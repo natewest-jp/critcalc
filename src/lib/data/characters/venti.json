@@ -223,7 +223,8 @@
 			],
 			"description": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
 			"application": [],
-			"nonHitting": true
+			"nonHitting": true,
+			"caveat": "Not modeled: the Stormeye absorbing a nearby Cryo, Pyro, Hydro or Electro aura, after which each tick adds a hit of that element — only its Anemo ticks are shown."
 		}
 	],
 	"passives": [
@@ -389,24 +390,15 @@
 					"duration": 10,
 					"element": "anemo",
 					"value": -20
-				},
-				{
-					"type": "resShred",
-					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst"
-					},
-					"duration": 10,
-					"value": -20
 				}
 			],
 			"_curatorNotes": [
 				"Migrated to onHit ability:burst, 10s 2026-05-09 (F1). gcsim c6() runs as AttackCBFunc on every burst tick hit. Duration 10s matches NewBaseWithHitlag (600f).",
-				"Second effect (absorbed-element resShred): the element field is intentionally absent because absorption is runtime-dynamic. Effect over-renders as a generic -20% resShred when no absorption occurred — element-conditional gating is a G dependency.",
+				"↻ RETIRED 2026-09-17 (T1.5): the second, element-less resShred. An absent `element` means ALL-Elemental (Zhongli's Jade Shield uses it that way), so every C6 burst drew a −20% All Elemental RES bar where the game lowers one element, and only after an absorption — a wrong value, not an approximation. Absorption is unmodelled (no absorb path in the sim), so the shred cannot be gated; the Anemo Traveler C6 form stands in: the Anemo half drawn, the absorbed half caveated.",
 				"[Hexerei] Fandom 'Storm of Defiance' constellation infobox, buffType=Hexerei buff field: the two RES shreds are UNCHANGED under Secret Rite (-20% Anemo, -20% absorbed element) — the existing effects stand as authored. The buff field adds only 'the DMG Venti deals to these opponents will gain a CRIT DMG Bonus of 100%'. Not authored: it boosts Venti's own hits only, is tied to the enemy debuff rather than a stated duration, and inventing one would fake timing."
 			],
-			"description": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%."
+			"description": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%.",
+			"caveat": "Only the Anemo shred is shown; if the Stormeye absorbed an element, that element's RES is also lowered by 20% for 10s."
 		}
 	],
 	"factionBonuses": [

@@ -117,6 +117,68 @@
 					"element": "electro",
 					"units": 2
 				}
+			],
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"effects": [
+						{
+							"type": "shield",
+							"target": "self",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"scaling": 25.9,
+							"stat": "hp",
+							"flat": 3050
+						},
+						{
+							"type": "buff",
+							"target": "self",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 10,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "normalDmgBonus",
+							"value": 15,
+							"snapshottable": false,
+							"conditions": {
+								"type": "ascension",
+								"min": 4
+							},
+							"attribution": "A4: Lightning Storm"
+						},
+						{
+							"type": "buff",
+							"target": "self",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 10,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "chargeDmgBonus",
+							"value": 15,
+							"snapshottable": false,
+							"conditions": {
+								"type": "ascension",
+								"min": 4
+							},
+							"attribution": "A4: Lightning Storm"
+						}
+					],
+					"_curatorNotes": [
+						"AUTHORED 2026-09-17 (T1.5). gcsim shares ONE skillFrames slice between press and hold — the `counter` param only selects the damage tier — so the variant inherits the base's frames, application and cooldown. Before it existed an `hE` silently drew the tap and nothing hold-only could be reached.",
+						"A4 Lightning Storm lives HERE (+15% Normal and Charged Attack DMG for 10s, gcsim asc.go a4 at counter 2): a variant's `effects` REPLACE the base's, so a tap draws no A4 bar — which the P1 trap (an `onCast.input` the buff passes do not read) would not have given. The shield is restated because replacement would otherwise drop it.",
+						"⚠️ A4 needs the MAXIMUM DMG Bonus. Since Luna VIII (Polaris) a held Tidecaller gains a stack every 0.8s even when not attacked, so a hold of 1.6s reaches it unassisted; a shorter hold would not. The 15% ATK SPD half has no Stat key and is not drawn."
+					]
+				}
 			]
 		},
 		{
@@ -190,7 +252,7 @@
 			"name": "Lightning Storm",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. gcsim a4(): +15% Normal/Charged DMG (DmgP), +15% ATK SPD (AtkSpd), both 600 frames (10s). Triggered when Tidecaller fires at max DMG bonus (counter=2). gcsim also has TODO: 'Greatly reduced delay before unleashing Charged Attacks' not implemented."
+				"Authored on Tidecaller's `hE` variant (2026-09-17, T1.5) — see its notes. gcsim a4(): +15% Normal/Charged DMG (DmgP), +15% ATK SPD (AtkSpd), both 600 frames (10s), when Tidecaller fires at counter 2. gcsim also has TODO: 'Greatly reduced delay before unleashing Charged Attacks' not implemented."
 			],
 			"description": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks."
 		},
@@ -229,12 +291,13 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"Migrated to onCast burst 2026-05-09 (F1). gcsim adds the shield directly in Burst() when cons >= 1; 16% max HP, 15s, 250% electro absorption."
+				"Migrated to onCast burst 2026-05-09 (F1). gcsim adds the shield directly in Burst() when cons >= 1; 16% max HP, 15s, 250% electro absorption.",
+				"target 'self' → 'active' (2026-09-17, T1.5): gcsim burst.go adds this shield with `Target: -1` — player-wide, i.e. whoever is on field — where her skill's own parry shield is `Target: c.Index()`. The corpus reads a player-wide shield as `active` (Zhongli's Jade Shield). No bar moves: the shield lane draws under the caster; the Team Builder's claim does."
 			],
 			"effects": [
 				{
 					"type": "shield",
-					"target": "self",
+					"target": "active",
 					"trigger": {
 						"type": "onCast",
 						"ability": "burst"

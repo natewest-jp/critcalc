@@ -57,9 +57,9 @@
 				{
 					"name": "Fully-Charged Aimed Shot",
 					"frames": {
-						"anim": 42,
-						"D": 32,
-						"J": 32
+						"anim": 96,
+						"D": 86,
+						"J": 86
 					}
 				},
 				{
@@ -90,7 +90,10 @@
 				}
 			],
 			"effects": [],
-			"description": "N4 has two hits at frames 15 and 29; swap reflects the second hit. Breakthrough Barb (C in Breakthrough state) has its own faster frame profile — listed last in chargeHits so C resolves to it by default. Fully-Charged Aimed Shot is the non-Breakthrough hydro C."
+			"description": "N4 has two hits at frames 15 and 29; swap reflects the second hit. Breakthrough Barb (C in Breakthrough state) has its own faster frame profile — listed last in chargeHits so C resolves to it by default. Fully-Charged Aimed Shot is the non-Breakthrough hydro C.",
+			"_curatorNotes": [
+				"chargeHits[1] 'Fully-Charged Aimed Shot' {anim 96, D 86, J 86} (2026-09-17, T1.5): gcsim aimed.go aimedFrames[1] = InitAbilSlice(96) with Dash/Jump at its 86f hitmark. It carried the Breakthrough Barb's 42/32. ⚠️ The frames report pairs this list one entry off — its `chargeHits[0]` row (D 15→86) is the fully-charged shot's slice diffed against our partial shot, which matches gcsim exactly. `C` resolves to the LAST entry, the Barb, so this map is reachable only by the audit today."
+			]
 		},
 		{
 			"id": "yelan__skill__lingering_lifeline",
@@ -204,6 +207,33 @@
 								"Coordinated attack, authored 2026-08-18. gcsim yelan/yelan.go:61 registers a minazuki.Watcher on action.NormalAttackState with tickerFreq 60 and a 60f ICD key, firing summonExquisiteThrow (burst.go) — THREE darts at burstTravel(20) + i*6, Hydro, Durability 25, ICDTagYelanBurst/ICDGroupYelanBurst. Talent row 'Exquisite Throw DMG' = 8.77% Max HP ×3 at level 10, so `scaling` is ONE dart.",
 								"icdGate is gcsim's own ICDGroupYelanBurst verbatim — 120f timer, every 3rd hit applies (pkg/core/attacks/icd_groups.dm.go:127,188). With three darts a wave and waves 1s apart the counter never times out, so exactly one dart per wave applies, which is the kit's claim. ⚠️ docs/coordinated-attacks-survey.md read ICDGroupYelanBreakthrough (18f/every 4) here — that is her CHARGED attack's group, not this one."
 							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "whileNormalAttacking",
+								"interval": 2,
+								"icdGate": "none"
+							},
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							},
+							"scaling": 14,
+							"stat": "hp",
+							"element": "hydro",
+							"application": [
+								{
+									"frame": 17,
+									"element": "hydro",
+									"units": 1
+								}
+							],
+							"_curatorNotes": [
+								"C2's extra arrow (2026-09-17, T1.5; was a `manual` damage effect on the C2 entry that reached nothing). gcsim burst.go summonExquisiteThrow: on a wave, if 1.8s have passed since the last one, one more hit — 14% Max HP, ICDTagNone (so it always applies), Durability 25, landing at c2Hitmark = 17f. The Fischl C6 shape: a constellation-gated `whileNormalAttacking` damage effect on the same summon.",
+								"interval 2, not 1.8: the arrow rides the WAVE, and waves come every 1s, so the first wave at least 1.8s after the last arrow is two waves later. Under a continuous normal-attack string that is exactly every other wave; after a gap in attacking the two can differ by one wave."
+							]
 						}
 					]
 				}
@@ -268,19 +298,10 @@
 			"name": "Taking All Comers",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 14,
-					"stat": "hp",
-					"element": "hydro"
-				}
-			],
-			"description": "When Exquisite Throw conducts a coordinated attack, it will fire an additional water arrow that will deal 14% of Yelan's Max HP as Hydro DMG.\nThis effect can trigger once every 1.8s."
+			"description": "When Exquisite Throw conducts a coordinated attack, it will fire an additional water arrow that will deal 14% of Yelan's Max HP as Hydro DMG.\nThis effect can trigger once every 1.8s.",
+			"_curatorNotes": [
+				"Authored on the Exquisite Throw summon as a constellation-gated coordinated attack (2026-09-17, T1.5) — see its second effect. The `manual` damage skeleton here drew nothing."
+			]
 		},
 		{
 			"id": "yelan__constellation__beware_the_tricksters_dice",
@@ -294,7 +315,8 @@
 			"name": "Bait-and-Switch",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "Increases all party members' Max HP by 10% for 25s for every opponent marked by Lifeline when the Lifeline explodes. A maximum increase of 40% Max HP can be attained in this manner."
+			"description": "Increases all party members' Max HP by 10% for 25s for every opponent marked by Lifeline when the Lifeline explodes. A maximum increase of 40% Max HP can be attained in this manner.",
+			"caveat": "Shown at its 40% cap. In game it is 10% for each opponent the Lifeline marks."
 		},
 		{
 			"id": "yelan__constellation__dealers_sleight",

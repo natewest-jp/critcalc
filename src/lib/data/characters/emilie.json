@@ -79,22 +79,33 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 1.5,
-								"icdGate": { "timer": 120 }
+								"firstTickDelay": 1.5833,
+								"icdGate": {
+									"timer": 120
+								}
 							},
 							"scaling": 151.2,
 							"stat": "atk",
 							"element": "dendro",
 							"_curatorNotes": [
 								"Canonical assumption: Level 2 case (scent upgrade reached quickly in sustained combat vs Burning targets). Ladder @T10: L1 = 71.28% single hit / L2 = 151.2% ×2 hits per 1.5s tick (second hit +18f) / L3 (burst-only) = 391%. Marker shows tick start; the L2 double-hit and per-level dynamics (gcsim lumidouce.go: Mult skillLumidouce[level-1]) are not per-marker modeled.",
-								"icdGate authored 2026-08-17 (ICD-group round b): gcsim lumidouce.go:66 sets ICDGroupEmilieLumidouce on the case's tick, whose table entry is a 120f reset window in which only the FIRST hit applies. Measured 5/9 applied, which standard also gives at this 90f interval — authored on the GROUP, not on the coincidence. ⚠️ Her BURST's case is deliberately left bare, and pairing by eye is why: gcsim runs the Level-3 phase on ICDGroupDefault and only the decayed Level-1 stream carries this group, while the burst's authored series models the Level-3 phase."
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim lumidouce.go:66 sets ICDGroupEmilieLumidouce on the case's tick, whose table entry is a 120f reset window in which only the FIRST hit applies. Measured 5/9 applied, which standard also gives at this 90f interval — authored on the GROUP, not on the coincidence. ⚠️ Her BURST's case is deliberately left bare, and pairing by eye is why: gcsim runs the Level-3 phase on ICDGroupDefault and only the decayed Level-1 stream carries this group, while the burst's authored series models the Level-3 phase.",
+								"firstTickDelay 1.5833 (95f) authored 2026-09-17 (T1.5): gcsim lumidouce.go queues the first attack at lumidouceTickInterval (90f) and lands it after caseTravel (default 5f), so the first hit is spawn + 95 — the dump's 111f from cast (16 + 95). It had defaulted to the interval, 5f early on all fourteen ticks."
 							]
 						}
+					],
+					"terminatesOn": "recast",
+					"_curatorNotes": [
+						"terminatesOn 'recast' + ONE LABEL for all three Cases (2026-09-17, T1.5). The kit: '1 Lumidouce Case created by Emilie herself can exist at any one time', and gcsim keys every case on one `lumidouceSrc` — a new spawn (E recast, the burst's Level 3 Case, or the Case the burst leaves behind) re-keys it and the previous Case's attack chain stops. Recast truncation keys on the summon LABEL, so the burst's two Cases carry this label too; that is what lets the burst stow this Case at its spawn."
 					]
 				}
 			],
 			"application": [
-				{ "frame": 37, "element": "dendro", "units": 1 },
-				{ "frame": 62, "element": "dendro" }
+				{
+					"frame": 37,
+					"element": "dendro",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -112,7 +123,7 @@
 			"frames": { "anim": 111, "N": 108, "D": 97, "J": 98, "swap": 105 },
 			"summons": [
 				{
-					"label": "Lumidouce Case (Level 3)",
+					"label": "Lumidouce Case",
 					"duration": 2.8,
 					"spawnsAt": 96,
 					"mobility": "stationary",
@@ -120,16 +131,93 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.9, "firstTickDelay": 0.5 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9,
+								"firstTickDelay": 0.5
+							},
 							"scaling": 391,
 							"stat": "atk",
 							"element": "dendro",
 							"_curatorNotes": [
 								"CADENCE CORRECTED 2026-08-18 (tick-cap round follow-up), and the old 0.7s was the MARK duration rather than a cadence. gcsim burst.go: the volley task runs every burstTickInterval = 18f and picks a random enemy that does NOT carry burstMarkKey, marking it for burstMarkDuration = 42f. Single-target, the mark can therefore only expire ON an 18f volley boundary, so the deliberate re-target cadence is ceil(42/18) x 18 = 54f = 0.9s, not 0.7s. First hit lands at the first volley (18f) plus burstHitmark (12f) = 30f after spawn, hence firstTickDelay 0.5. Measured: gcsim hits at +126/+180/+234, which is exactly what this now draws (spawnsAt 96 + 30, then 54f apart, three ticks inside the 2.8s window).",
 								"NO tickCap, and ⚓ THE KIT TEXT IS THE REASON, not a positional judgement (re-justified 2026-08-18 after Nate asked whether an always-output tick was being refused on AOE grounds - a fair challenge, and the first version of this note gave the weaker answer). The burst description states the cap outright: \"1 drop of Scented Dew will descend every 0.3 seconds, and 1 opponent can become the target every 0.7 seconds.\" The drop ALWAYS descends - we are not refusing an output - but the game itself forbids the same opponent being targeted inside 0.7s, and on a 0.3s grid the earliest legal re-target is 0.9s. That is the cadence above. gcsim shows a FOURTH Level-3 hit at +162 because when every enemy is marked its volley falls back to CalcRandomPointFromCenter and that random point's 2.5-radius blast happened to clip the target - an artifact of gcsim needing to send the drop SOMEWHERE, not a hit the game grants. ⚠️ The audit will keep flagging count 3 -> 4 for this reason; that flag is expected, not a backlog item.",
-								"Level 3 barrage: gcsim fires volleys every 0.3s at random marked enemies, with a 0.7s per-enemy mark (burst.go burstTickInterval/burstMarkDuration) — single-target effective cadence is one 391%-ATK hit per 0.7s, which is what the interval models. C4: +2s duration and 0.4s mark (faster per-target rate) not modeled. After the barrage (306f from cast) the case reverts to its previous E-level and resumes E-tick behavior for the remaining E duration — not modeled as a second summon."
+								"Level 3 barrage: gcsim fires volleys every 0.3s at random unmarked enemies, marking each for 0.7s (burst.go burstTickInterval/burstMarkDuration) — the single-target cadence that produces is the 0.9s above. ↻ 2026-09-17 (T1.5): C4's +2s and 0.4s mark are authored (durationModifiers on this Case, a gated 0.6s twin of this series), and the Case recreated at 306f is the burst's second summon — this line used to say all three were unmodelled."
+							],
+							"conditions": {
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 4
+								}
+							}
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.6,
+								"firstTickDelay": 0.5
+							},
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							},
+							"scaling": 391,
+							"stat": "atk",
+							"element": "dendro",
+							"_curatorNotes": [
+								"C4 cadence (2026-09-17, T1.5), authored as the same series twice with exclusive conditions (the Aino/Ororon shape). C4 cuts the per-target mark by 0.3s (gcsim burst.go: burstMarkDuration -= 0.3*60 → 24f). On the 18f volley grid the earliest legal re-target is ceil(24/18) × 18 = 36f = 0.6s; the first hit is unchanged at spawn + 30f. With the +2s the Case lives 288f: eight hits, not three."
 							]
 						}
+					],
+					"terminatesOn": "recast",
+					"durationModifiers": [
+						{
+							"source": "C4: Lumidouce Heart Note",
+							"type": "flat",
+							"value": 2,
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							}
+						}
+					],
+					"_curatorNotes": [
+						"LABEL (2026-09-17, T1.5): was 'Lumidouce Case (Level 3)'. It carries the E Case's label so it STOWS that Case at its spawn — recast truncation keys on the label, and the kit's 'stowing existing Cases away' is gcsim re-keying `lumidouceSrc`, which stops the E Case's attack chain. Before this the E Case kept ticking through the burst. The Level is in the burst's own name and description.",
+						"C4 +2s (burst.go: extendDuration 2*60) as durationModifiers — only summons[0] reads them, which is why this Case stays first."
+					]
+				},
+				{
+					"label": "Lumidouce Case",
+					"duration": 22,
+					"spawnsAt": 306,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 1.5833,
+								"icdGate": {
+									"timer": 120
+								}
+							},
+							"scaling": 151.2,
+							"stat": "atk",
+							"element": "dendro",
+							"_curatorNotes": [
+								"Mirrors the E Case's series exactly (canonical Level 2, 90f cadence, ICDGroupEmilieLumidouce, first hit at spawn + 95f). gcsim respawns the Case at the level it had when the burst stowed it, or Level 1 if none was out; both levels land one application per tick under this group, so the gauge cannot tell them apart."
+							]
+						}
+					],
+					"_curatorNotes": [
+						"The Case the burst leaves behind (2026-09-17, T1.5). Kit: 'When the duration ends, a Level 1 Lumidouce Case will be recreated. If a Lumidouce Case was stowed away … the Case that was stowed away will be deployed instead, and its duration will be reset.' gcsim burst.go queues spawnLumidouceCase at burstResetLumidouce = 306f from the cast (+120 at C4) with a full skillDuration (22s) — measured 401f / 90f × 14 in the frames report, which is this spawn + 95.",
+						"⚠️ NO terminatesOn, on purpose: a flag would truncate the Level 3 Case at 306f, which at C4 is still alive until 384f. It is ended by the NEXT spawn that carries the flag (an E recast or the next burst), which is the behaviour it needs.",
+						"⚠️ spawnsAt is static, so at C4 this Case is drawn 120f early (306 rather than 426) — caveated on C4. No summon field takes a constellation condition."
 					]
 				}
 			],
@@ -228,7 +316,8 @@
 			"name": "Lumidouce Heart Note",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "Aromatic Explication's duration is increased by 2s. The interval between opponents being selected as the target for Scented Dew is decreased by 0.3s."
+			"description": "Aromatic Explication's duration is increased by 2s. The interval between opponents being selected as the target for Scented Dew is decreased by 0.3s.",
+			"caveat": "The Lumidouce Case the burst leaves behind is drawn 2s early and ends 2s early."
 		},
 		{
 			"id": "emilie__constellation__puredew_aroma",
@@ -244,15 +333,27 @@
 			"constellationLevel": 6,
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 300,
-					"stat": "atk",
-					"element": "dendro"
+					"type": "infuse",
+					"target": "self",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 5,
+					"durationType": "fixed",
+					"element": "dendro",
+					"procCooldown": 12,
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
 				}
 			],
-			"description": "When using Fragrance Extraction or Aromatic Explication, Emilie will gain Abiding Fragrance for 5s.\nWhile this is active, after Emilie uses Normal or Charged Attacks, she will generate 1 Scent, and her Normal and Charged Attack DMG will be converted into Dendro DMG that cannot be overridden, and the DMG dealt will be increased by 300% of Emilie's ATK.\n\nThe Abiding Fragrance effect will be removed after 4 Scents are created this way or after its duration expires. Abiding Fragrance can be triggered once every 12s."
+			"description": "When using Fragrance Extraction or Aromatic Explication, Emilie will gain Abiding Fragrance for 5s.\nWhile this is active, after Emilie uses Normal or Charged Attacks, she will generate 1 Scent, and her Normal and Charged Attack DMG will be converted into Dendro DMG that cannot be overridden, and the DMG dealt will be increased by 300% of Emilie's ATK.\n\nThe Abiding Fragrance effect will be removed after 4 Scents are created this way or after its duration expires. Abiding Fragrance can be triggered once every 12s.",
+			"caveat": "Normal and Charged Attacks are drawn as Dendro for the full 5s. In game Abiding Fragrance ends early after 4 of them.",
+			"_curatorNotes": [
+				"C6 as an `infuse` (2026-09-17, T1.5), the Kazuha C6 shape: onCast with no ability fires on both E and Q. gcsim cons.go: c6() opens c6ModKey for 5s behind a 12s c6ICDKey — `procCooldown 12` — and applyC6Bonus sets Element = Dendro, IgnoreInfusion on Normal/Extra attacks. gcsim opens it at the Case SPAWN (16f after E, 96f after Q), not the cast; the window here starts at the cast.",
+				"Retired: a `manual` damage effect (300% ATK) that reached no surface — it is the flat DMG added to the converted attacks (`ai.FlatDmg += TotalAtk * 3`), a damage-formula term with no bar. The 4-Scent early end is caveated."
+			]
 		}
 	],
 	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.692Z" },

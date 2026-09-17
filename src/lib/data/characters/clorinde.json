@@ -231,7 +231,8 @@
 							"hyperbloom",
 							"overloaded",
 							"electroSwirl",
-							"electroCrystallize"
+							"electroCrystallize",
+							"stellarConduct"
 						],
 						"source": "team"
 					},
@@ -244,7 +245,8 @@
 			"description": "Enhance the Ascension Talent \"Dark-Shattering Flame\": After a nearby party member triggers an Electro-related reaction against an opponent, Electro DMG dealt by Clorinde's Normal Attacks and Last Lightfall will be increased by 30% of Clorinde's ATK for 15s. Max 3 stacks. Each stack is counted independently. When you have 3 stacks, Clorinde's interruption resistance will be increased. The Maximum DMG increase achievable this way for the above attacks is 2,700.\nYou must first unlock the Ascension Talent \"Dark-Shattering Flame.\"",
 			"_curatorNotes": [
 				"C2 enhances A1 (Dark-Shattering Flame): raises the per-stack ATK% from 20 to 30 and the cap from 1800 to 2700. Authored as a separate damage instance gated on the same Electro-related reaction set as A1; the in-game form is a flat-dmg add to N/Q hits, not a discrete damage event — see A1 note. Per-stack accumulation (max 3, independent stacks) not modelled.",
-				"Interruption-resistance buff at 3 stacks not authored — schema has no representation for interruption resistance."
+				"Interruption-resistance buff at 3 stacks not authored — schema has no representation for interruption resistance.",
+				"`stellarConduct` added (2026-09-17, T1.5): gcsim asc.go subscribes OnStellarConduct beside OnSuperconduct for the same a1CB, so this is the positive evidence the reaction-conversion rule asks for — not the refused subsumption. Without it the trigger goes dark in a Stellar-enabler team, where every Superconduct converts."
 			]
 		},
 		{
@@ -312,7 +314,8 @@
 			"_curatorNotes": [
 				"Inherited 'manual' triggers on all three effects. The two CR/CD buffs likely belong on 'onCast' with ability='skill' — gcsim grants on Hunter's Vigil cast (c.c6skill in cons.go). 12s duration each. Values are correct.",
 				"The Glimbright Shade damage effect: trigger is conditional — 'when Clorinde takes damage' OR 'on Impale the Night: Pact cast'. ICD = 1s (gcsim c6GlimbrightIcdKey). Cap = 6 procs per Night Vigil window (gcsim c6Stacks). No clean trigger fit; reviewer to wire likely as a multi-trigger or custom proc.",
-				"DMG-taken reduction (80%) and interruption resistance — not authored; schema has no incoming-damage modifier or interruption-resistance representation."
+				"DMG-taken reduction (80%) and interruption resistance — not authored; schema has no incoming-damage modifier or interruption-resistance representation.",
+				"⛔ The CR/CD pair stays `manual` (checked 2026-09-17, T1.5). gcsim grants it only from the stance-OPENING press (skill.go Skill → c6skill; an in-stance press takes skillDash, which does not). `onCast ability: skill` cannot tell that press from Impale the Night — both are `E`, both are skill abilities, and the collector gathers every skill ability's effects for either — so it would re-grant on every Impale and refresh-merge the bar past its 12s. The Lohen cast-counter pattern cannot rescue it either: gains snapshot BEFORE consumes, so the first Impale would still read the stack. Needs a trigger bound to one ability, not a class."
 			]
 		}
 	],

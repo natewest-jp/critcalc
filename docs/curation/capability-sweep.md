@@ -11,24 +11,22 @@ Out of scope v1 (recorded decision, Nate 2026-07-28): wiki buff-increase categor
 Shield Strength / Healing Bonus improvement categories, and `cleanse` (no wiki category exists;
 fixture-only). Sanity counts per category group:
 
-- heal: wiki 46 characters / ours 36
+- heal: wiki 46 characters / ours 38
 - shield: wiki 21 characters / ours 20
 - resShred: wiki 34 characters / ours 38
 - taunt: wiki 8 characters / ours 9
 - grouping: wiki 10 characters / ours 10
-- infuse: wiki 10 characters / ours 7
+- infuse: wiki 10 characters / ours 10
 - interruptionRes: wiki 45 characters / ours 1
 - energy: wiki 73 characters / ours 26
 - revival: wiki 4 characters
 - offField: wiki 74 characters
 
-## Wiki-attributed capability we don’t derive (7)
+## Wiki-attributed capability we don’t derive (5)
 
 Highest priority — the wiki says this kit does something our facets deny. Triage: (a) real gap → effect/tag fix; (b) unmodelable under the schema freeze → caveat; (c) wiki wrong → WIKI_KNOWN_WRONG with evidence.
 
 - **dehya** — wiki attributes heal ("Stalwart and True", "An Oath Abiding" [C4]) — nothing derives
-- **gaming** — wiki attributes heal ("Dance of Amity", "Suanni's Gilded Dance", "Bringer of Blessing" [C1]) — nothing derives
-- **gorou** — wiki attributes heal ("Lapping Hound: Warm as Water" [C4]) — nothing derives
 - **kaveh** — wiki attributes heal ("An Architect's Undertaking") — nothing derives
 - **sigewinne** — wiki attributes shield (""Can the Most Merciful of Spirits Defeat Its Foes?"" [C2]) — nothing derives
 - **traveler_anemo** — wiki attributes heal ("Second Wind") — nothing derives
@@ -40,13 +38,15 @@ First external check of minConstellation provenance.
 
 - _none_
 
-## We derive it; the wiki doesn’t list it (7)
+## We derive it; the wiki doesn’t list it (9)
 
 Over-derivation candidate OR a wiki gap — verify against gcsim/kit text before touching data.
 
 - **alyosha** — derives energy→self C1 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
 - **alyosha** — derives heal→active C0, heal→team C4 — absent from the wiki's heal categories (over-derivation, or a wiki gap)
 - **alyosha** — derives taunt C0 — absent from the wiki's taunt categories (over-derivation, or a wiki gap)
+- **emilie** — derives infuse(dendro)→self C6 — absent from the wiki's infuse categories (over-derivation, or a wiki gap)
+- **navia** — derives infuse(geo)→self C0 — absent from the wiki's infuse categories (over-derivation, or a wiki gap)
 - **odette** — derives resShred(anemo)→enemy C2, resShred(cryo)→enemy C2, resShred(electro)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
 - **traveler_cryo** — derives energy→self C1 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
 - **traveler_cryo** — derives infuse(cryo)→self C0 — absent from the wiki's infuse categories (over-derivation, or a wiki gap)
@@ -76,7 +76,7 @@ No revive primitive exists (Tier-2 freeze) — each of these should carry a cave
 
 - _none_
 
-## Candidates (wiki category broader than our kind) (99)
+## Candidates (wiki category broader than our kind) (98)
 
 Appendix — wiki-has/we-don’t for superset categories (energy incl. particles, self-infusions, self interruption res). Judgment required; most are fine.
 
@@ -89,7 +89,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **beidou** — wiki attributes interruptionRes ("Stormbreaker") — nothing derives
 - **charlotte** — wiki attributes energy ("A Responsibility to Oversee" [C4]) — nothing derives
 - **chasca** — wiki attributes interruptionRes ("Spirit Reins, Shadow Hunt") — nothing derives
-- **chiori** — wiki attributes infuse ("Tailor-Made") — nothing derives
 - **chongyun** — wiki attributes infuse ("Spirit Blade: Chonghua's Layered Frost") — nothing derives
 - **clorinde** — wiki attributes interruptionRes (""And So Shall I Never Despair"" [C6], ""Now, As We Face the Perils of the Long Night"" [C2]) — nothing derives
 - **columbina** — wiki attributes energy ("Cloudveiled Ridges in Floral Mists" [C4], "Radiance Over Blossoms and Peaks" [C1]) — nothing derives

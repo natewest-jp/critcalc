@@ -72,10 +72,20 @@
 			},
 			"plungeVariants": [
 				{
+					"label": "After Press E",
+					"input": ["E", "tE", "pE"],
+					"frames": {
+						"anim": 55,
+						"D": 43,
+						"J": 50,
+						"swap": 50
+					}
+				},
+				{
 					"label": "After Hold E",
 					"input": ["hE"],
 					"frames": {
-						"anim": 54,
+						"anim": 61,
 						"N": 61,
 						"E": 60,
 						"Q": 60,
@@ -104,7 +114,7 @@
 			],
 			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact. If this Plunging Attack is triggered by Chihayaburu, it will be converted to Plunging Attack: Midare Ranzan.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG and will create a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.",
 			"_curatorNotes": [
-				"[A7] Base plungeFrames represent the Press-E plunge path (plungePressFrames in gcsim, hitmark 36f); the 'After Hold E' plungeVariant represents plungeHoldFrames (hitmark 41f). The plunge variant is auto-selected from whichever E token (Press vs Hold) preceded P in the notation string."
+				"↻ CORRECTED 2026-09-17 (T1.5). This note used to say the base plungeFrames were the Press-E plunge; they are gcsim's GENERIC high plunge (highPlungeFrames: InitAbilSlice(73), N 54, E/Q 53, D 47, J 69, swap 55 — verified against the dump's P key), which is right for a plunge that follows no skill. The two Midare Ranzan plunges are plungeVariants, selected by the E token that preceded P: 'After Press E' is plungePressFrames (InitAbilSlice(55), D 43, J 50, swap 50; hitmark 36f) and was missing, so `E P Q` ran 18f long; 'After Hold E' is plungeHoldFrames (hitmark 41f), whose `anim` was 54 — its own swap, the pre-L4b stand-in — against gcsim's InitAbilSlice(61)."
 			],
 			"lowPlungeFrames": {
 				"anim": 73,
@@ -202,7 +212,7 @@
 			"summons": [
 				{
 					"label": "Autumn Whirlwind",
-					"duration": 8,
+					"duration": 8.78,
 					"spawnsAt": 82,
 					"mobility": "stationary",
 					"effects": [
@@ -213,8 +223,7 @@
 								"type": "summonTick",
 								"interval": 1.95,
 								"firstTickDelay": 0.967,
-								"icdGate": "none",
-								"tickCap": 5
+								"icdGate": "none"
 							},
 							"scaling": 216,
 							"stat": "atk",
@@ -225,7 +234,8 @@
 								"icdGate 'none': ai.ICDTag = attacks.ICDTagNone in burst.go; gcsim-frames-diff §5 measured 5/5 'none'. Durability 25 = 1U per tick.",
 								"Not modelled: the Elemental Absorption DoT (aiAbsorb, burstEleDot[9] = 64.8%) rides the identical 117f cadence with the absorbed element (Hydro/Pyro/Cryo/Electro) — element is runtime-determined by AbsorbCheck, so there is no fixed element to author.",
 								"C2 (c2() in cons.go) adds a 0.5s EM-buff tick loop only; it does not change the damage cadence or tick count, so this series is constellation-invariant.",
-								"tickCap 5 (tick-cap round, 2026-08-18): gcsim burst.go `for i := range 5` queues exactly five Autumn Whirlwind DoT ticks - an explicit count, not a window, so our duration-derived 4 was one short. Measured 5 at both C0 and C6."
+								"tickCap 5 (tick-cap round, 2026-08-18): gcsim burst.go `for i := range 5` queues exactly five Autumn Whirlwind DoT ticks - an explicit count, not a window, so our duration-derived 4 was one short. Measured 5 at both C0 and C6. ↻ RETIRED 2026-09-17 (T1.5): with the duration at gcsim's 8.78s the window itself derives the five ticks, so the cap restated the count (lint D.27d) and is gone.",
+								"duration 8.78 (2026-09-17, T1.5): gcsim adds burstStatus at burstHitmark − 1 = 81f for (burstFirstTick − 81) + 117 × 4 = 527f, so the field ends on the fifth tick's frame (608). At 8.00 the tickCap widening drew the fifth marker outside its own bar."
 							]
 						}
 					]
@@ -375,7 +385,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 8,
+					"duration": 9.48,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -386,6 +396,10 @@
 						"level": 2
 					}
 				}
+			],
+			"_curatorNotes": [
+				"9.48s (2026-09-17, T1.5; was 8). gcsim cons.go c2 ticks every 30f from frame 81 while burstStatus lives and each tick gives a 60f +200 EM mod; the last tick is at 591f (the status ends at 608) and its mod runs to 651f — 569f = 9.48s from the field's spawn at 82f, the honest length of a buff re-applied per tick (the Bennett/Faruzan ruling).",
+				"⏸️ The SELF half is NOT authored, and it is real: each tick also gives the mod to Kazuha himself when he is not the active character (`if active.Base.Key != c.Base.Key`), which is the EM his A4 scales off. A `target: 'self'` twin was authored and measured, and it POOLS with his C6 self buffs (onCast, 5s) into one window whose length is taken from the pool's FIRST effect — so C6's 5s drew 9.48s. That is an engine defect in every cast pool (it already cuts Iansan's C2 on the receiver), queued in essential-characters §10; author the twin after it lands."
 			]
 		},
 		{

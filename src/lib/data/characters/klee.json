@@ -451,7 +451,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onCast",
-						"ability": "Sparks 'n' Splash"
+						"ability": "burst"
 					},
 					"duration": 25,
 					"durationType": "fixed",

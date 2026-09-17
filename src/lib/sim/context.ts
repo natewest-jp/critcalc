@@ -342,6 +342,10 @@ export type SimContext = {
 	followStateCasts: Map<string, FollowStateCast>;
 	/** Timed elemental infusions granted by `infuse` Effects. */
 	infusionWindows: InfusionWindow[];
+	/** When each `infuse` Effect last opened a window, for its `procCooldown`
+	 *  (Emilie C6: 5s after E or Q, once per 12s). Keyed by the authored effect
+	 *  OBJECT — a character is in the team at most once, so identity is enough. */
+	infusionProcAt: Map<object, number>;
 	/**
 	 * Armed off-field damage-proc listeners — the FOURTH application source
 	 * (mark-triggered round, 2026-08-17; joined by `onHit` and
@@ -453,6 +457,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		lineupChanges: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],
+		infusionProcAt: new Map(),
 		procs: new Map(),
 		stateGatedTicks: new Map(),
 		tickStacks: new Map()

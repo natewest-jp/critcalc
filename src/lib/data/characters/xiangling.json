@@ -70,7 +70,7 @@
 				"swap": 63
 			},
 			"_curatorNotes": [
-				"N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted. High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) but not represented (recipe uses lowPlungeFrames only). gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat.",
+				"N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted. High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) — ↻ stale since L4b: `plungeFrames` IS the high plunge and is authored beside `lowPlungeFrames`. gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat.",
 				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
 			"sections": [
@@ -213,11 +213,13 @@
 				},
 				{
 					"frame": 33,
-					"element": "pyro"
+					"element": "pyro",
+					"units": 1
 				},
 				{
 					"frame": 57,
-					"element": "pyro"
+					"element": "pyro",
+					"units": 1
 				}
 			]
 		}
@@ -321,15 +323,17 @@
 					"type": "buff",
 					"target": "team",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
+					"duration": 14,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "pyroDmgBonus",
 					"value": 15,
 					"snapshottable": false,
 					"_curatorNotes": [
-						"Inherited `manual` trigger — do not rewrite. Probable trigger: onCast with ability: 'burst'; buff applied at frame 56 of burst animation when Pyronado activates (via QueueCharTask at a=56 in burst.go). Duration tied to Pyronado's active window (10s base, 14s at C4). Target: all party members. gcsim: c.c6(maxDuration) calls AddStatMod with NewBaseWithHitlag on all chars for PyroP +0.15."
+						"onCast burst, 14s (2026-09-17, T1.5; was a `manual` trigger with no duration, so it drew nothing). gcsim burst.go: c6(maxDuration) is called inside the task queued at a = 56f, with maxDuration = 14 * 60 because C6 implies C4 — so the buff runs from the Pyronado spawn to its end. Measured: the window opens at the spawn (the burst activation), so it covers the Pyronado bar exactly."
 					]
 				}
 			],

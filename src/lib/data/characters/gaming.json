@@ -118,33 +118,32 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"tags": ["summon"],
+			"tags": ["summon", "heal"],
 			"energyCost": 60,
 			"effects": [
 				{
-					"type": "buff",
+					"type": "heal",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
-					"duration": 12,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "hp%",
-					"value": 50,
-					"snapshottable": false
+					"scaling": 30,
+					"stat": "hp"
 				}
 			],
 			"_curatorNotes": [
 				"Behavior changed from 'stance' to 'instant': Wushou Stance does not replace Gaming's normals or charged attacks — it is a 12s self-status (burstKey) enabling Man Chai respawning on each successful Charmed Cloudstrider or forward pounce with >50% HP. Canceled on swap-off (gcsim onExitField). Man Chai spawns at burstHitmark+1=61f with variable walkback duration (gcsim manChaiWalkBack default=100f, user-controlled via man_chai_delay param) and re-spawns throughout the 12s window. summons[] not authored due to variable/repeating nature — reviewer to decide representation for Wushou Stance window and Man Chai.",
-				"Inherited manual trigger on existing hp% buff effect — probable trigger: onCast (burst). Effect appears to model a one-time HP recovery (gcsim: HealTypePercent Src=0.3 = 30% MaxHP, at burstStart=frame 36) but is typed as 'buff' with stat 'hp%' and value 50 — neither type nor value matches gcsim. The duration:12 on the effect likely intends to represent the Wushou Stance window rather than the heal duration. Reviewer to rework as a heal effect plus a separate self-status entry for the 12s window (terminatesOnSwap)."
+				"↻ REWORKED 2026-09-17 (T1.5): the inherited `manual` `buff hp% 50` (wrong type, wrong number, unreachable) is now the heal gcsim applies — burst.go Player.Heal HealTypePercent Src 0.3 on Gaming at burstStart (36f): 30% Max HP. The 12s Wushou Stance window and Man Chai stay unauthored (see the note above).",
+				"frames re-transcribed (2026-09-17, T1.5): gcsim burstFrames = InitAbilSlice(77) — `anim` 66 → 77 (66 is its Dash override, which had no key and is now D 66). Q→C / Q→Q / Q→P and the human-timing full-animation reading were 11f short."
 			],
 			"description": "Gaming enters Wushou Stance, briefly applying Pyro to him, recovering a fixed amount of HP, and summons his companion, the Suanni Man Chai, to smash into his target, dealing AoE Pyro DMG.\nAfter bashing its target, Man Chai will roll to a nearby location before moving towards Gaming. When it links up with Gaming, Man Chai will leave the field and reset the CD for Gaming's Elemental Skill, Bestial Ascent.\nWhile Wushou Stance is active, his resistance to interruption is increased, and when Gaming lands with Charmed Cloudstrider attack or completes the forward pounce attack from Bestial Ascent with over 50% HP, he will summon Man Chai again.\nEach Gaming can only have 1 Man Chai on the field simultaneously.\nThis effect will be canceled once Gaming leaves the field.",
 			"behavior": "instant",
 			"frames": {
-				"anim": 66,
+				"anim": 77,
 				"N": 63,
 				"E": 63,
+				"D": 66,
 				"J": 65,
 				"swap": 77
 			},

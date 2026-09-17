@@ -254,7 +254,8 @@
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
-						"type": "onHit"
+						"type": "onHit",
+						"abilityType": "burst"
 					},
 					"duration": 4,
 					"durationType": "refresh",
@@ -265,6 +266,10 @@
 						"level": 2
 					}
 				}
+			],
+			"caveat": "Drawn for 4s from the burst. In game every Rain Sword wave refreshes it, so it lasts as long as the waves keep firing.",
+			"_curatorNotes": [
+				"`abilityType: burst` (2026-09-17, T1.5) — a PARTIAL fix. The kit and gcsim scope the shred to Sword Rain hits (burst.go attaches c2cb inside summonSwordWave, 1f ICD, so every wave refreshes it). The bare `onHit` fired off the E's cast hit and the burst's; now only the burst's (its f18 Orbital attack, the one hit the cast lands). The waves do not reach a character onHit pool — a `whileNormalAttacking` fire is not a summon tick — so the refresh through the burst needs engine work; caveated."
 			]
 		},
 		{
@@ -295,7 +300,7 @@
 			"constellationLevel": 6,
 			"description": "Activating 2 of Guhua Sword: Raincutter's sword rain attacks greatly enhances the third sword rain attack. On hit, the third sword rain attack also regenerates 3 Energy for Xingqiu.",
 			"_curatorNotes": [
-				"C6: +3 energy on every 3rd sword rain hit — skipped: triggered by normal attacks which aren't simulated; no trigger variant for 'on Nth hit of ability'"
+				"C6 (every third Sword Rain wave fires 5 swords instead of 3 and restores 3 Energy) is not authored. ↻ 2026-09-17 (T1.5): the old reason — \"normal attacks aren't simulated\" — is stale; normals are simulated and the proc registry fires every wave. What is missing is a per-Nth-fire trigger on a wave, and of the two payloads the Energy reaches no planner surface; the extra swords would change only a scaling nobody draws."
 			]
 		}
 	],

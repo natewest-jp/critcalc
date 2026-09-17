@@ -18,7 +18,9 @@
 			"_curatorNotes": [
 				"No plunge.go in gcsim character dir — plungeFrames not available.",
 				"Prop Arrow CA (chargeHits[2]) spawns a Grin-Malkin Hat at ~frame 113 from CA cast (aimedPropRelease=103 + default travel=10): duration 238 frames (~4.0s), stationary, terminates on recast (len(hats)==maxHatCount kills oldest). Schema does not support summons[] on chargeHits; reviewer to decide representation.",
-				"Spiritbreath Thorn (Arkhe: Pneuma) fires on Prop Arrow hit with 6s ICD (skillAlignedICD=6*60). Separate Pyro DMG instance. Not in effects skeleton; reviewer to author."
+				"Spiritbreath Thorn (Arkhe: Pneuma) fires on Prop Arrow hit with 6s ICD (skillAlignedICD=6*60). Separate Pyro DMG instance. Not in effects skeleton; reviewer to author.",
+				"chargeHits RE-SLOTTED (2026-09-17, T1.5): the three rows were each one step off gcsim's aimed ladder — \"Aimed Shot\" held the fully-charged slice (80/72), \"Fully-Charged Aimed Shot\" held the Prop Arrow's (111/103). Now aimedFrames[0] InitAbilSlice(23) D/J 15, aimedFrames[1] InitAbilSlice(80) D/J 72, aimedPropFrames InitAbilSlice(111) D/J 103 (aimedPropRelease). `C` still resolves to the last entry, the Prop Arrow, so the rotation shot is unchanged; the frames report did not flag it because it pairs hA/A by name onto the same shifted values.",
+				"noICD (2026-09-17, T1.5): both the fully-charged shot and the Prop Arrow are ICDTagNone in gcsim aimed.go, so every aimed shot applies. Safe on the whole normal ability because N1–N4 are Physical and reach no clock. ⚠️ Per character, not a bow rule — Amber and Venti use ICDTagExtraAttack."
 			],
 			"hits": [
 				{
@@ -58,17 +60,17 @@
 				{
 					"name": "Aimed Shot",
 					"frames": {
-						"anim": 80,
-						"D": 72,
-						"J": 72
+						"anim": 23,
+						"D": 15,
+						"J": 15
 					}
 				},
 				{
 					"name": "Fully-Charged Aimed Shot",
 					"frames": {
-						"anim": 111,
-						"D": 103,
-						"J": 103
+						"anim": 80,
+						"D": 72,
+						"J": 72
 					}
 				},
 				{
@@ -98,7 +100,8 @@
 					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will run across the arrowhead before being fired. Different effects will occur based on the time spent charging.\n·Charge Level 1: Fires off a Pyro-infused arrow, dealing Pyro DMG.\n·Charge Level 2: Fires off a Prop Arrow that deals Pyro DMG, and upon hit, it will summon a Grin-Malkin Hat.\nWhen firing the Prop Arrow, and when Lyney has more than 60% HP, he will consume a portion of his HP to obtain 1 Prop Surplus stack. Max 5 stacks. The effect will be removed after the character spends 30s out of combat.\nThe lowest Lyney can drop to through this method is 60% of his Max HP.\nGrin-Malkin Hat\n·Can taunt nearby opponents and attract their attacks. Each opponent can only be taunted by the Hat once every 5s.\n·The Hat will inherit a percentage of Lyney's Max HP.\n·If destroyed, or if its duration expires, it will fire off a Pyrotechnic Strike at 1 nearby opponent, dealing Pyro DMG.\nOnly 1 Hat can exist at any given time.\nArkhe: Pneuma\nAt certain intervals, the Prop Arrow will cause a Spiritbreath Thorn to descend upon its hit location, dealing Pneuma-aligned Pyro DMG."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will run across the arrowhead before being fired. Different effects will occur based on the time spent charging.\n·Charge Level 1: Fires off a Pyro-infused arrow, dealing Pyro DMG.\n·Charge Level 2: Fires off a Prop Arrow that deals Pyro DMG, and upon hit, it will summon a Grin-Malkin Hat.\nWhen firing the Prop Arrow, and when Lyney has more than 60% HP, he will consume a portion of his HP to obtain 1 Prop Surplus stack. Max 5 stacks. The effect will be removed after the character spends 30s out of combat.\nThe lowest Lyney can drop to through this method is 60% of his Max HP.\n\nGrin-Malkin Hat\n·Can taunt nearby opponents and attract their attacks. Each opponent can only be taunted by the Hat once every 5s.\n·The Hat will inherit a percentage of Lyney's Max HP.\n·If destroyed, or if its duration expires, it will fire off a Pyrotechnic Strike at 1 nearby opponent, dealing Pyro DMG.\nOnly 1 Hat can exist at any given time.\n\nArkhe: Pneuma\nAt certain intervals, the Prop Arrow will cause a Spiritbreath Thorn to descend upon its hit location, dealing Pneuma-aligned Pyro DMG."
+			"description": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will run across the arrowhead before being fired. Different effects will occur based on the time spent charging.\n·Charge Level 1: Fires off a Pyro-infused arrow, dealing Pyro DMG.\n·Charge Level 2: Fires off a Prop Arrow that deals Pyro DMG, and upon hit, it will summon a Grin-Malkin Hat.\nWhen firing the Prop Arrow, and when Lyney has more than 60% HP, he will consume a portion of his HP to obtain 1 Prop Surplus stack. Max 5 stacks. The effect will be removed after the character spends 30s out of combat.\nThe lowest Lyney can drop to through this method is 60% of his Max HP.\n\nGrin-Malkin Hat\n·Can taunt nearby opponents and attract their attacks. Each opponent can only be taunted by the Hat once every 5s.\n·The Hat will inherit a percentage of Lyney's Max HP.\n·If destroyed, or if its duration expires, it will fire off a Pyrotechnic Strike at 1 nearby opponent, dealing Pyro DMG.\nOnly 1 Hat can exist at any given time.\n\nArkhe: Pneuma\nAt certain intervals, the Prop Arrow will cause a Spiritbreath Thorn to descend upon its hit location, dealing Pneuma-aligned Pyro DMG.",
+			"noICD": true
 		},
 		{
 			"id": "lyney__skill__bewildering_lights",

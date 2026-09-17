@@ -44,19 +44,19 @@
 				}
 			],
 			"chargeFrames": {
-				"anim": 74,
-				"C": 53,
-				"E": 23,
-				"Q": 23,
-				"D": 23,
-				"J": 23,
-				"swap": 50
+				"anim": 87,
+				"C": 69,
+				"E": 26,
+				"Q": 27,
+				"D": 25,
+				"J": 26,
+				"swap": 58
 			},
 			"caveat": "Typing 'C' shows the short Charged Attack; in game, holding to charge enters Equitable Judgment, the long channeled attack, which is not modeled.",
 			"_curatorNotes": [
 				"Droplet-absorption self-heal (16% MaxHP per Droplet consumed, gcsim charge.go:301-312 consumeDroplet) named in the caveat 2026-07-28 (capability sweep). Not authorable: absorption count is player-dependent field state inside the unmodeled EJ system; a bare heal effect would fake its trigger cadence. The wiki's C4 'heal' credit is this same base mechanic — C4 only spawns a Droplet (cons.go:46-79, 4s ICD), stub-with-caveat stands.",
 				"Normals: 3-hit catalyst chain. attackHitmarks=[19,16,32], attackFrames built via InitNormalCancelSlice(hitmark, animLen). N1 explicit overrides ActionAttack=29 ActionCharge=20; N2 ActionAttack=31 ActionCharge=22; N3 ActionWalk=61 ActionCharge=51. N3 final-hit C key omitted per convention.",
-				"Charge (short CA): chargeFrames=InitAbilSlice(87) with ActionCharge=69 (omit C self-cancel), ActionSkill=26→E, ActionBurst=27→Q, ActionDash=25→D, ActionJump=26→J, ActionSwap=58→swap, ActionAttack default=87→N. Short-CA gate: only fires if early-cancelled before Seal of Arbitration forms (~209f initial Legal Eval setup).",
+				"Charge (short CA): gcsim charge.go chargeFrames = InitAbilSlice(87) with ActionCharge 69, ActionSkill 26→E, ActionBurst 27→Q, ActionDash 25→D, ActionJump 26→J, ActionSwap 58→swap (ActionWalk 61 has no key). Short-CA gate: only fires if early-cancelled before Seal of Arbitration forms (~209f initial Legal Eval setup). ↻ 2026-09-17 (T1.5): these ARE the shipped numbers now. The map shipped before was {anim 74, C 53, E/Q/D/J 23, swap 50} — neither this slice nor Equitable Judgment's, but a capture ARTEFACT: EJ's frame function closes over chargeLegalEvalLeft and tickAnimLength, which read 0 and 6 at the instant the dumper samples them, so it described an EJ aborted at its first tick (windup + 3 + 0 + 6 + endLag), and the audit 'matched' it because the dumper re-read the same closure. The caveat already said `C` draws the short CA; now it does.",
 				"Charged Attack: Equitable Judgment NOT authored: requires Sourcewater Droplet pickup state (deferred — 'collectibles on the field' has no schema primitive), and the multi-tick channeled mechanic doesn't fit chargeFrames (single FrameMap). Per-tick FlatDmg = chargeJudgement[lvl=10] × MaxHP = 14.47% MaxHP Hydro per tick; first tick 6f after EJ start, ticks at 22f then 25f intervals; total dur 173f after legalEval (which can be reduced by 0/57/111/209f by absorbing 0/1/2/3 droplets at start). C6 extends duration by 60f per droplet absorbed during EJ.",
 				"Plunge frames not authored — Neuvillette has no custom plunge.go in gcsim source; not a meaningful rotation action.",
 				"[A7] Equitable Judgment is Neuvillette's main-DPS mode.",
@@ -104,7 +104,7 @@
 				"Single-instance Hydro AoE FlatDmg vs MaxHP. behavior:instant rather than 'persistent' — there is no on-field summon entity, only the one-shot waterfall + thorn. The 15s in genshin-db description refers to droplet lifetime on the ground (gadgets, not modelled), not a Neuvillette state.",
 				"Main waterfall hit: skillHitmark=23f, FlatDmg=skill[lvl=10]×MaxHP=23.16% MaxHP Hydro, AttackTagElementalArt, ICDTagNone. 4 Hydro particles per cast (0.3s ICD).",
 				"Spawns 3 Sourcewater Droplets near hit target (gadgets the user picks up to fuel Equitable Judgment) — not modelled.",
-				"Spiritbreath Thorn (Pneuma Arkhe): hitmark=60f (=23+37), 37.44% ATK Hydro, AttackTagElementalArt, 10s ICD per skillAlignedICDKey. Pneuma-aligned; schema has no Arkhe field — flagged.",
+				"Spiritbreath Thorn (Pneuma Arkhe): hitmark=60f (=23+37), 37.44% ATK Hydro, AttackTagElementalArt, 10s ICD per skillAlignedICDKey. Pneuma-aligned; schema has no Arkhe field — flagged. ↻ 2026-09-17 (T1.5): it is `Durability: 0` in gcsim skill.go, so it applies nothing — its +60 entry is gone from `application`, where only the per-cast ICD counter had hidden it.",
 				"Cooldown: SetCDWithDelay(skill, 12*60, 20) → cooldown 12s, cooldownStartDelay 20f."
 			],
 			"description": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG.",
@@ -113,10 +113,6 @@
 					"frame": 23,
 					"element": "hydro",
 					"units": 1
-				},
-				{
-					"frame": 60,
-					"element": "hydro"
 				}
 			]
 		},

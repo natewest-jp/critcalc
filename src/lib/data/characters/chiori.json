@@ -97,7 +97,7 @@
 			"summons": [
 				{
 					"label": "Tamoto",
-					"duration": 17.5,
+					"duration": 17,
 					"spawnsAt": 19,
 					"mobility": "stationary",
 					"effects": [
@@ -107,7 +107,7 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 3.6,
-								"firstTickDelay": 0.6,
+								"firstTickDelay": 0.6833,
 								"icdGate": {
 									"timer": 114
 								}
@@ -116,7 +116,9 @@
 							"stat": "atk",
 							"element": "geo",
 							"_curatorNotes": [
-								"icdGate authored 2026-08-17 (ICD-group round b): gcsim kinu.go:53 sets ICDGroupChioriSkill on the Tamoto slash, whose table entry is a 114f reset window in which only the FIRST hit applies. Measured 3/4 applied, the same as standard gives — at a 216f interval every tick opens its own window either way, so this is authored on the GROUP and not on a moved count."
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim kinu.go:53 sets ICDGroupChioriSkill on the Tamoto slash, whose table entry is a 114f reset window in which only the FIRST hit applies. Measured 3/4 applied, the same as standard gives — at a 216f interval every tick opens its own window either way, so this is authored on the GROUP and not on a moved count.",
+								"firstTickDelay 0.6 → 0.6833 (41f) (2026-09-17, T1.5): gcsim createDoll queues the first tick at skillDollStartDelay (36f) and skillDollAttack lands the slash skillDollAttackDelay (5f) later — the frames report's 60f from cast (19 + 41). Every marker had been 5f early.",
+								"duration 17.5 → 17 (2026-09-17, T1.5): the talent table (docs/curation/talents/chiori.json 'Tamoto Duration') is 17.0s at every level; gcsim's skillDollDuration is 17.5 with no stated source. The Zhongli-stele precedent: the datamined number for the bar. Five ticks either way (the fifth lands at spawn + 905f)."
 							]
 						}
 					]
@@ -125,8 +127,7 @@
 			"effects": [],
 			"_curatorNotes": [
 				"Tamoto interval slashes migrated to summons[0].effects[] (P3): gcsim skillDollAttackInterval=3.6s, skillDollStartDelay=0.6s firstTickDelay. ATK multiplier turretAtkScaling[9]=147.74% Geo at TalentLvl 10. DEF-scaling FlatDmg (turretDefScaling) not authored — schema's damage Effect carries one scaling only.",
-				"A1 Tailor-Made: post-skill window (~1.3s after the upward sweep) branches into Tapestry (force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s) depending on the next input. Not modelled — branching on a post-cast input window isn't expressible in the current schema. The Geo infusion path would be modellable in isolation but the gating isn't.",
-				"Hold E: variant has different cast frames (skillFrames[1] swap=87, hitmark=37) and cooldownStartDelay=34 vs Tap's 19. Skipped — Tap is the rotation-relevant form; gcsim's Hold frames are sparse (D/J default to animation length and aren't explicitly measured).",
+				"A1 Tailor-Made: post-skill window branches into Tapestry (press E again: force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s). ↻ 2026-09-17 (T1.5): the Tailoring branch is the DEFAULT — gcsim activateA1Window fires a1Tailoring when the window lapses with no input — and is authored as an `infuse` on the A1 passive. Tapestry is not modelled.",
 				"[A7] Precise off-field-tick scaling (ATK 147.74% at talent 10) and the omitted DEF-scaling flat-damage layer (turretDefScaling) are already documented in the summon-migration curator note above; the schema's damage Effect carries one scaling only, which is why the DEF component is unauthored.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The E bar itself. There is no `hE` variant authored, so an `hE` token resolves to the base ability and the bar draws the tap's cast frames and the tap's `cooldownStartDelay` (19 vs the hold's 34) — the bar's width, the swap connector after it, and where the cooldown tail ends are all the wrong cast's numbers. A Chiori player writing hold-E and seeing tap spacing is the exact confusion this repairs. Category: approximation-disclosure."
 			],
@@ -136,6 +137,55 @@
 					"frame": 21,
 					"element": "geo",
 					"units": 1
+				}
+			],
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"frames": {
+						"anim": 88,
+						"E": 44,
+						"swap": 87
+					},
+					"application": [
+						{
+							"frame": 37,
+							"element": "geo",
+							"units": 1
+						}
+					],
+					"summons": [
+						{
+							"label": "Tamoto",
+							"duration": 17,
+							"spawnsAt": 34,
+							"mobility": "stationary",
+							"effects": [
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": {
+										"type": "summonTick",
+										"interval": 3.6,
+										"firstTickDelay": 0.6833,
+										"icdGate": {
+											"timer": 114
+										}
+									},
+									"scaling": 147.74,
+									"stat": "atk",
+									"element": "geo",
+									"_curatorNotes": [
+										"The hold's Tamoto — identical to the tap's but spawned at skillCDStarts[1] = 34f. A variant's summons REPLACE the base's, so without this entry the hold would inherit the tap's 19f spawn."
+									]
+								}
+							]
+						}
+					],
+					"_curatorNotes": [
+						"AUTHORED 2026-09-17 (T1.5). gcsim skill.go skillFrames[1] = InitAbilSlice(88) with Skill 44, Swap 87 (Walk 86 and LowPlunge 52 have no key here); the upward sweep lands at skillHitmarks[1] = 37 (Durability 25). ⚠️ Its cooldownStartDelay is 34 (skillCDStarts[1]) and AbilityVariant cannot carry one, so a hold's cooldown starts at the tap's 19f."
+					]
 				}
 			]
 		},
@@ -171,9 +221,23 @@
 			"name": "Tailor-Made",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Branching post-skill mechanic (Tapestry vs Tailoring) — see skill _curatorNotes. Geo infusion (Tailoring path) and Tapestry coordinated-attack window are both unmodelled."
+				"Tailoring as an `infuse` (2026-09-17, T1.5). gcsim asc.go a1Tailoring: AddWeaponInfuse Geo on Normal/Charged/Plunge for a1GeoInfusionDuration = 300f. It is the branch you get by pressing Normal Attack inside the window AND the default when the window lapses (tap: opens 26f, lasts 78f; hold: 42f / 77f) — so it is what ordinary play produces. The note this replaces called the whole passive unmodellable, which is why it stayed blank.",
+				"⚠️ The window opens at the cast. In game it opens at the Normal Attack that triggers it, or at the lapse (104f after a tap, 119f after a hold), so its end is drawn up to 1.7s early. Tapestry (E pressed again: a forced swap and Seize the Moment) is not modelled."
 			],
-			"description": "Gain different effects depending on the next action you take within a short duration after using Fluttering Hasode's upward sweep. If you Press the Elemental Skill, you will trigger the Tapestry effect. If you Press your Normal Attack, the Tailoring effect will be triggered instead.\n\nTapestry\n· Switches to the next character in your roster.\n· Grants all your party members \"Seize the Moment\": When your active party member's Normal Attacks, Charged Attacks, and Plunging Attacks hit a nearby opponent, \"Tamoto\" will execute a coordinated attack, dealing 100% of Fluttering Hasode's upward sweep DMG as AoE Geo DMG at the opponent's location. DMG dealt this way is considered Elemental Skill DMG.\n· \"Seize the Moment\" lasts 8s, and 1 of \"Tamoto\"'s coordinated attack can be unleashed every 2s. 2 such coordinated attacks can occur per \"Seize the Moment\" effect duration.\n\nTailoring\n· Chiori gains Geo infusion for 5s.\n\nWhen on the field, if Chiori does not either Press her Elemental Skill or use a Normal Attack within a short time after using Fluttering Hasode's upward sweep, the Tailoring effect will be triggered by default."
+			"description": "Gain different effects depending on the next action you take within a short duration after using Fluttering Hasode's upward sweep. If you Press the Elemental Skill, you will trigger the Tapestry effect. If you Press your Normal Attack, the Tailoring effect will be triggered instead.\n\nTapestry\n· Switches to the next character in your roster.\n· Grants all your party members \"Seize the Moment\": When your active party member's Normal Attacks, Charged Attacks, and Plunging Attacks hit a nearby opponent, \"Tamoto\" will execute a coordinated attack, dealing 100% of Fluttering Hasode's upward sweep DMG as AoE Geo DMG at the opponent's location. DMG dealt this way is considered Elemental Skill DMG.\n· \"Seize the Moment\" lasts 8s, and 1 of \"Tamoto\"'s coordinated attack can be unleashed every 2s. 2 such coordinated attacks can occur per \"Seize the Moment\" effect duration.\n\nTailoring\n· Chiori gains Geo infusion for 5s.\n\nWhen on the field, if Chiori does not either Press her Elemental Skill or use a Normal Attack within a short time after using Fluttering Hasode's upward sweep, the Tailoring effect will be triggered by default.",
+			"effects": [
+				{
+					"type": "infuse",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "fixed",
+					"element": "geo"
+				}
+			]
 		},
 		{
 			"id": "chiori__passive__the_finishing_touch",
@@ -184,20 +248,39 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "geoDmgBonus",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 4
+							},
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["geo"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					}
 				}
 			],
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-12): manual trigger preserved because construct-spawn is a team-wide event without a corresponding primitive in the schema. Authoring `onConstructSpawned` would require (a) a new trigger type, (b) a `kind: \"construct\"` classifier on Summon, and (c) tagging the corpus's Geo-construct spawners (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls + meteorite, Chiori's own Tamoto). Cost not justified for one current consumer; revisit if more construct-event mechanics appear.",
-				"[A7] Fuller Geo-Construct trigger examples (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto) are already enumerated in the stub-with-caveat curator note; construct-spawn is a team-wide event with no corresponding trigger primitive.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A blank next to a lane that is right there. The effect is `trigger: 'manual'`, so it draws no bar and does not even reach the always-on chip strip (which requires `trigger.type === 'passive'`). Chiori's own Tamoto summon lane renders on every rotation, and the +20% Geo DMG bar the player expects to accompany it is simply absent — the caveat names Tamoto specifically, which is what makes the blank legible. Category: expected-but-absent."
+				"The C1 branch only (2026-09-17, T1.5; was a `manual` skeleton that drew nothing). gcsim skill.go handleSkill: at C1 with another Geo party member (c1Active), the doll spawn at skillCDStarts creates the rock doll AND calls applyA4Buff — a 20s +20% Geo DMG on Chiori. teamElementCount counts non-holder members, so `geo >= 1` is 'a Geo party member other than Chiori'.",
+				"⏸️ The general branch — 'when a nearby party member creates a Geo Construct' (gcsim OnConstructSpawned) — is not authored: no trigger listens to a construct spawn. Adding one needs the construct classifier and corpus tagging this entry's earlier note describes."
 			],
 			"description": "When a nearby party member creates a Geo Construct, Chiori will gain 20% Geo DMG Bonus for 20s."
 		}
@@ -219,7 +302,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Post-Q Kinu summoner (every 3s for 10s, deals 170% Tamoto DMG, lasts 1 hit or 3s). Not modelled — the recurring summon pattern depends on Tamoto-emitted damage authoring (P3). Removed the prior placeholder damage effect that mis-attributed C6's N-attack flat damage scaling here."
+				"Post-Q Kinu summoner (every 3s for 10s, deals 170% Tamoto DMG, lasts 1 hit or 3s). ↻ 2026-09-17 (T1.5): the old blocker ('depends on Tamoto-emitted damage') is stale — the Tamoto series exists. The cadence is fully specified (gcsim cons.go c2 at burst hitmark − 1 = 91f: a Kinu every 180f while a 600f ticker lives, each striking 36 + 5f after its spawn, ICDGroupChioriSkill — hits at 312 / 492 / 672f). ⛔ The blocker now is that a SUMMON cannot be constellation-gated: authored on the burst it would draw a Kinu lane at C0. That is the summon-conditions round (docs/curation/summon-conditions-round.md); Chiori C2 is not on its list and belongs there."
 			],
 			"description": "For 10s after using Hiyoku: Twin Blades, a simplified automaton doll, \"Kinu,\" will be summoned next to your active character every 3s. Kinu will attack nearby opponents, dealing AoE Geo DMG equivalent to 170% of Tamoto's DMG. DMG dealt this way is considered Elemental Skill DMG.\nKinu will leave the field after 1 attack or after lasting 3s."
 		},
