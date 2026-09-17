@@ -7,11 +7,10 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (3)
+## Expected capability missing entirely (2)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
-- **gorou** — expected heal (C4) — nothing derives — C4 General’s Glory field heal
 - **traveler_hydro** — expected heal (C0) — nothing derives — RESOLVED 2026-07-28 (capability sweep): Spotless Waters droplet-pickup self-heal now authored (manual trigger, 7% max HP) after the stale-beta re-ingest; C6 Tides of Justice team heal (6% of receiver max HP, lowest-HP ally) also derives from C6
 - **sigewinne** — expected shield (C2) — nothing derives — CONFIRMED 2026-07-12: C2 Bubbly Shield (30% max HP, 250% hydro absorption); no shield below C2 (KQM quickguide)
 
@@ -46,11 +45,11 @@ Informational: facet works, but no target/scaling data for the detail card.
 
 - **clorinde** — clorinde__skill__hunters_vigil tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 
-## Effect without tag (0)
+## Effect without tag (1)
 
 Add the tag for consistency.
 
-- _none_
+- **gorou** — gorou__burst__juuga_forward_unto_victory has a heal effect but lacks the 'heal' tag
 
 ## Capabilities hiding in _todo stubs (0)
 

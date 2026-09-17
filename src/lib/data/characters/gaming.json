@@ -118,7 +118,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"tags": ["summon"],
+			"tags": ["summon", "heal"],
 			"energyCost": 60,
 			"effects": [
 				{
