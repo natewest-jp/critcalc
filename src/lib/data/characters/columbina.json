@@ -122,50 +122,117 @@
 			],
 			"effects": [
 				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCharged",
+						"source": "team"
+					},
+					"key": "gravityLunarCharged",
+					"amount": 20,
+					"max": 60,
+					"procCooldown": 2,
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					}
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarBloom",
+						"source": "team"
+					},
+					"key": "gravityLunarBloom",
+					"amount": 20,
+					"max": 60,
+					"procCooldown": 2,
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					}
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCrystallize",
+						"source": "team"
+					},
+					"key": "gravityLunarCrystallize",
+					"amount": 20,
+					"max": 60,
+					"procCooldown": 2,
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					}
+				},
+				{
 					"type": "damage",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarCharged",
+						"label": "Gravity Interference"
 					},
 					"scaling": 8.47,
 					"stat": "hp",
 					"element": "electro",
 					"_curatorNotes": [
 						"Gravity Interference (Lunar-Charged variant): gcsim skill.go gravityTick, skillLC[9]=0.084672 = 8.47% Max HP @T10, Electro, UseHP. Fires once when accumulated Gravity reaches its limit (60), which takes ~6s of continuous party Lunar reactions (Gravity accrues 10/s, +34% at C2). Only ONE of the three Gravity Interference variants fires per trigger — the Lunar reaction type that accumulated the most Gravity, decided at runtime. Manual trigger + caveat because reaction cadence is not simulable."
-					]
+					],
+					"application": []
 				},
 				{
 					"type": "damage",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarBloom",
+						"label": "Gravity Interference"
 					},
 					"scaling": 2.53,
 					"stat": "hp",
 					"element": "dendro",
 					"_curatorNotes": [
 						"Gravity Interference (Lunar-Bloom variant): gcsim skillLB[9]=0.025344 = 2.53% Max HP @T10 per hit, Dendro, 5 hits (skillHitmarksLB has 5 entries). Only fires if Lunar-Bloom is the dominant accumulated reaction. See the Lunar-Charged variant note for trigger cadence."
-					]
+					],
+					"application": []
 				},
 				{
 					"type": "damage",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarCrystallize",
+						"label": "Gravity Interference"
 					},
 					"scaling": 15.88,
 					"stat": "hp",
 					"element": "geo",
 					"_curatorNotes": [
 						"Gravity Interference (Lunar-Crystallize variant): gcsim skillLCr[9]=0.158832 = 15.88% Max HP @T10, Geo, UseHP. Only fires if Lunar-Crystallize is the dominant accumulated reaction. See the Lunar-Charged variant note for trigger cadence. C4 adds Max-HP-scaled flat DMG to this hit (see C4 notes)."
-					]
+					],
+					"application": []
 				}
 			],
-			"caveat": "Not modeled: the three off-field Gravity Interference hits. They fire only when Gravity fills from party Lunar reactions (about every 6s), and only the one matching the dominant reaction lands.",
+			"caveat": "Gravity fills 20 per party Lunar reaction, at most once every 2s, rather than the game's 10 per second while reactions keep coming. A Gravity Interference mark can land a second or two off, and a brief burst of reactions may not reach one.",
 			"description": "Awaken Moonbound Tides, dealing AoE Hydro DMG and summoning **Gravity Ripple**.\nGravity Ripple will follow the active character on the field, while continuously dealing AoE Hydro DMG to surrounding opponents. While Gravity Ripple is on the field, and nearby party members trigger Lunar reactions or inflict Lunar Reaction DMG, Columbina will accrue a special Gravity. Once Gravity is accumulated to its limit, different types of damage will be dealt to enemies based on the type of Lunar Reaction that has accumulated the most Gravity for Columbina.\nMoonsign: Ascendant Gleam: Gravity Ripple inflicts AoE Hydro DMG over a wider area.",
 			"_curatorNotes": [
 				"Frames 2026-07-14 from gcsim skill.go: skillFrames = InitAbilSlice(41); ActionCharge=40, Skill=28, Burst=28, Dash=27, Jump=32, Swap=26. swap=ActionSwap=26; N=InitAbilSlice default 41 (ActionAttack not overridden). CD: SetCDWithDelay(action.ActionSkill, 17*60, 20) -> cooldown 17s, cooldownStartDelay 20. Skill self-DMG skill[9]=0.30096=30.1% Max HP (Hydro, hitmark 21) follows the FrameMap convention, not authored as an effect.",
-				"Behavior corrected instant (genshin-db stub had duration:25 on an instant skill — moved to the Gravity Ripple summon which carries the 25s window; Gravity Ripple Duration row confirms 25.0s)."
+				"Behavior corrected instant (genshin-db stub had duration:25 on an instant skill — moved to the Gravity Ripple summon which carries the 25s window; Gravity Ripple Duration row confirms 25.0s).",
+				"↻ 2026-09-18 (stack-threshold round, docs/stack-threshold-round.md §5): Gravity is a STACK RESOURCE now — three `gainStacks` keys (gravityLunarCharged / gravityLunarBloom / gravityLunarCrystallize), `onReaction source: team` on each Lunar kind, +20 per reaction with `procCooldown: 2` (gcsim: a 2s `gravityKey` status any Lunar reaction refreshes, accruing 10/s while live — \"20 per reaction, at most one grant per 2s\" reproduces the rate under sparse AND dense streams; an uncapped count reached 60 in three ticks of one EC), `max: 60`, gated `duringSummon` (gcsim gates every Gravity hook on `skillKey` = the Ripple, NOT the Lunar Domain; the kit: \"While Gravity Ripple is on the field\"). The three Interference hits are `onStack {keys, count: 60, dominant}` — one per Lunar kind, the fire's element is the key holding the most Gravity (ties in key order = gcsim's strict `>` over its index loop) — with `application: []` because gcsim's `gravityTick` attack is `ICDTagNone, Durability: 0`: it applies NOTHING, so the fire is a MARK on the Gravity Ripple lane (⚓ Nate 2026-09-18) and never a gauge application. Divergence stated in the caveat: under a dense stream we fire at the third grant, gcsim at the end of the third 2s window, so up to 2s early. The C1 first-cast tick (`c1OnSkill`, 15s ICD, clearGravity=false) is NOT modelled — it fires with zero Gravity and its branch is the team-composition tie-break, a second mechanism for one visual."
 			],
 			"application": [
 				{
@@ -264,13 +331,16 @@
 			"id": "columbina__passive__lunacys_lure",
 			"name": "Lunacy's Lure",
 			"abilityType": "passive",
-			"caveat": "Not modeled: the CRIT Rate stacks each Gravity Interference grants her — no bar draws for them.",
+			"caveat": "The CRIT Rate bar draws at one stack (+5%); in game up to three Gravity Interferences stack it to +15%.",
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"label": "Gravity Interference"
 					},
 					"duration": 10,
 					"durationType": "fixed",
@@ -288,7 +358,8 @@
 			"_curatorNotes": [
 				"A1 (Ascension 1): gcsim asc.go a1OGravityTick — CR = 0.05 * min(stacks,3), 10s window refreshed on each Gravity Interference. Self-only; not a team buff.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Her received-buff row stays empty where a +5%/+10%/+15% CRIT Rate bar would sit — the effect is manual-trigger, so no bar draws at any point in the rotation. The pixel is the blank row; the second sentence only restates the Gravity cadence the skill caveat already establishes, so it is paying for column space twice. Category: expected-but-absent.",
-				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces."
+				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces.",
+				"↻ 2026-09-18 (stack-threshold round): trigger `onStack` on the Gravity fire — the bar draws from each Interference for 10s, refresh-merged. The `stacks` block (max 3, shared duration) still has no consumer, so the bar reads +5% at every fire; the caveat names that pixel."
 			]
 		},
 		{
@@ -323,7 +394,11 @@
 					"type": "shield",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarCrystallize",
+						"label": "Gravity Interference"
 					},
 					"duration": 8,
 					"scaling": 12,
@@ -341,13 +416,18 @@
 								"min": 2
 							}
 						]
-					}
+					},
+					"label": "Rainsea Shield"
 				},
 				{
 					"type": "energy",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarCharged",
+						"label": "Gravity Interference"
 					},
 					"amount": 6,
 					"conditions": {
@@ -369,7 +449,11 @@
 					"type": "buff",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarBloom",
+						"label": "Gravity Interference"
 					},
 					"duration": 8,
 					"durationType": "fixed",
@@ -412,13 +496,13 @@
 				}
 			],
 			"description": "Unleashing her Elemental Skill Eternal Tides will immediately trigger an effect equivalent to the effect of **Gravity Interference**. This effect can be triggered once every 15s.\nMoonsign: Ascendant Gleam\nWhen Gravity Interference is triggered, if the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: Your current active character will recover 6 Energy.\n· Lunar-Bloom: Your active character's interruption resistance will be increased for 8s.\n· Lunar-Crystallize: Summons a Rainsea Shield. The Rainsea Shield's DMG absorption is based on 12% of Columbina's Max HP, and it will absorb Hydro DMG with 250% effectiveness for 8s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-			"caveat": "Not modeled: the Rainsea Shield or the interruption resistance boost — only one branch fires per Gravity Interference, chosen by the dominant Lunar reaction.",
 			"_curatorNotes": [
 				"C1: gcsim cons.go c1OnSkill (E cast -> gravityTick, 15s ICD) and c1OnGravityTick — Lunar-Charged: active +6 energy; Lunar-Crystallize: Rainsea Shield HP=0.12*MaxHP, 8s (shield.ColumbinaC1, self-targeted). Lunar-Bloom interruption-res branch is kit text (gcsim models the LC/LCr branches). All gated on Moonsign: Ascendant Gleam -> teamFaction moonsign min:2. Manual triggers because Gravity Interference cadence is unmodelable. Elevate increment +1.5% (gcsim elevation[1]=0.015).",
 				"Prior stub had a spurious C1 damage effect (12% HP hydro) — C1 adds no new damage scaling (it re-triggers the base Gravity Interference); removed.",
 				"[A7] Rainsea Shield's 250% Hydro-DMG absorption effectiveness is not modeled; it is shown as a generic 12% Max HP shield.",
 				"↻ 2026-08-18: the [A7] line above is WRONG about the fallback — the Rainsea Shield is not shown as a generic shield, it is not shown AT ALL, at any constellation level. All three C1 branches are `trigger: 'manual'`, and `manual` reaches no surface anywhere: `pushShield` (sim/shields.ts:111-115) requires `onCast` with a positive `duration`, and the only `'manual'` mention in src is the type declaration itself (types/ability.ts:649) — no collector, no proc, no chip, no notation token. So the 250% Hydro absorption is a second-order gap on a shield that never draws, and the ability-level `caveat` (which DOES render, gated to C1+) already states the real absence. ⚠️ The constellation-shield wire (53db108) does NOT reach this — it only widened the `onCast` walk to non-ability effect sources; docs/curation/engine-capability-rubric.md P26 names Columbina C1 as one of the five non-ability shields that still draw nothing. ⏭ The blocker is unchanged and is not the shield primitive: Gravity Interference cadence has no primitive, which is why these are `manual` in the first place.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the shield, 6 Energy, and interruption resistance — only one of the three fires per Gravity Interference, chosen by the dominant Lunar reaction.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the shield, 6 Energy, and interruption resistance — only one of the three fires per Gravity Interference, chosen by the dominant Lunar reaction.\"",
+				"↻ 2026-09-18 (stack-threshold round): the three branches are `onStack` with a `dominant` each — Rainsea Shield (label authored; opens at the fire under the skill's source, 8s, `pushShieldAt`) when Lunar-Crystallize held the most Gravity, +6 Energy on Lunar-Charged (no surface, as every energy effect), interruption resistance on Lunar-Bloom. CAVEAT REMOVED: the shield and the interruption-res bar now draw at the fire; the energy has no pixel anywhere (invisible-omission), and the shield's 250% Hydro absorption is a magnitude the tool never prints. gcsim `c1OnGravityTick(maxReaction)`."
 			]
 		},
 		{
@@ -426,13 +510,16 @@
 			"name": "Not in Lone Splendor",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"caveat": "Not modeled: her Max HP buff and the active character's ATK, EM or DEF bonus from each Gravity Interference — no bars draw for them.",
+			"caveat": "Gravity Interference marks land where a C0 Columbina's would; C2's 34% faster Gravity does not move them.",
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"label": "Gravity Interference"
 					},
 					"duration": 8,
 					"durationType": "fixed",
@@ -449,7 +536,11 @@
 					"type": "buff",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarCharged",
+						"label": "Gravity Interference"
 					},
 					"duration": 8,
 					"durationType": "fixed",
@@ -480,7 +571,11 @@
 					"type": "buff",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarBloom",
+						"label": "Gravity Interference"
 					},
 					"duration": 8,
 					"durationType": "fixed",
@@ -511,7 +606,11 @@
 					"type": "buff",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"dominant": "gravityLunarCrystallize",
+						"label": "Gravity Interference"
 					},
 					"duration": 8,
 					"durationType": "fixed",
@@ -559,7 +658,8 @@
 				"C2 re-authored 2026-07-14 (replaces flagged broken stub). gcsim cons.go c2Init/c2OnGravityTick: c2Buff HPP=0.4 (Lunar Brilliance +40% Max HP, 8s, self, applied on every Gravity Interference regardless of Moonsign). Active-char conversions gated on Moonsign level >=2 (teamFaction moonsign min:2): ATK += 0.01*MaxHP (ratio 1), EM += 0.0035*MaxHP (ratio 0.35), DEF += 0.01*MaxHP (ratio 1) — all flat stats scaling on Columbina's Max HP, 8s, mutually exclusive by dominant reaction. Elevate increment +7% (gcsim elevation[2]=0.085 cumulative; C1 1.5 + C2 7 = 8.5). +34% gravity rate (c2GravityRate) unmodeled — no gravity primitive.",
 				"NOTE: ability.ts stat-key JSDoc credits 'Columbina C2 per-reaction-element CRIT DMG' — that is actually C6 (CRIT DMG); C2 does ATK/EM/DEF conversions. Comment mislabel, not editable from this file.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Four authored buffs (self +40% Max HP, and active-target ATK/EM/DEF conversions) are all manual-trigger, so her row and the active character's row draw no bars where the game gives a stack of them every ~6s. The +34% Gravity accrual rate has no pixel at all — Gravity is not a bar, a meter or a marker anywhere in the tool, so a rate change to it cannot look wrong. Category: expected-but-absent.",
-				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces."
+				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces.",
+				"↻ 2026-09-18 (stack-threshold round): the four buffs are `onStack` — Lunar Brilliance (+40% Max HP, self) on every fire, the ATK/EM/DEF conversion on the active character by `dominant` kind (LC → ATK, LB → EM, LCr → DEF), all 8s, Moonsign-gated as before. The +34% Gravity rate (`c2GravityRate`) stays unmodelled: the grant is a per-reaction count with a 2s cooldown, so a rate multiplier has no honest place in it — at C2 the fire marks sit where a C0 Columbina's would, which the caveat names. gcsim `c2OnGravityTick(maxReaction)`."
 			]
 		},
 		{
