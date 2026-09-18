@@ -4473,16 +4473,18 @@
 	}
 	/* Per-tick marker rendered on top of the summon bar (P3 — Summon.effects[]
 	   summonTick triggers). Short bottom-anchored stub (ruler-mark cadence) —
-	   leaves the bar's top-light gradient uncut. Slight alpha is fine here:
-	   it composites over the bar's own opaque fill, never the connectors. */
+	   leaves the bar's top-light gradient uncut.
+	   ↻ 2026-09-18 (⚓ Nate): 5px at .92 read too faint once the row also
+	   carried seams and threshold fires — 7px, opaque. Still a stub (a fire is
+	   full-height); the height is the difference between "the summon hit" and
+	   "the accrual paid for a hit". */
 	.rp-summon-tick {
 		position: absolute;
 		bottom: 0;
-		/* Integer height (≈40% of the 12px bar) — a %-height lands on a
+		/* Integer height (≈60% of the 12px bar) — a %-height lands on a
 		   subpixel and fuzzes the bottom edge past the bar */
-		height: 5px;
+		height: 7px;
 		width: 1px;
-		opacity: 0.92;
 		z-index: 3;
 		pointer-events: none;
 		/* No centering shift — a tick at the bar's start time (Linnea Q)

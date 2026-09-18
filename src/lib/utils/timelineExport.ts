@@ -897,14 +897,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						...elementHalo(p.bar),
 						Math.max(pw - 6, 8)
 					);
-					// Bottom-anchored tick stubs — mirror .rp-summon-tick
+					// Bottom-anchored tick stubs — mirror .rp-summon-tick (7px, opaque
+					// since 2026-09-18)
 					ctx!.fillStyle = p.hi;
-					ctx!.globalAlpha = 0.92;
-					const th = 5;
+					const th = 7;
 					for (const tickT of sbar.ticks) {
 						ctx!.fillRect(x(tickT), rowTop + snap.summonRowH - th, 1, th);
 					}
-					ctx!.globalAlpha = 1;
 					// Threshold fires — mirror .rp-summon-fire: full height, 2px,
 					// centred, in the hit's element.
 					for (const fire of sbar.fires ?? []) {
