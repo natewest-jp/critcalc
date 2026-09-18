@@ -18,7 +18,8 @@ import type {
 	CastAbility,
 	DurationModifier,
 	NormalAbility,
-	NormalHit
+	NormalHit,
+	CooldownModifier
 } from '$lib/types/ability';
 import {
 	getActiveDuration,
@@ -218,11 +219,21 @@ export function resolveAbilityTiming(
 	stacks?: ReadonlyMap<string, number>,
 	/** Team scope for a modifier's own gate — see `applyModifiers`. Absent means a
 	 *  team-composition-gated modifier cannot resolve and is skipped. */
-	context?: ConditionContext
+	context?: ConditionContext,
+	/** Team-wide SKILL cooldown modifiers (`TeamContext.skillCooldownModifiers`
+	 *  — Anemo Resonance), applied before the ability's own so a flat modifier
+	 *  authored as "off the remaining cooldown" (Qiqi) subtracts from the
+	 *  resonance-reduced value, as in game. Ignored for a burst. */
+	teamSkillCooldownModifiers: readonly CooldownModifier[] = []
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
+	const ownCdMods = variant?.cooldownModifiers ?? ability.cooldownModifiers;
+	const cdMods =
+		ability.abilityType === 'skill' && teamSkillCooldownModifiers.length > 0
+			? [...teamSkillCooldownModifiers, ...(ownCdMods ?? [])]
+			: ownCdMods;
 	const cooldown = applyModifiers(
 		framesOf(variant?.cooldown ?? ability.cooldown),
-		variant?.cooldownModifiers ?? ability.cooldownModifiers,
+		cdMods,
 		DEFAULT_ASCENSION,
 		resolvedStates,
 		constellationLevel,

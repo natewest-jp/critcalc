@@ -55,6 +55,8 @@ import { finalizeParse } from '$lib/sim/finalize';
 import { runRotation } from '$lib/sim/run';
 import { collectStackThresholds } from '$lib/sim/thresholds';
 import { collectCooldownReduces } from '$lib/sim/cooldownReduce';
+import { deriveResonances } from '$lib/utils/resonance';
+import type { CooldownModifier } from '$lib/types/ability';
 
 // ---------------------------------------------------------------------------
 // The published surface. ⛔ Every re-export below exists so a consumer's import
@@ -230,6 +232,16 @@ export function parseNotation(
 		teamElementCountsByHolder.set(holder.id, counts);
 	}
 
+	// Elemental resonance is a ROSTER fact with the game's full-party rule —
+	// two Anemo characters in a party of four shave 5% off every skill
+	// cooldown. Computed once; `resolveAbilityTiming` prepends it to each
+	// skill's own modifiers.
+	function teamSkillCooldownModifiers(roster: CharacterData[]): CooldownModifier[] {
+		const { active } = deriveResonances(roster.map((c) => c.element ?? null));
+		const anemo = active.find((r) => r.element === 'anemo');
+		return anemo ? [{ source: `Anemo Resonance: ${anemo.label}`, type: 'percent', value: -5 }] : [];
+	}
+
 	// The sim's mutable state, in one place (`$lib/sim/context.ts`).
 	const ctx = createSimContext({
 		swapF: swapFrames,
@@ -246,6 +258,7 @@ export function parseNotation(
 			teamHasOnHitStackEffects,
 			stackThresholds: collectStackThresholds(teamChars, constellationByHolder),
 			cooldownReduces: collectCooldownReduces(teamChars, constellationByHolder),
+			skillCooldownModifiers: teamSkillCooldownModifiers(rosterChars),
 			slotRoster: teamCharacters
 		}
 	});

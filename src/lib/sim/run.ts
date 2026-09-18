@@ -640,7 +640,8 @@ export function runRotation(
 					stackState,
 					// ⚓ Team scope so a `teamElementCount`-gated cooldown modifier can
 					// RESOLVE rather than evaluate null and be skipped (Itto C2).
-					{ teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) }
+					{ teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) },
+					ctx.team.skillCooldownModifiers
 				);
 
 				// Apply gainStacks matching this cast BEFORE the snapshot, so the
@@ -893,7 +894,8 @@ export function runRotation(
 								charConstellationLevel,
 								chainIdx,
 								stackState,
-								variantCtx
+								variantCtx,
+								ctx.team.skillCooldownModifiers
 							).cooldown;
 							const chain: number[] = [];
 							for (let i = 1; i <= n; i++) chain.push(clockStart + i * sibCd);
