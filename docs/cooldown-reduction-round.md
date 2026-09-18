@@ -99,12 +99,12 @@ two uses per stance. The cast site now appends the spent charge's clock to the
 END of the chain (`run.ts`, the CD write), and the ghost tail follows so the bar
 still ends where a recast can be placed (the barPhases ruling). Measured:
 
-| rotation | before | after |
-| --- | --- | --- |
-| `Klee E E E` — 2nd charge ready | 1301 | 2433 |
-| `Xiao E E E` — 2nd charge ready | 624 | 1200 |
+| rotation                           | before          | after           |
+| ---------------------------------- | --------------- | --------------- |
+| `Klee E E E` — 2nd charge ready    | 1301            | 2433            |
+| `Xiao E E E` — 2nd charge ready    | 624             | 1200            |
 | `Yae Miko E E E E` — charges ready | 256 / 293 / 330 | 256 / 496 / 736 |
-| `Navia E E E` — 2nd charge ready | 591 | 1091 |
+| `Navia E E E` — 2nd charge ready   | 591             | 1091            |
 
 Fourteen multi-charge abilities in the corpus (Klee, Navia, Nefer, Varesa ×2,
 Xiao, Yae Miko at 2–3; seven more gain one at a constellation). ⚠️ The digest
@@ -167,11 +167,11 @@ stance opener.
 
 **Data** — three characters, Itto retracted (§4.3):
 
-| character | effect | measured |
-| --- | --- | --- |
+| character                    | effect                                                                                                                                        | measured                                                                                                                                                              |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Varka, Four Winds' Ascension | `charges: 2`, C1 `+1`, `startsOnCooldown`, two `cooldownReduce` under mutually exclusive Hexerei gates (0.5s / 1.0s), `procCap 15 per stance` | `Xiangling E > Varka E N2 sE`: Four Winds lands at **685f** = clock start 85 + 11s − 2 × 0.5s. Previously ready at t = 0. `Lauma E > Varka E …`: Windbound untouched. |
-| Raiden C6 | `onHit normal\|charged`, `inStance`, `teamExcludingSelf`, `reduces: burst`, `procCooldown 1`, `procCap 5 per stance` | `Xingqiu E Q > Raiden Q N1…C` at C6: Xingqiu's burst **−240f** (four fires inside her 7s stance); C5: 0. Caveat retired. |
-| Kujou Sara C1 | `onHit skill\|burst`, `reduces: skill`, `procCooldown 3` | `E N1 N2 Q N1 E` at C1: E tail 607 → **547**, the Q's hit 1.7s later refused by the 3s window; C0 unchanged. |
+| Raiden C6                    | `onHit normal\|charged`, `inStance`, `teamExcludingSelf`, `reduces: burst`, `procCooldown 1`, `procCap 5 per stance`                          | `Xingqiu E Q > Raiden Q N1…C` at C6: Xingqiu's burst **−240f** (four fires inside her 7s stance); C5: 0. Caveat retired.                                              |
+| Kujou Sara C1                | `onHit skill\|burst`, `reduces: skill`, `procCooldown 3`                                                                                      | `E N1 N2 Q N1 E` at C1: E tail 607 → **547**, the Q's hit 1.7s later refused by the 3s window; C0 unchanged.                                                          |
 
 ### 4.2 Why two Varka effects and not one with a scaled amount
 
@@ -225,3 +225,40 @@ negatives), check, lint, build. e2e: see the merge commit.
   is a `damage` proc on the summon registry — a different dispatcher).
 - The onHit dispatcher on the summon-tick stream, when a tick-triggered
   reduction is authored.
+
+### 4.7 Addendum, same day — Anemo Resonance, and Nate's calls
+
+⚓ **Nate's three calls (2026-09-18):** sequential recharge STAYS (confirmed
+against gcsim's `cdQueue`, which pops one entry and starts the next only when
+the previous ends — Klee, Sucrose C6 and every multi-charge skill run that way
+there too) · the token blocks are the reduction's whole surface, ⛔ no bar, no
+printed amount · Ayaka C1's 50% stays unmodelled, and the rule generalises:
+⛔ a low-probability proc is never drawn at 100% uptime.
+
+**Anemo Resonance (Impetuous Winds) reaches the planner.** It lived in
+`resonance.ts` as a Team Builder fact only; the parser ran every skill at full
+cooldown in a double-Anemo party. It is a static ROSTER fact, so by this
+round's own rule it is a MODIFIER at the cast, never a `cooldownReduce`:
+`TeamContext.skillCooldownModifiers` (one `percent −5` entry when the roster
+holds two Anemo characters, with the game's full-party rule from
+`deriveResonances`), prepended to each SKILL's own modifiers in
+`resolveAbilityTiming`. ⚠️ Percent FIRST, then the authored flats — Qiqi's
+Seven Sacred Treasures is "−15s off the remaining cooldown", so the game reaches
+30 × 0.95 − 15 = **13.5s**; the other order gives 14.25s, the divergence her
+curator note used to accept and now closes. Measured over all 123 characters as
+the fourth slot of a Kazuha + Venti + Xiangling party: every skill at 95%, and
+the four exceptions each right (Bennett's own −20% stacks to 3.8s; Qiqi 13.5s;
+the Geo Traveler's flat −2s subtracts after, 3.7s; `blank` is the stub and
+takes the uncurated fallback). Corpus digest against the round-4 baseline:
+0 moved — its team is three characters, which is exactly the full-party rule
+holding. Guarded by three cases in `sim/cooldownReduce.test.ts`.
+
+**Chongyun C2 is a WISHLIST item (⚓ Nate).** Skills and bursts cast inside the
+Frost Field get −15% cooldown. The field already exists as a summon window, but
+the reduced ability belongs to WHOEVER CASTS inside it and the amount is a
+percentage of that caster's own cooldown — neither a modifier on the ability
+(it is not the caster's own) nor a `cooldownReduce` (that moves a running clock
+by seconds). It wants a third shape, a team-wide "a cast inside window X pays
+85%" applied at the CD write, gated on the field being live, with the same
+"anyone on field is inside the circle" assumption Bennett's field makes. One
+holder today; a half day when it is wanted.

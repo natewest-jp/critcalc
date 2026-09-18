@@ -33,6 +33,7 @@ import { type AuraState, createAuraState } from './aura';
 import type { ProcListener } from './procs';
 import type { StackThreshold } from './thresholds';
 import type { CooldownReduceListener } from './cooldownReduce';
+import type { CooldownModifier } from '$lib/types/ability';
 import type { CastKinds } from './states';
 import type { ChainIndex } from './conditions';
 import type { CharacterTrack, TimelineBar } from './types';
@@ -196,6 +197,14 @@ export type TeamContext = {
 	 *  `sim/cooldownReduce.ts`). Empty for most teams, which is what keeps the
 	 *  per-hit check free for the rest of the corpus. */
 	cooldownReduces: Map<string, CooldownReduceListener[]>;
+	/** Team-wide SKILL cooldown modifiers, applied BEFORE an ability's own
+	 *  (2026-09-18): Anemo Resonance's −5% today, over the ROSTER with the
+	 *  in-game full-party rule. ⚓ A cooldown change that is a static team fact
+	 *  is a MODIFIER at the cast, never a `cooldownReduce` (the Itto C2 lesson).
+	 *  ⚠️ Percent first, then the authored flats: Qiqi's Seven Sacred Treasures
+	 *  is "−15s off the remaining cooldown", so the game reaches 30 × 0.95 − 15
+	 *  = 13.5s, and the other order gives 14.25s. */
+	skillCooldownModifiers: CooldownModifier[];
 	/** The caller's SLOT roster, when it supplied one. ⚠️ Preferred over
 	 *  `teamChars` for TEAM-WIDE mechanics: a Stellar enabler in slot 4 with
 	 *  zero casts still converts every Superconduct, and the NB clock counts

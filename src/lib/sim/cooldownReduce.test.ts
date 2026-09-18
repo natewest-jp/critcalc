@@ -12,9 +12,15 @@ import type { CastEvent } from '$lib/utils/rotationEvents';
 import { lintCharacter } from '$lib/utils/characterLint';
 import xianglingJson from '$lib/data/characters/xiangling.json';
 import kaeyaJson from '$lib/data/characters/kaeya.json';
+import kazuhaJson from '$lib/data/characters/kaedehara_kazuha.json';
+import ventiJson from '$lib/data/characters/venti.json';
+import qiqiJson from '$lib/data/characters/qiqi.json';
 
 const XIANGLING = xianglingJson as unknown as CharacterData;
 const KAEYA = kaeyaJson as unknown as CharacterData;
+const KAZUHA = kazuhaJson as unknown as CharacterData;
+const VENTI = ventiJson as unknown as CharacterData;
+const QIQI = qiqiJson as unknown as CharacterData;
 
 const SKILL_FRAMES = { anim: 42, N: 38, C: 38, Q: 38, D: 37, J: 38, swap: 36 };
 const NORMAL = {
@@ -282,5 +288,41 @@ describe('lint', () => {
 			sibling: { startsOnCooldown: true }
 		});
 		expect(strict(stub).map((i) => `${i.check}: ${i.message}`)).toEqual([]);
+	});
+});
+
+describe('Anemo Resonance — a team skill-cooldown modifier, not a reduction', () => {
+	const lookup = (n: string) =>
+		({ Kazuha: KAZUHA, Venti: VENTI, Xiangling: XIANGLING, Kaeya: KAEYA, Qiqi: QIQI })[n] ?? null;
+	it('two Anemo in a party of four shave 5% off every skill cooldown, not the burst', () => {
+		const r = parseNotation('Kazuha E Q > Venti E', lookup, 8, {}, undefined, [
+			KAZUHA,
+			VENTI,
+			XIANGLING,
+			KAEYA
+		]);
+		const [e] = casts(r, KAZUHA.abilities.find((a) => a.abilityType === 'skill')!.id);
+		const [q] = casts(r, KAZUHA.abilities.find((a) => a.abilityType === 'burst')!.id);
+		expect(e.cooldown).toBeCloseTo(360 * 0.95, 5);
+		expect(q.cooldown).toBe(900);
+	});
+	it('needs the full party — three members are no resonance', () => {
+		const r = parseNotation('Kazuha E > Venti E', lookup, 8, {}, undefined, [
+			KAZUHA,
+			VENTI,
+			XIANGLING
+		]);
+		const [e] = casts(r, KAZUHA.abilities.find((a) => a.abilityType === 'skill')!.id);
+		expect(e.cooldown).toBe(360);
+	});
+	it("applies before an ability's own flat modifier — Qiqi's 30 × 0.95 − 15", () => {
+		const r = parseNotation('Qiqi E > Kazuha E > Venti E', lookup, 8, {}, undefined, [
+			QIQI,
+			KAZUHA,
+			VENTI,
+			XIANGLING
+		]);
+		const [e] = casts(r, QIQI.abilities.find((a) => a.abilityType === 'skill')!.id);
+		expect(e.cooldown).toBeCloseTo(1800 * 0.95 - 900, 5);
 	});
 });
