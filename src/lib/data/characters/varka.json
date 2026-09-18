@@ -174,7 +174,539 @@
 				}
 			],
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["anemo"],
+												"comparison": ">=",
+												"value": 1
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["pyro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["electro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["cryo"],
+												"comparison": ">=",
+												"value": 2
+											}
+										]
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "all",
+											"conditions": [
+												{
+													"type": "teamElementCount",
+													"elements": ["anemo"],
+													"comparison": ">=",
+													"value": 1
+												},
+												{
+													"type": "any",
+													"conditions": [
+														{
+															"type": "teamElementCount",
+															"elements": ["pyro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["hydro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["electro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["cryo"],
+															"comparison": ">=",
+															"value": 2
+														}
+													]
+												}
+											]
+										}
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["anemo"],
+												"comparison": ">=",
+												"value": 1
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["pyro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["electro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["cryo"],
+												"comparison": ">=",
+												"value": 2
+											}
+										]
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "all",
+											"conditions": [
+												{
+													"type": "teamElementCount",
+													"elements": ["anemo"],
+													"comparison": ">=",
+													"value": 1
+												},
+												{
+													"type": "any",
+													"conditions": [
+														{
+															"type": "teamElementCount",
+															"elements": ["pyro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["hydro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["electro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["cryo"],
+															"comparison": ">=",
+															"value": 2
+														}
+													]
+												}
+											]
+										}
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["anemo"],
+												"comparison": ">=",
+												"value": 1
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["pyro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["electro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["cryo"],
+												"comparison": ">=",
+												"value": 2
+											}
+										]
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "all",
+											"conditions": [
+												{
+													"type": "teamElementCount",
+													"elements": ["anemo"],
+													"comparison": ">=",
+													"value": 1
+												},
+												{
+													"type": "any",
+													"conditions": [
+														{
+															"type": "teamElementCount",
+															"elements": ["pyro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["hydro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["electro"],
+															"comparison": ">=",
+															"value": 2
+														},
+														{
+															"type": "teamElementCount",
+															"elements": ["cryo"],
+															"comparison": ">=",
+															"value": 2
+														}
+													]
+												}
+											]
+										}
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "skillDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamElementCount",
+										"elements": ["anemo"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["pyro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["electro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["cryo"],
+												"comparison": ">=",
+												"value": 2
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 120,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamElementCount",
+										"elements": ["anemo"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["pyro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["electro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["cryo"],
+												"comparison": ">=",
+												"value": 2
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": 120,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamElementCount",
+										"elements": ["anemo"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "any",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["pyro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["electro"],
+												"comparison": ">=",
+												"value": 2
+											},
+											{
+												"type": "teamElementCount",
+												"elements": ["cryo"],
+												"comparison": ">=",
+												"value": 2
+											}
+										]
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "skillDmgBonus",
+					"value": 120,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
 				"FrameMaps re-extracted 2026-07-29 from gcsim main (PR #2668 merged as 5d1ec8c79); post-merge timings replaced the PR-era values.",
 				"skill.go: base tap = skillFrames = InitAbilSlice(55) with ActionSwap=49, ActionAttack(N)=49, ActionCharge(C)=49 (omitted, equals swap), ActionSkill(E)=44, ActionBurst(Q)=44, ActionDash(D)=65-19=46, ActionJump(J)=73-30=43. skillHitmark=40, skillCD=16*60 (Press CD 16s).",
@@ -188,7 +720,8 @@
 				"[Hexerei 2026-07-29] No permanent (count-independent) patch on Varka: the only IsHexerei site is varka.go:43 (flag defaults on) feeding asc.go hexSkillCDReduction, which still returns 0.5s when the flag is on but fewer than 2 Hexerei are in the party — the whole enhancement is count-gated. No buff / energy / RES-shred / heal piece exists anywhere in the varka package (Hexerei appears at exactly 3 sites: varka.go:43, skill.go:194, asc.go:131-138).",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: Azure Devour, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks (0.5s per hit, 1s with 2+ Hexerei). Four Winds itself can't be placed — a second E shares the base skill's cooldown, which isn't back up in the stance.\"",
 				"↻ CAVEAT REWRITTEN 2026-09-16 (T0.5): the sentence \"Four Winds' Ascension can't be placed\" is no longer true — it is a sibling ability with its own 11s clock now (see it below). The remaining two omissions keep their half of the sentence.",
-				"↻ CAVEAT REMOVED 2026-09-18: Azure Devour spends its use now (`specialChargeSpends` on the in-stance normal), so the sentence this carried is no longer true and no pixel on this ability is wrong. What is still unmodelled on the kit is C6's free casts (caveated there) and magnitudes (A1's multiplier, C1's Lyrical Libation, C2's strike), none of which draws on this ability."
+				"↻ CAVEAT REMOVED 2026-09-18: Azure Devour spends its use now (`specialChargeSpends` on the in-stance normal), so the sentence this carried is no longer true and no pixel on this ability is wrong. What is still unmodelled on the kit is C6's free casts (caveated there) and magnitudes (A1's multiplier, C1's Lyrical Libation, C2's strike), none of which draws on this ability.",
+				"⚓ A1's MULTIPLIER IS AUTHORED HERE, 2026-09-19 (⚓ Nate), on the house convention Skirk's Return to Oblivion and Neuvillette's A1 use: \"deals X% of original DMG\" as a +(X − 100) `*DmgBonus` buff. gcsim asc.go a1Multiplier: 1.4 with ≥2 Anemo OR ≥2 of one Pyro/Hydro/Electro/Cryo element in the party, 2.2 with both at once, applied to in-stance Normal/Charged Attacks, Azure Devour and Four Winds' Ascension — so `normalDmgBonus` + `chargeDmgBonus` + `skillDmgBonus` at +40, or +120, under mutually exclusive gates (the +40 rung wraps the +120 condition in `not`). ⚠️ `teamElementCount` is HOLDER-EXCLUDED, so \"at least 2 Anemo characters\" is `anemo >= 1` here (Varka is the other one). HOSTED ON THIS ABILITY, not on the A1 passive, for the reason Hu Tao's Paramita buff is: an effect on the stance ability fires only on casts OF this ability, where an `onCast skill` on the passive would fire again on every in-stance Four Winds cast and refresh-merge the bar past the stance's end. `duration: 12` is the stance's base length (the Hu Tao / Cyno precedent) — ⚠️ it does not follow the burst's 2.3s extension, so under a `Q` the bar ends 2.3s before the stance does. ⚠️ An ADDITIVE stand-in for a MULTIPLICATIVE bucket, the same approximation the two precedents make: the chip prints +40% / +120% where the game multiplies by 1.4 / 2.2; the three stats share one bar (one window per provenance and duration, the pool round). `skillDmgBonus` reaches only Four Winds in practice — Windbound cannot be recast inside its own stance."
 			],
 			"description": "Manifest the true essence of Favonius Bladework with absolute power. Produces different effects depending on whether the skill is Tapped or Held.\n\nTap\nLeap forward and slash in one fluid motion, dealing AoE Anemo DMG and switching to **Sturm und Drang** mode.\nWhile in Sturm und Drang, Varka's Normal Attack and Charged Attack DMG is increased, and he cannot perform Plunging Attacks. Also, when performing Normal or Charged Attacks, Varka's dual-wielded claymores will deal corresponding Elemental DMG based on the Elemental Types of the characters in the party, respectively. This Elemental DMG cannot be overridden by infusions.\nAdditionally, when in Sturm und Drang, if there are Pyro, Hydro, Electro or Cryo characters in the party, Varka's Elemental Skill Windbound Execution will be converted to the special Elemental Skill, **Four Winds' Ascension**, dealing corresponding Elemental DMG and Anemo DMG. Additionally, Varka can also expend uses of the special Elemental Skill Four Winds' Ascension to perform a special Charged Attack, Azure Devour, that does not consume stamina to deal corresponding Elemental DMG and Anemo DMG.\n\nHold\nAfter charging for a while, leap forward. The duration of the charge will increase the distance of the leap.",
 			"application": [{ "frame": 40, "element": "anemo", "units": 1 }]
@@ -531,7 +1064,8 @@
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The authored buff carries `trigger: manual`, and a manual trigger reaches NO planner surface — no bar, no chip, no toggle (167 such effects corpus-wide). So an A1 Varka in a Pyro/Hydro/Electro/Cryo party sees no Anemo DMG Bonus anywhere, where every other always-on stat bonus in the tool chips or bars. The 140%/220% half is trimmed: it is a self DMG multiplier, a magnitude, with no bar shape at all. Category: expected-but-absent.",
 				"↻ trigger `manual` → `passive`, 2026-09-16 (T0.5; `docs/manual-trigger-retirement.md` step 3, re-trigger). gcsim asc.go:30-50 adds it as AddStatMod(NewBase(..., -1)) — a PERMANENT conditional stat mod, not a player toggle — so `passive` is the shape it always wanted. `manual` reaches no planner surface at all, which is why an A1 Varka in a Pyro/Hydro/Electro/Cryo party saw no Anemo DMG Bonus anywhere while every other always-on bonus in the tool draws. The teamElementCount gate is unchanged, and the matching-element half stays omitted (the element depends on party priority).",
 				"↻ THE CONVERSION-ELEMENT HALF IS AUTHORED 2026-09-16, closing the note above's \"the matching-element half is omitted (which element depends on party priority)\". gcsim asc.go:26-50 adds the SAME value to AnemoP and to the conversion element's DmgP from one a1Buff, so the four rungs carry the identical `scaling atk ratio 1 cap 25` the Anemo effect does. The priority is the ladder in `conditions`: Pyro on any Pyro teammate, Hydro on none-Pyro-and-a-Hydro, and so on — ⚠️ holder-excluded counts, which is free here because Varka is Anemo.",
-				"⚓ A LADDER IN CONDITIONS rather than an `ElementRef`, and the two are not interchangeable: a ref names an ELEMENT and what varies here is the STAT KEY (`pyroDmgBonus` vs `hydroDmgBonus` …), which no element expression reaches. ⚠️ Safe from the §1.H stat-dedupe trap precisely because the four are DIFFERENT stats — ⛔ don't collapse them toward one stat with a conditional value."
+				"⚓ A LADDER IN CONDITIONS rather than an `ElementRef`, and the two are not interchangeable: a ref names an ELEMENT and what varies here is the STAT KEY (`pyroDmgBonus` vs `hydroDmgBonus` …), which no element expression reaches. ⚠️ Safe from the §1.H stat-dedupe trap precisely because the four are DIFFERENT stats — ⛔ don't collapse them toward one stat with a conditional value.",
+				"↻ THE 140%/220% HALF IS AUTHORED 2026-09-19 — on Windbound Execution (see its last note for why it is hosted there and how the gates are built), replacing the note above's \"flagged, not authored\". ⚓ Not the first composition-reactive permanent buff: this entry's own stat half and the faction tiers already are; what it needed was only a stat to be said in, and the Skirk/Neuvillette convention supplies it."
 			],
 			"description": "When there are Pyro, Hydro, Electro or Cryo characters in the party, according to the aforementioned priority order of Elemental Types, every 1,000 points of Varka's ATK will grant Varka a 10% Anemo DMG Bonus and corresponding Elemental DMG Bonus (among the aforementioned Elemental Types, only one element can gain bonus DMG this way). Up to 25% bonus DMG can be gained this way. \n\nAdditionally, if there are at least 2 Anemo characters, or at least 2 characters of the same Element among Pyro, Hydro, Electro or Cryo in the party, the Normal Attacks, Charged Attacks, Special Charged Attack Azure Devour and the special Elemental Skill **Four Winds' Ascension** that Varka deals or unleashes while in the **Sturm und Drang** mode will deal 140% of their original DMG. If there are at least 2 Anemo characters and at least 2 other characters of the same element among Pyro, Hydro, Electro or Cryo present in the party at the same time, the aforementioned effect will be increased to 220%."
 		},

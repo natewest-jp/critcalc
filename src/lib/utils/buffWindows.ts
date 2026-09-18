@@ -542,21 +542,24 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			// ⚠️ The pools are UNDEDUPED (pool round): the stat / element dedupe
 			// runs per cast, after that cast's conditions — see `dedupByStat`.
 			const poolCache = new Map<string, CastPools>();
-			const poolsFor = (label: string): CastPools => {
-				const hit = poolCache.get(label);
+			// Keyed by the RESOLVED ability too (2026-09-19): an effect hosted on a
+			// skill fires only for casts of that skill — see `hostedElsewhere`.
+			const poolsFor = (label: string, abilityId: string): CastPools => {
+				const key = `${abilityId}|${label}`;
+				const hit = poolCache.get(key);
 				if (hit) return hit;
 				const merged = [
-					...getCharacterEffectsForCast(char, cLevel, castType, label),
-					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
+					...getCharacterEffectsForCast(char, cLevel, castType, label, abilityId),
+					...getCharacterEffectsForOnHit(char, cLevel, castType, label, abilityId)
 				];
 				const built: CastPools = {
 					qualified: byProvenance(merged.filter(universalPool)),
 					resShred: byProvenance(merged.filter(resShredBase)),
 					afterDuration: byProvenance(
-						getCharacterEffectsForAfterDuration(char, cLevel, castType, label)
+						getCharacterEffectsForAfterDuration(char, cLevel, castType, label, abilityId)
 					)
 				};
-				poolCache.set(label, built);
+				poolCache.set(key, built);
 				return built;
 			};
 
@@ -566,7 +569,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 					// 2026-09-16); its `onCast` effects in the same pool are untouched.
 					const castNoHit = castLandsNoHit(char, castType, cast);
-					for (const group of poolsFor(cast.label).qualified) {
+					for (const group of poolsFor(cast.label, cast.abilityId).qualified) {
 						const qualifiedEffects = group.effects;
 						if (qualifiedEffects.length === 0) continue;
 						const barEffects = dedupByStat(
@@ -631,7 +634,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				});
 			{
 				for (const cast of abCasts) {
-					for (const group of poolsFor(cast.label).afterDuration) {
+					for (const group of poolsFor(cast.label, cast.abilityId).afterDuration) {
 						const qualifiedEffectsAfter = qualifiedAfterFor(group.effects);
 						if (qualifiedEffectsAfter.length === 0) continue;
 						const barEffects = dedupByStat(
@@ -673,7 +676,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 					// 2026-09-16); its `onCast` effects in the same pool are untouched.
 					const castNoHit = castLandsNoHit(char, castType, cast);
-					for (const group of poolsFor(cast.label).resShred) {
+					for (const group of poolsFor(cast.label, cast.abilityId).resShred) {
 						const resShredStartPool = group.effects;
 						if (resShredStartPool.length === 0) continue;
 						const barEffects = dedupResShredByElement(
@@ -718,7 +721,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			// ── resShred (debuff): afterDuration at cast end — no per-bar filter ──
 			{
 				for (const cast of abCasts) {
-					for (const group of poolsFor(cast.label).afterDuration) {
+					for (const group of poolsFor(cast.label, cast.abilityId).afterDuration) {
 						const resShredEndPool = dedupResShredByElement(group.effects.filter(resShredBase));
 						for (const part of partitionByDuration(resShredEndPool)) {
 							const buffStart = afterDurationStart(cast);
@@ -1567,13 +1570,15 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				Array<{ prov?: FactionProvenance; effects: BuffEffect[] }>
 			>();
 			const activeEffectsFor = (
-				label: string
+				label: string,
+				abilityId: string
 			): Array<{ prov?: FactionProvenance; effects: BuffEffect[] }> => {
-				const hit = activeCache.get(label);
+				const key = `${abilityId}|${label}`;
+				const hit = activeCache.get(key);
 				if (hit) return hit;
 				const built = [
-					...getCharacterEffectsForCast(char, cLevel, castType, label),
-					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
+					...getCharacterEffectsForCast(char, cLevel, castType, label, abilityId),
+					...getCharacterEffectsForOnHit(char, cLevel, castType, label, abilityId)
 				].filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (!isActiveTargetOnly(effect.target)) return false;
@@ -1593,7 +1598,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					return true;
 				});
 				const grouped = byProvenance(built);
-				activeCache.set(label, grouped);
+				activeCache.set(key, grouped);
 				return grouped;
 			};
 
@@ -1602,7 +1607,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 				// 2026-09-16); its `onCast` effects in the same pool are untouched.
 				const castNoHit = castLandsNoHit(char, castType, cast);
-				for (const activeGroup of activeEffectsFor(cast.label)) {
+				for (const activeGroup of activeEffectsFor(cast.label, cast.abilityId)) {
 					const activeEffects = activeGroup.effects;
 					if (activeEffects.length === 0) continue;
 					const barEffects = dedupByStat(
@@ -2139,13 +2144,15 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				Array<{ prov?: FactionProvenance; effects: BuffEffect[] }>
 			>();
 			const selfEffectsFor = (
-				label: string
+				label: string,
+				abilityId: string
 			): Array<{ prov?: FactionProvenance; effects: BuffEffect[] }> => {
-				const cached = selfCache.get(label);
+				const key = `${abilityId}|${label}`;
+				const cached = selfCache.get(key);
 				if (cached) return cached;
 				const built = [
-					...getCharacterEffectsForCast(char, cLevel, castType, label),
-					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
+					...getCharacterEffectsForCast(char, cLevel, castType, label, abilityId),
+					...getCharacterEffectsForOnHit(char, cLevel, castType, label, abilityId)
 				].filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (effect.target !== 'self') return false;
@@ -2165,7 +2172,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					return true;
 				});
 				const grouped = byProvenance(built);
-				selfCache.set(label, grouped);
+				selfCache.set(key, grouped);
 				return grouped;
 			};
 
@@ -2174,7 +2181,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 				// 2026-09-16); its `onCast` effects in the same pool are untouched.
 				const castNoHit = castLandsNoHit(char, castType, cast);
-				for (const selfGroup of selfEffectsFor(cast.label)) {
+				for (const selfGroup of selfEffectsFor(cast.label, cast.abilityId)) {
 					const selfEffects = selfGroup.effects;
 					if (selfEffects.length === 0) continue;
 					const barEffects = dedupByStat(

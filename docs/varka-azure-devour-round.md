@@ -209,3 +209,46 @@ synthetic character), check, lint, build; e2e — see the merge commit.
   `element` alone, so it stays Anemo: the cast's own hit. ⚠️ The notation EDITOR still highlights `sE`/`Q` in Varka's own Anemo —
   the highlighter reads the eager index and has no party to resolve a ref
   against, the same limit that leaves timed infusions neutral there.
+
+## 6. Addendum, 2026-09-19 — A1's multiplier, and a general defect it exposed
+
+⚓ Nate: "sounds like a small thing to add on." It was, once the shape was
+settled by precedent, and it exposed a walk that had been wrong since the
+buff pool existed.
+
+**The shape.** Skirk's Return to Oblivion and Neuvillette's A1 author "deals X%
+of original DMG" as a `+(X − 100)` `*DmgBonus` buff, and Hu Tao's and Cyno's
+in-stance self-buffs anchor on the stance's `onCast` with its fixed length. So:
+`normalDmgBonus` + `chargeDmgBonus` + `skillDmgBonus` at **+40** under
+`any[anemo ≥ 1, pyro ≥ 2, hydro ≥ 2, electro ≥ 2, cryo ≥ 2]` and at **+120**
+under `all[anemo ≥ 1, any[PHEC ≥ 2]]`, the +40 rung wrapping the +120
+condition in `not`; `trigger: onCast skill`, `duration: 12`, gated `inStance`
+and `ascension ≥ 1`. ⚠️ `teamElementCount` is HOLDER-EXCLUDED, so the kit's
+"at least 2 Anemo characters" is `anemo >= 1` — Varka is the other one.
+⚠️ Additive stand-in for a multiplicative bucket, the precedents' own
+approximation; the chip prints +40% / +120%. ⚠️ The fixed 12s does not follow
+the burst's 2.3s extension (the precedents' limit too). Hosted on **Windbound
+Execution**, not the A1 passive — which is what found the defect.
+
+**The defect.** `collectOnCastEffects` walked EVERY skill-hosted effect for
+ANY skill cast. No character could expose it until one had a sibling skill and
+a skill-hosted `onCast` buff meant for that skill alone: measured, the
+multiplier fired again on every in-stance Four Winds cast (`Xiangling E >
+Bennett E > Varka E N5 N5 sE`: a second window at 606–1326 beside the stance's
+95–815) and would have refresh-merged 10s past the stance's end. ⚓ **An effect
+hosted on a cast ability fires only for casts of that ability** now
+(`hostedElsewhere` in `effectCollection.ts`; the three cast pools in
+`buffWindows.ts` are keyed by the resolved ability id as well as the label;
+passives, constellations and faction bonuses are untouched). Two digests over
+the corpus — the standard one and a sibling-reaching `E N1 N2 E N1 Q N1 E sE`
+— moved **0 of 252** after one data correction: **Varesa's** Tag-Team Triple
+Jump buff (A1) was authored on her base skill and reached Fiery Passion Rush,
+the Nightsoul-form sibling, only through the old walk. It is hosted on the A1
+passive now, where an `onCast skill` fires for both forms, and its provenance
+chip names the passive.
+
+**Measured.** `Xiangling E > Varka …` (one Pyro): no bar. `+ Bennett`: one
++40 bar, 95–815, through `N5 N5 sE N5 N5`. `Kazuha + Xiangling + Bennett`:
+one +120 bar. `Kazuha + Varka`: +40 (two Anemo, no PHEC pair, no Four Winds).
+
+**C2** is recorded on its entry as known and pixel-free (§5).
