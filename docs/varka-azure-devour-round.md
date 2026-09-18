@@ -142,13 +142,41 @@ synthetic character), check, lint, build; e2e — see the merge commit.
 
 ## 5. Still open — three things, all Nate's
 
-- **The pixel for a spent charge.** An `sC` that paid draws nothing but its own
-  block; the E lane has no pill for it, so the cost shows only as where the next
-  `sE` can land. `ActionEvent.spentCharge` carries what a ghost tail from the
-  block or a tooltip would need. The last round's ruling for the reduction (no
-  bar, no printed amount) argues for leaving it; the ghost tail's own ruling
-  ("its END is where a reader looks to answer when can I recast") argues for
-  drawing one. ⏭ Nate.
+- 🗒️ **The pixel for a spent charge — PARKED (⚓ Nate, 2026-09-18: "I'm not
+  feeling it"; discarded, kept as an open idea).** An `sC` that paid draws
+  nothing but its own block; `ActionEvent.spentCharge` (ability id + chained
+  `readyAt`) is still stamped, so the cost shows only as where the next `sE`
+  can land, and any future surface has its data. **What was tried, three cuts
+  on branch `polish/varka-spent-ghost` (unmerged, kept as the archive), each
+  recorded because each taught something:**
+  1. _A pill-less GHOST tail_ on the E row at ghost depth (z:0, the element at
+     ghost alpha, from the `sC` block's start to `readyAt`). Invisible for
+     exactly the span that matters: on Varka the E row IS his 12–14s stance
+     pill, opaque, so the tail surfaced only after the stance ended, stacked
+     with Windbound's own 16s ghost. ⚠️ Four Winds' own ghost tails already
+     hide under the stance pill the same way — a standing limit of one E row
+     carrying a stance and its sibling skill.
+  2. _The same tail OPAQUE and ABOVE the pills_ (a 40% element-into-ground mix
+     at z:3). Read as a recessed channel in the stance pill with the pill's
+     1px rim above and below, a darker ghost past it — but it COVERED a later
+     Four Winds pill on the row (`E N2 sC N5 sE` at C1: the `sE` vanished),
+     and it made the stance pill look as if it ended at the `sC`. One row
+     cannot LAYER a stance window, a sibling's pills and a third thing.
+  3. _An EDGE LEDGER_ (Nate's shape): two summon-style ticks (1px × 7px, the
+     bar's `hi` rung) joined by a 1px line along the row's BOTTOM edge for a
+     cooldown, TOP edge for a limited-availability window, as a `ledger` role
+     in `barPhases` so screen and PNG agreed. It hid nothing and both pills
+     stayed legible, but at 1px in `hi`-over-pill it was faint on the pill,
+     and it had no room for a label. Judged live and not taken.
+     ⚓ The idea that survives: **one shape could mark both "when does this come
+     off cooldown" and "when does this availability window close"**, and the
+     census of who would use the window half is in the session's report — Varesa
+     (Apex Drive after a plunge), Lauma (deer form → Prayer cooldown after a
+     `C`), Durin (the Dark commit), and the cast-opened windows of Flins, Odette,
+     Varesa and Durin. If it is picked up: draw a window on the row of the
+     ability it makes AVAILABLE, not the row of the cast that opened it, and the
+     E-row occlusion in (1) is the first thing to solve — probably the stance
+     sibling on its own sub-row.
 - **C6's free casts** — after a paid Four Winds, an `sC` inside 3s is free;
   after a paid Azure Devour, an `sE` inside 3s is free; a free cast does not
   re-arm the window. There is a pixel now (the C6 caveat names it) and the
@@ -172,6 +200,12 @@ synthetic character), check, lint, build; e2e — see the merge commit.
   corpus finds ZERO that differ from the character's, so only Varka's two refs
   move). It rides the bar (`TimelineBar.element`) into the pill, its ghost
   tail, its badge halo and the cast's input block, and the PNG export mirrors
-  it. ⚠️ The notation EDITOR still highlights `sE`/`Q` in Varka's own Anemo —
+  it. ↻ **And the stance opener's PILL joins them** (⚓ Nate, later the same
+  day): Windbound Execution's only hit is Anemo, but its pill body IS the
+  stance in which he is a PHEC DPS, and an Anemo E pill beside a PHEC Q pill
+  "looks a little off" — so `CastEvent.stanceElement` (the in-stance normal's
+  resolved infusion, when not the caster's own; no other stance in the corpus
+  infuses a foreign element) tints the PILL, and the input BLOCK keeps
+  `element` alone, so it stays Anemo: the cast's own hit. ⚠️ The notation EDITOR still highlights `sE`/`Q` in Varka's own Anemo —
   the highlighter reads the eager index and has no party to resolve a ref
   against, the same limit that leaves timed infusions neutral there.
