@@ -24,7 +24,12 @@ import type { Element, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { framesOf } from '$lib/utils/frames';
 import { deriveBuffWindows } from '$lib/utils/buffWindows';
-import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+import type {
+	CastEvent,
+	ReactionEvent,
+	StackThresholdEvent,
+	TimelineWindow
+} from '$lib/utils/rotationEvents';
 import type { SimContext } from './context';
 import type { ConditionContext } from './conditions';
 import type { CharacterTrack, InputBlock, ParsedRotation, TimelineBar } from './types';
@@ -546,6 +551,22 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		].sort((a, b) => a - b);
 		if (ticks.length > 0) win.ticks = ticks;
 	}
+	// ⚓ THE FIRES, the same way (stack-threshold round, 2026-09-18): a
+	// threshold's `damage` effect recorded its mark at the settle point that
+	// fired it, naming the lane — the primary summon of the E/Q hosting the
+	// accrual — and finalize stamps it on the window that was OUT at that
+	// instant. Marks are in parse order, which is time order (feed order = time
+	// order, pinned corpus-wide). A fire with no window under it draws no mark;
+	// its buffs and shield still draw off the event.
+	for (const mark of ctx.stackFireMarks) {
+		for (const win of windows) {
+			if (win.kind !== 'summon') continue;
+			if (win.characterId !== mark.characterId || win.label !== mark.summonLabel) continue;
+			if (mark.time < win.start || mark.time >= win.end) continue;
+			(win.fires ??= []).push({ time: mark.time, element: mark.element });
+			break;
+		}
+	}
 
 	for (const win of windows) {
 		if (win.kind !== 'summon') continue;
@@ -626,6 +647,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			nbBars: ctx.events
 				.filter((e) => e.kind === 'nightsoulBurst')
 				.map((e) => ({ start: e.time, cooldown: e.cooldown })),
+			stackFires: ctx.events.filter((e): e is StackThresholdEvent => e.kind === 'stackThreshold'),
 			windows,
 			constellationLevels: ctx.constellationLevels ?? {},
 			loadoutMap: ctx.loadoutMap ?? {},

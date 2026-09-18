@@ -345,3 +345,34 @@ export function dispatchShieldEnds(ctx: SimContext, currentTime: number): void {
 		}
 	}
 }
+
+/**
+ * A shield that opens at an instant which is NOT a cast — a stack-threshold
+ * fire (stack-threshold round, 2026-09-18; Columbina C1's Rainsea Shield). The
+ * same two writes `registerShieldOnCast` ends with, for one window: the drain
+ * queue (so `dispatchShieldEnds` fires its `shieldEnd` at the next cast site)
+ * and the IR record (so the shield lane draws it under `source`). `sourceCastId`
+ * is the host cast that put the accruing summon out — real provenance, the
+ * cast the reader would point at.
+ */
+export function pushShieldAt(
+	ctx: SimContext,
+	characterId: string,
+	source: 'skill' | 'burst',
+	start: number,
+	endTime: number,
+	sourceCastId: number,
+	label?: string
+): void {
+	const existing = ctx.getCharState(characterId).shields;
+	existing.push({ ability: source, endTime });
+	existing.sort((a, b) => a.endTime - b.endTime);
+	ctx.shieldWindowRecs.push({
+		characterId,
+		source,
+		start,
+		end: endTime,
+		sourceCastId,
+		...(label !== undefined ? { label } : {})
+	});
+}

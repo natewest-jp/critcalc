@@ -53,6 +53,7 @@ import type { HumanTiming } from '$lib/sim/humanTiming';
 import type { ParsedRotation } from '$lib/sim/types';
 import { finalizeParse } from '$lib/sim/finalize';
 import { runRotation } from '$lib/sim/run';
+import { collectStackThresholds } from '$lib/sim/thresholds';
 
 // ---------------------------------------------------------------------------
 // The published surface. ⛔ Every re-export below exists so a consumer's import
@@ -242,6 +243,7 @@ export function parseNotation(
 			teamElementCountsByHolder,
 			constellationByHolder,
 			teamHasOnHitStackEffects,
+			stackThresholds: collectStackThresholds(teamChars, constellationByHolder),
 			slotRoster: teamCharacters
 		}
 	});

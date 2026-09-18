@@ -109,6 +109,10 @@ export type SummonBar = {
 	/** Absolute timestamps (seconds) of summonTick effect emissions during
 	 *  this bar's lifetime. P3: rendered as markers on the summon bar. */
 	ticks: number[];
+	/** Stack-threshold fires on this lane (stack-threshold round, 2026-09-18) —
+	 *  a different mark from a tick: full-height, in the hit's element, and it
+	 *  applied nothing. Read off the window's `fires`, never derived. */
+	fires?: { time: number; element: string }[];
 };
 export type SummonSubrow = {
 	slotIdx: number;

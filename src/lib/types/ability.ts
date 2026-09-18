@@ -696,8 +696,47 @@ export type Trigger =
 	| { type: 'onSwapOut' }
 	/** Fires when the holder enters the field; buff targets themselves (e.g. The Widsith). */
 	| { type: 'onSwapIn' }
-	/** Fires after N qualifying events accumulate (e.g. Freedom-Sworn: 2 reactions). */
-	| { type: 'onStack'; count: number }
+	/**
+	 * ⚓ A STACK THRESHOLD — fires the instant the SUM of `keys` reaches `count`
+	 * (stack-threshold round, 2026-09-18; `docs/stack-threshold-round.md`).
+	 *
+	 * Columbina's Gravity is the case and the reason it has a reader: while the
+	 * Gravity Ripple is out, every party Lunar reaction accrues Gravity, at 60 the
+	 * Interference fires and the pool empties. A flat cadence ("every ~6s") was
+	 * refused as an invented number; a stack resource is the mechanic's own shape.
+	 *
+	 * ⚓⚓ THE FIRE SPENDS THE SET. Every key in `keys` goes to zero at the fire —
+	 * that is the only semantics under which "fires at N" can fire twice, and an
+	 * explicit `consumeStacks` beside it would be ceremony (gcsim: `clearGravity()`).
+	 * ⚠️ A GATE is not a threshold: "while ≥ N stacks" is a `stacks` Condition
+	 * (Nahida's Seeds), and this is not that.
+	 *
+	 * `keys` names ONE resource or SEVERAL sibling resources counted together —
+	 * Columbina's three Lunar kinds are three keys so the fire can tell which
+	 * accrued the most. `dominant` is that question asked by ONE effect: it fires
+	 * only when the named key holds the largest count at the fire (ties resolve in
+	 * `keys` order — gcsim's strict `>` over its index loop, the same rule), so
+	 * three mutually-exclusive branches are three effects with three `dominant`s.
+	 * An effect with no `dominant` fires on every threshold.
+	 *
+	 * Checked at the four settle points where a count can move — the reaction
+	 * dispatch, a cast, a hit, a summon tick — by `sim/thresholds.ts`, which is
+	 * the ONE reader; a `stackThreshold` IR event is the record. What an effect
+	 * on it then does: a `buff` anchors on the event (`buffWindows`, cast-like:
+	 * start = the fire, end = + duration; `active` follows the field), a `shield`
+	 * opens at the fire, a `damage` draws a MARK on the lane of the summon that
+	 * hosts the accrual and ⛔ applies NOTHING (the one holder is Durability 0 in
+	 * gcsim; lint refuses a non-empty `application[]` here until a fire feeds the
+	 * gauge). `energy` reaches no surface, as everywhere.
+	 *
+	 * `label` is the fire's in-game name for the buff rows ("Gravity
+	 * Interference"); effects sharing one (keys, count) must agree on it.
+	 *
+	 * Lint (B.16): non-empty `keys`, each with a `gainStacks` author on the same
+	 * character; positive integer `count` no larger than the keys' summed `max`;
+	 * `dominant` ∈ `keys`.
+	 */
+	| { type: 'onStack'; keys: string[]; count: number; dominant?: string; label?: string }
 	/** Always-on passive — not rendered in the team buffs row. */
 	| { type: 'passive' }
 	/** Fires when the host ability's duration expires; buff starts at bar.end.

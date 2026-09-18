@@ -150,6 +150,12 @@ export type CharState = {
 	 *  `${nodeId}#${effectIndex}` → last fire time. Escoffier C6's 0.5s ICD
 	 *  is the canonical consumer; mirrors `shieldEndProcCooldown`. */
 	onHitProcLastFire: Map<string, number>;
+	/** The onReaction twin (stack-threshold round, 2026-09-18): a `procCooldown`
+	 *  on an onReaction `gainStacks` is how Columbina's Gravity states its RATE
+	 *  — one 2s status per reaction, 10/s while live — as "20 per reaction, at
+	 *  most one grant per 2s", rather than as a count that a dense reaction
+	 *  stream would run away with. `${nodeId}#${effectIndex}` → last fire. */
+	onReactionProcLastFire: Map<string, number>;
 	/** ⚓⚓ THE HOME OF A `scope: 'rotation'` STACK KEY (2026-08-31). Everything
 	 *  above it in this record is rotation-wide because the HOLDER may be off
 	 *  field when the trigger fires; this pair is rotation-wide because the
@@ -193,6 +199,7 @@ export function createCharState(): CharState {
 		onHitStacks: new Map(),
 		onHitStackInstances: new Map(),
 		onHitProcLastFire: new Map(),
+		onReactionProcLastFire: new Map(),
 		rotationStacks: new Map(),
 		rotationStackInstances: new Map()
 	};

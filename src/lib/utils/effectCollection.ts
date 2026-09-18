@@ -600,6 +600,23 @@ export function getCharacterEffectsForTeamNightsoulBurst(
 	return normalizeBuffLikeEffects(result);
 }
 
+/** Collects effects with `trigger.type === "onStack"` — a stack-threshold
+ *  fire's buffs, anchored by `buffWindows` on the parser's `stackThreshold`
+ *  events the way NB buffs anchor on `nightsoulBurst` (stack-threshold round,
+ *  2026-09-18). Constellation-gated like every collector here; the
+ *  `dominant` gate is per EVENT and is applied at the anchor site. */
+export function getCharacterEffectsForOnStack(char: CharacterData, cLevel: number): Effect[] {
+	const sources = effectSourcesOf(char, cLevel);
+	const result: Effect[] = [];
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.trigger.type !== 'onStack') continue;
+			result.push(fx);
+		}
+	}
+	return normalizeBuffLikeEffects(result);
+}
+
 /** Collects effects with `trigger.type === "onReaction"`. Source-agnostic;
  *  walks the full effect surface (abilities + passives + constellations).
  *  Pairs with the parser's `reaction` IR events — the dispatcher matches

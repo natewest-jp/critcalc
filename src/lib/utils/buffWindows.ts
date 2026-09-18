@@ -39,7 +39,12 @@ import {
 	type CharacterTrack,
 	type HitEvent
 } from '$lib/utils/notationParser';
-import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+import type {
+	CastEvent,
+	ReactionEvent,
+	StackThresholdEvent,
+	TimelineWindow
+} from '$lib/utils/rotationEvents';
 import { evalTriggerFilter, type TriggerFilterContext } from '$lib/types/ability';
 import type { Effect, Element, Reaction } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
@@ -52,6 +57,7 @@ import {
 	getCharacterEffectsForCast,
 	getCharacterEffectsForOnHit,
 	getCharacterEffectsForOnReaction,
+	getCharacterEffectsForOnStack,
 	getCharacterEffectsForOnState,
 	getCharacterEffectsForTeamNightsoulBurst,
 	factionProvenanceOf,
@@ -74,6 +80,10 @@ export type BuffWindowInput = {
 	castEvents: readonly CastEvent[];
 	reactionEvents: readonly ReactionEvent[];
 	nbBars: readonly { start: number; cooldown: number }[];
+	/** The parser's `stackThreshold` events — what an `onStack` buff anchors
+	 *  on, the way NB buffs anchor on `nbBars` (stack-threshold round,
+	 *  2026-09-18). */
+	stackFires: readonly StackThresholdEvent[];
 	/** The parser's authored state/summon windows (afterDuration span join). */
 	windows: readonly TimelineWindow[];
 	constellationLevels: Record<string, number>;
@@ -93,6 +103,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		castEvents,
 		reactionEvents,
 		nbBars,
+		stackFires,
 		windows,
 		constellationLevels,
 		loadoutMap,
@@ -334,6 +345,53 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		}
 		return pooler.pools;
 	};
+
+	// ── stack-threshold fires (stack-threshold round, 2026-09-18) ──
+	//
+	// ⚓ A FIRE IS AN ANCHOR LIKE AN NB FIRE: cast-like, start = the instant,
+	// end = + duration, once per fire, for the HOLDER's own `onStack` effects.
+	// The `dominant` gate is per fire — Columbina's C2 gives ATK, EM or DEF by
+	// which Lunar kind held the most Gravity — so the effect list is filtered per
+	// event and deduped by stat AFTER that (the buff-pool round's §1.H order),
+	// then partitioned by duration. Three sites call this (team, active, self)
+	// with their own target filter, exactly the split every other trigger has.
+	type FirePool = { fire: StackThresholdEvent; effects: BuffEffect[] };
+	const stackFirePoolsFor = (
+		char: CharacterData,
+		holderId: string,
+		cLevel: number,
+		ctx: ConditionContext,
+		qualifies: (e: BuffEffect) => boolean
+	): FirePool[] => {
+		const fires = stackFires.filter((f) => f.characterId === holderId);
+		if (fires.length === 0) return [];
+		const effects = getCharacterEffectsForOnStack(char, cLevel).filter((e): e is BuffEffect => {
+			if (e.type !== 'buff') return false;
+			if (e.duration == null) return false;
+			if (!qualifies(e)) return false;
+			return evalCondition(e.conditions, 4, new Set(), cLevel, undefined, undefined, ctx) !== false;
+		});
+		if (effects.length === 0) return [];
+		const pools: FirePool[] = [];
+		for (const fire of fires) {
+			const qualified = dedupByStat(
+				effects.filter((e) => {
+					const dominant = (e.trigger as { dominant?: string }).dominant;
+					return dominant === undefined || dominant === fire.dominant;
+				})
+			);
+			for (const part of partitionByDuration(qualified)) pools.push({ fire, effects: part });
+		}
+		return pools;
+	};
+	const fireSource = (
+		fire: StackThresholdEvent
+	): Extract<BuffWindow['source'], { type: 'character' }> => ({
+		type: 'character',
+		trigger: 'stackThreshold',
+		...(fire.abilityClass !== undefined ? { abilityClass: fire.abilityClass } : {}),
+		...(fire.label !== undefined ? { fireLabel: fire.label } : {})
+	});
 
 	// ── per-swing hit helpers (phase-6 delta) ──
 	// A track's hits of one input class, scoped by the track's active span
@@ -1073,6 +1131,27 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 		}
 
+		// ── stack-threshold team-target buffs (once per character) ──
+		if (firstTrackOfChar) {
+			for (const pool of stackFirePoolsFor(
+				char,
+				track.characterId,
+				cLevel,
+				baseCtx,
+				(e) => targetsTeamOrActive(e.target) && !isActiveTargetOnly(e.target)
+			)) {
+				const buffStart = pool.fire.time;
+				const buffEnd = buffStart + framesOf(pool.effects[0].duration!);
+				emit({
+					characterId: track.characterId,
+					start: buffStart,
+					end: buffEnd,
+					effects: pool.effects,
+					source: fireSource(pool.fire)
+				});
+			}
+		}
+
 		// ── Artifact 4pc: onCast groups + onReaction ──
 		const artifactSetId = loadoutMap[track.characterId]?.artifactSetId;
 		const artifactSet = artifactSetId ? getArtifactSetById(artifactSetId) : null;
@@ -1461,6 +1540,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// rotation-wide), so it needs its own first-track guard — the cast/block
 	// sites below are naturally per-track and do not.
 	const reactionActiveDispatched = new Set<string>();
+	/** Same guard for the stack-threshold active-target pass (fires are
+	 *  rotation-wide, like reactions). */
+	const fireActiveDispatched = new Set<string>();
 	/** Once-per-character guard for the summon-tick active-target pass — the
 	 *  received-surface twin of `firstTrackOfChar` in the team-surface loop. */
 	const tickActiveDispatched = new Set<string>();
@@ -1988,6 +2070,43 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				}
 			}
 		}
+
+		// ── stack-threshold active-target (segmented, received surface) ──
+		// Sliced across on-field windows like the reaction site above: the buff
+		// follows whoever is active, one window per receiver it covers.
+		if (!fireActiveDispatched.has(sourceTrack.characterId)) {
+			fireActiveDispatched.add(sourceTrack.characterId);
+			for (const pool of stackFirePoolsFor(
+				char,
+				sourceTrack.characterId,
+				cLevel,
+				receivedCtxOf(char.id),
+				(e) => isActiveTargetOnly(e.target)
+			)) {
+				const poolStart = pool.fire.time;
+				const poolEnd = poolStart + framesOf(pool.effects[0].duration!);
+				const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
+				for (const receiverTrack of tracks) {
+					const segStart = Math.max(poolStart, receiverTrack.activeStart);
+					const segEnd = Math.min(poolEnd, receiverTrack.activeEnd);
+					if (segEnd <= segStart) continue;
+					segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+				}
+				for (let si = 0; si < segments.length; si++) {
+					const { receiverId, segStart, segEnd } = segments[si];
+					const isLast = si === segments.length - 1;
+					emit({
+						characterId: sourceTrack.characterId,
+						receiverId,
+						start: segStart,
+						end: isLast ? poolEnd : segEnd,
+						effects: pool.effects,
+						duration: poolEnd - poolStart,
+						source: fireSource(pool.fire)
+					});
+				}
+			}
+		}
 	}
 
 	// ── Self-target buffs + NB self-target ──
@@ -2214,6 +2333,29 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						});
 					}
 				}
+			}
+		}
+
+		// ── stack-threshold self-target (received surface) ──
+		if (firstTrackOfChar) {
+			for (const pool of stackFirePoolsFor(
+				char,
+				sourceTrack.characterId,
+				cLevel,
+				receivedCtxOf(char.id),
+				(e) => e.target === 'self'
+			)) {
+				const buffStart = pool.fire.time;
+				const buffEnd = buffStart + framesOf(pool.effects[0].duration!);
+				emit({
+					characterId: sourceTrack.characterId,
+					receiverId: sourceTrack.characterId,
+					start: buffStart,
+					end: buffEnd,
+					effects: pool.effects,
+					duration: buffEnd - buffStart,
+					source: fireSource(pool.fire)
+				});
 			}
 		}
 

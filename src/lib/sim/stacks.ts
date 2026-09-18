@@ -457,7 +457,15 @@ export function dispatchGainStacksOnReaction(
 	triggerCharId: string,
 	emittedReaction: Reaction,
 	castTime: number,
-	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
+	/** ⚓ A RESOLVER, not a map, since the stack-threshold round (2026-09-18):
+	 *  the holder of a `'team'` grant may be OFF FIELD when the reaction fires,
+	 *  and this used to hand every holder but the trigger character an empty
+	 *  set — so a `state` gate on such a grant (Columbina's Gravity accrues only
+	 *  `duringSummon`) was unresolvable and skipped whenever a teammate made
+	 *  the reaction. `holderStatesAt` answers for any holder, as it does for
+	 *  the onHit dispatcher. Byte-identical for the three team grants that
+	 *  predate it (Chevreuse, Neuvillette, Varka — no `state` conditions). */
+	getHolderStates: (holder: CharacterData) => ReadonlySet<string>,
 	constellationByHolder: Map<string, number>,
 	getCharState: (charId: string) => CharState
 ): void {
@@ -465,13 +473,15 @@ export function dispatchGainStacksOnReaction(
 		const holderCons = constellationByHolder.get(holder.id) ?? 0;
 		const sources = effectSourcesAtConstellation(holder, holderCons);
 		for (const src of sources) {
-			for (const fx of src.effects ?? []) {
+			const effects = src.effects ?? [];
+			for (let effIdx = 0; effIdx < effects.length; effIdx++) {
+				const fx = effects[effIdx];
 				if (fx.type !== 'gainStacks') continue;
 				if (fx.trigger.type !== 'onReaction') continue;
 				const srcMode = fx.trigger.source ?? 'self';
 				if (srcMode === 'self' && holder.id !== triggerCharId) continue;
 				if (!reactionMatchesTrigger(emittedReaction, fx.trigger.reaction)) continue;
-				const holderStates = resolvedStatesByHolder.get(holder.id) ?? new Set<string>();
+				const holderStates = getHolderStates(holder);
 				const condResult = evalCondition(
 					fx.conditions,
 					DEFAULT_ASCENSION,
@@ -481,6 +491,21 @@ export function dispatchGainStacksOnReaction(
 					undefined
 				);
 				if (condResult !== true) continue;
+				const hcs = getCharState(holder.id);
+				// Effect-level `procCooldown` — the onHit dispatcher's rule, mirrored
+				// (stack-threshold round, 2026-09-18). ⚓ It is how a grant states a
+				// RATE: Columbina's Gravity accrues 10/s while a 2s status any Lunar
+				// reaction refreshes is live, which "20 per reaction, at most one
+				// grant per 2s" reproduces under both a sparse and a dense reaction
+				// stream (an uncapped count reached 60 in three ticks of one EC).
+				const pc = fx.procCooldown;
+				const pcNum = typeof pc === 'number' ? framesOf(pc) : undefined;
+				if (pcNum !== undefined && pcNum > 0) {
+					const fxKey = `${src.id}#${effIdx}`;
+					const last = hcs.onReactionProcLastFire.get(fxKey) ?? -Infinity;
+					if (castTime - last < pcNum) continue;
+					hcs.onReactionProcLastFire.set(fxKey, castTime);
+				}
 				let effAmount = fx.amount;
 				if (fx.constellationScaling) {
 					const csResult = evalCondition(
@@ -493,7 +518,6 @@ export function dispatchGainStacksOnReaction(
 					);
 					if (csResult === true) effAmount = fx.constellationScaling.amount;
 				}
-				const hcs = getCharState(holder.id);
 				const holderState = hcs.onReactionStacks;
 				if (fx.lifetime !== undefined) {
 					const expiry = castTime + framesOf(fx.lifetime);

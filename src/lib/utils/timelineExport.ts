@@ -905,6 +905,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillRect(x(tickT), rowTop + snap.summonRowH - th, 1, th);
 					}
 					ctx!.globalAlpha = 1;
+					// Threshold fires — mirror .rp-summon-fire: full height, 2px,
+					// centred, in the hit's element.
+					for (const fire of sbar.fires ?? []) {
+						ctx!.fillStyle = elementPalette(fire.element).hi;
+						ctx!.fillRect(x(fire.time) - 1, rowTop, 2, snap.summonRowH);
+					}
 				}
 			});
 		});

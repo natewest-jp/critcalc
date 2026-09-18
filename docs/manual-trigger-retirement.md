@@ -3,7 +3,10 @@
 _Status: STEP 1 SHIPPED 2026-09-15 (`deriveCapabilities` skips `manual`;
 derived capabilities 783 → 669, 114 claims gone across 55 characters, 0 added —
 the census is in `essential-characters-2026-09-15.md` §6.6). Steps 2–3 open.
-⚓ Nate's decision 2026-09-15: retire the channel._
+⚓ Nate's decision 2026-09-15: retire the channel. ↻ 2026-09-18: the
+stack-threshold round re-triggered 11 of Columbina's 12 to `onStack`
+(`docs/stack-threshold-round.md` §5); the corpus stands at **130 effects across
+63 characters**._
 
 ## 0. What it is and why now
 

@@ -173,6 +173,30 @@ export type NightsoulBurstEvent = {
 	cooldown: number;
 };
 
+/**
+ * ⚓ A STACK THRESHOLD FIRED (stack-threshold round, 2026-09-18). The instant the
+ * summed count of `keys` reached `count` on `characterId`'s pools — Columbina's
+ * Gravity Interference — and the pools were spent. `dominant` is the key that
+ * held the most at the fire (ties in `keys` order), which is what an `onStack`
+ * effect carrying a `dominant` gate reads. `buffWindows` anchors `onStack` buffs
+ * on these the way NB buffs anchor on `nightsoulBurst`; the fire's MARK on the
+ * summon lane is stamped on the summon window (`fires`), not carried here.
+ */
+export type StackThresholdEvent = {
+	kind: 'stackThreshold';
+	id: number;
+	characterId: string;
+	time: number;
+	keys: string[];
+	count: number;
+	dominant: string;
+	/** The fire's in-game name, when the trigger states one. */
+	label?: string;
+	/** The E/Q whose primary summon hosts the accrual, when one does — the
+	 *  shield lane's `source` and the buff rows' ability class. */
+	abilityClass?: 'skill' | 'burst';
+};
+
 /** The public event stream. NB: the parser's hit records are parser-private
  *  (post-P4 #1 decision) — they exist solely for the internal onHit dispatch
  *  and the buff-window derivation and are NOT part of the IR. Action-level
@@ -183,7 +207,8 @@ export type TimelineEvent =
 	| ActionEvent
 	| ReactionEvent
 	| ShieldEndEvent
-	| NightsoulBurstEvent;
+	| NightsoulBurstEvent
+	| StackThresholdEvent;
 
 /** Provenance shared by all window kinds. `sourceCastId` is the id of the
  *  `cast` event that opened the window; `sourceActionId` (post-P4 #2) is the
@@ -219,8 +244,18 @@ export type BuffWindowSource =
 			 *  'block' = the N/CA/P input-token pool; the rest are literal.
 			 *  ⚠️ 'state' is the odd one — its window is not a duration measured
 			 *  from a trigger instant, it IS the state's own span. */
-			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst' | 'state';
+			trigger:
+				| 'cast'
+				| 'afterDuration'
+				| 'block'
+				| 'reaction'
+				| 'nightsoulBurst'
+				| 'state'
+				| 'stackThreshold';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
+			/** `stackThreshold` only — the fire's in-game name for the row label
+			 *  (stack-threshold round, 2026-09-18). */
+			fireLabel?: string;
 	  }
 	| {
 			type: 'artifact';
@@ -278,7 +313,14 @@ export type BuffWindowSource =
 			faction: string;
 			bonusName: string;
 			/** Mirrors the `character` arm — the dispatch family that fired it. */
-			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst' | 'state';
+			trigger:
+				| 'cast'
+				| 'afterDuration'
+				| 'block'
+				| 'reaction'
+				| 'nightsoulBurst'
+				| 'state'
+				| 'stackThreshold';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 	  };
 
@@ -338,6 +380,16 @@ export type TimelineWindow =
 			 * Absent on every summon that has no such series.
 			 */
 			ticks?: number[];
+			/**
+			 * ⚓ THRESHOLD FIRES ON THIS LANE (stack-threshold round, 2026-09-18) —
+			 * a `damage` effect on an `onStack` trigger draws here, on the lane of
+			 * the summon that hosts the accrual, in the hit's element. Frames.
+			 * ⛔ NOT a tick: a tick is the series' own hit and feeds the gauge;
+			 * a fire applies nothing (Columbina's Interference is Durability 0),
+			 * so it is a different mark and a different field. Stamped by
+			 * `finalize` off the `stackThreshold` events, like `ticks`.
+			 */
+			fires?: { time: number; element: Element }[];
 			/**
 			 * Where this summon WOULD have ended on its own — spawn + lifetime,
 			 * extensions applied, no swap, recast or flip truncation (small-fix

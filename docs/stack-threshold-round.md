@@ -86,3 +86,129 @@ Implementation shape: the threshold check sits right after
 and at the cast/hit/tick settle points; the fire pushes a new IR event kind
 (`stackThreshold`), consumes the pool, and `buffWindows` anchors `onStack`
 buffs on those events the way NB buffs anchor on `nbBars`.
+
+## 5. Record — SHIPPED 2026-09-18 (`engine/stack-threshold`)
+
+_The three §4 decisions, ⚓ Nate 2026-09-18, in order: the fire is a **MARK ON
+THE GRAVITY RIPPLE'S LANE** (full height, in the hit's element, nothing in the
+aura lane — it applies nothing); **C6 keeps its caveat and waits for §1.G** (it
+is not a Gravity mechanic — gcsim fires it on any Lunar reaction while the
+burst's Domain is active, and the onReaction buff pass cannot read a
+`duringSummon` gate yet); **THREE KEYS, threshold on the sum, the largest key
+wins** (`dominant`, ties in key order = gcsim's strict `>` over its index
+loop)._
+
+⚠️ One correction to §4 above: Gravity accrues while the **Gravity Ripple** (the
+E summon, `skillKey`) is out, not the Lunar Domain. gcsim gates every Gravity
+hook on `skillKey`; the kit says "While Gravity Ripple is on the field". The
+Domain gates only C6.
+
+### 5.1 The primitive
+
+- **`Trigger` `onStack`** reshaped: `{ keys: string[], count, dominant?,
+label? }`. It had no reader and no author; the old `{ count }` form is gone.
+  ⚓⚓ **The fire SPENDS the set** — every key to zero at the fire, implicitly.
+  That is the only semantics under which "fires at N" fires twice, and an
+  explicit `consumeStacks` beside it would be ceremony (gcsim `clearGravity()`).
+  A GATE ("while ≥ N") is a `stacks` Condition, not this.
+- **`sim/thresholds.ts`** is the ONE reader. `collectStackThresholds` runs once
+  per parse into `TeamContext.stackThresholds` (constellation-gated, grouped by
+  holder × keys × count — one group is one fire however many effects hang off
+  it), so the per-settle check is a no-op for every team but one.
+  `checkStackThresholds` runs at the **four settle points where a count can
+  move**: the reaction dispatch (`aura.ts` `emitReaction`, after the reaction
+  event so the record follows its cause), a cast (`run.ts`, beside the cast's
+  own consume — a fire IS a consume, so `stackContext` reads post-gain
+  pre-spend), a hit (`run.ts` `dispatchHit`, inside the `teamHasOnHitStackEffects`
+  guard), a summon tick (`aura.ts` `dispatchEntityHitStacks`).
+- **A key's count is read from its HOME, never summed across homes** —
+  resolved from the grants that name it, constellation-ungated (`stackScopesOf`'s
+  rule): `rotation` / `onReaction` (team) / `onHit` (team) / `sourceLifetime` /
+  `segment`. ⚠️ A segment-home key is readable only where the on-field pool is
+  in hand (cast, hit); at the reaction and tick sites it reads 0 — stated.
+- **What a fire does, by effect type:** `damage` → a mark
+  (`ctx.stackFireMarks`, stamped by `finalize` onto the summon window as
+  `fires`, the way `stateGatedTicks` become `ticks`; the lane is the primary
+  summon of the E/Q that authors a grant of `keys[0]`), ⛔ NO application;
+  `shield` → `pushShieldAt` under the host cast's source, provenance = the
+  latest host cast at or before the fire; `buff` → `buffWindows` anchors on the
+  `stackThreshold` IR event at three sites (team / active-segmented / self),
+  mirroring NB, with the `dominant` gate applied PER EVENT and the stat dedupe
+  after it (the buff-pool round's §1.H order); `energy` → nothing, as
+  everywhere. Optimistic on an unresolvable condition at all three surfaces, so
+  a fire's mark, shield and bars cannot disagree about whether it drew.
+- **`StackThresholdEvent`** (IR): `characterId, time, keys, count, dominant,
+label?, abilityClass?`. Provenance arm `trigger: 'stackThreshold'` +
+  `fireLabel` on `BuffWindowSource`; the rows are named after the FIRE
+  ("Columbina Gravity Interference"), keyed apart from the cast pool row.
+- **The rate is a `procCooldown` on the grant.** ⚓ A `procCooldown` on an
+  onReaction `gainStacks` is honoured now (the onHit dispatcher's rule,
+  mirrored; `CharState.onReactionProcLastFire`). Columbina's Gravity accrues
+  10/s while a 2s status any Lunar reaction refreshes is live; "20 per reaction,
+  at most one grant per 2s" reproduces that under a sparse stream (identical)
+  and a dense one (the C0 probe below lands 0.5s from gcsim's instant), where
+  the plan's uncapped 20-per-reaction would have fired 6s early on the third
+  tick of one EC. ⚠️ Its weakness is a SHORT BURST: four Guoba ticks 1.67s apart
+  are two grants (40) and no fire, where gcsim's continuous status reaches 60 —
+  named in the caveat. A continuous accrual primitive ("10/s while a state is
+  live") would close it and is not built: one holder.
+- **The onReaction stack dispatcher takes a holder-state RESOLVER**
+  (`holderStatesAt`), not the trigger character's `preStates` map — the holder
+  of a `'team'` grant may be off field when the reaction fires, and a
+  `duringSummon` gate on such a grant was unresolvable and skipped whenever a
+  teammate made the reaction. Byte-identical for the three team grants that
+  predate it (Chevreuse, Neuvillette, Varka: no `state` conditions; census
+  2026-09-18).
+- **Lint:** B.16 (keys non-empty strings, positive integer count, `dominant` ∈
+  keys, label a string, effect type one the reader acts on, a `damage` must
+  state `application: []`); D.40 (every key has a `gainStacks` author on the
+  character, `count` ≤ the keys' summed `max`, effects on one (keys, count)
+  agree on `label`); B.12d widened so an EMPTY `application[]` on `onStack` is
+  the positive statement "this fire applies nothing" and a non-empty one is
+  refused as unread.
+- **Guarded by `sim/thresholds.test.ts`** (11 cases on a synthetic hydro
+  catalyst with Xiangling and Kaeya as reaction sources; five seeded negatives
+  verified by hand — see the file header).
+
+### 5.2 Columbina
+
+Skill: three `gainStacks` keys (`gravityLunarCharged` / `gravityLunarBloom` /
+`gravityLunarCrystallize`), `onReaction source: team` per Lunar kind, +20,
+`max: 60`, `procCooldown: 2`, gated `duringSummon`; three `onStack` damage
+effects (`count: 60`, one `dominant` each, `application: []`, label "Gravity
+Interference") replacing the three `manual` ones. A1: CRIT Rate on every fire
+(⚠️ drawn at one stack — `BuffEffect.stacks` still has no consumer; the caveat
+names it). C1: Rainsea Shield (label authored) on a Lunar-Crystallize fire, +6
+Energy on Lunar-Charged (no surface), interruption res on Lunar-Bloom; caveat
+REMOVED (the shield and the res bar draw; the energy and the 250% absorption
+have no pixel). C2: +40% Max HP on every fire, ATK/EM/DEF on the active
+character by dominant kind; caveat names the +34% rate as "marks land where a
+C0 Columbina's would". C6: untouched (`manual`, caveat kept — §1.G). ⛔ NOT
+modelled: the C1 first-cast tick (`c1OnSkill`, 15s ICD, fires with zero
+Gravity and a team-composition branch — a second mechanism for one visual),
+the C4 flat add (magnitude). `manual` on Columbina: **12 → 1**; corpus 130
+across 63 characters.
+
+### 5.3 Measured
+
+- `Columbina E Q > Fischl E N3 > Barbara E N1 N2 N3 N4 ~4s N1 N2 N3` (one
+  Moonsign member): C0 — Lunar-Charged reactions at 196 250 255 283 486 489 510
+  604 606 643f; grants at 196, 486, 606 → **fire at 606f in Electro**, mark on
+  the Ripple, A1 bar 606–1206. gcsim's status arithmetic over the same stream
+  reaches 60 at ≈639f. C1/C2 branches correctly dark (`teamFaction moonsign
+min 2` false).
+- `Columbina E Q > Zhongli E > Aino E …` C6: fires at 542 and 1262f in Geo,
+  Rainsea Shield 542–1022 (source skill, cast 0), DEF conversion on Aino,
+  +40% HP and CRIT on Columbina. `… > Nahida E > Lauma E …` C6: Dendro fires,
+  EM + interruption res on Lauma.
+- **Corpus digest: 0 of 246 moved** (the digest team makes no Lunar reaction),
+  engine-only diff byte-identical before the data landed.
+
+### 5.4 Held
+
+- C6 → §1.G (resolved states in the onReaction buff pass). Odette's Coda and
+  Xilonen's heal gate wait on the same thing.
+- A1's stacking (`BuffEffect.stacks` consumer) — the bar reads +5% at every fire.
+- A continuous accrual primitive, if a second holder appears.
+- The fire's mark is a first cut for Nate to judge on screen (full-height 2px
+  in the hit's element, `.rp-summon-fire`, mirrored in the PNG export).
