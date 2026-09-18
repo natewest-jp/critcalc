@@ -25,6 +25,7 @@
 import type { CastAbility, DurationExtension } from '$lib/types/ability';
 import type { CastEvent } from '$lib/utils/rotationEvents';
 import type { StateWindowRec } from './context';
+import type { AccrualRecord } from './accrual';
 
 /** Active stance window for a character. Present iff a stance E/Q has ever been
  *  cast (never cleared — swap-close only clamps `end`, mirroring the old
@@ -156,6 +157,9 @@ export type CharState = {
 	 *  most one grant per 2s", rather than as a count that a dense reaction
 	 *  stream would run away with. `${nodeId}#${effectIndex}` → last fire. */
 	onReactionProcLastFire: Map<string, number>;
+	/** Live (and lapsed, kept for retroactive refresh) accrual statuses by
+	 *  `accrual.group` (stack-threshold round, exact model). See `accrual.ts`. */
+	accruals: Map<string, AccrualRecord>;
 	/** ⚓⚓ THE HOME OF A `scope: 'rotation'` STACK KEY (2026-08-31). Everything
 	 *  above it in this record is rotation-wide because the HOLDER may be off
 	 *  field when the trigger fires; this pair is rotation-wide because the
@@ -200,6 +204,7 @@ export function createCharState(): CharState {
 		onHitStackInstances: new Map(),
 		onHitProcLastFire: new Map(),
 		onReactionProcLastFire: new Map(),
+		accruals: new Map(),
 		rotationStacks: new Map(),
 		rotationStackInstances: new Map()
 	};

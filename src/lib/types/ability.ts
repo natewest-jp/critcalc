@@ -1802,6 +1802,32 @@ export type Effect =
 			 *  to filter for non-self contributions (Skirk's own Cryo doesn't
 			 *  count toward Death's Crossing). */
 			sourceLifetime?: number;
+			/**
+			 * ⚓ CONTINUOUS ACCRUAL (stack-threshold round, exact model, 2026-09-18).
+			 * When present, `amount` is a RATE — stacks per second — and a trigger
+			 * fire does not add it: it opens, or refreshes, a `window`-second
+			 * status shared per holder across every key of the same `group`, and
+			 * while the status is live the key the LAST fire named gains `amount`
+			 * per second in 0.05 s polls (gcsim's `QueueCharTask(..., 0.05*60)`).
+			 * Columbina's Gravity: any party Lunar reaction opens/refreshes a 2 s
+			 * status; 10 per second into the last reaction's kind; +34% at C2 via
+			 * `constellationScaling` (which scales the RATE here, since it replaces
+			 * `amount`).
+			 *
+			 * ⚓ A Lunar-Charged TICK refreshes it too — gcsim's hook is on any
+			 * Lunar-tagged damage — so the sim feeds the gauge's `ecTick` events
+			 * to accrual grants whose reaction matches the party's converted EC.
+			 *
+			 * ⛔ Not with `procCooldown`, `lifetime`, `drain` or `sourceLifetime`,
+			 * and only on an `onReaction` grant with `source: 'team'` (a tick has
+			 * no trigger character) — lint B.13k. See `sim/accrual.ts`.
+			 */
+			accrual?: {
+				/** Keys sharing one status on the holder. */
+				group: string;
+				/** Seconds the status lives after each fire. */
+				window: number;
+			};
 	  })
 	| (EffectBase & {
 			/** Removes stacks of a named resource when the trigger fires. The

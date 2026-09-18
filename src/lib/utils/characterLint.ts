@@ -2852,6 +2852,51 @@ function lintEffect(
 				location
 			);
 		}
+		// (B.13k) gainStacks accrual — a RATE into a shared status (exact-model
+		// round, 2026-09-18): group a non-empty string, window > 0, only on an
+		// onReaction grant with source team (a tick refresh has no trigger
+		// character), and never beside another decay/rate shape — the amount is
+		// per second here, and a second shape would read it as a count.
+		if (eff.accrual !== undefined) {
+			const acc = eff.accrual as { group?: unknown; window?: unknown };
+			if (typeof acc.group !== 'string' || acc.group.length === 0) {
+				push(
+					'strict',
+					'gainstacks-accrual-invalid',
+					`gainStacks accrual.group must be a non-empty string (got ${JSON.stringify(acc.group)})`,
+					location
+				);
+			}
+			if (typeof acc.window !== 'number' || !Number.isFinite(acc.window) || acc.window <= 0) {
+				push(
+					'strict',
+					'gainstacks-accrual-invalid',
+					`gainStacks accrual.window must be a positive number of seconds (got ${JSON.stringify(acc.window)})`,
+					location
+				);
+			}
+			if (eff.trigger.type !== 'onReaction' || eff.trigger.source !== 'team') {
+				push(
+					'strict',
+					'gainstacks-accrual-trigger',
+					`gainStacks accrual is read only on an onReaction grant with source "team" — a reaction tick has no trigger character`,
+					location
+				);
+			}
+			if (
+				eff.procCooldown !== undefined ||
+				eff.lifetime !== undefined ||
+				eff.drain !== undefined ||
+				eff.sourceLifetime !== undefined
+			) {
+				push(
+					'strict',
+					'gainstacks-accrual-conflict',
+					`gainStacks accrual cannot sit beside procCooldown, lifetime, drain or sourceLifetime — amount is a rate per second here`,
+					location
+				);
+			}
+		}
 		// (B.13j) gainStacks scope — the two legal values, and ⛔ NOT on a
 		// team/others onHit grant. Those already accrue rotation-wide via
 		// `CharState.onHitStacks`, for a different reason (the HOLDER may be off
