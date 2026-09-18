@@ -92,6 +92,16 @@ export type CastEvent = {
 	 *  Anemo, visibly Anemo beside them. Rendered by the pill, its ghost tail
 	 *  and the input block; the PNG export mirrors it. */
 	element?: Element;
+	/** For a STANCE opener: the element its stance's normal attacks land (the
+	 *  in-stance normal's resolved `infusion`), when it is not the caster's own.
+	 *  ⚓ Nate (2026-09-18): Windbound Execution's PILL tints the PHEC hand —
+	 *  its body IS the stance window, in which he is a PHEC DPS, and an Anemo
+	 *  pill beside a PHEC burst pill "looks a little off" — while its input
+	 *  BLOCK stays Anemo, because the cast's own hit is. So the pill reads
+	 *  `stanceElement ?? element` and the block reads `element` alone. Only
+	 *  Varka's stance infuses an element other than his own (census
+	 *  2026-09-18), so nothing else moves. */
+	stanceElement?: Element;
 	/** Frames (60fps) from cast start until the spawned summon becomes active.
 	 *  0 when the ability spawns nothing (then `fieldStart === time`). */
 	summonActivatesAt: number;

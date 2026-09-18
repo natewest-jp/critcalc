@@ -60,7 +60,8 @@ export type TimelineBar = {
 	variantLabel?: string;
 	/** Mirrors `CastEvent.element`: the first landed hit's element when it is
 	 *  not the character's own (Varka's Four Winds and burst). The pill, its
-	 *  ghost tail and the badge halo take this palette; absent = the slot's. */
+	 *  ghost tail and the badge halo take this palette; absent = the slot's.
+	 *  For a stance opener it is `CastEvent.stanceElement ?? element`. */
 	element?: Element;
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
 	 *  Mirrors persistent-behavior summonActivatesAt; carried on the bar so the

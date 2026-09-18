@@ -899,6 +899,23 @@ export function runRotation(
 					// replaced per cast; extensions/swap-close mutate this same
 					// object in place, so the collected record stays current).
 					ctx.stanceWindowRecs.push(cs.stance);
+					// The stance's landed element for the PILL (`CastEvent.stanceElement`):
+					// the in-stance normal's resolved infusion, when not the caster's own.
+					{
+						const inStanceStates = new Set([...states, 'inStance']);
+						if (stance.opensState) inStanceStates.add(stance.opensState);
+						const stanceNormal = resolveActiveAbility(
+							char,
+							'normal',
+							inStanceStates,
+							charConstellationLevel,
+							undefined,
+							undefined,
+							variantCtx
+						);
+						const landed = resolveElementRef(stanceNormal?.infusion, variantCtx);
+						if (landed !== undefined && landed !== char.element) castEvent.stanceElement = landed;
+					}
 					// ⚓ A sibling skill that `startsOnCooldown` begins recharging
 					// HERE (cooldown-reduction round, 2026-09-18): Varka's Four Winds'
 					// Ascension "starts on cooldown and has 2 maximum uses", so its

@@ -82,7 +82,12 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			summonActivatesAt: ev.summonActivatesAt,
 			sacProcFired: ev.sacProcFired,
 			stackContext: ev.stackContext,
-			...(ev.element !== undefined ? { element: ev.element } : {})
+			// The pill's element: a stance opener's stance, else the first hit.
+			...(ev.stanceElement !== undefined
+				? { element: ev.stanceElement }
+				: ev.element !== undefined
+					? { element: ev.element }
+					: {})
 		};
 		(ev.ability === 'burst' ? track.qBars : track.eBars).push(bar);
 		ctx.castIdByBar.set(bar, ev.id);
