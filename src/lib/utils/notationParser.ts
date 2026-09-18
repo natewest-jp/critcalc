@@ -232,12 +232,18 @@ export function parseNotation(
 		teamElementCountsByHolder.set(holder.id, counts);
 	}
 
-	// Elemental resonance is a ROSTER fact with the game's full-party rule —
-	// two Anemo characters in a party of four shave 5% off every skill
-	// cooldown. Computed once; `resolveAbilityTiming` prepends it to each
-	// skill's own modifiers.
+	// Elemental resonance is a ROSTER fact — two Anemo characters shave 5%
+	// off every skill cooldown. Computed once; `resolveAbilityTiming` prepends
+	// it to each skill's own modifiers. ⚓ WITHOUT the game's full-party rule
+	// (⚓ Nate 2026-09-18): the planner's roster is whoever the notation NAMES,
+	// not the party the player fields, so a two-character rotation with Kazuha
+	// and Venti is a four-character party with two seats unwritten. The Team
+	// Builder keeps the rule for its own display, where the slots ARE the party.
 	function teamSkillCooldownModifiers(roster: CharacterData[]): CooldownModifier[] {
-		const { active } = deriveResonances(roster.map((c) => c.element ?? null));
+		const { active } = deriveResonances(
+			roster.map((c) => c.element ?? null),
+			{ requireFullParty: false }
+		);
 		const anemo = active.find((r) => r.element === 'anemo');
 		return anemo ? [{ source: `Anemo Resonance: ${anemo.label}`, type: 'percent', value: -5 }] : [];
 	}

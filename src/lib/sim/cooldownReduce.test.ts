@@ -306,10 +306,14 @@ describe('Anemo Resonance — a team skill-cooldown modifier, not a reduction', 
 		expect(e.cooldown).toBeCloseTo(360 * 0.95, 5);
 		expect(q.cooldown).toBe(900);
 	});
-	it('needs the full party — three members are no resonance', () => {
-		const r = parseNotation('Kazuha E > Venti E', lookup, 8, {}, undefined, [
+	it('two characters alone still resonate — the notation names who acts, not the party', () => {
+		const r = parseNotation('Kazuha E > Venti E', lookup, 8, {}, undefined, [KAZUHA, VENTI]);
+		const [e] = casts(r, KAZUHA.abilities.find((a) => a.abilityType === 'skill')!.id);
+		expect(e.cooldown).toBeCloseTo(360 * 0.95, 5);
+	});
+	it('one Anemo is no resonance', () => {
+		const r = parseNotation('Kazuha E > Xiangling E', lookup, 8, {}, undefined, [
 			KAZUHA,
-			VENTI,
 			XIANGLING
 		]);
 		const [e] = casts(r, KAZUHA.abilities.find((a) => a.abilityType === 'skill')!.id);
