@@ -81,6 +81,17 @@ export type CastEvent = {
 	 *  after it was written (cooldown-reduction round, 2026-09-18) — the reason
 	 *  `readyAt` may sit before `time + cooldown`. Absent when nothing moved it. */
 	cdReduced?: number;
+	/** The element this cast's FIRST landed hit applies, when it is NOT the
+	 *  caster's own — resolved at parse from `application[0].element`
+	 *  (2026-09-18). Absent means the character's element, which is every cast
+	 *  in the corpus but Varka's: Four Winds' Ascension and Northwind Avatar
+	 *  open with the RIGHT-hand claymore's party-resolved element (a
+	 *  `teamElementPriority` ref) and land Anemo second. ⚓ Nate: the pill and
+	 *  its cast block tint THIS, because a Pyro-team Varka is built for his
+	 *  Pyro damage — and it leaves Windbound Execution, whose only hit is
+	 *  Anemo, visibly Anemo beside them. Rendered by the pill, its ghost tail
+	 *  and the input block; the PNG export mirrors it. */
+	element?: Element;
 	/** Frames (60fps) from cast start until the spawned summon becomes active.
 	 *  0 when the ability spawns nothing (then `fieldStart === time`). */
 	summonActivatesAt: number;

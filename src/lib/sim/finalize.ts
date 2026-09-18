@@ -81,7 +81,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			variantLabel: ev.variantLabel,
 			summonActivatesAt: ev.summonActivatesAt,
 			sacProcFired: ev.sacProcFired,
-			stackContext: ev.stackContext
+			stackContext: ev.stackContext,
+			...(ev.element !== undefined ? { element: ev.element } : {})
 		};
 		(ev.ability === 'burst' ? track.qBars : track.eBars).push(bar);
 		ctx.castIdByBar.set(bar, ev.id);
@@ -106,7 +107,9 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				start: ev.time,
 				duration: ev.castTime,
 				parts: [ev.label],
-				kind: ev.ability
+				kind: ev.ability,
+				// The block tints what the cast LANDS first, like an infused swing's.
+				...(ev.element !== undefined ? { element: ev.element } : {})
 			});
 		}
 		const blocksByAnchor = new Map<number, InputBlock>();

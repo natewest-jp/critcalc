@@ -2495,6 +2495,10 @@
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.eBars as bar, barIdx (barIdx)}
 											{@const eHasSummon = findCastSummons(char, 'skill', bar.label).length > 0}
+											<!-- The BAR's palette when its first hit lands an element that is not the
+													     slot's (Varka's Four Winds and burst, `CastEvent.element`), else the slot's.
+													     Pill, ghost tail and badge halo all take it, so the halo stays the fill's own shade. -->
+											{@const bp = bar.element ? pal(bar.element) : p}
 											<!-- Three-case E/Q pill geometry lives in the shared barPhases()
 										     helper (mirrored by the PNG exporter). Roles carry the styling
 										     intent; this template projects each to its DOM treatment. -->
@@ -2503,9 +2507,12 @@
 												{#if seg.role === 'uptime'}
 													<div
 														class="rp-bar-uptime"
+														style:--label-halo={bar.element
+															? shiftHue(bp.bar, 0, -30, 1)
+															: undefined}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.bar)}
+														style:background={castFill(bp.bar)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -2513,9 +2520,12 @@
 												{:else if seg.role === 'uptimeFlush'}
 													<div
 														class="rp-bar-uptime"
+														style:--label-halo={bar.element
+															? shiftHue(bp.bar, 0, -30, 1)
+															: undefined}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.bar)}
+														style:background={castFill(bp.bar)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
@@ -2526,9 +2536,12 @@
 											     ink only sits on full-strength fills. -->
 													<div
 														class="rp-bar-uptime rp-bar-uptime--dim"
+														style:--label-halo={bar.element
+															? shiftHue(bp.bar, 0, -30, 1)
+															: undefined}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.bar}
+														style:background="color-mix(in srgb, {bp.bar}
 														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
@@ -2540,7 +2553,7 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.bar}
+															style:background="color-mix(in srgb, {bp.bar}
 															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
@@ -2550,7 +2563,7 @@
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {desaturate(
-															p.bar,
+															bp.bar,
 															GHOST_CHROMA_KEEP
 														)}
 														{GHOST_FILL_MIX}%, transparent)"
@@ -2626,6 +2639,10 @@
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.qBars as bar, barIdx (barIdx)}
 											{@const qHasSummon = findCastSummons(char, 'burst', bar.label).length > 0}
+											<!-- The BAR's palette when its first hit lands an element that is not the
+													     slot's (Varka's Four Winds and burst, `CastEvent.element`), else the slot's.
+													     Pill, ghost tail and badge halo all take it, so the halo stays the fill's own shade. -->
+											{@const bp = bar.element ? pal(bar.element) : p}
 											<!-- Same shared barPhases() geometry as the E row (badge 'Q').
 										     Bursts never fire the sac proc, so the uptimeDim role is
 										     unreachable here, but kept for E/Q symmetry. -->
@@ -2634,9 +2651,12 @@
 												{#if seg.role === 'uptime'}
 													<div
 														class="rp-bar-uptime"
+														style:--label-halo={bar.element
+															? shiftHue(bp.bar, 0, -30, 1)
+															: undefined}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.bar)}
+														style:background={castFill(bp.bar)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -2644,18 +2664,24 @@
 												{:else if seg.role === 'uptimeFlush'}
 													<div
 														class="rp-bar-uptime"
+														style:--label-halo={bar.element
+															? shiftHue(bp.bar, 0, -30, 1)
+															: undefined}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.bar)}
+														style:background={castFill(bp.bar)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeDim'}
 													<div
 														class="rp-bar-uptime rp-bar-uptime--dim"
+														style:--label-halo={bar.element
+															? shiftHue(bp.bar, 0, -30, 1)
+															: undefined}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.bar}
+														style:background="color-mix(in srgb, {bp.bar}
 														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
@@ -2667,7 +2693,7 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.bar}
+															style:background="color-mix(in srgb, {bp.bar}
 															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
@@ -2677,7 +2703,7 @@
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {desaturate(
-															p.bar,
+															bp.bar,
 															GHOST_CHROMA_KEEP
 														)}
 														{GHOST_FILL_MIX}%, transparent)"

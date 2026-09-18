@@ -788,10 +788,20 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const p = elementPalette(slot.element);
 
 		for (const track of slot.tracks) {
+			// ⚠️ The BAR's element when it lands one that is not the slot's
+			// (Varka's Four Winds and burst), else the slot's — the on-screen rule.
+			const barPal = (bar: ExportBar) => (bar.element ? elementPalette(bar.element).bar : p.bar);
 			for (const bar of track.eBars)
-				collectBarPhases(bar, top + snap.charPadTop, snap.eRowH, p.bar, bar.label, solidDraws);
+				collectBarPhases(
+					bar,
+					top + snap.charPadTop,
+					snap.eRowH,
+					barPal(bar),
+					bar.label,
+					solidDraws
+				);
 			for (const bar of track.qBars)
-				collectBarPhases(bar, top + slot.qRowTop, snap.qRowH, p.bar, bar.label, solidDraws);
+				collectBarPhases(bar, top + slot.qRowTop, snap.qRowH, barPal(bar), bar.label, solidDraws);
 		}
 
 		// Active strip + input blocks (solid layer)
