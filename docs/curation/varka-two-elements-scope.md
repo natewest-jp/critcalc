@@ -260,8 +260,8 @@ Both are wired.
 Measured: `Xiangling E > Varka E N2 sC` → 64f (Azure Devour), `… sE` → 68f
 (Four Winds), `… C` → 60f (the ordinary in-stance charge); out of stance both
 fall back; `N2sC` splits correctly concatenated; and the corpus is byte-identical
-apart from Varka. ⛔ Azure Devour still SPENDS a Four Winds use and the token
-draws the attack without the cost — see the pair below.
+apart from Varka. ↻ Azure Devour SPENDS its Four Winds use since 2026-09-18
+(`docs/varka-azure-devour-round.md`).
 
 ### ⚠️⚠️ What is left, and why it is a PAIR rather than two edits
 
@@ -269,8 +269,10 @@ draws the attack without the cost — see the pair below.
 (`docs/cooldown-reduction-round.md` §4): `charges: 2` (+1 at C1),
 `startsOnCooldown`, and Secret Rite as two `cooldownReduce` effects capped 15
 per stance; charges recharge one at a time now, which is what makes the second
-use honest. Measured `Xiangling E > Varka E N2 sE`: Four Winds at 685f. Azure
-Devour's cost is still the open item below.
+use honest. Measured `Xiangling E > Varka E N2 sE`: Four Winds at 685f. ↻ And
+**Azure Devour's cost shipped the same day** (`docs/varka-azure-devour-round.md`),
+which also found that round's C1 (`+1` charge) wrong — it is a use handed back
+at entry, not a third charge on cooldown.
 
 **Four Winds' charges and its cooldown reduction cannot be landed
 separately, and landing the first alone would make the tool WORSE.**
@@ -294,8 +296,8 @@ this is a `type` VALUE). Wiring it means a new dispatcher on the hit stream that
 shifts a queued charge earlier, plus a per-stance proc cap, which is the
 `maxProcs` gap several other characters are waiting on.
 
-⛔ Also still out, each for its own reason: **Azure Devour** (a charged attack
-that spends a SKILL charge — no shape); **A1's 140%/220% multiplier** and
+⛔ Also still out, each for its own reason: ~~**Azure Devour**~~ (↻ shipped
+2026-09-18); **A1's 140%/220% multiplier** and
 **C2's 800% strike** (damage magnitude, out by the tool constitution);
 **within-swing hand ordering** and **N1's single hit** (a per-hit element model,
 not worth it for one swing in five).

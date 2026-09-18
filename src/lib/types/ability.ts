@@ -1628,6 +1628,18 @@ export type Effect =
 			// character cdReset fires unconditionally on every matching cast (no
 			// procCooldown).
 			resets?: 'skill' | 'burst';
+			/** ONE named ability's queue, instead of every queue of `resets`'s
+			 *  kind. ⚓ Needed the moment a character has TWO skill queues and a
+			 *  reset that reaches only one: Varka's C1 hands back a Four Winds'
+			 *  Ascension use at stance entry (gcsim `c1OnSkill`:
+			 *  `ResetActionCooldown(ActionSpecialSkill)`) while Windbound
+			 *  Execution's own 16s clock, written by the same cast, stays put.
+			 *  ⚠️ A skill-fired reset of `resets: "skill"` MUST name this (lint
+			 *  B.10b) — an unnamed one would refund the very cast that fired it.
+			 *  A skill-fired reset lands at the firing cast's COOLDOWN CLOCK
+			 *  start (`cooldownStartDelay`), which is where gcsim's stance-entry
+			 *  block runs; a burst-fired one keeps its cast-end instant. */
+			resetsAbility?: string;
 	  })
 	| (EffectBase & {
 			/** A fixed number of seconds off a cooldown that is RUNNING — gcsim's
@@ -2059,11 +2071,32 @@ export type NormalAbility = AbilityCommon & {
 	 * `chargeFrames`, the same rule an out-of-window `sQ` follows — a token the
 	 * data cannot honour takes the ordinary form rather than vanishing.
 	 *
-	 * ⛔ Not modelled: Azure Devour SPENDS a use of the special skill. A charged
-	 * attack that consumes a skill charge has no shape here, so the token draws
-	 * the attack without the cost.
+	 * ↻ The cost is `specialChargeSpends` beside this (2026-09-18) — until then
+	 * the token drew the attack without spending the use.
 	 */
 	specialChargeFrames?: FrameMap;
+	/**
+	 * The sibling SKILL ability whose charge an `sC` SPENDS — Azure Devour
+	 * "expends uses of the special Elemental Skill Four Winds' Ascension"
+	 * (2026-09-18; gcsim `charge.go` `skillAzureDevour`: `SetCD(ActionSpecialSkill,
+	 * 11*60)` at the attack's start, no delay).
+	 *
+	 * ⚓ The special form is taken ONLY when the named skill is the one ACTIVE at
+	 * the swing (gcsim `useSpecialSkill()` — in Varka's case, in Sturm und Drang
+	 * with a Pyro/Hydro/Electro/Cryo teammate); anywhere else the token is the
+	 * ordinary charged attack on `chargeFrames`, because the attack it names
+	 * cannot be performed there. ⚓ And a charge must be READY: the token WAITS
+	 * for one exactly as an `E` on cooldown does (the charge-queue scan), rather
+	 * than silently taking the ordinary form — the notation named Azure Devour,
+	 * and a gap that says "no use yet" is honest where a same-tinted ordinary
+	 * charge would be a quiet substitution. The spent charge's clock is appended
+	 * to the END of the queue's chain (charges recharge one at a time).
+	 *
+	 * ⚠️ The action event records the spend (`ActionEvent.spentCharge`); nothing
+	 * is DRAWN for it beyond the block itself — the next `sE` simply lands where
+	 * the queue allows. ⛔ Requires `specialChargeFrames` (lint A.4d).
+	 */
+	specialChargeSpends?: string;
 	/** HIGH-plunge frames, and the default. Covers the standalone `P` token, the
 	 *  explicit `hP`, and the `E P` path where no plungeVariant matches the
 	 *  preceding E token.

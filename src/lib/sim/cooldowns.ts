@@ -20,7 +20,12 @@ import type { LoadoutEntry } from '$lib/stores';
 import { framesOf } from '$lib/utils/frames';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { SimContext } from './context';
-import { findChainStage } from './conditions';
+import {
+	DEFAULT_ASCENSION,
+	evalCondition,
+	findChainStage,
+	type ConditionContext
+} from './conditions';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 
 // ---------------------------------------------------------------------------
@@ -57,27 +62,42 @@ export function getWeaponCdResetCooldown(
 // Character cdReset helper
 // ---------------------------------------------------------------------------
 
+/** One reset a cast fires: the KIND of queue, and — since 2026-09-18 — an
+ *  optional single ability whose queue it reaches instead of every queue of
+ *  that kind (`cdReset.resetsAbility`). */
+export type CdResetTarget = { kind: 'skill' | 'burst'; abilityId?: string };
+
 /**
- * Returns the abilities (skill/burst) whose cooldowns should be reset when the
- * given character casts the named ability. Walks the character's burst,
- * passives, and constellations for `cdReset` effects with `source: "character"`
- * whose `trigger.ability` matches the cast that just fired. Constellation ENTRIES
- * above the character's level are dropped before their effects are read.
+ * Returns the resets the given character's cast of `firingAbility` fires.
+ * Walks the character's effect surface for `cdReset` effects with
+ * `source: "character"` whose `trigger.ability` matches, and evaluates each
+ * one's `conditions` at the cast (a definitive `false` drops it; `null` — a
+ * condition the parse cannot answer — keeps it, the Conditions' optimistic
+ * rule). Constellation ENTRIES above the character's level are dropped before
+ * their effects are read.
  *
- * Use case (v1): Kazuha C1 — burst reset of skill CD on Q-cast.
+ * Use cases: Kazuha C1 — burst reset of skill CD on Q-cast. Varka C1 — the
+ * stance-entering skill hands back one Four Winds' Ascension use
+ * (`resetsAbility`, under `not inStance` so the in-stance Four Winds cast,
+ * which is also a skill, does not refund itself).
  */
 export function getCharacterCdResetTargets(
 	char: CharacterData,
 	firingAbility: 'skill' | 'burst',
-	constellationLevel: number
-): Array<'skill' | 'burst'> {
-	const targets: Array<'skill' | 'burst'> = [];
+	constellationLevel: number,
+	states: ReadonlySet<string>,
+	chainIndex: ReadonlyMap<'skill' | 'burst', number>,
+	stacks: ReadonlyMap<string, number> | undefined,
+	context: ConditionContext | undefined
+): CdResetTarget[] {
+	const targets: CdResetTarget[] = [];
 	// ⚓ The ENTRY's level is the gate (2026-08-18) — `effectSourcesAtConstellation`
 	// drops a locked constellation before its effects are ever seen. The
-	// effect-level `constellation` check below stays: it is what a passive or a
-	// FUTURE non-entry-level condition is judged by, and on a constellation
-	// entry it is pure duplication of the field (0 of 133 name a different
-	// level). See docs/constellation-gating-plan.md.
+	// effect-level `conditions` are evaluated in full below: on a constellation
+	// entry the `constellation` condition is pure duplication of the field (0 of
+	// 133 name a different level), and a `state` or team gate is what a
+	// skill-fired reset needs to tell the stance opener from its in-stance
+	// sibling. See docs/constellation-gating-plan.md.
 	// ⚓ THE ONE WALK (small-fix bundle, 2026-09-17). This used to be
 	// `[...passives, ...unlockedConstellations]` — a bespoke surface walk the
 	// constellation-gating ruling forbids, and one that SKIPPED `char.abilities`,
@@ -91,6 +111,7 @@ export function getCharacterCdResetTargets(
 			source?: string;
 			trigger: { type: string; ability?: string };
 			resets?: string;
+			resetsAbility?: string;
 			conditions?: Condition;
 		}[];
 	}> = effectSourcesAtConstellation(char, constellationLevel);
@@ -101,17 +122,24 @@ export function getCharacterCdResetTargets(
 			if (eff.source !== 'character') continue;
 			if (eff.trigger.type !== 'onCast') continue;
 			if (eff.trigger.ability !== firingAbility) continue;
-			const cond = eff.conditions;
 			if (
-				cond &&
-				cond.type === 'constellation' &&
-				cond.level !== undefined &&
-				constellationLevel < cond.level
+				eff.conditions !== undefined &&
+				evalCondition(
+					eff.conditions,
+					DEFAULT_ASCENSION,
+					states,
+					constellationLevel,
+					chainIndex,
+					stacks,
+					context
+				) === false
 			) {
 				continue;
 			}
-			const resetTarget = (eff.resets ?? eff.trigger.ability) as 'skill' | 'burst';
-			targets.push(resetTarget);
+			const kind = (eff.resets ?? eff.trigger.ability) as 'skill' | 'burst';
+			targets.push(
+				eff.resetsAbility !== undefined ? { kind, abilityId: eff.resetsAbility } : { kind }
+			);
 		}
 	}
 	return targets;

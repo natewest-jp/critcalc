@@ -945,7 +945,7 @@ function lintAbility(
 	// Per-type checks
 	switch (a.abilityType) {
 		case 'normal':
-			lintNormal(a, push);
+			lintNormal(c, a, push);
 			break;
 		case 'skill':
 		case 'burst':
@@ -1121,6 +1121,7 @@ function lintAbility(
 }
 
 function lintNormal(
+	c: CharacterData,
 	a: NormalAbility,
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
 ): void {
@@ -1304,6 +1305,30 @@ function lintNormal(
 		}
 		if (!a.chargeFrames) {
 			push('strict', 'missing-frames', 'specialChargeFrames without chargeFrames', a.id);
+		}
+	}
+
+	// (A.4d) specialChargeSpends — the skill charge an `sC` SPENDS (Varka's Azure
+	// Devour, 2026-09-18). Needs the special frames (no special form, nothing
+	// to spend on) and must name a SKILL ability of this character, because the
+	// parser keys the charge queue it spends from by ability id.
+	if (a.specialChargeSpends !== undefined) {
+		if (!a.specialChargeFrames) {
+			push(
+				'strict',
+				'special-charge-spends-frames',
+				'specialChargeSpends without specialChargeFrames',
+				a.id
+			);
+		}
+		const target = c.abilities.find((x) => x.id === a.specialChargeSpends);
+		if (!target || target.abilityType !== 'skill') {
+			push(
+				'strict',
+				'special-charge-spends-target',
+				`specialChargeSpends "${a.specialChargeSpends}" does not name a skill ability of this character`,
+				a.id
+			);
 		}
 	}
 
@@ -2071,7 +2096,7 @@ function lintDurationExtensions(
 }
 
 function lintEffect(
-	_c: CharacterData,
+	c: CharacterData,
 	location: string,
 	eff: Effect,
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void,
@@ -2168,6 +2193,32 @@ function lintEffect(
 			`cdReset effect must specify trigger.ability ("skill" or "burst") to indicate which CD is reset`,
 			location
 		);
+	}
+	// (B.10c) cdReset.resetsAbility (2026-09-18) names ONE of the character's own
+	// abilities of the reset kind; and a SKILL-fired reset of `resets: "skill"`
+	// must name one — unnamed, it refunds the very cast that fired it (Varka's
+	// C1 refunds Four Winds, not the Windbound Execution clock the same cast
+	// wrote).
+	if (eff.type === 'cdReset' && eff.source === 'character' && eff.trigger.type === 'onCast') {
+		const kind = eff.resets ?? eff.trigger.ability;
+		if (eff.resetsAbility !== undefined) {
+			const target = c.abilities.find((x) => x.id === eff.resetsAbility);
+			if (!target || target.abilityType !== kind) {
+				push(
+					'strict',
+					'cdreset-resets-ability',
+					`cdReset.resetsAbility "${eff.resetsAbility}" does not name a ${kind ?? 'skill/burst'} ability of this character`,
+					location
+				);
+			}
+		} else if (eff.trigger.ability === 'skill' && kind === 'skill') {
+			push(
+				'strict',
+				'cdreset-skill-self',
+				'a skill-fired cdReset of resets: "skill" must name resetsAbility — without it the reset refunds the cast that fired it',
+				location
+			);
+		}
 	}
 
 	// (B.10b) cooldownReduce shape
