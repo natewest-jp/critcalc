@@ -243,7 +243,28 @@
 			"name": "Crow's Eye",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "When Tengu Juurai grants characters ATK Bonuses or hits opponents, the CD of Tengu Stormcall is decreased by 1s.\nThis effect can be triggered once every 3s."
+			"description": "When Tengu Juurai grants characters ATK Bonuses or hits opponents, the CD of Tengu Stormcall is decreased by 1s.\nThis effect can be triggered once every 3s.",
+			"effects": [
+				{
+					"type": "cooldownReduce",
+					"source": "character",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"amount": 1,
+					"reduces": "skill",
+					"procCooldown": 3
+				}
+			],
+			"_curatorNotes": [
+				"AUTHORED 2026-09-18 (cooldown-reduction round — docs/cooldown-reduction-round.md §5). Crow's Eye: −1s Tengu Stormcall CD when Tengu Juurai grants ATK or hits, once per 3s (gcsim cons.go c1, a 180f status; called from skill.go:117 and burst.go:56 — the E's Ambush and the Q's Titanbreaker). Authored on the cast hit of either ability (`abilityType: [\"skill\",\"burst\"]`), which fires at the cast rather than at the Ambush's delayed detonation — ~1s early, inside the 3s proc window."
+			]
 		},
 		{
 			"id": "kujou_sara__constellation__dark_wings",
