@@ -54,6 +54,8 @@ import { DEFAULT_ASCENSION, evalCondition, type ConditionContext } from './condi
 import { holderStatesAt } from './states';
 import { stackScopeOf, type StackPools } from './stacks';
 import { pushShieldAt } from './shields';
+import { Band, type Clock } from './clock';
+import { predictFire, settleAccruals } from './accrual';
 
 type OnStackTrigger = Extract<Trigger, { type: 'onStack' }>;
 export type OnStackEffect = Effect & { trigger: OnStackTrigger };
@@ -211,6 +213,7 @@ function spend(hcs: CharState, home: Home, key: string, seg: StackPools | null):
  */
 export function checkStackThresholds(
 	ctx: SimContext,
+	clock: Clock,
 	time: number,
 	seg: { charId: string; pools: StackPools } | null
 ): void {
@@ -218,12 +221,14 @@ export function checkStackThresholds(
 	if (all.size === 0) return;
 	for (const [holderId, thresholds] of all) {
 		const hcs = ctx.getCharState(holderId);
+		// ⚓ An accruing key is counted up to THIS frame before it is read.
+		settleAccruals(hcs, time);
 		const segPools = seg && seg.charId === holderId ? seg.pools : null;
 		for (const th of thresholds) {
 			const counts = th.keys.map((k) => readCount(hcs, th.homes.get(k)!, k, segPools));
 			let sum = 0;
 			for (const c of counts) sum += c;
-			if (sum < th.count) continue;
+			if (sum < th.count - 1e-9) continue;
 			// The dominant key: the largest count, ties to the EARLIER key.
 			let dominant = th.keys[0];
 			let best = -Infinity;
@@ -234,6 +239,9 @@ export function checkStackThresholds(
 				}
 			});
 			for (const k of th.keys) spend(hcs, th.homes.get(k)!, k, segPools);
+			// A live accrual keeps polling into the emptied pool (gcsim's task
+			// outlives `clearGravity`), so the NEXT fire is re-predicted from zero.
+			scheduleAccrualFire(ctx, clock, hcs, th, time);
 			const ev: StackThresholdEvent = {
 				kind: 'stackThreshold',
 				id: ctx.nextId(),
@@ -302,5 +310,57 @@ export function checkStackThresholds(
 				}
 			}
 		}
+	}
+}
+
+/**
+ * ⚓ THE FIRE OF AN ACCRUING THRESHOLD IS PREDICTED AND SCHEDULED, never
+ * polled (exact-model round, 2026-09-18). With the poll grid fixed and the
+ * rate constant, the poll on which the group's sum reaches `count` is
+ * arithmetic; this schedules it on the one clock, generation-stamped on the
+ * accrual record so a refresh, a spend or a lapse re-predicts and orphans the
+ * pending task. A prediction at or before `now` — a Lunar-Charged tick
+ * surfaced late by the gauge extended a status that had already crossed — is
+ * fired IMMEDIATELY at its own instant: the settle is monotone, so settling to
+ * that frame and checking there records the fire where it happened, and the
+ * polls after it go to the emptied pool. `finalize` sorts events by time.
+ */
+function scheduleAccrualFire(
+	ctx: SimContext,
+	clock: Clock,
+	hcs: CharState,
+	th: StackThreshold,
+	now: number
+): void {
+	for (const [, rec] of hcs.accruals) {
+		if (!th.keys.includes(rec.key)) continue;
+		// Any earlier prediction for this record is stale from here.
+		rec.gen++;
+		if (now >= rec.liveUntil) continue;
+		let sum = 0;
+		for (const k of th.keys) sum += readCount(hcs, th.homes.get(k)!, k, null);
+		const remaining = th.count - sum;
+		const at = predictFire(rec, remaining, now);
+		if (at === null) continue;
+		const gen = rec.gen;
+		const fire = (): void => {
+			if (rec.gen !== gen) return;
+			checkStackThresholds(ctx, clock, at, null);
+		};
+		if (at <= clock.now) fire();
+		else clock.schedule(at, Band.TICK, fire);
+	}
+}
+
+/** Re-predict every accruing threshold on every holder — called after a
+ *  reaction or a tick has opened or refreshed a status. */
+export function scheduleAccrualFires(ctx: SimContext, clock: Clock, now: number): void {
+	const all = ctx.team.stackThresholds;
+	if (all.size === 0) return;
+	for (const [holderId, thresholds] of all) {
+		const hcs = ctx.getCharState(holderId);
+		if (hcs.accruals.size === 0) continue;
+		settleAccruals(hcs, now);
+		for (const th of thresholds) scheduleAccrualFire(ctx, clock, hcs, th, now);
 	}
 }

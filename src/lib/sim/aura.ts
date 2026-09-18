@@ -74,10 +74,10 @@ import {
 	rotationStackSnapshot
 } from './stacks';
 import { holderStatesAt } from './states';
-import { checkStackThresholds } from './thresholds';
+import { checkStackThresholds, scheduleAccrualFires } from './thresholds';
 import type { HitEvent } from './hits';
 import { getChainIndexMap } from './cooldowns';
-import { toReactions } from './reactionBridge';
+import { convertReaction, toReactions } from './reactionBridge';
 import {
 	armSummonProcs,
 	takeHitProcs,
@@ -261,6 +261,30 @@ function offerApplication(ctx: SimContext, clock: Clock, offer: Offer): void {
 			recordGadgetEvent(ctx, e);
 			continue;
 		}
+		// ⚓ A LUNAR-CHARGED TICK REFRESHES AN ACCRUAL (exact-model round,
+		// 2026-09-18): gcsim's Gravity hook is on any Lunar-tagged damage, and an
+		// EC tick under a Lunar-Charged enabler is one. The gauge emits the tick
+		// at its own instant and surfaces it here, at the next application —
+		// retroactively, which `accrual.ts`'s monotone settle is built to take.
+		// Only accrual grants hear it (a plain count would gain per tick).
+		if (e.kind === 'ecTick') {
+			if (ctx.team.stackThresholds.size === 0) continue;
+			const at = framesOf(e.time);
+			for (const r of convertReaction('electroCharged', ctx.team)) {
+				dispatchGainStacksOnReaction(
+					ctx.team.teamChars,
+					'',
+					r,
+					at,
+					(holder) => holderStatesAt(ctx, holder, at),
+					ctx.team.constellationByHolder,
+					ctx.getCharState,
+					true
+				);
+			}
+			scheduleAccrualFires(ctx, clock, at);
+			continue;
+		}
 		if (e.kind !== 'reaction') continue;
 		// ⚓ Unreachable by construction — the only internal applicator is the
 		// Burning chain, and nothing that reacts with Pyro can coexist with a
@@ -315,8 +339,10 @@ function emitReaction(
 	// A reaction is one of the four places a stack count moves, so a threshold
 	// is asked here — AFTER the reaction event, so the fire's record follows its
 	// cause in the stream. No segment pool is in hand mid-apply (a segment-home
-	// key is read at the cast and hit sites; see `thresholds.ts`).
-	checkStackThresholds(ctx, time, null);
+	// key is read at the cast and hit sites; see `thresholds.ts`). An accruing
+	// key's fire is then (re)predicted from the status this reaction opened.
+	checkStackThresholds(ctx, clock, time, null);
+	scheduleAccrualFires(ctx, clock, time);
 }
 
 /**
@@ -808,6 +834,7 @@ function tickConditionCtx(
  */
 function dispatchEntityHitStacks(
 	ctx: SimContext,
+	clock: Clock,
 	owner: CharacterData,
 	hit: HitEvent
 ): ReadonlyMap<string, number> | undefined {
@@ -837,7 +864,7 @@ function dispatchEntityHitStacks(
 	);
 	// The tick is the fourth place a count moves (stack-threshold round). Null
 	// pool, same rule as the dispatchers above.
-	checkStackThresholds(ctx, hit.time, null);
+	checkStackThresholds(ctx, clock, hit.time, null);
 	return snapshot;
 }
 
@@ -1067,7 +1094,7 @@ export function scheduleSummonTicks(
 				// without an onHit stack consumer on the team there is nothing to
 				// dispatch to.
 				if (ctx.team.teamHasOnHitStackEffects) {
-					const snapshot = dispatchEntityHitStacks(ctx, char, tickHit);
+					const snapshot = dispatchEntityHitStacks(ctx, clock, char, tickHit);
 					if (snapshot) ctx.tickStacks.set(`${char.id}::${summon.label}::${at}`, snapshot);
 				}
 				notifyDamage(ctx, clock, tickHit);

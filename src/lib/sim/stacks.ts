@@ -43,6 +43,7 @@ import {
 } from './conditions';
 import { onHitTriggerMatches, type HitEvent } from './hits';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
+import { openOrRefreshAccrual } from './accrual';
 
 // ---------------------------------------------------------------------------
 // Stack SCOPE — where a key's stacks live (summon-tick stacks round, 2026-08-31)
@@ -467,7 +468,12 @@ export function dispatchGainStacksOnReaction(
 	 *  predate it (Chevreuse, Neuvillette, Varka — no `state` conditions). */
 	getHolderStates: (holder: CharacterData) => ReadonlySet<string>,
 	constellationByHolder: Map<string, number>,
-	getCharState: (charId: string) => CharState
+	getCharState: (charId: string) => CharState,
+	/** ⚓ A TICK, not a reaction (exact-model round): a Lunar-Charged tick
+	 *  refreshes an ACCRUAL status and nothing else — a plain count would
+	 *  otherwise gain once per tick, which no kit says. `triggerCharId` is ''
+	 *  on this path: a tick has no trigger character, so only team grants hear it. */
+	accrualOnly = false
 ): void {
 	for (const holder of allChars) {
 		const holderCons = constellationByHolder.get(holder.id) ?? 0;
@@ -478,6 +484,7 @@ export function dispatchGainStacksOnReaction(
 				const fx = effects[effIdx];
 				if (fx.type !== 'gainStacks') continue;
 				if (fx.trigger.type !== 'onReaction') continue;
+				if (accrualOnly && fx.accrual === undefined) continue;
 				const srcMode = fx.trigger.source ?? 'self';
 				if (srcMode === 'self' && holder.id !== triggerCharId) continue;
 				if (!reactionMatchesTrigger(emittedReaction, fx.trigger.reaction)) continue;
@@ -517,6 +524,20 @@ export function dispatchGainStacksOnReaction(
 						undefined
 					);
 					if (csResult === true) effAmount = fx.constellationScaling.amount;
+				}
+				// ⚓ An accrual grant opens or refreshes its status and adds nothing
+				// itself — `amount` is a rate there. See `accrual.ts`.
+				if (fx.accrual !== undefined) {
+					openOrRefreshAccrual(
+						hcs,
+						fx.accrual.group,
+						fx.key,
+						effAmount,
+						fx.accrual.window,
+						castTime,
+						fx.max
+					);
+					continue;
 				}
 				const holderState = hcs.onReactionStacks;
 				if (fx.lifetime !== undefined) {

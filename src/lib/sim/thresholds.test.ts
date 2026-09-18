@@ -17,17 +17,14 @@
  * expected kind happened) before asserting a fire or its absence, because half
  * of what is asserted is that something did NOT happen.
  *
- * Seeded negatives, verified by hand when the file landed (2026-09-18):
- * removing the reaction-site `checkStackThresholds` call fails the four fire
- * cases; removing the `spend` fails the first case (the second fire arrives
- * on the very next grant, under the 4s floor) and the mark case (an extra
- * mark); dropping the `dominant` gate in `thresholds.ts` fails the mark case
- * (a Cryo mark beside every Pyro one) and the shield case (the shield opens
- * on a Vaporize fire); dropping the `procCooldown` gate in the onReaction
- * dispatcher fails exactly the rate case; handing the onReaction dispatcher
- * an empty state set for off-field holders (the pre-round behaviour) fails
- * the four fire cases, because the grant is `duringSummon`-gated and a
- * partner makes the reaction.
+ * ↻ EXACT MODEL (same day, ⚓ Nate): the grant is an ACCRUAL — 10 per second
+ * in 0.05 s polls while a 2 s status any matching reaction opens or refreshes
+ * is live, into the last reaction's key, 13.4 at C2 — and the fire is
+ * predicted and scheduled on the clock at the exact poll the sum crosses 60.
+ * A Lunar-Charged tick refreshes it (gcsim hooks any Lunar-tagged damage).
+ *
+ * Seeded negatives, verified by hand (2026-09-18, exact model): SEE THE
+ * RECORD's §5.5 for the list and what each fails.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -41,22 +38,32 @@ type SummonWin = Extract<TimelineWindow, { kind: 'summon' }>;
 import { lintCharacter } from '$lib/utils/characterLint';
 import xianglingJson from '$lib/data/characters/xiangling.json';
 import kaeyaJson from '$lib/data/characters/kaeya.json';
+import fischlJson from '$lib/data/characters/fischl.json';
 
 const XIANGLING = xianglingJson as unknown as CharacterData;
 const KAEYA = kaeyaJson as unknown as CharacterData;
+const FISCHL = fischlJson as unknown as CharacterData;
 
 const KEYS = ['gA', 'gB'];
 const FIRE = { type: 'onStack', keys: KEYS, count: 60, label: 'Test Fire' };
-const grant = (reaction: string, key: string) => ({
+/** Gravity's shape: 10 per second in 0.05 s polls while a 2 s status any
+ *  matching reaction opens or refreshes is live, into the LAST reaction's
+ *  key; 13.4 per second at C2. */
+const grant = (reaction: string | string[], key: string) => ({
 	type: 'gainStacks',
 	target: 'self',
 	trigger: { type: 'onReaction', reaction, source: 'team' },
 	key,
-	amount: 20,
+	amount: 10,
+	constellationScaling: { conditions: { type: 'constellation', level: 2 }, amount: 13.4 },
 	max: 60,
-	procCooldown: 2,
+	accrual: { group: 'test', window: 2 },
 	conditions: { type: 'state', state: 'duringSummon' }
 });
+/** The poll on which a status opened at `t0` and kept live reaches `count`
+ *  from `prior`, at `perPoll` per 3 frames — gcsim's grid, ours. */
+const pollAt = (t0: number, prior: number, count = 60, perPoll = 0.5) =>
+	t0 + 3 * (Math.ceil((count - prior) / perPoll - 1e-9) - 1);
 
 /** The synthetic accruer. `skill` overrides the skill's own fields; `cons`
  *  and `passives` replace the lists. */
@@ -72,6 +79,7 @@ function tester(
 		displayName: 'Tester',
 		element: 'hydro',
 		weapon: 'catalyst',
+		enablesReactions: ['lunarCharged'],
 		passives: overrides.passives ?? [
 			{
 				id: 'tester__passive__a1',
@@ -167,7 +175,7 @@ function tester(
 					}
 				],
 				effects: [
-					grant('vaporize', 'gA'),
+					grant(['vaporize', 'lunarCharged'], 'gA'),
 					grant('frozen', 'gB'),
 					{
 						type: 'damage',
@@ -201,8 +209,16 @@ function parse(
 	stub: CharacterData = tester()
 ): ParsedRotation {
 	const lookup = (n: string) =>
-		n === 'Tester' ? stub : n === 'Xiangling' ? XIANGLING : n === 'Kaeya' ? KAEYA : null;
-	const r = parseNotation(notation, lookup, 8, cons, undefined, [stub, XIANGLING, KAEYA]);
+		n === 'Tester'
+			? stub
+			: n === 'Xiangling'
+				? XIANGLING
+				: n === 'Kaeya'
+					? KAEYA
+					: n === 'Fischl'
+						? FISCHL
+						: null;
+	const r = parseNotation(notation, lookup, 8, cons, undefined, [stub, XIANGLING, KAEYA, FISCHL]);
 	expect(r.unknownTokens, notation).toEqual([]);
 	return r;
 }
@@ -228,12 +244,19 @@ const fireBuffs = (r: ParsedRotation) =>
 const shields = (r: ParsedRotation) =>
 	r.windows.filter((w): w is ShieldWin => w.kind === 'shield' && w.characterId === 'tester');
 
-// Two Guobas: one gives four ticks 1.67s apart, which under the 2s cooldown is
-// only two grants (40) — the cap's stated weakness for a short burst, where
-// gcsim's continuous 10/s would have reached 60. The second cast's first tick
-// is the third grant.
-const VAPORIZE = 'Tester E > Xiangling E ~12s E ~8s';
+// One Guoba: four Vaporizes 1.67 s apart keep one status live from the first
+// (each refresh lands inside the previous 2 s), so 60 is reached on poll 119 —
+// 5.95 s after the first — while the fourth tick is still 1.7 s away from the
+// status lapsing. The count model this replaced saw two grants and no fire.
+const VAPORIZE = 'Tester E > Xiangling E ~20s';
+// Three Frozens 6.5 s apart are three SEPARATE 2 s statuses of 40 polls each:
+// 20 + 20 + 20, the fire on the third status's 40th poll, 117 frames after
+// the third reaction — not at the reaction.
 const FROZEN = 'Tester E > Kaeya E ~6.5s E ~6.5s E';
+// Oz under a Lunar-Charged enabler: the reactions are sparse (Oz applies every
+// third strike) but every Lunar-Charged TICK refreshes the status, so it stays
+// live from the first reaction and 60 lands on poll 119.
+const LUNAR = 'Tester E > Fischl E ~20s';
 
 describe('a stack threshold fires, spends the set and records the fire', () => {
 	it('Vaporize into key A: the sum reaches 60, the fire is dominant A, and the pool is spent', () => {
@@ -241,50 +264,69 @@ describe('a stack threshold fires, spends the set and records the fire', () => {
 		const vap = reactions(r, 'vaporize');
 		expect(vap.length).toBeGreaterThanOrEqual(3);
 		const f = fires(r);
-		expect(f.length).toBeGreaterThanOrEqual(1);
-		for (const ev of f) {
-			expect(ev.dominant).toBe('gA');
-			expect(ev.keys).toEqual(KEYS);
-			expect(ev.count).toBe(60);
-			expect(ev.label).toBe('Test Fire');
-			expect(ev.abilityClass).toBe('skill');
-			// The fire lands ON a reaction instant — it is checked there.
-			expect(vap).toContain(ev.time);
-		}
-		// Spent: every fire needs THREE eligible grants after the previous one,
-		// and a grant is at most one per 2s (procCooldown), so a fire is never
-		// within 4s of the previous fire and there are ≥3 reactions between.
-		for (let i = 0; i < f.length; i++) {
-			const prev = i === 0 ? -Infinity : f[i - 1].time;
-			expect(f[i].time - prev).toBeGreaterThanOrEqual(240);
-			expect(vap.filter((t) => t > prev && t <= f[i].time).length).toBeGreaterThanOrEqual(3);
-		}
+		expect(f.length).toBe(1);
+		const ev = f[0];
+		expect(ev.dominant).toBe('gA');
+		expect(ev.keys).toEqual(KEYS);
+		expect(ev.count).toBe(60);
+		expect(ev.label).toBe('Test Fire');
+		expect(ev.abilityClass).toBe('skill');
+		// The fire lands on the GRID, between reactions — poll 119 of the status
+		// the first Vaporize opened.
+		expect(ev.time).toBe(pollAt(vap[0], 0));
+		expect(vap).not.toContain(ev.time);
+		// Spent: the status is still live after the fire (the last refresh + 2 s)
+		// and keeps polling into the emptied pool; it lapses before a second 60.
+		expect(vap[3] + 120).toBeGreaterThan(ev.time);
+		expect(pollAt(ev.time + 3, 0)).toBeGreaterThanOrEqual(vap[3] + 120);
 	});
 
-	it('the rate: a grant at most once per procCooldown, so the first fire is not the third reaction', () => {
-		const r = parse(VAPORIZE);
+	it("the rate scales with the holder's constellation: 13.4 per second at C2 is poll 90", () => {
+		const r = parse(VAPORIZE, { tester: 2 });
 		const vap = reactions(r, 'vaporize');
-		const first = fires(r)[0];
-		expect(first).toBeDefined();
-		// Guoba ticks every 1.667s, under the 2s cooldown: the third reaction
-		// cannot be the third GRANT — the first Guoba's four ticks are two grants,
-		// and the fire waits for the second Guoba.
-		expect(vap[3]).toBeLessThan(first.time);
-		// And the fire instant is the first reaction at or after the third
-		// 2s-spaced grant — the walk gcsim's status timer takes, at 20 per grant.
-		let last = -Infinity;
-		let grants = 0;
-		let expected = -1;
-		for (const t of vap) {
-			if (t - last < 120) continue;
-			last = t;
-			grants++;
-			if (grants === 3) {
-				expected = t;
+		expect(fires(r).map((e) => e.time)).toEqual([pollAt(vap[0], 0, 60, 13.4 * 0.05)]);
+	});
+
+	it('a Lunar-Charged tick refreshes the status the sparse reactions would let lapse', () => {
+		const r = parse(LUNAR);
+		const lc = reactions(r, 'lunarCharged');
+		expect(lc.length).toBeGreaterThanOrEqual(2);
+		// Sparse: at least one gap between reactions is longer than the 2 s window.
+		const gaps = lc.slice(1).map((t, i) => t - lc[i]);
+		expect(Math.max(...gaps)).toBeGreaterThan(120);
+		// What the REACTIONS ALONE would give: statuses opened and refreshed by
+		// reactions only, polled on each status's own grid.
+		let start = -Infinity;
+		let liveUntil = -Infinity;
+		let polled = 0;
+		let sum = 0;
+		let reactionsOnly = -1;
+		for (const t of lc) {
+			if (t >= liveUntil) {
+				if (Number.isFinite(start)) {
+					const due = Math.floor((liveUntil - 1 - start) / 3) + 1;
+					sum += (due - polled) * 0.5;
+				}
+				start = t;
+				polled = 0;
+			}
+			liveUntil = t + 120;
+			const n = Math.ceil((60 - sum) / 0.5 - 1e-9);
+			const fireAt = start + 3 * (polled + n - 1);
+			if (fireAt < liveUntil) {
+				reactionsOnly = fireAt;
 				break;
 			}
 		}
-		expect(first.time).toBe(expected);
+		expect(reactionsOnly).toBeGreaterThan(0);
+		const f = fires(r).map((e) => e.time);
+		expect(f.length).toBe(1);
+		// The ticks kept the status alive past the last reaction's window while
+		// the auras coexisted, so the fire is EARLIER than reactions alone give —
+		// and later than one continuous status from the first, because the
+		// Electro-Charged aura itself lapsed once (no aura, no tick).
+		expect(f[0]).toBeLessThan(reactionsOnly);
+		expect(f[0]).toBeGreaterThan(pollAt(lc[0], 0));
 	});
 
 	it("the mark rides the accruing summon's lane, in the fire's element, and applies nothing", () => {
@@ -334,6 +376,9 @@ describe('a stack threshold fires, spends the set and records the fire', () => {
 		const f = fires(fro);
 		expect(f.length).toBe(1);
 		expect(f[0].dominant).toBe('gB');
+		// Three separate statuses of 20 each: the fire is the third's 40th poll.
+		const fz = reactions(fro, 'frozen');
+		expect(f[0].time).toBe(pollAt(fz[2], 40));
 		const marks = tide(fro)[0].fires ?? [];
 		expect(marks.map((m) => m.element)).toEqual(['cryo']);
 		const sh = shields(fro);

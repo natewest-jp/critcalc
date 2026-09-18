@@ -212,3 +212,70 @@ min 2` false).
 - A continuous accrual primitive, if a second holder appears.
 - The fire's mark is a first cut for Nate to judge on screen (full-height 2px
   in the hit's element, `.rp-summon-fire`, mirrored in the PNG export).
+
+### 5.5 The exact model (same day — ⚓ Nate: "this approximation verges on the territory where it is no longer useful")
+
+The count-shaped grant of §5.1 ("+20 per reaction, at most one grant per 2s")
+is RETIRED with the `procCooldown` it needed. Gravity is now what gcsim runs:
+
+- **`gainStacks.accrual: { group, window }`** (`sim/accrual.ts`). With it,
+  `amount` is a RATE per second; a trigger fire adds nothing and instead opens
+  or refreshes a `window`-second status shared per holder across every key of
+  the `group`; while the status is live, the key the LAST fire named gains
+  `amount` per second in 0.05 s polls on a grid anchored at the fire that
+  opened it (gcsim `gravityAccum`: `QueueCharTask(…, 0.05*60)`, the task
+  surviving refreshes on its own cadence). `constellationScaling` scales the
+  rate (Columbina 10 → 13.4 at C2 = `10 × (1 + c2GravityRate)`). Lint B.13k:
+  only an `onReaction` grant with `source: 'team'`, never beside
+  `procCooldown` / `lifetime` / `drain` / `sourceLifetime`.
+- **Settled lazily, monotone, idempotent.** A record says where its grid
+  starts, how many polls have been counted, and when the status lapses;
+  `settleAccruals(hcs, upTo)` counts the polls at or before a frame into the
+  key. A lapsed record is KEPT, which is what makes a retroactive refresh legal.
+- **A Lunar-Charged TICK refreshes it.** gcsim's hook is on any Lunar-tagged
+  damage, and an EC tick under a Lunar-Charged enabler is one. The gauge emits
+  `ecTick` at its own instant and surfaces it at the next application; the
+  dispatch loop now feeds those (converted through `reactionBridge`) to
+  accrual grants ONLY (`dispatchGainStacksOnReaction(…, accrualOnly)` — a plain
+  count would gain per tick, which no kit says), with `holderStatesAt` at the
+  tick's frame. The refresh is retroactive by up to the gap to the next
+  application, and the monotone settle absorbs it.
+- **The fire is PREDICTED, never polled.** With the grid fixed and the rate
+  constant, the poll on which the threshold's sum crosses `count` is
+  arithmetic (`predictFire`); `thresholds.ts` schedules it on the one clock
+  (`Band.TICK`), generation-stamped on the record so a refresh, a spend or a
+  lapse re-predicts and orphans the pending task. A prediction at or before
+  `now` (a late-surfacing tick extended a status that had already crossed) is
+  fired immediately AT ITS OWN INSTANT — the settle is monotone, the polls
+  after it go to the emptied pool, and `finalize` sorts events by time. ⛔ Never
+  a 3-frame wake-up task (L3 §4.2).
+- **`checkStackThresholds` takes the clock** (all four sites) so a spend can
+  re-predict: gcsim's task outlives `clearGravity`, so a status that stays
+  refreshed fires again 6 s later with no new reaction needed.
+
+**Measured (exact model).** The synthetic Vaporize case fires on poll 119,
+5.95 s after the first of four Guoba ticks 1.67 s apart — the count model saw
+two grants and no fire there. Three Frozens 6.5 s apart are three statuses of
+20 and fire on the third's 40th poll, 117 frames after the reaction. At C2 the
+fire is poll 90. Under a Lunar-Charged enabler with Oz (reactions every third
+strike, ticks between), the fire lands earlier than reactions alone would give
+and later than one continuous status, because the Electro-Charged aura itself
+lapsed once — no aura, no tick, in gcsim too. Columbina's
+`E Q > Fischl E N3 > Barbara E …`: **C0 fires at 585f** (count model: 606;
+the plan's uncapped count: 255), **C6 at 473 and 743f**. Corpus digest: 0
+moved.
+
+**Still not matched, both named in caveats:** gcsim's `Skill` clears Gravity
+when cast after the Ripple has EXPIRED (`if !StatusIsActive(skillKey)
+clearGravity()`), so leftover Gravity carries into our next Ripple; and C1's
+cast-time tick (`c1OnSkill`, 15 s ICD, zero Gravity, a team-composition
+branch). The C2 caveat is GONE — the rate is modelled.
+
+**Seeded negatives, verified by hand (exact model, 2026-09-18):** dropping the
+`ecTick` branch fails exactly the Lunar-Charged case (the fire moves to the
+reactions-only instant); dropping the settle before the read fails the
+Vaporize, C2 and shield cases; dropping the reaction-site re-predict fails
+the same three (a fire can then only land ON a reaction); dropping the spend
+fails the Vaporize, C2 and Lunar-Charged cases (a second fire on the next
+poll); dropping the `dominant` gate fails the mark and shield cases. Guarded
+by `sim/thresholds.test.ts` (12).

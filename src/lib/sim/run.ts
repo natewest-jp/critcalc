@@ -400,7 +400,7 @@ export function runRotation(
 				// A hit is one of the four places a count moves (stack-threshold
 				// round, 2026-09-18). Inside the guard on purpose: with no onHit
 				// stack effect on the team, a hit cannot move a count.
-				checkStackThresholds(ctx, hit.time, { charId: char.id, pools: segPools });
+				checkStackThresholds(ctx, clock, hit.time, { charId: char.id, pools: segPools });
 			}
 			ctx.hitRecords.push(hit);
 			// ⚓ THE DAMAGE STREAM IS THIS STREAM (coordinated-attack round,
@@ -714,7 +714,7 @@ export function runRotation(
 				// round, 2026-09-18). After the snapshot and beside the consume,
 				// because a threshold fire IS a consume: the cast's `stackContext`
 				// reads the post-gain, pre-spend value, the convention above.
-				checkStackThresholds(ctx, castStart, {
+				checkStackThresholds(ctx, clock, castStart, {
 					charId: char.id,
 					pools: { state: stackState, instances: stackInstances }
 				});

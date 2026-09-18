@@ -105,6 +105,10 @@ const CONVERSIONS: ReadonlyArray<{
 
 /** The base reaction, plus/or its newer-generation counterpart when the party
  *  enables one. ⚓ ONE function so the five cannot drift apart. */
+export function convertReaction(base: Reaction, team: ReactionTeamContext): Reaction[] {
+	return convert(base, team);
+}
+
 function convert(base: Reaction, team: ReactionTeamContext): Reaction[] {
 	for (const c of CONVERSIONS) {
 		if (c.base !== base || !team.teamEnabledReactions.has(c.converted)) continue;
