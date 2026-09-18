@@ -240,9 +240,12 @@ printed amount · Ayaka C1's 50% stays unmodelled, and the rule generalises:
 cooldown in a double-Anemo party. It is a static ROSTER fact, so by this
 round's own rule it is a MODIFIER at the cast, never a `cooldownReduce`:
 `TeamContext.skillCooldownModifiers` (one `percent −5` entry when the roster
-holds two Anemo characters, with the game's full-party rule from
-`deriveResonances`), prepended to each SKILL's own modifiers in
-`resolveAbilityTiming`. ⚠️ Percent FIRST, then the authored flats — Qiqi's
+holds two Anemo characters), prepended to each SKILL's own modifiers in
+`resolveAbilityTiming`. ↻ ⚓ **WITHOUT the game's full-party rule** (Nate,
+same day, on seeing it): the planner's roster is whoever the notation NAMES,
+not the party the player fields — a rotation that writes only Kazuha and
+Venti is a party of four with two seats unwritten. The Team Builder keeps the
+rule for its own display, where the slots ARE the party. ⚠️ Percent FIRST, then the authored flats — Qiqi's
 Seven Sacred Treasures is "−15s off the remaining cooldown", so the game reaches
 30 × 0.95 − 15 = **13.5s**; the other order gives 14.25s, the divergence her
 curator note used to accept and now closes. Measured over all 123 characters as

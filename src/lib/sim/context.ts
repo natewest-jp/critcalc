@@ -198,8 +198,9 @@ export type TeamContext = {
 	 *  per-hit check free for the rest of the corpus. */
 	cooldownReduces: Map<string, CooldownReduceListener[]>;
 	/** Team-wide SKILL cooldown modifiers, applied BEFORE an ability's own
-	 *  (2026-09-18): Anemo Resonance's −5% today, over the ROSTER with the
-	 *  in-game full-party rule. ⚓ A cooldown change that is a static team fact
+	 *  (2026-09-18): Anemo Resonance's −5% today, over the ROSTER — ⚓ without
+	 *  the in-game full-party rule, because the roster is whoever the notation
+	 *  names, not the party (Nate). ⚓ A cooldown change that is a static team fact
 	 *  is a MODIFIER at the cast, never a `cooldownReduce` (the Itto C2 lesson).
 	 *  ⚠️ Percent first, then the authored flats: Qiqi's Seven Sacred Treasures
 	 *  is "−15s off the remaining cooldown", so the game reaches 30 × 0.95 − 15
