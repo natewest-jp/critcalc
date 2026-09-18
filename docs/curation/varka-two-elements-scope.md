@@ -265,6 +265,13 @@ draws the attack without the cost — see the pair below.
 
 ### ⚠️⚠️ What is left, and why it is a PAIR rather than two edits
 
+↻ **SHIPPED TOGETHER 2026-09-18** — the cooldown-reduction round
+(`docs/cooldown-reduction-round.md` §4): `charges: 2` (+1 at C1),
+`startsOnCooldown`, and Secret Rite as two `cooldownReduce` effects capped 15
+per stance; charges recharge one at a time now, which is what makes the second
+use honest. Measured `Xiangling E > Varka E N2 sE`: Four Winds at 685f. Azure
+Devour's cost is still the open item below.
+
 **Four Winds' charges and its cooldown reduction cannot be landed
 separately, and landing the first alone would make the tool WORSE.**
 
