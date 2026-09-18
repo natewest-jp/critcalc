@@ -187,84 +187,7 @@
 			"cooldown": 9,
 			"charges": 2,
 			"tags": [],
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "ascension",
-								"min": 1
-							},
-							{
-								"type": "not",
-								"condition": {
-									"type": "state",
-									"state": "nightsoulBlessing"
-								}
-							}
-						]
-					},
-					"duration": 5,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "plungeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 50
-					},
-					"constellationScaling": {
-						"conditions": {
-							"type": "constellation",
-							"level": 1
-						},
-						"value": {
-							"type": "scaling",
-							"stat": "atk",
-							"ratio": 180
-						}
-					},
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "ascension",
-								"min": 1
-							},
-							{
-								"type": "state",
-								"state": "nightsoulBlessing"
-							}
-						]
-					},
-					"duration": 5,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "plungeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 180
-					},
-					"snapshottable": false
-				}
-			],
+			"effects": [],
 			"_curatorNotes": [
 				"behavior: \"instant\" — the Tap form is a forward rush with skillHitmark=5. Hold form (Sudden Onrush) is the alternative entry into Nightsoul Blessing; not authored as a separate variant — the dominant rotation use is Tap, and Hold is a traversal/positioning mode that doesn't fit the timeline cleanly.",
 				"⚓ `opensTransientState` followUpStrike (5s, gcsim `skillStatus`) with `consumes: [apexDrive]` — authored 2026-09-17 (T1 tranche) on BOTH skills. The kit: \"Varesa will exit Apex Drive after using her Elemental Skill\" (gcsim skill.go `DeleteStatus(apexState)` at cast). An instant cast can close a state only by opening one, and Follow-Up Strike is the state the skill genuinely opens. Measured before: `… P E sQ` still fired Volcano Kablam. ⚠️ Nothing reads followUpStrike yet — in gcsim a Normal Attack inside it becomes a Charged Attack, unmodelled. `anim` 43 (was the swap value, 21).",
@@ -272,7 +195,8 @@
 				"Follow-Up Strike (gcsim skillStatus=5s): after E cast, the next N press fires a fast Charged Attack (no stamina cost). Modelled implicitly: in-FP CA already costs 0 stamina; out-of-FP, the 5s window after E enables a stam-free CA via gcsim's special handling. The schema doesn't gate stamina, so this isn't visibly different in the timeline — flag and move on.",
 				"Free skill bonus: gcsim sets c.freeSkill=true when entering Nightsoul via plunge, allowing one cooldown-free E press inside FP. Stack-like primitive; not modellable as a charge modifier (the bonus charge is single-use, then gone). Acceptable approximation: the 2 base charges + the natural 9s CD usually cover the rotation use.",
 				"A1 Tag-Team Triple Jump: 5s plunge-flat-DMG buff after E cast. Modelled as two buff effects gated on inverse Nightsoul conditions: out-of-FP +50% ATK (constellationScaling +180% at C1, since C1 makes both states deal 180%); in-FP +180% ATK. Both gated on ascension>=1. The 'cancels on plunge ground impact' (gcsim DeleteStatus on a1Cancel) isn't modellable — buff persists for the full 5s in our model.",
-				"Hold version not authored: schema lacks a `hE` distinct from `E` for stance-entry behavior change. Pressing hE in the parser will fall through to base E. Acceptable since Sudden Onrush is a movement/positional state."
+				"Hold version not authored: schema lacks a `hE` distinct from `E` for stance-entry behavior change. Pressing hE in the parser will fall through to base E. Acceptable since Sudden Onrush is a movement/positional state.",
+				"↻ 2026-09-19: the two Tag-Team Triple Jump buffs MOVED to the A1 passive entry where they belong. They were hosted here and reached Fiery Passion Rush (the Nightsoul-form sibling) only because the buff pool used to admit every skill-hosted effect for ANY skill cast — a walk that broke the moment a character had a sibling skill AND a skill-hosted buff meant for that skill alone (Varka's A1 multiplier on Windbound Execution, re-firing on Four Winds). An effect hosted on a cast ability now fires only for casts of that ability; a passive's `onCast skill` fires for both forms, which is what this buff always meant."
 			],
 			"description": "With footwork swift as lightning and fierce as thunder, Varesa displays the true spirit of lucha libre, rushing forward a certain distance and dealing Nightsoul-aligned Electro DMG to opponents in her path.\nAfter using this Skill, Varesa gains 20 Nightsoul points and gains the \"Follow-Up Strike\" effect: Varesa has increased interruption resistance during this time, and upon pressing her Normal Attack, she will quickly unleash a Charged Attack that does not consume Stamina. \"Follow-Up Strike\" will be canceled after Varesa uses a Charged Attack.\nShe will use different techniques based on whether the skill is Tapped or Held.\n\nTap\nQuickly rush a certain distance forward.\n\nHold\nVaresa enters the Nightsoul's Blessing state and switches to Sudden Onrush mode.\n\nHas 2 charges. When Varesa enters the Fiery Passion state, she will obtain an additional Tap charge of her Elemental Skill and its DMG will be increased.",
 			"application": [
@@ -444,9 +368,88 @@
 			"name": "Tag-Team Triple Jump!",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"5s plunge-flat-DMG buff after E cast: +50% ATK out-of-FP (or +180% in-FP / with C1). Modelled as two buff effects on the base skill ability (varesa__skill__riding_the_nightrainbow.effects[]) with inverse-state conditions; constellationScaling on the out-of-FP branch handles C1's +180% upgrade. The cancellation on plunge ground impact (gcsim a1Cancel via DeleteStatus) isn't modellable — buff persists for the full 5s in our model."
+				"5s plunge-flat-DMG buff after E cast: +50% ATK out-of-FP (or +180% in-FP / with C1). Modelled as two buff effects on the base skill ability (varesa__skill__riding_the_nightrainbow.effects[]) with inverse-state conditions; constellationScaling on the out-of-FP branch handles C1's +180% upgrade. The cancellation on plunge ground impact (gcsim a1Cancel via DeleteStatus) isn't modellable — buff persists for the full 5s in our model.",
+				"↻ 2026-09-19: the two plungeFlatDmg buffs are hosted HERE now (they sat on Riding the Night-Rainbow; see that ability's last note). Same effects, same gates — the out-of-Nightsoul tier and the in-Nightsoul tier — and the provenance chip names this passive, which is what the player reads in game."
 			],
-			"description": "After using the Elemental Skill Riding the Night-Rainbow, Varesa gains \"Rainbow Crash\" for 5s.\nDuring this time, when Varesa uses a Plunging Attack, the shockwave DMG dealt when she hits the ground is increased by 50% of her ATK. If Varesa is in the Fiery Passion state, this ground impact DMG is increased by 180% of her ATK instead.\n\nThe Rainbow Crash effect will be canceled once a ground impact hits an opponent, or when its duration expires."
+			"description": "After using the Elemental Skill Riding the Night-Rainbow, Varesa gains \"Rainbow Crash\" for 5s.\nDuring this time, when Varesa uses a Plunging Attack, the shockwave DMG dealt when she hits the ground is increased by 50% of her ATK. If Varesa is in the Fiery Passion state, this ground impact DMG is increased by 180% of her ATK instead.\n\nThe Rainbow Crash effect will be canceled once a ground impact hits an opponent, or when its duration expires.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "nightsoulBlessing"
+								}
+							}
+						]
+					},
+					"duration": 5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "plungeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 50
+					},
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 1
+						},
+						"value": {
+							"type": "scaling",
+							"stat": "atk",
+							"ratio": 180
+						}
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
+						]
+					},
+					"duration": 5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "plungeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 180
+					},
+					"snapshottable": false
+				}
+			]
 		},
 		{
 			"id": "varesa__passive__the_hero_twicereturned",

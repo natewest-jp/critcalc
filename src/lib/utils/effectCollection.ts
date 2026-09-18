@@ -114,6 +114,9 @@ export function effectSourcesOf(char: CharacterData, cLevel: number): EffectSour
  *  constellation entry or a faction bonus, reduced to the three fields trigger
  *  matching reads. */
 type EffectSource = {
+	/** An ability's id — present on abilities, passives and constellations,
+	 *  absent on a faction bonus. Read by `hostedElsewhere` for cast abilities. */
+	id?: string;
 	abilityType?: string;
 	effects?: Effect[];
 	variants?: { input?: string[]; effects?: Effect[] }[];
@@ -303,13 +306,32 @@ function effectsForCast(
 	return variant?.effects ?? src.effects ?? [];
 }
 
+/** ⚓ AN EFFECT HOSTED ON A CAST ABILITY FIRES ONLY FOR CASTS OF THAT ABILITY
+ *  (2026-09-19). The walk used to admit every skill-hosted effect for any skill
+ *  cast, which no character could expose until one had a SIBLING skill and a
+ *  skill-hosted `onCast` buff at once: Varka's A1 multiplier, authored on
+ *  Windbound Execution, fired again on every in-stance Four Winds cast and
+ *  refresh-merged its bar 10s past the stance's end. Passives, constellations
+ *  and faction bonuses are untouched — they host no cast and fire for both
+ *  kinds as before. `castAbilityId` absent keeps the old walk (callers that
+ *  have no resolved ability in hand). */
+function hostedElsewhere(src: EffectSource, castAbilityId: string | undefined): boolean {
+	return (
+		castAbilityId !== undefined &&
+		(src.abilityType === 'skill' || src.abilityType === 'burst') &&
+		src.id !== castAbilityId
+	);
+}
+
 function collectOnCastEffects(
 	sources: EffectSource[],
 	castType: 'skill' | 'burst',
-	castLabel: string | undefined
+	castLabel: string | undefined,
+	castAbilityId?: string
 ): Effect[] {
 	const result: Effect[] = [];
 	for (const src of sources) {
+		if (hostedElsewhere(src, castAbilityId)) continue;
 		for (const fx of effectsForCast(src, castLabel)) {
 			if (fx.trigger.type !== 'onCast') continue;
 			const explicit = fx.trigger.ability;
@@ -329,9 +351,11 @@ export function getCharacterEffectsForCast(
 	char: CharacterData,
 	cLevel: number,
 	castType: 'skill' | 'burst',
-	castLabel?: string
+	castLabel?: string,
+	/** The RESOLVED ability's id — see `hostedElsewhere`. */
+	castAbilityId?: string
 ): Effect[] {
-	return collectOnCastEffects(effectSourcesOf(char, cLevel), castType, castLabel);
+	return collectOnCastEffects(effectSourcesOf(char, cLevel), castType, castLabel, castAbilityId);
 }
 
 /** The onCast effects this cast fires that are NOT hosted on a cast ability —
@@ -368,12 +392,15 @@ export function getCharacterEffectsForOnHit(
 	char: CharacterData,
 	cLevel: number,
 	castType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge',
-	castLabel?: string
+	castLabel?: string,
+	/** The RESOLVED cast ability's id for skill/burst — see `hostedElsewhere`. */
+	castAbilityId?: string
 ): Effect[] {
 	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	const isInputClass = castType === 'normal' || castType === 'charged' || castType === 'plunge';
 	for (const src of sources) {
+		if (hostedElsewhere(src, castAbilityId)) continue;
 		for (const fx of effectsForCast(src, castLabel)) {
 			if (fx.trigger.type !== 'onHit') continue;
 			const explicit = fx.trigger.abilityType;
@@ -533,11 +560,14 @@ export function getCharacterEffectsForAfterDuration(
 	char: CharacterData,
 	cLevel: number,
 	castType: 'skill' | 'burst',
-	castLabel?: string
+	castLabel?: string,
+	/** The RESOLVED cast ability's id — see `hostedElsewhere`. */
+	castAbilityId?: string
 ): Effect[] {
 	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	for (const src of sources) {
+		if (hostedElsewhere(src, castAbilityId)) continue;
 		// Variant-resolved for SYMMETRY, not for a live case: no variant in the
 		// corpus authors an afterDuration effect today. Leaving one of the three
 		// cast-scoped collectors flat is how the next curator finds a gap the
