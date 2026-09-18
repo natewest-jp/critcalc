@@ -1254,9 +1254,32 @@ export type EffectBase = {
 	 * NOT elemental-application ICD — see `noICD` / docs/library/game/icd.md.
 	 */
 	procCooldown?: number | ScaledValue;
+	/**
+	 * How many times this effect may fire per WINDOW — "up to 15 times per
+	 * stance" (Varka's Secret Rite), "a total of 5 times during Musou Isshin"
+	 * (Raiden C6). A different axis from `procCooldown`: that says how OFTEN, this
+	 * says how MANY, and the count resets when the window it names re-opens.
+	 *
+	 * ⚓ Designed against the corpus census (cooldown-reduction round, 2026-09-18:
+	 * 21 characters, 27 curator notes), which shows FOUR scopes — per stance, per
+	 * summon instance, per cast, and a rolling time window (Charlotte A1's "4
+	 * times every 12s"). ⛔ `per` admits a member only once a consumer reads it,
+	 * so a field never comes to mean four things at once. Today: `'stance'`,
+	 * read by the `cooldownReduce` dispatchers — the count lives on the holder's
+	 * live stance record and is zeroed when a stance opens (the `extCounts`
+	 * precedent). Lint requires `per: 'stance'` to sit under an `inStance`
+	 * condition, so there is always a window to count in.
+	 */
+	procCap?: ProcCap;
 	target: EffectTarget | EffectTarget[];
 	/** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
 	attribution?: string;
+};
+
+/** See `EffectBase.procCap`. */
+export type ProcCap = {
+	count: number;
+	per: 'stance';
 };
 
 /** Value payload for buffs, including scaling or capped scaling. */
@@ -1607,19 +1630,49 @@ export type Effect =
 			resets?: 'skill' | 'burst';
 	  })
 	| (EffectBase & {
-			/** Fixed-amount cooldown reduction on the ability named by `trigger.ability`.
-			 *  Distinct from `cdReset` (which fully refunds a charge): `cooldownReduce`
-			 *  shaves a literal number of seconds off the CD timer.
+			/** A fixed number of seconds off a cooldown that is RUNNING — gcsim's
+			 *  `ReduceActionCooldown`. Distinct from `cdReset`, which refunds the
+			 *  charge outright.
 			 *
-			 *  Use cases: Arlecchino C4 (-2s burst CD on absorb event), Gorou C2
-			 *  (-2s skill CD on team Geo hit), Navia C1 (-1s burst CD per Crystal
-			 *  Shrapnel stack consumed). Schema-only at v1; parser implementation
-			 *  deferred until the surrounding event-trigger primitives land
-			 *  (onAbsorbDirective, team-Geo-onHit, etc.). */
+			 *  ⚓ READ SINCE THE COOLDOWN-REDUCTION ROUND (2026-09-18,
+			 *  `sim/cooldownReduce.ts`) — it was declared 2026-07 with no consumer,
+			 *  and `orphanedSchema.test.ts` could not see that because the key is a
+			 *  `type` VALUE, not a property. Three triggers dispatch it: `onHit`
+			 *  (Varka's Secret Rite, Raiden C6, Kujou Sara C1), `onCast` (Itto C2)
+			 *  and `onReaction` (Dori A1). `target` says WHOSE cooldown moves —
+			 *  `self`, `team` or `teamExcludingSelf` (Raiden C6 reaches everyone
+			 *  but her). `procCooldown` and `procCap` gate the fires.
+			 *
+			 *  ⚓⚓ THE SKILL IT MOVES IS THE ONE ACTIVE AT THE FIRE. A `reduces:
+			 *  'skill'` resolves the receiver's skill through `resolveActiveAbility`
+			 *  at the trigger's instant, so a state-gated sibling is reached without
+			 *  naming it: Varka's in-stance hits land on Four Winds' Ascension
+			 *  because in Sturm und Drang the skill IS Four Winds — the same
+			 *  redirection gcsim writes as a `ReduceActionCooldown` override on
+			 *  Varka, Odette and Cyno. ⛔ Never an ability id here. ⚠️ An effect
+			 *  HOSTED on a skill ability reduces that skill and nothing else, so
+			 *  a reduction that belongs to one sibling (Secret Rite → Four Winds)
+			 *  is authored on it and cannot drift to the base skill in a party
+			 *  where the sibling never resolves.
+			 *
+			 *  ⚠️ What moves: the earliest charge still recharging, and every
+			 *  charge chained behind it by the same amount (charges recharge one at
+			 *  a time, so they are one chain) — and the cast's ghost tail with it,
+			 *  or the chart and the parser disagree about when the ability is
+			 *  castable. A reduction larger than what remains is a reset; a
+			 *  cooldown that is not running is left alone (gcsim's early return).
+			 *
+			 *  ⛔ Not this: a per-stack amount (Navia C1, Beidou A4 — no shape yet),
+			 *  a coin flip (Ayaka C1's 50% — a chance modelled as certain is a fake),
+			 *  "every Nth hit" (Noelle A4, Sucrose C4), and a defeat (Charlotte A1). */
 			type: 'cooldownReduce';
 			source: 'character';
-			/** Seconds to subtract from the named ability's remaining CD. */
+			/** Seconds to subtract from the remaining cooldown. */
 			amount: number;
+			/** Whose cooldown, on each receiver named by `target`. Required unless
+			 *  the trigger is an `onCast` with its own `ability`, which then names
+			 *  it (the `cdReset` convention). */
+			reduces?: 'skill' | 'burst';
 	  })
 	| (EffectBase & {
 			/** Multiplicative per-attack DMG bonus tier, distinct from reaction-bonus
@@ -2304,6 +2357,18 @@ type SkillCommonFields = AbilityCommon & {
 	cooldownModifiers?: CooldownModifier[];
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
+	/** Every charge begins RECHARGING the moment the ability becomes available,
+	 *  rather than starting ready — "Starts on cooldown and has 2 maximum uses"
+	 *  (Varka's Four Winds' Ascension). ⚓ Only meaningful on a state-gated
+	 *  SIBLING skill (lint requires an `inStance` condition): the opening it
+	 *  rides is the stance's start, where the charge queue is written as one
+	 *  chain (`start + cd`, `start + 2cd`, …) from the base skill's cooldown
+	 *  clock, and re-written on every re-entry (gcsim discards the in-progress
+	 *  queue and starts a fresh one). ⛔⛔ Never authored without the
+	 *  reduction that closes the loop — see docs/cooldown-reduction-round.md §0:
+	 *  alone it says "ready 11s into a 12s stance", further from play than
+	 *  the ready-at-zero it replaces. */
+	startsOnCooldown?: boolean;
 	/** Whether this ability's own damage snapshots the caster's stats at cast
 	 *  (KQM "snapshotting talents" — DoTs/summons like Pyronado, Oz), vs. recomputing
 	 *  dynamically. Forward-looking (keep + document, 2026-07-14): authored on a few

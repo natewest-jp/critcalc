@@ -32,6 +32,7 @@ import type { HitEvent } from './hits';
 import { type AuraState, createAuraState } from './aura';
 import type { ProcListener } from './procs';
 import type { StackThreshold } from './thresholds';
+import type { CooldownReduceListener } from './cooldownReduce';
 import type { CastKinds } from './states';
 import type { ChainIndex } from './conditions';
 import type { CharacterTrack, TimelineBar } from './types';
@@ -190,6 +191,11 @@ export type TeamContext = {
 	 *  Empty for every team but Columbina's today, which is what keeps the
 	 *  per-settle check free for the rest of the corpus. */
 	stackThresholds: Map<string, StackThreshold[]>;
+	/** Every `cooldownReduce` effect the team authors at its constellations,
+	 *  grouped per holder (cooldown-reduction round, 2026-09-18;
+	 *  `sim/cooldownReduce.ts`). Empty for most teams, which is what keeps the
+	 *  per-hit check free for the rest of the corpus. */
+	cooldownReduces: Map<string, CooldownReduceListener[]>;
 	/** The caller's SLOT roster, when it supplied one. ⚠️ Preferred over
 	 *  `teamChars` for TEAM-WIDE mechanics: a Stellar enabler in slot 4 with
 	 *  zero casts still converts every Superconduct, and the NB clock counts

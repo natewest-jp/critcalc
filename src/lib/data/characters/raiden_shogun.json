@@ -390,10 +390,40 @@
 			"name": "Wishbearer",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Not modeled: the C6 CD reduction from Musou Isshin hits.",
 			"description": "While in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, attacks by the Raiden Shogun that are considered part of her Elemental Burst will decrease all nearby party members' (not including the Raiden Shogun herself) Elemental Burst CD by 1s when they hit opponents.\nThis effect can trigger once every 1s and can trigger a total of 5 times during Musou Isshin's duration.",
 			"_curatorNotes": [
-				"[A7] C6 CD reduction detail: −1s to nearby party members' burst CD per burst-stance hit on an opponent, once per 1s, up to 5 times per stance. cooldownReduce is schema-only / parser-deferred."
+				"↻ AUTHORED 2026-09-18 (cooldown-reduction round — docs/cooldown-reduction-round.md §5). −1s to every OTHER party member's burst cooldown per Musou Isshin Normal/Charged Attack that hits (gcsim cons.go c6, called from attack.go:152 and charge.go:104), once per 1s (c6ICD), 5 per burst (c6Count, zeroed at burst cast — burst.go:37). `inStance` is her burst stance (she has no skill stance), `procCooldown: 1`, `procCap: 5 per stance`. The reduction lands on a teammate's RUNNING burst clock only (gcsim's early return), so a burst cast after her stance sees nothing — order the rotation as played. The caveat \"Not modeled: the C6 CD reduction\" is retired."
+			],
+			"effects": [
+				{
+					"type": "cooldownReduce",
+					"source": "character",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged"]
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							}
+						]
+					},
+					"amount": 1,
+					"reduces": "burst",
+					"procCooldown": 1,
+					"procCap": {
+						"count": 5,
+						"per": "stance"
+					}
+				}
 			]
 		}
 	],

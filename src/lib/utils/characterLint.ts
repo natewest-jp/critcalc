@@ -1641,6 +1641,34 @@ function lintCastAbility(
 		}
 	}
 
+	// (D.44) startsOnCooldown rides a STANCE OPENING — the sibling must be
+	// gated on inStance, or there is no instant at which its chain is written
+	// (cooldown-reduction round, 2026-09-18). And it is never alone: the base
+	// skill's `cooldownStartDelay` is its clock start, which is fine, but a
+	// stance it can never be reached in is a queue nobody reads.
+	if (a.abilityType === 'skill' && a.startsOnCooldown === true) {
+		let underStance = false;
+		walkConditions(a.conditions, (cond) => {
+			if (cond.type === 'state' && cond.state === 'inStance') underStance = true;
+		});
+		if (!underStance) {
+			push(
+				'strict',
+				'starts-on-cooldown-stance',
+				'startsOnCooldown is written at a stance opening, so the ability must be a sibling gated on { type: "state", state: "inStance" }',
+				a.id
+			);
+		}
+		if (a.behavior === 'stance') {
+			push(
+				'strict',
+				'starts-on-cooldown-behavior',
+				'startsOnCooldown is for the sibling a stance makes available, not for the stance opener itself',
+				a.id
+			);
+		}
+	}
+
 	// (D.33) durationExtensions[] only valid on stance behavior
 	const baseExts = (a as { durationExtensions?: unknown }).durationExtensions;
 	if (baseExts !== undefined && a.behavior !== 'stance') {
@@ -2165,6 +2193,88 @@ function lintEffect(
 				'strict',
 				'cooldownreduce-ability',
 				`cooldownReduce effect on onCast trigger must specify trigger.ability ("skill" or "burst")`,
+				location
+			);
+		}
+		// (B.10c) …and since it has a reader (cooldown-reduction round,
+		// 2026-09-18) the reader's contract is pinned: one of its three
+		// triggers, a `reduces` wherever the trigger does not name the ability,
+		// and a target the mover can resolve to a receiver.
+		const t = eff.trigger.type;
+		if (t !== 'onHit' && t !== 'onCast' && t !== 'onReaction') {
+			push(
+				'strict',
+				'cooldownreduce-trigger',
+				`cooldownReduce is dispatched on onHit, onCast and onReaction only — got "${t}"`,
+				location
+			);
+		}
+		if (eff.reduces !== undefined && eff.reduces !== 'skill' && eff.reduces !== 'burst') {
+			push(
+				'strict',
+				'cooldownreduce-reduces',
+				`cooldownReduce.reduces must be "skill" or "burst"`,
+				location
+			);
+		}
+		if (eff.reduces === undefined && t !== 'onCast') {
+			push(
+				'strict',
+				'cooldownreduce-reduces-missing',
+				`cooldownReduce on an ${t} trigger must say which cooldown it moves (reduces: "skill" | "burst")`,
+				location
+			);
+		}
+		const cdTargets = Array.isArray(eff.target) ? eff.target : [eff.target];
+		for (const tg of cdTargets) {
+			if (tg !== 'self' && tg !== 'team' && tg !== 'teamExcludingSelf') {
+				push(
+					'strict',
+					'cooldownreduce-target',
+					`cooldownReduce.target must be self, team or teamExcludingSelf — a cooldown belongs to a character, got "${tg}"`,
+					location
+				);
+			}
+		}
+	}
+
+	// (B.17) procCap shape — a count per WINDOW, and the window must exist.
+	if (eff.procCap !== undefined) {
+		const cap = eff.procCap;
+		if (!Number.isInteger(cap.count) || cap.count <= 0) {
+			push(
+				'strict',
+				'proccap-count',
+				`procCap.count must be a positive integer, got ${JSON.stringify(cap.count)}`,
+				location
+			);
+		}
+		if (cap.per !== 'stance') {
+			push(
+				'strict',
+				'proccap-per',
+				`procCap.per admits "stance" only (a member is added with its consumer), got ${JSON.stringify(cap.per)}`,
+				location
+			);
+		} else {
+			let underStance = false;
+			walkConditions(eff.conditions, (cond) => {
+				if (cond.type === 'state' && cond.state === 'inStance') underStance = true;
+			});
+			if (!underStance) {
+				push(
+					'strict',
+					'proccap-stance-condition',
+					`procCap.per: "stance" counts fires per stance window, so the effect must be gated on { type: "state", state: "inStance" }`,
+					location
+				);
+			}
+		}
+		if (eff.type !== 'cooldownReduce') {
+			push(
+				'strict',
+				'proccap-consumer',
+				`procCap is read by cooldownReduce only today — a ${eff.type} carrying one would silently fire uncapped`,
 				location
 			);
 		}

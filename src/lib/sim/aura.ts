@@ -73,6 +73,7 @@ import {
 	dispatchGainStacksOnReaction,
 	rotationStackSnapshot
 } from './stacks';
+import { dispatchCooldownReduceOnReaction } from './cooldownReduce';
 import { holderStatesAt } from './states';
 import { checkStackThresholds, scheduleAccrualFires } from './thresholds';
 import type { HitEvent } from './hits';
@@ -327,6 +328,9 @@ function emitReaction(
 		new Map(ctx.team.teamChars.map((c) => [c.id, ctx.constellationLevels?.[c.id] ?? 0])),
 		ctx.getCharState
 	);
+	// An `onReaction` cooldownReduce (Dori A1) — beside the stack dispatcher,
+	// with the same source scoping.
+	dispatchCooldownReduceOnReaction(ctx, src.characterId, reaction, time, src.stacks);
 	scheduleReactionProcs(ctx, clock, src, reaction, time);
 	ctx.events.push({
 		kind: 'reaction',

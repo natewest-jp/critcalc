@@ -495,9 +495,13 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 				);
 				expect(c.stackContext, 'bar/cast stackContext agree').toBe(bar.stackContext);
 				// readyAt sanity: never before the cast; equals the hitmark on a
-				// sac proc, else >= time + cooldown (delay-adjusted).
+				// sac proc, else >= time + cooldown (delay-adjusted) less whatever a
+				// cdReset / cooldownReduce took off it, which the event states
+				// (`cdReduced`, cooldown-reduction round) — a tail that moved
+				// without saying so is the bug this line now catches.
 				expect(c.readyAt).toBeGreaterThanOrEqual(c.time - EPS);
-				if (!c.sacProcFired) expect(c.readyAt).toBeGreaterThanOrEqual(c.time + c.cooldown - EPS);
+				if (!c.sacProcFired)
+					expect(c.readyAt).toBeGreaterThanOrEqual(c.time + c.cooldown - (c.cdReduced ?? 0) - EPS);
 			}
 		}
 	}
