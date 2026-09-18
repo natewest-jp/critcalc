@@ -46,6 +46,11 @@ export function projectCharReceivedBuffRows(
 		} else if (src.type === 'character' && src.trigger === 'nightsoulBurst') {
 			const char = getCharacter(w.characterId);
 			sourceLabel = `${char?.displayName ?? w.characterId} NB`;
+		} else if (src.type === 'character' && src.trigger === 'stackThreshold') {
+			// Named after the fire — the team surface's rule (stack-threshold round).
+			const char = getCharacter(w.characterId);
+			const fire = src.fireLabel ?? `${AB_LABEL[src.abilityClass ?? 'skill']} threshold`;
+			sourceLabel = `${char?.displayName ?? w.characterId} ${fire}`;
 		} else if (src.type === 'character' && src.trigger === 'reaction') {
 			// ⚠ A reaction window carries no `abilityClass` — it is not bound to a
 			// cast — so the branch below would render "Varka undefined". Harmless

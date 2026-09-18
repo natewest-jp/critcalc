@@ -31,6 +31,7 @@ import type { IcdClock } from '$lib/utils/icd';
 import type { HitEvent } from './hits';
 import { type AuraState, createAuraState } from './aura';
 import type { ProcListener } from './procs';
+import type { StackThreshold } from './thresholds';
 import type { CastKinds } from './states';
 import type { ChainIndex } from './conditions';
 import type { CharacterTrack, TimelineBar } from './types';
@@ -184,6 +185,11 @@ export type TeamContext = {
 	 * character's stack arithmetic.
 	 */
 	teamHasOnHitStackEffects: boolean;
+	/** Every `onStack` trigger the team authors at its constellations, grouped
+	 *  per holder (stack-threshold round, 2026-09-18; `sim/thresholds.ts`).
+	 *  Empty for every team but Columbina's today, which is what keeps the
+	 *  per-settle check free for the rest of the corpus. */
+	stackThresholds: Map<string, StackThreshold[]>;
 	/** The caller's SLOT roster, when it supplied one. ⚠️ Preferred over
 	 *  `teamChars` for TEAM-WIDE mechanics: a Stellar enabler in slot 4 with
 	 *  zero casts still converts every Superconduct, and the NB clock counts
@@ -396,6 +402,14 @@ export type SimContext = {
 	 */
 	tickStacks: Map<string, ReadonlyMap<string, number>>;
 	/**
+	 * A stack-threshold fire's MARK (stack-threshold round, 2026-09-18): the
+	 * instant, the element the fire's `damage` effect names, and the lane it
+	 * rides — the primary summon of the E/Q that hosts the accrual. `finalize`
+	 * stamps these onto the summon window as `fires`, the way `stateGatedTicks`
+	 * become `ticks`. Parser-private; the IR carries the `stackThreshold` event.
+	 */
+	stackFireMarks: { characterId: string; summonLabel: string; time: number; element: Element }[];
+	/**
 	 * Whose segment the clock is currently inside, or `undefined` before the
 	 * first. ⚓ Written where a segment OPENS, which is exactly where the clock
 	 * already stands at the boundary — so a task firing mid-segment reads the
@@ -468,6 +482,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		infusionProcAt: new Map(),
 		procs: new Map(),
 		stateGatedTicks: new Map(),
-		tickStacks: new Map()
+		tickStacks: new Map(),
+		stackFireMarks: []
 	};
 }

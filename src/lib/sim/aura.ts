@@ -74,6 +74,7 @@ import {
 	rotationStackSnapshot
 } from './stacks';
 import { holderStatesAt } from './states';
+import { checkStackThresholds } from './thresholds';
 import type { HitEvent } from './hits';
 import { getChainIndexMap } from './cooldowns';
 import { toReactions } from './reactionBridge';
@@ -298,7 +299,7 @@ function emitReaction(
 		src.characterId,
 		reaction,
 		time,
-		new Map([[src.characterId, src.preStates]]),
+		(holder) => holderStatesAt(ctx, holder, time),
 		new Map(ctx.team.teamChars.map((c) => [c.id, ctx.constellationLevels?.[c.id] ?? 0])),
 		ctx.getCharState
 	);
@@ -311,6 +312,11 @@ function emitReaction(
 		time,
 		castKind: src.castKind
 	});
+	// A reaction is one of the four places a stack count moves, so a threshold
+	// is asked here — AFTER the reaction event, so the fire's record follows its
+	// cause in the stream. No segment pool is in hand mid-apply (a segment-home
+	// key is read at the cast and hit sites; see `thresholds.ts`).
+	checkStackThresholds(ctx, time, null);
 }
 
 /**
@@ -829,6 +835,9 @@ function dispatchEntityHitStacks(
 		ctx.getCharState,
 		null
 	);
+	// The tick is the fourth place a count moves (stack-threshold round). Null
+	// pool, same rule as the dispatchers above.
+	checkStackThresholds(ctx, hit.time, null);
 	return snapshot;
 }
 

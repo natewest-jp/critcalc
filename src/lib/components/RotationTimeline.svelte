@@ -2597,6 +2597,21 @@
 														aria-hidden="true"
 													></div>
 												{/each}
+												<!-- A stack-threshold FIRE on this lane (Columbina's Gravity
+												     Interference): full height in the HIT's element, because it
+												     is a different object from a tick — the summon's own hits are
+												     stubs in the owner's hue, this is one hit the accrual paid
+												     for, and it applied nothing to the gauge (Durability 0), so
+												     it draws here and nowhere in the aura lane. -->
+												{#each sbar.fires ?? [] as fire, fIdx (fIdx)}
+													{@const fg = barGeom(fire.time, 0)}
+													<div
+														class="rp-summon-fire"
+														style:left="{fg.left}px"
+														style:background={pal(fire.element).hi}
+														aria-hidden="true"
+													></div>
+												{/each}
 											{/each}
 										</div>
 									{/each}
@@ -4472,6 +4487,20 @@
 		pointer-events: none;
 		/* No centering shift — a tick at the bar's start time (Linnea Q)
 		   must sit flush with the bar's left edge, not straddle it */
+	}
+
+	/* A threshold fire's mark on a summon lane (stack-threshold round,
+	   2026-09-18). Full bar height and 2px wide so it reads as an EVENT against
+	   the 5px tick stubs; opaque, in the hit's element. Centered on its instant
+	   — unlike a tick, a fire never coincides with the bar's start. */
+	.rp-summon-fire {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		width: 2px;
+		margin-left: -1px;
+		z-index: 4;
+		pointer-events: none;
 	}
 
 	.rp-active-bg {

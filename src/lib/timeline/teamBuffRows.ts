@@ -93,6 +93,13 @@ export function projectTeamBuffRows(
 			} else if (src.trigger === 'nightsoulBurst') {
 				rowKey = `${w.characterId}::char::NB`;
 				sourceLabel = `${displayName} NB`;
+			} else if (src.trigger === 'stackThreshold') {
+				// ⚓ Named after the FIRE (stack-threshold round, 2026-09-18): the
+				// bar's claim is "when the threshold fired", and a cast-pool row
+				// under the same E would fuse two anchors the merge law keeps apart.
+				const fire = src.fireLabel ?? `${AB_LABEL[src.abilityClass ?? 'skill']} threshold`;
+				rowKey = `${w.characterId}::char::stackThreshold::${fire}${w.debuff ? '::resShred' : ''}`;
+				sourceLabel = `${displayName} ${fire}`;
 			} else if (src.trigger === 'state') {
 				// ⚓ Named after the CONDITION, not a cast — the bar's whole claim is
 				// "while this state holds", and its span already says when. Keyed by

@@ -198,7 +198,16 @@ export function computeSummonSubrows(
 		// to duplicate the parser's, which is exactly the drift this removes.
 		//
 		// ⛔ Do not reintroduce a local walk for "just one case".
-		row.bars.push({ start: w.start, end: w.end, source: w.source, ticks: w.ticks ?? [] });
+		row.bars.push({
+			start: w.start,
+			end: w.end,
+			source: w.source,
+			ticks: w.ticks ?? [],
+			// A threshold fire's mark rides the same lane, read not derived
+			// (stack-threshold round, 2026-09-18). Spread conditionally so a lane
+			// with none is byte-identical to before.
+			...(w.fires ? { fires: w.fires } : {})
+		});
 	}
 
 	// The parser emits windows in start order (its final `windows.sort`), but the

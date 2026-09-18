@@ -572,6 +572,72 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		}
 	}
 
+	// (D.40) A STACK THRESHOLD NAMES RESOURCES THAT EXIST AND A COUNT THAT CAN
+	// BE REACHED (stack-threshold round, 2026-09-18). Every key in `keys` must
+	// have a `gainStacks` author on this character (a key nobody grants is a
+	// threshold that never fires — silently); `count` may not exceed the summed
+	// `max` of the keys when every key states one (a threshold above the cap is
+	// the same silence); and effects sharing one (keys, count) must agree on
+	// `label`, since the group is one fire and one row.
+	{
+		const grantMax = new Map<string, number | null>(); // null = unbounded
+		for (const src of [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])]) {
+			for (const fx of src.effects ?? []) {
+				if (fx.type !== 'gainStacks') continue;
+				const prev = grantMax.get(fx.key);
+				const mx = typeof fx.max === 'number' ? fx.max : null;
+				if (prev === undefined) grantMax.set(fx.key, mx);
+				else if (prev !== null && mx !== null) grantMax.set(fx.key, Math.max(prev, mx));
+				else grantMax.set(fx.key, null);
+			}
+		}
+		const labelsByGroup = new Map<string, Set<string>>();
+		for (const src of [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])]) {
+			for (const fx of src.effects ?? []) {
+				if (fx.trigger.type !== 'onStack') continue;
+				const t = fx.trigger;
+				if (!Array.isArray(t.keys)) continue;
+				for (const k of t.keys) {
+					if (!grantMax.has(k)) {
+						push(
+							'strict',
+							'onstack-key-unauthored',
+							`onStack key "${k}" has no gainStacks author on this character — the threshold can never fire`,
+							src.id
+						);
+					}
+				}
+				const maxes = t.keys.map((k) => grantMax.get(k));
+				if (maxes.length > 0 && maxes.every((m) => typeof m === 'number')) {
+					const cap = (maxes as number[]).reduce((a, b) => a + b, 0);
+					if (typeof t.count === 'number' && t.count > cap) {
+						push(
+							'strict',
+							'onstack-count-unreachable',
+							`onStack count ${t.count} exceeds the keys' summed max ${cap} — the threshold can never fire`,
+							src.id
+						);
+					}
+				}
+				const gk = `${t.keys.join('|')}#${t.count}`;
+				if (t.label !== undefined) {
+					const set = labelsByGroup.get(gk) ?? new Set<string>();
+					set.add(t.label);
+					labelsByGroup.set(gk, set);
+				}
+			}
+		}
+		for (const [gk, labels] of labelsByGroup) {
+			if (labels.size > 1) {
+				push(
+					'strict',
+					'onstack-label-disagreement',
+					`onStack effects on one threshold (${gk}) name it differently (${[...labels].sort().join(', ')}) — one fire, one label`
+				);
+			}
+		}
+	}
+
 	// FactionBonus effects also need linting
 	for (const fb of factionBonuses) {
 		for (const eff of fb.effects ?? []) {
@@ -2304,7 +2370,19 @@ function lintEffect(
 		// `whileNormalAttacking` (the active character is swinging). ⚓ One list,
 		// shared with the sim's acceptance rule, so the lint can never accept an
 		// effect the sim ignores.
-		if (!(PROC_TRIGGERS as readonly string[]).includes(eff.trigger.type)) {
+		// ↻ An `onStack` fire may state an EMPTY list (stack-threshold round,
+		// 2026-09-18): the fire draws a mark and applies nothing, and `[]` is the
+		// positive statement of that (Columbina's Interference is Durability 0).
+		// A non-empty list there is unread — no fire feeds the gauge yet.
+		const emptyOnStack = eff.trigger.type === 'onStack' && eff.application.length === 0;
+		if (eff.trigger.type === 'onStack' && !emptyOnStack) {
+			push(
+				'strict',
+				'onstack-application-unread',
+				`a damage effect on an onStack trigger applies nothing (the fire is a mark, not an application) — author application: [] or drop it`,
+				location
+			);
+		} else if (!emptyOnStack && !(PROC_TRIGGERS as readonly string[]).includes(eff.trigger.type)) {
 			push(
 				'strict',
 				'effect-application-unread',
@@ -2889,6 +2967,79 @@ function lintEffect(
 				'strict',
 				'resshred-def-with-element',
 				`resShred with shredStat 'def' must not set element (DEF shred is element-agnostic)`,
+				location
+			);
+		}
+	}
+
+	// (B.16) onStack trigger shape (stack-threshold round, 2026-09-18): the
+	// keys it sums, a positive integer threshold, a dominant key from the set,
+	// and an effect type the reader acts on. Key authorship and reachability
+	// are character-level (D.40) — they need every grant in hand.
+	if (eff.trigger.type === 'onStack') {
+		const t = eff.trigger as {
+			keys?: unknown;
+			count?: unknown;
+			dominant?: unknown;
+			label?: unknown;
+		};
+		const keysOk =
+			Array.isArray(t.keys) &&
+			t.keys.length > 0 &&
+			t.keys.every((k) => typeof k === 'string' && k.length > 0);
+		if (!keysOk) {
+			push(
+				'strict',
+				'onstack-keys-invalid',
+				`onStack trigger needs a non-empty keys[] of stack keys (got ${JSON.stringify(t.keys)})`,
+				location
+			);
+		}
+		if (typeof t.count !== 'number' || !Number.isInteger(t.count) || t.count <= 0) {
+			push(
+				'strict',
+				'onstack-count-invalid',
+				`onStack trigger count must be a positive integer (got ${JSON.stringify(t.count)})`,
+				location
+			);
+		}
+		if (t.dominant !== undefined) {
+			if (typeof t.dominant !== 'string' || !keysOk || !(t.keys as string[]).includes(t.dominant)) {
+				push(
+					'strict',
+					'onstack-dominant-invalid',
+					`onStack dominant must name one of the trigger's keys (got ${JSON.stringify(t.dominant)})`,
+					location
+				);
+			}
+		}
+		if (t.label !== undefined && (typeof t.label !== 'string' || t.label.length === 0)) {
+			push(
+				'strict',
+				'onstack-label-invalid',
+				`onStack label must be a non-empty string when present`,
+				location
+			);
+		}
+		if (
+			eff.type !== 'buff' &&
+			eff.type !== 'damage' &&
+			eff.type !== 'shield' &&
+			eff.type !== 'energy' &&
+			eff.type !== 'resShred'
+		) {
+			push(
+				'strict',
+				'onstack-effect-unread',
+				`onStack is read for buff, damage (a mark), shield, energy and resShred effects — a "${eff.type}" on it reaches nothing`,
+				location
+			);
+		}
+		if (eff.type === 'damage' && eff.application === undefined) {
+			push(
+				'strict',
+				'onstack-damage-application-missing',
+				`a damage effect on onStack must state application: [] — the fire is a mark and applies nothing, and an absent list means "unmeasured" everywhere else`,
 				location
 			);
 		}
