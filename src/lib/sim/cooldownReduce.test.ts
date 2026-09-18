@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
-import type { CastEvent } from '$lib/utils/rotationEvents';
+import type { ActionEvent, CastEvent } from '$lib/utils/rotationEvents';
 import { lintCharacter } from '$lib/utils/characterLint';
 import xianglingJson from '$lib/data/characters/xiangling.json';
 import kaeyaJson from '$lib/data/characters/kaeya.json';
@@ -48,6 +48,9 @@ function tester(opts: {
 	sibling?: Record<string, unknown>;
 	stanceCharges?: number;
 	burst?: Record<string, unknown>;
+	/** An in-stance normal whose `sC` spends the sibling's charge (Varka's
+	 *  Azure Devour shape, 2026-09-18). Opt-in like the sibling. */
+	stanceNormal?: Record<string, unknown>;
 }): CharacterData {
 	return {
 		id: 'tester',
@@ -66,6 +69,22 @@ function tester(opts: {
 		],
 		abilities: [
 			NORMAL,
+			...(opts.stanceNormal
+				? [
+						{
+							id: 'tester__normal__stance',
+							name: 'Tester Stance Normal',
+							abilityType: 'normal',
+							input: ['N', 'C', 'sC'],
+							hits: NORMAL.hits,
+							chargeFrames: { anim: 40, swap: 36 },
+							specialChargeFrames: { anim: 50, swap: 46 },
+							specialChargeSpends: 'tester__skill__sibling',
+							conditions: { type: 'state', state: 'inStance' },
+							...opts.stanceNormal
+						}
+					]
+				: []),
 			{
 				id: 'tester__skill__stance',
 				name: 'Tester Stance',
@@ -328,5 +347,133 @@ describe('Anemo Resonance — a team skill-cooldown modifier, not a reduction', 
 		]);
 		const [e] = casts(r, QIQI.abilities.find((a) => a.abilityType === 'skill')!.id);
 		expect(e.cooldown).toBeCloseTo(1800 * 0.95 - 900, 5);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// A special charge that SPENDS a skill charge (`specialChargeSpends`), and a
+// skill-fired cdReset that names ONE ability (`resetsAbility`) — Varka's Azure
+// Devour and his C1, 2026-09-18 (docs/varka-azure-devour-round.md).
+// ---------------------------------------------------------------------------
+
+const actions = (r: ParsedRotation, label: string): ActionEvent[] =>
+	r.events.filter((e): e is ActionEvent => e.kind === 'action' && e.label === label);
+const SIB_CD = 4;
+const spender = (extra: Record<string, unknown> = {}) =>
+	tester({
+		sibling: { startsOnCooldown: true, cooldown: SIB_CD, charges: 2, ...extra },
+		stanceNormal: {}
+	});
+
+describe("sC spends the sibling skill's charge", () => {
+	it('the ready slot takes a clock at the END of the chain, and the next sE waits for it', () => {
+		const r = parse('Tester E N1 N1 N1 N1 N1 N1 N1 N1 N1 N1 sC sE', spender());
+		const [stance] = casts(r, 'tester__skill__stance');
+		const [sc] = actions(r, 'sC');
+		const [sib] = casts(r, 'tester__skill__sibling');
+		const clockStart = stance.time + 6;
+		const chainEnd = clockStart + 2 * SIB_CD * 60;
+		// ten swings carry the swing past the first charge's return, so no wait
+		expect(sc.time).toBeGreaterThan(clockStart + SIB_CD * 60);
+		expect(sc.duration).toBe(50); // the special frames
+		expect(sc.spentCharge).toEqual({
+			abilityId: 'tester__skill__sibling',
+			readyAt: chainEnd + SIB_CD * 60
+		});
+		// the second charge, not a third: the sE lands where the chain allows
+		expect(sib.time).toBe(chainEnd);
+	});
+	it('waits for a use exactly as an E on cooldown does', () => {
+		const r = parse('Tester E sC', spender());
+		const [stance] = casts(r, 'tester__skill__stance');
+		const [sc] = actions(r, 'sC');
+		expect(sc.time).toBe(stance.time + 6 + SIB_CD * 60);
+		expect(sc.duration).toBe(46); // the special frames' swap key (last token)
+		expect(sc.spentCharge?.readyAt).toBe(stance.time + 6 + 3 * SIB_CD * 60);
+	});
+	it('is the ORDINARY in-stance charge, at its own instant, when no use can return before the stance ends', () => {
+		const r = parse('Tester E N1 sC', spender({ cooldown: 20 }));
+		const [n1] = actions(r, 'N1');
+		const [sc] = actions(r, 'sC');
+		expect(sc.time).toBe(n1.time + n1.duration);
+		expect(sc.duration).toBe(36); // chargeFrames' swap key, not the special's 46
+		expect(sc.spentCharge).toBeUndefined();
+	});
+	it('is the ordinary charge wherever the skill it spends does not resolve', () => {
+		// the sibling needs C3 here: at C0 there is no Azure Devour to perform
+		const stub = spender({
+			conditions: {
+				type: 'all',
+				conditions: [
+					{ type: 'state', state: 'inStance' },
+					{ type: 'constellation', level: 3 }
+				]
+			}
+		});
+		const c0 = actions(parse('Tester E N1 sC', stub, { tester: 0 }), 'sC')[0];
+		const c3 = actions(parse('Tester E N1 sC', stub, { tester: 3 }), 'sC')[0];
+		expect(c0.duration).toBe(36);
+		expect(c0.spentCharge).toBeUndefined();
+		expect(c3.duration).toBe(46);
+		expect(c3.spentCharge).toBeDefined();
+	});
+	it('lint: needs the special frames and a skill of this character to spend', () => {
+		const noFrames = tester({ sibling: {}, stanceNormal: { specialChargeFrames: undefined } });
+		expect(strict(noFrames).map((i) => i.check)).toContain('special-charge-spends-frames');
+		const wrongTarget = tester({
+			sibling: {},
+			stanceNormal: { specialChargeSpends: 'tester__burst__q' }
+		});
+		expect(strict(wrongTarget).map((i) => i.check)).toContain('special-charge-spends-target');
+		expect(strict(spender())).toEqual([]);
+	});
+});
+
+describe('a skill-fired cdReset naming one ability', () => {
+	const c1Reset = (extra: Record<string, unknown> = {}) => ({
+		type: 'cdReset',
+		source: 'character',
+		target: 'self',
+		trigger: { type: 'onCast', ability: 'skill' },
+		resets: 'skill',
+		resetsAbility: 'tester__skill__sibling',
+		conditions: { type: 'not', condition: { type: 'state', state: 'inStance' } },
+		...extra
+	});
+	it("hands back one starts-on-cooldown charge at the stance clock, leaving the opener's own clock alone", () => {
+		const stub = tester({
+			c1: [c1Reset()],
+			sibling: { startsOnCooldown: true, cooldown: SIB_CD, charges: 2 }
+		});
+		const r = parse('Tester E sE sE', stub, { tester: 1 });
+		const [stance] = casts(r, 'tester__skill__stance');
+		const [s1, s2] = casts(r, 'tester__skill__sibling');
+		const clockStart = stance.time + 6;
+		// the first use is in hand at entry: the sE follows the E's cancel
+		expect(s1.time).toBe(stance.time + 42);
+		// its spent clock chains behind the charge still recharging (the other one)
+		expect(s1.readyAt).toBe(clockStart + 2 * SIB_CD * 60);
+		expect(s2.time).toBe(clockStart + SIB_CD * 60);
+		// the opener's 12s is untouched — the reset named the sibling
+		expect(stance.readyAt).toBe(clockStart + 12 * 60);
+		// and the in-stance sE, a skill cast too, did not refund itself
+		expect(s2.readyAt).toBe(s1.readyAt + SIB_CD * 60);
+	});
+	it('does nothing below its constellation', () => {
+		const stub = tester({
+			c1: [c1Reset()],
+			sibling: { startsOnCooldown: true, cooldown: SIB_CD, charges: 2 }
+		});
+		const r = parse('Tester E sE', stub, { tester: 0 });
+		const [stance] = casts(r, 'tester__skill__stance');
+		const [s1] = casts(r, 'tester__skill__sibling');
+		expect(s1.time).toBe(stance.time + 6 + SIB_CD * 60);
+	});
+	it('lint: a skill-fired reset of skill must name its ability, and the name must be one of that kind', () => {
+		const unnamed = tester({ c1: [c1Reset({ resetsAbility: undefined })], sibling: {} });
+		expect(strict(unnamed).map((i) => i.check)).toContain('cdreset-skill-self');
+		const wrongKind = tester({ c1: [c1Reset({ resetsAbility: 'tester__burst__q' })], sibling: {} });
+		expect(strict(wrongKind).map((i) => i.check)).toContain('cdreset-resets-ability');
+		expect(strict(tester({ c1: [c1Reset()], sibling: {} }))).toEqual([]);
 	});
 });

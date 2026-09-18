@@ -215,10 +215,12 @@ negatives), check, lint, build. e2e: see the merge commit.
 
 ### 4.6 Still open after this round
 
-- Azure Devour's cost (`sC` draws the attack without spending a Four Winds use)
-  — the charge queue can be spent from a normal-attack token now that the
-  sibling has a queue of its own; a `spendsChargeOf` on `specialChargeFrames`
-  is the shape, not started.
+- ↻ **SHIPPED the same day** — Azure Devour's cost
+  (`NormalAbility.specialChargeSpends`, `docs/varka-azure-devour-round.md`).
+  🐛 That round also overturned this one's C1 authoring: `chargeModifiers +1`
+  on a `startsOnCooldown` sibling wrote a third charge 33s out, unreachable in
+  any stance; gcsim's C1 is `ResetActionCooldown` at entry, now a `cdReset`
+  naming one ability (`resetsAbility`).
 - The 21-character cap census minus the three shipped here: every remaining
   row needs a `per` member that has no consumer yet, and the first consumer
   should be the one whose census row is measured (Escoffier C6's six per Mek

@@ -109,6 +109,7 @@ import {
 	advanceChain,
 	getChainIndexMap,
 	getCharacterCdResetTargets,
+	type CdResetTarget,
 	getWeaponCdResetCooldown
 } from './cooldowns';
 import {
@@ -346,6 +347,32 @@ export function runRotation(
 			consider(cs.stance?.end);
 			for (const end of cs.states.values()) consider(end);
 			return next;
+		};
+
+		// Character cdResets a cast fires (Kazuha C1: Q resets E; Varka C1: the
+		// stance-entering E hands back a Four Winds use). Only the caster's own
+		// queues — keys are `{charId}__…` ability ids (or bare charId in the
+		// uncurated fallback). A rotation-wide reset would erase teammates'
+		// cooldowns. Through the one mover (cooldown-reduction round), so the
+		// refunded cast's ghost tail moves with its slot — measured before,
+		// `Kazuha E Q E` at C1 placed the second E at 169f under a first-E tail
+		// that still ran to 332f. An infinite reduction is a reset; a ready
+		// charge is left alone. ⚓ A target that NAMES an ability (`resetsAbility`)
+		// reaches that queue alone — Varka's C1 must refund Four Winds and not
+		// the Windbound Execution clock the same cast just wrote.
+		const fireCharacterCdResets = (targets: CdResetTarget[], at: number): void => {
+			for (const target of targets) {
+				if (target.kind === 'burst') {
+					reduceCooldown(ctx, char.id, 'burst', undefined, Infinity, at);
+				} else if (target.abilityId !== undefined) {
+					reduceCooldown(ctx, char.id, 'skill', target.abilityId, Infinity, at);
+				} else {
+					for (const key of ctx.eChargeQueues.keys()) {
+						if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
+						reduceCooldown(ctx, char.id, 'skill', key, Infinity, at);
+					}
+				}
+			}
 		};
 
 		// Settle the segment character's stack machinery at an ACTION-site hit
@@ -823,26 +850,18 @@ export function runRotation(
 				// Q only: character cdReset — refund a charge on each affected
 				// ability whose CD the burst resets (Kazuha C1: Q resets E).
 				if (isBurst) {
-					const resets = getCharacterCdResetTargets(char, 'burst', charConstellationLevel);
-					for (const target of resets) {
-						if (target === 'skill') {
-							// Only the caster's own skill queues — keys are
-							// `{charId}__…` ability ids (or bare charId in the
-							// uncurated fallback). A rotation-wide reset would erase
-							// teammates' cooldowns.
-							// Through the one mover (cooldown-reduction round), so the
-							// refunded cast's ghost tail moves with its slot — measured
-							// before, `Kazuha E Q E` at C1 placed the second E at 169f
-							// under a first-E tail that still ran to 332f. An infinite
-							// reduction is a reset; a ready charge is left alone.
-							for (const key of ctx.eChargeQueues.keys()) {
-								if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
-								reduceCooldown(ctx, char.id, 'skill', key, Infinity, castEnd);
-							}
-						} else if (target === 'burst') {
-							reduceCooldown(ctx, char.id, 'burst', undefined, Infinity, castEnd);
-						}
-					}
+					fireCharacterCdResets(
+						getCharacterCdResetTargets(
+							char,
+							'burst',
+							charConstellationLevel,
+							states,
+							chainIdx,
+							stackState,
+							variantCtx
+						),
+						castEnd
+					);
 				}
 
 				// Open a stance window when the resolved variant has stance
@@ -943,6 +962,29 @@ export function runRotation(
 							stackState
 						);
 					}
+				}
+				// A SKILL-fired character cdReset (2026-09-18) — after the stance
+				// opening above, because the queue it refunds may be the chain that
+				// opening just wrote: Varka's C1 "obtain an additional use of Four
+				// Winds' Ascension" is gcsim's `ResetActionCooldown(ActionSpecialSkill)`
+				// run right after the stance-entry block puts every charge on
+				// cooldown (`skill.go:105-118`, `c1OnSkill`). ⚠️ At the cast's
+				// COOLDOWN CLOCK start, not its end: that is the instant the chain
+				// was written from, so the head lands exactly on it. The burst-fired
+				// site above keeps its cast-end instant (Kazuha C1 is unchanged).
+				if (!isBurst) {
+					fireCharacterCdResets(
+						getCharacterCdResetTargets(
+							char,
+							'skill',
+							charConstellationLevel,
+							states,
+							chainIdx,
+							stackState,
+							variantCtx
+						),
+						castStart + (active.cooldownStartDelay ?? 0)
+					);
 				}
 				// Variant consumes a transient state (gcsim DeleteStatus on cast):
 				// Thunderous Symphony closes `symphonyWindow`, Volcano Kablam closes
@@ -1449,10 +1491,10 @@ export function runRotation(
 					// 2026-09-16): a `C` that ends Lauma's deer opens her cooldown and
 					// then resolves against it — `C C` is deer, then Prayer.
 					settleOwnerStates(ctx, cs, char.id, clock.now);
-					const chargedStates = computeCurrentStates(clock.now);
+					let chargedStates = computeCurrentStates(clock.now);
 					// Explicit annotation: the chargeHits read in the hit block below
 					// otherwise forms a TS7022 inference cycle through this initializer.
-					const activeNormal: NormalAbility | undefined = resolveActiveAbility(
+					let activeNormal: NormalAbility | undefined = resolveActiveAbility(
 						char,
 						'normal',
 						chargedStates,
@@ -1461,12 +1503,113 @@ export function runRotation(
 						undefined,
 						variantCtx
 					);
+					// ⚓⚓ A SPECIAL CHARGE THAT SPENDS A SKILL CHARGE (2026-09-18): Varka's
+					// Azure Devour "expends uses of the special Elemental Skill Four
+					// Winds' Ascension" (`NormalAbility.specialChargeSpends`). Two gates,
+					// both gcsim's (`charge.go` `skillCharge`): the named skill must be
+					// the one ACTIVE now (`useSpecialSkill()` — no Pyro/Hydro/Electro/
+					// Cryo teammate, no Four Winds, no Azure Devour) and a charge must be
+					// READY. The first failing makes the token the ORDINARY charge, on
+					// `chargeFrames`, because the attack it names cannot be performed.
+					// The second WAITS, as an `E` on cooldown does — the same scan
+					// (charge ready, or an own window ends and resolution may flip),
+					// because the notation named the special and a visible gap is
+					// honest where a same-tinted ordinary charge would be a quiet
+					// substitution. ⚠️ A wait moves the clock, so the state snapshot and
+					// the resolved normal are taken AGAIN after it.
+					let spendsId =
+						t.startsWith('s') && activeNormal?.specialChargeSpends !== undefined
+							? activeNormal.specialChargeSpends
+							: undefined;
+					let spendQueue: number[] | undefined;
+					let spendSkill: SkillAbility | undefined;
+					if (spendsId !== undefined) {
+						const waitFrom = clock.now;
+						for (let scanGuard = 0; scanGuard < 8; scanGuard++) {
+							const scanStates = computeCurrentStates(clock.now);
+							const scanSkill = resolveActiveAbility(
+								char,
+								'skill',
+								scanStates,
+								charConstellationLevel,
+								getChainIndexMap(ctx, char.id, clock.now),
+								stackState,
+								variantCtx
+							);
+							if (scanSkill?.id !== spendsId) {
+								// Not performable here (out of the stance, or the stance
+								// ended during the wait): the ordinary charge.
+								spendsId = undefined;
+								spendQueue = undefined;
+								spendSkill = undefined;
+								break;
+							}
+							if (!ctx.eChargeQueues.has(spendsId)) {
+								ctx.eChargeQueues.set(
+									spendsId,
+									new Array(
+										resolveEffectiveCharges(scanSkill, undefined, charConstellationLevel)
+									).fill(0)
+								);
+							}
+							spendQueue = ctx.eChargeQueues.get(spendsId)!;
+							spendSkill = scanSkill;
+							const readyAt = spendQueue[0];
+							if (readyAt <= clock.now) break;
+							const boundary = nextOwnWindowEnd(clock.now);
+							if (boundary !== null && boundary < readyAt) {
+								// ⚓ A wait is only worth taking when it can END in the special:
+								// peek at the resolution once that window closes, and if the
+								// skill no longer resolves there (the stance ends first), no
+								// use can be reached in this stance — take the ORDINARY
+								// in-stance charge NOW, gcsim's own fallback, rather than carry
+								// the rest of the rotation to the stance's end for a base
+								// charged attack nobody asked for. Measured before this peek:
+								// `Xiangling E > Varka E N5 N5 sE N2 sC` at C0 put the `sC` at
+								// 766f, out of stance and Physical, in place of 673f in it.
+								const atBoundary = resolveActiveAbility(
+									char,
+									'skill',
+									computeCurrentStates(boundary),
+									charConstellationLevel,
+									getChainIndexMap(ctx, char.id, boundary),
+									stackState,
+									variantCtx
+								);
+								if (atBoundary?.id !== spendsId) {
+									spendsId = undefined;
+									spendQueue = undefined;
+									spendSkill = undefined;
+									break;
+								}
+								clock.advance(boundary);
+								continue;
+							}
+							clock.advance(readyAt);
+						}
+						if (clock.now !== waitFrom) {
+							settleOwnerStates(ctx, cs, char.id, clock.now);
+							chargedStates = computeCurrentStates(clock.now);
+							activeNormal = resolveActiveAbility(
+								char,
+								'normal',
+								chargedStates,
+								charConstellationLevel,
+								undefined,
+								undefined,
+								variantCtx
+							);
+						}
+					}
 					const castS = activeNormal
 						? resolveChargeCastTime(
 								activeNormal,
 								t,
 								cancelKeyFor(ctx.humanTiming, 'charged', nextKey, isBow, chargedBuffers),
-								isBow
+								isBow,
+								// The special form only when it spends what it must spend —
+								// an `sC` whose skill is not active is the ordinary charge.
+								activeNormal.specialChargeSpends === undefined || spendsId !== undefined
 							)
 						: null;
 					const blockStart = clock.now;
@@ -1497,6 +1640,29 @@ export function runRotation(
 						abilityId: activeNormal?.id,
 						element: cElement
 					});
+					// The spend (see the gate above): the ready slot takes a fresh
+					// clock appended to the END of the chain — charges recharge one at
+					// a time (cooldown-reduction round) — from the attack's START, which
+					// is where gcsim's `SetCD(ActionSpecialSkill, 11*60)` runs (no
+					// delay, unlike Four Winds' own 39f). Recorded on the event; ⚠️
+					// nothing is drawn for it — see `ActionEvent.spentCharge`.
+					if (spendsId !== undefined && spendQueue !== undefined && spendSkill !== undefined) {
+						const spendCd = resolveAbilityTiming(
+							spendSkill,
+							undefined,
+							chargedStates,
+							charConstellationLevel,
+							getChainIndexMap(ctx, char.id, blockStart),
+							stackState,
+							variantCtx,
+							ctx.team.skillCooldownModifiers
+						).cooldown;
+						const chainEnd = spendQueue[spendQueue.length - 1];
+						const spentReadyAt = Math.max(blockStart, chainEnd) + spendCd;
+						spendQueue[0] = spentReadyAt;
+						spendQueue.sort((a, b) => a - b);
+						chargedEv.spentCharge = { abilityId: spendsId, readyAt: spentReadyAt };
+					}
 					if (castS !== null) clock.advance(clock.now + castS);
 					humanPad('charged', j);
 					// Charged-opened transient state (Arkhe round, 2026-09-04): the

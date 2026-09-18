@@ -91,7 +91,11 @@ export function resolveChargeCastTime(
 	ability: NormalAbility,
 	charToken: string,
 	nextKey: CancelKey,
-	isBow: boolean
+	isBow: boolean,
+	/** Whether the special form may be taken at all — false when the skill an
+	 *  `sC` spends is not the active one (`specialChargeSpends`), so the attack
+	 *  it names cannot be performed and the token is the ordinary charge. */
+	allowSpecial = true
 ): number | null {
 	if (isBow) {
 		const hits = ability.chargeHits;
@@ -104,7 +108,8 @@ export function resolveChargeCastTime(
 		// resolved ability authors none — the same rule an out-of-window `sQ`
 		// follows, because a token the data cannot honour should take the ordinary
 		// form rather than vanish.
-		const special = charToken.startsWith('s') ? ability.specialChargeFrames : undefined;
+		const special =
+			charToken.startsWith('s') && allowSpecial ? ability.specialChargeFrames : undefined;
 		// Frameless (uncurated / Blank) → generic charge profile, so a charged
 		// attack advances the cursor realistically instead of by zero.
 		const frameMap = special ?? ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;

@@ -157,6 +157,14 @@ export type ActionEvent = {
 	 *  block kind (`elemental-normal` vs `normal`) and the substrate fact
 	 *  future onHit consumers (Flins C2, Escoffier C6) need. */
 	element?: Element;
+	/** A special charged attack (`sC`) that SPENT a sibling skill's charge —
+	 *  Varka's Azure Devour expends a Four Winds' Ascension use
+	 *  (`NormalAbility.specialChargeSpends`, 2026-09-18). `readyAt` is where the
+	 *  spent charge's clock ends, appended to the queue's chain. ⚠️ Recorded,
+	 *  not drawn: the E lane has no pill for a charge spent from the input
+	 *  strip, so the cost shows only as where the next `sE` can land. A tail or
+	 *  tooltip built on this is a display call, not a parse one. */
+	spentCharge?: { abilityId: string; readyAt: number };
 };
 
 /** One team Nightsoul-Burst fire (post-P4 #5 arc, phase 3 — derivation moved
