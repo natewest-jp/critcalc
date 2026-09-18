@@ -54,6 +54,7 @@ import type { ParsedRotation } from '$lib/sim/types';
 import { finalizeParse } from '$lib/sim/finalize';
 import { runRotation } from '$lib/sim/run';
 import { collectStackThresholds } from '$lib/sim/thresholds';
+import { collectCooldownReduces } from '$lib/sim/cooldownReduce';
 
 // ---------------------------------------------------------------------------
 // The published surface. ⛔ Every re-export below exists so a consumer's import
@@ -244,6 +245,7 @@ export function parseNotation(
 			constellationByHolder,
 			teamHasOnHitStackEffects,
 			stackThresholds: collectStackThresholds(teamChars, constellationByHolder),
+			cooldownReduces: collectCooldownReduces(teamChars, constellationByHolder),
 			slotRoster: teamCharacters
 		}
 	});

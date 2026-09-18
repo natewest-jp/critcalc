@@ -77,6 +77,10 @@ export type CastEvent = {
 	 *  when a Sacrificial-series proc reset the CD. Can differ from
 	 *  `time + cooldown` (the visual ghost tail) when cooldownStartDelay > 0. */
 	readyAt: number;
+	/** Frames a `cdReset` or `cooldownReduce` took off THIS cast's cooldown
+	 *  after it was written (cooldown-reduction round, 2026-09-18) — the reason
+	 *  `readyAt` may sit before `time + cooldown`. Absent when nothing moved it. */
+	cdReduced?: number;
 	/** Frames (60fps) from cast start until the spawned summon becomes active.
 	 *  0 when the ability spawns nothing (then `fieldStart === time`). */
 	summonActivatesAt: number;

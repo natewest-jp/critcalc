@@ -63,6 +63,11 @@ export type StanceRecord = {
 	extCounts: Map<number, number>;
 	/** Per-durationExtensions[]-index last-fire cursor (reset each window open). */
 	extLastFire: Map<number, number>;
+	/** `procCap: { per: 'stance' }` fire counts, `${nodeId}#${effectIndex}` →
+	 *  fires in THIS window (cooldown-reduction round, 2026-09-18). Zeroed by
+	 *  construction when a stance opens, because the record is fresh — the
+	 *  `extCounts` precedent. Varka's 15 Secret Rite hits, Raiden C6's five. */
+	procCounts: Map<string, number>;
 	/** The named state this stance opened alongside `inStance` (`opensState`,
 	 *  e.g. `nightsoulBlessing`) — its live entry in `cs.states` and its IR
 	 *  record, so an extension that moves the stance's end moves the companion
@@ -157,6 +162,10 @@ export type CharState = {
 	 *  most one grant per 2s", rather than as a count that a dense reaction
 	 *  stream would run away with. `${nodeId}#${effectIndex}` → last fire. */
 	onReactionProcLastFire: Map<string, number>;
+	/** `cooldownReduce` fires, `${nodeId}#${effectIndex}` → last fire time
+	 *  (cooldown-reduction round, 2026-09-18). One map for all three of its
+	 *  triggers, since one effect has one trigger; keyed like the two above. */
+	cooldownReduceLastFire: Map<string, number>;
 	/** Live (and lapsed, kept for retroactive refresh) accrual statuses by
 	 *  `accrual.group` (stack-threshold round, exact model). See `accrual.ts`. */
 	accruals: Map<string, AccrualRecord>;
@@ -204,6 +213,7 @@ export function createCharState(): CharState {
 		onHitStackInstances: new Map(),
 		onHitProcLastFire: new Map(),
 		onReactionProcLastFire: new Map(),
+		cooldownReduceLastFire: new Map(),
 		accruals: new Map(),
 		rotationStacks: new Map(),
 		rotationStackInstances: new Map()

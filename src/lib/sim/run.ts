@@ -112,6 +112,11 @@ import {
 	getWeaponCdResetCooldown
 } from './cooldowns';
 import {
+	dispatchCooldownReduceOnCast,
+	dispatchCooldownReduceOnHit,
+	reduceCooldown
+} from './cooldownReduce';
+import {
 	emitReactionsAtCast,
 	emitReactionsAtSwing,
 	handOffLineup,
@@ -402,6 +407,10 @@ export function runRotation(
 				// stack effect on the team, a hit cannot move a count.
 				checkStackThresholds(ctx, clock, hit.time, { charId: char.id, pools: segPools });
 			}
+			// A hit is where a `cooldownReduce` most often fires (Varka's Secret
+			// Rite, Raiden C6, Sara C1). Outside the stack guard — it has its own
+			// per-team precompute and is free when nobody authors one.
+			dispatchCooldownReduceOnHit(ctx, hit);
 			ctx.hitRecords.push(hit);
 			// ⚓ THE DAMAGE STREAM IS THIS STREAM (coordinated-attack round,
 			// 2026-08-18) — one hit the opponent took, offered to every armed
@@ -734,6 +743,27 @@ export function runRotation(
 					// writing first and sorting leaves queue[0] pointing at a
 					// different charge, so the proc would reset the wrong slot.
 					let consumedReadyAt = castEvent.readyAt;
+					// ⚓⚓ CHARGES RECHARGE ONE AT A TIME (cooldown-reduction round,
+					// 2026-09-18). A charge spent while another is still recharging
+					// does not start its own clock until that one finishes — gcsim's
+					// `cdQueue` is a sequential worker, and it is the in-game rule.
+					// Measured before: `Klee E E E` returned both charges at 20s, so
+					// the third E landed at 1233f where in game it waits until
+					// 2433f. ⚠️ `queue[0]` is the slot being spent (ready, ≤ now);
+					// the last slot is the END of the chain, and the new clock is
+					// appended to it rather than started at its own delay. The
+					// ghost tail follows, so the bar still ends where a recast can
+					// be placed — the barPhases ruling. The sac-proc branch below
+					// may still reset it to the hitmark; a reset beats a queue.
+					if (queue!.length > 1) {
+						const chainEnd = queue![queue!.length - 1];
+						const ownClockStart = castEvent.readyAt - cd;
+						if (chainEnd > ownClockStart) {
+							const shift = chainEnd - ownClockStart;
+							consumedReadyAt += shift;
+							castEvent.readyAt += shift;
+						}
+					}
 					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end
 					// of cast animation), not onCast. hitTime approximates hitmark.
 					const sacCd = getWeaponCdResetCooldown(char.id, ctx.loadoutMap);
@@ -756,6 +786,9 @@ export function runRotation(
 					queue![0] = consumedReadyAt;
 					queue!.sort((a, b) => a - b);
 				}
+				// An `onCast` cooldownReduce on the caster's own cast (Itto C2),
+				// AFTER the CD write so it sees the clock it shortens.
+				dispatchCooldownReduceOnCast(ctx, char.id, kind, tok.text, castStart, stackState);
 
 				// ⚓⚓ THE CAST PIPELINE SCHEDULES BEFORE IT ADVANCES (2026-08-17).
 				// The clock does NOT move here — it moves at the very BOTTOM of this
@@ -796,16 +829,17 @@ export function runRotation(
 							// `{charId}__…` ability ids (or bare charId in the
 							// uncurated fallback). A rotation-wide reset would erase
 							// teammates' cooldowns.
-							for (const [key, q] of ctx.eChargeQueues) {
+							// Through the one mover (cooldown-reduction round), so the
+							// refunded cast's ghost tail moves with its slot — measured
+							// before, `Kazuha E Q E` at C1 placed the second E at 169f
+							// under a first-E tail that still ran to 332f. An infinite
+							// reduction is a reset; a ready charge is left alone.
+							for (const key of ctx.eChargeQueues.keys()) {
 								if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
-								if (q.length === 0) continue;
-								// Refund only charges still on CD; never push an
-								// already-ready charge later.
-								q[0] = Math.min(q[0], castEnd);
-								q.sort((a, b) => a - b);
+								reduceCooldown(ctx, char.id, 'skill', key, Infinity, castEnd);
 							}
 						} else if (target === 'burst') {
-							cs.qReadyAt = castEnd;
+							reduceCooldown(ctx, char.id, 'burst', undefined, Infinity, castEnd);
 						}
 					}
 				}
@@ -828,12 +862,44 @@ export function runRotation(
 						sourceCastId: castId,
 						ownerUptime: dur,
 						extCounts: new Map(),
-						extLastFire: new Map()
+						extLastFire: new Map(),
+						procCounts: new Map()
 					};
 					// Retain every opened stance window for the IR (cs.stance is
 					// replaced per cast; extensions/swap-close mutate this same
 					// object in place, so the collected record stays current).
 					ctx.stanceWindowRecs.push(cs.stance);
+					// ⚓ A sibling skill that `startsOnCooldown` begins recharging
+					// HERE (cooldown-reduction round, 2026-09-18): Varka's Four Winds'
+					// Ascension "starts on cooldown and has 2 maximum uses", so its
+					// queue is written as one chain from the base skill's cooldown
+					// clock — `start + cd`, `start + 2cd` — and re-written on every
+					// re-entry (gcsim discards the in-progress queue and starts a
+					// fresh one, `skill.go:105-118`). The clock's start is the base
+					// skill's own `cooldownStartDelay`, which is where gcsim's
+					// stance-entry block runs (the status is added at the hitmark).
+					// ⚠️ Only reachable with the reduction that closes the loop —
+					// see the field's doc and the round's §0.
+					if (kind === 'skill') {
+						const clockStart = castStart + (active.cooldownStartDelay ?? 0);
+						for (const sib of char.abilities) {
+							if (sib.abilityType !== 'skill' || sib.startsOnCooldown !== true) continue;
+							if (sib.id === active.id) continue;
+							const n = resolveEffectiveCharges(sib, undefined, charConstellationLevel);
+							const sibCd = resolveAbilityTiming(
+								sib,
+								undefined,
+								new Set([...states, 'inStance']),
+								charConstellationLevel,
+								chainIdx,
+								stackState,
+								variantCtx
+							).cooldown;
+							const chain: number[] = [];
+							for (let i = 1; i <= n; i++) chain.push(clockStart + i * sibCd);
+							ctx.eChargeQueues.set(sib.id, chain);
+						}
+					}
 					// Open named state alongside inStance (e.g. nightsoulBlessing).
 					// `opensState: "inStance"` is redundant (the stance IS the
 					// inStance window — post-P4 #4 they are one record); skip it so

@@ -142,7 +142,7 @@ const NO_STACKS: ReadonlyMap<string, number> = new Map();
  *  agrees) and is what makes a rotation-scoped key readable at a site that has
  *  no segment pool at all — a summon tick, or an off-field holder whose stack
  *  conditions previously resolved against an empty map. */
-function stackReadView(
+export function stackReadView(
 	hcs: CharState,
 	seg: Map<string, number> | null
 ): ReadonlyMap<string, number> {
