@@ -158,9 +158,20 @@ synthetic character), check, lint, build; e2e — see the merge commit.
   `specialChargeSpends`. Two `State` members (`freeAzureDevour`,
   `freeFourWinds`) and lint. ⏭ Nate's call whether a C6 rotation loop is worth
   three schema additions.
-- **Which element tints his E/Q pills.** Every cast pill on every track is the
-  CHARACTER's element (`pal(char.element)` in the timeline, and the cast input
-  blocks likewise); Varka is the first character whose casts LAND another
-  element first — Four Winds and the burst open with the right-hand element,
-  Windbound Execution is Anemo only. The aura lane already shows each cast's
-  applications in their own colour. ⏭ Nate's call; nothing was changed.
+- ✅ **Which element tints his E/Q pills — RULED AND SHIPPED the same day**
+  (branch `polish/varka-cast-tint`). ⚓ Nate: Four Winds and the burst tint the
+  PHEC hand; Windbound Execution stays Anemo, and that contrast is the point —
+  "in a Pyro Varka team you build him with a Pyro Goblet, since his Pyro damage
+  is greater than his Anemo damage, so people will consider his PHEC damage
+  his main output … it will bring more attention to Windbound Execution being
+  Anemo tinted, which should be interesting and helpful for players to know
+  his kit better." The rule is general, not Varka's: **a cast pill tints the
+  element its FIRST landed hit applies**, resolved at parse from
+  `application[0].element` (`CastEvent.element`, stamped only when it is not
+  the caster's own; a census of every literal `application[0].element` in the
+  corpus finds ZERO that differ from the character's, so only Varka's two refs
+  move). It rides the bar (`TimelineBar.element`) into the pill, its ghost
+  tail, its badge halo and the cast's input block, and the PNG export mirrors
+  it. ⚠️ The notation EDITOR still highlights `sE`/`Q` in Varka's own Anemo —
+  the highlighter reads the eager index and has no party to resolve a ref
+  against, the same limit that leaves timed infusions neutral there.

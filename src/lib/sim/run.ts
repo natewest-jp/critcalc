@@ -731,6 +731,16 @@ export function runRotation(
 					fieldStart: castStart + (spawn ?? 0),
 					stackContext: stacks
 				};
+				// The element the cast's first hit LANDS, when it is not the caster's
+				// own (`CastEvent.element`): Varka's Four Winds and burst open with the
+				// right-hand claymore. Resolved from the same `application[]` the
+				// gauge is fed (variant's replaces the base's, the array rule), so the
+				// pill and the aura lane's first pip cannot disagree.
+				{
+					const castApps = variant?.application ?? active.application;
+					const first = resolveElementRef(castApps?.[0]?.element, variantCtx);
+					if (first !== undefined && first !== char.element) castEvent.element = first;
+				}
 				ctx.events.push(castEvent);
 				ctx.castRecords.push({ ev: castEvent, track });
 				charCasts.push(castEvent);

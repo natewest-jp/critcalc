@@ -58,6 +58,10 @@ export type TimelineBar = {
 	 *  input token — the sibling-ability case above, one rung down. Furina's
 	 *  Ousia/Pneuma lineups are the corpus's only pair (Arkhe round). */
 	variantLabel?: string;
+	/** Mirrors `CastEvent.element`: the first landed hit's element when it is
+	 *  not the character's own (Varka's Four Winds and burst). The pill, its
+	 *  ghost tail and the badge halo take this palette; absent = the slot's. */
+	element?: Element;
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
 	 *  Mirrors persistent-behavior summonActivatesAt; carried on the bar so the
 	 *  renderer and duringSummon detection don't need to re-query the ability. */
