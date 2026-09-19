@@ -128,6 +128,12 @@ export type ReactionEvent = {
 	 *  action classes arrived with the ICD round (2026-08-15) — a catalyst's
 	 *  normals, a catalyst/bow charged shot and an infused plunge all react. */
 	castKind: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
+	/** The application that caused it was DELIVERED BY AN ENTITY — a summon
+	 *  tick or a proc — rather than by the controlled character's own cast or
+	 *  swing. It carries its OWNER's id, so this flag is the only thing that lets
+	 *  an `onReaction … source: 'active'` reader refuse it (the same distinction,
+	 *  under the same name, as `Offer.viaEntity` and `HitEvent.viaEntity`). */
+	viaEntity?: true;
 };
 
 /** Scheduled expiry of a tracked shield window (not shatter-by-damage). */

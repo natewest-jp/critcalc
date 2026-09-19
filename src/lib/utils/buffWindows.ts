@@ -52,6 +52,7 @@ import type { LoadoutEntry } from '$lib/stores';
 import { getArtifactSetById } from '$lib/data/artifactLookup';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import { framesOf } from '$lib/utils/frames';
+import { buildStateIndex, type StatesAt } from '$lib/utils/stateIndex';
 import {
 	getCharacterEffectsForAfterDuration,
 	getCharacterEffectsForCast,
@@ -86,6 +87,9 @@ export type BuffWindowInput = {
 	stackFires: readonly StackThresholdEvent[];
 	/** The parser's authored state/summon windows (afterDuration span join). */
 	windows: readonly TimelineWindow[];
+	/** Which `summon` windows are their cast's PRIMARY summon — what
+	 *  `duringSummon` means. See `buildStateIndex`. */
+	primarySummonWindows: ReadonlySet<TimelineWindow>;
 	constellationLevels: Record<string, number>;
 	loadoutMap: Record<string, LoadoutEntry>;
 	teamFactionCounts: ReadonlyMap<string, number>;
@@ -105,6 +109,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		nbBars,
 		stackFires,
 		windows,
+		primarySummonWindows,
 		constellationLevels,
 		loadoutMap,
 		teamFactionCounts,
@@ -115,6 +120,47 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 	const out: BuffWindow[] = [];
 	let nextId = 0;
+
+	// ⚓⚓ THE HOLDER'S STATES AT THE EVENT (state-gates round, §1.G — 2026-09-19).
+	//
+	// Every per-EVENT condition pass below — a cast, a hit, a tick, a reaction, a
+	// threshold fire — evaluates with the states the holder was in at that
+	// instant, read off the parse's own final windows (`stateIndex.ts`, which
+	// holds the closed-world rule and the self-opened-state rule). Until this a
+	// `state` gate was `null` at every site and a pool keeps a `null`, so a buff
+	// gated on `inStance` / `duringSummon` / `nightsoulBlessing` drew with the
+	// state down.
+	//
+	// ⚓ THE GATE IS AN ENTRY TEST, at the event. Every state-gated effect that
+	// reaches this pass carries its own `duration` (census 2026-09-19), so the
+	// state decides whether the buff STARTS and the duration decides how long it
+	// runs — Iansan's 15s ATK outlives her 9s Blessing, and that is the kit.
+	//
+	// ⚠️ THE POOL PREFILTERS STAY STATELESS, on purpose. They run once per token,
+	// before any event exists, and drop only a definitive `false`; with no states
+	// a `state` gate is `null` there and the effect rides on to the per-event
+	// pass, which is where it is decided. ⛔ Don't hand them a state set — there
+	// is no instant to read it at. The same goes for the `afterDuration`,
+	// Nightsoul-Burst and `onState` sites: no state gate sits on one today, and
+	// each would need its own answer to "which instant".
+	//
+	// ⚠️ `field` is the holder's on/off-field fact for the scopes that know it
+	// (the self sites, the per-receiver slices) — it joins the same two sets.
+	const stateIndex = buildStateIndex(windows, getCharacter, primarySummonWindows);
+	type Gate = { resolved: ReadonlySet<string>; ctx: ConditionContext };
+	const gateFor = (base: ConditionContext, st: StatesAt, field?: 'onField' | 'offField'): Gate => {
+		if (field === undefined) {
+			if (st.negated.size === 0) return { resolved: st.active, ctx: base };
+			return { resolved: st.active, ctx: { ...base, negatedStates: st.negated } };
+		}
+		return {
+			resolved: new Set([...st.active, field]),
+			ctx: {
+				...base,
+				negatedStates: new Set([...st.negated, field === 'onField' ? 'offField' : 'onField'])
+			}
+		};
+	};
 	const push = (w: Omit<BuffWindow, 'kind' | 'id'>): BuffWindow => {
 		const win: BuffWindow = { kind: 'buff', id: nextId++, ...w };
 		out.push(win);
@@ -266,6 +312,56 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// TARGETS carrying different display formatters: a window is read wholesale
 	// as buff-or-shred (`formatBuffDisplayValue` vs `formatResShredDisplayValue`)
 	// and its row carries one `kind`, so a mixed pool has no single answer.
+	/**
+	 * Whether `effect` fires off `ev`, by the HOLDER's states when the reaction
+	 * happened (§1.G). The pool prefilter has already dropped everything the
+	 * static context refuses; this is the per-event half, which the reaction
+	 * sites did not have at all — Citlali's A1 shred drew off any melt, Itzpapa
+	 * or no Itzpapa. One `Gate` per (holder, event), since a kit fires several
+	 * effects off one reaction.
+	 */
+	const makeReactionGate = (holderId: string, cLevel: number, base: ConditionContext) => {
+		const gates = new Map<ReactionEvent, Gate>();
+		return (effect: Effect, ev: ReactionEvent): boolean => {
+			if (effect.conditions === undefined) return true;
+			let gate = gates.get(ev);
+			if (!gate) {
+				gate = gateFor(base, stateIndex.at(holderId, ev.time));
+				gates.set(ev, gate);
+			}
+			return (
+				evalCondition(
+					effect.conditions,
+					4,
+					gate.resolved,
+					cLevel,
+					undefined,
+					undefined,
+					gate.ctx
+				) !== false
+			);
+		};
+	};
+
+	/**
+	 * The reaction events an `onReaction` trigger listens to, by its `source`.
+	 * ⚓ `'active'` is every reaction the CONTROLLED character caused with their
+	 * own cast or swing — whoever that is — so it is the whole stream minus the
+	 * entity-delivered ones, ⛔ never an id comparison (a tick carries its
+	 * owner's id). Until 2026-09-19 it fell through to the holder's own events,
+	 * so Qiqi's A1 ("a character under the effects of Herald of Frost triggers
+	 * an Elemental Reaction") drew for nobody but Qiqi.
+	 */
+	const reactionEventsFor = (
+		source: 'self' | 'team' | 'active' | undefined,
+		own: readonly ReactionEvent[]
+	): readonly ReactionEvent[] =>
+		source === 'team'
+			? reactionEvents
+			: source === 'active'
+				? reactionEvents.filter((ev) => ev.viaEntity !== true)
+				: own;
+
 	const reactionEventIndex = new Map<ReactionEvent, number>(
 		reactionEvents.map((ev, i) => [ev, i] as const)
 	);
@@ -330,17 +426,18 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		if (qualified.length === 0) return [];
 		const ownEvents = reactionEvents.filter((ev) => ev.characterId === holderId);
 		const pooler = makeReactionPooler();
+		const firesAt = makeReactionGate(holderId, cLevel, ctx);
 		for (const effect of qualified) {
 			const trig = effect.trigger as {
 				reaction: Reaction | Reaction[] | 'any';
-				source?: 'self' | 'team';
+				source?: 'self' | 'team' | 'active';
 			};
 			const trigReaction = trig.reaction;
 			const matches = (r: Reaction): boolean =>
 				trigReaction === 'any' ||
 				(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
-			for (const ev of trig.source === 'team' ? reactionEvents : ownEvents) {
-				if (matches(ev.reaction)) pooler.add(ev, effect);
+			for (const ev of reactionEventsFor(trig.source, ownEvents)) {
+				if (matches(ev.reaction) && firesAt(effect, ev)) pooler.add(ev, effect);
 			}
 		}
 		return pooler.pools;
@@ -374,10 +471,22 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		if (effects.length === 0) return [];
 		const pools: FirePool[] = [];
 		for (const fire of fires) {
+			const gate = gateFor(ctx, stateIndex.at(holderId, fire.time));
 			const qualified = dedupByStat(
 				effects.filter((e) => {
 					const dominant = (e.trigger as { dominant?: string }).dominant;
-					return dominant === undefined || dominant === fire.dominant;
+					if (dominant !== undefined && dominant !== fire.dominant) return false;
+					return (
+						evalCondition(
+							e.conditions,
+							4,
+							gate.resolved,
+							cLevel,
+							undefined,
+							undefined,
+							gate.ctx
+						) !== false
+					);
 				})
 			);
 			for (const part of partitionByDuration(qualified)) pools.push({ fire, effects: part });
@@ -569,6 +678,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 					// 2026-09-16); its `onCast` effects in the same pool are untouched.
 					const castNoHit = castLandsNoHit(char, castType, cast);
+					const gate = gateFor(baseCtx, stateIndex.at(track.characterId, cast.time, cast.id));
 					for (const group of poolsFor(cast.label, cast.abilityId).qualified) {
 						const qualifiedEffects = group.effects;
 						if (qualifiedEffects.length === 0) continue;
@@ -578,11 +688,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 									evalCondition(
 										effect.conditions,
 										4,
-										new Set(),
+										gate.resolved,
 										cLevel,
 										undefined,
 										cast.stackContext,
-										baseCtx
+										gate.ctx
 									) === false
 								) {
 									return false;
@@ -676,6 +786,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 					// 2026-09-16); its `onCast` effects in the same pool are untouched.
 					const castNoHit = castLandsNoHit(char, castType, cast);
+					const gate = gateFor(baseCtx, stateIndex.at(track.characterId, cast.time, cast.id));
 					for (const group of poolsFor(cast.label, cast.abilityId).resShred) {
 						const resShredStartPool = group.effects;
 						if (resShredStartPool.length === 0) continue;
@@ -685,11 +796,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 									evalCondition(
 										effect.conditions,
 										4,
-										new Set(),
+										gate.resolved,
 										cLevel,
 										undefined,
 										cast.stackContext,
-										baseCtx
+										gate.ctx
 									) === false
 								)
 									return false;
@@ -781,17 +892,18 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					const lastWinByDur = new Map<number, BuffWindow>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
+						const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
 						const barEffects = dedupByStat(
 							qualifiedEffects.filter((effect) => {
 								if (
 									evalCondition(
 										effect.conditions,
 										4,
-										new Set(),
+										gate.resolved,
 										cLevel,
 										undefined,
 										hit.stacks,
-										baseCtx
+										gate.ctx
 									) === false
 								) {
 									return false;
@@ -836,17 +948,18 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					const lastWinByDur = new Map<number, BuffWindow>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
+						const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
 						const barEffects = dedupResShredByElement(
 							resShredBlockPool.filter((effect) => {
 								if (
 									evalCondition(
 										effect.conditions,
 										4,
-										new Set(),
+										gate.resolved,
 										cLevel,
 										undefined,
 										hit.stacks,
-										baseCtx
+										gate.ctx
 									) === false
 								)
 									return false;
@@ -953,6 +1066,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								)
 									continue;
 								const filterCtx = hitFilterCtx(hit);
+								const gate = gateFor(baseCtx, stateIndex.at(track.characterId, hit.time));
 								const barEffects = dedup(
 									pool.filter((effect) => {
 										if (effect.trigger.type !== 'onHit') return false;
@@ -961,11 +1075,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 											evalCondition(
 												effect.conditions,
 												4,
-												new Set(),
+												gate.resolved,
 												cLevel,
 												undefined,
 												hit.stacks,
-												baseCtx
+												gate.ctx
 											) === false
 										)
 											return false;
@@ -1398,10 +1512,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				return true;
 			});
 			const pooler = makeReactionPooler();
+			const firesAt = makeReactionGate(track.characterId, cLevel, baseCtx);
 			for (const effect of qualified) {
 				const trig = effect.trigger as {
 					reaction: Reaction | Reaction[] | 'any';
-					source?: 'self' | 'team';
+					source?: 'self' | 'team' | 'active';
 				};
 				const trigReaction = trig.reaction;
 				const matches = (r: Reaction): boolean =>
@@ -1411,9 +1526,10 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// hand back the same event objects — which is what lets the pooler
 				// key on event identity across a self-triggered and a team-triggered
 				// effect that happen to share one event.
-				const eventPool = trig.source === 'team' ? reactionEvents : ownReactionEvents;
+				const eventPool = reactionEventsFor(trig.source, ownReactionEvents);
 				for (const ev of eventPool) {
 					if (!matches(ev.reaction)) continue;
+					if (!firesAt(effect, ev)) continue;
 					pooler.add(ev, effect);
 				}
 			}
@@ -1607,6 +1723,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 				// 2026-09-16); its `onCast` effects in the same pool are untouched.
 				const castNoHit = castLandsNoHit(char, castType, cast);
+				const castStates = stateIndex.at(sourceTrack.characterId, cast.time, cast.id);
+				const gate = gateFor(receivedCtxOf(char.id), castStates);
 				for (const activeGroup of activeEffectsFor(cast.label, cast.abilityId)) {
 					const activeEffects = activeGroup.effects;
 					if (activeEffects.length === 0) continue;
@@ -1616,11 +1734,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								evalCondition(
 									effect.conditions,
 									4,
-									new Set(),
+									gate.resolved,
 									cLevel,
 									undefined,
 									cast.stackContext,
-									receivedCtxOf(char.id)
+									gate.ctx
 								) === false
 							)
 								return false;
@@ -1714,13 +1832,10 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							// end — straight through a swap-out that had already happened.
 							const isLast = trackIdx === tracks.length - 1;
 							const sourceIsActive = receiverId === sourceTrack.characterId;
-							const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
-							const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
 							const receiverChar = getCharacter(receiverId);
 							const activeCharFactions = new Set<string>(receiverChar?.factions ?? []);
 							const segCtx: ConditionContext = {
 								teamFactionCounts,
-								negatedStates: segNegated,
 								activeCharFactions,
 								// ⚓ Same structural claim `activeCharFactions` makes: a
 								// per-segment slice is the one scope where the RECEIVER is
@@ -1731,17 +1846,20 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								// receiver, which is what the talent says.
 								receiverWeapon: receiverChar?.weapon
 							};
+							// The holder's states at the EVENT plus their field fact for THIS
+							// slice — one gate, so a state decided at the cast stays decided here.
+							const segGate = gateFor(segCtx, castStates, sourceIsActive ? 'onField' : 'offField');
 
 							const segEffects = part.filter(
 								(effect) =>
 									evalCondition(
 										effect.conditions,
 										4,
-										segResolved,
+										segGate.resolved,
 										cLevel,
 										undefined,
 										cast.stackContext,
-										segCtx
+										segGate.ctx
 									) !== false
 							);
 							if (segEffects.length === 0) continue;
@@ -1796,17 +1914,19 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				if (activeEffects.length === 0) continue;
 				for (const hit of hitsForTrack(sti, blockClass)) {
 					const filterCtx = hitFilterCtx(hit);
+					const hitStates = stateIndex.at(sourceTrack.characterId, hit.time);
+					const gate = gateFor(receivedCtxOf(char.id), hitStates);
 					const barEffects = dedupByStat(
 						activeEffects.filter((effect) => {
 							if (
 								evalCondition(
 									effect.conditions,
 									4,
-									new Set(),
+									gate.resolved,
 									cLevel,
 									undefined,
 									hit.stacks,
-									receivedCtxOf(char.id)
+									gate.ctx
 								) === false
 							)
 								return false;
@@ -1830,13 +1950,10 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							const { receiverId, segStart, segEnd } = segments[si];
 							const isLast = si === segments.length - 1;
 							const sourceIsActive = receiverId === sourceTrack.characterId;
-							const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
-							const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
 							const receiverChar = getCharacter(receiverId);
 							const activeCharFactions = new Set<string>(receiverChar?.factions ?? []);
 							const segCtx: ConditionContext = {
 								teamFactionCounts,
-								negatedStates: segNegated,
 								activeCharFactions,
 								// ⚓ Same structural claim `activeCharFactions` makes: a
 								// per-segment slice is the one scope where the RECEIVER is
@@ -1847,16 +1964,19 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								// receiver, which is what the talent says.
 								receiverWeapon: receiverChar?.weapon
 							};
+							// The holder's states at the EVENT plus their field fact for THIS
+							// slice — one gate, so a state decided at the cast stays decided here.
+							const segGate = gateFor(segCtx, hitStates, sourceIsActive ? 'onField' : 'offField');
 							const segEffects = part.filter(
 								(effect) =>
 									evalCondition(
 										effect.conditions,
 										4,
-										segResolved,
+										segGate.resolved,
 										cLevel,
 										undefined,
 										hit.stacks,
-										segCtx
+										segGate.ctx
 									) !== false
 							);
 							if (segEffects.length === 0) continue;
@@ -1934,6 +2054,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					if (activeEffects.length === 0) continue;
 					for (const hit of classHits) {
 						const filterCtx = hitFilterCtx(hit);
+						const hitStates = stateIndex.at(sourceTrack.characterId, hit.time);
+						const gate = gateFor(receivedCtxOf(char.id), hitStates);
 						const barEffects = dedupByStat(
 							activeEffects.filter((effect) => {
 								if (effect.trigger.type !== 'onHit') return false;
@@ -1943,11 +2065,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 									evalCondition(
 										effect.conditions,
 										4,
-										new Set(),
+										gate.resolved,
 										cLevel,
 										undefined,
 										hit.stacks,
-										receivedCtxOf(char.id)
+										gate.ctx
 									) === false
 								)
 									return false;
@@ -1985,25 +2107,25 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								const { receiverId, segStart, segEnd } = segments[si];
 								const isLast = si === segments.length - 1;
 								const sourceIsActive = receiverId === sourceTrack.characterId;
-								const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
-								const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
 								const receiverChar = getCharacter(receiverId);
 								const segCtx: ConditionContext = {
 									teamFactionCounts,
-									negatedStates: segNegated,
 									activeCharFactions: new Set<string>(receiverChar?.factions ?? []),
 									receiverWeapon: receiverChar?.weapon
 								};
+								// The holder's states at the EVENT plus their field fact for THIS
+								// slice — one gate, so a state decided at the cast stays decided here.
+								const segGate = gateFor(segCtx, hitStates, sourceIsActive ? 'onField' : 'offField');
 								const segEffects = part.filter(
 									(effect) =>
 										evalCondition(
 											effect.conditions,
 											4,
-											segResolved,
+											segGate.resolved,
 											cLevel,
 											undefined,
 											hit.stacks,
-											segCtx
+											segGate.ctx
 										) !== false
 								);
 								if (segEffects.length === 0) continue;
@@ -2181,6 +2303,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
 				// 2026-09-16); its `onCast` effects in the same pool are untouched.
 				const castNoHit = castLandsNoHit(char, castType, cast);
+				const gate = gateFor(
+					selfCtx,
+					stateIndex.at(sourceTrack.characterId, cast.time, cast.id),
+					'onField'
+				);
 				for (const selfGroup of selfEffectsFor(cast.label, cast.abilityId)) {
 					const selfEffects = selfGroup.effects;
 					if (selfEffects.length === 0) continue;
@@ -2190,11 +2317,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								evalCondition(
 									effect.conditions,
 									4,
-									selfResolved,
+									gate.resolved,
 									cLevel,
 									undefined,
 									cast.stackContext,
-									selfCtx
+									gate.ctx
 								) === false
 							)
 								return false;
@@ -2261,17 +2388,22 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// bonus sees her pre-consume seal count at the CA hit.
 				for (const hit of hitsForTrack(sti, blockClass)) {
 					const filterCtx = hitFilterCtx(hit);
+					const gate = gateFor(
+						selfCtxBlock,
+						stateIndex.at(sourceTrack.characterId, hit.time),
+						'onField'
+					);
 					const barEffects = dedupByStat(
 						selfEffects.filter((effect) => {
 							if (
 								evalCondition(
 									effect.conditions,
 									4,
-									selfResolvedBlock,
+									gate.resolved,
 									cLevel,
 									undefined,
 									hit.stacks,
-									selfCtxBlock
+									gate.ctx
 								) === false
 							)
 								return false;

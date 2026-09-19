@@ -233,6 +233,31 @@ describe('buff windows — team surface', () => {
 		expect(keys).not.toContain('applier::char::onReaction::atk');
 	});
 
+	it("onReaction source 'active': the CONTROLLED character's reaction, whoever holds the effect", () => {
+		// Qiqi's A1 shape. It fell through to the holder's own events until
+		// 2026-09-19, so a teammate's reaction drew nothing at all.
+		const applier = mkChar('applier', 'Applier', { element: 'pyro' });
+		const reactor = mkChar('reactor', 'Reactor', { element: 'hydro' });
+		applier.passives = [
+			{
+				id: 'applier__passive__rxn',
+				name: 'Rxn',
+				abilityType: 'passive',
+				effects: [
+					teamBuff({
+						target: 'active',
+						trigger: { type: 'onReaction', reaction: 'vaporize', source: 'active' },
+						duration: 5
+					})
+				]
+			} as unknown as Ability
+		];
+		const { rotation } = run('Applier E > Reactor E', [applier, reactor]);
+		const wins = rotation.windows.filter((w) => w.kind === 'buff' && w.characterId === 'applier');
+		expect(wins).toHaveLength(1);
+		expect(wins[0].kind === 'buff' && wins[0].receiverId).toBe('reactor');
+	});
+
 	// ↻ 2026-08-14 — THIS TEST'S EXPECTATION IS INVERTED ON PURPOSE. It used to
 	// assert TWO rows with distinct keys, guarding the archived
 	// `each_key_duplicate` crash: Chevreuse's two shreds share one sourceLabel,
@@ -926,5 +951,145 @@ describe('onFieldDelay — a buff that waits for the receiver to stay', () => {
 		const c0 = run('Nicole E > Kaeya N5 N5', [nicole, kaeya]).rotation;
 		const c6 = run('Nicole E > Kaeya N5 N5', [nicole, kaeya], { nicole: 6 }).rotation;
 		expect(guidance(c0, 'kaeya')[0][0] - guidance(c6, 'kaeya')[0][0]).toBeCloseTo(3, 1);
+	});
+});
+
+// ── state gates (§1.G, 2026-09-19) ──
+//
+// Until this round every buff pass evaluated `conditions` with an EMPTY state
+// set, so a `state` gate was `null` and the pool kept it: a buff gated on
+// `inStance` / `duringSummon` drew with the state down. The states now come
+// from the parse's own final windows (`stateIndex.ts`). Hermetic holder: E is a
+// 6s stance, Q leaves a 10s summon, and every gated effect sits on a passive.
+describe('buff windows — state gates (§1.G)', () => {
+	const inState = (state: string) => ({ type: 'state', state });
+	const holder = (effects: Effect[]): CharacterData => {
+		const c = mkChar('gated', 'Gated', { element: 'pyro' });
+		c.abilities[1] = mkSkill('gated', { behavior: 'stance', duration: 6 });
+		c.abilities[2] = mkBurst('gated', { summons: [{ label: 'Totem', duration: 10 }] });
+		c.passives = [
+			{ id: 'gated__passive__gates', name: 'Gates', abilityType: 'passive', effects }
+		] as unknown as Ability[];
+		return c;
+	};
+	const statsOf = (rotation: ReturnType<typeof run>['rotation'], id = 'gated'): string[] =>
+		rotation.windows.flatMap((w) =>
+			w.kind === 'buff' && w.characterId === id
+				? w.effects.map((e) =>
+						e.type === 'buff' ? `${e.stat}=${e.value}` : `shred=${(e as { value?: unknown }).value}`
+					)
+				: []
+		);
+
+	it('a cast gate is an entry test against a state some OTHER cast opened', () => {
+		const c = holder([
+			teamBuff({
+				trigger: { type: 'onCast', ability: 'burst' },
+				duration: 5,
+				conditions: inState('inStance')
+			})
+		]);
+		expect(statsOf(run('Gated Q', [c]).rotation)).toEqual([]);
+		expect(statsOf(run('Gated E Q', [c]).rotation)).toEqual(['atk=20']);
+		// The stance is 6s; a burst after it closed is cold again.
+		expect(statsOf(run('Gated E ~7s Q', [c]).rotation)).toEqual([]);
+	});
+
+	it('⚓ a state the cast ITSELF opens is neither up nor down — both readings draw', () => {
+		// Skirk's A4 (`inStance` on the E that opens the stance) means "after";
+		// Varesa's C4 (`not nightsoulBlessing` on the Q that opens it) means
+		// "before". No instant serves both, so the self-opened window answers null.
+		const c = holder([
+			teamBuff({ stat: 'em', conditions: inState('inStance') }),
+			teamBuff({ stat: 'def', conditions: { type: 'not', condition: inState('inStance') } })
+		]);
+		expect(statsOf(run('Gated E', [c]).rotation).sort()).toEqual(['def=20', 'em=20']);
+	});
+
+	it('tiers of one stat resolve to the tier whose state is up (dedupe after conditions)', () => {
+		const tier = (value: number, conditions: unknown) =>
+			teamBuff({ trigger: { type: 'onCast', ability: 'burst' }, duration: 5, value, conditions });
+		const c = holder([
+			tier(10, { type: 'not', condition: inState('inStance') }),
+			tier(30, inState('inStance'))
+		]);
+		expect(statsOf(run('Gated Q', [c]).rotation)).toEqual(['atk=10']);
+		expect(statsOf(run('Gated E Q', [c]).rotation)).toEqual(['atk=30']);
+	});
+
+	it('a hit gate reads the holder at the HIT: duringSummon up, down, and expired', () => {
+		const c = holder([
+			teamBuff({
+				target: 'self',
+				trigger: { type: 'onHit', abilityType: 'normal' },
+				duration: 5,
+				conditions: inState('duringSummon')
+			})
+		]);
+		expect(statsOf(run('Gated N1', [c]).rotation)).toEqual([]);
+		expect(statsOf(run('Gated Q N1', [c]).rotation)).toEqual(['atk=20']);
+		expect(statsOf(run('Gated Q ~11s N1', [c]).rotation)).toEqual([]);
+	});
+
+	it('a reaction gate reads the HOLDER at the reaction, off field included', () => {
+		const shred = {
+			type: 'resShred',
+			target: 'enemy',
+			trigger: { type: 'onReaction', reaction: 'vaporize', source: 'team' },
+			duration: 6,
+			source: 'character',
+			element: 'pyro',
+			value: -20,
+			conditions: inState('duringSummon')
+		} as unknown as Effect;
+		const c = holder([shred]);
+		const reactor = mkChar('reactor', 'Reactor', { element: 'hydro' });
+		const cold = run('Gated E > Reactor E', [c, reactor]).rotation;
+		expect(cold.events.some((e) => e.kind === 'reaction')).toBe(true);
+		expect(statsOf(cold)).toEqual([]);
+		const live = run('Gated Q > Reactor E', [c, reactor]).rotation;
+		expect(live.events.some((e) => e.kind === 'reaction')).toBe(true);
+		expect(statsOf(live)).toEqual(['shred=-20']);
+	});
+
+	it('⚓ the LIVE stack dispatchers share the closed world — a `not state` gate can fire', () => {
+		// They demand a definitive `true`, so with no negated set a `not(state)`
+		// gate never fired at all. Lohen's shape: a count gained inside the stance
+		// and cleared by the skill cast made OUTSIDE it (measured on main: the
+		// clear never ran and his second Masterstroke got one special cast, not 3).
+		const stack = (type: string, ability: string, conditions: unknown, extra: object) =>
+			({
+				type,
+				target: 'self',
+				trigger: { type: 'onCast', ability },
+				key: 'inStanceCasts',
+				conditions,
+				...extra
+			}) as unknown as Effect;
+		const c = holder([
+			stack('gainStacks', 'burst', inState('inStance'), { amount: 1, max: 9 }),
+			stack(
+				'consumeStacks',
+				'skill',
+				{ type: 'not', condition: inState('inStance') },
+				{ amount: 'all' }
+			)
+		]);
+		c.abilities[2] = mkBurst('gated', { cooldown: 2 });
+		const { rotation } = run('Gated E Q ~9s E Q', [c]);
+		const counts = rotation.events.flatMap((e) =>
+			e.kind === 'cast' && e.ability === 'burst' ? [e.stackContext?.get('inStanceCasts') ?? 0] : []
+		);
+		expect(counts).toEqual([1, 1]);
+	});
+
+	it('⚠️ closed world ONLY for states the holder can open — an untracked gate stays optimistic', () => {
+		// `afterSkill` has no window anywhere, and this holder never opens
+		// `nightsoulBlessing`. Negating either would silently delete the effect.
+		const c = holder([
+			teamBuff({ stat: 'em', conditions: inState('afterSkill') }),
+			teamBuff({ stat: 'def', conditions: inState('nightsoulBlessing') })
+		]);
+		expect(statsOf(run('Gated E', [c]).rotation).sort()).toEqual(['def=20', 'em=20']);
 	});
 });
