@@ -517,7 +517,8 @@
 			],
 			"_curatorNotes": [
 				"↻ `duringSummon` ADDED to both gates, 2026-09-16 (T0.5) — and ⚠️⚠️ MEASURED INERT TODAY, which is why this note exists. gcsim asc.go:135-160: both the atkpHook and the emHook `return` when !StatusIsActive(ozActiveKey), so the Secret Rite needs Oz ON THE FIELD and ours drew off any Electro reaction Fischl triggered, Oz long gone. The condition is correct data about the mechanic, but a `state` gate is UNRESOLVABLE on the reaction buff pass and the projection drops only a definitive false — measured `Fischl E A ~13s > Klee E N1 N2 N3 > Fischl A A`: Oz dies at 10.30s and the 22.48s Overload still draws a 22.48→32.48s +22.5% ATK bar, before AND after this edit. ⛔ So don't read it as handled. It starts working the day §1.G (resolved states in the buff projections) lands, and until then the divergence is narrow: it needs Fischl herself to trigger an Electro reaction with Oz down, and her normals are Physical.",
-				"⛔ No caveat for it: lint E.28 refuses a caveat on a factionBonus effect, and the nearest ability-shaped host is the skill, where an entry about a faction bonus would be reading the wrong label. Filed here instead."
+				"⛔ No caveat for it: lint E.28 refuses a caveat on a factionBonus effect, and the nearest ability-shaped host is the skill, where an entry about a faction bonus would be reading the wrong label. Filed here instead.",
+				"↻ RESOLVED (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`): the reaction buff pass reads Fischl's `duringSummon` at the reaction. Measured `Bennett E > Fischl C` (no Oz): the +22.5% ATK bar no longer draws; under Oz it draws per Overload as before."
 			]
 		}
 	],
