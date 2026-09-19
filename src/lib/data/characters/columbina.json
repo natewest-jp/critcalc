@@ -362,8 +362,24 @@
 			"id": "columbina__passive__lunacys_lure",
 			"name": "Lunacy's Lure",
 			"abilityType": "passive",
-			"caveat": "The CRIT Rate bar draws at one stack (+5%); in game up to three Gravity Interferences stack it to +15%.",
 			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onStack",
+						"keys": ["gravityLunarCharged", "gravityLunarBloom", "gravityLunarCrystallize"],
+						"count": 60,
+						"label": "Gravity Interference"
+					},
+					"source": "character",
+					"key": "lunacysLure",
+					"amount": 1,
+					"max": 3,
+					"scope": "rotation",
+					"lifetime": 10,
+					"lifetimeRefresh": true
+				},
 				{
 					"type": "buff",
 					"target": "self",
@@ -377,12 +393,13 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
-					"value": 5,
-					"snapshottable": false,
-					"stacks": {
-						"maxStacks": 3,
-						"durationModel": "shared"
-					}
+					"value": {
+						"type": "perStack",
+						"key": "lunacysLure",
+						"per": 5,
+						"maxStacks": 3
+					},
+					"snapshottable": false
 				}
 			],
 			"description": "When triggering **Gravity Interference**, Columbina gains the Lunacy effect, increasing her CRIT Rate by 5% for 10s. This effect can be stacked up to 3 times.",
@@ -390,7 +407,8 @@
 				"A1 (Ascension 1): gcsim asc.go a1OGravityTick — CR = 0.05 * min(stacks,3), 10s window refreshed on each Gravity Interference. Self-only; not a team buff.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Her received-buff row stays empty where a +5%/+10%/+15% CRIT Rate bar would sit — the effect is manual-trigger, so no bar draws at any point in the rotation. The pixel is the blank row; the second sentence only restates the Gravity cadence the skill caveat already establishes, so it is paying for column space twice. Category: expected-but-absent.",
 				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces.",
-				"↻ 2026-09-18 (stack-threshold round): trigger `onStack` on the Gravity fire — the bar draws from each Interference for 10s, refresh-merged. The `stacks` block (max 3, shared duration) still has no consumer, so the bar reads +5% at every fire; the caveat names that pixel."
+				"↻ 2026-09-18 (stack-threshold round): trigger `onStack` on the Gravity fire — the bar draws from each Interference for 10s, refresh-merged. The `stacks` block (max 3, shared duration) still has no consumer, so the bar reads +5% at every fire; the caveat names that pixel.",
+				"✅ THE STACKS STEP (stack-count display round, 2026-09-19 — route A, ⚓ Nate). Lunacy is a stack RESOURCE, `lunacysLure`: one per Gravity Interference (a `gainStacks` on the same `onStack` trigger), max 3, rotation-scoped (a fire lands at a reaction, a tick or a scheduled poll — no segment pool), `lifetime: 10` with `lifetimeRefresh` — the SHARED model gcsim's `a1OGravityTick` states (`CR = 0.05 × min(stacks, 3)` on ONE 10s status every Interference refreshes). The buff is `perStack` and reads the fire's post-grant snapshot (`StackThresholdEvent.stackContext`), so three fires inside 10s draw three bars, +5 / +10 / +15% in the tooltip, each fire a lit edge (⚓ Nate: the value lives in the TOOLTIP, ⛔ not the label). The inert `stacks {maxStacks, durationModel}` block and the one-stack caveat are retired. ⚠️ The grant is authored FIRST so the fire's snapshot is post-gain."
 			]
 		},
 		{
