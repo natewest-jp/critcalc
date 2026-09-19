@@ -44,9 +44,12 @@
 	//
 	// `art` is where the silhouette sits in the plate's 100×180 space. The
 	// three are drawn to different extents AND different weights — the
-	// observatory is a solid mass, the ephemeris a line drawing — so they are
-	// not box-matched; each gets its own panel so the three read at one
-	// optical size. Judged by eye; adjust here, never in the artwork.
+	// astrolabe is the densest, the ephemeris the lightest line drawing, and
+	// the observatory sits between them (it is a line drawing too since its
+	// 2026-09-19 redraw — no longer the solid mass it was, which is why its
+	// panel is no longer held small) — so they are not box-matched; each gets its own panel, the lighter the
+	// drawing the wider, so the three read at one optical size. Judged by
+	// eye; adjust here, never in the artwork.
 	const tools = [
 		{
 			id: 'team-builder',
@@ -67,7 +70,7 @@
 			title: 'Observatory',
 			tool: 'Visualizers',
 			path: '/visualizers',
-			art: { id: 'observatory', x: 15, y: 22, w: 70, h: 74 }
+			art: { id: 'observatory', x: 9, y: 20, w: 82, h: 78 }
 		}
 	] as const;
 
