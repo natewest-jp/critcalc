@@ -1,6 +1,9 @@
-# §1.G — resolved states in the buff projections — SCOPE (2026-09-19)
+# §1.G — resolved states in the buff projections (2026-09-19)
 
-_Status: SCOPE, not started. ⚓ Nate approved §1.G as the next engine round
+_Status: ✅ SHIPPED 2026-09-19 on `feat/state-gates` — **§6 is the RECORD and
+wins over §0–§5, which are the SCOPE as written before the measurement.**_
+
+_Original status: SCOPE, not started. ⚓ Nate approved §1.G as the next engine round
 2026-09-19. This file is the static half of the scope — what the data says and
 what the code is handed. ⏭ The MEASURED half (which bars are wrong today, in
 which rotations) is §4 and is still to be run; ⛔ don't start the change before
@@ -126,3 +129,127 @@ the index must use the BROAD reading, ⛔ not the stationary one.
   snapshot-time question.
 - `manual` retirement — runs after this, because Columbina C6 and Odette leave
   the `manual` pile only once this lands.
+
+## 6. RECORD (2026-09-19)
+
+### 6.1 The measurement came first, and it changed the design twice
+
+The inside/outside digest (28 scenarios × C0/C6, gitignored
+`scratch/probe/stategates.test.ts`) ran on `main` before any code. It confirmed
+the scope's casualties — Citlali's A1 shred off a melt with no Itzpapa and 22s
+after it expired, Durin's shreds and C2 with no dragon, Iansan's A1 off a cold
+charged attack, Lohen's A4 and C2 out of stance, Skirk's A4 off a hold-E that
+opens no stance and her C2 off a cold burst, Fischl's and Venti's Secret Rites
+with no Oz / Stormeye, Varesa's A1 drawing the 50% tier inside Fiery Passion —
+and it found two things the static scope could not:
+
+1. **§3 Q1 ("which `t`?") has no answer for a cast that OPENS the state it is
+   gated on, because the corpus authors both readings.** Skirk's A4, Varka's
+   A1, Zibai's C2, Durin's C6 and Xianyun's A1 gate POSITIVELY on the state
+   their own cast opens ("after"); Varesa's C4 gates `not nightsoulBlessing` on
+   the burst that opens the Blessing ("before"). Any instant deletes one side.
+2. **Qiqi's A1 drew nothing in EITHER state** — not a state defect at all
+   (§6.4).
+
+### 6.2 What shipped — `src/lib/utils/stateIndex.ts`
+
+One index over the parse's final `state` and `summon` windows, the
+finalize-time twin of `holderStatesAt` (any holder, any instant, PRIMARY summon
+only — finalize hands over `primarySummonWindows` so the projection cannot
+widen `duringSummon` behind the live resolver's back). Every per-EVENT pass in
+`deriveBuffWindows` reads it: cast, N/CA/P hit, summon tick, reaction,
+threshold fire, and the three per-receiver slice sites (which now build ONE
+gate from the event's states plus the slice's on/off-field fact). The reaction
+sites had no per-event pass at all and gained one (`makeReactionGate`).
+
+Three rules, each with a seeded negative in `buffWindows.test.ts`:
+
+- ⚠️⚠️ **Closed world only for states the holder's own data can OPEN** — a
+  stance, an `opensState`, a transient spec and its `onEnd` chain, a summon
+  (`trackedStatesOf`, a cached deep walk). Everything else stays `null`.
+  ⚓ Measured: every gated state in the corpus except `offField` IS openable by
+  its holder, so the intersection drops nothing today; it is the guard for the
+  character who gates on a state we do not model for them. ⛔ Rejected: a fixed
+  three-state allowlist.
+- ⚓⚓ **A state the cast ITSELF opens answers `null` at that cast**
+  (`sourceCastId === cast.id`, whether the window covers the cast instant or
+  spawns after it — Durin's dragon lands 97f after the burst gated on it). The
+  gate is then decided only by a window some OTHER cast opened: Skirk's bar
+  stays on `E` and drops on `hE`; Varesa's C4 stays on a cold Q and would drop
+  on a Q inside a standing Blessing.
+- ⚓ **The gate is an ENTRY TEST** (§3 Q1's other half): every state-gated
+  effect that reaches the pass carries its own `duration`.
+
+§3's other questions: Q2 — every gate is the HOLDER's. Q3 — confirmed, no
+change needed: with states supplied the conditions → dedupe order picks
+Varesa's 180% tier in Fiery Passion and 50% outside. Q4 — the chip is
+untouched. Q5 — re-checked, no state-gated tick series; `summonTickSeries` and
+the live chain are untouched.
+
+⚠️ Left stateless on purpose: the pool PREFILTERS (they run once per token,
+before any event — no instant to read), and the `afterDuration`,
+Nightsoul-Burst and `onState` sites (no state gate sits on one).
+
+### 6.3 🐛 The live twin — a `not state` gate never fired in the stack dispatchers
+
+Found by measuring Odette's gate: the five `stacks.ts` dispatch sites demand a
+definitive `true` and evaluated with NO negated set, so `not(state)` was `null`
+forever. One corpus effect was already sitting on it — **Lohen's
+`consumeStacks … not inStance`**, the clear that resets his special-skill count
+on re-entering Masterstroke. Measured on `main`, `Lohen E E E ~20s E E E` @C0:
+the count carried 2 → 3 into the second Masterstroke, which got ONE Etched Into
+Bone and Soul and then fell back to Unforeseen Strike on its 18s cooldown.
+`liveNegatedStates` is the same per-holder tracked set, minus what is up.
+⚠️ `duringSummon` is never negated live — `inferredStates` (stationary) and
+`holderStatesAt` (following too) disagree about it, and both read a
+pre-extension `uptime` mid-parse. Blast radius: exactly the `not(state)` gates
+on stack effects (positive gates already skipped on `null`).
+
+### 6.4 🐛 `onReaction … source: 'active'` had no reader in the buff pass
+
+The three reaction sites chose their stream with `source === 'team' ? all :
+own`, so `'active'` fell through to the holder's own reactions and Qiqi's A1
+fired for nobody but Qiqi (her note claimed an optimistic bar). `'active'` is
+the whole stream minus entity-delivered reactions; `ReactionEvent.viaEntity`
+carries what `emitReaction` already had in hand. One holder (census).
+
+### 6.5 Data
+
+- **Columbina C6** authored: four `onReaction` source-team +80% element CRIT
+  DMG buffs, 8s, Hydro on all three Lunar reactions (its row refreshes across
+  kinds — "same Elemental Type do not stack"), gated `duringSummon`. `manual`
+  1 → 0 on her; the caveat is retired. ⚠️ One stated imprecision: the Gravity
+  Ripple (25s) satisfies the gate as well as the Lunar Domain (20s) gcsim
+  checks, so a Lunar reaction in the ~3s after the Domain closes still draws
+  (measured: a bloom rotation's row ends 1905f, exact 1788f). No
+  label-qualified summon gate exists.
+- **Odette**: nine `onCast ability: 'skill'` grants gated `not codaWindow` —
+  the Coda re-fired every A1 / C2 / C6 bar 0.3s after the E that raised them.
+- **Lohen A4**'s caveat lost its "after Masterstroke has ended" pixel.
+- Xilonen's burst heal gate (held with these in the stack-threshold record) was
+  ALREADY resolved by T1's tick-context fix — measured 0 ticks in mono-Geo.
+- ⏭ Still unreachable: Lohen's Etched Secret Rite trigger — the self-opened
+  rule keeps the cold-open E too; it needs hosting, which a `factionBonuses`
+  entry cannot have.
+
+### 6.6 Measured
+
+Inside/outside digest: every removed window is an OUT / LATE scenario, no IN
+scenario moved, Varesa's tier flips 50 → 180 in Fiery Passion. Corpus: 5 of 630
+summon-aware + 2 of 252 buff digests moved on the engine commit (all Lohen), 0
+on the live fix (blind — no corpus rotation re-enters a stance; measured at the
+site), 5 + 2 on the `'active'` fix (all Qiqi). No timing change on
+1,500–5,000-cast rotations of a tracked holder.
+
+### 6.7 ⏭ Open, for Nate
+
+- **A buff whose gate is the stance its own cast opened outlives an EARLY
+  stance exit.** Measured `Skirk E N1 > Furina …`: the stance ends at the swap
+  (33f) and the A4 bar still runs 0–754f; same for Varka's A1 and Zibai's C2
+  (all three author `duration` = the stance length, i.e. co-extensive in
+  spirit). Not a regression — `main` does the same. Two candidate fixes: clamp
+  a positively-gated, self-opened effect's end to that window's final end, or
+  re-author the three as `onState` (whose span IS the window) once `onState`
+  has a self-target surface. It is a display call.
+- A label-qualified `duringSummon` (Columbina's Domain vs Ripple), only if a
+  second holder needs it.
