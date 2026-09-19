@@ -45,7 +45,11 @@
 import type { CharacterData } from '$lib/types/character';
 import type { Element } from '$lib/types/ability';
 import { tokenizeNotation } from '$lib/utils/tokenizer';
-import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
+import {
+	computeTeamEnabledReactions,
+	computeTeamFactionCounts,
+	computeHolderElementCounts
+} from '$lib/utils/teamComposition';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 import type { LoadoutEntry } from '$lib/stores';
 import { createSimContext } from '$lib/sim/context';
@@ -224,12 +228,7 @@ export function parseNotation(
 	const teamFactionCounts = computeTeamFactionCounts(rosterChars);
 	const teamElementCountsByHolder = new Map<string, Map<Element, number>>();
 	for (const holder of teamChars) {
-		const counts = new Map<Element, number>();
-		for (const other of rosterChars) {
-			if (other.id === holder.id || !other.element) continue;
-			counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
-		}
-		teamElementCountsByHolder.set(holder.id, counts);
+		teamElementCountsByHolder.set(holder.id, computeHolderElementCounts(rosterChars, holder.id));
 	}
 
 	// Elemental resonance is a ROSTER fact — two Anemo characters shave 5%

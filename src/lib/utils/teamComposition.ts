@@ -6,6 +6,7 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
+import type { Element } from '$lib/types/ability';
 
 export type TeamComposition = {
 	/** Number of Natlan characters in the team (triggers NB lane). */
@@ -65,6 +66,26 @@ export function computeTeamFactionCounts(
 		for (const [faction, amount] of Object.entries(c.factionContributions ?? {})) {
 			counts.set(faction, (counts.get(faction) ?? 0) + amount);
 		}
+	}
+	return counts;
+}
+
+/**
+ * Per-element member count for ONE holder's `teamElementCount` conditions —
+ * the HOLDER EXCLUDED, which is the convention every such condition in the
+ * corpus is written against ("2 Anemo characters" on an Anemo holder is
+ * `anemo >= 1`). ⚓ The one loop (2026-09-19): the parser keys it per holder
+ * over the roster, and the always-on chip evaluates a passive's party gates
+ * against the slotted team through the same function.
+ */
+export function computeHolderElementCounts(
+	chars: (Pick<CharacterData, 'id' | 'element'> | null | undefined)[],
+	holderId: string
+): Map<Element, number> {
+	const counts = new Map<Element, number>();
+	for (const other of chars) {
+		if (!other || other.id === holderId || !other.element) continue;
+		counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
 	}
 	return counts;
 }
