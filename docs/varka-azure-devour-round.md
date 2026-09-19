@@ -252,3 +252,27 @@ chip names the passive.
 one +120 bar. `Kazuha + Varka`: +40 (two Anemo, no PHEC pair, no Four Winds).
 
 **C2** is recorded on its entry as known and pixel-free (§5).
+
+## 7. Addendum, 2026-09-19 — the always-on chip and a stale caveat
+
+⚓ Nate, hovering Dawn Wind's March: the chip listed Anemo, Pyro, Hydro,
+Electro AND Cryo DMG, and "it doesn't vary with any party changes". Not a
+Varka defect: `TeamBonusesBlock.svelte` said in its own comment that a
+passive's conditions "are NOT evaluated — they list optimistically", which was
+tolerable while the only gates were runtime facts the chip cannot know (enemy
+HP, an aura), and wrong the moment a passive's gates were PARTY COMPOSITION —
+a static fact the chip holds in full, and exactly what A1's five-rung ladder
+is. The chip now evaluates every passive effect's conditions against the
+slotted party (faction counts over the whole party, element counts with the
+HOLDER excluded — through `computeHolderElementCounts`, one loop shared with
+the parser); a definitive `false` drops the effect and a chip left with
+nothing, `null` still lists. Measured headless: with Xiangling the tooltip
+reads Anemo + Pyro; with Lauma or Kazuha the chip is gone, which is the kit —
+A1 grants nothing without a Pyro/Hydro/Electro/Cryo teammate (gcsim returns
+early). ⚠️ Every other composition-gated passive in the corpus (the faction
+tiers) now answers on this surface too; the runtime-gated ones are unchanged.
+
+And a stale caveat, also Nate's catch: the base normal's "Shown as Physical;
+in game, Normal and Charged Attacks in the Sturm und Drang stance deal
+Elemental DMG…" described the tool before the two-claymores round. Retired,
+with the note on the entry.

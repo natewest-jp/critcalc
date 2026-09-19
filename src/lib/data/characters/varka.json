@@ -29,9 +29,9 @@
 				"attack.go attackHitmarks = [[19],[18,28],[27,43],[19,24],[44,45]] with InitNormalCancelSlice animations 46/46/60/47/82; ActionAttack (N) overrides 23/29/55/40/73 and ActionCharge (C) overrides 22/30/48/28/48. Multi-hitmark hits (N2-N5) use the LAST hitmark for swap per convention. gcsim adds a +5f windup when starting from idle/swap/jump/dash — not modeled.",
 				"charge.go chargeHitmarks = [41,41]; chargeFrames = InitAbilSlice(67) with ActionAttack(N)=58, ActionSkill(E)=59, ActionBurst(Q)=58 (assigned twice, 50 then 58 — the later assignment wins), ActionDash(D)=41, ActionJump(J)=41, ActionSwap=49, ActionWalk=49. gcsim adds a +14f windup when not chaining from a Normal/Charged Attack — not modeled. Azure Devour (azureDevourFrames = InitAbilSlice(75), hitmarks [40,40,60,60]) stays unmodeled (see skill notes).",
 				"gcsim has no plunge.go — plunge is not implemented, so plungeFrames are omitted. In-game Varka cannot Plunge while in Sturm und Drang anyway.",
-				"In Sturm und Drang, N/CA timing is identical (attack.go skillAttack() and charge.go skillCharge() reuse the same attackHitmarks/attackFrames/chargeHitmarks/chargeFrames); only the element (party-composition-based) and multipliers change, so no separate in-stance FrameMap is needed."
+				"In Sturm und Drang, N/CA timing is identical (attack.go skillAttack() and charge.go skillCharge() reuse the same attackHitmarks/attackFrames/chargeHitmarks/chargeFrames); only the element (party-composition-based) and multipliers change, so no separate in-stance FrameMap is needed.",
+				"↻ CAVEAT REMOVED 2026-09-19 (⚓ Nate spotted it): \"Shown as Physical; in game, Normal and Charged Attacks in the Sturm und Drang stance deal Elemental DMG matched to your party's elements\" described the tool BEFORE the two-claymores round (2026-09-16) — the in-stance sibling lands both hands and tints the party's element now, so the sentence was three days stale. Out of the stance these attacks ARE Physical, on screen and in game, so no pixel remains."
 			],
-			"caveat": "Shown as Physical; in game, Normal and Charged Attacks in the Sturm und Drang stance deal Elemental DMG matched to your party's elements.",
 			"sections": [
 				{
 					"type": "normal",

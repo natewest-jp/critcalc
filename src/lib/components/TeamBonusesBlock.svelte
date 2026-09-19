@@ -38,6 +38,8 @@
 	} from '$lib/timeline/buffDisplay';
 	import { constellations } from '$lib/stores';
 	import BuffTooltip, { type BuffTooltipData } from '$lib/components/BuffTooltip.svelte';
+	import { computeTeamFactionCounts, computeHolderElementCounts } from '$lib/utils/teamComposition';
+	import { DEFAULT_ASCENSION, evalCondition, type ConditionContext } from '$lib/sim/conditions';
 
 	let { slots }: { slots: string[] } = $props();
 
@@ -57,37 +59,68 @@
 		)
 	);
 
-	function permanentPassives(char: CharacterData | null) {
-		if (!char) return [];
-		return (char.passives ?? []).filter((p) =>
-			(p.effects ?? []).some((fx) => fx.trigger.type === 'passive')
+	// ⚓ TEAM-SCOPE CONDITIONS ARE EVALUATED HERE (2026-09-19). The chip used to
+	// list every passive effect "optimistically", which was tolerable while the
+	// only gates were runtime facts the chip cannot know (enemy HP, an aura) —
+	// but a PARTY-COMPOSITION gate is a static fact this surface holds in full,
+	// and Varka's Dawn Wind's March is a five-rung ladder on exactly that:
+	// measured, the chip listed Anemo + Pyro + Hydro + Electro + Cryo in every
+	// party where the game grants Anemo plus ONE of the four, and never changed
+	// when the party did. So a definitive `false` drops an effect (and a chip
+	// left with no effect), while `null` — a condition this surface cannot
+	// answer — still lists, the Conditions' optimistic rule. The context
+	// mirrors the parser's: faction counts over the whole party, element counts
+	// with the HOLDER excluded (`notationParser.ts`).
+	let teamFactionCounts = $derived(computeTeamFactionCounts(chars));
+	function holderContext(holder: CharacterData): ConditionContext {
+		return { teamFactionCounts, teamElementCounts: computeHolderElementCounts(chars, holder.id) };
+	}
+	/** The always-on effects of one entry that the slotted party does not
+	 *  definitively rule out. */
+	function liveEffects(holder: CharacterData, entry: Ability, conLevel: number): Effect[] {
+		const ctx = holderContext(holder);
+		return ((entry.effects ?? []) as Effect[]).filter(
+			(fx) =>
+				fx.trigger.type === 'passive' &&
+				evalCondition(
+					fx.conditions,
+					DEFAULT_ASCENSION,
+					undefined,
+					conLevel,
+					undefined,
+					undefined,
+					ctx
+				) !== false
 		);
+	}
+
+	function permanentPassives(char: CharacterData | null, conLevel: number) {
+		if (!char) return [];
+		return (char.passives ?? []).filter((p) => liveEffects(char, p, conLevel).length > 0);
 	}
 
 	/** Constellation entries whose always-on (`trigger: passive`) buff/shred
 	 *  effects are unlocked at the slotted constellation level. Scoped to the
 	 *  effect types the chip tooltip can display — shield/heal/elevate
 	 *  passives (e.g. Kaeya C4's emergency shield, frozen elevate stats)
-	 *  stay unlisted. Conditions on listed effects (enemy-HP gates etc.) are
-	 *  NOT evaluated — they list optimistically, and each affected character
-	 *  carries a caveat saying so. */
+	 *  stay unlisted. Runtime gates (enemy HP etc.) are NOT evaluated — they
+	 *  list optimistically, and each affected character carries a caveat
+	 *  saying so; team-scope gates ARE (see `liveEffects`). */
 	function permanentConstellations(char: CharacterData | null, conLevel: number) {
 		if (!char) return [];
 		return (char.constellations ?? []).filter(
 			(c) =>
 				c.abilityType === 'constellation' &&
 				c.constellationLevel <= conLevel &&
-				(c.effects ?? []).some(
-					(fx) => fx.trigger.type === 'passive' && (fx.type === 'buff' || fx.type === 'resShred')
-				)
+				liveEffects(char, c, conLevel).some((fx) => fx.type === 'buff' || fx.type === 'resShred')
 		);
 	}
 
 	let permanentByChar = $derived(
-		chars.map((c) => [
-			...permanentPassives(c),
-			...permanentConstellations(c, c ? ($constellations[c.id] ?? 0) : 0)
-		])
+		chars.map((c) => {
+			const conLevel = c ? ($constellations[c.id] ?? 0) : 0;
+			return [...permanentPassives(c, conLevel), ...permanentConstellations(c, conLevel)];
+		})
 	);
 
 	let hasFactionBadges = $derived(comp.hasAscendantGleam || comp.hasSecretRite);
@@ -96,11 +129,11 @@
 
 	// ── Chip hover tooltip — same detail rows as the timeline's buff bars ──
 
-	/** The chip's always-on effects, formatted for the shared tooltip. */
-	function chipEffects(bonus: Ability): MergedEffectDisplay[] {
+	/** The chip's always-on effects, formatted for the shared tooltip — the
+	 *  ones the slotted party does not rule out. */
+	function chipEffects(holder: CharacterData, bonus: Ability): MergedEffectDisplay[] {
 		const out: MergedEffectDisplay[] = [];
-		for (const fx of (bonus.effects ?? []) as Effect[]) {
-			if (fx.trigger.type !== 'passive') continue;
+		for (const fx of liveEffects(holder, bonus, $constellations[holder.id] ?? 0)) {
 			if (fx.type === 'buff') {
 				out.push({
 					stat: fx.stat,
@@ -118,8 +151,13 @@
 
 	let tooltip = $state<BuffTooltipData | null>(null);
 
-	function showChipTooltip(e: MouseEvent, bonus: Ability, ownerName: string | undefined) {
-		const effects = chipEffects(bonus);
+	function showChipTooltip(
+		e: MouseEvent,
+		holder: CharacterData,
+		bonus: Ability,
+		ownerName: string | undefined
+	) {
+		const effects = chipEffects(holder, bonus);
 		if (effects.length === 0) return;
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const above = rect.top > 80;
@@ -202,7 +240,7 @@
 					<span
 						class="bonus-chip"
 						style:border-left-color={elementPalette(owner?.element).main}
-						onmouseenter={(e) => showChipTooltip(e, bonus, owner?.displayName)}
+						onmouseenter={(e) => owner && showChipTooltip(e, owner, bonus, owner.displayName)}
 						onmouseleave={hideChipTooltip}
 						>{#if owner?.displayName}<span class="bonus-chip-owner">{owner.displayName}:&nbsp;</span
 							>{/if}{bonus.name}</span
