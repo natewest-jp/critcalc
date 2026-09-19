@@ -205,7 +205,8 @@
 				"⚓ THE CAST CAP IS A STACK COUNTER, and it is what makes a fourth in-stance `E` fall back to Unforeseen Strike (on its 18s cooldown) instead of drawing a fourth special. `etchedCasts` gains 1 on a skill cast made INSIDE Masterstroke and is cleared by a skill cast made OUTSIDE it — both gated on the cast's pre-state, because `onCast` cannot tell two `E` abilities apart (the Odette Coda finding). This ability resolves while the count is ≤ 2 (≤ 4 at C6); gains → snapshot → consumes means the gate reads the count BEFORE this cast's gain. Measured: C0 `… E … E Q … E … E` → three specials, the fourth resolves the base; C6 → five. Segment scope is right: Masterstroke ends on swap.",
 				"⛔ Joy is NOT tracked: the cast is drawn wherever `E` is typed inside Masterstroke (the user asserts full Joy by typing it, the Kinich Cannon convention) — caveated. ⛔ No frames and no `application[]`: there is no gcsim source, so the cast takes the frameless fallback and applies Cryo at its start, flagged provisional. ⛔ cooldown 0: the kit states none; Joy is the gate.",
 				"⛔ Still not reachable from this hit: the Hexerei Secret Rite ('or hitting an opponent with … Etched Into Bone and Soul') — a buff gated on `state: inStance` cannot tell this cast from the base on the cast buff pass (§1.G), so authoring it would draw the rite off the cold-open E too.",
-				"↻ STILL NOT REACHABLE, for a narrower reason (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`): states resolve on the cast buff pass now, but a state the cast ITSELF opens answers null there (Skirk's A4 needs \"after\", Varesa's C4 needs \"before\"), so an `inStance` gate keeps the cold-open E that opens Masterstroke as well as this in-stance sibling. Separating them needs the effect HOSTED on this ability (`hostedElsewhere`), which a factionBonuses entry cannot be."
+				"↻ STILL NOT REACHABLE, for a narrower reason (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`): states resolve on the cast buff pass now, but a state the cast ITSELF opens answers null there (Skirk's A4 needs \"after\", Varesa's C4 needs \"before\"), so an `inStance` gate keeps the cold-open E that opens Masterstroke as well as this in-stance sibling. Separating them needs the effect HOSTED on this ability (`hostedElsewhere`), which a factionBonuses entry cannot be.",
+				"↻ REACHABLE AFTER ALL, the same day (cast-binding round, 2026-09-19) — by NAME, not by state or hosting: a cast hit's `filter.abilityName` now names the ability the parse resolved, so the Secret Rite's second trigger is an `onHit skill` filtered to this ability. See the factionBonuses note."
 			]
 		},
 		{
@@ -412,6 +413,50 @@
 					"stat": "chargeDmgBonus",
 					"value": 40,
 					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Etched Into Bone and Soul"
+						}
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"target": "self",
+					"stat": "normalDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Etched Into Bone and Soul"
+						}
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"target": "self",
+					"stat": "chargeDmgBonus",
+					"value": 40,
+					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
@@ -419,7 +464,8 @@
 				"+40% Normal AND Charged Attack DMG for 6s, SELF only — split into two effects because `stat` is scalar. Modeled as a dmg-bonus stat buff (an authorable stat in the vocabulary, cf. Ayato C1 / Yun Jin C2), not as a raw damage multiplier.",
 				"Two gates in the kit are NOT expressible: (a) Will to Win >= 50% of max — Will to Win is an unmodeled internal resource, so the buff fires unconditionally on cast and the threshold is surfaced in the Burst caveat; (b) the Etched Into Bone and Soul hit trigger — ↻ the special skill IS an ability since 2026-09-17, but a `state` gate cannot separate it from the cold-open E on the cast buff pass (§1.G). Only the Burst trigger path is modeled.",
 				"No Masterstroke (state:inStance) condition added: the kit text gates the Secret Rite on Will to Win, not on Masterstroke mode.",
-				"KQM confirms Lohen grants no other team buffs, shreds, heals, or energy beyond the already-authored A4 Flippant Masterpiece (+15% ATK) and C2 (+200 EM) — nothing else added, nothing duplicated. No permanent (ungated) current-patch kit patches found for Lohen."
+				"KQM confirms Lohen grants no other team buffs, shreds, heals, or energy beyond the already-authored A4 Flippant Masterpiece (+15% ATK) and C2 (+200 EM) — nothing else added, nothing duplicated. No permanent (ungated) current-patch kit patches found for Lohen.",
+				"✅ THE SECOND TRIGGER IS AUTHORED (cast-binding round, 2026-09-19): \"or hitting an opponent with the special Elemental Skill Etched Into Bone and Soul\" is an `onHit skill` twin of each effect, filtered `abilityName: 'Etched Into Bone and Soul'`. It was unreachable because `resolveCastContext` named the unconditioned BASE skill whatever was cast, so a filter could never name a state-gated sibling on the same `E`; it reads the cast's resolved `abilityId` now. ⛔ Not a `state: inStance` gate — the self-opened rule keeps the cold-open Unforeseen Strike too (see the note on the ability). Will to Win (gate a) is still unmodelled."
 			]
 		}
 	],

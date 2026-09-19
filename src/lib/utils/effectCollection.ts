@@ -13,7 +13,6 @@ import type { InputBlock } from '$lib/utils/notationParser';
 import {
 	castIsNonHitting,
 	getDefaultDamageTag,
-	type DamageTag,
 	type TriggerFilterContext
 } from '$lib/types/ability';
 import type { Ability, AbilityVariant, Effect, EffectTarget, Stat } from '$lib/types/ability';
@@ -479,17 +478,25 @@ export function resolveBlockContext(
 	};
 }
 
-/** The (ability, variant) pair backing a cast, by the SAME resolution
- *  `resolveCastContext` uses: the unconditioned base ability, and the variant
- *  whose `input` carries the cast's token. ⚠️ Blind to a state-gated SIBLING
- *  (§1.F) — Skirk's in-stance burst resolves to Havoc: Ruin here. */
+/** The (ability, variant) pair backing a cast — the one the PARSE resolved.
+ *
+ *  ↻ 2026-09-19 (cast-binding round, §1.F): a `CastEvent` carries the resolved
+ *  ability's `abilityId`, and this reads it. It used to take the unconditioned
+ *  base ability whatever was cast, so a state-gated SIBLING was invisible here
+ *  — Skirk's in-stance burst resolved to Havoc: Ruin, Clorinde's Impale the
+ *  Night to Hunter's Vigil — and a trigger `filter.abilityName` on a cast hit
+ *  could only ever name the base. ⚠️ No `abilityId` (a caller with no cast event
+ *  in hand) falls back to the base, the old reading. */
 function resolveCastPair(
 	char: CharacterData,
 	kind: 'skill' | 'burst',
-	cast: { variantLabel?: string | null }
+	cast: { variantLabel?: string | null; abilityId?: string }
 ): { ability: Ability; variant: AbilityVariant | undefined } | null {
 	const candidates = char.abilities.filter((a) => a.abilityType === kind);
-	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+	const ability =
+		(cast.abilityId !== undefined ? candidates.find((a) => a.id === cast.abilityId) : undefined) ??
+		candidates.find((a) => a.conditions === undefined) ??
+		candidates[0];
 	if (!ability) return null;
 	// ⚓ THE PARSE ALREADY RESOLVED THE VARIANT, conditions included, and a
 	// `CastEvent` carries it as `variantLabel` — ABSENT when the base cast (the
@@ -513,7 +520,7 @@ function resolveCastPair(
 export function castLandsNoHit(
 	char: CharacterData | null | undefined,
 	kind: 'skill' | 'burst',
-	cast: { variantLabel?: string | null }
+	cast: { variantLabel?: string | null; abilityId?: string }
 ): boolean {
 	if (!char) return false;
 	const pair = resolveCastPair(char, kind, cast);
@@ -530,15 +537,14 @@ export function castLandsNoHit(
 export function resolveCastContext(
 	char: CharacterData | null | undefined,
 	kind: 'skill' | 'burst',
-	cast: { label: string }
+	cast: { label: string; variantLabel?: string | null; abilityId?: string }
 ): TriggerFilterContext | null {
 	if (!char) return null;
-	const candidates = char.abilities.filter((a) => a.abilityType === kind);
-	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
-	if (!ability) return null;
-	const variant = (
-		ability as { variants?: { input?: string[]; label?: string; damageTag?: DamageTag }[] }
-	).variants?.find((v) => (v.input as string[] | undefined)?.includes(cast.label));
+	// ⚓ ONE resolution with `castLandsNoHit` beside it — the ability and variant
+	// the parse resolved, never a second guess from the token.
+	const pair = resolveCastPair(char, kind, cast);
+	if (!pair) return null;
+	const { ability, variant } = pair;
 	const damageTag = getDefaultDamageTag(ability, variant as never);
 	const variantLabel = variant?.label ? ` ${variant.label}` : '';
 	return {

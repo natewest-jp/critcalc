@@ -1093,3 +1093,48 @@ describe('buff windows — state gates (§1.G)', () => {
 		expect(statsOf(run('Gated E', [c]).rotation).sort()).toEqual(['def=20', 'em=20']);
 	});
 });
+
+// ── a cast hit names the ability the PARSE resolved (cast-binding round, 2026-09-19) ──
+//
+// `resolveCastContext` took the unconditioned base ability whatever was cast,
+// so a state-gated SIBLING on the same token was invisible to a trigger filter:
+// `filter.abilityName` on a cast hit could only ever name the base. It reads
+// `CastEvent.abilityId` now — the binding an `onHit` effect on a passive or a
+// constellation needs to fire off ONE of two skills that share `E`.
+describe('buff windows — a cast hit binds to the resolved ability', () => {
+	const bound = (abilityName: string, stat: string): Effect =>
+		teamBuff({
+			target: 'self',
+			stat,
+			duration: 5,
+			trigger: { type: 'onHit', abilityType: 'skill', filter: { abilityName } }
+		});
+	it('the opener and its in-stance sibling fire their own effects, not each other’s', () => {
+		const c = mkChar('twin', 'Twin');
+		c.abilities[1] = mkSkill('twin', { name: 'Opener', behavior: 'stance', duration: 6 });
+		c.abilities.push({
+			...mkSkill('twin', { name: 'Sibling', cooldown: 0 }),
+			id: 'twin__skill__sibling',
+			conditions: { type: 'state', state: 'inStance' }
+		} as unknown as Ability);
+		c.passives = [
+			{
+				id: 'twin__passive__bound',
+				name: 'Bound',
+				abilityType: 'passive',
+				effects: [bound('Opener', 'atk'), bound('Sibling', 'em')]
+			}
+		] as unknown as Ability[];
+		const { rotation } = run('Twin E E', [c]);
+		const casts = rotation.events.flatMap((e) => (e.kind === 'cast' ? [e] : []));
+		expect(casts.map((e) => e.abilityId)).toEqual(['twin__skill__cast', 'twin__skill__sibling']);
+		const byCast = (id: number) =>
+			rotation.windows.flatMap((w) =>
+				w.kind === 'buff' && w.sourceCastId === id
+					? w.effects.map((e) => (e.type === 'buff' ? e.stat : ''))
+					: []
+			);
+		expect(byCast(casts[0].id)).toEqual(['atk']);
+		expect(byCast(casts[1].id)).toEqual(['em']);
+	});
+});
