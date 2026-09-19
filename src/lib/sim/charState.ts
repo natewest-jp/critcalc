@@ -156,6 +156,11 @@ export type CharState = {
 	 *  `${nodeId}#${effectIndex}` → last fire time. Escoffier C6's 0.5s ICD
 	 *  is the canonical consumer; mirrors `shieldEndProcCooldown`. */
 	onHitProcLastFire: Map<string, number>;
+	/** The expiry a `gainStacks … onSwapIn` lifetime grant last wrote,
+	 *  `${nodeId}#${effectIndex}` → expiry. Taking the field again REFRESHES
+	 *  that one stack rather than adding a second — see
+	 *  `dispatchGainStacksOnSwapIn`. */
+	swapInGrantExpiry: Map<string, number>;
 	/** The onReaction twin (stack-threshold round, 2026-09-18): a `procCooldown`
 	 *  on an onReaction `gainStacks` is how Columbina's Gravity states its RATE
 	 *  — one 2s status per reaction, 10/s while live — as "20 per reaction, at
@@ -212,6 +217,7 @@ export function createCharState(): CharState {
 		onHitStacks: new Map(),
 		onHitStackInstances: new Map(),
 		onHitProcLastFire: new Map(),
+		swapInGrantExpiry: new Map(),
 		onReactionProcLastFire: new Map(),
 		cooldownReduceLastFire: new Map(),
 		accruals: new Map(),

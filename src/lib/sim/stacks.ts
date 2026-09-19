@@ -1128,6 +1128,42 @@ export function applyLifetimeExpiry(
 }
 
 // ---------------------------------------------------------------------------
+// A key's HOME — which container its count lives in
+// ---------------------------------------------------------------------------
+
+// ↻ Lifted out of `thresholds.ts` (swap-in stacks round, 2026-09-19): the
+// threshold reader was the only place that knew it, and the swap-in grant is a
+// second thing that must WRITE a key where it already lives.
+
+/** Where a key's count lives — `thresholds.ts`' header tells the five apart. */
+export type Home = 'rotation' | 'onReaction' | 'onHit' | 'sourceLifetime' | 'segment';
+
+/** The home of `key` on `holder`, resolved from every grant that names it —
+ *  constellation-ungated on purpose (`stackScopesOf`'s own rule). First grant wins; every
+ *  grant of a key agrees on scope by lint D.39, and on trigger family by the
+ *  key naming one resource. */
+export function homeOf(holder: CharacterData, key: string): Home {
+	if (stackScopeOf(holder, key) === 'rotation') return 'rotation';
+	for (const src of [
+		...holder.abilities,
+		...(holder.passives ?? []),
+		...(holder.constellations ?? [])
+	]) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks' || fx.key !== key) continue;
+			const t = fx.trigger;
+			if (t.type === 'onReaction' && t.source === 'team') return 'onReaction';
+			if (t.type === 'onHit') {
+				if (fx.sourceLifetime !== undefined) return 'sourceLifetime';
+				if (t.source === 'team' || t.source === 'others') return 'onHit';
+			}
+			return 'segment';
+		}
+	}
+	return 'segment';
+}
+
+// ---------------------------------------------------------------------------
 // gainStacks on a threshold fire (stack-count display round, 2026-09-19)
 // ---------------------------------------------------------------------------
 
@@ -1206,5 +1242,100 @@ export function dispatchGainStacksOnStackFire(
 			target.write.state.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
 		}
 		mirrorKey(target, fx.key);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// gainStacks on taking the field (swap-in stacks round, 2026-09-19)
+// ---------------------------------------------------------------------------
+
+/**
+ * Applies the entering character's `gainStacks … onSwapIn` effects — Neuvillette
+ * C1: "When Neuvillette takes the field, he will obtain 1 stack of Past
+ * Draconic Glories".
+ *
+ * ⚓⚓ THE GRANT WRITES THE KEY'S HOME, not the entering segment's pool. A key
+ * names ONE resource with ONE container (`homeOf`), and his lives in the
+ * rotation-wide `onReaction` accumulator because its first grant is a
+ * team-sourced reaction — a stack written to the fresh segment pool would be
+ * overwritten by the very next settle's sync. Every home but `sourceLifetime`
+ * (a per-SOURCE slot map, where "a stack from taking the field" has no source)
+ * is writable.
+ *
+ * ⚠️ Conditions demand a definitive `true` under the live closed world, the
+ * stack dispatchers' rule.
+ */
+export function dispatchGainStacksOnSwapIn(
+	char: CharacterData,
+	hcs: CharState,
+	time: number,
+	states: ReadonlySet<string>,
+	constellationLevel: number,
+	segPools: StackPools
+): void {
+	for (const src of effectSourcesAtConstellation(char, constellationLevel)) {
+		const effects = src.effects ?? [];
+		for (let effIdx = 0; effIdx < effects.length; effIdx++) {
+			const fx = effects[effIdx];
+			if (fx.type !== 'gainStacks' || fx.trigger.type !== 'onSwapIn') continue;
+			const verdict = evalCondition(
+				fx.conditions,
+				DEFAULT_ASCENSION,
+				states,
+				constellationLevel,
+				new Map(),
+				stackReadView(hcs, segPools.state),
+				{ negatedStates: liveNegatedStates(char, states) }
+			);
+			if (verdict !== true) continue;
+			const home = homeOf(char, fx.key);
+			const pools: StackPools | null =
+				home === 'rotation'
+					? { state: hcs.rotationStacks, instances: hcs.rotationStackInstances }
+					: home === 'onReaction'
+						? { state: hcs.onReactionStacks, instances: hcs.onReactionStackInstances }
+						: home === 'onHit'
+							? { state: hcs.onHitStacks, instances: hcs.onHitStackInstances }
+							: home === 'segment'
+								? segPools
+								: null;
+			if (!pools) continue;
+			if (fx.lifetime !== undefined) {
+				const live = (pools.instances.get(fx.key) ?? []).filter((e) => e > time);
+				// ⚓ TAKING THE FIELD AGAIN REFRESHES THE STACK IT GAVE, it does not add
+				// a second. "He will obtain 1 stack" is one slot with one source — gcsim
+				// models it as a base count of exactly 1 — so the instance this effect
+				// last wrote is withdrawn before the new one goes in. ⚠️ Matched by its
+				// EXPIRY, which is what an instance is; if a reaction's stack happens to
+				// share the frame, withdrawing either is the same count.
+				const fxKey = `${src.id}#${effIdx}`;
+				const prior = hcs.swapInGrantExpiry.get(fxKey);
+				if (prior !== undefined) {
+					const at = live.indexOf(prior);
+					if (at >= 0) live.splice(at, 1);
+				}
+				hcs.swapInGrantExpiry.set(fxKey, time + framesOf(fx.lifetime));
+				const instances = grantInstances(
+					live,
+					fx.amount,
+					time,
+					time + framesOf(fx.lifetime),
+					fx.max,
+					fx.lifetimeRefresh === true
+				);
+				pools.instances.set(fx.key, instances);
+				pools.state.set(fx.key, instances.length);
+			} else {
+				const next = (pools.state.get(fx.key) ?? 0) + fx.amount;
+				pools.state.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+			}
+			// A rotation-scoped key is mirrored into the live pool like every other
+			// write of one; the two accumulators are pulled in by the next settle.
+			if (home === 'rotation') {
+				segPools.state.set(fx.key, pools.state.get(fx.key) ?? 0);
+				const inst = pools.instances.get(fx.key);
+				if (inst) segPools.instances.set(fx.key, [...inst]);
+			}
+		}
 	}
 }

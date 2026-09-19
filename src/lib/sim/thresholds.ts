@@ -54,8 +54,9 @@ import { DEFAULT_ASCENSION, evalCondition, type ConditionContext } from './condi
 import { holderStatesAt } from './states';
 import {
 	dispatchGainStacksOnStackFire,
+	homeOf,
 	rotationStackSnapshot,
-	stackScopeOf,
+	type Home,
 	type StackPools
 } from './stacks';
 import { pushShieldAt } from './shields';
@@ -64,9 +65,6 @@ import { predictFire, settleAccruals } from './accrual';
 
 type OnStackTrigger = Extract<Trigger, { type: 'onStack' }>;
 export type OnStackEffect = Effect & { trigger: OnStackTrigger };
-
-/** Where a key's count lives — see the file header. */
-type Home = 'rotation' | 'onReaction' | 'onHit' | 'sourceLifetime' | 'segment';
 
 export type StackThreshold = {
 	holder: CharacterData;
@@ -81,31 +79,6 @@ export type StackThreshold = {
 	host?: { kind: 'skill' | 'burst'; summonLabel: string };
 	effects: OnStackEffect[];
 };
-
-/** The home of `key` on `holder`, resolved from every grant that names it —
- *  constellation-ungated on purpose (see the header). First grant wins; every
- *  grant of a key agrees on scope by lint D.39, and on trigger family by the
- *  key naming one resource. */
-function homeOf(holder: CharacterData, key: string): Home {
-	if (stackScopeOf(holder, key) === 'rotation') return 'rotation';
-	for (const src of [
-		...holder.abilities,
-		...(holder.passives ?? []),
-		...(holder.constellations ?? [])
-	]) {
-		for (const fx of src.effects ?? []) {
-			if (fx.type !== 'gainStacks' || fx.key !== key) continue;
-			const t = fx.trigger;
-			if (t.type === 'onReaction' && t.source === 'team') return 'onReaction';
-			if (t.type === 'onHit') {
-				if (fx.sourceLifetime !== undefined) return 'sourceLifetime';
-				if (t.source === 'team' || t.source === 'others') return 'onHit';
-			}
-			return 'segment';
-		}
-	}
-	return 'segment';
-}
 
 /** The E/Q hosting the accrual of `key`, if one does. */
 function hostOf(
