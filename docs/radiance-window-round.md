@@ -1,6 +1,10 @@
 # The Radiance-window round — scope (2026-09-15)
 
-_Status: SPEC, not started. Scoped at Nate's request after the gcsim sync round
+_Status: SPEC, not started — ⚓ **§2's decision is MADE (Nate, 2026-09-19): APPROVED** —
+Radiance is a WINDOW in the planner and stays a STANDING condition in the Team
+Builder. Queued after §1.G and the stack-count display._
+
+_Scope notes: Scoped at Nate's request after the gcsim sync round
 landed the Cryo Traveler's crystal cadence. ⚠️ §0–§6 are the plan; when the round
 ships, its record wins where they disagree._
 

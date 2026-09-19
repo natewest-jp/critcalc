@@ -444,7 +444,7 @@ corrupt both. Same class as the Flins burst and Nilou WS2/WS3 rows (§5).
   drift cloud is on `ICDGroupMizukiSkill` (72f / `{1,0,0,0}`) and runs on
   our standard cast counter.
 
-**⏭ Flagged for Nate:** Escoffier's A4 trigger is now
+**✅ DECIDED (⚓ Nate, 2026-09-19): the two rows STAY.** The flag as raised — Escoffier's A4 trigger is now
 `['skill','burst']`, which is correct against gcsim but draws TWO rows in
 an `E Q` rotation (`escoffier::char::E::resShred` and `::Q`), because the
 row key carries the cast class. Each row names the cast that applied it,

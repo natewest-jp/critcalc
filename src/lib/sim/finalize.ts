@@ -557,7 +557,16 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			// or before a truncated window's start — is not drawn outside the bar.
 			...measured.filter((t) => t >= win.start && t < win.end)
 		].sort((a, b) => a - b);
-		if (ticks.length > 0) win.ticks = ticks;
+		// ⚓ ONE MARK PER FRAME (⚓ Nate, 2026-09-19). A summon that heals and hits
+		// on one cadence (Kuki's ring, Diona's mist, Kokomi's jellyfish — nine in
+		// the corpus, Alyosha's Tugarin three deep) walked one marker per SERIES,
+		// so every instant drew two or three stubs on the same pixel. Measured
+		// before deciding: every duplicate is an EXACT same-frame pair, never a
+		// near miss, so this is an equality test and not a tolerance. ⚠️ MARKERS
+		// ONLY — the hit stream below walks damage series on its own and is
+		// untouched; a marker says "the summon acted here", not how many effects.
+		const marks = ticks.filter((t, i) => i === 0 || t !== ticks[i - 1]);
+		if (marks.length > 0) win.ticks = marks;
 	}
 	// ⚓ THE FIRES, the same way (stack-threshold round, 2026-09-18): a
 	// threshold's `damage` effect recorded its mark at the settle point that
