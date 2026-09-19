@@ -60,11 +60,15 @@ import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
 import { Band, type Clock } from './clock';
 import {
+	DEFAULT_ASCENSION,
+	evalCondition,
 	matchVariant,
+	mentionsPolestarField,
 	resolveElementRef,
 	type ChainIndex,
 	type ConditionContext
 } from './conditions';
+import { polestarFieldOpenAt } from './fields';
 import { dispatchOnReactionExtensions } from './extensions';
 import {
 	applyRotationLifetimeExpiry,
@@ -309,6 +313,18 @@ function emitReaction(
 	reaction: Reaction,
 	time: number
 ): void {
+	if (reaction === 'stellarConduct') {
+		// Ascending by construction (feed order is time order); the guard keeps
+		// `polestarFieldOpenAt`'s binary search honest if that ever slips.
+		const times = ctx.stellarConductTimes;
+		if (times.length === 0 || times[times.length - 1] <= time) times.push(time);
+		else
+			times.splice(
+				times.findIndex((t) => t > time),
+				0,
+				time
+			);
+	}
 	dispatchOnReactionExtensions(
 		ctx,
 		src.characterId,
@@ -1050,6 +1066,7 @@ export function scheduleSummonTicks(
 				return end + series.interval;
 			};
 			const capReached = (): boolean => cap !== null && fired >= cap;
+			const asksField = mentionsPolestarField(series.effect.conditions);
 
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
@@ -1057,6 +1074,31 @@ export function scheduleSummonTicks(
 				if (!liveAt(at)) return;
 				if (at >= liveUntil()) return;
 				if (capReached()) return;
+				// ⚓ A series gated on the Polestar Field is asked PER TICK, at the
+				// tick's own instant (Radiance-window round) — and a refused tick
+				// keeps the chain: gcsim's `skillTicker` skips the ATTACK and
+				// re-queues, so the next crystal lands on the ORIGINAL cadence, not 3s
+				// after the field closes. ⚠️ `collectSummonTicks` asks the same
+				// question of the finished stream — ⛔ the two must agree.
+				if (
+					asksField &&
+					evalCondition(
+						series.effect.conditions,
+						DEFAULT_ASCENSION,
+						new Set(),
+						cLevel,
+						undefined,
+						undefined,
+						{
+							...tickConditionCtx(ctx, char.id),
+							inPolestarField: polestarFieldOpenAt(ctx.stellarConductTimes, at)
+						}
+					) === false
+				) {
+					const skipTo = at + series.interval;
+					if (skipTo < liveUntil()) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
+					return;
+				}
 				fired += 1;
 
 				let applies = element !== undefined;

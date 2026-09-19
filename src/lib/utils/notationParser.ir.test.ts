@@ -299,20 +299,36 @@ function assertBlocksProjectFromEvents(result: ParsedRotation): void {
 			g.sort((a, b) => a.id - b.id);
 			const anchor = g[0];
 			expect(anchor.id, 'group anchor is its blockId').toBe(blockId);
-			let duration = 0;
-			for (const e of g) duration += e.duration;
-			items.push({
-				sortId: blockId,
-				block: {
-					start: anchor.time,
-					duration,
-					parts: [anchor.label],
-					kind: actionBlockKind(anchor),
-					// The anchor's element speaks for the group — infusion resolves
-					// once per token, so every swing an `N5` groups shares it.
-					...(anchor.element !== undefined ? { element: anchor.element } : {})
+			// ↻ A group is one block PER RUN OF ONE ELEMENT (Radiance-window round,
+			// 2026-09-19): infusion resolves per swing, so a string whose infusion
+			// opens or lapses mid-way splits where it changes. The continuation is
+			// label-less and sorts by its own first swing.
+			let run = [g[0]];
+			const flush = (first: boolean): void => {
+				let duration = 0;
+				for (const e of run) duration += e.duration;
+				items.push({
+					sortId: first ? blockId : run[0].id,
+					block: {
+						start: run[0].time,
+						duration,
+						parts: first ? [anchor.label] : [],
+						kind: actionBlockKind(run[0]),
+						...(run[0].element !== undefined ? { element: run[0].element } : {})
+					}
+				});
+			};
+			let first = true;
+			for (const e of g.slice(1)) {
+				if (e.element === run[0].element) {
+					run.push(e);
+					continue;
 				}
-			});
+				flush(first);
+				first = false;
+				run = [e];
+			}
+			flush(first);
 		}
 		items.sort((a, b) => a.sortId - b.sortId);
 		const expected = items.map((i) => i.block);

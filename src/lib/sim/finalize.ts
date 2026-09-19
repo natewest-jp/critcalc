@@ -42,7 +42,7 @@ import {
 } from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
 import { materialiseStateChains } from './states';
-import { deriveFieldWindows } from './fields';
+import { deriveFieldWindows, polestarFieldOpenAt } from './fields';
 import { deriveGadgetWindows } from './gadgets';
 
 /**
@@ -120,14 +120,21 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		const blocksByAnchor = new Map<number, InputBlock>();
 		for (const { ev, track } of ctx.actionRecords) {
 			const open = blocksByAnchor.get(ev.blockId);
-			if (open) {
+			// ⚓ A BLOCK CARRIES ONE ELEMENT, SO IT ENDS WHERE THE ELEMENT CHANGES
+			// (Radiance-window round, 2026-09-19). Infusion resolves per SWING now
+			// — a Polestar Field opening mid-`N5`, or a timed grant lapsing inside
+			// one — and a string whose first swings are physical and last are Cryo
+			// is two blocks. The continuation carries no label: the token was named
+			// once, and a second "N5" would read as a second string (the pad's own
+			// convention for a block that is part of something already named).
+			if (open && open.element === ev.element) {
 				open.duration += ev.duration;
 				continue;
 			}
 			const block: InputBlock = {
 				start: ev.time,
 				duration: ev.duration,
-				parts: [ev.label],
+				parts: open ? [] : [ev.label],
 				kind:
 					ev.action === 'dash' || ev.action === 'jump'
 						? 'movement'
@@ -136,15 +143,14 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 							: ev.element !== undefined
 								? 'elemental-normal'
 								: 'normal',
-				// The ANCHOR swing's element speaks for the whole block, which is
-				// exact today: infusion is resolved once per token, so every swing
-				// an `N5` groups shares it. ⚠️ If infusion ever resolves per swing,
-				// a block can no longer carry one element and this is the site that
-				// has to say so.
+				// The first swing of a run speaks for the run — every swing in it
+				// shares the element by the split above.
 				...(ev.element !== undefined ? { element: ev.element } : {})
 			};
 			blocksByAnchor.set(ev.blockId, block);
-			pushItem(track, ev.blockId, block);
+			// ⚠️ Sorted by the FIRST swing's id of each run: a continuation must
+			// follow its own anchor and precede the next token.
+			pushItem(track, open ? ev.id : ev.blockId, block);
 		}
 		// Human pads (2026-09-14): one label-less block each, sorted into place by
 		// the id minted when the pad was inserted — after the action it follows,
@@ -540,6 +546,10 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// about to change. Measured while writing this: Fischl's first Oz kept ten
 	// markers out at 82–613 frames on a window the burst had already cut to 44.
 	// ⛔ Never move this back up.
+	// ⚓ The finished Stellar-Conduct stream, for a tick series gated on the
+	// Polestar Field — the same instants the live chain read as they happened
+	// (`ctx.stellarConductTimes`), so the markers drawn are the ticks that fired.
+	const fieldOpenAt = (time: number): boolean => polestarFieldOpenAt(ctx.stellarConductTimes, time);
 	for (const win of windows) {
 		if (win.kind !== 'summon') continue;
 		const summon = summonByWindow.get(win);
@@ -556,7 +566,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				cLevel,
 				() => true,
 				tickCtx(win.characterId),
-				win.naturalEnd
+				win.naturalEnd,
+				fieldOpenAt
 			).map((t) => t.time),
 			// ⚠️ Bounded by the FINAL span so a wave landing past the summon's end —
 			// or before a truncated window's start — is not drawn outside the bar.
@@ -600,7 +611,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			win.start,
 			win.end,
 			cLevel,
-			tickCtx(win.characterId)
+			tickCtx(win.characterId),
+			fieldOpenAt
 		)) {
 			ctx.hitRecords.push({
 				characterId: win.characterId,

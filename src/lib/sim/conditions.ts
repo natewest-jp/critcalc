@@ -92,7 +92,28 @@ export type ConditionContext = {
 	 *  Absent → `weaponType` returns null, the same optimistic rule
 	 *  `teamFaction` and `activeCharFaction` use. */
 	receiverWeapon?: WeaponType;
+	/** Whether a Polestar Field stands at the instant being evaluated — the
+	 *  caller resolves the instant (`polestarFieldOpenAt`) and hands over the
+	 *  answer. Absent → `inPolestarField` returns null, the optimistic rule. */
+	inPolestarField?: boolean;
 };
+
+/** Whether a condition tree asks about the Polestar Field anywhere — the gate
+ *  that keeps the per-instant lookup off every tree that does not. */
+export function mentionsPolestarField(cond: Condition | undefined): boolean {
+	if (!cond) return false;
+	switch (cond.type) {
+		case 'inPolestarField':
+			return true;
+		case 'not':
+			return mentionsPolestarField(cond.condition);
+		case 'all':
+		case 'any':
+			return cond.conditions.some(mentionsPolestarField);
+		default:
+			return false;
+	}
+}
 
 /**
  * Evaluates whether a condition is definitively met at the given ascension and
@@ -216,6 +237,8 @@ export function evalCondition(
 			}
 			return null;
 		}
+		case 'inPolestarField':
+			return context?.inPolestarField ?? null;
 		case 'activeCharFaction': {
 			// Resolves at per-segment scope where the receiver's factions are
 			// known. Absent → null so non-segment contexts don't drop the effect.

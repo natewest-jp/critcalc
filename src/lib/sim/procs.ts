@@ -55,9 +55,11 @@ import { framesOf } from '$lib/utils/frames';
 import {
 	DEFAULT_ASCENSION,
 	evalCondition,
+	mentionsPolestarField,
 	reactionMatchesTrigger,
 	type ChainIndex
 } from './conditions';
+import { polestarFieldOpenAt } from './fields';
 import type { SimContext } from './context';
 import { onHitTriggerMatches, type HitEvent } from './hits';
 
@@ -394,6 +396,25 @@ export function takeHitProcs(ctx: SimContext, dmg: DamageEvent, time: number): P
 		if (!isLive(l, time)) continue;
 		if (dmg.procKey === l.key) continue;
 		if (!onHitTriggerMatches(trig, dmg, l.holderId)) continue;
+		// ⚓ A proc gated on the Polestar Field is asked at the OFFER instant
+		// (Radiance-window round, 2026-09-19) — arming is optimistic about the
+		// leaf (no instant exists at arm time), so this is where it is decided.
+		// ⚠️ BEFORE the cooldown: a hit the field refuses must not spend it.
+		if (
+			mentionsPolestarField(l.effect.conditions) &&
+			evalCondition(
+				l.effect.conditions,
+				DEFAULT_ASCENSION,
+				l.preStates,
+				l.constellation,
+				undefined,
+				undefined,
+				{
+					inPolestarField: polestarFieldOpenAt(ctx.stellarConductTimes, time)
+				}
+			) === false
+		)
+			continue;
 		if (!takeCooldown(l, time)) continue;
 		fired.push(l);
 	}

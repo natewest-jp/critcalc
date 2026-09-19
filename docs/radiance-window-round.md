@@ -1,6 +1,7 @@
 # The Radiance-window round — scope (2026-09-15)
 
-_Status: SPEC, not started — ⚓ **§2's decision is MADE (Nate, 2026-09-19): APPROVED** —
+_Status: ✅ SHIPPED 2026-09-19 on `feat/radiance-window` — **§7 is the RECORD and wins
+over §0–§6.** ⚓ **§2's decision is MADE (Nate, 2026-09-19): APPROVED** —
 Radiance is a WINDOW in the planner and stays a STANDING condition in the Team
 Builder. Queued after §1.G and the stack-count display._
 
@@ -216,3 +217,98 @@ definitively at each swing.
 3. Consumer B (the proc) — measured.
 4. Consumer C (the infusion) — decide (a)/(b) on the block split; measured.
 5. Caveat rewrite, notes, record in this file's §7, CLAUDE.md entry, memory.
+
+## 7. RECORD (2026-09-19)
+
+Shipped in §6's order, three commits, each measured on the probe before the
+next (`scratch/probe/radiance.test.ts`, gitignored).
+
+### 7.1 The leaf and its ONE reader
+
+`{ type: 'inPolestarField' }`. `evalCondition` takes no time, so the CALLER
+resolves the instant and hands the answer over as
+`ConditionContext.inPolestarField` (absent → null). The reader is
+`polestarFieldOpenAt(conductTimes, time)` in `fields.ts`, over the
+Stellar-Conduct instants in ascending order: `emitReaction` appends to
+`ctx.stellarConductTimes` live, finalize reads the same list finished. A binary
+search — the LATEST conduct before `time` decides (refresh replaces).
+
+⚠️⚠️ **STRICTLY before**, which §3.1 did not say and the two-reader rule needs:
+a tick whose own application CAUSES a conduct at T fired with the field down,
+and a `<=` at finalize would find that conduct and un-draw the tick that made
+it. Guarded against the Prism windows finalize draws (equal everywhere but the
+opening frame).
+
+`mentionsPolestarField(cond)` keeps the lookup off every tree that does not
+ask. TB: `caveatLabel` → `needsField:polestar`; nothing in the TB resolves it.
+Lint C.19 `polestar-field-unrelated`: the leaf only on a kit that names
+`stellarConduct` (an `enablesReactions` entry or a `teamEnablesReaction` gate).
+
+### 7.2 Consumer A — the series pauses
+
+Both tick readers ask a field-gated series PER TICK (`collectSummonTicks` via a
+new `fieldOpenAt` parameter, which `computeSummonDamageTicks` forwards; the
+live chain in `aura.ts`). A refused tick is skipped and the cadence runs on —
+the ORIGINAL phase — and it does not count toward a tick cap (no holder has
+both). ⚠️ The data has ONE series standing for a two-crystal volley, not the two
+§3.2 describes. Measured `Lisa E > Cryo Traveler E ~12s`: Prism 28–448f, volleys
+at 103 / 283 absent, 463 / 643 land, markers == entity applications.
+
+### 7.3 Consumer B — the per-hit crystal
+
+`takeHitProcs` asks a field-gated proc at the OFFER instant, BEFORE its
+cooldown. Arming stays optimistic (no instant at arm time). ⚠️ Two departures
+from §3.3:
+
+- **Frostglow is granted at the SWING, by a second `gainStacks`** (`onHit`
+  N/C/P, source self, `procCooldown: 0.2`, +1, gated `duringSummon` +
+  `inPolestarField`), ⛔ not by the proc's landing: a proc's landing calls
+  `notifyDamage` only and reaches no stack dispatcher, and routing every proc
+  landing into the stack machinery is a corpus-wide semantic change nobody
+  measured. `dispatchGainStacksOnHit` takes the field lookup so the grant can
+  reach that dispatcher's definitive `true`.
+- **The per-hit crystal keeps its OWN ICD counter** (per listener) where
+  gcsim's `queueCrystal` shares one with the interval crystals. A tick series
+  and a proc cannot share a counter today; the two streams never overlap in
+  time, so it shows only at a field's edges.
+
+Measured `Cryo Traveler E > Fischl E N3 > Cryo Traveler N5 Q`: one volley, then
+crystals at 194 / 220 / 252 / 291 / 316 riding his swings; burst reads
+Frostglow 7. With Bennett: four volleys, Frostglow 4.
+
+### 7.4 Consumer C — per-SWING infusion, option (a)
+
+`infusionAt` gains the field as its third fact. A normal string resolves its
+GRANTED infusion per swing (a stance infusion stays per token), and finalize
+ends a block where its swings' element changes; the continuation is
+label-less. `parts: []` is safe in both renderers (the live chart's `{#each}`,
+the PNG's `join`).
+
+⚠️ **It moved four characters who have nothing to do with the field** — Chiori,
+Dori C6, Emilie C6, Bennett C6 — each a TIMED infusion lapsing inside a string
+whose last swing had been tinted and had applied an element the grant no longer
+gave. That is the correction §3.4's "one-token lag" was hiding, and it is why
+(b) was not taken.
+
+Measured `Fischl N1 > Cryo Traveler E N5 N5 > Fischl E > Cryo Traveler N5 N5`:
+ten physical swings before the first Conduct (the standing gate painted them
+Cryo), Cryo inside the Prism, and a split block where the Star ends mid-string.
+
+### 7.5 Guards and negatives
+
+`fields.test.ts` (existing file): the reader; the paused series; the per-hit
+crystal + Frostglow; the field-following infusion + block split. Seeded
+negatives, each failing its case: gate only the finalize tick reader · drop the
+proc's field gate · drop the field fact from `infusionAt`. `notationParser.ir
+.test.ts`'s reference projection now splits runs by element.
+
+### 7.6 ⏭ Open
+
+- **For Nate, on screen:** the split block (an unlabelled continuation beside
+  the labelled first run), and the Star's lane inside a field (crystal marks
+  riding the swings, the interval marks gone).
+- The other Radiance holders keep their standing gates — a per-character call
+  (§3.5). `enemyAffectedBy` is still unresolved off the gauge (its "cannot
+  simulate aura" comment has been stale since L5).
+- A shared ICD counter between a tick series and a proc, if a second holder
+  needs it.

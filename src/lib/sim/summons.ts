@@ -22,6 +22,7 @@ import {
 	applyModifiers,
 	DEFAULT_ASCENSION,
 	evalCondition,
+	mentionsPolestarField,
 	type ConditionContext
 } from './conditions';
 
@@ -237,7 +238,12 @@ export function collectSummonTicks(
 	context?: ConditionContext,
 	/** The summon's UNTRUNCATED end (`TimelineWindow.naturalEnd`). Absent =
 	 *  treat `endAt` as natural, the pre-2026-09-17 behaviour. */
-	naturalEnd?: number
+	naturalEnd?: number,
+	/** Whether a Polestar Field stands at an instant — finalize's view of the
+	 *  finished Stellar-Conduct stream. Absent (the Team Builder, the renderer's
+	 *  context-free callers) leaves a field-gated series unresolved, so every
+	 *  tick draws. */
+	fieldOpenAt?: (time: number) => boolean
 ): { time: number; effect: Effect }[] {
 	const ticks: { time: number; effect: Effect }[] = [];
 	// ⚓ A CUT WINDOW HAS NO BOUNDARY TICK (small-fix bundle, 2026-09-17). The
@@ -255,9 +261,21 @@ export function collectSummonTicks(
 		// widens the window by exactly ONE tick to say so, and ⛔ by no more.
 		const cap = tickCapOf(s.effect, cLevel, context);
 		const limit = cap === null || !endIsNatural ? endAt : endAt + s.interval;
+		// ⚓ A field-gated series is asked PER TICK — the live chain's own rule
+		// (`aura.ts`), word for word: a refused tick is skipped and the cadence
+		// runs on underneath it.
+		const asksField = fieldOpenAt !== undefined && mentionsPolestarField(s.effect.conditions);
 		let n = 0;
 		for (let t = spawnAt + s.firstDelay; t < limit; t += s.interval) {
 			if (cap !== null && n >= cap) break;
+			if (
+				asksField &&
+				evalCondition(s.effect.conditions, 4, new Set(), cLevel, undefined, undefined, {
+					...context,
+					inPolestarField: fieldOpenAt!(t)
+				}) === false
+			)
+				continue;
 			n += 1;
 			ticks.push({ time: t, effect: s.effect });
 		}
@@ -375,7 +393,8 @@ export function computeSummonDamageTicks(
 	spawnAt: number,
 	endAt: number,
 	cLevel: number,
-	context?: ConditionContext
+	context?: ConditionContext,
+	fieldOpenAt?: (time: number) => boolean
 ): { time: number; element?: Element }[] {
 	return collectSummonTicks(
 		summon,
@@ -383,7 +402,9 @@ export function computeSummonDamageTicks(
 		endAt,
 		cLevel,
 		(eff) => eff.type === 'damage',
-		context
+		context,
+		undefined,
+		fieldOpenAt
 	).map((t) => ({
 		time: t.time,
 		element: (t.effect as Extract<Effect, { type: 'damage' }>).element

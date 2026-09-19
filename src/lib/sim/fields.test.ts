@@ -204,3 +204,157 @@ describe('the ledger', () => {
 		expect((tiles[1].effects[0] as { value: number }).value).toBe(40);
 	});
 });
+
+// ── Radiance as a WINDOW (Radiance-window round, 2026-09-19) ──
+import { polestarFieldOpenAt } from './fields';
+import { parseNotation } from '$lib/utils/notationParser';
+import type { CharacterData } from '$lib/types/character';
+import travelerCryoJson from '$lib/data/characters/traveler_cryo.json';
+import lisaJson from '$lib/data/characters/lisa.json';
+import bennettJson from '$lib/data/characters/bennett.json';
+import fischlJson from '$lib/data/characters/fischl.json';
+
+describe('polestarFieldOpenAt — the one reader, live and at finalize', () => {
+	const at = (s: number) => framesOf(s);
+	it('is open for 7s after a conduct, and the LATEST conduct decides (refresh replaces)', () => {
+		const times = [at(1), at(5)];
+		expect(polestarFieldOpenAt(times, at(0.5))).toBe(false);
+		expect(polestarFieldOpenAt(times, at(4))).toBe(true);
+		expect(polestarFieldOpenAt(times, at(8.5))).toBe(true); // 1s + 7s has lapsed; 5s + 7s has not
+		expect(polestarFieldOpenAt(times, at(12))).toBe(false);
+		expect(polestarFieldOpenAt([], at(3))).toBe(false);
+	});
+	it('⚠️ STRICTLY before — the instant a conduct happens is not yet inside its field', () => {
+		// A tick whose own application CAUSES the conduct fired with the field
+		// down; the finished stream must not un-draw it.
+		expect(polestarFieldOpenAt([at(2)], at(2))).toBe(false);
+		expect(polestarFieldOpenAt([at(2)], at(2) + 1)).toBe(true);
+	});
+	it('agrees with the Prism windows finalize draws, everywhere but the opening frame', () => {
+		const events = [conduct(1), conduct(5), conduct(20)];
+		const { gadgets } = deriveFieldWindows({
+			reactionEvents: events,
+			applications: [],
+			nextBuffId: 0
+		});
+		const times = events.map((e) => e.time);
+		for (let f = 0; f < framesOf(30); f += 7) {
+			const inWindow = gadgets.some((g) => f > g.start && f < g.end);
+			expect(polestarFieldOpenAt(times, f), `frame ${f}`).toBe(inWindow);
+		}
+	});
+});
+
+describe("a tick series gated on the field pauses under it — the Cryo Traveler's Star", () => {
+	const TRAVELER = travelerCryoJson as unknown as CharacterData;
+	const LISA = lisaJson as unknown as CharacterData;
+	const BENNETT = bennettJson as unknown as CharacterData;
+	const run = (notation: string, mate: CharacterData) => {
+		const chars = [TRAVELER, mate];
+		const r = parseNotation(
+			notation,
+			(n) => chars.find((c) => c.displayName === n) ?? null,
+			8,
+			{},
+			undefined,
+			chars
+		);
+		expect(r.unknownTokens).toEqual([]);
+		const star = r.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		if (!star || star.kind !== 'summon') throw new Error('no Star');
+		const prisms = r.windows.filter((w) => w.kind === 'gadget');
+		const entityApps = r.applications
+			.filter((a) => a.characterId === TRAVELER.id && a.time > star.start)
+			.map((a) => a.time);
+		return { star, prisms, entityApps };
+	};
+
+	it('skips the interval crystals inside the Prism and resumes on the ORIGINAL phase', () => {
+		// One Lisa E is one Electro aura: the Traveler's cast conducts once, the
+		// Prism stands 7s, and nothing re-opens it.
+		const { star, prisms, entityApps } = run('Lisa E > Cryo Traveler E ~12s', LISA);
+		expect(prisms).toHaveLength(1);
+		const first = star.start + framesOf(1.25);
+		const cadence = framesOf(3);
+		// The first two volleys fall inside the field; the third is the first out.
+		expect(first + cadence).toBeLessThan(prisms[0].end);
+		expect(star.ticks).toEqual([first + 2 * cadence, first + 3 * cadence]);
+		// ⚓ Both readers: the markers drawn are exactly the ticks that applied.
+		expect(entityApps).toEqual(star.ticks);
+	});
+
+	it('inside the field the Star fires one crystal per hit he lands, and they build Frostglow', () => {
+		const FISCHL = { ...(fischlJson as unknown as CharacterData) };
+		const chars = [TRAVELER, FISCHL];
+		const parse = (notation: string, team: CharacterData[]) =>
+			parseNotation(
+				notation,
+				(n) => team.find((c) => c.displayName === n) ?? null,
+				8,
+				{},
+				undefined,
+				team
+			);
+		const r = parse('Cryo Traveler E > Fischl E N3 > Cryo Traveler N5 Q', chars);
+		const star = r.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		if (!star || star.kind !== 'summon') throw new Error('no Star');
+		const crystals = (star.ticks ?? []).filter((t) => t !== star.start + framesOf(1.25));
+		expect(crystals.length).toBeGreaterThanOrEqual(4);
+		const prism = r.windows.find((w) => w.kind === 'gadget');
+		for (const t of crystals) {
+			expect(t).toBeGreaterThan(prism!.start);
+			expect(t).toBeLessThan(prism!.end);
+		}
+		// One volley (+2) before the field, then +1 per crystal-bearing hit.
+		const burst = r.events.find((e) => e.kind === 'cast' && e.ability === 'burst');
+		const glow = burst?.kind === 'cast' ? burst.stackContext?.get('frostglow') : undefined;
+		expect(glow).toBe(2 + crystals.length);
+		// ⚓ And with no field: no per-hit crystal at all, Frostglow from volleys only.
+		const dry = parse('Cryo Traveler E > Bennett E N3 > Cryo Traveler N5 Q', [TRAVELER, BENNETT]);
+		const dryStar = dry.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		expect(dryStar?.kind === 'summon' && dryStar.ticks).toHaveLength(4);
+		const dryBurst = dry.events.find((e) => e.kind === 'cast' && e.ability === 'burst');
+		expect(dryBurst?.kind === 'cast' && dryBurst.stackContext?.get('frostglow')).toBe(4);
+	});
+
+	it('Ever-Keen Frost infuses the swings a field covers — not the ones before the first Conduct', () => {
+		const FISCHL = fischlJson as unknown as CharacterData;
+		const chars = [TRAVELER, FISCHL];
+		const r = parseNotation(
+			'Fischl N1 > Cryo Traveler E N5 N5 > Fischl E > Cryo Traveler N5 N5',
+			(n) => chars.find((c) => c.displayName === n) ?? null,
+			8,
+			{},
+			undefined,
+			chars
+		);
+		const prism = r.windows.find((w) => w.kind === 'gadget');
+		const star = r.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		if (!prism || !star) throw new Error('no field');
+		const swings = r.events.flatMap((e) =>
+			e.kind === 'action' && e.characterId === TRAVELER.id && e.action === 'normal' ? [e] : []
+		);
+		// The chicken-and-egg: an Electro teammate is on the bench from frame 0,
+		// and nothing is Cryo until a Conduct has actually opened a field.
+		const before = swings.filter((e) => e.time < prism.start);
+		expect(before.length).toBeGreaterThanOrEqual(5);
+		expect(before.every((e) => e.element === undefined)).toBe(true);
+		const inside = swings.filter((e) => e.time > prism.start && e.time < star.end);
+		expect(inside.length).toBeGreaterThanOrEqual(5);
+		expect(inside.every((e) => e.element === 'cryo')).toBe(true);
+		// ⚓ A string the infusion lapses inside is TWO blocks, the second unlabelled.
+		const track = r.tracks.filter((t) => t.characterId === TRAVELER.id).at(-1)!;
+		const split = track.inputBlocks.findIndex((b) => b.parts.length === 0 && b.kind === 'normal');
+		expect(split).toBeGreaterThan(0);
+		expect(track.inputBlocks[split - 1].kind).toBe('elemental-normal');
+		expect(track.inputBlocks[split - 1].start + track.inputBlocks[split - 1].duration).toBe(
+			track.inputBlocks[split].start
+		);
+	});
+
+	it('with no Electro there is no field, and the Star keeps its interval', () => {
+		const { star, prisms } = run('Bennett E > Cryo Traveler E ~12s', BENNETT);
+		expect(prisms).toHaveLength(0);
+		expect(star.ticks).toHaveLength(4);
+	});
+});

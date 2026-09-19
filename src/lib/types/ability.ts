@@ -382,6 +382,22 @@ export type Condition =
 	 *  (renderer/planner-side); null otherwise, so effects aren't dropped
 	 *  before team scope exists. See docs/library/game/stellar-reactions.md. */
 	| { type: 'teamEnablesReaction'; reaction: Reaction }
+	/** True while a POLESTAR FIELD stands — the 7s a Starlight Prism lives
+	 *  after a Stellar-Conduct, refresh REPLACES (Radiance-window round,
+	 *  2026-09-19). It is "Radiance: Stellar-Conduct" as a WINDOW: gcsim defines
+	 *  that state as exactly `StatusIsActive(PolestarFieldKey)`.
+	 *
+	 *  ⚓ Resolved at an INSTANT the caller names, off the parse's own
+	 *  Stellar-Conduct stream (`polestarFieldOpenAt` in `sim/fields.ts`, the ONE
+	 *  reader) — the caller asks and hands the answer over as
+	 *  `ConditionContext.inPolestarField`. Absent → null, so the Team Builder
+	 *  (no timeline) lists the effect with a `needsField:polestar` caveat and
+	 *  ⛔ never tries to resolve a window.
+	 *
+	 *  ⚠️ Keep the STANDING gate beside it (`all` of `teamEnablesReaction` + the
+	 *  element count): the TB still narrows by enabler and element; this leaf
+	 *  only narrows the planner further. */
+	| { type: 'inPolestarField' }
 	/** True when the count of NON-HOLDER team members whose `character.element`
 	 *  is in `elements` satisfies `comparison` against `value`. Resolves
 	 *  definitively at planner time since team composition is fully known.
