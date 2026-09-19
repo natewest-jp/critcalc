@@ -1,9 +1,14 @@
 # Stacked buffs that STEP — plan (2026-09-18)
 
-_Status: SCOPE, not started. ⚓ Nate 2026-09-18: Columbina's Lunacy's Lure is
+_Status: SCOPE, not started — ⚓ **DECIDED 2026-09-19 (Nate): ROUTE A (§1), and the
+stepped value shows in the TOOLTIP, ⛔ not the label** — §3's option (b), my
+recommendation, was overruled: the bar's label stays its source name, the step
+reads as the lit edge, and the hover says the value. Queued after §1.G._
+
+\_⚓ Nate 2026-09-18: Columbina's Lunacy's Lure is
 +5% CRIT Rate per Gravity Interference, up to three stacks, 10 s; today its
 three fires refresh-merge into ONE +5% bar, and the step to 10% and 15% is the
-thing worth seeing._
+thing worth seeing.
 
 ## 0. What the chart says today, and why
 
