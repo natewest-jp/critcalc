@@ -133,6 +133,24 @@ describe('the authored ICD gate decides how much of a series applies', () => {
 		expect(ticks.length).toBeLessThan(8);
 		expect(ticks.length).toBe(4);
 	});
+
+	it('⚓ one clock never runs two windows — a shared LABEL is not a shared counter', () => {
+		// 🐛 Promoted from a real bug (summon-conditions round, 2026-09-19). Emilie's
+		// burst Level 3 Case wears the E Case's label so that it STOWS it, and a
+		// tick series' ICD clock was keyed by label — so the E Case's 120f
+		// first-only window and the volley's standard one alternated on a single
+		// counter. The volley's first hit then applied nothing, because the E Case
+		// had ticked 39f before it. gcsim has them on ICDTagEmilieLumidouce and
+		// ICDTagElementalBurst: the first Level 3 hit applies.
+		const notation = 'Emilie E Q';
+		const cases = summonWindows(notation).filter((w) => w.label === 'Lumidouce Case');
+		// E Case · the burst's Level 3 Case · the Case the burst leaves behind.
+		expect(cases.length).toBe(3);
+		const level3 = cases[1];
+		// The volley's first hit lands 30f after the Case spawns (`firstTickDelay`).
+		const firstVolley = +(level3.start + 0.5).toFixed(2);
+		expect(appsOf(notation, 'emilie')).toContain(firstVolley);
+	});
 });
 
 describe('a recast truncates the running chain', () => {
