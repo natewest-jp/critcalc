@@ -17,8 +17,8 @@ fixture-only). Sanity counts per category group:
 - taunt: wiki 8 characters / ours 9
 - grouping: wiki 10 characters / ours 10
 - infuse: wiki 10 characters / ours 10
-- interruptionRes: wiki 45 characters / ours 1
-- energy: wiki 73 characters / ours 26
+- interruptionRes: wiki 45 characters / ours 2
+- energy: wiki 73 characters / ours 27
 - revival: wiki 4 characters
 - offField: wiki 74 characters
 
@@ -76,7 +76,7 @@ No revive primitive exists (Tier-2 freeze) — each of these should carry a cave
 
 - _none_
 
-## Candidates (wiki category broader than our kind) (98)
+## Candidates (wiki category broader than our kind) (96)
 
 Appendix — wiki-has/we-don’t for superset categories (energy incl. particles, self-infusions, self interruption res). Judgment required; most are fine.
 
@@ -91,8 +91,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **chasca** — wiki attributes interruptionRes ("Spirit Reins, Shadow Hunt") — nothing derives
 - **chongyun** — wiki attributes infuse ("Spirit Blade: Chonghua's Layered Frost") — nothing derives
 - **clorinde** — wiki attributes interruptionRes (""And So Shall I Never Despair"" [C6], ""Now, As We Face the Perils of the Long Night"" [C2]) — nothing derives
-- **columbina** — wiki attributes energy ("Cloudveiled Ridges in Floral Mists" [C4], "Radiance Over Blossoms and Peaks" [C1]) — nothing derives
-- **columbina** — wiki attributes interruptionRes ("Radiance Over Blossoms and Peaks" [C1]) — nothing derives
 - **cyno** — wiki attributes interruptionRes ("Sacred Rite: Wolf's Swiftness") — nothing derives
 - **dahlia** — wiki attributes energy ("Infallible Procession" [C1]) — nothing derives
 - **dehya** — wiki attributes energy ("An Oath Abiding" [C4]) — nothing derives

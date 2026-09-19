@@ -92,7 +92,7 @@ async function main() {
 			const baseKey = a.abilityType === 'burst' ? 'Q' : 'E';
 			const targets = [{ node: a, key: suffix === null ? null : `${baseKey}${suffix}` }];
 			for (const v of a.variants ?? []) {
-				const vk = variantDumpKey(v.input ?? [], baseKey);
+				const vk = variantDumpKey(v.input ?? [], baseKey, v.conditions);
 				targets.push({
 					node: v,
 					key: vk === null || suffix === null ? null : `${vk}${suffix}`,

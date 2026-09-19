@@ -32,11 +32,10 @@ Capability derives, but not from the ability that actually carries it in-game �
 
 - _none_
 
-## Derived but not in fixture (2)
+## Derived but not in fixture (1)
 
 Either a fixture blind spot (fine — extend the fixture) or a data artifact worth a look.
 
-- **columbina** — derives shield C1 — absent from fixture (fixture blind spot, or data artifact?)
 - **prune** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 
 ## Tag without effect (1)
