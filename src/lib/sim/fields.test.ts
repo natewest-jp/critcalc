@@ -317,6 +317,41 @@ describe("a tick series gated on the field pauses under it — the Cryo Traveler
 		expect(dryBurst?.kind === 'cast' && dryBurst.stackContext?.get('frostglow')).toBe(4);
 	});
 
+	it('Ever-Keen Frost infuses the swings a field covers — not the ones before the first Conduct', () => {
+		const FISCHL = fischlJson as unknown as CharacterData;
+		const chars = [TRAVELER, FISCHL];
+		const r = parseNotation(
+			'Fischl N1 > Cryo Traveler E N5 N5 > Fischl E > Cryo Traveler N5 N5',
+			(n) => chars.find((c) => c.displayName === n) ?? null,
+			8,
+			{},
+			undefined,
+			chars
+		);
+		const prism = r.windows.find((w) => w.kind === 'gadget');
+		const star = r.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		if (!prism || !star) throw new Error('no field');
+		const swings = r.events.flatMap((e) =>
+			e.kind === 'action' && e.characterId === TRAVELER.id && e.action === 'normal' ? [e] : []
+		);
+		// The chicken-and-egg: an Electro teammate is on the bench from frame 0,
+		// and nothing is Cryo until a Conduct has actually opened a field.
+		const before = swings.filter((e) => e.time < prism.start);
+		expect(before.length).toBeGreaterThanOrEqual(5);
+		expect(before.every((e) => e.element === undefined)).toBe(true);
+		const inside = swings.filter((e) => e.time > prism.start && e.time < star.end);
+		expect(inside.length).toBeGreaterThanOrEqual(5);
+		expect(inside.every((e) => e.element === 'cryo')).toBe(true);
+		// ⚓ A string the infusion lapses inside is TWO blocks, the second unlabelled.
+		const track = r.tracks.filter((t) => t.characterId === TRAVELER.id).at(-1)!;
+		const split = track.inputBlocks.findIndex((b) => b.parts.length === 0 && b.kind === 'normal');
+		expect(split).toBeGreaterThan(0);
+		expect(track.inputBlocks[split - 1].kind).toBe('elemental-normal');
+		expect(track.inputBlocks[split - 1].start + track.inputBlocks[split - 1].duration).toBe(
+			track.inputBlocks[split].start
+		);
+	});
+
 	it('with no Electro there is no field, and the Star keeps its interval', () => {
 		const { star, prisms } = run('Bennett E > Cryo Traveler E ~12s', BENNETT);
 		expect(prisms).toHaveLength(0);

@@ -161,7 +161,8 @@
 					"_curatorNotes": [
 						"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
 						"Cadence (skill.go): the ticker first fires 60f after the cast and then every 180f (skillInterval = 3*60); each tick queues TWO crystals with hitmarks 5 and 8 plus the default 10f travel, landing at +15 and +18. ⚓ Authored as ONE series (first tick 1.25s from the cast, spawnsAt 0), ⛔ not two: the summon-tick ICD counter is keyed per SERIES (`aura.ts`, `${char.id}:summon:${label}:${series.index}`), so two series 3f apart applied Cryo TWICE per tick where gcsim's two crystals share one ICDTagElementalArt/Default counter and apply once — measured 8 applications per 12s Star as two series, 4 as one, gcsim 4. The second crystal survives as `gainStacks.amount: 2` on the Frostglow grant (two hits, two stacks). Cost: one tick marker per two-crystal volley. Over the 12s Star that is 4 ticks / 8 crystals, 5 / 10 at C4. Standard gate, so no icdGate. Ice Crystal DMG 38.51% ATK at talent level 10 (sidecar).",
-						"Not modelled: under Radiance: Stellar-Conduct the ticker stops and a crystal fires on each of the Traveler's own Normal/Charged/Plunging hits (0.2s ICD) — the proc registry needs an application frame the draft cannot give (the crystal travels)."
+						"Not modelled: under Radiance: Stellar-Conduct the ticker stops and a crystal fires on each of the Traveler's own Normal/Charged/Plunging hits (0.2s ICD) — the proc registry needs an application frame the draft cannot give (the crystal travels).",
+						"⚓ RADIANCE IS A WINDOW HERE (Radiance-window round, 2026-09-19 — `docs/radiance-window-round.md` §7). Inside a Polestar Field (the 7s after a Stellar-Conduct; gcsim's `radiance == conduct` is exactly `StatusIsActive(PolestarFieldKey)`) the Star does NOT stop — it changes trigger. The interval series is gated `not(inPolestarField)` and asked PER TICK: a refused volley is skipped and the 3s cadence runs on underneath (gcsim's `skillTicker` skips the attack and re-queues), so the next volley lands on the ORIGINAL phase. The per-hit crystal is the `onHit` proc beside it (source self, N/C/P, 0.2s, landing 3f after the hit — the draft's `naCaPlungeCB`), gated `inPolestarField`. ⚠️ It keeps its own ICD counter where gcsim's `queueCrystal` shares one; the two streams never overlap in time, so it shows only at a field's edges."
 					]
 				}
 			],
@@ -214,7 +215,7 @@
 					]
 				}
 			],
-			"caveat": "The Star's ticks come from gcsim's unreleased draft, not from the game text: each mark is one two-crystal volley every 3s, and the cast itself is still untimed.",
+			"caveat": "The Star's marks come from gcsim's unreleased draft, not the game text: one two-crystal volley every 3s, or — while a Polestar Field stands — one crystal per hit he lands instead. The cast itself is still untimed.",
 			"_curatorNotes": [
 				"⚠️⚠️ THE ICE-CRYSTAL CADENCE IS THE ONE MISSING NUMBER, AND MOST OF THE UNAUTHORED KIT HANGS OFF IT. The talent says the Star \"periodically fires ice crystals\" and never says how often. Checked 2026-08-31: genshin-db 5.2.13 has no interval label (its combat2 attributes are Skill DMG / Ice Crystal DMG / Duration / CD only), the Fandom talent page is a {{Stub}} with its Gameplay Notes section commented out and empty, and gcsim has no Cryo Traveler at all. ⛔ So no summonTick series is authored — never fake timing — and the summon is a presence bar with no tick markers. Ice Crystal DMG is 38.51% ATK Cryo at talent level 10 and is ready to author the moment a cadence is stated.",
 				"⛔ THE Radiance: Stellar-Conduct BRANCH IS ALSO UNAUTHORED, and for a different reason. It IS fully specified — the Star stops firing on an interval and instead fires one crystal whenever the Traveler lands a Normal, Charged or Plunging attack, once every 0.2s — which is the coordinated-attack round's onHit damage-proc shape, summon-hosted so the Star's own liveness is the window. But `sim/procs.ts` registers a proc only when the effect carries a non-empty application[], and the crystal TRAVELS, so its frame offset is a measurement nobody has made. Authoring `frame: 0` would be inventing a travel time; authoring the effect without application[] would be inert data. Both halves of this series unblock together the moment gcsim ships the character.",
@@ -286,6 +287,9 @@
 								"elements": ["electro"],
 								"comparison": ">=",
 								"value": 1
+							},
+							{
+								"type": "inPolestarField"
 							}
 						]
 					},
@@ -295,7 +299,8 @@
 			"_curatorNotes": [
 				"The infusion window IS the Frostpierce Star's lifetime — \"when a Frostpierce Star is on the field\" — so it is authored as an onCast-skill grant of 12s rather than a state the parser tracks. ⚠️ It does NOT follow C4: the Star goes to 15s there and this window stays at 12s, because durationModifiers live on the summon and an infuse effect has no way to read them.",
 				"The Radiance: Stellar-Conduct gate is the house idiom from docs/library/game/stellar-reactions.md — teamEnablesReaction + an Electro teammate. ⚠️ The Traveler is himself an enabler, so the first clause is satisfied by his own presence and the Electro count is what does the work. No `not(…)` wrapper here: unlike Odette's C2/C6 this passive names only the Conduct branch, so there is no Swirl alternative for Conduct to take precedence over.",
-				"⛔ The other half — \"DMG dealt is also increased by 80% of the Traveler's ATK\" — is an additive base-DMG bonus on his own attacks. The tool draws no damage numbers, so there is no pixel for it to repair; description-only."
+				"⛔ The other half — \"DMG dealt is also increased by 80% of the Traveler's ATK\" — is an additive base-DMG bonus on his own attacks. The tool draws no damage numbers, so there is no pixel for it to repair; description-only.",
+				"↻ THE INFUSION IS FIELD-GATED (Radiance-window round, 2026-09-19). The standing gate (an enabler + an Electro teammate) stays in the same `all` so the Team Builder still narrows by party; `inPolestarField` narrows the planner further and is resolved at each SWING (`infusionAt`'s third fact). Measured: with Fischl on the bench his swings are physical until the first Conduct opens a field, where the standing gate alone painted every swing under the Star Cryo. A string the infusion opens or lapses inside draws as two blocks."
 			],
 			"description": "Radiance: Stellar-Conduct: When a Frostpierce Star is on the field, DMG from the Traveler's Normal Attacks, Charged Attacks, and Plunging Attacks are converted to Cryo DMG that cannot be overridden by another elemental infusion, and DMG dealt is also increased by 80% of the Traveler's ATK."
 		},

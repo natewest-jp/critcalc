@@ -32,9 +32,11 @@ import type { SimContext } from './context';
 import {
 	DEFAULT_ASCENSION,
 	evalCondition,
+	mentionsPolestarField,
 	type ChainIndex,
 	type ConditionContext
 } from './conditions';
+import { polestarFieldOpenAt } from './fields';
 
 /** Opens an infusion window for every `infuse` Effect this cast fires
  *  (infusion round, 2026-08-15). Reuses `getCharacterEffectsForCast`, which
@@ -147,7 +149,16 @@ export function infusionAt(
 			w.holderConstellation,
 			new Map(),
 			undefined,
-			{ receiverWeapon: receiver.weapon }
+			{
+				receiverWeapon: receiver.weapon,
+				// ↻ A THIRD fact (Radiance-window round, 2026-09-19): whether a
+				// Polestar Field stands at the swing. Like the weapon it is not a
+				// fact about the HOLDER at the cast — it is a fact about the world
+				// at `time` — so it belongs here and nowhere earlier.
+				...(mentionsPolestarField(w.conditions)
+					? { inPolestarField: polestarFieldOpenAt(ctx.stellarConductTimes, time) }
+					: {})
+			}
 		);
 		if (verdict === false) continue;
 		return w.element;

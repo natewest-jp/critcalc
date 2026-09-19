@@ -39,6 +39,7 @@ import type { CharacterData } from '$lib/types/character';
 import type {
 	Ability,
 	ActionKey,
+	Element,
 	FrameMap,
 	NormalAbility,
 	NormalHit,
@@ -1358,26 +1359,37 @@ export function runRotation(
 					// ⚠️ TWO infusion mechanisms, and the stance one WINS: a stance's
 					// own `infusion` is the character's self-infusion, which in game
 					// overrides an external grant (Xiao's burst stays anemo through
-					// a Bennett C6 pyro infusion). Resolved once per TOKEN, at the
-					// token's start — the same altitude `activeNormal` is resolved at,
-					// so a swing's drawn element and its reaction cannot disagree.
+					// a Bennett C6 pyro infusion).
+					// ↻ Resolved PER SWING, at the swing's start (Radiance-window round,
+					// 2026-09-19) — it was once per token, which was exact while every
+					// granted infusion was a window fixed at its cast. An infusion gated
+					// on the Polestar Field opens and closes with the reaction stream, so
+					// a field opening mid-`N5` makes a string whose first swings are
+					// physical and whose last are Cryo; a timed grant lapsing mid-string
+					// is the same case and was simply wrong before. The element rides
+					// each swing's own action event, so a swing's drawn element and its
+					// reaction still cannot disagree; finalize splits the block where it
+					// changes. ⚠️ `activeNormal` (and so a STANCE infusion) stays
+					// per-token — a stance does not change under a string.
 					// ⚓ A non-hitting normal string lands nothing (charged-forms round,
 					// 2026-09-16): no element, and no hit record below.
 					const nNonHitting = activeNormal?.nonHitting?.normal === true;
-					const nElement = nNonHitting
-						? undefined
-						: resolveActionElement(
-								'normal',
-								t,
-								char.weapon,
-								char.element,
-								resolveElementRef(activeNormal?.infusion, variantCtx) ??
-									infusionAt(ctx, char, clock.now)
-							);
+					const stanceInfusion = resolveElementRef(activeNormal?.infusion, variantCtx);
+					const swingElement = (): Element | undefined =>
+						nNonHitting
+							? undefined
+							: resolveActionElement(
+									'normal',
+									t,
+									char.weapon,
+									char.element,
+									stanceInfusion ?? infusionAt(ctx, char, clock.now)
+								);
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
 					let anchorId: number | undefined;
 					for (let k = 0; k < count; k++) {
+						const nElement = swingElement();
 						const hitIndex = normalCounter % hits.length;
 						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
 						const castS = resolveNormalCastTime(
