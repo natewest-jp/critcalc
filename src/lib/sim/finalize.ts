@@ -341,16 +341,19 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						// — gcsim passes 0 rather than the summon's `spawnsAt`, because the
 						// spawn delay belongs to a cast animation and there is no second cast.
 						const spawnAt = span.from ?? summonSpawnAt(bar.start, bar.summonActivatesAt, summon, i);
-						const naturalEnd = summonEndAt({
+						// The ONE gate a secondary's `durationModifiers` resolve under — the
+						// tick walk's own (see `summonEndAt`).
+						const endArgs = {
 							spawnAt,
 							barUptime: bar.uptime,
 							summon,
 							index: i,
-							swapOutAt
-						});
+							cLevel: ctx.constellationLevels?.[track.characterId] ?? 0,
+							context: tickCtx(track.characterId)
+						};
+						const naturalEnd = summonEndAt({ ...endArgs, swapOutAt });
 						if (si === 0 && i === 0) sharedEnd = naturalEnd;
-						if (si === 0 && i === 0)
-							sharedUntruncated = summonEndAt({ spawnAt, barUptime: bar.uptime, summon, index: i });
+						if (si === 0 && i === 0) sharedUntruncated = summonEndAt(endArgs);
 						// ⚓ A LATER OCCUPANT INHERITS THE REMAINING DURATION, it does not start a
 						// fresh lifetime — so its end is the SHARED end, not its own `duration`.
 						// And every occupant is cut short by the flip that replaced it.
@@ -374,10 +377,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						// ⚓ The UNTRUNCATED end — no swap (`swapOutAt` omitted), and the
 						// recast/flip cuts below never touch it. `naturalEnd` above is
 						// misnamed for this purpose: it already carries the swap.
-						const untruncatedEnd =
-							span.from === null
-								? summonEndAt({ spawnAt, barUptime: bar.uptime, summon, index: i })
-								: sharedUntruncated;
+						const untruncatedEnd = span.from === null ? summonEndAt(endArgs) : sharedUntruncated;
 						const win: Extract<TimelineWindow, { kind: 'summon' }> = {
 							kind: 'summon',
 							characterId: track.characterId,

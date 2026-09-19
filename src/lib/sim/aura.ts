@@ -925,6 +925,8 @@ export function scheduleSummonTicks(
 				barUptime: extRec ? extRec.ownerUptime : castEvent.uptime,
 				summon,
 				index,
+				cLevel,
+				context: tickConditionCtx(ctx, char.id),
 				// ⚠️ Only a swap-out AFTER this spawn can end this summon; an
 				// earlier one belongs to a previous life of the same character.
 				swapOutAt: (() => {
@@ -1037,7 +1039,9 @@ export function scheduleSummonTicks(
 					spawnAt,
 					barUptime: extRec ? extRec.ownerUptime : castEvent.uptime,
 					summon,
-					index
+					index,
+					cLevel,
+					context: tickConditionCtx(ctx, char.id)
 				});
 			const liveUntil = (): number => {
 				const end = endNow();
