@@ -204,3 +204,83 @@ describe('the ledger', () => {
 		expect((tiles[1].effects[0] as { value: number }).value).toBe(40);
 	});
 });
+
+// ── Radiance as a WINDOW (Radiance-window round, 2026-09-19) ──
+import { polestarFieldOpenAt } from './fields';
+import { parseNotation } from '$lib/utils/notationParser';
+import type { CharacterData } from '$lib/types/character';
+import travelerCryoJson from '$lib/data/characters/traveler_cryo.json';
+import lisaJson from '$lib/data/characters/lisa.json';
+import bennettJson from '$lib/data/characters/bennett.json';
+
+describe('polestarFieldOpenAt — the one reader, live and at finalize', () => {
+	const at = (s: number) => framesOf(s);
+	it('is open for 7s after a conduct, and the LATEST conduct decides (refresh replaces)', () => {
+		const times = [at(1), at(5)];
+		expect(polestarFieldOpenAt(times, at(0.5))).toBe(false);
+		expect(polestarFieldOpenAt(times, at(4))).toBe(true);
+		expect(polestarFieldOpenAt(times, at(8.5))).toBe(true); // 1s + 7s has lapsed; 5s + 7s has not
+		expect(polestarFieldOpenAt(times, at(12))).toBe(false);
+		expect(polestarFieldOpenAt([], at(3))).toBe(false);
+	});
+	it('⚠️ STRICTLY before — the instant a conduct happens is not yet inside its field', () => {
+		// A tick whose own application CAUSES the conduct fired with the field
+		// down; the finished stream must not un-draw it.
+		expect(polestarFieldOpenAt([at(2)], at(2))).toBe(false);
+		expect(polestarFieldOpenAt([at(2)], at(2) + 1)).toBe(true);
+	});
+	it('agrees with the Prism windows finalize draws, everywhere but the opening frame', () => {
+		const events = [conduct(1), conduct(5), conduct(20)];
+		const { gadgets } = deriveFieldWindows({ reactionEvents: events, applications: [] });
+		const times = events.map((e) => e.time);
+		for (let f = 0; f < framesOf(30); f += 7) {
+			const inWindow = gadgets.some((g) => f > g.start && f < g.end);
+			expect(polestarFieldOpenAt(times, f), `frame ${f}`).toBe(inWindow);
+		}
+	});
+});
+
+describe("a tick series gated on the field pauses under it — the Cryo Traveler's Star", () => {
+	const TRAVELER = travelerCryoJson as unknown as CharacterData;
+	const LISA = lisaJson as unknown as CharacterData;
+	const BENNETT = bennettJson as unknown as CharacterData;
+	const run = (notation: string, mate: CharacterData) => {
+		const chars = [TRAVELER, mate];
+		const r = parseNotation(
+			notation,
+			(n) => chars.find((c) => c.displayName === n) ?? null,
+			8,
+			{},
+			undefined,
+			chars
+		);
+		expect(r.unknownTokens).toEqual([]);
+		const star = r.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		if (!star || star.kind !== 'summon') throw new Error('no Star');
+		const prisms = r.windows.filter((w) => w.kind === 'gadget');
+		const entityApps = r.applications
+			.filter((a) => a.characterId === TRAVELER.id && a.time > star.start)
+			.map((a) => a.time);
+		return { star, prisms, entityApps };
+	};
+
+	it('skips the interval crystals inside the Prism and resumes on the ORIGINAL phase', () => {
+		// One Lisa E is one Electro aura: the Traveler's cast conducts once, the
+		// Prism stands 7s, and nothing re-opens it.
+		const { star, prisms, entityApps } = run('Lisa E > Cryo Traveler E ~12s', LISA);
+		expect(prisms).toHaveLength(1);
+		const first = star.start + framesOf(1.25);
+		const cadence = framesOf(3);
+		// The first two volleys fall inside the field; the third is the first out.
+		expect(first + cadence).toBeLessThan(prisms[0].end);
+		expect(star.ticks).toEqual([first + 2 * cadence, first + 3 * cadence]);
+		// ⚓ Both readers: the markers drawn are exactly the ticks that applied.
+		expect(entityApps).toEqual(star.ticks);
+	});
+
+	it('with no Electro there is no field, and the Star keeps its interval', () => {
+		const { star, prisms } = run('Bennett E > Cryo Traveler E ~12s', BENNETT);
+		expect(prisms).toHaveLength(0);
+		expect(star.ticks).toHaveLength(4);
+	});
+});

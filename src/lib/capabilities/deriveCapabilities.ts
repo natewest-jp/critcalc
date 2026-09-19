@@ -214,6 +214,8 @@ function caveatLabel(cond: Condition): string | null {
 			return `teamFaction:${cond.faction}`;
 		case 'teamEnablesReaction':
 			return `needsEnabler:${cond.reaction}`;
+		case 'inPolestarField':
+			return 'needsField:polestar';
 		case 'teamElementCount':
 			return 'teamElements';
 		case 'activeCharFaction':

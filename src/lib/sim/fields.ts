@@ -60,6 +60,32 @@ type GadgetWindow = Extract<TimelineWindow, { kind: 'gadget' }>;
 const PRISM_LIFETIME_F = framesOf(7);
 
 /**
+ * ⚓ IS A POLESTAR FIELD OPEN AT `time`? — the ONE reader, for both the live
+ * parse and finalize (Radiance-window round, 2026-09-19). `conductTimes` is the
+ * Stellar-Conduct instants in ASCENDING order: the live parse appends to
+ * `ctx.stellarConductTimes` as reactions fire (the clock is monotonic), finalize
+ * takes them off the finished stream.
+ *
+ * Refresh REPLACES, so the field is the union of `[t, t + 7s)` over every
+ * conduct, and the LATEST conduct before `time` decides.
+ *
+ * ⚠️⚠️ STRICTLY BEFORE, and that is what lets the two readers agree. A tick at T
+ * whose own application CAUSES a conduct at T fired with the field down; asked
+ * again at finalize with the finished stream, a `<=` would find that conduct
+ * and un-draw the tick that made it. "Open" means opened by something EARLIER.
+ */
+export function polestarFieldOpenAt(conductTimes: readonly number[], time: number): boolean {
+	let lo = 0;
+	let hi = conductTimes.length;
+	while (lo < hi) {
+		const mid = (lo + hi) >> 1;
+		if (conductTimes[mid] < time) lo = mid + 1;
+		else hi = mid;
+	}
+	return lo > 0 && time < conductTimes[lo - 1] + PRISM_LIFETIME_F;
+}
+
+/**
  * ⚓ THE SECOND CLOCK. "Every 4s, the count is reset, and buffs lasting 4s are
  * granted." ⚠️ It is NOT the Prism's clock — the two run together and are not
  * the same length, which is exactly why the corpus's old 4s-refresh mirror was

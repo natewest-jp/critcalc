@@ -510,6 +510,11 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		lintAbility(c, a, push);
 	}
 
+	const speaksOfStellarConduct =
+		(c.enablesReactions ?? []).includes('stellarConduct') ||
+		JSON.stringify([c.abilities, c.passives, c.constellations, c.factionBonuses]).includes(
+			'"reaction":"stellarConduct"'
+		);
 	// (NEW) every condition tree, wherever hosted, must be structurally valid —
 	// malformed nodes silently never evaluate (Skirk C2 shipped with one).
 	walkRawConditionRoots(
@@ -523,6 +528,17 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		(cond, path) => {
 			const problem = conditionShapeProblem(cond, path);
 			if (problem) push('strict', 'condition-shape', problem);
+			// (C.19) `inPolestarField` is Radiance: Stellar-Conduct as a WINDOW
+			// (Radiance-window round, 2026-09-19) — it belongs to a kit that speaks
+			// of Stellar-Conduct at all: an enabler, or a holder gating on one.
+			// Anywhere else it is a copy-paste error that silently never resolves.
+			if (JSON.stringify(cond).includes('"inPolestarField"') && !speaksOfStellarConduct) {
+				push(
+					'strict',
+					'polestar-field-unrelated',
+					`${path}: inPolestarField on a character whose kit never names stellarConduct (no enablesReactions entry, no teamEnablesReaction gate)`
+				);
+			}
 		}
 	);
 

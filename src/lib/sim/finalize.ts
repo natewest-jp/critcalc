@@ -42,7 +42,7 @@ import {
 } from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
 import { materialiseStateChains } from './states';
-import { deriveFieldWindows } from './fields';
+import { deriveFieldWindows, polestarFieldOpenAt } from './fields';
 import { deriveGadgetWindows } from './gadgets';
 
 /**
@@ -540,6 +540,10 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// about to change. Measured while writing this: Fischl's first Oz kept ten
 	// markers out at 82–613 frames on a window the burst had already cut to 44.
 	// ⛔ Never move this back up.
+	// ⚓ The finished Stellar-Conduct stream, for a tick series gated on the
+	// Polestar Field — the same instants the live chain read as they happened
+	// (`ctx.stellarConductTimes`), so the markers drawn are the ticks that fired.
+	const fieldOpenAt = (time: number): boolean => polestarFieldOpenAt(ctx.stellarConductTimes, time);
 	for (const win of windows) {
 		if (win.kind !== 'summon') continue;
 		const summon = summonByWindow.get(win);
@@ -556,7 +560,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				cLevel,
 				() => true,
 				tickCtx(win.characterId),
-				win.naturalEnd
+				win.naturalEnd,
+				fieldOpenAt
 			).map((t) => t.time),
 			// ⚠️ Bounded by the FINAL span so a wave landing past the summon's end —
 			// or before a truncated window's start — is not drawn outside the bar.
@@ -600,7 +605,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			win.start,
 			win.end,
 			cLevel,
-			tickCtx(win.characterId)
+			tickCtx(win.characterId),
+			fieldOpenAt
 		)) {
 			ctx.hitRecords.push({
 				characterId: win.characterId,

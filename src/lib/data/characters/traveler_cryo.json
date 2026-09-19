@@ -125,7 +125,13 @@
 							},
 							"scaling": 38.51,
 							"stat": "atk",
-							"element": "cryo"
+							"element": "cryo",
+							"conditions": {
+								"type": "not",
+								"condition": {
+									"type": "inPolestarField"
+								}
+							}
 						}
 					],
 					"_curatorNotes": [

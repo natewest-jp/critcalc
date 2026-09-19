@@ -320,6 +320,9 @@ export type SimContext = {
 	 *  property of the chaining (L5e §2), not of this map; ⛔ don't reuse it
 	 *  somewhere that reads the value once. */
 	lastSwapOutAt: Map<string, number>;
+	/** Every Stellar-Conduct instant so far, ascending — what
+	 *  `polestarFieldOpenAt` reads mid-parse. Appended by `emitReaction`. */
+	stellarConductTimes: number[];
 	/** Generation per `${characterId}::${summonLabel}` — bumped when a summon
 	 *  that declares `terminatesOn: 'recast'` respawns (gauge round L5e-b). A
 	 *  running tick chain compares its captured generation on every fire and
@@ -490,6 +493,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		aura: createAuraState(),
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
+		stellarConductTimes: [],
 		summonChainGen: new Map(),
 		summonChainSupersededAt: new Map(),
 		lineupChanges: new Map(),
