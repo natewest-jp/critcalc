@@ -376,6 +376,17 @@
 							"stat": "atk",
 							"element": "electro"
 						}
+					],
+					"durationModifiers": [
+						{
+							"source": "C2: Howl From Afar",
+							"type": "flat",
+							"value": 6,
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
+						}
 					]
 				}
 			],
@@ -386,7 +397,7 @@
 				"⚠️ The consume is `amount: 1`, NOT `'all'` — the opposite of the skill's and N4's. Activation removes the one mark it activated; at C2 the same maul has just applied a fresh one, and `'all'` would wipe that too and halve the cadence to every other maul.",
 				"firstTickDelay is left at the default (= interval) on all three series: the kit says \"every 2s\" and nothing states an offset from the cast. ⛔ Never faked. Likewise no icdGate anywhere here — gcsim has no Alyosha, so nothing has been measured and a bare series correctly means 'standard'.",
 				"C2's second half — \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks\" — is authored on the C2 entry as a per-maul `gainStacks` on the same Tugarin-filtered trigger, gated by the entry itself. It is what makes Hunter's Precision continuous at C2 and a single 15s window at C0.",
-				"⚠️ SUMMON ORDER IS LOAD-BEARING AND TUGARIN IS FIRST ON PURPOSE. Only summons[0] takes its lifetime from the BAR (and so only its durationModifiers are read); a secondary uses its own authored `duration` flat. So C2's +6s can reach exactly one of the two, and Tugarin gets it — he is what the kit text leads with, he carries the damage and both heals, and his length is what a player tracks. Measured before choosing: at C2 the primary ran to 20.73s and the secondary stayed at 14.73s whichever way round they were authored. The Fulgurite Hunting Field's short bar at C2 is caveated on the C2 entry."
+				"SUMMON ORDER: Tugarin is first because summons[0] takes its lifetime from the BAR - he is what the kit text leads with, he carries the damage and both heals, and his length is what a player tracks. ↻ 2026-09-19 (summon-conditions round): a secondary summon now reads its OWN durationModifiers (summonEndAt), so C2's +6s is authored on both and the Fulgurite Hunting Field runs to 20s at C2 beside him. Until then only summons[0]'s were ever applied, the Field stayed at 14s, and the C2 entry carried a caveat for it."
 			]
 		}
 	],
@@ -709,10 +720,8 @@
 			"description": "The duration of the Elemental Burst Hunter's Advance is extended by 6s.\nAdditionally, each time **Tugarin** attacks the opponent, he will also apply the **Hunter's Mark** to a target. This effect does not activate existing Hunter's Marks.",
 			"_curatorNotes": [
 				"The +6s half IS modelled, as a flat durationModifier on BOTH of the burst's summons (source \"C2: Howl From Afar\"), mirroring Kuki's C2 ring extension. It is authored on the summons rather than here because a durationModifier belongs to the window it lengthens; it carries its own constellation condition, since an entry-level gate does not reach an ability-hosted modifier.",
-				"✓ The mark half is AUTHORED here (2026-08-31): a `gainStacks` on `onHit / burst / filter.abilityName: 'Tugarin'`, amount 1, max 2, lifetime 15, `scope: 'rotation'`. No explicit constellation condition — the entry IS the gate. ⚠️ The non-activation clause is honoured by the burst's `min: 2` branch, not here: this effect only APPLIES, and the burst decides what activates. See the burst's notes for why min:2 is the same claim as the skill's.",
-				"⚠️ The +6s reaches Tugarin only, and that is a limit of how a cast's second summon takes its length (its own authored duration, flat) rather than an authoring choice that could be made differently — see the burst's notes. Caveated here because the wrong bar is only visible to a reader who HAS C2, which is exactly who a constellation caveat reaches."
-			],
-			"caveat": "At C2 the burst runs 20s, but the Fulgurite Hunting Field's bar still ends at 14s — only Tugarin's is extended."
+				"✓ The mark half is AUTHORED here (2026-08-31): a `gainStacks` on `onHit / burst / filter.abilityName: 'Tugarin'`, amount 1, max 2, lifetime 15, `scope: 'rotation'`. No explicit constellation condition — the entry IS the gate. ⚠️ The non-activation clause is honoured by the burst's `min: 2` branch, not here: this effect only APPLIES, and the burst decides what activates. See the burst's notes for why min:2 is the same claim as the skill's."
+			]
 		},
 		{
 			"id": "alyosha__constellation__friendly_call",

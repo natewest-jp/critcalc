@@ -212,6 +212,50 @@
 					"element": "geo",
 					"units": 2
 				}
+			],
+			"variants": [
+				{
+					"label": "C2 Kinu",
+					"input": ["Q"],
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
+					"summons": [
+						{
+							"label": "Kinu",
+							"duration": 10,
+							"spawnsAt": 91,
+							"mobility": "follows",
+							"effects": [
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": {
+										"type": "summonTick",
+										"interval": 3,
+										"firstTickDelay": 3.6833,
+										"icdGate": {
+											"timer": 114
+										}
+									},
+									"scaling": 251.16,
+									"stat": "atk",
+									"element": "geo",
+									"attribution": "C2: In Five Colors Dyed",
+									"_curatorNotes": [
+										"Authored 2026-09-19 (summon-conditions round) as a CONSTELLATION-GATED VARIANT of the burst: a variant's summons replace the base's and matchVariant is condition-aware, so the Kinu lane exists only at C2+ and C0 is byte-identical. gcsim cons.go c2() runs at the burst hitmark - 1 (91f): a 600f ticker spawns a Kinu every 180f, and each strikes skillDollStartDelay + skillDollAttackDelay = 41f after its spawn - hits at 312 / 492 / 672f from the cast, three per burst. The window is the 10s the kit states; interval 3s is the spawn cadence and firstTickDelay 3.6833 (221f) lands the first strike.",
+										"scaling 251.16 = 170% of the Tamoto slash (147.74) as the kit states. icdGate is ICDGroupChioriSkill (114f), the same group Tamoto carries; at a 180f interval every strike applies. gcsim shares that ONE counter between Tamoto and Kinu and ours are per series - counter sharing across entities is unmodelled.",
+										"The kit calls this Elemental Skill DMG; a tick inherits its host cast's class here, so these hits read as burst hits to an onHit consumer. No effect type can restate a tick's damage class."
+									]
+								}
+							]
+						}
+					],
+					"_curatorNotes": [
+						"Exists only to gate the Kinu summon on C2 (docs/summon-conditions-round.md). It states no frames, cooldown, application or effects, so every one of those falls through to the base burst. The frames audit cannot reach a plain-input variant (variantDumpKey returns null) and has nothing to compare: it authors no frames."
+					]
+				}
 			]
 		}
 	],
@@ -302,7 +346,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Post-Q Kinu summoner (every 3s for 10s, deals 170% Tamoto DMG, lasts 1 hit or 3s). ↻ 2026-09-17 (T1.5): the old blocker ('depends on Tamoto-emitted damage') is stale — the Tamoto series exists. The cadence is fully specified (gcsim cons.go c2 at burst hitmark − 1 = 91f: a Kinu every 180f while a 600f ticker lives, each striking 36 + 5f after its spawn, ICDGroupChioriSkill — hits at 312 / 492 / 672f). ⛔ The blocker now is that a SUMMON cannot be constellation-gated: authored on the burst it would draw a Kinu lane at C0. That is the summon-conditions round (docs/curation/summon-conditions-round.md); Chiori C2 is not on its list and belongs there."
+				"Post-Q Kinu summoner (every 3s for 10s, 170% of Tamoto's DMG, each Kinu leaves after 1 attack or 3s). Authored 2026-09-19 as the burst's constellation-gated 'C2 Kinu' variant - see the notes there for the gcsim cadence (hits at 312 / 492 / 672f from the cast)."
 			],
 			"description": "For 10s after using Hiyoku: Twin Blades, a simplified automaton doll, \"Kinu,\" will be summoned next to your active character every 3s. Kinu will attack nearby opponents, dealing AoE Geo DMG equivalent to 170% of Tamoto's DMG. DMG dealt this way is considered Elemental Skill DMG.\nKinu will leave the field after 1 attack or after lasting 3s."
 		},

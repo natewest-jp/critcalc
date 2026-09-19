@@ -17,8 +17,13 @@
 
 import type { CastAbility, Effect, Element, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
-import { framesOf } from '$lib/utils/frames';
-import { evalCondition, type ConditionContext } from './conditions';
+import { FPS, framesOf } from '$lib/utils/frames';
+import {
+	applyModifiers,
+	DEFAULT_ASCENSION,
+	evalCondition,
+	type ConditionContext
+} from './conditions';
 
 // ---------------------------------------------------------------------------
 // Summon resolution (for the P4 summon-window pass)
@@ -156,6 +161,18 @@ export function summonSpawnAt(
  *
  * ⚠ `terminatesOn` is read off the SUMMON, so a stationary turret can outlive
  * the swap that ends the field it spawned beside.
+ *
+ * ⚓ A SECONDARY READS ITS OWN `durationModifiers` (2026-09-19). The field is on
+ * every `Summon`, and until this date only `summons[0]`'s were ever applied —
+ * through the cast's geometry accessors, which resolve the primary and nothing
+ * else — so a modifier authored on a second summon was silently inert. Alyosha's
+ * C2 lengthens his whole burst by 6s and the Fulgurite Hunting Field, his
+ * burst's second summon, kept ending at 14s. `cLevel` is REQUIRED so that no
+ * caller can ask this question without it, and every caller passes the SAME
+ * context its tick walk takes — ⛔ the live chain and finalize must not resolve
+ * a modifier's gate differently. ⚠️ No resolved states: a secondary has no cast
+ * of its own to snapshot them at, so a STATE-gated modifier on one is
+ * unresolvable and is skipped (`applyModifiers` applies only a definitive true).
  */
 export function summonEndAt(args: {
 	spawnAt: number;
@@ -163,12 +180,32 @@ export function summonEndAt(args: {
 	barUptime: number;
 	summon: Summon;
 	index: number;
+	/** The owner's constellation level — gates a secondary's modifiers. */
+	cLevel: number;
+	/** Team scope for a secondary's modifier gate; the tick walk's own. */
+	context?: ConditionContext;
 	/** The owner's next swap-out, or `Infinity` when they never leave. */
 	swapOutAt?: number;
 }): number {
-	const { spawnAt, barUptime, summon, index, swapOutAt = Infinity } = args;
-	const natural = spawnAt + (index === 0 ? barUptime : framesOf(summon.duration));
+	const { spawnAt, barUptime, summon, index, cLevel, context, swapOutAt = Infinity } = args;
+	const natural = spawnAt + (index === 0 ? barUptime : secondaryLifetime(summon, cLevel, context));
 	return summon.terminatesOn === 'swap' && swapOutAt < natural ? swapOutAt : natural;
+}
+
+/** A secondary summon's lifetime in FRAMES: its authored `duration` with its own
+ *  `durationModifiers` applied. See `summonEndAt`. */
+function secondaryLifetime(summon: Summon, cLevel: number, context?: ConditionContext): number {
+	return applyModifiers(
+		framesOf(summon.duration),
+		summon.durationModifiers,
+		DEFAULT_ASCENSION,
+		new Set(),
+		cLevel,
+		undefined,
+		undefined,
+		FPS, // a `flat` duration modifier is authored in seconds
+		context
+	);
 }
 
 /**

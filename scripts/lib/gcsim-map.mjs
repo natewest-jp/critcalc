@@ -98,8 +98,16 @@ export function prereqFor(conditions, drv) {
  * exists when a Pyro/Hydro/Electro/Cryo unit is in the party, which a single-character
  * dump can never produce — so comparing it against the base capture reports a
  * mismatch between two different abilities. Uncovered is the true answer.
+ *
+ * ⛔ A CONSTELLATION-GATED variant returns null whatever its token (2026-09-19). The
+ * dumper runs every character at C0, so a variant that exists only at C4 — Sigewinne's
+ * longer burst channel, which authors its own frames and fourteen waves — was filed
+ * against the C0 capture's six the day it landed. ⚠️ Deliberately narrower than "any
+ * plain `Q`": Albedo's and Xilonen's state/team-gated burst variants share the base
+ * cast's schedule and the C0 capture does describe them.
  */
-export function variantDumpKey(input, base) {
+export function variantDumpKey(input, base, conditions) {
+	if (conditions && JSON.stringify(conditions).includes('"type":"constellation"')) return null;
 	if (input.includes('h2E')) return 'h2E';
 	if (input.includes('hE') || input.includes('h1E')) return 'hE';
 	if (input.includes('E')) return null;
@@ -286,7 +294,7 @@ export function authoredMaps(char, drv, dumped) {
 			});
 		for (const v of a.variants ?? []) {
 			if (!v.frames) continue;
-			let vk = variantDumpKey(v.input ?? [], base);
+			let vk = variantDumpKey(v.input ?? [], base, v.conditions);
 			let why;
 			if ((vk === 'hE' || vk === 'h2E') && !holdKeys.has(vk)) {
 				vk = null;

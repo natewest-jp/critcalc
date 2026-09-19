@@ -356,7 +356,7 @@ function main() {
 			const base = suffix === null ? null : `${baseKey}${suffix}`;
 			const targets = [{ path: a.id, key: base, node: a }];
 			for (const v of a.variants ?? []) {
-				const vk = variantDumpKey(v.input ?? [], baseKey);
+				const vk = variantDumpKey(v.input ?? [], baseKey, v.conditions);
 				targets.push({
 					path: `${a.id} · ${v.input?.join('/') ?? '?'}`,
 					key: vk === null || suffix === null ? null : `${vk}${suffix}`,

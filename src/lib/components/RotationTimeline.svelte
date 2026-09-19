@@ -1468,7 +1468,11 @@
 			source: 'skill' | 'burst',
 			bars: TimelineBar[]
 		): ExportBar[] =>
-			bars.map((b) => ({ ...b, hasSummon: findCastSummons(char, source, b.label).length > 0 }));
+			bars.map((b) => ({
+				...b,
+				hasSummon:
+					findCastSummons(char, source, b.label, b.abilityId, b.variantLabel ?? null).length > 0
+			}));
 
 		return {
 			title: teamNames.length > 0 ? `${teamNames.join(' · ')}  —  ${total}s` : 'critcalc rotation',
@@ -2494,7 +2498,14 @@
 								<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.eBars as bar, barIdx (barIdx)}
-											{@const eHasSummon = findCastSummons(char, 'skill', bar.label).length > 0}
+											{@const eHasSummon =
+												findCastSummons(
+													char,
+													'skill',
+													bar.label,
+													bar.abilityId,
+													bar.variantLabel ?? null
+												).length > 0}
 											<!-- The BAR's palette when its first hit lands an element that is not the
 													     slot's (Varka's Four Winds and burst, `CastEvent.element`), else the slot's.
 													     Pill, ghost tail and badge halo all take it, so the halo stays the fill's own shade. -->
@@ -2638,7 +2649,14 @@
 								>
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.qBars as bar, barIdx (barIdx)}
-											{@const qHasSummon = findCastSummons(char, 'burst', bar.label).length > 0}
+											{@const qHasSummon =
+												findCastSummons(
+													char,
+													'burst',
+													bar.label,
+													bar.abilityId,
+													bar.variantLabel ?? null
+												).length > 0}
 											<!-- The BAR's palette when its first hit lands an element that is not the
 													     slot's (Varka's Four Winds and burst, `CastEvent.element`), else the slot's.
 													     Pill, ghost tail and badge halo all take it, so the halo stays the fill's own shade. -->

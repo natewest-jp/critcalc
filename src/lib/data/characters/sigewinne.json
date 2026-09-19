@@ -425,7 +425,91 @@
 			],
 			"icdGate": {
 				"timer": 114
-			}
+			},
+			"variants": [
+				{
+					"label": "C4",
+					"input": ["Q"],
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"frames": {
+						"anim": 429,
+						"N": 453,
+						"E": 455,
+						"D": 425,
+						"J": 425,
+						"swap": 429
+					},
+					"application": [
+						{
+							"frame": 99,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 124,
+							"element": "hydro"
+						},
+						{
+							"frame": 149,
+							"element": "hydro"
+						},
+						{
+							"frame": 174,
+							"element": "hydro"
+						},
+						{
+							"frame": 199,
+							"element": "hydro"
+						},
+						{
+							"frame": 224,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 249,
+							"element": "hydro"
+						},
+						{
+							"frame": 274,
+							"element": "hydro"
+						},
+						{
+							"frame": 299,
+							"element": "hydro"
+						},
+						{
+							"frame": 324,
+							"element": "hydro"
+						},
+						{
+							"frame": 349,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 374,
+							"element": "hydro"
+						},
+						{
+							"frame": 399,
+							"element": "hydro"
+						},
+						{
+							"frame": 424,
+							"element": "hydro"
+						}
+					],
+					"_curatorNotes": [
+						"C4's +3s, authored 2026-09-19 (summon-conditions round) as a constellation-gated variant: the burst is a CHANNEL with no entity, so the extension is the cast's own frames and hits rather than a window. gcsim sigewinne.go:66 sets burstMaxDuration = 425 - 99 = 326f at C4 (142f below it), and Frames(next) = 99 + burstMaxDuration + endLag[next] - every base slot + 184f. burstTick lands a wave at 99f and every 25f while F <= start + 326: fourteen waves, 99 ... 424f (six at C0).",
+						"`units` sits on the three waves gcsim's ICDGroupSigewinneBurst (114f, first only) lets through - 99 / 224 / 349 - the base's own convention. The ability's icdGate is read off the ABILITY, so this variant inherits it.",
+						"A plain-input variant: matchVariant takes it only at C4+, the frames audit cannot reach it (variantDumpKey returns null, and the dumper runs at C0), and it states no effects - the cast-effect collectors match a variant by input token alone."
+					]
+				}
+			]
 		}
 	],
 	"passives": [
@@ -558,7 +642,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"C4 extends burst wave window: gcsim sets burstMaxDuration from 241-99=142f to 425-99=326f (+184f≈+3.07s, matching 'extended by 3s'). With C4 full-burst frames: swap=429, N=453, E=455, D=425, J=425. No effect skeleton authored — reviewer to add durationModifier or equivalent on the burst."
+				"Authored 2026-09-19 as the burst's constellation-gated 'C4' variant: frames + 184f and fourteen waves instead of six (gcsim sigewinne.go:66, burstMaxDuration 142f -> 326f, 'extended by 3s')."
 			],
 			"description": "The duration of Super Saturated Syringing is extended by 3s."
 		},

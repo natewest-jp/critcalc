@@ -1103,6 +1103,30 @@ function lintAbility(
 					a.id
 				);
 			}
+			// ⚓ A GATED VARIANT ON THE BASE'S OWN TOKEN (summon-conditions round,
+			// 2026-09-19) is how a cast changes shape at a constellation or under a
+			// state without a new token — Chiori's C2 Kinu, Emilie's C4 Cases,
+			// Furina's Pneuma lineup. `matchVariant` takes it only when its conditions
+			// hold, and `variantLabel` carries that answer to every summon, frame and
+			// application reader. ⚠️⚠️ The cast-EFFECT collectors do not read it:
+			// `effectsForCast` and `resolveCastContext` pick a variant by input token
+			// ALONE, so `effects` / `tags` / `damageTag` on such a variant would apply
+			// on every cast of the token, condition or no condition. Refused until
+			// those collectors take the resolved label.
+			const sharesBaseToken =
+				v.conditions !== undefined &&
+				(v.input ?? []).some((t) => ((a as { input?: string[] }).input ?? []).includes(t));
+			if (
+				sharesBaseToken &&
+				(v.effects !== undefined || v.tags !== undefined || v.damageTag !== undefined)
+			) {
+				push(
+					'strict',
+					'variant-gated-effects',
+					`variant "${v.label}" is gated by conditions on the base ability's own input token and authors effects/tags/damageTag — the cast-effect collectors match a variant by token alone, so these would apply even when the gate is false`,
+					a.id
+				);
+			}
 			if (v.damageTag !== undefined && !DAMAGE_TAGS.has(v.damageTag)) {
 				push(
 					'strict',

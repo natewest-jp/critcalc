@@ -925,6 +925,8 @@ export function scheduleSummonTicks(
 				barUptime: extRec ? extRec.ownerUptime : castEvent.uptime,
 				summon,
 				index,
+				cLevel,
+				context: tickConditionCtx(ctx, char.id),
 				// ⚠️ Only a swap-out AFTER this spawn can end this summon; an
 				// earlier one belongs to a previous life of the same character.
 				swapOutAt: (() => {
@@ -986,7 +988,6 @@ export function scheduleSummonTicks(
 			// so the damage stream is complete by construction rather than by census.
 			// ⚓ Per SERIES, not per summon: Furina's Salon Solitaire carries three
 			// and they measure as three different gates.
-			const icdKey = `${char.id}:summon:${summon.label}:${series.index}`;
 			// ⚓ THREE CASES, and they are not a scale (ICD-group round b): `'none'`
 			// is gcsim's `ICDTagNone` — every tick applies and NO clock is touched;
 			// an `IcdWindow` is a MEASURED (timer, period) pair replacing the
@@ -998,6 +999,18 @@ export function scheduleSummonTicks(
 				series.effect.trigger.type === 'summonTick' ? series.effect.trigger.icdGate : undefined;
 			const params: IcdParams | null =
 				gate === 'none' ? null : gate ? icdParamsFor(gate) : STANDARD_ICD_FRAMES;
+			// ⚓ ONE CLOCK NEVER RUNS TWO WINDOWS (2026-09-19). The key is the summon's
+			// LABEL, which is what lets a recast carry its counter over (Fischl's E-Oz
+			// and Q-Oz are one gcsim counter) — but a label is also what recast
+			// truncation keys on, so two DIFFERENT attacks can come to share one:
+			// Emilie's Level 3 Case wears the E Case's label so that it stows it, and
+			// the two then alternated a 120f window and the standard one on a single
+			// counter. Measured on `Emilie E Q`, the volley's first hit applied
+			// nothing because the E Case had ticked 39f earlier; gcsim has them on
+			// `ICDTagEmilieLumidouce` and `ICDTagElementalBurst`. The window is the
+			// only thing our data knows about a series' gcsim group, so it joins the
+			// key: same label AND same window is one counter, anything else is two.
+			const icdKey = `${char.id}:summon:${summon.label}:${series.index}:${params ? `${params.timer}/${params.hits}` : 'none'}`;
 
 			// ⚓ THE SECOND READER of the tick cap, and it MUST agree with
 			// `collectSummonTicks` — that walk draws the markers a reader counts on
@@ -1026,7 +1039,9 @@ export function scheduleSummonTicks(
 					spawnAt,
 					barUptime: extRec ? extRec.ownerUptime : castEvent.uptime,
 					summon,
-					index
+					index,
+					cLevel,
+					context: tickConditionCtx(ctx, char.id)
 				});
 			const liveUntil = (): number => {
 				const end = endNow();
