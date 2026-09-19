@@ -282,6 +282,10 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// and re-resolving from the label alone cannot distinguish two summons that
 	// share one (the reason `findSummonsForBar` takes a bar, not a name).
 	const summonByWindow = new Map<Extract<TimelineWindow, { kind: 'summon' }>, Summon>();
+	// The windows that are their cast's PRIMARY summon — what `duringSummon`
+	// means (`holderStatesAt`'s own rule), handed to the buff pass's state index
+	// so the finalize-time reading cannot widen it (state-gates round, §1.G).
+	const primarySummonWindows = new Set<TimelineWindow>();
 	for (let ti = 0; ti < ctx.tracks.length; ti++) {
 		const track = ctx.tracks[ti];
 		const summonChar = charById.get(track.characterId);
@@ -390,6 +394,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						};
 						windows.push(win);
 						summonByWindow.set(win, summon);
+						if (i === 0) primarySummonWindows.add(win);
 						lastSummonWindowByKey.set(key, win);
 					}
 				);
@@ -666,6 +671,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				.map((e) => ({ start: e.time, cooldown: e.cooldown })),
 			stackFires: ctx.events.filter((e): e is StackThresholdEvent => e.kind === 'stackThreshold'),
 			windows,
+			primarySummonWindows,
 			constellationLevels: ctx.constellationLevels ?? {},
 			loadoutMap: ctx.loadoutMap ?? {},
 			teamFactionCounts: buffFactionCounts,
