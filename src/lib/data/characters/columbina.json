@@ -789,11 +789,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": [
-							"lunarCharged",
-							"lunarBloom",
-							"lunarCrystallize"
-						],
+						"reaction": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 						"source": "team"
 					},
 					"duration": 8,
@@ -911,11 +907,7 @@
 						"level": 6
 					},
 					"source": "character",
-					"reactions": [
-						"lunarCharged",
-						"lunarBloom",
-						"lunarCrystallize"
-					],
+					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 					"value": 7,
 					"snapshottable": false
 				}
