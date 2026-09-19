@@ -234,6 +234,11 @@ export type StackThresholdEvent = {
 	/** The E/Q whose primary summon hosts the accrual, when one does — the
 	 *  shield lane's `source` and the buff rows' ability class. */
 	abilityClass?: 'skill' | 'burst';
+	/** The holder's rotation-scoped stacks AFTER the fire's own grants — the
+	 *  cast convention (post-gain), so a `perStack` buff anchored on this fire
+	 *  prints the count the fire brought it to (stack-count display round,
+	 *  2026-09-19). Absent when the holder declares no rotation-scoped key. */
+	stackContext?: ReadonlyMap<string, number>;
 };
 
 /** The public event stream. NB: the parser's hit records are parser-private

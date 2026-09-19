@@ -52,7 +52,12 @@ import type { SimContext } from './context';
 import type { CharState } from './charState';
 import { DEFAULT_ASCENSION, evalCondition, type ConditionContext } from './conditions';
 import { holderStatesAt } from './states';
-import { stackScopeOf, type StackPools } from './stacks';
+import {
+	dispatchGainStacksOnStackFire,
+	rotationStackSnapshot,
+	stackScopeOf,
+	type StackPools
+} from './stacks';
 import { pushShieldAt } from './shields';
 import { Band, type Clock } from './clock';
 import { predictFire, settleAccruals } from './accrual';
@@ -242,6 +247,29 @@ export function checkStackThresholds(
 			// A live accrual keeps polling into the emptied pool (gcsim's task
 			// outlives `clearGravity`), so the NEXT fire is re-predicted from zero.
 			scheduleAccrualFire(ctx, clock, hcs, th, time);
+			// ⚓ The fire's own grants land BEFORE its record is taken, the cast
+			// convention (post-gain): a `perStack` buff anchored on this fire prints
+			// the count the fire brought it to — Columbina's Lunacy steps 5 → 10 →
+			// 15% (stack-count display round, 2026-09-19).
+			const states = holderStatesAt(ctx, th.holder, time);
+			const cons = ctx.team.constellationByHolder.get(holderId) ?? 0;
+			const condCtx: ConditionContext = {
+				teamFactionCounts: ctx.team.teamFactionCounts,
+				teamEnabledReactions: ctx.team.teamEnabledReactions,
+				teamElementCounts: ctx.team.teamElementCountsByHolder.get(holderId)
+			};
+			dispatchGainStacksOnStackFire(
+				th.holder,
+				hcs,
+				th.effects,
+				dominant,
+				time,
+				states,
+				cons,
+				condCtx,
+				segPools
+			);
+			const stackContext = rotationStackSnapshot(th.holder, hcs);
 			const ev: StackThresholdEvent = {
 				kind: 'stackThreshold',
 				id: ctx.nextId(),
@@ -251,20 +279,14 @@ export function checkStackThresholds(
 				count: th.count,
 				dominant,
 				...(th.label !== undefined ? { label: th.label } : {}),
-				...(th.host ? { abilityClass: th.host.kind } : {})
+				...(th.host ? { abilityClass: th.host.kind } : {}),
+				...(stackContext !== undefined ? { stackContext } : {})
 			};
 			ctx.events.push(ev);
 			// What acts NOW: the mark and a shield. Buffs are the projection's.
 			// ⚠️ Optimistic on an unresolvable condition (`=== false` drops), the
 			// rule `pushShield` and every buff site share, so the three surfaces of
 			// one fire cannot disagree about whether it drew.
-			const states = holderStatesAt(ctx, th.holder, time);
-			const cons = ctx.team.constellationByHolder.get(holderId) ?? 0;
-			const condCtx: ConditionContext = {
-				teamFactionCounts: ctx.team.teamFactionCounts,
-				teamEnabledReactions: ctx.team.teamEnabledReactions,
-				teamElementCounts: ctx.team.teamElementCountsByHolder.get(holderId)
-			};
 			for (const fx of th.effects) {
 				if (fx.trigger.dominant !== undefined && fx.trigger.dominant !== dominant) continue;
 				if (fx.type !== 'damage' && fx.type !== 'shield') continue;

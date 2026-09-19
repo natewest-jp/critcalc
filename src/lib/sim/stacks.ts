@@ -30,7 +30,7 @@
  * work": that pool belongs to whoever happens to be on field.
  */
 
-import type { Reaction } from '$lib/types/ability';
+import type { Effect, Reaction } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { FPS, framesOf } from '$lib/utils/frames';
 import type { CharState } from './charState';
@@ -39,7 +39,8 @@ import {
 	DEFAULT_ASCENSION,
 	evalCondition,
 	reactionMatchesTrigger,
-	type ChainIndex
+	type ChainIndex,
+	type ConditionContext
 } from './conditions';
 import { onHitTriggerMatches, type HitEvent } from './hits';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
@@ -131,6 +132,31 @@ function mirrorKey(target: { write: StackPools; mirror: StackPools | null }, key
 	const inst = target.write.instances.get(key);
 	if (inst === undefined) target.mirror.instances.delete(key);
 	else target.mirror.instances.set(key, [...inst]);
+}
+
+/**
+ * Appends `amount` lifetime instances expiring at `expiry`, oldest dropped past
+ * `max` — the ONE instance write every lifetime site shares.
+ *
+ * ⚓ `refresh` is the SHARED duration model (`gainStacks.lifetimeRefresh`): the
+ * grant first moves every LIVE instance to the new expiry, so the stacks rise
+ * one at a time and fall together. ⚠️ LIVE only — an instance that ran out
+ * before `now` and has not been swept yet (a threshold fire has no settle point
+ * in front of it) is dropped, never resurrected.
+ */
+function grantInstances(
+	instances: number[],
+	amount: number,
+	now: number,
+	expiry: number,
+	max: number | undefined,
+	refresh: boolean
+): number[] {
+	let list = instances;
+	if (refresh) list = list.filter((e) => e > now).map(() => expiry);
+	for (let i = 0; i < amount; i++) list.push(expiry);
+	if (max !== undefined && list.length > max) list.splice(0, list.length - max);
+	return list;
 }
 
 const NO_STACKS: ReadonlyMap<string, number> = new Map();
@@ -330,11 +356,14 @@ export function dispatchGainStacks(
 				// same expiry-time (cast time + lifetime). Saturation drops
 				// oldest first when total would exceed `max`.
 				const expiry = castTime + framesOf(fx.lifetime);
-				const instances = target.write.instances.get(fx.key) ?? [];
-				for (let i = 0; i < effAmount; i++) instances.push(expiry);
-				if (fx.max !== undefined && instances.length > fx.max) {
-					instances.splice(0, instances.length - fx.max);
-				}
+				const instances = grantInstances(
+					target.write.instances.get(fx.key) ?? [],
+					effAmount,
+					castTime,
+					expiry,
+					fx.max,
+					fx.lifetimeRefresh === true
+				);
 				target.write.instances.set(fx.key, instances);
 				target.write.state.set(fx.key, instances.length);
 				mirrorKey(target, fx.key);
@@ -547,11 +576,14 @@ export function dispatchGainStacksOnReaction(
 				if (fx.lifetime !== undefined) {
 					const expiry = castTime + framesOf(fx.lifetime);
 					const holderInstances = hcs.onReactionStackInstances;
-					const instances = holderInstances.get(fx.key) ?? [];
-					for (let i = 0; i < effAmount; i++) instances.push(expiry);
-					if (fx.max !== undefined && instances.length > fx.max) {
-						instances.splice(0, instances.length - fx.max);
-					}
+					const instances = grantInstances(
+						holderInstances.get(fx.key) ?? [],
+						effAmount,
+						castTime,
+						expiry,
+						fx.max,
+						fx.lifetimeRefresh === true
+					);
 					holderInstances.set(fx.key, instances);
 					holderState.set(fx.key, instances.length);
 				} else {
@@ -754,11 +786,14 @@ export function dispatchGainStacksOnHit(
 					if (!target) continue;
 					if (fx.lifetime !== undefined) {
 						const expiry = hit.time + framesOf(fx.lifetime);
-						const instances = target.write.instances.get(fx.key) ?? [];
-						for (let i = 0; i < effAmount; i++) instances.push(expiry);
-						if (fx.max !== undefined && instances.length > fx.max) {
-							instances.splice(0, instances.length - fx.max);
-						}
+						const instances = grantInstances(
+							target.write.instances.get(fx.key) ?? [],
+							effAmount,
+							hit.time,
+							expiry,
+							fx.max,
+							fx.lifetimeRefresh === true
+						);
 						target.write.instances.set(fx.key, instances);
 						target.write.state.set(fx.key, instances.length);
 					} else {
@@ -771,11 +806,14 @@ export function dispatchGainStacksOnHit(
 				} else if (fx.lifetime !== undefined) {
 					// team/others — rotation-wide instance accrual (onReaction shape).
 					const expiry = hit.time + framesOf(fx.lifetime);
-					const instances = hcs.onHitStackInstances.get(fx.key) ?? [];
-					for (let i = 0; i < effAmount; i++) instances.push(expiry);
-					if (fx.max !== undefined && instances.length > fx.max) {
-						instances.splice(0, instances.length - fx.max);
-					}
+					const instances = grantInstances(
+						hcs.onHitStackInstances.get(fx.key) ?? [],
+						effAmount,
+						hit.time,
+						expiry,
+						fx.max,
+						fx.lifetimeRefresh === true
+					);
 					hcs.onHitStackInstances.set(fx.key, instances);
 					hcs.onHitStacks.set(fx.key, instances.length);
 				} else {
@@ -1075,5 +1113,87 @@ export function applyLifetimeExpiry(
 				stackState.set(fx.key, remaining.length);
 			}
 		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// gainStacks on a threshold fire (stack-count display round, 2026-09-19)
+// ---------------------------------------------------------------------------
+
+/**
+ * Applies the `gainStacks` effects hanging off ONE threshold fire — a stack per
+ * Gravity Interference is Columbina's Lunacy.
+ *
+ * ⚓ ROTATION-SCOPED KEYS ONLY, and lint says so: a fire lands at a reaction, a
+ * tick or a scheduled poll, none of which has a segment pool in hand (the
+ * summon-tick rule), so a segment-scoped grant has nowhere to live. When the
+ * holder IS the on-field character at a cast or hit site, `segPools` is theirs
+ * and the key is mirrored so the very next read sees it.
+ *
+ * ⚠️ Conditions demand a definitive `true`, the stack dispatchers' rule, under
+ * the same closed world (`liveNegatedStates`).
+ */
+export function dispatchGainStacksOnStackFire(
+	holder: CharacterData,
+	hcs: CharState,
+	effects: readonly Effect[],
+	dominant: string,
+	time: number,
+	states: ReadonlySet<string>,
+	constellationLevel: number,
+	context: ConditionContext,
+	segPools: StackPools | null
+): void {
+	let swept = false;
+	for (const fx of effects) {
+		if (fx.type !== 'gainStacks' || fx.trigger.type !== 'onStack') continue;
+		if (fx.trigger.dominant !== undefined && fx.trigger.dominant !== dominant) continue;
+		if (stackScopeOf(holder, fx.key) !== 'rotation') continue;
+		const verdict = evalCondition(
+			fx.conditions,
+			DEFAULT_ASCENSION,
+			states,
+			constellationLevel,
+			new Map(),
+			stackReadView(hcs, segPools?.state ?? null),
+			{ ...context, negatedStates: liveNegatedStates(holder, states) }
+		);
+		if (verdict !== true) continue;
+		// No settle point stands in front of a fire — sweep before counting.
+		if (!swept) {
+			applyRotationLifetimeExpiry(holder, time, () => hcs);
+			swept = true;
+		}
+		let amount = fx.amount;
+		if (fx.constellationScaling) {
+			const cs = evalCondition(
+				fx.constellationScaling.conditions,
+				DEFAULT_ASCENSION,
+				states,
+				constellationLevel,
+				new Map(),
+				undefined,
+				context
+			);
+			if (cs === true) amount = fx.constellationScaling.amount;
+		}
+		const target = poolsFor(hcs, holder, fx.key, segPools);
+		if (!target) continue;
+		if (fx.lifetime !== undefined) {
+			const instances = grantInstances(
+				target.write.instances.get(fx.key) ?? [],
+				amount,
+				time,
+				time + framesOf(fx.lifetime),
+				fx.max,
+				fx.lifetimeRefresh === true
+			);
+			target.write.instances.set(fx.key, instances);
+			target.write.state.set(fx.key, instances.length);
+		} else {
+			const next = (target.write.state.get(fx.key) ?? 0) + amount;
+			target.write.state.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+		}
+		mirrorKey(target, fx.key);
 	}
 }

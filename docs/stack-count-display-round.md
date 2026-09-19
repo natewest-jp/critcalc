@@ -1,6 +1,7 @@
 # Stacked buffs that STEP — plan (2026-09-18)
 
-_Status: SCOPE, not started — ⚓ **DECIDED 2026-09-19 (Nate): ROUTE A (§1), and the
+_Status: ✅ SHIPPED 2026-09-19 on `feat/stack-count-display` — **§5 is the RECORD.**
+⚓ **DECIDED 2026-09-19 (Nate): ROUTE A (§1), and the
 stepped value shows in the TOOLTIP, ⛔ not the label** — §3's option (b), my
 recommendation, was overruled: the bar's label stays its source name, the step
 reads as the lit edge, and the hover says the value. Queued after §1.G._
@@ -127,3 +128,51 @@ and self-contained, and it does not touch the cooldown machinery. Measure:
 three fires inside 10 s (the C6 probe showed two ~4.5 s apart), plus the
 corpus digest (0 expected — no other `perStack` window gains a
 `stackContext` from this).
+
+## 5. RECORD (2026-09-19)
+
+Route A shipped as §1 scoped it, four pieces, with two things the plan did not
+say:
+
+- **The grant is dispatched from `stacks.ts`** (`dispatchGainStacksOnStackFire`),
+  not inline in `thresholds.ts` — `poolsFor` / `mirrorKey` are that module's
+  private container decision, and a second copy of it is the thing the
+  rotation-scope round refused. It runs after the spend and BEFORE the event is
+  built; conditions demand a definitive `true` under the closed world §1.G
+  gave the live dispatchers (`liveNegatedStates`).
+- **`lifetimeRefresh` went into ONE helper, `grantInstances`, used at all five
+  lifetime sites** (onCast, onReaction, onHit self, onHit team, the fire) rather
+  than "one line at every site" — the four existing writes were the same five
+  lines. Byte-identical where the flag is absent (corpus: 0 of 630 / 0 of 252).
+  ⚠️ LIVE instances only: a fire has no settle point in front of it, so the
+  dispatcher sweeps (`applyRotationLifetimeExpiry`) and the helper also refuses
+  an expired instance. Either layer alone holds the "never resurrects" test —
+  the seeded negative had to remove BOTH.
+- `StackThresholdEvent.stackContext` = `rotationStackSnapshot` post-grant; the
+  three buff fire sites pass it as the window's `stackContext` AND into their
+  condition pass (a `stacks` gate on a fire buff resolves now).
+- Lint: B.16 admits `gainStacks` (`onstack-gainstacks-scope`,
+  `onstack-gainstacks-own-key`); B.13f2 `gainstacks-lifetime-refresh-invalid`;
+  the gainStacks trigger rule admits `onStack`.
+
+**Data — Columbina only.** The grant sits on the A1 PASSIVE, not on the skill
+as §1 sketched: it is A1's resource, and the passive is what carries the
+ascension gate. Authored FIRST so the snapshot is post-gain. The inert `stacks`
+block and the one-stack caveat are retired.
+
+**Measured** (`Columbina E Q > Fischl E N3 > Barbara E N3 > Fischl N3 Q N3 > …`):
+C2 fires at 488 / 758 / 1055f carry 1 / 2 / 3; three bars in one row,
+488–1088 · 758–1358 · 1055–1655, tooltips +5% / +10% / +15% (⚓ Nate: tooltip,
+⛔ not the label). C0 reaches two fires in the same rotation.
+
+**⏭ For Nate to judge on screen:** the three bars OVERLAP (each window keeps
+its own 10 s, §1's "superseded rather than wrong"), and the bar register is
+translucent glass, so the overlap is denser than a single bar. That look
+already exists on `main` — a seamed bar never refresh-merges, so her C2's three
+fires were already three overlapping bars — but this makes it the C0 default
+for her. If it reads badly the fix is a PROJECTION clip (a bar superseded by a
+later, different-valued bar of the same row ends where that one starts), ⛔ not
+a change to the windows.
+
+**Not this round (§1's bonus, still listed):** the other nine authors of
+`BuffEffect.stacks` — one holder at a time, most already carry a key.
