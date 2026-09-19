@@ -230,7 +230,7 @@ const STATES = new Set([
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
 const BEHAVIORS = new Set(['instant', 'persistent', 'stance']);
-const SUMMON_TERMINATES = new Set(['swap', 'recast']);
+const SUMMON_TERMINATES = new Set(['swap', 'recast', 'skill', 'burst']);
 const DAMAGE_TAGS = new Set(['normal', 'charged', 'plunge', 'skill', 'skillHold', 'burst']);
 
 /** Characters whose input-less cast variants are known-unreachable *by design*,
@@ -1779,6 +1779,16 @@ function lintCastAbility(
 				'strict',
 				'summon-terminates-invalid',
 				`summon "${s.label}" has invalid terminatesOn "${s.terminatesOn}"`,
+				a.id
+			);
+		}
+		// (D.22b) 'skill' / 'burst' name the owner's OTHER ability — the cast that
+		// ends this summon. The host's own kind is a recast, which has its own word.
+		if (s.terminatesOn === a.abilityType) {
+			push(
+				'strict',
+				'summon-terminates-own-kind',
+				`summon "${s.label}" terminatesOn "${s.terminatesOn}" names its own ability's kind — that is 'recast'`,
 				a.id
 			);
 		}

@@ -292,6 +292,9 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// means (`holderStatesAt`'s own rule), handed to the buff pass's state index
 	// so the finalize-time reading cannot widen it (state-gates round, §1.G).
 	const primarySummonWindows = new Set<TimelineWindow>();
+	// Open windows a later cast of their owner ends, by `${characterId}::${kind}`.
+	// ⚠️ Outside the track loop: a character's casts span tracks.
+	const castTerminable = new Map<string, Extract<TimelineWindow, { kind: 'summon' }>[]>();
 	for (let ti = 0; ti < ctx.tracks.length; ti++) {
 		const track = ctx.tracks[ti];
 		const summonChar = charById.get(track.characterId);
@@ -316,6 +319,17 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			}
 		}
 		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
+			// ⚓ A cast of this kind ENDS the owner's summons that say so
+			// (`terminatesOn: 'skill' | 'burst'`) — at the cast's START, the instant
+			// the live chain retired them (`retireSummonsOnCast`). ⚠️ Before the
+			// `uptime` return: Mavuika's burst leaves no summon of its own and
+			// still ends the Ring.
+			const endedHere = castTerminable.get(`${track.characterId}::${kind}`);
+			if (endedHere) {
+				for (const win of endedHere)
+					if (win.end > bar.start) win.end = Math.max(win.start, bar.start);
+				endedHere.length = 0;
+			}
 			if (bar.uptime <= 0) return;
 			// ⚓⚓ ONE WINDOW, POSSIBLY SEVERAL OCCUPANTS (Arkhe round, landing c).
 			// A `summonsFollowState` cast hands its window from one lineup to the
@@ -399,6 +413,12 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 							sourceCastId: ctx.castIdByBar.get(bar)
 						};
 						windows.push(win);
+						if (summon.terminatesOn === 'skill' || summon.terminatesOn === 'burst') {
+							const tk = `${track.characterId}::${summon.terminatesOn}`;
+							const list = castTerminable.get(tk);
+							if (list) list.push(win);
+							else castTerminable.set(tk, [win]);
+						}
 						summonByWindow.set(win, summon);
 						if (i === 0) primarySummonWindows.add(win);
 						lastSummonWindowByKey.set(key, win);
