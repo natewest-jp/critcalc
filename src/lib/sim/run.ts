@@ -125,6 +125,7 @@ import {
 	handOffLineup,
 	notifyDamage,
 	notifyNormalAttack,
+	retireSummonsOnCast,
 	scheduleSummonTicks
 } from './aura';
 import { armCastProcs } from './procs';
@@ -1124,6 +1125,9 @@ export function runRotation(
 				// At an EQUAL frame `Band.TICK` still precedes `Band.LAND`, which is the
 				// band contract (a consequence of what is already running, before the
 				// thing that is starting) and costs nothing: the two carry the same time.
+				// ⚠️ First, the summons THIS cast ends (`terminatesOn: 'skill' |
+				// 'burst'`) — before it schedules its own.
+				retireSummonsOnCast(ctx, char.id, kind, castStart);
 				scheduleSummonTicks(
 					ctx,
 					clock,

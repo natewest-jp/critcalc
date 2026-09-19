@@ -174,6 +174,59 @@ describe('a recast truncates the running chain', () => {
 	});
 });
 
+// ── A summon its owner's OTHER cast ends (2026-09-19) ────────────────────────
+//
+// `Summon.terminatesOn: 'skill' | 'burst'`. Mavuika's Ring is gone the instant
+// she casts her burst (gcsim `Burst()` → `enterBike()`); we kept its whole
+// schedule and applied Pyro at 4 / 8 / 12s from an entity the game had deleted.
+describe("a summon ends on its owner's other cast", () => {
+	it("⚓ Mavuika's Ring stops at the burst — window, markers and applications agree", () => {
+		const r = parse('Mavuika E ~5s Q ~8s');
+		const burst = r.events.find((e) => e.kind === 'cast' && e.ability === 'burst')!;
+		const ring = r.windows.find((w) => w.kind === 'summon' && w.characterId === 'mavuika');
+		if (!ring || ring.kind !== 'summon') throw new Error('no Ring');
+		// Cut at the cast's START — nothing of the burst has to exist yet.
+		expect(ring.end).toBe(burst.time);
+		expect(ring.naturalEnd).toBeGreaterThan(ring.end);
+		const ticks = ring.ticks ?? [];
+		expect(ticks.length).toBeGreaterThanOrEqual(2);
+		expect(ticks.every((t) => t < burst.time)).toBe(true);
+		// ⚓ Both readers: no entity application after the Ring is gone.
+		const apps = (r.applications ?? [])
+			.filter((a) => a.characterId === 'mavuika')
+			.map((a) => a.time);
+		for (const t of ticks) expect(apps).toContain(t);
+		// After the Ring is gone the only Pyro of hers is the burst's own hit —
+		// it was one application per 2s for the rest of the Ring's 12.4s.
+		expect(apps.filter((t) => t > ring.end)).toHaveLength(1);
+	});
+
+	it('the burst alone, and a Ring cast AFTER it, are untouched', () => {
+		const alone = parse('Mavuika E ~13s').windows.find((w) => w.kind === 'summon')!;
+		expect(alone.kind === 'summon' && alone.end).toBe(
+			alone.kind === 'summon' ? alone.naturalEnd : -1
+		);
+		const after = parse('Mavuika Q E ~13s').windows.find((w) => w.kind === 'summon')!;
+		expect(after.kind === 'summon' && after.end).toBe(
+			after.kind === 'summon' ? after.naturalEnd : -1
+		);
+	});
+
+	it("Gorou's burst destroys the War Banner, and the next E raises a fresh one", () => {
+		const wins = parse('Gorou E ~3s Q ~10s E').windows.filter(
+			(w) => w.kind === 'summon' && w.label === "General's War Banner"
+		);
+		expect(wins).toHaveLength(2);
+		const q = parse('Gorou E ~3s Q ~10s E').events.find(
+			(e) => e.kind === 'cast' && e.ability === 'burst'
+		)!;
+		expect(wins[0].end).toBe(q.time);
+		expect(wins[1].kind === 'summon' && wins[1].end).toBe(
+			wins[1].kind === 'summon' ? wins[1].naturalEnd : -1
+		);
+	});
+});
+
 // ── A tick series whose CADENCE is conditional (2026-08-18) ──────────────────
 //
 // ⚓ Two authors, two gate kinds. Aino's burst ticks at 0.7s instead of 1.5s

@@ -103,6 +103,7 @@ const FOLLOW_STATE = '\u0000followState';
 function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 	const out: SummonTuple[] = [];
 	const lastByKey = new Map<string, SummonTuple>();
+	const castTerminable = new Map<string, SummonTuple[]>();
 	const tracks = result.tracks;
 	for (let ti = 0; ti < tracks.length; ti++) {
 		const track = tracks[ti];
@@ -115,6 +116,9 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 			}
 		}
 		const emit = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
+			for (const t of castTerminable.get(`${track.characterId}::${kind}`) ?? [])
+				if (t.end > bar.start) t.end = Math.max(t.start, bar.start);
+			castTerminable.delete(`${track.characterId}::${kind}`);
 			if (bar.uptime <= 0) return;
 			// ⚓⚓ A `summonsFollowState` CAST CANNOT BE RECONSTRUCTED FROM GEOMETRY,
 			// and that is the honest answer rather than a gap (Arkhe round, landing
@@ -166,6 +170,12 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 					};
 					out.push(t);
 					lastByKey.set(key, t);
+					// ↻ 2026-09-19 (summon-ends-on-cast round): a summon its owner's
+					// OTHER cast ends is cut at that cast's start.
+					if (summon.terminatesOn === 'skill' || summon.terminatesOn === 'burst') {
+						const tk = `${track.characterId}::${summon.terminatesOn}`;
+						castTerminable.set(tk, [...(castTerminable.get(tk) ?? []), t]);
+					}
 				}
 			);
 		};

@@ -133,6 +133,10 @@
 							"stat": "atk",
 							"element": "pyro"
 						}
+					],
+					"terminatesOn": "burst",
+					"_curatorNotes": [
+						"`terminatesOn: 'burst'` (summon-ends-on-cast round, 2026-09-19): gcsim's `Burst()` calls `enterBike()` and `skillRingTask` returns the moment the armament is not the ring, so the Ring is gone the instant Q is pressed. Measured before: `Mavuika E Q` applied Pyro at 4 / 8 / 12s from an entity the game deleted at 0.3s."
 					]
 				}
 			],
@@ -150,7 +154,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "After Q the Ring's bar and Pyro ticks keep running, though in game the burst ends the Ring. C1 lengthens the Hold window to ~13s, not shown, and a second press is read as a new Tap.",
+			"caveat": "C1 lengthens the Hold window to ~13s, not shown, and a second press is read as a new Tap.",
 			"_curatorNotes": [
 				"Hold-E migrated to a true variant-driven bike-NS opener (2026-05-08): variant overrides behavior → \"stance\", opensState → \"nightsoulBlessing\", terminatesOnSwap → true, duration → 9. Now possible since the parser is variant-aware for stance fields. The Tap form remains instant (no NS — ring-mode NS rendering would need full P1 multi-state to distinguish ring from bike inside NS).",
 				"Tap behavior: \"instant\" — gcsim skillFrames AnimationLength 28, ActionSwap 24. Hold uses skillFramesHold (AnimationLength 43, ActionSwap 34).",

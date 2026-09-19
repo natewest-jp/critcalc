@@ -1219,8 +1219,15 @@ export type Summon = {
 	mobility?: 'stationary' | 'follows';
 	/** Conditions that end the summon before its natural duration.
 	 *  "swap" — ends when the caster swaps off-field.
-	 *  "recast" — ends when the source ability is cast again. */
-	terminatesOn?: 'swap' | 'recast';
+	 *  "recast" — ends when the source ability is cast again.
+	 *  "skill" / "burst" — ends the instant its owner casts their OTHER ability
+	 *  (summon-ends-on-cast round, 2026-09-19): Mavuika's Ring is gone the
+	 *  moment she presses Q (gcsim `Burst()` → `enterBike()`, and
+	 *  `skillRingTask` returns once the armament is not the ring), Gorou's War
+	 *  Banner is destroyed by his burst. ⚠️ At the CAST START, not at a spawn —
+	 *  nothing of the terminating cast has to exist yet. Naming the host
+	 *  ability's OWN kind is `recast` and lint says so (D.22b). */
+	terminatesOn?: 'swap' | 'recast' | 'skill' | 'burst';
 	/** Effects emitted by the summon while active. Damage effects with
 	 *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
 	 *  during the summon's lifetime; the timeline renders one marker per tick

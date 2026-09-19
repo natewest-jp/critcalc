@@ -889,6 +889,35 @@ function dispatchEntityHitStacks(
 	return snapshot;
 }
 
+/**
+ * ⚓ A CAST THAT ENDS ITS OWNER'S OTHER SUMMON (summon-ends-on-cast round,
+ * 2026-09-19) — `Summon.terminatesOn: 'skill' | 'burst'`. Mavuika's Ring dies
+ * the instant she casts her burst; we kept its whole schedule and applied Pyro
+ * at 4 / 8 / 12s from an entity the game deleted at 0.3s.
+ *
+ * Retired by the SAME generation bump a recast uses, so nothing has to cancel a
+ * scheduled task and the proc listeners hosted on the summon go with it.
+ * ⚠️ Superseded AT THE CAST, where finalize cuts the window — unlike a recast
+ * there is no new spawn to wait for. ⛔ Call it BEFORE the cast schedules its
+ * own summons, or a burst that re-summons under the same label would retire
+ * the chain it is about to start.
+ */
+export function retireSummonsOnCast(
+	ctx: SimContext,
+	charId: string,
+	kind: 'skill' | 'burst',
+	castTime: number
+): void {
+	const keys = ctx.castTerminatedSummons.get(`${charId}::${kind}`);
+	if (!keys || keys.size === 0) return;
+	for (const key of keys) {
+		const prior = ctx.summonChainGen.get(key) ?? 0;
+		ctx.summonChainGen.set(key, prior + 1);
+		ctx.summonChainSupersededAt.set(`${key}#${prior}`, castTime);
+	}
+	keys.clear();
+}
+
 export function scheduleSummonTicks(
 	ctx: SimContext,
 	clock: Clock,
@@ -930,6 +959,14 @@ export function scheduleSummonTicks(
 			ctx.summonChainSupersededAt.set(`${key}#${prior}`, spawnAt);
 		}
 		const generation = ctx.summonChainGen.get(key) ?? 0;
+		// A summon another cast of its owner ENDS is registered for that cast to
+		// find — see `retireSummonsOnCast`.
+		if (summon.terminatesOn === 'skill' || summon.terminatesOn === 'burst') {
+			const tk = `${char.id}::${summon.terminatesOn}`;
+			const set = ctx.castTerminatedSummons.get(tk);
+			if (set) set.add(key);
+			else ctx.castTerminatedSummons.set(tk, new Set([key]));
+		}
 
 		/** The summon's end AS OF NOW — recomputed at every fire, never cached. */
 		const endNow = (): number =>
