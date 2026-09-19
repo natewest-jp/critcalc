@@ -1828,6 +1828,15 @@ export type Effect =
 			 *  Mutual exclusion with `drain`: a single key cannot have both —
 			 *  the two decay shapes are incompatible. Lint enforces. */
 			lifetime?: number;
+			/** The SHARED duration model (stack-count display round, 2026-09-19):
+			 *  a grant resets EVERY live instance's expiry to `now + lifetime`,
+			 *  so the stacks rise one at a time and fall together. Columbina's
+			 *  Lunacy is the holder — gcsim's `a1OGravityTick` is `CR = 0.05 ×
+			 *  min(stacks, 3)` on ONE 10s status every Interference refreshes.
+			 *  Absent is the per-instance model (`lifetime`'s own doc: Linnea's
+			 *  stacks each die 10s after THEIR grant). Only meaningful beside
+			 *  `lifetime` (lint B.13f2). */
+			lifetimeRefresh?: true;
 			/** Conditional override of `amount` (E3 v2.x). Mirrors
 			 *  `BuffEffect.constellationScaling`: when `conditions` evaluates
 			 *  definitively true (typically `{ type: 'constellation', level: N }`),

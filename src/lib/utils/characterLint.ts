@@ -2878,12 +2878,15 @@ function lintEffect(
 		if (
 			eff.trigger.type !== 'onCast' &&
 			eff.trigger.type !== 'onReaction' &&
-			eff.trigger.type !== 'onHit'
+			eff.trigger.type !== 'onHit' &&
+			// A stack per threshold fire (stack-count display round) — B.16 holds
+			// its scope and own-key rules.
+			eff.trigger.type !== 'onStack'
 		) {
 			push(
 				'strict',
 				'gainstacks-trigger-invalid',
-				`gainStacks effect trigger.type must be one of "onCast", "onReaction", or "onHit" (got "${eff.trigger.type}")`,
+				`gainStacks effect trigger.type must be one of "onCast", "onReaction", "onHit" or "onStack" (got "${eff.trigger.type}")`,
 				location
 			);
 		}
@@ -2931,6 +2934,18 @@ function lintEffect(
 		// Each granted instance lives independently for `lifetime` seconds before
 		// expiring. Mutually exclusive with `drain` — the two decay shapes are
 		// incompatible (drain is continuous-rate, lifetime is discrete per-instance).
+		// (B.13f2) lifetimeRefresh — the SHARED duration model is a statement about
+		// a `lifetime`, so it means nothing without one; and it is `true` or absent.
+		if (eff.lifetimeRefresh !== undefined) {
+			if (eff.lifetimeRefresh !== true || eff.lifetime === undefined) {
+				push(
+					'strict',
+					'gainstacks-lifetime-refresh-invalid',
+					`gainStacks lifetimeRefresh must be true and sit beside a lifetime (got ${JSON.stringify(eff.lifetimeRefresh)}, lifetime ${JSON.stringify(eff.lifetime)})`,
+					location
+				);
+			}
+		}
 		if (eff.lifetime !== undefined) {
 			if (
 				typeof eff.lifetime !== 'number' ||
@@ -3256,14 +3271,37 @@ function lintEffect(
 			eff.type !== 'damage' &&
 			eff.type !== 'shield' &&
 			eff.type !== 'energy' &&
-			eff.type !== 'resShred'
+			eff.type !== 'resShred' &&
+			eff.type !== 'gainStacks'
 		) {
 			push(
 				'strict',
 				'onstack-effect-unread',
-				`onStack is read for buff, damage (a mark), shield, energy and resShred effects — a "${eff.type}" on it reaches nothing`,
+				`onStack is read for buff, damage (a mark), shield, energy, resShred and gainStacks effects — a "${eff.type}" on it reaches nothing`,
 				location
 			);
+		}
+		// A stack per fire (stack-count display round, 2026-09-19). A fire lands at
+		// a reaction, a tick or a scheduled poll — no segment pool is in hand, so
+		// the grant must live rotation-wide (the summon-tick rule) — and a grant of
+		// one of the threshold's OWN keys would re-arm the fire that made it.
+		if (eff.type === 'gainStacks') {
+			if (eff.scope !== 'rotation') {
+				push(
+					'strict',
+					'onstack-gainstacks-scope',
+					`a gainStacks on an onStack trigger must declare scope: 'rotation' — a fire has no segment pool to write`,
+					location
+				);
+			}
+			if (Array.isArray(t.keys) && t.keys.includes(eff.key)) {
+				push(
+					'strict',
+					'onstack-gainstacks-own-key',
+					`a gainStacks on an onStack trigger cannot grant one of the threshold's own keys ("${eff.key}")`,
+					location
+				);
+			}
 		}
 		if (eff.type === 'damage' && eff.application === undefined) {
 			push(

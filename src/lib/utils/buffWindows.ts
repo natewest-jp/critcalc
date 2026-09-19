@@ -483,7 +483,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							gate.resolved,
 							cLevel,
 							undefined,
-							undefined,
+							fire.stackContext,
 							gate.ctx
 						) !== false
 					);
@@ -1264,6 +1264,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					start: buffStart,
 					end: buffEnd,
 					effects: pool.effects,
+					stackContext: pool.fire.stackContext,
 					source: fireSource(pool.fire)
 				});
 			}
@@ -2228,6 +2229,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						start: segStart,
 						end: isLast ? poolEnd : segEnd,
 						effects: pool.effects,
+						stackContext: pool.fire.stackContext,
 						duration: poolEnd - poolStart,
 						source: fireSource(pool.fire)
 					});
@@ -2492,6 +2494,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					start: buffStart,
 					end: buffEnd,
 					effects: pool.effects,
+					stackContext: pool.fire.stackContext,
 					duration: buffEnd - buffStart,
 					source: fireSource(pool.fire)
 				});

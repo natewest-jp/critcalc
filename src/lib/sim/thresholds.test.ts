@@ -420,6 +420,86 @@ describe('a stack threshold fires, spends the set and records the fire', () => {
 	});
 });
 
+// ── a stack per fire (stack-count display round, 2026-09-19) ──
+//
+// Columbina's Lunacy: +5% CRIT Rate per Gravity Interference, up to three, on
+// ONE 10 s status every Interference refreshes. The fire grants a rotation-
+// scoped stack BEFORE its record is taken, the record carries the post-grant
+// snapshot, and a `perStack` buff anchored on the fire prints that count.
+describe('a gainStacks on the fire: the count steps, and the lifetime model decides how it falls', () => {
+	// A threshold of 20 under a 10/s accrual fires every 2 s while the status
+	// the Vaporizes keep live is up — three fires, 120 frames apart.
+	const QUICK = { type: 'onStack', keys: KEYS, count: 20, label: 'Test Fire' };
+	const stepper = (grantExtra: Record<string, unknown>): CharacterData =>
+		tester({
+			constellations: [],
+			skill: { effects: [grant(['vaporize', 'lunarCharged'], 'gA'), grant('frozen', 'gB')] },
+			passives: [
+				{
+					id: 'tester__passive__a1',
+					name: 'Tester A1',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'gainStacks',
+							target: 'self',
+							trigger: QUICK,
+							key: 'lure',
+							amount: 1,
+							max: 3,
+							scope: 'rotation',
+							...grantExtra
+						},
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: QUICK,
+							duration: 10,
+							durationType: 'fixed',
+							source: 'character',
+							stat: 'critRate',
+							value: { type: 'perStack', key: 'lure', per: 5, maxStacks: 3 },
+							snapshottable: false
+						}
+					]
+				}
+			]
+		});
+	const lure = (r: ParsedRotation) => fires(r).map((e) => e.stackContext?.get('lure'));
+
+	it('the fire records the post-grant count, capped at max, and the buff window carries it', () => {
+		const r = parse(VAPORIZE, {}, stepper({}));
+		const f = fires(r);
+		expect(f.length).toBeGreaterThanOrEqual(3);
+		expect(f[1].time - f[0].time).toBe(120);
+		expect(lure(r).slice(0, 3)).toEqual([1, 2, 3]);
+		expect(lure(r).every((n) => n !== undefined && n <= 3)).toBe(true);
+		expect(
+			fireBuffs(r)
+				.slice(0, 3)
+				.map((w) => w.stackContext?.get('lure'))
+		).toEqual([1, 2, 3]);
+	});
+
+	it('lifetimeRefresh is the SHARED model — each fire carries every live stack forward', () => {
+		// Fires 2 s apart, 3 s lifetime. Per instance, the first stack has died by
+		// the third fire (4 s on): 1, 2, 2. Shared, the second fire moved it to
+		// 5 s: 1, 2, 3.
+		expect(lure(parse(VAPORIZE, {}, stepper({ lifetime: 3 }))).slice(0, 3)).toEqual([1, 2, 2]);
+		expect(
+			lure(parse(VAPORIZE, {}, stepper({ lifetime: 3, lifetimeRefresh: true }))).slice(0, 3)
+		).toEqual([1, 2, 3]);
+	});
+
+	it('⚠️ a refresh never resurrects a stack that already ran out', () => {
+		// 1 s lifetime against 2 s between fires: every stack is dead before the
+		// next fire, refresh or no refresh.
+		expect(
+			lure(parse(VAPORIZE, {}, stepper({ lifetime: 1, lifetimeRefresh: true }))).slice(0, 3)
+		).toEqual([1, 1, 1]);
+	});
+});
+
 describe('lint: the trigger names resources that exist and a count that can be reached', () => {
 	const checks = (c: CharacterData, check: string) =>
 		lintCharacter(c)
@@ -482,6 +562,31 @@ describe('lint: the trigger names resources that exist and a count that can be r
 			]
 		});
 		expect(checks(c, 'onstack-count-unreachable').join('\n')).toMatch(/200 exceeds .* 120/);
+	});
+	it('a gainStacks on the fire: rotation scope, not one of its own keys, refresh only beside a lifetime', () => {
+		const withGrant = (g: Record<string, unknown>) =>
+			tester({
+				passives: [
+					{
+						id: 'tester__passive__a1',
+						name: 'P',
+						abilityType: 'passive',
+						effects: [
+							{ type: 'gainStacks', target: 'self', trigger: FIRE, amount: 1, max: 3, ...g }
+						]
+					}
+				]
+			});
+		expect(
+			strict(withGrant({ key: 'lure', scope: 'rotation', lifetime: 10, lifetimeRefresh: true }))
+		).toEqual([]);
+		expect(strict(withGrant({ key: 'lure' })).join('\n')).toMatch(/onstack-gainstacks-scope/);
+		expect(strict(withGrant({ key: 'gA', scope: 'rotation' })).join('\n')).toMatch(
+			/onstack-gainstacks-own-key/
+		);
+		expect(
+			strict(withGrant({ key: 'lure', scope: 'rotation', lifetimeRefresh: true })).join('\n')
+		).toMatch(/gainstacks-lifetime-refresh-invalid/);
 	});
 	it('a dominant outside the keys, a fire label that disagrees, a damage with no application', () => {
 		const base = tester();
