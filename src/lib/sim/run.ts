@@ -102,6 +102,7 @@ import {
 	syncSourceLifetimeToStackState
 } from './stacks';
 import { dispatchOnCastExtensions } from './extensions';
+import { polestarFieldOpenAt } from './fields';
 import { dispatchShieldEnds, registerShieldOnCast } from './shields';
 import { checkStackThresholds } from './thresholds';
 import { infusionAt, registerInfusionsOnCast } from './infusions';
@@ -418,7 +419,8 @@ export function runRotation(
 					getHolderStates,
 					ctx.team.constellationByHolder,
 					ctx.getCharState,
-					segPools
+					segPools,
+					(t) => polestarFieldOpenAt(ctx.stellarConductTimes, t)
 				);
 				if (hit.stacks === undefined && stackState.size > 0) hit.stacks = new Map(stackState);
 				dispatchConsumeStacksOnHit(

@@ -38,6 +38,7 @@ import type { SimContext } from './context';
 import {
 	DEFAULT_ASCENSION,
 	evalCondition,
+	mentionsPolestarField,
 	reactionMatchesTrigger,
 	type ChainIndex,
 	type ConditionContext
@@ -705,7 +706,12 @@ export function dispatchGainStacksOnHit(
 	/** ⚓ NULL AT A SUMMON TICK — the tick has no segment pool to write, so a
 	 *  segment-scoped grant is skipped rather than landing on whoever is on
 	 *  field. See the file header. */
-	segPools: StackPools | null
+	segPools: StackPools | null,
+	/** Whether a Polestar Field stands at an instant — for a grant gated on
+	 *  `inPolestarField` (the Cryo Traveler's per-hit crystals build Frostglow
+	 *  only inside one). Absent → the leaf is unresolvable and, under this
+	 *  dispatcher's demand for a definitive `true`, the grant never fires. */
+	fieldOpenAt?: (time: number) => boolean
 ): void {
 	for (const holder of allChars) {
 		const holderCons = constellationByHolder.get(holder.id) ?? 0;
@@ -735,7 +741,12 @@ export function dispatchGainStacksOnHit(
 					holderCons,
 					new Map(),
 					condStacks,
-					{ negatedStates: liveNegatedStates(holder, holderStates) }
+					{
+						negatedStates: liveNegatedStates(holder, holderStates),
+						...(fieldOpenAt && mentionsPolestarField(fx.conditions)
+							? { inPolestarField: fieldOpenAt(hit.time) }
+							: {})
+					}
 				);
 				if (condResult !== true) continue;
 				const hcs = getCharState(holder.id);

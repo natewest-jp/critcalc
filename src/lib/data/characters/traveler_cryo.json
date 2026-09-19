@@ -132,6 +132,30 @@
 									"type": "inPolestarField"
 								}
 							}
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"abilityType": ["normal", "charged", "plunge"],
+								"source": "self"
+							},
+							"procCooldown": 0.2,
+							"scaling": 38.51,
+							"stat": "atk",
+							"element": "cryo",
+							"application": [
+								{
+									"frame": 3,
+									"element": "cryo",
+									"units": 1
+								}
+							],
+							"attribution": "Frostpierce Star",
+							"conditions": {
+								"type": "inPolestarField"
+							}
 						}
 					],
 					"_curatorNotes": [
@@ -158,6 +182,35 @@
 					"scope": "rotation",
 					"_curatorNotes": [
 						"Frostglow: +1 per ice-crystal hit, max 8 (skillStacksMax). The Star's tick is authored as ONE series standing for a two-crystal volley (see the summon's notes), so the grant is `amount: 2` per tick — 8 stacks after four ticks, as gcsim. Granted by the Star's synthesized tick hits on the Alyosha/Tugarin pattern (onHit skill + filter.abilityName), which requires scope rotation, and the kit agrees: the stacks live on the Traveler across swaps and only lapse 30s out of combat, so no lifetime is authored."
+					]
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge"],
+						"source": "self"
+					},
+					"procCooldown": 0.2,
+					"key": "frostglow",
+					"amount": 1,
+					"max": 8,
+					"scope": "rotation",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "state",
+								"state": "duringSummon"
+							},
+							{
+								"type": "inPolestarField"
+							}
+						]
+					},
+					"_curatorNotes": [
+						"The per-hit crystal's Frostglow (Radiance-window round, 2026-09-19): inside a Polestar Field the Star fires ONE crystal per Normal / Charged / Plunging hit, once per 0.2s, and \"the crystals still build Frostglow\" — +1 each, where the interval volley above is +2 (two crystals). Granted at the SWING with the crystal's own 0.2s clock rather than at its landing 3f later: a proc's landing reaches no stack dispatcher, and 3 frames moves no count a reader can see. Gated on the Star being out and the field standing."
 					]
 				}
 			],

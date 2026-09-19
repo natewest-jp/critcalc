@@ -212,6 +212,7 @@ import type { CharacterData } from '$lib/types/character';
 import travelerCryoJson from '$lib/data/characters/traveler_cryo.json';
 import lisaJson from '$lib/data/characters/lisa.json';
 import bennettJson from '$lib/data/characters/bennett.json';
+import fischlJson from '$lib/data/characters/fischl.json';
 
 describe('polestarFieldOpenAt — the one reader, live and at finalize', () => {
 	const at = (s: number) => framesOf(s);
@@ -231,7 +232,11 @@ describe('polestarFieldOpenAt — the one reader, live and at finalize', () => {
 	});
 	it('agrees with the Prism windows finalize draws, everywhere but the opening frame', () => {
 		const events = [conduct(1), conduct(5), conduct(20)];
-		const { gadgets } = deriveFieldWindows({ reactionEvents: events, applications: [] });
+		const { gadgets } = deriveFieldWindows({
+			reactionEvents: events,
+			applications: [],
+			nextBuffId: 0
+		});
 		const times = events.map((e) => e.time);
 		for (let f = 0; f < framesOf(30); f += 7) {
 			const inWindow = gadgets.some((g) => f > g.start && f < g.end);
@@ -276,6 +281,40 @@ describe("a tick series gated on the field pauses under it — the Cryo Traveler
 		expect(star.ticks).toEqual([first + 2 * cadence, first + 3 * cadence]);
 		// ⚓ Both readers: the markers drawn are exactly the ticks that applied.
 		expect(entityApps).toEqual(star.ticks);
+	});
+
+	it('inside the field the Star fires one crystal per hit he lands, and they build Frostglow', () => {
+		const FISCHL = { ...(fischlJson as unknown as CharacterData) };
+		const chars = [TRAVELER, FISCHL];
+		const parse = (notation: string, team: CharacterData[]) =>
+			parseNotation(
+				notation,
+				(n) => team.find((c) => c.displayName === n) ?? null,
+				8,
+				{},
+				undefined,
+				team
+			);
+		const r = parse('Cryo Traveler E > Fischl E N3 > Cryo Traveler N5 Q', chars);
+		const star = r.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		if (!star || star.kind !== 'summon') throw new Error('no Star');
+		const crystals = (star.ticks ?? []).filter((t) => t !== star.start + framesOf(1.25));
+		expect(crystals.length).toBeGreaterThanOrEqual(4);
+		const prism = r.windows.find((w) => w.kind === 'gadget');
+		for (const t of crystals) {
+			expect(t).toBeGreaterThan(prism!.start);
+			expect(t).toBeLessThan(prism!.end);
+		}
+		// One volley (+2) before the field, then +1 per crystal-bearing hit.
+		const burst = r.events.find((e) => e.kind === 'cast' && e.ability === 'burst');
+		const glow = burst?.kind === 'cast' ? burst.stackContext?.get('frostglow') : undefined;
+		expect(glow).toBe(2 + crystals.length);
+		// ⚓ And with no field: no per-hit crystal at all, Frostglow from volleys only.
+		const dry = parse('Cryo Traveler E > Bennett E N3 > Cryo Traveler N5 Q', [TRAVELER, BENNETT]);
+		const dryStar = dry.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
+		expect(dryStar?.kind === 'summon' && dryStar.ticks).toHaveLength(4);
+		const dryBurst = dry.events.find((e) => e.kind === 'cast' && e.ability === 'burst');
+		expect(dryBurst?.kind === 'cast' && dryBurst.stackContext?.get('frostglow')).toBe(4);
 	});
 
 	it('with no Electro there is no field, and the Star keeps its interval', () => {
