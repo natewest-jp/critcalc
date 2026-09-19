@@ -343,6 +343,25 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		};
 	};
 
+	/**
+	 * The reaction events an `onReaction` trigger listens to, by its `source`.
+	 * ⚓ `'active'` is every reaction the CONTROLLED character caused with their
+	 * own cast or swing — whoever that is — so it is the whole stream minus the
+	 * entity-delivered ones, ⛔ never an id comparison (a tick carries its
+	 * owner's id). Until 2026-09-19 it fell through to the holder's own events,
+	 * so Qiqi's A1 ("a character under the effects of Herald of Frost triggers
+	 * an Elemental Reaction") drew for nobody but Qiqi.
+	 */
+	const reactionEventsFor = (
+		source: 'self' | 'team' | 'active' | undefined,
+		own: readonly ReactionEvent[]
+	): readonly ReactionEvent[] =>
+		source === 'team'
+			? reactionEvents
+			: source === 'active'
+				? reactionEvents.filter((ev) => ev.viaEntity !== true)
+				: own;
+
 	const reactionEventIndex = new Map<ReactionEvent, number>(
 		reactionEvents.map((ev, i) => [ev, i] as const)
 	);
@@ -411,13 +430,13 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		for (const effect of qualified) {
 			const trig = effect.trigger as {
 				reaction: Reaction | Reaction[] | 'any';
-				source?: 'self' | 'team';
+				source?: 'self' | 'team' | 'active';
 			};
 			const trigReaction = trig.reaction;
 			const matches = (r: Reaction): boolean =>
 				trigReaction === 'any' ||
 				(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
-			for (const ev of trig.source === 'team' ? reactionEvents : ownEvents) {
+			for (const ev of reactionEventsFor(trig.source, ownEvents)) {
 				if (matches(ev.reaction) && firesAt(effect, ev)) pooler.add(ev, effect);
 			}
 		}
@@ -1497,7 +1516,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			for (const effect of qualified) {
 				const trig = effect.trigger as {
 					reaction: Reaction | Reaction[] | 'any';
-					source?: 'self' | 'team';
+					source?: 'self' | 'team' | 'active';
 				};
 				const trigReaction = trig.reaction;
 				const matches = (r: Reaction): boolean =>
@@ -1507,7 +1526,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// hand back the same event objects — which is what lets the pooler
 				// key on event identity across a self-triggered and a team-triggered
 				// effect that happen to share one event.
-				const eventPool = trig.source === 'team' ? reactionEvents : ownReactionEvents;
+				const eventPool = reactionEventsFor(trig.source, ownReactionEvents);
 				for (const ev of eventPool) {
 					if (!matches(ev.reaction)) continue;
 					if (!firesAt(effect, ev)) continue;

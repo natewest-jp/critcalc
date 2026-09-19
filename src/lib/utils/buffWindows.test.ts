@@ -233,6 +233,31 @@ describe('buff windows — team surface', () => {
 		expect(keys).not.toContain('applier::char::onReaction::atk');
 	});
 
+	it("onReaction source 'active': the CONTROLLED character's reaction, whoever holds the effect", () => {
+		// Qiqi's A1 shape. It fell through to the holder's own events until
+		// 2026-09-19, so a teammate's reaction drew nothing at all.
+		const applier = mkChar('applier', 'Applier', { element: 'pyro' });
+		const reactor = mkChar('reactor', 'Reactor', { element: 'hydro' });
+		applier.passives = [
+			{
+				id: 'applier__passive__rxn',
+				name: 'Rxn',
+				abilityType: 'passive',
+				effects: [
+					teamBuff({
+						target: 'active',
+						trigger: { type: 'onReaction', reaction: 'vaporize', source: 'active' },
+						duration: 5
+					})
+				]
+			} as unknown as Ability
+		];
+		const { rotation } = run('Applier E > Reactor E', [applier, reactor]);
+		const wins = rotation.windows.filter((w) => w.kind === 'buff' && w.characterId === 'applier');
+		expect(wins).toHaveLength(1);
+		expect(wins[0].kind === 'buff' && wins[0].receiverId).toBe('reactor');
+	});
+
 	// ↻ 2026-08-14 — THIS TEST'S EXPECTATION IS INVERTED ON PURPOSE. It used to
 	// assert TWO rows with distinct keys, guarding the archived
 	// `each_key_duplicate` crash: Chevreuse's two shreds share one sourceLabel,

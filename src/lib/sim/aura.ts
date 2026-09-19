@@ -338,7 +338,8 @@ function emitReaction(
 		characterId: src.characterId,
 		reaction,
 		time,
-		castKind: src.castKind
+		castKind: src.castKind,
+		...(src.viaEntity === true ? { viaEntity: true as const } : {})
 	});
 	// A reaction is one of the four places a stack count moves, so a threshold
 	// is asked here — AFTER the reaction event, so the fire's record follows its
