@@ -282,29 +282,69 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
 					"value": 10,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "inStance"
+								}
+							}
+						]
+					}
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
 					"value": 70,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "inStance"
+								}
+							}
+						]
+					}
 				},
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 200,
 					"stat": "atk",
 					"element": "electro"
@@ -315,7 +355,8 @@
 				"Inherited 'manual' triggers on all three effects. The two CR/CD buffs likely belong on 'onCast' with ability='skill' — gcsim grants on Hunter's Vigil cast (c.c6skill in cons.go). 12s duration each. Values are correct.",
 				"The Glimbright Shade damage effect: trigger is conditional — 'when Clorinde takes damage' OR 'on Impale the Night: Pact cast'. ICD = 1s (gcsim c6GlimbrightIcdKey). Cap = 6 procs per Night Vigil window (gcsim c6Stacks). No clean trigger fit; reviewer to wire likely as a multi-trigger or custom proc.",
 				"DMG-taken reduction (80%) and interruption resistance — not authored; schema has no incoming-damage modifier or interruption-resistance representation.",
-				"⛔ The CR/CD pair stays `manual` (checked 2026-09-17, T1.5). gcsim grants it only from the stance-OPENING press (skill.go Skill → c6skill; an in-stance press takes skillDash, which does not). `onCast ability: skill` cannot tell that press from Impale the Night — both are `E`, both are skill abilities, and the collector gathers every skill ability's effects for either — so it would re-grant on every Impale and refresh-merge the bar past its 12s. The Lohen cast-counter pattern cannot rescue it either: gains snapshot BEFORE consumes, so the first Impale would still read the stack. Needs a trigger bound to one ability, not a class."
+				"⛔ The CR/CD pair stays `manual` (checked 2026-09-17, T1.5). gcsim grants it only from the stance-OPENING press (skill.go Skill → c6skill; an in-stance press takes skillDash, which does not). `onCast ability: skill` cannot tell that press from Impale the Night — both are `E`, both are skill abilities, and the collector gathers every skill ability's effects for either — so it would re-grant on every Impale and refresh-merge the bar past its 12s. The Lohen cast-counter pattern cannot rescue it either: gains snapshot BEFORE consumes, so the first Impale would still read the stack. Needs a trigger bound to one ability, not a class.",
+				"✅ THE CR/CD PAIR IS AUTHORED (2026-09-19, cast-binding round) — and it needed no binding primitive. gcsim grants it only from the stance-OPENING press; an in-stance `E` is Impale the Night. With states in the cast buff pass (§1.G) that is `not(state: inStance)`: Impale is cast INSIDE a stance some other cast opened (gate false), while the opening press is decided by the self-opened rule — a state the cast itself opens answers null, so the opener keeps its grant. Measured `Clorinde E N3 E N3 E`: one 12s CR/CD window from the opener, none from the two Impales."
 			]
 		}
 	],
