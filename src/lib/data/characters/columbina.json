@@ -783,23 +783,121 @@
 			"name": "Through Darkness Led by Moonlight",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Not modeled: the +80% CRIT DMG party members get for 8s after a Lunar reaction inside the Lunar Domain — no bar draws for it.",
 			"effects": [
 				{
 					"type": "buff",
 					"target": "team",
 					"trigger": {
-						"type": "manual"
+						"type": "onReaction",
+						"reaction": [
+							"lunarCharged",
+							"lunarBloom",
+							"lunarCrystallize"
+						],
+						"source": "team"
 					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
-					"stat": "critDmg",
+					"stat": "hydroCritDmg",
 					"value": 80,
 					"snapshottable": false,
 					"conditions": {
-						"type": "constellation",
-						"level": 6
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCharged",
+						"source": "team"
+					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "electroCritDmg",
+					"value": 80,
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarBloom",
+						"source": "team"
+					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "dendroCritDmg",
+					"value": 80,
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCrystallize",
+						"source": "team"
+					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "geoCritDmg",
+					"value": 80,
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					}
 				},
 				{
@@ -813,7 +911,11 @@
 						"level": 6
 					},
 					"source": "character",
-					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
+					"reactions": [
+						"lunarCharged",
+						"lunarBloom",
+						"lunarCrystallize"
+					],
 					"value": 7,
 					"snapshottable": false
 				}
@@ -822,7 +924,8 @@
 			"_curatorNotes": [
 				"C6: gcsim cons.go c6Init — c6Buff CD=0.8 (+80% CRIT DMG) added per element bucket keyed by the triggering Lunar reaction (LC->Electro+Hydro, LB->Dendro+Hydro, LCr->Geo+Hydro), 8s, requires the burst's Lunar Domain react-bonus mod active. Authored as generic team critDmg 80 with caveat (element-specific critDmg stats would need runtime knowledge of which reaction fired). Elevate increment +7% (gcsim elevation[6]=0.20 cumulative).",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A +80% team CRIT DMG bar is the single largest buff in her kit and no bar draws — the effect is authored but manual-trigger. A C6 owner casting Q and seeing only the three Reaction Bonus rows would reasonably assume the tool has it covered. Trimmed only to drop the worked Lunar-Charged example, which is kit explanation and not needed to read the blank row. Category: expected-but-absent.",
-				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces. ⚠️ C6 is NOT a Gravity mechanic and is not waiting on that round: gcsim c6Init subscribes OnLunarCharged/OnLunarBloom/OnLunarCrystallize, requires the burst's react-bonus mod (burstBuffKey) to be active, and grants 8s AttackMods keyed per reaction to its elements — LC → Electro+Hydro, LB → Dendro+Hydro, LCr → Geo+Hydro. The stats exist (`electroCritDmg`, `hydroCritDmg`, `dendroCritDmg`, `geoCritDmg`), so the shape is four `onReaction` source-team buffs (Hydro on the three-reaction array, one element each), duration 8, refresh. ⛔ TRIED IN MEMORY AND NOT SHIPPED: the only gate available is `state: duringSummon`, which the onReaction buff pass cannot resolve (§1.G) — measured, `Columbina C > Fischl E Q > Barbara E` (no summon of hers at all) drew seven +80% bars. Without a burst-window gate it would claim the buff in every Lunar rotation. Unblocks with a resolvable summon/burst-window condition on that pass."
+				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces. ⚠️ C6 is NOT a Gravity mechanic and is not waiting on that round: gcsim c6Init subscribes OnLunarCharged/OnLunarBloom/OnLunarCrystallize, requires the burst's react-bonus mod (burstBuffKey) to be active, and grants 8s AttackMods keyed per reaction to its elements — LC → Electro+Hydro, LB → Dendro+Hydro, LCr → Geo+Hydro. The stats exist (`electroCritDmg`, `hydroCritDmg`, `dendroCritDmg`, `geoCritDmg`), so the shape is four `onReaction` source-team buffs (Hydro on the three-reaction array, one element each), duration 8, refresh. ⛔ TRIED IN MEMORY AND NOT SHIPPED: the only gate available is `state: duringSummon`, which the onReaction buff pass cannot resolve (§1.G) — measured, `Columbina C > Fischl E Q > Barbara E` (no summon of hers at all) drew seven +80% bars. Without a burst-window gate it would claim the buff in every Lunar rotation. Unblocks with a resolvable summon/burst-window condition on that pass.",
+				"✅ AUTHORED 2026-09-19 (state-gates round, §1.G — the buff passes now read the holder's states at the reaction). Four `onReaction` source-team buffs, 8s, gated `duringSummon`: Hydro on all three Lunar reactions, Electro / Dendro / Geo on their own — so the Hydro row refreshes across kinds, which is the kit's \"effects for the same Elemental Type do not stack\". The `manual` generic critDmg and its caveat are retired. ⚠️ ONE STATED IMPRECISION: `duringSummon` is \"a summon of hers is out\", and she has two — the gate gcsim checks is the burst's react-bonus mod (the Lunar DOMAIN, 20s), while the Gravity Ripple (25s) also satisfies ours. In `E Q` the Domain opens ~2s after the Ripple and closes ~3s before it, so a Lunar reaction in those edges draws a bar the game would not grant. No label-qualified summon gate exists; if a second holder needs one, that is the primitive."
 			]
 		}
 	],
