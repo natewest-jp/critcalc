@@ -165,14 +165,26 @@ C2 fires at 488 / 758 / 1055f carry 1 / 2 / 3; three bars in one row,
 488–1088 · 758–1358 · 1055–1655, tooltips +5% / +10% / +15% (⚓ Nate: tooltip,
 ⛔ not the label). C0 reaches two fires in the same rotation.
 
-**⏭ For Nate to judge on screen:** the three bars OVERLAP (each window keeps
-its own 10 s, §1's "superseded rather than wrong"), and the bar register is
-translucent glass, so the overlap is denser than a single bar. That look
-already exists on `main` — a seamed bar never refresh-merges, so her C2's three
-fires were already three overlapping bars — but this makes it the C0 default
-for her. If it reads badly the fix is a PROJECTION clip (a bar superseded by a
-later, different-valued bar of the same row ends where that one starts), ⛔ not
-a change to the windows.
+**⚓ Nate judged it on screen, 2026-09-19: the overlap STANDS.** The bar register
+is opaque enough that three overlapping bars barely read as stacked, and the
+SHARED model is accepted as the mechanic (gcsim's `a1OGravityTick`: one 10 s
+stat mod every Interference re-adds, `stacks + 1` while it is live, reset to 1
+once it lapses — so the third bar's +15% for its whole 10 s is right, and it is
+what makes 15% uptime reachable at all). Measured on his rotation
+(`Columbina EQ > Nahida hEQ > Lauma hEQ > Nilou EN2E > Columbina CCC`): fires at
+9.13 / 15.13 / 21.13 s, windows 9.13–19.13 · 15.13–25.13 · 21.13–31.13.
+
+🗒️ **The projection clip was NOT built, and the general version would be WRONG.**
+The bars' own 10 s tails are what made the row read as three independent windows
+that sum (Nate's first reading), and the truthful picture under the shared
+model is end to end — 5% to the second fire, 10% to the third, 15% for 10 s. But
+"a later bar of the same row ends the earlier one" only holds when the two bars
+carry the SAME STATS at a DIFFERENT VALUE. A second cast that qualifies a
+different effect SET leaves the first bar's extra stat running its full length,
+and a clip would hide it; a seamed bar would need its inner seams re-placed; a
+ramp/decay envelope is drawn over the bar's span. So it is a restricted rule
+plus a corpus pass over every buff row, ⛔ not a one-liner in
+`mergeRefreshedBars` — build it only if the overlap ever misleads again.
 
 **Not this round (§1's bonus, still listed):** the other nine authors of
 `BuffEffect.stacks` — one holder at a time, most already carry a key.
