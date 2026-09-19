@@ -108,6 +108,37 @@ function trackedStatesOf(char: CharacterData): ReadonlySet<string> {
 	return tracked;
 }
 
+/**
+ * The closed world for a LIVE dispatcher: the holder's tracked states that are
+ * not in `active`, as `ConditionContext.negatedStates`.
+ *
+ * ⚓ The live twin of the index above, and the same defect from the other end.
+ * The stack dispatchers demand a definitive `true`, and with no negated set a
+ * `not(state)` gate is `null` forever — so it never fired at all. Measured on
+ * main: Lohen's `consumeStacks … not inStance` (the clear that resets his
+ * special-skill count when he re-enters Masterstroke) had never run, and his
+ * second Masterstroke got one special cast instead of three.
+ *
+ * ⚠️ `duringSummon` IS NEVER NEGATED HERE. The two live resolvers disagree
+ * about it (`inferredStates` counts stationary summons only, `holderStatesAt`
+ * counts following ones too) and both read a pre-extension `uptime` mid-parse,
+ * so "not in the set" is not "down". No live effect gates on its absence.
+ */
+const NO_STATES: ReadonlySet<string> = new Set();
+export function liveNegatedStates(
+	char: CharacterData,
+	active: ReadonlySet<string>
+): ReadonlySet<string> {
+	const tracked = trackedStatesOf(char);
+	if (tracked.size === 0) return NO_STATES;
+	let out: Set<string> | undefined;
+	for (const s of tracked) {
+		if (s === 'duringSummon' || active.has(s)) continue;
+		(out ??= new Set()).add(s);
+	}
+	return out ?? NO_STATES;
+}
+
 type Span = { start: number; end: number; castId: number | undefined };
 type SpanList = {
 	spans: Span[];

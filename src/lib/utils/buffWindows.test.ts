@@ -1027,6 +1027,37 @@ describe('buff windows — state gates (§1.G)', () => {
 		expect(statsOf(live)).toEqual(['shred=-20']);
 	});
 
+	it('⚓ the LIVE stack dispatchers share the closed world — a `not state` gate can fire', () => {
+		// They demand a definitive `true`, so with no negated set a `not(state)`
+		// gate never fired at all. Lohen's shape: a count gained inside the stance
+		// and cleared by the skill cast made OUTSIDE it (measured on main: the
+		// clear never ran and his second Masterstroke got one special cast, not 3).
+		const stack = (type: string, ability: string, conditions: unknown, extra: object) =>
+			({
+				type,
+				target: 'self',
+				trigger: { type: 'onCast', ability },
+				key: 'inStanceCasts',
+				conditions,
+				...extra
+			}) as unknown as Effect;
+		const c = holder([
+			stack('gainStacks', 'burst', inState('inStance'), { amount: 1, max: 9 }),
+			stack(
+				'consumeStacks',
+				'skill',
+				{ type: 'not', condition: inState('inStance') },
+				{ amount: 'all' }
+			)
+		]);
+		c.abilities[2] = mkBurst('gated', { cooldown: 2 });
+		const { rotation } = run('Gated E Q ~9s E Q', [c]);
+		const counts = rotation.events.flatMap((e) =>
+			e.kind === 'cast' && e.ability === 'burst' ? [e.stackContext?.get('inStanceCasts') ?? 0] : []
+		);
+		expect(counts).toEqual([1, 1]);
+	});
+
 	it('⚠️ closed world ONLY for states the holder can open — an untracked gate stays optimistic', () => {
 		// `afterSkill` has no window anywhere, and this holder never opens
 		// `nightsoulBlessing`. Negating either would silently delete the effect.

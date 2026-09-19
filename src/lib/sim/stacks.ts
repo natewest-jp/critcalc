@@ -43,6 +43,7 @@ import {
 } from './conditions';
 import { onHitTriggerMatches, type HitEvent } from './hits';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
+import { liveNegatedStates } from '$lib/utils/stateIndex';
 import { openOrRefreshAccrual } from './accrual';
 
 // ---------------------------------------------------------------------------
@@ -296,7 +297,8 @@ export function dispatchGainStacks(
 				resolvedStates,
 				constellationLevel,
 				chainIdx,
-				stackState
+				stackState,
+				{ negatedStates: liveNegatedStates(char, resolvedStates) }
 			);
 			if (condResult !== true) continue;
 			// E3 v2.x constellationScaling: when the override condition holds
@@ -399,7 +401,8 @@ export function dispatchConsumeStacks(
 				resolvedStates,
 				constellationLevel,
 				chainIdx,
-				stackState
+				stackState,
+				{ negatedStates: liveNegatedStates(char, resolvedStates) }
 			);
 			if (condResult !== true) continue;
 			// ⚓ The consume side never declares a scope — a key has ONE home and
@@ -495,7 +498,8 @@ export function dispatchGainStacksOnReaction(
 					holderStates,
 					holderCons,
 					new Map(),
-					undefined
+					undefined,
+					{ negatedStates: liveNegatedStates(holder, holderStates) }
 				);
 				if (condResult !== true) continue;
 				const hcs = getCharState(holder.id);
@@ -698,7 +702,8 @@ export function dispatchGainStacksOnHit(
 					holderStates,
 					holderCons,
 					new Map(),
-					condStacks
+					condStacks,
+					{ negatedStates: liveNegatedStates(holder, holderStates) }
 				);
 				if (condResult !== true) continue;
 				const hcs = getCharState(holder.id);
@@ -823,7 +828,8 @@ export function dispatchConsumeStacksOnHit(
 					holderStates,
 					holderCons,
 					new Map(),
-					condStacks
+					condStacks,
+					{ negatedStates: liveNegatedStates(holder, holderStates) }
 				);
 				if (condResult !== true) continue;
 				const hcs = getCharState(holder.id);
