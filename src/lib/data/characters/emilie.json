@@ -142,51 +142,13 @@
 							"_curatorNotes": [
 								"CADENCE CORRECTED 2026-08-18 (tick-cap round follow-up), and the old 0.7s was the MARK duration rather than a cadence. gcsim burst.go: the volley task runs every burstTickInterval = 18f and picks a random enemy that does NOT carry burstMarkKey, marking it for burstMarkDuration = 42f. Single-target, the mark can therefore only expire ON an 18f volley boundary, so the deliberate re-target cadence is ceil(42/18) x 18 = 54f = 0.9s, not 0.7s. First hit lands at the first volley (18f) plus burstHitmark (12f) = 30f after spawn, hence firstTickDelay 0.5. Measured: gcsim hits at +126/+180/+234, which is exactly what this now draws (spawnsAt 96 + 30, then 54f apart, three ticks inside the 2.8s window).",
 								"NO tickCap, and ⚓ THE KIT TEXT IS THE REASON, not a positional judgement (re-justified 2026-08-18 after Nate asked whether an always-output tick was being refused on AOE grounds - a fair challenge, and the first version of this note gave the weaker answer). The burst description states the cap outright: \"1 drop of Scented Dew will descend every 0.3 seconds, and 1 opponent can become the target every 0.7 seconds.\" The drop ALWAYS descends - we are not refusing an output - but the game itself forbids the same opponent being targeted inside 0.7s, and on a 0.3s grid the earliest legal re-target is 0.9s. That is the cadence above. gcsim shows a FOURTH Level-3 hit at +162 because when every enemy is marked its volley falls back to CalcRandomPointFromCenter and that random point's 2.5-radius blast happened to clip the target - an artifact of gcsim needing to send the drop SOMEWHERE, not a hit the game grants. ⚠️ The audit will keep flagging count 3 -> 4 for this reason; that flag is expected, not a backlog item.",
-								"Level 3 barrage: gcsim fires volleys every 0.3s at random unmarked enemies, marking each for 0.7s (burst.go burstTickInterval/burstMarkDuration) — the single-target cadence that produces is the 0.9s above. ↻ 2026-09-17 (T1.5): C4's +2s and 0.4s mark are authored (durationModifiers on this Case, a gated 0.6s twin of this series), and the Case recreated at 306f is the burst's second summon — this line used to say all three were unmodelled."
-							],
-							"conditions": {
-								"type": "not",
-								"condition": {
-									"type": "constellation",
-									"level": 4
-								}
-							}
-						},
-						{
-							"type": "damage",
-							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 0.6,
-								"firstTickDelay": 0.5
-							},
-							"conditions": {
-								"type": "constellation",
-								"level": 4
-							},
-							"scaling": 391,
-							"stat": "atk",
-							"element": "dendro",
-							"_curatorNotes": [
-								"C4 cadence (2026-09-17, T1.5), authored as the same series twice with exclusive conditions (the Aino/Ororon shape). C4 cuts the per-target mark by 0.3s (gcsim burst.go: burstMarkDuration -= 0.3*60 → 24f). On the 18f volley grid the earliest legal re-target is ceil(24/18) × 18 = 36f = 0.6s; the first hit is unchanged at spawn + 30f. With the +2s the Case lives 288f: eight hits, not three."
+								"Level 3 barrage: gcsim fires volleys every 0.3s at random unmarked enemies, marking each for 0.7s (burst.go burstTickInterval/burstMarkDuration) — the single-target cadence that produces is the 0.9s above. ↻ 2026-09-19: C4's +2s and 0.4s mark live on the burst's 'C4 Heart Note' variant, which restates both summons; the Case recreated at 306f is the burst's second summon."
 							]
 						}
 					],
 					"terminatesOn": "recast",
-					"durationModifiers": [
-						{
-							"source": "C4: Lumidouce Heart Note",
-							"type": "flat",
-							"value": 2,
-							"conditions": {
-								"type": "constellation",
-								"level": 4
-							}
-						}
-					],
 					"_curatorNotes": [
-						"LABEL (2026-09-17, T1.5): was 'Lumidouce Case (Level 3)'. It carries the E Case's label so it STOWS that Case at its spawn — recast truncation keys on the label, and the kit's 'stowing existing Cases away' is gcsim re-keying `lumidouceSrc`, which stops the E Case's attack chain. Before this the E Case kept ticking through the burst. The Level is in the burst's own name and description.",
-						"C4 +2s (burst.go: extendDuration 2*60) as durationModifiers — only summons[0] reads them, which is why this Case stays first."
+						"LABEL (2026-09-17, T1.5): was 'Lumidouce Case (Level 3)'. It carries the E Case's label so it STOWS that Case at its spawn — recast truncation keys on the label, and the kit's 'stowing existing Cases away' is gcsim re-keying `lumidouceSrc`, which stops the E Case's attack chain. Before this the E Case kept ticking through the burst. The Level is in the burst's own name and description."
 					]
 				},
 				{
@@ -216,8 +178,7 @@
 					],
 					"_curatorNotes": [
 						"The Case the burst leaves behind (2026-09-17, T1.5). Kit: 'When the duration ends, a Level 1 Lumidouce Case will be recreated. If a Lumidouce Case was stowed away … the Case that was stowed away will be deployed instead, and its duration will be reset.' gcsim burst.go queues spawnLumidouceCase at burstResetLumidouce = 306f from the cast (+120 at C4) with a full skillDuration (22s) — measured 401f / 90f × 14 in the frames report, which is this spawn + 95.",
-						"⚠️ NO terminatesOn, on purpose: a flag would truncate the Level 3 Case at 306f, which at C4 is still alive until 384f. It is ended by the NEXT spawn that carries the flag (an E recast or the next burst), which is the behaviour it needs.",
-						"⚠️ spawnsAt is static, so at C4 this Case is drawn 120f early (306 rather than 426) — caveated on C4. No summon field takes a constellation condition."
+						"⚠️ NO terminatesOn, on purpose: a flag would truncate the Level 3 Case at 306f, which at C4 is still alive until 384f. It is ended by the NEXT spawn that carries the flag (an E recast or the next burst), which is the behaviour it needs."
 					]
 				}
 			],
@@ -225,6 +186,77 @@
 			"nonHitting": true,
 			"_curatorNotes": [
 				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim emilie/burst.go:35-70 queues only the Lv3 Lumidouce Case spawn at f96; its ticks (≈f126 on) are the summon series."
+			],
+			"variants": [
+				{
+					"label": "C4 Heart Note",
+					"input": ["Q"],
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"summons": [
+						{
+							"label": "Lumidouce Case",
+							"duration": 4.8,
+							"spawnsAt": 96,
+							"mobility": "stationary",
+							"effects": [
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": {
+										"type": "summonTick",
+										"interval": 0.6,
+										"firstTickDelay": 0.5
+									},
+									"scaling": 391,
+									"stat": "atk",
+									"element": "dendro",
+									"_curatorNotes": [
+										"C4 cadence (2026-09-17, T1.5), authored as the same series twice with exclusive conditions (the Aino/Ororon shape). C4 cuts the per-target mark by 0.3s (gcsim burst.go: burstMarkDuration -= 0.3*60 → 24f). On the 18f volley grid the earliest legal re-target is ceil(24/18) × 18 = 36f = 0.6s; the first hit is unchanged at spawn + 30f. With the +2s the Case lives 288f: eight hits, not three."
+									]
+								}
+							],
+							"terminatesOn": "recast",
+							"_curatorNotes": [
+								"The Level 3 Case at C4: 2.8s + 2s (gcsim burst.go: extendDuration 2*60) and the 0.6s re-target cadence, stated whole because a variant's summons REPLACE the base's. Until 2026-09-19 this was a durationModifier plus a gated twin series on the base summon; it moved here so the Case the burst leaves behind could move with it (summon-conditions round)."
+							]
+						},
+						{
+							"label": "Lumidouce Case",
+							"duration": 22,
+							"spawnsAt": 426,
+							"mobility": "stationary",
+							"effects": [
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": {
+										"type": "summonTick",
+										"interval": 1.5,
+										"firstTickDelay": 1.5833,
+										"icdGate": {
+											"timer": 120
+										}
+									},
+									"scaling": 151.2,
+									"stat": "atk",
+									"element": "dendro",
+									"_curatorNotes": [
+										"Mirrors the E Case's series exactly (canonical Level 2, 90f cadence, ICDGroupEmilieLumidouce, first hit at spawn + 95f). gcsim respawns the Case at the level it had when the burst stowed it, or Level 1 if none was out; both levels land one application per tick under this group, so the gauge cannot tell them apart."
+									]
+								}
+							],
+							"_curatorNotes": [
+								"The Case the burst leaves behind, at C4: gcsim burst.go queues spawnLumidouceCase at burstResetLumidouce (306f) + the 120f extension = 426f from the cast, with a full 22s. Otherwise identical to the base ability's second summon - see the notes there, including why it carries no terminatesOn."
+							]
+						}
+					],
+					"_curatorNotes": [
+						"Exists to state the burst's two summons as they are at C4 (docs/summon-conditions-round.md): matchVariant is condition-aware, so below C4 the cast resolves NO variant and takes the base list. It states no frames, cooldown, application, nonHitting or effects - every one falls through to the base burst. ⛔ Never give it `effects`: the cast-effect collectors match a variant by input token alone."
+					]
+				}
 			]
 		}
 	],
@@ -317,7 +349,9 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"description": "Aromatic Explication's duration is increased by 2s. The interval between opponents being selected as the target for Scented Dew is decreased by 0.3s.",
-			"caveat": "The Lumidouce Case the burst leaves behind is drawn 2s early and ends 2s early."
+			"_curatorNotes": [
+				"Both halves are modelled on the burst's 'C4 Heart Note' variant (2026-09-19): the Level 3 Case runs 4.8s on a 0.6s cadence, and the Case it leaves behind spawns at 426f. The caveat ('drawn 2s early and ends 2s early') retired with it."
+			]
 		},
 		{
 			"id": "emilie__constellation__puredew_aroma",
