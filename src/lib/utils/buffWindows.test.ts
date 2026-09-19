@@ -1138,3 +1138,69 @@ describe('buff windows — a cast hit binds to the resolved ability', () => {
 		expect(byCast(casts[1].id)).toEqual(['em']);
 	});
 });
+
+// ── a stack from TAKING THE FIELD (swap-in stacks round, 2026-09-19) ──
+//
+// Neuvillette C1's shape: the A1 key lives in the rotation-wide onReaction
+// accumulator (its first grant is a team-sourced reaction), and C1 adds one
+// stack of the SAME key when he takes the field. The grant writes the key's
+// HOME — a stack put in the fresh segment pool is overwritten by the next
+// settle's sync — and a repeat swap-in refreshes its own stack, never adds one.
+describe('gainStacks onSwapIn — written to the key’s home', () => {
+	const holder = (): CharacterData => {
+		const c = mkChar('judge', 'Judge', { element: 'hydro' });
+		const stack = (trigger: unknown, conditions?: unknown) => ({
+			type: 'gainStacks',
+			target: 'self',
+			trigger,
+			key: 'glory',
+			amount: 1,
+			max: 3,
+			lifetime: 30,
+			...(conditions ? { conditions } : {})
+		});
+		c.passives = [
+			{
+				id: 'judge__passive__a1',
+				name: 'A1',
+				abilityType: 'passive',
+				effects: [stack({ type: 'onReaction', reaction: 'vaporize', source: 'team' })]
+			}
+		] as unknown as Ability[];
+		c.constellations = [
+			{
+				id: 'judge__constellation__c1',
+				name: 'C1',
+				abilityType: 'constellation',
+				constellationLevel: 1,
+				effects: [stack({ type: 'onSwapIn' }, { type: 'constellation', level: 1 })]
+			}
+		] as unknown as CharacterData['constellations'];
+		return c;
+	};
+	const glory = (notation: string, cLevel: number, mate: CharacterData): (number | undefined)[] => {
+		const { rotation } = run(notation, [holder(), mate], { judge: cLevel });
+		return rotation.events.flatMap((e) =>
+			e.kind === 'cast' && e.characterId === 'judge' ? [e.stackContext?.get('glory')] : []
+		);
+	};
+	const mate = mkChar('mate', 'Mate', { element: 'pyro' });
+
+	it('C1 gives one stack on taking the field — the rotation’s first character included', () => {
+		expect(glory('Judge E', 0, mate)).toEqual([0]);
+		expect(glory('Judge E', 1, mate)).toEqual([1]);
+		expect(glory('Mate N1 > Judge E', 1, mate)).toEqual([1]);
+	});
+
+	it('⚓ taking the field again REFRESHES that stack, it does not add a second', () => {
+		expect(glory('Mate N1 > Judge E > Mate N1 ~9s > Judge E', 1, mate)).toEqual([1, 1]);
+	});
+
+	it('and it shares the key with the reaction stacks it sits beside', () => {
+		// Mate's Pyro cast, then Judge's Hydro cast vaporizes: one reaction stack.
+		// At C1 the swap-in stack is already there when the cast is snapshotted.
+		const c0 = glory('Mate E > Judge E ~1s E', 0, mate);
+		const c1 = glory('Mate E > Judge E ~1s E', 1, mate);
+		expect(c1.map((n, i) => (n ?? 0) - (c0[i] ?? 0))).toEqual(c0.map(() => 1));
+	});
+});

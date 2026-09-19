@@ -2907,12 +2907,14 @@ function lintEffect(
 			eff.trigger.type !== 'onHit' &&
 			// A stack per threshold fire (stack-count display round) — B.16 holds
 			// its scope and own-key rules.
-			eff.trigger.type !== 'onStack'
+			eff.trigger.type !== 'onStack' &&
+			// Taking the field (swap-in stacks round) — written to the key's HOME.
+			eff.trigger.type !== 'onSwapIn'
 		) {
 			push(
 				'strict',
 				'gainstacks-trigger-invalid',
-				`gainStacks effect trigger.type must be one of "onCast", "onReaction", "onHit" or "onStack" (got "${eff.trigger.type}")`,
+				`gainStacks effect trigger.type must be one of "onCast", "onReaction", "onHit", "onStack" or "onSwapIn" (got "${eff.trigger.type}")`,
 				location
 			);
 		}

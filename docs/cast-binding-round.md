@@ -59,7 +59,7 @@ Clorinde@C6 only. Guarded by a hermetic case in `buffWindows.test.ts` (an
 opener and its in-stance sibling each fire their own name-filtered effect);
 seeded negative — ignoring `abilityId` — fails it.
 
-## 5. ⏭ Still open from the same queue line
+## 5. ✅ The other half of the queue line — shipped the same day (§6)
 
 **No stack dispatcher listens to `onSwapIn`** (Neuvillette C1's free stack of
 Past Draconic Glories). Not started. The non-obvious part, found while reading:
@@ -68,3 +68,34 @@ is `onReaction … source: 'team'`, `lifetime: 30`), so a swap-in grant has to
 write THAT container, not the entering segment's pool — the round needs a
 "write to the key's home" helper (`thresholds.ts` has the private read/spend
 half), not just a new dispatch site.
+
+## 6. RECORD — a stack from TAKING THE FIELD (swap-in stacks round, 2026-09-19)
+
+`gainStacks … onSwapIn`, on `feat/swap-in-stacks`. One holder: Neuvillette C1.
+
+- **The grant writes the key's HOME** (`dispatchGainStacksOnSwapIn`,
+  `stacks.ts`). `homeOf` / `Home` were lifted out of `thresholds.ts`, where the
+  threshold reader was the only thing that knew them. Every home but
+  `sourceLifetime` is writable (a per-SOURCE slot map has no "source" for a
+  stack that comes from taking the field). Seeded negative: writing the
+  entering segment's pool instead fails all three cases — the next settle's
+  sync overwrites it.
+- **Fired where the segment opens**, for a real swap-in AND for the rotation's
+  first character (a rotation begins with somebody taking the field); ⛔ not for
+  a second consecutive segment of the same character. ⚠️ The WEAPON `onSwapIn`
+  procs in `buffWindows.ts` still fire on real swaps only — a different
+  convention, left alone (a weapon proc at frame 0 of every rotation is a
+  different claim).
+- ⚓ **Taking the field again REFRESHES the stack, it does not add a second**
+  (`CharState.swapInGrantExpiry`): "he will obtain 1 stack" is one slot with
+  one source. The first cut accumulated — two swap-ins inside 30s read 2 — and
+  gcsim's model decided it: `c1()` is `a1BaseStackCount = 1`, a base count of
+  exactly one.
+- ⚠️ gcsim goes further than the kit: its base stack never lapses. Ours lapses
+  30s after he last took the field, the kit's own sentence. They agree in any
+  rotation that returns to him within 30s.
+- Lint: the gainStacks trigger rule admits `onSwapIn`.
+
+Measured: `Bennett N1 > Neuvillette E` C0 → 0 stacks, C1 → 1 and the +10%
+Charged DMG tier draws; `… > Bennett N1 > Neuvillette E` C1 → 1, 1. Corpus: 4 of
+630 + 1 of 252 digests moved, all Neuvillette at C1+.

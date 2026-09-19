@@ -286,9 +286,36 @@
 			"constellationLevel": 1,
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. Per the curation philosophy, building the gadget-collectible primitive for Sourcewater Droplets + multi-tick channeled CA is high-cost and EJ-gated constellations would still be cosmetic in canonical Neuvillette rotations (the player CAs regardless). The stub IS the final state.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A damage-tier stack inside an attack the tool does not draw, plus interrupt resistance, which has no surface for any character in the corpus. The caveat even says so itself ('nothing to show on the timeline'). The EJ gap is stated on the Charged Attack entry, which every reader sees at every constellation — this is restatement number one of four. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A damage-tier stack inside an attack the tool does not draw, plus interrupt resistance, which has no surface for any character in the corpus. The caveat even says so itself ('nothing to show on the timeline'). The EJ gap is stated on the Charged Attack entry, which every reader sees at every constellation — this is restatement number one of four. Category: invisible-omission.",
+				"✅ THE FREE STACK IS AUTHORED (swap-in stacks round, 2026-09-19): a `gainStacks … onSwapIn` of the A1 key, same `max` and the same 30s `lifetime`. The grant writes the key's HOME — the rotation-wide onReaction accumulator its A1 grant lives in — not the entering segment's pool, which the next settle's sync would overwrite. It fires on every swap-in AND for the rotation's first character (a rotation begins with somebody taking the field). ⚠️ gcsim goes further: `c1()` sets `a1BaseStackCount = 1`, a STANDING base stack that never lapses. Ours lapses 30s after he last took the field, which is the kit's own sentence; the two agree in any rotation that returns to him within 30s. The interruption-resistance half stays unauthored (no surface for it in the corpus)."
 			],
-			"description": "When Neuvillette takes the field, he will obtain 1 stack of Past Draconic Glories from the Ascension Talent \"Heir to the Ancient Sea's Authority.\" You must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\"\nAdditionally, his interruption resistance will be increased while using the Charged Attack Empowerment: Legal Evaluation and the Charged Attack: Equitable Judgment."
+			"description": "When Neuvillette takes the field, he will obtain 1 stack of Past Draconic Glories from the Ascension Talent \"Heir to the Ancient Sea's Authority.\" You must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\"\nAdditionally, his interruption resistance will be increased while using the Charged Attack Empowerment: Legal Evaluation and the Charged Attack: Equitable Judgment.",
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onSwapIn"
+					},
+					"key": "pastDraconicGlories",
+					"amount": 1,
+					"max": 3,
+					"lifetime": 30,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "ascension",
+								"min": 1
+							}
+						]
+					}
+				}
+			]
 		},
 		{
 			"id": "neuvillette__constellation__juridical_exhortation",

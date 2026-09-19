@@ -98,6 +98,7 @@ import {
 	dispatchGainStacks,
 	dispatchGainStacksOnHit,
 	syncOnHitToStackState,
+	dispatchGainStacksOnSwapIn,
 	syncRotationStacksToStackState,
 	syncOnReactionToStackState,
 	syncSourceLifetimeToStackState
@@ -336,6 +337,23 @@ export function runRotation(
 			}
 			return states;
 		};
+
+		// ⚓ TAKING THE FIELD grants stacks too (swap-in stacks round, 2026-09-19 —
+		// Neuvillette C1). Fired where the segment opens, for a real swap-in AND for
+		// the rotation's first character: a rotation begins with somebody taking the
+		// field, and gcsim goes further still (his C1 is a standing base stack).
+		// ⚠️ NOT for a second consecutive segment of the same character — that is
+		// the same stay on field.
+		if (!prevTrack || prevTrack.characterId !== char.id) {
+			dispatchGainStacksOnSwapIn(
+				char,
+				cs,
+				clock.now,
+				computeCurrentStates(clock.now),
+				charConstellationLevel,
+				{ state: stackState, instances: stackInstances }
+			);
+		}
 
 		// Earliest own stance/named-state window end strictly after `t`, or null.
 		// These are the runtime-state boundaries that can flip skill-variant
