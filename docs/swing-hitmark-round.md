@@ -188,20 +188,24 @@ writer refuses; no authored data reads them.
 
 ## 5. Still open
 
-- ⏭ **82 multi-hit normals that state only `hit`** (55 characters; 77 are
-  two-hit, 17 elemental in an uninfused capture) land at gcsim's LAST hitmark,
-  a median 12f after their first (max 27). ↻ This record first said "~116" —
-  that count predated the travel pin and included in-flight arrows. ⚠️ The real
-  gap is not the 12f: ICD and every `onHit` count HITS, and a swing is still one.
-- ⏭ **Projectile travel on swings** — measured in §4.4; casts carry it, bow
-  swings do not. ⚠️ A landing AFTER the swing's end is the engine question: the
-  closure's segment stack pool is sound only while the landing is inside it.
+↻ Closed the same day (2026-09-20, `curation/swing-followups`): **Varesa's
+`apexDrive`** opens at the plunge's START now (`d66a2f79`, ⚓ Nate — gcsim's
+(start, 140f) is one measurement) · **Iansan** re-read from the merged source
+(`ecab3e65`) · the **Cryo Traveler** got Stage 4 and left `FRAMELESS_EXEMPT`
+(`09bd75ab`); the Star's "8 crystals" audit row is our 4 two-crystal volleys and
+stays.
+
+- ⏭ **Every hit a swing lands** — PLANNED, `docs/multi-hit-swings-round.md`
+  (⚓ Nate: the full implementation). 82 normals + 43 `lands` maps.
+- ⏭ **Projectile travel on swings** — PLANNED, `docs/projectile-travel-round.md`
+  (⚓ Nate: a constant, not a setting; a `projectile` flag on nine catalysts).
+  ⚠️ Both rounds rewrite `landSwing` — one at a time.
 - ⏭ **The 34 uncovered maps** — where KQM's frame sheet could actually help.
-- ⏭ **Varesa's `apexDrive` anchor** (§4.3) and **Barbara's / Yae's charged
-  attacks landing no damage in gcsim**.
-- ⏭ From the gcsim sync (`18de22ec`): Iansan's six maps now disagree with a
-  source she did not have when they were authored; the Cryo Traveler's
-  Frostpierce Star reads as 8 crystals in gcsim against our 4 volleys.
+- ⏭ **Barbara's and Yae's charged attacks** land no damage in gcsim's capture.
+- ⚠️ `migrate-frames-shape`'s PRESERVE path adds an explicit `swap: <anim>` to a
+  map that states `hit`, moving its swap cancel from the hitmark to the full
+  animation (found on Iansan, not fixed); and it and `migrate-application-schema`
+  still reflow the whole file. Take their VALUES, apply them surgically.
 - ⚠️ Observed, not changed: on the synchronous path the charged and plunge sites
   run `humanPad` BEFORE the landing, so with Human timing on, a swing that states
   no landing lands after its pad.
