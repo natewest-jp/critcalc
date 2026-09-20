@@ -36,6 +36,7 @@ import { join } from 'node:path';
 import { format, resolveConfig } from 'prettier';
 
 import { runDumper } from './lib/gcsim-dump.mjs';
+import { surgicalRewrite } from './lib/json-edit.mjs';
 import {
 	CHAR_DIR,
 	KEYS,
@@ -297,7 +298,9 @@ async function main() {
 			}
 		}
 
-		const next = await format(JSON.stringify(c.data), prettierOptions);
+		// ⚓ Surgical: only what this run changed is rewritten (`lib/json-edit.mjs`).
+		// ⛔ Never `format(JSON.stringify(c.data))` — it reflows the whole hand-formatted file.
+		const next = await format(surgicalRewrite(c.raw, JSON.parse(c.raw), c.data), prettierOptions);
 		if (next !== c.raw) {
 			stats.files++;
 			if (write) writeFileSync(c.file, next);

@@ -109,7 +109,8 @@ momentum)`, `Normal 1 (Windfavored)`). The rule that holds: only an N(k)
 - ⚠️⚠️ **The edit is SURGICAL** (`jsonc-parser` `modify`). The first cut copied the
   older writers' `format(JSON.stringify(data))` and produced a **14,190-line**
   diff to author 233 numbers; the corpus is hand-formatted and that reflows every
-  object prettier can fit on a line. ⛔ The two older writers still do it.
+  object prettier can fit on a line. ↻ The two older writers did the same and
+  are fixed — see §5.
 - ⚠️ `lands` is in no gcsim SLICE, so a writer that rebuilds a map from one would
   erase it: `preserveFrameMap` carries it and `migrate-frames-shape` goes through
   `withLands`.
@@ -202,10 +203,19 @@ stays.
   ⚠️ Both rounds rewrite `landSwing` — one at a time.
 - ⏭ **The 34 uncovered maps** — where KQM's frame sheet could actually help.
 - ⏭ **Barbara's and Yae's charged attacks** land no damage in gcsim's capture.
-- ⚠️ `migrate-frames-shape`'s PRESERVE path adds an explicit `swap: <anim>` to a
-  map that states `hit`, moving its swap cancel from the hitmark to the full
-  animation (found on Iansan, not fixed); and it and `migrate-application-schema`
-  still reflow the whole file. Take their VALUES, apply them surgically.
+- ↻ **The older writers are fixed (2026-09-20, `chore/surgical-writers`).**
+  `scripts/lib/json-edit.mjs` — `surgicalRewrite(text, before, after)` turns the
+  difference between the parsed original and the object a writer mutated into
+  `jsonc-parser` edits against the original text, so `migrate-frames-shape` and
+  `migrate-application-schema` keep their logic and lose the reflow. Verified by
+  corrupting values and letting each writer repair them: the tree came back
+  byte-clean. 🐛 `preserveFrameMap` added an explicit `swap: <anim>` to a map that
+  states `hit`, which moves its swap cancel from the hitmark to the full
+  animation — a PRESERVE must be a behavioural no-op; it is now. ⚠️ A corpus-wide
+  dry run is MEANINGFUL for the first time (frames 19 files / ~100 lines,
+  applications 33 files / ~640 lines; reflow used to make it every file) and is
+  still ⛔ never applied blind: those are the known oracle artefacts and the
+  hand-curated `application[]` lists.
 - ⚠️ Observed, not changed: on the synchronous path the charged and plunge sites
   run `humanPad` BEFORE the landing, so with Human timing on, a swing that states
   no landing lands after its pad.

@@ -424,7 +424,12 @@ export function preserveFrameMap(fm) {
 	for (const k of KEYS) {
 		if (typeof fm[k] === 'number') out[k] = fm[k];
 	}
-	if (out.swap === undefined) out.swap = anim;
+	// ⚠️⚠️ Only where there is NO `hit` tier. With one, an unlisted `swap` resolves to the
+	// HITMARK (`frameAt`), so writing `swap: anim` is not redundant at all — it moves the
+	// swap cancel from the hitmark to the full animation. Found 2026-09-20 on Iansan's
+	// stance normals (13f → 28f), which a "preserve" had been about to rewrite. The rule
+	// below predates `hit` (L4b); preserve must be a behavioural NO-OP or it is misnamed.
+	if (out.swap === undefined && out.hit === undefined) out.swap = anim;
 	return out;
 }
 
