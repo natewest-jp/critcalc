@@ -78,8 +78,8 @@ baseline `out/k-base.json` = main `0b1696c1`, byte-identical to `si-sum`):
   hitmark AND the fill for E/Q/D/J/swap. gcsim builds charged attacks and most
   catalyst normals with `InitAbilSlice` + explicit cancels and keeps the hitmark
   in a separate constant (`chargeHitmark`), which the frame migration never read.
-- ⛔ So the number **cannot go in `hit`**: on Itto's `{anim:130, D:89, J:89,
-swap:130}` a `hit: 50` would make his E and Q cancels 50. A new field is
+- ⛔ So the number **cannot go in `hit`**: Itto's charged map states `anim: 130`
+  and only `D`/`J`/`swap`, so a `hit: 50` there would make his E and Q cancels 50. A new field is
   needed — proposed **`lands`**, read first by `landsAt` (`fm.lands ?? fm.hit`),
   lint: redundant when equal to `hit`, never past `anim`.
 - **The oracle already has them**: the dumper's isolated-core damage events give
