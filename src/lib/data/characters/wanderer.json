@@ -18,19 +18,50 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "anim": 35, "N": 26, "C": 24, "E": 12, "Q": 12, "D": 12, "J": 11, "swap": 11 }
+					"frames": {
+						"anim": 35,
+						"lands": 11,
+						"N": 26,
+						"C": 24,
+						"E": 12,
+						"Q": 12,
+						"D": 12,
+						"J": 11,
+						"swap": 11
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "anim": 39, "N": 18, "C": 27, "E": 5, "Q": 5, "D": 6, "J": 5, "swap": 5 }
+					"frames": {
+						"anim": 39,
+						"lands": 6,
+						"N": 18,
+						"C": 27,
+						"E": 5,
+						"Q": 5,
+						"D": 6,
+						"J": 5,
+						"swap": 5
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "anim": 76, "N": 64, "C": 50, "E": 33, "Q": 33, "D": 34, "J": 34, "swap": 33 }
+					"frames": {
+						"anim": 76,
+						"lands": 32,
+						"N": 64,
+						"C": 50,
+						"E": 33,
+						"Q": 33,
+						"D": 34,
+						"J": 34,
+						"swap": 33
+					}
 				}
 			],
 			"chargeFrames": {
 				"anim": 69,
+				"lands": 34,
 				"N": 51,
 				"C": 50,
 				"E": 49,
@@ -75,14 +106,43 @@
 				{ "name": "N1", "frames": { "anim": 43, "hit": 15, "N": 30, "C": 31 } },
 				{
 					"name": "N2",
-					"frames": { "anim": 34, "N": 17, "C": 23, "E": 4, "Q": 6, "D": 5, "J": 5, "swap": 3 }
+					"frames": {
+						"anim": 34,
+						"lands": 3,
+						"N": 17,
+						"C": 23,
+						"E": 4,
+						"Q": 6,
+						"D": 5,
+						"J": 5,
+						"swap": 3
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "anim": 70, "N": 54, "C": 53, "E": 33, "Q": 33, "D": 40, "J": 33, "swap": 40 }
+					"frames": {
+						"anim": 70,
+						"lands": 32,
+						"N": 54,
+						"C": 53,
+						"E": 33,
+						"Q": 33,
+						"D": 40,
+						"J": 33,
+						"swap": 40
+					}
 				}
 			],
-			"chargeFrames": { "anim": 70, "N": 49, "C": 49, "E": 38, "Q": 38, "D": 38, "J": 38 },
+			"chargeFrames": {
+				"anim": 70,
+				"lands": 36,
+				"N": 49,
+				"C": 49,
+				"E": 38,
+				"Q": 38,
+				"D": 38,
+				"J": 38
+			},
 			"description": "While in the Windfavored state activated by Hanega: Song of the Wind, Wanderer's Normal Attacks are converted into Kuugo: Fushoudan and his Charged Attacks into Kuugo: Toufukai. Both deal Anemo DMG with increased AoE and damage; Kuugo: Toufukai does not consume Stamina. Plunging Attacks are disabled while hovering.",
 			"_curatorNotes": [
 				"In-stance N (Kuugo: Fushoudan) and CA (Kuugo: Toufukai) deal anemo DMG and are still tagged as Normal/Charged Attack DMG by the game. gcsim applies skillNABonus[talentLvlSkill] (N) and skillCABonus[talentLvlSkill] (CA) as a multiplicative bonus on top of the base Mult — these are stance-only damage scalings the schema can't represent on hits[]; reviewer to wire as a state-conditioned damage modifier.",

@@ -3257,13 +3257,22 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const wins = stateWindows(result, 'apexDrive');
 		expect(wins).toHaveLength(1);
 		expect(wins[0].sourceCastId).toBeUndefined(); // opened by a plunge, not a cast
-		// Post-P4 #2: the plunge's action event is the window's provenance,
-		// and the window opens at the plunge's END (landing).
+		// Post-P4 #2: the plunge's action event is the window's provenance.
+		// ↻ §1.K stage 2 (2026-09-20): the window opens at the plunge's LANDING —
+		// `lands`, read from the data — and no longer at the swing's end, so the
+		// hit that lands there finds the state its own plunge opened.
 		const plunge = result.events.find((e) => e.kind === 'action' && e.action === 'plunge');
 		expect(plunge).toBeTruthy();
 		expect(wins[0].sourceActionId).toBe(plunge!.id);
 		if (plunge!.kind === 'action') {
-			expect(wins[0].start).toBe(plunge!.time + plunge!.duration);
+			const plungeMap = (
+				varesaForTest.abilities.find((a) => a.abilityType === 'normal' && !('conditions' in a)) as {
+					plungeFrames: Parameters<typeof landsAt>[0];
+				}
+			).plungeFrames;
+			const landing = landsAt(plungeMap)!;
+			expect(landing).toBeLessThan(plunge!.duration);
+			expect(wins[0].start).toBe(plunge!.time + landing);
 		}
 		// Consumed by the Kablam cast.
 		expect(wins[0].end).toBe(qBars[0].start);
@@ -4017,7 +4026,15 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 	const xiao = xiaoForIcd as unknown as CharacterData;
 	const team: Record<string, CharacterData> = { Sucrose: sucrose, Xingqiu: xingqiu, Xiao: xiao };
 	const lookup = (n: string): CharacterData | null => team[n] ?? null;
-	const klee = kleeForLanding as unknown as CharacterData;
+	// ⚠️ A COPY with N1's landing frame removed: every Klee normal states `lands`
+	// since stage 2, and the arm below needs a map that states none — which is
+	// what an uncovered map (34 in the corpus) or a frameless stub looks like.
+	const klee = structuredClone(kleeForLanding) as unknown as CharacterData;
+	delete (
+		klee.abilities.find((a) => a.abilityType === 'normal') as never as {
+			hits: { frames: { lands?: number } }[];
+		}
+	).hits[0].frames.lands;
 	const kleeNormal = klee.abilities.find((a) => a.abilityType === 'normal') as unknown as {
 		hits: { frames: Parameters<typeof landsAt>[0] }[];
 	};
@@ -4074,8 +4091,8 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 	});
 
 	it('⚓ a swing lands at its hitmark, and one with none keeps its end (§1.K)', () => {
-		// Sucrose's N1 states `hit`; Klee's states none (gcsim gives a catalyst
-		// explicit cancels and keeps the hitmark elsewhere). Same rule, both arms —
+		// Sucrose's swing states `hit`; the Klee copy's N1 states nothing. Same rule,
+		// both arms —
 		// and the seeded negative is the first: put the offer back after the
 		// advance and Sucrose's application returns to the swing's end.
 		// ⚠️ Read at the FOURTH swing (hit 28, next normal at 51): Sucrose's N1 is

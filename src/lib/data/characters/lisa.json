@@ -27,8 +27,25 @@
 				{ "name": "N3", "frames": { "anim": 40, "hit": 17, "C": 34 } },
 				{ "name": "N4", "frames": { "anim": 57, "hit": 31 } }
 			],
-			"chargeFrames": { "anim": 93, "N": 91, "C": 90, "D": 70, "J": 70, "swap": 90 },
-			"plungeFrames": { "anim": 68, "N": 60, "C": 51, "E": 58, "Q": 59, "D": 47, "swap": 52 },
+			"chargeFrames": {
+				"anim": 93,
+				"lands": 70,
+				"N": 91,
+				"C": 90,
+				"D": 70,
+				"J": 70,
+				"swap": 90
+			},
+			"plungeFrames": {
+				"anim": 68,
+				"lands": 47,
+				"N": 60,
+				"C": 51,
+				"E": 58,
+				"Q": 59,
+				"D": 47,
+				"swap": 52
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -47,7 +64,16 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 lightning attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground.",
-			"lowPlungeFrames": { "anim": 67, "N": 58, "C": 48, "E": 58, "Q": 57, "D": 45, "swap": 50 }
+			"lowPlungeFrames": {
+				"anim": 67,
+				"lands": 45,
+				"N": 58,
+				"C": 48,
+				"E": 58,
+				"Q": 57,
+				"D": 45,
+				"swap": 50
+			}
 		},
 		{
 			"id": "lisa__skill__violet_arc",

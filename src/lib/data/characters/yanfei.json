@@ -59,8 +59,26 @@
 				{ "name": "N2", "frames": { "anim": 28, "hit": 16, "C": 16 } },
 				{ "name": "N3", "frames": { "anim": 73, "hit": 37, "C": 42 } }
 			],
-			"chargeFrames": { "anim": 79, "C": 78, "E": 63, "Q": 63, "D": 51, "J": 49, "swap": 59 },
-			"plungeFrames": { "anim": 67, "N": 58, "C": 49, "E": 59, "Q": 59, "D": 47, "swap": 50 },
+			"chargeFrames": {
+				"anim": 79,
+				"lands": 63,
+				"C": 78,
+				"E": 63,
+				"Q": 63,
+				"D": 51,
+				"J": 49,
+				"swap": 59
+			},
+			"plungeFrames": {
+				"anim": 67,
+				"lands": 47,
+				"N": 58,
+				"C": 49,
+				"E": 59,
+				"Q": 59,
+				"D": 47,
+				"swap": 50
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -79,7 +97,16 @@
 				}
 			],
 			"description": "Normal Attack\nShoots fireballs that deal up to three counts of Pyro DMG.\nWhen Yanfei's Normal Attacks hit enemies, they will grant her a single Scarlet Seal. Yanfei may possess a maximum of 3 Scarlet Seals, and each time this effect is triggered, the duration of currently possessed Scarlet Seals will refresh.\nEach Scarlet Seal will decrease Yanfei's Stamina consumption and will disappear when she leaves the field.\n\nCharged Attack\nConsumes Stamina and all Scarlet Seals before dealing AoE Pyro DMG to opponents after a short casting time.\nThis Charged Attack's AoE and DMG will increase according to the amount of Scarlet Seals consumed.\n\nPlunging Attack\nGathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground.",
-			"lowPlungeFrames": { "anim": 65, "N": 57, "C": 46, "E": 57, "Q": 57, "D": 45, "swap": 48 }
+			"lowPlungeFrames": {
+				"anim": 65,
+				"lands": 45,
+				"N": 57,
+				"C": 46,
+				"E": 57,
+				"Q": 57,
+				"D": 45,
+				"swap": 48
+			}
 		},
 		{
 			"id": "yanfei__skill__signed_edict",

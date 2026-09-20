@@ -28,8 +28,24 @@
 				{ "name": "N4", "frames": { "anim": 46, "hit": 23, "N": 38 } },
 				{ "name": "N5", "frames": { "anim": 64, "hit": 30 } }
 			],
-			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 25, "J": 24, "swap": 34 },
-			"plungeFrames": { "anim": 77, "N": 56, "E": 57, "Q": 56, "D": 47, "swap": 67 },
+			"chargeFrames": {
+				"anim": 55,
+				"lands": 16,
+				"E": 37,
+				"Q": 36,
+				"D": 25,
+				"J": 24,
+				"swap": 34
+			},
+			"plungeFrames": {
+				"anim": 77,
+				"lands": 47,
+				"N": 56,
+				"E": 57,
+				"Q": 56,
+				"D": 47,
+				"swap": 67
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -48,7 +64,15 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 74, "N": 55, "E": 55, "Q": 55, "D": 45, "swap": 64 }
+			"lowPlungeFrames": {
+				"anim": 74,
+				"lands": 45,
+				"N": 55,
+				"E": 55,
+				"Q": 55,
+				"D": 45,
+				"swap": 64
+			}
 		},
 		{
 			"id": "kaeya__skill__frostgnaw",

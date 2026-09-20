@@ -22,7 +22,15 @@
 				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
 				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
+			"chargeFrames": {
+				"anim": 55,
+				"lands": 9,
+				"E": 37,
+				"Q": 36,
+				"D": 20,
+				"J": 20,
+				"swap": 44
+			},
 			"_curatorNotes": [
 				"Normal-attack frames + scaling are SHARED across all 6 Traveler element variants in gcsim — only the skill/burst differ per element. Same normal/charge data as traveler_anemo.json (Male/Aether frames).",
 				"Plunge frames not authored — geo Traveler has no plunge.go in gcsim source."

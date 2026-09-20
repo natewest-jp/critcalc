@@ -46,6 +46,7 @@
 			],
 			"chargeFrames": {
 				"anim": 56,
+				"lands": 50,
 				"N": 49,
 				"C": 52,
 				"E": 52,

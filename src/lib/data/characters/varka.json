@@ -23,7 +23,16 @@
 				{ "name": "N4", "frames": { "anim": 52, "hit": 29, "N": 45, "C": 33 } },
 				{ "name": "N5", "frames": { "anim": 87, "hit": 50, "N": 78, "C": 53 } }
 			],
-			"chargeFrames": { "anim": 81, "N": 72, "E": 73, "Q": 72, "D": 55, "J": 55, "swap": 63 },
+			"chargeFrames": {
+				"anim": 81,
+				"lands": 41,
+				"N": 72,
+				"E": 73,
+				"Q": 72,
+				"D": 55,
+				"J": 55,
+				"swap": 63
+			},
 			"_curatorNotes": [
 				"FrameMaps re-extracted 2026-07-29 from gcsim main (PR #2668 merged as 5d1ec8c79); post-merge timings replaced the PR-era values.",
 				"attack.go attackHitmarks = [[19],[18,28],[27,43],[19,24],[44,45]] with InitNormalCancelSlice animations 46/46/60/47/82; ActionAttack (N) overrides 23/29/55/40/73 and ActionCharge (C) overrides 22/30/48/28/48. Multi-hitmark hits (N2-N5) use the LAST hitmark for swap per convention. gcsim adds a +5f windup when starting from idle/swap/jump/dash — not modeled.",

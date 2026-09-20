@@ -21,8 +21,24 @@
 				{ "name": "N4", "frames": { "anim": 58, "hit": 21, "N": 31 } },
 				{ "name": "N5", "frames": { "anim": 66, "hit": 22 } }
 			],
-			"chargeFrames": { "anim": 36, "E": 35, "Q": 35, "D": 24, "J": 24, "swap": 24 },
-			"plungeFrames": { "anim": 75, "N": 59, "E": 59, "Q": 59, "D": 48, "swap": 61 },
+			"chargeFrames": {
+				"anim": 36,
+				"lands": 21,
+				"E": 35,
+				"Q": 35,
+				"D": 24,
+				"J": 24,
+				"swap": 24
+			},
+			"plungeFrames": {
+				"anim": 75,
+				"lands": 48,
+				"N": 59,
+				"E": 59,
+				"Q": 59,
+				"D": 48,
+				"swap": 61
+			},
 			"_curatorNotes": [
 				"N4 has 2 damage instances at gcsim frames 11 and 21 (attackHitmarks[3] = [11, 21]); authored as single entry using last hitmark (21) per multi-hitmark convention.",
 				"High plunge exists in gcsim (highPlungeFrames: swap 61, hitmark 48) but not represented here; low plunge frames used per convention (swap 60, hitmark 46). Add _curatorNotes entry noting high plunge omission.",
@@ -47,7 +63,15 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 73, "N": 57, "E": 57, "Q": 58, "D": 46, "swap": 60 }
+			"lowPlungeFrames": {
+				"anim": 73,
+				"lands": 46,
+				"N": 57,
+				"E": 57,
+				"Q": 58,
+				"D": 46,
+				"swap": 60
+			}
 		},
 		{
 			"id": "keqing__skill__stellar_restoration",

@@ -1,9 +1,9 @@
 # A swing lands at its hitmark — §1.K (2026-09-20)
 
-_Status: **stage 1 (the engine) BUILT** on `feat/swing-hitmark`. Stage 2 (the
-landing frame for the maps that state none) is SCOPED in §4 and waits on three
-calls from Nate. Source item: `docs/curation/essential-characters-2026-09-15.md`
-§1.K._
+_Status: **both stages BUILT** on `feat/swing-hitmark` — stage 1 the engine
+(`1d9d2652`), stage 2 the landing frame for the maps that state no hitmark (§4).
+Source item: `docs/curation/essential-characters-2026-09-15.md` §1.K. §5 is what
+is still open._
 
 ## 1. The defect
 
@@ -38,9 +38,8 @@ Measured over the corpus: **563** normal-style maps state a hitmark, and in
 - A charged landing reads its states AT the landing; the normal and plunge
   landings keep their token-start snapshot, as before.
 
-⚠️ **Plunges are wired and inert** — no plunge map states a hitmark. When one
-does, the plunge's state OPENER must move with it (a plunge's state opens at the
-LANDING — Varesa's `apexDrive` — not at the swing's end). Noted at the site.
+↻ Plunges were wired and inert at stage 1 (no plunge map stated a hitmark);
+stage 2 gave 91 of them a landing frame and moved the state opener — §4.3.
 
 ## 3. Measured
 
@@ -69,46 +68,123 @@ baseline `out/k-base.json` = main `0b1696c1`, byte-identical to `si-sum`):
   proc 2.58 → 2.43. New guard: both arms of the rule in one test; seeded
   negative (force `landSwing` false) fails three.
 
-## 4. Stage 2 — the maps that state no hitmark (SCOPED, not built)
+## 4. Stage 2 — the maps that state no hitmark
 
-**176 non-plunge maps state none** (95 `chargeFrames`, 36 normals, 45 bow
-`chargeHits`), and ⚓ **the reason is structural, not missing research**:
+### 4.1 Why they state none
 
-- Our `hit` is gcsim's `InitNormalCancelSlice(hitmark, anim)` tier — it is the
-  hitmark AND the fill for E/Q/D/J/swap. gcsim builds charged attacks and most
-  catalyst normals with `InitAbilSlice` + explicit cancels and keeps the hitmark
-  in a separate constant (`chargeHitmark`), which the frame migration never read.
+**267 normal-style maps stated no `hit`**: 95 `chargeFrames`, 36 normals, 45 bow
+`chargeHits`, and every one of the 96 plunge maps. ⚓ **The reason is structural,
+not missing research** — and ⚓ Nate's offer to check KQM's sheet turned out not
+to be needed, because the oracle already had them:
+
+- Our `hit` is gcsim's `InitNormalCancelSlice(hitmark, anim)` tier — the hitmark
+  AND the fill for E/Q/D/J/swap. gcsim builds every charged attack, every plunge
+  and most catalyst normals with `InitAbilSlice` + explicit cancels and keeps
+  the hitmark in a separate constant (`chargeHitmark`) the frame migration never
+  read.
 - ⛔ So the number **cannot go in `hit`**: Itto's charged map states `anim: 130`
-  and only `D`/`J`/`swap`, so a `hit: 50` there would make his E and Q cancels 50. A new field is
-  needed — proposed **`lands`**, read first by `landsAt` (`fm.lands ?? fm.hit`),
-  lint: redundant when equal to `hit`, never past `anim`.
-- **The oracle already has them**: the dumper's isolated-core damage events give
-  one hit for 99, several for 45, none for 3 (Barbara's and Yae's CA, Lauma's
-  deer — the last is CORRECT, it is `nonHitting`), and 29 are uncovered (bow
-  `chargeHits[0]` partial draws, Iansan/Nefer/Illuga/Kachina, stance-gated
-  forms). The headline cases: **Mualani's Sharky's Bite lands at 7f** (cancels
-  39–215), her CA at 84; **Varesa's CA at 69f** (cancels 139+).
+  and only `D`/`J`/`swap`, so a `hit: 50` there would make his E and Q cancels 50.
 
-Open calls (⏭ Nate):
+### 4.2 `FrameMap.lands`
 
-1. **The field** — `lands` beside `hit`, as above?
-2. **A multi-hit swing: first or last hit?** One swing is one hit here. `hit` is
-   gcsim's LAST hitmark (146 of 150 melee multi-hit maps). The FIRST is what
-   applies the element and fires an `onHit`, so `lands` would be the first —
-   and then 116 normals that already state `hit` are 8–23f late by the same
-   argument. Recommended: first hit for the new field; leave the 116 for a
-   follow-up with its own measurement.
-3. **Projectile travel.** For bows and most catalysts `hit` is the RELEASE;
-   gcsim's damage lands `+10f` (87 bow maps, 10 catalyst), and that 10 is gcsim's
-   `travel` PARAMETER default, not a measurement — in game it is distance.
-   Cast `application[]` frames already include it (they are authored from the
-   damage stream). Recommended: a blanket `+10` for a bow's swings is NOT
-   authored (⛔ mass-annotating a default); catalyst landings take gcsim's frame
-   since there is no other number.
+⚓ Nate's three calls (2026-09-20): a new field beside `hit` · the **FIRST** hit
+of a multi-hit swing · ⛔ no hardcoded projectile travel.
 
-⚠️ The gcsim checkout is **98 commits behind** `origin/main`; the oracle audits
-whatever is checked out. Fast-forward before authoring from it.
+- **`lands`** — the frame the swing's first hit lands. `landsAt` reads
+  `fm.lands ?? fm.hit`. Lint **A.5c**: never past `anim`, never restating `hit`
+  (absent must keep meaning "`hit` says it"), never beside a `nonHitting` claim
+  for that class, never on a skill/burst map (a cast states `application[]`).
+- **`scripts/migrate-swing-landings.mjs`** authors it from the dumper's damage
+  stream: **233 landings across 108 files** (85 charged, 32 normals, 25 bow
+  charged shots, 47 high + 44 low plunges). Idempotent. ⛔ Never writes a map that
+  states `hit`.
+- ⚓ **Which hits are the swing's OWN** took three cuts, and the dry run caught
+  the first two before a byte was written: "the hits sharing the LAST hit's
+  name" (a multi-hit charged attack is `Charge 0`, `Charge 1`, and a capture's
+  last hit is as often a PROC — Alhaitham's mirror, Hu Tao's Blood Blossom) and
+  "the hits named for this combo index" (gcsim writes `Sharky's Bite (0
+momentum)`, `Normal 1 (Windfavored)`). The rule that holds: only an N(k)
+  capture has anything in flight, so a hit is an artefact exactly when its name
+  already appeared in an EARLIER swing's capture of the same form.
+- ⚠️⚠️ **The edit is SURGICAL** (`jsonc-parser` `modify`). The first cut copied the
+  older writers' `format(JSON.stringify(data))` and produced a **14,190-line**
+  diff to author 233 numbers; the corpus is hand-formatted and that reflows every
+  object prettier can fit on a line. ⛔ The two older writers still do it.
+- ⚠️ `lands` is in no gcsim SLICE, so a writer that rebuilds a map from one would
+  erase it: `preserveFrameMap` carries it and `migrate-frames-shape` goes through
+  `withLands`.
+- **Not written, each reported by the writer**: 34 uncovered (bow partial draws,
+  Iansan's/Varesa's/Varka's stance forms, Illuga, Kachina, Nefer, Linnea, Kazuha's
+  two plunge variants, Venti's/Wanderer's/Xiao's-mask plunges) · 2 where gcsim
+  lands NO damage (Barbara's and Yae's charged attacks — ⏭ worth a look) · 4
+  refused as not a swing's hit (Neuvillette's Equitable Judgment at 232f past an
+  87f `anim`; Chasca's N2–N4 at frame 0).
 
-⚠️ Observed, not changed: on the synchronous path the charged and plunge sites
-run `humanPad` BEFORE the landing, so with Human timing on, a hitmark-less CA
-lands after its pad. A map that states its landing is immune.
+The headline cases: **Mualani's Sharky's Bite lands at 7f** (it sat at its
+39–215f cancel), her charged attack at 84; **Varesa's charged attack at 69f**
+(139+); Hu Tao's Paramita charge at **3f**, which looked wrong and is gcsim's own
+`ppChargeHitmark = 3`.
+
+### 4.3 The plunge opener moves with the landing
+
+A plunge's `actionOpensState` lives INSIDE the landing closure now: opener →
+offers → hit record at one instant, so the hit always finds the state its own
+plunge opened. With no landing frame all three fall back to the swing's end
+together. One holder (Varesa's `apexDrive`): it opens at 38f instead of 40f.
+⚠️ gcsim adds that status at the plunge's **START** for the same 140f
+(`getApexDrive`, no delay), so our window still ends late by the length of the
+fall — by less than before. Not changed: it is her authored anchor, not §1.K's.
+
+### 4.4 Projectile travel
+
+⚓ The ruling was already in the dumper for aimed shots — gcsim's `travel`
+default (10f) is "a SIMULATION POLICY, not game data" — but the pin had never
+been extended to normals and charged attacks, which is the whole reason bow
+normals read `hit + 10`. It is now (`travel: 0` on every swing capture and on
+the combo prefix). **Measured after the pin: all 94 bow normals and 73 catalyst
+normals land at Δ0 from `hit`.** So every landing frame in the corpus is
+uniformly the travel-free RELEASE frame, and `hit` was right all along.
+
+Whether to model travel at all (⏭ Nate, recommendation): **not in data, and not
+by default.** It is distance, so any number is a claim about where the player
+stands; 10f rarely reorders anything; and the data being uniformly travel-free
+makes it a ONE-SITE change later (`landSwing`). If it is wanted, the precedent
+is Human timing — a player-dependent assumption held in `siteSettings`, ⛔ never
+in a character JSON and ⛔ never in `?r=` — and it needs one new fact the corpus
+lacks: which CATALYST normals are projectiles (Heizou and Wriothesley punch).
+⚠️ The inconsistency this leaves: a ranged skill's `application[]` was authored
+from captures that do NOT pin travel, so those frames may still carry gcsim's
+10f. Unmeasured — a follow-up with its own census.
+
+### 4.5 Measured
+
+Against stage 1 (`out/k-eng.json`): **207 of 630 digests moved**, zero bar or
+total-duration changes. Set changes, each read: Flins' Thundercloud gadget is
+spawned by a Lunar-Charged reaction that moved 15f earlier · Raiden's charged
+attack lands at 1273 instead of 1305, inside the Eye's 0.9s cooldown from its
+1245 tick, so that coordinated attack no longer fires · Lan Yan and Klee are the
+2.5s ICD timer's edge. ⚠️ The digest rotation has no `P`, so 91 plunge landings
+are measured only by the Varesa test and the roster gate.
+
+Gates: vitest 1943 · check · lint · build. Two tests re-derived (Varesa's window
+start, from the data; the guard's "states no landing" arm now uses a Klee copy
+with the field removed). Lint A.5c has five seeded tests on Keqing.
+
+⚠️ The pin costs the audit's ICD-cadence join three hits (3032 of 3035): Chasca's
+N2–N4, whose in-flight shots now resolve on the cast frame. The same three the
+writer refuses; no authored data reads them.
+
+## 5. Still open
+
+- ⏭ **The ~116 multi-hit normals that state only `hit`** land at gcsim's LAST
+  hitmark, 8–23f after their first. Same argument as `lands`, its own measurement.
+- ⏭ **Ranged casts' `application[]` may carry gcsim's travel** (§4.4).
+- ⏭ **The 34 uncovered maps** — where KQM's frame sheet could actually help.
+- ⏭ **Varesa's `apexDrive` anchor** (§4.3) and **Barbara's / Yae's charged
+  attacks landing no damage in gcsim**.
+- ⏭ From the gcsim sync (`18de22ec`): Iansan's six maps now disagree with a
+  source she did not have when they were authored; the Cryo Traveler's
+  Frostpierce Star reads as 8 crystals in gcsim against our 4 volleys.
+- ⚠️ Observed, not changed: on the synchronous path the charged and plunge sites
+  run `humanPad` BEFORE the landing, so with Human timing on, a swing that states
+  no landing lands after its pad.

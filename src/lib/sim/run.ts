@@ -1979,11 +1979,33 @@ export function runRotation(
 							abilityId: activeNormal?.id,
 							element: pElement
 						});
-						// The plunge's landing — see `landSwing`. ⚠️ No plunge map states a
-						// landing frame today, so this is the synchronous path in practice;
-						// ⚠️⚠️ when one does, the OPENER below must move with it — a plunge's
-						// state opens AT the landing (`apexDrive`), not at the swing's end.
+						// The plunge's landing — see `landSwing`: the state opener, the
+						// offers and the hit record, in that order, at one instant.
 						const landPlunge = (at: number): void => {
+							// Post-plunge transient state (sQ primitive): the plunge LANDING
+							// opens a short gating window — Varesa's plunge opens `apexDrive`
+							// (140f) during which `sQ` resolves to Volcano Kablam; provenance
+							// is the plunge's action event (post-P4 #2).
+							// ⚓ It lives INSIDE the landing closure (§1.K stage 2): the hit
+							// below must find the state its own plunge opened, so the opener
+							// can never sit later than the hit. With no landing frame both
+							// fall back to the swing's end together, as they always did.
+							// ⚠️ gcsim adds the status at the plunge's START (`getApexDrive`,
+							// no delay) for the same 140f, so our window still ends late by
+							// the fall — by less than when it opened at the swing's end.
+							const pSpec = activeNormal?.actionOpensState?.plunge;
+							if (pSpec) {
+								applyTransientState(
+									ctx,
+									pSpec,
+									cs,
+									char.id,
+									at,
+									plungeStates,
+									charConstellationLevel,
+									{ sourceActionId: plungeEv.id }
+								);
+							}
 							// Offer the plunge to the aura at the landing. Plunges carry no
 							// ICD at all (gcsim census in resolveActionIcd), so an infused
 							// plunge string applies on every landing.
@@ -2043,24 +2065,6 @@ export function runRotation(
 						const pLanded = landSwing(blockStart, castS, plungeFrames, landPlunge);
 						clock.advance(clock.now + castS);
 						humanPad('plunge', j);
-						// Post-plunge transient state (sQ primitive): the plunge landing
-						// opens a short gating window — Varesa's plunge opens `apexDrive`
-						// (140f) during which `sQ` resolves to Volcano Kablam. Window
-						// runs from the plunge's END (≈ landing, the post-advance
-						// cursor); provenance is the plunge's action event (post-P4 #2).
-						const pSpec = activeNormal?.actionOpensState?.plunge;
-						if (pSpec) {
-							applyTransientState(
-								ctx,
-								pSpec,
-								cs,
-								char.id,
-								clock.now,
-								plungeStates,
-								charConstellationLevel,
-								{ sourceActionId: plungeEv.id }
-							);
-						}
 						if (!pLanded) landPlunge(clock.now);
 					}
 					lastEText = null;

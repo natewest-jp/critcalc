@@ -59,6 +59,7 @@
 			],
 			"chargeFrames": {
 				"anim": 56,
+				"lands": 20,
 				"E": 34,
 				"Q": 34,
 				"D": 20,
@@ -90,6 +91,7 @@
 			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"plungeFrames": {
 				"anim": 66,
+				"lands": 39,
 				"N": 44,
 				"E": 43,
 				"Q": 42,
@@ -99,6 +101,7 @@
 			},
 			"lowPlungeFrames": {
 				"anim": 63,
+				"lands": 37,
 				"N": 41,
 				"E": 42,
 				"Q": 41,

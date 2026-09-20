@@ -39,7 +39,14 @@
 				{ "name": "N3", "frames": { "anim": 49, "hit": 33, "N": 40, "C": 46 } },
 				{ "name": "N4", "frames": { "anim": 71, "hit": 34, "N": 70 } }
 			],
-			"chargeFrames": { "anim": 50, "N": 39, "E": 42, "Q": 39, "swap": 47 }
+			"chargeFrames": {
+				"anim": 50,
+				"lands": 26,
+				"N": 39,
+				"E": 42,
+				"Q": 39,
+				"swap": 47
+			}
 		},
 		{
 			"id": "emilie__skill__fragrance_extraction",

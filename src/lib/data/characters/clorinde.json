@@ -22,7 +22,14 @@
 				{ "name": "N4", "frames": { "anim": 35, "hit": 23, "N": 32 } },
 				{ "name": "N5", "frames": { "anim": 60, "hit": 21 } }
 			],
-			"chargeFrames": { "anim": 68, "N": 66, "D": 38, "J": 38, "swap": 45 },
+			"chargeFrames": {
+				"anim": 68,
+				"lands": 38,
+				"N": 66,
+				"D": 38,
+				"J": 38,
+				"swap": 45
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -56,9 +63,42 @@
 			"infusion": "electro",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 18, "E": 11, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
-				{ "name": "N2", "frames": { "anim": 17, "E": 10, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
-				{ "name": "N3", "frames": { "anim": 20, "E": 11, "Q": 11, "D": 9, "J": 9, "swap": 9 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 18,
+						"lands": 8,
+						"E": 11,
+						"Q": 10,
+						"D": 8,
+						"J": 8,
+						"swap": 8
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 17,
+						"lands": 8,
+						"E": 10,
+						"Q": 10,
+						"D": 8,
+						"J": 8,
+						"swap": 8
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 20,
+						"lands": 9,
+						"E": 11,
+						"Q": 11,
+						"D": 9,
+						"J": 9,
+						"swap": 9
+					}
+				}
 			],
 			"description": "Clorinde's normal-attack chain while in the Night Vigil stance. Replaces the standard 5-hit string with a 3-hit pistolet shot cycle. All hits deal Electro DMG that cannot be overridden by infusions, and Charged Attacks are disabled while in stance.",
 			"_curatorNotes": [

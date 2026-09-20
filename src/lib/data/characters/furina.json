@@ -51,6 +51,7 @@
 			],
 			"chargeFrames": {
 				"anim": 253,
+				"lands": 33,
 				"N": 37,
 				"E": 47,
 				"Q": 33,
@@ -88,6 +89,7 @@
 			],
 			"plungeFrames": {
 				"anim": 76,
+				"lands": 47,
 				"N": 59,
 				"C": 55,
 				"E": 59,
@@ -97,6 +99,7 @@
 			},
 			"lowPlungeFrames": {
 				"anim": 75,
+				"lands": 46,
 				"N": 58,
 				"C": 56,
 				"E": 58,

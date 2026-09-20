@@ -40,7 +40,15 @@
 				{ "name": "N4", "frames": { "anim": 44, "hit": 17 } },
 				{ "name": "N5", "frames": { "anim": 105, "hit": 56 } }
 			],
-			"plungeFrames": { "anim": 84, "N": 53, "E": 54, "Q": 52, "D": 41, "swap": 64 },
+			"plungeFrames": {
+				"anim": 84,
+				"lands": 41,
+				"N": 53,
+				"E": 54,
+				"Q": 52,
+				"D": 41,
+				"swap": 64
+			},
 			"_curatorNotes": [
 				"chargeFrames: no explicit chargeFrames found in gcsim character dir (no charge.go; attack.go has no chargeFrames slice). Reviewer to source charge attack frame data.",
 				"Normal N (ActionAttack) and C (ActionCharge) cancel frames are not explicitly assigned after InitNormalCancelSlice — they default to AnimationLength (N1:34, N2:36, N3:56, N4:44, N5:105) and are omitted per recipe rule. Only swap is recorded for each hit.",
@@ -49,7 +57,15 @@
 				"plungeFrames: highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=53, E=54, Q=52, D=41) but is not represented — using lowPlungeFrames only per recipe.",
 				"plungeFrames: J (ActionJump) is not explicitly assigned in lowPlungeFrames (InitAbilSlice(80) default = 80 = AnimationLength) — omitted per recipe."
 			],
-			"lowPlungeFrames": { "anim": 80, "N": 50, "E": 51, "Q": 50, "D": 37, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 80,
+				"lands": 37,
+				"N": 50,
+				"E": 51,
+				"Q": 50,
+				"D": 37,
+				"swap": 62
+			}
 		},
 		{
 			"id": "eula__skill__icetide_vortex",

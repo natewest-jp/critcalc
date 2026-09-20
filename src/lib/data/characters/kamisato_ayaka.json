@@ -21,7 +21,15 @@
 				{ "name": "N4", "frames": { "anim": 23, "hit": 22, "N": 22 } },
 				{ "name": "N5", "frames": { "anim": 66, "hit": 27 } }
 			],
-			"chargeFrames": { "anim": 71, "E": 62, "Q": 63, "D": 39, "J": 39, "swap": 39 },
+			"chargeFrames": {
+				"anim": 71,
+				"lands": 27,
+				"E": 62,
+				"Q": 63,
+				"D": 39,
+				"J": 39,
+				"swap": 39
+			},
 			"tags": [],
 			"sections": [
 				{

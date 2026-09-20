@@ -22,8 +22,26 @@
 				{ "name": "N4", "frames": { "anim": 51, "hit": 21, "N": 30, "C": 37 } },
 				{ "name": "N5", "frames": { "anim": 90, "hit": 35, "N": 67 } }
 			],
-			"chargeFrames": { "anim": 64, "N": 50, "E": 50, "Q": 50, "D": 27, "J": 27, "swap": 48 },
-			"plungeFrames": { "anim": 77, "N": 56, "E": 56, "Q": 56, "D": 48, "J": 76, "swap": 64 },
+			"chargeFrames": {
+				"anim": 64,
+				"lands": 19,
+				"N": 50,
+				"E": 50,
+				"Q": 50,
+				"D": 27,
+				"J": 27,
+				"swap": 48
+			},
+			"plungeFrames": {
+				"anim": 77,
+				"lands": 48,
+				"N": 56,
+				"E": 56,
+				"Q": 56,
+				"D": 48,
+				"J": 76,
+				"swap": 64
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -50,7 +68,15 @@
 				"Projection Attack proc: while ≥1 mirror is active, each N/C/P hit triggers an AoE Dendro Projection Attack scaling on talent and EM. Per-hit count = current mirror count (1/2/3); 1.6s ICD between procs (gcsim projectionICDKey = 96f). Snapshot timings per mirror count: [20, 22, 26]f. Multi-hit hitmark slices in gcsim — mirror1HitmarkLeft/Right, mirror2HitmarksLeft/Right, mirror3Hitmarks. Effect not authored — needs reviewer pass once schema supports mirror-state-conditional damage effects.",
 				"A1 (Four-Causal Correction) extra mirror-gen on C/P hit, 12s ICD — flagged on the passive."
 			],
-			"lowPlungeFrames": { "anim": 70, "N": 49, "E": 50, "Q": 50, "D": 40, "swap": 58 }
+			"lowPlungeFrames": {
+				"anim": 70,
+				"lands": 46,
+				"N": 49,
+				"E": 50,
+				"Q": 50,
+				"D": 40,
+				"swap": 58
+			}
 		},
 		{
 			"id": "alhaitham__skill__universality_an_elaboration_on_form",

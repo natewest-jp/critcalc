@@ -51,12 +51,14 @@
 			],
 			"chargeFrames": {
 				"anim": 130,
+				"lands": 89,
 				"D": 89,
 				"J": 89,
 				"swap": 130
 			},
 			"plungeFrames": {
 				"anim": 87,
+				"lands": 40,
 				"N": 53,
 				"C": 53,
 				"E": 51,
@@ -93,6 +95,7 @@
 			],
 			"lowPlungeFrames": {
 				"anim": 83,
+				"lands": 37,
 				"N": 49,
 				"C": 49,
 				"E": 48,
@@ -148,12 +151,14 @@
 			],
 			"chargeFrames": {
 				"anim": 130,
+				"lands": 89,
 				"D": 89,
 				"J": 89,
 				"swap": 130
 			},
 			"plungeFrames": {
 				"anim": 87,
+				"lands": 40,
 				"N": 53,
 				"C": 53,
 				"E": 51,
@@ -169,6 +174,7 @@
 			],
 			"lowPlungeFrames": {
 				"anim": 83,
+				"lands": 37,
 				"N": 49,
 				"C": 49,
 				"E": 48,

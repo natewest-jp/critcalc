@@ -20,7 +20,16 @@
 				{ "name": "N2", "frames": { "anim": 46, "hit": 33 } },
 				{ "name": "N3", "frames": { "anim": 108, "hit": 60 } }
 			],
-			"plungeFrames": { "anim": 80, "N": 52, "E": 53, "Q": 52, "D": 40, "J": 79, "swap": 64 },
+			"plungeFrames": {
+				"anim": 80,
+				"lands": 40,
+				"N": 52,
+				"E": 53,
+				"Q": 52,
+				"D": 40,
+				"J": 79,
+				"swap": 64
+			},
 			"_curatorNotes": [
 				"N and C cancel frames omitted for all hits: attack.go uses InitNormalCancelSlice with no explicit ActionAttack or ActionCharge overrides — values remain at animation-length defaults (N1: 44, N2: 46, N3: 108). Reviewer to source tested cancel frames.",
 				"Charged attack frames not available in gcsim source (no charge.go in character dir). chargeFrames not populated.",
@@ -44,7 +53,15 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 77, "N": 50, "E": 51, "Q": 51, "D": 38, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 77,
+				"lands": 38,
+				"N": 50,
+				"E": 51,
+				"Q": 51,
+				"D": 38,
+				"swap": 62
+			}
 		},
 		{
 			"id": "dori__skill__spiritwarding_lamp_troubleshooter_cannon",

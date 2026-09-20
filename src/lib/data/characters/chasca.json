@@ -16,7 +16,15 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 10, "N": 17, "swap": 10 } },
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 10,
+						"lands": 5,
+						"N": 17,
+						"swap": 10
+					}
+				},
 				{ "name": "N2", "frames": { "anim": 8, "N": 19, "swap": 8 } },
 				{ "name": "N3", "frames": { "anim": 20, "N": 36, "swap": 20 } },
 				{ "name": "N4", "frames": { "anim": 39, "N": 73, "swap": 39 } }
@@ -25,7 +33,13 @@
 				{ "name": "Aimed Shot", "frames": { "anim": 26, "D": 14, "J": 14, "swap": 26 } },
 				{
 					"name": "Fully-Charged Aimed Shot",
-					"frames": { "anim": 96, "D": 86, "J": 86, "swap": 96 }
+					"frames": {
+						"anim": 96,
+						"lands": 86,
+						"D": 86,
+						"J": 86,
+						"swap": 96
+					}
 				}
 			],
 			"_curatorNotes": [

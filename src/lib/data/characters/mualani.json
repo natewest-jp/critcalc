@@ -18,19 +18,50 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "anim": 33, "N": 23, "C": 22, "E": 13, "Q": 11, "D": 12, "J": 13, "swap": 11 }
+					"frames": {
+						"anim": 33,
+						"lands": 11,
+						"N": 23,
+						"C": 22,
+						"E": 13,
+						"Q": 11,
+						"D": 12,
+						"J": 13,
+						"swap": 11
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "anim": 32, "N": 22, "C": 24, "E": 11, "Q": 11, "D": 10, "J": 10, "swap": 8 }
+					"frames": {
+						"anim": 32,
+						"lands": 9,
+						"N": 22,
+						"C": 24,
+						"E": 11,
+						"Q": 11,
+						"D": 10,
+						"J": 10,
+						"swap": 8
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "anim": 67, "N": 54, "C": 52, "E": 32, "Q": 33, "D": 32, "J": 34, "swap": 32 }
+					"frames": {
+						"anim": 67,
+						"lands": 31,
+						"N": 54,
+						"C": 52,
+						"E": 32,
+						"Q": 33,
+						"D": 32,
+						"J": 34,
+						"swap": 32
+					}
 				}
 			],
 			"chargeFrames": {
 				"anim": 113,
+				"lands": 84,
 				"N": 86,
 				"C": 98,
 				"E": 85,
@@ -73,7 +104,15 @@
 			"hits": [
 				{
 					"name": "Sharky's Bite",
-					"frames": { "anim": 215, "N": 109, "E": 39, "Q": 40, "D": 40, "J": 40 }
+					"frames": {
+						"anim": 215,
+						"lands": 7,
+						"N": 109,
+						"E": 39,
+						"Q": 40,
+						"D": 40,
+						"J": 40
+					}
 				}
 			],
 			"description": "While in Nightsoul's Blessing, Mualani's Normal Attacks are converted to Sharky's Bites — auto-targeting wave-chomps that deal Nightsoul-aligned Hydro DMG based on Max HP. Each Sharky's Bite has a 1.8s ICD (gcsim). Charged Attacks are disabled in this state.",

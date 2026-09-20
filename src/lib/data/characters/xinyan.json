@@ -48,6 +48,7 @@
 			],
 			"plungeFrames": {
 				"anim": 82,
+				"lands": 40,
 				"N": 53,
 				"C": 53,
 				"E": 52,
@@ -80,6 +81,7 @@
 			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"lowPlungeFrames": {
 				"anim": 81,
+				"lands": 38,
 				"N": 51,
 				"C": 51,
 				"E": 51,

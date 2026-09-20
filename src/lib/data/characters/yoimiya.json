@@ -24,7 +24,15 @@
 			],
 			"chargeHits": [
 				{ "name": "Aimed Shot", "frames": { "anim": 26, "D": 15, "J": 15, "swap": 26 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 97, "D": 86, "J": 86 } }
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 97,
+						"lands": 86,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"sections": [
 				{
@@ -68,7 +76,15 @@
 			],
 			"chargeHits": [
 				{ "name": "Aimed Shot", "frames": { "anim": 26, "D": 15, "J": 15, "swap": 26 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 97, "D": 86, "J": 86 } }
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 97,
+						"lands": 86,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"description": "Yoimiya's Normal Attack while Niwabi Fire-Dance is active. Arrows become Blazing Arrows, gaining Pyro infusion, an auto-aim assist, and a skill-talent damage multiplier. Charge Level 2 will not generate Kindling Arrows.",
 			"_curatorNotes": [

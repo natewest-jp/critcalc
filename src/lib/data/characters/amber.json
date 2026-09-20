@@ -28,7 +28,15 @@
 			],
 			"chargeHits": [
 				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 15, "J": 15, "swap": 25 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 96,
+						"lands": 86,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"sections": [
 				{

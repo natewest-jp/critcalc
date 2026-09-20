@@ -24,7 +24,15 @@
 				{ "name": "N6", "frames": { "anim": 66, "hit": 14 } }
 			],
 			"chargeHits": [
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 94,
+						"lands": 86,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"sections": [
 				{
@@ -66,7 +74,15 @@
 				{ "name": "N5", "frames": { "anim": 23, "hit": 7, "N": 22 } },
 				{ "name": "N6", "frames": { "anim": 65, "hit": 20 } }
 			],
-			"chargeFrames": { "anim": 55, "E": 29, "Q": 29, "D": 14, "J": 15, "swap": 52 },
+			"chargeFrames": {
+				"anim": 55,
+				"lands": 14,
+				"E": 29,
+				"Q": 29,
+				"D": 14,
+				"J": 15,
+				"swap": 52
+			},
 			"description": "While in Melee Stance, Tartaglia's bow is replaced with dual hydro blades. Performs up to 6 consecutive Hydro melee strikes; charged attack is a cross slash dealing Hydro DMG.",
 			"_curatorNotes": [
 				"Tartaglia is the only character whose weapon TYPE changes mid-stance (bow → melee dual-blades). Base normal uses chargeHits[] (bow); in-stance normal uses chargeFrames (melee). Planner should treat the in-stance N as melee for any weapon-keyed logic.",

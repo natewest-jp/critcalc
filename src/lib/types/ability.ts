@@ -2002,6 +2002,29 @@ export type FrameMap = Partial<Record<ActionKey, number>> & {
 	anim: number;
 	/** Hitmark; fills E/Q/D/J/swap. Normal and charged slices only. */
 	hit?: number;
+	/**
+	 * The frame the swing's FIRST hit lands, where `hit` cannot say it (§1.K stage
+	 * 2, 2026-09-20). Read through `landsAt()` — ⛔ never directly.
+	 *
+	 * ⚓⚓ **`hit` IS A CANCEL TIER AS WELL AS A HITMARK**, and that is why this
+	 * field exists. `hit` is gcsim's `InitNormalCancelSlice(hitmark, anim)`: the
+	 * hitmark AND the fill for E/Q/D/J/swap. gcsim builds every charged attack,
+	 * every plunge and most catalyst normals with explicit cancels instead and
+	 * keeps the hitmark in a separate constant, so those maps state no `hit` —
+	 * and the number cannot be authored into it, because it would become their
+	 * E and Q cancel. `lands` is a landing frame and nothing else.
+	 *
+	 * ⚠️ The FIRST hit of a multi-hit swing (⚓ Nate): it is what applies the
+	 * element and fires an `onHit`. `hit` is gcsim's LAST hitmark, so the ~116
+	 * multi-hit normals that state only `hit` still land 8–23f late — a follow-up
+	 * with its own measurement, ⛔ not something to infer from this field.
+	 *
+	 * ⚠️ A RELEASE frame for a projectile, never a travel-inclusive one: gcsim's
+	 * `travel` default (10f) is a simulation policy and the dumper pins it to 0.
+	 * Authored from the dumper by `scripts/migrate-swing-landings.mjs`; absent
+	 * where `hit` already says it (lint A.5c).
+	 */
+	lands?: number;
 };
 
 /**

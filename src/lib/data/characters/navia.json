@@ -36,16 +36,43 @@
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 28, "hit": 23 } },
 				{ "name": "N2", "frames": { "anim": 42, "hit": 22 } },
-				{ "name": "N3", "frames": { "anim": 48, "E": 30, "Q": 29, "D": 29, "J": 29, "swap": 29 } },
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 48,
+						"lands": 31,
+						"E": 30,
+						"Q": 29,
+						"D": 29,
+						"J": 29,
+						"swap": 29
+					}
+				},
 				{ "name": "N4", "frames": { "anim": 93, "hit": 41 } }
 			],
-			"plungeFrames": { "anim": 83, "N": 52, "E": 53, "Q": 53, "D": 40, "swap": 64 },
+			"plungeFrames": {
+				"anim": 83,
+				"lands": 40,
+				"N": 52,
+				"E": 53,
+				"Q": 53,
+				"D": 40,
+				"swap": 64
+			},
 			"_curatorNotes": [
 				"No charge.go in gcsim character dir — chargeFrames not available. Navia has a spinning stamina-drain charged attack (claymore type) that is not modeled in gcsim.",
 				"N3 is a 3-hit sequence (hitmarks 31, 39, 48) treated as one notation action. gcsim queues all three attacks at frame 29 (attackEarliestCancel[2]=29) and sets CanQueueAfter=29 to snapshot A1 geo infusion correctly at gadget creation. Cancel frames (swap=29, E=30) reflect this committed-at-29 model; actual in-game cancel window vs hitmarks warrants KQM cross-check.",
 				"High plunge frames exist in gcsim (highPlungeFrames) but not represented here per recipe convention (lowPlungeFrames used). High plunge reference: swap=64, N=52, E/Q=53, D=40 (J not explicitly set in gcsim)."
 			],
-			"lowPlungeFrames": { "anim": 82, "N": 50, "E": 50, "Q": 50, "D": 37, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 82,
+				"lands": 37,
+				"N": 50,
+				"E": 50,
+				"Q": 50,
+				"D": 37,
+				"swap": 62
+			}
 		},
 		{
 			"id": "navia__skill__ceremonial_crystalshot",

@@ -1860,6 +1860,59 @@ describe('onShieldEnd trigger lint rules (2026-05-14)', () => {
 
 import { parseNotation } from './notationParser';
 
+describe('FrameMap.lands lint rules (A.5c — §1.K stage 2, 2026-09-20)', () => {
+	// Seeded on a REAL character so the map shapes are the corpus's own: Keqing's
+	// normals state `hit`, her charged attack and plunges state `lands`.
+	const keqing = (): CharacterData =>
+		structuredClone(all.find((c) => c.id === 'keqing')!) as CharacterData;
+	type Swing = {
+		hits: { frames: Record<string, number> }[];
+		chargeFrames: Record<string, number>;
+		nonHitting?: Record<string, boolean>;
+	};
+	const normalOf = (c: CharacterData): Swing =>
+		c.abilities.find((a) => a.abilityType === 'normal') as never as Swing;
+	const landsIssues = (c: CharacterData): string[] =>
+		lintCharacter(c)
+			.filter((i) => i.check === 'frame-value-invalid' && /lands/.test(i.message))
+			.map((i) => i.message);
+
+	it('the shipped corpus shape is clean', () => {
+		expect(normalOf(keqing()).chargeFrames.lands).toBeGreaterThan(0);
+		expect(landsIssues(keqing())).toEqual([]);
+	});
+
+	it('refuses a landing past the animation', () => {
+		const c = keqing();
+		normalOf(c).chargeFrames.lands = normalOf(c).chargeFrames.anim + 1;
+		expect(landsIssues(c)).toEqual([expect.stringMatching(/chargeFrames\.lands .* is past anim/)]);
+	});
+
+	it('refuses a landing that restates `hit` — absent must keep meaning "hit says it"', () => {
+		const c = keqing();
+		normalOf(c).hits[0].frames.lands = normalOf(c).hits[0].frames.hit;
+		expect(landsIssues(c)).toEqual([
+			expect.stringMatching(/hits\[0\]\.frames\.lands restates hit/)
+		]);
+	});
+
+	it('refuses a landing on a class the ability says lands nothing', () => {
+		const c = keqing();
+		normalOf(c).nonHitting = { charged: true };
+		expect(landsIssues(c)).toEqual([expect.stringMatching(/lands on a nonHitting charged/)]);
+	});
+
+	it('refuses `lands` on a skill/burst map — a cast states `application[]`', () => {
+		const c = keqing();
+		(
+			c.abilities.find((a) => a.abilityType === 'skill') as never as {
+				frames: Record<string, number>;
+			}
+		).frames.lands = 10;
+		expect(landsIssues(c)).toEqual([expect.stringMatching(/not valid on a skill\/burst map/)]);
+	});
+});
+
 describe('roster-wide parse smoke test', () => {
 	for (const c of all) {
 		it(`${c.id} parses E Q N1 C without throwing or producing non-finite numbers`, () => {

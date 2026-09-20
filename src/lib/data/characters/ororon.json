@@ -54,6 +54,7 @@
 					"name": "Fully-Charged Aimed Shot",
 					"frames": {
 						"anim": 85,
+						"lands": 84,
 						"D": 84,
 						"J": 84
 					}

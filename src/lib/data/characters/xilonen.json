@@ -45,6 +45,7 @@
 			],
 			"chargeFrames": {
 				"anim": 42,
+				"lands": 23,
 				"Q": 40,
 				"D": 23,
 				"J": 23,
@@ -70,6 +71,7 @@
 			"description": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina and performs a forward kick.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact, both based on Xilonen's DEF.",
 			"plungeFrames": {
 				"anim": 75,
+				"lands": 50,
 				"N": 62,
 				"E": 60,
 				"Q": 61,
@@ -79,6 +81,7 @@
 			},
 			"lowPlungeFrames": {
 				"anim": 75,
+				"lands": 47,
 				"N": 59,
 				"E": 59,
 				"Q": 58,
@@ -141,6 +144,7 @@
 			],
 			"plungeFrames": {
 				"anim": 77,
+				"lands": 50,
 				"N": 55,
 				"E": 56,
 				"Q": 55,

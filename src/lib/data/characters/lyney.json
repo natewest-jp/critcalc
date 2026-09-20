@@ -69,6 +69,7 @@
 					"name": "Fully-Charged Aimed Shot",
 					"frames": {
 						"anim": 80,
+						"lands": 72,
 						"D": 72,
 						"J": 72
 					}
@@ -77,6 +78,7 @@
 					"name": "Prop Arrow",
 					"frames": {
 						"anim": 111,
+						"lands": 103,
 						"D": 103,
 						"J": 103,
 						"swap": 111
