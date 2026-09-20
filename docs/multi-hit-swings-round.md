@@ -6,6 +6,10 @@ The small option (author `lands` = first hit on the maps that state only `hit`)
 was considered and declined: it is a subset of this. Start in a fresh context,
 at §3's MEASUREMENT. Parent: `docs/swing-hitmark-round.md` (§1.K)._
 
+_↻ **2026-09-20, later the same day: the CAST side has the same defect and a worse
+one — read §6 before starting.** ⚓ Nate: "very important"; both are the next
+session's work._
+
 ## 1. The defect
 
 **One swing is one hit** in our model. In the game, and in gcsim, a swing can
@@ -116,3 +120,92 @@ questions the design depends on:
   the scalar whole, which is what you want.
 - The oracle cannot adjudicate an INFUSED string — no fixture spams one. Measure
   with a probe and say so.
+
+## 6. The cast side — found 2026-09-20, and it changes where this round starts
+
+Found while measuring Faruzan's C6 proc (`docs/summon-tick-gaps-round.md` §8 is
+the discovery record). §1.K synced a SWING's application and hit record into one
+closure at `landsAt`. **A cast was never synced**: `run.ts`'s cast branch
+dispatches the hit record with `time: castStart`, synchronously, just before
+`clock.advance(castEnd)`, while the same cast's `application[]` is scheduled at
+`castStart + frame`. One cast's damage is in two places — the gauge sees it at the
+hitmark, every `onHit` consumer sees it at the button press.
+
+So a cast is wrong TWICE where a swing is wrong once: its one hit record is at the
+wrong instant (§1.K's defect, unfixed), AND it is one record for N landings (this
+round's defect).
+
+**gcsim is right, and so is our own data** — `application[]` IS gcsim's damage
+stream, and contract C4 says it is the NOMINAL schedule (a hit its ICD suppressed
+is still listed). That is exactly what a hit stream wants: ⚓ **for a cast the
+per-landing list this round has to AUTHOR for swings already exists.**
+
+### 6.1 Measured (2026-09-20, corpus census over every skill/burst + variant)
+
+- **266 hitting casts state a measured landing; all 266 are offset** (none lands
+  on frame 0). Median **35f**, p25 21f, p75 71f, p90 106f. The tail is delayed
+  detonations: Amber's Bunny 530f, Jahoda 368f, Mona 344f / 329f, Heizou 200f,
+  Klee 186f, Mualani 178f, Kinich 161f, Ayato 139f, Sigewinne 130f.
+- **88 are multi-hit and ONE hit record**; 45 of those span more than 60f.
+- **16 state no `application[]`** (unmeasured) and **3 hit at Durability 0**
+  (`application: []`, hitting — Emilie's E is the known one). Neither has a frame
+  to move to. 39 are `nonHitting` and already dispatch nothing.
+- Listeners that can hear a cast's hit (an `onHit` with no `abilityType`, or one
+  naming skill/burst): damage procs 6 characters · buff 12 · resShred 17 ·
+  damage 5 · heal 4 · energy 3 · gainStacks 2 · consumeStacks 2 ·
+  cooldownReduce 1 — plus the artifact `onHit` sets and weapon procs, uncounted.
+
+### 6.2 What it does on screen
+
+- ⚠️ **ORDER INVERSION, not just an offset.** A damage proc fired by a cast's hit
+  lands its own application BEFORE the cast's. Measured on `Bennett E > Fischl E >
+Faruzan Q > Xiao …` at C6: the Collapse lands at cast + 33f, the burst's hit at
+  cast + 54f; gcsim has 54 then 87. Raiden's Eye, Beidou's Stormbreaker, Albedo's
+  Blossom and Dehya's Sanctum do the same off any teammate's cast — and an
+  inverted pair can be a different REACTION.
+- An `onHit skill|burst` buff / shred window opens at the press, not the hit —
+  right length, shifted early by the offset above.
+- Stack grants, `cooldownReduce` and the hit-triggered artifact sets fire early.
+
+### 6.3 The shape of the fix, and what §1.K did not face
+
+The hit record joins the application in one `Band.LAND` closure at the landing,
+queued before the advance — the cast pipeline already schedules before it
+advances (the 2026-08-17 feed-order fix), so the seam exists. New ground:
+
+- **The stack snapshot.** The record carries the cast's PRE-consume `stacks`,
+  taken at the cast. A record that lands later must still carry the cast's
+  snapshot, ⛔ not re-read the pool at the landing (§1.K's "a context is a moment").
+- **Four finalize-side sites anchor `onHit skill|burst` on the CAST EVENT**
+  (`castLandsNoHit`'s four callers in `buffWindows.ts`, non-hitting casts round). They must anchor on the
+  landing — which means the landing has to be recoverable at finalize, so publish
+  it on the `CastEvent` rather than re-deriving it from `application[]`.
+- **No frame to move to** (16 unmeasured + 3 Durability-0): keep the synchronous
+  path verbatim, as §1.K does for a map that states no landing. ⛔ No provisional
+  mark (⚓ Nate's §1.K ruling carries). ⏭ The 3 Durability-0 casts want a hitmark
+  with nowhere to live — `application[]` cannot hold an entry that applies
+  nothing. Name it, don't solve it here.
+- ⚠️ **`application[]` sometimes carries SUMMON damage** (Charlotte, Qiqi — the
+  Furina round's ruling that this is sometimes correct). Under "every entry is a
+  hit" those become cast-tagged hits. Probably right (it is damage, tagged
+  skill/burst) — but CHECK those two before the corpus run, not after.
+- ⚠️ A cast's entries can differ in ELEMENT (Varka's refs, absorbers later) and
+  carry `noICD`; a swing's hits share one element. The hit record's `element`
+  must come from its own entry, ⛔ not from `char.element` as the cast site does
+  today.
+
+### 6.4 Recommended order (⏭ Nate to confirm)
+
+1. **§3's measurement, widened to casts** — same probe, same questions, plus:
+   which `onHit skill|burst` stack grants have no `procCooldown` and would
+   multiply under per-landing records.
+2. **Phase A — a cast's hit record lands at its FIRST landing.** §1.K's twin:
+   small, no schema, no data, and it removes the order inversions across 266
+   casts on its own. Measure, merge.
+3. **Phase B — every landing is a hit, swings AND casts in one pass.** The
+   "what must NOT multiply" audit in §4 is ONE audit over `hitRecords`' readers
+   whichever side feeds them; doing it twice is how the two sides would drift.
+   Swings need the `lands` array authored; casts need nothing authored.
+
+⛔ Still one at a time against `docs/projectile-travel-round.md`, which rewrites
+`landSwing` too.
