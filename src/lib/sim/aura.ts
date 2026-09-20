@@ -702,9 +702,10 @@ export function emitReactionsAtCast(
 }
 
 /** One N/C/P swing offered to the aura, behind its ICD clock (ICD round,
- *  2026-08-15). Called at the swing's HIT instant — the post-advance cursor,
- *  the same instant `dispatchHit` uses — because that is when the element
- *  lands.
+ *  2026-08-15). Called at the swing's LANDING — its hitmark, fired from a
+ *  `Band.LAND` task (§1.K, 2026-09-20), or the post-advance cursor when the map
+ *  states none — the same instant `dispatchHit` uses, because that is when the
+ *  element lands. ⚠️ `time` is handed in; ⛔ never read `clock.now` for it.
  *
  *  ⚠️ A PHYSICAL swing never reaches a clock. `resolveActionElement`
  *  returning `undefined` means the swing applies nothing, and a hit that

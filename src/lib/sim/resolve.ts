@@ -17,6 +17,7 @@ import type {
 	AbilityVariant,
 	CastAbility,
 	DurationModifier,
+	FrameMap,
 	NormalAbility,
 	NormalHit,
 	CooldownModifier
@@ -97,24 +98,37 @@ export function resolveChargeCastTime(
 	 *  it names cannot be performed and the token is the ordinary charge. */
 	allowSpecial = true
 ): number | null {
+	const frameMap = resolveChargeFrameMap(ability, charToken, isBow, allowSpecial);
+	return frameMap ? frameAt(frameMap, nextKey) : null;
+}
+
+/**
+ * The FrameMap a charged token reads — ONE owner, because the cast time and the
+ * landing frame (§1.K) must come off the same map or a swing can land on a
+ * hitmark belonging to a form it did not take.
+ */
+export function resolveChargeFrameMap(
+	ability: NormalAbility,
+	charToken: string,
+	isBow: boolean,
+	allowSpecial = true
+): FrameMap | null {
 	if (isBow) {
 		const hits = ability.chargeHits;
 		if (!hits?.length) return null;
 		const index = charToken === 'C1' ? 0 : hits.length - 1;
-		return frameAt(hits[index].frames, nextKey);
-	} else {
-		// ⚓ KQM's `sC` is the SPECIAL charged attack a stance substitutes (Varka's
-		// Azure Devour). ⚠️ It falls back to the ordinary `chargeFrames` when the
-		// resolved ability authors none — the same rule an out-of-window `sQ`
-		// follows, because a token the data cannot honour should take the ordinary
-		// form rather than vanish.
-		const special =
-			charToken.startsWith('s') && allowSpecial ? ability.specialChargeFrames : undefined;
-		// Frameless (uncurated / Blank) → generic charge profile, so a charged
-		// attack advances the cursor realistically instead of by zero.
-		const frameMap = special ?? ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
-		return frameAt(frameMap, nextKey);
+		return hits[index].frames;
 	}
+	// ⚓ KQM's `sC` is the SPECIAL charged attack a stance substitutes (Varka's
+	// Azure Devour). ⚠️ It falls back to the ordinary `chargeFrames` when the
+	// resolved ability authors none — the same rule an out-of-window `sQ`
+	// follows, because a token the data cannot honour should take the ordinary
+	// form rather than vanish.
+	const special =
+		charToken.startsWith('s') && allowSpecial ? ability.specialChargeFrames : undefined;
+	// Frameless (uncurated / Blank) → generic charge profile, so a charged
+	// attack advances the cursor realistically instead of by zero.
+	return special ?? ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
 }
 
 /**

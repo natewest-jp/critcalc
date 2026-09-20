@@ -53,7 +53,7 @@ import {
 } from '$lib/types/ability';
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
-import { FPS, frameAt, framesOf } from '$lib/utils/frames';
+import { FPS, frameAt, framesOf, landsAt } from '$lib/utils/frames';
 import {
 	GENERIC_NORMAL_HITS,
 	GENERIC_SKILL,
@@ -61,7 +61,7 @@ import {
 	GENERIC_PLUNGE_FRAMES
 } from '$lib/data/genericProfile';
 import type { ActionEvent, CastEvent } from '$lib/utils/rotationEvents';
-import { createClock } from './clock';
+import { Band, createClock } from './clock';
 import type { SimContext } from './context';
 import type { CharacterTrack } from './types';
 import type { HitEvent } from './hits';
@@ -75,6 +75,7 @@ import {
 	resolveAbilityTiming,
 	resolveActiveAbility,
 	resolveChargeCastTime,
+	resolveChargeFrameMap,
 	resolveEQCastTime,
 	resolveNormalCastTime,
 	resolveStanceFields
@@ -474,6 +475,40 @@ export function runRotation(
 			// approximation every `onHit` buff already makes; §5 of the round doc
 			// carries it.
 			notifyDamage(ctx, clock, hit);
+		};
+
+		// ⚓⚓ A SWING LANDS AT ITS HITMARK, NOT AT ITS END (§1.K, 2026-09-20).
+		// A swing's application, its second hand's and its hit record are ONE
+		// instant (⚓ Nate: everything stays synced), so each site hands them over
+		// as a single `land(at)` and this decides when it runs. Where the map
+		// states a landing frame earlier than the swing's end, it is a `Band.LAND`
+		// task — ⚠️⚠️ queued BEFORE the advance, which is the whole contract: the
+		// advance then fires it in order with every summon tick inside the swing,
+		// where an offer made after the advance but stamped earlier would land
+		// BEHIND ticks it precedes (feed order = time order is pinned corpus-wide).
+		//
+		// ⚠️ Returns false for an unmeasured map, a landing at or past the end (a
+		// swing cancelled before it connects still lands at the cancel — it only
+		// ever moves EARLIER than this model always placed it), and a swing with
+		// no cast time; the caller then lands it synchronously after the advance,
+		// exactly as before. ⛔ Don't route that case through the queue "for
+		// uniformity": at the swing's end the hit must follow the state opener
+		// that shares its instant, and a task would fire ahead of it.
+		//
+		// ⚠️ The closure runs mid-advance with the SEGMENT's live stack pool, which
+		// is sound only because the landing is inside the swing — the on-field
+		// character cannot have changed.
+		const landSwing = (
+			start: number,
+			swingF: number | null,
+			fm: FrameMap | null | undefined,
+			land: (at: number) => void
+		): boolean => {
+			const hitF = fm ? landsAt(fm) : null;
+			if (hitF === null || swingF === null || hitF >= swingF) return false;
+			const at = start + hitF;
+			clock.schedule(at, Band.LAND, () => land(at));
+			return true;
 		};
 
 		// Expand bracket repeat groups (e.g. 2[N5C] → N5 C N5 C) before the main
@@ -1361,7 +1396,9 @@ export function runRotation(
 					// chains before the snapshot (charged-forms round, 2026-09-16).
 					settleOwnerStates(ctx, cs, char.id, clock.now);
 					const nStates = computeCurrentStates(clock.now);
-					const activeNormal = resolveActiveAbility(
+					// Explicit annotation: the landing closure below reads `hits`, which
+					// otherwise forms a TS7022 inference cycle through this initializer.
+					const activeNormal: NormalAbility | undefined = resolveActiveAbility(
 						char,
 						'normal',
 						nStates,
@@ -1375,8 +1412,10 @@ export function runRotation(
 					// instead of collapsing to zero duration. ⚠️ The framed-vs-not sentinel
 					// is `anim` since L4b — it is what `isCurated` and characterLint now
 					// require, and `swap` is an ordinary optional override.
-					const rawHits = activeNormal?.hits;
-					const hits = Number.isFinite(rawHits?.[0]?.frames?.anim) ? rawHits! : GENERIC_NORMAL_HITS;
+					const rawHits: NormalHit[] | undefined = activeNormal?.hits;
+					const hits: NormalHit[] = Number.isFinite(rawHits?.[0]?.frames?.anim)
+						? rawHits!
+						: GENERIC_NORMAL_HITS;
 					// Infusion rule shared with the notation highlighter (actionElement.ts).
 					// ⚠️ TWO infusion mechanisms, and the stance one WINS: a stance's
 					// own `infusion` is the character's self-infusion, which in game
@@ -1437,6 +1476,72 @@ export function runRotation(
 						// ⚠️ BEFORE the advance: the fires land inside the span, so they
 						// have to be queued while the clock still stands at its start.
 						notifyNormalAttack(ctx, clock, clock.now, clock.now + (castS ?? 0));
+						// The swing's landing — see `landSwing`. Offer the swing to the
+						// aura, behind the normal-attack ICD clock (ICD round): a catalyst
+						// `N5` applies on swings 1, 4 and 6 at the corpus cadence, not on
+						// all five.
+						const coN = resolveElementRef(activeNormal?.coInfusion, variantCtx);
+						const landNormal = (at: number): void => {
+							emitReactionsAtSwing(
+								ctx,
+								clock,
+								char,
+								'normal',
+								nElement,
+								activeNormal?.noICD,
+								at,
+								nStates,
+								charConstellationLevel,
+								stackState
+							);
+							// ⚓⚓ THE SECOND CLAYMORE (Varka's two claymores round,
+							// 2026-09-16). A swing with a `coInfusion` lands a second
+							// element on its own counter — offered AFTER the primary and at
+							// the same instant, which is the contract: measured, the
+							// conversion element then Anemo swirls and the reverse order
+							// produces nothing. ⛔ It lands no second hit record and no
+							// second action event; one swing is one hit.
+							if (coN && !nNonHitting) {
+								emitReactionsAtSwing(
+									ctx,
+									clock,
+									char,
+									'normal',
+									coN,
+									activeNormal?.noICD,
+									at,
+									nStates,
+									charConstellationLevel,
+									stackState,
+									undefined,
+									'co'
+								);
+							}
+							// Parser-private per-swing hit (onHit wiring), at the landing.
+							// Per-hit damageTag override honored, combo index feeding
+							// filter.hitIndex. Per-swing = one hit (multi-hit swings are not
+							// curated — see the HitEvent decl). ⛔ None at all for a
+							// non-hitting string: a physical swing is a hit with no element,
+							// a non-hitting one is not a hit.
+							if (!nNonHitting) {
+								dispatchHit(
+									{
+										characterId: char.id,
+										time: at,
+										abilityType: 'normal',
+										element: nElement,
+										damageTag: hits?.[hitIndex]
+											? getNormalHitDamageTag(hits[hitIndex], 'normal')
+											: 'normal',
+										abilityName: activeNormal?.name,
+										hitIndex,
+										sourceEventId: ev.id
+									},
+									true
+								);
+							}
+						};
+						const nLanded = landSwing(clock.now, castS, hits[hitIndex]?.frames, landNormal);
 						if (castS !== null) clock.advance(clock.now + castS);
 						normalCounter++;
 						// Normal-opened transient state (post-P4 #2): the FIRST swing's
@@ -1461,70 +1566,10 @@ export function runRotation(
 								}
 							);
 						}
-						// Offer the swing to the aura, behind the normal-attack ICD
-						// clock (ICD round). A catalyst `N5` applies on swings 1, 4
-						// and 6 at the corpus cadence, not on all five.
-						emitReactionsAtSwing(
-							ctx,
-							clock,
-							char,
-							'normal',
-							nElement,
-							activeNormal?.noICD,
-							clock.now,
-							nStates,
-							charConstellationLevel,
-							stackState
-						);
-						// ⚓⚓ THE SECOND CLAYMORE (Varka's two claymores round,
-						// 2026-09-16). A swing with a `coInfusion` lands a second
-						// element on its own counter — offered AFTER the primary and at
-						// the same instant, which is the contract: measured, the
-						// conversion element then Anemo swirls and the reverse order
-						// produces nothing. ⛔ It lands no second hit record and no
-						// second action event; one swing is one hit.
-						const coN = resolveElementRef(activeNormal?.coInfusion, variantCtx);
-						if (coN && !nNonHitting) {
-							emitReactionsAtSwing(
-								ctx,
-								clock,
-								char,
-								'normal',
-								coN,
-								activeNormal?.noICD,
-								clock.now,
-								nStates,
-								charConstellationLevel,
-								stackState,
-								undefined,
-								'co'
-							);
-						}
-						// Parser-private per-swing hit (onHit wiring): swing-END time,
-						// per-hit damageTag override honored, combo index feeding
-						// filter.hitIndex. Dispatched AFTER the transient-state opener
-						// so a state the swing itself opens is visible to hit-gated
-						// conditions. Per-swing = one hit (multi-hit swings are not
-						// curated — see the HitEvent decl). ⛔ None at all for a
-						// non-hitting string: a physical swing is a hit with no element,
-						// a non-hitting one is not a hit.
-						if (!nNonHitting) {
-							dispatchHit(
-								{
-									characterId: char.id,
-									time: clock.now,
-									abilityType: 'normal',
-									element: nElement,
-									damageTag: hits?.[hitIndex]
-										? getNormalHitDamageTag(hits[hitIndex], 'normal')
-										: 'normal',
-									abilityName: activeNormal?.name,
-									hitIndex,
-									sourceEventId: ev.id
-								},
-								true
-							);
-						}
+						// A swing with no stated landing (or one at its end) lands HERE, after
+						// the opener that shares its instant — so a state the swing itself
+						// opens is visible to hit-gated conditions, as it always was.
+						if (!nLanded) landNormal(clock.now);
 					}
 					humanPad('normal', j);
 				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
@@ -1726,6 +1771,96 @@ export function runRotation(
 						spendQueue.sort((a, b) => a - b);
 						chargedEv.spentCharge = { abilityId: spendsId, readyAt: spentReadyAt };
 					}
+					// The charged attack's landing — see `landSwing`. ⚠️ The states are
+					// read AT the landing: a hitmark sits before the opener's edge (Furina's
+					// toggle), the end-of-swing fallback after it, as it always did.
+					const landCharged = (at: number): void => {
+						// Offer the charged shot to the aura. A catalyst CA and a bow's
+						// aimed shot both apply; only the bow's runs a counter (a
+						// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
+						// ⚓ `chargedIcdWindow` comes off the RESOLVED normal ability, so a
+						// stance's charged attack answers with its own measurement rather
+						// than the base ability's — the same resolution `noICD` beside it
+						// already relies on.
+						emitReactionsAtSwing(
+							ctx,
+							clock,
+							char,
+							'charged',
+							cElement,
+							activeNormal?.noICD,
+							at,
+							computeCurrentStates(at),
+							charConstellationLevel,
+							stackState,
+							activeNormal?.chargedIcdWindow
+						);
+						// ⚓⚓ The second claymore on the charged attack — see the normal
+						// path for the ordering contract. gcsim gives the CA its own
+						// dedicated pair of counters (`ICDTagVarkaExtraAttack*`), which is
+						// what the separate `'co'` key reproduces.
+						const coC = resolveElementRef(activeNormal?.coInfusion, variantCtx);
+						if (coC && !cNonHitting) {
+							emitReactionsAtSwing(
+								ctx,
+								clock,
+								char,
+								'charged',
+								coC,
+								activeNormal?.noICD,
+								at,
+								computeCurrentStates(at),
+								charConstellationLevel,
+								stackState,
+								activeNormal?.chargedIcdWindow,
+								'co'
+							);
+						}
+						// Parser-private charged hit (onHit wiring), at the landing. The
+						// abilityName carries the bow chargeHit sub-name (C1 → first
+						// entry, C → last) so `filter.abilityName: "Wreath Arrow"`
+						// substring-matches — mirrors resolveBlockContext's rule.
+						// ⛔ No record at all for a non-hitting charged attack.
+						if (!cNonHitting) {
+							let cAbilityName: string | undefined = activeNormal?.name;
+							const chargeHits: NormalHit[] | undefined = activeNormal?.chargeHits;
+							if (chargeHits?.length && cAbilityName) {
+								const chIdx = t === 'C1' ? 0 : chargeHits.length - 1;
+								const hitName = chargeHits[chIdx]?.name;
+								if (hitName) cAbilityName = `${cAbilityName} ${hitName}`;
+							}
+							dispatchHit(
+								{
+									characterId: char.id,
+									time: at,
+									abilityType: 'charged',
+									element: cElement,
+									damageTag: chargeHits?.length
+										? getNormalHitDamageTag(
+												chargeHits[t === 'C1' ? 0 : chargeHits.length - 1],
+												'charged'
+											)
+										: 'charged',
+									abilityName: cAbilityName,
+									sourceEventId: chargedEv.id
+								},
+								true
+							);
+						}
+					};
+					const cLanded = landSwing(
+						blockStart,
+						castS,
+						activeNormal
+							? resolveChargeFrameMap(
+									activeNormal,
+									t,
+									isBow,
+									activeNormal.specialChargeSpends === undefined || spendsId !== undefined
+								)
+							: null,
+						landCharged
+					);
 					if (castS !== null) clock.advance(clock.now + castS);
 					humanPad('charged', j);
 					// Charged-opened transient state (Arkhe round, 2026-09-04): the
@@ -1760,78 +1895,9 @@ export function runRotation(
 						// alignment we are leaving.
 						handOffLineup(ctx, clock, char, computeCurrentStates(clock.now), variantCtx);
 					}
-					// Offer the charged shot to the aura. A catalyst CA and a bow's
-					// aimed shot both apply; only the bow's runs a counter (a
-					// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
-					// ⚓ `chargedIcdWindow` comes off the RESOLVED normal ability, so a
-					// stance's charged attack answers with its own measurement rather
-					// than the base ability's — the same resolution `noICD` beside it
-					// already relies on.
-					emitReactionsAtSwing(
-						ctx,
-						clock,
-						char,
-						'charged',
-						cElement,
-						activeNormal?.noICD,
-						clock.now,
-						computeCurrentStates(clock.now),
-						charConstellationLevel,
-						stackState,
-						activeNormal?.chargedIcdWindow
-					);
-					// ⚓⚓ The second claymore on the charged attack — see the normal
-					// path for the ordering contract. gcsim gives the CA its own
-					// dedicated pair of counters (`ICDTagVarkaExtraAttack*`), which is
-					// what the separate `'co'` key reproduces.
-					const coC = resolveElementRef(activeNormal?.coInfusion, variantCtx);
-					if (coC && !cNonHitting) {
-						emitReactionsAtSwing(
-							ctx,
-							clock,
-							char,
-							'charged',
-							coC,
-							activeNormal?.noICD,
-							clock.now,
-							computeCurrentStates(clock.now),
-							charConstellationLevel,
-							stackState,
-							activeNormal?.chargedIcdWindow,
-							'co'
-						);
-					}
-					// Parser-private charged hit (onHit wiring): swing-END time. The
-					// abilityName carries the bow chargeHit sub-name (C1 → first
-					// entry, C → last) so `filter.abilityName: "Wreath Arrow"`
-					// substring-matches — mirrors resolveBlockContext's rule.
-					// ⛔ No record at all for a non-hitting charged attack.
-					if (!cNonHitting) {
-						let cAbilityName: string | undefined = activeNormal?.name;
-						const chargeHits: NormalHit[] | undefined = activeNormal?.chargeHits;
-						if (chargeHits?.length && cAbilityName) {
-							const chIdx = t === 'C1' ? 0 : chargeHits.length - 1;
-							const hitName = chargeHits[chIdx]?.name;
-							if (hitName) cAbilityName = `${cAbilityName} ${hitName}`;
-						}
-						dispatchHit(
-							{
-								characterId: char.id,
-								time: clock.now,
-								abilityType: 'charged',
-								element: cElement,
-								damageTag: chargeHits?.length
-									? getNormalHitDamageTag(
-											chargeHits[t === 'C1' ? 0 : chargeHits.length - 1],
-											'charged'
-										)
-									: 'charged',
-								abilityName: cAbilityName,
-								sourceEventId: chargedEv.id
-							},
-							true
-						);
-					}
+					// No stated landing (or one at the end): it lands HERE, after the
+					// opener that shares its instant, reading the post-edge states.
+					if (!cLanded) landCharged(clock.now);
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plunge frames, or a
 					// plungeVariant whose input[] matches the preceding E token text
@@ -1913,6 +1979,68 @@ export function runRotation(
 							abilityId: activeNormal?.id,
 							element: pElement
 						});
+						// The plunge's landing — see `landSwing`. ⚠️ No plunge map states a
+						// landing frame today, so this is the synchronous path in practice;
+						// ⚠️⚠️ when one does, the OPENER below must move with it — a plunge's
+						// state opens AT the landing (`apexDrive`), not at the swing's end.
+						const landPlunge = (at: number): void => {
+							// Offer the plunge to the aura at the landing. Plunges carry no
+							// ICD at all (gcsim census in resolveActionIcd), so an infused
+							// plunge string applies on every landing.
+							emitReactionsAtSwing(
+								ctx,
+								clock,
+								char,
+								'plunge',
+								pElement,
+								activeNormal?.noICD,
+								at,
+								plungeStates,
+								charConstellationLevel,
+								stackState
+							);
+							// ⚓ The second claymore on a plunge, for completeness of the
+							// class. ⛔ NO HOLDER and there cannot be one today: the only
+							// `coInfusion` author is Varka, who is refused plunges in the
+							// very stance that gives him two hands. Authored so the rule is
+							// one rule rather than two-thirds of one.
+							const coP = resolveElementRef(activeNormal?.coInfusion, variantCtx);
+							if (coP && !pNonHitting) {
+								emitReactionsAtSwing(
+									ctx,
+									clock,
+									char,
+									'plunge',
+									coP,
+									activeNormal?.noICD,
+									at,
+									plungeStates,
+									charConstellationLevel,
+									stackState,
+									undefined,
+									'co'
+								);
+							}
+							// Parser-private plunge hit (onHit wiring): landing ≈ swing
+							// END. Dispatched after the transient-state opener (apexDrive
+							// is open to hit-gated conditions at the landing instant). A
+							// frameless plunge emits no action event and no hit; a
+							// non-hitting one emits the event and no hit.
+							if (!pNonHitting)
+								dispatchHit(
+									{
+										characterId: char.id,
+										time: at,
+										abilityType: 'plunge',
+										element: pElement,
+										damageTag: 'plunge',
+										abilityName: activeNormal?.name,
+										sourceEventId: plungeEv.id
+									},
+									true
+								);
+						};
+						const pLanded = landSwing(blockStart, castS, plungeFrames, landPlunge);
 						clock.advance(clock.now + castS);
 						humanPad('plunge', j);
 						// Post-plunge transient state (sQ primitive): the plunge landing
@@ -1933,61 +2061,7 @@ export function runRotation(
 								{ sourceActionId: plungeEv.id }
 							);
 						}
-						// Offer the plunge to the aura at the landing. Plunges carry no
-						// ICD at all (gcsim census in resolveActionIcd), so an infused
-						// plunge string applies on every landing.
-						emitReactionsAtSwing(
-							ctx,
-							clock,
-							char,
-							'plunge',
-							pElement,
-							activeNormal?.noICD,
-							clock.now,
-							plungeStates,
-							charConstellationLevel,
-							stackState
-						);
-						// ⚓ The second claymore on a plunge, for completeness of the
-						// class. ⛔ NO HOLDER and there cannot be one today: the only
-						// `coInfusion` author is Varka, who is refused plunges in the
-						// very stance that gives him two hands. Authored so the rule is
-						// one rule rather than two-thirds of one.
-						const coP = resolveElementRef(activeNormal?.coInfusion, variantCtx);
-						if (coP && !pNonHitting) {
-							emitReactionsAtSwing(
-								ctx,
-								clock,
-								char,
-								'plunge',
-								coP,
-								activeNormal?.noICD,
-								clock.now,
-								plungeStates,
-								charConstellationLevel,
-								stackState,
-								undefined,
-								'co'
-							);
-						}
-						// Parser-private plunge hit (onHit wiring): landing ≈ swing
-						// END. Dispatched after the transient-state opener (apexDrive
-						// is open to hit-gated conditions at the landing instant). A
-						// frameless plunge emits no action event and no hit; a
-						// non-hitting one emits the event and no hit.
-						if (!pNonHitting)
-							dispatchHit(
-								{
-									characterId: char.id,
-									time: clock.now,
-									abilityType: 'plunge',
-									element: pElement,
-									damageTag: 'plunge',
-									abilityName: activeNormal?.name,
-									sourceEventId: plungeEv.id
-								},
-								true
-							);
+						if (!pLanded) landPlunge(clock.now);
 					}
 					lastEText = null;
 				} else if (t === 'D' || t === 'J') {
