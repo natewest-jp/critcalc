@@ -11,7 +11,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 - FrameMaps: **1143** authored · **1000** matching gcsim exactly · **53** disagreeing · **90** uncovered
 - skill/burst application schedules observed: **291** · unobserved: **19**
 - summon tick streams cross-checked: **59**
-- hits carrying a measured gcsim ICD cadence: **3067** of **3067**
+- hits carrying a measured gcsim ICD cadence: **3032** of **3035**
 
 ⛔ **No gcsim source (9)** — cannot be oracled at all, and nothing here may be written to them:
 

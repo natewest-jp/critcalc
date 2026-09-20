@@ -45,7 +45,8 @@ import {
 	gcsimKeyFor,
 	loadDrivers,
 	preserveFrameMap,
-	toFrameMap
+	toFrameMap,
+	withLands
 } from './lib/gcsim-map.mjs';
 
 /**
@@ -238,7 +239,8 @@ async function main() {
 			}
 			proposals.push({
 				m,
-				next: toFrameMap(g.frames, { normalStyle: m.normalStyle }),
+				// ⚠️ A slice has no landing frame — carry the authored one across.
+				next: withLands(toFrameMap(g.frames, { normalStyle: m.normalStyle }), undefined, m.frames),
 				migrated: true
 			});
 		}
