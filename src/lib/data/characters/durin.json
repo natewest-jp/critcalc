@@ -72,6 +72,7 @@
 			],
 			"chargeFrames": {
 				"anim": 58,
+				"lands": 17,
 				"N": 53,
 				"E": 52,
 				"Q": 52,
@@ -99,6 +100,7 @@
 					"name": "Denial of Darkness",
 					"frames": {
 						"anim": 67,
+						"lands": 32,
 						"N": 64,
 						"E": 48,
 						"Q": 45,

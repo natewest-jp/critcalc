@@ -49,6 +49,7 @@
 			],
 			"chargeFrames": {
 				"anim": 53,
+				"lands": 25,
 				"E": 52,
 				"Q": 52,
 				"D": 29,
@@ -57,6 +58,7 @@
 			},
 			"plungeFrames": {
 				"anim": 82,
+				"lands": 45,
 				"N": 62,
 				"E": 62,
 				"Q": 62,
@@ -87,6 +89,7 @@
 			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"lowPlungeFrames": {
 				"anim": 81,
+				"lands": 42,
 				"N": 59,
 				"E": 59,
 				"Q": 60,

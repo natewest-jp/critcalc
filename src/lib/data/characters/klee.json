@@ -28,6 +28,7 @@
 					"name": "N1",
 					"frames": {
 						"anim": 34,
+						"lands": 16,
 						"N": 31,
 						"C": 23,
 						"E": 6,
@@ -41,6 +42,7 @@
 					"name": "N2",
 					"frames": {
 						"anim": 41,
+						"lands": 23,
 						"N": 38,
 						"C": 32,
 						"E": 2,
@@ -61,6 +63,7 @@
 			],
 			"chargeFrames": {
 				"anim": 113,
+				"lands": 76,
 				"N": 59,
 				"C": 59,
 				"E": 59,
@@ -71,6 +74,7 @@
 			},
 			"plungeFrames": {
 				"anim": 71,
+				"lands": 48,
 				"N": 60,
 				"C": 55,
 				"E": 61,
@@ -99,6 +103,7 @@
 			"description": "Normal Attack\nThrows things that go boom when they hit things! Performs up to 3 explosive attacks, dealing AoE Pyro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Pyro DMG to opponents after a short casting time.\n\nPlunging Attack\nGathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground.",
 			"lowPlungeFrames": {
 				"anim": 67,
+				"lands": 47,
 				"N": 57,
 				"C": 53,
 				"E": 58,

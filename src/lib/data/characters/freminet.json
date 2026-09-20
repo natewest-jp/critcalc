@@ -25,7 +25,16 @@
 				{ "name": "N3", "frames": { "anim": 65, "hit": 31, "N": 59 } },
 				{ "name": "N4", "frames": { "anim": 86, "hit": 42 } }
 			],
-			"plungeFrames": { "anim": 87, "N": 58, "E": 58, "Q": 59, "D": 45, "J": 86, "swap": 68 },
+			"plungeFrames": {
+				"anim": 87,
+				"lands": 45,
+				"N": 58,
+				"E": 58,
+				"Q": 59,
+				"D": 45,
+				"J": 86,
+				"swap": 68
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -44,7 +53,16 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 85, "N": 56, "E": 55, "Q": 57, "D": 43, "J": 84, "swap": 67 }
+			"lowPlungeFrames": {
+				"anim": 85,
+				"lands": 43,
+				"N": 56,
+				"E": 55,
+				"Q": 57,
+				"D": 43,
+				"J": 84,
+				"swap": 67
+			}
 		},
 		{
 			"id": "freminet__skill__pressurized_floe",

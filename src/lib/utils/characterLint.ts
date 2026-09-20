@@ -15,6 +15,7 @@
 import type { CharacterData } from '$lib/types/character';
 import type {
 	Ability,
+	FrameMap,
 	AbilityVariant,
 	Condition,
 	Effect,
@@ -1384,6 +1385,47 @@ function lintNormal(
 			push('strict', 'missing-anim', `${field}.anim missing or not a positive integer`, a.id);
 		}
 	}
+	// (A.5c) `lands` — where a swing's first hit lands, on the maps `hit` cannot
+	// say it for (§1.K stage 2, 2026-09-20). Three ways to author it wrong, each
+	// silent: past the animation (a hit that lands after the swing is over);
+	// restating `hit` (absent must keep meaning "`hit` already says it", or the
+	// field stops distinguishing the two map shapes); and beside a `nonHitting`
+	// claim for the same action class, which says nothing lands at all.
+	const landed: [string, FrameMap | undefined, 'normal' | 'charged' | 'plunge'][] = [
+		...a.hits.map((h, i): [string, FrameMap, 'normal'] => [
+			`hits[${i}].frames`,
+			h.frames,
+			'normal'
+		]),
+		['chargeFrames', a.chargeFrames, 'charged'],
+		['specialChargeFrames', a.specialChargeFrames, 'charged'],
+		...(a.chargeHits ?? []).map((h, i): [string, FrameMap, 'charged'] => [
+			`chargeHits[${i}].frames`,
+			h.frames,
+			'charged'
+		]),
+		['plungeFrames', a.plungeFrames, 'plunge'],
+		['lowPlungeFrames', a.lowPlungeFrames, 'plunge'],
+		...(a.plungeVariants ?? []).map((v, i): [string, FrameMap, 'plunge'] => [
+			`plungeVariants[${i}].frames`,
+			v.frames,
+			'plunge'
+		])
+	];
+	for (const [field, fm, cls] of landed) {
+		if (fm?.lands === undefined) continue;
+		if (isPositiveInt(fm.anim) && fm.lands > fm.anim)
+			push(
+				'strict',
+				'frame-value-invalid',
+				`${field}.lands (${fm.lands}) is past anim (${fm.anim})`,
+				a.id
+			);
+		if (fm.lands === fm.hit)
+			push('strict', 'frame-value-invalid', `${field}.lands restates hit — omit it`, a.id);
+		if (a.nonHitting?.[cls])
+			push('strict', 'frame-value-invalid', `${field}.lands on a nonHitting ${cls}`, a.id);
+	}
 	// ⛔ A low-plunge map with no high-plunge map beside it inverts the default:
 	// the bare `P` token would fall through to nothing while `lP` resolved.
 	if (a.lowPlungeFrames && !a.plungeFrames) {
@@ -1450,6 +1492,11 @@ function lintCastAbility(
 		// silent second fallback that gcsim does not have.
 		if (a.frames.hit !== undefined) {
 			push('strict', 'frame-value-invalid', 'frames.hit is not valid on a skill/burst map', a.id);
+		}
+		// …and a cast's landings are `application[]`, which says element and units
+		// too. `lands` is a swing's field.
+		if (a.frames.lands !== undefined) {
+			push('strict', 'frame-value-invalid', 'frames.lands is not valid on a skill/burst map', a.id);
 		}
 	}
 

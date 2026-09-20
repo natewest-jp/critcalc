@@ -31,9 +31,12 @@ import { evalTriggerFilter } from '$lib/types/ability';
  *    procCooldown will undercount on multi-hit swings — a documented
  *    approximation until a `NormalHit.hitCount` consumer appears.
  *  - **`time`** — E/Q casts: the cast start (legacy convention). Actions:
- *    the swing END (`actionEvent.time + duration`; equals the start for
- *    frameless kits) — cancel-window frames are the closest recorded proxy
- *    for the hitmark, and legacy block-driven onHit buffs open at block end.
+ *    the swing's LANDING (§1.K, 2026-09-20) — `landsAt(frames)` from the
+ *    swing's start, which is its hitmark. ⚠️ A map that states no landing
+ *    frame, or a swing cancelled before it, keeps the swing END
+ *    (`actionEvent.time + duration`), the placement every swing had before
+ *    that round. The application and this record are ONE instant by
+ *    construction — `run.ts`'s `landSwing` hands both over as one closure.
  *  - **`element` ABSENT ⇒ physical** (the ActionEvent convention). Cast
  *    hits always carry the caster's element.
  *  - `damageTag`/`abilityName`/`isCrit` mirror the renderer's

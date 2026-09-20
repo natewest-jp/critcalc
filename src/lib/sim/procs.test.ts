@@ -314,7 +314,7 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 	it('fires off the reaction a DIFFERENT active character caused', () => {
 		// Barbara's Hydro electro-charges Oz's Electro while she is on field: the
 		// active character triggered it, Oz is up, so A4 procs 4 frames later —
-		// 1.65→1.72, 2.52→2.58, 3.05→3.12, 9.05→9.12. This is `source: 'active'`
+		// 1.65→1.72, 2.37→2.43, 3.05→3.12, 9.05→9.12. This is `source: 'active'`
 		// doing the thing `source: 'self'` could not.
 		//
 		// ↻ Retimed 2026-08-17 with ICDGroupFischl (b): the Oz ticks that apply are
@@ -326,8 +326,12 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 		// ↻ Retimed 2026-09-16 (T0.5): Oz's `firstTickDelay` gained gcsim's
 		// `ozTravel` (10 frames), which every tick's damage carries, so every
 		// Oz-derived instant below moves by exactly 0.17s and nothing else does.
+		// ↻ Retimed 2026-09-20 (§1.K): a swing lands at its HITMARK, so Barbara's
+		// N1 electro-charges at 2.37 rather than at the swing's end (2.52) and the
+		// proc behind it moves with it, 2.58 → 2.43. Nothing else in the list is
+		// hers to move.
 		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).toEqual([
-			1.65, 1.72, 2.03, 2.58, 2.97, 3.12, 6.9, 8.87, 9.12
+			1.65, 1.72, 2.03, 2.43, 2.97, 3.12, 6.9, 8.87, 9.12
 		]);
 	});
 
@@ -341,7 +345,7 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 		// ↻ 6.12 dropped 2026-08-17 (b): its reaction no longer happens, per the
 		// test above. ⚓ The three surviving gaps still bracket the 0.5 s and the
 		// 2.1 s exclusion is untouched, which is the whole assertion.
-		const procs = [1.72, 2.58, 3.12, 9.12];
+		const procs = [1.72, 2.43, 3.12, 9.12];
 		for (let i = 1; i < procs.length; i++)
 			expect(procs[i] - procs[i - 1]).toBeGreaterThanOrEqual(0.5);
 		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).toEqual(

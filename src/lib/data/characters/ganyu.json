@@ -23,8 +23,24 @@
 				{ "name": "N6", "frames": { "anim": 59, "hit": 22 } }
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 85, "D": 74, "J": 74 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 113, "D": 103, "J": 103 } }
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 85,
+						"lands": 74,
+						"D": 74,
+						"J": 74
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 113,
+						"lands": 103,
+						"D": 103,
+						"J": 103
+					}
+				}
 			],
 			"sections": [
 				{

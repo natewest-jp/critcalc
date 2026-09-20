@@ -101,3 +101,26 @@ export function frameAt(fm: import('$lib/types/ability').FrameMap, key: string):
 	if (HIT_KEYS.has(key) && typeof fm.hit === 'number') return fm.hit;
 	return fm.anim ?? 0;
 }
+
+/**
+ * The frame a swing's hit LANDS, counted from the swing's start — or `null` when
+ * the map does not say (§1.K, 2026-09-20).
+ *
+ * ⚓⚓ **THE ONE PLACE THAT SAYS WHEN A SWING LANDS.** Until this round a swing's
+ * application, its hit record and every `onHit` consequence sat at the swing's
+ * cancel-resolved END, which is where the NEXT input starts and has nothing to
+ * do with when the blade connects. Harmless on a jab, a second late on every
+ * heavy finisher (Razor's N4 lands at 38f and ends at 116f).
+ *
+ * ⚓ `lands` first, then `hit`: `hit` is a hitmark only where gcsim built the map
+ * with `InitNormalCancelSlice`, and `lands` states the landing everywhere else
+ * (every charged attack and plunge, most catalyst normals) — see `FrameMap.lands`.
+ *
+ * ⚠️ `null` is "unmeasured", and the caller keeps the swing's end for it — the
+ * placement this model always had. ⛔ Never substitute `anim` or a cancel entry:
+ * those say when the player may act again, not when the hit lands.
+ */
+export function landsAt(fm: import('$lib/types/ability').FrameMap): number | null {
+	if (typeof fm.lands === 'number') return fm.lands;
+	return typeof fm.hit === 'number' ? fm.hit : null;
+}

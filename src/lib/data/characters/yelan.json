@@ -58,6 +58,7 @@
 					"name": "Fully-Charged Aimed Shot",
 					"frames": {
 						"anim": 96,
+						"lands": 32,
 						"D": 86,
 						"J": 86
 					}
@@ -66,6 +67,7 @@
 					"name": "Breakthrough Barb",
 					"frames": {
 						"anim": 42,
+						"lands": 32,
 						"D": 32,
 						"J": 32,
 						"swap": 42

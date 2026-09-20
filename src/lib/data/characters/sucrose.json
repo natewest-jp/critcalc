@@ -61,6 +61,7 @@
 			],
 			"chargeFrames": {
 				"anim": 71,
+				"lands": 54,
 				"N": 69,
 				"C": 66,
 				"E": 60,
@@ -71,6 +72,7 @@
 			},
 			"plungeFrames": {
 				"anim": 68,
+				"lands": 46,
 				"N": 59,
 				"C": 49,
 				"E": 46,
@@ -98,6 +100,7 @@
 			"description": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
 			"lowPlungeFrames": {
 				"anim": 66,
+				"lands": 45,
 				"N": 56,
 				"C": 47,
 				"E": 45,

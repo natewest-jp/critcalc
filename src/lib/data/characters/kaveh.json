@@ -27,7 +27,16 @@
 				{ "name": "N3", "frames": { "anim": 56, "hit": 33, "N": 42 } },
 				{ "name": "N4", "frames": { "anim": 81, "hit": 40, "N": 67 } }
 			],
-			"plungeFrames": { "anim": 84, "N": 54, "E": 53, "Q": 54, "D": 41, "J": 83, "swap": 64 },
+			"plungeFrames": {
+				"anim": 84,
+				"lands": 41,
+				"N": 54,
+				"E": 53,
+				"Q": 54,
+				"D": 41,
+				"J": 83,
+				"swap": 64
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -46,7 +55,15 @@
 				}
 			],
 			"description": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 85, "N": 54, "E": 54, "Q": 55, "D": 41, "swap": 65 }
+			"lowPlungeFrames": {
+				"anim": 85,
+				"lands": 41,
+				"N": 54,
+				"E": 54,
+				"Q": 55,
+				"D": 41,
+				"swap": 65
+			}
 		},
 		{
 			"id": "kaveh__skill__artistic_ingenuity",

@@ -23,6 +23,7 @@
 			"hits": [{ "name": "N1", "frames": { "anim": 66, "hit": 13, "C": 40 } }],
 			"chargeFrames": {
 				"anim": 74,
+				"lands": 66,
 				"N": 68,
 				"C": 69,
 				"E": 72,

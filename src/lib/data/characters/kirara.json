@@ -21,7 +21,16 @@
 				{ "name": "N3", "frames": { "anim": 61, "hit": 39, "N": 54, "C": 40 } },
 				{ "name": "N4", "frames": { "anim": 63, "hit": 39, "N": 60 } }
 			],
-			"chargeFrames": { "anim": 52, "N": 43, "E": 43, "Q": 43, "D": 38, "J": 38, "swap": 37 },
+			"chargeFrames": {
+				"anim": 52,
+				"lands": 20,
+				"N": 43,
+				"E": 43,
+				"Q": 43,
+				"D": 38,
+				"J": 38,
+				"swap": 37
+			},
 			"sections": [
 				{
 					"type": "normal",

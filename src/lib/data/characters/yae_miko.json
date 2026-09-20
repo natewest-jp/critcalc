@@ -50,6 +50,7 @@
 			},
 			"plungeFrames": {
 				"anim": 68,
+				"lands": 49,
 				"N": 60,
 				"C": 51,
 				"E": 60,
@@ -84,6 +85,7 @@
 			],
 			"lowPlungeFrames": {
 				"anim": 66,
+				"lands": 46,
 				"N": 58,
 				"C": 48,
 				"E": 58,

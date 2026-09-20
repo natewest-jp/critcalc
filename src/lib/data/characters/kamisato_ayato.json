@@ -22,8 +22,22 @@
 				{ "name": "N4", "frames": { "anim": 29, "hit": 25, "N": 27 } },
 				{ "name": "N5", "frames": { "anim": 63, "hit": 41 } }
 			],
-			"chargeFrames": { "anim": 55, "D": 24, "J": 24, "swap": 53 },
-			"plungeFrames": { "anim": 76, "N": 56, "E": 56, "Q": 56, "D": 47, "swap": 63 },
+			"chargeFrames": {
+				"anim": 55,
+				"lands": 24,
+				"D": 24,
+				"J": 24,
+				"swap": 53
+			},
+			"plungeFrames": {
+				"anim": 76,
+				"lands": 47,
+				"N": 56,
+				"E": 56,
+				"Q": 56,
+				"D": 47,
+				"swap": 63
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -49,7 +63,16 @@
 				"High plunge variant exists in gcsim (highPlungeFrames) but is not represented per recipe convention.",
 				"gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. plungeFrames sourced from gcsim's lowPlungeFrames; in-game any post-jump plunge works."
 			],
-			"lowPlungeFrames": { "anim": 75, "N": 55, "E": 55, "Q": 55, "D": 45, "J": 73, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 75,
+				"lands": 45,
+				"N": 55,
+				"E": 55,
+				"Q": 55,
+				"D": 45,
+				"J": 73,
+				"swap": 62
+			}
 		},
 		{
 			"id": "kamisato_ayato__normal__shunsuiken",

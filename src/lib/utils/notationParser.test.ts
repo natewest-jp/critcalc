@@ -13,7 +13,7 @@ const shieldEndsOf = (events: TimelineEvent[]): ShieldEndEvent[] =>
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Element } from '$lib/types/ability';
 import { GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
-import { framesOf } from '$lib/utils/frames';
+import { framesOf, landsAt } from '$lib/utils/frames';
 import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import durinJson from '$lib/data/characters/durin.json';
@@ -27,6 +27,7 @@ import linneaForTest from '$lib/data/characters/linnea.json';
 import flinsForTest from '$lib/data/characters/flins.json';
 import varesaForTest from '$lib/data/characters/varesa.json';
 import varkaForTest from '$lib/data/characters/varka.json';
+import kleeForLanding from '$lib/data/characters/klee.json';
 import iansanJson from '$lib/data/characters/iansan.json';
 import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
@@ -3256,13 +3257,22 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const wins = stateWindows(result, 'apexDrive');
 		expect(wins).toHaveLength(1);
 		expect(wins[0].sourceCastId).toBeUndefined(); // opened by a plunge, not a cast
-		// Post-P4 #2: the plunge's action event is the window's provenance,
-		// and the window opens at the plunge's END (landing).
+		// Post-P4 #2: the plunge's action event is the window's provenance.
+		// ↻ §1.K stage 2 (2026-09-20): the window opens at the plunge's LANDING —
+		// `lands`, read from the data — and no longer at the swing's end, so the
+		// hit that lands there finds the state its own plunge opened.
 		const plunge = result.events.find((e) => e.kind === 'action' && e.action === 'plunge');
 		expect(plunge).toBeTruthy();
 		expect(wins[0].sourceActionId).toBe(plunge!.id);
 		if (plunge!.kind === 'action') {
-			expect(wins[0].start).toBe(plunge!.time + plunge!.duration);
+			const plungeMap = (
+				varesaForTest.abilities.find((a) => a.abilityType === 'normal' && !('conditions' in a)) as {
+					plungeFrames: Parameters<typeof landsAt>[0];
+				}
+			).plungeFrames;
+			const landing = landsAt(plungeMap)!;
+			expect(landing).toBeLessThan(plunge!.duration);
+			expect(wins[0].start).toBe(plunge!.time + landing);
 		}
 		// Consumed by the Kablam cast.
 		expect(wins[0].end).toBe(qBars[0].start);
@@ -3681,8 +3691,9 @@ describe('parseNotation — onHit dispatch from action hits (onHit wiring, 2026-
 		} as unknown as Ability
 	];
 
-	// Self-source LIFETIME grants expire per-instance at action sites: 0.4s
-	// lifetime over 1/3s swings → the E cast after N3 sees only the last 2.
+	// Self-source LIFETIME grants expire per-instance at action sites: a 0.6s
+	// lifetime over the generic string's landings → the E cast after N3 sees
+	// only the last 2.
 	const decayStub = baseChar('decaystub', 'DecayStub', 'electro', 'catalyst');
 	decayStub.passives = [
 		{
@@ -3697,7 +3708,7 @@ describe('parseNotation — onHit dispatch from action hits (onHit wiring, 2026-
 					key: 'echo',
 					amount: 1,
 					max: 10,
-					lifetime: 0.4
+					lifetime: 0.6
 				}
 			]
 		} as unknown as Ability
@@ -3777,8 +3788,12 @@ describe('parseNotation — onHit dispatch from action hits (onHit wiring, 2026-
 	});
 
 	it('self-source lifetime instances expire at action-site settles', () => {
-		// Swings end at ~1/3, ~2/3, ~1.0s; expiries at +0.4s. At the E cast
-		// (~1.0s) the first instance has lapsed — 2 remain.
+		// ↻ §1.K (2026-09-20): a hit lands at its HITMARK. The generic string
+		// lands at 13f, 32f and 62f (N3 cancelled into E lands at the cancel);
+		// expiries at +36f are 49, 68 and 98. At the E cast (62f) the first
+		// instance has lapsed — 2 remain. The lifetime was 0.4s while hits sat at
+		// swing ends; at the hitmarks that lapsed the second too, which is the
+		// model being right and the fixture's number being stale.
 		const result = parseNotation('DecayStub N3 E', lookup, 8);
 		expect(eContext(result, 'decaystub')?.get('echo')).toBe(2);
 	});
@@ -4011,6 +4026,34 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 	const xiao = xiaoForIcd as unknown as CharacterData;
 	const team: Record<string, CharacterData> = { Sucrose: sucrose, Xingqiu: xingqiu, Xiao: xiao };
 	const lookup = (n: string): CharacterData | null => team[n] ?? null;
+	// ⚠️ A COPY with N1's landing frame removed: every Klee normal states `lands`
+	// since stage 2, and the arm below needs a map that states none — which is
+	// what an uncovered map (34 in the corpus) or a frameless stub looks like.
+	const klee = structuredClone(kleeForLanding) as unknown as CharacterData;
+	delete (
+		klee.abilities.find((a) => a.abilityType === 'normal') as never as {
+			hits: { frames: { lands?: number } }[];
+		}
+	).hits[0].frames.lands;
+	const kleeNormal = klee.abilities.find((a) => a.abilityType === 'normal') as unknown as {
+		hits: { frames: Parameters<typeof landsAt>[0] }[];
+	};
+	// ⚓ Where each NORMAL swing lands (§1.K): its hitmark, or the swing's end
+	// when the map states none or the swing was cancelled before it — the
+	// parser's own rule (`landSwing`), restated from the DATA so the assertions
+	// below are not the parser agreeing with itself.
+	const swingLandings = (parsed: ReturnType<typeof parseNotation>, charId: string): number[] => {
+		const normal = Object.values(team)
+			.find((c) => c.id === charId)!
+			.abilities.find((a) => a.abilityType === 'normal' && !a.conditions) as {
+			hits: { frames: Parameters<typeof landsAt>[0] }[];
+		};
+		return parsed.events.flatMap((e) => {
+			if (e.kind !== 'action' || e.characterId !== charId || e.action !== 'normal') return [];
+			const hitF = landsAt(normal.hits[e.comboIndex ?? 0].frames);
+			return [e.time + (hitF !== null && hitF < e.duration ? hitF : e.duration)];
+		});
+	};
 
 	// ↻ REBASED AT L5c, and the rebase made these tests DIRECT. They used to
 	// count the swirls a swinger triggered, with a note that "anemo is the clean
@@ -4038,14 +4081,40 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 
 	it('the applications land on swings 1 and 4 — the 3-hit counter, not the 2.5s timer', () => {
 		const parsed = parseNotation('Xingqiu E > Sucrose N5', lookup, 8);
-		const swingEnds = parsed.events
-			.filter((e) => e.kind === 'action' && e.characterId === 'sucrose')
-			.map((e) => (e.kind === 'action' ? e.time + e.duration : 0));
+		const landings = swingLandings(parsed, 'sucrose');
 		const applied = parsed.applications
 			.filter((a) => a.characterId === 'sucrose')
 			.map((a) => a.time);
-		// Applied at the swing's HIT instant, the same one dispatchHit uses.
-		expect(applied).toEqual([swingEnds[0], swingEnds[3]]);
+		// Applied at the swing's LANDING — its hitmark (§1.K), the same instant
+		// dispatchHit uses.
+		expect(applied).toEqual([landings[0], landings[3]]);
+	});
+
+	it('⚓ a swing lands at its hitmark, and one with none keeps its end (§1.K)', () => {
+		// Sucrose's swing states `hit`; the Klee copy's N1 states nothing. Same rule,
+		// both arms —
+		// and the seeded negative is the first: put the offer back after the
+		// advance and Sucrose's application returns to the swing's end.
+		// ⚠️ Read at the FOURTH swing (hit 28, next normal at 51): Sucrose's N1 is
+		// cancelled AT its hitmark, where the two instants coincide and an
+		// assertion there would prove nothing. Swing 4 is also the one the 3-hit
+		// counter lets apply, so its landing is observable in `applications`.
+		const s = parseNotation('Sucrose N5', lookup, 8);
+		const sSwing = s.events.filter((e) => e.kind === 'action')[3];
+		const sHit = landsAt(
+			(sucrose.abilities.find((a) => a.abilityType === 'normal') as never as typeof kleeNormal)
+				.hits[3].frames
+		)!;
+		const sEnd = sSwing.time + (sSwing.kind === 'action' ? sSwing.duration : 0);
+		expect(s.applications[1].time).toBe(sSwing.time + sHit);
+		expect(s.applications[1].time).toBeLessThan(sEnd);
+
+		const k = parseNotation('Klee N1', (n) => (n === 'Klee' ? klee : null), 8);
+		const kSwing = k.events.find((e) => e.kind === 'action')!;
+		expect(landsAt(kleeNormal.hits[0].frames)).toBeNull();
+		expect(k.applications[0].time).toBe(
+			kSwing.time + (kSwing.kind === 'action' ? kSwing.duration : 0)
+		);
 	});
 
 	it('a catalyst charged attack applies EVERY time (gcsim ICDTagNone)', () => {
@@ -4063,9 +4132,7 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 		// alone. That is the reconciliation this round exists to make, asserted
 		// rather than asserted-about.
 		const parsed = parseNotation('Xingqiu E > Sucrose N1 C N1 C N1', lookup, 8);
-		const normalEnds = parsed.events
-			.filter((e) => e.kind === 'action' && e.characterId === 'sucrose' && e.action === 'normal')
-			.map((e) => (e.kind === 'action' ? e.time + e.duration : 0));
+		const normalEnds = swingLandings(parsed, 'sucrose');
 		// ⚠️ FRAMES params against frame-valued swing times. `icdApplies` is
 		// unit-agnostic, so feeding it the seconds constant here silently predicted
 		// an application on every swing (the timer never appeared to run).

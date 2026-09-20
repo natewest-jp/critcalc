@@ -40,6 +40,7 @@ export const CANCEL_KEYS = new Set(['E', 'Q', 'D', 'J', 'swap']);
  *  model the Aether/Lumine split for frames and the two are frame-identical upstream. */
 const KEY_OVERRIDES = {
 	traveler_anemo: 'aetheranemo',
+	traveler_cryo: 'aethercryo',
 	traveler_dendro: 'aetherdendro',
 	traveler_electro: 'aetherelectro',
 	traveler_geo: 'aethergeo',
@@ -417,10 +418,32 @@ export function preserveFrameMap(fm) {
 	const anim = fm.anim ?? fm.swap ?? Math.max(0, ...Object.values(fm));
 	const out = { anim };
 	if (fm.hit !== undefined) out.hit = fm.hit;
+	// ⚠️ `lands` is not in any gcsim slice, so a writer that rebuilds a map from one
+	// would silently DROP it — every rebuild goes through here or `withLands`.
+	if (fm.lands !== undefined) out.lands = fm.lands;
 	for (const k of KEYS) {
 		if (typeof fm[k] === 'number') out[k] = fm[k];
 	}
 	if (out.swap === undefined) out.swap = anim;
+	return out;
+}
+
+/**
+ * `fm` with its landing frame set (or, with `lands` undefined, carried over from
+ * `from`) — in the corpus's key order: `anim`, `hit`, `lands`, then the cancels.
+ *
+ * ⚓ `lands` comes from the DAMAGE stream and the rest of a FrameMap from the CANCEL
+ * slice, so the two have different writers (`migrate-swing-landings` and
+ * `migrate-frames-shape`). This is the seam: the second must not erase the first.
+ */
+export function withLands(fm, lands, from) {
+	const value = lands ?? from?.lands;
+	const out = {};
+	for (const [k, v] of Object.entries(fm)) {
+		if (k === 'lands') continue;
+		out[k] = v;
+		if (k === (fm.hit !== undefined ? 'hit' : 'anim') && value !== undefined) out.lands = value;
+	}
 	return out;
 }
 

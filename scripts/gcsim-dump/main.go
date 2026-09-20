@@ -377,7 +377,13 @@ type spec struct {
 	params map[string]int
 }
 
-// ⚠️ `travel: 0` on every aimed shot is deliberate. gcsim's `travel` default of 10 is
+// ⚠️ `travel: 0` on every aimed shot — and, since §1.K stage 2 (2026-09-20), on every
+// NORMAL and CHARGED attack too — is deliberate. The swing captures went unpinned
+// while nothing read their damage frames; `FrameMap.lands` is authored from them now,
+// and unpinned, all 87 bow normals and the projectile catalysts read release + 10.
+// A melee `attack` ignores the key. The reason, as first written for the aimed shot:
+//
+// ⚠️ `travel: 0` is deliberate. gcsim's `travel` default of 10 is
 // a SIMULATION POLICY, not game data (76 sites), and it lands inside the observed
 // hitmark. Pinning it to zero measures "frames until the arrow leaves the bow", which
 // is the distance-independent number. ⛔ Never ingest a travel-inclusive figure as
@@ -385,10 +391,10 @@ type spec struct {
 func defaultSpecs(normalHitNum int) []spec {
 	out := make([]spec, 0, normalHitNum+9)
 	for i := range normalHitNum {
-		out = append(out, spec{fmt.Sprintf("N%d", i+1), "attack", map[string]int{}})
+		out = append(out, spec{fmt.Sprintf("N%d", i+1), "attack", map[string]int{"travel": 0}})
 	}
 	return append(out,
-		spec{"C", "charge", map[string]int{}},
+		spec{"C", "charge", map[string]int{"travel": 0}},
 		spec{"A", "aim", map[string]int{"travel": 0}},
 		spec{"hA", "aim", map[string]int{"hold": 1, "travel": 0}},
 		spec{"P", "high_plunge", map[string]int{"collision": 0}},
@@ -556,7 +562,7 @@ func captureApplications(k keys.Char, cons int, prereq []Step, s spec, horizon i
 		c.Tick()
 		steps := append([]Step{}, prereq...)
 		if n := comboPrefix(s.key); n > 0 {
-			steps = append(steps, Step{Action: "attack", Params: map[string]int{}, Repeat: n})
+			steps = append(steps, Step{Action: "attack", Params: map[string]int{"travel": 0}, Repeat: n})
 		}
 		if msg := runPrereq(c, ch, steps, t); msg != "" {
 			fail = msg

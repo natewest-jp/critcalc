@@ -21,8 +21,24 @@
 				{ "name": "N3", "frames": { "anim": 69, "hit": 39, "N": 63 } }
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 16, "J": 16 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 38, "D": 27, "J": 27 } },
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 25,
+						"lands": 16,
+						"D": 16,
+						"J": 16
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 38,
+						"lands": 27,
+						"D": 27,
+						"J": 27
+					}
+				},
 				{
 					"name": "Shadowpiercing Shot",
 					"frames": { "anim": 379, "D": 368, "J": 368, "swap": 379 }

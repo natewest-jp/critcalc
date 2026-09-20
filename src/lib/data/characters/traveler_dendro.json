@@ -22,7 +22,15 @@
 				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
 				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
+			"chargeFrames": {
+				"anim": 55,
+				"lands": 9,
+				"E": 37,
+				"Q": 36,
+				"D": 20,
+				"J": 20,
+				"swap": 44
+			},
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether)."
 			],

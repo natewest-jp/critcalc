@@ -50,6 +50,7 @@
 			],
 			"chargeFrames": {
 				"anim": 64,
+				"lands": 27,
 				"D": 34,
 				"J": 34,
 				"swap": 63

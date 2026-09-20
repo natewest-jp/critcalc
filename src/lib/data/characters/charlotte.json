@@ -18,19 +18,66 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "anim": 32, "N": 23, "C": 25, "E": 5, "Q": 5, "D": 5, "J": 6, "swap": 12 }
+					"frames": {
+						"anim": 32,
+						"lands": 13,
+						"N": 23,
+						"C": 25,
+						"E": 5,
+						"Q": 5,
+						"D": 5,
+						"J": 6,
+						"swap": 12
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "anim": 45, "N": 35, "C": 26, "E": 15, "Q": 17, "D": 16, "J": 16, "swap": 16 }
+					"frames": {
+						"anim": 45,
+						"lands": 25,
+						"N": 35,
+						"C": 26,
+						"E": 15,
+						"Q": 17,
+						"D": 16,
+						"J": 16,
+						"swap": 16
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "anim": 74, "C": 66, "E": 14, "Q": 7, "D": 8, "J": 7, "swap": 4 }
+					"frames": {
+						"anim": 74,
+						"lands": 31,
+						"C": 66,
+						"E": 14,
+						"Q": 7,
+						"D": 8,
+						"J": 7,
+						"swap": 4
+					}
 				}
 			],
-			"chargeFrames": { "anim": 84, "N": 79, "E": 71, "Q": 71, "D": 21, "J": 21, "swap": 60 },
-			"plungeFrames": { "anim": 67, "N": 59, "C": 50, "E": 58, "Q": 59, "D": 46, "swap": 50 },
+			"chargeFrames": {
+				"anim": 84,
+				"lands": 67,
+				"N": 79,
+				"E": 71,
+				"Q": 71,
+				"D": 21,
+				"J": 21,
+				"swap": 60
+			},
+			"plungeFrames": {
+				"anim": 67,
+				"lands": 46,
+				"N": 59,
+				"C": 50,
+				"E": 58,
+				"Q": 59,
+				"D": 46,
+				"swap": 50
+			},
 			"_curatorNotes": [
 				"N3 ActionAttack defaults to AnimationLength (74) — not explicitly set in gcsim; N key omitted. C=66 is explicitly set.",
 				"chargeFrames are base (standstill) values. gcsim applies a windup subtraction at runtime: 14f from NormalAttackState, 8f from SkillState (press), 3f from BurstState. All chargeFrames values are reduced by the applicable windup. Reviewer to decide whether to represent windup variants.",
@@ -55,7 +102,16 @@
 				}
 			],
 			"description": "Normal Attack\nTaking aim at targets using Monsieur Verite, her custom Kamera, Charlotte performs up to 3 consecutive attacks, dealing Cryo DMG.\n\nCharged Attack\nConsumes a fixed amount of Stamina, and after a moment's preparation, will deploy Monsieur Verite to deal AoE Cryo DMG.\n\nPlunging Attack\nGathering the power of Cryo, Charlotte plunges toward the ground, dealing DMG to all opponents in her path and dealing AoE Cryo DMG upon landing.\n\nArkhe: Pneuma\nAt certain intervals, upon using a Charged Attack, Charlotte will cause a Spiritbreath Thorn to descend and pierce opponents, dealing Pneuma-aligned AoE Cryo DMG.",
-			"lowPlungeFrames": { "anim": 65, "N": 57, "C": 47, "E": 57, "Q": 56, "D": 44, "swap": 48 }
+			"lowPlungeFrames": {
+				"anim": 65,
+				"lands": 44,
+				"N": 57,
+				"C": 47,
+				"E": 57,
+				"Q": 56,
+				"D": 44,
+				"swap": 48
+			}
 		},
 		{
 			"id": "charlotte__skill__framing_freezing_point_composition",

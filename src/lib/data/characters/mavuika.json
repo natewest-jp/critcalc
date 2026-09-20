@@ -21,8 +21,25 @@
 				{ "name": "N3", "frames": { "anim": 59, "hit": 39, "N": 46, "C": 47 } },
 				{ "name": "N4", "frames": { "anim": 61, "hit": 30, "N": 60 } }
 			],
-			"chargeFrames": { "anim": 99, "N": 98, "C": 98, "E": 98, "D": 79, "J": 79 },
-			"plungeFrames": { "anim": 83, "N": 54, "C": 55, "E": 40, "Q": 53, "D": 41, "swap": 65 },
+			"chargeFrames": {
+				"anim": 99,
+				"lands": 79,
+				"N": 98,
+				"C": 98,
+				"E": 98,
+				"D": 79,
+				"J": 79
+			},
+			"plungeFrames": {
+				"anim": 83,
+				"lands": 41,
+				"N": 54,
+				"C": 55,
+				"E": 40,
+				"Q": 53,
+				"D": 41,
+				"swap": 65
+			},
 			"_curatorNotes": [
 				"Base normals are 4-hit physical claymore strikes (Ring mode, the default armament state). N3 lands 3 hits (hitmarks 28/33/39) and N2 lands 2 (14/26); per recipe, swap reflects the last hitmark only.",
 				"Inside Nightsoul Blessing (= Burst's Crucible of Death and Life window), N input routes to Flamestrider Strikes — separate normal ability gated on state: \"nightsoulBlessing\" with 5-hit Pyro chain.",
@@ -47,7 +64,16 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive claymore strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an especially powerful Severing Splendor strike toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 80, "N": 51, "C": 52, "E": 37, "Q": 51, "D": 37, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 80,
+				"lands": 37,
+				"N": 51,
+				"C": 52,
+				"E": 37,
+				"Q": 51,
+				"D": 37,
+				"swap": 62
+			}
 		},
 		{
 			"id": "mavuika__normal__flamestrider_strikes",
@@ -66,6 +92,7 @@
 			],
 			"plungeFrames": {
 				"anim": 80,
+				"lands": 41,
 				"N": 63,
 				"C": 63,
 				"E": 44,
@@ -83,6 +110,7 @@
 			],
 			"lowPlungeFrames": {
 				"anim": 77,
+				"lands": 37,
 				"N": 60,
 				"C": 60,
 				"E": 41,
