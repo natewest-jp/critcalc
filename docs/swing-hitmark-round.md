@@ -142,8 +142,20 @@ default (10f) is "a SIMULATION POLICY, not game data" — but the pin had never
 been extended to normals and charged attacks, which is the whole reason bow
 normals read `hit + 10`. It is now (`travel: 0` on every swing capture and on
 the combo prefix). **Measured after the pin: all 94 bow normals and 73 catalyst
-normals land at Δ0 from `hit`.** So every landing frame in the corpus is
-uniformly the travel-free RELEASE frame, and `hit` was right all along.
+normals land at Δ0 from `hit`**, so `hit` was right all along.
+
+↻ **Corrected the same day, by an A/B of the dumper — "uniformly travel-free"
+was too strong.** gcsim exposes `travel` as a parameter on 20 of 21 bows (10f)
+and only **9 of 28 catalysts** (Citlali, Klee, Ningguang, Kokomi, Xianyun, Yae,
+Yanfei, Mizuki at 10f; Wanderer 5f). The other catalysts' flight is folded into
+gcsim's hitmark constant and cannot be separated, so their `hit`/`lands` already
+include it. ⚠️⚠️ **And the CAST side carries travel throughout**: E/Q captures
+are unpinned, and pinning them moves 39 captures across 13 characters — not by
+a flat 10 but by gcsim's per-ability estimate (Itto E 4 · Aloy, Tighnari,
+Emilie, Escoffier 5 · Cryo Traveler 9/6 · Diona, Dori, Ororon 10 · Layla Q 22 ·
+Mizuki E 30 · **Mualani Q 70**, a homing missile whose flight is real). So today
+a ranged CAST lands with travel and a bow SWING without — the inconsistency is
+the argument for modelling it on swings, ⛔ not for stripping it from casts.
 
 Whether to model travel at all (⏭ Nate, recommendation): **not in data, and not
 by default.** It is distance, so any number is a claim about where the player
@@ -176,9 +188,14 @@ writer refuses; no authored data reads them.
 
 ## 5. Still open
 
-- ⏭ **The ~116 multi-hit normals that state only `hit`** land at gcsim's LAST
-  hitmark, 8–23f after their first. Same argument as `lands`, its own measurement.
-- ⏭ **Ranged casts' `application[]` may carry gcsim's travel** (§4.4).
+- ⏭ **82 multi-hit normals that state only `hit`** (55 characters; 77 are
+  two-hit, 17 elemental in an uninfused capture) land at gcsim's LAST hitmark,
+  a median 12f after their first (max 27). ↻ This record first said "~116" —
+  that count predated the travel pin and included in-flight arrows. ⚠️ The real
+  gap is not the 12f: ICD and every `onHit` count HITS, and a swing is still one.
+- ⏭ **Projectile travel on swings** — measured in §4.4; casts carry it, bow
+  swings do not. ⚠️ A landing AFTER the swing's end is the engine question: the
+  closure's segment stack pool is sound only while the landing is inside it.
 - ⏭ **The 34 uncovered maps** — where KQM's frame sheet could actually help.
 - ⏭ **Varesa's `apexDrive` anchor** (§4.3) and **Barbara's / Yae's charged
   attacks landing no damage in gcsim**.

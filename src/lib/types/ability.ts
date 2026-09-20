@@ -2015,8 +2015,8 @@ export type FrameMap = Partial<Record<ActionKey, number>> & {
 	 * E and Q cancel. `lands` is a landing frame and nothing else.
 	 *
 	 * ⚠️ The FIRST hit of a multi-hit swing (⚓ Nate): it is what applies the
-	 * element and fires an `onHit`. `hit` is gcsim's LAST hitmark, so the ~116
-	 * multi-hit normals that state only `hit` still land 8–23f late — a follow-up
+	 * element and fires an `onHit`. `hit` is gcsim's LAST hitmark, so the 82
+	 * multi-hit normals that state only `hit` still land a median 12f late — a follow-up
 	 * with its own measurement, ⛔ not something to infer from this field.
 	 *
 	 * ⚠️ A RELEASE frame for a projectile, never a travel-inclusive one: gcsim's

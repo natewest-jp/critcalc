@@ -22,7 +22,7 @@
  * swing capture (its 10f default is a simulation policy, not game data). A catalyst
  * whose travel gcsim HARDCODES still carries it — reported, never stripped by guess.
  *
- * ⛔ Never writes a map that states `hit` (that tier is the hitmark already; the ~116
+ * ⛔ Never writes a map that states `hit` (that tier is the hitmark already; the 82
  * multi-hit normals where it is the LAST hit are a separate, measured follow-up), a
  * `nonHitting` class, an uncovered map, or a value past `anim`.
  *
