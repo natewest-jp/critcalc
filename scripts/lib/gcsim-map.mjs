@@ -40,6 +40,7 @@ export const CANCEL_KEYS = new Set(['E', 'Q', 'D', 'J', 'swap']);
  *  model the Aether/Lumine split for frames and the two are frame-identical upstream. */
 const KEY_OVERRIDES = {
 	traveler_anemo: 'aetheranemo',
+	traveler_cryo: 'aethercryo',
 	traveler_dendro: 'aetherdendro',
 	traveler_electro: 'aetherelectro',
 	traveler_geo: 'aethergeo',
