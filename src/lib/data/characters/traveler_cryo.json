@@ -98,6 +98,16 @@
 			"abilityType": "skill",
 			"behavior": "instant",
 			"cooldown": 15,
+			"cooldownStartDelay": 17,
+			"frames": {
+				"anim": 66,
+				"N": 32,
+				"E": 33,
+				"Q": 33,
+				"D": 33,
+				"J": 33,
+				"swap": 32
+			},
 			"tags": ["summon"],
 			"summons": [
 				{
@@ -121,8 +131,8 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 3,
-								"firstTickDelay": 1.25
+								"interval": 2.9333,
+								"firstTickDelay": 3.1167
 							},
 							"scaling": 38.51,
 							"stat": "atk",
@@ -163,7 +173,8 @@
 						"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
 						"Cadence (skill.go): the ticker first fires 60f after the cast and then every 180f (skillInterval = 3*60); each tick queues TWO crystals with hitmarks 5 and 8 plus the default 10f travel, landing at +15 and +18. ⚓ Authored as ONE series (first tick 1.25s from the cast, spawnsAt 0), ⛔ not two: the summon-tick ICD counter is keyed per SERIES (`aura.ts`, `${char.id}:summon:${label}:${series.index}`), so two series 3f apart applied Cryo TWICE per tick where gcsim's two crystals share one ICDTagElementalArt/Default counter and apply once — measured 8 applications per 12s Star as two series, 4 as one, gcsim 4. The second crystal survives as `gainStacks.amount: 2` on the Frostglow grant (two hits, two stacks). Cost: one tick marker per two-crystal volley. Over the 12s Star that is 4 ticks / 8 crystals, 5 / 10 at C4. Standard gate, so no icdGate. Ice Crystal DMG 38.51% ATK at talent level 10 (sidecar).",
 						"↻ SUPERSEDED 2026-09-19 — this note used to say the per-hit crystal under Radiance: Stellar-Conduct was NOT modelled (no application frame). It is modelled now: see the RADIANCE IS A WINDOW note below.",
-						"⚓ RADIANCE IS A WINDOW HERE (Radiance-window round, 2026-09-19 — `docs/radiance-window-round.md` §7). Inside a Polestar Field (the 7s after a Stellar-Conduct; gcsim's `radiance == conduct` is exactly `StatusIsActive(PolestarFieldKey)`) the Star does NOT stop — it changes trigger. The interval series is gated `not(inPolestarField)` and asked PER TICK: a refused volley is skipped and the 3s cadence runs on underneath (gcsim's `skillTicker` skips the attack and re-queues), so the next volley lands on the ORIGINAL phase. The per-hit crystal is the `onHit` proc beside it (source self, N/C/P, 0.2s, landing 3f after the hit — the draft's `naCaPlungeCB`), gated `inPolestarField`. ⚠️ It keeps its own ICD counter where gcsim's `queueCrystal` shares one; the two streams never overlap in time, so it shows only at a field's edges."
+						"⚓ RADIANCE IS A WINDOW HERE (Radiance-window round, 2026-09-19 — `docs/radiance-window-round.md` §7). Inside a Polestar Field (the 7s after a Stellar-Conduct; gcsim's `radiance == conduct` is exactly `StatusIsActive(PolestarFieldKey)`) the Star does NOT stop — it changes trigger. The interval series is gated `not(inPolestarField)` and asked PER TICK: a refused volley is skipped and the 3s cadence runs on underneath (gcsim's `skillTicker` skips the attack and re-queues), so the next volley lands on the ORIGINAL phase. The per-hit crystal is the `onHit` proc beside it (source self, N/C/P, 0.2s, landing 3f after the hit — the draft's `naCaPlungeCB`), gated `inPolestarField`. ⚠️ It keeps its own ICD counter where gcsim's `queueCrystal` shares one; the two streams never overlap in time, so it shows only at a field's edges.",
+						"↻ CADENCE RE-READ 2026-09-20 (gcsim e82383e4e — Cryo Traveler MERGED as #2742; the DRAFT this kit was first authored from had placeholder E/Q slices and a different Star cadence.) skill.go now states ’skillFirstTickDelay = 178`, `skillInterval = 163 + 13` (176f) and `skillTickHitmarks = {0, 13}` with a default 9f travel, so the first volley LANDS at 187f (3.1167s) and repeats every 176f (2.9333s) — the draft said 60f + 180f with crystals at +15/+18. Still ONE series of two-crystal volleys (⚓ Nate, 2026-09-19: one 1U application per volley is correct — the pair shares the standard ICD), still 4 volleys inside the 12s (178 / 354 / 530 / 706f; the status lasts `skillHitmark + 720`). ⚠️ The 9f is gcsim`s travel default, carried in `firstTickDelay` on the Oz (`ozTravel`) and Emilie precedent — a summon tick, like a cast, lands WITH travel."
 					]
 				}
 			],
@@ -216,7 +227,6 @@
 					]
 				}
 			],
-			"caveat": "The Star's marks come from gcsim's unreleased draft, not the game text: one two-crystal volley every 3s, or — while a Polestar Field stands — one crystal per hit he lands instead. The cast itself is still untimed.",
 			"_curatorNotes": [
 				"⚠️⚠️ THE ICE-CRYSTAL CADENCE IS THE ONE MISSING NUMBER, AND MOST OF THE UNAUTHORED KIT HANGS OFF IT. The talent says the Star \"periodically fires ice crystals\" and never says how often. Checked 2026-08-31: genshin-db 5.2.13 has no interval label (its combat2 attributes are Skill DMG / Ice Crystal DMG / Duration / CD only), the Fandom talent page is a {{Stub}} with its Gameplay Notes section commented out and empty, and gcsim has no Cryo Traveler at all. ⛔ So no summonTick series is authored — never fake timing — and the summon is a presence bar with no tick markers. Ice Crystal DMG is 38.51% ATK Cryo at talent level 10 and is ready to author the moment a cadence is stated.",
 				"⛔ THE Radiance: Stellar-Conduct BRANCH IS ALSO UNAUTHORED, and for a different reason. It IS fully specified — the Star stops firing on an interval and instead fires one crystal whenever the Traveler lands a Normal, Charged or Plunging attack, once every 0.2s — which is the coordinated-attack round's onHit damage-proc shape, summon-hosted so the Star's own liveness is the window. But `sim/procs.ts` registers a proc only when the effect carries a non-empty application[], and the crystal TRAVELS, so its frame offset is a measurement nobody has made. Authoring `frame: 0` would be inventing a travel time; authoring the effect without application[] would be inert data. Both halves of this series unblock together the moment gcsim ships the character.",
@@ -224,9 +234,17 @@
 				"Frostpierce Star duration is 12s, and C4 takes it to 15s via durationModifiers rather than a separate summon — the modifier carries its own `constellation` gate because it lives on the SKILL, not on the C4 entry, so collection-time constellation gating does not reach it.",
 				"⛔ `duration` is deliberately NOT set on the ability. The Star's lifetime belongs to summons[0]; a stray ability-level `duration` on an instant cast is the pattern twelve abilities already carry and no accessor reads.",
 				"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
-				"↻ 2026-09-15: the crystal cadence is stated now — see the summon's notes. Frostglow is authored on this ability as a rotation-scoped stack key, which unblocks C2 and C6 below and the burst's consume."
+				"↻ 2026-09-15: the crystal cadence is stated now — see the summon's notes. Frostglow is authored on this ability as a rotation-scoped stack key, which unblocks C2 and C6 below and the burst's consume.",
+				"↻ FRAMES LANDED 2026-09-20 (gcsim e82383e4e — Cryo Traveler MERGED as #2742; the DRAFT this kit was first authored from had placeholder E/Q slices and a different Star cadence.) `frames` is gcsim’s merged slice (`InitAbilSlice(66)`; N/swap 32, E/Q/D/J 33 — gcsim assumes the male slice equals the female), `application[]` is the stab at `skillHitmark = 19` (1U; the crystals are the summon’s series, not the cast`s), and `cooldownStartDelay: 17` is `SetCDWithDelay(ActionSkill, 15*60, 17)`. The character leaves FRAMELESS_EXEMPT with this commit; every earlier note here that says NO FrameMaps / placeholder describes the draft."
 			],
-			"description": "Stabs at the opponent with the Traveler's weapon, which releases an ice-cold fog. This deals Cryo DMG to opponents up ahead and forms a Frostpierce Star next to the Traveler.\n\nFrostpierce Star\n· Follows your own party members around the field and periodically fires ice crystals at nearby opponents, dealing Cryo DMG.\nRadiance: Stellar-Conduct: The Frostpierce Star will no longer fire ice crystals at opponents at intervals but will instead fire an ice crystal at opponents in a coordinated attack when the Traveler hits an opponent with a Normal Attack, Charged Attack, or Plunging Attack. This effect can trigger once every 0.2s.\n· When an opponent is hit with an ice crystal, the Traveler gains 1 stack of **Frostglow** (max 8 stacks).\n· When not in combat, Frostglow expires after 30s."
+			"description": "Stabs at the opponent with the Traveler's weapon, which releases an ice-cold fog. This deals Cryo DMG to opponents up ahead and forms a Frostpierce Star next to the Traveler.\n\nFrostpierce Star\n· Follows your own party members around the field and periodically fires ice crystals at nearby opponents, dealing Cryo DMG.\nRadiance: Stellar-Conduct: The Frostpierce Star will no longer fire ice crystals at opponents at intervals but will instead fire an ice crystal at opponents in a coordinated attack when the Traveler hits an opponent with a Normal Attack, Charged Attack, or Plunging Attack. This effect can trigger once every 0.2s.\n· When an opponent is hit with an ice crystal, the Traveler gains 1 stack of **Frostglow** (max 8 stacks).\n· When not in combat, Frostglow expires after 30s.",
+			"application": [
+				{
+					"frame": 19,
+					"element": "cryo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "traveler_cryo__burst__frostbound_javelin",
@@ -235,6 +253,12 @@
 			"abilityType": "burst",
 			"behavior": "instant",
 			"cooldown": 15,
+			"frames": {
+				"anim": 75,
+				"E": 74,
+				"J": 74,
+				"swap": 73
+			},
 			"energyCost": 60,
 			"tags": [],
 			"effects": [
@@ -256,9 +280,25 @@
 				"⛔ FROSTGLOW IS NOT AUTHORED AS A STACK RESOURCE, and the blocker is upstream: stacks are granted by ice-crystal hits, and the crystal series has no cadence (see the skill's notes). A gainStacks key nothing can grant would draw nothing and would make C6's perStack bar permanently empty, so the whole Frostglow chain — the +5.0%/stack burst DMG bonus, the two extra strikes at 8 stacks, and C6 — waits on the same number.",
 				"⛔ \"Radiance: Stellar Glimmer: DMG from the current Elemental Burst is changed to Cryo DMG of the corresponding Stellar Glimmer reaction type\" is a damage-TYPE conversion and has no home in this schema — the tool draws no damage numbers, so there is no on-screen quantity for it to change. Description-only, deliberately.",
 				"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
-				"↻ 2026-09-15: consumeStacks authored. Still description-only: the per-stack multiplier on the javelin (a damage number) and the +2 strikes at 8 stacks (an application[] the draft's placeholder frames cannot state — burstTickHitmarks 60/75/81/87/93 from a burstSpawnFrame of 55 are recorded here for when the PR lands)."
+				"↻ 2026-09-15: consumeStacks authored. Still description-only: the per-stack multiplier on the javelin (a damage number) and the +2 strikes at 8 stacks (an application[] the draft's placeholder frames cannot state — burstTickHitmarks 60/75/81/87/93 from a burstSpawnFrame of 55 are recorded here for when the PR lands).",
+				"↻ FRAMES LANDED 2026-09-20 (gcsim e82383e4e — Cryo Traveler MERGED as #2742; the DRAFT this kit was first authored from had placeholder E/Q slices and a different Star cadence.) `frames` is `InitAbilSlice(75)` with E/J 74 and swap 73. `application[]` is the ZERO-Frostglow javelin — three strikes at `burstSpawnFrame` 36 + `burstTickHitmarks` {0, 33, 38} + the default 6f travel = 42 / 75 / 80, the first at 1U and the rest inside the standard ICD (the draft recorded a spawn of 55 and hitmarks 60/75/81/87/93 — superseded). ⚠️ STILL description-only: the +2 strikes at 8 Frostglow (hitmarks +35 and +42), which need an `application[]` that varies with a stack count."
 			],
-			"description": "Generates an ice javelin with the power of Cryo, then directs it at enemies to deal multiple instances of Cryo DMG.\nWhen cast, the Traveler consumes all existing stacks of Frostglow, which in turn increases the DMG dealt by this Elemental Burst. When 8 stacks of **Frostglow** are consumed, the number of DMG instances caused by the javelins is also increased.\n\n**Radiance: Stellar Glimmer**: DMG from the current Elemental Burst is changed to Cryo DMG of the corresponding Stellar Glimmer reaction type."
+			"description": "Generates an ice javelin with the power of Cryo, then directs it at enemies to deal multiple instances of Cryo DMG.\nWhen cast, the Traveler consumes all existing stacks of Frostglow, which in turn increases the DMG dealt by this Elemental Burst. When 8 stacks of **Frostglow** are consumed, the number of DMG instances caused by the javelins is also increased.\n\n**Radiance: Stellar Glimmer**: DMG from the current Elemental Burst is changed to Cryo DMG of the corresponding Stellar Glimmer reaction type.",
+			"application": [
+				{
+					"frame": 42,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 75,
+					"element": "cryo"
+				},
+				{
+					"frame": 80,
+					"element": "cryo"
+				}
+			]
 		}
 	],
 	"passives": [

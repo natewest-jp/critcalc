@@ -1964,18 +1964,10 @@ const FRAMELESS_EXEMPT = new Set([
 	// no `application[]`, no `chargedIcdWindow` (⚠️ he is a polearm, so that
 	// last one is a live question the moment gcsim ships him). He applies his
 	// element provisionally at the cast until then. (Odette and Prune left
-	// this list 2026-09-15 — gcsim main shipped both, #2749 / #2712.)
-	'alyosha',
-	// Cryo Traveler, hand-built 2026-08-31 (⛔ the ingest generator refuses
-	// Travelers — element splits are hand-built). Its NORMAL frames are real,
-	// derived from a three-way census (six byte-identical Traveler JSONs, the
-	// same attackHitmarks in all six gcsim traveler/common packages, identical
-	// genshin-db multipliers), but gcsim has no Cryo Traveler on main. The one
-	// source is DRAFT PR #2742 (2026-09-06), whose E/Q slices are literally
-	// "Placeholder using DMC frames" — so its E/Q still have no FrameMaps. What
-	// the draft DID state (2026-09-15) is the Frostpierce Star's cadence, which
-	// is authored; Stage 4 proper waits for the PR to land.
-	'traveler_cryo'
+	// this list 2026-09-15 — gcsim main shipped both, #2749 / #2712. The Cryo
+	// Traveler left 2026-09-20: #2742 merged with real E/Q slices in place of the
+	// draft's "Placeholder using DMC frames".)
+	'alyosha'
 ]);
 
 describe('FrameMap coverage', () => {

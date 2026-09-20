@@ -1979,33 +1979,36 @@ export function runRotation(
 							abilityId: activeNormal?.id,
 							element: pElement
 						});
-						// The plunge's landing — see `landSwing`: the state opener, the
-						// offers and the hit record, in that order, at one instant.
+						// Plunge-opened transient state (sQ primitive): Varesa's plunge opens
+						// `apexDrive` (140f), during which `sQ` resolves to Volcano Kablam;
+						// provenance is the plunge's action event (post-P4 #2).
+						// ⚓⚓ AT THE PLUNGE'S START (⚓ Nate, 2026-09-20) — the one opener that
+						// does not wait for its action's end. The 140f IS gcsim's
+						// `apexDuration`, and gcsim adds the status in the plunge action itself
+						// (`getApexDrive`, no delay): (start, 140f) is ONE measurement, and we
+						// had taken its length and moved its anchor — first to the swing's end,
+						// then to the landing — so the window ran 38–40f past gcsim's and a long
+						// `P … sQ` chain resolved Kablam where gcsim gives the ordinary burst.
+						// The kit says only "after using a Plunging Attack". ⚠️ gcsim's status
+						// is hitlag-extended; we model no hitlag anywhere.
+						// ⚠️ It also makes the landing's hit find the state by construction —
+						// the guarantee the old end-of-swing ordering existed to give.
+						const pSpec = activeNormal?.actionOpensState?.plunge;
+						if (pSpec) {
+							applyTransientState(
+								ctx,
+								pSpec,
+								cs,
+								char.id,
+								blockStart,
+								plungeStates,
+								charConstellationLevel,
+								{ sourceActionId: plungeEv.id }
+							);
+						}
+						// The plunge's landing — see `landSwing`: the offers and the hit
+						// record at one instant.
 						const landPlunge = (at: number): void => {
-							// Post-plunge transient state (sQ primitive): the plunge LANDING
-							// opens a short gating window — Varesa's plunge opens `apexDrive`
-							// (140f) during which `sQ` resolves to Volcano Kablam; provenance
-							// is the plunge's action event (post-P4 #2).
-							// ⚓ It lives INSIDE the landing closure (§1.K stage 2): the hit
-							// below must find the state its own plunge opened, so the opener
-							// can never sit later than the hit. With no landing frame both
-							// fall back to the swing's end together, as they always did.
-							// ⚠️ gcsim adds the status at the plunge's START (`getApexDrive`,
-							// no delay) for the same 140f, so our window still ends late by
-							// the fall — by less than when it opened at the swing's end.
-							const pSpec = activeNormal?.actionOpensState?.plunge;
-							if (pSpec) {
-								applyTransientState(
-									ctx,
-									pSpec,
-									cs,
-									char.id,
-									at,
-									plungeStates,
-									charConstellationLevel,
-									{ sourceActionId: plungeEv.id }
-								);
-							}
 							// Offer the plunge to the aura at the landing. Plunges carry no
 							// ICD at all (gcsim census in resolveActionIcd), so an infused
 							// plunge string applies on every landing.

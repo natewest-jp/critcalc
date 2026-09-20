@@ -249,6 +249,24 @@ describe("a tick series gated on the field pauses under it — the Cryo Traveler
 	const TRAVELER = travelerCryoJson as unknown as CharacterData;
 	const LISA = lisaJson as unknown as CharacterData;
 	const BENNETT = bennettJson as unknown as CharacterData;
+	// ⚓ The Star's cadence, read from the DATA rather than restated: it moved
+	// once already (2026-09-20, 1.25s + 3s from gcsim's draft → 187f + 176f from
+	// the merged source) and three tests here had the old numbers inline.
+	const STAR_TICK = (
+		TRAVELER.abilities.find((a) => a.abilityType === 'skill') as unknown as {
+			summons: { effects: { trigger: { interval: number; firstTickDelay: number } }[] }[];
+		}
+	).summons[0].effects[0].trigger;
+	// The cast's own stab — it has landed at a stated frame since the merged
+	// source gave the skill an `application[]`, so it is no longer at the cast
+	// instant and has to be told apart from the Star's crystals by name.
+	const STAB_F = (
+		TRAVELER.abilities.find((a) => a.abilityType === 'skill') as unknown as {
+			application: { frame: number }[];
+		}
+	).application[0].frame;
+	const FIRST_F = framesOf(STAR_TICK.firstTickDelay);
+	const CADENCE_F = framesOf(STAR_TICK.interval);
 	const run = (notation: string, mate: CharacterData) => {
 		const chars = [TRAVELER, mate];
 		const r = parseNotation(
@@ -264,7 +282,10 @@ describe("a tick series gated on the field pauses under it — the Cryo Traveler
 		if (!star || star.kind !== 'summon') throw new Error('no Star');
 		const prisms = r.windows.filter((w) => w.kind === 'gadget');
 		const entityApps = r.applications
-			.filter((a) => a.characterId === TRAVELER.id && a.time > star.start)
+			.filter(
+				(a) =>
+					a.characterId === TRAVELER.id && a.time > star.start && a.time !== star.start + STAB_F
+			)
 			.map((a) => a.time);
 		return { star, prisms, entityApps };
 	};
@@ -274,8 +295,8 @@ describe("a tick series gated on the field pauses under it — the Cryo Traveler
 		// Prism stands 7s, and nothing re-opens it.
 		const { star, prisms, entityApps } = run('Lisa E > Cryo Traveler E ~12s', LISA);
 		expect(prisms).toHaveLength(1);
-		const first = star.start + framesOf(1.25);
-		const cadence = framesOf(3);
+		const first = star.start + FIRST_F;
+		const cadence = CADENCE_F;
 		// The first two volleys fall inside the field; the third is the first out.
 		expect(first + cadence).toBeLessThan(prisms[0].end);
 		expect(star.ticks).toEqual([first + 2 * cadence, first + 3 * cadence]);
@@ -298,30 +319,41 @@ describe("a tick series gated on the field pauses under it — the Cryo Traveler
 		const r = parse('Cryo Traveler E > Fischl E N3 > Cryo Traveler N5 Q', chars);
 		const star = r.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
 		if (!star || star.kind !== 'summon') throw new Error('no Star');
-		const crystals = (star.ticks ?? []).filter((t) => t !== star.start + framesOf(1.25));
+		const crystals = (star.ticks ?? []).filter((t) => t !== star.start + FIRST_F);
 		expect(crystals.length).toBeGreaterThanOrEqual(4);
 		const prism = r.windows.find((w) => w.kind === 'gadget');
 		for (const t of crystals) {
 			expect(t).toBeGreaterThan(prism!.start);
 			expect(t).toBeLessThan(prism!.end);
 		}
-		// One volley (+2) before the field, then +1 per crystal-bearing hit.
+		// +1 per crystal-bearing hit, and NOTHING from the interval series here.
+		// ↻ 2026-09-20: with the merged cadence the first volley lands 187f after
+		// the cast — inside the field Fischl has opened by then — so it is refused
+		// like any other interval tick under a Prism. At the draft's 75f it landed
+		// before the field and this read `2 + crystals`.
+		expect(star.ticks ?? []).not.toContain(star.start + FIRST_F);
 		const burst = r.events.find((e) => e.kind === 'cast' && e.ability === 'burst');
 		const glow = burst?.kind === 'cast' ? burst.stackContext?.get('frostglow') : undefined;
-		expect(glow).toBe(2 + crystals.length);
+		expect(glow).toBe(crystals.length);
 		// ⚓ And with no field: no per-hit crystal at all, Frostglow from volleys only.
 		const dry = parse('Cryo Traveler E > Bennett E N3 > Cryo Traveler N5 Q', [TRAVELER, BENNETT]);
 		const dryStar = dry.windows.find((w) => w.kind === 'summon' && w.characterId === TRAVELER.id);
 		expect(dryStar?.kind === 'summon' && dryStar.ticks).toHaveLength(4);
 		const dryBurst = dry.events.find((e) => e.kind === 'cast' && e.ability === 'burst');
-		expect(dryBurst?.kind === 'cast' && dryBurst.stackContext?.get('frostglow')).toBe(4);
+		// ↻ 2026-09-20: ONE volley (+2) has landed by the burst at the merged cadence
+		// (187f, then 363f); at the draft's 75f + 180f it was two.
+		expect(dryBurst?.kind === 'cast' && dryBurst.stackContext?.get('frostglow')).toBe(2);
 	});
 
 	it('Ever-Keen Frost infuses the swings a field covers — not the ones before the first Conduct', () => {
 		const FISCHL = fischlJson as unknown as CharacterData;
 		const chars = [TRAVELER, FISCHL];
 		const r = parseNotation(
-			'Fischl N1 > Cryo Traveler E N5 N5 > Fischl E > Cryo Traveler N5 N5',
+			// ↻ 2026-09-20: the `~1.5s` puts the Star's end INSIDE the second string.
+			// The skill used to draw with generic cast timing; with gcsim's merged
+			// slice (E → N at 32f) everything after it moved earlier and the lapse
+			// fell exactly between two strings, where there is nothing to split.
+			'Fischl N1 > Cryo Traveler E N5 N5 > Fischl E > Cryo Traveler N5 ~1.5s N5 N5',
 			(n) => chars.find((c) => c.displayName === n) ?? null,
 			8,
 			{},
