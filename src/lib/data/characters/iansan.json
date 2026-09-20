@@ -19,38 +19,38 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 28,
-						"hit": 13,
-						"N": 22,
-						"C": 22
+						"anim": 27,
+						"hit": 14,
+						"N": 21,
+						"C": 21
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
 						"anim": 31,
-						"hit": 16,
-						"N": 22,
+						"hit": 7,
+						"N": 25,
 						"C": 25
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 51,
-						"hit": 12,
-						"N": 41
+						"anim": 55,
+						"hit": 22,
+						"N": 53
 					}
 				}
 			],
 			"chargeFrames": {
 				"anim": 55,
 				"lands": 21,
-				"N": 49,
-				"E": 49,
+				"N": 52,
+				"E": 51,
 				"Q": 50,
-				"D": 24,
-				"J": 24,
+				"D": 21,
+				"J": 21,
 				"swap": 49
 			},
 			"_curatorNotes": [
@@ -93,36 +93,38 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 28,
-						"hit": 13,
-						"N": 22,
-						"C": 22
+						"anim": 27,
+						"hit": 14,
+						"N": 21,
+						"C": 21
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
 						"anim": 31,
-						"hit": 16,
-						"N": 22,
+						"hit": 7,
+						"N": 25,
 						"C": 25
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 51,
-						"hit": 12,
-						"N": 41
+						"anim": 55,
+						"hit": 22,
+						"N": 53
 					}
 				}
 			],
 			"chargeFrames": {
-				"anim": 52,
-				"N": 51,
-				"E": 51,
-				"J": 50,
-				"swap": 49
+				"anim": 33,
+				"lands": 25,
+				"N": 32,
+				"Q": 24,
+				"D": 30,
+				"J": 27,
+				"swap": 31
 			},
 			"caveat": "Not modeled: for 5s after the skill, a Normal Attack auto-triggers a free empowered stomp. The timeline only swaps the Charged Attack while in the Nightsoul state, so a Normal there is shown as an ordinary hit.",
 			"_curatorNotes": [
@@ -130,7 +132,8 @@
 				"Authored as a normal-typed dual variant with state condition (varesa/cyno-shape). NO `infusion` field — base normals stay Physical even in NS; only the CA changes element.",
 				"fastSkill 5s post-skill window: gcsim auto-converts N → CA during this window even before NS exit. Schema can't gate on a per-cast post-action transient (apexDrive-equivalent gap). The state:nightsoulBlessing match covers the dominant case (NS active = CA replaced).",
 				"[A7] The Nightsoul Charged Attack (Swift Stormflight) is a single Electro stomp, 166.4% ATK at level 10, hitmark ~14 frames. Only the charge timing is authored on the in-Nightsoul variant (swiftFrames); no infusion field, so the empowered CA's Electro element is not carried and the base normals correctly stay Physical. Genuine gap retained in the rewrite: the 5s post-skill fastSkill window (Normal auto-converts to a free stomp) is not separately gated — apexDrive-equivalent per-cast transient-state gap; the state:nightsoulBlessing match covers the dominant case since NS is active during that window.",
-				"↻ 2026-09-15: hits re-shaped with the base normal (identical slices); Swift Stormflight chargeFrames `anim` 49 → 52 — swiftFrames = InitAbilSlice(52) (gcsim PR #2374, unmerged, branch `iansan`); 49 is its swap override."
+				"↻ 2026-09-15: hits re-shaped with the base normal (identical slices); Swift Stormflight chargeFrames `anim` 49 → 52 — swiftFrames = InitAbilSlice(52) (gcsim PR #2374, unmerged, branch `iansan`); 49 is its swap override.",
+				"↻ 2026-09-20 (gcsim e82383e4e, Iansan merged as #2374): frames re-read from the MERGED source — the first pass was authored from the PR head, which moved before it landed. gcsim has ONE normal-attack set for both states (attack.go has no Nightsoul branch), so these three hits mirror Weighted Spike. The Swift Stormflight charge is its own slice (charge.go `swiftFrames`: InitAbilSlice(33), N 32 / Q 24 / D 30 / J 27 / swap 31, `swiftHitmark` 25) — read from source because the dumper cannot reach this form."
 			]
 		},
 		{
@@ -141,7 +144,7 @@
 			"behavior": "stance",
 			"application": [
 				{
-					"frame": 21,
+					"frame": 9,
 					"element": "electro",
 					"units": 1
 				}
@@ -150,12 +153,12 @@
 			"opensState": "nightsoulBlessing",
 			"terminatesOnSwap": false,
 			"frames": {
-				"anim": 42,
-				"N": 43,
-				"Q": 43,
-				"D": 31,
+				"anim": 137,
+				"N": 32,
+				"Q": 31,
+				"D": 27,
 				"J": 32,
-				"swap": 42
+				"swap": 33
 			},
 			"cooldown": 16,
 			"tags": [],
@@ -196,18 +199,18 @@
 			"behavior": "instant",
 			"application": [
 				{
-					"frame": 34,
+					"frame": 38,
 					"element": "electro",
 					"units": 1
 				}
 			],
 			"frames": {
-				"anim": 69,
-				"N": 71,
-				"E": 71,
-				"D": 72,
-				"J": 70,
-				"swap": 69
+				"anim": 45,
+				"N": 43,
+				"E": 42,
+				"D": 44,
+				"J": 43,
+				"swap": 41
 			},
 			"cooldown": 18,
 			"energyCost": 70,

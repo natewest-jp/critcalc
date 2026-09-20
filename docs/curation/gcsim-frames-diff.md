@@ -8,7 +8,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **126** authored · **117** with a gcsim source
-- FrameMaps: **1143** authored · **1000** matching gcsim exactly · **53** disagreeing · **90** uncovered
+- FrameMaps: **1143** authored · **1006** matching gcsim exactly · **47** disagreeing · **90** uncovered
 - skill/burst application schedules observed: **291** · unobserved: **19**
 - summon tick streams cross-checked: **59**
 - hits carrying a measured gcsim ICD cadence: **3032** of **3035**
@@ -25,9 +25,9 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 401 / 419 | 11f |
-| E/Q → C | 302 / 320 | 9f |
-| E/Q → Q | 168 / 180 | 3f |
+| E/Q → P | 402 / 419 | 11f |
+| E/Q → C | 303 / 320 | 9f |
+| E/Q → Q | 169 / 180 | 3f |
 | E/Q → E | 135 / 144 | 3f |
 | E/Q → N | 129 / 133 | 3f |
 | E/Q → J | 111 / 112 | 14f |
@@ -36,9 +36,9 @@ difference, per transition that currently falls back.
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **404** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **405** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (53)
+## 2. FrameMaps that disagree (47)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -60,12 +60,6 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | escoffier | `escoffier__normal__kitchen_skills.hits[1]` | anim 21→30 |
 | faruzan | `faruzan__burst__the_winds_secret_ways.frames` | C 61→71 |
 | flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | N 102→53, E 103→53, D 103→51, J 103→50, swap 91→81, anim 91→81 |
-| iansan | `iansan__normal__weighted_spike.hits[0]` | N 22→21, C 22→21, anim 28→27, hit 13→14 |
-| iansan | `iansan__normal__weighted_spike.hits[1]` | N 22→25, hit 16→7 |
-| iansan | `iansan__normal__weighted_spike.hits[2]` | N 41→53, anim 51→55, hit 12→22 |
-| iansan | `iansan__normal__weighted_spike.chargeFrames` | N 49→52, E 49→51, D 24→21, J 24→21 |
-| iansan | `iansan__skill__thunderbolt_rush.frames` | N 43→32, Q 43→31, D 31→27, swap 42→33, anim 42→137 |
-| iansan | `iansan__burst__the_three_principles_of_power.frames` | N 71→43, E 71→42, D 72→44, J 70→43, swap 69→41, anim 69→45 |
 | ifa | `ifa__skill__airborne_disease_prevention.frames` | swap 31→631, anim 31→631 |
 | ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator.frames` | anim 127→130 |
 | keqing | `keqing__skill__stellar_restoration.frames` | anim 28→37 |
