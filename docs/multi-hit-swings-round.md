@@ -104,15 +104,15 @@ questions the design depends on:
 
 ## 5. Known traps, carried from §1.K
 
-- A data writer edits with `jsonc-parser`'s `modify`. `format(JSON.stringify())`
-  reflows the hand-formatted corpus (14,190 lines for 233 numbers).
+- A data writer NEVER ends with `format(JSON.stringify(data))` — it reflows the
+  hand-formatted corpus (14,190 lines for 233 numbers). Mutate the parsed object
+  and hand it to `surgicalRewrite` (`scripts/lib/json-edit.mjs`), or `modify`.
 - Ship the writer with a dry-run REPORT and read its multi-name section — the
   own-hit rule was wrong twice and the report is what caught it.
 - `lands` is in no gcsim slice: `preserveFrameMap` / `withLands` carry it, and
   both must learn the array form.
-- ⚠️ `migrate-frames-shape`'s PRESERVE path adds an explicit `swap: <anim>` to a
-  map that states `hit`, which moves its swap cancel from the hitmark to the full
-  animation. Found on Iansan 2026-09-20, not fixed; don't run it with `--write`
-  over maps you have not diffed.
+- ⚠️ `surgicalRewrite` does not apply a pure key REORDER, and it diffs arrays
+  element-wise only at equal length — a `lands` that becomes an array replaces
+  the scalar whole, which is what you want.
 - The oracle cannot adjudicate an INFUSED string — no fixture spams one. Measure
   with a probe and say so.
