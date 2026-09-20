@@ -346,6 +346,21 @@ runs one character) or any C6 branch.
    Anemo absorber. Found by Nate on a Stellar-Conduct team — Lynette's Bogglecat
    Box hits Anemo and never the absorbed element, so it can never feed a Conduct.
    Jahoda's robots (§3) belong to that round, not this one.
+6. **The sequenced series is PUBLISHED by the live chain, not replayed at finalize**
+   (⚓ Nate took the recommendation, 2026-09-20). A replayed FILTER (Radiance) can
+   be wrong about one mark; a replayed SEQUENCE is wrong about every later one,
+   because each decision moves the next tick's TIME. The channel exists: finalize
+   already merges `ctx.stateGatedTicks` into `win.ticks`, bounded by the final span.
+   ⚠️ Finalize's hit synthesis must read the published list for such a series, and
+   the published record must say WHICH step fired. The Team Builder shows the
+   authored cycle.
+7. **Faruzan's Collapses: the aura lane only** — see §7.
+8. **Direct reaction damage gets its own round** — `docs/reaction-damage-round.md`.
+   Lumi's Heavy ships first as a tick that hits and applies nothing (E1) and gains
+   the heavy mark when that round lands.
+9. ⏭ **The in-game counts wait for Wednesday 2026-09-23** (Nate gets Nilou then, and
+   owns no Raiden — so §1.4's list, Nilou's two checks and the standing items go in
+   one session at the DPS dummy, whose log is the instrument).
 
 ## 7. Built
 
