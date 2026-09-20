@@ -3258,22 +3258,14 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		expect(wins).toHaveLength(1);
 		expect(wins[0].sourceCastId).toBeUndefined(); // opened by a plunge, not a cast
 		// Post-P4 #2: the plunge's action event is the window's provenance.
-		// ↻ §1.K stage 2 (2026-09-20): the window opens at the plunge's LANDING —
-		// `lands`, read from the data — and no longer at the swing's end, so the
-		// hit that lands there finds the state its own plunge opened.
+		// ↻ 2026-09-20 (⚓ Nate): the window opens at the plunge's START — gcsim's
+		// `getApexDrive` adds the 140f status in the plunge action itself, and
+		// (start, 140f) is one measurement. It opened at the swing's end, then
+		// briefly at the landing, both of which ran the window past gcsim's.
 		const plunge = result.events.find((e) => e.kind === 'action' && e.action === 'plunge');
 		expect(plunge).toBeTruthy();
 		expect(wins[0].sourceActionId).toBe(plunge!.id);
-		if (plunge!.kind === 'action') {
-			const plungeMap = (
-				varesaForTest.abilities.find((a) => a.abilityType === 'normal' && !('conditions' in a)) as {
-					plungeFrames: Parameters<typeof landsAt>[0];
-				}
-			).plungeFrames;
-			const landing = landsAt(plungeMap)!;
-			expect(landing).toBeLessThan(plunge!.duration);
-			expect(wins[0].start).toBe(plunge!.time + landing);
-		}
+		expect(wins[0].start).toBe(plunge!.time);
 		// Consumed by the Kablam cast.
 		expect(wins[0].end).toBe(qBars[0].start);
 	});
