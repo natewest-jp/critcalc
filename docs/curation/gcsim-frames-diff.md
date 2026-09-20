@@ -8,7 +8,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **126** authored · **117** with a gcsim source
-- FrameMaps: **1143** authored · **1006** matching gcsim exactly · **47** disagreeing · **90** uncovered
+- FrameMaps: **1145** authored · **1008** matching gcsim exactly · **47** disagreeing · **90** uncovered
 - skill/burst application schedules observed: **291** · unobserved: **19**
 - summon tick streams cross-checked: **59**
 - hits carrying a measured gcsim ICD cadence: **3032** of **3035**
@@ -25,18 +25,18 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 402 / 419 | 11f |
-| E/Q → C | 303 / 320 | 9f |
-| E/Q → Q | 169 / 180 | 3f |
+| E/Q → P | 404 / 421 | 11f |
+| E/Q → C | 305 / 322 | 9f |
+| E/Q → Q | 170 / 181 | 3f |
 | E/Q → E | 135 / 144 | 3f |
-| E/Q → N | 129 / 133 | 3f |
+| E/Q → N | 130 / 134 | 3f |
 | E/Q → J | 111 / 112 | 14f |
-| E/Q → D | 56 / 58 | 3f |
+| E/Q → D | 57 / 59 | 3f |
 | normal → P | 34 / 37 | 24f |
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **405** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **407** E/Q (median 11f).
 
 ## 2. FrameMaps that disagree (47)
 
@@ -592,7 +592,7 @@ which the pair alone cannot state.
 | sigewinne | `rebound_hydrotherapy` | Bolstering Bubblebalm 35f / 107f × 5 `cap` · 120f / first only | Rebound Hydrotherapy 35f / 107f × 5 · 3/5 `standard` | 120f / first only |
 | sucrose | `forbidden_creation_isomer_75_type_ii` | Large Wind Spirit 137f / 113f × 3 `cap` · `none` | Forbidden Creation-Isomer 75/Type II 137f / 113f × 3 · 3/3 `none` | `none` |
 | traveler_anemo | `gust_surge` | Gust Surge 94f / 30f × 9 · `standard` | Gust Surge 94f / 30f × 9 · 4/9 `standard` | 150f / every 3 |
-| traveler_cryo | `ice_fog_piercer` | Frostpierce Star 75f / 180f × 4 · `standard` | Frostpierce Star 187f / 13f × 8 · 4/8 `standard` ⚠️ **authored disagrees** ⚠️ **count 4→8** | 150f / first only |
+| traveler_cryo | `ice_fog_piercer` | Frostpierce Star 187f / 176f × 4 · `standard` | Frostpierce Star 187f / 13f × 8 · 4/8 `standard` ⚠️ **authored disagrees** ⚠️ **count 4→8** | 150f / first only |
 | traveler_dendro | `surgent_manifestation` | LeaLotus Lamp 91f / 90f × 8 · `standard` | Lea Lotus Lamp 91f / 90f × 8 · 4/8 `standard` | 150f / every 3 |
 | traveler_geo | `wake_of_earth` | — | Wake of Earth 66f / 15f × 4 · 2/4 `standard` | 150f / every 3 |
 | traveler_hydro | `rising_waters` | Rising Waters Bubble 34f / 30f × 8 · `standard` | — | — |
