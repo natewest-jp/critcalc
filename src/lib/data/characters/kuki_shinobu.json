@@ -109,7 +109,6 @@
 							"scaling": 45.43,
 							"stat": "atk",
 							"element": "electro",
-							"flatScaling": { "stat": "em", "ratio": 25 },
 							"_curatorNotes": [
 								"tickCap 8 / 10 at C2 (tick-cap round, 2026-08-18): gcsim skill.go `skilldur := 720` (900 at C2) with bellTick self-rescheduling every 90f while the ring status is live, so the tick landing on the window boundary fires. Measured 8 at C0 and 10 at C6; our duration-derived counts were 7 and 9. The C2 override is required, not decorative - a flat cap would freeze the constellation at 8."
 							]
@@ -192,22 +191,24 @@
 			"abilityType": "passive",
 			"effects": [
 				{
-					"type": "heal",
+					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"scaling": 75,
-					"stat": "em"
-				},
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 25,
-					"stat": "em"
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "skillFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 25
+					},
+					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Inherited manual triggers on both effects — actual trigger is onCast (skill), boosting the ring's periodic heal and DMG based on Shinobu's EM for the ring's duration. Reviewer to update triggers and confirm durationType."
+				"Inherited manual triggers on both effects — actual trigger is onCast (skill), boosting the ring's periodic heal and DMG based on Shinobu's EM for the ring's duration. Reviewer to update triggers and confirm durationType.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). Both effects resolved. The DAMAGE half CONVERTED to the flat-DMG house form: gcsim `asc.go:41-46` returns `EM × 0.25` and it lands as `FlatDmg` on both the ring tick (`skill.go:120`) and the skill's own cast hit (`skill.go:58`). ⚓ `skillFlatDmg` is EXACT rather than approximate — Sanctifying Ring is her only skill, so the class and the ability coincide, and her burst's Max-HP ticks take neither half. ⚠️ It was a DOUBLE STATEMENT: the same bonus was also folded into the ring's damage tick as `flatScaling {em, 25}`, removed in the same edit so the claim lives in one place, and the chip is the place with a pixel. The HEAL half was RETIRED: there is no heal-side buff stat for a flat add-on, and the bonus is already authored where it lands, as `flatScaling {em, 75}` on the ring's heal tick (the Kachina-A4 shape) — ⛔ that one stays folded. ⚠️ Its authored `target: \"self\"` was wrong besides; the ring heals the ACTIVE character (gcsim `Target: Core.Player.Active()`)."
 			],
 			"description": "Sanctifying Ring's abilities will be boosted based on Shinobu's Elemental Mastery:\n·Healing amount will be increased by 75% of Elemental Mastery.\n·DMG dealt is increased by 25% of Elemental Mastery."
 		}

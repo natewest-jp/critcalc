@@ -200,20 +200,83 @@
 			"abilityType": "passive",
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": [
+							"electroCharged",
+							"lunarCharged",
+							"superConduct",
+							"stellarConduct",
+							"aggravate",
+							"quicken",
+							"hyperbloom",
+							"overloaded",
+							"electroSwirl",
+							"electroCrystallize"
+						],
+						"source": "team"
+					},
 					"duration": 15,
-					"scaling": 20,
-					"stat": "atk",
-					"element": "electro"
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 20,
+						"cap": 1800
+					},
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 3,
+						"durationModel": "separate"
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": [
+							"electroCharged",
+							"lunarCharged",
+							"superConduct",
+							"stellarConduct",
+							"aggravate",
+							"quicken",
+							"hyperbloom",
+							"overloaded",
+							"electroSwirl",
+							"electroCrystallize"
+						],
+						"source": "team"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "burstFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 20,
+						"cap": 1800
+					},
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 3,
+						"durationModel": "separate"
+					}
 				}
 			],
 			"description": "After a nearby party member triggers an Electro-related reaction against an opponent, Electro DMG dealt by Clorinde's Normal Attacks and Last Lightfall will be increased by 20% of Clorinde's ATK for 15s. Max 3 stacks. Each stack is counted independently. The Maximum DMG increase achievable this way for the above attacks is 1,800.",
 			"_curatorNotes": [
 				"Inherited 'manual' trigger. Likely 'onReaction' with Electro-related reactions list (gcsim subscribes to OnElectroCharged, OnLunarCharged, OnSuperconduct, OnAggravate, OnQuicken, OnHyperbloom, OnOverload, OnSwirlElectro, OnCrystallizeElectro). Effect mechanism: adds FlatDmg to Normal/Burst hits (gcsim AddAttackMod with Element==Electro filter for Normals, all elements for Burst). Per-stack value = 20% ATK; cap at 1800 flat dmg per hit; max 3 independent stacks (each refresh-per-stack, 15s duration). Schema has no per-stack scaling structure or flat-dmg cap; reviewer to decide representation.",
-				"Effect type 'damage' is wrong — this is a flat-dmg ADD to existing Normal/Burst hits, not a separate damage instance. The schema's normalFlatDmg/burstFlatDmg buff (Cyno A2 reference) is closer. Reviewer to rewrite as a buff with stat: 'normalFlatDmg' / 'burstFlatDmg' filtered by electro element."
-			]
+				"Effect type 'damage' is wrong — this is a flat-dmg ADD to existing Normal/Burst hits, not a separate damage instance. The schema's normalFlatDmg/burstFlatDmg buff (Cyno A2 reference) is closer. Reviewer to rewrite as a buff with stat: 'normalFlatDmg' / 'burstFlatDmg' filtered by electro element.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). CONVERTED from one `damage`/`manual` effect to two `onReaction` flat-DMG buffs — the effect was never a damage instance: gcsim `asc.go:55-82` adds `min(totalATK × 0.2 × stacks, 1800)` to `FlatDmg` on Electro-element `AttackTagNormal` hits and on every `AttackTagElementalBurst` hit, for 15s. The reaction list is gcsim's nine subscriptions verbatim (`asc.go:24-46`); `source: \"team\"` because the kit says \"a nearby party member\" and because Hyperbloom arrives through `a1CBGadget`, whose source is a gadget rather than a character. ⚠️ The 1,800 cap is over the THREE-stack total, so at the one stack we draw it only binds above 3,000 ATK. ⚠️ `normalFlatDmg` cannot be filtered to Electro hits, so out of Night Vigil it is an over-claim on her Physical normals — that is what the caveat's second sentence is for. ⏭ NOT DONE HERE: her C2 upgrade (30% ATK / 2,700) still sits on the C2 entry as a `damage` effect reaching no surface — the same defect in the same kit, but not a `manual` trigger, so out of this round's scope. It wants either a C2-gated twin of this pair or `constellationScaling` (⛔ which has no reader in `buffWindows`/`buffDisplay` and would still print 20%)."
+			],
+			"caveat": "The bar shows one stack — three can run at once in game, for at most 1,800 bonus DMG on a hit. Only her Electro Normal Attacks take it, so outside Night Vigil her Normal Attacks get nothing."
 		},
 		{
 			"id": "clorinde__passive__lawful_remuneration",

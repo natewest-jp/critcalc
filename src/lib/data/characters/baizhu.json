@@ -332,17 +332,24 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Inherited manual trigger. Two effects: (1) Spiritvein DMG +8% Baizhu Max HP (HP-scaling flat DMG bonus; authored as scaling:8, stat:hp); (2) Gossamer Sprite / C2 Sprite hit has 100% chance of generating a Seamless Shield (once per Sprite). The shield-generation part is not authored. Reviewer to author the shield-generation effect."
+				"Inherited manual trigger. Two effects: (1) Spiritvein DMG +8% Baizhu Max HP (HP-scaling flat DMG bonus; authored as scaling:8, stat:hp); (2) Gossamer Sprite / C2 Sprite hit has 100% chance of generating a Seamless Shield (once per Sprite). The shield-generation part is not authored. Reviewer to author the shield-generation effect.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). The first clause CONVERTED from `damage`/`manual` to the flat-DMG house form. gcsim `burst.go:97-99`: inside `summonSpiritvein()`, `if Cons >= 6 { ai.FlatDmg = MaxHP * 0.08 }` — a flat addend on the Spiritvein's own AttackInfo. ⚓ `burstFlatDmg` is EXACT here rather than approximate: the burst is `nonHitting: true` with `application: []`, so its Spiritvein tick series is its only burst-class damage. ⏭ The SECOND clause is unauthored and is a Nate item, not a retirement item: a Gossamer Sprite hit generates a Seamless Shield (gcsim `cons.go:94-102` `makeC6CB` → `burst.go:63-71`), absorption identical to the burst's (`burstShieldPP[9]` / `burstShieldFlat[9]`) for `burstShieldExpiry` 152f = 2.53s. Authorable today as `{shield, target active, onCast ability skill, duration 2.53, scaling 1.44 hp, flat 169.4954, label \"Seamless Shield\"}` on THIS entry (the Beidou-C1 / Yanfei-C4 path through `getNonAbilityEffectsForCast`; ⛔ never on the skill ability — the `authorsShieldEffect` guard protects the summon fallback and his skill is tagged `heal`). Held back because it draws a NEW short shield bar beside the burst's 14s one during Pulsing Clarity, which is what the game does but wants a look first."
 			],
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
+					"type": "buff",
+					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"scaling": 8,
-					"stat": "hp"
+					"source": "character",
+					"stat": "burstFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 8
+					},
+					"snapshottable": false
 				}
 			],
 			"description": "Increases the DMG dealt by Holistic Revivification's Spiritveins by 8% of Baizhu's Max HP.\nAdditionally, when a Gossamer Sprite or Gossamer Sprite: Splice hits opponents, there is a 100% chance of generating one of Holistic Revivification's Seamless Shields. This effect can only be triggered once by each Gossamer Sprite or Gossamer Sprite: Splice."

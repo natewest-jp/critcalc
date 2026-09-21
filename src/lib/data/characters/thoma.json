@@ -239,19 +239,25 @@
 			"abilityType": "passive",
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
+					"type": "buff",
+					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"_curatorNotes": [
-						"Inherited `manual` trigger — do not rewrite. Probable trigger: fires on each Fiery Collapse hit (`onHit` with Fiery Collapse ability); adds FlatDmg = 2.2% of Thoma's Max HP. gcsim: `a4()` returns `0.022 * c.MaxHP()` and is passed as `FlatDmg` in `summonFieryCollapse` AttackInfo. Scaling buff — value depends on caster's Max HP; reviewer to author scaling-buff shape."
-					],
-					"scaling": 2.2,
-					"stat": "hp"
+					"source": "character",
+					"stat": "burstFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 2.2
+					},
+					"snapshottable": false
 				}
 			],
-			"description": "DMG dealt by Crimson Ooyoroi's Fiery Collapse is increased by 2.2% of Thoma's Max HP."
+			"description": "DMG dealt by Crimson Ooyoroi's Fiery Collapse is increased by 2.2% of Thoma's Max HP.",
+			"_curatorNotes": [
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). CONVERTED from `damage`/`manual` to the flat-DMG house form. gcsim `asc.go:30-34` returns `0.022 × MaxHP` and `burst.go:90` uses it as `FlatDmg` on the `summonFieryCollapse` AttackInfo — an addend on an existing hit, never its own attack. ⚠️ Crimson Ooyoroi's own cast hit (`burst.go:29-47`) is also `AttackTagElementalBurst` and carries NO `FlatDmg`, so `burstFlatDmg` is broader than the kit by that one hit; taken anyway because it is precisely what the house form already does (Cyno's A4 names \"Duststalker Bolt DMG\" and is authored `skillFlatDmg` beside his own skill hit), and the visible cost is a stat name on the always-on chip, never a printed damage number. ⚠️ gcsim's guard reads `Ascension < 1`, an upstream typo; the talent is A4."
+			]
 		}
 	],
 	"constellations": [
