@@ -431,21 +431,21 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
+						"type": "onHit",
+						"source": "others",
+						"filter": {
+							"element": ["hydro", "cryo"]
+						}
 					},
-					"duration": 12.57,
-					"durationType": "fixed",
+					"duration": 20,
+					"durationType": "refresh",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
 							{
 								"type": "ascension",
 								"min": 4
-							},
-							{
-								"type": "state",
-								"state": "inStance"
 							},
 							{
 								"type": "teamElementCount",
@@ -464,21 +464,21 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
+						"type": "onHit",
+						"source": "others",
+						"filter": {
+							"element": ["hydro", "cryo"]
+						}
 					},
-					"duration": 12.57,
-					"durationType": "fixed",
+					"duration": 20,
+					"durationType": "refresh",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
 							{
 								"type": "ascension",
 								"min": 4
-							},
-							{
-								"type": "state",
-								"state": "inStance"
 							},
 							{
 								"type": "teamElementCount",
@@ -497,21 +497,21 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
+						"type": "onHit",
+						"source": "others",
+						"filter": {
+							"element": ["hydro", "cryo"]
+						}
 					},
-					"duration": 12.57,
-					"durationType": "fixed",
+					"duration": 20,
+					"durationType": "refresh",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
 							{
 								"type": "ascension",
 								"min": 4
-							},
-							{
-								"type": "state",
-								"state": "inStance"
 							},
 							{
 								"type": "teamElementCount",
@@ -550,6 +550,13 @@
 								"elements": ["cryo", "hydro"],
 								"comparison": "=",
 								"value": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "inStance"
+								}
 							}
 						]
 					},
@@ -579,6 +586,13 @@
 								"elements": ["cryo", "hydro"],
 								"comparison": "=",
 								"value": 2
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "inStance"
+								}
 							}
 						]
 					},
@@ -608,6 +622,13 @@
 								"elements": ["cryo", "hydro"],
 								"comparison": ">=",
 								"value": 3
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "inStance"
+								}
 							}
 						]
 					},
@@ -625,10 +646,12 @@
 				"Tier multipliers (additive +10/+20/+70 normalDmgBonus and +5/+15/+60 burstDmgBonus) are mathematically equivalent to ×1.1/×1.2/×1.7 NA and ×1.05/×1.15/×1.6 burst in the standard Genshin damage formula `talent × (1 + ΣDmgBonus%)`.",
 				"Per-cast HitEvent emission from v0.8 is no longer consumed for Death's Crossing accrual but is retained on ParsedRotation for future renderer subscribers (Skirk-specific tests update accordingly). Per-hit fidelity (Cryo-infused teammate NAs) was already deferred under v0.8; the canonical-team-comp gating doesn't depend on per-hit granularity so the gap is no longer relevant for tier resolution.",
 				"[A7] Tier-3 headline +70% normalDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates (e.g. Escoffier + Furina + Citlali). Tiers gate on teamElementCount and correspond to in-stance NA x1.1/x1.2/x1.7 of base.",
-				"[A7] Tier-3 headline +60% burstDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount, corresponding to in-game burst x1.05/x1.15/x1.6 of base."
+				"[A7] Tier-3 headline +60% burstDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount, corresponding to in-game burst x1.05/x1.15/x1.6 of base.",
+				"↻ 2026-09-21 (event-ended buffs round): THE NORMAL-ATTACK TIERS ARE Death's Crossing ∩ Seven-Phase Flash NOW. Trigger `onCast skill` → `onHit`, `source: 'others'`, `filter.element: [hydro, cryo]`, 20s refreshing — gcsim `asc.go` `a4Init`: any OTHER Hydro/Cryo character's hit of their own element grants a 20s status, stance or no stance — and `whileState: 'inStance'` clips the drawn window to the stance, because `a4MultAttack` is read only by her skill-state attacks (`attack.go:165`). The `inStance` CONDITION is gone on purpose: it was an entry test, and the status usually predates the stance (Furina and Escoffier set up first). Measured `Furina E Q > Escoffier E Q > Skirk E N1…`: the bar is the stance, 5.35–17.92s, as before; `Skirk E …` cast before any teammate has hit now draws NOTHING until one does, where it drew the full tier from 0s; `Furina E > Skirk E N1 > Furina …` ends at the 0.55s stance's end instead of 12.57s later. ⚠️ STILL a stand-in: the TIER is party composition (`teamElementCount`), not a count of who has actually hit — a per-teammate count at a teammate's hit needs a holder-side stack snapshot the buff pass does not have (docs/cross-character-onhit-round.md §1.3). ⚠️ gcsim also requires the HITTER's own element to match the hit's; ours reads the hit's element only, so a Cryo-infused Hydro character's swing counts here.",
+				"↻ Same day: the three Burst tiers gained `not inStance`. `a4MultBurst` multiplies Havoc: RUIN (`burst.go:65,79`), the out-of-stance burst; hosted on a passive, the `onCast burst` tiers also fired on the in-stance Havoc: Extinction and drew a Ruin bonus over it (measured: «Skirk Q» +15% at 12.67s inside the stance). ⚠️ Out of stance the tier is STILL not drawn — the burst's own Serpent's Subtlety `burstDmgBonus` wins the one-bar-per-stat dedupe — which is what the caveat's last sentence says."
 			],
 			"description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG.",
-			"caveat": "The Normal Attack tier follows how many Cryo or Hydro teammates are in the party, though in game each must land a hit to grant a 20s Death's Crossing stack. The matching Burst DMG tier is not shown."
+			"caveat": "The Normal Attack tier follows how many Cryo or Hydro teammates are in the party, and appears once one of them has landed a Cryo or Hydro hit; in game each teammate's hit grants its own 20s stack. The matching Burst DMG tier is not shown."
 		}
 	],
 	"constellations": [
