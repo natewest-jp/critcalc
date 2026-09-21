@@ -130,10 +130,12 @@ they read naturally, fails lint; this round tried it and the lint caught it.
 
 ⏭ **Held back deliberately, and each wants a look rather than a round:**
 
-- **Baizhu C6's second clause** — a Seamless Shield off the Gossamer Sprite,
-  authorable today, spec in its curator note. It draws a NEW short shield bar
-  beside the burst's 14s one during Pulsing Clarity. Correct per the game;
-  net-new, so it was not smuggled in under a retirement.
+- ~~**Baizhu C6's second clause**~~ ✅ **CLOSED 2026-09-21 (⚓ Nate): not doing
+  it, and the curator note stays.** The Seamless Shield off the Gossamer Sprite
+  is authorable today and the full spec is in the note — ⚓ his call was that
+  Baizhu is not a relevant enough character for the intersection of "owns C6"
+  and "cares about a 2.5s shield bar" to be worth the pixel. ⛔ Not a gap to
+  re-raise; a nice-to-have someone can cash in from the note if it ever matters.
 - **Clorinde C2** — her A1 upgrade (30% ATK / 2,700 cap) still sits on the C2
   entry as a `damage` effect reaching no surface. Same defect in the same kit,
   but never a `manual` trigger, so out of this round's scope.
