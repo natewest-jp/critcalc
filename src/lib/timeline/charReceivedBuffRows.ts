@@ -51,6 +51,12 @@ export function projectCharReceivedBuffRows(
 			const char = getCharacter(w.characterId);
 			const fire = src.fireLabel ?? `${AB_LABEL[src.abilityClass ?? 'skill']} threshold`;
 			sourceLabel = `${char?.displayName ?? w.characterId} ${fire}`;
+		} else if (src.type === 'character' && src.trigger === 'teamHit') {
+			// Named after the hosting passive — the bar belongs to no cast of the
+			// holder's (cross-character onHit round, 2026-09-21).
+			const char = getCharacter(w.characterId);
+			const name = char?.displayName ?? w.characterId;
+			sourceLabel = src.hostLabel ? `${name} ${src.hostLabel}` : `${name} hit`;
 		} else if (src.type === 'character' && src.trigger === 'reaction') {
 			// ⚠ A reaction window carries no `abilityClass` — it is not bound to a
 			// cast — so the branch below would render "Varka undefined". Harmless

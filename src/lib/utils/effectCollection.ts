@@ -116,6 +116,9 @@ type EffectSource = {
 	/** An ability's id — present on abilities, passives and constellations,
 	 *  absent on a faction bonus. Read by `hostedElsewhere` for cast abilities. */
 	id?: string;
+	/** The entry's in-game name — absent on a faction bonus, whose rows are
+	 *  named from its provenance instead. */
+	name?: string;
 	abilityType?: string;
 	effects?: Effect[];
 	variants?: { input?: string[]; effects?: Effect[] }[];
@@ -402,6 +405,9 @@ export function getCharacterEffectsForOnHit(
 		if (hostedElsewhere(src, castAbilityId)) continue;
 		for (const fx of effectsForCast(src, castLabel)) {
 			if (fx.trigger.type !== 'onHit') continue;
+			// Anchored on the rotation-wide hit stream instead — see
+			// `getCharacterEffectsForTeamHit`.
+			if (listensToTeamHits(fx)) continue;
 			const explicit = fx.trigger.abilityType;
 			if (explicit !== undefined) {
 				// Array form matches any listed class (Escoffier C6 NA/CA/PL).
@@ -419,6 +425,51 @@ export function getCharacterEffectsForOnHit(
 		}
 	}
 	return normalizeBuffLikeEffects(result);
+}
+
+/** Whether an `onHit` effect listens to somebody ELSE's hits — its trigger
+ *  names a `source` other than the default `'self'`. */
+export function listensToTeamHits(fx: Effect): boolean {
+	return (
+		fx.trigger.type === 'onHit' && fx.trigger.source !== undefined && fx.trigger.source !== 'self'
+	);
+}
+
+/**
+ * ⚓⚓ THE `onHit` EFFECTS THAT LISTEN TO THE PARTY'S HITS, each with the name of
+ * the entry that hosts it (cross-character onHit round, 2026-09-21).
+ *
+ * `getCharacterEffectsForOnHit` answers "which effects does THIS cast / swing /
+ * tick of the holder's fire", and every pool built from it is anchored on the
+ * holder's own casts and swings. An effect whose trigger says `source: 'others'`,
+ * `'team'` or `'active'` is asking a different question — "which of ANYBODY's
+ * hits fire me" — and has no cast to be collected for. Until this existed it
+ * was pooled with the rest and anchored on the holder's own E and Q, the
+ * trigger's `source` never consulted: measured, Nicole's A4 ("Elemental DMG
+ * from nearby ACTIVE party members") drew at her own two casts and at none of
+ * her teammates' hits, and Mizuki's A4 ("when OTHER party members hit") fired
+ * off exactly the hits the talent excludes.
+ *
+ * ⚠️ NON-ABILITY HOSTS ONLY — passives, unlocked constellations, faction
+ * bonuses. A cast ability's effects belong to its casts (`hostedElsewhere`), a
+ * variant's REPLACE them, and with no cast in hand there is nothing to resolve
+ * either against; "while my burst is up" is a `state` condition on a passive
+ * host, which the per-hit gate answers. Lint B.19 refuses the other hosts
+ * rather than let one be authored and reach nothing.
+ *
+ * The host's name travels with the effect because it is the ROW's name: the
+ * bar is not any cast's, so "Nicole E" would be a claim about the wrong thing.
+ */
+export function getCharacterEffectsForTeamHit(
+	char: CharacterData,
+	cLevel: number
+): Array<{ hostName: string; effects: Effect[] }> {
+	const out: Array<{ hostName: string; effects: Effect[] }> = [];
+	for (const src of nonAbilityEffectSourcesOf(char, cLevel)) {
+		const effects = normalizeBuffLikeEffects((src.effects ?? []).filter(listensToTeamHits));
+		if (effects.length > 0) out.push({ hostName: src.name ?? '', effects });
+	}
+	return out;
 }
 
 /** Maps an input block to its damage-tag class (the `castType` slot used by

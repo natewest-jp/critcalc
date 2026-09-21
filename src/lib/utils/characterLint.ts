@@ -729,7 +729,8 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 	for (const fb of factionBonuses) {
 		for (const eff of fb.effects ?? []) {
 			lintEffect(c, `factionBonuses[${fb.faction}]`, eff, push, {
-				isPassiveOrConstellation: false
+				isPassiveOrConstellation: false,
+				isFactionBonus: true
 			});
 		}
 	}
@@ -2303,7 +2304,7 @@ function lintEffect(
 	location: string,
 	eff: Effect,
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void,
-	ctx: { isPassiveOrConstellation: boolean; isSummon?: boolean }
+	ctx: { isPassiveOrConstellation: boolean; isSummon?: boolean; isFactionBonus?: boolean }
 ): void {
 	// (B.8) effects on passive/constellation with onCast/afterDuration must set trigger.ability
 	if (ctx.isPassiveOrConstellation) {
@@ -2391,6 +2392,43 @@ function lintEffect(
 			'`manual` is a retired trigger and reaches no surface — state when the effect fires (one effect per in-game source), or retire it to the host description + _curatorNotes (docs/manual-trigger-retirement.md)',
 			location
 		);
+	}
+
+	// (B.19) AN `onHit` BUFF THAT LISTENS TO THE PARTY'S HITS (cross-character
+	// onHit round, 2026-09-21). `source: 'others' | 'team' | 'active'` on a buff
+	// is anchored on the rotation-wide hit stream by ONE pass, and that pass has
+	// exactly the reach the corpus needed: a SELF-target buff on a passive, a
+	// constellation or a faction bonus. Anything else used to be pooled under the
+	// holder's own casts with `source` unread — Nicole's A4 drew at her own E and
+	// Q and at nobody's hits — and now would be pooled under nothing. Refused
+	// here so the gap is a red test rather than a missing bar.
+	//
+	// ⚠️ A cast-ability host is refused because there is no cast to resolve it
+	// against: "while my burst is up" is a `state` condition on a passive host,
+	// which the per-hit gate answers. ⚠️ `damage` / `heal` / `shield` /
+	// `gainStacks` with a party source are other machinery (`sim/procs.ts`,
+	// `sim/stacks.ts`, `sim/shields.ts`) and are untouched.
+	if (
+		eff.trigger.type === 'onHit' &&
+		eff.trigger.source !== undefined &&
+		eff.trigger.source !== 'self' &&
+		(eff.type === 'buff' || eff.type === 'resShred' || eff.type === 'elevate')
+	) {
+		if (!ctx.isPassiveOrConstellation && !ctx.isFactionBonus) {
+			push(
+				'strict',
+				'teamhit-buff-host',
+				`an onHit ${eff.type} with source "${eff.trigger.source}" must be hosted on a passive, a constellation or a faction bonus — a cast ability's effects fire for its own casts, and this one listens to the party's hits (gate it on a \`state\` condition instead)`,
+				location
+			);
+		} else if (eff.type !== 'buff' || eff.target !== 'self') {
+			push(
+				'strict',
+				'teamhit-buff-target',
+				`an onHit ${eff.type} with source "${eff.trigger.source}" reaches the self-target surface only — no pass anchors a team, active or enemy target on the party's hit stream yet (buffWindows.ts, "listening to the PARTY's hits")`,
+				location
+			);
+		}
 	}
 
 	// (B.9) procCooldown not on passive trigger
@@ -2845,9 +2883,13 @@ function lintEffect(
 				location
 			);
 		}
+		// A single element or a non-empty list of them (one effect, one clock).
+		const elementOk = (e: unknown): boolean => typeof e === 'string' && DAMAGE_ELEMENTS.has(e);
 		if (
 			f.element !== undefined &&
-			(typeof f.element !== 'string' || !DAMAGE_ELEMENTS.has(f.element as string))
+			!(Array.isArray(f.element)
+				? f.element.length > 0 && f.element.every(elementOk)
+				: elementOk(f.element))
 		) {
 			push(
 				'strict',

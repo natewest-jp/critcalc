@@ -313,11 +313,18 @@ export type BuffWindowSource =
 				| 'reaction'
 				| 'nightsoulBurst'
 				| 'state'
-				| 'stackThreshold';
+				| 'stackThreshold'
+				/** A hit from the PARTY's stream — an `onHit` effect whose trigger
+				 *  names a `source` other than `'self'`, which no cast or swing of
+				 *  the holder's anchors (cross-character onHit round, 2026-09-21). */
+				| 'teamHit';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 			/** `stackThreshold` only — the fire's in-game name for the row label
 			 *  (stack-threshold round, 2026-09-18). */
 			fireLabel?: string;
+			/** `teamHit` only — the hosting passive's / constellation's name, which
+			 *  is the row's label: the bar belongs to no cast of the holder's. */
+			hostLabel?: string;
 	  }
 	| {
 			type: 'artifact';
@@ -382,7 +389,8 @@ export type BuffWindowSource =
 				| 'reaction'
 				| 'nightsoulBurst'
 				| 'state'
-				| 'stackThreshold';
+				| 'stackThreshold'
+				| 'teamHit';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 	  };
 

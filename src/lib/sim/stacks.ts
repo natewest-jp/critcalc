@@ -882,12 +882,25 @@ export function dispatchConsumeStacksOnHit(
 				);
 				if (condResult !== true) continue;
 				const hcs = getCharState(holder.id);
+				// ⚓ A TEAMMATE'S HIT SPENDS THE KEY WHERE IT LIVES (2026-09-21). This
+				// arm wrote `onHitStacks` whatever the key, which is right only for a
+				// key a team/others `onHit` grant accrues there. Illuga's Nightingale's
+				// Song is seeded by her burst into the ROTATION pool and spent by "the
+				// active character's Geo hits": measured with a Ningguang partner, seven
+				// Geo hits and the pool untouched — the spend landed in a container
+				// nothing reads. `homeOf` is the one answer to "which container", the
+				// same one the swap-in grant and the threshold reader ask.
+				//
+				// ⚠️ No mirror, and no segment home: `segPools` here is the HITTER's
+				// pool, never the holder's, so there is no live copy of the holder's to
+				// keep in step — the next settle point carries a rotation-scoped key
+				// into it, the summon ticks' rule.
 				const target = isSelf
 					? poolsFor(hcs, holder, fx.key, segPools)
-					: {
-							write: { state: hcs.onHitStacks, instances: hcs.onHitStackInstances },
-							mirror: null
-						};
+					: (() => {
+							const write = poolsAtHome(hcs, homeOf(holder, fx.key), null);
+							return write ? { write, mirror: null } : null;
+						})();
 				if (!target) continue;
 				const { state, instances } = target.write;
 				if (fx.amount === 'all') {
@@ -1163,6 +1176,24 @@ export function homeOf(holder: CharacterData, key: string): Home {
 	return 'segment';
 }
 
+/** The container a home names on `hcs` — `seg` for a segment home, which is
+ *  null wherever the holder's own live pool is not in hand. A `sourceLifetime`
+ *  home is a per-SOURCE slot map, not a count, and has no pools to hand back. */
+function poolsAtHome(hcs: CharState, home: Home, seg: StackPools | null): StackPools | null {
+	switch (home) {
+		case 'rotation':
+			return { state: hcs.rotationStacks, instances: hcs.rotationStackInstances };
+		case 'onReaction':
+			return { state: hcs.onReactionStacks, instances: hcs.onReactionStackInstances };
+		case 'onHit':
+			return { state: hcs.onHitStacks, instances: hcs.onHitStackInstances };
+		case 'segment':
+			return seg;
+		default:
+			return null;
+	}
+}
+
 // ---------------------------------------------------------------------------
 // gainStacks on a threshold fire (stack-count display round, 2026-09-19)
 // ---------------------------------------------------------------------------
@@ -1289,16 +1320,7 @@ export function dispatchGainStacksOnSwapIn(
 			);
 			if (verdict !== true) continue;
 			const home = homeOf(char, fx.key);
-			const pools: StackPools | null =
-				home === 'rotation'
-					? { state: hcs.rotationStacks, instances: hcs.rotationStackInstances }
-					: home === 'onReaction'
-						? { state: hcs.onReactionStacks, instances: hcs.onReactionStackInstances }
-						: home === 'onHit'
-							? { state: hcs.onHitStacks, instances: hcs.onHitStackInstances }
-							: home === 'segment'
-								? segPools
-								: null;
+			const pools = poolsAtHome(hcs, home, segPools);
 			if (!pools) continue;
 			if (fx.lifetime !== undefined) {
 				const live = (pools.instances.get(fx.key) ?? []).filter((e) => e > time);

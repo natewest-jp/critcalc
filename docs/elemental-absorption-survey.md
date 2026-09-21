@@ -1,0 +1,190 @@
+# Elemental absorption — the survey (2026-09-21)
+
+⚓ Nate, 2026-09-20: absorption gets its own round, **survey first**. This is the
+survey. Nothing here is built; §5 is a proposal and §6 is what needs an answer
+before a line of engine code.
+
+**Why it exists:** Lynette on a Stellar-Conduct team drew Anemo hits from her
+Bogglecat Box and never the absorbed element, so it could not feed the Conduct
+she was picked for. Absorption is unmodelled corpus-wide — there is no primitive
+in `src/lib/sim` or the schema; `grep absorb` finds only curator notes.
+
+Source: gcsim at `e82383e4e`. Every absorber goes through ONE function,
+`pkg/core/combat/absorb.go` `AbsorbCheck(idx, pattern, prio...)`: walk the
+priority list, and for each element return it if any enemy (then gadget, then
+the player) inside the pattern has an aura that CONTAINS it. First match wins,
+so **the priority list is the mechanic** when two auras coexist.
+
+## 1. The census — thirteen sites, eleven characters
+
+Ten `AbsorbCheck` call sites, plus three that read the aura by hand with the
+same priority walk (Jahoda, Heizou, Ifa — found by grepping `AuraContains`, ⚠️
+which the `AbsorbCheck` grep alone misses).
+
+| #   | character · ability           | priority           | first check                       | poll                              | what locking does                                                                                                                                       |
+| --- | ----------------------------- | ------------------ | --------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Venti Q (Stormeye)            | P > H > E > C      | 178f (4th Anemo tick)             | 18f, ≤ 21                         | starts its OWN stream: 15 hits × 24f from the lock, 1U, `ICDTagElementalBurst<El>` on `ICDGroupVenti`                                                   |
+| 2   | Kazuha Q (field)              | P > H > E > C      | 81f (hitmark − 1)                 | 18f, ≤ 17                         | each of the 5 DoT ticks (140f, then every 117f) lands a TWIN hit of the locked element on the same frame, 1U, `ICDTagNone` (every twin applies)         |
+| 3   | Kazuha A1 (plunge)            | P > H > E > C      | E cast + 1f                       | 6f, until the E's hitmark         | the following plunge lands ONE extra hit of the locked element (200% ATK), 1U, `ICDTagNone`; cleared after                                              |
+| 4   | Sucrose Q                     | P > H > E > C      | 136f                              | 18f, ≤ duration/18                | a TWIN per tick (137f, then every 113f — 3 ticks, 4 at C2), 1U, `ICDTagNone`; **C6 fires once AT the lock** (+20% that element's DMG, 10s in gcsim)     |
+| 5   | Sayu E (hold)                 | P > H > E > C      | 30f                               | 12f, ≤ duration/12                | a TWIN on each roll tick (every 30f) and on the kick, `ICDTagElementalArt<El>`; the press form checks ONCE                                              |
+| 6   | Anemo Traveler E (hold)       | **C > P > H > E**  | first tick + 1                    | 18f, ≤ hitmark/18                 | a TWIN on every cutting tick and on the storm, per-element ICD tag                                                                                      |
+| 7   | Anemo Traveler Q              | **C > P > H > E**  | 39f                               | 18f, ≤ duration/18                | a TWIN per tick (9 ticks × 30f from 94f), **2U**, per-element ICD tag                                                                                   |
+| 8   | Lynette Q (Box)               | **C > P > H > E**  | box spawn                         | 18f (the gadget's think interval) | starts its OWN stream: Vivid Shots every 134f from the lock (1 shot, 2 at C2… `vividCount`), 1U, ⚠️ `ICDTagElementalBurstAnemo` — the ANEMO tag         |
+| 9   | Wanderer A1                   | the 4, minus taken | the skill cast                    | none — two draws at one instant   | no damage at all: up to TWO elements pick BUFFS (Hydro +20 Kuugoryoku cap · Pyro +30% ATK · Cryo +20% CRIT Rate · Electro energy on N/CA hits)          |
+| 10  | Lan Yan A1                    | P > H > E > C      | the skill's first hit on an enemy | none — one draw                   | sets the SHIELD's element, and every Feathermoon Ring hit lands a TWIN of that element at 50% (`ICDGroupLanyanRingAttackMix`); no aura → Anemo, no twin |
+| 11  | Heizou Q (Windmuster Iris)    | P > H > E > C      | the burst's hit (34f)             | none — one draw per enemy         | each enemy holding an aura is afflicted; the Iris explodes 40f later in THAT element, 1U, `ICDTagNone`; no aura → no Iris                               |
+| 12  | Ifa Q (Sedation Mark)         | P > H > E > C      | the burst's hit (41f)             | none — one draw                   | a Sedation Mark hit in the aura's element 38f later, 1U, own ICD group; no aura → no mark                                                               |
+| —   | Jahoda Q (robots) / E (flask) | P > H > E > C      | 6f, +41f per robot                | hitmark/3                         | not `AbsorbCheck` but her own `enemyAuraInArea`; ⚠️ **only under Ascendant Gleam** (Moonsign ≥ 2); each robot locks its OWN element                     |
+
+⚠️ Lynette's Box has a second door the others lack: it is a gadget that can be
+**HIT** (`HandleAttack`), so a teammate's elemental attack landing on the box
+absorbs that attack's element with no enemy aura involved. We have no box to
+hit; the aura door is the one we can model.
+
+⚠️ The other `AuraContains` readers are CONDITIONS, not absorbers — "if the
+target has Cryo, then…" (Chongyun C4, Kaeya A4/C1, Keqing C2, Lyney A4, Qiqi C2)
+— which is `enemyAffectedBy`, already in our vocabulary. ⚠️ Sayu's BURST does
+not absorb (her Daruma deals Anemo only); her hold-E does. ⛔ Not verified here:
+Chasca, whose shell conversion is by PARTY composition as far as the kit text
+goes (the `teamElementPriority` shape, not an aura read) — she has no
+`AuraContains` call, which is consistent with that, but her source was not read.
+
+## 2. Three shapes, not thirteen mechanics
+
+**A. The TWIN** (rows 2, 4, 5, 6, 7) — the summon's own tick series keeps its
+cadence; once the element locks, every tick lands a second hit of that element
+on the same frame. Five of the thirteen, and it is one rule.
+
+**B. The OWN STREAM** (rows 1, 8) — locking STARTS a second series with its own
+interval, phased from the lock instant rather than from the cast. Venti 15 × 24f,
+Lynette every 134f to the box's end.
+
+**C. The ONE DRAW** (rows 3, 9, 10, 11, 12, Sucrose's C6, Jahoda's flask) — a
+single read of the aura at a known instant picks an element, and something
+that is NOT a tick series uses it: one extra hit (Kazuha's plunge, Heizou's
+Iris, Ifa's Mark), a twin on a character's own swings (Lan Yan), or which of
+several buffs applies (Wanderer, Sucrose C6). ⚠️ Heizou and Ifa have a fourth
+outcome the others lack: **no aura means the hit does not exist at all.**
+
+All three share the LOCK — poll the enemy's aura from a first-check frame at a
+fixed interval, stop at the first priority match, hold it for the life of that
+cast — and differ only in the consumer.
+
+## 3. What we draw today
+
+| character      | authored                                                                                     | absorbed element                                                                         |
+| -------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Venti          | Stormeye 8s, Anemo every 0.4s (+0.2), gate 60f/3                                             | nothing; his notes describe the 15 × 24f stream                                          |
+| Kazuha         | Autumn Whirlwind 8.78s, Anemo every 1.95s, `icdGate: 'none'`                                 | nothing; A1's plunge hit unauthored                                                      |
+| Sucrose        | Large Wind Spirit 6s, Anemo every 1.883s, cap 3                                              | nothing; **C6 deleted 2026-09-21 with a restore spec**                                   |
+| Sayu           | hold-E is a cast `application[]` (two Anemo entries)                                         | nothing                                                                                  |
+| Anemo Traveler | hold-E is a 7-entry `application[]`; Gust Surge 4.03s, Anemo every 0.5s                      | nothing                                                                                  |
+| Lynette        | Bogglecat Box 12.6s, Anemo every 0.983s (+2.033)                                             | nothing — Nate's report                                                                  |
+| Wanderer       | no summon                                                                                    | **A1's Cryo branch deleted 2026-09-21 with a restore spec**; Pyro/Electro never authored |
+| Lan Yan        | skill `application: [{ frame: 7 }]` — ⚠️ an entry with NO element                            | nothing; the ring twin and the shield's element are unauthored                           |
+| Heizou         | burst `application: [{ frame: 34 }, { frame: 34, anemo, 1U }]` — ⚠️ the first has NO element | that element-less entry is the Iris waiting for this round                               |
+| Ifa            | burst `application: [{ frame: 41, anemo, 1U }]`                                              | nothing; the Sedation Mark hit is unauthored                                             |
+| Jahoda         | robots carry a HEAL series only                                                              | nothing; the robots' damage is unauthored entirely (tick-gaps round, held)               |
+
+## 4. What the engine already has
+
+- **The live gauge answers the question.** `ctx.aura` is a real gauge on the
+  clock (`sim/aura.ts`), and an absorb poll is "at frame F, which of these
+  elements does the target hold" — `gauges()` after `advanceTo(F)`. ⚠️ It must
+  be asked LIVE, as a clock task: the answer depends on every application
+  before F, and the absorbed stream's own applications change every later
+  answer (the feed-order law).
+- **The tick chain is one tick at a time** (`sim/aura.ts`), each fired tick
+  scheduling the next and re-asking whether the summon lives. A poll chain is
+  the same shape and retires the same way — the generation stamp.
+- **A refused tick keeps its cadence** (the Radiance-window round): a series
+  gated on something that is not true yet is asked PER TICK in both readers,
+  and the original phase survives. Shape A is exactly that, gated on "locked".
+- **`ElementRef`** already lets a field name an element that is resolved rather
+  than literal (`teamElementPriority`, Varka). ⚠️ It resolves at PARSE START off
+  party composition and is NOT read on a summon tick's `element` today.
+- **Published markers.** `TimelineWindow.ticks` is stamped by the parse, so a
+  tick that exists only after a lock is drawn only if the live chain publishes
+  it — the Lumi ruling (⚓ Nate: published by the live chain, ⛔ never replayed
+  at finalize) is the precedent and applies unchanged.
+
+## 5. Proposed primitive (NOT built — for discussion)
+
+**One lock per summon, three consumers.**
+
+```jsonc
+// on a Summon (shapes A and B) or on a cast ability (shape C)
+"absorbs": {
+  "order": ["pyro", "hydro", "electro", "cryo"], // the priority IS the mechanic
+  "from": 178,     // FRAMES after the cast — first poll
+  "every": 18,     // FRAMES between polls; absent = one draw
+  "polls": 21      // absent with `every` = until the window ends
+}
+```
+
+- The live chain runs the polls as clock tasks; the first match is stored on the
+  summon's live record and published as `TimelineWindow.absorbed = { element, at }`.
+- **Shape A:** a tick series names `element: { "type": "absorbed" }`. Unlocked,
+  the tick is refused and keeps its cadence; locked, it lands in that element.
+  The twin is authored as the SAME series twice (the "cadence can change"
+  precedent: two series, mutually exclusive by construction), so its `units`,
+  `icdGate` and marker are its own. Kazuha's and Sucrose's twins are
+  `icdGate: 'none'`; the Traveler's burst twin is 2U.
+- **Shape B:** the same series with `phase: 'absorbed'` — its first tick is
+  measured from the lock, not from the spawn. Venti `interval 0.4, tickCap 15`;
+  Lynette `interval 2.233`.
+- **Shape C:** `application[].element: { "type": "absorbed" }` on the cast that
+  carries `absorbs` — Heizou's Iris and Ifa's Mark are exactly this, an entry
+  that lands in the drawn element or NOT AT ALL (an unresolved `ElementRef`
+  already means "applies nothing", Varka's rule). Kazuha's plunge add-on and
+  Lan Yan's ring twin ride a character's SWINGS and want the lock carried from
+  the skill cast to a later action — the `coInfusion` slot is the nearest
+  existing shape. The buffs (Wanderer A1, Sucrose C6) want a Condition leaf
+  `{ "type": "absorbed", "element": "cryo" }`.
+
+What the reader sees: the summon's lane gains tick marks in the absorbed
+element's colour from the lock onward, the aura lane gains their applications
+and the swirls/reactions they cause, and nothing appears when no aura was there
+to absorb — which is the honest answer for a rotation that casts Venti first.
+
+## 6. Open questions — these need Nate
+
+1. **Scope of the first cut.** Shapes A + B cover the seven SUMMON absorbers
+   (rows 1, 2, 4–8) with one lock and one tick-series change, and they are what
+   the report was about. Shape C is four unrelated consumers (a cast's own
+   entry, a swing twin, a plunge add-on, buff selection). Recommend: A + B
+   first; then the cast-entry half of C (Heizou, Ifa — two element-less entries
+   already sit in the data waiting); then the swing/buff half; Jahoda last (she
+   also needs her robots' damage authored and sits behind a Moonsign gate).
+2. **Lynette's box being hit.** The aura door is modellable; the "a teammate's
+   attack hits the box" door needs box geometry we do not have. Recommend: aura
+   only, no caveat unless a pixel is wrong (in a Conduct team the enemy carries
+   Cryo/Electro, so the aura door opens anyway).
+3. **Two absorbed elements at once.** With Pyro and Hydro both on the target the
+   PRIORITY decides (Pyro). Our gauge holds coexisting auras, so this falls out —
+   but "Frozen" and "Quicken" are compound states: gcsim's `AuraContains(cryo)`
+   is true on a Frozen target. Proposed: a compound counts as its parents
+   (Frozen → Cryo and Hydro; Burning → Pyro; Quicken → nothing, Dendro is not
+   absorbable). Needs a yes.
+4. **Sucrose C6's length.** gcsim: 10s from the lock. Kit text: "during its
+   duration", which reads as the burst's. The restore spec flagged the
+   disagreement; it is an in-game check (add to the 2026-09-23 batch?).
+5. **The marker grammar.** Twin ticks land on the SAME frame as the Anemo tick,
+   and one-mark-per-frame (⚓ Nate, 2026-09-19) dedupes them to one stub. For an
+   absorbed twin that erases the very thing the round exists to show. Proposed:
+   the dedupe keeps one mark per (frame, ELEMENT), so a twin draws a second stub
+   in its own colour. Needs Nate's eye.
+6. **Does the oracle reach it?** The dumper runs one character in an empty core:
+   no aura, so no absorber ever locks. Every number above was read from source,
+   not measured. A two-character driver (an aura applier + the absorber) would
+   let the frames audit see the absorbed stream; without it the round has no
+   oracle, like Aino's Moonsign branch.
+
+## 7. What waits on this round
+
+- Sucrose C6 "Chaotic Entropy" and Wanderer A1 "Jade-Claimed Flower" — both
+  deleted in the `manual` retirement with full restore specs in their
+  `_curatorNotes` (shape C).
+- Jahoda's robots and flask (`docs/summon-tick-gaps-round.md`).
+- Lan Yan's and Heizou's element-less `application[]` entries.

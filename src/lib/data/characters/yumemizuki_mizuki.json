@@ -309,11 +309,19 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
+						"type": "onHit",
+						"source": "others",
+						"filter": {
+							"element": ["pyro", "hydro", "cryo", "electro"]
+						}
 					},
-					"duration": 5,
+					"duration": 4,
 					"durationType": "refresh",
+					"procCooldown": 0.3,
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 100,
@@ -324,10 +332,10 @@
 				"+100 EM Mizuki for 4s when other party members hit with Pyro/Hydro/Cryo/Electro during Dreamdrifter (0.3s ICD). Modelled as a manual-triggered self buff gated on nightsoulBlessing state — leverages the new opensState mechanism so the buff only fires inside the actual Dreamdrifter window. The element-specific teammate-hit trigger isn't expressible (no elementHit trigger primitive); manual is the closest schema fit.",
 				"↻ trigger `manual` → `onCast skill`, 2026-09-16 (T0.5; manual-trigger-retirement step 3). The buff is REAL and was reaching no surface at all; it is now a self bar riding the Dreamdrifter window, with the approximation in the caveat. gcsim asc.go:85-110 is the true shape — subscribe to enemy damage, refuse the holder's own hits (ActorIndex == c.Index()), require the Dreamdrifter status, 0.3s ICD, +100 EM for 4s.",
 				"⛔ `onHit` with `source: 'others'` WAS TRIED AND MEASURED WRONG, 2026-09-16 — do not re-reach for it until the engine changes. No buff pool anchors a character's onHit effect on ANOTHER character's hit: the cast pool merges onCast and onHit and anchors both on the HOLDER'S OWN cast without consulting `trigger.source`, and the N/CA/P pools anchor on the holder's own swings. Measured `Yumemizuki Mizuki E Q > Xiangling E N1 N2 N3`: the bar fired off HER E and HER Q — the exact hits the talent excludes — and off none of Xiangling's. Nicole's A4 (`source: 'active'`) behaves the same way and is the corpus's only other character-hosted onHit buff with a non-self source. ⏭ Two engine pieces: a teammate-hit anchor for a character buff pool, and `trigger.source` honoured at the pools that exist.",
-				"⚠️ Even with that, the ELEMENT filter has no home: the talent names four elements and `TriggerFilter.element` takes one, so the faithful form would be four effects — and four effects means four independent procCooldown clocks where gcsim holds ONE shared 0.3s ICD (a4ICDKey). `damageType: 'elemental'` is the nearest single-clock form, and in a Mizuki team the excluded cases are rare: she is a Swirl amplifier, so her teammates are Pyro/Hydro/Cryo/Electro by construction."
+				"⚠️ Even with that, the ELEMENT filter has no home: the talent names four elements and `TriggerFilter.element` takes one, so the faithful form would be four effects — and four effects means four independent procCooldown clocks where gcsim holds ONE shared 0.3s ICD (a4ICDKey). `damageType: 'elemental'` is the nearest single-clock form, and in a Mizuki team the excluded cases are rare: she is a Swirl amplifier, so her teammates are Pyro/Hydro/Cryo/Electro by construction.",
+				"↻ 2026-09-21 (cross-character onHit round): the engine changed, and this is now the talent as written — `onHit`, `source: 'others'`, the four elements as ONE `filter.element` list (so ONE shared 0.3s `procCooldown`, gcsim's single `a4ICDKey`), 4s refreshing, gated on `inStance` (Dreamdrifter is her only stance) and read at the TEAMMATE's hit. A summon's tick counts: gcsim refuses only `ActorIndex == c.Index()`, and an off-field Oz carries Fischl's. The two ⛔/⚠️ notes above describe the blockers this removed; the caveat went with them, since the bar no longer claims the whole Dreamdrifter window. ⚠️ One residue: gcsim starts the 0.3s ICD BEFORE its element test, so an Anemo/Geo/Dendro/physical teammate hit can eat a window there and cannot here."
 			],
-			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, when other nearby party members hit opponents with Pyro, Hydro, Cryo, or Electro attacks, her Elemental Mastery will increase by 100 for 4s.",
-			"caveat": "Shown for the whole Dreamdrifter window; in game a teammate has to land a Pyro, Hydro, Cryo or Electro hit for it, and it lasts 4s from the last one."
+			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, when other nearby party members hit opponents with Pyro, Hydro, Cryo, or Electro attacks, her Elemental Mastery will increase by 100 for 4s."
 		},
 		{
 			"id": "yumemizuki_mizuki__passive__vast_be_the_dream",

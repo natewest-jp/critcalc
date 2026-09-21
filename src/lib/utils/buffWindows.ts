@@ -60,6 +60,7 @@ import {
 	getCharacterEffectsForOnReaction,
 	getCharacterEffectsForOnStack,
 	getCharacterEffectsForOnState,
+	getCharacterEffectsForTeamHit,
 	getCharacterEffectsForTeamNightsoulBurst,
 	factionProvenanceOf,
 	type FactionProvenance,
@@ -565,6 +566,20 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				h.time >= track.activeStart &&
 				h.time < nextStart
 		);
+	};
+	/** Every hit in the rotation, in time order — the summon-tick hits are
+	 *  appended at finalize rather than merged, so the sort is required. */
+	let sortedHits: HitEvent[] | undefined;
+	const hitsByTime = (): HitEvent[] =>
+		(sortedHits ??= hits.slice().sort((a, b) => a.time - b.time));
+	/** Who was on field at `time` (tracks are in segment order). */
+	const onFieldAt = (time: number): string | undefined => {
+		let id: string | undefined;
+		for (const t of tracks) {
+			if (t.activeStart > time) break;
+			id = t.characterId;
+		}
+		return id;
 	};
 	const hitFilterCtx = (h: HitEvent): TriggerFilterContext => ({
 		damageTag: h.damageTag,
@@ -2548,6 +2563,120 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					duration: buffEnd - buffStart,
 					source: fireSource(pool.fire)
 				});
+			}
+		}
+
+		// ── onHit self-target, listening to the PARTY's hits (received surface) ──
+		//
+		// ⚓⚓ ANCHORED ON THE ROTATION-WIDE HIT STREAM, NOT ON THE HOLDER'S CASTS
+		// (cross-character onHit round, 2026-09-21). An `onHit` effect whose trigger
+		// names `source: 'others' | 'team' | 'active'` fires off whoever landed the
+		// hit, so it has no cast or swing of the holder's to be pooled under — see
+		// `getCharacterEffectsForTeamHit`, which is also why the cast and block
+		// pools above no longer see these. `onHitTriggerMatches` is the ONE gate
+		// (source, ability class, damage type, filter), the same function the live
+		// stack and proc dispatchers ask.
+		//
+		// ⚓ The holder's STATES are read at the hit (§1.G) — Mizuki's A4 wants her
+		// Dreamdrifter up when the teammate's hit lands — and so is her on/off-field
+		// fact, which here is a lookup rather than a given: the holder is usually
+		// NOT the one hitting.
+		//
+		// ⚠️ `hit.stacks` is the HITTER's snapshot, so it is handed to the
+		// conditions only when the hitter is the holder. A `stacks` gate on a
+		// teammate's hit resolves `null` and rides, like every unresolvable gate.
+		//
+		// ⚠️ ONE WINDOW PER FIRE, fused by the projection (`mergeRefreshedBars`),
+		// the N/CA/P self site's shape — ⛔ not extended in place: `duration` feeds
+		// the tooltip and must stay the effect's LENGTH, not the covered span.
+		//
+		// ⚠️ SELF SURFACE ONLY, by census: the corpus's holders are self-target
+		// (Nicole's A4; Mizuki's A4 and Skirk's A4 once re-authored). Lint B.19
+		// refuses the other targets rather than let one reach nothing.
+		if (firstTrackOfChar) {
+			const holderId = sourceTrack.characterId;
+			const hostPools = getCharacterEffectsForTeamHit(char, cLevel);
+			for (const host of hostPools) {
+				for (const group of byProvenance(host.effects)) {
+					const pool = group.effects.filter((effect): effect is BuffEffect => {
+						if (effect.type !== 'buff') return false;
+						if (effect.target !== 'self') return false;
+						if (effect.duration == null) return false;
+						return (
+							evalCondition(
+								effect.conditions,
+								4,
+								new Set(),
+								cLevel,
+								undefined,
+								undefined,
+								receivedCtxOf(char.id)
+							) !== false
+						);
+					});
+					if (pool.length === 0) continue;
+					const procReady = new Map<BuffEffect, number>();
+					const lastFireByDur = new Map<number, { time: number; effects: BuffEffect[] }>();
+					for (const hit of hitsByTime()) {
+						if (
+							!pool.some(
+								(e) => e.trigger.type === 'onHit' && onHitTriggerMatches(e.trigger, hit, holderId)
+							)
+						)
+							continue;
+						const gate = gateFor(
+							receivedCtxOf(char.id),
+							stateIndex.at(holderId, hit.time),
+							onFieldAt(hit.time) === holderId ? 'onField' : 'offField'
+						);
+						const ownStacks = hit.characterId === holderId ? hit.stacks : undefined;
+						const fired = dedupByStat(
+							pool.filter((effect) => {
+								if (effect.trigger.type !== 'onHit') return false;
+								if (!onHitTriggerMatches(effect.trigger, hit, holderId)) return false;
+								if (hit.time < (procReady.get(effect) ?? -Infinity)) return false;
+								return (
+									evalCondition(
+										effect.conditions,
+										4,
+										gate.resolved,
+										cLevel,
+										undefined,
+										ownStacks,
+										gate.ctx
+									) !== false
+								);
+							})
+						);
+						for (const effect of fired) {
+							if (typeof effect.procCooldown === 'number')
+								procReady.set(effect, hit.time + framesOf(effect.procCooldown));
+						}
+						const viaCast = hit.abilityType === 'skill' || hit.abilityType === 'burst';
+						for (const part of partitionByDuration(fired)) {
+							// Several landings on ONE frame are one fire.
+							const last = lastFireByDur.get(part[0].duration!);
+							if (last && last.time === hit.time && sameEffects(last.effects, part)) continue;
+							lastFireByDur.set(part[0].duration!, { time: hit.time, effects: part });
+							const duration = framesOf(part[0].duration!);
+							emit({
+								characterId: holderId,
+								receiverId: holderId,
+								start: hit.time,
+								end: hit.time + duration,
+								effects: part,
+								stackContext: ownStacks,
+								duration,
+								...(hit.sourceEventId >= 0
+									? viaCast
+										? { sourceCastId: hit.sourceEventId }
+										: { sourceActionId: hit.sourceEventId }
+									: {}),
+								source: { type: 'character', trigger: 'teamHit', hostLabel: host.hostName }
+							});
+						}
+					}
+				}
 			}
 		}
 
