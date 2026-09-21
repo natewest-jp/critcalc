@@ -231,6 +231,7 @@ function normalizeBuffLikeEffect(effect: Effect): Effect | null {
 		duration: effect.duration,
 		durationType: effect.durationType,
 		procCooldown: effect.procCooldown,
+		whileState: effect.whileState,
 		attribution: effect.attribution,
 		source: effect.source,
 		stat,

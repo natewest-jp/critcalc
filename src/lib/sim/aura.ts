@@ -78,7 +78,7 @@ import {
 	rotationStackSnapshot
 } from './stacks';
 import { dispatchCooldownReduceOnReaction } from './cooldownReduce';
-import { holderStatesAt } from './states';
+import { closeStateWindows, holderStatesAt } from './states';
 import { checkStackThresholds, scheduleAccrualFires } from './thresholds';
 import type { HitEvent } from './hits';
 import { getChainIndexMap } from './cooldowns';
@@ -882,7 +882,8 @@ function dispatchEntityHitStacks(
 		getHolderStates,
 		ctx.team.constellationByHolder,
 		ctx.getCharState,
-		null
+		null,
+		(holder, state, at) => closeStateWindows(ctx, ctx.getCharState(holder.id), holder.id, state, at)
 	);
 	// The tick is the fourth place a count moves (stack-threshold round). Null
 	// pool, same rule as the dispatchers above.

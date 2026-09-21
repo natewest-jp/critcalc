@@ -327,6 +327,87 @@ describe('B.19 — an onHit buff that listens to the party’s hits', () => {
 	});
 });
 
+describe('D.45 / D.46 — a buff bound to a state, a spend that closes one', () => {
+	const stub = (skill: Record<string, unknown>, effect: Record<string, unknown>) =>
+		makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { anim: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { anim: 20 },
+					cooldown: 10,
+					...skill,
+					effects: [effect]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	const buff = (extra: Record<string, unknown>) => ({
+		type: 'buff',
+		target: 'self',
+		trigger: { type: 'onCast', ability: 'skill' },
+		duration: 10,
+		source: 'character',
+		stat: 'atk%',
+		value: 20,
+		snapshottable: false,
+		...extra
+	});
+	const checks = (c: CharacterData) => lintCharacter(c).map((i) => i.check);
+
+	it('passes a whileState the holder’s own stance opens', () => {
+		const found = checks(
+			stub({ behavior: 'stance', duration: 10 }, buff({ whileState: 'inStance' }))
+		);
+		expect(found).not.toContain('state-binding-unopenable');
+		expect(found).not.toContain('while-state-scope');
+	});
+
+	it('refuses a state nothing in the kit opens as a window', () => {
+		expect(checks(stub({}, buff({ whileState: 'inStance' })))).toContain(
+			'state-binding-unopenable'
+		);
+	});
+
+	it('refuses whileState on an effect with no drawn window', () => {
+		expect(
+			checks(
+				stub(
+					{ behavior: 'stance', duration: 10 },
+					buff({ whileState: 'inStance', duration: undefined })
+				)
+			)
+		).toContain('while-state-scope');
+	});
+
+	it('refuses closesStateWhenEmpty off an onHit consumeStacks', () => {
+		expect(
+			checks(
+				stub(
+					{ opensTransientState: { state: 'orioleSong', duration: 20 } },
+					{
+						type: 'consumeStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill' },
+						key: 'song',
+						amount: 1,
+						closesStateWhenEmpty: 'orioleSong'
+					}
+				)
+			)
+		).toContain('closes-state-scope');
+	});
+});
+
 describe('stacks condition lint rules', () => {
 	it('flags stacks condition with empty key', () => {
 		const c = makeStubCharacter({
