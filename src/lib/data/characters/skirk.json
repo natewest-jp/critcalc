@@ -682,6 +682,7 @@
 					},
 					"duration": 12.5,
 					"durationType": "fixed",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -719,7 +720,8 @@
 			"_curatorNotes": [
 				"C2 has three effects: (1) +10 SS on E cast (any tap or hold) — modelled E3 v2.x as a `gainStacks` effect on this constellation, gated on Cons:2, no input filter (fires on Tap-E and Hold-E alike); (2) +10 to the SS-bonus cap for Havoc: Ruin (raises max bonus from +12 SS counted to +22) — authored as the burst's perStack `constellationScaling` (maxStacks 12→22 at C2), ⚠️ which reaches NO surface — `BuffEffect.constellationScaling` is read only by the gainStacks amount override and by tickCapScaling, never by buffWindows/buffDisplay, so the bar prints the base cap of 12 at C2 too (2026-08-18; full detail on the burst node's ↻ notes); (3) +70% ATK for 12.5s after Havoc: Extinction (ends if Seven-Phase Flash ends earlier).",
 				"Effect (3) authored as self buff with onCast burst trigger, duration 12.5, conditions: all of [constellation:2, state:inStance]. The state:inStance condition restricts the buff to Havoc: Extinction casts (not Havoc: Ruin) — the parser stamps inStance per cast, so this resolves correctly.",
-				"Note: the effect is gcsim-modelled to also auto-end when skillKey ends (Seven-Phase Flash exit). Schema has no 'ends-when-state-ends' modifier; the 12.5s window is rendered fully even after stance exit. Acceptable trade-off."
+				"Note: the effect is gcsim-modelled to also auto-end when skillKey ends (Seven-Phase Flash exit). Schema has no 'ends-when-state-ends' modifier; the 12.5s window is rendered fully even after stance exit. Acceptable trade-off.",
+				"↻ 2026-09-21 (event-ended buffs round): the +70% ATK is bound with `whileState: 'inStance'`. gcsim's mod is 12.5s long and its Amount returns nil unless `skillKey` is active (`cons.go` `c2OnBurstExtinction`), so the buff exists only inside Seven-Phase Flash — leave the stance and it is gone, however much of the 12.5s was left. The `inStance` condition stays as the entry test (the burst that grants it IS the in-stance one)."
 			],
 			"description": "After unleashing her Elemental Skill Havoc: Warp, Skirk will gain 10 additional **Serpent's Subtlety** points.\nWhen using her Elemental Burst Havoc: Ruin, the DMG of this Elemental Burst instance will be increased by taking up to 10 more Serpent's Subtlety points into account.\nAdditionally, within 12.5s after Skirk unleashes the special Elemental Burst Havoc: Extinction while in her **Seven-Phase Flash** mode, her ATK is increased by 70%. This effect will be canceled when she leaves the Seven-Phase Flash mode."
 		},
