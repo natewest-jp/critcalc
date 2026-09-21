@@ -58,6 +58,79 @@ export type LintIssue = {
  */
 const PROC_TRIGGERS = ['onReaction', 'onHit', 'whileNormalAttacking'] as const;
 
+/** Characters that still carry a `trigger: 'manual'` effect, exempt from B.18
+ *  while the retirement works through the corpus (docs/manual-trigger-retirement.md).
+ *
+ *  ⚠️ This list only SHRINKS. An entry for a character with no `manual` effect left
+ *  is a stale entry and `characterLint.test.ts` fails on it, so the allowlist cannot
+ *  outlive the round; when it is empty, delete it, delete B.18's guard clause, and
+ *  strike `'manual'` from the `Trigger` union in `src/lib/types/ability.ts`.
+ *  ⛔ Never add to it. */
+export const MANUAL_PENDING: ReadonlySet<string> = new Set([
+	'alhaitham',
+	'aloy',
+	'arataki_itto',
+	'arlecchino',
+	'baizhu',
+	'barbara',
+	'bennett',
+	'candace',
+	'charlotte',
+	'chevreuse',
+	'chongyun',
+	'citlali',
+	'clorinde',
+	'collei',
+	'dehya',
+	'diona',
+	'dori',
+	'emilie',
+	'freminet',
+	'furina',
+	'gaming',
+	'gorou',
+	'hu_tao',
+	'ifa',
+	'illuga',
+	'kamisato_ayaka',
+	'kamisato_ayato',
+	'kaveh',
+	'keqing',
+	'kirara',
+	'klee',
+	'kuki_shinobu',
+	'lauma',
+	'layla',
+	'lisa',
+	'lyney',
+	'mona',
+	'nahida',
+	'navia',
+	'nilou',
+	'ningguang',
+	'qiqi',
+	'razor',
+	'sangonomiya_kokomi',
+	'sayu',
+	'sethos',
+	'sigewinne',
+	'sucrose',
+	'thoma',
+	'tighnari',
+	'traveler_anemo',
+	'traveler_hydro',
+	'varka',
+	'venti',
+	'wanderer',
+	'xiangling',
+	'xiao',
+	'xinyan',
+	'yae_miko',
+	'yanfei',
+	'yaoyao',
+	'yoimiya'
+]);
+
 /**
  * Standard element-application ICD, restated for D.27b's "did a curator annotate
  * the default" check.
@@ -2301,6 +2374,36 @@ function lintEffect(
 				);
 			}
 		}
+	}
+
+	// (B.18) ⛔⛔ `manual` IS NOT A TRIGGER. It was authored as "the player toggles
+	// it" and there has never been a toggle: its only occurrence in `src` was its
+	// own type declaration, so 167 effects across 69 characters drew no bar, no
+	// marker and no chip — while `deriveCapabilities` derived every one of them as
+	// a live Team Builder claim until 2026-09-15. The two surfaces disagreed about
+	// the same effect and only one of them could be caveated.
+	//
+	// ⚓ The rule that replaces it: an effect states WHEN IT FIRES, and if our
+	// vocabulary cannot say when, the effect does not exist — its kit text lives in
+	// the host `description` and its numbers in `_curatorNotes`, which is where a
+	// future round reads them back. ⚠️ When a kit clause names SEVERAL in-game
+	// sources, that is one effect PER SOURCE, never one partial trigger:
+	// Alhaitham's C2 mirror gain is `onCast skill` + `onCast burst` + the A1 path,
+	// not an `onCast skill` with an apology attached.
+	//
+	// docs/manual-trigger-retirement.md is the record.
+	//
+	// ⚠️ `MANUAL_PENDING` is a SHRINKING allowlist that must reach EMPTY inside
+	// this round — a stale entry (a character with no `manual` effect left) fails
+	// `characterLint.test.ts` on its own, so it cannot quietly become permanent.
+	// ⛔ Never add to it.
+	if (eff.trigger.type === 'manual' && !MANUAL_PENDING.has(c.id)) {
+		push(
+			'strict',
+			'manual-trigger',
+			'`manual` is a retired trigger and reaches no surface — state when the effect fires (one effect per in-game source), or retire it to the host description + _curatorNotes (docs/manual-trigger-retirement.md)',
+			location
+		);
 	}
 
 	// (B.9) procCooldown not on passive trigger
