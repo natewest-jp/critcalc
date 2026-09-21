@@ -9,7 +9,7 @@
 		sceneLayer,
 		startSceneTransition
 	} from '$lib/landing/transition';
-	import { SILHOUETTES } from '$lib/landing/silhouettes';
+	import { HERO_ART, PLATE_BACK, PLATE_LINE, PLATE_VIEWBOX } from '$lib/landing/heroArt';
 	import { currentAnnouncements } from '$lib/landing/announcements';
 	import { onMount } from 'svelte';
 
@@ -42,52 +42,34 @@
 	// (the eight Visualizers). ⚓ Settled with Nate 2026-08-14, reaffirmed
 	// 2026-09-16.
 	//
-	// `art` is where the silhouette sits in the plate's 100×180 space. The
-	// three are drawn to different extents AND different weights — the
-	// astrolabe is the densest, the ephemeris the lightest line drawing, and
-	// the observatory sits between them (it is a line drawing too since its
-	// 2026-09-19 redraw — no longer the solid mass it was, which is why its
-	// panel is no longer held small) — so they are not box-matched; each gets its own panel, the lighter the
-	// drawing the wider, so the three read at one optical size. Judged by
-	// eye; adjust here, never in the artwork.
+	// `art` names the card's drawing in HERO_ART. ⚓ It carries no geometry:
+	// each art is drawn on the plate's OWN artboard, so where a figure sits and
+	// how big it reads are decided in Affinity. ⛔ The per-card x/y/w/h panels
+	// that used to live here are gone with the placeholder plate — never bring
+	// them back to nudge a figure; that edit belongs in the artwork.
 	const tools = [
 		{
 			id: 'team-builder',
 			title: 'Astrolabe',
 			tool: 'Team Builder',
 			path: '/team-builder',
-			art: { id: 'astrolabe', x: 10, y: 22, w: 80, h: 76 }
+			art: 'astrolabe'
 		},
 		{
 			id: 'rotation-planner',
 			title: 'Ephemeris',
 			tool: 'Rotation Planner',
 			path: '/rotation-planner',
-			art: { id: 'ephemeris', x: 7, y: 24, w: 86, h: 72 }
+			art: 'ephemeris'
 		},
 		{
 			id: 'visualizers',
 			title: 'Observatory',
 			tool: 'Visualizers',
 			path: '/visualizers',
-			art: { id: 'observatory', x: 9, y: 20, w: 82, h: 78 }
+			art: 'observatory'
 		}
 	] as const;
-
-	// ⚠️ PLACEHOLDER PLATE — Nate is still drawing the final card shape and its
-	// borders. Until it lands, the card is a plain plate at the DERIVED 1:1.8
-	// aspect (see memory `project_landing_card_round`: 102px wide at a 360px
-	// phone, three across, no rotate-and-stack), drawn in a 100 × 180 space so
-	// the interior grid there (art 16–98, label 108–152, finials top and
-	// bottom) reads straight off the coordinates. Shallow points top and
-	// bottom, eased shoulders, straight flanks — the old plate's family,
-	// shortened. Replacing it is a viewBox + path swap; the inset hairline is
-	// the same path scaled about the centre, per axis, so its gap stays even
-	// (2.5 units each side).
-	const PLATE_VIEWBOX = '0 0 100 180';
-	const PLATE_PATH =
-		'M50 0L96.5 13Q100 14 100 17.5V162.5Q100 166 96.5 167L50 180L3.5 167Q0 166 0 162.5V17.5Q0 14 3.5 13Z';
-	const INSET_TRANSFORM = 'translate(50 90)scale(.95 .9722)translate(-50 -90)';
 
 	// Start the ascend immediately on click, then defer the actual navigation
 	// by two animation frames. The camera runs its own rAF loop, and a normal
@@ -155,7 +137,7 @@
 
 		<nav class="heroes" aria-label="critcalc tools">
 			{#each tools as tool (tool.id)}
-				{@const art = SILHOUETTES[tool.art.id]}
+				{@const art = HERO_ART[tool.art]}
 				<a
 					class="hero"
 					href={resolve(tool.path)}
@@ -163,33 +145,27 @@
 					onkeydown={(e) => e.key === 'Enter' && warmTool(tool.path)}
 					onclick={(e) => navigateToTool(e, tool.path)}
 				>
-					<!-- One plate, three passes and the art: a dark GLASS interior
+					<!-- One artboard, painted back to front: a dark GLASS interior
 						 (⚓ Nate 2026-09-16 — the toplight is gone; the fill is denser
 						 than the site's other glass because the landing scene is bright
-						 and carries no dim), a GOLD inset hairline (the site's
-						 inset-frame convention, here as the card's border), and the
-						 silhouette in the same gold in the upper art panel. No outer
-						 edge: the near-opaque glass seats itself against the sky. Every gold thing on the card is one
-						 colour, so the artwork's slightly uneven stroke weights read as
-						 one set.
-						 vector-effect keeps the hairline a true 1px: the plate scales to
-						 the card, and the inset is a non-uniform scale on top of that. -->
+						 and carries no dim), then the figure's decorative rings, the
+						 figure itself in full gold, and the card's inner line LAST so
+						 the border sits over everything. No outer edge: the near-opaque
+						 glass seats itself against the sky. Every gold thing on the
+						 card is ONE colour at different alphas, so the drawing reads
+						 as one set — heroArt.ts says why none of that paint is in the
+						 data.
+
+						 The art needs no placement: each figure is drawn on a copy of
+						 this same 511 × 919 plate, so its own coordinates say where it
+						 sits. ⚠️ fill-rule is evenodd for the whole tree — the rings
+						 and the inner line are two-contour bands. -->
 					<svg class="hero__plate" viewBox={PLATE_VIEWBOX} aria-hidden="true" focusable="false">
-						<path class="plate-fill" d={PLATE_PATH} />
-						<g transform={INSET_TRANSFORM}>
-							<path class="plate-inset" d={PLATE_PATH} vector-effect="non-scaling-stroke" />
-						</g>
-						<svg
-							class="hero__art"
-							x={tool.art.x}
-							y={tool.art.y}
-							width={tool.art.w}
-							height={tool.art.h}
-							viewBox={art.viewBox}
-							preserveAspectRatio="xMidYMid meet"
-						>
-							<path d={art.d} />
-						</svg>
+						<path class="plate-fill" d={PLATE_BACK} />
+						{#each art as layer (layer.role)}
+							<path class="art art--{layer.role}" d={layer.d} />
+						{/each}
+						<path class="plate-line" d={PLATE_LINE} />
 					</svg>
 
 					<!-- Label block: the plate's 108–152 band (60%–84%), under the art.
@@ -213,20 +189,31 @@
 		   Brand mark and heroes derive their horizontal extent from these,
 		   so any change to height/aspect/gap ripples through automatically.
 
-		   1:1.8 is DERIVED from the phone (memory `project_landing_card_round`):
+		   The proportion is now the ARTWORK'S — 511 × 919 (1:1.7984), straight
+		   off heroArt.ts's PLATE_VIEWBOX. It lands within a pixel of the 1:1.8
+		   that was DERIVED from the phone (memory `project_landing_card_round`:
 		   three cards across a 360px viewport with 16px gutters and 10px gaps
-		   leaves 102px per card, and the art panel + two-line label block need
-		   172px of height — 1:1.69 with zero slack, plus ~7% air. Height-driven
-		   so the clamp is in the axis that decides legibility: a 900px-tall
-		   laptop gets a 414 × 230 card (184px art panel), the max clamp 480 ×
-		   267, and the group settles ~880px wide on a 1440 screen. */
+		   leaves 102px per card, and the art + two-line label block need 172px
+		   of height — 1:1.69 with zero slack, plus ~7% air), so every size that
+		   derivation quotes still holds. Height-driven so the clamp is in the
+		   axis that decides legibility: a 900px-tall laptop gets a 414 × 230
+		   card, the max clamp 480 × 267, and the group settles ~880px wide on a
+		   1440 screen.
+		   ⚠ Written as literals because they have to reach calc() and
+		   aspect-ratio, which the TS constants cannot — re-copy PLATE_W/PLATE_H
+		   here if a redraw ever changes the artboard. */
+		--plate-w: 511;
+		--plate-h: 919;
 		--card-h-tall: clamp(17rem, 46vh, 30rem);
 		/* …but THREE ACROSS AT EVERY WIDTH (⚓ Nate — never rotate-and-stack),
 		   so on a phone the WIDTH binds: whatever three cards and two gaps can
 		   have of the viewport inside a 16px gutter each side. 108px at 390,
 		   102px at 360 — the numbers the aspect was derived from. */
-		--card-w: min(calc(var(--card-h-tall) / 1.8), calc((100vw - 2rem - 2 * var(--gap)) / 3));
-		--card-h: calc(var(--card-w) * 1.8);
+		--card-w: min(
+			calc(var(--card-h-tall) * var(--plate-w) / var(--plate-h)),
+			calc((100vw - 2rem - 2 * var(--gap)) / 3)
+		);
+		--card-h: calc(var(--card-w) * var(--plate-h) / var(--plate-w));
 		--gap: clamp(1rem, 2.6vw, 2.5rem);
 		--group-w: calc(3 * var(--card-w) + 2 * var(--gap));
 		/* The air between the doors and the band that captions them. */
@@ -287,18 +274,37 @@
 	   the whole card each frame. Everything below is paint on shapes that were
 	   going to be painted anyway. */
 	.hero {
-		/* Hover is DENSITY in the gold, never tint: the inset line and the art
-		   go from their resting alpha to full, the label with them. Alpha lives
-		   in the PAINT (fill-opacity / stroke-opacity), not element opacity —
-		   the card is transform-placed and moves on hover, and WebKit
-		   rasterizes an opacity subtree at rounded coordinates. */
-		--inset-alpha: 0.55;
-		--art-alpha: 0.9;
-		--label-opacity: 0.85;
+		/* ⚓ HOVER LIGHTS THE CARD'S GOLD (⚓ Nate 2026-09-21). Everything gold
+		   that is the card's own CONTENT — the silhouette, the kicker and its
+		   rule — steps a rung UP the ramp to --hero-lit. The two things that
+		   are not content rise in DENSITY instead: the chrome name from .85 to
+		   full, and the inner line --inset-line-quiet → --inset-line, staying
+		   on the accent rung so the frame never competes with what it frames.
+		   ⚓ The figure rests at FULL strength — it is the card's subject, so
+		   it is LIT rather than faded, and its whole answer is the hue.
+		   ⚓ THE RINGS DO NOT MOVE (⚓ Nate). They are the artwork's fixed
+		   decorative ladder — they exist to balance a sparse drawing by filling
+		   its empty middle, so they belong to the figure's WEIGHT, not to the
+		   card's state. Lighting them too would read as the whole card
+		   brightening, which is the placeholder's gesture from when there were
+		   only two gold things on it.
+		   ⚠ The line's two ends are ROLES, not numbers, and both carry alpha at
+		   :root on purpose — the card is glass over an unknown ground (app.css,
+		   § the night stop). */
+		--ink-figure: var(--accent);
+		/* The label block's .85 as PAINT, one stop per colour in it, because
+		   there is no single fill a text block can carry an alpha on. The rule
+		   folds in its own .6 (.85 × .6 = .51) — ⛔ it cannot wear a second
+		   mix, a color-mix fed by a color-mix crashes WebKit. ⚠ EVERY end mixes
+		   a var that resolves to a LITERAL, which is what keeps that true:
+		   --accent is gold-400, --hero-lit is gold-300, --chrome is #ffffff. */
+		--ink-kicker: color-mix(in srgb, var(--accent) 85%, transparent);
+		--ink-rule: color-mix(in srgb, var(--accent) 51%, transparent);
+		--ink-name: color-mix(in srgb, var(--chrome) 85%, transparent);
 
 		position: relative;
 		height: 100%;
-		aspect-ratio: 1 / 1.8;
+		aspect-ratio: var(--plate-w) / var(--plate-h);
 		min-width: 0;
 		display: block;
 		text-decoration: none;
@@ -308,6 +314,20 @@
 		   the card feels answerable to the cursor. Transform + paint alpha only,
 		   so the whole hover is compositor work plus a repaint of the plate. */
 		transform: none;
+		/* ⚠⚠ PROMOTED ON PURPOSE — this is a SAFARI fix (⚓ Nate saw it live,
+		   2026-09-21). The card is a great deal of fine vector detail now, and
+		   through the 1px lift WebKit was re-rasterizing all of it at each new
+		   sub-pixel offset: every gold stroke crawls on its own, which reads as
+		   the whole card dancing. Promoting it hands the translate to the
+		   compositor, so the artwork rasterizes ONCE and is then just moved.
+		   ⛔ Never promote .hero__plate instead. A promoted CHILD of a
+		   transform-animated parent gets positioned at ROUNDED coordinates —
+		   that is the same snapping this exists to cure, and it would move the
+		   artwork relative to the label besides.
+		   ⚠ Translate only, never scale, so nothing ever resamples; and three
+		   cards is three textures, which is why this is affordable here and
+		   would not be on a roster grid. */
+		will-change: transform;
 		/* Only the transform animates HERE. The alpha knobs are plain
 		   unregistered custom properties, so they switch instantly — what eases
 		   is each child's own paint property, which sees a new computed value
@@ -317,11 +337,17 @@
 
 	.hero:hover,
 	.hero:focus-visible {
-		--inset-alpha: 1;
-		--art-alpha: 1;
-		--label-opacity: 1;
+		--ink-figure: var(--hero-lit);
+		--ink-kicker: var(--hero-lit);
+		--ink-rule: color-mix(in srgb, var(--hero-lit) 60%, transparent);
+		--ink-name: var(--chrome);
 		transform: translateY(-1px);
 		outline: none;
+	}
+
+	.hero:hover .plate-line,
+	.hero:focus-visible .plate-line {
+		fill: var(--inset-line);
 	}
 
 	.hero__plate {
@@ -329,6 +355,13 @@
 		width: 100%;
 		height: 100%;
 		overflow: visible;
+		/* ⚠ LOAD-BEARING, and inherited by every path below. The rings and the
+		   inner line are two-contour bands; under nonzero, contours wound the
+		   same way fill solid and the band becomes a disc. The exports declare
+		   it at their own root, so this matches the drawing. (The older, much
+		   simpler silhouettes measured identical either way — that note does
+		   not transfer to this artwork.) */
+		fill-rule: evenodd;
 	}
 
 	/* Dark glass, denser than the site's panels (.58) and wells (.45): the
@@ -344,20 +377,43 @@
 	}
 
 	/* The inset frame in gold — the same idea as `--inset-line` on a panel,
-	   carried further because on the card it IS the border. */
-	.plate-inset {
-		fill: none;
-		stroke: var(--accent);
-		stroke-width: 1;
-		stroke-opacity: var(--inset-alpha);
-		transition: stroke-opacity var(--t-snap);
+	   carried further because on the card it IS the border. ⚓ A drawn BAND
+	   now, not a stroke, which is what retired the old INSET_TRANSFORM: the
+	   hairline gap is even because Nate drew it even, not because a per-axis
+	   scale was solved for one proportion. */
+	.plate-line {
+		fill: var(--inset-line-quiet);
+		transition: fill var(--t-snap);
 	}
 
-	.hero__art {
-		overflow: visible;
+	/* The figure and its rings, all one gold at four alphas. ⚓ The rings are a
+	   fixed decorative ladder — they balance a sparse drawing by filling the
+	   empty middle, so they belong to the ARTWORK's weight, not to the card's
+	   state, and nothing about hover or focus touches them. */
+	.art {
 		fill: var(--accent);
-		fill-opacity: var(--art-alpha);
-		transition: fill-opacity var(--t-snap);
+	}
+
+	.art--outer-ring {
+		fill-opacity: 0.09;
+	}
+
+	.art--middle-ring {
+		fill-opacity: 0.06;
+	}
+
+	.art--inner-ring {
+		fill-opacity: 0.03;
+	}
+
+	/* The figure is the one part of the drawing that answers the cursor, and
+	   it answers in HUE rather than alpha — it carries no fill-opacity at all,
+	   resting at full --accent and stepping a rung up on hover.
+	   ⚠ Compound selector: a lone modifier TIES with .art on specificity and
+	   would be left to source order, the same trap as .panel--paper. */
+	.art.art--figure {
+		fill: var(--ink-figure);
+		transition: fill var(--t-snap);
 	}
 
 	.hero__label {
@@ -375,8 +431,13 @@
 		gap: 0.45em;
 		padding: 0 8%;
 		text-align: center;
-		opacity: var(--label-opacity);
-		transition: opacity var(--t-snap);
+		/* ⛔ NO OPACITY HERE, AND NONE ON ITS CHILDREN — each colour carries
+		   its own alpha in the paint (--ink-* on .hero) and rises with the
+		   figure on hover. This block was element opacity .85 with the rule's
+		   .6 nested inside it: two stacked rasterization units inside a card
+		   the parallax controller re-places every frame the pointer moves.
+		   ⚠ That is the sub-pixel law's case, and it is NOT only a hover-time
+		   one, as the note that used to sit here claimed. */
 	}
 
 	/* Small, wide-tracked and gold — the tool's real name, read on the way to
@@ -387,13 +448,21 @@
 	   drops DECORATION, never meaning: below `compact` it loses its wide
 	   tracking first (⚓ memory `project_landing_card_round`). */
 	.hero__kicker {
-		font-family: var(--font-mono);
+		/* Set like the BETA tag — same face, weight and tracking, so the
+		   site's two small caps labels read as one voice. ⚓ BODY, not mono
+		   (⚓ Nate 2026-09-21).
+		   ⚠ The body face is VARIABLE, so --fw-semibold is a REAL 600 here.
+		   The pair was mono at --fw-bold, where 700 quietly FOLDED to the
+		   static cut's 600 — moving to Plex Sans is what makes the weight the
+		   one that was asked for. (app.css § the weight ladder.) */
+		font-family: var(--font-body);
 		font-size: clamp(0.5rem, calc(var(--card-w) * 0.048), var(--fs-sm));
-		font-weight: var(--fw-normal);
-		letter-spacing: var(--ls-widest);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wider);
 		line-height: var(--lh-tight);
 		text-transform: uppercase;
-		color: var(--accent);
+		color: var(--ink-kicker);
+		transition: color var(--t-snap);
 	}
 
 	/* `compact` — 40rem, $lib/breakpoints.ts (custom properties do not work
@@ -410,8 +479,8 @@
 		display: block;
 		width: 22%;
 		height: 1px;
-		background: var(--accent);
-		opacity: 0.6;
+		background: var(--ink-rule);
+		transition: background-color var(--t-snap);
 	}
 
 	.hero__name {
@@ -420,6 +489,8 @@
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		line-height: var(--lh-tight);
+		color: var(--ink-name);
+		transition: color var(--t-snap);
 		/* All three names are single words, so nothing wraps; the label's own
 		   padding is the only constraint they need. */
 		max-width: 100%;
