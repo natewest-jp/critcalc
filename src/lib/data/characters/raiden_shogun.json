@@ -206,6 +206,7 @@
 			"summons": [
 				{
 					"label": "Eye of Stormy Judgment",
+					"spawnsAt": 66,
 					"duration": 25,
 					"mobility": "follows",
 					"effects": [
@@ -241,7 +242,8 @@
 			"_curatorNotes": [
 				"A6 rigor 2026-07-12: burst DMG bonus per-energy corrected ≈0.35% → ≈0.30% (T10) (gcsim skillBurstBonus[9]=0.003; sidecar 0.30% Per Energy)",
 				"[A7] Per-member value = mult × that member's burst energy cost; ≈0.30% per energy at T10 per the existing A6 rigor note.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The value is authored as `{type:'unknown', description:'≈0.30% per energy cost (T10)'}`, and `formatBuffDisplayValue` prints that description verbatim on the bar — so the bar ALREADY reads '≈0.30% per energy cost (T10)'. The caveat spends a third of the column restating what the bar says about itself. Nothing on screen is wrong or approximate: the 25s window is right, and the per-member formula is the honest label. Category: working-behavior."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The value is authored as `{type:'unknown', description:'≈0.30% per energy cost (T10)'}`, and `formatBuffDisplayValue` prints that description verbatim on the bar — so the bar ALREADY reads '≈0.30% per energy cost (T10)'. The caveat spends a third of the column restating what the bar says about itself. Nothing on screen is wrong or approximate: the 25s window is right, and the per-member formula is the honest label. Category: working-behavior.",
+				"Eye start 2026-09-21 (⚓ Nate: follow gcsim): summons[0].spawnsAt 66 — gcsim raiden/skill.go adds the Eye status (the coordinated-attack gate AND the burst-DMG mod, one object) at 6+60 frames, 'starts 1s after cd delay'. That is gcsim PR #2271 (2024-11), a targeted correction of its own earlier 'start eye at hitmark' (51f). Consequence: her E's own hit (51f) lands before the Eye exists, so the Eye does not answer it."
 			],
 			"effects": [
 				{

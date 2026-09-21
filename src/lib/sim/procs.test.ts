@@ -446,15 +446,22 @@ describe('onHit damage procs — the coordinated attack that answers damage', ()
 		// answered Raiden's own BUTTON PRESS — her cast's hit record fired at the
 		// press, 51 frames before it landed. The first strike now answers Oz's tick
 		// at 1.53, which is what this test always claimed to show.
-		expect(eye).toEqual([1.62, 4.57, 7.52]);
+		// ↻ And again the same day: the Eye exists from 66f after the press (gcsim
+		// #2271), so Oz's tick at 1.53 finds no Eye and the next one is answered.
+		// gcsim's own strikes on this fixture: 2.62, 5.57, 8.52.
+		expect(eye).toEqual([2.6, 5.55, 8.5]);
 		// Every gap is the standard window, which is what the absent gate says.
 		for (let i = 1; i < eye.length; i++) expect(eye[i] - eye[i - 1]).toBeGreaterThan(2.4);
 	});
 
 	it('⚓ never fires off its OWN output, which is what bounds the loop', () => {
-		// Raiden alone, no other damage source: the Eye strikes once off her cast
-		// and then has nothing left to hear. gcsim states the same exclusion.
-		const alone = appsOf('Raiden E ~20s', 'raiden_shogun').map(([t]) => t);
+		// Raiden alone: the Eye strikes once off her one swing and then has nothing
+		// left to hear — its own strike included. gcsim states the same exclusion.
+		// ↻ 2026-09-21: the swing is here because her CAST no longer fires it — the
+		// Eye exists from 66f (gcsim #2271) and her E lands at 51f. Without it this
+		// rotation has no strike at all, which is asserted too.
+		expect(appsOf('Raiden E ~20s', 'raiden_shogun')).toHaveLength(1);
+		const alone = appsOf('Raiden E ~2s N1 ~20s', 'raiden_shogun').map(([t]) => t);
 		expect(alone).toHaveLength(2);
 	});
 
@@ -466,7 +473,8 @@ describe('onHit damage procs — the coordinated attack that answers damage', ()
 		// ↻ Rewritten 2026-09-21 (cast hit-record round): the old rotation had the
 		// Blossom answering Raiden's button PRESS, 51 frames before her E landed.
 		const rot = 'Raiden E ~2s > Albedo E ~10s';
-		expect(measuredTicks(rot, 'Eye of Stormy Judgment')).toEqual([0.93, 3.23]);
+		// (Her own E lands at 51f, before the Eye exists at 66f — no strike off it.)
+		expect(measuredTicks(rot, 'Eye of Stormy Judgment')).toEqual([3.23]);
 		expect(measuredTicks(rot, 'Solar Isotoma')).toEqual([3.25]);
 		// ⚓ And it stops there, because neither hears ITSELF. gcsim's Albedo and
 		// Dehya do, which is why theirs tick forever with no player input.
