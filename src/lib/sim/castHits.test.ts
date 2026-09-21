@@ -128,3 +128,45 @@ describe('every landing is a hit', () => {
 		expect(shred.map((w) => [w.start, w.end])).toEqual([[51, 100 + 480]]);
 	});
 });
+
+/**
+ * ⚓ A PROJECTILE LANDS AFTER ITS RELEASE (projectile-travel round, 2026-09-21).
+ * A bow's `hit` is its release frame; the arrow lands `PROJECTILE_TRAVEL_F`
+ * later — the flight our ranged CAST data always carried and a swing did not.
+ */
+describe('projectile travel on swings', () => {
+	const firstSwing = (r: ParsedRotation) => {
+		const ev = r.events.find((e) => e.kind === 'action');
+		if (!ev || ev.kind !== 'action') throw new Error('no swing');
+		return ev;
+	};
+
+	it('an arrow lands one flight after its release — even past the swing’s end', () => {
+		// C6 Bennett cannot infuse a bow, so read a bow whose shots are elemental
+		// by kit: Yoimiya under Niwabi. Her N1's first hit releases at 15.
+		const r = parse('Yoimiya E N1');
+		const swing = firstSwing(r);
+		const first = r.applications.find((a) => a.characterId === 'yoimiya' && a.time > swing.time)!;
+		expect(first.time).toBe(swing.time + 15 + 10);
+	});
+
+	it('melee is untouched, and a bow’s melee STANCE says so itself', () => {
+		// Tartaglia is a bow; Foul Legacy is `projectile: false`. His stance N1
+		// lands at its hitmark with no flight.
+		const r = parse('Tartaglia E N1');
+		const swing = firstSwing(r);
+		const hit = r.applications.find((a) => a.characterId === 'tartaglia' && a.time > swing.time)!;
+		expect(hit.time - swing.time).toBeLessThanOrEqual(swing.duration);
+	});
+
+	it('⚓ an arrow that lands after its shooter swapped out is not the ACTIVE character’s hit', () => {
+		// Fischl's N1 is cancelled into a swap AT its release frame (15), so the
+		// arrow lands 10 frames later — two frames into Faruzan's turn. The same
+		// arrow with Fischl still on field fires C6 Faruzan's Collapse
+		// (`source: 'active'`); in the air across the swap, it does not.
+		const stays = parse('Faruzan Q ~4s > Fischl N1 ~1s', { faruzan: 6 });
+		expect(appsOf(stays, 'faruzan')).toHaveLength(3);
+		const swaps = parse('Faruzan Q ~4s > Fischl N1 > Faruzan ~3s', { faruzan: 6 });
+		expect(appsOf(swaps, 'faruzan')).toHaveLength(2);
+	});
+});

@@ -19,6 +19,9 @@
 				"chargeFrames: gcsim applies a 14-frame windup when entering CA from NormalAttackState (windup=14 in charge.go). Values recorded are from the raw chargeFrames slice before windup subtraction. When cast from NA animation: all keys reduce by 14 (swap→48, N→48, E→48, Q→48, D→34, J→34). Reviewer to decide whether to record post-windup values.",
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
+			"projectile": {
+				"normal": true
+			},
 			"hits": [
 				{
 					"name": "N1",

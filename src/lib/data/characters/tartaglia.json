@@ -66,6 +66,10 @@
 			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "hydro",
 			"tags": [],
+			"projectile": {
+				"normal": false,
+				"charged": false
+			},
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 23, "hit": 8, "N": 10 } },
 				{ "name": "N2", "frames": { "anim": 23, "hit": 6, "N": 11 } },

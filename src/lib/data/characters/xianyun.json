@@ -15,6 +15,10 @@
 			"input": ["N1", "N2", "N3", "N4", "C", "P"],
 			"abilityType": "normal",
 			"tags": [],
+			"projectile": {
+				"normal": true,
+				"charged": true
+			},
 			"hits": [
 				{
 					"name": "N1",

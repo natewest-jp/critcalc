@@ -1,6 +1,6 @@
 # Projectile travel on swings (PLAN, 2026-09-20)
 
-_Status: **PLANNED, not started.** ⚓ Nate's decisions (2026-09-20): travel is a
+_↻ Status: **SHIPPED 2026-09-21 — §6 is the record and wins over §1–§5.** Originally: PLANNED, not started. ⚓ Nate's decisions (2026-09-20): travel is a
 named **CONSTANT, not a setting** (for now) · a **`projectile` flag** on the
 catalyst normals that need one is APPROVED · ⛔ never baked into a `hit` / `lands`
 value. Start in a fresh context. Parent: `docs/swing-hitmark-round.md` §4.4._
@@ -79,3 +79,61 @@ nine catalysts' likewise; anything else moving is a finding. The digest rotation
 has bow partners nowhere and no `A` — add a bow leg or measure at the site.
 ⚠️ Order this round AFTER `docs/multi-hit-swings-round.md` or before it, not
 during: both rewrite `landSwing`.
+
+## 6. What shipped (2026-09-21)
+
+On `feat/projectile-travel`, the same day as the two rounds that rewrote
+`landSwing` before it (`docs/cast-hit-record-round.md`,
+`docs/multi-hit-swings-round.md` §7) — which is why §4 was small.
+
+- **`PROJECTILE_TRAVEL_F = 10`** and **`projectileTravelOf(weapon, normal, cls)`**
+  in `$lib/utils/frames.ts`. Bows fly by RULE — normals and charged/aimed shots,
+  ⛔ never the plunge. §3's "21st bow" is Linnea, who is simply not in gcsim; all
+  20 gcsim bows take the parameter, so the rule is `weapon === 'bow'`.
+- **`NormalAbility.projectile: { normal?, charged? }` states the EXCEPTIONS, both
+  ways**, and ↻ it is PER CLASS, not the single flag §3 sketched: all nine
+  catalysts take `travel` on their normals, only FOUR on the charged attack
+  (Citlali, Klee, Ningguang, Xianyun). `false` is a bow in a melee stance —
+  Tartaglia's Foul Legacy, the one holder. Lint A.4d refuses a value that
+  restates the rule (`true` on a bow, `false` off one), so the field cannot
+  drift into a mass annotation. 11 abilities in 10 files (Wanderer's Kuugo form
+  included). ⚠️ Wanderer is 5f in gcsim and 10 here — §3's accepted divergence.
+- **`landSwing` takes `travel`.** A projectile landing is ALWAYS a task: release
+  (`min(frame, swing end)` — a cancel cannot un-fire an arrow, only hurry it; an
+  unmeasured map releases at the end) + travel. It composes with the landing
+  lists: each hit of a multi-hit arrow swing flies on its own.
+- **§4's question was already answered.** A landing after the shooter's TURN ends
+  takes Phase A's off-field path unchanged: `liveSegment`, the null stack pool,
+  `HitEvent.offField`, refused by `source: 'active'`. `onReaction`'s `active`
+  needed nothing — `takeReactionProcs` already compares the applier to
+  `ctx.activeCharId`. The closure keeps its token-start states (a late arrow is
+  still that swing's hit).
+
+### 6.1 Measured
+
+Same probe as the two rounds before it (1504 digests, five rotations, every
+character as the subject at C0 and C6).
+
+- **Exactly the 30 expected characters moved — 21 bows + 9 catalysts — and nobody
+  else.** 278 digests. Their swing applications shift +10f (Klee 189 → 199,
+  335 → 345, …).
+- Every application or reaction GAINED or LOST is downstream of that shift:
+  a partner's cooldown re-phasing (C6 Faruzan's own Collapse loses one fire in
+  R1 — the hit that used to find her 3s cooldown 4f clear now finds it 17f
+  short) or an aura arriving on the other side of a teammate's application
+  (Klee's orb now lands after Xingqiu's Hydro: +1 vaporize).
+- ⚠️ **The oracle cannot adjudicate.** Its one flagged-catalyst fixture is
+  Ningguang, and gcsim rolls her normal-attack variants per run — its own rows
+  move by more than the 10f in question between two runs of the same commit.
+  Summary counts are unchanged.
+
+Gates: vitest 1957 · check · lint · build green; e2e in the merge commit.
+
+### 6.2 Open
+
+- ⏭ Nate, only if it shows: Wanderer's 5f (make the flag a number), and whether
+  10f ever wants to be a setting.
+- A swing cancelled BEFORE its release frame still fires its arrow (at the
+  cancel). In game the arrow is never loosed; the notation cannot say which the
+  player meant, and this is the placement the model always had, plus the flight.
+- Casts keep gcsim's per-ability travel inside `application[]` (§1) — untouched.

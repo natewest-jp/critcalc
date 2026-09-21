@@ -23,6 +23,10 @@
 				"plungeFrames: high plunge also exists in gcsim (highPlungeFrames: swap=53, N=60, E=61, Q=48, D=48, J=68). Low plunge used here as standard rotation plunge.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Badges are a pure own-hit DMG multiplier (115%/130%/150%) — damage math, constitutionally frozen and never printed anywhere. Stacks have no counter on any surface either (there is no stack readout in the planner), so an authored badge system would have changed no bar, no marker and no tick. Three quarters of the text is a scaling table, which is the definition of trivia in a 262px column. It also sits on the base normal ability, so it fires for every Klee rotation. Category: invisible-omission."
 			],
+			"projectile": {
+				"normal": true,
+				"charged": true
+			},
 			"hits": [
 				{
 					"name": "N1",

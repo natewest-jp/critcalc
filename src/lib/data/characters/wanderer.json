@@ -15,6 +15,9 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"tags": [],
+			"projectile": {
+				"normal": true
+			},
 			"hits": [
 				{
 					"name": "N1",
@@ -102,6 +105,9 @@
 			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "anemo",
 			"tags": [],
+			"projectile": {
+				"normal": true
+			},
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 43, "hit": 15, "N": 30, "C": 31 } },
 				{
