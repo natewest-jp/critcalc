@@ -141,3 +141,34 @@ export function landingsOf(fm: import('$lib/types/ability').FrameMap): number[] 
 	const one = landsAt(fm);
 	return one === null ? [] : [one];
 }
+
+/**
+ * ⚓ HOW LONG A PROJECTILE SWING IS IN THE AIR, in frames (projectile-travel
+ * round, 2026-09-21). ⚓ Nate: a named CONSTANT, ⛔ not a setting — if it ever
+ * becomes one the precedent is Human timing (`siteSettings`, never a character
+ * JSON, never `?r=`).
+ *
+ * It is gcsim's `travel` default on all 20 bows it models and on eight of the
+ * nine catalysts that take the parameter (⚠️ Wanderer's is 5 — accepted under
+ * one constant, a known 5f divergence), and the same figure our ranged CAST data
+ * already carries inside `application[]`. A swing's `hit` / `lands` is its
+ * RELEASE frame (the dumper pins `travel: 0`), so ⛔ never bake this into data.
+ */
+export const PROJECTILE_TRAVEL_F = 10;
+
+/**
+ * The flight a swing of this class adds between release and landing — 0 for a
+ * melee swing. Bows are projectiles by RULE (normal + charged/aimed; ⛔ a bow's
+ * PLUNGE is melee), the near-universal census `resolveActionIcd` already keeps
+ * for plunges; `NormalAbility.projectile` states the exceptions both ways — the
+ * nine catalysts gcsim gives a `travel`, and Tartaglia's melee stance.
+ */
+export function projectileTravelOf(
+	weapon: string | undefined,
+	normal: { projectile?: { normal?: boolean; charged?: boolean } } | null | undefined,
+	cls: 'normal' | 'charged' | 'plunge'
+): number {
+	if (cls === 'plunge') return 0;
+	const stated = normal?.projectile?.[cls];
+	return (stated ?? weapon === 'bow') ? PROJECTILE_TRAVEL_F : 0;
+}

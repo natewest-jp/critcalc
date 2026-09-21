@@ -1246,6 +1246,37 @@ function lintNormal(
 		}
 	}
 
+	// (A.4d) `projectile` — the EXCEPTIONS to "a bow's normals and aimed shots fly,
+	// everything else is melee" (projectile-travel round, 2026-09-21). A value
+	// that restates the rule is refused, so the field keeps meaning "this one is
+	// different": `true` on a bow and `false` off one are both noise, and noise
+	// here is how a mass-annotation starts. ⛔ No `plunge` key — a plunge is melee.
+	const pj = (a as unknown as { projectile?: unknown }).projectile;
+	if (pj !== undefined) {
+		if (typeof pj !== 'object' || pj === null || Array.isArray(pj)) {
+			push('strict', 'projectile-shape', `projectile must be an object of action classes`, a.id);
+		} else {
+			for (const [k, v] of Object.entries(pj)) {
+				if (k !== 'normal' && k !== 'charged')
+					push(
+						'strict',
+						'projectile-shape',
+						`projectile key "${k}" is not normal|charged (a plunge is melee)`,
+						a.id
+					);
+				else if (typeof v !== 'boolean')
+					push('strict', 'projectile-shape', `projectile.${k} must be a boolean`, a.id);
+				else if (v === (c.weapon === 'bow'))
+					push(
+						'strict',
+						'projectile-shape',
+						`projectile.${k}: ${v} restates the rule for a ${c.weapon} — state only the exception`,
+						a.id
+					);
+			}
+		}
+	}
+
 	// (A.4c) `nonHitting` — a keyed object of action classes, each literally
 	// `true` (charged-forms round, 2026-09-16). A `chargedIcdWindow` beside a
 	// non-hitting charged attack is a gate on a swing that never applies.

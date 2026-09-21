@@ -15,6 +15,9 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"tags": ["summon"],
+			"projectile": {
+				"normal": true
+			},
 			"hits": [
 				{
 					"name": "N1",

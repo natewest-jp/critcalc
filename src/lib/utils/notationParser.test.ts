@@ -13,7 +13,7 @@ const shieldEndsOf = (events: TimelineEvent[]): ShieldEndEvent[] =>
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Element } from '$lib/types/ability';
 import { GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
-import { framesOf, landsAt } from '$lib/utils/frames';
+import { framesOf, landsAt, PROJECTILE_TRAVEL_F } from '$lib/utils/frames';
 import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import durinJson from '$lib/data/characters/durin.json';
@@ -4029,7 +4029,14 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 	).hits[0].frames.lands;
 	const kleeNormal = klee.abilities.find((a) => a.abilityType === 'normal') as unknown as {
 		hits: { frames: Parameters<typeof landsAt>[0] }[];
+		projectile?: unknown;
 	};
+	// ↻ And a MELEE copy (projectile-travel round, 2026-09-21): the real Klee's
+	// orbs fly, so "a map that states none keeps its end" needs the flag gone.
+	const kleeMelee = structuredClone(klee);
+	delete (
+		kleeMelee.abilities.find((a) => a.abilityType === 'normal') as never as { projectile?: unknown }
+	).projectile;
 	// ⚓ Where each NORMAL swing lands (§1.K): its hitmark, or the swing's end
 	// when the map states none or the swing was cancelled before it — the
 	// parser's own rule (`landSwing`), restated from the DATA so the assertions
@@ -4101,12 +4108,15 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 		expect(s.applications[1].time).toBe(sSwing.time + sHit);
 		expect(s.applications[1].time).toBeLessThan(sEnd);
 
-		const k = parseNotation('Klee N1', (n) => (n === 'Klee' ? klee : null), 8);
+		const k = parseNotation('Klee N1', (n) => (n === 'Klee' ? kleeMelee : null), 8);
 		const kSwing = k.events.find((e) => e.kind === 'action')!;
 		expect(landsAt(kleeNormal.hits[0].frames)).toBeNull();
-		expect(k.applications[0].time).toBe(
-			kSwing.time + (kSwing.kind === 'action' ? kSwing.duration : 0)
-		);
+		const kEnd = kSwing.time + (kSwing.kind === 'action' ? kSwing.duration : 0);
+		expect(k.applications[0].time).toBe(kEnd);
+		// ⚓ The same unmeasured swing as a PROJECTILE releases at its end and lands
+		// one flight later — past the swing, which is the round's whole point.
+		const flown = parseNotation('Klee N1', (n) => (n === 'Klee' ? klee : null), 8);
+		expect(flown.applications[0].time).toBe(kEnd + PROJECTILE_TRAVEL_F);
 	});
 
 	it('a catalyst charged attack applies EVERY time (gcsim ICDTagNone)', () => {

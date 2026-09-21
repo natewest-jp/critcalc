@@ -54,6 +54,9 @@
 				"chargeFrames: gcsim subtracts a 16-frame windup from every cancel value when CA is used outside Idle/Swap state (i.e. after a normal/skill/burst/etc.). Values recorded are the raw cold-open slice (windup=0). Effective post-N/E/Q windup: swap=43, E=47, Q=47, D=35, J=33.",
 				"plungeFrames: lowPlungeFrames recorded. highPlungeFrames also exists in gcsim (swap=50, N=58, E=59, Q=59, D=47) but is not represented; standard rotation uses low plunge. Catalyst plunge is gated on AirborneXianyun in gcsim — plunges are only available when launched by Xianyun support."
 			],
+			"projectile": {
+				"normal": true
+			},
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 26, "hit": 12, "C": 21 } },
 				{ "name": "N2", "frames": { "anim": 28, "hit": 16, "C": 16 } },

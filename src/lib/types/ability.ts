@@ -2219,6 +2219,20 @@ export type NormalAbility = AbilityCommon & {
 	 * at all — is a separate, gcsim-censused landing (the round's §7).
 	 */
 	nonHitting?: { normal?: true; charged?: true; plunge?: true };
+	/**
+	 * Whether a swing of this class is a PROJECTILE — released at its `hit` /
+	 * `lands` frame and landing `PROJECTILE_TRAVEL_F` later (projectile-travel
+	 * round, 2026-09-21). Read through `projectileTravelOf()`.
+	 *
+	 * ⚓ States the EXCEPTIONS to a rule, both ways: a bow's normals and aimed
+	 * shots are projectiles without saying so, and everything else is melee. So
+	 * `true` is the nine catalysts gcsim gives a `travel` parameter — per CLASS,
+	 * because only four of them take it on the charged attack — and `false` is a
+	 * bow in a melee stance (Tartaglia's Foul Legacy).
+	 * ⛔ The other 19 catalysts fold their flight into the hitmark, where it
+	 * cannot be separated: flagging one counts its travel twice.
+	 */
+	projectile?: { normal?: boolean; charged?: boolean };
 	/** Elemental infusion applied to N/C/P while this ability is active.
 	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer).
 	 *

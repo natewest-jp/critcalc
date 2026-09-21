@@ -53,7 +53,7 @@ import {
 } from '$lib/types/ability';
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
-import { FPS, frameAt, framesOf, landingsOf } from '$lib/utils/frames';
+import { FPS, frameAt, framesOf, landingsOf, projectileTravelOf } from '$lib/utils/frames';
 import {
 	GENERIC_NORMAL_HITS,
 	GENERIC_SKILL,
@@ -535,22 +535,39 @@ export function runRotation(
 		// ⚠️ What does NOT multiply: the action event, the input block, the wave's
 		// span, `hitIndex` (the COMBO index — N4's second hit is still 3) and the
 		// swing's resolved element (a granted infusion resolves per swing).
+		//
+		// ↻⚓ A PROJECTILE LANDS AFTER ITS RELEASE (projectile-travel round,
+		// 2026-09-21). `travel > 0` is a bow's arrow or a flagged catalyst's orb:
+		// the map's frame is when it LEAVES, and it lands `travel` later — very
+		// often past the swing's end (a bow N1 cancelled at release), sometimes
+		// after a swap. So a projectile landing is ALWAYS a task, never the
+		// synchronous path: its release clamps to the swing's end (a cancel cannot
+		// un-fire an arrow, only hurry it), and an unmeasured map releases there.
+		// ⚠️ No tie with the state opener at the swing's end — it lands after it.
+		// ⚓ `live` is the cast hit-record round's answer to "whose stack pool":
+		// false once this TURN is over, and the closure then takes the NULL pool
+		// and marks the hit `offField`. ⛔ Never the new on-field character's.
 		const landSwing = (
 			start: number,
 			swingF: number | null,
 			fm: FrameMap | null | undefined,
-			land: (at: number) => void
+			land: (at: number, live: boolean) => void,
+			travel = 0
 		): number => {
 			const frames = fm ? landingsOf(fm) : [];
+			const turn = i;
+			const queue = (at: number): void =>
+				clock.schedule(at, Band.LAND, () => land(at, liveSegment === turn));
+			if (travel > 0 && swingF !== null) {
+				for (const f of frames.length > 0 ? frames : [swingF])
+					queue(start + Math.min(f, swingF) + travel);
+				return 0;
+			}
 			if (frames.length === 0 || swingF === null) return 1;
 			let late = 0;
 			for (const f of frames) {
-				if (f >= swingF) {
-					late++;
-					continue;
-				}
-				const at = start + f;
-				clock.schedule(at, Band.LAND, () => land(at));
+				if (f >= swingF) late++;
+				else queue(start + f);
 			}
 			return late;
 		};
@@ -1575,7 +1592,7 @@ export function runRotation(
 						// `N5` applies on swings 1, 4 and 6 at the corpus cadence, not on
 						// all five.
 						const coN = resolveElementRef(activeNormal?.coInfusion, variantCtx);
-						const landNormal = (at: number): void => {
+						const landNormal = (at: number, live = true): void => {
 							emitReactionsAtSwing(
 								ctx,
 								clock,
@@ -1629,13 +1646,21 @@ export function runRotation(
 											: 'normal',
 										abilityName: activeNormal?.name,
 										hitIndex,
+										...(live ? {} : { offField: true as const }),
 										sourceEventId: ev.id
 									},
-									true
+									true,
+									live
 								);
 							}
 						};
-						const nLate = landSwing(clock.now, castS, hits[hitIndex]?.frames, landNormal);
+						const nLate = landSwing(
+							clock.now,
+							castS,
+							hits[hitIndex]?.frames,
+							landNormal,
+							projectileTravelOf(char.weapon, activeNormal, 'normal')
+						);
 						if (castS !== null) clock.advance(clock.now + castS);
 						normalCounter++;
 						// Normal-opened transient state (post-P4 #2): the FIRST swing's
@@ -1868,7 +1893,7 @@ export function runRotation(
 					// The charged attack's landing — see `landSwing`. ⚠️ The states are
 					// read AT the landing: a hitmark sits before the opener's edge (Furina's
 					// toggle), the end-of-swing fallback after it, as it always did.
-					const landCharged = (at: number): void => {
+					const landCharged = (at: number, live = true): void => {
 						// Offer the charged shot to the aura. A catalyst CA and a bow's
 						// aimed shot both apply; only the bow's runs a counter (a
 						// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
@@ -1936,9 +1961,11 @@ export function runRotation(
 											)
 										: 'charged',
 									abilityName: cAbilityName,
+									...(live ? {} : { offField: true as const }),
 									sourceEventId: chargedEv.id
 								},
-								true
+								true,
+								live
 							);
 						}
 					};
@@ -1953,7 +1980,8 @@ export function runRotation(
 									activeNormal.specialChargeSpends === undefined || spendsId !== undefined
 								)
 							: null,
-						landCharged
+						landCharged,
+						projectileTravelOf(char.weapon, activeNormal, 'charged')
 					);
 					if (castS !== null) clock.advance(clock.now + castS);
 					humanPad('charged', j);
@@ -2102,7 +2130,7 @@ export function runRotation(
 						}
 						// The plunge's landing — see `landSwing`: the offers and the hit
 						// record at one instant.
-						const landPlunge = (at: number): void => {
+						const landPlunge = (at: number, live = true): void => {
 							// Offer the plunge to the aura at the landing. Plunges carry no
 							// ICD at all (gcsim census in resolveActionIcd), so an infused
 							// plunge string applies on every landing.
@@ -2154,9 +2182,11 @@ export function runRotation(
 										element: pElement,
 										damageTag: 'plunge',
 										abilityName: activeNormal?.name,
+										...(live ? {} : { offField: true as const }),
 										sourceEventId: plungeEv.id
 									},
-									true
+									true,
+									live
 								);
 						};
 						const pLate = landSwing(blockStart, castS, plungeFrames, landPlunge);
