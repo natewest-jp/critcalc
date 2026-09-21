@@ -512,46 +512,63 @@
 			"constellationLevel": 6,
 			"_curatorNotes": [
 				"Heal effect trigger: 'manual' inherited from generator. Probable trigger: timer — gcsim fires c6TeamHeal() once, exactly 12s after skill-heal activates (c6HealQueued guard prevents duplicates). Single activation per skill cast. Applies to all party members (target: 'team' appears correct). gcsim: c6TeamHeal() in cons.go.",
-				"DMG bonus effects (electroDmgBonus + pyroDmgBonus) trigger: 'manual' inherited from generator. Probable trigger: per-heal-tick from Short-Range Rapid Interdiction Fire (gcsim calls c6() from startSkillHealing every 2s). Each call adds an independent 8s stack; max 3 stacks per character tracked by c6StackCounts[]. target: 'self' appears incorrect — gcsim applies to the character currently being healed (active character). Reviewer to fix target and trigger."
+				"DMG bonus effects (electroDmgBonus + pyroDmgBonus) trigger: 'manual' inherited from generator. Probable trigger: per-heal-tick from Short-Range Rapid Interdiction Fire (gcsim calls c6() from startSkillHealing every 2s). Each call adds an independent 8s stack; max 3 stacks per character tracked by c6StackCounts[]. target: 'self' appears incorrect — gcsim applies to the character currently being healed (active character). Reviewer to fix target and trigger.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 In Pursuit of Ending Evil — effects[0] (heal 10% hp, team) RE-TRIGGERED. gcsim: `chevreuse/skill.go:205-212` queues `c6TeamHeal` exactly `12*60` frames after the skill's heal status opens (guarded by `c6HealQueued` so a re-press does not double it); `cons.go:127-144` then heals `Target: -1` for `0.1 × MaxHP()` once. the 12s is the skill's own healing window (the skill's `heal` effect already carries `duration: 12`, gcsim `skillHeal`'s `skillDur = 12*60+1`), and the one-shot guard is `c6HealQueued` — a C4 re-press refreshes the heal status without queueing a second team heal. ⚠️ `afterDurationStart` (`buffWindows.ts:618-621`) only finds a real end when the cast owns a `summon` or an `inStance` window; Chevreuse's E is `behavior: \"instant\"` with neither, so the span collapses to the cast instant. That is harmless **only because heal effects reach no planner lane** — nothing is drawn. If the skill is ever given an `activeDuration: 12` (the Barbara-Melody-Loop shape), re-check that this does not start drawing 12s early.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 In Pursuit of Ending Evil — effects[1] (buff electroDmgBonus 20) RE-TRIGGERED. gcsim: `chevreuse/skill.go:215-229` — `startSkillHealing` heals `Core.Player.Active()` every `skillHealInterval` (120f) while `skillHealKey` holds, and calls `c.c6(ActiveChar())` on each tick; `cons.go:146-162` adds an independent `8*60` stat mod carrying `PyroP 0.20` AND `ElectroP 0.20`, cycling the key index `% 3` so at most three stacks live. `c6TeamHeal` (`cons.go:133-135`) additionally runs `c6` for every party member at the 12s mark. the arithmetic behind both numbers: `duration: 20` is the honest length under the standing \"authored at their HONEST length\" ruling (Bennett 14.1, Faruzan 16/22) — the last heal tick lands at 12s (six ticks, 2s apart, the sixth on status expiry) and its 8s stack runs to 20s; gcsim's status opens 18f after the press, so from the cast it is 20.3s. The ramp is the stack count: `20 / 40 / 60` mirrors `cons.go:161`'s three-slot cycle. Also keep that the 12s team heal grants the same pair to EVERY party member including off-field ones (`cons.go:133-135`) — not authored, because `afterDuration` on this summon-less instant cast anchors at the cast and would draw a second bar 12s early. ⚠️ ⚠️ the authored `target: 'self'` is WRONG and is corrected here — gcsim grants to `ActiveChar()`, the character being healed. No stat collision: Chevreuse's only other buff effects are the A4 `atk%` pair; her Pyro/Electro RES reduction is a `resShred`, a different pool. `ramping` has no decay model, so the bar holds 60% to the end where in game the stacks fall off one at a time from 14s; the tail over-claims by up to two stacks in the last ~6s.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 In Pursuit of Ending Evil — effects[2] (buff pyroDmgBonus 20) RE-TRIGGERED. gcsim: same site — `cons.go:151-152` writes `PyroP 0.20` and `ElectroP 0.20` into one stat mod, so the two halves are one grant in the engine and two effects here. as effects[1]. Keep that the pair is ONE gcsim stat mod and must stay in step — any change to one (duration, ramp, target) belongs on both. ⚠️ as effects[1]. The two sit on different `stat` keys so the cast pool's stat-dedupe keeps both bars; they will draw as two rows with identical geometry, which is correct (two separate elemental bonuses)."
 			],
 			"effects": [
 				{
 					"type": "heal",
 					"target": "team",
 					"trigger": {
-						"type": "manual"
+						"type": "afterDuration",
+						"ability": "skill"
 					},
 					"scaling": 10,
 					"stat": "hp"
 				},
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
-					"duration": 8,
+					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "electroDmgBonus",
-					"value": 20,
+					"value": {
+						"type": "ramping",
+						"startValue": 20,
+						"stepValue": 20,
+						"stepInterval": 2,
+						"cap": 60
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
-					"duration": 8,
+					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "pyroDmgBonus",
-					"value": 20,
+					"value": {
+						"type": "ramping",
+						"startValue": 20,
+						"stepValue": 20,
+						"stepInterval": 2,
+						"cap": 60
+					},
 					"snapshottable": false
 				}
 			],
-			"description": "After 12s of the healing effect from Short-Range Rapid Interdiction Fire, all nearby party members recover HP equivalent to 10% of Chevreuse's Max HP once.\nAfter a party member is healed by Short-Range Rapid Interdiction Fire, they gain a 20% Pyro DMG Bonus and Electro DMG Bonus for 8s. Max 3 stacks. Each stack's duration is counted independently."
+			"description": "After 12s of the healing effect from Short-Range Rapid Interdiction Fire, all nearby party members recover HP equivalent to 10% of Chevreuse's Max HP once.\nAfter a party member is healed by Short-Range Rapid Interdiction Fire, they gain a 20% Pyro DMG Bonus and Electro DMG Bonus for 8s. Max 3 stacks. Each stack's duration is counted independently.",
+			"caveat": "The Pyro and Electro bars build from the cast; in game the first stack lands 2s later, with the Skill's first heal tick."
 		}
 	],
 	"meta": {

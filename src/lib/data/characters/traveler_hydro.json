@@ -332,12 +332,18 @@
 					"type": "heal",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "skill",
+						"source": "self",
+						"filter": {
+							"damageTag": "skillHold"
+						}
 					},
 					"conditions": {
 						"type": "ascension",
 						"min": 1
 					},
+					"procCooldown": 1,
 					"scaling": 7,
 					"stat": "hp"
 				}
@@ -345,7 +351,8 @@
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Suffusion'/'Outflow' to release A1 'Spotless Waters' (genshin-db 5.2.12 passive1; deleted the beta Pneuma-absorption note and the A6 2026-07-12 rename flag this resolves). 'Suffusion' is the skill's own HP-drain mechanic, not a passive.",
 				"Heal authored: 7% of the Traveler's Max HP per Sourcewater Droplet picked up, self, fixed (not talent-scaled), scales with Healing Bonus — gcsim traveler/common/hydro/asc.go:14-35 (droplet spawn on Hold-E Dewdrop hit, 60f ICD, cap 4 per skill use) + asc.go:38-56 (a1PickUp: Heal Src MaxHP*0.07). Pickup has no schema trigger primitive — manual trigger per the Sigewinne C2 shield precedent.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — pickup-driven mechanics are on the FROZEN out-of-scope list (droplet/orb collection), the effect is `manual` so it reaches no planner surface, and heals draw no bar in the planner regardless. There is no lane where a droplet or its heal would sit, so its absence cannot be noticed; the second sentence is pure kit explanation on top. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — pickup-driven mechanics are on the FROZEN out-of-scope list (droplet/orb collection), the effect is `manual` so it reaches no planner surface, and heals draw no bar in the planner regardless. There is no lane where a droplet or its heal would sit, so its absence cannot be noticed; the second sentence is pure kit explanation on top. Category: invisible-omission.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Spotless Waters — effects[0] (heal 7% hp, self) RE-TRIGGERED. gcsim: `internal/characters/traveler/common/hydro/asc.go:14-35` — `makeA1CB()` is the callback on the Hold-mode Dewdrop hits (`skill.go:147`, `skill.go:182-196`): a droplet spawns per hit, 60f ICD, `count >= 4` stops it. The heal itself is `asc.go:37-68` `a1PickUp`, reached only from `dash.go:5-12`, i.e. from an explicit `pickup_droplets` parameter on a dash — even gcsim has no automatic pickup. the heal lands on PICKUP, which is on the frozen out-of-scope list (droplet/orb collection) and which gcsim itself models as a hand-declared dash parameter — so the effect is anchored one link earlier, at the Hold-mode Dewdrop hit that CREATES the droplet, at the droplet's own 1s spawn cadence (`asc.go:26-33`); the 4-per-use cap is not modelled, and the C1 +2 Energy per pickup (`asc.go:60-62`) stays resource-only. ⚠️ ⚠️ Fires more often than the game grants droplets — the Hold variant's `application[]` is 24 entries spanning frames 61–418, so at a 1s cooldown this is ~6 procs against a cap of 4. Harmless: a heal reaches no planner surface, and the Team Builder reads the capability rather than the count. ⚠️ Keep the existing `ascension: 1` gate; this is A1, not A4. ⛔ Retiring instead would delete the Hydro Traveler's only heal capability, which is real."
 			],
 			"description": "After the Dewdrop fired by the Hold Mode of the Aquacrest Saber hits an opponent, a Sourcewater Droplet will be generated near to the Traveler. If the Traveler picks it up, they will restore 7% HP.\n1 Droplet can be created this way every second, and each use of Aquacrest Saber can create 4 Droplets at most."
 		},
@@ -434,21 +441,11 @@
 			"name": "Tides of Justice",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "heal",
-					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 6,
-					"stat": "hp"
-				}
-			],
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Cresting Onslaught' (the E-CD-reset beta effect never shipped) to release C6 'Tides of Justice' (genshin-db 5.2.12); deleted the A6 2026-07-12 rename flag this resolves.",
 				"Heal authored: 6% of the RECEIVER's Max HP per Sourcewater Droplet picked up, targeting the lowest-HP% party member, scales with the Traveler's Healing Bonus — gcsim traveler/common/hydro/cons.go:71-95 (c6: HealTypePercent 0.06), fired from asc.go:63-65 inside a1PickUp. The heal Effect's stat 'hp' nominally reads as the holder's Max HP and target 'team' as everyone — both approximations are caveated; pickup has no schema trigger, so the trigger is manual (Sigewinne C2 precedent).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — same pickup class as A1: FROZEN out of scope, `manual` trigger (no bar, no marker, no chip), and heals have no planner lane anyway. ⚠️ Same TB residue as Qiqi C4 — `target: 'team'` on an inert effect makes the Team Builder claim a party-wide heal — but a caveat cannot reach that card (N17), so this is a data ruling for Nate, not text worth 262px in the Notes panel. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — same pickup class as A1: FROZEN out of scope, `manual` trigger (no bar, no marker, no chip), and heals have no planner lane anyway. ⚠️ Same TB residue as Qiqi C4 — `target: 'team'` on an inert effect makes the Team Builder claim a party-wide heal — but a caveat cannot reach that card (N17), so this is a data ruling for Nate, not text worth 262px in the Notes panel. Category: invisible-omission.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — effects[0] (heal 6% hp, team) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/traveler/common/hydro/cons.go:72-91` — `c6()` walks the party, picks the lowest `CurrentHPRatio()` and heals THAT ONE character `HealTypePercent 0.06` of their own Max HP; it is called from inside `a1PickUp` (`asc.go:64-66`), i.e. on the same unreachable pickup. Retained: one ally is healed — the lowest remaining HP%, for 6% of THEIR Max HP, scaling with the Traveler's Healing Bonus (`cons.go:79-90`) — and neither half is expressible: no `EffectTarget` names the lowest-HP member, and `stat: 'hp'` reads as the HOLDER's Max HP. Retiring this also clears the `target: 'team'` residue flagged for Nate, which had the Team Builder badging a party-wide heal for a one-ally heal (the Qiqi C4 class; a caveat cannot reach that card, N17). ⚠️ ⚠️ This is a SCOPE call, not a trigger call — the trigger half is solved, since the A1 anchor above reaches the identical event. If Nate accepts the breadth over-claim, the restore is one line: the A1 spec with `\"target\":\"team\"`, `\"scaling\":6` and the C6 condition. ⛔ `target: 'active'` is not the fix — the receiver is whoever is lowest, which is frequently not the character on field."
 			],
 			"description": "When the Traveler picks up a Sourcewater Droplet, they will restore HP to a nearby party member with the lowest remaining HP percentage based on 6% of said member's Max HP."
 		}

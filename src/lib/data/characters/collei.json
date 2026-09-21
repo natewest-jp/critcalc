@@ -93,7 +93,34 @@
 			"cooldown": 12,
 			"cooldownStartDelay": 20,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"armedFor": 2.617,
+						"icdGate": "none"
+					},
+					"procCooldown": 12,
+					"scaling": 200,
+					"stat": "atk",
+					"element": "dendro",
+					"application": [
+						{
+							"frame": 22,
+							"element": "dendro",
+							"units": 1
+						}
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"attribution": "Forest of Falling Arrows"
+				}
+			],
 			"description": "Throws out a Floral Ring that deals 1 instance of Dendro DMG to targets it comes into contact with.\nThe Floral Ring will return after a set time, dealing Dendro DMG once again.",
 			"application": [
 				{
@@ -234,24 +261,10 @@
 			"name": "Through Hill and Copse",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"duration": 3,
-					"scaling": 40,
-					"stat": "atk",
-					"element": "dendro",
-					"_curatorNotes": [
-						"Inherited `manual` trigger. Likely `onCast` (fires when Floral Ring returns at ~157 frames from E cast start); at C2+ with Ascension ≥ 1, gcsim sets `sproutShouldProc = true` on E cast and adds Sprout unconditionally at skillReturn (no reaction required). Extension fires once per cast via `sproutShouldExtend` flag. Scope: self (Collei). Probable trigger: `{ type: 'onCast', ability: 'skill' }` delayed to ring return.",
-						"Sprout's +3s on-dendro-reaction extension would fit `durationExtensions[]` (E5, 2026-05-10) once Sprout is authored as a window — today the Sprout damage effect has a 3s duration but no schema home for runtime extensions (effects don't host durationExtensions, only stance abilities + summons do). Defer until Sprout is authored as a Summon or the primitive grows to cover effect-level windows."
-					]
-				}
-			],
-			"description": "The Ascension Talent Floral Sidewinder is changed to this:\nThe Floral Ring will grant the character the Sprout effect from Floral Sidewinder upon return, dealing 40% of Collei's ATK as Dendro DMG to nearby opponents for 3s.\nFrom the moment of using Floral Brush to the moment when this instance of Sprout effect ends, if any of your party members triggers Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Lunar-Bloom, or Burgeon reactions, the Sprout effect will be extended by 3s.\nThe Sprout effect can only be extended this way once. If another Sprout effect is triggered during its initial duration, the initial effect will be removed. DMG dealt by Sprout is considered Elemental Skill DMG.\nYou must first unlock the Ascension Talent \"Floral Sidewinder.\""
+			"description": "The Ascension Talent Floral Sidewinder is changed to this:\nThe Floral Ring will grant the character the Sprout effect from Floral Sidewinder upon return, dealing 40% of Collei's ATK as Dendro DMG to nearby opponents for 3s.\nFrom the moment of using Floral Brush to the moment when this instance of Sprout effect ends, if any of your party members triggers Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Lunar-Bloom, or Burgeon reactions, the Sprout effect will be extended by 3s.\nThe Sprout effect can only be extended this way once. If another Sprout effect is triggered during its initial duration, the initial effect will be removed. DMG dealt by Sprout is considered Elemental Skill DMG.\nYou must first unlock the Ascension Talent \"Floral Sidewinder.\"",
+			"_curatorNotes": [
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 Through Hill and Copse — effects[0] (damage atk 40, dendro) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/collei/skill.go:78-96` — the E cast sets `sproutShouldProc = c.Base.Cons >= 2 && c.Base.Ascension >= 1`, and a task at `skillReturn` (157f) adds `sproutKey` for 180f (360f if `sproutShouldExtend`); the damage itself is a re-queuing tick chain, `asc.go:115-134` (`a1Ticks`, every `sproutTickPeriod` = 89f, first at `sproutHitmark` = 86f after the status opens). Retained: C2 makes the A1 Sprout UNCONDITIONAL (no party dendro reaction needed before the ring returns) and gives it a one-shot +3s extension; the Sprout is a 3s tick chain starting at cast + 157f + 86f, period 89f, ICDTagColleiSprout, 40% ATK Dendro 1U per tick. And the restore path: the Sprout is a windowed tick series, so its only reachable home is a `summons[]` entry with a `summonTick` damage effect, hosted on a constellation-gated VARIANT of Floral Brush on the base's own `E` token — the shape the summon-conditions round (2026-09-19) shipped for Chiori C2 / Emilie C4 / Sigewinne C4. ⚠️ Such a variant may author no `effects`/`tags`/`damageTag` (lint `variant-gated-effects`). ⚠️ `onCast` + `ability: 'skill'` is the exact trigger and would pass lint, but it buys NOTHING — a `damage` effect's `application[]` is read only by `sim/procs.ts`, whose `PROC_TRIGGERS` are `onReaction | onHit | whileNormalAttacking` (`src/lib/sim/procs.ts:69`), so an `onCast` damage reaches no pixel in either tool. Worse, it would sit beside the LIVE A1 Sprout (`collei__passive__floral_sidewinder.effects[0]`, `onReaction` `source: 'team'`, same 40/atk/dendro/3s), which the kit says C2 REPLACES — two Sprouts at C2+. ⚠️ If a future round does author the Sprout, the A1 copy needs `conditions: { \"type\": \"not\", \"condition\": { \"type\": \"constellation\", \"level\": 2 } }` or it double-counts."
+			]
 		},
 		{
 			"id": "collei__constellation__scent_of_summer",
@@ -268,22 +281,23 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 60,
-					"snapshottable": false,
-					"_curatorNotes": [
-						"Inherited `manual` trigger. Likely `onCast` with `ability: 'burst'` — gcsim calls c4() directly inside Burst(). Target `'self'` appears incorrect: description says 'all nearby characters excluding Collei herself' and gcsim iterates all chars except c.Index(). Reviewer should change target to `'team'` (or equivalent excluding Collei). Duration 12s confirmed by gcsim (720 frames / 60)."
-					]
+					"snapshottable": false
 				}
 			],
-			"description": "Using Trump-Card Kitty will increase all nearby characters' Elemental Mastery by 60 for 12s (not including Collei herself)."
+			"description": "Using Trump-Card Kitty will increase all nearby characters' Elemental Mastery by 60 for 12s (not including Collei herself).",
+			"_curatorNotes": [
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 Gift of the Woods — effects[0] (buff em 60) RE-TRIGGERED. gcsim: `internal/characters/collei/burst.go:58-60` calls `c.c4()` synchronously inside `Burst()`, and `cons.go:60-76` loops every character, skipping `c.Index()`, adding a 720-frame EM +60 StatMod. that the 12s is gcsim's 720 frames (`cons.go:69`) and that `c4()` fires at the cast instant, not at the explosion hitmark — so the bar starts on the `Q` press. ⚠️ ⚠️ `target` CORRECTED `self` → `teamExcludingSelf` — the authored `self` was backwards (the kit and gcsim both exclude Collei), so today the effect names the one character who never receives it. `teamExcludingSelf` has readers (`effectCollection.ts:165` counts it for `targetsTeamOrActive`; `deriveCapabilities.ts:281` maps it to a `team` chip), so this newly draws a 12s EM bar on all three teammates and a team-buff capability the TB did not have. No stat collision: the burst's own pool is empty of `em`."
+			]
 		},
 		{
 			"id": "collei__constellation__all_embers",
@@ -297,22 +311,10 @@
 			"name": "Forest of Falling Arrows",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 200,
-					"stat": "atk",
-					"element": "dendro",
-					"_curatorNotes": [
-						"Inherited `manual` trigger. Likely `onHit` with `ability: 'skill'`; gcsim uses a `c6Triggered` bool (reset each E cast) to fire at most once per Floral Brush cast — whichever hitmark (outbound at frame 34 or return at frame 138) connects first. Deals 200% ATK as Dendro DMG via a miniature Cuilein-Anbar (AoE radius 4 on the target). Scope: target enemy."
-					]
-				}
-			],
-			"description": "When the Floral Ring hits, it will create a miniature Cuilein-Anbar that will deal 200% of Collei's ATK as Dendro DMG.\nEach Floral Brush can only create one such miniature Cuilein-Anbar."
+			"description": "When the Floral Ring hits, it will create a miniature Cuilein-Anbar that will deal 200% of Collei's ATK as Dendro DMG.\nEach Floral Brush can only create one such miniature Cuilein-Anbar.",
+			"_curatorNotes": [
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Forest of Falling Arrows — effects[0] (damage atk 200, dendro) RE-TRIGGERED and RE-HOMED onto the skill ability. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `internal/characters/collei/skill.go:50-60` arms a `c6Cb` guarded by a per-cast `c6Triggered` bool and attaches it to both Floral Brush hitmarks (`skill.go:63-72`, `skillHitmarks = {34, 138}`); `cons.go:78-96` queues the miniature Cuilein-Anbar — Dendro, `Durability: 25`, `ICDTagNone`, `Mult: 2`, delay 0 / hitmark 22. `_curatorNotes` on the new host retains: `armedFor` 2.617 is `skillReturn` = 157f, the ring's whole flight, so both hitmarks (34f, 138f) are inside it; `icdGate: 'none'` is gcsim's `ICDTagNone` (`cons.go:83`); the application frame 22 is `QueueAttack`'s hitmark argument (`cons.go:94`); `procCooldown: 12` is Collei's own skill cooldown, standing in for the kit's \"one per Floral Brush\" because `procCap.per` admits only `'stance'` today (`ProcCap`, `src/lib/types/ability.ts:1303-1306`). ⚠️ ⚠️⚠️ Collei's skill authors TWO nominal `application[]` entries (frames 34 and 138), and since the cast-hit-record round a cast dispatches ONE hit record per nominal entry (`CastEvent.hitsAt`) — so without a `procCooldown` this fires TWICE per E where gcsim fires once, adding a phantom Dendro pip 1.73s later. `procCooldown: 12` suppresses it. ⚠️ The cost is that a cooldown-reduced second Floral Brush inside 12s (Sacrificial Bow) would be suppressed too — an under-fire, not a phantom, which is the right direction. ⚠️ Measure at the aura lane, not the buff digest: the gain is +1 Dendro application per E at C6, which the buff-only digest is blind to."
+			]
 		}
 	],
 	"meta": {

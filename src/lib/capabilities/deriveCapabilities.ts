@@ -335,16 +335,14 @@ function pushEffectCapabilities(
 	summonLabel?: string
 ): void {
 	for (const effect of effects ?? []) {
-		// ⛔⛔ A `manual` trigger reaches NO planner surface and never did (rubric N1:
-		// its one code occurrence is its own type declaration), yet until 2026-09-15
-		// this walk never inspected triggers, so the Team Builder claimed all 167 such
-		// effects as live capabilities — including at least one fabricated value
-		// (Wriothesley's +50% ATK). Two surfaces disagreeing about one effect, and
-		// only one of them can be caveated. ⚓ Nate's decision: retire the channel —
-		// the TB skips it first, lint refuses it next, and each effect is re-triggered
-		// or retired to description (docs/manual-trigger-retirement.md). A claim that
-		// vanishes here is a claim the planner never honoured.
-		if (effect.trigger?.type === 'manual') continue;
+		// ⛔⛔ THE `manual` SKIP THAT LIVED HERE IS GONE, and its absence is the
+		// point. Step 1 of the retirement (2026-09-15) added it because the Team
+		// Builder was claiming 167 effects the planner refused to draw; step 3
+		// (2026-09-21) emptied the corpus of them and struck the member from the
+		// `Trigger` union, so the condition no longer typechecks. ⚓ The guarantee
+		// moved UPSTREAM — characterLint B.18 refuses the trigger — which is the
+		// stronger place for it: a filter here would still have let the data exist.
+		// docs/manual-trigger-retirement-round.md.
 		const mapped = effectCapability(effect);
 		if (!mapped) continue;
 		const composed = composeConditions(ctx.hostConditions, effect.conditions);

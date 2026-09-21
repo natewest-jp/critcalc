@@ -304,18 +304,9 @@
 			"name": "Gleeful Songs",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"amount": 1
-				}
-			],
 			"_curatorNotes": [
-				"trigger: 'manual' inherited from generator — probable trigger is periodic (10s interval). Target scope: self. No conditions or stack cap. Reviewer should update to appropriate trigger type."
+				"trigger: 'manual' inherited from generator — probable trigger is periodic (10s interval). Target scope: self. No conditions or stack cap. Reviewer should update to appropriate trigger type.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 Gleeful Songs — effects[0] (energy self, amount 1) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/barbara/cons.go:11-16` + `barbara.go:49` — `c1(1)` is started from `Init()` and self-requeues a task every `10*60` frames forever; it is unconditional, untriggered wall-clock regen. Retained: `_curatorNotes` must keep: periodic self-energy, 1 per 10s from the start of combat (gcsim `cons.go:11-16`, self-requeueing task, no gate); RETIRED because no periodic non-summon trigger exists and `passive` would print \"+1 Energy\" with the cadence — the only load-bearing part — silently dropped. The `description` already states it verbatim. ⚠️ none — the corpus has zero `passive`-triggered `energy` effects, so nothing else depends on this shape."
 			],
 			"description": "Barbara regenerates 1 Energy every 10s."
 		},
@@ -329,8 +320,10 @@
 					"type": "buff",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
+					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hydroDmgBonus",
@@ -340,7 +333,8 @@
 			],
 			"_curatorNotes": [
 				"trigger: 'manual' inherited from generator — actual trigger is onCast (Skill). Buff applies to the active character (not Barbara herself) for the Melody Loop duration (15s base). Reviewer should update trigger and set duration field.",
-				"C2 also decreases Let the Show Begin♪ cooldown by 15% (see skill _curatorNotes). Not modeled on the buff effect — reviewer should track both changes together."
+				"C2 also decreases Let the Show Begin♪ cooldown by 15% (see skill _curatorNotes). Not modeled on the buff effect — reviewer should track both changes together.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 Vitality Burst — effects[0] (buff hydroDmgBonus 15) RE-TRIGGERED. gcsim: `barbara/skill.go:87-89` calls `c.c2()` at the E cast; `barbara/cons.go:18-31` gives every party member **except Barbara** a `HydroP 0.15` stat mod for `skillDuration` (`skill.go:16` = `15*60+1` frames). the second note verbatim — C2 ALSO cuts Let the Show Begin♪'s cooldown by 15% (`skill.go:88-90`, `SetCDWithDelay(32*60*0.85, 3)` → 27.2s). That half is **not** an `Effect`: it is a constellation-gated rung on the skill's `cooldownModifiers[]` (`{ \"source\": \"Vitality Burst\", \"type\": \"percent\", \"value\": -15, \"conditions\": { \"type\": \"constellation\", \"level\": 2 } }`), which the skill's own notes already flag as an authorable work item. It is out of scope for this round but must not be lost with the trigger fix. ⚠️ `target: 'active'` includes Barbara herself when she is the on-field character; gcsim explicitly skips her (`cons.go:20-22`). Kit text says \"your active character\" and is taken as written — this over-claims only in the case where Barbara is the one attacking, which is not how the buff is played. No stat collision: Barbara authors no other `hydroDmgBonus`."
 			],
 			"description": "Decreases the CD of Let the Show Begin♪ by 15%.\nDuring the ability's duration, your active character gains a 15% Hydro DMG Bonus."
 		},
@@ -361,13 +355,15 @@
 					"type": "energy",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "charged"
 					},
 					"amount": 1
 				}
 			],
 			"_curatorNotes": [
-				"trigger: 'manual' inherited from generator — actual trigger is onHit (Charged Attack, vs. enemy). Each enemy hit regenerates 1 Energy, capped at 5 per CA cast. Reviewer should update trigger to onHit with charged abilityType and note the per-cast energy cap."
+				"trigger: 'manual' inherited from generator — actual trigger is onHit (Charged Attack, vs. enemy). Each enemy hit regenerates 1 Energy, capped at 5 per CA cast. Reviewer should update trigger to onHit with charged abilityType and note the per-cast energy cap.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 Attentiveness Be My Power — effects[0] (energy self, amount 1) RE-TRIGGERED. gcsim: `barbara/charge.go:60-74` — a Charged-Attack `AttackCB` that, per enemy hit, adds 1 energy while `barbSkillKey` (Melody Loop) is up, with a local `energyCount < 5` cap. the per-enemy 5-energy cap per Charged Attack (`charge.go:64-73`) is not authored — `procCap` admits only `per: 'stance'`, and our hit stream is one hit per swing against one opponent, so 1 energy per CA is the exact single-target claim. Also keep that gcsim gates the refund on Melody Loop being active (`charge.go:68`) while the kit text states no such gate; the kit is taken, and no \"Melody Loop active\" state exists to express it (see the skill's own notes)."
 			],
 			"description": "Every opponent Barbara hits with her Charged Attack regenerates 1 Energy for her.\nA maximum of 5 energy can be regenerated in this manner with any one Charged Attack."
 		},

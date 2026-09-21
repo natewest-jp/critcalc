@@ -338,35 +338,13 @@
 			"name": "Hurricane of Freedom",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "not",
-						"condition": {
-							"type": "teamFaction",
-							"faction": "hexerei",
-							"min": 2
-						}
-					},
-					"duration": 10,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "anemoDmgBonus",
-					"value": 25,
-					"snapshottable": false
-				}
-			],
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely).",
 				"[Hexerei] Fandom 'Hurricane of Freedom' constellation infobox, buffType=Hexerei buff field: under Secret Rite the trigger changes from orb/particle pickup to 'After unleashing his Elemental Skill Skyward Sonnet or Elemental Burst Wind's Grand Ode, Venti and his own active party members gain a 25% Anemo DMG Bonus for 10s.' Authored in factionBonuses as two onCast effects (skill, burst) with conditions all[teamFaction hexerei >=2, constellation 4], target ['self','active'] — 'his own active party members' read as the active character, mirroring the Fischl Secret Rite target shape.",
 				"[Hexerei] 2026-08-15: the base manual-trigger effect is now gated `not(teamFaction hexerei >=2)`. The rite REPLACES the trigger (orb/particle pickup becomes a skill/burst cast), it does not add a second buff — so once factionBonuses render (docs/faction-bonuses-round.md), leaving the toggle available in a Hexerei team would let a reader stack a manual 25% on top of the automatic 25% that already fires. Below 2 Hexerei the toggle is unchanged and is still the only way this buff appears.",
 				"[A7] Original user text noted the C4 buff fires only while Venti is active on-field at pickup; dropped from the rewrite as a minor nuance since the buff is a manual toggle regardless of on-field state. Already documented in the existing curator notes (gcsim OnParticleReceived gated on Active()==Index).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A blank where a +25% Anemo DMG bar belongs. The base effect is `trigger: 'manual'` gated `not(hexerei ≥ 2)`, so in an ordinary team a C4 owner sees no bar at any point in the rotation, and the first sentence explains the blank. ⛔ The SECOND sentence is `working-behavior` — the Hexerei path genuinely fires as two authored onCast factionBonuses effects and draws correctly, so it describes the tool doing its job and should come out. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A blank where a +25% Anemo DMG bar belongs. The base effect is `trigger: 'manual'` gated `not(hexerei ≥ 2)`, so in an ordinary team a C4 owner sees no bar at any point in the rotation, and the first sentence explains the blank. ⛔ The SECOND sentence is `working-behavior` — the Hexerei path genuinely fires as two authored onCast factionBonuses effects and draws correctly, so it describes the tool doing its job and should come out. Category: expected-but-absent.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 — Hurricane of Freedom — effects[0] (buff anemoDmgBonus 25) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/venti/cons.go:61-77` (`c4`) — `event.OnParticleReceived`, gated on `c.Core.Player.Active() == c.Index()`, adds a 600f `AnemoP = 0.25` `StatMod`. Retained: , unchanged: the 2026-05-14 ruling that orb/particle pickup is non-deterministic and out of scope per the tool constitution (\"re-evaluate only if particle-gen modelling ever enters scope\"), and the gcsim gate (`OnParticleReceived` + on-field). Rewrite only the 2026-08-15 `not(hexerei ≥ 2)` note, whose whole purpose was to stop a manual toggle stacking on the automatic Hexerei copy — with the base effect gone the gate goes with it. ⚠️ None to the Hexerei path: the Secret Rite behaviour is a SEPARATE, already-live pair of `onCast` effects in `factionBonuses` (\"Secret Rite: Hurricane of Freedom (C4)\", skill + burst, `target: [\"self\",\"active\"]`, 10s), and the rite REPLACES the pickup trigger rather than adding a second buff — so deleting the base effect cannot create a blank in a Hexerei team and cannot double-fire in any team. Below 2 Hexerei a C4 owner simply has no bar, which is what the screen already shows, since `manual` never drew one. Both the parse and the TB index are byte-identical: `deriveCapabilities` has skipped `manual` since 2026-09-15, and `target: 'self'` emits no family chip regardless."
 			],
 			"description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."
 		},

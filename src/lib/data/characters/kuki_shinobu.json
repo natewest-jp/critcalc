@@ -82,14 +82,20 @@
 								"interval": 1.5,
 								"tickCap": 8,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 2 },
+									"conditions": {
+										"type": "constellation",
+										"level": 2
+									},
 									"ticks": 10
 								}
 							},
 							"scaling": 5.4,
 							"stat": "hp",
 							"flat": 635.608,
-							"flatScaling": { "stat": "em", "ratio": 75 },
+							"flatScaling": {
+								"stat": "em",
+								"ratio": 75
+							},
 							"_curatorNotes": [
 								"tickCap 8 / 10 at C2, MIRRORING the damage series on this summon (tick-cap round, 2026-08-18): gcsim skill.go `bellTick` queues the attack AND calls Player.Heal in the same task before rescheduling itself, so the heal and the damage are one tick. Verified in source rather than inferred - the oracle cannot see a heal at all, since a heal tick leaves no damage event."
 							]
@@ -102,17 +108,45 @@
 								"interval": 1.5,
 								"tickCap": 8,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 2 },
+									"conditions": {
+										"type": "constellation",
+										"level": 2
+									},
 									"ticks": 10
 								}
 							},
 							"scaling": 45.43,
 							"stat": "atk",
 							"element": "electro",
-							"flatScaling": { "stat": "em", "ratio": 25 },
 							"_curatorNotes": [
 								"tickCap 8 / 10 at C2 (tick-cap round, 2026-08-18): gcsim skill.go `skilldur := 720` (900 at C2) with bellTick self-rescheduling every 90f while the ring status is live, so the tick landing on the window boundary fires. Measured 8 at C0 and 10 at C6; our duration-derived counts were 7 and 9. The C2 override is required, not decorative - a flat cap would freeze the constellation at 8."
 							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"abilityType": ["normal", "charged", "plunge"],
+								"source": "active",
+								"icdGate": "none"
+							},
+							"procCooldown": 5,
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							},
+							"scaling": 9.7,
+							"stat": "hp",
+							"element": "electro",
+							"application": [
+								{
+									"frame": 5,
+									"element": "electro",
+									"units": 1
+								}
+							],
+							"attribution": "Thundergrass Mark (C4)"
 						}
 					]
 				}
@@ -192,22 +226,24 @@
 			"abilityType": "passive",
 			"effects": [
 				{
-					"type": "heal",
+					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"scaling": 75,
-					"stat": "em"
-				},
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 25,
-					"stat": "em"
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "skillFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 25
+					},
+					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Inherited manual triggers on both effects — actual trigger is onCast (skill), boosting the ring's periodic heal and DMG based on Shinobu's EM for the ring's duration. Reviewer to update triggers and confirm durationType."
+				"Inherited manual triggers on both effects — actual trigger is onCast (skill), boosting the ring's periodic heal and DMG based on Shinobu's EM for the ring's duration. Reviewer to update triggers and confirm durationType.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). Both effects resolved. The DAMAGE half CONVERTED to the flat-DMG house form: gcsim `asc.go:41-46` returns `EM × 0.25` and it lands as `FlatDmg` on both the ring tick (`skill.go:120`) and the skill's own cast hit (`skill.go:58`). ⚓ `skillFlatDmg` is EXACT rather than approximate — Sanctifying Ring is her only skill, so the class and the ability coincide, and her burst's Max-HP ticks take neither half. ⚠️ It was a DOUBLE STATEMENT: the same bonus was also folded into the ring's damage tick as `flatScaling {em, 25}`, removed in the same edit so the claim lives in one place, and the chip is the place with a pixel. The HEAL half was RETIRED: there is no heal-side buff stat for a flat add-on, and the bonus is already authored where it lands, as `flatScaling {em, 75}` on the ring's heal tick (the Kachina-A4 shape) — ⛔ that one stays folded. ⚠️ Its authored `target: \"self\"` was wrong besides; the ring heals the ACTIVE character (gcsim `Target: Core.Player.Active()`)."
 			],
 			"description": "Sanctifying Ring's abilities will be boosted based on Shinobu's Elemental Mastery:\n·Healing amount will be increased by 75% of Elemental Mastery.\n·DMG dealt is increased by 25% of Elemental Mastery."
 		}
@@ -239,18 +275,9 @@
 			"name": "To Sever Sealing",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 9.7,
-					"stat": "hp",
-					"element": "electro"
-				}
-			],
 			"_curatorNotes": [
-				"Inherited manual trigger — actual trigger is onHit (when ring-affected active character hits enemies with Normal/Charged/Plunging Attack, once per 5s ICD). gcsim has TODO comment about frames and ICD tag. Reviewer to update trigger and confirm ICD."
+				"Inherited manual trigger — actual trigger is onHit (when ring-affected active character hits enemies with Normal/Charged/Plunging Attack, once per 5s ICD). gcsim has TODO comment about frames and ICD tag. Reviewer to update trigger and confirm ICD.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4: To Sever Sealing — effects[0] (damage hp 9.7, electro) RE-TRIGGERED and RE-HOMED onto the skill's summon. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `~/Code/gcsim/internal/characters/kuki/cons.go:19-57` — `c4` is an `OnEnemyDamage` hook: 300-frame (`5s`) ICD status; tag must be `AttackTagNormal`/`Extra`/`Plunge`; `ae.Info.ActorIndex` must equal `Core.Player.Active()`; `Status.Duration(ringKey)` must be non-zero; then a Thundergrass Mark — Electro, Durability 25, `ICDTagNone`, `FlatDmg: MaxHP × 0.097`, queued at 5 frames. The C4 entry's `_curatorNotes` must say the mark is authored as an `onHit` proc on the Grass Ring's summon effects, not here — a summon-hosted proc is armed by the summon's own liveness, which is precisely gcsim's `ringKey` check, and it inherits the C2 `+3s` duration modifier for free where a hardcoded `armedFor` could not. It carries its own constellation condition because a summon effect is not gated by the constellation entry. Record `icdGate: 'none'` = `ICDTagNone`, `application[0].frame: 5` = the queue delay, Durability 25 = 1U, and drop the inherited \"gcsim has TODO comment… reviewer to confirm ICD\" line (the 5s is stated by the kit and by `AddStatus(c4IcdKey, 300)` alike). ⚠️ ⛔ No `armedFor` — lint B.13b refuses one on a summon-hosted proc. `source: 'active'` refuses entity-delivered hits, which is right (gcsim tests `ActorIndex == Active()`) and costs nothing, since no summon deals normal/charged/plunge damage. ⚠️ The proc draws a MARK on the Grass Ring's lane, beside its eight 1.5s tick markers, at C4+ — defensible (the ring on the active character is literally what makes the mark land) but it is a visible change and worth Nate's eye. ⚠️ A listener never fires off its own output, so the mark cannot chain."
 			],
 			"description": "When the Normal, Charged, or Plunging Attacks of the character affected by Shinobu's Grass Ring of Sanctification hit opponents, a Thundergrass Mark will land on the opponent's position and deal AoE Electro DMG based on 9.7% of Shinobu's Max HP.\nThis effect can occur once every 5s."
 		},
@@ -270,7 +297,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 25
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -280,9 +313,11 @@
 				}
 			],
 			"_curatorNotes": [
-				"Actual trigger is HP-drop-below-25% with a 60s ICD (gcsim onDrain). HP-state conditions aren't modelled in the planner — manual trigger preserved per the HP-state-null-resolving convention."
+				"Actual trigger is HP-drop-below-25% with a 60s ICD (gcsim onDrain). HP-state conditions aren't modelled in the planner — manual trigger preserved per the HP-state-null-resolving convention.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: To Ward Weakness — effects[0] (buff em 150) RE-TRIGGERED. gcsim: `~/Code/gcsim/internal/characters/kuki/cons.go:63-93` — `c6` subscribes to `OnPlayerHPDrain`: returns unless `CurrentHPRatio() <= 0.25`, revives to 1 HP at or below zero, sets a 3600-frame (60s) ICD, then a 900-frame (15s) `+150 EM` StatMod. the HP-state-null-resolving convention but stop citing `manual` as its expression: the house form is `passive` + `selfHpBelow`, the Kaeya C4 \"Frozen Kiss\" precedent (`passive` + `selfHpBelow: 20` + `duration: 20`, 60s ICD unenforced). It must also retain that the lethal-DMG survival half of the constellation is unmodelled and lives in the `description` alone. ⚠️ The always-on chip prints +150 EM with no ICD and no window — a large number stated unconditionally, which is why the caveat carries both the gate and the cadence. ⛔ `onHPDecrease` is the literal trigger and has no reader; it must not be proposed. ⚠️ `duration`/`durationType` are inert under a `passive` trigger (Kaeya's precedent carries `duration` alone); they are kept because they are already there and they document the 15s, not because anything reads them."
 			],
-			"description": "When Kuki Shinobu takes lethal DMG, this instance of DMG will not take her down. This effect will automatically trigger when her HP reaches 1 and will trigger once every 60s.\nWhen Shinobu's HP drops below 25%, she will gain 150 Elemental Mastery for 15s. This effect will trigger once every 60s."
+			"description": "When Kuki Shinobu takes lethal DMG, this instance of DMG will not take her down. This effect will automatically trigger when her HP reaches 1 and will trigger once every 60s.\nWhen Shinobu's HP drops below 25%, she will gain 150 Elemental Mastery for 15s. This effect will trigger once every 60s.",
+			"caveat": "Only while Shinobu is below 25% HP, for 15s and once a minute — the chip prints it as though it were always on."
 		}
 	],
 	"meta": {

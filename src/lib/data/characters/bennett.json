@@ -421,20 +421,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"description": "Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack.\nThis additional attack does 135% of the second attack's DMG.",
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 135,
-					"stat": "atk",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					}
-				}
+			"_curatorNotes": [
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 — Unexpected Odyssey — effects[0] (damage, atk 135) carried `trigger: manual` and reached no surface. gcsim: `bennett/skill.go:185-197` — inside `skillHold` at Charge Level 1, when the user passes `hold_c4` (a Normal Attack used as the second attack), gcsim re-queues the hold's second `ai` at `Mult × 1.35` with hitmark 94. Retained: `description` already carries the whole mechanic (\"Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack\"). `_curatorNotes` has nothing on this entry today; add one line recording that the follow-up is a separate Pyro damage instance queued at f94 of the `h1E` variant (gcsim `skillHold` c4 branch), retired as a damage magnitude. ⚠️ The retired effect is the only place we record that C4 adds a THIRD 1U Pyro application to `h1E` (gcsim `ICDTag: ICDTagNone`, `Durability: 25`, so every hold hit applies — our `h1E` `application[]` lists two entries, at f45 and f57). That pip is genuinely missing from the aura lane at C4. Expressing it is a constellation-gated VARIANT of the hold (the `summon-conditions-round` shape), not a `damage` effect — out of scope for this round, and it additionally depends on a player input gcsim models as a parameter."
 			]
 		},
 		{

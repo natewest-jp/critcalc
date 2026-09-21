@@ -478,7 +478,7 @@ Every line here is a place the OLD rubric is now WRONG. These drive most verdict
 
 ## ❌ CANNOT — real gaps (caveats about these are keep/rewrite)
 
-**N1.** `manual` trigger — nothing consumes it, and there is no toggle. 167 authored effects across 69 characters (86 buff, 53 damage, 17 heal, 9 energy, 2 shield) reach no planner surface at all.
+**N1.** ✅ **CLOSED 2026-09-21** — `manual` is RETIRED: 0 effects in the corpus, the member struck from the `Trigger` union, characterLint B.18 refuses it (`docs/manual-trigger-retirement-round.md`). It used to read: "nothing consumes it, and there is no toggle; 167 authored effects across 69 characters reach no planner surface at all." ⚠️ Its SIBLINGS are still open and are the live version of this finding: `onHeal`, `onEnergy`, `onHPChange`, `onHPDecrease` and `onHPIncrease` have no reader either — ⛔ never re-trigger an effect into one.
 
 - _user sees:_ The effect simply is not there — no bar, no marker, no chip, and nothing the user can click to add it. The style guide's wave-3 lesson ("it IS on the timeline once toggled") is FALSE.
 - _evidence:_ grep for `'manual'` across src/lib and src/routes (.ts/.svelte) returns exactly ONE line: src/lib/types/ability.ts:649 `| { type: 'manual' }`. No collector, no proc, no stack dispatcher, no chip (TeamBonusesBlock requires `trigger.type === 'passive'`), no notation token. Corpus census by walking abilities+passives+constellations+factionBonuses+summons+variants.

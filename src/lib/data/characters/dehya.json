@@ -277,14 +277,20 @@
 					"type": "heal",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 40
 					},
 					"scaling": 20,
 					"stat": "hp"
 				}
 			],
 			"_curatorNotes": [
-				"Heal triggers when HP < 40% (with 20s ICD): 20% Max HP burst + 6% per 2s for 10s. Modelled the burst portion as a manual-triggered self-heal; the per-tick HoT (5 ticks of 6%) isn't modelled because we don't have a periodic-heal primitive."
+				"Heal triggers when HP < 40% (with 20s ICD): 20% Max HP burst + 6% per 2s for 10s. Modelled the burst portion as a manual-triggered self-heal; the per-tick HoT (5 ticks of 6%) isn't modelled because we don't have a periodic-heal primitive.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Stalwart and True — effects[0] (heal 20% hp, self) RE-TRIGGERED. gcsim: `internal/characters/dehya/asc.go:47-76` — `event.OnPlayerHPDrain`, refused unless `CurrentHPRatio() < 0.4`, 20s ICD (`a4ICDKey`), then `0.2 × MaxHP` plus a five-tick `a4DotHeal` at `0.06 × MaxHP` every 2s (`asc.go:78-93`). No action triggers it; it is a pure HP-threshold watcher. the trigger is an HP watcher, not an action — authored as `passive` + `selfHpBelow: 40` on the Noelle-A1 precedent, which resolves null and lists the heal optimistically; the 6%-every-2s-for-10s HoT half (five ticks, `asc.go:78-93`) is still unmodelled, there being no periodic-heal primitive off a summon. ⚠️ Heals draw nothing in the planner, so the only surface that moves is the Team Builder's heal facet — which is a genuine capability and is exactly what `manual` was hiding. ⛔ Do not fold the HoT in as `scaling: 50` (20 + 5×6): that would invent a single instance the game never deals. ⚠️ gcsim files this under `a4()`; the effect carries no `ascension` gate, matching the corpus majority.",
+				"⚠️ The 20s ICD is NOT authored: `procCooldown` is meaningless on a `passive` trigger (characterLint B.9), and there is no HP-drop trigger with a reader. The heal is the 20% Max HP burst; the 6%-per-2s-for-10s tail is still unmodelled."
 			],
 			"description": "When her HP is less than 40%, Dehya will recover 20% of her Max HP and will restore 6% of her Max HP every 2s for the next 10s. This effect can be triggered once every 20s."
 		}
@@ -379,18 +385,37 @@
 					"type": "heal",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "burst",
+						"source": "self"
 					},
 					"conditions": {
 						"type": "constellation",
 						"level": 4
 					},
+					"procCooldown": 0.2,
 					"scaling": 2.5,
 					"stat": "hp"
+				},
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"source": "self"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"procCooldown": 0.2,
+					"amount": 1.5
 				}
 			],
 			"_curatorNotes": [
-				"Per-burst-hit 1.5 energy + 2.5% Max HP heal, 0.2s ICD. Modelled as a manual-triggered single 2.5% heal — the proc cadence and energy generation aren't modelled. C4 conditions added for clarity."
+				"Per-burst-hit 1.5 energy + 2.5% Max HP heal, 0.2s ICD. Modelled as a manual-triggered single 2.5% heal — the proc cadence and energy generation aren't modelled. C4 conditions added for clarity.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 — effects[0] (heal 2.5% hp, self) RE-TRIGGERED. gcsim: `internal/characters/dehya/cons.go:86-108` — `c4CB()` is the `AttackCBFunc` attached to Flame-Mane's Fist (`burst.go:86`) and Incineration Drive (`burst.go:127`), both `AttackTagElementalBurst`: 0.2s ICD, then `AddEnergy 1.5` and a `0.025 × MaxHP` self-heal. both outputs hang off the same burst-hit callback at a 0.2s ICD; our Leonine Bite is authored as a stance with no per-punch hits, so this fires once per burst here where the game fires it on every Flame-Mane's Fist pulse and on the closing Incineration Drive. ⚠️ ⚠️ Under-fires badly (one proc vs ~8 in a 4.1s stance) — harmless today, because neither a heal nor a self-target energy effect draws anything in the planner and the Team Builder reads the capability, not the count. ⛔ The energy effect is self-target, so it is excluded from the TB's facet chips by design (`capMatchesFacet`); it reaches the detail card and the compare row only."
 			],
 			"description": "When Flame-Mane's Fist and Incineration Drive attacks unleashed during Leonine Bite hit opponents, they will restore 1.5 Energy for Dehya and 2.5% of her Max HP. This effect can be triggered once every 0.2s."
 		},

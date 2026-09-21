@@ -203,18 +203,10 @@
 			"name": "Special Franchise",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 50,
-					"stat": "atk"
-				}
-			],
 			"_curatorNotes": [
 				"trigger: 'manual' inherited from generator — reviewer to assign correct trigger type (fires when Jinni heals the connected character during burst).",
-				"Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete."
+				"Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 Special Franchise — effects[0] (damage atk 50) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/dori/burst.go:96-116` — six tasks at `120*i + 11` each heal the active character and, at `burst.go:101-103`, call `c.c2(c2Travel)`; `cons.go:19-42` queues the Jinni Toop (Electro, `Durability: 25`, `ICDTagDoriC2`, `Mult: 0.5`, travel 10f). Retained: the Toop rides the burst's SIX heal ticks (gcsim `120*i + 11`, i.e. 0.18s then every 2s across the 12s connection), Electro 1U each, `ICDTagDoriC2`, 10f travel — a real six-application Electro stream the aura lane does not draw. Also retain that the firing event is a HEAL, and `onHeal` has no reader anywhere in this codebase (it is on the brief's dead-trigger list beside `manual`), so there is no trigger to move it to. ⚠️ The restore path is NOT one of this round's two deferred primitives. It needs the Jinni authored as a `summons[]` entry on the burst with a `summonTick` damage series at `interval: 2`, `firstTickDelay: 0.183` — which the burst's own curator note deliberately declined (\"duration-bounded self-status on the connected active character, not a spawned entity\"). ⚠️ If that is ever reversed, the burst's existing `heal`/`energy` effects (both `onCast burst`, `duration: 12`, per-tick values) must move with it or the same six ticks get counted twice."
 			],
 			"description": "When you are in combat and the Jinni heals the character it is connected to, it will fire a Jinni Toop from that character's position that deals 50% of Dori's ATK DMG."
 		},
@@ -251,7 +243,11 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"procCooldown": 0.1,
 					"scaling": 4,
 					"stat": "hp"
 				},
@@ -268,9 +264,11 @@
 			"_curatorNotes": [
 				"trigger: 'manual' inherited from generator — reviewer to assign correct trigger type (fires on normal attack hit while C6 infusion is active, ICD: 0.1s).",
 				"Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete.",
-				"[A7b] C6 Electro Infusion (3s after E) AUTHORED 2026-07-20 on this entry per the Bennett/Kazuha C6 precedent (infuse lives on the constellation entry, not the base skill). Kit text: 'Electro Infusion' for 3s after Spirit-Warding Lamp."
+				"[A7b] C6 Electro Infusion (3s after E) AUTHORED 2026-07-20 on this entry per the Bennett/Kazuha C6 precedent (infuse lives on the constellation entry, not the base skill). Kit text: 'Electro Infusion' for 3s after Spirit-Warding Lamp.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Sprinkling Weight — effects[0] (heal team, 4% hp) RE-TRIGGERED. gcsim: `internal/characters/dori/attack.go:33` arms `c6CB := c.makeC6CB()` and attaches it to every Normal Attack hit (`attack.go:55-57`); `cons.go:80-107` gates it on the C6 weapon infusion being live, the holder being on field, and a 0.1s `c6ICD` status, then heals `Target: -1` for `0.04 * c.MaxHP()`. the gate gcsim checks is `WeaponInfuseIsActive(c6Key)` — the same window as the sibling `infuse` effect on this entry — and that gcsim's infusion is 228 frames (\"3s + 0.8s according to dm\", `skill.go:44-54`) against the kit's 3s; the sibling is authored at the kit's 3s and stays there. Also that gcsim's infusion covers Normal/Extra/Plunge tags while the HEAL callback is attached in `attack.go` only, which is why `abilityType` is `'normal'` alone. ⚠️ The 3s arming window is not expressible: `armedFor` is read ONLY by the damage-proc path (`sim/procs.ts`), and there is no `State` the infusion opens — `afterSkill` exists in the `State` union but has no window anywhere (`stateIndex.ts:26`), so it resolves `null` and gates nothing. So this over-claims to a full-time normal-attack team heal in the Team Builder's heal chip and coverage row; the caveat is the disclosure, and it sits on the constellation entry, which is ability-shaped (lint E.28 satisfied). ⛔ Don't reach for `{ \"type\": \"state\", \"state\": \"afterSkill\" }` — it is a gate that never resolves, i.e. authored data with no reader, which is the class this round exists to remove."
 			],
-			"description": "Dori gains the following effects for 3s after using Spirit-Warding Lamp: Troubleshooter Cannon:\n·Electro Infusion.\n·When Normal Attacks hit opponents, all nearby party members will heal HP equivalent to 4% of Dori's Max HP. This type of healing can occur once every 0.1s."
+			"description": "Dori gains the following effects for 3s after using Spirit-Warding Lamp: Troubleshooter Cannon:\n·Electro Infusion.\n·When Normal Attacks hit opponents, all nearby party members will heal HP equivalent to 4% of Dori's Max HP. This type of healing can occur once every 0.1s.",
+			"caveat": "Shown as a team heal on every Normal Attack she lands. In game it only runs during the 3s after Spirit-Warding Lamp: Troubleshooter Cannon."
 		}
 	],
 	"meta": {

@@ -90,7 +90,35 @@
 			"duration": 12,
 			"tags": [],
 			"energyCost": 80,
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge"],
+						"source": "self",
+						"armedFor": 12.6,
+						"icdGate": "none"
+					},
+					"procCooldown": 3,
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"scaling": 61.8,
+					"stat": "atk",
+					"element": "dendro",
+					"application": [
+						{
+							"frame": 18,
+							"element": "dendro",
+							"units": 1
+						}
+					],
+					"attribution": "Pairidaeza's Dreams (C6)"
+				}
+			],
 			"_curatorNotes": [
 				"Painted Dome grants Kaveh a 12s self-status (burstDuration = 720 frames): normal/charged/plunge attack AoE increased, DMG converted to Dendro, resistance to interruption increased. Status cancels immediately on swap (OnCharacterSwap handler in burst.go deletes burstKey). No spawned entity — behavior: 'instant' per recipe. duration: 12 left as generator artifact; reviewer to decide field placement.",
 				"Bloom/Lunar-Bloom damage bonus: while Painted Dome is active, all party members' Bloom reactions deal additional DMG (~27.5% at L1, scaling in burstDmgBonus[] in kaveh_gen.go). This team-wide buff is not represented in effects[]. Reviewer to author."
@@ -105,39 +133,52 @@
 			"name": "An Architect's Undertaking",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"2026-05-09 model-mismatch cleanup: rewrote from `damage em 300 target:enemy` to `heal self em 300`. Trigger remains manual: gcsim a1() fires on onPlayerHit (Kaveh hit by a Bloom/Hyperbloom/Burgeon-tagged attack), 0.5s ICD — no onPlayerHit + reaction-tag primitive yet; reviewer to wire."
+				"2026-05-09 model-mismatch cleanup: rewrote from `damage em 300 target:enemy` to `heal self em 300`. Trigger remains manual: gcsim a1() fires on onPlayerHit (Kaveh hit by a Bloom/Hyperbloom/Burgeon-tagged attack), 0.5s ICD — no onPlayerHit + reaction-tag primitive yet; reviewer to wire.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: An Architect's Undertaking — effects[0] (heal em 300) RE-TRIGGERED. gcsim: `~/Code/gcsim/internal/characters/kaveh/asc.go:18-46` — `a1` subscribes to `OnPlayerHit`, returns unless the hit character is Kaveh AND the attack's tag is `AttackTagBloom`, `AttackTagHyperbloom` or `AttackTagBurgeon`, then heals `3.0 × EM` behind a 30-frame (0.5s) status. that gcsim's real hook is `OnPlayerHit` with a reaction-tag filter — we fire on the REACTION instead, because nothing models the player taking damage — and must drop the \"no onPlayerHit + reaction-tag primitive yet; reviewer to wire\" line. `source: 'team'` is deliberate: gcsim applies no actor filter, so a teammate's core heals him too. ⚠️ The surface bought here is the Team Builder's heal facet + badge + coverage row (a `heal` draws nothing in the planner), so the over-claim lands on Kaveh's healer chip: our model heals on every qualifying reaction, in-game only on the ones whose core reaches him. ⚠️ `lunarBloom` is deliberately ABSENT — the A1 text names only Bloom/Burgeon/Hyperbloom while Kaveh's BURST text names Lunar-Bloom explicitly, so the kit distinguishes them; per the reaction-conversion ruling a buff on the base is not a buff on the converted reaction, and Kaveh going dark on a Lunar-Bloom team is the correct, documented consequence. ⚠️ Lint B.12d requires the `source` field — it is present."
 			],
 			"effects": [
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["bloom", "burgeon", "hyperbloom"],
+						"source": "team"
+					},
+					"procCooldown": 0.5,
 					"scaling": 300,
 					"stat": "em"
 				}
 			],
-			"description": "When DMG dealt by a Dendro Core (including DMG from Burgeon and Hyperbloom) hits Kaveh, Kaveh will regain HP equal to 300% of his Elemental Mastery. This effect can be triggered once every 0.5s."
+			"description": "When DMG dealt by a Dendro Core (including DMG from Burgeon and Hyperbloom) hits Kaveh, Kaveh will regain HP equal to 300% of his Elemental Mastery. This effect can be triggered once every 0.5s.",
+			"caveat": "Kaveh heals only when the Dendro Core actually bursts on him; every Bloom, Burgeon and Hyperbloom in the party counts here."
 		},
 		{
 			"id": "kaveh__passive__a_craftsmans_curious_conceptions",
 			"name": "A Craftsman's Curious Conceptions",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Trigger: 'manual' — likely onHit (OnEnemyHit in asc.go a4AddStacksHandler) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey check). ICD: 0.1s (6 frames, a4ICDKey). Max 4 stacks of 25 EM each (a4Stacks capped at 4). Stack count resets on Q cast (c.a4Stacks = 0 in Burst()). Stat mod lasts for full Painted Dome window via modifier.NewBaseWithHitlag(a4Key, burstDuration = 720). Target scope: self. Reviewer to decide stack representation and condition authoring."
+				"Trigger: 'manual' — likely onHit (OnEnemyHit in asc.go a4AddStacksHandler) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey check). ICD: 0.1s (6 frames, a4ICDKey). Max 4 stacks of 25 EM each (a4Stacks capped at 4). Stack count resets on Q cast (c.a4Stacks = 0 in Burst()). Stat mod lasts for full Painted Dome window via modifier.NewBaseWithHitlag(a4Key, burstDuration = 720). Target scope: self. Reviewer to decide stack representation and condition authoring.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: A Craftsman's Curious Conceptions — effects[0] (buff em 25) RE-TRIGGERED. gcsim: `~/Code/gcsim/internal/characters/kaveh/asc.go:60-87` — `a4AddStacksHandler` is an `OnEnemyHit` hook: Kaveh's own Normal/Extra/Plunge tag, `burstKey` active, 6-frame ICD, `a4Stacks` capped at 4. `asc.go:48-58` is one EM StatMod worth `25 × a4Stacks` that lives for `burstDuration`. `burst.go:34` zeroes `a4Stacks` at the cast; `burst.go:52-70` adds `burstKey` for `burstDuration = 720` at `burstHitmark = 36`; `burst.go:80-89` deletes it on swap. that 100 is `4 × 25`, both numbers the kit states, authored at the max-stack peak (the documented `perStack`-not-expressible convention); that the span is the Painted Dome window measured from the cast — `burstKey` is added at the 36f hitmark and runs 720f, so 756f = **12.6s** from the anchor (the Faruzan/Bennett \"honest length from the anchor\" ruling); and that the 0.1s per-stack ICD and the stack reset at the Q cast are folded into that anchor. ⚠️ Two over-claims, both stated in the caveat: the ~3.5s ramp (four N-swings at Kaveh's cadence, not the 0.1s ICD) and the fact that Painted Dome dies on swap while this bar does not. ⚠️ The EXACT model (a `gainStacks` key on `onHit`, a `consumeStacks … all` on the burst, and a `perStack` buff) was examined and REFUSED: it needs a \"during Painted Dome\" gate, the only gate available is `state: inStance`, and that requires converting the burst to `behavior: \"stance\"` — and the one trigger whose span is a state window, `onState`, drops `self`-target effects outright (`buffWindows.ts:1207` runs inside the team pass behind `targetsTeamOrActive`), so it would be a fresh orphan. ⏭ Separately worth raising: Painted Dome IS a stance in Xiao's exact sense (12s self-window, attack conversion, `terminatesOnSwap`) and its `duration: 12` is currently one of the stray instant-ability durations nothing reads, so the burst draws as an instant pill — a correction of its own, and the thing that would later unlock the stacks model."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12.6,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": 25,
+					"value": 100,
 					"snapshottable": false
 				}
 			],
-			"description": "During Painted Dome, after Kaveh's Normal, Charged, or Plunging Attacks hit opponents, his Elemental Mastery will increase by 25. This effect can be triggered once every 0.1s. Max 4 stacks.\nThis effect will be canceled when Painted Dome's effects end."
+			"description": "During Painted Dome, after Kaveh's Normal, Charged, or Plunging Attacks hit opponents, his Elemental Mastery will increase by 25. This effect can be triggered once every 0.1s. Max 4 stacks.\nThis effect will be canceled when Painted Dome's effects end.",
+			"caveat": "Kaveh reaches the full +100 Elemental Mastery after four Normal, Charged or Plunging Attack hits inside Painted Dome; the bar shows it from the cast."
 		}
 	],
 	"constellations": [
@@ -182,17 +223,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Trigger: 'manual' — likely onHit (OnEnemyHit in cons.go c6()) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey). ICD: 3s (180 frames, c6ICDKey). Damage is AoE Dendro at hit enemy's position (AttackTagNone in gcsim). Also ruptures nearby Dendro Cores after delay (~18 frames, 0.3*60). Missing source: 'character' on effect skeleton. Reviewer to author trigger, ICD, and add source field."
-			],
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 61.8,
-					"stat": "atk",
-					"element": "dendro"
-				}
+				"Trigger: 'manual' — likely onHit (OnEnemyHit in cons.go c6()) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey). ICD: 3s (180 frames, c6ICDKey). Damage is AoE Dendro at hit enemy's position (AttackTagNone in gcsim). Also ruptures nearby Dendro Cores after delay (~18 frames, 0.3*60). Missing source: 'character' on effect skeleton. Reviewer to author trigger, ICD, and add source field.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: Pairidaeza's Dreams — effects[0] (damage atk 61.8, dendro) RE-TRIGGERED and RE-HOMED onto the burst ability. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `~/Code/gcsim/internal/characters/kaveh/cons.go:55-97` — `c6` is an `OnEnemyHit` hook: Kaveh's own Normal/Extra/Plunge tag, `burstKey` active, 180-frame status, then a Dendro / Durability 25 / `ICDTagNone` / `Mult: 0.618` attack queued with a `0.3*60` damage delay (`cons.go:95`, gcsim's own comment: \"delay is an estimate\"). The C6 entry's `_curatorNotes` must say the effect is authored on the BURST, not here, because a constellation-hosted proc has no arming window (`armCastProcs` is handed `variant?.effects ?? active.effects` only) — the Citlali-C4 / Faruzan-C6 re-homing precedent — and that it carries its own constellation condition because a burst-hosted effect is not gated by the C6 entry. The burst-side note must record `armedFor: 12.6` = `burstKey` added at the 36f hitmark for 720f; `application[0].frame: 18` = gcsim's `0.3*60` damage delay (its own estimate); `icdGate: 'none'` = `ICDTagNone`; Durability 25 = 1U; the Dendro-Core rupture half is unmodelled. Drop the \"Missing source: 'character'\" line — a `damage` effect has no `source` field. ⚠️ `armedFor` is fixed from the cast while the in-game window dies on swap — but `source: 'self'` means only Kaveh's own swings fire it and he cannot swing off field, so the divergence is self-correcting. ⚠️ Every one of the burst's `application[]`-driven hit records is a cast hit, not a normal/charged/plunge, so the burst cannot fire its own proc. ⚠️ The 180-frame status is gcsim's; the kit's \"once every 3s\" agrees, so `procCooldown: 3` needs no adjudication. ⚠️ A cast-hosted proc draws no mark on any summon lane (`tickKey` is summon-only) — correct here, Painted Dome spawns nothing."
 			],
 			"description": "When Kaveh's Normal, Charged, or Plunging Attacks hit opponents during Painted Dome, they will unleash Pairidaeza's Light upon the opponent's position, dealing 61.8% of Kaveh's ATK as AoE Dendro DMG and causing all Dendro Cores within that AoE to burst. This effect can be triggered once every 3s."
 		}

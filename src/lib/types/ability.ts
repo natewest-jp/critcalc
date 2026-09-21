@@ -707,7 +707,16 @@ export type Trigger =
 	| { type: 'onHPIncrease' }
 	| { type: 'onHeal' }
 	| { type: 'onState'; state: State }
-	| { type: 'manual' }
+	/* ⛔⛔ `manual` WAS HERE and is RETIRED (2026-09-21,
+	   docs/manual-trigger-retirement-round.md). It meant "the player toggles it"
+	   and there was never a toggle: its only occurrence in `src` was this
+	   declaration, so 167 effects across 69 characters drew no bar, no marker and
+	   no chip, while `deriveCapabilities` claimed every one of them in the Team
+	   Builder. ⚓ The rule that replaces it: an effect states WHEN IT FIRES, and
+	   when a kit clause names several sources that is one effect PER SOURCE. If
+	   our vocabulary cannot say when, the effect does not exist — its kit text
+	   lives in the host `description` and its numbers in `_curatorNotes`.
+	   characterLint B.18 refuses it. */
 	/** Fires when the holder leaves the field; buff targets the incoming character (e.g. TTDS). */
 	| { type: 'onSwapOut' }
 	/** Fires when the holder enters the field; buff targets themselves (e.g. The Widsith). */

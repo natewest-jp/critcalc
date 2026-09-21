@@ -193,6 +193,23 @@
 								"C6 (Sleep O'Clock) adds FlatDmg = ATK × min(EM×0.002, 4.0) to this tick — an EM-scaled flat rider with no scaling-buff representation here; unchanged cadence. See the C6 node's notes.",
 								"tickCap 6 (tick-cap round, 2026-08-18): gcsim burst.go `for i := 145 - tickTaskDelay; i < 145+540-tickTaskDelay; i += 90` = six Muji-Muji Daruma ticks. Our duration-derived 7 was one long. Unchanged at C6."
 							]
+						},
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 2.42,
+								"tickCap": 6
+							},
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							},
+							"scaling": 300,
+							"stat": "em",
+							"attribution": "Sleep O'Clock"
 						}
 					]
 				}
@@ -292,35 +309,14 @@
 			"name": "Sleep O'Clock",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "atk%",
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "atk%",
-					"snapshottable": false
-				}
-			],
 			"_curatorNotes": [
 				"C6 Effect 1 — Scaling buff: Daruma attack bonus scales as EM × 0.2% ATK (max +400% ATK additional DMG to Daruma attacks). value field removed per scaling-buff rule. trigger:manual inherited from generator — likely a continuous modifier on Daruma attacks while Daruma is active (not a discrete triggered buff); target 'self' appears incorrect (Daruma is the actor). Reviewer to author correct representation.",
-				"C6 Effect 2 — Scaling heal: Daruma heal bonus scales as EM × 3 HP (max +6000 HP additional heal per tick). Generator modeled as atk% stat which appears incorrect — should be a flat heal increase on the Daruma's heal, not an ATK% buff. value field removed per scaling-buff rule. trigger:manual inherited — reviewer to correct stat and author."
+				"C6 Effect 2 — Scaling heal: Daruma heal bonus scales as EM × 3 HP (max +6000 HP additional heal per tick). Generator modeled as atk% stat which appears incorrect — should be a flat heal increase on the Daruma's heal, not an ATK% buff. value field removed per scaling-buff rule. trigger:manual inherited — reviewer to correct stat and author.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Sleep O'Clock — effects[1] (buff atk%, no value — Daruma heal rider) RE-TRIGGERED and RE-HOMED onto the burst's summon. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `sayu/burst.go:65-69` — in the same C6 branch, `heal += min(d.Snapshot.Stats[EM]*3, 6000)`, folded into the per-tick `heal` value the Daruma's task pays out at `burst.go:94-99`; the schedule is the same `for i := 145 - tickTaskDelay; i < 145+540-tickTaskDelay; i += 90` loop, six ticks at 90f. `scaling: 300, stat: 'em'` IS \"+3 HP per point of EM\" in percentage-point form; the 6,000 cap (≈2,000 EM) has no schema home — `heal` carries `flat` and `flatScaling` but neither takes a `cap`, and `BuffValue.scaling.cap` is a buff-only field. Keep that `firstTickDelay: 2.42` and `tickCap: 6` MIRROR the sibling heal deliberately (the Daruma runs ONE schedule; the tick-cap round's rule that the two series draw the same count applies to a third series on that schedule too). Keep that the generator's `stat: 'atk%'` was wrong — this is a flat addend to a heal, never an ATK buff. ⚠️ The C6 effect deliberately carries NO `recipientHpBelow: 70`, unlike its C0 sibling: C1 removes the HP limit (`burst.go:84-86`, `hasC1` short-circuits `needHeal`) and C6 implies C1, so at C6 the gate is always open — copying the sibling's condition would under-claim. A third `summonTick` series on this summon adds no duplicate markers (same interval / delay / cap, and `TimelineWindow.ticks` is deduped by equality at its one publisher since 2026-09-19); heals never reach the aura, so the gauge is untouched. It does add a second `heal` capability row on the Daruma gated at C6 — intended, that is the whole surface.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Sleep O'Clock — effects[0] (buff atk%, no value — Daruma DMG rider) RETIRED. `sayu/burst.go:65-68` — inside the C6 branch, `d.Info.FlatDmg += atk * min(d.Snapshot.Stats[EM]*0.002, 4.0)`, applied to `d`, the Daruma TICK snapshot only. The burst's own initial hit (`burst.go:42-47`, `QueueAttackWithSnap` at `burstHitmark`) is a separate AttackInfo and gets nothing. C6 adds `FlatDmg = ATK × min(EM × 0.002, 4.0)` to each Muji-Muji Daruma tick (`burst.go:67`), cadence unchanged at 6 ticks; RETIRED for two independent reasons. (1) The value is a PRODUCT OF TWO STATS — ATK scaled by EM — and `BuffValue.scaling` names exactly one `stat`, so there is no form that states it; `{type:'unknown'}` would print prose where the reader expects a number. (2) Even if it were expressible, `burstFlatDmg` is ATTACK-CLASS scoped and Sayu has other burst-class damage (the cast's own hit), so the stat would over-claim on a hit gcsim deliberately excludes. Keep the note already on the burst's damage tick, which states the same rider."
 			],
-			"description": "The Muji-Muji Daruma created by Sayu's Yoohoo Art: Mujina Flurry will now also benefit from her Elemental Mastery. Each point of Sayu's Elemental Mastery will produce the following effects:\n·Increases the damage dealt by the Muji-Muji Daruma's attacks by 0.2% ATK. A maximum DMG increase of 400% ATK can be gained via this method.\n·Increases the HP restored by the Muji-Muji Daruma by 3. A maximum of 6,000 additional HP can be restored in this manner."
+			"description": "The Muji-Muji Daruma created by Sayu's Yoohoo Art: Mujina Flurry will now also benefit from her Elemental Mastery. Each point of Sayu's Elemental Mastery will produce the following effects:\n·Increases the damage dealt by the Muji-Muji Daruma's attacks by 0.2% ATK. A maximum DMG increase of 400% ATK can be gained via this method.\n·Increases the HP restored by the Muji-Muji Daruma by 3. A maximum of 6,000 additional HP can be restored in this manner.",
+			"caveat": "The Daruma's Elemental Mastery heal bonus is capped at 6,000 HP per tick, which the printed figure doesn't show."
 		}
 	],
 	"meta": {

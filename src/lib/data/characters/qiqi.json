@@ -392,33 +392,11 @@
 			"name": "Ascetics of Frost",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"amount": 2
-				},
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
-					"procCooldown": 6,
-					"amount": 6
-				}
-			],
 			"_curatorNotes": [
 				"trigger: 'manual' is inherited from generator; reviewer to replace. Probable trigger: onHit from Herald of Frost deployable damage (skill tick) hitting a Fortune-Preserving Talisman-marked enemy. In gcsim, c1() callback is appended to Herald tick AttackEvents and checks e.StatusIsActive(talismanKey) (cons.go:c1()). Energy +2 per qualifying hit; no per-hit ICD modeled in gcsim. Target scope: self.",
 				"STELLAR ROUND 2026-07-29 — second effect ADDED. Enhanced (buff-field) text, Fandom 'Ascetics of Frost': 'Radiance: Stellar-Conduct: Qiqi also regenerates 6 Elemental Energy when the Herald of Frost's attacks and coordinated attacks hit opponents. This effect can trigger once every 6s.' Authored as a second energy effect (6, self, procCooldown 6) gated on `teamEnablesReaction: stellarConduct`; the base 2-Energy effect is untouched. trigger 'manual' mirrors the sibling effect — the Herald's ticks and its new coordinated attacks are not authored damage, so no onHit trigger could fire. Real gate is narrower (Radiance state = Qiqi inside a Polestar Field), stated in the caveat.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it talks about ENERGY regeneration. The planner has no energy surface at all: both effects are `energy` on a `manual` trigger (nothing consumes manual, and energy effects have no planner consumer even on wired triggers), and no bar, marker, counter or tooltip anywhere prints energy gained. There is no pixel that is wrong, and none the player would look for. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it talks about ENERGY regeneration. The planner has no energy surface at all: both effects are `energy` on a `manual` trigger (nothing consumes manual, and energy effects have no planner consumer even on wired triggers), and no bar, marker, counter or tooltip anywhere prints energy gained. There is no pixel that is wrong, and none the player would look for. Category: invisible-omission.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Ascetics of Frost — effects[0] (energy 2, self) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/qiqi/cons.go:13-26` (`c1`) — an `AttackCB` appended to each Herald of Frost damage swipe (`skill.go:131-132`) that returns unless the struck enemy has `talismanKey` active, then `AddEnergy(\"qiqi-c1\", 2)`. No ICD. Retained: +2 Energy per Herald swipe on a Talisman-marked enemy, no ICD — and the two reasons it cannot be triggered: the Herald's damage series is unauthored (our `summons[0].effects` holds the heal tick only) and its cadence is irregular (`skill.go:138-140` alternates 60f / 135f, which a fixed-interval `summonTick` cannot state), and \"marked by a Fortune-Preserving Talisman\" has no `Condition` member. ⚠️ Leaving it as-is is not free — the host is already the one entry whose notes record that an inert `manual` effect still reaches `deriveCapabilities` through `target`. Deleting is byte-identical here because `deriveCapabilities` has skipped `manual` since 2026-09-15 and `energy` self-target is excluded from TB chips. The Herald's missing damage series belongs to the summon-tick-gaps backlog, not to this round.\n\n↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Ascetics of Frost — effects[1] (energy 6, self, stellarConduct-gated) carried `trigger: manual` and reached no surface. gcsim: absent from gcsim — the Herald's coordinated attacks and the whole Radiance upgrade are a Witch's-Revelation addition with no Go implementation; `cons.go:13-26` carries only the base 2-Energy arm. Retained: the whole Radiance clause verbatim (6 Energy, 6s cooldown, gated on Radiance: Stellar-Conduct, sourced from Fandom alone), plus the fact that the coordinated attacks it names are unauthored, so the same hit-stream gap as effects[0] applies. ⚠️ The real gate is narrower than `teamEnablesReaction` — it is the Polestar Field window, for which `{\"type\":\"inPolestarField\"}` now exists — but that does not rescue the effect: there is still no trigger, and `energy` reaches no planner surface even on a live trigger. ⛔ Do not author `inPolestarField` here just because the primitive landed."
 			],
 			"description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy."
 		},
@@ -494,23 +472,13 @@
 			"name": "Divine Suppression",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "heal",
-					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 180,
-					"stat": "atk"
-				}
-			],
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C4: enemies marked by Fortune-Preserving Talisman have their ATK decreased by 20%. Enemy ATK debuff; not implemented in gcsim cons.go. Reviewer to decide schema representation (enemy debuff target model). (The ATK-decrease half is still unauthored after the 2026-07-29 Stellar round.)",
 				"STELLAR ROUND 2026-07-29 — heal ADDED. Enhanced (buff-field) text, Fandom 'Divine Suppression': 'Additionally, when the healing effect of Fortune-Preserving Talisman triggers, the nearby party member with the lowest HP percentage remaining will also receive an additional instance of healing for 180% of Qiqi's ATK.' PERMANENT patch — no 'Radiance:' prefix, no Polestar Field or Stellar-Conduct wording — so no stellar gate. Constellation fixed value (no talent-level table). target 'team' + trigger 'manual' follows the Traveler (Hydro) C6 precedent for lowest-HP-ally heals: no target primitive picks the lowest-HP member, and the parent Talisman heal is itself unauthored, so nothing could fire it automatically.",
 				"↻ 2026-08-18 (stale-note pass) — ⛔ THE LAST SENTENCE OF THE NOTE ABOVE WAS WRONG AND HAS BEEN CUT. It read \"Over-claim on scope is repaired by the caveat.\" A caveat CANNOT repair it: an authored `Ability.caveat` reaches exactly ONE surface, the planner's Notes panel (`slotCaveats.ts` → `RotationNotes.svelte:47`, the only render in src), and it never reaches the Team Builder. `deriveCapabilities` applies NO trigger gate — `effectCapability` maps `heal` straight to `{ kind: 'heal' }` and `normalizeTarget('team')` → 'team' — so measured (deriveCharacterCapabilities, 2026-08-18) this node emits `{ kind: 'heal', target: 'team', minConstellation: 4, caveats: [] }` into the TB's provenance card. The TB therefore states that Qiqi's C4 heals the WHOLE PARTY, with no caveat channel to qualify it, while the planner shows nothing at all (`manual` has exactly one mention in src — the type declaration at ability.ts:649 — so 167 manual effects across 69 characters draw no bar, no marker and no chip).",
 				"↻ 2026-08-18 — ⏭ WORK ITEM / NATE'S CALL, same shape as the Nicole C2 shield ruling that shipped 2026-08-18: an inert `manual` effect with a wrong `target` is NOT harmless, because `target` reaches `deriveCapabilities` even when the trigger reaches nothing. Nicole C2 was resolved by the Kirara C2 house form — the entry keeps its `description`, carries NO `effects`, and a curator note says why. The same option applies here (the in-game scope is ONE ally, the lowest HP% nearby, not the team), and the alternative — leaving the effect and narrowing `target` — is no better, since no target primitive picks the lowest-HP member and `active` would be a different wrong claim. ⛔ Not changed here: this pass is notes only. Whichever way it goes, a char-JSON edit needs `npm run generate-character-index`. The 20% enemy ATK debuff half is still unauthored and still needs an enemy-debuff target model.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on the surface this caveat reaches. The heal is `trigger: manual` — 167 manual effects corpus-wide draw no bar, no marker, no chip — and its parent Talisman heal is unauthored too, so the planner shows nothing to be wrong about. The enemy ATK debuff likewise has no lane. ⚠️ The character's own curator note is right that the WRONG `target: 'team'` reaches deriveCapabilities and makes the Team Builder claim a party-wide C4 heal — but N17 is decisive: an authored caveat renders only in the planner's Notes panel and can never reach that card. The fix there is the Kirara-C2-style data ruling already queued for Nate, not this text. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on the surface this caveat reaches. The heal is `trigger: manual` — 167 manual effects corpus-wide draw no bar, no marker, no chip — and its parent Talisman heal is unauthored too, so the planner shows nothing to be wrong about. The enemy ATK debuff likewise has no lane. ⚠️ The character's own curator note is right that the WRONG `target: 'team'` reaches deriveCapabilities and makes the Team Builder claim a party-wide C4 heal — but N17 is decisive: an authored caveat renders only in the planner's Notes panel and can never reach that card. The fix there is the Kirara-C2-style data ruling already queued for Nate, not this text. Category: invisible-omission.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 — Divine Suppression — effects[0] (heal 180% atk, team) carried `trigger: manual` and reached no surface. gcsim: absent from gcsim — `cons.go` implements neither the C4 ATK debuff nor the Witch's-Revelation lowest-HP heal; the Talisman heal it rides on is `burst.go`'s `talismanHealHook`, which is itself unauthored in our JSON. Retained: the 180% ATK lowest-HP-ally heal and its parent (the Talisman's own 162% ATK + 1,270 per-second heal, also unauthored); the 20% enemy ATK debuff half, which still has no enemy-debuff target model; and that this takes the Kirara-C2 / Nicole-C2 house form — the entry keeps its `description`, carries no `effects`, and the note says why. ⚠️ ⚠️ The authored `target: 'team'` is WRONG and is the reason retiring beats re-triggering: the in-game scope is ONE ally, the nearby lowest HP%, and no `EffectTarget` picks them (`active` is a different wrong claim). The host's own 2026-08-18 note measured this node emitting `{kind:'heal', target:'team', minConstellation:4}` into the Team Builder's provenance card; that only stopped when `deriveCapabilities` began skipping `manual`, so a re-trigger onto any live trigger immediately restores a party-wide-heal claim that no caveat channel can qualify."
 			],
 			"description": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%."
 		},

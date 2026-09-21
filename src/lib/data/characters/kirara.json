@@ -78,7 +78,10 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12,
 					"durationType": "refresh",
 					"scaling": 18,
@@ -91,6 +94,32 @@
 						"Shield absorbs Dendro DMG with 250% effectiveness — not modelled (no per-element shield-efficiency primitive)."
 					],
 					"label": "Shield of Safe Transport"
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge"],
+						"source": "active",
+						"armedFor": 12
+					},
+					"procCooldown": 3.8,
+					"scaling": 200,
+					"stat": "atk",
+					"element": "dendro",
+					"application": [
+						{
+							"frame": 0,
+							"element": "dendro",
+							"units": 1
+						}
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"attribution": "Steed of Skanda"
 				}
 			],
 			"description": "Press\nLeaps into the air with all the agility of a cat passing through the bushes, and thwacks her foes with a flying kick that deals AoE Dendro DMG while creating a Shield of Safe Transport. This will also briefly apply Dendro to Kirara. The shield will absorb Dendro DMG with 250% effectiveness. The shield's DMG absorption will be based on Kirara's Max HP and will not exceed a certain percentage of that Max HP. The remaining DMG absorption on a Shield of Safe Transport will stack on a new one when it is created, and its duration will reset.\n\nHold\nOut of her desire to \"deliver within half a day,\" Kirara deploys a Shield of Safe Transport identical to the one that can be created by pressing the skill. She will also curl up into a special express delivery box, entering the Urgent Neko Parcel state in order to move and fight more swiftly.\n\nUrgent Neko Parcel\n· Deals Dendro DMG to opponents she crashes into. This effect can be triggered once on each opponent every 0.5s.\n· When in this state, Kirara's movement speed, climbing speed, and jumping power are all increased, and her Stamina Consumption from climbing is increased.\n· When the duration ends or the skill is used again, a Flipclaw Strike more powerful than the attack in the Press Mode will be unleashed, dealing AoE Dendro DMG.\n· The Urgent Neko Parcel state lasts a maximum of 10s. When the state ends, the skill will enter CD. The longer Kirara spends in this state, the longer the CD will be.\n· Sprinting or actively canceling climbing will end this state early.",
@@ -188,19 +217,10 @@
 			"name": "Steed of Skanda",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 200,
-					"stat": "atk",
-					"element": "dendro"
-				}
-			],
 			"description": "After active character(s) protected by Shields of Safe Transport or Critical Transport Shields hit opponents with Normal, Charged, or Plunging Attacks, Kirara will perform a coordinated attack with them using Small Cat Grass Cardamoms, dealing 200% of her ATK as Dendro DMG. DMG dealt this way is considered Elemental Burst DMG. This effect can be triggered once every 3.8s. This CD is shared between all party members.",
 			"_curatorNotes": [
-				"Inherited `manual` trigger. Likely `onHit` with `abilityType` matching N/C/plunge from any active char while Shield of Safe Transport (or Critical Transport Shield) is up on caster, with a 3.8s shared procCooldown. gcsim: subscribes to OnEnemyDamage, gates on existing Shields.KiraraSkill + AttackTag in {Normal, Extra, Plunge}, then fires a coordinated dendro attack tagged AttackTagElementalBurst with `Mult: 2`. ICD `c4IcdStatus = 3.8*60`. Scaling 200 / stat atk / element dendro / target enemy are correct; trigger type is the only field needing reviewer rewrite."
+				"Inherited `manual` trigger. Likely `onHit` with `abilityType` matching N/C/plunge from any active char while Shield of Safe Transport (or Critical Transport Shield) is up on caster, with a 3.8s shared procCooldown. gcsim: subscribes to OnEnemyDamage, gates on existing Shields.KiraraSkill + AttackTag in {Normal, Extra, Plunge}, then fires a coordinated dendro attack tagged AttackTagElementalBurst with `Mult: 2`. ICD `c4IcdStatus = 3.8*60`. Scaling 200 / stat atk / element dendro / target enemy are correct; trigger type is the only field needing reviewer rewrite.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4: Steed of Skanda — effects[0] (damage, 200% `atk`, dendro) RE-TRIGGERED and RE-HOMED onto the skill ability. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `cons.go:28-64` — `OnEnemyDamage` gated on a live `shield.KiraraSkill` (cons.go:33-36) and `AttackTag` ∈ {Normal, Extra, Plunge} (cons.go:39-45), then a Dendro hit with `ICDTagElementalBurst` / `ICDGroupDefault`, Durability 25, Mult 2, `QueueAttack(…, 0, 0)`, and a 3.8s status (cons.go:62). The shield is created at `skillPressHitmark` = 14f (`skill.go:129`, `skill.go:180/235` for the holds) and expires 12×60 later (`shield.go:25`). `_curatorNotes` on the C4 entry must retain that the effect now lives on the skill because the Shield of Safe Transport is its arming window, that `armedFor: 12` matches the shield bar the tool already draws (gcsim's shield actually starts 14f later — the same simplification the shield effect's own `onCast` anchoring already carries), and that `icdGate` is deliberately ABSENT because `ICDGroupDefault` is standard ICD and icd.md forbids annotating a measured default. ⚠️ Kirara's skill has no variants, so `variant?.effects ?? active.effects` is unambiguous. One `procCooldown: 3.8` clock is correct — the array form of `abilityType` is what keeps N/CA/P on ONE clock, where three single-class effects would triple-fire (the Escoffier C6 lesson). `source: \"active\"` refuses entity-delivered hits, which is right: gcsim's tag filter already excludes summon ticks. The pixel this buys is a Dendro pip in the aura lane every ≥3.8s while the shield is up — no summon lane marker, since a cast-armed proc carries no `tickKey`."
 			]
 		},
 		{
@@ -219,7 +239,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "allDmgBonus",
+					"value": 12,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -232,7 +269,8 @@
 			"_curatorNotes": [
 				"Inherited `manual` trigger. Likely two `onCast` triggers — one with `ability: 'skill'`, one with `ability: 'burst'`. gcsim: `c6()` runs in both `skillPress`/`skillShortHold`/`skillHold` and `Burst` branches, gated on Cons >= 6, applying a 15s StatMod to every party member.",
 				"Stat modeling note: gcsim assigns the +12% to each of PyroP/HydroP/CryoP/ElectroP/AnemoP/GeoP/PhyP/DendroP individually (8 separate stat keys), not to a single 'allDmgBonus' aggregate. The current `stat: 'allDmgBonus'` may or may not match this codebase's allDmgBonus semantics. Reviewer to verify whether allDmgBonus aggregates over per-element + physical or only over the elemental subset.",
-				"Target 'team' is correct — gcsim loops over all party members including Kirara herself."
+				"Target 'team' is correct — gcsim loops over all party members including Kirara herself.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: Countless Sights to See — effects[0] (buff, stat `allDmgBonus`, value 12) RE-TRIGGERED. gcsim: `cons.go:67-76` — `c6()` loops every party member and adds a 15×60 StatMod of `c.c6Buff`, which is +0.12 on all eight of PyroP/HydroP/CryoP/ElectroP/AnemoP/GeoP/PhyP/DendroP (`kirara.go:43-50`). It is called from both cast paths: the skill's press/short-hold/hold branches and `Burst()`. the one place gcsim and the kit disagree: the kit says \"All **Elemental** DMG Bonus\" and gcsim also grants `PhyP`. The Stat union has no elemental-only aggregate, so `allDmgBonus` (\"all of the recipient's attacks\") stands — it matches gcsim exactly and over-reads the kit text only for Physical damage. Retain also that `target: \"team\"` is verified (gcsim's loop includes Kirara herself), not inferred from \"nearby party members\". ⚠️ The two effects share `stat: \"allDmgBonus\"` from one host. They cannot collide — a skill cast's pool sees only the first, a burst cast's only the second — but a single `onCast` with no `ability` was rejected deliberately: it would emit one window per cast with no way to say which cast, and `onCast` with no `ability` also matches casts the kit does not name. An E and a Q inside 15s of each other produce two windows that refresh-merge into one covered span, which is correct."
 			]
 		}
 	],

@@ -233,22 +233,10 @@
 			"name": "Endless Flow",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "buff",
-					"target": "team",
-					"trigger": { "type": "manual" },
-					"duration": 15,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "atk%",
-					"value": 15,
-					"snapshottable": false
-				}
-			],
 			"description": "After using Kamisato Art: Suiyuu, all nearby party members will have 15% increased Normal Attack SPD for 15s.",
 			"_curatorNotes": [
-				"Inherited skeleton trigger is `manual`; likely `onCast` with `ability: burst`. Inherited stat is `atk%` but the actual buff is Normal Attack SPD (no `normalAtkSpd` stat in the schema; the team Atk SPD effect is currently encoded as `atk%` which is incorrect). gcsim cons.go in burst.go: adds AtkSpd +0.15 for all party members for 15*60 frames on burst cast. Reviewer to update stat once schema supports normal-atk-speed."
+				"Inherited skeleton trigger is `manual`; likely `onCast` with `ability: burst`. Inherited stat is `atk%` but the actual buff is Normal Attack SPD (no `normalAtkSpd` stat in the schema; the team Atk SPD effect is currently encoded as `atk%` which is incorrect). gcsim cons.go in burst.go: adds AtkSpd +0.15 for all party members for 15*60 frames on burst cast. Reviewer to update stat once schema supports normal-atk-speed.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 \"Endless Flow\" — effects[0] (buff atk% 15, team) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/ayato/burst.go:86-99` — on burst cast at C4+, every party member gets `AffectedStat: attributes.AtkSpd`, `m[attributes.AtkSpd] = 0.15`, `NewBaseWithHitlag(\"ayato-c4\", 15*60)`. Retained: Retain — the buff is ATTACK SPEED (gcsim `burst.go:88`, `attributes.AtkSpd` +0.15 for 15s on burst cast at C4+); the authored `atk%` was a generator guess and is a different stat entirely; there is no attack-speed member in the `Stat` union, so nothing can be authored without inventing one. ⚠️ none — but note that retiring it also REMOVES a false claim: the trigger is perfectly expressible (`onCast`, `ability: \"burst\"`), so a naive re-trigger pass would have shipped a team-wide +15% ATK bar and a Team Builder `atk%` buffer claim that the kit never makes. ⛔ Do not mint an `atkSpd` Stat for this alone: attack speed changes the number of swings, not a damage bracket, and it would be the only member whose meaning is \"the timeline should be shorter\"."
 			]
 		},
 		{
@@ -263,18 +251,10 @@
 			"name": "Boundless Origin",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 450,
-					"stat": "atk"
-				}
-			],
 			"description": "After using Kamisato Art: Kyouka, Ayato's next Shunsuiken attack will create 2 extra Shunsuiken strikes when they hit opponents, each one dealing 450% of Ayato's ATK as DMG.\nBoth these Shunsuiken attacks will not be affected by Namisen.\n",
 			"_curatorNotes": [
-				"Inherited damage effect skeleton: 450% ATK per strike, but the description states 2 extra strikes per proc. Likely trigger: onHit (first Shunsuiken hit after Kyouka cast); each proc fires 2 hydro hits at +20f and +22f after the parent shunsuiken hit (gcsim cons.go makeC6CB). One-shot per Kyouka cast (c.c6Ready flag). Both extras have IgnoreInfusion=hydro and bypass Namisen. Reviewer to author once-per-cast firing + 2 hits + Namisen exclusion."
+				"Inherited damage effect skeleton: 450% ATK per strike, but the description states 2 extra strikes per proc. Likely trigger: onHit (first Shunsuiken hit after Kyouka cast); each proc fires 2 hydro hits at +20f and +22f after the parent shunsuiken hit (gcsim cons.go makeC6CB). One-shot per Kyouka cast (c.c6Ready flag). Both extras have IgnoreInfusion=hydro and bypass Namisen. Reviewer to author once-per-cast firing + 2 hits + Namisen exclusion.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 \"Boundless Origin\" — effects[0] (damage atk 450) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/ayato/cons.go:56-97` — `makeC6CB()` returns an attack callback armed by `c.c6Ready` (set `true` at `skill.go:51`, cleared at the first qualifying Shunsuiken hit, `cons.go:70`); it queues TWO attacks at +20f and +22f, `AttackTagNormal`, `ICDTagNone`, Hydro, Durability 25, `Mult: 4.5`. Retained: Retain — gcsim `cons.go:88-95` fires two Hydro Durability-25 `ICDTagNone` hits at +20f and +22f after the first Shunsuiken hit following a Kyouka cast (`c6Ready`, one-shot per cast), both `IgnoreInfusion` and both exempt from Namisen; the authored `scaling: 450` matches `Mult: 4.5`. ⚠️ The two extras DO feed the gauge (2×1U Hydro per Kyouka cast), so this is not purely invisible — but expressing it needs \"the NEXT hit consumes the arming\", which we do not have: `armedFor` is a TIME window and `procCooldown` is a cadence, so the nearest authoring (`onHit`, `abilityType: \"normal\"`, `armedFor: <stance length>`) fires on every Shunsuiken swing and would multiply the applications several-fold. The shape that would work is a stack resource (`gainStacks` on `onCast skill`, `max: 1`; `consumeStacks` on `onHit normal`; the damage gated `{\"type\":\"stacks\",\"key\":…,\"min\":1}` with a measured `application[]`) — ⛔ that is a data build, not a re-trigger, and no round has queued it."
 			]
 		}
 	],

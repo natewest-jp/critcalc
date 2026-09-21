@@ -217,11 +217,37 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"durationType": "fixed",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "<absorbedElement — DOES NOT EXIST>",
+						"element": "cryo"
+					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "<absorbedElement — DOES NOT EXIST>",
+						"element": "pyro"
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 30,
 					"snapshottable": false
 				}
 			],
@@ -229,27 +255,19 @@
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): the Cryo +20% CR branch carries a `manual` trigger because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). ↻ 2026-08-18: the phrase \"manual trigger preserved\" implied a holding pen that still surfaces SOMETHING. It does not — a `manual` effect is authored but UNREACHABLE. grep for `'manual'` across src/lib and src/routes returns exactly one line, the type declaration itself (types/ability.ts), so there is no collector, no bar, no chip, no notation token and no toggle anywhere in the app; 167 such effects across 69 characters are in the same state. The whole disclosure here is the ability `caveat`, which is why it must not be trimmed away. ⏭ Re-evaluate if a multi-element-absorption primitive ever lands — ⚠️ and note that the gauge round did NOT deliver one: there is still no `absorb` path in src/lib/sim, so an absorbing Anemo ability applies only Anemo, and the absorption caveats on this character remain fully true.",
 				"[A7] Caveat trimmed for length: the non-Cryo absorption branches each last 20s (Pyro +30% ATK, Electro N/CA energy regen); up to 2 of 4 elemental branches absorb per skill cast and the tool can't predict which elements are contacted, which is why the Cryo branch is authored with a `manual` trigger. ⚠️ 2026-08-18: \"toggle\" was wrong — there is nothing to toggle; see the corrected stub-with-caveat note above. (Otherwise already captured there.)",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the absorption buffs — Cryo's +20% CR, Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the absorption buffs — Cryo's +20% CR, Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.\"",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive — Jade-Claimed Flower — effects[0] (buff, critRate 20) DEFERRED. gcsim: `wanderer/asc.go:102-127` — `absorbCheckA1` runs at skill cast and calls `AbsorbCheck` up to TWICE against `a1ValidBuffs`, granting one buff per absorbed element; `addA1Buff` (`asc.go:138-165`) adds the Cryo branch as `CR += 0.2` for 1200f (`a1CryoKey`, line 160) and the Pyro branch as `ATKP += 0.3` for 1200f (`a1PyroKey`, line 149). C4 (`asc.go:119-126`) adds one RANDOM further branch when at least one absorbed, raising the simultaneous cap to 3. Keep the 2026-08-18 correction note (a `manual` effect is authored but UNREACHABLE — it is the round's own founding evidence) and its ⏭ line, updated: the effect is now DELETED, not parked, and the restore spec above is what a future absorption round reinstates. Keep the [A7] note's 20s figure and the per-branch list; keep the 2026-08-19 caveat-trim record. ⚠️ Deleting the effect leaves the passive with `effects: []` and no `description`, so the caveat is load-bearing — verify it still renders on the detail card after the edit. Also check `wanderer__constellation__yonban_set_adrift_into_spring` (C4), whose notes point at this passive and must stay pointing at the deferred spec, not at a deleted effect."
 			]
 		},
 		{
 			"id": "wanderer__passive__gales_of_reverie",
 			"name": "Gales of Reverie",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 35,
-					"stat": "atk",
-					"element": "anemo"
-				}
-			],
 			"description": "When the Wanderer hits opponents with Kuugo: Fushoudan or Kuugo: Toufukai in his Windfavored state, he has a 16% chance to obtain the Descent effect: The next time the Wanderer accelerates in mid-air while in this instance of the Windfavored state, this effect will be removed, this acceleration instance will not consume any Kuugoryoku Points, and he will fire off 4 wind arrows that deal 35% of his ATK as Anemo DMG each.\nFor each Kuugo: Fushoudan and Kuugo: Toufukai that does not produce this effect, the next attack of those types will have a 12% increased chance of producing it. The calculation of the effect production is done once every 0.1s.",
 			"_curatorNotes": [
 				"Inherited manual trigger. gcsim a4 hookup: makeA4CB on every in-stance N/CA hit, gated on skillKey active, 6-frame ICD (a4IcdKey), pity-build probability starting 16% and incrementing 12% per failed roll back to 16% on success. Proc fires 4 anemo arrows at frames 16/18/21/25 with 30f hitmark each (gcsim a4Release + a4Hitmark), 35% ATK per arrow (60% with C1 — see C1 note). Likely shape: onHit trigger with ability tag normal/chargeAttack and ICD, conditional on inStance state — but the probabilistic pity mechanic has no schema representation. Reviewer-owned.",
-				"Probability mechanic (16% base + 12%/miss pity → 100% in 8 attempts max) effectively guarantees a proc within a typical Windfavored window; likely modeled as deterministic uptime once per stance for planner purposes. Reviewer to decide."
+				"Probability mechanic (16% base + 12%/miss pity → 100% in 8 attempts max) effectively guarantees a proc within a typical Windfavored window; likely modeled as deterministic uptime once per stance for planner purposes. Reviewer to decide.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive — Gales of Reverie — effects[0] (damage, atk 35 anemo) carried `trigger: manual` and reached no surface. gcsim: `wanderer/asc.go:29-57` — `makeA4CB` fires on in-stance N/CA hits behind a 6-frame ICD and a PITY ROLL (`c.a4Prob` starts 0.16, `+0.12` per miss, reset on success); on success it only sets `a4Key`. The arrows themselves are `asc.go:62-98`, fired when the Wanderer next DASHES in mid-air, four hits at `a4Release[i]` + 30f, `Mult: 0.35`, Anemo, `Durability: 25`, on `ICDGroupWandererA4` (`icd_groups.dm.go:131,198`: a 60f window where only the FIRST hit applies, so the four arrows are one 1U application). Retained: `description` keeps the whole mechanic including the pity clause. Retain the gcsim reading (6f ICD, 16%+12% pity, four arrows at 35% ATK, `ICDGroupWandererA4` = one application per second) and record the ruling: the trigger is a mid-air acceleration — a movement the notation has no token for — behind a probabilistic gate, and the payload is a damage magnitude. Drop both \"Reviewer to decide\" sentences. ⚠️ The curator note floats \"likely modeled as deterministic uptime once per stance\" — ⛔ do not take that route: it would paint a guaranteed Anemo pip per stance on a dash we cannot see the player make, and the standing ruling refuses drawing a probabilistic proc at full rate."
 			]
 		}
 	],
@@ -259,18 +277,10 @@
 			"name": "Shoban: Ostentatious Plumage",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 25,
-					"stat": "atk"
-				}
-			],
 			"description": "When in the Windfavored state, the Attack SPD of the Wanderer's Kuugo: Fushoudan and Kuugo: Toufukai is increased by 10%.\nAdditionally, the wind arrows fired by the Ascension Talent \"Gales of Reverie\" will deal an additional 25% of his ATK as DMG. You must first unlock the Ascension Talent \"Gales of Reverie.\"",
 			"_curatorNotes": [
-				"Inherited manual trigger with a 25% atk damage stub. C1 has two distinct effects: (a) +10% Atk SPD on Kuugo: Fushoudan / Toufukai while in Windfavored state (gcsim wanderer-c1-atkspd statMod, added on skillActivate, removed on skillEndRoutine, conditioned on inStance state) — not authored, no schema for per-ability ATK SPD; (b) Gales of Reverie wind arrows gain an additional bonus — gcsim implements as a4Mult swap from 0.35 to 0.6 (60% ATK total per arrow, not +25%). The +25% described in genshin-db text matches the in-game tooltip but gcsim's literal value is 60% (i.e. 35% + 25%). Reviewer to reconcile and decide whether C1 should be authored as a modifier on the A4 effect rather than a standalone damage row."
+				"Inherited manual trigger with a 25% atk damage stub. C1 has two distinct effects: (a) +10% Atk SPD on Kuugo: Fushoudan / Toufukai while in Windfavored state (gcsim wanderer-c1-atkspd statMod, added on skillActivate, removed on skillEndRoutine, conditioned on inStance state) — not authored, no schema for per-ability ATK SPD; (b) Gales of Reverie wind arrows gain an additional bonus — gcsim implements as a4Mult swap from 0.35 to 0.6 (60% ATK total per arrow, not +25%). The +25% described in genshin-db text matches the in-game tooltip but gcsim's literal value is 60% (i.e. 35% + 25%). Reviewer to reconcile and decide whether C1 should be authored as a modifier on the A4 effect rather than a standalone damage row.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Shoban: Ostentatious Plumage — effects[0] (damage, atk 25) carried `trigger: manual` and reached no surface. gcsim: `wanderer/asc.go:74-77` — the C1 bonus is implemented as a MULTIPLIER SWAP inside `a4()`: `a4Mult := 0.35`, and `if c.StatusIsActive(\"wanderer-c1-atkspd\") { a4Mult = 0.6 }`. There is no separate C1 attack. The C1's first clause is `cons.go:18-30`, an `AtkSpd` stat mod (`\"wanderer-c1-atkspd\"`, 1200f) added in `skillActivate` and deleted in `skillEndRoutine` (`skill.go:117-118`). Retained: `description` keeps both clauses. Retain the gcsim reconciliation (kit tooltip says \"+25%\", gcsim writes the total 0.6 — the same number stated two ways) and record: the effect was a SCHEMA ARTIFACT, a rider on the A4 arrows re-authored as its own damage row, and the A4 it rides is itself retired; the ATK SPD clause has no `Stat` member (there is no attack-speed stat in the union) and none is being minted for one holder. Drop \"Reviewer to reconcile and decide\". ⚠️ none — nothing else references this effect. ⚠️ Do NOT read the retirement as a licence to add an attack-speed stat: the corpus has one author and no consumer, which is exactly what `orphanedSchema.test.ts` exists to refuse."
 			]
 		},
 		{
@@ -312,20 +322,12 @@
 			"name": "Shugen: The Curtains' Melancholic Sway",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 40,
-					"stat": "atk"
-				}
-			],
 			"description": "When the Wanderer actively hits an opponent with Kuugo: Fushoudan while in the Windfavored state, the following effects will occur:\n·Deals an additional instance of Kuugo: Fushoudan at the position hit, dealing 40% of the attack's original DMG. This DMG will be considered Normal Attack DMG.\n·When the Wanderer falls below 40 Kuugoryoku Points, restores 4 Points to him. Kuugoryoku Points can be restored in this manner once every 0.2s. This restoration can occur up to 5 times within one Windfavored duration.",
 			"_curatorNotes": [
 				"Inherited manual trigger with 40% atk damage stub — but the value is wrong: C6 deals 40% of the original Kuugo: Fushoudan hit's damage, not 40% of ATK. gcsim makeC6Callback computes Mult = a.AttackEvent.Info.Mult * 0.4, i.e. 40% of the parent attack's multiplier on top of standard ATK scaling. The schema can't express 'inherit parent multiplier'; effect should be modeled as a multiplicative damage modifier on Kuugo: Fushoudan hits, not as a fixed-coefficient damage row. Reviewer-owned.",
 				"Likely shape: onHit trigger with ability tag normal, conditional on inStance state, ICD 12 frames (gcsim c6ICDKey). Once-per-attack (the makeC6Callback closes over a `done` flag preventing re-entry on multi-target hits).",
-				"Second component (Skydweller Points restoration) is a resource-pool effect not modeled in the schema."
+				"Second component (Skydweller Points restoration) is a resource-pool effect not modeled in the schema.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — Shugen: The Curtains' Melancholic Sway — effects[0] (damage, atk 40) carried `trigger: manual` and reached no surface. gcsim: `wanderer/cons.go:50-95` — `makeC6Callback` fires on an in-stance Kuugo: Fushoudan hit (guarded by `skillKey` active, `skydwellerPoints > 0`, and a `done` flag so a multi-target hit fires once) and queues one Anemo hit 8 frames later at `Mult: a.AttackEvent.Info.Mult * 0.4` (line 86) on `ICDTagWandererC6` / `ICDGroupWandererC6` (`icd_groups.dm.go:132,199`: a 120f window, first hit only). The 4-point restore is the separate branch at `cons.go:64-72`, capped at 5 per stance with a 12f ICD. Retained: `description` keeps both bullets. Retain the curator note's correction — the authored `scaling: 40, stat: \"atk\"` is WRONG, the real value is 40% of the PARENT hit's multiplier — and record the ruling: `DamageEffect` requires `scaling` + `stat`, \"inherit the parent multiplier\" is not in that vocabulary, and authoring 40% ATK would be an invented number. The Kuugoryoku restore stays unmodelled (resource pool). Drop \"Reviewer-owned\". ⚠️ This is the one retirement in my packet that loses a REACHABLE application. The C6 hit sits on its own ICD group (120f, first-hit-only), independent of the in-stance normals' counter, so at C6 an N-string applies Anemo roughly twice as often as the aura lane will show — and the trigger IS expressible (`onHit`, `abilityType: \"normal\"`, `conditions: {state: inStance}`, `application: [{frame: 8, element: \"anemo\", units: 1}]`, `icdGate: {timer: 120}`). It is blocked only on the damage number, plus the fact that a constellation-hosted `onHit` damage proc needs an `armedFor` it has no cast to hang off (lint B.13b). ⏭ Worth a line in the aura-lane gap list, not a `manual`-round authoring."
 			]
 		}
 	],

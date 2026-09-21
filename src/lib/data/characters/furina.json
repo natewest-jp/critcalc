@@ -374,18 +374,10 @@
 			"id": "furina__passive__endless_waltz",
 			"name": "Endless Waltz",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "heal",
-					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 2,
-					"stat": "hp"
-				}
-			],
-			"description": "When the active character in your party receives healing, if the source of the healing is not Furina herself and the healing overflows, then Furina will heal nearby party members for 2% of their Max HP once every 2s for the next 4s."
+			"description": "When the active character in your party receives healing, if the source of the healing is not Furina herself and the healing overflows, then Furina will heal nearby party members for 2% of their Max HP once every 2s for the next 4s.",
+			"_curatorNotes": [
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Endless Waltz — effects[0] (heal scaling 2 hp) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/furina/asc.go:24-47` — an `event.OnHeal` subscription gated on `hi.Caller != c.Index()`, `overheal > 0` and `hi.Target == Player.Active()`, which opens a 4s status; `asc.go:49-68` then self-queues a `HealTypePercent` `Src: 0.02` team heal every 120f while it holds. Retained: `_curatorNotes` must gain the reason: the trigger is `event.OnHeal` + overheal, and `{ type: 'onHeal' }` has no reader anywhere in this codebase (it is as dead as `manual`), so there is no partial trigger to fall back to. Retain that the heal is 2% of **each receiver's own** Max HP (`HealTypePercent`), which our `scaling`/`stat: 'hp'` pair reads as a percentage of *Furina's* HP — a second reason not to keep it. ⚠️ None to the Team Builder — Furina keeps her `heal` capability from the `heal` AbilityTag on Salon Solitaire (`pushTagCapabilities` in `deriveCapabilities.ts`), not from this effect, and `manual` is already skipped there, so the derived set is byte-identical after the delete. ⛔ Do not reach for `onHPIncrease` as a proxy: same dead list."
+			]
 		},
 		{
 			"id": "furina__passive__unheard_confession",

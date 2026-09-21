@@ -252,28 +252,39 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
 					"source": "character",
-					"stat": "em",
+					"stat": "chargeDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 6,
+						"cap": 60
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
 					"source": "character",
-					"stat": "allDmgBonus",
+					"stat": "burstDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 6,
+						"cap": 60
+					},
 					"snapshottable": false
 				}
 			],
 			"description": "For every point of Elemental Mastery Tighnari possesses, his Charged Attack and Fashioner's Tanglevine Shaft DMG are increased by 0.06%.\nThe maximum DMG Bonus obtainable this way is 60%.",
 			"_curatorNotes": [
-				"A4 — scaling buff: effect = min(EM * 0.06%, 60%) DMG bonus applying to Charged Attack (AttackTagExtra) and Fashioner's Tanglevine Shaft (AttackTagElementalBurst). gcsim: permanent attack modifier (duration=-1), bonus = Stat(EM) * 0.0006 capped at 0.6. Both value fields deleted per scaling-buff rule. Generator effect[0] had stat: 'em' which is incorrect (should be allDmgBonus or a charge/burst-specific DMG bonus); effect[1] had stat: 'allDmgBonus' value: 60 (the cap, not a flat bonus). Reviewer to author as a scaling BuffValue with ability-type condition."
+				"A4 — scaling buff: effect = min(EM * 0.06%, 60%) DMG bonus applying to Charged Attack (AttackTagExtra) and Fashioner's Tanglevine Shaft (AttackTagElementalBurst). gcsim: permanent attack modifier (duration=-1), bonus = Stat(EM) * 0.0006 capped at 0.6. Both value fields deleted per scaling-buff rule. Generator effect[0] had stat: 'em' which is incorrect (should be allDmgBonus or a charge/burst-specific DMG bonus); effect[1] had stat: 'allDmgBonus' value: 60 (the cap, not a flat bonus). Reviewer to author as a scaling BuffValue with ability-type condition.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: — Scholarly Blade — effects[0] (buff em, no value) RE-TRIGGERED. gcsim: `internal/characters/tighnari/asc.go:28-48` (`a4`) — a permanent (`-1`) `AttackMod` that returns nil unless the hit is `AttackTagExtra` or `AttackTagElementalBurst`, then sets `DmgP = min(Stat(EM) * 0.0006, 0.6)`. Replace the \"Reviewer to author as a scaling BuffValue with ability-type condition\" line — there is no ability-type condition; the two attack CLASSES are the two stats. Record that `ratio` is per 100 stat units, so 0.06% per EM point is `ratio: 6` (at 1,000 EM → 60% = the cap), and that the Alyosha A2 (`skillDmgBonus` + `burstDmgBonus`, scaling `energyRecharge`) pair is the template. ⚠️ `AttackTagExtra` on a bow covers the aimed shot, the Wreath Arrow AND the Clusterbloom Arrows (`aimed.go:78`, `:132`, `:226`), which is what \"his Charged Attack\" means here — no over-claim. ⚠️ Do not author the cap as two halves: gcsim caps ONE bonus at 0.6 and applies it to whichever class is hit, so each effect carries the full `cap: 60` and they are never summed. The ascension gate (`c.Base.Ascension < 4`) is omitted, matching Alyosha and Arlecchino — `DEFAULT_ASCENSION` is 4.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: — Scholarly Blade — effects[1] (buff allDmgBonus, no value) RE-TRIGGERED. gcsim: `internal/characters/tighnari/asc.go:28-48` — same mod; the second arm of the tag test is `attacks.AttackTagElementalBurst`, i.e. Fashioner's Tanglevine Shaft. Record that the authored `stat: \"allDmgBonus\"` with `value: 60` (now stripped to no value at all) was a schema artifact — 60 is the CAP, not a flat bonus, and `allDmgBonus` would have covered his normals and plunges too. ⚠️ Fashioner's Tanglevine Shaft IS Tighnari's only burst, so `burstDmgBonus` is exactly co-extensive with the named ability — this is the CONVERT rule's \"scoped to one named ability inside a class\" test passing, not failing. Two effects, two different stats, so no cast-pool `stat` dedupe collision. Both print on the always-on chip beside each other; that is the intended surface for a `passive` buff."
 			]
 		}
 	],
@@ -283,23 +294,10 @@
 			"name": "Beginnings Determined at the Roots",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critRate",
-					"value": 15,
-					"snapshottable": false
-				}
-			],
 			"description": "Tighnari's Charged Attack CRIT Rate is increased by 15%.",
 			"_curatorNotes": [
-				"C1 — inherited manual trigger. This is a permanent passive CRIT Rate bonus restricted to Charged Attacks (gcsim: permanent attack modifier with AttackTag == AttackTagExtra, duration=-1). The current effect has stat: 'critRate' with no condition limiting it to charged attacks. Reviewer to add ability-type condition and change trigger to passive."
+				"C1 — inherited manual trigger. This is a permanent passive CRIT Rate bonus restricted to Charged Attacks (gcsim: permanent attack modifier with AttackTag == AttackTagExtra, duration=-1). The current effect has stat: 'critRate' with no condition limiting it to charged attacks. Reviewer to add ability-type condition and change trigger to passive.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Beginnings Determined at the Roots — effects[0] (buff critRate 15) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/tighnari/cons.go:14-27` (`c1`) — a permanent (`-1`) `AttackMod` adding `CR = 0.15`, returning nil unless `atk.Info.AttackTag == attacks.AttackTagExtra`. Retained: +15% CRIT Rate restricted to Charged Attacks (`AttackTagExtra`), permanent, and that it is unauthorable because there is no ability-scoped CRIT stat — the `Stat` union's per-class members are the `*DmgBonus` and `*FlatDmg` families only. Replace \"Reviewer to add ability-type condition and change trigger to passive\": the `TriggerFilter` cannot gate a `passive` buff, and a `passive` critRate would be a flat claim. ⚠️ This is the brief's own named over-claim case. `{\"trigger\":{\"type\":\"passive\"},\"stat\":\"critRate\",\"value\":15}` would print a flat +15% CRIT Rate on the always-on chip for every attack Tighnari makes, which is false for his normals, his plunge and his burst. There is no condition that narrows a `passive` buff to an attack class — `TriggerFilter` lives on `onHit`, and an `onHit abilityType:'charged'` buff would draw a 15% CRIT Rate BAR on every aimed shot, which is a second, differently-wrong claim (the bonus is not a timed window)."
 			]
 		},
 		{
@@ -312,8 +310,10 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
+					"duration": 14,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "dendroDmgBonus",
@@ -323,8 +323,10 @@
 			],
 			"description": "When there are opponents within the Vijnana-Khanda Field created by Vijnana-Phala Mine, Tighnari gains 20% Dendro DMG Bonus.\nThe effect will last up to 6s if the field's duration ends or if it no longer has opponents within it.",
 			"_curatorNotes": [
-				"C2 — inherited manual trigger. Buff fires when enemies are inside the Vijnana-Khanda Field area; gcsim polls every 30f for 8*60f after the skill projectile hits (c.c2() queued at skillRelease+travel). The field-presence condition has no schema encoder. Effect duration is 6s (gcsim: modifier.NewBase('tighnari-c2', 6*60)), refreshed on each poll tick. The current effect skeleton has no 'duration' field — reviewer to add duration: 6 and decide trigger representation."
-			]
+				"C2 — inherited manual trigger. Buff fires when enemies are inside the Vijnana-Khanda Field area; gcsim polls every 30f for 8*60f after the skill projectile hits (c.c2() queued at skillRelease+travel). The field-presence condition has no schema encoder. Effect duration is 6s (gcsim: modifier.NewBase('tighnari-c2', 6*60)), refreshed on each poll tick. The current effect skeleton has no 'duration' field — reviewer to add duration: 6 and decide trigger representation.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 — Origins Known From the Stem — effects[0] (buff dendroDmgBonus 20) RE-TRIGGERED. gcsim: `internal/characters/tighnari/cons.go:30-48` (`c2`) — queued at `skillRelease + travel` (`skill.go:58-60`); polls every 30f for `8*60` frames, and on each poll where `Player().IsWithinArea(c.skillArea)` adds a 6s (`6*60`) `DendroP = .2` `StatMod`. the honest-length derivation: the field is 8s (`summons[0].duration`) and each poll grants 6s, so the buff outlives the field by 6s → 14s, the Bennett-14.1s shape (⚓ Nate, \"buffs re-applied per tick are authored at their HONEST length\"). ⚠️ gcsim and the kit text differ: gcsim's last poll is at 450f (its loop steps 30f over 480f), so its measured tail ends at 13.5s from the poll's start — that is the 0.5s poll granularity, and the kit text wins. ⚠️ The field-presence gate is dropped and cannot be expressed (no area/occupancy `Condition`), so the bar runs the full 14s in a rotation where the enemy walks out — that is what the caveat repairs, and it is an over-claim on uptime, not on value. The buff is `target: 'self'`, which the self pass reads for `onCast`/`onHit` pools (`buffWindows.ts:2291+`); ⛔ it must not become `team`/`active`, or it would also take the `onState`/team path with a different span. No constellation condition is authored — `effectSourcesAtConstellation` gates the host entry, and CLAUDE.md's ruling keeps existing duplicates but does not ask for new ones."
+			],
+			"caveat": "The Dendro DMG bar assumes opponents stay inside the Vijnana-Khanda Field. In game it fades 6s after the last one leaves."
 		},
 		{
 			"id": "tighnari__constellation__fortunes_read_amongst_the_branches",
@@ -386,21 +388,11 @@
 			"name": "Karma Adjudged From the Leaden Fruit",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 150,
-					"stat": "atk"
-				}
-			],
 			"description": "Wreath Arrow's charging time is decreased by 0.9s, and will produce 1 additional Clusterbloom Arrow upon hit. This arrow deals 150% of Tighnari's ATK as DMG.",
 			"_curatorNotes": [
 				"C6 — inherited manual trigger on damage effect. Probable trigger: onHit with Wreath Arrow (gcsim: QueueAttackWithSnap for additional Clusterbloom at wreathTravel frames after aimedWreathHitmark+travel-skip, gated on Cons>=6 inside WreathAimed). Same snapshot as the Wreath Arrow.",
-				"C6 also reduces Wreath Arrow charge time by 0.9s (54 frames). In gcsim: skip += 54 (on top of Vijnana Suffusion's 142f skip), capped at aimedWreathHitmark=175f. This mechanic is not modeled in the current JSON — reviewer to decide representation."
+				"C6 also reduces Wreath Arrow charge time by 0.9s (54 frames). In gcsim: skip += 54 (on top of Vijnana Suffusion's 142f skip), capped at aimedWreathHitmark=175f. This mechanic is not modeled in the current JSON — reviewer to decide representation.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — Karma Adjudged From the Leaden Fruit — effects[0] (damage 150% atk) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/tighnari/aimed.go:193-217` — inside the Wreath Arrow's post-hit task, at Cons ≥ 6 one extra `AttackTagExtra` / `ICDTagNone` Dendro hit (Durability 25 = 1U, `Mult: 1.5`) is queued with the same snapshot as the four base Clusterbloom Arrows, `wreathTravel` (35f, default) after the arrow lands. The charge-time half is `aimed.go:126-128` — `skip += 54`, clamped to `aimedWreathHitmark = 175`. Retained: Keep both existing notes and add: the extra arrow is `ICDTagNone` at Durability 25, so at C6 the Wreath Arrow lands one more Dendro application than we draw — and the four BASE Clusterbloom Arrows (`ICDTagExtraAttack` / `ICDGroupTighnari`, `aimed.go:170-192`) are unauthored too, so the C6 arrow would be the only one of five drawn. The 0.9s charge-time reduction stacks on Vijnana Suffusion's 142f and is not modelled (the skill already carries the matching caveat). ⚠️ Same arming gap as Chongyun C1 — a `damage` effect with `application[]` on an `onHit` trigger needs `armCastProcs`, which requires a host CAST and a `trigger.armedFor`, and this fires off a charged-attack hit that is always armed. `onHit abilityType:'charged' + filter.abilityName:'Wreath Arrow'` would match (Keen Sight already uses exactly that and works), but with no `application[]` it draws nothing, and with one it would never be armed. ⛔ Never invent an `armedFor` to get it armed."
 			]
 		}
 	],

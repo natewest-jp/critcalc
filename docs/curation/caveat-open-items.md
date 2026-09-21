@@ -82,23 +82,28 @@ authored keys, zero genuine strays (the 13 a name-based proxy flags are FrameMap
 
 ---
 
-## 4. The `manual`-trigger cluster
+## 4. The `manual`-trigger cluster — ✅ CLOSED 2026-09-21
 
-↻ **2026-09-15: the channel is being RETIRED** (⚓ Nate; `docs/manual-trigger-retirement.md`). Step 1 shipped — the Team Builder no longer derives a `manual` effect either, so the two surfaces agree that these draw nothing. The re-trigger/retire pass per effect is step 3.
+✅ **THE CHANNEL IS RETIRED.** 0 effects in the corpus, `'manual'` struck from the
+`Trigger` union, characterLint B.18 refuses it. Record:
+`docs/manual-trigger-retirement-round.md`; the plan it closes is
+`docs/manual-trigger-retirement.md`.
 
-⛔⛔ **`manual` reaches no surface and never did** — one occurrence in the codebase, its own type
-declaration (`types/ability.ts:649`); **167 effects across 69 characters** render nothing.
+⚓ **The prediction in this section came true, and is worth keeping for the
+pattern.** It said "a large share of the surviving caveats exist only because of
+this one hole" and "if `manual` ever gets a surface, re-audit that cluster — it
+collapses at once". It did: Columbina's half went in the stack-threshold round
+(2026-09-18), and the remaining 127 resolved into 52 retires, 6 flat-DMG
+conversions, 50 re-triggers and 11 coordinated attacks re-homed onto the cast
+that arms them — +123 buff windows, +79 Team Builder capabilities, applications
+up on nine characters.
 
-⚓ **A large share of the surviving caveats exist only because of this one hole.** Columbina is the
-clearest case: her headline off-field mechanic (Gravity Interference) is all manual-trigger, so it
-leaves no tick on the summon lane and no pip on the aura lane, and several of her caveats are all
-saying the same thing about the same absence.
-
-⏭ **If `manual` ever gets a surface, re-audit that cluster — it collapses at once.** Conversely, if
-it is ruled permanently out of scope, that is worth stating at the type so the next curator does not
-author into it. Today 167 effects are authored into a channel with no consumer.
-
----
+⚠️ **The live version of this finding is its SIBLINGS.** `onHeal`, `onEnergy`,
+`onHPChange`, `onHPDecrease` and `onHPIncrease` have no reader either and are in
+exactly the state `manual` was in. The corpus is nearly clean of them (1
+`onHPDecrease`, 0 of the rest), so this is a hazard for the next AUTHOR rather
+than a backlog: ⛔ never re-trigger an effect into one of them — it moves the
+problem and hides it better.
 
 ## 5. Implement candidates from round 1 (17)
 

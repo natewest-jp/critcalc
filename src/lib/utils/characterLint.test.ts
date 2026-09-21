@@ -225,6 +225,47 @@ describe('summonTick lint rules (P3)', () => {
 	});
 });
 
+describe('B.18 — the retired `manual` trigger', () => {
+	function stubWithManual() {
+		return makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { anim: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { anim: 20 },
+					cooldown: 10,
+					effects: [
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: { type: 'manual' },
+							source: 'character',
+							stat: 'atk%',
+							value: 20,
+							snapshottable: false
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('flags a manual trigger on a character that is not on the allowlist', () => {
+		const hit = lintCharacter(stubWithManual()).find((i) => i.check === 'manual-trigger');
+		expect(hit?.severity).toBe('strict');
+	});
+});
+
 describe('stacks condition lint rules', () => {
 	it('flags stacks condition with empty key', () => {
 		const c = makeStubCharacter({

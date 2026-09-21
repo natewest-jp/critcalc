@@ -120,20 +120,10 @@
 			"id": "kamisato_ayaka__passive__kanten_senmyou_blessing",
 			"name": "Kanten Senmyou Blessing",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": { "type": "manual" },
-					"duration": 10,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "cryoDmgBonus",
-					"value": 18,
-					"snapshottable": false
-				}
-			],
-			"description": "When the Cryo application at the end of Kamisato Art: Senho hits an opponent, Kamisato Ayaka gains the following effects:\n·Restores 10 Stamina\n·Gains 18% Cryo DMG Bonus for 10s."
+			"description": "When the Cryo application at the end of Kamisato Art: Senho hits an opponent, Kamisato Ayaka gains the following effects:\n·Restores 10 Stamina\n·Gains 18% Cryo DMG Bonus for 10s.",
+			"_curatorNotes": [
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Kanten Senmyou Blessing — effects[0] (buff, stat `cryoDmgBonus`, value 18) carried `trigger: manual` and reached no surface. gcsim: `asc.go:34-59` — `makeA4CB()` is attached as an attack callback to the DASH's Cryo hit only (`dash.go:41-47`, `dashHitmark = 20`); it fires once per Senho, restores 10 stamina and adds CryoP +0.18 for 600f. Retained: that the trigger is the Senho dash's Cryo hit and that the parser has no dash hit at all — `run.ts:2198-2210` emits a `dash` action block and advances the clock, with no hit record, no `application[]` and no state opener, so `onHit` cannot reach it (`abilityType` admits only skill/burst/normal/charged/plunge). Record the values for a future dash primitive: CryoP +18%, 600f, once per dash, gcsim `ayaka-a4`. ⚠️ ⛔ Do not reach for `trigger: passive` as a substitute — it would print a flat +18% Cryo DMG Bonus on the always-on chip, which is false before her first dash and false again 10s after each one. This is the brief's own RETIRE example in a different costume. It is not a DEFER either: a dash-hit trigger is neither of the two queued primitives."
+			]
 		}
 	],
 	"constellations": [

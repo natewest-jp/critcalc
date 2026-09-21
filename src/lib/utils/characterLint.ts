@@ -2303,6 +2303,36 @@ function lintEffect(
 		}
 	}
 
+	// (B.18) ⛔⛔ `manual` IS NOT A TRIGGER. It was authored as "the player toggles
+	// it" and there has never been a toggle: its only occurrence in `src` was its
+	// own type declaration, so 167 effects across 69 characters drew no bar, no
+	// marker and no chip — while `deriveCapabilities` derived every one of them as
+	// a live Team Builder claim until 2026-09-15. The two surfaces disagreed about
+	// the same effect and only one of them could be caveated.
+	//
+	// ⚓ The rule that replaces it: an effect states WHEN IT FIRES, and if our
+	// vocabulary cannot say when, the effect does not exist — its kit text lives in
+	// the host `description` and its numbers in `_curatorNotes`, which is where a
+	// future round reads them back. ⚠️ When a kit clause names SEVERAL in-game
+	// sources, that is one effect PER SOURCE, never one partial trigger:
+	// Alhaitham's C2 mirror gain is `onCast skill` + `onCast burst` + the A1 path,
+	// not an `onCast skill` with an apology attached.
+	//
+	// docs/manual-trigger-retirement.md is the record.
+	//
+	// ⚠️ The allowlist this rule shipped behind is GONE (2026-09-21) and so is
+	// `'manual'` itself — the member no longer exists in the `Trigger` union, so
+	// the cast below is what lets the rule keep catching a hand-written one in a
+	// JSON the type system never sees. ⛔ Do not "simplify" it away.
+	if ((eff.trigger as { type: string }).type === 'manual') {
+		push(
+			'strict',
+			'manual-trigger',
+			'`manual` is a retired trigger and reaches no surface — state when the effect fires (one effect per in-game source), or retire it to the host description + _curatorNotes (docs/manual-trigger-retirement.md)',
+			location
+		);
+	}
+
 	// (B.9) procCooldown not on passive trigger
 	if (eff.trigger.type === 'passive' && eff.procCooldown !== undefined) {
 		push(

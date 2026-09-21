@@ -265,6 +265,34 @@
 					"stat": "normalDmgBonus",
 					"value": 20,
 					"snapshottable": false
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"damageType": "elemental",
+						"source": "others",
+						"armedFor": 12.55,
+						"icdGate": "none"
+					},
+					"procCooldown": 2.3,
+					"scaling": 15,
+					"stat": "hp",
+					"element": "hydro",
+					"application": [
+						{
+							"frame": 1,
+							"element": "hydro",
+							"units": 1
+						}
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"attribution": "The Overflow"
 				}
 			],
 			"description": "Raising her weapon on high, Candace calls upon a divine blessing that deals AoE Hydro DMG based on her Max HP and continuously confers the Prayer of the Crimson Crown on your active character.\n\nPrayer of the Crimson Crown\nThis effect has the following properties:\n·Characters deal increased Elemental DMG with their Normal Attacks.\n·Whenever a character takes the field, they will unleash a rippling wave of water that deals Hydro DMG to nearby opponents. There is a limited number of waves that can be triggered in the duration of this skill.\n·Sword, Claymore, and Polearm-wielding characters under this effect will obtain a Hydro Infusion.",
@@ -343,19 +371,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Inherited manual trigger — probable trigger: onHit with elemental normal attack (AttackTagNormal, element not Physical/NoElement) by the active non-Candace character while burst is active. gcsim cons.go c6: subscribes to OnEnemyDamage, checks active char != Candace, burstKey active, c6 ICD not active. ICD: 138 frames = 2.3s. Deals hydro burst DMG = 15% of Candace MaxHP. Reviewer to rewrite trigger and add procCooldown: 2.3."
-			],
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 15,
-					"stat": "hp",
-					"element": "hydro"
-				}
+				"Inherited manual trigger — probable trigger: onHit with elemental normal attack (AttackTagNormal, element not Physical/NoElement) by the active non-Candace character while burst is active. gcsim cons.go c6: subscribes to OnEnemyDamage, checks active char != Candace, burstKey active, c6 ICD not active. ICD: 138 frames = 2.3s. Deals hydro burst DMG = 15% of Candace MaxHP. Reviewer to rewrite trigger and add procCooldown: 2.3.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: The Overflow — effects[0] (damage, 15% `hp`, hydro) RE-TRIGGERED and RE-HOMED onto the burst ability. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `cons.go:34-78` — `OnEnemyDamage` gated on `AttackTagNormal` (cons.go:38), element not Physical/NoElement (cons.go:41), actor is the active character (cons.go:44), actor is not Candace (cons.go:47), `burstKey` active (cons.go:50) and a 138f ICD (cons.go:53). `ICDTagNone`, Durability 25, `FlatDmg = 0.15 × MaxHP`, hit at `waveHitmark = 1` (`burst.go:21`). The `burstKey` window is 540f, 720f at C1 (`burst.go:54-57`), started at `burstHitmark` = 33f (`burst.go:60-65`). `_curatorNotes` on the C6 entry must retain that the effect now lives on the burst because that is where its window is, and that `armedFor: 12.55` is `burstHitmark` 33f + the C1-extended 720f status — C6 implies C1, so the 12s form is the only one reachable at this gate (the Faruzan C6 \"C6 implies C2\" precedent). ⚠️ `source: \"others\"` is the exact reading of gcsim's two actor checks (active AND not Candace) — our normal-attack hits are by construction the active character's, so `'others'` adds only the not-Candace half, and it refuses entity-delivered hits. `damageType: \"elemental\"` depends on the parser resolving the burst's own granted Hydro infusion per swing (Radiance-window round), which is what makes a melee wielder's normals qualify; a bow/catalyst holder qualifies on their own element. `icdGate: \"none\"` is gcsim's `ICDTagNone` and must be authored — omission would mean \"standard\", which is wrong. The burst's other unauthored wave source (on-swap waves, `burstSwap`, capped at 3) is a different mechanic with no trigger and stays noted only."
 			],
 			"description": "When characters (excluding Candace herself) affected by the Prayer of the Crimson Crown caused by Sacred Rite: Wagtail's Tide deal Elemental DMG to opponents using Normal Attacks, an attack wave will be unleashed that deals AoE Hydro DMG equal to 15% of Candace's Max HP.\nThis effect can trigger once every 2.3s and is considered Elemental Burst DMG."
 		}
