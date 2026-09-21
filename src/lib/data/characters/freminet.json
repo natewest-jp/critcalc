@@ -155,19 +155,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"trigger: 'manual' is inherited from generator. In gcsim this is an always-active AttackMod (duration -1, permanent) filtering ability name prefix 'Pressurized Floe: Shattering Pressure', granting +15% CRIT Rate to those attacks only. Likely not a triggered buff in the traditional sense — reviewer to decide whether to model as a passive-style attack modifier or a triggered condition on ability type."
-			],
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": { "type": "manual" },
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critRate",
-					"value": 15,
-					"snapshottable": false
-				}
+				"trigger: 'manual' is inherited from generator. In gcsim this is an always-active AttackMod (duration -1, permanent) filtering ability name prefix 'Pressurized Floe: Shattering Pressure', granting +15% CRIT Rate to those attacks only. Likely not a triggered buff in the traditional sense — reviewer to decide whether to model as a passive-style attack modifier or a triggered condition on ability type.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1: Dreams of the Foamy Deep — effects[0] (buff critRate 15) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/freminet/cons.go:23-40` — a permanent AttackMod (`NewBase(c1Key, -1)`) that returns `CR = 0.15` only when `strings.HasPrefix(atk.Info.Abil, pressureBaseName)`, i.e. for the \"Pressurized Floe: Shattering Pressure\" hits alone. Retained: that this is an ability-scoped CRIT Rate bonus with no stat to carry it, and must replace the inherited \"reviewer to decide whether to model as a passive-style attack modifier\" line — that decision is made and the answer is no. ⚠️ This is the brief's own worked example. `Stat` has no ability-scoped CRIT member (`critRate` is the recipient's whole kit), and `trigger.filter` scopes WHEN a buff fires, never WHAT it buffs — so any authoring prints a flat +15% CRIT Rate on Freminet's always-on chip, which is false for his normals, charged, plunge, the stack-building Pressurized Floe presses and his burst. ⚠️ Note that the scope is narrower than \"the skill class\": Shattering Pressure is the release variant, so even a hypothetical `skillCritRate` would over-claim."
 			],
 			"description": "The CRIT Rate of Pressurized Floe: Shattering Pressure will be increased by 15%."
 		},

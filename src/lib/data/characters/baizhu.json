@@ -281,19 +281,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Inherited manual trigger. Likely onHit (OnEnemyDamage) filtered to active character; 5s ICD (gcsim: c2ICDKey 60*5=300 frames). Gossamer Sprite: Splice is ElementalSkill DMG, 250% ATK, Dendro. Also includes C2 healing (20% of Universal Diagnosis heal amount, not authored as effect)."
-			],
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 250,
-					"stat": "atk",
-					"element": "dendro"
-				}
+				"Inherited manual trigger. Likely onHit (OnEnemyDamage) filtered to active character; 5s ICD (gcsim: c2ICDKey 60*5=300 frames). Gossamer Sprite: Splice is ElementalSkill DMG, 250% ATK, Dendro. Also includes C2 healing (20% of Universal Diagnosis heal amount, not authored as effect).",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2: Incisive Discernment — effects[0] (damage, 250% `atk`, dendro) carried `trigger: manual` and reached no surface. gcsim: `cons.go:25-74` — a permanent `OnEnemyDamage` subscription registered at character init, gated only on \"the hit's actor is the active character\" and a 300f (5s) status; it is bound to no cast and no summon, so there is no window to arm a listener from. Retained: the measurements, since the damage is deleted and they are the only record: `ICDTagElementalArt` / `ICDGroupBaizhuC2`, Durability 25 (1U), Mult 2.5, hit reusing `skillFirstHitmark`, 5s ICD (`c2ICDKey`), and — the load-bearing part — that the proc registry can only arm from a cast (`armedFor`) or a summon's liveness (`sim/procs.ts` `armCastProcs`/`armSummonProcs`), while this listener is permanent, so no `application[]` could ever be dispatched. ⚠️ ⚓ The C2's HEAL half is a separate, genuinely authorable claim this round leaves on the table — a `heal` effect reaches a real facet chip, badge and coverage row in the Team Builder (`effectCapability` maps `heal`; only `damage` maps to nothing). `20% of Universal Diagnosis's heal` at TL10 = `0.2 × (14.4% Max HP + 1694.9546)`:"
 			],
 			"description": "When your own active character hits a nearby opponent with their attacks, Baizhu will unleash a Gossamer Sprite: Splice.\nGossamer Sprite: Splice will initiate 1 attack before returning, dealing 250% of Baizhu's ATK as Dendro DMG and healing for 20% of Universal Diagnosis's Gossamer Sprite's normal healing.\nDMG dealt this way is considered Elemental Skill DMG.\nThis effect can be triggered once every 5s."
 		},

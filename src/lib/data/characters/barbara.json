@@ -304,18 +304,9 @@
 			"name": "Gleeful Songs",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"amount": 1
-				}
-			],
 			"_curatorNotes": [
-				"trigger: 'manual' inherited from generator — probable trigger is periodic (10s interval). Target scope: self. No conditions or stack cap. Reviewer should update to appropriate trigger type."
+				"trigger: 'manual' inherited from generator — probable trigger is periodic (10s interval). Target scope: self. No conditions or stack cap. Reviewer should update to appropriate trigger type.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 Gleeful Songs — effects[0] (energy self, amount 1) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/barbara/cons.go:11-16` + `barbara.go:49` — `c1(1)` is started from `Init()` and self-requeues a task every `10*60` frames forever; it is unconditional, untriggered wall-clock regen. Retained: `_curatorNotes` must keep: periodic self-energy, 1 per 10s from the start of combat (gcsim `cons.go:11-16`, self-requeueing task, no gate); RETIRED because no periodic non-summon trigger exists and `passive` would print \"+1 Energy\" with the cadence — the only load-bearing part — silently dropped. The `description` already states it verbatim. ⚠️ none — the corpus has zero `passive`-triggered `energy` effects, so nothing else depends on this shape."
 			],
 			"description": "Barbara regenerates 1 Energy every 10s."
 		},

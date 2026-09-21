@@ -200,28 +200,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
-					"duration": 3,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "normalFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 5 },
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 3,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "chargeFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 5 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 5
+					},
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"2026-05-09 model-mismatch cleanup: rewrote from `damage hp 5 target:enemy` (single effect) to two team buffs adding FlatDmg to Normal and Charged Attacks (`normalFlatDmg` + `chargeFlatDmg`, scaling on Layla's MaxHP × 5). gcsim c4() subscribes to event.OnEnemyHit; when a Dawn-Star-tagged character deals N or CA damage, adds FlatDmg = 0.05 * Layla.MaxHP, then removes the status 0.05s later. Status is granted to nearby party members when Shooting Stars begin firing; lasts up to 3s. Trigger remains manual: probable shape is event-based (shooting-star firing) with consumed-on-first-hit semantics — no consumption-style buff primitive matches; reviewer to wire."
+				"2026-05-09 model-mismatch cleanup: rewrote from `damage hp 5 target:enemy` (single effect) to two team buffs adding FlatDmg to Normal and Charged Attacks (`normalFlatDmg` + `chargeFlatDmg`, scaling on Layla's MaxHP × 5). gcsim c4() subscribes to event.OnEnemyHit; when a Dawn-Star-tagged character deals N or CA damage, adds FlatDmg = 0.05 * Layla.MaxHP, then removes the status 0.05s later. Status is granted to nearby party members when Shooting Stars begin firing; lasts up to 3s. Trigger remains manual: probable shape is event-based (shooting-star firing) with consumed-on-first-hit semantics — no consumption-style buff primitive matches; reviewer to wire.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 \"Starry Illumination\" — effects[0] (buff normalFlatDmg, scaling hp 5, team) and effects[1] (buff chargeFlatDmg, scaling hp 5, team) carried `trigger: manual` and reached no surface. (both). gcsim: `~/Code/gcsim/internal/characters/layla/shield.go:110-116` — inside `shootStars()`, when `stars == 4 && Cons >= 4`, every party member gets `AddStatus(c4Key, 3*60, true)`; `cons.go:18-38` then subscribes to `OnEnemyHit`, adds `0.05 * c.MaxHP()` FlatDmg to the holder's next `AttackTagNormal`/`AttackTagExtra` hit and deletes the status 0.05s later. Retained: Retain — the grant instant is the Night Star counter reaching 4 (gcsim `shield.go:79-83`, `shield.go:110-116`), and Night Stars are not modelled anywhere in our data (Layla's skill authors a `shield` Effect plus `activeDuration: 12`, no summon and no tick series), so there is no event to anchor on; the consumed-by-the-first-N/CA-hit half (`cons.go:33`) has no primitive either; restore values are 5% Max HP each on `normalFlatDmg` + `chargeFlatDmg`, team, 3s. ⚠️ none for the retirement. ⚠️ ⛔ Do not substitute `onCast ability:\"skill\"` as a stand-in — Shooting Stars fire when the star counter fills, which depends on teammates' skill casts and the 1.5s Night Star tick, not on Layla's cast; an `onCast` bar would be minutes wrong in a real rotation. ⚠️ Not a DEFER: a Night Star resource is not a named, queued primitive."
 			],
 			"description": "When Nights of Formal Focus starts to fire off Shooting Stars, it will grant all nearby party members the Dawn Star effect, causing their Normal and Charged Attack DMG to increase based on 5% of Layla's Max HP.\nDawn Star can last up to 3s and will be removed 0.05s after dealing Normal or Charged Attack DMG."
 		},

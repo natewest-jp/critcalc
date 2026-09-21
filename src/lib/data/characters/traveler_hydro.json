@@ -434,21 +434,11 @@
 			"name": "Tides of Justice",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "heal",
-					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 6,
-					"stat": "hp"
-				}
-			],
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Cresting Onslaught' (the E-CD-reset beta effect never shipped) to release C6 'Tides of Justice' (genshin-db 5.2.12); deleted the A6 2026-07-12 rename flag this resolves.",
 				"Heal authored: 6% of the RECEIVER's Max HP per Sourcewater Droplet picked up, targeting the lowest-HP% party member, scales with the Traveler's Healing Bonus — gcsim traveler/common/hydro/cons.go:71-95 (c6: HealTypePercent 0.06), fired from asc.go:63-65 inside a1PickUp. The heal Effect's stat 'hp' nominally reads as the holder's Max HP and target 'team' as everyone — both approximations are caveated; pickup has no schema trigger, so the trigger is manual (Sigewinne C2 precedent).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — same pickup class as A1: FROZEN out of scope, `manual` trigger (no bar, no marker, no chip), and heals have no planner lane anyway. ⚠️ Same TB residue as Qiqi C4 — `target: 'team'` on an inert effect makes the Team Builder claim a party-wide heal — but a caveat cannot reach that card (N17), so this is a data ruling for Nate, not text worth 262px in the Notes panel. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — same pickup class as A1: FROZEN out of scope, `manual` trigger (no bar, no marker, no chip), and heals have no planner lane anyway. ⚠️ Same TB residue as Qiqi C4 — `target: 'team'` on an inert effect makes the Team Builder claim a party-wide heal — but a caveat cannot reach that card (N17), so this is a data ruling for Nate, not text worth 262px in the Notes panel. Category: invisible-omission.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — effects[0] (heal 6% hp, team) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/traveler/common/hydro/cons.go:72-91` — `c6()` walks the party, picks the lowest `CurrentHPRatio()` and heals THAT ONE character `HealTypePercent 0.06` of their own Max HP; it is called from inside `a1PickUp` (`asc.go:64-66`), i.e. on the same unreachable pickup. Retained: one ally is healed — the lowest remaining HP%, for 6% of THEIR Max HP, scaling with the Traveler's Healing Bonus (`cons.go:79-90`) — and neither half is expressible: no `EffectTarget` names the lowest-HP member, and `stat: 'hp'` reads as the HOLDER's Max HP. Retiring this also clears the `target: 'team'` residue flagged for Nate, which had the Team Builder badging a party-wide heal for a one-ally heal (the Qiqi C4 class; a caveat cannot reach that card, N17). ⚠️ ⚠️ This is a SCOPE call, not a trigger call — the trigger half is solved, since the A1 anchor above reaches the identical event. If Nate accepts the breadth over-claim, the restore is one line: the A1 spec with `\"target\":\"team\"`, `\"scaling\":6` and the C6 condition. ⛔ `target: 'active'` is not the fix — the receiver is whoever is lowest, which is frequently not the character on field."
 			],
 			"description": "When the Traveler picks up a Sourcewater Droplet, they will restore HP to a nearby party member with the lowest remaining HP percentage based on 6% of said member's Max HP."
 		}

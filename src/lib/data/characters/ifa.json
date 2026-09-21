@@ -337,20 +337,9 @@
 			"name": "Oath on a Feathered Knot",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 120,
-					"stat": "atk",
-					"element": "anemo"
-				}
-			],
 			"_curatorNotes": [
-				"C6 confirmed against gcsim PR #2639 cons.go c6OnHoldAttackSkill (Base.Cons < 6 guard): on Hold Supporting Fire, 50% chance (Rand > 0.5 skip) to fire an extra 'Tonic Shot C6' at Mult 1.2 = 120% ATK Anemo, tagged AttackTagNormal (Normal Attack DMG). Tap Supporting Fire cannot proc it. Kept as a manual-trigger damage effect: the 50% probability and Hold-only gating are not expressible in the schema, so it is not auto-fired to avoid over-rendering at 100% rate. The C6 extra Tonicshot deals damage only (no healCB in gcsim), so no heal is authored for it."
+				"C6 confirmed against gcsim PR #2639 cons.go c6OnHoldAttackSkill (Base.Cons < 6 guard): on Hold Supporting Fire, 50% chance (Rand > 0.5 skip) to fire an extra 'Tonic Shot C6' at Mult 1.2 = 120% ATK Anemo, tagged AttackTagNormal (Normal Attack DMG). Tap Supporting Fire cannot proc it. Kept as a manual-trigger damage effect: the 50% probability and Hold-only gating are not expressible in the schema, so it is not auto-fired to avoid over-rendering at 100% rate. The C6 extra Tonicshot deals damage only (no healCB in gcsim), so no heal is authored for it.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — Oath on a Feathered Knot — effects[0] (damage, atk 120 anemo) carried `trigger: manual` and reached no surface. gcsim: `ifa/cons.go:64-104` — `c6OnHoldAttackSkill` returns early on `c.Core.Rand.Float64() > 0.5` (line 69), else queues one \"Tonic Shot C6\" (`Mult: 1.2`, Anemo, `Durability: 25`, `AttackTagNormal`) 12 frames later, and only if `nightsoulState.HasBlessing()` still holds. Retained: `description` keeps the mechanic. Keep the curator note's measured facts (gcsim `c6OnHoldAttackSkill`, Mult 1.2, `AttackTagNormal`, Hold-only, damage-only with no `healCB`) and REPLACE its closing sentence — \"Kept as a manual-trigger damage effect … not auto-fired\" is no longer true once the effect is gone; the reason is now the standing ruling that a coin flip is never drawn at 100% uptime (Ayaka C1 precedent), plus damage magnitudes having no pixel. ⚠️ none. Authoring it as an `onHit` proc with an `application[]` would paint an Anemo pip on every Hold Tonicshot, i.e. at double the in-game rate — exactly the over-render the original curator refused."
 			],
 			"description": "When Ifa uses the Hold version of his **Supporting Fire**, there is a 50% chance that he will fire an additional Tonicshot that deals 120% of Ifa's ATK as Anemo DMG. This DMG is considered Normal Attack DMG.\nAdditionally, when he is not in combat, Ifa will consume 20% less Nightsoul points and Phlogiston in his Nightsoul's Blessing state."
 		}

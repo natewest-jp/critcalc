@@ -412,19 +412,8 @@
 			"constellationLevel": 4,
 			"_curatorNotes": [
 				"Current-patch C4 addition (article evidence, no gcsim source available): the departure explosion deals +100% DMG if Klee is on-field when it lands. Own-hit DMG multiplier — not authored; the 555% ATK scaling below is unchanged. The on-field-at-landing wording is ambiguous in the source article (Klee has just left the field to trigger it), so no caveat was written for it — needs kit-text confirmation.",
-				"Inherited manual trigger — do not rewrite. Probable trigger: onSwap, fires when Klee swaps off-field while burst status ('kleeq') is active. gcsim: event.OnCharacterSwap checks kleeq duration > 0, deletes status, then queues 5.55× ATK AoE Pyro hit (attack type: none, not burst-tagged). Fires at 0-frame delay. Target scope: enemies near Klee's position at time of swap."
-			],
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 555,
-					"stat": "atk",
-					"element": "pyro"
-				}
+				"Inherited manual trigger — do not rewrite. Probable trigger: onSwap, fires when Klee swaps off-field while burst status ('kleeq') is active. gcsim: event.OnCharacterSwap checks kleeq duration > 0, deletes status, then queues 5.55× ATK AoE Pyro hit (attack type: none, not burst-tagged). Fires at 0-frame delay. Target scope: enemies near Klee's position at time of swap.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 — Sparkly Explosion — effects[0] (damage 555% atk, pyro) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/klee/burst.go:126-150` — `event.OnCharacterSwap` fires only while `Status.Duration(\"kleeq\") > 0`; it deletes the status and, at Cons ≥ 4, queues one `AttackTagNone` / `ICDTagNone` Pyro hit, Durability 50 (2U), Mult 5.55, at 0-frame delay. Retained: fires at Klee's swap-out while Sparks 'n' Splash is live (the burst summon already carries `terminatesOn: \"swap\"`, so the instant IS modelled), 555% ATK, Pyro at Durability 50 = 2U, `ICDTagNone`, 0-frame delay — the uncounted application is a 2U Pyro at the swap. Keep the unresolved first note (the +100% \"on field at landing\" clause still needs kit-text confirmation). ⚠️ `onSwapOut` exists in the `Trigger` union but has no CHARACTER-side reader — `buffWindows.ts:1632-1700`'s `processWeaponEffects` walks `weapon.passive.effects` only, and there is no `getCharacterEffectsForSwap*` collector beside the seven in `effectCollection.ts`. Authoring `onSwapOut` here would replace one dead channel with another. A `damage` effect also reaches the aura only through the three proc triggers (`PROC_TRIGGERS`, procs.ts:70), which does not include it."
 			],
 			"description": "If Klee leaves the field during the duration of Sparks 'n' Splash, her departure triggers an explosion that deals 555% of her ATK as AoE Pyro DMG."
 		},

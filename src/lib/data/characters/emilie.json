@@ -272,17 +272,10 @@
 			"id": "emilie__passive__lingering_fragrance",
 			"name": "Lingering Fragrance",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 600,
-					"stat": "atk",
-					"element": "dendro"
-				}
-			],
-			"description": "Each time it collects 2 Scents, the Level 2 Lumidouce Case will consume Scents and release Cleardew Cologne that deals AoE Dendro DMG equal to 600% of Emilie's ATK to opponents. This DMG is not considered Elemental Skill DMG."
+			"description": "Each time it collects 2 Scents, the Level 2 Lumidouce Case will consume Scents and release Cleardew Cologne that deals AoE Dendro DMG equal to 600% of Emilie's ATK to opponents. This DMG is not considered Elemental Skill DMG.",
+			"_curatorNotes": [
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Lingering Fragrance — effects[0] (damage atk 600, dendro) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/emilie/lumidouce.go:120-146` — `lumidouceScentCollect` polls every 0.5s; at `scent >= 2` it either levels the Case up or, at Level 2, calls `a1()` (`asc.go:20-45`: spend 2 Scents, Dendro / Durability 25 / `ICDTagNone`, `Mult: 6`, hitmark 18f). Scents themselves come from `lumidouceOnBurning` (`lumidouce.go:83-118`): a 0.5s poll that grants one Scent behind a 2s cooldown **only while an opponent in range `IsBurning()`**. Retained: `_curatorNotes` must record what was refused and why: the Cologne is a real 1U Dendro application on no ICD, but its resource has no expressible accrual — Scent generation is gated on a **Burning** opponent, and `Condition` has no Burning member (`enemyAffectedBy` takes an `AuraElement`); the cadence is a 0.5s poll behind a 2s cooldown, not any trigger we own; and the Level-2 prerequisite plus the 8s `lumidouceScentResetKey` decay are two more unexpressible gates. An `onStack` threshold on a `summonTick`-granted key would have to invent both the cadence (1.5s tick vs 2s cooldown) and the Burning gate, and ungated it would claim Cologne damage in every party. Keep the `description`. ⚠️ none — retiring removes nothing on screen. ⚠️ Do not \"fix\" this later by hanging a `gainStacks` off the Case's 1.5s tick: that pairs our series with a cadence gcsim runs on a separate poll, and drops the Burning condition that is the whole mechanic."
+			]
 		},
 		{
 			"id": "emilie__passive__rectification",

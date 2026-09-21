@@ -376,26 +376,8 @@
 			"faction": "hexerei",
 			"name": "Secret Rite",
 			"description": "When 2+ Hexerei members are in the team, gaining an Electro Sigil while already at the 3-Sigil cap calls down a lightning strike (150% of ATK as Electro DMG) that restores 7 Energy to Razor, at most once per second.",
-			"effects": [
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
-					"procCooldown": 1,
-					"amount": 7,
-					"_curatorNotes": [
-						"gcsim asc.go:50-89 (thunderFallCB): gated on IsHexerei && GetHexereiCount() >= 2 → count-gated Secret Rite. AddEnergy('razor-surge-of-lightning', 7) queued at 74f; hexereiICDKey held for 60+74f, so the next proc is possible 1s after the energy lands → procCooldown 1.",
-						"Trigger is manual because the real trigger is sigil overflow (skill.go:207-217: c.sigils > 3 → clamp to 3 + thunderFallCB), and the sigil counter is not schema-expressible. The accompanying 150% ATK Electro strike is not authored (damage-only enhancement).",
-						"gcsim does not gate thunderFallCB on the Wolf Within burst status, though the in-game text is reported as 'while Lightning Fang is active'. No burst-state condition authored — flagged as an uncertainty rather than guessed."
-					]
-				}
+			"_curatorNotes": [
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). factionBonuses[hexerei] \"Secret Rite\" — effects[0] (energy amount 7) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/razor/skill.go:215-218` — inside `addSigil()`, `if c.sigils > 3 { c.sigils = 3; c.thunderFallCB() }`; `asc.go:50-89` then gates on `IsHexerei && GetHexereiCount() >= 2`, queues the 150% ATK strike and `AddEnergy(\"razor-surge-of-lightning\", 7)` at 74f behind a `60+74`-frame ICD. Sigils come from a skill-press hit (`skill.go:121`) and, at C6 outside burst, the Lupus Fulguris strike (`cons.go:97-102`). Retained: the three facts the curator already pinned and that are still true — the count gate (`GetHexereiCount() >= 2`), the 1s effective proc cooldown derivation (`60+74`f ICD vs the 74f energy delay), and the open uncertainty that gcsim does **not** gate `thunderFallCB` on the Wolf Within status though the in-game text reportedly does. Add why it cannot be authored: the trigger is *overflow at the cap*, and the sigil counter is unmodelled on Razor. ⚠️ ⚓ I checked `onStack` and it cannot express this, structurally, not merely for want of a sigil resource: the fire **spends the set**, whereas Razor's sigils stay pinned at 3 after the strike (`c.sigils = 3`), so a fire at N would re-arm only after N more grants instead of on the very next one; and lint B.16 caps `count` at the keys' summed `max`, which is 3, while the overflow is by definition the *fourth* grant. The near-miss re-trigger, `{\"type\":\"onHit\",\"abilityType\":\"skill\",\"filter\":{\"damageTag\":\"skill\"}}` (Razor C4's own filter, which correctly excludes Hold-E), would fire on **every** press — 4× the true rate at C0, 2× at C6 — to buy one Team Builder detail-card line, since `energy` draws nothing in the planner. ⚠️ Retiring leaves `\"effects\": []` on the faction entry; that is already the shipped shape on klee, nicole and varka, C.16 only checks that `factionBonuses` is non-empty, and the entry keeps its name + description."
 			]
 		}
 	],

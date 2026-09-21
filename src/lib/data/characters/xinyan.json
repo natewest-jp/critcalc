@@ -229,22 +229,9 @@
 			"name": "Impromptu Opening",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critRate",
-					"value": 100,
-					"snapshottable": false
-				}
-			],
 			"_curatorNotes": [
-				"Inherited manual trigger. In gcsim this is a permanent AttackMod (not an onCast buff): applies +100% CRIT Rate only to burst Physical DMG hits (filters AttackTagElementalBurst + Physical element in cons.go c2()). Not a general critRate buff. Probable trigger: always-on conditional AttackMod when C2 is active — no standard onCast/onHit trigger fits directly. C2 also creates Level 3 shield at burstShieldStart=43f on burst cast (gcsim burst.go); not in effects. Reviewer to decide trigger and correct scope."
+				"Inherited manual trigger. In gcsim this is a permanent AttackMod (not an onCast buff): applies +100% CRIT Rate only to burst Physical DMG hits (filters AttackTagElementalBurst + Physical element in cons.go c2()). Not a general critRate buff. Probable trigger: always-on conditional AttackMod when C2 is active — no standard onCast/onHit trigger fits directly. C2 also creates Level 3 shield at burstShieldStart=43f on burst cast (gcsim burst.go); not in effects. Reviewer to decide trigger and correct scope.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 Impromptu Opening — effects[0] (buff critRate 100) carried `trigger: manual` and reached no surface. and the same clause's SECOND source is authorable and must be authored in its place (see SPEC). gcsim: `internal/characters/xinyan/cons.go:52-68` (`c2`) is a permanent `AddAttackMod` returning `CR +1.0` only when `atk.Info.AttackTag == AttackTagElementalBurst` AND `atk.Info.Element == attributes.Physical` — i.e. the burst's initial hit only, not its seven Pyro DoT ticks. The shield half is `burst.go:88-93`: at `burstShieldStart` = 43f it calls `updateShield(3, defFactor)`, which builds a `shield.XinyanSkill` for `12*60` frames (`skill.go:138-154`). Retained: (a) the deleted CRIT: +100% CRIT Rate on Riff Revolution's PHYSICAL hit only (gcsim's two-way tag+element filter), not on its Pyro DoT, unauthorable because the `Stat` union has no burst- or physical-scoped CRIT member and a `passive` trigger would print a flat +100% CRIT Rate on the always-on chip; and (b) that the shield values are Shield Level 3 (Rave) at talent level 10 from the sidecar row \"Shield Level 3 DMG Absorption\" 10th value, \"259.2% DEF+1524\" (gcsim `shieldLevel3[9]` = 2.592, `shieldLevel3Flat[9]` = 1524.29), that it spawns at `burstShieldStart` = 43f, and that no `label` is authored because Xinyan's shield genuinely has no in-game name (⛔ never invent one). ⚠️ ⚠️⚠️ In game this is ONE shield slot — `updateShield` writes the same `shield.XinyanSkill` for both the skill and the burst (`skill.go:153`), so a `E Q` rotation replaces the Level-1 shield with the Level-3 one, while our shield lane would draw TWO overlapping 12s bars (`durationType: 'refresh'` merges refreshes within one host, not across two abilities). That is a display question for Nate, not a data error — the alternative is no bar at all for a shield the player really gets. ⚠️ Lint B.8a is STRICT here: a shield effect on a constellation MUST set `trigger.ability`, or it registers a window on both the skill and the burst. ⚠️ No stat collision — the burst's `effects[]` is currently empty."
 			],
 			"description": "Riff Revolution's Physical DMG has its CRIT Rate increased by 100%, and will form a shield at Shield Level 3: Rave when cast."
 		},

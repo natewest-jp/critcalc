@@ -333,15 +333,6 @@
 			"constellationLevel": 2,
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 500,
-					"stat": "em"
-				},
-				{
 					"type": "buff",
 					"target": "team",
 					"trigger": {
@@ -372,7 +363,8 @@
 			],
 			"_curatorNotes": [
 				"Inherited manual trigger. C2 augments Pale Hymn via c2PaleHymnScalingBloom() (adds EM×5 FlatDmg to Bloom/Hyperbloom/Burgeon hits) and c2PaleHymnScalingLunarBloom() (adds EM×4 FlatDmg to LunarBloom hits), applied inside the initBurst() OnEnemyHit listener alongside Pale Hymn consumption. Probable trigger: onHit with AttackTag condition {Bloom, Hyperbloom, Burgeon, LunarBloom}, active during burstKey window. Effect skeleton has one entry (500% Bloom path) but the 400% LunarBloom path is missing — needs a second effect entry.",
-				"Moonsign Ascendant Gleam +40% Lunar-Bloom DMG authored 2026-05-09 against the new lunarBloomDmgBonus stat + teamFaction runtime resolution (B work). Trigger keyed on Q cast with constellation:2 + teamFaction:moonsign,min:2 conditions. Duration set to 15s (Pale Hymn / burst window default); gcsim c2Init applies the AddReactBonusMod for the burst's active window. Re-check duration if a cleaner 'burst-active' state primitive lands."
+				"Moonsign Ascendant Gleam +40% Lunar-Bloom DMG authored 2026-05-09 against the new lunarBloomDmgBonus stat + teamFaction runtime resolution (B work). Trigger keyed on Q cast with constellation:2 + teamFaction:moonsign,min:2 conditions. Duration set to 15s (Pale Hymn / burst window default); gcsim c2Init applies the AddReactBonusMod for the burst's active window. Re-check duration if a cleaner 'burst-active' state primitive lands.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 \"Twine Warnings and Tales From the North\" — effects[0] (damage scaling 500 em) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/lauma/burst.go:85` — inside `initBurst()`'s `OnEnemyHit` listener, while Pale Hymn stacks are live, `ae.Info.FlatDmg += em * c.c2PaleHymnScalingBloom()` (= EM × 5) is added to Bloom/Hyperbloom/Burgeon/BountifulCore hits, and `burst.go:88` adds EM × 4 to `AttackTagDirectLunarBloom` hits (`cons.go:104-119`). Retained: (a) that this is a per-REACTION-instance flat-DMG add-on (`FlatDmg`, gcsim's bucket), **not** an `elevate` and **not** a `*ReactionBonus` — conflating it with either would put it in the wrong damage bracket; and (b) that the `Stat` member it needs does not exist. The union has only `lunarCrystallizeFlatDmg` in that family, whose own doc says \"the other lunar / classical-reaction flavors will be added on demand\" — this kit is the demand (`bloomFlatDmg` / `hyperbloomFlatDmg` / `burgeonFlatDmg` / `lunarBloomFlatDmg`), and minting four Stat members is a round, not a retirement. ⚠️ ⛔ **Do not act on the existing note's instruction to \"add a second effect entry\" for the 400% Lunar-Bloom path** — that would author a second dead effect. ⚠️ Note also that the BASE Pale Hymn bonus (`burst.go:84`/`:87`, `bloomDmgIncrease`/`lunarBloomDmgIncrease` off the burst's own talent table) is equally unauthored — Lauma's burst has `effects: []` — so C2's increment has no sibling to attach to and would read as a bonus on a bonus that is not drawn. C2's other effect (the +40% `lunarBloomDmgBonus` Moonsign buff, `effects[1]`) is unaffected and stays."
 			],
 			"description": "The Elemental Burst **Runo: All Hearts Become the Beating Moon** is enhanced:\n· **Pale Hymn** effects are increased: All nearby party members' Bloom, Hyperbloom, and Burgeon DMG is further increased by 500% of Lauma's Elemental Mastery, and their Lunar-Bloom DMG is further increased by 400% of Lauma's Elemental Mastery.\n\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Bloom DMG is increased by 40%."
 		},
@@ -422,26 +414,6 @@
 			"constellationLevel": 6,
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 185,
-					"stat": "em",
-					"element": "dendro"
-				},
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 150,
-					"stat": "em",
-					"element": "dendro"
-				},
-				{
 					"type": "elevate",
 					"target": "team",
 					"trigger": {
@@ -470,7 +442,8 @@
 			"_curatorNotes": [
 				"First effect (185% EM, LunarBloom): Frostgrove Sanctuary ticks trigger an additional LunarBloom hit at 185% EM (c6OnFrostgroveTick, c6SkillHitName='Frostgrove Sanctuary C6'). Up to 8× per sanctuary (c6Count cap), resets on skill recast. Provides Lauma 2 Pale Hymn stacks (addC6PaleHymnCB) per trigger. Periodic trigger tied to sanctuary ticks — not a standard onCast/onHit pattern; reviewer to decide trigger representation.",
 				"Second effect (150% EM, LunarBloom): when Lauma performs Normal Attack with Pale Hymn stacks > 0, consumes 1 stack and the normal attack becomes LunarBloom DMG ×150% EM (attack.go C6 branch at top of Attack()). Probable trigger: onCast with ability normalAttack + condition Pale Hymn > 0; target self. Not a buff applied to external hits — Lauma's own N is converted.",
-				"Third effect: Moonsign Ascendant Gleam +25% Lunar-Bloom Elevation team-wide (c6ElevationBonus=0.25, gcsim subscribes OnEnemyHit, filters AttackTagDirectLunarBloom). Authored 2026-05-10 as an `elevate` effect (target=team, reactions=lunarBloom, gated on Cons:6 + Moonsign:2)."
+				"Third effect: Moonsign Ascendant Gleam +25% Lunar-Bloom Elevation team-wide (c6ElevationBonus=0.25, gcsim subscribes OnEnemyHit, filters AttackTagDirectLunarBloom). Authored 2026-05-10 as an `elevate` effect (target=team, reactions=lunarBloom, gated on Cons:6 + Moonsign:2).",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 \"I Offer Blood and Tears to the Moonlight\" — effects[0] (damage scaling 185 em, dendro) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/lauma/cons.go:176-208` — `c6OnFrostgroveTick()` queues an extra `AttackInfo{ Abil: \"Frostgrove Sanctuary C6\", AttackTag: AttackTagDirectLunarBloom, Element: Dendro, Mult: 1.85, UseEM: true, **Durability: 0** }` (`cons.go:193`) on each Sanctuary tick, capped at 8 per Sanctuary (`c6Count`), reset by a skill recast (`c6OnSkill`). Retained: the 8-per-Sanctuary cap, the reset on skill recast, and the 2 Pale Hymn stacks it grants (`addC6PaleHymnCB`) — the mechanically live half, which is unreachable while Pale Hymn itself is unmodelled. ⚓ The verdict is already corroborated in-repo: the Frostgrove Sanctuary summon tick's own curator note states \"its AttackInfo has Durability 0 — it applies nothing and does not change this series' cadence or count, so no constellation-gated variant is authored.\" ⚠️ A re-trigger *is* expressible — `{\"type\":\"onHit\",\"abilityType\":\"skill\",\"filter\":{\"abilityName\":\"Frostgrove Sanctuary\"}}`, the exact shape Lauma's C4 already uses to ride the same ticks (a summon tick's hit record carries the summon's label as `abilityName`, `finalize.ts:645`) — but it would draw **nothing**: a `damage` effect reaches a surface only through a measured `application[]`, and Durability 0 means the honest array is `[]`. ⛔ Never author a non-empty `application[]` here to buy a pip; it would put a Dendro tick in the aura lane that the game does not apply.\n\n↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 \"I Offer Blood and Tears to the Moonlight\" — effects[1] (damage scaling 150 em, dendro) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/lauma/attack.go:51-61` — at C6 with `paleHymnCount() > 0` her Normal Attack's own `AttackInfo` is **rewritten in place** (`Abil: \"Normal C6 Pale Hymn\"`, `AttackTag: AttackTagDirectLunarBloom`, `Mult: 1.5`, `UseEM: true`, `ICDTag: ICDTagNone`, **`Durability: 0`**) and one stack is consumed. It is a conversion, not an added instance. Retained: that this is a CONVERSION of her own normal (`attack.go:51`), so the interesting consequence is that her swings stop applying Dendro (Durability 25 → 0), and that it is gated on Pale Hymn stacks, which are unmodelled. Drop the note's \"Probable trigger: onCast with ability normalAttack\" — `onCast` takes only `'skill' | 'burst'`. ⚠️ ⛔ Do not author this as a `damage` effect on an `onHit abilityType:'normal'` trigger — it would claim an *extra* hit where the game *replaces* one, and a `damage` effect draws nothing anyway. The honest shape is a state-gated sibling normal ability (the Lauma deer / Spiritcall Prayer pattern) plus a Pale Hymn stack resource; that is a character round, not this one."
 			],
 			"description": "When the **Frostgrove Sanctuary** attacks opponents, it will deal 1 additional instance of AoE Dendro DMG equal to 185% of Lauma's Elemental Mastery. This DMG is considered Lunar-Bloom DMG. This instance of DMG will not consume any **Pale Hymn** stacks and will provide Lauma with 2 stacks of Pale Hymn, as well as refreshing the duration of Pale Hymn stacks gained in this manner.\nThis effect can occur up to 8 times during each Frostgrove Sanctuary. When using the Elemental Skill **Runo: Dawnless Rest of Karsikko**, all Pale Hymn stacks gained in this manner will be removed.\n\nAdditionally, when Lauma uses a Normal Attack while she has Pale Hymn stacks, she will consume 1 stack to convert this to deal Dendro DMG equal to 150% of her Elemental Mastery. This DMG is considered Lunar-Bloom DMG.\n\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Bloom DMG is **elevated** by 25%."
 		}

@@ -203,18 +203,10 @@
 			"name": "Special Franchise",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 50,
-					"stat": "atk"
-				}
-			],
 			"_curatorNotes": [
 				"trigger: 'manual' inherited from generator — reviewer to assign correct trigger type (fires when Jinni heals the connected character during burst).",
-				"Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete."
+				"Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 Special Franchise — effects[0] (damage atk 50) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/dori/burst.go:96-116` — six tasks at `120*i + 11` each heal the active character and, at `burst.go:101-103`, call `c.c2(c2Travel)`; `cons.go:19-42` queues the Jinni Toop (Electro, `Durability: 25`, `ICDTagDoriC2`, `Mult: 0.5`, travel 10f). Retained: the Toop rides the burst's SIX heal ticks (gcsim `120*i + 11`, i.e. 0.18s then every 2s across the 12s connection), Electro 1U each, `ICDTagDoriC2`, 10f travel — a real six-application Electro stream the aura lane does not draw. Also retain that the firing event is a HEAL, and `onHeal` has no reader anywhere in this codebase (it is on the brief's dead-trigger list beside `manual`), so there is no trigger to move it to. ⚠️ The restore path is NOT one of this round's two deferred primitives. It needs the Jinni authored as a `summons[]` entry on the burst with a `summonTick` damage series at `interval: 2`, `firstTickDelay: 0.183` — which the burst's own curator note deliberately declined (\"duration-bounded self-status on the connected active character, not a spawned entity\"). ⚠️ If that is ever reversed, the burst's existing `heal`/`energy` effects (both `onCast burst`, `duration: 12`, per-tick values) must move with it or the same six ticks get counted twice."
 			],
 			"description": "When you are in combat and the Jinni heals the character it is connected to, it will fire a Jinni Toop from that character's position that deals 50% of Dori's ATK DMG."
 		},

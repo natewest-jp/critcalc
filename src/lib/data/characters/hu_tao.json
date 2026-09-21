@@ -394,24 +394,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"description": "Upon defeating an enemy affected by a Blood Blossom that Hu Tao applied herself, all nearby allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 15s.",
-			"effects": [
-				{
-					"type": "buff",
-					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "manual"
-					},
-					"duration": 15,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critRate",
-					"value": 12,
-					"snapshottable": false
-				}
-			],
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onTargetDied category): manual trigger preserved because enemy-death state is null-resolving in the planner (no enemy HP/death simulation). gcsim event is OnTargetDied filtered to enemies carrying Hu Tao's bbDebuff status. Re-evaluate if a death-tracking primitive ever lands. Duration / target / value are correct.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The missing team CRIT Rate bar. The effect IS authored (target `teamExcludingSelf`, 15s, +12% critRate) on a `manual` trigger, which per N1 reaches no planner surface at all — no bar, no chip, no toggle. A C4 Hu Tao owner looking at the team buff rows for a 15s crit bar finds a blank, and the second sentence tells them why so they stop hunting. Correctly gated: it only shows to readers at C4+. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The missing team CRIT Rate bar. The effect IS authored (target `teamExcludingSelf`, 15s, +12% critRate) on a `manual` trigger, which per N1 reaches no planner surface at all — no bar, no chip, no toggle. A C4 Hu Tao owner looking at the team buff rows for a 15s crit bar finds a blank, and the second sentence tells them why so they stop hunting. Correctly gated: it only shows to readers at C4+. Category: expected-but-absent.",
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 \"Garden of Eternal Rest\" — effects[0] (buff critRate 12, teamExcludingSelf) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/hutao/cons.go:68-93` — `c4()` subscribes to `event.OnTargetDied`, checks the dead enemy carries `bbDebuff` (Hu Tao's own Blood Blossom), then adds +12% CR for 900f to every party member except Hu Tao. Retained: Retain — the gcsim event is `OnTargetDied` filtered to enemies carrying `bbDebuff` (cons.go:71-78); the planner has no enemy HP or death simulation, so there is no instant to anchor on; duration 15s / target `teamExcludingSelf` / value 12 were correct and are the restore numbers if a death-tracking primitive ever lands. ⚠️ none. ⚠️ This is NOT a DEFER — enemy death is not one of the two named, queued primitives, and nothing in `docs/` or the engine queue names it."
 			]
 		},
 		{
