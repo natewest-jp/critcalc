@@ -1322,3 +1322,53 @@ describe('onHit buffs that listen to the party’s hits', () => {
 		expect(echo(run('Mate E', [picky(['hydro', 'cryo']), mate()]))).toEqual([]);
 	});
 });
+
+// A `consumeStacks` fired by a TEAMMATE's hit spends the key in the container
+// it lives in (2026-09-21). It used to write `onHitStacks` whatever the key, so
+// a rotation-scoped pool seeded by the holder's own cast — Illuga's
+// Nightingale's Song, spent by the active character's Geo hits — was never
+// drained by anyone but the holder.
+describe('consumeStacks on a teammate’s hit — spent at the key’s home', () => {
+	const holder = (): CharacterData => {
+		const c = mkChar('singer', 'Singer', { element: 'hydro' });
+		c.abilities[2] = mkBurst('singer', {
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: { type: 'onCast', ability: 'burst' },
+					key: 'song',
+					amount: 5,
+					max: 5,
+					scope: 'rotation'
+				},
+				{
+					type: 'consumeStacks',
+					target: 'self',
+					trigger: { type: 'onHit', source: 'active', filter: { element: 'pyro' } },
+					conditions: { type: 'stacks', key: 'song', min: 1 },
+					key: 'song',
+					amount: 1
+				}
+			]
+		});
+		return c;
+	};
+	const songAtLastCast = (notation: string, mate: CharacterData): number | undefined => {
+		const { rotation } = run(notation, [holder(), mate]);
+		const casts = rotation.events.flatMap((e) =>
+			e.kind === 'cast' && e.characterId === 'singer' ? [e] : []
+		);
+		return casts[casts.length - 1].stackContext?.get('song');
+	};
+
+	it('two Pyro casts from the active teammate spend two', () => {
+		const pyro = mkChar('mate', 'Mate', { element: 'pyro' });
+		expect(songAtLastCast('Singer Q > Mate E ~8s E > Singer E', pyro)).toBe(3);
+	});
+
+	it('⛔ a hit the filter refuses spends nothing', () => {
+		const cryo = mkChar('mate', 'Mate', { element: 'cryo' });
+		expect(songAtLastCast('Singer Q > Mate E ~8s E > Singer E', cryo)).toBe(5);
+	});
+});
