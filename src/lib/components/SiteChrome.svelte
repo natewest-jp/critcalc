@@ -240,9 +240,13 @@
 	.chrome-beta {
 		position: relative;
 		top: -0.5em; /* 🎛️ ⚓ NATE 2026-09-16 */
-		font-family: var(--font-mono);
+		/* ⚓ BODY, not mono (⚓ Nate 2026-09-21) — it is set as one voice with
+		   the landing cards' kickers. ⚠ --fw-semibold is a REAL 600 on the
+		   variable body face; this was --fw-bold on mono, where 700 folded to
+		   that same 600 against a static cut. */
+		font-family: var(--font-body);
 		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
+		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		line-height: 1;
