@@ -442,7 +442,11 @@ describe('onHit damage procs — the coordinated attack that answers damage', ()
 		// ↻ Retimed 2026-09-16 (T0.5): Oz's `firstTickDelay` gained gcsim's
 		// `ozTravel` (10 frames), which every tick's damage carries, so every
 		// Oz-derived instant below moves by exactly 0.17s and nothing else does.
-		expect(eye).toEqual([0.92, 3.58, 6.53, 9.48]);
+		// ↻ Retimed 2026-09-21 (cast hit-record round): the old first strike, 0.92,
+		// answered Raiden's own BUTTON PRESS — her cast's hit record fired at the
+		// press, 51 frames before it landed. The first strike now answers Oz's tick
+		// at 1.53, which is what this test always claimed to show.
+		expect(eye).toEqual([1.62, 4.57, 7.52]);
 		// Every gap is the standard window, which is what the absent gate says.
 		for (let i = 1; i < eye.length; i++) expect(eye[i] - eye[i - 1]).toBeGreaterThan(2.4);
 	});
@@ -456,13 +460,17 @@ describe('onHit damage procs — the coordinated attack that answers damage', ()
 
 	it('⚓ hears ANOTHER proc’s landing, though — one field triggers the next', () => {
 		// A proc's own damage re-enters the stream, and gcsim agrees. Albedo's E
-		// cast fires a Transient Blossom at frame 40; Raiden's Eye, armed at 39,
-		// answers the BLOSSOM four frames later. Nothing else hits in this rotation.
-		expect(measuredTicks('Albedo E > Raiden E ~10s', 'Solar Isotoma')).toEqual([0.67]);
-		expect(measuredTicks('Albedo E > Raiden E ~10s', 'Eye of Stormy Judgment')).toEqual([0.73]);
+		// lands at 189 and Raiden's Eye answers it at 194; the Isotoma spawned AT
+		// 189, by that hit, so the only thing it can have heard is the Eye's strike
+		// — one frame later. Nothing else hits in this rotation.
+		// ↻ Rewritten 2026-09-21 (cast hit-record round): the old rotation had the
+		// Blossom answering Raiden's button PRESS, 51 frames before her E landed.
+		const rot = 'Raiden E ~2s > Albedo E ~10s';
+		expect(measuredTicks(rot, 'Eye of Stormy Judgment')).toEqual([0.93, 3.23]);
+		expect(measuredTicks(rot, 'Solar Isotoma')).toEqual([3.25]);
 		// ⚓ And it stops there, because neither hears ITSELF. gcsim's Albedo and
 		// Dehya do, which is why theirs tick forever with no player input.
-		expect(appsOf('Albedo E > Raiden E ~10s', 'albedo')).toHaveLength(2);
+		expect(appsOf(rot, 'albedo')).toHaveLength(2);
 	});
 
 	it('⚓ Beidou takes only the active character’s normals and chargeds', () => {

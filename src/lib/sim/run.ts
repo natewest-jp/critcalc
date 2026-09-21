@@ -94,6 +94,7 @@ import {
 import {
 	applyDrain,
 	applyLifetimeExpiry,
+	applyRotationLifetimeExpiry,
 	dispatchConsumeStacks,
 	dispatchConsumeStacksOnHit,
 	dispatchGainStacks,
@@ -177,6 +178,13 @@ export function runRotation(
 	lookupChar: (name: string) => CharacterData | null
 ): number {
 	const clock = createClock();
+	// ⚓ WHICH TURN IS ON FIELD, observed live (cast hit-record round, 2026-09-21).
+	// A cast's hit can land after its caster's turn is over — a closure queued in
+	// turn `i` asks `liveSegment === i` before it touches that turn's stack pool.
+	// ⚠️ The turn, not the character: a second consecutive segment of one character
+	// mints a fresh pool too. The swap frames at a turn's tail still belong to it,
+	// which is the same instant `lastSwapOutAt` stamps.
+	let liveSegment = -1;
 
 	for (let i = 0; i < segments.length; i++) {
 		const tokens = segments[i];
@@ -222,6 +230,7 @@ export function runRotation(
 		// at the bottom of the previous iteration has drained everything before
 		// this instant, so no pending task can fire under the wrong owner.
 		ctx.activeCharId = char.id;
+		liveSegment = i;
 
 		const track: CharacterTrack = {
 			characterId: char.id,
@@ -421,9 +430,19 @@ export function runRotation(
 		// settled at the cast instant). The hit's `stacks` snapshot is post-gain
 		// pre-consume (the cast `stackContext` convention); cast-site hits carry
 		// the cast's own snapshot instead (pre-set by the caller).
-		const dispatchHit = (hit: HitEvent, settle: boolean): void => {
+		//
+		// ⚓ `live` is false for ONE caller: a cast whose hit lands after its caster
+		// left the field (cast hit-record round, 2026-09-21 — Amber's Bunny, Klee's
+		// mines). This segment's pool is dead by then, and the on-field character's
+		// is somebody else's, so the stack dispatchers get the NULL pool a summon
+		// tick gets — same ruling, same reason (`stacks.ts`' header), and the same
+		// expiry-first step `dispatchEntityHitStacks` takes in place of a settle.
+		const dispatchHit = (hit: HitEvent, settle: boolean, live = true): void => {
 			if (ctx.team.teamHasOnHitStackEffects) {
-				if (settle) settleStacksAt(hit.time);
+				if (!live) {
+					for (const holder of ctx.team.teamChars)
+						applyRotationLifetimeExpiry(holder, hit.time, ctx.getCharState);
+				} else if (settle) settleStacksAt(hit.time);
 				// One resolver for every holder (self included) — onHit condition
 				// eval gets uniform state semantics regardless of who holds the
 				// effect (holderStatesAt's summon check is broader than the
@@ -433,7 +452,7 @@ export function runRotation(
 				// ⚠️ A live segment pool HERE and null on the summon-tick chain — the
 				// hitter is the on-field character by construction at every one of
 				// this function's four call sites.
-				const segPools = { state: stackState, instances: stackInstances };
+				const segPools = live ? { state: stackState, instances: stackInstances } : null;
 				dispatchGainStacksOnHit(
 					ctx.team.teamChars,
 					hit,
@@ -443,7 +462,8 @@ export function runRotation(
 					segPools,
 					(t) => polestarFieldOpenAt(ctx.stellarConductTimes, t)
 				);
-				if (hit.stacks === undefined && stackState.size > 0) hit.stacks = new Map(stackState);
+				if (live && hit.stacks === undefined && stackState.size > 0)
+					hit.stacks = new Map(stackState);
 				dispatchConsumeStacksOnHit(
 					ctx.team.teamChars,
 					hit,
@@ -455,7 +475,12 @@ export function runRotation(
 				// A hit is one of the four places a count moves (stack-threshold
 				// round, 2026-09-18). Inside the guard on purpose: with no onHit
 				// stack effect on the team, a hit cannot move a count.
-				checkStackThresholds(ctx, clock, hit.time, { charId: char.id, pools: segPools });
+				checkStackThresholds(
+					ctx,
+					clock,
+					hit.time,
+					segPools ? { charId: char.id, pools: segPools } : null
+				);
 			}
 			// A hit is where a `cooldownReduce` most often fires (Varka's Secret
 			// Rite, Raiden C6, Sara C1). Outside the stack guard — it has its own
@@ -793,11 +818,21 @@ export function runRotation(
 				// right-hand claymore. Resolved from the same `application[]` the
 				// gauge is fed (variant's replaces the base's, the array rule), so the
 				// pill and the aura lane's first pip cannot disagree.
+				const castApps = variant?.application ?? active.application;
 				{
-					const castApps = variant?.application ?? active.application;
 					const first = resolveElementRef(castApps?.[0]?.element, variantCtx);
 					if (first !== undefined && first !== char.element) castEvent.element = first;
 				}
+				// ⚓ The cast's FIRST LANDING (cast hit-record round, 2026-09-21): the
+				// earliest entry of the NOMINAL list — ⛔ not of the ICD-gated one, a
+				// hit its counter suppressed still landed (contract C4), and ⛔ not
+				// only the elemental ones, a physical opener (Xinyan's burst) is the
+				// cast's first hit. The first of several on one frame, in list order.
+				const firstLanding =
+					castApps && castApps.length > 0 && !castIsNonHitting(active, variant)
+						? castApps.reduce((a, b) => (b.frame < a.frame ? b : a))
+						: undefined;
+				if (firstLanding) castEvent.firstHitAt = castStart + firstLanding.frame;
 				ctx.events.push(castEvent);
 				ctx.castRecords.push({ ev: castEvent, track });
 				charCasts.push(castEvent);
@@ -1250,20 +1285,48 @@ export function runRotation(
 				// 2026-09-16): a stance opener, a heal, a gadget spawn whose ticks
 				// carry their own hits. The one gate for the stack dispatchers, the
 				// artifact `onHit` branch and the damage-proc stream at once.
+				//
+				// ⚓⚓ AT THE CAST'S FIRST LANDING, NOT AT THE PRESS (cast hit-record
+				// round, 2026-09-21) — §1.K's twin. The record used to fire here,
+				// synchronously, while the same cast's `application[]` was queued at
+				// its hitmark: one cast's damage in two places, and an ORDER INVERSION
+				// for every damage proc listening (C6 Faruzan's Collapse landed at
+				// cast + 33f, the burst hit that fired it at cast + 54f). Queued at
+				// `Band.LAND` AFTER `emitReactionsAtCast` queued the application at the
+				// same (frame, band), so FIFO lands application → hit record — the
+				// order a swing's one closure has.
+				// ⚠️ The record carries the CAST's stack snapshot, ⛔ never a re-read
+				// at the landing: a context is a moment (§1.K).
+				// ⚠️ No landing stated (unmeasured, or a hit at Durability 0) keeps
+				// the synchronous path verbatim — no frame to move to, no mark.
 				if (char.element && !castIsNonHitting(active, variant)) {
-					dispatchHit(
-						{
-							characterId: char.id,
-							time: castStart,
-							abilityType: kind,
-							element: char.element,
-							damageTag: getDefaultDamageTag(active, variant),
-							abilityName: variant?.label ? `${active.name} ${variant.label}` : active.name,
-							stacks,
-							sourceEventId: castId
-						},
-						false
-					);
+					const hit: HitEvent = {
+						characterId: char.id,
+						time: castStart,
+						abilityType: kind,
+						element: char.element,
+						damageTag: getDefaultDamageTag(active, variant),
+						abilityName: variant?.label ? `${active.name} ${variant.label}` : active.name,
+						stacks,
+						sourceEventId: castId
+					};
+					if (firstLanding && firstLanding.frame > 0) {
+						const at = castStart + firstLanding.frame;
+						hit.time = at;
+						// The landed hit's OWN element (⛔ not the caster's): absent is a
+						// physical hit, and Varka's opener names the party's.
+						hit.element = resolveElementRef(firstLanding.element, variantCtx);
+						const turn = i;
+						clock.schedule(at, Band.LAND, () => {
+							// ⚓ A landing after the caster's turn ended is OFF FIELD: null
+							// pool, and refused by `source: 'active'` (see `HitEvent.offField`).
+							const live = liveSegment === turn;
+							if (!live) hit.offField = true;
+							dispatchHit(hit, true, live);
+						});
+					} else {
+						dispatchHit(hit, false);
+					}
 				}
 				// Dispatch onCast durationExtensions on the (possibly just-opened)
 				// stance owner. Cyno's burst-stance + in-stance E recast fires here.

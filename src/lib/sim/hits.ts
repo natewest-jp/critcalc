@@ -30,15 +30,18 @@ import { evalTriggerFilter } from '$lib/types/ability';
  *    swing produces exactly one hit. Effects that count hits without a
  *    procCooldown will undercount on multi-hit swings — a documented
  *    approximation until a `NormalHit.hitCount` consumer appears.
- *  - **`time`** — E/Q casts: the cast start (legacy convention). Actions:
+ *  - **`time`** — E/Q casts: the cast's FIRST LANDING (cast hit-record round,
+ *    2026-09-21) — the earliest entry of its nominal `application[]`, which is
+ *    `CastEvent.firstHitAt`; the cast start when it states none. Actions:
  *    the swing's LANDING (§1.K, 2026-09-20) — `landsAt(frames)` from the
  *    swing's start, which is its hitmark. ⚠️ A map that states no landing
  *    frame, or a swing cancelled before it, keeps the swing END
  *    (`actionEvent.time + duration`), the placement every swing had before
  *    that round. The application and this record are ONE instant by
  *    construction — `run.ts`'s `landSwing` hands both over as one closure.
- *  - **`element` ABSENT ⇒ physical** (the ActionEvent convention). Cast
- *    hits always carry the caster's element.
+ *  - **`element` ABSENT ⇒ physical** (the ActionEvent convention). A cast
+ *    hit carries its first landed `application[]` entry's element, or the
+ *    caster's when the cast states no landing.
  *  - `damageTag`/`abilityName`/`isCrit` mirror the renderer's
  *    `resolveCastContext`/`resolveBlockContext` conventions so
  *    `evalTriggerFilter` gating agrees across both surfaces.
@@ -70,6 +73,14 @@ export type HitEvent = {
 	 * `source: 'active'` needs this flag rather than a name check.
 	 */
 	viaEntity?: true;
+	/**
+	 * ⚓ A CAST'S HIT THAT LANDED AFTER ITS CASTER LEFT THE FIELD (cast hit-record
+	 * round, 2026-09-21) — Amber's Bunny at 530f, Klee's mines, Mona's bubble. The
+	 * character still landed it (⛔ not `viaEntity`: that routes a hit into the
+	 * summon-tick passes, and this is the cast's own), but it is not the ACTIVE
+	 * character's hit, which is gcsim's `ActorIndex == Player.Active()` test.
+	 */
+	offField?: true;
 };
 // NB: the type export above is for the parser-side buff-window derivation
 // (`buffWindows.ts`) ONLY — hit records remain OUTSIDE the public IR event
@@ -93,7 +104,7 @@ export function onHitTriggerMatches(
 	// ⚓ `'active'` is `'team'` minus what an ENTITY delivered. A cast or swing hit
 	// is the on-field character's by construction, so this one clause is the whole
 	// of the distinction — see the source doc on the trigger.
-	if (srcMode === 'active' && hit.viaEntity) return false;
+	if (srcMode === 'active' && (hit.viaEntity || hit.offField)) return false;
 	if (trigger.abilityType !== undefined) {
 		// Array form matches any listed class under one effect (one shared
 		// procCooldown clock — Escoffier C6's NA/CA/PL 0.5s ICD).
