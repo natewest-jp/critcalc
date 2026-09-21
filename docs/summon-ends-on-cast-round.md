@@ -62,6 +62,12 @@ chain — fails the Ring case.
 ## 4. ⏭ Open
 
 - **Gorou's BUFF bar still draws through Glory** (`cast:skill def`, 34–634f).
+  ↻ ✅ **SCOPED 2026-09-21** — `docs/summon-bound-buffs-round.md` §2.2. ⚓ Nate:
+  cut it at its provider's death. ⚠️⚠️ But gcsim is sharper than "cut it": the
+  buff is a 0.3s re-application loop handing out a **2s** mod that stops when
+  **BOTH** fields are down (`skill.go:95-128`), so the honest end is field + 2s
+  and ⛔ it must NOT be cut at the banner's death while the Glory is up —
+  `E ~3s Q` is ONE continuous bar.
   A cast-anchored buff has no tie to its summon's life — that is a different
   primitive ("a buff that ends with the field that grants it"), and ⛔ it must
   not be inferred from the cut: most cast buffs beside a summon are NOT the

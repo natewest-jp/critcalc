@@ -306,5 +306,7 @@ Gates: vitest 1954 · check · lint · build green; e2e in the merge commit.
   the swing's end, as the first always did.
 - ⏭ The dumper runs C0 in an empty core — a constellation that adds a hit to a
   swing is invisible (§2's caveat stands).
-- ⏭ Nate, on screen: the aura lane's pips on an infused string (more of them, per
-  §4's "if the lane gets busy").
+- ✅ **ANSWERED 2026-09-21 (⚓ Nate, judgment pass): the pip density on an infused
+  string is fine** — measured 13 Pyro pips over 11.7s on `Bennett Q > Xiangling
+N1 N2 N3 ×3 C` at Bennett C6, "totally fine — looks quite good". ⛔ §4's
+  "if the lane gets busy" contingency is spent; don't re-open it on this shape.

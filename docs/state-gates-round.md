@@ -243,13 +243,21 @@ site), 5 + 2 on the `'active'` fix (all Qiqi). No timing change on
 
 ### 6.7 ⏭ Open, for Nate
 
-- **A buff whose gate is the stance its own cast opened outlives an EARLY
-  stance exit.** Measured `Skirk E N1 > Furina …`: the stance ends at the swap
-  (33f) and the A4 bar still runs 0–754f; same for Varka's A1 and Zibai's C2
-  (all three author `duration` = the stance length, i.e. co-extensive in
-  spirit). Not a regression — `main` does the same. Two candidate fixes: clamp
-  a positively-gated, self-opened effect's end to that window's final end, or
-  re-author the three as `onState` (whose span IS the window) once `onState`
-  has a self-target surface. It is a display call.
-- A label-qualified `duringSummon` (Columbina's Domain vs Ripple), only if a
-  second holder needs it.
+- ⛔⛔ **RESOLVED 2026-09-21 AND THE ANSWER IS "DO NOT BUILD THE CLAMP."** This
+  item read: "a buff whose gate is the stance its own cast opened outlives an
+  EARLY stance exit" (`Skirk E N1 > Furina …`: stance ends at 33f, the A4 bar
+  runs 0–754f). ⚓ Nate approved cutting it **"if that is the behavior
+  in-game"** — and gcsim says it is not. Skirk's A4 is _Death's Crossing_, 20s
+  per teammate hit with **no stance in it at all** (`skirk/asc.go:106`);
+  Varka's A1 is a **permanent** `modifier.NewBase(…, -1)` (`varka/asc.go:32`);
+  Zibai is absent from gcsim. The stance-length `duration` is a stand-in for
+  the MAGNITUDE, never a claim about the window, so a clamp would fix the end
+  we can see and worsen the one we cannot. ⏭ The real fix is per character:
+  Varka A1 → `passive` + `scaling atk` (authorable today); Skirk A4 → an
+  `onHit` buff on a TEAMMATE's hit, blocked on the queued cross-character
+  `onHit` defect. Full reasoning: `docs/summon-bound-buffs-round.md` §1.
+- ✅ **A label-qualified `duringSummon` — the second holder ARRIVED** (Gorou's
+  DEF bar, 2026-09-21), so this is scoped: `docs/summon-bound-buffs-round.md`
+  §3. Columbina's C6 takes `source: 'burst'` (gcsim gates it on
+  `ReactBonusModIsActive(burstBuffKey)`, `cons.go:232` — the Domain, not the
+  Ripple).

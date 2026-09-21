@@ -304,9 +304,9 @@ proc's field gate · drop the field fact from `infusionAt`. `notationParser.ir
 
 ### 7.6 ⏭ Open
 
-- **For Nate, on screen:** the split block (an unlabelled continuation beside
-  the labelled first run), and the Star's lane inside a field (crystal marks
-  riding the swings, the interval marks gone).
+- ✅ **BOTH SCREEN CALLS ANSWERED 2026-09-21 (⚓ Nate, judgment pass):** the
+  split block ("reads well — approved") and the Star's lane inside a field
+  ("looks good"). ⛔ Neither is open; don't re-raise them.
 - The other Radiance holders keep their standing gates — a per-character call
   (§3.5). `enemyAffectedBy` is still unresolved off the gauge (its "cannot
   simulate aura" comment has been stale since L5).
