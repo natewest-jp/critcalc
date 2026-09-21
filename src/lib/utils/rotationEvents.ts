@@ -108,6 +108,19 @@ export type CastEvent = {
 	/** Cast start plus the summon spawn offset (FRAMES). Equals `time`
 	 *  when the ability spawns nothing. */
 	fieldStart: number;
+	/**
+	 * The frame (absolute) this cast's FIRST hit lands — the earliest entry of its
+	 * NOMINAL `application[]` (cast hit-record round, 2026-09-21). The cast's hit
+	 * record is dispatched there, and an `onHit skill|burst` effect anchors there.
+	 *
+	 * ⚠️ Absent when the cast has no landing to state: an unmeasured cast (no
+	 * `application[]`), a hit at Durability 0 (`application: []`), a non-hitting
+	 * cast. Those keep the cast instant — the same "no landing, no move, no
+	 * provisional mark" rule a swing follows (§1.K).
+	 * ⚓ PUBLISHED, not re-derived: finalize cannot recover the resolved variant's
+	 * list from the token, and a second resolution is how two readers drift.
+	 */
+	firstHitAt?: number;
 	/** True when a Sacrificial-series proc fired on this cast (CD reset to 0);
 	 *  the bar renders as a dim continuation instead of uptime + ghost CD. */
 	sacProcFired?: boolean;

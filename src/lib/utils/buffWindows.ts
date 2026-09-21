@@ -268,6 +268,29 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		return parts;
 	};
 
+	// ⚓ A CAST POOL'S PARTS, EACH WITH ITS ANCHOR (cast hit-record round,
+	// 2026-09-21). One pool holds a cast's `onCast` AND `onHit` effects; the first
+	// open where they always did (`fieldStart`), the second where the cast's first
+	// hit LANDS (`CastEvent.firstHitAt` — the instant the live hit record fires
+	// at, published by the parse so no second resolution of the variant's
+	// `application[]` happens here). ⚠️ Split by anchor only where the two
+	// instants genuinely differ, so a cast that states no landing — unmeasured, or
+	// a hit at Durability 0 — draws exactly the windows it drew before.
+	const partitionCastPool = <T extends Effect>(
+		effects: readonly T[],
+		cast: CastEvent
+	): Array<{ anchor: number; part: T[] }> => {
+		const hitAt = cast.firstHitAt;
+		if (hitAt === undefined || hitAt === cast.fieldStart)
+			return partitionByDuration(effects).map((part) => ({ anchor: cast.fieldStart, part }));
+		const onHit = effects.filter((fx) => fx.trigger.type === 'onHit');
+		const rest = effects.filter((fx) => fx.trigger.type !== 'onHit');
+		return [
+			...partitionByDuration(rest).map((part) => ({ anchor: cast.fieldStart, part })),
+			...partitionByDuration(onHit).map((part) => ({ anchor: hitAt, part }))
+		];
+	};
+
 	const emit = (w: Omit<BuffWindow, 'kind' | 'id'>): BuffWindow => {
 		// ⚠ Only the CHARACTER sites can carry provenance. Artifact and weapon
 		// windows are built from the loadout, not from the character's effect
@@ -704,8 +727,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								return true;
 							})
 						);
-						for (const part of partitionByDuration(barEffects)) {
-							const buffStart = cast.fieldStart;
+						for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
+							const buffStart = anchor;
 							const buffEnd = buffStart + framesOf(part[0].duration!);
 							emit({
 								characterId: track.characterId,
@@ -811,8 +834,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								return true;
 							})
 						);
-						for (const part of partitionByDuration(barEffects)) {
-							const buffStart = cast.fieldStart;
+						for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
+							const buffStart = anchor;
 							const buffEnd = buffStart + framesOf(part[0].duration!);
 							emit({
 								characterId: track.characterId,
@@ -1750,7 +1773,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							return true;
 						})
 					);
-					for (const part of partitionByDuration(barEffects)) {
+					for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
 						const firstValue = part[0].value;
 						const rampParams =
 							typeof firstValue === 'object' &&
@@ -1773,7 +1796,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 										duration: framesOf(part[0].duration!)
 									}
 								: undefined;
-						const buffStart = cast.fieldStart;
+						const buffStart = anchor;
 						const buffEnd = buffStart + framesOf(part[0].duration!);
 
 						// ⚓ HOW LONG THE RECEIVER HAS BEEN ON FIELD (Nicole, 2026-08-18).
@@ -2334,8 +2357,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							return true;
 						})
 					);
-					for (const part of partitionByDuration(barEffects)) {
-						const buffStart = cast.fieldStart;
+					for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
+						const buffStart = anchor;
 						const buffEnd = buffStart + framesOf(part[0].duration!);
 						emit({
 							characterId: sourceTrack.characterId,

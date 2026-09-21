@@ -515,10 +515,10 @@ function scheduleReactionProcs(
  * are deliberately kept out of it (L5e). A proc listener holds no stack state, so
  * it can be — and must be — notified at the hit's own clock instant.
  *
- * ⚠️ For an E/Q cast the record's `time` is the CAST START, the `HitEvent`
- * convention every `onHit` consumer already reads. It is up to a second early on
- * a slow burst; splitting it would give the corpus two answers to "when did this
- * cast hit". See docs/coordinated-attacks-round.md §5.
+ * ↻ For an E/Q cast the record's `time` is the cast's FIRST LANDING since the
+ * cast hit-record round (2026-09-21) — it was the cast start, up to a second
+ * early on a slow burst, which put a proc's landing AHEAD of the hit that fired
+ * it. One answer to "when did this cast hit", and it is the gauge's.
  */
 export function notifyDamage(ctx: SimContext, clock: Clock, dmg: DamageEvent): void {
 	if (ctx.procs.size === 0) return;

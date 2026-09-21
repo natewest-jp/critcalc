@@ -554,7 +554,9 @@ describe('a non-hitting CAST (CastAbility.nonHitting)', () => {
 		expect(shreds(c0)).toEqual([]);
 		expect(c0.applications).toEqual([]);
 		const c2 = parseCast('Stub E', stub, { stub: 2 });
-		expect(shreds(c2).map((w) => w.start)).toEqual([0]);
+		// ↻ 2026-09-21 (cast hit-record round): the shred opens where the variant's
+		// hit LANDS — the same frame its application does — not at the press.
+		expect(shreds(c2).map((w) => w.start)).toEqual([20]);
 		expect(c2.applications.map((a) => [a.time, a.element])).toEqual([[20, 'dendro']]);
 	});
 

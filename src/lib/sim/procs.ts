@@ -395,6 +395,13 @@ export function takeHitProcs(ctx: SimContext, dmg: DamageEvent, time: number): P
 		if (trig.type !== 'onHit') continue;
 		if (!isLive(l, time)) continue;
 		if (dmg.procKey === l.key) continue;
+		// ⚓ A SUMMON SPAWNED AT THE HIT'S OWN INSTANT WAS SPAWNED BY IT (cast
+		// hit-record round, 2026-09-21). Albedo's E lands at 25f and the Isotoma
+		// spawns at 25f — gcsim queues the attack BEFORE it creates the construct,
+		// and gives Dehya's field a one-frame ICD "so field cannot proc from
+		// initial attack". Unreachable while a cast's hit fired at the press; the
+		// tie only exists now that the hit lands where the summon appears.
+		if (l.tickKey !== undefined && time <= l.start) continue;
 		if (!onHitTriggerMatches(trig, dmg, l.holderId)) continue;
 		// ⚓ A proc gated on the Polestar Field is asked at the OFFER instant
 		// (Radiance-window round, 2026-09-19) — arming is optimistic about the
