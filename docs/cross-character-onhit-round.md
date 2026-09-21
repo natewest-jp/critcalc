@@ -40,10 +40,10 @@ stand-in with a caveat (T0.5, 2026-09-16).
   N/CA/P self site's shape — ⛔ not extended in place, because `duration` feeds
   the tooltip and must stay the effect's LENGTH.
 - **The row is named after the hosting passive** — `source.trigger: 'teamHit'`
-  - `hostLabel`, rendered `"Nicole Philokalia"`. The bar is no cast's of the
-    holder's, so "Nicole E" was a claim about the wrong thing (and drew the one
-    buff as two rows, E and Q). ⏭ Nate's eye: some passive names are long
-    ("Mizuki Thoughts by Day Bring Dreams by Night").
+  with a `hostLabel`, rendered `"Nicole Philokalia"`. The bar is no cast's of
+  the holder's, so "Nicole E" was a claim about the wrong thing (and drew the
+  one buff as two rows, E and Q). ⏭ Nate's eye: some passive names are long
+  ("Mizuki Thoughts by Day Bring Dreams by Night").
 - **`TriggerFilter.element` takes a list** — `abilityType`'s convention. Several
   elements under ONE effect is ONE `procCooldown` clock; four effects would have
   run four, where gcsim holds a single `a4ICDKey` for Mizuki.
