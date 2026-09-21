@@ -266,6 +266,67 @@ describe('B.18 — the retired `manual` trigger', () => {
 	});
 });
 
+describe('B.19 — an onHit buff that listens to the party’s hits', () => {
+	const teamHitBuff = (target: string) => ({
+		type: 'buff',
+		target,
+		trigger: { type: 'onHit', source: 'others' },
+		duration: 4,
+		source: 'character',
+		stat: 'em',
+		value: 100,
+		snapshottable: false
+	});
+	const stub = (where: 'skill' | 'passive', target: string) =>
+		makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { anim: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { anim: 20 },
+					cooldown: 10,
+					...(where === 'skill' ? { effects: [teamHitBuff(target)] } : {})
+				}
+			],
+			passives:
+				where === 'passive'
+					? [
+							{
+								id: 'lintstub__passive__echo',
+								name: 'Echo',
+								abilityType: 'passive',
+								effects: [teamHitBuff(target)]
+							}
+						]
+					: []
+		} as unknown as Partial<CharacterData>);
+	const checks = (c: CharacterData) => lintCharacter(c).map((i) => i.check);
+
+	it('passes a self-target buff on a passive — the one surface the pass reaches', () => {
+		const found = checks(stub('passive', 'self'));
+		expect(found).not.toContain('teamhit-buff-host');
+		expect(found).not.toContain('teamhit-buff-target');
+	});
+
+	it('refuses a cast-ability host', () => {
+		expect(checks(stub('skill', 'self'))).toContain('teamhit-buff-host');
+	});
+
+	it('refuses a target no pass anchors on the party’s hit stream', () => {
+		expect(checks(stub('passive', 'team'))).toContain('teamhit-buff-target');
+	});
+});
+
 describe('stacks condition lint rules', () => {
 	it('flags stacks condition with empty key', () => {
 		const c = makeStubCharacter({

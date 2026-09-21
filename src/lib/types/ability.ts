@@ -354,7 +354,12 @@ export type DamageTag = 'normal' | 'charged' | 'plunge' | 'skill' | 'skillHold' 
  */
 export type TriggerFilter = {
 	damageTag?: DamageTag;
-	element?: Element;
+	/** The hit's element. ⚓ The array form matches ANY listed element under ONE
+	 *  effect — and so ONE `procCooldown` clock, which is the point: Mizuki's A4
+	 *  names Pyro, Hydro, Cryo and Electro behind a single shared 0.3s cooldown,
+	 *  and four effects would have run four (cross-character onHit round,
+	 *  2026-09-21). Same convention as `abilityType`'s array form. */
+	element?: Element | Element[];
 	abilityName?: string;
 	hitIndex?: number;
 	isCrit?: boolean;
@@ -3096,7 +3101,10 @@ export function evalTriggerFilter(
 ): boolean {
 	if (!filter) return true;
 	if (filter.damageTag !== undefined && filter.damageTag !== ctx.damageTag) return false;
-	if (filter.element !== undefined && filter.element !== ctx.element) return false;
+	if (filter.element !== undefined) {
+		const elements = Array.isArray(filter.element) ? filter.element : [filter.element];
+		if (!elements.includes(ctx.element as Element)) return false;
+	}
 	if (filter.abilityName !== undefined) {
 		if (!ctx.abilityName || !ctx.abilityName.includes(filter.abilityName)) return false;
 	}

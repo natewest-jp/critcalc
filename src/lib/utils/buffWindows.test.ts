@@ -1204,3 +1204,121 @@ describe('gainStacks onSwapIn — written to the key’s home', () => {
 		expect(c1.map((n, i) => (n ?? 0) - (c0[i] ?? 0))).toEqual(c0.map(() => 1));
 	});
 });
+
+// An `onHit` buff whose trigger names a party `source` is anchored on the
+// rotation-wide hit stream, not on the holder's own casts (cross-character
+// onHit round, 2026-09-21). Before it, `source` was unread and the bar drew at
+// the holder's own E and Q — for `'others'`, exactly the hits it excludes.
+describe('onHit buffs that listen to the party’s hits', () => {
+	const selfOnHit = (trigger: Record<string, unknown>, extra: Record<string, unknown> = {}) =>
+		teamBuff({
+			target: 'self',
+			stat: 'em',
+			value: 100,
+			duration: 4,
+			trigger: { type: 'onHit', ...trigger },
+			...extra
+		});
+	const listener = (effect: Effect, skill: Record<string, unknown> = {}): CharacterData => {
+		const c = mkChar('ear', 'Ear', { element: 'anemo' });
+		c.abilities[1] = mkSkill('ear', skill);
+		c.passives = [
+			{ id: 'ear__passive__echo', name: 'Echo', abilityType: 'passive', effects: [effect] }
+		] as unknown as Ability[];
+		return c;
+	};
+	const mate = (skill: Record<string, unknown> = {}): CharacterData => {
+		const c = mkChar('mate', 'Mate', { element: 'pyro' });
+		c.abilities[1] = mkSkill('mate', skill);
+		return c;
+	};
+	const turret = {
+		summons: [
+			{
+				label: 'Turret',
+				duration: 12,
+				effects: [
+					{
+						type: 'damage',
+						trigger: { type: 'summonTick', interval: 2 },
+						element: 'pyro',
+						scaling: 100,
+						stat: 'atk'
+					}
+				]
+			}
+		]
+	};
+	const echo = (r: ReturnType<typeof run>) => r.received.filter((row) => row.characterId === 'ear');
+	const mateCastAt = (r: ReturnType<typeof run>): number =>
+		r.rotation.events.find((e) => e.kind === 'cast' && e.characterId === 'mate')!.time;
+
+	it('`others`: fires off the teammate’s hit and ⛔ not off the holder’s own casts', () => {
+		const r = run('Ear E Q > Mate E', [listener(selfOnHit({ source: 'others' })), mate()]);
+		const rows = echo(r);
+		expect(rows).toHaveLength(1);
+		// Named after the hosting passive: the bar is no cast's of the holder's.
+		expect(rows[0].sourceLabel).toBe('Ear Echo');
+		expect(rows[0].bars).toHaveLength(1);
+		expect(rows[0].bars[0].start).toBe(mateCastAt(r));
+		expect(rows[0].bars[0].end).toBe(mateCastAt(r) + framesOf(4));
+		// Seeded negative: nobody else hits, nothing draws.
+		expect(echo(run('Ear E Q', [listener(selfOnHit({ source: 'others' })), mate()]))).toEqual([]);
+	});
+
+	it('`others` hears a summon’s ticks; `active` refuses them', () => {
+		const heard = echo(
+			run('Mate E > Ear N1 ~10s', [listener(selfOnHit({ source: 'others' })), mate(turret)])
+		);
+		// Cast hit + the ticks, each inside the last one's 4s: one fused bar.
+		expect(heard[0].bars).toHaveLength(1);
+		expect(heard[0].bars[0].end - heard[0].bars[0].start).toBeGreaterThan(framesOf(10));
+
+		const refused = echo(
+			run('Mate E > Ear N1 ~10s', [
+				listener(selfOnHit({ source: 'active', damageType: 'elemental' })),
+				mate(turret)
+			])
+		);
+		// Only the cast's own hit — the active character's — and its 4s.
+		expect(refused[0].bars).toHaveLength(1);
+		expect(refused[0].bars[0].end - refused[0].bars[0].start).toBe(framesOf(4));
+	});
+
+	it('`team` hears the holder too, and draws once — the cast pool no longer sees it', () => {
+		const r = run('Ear E', [listener(selfOnHit({ source: 'team' })), mate()]);
+		const wins = r.rotation.windows.filter((w) => w.kind === 'buff' && w.characterId === 'ear');
+		expect(wins).toHaveLength(1);
+		expect(wins[0].kind === 'buff' && wins[0].source).toEqual({
+			type: 'character',
+			trigger: 'teamHit',
+			hostLabel: 'Echo'
+		});
+	});
+
+	it('the holder’s STATE is read at the teammate’s hit', () => {
+		const gated = () =>
+			listener(
+				selfOnHit({ source: 'others' }, { conditions: { type: 'state', state: 'inStance' } }),
+				{ behavior: 'stance', duration: 6 }
+			);
+		expect(echo(run('Ear E > Mate E', [gated(), mate()]))).toHaveLength(1);
+		// Same hit with the stance down: cold.
+		expect(echo(run('Mate E', [gated(), mate()]))).toEqual([]);
+		expect(echo(run('Ear E ~7s > Mate E', [gated(), mate()]))).toEqual([]);
+	});
+
+	it('an element LIST is one effect and one `procCooldown` clock', () => {
+		const picky = (element: unknown) =>
+			listener(selfOnHit({ source: 'others', filter: { element } }, { procCooldown: 3 }));
+		// Pyro is on the list; Mate's ticks land every 2s, the clock admits every other.
+		const r = run('Mate E > Ear N1 ~10s', [picky(['pyro', 'hydro']), mate(turret)]);
+		const fires = r.rotation.windows.filter((w) => w.kind === 'buff' && w.characterId === 'ear');
+		const starts = fires.map((w) => w.start);
+		expect(starts.length).toBeGreaterThan(1);
+		for (let i = 1; i < starts.length; i++)
+			expect(starts[i] - starts[i - 1]).toBeGreaterThanOrEqual(framesOf(3));
+		// Off the list: nothing.
+		expect(echo(run('Mate E', [picky(['hydro', 'cryo']), mate()]))).toEqual([]);
+	});
+});
