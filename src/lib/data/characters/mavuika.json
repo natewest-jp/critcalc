@@ -17,8 +17,26 @@
 			"tags": [],
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 40, "hit": 21, "N": 31, "C": 31 } },
-				{ "name": "N2", "frames": { "anim": 50, "hit": 26, "N": 42, "C": 42 } },
-				{ "name": "N3", "frames": { "anim": 59, "hit": 39, "N": 46, "C": 47 } },
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 50,
+						"hit": 26,
+						"lands": [14, 26],
+						"N": 42,
+						"C": 42
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 59,
+						"hit": 39,
+						"lands": [28, 33, 39],
+						"N": 46,
+						"C": 47
+					}
+				},
 				{ "name": "N4", "frames": { "anim": 61, "hit": 30, "N": 60 } }
 			],
 			"chargeFrames": {

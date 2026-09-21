@@ -34,6 +34,7 @@
 					"frames": {
 						"anim": 33,
 						"hit": 25,
+						"lands": [16, 25],
 						"C": 31
 					}
 				},
@@ -49,13 +50,14 @@
 					"name": "N5",
 					"frames": {
 						"anim": 72,
-						"hit": 27
+						"hit": 27,
+						"lands": [15, 19, 27]
 					}
 				}
 			],
 			"chargeFrames": {
 				"anim": 55,
-				"lands": 20,
+				"lands": [20, 20],
 				"E": 30,
 				"Q": 30,
 				"D": 20,

@@ -22,9 +22,16 @@
  * swing capture (its 10f default is a simulation policy, not game data). A catalyst
  * whose travel gcsim HARDCODES still carries it — reported, never stripped by guess.
  *
- * ⛔ Never writes a map that states `hit` (that tier is the hitmark already; the 82
- * multi-hit normals where it is the LAST hit are a separate, measured follow-up), a
- * `nonHitting` class, an uncovered map, or a value past `anim`.
+ * ↻ EVERY HIT, not only the first (every-landing round, 2026-09-21): a swing that
+ * lands more than one hit gets `lands` as the LIST of its own hits' frames, first to
+ * last. ICD and every `onHit` count hits. ⚠️ Two hits on ONE frame are two hits
+ * (Kaeya's charged attack: `20, 20`), ⛔ never deduped.
+ * ⛔ Never TOUCHES `hit` — but a map that states `hit` and lands more than one hit is
+ * written now, with the list BESIDE it (`hit` is gcsim's last hitmark on most of
+ * them, and stays the cancel tier). A single-hit map that states `hit` is still left
+ * alone: `hit` already says it. ⛔ Never writes a `nonHitting` class, an uncovered
+ * map, a hit past `anim`, or a `coInfusion` ability — there the two dumped hits ARE
+ * the two hands, which the engine already lands as one swing's primary + co offer.
  *
  * Usage:  node scripts/migrate-swing-landings.mjs [--write] [--char <id>] [--verbose]
  */
@@ -110,7 +117,15 @@ async function main() {
 	const prettierOptions = { ...(await resolveConfig(chars[0].file)), parser: 'json' };
 	const stats = { authored: 0, unchanged: 0, hasHit: 0, uncovered: 0, noDamage: 0, files: 0 };
 	const byGroup = {};
-	const notes = { inFlight: [], multi: [], pastAnim: [], noDamage: [], uncovered: [] };
+	const notes = {
+		inFlight: [],
+		multi: [],
+		pastAnim: [],
+		noDamage: [],
+		uncovered: [],
+		coInfusion: [],
+		ambiguous: []
+	};
 
 	for (const c of chars) {
 		const gk = gcsimKeyFor(c.data.id);
@@ -119,10 +134,6 @@ async function main() {
 		for (const m of authoredMaps(c.data, drivers[gk], dumped)) {
 			if (!m.normalStyle) continue;
 			const where = `${c.data.id} ${m.path.replace(`${c.data.id}__`, '')}`;
-			if (typeof m.frames.hit === 'number') {
-				stats.hasHit++;
-				continue;
-			}
 			const ability = (c.data.abilities ?? []).find((a) => m.path.startsWith(`${a.id}.`));
 			if (ability?.nonHitting?.[classOf(m.group)]) continue;
 			const d = m.dumpKey ? dumped?.get(m.dumpKey) : null;
@@ -165,19 +176,70 @@ async function main() {
 				continue;
 			}
 			if (own.length < apps.length || new Set(apps.map((x) => x.abil)).size > 1)
-				notes.inFlight.push(
-					`${where} — ${apps.map((x) => `${x.abil}@${x.frame}`).join(', ')} → ${own[0].frame}`
-				);
-			const lands = own[0].frame;
-			if (own.length > 1)
-				notes.multi.push(`${where} — ${own.map((x) => x.frame).join(',')} → ${lands}`);
+				notes.inFlight.push(`${where} — ${apps.map((x) => `${x.abil}@${x.frame}`).join(', ')}`);
 			// ⛔ A landing at frame 0 or past the animation is not a swing's hit — a
-			// delayed projectile, a lingering field — and no swing can land it.
-			if (lands < 1 || lands > m.frames.anim) {
-				notes.pastAnim.push(`${where} — ${own[0].abil}@${lands}, anim ${m.frames.anim}`);
+			// delayed projectile, a lingering field, a 0-damage marker — and no swing
+			// can land it. Dropped from the list and reported; a map with nothing left
+			// is not written.
+			const timely = own.filter((x) => x.frame >= 1 && x.frame <= m.frames.anim);
+			if (timely.length < own.length)
+				notes.pastAnim.push(
+					`${where} — anim ${m.frames.anim}, dropped: ${own
+						.filter((x) => !timely.includes(x))
+						.map((x) => `${x.abil}@${x.frame}`)
+						.join(', ')}${timely.length ? '' : ' — NOTHING LEFT'}`
+				);
+			if (!timely.length) continue;
+			// ⚓⚓ WHICH OF ITS OWN HITS ARE THE SWING (every-landing round). The
+			// first-hit rule never had to ask: a proc the swing fires lands AFTER it.
+			// A list does — Alhaitham's Mirror projection, Clorinde's Surging Blade,
+			// Furina's Spiritbreath Thorn and the Traveler's A1/A4 strikes all ride a
+			// swing's capture under their own names, and several are authored as
+			// effects already. A swing's hits share a NAME STEM (digits stripped:
+			// `Charge 0`/`Charge 1`, `Musou Isshin (Charge Attack 0)`/`…1)`), or one
+			// stem extends the other (`Charge Attack` / `Charge Attack (Finisher)`).
+			// With more than one stem left: the one naming this combo index as a whole
+			// word (`Normal 4`, ⛔ not `(A4)`), else the most hits, else the first —
+			// and that last case is REPORTED, never silent.
+			const stemOf = (x) => x.abil.replace(/\d+/g, '').trim();
+			const groups = [];
+			for (const x of timely) {
+				const st = stemOf(x);
+				const g = groups.find((g) => g.stem.startsWith(st) || st.startsWith(g.stem));
+				if (g) {
+					g.hits.push(x);
+					if (st.length < g.stem.length) g.stem = st;
+				} else groups.push({ stem: st, hits: [x] });
+			}
+			let swing = groups[0];
+			if (groups.length > 1) {
+				const k = nm ? new RegExp(`\\b${Number(nm[1]) - 1}\\b`) : null;
+				const named = k ? groups.filter((g) => g.hits.some((x) => k.test(x.abil))) : [];
+				const most = Math.max(...groups.map((g) => g.hits.length));
+				const biggest = groups.filter((g) => g.hits.length === most);
+				if (named.length === 1) swing = named[0];
+				else if (biggest.length === 1) swing = biggest[0];
+				else
+					notes.ambiguous.push(
+						`${where} — ${timely.map((x) => `${x.abil}@${x.frame}`).join(', ')} → took "${swing.stem}"`
+					);
+			}
+			const inside = swing.hits;
+			if (inside.length > 1 && ability?.coInfusion) {
+				notes.coInfusion.push(`${where} — ${inside.map((x) => `${x.abil}@${x.frame}`).join(', ')}`);
 				continue;
 			}
-			if (m.frames.lands === lands) {
+			const hasHit = typeof m.frames.hit === 'number';
+			if (hasHit && inside.length === 1) {
+				stats.hasHit++;
+				continue;
+			}
+			const lands = inside.length > 1 ? inside.map((x) => x.frame) : inside[0].frame;
+			if (inside.length > 1)
+				notes.multi.push(
+					`${where} — ${inside.map((x) => x.frame).join(',')}${hasHit ? ` (hit ${m.frames.hit})` : ''}`
+				);
+			if (JSON.stringify(m.frames.lands) === JSON.stringify(lands)) {
 				stats.unchanged++;
 				continue;
 			}
@@ -187,13 +249,12 @@ async function main() {
 				notes.uncovered.push(`${where} — no JSON path for this map`);
 				continue;
 			}
-			// After `anim`: the corpus's key order is `anim`, `hit`, `lands`, then the
-			// cancels, and a map that states `hit` is never written here.
+			// The corpus's key order is `anim`, `hit`, `lands`, then the cancels.
 			c.text = applyEdits(
 				c.text,
 				modify(c.text, path, lands, {
 					formattingOptions: { insertSpaces: false, tabSize: 1 },
-					getInsertionIndex: (keys) => keys.indexOf('anim') + 1
+					getInsertionIndex: (keys) => keys.indexOf(hasHit ? 'hit' : 'anim') + 1
 				})
 			);
 			stats.authored++;
@@ -224,11 +285,10 @@ async function main() {
 	section('gcsim lands no damage — NOT written', notes.noDamage);
 	section('more than one ability name in the capture — READ THESE', notes.inFlight);
 	section('uncovered — NOT written', notes.uncovered);
-	if (verbose) section('multi-hit — first hit taken', notes.multi);
-	else
-		out.write(
-			`\n${notes.multi.length} multi-hit swings took their first hit (--verbose lists them)\n`
-		);
+	section('AMBIGUOUS — two name stems, neither decided; READ THESE', notes.ambiguous);
+	section('coInfusion ability — the two hits are the two hands, NOT written', notes.coInfusion);
+	if (verbose) section('multi-hit — the full list', notes.multi);
+	else out.write(`\n${notes.multi.length} multi-hit swings state a list (--verbose lists them)\n`);
 	if (!write) out.write('\n(dry run — pass --write)\n');
 }
 

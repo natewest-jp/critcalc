@@ -36,7 +36,8 @@
 					"name": "N3",
 					"frames": {
 						"anim": 62,
-						"hit": 40
+						"hit": 40,
+						"lands": [27, 40]
 					}
 				}
 			],

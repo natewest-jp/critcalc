@@ -17,7 +17,15 @@
 			"tags": [],
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 19, "hit": 10, "N": 17 } },
-				{ "name": "N2", "frames": { "anim": 35, "hit": 15, "N": 32 } },
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 35,
+						"hit": 15,
+						"lands": [12, 15],
+						"N": 32
+					}
+				},
 				{ "name": "N3", "frames": { "anim": 69, "hit": 39, "N": 63 } }
 			],
 			"chargeHits": [

@@ -95,3 +95,36 @@ describe('a cast’s hit record lands at its first landing', () => {
 		expect(appsOf(r, 'albedo')).toEqual([[25, 'geo']]);
 	});
 });
+
+/**
+ * ⚓ EVERY LANDING IS A HIT (every-landing round, 2026-09-21 — Phase B). One swing
+ * was one hit and one cast was one record; ICD and every `onHit` count HITS. A
+ * swing's `FrameMap.lands` may be a LIST, and a cast's `application[]` always was
+ * one.
+ */
+describe('every landing is a hit', () => {
+	it('⚓⚓ a two-hit swing spends TWO slots of the every-third-hit budget', () => {
+		// C6 Bennett infuses Kazuha's sword. N1 · N2 · N3 is FOUR hits (his N3 lands
+		// two), so the standard ICD applies on hit 1 and hit 4 — the second hit of
+		// N3. Counted as three hits, the string applied once.
+		const r = parse('Bennett Q > Kazuha N3', { bennett: 6 });
+		expect(appsOf(r, 'kaedehara_kazuha')).toHaveLength(2);
+	});
+
+	it('what must NOT multiply: one action event per swing', () => {
+		const r = parse('Kazuha N5');
+		const swings = r.events.filter((e) => e.kind === 'action');
+		expect(swings).toHaveLength(5);
+		expect(swings.map((e) => (e.kind === 'action' ? e.comboIndex : null))).toEqual([0, 1, 2, 3, 4]);
+	});
+
+	it('a cast publishes every landing, and a hit-triggered window is REFRESHED by each', () => {
+		// Kujou Sara's burst: the Titanbreaker at 51, four Stormclusters at 100.
+		// Deepwood's shred is 8s from the LAST hit, opened at the FIRST.
+		const r = parse('Kujou Sara Q ~3s', {}, { kujou_sara: { artifactSetId: 'deepwood_memories' } });
+		const cast = castOf(r, 'kujou_sara');
+		expect(cast.hitsAt).toEqual([51, 100, 100, 100, 100]);
+		const shred = r.windows.filter((w) => w.kind === 'buff' && w.source.type === 'artifact');
+		expect(shred.map((w) => [w.start, w.end])).toEqual([[51, 100 + 480]]);
+	});
+});

@@ -17,7 +17,14 @@
 			"tags": [],
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 44, "hit": 27 } },
-				{ "name": "N2", "frames": { "anim": 46, "hit": 33 } },
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 46,
+						"hit": 33,
+						"lands": [19, 33]
+					}
+				},
 				{ "name": "N3", "frames": { "anim": 108, "hit": 60 } }
 			],
 			"plungeFrames": {

@@ -1,6 +1,7 @@
 # Every hit a swing lands — the multi-hit round (PLAN, 2026-09-20)
 
-_Status: **PLANNED, not started.** ⚓ Nate's decision (2026-09-20): the FULL
+_↻ Status: **SHIPPED 2026-09-21 — §7 is the record and wins over §1–§6**, which
+are the plan as it stood. Originally: PLANNED, not started. ⚓ Nate's decision (2026-09-20): the FULL
 implementation — "we need to account for all hits, and infusions do matter."
 The small option (author `lands` = first hit on the maps that state only `hit`)
 was considered and declined: it is a subset of this. Start in a fresh context,
@@ -215,3 +216,95 @@ advances (the 2026-08-17 feed-order fix), so the seam exists. New ground:
 
 ⛔ Still one at a time against `docs/projectile-travel-round.md`, which rewrites
 `landSwing` too.
+
+## 7. What shipped (2026-09-21) — every landing is a hit, swings AND casts
+
+Phase A is `docs/cast-hit-record-round.md`. This is Phase B, on
+`feat/every-landing-is-a-hit`.
+
+### 7.1 The model
+
+- **`FrameMap.lands` is `number | number[]`.** The list is the frames a swing's
+  hits land, first to last. `landsAt()` still answers "when does this swing
+  connect" (the first); 🆕 `landingsOf()` returns them all. A map that states `hit`
+  states the list BESIDE it — `hit` stays the cancel tier, untouched. Lint A.5c:
+  a list is two or more positive integers, non-decreasing (equal neighbours are
+  two hits), checked against `anim` at its LAST frame; "restates `hit`" is a claim
+  about the scalar only.
+- **`landSwing` schedules one `Band.LAND` task per landing**, each running the same
+  closure (application → co-application → hit record). Landings at or past the
+  swing's end are returned as a COUNT and landed by the caller synchronously,
+  together; an unmeasured map is one such landing (the old `false`).
+- **A cast dispatches one record per nominal `application[]` entry** — each its
+  own instant and its own element, all carrying the cast's stack snapshot, each
+  asking `liveSegment` for itself. 🆕 `CastEvent.hitsAt` beside `firstHitAt`.
+  Finalize's `partitionCastPool` opens an `onHit` part at the first landing and
+  REFRESHES it to the last (`extend`); a landing the part's `procCooldown` refuses
+  does not refresh, and a gap longer than the duration opens a second window.
+- **What does not multiply:** the action event, the input block, the wave's span,
+  `hitIndex` (the COMBO index), the swing's resolved element.
+
+### 7.2 The data — 113 lists across 70 files
+
+102 two-hit, 9 three-hit, 2 four-hit; 85 normals + 29 charged attacks (one write
+was a scalar). `scripts/migrate-swing-landings.mjs` writes them; it still never
+touches `hit`.
+
+⚓⚓ **The own-hit rule needed a THIRD clause, and the dry-run report caught it
+again.** The first-hit rule never had to ask which of a capture's own hits ARE
+the swing — a proc the swing fires lands after it. A list does: Alhaitham's Mirror
+projection, Clorinde's Surging Blade, Furina's Spiritbreath Thorn, Ayato's Kyouka
+and the Traveler's A1 / A4 strikes all ride a swing's capture under their own
+names, and several are authored as effects already. **A swing's hits share a NAME
+STEM** (digits stripped: `Charge 0` / `Charge 1`), or one stem extends the other
+(`Charge Attack` / `Charge Attack (Finisher)`); with two stems left, the one
+naming the combo index as a whole word (`Normal 4`, ⛔ not `(A4)`), else the most
+hits, else the first AND REPORTED. The shipped run reports zero ambiguous.
+Measured: the naive list moved 8 digests the stem rule does not (Alhaitham, Ayato,
+Traveler Geo).
+
+⛔ Not written: a `coInfusion` ability (the two dumped hits ARE the two hands — no
+holder reached it, Varka's stance is an oracle artefact) · a hit past `anim`
+(dropped from the list and reported — Ganyu's Frostflake Bloom, two of Lan Yan's
+three charged hits; that is the projectile-travel round's ground) · a hit at
+frame 0 (Flins's 0-damage Arcane Light).
+
+### 7.3 Measured
+
+Probe: Phase A's three rotations plus R4 (`N5 C N5 C P`, so a multi-hit N3–N5 is
+reached at all — §3's question 4: R1's `N1 N2 N3` reaches few) and R5 (the same
+strings under C6 Bennett's infusion). 1504 digests.
+
+- **Casts, against Phase A: 216 of 1002 moved.** No character's own applications
+  move (the list was always fed to the gauge). Procs get MORE OFFERS — a long
+  multi-hit burst keeps Raiden's Eye and Albedo's Blossom firing on their own
+  cooldowns (Ganyu's E + Q in R2: +3 Eye strikes, +4 Blossoms) — and a hit-triggered
+  window runs from the first landing to the last + its duration (Deepwood on
+  Sara's burst: 51 → 100 + 8s). §6.1's stack question closed by census: every
+  cast heard by an un-cooled stack grant has ONE landing.
+- **Swings: 223 of 1504 moved**, and R5 is the round's reason: **56 of 250
+  infused digests gain applications (28 characters), +1 to +5 over three strings**
+  — Kazuha 7 → 10, because his N3 (two hits), N5 (three) and charged attack (two)
+  now spend the every-third-hit budget they always spent in game. Uninfused, it
+  is the 17 elemental multi-hit normals (Heizou R4 10 → 13, Ningguang +6).
+- Cyno C6's per-hit stack buff draws a window per HIT now (15 → 18 in R4); the
+  row's refresh-merge is what a reader sees.
+- **Oracle, against Phase A:** gcsim-applies-we-do-not **50 → 46**,
+  over-application unchanged at 1, aura drift 66 → 65. ⚠️ No fixture spams an
+  INFUSED string, so the oracle cannot adjudicate the headline; the probe did.
+
+Gates: vitest 1954 · check · lint · build green; e2e in the merge commit.
+
+### 7.4 What the probe cannot see, and what is open
+
+- Un-cooled swing listeners whose count now follows hits — Varka's Secret Rite
+  (`procCap` 15 bounds it; his stance swings are `coInfusion` and unlisted anyway),
+  Yanfei's seals (her normals are single-hit), the heal-on-hit set (undrawn).
+  Alyosha's N4 gain + consume-all on `hitIndex: 3`: check his N4's hit count when
+  gcsim covers him.
+- A swing's later hits can land AFTER a cancel cut the swing: they collapse onto
+  the swing's end, as the first always did.
+- ⏭ The dumper runs C0 in an empty core — a constellation that adds a hit to a
+  swing is invisible (§2's caveat stands).
+- ⏭ Nate, on screen: the aura lane's pips on an infused string (more of them, per
+  §4's "if the lane gets busy").

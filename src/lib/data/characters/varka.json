@@ -18,14 +18,50 @@
 			"tags": [],
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 51, "hit": 24, "N": 28, "C": 27 } },
-				{ "name": "N2", "frames": { "anim": 51, "hit": 33, "N": 34, "C": 35 } },
-				{ "name": "N3", "frames": { "anim": 65, "hit": 48, "N": 60, "C": 53 } },
-				{ "name": "N4", "frames": { "anim": 52, "hit": 29, "N": 45, "C": 33 } },
-				{ "name": "N5", "frames": { "anim": 87, "hit": 50, "N": 78, "C": 53 } }
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 51,
+						"hit": 33,
+						"lands": [18, 28],
+						"N": 34,
+						"C": 35
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 65,
+						"hit": 48,
+						"lands": [27, 43],
+						"N": 60,
+						"C": 53
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 52,
+						"hit": 29,
+						"lands": [19, 24],
+						"N": 45,
+						"C": 33
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 87,
+						"hit": 50,
+						"lands": [44, 45],
+						"N": 78,
+						"C": 53
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 81,
-				"lands": 41,
+				"lands": [41, 41],
 				"N": 72,
 				"E": 73,
 				"Q": 72,

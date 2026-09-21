@@ -16,7 +16,14 @@
 			"input": ["N1", "N2", "N3", "N4", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 31, "hit": 24 } },
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 31,
+						"hit": 24,
+						"lands": [11, 24]
+					}
+				},
 				{ "name": "N2", "frames": { "anim": 28, "hit": 16 } },
 				{ "name": "N3", "frames": { "anim": 38, "hit": 23 } },
 				{ "name": "N4", "frames": { "anim": 61, "hit": 30 } }

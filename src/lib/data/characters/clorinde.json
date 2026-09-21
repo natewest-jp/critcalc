@@ -18,7 +18,15 @@
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 24, "hit": 18, "N": 19 } },
 				{ "name": "N2", "frames": { "anim": 27, "hit": 12, "N": 12 } },
-				{ "name": "N3", "frames": { "anim": 42, "hit": 32, "N": 40 } },
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 42,
+						"hit": 32,
+						"lands": [23, 32],
+						"N": 40
+					}
+				},
 				{ "name": "N4", "frames": { "anim": 35, "hit": 23, "N": 32 } },
 				{ "name": "N5", "frames": { "anim": 60, "hit": 21 } }
 			],

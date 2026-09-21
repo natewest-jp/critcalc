@@ -2023,8 +2023,15 @@ export type FrameMap = Partial<Record<ActionKey, number>> & {
 	 * `travel` default (10f) is a simulation policy and the dumper pins it to 0.
 	 * Authored from the dumper by `scripts/migrate-swing-landings.mjs`; absent
 	 * where `hit` already says it (lint A.5c).
+	 *
+	 * ↻ **A LIST when the swing lands more than one hit** (every-landing round,
+	 * 2026-09-21): the frames its hits land, first to last — read through
+	 * `landingsOf()`. ⛔ Not a separate hit COUNT: a count cannot place the second
+	 * application, and the frames imply it. ⚠️ Two hits on ONE frame are two hits
+	 * (Kaeya's charged attack is `[20, 20]`), ⛔ never a duplicate to dedupe. A map
+	 * that states `hit` states the list BESIDE it — `hit` stays the cancel tier.
 	 */
-	lands?: number;
+	lands?: number | number[];
 };
 
 /**

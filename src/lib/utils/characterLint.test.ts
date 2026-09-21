@@ -1878,8 +1878,31 @@ describe('FrameMap.lands lint rules (A.5c — §1.K stage 2, 2026-09-20)', () =>
 			.map((i) => i.message);
 
 	it('the shipped corpus shape is clean', () => {
-		expect(normalOf(keqing()).chargeFrames.lands).toBeGreaterThan(0);
+		// ↻ A LIST since the every-landing round (2026-09-21): her charged attack
+		// lands two hits, and her N4 states a list BESIDE `hit` without restating it.
+		expect(normalOf(keqing()).chargeFrames.lands).toEqual([21, 24]);
 		expect(landsIssues(keqing())).toEqual([]);
+	});
+
+	it('the LIST form: two or more frames, first to last — equal neighbours are two hits', () => {
+		const withLands = (lands: unknown) => {
+			const c = keqing();
+			(normalOf(c).chargeFrames as { lands: unknown }).lands = lands;
+			return lintCharacter(c)
+				.filter((i) => i.check === 'frame-value-invalid')
+				.map((i) => i.message);
+		};
+		expect(withLands([20, 20])).toEqual([]);
+		expect(withLands([21])).toEqual([expect.stringMatching(/chargeFrames\.lands/)]);
+		expect(withLands([24, 21])).toEqual([expect.stringMatching(/chargeFrames\.lands/)]);
+		expect(withLands([21, 0])).toEqual([expect.stringMatching(/chargeFrames\.lands/)]);
+	});
+
+	it('a list past the animation is refused at its LAST frame', () => {
+		const c = keqing();
+		const cf = normalOf(c).chargeFrames;
+		(cf as { lands: unknown }).lands = [21, cf.anim + 1];
+		expect(landsIssues(c)).toEqual([expect.stringMatching(/chargeFrames\.lands .* is past anim/)]);
 	});
 
 	it('refuses a landing past the animation', () => {

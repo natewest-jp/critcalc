@@ -276,19 +276,46 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// `application[]` happens here). ⚠️ Split by anchor only where the two
 	// instants genuinely differ, so a cast that states no landing — unmeasured, or
 	// a hit at Durability 0 — draws exactly the windows it drew before.
+	//
+	// ↻ AND EVERY LATER LANDING REFRESHES IT (every-landing round, same day): an
+	// `onHit` part spans first landing → last landing + duration, which `extend`
+	// carries to the site. A landing the part's `procCooldown` refuses does not
+	// refresh; a gap longer than the duration closes the window and opens another.
 	const partitionCastPool = <T extends Effect>(
 		effects: readonly T[],
 		cast: CastEvent
-	): Array<{ anchor: number; part: T[] }> => {
-		const hitAt = cast.firstHitAt;
-		if (hitAt === undefined || hitAt === cast.fieldStart)
-			return partitionByDuration(effects).map((part) => ({ anchor: cast.fieldStart, part }));
+	): Array<{ anchor: number; extend: number; part: T[] }> => {
+		const hitsAt = cast.hitsAt;
+		if (hitsAt === undefined || (hitsAt.length === 1 && hitsAt[0] === cast.fieldStart))
+			return partitionByDuration(effects).map((part) => ({
+				anchor: cast.fieldStart,
+				extend: 0,
+				part
+			}));
 		const onHit = effects.filter((fx) => fx.trigger.type === 'onHit');
 		const rest = effects.filter((fx) => fx.trigger.type !== 'onHit');
-		return [
-			...partitionByDuration(rest).map((part) => ({ anchor: cast.fieldStart, part })),
-			...partitionByDuration(onHit).map((part) => ({ anchor: hitAt, part }))
-		];
+		const out = partitionByDuration(rest).map((part) => ({
+			anchor: cast.fieldStart,
+			extend: 0,
+			part
+		}));
+		for (const part of partitionByDuration(onHit)) {
+			const head = part[0] as { duration?: number; procCooldown?: unknown };
+			const dur = framesOf(head.duration ?? 0);
+			const pcd = typeof head.procCooldown === 'number' ? framesOf(head.procCooldown) : 0;
+			let start = hitsAt[0];
+			let last = start;
+			for (const h of hitsAt.slice(1)) {
+				if (h - last < pcd) continue;
+				if (h > last + dur) {
+					out.push({ anchor: start, extend: last - start, part });
+					start = h;
+				}
+				last = h;
+			}
+			out.push({ anchor: start, extend: last - start, part });
+		}
+		return out;
 	};
 
 	const emit = (w: Omit<BuffWindow, 'kind' | 'id'>): BuffWindow => {
@@ -727,9 +754,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								return true;
 							})
 						);
-						for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
+						for (const { anchor, extend, part } of partitionCastPool(barEffects, cast)) {
 							const buffStart = anchor;
-							const buffEnd = buffStart + framesOf(part[0].duration!);
+							const buffEnd = buffStart + framesOf(part[0].duration!) + extend;
 							emit({
 								characterId: track.characterId,
 								start: buffStart,
@@ -834,9 +861,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								return true;
 							})
 						);
-						for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
+						for (const { anchor, extend, part } of partitionCastPool(barEffects, cast)) {
 							const buffStart = anchor;
-							const buffEnd = buffStart + framesOf(part[0].duration!);
+							const buffEnd = buffStart + framesOf(part[0].duration!) + extend;
 							emit({
 								characterId: track.characterId,
 								start: buffStart,
@@ -1773,7 +1800,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							return true;
 						})
 					);
-					for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
+					for (const { anchor, extend, part } of partitionCastPool(barEffects, cast)) {
 						const firstValue = part[0].value;
 						const rampParams =
 							typeof firstValue === 'object' &&
@@ -1797,7 +1824,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 									}
 								: undefined;
 						const buffStart = anchor;
-						const buffEnd = buffStart + framesOf(part[0].duration!);
+						const buffEnd = buffStart + framesOf(part[0].duration!) + extend;
 
 						// ⚓ HOW LONG THE RECEIVER HAS BEEN ON FIELD (Nicole, 2026-08-18).
 						// `onFieldDelay` shifts each segment's START and leaves the buff's
@@ -2357,9 +2384,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							return true;
 						})
 					);
-					for (const { anchor, part } of partitionCastPool(barEffects, cast)) {
+					for (const { anchor, extend, part } of partitionCastPool(barEffects, cast)) {
 						const buffStart = anchor;
-						const buffEnd = buffStart + framesOf(part[0].duration!);
+						const buffEnd = buffStart + framesOf(part[0].duration!) + extend;
 						emit({
 							characterId: sourceTrack.characterId,
 							receiverId: sourceTrack.characterId,

@@ -121,6 +121,11 @@ export type CastEvent = {
 	 * list from the token, and a second resolution is how two readers drift.
 	 */
 	firstHitAt?: number;
+	/** EVERY frame (absolute) one of this cast's hits lands, first to last — the
+	 *  whole nominal `application[]` (every-landing round, 2026-09-21). One live hit
+	 *  record fires at each; an `onHit skill|burst` window opens at the first and is
+	 *  REFRESHED by the rest. Absent exactly when `firstHitAt` is. */
+	hitsAt?: number[];
 	/** True when a Sacrificial-series proc fired on this cast (CD reset to 0);
 	 *  the bar renders as a dim continuation instead of uptime + ghost CD. */
 	sacProcFired?: boolean;

@@ -16,10 +16,24 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 35, "hit": 24 } },
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 35,
+						"hit": 24,
+						"lands": [15, 24]
+					}
+				},
 				{ "name": "N2", "frames": { "anim": 26, "hit": 17 } },
 				{ "name": "N3", "frames": { "anim": 39, "hit": 25 } },
-				{ "name": "N4", "frames": { "anim": 44, "hit": 26 } },
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 44,
+						"hit": 26,
+						"lands": [11, 26]
+					}
+				},
 				{ "name": "N5", "frames": { "anim": 52, "hit": 17 } }
 			],
 			"chargeHits": [
@@ -68,10 +82,24 @@
 			"infusion": "pyro",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 35, "hit": 24 } },
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 35,
+						"hit": 24,
+						"lands": [15, 24]
+					}
+				},
 				{ "name": "N2", "frames": { "anim": 26, "hit": 17 } },
 				{ "name": "N3", "frames": { "anim": 39, "hit": 25 } },
-				{ "name": "N4", "frames": { "anim": 44, "hit": 26 } },
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 44,
+						"hit": 26,
+						"lands": [11, 26]
+					}
+				},
 				{ "name": "N5", "frames": { "anim": 52, "hit": 17 } }
 			],
 			"chargeHits": [

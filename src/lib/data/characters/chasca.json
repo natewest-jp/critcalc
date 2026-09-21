@@ -26,7 +26,15 @@
 					}
 				},
 				{ "name": "N2", "frames": { "anim": 8, "N": 19, "swap": 8 } },
-				{ "name": "N3", "frames": { "anim": 20, "N": 36, "swap": 20 } },
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 20,
+						"lands": 1,
+						"N": 36,
+						"swap": 20
+					}
+				},
 				{ "name": "N4", "frames": { "anim": 39, "N": 73, "swap": 39 } }
 			],
 			"chargeHits": [

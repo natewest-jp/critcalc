@@ -53,7 +53,7 @@ import {
 } from '$lib/types/ability';
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
-import { FPS, frameAt, framesOf, landsAt } from '$lib/utils/frames';
+import { FPS, frameAt, framesOf, landingsOf } from '$lib/utils/frames';
 import {
 	GENERIC_NORMAL_HITS,
 	GENERIC_SKILL,
@@ -523,17 +523,36 @@ export function runRotation(
 		// ⚠️ The closure runs mid-advance with the SEGMENT's live stack pool, which
 		// is sound only because the landing is inside the swing — the on-field
 		// character cannot have changed.
+		//
+		// ↻⚓ ONE TASK PER LANDING (every-landing round, 2026-09-21). A swing can
+		// land two, three or four hits and each is a hit: ICD counts them, and so
+		// does every `onHit`. `landingsOf` lists them; each one inside the swing is
+		// its own `Band.LAND` task running the SAME closure (application →
+		// co-application → hit record). Landings at or past the swing's end — a
+		// cancel cut them off — are returned as a COUNT and landed by the caller,
+		// synchronously after the advance, together. An unmeasured map is one such
+		// landing, which is the old `false`.
+		// ⚠️ What does NOT multiply: the action event, the input block, the wave's
+		// span, `hitIndex` (the COMBO index — N4's second hit is still 3) and the
+		// swing's resolved element (a granted infusion resolves per swing).
 		const landSwing = (
 			start: number,
 			swingF: number | null,
 			fm: FrameMap | null | undefined,
 			land: (at: number) => void
-		): boolean => {
-			const hitF = fm ? landsAt(fm) : null;
-			if (hitF === null || swingF === null || hitF >= swingF) return false;
-			const at = start + hitF;
-			clock.schedule(at, Band.LAND, () => land(at));
-			return true;
+		): number => {
+			const frames = fm ? landingsOf(fm) : [];
+			if (frames.length === 0 || swingF === null) return 1;
+			let late = 0;
+			for (const f of frames) {
+				if (f >= swingF) {
+					late++;
+					continue;
+				}
+				const at = start + f;
+				clock.schedule(at, Band.LAND, () => land(at));
+			}
+			return late;
 		};
 
 		// Expand bracket repeat groups (e.g. 2[N5C] → N5 C N5 C) before the main
@@ -823,16 +842,21 @@ export function runRotation(
 					const first = resolveElementRef(castApps?.[0]?.element, variantCtx);
 					if (first !== undefined && first !== char.element) castEvent.element = first;
 				}
-				// ⚓ The cast's FIRST LANDING (cast hit-record round, 2026-09-21): the
-				// earliest entry of the NOMINAL list — ⛔ not of the ICD-gated one, a
+				// ⚓ The cast's LANDINGS (cast hit-record round, 2026-09-21): every entry
+				// of the NOMINAL list, first to last — ⛔ not of the ICD-gated one, a
 				// hit its counter suppressed still landed (contract C4), and ⛔ not
 				// only the elemental ones, a physical opener (Xinyan's burst) is the
-				// cast's first hit. The first of several on one frame, in list order.
-				const firstLanding =
+				// cast's first hit. ↻ EVERY one is a hit since the every-landing round
+				// (same day): `application[]` IS the per-landing list a swing's `lands`
+				// has to author. Stable sort — entries on one frame keep list order.
+				const landings =
 					castApps && castApps.length > 0 && !castIsNonHitting(active, variant)
-						? castApps.reduce((a, b) => (b.frame < a.frame ? b : a))
-						: undefined;
-				if (firstLanding) castEvent.firstHitAt = castStart + firstLanding.frame;
+						? [...castApps].sort((a, b) => a.frame - b.frame)
+						: [];
+				if (landings.length > 0) {
+					castEvent.firstHitAt = castStart + landings[0].frame;
+					castEvent.hitsAt = landings.map((l) => castStart + l.frame);
+				}
 				ctx.events.push(castEvent);
 				ctx.castRecords.push({ ev: castEvent, track });
 				charCasts.push(castEvent);
@@ -1310,20 +1334,27 @@ export function runRotation(
 						stacks,
 						sourceEventId: castId
 					};
-					if (firstLanding && firstLanding.frame > 0) {
-						const at = castStart + firstLanding.frame;
-						hit.time = at;
-						// The landed hit's OWN element (⛔ not the caster's): absent is a
-						// physical hit, and Varka's opener names the party's.
-						hit.element = resolveElementRef(firstLanding.element, variantCtx);
+					if (landings.length > 0 && landings[0].frame > 0) {
 						const turn = i;
-						clock.schedule(at, Band.LAND, () => {
-							// ⚓ A landing after the caster's turn ended is OFF FIELD: null
-							// pool, and refused by `source: 'active'` (see `HitEvent.offField`).
-							const live = liveSegment === turn;
-							if (!live) hit.offField = true;
-							dispatchHit(hit, true, live);
-						});
+						// ↻ ONE RECORD PER LANDING (every-landing round): same cast, same
+						// snapshot, same name — its own instant and its own element.
+						for (const landing of landings) {
+							const at = castStart + landing.frame;
+							const landed: HitEvent = {
+								...hit,
+								time: at,
+								// The landed hit's OWN element (⛔ not the caster's): absent is
+								// a physical hit, and Varka's opener names the party's.
+								element: resolveElementRef(landing.element, variantCtx)
+							};
+							clock.schedule(at, Band.LAND, () => {
+								// ⚓ A landing after the caster's turn ended is OFF FIELD: null
+								// pool, refused by `source: 'active'` (see `HitEvent.offField`).
+								const live = liveSegment === turn;
+								if (!live) landed.offField = true;
+								dispatchHit(landed, true, live);
+							});
+						}
 					} else {
 						dispatchHit(hit, false);
 					}
@@ -1604,7 +1635,7 @@ export function runRotation(
 								);
 							}
 						};
-						const nLanded = landSwing(clock.now, castS, hits[hitIndex]?.frames, landNormal);
+						const nLate = landSwing(clock.now, castS, hits[hitIndex]?.frames, landNormal);
 						if (castS !== null) clock.advance(clock.now + castS);
 						normalCounter++;
 						// Normal-opened transient state (post-P4 #2): the FIRST swing's
@@ -1632,7 +1663,7 @@ export function runRotation(
 						// A swing with no stated landing (or one at its end) lands HERE, after
 						// the opener that shares its instant — so a state the swing itself
 						// opens is visible to hit-gated conditions, as it always was.
-						if (!nLanded) landNormal(clock.now);
+						for (let n = 0; n < nLate; n++) landNormal(clock.now);
 					}
 					humanPad('normal', j);
 				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
@@ -1911,7 +1942,7 @@ export function runRotation(
 							);
 						}
 					};
-					const cLanded = landSwing(
+					const cLate = landSwing(
 						blockStart,
 						castS,
 						activeNormal
@@ -1960,7 +1991,7 @@ export function runRotation(
 					}
 					// No stated landing (or one at the end): it lands HERE, after the
 					// opener that shares its instant, reading the post-edge states.
-					if (!cLanded) landCharged(clock.now);
+					for (let n = 0; n < cLate; n++) landCharged(clock.now);
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plunge frames, or a
 					// plungeVariant whose input[] matches the preceding E token text
@@ -2128,10 +2159,10 @@ export function runRotation(
 									true
 								);
 						};
-						const pLanded = landSwing(blockStart, castS, plungeFrames, landPlunge);
+						const pLate = landSwing(blockStart, castS, plungeFrames, landPlunge);
 						clock.advance(clock.now + castS);
 						humanPad('plunge', j);
-						if (!pLanded) landPlunge(clock.now);
+						for (let n = 0; n < pLate; n++) landPlunge(clock.now);
 					}
 					lastEText = null;
 				} else if (t === 'D' || t === 'J') {

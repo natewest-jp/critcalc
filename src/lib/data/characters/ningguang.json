@@ -20,7 +20,17 @@
 				"Multi-variant charge attack: chargeFrames records the Left variant (used after Left/Twirl normals when entering from NormalAttackState). Right variant (after Right normal): {swap:67, N:68, E:72, Q:69, D:54, J:54}. Twirl variant (from random/non-normal state): {swap:76, N:76, E:77, Q:77, D:61, J:62}. Raw base values recorded (windup=0). At runtime gcsim subtracts 15 frames when entering from NormalAttackState or ChargeAttackState — reviewer to decide whether post-windup values should be used instead.",
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
-			"hits": [{ "name": "N1", "frames": { "anim": 66, "hit": 13, "C": 40 } }],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 66,
+						"hit": 13,
+						"lands": [27, 27],
+						"C": 40
+					}
+				}
+			],
 			"chargeFrames": {
 				"anim": 74,
 				"lands": 66,

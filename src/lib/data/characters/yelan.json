@@ -40,7 +40,8 @@
 					"name": "N4",
 					"frames": {
 						"anim": 67,
-						"hit": 29
+						"hit": 29,
+						"lands": [15, 29]
 					}
 				}
 			],
