@@ -98,12 +98,16 @@ merge commit says how it ran.
 
 ## 5. Open
 
-- ⏭ **Nate — Raiden's Eye is live from the PRESS in our data; gcsim starts the
-  status 66f after it** (`raiden/skill.go`, "starts 1s after cd delay"), which is
-  after her E's own hitmark (51f). So the Eye still answers her own E hit (at
-  +56f; it used to answer her press at +5f). The fix is data — a `spawnsAt` on the
-  Eye — and it moves the Eye's bar and her burst-DMG buff 1.1s right, which is a
-  thing to judge on screen.
+- ✅ **Raiden's Eye starts 66f after the press** (⚓ Nate, 2026-09-21: "follow
+  their lead"). Our data had it live from the press, so the Eye answered her own E
+  hit at +56f. gcsim adds the status — the coordinated-attack gate AND the
+  burst-DMG mod, one object — at `6 + 60` ("starts 1s after cd delay"), which is
+  PR #2271 (2024-11), a targeted correction of gcsim's own earlier "start eye at
+  hitmark". Authored as `summons[0].spawnsAt: 66`, so the Eye's bar and her
+  burst-DMG buff both open there. Oracle, the Eye-off-a-summon fixture: every
+  Raiden row within ONE frame of gcsim (strikes 2.60 / 5.55 / 8.50s against 2.62 /
+  5.57 / 8.52s; they were 5 / 60 / 60f off after Phase A, 47 / 119 / 119f before
+  it).
 - **The 3 Durability-0 hitting casts** (Emilie's E is the known one) want a
   hitmark with nowhere to live. ⚠️ §6.3 of the plan said `application[]` "cannot
   hold an entry that applies nothing" — it CAN: an element-less entry (`{frame:
