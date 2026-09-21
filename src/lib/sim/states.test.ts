@@ -583,3 +583,164 @@ describe('a non-hitting CAST (CastAbility.nonHitting)', () => {
 		).toMatch(/boolean/);
 	});
 });
+
+// ── `duringSummon` qualified by its opener ──────────────────────────────────
+//
+// The summon-bound buffs round (2026-09-21). A holder with TWO summons could
+// only say "a summon of mine is out", so Columbina's C6 — gcsim wraps it in
+// `ReactBonusModIsActive(burstBuffKey)`, her burst's Lunar Domain — fired off
+// her longer-lived skill Ripple as well, and fired in a rotation with no burst
+// in it at all.
+//
+// Seeded negatives, verified by hand when this block landed: dropping the
+// qualified `states.add` from `holderStatesAt`'s summon scan, or from
+// `buildStateIndex`'s two-name push, fails the `source`-gated cases while the
+// unqualified one stays green — which is the shape of the whole change, and
+// the reason the unqualified case is asserted at all.
+
+/** Two summons on one holder: a 5s skill one and a 15s burst one, both
+ *  spawning at the cast, plus three `onHit normal` buffs that differ ONLY in
+ *  how they gate — unqualified, burst-only, skill-only. */
+function twinSummoner(): CharacterData {
+	const gate = (stat: string, value: number, source?: 'skill' | 'burst') => ({
+		type: 'buff',
+		target: 'self',
+		trigger: { type: 'onHit', abilityType: 'normal' },
+		duration: 2,
+		durationType: 'fixed',
+		source: 'character',
+		stat,
+		value,
+		snapshottable: false,
+		conditions: { type: 'state', state: 'duringSummon', ...(source ? { source } : {}) }
+	});
+	return {
+		id: 'twin',
+		displayName: 'Twin',
+		element: 'hydro',
+		weapon: 'sword',
+		constellations: [],
+		passives: [
+			{
+				id: 'twin__passive__gates',
+				name: 'Gates',
+				abilityType: 'passive',
+				effects: [gate('atk%', 10), gate('critRate', 20, 'burst'), gate('critDmg', 30, 'skill')]
+			}
+		],
+		abilities: [
+			{
+				id: 'twin__normal',
+				name: 'Twin Normal',
+				abilityType: 'normal',
+				input: ['N'],
+				hits: [{ name: 'N1', frames: { anim: 30, hit: 12 } }]
+			},
+			{
+				id: 'twin__skill',
+				name: 'Twin Skill',
+				abilityType: 'skill',
+				input: ['E'],
+				behavior: 'instant',
+				frames: { anim: 40, N: 36, C: 36, Q: 36, D: 35, J: 36, swap: 34 },
+				cooldown: 6,
+				summons: [{ label: 'Short One', duration: 5, spawnsAt: 0, mobility: 'stationary' }],
+				application: []
+			},
+			{
+				id: 'twin__burst',
+				name: 'Twin Burst',
+				abilityType: 'burst',
+				input: ['Q'],
+				behavior: 'instant',
+				frames: { anim: 60, N: 56, C: 56, E: 56, D: 55, J: 56, swap: 54 },
+				cooldown: 15,
+				energyCost: 40,
+				summons: [{ label: 'Long One', duration: 15, spawnsAt: 0, mobility: 'stationary' }],
+				application: []
+			}
+		]
+	} as unknown as CharacterData;
+}
+
+describe('duringSummon qualified by the cast kind that opened it', () => {
+	const twin = twinSummoner();
+	const parseTwin = (notation: string) => {
+		const r = parseNotation(
+			notation,
+			(n) => (n === 'Twin' ? twin : n === 'Other' ? OTHER : null),
+			8,
+			undefined,
+			undefined,
+			[twin, OTHER]
+		);
+		expect(r.unknownTokens, notation).toEqual([]);
+		return r;
+	};
+	/** The stats the holder's own buff windows grant, in window order. */
+	const grantedStats = (r: ParsedRotation) =>
+		r.windows
+			.filter((w) => w.kind === 'buff' && w.characterId === 'twin')
+			.flatMap((w) => ((w as { effects: { stat?: string }[] }).effects ?? []).map((e) => e.stat));
+
+	it('both summons out — every gate fires, qualified or not', () => {
+		// E then Q then a swing: the 5s skill summon and the 15s burst one both
+		// cover the hit.
+		expect(grantedStats(parseTwin('Twin E Q N1')).sort()).toEqual(['atk%', 'critDmg', 'critRate']);
+	});
+
+	it('the burst summon alone — the skill-qualified gate drops, the bare one does not', () => {
+		// ~7s past the E, the 5s Short One is gone and the 15s Long One is not.
+		expect(grantedStats(parseTwin('Twin E Q ~7s N1')).sort()).toEqual(['atk%', 'critRate']);
+	});
+
+	it('the skill summon alone — ⚓ THE DEFECT: an unqualified gate is satisfied by the wrong summon', () => {
+		// No burst in the rotation at all. Before the qualifier this drew the
+		// burst-gated buff too, which is Columbina's C6 firing with no Domain.
+		expect(grantedStats(parseTwin('Twin E N1')).sort()).toEqual(['atk%', 'critDmg']);
+	});
+
+	it('no summon out — nothing fires', () => {
+		expect(grantedStats(parseTwin('Twin E ~7s N1'))).toEqual([]);
+	});
+
+	it('an OFF-FIELD holder is read the same way (the live resolver, not the index)', () => {
+		// The gates are the holder's own, but the hit is hers on her second
+		// segment; what matters is that the burst summon opened in the FIRST one
+		// and is still counted by kind after a swap out and back.
+		expect(grantedStats(parseTwin('Twin Q > Other N1 > Twin N1')).sort()).toEqual([
+			'atk%',
+			'critRate'
+		]);
+	});
+
+	it('lint (C.20): a source qualifier names duringSummon, a cast kind, and a summon the holder has', () => {
+		const issues = (cond: Record<string, unknown>) => {
+			const c = twinSummoner();
+			const fx = (c.passives![0] as unknown as { effects: Record<string, unknown>[] }).effects;
+			fx[1].conditions = cond;
+			return lintCharacter(c)
+				.filter((i) => i.check === 'state-source-scope')
+				.map((i) => i.message)
+				.join('\n');
+		};
+		expect(issues({ type: 'state', state: 'duringSummon', source: 'burst' })).toBe('');
+		expect(issues({ type: 'state', state: 'duringSummon' })).toBe('');
+		expect(issues({ type: 'state', state: 'inStance', source: 'burst' })).toMatch(
+			/only duringSummon/
+		);
+		expect(issues({ type: 'state', state: 'duringSummon', source: 'normal' })).toMatch(
+			/not a cast kind/
+		);
+		// Nested inside a tree, and naming a kind that summons nothing: the
+		// holder's skill summons, so `burst` is the one to delete.
+		const noBurstSummon = twinSummoner();
+		delete (noBurstSummon.abilities[2] as unknown as Record<string, unknown>).summons;
+		expect(
+			lintCharacter(noBurstSummon)
+				.filter((i) => i.check === 'state-source-scope')
+				.map((i) => i.message)
+				.join('\n')
+		).toMatch(/summons nothing|summons anything/);
+	});
+});

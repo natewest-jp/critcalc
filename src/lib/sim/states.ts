@@ -23,7 +23,7 @@
 import type { TransientStateSpec } from '$lib/types/ability';
 import type { CastAbility } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
-import { getPersistentBehavior } from '$lib/types/ability';
+import { getPersistentBehavior, stateKey } from '$lib/types/ability';
 import { framesOf } from '$lib/utils/frames';
 import type { CastEvent } from '$lib/utils/rotationEvents';
 import type { CharState } from './charState';
@@ -98,6 +98,10 @@ export function inferredStates(
 	// ⚠️ `kinds.hasX` FIRST — it is the guard that actually matters. Without it
 	// the scan below runs in full on every call for a kind the character has
 	// never cast, which was the whole quadratic.
+	// ⚓ Each branch publishes BOTH spellings — the bare `duringSummon` every
+	// existing author gates on, and the kind-qualified one Columbina's C6 needs
+	// (`stateKey`, summon-bound buffs round). The two branches already knew
+	// which kind they were; until 2026-09-21 they threw it away.
 	if (
 		kinds.hasBurst &&
 		qAbility &&
@@ -105,6 +109,7 @@ export function inferredStates(
 		anySummonActive('burst')
 	) {
 		states.add('duringSummon');
+		states.add(stateKey('duringSummon', 'burst'));
 	}
 	if (
 		kinds.hasSkill &&
@@ -113,6 +118,7 @@ export function inferredStates(
 		anySummonActive('skill')
 	) {
 		states.add('duringSummon');
+		states.add(stateKey('duringSummon', 'skill'));
 	}
 	return states;
 }
@@ -367,8 +373,16 @@ export function holderStatesAt(
 	}
 	const casts = ctx.castsByChar.get(holder.id);
 	if (casts) {
+		// ⚠️ THE SCAN NO LONGER STOPS AT THE FIRST LIVE SUMMON. A holder with two
+		// (Columbina: the burst's Lunar Domain and the skill's Gravity Ripple) has
+		// to publish the qualified name for EACH, so the early exit waits until
+		// both kinds are known — still at most two matches, and a holder with one
+		// kind of summon leaves by the same cheap route as before.
+		let sawSkill = false;
+		let sawBurst = false;
 		for (const c of casts) {
 			if (c.uptime <= 0) continue;
+			if (c.ability === 'skill' ? sawSkill : sawBurst) continue;
 			// ⚠ PRIMARY ONLY, deliberately. `duringSummon` gates effects on
 			// "is this character's summon out" (Escoffier C6), and the
 			// ability's own geometry — the accessors that produced
@@ -388,7 +402,10 @@ export function holderStatesAt(
 			const start = c.time + c.summonActivatesAt;
 			if (t >= start && t < start + c.uptime) {
 				states.add('duringSummon');
-				break;
+				states.add(stateKey('duringSummon', c.ability));
+				if (c.ability === 'skill') sawSkill = true;
+				else sawBurst = true;
+				if (sawSkill && sawBurst) break;
 			}
 		}
 	}

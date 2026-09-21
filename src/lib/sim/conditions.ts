@@ -26,6 +26,7 @@ import type {
 	Reaction,
 	SkillAbility
 } from '$lib/types/ability';
+import { stateKey } from '$lib/types/ability';
 import type { WeaponType } from '$lib/types/weapon';
 
 // Assumed ascension level for all characters (affects modifier eligibility).
@@ -186,8 +187,13 @@ export function evalCondition(
 		case 'constellation':
 			return constellationLevel >= cond.level;
 		case 'state': {
-			if (resolvedStates.has(cond.state)) return true;
-			if (context?.negatedStates?.has(cond.state)) return false;
+			// ⚓ A qualified gate asks for the qualified member (`duringSummon:burst`)
+			// and NOTHING ELSE — the resolvers publish both spellings, so falling
+			// back to the bare name would restore exactly the over-claim the
+			// qualifier exists to remove.
+			const key = stateKey(cond.state, cond.source);
+			if (resolvedStates.has(key)) return true;
+			if (context?.negatedStates?.has(key)) return false;
 			return null;
 		}
 		case 'chainStage':

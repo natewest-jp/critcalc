@@ -43,13 +43,23 @@
  * Skirk's bar on `E` and drops it on `hE` (no stance window at all), and keeps
  * Varesa's on a cold Q and drops it on a Q cast inside a standing Blessing.
  *
+ * ⚓ `duringSummon` MAY NAME ITS OPENER (summon-bound buffs round, 2026-09-21).
+ * A `state` condition carrying `source: 'skill' | 'burst'` asks for the
+ * qualified member `duringSummon:burst`, which this index builds from the same
+ * summon windows narrowed by `TimelineWindow.source`. An unqualified gate is
+ * untouched, and both spellings are published together — see `stateKey`.
+ *
  * ⚠️ Half-open spans, `[start, end)` — the rule `holderStatesAt` uses. A state
  * a cast CONSUMES at its own instant therefore reads as already down for that
  * cast's effects; no surveyed effect sits on that edge (2026-09-19).
  *
- * Runtime-import-free besides types.
+ * Runtime-import-free besides types and `stateKey`, which is a pure one-liner
+ * in `$lib/types/ability` — a module with NO imports of its own, so it cannot
+ * drag a graph in behind it. ⛔ It is imported rather than mirrored because
+ * three files have to agree on one string (see `stateKey`'s own note).
  */
 
+import { stateKey } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { TimelineWindow } from '$lib/utils/rotationEvents';
 
@@ -84,24 +94,36 @@ function trackedStatesOf(char: CharacterData): ReadonlySet<string> {
 		if (typeof s.state === 'string') openable.add(s.state);
 		if (typeof s.onEnd?.state === 'string') openable.add(s.onEnd.state);
 	};
-	const walk = (node: unknown): void => {
+	// ⚠️ `kind` is the enclosing ability's class, carried down so a summon
+	// declared on a VARIANT is still attributed to the skill or burst that
+	// holds it — a qualified `duringSummon:burst` that is not `openable` would
+	// be dropped from `tracked` and the gate would silently answer `null`.
+	const walk = (node: unknown, kind: 'skill' | 'burst' | undefined): void => {
 		if (!node || typeof node !== 'object') return;
 		if (Array.isArray(node)) {
-			for (const n of node) walk(n);
+			for (const n of node) walk(n, kind);
 			return;
 		}
 		const o = node as Record<string, unknown>;
-		if (o.type === 'state' && typeof o.state === 'string') gated.add(o.state);
+		if (o.abilityType === 'skill' || o.abilityType === 'burst') kind = o.abilityType;
+		if (o.type === 'state' && typeof o.state === 'string') {
+			gated.add(
+				stateKey(o.state, o.source === 'skill' || o.source === 'burst' ? o.source : undefined)
+			);
+		}
 		if (o.behavior === 'stance') openable.add('inStance');
 		if (typeof o.opensState === 'string') openable.add(o.opensState);
 		if (o.opensTransientState) specStates(o.opensTransientState);
 		if (o.actionOpensState && typeof o.actionOpensState === 'object') {
 			for (const spec of Object.values(o.actionOpensState)) specStates(spec);
 		}
-		if (Array.isArray(o.summons) && o.summons.length > 0) openable.add('duringSummon');
-		for (const v of Object.values(o)) walk(v);
+		if (Array.isArray(o.summons) && o.summons.length > 0) {
+			openable.add('duringSummon');
+			if (kind) openable.add(stateKey('duringSummon', kind));
+		}
+		for (const v of Object.values(o)) walk(v, kind);
 	};
-	walk(char);
+	walk(char, undefined);
 	const tracked = new Set<string>();
 	for (const s of gated) if (openable.has(s)) tracked.add(s);
 	trackedCache.set(char, tracked);
@@ -133,7 +155,10 @@ export function liveNegatedStates(
 	if (tracked.size === 0) return NO_STATES;
 	let out: Set<string> | undefined;
 	for (const s of tracked) {
-		if (s === 'duringSummon' || active.has(s)) continue;
+		// ⚠️ `startsWith` so the QUALIFIED members are exempt too — the reason
+		// `duringSummon` is never negated live is a property of the summon
+		// resolvers, and naming the summon's kind does not repair either of them.
+		if (s.startsWith('duringSummon') || active.has(s)) continue;
 		(out ??= new Set()).add(s);
 	}
 	return out ?? NO_STATES;
@@ -184,12 +209,18 @@ export function buildStateIndex(
 		for (const name of tracked) raw.set(name, []);
 		for (const w of windows) {
 			// ⚠️ Kind test FIRST — the `gadget` arm has no `characterId`.
-			let name: string;
-			if (w.kind === 'state') name = w.name;
-			else if (w.kind === 'summon' && primarySummonWindows.has(w)) name = 'duringSummon';
+			// ⚓ A summon window feeds TWO lists — the bare `duringSummon` and the
+			// one qualified by the cast kind the window already carries — so a
+			// qualified gate reads the same spans narrowed to one opener.
+			let names: readonly string[];
+			if (w.kind === 'state') names = [w.name];
+			else if (w.kind === 'summon' && primarySummonWindows.has(w))
+				names = ['duringSummon', stateKey('duringSummon', w.source)];
 			else continue;
 			if (w.characterId !== holderId) continue;
-			raw.get(name)?.push({ start: w.start, end: w.end, castId: w.sourceCastId });
+			for (const name of names) {
+				raw.get(name)?.push({ start: w.start, end: w.end, castId: w.sourceCastId });
+			}
 		}
 		const lists = new Map<string, SpanList>();
 		for (const [name, spans] of raw) {
