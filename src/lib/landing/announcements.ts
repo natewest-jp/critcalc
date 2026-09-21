@@ -29,7 +29,7 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
 		// ⚠️ Keep this in step with FRAMELESS_EXEMPT (characterLint.test.ts):
 		// "in the works" means a kit authored but waiting on gcsim frames, so
 		// the planner times it with generic cast lengths.
-		detail: 'Odette curated in full · Alyosha and the Cryo Traveler in the works',
+		detail: 'Odette and the Cryo Traveler curated in full · Alyosha in the works',
 		expires: '2026-10-28'
 	}
 ];
