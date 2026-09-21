@@ -123,6 +123,12 @@ questions the design depends on:
 
 ## 6. The cast side — found 2026-09-20, and it changes where this round starts
 
+_↻ **2026-09-21: §6.4's order is CONFIRMED (⚓ Nate) and Phase A SHIPPED** —
+`docs/cast-hit-record-round.md` is its record. What is left of this section is
+Phase B. ⚠️ One correction to §6.3 below: `application[]` CAN hold an entry that
+applies nothing (an element-less entry), but it means PHYSICAL — see that record's
+§5._
+
 Found while measuring Faruzan's C6 proc (`docs/summon-tick-gaps-round.md` §8 is
 the discovery record). §1.K synced a SWING's application and hit record into one
 closure at `landsAt`. **A cast was never synced**: `run.ts`'s cast branch
