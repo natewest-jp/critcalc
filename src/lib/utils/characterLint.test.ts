@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { isCurated, lintCharacter, MANUAL_PENDING, type LintIssue } from './characterLint';
+import { isCurated, lintCharacter, type LintIssue } from './characterLint';
 import type { CharacterData } from '$lib/types/character';
 import { evalTriggerFilter, getDefaultDamageTag } from '$lib/types/ability';
 
@@ -61,19 +61,6 @@ describe('character lint', () => {
 			});
 		});
 	}
-
-	// ⚠️ The B.18 allowlist only SHRINKS. A character listed there with no `manual`
-	// effect left is a stale entry, and catching it here is what stops the list
-	// outliving the retirement round: when this reports the whole list as stale,
-	// delete `MANUAL_PENDING`, delete B.18's guard clause, and strike `'manual'`
-	// from the `Trigger` union. See docs/manual-trigger-retirement.md.
-	it('the B.18 manual allowlist has no stale entries', () => {
-		const stillManual = new Set(
-			all.filter((c) => JSON.stringify(c).includes('"manual"')).map((c) => c.id)
-		);
-		const stale = [...MANUAL_PENDING].filter((id) => !stillManual.has(id)).sort();
-		expect(stale, 'MANUAL_PENDING entries whose character no longer carries one').toEqual([]);
-	});
 });
 
 // ---------------------------------------------------------------------------
@@ -276,14 +263,6 @@ describe('B.18 — the retired `manual` trigger', () => {
 	it('flags a manual trigger on a character that is not on the allowlist', () => {
 		const hit = lintCharacter(stubWithManual()).find((i) => i.check === 'manual-trigger');
 		expect(hit?.severity).toBe('strict');
-	});
-
-	// The allowlist is the only thing keeping the corpus green mid-round; if it
-	// ever stopped exempting, every commit below would fail for the wrong reason.
-	it('exempts a character on the shrinking allowlist', () => {
-		const c = stubWithManual();
-		const exempt = { ...c, id: [...MANUAL_PENDING][0] } as CharacterData;
-		expect(lintCharacter(exempt).find((i) => i.check === 'manual-trigger')).toBeUndefined();
 	});
 });
 

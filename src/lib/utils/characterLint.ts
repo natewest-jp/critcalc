@@ -58,28 +58,6 @@ export type LintIssue = {
  */
 const PROC_TRIGGERS = ['onReaction', 'onHit', 'whileNormalAttacking'] as const;
 
-/** Characters that still carry a `trigger: 'manual'` effect, exempt from B.18
- *  while the retirement works through the corpus (docs/manual-trigger-retirement.md).
- *
- *  ⚠️ This list only SHRINKS. An entry for a character with no `manual` effect left
- *  is a stale entry and `characterLint.test.ts` fails on it, so the allowlist cannot
- *  outlive the round; when it is empty, delete it, delete B.18's guard clause, and
- *  strike `'manual'` from the `Trigger` union in `src/lib/types/ability.ts`.
- *  ⛔ Never add to it. */
-export const MANUAL_PENDING: ReadonlySet<string> = new Set([
-	'arlecchino',
-	'candace',
-	'charlotte',
-	'clorinde',
-	'collei',
-	'kaveh',
-	'kirara',
-	'kuki_shinobu',
-	'sangonomiya_kokomi',
-	'sayu',
-	'yaoyao'
-]);
-
 /**
  * Standard element-application ICD, restated for D.27b's "did a curator annotate
  * the default" check.
@@ -2342,11 +2320,11 @@ function lintEffect(
 	//
 	// docs/manual-trigger-retirement.md is the record.
 	//
-	// ⚠️ `MANUAL_PENDING` is a SHRINKING allowlist that must reach EMPTY inside
-	// this round — a stale entry (a character with no `manual` effect left) fails
-	// `characterLint.test.ts` on its own, so it cannot quietly become permanent.
-	// ⛔ Never add to it.
-	if (eff.trigger.type === 'manual' && !MANUAL_PENDING.has(c.id)) {
+	// ⚠️ The allowlist this rule shipped behind is GONE (2026-09-21) and so is
+	// `'manual'` itself — the member no longer exists in the `Trigger` union, so
+	// the cast below is what lets the rule keep catching a hand-written one in a
+	// JSON the type system never sees. ⛔ Do not "simplify" it away.
+	if ((eff.trigger as { type: string }).type === 'manual') {
 		push(
 			'strict',
 			'manual-trigger',

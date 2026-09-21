@@ -82,14 +82,20 @@
 								"interval": 1.5,
 								"tickCap": 8,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 2 },
+									"conditions": {
+										"type": "constellation",
+										"level": 2
+									},
 									"ticks": 10
 								}
 							},
 							"scaling": 5.4,
 							"stat": "hp",
 							"flat": 635.608,
-							"flatScaling": { "stat": "em", "ratio": 75 },
+							"flatScaling": {
+								"stat": "em",
+								"ratio": 75
+							},
 							"_curatorNotes": [
 								"tickCap 8 / 10 at C2, MIRRORING the damage series on this summon (tick-cap round, 2026-08-18): gcsim skill.go `bellTick` queues the attack AND calls Player.Heal in the same task before rescheduling itself, so the heal and the damage are one tick. Verified in source rather than inferred - the oracle cannot see a heal at all, since a heal tick leaves no damage event."
 							]
@@ -102,7 +108,10 @@
 								"interval": 1.5,
 								"tickCap": 8,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 2 },
+									"conditions": {
+										"type": "constellation",
+										"level": 2
+									},
 									"ticks": 10
 								}
 							},
@@ -112,6 +121,32 @@
 							"_curatorNotes": [
 								"tickCap 8 / 10 at C2 (tick-cap round, 2026-08-18): gcsim skill.go `skilldur := 720` (900 at C2) with bellTick self-rescheduling every 90f while the ring status is live, so the tick landing on the window boundary fires. Measured 8 at C0 and 10 at C6; our duration-derived counts were 7 and 9. The C2 override is required, not decorative - a flat cap would freeze the constellation at 8."
 							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"abilityType": ["normal", "charged", "plunge"],
+								"source": "active",
+								"icdGate": "none"
+							},
+							"procCooldown": 5,
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							},
+							"scaling": 9.7,
+							"stat": "hp",
+							"element": "electro",
+							"application": [
+								{
+									"frame": 5,
+									"element": "electro",
+									"units": 1
+								}
+							],
+							"attribution": "Thundergrass Mark (C4)"
 						}
 					]
 				}
@@ -240,18 +275,9 @@
 			"name": "To Sever Sealing",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 9.7,
-					"stat": "hp",
-					"element": "electro"
-				}
-			],
 			"_curatorNotes": [
-				"Inherited manual trigger — actual trigger is onHit (when ring-affected active character hits enemies with Normal/Charged/Plunging Attack, once per 5s ICD). gcsim has TODO comment about frames and ICD tag. Reviewer to update trigger and confirm ICD."
+				"Inherited manual trigger — actual trigger is onHit (when ring-affected active character hits enemies with Normal/Charged/Plunging Attack, once per 5s ICD). gcsim has TODO comment about frames and ICD tag. Reviewer to update trigger and confirm ICD.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4: To Sever Sealing — effects[0] (damage hp 9.7, electro) RE-TRIGGERED and RE-HOMED onto the skill's summon. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `~/Code/gcsim/internal/characters/kuki/cons.go:19-57` — `c4` is an `OnEnemyDamage` hook: 300-frame (`5s`) ICD status; tag must be `AttackTagNormal`/`Extra`/`Plunge`; `ae.Info.ActorIndex` must equal `Core.Player.Active()`; `Status.Duration(ringKey)` must be non-zero; then a Thundergrass Mark — Electro, Durability 25, `ICDTagNone`, `FlatDmg: MaxHP × 0.097`, queued at 5 frames. The C4 entry's `_curatorNotes` must say the mark is authored as an `onHit` proc on the Grass Ring's summon effects, not here — a summon-hosted proc is armed by the summon's own liveness, which is precisely gcsim's `ringKey` check, and it inherits the C2 `+3s` duration modifier for free where a hardcoded `armedFor` could not. It carries its own constellation condition because a summon effect is not gated by the constellation entry. Record `icdGate: 'none'` = `ICDTagNone`, `application[0].frame: 5` = the queue delay, Durability 25 = 1U, and drop the inherited \"gcsim has TODO comment… reviewer to confirm ICD\" line (the 5s is stated by the kit and by `AddStatus(c4IcdKey, 300)` alike). ⚠️ ⛔ No `armedFor` — lint B.13b refuses one on a summon-hosted proc. `source: 'active'` refuses entity-delivered hits, which is right (gcsim tests `ActorIndex == Active()`) and costs nothing, since no summon deals normal/charged/plunge damage. ⚠️ The proc draws a MARK on the Grass Ring's lane, beside its eight 1.5s tick markers, at C4+ — defensible (the ring on the active character is literally what makes the mark land) but it is a visible change and worth Nate's eye. ⚠️ A listener never fires off its own output, so the mark cannot chain."
 			],
 			"description": "When the Normal, Charged, or Plunging Attacks of the character affected by Shinobu's Grass Ring of Sanctification hit opponents, a Thundergrass Mark will land on the opponent's position and deal AoE Electro DMG based on 9.7% of Shinobu's Max HP.\nThis effect can occur once every 5s."
 		},

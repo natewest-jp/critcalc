@@ -142,6 +142,42 @@
 								"C6 variance NOT authored as a series: yuegui.go throw() fires yg.c6(target) on throwCounter 2 and 5 (the 3rd and 6th skill-Yuegui throws only, c6TravelDelay 20) — an extra Mega Radish entity with its own multiplier, not a change to this cadence or tick count. C0 authored; C6's extra radishes remain unmodelled here.",
 								"Not modelled: up to 2 Yuegui: Throwing Mode can coexist (existing geometry note), so a real double-skill rotation applies twice this cadence. Radishes thrown while Adeptal Legacy is active switch to burstRadishAI (yuegui.go getInfos) — a different multiplier and ICD group on the same summon; only the skill-state series is authored."
 							]
+						},
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3,
+								"firstTickDelay": 2.817,
+								"tickCap": 2
+							},
+							"scaling": 7.5,
+							"stat": "hp",
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							},
+							"attribution": "C6: Beneficent"
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3,
+								"firstTickDelay": 2.817,
+								"icdGate": "none",
+								"tickCap": 2
+							},
+							"scaling": 75,
+							"stat": "atk",
+							"element": "dendro",
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							},
+							"attribution": "C6: Beneficent"
 						}
 					]
 				}
@@ -381,29 +417,10 @@
 			"name": "Beneficent",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 75,
-					"stat": "atk",
-					"element": "dendro"
-				},
-				{
-					"type": "heal",
-					"target": "active",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 7.5,
-					"stat": "hp"
-				}
-			],
 			"_curatorNotes": [
-				"Triggers are manual. Mega Radish fires on throwCounter indices 2 and 5 within each Yuegui: Throwing Mode's throw sequence (per yuegui.go: counter % 3 check at positions 2 and 5). This is a gadget-internal periodic trigger, not a standard character action trigger — reviewer to wire. Each Yuegui: Throwing Mode can throw max 2 Mega Radishes total (throwCounter reaches 2 and 5). Effects: 75% ATK Dendro DMG (scaling: 75, stat: atk) and 7.5% MaxHP heal (scaling: 7.5, stat: hp) — skeletons look well-formed. Does not trigger C1 or A4 per c6HealMsg guard in radishHeal()."
+				"Triggers are manual. Mega Radish fires on throwCounter indices 2 and 5 within each Yuegui: Throwing Mode's throw sequence (per yuegui.go: counter % 3 check at positions 2 and 5). This is a gadget-internal periodic trigger, not a standard character action trigger — reviewer to wire. Each Yuegui: Throwing Mode can throw max 2 Mega Radishes total (throwCounter reaches 2 and 5). Effects: 75% ATK Dendro DMG (scaling: 75, stat: atk) and 7.5% MaxHP heal (scaling: 7.5, stat: hp) — skeletons look well-formed. Does not trigger C1 or A4 per c6HealMsg guard in radishHeal().",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Beneficent — effects[1] (heal 7.5 hp) RE-TRIGGERED and RE-HOMED onto the skill's summon. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `yaoyao/cons.go:87-95` — the same `c6()` builds `HealInfo{ Message: c6HealMsg, Src: MaxHP × 0.075 }` and adds it on the identical `c6TravelDelay` of 20f, targeting the active character (`yuegui.go:92-94` reassigns `Target` to `Player.Active()`). Keep that this heal does NOT re-trigger C1 or the A4 (`radish.go:8-10`, the `c6HealMsg` early return) — it is the only radish heal in the kit that does not. ⚠️ ⚠️⚠️ A SIBLING HEAL SERIES ON THE SAME CADENCE MUST CARRY THE SAME CAP (the tick-cap round's rule, already learnt on this character's burst Yuegui) — one gcsim call emits both, and the oracle cannot see the heal because it leaves no damage event. Uncapped it would draw three heals where gcsim throws two. ⛔ No `icdGate` on a heal series: a heal tick is not a hit and reaches no counter.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Beneficent — effects[0] (damage 75 atk, dendro) RE-TRIGGERED and RE-HOMED onto the skill's summon. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `yaoyao/yuegui.go:149-151` — `yg.c6(target)` fires on `throwCounter == 2 || == 5`, and only on `GadgetTypYueguiThrowing` (the SKILL Yuegui, never the burst's). `cons.go:73-97` queues Dendro, `ICDTagNone`, Durability 25, `Mult: 0.75` at `c6TravelDelay` = 20f. Throws land at spawn + 29, +89, +149, +209, +269, +329 (`yuegui.go:43, 123`), so the two Mega Radishes explode at spawn + 169 and spawn + 349. the derivation — `firstTickDelay` = (29 + 60 + 60 + 20)/60, `interval` = 3 throws × 60f, `tickCap: 2` from `throwCounter 2 || 5` — and that this supersedes the existing skill-summon note \"C6 variance NOT authored as a series … C6's extra radishes remain unmodelled here\". Keep that it is the Throwing Yuegui only. ⚠️ `icdGate: 'none'` is gcsim's `ICDTagNone` and puts a Dendro pip on both fires, which is the point. ⚠️ Its hit records carry `abilityName: \"Yuegui: Throwing Mode\"`, so they will fire the A4 and C1 specs above, where gcsim's `c6HealMsg` guard refuses them — the buffs are refresh-merged and the Mega Radish lands between ordinary radishes, so nothing moves on screen, but the note should say so. ⚠️ `tickCap` and `durationExtensions` do not compose; the Yuegui carries no `durationModifiers`, so this is safe. ⚠️ The marker dedupe (2026-09-19) is same-frame equality only — 169 and 349 differ from the ordinary radishes' 43/103/163/223/283/343, so these draw as their own marks."
 			],
 			"description": "For every 2 White Jade Radishes Yuegui: Throwing Mode throws out, the next throw will also release a Mega Radish that will have a larger AoE than the standard White Jade Radish and have the following effects upon exploding:\n·Deals AoE Dendro DMG based on 75% of Yaoyao's ATK.\n·Restores HP for the active character based on 7.5% of Yaoyao's Max HP.\n\nEvery Yuegui: Throwing Mode can throw out a maximum of 2 Mega Radishes."
 		}

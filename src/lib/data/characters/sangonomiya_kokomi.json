@@ -182,7 +182,37 @@
 			"cooldownStartDelay": 46,
 			"tags": ["summon"],
 			"energyCost": 70,
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"filter": {
+							"hitIndex": 2
+						},
+						"armedFor": 10,
+						"icdGate": "none"
+					},
+					"procCooldown": 1.8,
+					"scaling": 30,
+					"stat": "hp",
+					"element": "hydro",
+					"application": [
+						{
+							"frame": 0,
+							"element": "hydro",
+							"units": 1
+						}
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"attribution": "C1: At Water's Edge"
+				}
+			],
 			"_curatorNotes": [
 				"Ceremonial Garment is a 10s duration self-buff (not a spawned entity) applied to Kokomi on Q cast; it is cleared immediately when Kokomi swaps off-field (onExitField in burst.go). Buff grants: N/CA/Bake-Kurage DMG bonus scaled on MaxHP; HP restore on N/CA hit for all party members (also MaxHP-scaled); interruption resistance; walking on water. No summons[] entry — no entity is spawned. Reviewer to author the Ceremonial Garment self-buff representation and duration semantics.",
 				"Initial Q hit at burstHitmark=49 frames (49/60 ≈ 0.82s from cast). Not authored as an effect — consistent with other burst damage entries.",
@@ -262,19 +292,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim (cons.go), c1() fires when NormalCounter == NormalHitNum-1 (i.e., on the final N3 hit) and kokomiburst is active — likely trigger: 'onHit' with ability: 'normal', condition: final hit in combo + burst active. DMG is 30% MaxHP, not Normal Attack DMG (AttackTagNone in gcsim). Gcsim TODO notes gauge is assumed 1A (not specified)."
-			],
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 30,
-					"stat": "hp",
-					"element": "hydro"
-				}
+				"trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim (cons.go), c1() fires when NormalCounter == NormalHitNum-1 (i.e., on the final N3 hit) and kokomiburst is active — likely trigger: 'onHit' with ability: 'normal', condition: final hit in combo + burst active. DMG is 30% MaxHP, not Normal Attack DMG (AttackTagNone in gcsim). Gcsim TODO notes gauge is assumed 1A (not specified).",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 At Water's Edge — effects[0] (damage 30 hp, hydro) RE-TRIGGERED and RE-HOMED onto the burst ability. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `kokomi/cons.go:12-41` — `c1()` is called from `attack.go:71-73` only when `NormalCounter == NormalHitNum-1` (N3) and `kokomiburst` is live; it queues a separate attack, `AttackTagNone` / `ICDTagNone`, Hydro, Durability 25, `Mult: 0`, `FlatDmg = 0.3 × MaxHP`, at `attackHitmarks[2] + travel` — the same instant the N3 itself lands. gcsim's gauge is an assumed 1A (its own TODO), `AttackTagNone` so this is not Normal Attack DMG, `Mult: 0` with the whole magnitude in `FlatDmg`, and that `armedFor: 10` is the Ceremonial Garment and not the ability's length. ⚠️ ⚠️⚠️ `procCooldown` is **forced by lint B.13b** (\"an onHit damage effect with application[] needs procCooldown\") and **neither gcsim nor the kit states one** — gcsim's only gate is `NormalCounter == 2`, which `filter.hitIndex: 2` already expresses exactly. `1.8` is not invented: it is the minimum N3→N3 cycle off our own frame map (N1→N 14 + N2→N 30 + N3 anim 65 = 109f), so it suppresses no legitimate fire. ⏭ Nate's call — either take that derivation or exempt a `hitIndex`-pinned proc from B.13b. `frame: 0` because gcsim queues the fish at `attackHitmarks[2] + travel`, the same frame the N3 lands, and Kokomi's normals already carry `projectile: {normal: true}` so our hit record is at release + flight too."
 			],
 			"description": "While donning the Ceremonial Garment created by Nereid's Ascension, the final Normal Attack in Sangonomiya Kokomi's combo will unleash a swimming fish to deal 30% of her Max HP as Hydro DMG.\nThis DMG is not considered Normal Attack DMG."
 		},

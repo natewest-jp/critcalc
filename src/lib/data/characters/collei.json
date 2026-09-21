@@ -93,7 +93,34 @@
 			"cooldown": 12,
 			"cooldownStartDelay": 20,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"armedFor": 2.617,
+						"icdGate": "none"
+					},
+					"procCooldown": 12,
+					"scaling": 200,
+					"stat": "atk",
+					"element": "dendro",
+					"application": [
+						{
+							"frame": 22,
+							"element": "dendro",
+							"units": 1
+						}
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"attribution": "Forest of Falling Arrows"
+				}
+			],
 			"description": "Throws out a Floral Ring that deals 1 instance of Dendro DMG to targets it comes into contact with.\nThe Floral Ring will return after a set time, dealing Dendro DMG once again.",
 			"application": [
 				{
@@ -284,22 +311,10 @@
 			"name": "Forest of Falling Arrows",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 200,
-					"stat": "atk",
-					"element": "dendro",
-					"_curatorNotes": [
-						"Inherited `manual` trigger. Likely `onHit` with `ability: 'skill'`; gcsim uses a `c6Triggered` bool (reset each E cast) to fire at most once per Floral Brush cast — whichever hitmark (outbound at frame 34 or return at frame 138) connects first. Deals 200% ATK as Dendro DMG via a miniature Cuilein-Anbar (AoE radius 4 on the target). Scope: target enemy."
-					]
-				}
-			],
-			"description": "When the Floral Ring hits, it will create a miniature Cuilein-Anbar that will deal 200% of Collei's ATK as Dendro DMG.\nEach Floral Brush can only create one such miniature Cuilein-Anbar."
+			"description": "When the Floral Ring hits, it will create a miniature Cuilein-Anbar that will deal 200% of Collei's ATK as Dendro DMG.\nEach Floral Brush can only create one such miniature Cuilein-Anbar.",
+			"_curatorNotes": [
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Forest of Falling Arrows — effects[0] (damage atk 200, dendro) RE-TRIGGERED and RE-HOMED onto the skill ability. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `internal/characters/collei/skill.go:50-60` arms a `c6Cb` guarded by a per-cast `c6Triggered` bool and attaches it to both Floral Brush hitmarks (`skill.go:63-72`, `skillHitmarks = {34, 138}`); `cons.go:78-96` queues the miniature Cuilein-Anbar — Dendro, `Durability: 25`, `ICDTagNone`, `Mult: 2`, delay 0 / hitmark 22. `_curatorNotes` on the new host retains: `armedFor` 2.617 is `skillReturn` = 157f, the ring's whole flight, so both hitmarks (34f, 138f) are inside it; `icdGate: 'none'` is gcsim's `ICDTagNone` (`cons.go:83`); the application frame 22 is `QueueAttack`'s hitmark argument (`cons.go:94`); `procCooldown: 12` is Collei's own skill cooldown, standing in for the kit's \"one per Floral Brush\" because `procCap.per` admits only `'stance'` today (`ProcCap`, `src/lib/types/ability.ts:1303-1306`). ⚠️ ⚠️⚠️ Collei's skill authors TWO nominal `application[]` entries (frames 34 and 138), and since the cast-hit-record round a cast dispatches ONE hit record per nominal entry (`CastEvent.hitsAt`) — so without a `procCooldown` this fires TWICE per E where gcsim fires once, adding a phantom Dendro pip 1.73s later. `procCooldown: 12` suppresses it. ⚠️ The cost is that a cooldown-reduced second Floral Brush inside 12s (Sacrificial Bow) would be suppressed too — an under-fire, not a phantom, which is the right direction. ⚠️ Measure at the aura lane, not the buff digest: the gain is +1 Dendro application per E at C6, which the buff-only digest is blind to."
+			]
 		}
 	],
 	"meta": {

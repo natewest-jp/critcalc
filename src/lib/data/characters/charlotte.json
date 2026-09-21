@@ -161,6 +161,52 @@
 						{ "frame": 652, "element": "cryo" },
 						{ "frame": 742, "element": "cryo", "units": 1 },
 						{ "frame": 832, "element": "cryo" }
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"abilityType": ["normal", "charged"],
+								"source": "active",
+								"armedFor": 12,
+								"icdGate": "none"
+							},
+							"procCooldown": 6,
+							"scaling": 180,
+							"stat": "atk",
+							"element": "cryo",
+							"application": [
+								{
+									"frame": 14,
+									"element": "cryo",
+									"units": 1
+								}
+							],
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							},
+							"attribution": "A Summation of Interest"
+						},
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "onHit",
+								"abilityType": ["normal", "charged"],
+								"source": "active"
+							},
+							"procCooldown": 6,
+							"scaling": 42,
+							"stat": "atk",
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							},
+							"attribution": "A Summation of Interest"
+						}
 					]
 				}
 			],
@@ -342,20 +388,11 @@
 			"name": "A Summation of Interest",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 180,
-					"stat": "atk",
-					"element": "cryo",
-					"_curatorNotes": [
-						"Inherited trigger: 'manual'. Actual trigger: OnEnemyDamage from active char's Normal (AttackTagNormal) or Charged attack (AttackTagExtra) hitting an enemy with Focused Impression mark; 6s ICD on Charlotte (c6IcdKey). Damage tagged as AttackTagElementalBurst, ICDTagNone, Cryo, 25 durability. Likely 'onHit' trigger with ability condition (normal/chargeAttack), mark condition (focusedImpression), procCooldown=6s. Also missing: 42% ATK AoE heal to active char not authored in effects — needs reviewer addition."
-					]
-				}
+			"description": "When the active character's Normal and Charged Attacks hit an opponent marked by Framing: Freezing Point Composition's Focused Impression, Monsieur Verite will initiate a coordinated attack that deals 180% of Charlotte's ATK as AoE Cryo DMG and heals active character(s) within the AoE for 42% of Charlotte's ATK. This effect can be triggered once every 6s and both DMG and healing dealt in this way will be considered as having been done by Charlotte's Elemental Burst.",
+			"_curatorNotes": [
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 A Summation of Interest — effects[0] (damage 180% atk cryo) RE-TRIGGERED and RE-HOMED onto the skill's hE variant. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `charlotte/cons.go:113-160` — `OnEnemyDamage`, gated on `skillHoldMarkKey` (the Focused Impression mark, `skill.go:197` = `720+0.9*60` = 774f), on `ae.Info.ActorIndex == Core.Player.Active()`, and on `AttackTagNormal || AttackTagExtra`; sets a 6s `c6IcdKey`, then at +14f queues a Cryo `AttackTagElementalBurst`, `ICDTagNone`, Durability 25 hit **and** a `0.42 × TotalAtk` heal to the active character. `armedFor: 12` is the kit's \"Focused Impression\" Mark Duration (genshin-db `combat2` param8 = 12s at every talent level), **not** gcsim's 774f ≈ 12.9s — the two disagree and the kit is taken; the window opens at the cast while the mark in fact lands at the hold's hitmark, which is the stated `armedFor` convention. `icdGate: 'none'` is gcsim's `ICDTagNone` (`cons.go:137`); `units: 1` is its Durability 25; `frame: 14` is `Tasks.Add(…, 14)` with the inner `QueueAttack` at hitmark 0. Keep that the hit is tagged Elemental Burst in game, which is cosmetic here. ⚠️ gcsim runs ONE `c6IcdKey` over both the damage and the heal; authored as two effects they get two independent 6s `procCooldown` clocks. They cannot drift in practice — both fire off the same hit stream with the same filter — but a future change to one filter would desynchronise them. `source: 'active'` correctly includes Charlotte's own swings when she is on field (`cons.go:126`). No stat collision (heal and damage are different effect kinds); adding the heal introduces no new facet, Charlotte already claims `heal` from the burst."
 			],
-			"description": "When the active character's Normal and Charged Attacks hit an opponent marked by Framing: Freezing Point Composition's Focused Impression, Monsieur Verite will initiate a coordinated attack that deals 180% of Charlotte's ATK as AoE Cryo DMG and heals active character(s) within the AoE for 42% of Charlotte's ATK. This effect can be triggered once every 6s and both DMG and healing dealt in this way will be considered as having been done by Charlotte's Elemental Burst."
+			"caveat": "The coordinated attack only fires while an opponent still carries the Focused Impression mark from a held Skill; a tapped Skill's Snappy Silhouette does not arm it."
 		}
 	],
 	"meta": {

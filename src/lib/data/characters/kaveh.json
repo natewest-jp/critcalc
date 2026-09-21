@@ -90,7 +90,35 @@
 			"duration": 12,
 			"tags": [],
 			"energyCost": 80,
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge"],
+						"source": "self",
+						"armedFor": 12.6,
+						"icdGate": "none"
+					},
+					"procCooldown": 3,
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"scaling": 61.8,
+					"stat": "atk",
+					"element": "dendro",
+					"application": [
+						{
+							"frame": 18,
+							"element": "dendro",
+							"units": 1
+						}
+					],
+					"attribution": "Pairidaeza's Dreams (C6)"
+				}
+			],
 			"_curatorNotes": [
 				"Painted Dome grants Kaveh a 12s self-status (burstDuration = 720 frames): normal/charged/plunge attack AoE increased, DMG converted to Dendro, resistance to interruption increased. Status cancels immediately on swap (OnCharacterSwap handler in burst.go deletes burstKey). No spawned entity — behavior: 'instant' per recipe. duration: 12 left as generator artifact; reviewer to decide field placement.",
 				"Bloom/Lunar-Bloom damage bonus: while Painted Dome is active, all party members' Bloom reactions deal additional DMG (~27.5% at L1, scaling in burstDmgBonus[] in kaveh_gen.go). This team-wide buff is not represented in effects[]. Reviewer to author."
@@ -195,17 +223,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Trigger: 'manual' — likely onHit (OnEnemyHit in cons.go c6()) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey). ICD: 3s (180 frames, c6ICDKey). Damage is AoE Dendro at hit enemy's position (AttackTagNone in gcsim). Also ruptures nearby Dendro Cores after delay (~18 frames, 0.3*60). Missing source: 'character' on effect skeleton. Reviewer to author trigger, ICD, and add source field."
-			],
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 61.8,
-					"stat": "atk",
-					"element": "dendro"
-				}
+				"Trigger: 'manual' — likely onHit (OnEnemyHit in cons.go c6()) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey). ICD: 3s (180 frames, c6ICDKey). Damage is AoE Dendro at hit enemy's position (AttackTagNone in gcsim). Also ruptures nearby Dendro Cores after delay (~18 frames, 0.3*60). Missing source: 'character' on effect skeleton. Reviewer to author trigger, ICD, and add source field.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: Pairidaeza's Dreams — effects[0] (damage atk 61.8, dendro) RE-TRIGGERED and RE-HOMED onto the burst ability. ⚓ A proc is armed by the CAST that hosts it: `armCastProcs` (`sim/run.ts`) is handed `variant?.effects ?? active.effects` and never sees a constellation entry, so an effect authored here would be armed by nothing. The constellation gate travels with the effect's own `conditions` instead (the Faruzan C6 precedent). gcsim: `~/Code/gcsim/internal/characters/kaveh/cons.go:55-97` — `c6` is an `OnEnemyHit` hook: Kaveh's own Normal/Extra/Plunge tag, `burstKey` active, 180-frame status, then a Dendro / Durability 25 / `ICDTagNone` / `Mult: 0.618` attack queued with a `0.3*60` damage delay (`cons.go:95`, gcsim's own comment: \"delay is an estimate\"). The C6 entry's `_curatorNotes` must say the effect is authored on the BURST, not here, because a constellation-hosted proc has no arming window (`armCastProcs` is handed `variant?.effects ?? active.effects` only) — the Citlali-C4 / Faruzan-C6 re-homing precedent — and that it carries its own constellation condition because a burst-hosted effect is not gated by the C6 entry. The burst-side note must record `armedFor: 12.6` = `burstKey` added at the 36f hitmark for 720f; `application[0].frame: 18` = gcsim's `0.3*60` damage delay (its own estimate); `icdGate: 'none'` = `ICDTagNone`; Durability 25 = 1U; the Dendro-Core rupture half is unmodelled. Drop the \"Missing source: 'character'\" line — a `damage` effect has no `source` field. ⚠️ `armedFor` is fixed from the cast while the in-game window dies on swap — but `source: 'self'` means only Kaveh's own swings fire it and he cannot swing off field, so the divergence is self-correcting. ⚠️ Every one of the burst's `application[]`-driven hit records is a cast hit, not a normal/charged/plunge, so the burst cannot fire its own proc. ⚠️ The 180-frame status is gcsim's; the kit's \"once every 3s\" agrees, so `procCooldown: 3` needs no adjudication. ⚠️ A cast-hosted proc draws no mark on any summon lane (`tickKey` is summon-only) — correct here, Painted Dome spawns nothing."
 			],
 			"description": "When Kaveh's Normal, Charged, or Plunging Attacks hit opponents during Painted Dome, they will unleash Pairidaeza's Light upon the opponent's position, dealing 61.8% of Kaveh's ATK as AoE Dendro DMG and causing all Dendro Cores within that AoE to burst. This effect can be triggered once every 3s."
 		}
