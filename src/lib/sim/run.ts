@@ -470,7 +470,9 @@ export function runRotation(
 					getHolderStates,
 					ctx.team.constellationByHolder,
 					ctx.getCharState,
-					segPools
+					segPools,
+					(holder, state, at) =>
+						closeStateWindows(ctx, ctx.getCharState(holder.id), holder.id, state, at)
 				);
 				// A hit is one of the four places a count moves (stack-threshold
 				// round, 2026-09-18). Inside the guard on purpose: with no onHit

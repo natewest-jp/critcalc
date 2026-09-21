@@ -226,7 +226,9 @@ const STATES = new Set([
 	'spiritEnvoy',
 	'envoyCooldown',
 	// Varesa's Follow-Up Strike (T1 tranche, 2026-09-17).
-	'followUpStrike'
+	'followUpStrike',
+	// Illuga's Haunted Night's Oriole-Song (event-ended buffs round, 2026-09-21).
+	'orioleSong'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
@@ -612,6 +614,77 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 			});
 		}
 	);
+
+	// (D.45 / D.46) A BUFF BOUND TO A STATE, AND A SPEND THAT CLOSES ONE
+	// (event-ended buffs round, 2026-09-21). Both name a state whose WINDOW the
+	// parse must actually record for this holder — a stance, an `opensState`
+	// companion, a transient spec or its `onEnd` chain. Anything else has no
+	// `state` window to intersect with or to clamp, so `whileState` would delete
+	// the bar outright and `closesStateWhenEmpty` would close nothing, both in
+	// silence. ⚠️ The same "openable" walk `stateIndex.ts` makes, restated here
+	// because this module must stay runtime-import-free.
+	{
+		const openable = new Set<string>();
+		const specStates = (spec: unknown): void => {
+			if (!spec || typeof spec !== 'object') return;
+			const sp = spec as { state?: unknown; onEnd?: { state?: unknown } };
+			if (typeof sp.state === 'string') openable.add(sp.state);
+			if (typeof sp.onEnd?.state === 'string') openable.add(sp.onEnd.state);
+		};
+		const bound: Array<{ node: Record<string, unknown>; field: string }> = [];
+		const walkRaw = (node: unknown): void => {
+			if (!node || typeof node !== 'object') return;
+			if (Array.isArray(node)) {
+				for (const n of node) walkRaw(n);
+				return;
+			}
+			const o = node as Record<string, unknown>;
+			if (o.behavior === 'stance') openable.add('inStance');
+			if (typeof o.opensState === 'string') openable.add(o.opensState);
+			if (o.opensTransientState) specStates(o.opensTransientState);
+			if (o.actionOpensState && typeof o.actionOpensState === 'object')
+				for (const spec of Object.values(o.actionOpensState)) specStates(spec);
+			if (o.whileState !== undefined) bound.push({ node: o, field: 'whileState' });
+			if (o.closesStateWhenEmpty !== undefined)
+				bound.push({ node: o, field: 'closesStateWhenEmpty' });
+			for (const v of Object.values(o)) walkRaw(v);
+		};
+		walkRaw({
+			abilities: c.abilities,
+			passives: c.passives,
+			constellations: c.constellations,
+			factionBonuses: c.factionBonuses
+		});
+		for (const { node, field } of bound) {
+			const state = node[field];
+			if (typeof state !== 'string' || !openable.has(state)) {
+				push(
+					'strict',
+					'state-binding-unopenable',
+					`${field} "${String(state)}" names a state this character's data never opens as a window (a stance, opensState, a transient spec or its onEnd) — nothing would be there to bind to`
+				);
+			}
+			if (field === 'whileState') {
+				const ok =
+					(node.type === 'buff' || node.type === 'resShred' || node.type === 'elevate') &&
+					typeof node.duration === 'number';
+				if (!ok)
+					push(
+						'strict',
+						'while-state-scope',
+						`whileState on a "${String(node.type)}" effect${typeof node.duration === 'number' ? '' : ' with no duration'} — it clips a drawn buff window, so it belongs on a buff, resShred or elevate that has a duration`
+					);
+			} else {
+				const trig = node.trigger as { type?: unknown } | undefined;
+				if (node.type !== 'consumeStacks' || trig?.type !== 'onHit')
+					push(
+						'strict',
+						'closes-state-scope',
+						`closesStateWhenEmpty belongs on an onHit consumeStacks — the cast-side consume dispatcher does not read it`
+					);
+			}
+		}
+	}
 
 	// (C.18) inStance condition only on characters with a stance-bearing ability
 	const stanceBearer = abilityHasStanceBehavior(c);

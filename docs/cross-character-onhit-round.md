@@ -89,6 +89,9 @@ stand-in with a caveat (T0.5, 2026-09-16).
 
 ### 1.5 ⏭ Skirk's A4 — NOT re-authored, and it is Nate's call
 
+↻ **RESOLVED the same day** — ⚓ Nate made it a round, and `whileState` shipped:
+`docs/event-ended-buffs-round.md`. What follows is the reasoning that queued it.
+
 The judgment pass (2026-09-21) pencilled her in as "an `onHit` buff on a
 teammate's hit, blocked on this defect". Unblocked, it is a DISPLAY question,
 not a data fix. Prototyped in memory (`source: 'others'`,

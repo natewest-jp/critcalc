@@ -1372,3 +1372,143 @@ describe('consumeStacks on a teammate’s hit — spent at the key’s home', ()
 		expect(songAtLastCast('Singer Q > Mate E ~8s E > Singer E', cryo)).toBe(5);
 	});
 });
+
+// `whileState` — a buff that exists only while its HOLDER is in a state
+// (event-ended buffs round, 2026-09-21). The drawn window is the intersection of
+// the trigger's window with the holder's state windows, which a `state`
+// CONDITION — an entry test — cannot say: it lets `duration` run on.
+describe('whileState — a buff window clipped to the holder’s state', () => {
+	const stanceHolder = (effects: Effect[], where: 'skill' | 'passive' = 'skill'): CharacterData => {
+		const c = mkChar('bound', 'Bound', { element: 'anemo' });
+		c.abilities[1] = mkSkill('bound', {
+			behavior: 'stance',
+			duration: 10,
+			terminatesOnSwap: true,
+			...(where === 'skill' ? { effects } : {})
+		});
+		if (where === 'passive')
+			c.passives = [
+				{ id: 'bound__passive__p', name: 'Pact', abilityType: 'passive', effects }
+			] as unknown as Ability[];
+		return c;
+	};
+	const selfBuff = (extra: Record<string, unknown> = {}) =>
+		teamBuff({ target: 'self', duration: 12, ...extra });
+	const mate = () => mkChar('mate', 'Mate', { element: 'pyro' });
+	const barsOf = (r: ReturnType<typeof run>, id = 'bound') =>
+		r.received.filter((row) => row.characterId === id).flatMap((row) => row.bars);
+	const stanceOf = (r: ReturnType<typeof run>) =>
+		r.rotation.windows.find((w) => w.kind === 'state' && w.name === 'inStance')!;
+
+	it('loses its END to a stance a swap cut short — and the unbound twin does not', () => {
+		const bound = run('Bound E N1 > Mate N1', [
+			stanceHolder([selfBuff({ whileState: 'inStance' })]),
+			mate()
+		]);
+		const stance = stanceOf(bound);
+		expect(stance.end).toBeLessThan(framesOf(10));
+		expect(barsOf(bound)).toHaveLength(1);
+		expect(barsOf(bound)[0].end).toBe(stance.end);
+		// The bar keeps the effect's LENGTH for the tooltip, and the cut end is not
+		// a natural one.
+		expect(barsOf(bound)[0].duration).toBe(framesOf(12));
+		expect(barsOf(bound)[0].naturalEnd).toBe(framesOf(12));
+
+		const free = run('Bound E N1 > Mate N1', [stanceHolder([selfBuff()]), mate()]);
+		expect(barsOf(free)[0].end).toBe(framesOf(12));
+	});
+
+	it('runs to the state’s own end when nothing cuts it', () => {
+		const r = run('Bound E ~12s', [stanceHolder([selfBuff({ whileState: 'inStance' })]), mate()]);
+		expect(barsOf(r)[0].end).toBe(framesOf(10));
+	});
+
+	it('loses its START when the trigger came before the state — a teammate’s hit, then the stance', () => {
+		const effect = selfBuff({
+			whileState: 'inStance',
+			duration: 20,
+			trigger: { type: 'onHit', source: 'others' }
+		});
+		const r = run('Mate E > Bound E ~3s', [stanceHolder([effect], 'passive'), mate()]);
+		const stance = stanceOf(r);
+		expect(stance.start).toBeGreaterThan(0);
+		expect(barsOf(r)).toHaveLength(1);
+		expect(barsOf(r)[0].start).toBe(stance.start);
+		// No stance at all: the status is up and nothing is drawn.
+		expect(barsOf(run('Mate E ~3s', [stanceHolder([effect], 'passive'), mate()]))).toEqual([]);
+	});
+
+	it('splits a window whose effects disagree — the unbound stat keeps its span', () => {
+		const r = run('Bound E N1 > Mate N1', [
+			stanceHolder([selfBuff({ whileState: 'inStance' }), selfBuff({ stat: 'em' })]),
+			mate()
+		]);
+		const stance = stanceOf(r);
+		const wins = r.rotation.windows.flatMap((w) =>
+			w.kind === 'buff' && w.characterId === 'bound' ? [w] : []
+		);
+		const endOf = (stat: string) =>
+			wins.find((w) => w.effects.some((e) => e.type === 'buff' && e.stat === stat))!.end;
+		expect(endOf('atk')).toBe(stance.end);
+		expect(endOf('em')).toBe(framesOf(12));
+		// Ids stay unique and in emission order.
+		const ids = r.rotation.windows.flatMap((w) => (w.kind === 'buff' ? [w.id] : []));
+		expect(ids).toEqual(ids.map((_, i) => i));
+	});
+});
+
+// A spend that EMPTIES its key closes a named state of the holder's — Illuga's
+// Oriole-Song ends when her Nightingale's Song is spent.
+describe('consumeStacks.closesStateWhenEmpty', () => {
+	const holder = (amount: number): CharacterData => {
+		const c = mkChar('singer', 'Singer', { element: 'hydro' });
+		c.abilities[2] = mkBurst('singer', {
+			opensTransientState: { state: 'orioleSong', duration: 20 },
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: { type: 'onCast', ability: 'burst' },
+					key: 'song',
+					amount,
+					max: amount,
+					scope: 'rotation'
+				},
+				{
+					type: 'consumeStacks',
+					target: 'self',
+					trigger: { type: 'onHit', source: 'active', filter: { element: 'pyro' } },
+					conditions: { type: 'state', state: 'orioleSong' },
+					key: 'song',
+					amount: 1,
+					closesStateWhenEmpty: 'orioleSong'
+				},
+				teamBuff({
+					trigger: { type: 'onCast', ability: 'burst' },
+					duration: 20,
+					whileState: 'orioleSong'
+				})
+			]
+		});
+		return c;
+	};
+	const pyro = () => mkChar('mate', 'Mate', { element: 'pyro' });
+	const songOf = (r: ReturnType<typeof run>) =>
+		r.rotation.windows.find((w) => w.kind === 'state' && w.name === 'orioleSong')!;
+
+	it('the hit that takes the last stack ends the state, and the bound bar with it', () => {
+		const r = run('Singer Q > Mate E ~8s E ~8s E', [holder(2), pyro()]);
+		const secondHit = r.rotation.events.filter(
+			(e) => e.kind === 'cast' && e.characterId === 'mate'
+		)[1].time;
+		expect(songOf(r).end).toBe(secondHit);
+		expect(r.team[0].bars).toHaveLength(1);
+		expect(r.team[0].bars[0].end).toBe(secondHit);
+	});
+
+	it('⛔ a pool that is not emptied leaves the state its full length', () => {
+		const r = run('Singer Q > Mate E ~8s E', [holder(5), pyro()]);
+		expect(songOf(r).end).toBe(framesOf(20));
+		expect(r.team[0].bars[0].end).toBe(framesOf(20));
+	});
+});

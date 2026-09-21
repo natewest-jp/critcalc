@@ -227,8 +227,9 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 12,
+					"duration": 14.3,
 					"durationType": "fixed",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -337,8 +338,9 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 12,
+					"duration": 14.3,
 					"durationType": "fixed",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -447,8 +449,9 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 12,
+					"duration": 14.3,
 					"durationType": "fixed",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -557,8 +560,9 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 12,
+					"duration": 14.3,
 					"durationType": "fixed",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -624,8 +628,9 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 12,
+					"duration": 14.3,
 					"durationType": "fixed",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -691,8 +696,9 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 12,
+					"duration": 14.3,
 					"durationType": "fixed",
+					"whileState": "inStance",
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -766,7 +772,8 @@
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: Azure Devour, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks (0.5s per hit, 1s with 2+ Hexerei). Four Winds itself can't be placed — a second E shares the base skill's cooldown, which isn't back up in the stance.\"",
 				"↻ CAVEAT REWRITTEN 2026-09-16 (T0.5): the sentence \"Four Winds' Ascension can't be placed\" is no longer true — it is a sibling ability with its own 11s clock now (see it below). The remaining two omissions keep their half of the sentence.",
 				"↻ CAVEAT REMOVED 2026-09-18: Azure Devour spends its use now (`specialChargeSpends` on the in-stance normal), so the sentence this carried is no longer true and no pixel on this ability is wrong. What is still unmodelled on the kit is C6's free casts (caveated there) and magnitudes (A1's multiplier, C1's Lyrical Libation, C2's strike), none of which draws on this ability.",
-				"⚓ A1's MULTIPLIER IS AUTHORED HERE, 2026-09-19 (⚓ Nate), on the house convention Skirk's Return to Oblivion and Neuvillette's A1 use: \"deals X% of original DMG\" as a +(X − 100) `*DmgBonus` buff. gcsim asc.go a1Multiplier: 1.4 with ≥2 Anemo OR ≥2 of one Pyro/Hydro/Electro/Cryo element in the party, 2.2 with both at once, applied to in-stance Normal/Charged Attacks, Azure Devour and Four Winds' Ascension — so `normalDmgBonus` + `chargeDmgBonus` + `skillDmgBonus` at +40, or +120, under mutually exclusive gates (the +40 rung wraps the +120 condition in `not`). ⚠️ `teamElementCount` is HOLDER-EXCLUDED, so \"at least 2 Anemo characters\" is `anemo >= 1` here (Varka is the other one). HOSTED ON THIS ABILITY, not on the A1 passive, for the reason Hu Tao's Paramita buff is: an effect on the stance ability fires only on casts OF this ability, where an `onCast skill` on the passive would fire again on every in-stance Four Winds cast and refresh-merge the bar past the stance's end. `duration: 12` is the stance's base length (the Hu Tao / Cyno precedent) — ⚠️ it does not follow the burst's 2.3s extension, so under a `Q` the bar ends 2.3s before the stance does. ⚠️ An ADDITIVE stand-in for a MULTIPLICATIVE bucket, the same approximation the two precedents make: the chip prints +40% / +120% where the game multiplies by 1.4 / 2.2; the three stats share one bar (one window per provenance and duration, the pool round). `skillDmgBonus` reaches only Four Winds in practice — Windbound cannot be recast inside its own stance."
+				"⚓ A1's MULTIPLIER IS AUTHORED HERE, 2026-09-19 (⚓ Nate), on the house convention Skirk's Return to Oblivion and Neuvillette's A1 use: \"deals X% of original DMG\" as a +(X − 100) `*DmgBonus` buff. gcsim asc.go a1Multiplier: 1.4 with ≥2 Anemo OR ≥2 of one Pyro/Hydro/Electro/Cryo element in the party, 2.2 with both at once, applied to in-stance Normal/Charged Attacks, Azure Devour and Four Winds' Ascension — so `normalDmgBonus` + `chargeDmgBonus` + `skillDmgBonus` at +40, or +120, under mutually exclusive gates (the +40 rung wraps the +120 condition in `not`). ⚠️ `teamElementCount` is HOLDER-EXCLUDED, so \"at least 2 Anemo characters\" is `anemo >= 1` here (Varka is the other one). HOSTED ON THIS ABILITY, not on the A1 passive, for the reason Hu Tao's Paramita buff is: an effect on the stance ability fires only on casts OF this ability, where an `onCast skill` on the passive would fire again on every in-stance Four Winds cast and refresh-merge the bar past the stance's end. `duration: 12` is the stance's base length (the Hu Tao / Cyno precedent) — ⚠️ it does not follow the burst's 2.3s extension, so under a `Q` the bar ends 2.3s before the stance does. ⚠️ An ADDITIVE stand-in for a MULTIPLICATIVE bucket, the same approximation the two precedents make: the chip prints +40% / +120% where the game multiplies by 1.4 / 2.2; the three stats share one bar (one window per provenance and duration, the pool round). `skillDmgBonus` reaches only Four Winds in practice — Windbound cannot be recast inside its own stance.",
+				"↻ 2026-09-21 (event-ended buffs round): the 6 A1-multiplier effects are BOUND to the stance — `whileState: 'inStance'` — and their `duration` is 14.3, the stance's LONGEST possible length (12s + the burst's 2.3s extension), not a claim of its own. gcsim applies `a1Multiplier` at four in-stance sites only, so the bar's honest span IS the stance: measured before, it drew 0–12s over a 1.22s swap-cut stance (`Varka E N1 > Bennett E Q`) and 0–12s over a 14.3s burst-extended one. ⚠️ If the stance ever gains another extension, this number moves with it."
 			],
 			"description": "Manifest the true essence of Favonius Bladework with absolute power. Produces different effects depending on whether the skill is Tapped or Held.\n\nTap\nLeap forward and slash in one fluid motion, dealing AoE Anemo DMG and switching to **Sturm und Drang** mode.\nWhile in Sturm und Drang, Varka's Normal Attack and Charged Attack DMG is increased, and he cannot perform Plunging Attacks. Also, when performing Normal or Charged Attacks, Varka's dual-wielded claymores will deal corresponding Elemental DMG based on the Elemental Types of the characters in the party, respectively. This Elemental DMG cannot be overridden by infusions.\nAdditionally, when in Sturm und Drang, if there are Pyro, Hydro, Electro or Cryo characters in the party, Varka's Elemental Skill Windbound Execution will be converted to the special Elemental Skill, **Four Winds' Ascension**, dealing corresponding Elemental DMG and Anemo DMG. Additionally, Varka can also expend uses of the special Elemental Skill Four Winds' Ascension to perform a special Charged Attack, Azure Devour, that does not consume stamina to deal corresponding Elemental DMG and Anemo DMG.\n\nHold\nAfter charging for a while, leap forward. The duration of the charge will increase the distance of the leap.",
 			"application": [{ "frame": 40, "element": "anemo", "units": 1 }]

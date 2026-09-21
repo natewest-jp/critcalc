@@ -855,7 +855,12 @@ export function dispatchConsumeStacksOnHit(
 	constellationByHolder: Map<string, number>,
 	getCharState: (charId: string) => CharState,
 	/** ⚓ NULL AT A SUMMON TICK — see the gain dispatcher's note. */
-	segPools: StackPools | null
+	segPools: StackPools | null,
+	/** Closes a named state of `holder`'s at `at` — what a spend that EMPTIES
+	 *  its key does when it carries `closesStateWhenEmpty` (Illuga's Oriole-Song
+	 *  ends with her Nightingale's Song). Handed in because the state records
+	 *  live on the sim context, which this module does not import. */
+	closeState?: (holder: CharacterData, state: string, at: number) => void
 ): void {
 	for (const holder of allChars) {
 		const holderCons = constellationByHolder.get(holder.id) ?? 0;
@@ -915,6 +920,8 @@ export function dispatchConsumeStacksOnHit(
 					}
 				}
 				mirrorKey(target, fx.key);
+				if (fx.closesStateWhenEmpty !== undefined && (state.get(fx.key) ?? 0) <= 0)
+					closeState?.(holder, fx.closesStateWhenEmpty, hit.time);
 			}
 		}
 	}

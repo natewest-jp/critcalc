@@ -1095,7 +1095,11 @@ export type State =
 	 *  using her Elemental Skill"), and an instant cast can close a state only by
 	 *  opening one (T1 tranche, 2026-09-17). ⚠️ Nothing reads it yet — gcsim turns
 	 *  a Normal Attack inside it into a Charged Attack, which is unmodelled. */
-	| 'followUpStrike';
+	| 'followUpStrike'
+	/** Illuga's Haunted Night's Oriole-Song (event-ended buffs round,
+	 *  2026-09-21) — the burst's 20s effect, which ALSO ends the moment her
+	 *  Nightingale's Song pool is spent (`consumeStacks.closesStateWhenEmpty`). */
+	| 'orioleSong';
 
 /**
  * Post-action transient state — a short named gating window opened by an
@@ -1330,6 +1334,34 @@ export type EffectBase = {
 	 * condition, so there is always a window to count in.
 	 */
 	procCap?: ProcCap;
+	/**
+	 * ⚓⚓ THE BUFF EXISTS ONLY WHILE ITS HOLDER IS IN THIS STATE (event-ended
+	 * buffs round, 2026-09-21). The drawn window is the INTERSECTION of the
+	 * window the trigger and `duration` produce with the holder's `state` windows
+	 * of this name — so it can lose its end (a stance cut by a swap), its start
+	 * (a status gained before the stance opened), both, or all of itself, and one
+	 * window can come back as several pieces.
+	 *
+	 * ⚓ A DIFFERENT CLAIM FROM A `state` CONDITION, which is an ENTRY TEST: that
+	 * asks "was the state up when the trigger fired" and then lets `duration`
+	 * run. Three holders needed the other thing. Varka's A1 multiplier is applied
+	 * by gcsim at four in-stance sites only, and drew 12s over a 1.22s swap-cut
+	 * stance. Skirk's Death's Crossing is a 20s status any teammate's hit grants,
+	 * stance or no stance, that only MATTERS in Seven-Phase Flash — the bar is
+	 * status ∩ stance, which no entry test can say (the status usually predates
+	 * the stance). Illuga's C4 lasts "while Oriole-Song is active", and that
+	 * effect ends early when her stack pool is spent.
+	 *
+	 * ⚠️ The HOLDER's state, never the receiver's. ⚠️ `duration` stays the
+	 * effect's own length — it feeds the tooltip, and a clipped end is not a
+	 * natural one (no seam is drawn there). ⚠️ Applied as ONE pass at the end of
+	 * `deriveBuffWindows`, after every in-place refresh has settled.
+	 *
+	 * Lint D.45: a buff-like effect with a `duration`, and a state the holder's
+	 * own data can OPEN as a `state` window — ⛔ not `duringSummon`, `onField`,
+	 * `offField` or the `after*` states, which have no such window.
+	 */
+	whileState?: State;
 	target: EffectTarget | EffectTarget[];
 	/** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
 	attribution?: string;
@@ -1990,6 +2022,19 @@ export type Effect =
 			 *  regardless of count (Skirk's Q out-of-stance shape). Numeric
 			 *  amounts subtract and saturate at 0. */
 			amount: number | 'all';
+			/**
+			 * ⚓ CLOSE THIS STATE OF THE HOLDER'S WHEN THE SPEND LEAVES THE KEY AT
+			 * ZERO (event-ended buffs round, 2026-09-21) — "when all stacks of
+			 * Nightingale's Song have been consumed … the Haunted Night's
+			 * Oriole-Song effect will end" (gcsim: `if c.nightingalesSong < 1 {
+			 * c.DeleteStatus(burstKey) }`). The state's window is clamped at the
+			 * hit's instant, and whatever is bound to it (`whileState`) ends there.
+			 *
+			 * ⚠️ `onHit` consumes only (lint D.46): the cast-side consume
+			 * dispatcher has no holder asking for it, and ⛔ a field admits a reader
+			 * only with its consumer.
+			 */
+			closesStateWhenEmpty?: State;
 	  });
 
 // ---------------------------------------------------------------------------

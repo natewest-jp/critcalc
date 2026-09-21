@@ -2713,5 +2713,82 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		}
 	}
 
-	return out;
+	return clipToHolderStates(out, windows);
+}
+
+/**
+ * ⚓⚓ `whileState` — THE BUFF EXISTS ONLY WHILE ITS HOLDER IS IN A STATE
+ * (event-ended buffs round, 2026-09-21). Every window is intersected with the
+ * holder's `state` windows of the name its effects carry: a Varka A1 multiplier
+ * authored at the stance's full length loses its tail to a swap-cut stance, a
+ * Skirk Death's Crossing gained before Seven-Phase Flash loses its head, an
+ * Illuga C4 ends with the Oriole-Song her spent pool closed.
+ *
+ * ⚓ ONE PASS, LAST. Several sites refresh a window IN PLACE after emitting it
+ * (`lastWin.end = buffEnd`), so a clip at `emit` would cut a span that is about
+ * to grow. It also makes the rule one rule for every surface: a per-receiver
+ * SLICE is clipped exactly like a whole window, because intersection does not
+ * care what cut the other side.
+ *
+ * ⚠️ A window's effects may disagree (one bound, one not), so the window is
+ * split by `whileState` first — the unbound part keeps its span untouched.
+ * ⚠️ `duration` is left alone (the tooltip's LENGTH), and a received-surface
+ * piece is stamped `buffStart` so the projection reads the clipped end as NOT
+ * natural and draws no seam there.
+ * ⚠️ Ids are renumbered when — and only when — something was clipped: they are
+ * emission ORDER and nothing else, so a rotation with no bound effect returns
+ * the very array it was handed.
+ */
+function clipToHolderStates(out: BuffWindow[], windows: readonly TimelineWindow[]): BuffWindow[] {
+	const boundStateOf = (e: Effect): string | undefined => (e as { whileState?: string }).whileState;
+	if (!out.some((w) => w.effects.some((e) => boundStateOf(e) !== undefined))) return out;
+
+	const spanCache = new Map<string, { start: number; end: number }[]>();
+	const spansOf = (holderId: string, state: string): { start: number; end: number }[] => {
+		const key = `${holderId}::${state}`;
+		let spans = spanCache.get(key);
+		if (!spans) {
+			spans = windows
+				.filter(
+					(w): w is Extract<TimelineWindow, { kind: 'state' }> =>
+						w.kind === 'state' && w.name === state && w.characterId === holderId
+				)
+				.map((w) => ({ start: w.start, end: w.end }))
+				.sort((a, b) => a.start - b.start);
+			spanCache.set(key, spans);
+		}
+		return spans;
+	};
+
+	const result: BuffWindow[] = [];
+	for (const w of out) {
+		// First-seen order, so an unbound part keeps its place ahead of a bound one
+		// authored after it.
+		const groups = new Map<string | undefined, Effect[]>();
+		for (const e of w.effects) {
+			const state = boundStateOf(e);
+			const g = groups.get(state);
+			if (g) g.push(e);
+			else groups.set(state, [e]);
+		}
+		for (const [state, effects] of groups) {
+			if (state === undefined) {
+				result.push(effects.length === w.effects.length ? w : { ...w, effects });
+				continue;
+			}
+			for (const span of spansOf(w.characterId, state)) {
+				const start = Math.max(w.start, span.start);
+				const end = Math.min(w.end, span.end);
+				if (end <= start) continue;
+				result.push({
+					...w,
+					start,
+					end,
+					effects,
+					...(w.duration !== undefined ? { buffStart: w.buffStart ?? w.start } : {})
+				});
+			}
+		}
+	}
+	return result.map((w, i) => (w.id === i ? w : { ...w, id: i }));
 }
