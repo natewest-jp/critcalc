@@ -58,6 +58,7 @@
 					"frames": {
 						"anim": 55,
 						"hit": 37,
+						"lands": [14, 37],
 						"N": 48,
 						"C": 43
 					}
@@ -100,7 +101,7 @@
 					"name": "Denial of Darkness",
 					"frames": {
 						"anim": 67,
-						"lands": 32,
+						"lands": [32, 37, 42],
 						"N": 64,
 						"E": 48,
 						"Q": 45,

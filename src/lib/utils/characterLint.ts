@@ -345,6 +345,16 @@ function isPositiveInt(v: unknown): v is number {
 	return typeof v === 'number' && Number.isInteger(v) && v > 0;
 }
 
+/** A FrameMap entry's value: a positive integer — or, for `lands` alone, the LIST
+ *  form (every-landing round, 2026-09-21): two or more positive integers, first
+ *  to last. ⚠️ Equal neighbours are legal (two hits on one frame); a one-element
+ *  list is not — that is the scalar. */
+function isFrameValue(k: string, v: unknown): boolean {
+	if (k === 'lands' && Array.isArray(v))
+		return v.length >= 2 && v.every(isPositiveInt) && v.every((f, i) => i === 0 || f >= v[i - 1]);
+	return isPositiveInt(v);
+}
+
 function isPositiveNumber(v: unknown): v is number {
 	return typeof v === 'number' && v > 0 && Number.isFinite(v);
 }
@@ -1188,7 +1198,7 @@ function lintNormal(
 			);
 		}
 		for (const [k, v] of Object.entries(fm)) {
-			if (v !== undefined && !isPositiveInt(v)) {
+			if (v !== undefined && !isFrameValue(k, v)) {
 				push(
 					'strict',
 					'frame-value-invalid',
@@ -1288,7 +1298,7 @@ function lintNormal(
 			push('strict', 'missing-anim', `chargeFrames.anim missing or not a positive integer`, a.id);
 		}
 		for (const [k, v] of Object.entries(a.chargeFrames)) {
-			if (v !== undefined && !isPositiveInt(v)) {
+			if (v !== undefined && !isFrameValue(k, v)) {
 				push('strict', 'frame-value-invalid', `chargeFrames.${k} is not a positive integer`, a.id);
 			}
 		}
@@ -1311,7 +1321,7 @@ function lintNormal(
 				);
 			}
 			for (const [k, v] of Object.entries(fm)) {
-				if (v !== undefined && !isPositiveInt(v)) {
+				if (v !== undefined && !isFrameValue(k, v)) {
 					push(
 						'strict',
 						'frame-value-invalid',
@@ -1414,11 +1424,16 @@ function lintNormal(
 	];
 	for (const [field, fm, cls] of landed) {
 		if (fm?.lands === undefined) continue;
-		if (isPositiveInt(fm.anim) && fm.lands > fm.anim)
+		// ↻ The LIST form (every-landing round, 2026-09-21) is checked at its LAST
+		// frame; "restates `hit`" is a claim about the SCALAR only — a list beside
+		// `hit` is the 80 multi-hit normals saying what `hit` (their last hitmark,
+		// and their cancel tier) cannot.
+		const last = Array.isArray(fm.lands) ? Math.max(...fm.lands) : fm.lands;
+		if (isPositiveInt(fm.anim) && last > fm.anim)
 			push(
 				'strict',
 				'frame-value-invalid',
-				`${field}.lands (${fm.lands}) is past anim (${fm.anim})`,
+				`${field}.lands (${JSON.stringify(fm.lands)}) is past anim (${fm.anim})`,
 				a.id
 			);
 		if (fm.lands === fm.hit)

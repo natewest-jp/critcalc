@@ -122,5 +122,22 @@ export function frameAt(fm: import('$lib/types/ability').FrameMap, key: string):
  */
 export function landsAt(fm: import('$lib/types/ability').FrameMap): number | null {
 	if (typeof fm.lands === 'number') return fm.lands;
+	if (Array.isArray(fm.lands) && fm.lands.length > 0) return Math.min(...fm.lands);
 	return typeof fm.hit === 'number' ? fm.hit : null;
+}
+
+/**
+ * EVERY frame a swing's hits land, first to last — empty when the map does not
+ * say (every-landing round, 2026-09-21). `landsAt()` is its first element, and
+ * stays the answer to "when does this swing connect".
+ *
+ * ⚓ ICD counts HITS and so does every `onHit`: a two-hit swing spends two slots
+ * of the every-third-hit budget and fires a per-hit grant twice. One swing was
+ * one hit until this round (`hits.ts` carried it as a documented approximation).
+ * ⚠️ Equal frames are kept — two hits on one frame are two hits.
+ */
+export function landingsOf(fm: import('$lib/types/ability').FrameMap): number[] {
+	if (Array.isArray(fm.lands)) return [...fm.lands].sort((a, b) => a - b);
+	const one = landsAt(fm);
+	return one === null ? [] : [one];
 }

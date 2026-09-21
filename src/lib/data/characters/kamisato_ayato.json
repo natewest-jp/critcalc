@@ -19,7 +19,15 @@
 				{ "name": "N1", "frames": { "anim": 21, "hit": 12, "N": 15 } },
 				{ "name": "N2", "frames": { "anim": 27, "hit": 18 } },
 				{ "name": "N3", "frames": { "anim": 34, "hit": 20, "N": 30 } },
-				{ "name": "N4", "frames": { "anim": 29, "hit": 25, "N": 27 } },
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 29,
+						"hit": 25,
+						"lands": [22, 25],
+						"N": 27
+					}
+				},
 				{ "name": "N5", "frames": { "anim": 63, "hit": 41 } }
 			],
 			"chargeFrames": {

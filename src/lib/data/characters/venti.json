@@ -27,7 +27,8 @@
 					"name": "N1",
 					"frames": {
 						"anim": 30,
-						"hit": 27
+						"hit": 27,
+						"lands": [17, 27]
 					}
 				},
 				{
@@ -48,7 +49,8 @@
 					"name": "N4",
 					"frames": {
 						"anim": 31,
-						"hit": 28
+						"hit": 28,
+						"lands": [15, 28]
 					}
 				},
 				{

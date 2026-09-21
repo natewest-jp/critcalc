@@ -42,7 +42,7 @@
 			],
 			"chargeFrames": {
 				"anim": 43,
-				"lands": 26,
+				"lands": [26, 27],
 				"N": 42,
 				"D": 27,
 				"J": 27,

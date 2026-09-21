@@ -36,9 +36,23 @@
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 34, "hit": 30 } },
 				{ "name": "N2", "frames": { "anim": 36, "hit": 19 } },
-				{ "name": "N3", "frames": { "anim": 56, "hit": 42 } },
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 56,
+						"hit": 42,
+						"lands": [25, 42]
+					}
+				},
 				{ "name": "N4", "frames": { "anim": 44, "hit": 17 } },
-				{ "name": "N5", "frames": { "anim": 105, "hit": 56 } }
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 105,
+						"hit": 56,
+						"lands": [29, 56]
+					}
+				}
 			],
 			"plungeFrames": {
 				"anim": 84,

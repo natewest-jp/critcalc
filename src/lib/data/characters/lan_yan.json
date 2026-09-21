@@ -30,7 +30,7 @@
 					"name": "N2",
 					"frames": {
 						"anim": 37,
-						"lands": 17,
+						"lands": [17, 37],
 						"C": 30,
 						"swap": 37
 					}
@@ -39,7 +39,7 @@
 					"name": "N3",
 					"frames": {
 						"anim": 21,
-						"lands": 15,
+						"lands": [15, 21],
 						"C": 37,
 						"swap": 21
 					}

@@ -18,13 +18,22 @@
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 29, "hit": 11, "N": 15, "C": 23 } },
 				{ "name": "N2", "frames": { "anim": 31, "hit": 13, "N": 22, "C": 25 } },
-				{ "name": "N3", "frames": { "anim": 55, "hit": 29, "N": 44, "C": 45 } },
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 55,
+						"hit": 29,
+						"lands": [15, 29],
+						"N": 44,
+						"C": 45
+					}
+				},
 				{ "name": "N4", "frames": { "anim": 51, "hit": 21, "N": 30, "C": 37 } },
 				{ "name": "N5", "frames": { "anim": 90, "hit": 35, "N": 67 } }
 			],
 			"chargeFrames": {
 				"anim": 64,
-				"lands": 19,
+				"lands": [19, 27],
 				"N": 50,
 				"E": 50,
 				"Q": 50,
