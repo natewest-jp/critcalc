@@ -254,22 +254,23 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 60,
-					"snapshottable": false,
-					"_curatorNotes": [
-						"Inherited `manual` trigger. Likely `onCast` with `ability: 'burst'` — gcsim calls c4() directly inside Burst(). Target `'self'` appears incorrect: description says 'all nearby characters excluding Collei herself' and gcsim iterates all chars except c.Index(). Reviewer should change target to `'team'` (or equivalent excluding Collei). Duration 12s confirmed by gcsim (720 frames / 60)."
-					]
+					"snapshottable": false
 				}
 			],
-			"description": "Using Trump-Card Kitty will increase all nearby characters' Elemental Mastery by 60 for 12s (not including Collei herself)."
+			"description": "Using Trump-Card Kitty will increase all nearby characters' Elemental Mastery by 60 for 12s (not including Collei herself).",
+			"_curatorNotes": [
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 Gift of the Woods — effects[0] (buff em 60) RE-TRIGGERED. gcsim: `internal/characters/collei/burst.go:58-60` calls `c.c4()` synchronously inside `Burst()`, and `cons.go:60-76` loops every character, skipping `c.Index()`, adding a 720-frame EM +60 StatMod. that the 12s is gcsim's 720 frames (`cons.go:69`) and that `c4()` fires at the cast instant, not at the explosion hitmark — so the bar starts on the `Q` press. ⚠️ ⚠️ `target` CORRECTED `self` → `teamExcludingSelf` — the authored `self` was backwards (the kit and gcsim both exclude Collei), so today the effect names the one character who never receives it. `teamExcludingSelf` has readers (`effectCollection.ts:165` counts it for `targetsTeamOrActive`; `deriveCapabilities.ts:281` maps it to a `team` chip), so this newly draws a 12s EM bar on all three teammates and a team-buff capability the TB did not have. No stat collision: the burst's own pool is empty of `em`."
+			]
 		},
 		{
 			"id": "collei__constellation__all_embers",

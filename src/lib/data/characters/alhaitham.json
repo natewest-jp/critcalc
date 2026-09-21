@@ -169,17 +169,25 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"durationType": "fixed",
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
-					"stat": "em",
+					"stat": "burstDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 0.1,
+						"cap": 100
+					},
 					"snapshottable": false
 				}
 			],
 			"description": "Each point of Alhaitham's Elemental Mastery will increase the DMG dealt by Projection Attacks and Particular Field: Fetters of Phenomena by 0.1%.\nThe DMG of both aforementioned abilities can be increased by a maximum of 100% this way.",
 			"_curatorNotes": [
 				"Scaling buff — value depends on caster's EM (0.1% DMG per point of EM, capped at +100% DMG). The buff applies only to Projection Attacks and Burst damage (gcsim asc.go a4: matches AttackTagElementalBurst OR ICDGroupAlhaithamProjectionAttack). Per recipe scaling-buff rule, `value` field deleted; reviewer to wire as scaling expression with ability-target gating. Generator-inherited stat=em is wrong (this is a DMG bonus, not an EM buff) — reviewer to retype as `allDmgBonus` or add a per-ability-DMG stat.",
-				"Inherited trigger: `manual` — likely `passive` (always-on, no event). Conditioned on (self) attacks where AttackTag = ElementalBurst OR ICDGroup = AlhaithamProjectionAttack. Target scope: self (DMG bonus on outgoing damage, gated by ability source)."
+				"Inherited trigger: `manual` — likely `passive` (always-on, no event). Conditioned on (self) attacks where AttackTag = ElementalBurst OR ICDGroup = AlhaithamProjectionAttack. Target scope: self (DMG bonus on outgoing damage, gated by ability source).",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Mysteries Laid Bare — effects[0] (buff, stat `em`, no value) RE-TRIGGERED. gcsim: `~/Code/gcsim/internal/characters/alhaitham/asc.go:36-57` — a permanent `AddAttackMod` (no event) that returns `DmgP = 0.001 × EM`, clamped at 1.0, only for `AttackTagElementalBurst` or `ICDGroupAlhaithamProjectionAttack` (asc.go:44-48). that the same bonus also covers Projection Attacks (gcsim `ICDGroupAlhaithamProjectionAttack`), which are unauthored, so `burstDmgBonus` deliberately carries only half the kit's scope; and that the generator's `stat: \"em\"` was the artifact (it read \"Elemental Mastery\" as the buffed stat rather than the scaling source). ⚠️ `ratio` is the PER-POINT percentage, matching Kazuha A4 (`ratio: 0.04`) and Kazuha C6 (`ratio: 0.2`) — ⛔ not `10`. `cap: 100` is in `burstDmgBonus` units (percentage points), i.e. the kit's \"+100% maximum\". Drop the authored `durationType: \"fixed\"` — there is no duration on a `passive`."
 			]
 		}
 	],
@@ -203,20 +211,51 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 50,
 					"snapshottable": false,
-					"stacks": { "maxStacks": 4, "durationModel": "separate" }
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["charged", "plunge"]
+					},
+					"conditions": {
+						"type": "ascension",
+						"min": 1
+					},
+					"procCooldown": 12,
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 50,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					}
 				}
 			],
 			"description": "When Alhaitham generates a Chisel-Light Mirror, his Elemental Mastery will be increased by 50 for 8 seconds, max 4 stacks. Each stack's duration is counted independently. This effect can be triggered even when the maximum number of Chisel-Light Mirrors has been reached.",
 			"_curatorNotes": [
-				"Inherited trigger: `manual` — likely a custom 'on mirror generated' hook with no current schema equivalent. The current Trigger union has no 'on mirror generated' variant; reviewer to extend or use `onCast` { ability: 'skill' } as proxy (imprecise: misses A1 mirror gen, burst regeneration, and the C2 'overflow still triggers' clause). Stack model added with maxStacks=4, durationModel=separate to match the description."
-			]
+				"Inherited trigger: `manual` — likely a custom 'on mirror generated' hook with no current schema equivalent. The current Trigger union has no 'on mirror generated' variant; reviewer to extend or use `onCast` { ability: 'skill' } as proxy (imprecise: misses A1 mirror gen, burst regeneration, and the C2 'overflow still triggers' clause). Stack model added with maxStacks=4, durationModel=separate to match the description.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2: Debate — effects[0] (buff, stat `em`, value 50) RE-TRIGGERED. gcsim: `cons.go:34-47` — `c2(generated)` adds one 480f (8s) EM+50 StatMod per Mirror generated, called from `skill.go:147` inside `mirrorGain()`, which is itself reached from three places: the skill cast (`skill.go:65` tap, `skill.go:95` hold — a task at 15f/23f), the A1 callback (`asc.go:29`, 720f ICD on a Charged or Plunging hit), and the burst's regeneration task (`burst.go:62`, at 184f). the third source — the Burst regenerates `3 − consumed` Mirrors at frame 184 (3 at C6) and each one grants a stack — deliberately NOT authored, because at C2–C5 the count depends on the Mirrors the Burst consumed, which the parser does not track; and that `BuffEffect.stacks` has no consumer today and is carried as description only. ⚠️ The skill-cast effect fires at the cast while gcsim's Mirror lands 15f (tap) / 23f (hold) later — a quarter-second early. The two effects share `stat: \"em\"` but sit in different pools (a cast pool vs the hit pass), so the cast pool's stat dedupe cannot collide them. The A1 effect's `procCooldown: 12` is the Mirror-generation ICD, not an effect ICD, and it is correct only because A1 generates exactly one Mirror per fire. A buff on `onHit` must NOT carry `armedFor` (lint B.13b)."
+			],
+			"caveat": "One Elemental Mastery stack is shown per trigger; in game each Chisel-Light Mirror generated grants its own, and up to four run at once."
 		},
 		{
 			"id": "alhaitham__constellation__negation",
@@ -234,7 +273,10 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -245,7 +287,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -257,8 +302,10 @@
 			"description": "When Particular Field: Fetters of Phenomena is unleashed, the following effects will become active based on the number of Chisel-Light Mirrors consumed and created this time around:\n·Each Mirror consumed will increase the Elemental Mastery of all other nearby party members by 30 for 15s.\n·Each Mirror generated will grant Alhaitham a 10% Dendro DMG Bonus for 15s.\n\nThe pre-existing duration of the aforementioned effects will be cleared if you use Particular Field: Fetters of Phenomena again while they are in effect.",
 			"_curatorNotes": [
 				"Inherited trigger: `manual` — likely `onCast` with `ability: 'burst'`. Both effects are stacking-by-mirror: team EM = 30 * mirrorsConsumed; self Dendro DMG = 10% * mirrorsGenerated. Existing skeletons treat as single-stack (30 EM, 10% Dendro). Schema can't gate by mirror count; reviewer to extend with a `stacks` field keyed off mirror state (consumed vs generated are distinct counts). Generator changed target from 'team' to 'teamExcludingSelf' — verified against gcsim (cons.go c4Loss skips i == c.Index()). durationType set to 'refresh' per description ('pre-existing duration ... will be cleared').",
-				"Mirror-gen effect target should clarify 'nearby party members' — assuming team-radius gating handled by runtime, not schema."
-			]
+				"Mirror-gen effect target should clarify 'nearby party members' — assuming team-radius gating handled by runtime, not schema.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4: Elucidation — effects[0] (buff, stat `em`, value 30, target `teamExcludingSelf`) RE-TRIGGERED. gcsim: `cons.go:58-77` — `c4Loss(consumed)` runs at the burst cast (`burst.go:55`), returns early when `consumed <= 0`, and adds `EM = 30 × consumed` for 900f to every party member except Alhaitham (`cons.go:64-66` skips `i == c.Index()`). that the value is `30 × Mirrors consumed` and that the bar is authored at one Mirror; and that `teamExcludingSelf` is verified against gcsim's index skip, not inferred from \"all other nearby party members\". ⚠️ Fires on every burst, where gcsim returns early at `consumed == 0` — an over-claim on a burst cast with no Mirrors up, which is unreachable by the parser (no Mirror state). Different `stat` from effects[1], so no dedupe collision inside the burst's cast pool.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4: Elucidation — effects[1] (buff, stat `dendroDmgBonus`, value 10, target `self`) RE-TRIGGERED. gcsim: `cons.go:79-92` — `c4Gain(generated)` adds `DendroP = 0.1 × generated` for 900f to Alhaitham, called from the burst's queued task at frame 184 (`burst.go:60-67`), which also early-returns if he is no longer the active character. that the value is `10 × Mirrors generated` (`3 − consumed`, forced to 3 at C6), that it actually lands 184f ≈ 3.07s after the cast, and that gcsim drops it entirely if Alhaitham has swapped out by then. ⚠️ The bar starts at the cast and the game's starts ~3.07s later, so the window is 3s early at both ends. Fires on every burst where in game `generated` can be 0 (bursting at 3 Mirrors below C6)."
+			],
+			"caveat": "Both bars show one Mirror's worth — the Elemental Mastery scales with the Mirrors the Burst consumed and the Dendro DMG Bonus with the Mirrors it created, up to three each."
 		},
 		{
 			"id": "alhaitham__constellation__sagacity",
@@ -276,7 +323,15 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 3
+					},
 					"duration": 6,
 					"durationType": "refresh",
 					"source": "character",
@@ -287,7 +342,73 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["charged", "plunge"]
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 3
+							}
+						]
+					},
+					"procCooldown": 12,
+					"duration": 6,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "critRate",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "mirrors",
+						"min": 3
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "critDmg",
+					"value": 70,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["charged", "plunge"]
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "stacks",
+								"key": "mirrors",
+								"min": 3
+							}
+						]
+					},
+					"procCooldown": 12,
 					"duration": 6,
 					"durationType": "refresh",
 					"source": "character",
@@ -301,7 +422,8 @@
 				"Generator stub had critDmg value=10 — corrected to 70 per description and gcsim cons.go c6 (m[CD] = 0.7).",
 				"Inherited trigger: `manual` — likely 'on mirror overflow' (gcsim: triggered when mirrorGain pushes mirrorCount > 3, applies per overflow stack). No schema equivalent; reviewer to extend. Approximation via `onCast` { ability: 'skill' } would miss the overflow gating entirely (only fires when at-cap and gaining more) — reviewer to handle.",
 				"Description says 'duration remaining will be increased by 6s' on re-trigger; gcsim implements via ExtendStatus(c6key, 360). durationType set to 'refresh' as the closest approximation; the actual semantic is additive-extend, which the schema doesn't model.",
-				"C6 also forces the post-burst regeneration to spawn 3 fresh mirrors regardless of consumed count — flagged on the burst."
+				"C6 also forces the post-burst regeneration to spawn 3 fresh mirrors regardless of consumed count — flagged on the burst.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: Structuration — effects[0] (buff, stat `critRate`, value 10) RE-TRIGGERED. gcsim: `cons.go:103-119` — `c6(generated)` adds CR +0.1 / CD +0.7 for 360f, called from `skill.go:151-153` ONLY on overflow (`if c.mirrorCount > 3 { if Cons >= 6 { c.c6(c.mirrorCount - 3) } }`), i.e. when a generation happens while already at the 3-Mirror cap. The Burst can never reach it: it consumes all Mirrors first, then regenerates at most 3 (`burst.go:48-53`, `burst.go:62`), so `mirrorCount` never exceeds 3. that the trigger is Mirror OVERFLOW (generating at the 3-Mirror cap), that the Burst cannot cause it at any constellation, and that the re-trigger semantic is gcsim's `ExtendStatus(c6key, 360)` — additive extension, which `durationType: \"refresh\"` approximates. ⚠️ This mints a `mirrors` assertion key that nothing else in Alhaitham's data reads — C2 and C4 deliberately do not gate on it — so the model is coherent only for C6. Invisible by default in the planner; in the Team Builder it surfaces as a `stacks:mirrors` conditional capability, which is strictly more than `manual` gave. ⏭ If Nate does not want a new asserted key, the fallback is RETIRE: an ungated `onCast {ability:'skill'}` would print +10% CRIT Rate / +70% CRIT DMG on the first E of every rotation, where 0 Mirrors → gain 2 → no overflow, which is a flat over-claim. The two effects share `stat: \"critRate\"` but sit in different pools.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: Structuration — effects[1] (buff, stat `critDmg`, value 70) RE-TRIGGERED. gcsim: `cons.go:106` — `m[attributes.CD] = 0.7`, same `c6()` body and same overflow gate as effects[0]. that the generator stub's `value: 10` was corrected to 70 against both the description and gcsim `cons.go:106` — that correction is already recorded and must survive. ⚠️ Same as effects[0]. Four effects for one constellation is the cost of the two stats × two sources; trimming to the skill-cast pair alone is acceptable and loses only the Charged/Plunging path."
 			]
 		}
 	],

@@ -285,15 +285,29 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"durationType": "fixed",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "enemyAffectedBy",
+						"element": "pyro"
+					},
 					"source": "character",
 					"stat": "allDmgBonus",
-					"value": 36,
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 1.5,
+						"cap": 36
+					},
 					"snapshottable": false
 				}
 			],
-			"description": "Emilie deals increased DMG to Burning opponents based on her ATK, with every 1,000 ATK increasing DMG dealt by 15%. The maximum DMG bonus that can be gained this way is 36%."
+			"description": "Emilie deals increased DMG to Burning opponents based on her ATK, with every 1,000 ATK increasing DMG dealt by 15%. The maximum DMG bonus that can be gained this way is 36%.",
+			"caveat": "Only against Burning opponents. The chip prints the bonus as if they always are.",
+			"_curatorNotes": [
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Rectification — effects[0] (buff allDmgBonus 36) RE-TRIGGERED. gcsim: `~/Code/gcsim/internal/characters/emilie/asc.go:47-66` — `a4` is a permanent AttackMod that returns `DmgP = min(TotalAtk()/1000*0.15, 0.36)` and only when the target `x.IsBurning()`. that `ratio: 1.5` is the percentage-point form of \"15% per 1,000 ATK\" (`(ratio/100) × atk`), that `cap: 36` is the kit's own ceiling (gcsim's `min(…, 0.36)`), that the flat `36` it replaces was the CAP misread as the value, and that `enemyAffectedBy: 'pyro'` is a stand-in for Burning — `AuraElement` has no Burning member. ⚠️ The gate is approximate in TWO directions and must not be read as exact: `enemyAffectedBy` resolves to `null` anyway (the house optimistic path), so it buys a tooltip line, not a filter — and the line it buys says \"Pyro-affected\" where the kit says \"Burning\". If a reviewer judges that wording worse than silence, drop the `conditions` and keep the caveat; ⛔ do not mint a Burning `AuraElement` for it."
+			]
 		}
 	],
 	"constellations": [

@@ -164,20 +164,21 @@
 			"name": "Dance of Amity",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Periodic self-heal: 1.5% MaxHP (gcsim: Src=0.015, HealTypePercent) every 0.2s (12f) for 0.8s (4 ticks), 0.8s ICD between proc windows; triggered by Charmed Cloudstrider plunge after E. gcsim: makeA1CB() callback → AddStatus(a1Key, 0.8*60) + QueueCharTask(a1Heal, 0.2*60) chain. Fixed 2026-07-16 (surfaced by audit-data-outliers): was mis-modeled as an hp% stat buff, now type 'heal' (manual trigger retained for conservatism — could refine to onHit/plunge + procCooldown 0.8)."
+				"Periodic self-heal: 1.5% MaxHP (gcsim: Src=0.015, HealTypePercent) every 0.2s (12f) for 0.8s (4 ticks), 0.8s ICD between proc windows; triggered by Charmed Cloudstrider plunge after E. gcsim: makeA1CB() callback → AddStatus(a1Key, 0.8*60) + QueueCharTask(a1Heal, 0.2*60) chain. Fixed 2026-07-16 (surfaced by audit-data-outliers): was mis-modeled as an hp% stat buff, now type 'heal' (manual trigger retained for conservatism — could refine to onHit/plunge + procCooldown 0.8).",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Dance of Amity — effects[0] (heal self, 1.5% hp) RE-TRIGGERED. gcsim: `internal/characters/gaming/asc.go:14-29` (`makeA1CB`) is attached to the Charmed Cloudstrider plunge's `QueueAttack` (`plunge.go:225`); it adds an 0.8s `a1Key` status and starts the `a1Heal` chain (`asc.go:31-44`), which heals `Src: 0.015` `HealTypePercent` on Gaming himself and re-queues every 12f while the status holds. the cadence the schema cannot say — 1.5% Max HP per tick, every 0.2s (12f), four ticks per window, each window gated by the 0.8s `a1Key` status — following the Dori-burst / Escoffier \"Rehab Diet\" precedent (single effect, `duration` = the full window, `scaling` = the PER-TICK value, cadence in the note). Also retain that the `a1Key` status IS both the window and the re-proc gate, so `duration` and `procCooldown` are deliberately the same number. ⚠️ Scoped in game to Charmed Cloudstrider, which our data does not model as a distinct ability — `plungeFrames` on `gaming__normal__stellar_rend` is gcsim's Xianyun-assisted high plunge, and a plunge hit carries `abilityName: activeNormal?.name` (`run.ts:2184`), i.e. \"Stellar Rend\" for both, so `filter.abilityName` cannot separate them. In practice the over-claim is near zero: gcsim refuses Gaming a low/high plunge unless `AirborneXianyun` (`plunge.go:82-87`, `135-141`) and redirects to the special plunge whenever `LastAction == Skill`, so a `P` token that is NOT Charmed Cloudstrider only exists in a Xianyun team. ⚠️ Heal draws no planner pixel; the gain is the Team Builder self-heal facet, badge and coverage row that `manual` was suppressing."
 			],
 			"effects": [
 				{
 					"type": "heal",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "plunge"
 					},
+					"duration": 0.8,
+					"procCooldown": 0.8,
 					"scaling": 1.5,
-					"stat": "hp",
-					"_curatorNotes": [
-						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveat, no reader. Kit detail retained: after Charmed Cloudstrider (plunge) hits, heals 1.5% Max HP every 0.2s for 0.8s (4 ticks), each proc window gated by an 0.8s cooldown."
-					]
+					"stat": "hp"
 				}
 			],
 			"description": "After Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, Gaming will regain 1.5% of his Max HP once every 0.2s for 0.8s."
@@ -199,14 +200,16 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"Inherited manual trigger on heal effect — fires when Man Chai walks back to Gaming and links up (custom delayed-task event, not standard onHit/onCast/onReaction). gcsim: queueManChai() in burst.go adds a delayed task at manChaiWalkBack frames → c1() heal call. Trigger type does not map cleanly to a schema trigger. Reviewer to determine representation. Heal: 15% MaxHP (gcsim: HealTypePercent, Src=0.15)."
+				"Inherited manual trigger on heal effect — fires when Man Chai walks back to Gaming and links up (custom delayed-task event, not standard onHit/onCast/onReaction). gcsim: queueManChai() in burst.go adds a delayed task at manChaiWalkBack frames → c1() heal call. Trigger type does not map cleanly to a schema trigger. Reviewer to determine representation. Heal: 15% MaxHP (gcsim: HealTypePercent, Src=0.15).",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 Bringer of Blessing — effects[0] (heal self, 15% hp) RE-TRIGGERED. gcsim: `internal/characters/gaming/burst.go:86-101` (`queueManChai`) — the burst queues it at `burstHitmark + 1` = 61f and adds a delayed task at `c.manChaiWalkBack` (100f from the burst, 92f from a Charmed Cloudstrider landing) that, if Gaming is still the active character, resets his skill cooldown and calls `c.c1()`; `cons.go:19-32` heals `Src: 0.15` `HealTypePercent` on Gaming. the heal lands ~161f (2.7s) after the burst press, not at the press — Man Chai spawns at `burstHitmark + 1` = 61f and walks back over `manChaiWalkBack` (gcsim default 100f from the burst, 92f from a plunge, user-tunable via `man_chai_delay`); it RE-FIRES on every Charmed Cloudstrider landing inside the 12s Wushou Stance while Gaming is above 50% HP (`plunge.go:230-234`), and the same link-up also resets his skill cooldown (`burst.go:97`) — neither is authored. ⚠️ Under-claims — one fire per burst modelled against up to three or four in a played 12s stance, which is an omission, not a divergence (no bar shortens, no marker disappears; heal has no planner pixel). ⛔ Do NOT add a second `onHit` `abilityType: 'plunge'` copy for the in-stance repeats: the Wushou Stance is authored as `behavior: \"instant\"` with no state and no `activeDuration` (see the burst's own note), so there is nothing to gate on and the copy would fire on every cold plunge in the rotation. ⚠️ The link-up also requires Gaming to be the ACTIVE character (`burst.go:94-96`); an `onCast burst` window is on-field by construction, so this is honest for the modelled fire."
 			],
 			"effects": [
 				{
 					"type": "heal",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
 					"scaling": 15,
 					"stat": "hp"

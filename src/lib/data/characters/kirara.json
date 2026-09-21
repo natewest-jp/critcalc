@@ -219,7 +219,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "allDmgBonus",
+					"value": 12,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -232,7 +249,8 @@
 			"_curatorNotes": [
 				"Inherited `manual` trigger. Likely two `onCast` triggers — one with `ability: 'skill'`, one with `ability: 'burst'`. gcsim: `c6()` runs in both `skillPress`/`skillShortHold`/`skillHold` and `Burst` branches, gated on Cons >= 6, applying a 15s StatMod to every party member.",
 				"Stat modeling note: gcsim assigns the +12% to each of PyroP/HydroP/CryoP/ElectroP/AnemoP/GeoP/PhyP/DendroP individually (8 separate stat keys), not to a single 'allDmgBonus' aggregate. The current `stat: 'allDmgBonus'` may or may not match this codebase's allDmgBonus semantics. Reviewer to verify whether allDmgBonus aggregates over per-element + physical or only over the elemental subset.",
-				"Target 'team' is correct — gcsim loops over all party members including Kirara herself."
+				"Target 'team' is correct — gcsim loops over all party members including Kirara herself.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: Countless Sights to See — effects[0] (buff, stat `allDmgBonus`, value 12) RE-TRIGGERED. gcsim: `cons.go:67-76` — `c6()` loops every party member and adds a 15×60 StatMod of `c.c6Buff`, which is +0.12 on all eight of PyroP/HydroP/CryoP/ElectroP/AnemoP/GeoP/PhyP/DendroP (`kirara.go:43-50`). It is called from both cast paths: the skill's press/short-hold/hold branches and `Burst()`. the one place gcsim and the kit disagree: the kit says \"All **Elemental** DMG Bonus\" and gcsim also grants `PhyP`. The Stat union has no elemental-only aggregate, so `allDmgBonus` (\"all of the recipient's attacks\") stands — it matches gcsim exactly and over-reads the kit text only for Physical damage. Retain also that `target: \"team\"` is verified (gcsim's loop includes Kirara herself), not inferred from \"nearby party members\". ⚠️ The two effects share `stat: \"allDmgBonus\"` from one host. They cannot collide — a skill cast's pool sees only the first, a burst cast's only the second — but a single `onCast` with no `ability` was rejected deliberately: it would emit one window per cast with no way to say which cast, and `onCast` with no `ability` also matches casts the kit does not name. An E and a Q inside 15s of each other produce two windows that refresh-merge into one covered span, which is correct."
 			]
 		}
 	],

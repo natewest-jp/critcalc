@@ -271,7 +271,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 25
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -281,9 +287,11 @@
 				}
 			],
 			"_curatorNotes": [
-				"Actual trigger is HP-drop-below-25% with a 60s ICD (gcsim onDrain). HP-state conditions aren't modelled in the planner — manual trigger preserved per the HP-state-null-resolving convention."
+				"Actual trigger is HP-drop-below-25% with a 60s ICD (gcsim onDrain). HP-state conditions aren't modelled in the planner — manual trigger preserved per the HP-state-null-resolving convention.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6: To Ward Weakness — effects[0] (buff em 150) RE-TRIGGERED. gcsim: `~/Code/gcsim/internal/characters/kuki/cons.go:63-93` — `c6` subscribes to `OnPlayerHPDrain`: returns unless `CurrentHPRatio() <= 0.25`, revives to 1 HP at or below zero, sets a 3600-frame (60s) ICD, then a 900-frame (15s) `+150 EM` StatMod. the HP-state-null-resolving convention but stop citing `manual` as its expression: the house form is `passive` + `selfHpBelow`, the Kaeya C4 \"Frozen Kiss\" precedent (`passive` + `selfHpBelow: 20` + `duration: 20`, 60s ICD unenforced). It must also retain that the lethal-DMG survival half of the constellation is unmodelled and lives in the `description` alone. ⚠️ The always-on chip prints +150 EM with no ICD and no window — a large number stated unconditionally, which is why the caveat carries both the gate and the cadence. ⛔ `onHPDecrease` is the literal trigger and has no reader; it must not be proposed. ⚠️ `duration`/`durationType` are inert under a `passive` trigger (Kaeya's precedent carries `duration` alone); they are kept because they are already there and they document the 15s, not because anything reads them."
 			],
-			"description": "When Kuki Shinobu takes lethal DMG, this instance of DMG will not take her down. This effect will automatically trigger when her HP reaches 1 and will trigger once every 60s.\nWhen Shinobu's HP drops below 25%, she will gain 150 Elemental Mastery for 15s. This effect will trigger once every 60s."
+			"description": "When Kuki Shinobu takes lethal DMG, this instance of DMG will not take her down. This effect will automatically trigger when her HP reaches 1 and will trigger once every 60s.\nWhen Shinobu's HP drops below 25%, she will gain 150 Elemental Mastery for 15s. This effect will trigger once every 60s.",
+			"caveat": "Only while Shinobu is below 25% HP, for 15s and once a minute — the chip prints it as though it were always on."
 		}
 	],
 	"meta": {

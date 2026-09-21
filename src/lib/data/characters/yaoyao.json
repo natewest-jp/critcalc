@@ -258,19 +258,28 @@
 			"abilityType": "passive",
 			"effects": [
 				{
-					"type": "buff",
+					"type": "heal",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": ["skill", "burst"],
+						"filter": {
+							"abilityName": "Yuegui"
+						}
 					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "hp%",
-					"snapshottable": false
+					"duration": 5,
+					"durationType": "refresh",
+					"scaling": 0.8,
+					"stat": "hp",
+					"conditions": {
+						"type": "ascension",
+						"min": 4
+					}
 				}
 			],
 			"_curatorNotes": [
-				"Scaling buff: value field deleted — effect is 0.8% of Yaoyao's MaxHP per second for 5s. | Effect is a periodic heal, not a stat buff — generator typed it as 'buff' with stat 'hp%', which is incorrect; reviewer to re-type as 'heal' with duration 5s (a4Status = 5*60 frames). | Trigger is manual. Likely 'onHit' from radish explosion: radish.go calls radishHeal() which sets a4Status on the active character and queues a periodic heal task (every 60f for the status window). Probable trigger: 'onHit' conditioned on radish-type hit (skill or burst elemental art). Reviewer to wire."
+				"Scaling buff: value field deleted — effect is 0.8% of Yaoyao's MaxHP per second for 5s. | Effect is a periodic heal, not a stat buff — generator typed it as 'buff' with stat 'hp%', which is incorrect; reviewer to re-type as 'heal' with duration 5s (a4Status = 5*60 frames). | Trigger is manual. Likely 'onHit' from radish explosion: radish.go calls radishHeal() which sets a4Status on the active character and queues a periodic heal task (every 60f for the status window). Probable trigger: 'onHit' conditioned on radish-type hit (skill or burst elemental art). Reviewer to wire.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive In Others' Shoes — effects[0] (buff hp%, no value) RE-TRIGGERED. gcsim: `yaoyao/radish.go:15-20` — every radish heal that is not the C6 Mega Radish (`hi.Message == c6HealMsg` returns early) puts a 5×60f `a4Status` on the ACTIVE character and queues `a4()` (`asc.go:63-85`), which heals `0.008 × MaxHP` and re-queues itself every 60f while the status holds. Keep the 1s tick cadence inside the 5s status and that `scaling: 0.8` is the PER-SECOND value, not the total (4.0% over a full window); keep that the C6 Mega Radish is excluded by gcsim's `c6HealMsg` guard. ⚠️ `filter.abilityName: \"Yuegui\"` matches by substring against a summon-tick hit's `abilityName`, which finalize stamps as `summon.label` (`sim/finalize.ts:645`) — so it selects \"Yuegui: Throwing Mode\" and \"Yuegui: Jumping Mode\" and excludes the burst's own cast hit (\"Moonjade Descent\"), whose `resolveCastContext` name does not contain it. ⚠️ A radish that lands with no enemy nearby still heals in game but synthesizes no hit record here, so this UNDER-fires; ⚠️ and if the C6 Mega Radish is authored as the tick series specced below, its hit would fire this where gcsim's guard refuses it — invisible, since a heal has no cadence surface."
 			],
 			"description": "When White Jade Radishes explode, active characters within their AoE will regain HP every 1s based on 0.8% of Yaoyao's Max HP. This effect lasts 5s."
 		}
@@ -286,18 +295,27 @@
 					"type": "buff",
 					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": ["skill", "burst"],
+						"filter": {
+							"abilityName": "Yuegui"
+						}
 					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "dendroDmgBonus",
 					"value": 15,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			],
 			"_curatorNotes": [
-				"Trigger is manual. Likely 'onHit' from radish explosion — gcsim c1() is called from radishHeal(), which fires on any radish heal (skill or burst radishes; does not trigger on C6 Mega Radish per c6HealMsg guard). Dendro DMG Bonus buff always applies on radish heal (no ICD on the buff itself). Stamina restoration has a 5s ICD (c1ICDkey) but is separate from the buff — reviewer to decide if ICD applies to the buff trigger or only to the stamina restore. Probable trigger: 'onHit' with dendro element / elemental art or burst tag."
+				"Trigger is manual. Likely 'onHit' from radish explosion — gcsim c1() is called from radishHeal(), which fires on any radish heal (skill or burst radishes; does not trigger on C6 Mega Radish per c6HealMsg guard). Dendro DMG Bonus buff always applies on radish heal (no ICD on the buff itself). Stamina restoration has a 5s ICD (c1ICDkey) but is separate from the buff — reviewer to decide if ICD applies to the buff trigger or only to the stamina restore. Probable trigger: 'onHit' with dendro element / elemental art or burst tag.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 Adeptus' Tutelage — effects[0] (buff dendroDmgBonus 15) RE-TRIGGERED. gcsim: `yaoyao/radish.go:11-13` calls `c1()` (`cons.go:19-35`) on every non-C6 radish heal; `c1()` gives the ACTIVE character `DendroP = 0.15` for 8×60f unconditionally, and only the 15-stamina half sits behind the 5s `c1ICDkey`. Resolve the note's open question in the data's favour: the 5s ICD is on the STAMINA restore only (`c1ICDkey`, `cons.go:30-34`), never on the buff, so ⛔ no `procCooldown`. Keep that stamina has no surface and is therefore not authored. ⚠️ Reaches the received surface through the summon-tick active-target pass (`buffWindows.ts:2055-2140`), which is the one that exists for exactly this shape — ⚠️ a `target: 'active'` onHit buff is EXCLUDED from the team-surface tick pass (`:1173`), so `active` is load-bearing and ⛔ must not be \"simplified\" to `team`. One window per radish, fused by the projection's refresh-merge into one covered span."
 			],
 			"description": "When White Jade Radishes explode, active characters within their AoE will gain 15% Dendro DMG Bonus for 8s and have 15 Stamina restored to them. This form of Stamina Restoration can only be triggered every 5s."
 		},
@@ -325,18 +343,29 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast"
 					},
 					"duration": 8,
-					"durationType": "fixed",
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "em",
-					"snapshottable": false
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.3,
+						"cap": 120
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				}
 			],
 			"_curatorNotes": [
 				"Scaling EM buff — 0.3% of Yaoyao's MaxHP → EM gain, capped at 120 EM. value field omitted pending capped-scaling BuffValue form. gcsim c4(): m[EM] = MaxHP*0.003, capped at 120. Trigger is manual — gcsim c4() is called from Skill() and Burst() casts (C4+); probable trigger: 'onCast' with ability 'skill' or 'burst', condition: constellation >= 4. Duration: 8.8*60 frames (NewBaseWithHitlag) ≈ 8.8s in gcsim vs 8s in description — reviewer to verify.",
-				"2026-05-09 model-mismatch cleanup: deleted effect 2 (hp% value: 0.3, the scaling coefficient artifact — no hp% buff exists in the description or gcsim c4() code) and effect 3 (em value: 120, the hard cap misrepresented as a flat +120 EM buff)."
+				"2026-05-09 model-mismatch cleanup: deleted effect 2 (hp% value: 0.3, the scaling coefficient artifact — no hp% buff exists in the description or gcsim c4() code) and effect 3 (em value: 120, the hard cap misrepresented as a flat +120 EM buff).",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 Winsome — effects[0] (buff em, no value) RE-TRIGGERED. gcsim: `yaoyao/cons.go:57-71` — `c4()` sets `m[EM] = MaxHP × 0.003`, clamped to 120, for `8.8×60` frames. Called at the CAST from `skill.go:36` and `burst.go:58`. Keep the 8.8s-vs-8s divergence and that the kit number was taken; keep the 2026-05-09 record that the deleted `hp% 0.3` and `em 120` siblings were the scaling coefficient and the hard cap misread as flat buffs. `ratio: 0.3` is the percentage-point form — `(0.3 / 100) × MaxHP` — which reproduces gcsim's `× 0.003` exactly. ⚠️ ⛔ Do NOT add `\"ability\"` to the trigger: omitting it is what makes one effect cover both casts, and naming either one would silently halve the mechanic. `durationType: \"refresh\"` because the two casts share one gcsim modifier key (\"yaoyao-c4\"), so an E after a Q replaces rather than stacks."
 			],
 			"description": "After using Raphanus Sky Cluster or Moonjade Descent, Yaoyao's Elemental Mastery will be increased based on 0.3% of her Max HP for 8s. The maximum Elemental Mastery she can gain this way is 120."
 		},

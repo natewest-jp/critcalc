@@ -119,11 +119,29 @@
 			"abilityType": "passive",
 			"effects": [
 				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"procCooldown": 0.1,
+					"key": "coil",
+					"amount": 1,
+					"max": 4,
+					"scope": "rotation"
+				},
+				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"durationType": "fixed",
+					"trigger": {
+						"type": "onStack",
+						"keys": ["coil"],
+						"count": 4,
+						"label": "Rushing Ice"
+					},
 					"duration": 10,
+					"durationType": "fixed",
 					"source": "character",
 					"stat": "cryoDmgBonus",
 					"value": {
@@ -137,7 +155,8 @@
 				}
 			],
 			"_curatorNotes": [
-				"Consolidated from two start/cap skeleton effects into one ramping BuffValue (gcsim a4: +3.5%/s over the 10s Rushing Ice window, cap 35%). Trigger stays manual — a4 actually fires when the 4th Coil stack activates Rushing Ice, which needs a coil-stack condition the schema doesn't gate yet."
+				"Consolidated from two start/cap skeleton effects into one ramping BuffValue (gcsim a4: +3.5%/s over the 10s Rushing Ice window, cap 35%). Trigger stays manual — a4 actually fires when the 4th Coil stack activates Rushing Ice, which needs a coil-stack condition the schema doesn't gate yet.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Strong Strike — effects[0] (buff cryoDmgBonus, ramping 3.5→35) RE-TRIGGERED. gcsim: `~/Code/gcsim/internal/characters/aloy/skill.go:131-154` — `coilStacks` is the bomblet/bomb AttackCB: +1 Coil per hit behind a 6-frame ICD, and at `c.coils == 4` it zeroes the counter and calls `rushingIce()` (`skill.go:157-175`), which adds the 600f `rushingIceKey` status and calls `a4()` (`asc.go:33-54`: one CryoP StatMod for `rushingIceDuration`, `stacks` incremented by ten 1s tasks, clamped at 10 → 35%). that Rushing Ice is the 4th Coil stack (gcsim `coils == 4 → coils = 0 → rushingIce()`), that `onStack` spending the set IS that zeroing, and that the E's three `application[]` entries (f25/31/37, 6f apart) each land one hit record, so one E grants three Coils at the authored 0.1s ICD and the threshold falls on the next cast's first bomblet — gcsim's default `bomblets: 2` gives the same shape. `scope: \"rotation\"` because the kit clears Coil only 30s after Aloy leaves combat, not on swap (the Alyosha `huntersMark` precedent). ⚠️ \"While in the Rushing Ice state, Aloy cannot obtain new Coil stacks\" (gcsim `skill.go:139-141`) is NOT expressible — there is no `rushingIce` State and minting one is two edits. Coils therefore keep accruing inside the window and could re-fire the threshold early; bounded in practice by the 20s E cooldown against the 10s window (~3 Coils per cast), so a re-fire needs two casts and cannot land inside one window. Rushing Ice's OTHER content (Cryo infusion on normals + the Normal Attack DMG bonus) is the skill's, still unauthored, and is not this effect's to carry."
 			],
 			"description": "When Aloy is in the Rushing Ice state conferred by Frozen Wilds, her Cryo DMG Bonus increases by 3.5% every 1s. A maximum Cryo DMG Bonus increase of 35% can be gained in this way."
 		}

@@ -367,7 +367,7 @@
 			"name": "Cat's Tail Closing Time",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "The three Reaction Bonus lines are shown whenever a teammate enables Stellar-Conduct; in game they also need a Polestar Field and standing inside the burst's radius.",
+			"caveat": "The Elemental Mastery and Incoming Healing bars are drawn together, and the three Reaction Bonus lines whenever a teammate enables Stellar-Conduct; in game a character gets only the one their HP qualifies for, the Reaction Bonus lines also need a Polestar Field, and all of them need standing inside the burst's radius.",
 			"_curatorNotes": [
 				"↻ 2026-08-18 (stale-note pass) — ⛔ THE HEADLINE OF THIS NOTE WAS WRONG IN THE DIRECTION THAT MATTERS. It used to open \"Only EM buff (+200 EM) is modeled\", which told a future curator the bigger half was already covered. It is not: the +200 EM effect carries `trigger: 'manual'`, and `manual` has exactly ONE mention in src — the type declaration at src/lib/types/ability.ts:649. No collector, no proc, no stack dispatcher, no notation token and NO TOGGLE (167 manual effects across 69 characters are in this state). So NOTHING of the HP-based block reaches the planner: no bar, no marker. The chip strip does not carry it either — `TeamBonusesBlock` lists a constellation only for `trigger: 'passive'` buff/resShred effects, so at C6 the \"Cat's Tail Closing Time\" chip appears (on the strength of the +25% Max HP effect below) and its tooltip lists ONLY that +25% Max HP row. ⚠️ The one place the EM does surface is the Team Builder: `deriveCapabilities` applies no trigger gate, so it emits `{ kind: 'buff', detail: 'em', target: 'self', minConstellation: 6 }` (measured 2026-08-18) — a TB claim with no planner counterpart.",
 				"Kit facts, unchanged and still the authoring brief: the effect is HP-conditional on the RECIPIENT — HP > 50% → EM +200 to the active character in the field; HP ≤ 50% → Incoming Healing Bonus +30% to the active character in the field. gcsim re-checks every 30 frames (0.5s) for the Signature Mix duration. The +30% Incoming Healing Bonus half is still entirely unauthored. ⛔ Neither half is authorable today and the reason is a CONDITION gap, not a trigger-shape guess: `recipientHpBelow` / `selfHpBelow` / `enemyHpBelow` all fall through one `return null` in `conditions.ts:201-210`, and `ConditionContext` has six fields, none of them HP — so an HP-gated pair would render BOTH branches optimistically at once. ⏭ WORK ITEM once HP enters `ConditionContext`: re-trigger both effects as `onCast ability:'burst'`, `target: 'active'`, `duration: 12.5` (matching the three Radiance effects below and the authored Drunken Mist window), gated on the HP condition, and add the `incomingHealingBonus` half — the Stat key already exists (ability.ts). Until then, ⚠️ note that the authored `target: 'self'` does not match the kit either (the buff lands on the active character standing in the radius, not on Diona), and because `deriveCapabilities` reads `target` regardless of trigger, that mismatch is visible in the TB even though the effect fires nowhere — the same \"an inert effect's target is still a claim\" lesson as the Nicole C2 shield ruling (2026-08-18). Leaving it is a decision, not an oversight; a change here needs `npm run generate-character-index`.",
@@ -376,19 +376,47 @@
 				"[Stellar round] Clause (b) authored stellar-gated: conditions {type:'teamEnablesReaction', reaction:'stellarConduct'}. Justification — the 'Radiance: Stellar-Conduct' state is entered only 'when inside a Polestar Field' (wiki 'Choice Treasures'), and Polestar Fields exist only where Stellar-Conduct is enabled, i.e. an enabler (currently Sandrone alone) is in the party. Trigger onCast burst / duration 12.5 / fixed mirrors the authored Drunken Mist summon duration (gcsim 'diona-q' = 750f); target 'active' matches the burst heal's in-radius convention rather than this node's legacy 'self'.",
 				"[Stellar round, updated 2026-07-29 under Nate's bucket-5 ruling] All three thirds of clause (b) are now authored on the Reaction-Bonus stat family (stellarConduct/superConduct/cryoSwirl ReactionBonus — bucket 5, additive with the EM bonus; the wiki's 'Stellar-Conduct DMG Bonus Constellations' category maps there). The whole Radiance clause is field-gated in game, so all three ride teamEnablesReaction with the field caveat — including the Superconduct and Cryo Swirl halves, which without the Radiance state do not apply at all.",
 				"[Stellar round] The narrower real gate (Polestar Field present AND target standing in the burst radius) is beyond the condition vocabulary; carried in the caveat instead. The in-radius restriction also applies to the pre-existing EM buff and is unchanged by this pass.",
-				"[Stellar round] Wiki 'Stellar-Conduct' page confirms the Base Reaction Coefficient table reads 1 / 1.45 / … / 2.0 (1 + 0.40 + 0.05×n, n≤12) — resolves the NEEDS-CONFIRM in docs/library/game/stellar-reactions.md in favour of the assumed reading. Not a Diona effect; recorded for the doc owner."
+				"[Stellar round] Wiki 'Stellar-Conduct' page confirms the Base Reaction Coefficient table reads 1 / 1.45 / … / 2.0 (1 + 0.40 + 0.05×n, n≤12) — resolves the NEEDS-CONFIRM in docs/library/game/stellar-reactions.md in favour of the assumed reading. Not a Diona effect; recorded for the doc owner.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Cat's Tail Closing Time — effects[0] (buff em 200) RE-TRIGGERED. gcsim: `diona/cons.go:26-61` (`c6`), called from `diona/burst.go:75` — a task every 30f for 750f checks the ACTIVE character: inside `burstBuffArea` (radius 7, `burst.go:48`) and `CurrentHPRatio() > 0.5` → +200 EM for 120f; else → +0.3 Incoming Healing Bonus for 120f. Keep the 0.5s re-check cadence and the 120f per-grant length as the reason `duration: 12.5` is the window and not the grant; retire the \"⛔ Neither half is authorable today\" paragraph — `recipientHpBelow` resolving to `null` and rendering optimistically IS the house behaviour, so the condition gap was never the blocker. ⚠️ Both branches draw at once — that is the optimistic-render contract, carried by the caveat. ⚠️ `not(recipientHpBelow: 50)` is *not* HP ≥ 50: the kit's healing branch is \"≤ 50%\" and ours is \"< 50%\", a one-point edge that no surface can resolve. The active-target pass dedupes by `stat` — `em` and `incomingHealingBonus` differ, and both differ from the three `*ReactionBonus` effects on this node, so nothing collapses. A change here needs `npm run generate-character-index`."
 			],
 			"effects": [
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "recipientHpBelow",
+							"threshold": 50
+						}
+					},
+					"duration": 12.5,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 200,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "recipientHpBelow",
+						"threshold": 50
+					},
+					"duration": 12.5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "incomingHealingBonus",
+					"value": 30,
 					"snapshottable": false
 				},
 				{

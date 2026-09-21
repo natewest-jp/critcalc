@@ -125,6 +125,31 @@
 							"scaling": 196.54,
 							"stat": "atk",
 							"element": "hydro"
+						},
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 0
+							},
+							"scaling": 4.5,
+							"stat": "hp",
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "constellation",
+										"level": 2
+									},
+									{
+										"type": "recipientHpBelow",
+										"threshold": 50
+									}
+								]
+							},
+							"attribution": "C2: The Clouds Like Waves Rippling"
 						}
 					]
 				}
@@ -260,20 +285,32 @@
 			"constellationLevel": 2,
 			"_curatorNotes": [
 				"`recipientHpBelow` primitive shipped 2026-05-11 (queue item 2 alongside Noelle A4 migration). The condition gate is now expressible: `recipientHpBelow: 50`. However the EFFECT SHAPE remains unresolved — the in-game text describes 'Healing Bonuses' valued at 4.5% / 0.6% MaxHP, which is ambiguous between (a) heal-amount add-ons (two `heal` effects scaled on `hp` at ratio 4.5 / 0.6) and (b) Healing Bonus stat buffs (two `buff stat: healingBonus` effects with those values). The latter doesn't match typical healingBonus magnitudes (usually 25–50%) and the values are scoped to specific heal sources (Bake-Kurage vs N/CA) which a stat buff can't gate. Verify against gcsim source before authoring; both interpretations have substantially different schema shapes.",
-				"Original placeholder retained for now: `buff hp% 50` is the schema-mismatch artifact (the 50 is the HP threshold, not a buff value)."
+				"Original placeholder retained for now: `buff hp% 50` is the schema-mismatch artifact (the 50 is the HP threshold, not a buff value).",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 The Clouds Like Waves Rippling — effects[0] (buff hp% 50) RE-TRIGGERED. gcsim: The shape ambiguity the node flags is **resolved**: both halves are heal-AMOUNT add-ons, not Healing Bonus stat buffs. `kokomi/skill.go:109-119` — inside `skillTick`, `if Cons >= 2 && active.CurrentHPRatio() <= 0.5 { src += 0.045 * maxhp }`. `kokomi/burst.go:131-137` — inside `makeBurstHealCB`, per party member, `if Cons >= 2 && char.CurrentHPRatio() <= 0.5 { src += 0.006 * c.MaxHP() }`. Replace the \"EFFECT SHAPE remains unresolved\" paragraph with the two gcsim citations above; keep that the two values are add-ons to their base heals and not standalone heals, and that the burst half's base (the Ceremonial Garment N/CA heal) is still unauthored. ⚠️ ⚠️ The second effect's base heal does not exist in our data — the burst's own notes say the Ceremonial Garment heal was never authored — so the C2 add-on stands alone as Kokomi's only N/CA heal claim, which UNDER-states the source rather than over-stating it. ⚠️ Without the Garment gate the N/CA half claims healing on any swing; that is invisible (heal has no planner surface) but is a real Team Builder over-claim. ⛔ Do not reach for `healingBonus` — gcsim adds to `HealInfo.Src`, not to the stat."
 			],
 			"effects": [
 				{
-					"type": "buff",
-					"target": "self",
+					"type": "heal",
+					"target": "team",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": ["normal", "charged"]
 					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "hp%",
-					"value": 50,
-					"snapshottable": false
+					"scaling": 0.6,
+					"stat": "hp",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "recipientHpBelow",
+								"threshold": 50
+							}
+						]
+					}
 				}
 			],
 			"description": "Sangonomiya Kokomi gains the following Healing Bonuses with regard to characters with 50% or less HP via the following methods:\n·Kurage's Oath Bake-Kurage: 4.5% of Kokomi's Max HP.\n·Nereid's Ascension Normal and Charged Attacks: 0.6% of Kokomi's Max HP."
@@ -309,24 +346,31 @@
 			"constellationLevel": 6,
 			"_curatorNotes": [
 				"Effect (hydroDmgBonus: 40, duration: 4) looks correct — 40% Hydro DMG Bonus for 4s. trigger: 'manual' inherited from generator; reviewer to replace. In gcsim (cons.go), c6() fires inside makeBurstHealCB when burst active and any party member's HP ratio ≥ 0.8 — likely trigger: 'onHit' with condition burst active + party member ≥80% HP healed.",
-				"2026-05-09 model-mismatch cleanup: deleted the second effect (stat: 'hp%', value: 80), which was a generator misinterpretation of the ≥80% HP threshold condition as an HP% buff."
+				"2026-05-09 model-mismatch cleanup: deleted the second effect (stat: 'hp%', value: 80), which was a generator misinterpretation of the ≥80% HP threshold condition as an HP% buff.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 Sango Isshin — effects[0] (buff hydroDmgBonus 40) RE-TRIGGERED. gcsim: `kokomi/cons.go:70-88` — `c6()` is called from inside `makeBurstHealCB` (`burst.go:148-150`), i.e. on a Normal or Charged Attack hit while `kokomiburst` is live; it walks the party for anyone at `CurrentHPRatio() >= 0.8` and adds `HydroP = .4` for 480f (8s in gcsim vs the kit's 4s). Keep the 480f-vs-4s divergence and that the kit number was taken; keep the 2026-05-09 record that the deleted `hp% 80` sibling was the ≥80% threshold misread as a buff. ⚠️ The Ceremonial Garment is NOT expressible — Kokomi's burst opens no state, carries no `activeDuration`, and `afterBurst` is an untracked state that `stateIndex` leaves `null`, so gating on it would change nothing. Consequence: a rotation with normals and no `Q` draws a false bar, which the caveat names. The alternative considered and rejected: `onCast burst` + `duration: 10` (the A4 \"Song of Pearls\" Garment pattern already in this file) — it gets the gate right and the trigger wrong, and it draws a false 10s bar on the very common `E Q swap` off-field rotation. ⚠️ `recipientHpAbove` does not exist in the Condition union, so the ≥80% gate has no encoding; it is near-always true in play and is deliberately left out of the caveat under the name-the-pixel rule."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": ["normal", "charged"]
 					},
 					"duration": 4,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hydroDmgBonus",
 					"value": 40,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
 				}
 			],
-			"description": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi gains a 40% Hydro DMG Bonus for 4s when her Normal and Charged Attacks heal, or would heal, any party member with 80% or more HP."
+			"description": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi gains a 40% Hydro DMG Bonus for 4s when her Normal and Charged Attacks heal, or would heal, any party member with 80% or more HP.",
+			"caveat": "The Hydro DMG bar is drawn on every Normal and Charged Attack; in game it needs the Ceremonial Garment, so it only applies inside her burst window."
 		}
 	],
 	"meta": {

@@ -67,40 +67,17 @@ const PROC_TRIGGERS = ['onReaction', 'onHit', 'whileNormalAttacking'] as const;
  *  strike `'manual'` from the `Trigger` union in `src/lib/types/ability.ts`.
  *  ⛔ Never add to it. */
 export const MANUAL_PENDING: ReadonlySet<string> = new Set([
-	'alhaitham',
-	'aloy',
 	'arlecchino',
-	'barbara',
 	'candace',
 	'charlotte',
-	'chevreuse',
 	'clorinde',
 	'collei',
-	'dehya',
-	'diona',
-	'dori',
-	'emilie',
-	'gaming',
 	'kaveh',
-	'keqing',
 	'kirara',
 	'kuki_shinobu',
-	'layla',
-	'lisa',
-	'nilou',
-	'ningguang',
 	'sangonomiya_kokomi',
 	'sayu',
-	'sethos',
-	'sigewinne',
-	'sucrose',
-	'tighnari',
-	'traveler_hydro',
-	'wanderer',
-	'xiao',
-	'yae_miko',
-	'yaoyao',
-	'yoimiya'
+	'yaoyao'
 ]);
 
 /**

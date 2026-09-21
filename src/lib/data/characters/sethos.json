@@ -153,7 +153,56 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged",
+						"filter": {
+							"abilityName": "Shadowpiercing Shot"
+						}
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "ascension",
+						"min": 1
+					},
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": [
+							"overloaded",
+							"electroCharged",
+							"lunarCharged",
+							"superConduct",
+							"stellarConduct",
+							"electroSwirl",
+							"hyperbloom",
+							"quicken",
+							"aggravate"
+						],
+						"source": "self"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -163,9 +212,11 @@
 				}
 			],
 			"_curatorNotes": [
-				"Manual trigger inherited from generator. C2 adds up to 2 stacks of 15% Electro DMG Bonus (10s each, independently timed). Three trigger conditions in gcsim (cons.go + asc.go + skill.go): (a) energy consumed via Aimed Shot — a1Consume() calls c2AddStack(c2ConsumingKey); (b) E skill triggering electro reactions that refund energy — skillRefundHook() calls c2AddStack(c2RegainingKey); (c) Q cast — Burst() calls c2AddStack(c2BurstKey). Stacks cap at 2 (min of total active statuses). Probable trigger: three separate conditions requiring multiple effect entries or compound trigger. Target scope: self."
+				"Manual trigger inherited from generator. C2 adds up to 2 stacks of 15% Electro DMG Bonus (10s each, independently timed). Three trigger conditions in gcsim (cons.go + asc.go + skill.go): (a) energy consumed via Aimed Shot — a1Consume() calls c2AddStack(c2ConsumingKey); (b) E skill triggering electro reactions that refund energy — skillRefundHook() calls c2AddStack(c2RegainingKey); (c) Q cast — Burst() calls c2AddStack(c2BurstKey). Stacks cap at 2 (min of total active statuses). Probable trigger: three separate conditions requiring multiple effect entries or compound trigger. Target scope: self.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2 \"Papyrus Scripture of Silent Secrets\" — effects[0] (buff electroDmgBonus 15) RE-TRIGGERED. gcsim: three distinct call sites feed one status trio (`cons.go:69-88`, `c2Stacks() = min(active statuses, 2)`): (a) `asc.go:20-30` `a1Consume()` → `c2AddStack(c2ConsumingKey)`, reached from `aimed.go:109` and `aimed.go:175` (aimed shots that consume tallied Energy); (b) `skill.go:28-59` `skillRefundHook()` → `c2AddStack(c2RegainingKey)` on any of nine Electro reactions caused by a skill-tagged hit of Sethos's; (c) `burst.go:18` `c.c2AddStack(c2BurstKey)` on the burst cast. the three gcsim keys and their call sites, the `min(stacks, 2)` cap, and two authored divergences: the reaction effect is **not** bound to the skill (our `onReaction` has no ability filter, so a reaction Sethos causes with his `C` or `Q` also fires it, where gcsim tests `AttackTag == AttackTagElementalArt`); and the aimed-shot effect reaches only the Shadowpiercing Shot, since our `chargeHits` expose `C1` → \"Aimed Shot\" and `C`/`C2` → \"Shadowpiercing Shot\" with no token for the Fully-Charged Aimed Shot that gcsim's `AimParamLv1` branch also credits. ⚠️ ⚠️ Three effects on the SAME stat from the same host. They do not collide today — `dedupByStat` runs per pool, and the three land in three different ones (charged-swing block, reaction pool, burst cast pool) — but any future pool merge would silently drop two of them. ⚠️ gcsim does **not** gate source (a) on Ascension ≥ 1 (`a1Consume` calls `c2AddStack` unconditionally for Lv1/Lv2), while the kit text states the A1 prerequisite explicitly; per the brief I authored the kit text, at no cost since `DEFAULT_ASCENSION` is 4. ⚠️ `source: 'self'` on the reaction trigger is required by lint B.12d and is the right scope (`skillRefundHook` tests `ae.Info.ActorIndex != c.Index()`); no `armedFor` is needed — the effect carries no `application[]` and is not summon-hosted."
 			],
-			"description": "When any of the following conditions are met, Sethos gains a 15% Electro DMG Bonus for 10s that may stack twice, with each stack duration counted independently:\n· Consuming Elemental Energy through Aimed Shots. You must first unlock the Ascension Talent \"Black Kite's Enigma\" to trigger this condition.\n· Regaining Elemental Energy by triggering Elemental Reactions using Ancient Rite: The Thundering Sands.\n· Using Secret Rite: Twilight Shadowpiercer."
+			"description": "When any of the following conditions are met, Sethos gains a 15% Electro DMG Bonus for 10s that may stack twice, with each stack duration counted independently:\n· Consuming Elemental Energy through Aimed Shots. You must first unlock the Ascension Talent \"Black Kite's Enigma\" to trigger this condition.\n· Regaining Elemental Energy by triggering Elemental Reactions using Ancient Rite: The Thundering Sands.\n· Using Secret Rite: Twilight Shadowpiercer.",
+			"caveat": "Each source draws its own 15% bar; in game the bonus caps at two stacks, so three overlapping bars are worth 30%, not 45%."
 		},
 		{
 			"id": "sethos__constellation__ode_to_the_moonrise_sage",
@@ -183,7 +234,13 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged",
+						"filter": {
+							"abilityName": "Shadowpiercing Shot"
+						}
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -193,9 +250,11 @@
 				}
 			],
 			"_curatorNotes": [
-				"Trigger preserved as manual: gcsim fires makeC4cb after 2 enemies hit by the same Shadowpiercing Shot or Dusk Bolt — 'hits≥2 enemies in one cast' isn't a schema-expressible condition. Probable closest match: onHit on chargedAttack with the multi-enemy gate stubbed."
+				"Trigger preserved as manual: gcsim fires makeC4cb after 2 enemies hit by the same Shadowpiercing Shot or Dusk Bolt — 'hits≥2 enemies in one cast' isn't a schema-expressible condition. Probable closest match: onHit on chargedAttack with the multi-enemy gate stubbed.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 \"Beneficent Plumage\" — effects[0] (buff em 80, target team) RE-TRIGGERED. gcsim: `internal/characters/sethos/cons.go:98-123` — `makeC4cb()` counts enemies struck by one attack and, on the second, loops every party member with `AddStatMod(EM +80, 600f)`. It is attached in exactly two places: the Shadowpiercing Shot (`aimed.go:182`) and the burst-state Dusk Bolts (`attack.go:83`, inside the `StatusIsActive(burstBuffKey)` branch). that the 2-enemy gate is dropped (the planner has one target and there is no enemy-count `Condition`), and **why the Dusk Bolt source is unreachable**: Sethos's burst is authored `behavior: \"instant\"` with no `duration`, no `activeDuration` and no `opensTransientState`, and there is no Twilight Meditation normal-attack sibling — so nothing in our data distinguishes an in-burst swing. Restoring it is a character-data round (a stance-gated normal ability), not a trigger choice. ⛔ Do not substitute `onHit abilityType: 'normal'`: that fires on his out-of-burst physical 3-hit string too. ⚠️ ⚠️ `target: 'team'` is correct and must stay — gcsim's loop includes Sethos himself. ⚠️ The `abilityName` filter is load-bearing: without it the effect would also fire on the plain `C1` Aimed Shot, which grants nothing. The filter is safe here because Sethos has one normal ability, so `resolveBlockContext`'s \"first normal ability\" rule and `run.ts`'s resolved-ability rule agree."
 			],
-			"description": "When a Shadowpiercing Shot or Dusk Bolt strikes 2 or more opponents, all nearby party members gain 80 Elemental Mastery for 10s."
+			"description": "When a Shadowpiercing Shot or Dusk Bolt strikes 2 or more opponents, all nearby party members gain 80 Elemental Mastery for 10s.",
+			"caveat": "The bar is drawn on every Shadowpiercing Shot; in game it needs the shot to strike two or more opponents. Dusk Bolts grant it too and are not drawn."
 		},
 		{
 			"id": "sethos__constellation__record_of_the_desolate_gods_burning_sands",

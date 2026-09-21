@@ -232,22 +232,40 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Existing electroDmgBonus effect: inherited `manual` trigger. Fires on cast of N, CA, E, or Q — gcsim calls c6() from attack.go, charge.go, skill.go, and burst.go respectively. Effects from different ability types are independent entities (up to 4 concurrent stacks, each with own 8s timer per gcsim modifier key 'keqing-c6-'+src). Reviewer to decide stack modeling — consider `stacks: { maxStacks: 4, durationModel: \"separate\" }`."
+				"Existing electroDmgBonus effect: inherited `manual` trigger. Fires on cast of N, CA, E, or Q — gcsim calls c6() from attack.go, charge.go, skill.go, and burst.go respectively. Effects from different ability types are independent entities (up to 4 concurrent stacks, each with own 8s timer per gcsim modifier key 'keqing-c6-'+src). Reviewer to decide stack modeling — consider `stacks: { maxStacks: 4, durationModel: \"separate\" }`.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — Tenacious Star — effects[0] (buff, electroDmgBonus 6) RE-TRIGGERED. gcsim: `keqing/cons.go:75-83` — `c6(src)` adds an `ElectroP` stat mod keyed `\"keqing-c6-\"+src` for 480f (8s); it is called from four sites, one per in-game source: `attack.go:86`, `charge.go:85`, `skill.go:70`, `burst.go:60`. Keep the four gcsim call sites and the per-`src` modifier key. Replace \"Reviewer to decide stack modeling — consider `stacks: {…}`\" with the ruling: `BuffEffect.stacks` has no consumer, so the four independent entities are one refreshing bar plus the caveat. ⚠️ Two effects on the same `stat` from the same host. They do NOT collide: `partitionCastPool` pools a cast's `onCast` + `onHit` effects, but `getCharacterEffectsForOnHit(char, cLevel, 'skill'|'burst')` cannot return an effect whose `abilityType` is `[\"normal\",\"charged\"]`, and the N/CA/P block pass (`buffWindows.ts:910`, `:2410`) cannot see the `onCast` effect. Verify with a digest anyway: if a stat-dedupe ever runs across the merged pool, the burst bar would eat the swing bar. Separate under-claim, not caused by this: the bar anchors at the swing's LANDING for N/CA, where the kit says \"when initiating\" — a few frames, not caveat-worthy."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 8,
-					"durationType": "fixed",
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 6,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged"]
+					},
+					"duration": 8,
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "electroDmgBonus",
 					"value": 6,
 					"snapshottable": false
 				}
 			],
-			"description": "When initiating a Normal Attack, a Charged Attack, Elemental Skill or Elemental Burst, Keqing gains a 6% Electro DMG Bonus for 8s.\nEffects triggered by Normal Attacks, Charged Attacks, Elemental Skills and Elemental Bursts are considered independent entities."
+			"description": "When initiating a Normal Attack, a Charged Attack, Elemental Skill or Elemental Burst, Keqing gains a 6% Electro DMG Bonus for 8s.\nEffects triggered by Normal Attacks, Charged Attacks, Elemental Skills and Elemental Bursts are considered independent entities.",
+			"caveat": "The bar shows one 6% Electro DMG Bonus; in game a Normal, a Charged, a Skill and a Burst each carry their own 8s timer, so up to four can overlap."
 		}
 	],
 	"meta": {

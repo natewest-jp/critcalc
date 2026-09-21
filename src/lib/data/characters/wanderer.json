@@ -217,11 +217,37 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"durationType": "fixed",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "<absorbedElement — DOES NOT EXIST>",
+						"element": "cryo"
+					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "<absorbedElement — DOES NOT EXIST>",
+						"element": "pyro"
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 30,
 					"snapshottable": false
 				}
 			],
@@ -229,7 +255,8 @@
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): the Cryo +20% CR branch carries a `manual` trigger because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). ↻ 2026-08-18: the phrase \"manual trigger preserved\" implied a holding pen that still surfaces SOMETHING. It does not — a `manual` effect is authored but UNREACHABLE. grep for `'manual'` across src/lib and src/routes returns exactly one line, the type declaration itself (types/ability.ts), so there is no collector, no bar, no chip, no notation token and no toggle anywhere in the app; 167 such effects across 69 characters are in the same state. The whole disclosure here is the ability `caveat`, which is why it must not be trimmed away. ⏭ Re-evaluate if a multi-element-absorption primitive ever lands — ⚠️ and note that the gauge round did NOT deliver one: there is still no `absorb` path in src/lib/sim, so an absorbing Anemo ability applies only Anemo, and the absorption caveats on this character remain fully true.",
 				"[A7] Caveat trimmed for length: the non-Cryo absorption branches each last 20s (Pyro +30% ATK, Electro N/CA energy regen); up to 2 of 4 elemental branches absorb per skill cast and the tool can't predict which elements are contacted, which is why the Cryo branch is authored with a `manual` trigger. ⚠️ 2026-08-18: \"toggle\" was wrong — there is nothing to toggle; see the corrected stub-with-caveat note above. (Otherwise already captured there.)",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the absorption buffs — Cryo's +20% CR, Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the absorption buffs — Cryo's +20% CR, Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.\"",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive — Jade-Claimed Flower — effects[0] (buff, critRate 20) DEFERRED. gcsim: `wanderer/asc.go:102-127` — `absorbCheckA1` runs at skill cast and calls `AbsorbCheck` up to TWICE against `a1ValidBuffs`, granting one buff per absorbed element; `addA1Buff` (`asc.go:138-165`) adds the Cryo branch as `CR += 0.2` for 1200f (`a1CryoKey`, line 160) and the Pyro branch as `ATKP += 0.3` for 1200f (`a1PyroKey`, line 149). C4 (`asc.go:119-126`) adds one RANDOM further branch when at least one absorbed, raising the simultaneous cap to 3. Keep the 2026-08-18 correction note (a `manual` effect is authored but UNREACHABLE — it is the round's own founding evidence) and its ⏭ line, updated: the effect is now DELETED, not parked, and the restore spec above is what a future absorption round reinstates. Keep the [A7] note's 20s figure and the per-branch list; keep the 2026-08-19 caveat-trim record. ⚠️ Deleting the effect leaves the passive with `effects: []` and no `description`, so the caveat is load-bearing — verify it still renders on the detail card after the edit. Also check `wanderer__constellation__yonban_set_adrift_into_spring` (C4), whose notes point at this passive and must stay pointing at the deferred spec, not at a deleted effect."
 			]
 		},
 		{

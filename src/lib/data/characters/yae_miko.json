@@ -321,28 +321,6 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
-					"duration": 5,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "electroDmgBonus",
-					"value": 20,
-					"snapshottable": false
-				},
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"procCooldown": 5,
-					"amount": 8
-				},
-				{
-					"type": "buff",
 					"target": "self",
 					"trigger": {
 						"type": "passive"
@@ -361,7 +339,9 @@
 				"Inherited manual trigger. Mechanics (unchanged, keep): gcsim wires c4 via a c4cb attack callback attached to the kitsuneTick QueueAttack call, so it fires once per Sesshou Sakura tick; a `done` flag caps it at one proc per tick — effectively a ~2.93s ICD, which is our authored `summonTick.interval` on `yae_miko__skill__yakan_evocation_sesshou_sakura` → \"Sesshou Sakura\". Target scope: team (all chars get the StatMod). Value 20% and duration 5s are correct.",
 				"↻ 2026-08-18. THE TRIGGER THIS NOTE USED TO PROPOSE DOES NOT WORK — ⛔ do not author `onHit` with `abilityType: elementalArt`. Two independent reasons, both current: (a) there is no such member — `Trigger.onHit.abilityType` is skill|burst|normal|charged|plunge or an array of those (src/lib/types/ability.ts:510-516); (b) even spelled `'skill'` it would draw ONE 5s bar at the E CAST, not one per tick. A skill/burst `onHit` effect is merged into that cast's own pool (`getCharacterEffectsForOnHit` at buffWindows.ts:441) and emitted at `cast.fieldStart` (:490-495). Summon ticks cannot rescue it: finalize DOES synthesize an off-field hit per damage tick, but tags it `abilityType: win.source` (skill|burst) (finalize.ts:430-452), and `hitsForTrack` selects only normal|charged|plunge (buffWindows.ts:284-293) — so a tick reaches the artifact 4pc onHit branch and never a CHARACTER onHit buff bar.",
 				"⏭ STILL DEFERRED, and the missing primitive now has a name: a `summonTick`-triggered BUFF collector in `buffWindows.ts`. The cadence half is already built — `summonTickSeries`/`collectSummonTicks` walk the trigger (src/lib/sim/summons.ts:145-193) and `finalize` publishes the tick times on `TimelineWindow.ticks` (finalize.ts:412-427), with `accept: () => true`, so a `summonTick` buff authored on the Sesshou Sakura summon would already DRAW ITS MARKS on the summon lane. Nothing turns a tick into a buff window: `grep summonTick src/lib/utils/buffWindows.ts` returns nothing, and the only consumers are the damage/heal paths. Until that collector exists the two effects stay `manual`, which reaches no planner surface at all (167 such effects corpus-wide), and the caveat is the honest surface.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the Electro DMG bonus or the energy restore from a Sesshou Sakura lightning strike.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the Electro DMG bonus or the energy restore from a Sesshou Sakura lightning strike.\"",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 Sakura Channeling — effects[0] (buff team electroDmgBonus 20) DEFERRED. gcsim: `internal/characters/yaemiko/cons.go:173-189` (`c4MakeCB`, a `done`-flagged one-proc-per-tick callback) is attached to the Sesshou Sakura tick's `QueueAttack` at `kitsune.go:149`; `cons.go:191-201` adds a 5s `ElectroP +0.20` StatMod to every party member. gcsim's `done` flag caps the proc at one per tick, so the cadence IS the authored `summonTick.interval` 2.933 on the Sesshou Sakura series; value 20% and duration 5s are confirmed; target is the whole team including Yae (`cons.go:193` loops `Chars()` with no skip). ⛔ Keep the 2026-08-18 note verbatim — `onHit` with `abilityType: 'skill'` is REFUSED and the reason is current: a skill/burst `onHit` effect merges into that cast's pool and emits once at `cast.fieldStart`, and a synthesized summon-tick hit is tagged `abilityType: win.source` while `hitsForTrack` selects only `normal|charged|plunge`. ⚠️ `durationType: 'refresh'` matters — the ticks are 2.933s apart and the buff is 5s, so consecutive ticks overlap and must merge into one covered span (`mergeRefreshedBars`), not stack. ⚠️ Deleting this leaves the C4 entry with its `passive` `burstDmgBonus: 100` sibling, so the entry is not left effect-less and the always-on chip is unchanged.\n\n↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 Sakura Channeling — effects[1] (energy self 8, procCooldown 5) DEFERRED. gcsim: `internal/characters/yaemiko/cons.go:203-209` — inside the same `c4()`, behind `c.revelation` and a 5s `c4EnergyIcdKey` status, `c.AddEnergy(c4Key, 8)`. Same firing event as the sibling: the Sesshou Sakura tick callback at `kitsune.go:149`. the energy shares the Electro buff's firing event (one `c4()` call) but carries its OWN 5s ICD (`c4EnergyIcdKey`) that the Electro half does not have — which is why they are two effects with different `procCooldown`s, not one. Also retain that this clause comes from the Fandom constellation infobox (buffType Revelation, fetched 2026-07-29) and is not in the entry's `description`; ⚠️ the `description` should gain the sentence when the effect is restored. ⚠️ ⚠️ The two effects must stay on ONE trigger shape — if a future round gives the Electro half a `summonTick` and leaves this one behind on some other trigger, they would fire at different instants off a single in-game callback. ⚠️ `procCooldown: 5` against an `interval` of 2.933 means the energy fires on roughly every other tick; the collector must honour `procCooldown` per series, not per window, or Yae gains 8 energy per tick.",
+				"⛔ The two summonTick effects above are the RESTORE SPEC, not authored data — a `summonTick` trigger is legal only inside `summons[].effects[]` (characterLint `summon-tick-misplaced`), and the Sesshou Sakura summon is hosted on the SKILL, where a C4-gated effect cannot express its own constellation gate against the summon's own tick walk. When the summon-tick BUFF collector lands, author on `yae_miko__skill__yakan_evocation_sesshou_sakura`.summons[0] (\"Sesshou Sakura\"): `{buff, target team, trigger {summonTick, interval 2.933, firstTickDelay 1.433}, duration 5, durationType refresh, electroDmgBonus 20, conditions {constellation 4}}` and `{energy, target self, same trigger, procCooldown 5, amount 8, conditions {constellation 4}}`."
 			]
 		},
 		{

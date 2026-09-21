@@ -171,16 +171,35 @@ describe('constellation-hosted shields', () => {
 	// ⛔ NOT WORK, and each for its own stated reason. Left as assertions rather
 	// than as a comment so a future author who wires one of them has to come
 	// here and say why.
-	//   · Columbina C1 / Sigewinne C2 — `manual` trigger, dispatched nowhere.
+	//   · Columbina C1 — an `onStack` shield on her Gravity threshold. ⚠️ Its
+	//     reason USED to read "`manual` trigger, dispatched nowhere"; that went
+	//     stale when the stack-threshold round re-triggered her (2026-09-18).
+	//     It stays inert in THIS rotation because `Columbina E Q` accrues
+	//     nothing like 60 Gravity — ⛔ so a future author must not read the
+	//     assertion as "the trigger has no reader".
 	//   · Kaeya C4 — `passive` trigger gated on `selfHpBelow`, which the planner
 	//     has no HP state to answer.
 	//   · Traveler Hydro C4 — `onCast skill` with NO `duration`, deliberately:
 	//     the Aquacrest Aegis is channel-bound ("persists until the Traveler
 	//     finishes using the skill") and his skill is `instant` with no active
 	//     window to bind it to. ⛔ Authoring a duration would be faking timing.
+	// ⚓ Sigewinne's C2 Bubbly Shield LEFT this list on 2026-09-21 (the manual-
+	// trigger retirement). It is the one shield in the corpus whose lifetime is
+	// its own cast's ANIMATION — "persists until Sigewinne finishes using
+	// relevant skills" — so it is two effects, one per raising cast, each
+	// `duration` = that cast's `frames.anim`. ⚠️ Distinct from Traveler Hydro
+	// C4 two entries below, which is channel-bound with no window at all: a
+	// cast animation is a length we MEASURE, a channel is one we would be
+	// inventing.
+	it('sigewinne: the C2 Bubbly Shield draws one bar per raising cast', () => {
+		expect(shieldsOf(parseAt('sigewinne', 'Sigewinne E Q', 0))).toEqual([]);
+		const at2 = shieldsOf(parseAt('sigewinne', 'Sigewinne E Q', 2));
+		expect(at2).toHaveLength(2);
+		expect(at2.map((w) => Math.round(w.end - w.start))).toEqual([41, 245]);
+	});
+
 	const INERT: { id: string; level: number; notation: string }[] = [
 		{ id: 'columbina', level: 1, notation: 'Columbina E Q' },
-		{ id: 'sigewinne', level: 2, notation: 'Sigewinne E Q' },
 		{ id: 'kaeya', level: 4, notation: 'Kaeya E Q' },
 		{ id: 'traveler_hydro', level: 4, notation: 'Hydro Traveler E Q' }
 	];

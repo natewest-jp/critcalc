@@ -276,18 +276,27 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
+					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
-					"value": 25,
+					"value": {
+						"type": "ramping",
+						"startValue": 5,
+						"stepValue": 5,
+						"stepInterval": 3,
+						"cap": 25
+					},
 					"snapshottable": false
 				}
 			],
 			"description": "While under the effects of Bane of All Evil, all DMG dealt by Xiao increases by 5%. DMG increases by a further 5% for every 3s the ability persists.\nThe maximum DMG Bonus is 25%.",
 			"_curatorNotes": [
-				"Inherited manual-trigger skeleton flattens a 5-stack ramp (5% at cast, +5% every 3s, max 25% at 12s into stance) to a single +25% buff. Likely target/timing: self, gated on burst-active, ramping over 12s. gcsim implements via a per-frame Amount() that returns min(1 + (Core.F - qStarted) / 180, 5) * 0.05 attached as a DmgP modifier with lifetime 900+burstStart and hitlag-aware. Reviewer to model the ramp (stacking buff across the stance window) — schema currently has no 'rampingStacks' construct."
+				"Inherited manual-trigger skeleton flattens a 5-stack ramp (5% at cast, +5% every 3s, max 25% at 12s into stance) to a single +25% buff. Likely target/timing: self, gated on burst-active, ramping over 12s. gcsim implements via a per-frame Amount() that returns min(1 + (Core.F - qStarted) / 180, 5) * 0.05 attached as a DmgP modifier with lifetime 900+burstStart and hitlag-aware. Reviewer to model the ramp (stacking buff across the stance window) — schema currently has no 'rampingStacks' construct.",
+				"↻ 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Conqueror of Evil: Tamer of Demons — effects[0] (buff allDmgBonus 25) RE-TRIGGERED. gcsim: `internal/characters/xiao/asc.go:16-30` — a `DmgP` stat mod added at the burst, lifetime `900 + burstStart` frames, whose `Amount()` is `min(1 + (F − qStarted)/180, 5) × 0.05`: 5% the instant Bane of All Evil starts, one more 5% step every 180 frames, clamped at five steps. the ramp is gcsim's `min(1 + (F − qStarted)/180, 5) × 0.05` said in the `ramping` BuffValue's own terms — 5% at the cast, +5% per 3s, cap 25% at 12s into a 15s stance; the flattened +25% skeleton the stub carried was the ramp's ENDPOINT, not its value, and `durationType` is `fixed` because the burst cannot be recast inside itself. ⚠️ ⚠️ Bane of All Evil is `terminatesOnSwap: true`, and an `onCast` buff window with a fixed 15s duration does not follow the stance's early end — swap out mid-burst and the bar outlives the stance it names. The same is true of every cast-anchored buff on a swap-terminating stance (the §6.7 item Nate already owes a display call on), so ⛔ don't solve it here with an `onState` trigger. ⚠️ The A4 passive beside it (\"Dissolution Eon: Heaven Fall\", +15% per stack to subsequent Lemniscatic Wind Cycling, max 3, 7s) is still unauthored and is a `skillDmgBonus` + `gainStacks`/`perStack` candidate — out of this packet's scope."
 			]
 		},
 		{
