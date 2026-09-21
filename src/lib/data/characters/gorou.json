@@ -120,7 +120,7 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 10,
+					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "def",
@@ -134,7 +134,7 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 10,
+					"duration": 12,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "teamElementCount",
@@ -157,7 +157,7 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 10,
+					"duration": 12,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "teamElementCount",
@@ -176,7 +176,8 @@
 				"Buffs apply to the ACTIVE character within the banner AoE (kit text; target: 'active'). The in-game 2s buff linger after the active character leaves the field is not modeled — buff windows run the banner's 10s lifetime.",
 				"Snapshot: KQM TCL — banner DEF/Geo-DMG buffs snapshot with abilities cast under them (snapshottable: true). interruptionRes is a unitless presence window (value: unknown per convention), snapshottable: false.",
 				"Hold variant only adjusts placement position; gcsim has no separate hold-variant frame data for this skill — single skillFrames array used for both Tap and Hold.",
-				"General's War Banner terminatesOn is non-standard: the banner is explicitly destroyed when Q is cast (gcsim: Status.Delete on burstHitmark=31). Also, E will not create a new banner while General's Glory is active. Standard terminatesOn 'recast' does not capture this cross-ability interaction — reviewer to decide schema approach."
+				"General's War Banner terminatesOn is non-standard: the banner is explicitly destroyed when Q is cast (gcsim: Status.Delete on burstHitmark=31). Also, E will not create a new banner while General's Glory is active. Standard terminatesOn 'recast' does not capture this cross-ability interaction — reviewer to decide schema approach.",
+				"↻ THE BUFFS ARE AUTHORED AT THEIR HONEST LENGTH, 2026-09-21 (summon-bound buffs round): field + 2s, so 12s on the banner's 10 and 11s on the Glory's 9 — the Bennett (12s field / 14.1s buff) and Faruzan house form, which CLAUDE.md already states and which Gorou belongs to. gcsim skill.go:95-128 is a 0.3s re-application loop handing the active character a TWO-SECOND stat mod and returning only when BOTH fields are down, so the last tick's mod outlives the field that queued it; measured, the chain ends at 754f on a `Gorou E` whose banner ends at 634f. ⚓⚓ It also retires the note above's \"the in-game 2s buff linger is not modeled\". ⛔ AND IT IS WHY THE BUFF IS NOT BOUND TO THE BANNER'S WINDOW: the loop accepts EITHER field, so cutting the E's bar when the burst destroys the banner would be a new wrong answer — `Gorou E ~3s Q` is ONE continuous buff in game, and at these lengths the two bars cover 34-754 and 257-917 with no gap and no instant either of them claims falsely. A span-bound primitive would only re-attribute the overlap, which is why it was scoped out rather than built."
 			],
 			"description": "Deals AoE Geo DMG and sets up a General's War Banner.\n\nGeneral's War Banner\nProvides up to 3 buffs to active characters within the skill's AoE based on the number of Geo characters in the party at the time of casting:\n· 1 Geo character: Adds \"Standing Firm\" - DEF Bonus.\n· 2 Geo characters: Adds \"Impregnable\" - Increased resistance to interruption.\n· 3 Geo characters: Adds \"Crunch\" - Geo DMG Bonus.\n\nGorou can deploy only 1 General's War Banner on the field at any one time. Characters can only benefit from 1 General's War Banner at a time. When a party member leaves the field, the active buff will last for 2s.\n\nHold\nAdjust the location of the skill.",
 			"application": [
@@ -185,7 +186,8 @@
 					"element": "geo",
 					"units": 1
 				}
-			]
+			],
+			"caveat": "With only the War Banner out, the buff reaches whoever is standing inside it; the bar shows it for the whole party's active character wherever they go. Under General's Glory the field follows you, so there is nothing to stand in."
 		},
 		{
 			"id": "gorou__burst__juuga_forward_unto_victory",
@@ -261,7 +263,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 9,
+					"duration": 11,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "def",
@@ -275,7 +277,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 9,
+					"duration": 11,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "teamElementCount",
@@ -298,7 +300,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 9,
+					"duration": 11,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "teamElementCount",
@@ -315,7 +317,8 @@
 			"_curatorNotes": [
 				"General's Glory recreates the same three banner buffs as E (identical tier gating; talent level 10 values shared — the DEF Increase / Geo DMG Bonus rows live on the SKILL talent table and are not boosted by C5), authored for the field's 9s duration. Same caveats as E: target 'active', 2s off-field linger not modeled.",
 				"Crystal Collapse authored as summonTick damage on General's Glory: every 1.5s (kit text), 110.34% DEF at burst talent level 10, Geo, single opponent (KQM TCL). A4 adds +15.6% DEF flat per tick — carried by the existing A4 passive damage effect, intentionally NOT duplicated as flatScaling here.",
-				"C2 extends General's Glory duration by 1s per Crystallize shard pickup (once per 0.1s, max +3s per cast). This is event-driven (subscribes to OnShielded + Crystallize shield type check), not a flat constellation durationModifier — not modeled here. Reviewer to decide representation."
+				"C2 extends General's Glory duration by 1s per Crystallize shard pickup (once per 0.1s, max +3s per cast). This is event-driven (subscribes to OnShielded + Crystallize shield type check), not a flat constellation durationModifier — not modeled here. Reviewer to decide representation.",
+				"↻ 9s -> 11s, 2026-09-21 — see the note on Inuzaka All-Round Defense. General's Glory is 9s from the burst's hitmark (gcsim generalGloryDuration = 9*60, with its own comment on why it is not the datamined 9.1) and the tick chain's last 2s mod runs past it."
 			],
 			"description": "Displaying his valor as a general, Gorou deals AoE Geo DMG and creates a field known as General's Glory to embolden his comrades.\n\nGeneral's Glory\nThis field has the following properties:\n· Like the General's War Banner created by Inuzaka All-Round Defense, provides buffs to active characters within the skill's AoE based on the number of Geo characters in the party. Also moves together with your active character.\n· Generates 1 Crystal Collapse every 1.5s that deals AoE Geo DMG to 1 opponent within the skill's AoE.\n· Pulls 1 elemental shard in the skill's AoE to your active character's position every 1.5s (elemental shards are created by Crystallize reactions).\n\nIf a General's War Banner created by Gorou currently exists on the field when this ability is used, it will be destroyed. In addition, for the duration of General's Glory, Gorou's Elemental Skill \"Inuzaka All-Round Defense\" will not create the General's War Banner.\n If Gorou falls, the effects of General's Glory will be cleared.",
 			"application": [
@@ -325,7 +328,7 @@
 					"units": 1
 				}
 			],
-			"caveat": "The War Banner's DEF bar keeps drawing through General's Glory, and an E cast during Glory still draws a banner. In game this burst destroys the banner, and no new one appears until Glory ends."
+			"caveat": "An E cast while General's Glory is up still draws a banner here; in game none appears until the Glory ends."
 		}
 	],
 	"passives": [

@@ -366,7 +366,29 @@ export type TriggerFilter = {
 
 /** Logical condition tree for effect gating. */
 export type Condition =
-	| { type: 'state'; state: State }
+	| {
+			type: 'state';
+			state: State;
+			/**
+			 * ⚓ QUALIFY `duringSummon` TO THE CAST KIND THAT SPAWNED THE SUMMON
+			 * (summon-bound buffs round, 2026-09-21). Absent means "either" — the
+			 * unqualified state every existing author has, and ⛔ the default must
+			 * stay that, because a holder with one summon gains nothing from
+			 * naming it and thirty-odd authors would have to.
+			 *
+			 * Columbina is the reason it exists: she has TWO summons, and her C6
+			 * is wrapped in gcsim's `ReactBonusModIsActive(burstBuffKey)` —
+			 * the Lunar DOMAIN, her burst. Her Gravity Ripple is the skill and
+			 * lives five seconds longer, so an unqualified gate kept the +80%
+			 * CRIT DMG firing after the Domain closed, and fired it in a rotation
+			 * with no burst at all.
+			 *
+			 * ⚠️ Only meaningful on `duringSummon` (lint C.20): every other state
+			 * has ONE opener vocabulary of its own, and a `source` on one would
+			 * read as a gate and resolve as nothing.
+			 */
+			source?: 'skill' | 'burst';
+	  }
 	| { type: 'not'; condition: Condition }
 	| { type: 'all'; conditions: Condition[] }
 	| { type: 'any'; conditions: Condition[] }
@@ -2939,6 +2961,23 @@ export function getPersistentBehavior(a: CastAbility): 'stationary' | 'follows' 
 	const s = a.summons?.[0];
 	if (s) return s.mobility;
 	return a.behavior === 'persistent' ? a.persistentBehavior : undefined;
+}
+
+/**
+ * ⚓⚓ THE ONE SPELLING OF A RESOLVED STATE (summon-bound buffs round,
+ * 2026-09-21). A state condition may qualify `duringSummon` by the cast kind
+ * that spawned the summon, and the resolvers carry that as an EXTRA member of
+ * the same `Set<string>` rather than a second field — `duringSummon` and
+ * `duringSummon:burst` are both published when a burst summon is out.
+ *
+ * ⚓ That is what keeps the change free for the unqualified authors: a
+ * `source`-less gate asks for the bare name, which is added exactly as before.
+ *
+ * ⛔ Never hand-write the `${state}:${source}` string — four call sites across
+ * three files have to agree on it, and a typo resolves as `null` forever.
+ */
+export function stateKey(state: string, source?: 'skill' | 'burst'): string {
+	return source === undefined ? state : `${state}:${source}`;
 }
 
 /** Duration-extension entries declared on the ability (stance behavior only).

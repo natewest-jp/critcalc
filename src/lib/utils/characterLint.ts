@@ -427,6 +427,26 @@ function walkRawConditionRoots(
 	}
 }
 
+/** Every `{type:'state'}` node inside one RAW condition tree, with its path.
+ *  Raw rather than typed because the `source` qualifier is exactly the kind of
+ *  key TypeScript stops seeing once the JSON is cast to `CharacterData`. */
+function walkRawStateNodes(
+	node: unknown,
+	path: string,
+	fn: (node: { state?: unknown; source?: unknown }, path: string) => void
+): void {
+	if (typeof node !== 'object' || node === null) return;
+	if (Array.isArray(node)) {
+		node.forEach((n, i) => walkRawStateNodes(n, `${path}[${i}]`, fn));
+		return;
+	}
+	const raw = node as Record<string, unknown>;
+	if (raw.type === 'state') fn(raw, path);
+	for (const [key, value] of Object.entries(raw)) {
+		if (typeof value === 'object') walkRawStateNodes(value, `${path}.${key}`, fn);
+	}
+}
+
 function abilityHasStanceBehavior(c: CharacterData): boolean {
 	for (const a of c.abilities) {
 		if ((a.abilityType === 'skill' || a.abilityType === 'burst') && a.behavior === 'stance') {
@@ -521,6 +541,17 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		lintAbility(c, a, push);
 	}
 
+	// Which cast kinds of this character leave a summon in the world — base
+	// ability or variant, since a variant-only summon still opens `duringSummon`.
+	const summonKinds = new Set<string>();
+	for (const a of c.abilities) {
+		if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+		const raw = a as unknown as { summons?: unknown[]; variants?: { summons?: unknown[] }[] };
+		const has =
+			(raw.summons?.length ?? 0) > 0 ||
+			(raw.variants ?? []).some((v) => (v.summons?.length ?? 0) > 0);
+		if (has) summonKinds.add(a.abilityType);
+	}
 	const speaksOfStellarConduct =
 		(c.enablesReactions ?? []).includes('stellarConduct') ||
 		JSON.stringify([c.abilities, c.passives, c.constellations, c.factionBonuses]).includes(
@@ -550,6 +581,35 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 					`${path}: inPolestarField on a character whose kit never names stellarConduct (no enablesReactions entry, no teamEnablesReaction gate)`
 				);
 			}
+			// (C.20) A `source` QUALIFIER NAMES A SUMMON THE HOLDER HAS
+			// (summon-bound buffs round, 2026-09-21). It is meaningful only on
+			// `duringSummon` — every other state has one opener vocabulary of its
+			// own, and a qualifier there would read as a gate and resolve as `null`
+			// forever. Naming a kind the character never summons is the same
+			// silence from the other side: `trackedStatesOf` drops the key as
+			// un-openable, and the gate stops narrowing anything.
+			walkRawStateNodes(cond, path, (node, where) => {
+				if (node.source === undefined) return;
+				if (node.state !== 'duringSummon') {
+					push(
+						'strict',
+						'state-source-scope',
+						`${where}: 'source' qualifier on state "${String(node.state)}" — only duringSummon can name the cast kind that opened it`
+					);
+				} else if (node.source !== 'skill' && node.source !== 'burst') {
+					push(
+						'strict',
+						'state-source-scope',
+						`${where}: state source "${String(node.source)}" is not a cast kind (skill|burst)`
+					);
+				} else if (!summonKinds.has(node.source)) {
+					push(
+						'strict',
+						'state-source-scope',
+						`${where}: duringSummon source "${node.source}" but no ${node.source} of this character summons anything`
+					);
+				}
+			});
 		}
 	);
 
