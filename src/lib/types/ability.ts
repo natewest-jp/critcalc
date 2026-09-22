@@ -2978,8 +2978,15 @@ export function getPrimarySummon(a: CastAbility): Summon | undefined {
 }
 
 /** Active-window duration in seconds. Reads `summons[0].duration` when present,
- *  else the legacy persistent/stance `duration`. 0 when no active window exists. */
+ *  else the legacy persistent/stance `duration`. 0 when no active window exists.
+ *  ⚠ A STANCE reads its OWN `duration`, never its summon's (2026-09-22): the
+ *  stance is the character's window and the summon is a thing left in the
+ *  world, and the two lifetimes are independent — Nilou's Pirouette is 10s
+ *  while the Tranquility Aura it leaves runs 12s (18 at C1), and the stance
+ *  drew the aura's length for as long as this rung came first. One holder in
+ *  the corpus; the summon lane reads `summonEndAt` and is unaffected. */
 export function getActiveDuration(a: CastAbility): number {
+	if (a.behavior === 'stance') return a.duration;
 	const s = a.summons?.[0];
 	if (s) return s.duration;
 	// ⚠ `activeDuration`, never `duration`, on the instant branch — twelve
@@ -2992,6 +2999,9 @@ export function getActiveDuration(a: CastAbility): number {
 /** Duration modifiers for the active window. Reads `summons[0].durationModifiers`
  *  when summons[0] is present, else the legacy `durationModifiers`. */
 export function getActiveDurationModifiers(a: CastAbility): DurationModifier[] | undefined {
+	// Same split as `getActiveDuration`: a stance's modifiers are its own,
+	// and its summon's (Nilou's C1 +6s on the Aura) stay on the summon lane.
+	if (a.behavior === 'stance') return a.durationModifiers;
 	const s = a.summons?.[0];
 	if (s) return s.durationModifiers;
 	return a.behavior === 'instant' ? undefined : a.durationModifiers;

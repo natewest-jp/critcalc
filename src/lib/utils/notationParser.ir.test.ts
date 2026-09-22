@@ -149,11 +149,19 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 			// `summons[0]`. The primary reads the BAR's spawn/uptime (the geometry
 			// the ability accessors already resolved, extensions included); a
 			// secondary reads its own authored spawnsAt/duration.
+			// ↻ 2026-09-22: a STANCE's primary summon reads its own duration too —
+			// the bar's uptime is the stance, and the thing it leaves in the world
+			// has a lifetime of its own (Nilou's 10s Pirouette, 12s Aura). ⚠️ At C0
+			// only: this oracle applies no `durationModifiers`, and the sweep runs
+			// at C0, so a C1 Aura is the parser's own test to make.
+			const ownerIsStance =
+				castAbility !== undefined && 'behavior' in castAbility && castAbility.behavior === 'stance';
 			findCastSummons(char, kind, bar.label, bar.abilityId, bar.variantLabel ?? null).forEach(
 				(summon, i) => {
 					const spawnAt =
 						bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
-					let endAt = spawnAt + (i === 0 ? bar.uptime : framesOf(summon.duration));
+					const ownLifetime = i !== 0 || ownerIsStance;
+					let endAt = spawnAt + (ownLifetime ? framesOf(summon.duration) : bar.uptime);
 					if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
 					if (endAt <= spawnAt) return;
 					const key = `${track.characterId}::${summon.label}`;

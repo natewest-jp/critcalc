@@ -49,6 +49,7 @@ import {
 import {
 	findSummonsForBar,
 	summonEndAt,
+	summonOwnerIsStance,
 	summonSpawnAt,
 	summonTickSeries,
 	tickCapOf
@@ -947,6 +948,8 @@ export function scheduleSummonTicks(
 ): void {
 	const cLevel = ctx.constellationLevels?.[char.id] ?? 0;
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
+	// Resolved once per cast, the same way finalize resolves it for the window.
+	const ownerIsStance = summonOwnerIsStance(char, kind, abilityId);
 
 	findSummonsForBar(char, kind, label, abilityId, variantLabel ?? null).forEach((summon, index) => {
 		const spawnAt = summonSpawnAt(castTime, summonActivatesAt, summon, index);
@@ -983,6 +986,7 @@ export function scheduleSummonTicks(
 				index,
 				cLevel,
 				context: tickConditionCtx(ctx, char.id),
+				ownerIsStance,
 				// ⚠️ Only a swap-out AFTER this spawn can end this summon; an
 				// earlier one belongs to a previous life of the same character.
 				swapOutAt: (() => {
@@ -1097,7 +1101,8 @@ export function scheduleSummonTicks(
 					summon,
 					index,
 					cLevel,
-					context: tickConditionCtx(ctx, char.id)
+					context: tickConditionCtx(ctx, char.id),
+					ownerIsStance
 				});
 			const liveUntil = (): number => {
 				const end = endNow();

@@ -38,6 +38,7 @@ import {
 	computeSummonDamageTicks,
 	findSummonsForBar,
 	summonEndAt,
+	summonOwnerIsStance,
 	summonSpawnAt
 } from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
@@ -373,7 +374,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 							summon,
 							index: i,
 							cLevel: ctx.constellationLevels?.[track.characterId] ?? 0,
-							context: tickCtx(track.characterId)
+							context: tickCtx(track.characterId),
+							ownerIsStance: summonOwnerIsStance(summonChar, kind, bar.abilityId)
 						};
 						const naturalEnd = summonEndAt({ ...endArgs, swapOutAt });
 						if (si === 0 && i === 0) sharedEnd = naturalEnd;

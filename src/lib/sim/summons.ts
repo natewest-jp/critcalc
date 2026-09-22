@@ -109,6 +109,26 @@ export function findSummonsForBar(
 }
 
 /**
+ * Whether the cast that owns a summon is a STANCE — the one fact `summonEndAt`
+ * needs beyond the summon itself. Resolves the ability the same way
+ * `findSummonsForBar` does (the resolved id first, then the unconditioned
+ * base), so the two cannot disagree about which cast is being asked about.
+ */
+export function summonOwnerIsStance(
+	char: CharacterData | null | undefined,
+	kind: 'skill' | 'burst',
+	abilityId?: string
+): boolean {
+	if (!char) return false;
+	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
+	const ability =
+		(abilityId !== undefined ? candidates.find((a) => a.id === abilityId) : undefined) ??
+		candidates.find((a) => a.conditions === undefined) ??
+		candidates[0];
+	return ability?.behavior === 'stance';
+}
+
+/**
  * Where one summon spawns within its cast.
  *
  * ⚠ THE PRIMARY IS NOT COMPUTED THE SAME WAY AS THE REST, and that asymmetry is
@@ -153,6 +173,14 @@ export function summonSpawnAt(
  * this only shifts starts — but a secondary with its own duration will be right
  * rather than inheriting the primary's.
  *
+ * ⚓ EXCEPT WHEN THE OWNER IS A STANCE (2026-09-22): then the bar's uptime is
+ * the STANCE, and the summon is a thing left in the world with a lifetime of
+ * its own — so the primary reads its authored `duration` + `durationModifiers`
+ * exactly as a secondary does. Nilou is the one holder: Pirouette is 10s, the
+ * Tranquility Aura it leaves runs 12s (18 at C1). Before this, `getActiveDuration`
+ * handed the stance the AURA's length; once it stopped, the aura was cut to the
+ * stance's — the coupling had been hiding in both directions.
+ *
  * ⛔ RECAST TRUNCATION IS DELIBERATELY NOT HERE, and folding it in would be a
  * mistake rather than a convenience. It is not a property of one summon's end:
  * finalize expresses it by shortening the PRIOR window on the same key, and a
@@ -187,9 +215,22 @@ export function summonEndAt(args: {
 	context?: ConditionContext;
 	/** The owner's next swap-out, or `Infinity` when they never leave. */
 	swapOutAt?: number;
+	/** The owning cast is a stance (`summonOwnerIsStance`), so even the primary
+	 *  lives its own authored lifetime — see the ⚓ note above. */
+	ownerIsStance?: boolean;
 }): number {
-	const { spawnAt, barUptime, summon, index, cLevel, context, swapOutAt = Infinity } = args;
-	const natural = spawnAt + (index === 0 ? barUptime : secondaryLifetime(summon, cLevel, context));
+	const {
+		spawnAt,
+		barUptime,
+		summon,
+		index,
+		cLevel,
+		context,
+		swapOutAt = Infinity,
+		ownerIsStance = false
+	} = args;
+	const ownLifetime = index !== 0 || ownerIsStance;
+	const natural = spawnAt + (ownLifetime ? secondaryLifetime(summon, cLevel, context) : barUptime);
 	return summon.terminatesOn === 'swap' && swapOutAt < natural ? swapOutAt : natural;
 }
 
