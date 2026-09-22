@@ -282,7 +282,12 @@
 			grid-template-rows: repeat(2, minmax(var(--atlas-card-min-h), 1fr));
 		}
 	}
-	@media (max-width: 620px) {
+	/* `compact` (40rem = 640px, $lib/breakpoints.ts) — was a stray 620px, the
+	   one the responsive survey named for absorption. Raising it 20px only
+	   widens the one-column band, which is the safe direction: two role cards
+	   at 621–640 were the narrowest two-column form on the site. ⚠️ Custom
+	   properties do not work in media queries; the literal cites the table. */
+	@media (max-width: 640px) {
 		.rolecards {
 			grid-template-columns: 1fr;
 			grid-template-rows: repeat(4, minmax(var(--atlas-card-min-h), 1fr));

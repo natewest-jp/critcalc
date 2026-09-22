@@ -25,8 +25,8 @@
  * Visualizers' `min-width: 1024px` (the workspace's second column). Neither
  * maps onto a measured site fact, and a system that forces a real content
  * stop onto a wrong shared number is worse than the strays it replaces.
- * AtlasView's `620px` is the one the survey named for absorption into
- * `compact`; it is left for the Atlas's own pass.
+ * AtlasView's `620px` was the one the survey named for absorption into
+ * `compact`; absorbed 2026-09-22.
  */
 export const BP = {
 	/**
