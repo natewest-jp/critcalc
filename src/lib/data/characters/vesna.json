@@ -1,0 +1,158 @@
+{
+	"id": "vesna",
+	"name": "Vesna",
+	"displayName": "Vesna",
+	"element": "anemo",
+	"weapon": "sword",
+	"gender": "Female",
+	"affiliation": "Druzhna",
+	"rarity": 5,
+	"enablesReactions": ["stellarSwirl"],
+	"abilities": [
+		{
+			"id": "vesna__normal__vila_blade_dance",
+			"name": "Vila Blade Dance",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 6 consecutive strikes.\n"
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to trample opponents in front of her.\n"
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along her path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 6 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to trample opponents in front of her.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along her path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "vesna__skill__the_art_of_victory",
+			"name": "The Art of Victory",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 18,
+			"duration": 15,
+			"tags": [],
+			"effects": [],
+			"description": "Calls forth Spirit Blades passed down through generations of the Vila to deal AoE Anemo DMG, then switches to the **Armed for Action** mode and gains 2 stacks of **Sword Essence**.\n\nArmed for Action\nDMG dealt by Vesna with her Normal Attacks, Charged Attacks, and Plunging Attacks become Anemo DMG that cannot be overridden by another elemental infusion instead. She will also summon a wind pinion that attacks the opponent at the same time, dealing additional Anemo DMG. Each time the wind pinion is summoned, Vesna will regenerate a certain amount of Sword Essence.\nVesna can consume Sword Essence to unleash the special Elemental Skill **Windborne Sword**, which deals to the opponent Anemo DMG.\nEach use of the special Elemental Skill Windborne Sword in the same instance of Armed for Action will increase the level of Windborne Sword, beginning from Lv. 1 to Lv. 3 max, for more Anemo DMG. Using Windborne Sword at Lv. 2 and Lv. 3 will also summon **Spirit Blades** which deal Anemo DMG.\nVesna will exit the mode when its duration ends or when she has used Windborne Sword at the highest level 3 times. Exiting will clear all remaining Sword Essence she has accrued.\nAdditionally, when in this mode, Vesna's resistance to interruption is increased.\nRadiance: Stellar Swirl: DMG dealt with the Spirit Blades becomes Anemo DMG that is also considered Stellar Swirl reaction DMG.",
+			"behavior": "instant"
+		},
+		{
+			"id": "vesna__burst__for_the_tsaritsa",
+			"name": "For the Tsaritsa!",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": [],
+			"effects": [],
+			"description": "Summons multiple **Spirit Blades**, dealing AoE Anemo DMG. Also gains a stack of **Sword Essence**.",
+			"behavior": "instant"
+		}
+	],
+	"passives": [
+		{
+			"id": "vesna__passive__rite_of_springs_procession",
+			"name": "Rite of Spring's Procession",
+			"abilityType": "passive",
+			"description": "After Vesna uses the special Elemental Skill **Windborne Sword** or the Elemental Burst **For the Tsaritsa!**, she also gains 1 stack of Disciplinary Action which lasts 20s. Max 6 stacks, and the duration of each stack is independent of the others'.\nWhen she has Disciplinary Action stacks active, the **Spirit Blades** summoned by Vesna will deal DMG equal to (100% + 10% × Disciplinary Action stack count) of the original DMG instead. All active stacks of Disciplinary Action are cleared when Vesna uses the Elemental Skill The Art of Victory or when she leaves the field."
+		},
+		{
+			"id": "vesna__passive__truth_prevails",
+			"name": "Truth Prevails",
+			"abilityType": "passive",
+			"description": "Radiance: Stellar Swirl: Vesna will gain the corresponding effect based on the Elemental Type of her party members: \n· For every Cryo or Anemo character in her current party, Vesna's ATK increases by 6%; and\n· For every character of all other Elemental Types in her current party, Vesna's Elemental Mastery increases by 25 instead."
+		},
+		{
+			"id": "vesna__passive__stellar_jubilee_splendid_prelude",
+			"name": "Stellar Jubilee: Splendid Prelude",
+			"abilityType": "passive",
+			"description": "When party members trigger Cryo Swirl, it will be changed to a Stellar Swirl reaction, and party members' Base DMG for the Stellar Swirl will be increased based on Vesna's ATK. Every 100 ATK she has increases the Base Stellar Swirl DMG by 0.7%. The maximum DMG increase that can be gained this way is 14%.\nAfter a party member triggers a Stellar Swirl reaction nearby, Vesna enters the Radiance: Stellar Swirl state for 8s.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "stellarSwirlDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 0.7,
+						"cap": 14
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"THE THIRD STELLAR ENABLER, Swirl only: `enablesReactions: ['stellarSwirl']` at the root converts every party Cryo Swirl. The passive is the house \"Stellar Jubilee: …\" shape (Odette, Sandrone) — 0.7% per 100 ATK, 14% cap — but on `stellarSwirlDmgBonus`, not the family-wide `stellarGlimmerDmgBonus`, because her text names the Stellar Swirl alone. ⚠️ genshin-db files this passive in the `passive3` slot, so `ingest-character.mjs` sent it to the sidecar's `extraPassives` (the positional-split trap, ingest recipe Stage 0); pulled in by hand 2026-09-22.",
+				"The Radiance: Stellar Swirl state (8s after a nearby party Stellar Swirl) gates her E's Spirit Blades becoming Stellar Swirl DMG and A4's composition buff — a standing gate to author with the kit (Stage 2), not here."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "vesna__constellation__winters_farewell_feast",
+			"name": "Winter's Farewell Feast",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [],
+			"description": "When in the **Armed for Action** mode, Vesna can unleash **Windborne Sword** at the highest level 4 times instead of 3. Also, each time she enters the Armed for Action mode, she will not consume **Sword Essence** the first time she uses Windborne Sword at the highest level.\nAdditionally, Vesna deals 20% increased Stellar Swirl reaction DMG when in the Armed for Action mode."
+		},
+		{
+			"id": "vesna__constellation__kolo_of_springs_arrival",
+			"name": "Kolo of Spring's Arrival",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [],
+			"description": "The Ascension Talent **Rite of Spring's Procession** is enhanced: Vesna gains the maximum number of Disciplinary Action stacks when she enters **Armed for Action** mode. Vesna's ATK is increased by 40% when she has maximum Disciplinary Action stacks.\nYou must unlock the Ascension Talent \"Rite of Spring's Procession\" to gain access to the above effects."
+		},
+		{
+			"id": "vesna__constellation__winters_last_offering",
+			"name": "Winter's Last Offering",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"effects": [],
+			"description": "Increases the Level of the Elemental Skill **The Art of Victory** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "vesna__constellation__glory_to_our_forebears",
+			"name": "Glory to Our Forebears",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [],
+			"description": "The Ascension Talent **Truth Prevails** is enhanced: Its ATK and Elemental Mastery bonuses increase to 3 times their original values."
+		},
+		{
+			"id": "vesna__constellation__the_nobleborns_charge",
+			"name": "The Nobleborn's Charge",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"effects": [],
+			"description": "Increases the Level of the Elemental Burst **For the Tsaritsa!** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "vesna__constellation__unwavering_ardor",
+			"name": "Unwavering Ardor",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [],
+			"description": "Tapping on Normal Attack or Elemental Skill in the 5s after Vesna uses **Windborne Sword** at its highest level will unleash the secret Vila ability Windborne Sword: Transpose, dealing Anemo DMG at 150% of Vesna's ATK as well as summoning **Spirit Blades** which deal an additional instance of Anemo DMG at 200% of Vesna's ATK. If Vesna is in the **Armed for Action** mode, she will also summon a wind pinion to perform Coordinated Attacks against opponents.\nAdditionally, Vesna's Stellar Swirl reaction DMG dealt is **elevated** by 20%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-09-22T03:41:00.852Z"
+	}
+}

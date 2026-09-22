@@ -27,9 +27,9 @@ import type { Page } from '@playwright/test';
  *  ⚠️ HARDCODED ON PURPOSE — deriving it from the corpus would make the test
  *  agree with whatever the app renders, which is the one thing it exists to
  *  check. ⛔ So it must be bumped by hand on every character ingest; the
- *  ingest-character recipe's Stage 3 says so. Last bumped 2026-08-31 (+Odette,
- *  +Alyosha). */
-const ROSTER_SIZE = 125;
+ *  ingest-character recipe's Stage 3 says so. Last bumped 2026-09-22 (+Vesna,
+ *  +Vodyanitsa). */
+const ROSTER_SIZE = 127;
 
 const matchCount = async (page: Page) => parseInt(await page.locator('.tb-count').innerText(), 10);
 

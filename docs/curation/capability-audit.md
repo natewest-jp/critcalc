@@ -7,12 +7,11 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (2)
+## Expected capability missing entirely (0)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
-- **traveler_hydro** — expected heal (C0) — nothing derives — RESOLVED 2026-07-28 (capability sweep): Spotless Waters droplet-pickup self-heal now authored (manual trigger, 7% max HP) after the stale-beta re-ingest; C6 Tides of Justice team heal (6% of receiver max HP, lowest-HP ally) also derives from C6
-- **sigewinne** — expected shield (C2) — nothing derives — CONFIRMED 2026-07-12: C2 Bubbly Shield (30% max HP, 250% hydro absorption); no shield below C2 (KQM quickguide)
+- _none_
 
 ## Constellation gate later than in-game (0)
 
@@ -44,10 +43,11 @@ Informational: facet works, but no target/scaling data for the detail card.
 
 - **clorinde** — clorinde__skill__hunters_vigil tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 
-## Effect without tag (1)
+## Effect without tag (2)
 
 Add the tag for consistency.
 
+- **charlotte** — charlotte__skill__framing_freezing_point_composition has a heal effect but lacks the 'heal' tag
 - **gorou** — gorou__burst__juuga_forward_unto_victory has a heal effect but lacks the 'heal' tag
 
 ## Capabilities hiding in _todo stubs (0)
@@ -56,27 +56,22 @@ Underivable until curated.
 
 - _none_
 
-## Frame-curated, zero capabilities (8)
+## Frame-curated, zero capabilities (2)
 
 Verify these kits genuinely offer nothing team-facing.
 
-- **alhaitham** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
-- **aloy** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **chasca** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
-- **kaveh** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
-- **ningguang** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
-- **sethos** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
-- **wanderer** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (5)
+## Uncurated stubs (6)
 
 Excluded from capability trust; shown honestly in the UI.
 
 - **alyosha** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **traveler_cryo** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
+- **vesna** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
+- **vodyanitsa** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **zibai** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 
 ## Fixture ids not in roster (0)
