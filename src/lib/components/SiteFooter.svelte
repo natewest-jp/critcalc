@@ -12,9 +12,15 @@
 	     shared by both. -->
 	<div class="ftr__rule"><HRule variant="center" /></div>
 
+	<!-- ⚠ ONE SENTENCE, NO INTERIOR MARKUP (text round, 2026-09-22). The wordmark
+		 used to be a <strong> inside it, which made the line three fragments — and
+		 a fragmented sentence cannot be reordered by a translator, so it has to be
+		 one message before extraction (docs/text/style-guide.md § 3.1).
+		 The year is a build constant; vite.config.ts says why it cannot read the
+		 clock here. -->
 	<p class="ftr__legal">
-		© 2026 <strong>critcalc.app</strong> — an unofficial fan project, not affiliated with or endorsed
-		by HoYoverse. Genshin Impact and all related trademarks and assets are © HoYoverse.
+		© {__BUILD_YEAR__} critcalc.app — an unofficial fan project, not affiliated with or endorsed by HoYoverse.
+		Genshin Impact and all related trademarks and assets are © HoYoverse.
 	</p>
 </footer>
 

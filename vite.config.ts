@@ -34,6 +34,20 @@ const devAssetCache: Plugin = {
 
 export default defineConfig({
 	plugins: [sveltekit(), devAssetCache],
+	define: {
+		/* The footer's copyright year, inlined at BUILD time.
+		 *
+		 * ⚠ IT HAS TO BE A BUILD CONSTANT, NOT A CLOCK READ. The site is
+		 * prerendered, so `new Date().getFullYear()` inside the component would
+		 * bake the BUILD year into the static HTML and then compute the VISIT
+		 * year again during hydration — the two disagree the moment a year rolls
+		 * over between a deploy and a visit, which is exactly the mismatch
+		 * $lib/landing/announcements.ts forbids. Defining it here inlines ONE
+		 * literal into both the prerendered HTML and the client bundle, so they
+		 * cannot disagree. ⚠ A redeploy is what moves it, which is correct for a
+		 * copyright line. */
+		__BUILD_YEAR__: new Date().getFullYear()
+	},
 	test: {
 		include: ['src/**/*.{test,spec}.ts']
 	}

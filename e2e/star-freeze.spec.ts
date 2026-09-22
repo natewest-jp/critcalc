@@ -68,7 +68,7 @@ test('the star clock holds one frame across every tool leg, and thaws on descend
 	expect((await scene(page))!.t, 'the frozen frame survives idle time').toBe(rest0!.t);
 
 	// ── The crane: the world sweeps, the field does not ──────────────────────
-	const toTb = await sampleLeg(page, 'Teams');
+	const toTb = await sampleLeg(page, 'Builder');
 	expect(
 		spread(toTb.map((s) => s.cx)),
 		'the camera actually craned (the test exercised the real thing)'
