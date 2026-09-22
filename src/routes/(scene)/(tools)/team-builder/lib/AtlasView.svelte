@@ -287,7 +287,7 @@
 	   widens the one-column band, which is the safe direction: two role cards
 	   at 621–640 were the narrowest two-column form on the site. ⚠️ Custom
 	   properties do not work in media queries; the literal cites the table. */
-	@media (max-width: 640px) {
+	@media (max-width: 40rem) {
 		.rolecards {
 			grid-template-columns: 1fr;
 			grid-template-rows: repeat(4, minmax(var(--atlas-card-min-h), 1fr));
