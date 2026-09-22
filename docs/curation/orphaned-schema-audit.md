@@ -6,7 +6,13 @@ meta-bug: data authored correctly, and no code path reading it. `factionBonuses`
 `summons[1]` were all that shape. This sweep asks whether there are more.
 
 **Findings only when written.** ✅ Findings 1 (Citlali + Hu Tao) and the promoted guard
-landed the same day — see "Resolved" at the bottom. Findings 2–6 stand.
+landed the same day — see "Resolved" at the bottom. ✅ **Findings 2–6 were RULED
+2026-09-22** (⚓ Nate) — see "Resolved 2026-09-22" at the bottom; ⚠️ two of their premises
+had gone stale by then, which is the lesson: a finding here is a snapshot, re-read the
+code before acting on one.
+
+⚠️ **Passes B and C are MANUAL and were last run 2026-08-15.** Only pass A is the vitest
+guard. A clean guard is not a clean corpus.
 
 ---
 
@@ -99,13 +105,14 @@ key with no schema at all — worth folding into `_curatorNotes` or declaring.
   reason: "the tools model buff windows, not damage."
 - **`twoPiece`** (6 artifact sets) — already tracked in `CLAUDE.md`; no Stat key until a
   consumer exists.
-- **`noICD` on skills/bursts** — now inert _for a stated reason_ (a cast is
-  ability-granularity, not hit-granularity — see `docs/icd-round-handoff.md`).
+- ~~**`noICD` on skills/bursts** — now inert _for a stated reason_~~ ⚠️ **WRONG since
+  2026-09-16**: `CastAbility.noICD` IS read (`resolveCastApplications`, `7438ef50`) —
+  eight characters depend on it. This entry was a live wrong rule for a month.
 - **`heal` (72) and `energy` (29) effects, parser-side** — the planner models neither HP
   nor energy by constitution. The capability layer and Team Builder do consume them.
-- **`manual` triggers (167)** — by design: the player asserts these, the parser does not
-  fire them. ⚠️ Worth confirming that is still the intent, since it is roughly a third of
-  all authored triggers.
+- ~~**`manual` triggers (167)** — by design~~ ↻ **OVERTURNED**: the channel reached no
+  surface and was RETIRED 2026-09-21 (127 → 0, struck from the `Trigger` union —
+  `docs/manual-trigger-retirement-round.md`). The ⚠️ that used to sit here was right.
 - **`mobility = "follows"`, `input = "N4"/"N6"`** flagged by pass B are matched
   dynamically, not by literal — pass-B false positives.
 - **Provenance keys** (`curatedAt`, `draftedBy`, `generatedAt`, …) — documentation by
@@ -172,3 +179,26 @@ time.
 (a bare entry would be the same silence the test exists to break). A second case fails on
 _stale_ allow-list entries: a key no longer authored, or one that has since gained a
 consumer. Verified by seeded negative — an injected field fails the run and names it.
+
+---
+
+## ✅ Resolved 2026-09-22 — findings 2–6 ruled (⚓ Nate)
+
+Ruled as a launch-triage item, and two of the five turned out to rest on premises that
+had gone stale in the five weeks since the run:
+
+- **#2 `durationType`** — cannot be `INERT`-listed (it IS accessed — copied through
+  `effectCollection`, authored by `sim/fields.ts` — and the guard's stale-entry test
+  refuses a listed key with a reader). Documented at its declaration instead: the engine
+  has ONE behaviour (refresh-merge at the projection) and a `fixed` reader is a future
+  round; the 394 authorings stand as game truth.
+- **#3 `mobility`** — ⚠️ **STALE**: `getPersistentBehavior` gained a caller after the
+  run — `sim/states.ts`'s `duringSummon` inference reads `'stationary'` at two sites. Not
+  retired; it has a live consumer.
+- **#4 `durationModel`** — retires WITH `BuffEffect.stacks` (a shape with no consumer at
+  all) in the nine-author pass `docs/stack-count-display-round.md` §5 queues, ⛔ not alone.
+  `INERT` reason updated.
+- **#5 `shortName`** — kept; its consumer is the coverage page's row
+  (`docs/coverage-round.md` §7).
+- **#6 `framesSource`** — its consumer is the coverage page (§5.3), which declares it and
+  reads `gcsim-pr` as provisional timing. `INERT` reason updated until it lands.

@@ -172,6 +172,21 @@ the affected character through `parseNotation` after.
 
 ## 4. Engine rounds this would need, sized by what each frees
 
+> ↻ **Status 2026-09-22** (the table below is the plan as written; this note is
+> the state). ✅ SHIPPED: §1.A (cast-ICD-gate round) · §1.B (`manual` retired
+> outright, 2026-09-21) · §1.D (generic plunge = provisional stand-in) · §1.E ·
+> §1.G · §1.H (buff-pool round) · §1.I (`constellationScaling` is read by
+> `sim/stacks.ts` + `sim/summons.ts`) · §1.J · §1.K · §1.M · §1.N · Radiance as a
+> window (Cryo Traveler; the other holders keep standing gates by ruling).
+> ⏳ STILL OPEN: **§1.F** chain-step / sibling resolution (Nilou WS2/WS3 —
+> Kinich was solved by the Cannon retype instead) · **§1.L** the stance-cancel
+> token (⚓ Nate: a conversation when reached, ⛔ not scoped before) ·
+> **`swirlReactionBonus` + reaction-CRIT** (the Stat keys exist; no reader).
+> Plus §9/§10's residue: a team-NB `gainStacks` dispatcher (Kinich/Mualani A4) ·
+> a `passive` RES-shred surface (Xilonen C2) · a condition naming the RECEIVER
+> (Aino C1/C6) · the pulsed-reapplication primitive (§6.4). ✅ 2026-09-22: "a
+> stance reads its summon's duration" (Nilou's Pirouette) is FIXED (`79cabb9c`).
+
 | round                                                                                                                                     | frees                                                                                                   |
 | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Per-cast ICD gate on `application[]` + Durability-0 lint (§1.A)                                                                           | Varka Q, Mizuki cloud, Arlecchino E, Chevreuse mines, Cyno bolts; retires ~10 phantom pills             |

@@ -1307,6 +1307,12 @@ export type EffectBase = {
 	trigger: Trigger;
 	conditions?: Condition;
 	duration?: number;
+	/** How a re-application inside the window behaves. ⚠️ NEVER BRANCHED ON
+	 *  (orphaned-schema audit finding #2; ruled 2026-09-22): the engine has ONE
+	 *  behaviour — a refresh-merge at the projection (`mergeRefreshedBars`) —
+	 *  and `fixed` would need a reader that refuses to extend a live window.
+	 *  394 authorings stand as a claim about the game, not the tool; a `fixed`
+	 *  reader is a future round, ⛔ not a reason to stop authoring the truth. */
 	durationType?: 'refresh' | 'fixed';
 	/**
 	 * Minimum seconds between procs of this effect. 0 or absent = no cooldown

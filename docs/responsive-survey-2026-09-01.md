@@ -662,7 +662,11 @@ none` on `.chrome-center` removed a grid item, so the action cluster shifted
 > Nate's eye. The entries under this heading are kept as the survey wrote
 > them; Part IV is the record.
 
-### 1. 🐛 Band B is unreachable below ~768px — a bug before it is a feature
+### 1. ~~🐛 Band B is unreachable below ~768px~~ ✅ CLOSED by the narrow round; re-verified 2026-09-22
+
+_(Atlas/Roster/Compare sit at 30–320px at 390 and the view switches on click —
+measured on the production build at 390, 640, 700, 768 and 800. Kept below as
+the record of what the narrow round fixed.)_
 
 Atlas/Roster/Compare sits past the right edge, so **the Team Builder is stuck on
 whichever view it opened with**; an automated pass could not click "Roster" at
