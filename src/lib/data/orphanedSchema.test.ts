@@ -41,14 +41,21 @@ const INERT: Record<string, string> = {
 	draftedAt: 'curation provenance, documentation only',
 	draftedBy: 'curation provenance, documentation only',
 	generatedAt: 'ingest provenance, documentation only',
-	framesSource: 'frame provenance, documentation only',
+	framesSource:
+		'frame provenance — its consumer is the coverage page (docs/coverage-round.md §5.3), which declares it and reads gcsim-pr as provisional timing',
 	// Forward-looking game truth, each with a stated reason at its declaration.
 	snapshots:
 		'KQM snapshotting; the tools model buff windows, not damage — see docs/library/game/snapshotting.md',
 	twoPiece: 'no Stat key for a 2pc bonus until a consumer exists — see CLAUDE.md',
 	// Known-inert, tracked in docs/curation/orphaned-schema-audit.md.
-	durationModel: 'stacks shared/separate — audit finding #4, decision pending',
-	shortName: 'declared on ability/artifact/weapon, rendered nowhere — audit finding #5'
+	// ⚓ 2026-09-22 rulings (Nate): findings 2–6 resolved — #2 durationType is
+	// documented at its declaration (accessed, never branched on, so it cannot
+	// be listed here); #3 mobility turned out to have a LIVE consumer
+	// (sim/states.ts's duringSummon inference) — the finding was stale.
+	durationModel:
+		'a required key of BuffEffect.stacks, which has NO consumer — retires WITH that shape in the nine-author pass (docs/stack-count-display-round.md §5), not alone',
+	shortName:
+		'declared on ability/artifact/weapon, rendered nowhere — kept for the coverage page row (docs/coverage-round.md §7)'
 };
 
 const DATA_DIRS = ['src/lib/data/characters', 'src/lib/data/artifacts', 'src/lib/data/weapons'];

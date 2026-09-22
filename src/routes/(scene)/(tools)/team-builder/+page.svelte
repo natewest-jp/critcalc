@@ -2110,7 +2110,14 @@
 		flex: 1;
 		min-height: 0;
 		min-width: 0;
-		--cg-tile-min: 118px;
+		/* 118 → 108 (2026-09-22, the responsive survey's item 6): at 390 the
+		   grid's box MEASURES 346px (the survey's "~110" assumed 358 and was 3px
+		   short — 3 × 110 + two 0.6rem gaps is 349), and 3 × 118 is two across
+		   with a third that did not fit by 27px. 3 × 108 + 2 gaps is 343. The
+		   card's base form is sound down to 104 (its deleted compact band's gate
+		   — see CharacterCard.svelte), so 108 costs the card nothing; with
+		   auto-fill + 1fr a track sits just above its minimum, ~108–124. */
+		--cg-tile-min: 108px;
 		--cg-gap: 0.6rem;
 		--cg-stack-gap: 0.7rem;
 		/* Adds `display` to the shared fade. The Roster is the one view that is

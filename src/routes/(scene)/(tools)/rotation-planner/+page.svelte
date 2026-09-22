@@ -867,6 +867,17 @@
 		color: var(--muted);
 		flex-shrink: 0;
 	}
+	/* Below BP.toolMin (54rem) the aside is a DRAWER (ToolColumns `sheet`),
+	   and the drawer draws its own heading — the same two words, stacked right
+	   over this one. ⚓ The drawer owns the title there: it needs a heading for
+	   the ✕ to sit beside, and this head is a desktop-column object (the
+	   notes column's character headings are the peers it was typeset to
+	   match). On desktop nothing changes. ⚠ Literal from the table. */
+	@media (max-width: 54rem) {
+		.rp-log-head {
+			display: none;
+		}
+	}
 
 	/* The standing limits, at the head of the transcript and INSIDE its scroller
 	   — three paragraphs pinned over a several-hundred-row list would spend a

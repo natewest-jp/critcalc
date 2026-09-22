@@ -552,7 +552,8 @@
 	   ⛔ 42rem (672px) would be the tight fit and is deliberately NOT used: it
 	   would be a brand-new threshold, and the survey's § 5 argues this set must
 	   shrink rather than grow (AtlasView's stray 620px, 20px off the chrome's
-	   own stop, is the cautionary case). 47.5rem is already in the codebase —
+	   own stop, was the cautionary case — absorbed into `compact` 2026-09-22).
+	   47.5rem is already in the codebase —
 	   HelpAreaShell's — and clears the requirement by ~95px.
 
 	   ⚠ ChromeOverlay's own 40rem block is a DIFFERENT concern (overlay

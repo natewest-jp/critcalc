@@ -222,6 +222,8 @@ proc hearing nothing, the C2 re-enable with its application, the lint arms.
 Seeded negatives: the cast-site gate removed fails the proc case; the buff-pool
 gate removed fails the shred and variant cases.
 
-**Still open.** Kinich E (with §1.F); the state-gated sibling blind spot in
-`resolveCastPair` (Skirk's Extinction is invisible to the buff pools until
-§1.F); the editor tint, unchanged.
+**Still open.** ~~Kinich E (with §1.F)~~ ✅ done 2026-09-17 (T1: Loop Shot
+retyped as a state-gated normal, `nonHitting` on the cold-open E in the same
+commit — `essential-characters-2026-09-15.md` §9); the state-gated sibling blind
+spot in `resolveCastPair` (Skirk's Extinction is invisible to the buff pools
+until §1.F); the editor tint, unchanged.

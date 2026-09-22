@@ -697,8 +697,9 @@
 	/* ── The ROOMY band — the only container query left ───────────────────────
 	   ⛔ THE COMPACT BAND IS DELETED (⚓ Nate approved 2026-08-11). It was the
 	   base, gated below 104px — centred name, no element glyph, no body — and it
-	   was UNREACHABLE. The smallest minimum any grid hands a card is 118px
-	   (.tb-grid and .tb-roster's --cg-tile-min; the planner picker's is 128), and
+	   was UNREACHABLE. The smallest minimum any grid hands a card is 108px
+	   (.tb-roster's --cg-tile-min since 2026-09-22, was 118; the planner picker's
+	   is 128), and
 	   `auto-fill` at a 320px viewport still yields one ~280px column. Everything
 	   the 104px query used to set is now simply the base.
 	   ⛔ Do not restore it as a mobile safety net: the mobile round is survey-first
@@ -707,7 +708,7 @@
 
 	   📌 150 IS NOT A FREE NUMBER — IT IS COUPLED TO .tb-grid's 1500px BUMP, and
 	   until now nothing said so. With `auto-fill` + `1fr` a track sits just above
-	   its minimum (118 → ~118–133 · 150 → ~150–168), so this band fires at exactly
+	   its minimum (108 → ~108–124 · 150 → ~150–168), so this band fires at exactly
 	   the moment the media query raises the minimum to 150. Move one and you must
 	   move the other; a value in 134–149 would separate the two regimes with
 	   margin, at the cost of the picker (128 min, tracks to ~146) crossing it.

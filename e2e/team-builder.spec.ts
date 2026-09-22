@@ -27,9 +27,9 @@ import type { Page } from '@playwright/test';
  *  ⚠️ HARDCODED ON PURPOSE — deriving it from the corpus would make the test
  *  agree with whatever the app renders, which is the one thing it exists to
  *  check. ⛔ So it must be bumped by hand on every character ingest; the
- *  ingest-character recipe's Stage 3 says so. Last bumped 2026-08-31 (+Odette,
- *  +Alyosha). */
-const ROSTER_SIZE = 125;
+ *  ingest-character recipe's Stage 3 says so. Last bumped 2026-09-22 (+Vesna,
+ *  +Vodyanitsa). */
+const ROSTER_SIZE = 127;
 
 const matchCount = async (page: Page) => parseInt(await page.locator('.tb-count').innerText(), 10);
 
@@ -76,10 +76,15 @@ test.describe('roster and facets', () => {
 		// fills it. ⚠️ And it is Stage 2, not frames, that empties it: both
 		// characters are still frameless and still read as "not yet curated" in
 		// the roster.
+		//   · 2026-09-22 — that day: 7.1's Vesna and Vodyanitsa ingested at
+		//     Stage 0 (`fc215035`). Vesna carries her Stellar-Jubilee enabler
+		//     passive and derives a capability; Vodyanitsa carries nothing yet, so
+		//     she is genuinely unknown and the bucket is back to 1. ⏭ Returns to
+		//     0 when her Stage 2 effects land (post-launch, per the 09-22 triage).
 		await expect(
 			page.locator('.tb-stubs'),
-			'no uncurated bucket once every stub has authored capabilities'
-		).toHaveCount(0);
+			'the uncurated bucket holds exactly the Stage-0 stubs (Vodyanitsa)'
+		).toHaveCount(1);
 	});
 
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {

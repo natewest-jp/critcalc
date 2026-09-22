@@ -24,13 +24,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
 	{
-		id: 'current-7-0',
-		text: 'Data current to Genshin Impact 7.0',
+		id: 'current-7-1',
+		text: 'Data current to Genshin Impact 7.1',
 		// ⚠️ Keep this in step with FRAMELESS_EXEMPT (characterLint.test.ts):
 		// "in the works" means a kit authored but waiting on gcsim frames, so
-		// the planner times it with generic cast lengths.
-		detail: 'Odette and the Cryo Traveler curated in full · Alyosha in the works',
-		expires: '2026-10-28'
+		// the planner times it with generic cast lengths. ⏭ The coverage page
+		// (docs/coverage-round.md) will READ this from the index instead.
+		detail: 'Vesna, Vodyanitsa and Alyosha in the works',
+		// 7.1 went live 2026-09-23; the next patch is ~six weeks out.
+		expires: '2026-11-04'
 	}
 ];
 
