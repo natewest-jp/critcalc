@@ -464,10 +464,17 @@
 		color: var(--muted);
 		line-height: var(--lh-snug);
 	}
+	/* ⚓ Nate 2026-09-23: each key takes only the width its own text needs
+	   (equal columns left the short ones padded with empty space), a steady gap
+	   between; if the row runs short, the longest description wraps first. */
 	@container (min-width: 44rem) {
 		.cov-legend {
-			grid-template-columns: repeat(5, minmax(0, 1fr));
-			gap: 0 1rem;
+			display: flex;
+			gap: 0 1.5rem;
+		}
+		.cov-legend li {
+			flex: 0 1 auto;
+			min-width: 0;
 		}
 	}
 
