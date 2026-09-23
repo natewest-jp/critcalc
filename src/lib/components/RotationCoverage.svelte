@@ -89,8 +89,10 @@
 		white-space: nowrap;
 		overflow: hidden;
 	}
+	/* ⚓ Nate 2026-09-23: right-aligned, snug against the strip — the column is
+	   sized for the longest name and most are far shorter. */
 	.rp-cov-name {
-		justify-self: start;
+		justify-self: end;
 		max-width: 100%;
 		overflow: hidden;
 		text-overflow: ellipsis;

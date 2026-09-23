@@ -260,13 +260,18 @@
 						onclick={() => (rosterOnly = !rosterOnly)}>My roster</button
 					>
 				</div>
-				<label class="cov-sort">
-					<span class="field-label">Sort</span>
-					<select class="field" bind:value={sort}>
-						<option value="name">By name</option>
-						<option value="least">Least covered first</option>
-					</select>
-				</label>
+				<div class="segment cov-sort" role="radiogroup" aria-label="Sort">
+					{#each [['name', 'By name'], ['least', 'Least covered first']] as const as [value, label] (value)}
+						<button
+							type="button"
+							class="btn"
+							class:is-active={sort === value}
+							role="radio"
+							aria-checked={sort === value}
+							onclick={() => (sort = value)}>{label}</button
+						>
+					{/each}
+				</div>
 			</div>
 		{/if}
 	</header>
@@ -470,24 +475,21 @@
 		align-items: center;
 		margin-bottom: 0.75rem;
 	}
+	/* At the chips' scale: the shared .field is sized for a form row, and beside
+	   a line of chips it read a size too large. The focus ring is drawn INSIDE —
+	   the chapter's scroller clips an outside ring at its left edge. */
 	.cov-search {
 		flex: 1 1 12rem;
 		width: auto;
 		min-width: 0;
+		padding: 0.3rem 0.6rem;
+		font-size: var(--fs-md);
+	}
+	.cov-search:focus-visible {
+		outline-offset: -2px;
 	}
 	.cov-phrase {
 		text-transform: none;
-	}
-	.cov-sort {
-		display: flex;
-		gap: 0.4rem;
-		align-items: center;
-	}
-	.cov-sort .field-label {
-		margin: 0;
-	}
-	.cov-sort .field {
-		width: auto;
 	}
 
 	/* ---- the table ------------------------------------------------------- */
