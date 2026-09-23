@@ -1,6 +1,6 @@
 # The Coverage page — `/coverage`
 
-_Status: IN PROGRESS on `feat/coverage-page` (2026-09-23). ✅ Phase 1 (derivation, index stamp, the
+_Status: ✅ SHIPPED 2026-09-23 — §11 is the record and wins over everything above it. (Was: IN PROGRESS on `feat/coverage-page`.) ✅ Phase 1 (derivation, index stamp, the
 three statements + lints E.29–E.31) and a first cut of Phase 3 (the page) are built. ⏳ Phase 2's
 proposals are in `docs/curation/coverage-classification.md`, awaiting Nate — nothing is written to
 the data yet. ⚠️ Deviations from this spec so far: a tenth column, `extra` (a third passive or a
@@ -301,4 +301,32 @@ can be built against phase 1's stamp while phase 2 runs.
 
 ## 11. Record
 
-_(written when the round ships; wins over §0–§10)_
+_Shipped 2026-09-23 on `feat/coverage-page`, merged to `main` the same day. This section wins over §0–§10._
+
+**What shipped**
+
+- **Derivation** — `src/lib/coverage/deriveCoverage.ts` reads a character JSON into **nineteen segments in fixed places**: Normals `N|C|P` × timing|element, E and Q × timing|element|effects, A1, A4, **`extra`** (a tenth column the spec lacked — a third passive or a faction bonus; 16 characters carry one), C1/C2/C4/C6. Five states. It emits line CODES, never prose (`coverageText.ts` holds one whole sentence per code). The index carries one state character per segment (`coverage`), drift-guarded.
+- **Four positive statements in the data**, each checked: `notModeled { reason }` (lint E.29), `nothingToModel` (E.29), 🆕 `modeledBy: '<host id>'` (E.29b — a mechanic drawn through a host whose data does not name it), a summon's `dealsNothing` (E.30); plus `meta.framesSource` declared (E.31; `gcsim-pr` on Illuga, Kachina, Linnea, Nefer). 🆕 `CharacterData.release` ("major.minor", genshin-db `version`, the Travelers by hand), required by `characterIndex.test.ts` — ⚠️ a corpus fact, deliberately NOT a `lintCharacter` rule (synthetic sim-test kits carry none).
+- **The classification pass** — 499 effect-less hosts read missing on day one; four agents proposed, ⚓ Nate ruled nine CLASSES plus six follow-ups (`docs/curation/coverage-classification.md` is the record), and 251 statements were written surgically: **notModeled 184 · nothingToModel 57 · modeledBy 10**. What remains missing in the effect columns (~219) is the curation backlog, sorted for free by "Least covered first".
+- **The page** — an About CHAPTER, rendered in the About/Help overlay over whatever surface you are on (`Chapter.bare` skips `.prose`), and at the `/coverage` route. Search, My roster, sort **Newest first (default) · By name · Least covered first**; hover a segment for a tooltip, select a row for its details in place; the legend is a content-sized row of five where its container allows (a container query on the legend's own wrapper).
+- **Links in** — every link opens the overlay IN PLACE (`$lib/coverage/openCoverage`), keeping its `/coverage?c=…` href for new tabs: the planner's Notes panel (per character + "Coverage for this team"), the Team Builder's uncurated bucket and detail card, the landing banner (whose detail line now READS the frameless list from the index — `inTheWorks`), `/contribute`.
+- **The planner's opt-in strips** (Settings → Coverage strips, OFF by default): each slotted character's strip under the notation box, the parts THIS rotation does not reach dimmed (`rotationUse.ts`).
+
+**Rulings made along the way (⚓ Nate, 2026-09-23)**
+
+- The test between the n/a-ish states: _would a player reading the timeline ever expect to see it?_ No → `nothingToModel`; yes but ruled out → `notModeled`. A host with ANY modelable-but-unauthored part stays missing.
+- Every reason names **the Rotation Planner**, never "we" — "we" reads as a stance, the tool's name as a limit of this tool.
+- The planner simulates no chance: two people planning one rotation must see the same bars.
+- Absent a charged attack's frames, `C` takes `GENERIC_CHARGE_FRAMES` — a stand-in, not missing. A stance or window a cast opens IS its grant.
+- Colours: modeled `--ui-positive`, not modeled hatched in `--ui-danger`, stand-in and missing the editor's own marks (`.cov-state` in app.css).
+- The static pages are ONE place: **About | Help tabs** head the overlay and the routes; the overlay and every static route are **72rem**, the sidebar 12rem; prose keeps its 56ch measure.
+- **Links**: a real `text-decoration` underline on every text link (`.prose a`, 🆕 `.link`, `.link--quiet`), 45% at rest and 90% on hover, the font's own thickness and offset. The resting underline is also the accessible one: gold on `--text` is 1.57:1.
+- Element and weapon filters removed (the Team Builder's questions). The row prints no patch number.
+
+**Deviations from §0–§10**: the tenth column; no seams per form (not drawn, not asked for again); the widths table is as §2.1 plus `extra` 0.5; the page is a chapter, not a fourth route beside About/Help.
+
+**Not done**: the editor's stand-in hover still carries no coverage link — it is a plain `title`, which cannot hold one.
+
+**Found on the way, for the engine queue** (memory `project_engine_queue_2026-09-17`): Alhaitham's C4/C6 read a `mirrors` key nothing grants; Eula's Hold variant keeps its 10s cooldown at C2 (variants have no `cooldownModifiers`); Dahlia C4 extends an unauthored Favonian Favor window. And `.gitignore`'s `coverage/` had swallowed `src/lib/coverage/` and the route — anchored to `/coverage/`.
+
+**Verification**: vitest 2027/2027, check, lint; e2e **78 + 78** passed (chrome + webkit) with the new `e2e/coverage.spec.ts` (wide and 390).
