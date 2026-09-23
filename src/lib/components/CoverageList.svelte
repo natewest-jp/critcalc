@@ -439,7 +439,7 @@
 		margin: 0;
 		padding: 0;
 		display: grid;
-		gap: 0.55rem;
+		gap: 0.3rem;
 		font-size: var(--fs-sm);
 	}
 	/* The key, then its description beneath — in the stacked list and the row
@@ -467,7 +467,7 @@
 	@container (min-width: 44rem) {
 		.cov-legend {
 			grid-template-columns: repeat(5, minmax(0, 1fr));
-			gap: 0 1.25rem;
+			gap: 0 1rem;
 		}
 	}
 
