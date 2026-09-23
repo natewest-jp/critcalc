@@ -28,10 +28,12 @@ export type Chapter = {
 	path: string;
 	/** Overlay-only lazy loader; routes import the component directly. */
 	load: () => Promise<{ default: Component }>;
-	/** A page of its own, listed in the sidebar but never rendered as a pane:
-	 *  in the overlay its link navigates (and closes the overlay) instead of
-	 *  swapping the chapter. The coverage list is a table, too wide for a pane. */
-	standalone?: true;
+	/** Takes the overlay's `full` size — the coverage list is a table of 127
+	 *  strips, not a chapter of prose. */
+	wide?: true;
+	/** Renders WITHOUT the `.prose` article, whose typography would restyle a
+	 *  table's lists and headings. */
+	bare?: true;
 };
 
 export type Area = {
@@ -106,7 +108,8 @@ export const ABOUT_AREA: Area = {
 			title: 'Coverage',
 			path: resolve('/coverage'),
 			load: () => import('$lib/components/CoverageList.svelte'),
-			standalone: true
+			wide: true,
+			bare: true
 		}
 	]
 };

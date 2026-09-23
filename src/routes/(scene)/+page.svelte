@@ -11,6 +11,7 @@
 	} from '$lib/landing/transition';
 	import { HERO_ART, PLATE_BACK, PLATE_LINE, PLATE_VIEWBOX } from '$lib/landing/heroArt';
 	import { currentAnnouncements } from '$lib/landing/announcements';
+	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { onMount } from 'svelte';
 
 	// The banner's entries are filtered by DATE, and the first paint must be
@@ -131,7 +132,11 @@
 						<span class="notice__text">{a.text}</span>
 						{#if a.detail}
 							{#if a.href}
-								<a class="notice__detail" href={resolve(a.href as '/coverage')}>{a.detail}</a>
+								<a
+									class="notice__detail link link--quiet"
+									href={resolve(a.href as '/coverage')}
+									onclick={(e) => openCoverage(e)}>{a.detail}</a
+								>
 							{:else}
 								<span class="notice__detail">{a.detail}</span>
 							{/if}
@@ -560,15 +565,6 @@
 	.notice__detail {
 		opacity: 0.75;
 		text-wrap: balance;
-	}
-	a.notice__detail {
-		color: inherit;
-		text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
-		text-underline-offset: 0.2em;
-		transition: text-decoration-color var(--t-snap);
-	}
-	a.notice__detail:hover {
-		text-decoration-color: currentColor;
 	}
 
 	/* `compact` — 40rem, $lib/breakpoints.ts. The card names are ~13px on a

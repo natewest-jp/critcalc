@@ -4,7 +4,8 @@
 	import NavPanel from './NavPanel.svelte';
 	import HelpAreaShell from './HelpAreaShell.svelte';
 	import { chromeModal, closeChromeModal } from './chromeModal.svelte';
-	import { AREAS } from '$lib/help/areas';
+	import AreaTabs from './AreaTabs.svelte';
+	import { AREAS, findChapter } from '$lib/help/areas';
 
 	// Host for whatever the chrome's meta glyphs have open. Each layout renders
 	// exactly one of these, as a SIBLING of the chrome — see chromeModal.svelte.ts
@@ -28,7 +29,15 @@
 	</ChromeOverlay>
 {:else if state?.kind === 'area'}
 	{@const area = AREAS[state.area]}
-	<ChromeOverlay title={area.title} onClose={closeChromeModal} size="wide" {onScene}>
+	<ChromeOverlay
+		title={area.title}
+		onClose={closeChromeModal}
+		size={findChapter(state.area, state.chapter).wide ? 'full' : 'wide'}
+		{onScene}
+	>
+		{#snippet heading()}
+			<AreaTabs current={state.area} mode="modal" />
+		{/snippet}
 		<HelpAreaShell {area} chapter={state.chapter} mode="modal" />
 	</ChromeOverlay>
 {/if}

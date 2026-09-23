@@ -2292,6 +2292,31 @@ img {
 	border-bottom-color: var(--accent);
 }
 
+/* A text link OUTSIDE prose (⚓ Nate 2026-09-23: the coverage links read as
+   plain text). The bare `a` rule above strips all decoration on purpose — tool
+   cards, chrome marks and tabs are anchors too — so a link that sits in running
+   UI text opts in here and gets the prose treatment: accent ink, a 45% rule
+   that fills on hover. `.link--quiet` keeps the surrounding ink and only draws
+   the rule, for a line whose own colour is the point (the landing banner). */
+.link {
+	color: var(--accent);
+	text-decoration: none;
+	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: border-color var(--t-snap);
+}
+.link:hover,
+.link:focus-visible {
+	border-bottom-color: var(--accent);
+}
+.link.link--quiet {
+	color: inherit;
+	border-bottom-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+.link.link--quiet:hover,
+.link.link--quiet:focus-visible {
+	border-bottom-color: currentColor;
+}
+
 /* Jump targets clear the top of whichever container is scrolling — the pages
    panel on a route, the area body in the overlay. */
 .prose section[id],

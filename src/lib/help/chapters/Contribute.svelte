@@ -10,6 +10,7 @@
 
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { openCoverage } from '$lib/coverage/openCoverage';
 </script>
 
 <h1>Contribute</h1>
@@ -57,8 +58,8 @@
 		than an oversight — but a value that is simply <em>wrong</em> is a bug.
 	</p>
 	<p>
-		The <a href={resolve('/coverage')}>coverage page</a> lists what each character’s kit has in the Rotation
-		Planner so far, and what falls outside it, with the reason.
+		The <a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> lists what each
+		character’s kit has in the Rotation Planner so far, and what falls outside it, with the reason.
 	</p>
 	<!-- TODO: replace with the real channel once Nate picks one (public repo
 		 issues / an email alias on the domain / Discord). Until then, do not

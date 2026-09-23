@@ -44,6 +44,7 @@
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
 	import { constellations, ownership, siteSettings } from '$lib/stores';
 	import { portal } from '$lib/actions/portal';
+	import { takeCoverageFocus } from '$lib/coverage/openCoverage';
 
 	// -------------------------------------------------------------------------
 	// The shared grid template
@@ -119,9 +120,16 @@
 	let pinned = $state<string[]>([]);
 	const byId: Record<string, Row> = Object.fromEntries(rows.map((r) => [r.entry.id, r]));
 
+	/** True on the /coverage route itself; false inside the About overlay,
+	 *  where the URL is whatever tool the overlay floats over. */
+	const onRoute = () => location.pathname.replace(/\/$/, '').endsWith('/coverage');
+
 	onMount(async () => {
-		const ids = (new URLSearchParams(location.search).get('c') ?? '')
-			.split(',')
+		// The overlay link's focus first (openCoverage), else the route's ?c=.
+		const named =
+			takeCoverageFocus() ??
+			(onRoute() ? (new URLSearchParams(location.search).get('c') ?? '').split(',') : []);
+		const ids = named
 			.map((s) => s.trim())
 			.filter((id, i, all) => id in byId && all.indexOf(id) === i);
 		if (ids.length === 0) return;
@@ -136,7 +144,7 @@
 
 	function showAll() {
 		pinned = [];
-		replaceState(resolve('/coverage'), {});
+		if (onRoute()) replaceState(resolve('/coverage'), {});
 	}
 
 	const visible = $derived.by(() => {
@@ -235,43 +243,47 @@
 		{#if pinned.length === 0}
 			<div class="cov-controls">
 				<input
-					class="cov-search"
+					class="field cov-search"
 					type="search"
 					placeholder="Search characters"
 					aria-label="Search characters"
 					bind:value={search}
 				/>
-				<div class="chip-group" role="group" aria-label="Element">
+				<div class="chips" role="group" aria-label="Element">
 					{#each ELEMENTS as el (el)}
 						<button
 							type="button"
 							class="chip"
+							class:active={elements.has(el)}
 							aria-pressed={elements.has(el)}
-							onclick={() => toggle(elements, el)}>{el[0].toUpperCase() + el.slice(1)}</button
+							onclick={() => toggle(elements, el)}>{el}</button
 						>
 					{/each}
 				</div>
-				<div class="chip-group" role="group" aria-label="Weapon">
+				<div class="chips" role="group" aria-label="Weapon">
 					{#each WEAPONS as w (w)}
 						<button
 							type="button"
 							class="chip"
+							class:active={weapons.has(w)}
 							aria-pressed={weapons.has(w)}
-							onclick={() => toggle(weapons, w)}>{w[0].toUpperCase() + w.slice(1)}</button
+							onclick={() => toggle(weapons, w)}>{w}</button
 						>
 					{/each}
 				</div>
-				<div class="chip-group" role="group" aria-label="Show">
+				<div class="chips" role="group" aria-label="Show">
+					<!-- A phrase, so it opts out of the chip's capitalize (app.css .chip). -->
 					<button
 						type="button"
-						class="chip"
+						class="chip cov-phrase"
+						class:active={rosterOnly}
 						aria-pressed={rosterOnly}
 						onclick={() => (rosterOnly = !rosterOnly)}>My roster</button
 					>
 				</div>
 				<label class="cov-sort">
-					Sort
-					<select bind:value={sort}>
+					<span class="field-label">Sort</span>
+					<select class="field" bind:value={sort}>
 						<option value="name">By name</option>
 						<option value="least">Least covered first</option>
 					</select>
@@ -287,7 +299,7 @@
 					? 'Showing 1 character from the Rotation Planner.'
 					: `Showing ${pinned.length} characters from the Rotation Planner.`}</span
 			>
-			<button type="button" class="chip" onclick={showAll}>Show all characters</button>
+			<button type="button" class="btn" onclick={showAll}>Show all characters</button>
 		</p>
 	{/if}
 
@@ -506,59 +518,22 @@
 	}
 	.cov-search {
 		flex: 1 1 12rem;
+		width: auto;
 		min-width: 0;
-		padding: 0.35rem 0.6rem;
-		font: inherit;
-		color: var(--text);
-		background: var(--surface-inset, transparent);
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm, 3px);
 	}
-	.chip-group {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem;
-	}
-	.chip {
-		font: inherit;
-		font-size: var(--fs-sm);
-		padding: 0.2rem 0.55rem;
-		color: var(--muted);
-		background: transparent;
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm, 3px);
+	.cov-phrase {
 		text-transform: none;
-		cursor: pointer;
-		transition:
-			color var(--t-snap),
-			border-color var(--t-snap);
-	}
-	.chip[aria-pressed='true'] {
-		color: var(--text);
-		border-color: var(--accent);
 	}
 	.cov-sort {
 		display: flex;
 		gap: 0.4rem;
 		align-items: center;
-		font-size: var(--fs-sm);
-		color: var(--muted);
 	}
-	.cov-sort select {
-		font: inherit;
-		color: var(--text);
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm, 3px);
+	.cov-sort .field-label {
+		margin: 0;
 	}
-
-	.cov-pinned {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem 0.75rem;
-		margin: 0 0 0.75rem;
-		color: var(--text);
+	.cov-sort .field {
+		width: auto;
 	}
 
 	/* ---- the table ------------------------------------------------------- */
@@ -571,7 +546,9 @@
 	}
 	.cov-columns {
 		position: sticky;
-		top: calc(-1 * clamp(1.4rem, 3vw, 2.4rem)); /* the panel's own padding */
+		/* It scrolls inside the overlay's chapter body or the route's panel;
+		   top: 0 is the scrollport's edge in both. */
+		top: 0;
 		z-index: 1;
 		padding: 0.4rem 0;
 		background: var(--surface);
@@ -600,6 +577,8 @@
 	}
 	.cov-row {
 		border-bottom: 1px solid var(--border);
+		/* A deep link scrolls the first named row in under the sticky header. */
+		scroll-margin-top: 2.5rem;
 	}
 	.row-button {
 		width: 100%;

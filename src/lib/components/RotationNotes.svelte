@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import type { SlotCaveatEntry } from '$lib/timeline/slotCaveats';
 
@@ -52,13 +53,21 @@
 					<p class="rp-caveat-text">{item.caveat}</p>
 				</div>
 			{/each}
-			<a class="rp-coverage-link" href="{resolve('/coverage')}?c={entry.id}">Coverage</a>
+			<a
+				class="link rp-coverage-link"
+				href="{resolve('/coverage')}?c={entry.id}"
+				onclick={(e) => openCoverage(e, [entry.id])}>Coverage</a
+			>
 		</div>
 	{/each}
 	{#if teamIds.length > 1}
-		<a class="rp-coverage-link rp-coverage-team" href="{resolve('/coverage')}?c={teamIds.join(',')}"
-			>Coverage for this team</a
-		>
+		<div class="rp-coverage-team">
+			<a
+				class="link"
+				href="{resolve('/coverage')}?c={teamIds.join(',')}"
+				onclick={(e) => openCoverage(e, teamIds)}>Coverage for this team</a
+			>
+		</div>
 	{/if}
 </div>
 
@@ -111,19 +120,12 @@
 	.rp-coverage-link {
 		align-self: flex-start;
 		font-size: var(--fs-sm);
-		color: var(--muted);
-		text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
-		text-underline-offset: 0.2em;
-		transition: color var(--t-snap);
-	}
-	.rp-coverage-link:hover {
-		color: var(--text);
 	}
 	.rp-coverage-team {
 		margin-top: 2px;
 		padding-top: 10px;
 		border-top: 1px solid var(--border);
-		align-self: stretch;
+		font-size: var(--fs-sm);
 	}
 	.rp-caveat-text {
 		margin: 0;

@@ -2,7 +2,9 @@
 	import type { Component } from 'svelte';
 	import type { Area } from '$lib/help/areas';
 	import { findChapter } from '$lib/help/areas';
-	import { closeChromeModal, setChapter } from './chromeModal.svelte';
+	import { setChapter } from './chromeModal.svelte';
+	import AreaTabs from './AreaTabs.svelte';
+	import HRule from './HRule.svelte';
 
 	// One area, two presentations. In `modal` mode the chapter list switches
 	// panes in place (the URL never moves — see chromeModal.svelte.ts); in
@@ -52,12 +54,6 @@
 
 	function onChapterClick(event: MouseEvent, id: string) {
 		if (mode !== 'modal') return; // page mode: let the browser navigate
-		// A standalone page is never a pane: let the link navigate, and close the
-		// overlay so the page is what you land on.
-		if (findChapter(area.id, id).standalone) {
-			closeChromeModal();
-			return;
-		}
 		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
 			return; // leave open-in-new-tab to the browser
 		}
@@ -77,6 +73,14 @@
 	 again on them here would double the base prefix. The rule cannot see that
 	 from a variable, hence the file-scoped exemption. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
+{#if mode === 'page'}
+	<!-- On a route the tabs head the page, as they head the overlay — one
+	     place, whichever way you arrived. -->
+	<header class="area-page-head">
+		<AreaTabs current={area.id} mode="page" />
+		<HRule />
+	</header>
+{/if}
 <div class="area-shell" class:is-page={mode === 'page'}>
 	<nav class="area-nav" aria-label="{area.title} sections">
 		<ul class="area-chapters">
@@ -110,13 +114,21 @@
 		{#key current.id}
 			{#if chapterComponent}
 				{@const Chapter = chapterComponent}
-				<article class="prose" use:collectToc><Chapter /></article>
+				{#if current.bare}
+					<div use:collectToc><Chapter /></div>
+				{:else}
+					<article class="prose" use:collectToc><Chapter /></article>
+				{/if}
 			{:else}
 				{#await current.load()}
 					<p class="area-loading">Loading…</p>
 				{:then mod}
 					{@const Chapter = mod.default}
-					<article class="prose" use:collectToc><Chapter /></article>
+					{#if current.bare}
+						<div use:collectToc><Chapter /></div>
+					{:else}
+						<article class="prose" use:collectToc><Chapter /></article>
+					{/if}
 				{/await}
 			{/if}
 		{/key}
@@ -230,6 +242,12 @@
 
 	.is-page .area-body {
 		overflow: visible;
+	}
+
+	.area-page-head {
+		display: grid;
+		gap: 0.6rem;
+		margin-bottom: 1.2rem;
 	}
 
 	.area-loading {

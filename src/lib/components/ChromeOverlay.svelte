@@ -23,12 +23,18 @@
 		onClose,
 		size = 'compact',
 		onScene = false,
+		heading,
 		children
 	}: {
 		title: string;
 		onClose: () => void;
-		size?: 'compact' | 'wide';
+		/** `full` is the coverage table's size — a list of 127 strips needs more
+		 *  width than a chapter of prose. */
+		size?: 'compact' | 'wide' | 'full';
 		onScene?: boolean;
+		/** Replaces the plain title — the About | Help tabs (AreaTabs). `title`
+		 *  still names the dialog for assistive tech. */
+		heading?: Snippet;
 		children: Snippet;
 	} = $props();
 
@@ -61,13 +67,18 @@
 >
 	<div
 		class="overlay-panel"
-		class:is-wide={size === 'wide'}
+		class:is-wide={size === 'wide' || size === 'full'}
+		class:is-full={size === 'full'}
 		role="dialog"
 		aria-modal="true"
 		aria-label={title}
 	>
 		<header class="overlay-header">
-			<h2 class="overlay-title">{title}</h2>
+			{#if heading}
+				{@render heading()}
+			{:else}
+				<h2 class="overlay-title">{title}</h2>
+			{/if}
 			<button class="overlay-close" onclick={onClose} aria-label="Close">
 				<CloseMark />
 			</button>
@@ -118,6 +129,11 @@
 		overflow: hidden;
 		display: grid;
 		grid-template-rows: auto auto minmax(0, 1fr);
+	}
+
+	.overlay-panel.is-full {
+		width: min(80rem, 100%);
+		height: min(88svh, 60rem);
 	}
 
 	.overlay-header {
