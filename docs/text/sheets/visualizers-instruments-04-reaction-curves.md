@@ -9,19 +9,21 @@ The smallest instrument sheet, and the one with the least wrong with it.
 
 ---
 
-| key                  | Where                 | Now                                          | New |
-| -------------------- | --------------------- | -------------------------------------------- | --- |
-| `vz.rc.chart.aria`   | The chart             | Reaction scaling curves vs Elemental Mastery |     |
-| `vz.rc.axis.em`      | X axis                | Elemental Mastery                            | 🔒  |
-| `vz.rc.family`       | Section heading       | Reaction Family                              |     |
-| `vz.rc.build`        | Section heading       | Build                                        |     |
-| `vz.rc.em`           | Slider label          | Elemental Mastery                            | 🔒  |
-| `vz.rc.em.aria`      | Its field             | Elemental Mastery                            | 🔒  |
-| `vz.rc.level`        | Slider label          | Level                                        |     |
-| `vz.rc.level.aria`   | Its field             | Character level                              |     |
-| `vz.rc.readout`      | Section heading       | Readout                                      | §E  |
-| `vz.rc.readout.gain` | next +{n} EM: {value} | §C                                           |
+| key                  | Where           | Now                                          | New             |
+| -------------------- | --------------- | -------------------------------------------- | --------------- |
+| `vz.rc.chart.aria`   | The chart       | Reaction scaling curves vs Elemental Mastery |                 |
+| `vz.rc.axis.em`      | X axis          | Elemental Mastery                            | 🔒              |
+| `vz.rc.family`       | Section heading | Reaction Family                              | Reaction family |
+| `vz.rc.build`        | Section heading | Build                                        |                 |
+| `vz.rc.em`           | Slider label    | Elemental Mastery                            | 🔒              |
+| `vz.rc.em.aria`      | Its field       | Elemental Mastery                            | 🔒              |
+| `vz.rc.level`        | Slider label    | Level                                        |                 |
+| `vz.rc.level.aria`   | Its field       | Character level                              |                 |
+| `vz.rc.readout`      | Section heading | Readout                                      | ✅ §E           |
+| `vz.rc.readout.gain` | Readout line    | next +{n} EM: {value}                        | next +{n} EM    |
 
+✅ **Conventions applied:** §A (`Reaction family`), §C (the gain line's colon). The
+`readout.gain` row was missing a column and is repaired.
 ⚠️ **"Elemental Mastery" appears three times** — axis, slider label, and the slider's
 screen-reader name. ⚓ Same meaning → **one key** (style guide §3.2), which is also what
 keeps the axis and the control from drifting apart in a locale.

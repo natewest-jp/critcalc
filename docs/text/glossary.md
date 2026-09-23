@@ -207,7 +207,9 @@ flip. Not edited because Nate is reviewing that file.
 Other fixed forms: **on field** (adverbial: "when they are on field") · **off-field**
 (adjectival: "off-field damage") · **frame-accurate** · **frame-perfect** ·
 **theorycrafting** (one word) · **datamined** (one word) · **5★** (star glyph, ⛔ never
-"5-star" or "five-star" — `WishInstrument.svelte` uses all three forms).
+"5-star" or "five-star" — `WishInstrument.svelte` uses all three forms). ⚓ **One
+exception (ruled 2026-09-23): screen-reader text writes `five-star`**, because `5★` is
+read aloud as "5 black star".
 
 ---
 
@@ -228,20 +230,20 @@ Other fixed forms: **on field** (adverbial: "when they are on field") · **off-f
 New variance the sheets turned up. ⏭ These are **proposals, not rulings** — each is
 decided on the sheet that raises it.
 
-| Thing               | Found in the wild                                            | ⏭ Proposed                 | Where it is raised                      |
-| ------------------- | ------------------------------------------------------------ | --------------------------- | --------------------------------------- |
-| Band B, again       | ↻ a **third** name: **"the planner's toolbar"**              | the view bar (unchanged)    | `settings.md` §2                        |
-| The loadout popover | "picker" (`Close picker`)                                    | the loadout popover         | `bench.md` §2                           |
-| The aura log        | "Event log" in the Gauge Explorer, "aura log" in the planner | one name, both tools        | `visualizers-instruments-03-gauge.md`   |
-| A capability's stat | `RES shred` (facets) · `RES Shred` (DEF & RES) — ONE term    | RES shred                   | `team-builder.md` §1, `…-05-def-res.md` |
-| ⚠️⚠️ Interruption   | `Interruption Res` — a **different** resistance              | ⏭ see §2a, ⛔ not `RES`    | §2a below                               |
-| Off-field           | `Off-field DMG` (facets) · `Off-Field DPS` (roles)           | off-field                   | `team-builder.md` §2                    |
-| Crit stats          | `Crit Rate` · `CRIT Rate` · `CRIT RATE`                      | as the game writes them     | `…-00-conventions.md` §B                |
-| Elemental Mastery   | `Elemental Mastery` · `Elemental mastery`                    | Elemental Mastery 🔒        | `…-07-anatomy.md`                       |
-| "not curated"       | four wordings across four surfaces                           | two states, one pattern     | `team-builder.md` §4                    |
-| Joining two nouns   | `/` (×5) · `&` (×3) · `and`                                  | one rule                    | `team-builder.md` §3                    |
-| Emphasis            | `<strong>` · _italics_ · **CAPS** (×4)                       | ⛔ never caps (lost in CJK) | `…-00-conventions.md` §F                |
-| Multiplier          | `×` · `x`                                                    | ×                           | `…-00-conventions.md` §G                |
+| Thing               | Found in the wild                                            | ⏭ Proposed                                                | Where it is raised                      |
+| ------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- | --------------------------------------- |
+| Band B, again       | ↻ a **third** name: **"the planner's toolbar"**              | the view bar (unchanged)                                   | `settings.md` §2                        |
+| The loadout popover | "picker" (`Close picker`)                                    | the loadout popover                                        | `bench.md` §2                           |
+| The aura log        | "Event log" in the Gauge Explorer, "aura log" in the planner | one name, both tools                                       | `visualizers-instruments-03-gauge.md`   |
+| A capability's stat | `RES shred` (facets) · `RES Shred` (DEF & RES) — ONE term    | RES shred                                                  | `team-builder.md` §1, `…-05-def-res.md` |
+| ⚠️⚠️ Interruption   | `Interruption Res` — a **different** resistance              | ⏭ see §2a, ⛔ not `RES`                                   | §2a below                               |
+| Off-field           | `Off-field DMG` (facets) · `Off-Field DPS` (roles)           | off-field                                                  | `team-builder.md` §2                    |
+| Crit stats          | `Crit Rate` · `CRIT Rate` · `CRIT RATE`                      | ✅ **CRIT Rate** · **CRIT DMG** (visible); aria spells out | `…-00-conventions.md` §B                |
+| Elemental Mastery   | `Elemental Mastery` · `Elemental mastery`                    | Elemental Mastery 🔒                                       | `…-07-anatomy.md`                       |
+| "not curated"       | four wordings across four surfaces                           | two states, one pattern                                    | `team-builder.md` §4                    |
+| Joining two nouns   | `/` (×5) · `&` (×3) · `and`                                  | one rule · ✅ a RATE uses _per_, never `/`                 | `team-builder.md` §3                    |
+| Emphasis            | `<strong>` · _italics_ · **CAPS** (×4)                       | ⛔ never caps (lost in CJK)                                | `…-00-conventions.md` §F                |
+| Multiplier          | `×` · `x`                                                    | ✅ **×**, prefix (`×1.234`)                                | `…-00-conventions.md` §G                |
 
 ⚠️ **Community vocabulary found and needing 🏷 context notes, not translation:**
 pity · soft pity · 50/50 · fate point · line (an artifact substat row) · the 70–100%

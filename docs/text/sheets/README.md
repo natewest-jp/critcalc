@@ -34,26 +34,26 @@ it."**
 
 ---
 
-| Sheet                                                                      | Strings | Notes                                                   |
-| -------------------------------------------------------------------------- | ------- | ------------------------------------------------------- |
-| ✅ ~~[site-chrome](site-chrome.md)~~                                       | 24      | **CLOSED + APPLIED 2026-09-22** — gates green           |
-| [landing](landing.md)                                                      | 11      | Highest-stakes surface. Eleven strings — spend the time |
-| [bench](bench.md)                                                          | 20      | Loadout popover, the uncurated mark                     |
-| [document-bar](document-bar.md)                                            | 33      | Tabs, Save/Load/Share, Saved Rotations                  |
-| [rotation-planner](rotation-planner.md)                                    | 34      | 🐛 lane headings · 🐛 Mac-only shortcuts                |
-| [team-builder](team-builder.md)                                            | ~90     | ⚓ §1 is the tool's whole argument                      |
-| [settings](settings.md)                                                    | 38      | 🐛 names a button that doesn't exist · 🐛 plurals       |
-| [errors-and-frame](errors-and-frame.md)                                    | 14      | Plus three surfaces not yet written                     |
-| [visualizers-workspace](visualizers-workspace.md)                          | 18      | Workspace + the eight names                             |
-| **[instruments — conventions](visualizers-instruments-00-conventions.md)** | —       | ⚠️ **Read before any instrument sheet**                 |
-| [· Crit Heatmap](visualizers-instruments-01-crit.md)                       | 33      |                                                         |
-| [· ICD Timeline](visualizers-instruments-02-icd.md)                        | 28      | Best prose on the shelf                                 |
-| [· Gauge Explorer](visualizers-instruments-03-gauge.md)                    | 19      |                                                         |
-| [· Reaction Curves](visualizers-instruments-04-reaction-curves.md)         | 12      | Least wrong with it                                     |
-| [· Enemy DEF & RES](visualizers-instruments-05-def-res.md)                 | 34      |                                                         |
-| [· Wish Odds](visualizers-instruments-06-wish.md)                          | 24      | Closest to the constitution's edge                      |
-| [· Damage Anatomy](visualizers-instruments-07-anatomy.md)                  | 59      |                                                         |
-| [· Artifact Rolls](visualizers-instruments-08-artifact.md)                 | 62      | Mostly 🔒 frozen                                        |
+| Sheet                                                                         | Strings | Notes                                                    |
+| ----------------------------------------------------------------------------- | ------- | -------------------------------------------------------- |
+| ✅ ~~[site-chrome](site-chrome.md)~~                                          | 24      | **CLOSED + APPLIED 2026-09-22** — gates green            |
+| [landing](landing.md)                                                         | 11      | Highest-stakes surface. Eleven strings — spend the time  |
+| [bench](bench.md)                                                             | 20      | Loadout popover, the uncurated mark                      |
+| [document-bar](document-bar.md)                                               | 33      | Tabs, Save/Load/Share, Saved Rotations                   |
+| [rotation-planner](rotation-planner.md)                                       | 34      | 🐛 lane headings · 🐛 Mac-only shortcuts                 |
+| [team-builder](team-builder.md)                                               | ~90     | ⚓ §1 is the tool's whole argument                       |
+| [settings](settings.md)                                                       | 38      | 🐛 names a button that doesn't exist · 🐛 plurals        |
+| [errors-and-frame](errors-and-frame.md)                                       | 14      | Plus three surfaces not yet written                      |
+| [visualizers-workspace](visualizers-workspace.md)                             | 18      | Workspace + the eight names                              |
+| ✅ **[instruments — conventions](visualizers-instruments-00-conventions.md)** | —       | **RULED 2026-09-23** and pre-applied to all eight sheets |
+| [· Crit Heatmap](visualizers-instruments-01-crit.md)                          | 33      |                                                          |
+| [· ICD Timeline](visualizers-instruments-02-icd.md)                           | 28      | Best prose on the shelf                                  |
+| [· Gauge Explorer](visualizers-instruments-03-gauge.md)                       | 19      |                                                          |
+| [· Reaction Curves](visualizers-instruments-04-reaction-curves.md)            | 12      | Least wrong with it                                      |
+| [· Enemy DEF & RES](visualizers-instruments-05-def-res.md)                    | 34      |                                                          |
+| [· Wish Odds](visualizers-instruments-06-wish.md)                             | 24      | Closest to the constitution's edge                       |
+| [· Damage Anatomy](visualizers-instruments-07-anatomy.md)                     | 59      |                                                          |
+| [· Artifact Rolls](visualizers-instruments-08-artifact.md)                    | 62      | Mostly 🔒 frozen                                         |
 
 **Total: ~570 strings.** The eight instrument sheets share their decisions — settle the
 conventions sheet first and the eight become short.

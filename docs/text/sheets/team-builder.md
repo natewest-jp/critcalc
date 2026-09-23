@@ -104,6 +104,10 @@ name, so it is invisible until it isn't.
 `src/lib/components/CharacterFilterRail.svelte:100,125,140,154,168,185` ·
 `team-builder/+page.svelte:914,920,946,962,975,1020,1024,1203`
 
+✅ **Part of this is ruled (⚓ Nate, 2026-09-23): a slash that means _per_ becomes the word
+"per"** (`Hits / Rotation` → `Hits per rotation`, Crit instrument). A rate is not two
+nouns joined, so ⏭ **what is still open here is only the joining case** (`Factions /
+Buffs`, `Boss / Strongbox`, `Levels & Enemy`, `Enemy DEF & RES`, `Spread/Aggravate`).
 ⚠️ **"Factions / Buffs" uses a spaced slash** — the only one on the site. Other pairs use
 "and" ("weapon and refinement") or an ampersand ("Enemy DEF & RES"). ⚓ Three conventions
 for the same job; pick one.

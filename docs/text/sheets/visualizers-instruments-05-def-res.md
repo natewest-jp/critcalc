@@ -9,24 +9,26 @@
 
 ## Controls
 
-| key                    | Where           | Now                           | New |
-| ---------------------- | --------------- | ----------------------------- | --- |
-| `vz.dr.view`           | Section heading | Hidden Multiplier             |     |
-| `vz.dr.view.res`       | Tab             | Enemy RES                     | 🔒  |
-| `vz.dr.view.def`       | Tab             | Enemy DEF                     | 🔒  |
-| `vz.dr.res`            | Slider label    | Enemy RES                     | 🔒  |
-| `vz.dr.res.aria`       | Its field       | Enemy base resistance percent |     |
-| `vz.dr.shred`          | Slider label    | RES Shred                     | 🐛  |
-| `vz.dr.shred.aria`     | Its field       | Resistance shred percent      |     |
-| `vz.dr.level`          | Slider label    | Your Level                    |     |
-| `vz.dr.level.aria`     | Its field       | Character level               |     |
-| `vz.dr.enemy`          | Slider label    | Enemy Level                   |     |
-| `vz.dr.enemy.aria`     | Its field       | Enemy level                   |     |
-| `vz.dr.defshred`       | Slider label    | DEF Shred                     |     |
-| `vz.dr.defshred.aria`  | Its field       | Defense shred percent         |     |
-| `vz.dr.defignore`      | Slider label    | DEF Ignore                    |     |
-| `vz.dr.defignore.aria` | Its field       | Defense ignore percent        |     |
+| key                    | Where           | Now                           | New               |
+| ---------------------- | --------------- | ----------------------------- | ----------------- |
+| `vz.dr.view`           | Section heading | Hidden Multiplier             | Hidden multiplier |
+| `vz.dr.view.res`       | Tab             | Enemy RES                     | 🔒                |
+| `vz.dr.view.def`       | Tab             | Enemy DEF                     | 🔒                |
+| `vz.dr.res`            | Slider label    | Enemy RES                     | 🔒                |
+| `vz.dr.res.aria`       | Its field       | Enemy base resistance percent |                   |
+| `vz.dr.shred`          | Slider label    | RES Shred                     | RES shred         |
+| `vz.dr.shred.aria`     | Its field       | Resistance shred percent      |                   |
+| `vz.dr.level`          | Slider label    | Your Level                    | Your level        |
+| `vz.dr.level.aria`     | Its field       | Character level               |                   |
+| `vz.dr.enemy`          | Slider label    | Enemy Level                   | Enemy level       |
+| `vz.dr.enemy.aria`     | Its field       | Enemy level                   |                   |
+| `vz.dr.defshred`       | Slider label    | DEF Shred                     | DEF shred         |
+| `vz.dr.defshred.aria`  | Its field       | Defense shred percent         |                   |
+| `vz.dr.defignore`      | Slider label    | DEF Ignore                    | DEF ignore        |
+| `vz.dr.defignore.aria` | Its field       | Defense ignore percent        |                   |
 
+✅ **§A applied** — which also settles the 🐛 below: `RES shred`, `DEF shred`, `DEF ignore`
+(the frozen `RES`/`DEF` keep their capitals; `Enemy RES` / `Enemy DEF` stay whole).
 🐛 **`RES Shred` here vs `RES shred` in the Team Builder's facets** (`team-builder.md`
 §1) — capital S against lowercase, same term. The glossary rules **RES shred**.
 ⚠️ **The screen-reader names expand the abbreviations** ("Resistance shred percent",
@@ -38,14 +40,14 @@ consistent here — worth noting as the pattern other instruments should follow.
 
 ## The two explanations
 
-| key              | Now                                                                                                                                                                           | New |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| `vz.dr.res.desc` | Every hit is cut by the enemy's elemental resistance — most enemies resist 10%. Shred subtracts from it, and pushing BELOW zero still helps: each negative point counts half. |     |
-| `vz.dr.def.desc` | Your level against the enemy's sets a baseline cut — equal levels already cost you half. DEF shred and DEF ignore claw it back, and they multiply together.                   |     |
+| key              | Now                                                                                                                                                                           | New                                                                                                                                                                                            |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vz.dr.res.desc` | Every hit is cut by the enemy's elemental resistance — most enemies resist 10%. Shred subtracts from it, and pushing BELOW zero still helps: each negative point counts half. | Every hit is cut by the enemy's elemental resistance — most enemies resist 10%. Shred subtracts from it, and pushing <strong>below</strong> zero still helps: each negative point counts half. |
+| `vz.dr.def.desc` | Your level against the enemy's sets a baseline cut — equal levels already cost you half. DEF shred and DEF ignore claw it back, and they multiply together.                   |                                                                                                                                                                                                |
 
 ⚓ **"equal levels already cost you half" is the fact that surprises people**, and leading
 with it is right. ⛔ Keep it early in the sentence.
-⚠️ **"BELOW" in caps** — §F. ⚠️⚠️ Capitals cannot carry emphasis in CJK, so the stress is
+⚠️ **"BELOW" in caps** — §F. ✅ Pre-filled with `<strong>` (a floor, not a rewrite). ⚠️⚠️ Capitals cannot carry emphasis in CJK, so the stress is
 simply lost; `<strong>` survives.
 ⚠️ **"claw it back" is idiom** and will not translate literally.
 ⚠️ Both are two-clause sentences hung on an em dash (§3.4) — fine, one each.
@@ -64,20 +66,20 @@ assumption. This is §I's exact case.
 
 ## Chart and readout
 
-| key                     | Now                                                                                   | New |
-| ----------------------- | ------------------------------------------------------------------------------------- | --- |
-| `vz.dr.chart.kept`      | damage kept                                                                           |     |
-| `vz.dr.chart.neg`       | negative counts half                                                                  |     |
-| `vz.dr.chart.dim`       | diminishing                                                                           |     |
-| `vz.dr.readout`         | Readout                                                                               | §E  |
-| `vz.dr.readout.through` | of your damage gets through                                                           |     |
-| `vz.dr.readout.final`   | Final RES:                                                                            | §C  |
-| `vz.dr.readout.worth`   | Your shred is worth                                                                   |     |
-| `vz.dr.readout.here`    | damage here                                                                           |     |
-| `vz.dr.readout.base`    | Without shred/ignore:                                                                 | §C  |
-| `vz.dr.readout.mods`    | Your modifiers are worth                                                              |     |
-| `vz.dr.caveat`          | Both views are pure multipliers — combine them with everything else your hit carries. |     |
-| `vz.dr.vv`              | The classic 4pc Viridescent Venerer swirl is a 40% shred.                             |     |
+| key                     | Now                                                                                   | New                  |
+| ----------------------- | ------------------------------------------------------------------------------------- | -------------------- |
+| `vz.dr.chart.kept`      | damage kept                                                                           |                      |
+| `vz.dr.chart.neg`       | negative counts half                                                                  |                      |
+| `vz.dr.chart.dim`       | diminishing                                                                           |                      |
+| `vz.dr.readout`         | Readout                                                                               | ✅ §E                |
+| `vz.dr.readout.through` | of your damage gets through                                                           |                      |
+| `vz.dr.readout.final`   | Final RES:                                                                            | Final RES            |
+| `vz.dr.readout.worth`   | Your shred is worth                                                                   |                      |
+| `vz.dr.readout.here`    | damage here                                                                           |                      |
+| `vz.dr.readout.base`    | Without shred/ignore:                                                                 | Without shred/ignore |
+| `vz.dr.readout.mods`    | Your modifiers are worth                                                              |                      |
+| `vz.dr.caveat`          | Both views are pure multipliers — combine them with everything else your hit carries. |                      |
+| `vz.dr.vv`              | The classic 4pc Viridescent Venerer swirl is a 40% shred.                             |                      |
 
 ⚠️⚠️ **The readout is built almost entirely from stems** — `×{n}` + "of your damage gets
 through", "Your shred is worth" + `+{n}%` + "damage here". ⚓ Four fragments per line, and
