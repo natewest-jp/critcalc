@@ -419,8 +419,10 @@
 	.coverage {
 		/* Fitted to the standard 64rem modal beside its sidebar (⚓ Nate
 		   2026-09-23): the count sits under the name, not beside it. */
-		--cov-who-w: 10rem;
-		--cov-strip-h: 14px;
+		--cov-who-w: 9.5rem;
+		/* Taller since the name and its count stack (⚓ Nate 2026-09-23): the
+		   strip uses more of the row's height. */
+		--cov-strip-h: 20px;
 	}
 
 	h1 {
@@ -579,6 +581,7 @@
 		box-shadow: inset 0 0 0 1px var(--border);
 	}
 	.name {
+		font-size: var(--fs-lg);
 		color: var(--text);
 		white-space: nowrap;
 		overflow: hidden;

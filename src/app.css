@@ -2284,19 +2284,20 @@ img {
    cue alone would need, so the resting underline is also the accessible one.
    ↻ It is a real `text-decoration` now, not a border-bottom (⚓ Nate): the
    border's one advantage — a colour of its own — is `text-decoration-color`'s
-   too, and a real underline wraps with the text and clears descenders. */
+   too, and a real underline wraps with the text and clears descenders. The
+   font's own thickness and offset — no spacing away from the text (⚓ Nate). */
 .prose a {
 	color: var(--accent);
 	text-decoration: underline;
-	text-decoration-thickness: 1px;
-	text-underline-offset: 0.2em;
 	text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
 	transition: text-decoration-color var(--t-snap);
 }
 
 .prose a:hover,
 .prose a:focus-visible {
-	text-decoration-color: var(--accent);
+	/* 90%, not full: a straight rule reads brighter than the glyphs it sits
+	   under at the same colour (⚓ Nate 2026-09-23). */
+	text-decoration-color: color-mix(in srgb, var(--accent) 90%, transparent);
 }
 
 /* A text link OUTSIDE prose (⚓ Nate 2026-09-23: the coverage links read as
@@ -2309,14 +2310,12 @@ img {
 .link {
 	color: var(--accent);
 	text-decoration: underline;
-	text-decoration-thickness: 1px;
-	text-underline-offset: 0.2em;
 	text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
 	transition: text-decoration-color var(--t-snap);
 }
 .link:hover,
 .link:focus-visible {
-	text-decoration-color: var(--accent);
+	text-decoration-color: color-mix(in srgb, var(--accent) 90%, transparent);
 }
 .link.link--quiet {
 	color: inherit;
@@ -2324,7 +2323,7 @@ img {
 }
 .link.link--quiet:hover,
 .link.link--quiet:focus-visible {
-	text-decoration-color: currentColor;
+	text-decoration-color: color-mix(in srgb, currentColor 90%, transparent);
 }
 
 /* ── Coverage states ──────────────────────────────────────────────────────
