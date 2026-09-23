@@ -260,7 +260,7 @@
 			],
 			"description": "Lightfall Swords created by Glacial Illumination start with 5 stacks of energy. Normal Attacks, Elemental Skills, and Elemental Bursts have a 50% chance to grant the Lightfall Sword an additional stack of energy.",
 			"notModeled": {
-				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — the extra Lightfall Sword stacks are a 50% chance. The starting stacks only raise its damage, which we don't draw."
+				"reason": "The extra Lightfall Sword stacks are a 50% chance. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone. The starting stacks only raise its damage, which the Rotation Planner doesn't draw."
 			}
 		}
 	],

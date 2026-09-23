@@ -247,7 +247,7 @@
 			"abilityType": "passive",
 			"description": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus.",
 			"notModeled": {
-				"reason": "We don't model Beidou being hit, so the perfectly timed counter this rewards can't happen in a rotation."
+				"reason": "The Rotation Planner doesn't model Beidou being hit, so the perfectly timed counter this rewards can't happen in a rotation."
 			}
 		},
 		{
@@ -323,7 +323,7 @@
 			"constellationLevel": 2,
 			"description": "Stormbreaker's arc lightning can jump to 2 additional targets.",
 			"notModeled": {
-				"reason": "We model a single opponent, so there are no extra targets for the lightning to jump to."
+				"reason": "The Rotation Planner models a single opponent, so there are no extra targets for the lightning to jump to."
 			}
 		},
 		{
@@ -343,7 +343,7 @@
 			],
 			"description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s.",
 			"notModeled": {
-				"reason": "We don't model Beidou being hit, so the extra Electro damage this gives her Normal Attacks isn't shown."
+				"reason": "The Rotation Planner doesn't model Beidou being hit, so the extra Electro damage this gives her Normal Attacks isn't shown."
 			}
 		},
 		{

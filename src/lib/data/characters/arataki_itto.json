@@ -322,7 +322,7 @@
 				"No effects authored. ATK SPD ramp on Kesagiri (CA1/CA2) only, +10% per stack max 30%, only applies during ChargeAttackState (gcsim asc.go a1Update). Resets on Saichi or non-CA action. Schema has no consecutive-slash counter; reviewer to decide whether to model. Interrupt resistance is not modeled."
 			],
 			"notModeled": {
-				"reason": "We don't model attack speed, so Arataki Kesagiri's slashes keep their usual timing."
+				"reason": "The Rotation Planner doesn't model attack speed, so Arataki Kesagiri's slashes keep their usual timing."
 			}
 		},
 		{
@@ -335,7 +335,7 @@
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Bloodline of the Crimson Oni — effects[0] (damage scaling 35 def) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/itto/charge.go:245-247` — `if c.slashState != SaichiSlash { c.a4(&ai) }`, so `asc.go:63-69`'s `ai.FlatDmg = TotalDef × 0.35` lands on Arataki Kesagiri's Left/Right/Final slashes and on nothing else; the cold-open Saichimonji Slash is excluded. Retained: that the A4 is `FlatDmg = TotalDEF × 0.35` on every Kesagiri slash and **not** on Saichimonji, and that the coefficient 35 is correct — plus the reason it cannot be authored: `arataki_itto.json`'s `chargeFrames` **is** the Saichi cold-open (its own note: \"chargeFrames is the cold-open Saichimonji Slash (Saichi, no stacks)\"), so `C` in the planner is precisely the one charged attack the A4 does not buff. Drop the \"Reviewer to wire trigger and exclude Saichi\" line — there is nothing to wire. ⚠️ The tempting CONVERT (`chargeFlatDmg`, scaling def 35, `passive`) is wrong in both directions and would be a silent regression: it would print an always-on \"+35% DEF charged flat DMG\" chip, claiming the bonus for the exact attack our data models (Saichi) while the real holders (Kesagiri Left/Right/Final) have no representation at all. ⛔ `filter.abilityName` cannot rescue it either — Itto's normal ability has no `chargeHits`, so `resolveBlockContext`/`run.ts` hand the parent name \"Fight Club Legend\" over and \"Arataki Kesagiri\" matches nothing; and `TriggerFilter` has no negation, which is what a Saichi *exclusion* needs (the field's own doc-comment parks this as \"a future revision\")."
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Arataki Kesagiri hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Arataki Kesagiri hits."
 			}
 		}
 	],
@@ -350,7 +350,7 @@
 				"No effects authored. Grants 2 SSS stacks at ~75f post-Q, then 1 stack at +60f, +90f, +120f (gcsim cons.go c1). SSS economy not represented in schema."
 			],
 			"notModeled": {
-				"reason": "We don't track Superlative Superstrength, so the stacks this grants aren't shown."
+				"reason": "The Rotation Planner doesn't track Superlative Superstrength, so the stacks this grants aren't shown."
 			}
 		},
 		{

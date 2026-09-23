@@ -541,7 +541,7 @@
 			],
 			"description": "After unleashing an Elemental Burst, Durin gains the Primordial Fusion of Forms effect for 20s: Durin gains 10 stacks of Primordial Fusion. When a periodic attack from Dragon of White Flame or Dragon of Dark Decay deals DMG, 1 stack of Primordial Fusion will be consumed to increase the DMG dealt by 3% of the original DMG for every 100 ATK. A maximum of 75% additional DMG can be dealt this way. When a single attack from Dragon of White Flame or Dragon of Dark Decay hits multiple opponents, only one stack of Primordial Fusion is consumed.\nPrimordial Fusion stacks are reset when the Elemental Burst is unleashed again.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard the Dragon of White Flame and Dragon of Dark Decay hit."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the Dragon of White Flame and Dragon of Dark Decay hit."
 			}
 		}
 	],

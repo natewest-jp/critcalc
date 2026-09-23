@@ -170,7 +170,7 @@
 			],
 			"description": "Second Skyladder leap (within ~3.67s of the first). Each leap increases the DMG and AoE of the next Driftcloud Wave.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard the next Driftcloud Wave hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the next Driftcloud Wave hits."
 			}
 		},
 		{

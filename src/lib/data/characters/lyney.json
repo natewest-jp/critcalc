@@ -214,7 +214,7 @@
 			],
 			"description": "If Lyney consumes HP when firing off a Prop Arrow, the Grin-Malkin hat summoned by the arrow will, upon hitting an opponent, restore 3 Energy to Lyney and increase DMG dealt by 80% of his ATK.",
 			"notModeled": {
-				"reason": "We don't track energy or draw damage amounts, and this only restores Energy and raises how hard the Grin-Malkin Hat's Pyrotechnic Strike hits."
+				"reason": "The Rotation Planner doesn't track energy or draw damage amounts, and this only restores Energy and raises how hard the Grin-Malkin Hat's Pyrotechnic Strike hits."
 			}
 		},
 		{

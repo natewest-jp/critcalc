@@ -211,7 +211,7 @@
 			],
 			"description": "When your active party member is affected by the Favonian Favor effect of the Elemental Burst **\"Radiant Psalter,\"** their ATK SPD will increase based on Dahlia's Max HP: Every 1,000 Max HP will cause an increase of 0.5%, up to a maximum of 20%.",
 			"notModeled": {
-				"reason": "We don't model attack speed, so Normal Attacks keep their usual timing under this bonus."
+				"reason": "The Rotation Planner doesn't model attack speed, so Normal Attacks keep their usual timing under this bonus."
 			}
 		}
 	],
@@ -223,7 +223,7 @@
 			"constellationLevel": 1,
 			"description": "Each time Dahlia gains 1 of his Elemental Burst **Radiant Psalter**'s Benison stacks, he will regain 2.5 Elemental Energy.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{
@@ -234,10 +234,7 @@
 			"_curatorNotes": [
 				"25% Shield Strength for 12s granted to the character protected by the new Shield, triggered when a Benison stack is consumed to summon a Shield of Sacred Favor. Effect not yet authored — needs reviewer pass."
 			],
-			"description": "After Dahlia consumes his Elemental Burst **Radiant Psalter**'s Benison stacks to summon a Shield of Sacred Favor, the character protected by said Shield will gain 25% increased Shield Strength for 12s.",
-			"notModeled": {
-				"reason": "We don't draw shield strength, and this only makes the Shield of Sacred Favor sturdier."
-			}
+			"description": "After Dahlia consumes his Elemental Burst **Radiant Psalter**'s Benison stacks to summon a Shield of Sacred Favor, the character protected by said Shield will gain 25% increased Shield Strength for 12s."
 		},
 		{
 			"id": "dahlia__constellation__windblume_offertory",
@@ -274,7 +271,7 @@
 			],
 			"description": "The current active character affected by the Elemental Burst **Radiant Psalter**'s Favonian Favor has their ATK SPD increased by 10%.\nAdditionally, when an active character affected by Favonian Favor falls, immediately:\n· Revive them.\n· Restore their HP to 100%.\nThis effect can trigger once every 15 minutes.",
 			"notModeled": {
-				"reason": "We don't model attack speed or characters falling in battle, so neither half of this constellation is drawn."
+				"reason": "The Rotation Planner doesn't model attack speed or characters falling in battle, so neither half of this constellation is drawn."
 			}
 		}
 	],

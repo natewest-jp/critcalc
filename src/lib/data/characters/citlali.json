@@ -222,7 +222,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't track Nightsoul points, so the points this burst restores to Citlali aren't shown."
+				"reason": "The Rotation Planner doesn't track Nightsoul points, so the points this burst restores to Citlali aren't shown."
 			}
 		}
 	],
@@ -281,7 +281,7 @@
 			],
 			"description": "During the Elemental Skill Dawnfrost Darkstar, Itzpapa's Frostfall Storm DMG is increased by 90% of Citlali's Elemental Mastery. During the Elemental Burst Edict of Entwined Splendor, Ice Storm DMG is increased by 1200% of Citlali's Elemental Mastery.\nIn addition, when nearby party members trigger Nightsoul Bursts, Citlali regains 4 Nightsoul points.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Itzpapa's Frostfall Storm and Ice Storm hit. We don't track Nightsoul points either."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Itzpapa's Frostfall Storm and Ice Storm hit. The Rotation Planner doesn't track Nightsoul points either."
 			}
 		}
 	],
@@ -427,7 +427,7 @@
 			],
 			"description": "After being summoned with the Elemental Skill Dawnfrost Darkstar, Itzpapa will always be in the Opal Fire state, and when Nightsoul points are exhausted, this state will not end.\nAdditionally, when Dawnfrost Darkstar is used, Itzpapa will consume all Nightsoul points, and while it is on the field, it will continuously consume Nightsoul points. Each Nightsoul point consumed in this way will grant Citlali 1 \"Cifra of the Secret Law\" point.\nA maximum of 40 such points can be gained, and each point Citlali possesses will grant all nearby party members a 1.5% Pyro and Hydro DMG Bonus, and increase the DMG Citlali deals by 2.5%.\nWhen Itzpapa leaves the field, or upon using Citlali's Elemental Skill again, all \"Cifra of the Secret Law\" points she has will be removed.",
 			"notModeled": {
-				"reason": "We don't track Nightsoul points, and the Cifra of the Secret Law behind this Pyro and Hydro DMG Bonus builds from the points Itzpapa consumes."
+				"reason": "The Rotation Planner doesn't track Nightsoul points, and the Cifra of the Secret Law behind this Pyro and Hydro DMG Bonus builds from the points Itzpapa consumes."
 			}
 		}
 	],

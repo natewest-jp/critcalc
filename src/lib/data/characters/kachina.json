@@ -216,7 +216,7 @@
 			],
 			"description": "Turbo Twirly's DMG is increased by 20% of Kachina's DEF.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Turbo Twirly hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Turbo Twirly hits."
 			}
 		}
 	],
@@ -228,7 +228,7 @@
 			"constellationLevel": 1,
 			"description": "When Kachina mounts or dismounts Turbo Twirly, she will absorb nearby Elemental Shards created by Crystallize.\nAdditionally, when a party member picks up such a Shard, or triggers Lunar-Crystallize reactions, 3 Energy will be restored to Kachina. Energy can be restored this way once every 5s.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{

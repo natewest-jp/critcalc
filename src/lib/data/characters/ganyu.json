@@ -136,7 +136,7 @@
 			"abilityType": "passive",
 			"description": "After firing a Frostflake Arrow, the CRIT Rate of subsequent Frostflake Arrows and their resulting bloom effects is increased by 20% for 5s.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this CRIT Rate bonus only applies to Frostflake Arrows."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this CRIT Rate bonus only applies to Frostflake Arrows."
 			}
 		},
 		{
@@ -217,7 +217,7 @@
 				"C4: ramp DMG-taken debuff on enemies inside Q AoE (5%→25%, +5% per 3s, max 25%) — skipped: no ramp/time-stacking model + no vulnerabilityBuff effect type"
 			],
 			"notModeled": {
-				"reason": "This depends on how long opponents stay inside Celestial Shower, and we don't model positioning."
+				"reason": "This depends on how long opponents stay inside Celestial Shower, and the Rotation Planner doesn't model positioning."
 			}
 		},
 		{

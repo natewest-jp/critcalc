@@ -298,7 +298,7 @@
 			],
 			"description": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s.",
 			"notModeled": {
-				"reason": "We don't model particle pickups, and this extension comes from picking up Elemental Orbs and Particles."
+				"reason": "The Rotation Planner doesn't model particle pickups, and this extension comes from picking up Elemental Orbs and Particles."
 			}
 		}
 	],
@@ -314,7 +314,7 @@
 			],
 			"description": "Barbara regenerates 1 Energy every 10s.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{
@@ -388,7 +388,7 @@
 			"constellationLevel": 6,
 			"description": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins.",
 			"notModeled": {
-				"reason": "We don't model characters falling in battle, so this revive has nothing to show."
+				"reason": "The Rotation Planner doesn't model characters falling in battle, so this revive has nothing to show."
 			}
 		}
 	],

@@ -183,7 +183,7 @@
 			],
 			"description": "Aimed Shot hits on weak points increase ATK by 15% for 10s.",
 			"notModeled": {
-				"reason": "This needs an Aimed Shot to hit a weak point, and we don't model where a shot lands."
+				"reason": "This needs an Aimed Shot to hit a weak point, and the Rotation Planner doesn't model where a shot lands."
 			}
 		}
 	],
@@ -202,7 +202,7 @@
 			"constellationLevel": 2,
 			"description": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG.",
 			"notModeled": {
-				"reason": "We don't model where a shot lands, and this needs a fully charged Aimed Shot to hit Baron Bunny's foot."
+				"reason": "The Rotation Planner doesn't model where a shot lands, and this needs a fully charged Aimed Shot to hit Baron Bunny's foot."
 			}
 		},
 		{

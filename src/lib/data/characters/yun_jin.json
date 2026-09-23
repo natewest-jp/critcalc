@@ -289,7 +289,7 @@
 			"abilityType": "passive",
 			"description": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form.",
 			"notModeled": {
-				"reason": "Opponents don't attack in our model, so there is no hit to counter."
+				"reason": "Opponents don't attack in the Rotation Planner, so there is no hit to counter."
 			}
 		},
 		{
@@ -390,7 +390,7 @@
 			],
 			"description": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%.",
 			"notModeled": {
-				"reason": "We don't model attack speed, so this changes nothing on the timeline."
+				"reason": "The Rotation Planner doesn't model attack speed, so this changes nothing on the timeline."
 			}
 		}
 	],

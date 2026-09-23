@@ -367,7 +367,7 @@
 			],
 			"description": "If HP has been consumed via Suffusion while using the Hold Mode Aquacrest Saber, the Torrent Surge at the skill's end will deal Bonus DMG equal to 45% of the total HP the Traveler has consumed in this skill use via Suffusion.\nThe maximum DMG Bonus that can be gained this way is 5,000.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts or track HP, and this only raises how hard Torrent Surge hits based on HP spent."
+				"reason": "The Rotation Planner doesn't draw damage amounts or track HP, and this only raises how hard Torrent Surge hits based on HP spent."
 			}
 		}
 	],
@@ -383,7 +383,7 @@
 			],
 			"description": "Picking up a Sourcewater Droplet will restore 2 Energy to the Traveler.\nYou must first unlock the Ascension Talent \"Spotless Waters.\"",
 			"notModeled": {
-				"reason": "We don't model picking up Sourcewater Droplets, so the Energy they restore isn't shown."
+				"reason": "The Rotation Planner doesn't model picking up Sourcewater Droplets, so the Energy they restore isn't shown."
 			}
 		},
 		{
@@ -456,7 +456,7 @@
 			],
 			"description": "When the Traveler picks up a Sourcewater Droplet, they will restore HP to a nearby party member with the lowest remaining HP percentage based on 6% of said member's Max HP.",
 			"notModeled": {
-				"reason": "We don't model picking up Sourcewater Droplets, so the healing they trigger isn't shown."
+				"reason": "The Rotation Planner doesn't model picking up Sourcewater Droplets, so the healing they trigger isn't shown."
 			}
 		}
 	],

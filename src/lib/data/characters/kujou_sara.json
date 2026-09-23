@@ -237,7 +237,7 @@
 			],
 			"description": "When Tengu Juurai: Ambush hits opponents, Kujou Sara will restore 1.2 Energy to all party members for every 100% Energy Recharge she has. This effect can be triggered once every 3s.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores to the party."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores to the party."
 			}
 		}
 	],

@@ -378,7 +378,7 @@
 			"abilityType": "passive",
 			"description": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG.",
 			"notModeled": {
-				"reason": "We don't model where a shot lands, and this needs a fully charged Aimed Shot to hit Oz."
+				"reason": "The Rotation Planner doesn't model where a shot lands, and this needs a fully charged Aimed Shot to hit Oz."
 			}
 		},
 		{
@@ -410,7 +410,7 @@
 			"constellationLevel": 2,
 			"description": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only makes Nightrider's summoning hit stronger and larger."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only makes Nightrider's summoning hit stronger and larger."
 			}
 		},
 		{

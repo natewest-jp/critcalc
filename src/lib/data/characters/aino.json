@@ -266,7 +266,7 @@
 			],
 			"description": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Precision Hydronic Cooler hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Precision Hydronic Cooler hits."
 			}
 		}
 	],

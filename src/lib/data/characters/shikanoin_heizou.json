@@ -163,7 +163,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Heartstopper Strike hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Heartstopper Strike hits."
 			}
 		},
 		{
@@ -212,7 +212,7 @@
 				"Effect not yet authored — needs reviewer pass. gcsim asc.go: subscribes to OnEnemyDamage, filters AttackTag in {SwirlPyro, SwirlHydro, SwirlElectro, SwirlCryo}, requires Heizou is on-field and is the actor of the swirl. ICD 6 frames (0.1s) via 'heizou-a1-icd' status. Effect is 'add 1 Declension stack' — schema has no stack-count buff representation. Reviewer to decide whether to model stacks as a self-buff with maxStacks or leave purely descriptive."
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Heartstopper Strike hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Heartstopper Strike hits."
 			}
 		},
 		{
@@ -252,7 +252,7 @@
 				"Effect not yet authored — needs reviewer pass. Two parts: (a) +15% Normal Attack SPD self-buff for 5s on swap-in (gcsim cons.go c1: AffectedStat AtkSpd, dur 300f); (b) +1 Declension stack on swap-in. ICD 600f (10s) via 'heizou-c1-icd' status. Trigger likely onSwapIn (no exact match in schema's Trigger union — closest is onCast or a new onSwap). Reviewer to author."
 			],
 			"notModeled": {
-				"reason": "We don't model attack speed, and the Declension stack only raises how hard Heartstopper Strike hits."
+				"reason": "The Rotation Planner doesn't model attack speed, and the Declension stack only raises how hard Heartstopper Strike hits."
 			}
 		},
 		{
@@ -262,7 +262,7 @@
 			"constellationLevel": 2,
 			"description": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s.",
 			"notModeled": {
-				"reason": "We don't model pulling opponents together, so a stronger pull changes nothing on the timeline."
+				"reason": "The Rotation Planner doesn't model pulling opponents together, so a stronger pull changes nothing on the timeline."
 			}
 		},
 		{
@@ -282,7 +282,7 @@
 				"Effect not yet authored — needs reviewer pass. Energy regen on Windmuster Iris explosions: 1st = 9 energy, 2nd–4th = 1.5 each (total 13.5). gcsim cons.go c4: AddEnergy keyed by burstTaggedCount index. Schema has no per-cast energy-regen-on-iris-explosion trigger; reviewer to decide modeling (likely an energy-event that doesn't currently exist)."
 			],
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{

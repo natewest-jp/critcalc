@@ -118,7 +118,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Ceremonial Crystalshot hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Ceremonial Crystalshot hits."
 			}
 		},
 		{
@@ -358,7 +358,7 @@
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — The Flexible Finesse of the Spina's President — effects[0] (buff, critDmg 45) carried `trigger: manual` and reached no surface. gcsim: `navia/skill.go:248-250` — `snap.Stats[attributes.CD] += 0.45 × max(count−3, 0)`, the same cast-snapshot mutation as C2, no `StatMod` and no duration. The shrapnel return is `skill.go:204` (`c.shrapnel = max(c.shrapnel-3, 0)`). Retained: `description` keeps it. Retain the gcsim reading (per-EXCESS-stack 45% CD on the E snapshot, plus the excess-shrapnel return) and record the same ruling as C2: instance-scoped snapshot, `critDmg` is character-wide, no duration, and the damage it modifies is never printed. Drop \"reviewer to decide representation\". ⚠️ The authored `value: 45` reads as a flat +45% CRIT DMG buff — the worst version of this over-claim, since it is per-excess-stack and reaches +135% at 6 shrapnel. Retiring it removes a number that was wrong in both directions."
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises the CRIT DMG of Ceremonial Crystalshot."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises the CRIT DMG of Ceremonial Crystalshot."
 			}
 		}
 	],

@@ -310,7 +310,7 @@
 			"abilityType": "passive",
 			"description": "When nearby party members gain Elemental Orbs or Particles, Chakra Desiderata gains 2 Resolve stacks. This effect can occur once every 3s.",
 			"notModeled": {
-				"reason": "We don't model pickups, and the Resolve this grants only raises how hard Secret Art: Musou Shinsetsu and Musou Isshin hit."
+				"reason": "The Rotation Planner doesn't model pickups, and the Resolve this grants only raises how hard Secret Art: Musou Shinsetsu and Musou Isshin hit."
 			}
 		},
 		{
@@ -350,7 +350,7 @@
 			"constellationLevel": 1,
 			"description": "Chakra Desiderata will gather Resolve even faster. When Electro characters use their Elemental Bursts, the Resolve gained is increased by 80%. When characters of other Elemental Types use their Elemental Bursts, the Resolve gained is increased by 20%.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Secret Art: Musou Shinsetsu and Musou Isshin hit."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Secret Art: Musou Shinsetsu and Musou Isshin hit."
 			}
 		},
 		{

@@ -340,7 +340,7 @@
 			],
 			"description": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts or shield strength, and this only strengthens Icy Paws and its shield. The shield it gives other characters only exists in co-op."
+				"reason": "The Rotation Planner doesn't draw damage amounts or shield strength, and this only strengthens Icy Paws and its shield. The shield it gives other characters only exists in co-op."
 			}
 		},
 		{

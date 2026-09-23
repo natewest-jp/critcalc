@@ -227,7 +227,7 @@
 			],
 			"description": "When Gaming receives healing and this instance of healing overflows, his ATK will be increased by 20% for 5s.",
 			"notModeled": {
-				"reason": "This triggers on overflow healing Gaming receives, and we don't track healing received."
+				"reason": "This triggers on overflow healing Gaming receives, and the Rotation Planner doesn't track healing received."
 			}
 		},
 		{
@@ -247,7 +247,7 @@
 			],
 			"description": "When Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, it will restore 2 Energy to Gaming. This effect can be triggered once every 0.2s.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{
@@ -268,7 +268,7 @@
 			],
 			"description": "Bestial Ascent's Plunging Attack: Charmed Cloudstrider CRIT Rate increased by 20% and CRIT DMG increased by 40%, and its attack radius will be increased.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this CRIT bonus only applies to Charmed Cloudstrider."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this CRIT bonus only applies to Charmed Cloudstrider."
 			}
 		}
 	],

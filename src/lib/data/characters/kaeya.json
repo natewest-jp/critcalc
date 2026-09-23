@@ -195,7 +195,7 @@
 			"abilityType": "passive",
 			"description": "Opponents Frozen by Frostgnaw will drop additional Elemental Particles.\nFrostgnaw may only produce a maximum of 2 additional Elemental Particles per use.",
 			"notModeled": {
-				"reason": "We don't model Energy particles, so the extra particles this drops aren't shown."
+				"reason": "The Rotation Planner doesn't model Energy particles, so the extra particles this drops aren't shown."
 			}
 		}
 	],
@@ -231,7 +231,7 @@
 			"constellationLevel": 2,
 			"description": "While Glacial Waltz is in effect, for each opponent defeated, its duration is increased by 2.5s, up to a maximum of 15s.",
 			"notModeled": {
-				"reason": "This extends the burst only when an opponent is defeated, and we don't model opponents being defeated."
+				"reason": "This extends the burst only when an opponent is defeated, and the Rotation Planner doesn't model opponents being defeated."
 			}
 		},
 		{

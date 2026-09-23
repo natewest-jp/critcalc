@@ -246,7 +246,7 @@
 			],
 			"description": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s.",
 			"notModeled": {
-				"reason": "We don't model picking up Guoba's chili pepper, so the ATK it grants isn't shown."
+				"reason": "The Rotation Planner doesn't model picking up Guoba's chili pepper, so the ATK it grants isn't shown."
 			}
 		}
 	],

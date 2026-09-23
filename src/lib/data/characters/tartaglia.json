@@ -215,7 +215,7 @@
 				"No effect authored — Riptide application on melee CRIT. gcsim: makeA4CB returns a callback gated on a.IsCrit; conditional on stance + crit + target type. Schema cannot express crit-conditional callbacks; flag for reviewer."
 			],
 			"notModeled": {
-				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — this Riptide is applied on CRIT hits."
+				"reason": "This Riptide is applied on CRIT hits. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		}
 	],
@@ -240,7 +240,7 @@
 				"No effect authored. Likely onTargetDied trigger filtered by riptideKey on target; schema has no equivalent trigger type. Energy-restore (energyRestore stat) on a kill event — reviewer to decide."
 			],
 			"notModeled": {
-				"reason": "This triggers when an opponent is defeated, and we model one opponent that stays up."
+				"reason": "This triggers when an opponent is defeated, and the Rotation Planner models one opponent that stays up."
 			}
 		},
 		{

@@ -147,7 +147,7 @@
 			],
 			"description": "When Freminet triggers Shatter against opponents, the DMG dealt by Pressurized Floe: Shattering Pressure will be increased by 40% for 5s.",
 			"notModeled": {
-				"reason": "We don't model Shatter, which triggers this bonus."
+				"reason": "The Rotation Planner doesn't model Shatter, which triggers this bonus."
 			}
 		}
 	],
@@ -163,7 +163,7 @@
 			],
 			"description": "The CRIT Rate of Pressurized Floe: Shattering Pressure will be increased by 15%.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this CRIT Rate bonus only applies to Shattering Pressure."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this CRIT Rate bonus only applies to Shattering Pressure."
 			}
 		},
 		{
@@ -176,7 +176,7 @@
 			],
 			"description": "Unleashing Pressurized Floe: Shattering Pressure will restore 2 Energy to Freminet. If a Pressure Level 4 Shattering Pressure is unleashed, this will restore 3 Energy.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{

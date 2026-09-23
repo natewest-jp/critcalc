@@ -250,7 +250,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't model pulling opponents together, which is all Lustrous Moonrise adds beyond its damage."
+				"reason": "The Rotation Planner doesn't model pulling opponents together, which is all Lustrous Moonrise adds beyond its damage."
 			}
 		}
 	],
@@ -299,7 +299,7 @@
 			],
 			"description": "While the Swallow-Wisp Shield is active, when your active party member's Normal Attacks deal DMG, 40% of the Shield's DMG absorption will be restored, up to its original maximum absorption. This effect can occur once every 2s.",
 			"notModeled": {
-				"reason": "We draw when a shield is up, not how much it absorbs, and this only refills Swallow-Wisp Shield."
+				"reason": "The Rotation Planner draws when a shield is up, not how much it absorbs, and this only refills Swallow-Wisp Shield."
 			}
 		},
 		{

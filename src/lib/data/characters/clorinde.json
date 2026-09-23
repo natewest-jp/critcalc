@@ -237,7 +237,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't model Bond of Life, which decides how much this lunge heals Clorinde."
+				"reason": "The Rotation Planner doesn't model Bond of Life, which decides how much this lunge heals Clorinde."
 			}
 		},
 		{
@@ -266,7 +266,7 @@
 				{ "frame": 121, "element": "electro" }
 			],
 			"notModeled": {
-				"reason": "We don't model Bond of Life, so the Bond of Life this burst grants isn't shown."
+				"reason": "The Rotation Planner doesn't model Bond of Life, so the Bond of Life this burst grants isn't shown."
 			}
 		}
 	],
@@ -475,7 +475,7 @@
 				"Bond of Life mechanic — not authored per Tier B recipe BoL exception. Effect: burst DmgP += min(BoL% * 2, 200) (gcsim AddAttackMod with AttackTagElementalBurst filter, base 'clorinde-c4-burst-bonus')."
 			],
 			"notModeled": {
-				"reason": "We don't model Bond of Life, which this constellation's damage bonus depends on."
+				"reason": "The Rotation Planner doesn't model Bond of Life, which this constellation's damage bonus depends on."
 			}
 		},
 		{

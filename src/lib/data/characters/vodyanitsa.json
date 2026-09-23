@@ -57,7 +57,7 @@
 			"description": "Leads a song of the Water Imps which lures its listeners to their doom. This deals AoE Hydro DMG to the opponent.\nWhen in the **Song of Ages Past** state, DMG dealt is further increased.",
 			"behavior": "instant",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Koda: Sink With Thee hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Koda: Sink With Thee hits."
 			}
 		}
 	],
@@ -82,10 +82,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"effects": [],
-			"description": "Each time Vodyanitsa triggers the healing effect of **Song of Ages Past**, it also increases the ATK of all nearby party members by 0.8% of her Max HP for 5s.",
-			"notModeled": {
-				"reason": "We don't draw effects triggered by healing, so the ATK each Song of Ages Past heal grants isn't shown."
-			}
+			"description": "Each time Vodyanitsa triggers the healing effect of **Song of Ages Past**, it also increases the ATK of all nearby party members by 0.8% of her Max HP for 5s."
 		},
 		{
 			"id": "vodyanitsa__constellation__echoes_that_pierce_the_snow",
@@ -111,7 +108,7 @@
 			"effects": [],
 			"description": "When Vodyanitsa triggers the healing effect of **Song of Ages Past**, an additional effect will be triggered based on the healed character's HP.\n· If the character's HP is below 40%: The healing is increased by 50%; and\n· If the character's HP is 40% or above: Vodyanitsa's Max HP is increased by 20% for 6s. Max 3 stacks, and each stack's duration is counted independently.",
 			"notModeled": {
-				"reason": "We don't draw effects triggered by healing or track HP, which is all this depends on."
+				"reason": "The Rotation Planner doesn't draw effects triggered by healing or track HP, which is all this depends on."
 			}
 		},
 		{

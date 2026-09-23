@@ -401,7 +401,7 @@
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 \"Garden of Eternal Rest\" — effects[0] (buff critRate 12, teamExcludingSelf) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/hutao/cons.go:68-93` — `c4()` subscribes to `event.OnTargetDied`, checks the dead enemy carries `bbDebuff` (Hu Tao's own Blood Blossom), then adds +12% CR for 900f to every party member except Hu Tao. Retained: Retain — the gcsim event is `OnTargetDied` filtered to enemies carrying `bbDebuff` (cons.go:71-78); the planner has no enemy HP or death simulation, so there is no instant to anchor on; duration 15s / target `teamExcludingSelf` / value 12 were correct and are the restore numbers if a death-tracking primitive ever lands. ⚠️ none. ⚠️ This is NOT a DEFER — enemy death is not one of the two named, queued primitives, and nothing in `docs/` or the engine queue names it."
 			],
 			"notModeled": {
-				"reason": "This triggers when an opponent is defeated, and we don't model opponents being defeated."
+				"reason": "This triggers when an opponent is defeated, and the Rotation Planner doesn't model opponents being defeated."
 			}
 		},
 		{
@@ -421,7 +421,7 @@
 				"No effects authored. C6 has three components, none cleanly authorable today: (a) revive — no schema concept; (b) +200% allElementalRes + physicalRes — stats now exist (added 2026-05-09) but the effect is gated on the OnPlayerHPDrain event with hpBelow25 state, neither of which the schema models; (c) +100% CR for 10s, same trigger gap. gcsim subscribes to OnPlayerHPDrain plus a 2-frame periodic check, gated on hpRatio <= 0.25 and 60s c6ICDKey. Effects remain unauthored until the trigger primitive lands."
 			],
 			"notModeled": {
-				"reason": "This triggers when Hu Tao's HP drops below 25% or she takes a lethal hit, and we don't track HP."
+				"reason": "This triggers when Hu Tao's HP drops below 25% or she takes a lethal hit, and the Rotation Planner doesn't track HP."
 			}
 		}
 	],

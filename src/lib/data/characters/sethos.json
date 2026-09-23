@@ -100,7 +100,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{
@@ -140,7 +140,7 @@
 			],
 			"description": "Sethos gains the \"Scorching Sandshade\" effect, increasing the DMG dealt by Shadowpiercing Shots by 700% of Sethos's Elemental Mastery.\nThe Scorching Sandshade effect will be canceled when any of the following conditions are met:\n· 5s after a Shadowpiercing Shot first hits an opponent.\n· After 4 Shadowpiercing Shots strike opponents.\n\nWhen a Shadowpiercing Shot affected by Scorching Sandshade first hits an opponent, Sethos will regain Scorching Sandshade after 15s.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Shadowpiercing Shot hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Shadowpiercing Shot hits."
 			}
 		}
 	],
@@ -156,7 +156,7 @@
 			],
 			"description": "The CRIT Rate of Shadowpiercing Shot is increased by 15%.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises the CRIT Rate of Shadowpiercing Shot."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises the CRIT Rate of Shadowpiercing Shot."
 			}
 		},
 		{
@@ -285,7 +285,7 @@
 			"constellationLevel": 6,
 			"description": "After Shadowpiercing Shot strikes an opponent, the Elemental Energy consumed by the Ascension Talent \"Black Kite's Enigma\" will be returned. This effect can be triggered up to once every 15s. You must first unlock the Ascension Talent \"Black Kite's Enigma.\"",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		}
 	],

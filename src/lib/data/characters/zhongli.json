@@ -284,7 +284,7 @@
 			"abilityType": "passive",
 			"description": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears.",
 			"notModeled": {
-				"reason": "Opponents don't attack in our model, so the Jade Shield never takes the hits that strengthen it."
+				"reason": "Opponents don't attack in the Rotation Planner, so the Jade Shield never takes the hits that strengthen it."
 			}
 		},
 		{
@@ -458,7 +458,7 @@
 			],
 			"description": "When the Jade Shield takes DMG, 40% of that incoming DMG is converted to HP for the current character.\nA single instance of regeneration cannot exceed 8% of that character's Max HP.",
 			"notModeled": {
-				"reason": "Opponents don't attack in our model, so the Jade Shield never takes the damage this heal is made from."
+				"reason": "Opponents don't attack in the Rotation Planner, so the Jade Shield never takes the damage this heal is made from."
 			}
 		}
 	],

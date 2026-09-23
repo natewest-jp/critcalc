@@ -207,7 +207,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't track Nightsoul points, so the planner doesn't draw the points Plains Scorcher restores."
+				"reason": "The Rotation Planner doesn't track Nightsoul points, so it doesn't draw the points Plains Scorcher restores."
 			}
 		}
 	],
@@ -295,7 +295,7 @@
 			],
 			"description": "Within 12s of using the Elemental Skill Flowfire Blade, after nearby party members trigger a Pyro-related reaction on an opponent, the Traveler will regain 14 Nightsoul points. Each use of Flowfire Blade will restore at most 28 Nightsoul points in this way.",
 			"notModeled": {
-				"reason": "We don't track Nightsoul points, so the planner doesn't draw the points this restores."
+				"reason": "The Rotation Planner doesn't track Nightsoul points, so it doesn't draw the points this restores."
 			}
 		},
 		{

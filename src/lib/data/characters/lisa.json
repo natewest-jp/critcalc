@@ -112,7 +112,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Violet Arc's Hold hits. Conductive stacks exist only to feed it."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Violet Arc's Hold hits. Conductive stacks exist only to feed it."
 			}
 		},
 		{
@@ -171,7 +171,7 @@
 			],
 			"description": "Hits by Charged Attacks apply Violet Arc's Conductive status to opponents.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Violet Arc's Hold hits. Conductive stacks exist only to feed it."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Violet Arc's Hold hits. Conductive stacks exist only to feed it."
 			}
 		},
 		{
@@ -249,7 +249,7 @@
 			"constellationLevel": 4,
 			"description": "Lightning Rose now unleashes 1-3 lightning bolts when it attacks.",
 			"notModeled": {
-				"reason": "Lightning Rose fires a random number of bolts. We don't simulate chance, so the same rotation always draws the same bars for everyone."
+				"reason": "Lightning Rose fires a random number of bolts. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		},
 		{
@@ -269,7 +269,7 @@
 			],
 			"description": "When Lisa takes the field, she applies 3 stacks of Violet Arc's Conductive status onto nearby opponents.\nThis effect can only occur once every 5s.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Violet Arc's Hold hits. Conductive stacks exist only to feed it."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Violet Arc's Hold hits. Conductive stacks exist only to feed it."
 			}
 		}
 	],

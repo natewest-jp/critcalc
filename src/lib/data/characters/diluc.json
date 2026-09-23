@@ -253,7 +253,7 @@
 				"No effect authored. Pattern: stack-on-hit buff (max 3 stacks) granting +10% ATK + 5% ATK SPD per stack, 10s duration, 1.5s ICD between stack additions. Likely trigger: `onPlayerHit` (gcsim subscribes to event.OnPlayerHit) with `target: self`, `duration: 10`, `value: 10` (atk%) per stack and `value: 5` (atkspd%) per stack, `procCooldown: 1.5`, max 3 stacks. Schema has no stack-count concept on effects; reviewer to decide whether to extend or to model as a single 30%/15% buff with caveats."
 			],
 			"notModeled": {
-				"reason": "We don't model Diluc taking damage, so this ATK bonus can't trigger."
+				"reason": "The Rotation Planner doesn't model Diluc taking damage, so this ATK bonus can't trigger."
 			}
 		},
 		{
@@ -273,7 +273,7 @@
 				"No effect authored. Conditional skill DMG buff: +40% DMG to the next Searing Onslaught cast, but only if cast in a 2s window starting 2s after the prior cast (i.e. 2s–4s post-cast). Likely target: self, conditional ability: 'skill'. Schema has no 'time-since-prior-skill' condition. gcsim implementation: AddAttackMod with key 'diluc-c4-dmg' on a 120-frame timer queued at hitmark+120. Reviewer to model."
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard the next Searing Onslaught hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the next Searing Onslaught hits."
 			}
 		},
 		{

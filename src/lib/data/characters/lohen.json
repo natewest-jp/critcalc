@@ -240,7 +240,7 @@
 				"A1: purely accelerates Will to Win accrual (an internal on-field-DPS resource). No team-facing capability — no effect authored. Mechanics source: KQM quickguide."
 			],
 			"notModeled": {
-				"reason": "We don't track Will to Win, which is all this passive changes."
+				"reason": "The Rotation Planner doesn't track Will to Win, which is all this passive changes."
 			}
 		},
 		{
@@ -296,7 +296,7 @@
 				"C1: raises the Will to Win cap (100 → 300) and multiplies teammate accrual ×5. Internal on-field-DPS resource only — no team-facing capability, no effect authored."
 			],
 			"notModeled": {
-				"reason": "We don't track Will to Win, which is all this constellation changes."
+				"reason": "The Rotation Planner doesn't track Will to Win, which is all this constellation changes."
 			}
 		},
 		{
@@ -356,7 +356,7 @@
 				"C4: maxes Will to Win on an in-Masterstroke Burst (self damage) and restores 15 Energy to LOHEN HIMSELF on entering Masterstroke (or after Burst when energy was full). Self-only energy management — not a team battery, so no energy capability authored."
 			],
 			"notModeled": {
-				"reason": "We don't track energy or Will to Win, so the planner doesn't draw what this restores."
+				"reason": "The Rotation Planner doesn't track energy or Will to Win, so it doesn't draw what this restores."
 			}
 		},
 		{

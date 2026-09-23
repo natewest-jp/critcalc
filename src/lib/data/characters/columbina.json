@@ -421,7 +421,7 @@
 				"A4 (Ascension 4): gcsim asc.go a4* — Lunar-Charged +33% extra lightning-strike chance and Lunar-Crystallize +33% extra Moondrift are reaction-mechanic damage multipliers with no schema primitive; Lunar-Bloom generates Moonridge Dew (feeds her Verdant Dew Charged Attack) up to 3 per 18s. All require party Lunar reactions the planner cannot simulate — left as description-only (unmodelable procs)."
 			],
 			"notModeled": {
-				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — two of these effects are 33% chances of an extra hit. The third builds Moonridge Dew, a resource we don't track."
+				"reason": "Two of these effects are 33% chances of an extra hit. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone. The third builds Moonridge Dew, a resource the Rotation Planner doesn't track."
 			}
 		},
 		{
@@ -434,7 +434,7 @@
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Revival has no timeline representation of any kind — there is no death, no HP and no party-state surface anywhere in the planner, so nothing on screen is wrong or missing. It is also disabled in every instanced fight a rotation is planned for, and its magnitude depends on Friendship Level, which the tool has no notion of. Pure kit trivia in a 262px column. Category: invisible-omission."
 			],
 			"notModeled": {
-				"reason": "We don't model characters falling in battle, so this revive has nothing to show."
+				"reason": "The Rotation Planner doesn't model characters falling in battle, so this revive has nothing to show."
 			}
 		}
 	],

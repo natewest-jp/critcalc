@@ -381,7 +381,7 @@
 				"Effect not authored — needs reviewer pass. Mechanic: while burstBuffKey is active, an OnDamage AttackCB on plunges counts enemies hit; on the 2nd enemy hit it ResetActionCooldown(skill) + AddStatus(c6BuffKey, 72f, true), which during its 1.2s window allows skill use without consuming a charge or setting CD. Schema has no 'reset-CD-on-plunge-multi-hit-count' construct, and the 'free skill cast' window is a transient skill-mode override. Flag and defer; reviewer to extend schema or annotate."
 			],
 			"notModeled": {
-				"reason": "We model a single opponent, so a Plunging Attack never hits the two opponents this needs."
+				"reason": "The Rotation Planner models a single opponent, so a Plunging Attack never hits the two opponents this needs."
 			}
 		}
 	],

@@ -205,7 +205,7 @@
 			],
 			"description": "The Base DMG for Lunar-Bloom reactions caused by Nefer's **Phantasm Performance** is increased by 60% of her Elemental Mastery. This effect is also boosted by **Veil of Falsehood**.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises the Lunar-Bloom damage Phantasm Performance deals."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises the Lunar-Bloom damage Phantasm Performance deals."
 			}
 		},
 		{

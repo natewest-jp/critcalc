@@ -205,7 +205,7 @@
 			],
 			"description": "Every point of Elemental Mastery the Traveler possesses increases the DMG dealt by Razorgrass Blade by 0.15% and the DMG dealt by Surgent Manifestation by 0.1%.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Razorgrass Blade and Surgent Manifestation hit."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Razorgrass Blade and Surgent Manifestation hit."
 			}
 		}
 	],

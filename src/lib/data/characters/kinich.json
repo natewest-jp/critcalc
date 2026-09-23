@@ -266,7 +266,7 @@
 			],
 			"description": "When Kinich is in Nightsoul's Blessing state, opponents hit by his Elemental Skill will enter the Desolation state, and when affected by Burning or Burgeon reaction DMG, they will restore 7 Nightsoul points to him. Nightsoul points can be gained this way once every 0.8s. The Desolation state will persist until this instance of Kinich's Nightsoul's Blessing state ends.",
 			"notModeled": {
-				"reason": "We don't track Nightsoul points, which is all this passive changes."
+				"reason": "The Rotation Planner doesn't track Nightsoul points, which is all this passive changes."
 			}
 		},
 		{
@@ -326,7 +326,7 @@
 			],
 			"description": "After Kinich lands from Canopy Hunter: Riding High's mid-air swing, his Movement SPD will increase by 30% for 6s.\nAdditionally, Scalespiker Cannon's CRIT DMG is increased by 100%.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this CRIT DMG bonus only applies to Scalespiker Cannon."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this CRIT DMG bonus only applies to Scalespiker Cannon."
 			}
 		},
 		{

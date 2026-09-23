@@ -205,7 +205,7 @@
 				"Co-op only — not implemented in gcsim (cons.go: `// C2 is not implemented, co-op only`). Reviewer to confirm in-game whether C2 grants any single-player benefit; if not, leave unmodeled."
 			],
 			"notModeled": {
-				"reason": "We don't model co-op, and these shields only go to other players' characters."
+				"reason": "The Rotation Planner doesn't model co-op, and these shields only go to other players' characters."
 			}
 		},
 		{

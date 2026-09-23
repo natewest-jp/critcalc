@@ -264,7 +264,7 @@
 			"abilityType": "passive",
 			"description": "The Muji-Muji Daruma created by Yoohoo Art: Mujina Flurry gains the following effects:\n·When healing a character, it will also heal characters near that healed character for 20% the amount of HP.\n·Increases the AoE of its attack against opponents.",
 			"notModeled": {
-				"reason": "The extra healing reaches characters standing near the one healed, and we don't model positions."
+				"reason": "The extra healing reaches characters standing near the one healed, and the Rotation Planner doesn't model positions."
 			}
 		}
 	],
@@ -284,7 +284,7 @@
 			"constellationLevel": 2,
 			"description": "Yoohoo Art: Fuuin Dash gains the following effects:\n·DMG of Fuufuu Whirlwind Kick in Press Mode increased by 3.3%.\n·Every 0.5s in the Fuufuu Windwheel state will increase the DMG of this Fuufuu Whirlwind Kick by 3.3%. The maximum DMG increase possible through this method is 66%.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Fuufuu Whirlwind Kick hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Fuufuu Whirlwind Kick hits."
 			}
 		},
 		{
@@ -304,7 +304,7 @@
 			],
 			"description": "Sayu recovers 1.2 Energy when she triggers a Swirl or Stellar Swirl reaction while on-field.\nThis effect occurs once every 2s.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{

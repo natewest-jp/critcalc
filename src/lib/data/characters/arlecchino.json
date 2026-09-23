@@ -262,7 +262,7 @@
 				"Two parts, both BoL-economy: (a) on-kill of a directive-marked enemy → BoL = 1.30 × MaxHP (gcsim a1OnKill, capped by 35s skillDebtMax window); (b) directives upgrade from level 1 → 2 (Blood-Debt Due) 5s after application (gcsim a1Upgrade, raises absorb scaling from 0.65 → 1.30 × MaxHP). Likely trigger types: `onTargetDied` (filtered to directive-marked enemies) and a periodic `5s after directive applied` upgrade. Schema has neither a BoL-grant encoder nor an `onTargetDied` trigger type. Not authored."
 			],
 			"notModeled": {
-				"reason": "We don't model Bond of Life, and this passive only changes how much of it Arlecchino gains."
+				"reason": "The Rotation Planner doesn't model Bond of Life, and this passive only changes how much of it Arlecchino gains."
 			}
 		},
 		{
@@ -322,7 +322,7 @@
 				"C1 increases the Masque ATK multiplier by +1.0 (gcsim cons.go bondBonus: `c1Bonus = 1.0` added to masque[talent]). The Masque damage itself is not authored due to BoL-runtime scaling — C1's modifier inherits that gap. Interruption resistance not modeled per recipe (no schema encoder)."
 			],
 			"notModeled": {
-				"reason": "We don't model Bond of Life, which this constellation's damage bonus depends on."
+				"reason": "The Rotation Planner doesn't model Bond of Life, which this constellation's damage bonus depends on."
 			}
 		},
 		{

@@ -1260,7 +1260,7 @@
 			],
 			"description": "When unleashing the special Elemental Skill **Four Winds' Ascension**, or when performing the special Charged Attack Azure Devour, Varka will perform an additional strike, dealing AoE Anemo DMG equal to 800% of Varka's ATK.",
 			"notModeled": {
-				"reason": "This extra strike applies no Anemo, and we don't draw damage amounts."
+				"reason": "This extra strike applies no Anemo, and the Rotation Planner doesn't draw damage amounts."
 			}
 		},
 		{

@@ -248,7 +248,7 @@
 			],
 			"description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s.",
 			"notModeled": {
-				"reason": "We don't model defeating opponents, so there is no kill for this heal to follow."
+				"reason": "The Rotation Planner doesn't model defeating opponents, so there is no kill for this heal to follow."
 			}
 		}
 	],
@@ -260,7 +260,7 @@
 			"constellationLevel": 1,
 			"description": "Palm Vortex's Storm DMG is increased by 100% in its initial cast (the cast made before any other element is absorbed).\n\nMaximum upgrade level is 15.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard the first Storm hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the first Storm hits."
 			}
 		},
 		{

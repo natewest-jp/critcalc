@@ -116,7 +116,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't model pickups, so the Sourcewater Droplets this creates aren't drawn."
+				"reason": "The Rotation Planner doesn't model pickups, so the Sourcewater Droplets this creates aren't drawn."
 			}
 		},
 		{
@@ -158,7 +158,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't model pickups, so the Sourcewater Droplets this creates aren't drawn."
+				"reason": "The Rotation Planner doesn't model pickups, so the Sourcewater Droplets this creates aren't drawn."
 			}
 		}
 	],
@@ -334,7 +334,7 @@
 			],
 			"description": "The Ascension Talent \"Heir to the Ancient Sea's Authority\" will be enhanced: Each stack of Past Draconic Glories will increase the CRIT DMG of Charged Attack: Equitable Judgment by 14%. The maximum increase that can be achieved this way is 42%.\nYou must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\"",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises the CRIT DMG of Equitable Judgment."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises the CRIT DMG of Equitable Judgment."
 			}
 		},
 		{
@@ -355,7 +355,7 @@
 			],
 			"description": "When Neuvillette is on the field and is healed, 1 Sourcewater Droplet will be generated. This effect can occur once every 4s.",
 			"notModeled": {
-				"reason": "We don't model pickups or track healing, so the Sourcewater Droplet Neuvillette gets when healed isn't drawn."
+				"reason": "The Rotation Planner doesn't model pickups or track healing, so the Sourcewater Droplet Neuvillette gets when healed isn't drawn."
 			}
 		},
 		{
@@ -377,7 +377,7 @@
 			],
 			"description": "When using Charged Attack: Equitable Judgment, Neuvillette can absorb nearby Sourcewater Droplets in an AoE. Each absorbed Droplet will increase the duration of Charged Attack: Equitable Judgment by 1s.\nAdditionally, when Equitable Judgment hits opponents, it will fire off 2 additional currents every 2s, each of which will deal 10% of Neuvillette's Max HP as Hydro DMG. DMG dealt this way will count as DMG dealt by Equitable Judgment.",
 			"notModeled": {
-				"reason": "We don't model pickups, so absorbed Sourcewater Droplets don't lengthen Equitable Judgment, and its extra currents only add to its damage."
+				"reason": "The Rotation Planner doesn't model pickups, so absorbed Sourcewater Droplets don't lengthen Equitable Judgment, and its extra currents only add to its damage."
 			}
 		}
 	],

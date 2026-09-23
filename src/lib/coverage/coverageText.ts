@@ -2,7 +2,9 @@
  * src/lib/coverage/coverageText.ts
  *
  * Every user-facing string on the coverage page that is not a character's own
- * `caveat` or `notModeled.reason`. ⚓ One whole sentence per line code (style
+ * `caveat` or `notModeled.reason`. ⚓ Nate 2026-09-23: a limitation is the
+ * ROTATION PLANNER's ("The Rotation Planner doesn't…"), never "we" — "we"
+ * reads as a stance taken, the tool's name as a limit of this tool. ⚓ One whole sentence per line code (style
  * guide §3.1 — a string is a sentence, never assembled from parts); a line's
  * `form` renders as its own label beside the sentence, never inside it. Kept in
  * one module so the i18n extraction finds them together.
@@ -21,7 +23,7 @@ export const LINE_TEXT: Record<CoverageLineCode, string> = {
 	'frames.gcsimPr':
 		'Timed from a gcsim change that hasn’t been merged yet, so these frames may still move.',
 	'frames.wiki': 'Timed from wiki frame counts rather than gcsim.',
-	'frames.hand': 'Timed from our own frame counts rather than gcsim.',
+	'frames.hand': 'Timed from frame counts measured by hand rather than gcsim.',
 	'frames.none': 'There is no frame data for this yet, so the planner uses a generic length.',
 	'frames.someForms': 'Some forms have no frame data and use a generic length.',
 	'charged.generic':
@@ -34,7 +36,7 @@ export const LINE_TEXT: Record<CoverageLineCode, string> = {
 	'app.measured': 'Element, timing and gauge units are measured from gcsim.',
 	'app.appliesNothing': 'Measured from gcsim: this applies no element.',
 	'app.atCast':
-		'Not measured yet, so we apply the element once, at the cast, and mark it on the aura lane.',
+		'Not measured yet, so the Rotation Planner applies the element once, at the cast, and marks it on the aura lane.',
 	'app.unitsUnmeasured': 'Timing is measured, but some hits’ gauge units are assumed to be 1U.',
 	'grants.authored': 'Its effects are drawn on the timeline.',
 	'grants.elsewhere': 'Drawn as part of another ability.',
@@ -47,7 +49,7 @@ export const LINE_TEXT: Record<CoverageLineCode, string> = {
 	'grants.unknownValue': 'Its exact value isn’t known yet, so the bar is drawn without one.',
 	'grants.none': 'This hasn’t been added to the planner yet.',
 	'grants.nothingToModel': 'Nothing here changes what the planner draws.',
-	'grants.notModeled': 'We don’t model this.',
+	'grants.notModeled': 'The Rotation Planner doesn’t show this.',
 	'grants.noHost': 'There’s nothing in this slot.'
 };
 
@@ -63,7 +65,7 @@ export const STATE_DESCRIPTION: Record<CoverageState, string> = {
 	lit: 'Measured or written into the kit.',
 	provisional: 'Drawn, but with a stand-in — the same yellow as the planner’s editor mark.',
 	missing: 'Described in the kit and not in the planner yet.',
-	notModeled: 'Left out on purpose; the reason is in the details.',
+	notModeled: 'Outside what the Rotation Planner shows; the reason is in the details.',
 	na: 'This part of the kit has nothing of that kind.'
 };
 

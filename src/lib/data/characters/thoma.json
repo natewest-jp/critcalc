@@ -271,7 +271,7 @@
 			],
 			"description": "When a character protected by Thoma's own Blazing Barrier (Thoma excluded) is attacked, Thoma's own Blazing Blessing CD is decreased by 3s, while his own Crimson Ooyoroi's CD is decreased by 3s.\nThis effect can be triggered once every 20s.",
 			"notModeled": {
-				"reason": "This triggers when an opponent attacks a shielded character, and we don't model incoming attacks."
+				"reason": "This triggers when an opponent attacks a shielded character, and the Rotation Planner doesn't model incoming attacks."
 			}
 		},
 		{
@@ -298,7 +298,7 @@
 			],
 			"description": "After using Crimson Ooyoroi, 15 Energy will be restored to Thoma.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{

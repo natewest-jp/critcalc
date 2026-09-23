@@ -512,7 +512,7 @@
 				}
 			],
 			"notModeled": {
-				"reason": "We don't model pickups or Bond of Life, so the Sourcewater Droplets this absorbs aren't drawn."
+				"reason": "The Rotation Planner doesn't model pickups or Bond of Life, so the Sourcewater Droplets this absorbs aren't drawn."
 			}
 		}
 	],
@@ -572,7 +572,7 @@
 			],
 			"description": "When Sigewinne performs healing, the amount healed for this instance is increased based on the total current value of the Bonds of Life on all party members: For each 1,000 HP worth of Bonds of Life, the outgoing healing is increased by 3%. The amount of healing provided can be increased by up to 30% in this way.",
 			"notModeled": {
-				"reason": "We don't model Bond of Life, and this healing bonus scales with it."
+				"reason": "The Rotation Planner doesn't model Bond of Life, and this healing bonus scales with it."
 			}
 		}
 	],

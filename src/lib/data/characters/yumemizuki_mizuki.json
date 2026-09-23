@@ -536,7 +536,7 @@
 			],
 			"description": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal, and will restore 5 Energy to Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration.",
 			"notModeled": {
-				"reason": "We don't model picking up Yumemi Style Special Snacks, so their healing, damage and Energy aren't shown."
+				"reason": "The Rotation Planner doesn't model picking up Yumemi Style Special Snacks, so their healing, damage and Energy aren't shown."
 			}
 		},
 		{
@@ -557,7 +557,7 @@
 			],
 			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl reaction DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%. Any Stellar Swirl reaction DMG dealt by these characters will also have its CRIT Rate and CRIT DMG increased by 10% and 20%, respectively.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only lets Swirl damage land critical hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only lets Swirl damage land critical hits."
 			}
 		}
 	],

@@ -259,7 +259,7 @@
 			],
 			"description": "While Zibai is in the **Lunar Phase Shift** mode, her Phase Shift Radiance gain rate is increased by 50%.\nAdditionally, Spirit Steed's Stride will change such that it will consume all Phase Shift Radiance. This will **elevate** the DMG dealt by this instance of Spirit Steed's Stride and the Lunar-Crystallize Reaction DMG dealt by Zibai within the next 3s by 1.6% for every point consumed above 70. This effect cannot stack.",
 			"notModeled": {
-				"reason": "We don't track Phase Shift Radiance, and this only raises damage by how much of it is spent."
+				"reason": "The Rotation Planner doesn't track Phase Shift Radiance, and this only raises damage by how much of it is spent."
 			}
 		}
 	],

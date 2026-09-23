@@ -291,7 +291,7 @@
 			],
 			"description": "When Ifa is in the Nightsoul's Blessing state, every Nightsoul point the party has above a total of 60 will grant Ifa 4 additional **Rescue Essentials** points.\nAdditionally, Ifa's Rescue Essentials limit is increased by 50.\nYou must first unlock the Ascension Talent **Field Medic's Vision**.",
 			"notModeled": {
-				"reason": "We don't track Nightsoul points or Rescue Essentials, which is all this constellation changes."
+				"reason": "The Rotation Planner doesn't track Nightsoul points or Rescue Essentials, which is all this constellation changes."
 			}
 		},
 		{
@@ -346,7 +346,7 @@
 			],
 			"description": "When Ifa uses the Hold version of his **Supporting Fire**, there is a 50% chance that he will fire an additional Tonicshot that deals 120% of Ifa's ATK as Anemo DMG. This DMG is considered Normal Attack DMG.\nAdditionally, when he is not in combat, Ifa will consume 20% less Nightsoul points and Phlogiston in his Nightsoul's Blessing state.",
 			"notModeled": {
-				"reason": "This extra shot fires on a 50% chance. We don't simulate chance, so the same rotation always draws the same bars for everyone."
+				"reason": "This extra shot fires on a 50% chance. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		}
 	],

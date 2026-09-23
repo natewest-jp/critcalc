@@ -285,7 +285,7 @@
 			],
 			"description": "When Enigmatic Feint's Enigma Thrust hits an opponent with Shadowsign, a vortex will be created at that opponent's position that will pull nearby opponents in.",
 			"notModeled": {
-				"reason": "We don't model pulling opponents together, which is all this constellation adds beyond its damage."
+				"reason": "The Rotation Planner doesn't model pulling opponents together, which is all this constellation adds beyond its damage."
 			}
 		},
 		{

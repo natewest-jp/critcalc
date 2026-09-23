@@ -190,7 +190,7 @@
 				"Not authored: Nightsoul-point regeneration mechanic. gcsim a1cb generates 20 Nightsoul points (delayed 20f) on Surging-Bite hit, capped at 2 procs per stance. Effect schema has no \"Nightsoul point\" stat; reviewer to decide whether the regeneration should be modelled as a stance-duration extension or skipped."
 			],
 			"notModeled": {
-				"reason": "We don't model pickups, so the Nightsoul points Mualani gets from Puffers don't lengthen her Nightsoul's Blessing."
+				"reason": "The Rotation Planner doesn't model pickups, so the Nightsoul points Mualani gets from Puffers don't lengthen her Nightsoul's Blessing."
 			}
 		},
 		{
@@ -202,7 +202,7 @@
 				"↻ RETIRED 2026-09-17 (T1 tranche, `manual` retirement): the `manual` damage skeleton (scaling 45 HP) is deleted. It never drew, and what it described is damage magnitude with no pixel — stacks gained on a team Nightsoul Burst (cap 3, 20s), spent as FlatDmg on her burst (0.15 × stacks × Max HP, gcsim)."
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Boomsharka-laka hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Boomsharka-laka hits."
 			}
 		}
 	],
@@ -218,7 +218,7 @@
 				"The out-of-combat Nightsoul-consumption reduction is a resource-pool effect not modelled in schema."
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard her first Sharky's Surging Bite hits."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard her first Sharky's Surging Bite hits."
 			}
 		},
 		{
@@ -279,7 +279,7 @@
 				"Modifier on C1: removes the once-per-stance gate (gcsim c6() resets c1Done=false on each Surging Bite, allowing repeated procs). No effect authored — depends on C1 representation; reviewer to thread once C1 is modelled."
 			],
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Sharky's Surging Bite hits, now on every bite."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Sharky's Surging Bite hits, now on every bite."
 			}
 		}
 	],

@@ -230,7 +230,7 @@
 			],
 			"description": "When a Fluffy Meowball fired by the **Purr-loined Treasure Flask** from the Elemental Skill Savvy Strategy: Splitting the Spoils hits an enemy, there is a 50% chance for it to bounce, dealing the corresponding Elemental DMG to nearby opponents.",
 			"notModeled": {
-				"reason": "This bounce happens on a 50% chance. We don't simulate chance, so the same rotation always draws the same bars for everyone."
+				"reason": "This bounce happens on a 50% chance. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		},
 		{
@@ -260,7 +260,7 @@
 			],
 			"description": "When a **Purrsonal Coordinated Assistance Robot** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter undergoes an Elemental Conversion, Jahoda will recover 4 Elemental Energy.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		},
 		{

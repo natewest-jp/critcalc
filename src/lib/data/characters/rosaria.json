@@ -280,7 +280,7 @@
 			],
 			"description": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s.",
 			"notModeled": {
-				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — this triggers on CRIT hits."
+				"reason": "This triggers on CRIT hits. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		},
 		{
@@ -307,7 +307,7 @@
 			],
 			"description": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast.",
 			"notModeled": {
-				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — this Energy is restored on CRIT hits."
+				"reason": "This Energy is restored on CRIT hits. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		},
 		{

@@ -154,7 +154,7 @@
 			],
 			"description": "When the Elemental Skill Spirit Reins, Shadow Hunt's Multitarget Fire is being charged, if there are party members who meet the Elemental Conversion Type requirements, gain the following effects based on the number of different eligible Elemental Types present:\n·There is a 33.3%/66.7%/100% chance for each Type to trigger \"Spiritbinding Conversion\" and cause the 3rd Shadowhunt Shell loaded into the cylinder to be randomly converted into a Shining Shadowhunt Shell from one of the corresponding Elemental Types.\n·Each Elemental Type will grant Chasca 1 stack of Spirit of the Radiant Shadow, increasing the DMG of Shining Shadowhunt Shell by 15%/35%/65%. This effect lasts until the current Multitarget Fire ends. Max 3 stacks.",
 			"notModeled": {
-				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — Spiritbinding Conversion is a chance. The stacks only raise Shining Shadowhunt Shell damage, which we don't draw."
+				"reason": "Spiritbinding Conversion is a chance. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone. The stacks only raise Shining Shadowhunt Shell damage, which the Rotation Planner doesn't draw."
 			}
 		},
 		{
@@ -178,7 +178,7 @@
 			],
 			"description": "When triggering the Ascension Talent \"Bullet Trick\"'s \"Spiritbinding Conversion,\" the 2nd Shadowhunt Shell loaded into the cylinder will be additionally converted into a Shining Shadowhunt Shell.\nThe chance to trigger \"Spiritbinding Conversion\" is increased: If there are party members who meet the Elemental Conversion Type requirements, the chance to trigger \"Spiritbinding Conversion\" is increased by 33.3%, up to a maximum of 100%.\n\nYou must first unlock the Ascension Talent \"Bullet Trick.\"\nIn addition, Chasca's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30% while out of combat.",
 			"notModeled": {
-				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — the extra Shining Shadowhunt Shell depends on Spiritbinding Conversion, which is a chance."
+				"reason": "The extra Shining Shadowhunt Shell depends on Spiritbinding Conversion, which is a chance. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		},
 		{

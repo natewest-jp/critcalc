@@ -247,7 +247,9 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"description": "Increases the maximum number of Rain Swords by 1.",
-			"nothingToModel": true
+			"notModeled": {
+				"reason": "The Rotation Planner doesn’t draw how many Rain Swords are up, which is all this adds."
+			}
 		},
 		{
 			"id": "xingqiu__constellation__rainbow_upon_the_azure_sky",

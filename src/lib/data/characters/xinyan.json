@@ -204,7 +204,7 @@
 			"abilityType": "passive",
 			"description": "Decreases the number of opponents Sweeping Fervor must hit to trigger each level of shielding.\n·Shield Level 2: Lead-In requirement reduced to 1 opponent hit.\n·Shield Level 3: Rave requirement reduced to 2 opponents hit or more.",
 			"notModeled": {
-				"reason": "Shield level depends on how many opponents the swing hits, and we model a single opponent."
+				"reason": "Shield level depends on how many opponents the swing hits, and the Rotation Planner models a single opponent."
 			}
 		},
 		{
@@ -228,7 +228,7 @@
 			],
 			"description": "Upon scoring a CRIT Hit, increases ATK SPD of Xinyan's Normal and Charged Attacks by 12% for 5s.\nCan only occur once every 5s.",
 			"notModeled": {
-				"reason": "We don't model attack speed, and this triggers on CRIT hits, which we don't simulate."
+				"reason": "The Rotation Planner doesn't model attack speed, and this triggers on CRIT hits, which it doesn't simulate."
 			}
 		},
 		{

@@ -255,7 +255,7 @@
 			],
 			"description": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration.",
 			"notModeled": {
-				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
 			}
 		}
 	],
@@ -270,7 +270,7 @@
 			],
 			"description": "The Elemental Skill Night's Sling's Spirit Orb can bounce 2 additional times.\nAdditionally, after the Spirit Orb hits an opponent, it will apply the Nighttide effect to them for 12s. Opponents affected by Nighttide take 50% increased DMG from Hypersense triggered by the Ascension Talent, \"Nightshade Synesthesia.\" You must first unlock the Ascension Talent \"Nightshade Synesthesia.\"",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and Nighttide only raises how hard Hypersense hits. The extra bounces need more opponents than the one we model."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and Nighttide only raises how hard Hypersense hits. The extra bounces need more opponents than the one the Rotation Planner models."
 			}
 		},
 		{

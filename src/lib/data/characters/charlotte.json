@@ -295,7 +295,7 @@
 			"abilityType": "passive",
 			"description": "When opponents marked by \"Focused Impression\" are defeated, Framing: Freezing Point Composition's CD will be decreased by 2s. This CD decrease can be triggered 4 times every 12s.",
 			"notModeled": {
-				"reason": "We don't model opponents being defeated, so this cooldown reduction can't trigger."
+				"reason": "The Rotation Planner doesn't model opponents being defeated, so this cooldown reduction can't trigger."
 			}
 		},
 		{
@@ -379,7 +379,7 @@
 			],
 			"description": "When Still Photo: Comprehensive Confirmation hits an opponent marked by Snappy Silhouette or Focused Impression, it will deal 10% more DMG and restore 2 Energy to Charlotte. This restoration can be triggered 5 times every 20s.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts or track energy, and this only makes Still Photo: Comprehensive Confirmation hit harder and restore Energy."
+				"reason": "The Rotation Planner doesn't draw damage amounts or track energy, and this only makes Still Photo: Comprehensive Confirmation hit harder and restore Energy."
 			}
 		},
 		{

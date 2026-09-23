@@ -408,7 +408,10 @@
 			"name": "Impasse Conqueror",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%."
+			"description": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%.",
+			"notModeled": {
+				"reason": "This needs Bennett’s HP below 70%, and the Rotation Planner doesn’t track HP."
+			}
 		},
 		{
 			"id": "bennett__constellation__unstoppable_fervor",

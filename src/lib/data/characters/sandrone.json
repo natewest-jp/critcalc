@@ -79,7 +79,7 @@
 			],
 			"description": "**Radiance: Stellar Glimmer**: When using the Elemental Skill **Formule Phenomenale: Differential Analysis**, if Fagio's **Decoding Power** is greater than 50, the second Prism Shot fired by Fagio at nearby opponents will deal 400% of its original DMG as Fagio's Decoding Power is decreased.\nAdditionally, for every 10 points of Decoding Power Fagio loses, it gains 1 stack of Refined Tactics for 60s (max 10 stacks). When Sandrone uses the Elemental Burst **Formule Phenomenale: Q.E.D.** while in the Radiance: Stellar Glimmer state, all stacks of Refined Tactics are cleared, causing the Convective Inhibition Ray to deal 100% + (number of stacks cleared) × 10% of its original DMG.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises how hard Fagio's second Prism Shot and the Convective Inhibition Ray hit."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Fagio's second Prism Shot and the Convective Inhibition Ray hit."
 			}
 		},
 		{
@@ -187,7 +187,7 @@
 			],
 			"description": "Radiance: Stellar Glimmer: Increases CRIT DMG from Charged Attack condensed beams by 40%. Also, each time a beam is fired, CRIT DMG dealt by all condensed beams fired during this **Decoding** mode period will be further increased by 20%. Max 3 stacks.",
 			"notModeled": {
-				"reason": "We don't draw damage amounts, and this only raises the CRIT DMG of Fagio's condensed beams."
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises the CRIT DMG of Fagio's condensed beams."
 			}
 		},
 		{

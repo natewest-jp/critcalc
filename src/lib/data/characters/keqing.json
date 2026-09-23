@@ -210,7 +210,7 @@
 			],
 			"description": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s.",
 			"notModeled": {
-				"reason": "This makes an Energy particle on a 50% chance. We don't simulate chance, so the same rotation always draws the same bars for everyone."
+				"reason": "This makes an Energy particle on a 50% chance. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
 			}
 		},
 		{
