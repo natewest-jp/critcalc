@@ -24,7 +24,7 @@ export const LINE_TEXT: Record<CoverageLineCode, string> = {
 		'Timed from a gcsim change that hasn’t been merged yet, so these frames may still move.',
 	'frames.wiki': 'Timed from wiki frame counts rather than gcsim.',
 	'frames.hand': 'Timed from frame counts measured by hand rather than gcsim.',
-	'frames.none': 'There is no frame data for this yet, so the planner uses a generic length.',
+	'frames.none': 'There is no frame data for this yet, so the Planner uses a generic length.',
 	'frames.someForms': 'Some forms have no frame data and use a generic length.',
 	'charged.generic':
 		'This kit has no charged-attack frames, so C is timed with a generic stand-in.',
@@ -45,10 +45,10 @@ export const LINE_TEXT: Record<CoverageLineCode, string> = {
 	'grants.summonSilent': 'Its summon’s window is drawn, but its hits aren’t yet.',
 	'grants.summonDealsNothing': 'Its summon is drawn; it deals no damage of its own.',
 	'grants.noReader':
-		'Part of this waits on healing, energy or HP changes, which the planner doesn’t track, so it isn’t drawn.',
+		'Part of this waits on healing, energy or HP changes, which the Planner doesn’t track, so it isn’t drawn.',
 	'grants.unknownValue': 'Its exact value isn’t known yet, so the bar is drawn without one.',
-	'grants.none': 'This hasn’t been added to the planner yet.',
-	'grants.nothingToModel': 'Nothing here changes what the planner draws.',
+	'grants.none': 'This hasn’t been added to the Planner yet.',
+	'grants.nothingToModel': 'Nothing here changes what the Planner draws.',
 	'grants.notModeled': 'The Rotation Planner doesn’t show this.',
 	'grants.noHost': 'There’s nothing in this slot.'
 };
@@ -62,11 +62,11 @@ export const STATE_LABEL: Record<CoverageState, string> = {
 };
 
 export const STATE_DESCRIPTION: Record<CoverageState, string> = {
-	lit: 'Measured or written into the kit.',
-	provisional: 'Drawn, but with a stand-in — the same yellow as the planner’s editor mark.',
-	missing: 'Described in the kit and not in the planner yet.',
-	notModeled: 'Outside what the Rotation Planner shows; the reason is in the details.',
-	na: 'This part of the kit has nothing of that kind.'
+	lit: 'Drawn by the Planner.',
+	provisional: 'Drawn with a stand-in.',
+	missing: 'In the kit, not yet in the Planner.',
+	notModeled: 'Outside the Planner’s scope; the details say why.',
+	na: 'Nothing of that kind in the kit.'
 };
 
 /** Column headers — the ONLY labels on the strip (rows carry none). */
