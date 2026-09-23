@@ -141,7 +141,8 @@
 						"Hold variant read by hand from PR #2677 skill.go (skillHoldFrames = InitAbilSlice(58); N/Q 50, D 50, J 49, swap 49; hitmark 36; SetCDWithDelay(15*60, 33)). The migration does not seed variants. Effects inherit the base (Hold only aims Aedon; ICDTagNone, 25 durability — same shape as Tap)."
 					]
 				}
-			]
+			],
+			"modeledBy": "illuga__passive__torchforgers_covenant"
 		},
 		{
 			"id": "illuga__burst__shadowless_reflection",
@@ -425,6 +426,8 @@
 	],
 	"meta": {
 		"source": "genshin-db",
-		"generatedAt": "2026-04-06T11:45:40.699Z"
-	}
+		"generatedAt": "2026-04-06T11:45:40.699Z",
+		"framesSource": "gcsim-pr"
+	},
+	"release": "6.3"
 }

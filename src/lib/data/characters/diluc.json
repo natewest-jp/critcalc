@@ -84,7 +84,14 @@
 				"Particle generation: 1 Pyro particle per cast (33% chance of 2), gated by a 0.3s particle ICD across the chain (gcsim particleICDKey). Not modeled as an effect; reviewer to wire energy generation if needed.",
 				"Generator stub had `behavior: 'stance'`; corrected to 'instant' — Diluc does not replace N or charge during the chain window."
 			],
-			"application": [{ "frame": 24, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 24,
+					"element": "pyro",
+					"units": 1
+				}
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e2",
@@ -101,7 +108,14 @@
 			"_curatorNotes": [
 				"chainStage(skill, 1, window: 4) — fires when chain position is 1 (after E1, within 4s). After firing, parser advances to chain index 2 with another 4s window."
 			],
-			"application": [{ "frame": 28, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 28,
+					"element": "pyro",
+					"units": 1
+				}
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e3",
@@ -119,7 +133,14 @@
 				"chainStage(skill, 2) — terminal stage; no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's behavior of deleting eWindowKey + resetting eCounter to 0 after E3.",
 				"swap=66 sourced via the InitAbilSlice-arg-as-swap exception — no explicit ActionSwap line follows skillFrames[2]'s init in gcsim. N=58 is included because skillFrames[2] is the only one of the three stages that explicitly sets ActionAttack."
 			],
-			"application": [{ "frame": 46, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 46,
+					"element": "pyro",
+					"units": 1
+				}
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "diluc__burst__dawn",
@@ -165,7 +186,8 @@
 			"description": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s.",
 			"_curatorNotes": [
 				"No effects authored. Pattern 5 (stamina-cost / damage modifier with no animation change). Stamina is not modeled in the planner, and the +3s CA duration is also stamina-related. Both parts are practically inert in the planner. Reviewer to confirm no schema action is needed."
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "diluc__passive__blessing_of_phoenix",
@@ -229,7 +251,10 @@
 			"description": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s.\nThis effect can stack up to 3 times and can only occur once every 1.5s.",
 			"_curatorNotes": [
 				"No effect authored. Pattern: stack-on-hit buff (max 3 stacks) granting +10% ATK + 5% ATK SPD per stack, 10s duration, 1.5s ICD between stack additions. Likely trigger: `onPlayerHit` (gcsim subscribes to event.OnPlayerHit) with `target: self`, `duration: 10`, `value: 10` (atk%) per stack and `value: 5` (atkspd%) per stack, `procCooldown: 1.5`, max 3 stacks. Schema has no stack-count concept on effects; reviewer to decide whether to extend or to model as a single 30%/15% buff with caveats."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model Diluc taking damage, so this ATK bonus can't trigger."
+			}
 		},
 		{
 			"id": "diluc__constellation__fire_and_steel",
@@ -246,7 +271,10 @@
 			"description": "Casting Searing Onslaught in rhythm greatly increases damage dealt.\n2s after casting Searing Onslaught, casting the next Searing Onslaught in the combo deals 40% additional DMG. This effect lasts for 2s.",
 			"_curatorNotes": [
 				"No effect authored. Conditional skill DMG buff: +40% DMG to the next Searing Onslaught cast, but only if cast in a 2s window starting 2s after the prior cast (i.e. 2s–4s post-cast). Likely target: self, conditional ability: 'skill'. Schema has no 'time-since-prior-skill' condition. gcsim implementation: AddAttackMod with key 'diluc-c4-dmg' on a 120-frame timer queued at hitmark+120. Reviewer to model."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the next Searing Onslaught hits."
+			}
 		},
 		{
 			"id": "diluc__constellation__phoenix_harbinger_of_dawn",
@@ -271,5 +299,6 @@
 		"generatedAt": "2026-04-06T11:45:40.690Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.0"
 }

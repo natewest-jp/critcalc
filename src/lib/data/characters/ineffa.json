@@ -431,5 +431,6 @@
 	},
 	"_curatorNotes": [
 		"AUTHORED 2026-08-31: C1 \"Increases Lunar-Charged DMG by 2.5% for every 100 ATK Ineffa has, up to a maximum of 50%.\" ⚠️ Needed NO new schema — no threshold — it was simply left as an `unknown` placeholder. Found by the offset census rather than caused by it."
-	]
+	],
+	"release": "5.8"
 }

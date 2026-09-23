@@ -177,7 +177,8 @@
 					"element": "geo",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -213,7 +214,10 @@
 			"_curatorNotes": [
 				"Not a standalone hit — this A4 adds +20% of Kachina's DEF to Turbo Twirly's slam DMG. Modeled where it takes effect: folded into the skill summon's summonTick via flatScaling { stat: def, ratio: 20 } (see kachina__skill__go_go_turbo_twirly). Replaced an earlier stub that modeled it as a phantom 20%-DEF damage effect on the passive itself, which misrepresented it as a separate attack."
 			],
-			"description": "Turbo Twirly's DMG is increased by 20% of Kachina's DEF."
+			"description": "Turbo Twirly's DMG is increased by 20% of Kachina's DEF.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Turbo Twirly hits."
+			}
 		}
 	],
 	"constellations": [
@@ -222,7 +226,10 @@
 			"name": "Shards Are Gems Too",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "When Kachina mounts or dismounts Turbo Twirly, she will absorb nearby Elemental Shards created by Crystallize.\nAdditionally, when a party member picks up such a Shard, or triggers Lunar-Crystallize reactions, 3 Energy will be restored to Kachina. Energy can be restored this way once every 5s."
+			"description": "When Kachina mounts or dismounts Turbo Twirly, she will absorb nearby Elemental Shards created by Crystallize.\nAdditionally, when a party member picks up such a Shard, or triggers Lunar-Crystallize reactions, 3 Energy will be restored to Kachina. Energy can be restored this way once every 5s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "kachina__constellation__never_leave_home_without_turbo_twirly",
@@ -299,6 +306,8 @@
 	],
 	"meta": {
 		"source": "genshin-db",
-		"generatedAt": "2026-04-06T11:45:40.701Z"
-	}
+		"generatedAt": "2026-04-06T11:45:40.701Z",
+		"framesSource": "gcsim-pr"
+	},
+	"release": "5.0"
 }

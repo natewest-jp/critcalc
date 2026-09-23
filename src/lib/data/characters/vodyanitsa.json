@@ -55,7 +55,10 @@
 			"tags": [],
 			"effects": [],
 			"description": "Leads a song of the Water Imps which lures its listeners to their doom. This deals AoE Hydro DMG to the opponent.\nWhen in the **Song of Ages Past** state, DMG dealt is further increased.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Koda: Sink With Thee hits."
+			}
 		}
 	],
 	"passives": [
@@ -103,7 +106,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"effects": [],
-			"description": "When Vodyanitsa triggers the healing effect of **Song of Ages Past**, an additional effect will be triggered based on the healed character's HP.\n· If the character's HP is below 40%: The healing is increased by 50%; and\n· If the character's HP is 40% or above: Vodyanitsa's Max HP is increased by 20% for 6s. Max 3 stacks, and each stack's duration is counted independently."
+			"description": "When Vodyanitsa triggers the healing effect of **Song of Ages Past**, an additional effect will be triggered based on the healed character's HP.\n· If the character's HP is below 40%: The healing is increased by 50%; and\n· If the character's HP is 40% or above: Vodyanitsa's Max HP is increased by 20% for 6s. Max 3 stacks, and each stack's duration is counted independently.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw effects triggered by healing or track HP, which is all this depends on."
+			}
 		},
 		{
 			"id": "vodyanitsa__constellation__together_down_into_the_deep",
@@ -125,5 +131,6 @@
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-09-22T03:41:08.914Z"
-	}
+	},
+	"release": "7.1"
 }

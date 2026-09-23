@@ -103,7 +103,8 @@
 				{
 					"label": "Rain Swords",
 					"duration": 15,
-					"mobility": "follows"
+					"mobility": "follows",
+					"dealsNothing": true
 				}
 			],
 			"noICD": true,
@@ -235,7 +236,8 @@
 			"id": "xingqiu__passive__flash_of_genius",
 			"name": "Flash of Genius",
 			"abilityType": "passive",
-			"description": "When Xingqiu crafts Character Talent Materials, he has a 25% chance to refund a portion of the crafting materials used."
+			"description": "When Xingqiu crafts Character Talent Materials, he has a 25% chance to refund a portion of the crafting materials used.",
+			"nothingToModel": true
 		}
 	],
 	"constellations": [
@@ -244,7 +246,10 @@
 			"name": "The Scent Remained",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Increases the maximum number of Rain Swords by 1."
+			"description": "Increases the maximum number of Rain Swords by 1.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn’t draw how many Rain Swords are up, which is all this adds."
+			}
 		},
 		{
 			"id": "xingqiu__constellation__rainbow_upon_the_azure_sky",
@@ -311,5 +316,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.730Z",
 		"curatedAt": "2026-04-09"
-	}
+	},
+	"release": "1.0"
 }

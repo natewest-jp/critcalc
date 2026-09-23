@@ -279,7 +279,8 @@
 			"id": "diona__passive__cats_tail_secret_menu",
 			"name": "Cat's Tail Secret Menu",
 			"abilityType": "passive",
-			"description": "Characters shielded by Icy Paws have their Movement SPD increased by 10% and their Stamina Consumption decreased by 10%."
+			"description": "Characters shielded by Icy Paws have their Movement SPD increased by 10% and their Stamina Consumption decreased by 10%.",
+			"nothingToModel": true
 		},
 		{
 			"id": "diona__passive__drunkards_farce",
@@ -288,7 +289,8 @@
 			"_curatorNotes": [
 				"A4 is NOT implemented in gcsim (asc.go comment: 'A4 is not implemented'). No authoritative trigger/timing data — the generator placeholder (atk% -10 on self) was removed. Re-author if gcsim coverage lands."
 			],
-			"description": "Opponents who enter the AoE of Signature Mix have 10% decreased ATK for 15s."
+			"description": "Opponents who enter the AoE of Signature Mix have 10% decreased ATK for 15s.",
+			"nothingToModel": true
 		},
 		{
 			"id": "diona__passive__choice_treasures",
@@ -336,7 +338,10 @@
 				"C2: +15% Icy Paws DMG (Elemental Art DMG bonus via AddAttackMod checking AttackTagElementalArt in gcsim) and +15% shield DMG Absorption — damage and absorption magnitude, no bar to move.",
 				"⛔ The 5s splash shield is CO-OP and stays unmodelled (2026-09-17, T1.5; ⚓ the Nicole C2 ruling, Kirara C2 is the house form). It goes to \"OTHER nearby characters ON THE FIELD\": in single-player the only character on the field is the one who cast the paws, and \"other\" excludes her — the plural only has members when several players each field a character. gcsim implements no splash shield. The essential-characters backlog (§3 T1.5) filed it as authorable; authoring it would draw a second shield bar the single-player game never grants."
 			],
-			"description": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s."
+			"description": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts or shield strength, and this only strengthens Icy Paws and its shield. The shield it gives other characters only exists in co-op."
+			}
 		},
 		{
 			"id": "diona__constellation__aanother_round",
@@ -493,5 +498,6 @@
 		"generatedAt": "2026-04-06T11:45:40.690Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.1"
 }

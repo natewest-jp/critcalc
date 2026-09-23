@@ -64,7 +64,8 @@
 			"tags": [],
 			"effects": [],
 			"description": "In line with established ladylike behavior, Sandrone summons a large number of Prismatic Resonance Cannons for a frontal bombardment before firing on her foes with a Convective Inhibition Ray, dealing AoE Cryo DMG.\n**Radiance: Stellar Glimmer**: The Convective Inhibition Ray instead deals AoE Cryo DMG that is considered the corresponding Stellar Glimmer reaction DMG.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -76,7 +77,10 @@
 				"A1 (self-damage amplification, not modeled). Two intertwined mechanics both ride on untracked state: (a) the enhanced second Prism Shot (400% of its DMG) is gated on Fagio's Decoding Power > 50 and being in the Radiance: Stellar-Conduct state — Decoding Power is a continuous resource the planner does not simulate; (b) Refined Tactics stacks accrue per 10 Decoding Power lost (max 10, 60s) and, on a Radiance-state burst, boost the Convective Inhibition Ray to 100% + stacks×10% of its DMG. No primitive tracks Decoding-Power loss, and the amp lands on Sandrone's own on-field burst hit (FrameMap territory, and Sandrone is frameless). Left unauthored.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Both halves are pure damage MAGNITUDE (a shot dealing 400% of its DMG; a ray dealing 100%+stacks×10%). The tool renders no damage numbers anywhere by constitution, so there is no bar, marker or value that reads wrong — nothing on screen changes whether these exist or not. Category: invisible-omission."
 			],
-			"description": "**Radiance: Stellar Glimmer**: When using the Elemental Skill **Formule Phenomenale: Differential Analysis**, if Fagio's **Decoding Power** is greater than 50, the second Prism Shot fired by Fagio at nearby opponents will deal 400% of its original DMG as Fagio's Decoding Power is decreased.\nAdditionally, for every 10 points of Decoding Power Fagio loses, it gains 1 stack of Refined Tactics for 60s (max 10 stacks). When Sandrone uses the Elemental Burst **Formule Phenomenale: Q.E.D.** while in the Radiance: Stellar Glimmer state, all stacks of Refined Tactics are cleared, causing the Convective Inhibition Ray to deal 100% + (number of stacks cleared) × 10% of its original DMG."
+			"description": "**Radiance: Stellar Glimmer**: When using the Elemental Skill **Formule Phenomenale: Differential Analysis**, if Fagio's **Decoding Power** is greater than 50, the second Prism Shot fired by Fagio at nearby opponents will deal 400% of its original DMG as Fagio's Decoding Power is decreased.\nAdditionally, for every 10 points of Decoding Power Fagio loses, it gains 1 stack of Refined Tactics for 60s (max 10 stacks). When Sandrone uses the Elemental Burst **Formule Phenomenale: Q.E.D.** while in the Radiance: Stellar Glimmer state, all stacks of Refined Tactics are cleared, causing the Convective Inhibition Ray to deal 100% + (number of stacks cleared) × 10% of its original DMG.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Fagio's second Prism Shot and the Convective Inhibition Ray hit."
+			}
 		},
 		{
 			"id": "sandrone__passive__light_of_rationalisme",
@@ -181,7 +185,10 @@
 				"C2 NOT modeled (self-only): +40% CRIT DMG on Charged Attack condensed beams, plus +20% per beam fired this Decoding period (max 3 stacks). Scopes to condensed-beam charged-attack hits only and is gated on the Radiance: Stellar-Conduct state; there is no beam-specific critDmg stat, and the beams are Sandrone's own on-field damage (FrameMap territory, frameless). Left unauthored. Re-verified against the Fandom constellation page 2026-07-29 — values unchanged.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — C2 has empty `effects`, so nothing draws — but nothing is missing either: the bonus is scoped to condensed-beam hits, and the beams belong to Fagio, which does not exist on the timeline at all. It is a CRIT DMG modifier on a damage instance we never render, disclosed on top of the Fagio caveat that already covers the absence. Category: invisible-omission."
 			],
-			"description": "Radiance: Stellar Glimmer: Increases CRIT DMG from Charged Attack condensed beams by 40%. Also, each time a beam is fired, CRIT DMG dealt by all condensed beams fired during this **Decoding** mode period will be further increased by 20%. Max 3 stacks."
+			"description": "Radiance: Stellar Glimmer: Increases CRIT DMG from Charged Attack condensed beams by 40%. Also, each time a beam is fired, CRIT DMG dealt by all condensed beams fired during this **Decoding** mode period will be further increased by 20%. Max 3 stacks.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises the CRIT DMG of Fagio's condensed beams."
+			}
 		},
 		{
 			"id": "sandrone__constellation__refuse_the_wake_of_dusk_the_moonlit_yoke",
@@ -256,5 +263,6 @@
 		"Fagio (summoned by Charged Attack) 'periodically fires condensed beams' but no official firing interval is stated (a secondary guide guessed ~1/s; unverified), so no summon/summonTick is authored — never fake cadence. Fagio is an on-field-driven carry mechanism (Decoding Power decays 300% faster while Sandrone is off-field), not an autonomous off-field summon, so it grants no off-field-DMG capability.",
 		"Still unauthored after the Stellar pass: C1's +30% Stellar-Conduct DMG (Reaction Bonus bucket — no primitive), C2/C4/C6 damage magnitudes, A1's Decoding-Power amplifiers, and the Radiance: Stellar-Conduct state itself (no field-presence primitive). Each carries a caveat on its own node. No heal, shield, cleanse, or grouping in the kit (external healers/shielders required per every source).",
 		"↻ 7.0 RE-AUTHOR 2026-08-31 (genshin-db 5.2.13). HoYo generalised every \"Stellar-Conduct\" reference in this kit to \"Stellar Glimmer\" — the umbrella covering Stellar-Conduct AND Stellar Swirl — and split the numbers where the two differ. Descriptions re-synced from genshin-db; stats re-keyed to the umbrella family."
-	]
+	],
+	"release": "6.7"
 }

@@ -464,6 +464,9 @@ function abilityHasStanceBehavior(c: CharacterData): boolean {
 // Per-character lint
 // ---------------------------------------------------------------------------
 
+/** `CharacterMeta.framesSource`'s members (lint E.31). */
+const FRAMES_SOURCES = ['gcsim', 'gcsim-pr', 'wiki', 'hand'];
+
 export function lintCharacter(c: CharacterData): LintIssue[] {
 	const issues: LintIssue[] = [];
 	const push = (sev: Severity, check: string, message: string, abilityId?: string) =>
@@ -475,6 +478,15 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		(a) => a.abilityType === 'skill' || a.abilityType === 'burst'
 	);
 	if (!hasNormal) push('strict', 'missing-normal', 'character has no normal-attack ability');
+
+	// (E.31) frames provenance is a closed vocabulary (coverage round §5.3).
+	const fs = (c.meta as { framesSource?: unknown } | undefined)?.framesSource;
+	if (fs !== undefined && !FRAMES_SOURCES.includes(fs as string))
+		push(
+			'strict',
+			'frames-source-value',
+			`meta.framesSource "${String(fs)}" is not one of ${FRAMES_SOURCES.join(' / ')}`
+		);
 	if (!hasSkillOrBurst)
 		push('warn', 'missing-cast-ability', 'character has no skill or burst ability');
 
@@ -1084,6 +1096,62 @@ function lintAbility(
 				);
 			}
 		}
+	}
+
+	// (E.29) The coverage page's two positive statements (docs/coverage-round.md
+	// §5.1, §6). A ruling and "nothing to model" each REPLACE authored effects,
+	// so a host carrying either beside `effects` says two things at once — and
+	// the page would believe whichever it read first. A ruling's `reason` is
+	// rendered, so it follows the caveat style guide.
+	const nm = (a as { notModeled?: unknown }).notModeled;
+	const ntm = (a as { nothingToModel?: unknown }).nothingToModel;
+	const hasEffects = ((a as { effects?: unknown[] }).effects ?? []).length > 0;
+	if (nm !== undefined) {
+		const reason = (nm as { reason?: unknown })?.reason;
+		if (typeof reason !== 'string' || reason.trim().length === 0) {
+			push('strict', 'not-modeled-shape', `notModeled must be { reason: string }`, a.id);
+		} else {
+			for (const issue of caveatStyleIssues(reason)) {
+				push(issue.severity, 'not-modeled-style', issue.message, a.id);
+			}
+		}
+		if (hasEffects)
+			push('strict', 'not-modeled-with-effects', `notModeled beside authored effects`, a.id);
+	}
+	if (ntm !== undefined) {
+		if (ntm !== true) push('strict', 'nothing-to-model-shape', `nothingToModel must be true`, a.id);
+		if (hasEffects)
+			push(
+				'strict',
+				'nothing-to-model-with-effects',
+				`nothingToModel beside authored effects`,
+				a.id
+			);
+		if (nm !== undefined)
+			push('strict', 'nothing-to-model-with-ruling', `nothingToModel beside notModeled`, a.id);
+	}
+
+	// (E.29b) `modeledBy` points at ANOTHER host of this character, and says
+	// the same thing as authored effects or a ruling would, so never beside one.
+	const mb = (a as { modeledBy?: unknown }).modeledBy;
+	if (mb !== undefined) {
+		const ids = new Set(
+			[...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])].map((h) => h.id)
+		);
+		if (typeof mb !== 'string' || !ids.has(mb) || mb === a.id)
+			push(
+				'strict',
+				'modeled-by-target',
+				`modeledBy "${String(mb)}" is not another host of this character`,
+				a.id
+			);
+		if (hasEffects || nm !== undefined || ntm !== undefined)
+			push(
+				'strict',
+				'modeled-by-with-statement',
+				`modeledBy beside effects, notModeled or nothingToModel`,
+				a.id
+			);
 	}
 
 	// (E.25) description doesn't contain implementation phrases
@@ -2088,6 +2156,24 @@ function lintSummonEffects(
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
 ): void {
 	for (const s of a.summons ?? []) {
+		// (E.30) `dealsNothing` is the positive statement that a summon has no
+		// damage of its own (coverage round §5.2) — it cannot sit beside one.
+		if (s.dealsNothing !== undefined) {
+			if (s.dealsNothing !== true)
+				push(
+					'strict',
+					'deals-nothing-shape',
+					`summon "${s.label}" dealsNothing must be true`,
+					a.id
+				);
+			if ((s.effects ?? []).some((e) => e.type === 'damage'))
+				push(
+					'strict',
+					'deals-nothing-with-damage',
+					`summon "${s.label}" dealsNothing beside a damage effect`,
+					a.id
+				);
+		}
 		for (const eff of s.effects ?? []) {
 			const location = `${a.id} summon "${s.label}"`;
 			lintEffect(c, location, eff, push, { isPassiveOrConstellation: false, isSummon: true });

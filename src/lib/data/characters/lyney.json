@@ -212,7 +212,10 @@
 				"Condition: Lyney must have been above 60% HP at Prop Arrow cast time (propSurplusHPDrainThreshold=0.6). Fires at most once per Hat lifetime (done=true guard).",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: — Perilous Performance — effects[0] (damage 80% atk) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/lyney/asc.go:31-37` (`addA1`) — the bonus is `ai.Mult += 0.8` folded into the Grin-Malkin Hat's own Pyrotechnic Strike (`grinmalkinhat.go:37-47`, `AttackTagExtra`), not a separate instance; `asc.go:14-29` (`makeA1CB`) grants the +3 Energy once per Hat (`done` guard), gated on `hpDrained` and Ascension ≥ 1. Retained: the +80% ATK is a multiplier add-on to the Hat's Pyrotechnic Strike (`addA1`), not a damage instance; the +3 Energy fires once per Hat lifetime on its first enemy hit; the gate is Lyney above 60% HP at the Prop Arrow cast (`propSurplusHPDrainThreshold = 0.6`), and the Prop Arrow's Hat is itself unauthored (the schema has no `summons[]` on `chargeHits`). ⚠️ This looks like a CONVERT (`chargeFlatDmg`, scaling atk ratio 80) and is not one. The Hat's strike is `AttackTagExtra`, the same class as Lyney's aimed shots, his Prop Arrow and the C6 Reprised — so a class-wide stat would print the bonus on every charged attack he makes, when it lands on one hit of one Hat, once, only after an HP-draining Prop Arrow. That is the brief's named over-claim case. The +3 Energy has no trigger either: the Hat is unauthored, so there is no hit stream to hang an `onHit` on, and `energy` self-target reaches no planner surface and no TB chip."
 			],
-			"description": "If Lyney consumes HP when firing off a Prop Arrow, the Grin-Malkin hat summoned by the arrow will, upon hitting an opponent, restore 3 Energy to Lyney and increase DMG dealt by 80% of his ATK."
+			"description": "If Lyney consumes HP when firing off a Prop Arrow, the Grin-Malkin hat summoned by the arrow will, upon hitting an opponent, restore 3 Energy to Lyney and increase DMG dealt by 80% of his ATK.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track energy or draw damage amounts, and this only restores Energy and raises how hard the Grin-Malkin Hat's Pyrotechnic Strike hits."
+			}
 		},
 		{
 			"id": "lyney__passive__conclusive_ovation",
@@ -307,5 +310,6 @@
 		"generatedAt": "2026-04-06T11:45:40.709Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "4.0"
 }

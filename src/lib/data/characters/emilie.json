@@ -407,5 +407,6 @@
 	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.692Z" },
 	"_curatorNotes": [
 		"Frames pass 2026-07-12 (first stage-4 run of the ingestion recipe): all FrameMaps from gcsim source at ~/Code/gcsim/internal/characters/emilie/ (attack/charge/skill/burst.go). CDs (14/13.5), energy (50), and durations (22/2.8) confirmed against gcsim gen arrays + talent sidecar. Plunge frames omitted — not rotation-relevant. Passive/constellation effects (scent mechanics, A1/A4 self-buffs, C-effects) remain uncurated — kit-text only."
-	]
+	],
+	"release": "4.8"
 }

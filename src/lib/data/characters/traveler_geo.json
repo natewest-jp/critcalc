@@ -85,7 +85,8 @@
 							"value": 10,
 							"conditions": { "type": "constellation", "level": 6 }
 						}
-					]
+					],
+					"dealsNothing": true
 				}
 			],
 			"variants": [
@@ -307,5 +308,6 @@
 		"source": "gcsim",
 		"generatedAt": "2026-05-08T00:00:00.000Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"release": "1.0"
 }

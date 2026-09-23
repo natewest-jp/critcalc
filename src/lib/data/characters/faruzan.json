@@ -346,7 +346,10 @@
 			"name": "Divine Comprehension",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "The vortex created by Pressurized Collapses will restore Energy to Faruzan based on the number of opponents hit: If it hits 1 opponent, it will restore 2 Energy for Faruzan. Each additional opponent hit will restore 0.5 more Energy for Faruzan.\nA maximum of 4 Energy can be restored to her per vortex."
+			"description": "The vortex created by Pressurized Collapses will restore Energy to Faruzan based on the number of opponents hit: If it hits 1 opponent, it will restore 2 Energy for Faruzan. Each additional opponent hit will restore 0.5 more Energy for Faruzan.\nA maximum of 4 Energy can be restored to her per vortex.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "faruzan__constellation__wonderland_of_rumination",
@@ -391,5 +394,6 @@
 		"generatedAt": "2026-04-06T11:45:40.694Z",
 		"draftedAt": "2026-05-02",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.3"
 }

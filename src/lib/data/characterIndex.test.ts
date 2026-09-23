@@ -8,12 +8,13 @@
 
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, CharacterIndexEntry } from '$lib/types/character';
-import { characterIndex } from './characterIndex.generated';
+import { characterIndex, inTheWorks } from './characterIndex.generated';
 import {
 	collectGatedReactions,
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '$lib/capabilities/deriveCapabilities';
+import { decodeCoverage, deriveCoverage, encodeCoverage } from '$lib/coverage/deriveCoverage';
 import { isCurated } from '$lib/utils/characterLint';
 import { declaredCastTokens, hasPlungeFrames } from '$lib/utils/castTokens';
 
@@ -27,6 +28,7 @@ const INDEX_FIELDS = [
 	'affiliation',
 	'region',
 	'rarity',
+	'release',
 	'noConstellations',
 	'factions',
 	'enablesReactions'
@@ -46,6 +48,7 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 	entry.casts = declaredCastTokens(source);
 	entry.plunge = hasPlungeFrames(source);
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
+	entry.coverage = encodeCoverage(deriveCoverage(source));
 	const gated = collectGatedReactions(source);
 	if (gated.length > 0) entry.gatedReactions = gated;
 	return entry as CharacterIndexEntry;
@@ -56,6 +59,25 @@ describe('generated character index', () => {
 		const indexIds = characterIndex.map((e) => e.id).sort();
 		const sourceIds = sources.map((c) => c.id).sort();
 		expect(indexIds).toEqual(sourceIds);
+	});
+
+	it('lists the frameless characters as in the works', () => {
+		const expected = characterIndex
+			.filter((e) => e.id !== 'blank' && decodeCoverage(e.coverage)[0] === 'missing')
+			.map((e) => e.displayName);
+		expect(inTheWorks).toEqual(expected);
+		expect(inTheWorks.length).toBeGreaterThan(0);
+	});
+
+	// A corpus fact, not kit shape, so it is checked here rather than in
+	// lintCharacter (synthetic test kits carry no patch): every character but the
+	// planner's `blank` slot names the patch it released in — the coverage page's
+	// "Newest first" sort reads it.
+	it('every character carries a "major.minor" release patch', () => {
+		for (const source of sources) {
+			if (source.id === 'blank') continue;
+			expect(source.release, source.id).toMatch(/^\d+\.\d+$/);
+		}
 	});
 
 	it('matches the source JSON on every index field', () => {

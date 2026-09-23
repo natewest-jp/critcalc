@@ -308,7 +308,10 @@
 			"id": "raiden_shogun__passive__wishes_unnumbered",
 			"name": "Wishes Unnumbered",
 			"abilityType": "passive",
-			"description": "When nearby party members gain Elemental Orbs or Particles, Chakra Desiderata gains 2 Resolve stacks. This effect can occur once every 3s."
+			"description": "When nearby party members gain Elemental Orbs or Particles, Chakra Desiderata gains 2 Resolve stacks. This effect can occur once every 3s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pickups, and the Resolve this grants only raises how hard Secret Art: Musou Shinsetsu and Musou Isshin hit."
+			}
 		},
 		{
 			"id": "raiden_shogun__passive__enlightened_one",
@@ -345,7 +348,10 @@
 			"name": "Ominous Inscription",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Chakra Desiderata will gather Resolve even faster. When Electro characters use their Elemental Bursts, the Resolve gained is increased by 80%. When characters of other Elemental Types use their Elemental Bursts, the Resolve gained is increased by 20%."
+			"description": "Chakra Desiderata will gather Resolve even faster. When Electro characters use their Elemental Bursts, the Resolve gained is increased by 80%. When characters of other Elemental Types use their Elemental Bursts, the Resolve gained is increased by 20%.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Secret Art: Musou Shinsetsu and Musou Isshin hit."
+			}
 		},
 		{
 			"id": "raiden_shogun__constellation__steelbreaker",
@@ -441,5 +447,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.717Z",
 		"curatedAt": "2026-04-20"
-	}
+	},
+	"release": "2.1"
 }

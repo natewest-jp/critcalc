@@ -153,7 +153,10 @@
 					"element": "anemo",
 					"units": 1
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pulling opponents together, so the Wind Spirit's pull isn't drawn."
+			}
 		},
 		{
 			"id": "sucrose__burst__forbidden_creation_isomer_75_type_ii",
@@ -330,7 +333,10 @@
 			"name": "Alchemania",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "Sucrose will reduce the CD of Astable Anemohypostasis Creation - 6308 by 1-7s for every 7 Normal or Charged Attack hits she scores against opponents.\nOne hit may be counted every 0.1s."
+			"description": "Sucrose will reduce the CD of Astable Anemohypostasis Creation - 6308 by 1-7s for every 7 Normal or Charged Attack hits she scores against opponents.\nOne hit may be counted every 0.1s.",
+			"notModeled": {
+				"reason": "The cooldown cut is a random 1 to 7 seconds. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		},
 		{
 			"id": "sucrose__constellation__caution_standard_flask",
@@ -410,5 +416,6 @@
 		"generatedAt": "2026-04-06T11:45:40.722Z",
 		"draftedAt": "2026-04-27",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.0"
 }

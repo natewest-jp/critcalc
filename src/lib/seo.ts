@@ -115,6 +115,12 @@ export const PAGE_META: Record<string, PageMeta> = {
 			'The critcalc Visualizers: the workspace, and what each of the eight graph instruments shows.'
 	},
 
+	'/coverage': {
+		title: 'Character coverage',
+		description:
+			'Which parts of each Genshin character’s kit the critcalc Rotation Planner draws, ability by ability, and what is missing or left out.'
+	},
+
 	'/about': {
 		title: 'About',
 		description:

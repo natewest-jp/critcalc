@@ -163,7 +163,8 @@
 					"element": "anemo",
 					"units": 2
 				}
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "venti__burst__winds_grand_ode",
@@ -235,7 +236,8 @@
 			"id": "venti__passive__embrace_of_winds",
 			"name": "Embrace of Winds",
 			"abilityType": "passive",
-			"description": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s."
+			"description": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s.",
+			"nothingToModel": true
 		},
 		{
 			"id": "venti__passive__stormeye",
@@ -545,5 +547,6 @@
 		"generatedAt": "2026-04-06T11:45:40.726Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.0"
 }

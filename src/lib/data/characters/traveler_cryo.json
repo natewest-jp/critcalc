@@ -539,5 +539,6 @@
 		"source": "genshin-db@5.2.13",
 		"generatedAt": "2026-08-31T00:00:00.000Z",
 		"curatedAt": "2026-08-31"
-	}
+	},
+	"release": "7.0"
 }

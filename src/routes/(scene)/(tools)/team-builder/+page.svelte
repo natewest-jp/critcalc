@@ -18,6 +18,7 @@
 	} from './lib/facets';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { notationHasActions } from '$lib/utils/notationEdit';
 	import { benchBand } from '$lib/benchBand.svelte';
@@ -878,6 +879,15 @@
 			<p class="note tb-note">
 				These kits have no capability data yet — they may well do what you’re filtering for. Absence
 				of a badge here means “unknown”, not “no”.
+				<a
+					class="link tb-stubs-link"
+					href="{resolve('/coverage')}?c={split.uncurated.map((e) => e.id).join(',')}"
+					onclick={(e) =>
+						openCoverage(
+							e,
+							split.uncurated.map((u) => u.id)
+						)}>See their coverage</a
+				>
 			</p>
 			<div class="tb-grid">
 				{#each split.uncurated as entry (entry.id)}
@@ -2205,6 +2215,9 @@
 
 	/* .chips, plus the facet rail's own top spacing. */
 	/* .note, plus the offset its container doesn't provide. */
+	.tb-stubs-link {
+		white-space: nowrap;
+	}
 	.tb-note {
 		margin-top: 0.5rem;
 		font-size: var(--fs-md);

@@ -754,7 +754,10 @@
 			"_curatorNotes": [
 				"C4 Skyfrost Mantra: when party members consume an Icy Quill stack (i.e. trigger the DMG Bonus), Shenhe gains a stack (max 50, lasts 60s; gcsim: c4count++, AddStatus(c4BuffKey, 3600)). On Shenhe's next E cast, all stacks are consumed and each adds 5% DMG Bonus to that cast (gcsim: c4() returns 0.05*c4count, injected into the E hit snapshot). This is a dynamic self-buff that accrues between casts — not modelable as a static buff entry. Not authored; reviewer to decide representation."
 			],
-			"description": "When characters under the effect of Icy Quill applied by Shenhe trigger its DMG Bonus effects, Shenhe will gain a Skyfrost Mantra stack:\n· When Shenhe uses Spring Spirit Summoning, she will consume all stacks of Skyfrost Mantra, increasing the DMG of that Spring Spirit Summoning by 5% for each stack consumed.\n· Max 50 stacks. Stacks last for 60s."
+			"description": "When characters under the effect of Icy Quill applied by Shenhe trigger its DMG Bonus effects, Shenhe will gain a Skyfrost Mantra stack:\n· When Shenhe uses Spring Spirit Summoning, she will consume all stacks of Skyfrost Mantra, increasing the DMG of that Spring Spirit Summoning by 5% for each stack consumed.\n· Max 50 stacks. Stacks last for 60s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Shenhe's next Spring Spirit Summoning hits."
+			}
 		},
 		{
 			"id": "shenhe__constellation__divine_attainment",
@@ -779,5 +782,6 @@
 		"generatedAt": "2026-04-06T11:45:40.720Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "2.4"
 }

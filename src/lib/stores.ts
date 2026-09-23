@@ -286,6 +286,10 @@ const SITE_SETTINGS_KEY = 'critcalc:siteSettings';
 
 type SiteSettings = {
 	useNewOutfits: boolean;
+	/** The planner's opt-in coverage strips under the notation box (⚓ Nate
+	 *  2026-09-23): OFF by default — they make the tool taller and busier, so
+	 *  they are a Settings choice, ⛔ never a toolbar button. */
+	showCoverageStrips: boolean;
 	/** Which traveler renders wherever a traveler_* character appears. */
 	travelerVariant: 'aether' | 'lumine';
 	/**
@@ -372,6 +376,7 @@ export const HUMAN_TIMING_DEFAULTS = {
 
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
+	showCoverageStrips: false,
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
@@ -409,6 +414,9 @@ function createSiteSettingsStore() {
 		subscribe: store.subscribe,
 		setUseNewOutfits(value: boolean) {
 			store.update((prev) => persist({ ...prev, useNewOutfits: value }));
+		},
+		setShowCoverageStrips(value: boolean) {
+			store.update((prev) => persist({ ...prev, showCoverageStrips: value }));
 		},
 		setTravelerVariant(value: 'aether' | 'lumine') {
 			store.update((prev) => persist({ ...prev, travelerVariant: value }));

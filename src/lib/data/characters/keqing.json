@@ -117,7 +117,14 @@
 				"C1 Thundering Might (2 particles on recast) and the C1 +50% ATK recast hit are semantically tied to THIS ability; both remain authored on the C1 constellation with manual/placeholder triggers — a future pass could gate them on chainStage index 1."
 			],
 			"description": "Using Stellar Restoration again while the Lightning Stiletto persists: Keqing blinks to the Mark's location and unleashes a slashing attack that deals AoE Electro DMG. Blinking to a Stiletto thrown from a Hold cast lets her leap across obstructing terrain.",
-			"application": [{ "frame": 16, "element": "electro", "units": 2 }]
+			"application": [
+				{
+					"frame": 16,
+					"element": "electro",
+					"units": 2
+				}
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "keqing__burst__starward_sword",
@@ -143,7 +150,8 @@
 				{ "frame": 148, "element": "electro" },
 				{ "frame": 159, "element": "electro" },
 				{ "frame": 197, "element": "electro", "units": 1 }
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -200,7 +208,10 @@
 			"_curatorNotes": [
 				"Partial fit for `enemyAffectedBy` primitive (E2 follow-up, 2026-05-10). Effect would be `onHit` (N/CA only) + `enemyAffectedBy: electro` + 5s procCooldown + energy effect. Defer authoring: the 50%-chance gate is not expressible in the schema (no probabilistic-trigger primitive), and authoring without it would make the buff over-render at 100% rate vs the in-game 50%. gcsim c2ICDKey + makeC2CB() in cons.go for full mechanic."
 			],
-			"description": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s."
+			"description": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s.",
+			"notModeled": {
+				"reason": "This makes an Energy particle on a 50% chance. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		},
 		{
 			"id": "keqing__constellation__foreseen_reformation",
@@ -273,5 +284,6 @@
 		"generatedAt": "2026-04-06T11:45:40.704Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.0"
 }

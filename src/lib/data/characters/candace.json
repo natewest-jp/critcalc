@@ -311,7 +311,10 @@
 			"id": "candace__passive__aegis_of_crossed_arrows",
 			"name": "Aegis of Crossed Arrows",
 			"abilityType": "passive",
-			"description": "If Candace is hit by an attack in the Hold duration of Sacred Rite: Heron's Sanctum, that skill will finish charging instantly."
+			"description": "If Candace is hit by an attack in the Hold duration of Sacred Rite: Heron's Sanctum, that skill will finish charging instantly.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model Candace being hit, so her Hold Skill always takes its full charge time."
+			}
 		},
 		{
 			"id": "candace__passive__celestial_dome_of_sand",
@@ -382,5 +385,6 @@
 		"generatedAt": "2026-04-06T11:45:40.681Z",
 		"draftedAt": "2026-05-03",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.1"
 }

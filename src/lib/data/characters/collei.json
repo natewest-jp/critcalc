@@ -245,7 +245,8 @@
 			"_curatorNotes": [
 				"Authored 2026-05-10 (E3 v1.5) as durationExtensions[] on the burst summon (Cuilein-Anbar) — see the burst's summon entry for the full extension shape and cast-only emission caveat."
 			],
-			"description": "When a character within the Cuilein-Anbar Zone triggers Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Burgeon, or Lunar-Bloom reactions, the Zone's duration will be increased by 1s.\nA single Trump-Card Kitty can be extended this way by up to 3s."
+			"description": "When a character within the Cuilein-Anbar Zone triggers Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Burgeon, or Lunar-Bloom reactions, the Zone's duration will be increased by 1s.\nA single Trump-Card Kitty can be extended this way by up to 3s.",
+			"modeledBy": "collei__burst__trumpcard_kitty"
 		}
 	],
 	"constellations": [
@@ -322,5 +323,6 @@
 		"generatedAt": "2026-04-06T11:45:40.687Z",
 		"draftedAt": "2026-05-03",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.0"
 }

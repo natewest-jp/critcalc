@@ -270,6 +270,10 @@ export function buildStub(name) {
 		affiliation: char.affiliation,
 		region: char.region,
 		rarity: char.rarity,
+		// The patch it released in (genshin-db `version`) — the coverage page's
+		// "Newest first" sort (2026-09-23). ⚠️ Travelers are hand-built and carry
+		// theirs by hand.
+		release: char.version,
 		abilities,
 		passives,
 		constellations,

@@ -170,7 +170,14 @@
 				"gcsim ConsumeEnergy(11) is a non-standard call distinct from the burst's true 60-energy cost (sourced from data_gen.textproto: burst_energy_cost=60). Authored energyCost=60.",
 				"A4 \"Wavechaser's Exploits\" stacks add 15%/30%/45% Max-HP flat DMG when consumed by Q (gcsim: 0.15 * stacks * MaxHP). Authored on the passive as a damage skeleton with manual trigger (inherited)."
 			],
-			"application": [{ "frame": 178, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 178,
+					"element": "hydro",
+					"units": 1
+				}
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -181,7 +188,10 @@
 			"description": "When Sharky's Surging Bite hits an opponent, a Puffer will be generated nearby. Mualani will restore 20 Nightsoul points when she picks up a Puffer. Only 2 such Puffers can be created in this way during a single instance of being in Nightsoul's Blessing.",
 			"_curatorNotes": [
 				"Not authored: Nightsoul-point regeneration mechanic. gcsim a1cb generates 20 Nightsoul points (delayed 20f) on Surging-Bite hit, capped at 2 procs per stance. Effect schema has no \"Nightsoul point\" stat; reviewer to decide whether the regeneration should be modelled as a stance-duration extension or skipped."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pickups, so the Nightsoul points Mualani gets from Puffers don't lengthen her Nightsoul's Blessing."
+			}
 		},
 		{
 			"id": "mualani__passive__natlans_greatest_guide",
@@ -190,7 +200,10 @@
 			"description": "After a nearby party member triggers a Nightsoul Burst, Mualani will gain 1 stack of Wavechaser's Exploits, which lasts for 20s. Max 3 stacks. When she uses Boomsharka-laka, Mualani will clear all Wavechaser's Exploits stacks and increase the DMG of this Boomsharka-laka by 15%/30%/45% of her Max HP based on the number of stacks cleared.",
 			"_curatorNotes": [
 				"↻ RETIRED 2026-09-17 (T1 tranche, `manual` retirement): the `manual` damage skeleton (scaling 45 HP) is deleted. It never drew, and what it described is damage magnitude with no pixel — stacks gained on a team Nightsoul Burst (cap 3, 20s), spent as FlatDmg on her burst (0.15 × stacks × Max HP, gcsim)."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Boomsharka-laka hits."
+			}
 		}
 	],
 	"constellations": [
@@ -203,7 +216,10 @@
 			"_curatorNotes": [
 				"↻ RETIRED 2026-09-17 (T1 tranche, `manual` retirement): the `manual` damage skeleton (scaling 66 HP) is deleted. It never drew, and it is a multiplier added to the first Sharky's Surging Bite per Nightsoul (gcsim `c1()`; C6 removes the once-per-stance gate) — damage magnitude, no pixel.",
 				"The out-of-combat Nightsoul-consumption reduction is a resource-pool effect not modelled in schema."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard her first Sharky's Surging Bite hits."
+			}
 		},
 		{
 			"id": "mualani__constellation__mualani_going_all_out",
@@ -261,7 +277,10 @@
 			"description": "The DMG increase from the Constellation \"The Leisurely 'Meztli'...\" is no longer limited to being triggered once every Nightsoul's Blessing.",
 			"_curatorNotes": [
 				"Modifier on C1: removes the once-per-stance gate (gcsim c6() resets c1Done=false on each Surging Bite, allowing repeated procs). No effect authored — depends on C1 representation; reviewer to thread once C1 is modelled."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Sharky's Surging Bite hits, now on every bite."
+			}
 		}
 	],
 	"meta": {
@@ -269,5 +288,6 @@
 		"generatedAt": "2026-04-06T11:45:40.712Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "5.0"
 }

@@ -114,7 +114,10 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pickups, so the Sourcewater Droplets this creates aren't drawn."
+			}
 		},
 		{
 			"id": "neuvillette__burst__o_tides_i_have_returned",
@@ -153,7 +156,10 @@
 					"frame": 154,
 					"element": "hydro"
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pickups, so the Sourcewater Droplets this creates aren't drawn."
+			}
 		}
 	],
 	"passives": [
@@ -326,7 +332,10 @@
 				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap, plus a second primitive gap (ability-scoped CRIT-DMG modifier — Crit modifiers currently only support character-wide scope). Cost/value firmly favors stub. The stub IS the final state.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The closest thing to a pixel is 'a CRIT DMG bar a C2 owner might look for', but the bonus is scoped to a single unmodeled attack, so there is no bar whose value is wrong and no lane where the absence reads as a defect — and the reader has already been told on the Charged Attack entry that Equitable Judgment is not modeled. This is the coin-flip the calibration says to let go: four constellations restating one gap in a 262px column is the bloat itself. Category: invisible-omission."
 			],
-			"description": "The Ascension Talent \"Heir to the Ancient Sea's Authority\" will be enhanced: Each stack of Past Draconic Glories will increase the CRIT DMG of Charged Attack: Equitable Judgment by 14%. The maximum increase that can be achieved this way is 42%.\nYou must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\""
+			"description": "The Ascension Talent \"Heir to the Ancient Sea's Authority\" will be enhanced: Each stack of Past Draconic Glories will increase the CRIT DMG of Charged Attack: Equitable Judgment by 14%. The maximum increase that can be achieved this way is 42%.\nYou must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\"",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises the CRIT DMG of Equitable Judgment."
+			}
 		},
 		{
 			"id": "neuvillette__constellation__ancient_postulation",
@@ -344,7 +353,10 @@
 				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. The droplet output side has no consumer in the planner; even if the gadget primitive landed, the heal-trigger primitive (onHeal) would also be needed. The stub IS the final state.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — the caveat states its own verdict ('no visible payoff'). A field pickup spawning on a heal has never had a place on a timeline (pickups are on the rubric's permanent out-of-scope list), and its only consumer is the unmodeled channel already disclosed on the Charged Attack entry. Category: invisible-omission."
 			],
-			"description": "When Neuvillette is on the field and is healed, 1 Sourcewater Droplet will be generated. This effect can occur once every 4s."
+			"description": "When Neuvillette is on the field and is healed, 1 Sourcewater Droplet will be generated. This effect can occur once every 4s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pickups or track healing, so the Sourcewater Droplet Neuvillette gets when healed isn't drawn."
+			}
 		},
 		{
 			"id": "neuvillette__constellation__axiomatic_judgment",
@@ -363,12 +375,16 @@
 				"[A7] C6's added Hydro currents during Equitable Judgment deal 10% of Max HP as Hydro DMG every 2s (per constellation description).",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Both halves extend a channel that is not drawn at all — there is no bar to be the wrong length, no tick to be missing from a cadence, and no lane that goes conspicuously empty, because nothing for Equitable Judgment is ever drawn in the first place. Fourth restatement of the same gap. Category: invisible-omission."
 			],
-			"description": "When using Charged Attack: Equitable Judgment, Neuvillette can absorb nearby Sourcewater Droplets in an AoE. Each absorbed Droplet will increase the duration of Charged Attack: Equitable Judgment by 1s.\nAdditionally, when Equitable Judgment hits opponents, it will fire off 2 additional currents every 2s, each of which will deal 10% of Neuvillette's Max HP as Hydro DMG. DMG dealt this way will count as DMG dealt by Equitable Judgment."
+			"description": "When using Charged Attack: Equitable Judgment, Neuvillette can absorb nearby Sourcewater Droplets in an AoE. Each absorbed Droplet will increase the duration of Charged Attack: Equitable Judgment by 1s.\nAdditionally, when Equitable Judgment hits opponents, it will fire off 2 additional currents every 2s, each of which will deal 10% of Neuvillette's Max HP as Hydro DMG. DMG dealt this way will count as DMG dealt by Equitable Judgment.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pickups, so absorbed Sourcewater Droplets don't lengthen Equitable Judgment, and its extra currents only add to its damage."
+			}
 		}
 	],
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.714Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"release": "4.1"
 }

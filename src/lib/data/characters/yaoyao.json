@@ -286,7 +286,10 @@
 			"id": "yaoyao__passive__starscatter",
 			"name": "Starscatter",
 			"abilityType": "passive",
-			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, Yaoyao will constantly throw White Jade Radishes at nearby opponents when she is sprinting, jumping, or running. She can throw 1 White Jade Radish this way once every 0.6s."
+			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, Yaoyao will constantly throw White Jade Radishes at nearby opponents when she is sprinting, jumping, or running. She can throw 1 White Jade Radish this way once every 0.6s.",
+			"notModeled": {
+				"reason": "These radishes are thrown while Yaoyao sprints, jumps or runs, and the Rotation Planner doesn’t model movement."
+			}
 		},
 		{
 			"id": "yaoyao__passive__in_others_shoes",
@@ -360,7 +363,10 @@
 			"name": "Innocent",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, if White Jade Radish explosions hit opponents, 3 Energy will be restored to Yaoyao. This form of Energy regeneration can occur once every 0.8s."
+			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, if White Jade Radish explosions hit opponents, 3 Energy will be restored to Yaoyao. This form of Energy regeneration can occur once every 0.8s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "yaoyao__constellation__loyal_and_kind",
@@ -430,5 +436,6 @@
 		"generatedAt": "2026-04-06T11:45:40.732Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.4"
 }

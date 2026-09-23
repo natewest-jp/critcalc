@@ -151,7 +151,8 @@
 				"cooldown: 7 is the minimum value of the parametric exit CD (timeInMelee < 2s → 7s). See base-skill _curatorNotes for the full table. C1 reduces by 20%. C6 + Q-in-melee triggers ResetActionCooldown instead — flag separately; not authored.",
 				"Walk/Dash-state variants exist with much earlier cancel windows (skillMeleeWalkFrames anim 24 with Attack=5, Burst=5, Dash=6, Jump=3; skillMeleeDashFrames anim 23 with Attack=13, Burst=16, Dash=22, Jump=3). The schema has one frames slot — recorded the standing variant. Reviewer can promote to variants[] if needed.",
 				"No stanceExtension — the recast does not extend the stance, it terminates it. (Contrast with Cyno's Mortuary Rite which does extend.)"
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "tartaglia__burst__havoc_obliteration_ranged",
@@ -212,7 +213,10 @@
 			"description": "When Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, on dealing a CRIT hit, Normal and Charged Attacks apply the Riptide status effect to opponents.",
 			"_curatorNotes": [
 				"No effect authored — Riptide application on melee CRIT. gcsim: makeA4CB returns a callback gated on a.IsCrit; conditional on stance + crit + target type. Schema cannot express crit-conditional callbacks; flag for reviewer."
-			]
+			],
+			"notModeled": {
+				"reason": "This Riptide is applied on CRIT hits. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		}
 	],
 	"constellations": [
@@ -234,7 +238,10 @@
 			"description": "When opponents affected by Riptide are defeated, Tartaglia regenerates 4 Elemental Energy.",
 			"_curatorNotes": [
 				"No effect authored. Likely onTargetDied trigger filtered by riptideKey on target; schema has no equivalent trigger type. Energy-restore (energyRestore stat) on a kill event — reviewer to decide."
-			]
+			],
+			"notModeled": {
+				"reason": "This triggers when an opponent is defeated, and the Rotation Planner models one opponent that stays up."
+			}
 		},
 		{
 			"id": "tartaglia__constellation__abyssal_mayhem_vortex_of_turmoil",
@@ -276,5 +283,6 @@
 		"generatedAt": "2026-04-06T11:45:40.723Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.1"
 }

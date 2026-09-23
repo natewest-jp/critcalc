@@ -145,7 +145,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. A4: after Freminet triggers Shatter against opponents, Shattering Pressure DMG +40% for 5s (gcsim: onShatter → AddAttackMod filtering ability name prefix 'Pressurized Floe: Shattering Pressure', duration 5×60). Likely trigger: onReaction with reaction: shatter, target: self, durationType: fixed, duration: 5."
 			],
-			"description": "When Freminet triggers Shatter against opponents, the DMG dealt by Pressurized Floe: Shattering Pressure will be increased by 40% for 5s."
+			"description": "When Freminet triggers Shatter against opponents, the DMG dealt by Pressurized Floe: Shattering Pressure will be increased by 40% for 5s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model Shatter, which triggers this bonus."
+			}
 		}
 	],
 	"constellations": [
@@ -158,7 +161,10 @@
 				"trigger: 'manual' is inherited from generator. In gcsim this is an always-active AttackMod (duration -1, permanent) filtering ability name prefix 'Pressurized Floe: Shattering Pressure', granting +15% CRIT Rate to those attacks only. Likely not a triggered buff in the traditional sense — reviewer to decide whether to model as a passive-style attack modifier or a triggered condition on ability type.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1: Dreams of the Foamy Deep — effects[0] (buff critRate 15) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/freminet/cons.go:23-40` — a permanent AttackMod (`NewBase(c1Key, -1)`) that returns `CR = 0.15` only when `strings.HasPrefix(atk.Info.Abil, pressureBaseName)`, i.e. for the \"Pressurized Floe: Shattering Pressure\" hits alone. Retained: that this is an ability-scoped CRIT Rate bonus with no stat to carry it, and must replace the inherited \"reviewer to decide whether to model as a passive-style attack modifier\" line — that decision is made and the answer is no. ⚠️ This is the brief's own worked example. `Stat` has no ability-scoped CRIT member (`critRate` is the recipient's whole kit), and `trigger.filter` scopes WHEN a buff fires, never WHAT it buffs — so any authoring prints a flat +15% CRIT Rate on Freminet's always-on chip, which is false for his normals, charged, plunge, the stack-building Pressurized Floe presses and his burst. ⚠️ Note that the scope is narrower than \"the skill class\": Shattering Pressure is the release variant, so even a hypothetical `skillCritRate` would over-claim."
 			],
-			"description": "The CRIT Rate of Pressurized Floe: Shattering Pressure will be increased by 15%."
+			"description": "The CRIT Rate of Pressurized Floe: Shattering Pressure will be increased by 15%.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this CRIT Rate bonus only applies to Shattering Pressure."
+			}
 		},
 		{
 			"id": "freminet__constellation__penguins_and_the_land_of_plenty",
@@ -168,7 +174,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C2: on Shattering Pressure use → restore 2 Energy (or 3 Energy if Lv 4). gcsim: c.AddEnergy(c1Key, amt) in detonateSkill(). Conditional energy amount (2 vs 3) based on pressure level."
 			],
-			"description": "Unleashing Pressurized Floe: Shattering Pressure will restore 2 Energy to Freminet. If a Pressure Level 4 Shattering Pressure is unleashed, this will restore 3 Energy."
+			"description": "Unleashing Pressurized Floe: Shattering Pressure will restore 2 Energy to Freminet. If a Pressure Level 4 Shattering Pressure is unleashed, this will restore 3 Energy.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "freminet__constellation__song_of_the_eddies_and_bleached_sands",
@@ -224,5 +233,6 @@
 		"generatedAt": "2026-04-06T11:45:40.695Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "4.0"
 }

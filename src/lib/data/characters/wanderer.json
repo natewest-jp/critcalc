@@ -268,7 +268,10 @@
 				"Inherited manual trigger. gcsim a4 hookup: makeA4CB on every in-stance N/CA hit, gated on skillKey active, 6-frame ICD (a4IcdKey), pity-build probability starting 16% and incrementing 12% per failed roll back to 16% on success. Proc fires 4 anemo arrows at frames 16/18/21/25 with 30f hitmark each (gcsim a4Release + a4Hitmark), 35% ATK per arrow (60% with C1 — see C1 note). Likely shape: onHit trigger with ability tag normal/chargeAttack and ICD, conditional on inStance state — but the probabilistic pity mechanic has no schema representation. Reviewer-owned.",
 				"Probability mechanic (16% base + 12%/miss pity → 100% in 8 attempts max) effectively guarantees a proc within a typical Windfavored window; likely modeled as deterministic uptime once per stance for planner purposes. Reviewer to decide.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive — Gales of Reverie — effects[0] (damage, atk 35 anemo) carried `trigger: manual` and reached no surface. gcsim: `wanderer/asc.go:29-57` — `makeA4CB` fires on in-stance N/CA hits behind a 6-frame ICD and a PITY ROLL (`c.a4Prob` starts 0.16, `+0.12` per miss, reset on success); on success it only sets `a4Key`. The arrows themselves are `asc.go:62-98`, fired when the Wanderer next DASHES in mid-air, four hits at `a4Release[i]` + 30f, `Mult: 0.35`, Anemo, `Durability: 25`, on `ICDGroupWandererA4` (`icd_groups.dm.go:131,198`: a 60f window where only the FIRST hit applies, so the four arrows are one 1U application). Retained: `description` keeps the whole mechanic including the pity clause. Retain the gcsim reading (6f ICD, 16%+12% pity, four arrows at 35% ATK, `ICDGroupWandererA4` = one application per second) and record the ruling: the trigger is a mid-air acceleration — a movement the notation has no token for — behind a probabilistic gate, and the payload is a damage magnitude. Drop both \"Reviewer to decide\" sentences. ⚠️ The curator note floats \"likely modeled as deterministic uptime once per stance\" — ⛔ do not take that route: it would paint a guaranteed Anemo pip per stance on a dash we cannot see the player make, and the standing ruling refuses drawing a probabilistic proc at full rate."
-			]
+			],
+			"notModeled": {
+				"reason": "Descent triggers at random. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		}
 	],
 	"constellations": [
@@ -281,7 +284,10 @@
 			"_curatorNotes": [
 				"Inherited manual trigger with a 25% atk damage stub. C1 has two distinct effects: (a) +10% Atk SPD on Kuugo: Fushoudan / Toufukai while in Windfavored state (gcsim wanderer-c1-atkspd statMod, added on skillActivate, removed on skillEndRoutine, conditioned on inStance state) — not authored, no schema for per-ability ATK SPD; (b) Gales of Reverie wind arrows gain an additional bonus — gcsim implements as a4Mult swap from 0.35 to 0.6 (60% ATK total per arrow, not +25%). The +25% described in genshin-db text matches the in-game tooltip but gcsim's literal value is 60% (i.e. 35% + 25%). Reviewer to reconcile and decide whether C1 should be authored as a modifier on the A4 effect rather than a standalone damage row.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Shoban: Ostentatious Plumage — effects[0] (damage, atk 25) carried `trigger: manual` and reached no surface. gcsim: `wanderer/asc.go:74-77` — the C1 bonus is implemented as a MULTIPLIER SWAP inside `a4()`: `a4Mult := 0.35`, and `if c.StatusIsActive(\"wanderer-c1-atkspd\") { a4Mult = 0.6 }`. There is no separate C1 attack. The C1's first clause is `cons.go:18-30`, an `AtkSpd` stat mod (`\"wanderer-c1-atkspd\"`, 1200f) added in `skillActivate` and deleted in `skillEndRoutine` (`skill.go:117-118`). Retained: `description` keeps both clauses. Retain the gcsim reconciliation (kit tooltip says \"+25%\", gcsim writes the total 0.6 — the same number stated two ways) and record: the effect was a SCHEMA ARTIFACT, a rider on the A4 arrows re-authored as its own damage row, and the A4 it rides is itself retired; the ATK SPD clause has no `Stat` member (there is no attack-speed stat in the union) and none is being minted for one holder. Drop \"Reviewer to reconcile and decide\". ⚠️ none — nothing else references this effect. ⚠️ Do NOT read the retirement as a licence to add an attack-speed stat: the corpus has one author and no consumer, which is exactly what `orphanedSchema.test.ts` exists to refuse."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model attack speed, and the wind arrows this strengthens come from a chance-based proc it doesn't draw."
+			}
 		},
 		{
 			"id": "wanderer__constellation__niban_isle_amidst_white_waves",
@@ -291,7 +297,10 @@
 			"description": "When in the Windfavored state, Kyougen: Five Ceremonial Plays will see its DMG increased by 4% per point of difference between the max amount of Kuugoryoku Points contrasted with Kuugoryoku's present capacity when using this skill.\nThrough this method, you can increase Kyougen: Five Ceremonial Plays's DMG by a maximum of 200%.",
 			"_curatorNotes": [
 				"Scaling buff — value depends on Skydweller Points spent at burst cast time (gcsim c2: dmgP += min((maxSkydwellerPoints - skydwellerPoints) * 0.04, 2)). Capped at +200%. Trigger is onCast burst with conditional inStance state. Resource pool (Skydweller Points) is not modeled in the schema; reviewer to decide whether to author at uptime-cap (+200%) or model the resource. No effect entry authored per recipe scaling-buff rule."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track Kuugoryoku Points, and this bonus scales with how many were spent."
+			}
 		},
 		{
 			"id": "wanderer__constellation__sanban_moonflower_kusemai",
@@ -308,7 +317,10 @@
 			"description": "When casting Hanega: Song of the Wind, should the Ascension Talent \"Jade-Claimed Flower\" be triggered, the character will gain buffs in correspondence to the contacted Elemental Type(s), and also obtain a random untriggered buff. A maximum of 3 such corresponding elemental buffs can exist simultaneously.\nYou must first unlock the Ascension Talent \"Jade-Claimed Flower.\"",
 			"_curatorNotes": [
 				"C4 extends A1's element-absorption mechanic: when at least one element is absorbed, an additional random buff from the un-absorbed elements is granted (gcsim absorbCheckA1: chosenElement from c.a1ValidBuffs after absorption resolves). Caps the simultaneous buff count at 3 instead of A1's 2. Same recipe.md § 3.5 posture as A1 — do not author per-element conditional buffs. Reviewer-owned."
-			]
+			],
+			"notModeled": {
+				"reason": "The extra element is picked at random. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		},
 		{
 			"id": "wanderer__constellation__matsuban_ancient_illuminator_from_abroad",
@@ -336,5 +348,6 @@
 		"generatedAt": "2026-04-06T11:45:40.726Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.3"
 }

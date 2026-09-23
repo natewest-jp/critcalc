@@ -251,7 +251,8 @@
 			],
 			"icdGate": {
 				"timer": 90
-			}
+			},
+			"nothingToModel": true
 		},
 		{
 			"id": "traveler_hydro__burst__rising_waters",
@@ -364,7 +365,10 @@
 				"Capability sweep 2026-07-28: renamed from stale beta name 'Rising Waters' to release A4 'Clear Waters' (genshin-db 5.2.12 passive2; mechanic text unchanged from beta).",
 				"A4 (Clear Waters): HP drained via Suffusion accumulates +45% as Torrent Surge FlatDmg bonus, max 5000 DMG. Not authored — drain-aggregate scaling on a separate skill action. gcsim traveler/common/hydro/skill.go:328-332."
 			],
-			"description": "If HP has been consumed via Suffusion while using the Hold Mode Aquacrest Saber, the Torrent Surge at the skill's end will deal Bonus DMG equal to 45% of the total HP the Traveler has consumed in this skill use via Suffusion.\nThe maximum DMG Bonus that can be gained this way is 5,000."
+			"description": "If HP has been consumed via Suffusion while using the Hold Mode Aquacrest Saber, the Torrent Surge at the skill's end will deal Bonus DMG equal to 45% of the total HP the Traveler has consumed in this skill use via Suffusion.\nThe maximum DMG Bonus that can be gained this way is 5,000.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts or track HP, and this only raises how hard Torrent Surge hits based on HP spent."
+			}
 		}
 	],
 	"constellations": [
@@ -377,7 +381,10 @@
 				"Capability sweep 2026-07-28: renamed from stale beta 'Beneficent Spring' (the Tap-CRIT-Rate beta effect never shipped) to release C1 'Swelling Lake' (genshin-db 5.2.12).",
 				"Not authored: +2 Energy to the Traveler per Sourcewater Droplet picked up (gcsim traveler/common/hydro/asc.go:58-61, fired inside a1PickUp). Pickup has no schema trigger, and the energy is self-only — it would not derive the team-battery facet either way."
 			],
-			"description": "Picking up a Sourcewater Droplet will restore 2 Energy to the Traveler.\nYou must first unlock the Ascension Talent \"Spotless Waters.\""
+			"description": "Picking up a Sourcewater Droplet will restore 2 Energy to the Traveler.\nYou must first unlock the Ascension Talent \"Spotless Waters.\"",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model picking up Sourcewater Droplets, so the Energy they restore isn't shown."
+			}
 		},
 		{
 			"id": "traveler_hydro__constellation__trickling_purity",
@@ -447,12 +454,16 @@
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — same pickup class as A1: FROZEN out of scope, `manual` trigger (no bar, no marker, no chip), and heals have no planner lane anyway. ⚠️ Same TB residue as Qiqi C4 — `target: 'team'` on an inert effect makes the Team Builder claim a party-wide heal — but a caveat cannot reach that card (N17), so this is a data ruling for Nate, not text worth 262px in the Notes panel. Category: invisible-omission.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — effects[0] (heal 6% hp, team) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/traveler/common/hydro/cons.go:72-91` — `c6()` walks the party, picks the lowest `CurrentHPRatio()` and heals THAT ONE character `HealTypePercent 0.06` of their own Max HP; it is called from inside `a1PickUp` (`asc.go:64-66`), i.e. on the same unreachable pickup. Retained: one ally is healed — the lowest remaining HP%, for 6% of THEIR Max HP, scaling with the Traveler's Healing Bonus (`cons.go:79-90`) — and neither half is expressible: no `EffectTarget` names the lowest-HP member, and `stat: 'hp'` reads as the HOLDER's Max HP. Retiring this also clears the `target: 'team'` residue flagged for Nate, which had the Team Builder badging a party-wide heal for a one-ally heal (the Qiqi C4 class; a caveat cannot reach that card, N17). ⚠️ ⚠️ This is a SCOPE call, not a trigger call — the trigger half is solved, since the A1 anchor above reaches the identical event. If Nate accepts the breadth over-claim, the restore is one line: the A1 spec with `\"target\":\"team\"`, `\"scaling\":6` and the C6 condition. ⛔ `target: 'active'` is not the fix — the receiver is whoever is lowest, which is frequently not the character on field."
 			],
-			"description": "When the Traveler picks up a Sourcewater Droplet, they will restore HP to a nearby party member with the lowest remaining HP percentage based on 6% of said member's Max HP."
+			"description": "When the Traveler picks up a Sourcewater Droplet, they will restore HP to a nearby party member with the lowest remaining HP percentage based on 6% of said member's Max HP.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model picking up Sourcewater Droplets, so the healing they trigger isn't shown."
+			}
 		}
 	],
 	"meta": {
 		"source": "gcsim",
 		"generatedAt": "2026-05-08T00:00:00.000Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"release": "4.0"
 }
