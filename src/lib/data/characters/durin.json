@@ -854,5 +854,6 @@
 	},
 	"_curatorNotes": [
 		"Full curation 2026-07-14 (stub upgrade). Frames from gcsim main (merged) at ~/Code/gcsim/internal/characters/durin/ (attack.go, charge.go, skill.go, burst.go). Normal/charge/skill/burst FrameMaps + Burst dragon summonTick effects authored; plunge omitted (not rotation-relevant, no plunge.go). All scalings/CD/energy/durations cross-checked against docs/curation/talents/durin.json at talent level 10. Stub artifacts fixed: Burst behavior stance->instant (+summons); mismodeled A4/C1/C6 'damage' effects removed and documented as unmodelable (ATK-scaled dragon amp / source-ATK flat-DMG buff / DEF ignore+shred). Support capabilities modeled: A1 Pyro(+partner-element) RES shred (White form), C2 team Pyro DMG buff, C4 self Burst DMG buff, Skill self energy restore. Durin is a dual-form (White support / Dark DPS) character; form is set by the Skill and cannot be switched inside the planner — Burst is modeled as the default White form with the Dark form as a variant."
-	]
+	],
+	"release": "6.2"
 }

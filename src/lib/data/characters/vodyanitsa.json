@@ -131,5 +131,6 @@
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-09-22T03:41:08.914Z"
-	}
+	},
+	"release": "7.1"
 }

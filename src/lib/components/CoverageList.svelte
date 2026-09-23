@@ -71,14 +71,11 @@
 			return { entry, states, lit, of, gaps };
 		});
 
-	const ELEMENTS = ['pyro', 'hydro', 'electro', 'cryo', 'anemo', 'geo', 'dendro'];
-	const WEAPONS = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
-
 	let search = $state('');
-	const elements = new SvelteSet<string>();
-	const weapons = new SvelteSet<string>();
 	let rosterOnly = $state(false);
-	let sort = $state<'name' | 'least'>('name');
+	/** ⚓ Nate 2026-09-23: Newest first is the default — the question most
+	 *  visits bring is "is the new release in yet?". */
+	let sort = $state<'newest' | 'name' | 'least'>('newest');
 
 	const owned = $derived(
 		new Set(Object.keys($ownership).filter((id) => $ownership[id] === 'owned'))
@@ -127,23 +124,25 @@
 		const out = rows.filter(
 			(r) =>
 				(!q || r.entry.displayName.toLowerCase().includes(q)) &&
-				(elements.size === 0 || elements.has(r.entry.element ?? '')) &&
-				(weapons.size === 0 || weapons.has(r.entry.weapon ?? '')) &&
 				(!rosterOnly || owned.has(r.entry.id))
 		);
-		return sort === 'name'
-			? out.sort((a, b) => a.entry.displayName.localeCompare(b.entry.displayName))
-			: out.sort(
-					(a, b) =>
-						a.lit / Math.max(a.of, 1) - b.lit / Math.max(b.of, 1) ||
-						b.gaps - a.gaps ||
-						a.entry.displayName.localeCompare(b.entry.displayName)
-				);
+		const byName = (a: Row, b: Row) => a.entry.displayName.localeCompare(b.entry.displayName);
+		if (sort === 'name') return out.sort(byName);
+		if (sort === 'newest')
+			return out.sort(
+				(a, b) => patchOrder(b.entry.release) - patchOrder(a.entry.release) || byName(a, b)
+			);
+		return out.sort(
+			(a, b) =>
+				a.lit / Math.max(a.of, 1) - b.lit / Math.max(b.of, 1) || b.gaps - a.gaps || byName(a, b)
+		);
 	});
 
-	function toggle(set: SvelteSet<string>, v: string) {
-		if (set.has(v)) set.delete(v);
-		else set.add(v);
+	/** "7.1" → 7001: a patch's minor never reaches 1000, and "6.10" must sort
+	 *  after "6.9", which a float would not. Unknown sorts last. */
+	function patchOrder(release: string | undefined): number {
+		const m = /^(\d+)\.(\d+)$/.exec(release ?? '');
+		return m ? Number(m[1]) * 1000 + Number(m[2]) : -1;
 	}
 
 	/** "My roster" dims the constellation columns above what you own. */
@@ -228,28 +227,6 @@
 					aria-label="Search characters"
 					bind:value={search}
 				/>
-				<div class="chips" role="group" aria-label="Element">
-					{#each ELEMENTS as el (el)}
-						<button
-							type="button"
-							class="chip"
-							class:active={elements.has(el)}
-							aria-pressed={elements.has(el)}
-							onclick={() => toggle(elements, el)}>{el}</button
-						>
-					{/each}
-				</div>
-				<div class="chips" role="group" aria-label="Weapon">
-					{#each WEAPONS as w (w)}
-						<button
-							type="button"
-							class="chip"
-							class:active={weapons.has(w)}
-							aria-pressed={weapons.has(w)}
-							onclick={() => toggle(weapons, w)}>{w}</button
-						>
-					{/each}
-				</div>
 				<div class="chips" role="group" aria-label="Show">
 					<!-- A phrase, so it opts out of the chip's capitalize (app.css .chip). -->
 					<button
@@ -261,7 +238,7 @@
 					>
 				</div>
 				<div class="segment cov-sort" role="radiogroup" aria-label="Sort">
-					{#each [['name', 'By name'], ['least', 'Least covered first']] as const as [value, label] (value)}
+					{#each [['newest', 'Newest first'], ['name', 'By name'], ['least', 'Least covered first']] as const as [value, label] (value)}
 						<button
 							type="button"
 							class="btn"

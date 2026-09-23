@@ -458,5 +458,6 @@
 		"generatedAt": "2026-04-11T09:09:51.431Z",
 		"curatedAt": "2026-05-08",
 		"framesSource": "gcsim-pr"
-	}
+	},
+	"release": "6.5"
 }

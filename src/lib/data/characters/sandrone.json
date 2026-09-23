@@ -263,5 +263,6 @@
 		"Fagio (summoned by Charged Attack) 'periodically fires condensed beams' but no official firing interval is stated (a secondary guide guessed ~1/s; unverified), so no summon/summonTick is authored — never fake cadence. Fagio is an on-field-driven carry mechanism (Decoding Power decays 300% faster while Sandrone is off-field), not an autonomous off-field summon, so it grants no off-field-DMG capability.",
 		"Still unauthored after the Stellar pass: C1's +30% Stellar-Conduct DMG (Reaction Bonus bucket — no primitive), C2/C4/C6 damage magnitudes, A1's Decoding-Power amplifiers, and the Radiance: Stellar-Conduct state itself (no field-presence primitive). Each carries a caveat on its own node. No heal, shield, cleanse, or grouping in the kit (external healers/shielders required per every source).",
 		"↻ 7.0 RE-AUTHOR 2026-08-31 (genshin-db 5.2.13). HoYo generalised every \"Stellar-Conduct\" reference in this kit to \"Stellar Glimmer\" — the umbrella covering Stellar-Conduct AND Stellar Swirl — and split the numbers where the two differ. Descriptions re-synced from genshin-db; stats re-keyed to the umbrella family."
-	]
+	],
+	"release": "6.7"
 }

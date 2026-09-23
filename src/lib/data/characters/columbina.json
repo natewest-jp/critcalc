@@ -958,5 +958,6 @@
 	"_curatorNotes": [
 		"Full curation 2026-07-14 (stub -> curated). Effects + FrameMaps from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged) cross-checked against docs/curation/talents/columbina.json. Web: KQM Columbina quickguide + genshin wiki.",
 		"UNMODELED / FLAGGED: (1) Moonsign Benediction 'Moonlight, Lent Unto You' (extraPassive) — converts party Electro-Charged/Bloom/Hydro-Crystallize into the Lunar variants, grants Lunar reaction Base DMG up to +7% from Max HP (0.2% per 1000 Max HP, needs ~35k HP), and +1 party Moonsign level. No Lunar-conversion / Moonsign-level / lunar-base-DMG primitive exists — excluded per extraPassive convention, flagged. (2) Gravity accumulation system (10/s, +34% C2, 60 limit) has no primitive; Gravity Interference off-field hits use manual triggers. (3) Verdant Dew / Moondew Cleanse CA gated on external party-generated resource."
-	]
+	],
+	"release": "6.3"
 }

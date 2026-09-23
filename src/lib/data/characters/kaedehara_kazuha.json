@@ -546,5 +546,6 @@
 	},
 	"_curatorNotes": [
 		"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): A4 text rewritten to \"a Swirl or Stellar Swirl reaction\". ⚠️ KAZUHA-SPECIFIC: his A4 is FOUR per-element effects — each swirl grants the absorbed element's DMG Bonus. A Stellar Swirl absorbs CRYO, so `stellarSwirl` joins the **cryoSwirl** effect ONLY; adding it to the pyro/hydro/electro entries would grant the wrong element. ⚠️ That trigger was a bare STRING and became a two-entry array — the other three stay strings, deliberately."
-	]
+	],
+	"release": "1.6"
 }

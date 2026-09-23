@@ -357,5 +357,6 @@
 		"source": "gcsim",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-opus-4-7"
-	}
+	},
+	"release": "5.3"
 }

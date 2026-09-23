@@ -356,5 +356,6 @@
 	},
 	"_curatorNotes": [
 		"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): kit text rewritten from \"Swirl\" to \"Swirl or Stellar Swirl\", so `stellarSwirl` joins the trigger. ⚓ Needed because a Stellar Swirl enabler (Sandrone/Odette/Cryo Traveler) REPLACES every Cryo Swirl party-wide — without this the effect would go dark in those teams. ⛔ Only added where HoYo actually renamed the text: a buff on the base reaction is NOT a buff on the converted one, so characters whose text was left alone (Venti, Lohen) stay as-is. ⚠️ IFA also gained **Lunar-Charged**: \"Rescue Essentials will increase the Swirl, Stellar Swirl, Electro-Charged, and Lunar-Charged reaction DMG\". ⚠️ This elevate lists seven reactions, so `normalizeBuffLikeEffect` still renders NOTHING for it (only a single reaction or a whole family maps to a stat) — pre-existing, not caused by this edit."
-	]
+	],
+	"release": "5.6"
 }

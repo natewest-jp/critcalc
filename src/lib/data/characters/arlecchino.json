@@ -492,5 +492,6 @@
 	},
 	"_curatorNotes": [
 		"AUTHORED 2026-08-31: \"1% All Elemental and Physical RES for every 100 ATK in excess of 1,000. The maximum RES increase she can gain this way FOR EACH is 20%.\" — two effects (allElementalRes + physicalRes), each capped at 20 SEPARATELY, not 20 shared. Was an `unknown` placeholder until `scaling.offset` existed. ⚓ ratio is VALUE PER 100 STAT UNITS (BuffValue JSDoc: contribution = (ratio/100) × stat), which is why a \"per 1% ER\" kit reads as ratio 40, not 0.4."
-	]
+	],
+	"release": "4.6"
 }

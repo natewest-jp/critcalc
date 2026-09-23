@@ -28,6 +28,7 @@ const INDEX_FIELDS = [
 	'affiliation',
 	'region',
 	'rarity',
+	'release',
 	'noConstellations',
 	'factions',
 	'enablesReactions'
@@ -66,6 +67,17 @@ describe('generated character index', () => {
 			.map((e) => e.displayName);
 		expect(inTheWorks).toEqual(expected);
 		expect(inTheWorks.length).toBeGreaterThan(0);
+	});
+
+	// A corpus fact, not kit shape, so it is checked here rather than in
+	// lintCharacter (synthetic test kits carry no patch): every character but the
+	// planner's `blank` slot names the patch it released in — the coverage page's
+	// "Newest first" sort reads it.
+	it('every character carries a "major.minor" release patch', () => {
+		for (const source of sources) {
+			if (source.id === 'blank') continue;
+			expect(source.release, source.id).toMatch(/^\d+\.\d+$/);
+		}
 	});
 
 	it('matches the source JSON on every index field', () => {

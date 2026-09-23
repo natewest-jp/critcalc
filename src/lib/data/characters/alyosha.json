@@ -844,5 +844,6 @@
 	},
 	"_curatorNotes": [
 		"⚠️ STAGE-0 CORRECTION 2026-08-31: `ingest-character.mjs` put \"Into the Fray\" in the sidecar's `extraPassives` instead of the character JSON. The split is PURELY POSITIONAL — passive1/2 in, passive3/4 out — a convention that held while passive3 was utility, and that 7.0 BROKE by putting the Stellar Jubilee converter passive in that slot. This one is load-bearing (it is what makes the character a Stellar enabler), so it was moved back by hand. ⚠️ passive4 stays out and that is correct — it is genuine minimap-utility."
-	]
+	],
+	"release": "7.0"
 }

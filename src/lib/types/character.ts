@@ -58,6 +58,11 @@ export type CharacterData = {
 	affiliation?: string;
 	region?: string;
 	rarity: Rarity;
+	/** The patch the character released in, `"major.minor"` (genshin-db's
+	 *  `version`; the seven Travelers by hand). Read by the coverage page's
+	 *  "Newest first" sort. The patch only — two releases in one patch tie, and
+	 *  sort by name. Required by characterIndex.test.ts. */
+	release?: string;
 	/** True for characters whose in-game constellations are permanently locked
 	 *  (Aloy: "The time has not yet come…"). Constellation steppers and badges
 	 *  don't render for these — there is nothing to set. */
@@ -108,6 +113,7 @@ export type CharacterIndexEntry = Pick<
 	| 'affiliation'
 	| 'region'
 	| 'rarity'
+	| 'release'
 	| 'noConstellations'
 	| 'factions'
 	| 'enablesReactions'

@@ -48,6 +48,7 @@ const INDEX_FIELDS = [
 	'affiliation',
 	'region',
 	'rarity',
+	'release',
 	'noConstellations',
 	'factions',
 	'enablesReactions'

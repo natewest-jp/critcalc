@@ -636,5 +636,6 @@
 		"generatedAt": "2026-04-06T11:45:40.715Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-opus-4-7"
-	}
+	},
+	"release": "3.1"
 }

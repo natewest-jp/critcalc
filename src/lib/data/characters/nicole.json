@@ -509,5 +509,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-07-12T05:40:54.376Z",
 		"framesSource": "gcsim"
-	}
+	},
+	"release": "6.6"
 }

@@ -349,5 +349,6 @@
 	},
 	"_curatorNotes": [
 		"AUTHORED 2026-08-31: \"increases CRIT Rate of all nearby party members (except Rosaria herself) by 15% of Rosaria's CRIT Rate for 10s. CRIT Rate Bonus gained this way cannot exceed 15%.\" ⚠️ Also always authorable — another placeholder that needed no schema."
-	]
+	],
+	"release": "1.4"
 }

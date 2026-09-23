@@ -385,5 +385,6 @@
 		"generatedAt": "2026-04-06T11:45:40.681Z",
 		"draftedAt": "2026-05-03",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.1"
 }
