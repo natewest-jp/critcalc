@@ -103,7 +103,7 @@ hairline seam. ⚠️ These are a first cut for Nate's eye, not measurements.
 | **not modelled** | a RULING — co-op shields, distance-based regen, the `onHeal`/`onHP*` class | hatched; listed WITH its reason; ⛔ never counts against the character                                                  |
 | **n/a**          | this ability has nothing of that kind (Xiangling's E grants no buff)       | empty / neutral ground — ⛔ NEVER drawn as missing                                                                      |
 
-⚓ n/a vs missing is the whole honesty of the page (⚓ Nate: not-modelled is
+⚓ n/a vs missing is the whole honesty of the page (⚓ Nate: not-modeled is
 SHOWN — it teaches users what the tool can do). Where the data cannot
 distinguish them today, §5 says what the data must learn.
 
@@ -139,7 +139,7 @@ data says which today. Three sources, in precedence order:
    `onHPChange`, `onHPDecrease`, `onHPIncrease` — memory
    `project_manual_trigger_retirement`) → **provisional** (we took it; the
    planner draws nothing). A `BuffValue {type:'unknown'}` → **provisional**.
-2. `notModelled: { reason }` on the host (§5.1) → **not modelled**.
+2. `notModeled: { reason }` on the host (§5.1) → **not modelled**.
 3. Neither: **missing** if the capability oracle expects something here
    (`capability-expectations.mjs` via the audit's expected-but-absent set —
    consumed, never re-derived), else **n/a**… ⚠️ but the oracle is
@@ -164,13 +164,13 @@ lit sub-segments for the sort key · `caveat` presence per host · the
 Each is a schema addition WITH its consumer (this page), which is what the
 orphaned-schema rule asks for. Each gets a lint.
 
-### 5.1 `notModelled: { reason: string }` on an ability-shaped host
+### 5.1 `notModeled: { reason: string }` on an ability-shaped host
 
 A RULING as data. Today rulings live in `_curatorNotes` prose, which the
 page must not render. `reason` is USER-FACING and follows the caveat style
 guide (name the thing, ≤2 sentences, no curator-speak) — it is rendered.
-⚠️ Lint: a host may not carry both `notModelled` and `effects`; a host with
-`notModelled` may carry a `caveat` (the ruling can still leave a pixel wrong).
+⚠️ Lint: a host may not carry both `notModeled` and `effects`; a host with
+`notModeled` may carry a `caveat` (the ruling can still leave a pixel wrong).
 Census to seed it from: `docs/curation/` rulings (co-op shields — Nicole C2,
 Diona C2, Kirara C2 house form; Iansan distance; Hydro Traveler suffusion;
 Skirk rifts; Ayaka C1 coin flip; Xiao's ICD case; Zibai C2), plus every
@@ -206,15 +206,15 @@ missing; some are rulings. Shown raw on launch day, they would all read
 "missing", which misrepresents us in the wrong direction.
 
 The pass: an agent reads each effect-less host's `description` +
-`_curatorNotes` and proposes ONE of `n/a` / `missing` / `notModelled(reason)`
+`_curatorNotes` and proposes ONE of `n/a` / `missing` / `notModeled(reason)`
 into a review table (`docs/curation/coverage-classification.md`); ⚓ Nate
 reviews; the accepted rows are written as data by a `jsonc-parser` writer
 through `scripts/lib/json-edit.mjs` (`surgicalRewrite`). "n/a" is the
 positive statement `models: 'none'`… ⚠️ naming TBD — it must not collide with
-`notModelled`, and it must be distinguishable from "not yet looked at", which
+`notModeled`, and it must be distinguishable from "not yet looked at", which
 is the state a 7.1 character's constellations arrive in. Proposed:
 
-- `notModelled: { reason }` — a ruling (§5.1)
+- `notModeled: { reason }` — a ruling (§5.1)
 - `nothingToModel: true` — n/a; the host describes nothing the planner would
   ever draw (⚠️ a lint refuses it beside `effects`)
 - absent both, no effects — **missing**, the honest default for anything not
@@ -243,7 +243,7 @@ becomes regenerated: sort the page by missing width and it is the list.
   DIMS the C-columns above what the user owns.
 - **Hover** on a sub-segment → the tooltip: its derived line ("plunge uses a
   generic stand-in", "applications land the element at the cast, counted
-  provisional") + the host's `caveat` + the `notModelled.reason`. A caveat's
+  provisional") + the host's `caveat` + the `notModeled.reason`. A caveat's
   host IS its column (lint E.28 guarantees an ability-shaped host), so the
   mapping needs no metadata.
 - **Click** a row → an IN-FLOW accordion (⛔ never a modal — memory
@@ -261,7 +261,7 @@ becomes regenerated: sort the page by missing width and it is the list.
 ## 8. Tests and gates
 
 - `deriveCoverage.test.ts` — one fixture per state per sub-segment, plus three
-  seeded negatives (an `effects`+`notModelled` host; a `nothingToModel` beside
+  seeded negatives (an `effects`+`notModeled` host; a `nothingToModel` beside
   effects; a `framesSource` value outside the union).
 - `characterIndex.test.ts` — drift guard extends to the coverage block.
 - `characterLint` — the three new lints (§5.1, §5.2, §6).
@@ -295,7 +295,7 @@ can be built against phase 1's stamp while phase 2 runs.
 
 - The widths in §2.1 and the seam-per-form question (§2), on screen.
 - Materials (§7).
-- The two field names in §6 (`nothingToModel` / `notModelled`).
+- The two field names in §6 (`nothingToModel` / `notModeled`).
 - Whether "12 of 15" prints at all, or the sort is silent.
 - The narrow-width e2e promotion (§8).
 

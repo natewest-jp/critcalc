@@ -1103,20 +1103,20 @@ function lintAbility(
 	// so a host carrying either beside `effects` says two things at once — and
 	// the page would believe whichever it read first. A ruling's `reason` is
 	// rendered, so it follows the caveat style guide.
-	const nm = (a as { notModelled?: unknown }).notModelled;
+	const nm = (a as { notModeled?: unknown }).notModeled;
 	const ntm = (a as { nothingToModel?: unknown }).nothingToModel;
 	const hasEffects = ((a as { effects?: unknown[] }).effects ?? []).length > 0;
 	if (nm !== undefined) {
 		const reason = (nm as { reason?: unknown })?.reason;
 		if (typeof reason !== 'string' || reason.trim().length === 0) {
-			push('strict', 'not-modelled-shape', `notModelled must be { reason: string }`, a.id);
+			push('strict', 'not-modeled-shape', `notModeled must be { reason: string }`, a.id);
 		} else {
 			for (const issue of caveatStyleIssues(reason)) {
-				push(issue.severity, 'not-modelled-style', issue.message, a.id);
+				push(issue.severity, 'not-modeled-style', issue.message, a.id);
 			}
 		}
 		if (hasEffects)
-			push('strict', 'not-modelled-with-effects', `notModelled beside authored effects`, a.id);
+			push('strict', 'not-modeled-with-effects', `notModeled beside authored effects`, a.id);
 	}
 	if (ntm !== undefined) {
 		if (ntm !== true) push('strict', 'nothing-to-model-shape', `nothingToModel must be true`, a.id);
@@ -1128,7 +1128,7 @@ function lintAbility(
 				a.id
 			);
 		if (nm !== undefined)
-			push('strict', 'nothing-to-model-with-ruling', `nothingToModel beside notModelled`, a.id);
+			push('strict', 'nothing-to-model-with-ruling', `nothingToModel beside notModeled`, a.id);
 	}
 
 	// (E.25) description doesn't contain implementation phrases

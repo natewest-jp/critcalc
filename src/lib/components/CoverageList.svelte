@@ -70,7 +70,7 @@
 		};
 	})();
 
-	const STATES: CoverageState[] = ['lit', 'provisional', 'missing', 'notModelled', 'na'];
+	const STATES: CoverageState[] = ['lit', 'provisional', 'missing', 'notModeled', 'na'];
 
 	// -------------------------------------------------------------------------
 	// Rows, filters, sort
@@ -441,7 +441,7 @@
 	.s-missing {
 		background-color: var(--ui-warning);
 	}
-	.s-notModelled {
+	.s-notModeled {
 		/* One layer only — the Safari veto is on TILED multi-layer backgrounds. */
 		background-image: repeating-linear-gradient(
 			135deg,

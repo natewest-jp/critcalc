@@ -2206,12 +2206,12 @@ export type AbilityCommon = {
 	 *  USER-FACING (the coverage page renders it; caveat style guide: name the
 	 *  thing, ≤2 sentences). ⛔ Never beside `effects` (lint E.29); a `caveat`
 	 *  may still sit beside it. */
-	notModelled?: { reason: string };
+	notModeled?: { reason: string };
 	/** ⚓ n/a as data (coverage round §6): the host describes nothing the planner
 	 *  would ever draw — stamina, movement, a crafting refund. Absent both this
 	 *  and `effects`, the coverage page reads the host as MISSING, the honest
 	 *  default for anything not yet looked at. ⛔ Never beside `effects` or
-	 *  `notModelled` (lint E.29). */
+	 *  `notModeled` (lint E.29). */
 	nothingToModel?: true;
 };
 
