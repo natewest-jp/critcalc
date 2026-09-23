@@ -28,9 +28,6 @@ export type Chapter = {
 	path: string;
 	/** Overlay-only lazy loader; routes import the component directly. */
 	load: () => Promise<{ default: Component }>;
-	/** Takes the overlay's `full` size — the coverage list is a table of 127
-	 *  strips, not a chapter of prose. */
-	wide?: true;
 	/** Renders WITHOUT the `.prose` article, whose typography would restyle a
 	 *  table's lists and headings. */
 	bare?: true;
@@ -108,7 +105,6 @@ export const ABOUT_AREA: Area = {
 			title: 'Coverage',
 			path: resolve('/coverage'),
 			load: () => import('$lib/components/CoverageList.svelte'),
-			wide: true,
 			bare: true
 		}
 	]

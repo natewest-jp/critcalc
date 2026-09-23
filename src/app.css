@@ -2279,42 +2279,52 @@ img {
    them instead — no heading will ever have one — which leaves colour free to
    mean "this is chrome" for both. Still true now that links are the accent and
    headings are --chrome: those two are much further apart than the old pair,
-   but the underline is what makes a link findable in a paragraph, not the hue. */
+   but the underline is what makes a link findable in a paragraph, not the hue.
+   ⚓ Measured 2026-09-23: gold on --text is 1.57:1, far under the 3:1 a colour
+   cue alone would need, so the resting underline is also the accessible one.
+   ↻ It is a real `text-decoration` now, not a border-bottom (⚓ Nate): the
+   border's one advantage — a colour of its own — is `text-decoration-color`'s
+   too, and a real underline wraps with the text and clears descenders. */
 .prose a {
 	color: var(--accent);
-	text-decoration: none;
-	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-	transition: border-color var(--t-snap);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.2em;
+	text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: text-decoration-color var(--t-snap);
 }
 
 .prose a:hover,
 .prose a:focus-visible {
-	border-bottom-color: var(--accent);
+	text-decoration-color: var(--accent);
 }
 
 /* A text link OUTSIDE prose (⚓ Nate 2026-09-23: the coverage links read as
    plain text). The bare `a` rule above strips all decoration on purpose — tool
    cards, chrome marks and tabs are anchors too — so a link that sits in running
-   UI text opts in here and gets the prose treatment: accent ink, a 45% rule
-   that fills on hover. `.link--quiet` keeps the surrounding ink and only draws
-   the rule, for a line whose own colour is the point (the landing banner). */
+   UI text opts in here and gets the prose treatment — ⚓ Nate 2026-09-23: the
+   SAME for every link, accent ink with an underline faint at rest and lit on
+   hover. `.link--quiet` keeps the surrounding ink and only draws the
+   underline, for a line whose own colour is the point (the landing banner). */
 .link {
 	color: var(--accent);
-	text-decoration: none;
-	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-	transition: border-color var(--t-snap);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.2em;
+	text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: text-decoration-color var(--t-snap);
 }
 .link:hover,
 .link:focus-visible {
-	border-bottom-color: var(--accent);
+	text-decoration-color: var(--accent);
 }
 .link.link--quiet {
 	color: inherit;
-	border-bottom-color: color-mix(in srgb, currentColor 45%, transparent);
+	text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
 }
 .link.link--quiet:hover,
 .link.link--quiet:focus-visible {
-	border-bottom-color: currentColor;
+	text-decoration-color: currentColor;
 }
 
 /* ── Coverage states ──────────────────────────────────────────────────────

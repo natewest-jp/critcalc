@@ -87,7 +87,7 @@
 	.rp-cov-head span {
 		text-align: center;
 		white-space: nowrap;
-		overflow: hidden;
+		overflow: visible;
 	}
 	/* ⚓ Nate 2026-09-23: right-aligned, snug against the strip — the column is
 	   sized for the longest name and most are far shorter. */

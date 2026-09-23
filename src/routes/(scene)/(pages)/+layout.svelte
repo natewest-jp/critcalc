@@ -41,9 +41,7 @@
 	     in both cases and leaked prose typography onto the chapter NAV and the
 	     settings rows; it only became visible when links gained a resting
 	     underline and the nav sprouted full-width rules. -->
-	<!-- The coverage list is a table, not prose: it takes a wider panel so the
-	     strip keeps readable segment widths beside the name column. -->
-	<main class="pages-panel" class:is-wide={pathname.startsWith('/coverage')}>
+	<main class="pages-panel">
 		{#key pathname}
 			<div in:fade={{ duration: 150 }}>
 				{@render children()}
@@ -69,7 +67,10 @@
 		bottom: calc(var(--site-footer-h) + clamp(0.5rem, 1.5vh, 1rem));
 		left: 0;
 		right: 0;
-		width: min(860px, calc(100% - 2.5rem));
+		/* ⚓ ONE width for every static page, the About/Help overlay's (⚓ Nate
+		   2026-09-23): the coverage table fits it, and prose keeps its own 56ch
+		   measure, so the extra width is margin, never longer lines. */
+		width: min(64rem, calc(100% - 2.5rem));
 		margin: 0 auto;
 		overflow-y: auto;
 		background: var(--surface); /* modal role (Nate 2026-07-31) */
@@ -78,9 +79,6 @@
 		padding: clamp(1.4rem, 3vw, 2.4rem);
 		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 		will-change: transform;
-	}
-	.pages-panel.is-wide {
-		width: min(1180px, calc(100% - 2.5rem));
 	}
 
 	/* Typography for the content itself is the shared `.prose` class in app.css

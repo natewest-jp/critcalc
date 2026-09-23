@@ -333,8 +333,10 @@
 							{:else}
 								<span class="avatar avatar--blank"></span>
 							{/if}
-							<span class="name">{row.entry.displayName}</span>
-							<span class="count">{row.lit} of {row.of}</span>
+							<span class="who-text">
+								<span class="name">{row.entry.displayName}</span>
+								<span class="count">{row.lit} of {row.of}</span>
+							</span>
 						</span>
 						<CoverageStrip
 							states={row.states}
@@ -415,7 +417,9 @@
 
 <style>
 	.coverage {
-		--cov-who-w: 13.5rem;
+		/* Fitted to the standard 64rem modal beside its sidebar (⚓ Nate
+		   2026-09-23): the count sits under the name, not beside it. */
+		--cov-who-w: 10rem;
 		--cov-strip-h: 14px;
 	}
 
@@ -523,7 +527,9 @@
 	.col-label {
 		text-align: center;
 		white-space: nowrap;
-		overflow: hidden;
+		/* Visible, not clipped: "Other" is wider than its half-unit column at the
+		   64rem modal, and the column gaps either side have room for it. */
+		overflow: visible;
 	}
 
 	.cov-rows {
@@ -552,10 +558,16 @@
 	}
 	.who {
 		display: grid;
-		grid-template-columns: 2rem minmax(0, 1fr) auto;
+		grid-template-columns: 2rem minmax(0, 1fr);
 		align-items: center;
 		gap: 0.5rem;
 		min-width: 0;
+	}
+	.who-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		line-height: var(--lh-tight);
 	}
 	.avatar {
 		width: 2rem;
