@@ -99,7 +99,6 @@
 	let search = $state('');
 	const elements = new SvelteSet<string>();
 	const weapons = new SvelteSet<string>();
-	let onlyGaps = $state(false);
 	let rosterOnly = $state(false);
 	let sort = $state<'name' | 'least'>('name');
 
@@ -114,7 +113,6 @@
 				(!q || r.entry.displayName.toLowerCase().includes(q)) &&
 				(elements.size === 0 || elements.has(r.entry.element ?? '')) &&
 				(weapons.size === 0 || weapons.has(r.entry.weapon ?? '')) &&
-				(!onlyGaps || r.gaps > 0) &&
 				(!rosterOnly || owned.has(r.entry.id))
 		);
 		return sort === 'name'
@@ -227,12 +225,6 @@
 				{/each}
 			</div>
 			<div class="chip-group" role="group" aria-label="Show">
-				<button
-					type="button"
-					class="chip"
-					aria-pressed={onlyGaps}
-					onclick={() => (onlyGaps = !onlyGaps)}>Only with gaps</button
-				>
 				<button
 					type="button"
 					class="chip"
