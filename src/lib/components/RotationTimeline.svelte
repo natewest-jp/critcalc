@@ -4,6 +4,7 @@
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
 	import type { NotationEditor } from '$lib/utils/notationEditor';
+	import RotationCoverage from './RotationCoverage.svelte';
 	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar } from '$lib/utils/getAvatar';
@@ -3099,6 +3100,17 @@
 	<div class="rp-composer">
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={notation}></div>
+			<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
+			     characters' coverage under the box, what this rotation doesn't
+			     reach dimmed. Under the box rather than beside it, so the strips
+			     share the notation's left edge — which is the chart's. -->
+			{#if $siteSettings.showCoverageStrips}
+				<RotationCoverage
+					ids={characterSlots.filter((id, i) => id !== 'blank' && characterSlots.indexOf(id) === i)}
+					events={rotation.events}
+					constellations={effectiveCon}
+				/>
+			{/if}
 		</div>
 		<!-- ── THE HISTORY PAIR (single truth, 2026-08-13) ─────────────────────
 		     ⚓ NATE asked for undo/redo buttons on one side of the notation box.

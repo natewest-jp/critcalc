@@ -25,15 +25,9 @@
 		decodeCoverage,
 		deriveCoverage,
 		type Coverage,
-		type CoverageColumn,
 		type CoverageSegmentKey,
 		type CoverageState
 	} from '$lib/coverage/deriveCoverage';
-	import {
-		COVERAGE_COLUMN_GAP_PX,
-		COVERAGE_SEAM_PX,
-		COVERAGE_WIDTHS
-	} from '$lib/coverage/coverageWidths';
 	import {
 		COLUMN_LABEL,
 		LINE_TEXT,
@@ -44,35 +38,15 @@
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
 	import { constellations, ownership, siteSettings } from '$lib/stores';
 	import { portal } from '$lib/actions/portal';
+	import CoverageStrip from './CoverageStrip.svelte';
+	import { COVERAGE_LAYOUT } from '$lib/coverage/coverageLayout';
 	import { takeCoverageFocus } from '$lib/coverage/openCoverage';
 
 	// -------------------------------------------------------------------------
 	// The shared grid template
 	// -------------------------------------------------------------------------
 
-	/** One grid line per segment, with a gap track between columns and a seam
-	 *  track between the sub-segments of one column. */
-	const layout = (() => {
-		const tracks: string[] = [];
-		const segCol: Record<string, number> = {};
-		const colSpan: Partial<Record<CoverageColumn, [number, number]>> = {};
-		let prev: CoverageColumn | undefined;
-		for (const seg of COVERAGE_SEGMENTS) {
-			if (prev !== undefined)
-				tracks.push(`${seg.column === prev ? COVERAGE_SEAM_PX : COVERAGE_COLUMN_GAP_PX}px`);
-			tracks.push(`${COVERAGE_WIDTHS[seg.key]}fr`);
-			const line = tracks.length; // 1-based grid column of this segment
-			segCol[seg.key] = line;
-			const span = colSpan[seg.column];
-			colSpan[seg.column] = span ? [span[0], line] : [line, line];
-			prev = seg.column;
-		}
-		return {
-			template: tracks.join(' '),
-			segCol,
-			colSpan: Object.entries(colSpan) as [CoverageColumn, [number, number]][]
-		};
-	})();
+	const layout = COVERAGE_LAYOUT;
 
 	const STATES: CoverageState[] = ['lit', 'provisional', 'missing', 'notModeled', 'na'];
 
@@ -173,11 +147,16 @@
 	}
 
 	/** "My roster" dims the constellation columns above what you own. */
-	const C_LEVEL: Partial<Record<CoverageSegmentKey, number>> = { C1: 1, C2: 2, C4: 4, C6: 6 };
-	function dimmed(id: string, key: CoverageSegmentKey): boolean {
-		if (!rosterOnly) return false;
-		const level = C_LEVEL[key];
-		return level !== undefined && level > ($constellations[id] ?? 0);
+	const C_LEVEL: [number, CoverageSegmentKey][] = [
+		[1, 'C1'],
+		[2, 'C2'],
+		[4, 'C4'],
+		[6, 'C6']
+	];
+	function dimmedFor(id: string): Set<CoverageSegmentKey> | undefined {
+		if (!rosterOnly) return undefined;
+		const owned = $constellations[id] ?? 0;
+		return new Set(C_LEVEL.filter(([lvl]) => lvl > owned).map(([, k]) => k));
 	}
 
 	// -------------------------------------------------------------------------
@@ -231,7 +210,7 @@
 		<ul class="cov-legend">
 			{#each STATES as s (s)}
 				<li>
-					<span class="swatch s-{s}"></span>
+					<span class="swatch cov-state cov-state--{s}"></span>
 					<strong>{STATE_LABEL[s]}</strong>
 					<span class="legend-desc">{STATE_DESCRIPTION[s]}</span>
 				</li>
@@ -352,20 +331,13 @@
 							<span class="name">{row.entry.displayName}</span>
 							<span class="count">{row.lit} of {row.of}</span>
 						</span>
-						<span class="strip" role="img" aria-label="{row.lit} of {row.of} parts modeled">
-							{#each COVERAGE_SEGMENTS as seg, i (seg.key)}
-								<!-- Hover is a convenience tier only: everything the tooltip says is
-								     also in the row's details, which the row button opens. -->
-								<!-- svelte-ignore a11y_no_static_element_interactions -->
-								<span
-									class="seg s-{row.states[i]}"
-									class:is-dim={dimmed(id, seg.key)}
-									style:grid-column={layout.segCol[seg.key]}
-									onpointerenter={(e) => onSegmentEnter(e, id, seg.key)}
-									onpointerleave={() => (tip = null)}
-								></span>
-							{/each}
-						</span>
+						<CoverageStrip
+							states={row.states}
+							dim={dimmedFor(id)}
+							label="{row.lit} of {row.of} parts modeled"
+							onEnter={(e, key) => onSegmentEnter(e, id, key)}
+							onLeave={() => (tip = null)}
+						/>
 					</button>
 
 					{#if isOpen}
@@ -380,7 +352,7 @@
 										{#if c.state !== 'na' || c.lines.some((l) => l.code !== 'grants.noHost')}
 											<div class="detail">
 												<dt>
-													<span class="swatch s-{c.state}"></span>
+													<span class="swatch cov-state cov-state--{c.state}"></span>
 													{SEGMENT_TITLE[seg.key]}
 													<span class="detail-state">{STATE_LABEL[c.state]}</span>
 												</dt>
@@ -417,7 +389,9 @@
 			<p>Loading…</p>
 		{:else}
 			{@const c = d.cov[tip.key]}
-			<p class="tip-state"><span class="swatch s-{c.state}"></span>{STATE_LABEL[c.state]}</p>
+			<p class="tip-state">
+				<span class="swatch cov-state cov-state--{c.state}"></span>{STATE_LABEL[c.state]}
+			</p>
 			<ul>
 				{#each c.lines as line, li (li)}
 					<li>
@@ -486,26 +460,6 @@
 		flex: none;
 		border-radius: 1px;
 		align-self: center;
-	}
-	.s-lit {
-		background-color: var(--ui-positive);
-	}
-	.s-provisional {
-		background-color: var(--ui-provisional);
-	}
-	.s-missing {
-		background-color: var(--ui-warning);
-	}
-	.s-notModeled {
-		/* One layer only — the Safari veto is on TILED multi-layer backgrounds. */
-		background-image: repeating-linear-gradient(
-			135deg,
-			var(--ui-danger) 0 1.5px,
-			transparent 1.5px 4px
-		);
-	}
-	.s-na {
-		box-shadow: inset 0 0 0 1px var(--border);
 	}
 
 	/* ---- controls -------------------------------------------------------- */
@@ -623,13 +577,7 @@
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
-	.seg {
-		height: var(--cov-strip-h);
-		border-radius: 1px;
-	}
-	.seg.is-dim {
-		opacity: 0.3;
-	}
+
 	.empty {
 		padding: 1rem 0;
 		color: var(--muted);

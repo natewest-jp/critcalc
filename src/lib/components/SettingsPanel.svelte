@@ -125,6 +125,24 @@
 				>
 			</div>
 		</div>
+		<label class="sp-row">
+			<span class="sp-label">
+				<span class="sp-name">Coverage strips</span>
+				<span class="sp-desc">
+					Show each slotted character’s coverage strip under the Rotation Planner’s notation, with
+					the parts your rotation doesn’t reach dimmed.
+				</span>
+			</span>
+			<span class="toggle">
+				<input
+					type="checkbox"
+					checked={$siteSettings.showCoverageStrips}
+					onchange={() => siteSettings.setShowCoverageStrips(!$siteSettings.showCoverageStrips)}
+				/>
+				<span class="toggle-track"><span class="toggle-thumb"></span></span>
+				<span class="toggle-label">{$siteSettings.showCoverageStrips ? 'On' : 'Off'}</span>
+			</span>
+		</label>
 	</section>
 
 	<section class="sp-section">

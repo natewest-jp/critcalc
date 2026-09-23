@@ -2317,6 +2317,51 @@ img {
 	border-bottom-color: currentColor;
 }
 
+/* ── Coverage states ──────────────────────────────────────────────────────
+   The five registers of the coverage strip (docs/coverage-round.md §3), one
+   place for the strip (CoverageStrip) and the legend's swatches. ⚓ Nate
+   2026-09-23: modeled is --ui-positive and not-modeled hatches in --ui-danger,
+   so the strip reads at a glance; stand-in and missing are the editor's own
+   provisional / warning marks. ⛔ Never element colours — coverage is not a
+   mechanic. `.is-dim` (out of this rotation's reach) recedes in the PAINT,
+   never element opacity. The hatch is ONE layer (the Safari veto is on tiled
+   multi-layer backgrounds). */
+.cov-state--lit {
+	background-color: var(--ui-positive);
+}
+.cov-state--provisional {
+	background-color: var(--ui-provisional);
+}
+.cov-state--missing {
+	background-color: var(--ui-warning);
+}
+.cov-state--notModeled {
+	background-image: repeating-linear-gradient(
+		135deg,
+		var(--ui-danger) 0 1.5px,
+		transparent 1.5px 4px
+	);
+}
+.cov-state--na {
+	box-shadow: inset 0 0 0 1px var(--border);
+}
+.cov-state--lit.is-dim {
+	background-color: color-mix(in srgb, var(--ui-positive) 28%, transparent);
+}
+.cov-state--provisional.is-dim {
+	background-color: color-mix(in srgb, var(--ui-provisional) 28%, transparent);
+}
+.cov-state--missing.is-dim {
+	background-color: color-mix(in srgb, var(--ui-warning) 28%, transparent);
+}
+.cov-state--notModeled.is-dim {
+	background-image: repeating-linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--ui-danger) 35%, transparent) 0 1.5px,
+		transparent 1.5px 4px
+	);
+}
+
 /* Jump targets clear the top of whichever container is scrolling — the pages
    panel on a route, the area body in the overlay. */
 .prose section[id],
