@@ -69,7 +69,14 @@
 			"tags": [],
 			"effects": [],
 			"description": "Summons blooming ice to launch nearby opponents, dealing AoE Cryo DMG.",
-			"application": [{ "frame": 33, "element": "cryo", "units": 2 }]
+			"application": [
+				{
+					"frame": 33,
+					"element": "cryo",
+					"units": 2
+				}
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "kamisato_ayaka__burst__kamisato_art_soumetsu",
@@ -132,7 +139,10 @@
 			"name": "Snowswept Sakura",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "When Kamisato Ayaka's Normal or Charged Attacks deal Cryo DMG to opponents, it has a 50% chance of decreasing the CD of Kamisato Art: Hyouka by 0.3s. This effect can occur once every 0.1s."
+			"description": "When Kamisato Ayaka's Normal or Charged Attacks deal Cryo DMG to opponents, it has a 50% chance of decreasing the CD of Kamisato Art: Hyouka by 0.3s. This effect can occur once every 0.1s.",
+			"notModeled": {
+				"reason": "This cuts the cooldown on a 50% chance. We don't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		},
 		{
 			"id": "kamisato_ayaka__constellation__blizzard_blade_seki_no_to",

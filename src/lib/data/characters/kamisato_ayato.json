@@ -182,7 +182,10 @@
 			"description": "If Kamisato Ayato is not on the field and his Energy is less than 40, he will regenerate 2 Energy for himself every second.",
 			"_curatorNotes": [
 				"Not authored. Off-field self energy regen — gcsim asc.go a4(): adds 2 energy on a 60-frame periodic task while inactive and Energy < 40. Schema has no conditional energy-regen effect; reviewer-owned."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		}
 	],
 	"constellations": [
@@ -237,7 +240,10 @@
 			"_curatorNotes": [
 				"Inherited skeleton trigger is `manual`; likely `onCast` with `ability: burst`. Inherited stat is `atk%` but the actual buff is Normal Attack SPD (no `normalAtkSpd` stat in the schema; the team Atk SPD effect is currently encoded as `atk%` which is incorrect). gcsim cons.go in burst.go: adds AtkSpd +0.15 for all party members for 15*60 frames on burst cast. Reviewer to update stat once schema supports normal-atk-speed.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C4 \"Endless Flow\" — effects[0] (buff atk% 15, team) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/ayato/burst.go:86-99` — on burst cast at C4+, every party member gets `AffectedStat: attributes.AtkSpd`, `m[attributes.AtkSpd] = 0.15`, `NewBaseWithHitlag(\"ayato-c4\", 15*60)`. Retained: Retain — the buff is ATTACK SPEED (gcsim `burst.go:88`, `attributes.AtkSpd` +0.15 for 15s on burst cast at C4+); the authored `atk%` was a generator guess and is a different stat entirely; there is no attack-speed member in the `Stat` union, so nothing can be authored without inventing one. ⚠️ none — but note that retiring it also REMOVES a false claim: the trigger is perfectly expressible (`onCast`, `ability: \"burst\"`), so a naive re-trigger pass would have shipped a team-wide +15% ATK bar and a Team Builder `atk%` buffer claim that the kit never makes. ⛔ Do not mint an `atkSpd` Stat for this alone: attack speed changes the number of swings, not a damage bracket, and it would be the only member whose meaning is \"the timeline should be shorter\"."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't model attack speed, so this Normal Attack SPD bonus isn't shown."
+			}
 		},
 		{
 			"id": "kamisato_ayato__constellation__bansui_ichiro",

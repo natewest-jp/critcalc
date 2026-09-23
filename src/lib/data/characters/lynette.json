@@ -283,7 +283,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. Vortex pull mechanic not implemented in gcsim (cons.go: 'C1 is not implemented, because vortex/pulling mechanics are not implemented'). CC/utility vortex effect; not a standard buff/debuff. Reviewer to decide if and how to represent."
 			],
-			"description": "When Enigmatic Feint's Enigma Thrust hits an opponent with Shadowsign, a vortex will be created at that opponent's position that will pull nearby opponents in."
+			"description": "When Enigmatic Feint's Enigma Thrust hits an opponent with Shadowsign, a vortex will be created at that opponent's position that will pull nearby opponents in.",
+			"notModeled": {
+				"reason": "We don't model pulling opponents together, which is all this constellation adds beyond its damage."
+			}
 		},
 		{
 			"id": "lynette__constellation__endless_mysteries",

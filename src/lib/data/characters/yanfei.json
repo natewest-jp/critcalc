@@ -225,7 +225,10 @@
 				"Inherited `trigger: manual`. Likely `onHit` with `ability: chargeAttack` and `requireCrit: true`; gcsim caps to once per CA via a `done` boolean (one extra hit per Charged Attack regardless of seal count). Damage counts as Charged Attack DMG (snapshot at CA cast time). Reviewer to author the trigger.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Blazing Eye — effects[0] (damage atk 80, pyro) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/yanfei/asc.go:33-68` — `makeA4CB` is an AttackCB on her Charged Attack: enemy target, Yanfei active, `a.IsCrit`, and a `done` boolean that caps it at one extra hit per Charged Attack; the hit is Pyro / Durability 25 / `ICDTagNone` / `Mult: 0.8`, queued 10 frames later. Retained: `_curatorNotes` must record the shape that WOULD work and the one thing missing: `{ type: 'onHit', abilityType: 'charged', filter: { isCrit: true }, source: 'self', icdGate: 'none' }` with `application: [{ frame: 10, element: 'pyro', units: 1 }]`, `procCooldown` standing in for gcsim's once-per-CA `done` flag — refused because the host is a PASSIVE and nothing arms a passive-hosted proc. Replace the inherited \"Reviewer to author the trigger\" line with that finding, and keep the `description`. ⚠️ This retires a real 1U Pyro application on no ICD — Yanfei's aura lane will under-count on a crit-heavy Charged-Attack string. It is a loss on paper only: the `manual` effect already reached nothing, so nothing on screen changes. ⚠️ The gap is NOT one of the two queued primitives, so it must not be filed as `DEFER`; it wants a third arming path (a passive-hosted proc armed for the whole rotation), which no round has named. ⚠️ ⛔ Do not reach for `application[]` on the charged attack instead — normals and their charged/plunge siblings carry no application list by rule; their element has one owner in `resolveActionElement`."
 			],
-			"description": "When Yanfei's Charged Attack deals a CRIT Hit to opponents, she will deal an additional instance of AoE Pyro DMG equal to 80% of her ATK. This DMG counts as Charged Attack DMG."
+			"description": "When Yanfei's Charged Attack deals a CRIT Hit to opponents, she will deal an additional instance of AoE Pyro DMG equal to 80% of her ATK. This DMG counts as Charged Attack DMG.",
+			"notModeled": {
+				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — this triggers on CRIT Charged Attacks."
+			}
 		}
 	],
 	"constellations": [
@@ -237,7 +240,8 @@
 			"_curatorNotes": [
 				"Two effects, neither modeled: (a) per-seal stamina reduction is doubled (gcsim sealStamReduction 0.15 → 0.25), but stamina is not in the planner; (b) interruption-resist during CA release has no schema field. No effect skeleton authored."
 			],
-			"description": "When Yanfei uses her Charged Attack, each existing Scarlet Seal additionally reduces the stamina cost of this Charged Attack by 10% and increases resistance against interruption during its release."
+			"description": "When Yanfei uses her Charged Attack, each existing Scarlet Seal additionally reduces the stamina cost of this Charged Attack by 10% and increases resistance against interruption during its release.",
+			"nothingToModel": true
 		},
 		{
 			"id": "yanfei__constellation__right_of_final_interpretation",

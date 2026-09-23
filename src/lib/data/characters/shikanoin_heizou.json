@@ -161,7 +161,10 @@
 					"element": "anemo",
 					"units": 2
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard Heartstopper Strike hits."
+			}
 		},
 		{
 			"id": "shikanoin_heizou__burst__windmuster_kick",
@@ -207,7 +210,10 @@
 			"description": "When Shikanoin Heizou activates a Swirl or Stellar Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s.",
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. gcsim asc.go: subscribes to OnEnemyDamage, filters AttackTag in {SwirlPyro, SwirlHydro, SwirlElectro, SwirlCryo}, requires Heizou is on-field and is the actor of the swirl. ICD 6 frames (0.1s) via 'heizou-a1-icd' status. Effect is 'add 1 Declension stack' — schema has no stack-count buff representation. Reviewer to decide whether to model stacks as a self-buff with maxStacks or leave purely descriptive."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard Heartstopper Strike hits."
+			}
 		},
 		{
 			"id": "shikanoin_heizou__passive__penetrative_reasoning",
@@ -244,14 +250,20 @@
 			"description": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s.",
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. Two parts: (a) +15% Normal Attack SPD self-buff for 5s on swap-in (gcsim cons.go c1: AffectedStat AtkSpd, dur 300f); (b) +1 Declension stack on swap-in. ICD 600f (10s) via 'heizou-c1-icd' status. Trigger likely onSwapIn (no exact match in schema's Trigger union — closest is onCast or a new onSwap). Reviewer to author."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't model attack speed, and the Declension stack only raises how hard Heartstopper Strike hits."
+			}
 		},
 		{
 			"id": "shikanoin_heizou__constellation__investigative_collection",
 			"name": "Investigative Collection",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s."
+			"description": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s.",
+			"notModeled": {
+				"reason": "We don't model pulling opponents together, so a stronger pull changes nothing on the timeline."
+			}
 		},
 		{
 			"id": "shikanoin_heizou__constellation__esoteric_puzzle_book",
@@ -268,7 +280,10 @@
 			"description": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner.",
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. Energy regen on Windmuster Iris explosions: 1st = 9 energy, 2nd–4th = 1.5 each (total 13.5). gcsim cons.go c4: AddEnergy keyed by burstTaggedCount index. Schema has no per-cast energy-regen-on-iris-explosion trigger; reviewer to decide modeling (likely an energy-event that doesn't currently exist)."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "shikanoin_heizou__constellation__secret_archive",

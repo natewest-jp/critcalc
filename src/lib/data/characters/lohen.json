@@ -226,7 +226,8 @@
 				"Burst DMG scales with consumed Will to Win (0.40%/Point at TL10, sidecar 'DMG Increase From Will to Win') — a self on-field-DPS resource, not modeled. Base 118.8%×6 → 202.0%×6 at TL10 (self damage; no off-field / team capability).",
 				"Masterstroke +1.65s extension on in-stance casts IS modeled since 2026-07-20 (A7 wave 8) via durationExtensions on the skill (the stance owner) — the stale caveat sentence claiming it wasn't shown was removed; see skill _curatorNotes for sourcing.",
 				"[A7] Original stated the burst consumes ALL stored Will to Win; compressed to 'scales with how much Will to Win is consumed' since the resource and its consumption are a self on-field-DPS mechanic that is not modeled (existing note: 0.40%/Point at TL10, base 118.8%x6 -> 202.0%x6)."
-			]
+			],
+			"modeledBy": "lohen__skill__unforeseen_strike"
 		}
 	],
 	"passives": [
@@ -237,7 +238,10 @@
 			"description": "When nearby party members accumulate **Will to Win** for Lohen by dealing DMG while he is in **Masterstroke** mode, if that DMG is not less than 3,000% of Lohen's Base ATK, it will accumulate an extra 60 Will to Win.",
 			"_curatorNotes": [
 				"A1: purely accelerates Will to Win accrual (an internal on-field-DPS resource). No team-facing capability — no effect authored. Mechanics source: KQM quickguide."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't track Will to Win, which is all this passive changes."
+			}
 		},
 		{
 			"id": "lohen__passive__flippant_masterpiece",
@@ -290,7 +294,10 @@
 			"description": "Lohen's maximum **Will to Win** limit is increased to 300% of its original value.\nAdditionally, when other nearby party members deal DMG while Lohen is in **Masterstroke** mode, they accumulate 500% as much Will to Win for him as they originally would have.",
 			"_curatorNotes": [
 				"C1: raises the Will to Win cap (100 → 300) and multiplies teammate accrual ×5. Internal on-field-DPS resource only — no team-facing capability, no effect authored."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't track Will to Win, which is all this constellation changes."
+			}
 		},
 		{
 			"id": "lohen__constellation__in_flight_i_strike_whatever_flies",
@@ -347,7 +354,10 @@
 			"description": "When Lohen unleashes the Elemental Burst Manifest Judgment while in **Masterstroke** mode, his **Will to Win** will be maxed out, causing this instance of his Elemental Burst to gain the maximum possible DMG increase.\n\nAdditionally, when Lohen switches to Masterstroke mode, the following will occur depending on how much Elemental Energy he has:\n· When Elemental Energy is not full: Lohen recovers 15 Elemental Energy.\n· When Elemental Energy is full: If, during the next 15s, Lohen unleashes the Elemental Burst Manifest Judgment, he will recover 15 Elemental Energy.",
 			"_curatorNotes": [
 				"C4: maxes Will to Win on an in-Masterstroke Burst (self damage) and restores 15 Energy to LOHEN HIMSELF on entering Masterstroke (or after Burst when energy was full). Self-only energy management — not a team battery, so no energy capability authored."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't track energy or Will to Win, so the planner doesn't draw what this restores."
+			}
 		},
 		{
 			"id": "lohen__constellation__never_ask_nor_trouble_you_to_know",

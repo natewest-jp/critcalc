@@ -168,7 +168,10 @@
 			"_curatorNotes": [
 				"chainStage(skill, 1, window: 3.97) — fires when chain is at index 1 (within 3.67s of E1). After firing, advances to index 2 with 3.97s window (gcsim skillStateDur[1]=238)."
 			],
-			"description": "Second Skyladder leap (within ~3.67s of the first). Each leap increases the DMG and AoE of the next Driftcloud Wave."
+			"description": "Second Skyladder leap (within ~3.67s of the first). Each leap increases the DMG and AoE of the next Driftcloud Wave.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard the next Driftcloud Wave hits."
+			}
 		},
 		{
 			"id": "xianyun__skill__skyladder_3",
@@ -196,7 +199,8 @@
 			"_curatorNotes": [
 				"chainStage(skill, 2) terminal — no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's skillCounter == 3 reset path."
 			],
-			"description": "Third (final) Skyladder leap. The chain ends after this; the next E starts a fresh Cloud Transmogrification (subject to E1's 12s CD)."
+			"description": "Third (final) Skyladder leap. The chain ends after this; the next E starts a fresh Cloud Transmogrification (subject to E1's 12s CD).",
+			"nothingToModel": true
 		},
 		{
 			"id": "xianyun__burst__stars_gather_at_dusk",

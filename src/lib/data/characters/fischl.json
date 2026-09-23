@@ -376,7 +376,10 @@
 			"id": "fischl__passive__stellar_predator",
 			"name": "Stellar Predator",
 			"abilityType": "passive",
-			"description": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG."
+			"description": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG.",
+			"notModeled": {
+				"reason": "We don't model where a shot lands, and this needs a fully charged Aimed Shot to hit Oz."
+			}
 		},
 		{
 			"id": "fischl__passive__undone_be_thy_sinful_hex",
@@ -405,7 +408,10 @@
 			"name": "Devourer of All Sins",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%."
+			"description": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only makes Nightrider's summoning hit stronger and larger."
+			}
 		},
 		{
 			"id": "fischl__constellation__wings_of_nightmare",

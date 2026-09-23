@@ -235,7 +235,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. gcsim (asc.go makeA4CB): on Tengu Juurai: Ambush hit, restore 1.2 × Sara's ER (fractional) energy to all party members, ICD 3s (180f). A4 only (ascension ≥ 4). gcsim comment notes description is slightly inaccurate — actual formula is 1.2 × ER multiplier rather than strictly per-100%."
 			],
-			"description": "When Tengu Juurai: Ambush hits opponents, Kujou Sara will restore 1.2 Energy to all party members for every 100% Energy Recharge she has. This effect can be triggered once every 3s."
+			"description": "When Tengu Juurai: Ambush hits opponents, Kujou Sara will restore 1.2 Energy to all party members for every 100% Energy Recharge she has. This effect can be triggered once every 3s.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores to the party."
+			}
 		}
 	],
 	"constellations": [

@@ -938,7 +938,8 @@
 					"units": 1
 				}
 			],
-			"noICD": true
+			"noICD": true,
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -1257,7 +1258,10 @@
 				"⚓ KNOWN, NOT WORTH A PIXEL (⚓ Nate 2026-09-19). Re-examined once Four Winds and Azure Devour became placeable (2026-09-16/18): the strike is queued 10f after either (cons.go c2OnSpecialSkill, ICDTagNone) but its AttackInfo sets NO Durability, so it applies no Anemo — no pip in the aura lane, no reaction, nothing a marker could stand for. It is a damage number and stays out by the tool constitution; the `manual` trigger here is the retirement queue's problem (docs/manual-trigger-retirement.md), not this note's.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C2: \"When Dawn Breaks, Our Journey Shall Take Flight\" — effects[0] (damage, 800% `atk`, anemo) carried `trigger: manual` and reached no surface. gcsim: `cons.go:42-61` — `c2OnSpecialSkill()` queues an Anemo hit at frame 10, Mult 8, `AttackTagNone`, `ICDTagNone`, **and sets no `Durability` field at all** (cons.go:47-57), so the hit applies nothing. Queued from `fourWinds()` and `skillAzureDevour()`. Retained: `_curatorNotes` already holds the complete record and must keep it verbatim: gcsim `cons.go` `c2OnSpecialSkill`, Mult 8 at frame 10, `ICDTagNone`, **no Durability → no Anemo application**, and ⚓ Nate's 2026-09-19 ruling \"KNOWN, NOT WORTH A PIXEL\", made after Four Winds and Azure Devour became placeable (`sE` / `sC`). That note already names this retirement queue as the owner of the `manual` trigger; strike only the trigger's home — the effect — and leave the note's reasoning standing. ⚠️ A trigger DOES exist now (`onCast {ability:\"skill\", input:[\"sE\"]}` for Four Winds, and the `sC` charged attack for Azure Devour), so this is not retired for lack of a trigger — it is retired because a `damage` effect reaches no surface without an `application[]`, and a zero-Durability hit has no `application[]` to author. ⛔ Do not resurrect it by inventing `units` for a hit gcsim gives no durability."
 			],
-			"description": "When unleashing the special Elemental Skill **Four Winds' Ascension**, or when performing the special Charged Attack Azure Devour, Varka will perform an additional strike, dealing AoE Anemo DMG equal to 800% of Varka's ATK."
+			"description": "When unleashing the special Elemental Skill **Four Winds' Ascension**, or when performing the special Charged Attack Azure Devour, Varka will perform an additional strike, dealing AoE Anemo DMG equal to 800% of Varka's ATK.",
+			"notModeled": {
+				"reason": "This extra strike applies no Anemo, and we don't draw damage amounts."
+			}
 		},
 		{
 			"id": "varka__constellation__o_friend_quaff_not_the_bitter_wine_that_brings_tears_of_woe",

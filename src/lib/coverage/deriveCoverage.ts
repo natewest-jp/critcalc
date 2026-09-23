@@ -210,7 +210,13 @@ const FRAMES_LINE: Record<FramesSource, { code: CoverageLineCode; state: Coverag
 
 /** Triggers with NO reader anywhere (memory project_manual_trigger_retirement):
  *  an effect on one is data the planner draws nothing for. */
-const UNREAD_TRIGGERS = new Set(['onHeal', 'onEnergy', 'onHPChange', 'onHPDecrease', 'onHPIncrease']);
+const UNREAD_TRIGGERS = new Set([
+	'onHeal',
+	'onEnergy',
+	'onHPChange',
+	'onHPDecrease',
+	'onHPIncrease'
+]);
 
 function effectLines(effects: Effect[], form?: string): CoverageLine[] {
 	const lines: CoverageLine[] = [];
@@ -279,7 +285,8 @@ function hostGrantLines(host: Ability): CoverageLine[] {
 	if (host.effects?.length) lines.push(...effectLines(host.effects));
 	const cast = host.abilityType === 'skill' || host.abilityType === 'burst' ? host : null;
 	if (cast) {
-		for (const s of cast.summons ?? []) lines.push(summonLines(s, { ...cast, anim: cast.frames?.anim }));
+		for (const s of cast.summons ?? [])
+			lines.push(summonLines(s, { ...cast, anim: cast.frames?.anim }));
 		if ((cast as { activeDuration?: number }).activeDuration !== undefined && lines.length === 0)
 			lines.push({ code: 'grants.authored', state: 'lit' });
 		// A stance or a timed window IS what the cast grants (Wanderer's Hanega,
@@ -370,7 +377,13 @@ function effectHostCell(
 	if (!host) return cell([{ code: 'grants.noHost', state: 'na' }], []);
 	const hosts = [host.id];
 	if (host.notModeled)
-		return cell([{ code: 'grants.notModeled', state: 'notModeled' }], hosts, host.notModeled.reason);
+		return cell(
+			[{ code: 'grants.notModeled', state: 'notModeled' }],
+			hosts,
+			host.notModeled.reason
+		);
+	if (host.modeledBy)
+		return cell([{ code: 'grants.elsewhere', state: 'lit' }], [...hosts, host.modeledBy]);
 	const own = hostGrantLines(host);
 	const others = [...(elsewhere ?? [])].filter((id) => id !== host.id);
 	if (own.length === 0 && others.length > 0) own.push({ code: 'grants.elsewhere', state: 'lit' });
@@ -392,14 +405,16 @@ function normalTimingLine(
 	source: FramesSource,
 	form?: string
 ): CoverageLine {
-	if (maps.length === 0 || !maps.every(isFramed)) return { code: 'frames.none', state: 'missing', form };
+	if (maps.length === 0 || !maps.every(isFramed))
+		return { code: 'frames.none', state: 'missing', form };
 	return { ...FRAMES_LINE[source], form };
 }
 
 /** ⚓ When a swing's element lands: at its stated landing (`landsAt`, the ONE
  *  resolver), or — a map that states none — at the swing's end. */
 function landingLine(maps: (FrameMap | undefined)[], form?: string): CoverageLine {
-	if (maps.length === 0 || !maps.every(isFramed)) return { code: 'frames.none', state: 'missing', form };
+	if (maps.length === 0 || !maps.every(isFramed))
+		return { code: 'frames.none', state: 'missing', form };
 	if (maps.every((fm) => landsAt(fm) !== null)) return { code: 'app.lands', state: 'lit', form };
 	return { code: 'app.atSwingEnd', state: 'provisional', form };
 }
@@ -440,7 +455,10 @@ function swingMaps(form: NormalAbility, kind: SwingKind): (FrameMap | undefined)
 	return maps;
 }
 
-function normalsCells(c: CharacterData, source: FramesSource): Pick<
+function normalsCells(
+	c: CharacterData,
+	source: FramesSource
+): Pick<
 	Coverage,
 	'N.timing' | 'N.application' | 'C.timing' | 'C.application' | 'P.timing' | 'P.application'
 > {
@@ -462,7 +480,11 @@ function normalsCells(c: CharacterData, source: FramesSource): Pick<
 			// ⚓ An absent C or P is TAKEN with a stand-in (`GENERIC_CHARGE_FRAMES` /
 			// `GENERIC_PLUNGE_FRAMES`) — a claymore's spin is the common case — so
 			// it is provisional, not missing. Only a frameless kit is missing here.
-			const generic = kind !== 'N' && forms.some((f) => (f.hits ?? []).every((h) => isFramed(h.frames)) && (f.hits ?? []).length > 0);
+			const generic =
+				kind !== 'N' &&
+				forms.some(
+					(f) => (f.hits ?? []).every((h) => isFramed(h.frames)) && (f.hits ?? []).length > 0
+				);
 			const genericCode: CoverageLineCode = kind === 'C' ? 'charged.generic' : 'plunge.generic';
 			timing.push(
 				generic
@@ -496,7 +518,12 @@ function normalsCells(c: CharacterData, source: FramesSource): Pick<
 // Skill / burst
 // ---------------------------------------------------------------------------
 
-type CastForm = { label?: string; frames?: FrameMap; application?: CastAbility['application']; nonHitting?: boolean };
+type CastForm = {
+	label?: string;
+	frames?: FrameMap;
+	application?: CastAbility['application'];
+	nonHitting?: boolean;
+};
 
 function castForms(a: CastAbility): { base: CastForm; variants: (AbilityVariant & CastForm)[] } {
 	return {
@@ -566,6 +593,10 @@ function castCells(
 			reason ??= a.notModeled.reason;
 			continue;
 		}
+		if (a.modeledBy) {
+			grants.push({ code: 'grants.elsewhere', state: 'lit', form });
+			continue;
+		}
 		const own = hostGrantLines(a).map((l) => (form && !l.form ? { ...l, form } : l));
 		if (own.length > 0) grants.push(...own);
 		else if (a.nothingToModel) grants.push({ code: 'grants.nothingToModel', state: 'na', form });
@@ -589,7 +620,9 @@ export function deriveCoverage(c: CharacterData): Coverage {
 	const [qT, qA, qG] = castCells(c, 'burst', source);
 	const passives = c.passives ?? [];
 	const cAt = (level: number) =>
-		(c.constellations ?? []).find((k) => k.abilityType === 'constellation' && k.constellationLevel === level);
+		(c.constellations ?? []).find(
+			(k) => k.abilityType === 'constellation' && k.constellationLevel === level
+		);
 	const constellationCell = (level: number) =>
 		c.noConstellations
 			? cell([{ code: 'grants.noHost', state: 'na' }], [])

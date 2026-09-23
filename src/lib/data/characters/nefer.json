@@ -203,7 +203,10 @@
 			"_curatorNotes": [
 				"C1: +60% EM as Lunar-Bloom base DMG for Phantasm Performance Lunar-Bloom hits (Shade hits 1-3 + neferHit2 if C6). Modifies the Phantasm Performance damage formula directly via c1ShadeScaleBonus. Phantasm Performance not modeled; C1 not authored. Original stub had a damage effect with onReaction:bloom and 60% EM scaling — semantically incorrect (it's not a reaction-DMG bonus, it's a per-hit base-DMG add to Phantasm's specific Lunar-Bloom hits). Removed."
 			],
-			"description": "The Base DMG for Lunar-Bloom reactions caused by Nefer's **Phantasm Performance** is increased by 60% of her Elemental Mastery. This effect is also boosted by **Veil of Falsehood**."
+			"description": "The Base DMG for Lunar-Bloom reactions caused by Nefer's **Phantasm Performance** is increased by 60% of her Elemental Mastery. This effect is also boosted by **Veil of Falsehood**.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises the Lunar-Bloom damage Phantasm Performance deals."
+			}
 		},
 		{
 			"id": "nefer__constellation__observation_feeds_strategy",

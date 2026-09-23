@@ -70,7 +70,14 @@
 				"Frames: skillFrames[0]=InitAbilSlice(37), ActionDash/Jump=29 ActionSwap=36. Per E-spec swap/N/Q/D/J — N/Q default to animLen=37."
 			],
 			"description": "Whirling the discarded sword to its limit, the Traveler unleashes 1 final stroke that deals AoE Dendro DMG to opponents in front of them.",
-			"application": [{ "frame": 28, "element": "dendro", "units": 1 }]
+			"application": [
+				{
+					"frame": 28,
+					"element": "dendro",
+					"units": 1
+				}
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "traveler_dendro__burst__surgent_manifestation",
@@ -196,7 +203,10 @@
 			"_curatorNotes": [
 				"EM → +0.15% Razorgrass Blade DMG and +0.1% Surgent Manifestation DMG per point — damage magnitude, which the tool never draws; description-only. ⚠️ Re-ingested 2026-09-15: the retired entry carried invented Bloom-EM text under the A1's real name."
 			],
-			"description": "Every point of Elemental Mastery the Traveler possesses increases the DMG dealt by Razorgrass Blade by 0.15% and the DMG dealt by Surgent Manifestation by 0.1%."
+			"description": "Every point of Elemental Mastery the Traveler possesses increases the DMG dealt by Razorgrass Blade by 0.15% and the DMG dealt by Surgent Manifestation by 0.1%.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard Razorgrass Blade and Surgent Manifestation hit."
+			}
 		}
 	],
 	"constellations": [

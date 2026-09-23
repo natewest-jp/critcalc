@@ -132,7 +132,8 @@
 				{ "frame": 50, "element": "cryo", "units": 1 },
 				{ "frame": 59, "element": "cryo", "units": 1 },
 				{ "frame": 67, "element": "cryo", "units": 1 }
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -143,7 +144,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — A1 grants +8% Normal ATK SPD (AtkSpd stat mod) to sword/claymore/polearm characters within the Chonghua Frost Field. Applied per character on each field infusion tick for infuseDur duration (talent-scaling). Reviewer to author effect skeleton."
 			],
-			"description": "Sword, Claymore, or Polearm-wielding characters within the field created by Spirit Blade: Chonghua's Layered Frost have their Normal ATK SPD increased by 8%."
+			"description": "Sword, Claymore, or Polearm-wielding characters within the field created by Spirit Blade: Chonghua's Layered Frost have their Normal ATK SPD increased by 8%.",
+			"notModeled": {
+				"reason": "We don't model attack speed, so Normal Attacks inside the Frost Field keep their usual timing."
+			}
 		},
 		{
 			"id": "chongyun__passive__rimechaser_blade",

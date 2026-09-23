@@ -134,7 +134,10 @@
 			"id": "ganyu__passive__undivided_heart",
 			"name": "Undivided Heart",
 			"abilityType": "passive",
-			"description": "After firing a Frostflake Arrow, the CRIT Rate of subsequent Frostflake Arrows and their resulting bloom effects is increased by 20% for 5s."
+			"description": "After firing a Frostflake Arrow, the CRIT Rate of subsequent Frostflake Arrows and their resulting bloom effects is increased by 20% for 5s.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this CRIT Rate bonus only applies to Frostflake Arrows."
+			}
 		},
 		{
 			"id": "ganyu__passive__harmony_between_heaven_and_earth",
@@ -159,7 +162,8 @@
 			"id": "ganyu__passive__preserved_for_the_hunt",
 			"name": "Preserved for the Hunt",
 			"abilityType": "passive",
-			"description": "Refunds 15% of the ore used when crafting Bow-type weapons."
+			"description": "Refunds 15% of the ore used when crafting Bow-type weapons.",
+			"nothingToModel": true
 		}
 	],
 	"constellations": [
@@ -211,7 +215,10 @@
 			"description": "Opponents standing within the AoE of Celestial Shower take increased DMG. This effect strengthens over time.\nIncreased DMG taken begins at 5% and increases by 5% every 3s, up to a maximum of 25%.\nThe effect lingers for 3s after the opponent leaves the AoE.",
 			"_curatorNotes": [
 				"C4: ramp DMG-taken debuff on enemies inside Q AoE (5%→25%, +5% per 3s, max 25%) — skipped: no ramp/time-stacking model + no vulnerabilityBuff effect type"
-			]
+			],
+			"notModeled": {
+				"reason": "This depends on how long opponents stay inside Celestial Shower, and we don't model positioning."
+			}
 		},
 		{
 			"id": "ganyu__constellation__the_merciful",

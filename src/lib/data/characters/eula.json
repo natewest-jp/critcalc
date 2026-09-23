@@ -258,7 +258,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C6: (1) Lightfall Sword starts with 5 stacks (burstCounter=5 at Burst() when Cons==6); (2) each on-field N/E/Q hit has 50% chance to grant an extra stack beyond the normal +1 (burstStackCB at Cons==6: additional rand<0.5 → burstCounter++). Effect not yet authored — needs reviewer pass."
 			],
-			"description": "Lightfall Swords created by Glacial Illumination start with 5 stacks of energy. Normal Attacks, Elemental Skills, and Elemental Bursts have a 50% chance to grant the Lightfall Sword an additional stack of energy."
+			"description": "Lightfall Swords created by Glacial Illumination start with 5 stacks of energy. Normal Attacks, Elemental Skills, and Elemental Bursts have a 50% chance to grant the Lightfall Sword an additional stack of energy.",
+			"notModeled": {
+				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — the extra Lightfall Sword stacks are a 50% chance. The starting stacks only raise its damage, which we don't draw."
+			}
 		}
 	],
 	"meta": {

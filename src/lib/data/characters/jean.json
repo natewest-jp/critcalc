@@ -114,7 +114,10 @@
 					"element": "anemo",
 					"units": 2
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "We don't model pulling opponents together, which is all holding Gale Blade adds beyond its damage."
+			}
 		},
 		{
 			"id": "jean__burst__dandelion_breeze",
@@ -222,7 +225,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — using Dandelion Breeze regenerates 20% of its Energy (16 energy at cost 80). gcsim: c.AddEnergy(\"jean-a4\", 16) on burst cast. Reviewer to author if schema supports energy-recovery effects."
 			],
-			"description": "Using Dandelion Breeze will regenerate 20% of its Energy."
+			"description": "Using Dandelion Breeze will regenerate 20% of its Energy.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		}
 	],
 	"constellations": [
@@ -234,7 +240,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — C1 grants +40% DMG to Gale Blade when held for ≥1s (≥60 frames). Conditional on hold duration; not modeled in gcsim skill frame data. Reviewer to author."
 			],
-			"description": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%."
+			"description": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard a held Gale Blade hits."
+			}
 		},
 		{
 			"id": "jean__constellation__peoples_aegis",
@@ -244,7 +253,10 @@
 			"_curatorNotes": [
 				"Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onParticleReceived category — particle/orb pickup is out-of-scope per the tool constitution; auto-fulfills in canonical rotations). C2 grants all party members +15% Movement SPD and +15% ATK SPD for 15s when Jean picks up an Elemental Orb/Particle (Jean must be active on-field). gcsim trigger: onParticleReceived. Re-evaluate only if particle-gen modelling ever enters scope (unlikely)."
 			],
-			"description": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s."
+			"description": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s.",
+			"notModeled": {
+				"reason": "This triggers on picking up Energy particles, and we don't model particles or ATK SPD."
+			}
 		},
 		{
 			"id": "jean__constellation__when_the_west_wind_arises",

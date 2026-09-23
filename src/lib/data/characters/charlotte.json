@@ -293,7 +293,10 @@
 			"id": "charlotte__passive__moment_of_impact",
 			"name": "Moment of Impact",
 			"abilityType": "passive",
-			"description": "When opponents marked by \"Focused Impression\" are defeated, Framing: Freezing Point Composition's CD will be decreased by 2s. This CD decrease can be triggered 4 times every 12s."
+			"description": "When opponents marked by \"Focused Impression\" are defeated, Framing: Freezing Point Composition's CD will be decreased by 2s. This CD decrease can be triggered 4 times every 12s.",
+			"notModeled": {
+				"reason": "We don't model opponents being defeated, so this cooldown reduction can't trigger."
+			}
 		},
 		{
 			"id": "charlotte__passive__diversified_investigation",
@@ -374,7 +377,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. On burst hits against Snappy Silhouette or Focused Impression marked enemies: +10% DMG bonus to that hit, restore 2 Energy to Charlotte; up to 5 times per 20s. gcsim: c4() subscribes to event.OnEnemyHit, checks mark status, adds DmgP += 0.1, restores 2 energy, counter resets after 1200f. Likely 'onHit(burst)' trigger with mark condition, counter cap 5, 20s reset window. Reviewer to model."
 			],
-			"description": "When Still Photo: Comprehensive Confirmation hits an opponent marked by Snappy Silhouette or Focused Impression, it will deal 10% more DMG and restore 2 Energy to Charlotte. This restoration can be triggered 5 times every 20s."
+			"description": "When Still Photo: Comprehensive Confirmation hits an opponent marked by Snappy Silhouette or Focused Impression, it will deal 10% more DMG and restore 2 Energy to Charlotte. This restoration can be triggered 5 times every 20s.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts or track energy, and this only makes Still Photo: Comprehensive Confirmation hit harder and restore Energy."
+			}
 		},
 		{
 			"id": "charlotte__constellation__a_principle_of_conscience",

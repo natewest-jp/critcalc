@@ -360,7 +360,10 @@
 			"name": "Innocent",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, if White Jade Radish explosions hit opponents, 3 Energy will be restored to Yaoyao. This form of Energy regeneration can occur once every 0.8s."
+			"description": "While affected by the Adeptal Legacy state caused by Moonjade Descent, if White Jade Radish explosions hit opponents, 3 Energy will be restored to Yaoyao. This form of Energy regeneration can occur once every 0.8s.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "yaoyao__constellation__loyal_and_kind",

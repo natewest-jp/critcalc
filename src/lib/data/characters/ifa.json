@@ -289,7 +289,10 @@
 			"_curatorNotes": [
 				"C2 enhances the A1 Rescue Essentials formula rather than adding an independent effect: Nightsoul above 60 grants +4 Rescue Essentials each (gcsim c2Mult=4, both requiring Ascension>=1) and raises the cap by 50 -> 200 (c2CapIncrease=50). Not authored as a separate effect — it scales the A1 buff whose canonical magnitude is already assumption-based (see Field Medic's Vision notes). Requires the A1 talent unlocked."
 			],
-			"description": "When Ifa is in the Nightsoul's Blessing state, every Nightsoul point the party has above a total of 60 will grant Ifa 4 additional **Rescue Essentials** points.\nAdditionally, Ifa's Rescue Essentials limit is increased by 50.\nYou must first unlock the Ascension Talent **Field Medic's Vision**."
+			"description": "When Ifa is in the Nightsoul's Blessing state, every Nightsoul point the party has above a total of 60 will grant Ifa 4 additional **Rescue Essentials** points.\nAdditionally, Ifa's Rescue Essentials limit is increased by 50.\nYou must first unlock the Ascension Talent **Field Medic's Vision**.",
+			"notModeled": {
+				"reason": "We don't track Nightsoul points or Rescue Essentials, which is all this constellation changes."
+			}
 		},
 		{
 			"id": "ifa__constellation__rebuttal_in_negotiations_with_the_night",
@@ -341,7 +344,10 @@
 				"C6 confirmed against gcsim PR #2639 cons.go c6OnHoldAttackSkill (Base.Cons < 6 guard): on Hold Supporting Fire, 50% chance (Rand > 0.5 skip) to fire an extra 'Tonic Shot C6' at Mult 1.2 = 120% ATK Anemo, tagged AttackTagNormal (Normal Attack DMG). Tap Supporting Fire cannot proc it. Kept as a manual-trigger damage effect: the 50% probability and Hold-only gating are not expressible in the schema, so it is not auto-fired to avoid over-rendering at 100% rate. The C6 extra Tonicshot deals damage only (no healCB in gcsim), so no heal is authored for it.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C6 — Oath on a Feathered Knot — effects[0] (damage, atk 120 anemo) carried `trigger: manual` and reached no surface. gcsim: `ifa/cons.go:64-104` — `c6OnHoldAttackSkill` returns early on `c.Core.Rand.Float64() > 0.5` (line 69), else queues one \"Tonic Shot C6\" (`Mult: 1.2`, Anemo, `Durability: 25`, `AttackTagNormal`) 12 frames later, and only if `nightsoulState.HasBlessing()` still holds. Retained: `description` keeps the mechanic. Keep the curator note's measured facts (gcsim `c6OnHoldAttackSkill`, Mult 1.2, `AttackTagNormal`, Hold-only, damage-only with no `healCB`) and REPLACE its closing sentence — \"Kept as a manual-trigger damage effect … not auto-fired\" is no longer true once the effect is gone; the reason is now the standing ruling that a coin flip is never drawn at 100% uptime (Ayaka C1 precedent), plus damage magnitudes having no pixel. ⚠️ none. Authoring it as an `onHit` proc with an `application[]` would paint an Anemo pip on every Hold Tonicshot, i.e. at double the in-game rate — exactly the over-render the original curator refused."
 			],
-			"description": "When Ifa uses the Hold version of his **Supporting Fire**, there is a 50% chance that he will fire an additional Tonicshot that deals 120% of Ifa's ATK as Anemo DMG. This DMG is considered Normal Attack DMG.\nAdditionally, when he is not in combat, Ifa will consume 20% less Nightsoul points and Phlogiston in his Nightsoul's Blessing state."
+			"description": "When Ifa uses the Hold version of his **Supporting Fire**, there is a 50% chance that he will fire an additional Tonicshot that deals 120% of Ifa's ATK as Anemo DMG. This DMG is considered Normal Attack DMG.\nAdditionally, when he is not in combat, Ifa will consume 20% less Nightsoul points and Phlogiston in his Nightsoul's Blessing state.",
+			"notModeled": {
+				"reason": "This extra shot fires on a 50% chance. We don't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		}
 	],
 	"meta": {

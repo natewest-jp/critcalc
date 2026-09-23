@@ -98,8 +98,14 @@ describe('deriveCoverage — timing', () => {
 	it('an absent charged attack or plunge is a stand-in, not a gap', () => {
 		const c = withAbility(char(), 'n', { chargeFrames: undefined, plungeFrames: undefined });
 		const cov = deriveCoverage(c);
-		expect(cov['C.timing'].lines[0]).toMatchObject({ code: 'charged.generic', state: 'provisional' });
-		expect(cov['P.timing'].lines[0]).toMatchObject({ code: 'plunge.generic', state: 'provisional' });
+		expect(cov['C.timing'].lines[0]).toMatchObject({
+			code: 'charged.generic',
+			state: 'provisional'
+		});
+		expect(cov['P.timing'].lines[0]).toMatchObject({
+			code: 'plunge.generic',
+			state: 'provisional'
+		});
 	});
 
 	it('a frameless kit is missing everywhere it is timed', () => {
@@ -119,7 +125,9 @@ describe('deriveCoverage — application', () => {
 	it('a catalyst swing with a stated landing is lit; without one it is provisional', () => {
 		const lit = deriveCoverage(char({ weapon: 'catalyst' }));
 		expect(lit['N.application'].state).toBe('lit');
-		const soft = withAbility(char({ weapon: 'catalyst' }), 'n', { hits: [{ frames: { anim: 30 } }] });
+		const soft = withAbility(char({ weapon: 'catalyst' }), 'n', {
+			hits: [{ frames: { anim: 30 } }]
+		});
 		expect(deriveCoverage(soft)['N.application'].lines[0].code).toBe('app.atSwingEnd');
 	});
 
@@ -172,6 +180,11 @@ describe('deriveCoverage — grants', () => {
 		const cov = deriveCoverage(c);
 		expect(cov.C4.lines[0].code).toBe('grants.elsewhere');
 		expect(cov.C4.hosts).toContain('e');
+	});
+
+	it('modeledBy lights a host the planner draws through another one', () => {
+		const c = withAbility(char(), 'a4', { modeledBy: 'e' });
+		expect(deriveCoverage(c).A4).toMatchObject({ state: 'lit', hosts: ['a4', 'e'] });
 	});
 
 	it('a ⛔ NOT-gated condition is not evidence the constellation is authored', () => {
@@ -255,6 +268,11 @@ describe('the coverage statements — seeded negatives (lint E.29–E.31)', () =
 		expect(checks(c)).toContain('nothing-to-model-with-effects');
 	});
 
+	it('refuses a modeledBy that points at no other host', () => {
+		expect(checks(withAbility(char(), 'a4', { modeledBy: 'nope' }))).toContain('modeled-by-target');
+		expect(checks(withAbility(char(), 'a4', { modeledBy: 'a4' }))).toContain('modeled-by-target');
+	});
+
 	it('refuses a framesSource outside the vocabulary', () => {
 		const c = char({
 			meta: { source: 'genshin-db', generatedAt: '', framesSource: 'gcsim main' as never }
@@ -269,7 +287,9 @@ describe('the coverage statements — seeded negatives (lint E.29–E.31)', () =
 					label: 'Field',
 					duration: 10,
 					dealsNothing: true,
-					effects: [{ type: 'damage', trigger: { type: 'summonTick', interval: 1 }, target: 'enemy' }]
+					effects: [
+						{ type: 'damage', trigger: { type: 'summonTick', interval: 1 }, target: 'enemy' }
+					]
 				}
 			]
 		});

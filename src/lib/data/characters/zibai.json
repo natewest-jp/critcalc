@@ -107,7 +107,8 @@
 				"Removed the genshin-db stub's duration:1.7 — that value is the Lunar Phase Shift extension the Burst grants, not the Burst's own window. Modeled as a durationExtension on the Skill's stance instead. CD 15s (sidecar col 10 = 15.0s), Energy 60 (sidecar col 10 = 60).",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Q bar draws with its cooldown, its energy cost, its +1.7s stance extension and a Geo application on the aura lane. What the caveat names is the hit COUNT and their DEF scalings (damage magnitude, out of scope) plus a hit 'counting as' Lunar-Crystallize Reaction DMG, which is the frozen reaction-DMG-derivation distinction and not a gauge event the lane could ever mark. Category: invisible-omission."
 			],
-			"description": "Zibai operates the Jadelight Canopy, dealing two instances of Geo DMG, with the second damage instance being considered Lunar-Crystallize Reaction DMG.\nWhen cast, if Zibai is in the **Lunar Phase Shift**, the duration of the current Lunar Phase Shift will extend by an additional 1.7s."
+			"description": "Zibai operates the Jadelight Canopy, dealing two instances of Geo DMG, with the second damage instance being considered Lunar-Crystallize Reaction DMG.\nWhen cast, if Zibai is in the **Lunar Phase Shift**, the duration of the current Lunar Phase Shift will extend by an additional 1.7s.",
+			"modeledBy": "zibai__skill__heaven_and_earth_made_manifest"
 		}
 	],
 	"passives": [
@@ -256,7 +257,10 @@
 			"_curatorNotes": [
 				"NOT MODELED (self-only, radiance-dependent, frameless): in mode, Phase Shift Radiance gain rate +50%; Spirit Steed's Stride consumes ALL Radiance and elevates that instance's DMG and Zibai's own Lunar-Crystallize DMG for 3s by 1.6% per point consumed above 70 (non-stacking). This is an 'elevate' on lunarCrystallize but self-only and scaled by consumed radiance the planner cannot simulate, so no elevate effect is authored."
 			],
-			"description": "While Zibai is in the **Lunar Phase Shift** mode, her Phase Shift Radiance gain rate is increased by 50%.\nAdditionally, Spirit Steed's Stride will change such that it will consume all Phase Shift Radiance. This will **elevate** the DMG dealt by this instance of Spirit Steed's Stride and the Lunar-Crystallize Reaction DMG dealt by Zibai within the next 3s by 1.6% for every point consumed above 70. This effect cannot stack."
+			"description": "While Zibai is in the **Lunar Phase Shift** mode, her Phase Shift Radiance gain rate is increased by 50%.\nAdditionally, Spirit Steed's Stride will change such that it will consume all Phase Shift Radiance. This will **elevate** the DMG dealt by this instance of Spirit Steed's Stride and the Lunar-Crystallize Reaction DMG dealt by Zibai within the next 3s by 1.6% for every point consumed above 70. This effect cannot stack.",
+			"notModeled": {
+				"reason": "We don't track Phase Shift Radiance, and this only raises damage by how much of it is spent."
+			}
 		}
 	],
 	"meta": {

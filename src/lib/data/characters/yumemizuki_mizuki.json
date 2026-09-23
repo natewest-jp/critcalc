@@ -298,7 +298,8 @@
 			"_curatorNotes": [
 				"Swirl-triggered Dreamdrifter extension (+2.5s, max 2 extensions, 0.3s ICD) authored on the skill's durationExtensions[] (E3 v1.5, 2026-05-10). ↻ 2026-08-18: this used to send the reader to a skill note about \"cast-only emission\" — that caveat is retired; see the corrected A1 note on the skill. The extension is driven by the live gauge off Mizuki's own applications, drift-cloud hits included."
 			],
-			"description": "When Yumemizuki Mizuki triggers a Swirl or Stellar Swirl reaction while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state."
+			"description": "When Yumemizuki Mizuki triggers a Swirl or Stellar Swirl reaction while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state.",
+			"modeledBy": "yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage"
 		},
 		{
 			"id": "yumemizuki_mizuki__passive__thoughts_by_day_bring_dreams_by_night",
@@ -533,7 +534,10 @@
 			"_curatorNotes": [
 				"Snack pickup grants both heal and damage + 5 Energy to Mizuki, max 4 procs per Q. Energy effect would over-fire; depends on snack-pickup events we don't model. Description-only."
 			],
-			"description": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal, and will restore 5 Energy to Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration."
+			"description": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal, and will restore 5 Energy to Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration.",
+			"notModeled": {
+				"reason": "We don't model picking up Yumemi Style Special Snacks, so their healing, damage and Energy aren't shown."
+			}
 		},
 		{
 			"id": "yumemizuki_mizuki__constellation__as_setting_moon_brings_years_end",
@@ -551,7 +555,10 @@
 				"Swirl can crit during Dreamdrifter: CR fixed 30%, CDmg fixed 100%. Schema doesn't have per-reaction crit overrides; Swirl in our model isn't subject to crit at all. Description-only.",
 				"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): gained a second clause — Stellar Swirl DMG from those characters also gets +10% CRIT Rate and +20% CRIT DMG. Still description-only for the same reason as the first clause: the schema has no per-reaction crit override and Swirl is not subject to crit in our model at all."
 			],
-			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl reaction DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%. Any Stellar Swirl reaction DMG dealt by these characters will also have its CRIT Rate and CRIT DMG increased by 10% and 20%, respectively."
+			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl reaction DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%. Any Stellar Swirl reaction DMG dealt by these characters will also have its CRIT Rate and CRIT DMG increased by 10% and 20%, respectively.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only lets Swirl damage land critical hits."
+			}
 		}
 	],
 	"meta": {

@@ -92,7 +92,16 @@
 			],
 			"behavior": "instant",
 			"description": "Gathers the might of thunder, dealing AoE Electro DMG and quickly retreating. If this attack triggers Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reactions, Sethos recovers a certain amount of Elemental Energy.",
-			"application": [{ "frame": 13, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 13,
+					"element": "electro",
+					"units": 1
+				}
+			],
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "sethos__burst__secret_rite_twilight_shadowpiercer",
@@ -129,7 +138,10 @@
 				"Manual trigger inherited from generator. Probable trigger: onHit scoped to Shadowpiercing Shot (AttackTagExtra, Abil=='Shadowpiercing Shot') when Scorching Sandshade (a4Key) status is active. In gcsim (aimed.go): FlatDmg += 7 × EM applied inside ShadowPierce() when a4Key is active. Scorching Sandshade lifecycle: starts infinite on Init(), first hit resets to 5s; deactivates after 4 hits or expiry; 15s ICD (a4IcdKey) before reactivation. Target scope: self (flat DMG addition to Sethos's Shadowpiercing Shot). Reviewer to model cycling status and ICD.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: The Sand King's Boon — effects[0] (damage scaling 700 em) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/sethos/aimed.go:156-162` — inside `ShadowPierce()`, `if c.StatusIsActive(a4Key) { ai.FlatDmg += 7 * em }`. The Scorching Sandshade status itself cycles: infinite from `a4()` (`asc.go:38-45`), rewritten to 5s on the first hit that consumes it, deleted after 4 hits (`makeA4cb`, `asc.go:47-74`), then re-armed 15s later (`startA4Icd`, `asc.go:76-82`). Retained: the coefficient (`7 × EM` = 700%), that it applies to Shadowpiercing Shots **only**, and the full Sandshade lifecycle (infinite → 5s on first hit → off after 4 hits → 15s ICD → back). Drop \"Reviewer to model cycling status and ICD\" — there is nothing to model it with. ⚠️ The CONVERT shape (`chargeFlatDmg`, scaling em 700, `passive`) over-claims on two independent axes and would be a false always-on chip: Sethos's charged class holds three members in our own data (`chargeHits`: Aimed Shot, Fully-Charged Aimed Shot, Shadowpiercing Shot) plus the burst's Dusk Bolts, which gcsim also tags `AttackTagExtra` (`attack.go:63-66`) — only one of the four carries the bonus — and even on that one it holds for at most 4 shots in 5s out of every 20. ⚠️ `filter.abilityName: \"Shadowpiercing Shot\"` *does* resolve for Sethos (both readers append the `chargeHits` sub-name; `C`/`C2` → the last entry), but a filter belongs to a trigger and a flat-DMG stat carries none — and an `onHit` buff would land the bonus on the swing *after* the one that earned it."
 			],
-			"description": "Sethos gains the \"Scorching Sandshade\" effect, increasing the DMG dealt by Shadowpiercing Shots by 700% of Sethos's Elemental Mastery.\nThe Scorching Sandshade effect will be canceled when any of the following conditions are met:\n· 5s after a Shadowpiercing Shot first hits an opponent.\n· After 4 Shadowpiercing Shots strike opponents.\n\nWhen a Shadowpiercing Shot affected by Scorching Sandshade first hits an opponent, Sethos will regain Scorching Sandshade after 15s."
+			"description": "Sethos gains the \"Scorching Sandshade\" effect, increasing the DMG dealt by Shadowpiercing Shots by 700% of Sethos's Elemental Mastery.\nThe Scorching Sandshade effect will be canceled when any of the following conditions are met:\n· 5s after a Shadowpiercing Shot first hits an opponent.\n· After 4 Shadowpiercing Shots strike opponents.\n\nWhen a Shadowpiercing Shot affected by Scorching Sandshade first hits an opponent, Sethos will regain Scorching Sandshade after 15s.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard Shadowpiercing Shot hits."
+			}
 		}
 	],
 	"constellations": [
@@ -142,7 +154,10 @@
 				"Manual trigger inherited from generator. In gcsim (cons.go): AddAttackMod fires when AttackTag==AttackTagExtra && Abil=='Shadowpiercing Shot', applying CR+15%. This is a permanent conditional modifier, not a triggered buff — effectively unconditional while Sethos fires Shadowpiercing Shots. Probable trigger: none (always-on conditional stat modifier for specific attack type); target scope: self. Reviewer to decide representation.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 \"Sealed Shrine's Spiritsong\" — effects[0] (buff critRate 15) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/sethos/cons.go:31-49` — a permanent `AddAttackMod` returning CR +0.15 only when `atk.Info.AttackTag == AttackTagExtra && atk.Info.Abil == \"Shadowpiercing Shot\"`. No window, no trigger: it is a per-attack modifier, not a buff. Retained: that this is an attack-scoped stat modifier with no lifetime (gcsim `modifier.NewBase(..., -1)` + an `Abil` test), and that it cannot be expressed because there is no ability-scoped CRIT stat. Drop \"Reviewer to decide representation.\" ⚠️ This is the brief's own worked RETIRE example, and Sethos is the narrower case: `passive` + `critRate: 15` would print a flat \"+15% CRIT Rate\" on the always-on chip for a bonus that reaches one named shot inside the charged class, while his normals, Aimed Shots and Dusk Bolts get nothing. ⛔ There is no `chargedCritRate` member and ⛔ none should be minted for one holder — the element-scoped `*CritDmg` family exists but has no CRIT-Rate twin, and an ability-scoped one is a different axis again."
 			],
-			"description": "The CRIT Rate of Shadowpiercing Shot is increased by 15%."
+			"description": "The CRIT Rate of Shadowpiercing Shot is increased by 15%.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises the CRIT Rate of Shadowpiercing Shot."
+			}
 		},
 		{
 			"id": "sethos__constellation__papyrus_scripture_of_silent_secrets",
@@ -268,7 +283,10 @@
 			"name": "Pylon of the Sojourning Sun Temple",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"description": "After Shadowpiercing Shot strikes an opponent, the Elemental Energy consumed by the Ascension Talent \"Black Kite's Enigma\" will be returned. This effect can be triggered up to once every 15s. You must first unlock the Ascension Talent \"Black Kite's Enigma.\""
+			"description": "After Shadowpiercing Shot strikes an opponent, the Elemental Energy consumed by the Ascension Talent \"Black Kite's Enigma\" will be returned. This effect can be triggered up to once every 15s. You must first unlock the Ascension Talent \"Black Kite's Enigma.\"",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		}
 	],
 	"meta": {

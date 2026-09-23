@@ -201,7 +201,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. gcsim a4(): permanent conditional StatMod — ER +30% (0.3) to Razor when Energy / EnergyMax < 0.5, activated at Ascension 4+. Always-on conditional self-buff; reviewer to decide trigger/condition model."
 			],
-			"description": "When Razor's Energy is below 50%, increases Energy Recharge by 30%."
+			"description": "When Razor's Energy is below 50%, increases Energy Recharge by 30%.",
+			"notModeled": {
+				"reason": "We don't track energy, so we can't tell when Razor is below 50% Energy for this Energy Recharge bonus."
+			}
 		}
 	],
 	"constellations": [
@@ -213,7 +216,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. gcsim c1(): subscribes to event.OnParticleReceived; if Razor is active character, grants DmgP +10% for 8s (modifier.NewBaseWithHitlag, 8*60 frames). Likely `onHit` or custom particle-pickup trigger — reviewer to determine trigger model."
 			],
-			"description": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s."
+			"description": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s.",
+			"notModeled": {
+				"reason": "We don't model pickups, so this DMG bonus from picking up Elemental Orbs or Particles isn't drawn."
+			}
 		},
 		{
 			"id": "razor__constellation__suppression",

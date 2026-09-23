@@ -349,7 +349,10 @@
 			"_curatorNotes": [
 				"Effects not yet authored — C4 grants +10% Normal Attack SPD during Ceremonial Garment (AddStatMod in burst.go for 10*60 frames on Q cast) and 0.8 Energy per N hit when burst active (ICD: 0.2s / 12 frames). Both require a burst-active condition and are modeled in gcsim via burst.go + cons.go respectively. Needs reviewer pass."
 			],
-			"description": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi's Normal Attack SPD is increased by 10%, and Normal Attacks that hit opponents will restore 0.8 Energy for her.\nThis effect can occur once every 0.2s."
+			"description": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi's Normal Attack SPD is increased by 10%, and Normal Attacks that hit opponents will restore 0.8 Energy for her.\nThis effect can occur once every 0.2s.",
+			"notModeled": {
+				"reason": "We don't model attack speed or track energy, so neither the ATK SPD bonus nor the Energy these Normal Attacks restore is drawn."
+			}
 		},
 		{
 			"id": "sangonomiya_kokomi__constellation__all_streams_flow_to_the_sea",

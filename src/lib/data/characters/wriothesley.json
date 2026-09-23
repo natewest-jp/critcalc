@@ -261,7 +261,8 @@
 					"frame": 160,
 					"element": "cryo"
 				}
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [

@@ -253,7 +253,10 @@
 				"Caveat added 2026-07-28 (capability sweep). Confirmed base-kit flat Energy (not particles) per gcsim: skill.go:63 attaches makeA4cb to the Spirit Orb hit; asc.go:206-211 opens the 15s a4Key window; asc.go:162-199 AddEnergy(3) to active + AddEnergy(3) to off-field Ororon, 1s ICD, 3-proc cap. Energy effects have no onHit dispatch and maxProcs is an unbuilt P4 primitive, so the energy capability legitimately stays first-derivable at C4.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — There is no energy meter, energy lane or energy number anywhere in the planner — burst bars are placed by cooldown alone — so an unmodelled energy refund changes no rendered thing. Ororon's own C4 authors an `energy` effect that is equally inert and carries no caveat. Category: invisible-omission."
 			],
-			"description": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration."
+			"description": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		}
 	],
 	"constellations": [
@@ -265,7 +268,10 @@
 			"_curatorNotes": [
 				"Two effects: (1) +2 Spirit Orb bounces — not modellable as a structural ability change in the schema; (2) Nighttide debuff on hit, +50% Hypersense DMG vs Nighttide-affected enemies, 12s — would need a per-enemy state, which we don't model. Description-only."
 			],
-			"description": "The Elemental Skill Night's Sling's Spirit Orb can bounce 2 additional times.\nAdditionally, after the Spirit Orb hits an opponent, it will apply the Nighttide effect to them for 12s. Opponents affected by Nighttide take 50% increased DMG from Hypersense triggered by the Ascension Talent, \"Nightshade Synesthesia.\" You must first unlock the Ascension Talent \"Nightshade Synesthesia.\""
+			"description": "The Elemental Skill Night's Sling's Spirit Orb can bounce 2 additional times.\nAdditionally, after the Spirit Orb hits an opponent, it will apply the Nighttide effect to them for 12s. Opponents affected by Nighttide take 50% increased DMG from Hypersense triggered by the Ascension Talent, \"Nightshade Synesthesia.\" You must first unlock the Ascension Talent \"Nightshade Synesthesia.\"",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and Nighttide only raises how hard Hypersense hits. The extra bounces need more opponents than the one we model."
+			}
 		},
 		{
 			"id": "ororon__constellation__king_bee_of_the_hidden_honeyed_wine",

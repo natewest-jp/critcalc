@@ -245,7 +245,10 @@
 			"id": "beidou__passive__retribution",
 			"name": "Retribution",
 			"abilityType": "passive",
-			"description": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus."
+			"description": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus.",
+			"notModeled": {
+				"reason": "We don't model Beidou being hit, so the perfectly timed counter this rewards can't happen in a rotation."
+			}
 		},
 		{
 			"id": "beidou__passive__lightning_storm",
@@ -318,7 +321,10 @@
 			"name": "Upon the Turbulent Sea, the Thunder Arises",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "Stormbreaker's arc lightning can jump to 2 additional targets."
+			"description": "Stormbreaker's arc lightning can jump to 2 additional targets.",
+			"notModeled": {
+				"reason": "We model a single opponent, so there are no extra targets for the lightning to jump to."
+			}
 		},
 		{
 			"id": "beidou__constellation__summoner_of_storm",
@@ -335,7 +341,10 @@
 			"_curatorNotes": [
 				"Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onPlayerHit category — taking damage isn't simulated; HP state is null-resolving). gcsim source: on player HP drain (external, active character only, cons >= 4), sets 10s status; each normal attack procs additional instance of 20% Electro DMG via AttackTagNone + ICDTagElementalBurst. gcsim TODO: 'this should also be added to her CA'. Re-evaluate if HP-state simulation ever enters scope."
 			],
-			"description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s."
+			"description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s.",
+			"notModeled": {
+				"reason": "We don't model Beidou being hit, so the extra Electro damage this gives her Normal Attacks isn't shown."
+			}
 		},
 		{
 			"id": "beidou__constellation__crimson_tidewalker",

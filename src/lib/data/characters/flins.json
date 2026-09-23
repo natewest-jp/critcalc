@@ -323,7 +323,8 @@
 					"element": "electro",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [

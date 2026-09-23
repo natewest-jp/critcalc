@@ -212,7 +212,8 @@
 					"frame": 175,
 					"element": "dendro"
 				}
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [

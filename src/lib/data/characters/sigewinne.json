@@ -510,7 +510,10 @@
 						"A plain-input variant: matchVariant takes it only at C4+, the frames audit cannot reach it (variantDumpKey returns null, and the dumper runs at C0), and it states no effects - the cast-effect collectors match a variant by input token alone."
 					]
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "We don't model pickups or Bond of Life, so the Sourcewater Droplets this absorbs aren't drawn."
+			}
 		}
 	],
 	"passives": [
@@ -567,7 +570,10 @@
 			"_curatorNotes": [
 				"A4 effect not authored: Sigewinne's outgoing healing increases by 3% per 1000 HP of total team Bond of Life, max 30% (a4HpDebtHealingBonusRatio=0.03/1000, a4HealingBonusCap=0.3 in asc.go). Scaling buff tied to team Bond of Life — reviewer to author."
 			],
-			"description": "When Sigewinne performs healing, the amount healed for this instance is increased based on the total current value of the Bonds of Life on all party members: For each 1,000 HP worth of Bonds of Life, the outgoing healing is increased by 3%. The amount of healing provided can be increased by up to 30% in this way."
+			"description": "When Sigewinne performs healing, the amount healed for this instance is increased based on the total current value of the Bonds of Life on all party members: For each 1,000 HP worth of Bonds of Life, the outgoing healing is increased by 3%. The amount of healing provided can be increased by up to 30% in this way.",
+			"notModeled": {
+				"reason": "We don't model Bond of Life, and this healing bonus scales with it."
+			}
 		}
 	],
 	"constellations": [

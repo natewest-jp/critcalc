@@ -254,7 +254,8 @@
 			"name": "To Cloister Compassion",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Gyoei Narukami Kariyama Rite's AoE is increased by 50%."
+			"description": "Gyoei Narukami Kariyama Rite's AoE is increased by 50%.",
+			"nothingToModel": true
 		},
 		{
 			"id": "kuki_shinobu__constellation__to_forsake_fortune",

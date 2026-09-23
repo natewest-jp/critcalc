@@ -193,7 +193,8 @@
 					"element": "pyro",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -201,7 +202,10 @@
 			"id": "xinyan__passive__the_show_goes_on_even_without_an_audience",
 			"name": "\"The Show Goes On, Even Without an Audience...\"",
 			"abilityType": "passive",
-			"description": "Decreases the number of opponents Sweeping Fervor must hit to trigger each level of shielding.\n·Shield Level 2: Lead-In requirement reduced to 1 opponent hit.\n·Shield Level 3: Rave requirement reduced to 2 opponents hit or more."
+			"description": "Decreases the number of opponents Sweeping Fervor must hit to trigger each level of shielding.\n·Shield Level 2: Lead-In requirement reduced to 1 opponent hit.\n·Shield Level 3: Rave requirement reduced to 2 opponents hit or more.",
+			"notModeled": {
+				"reason": "Shield level depends on how many opponents the swing hits, and we model a single opponent."
+			}
 		},
 		{
 			"id": "xinyan__passive__now_thats_rock_n_roll",
@@ -222,7 +226,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C1 grants +12% ATK SPD to Xinyan's Normal and Charged Attacks for 5s on CRIT hit; 5s ICD (gcsim cons.go: c1ICDKey, 5*60f). Condition: active character only, IsCrit=true on any of Xinyan's attacks. Likely onCrit trigger, self target, ability conditions: normal+charge. Reviewer to author effects[] entry."
 			],
-			"description": "Upon scoring a CRIT Hit, increases ATK SPD of Xinyan's Normal and Charged Attacks by 12% for 5s.\nCan only occur once every 5s."
+			"description": "Upon scoring a CRIT Hit, increases ATK SPD of Xinyan's Normal and Charged Attacks by 12% for 5s.\nCan only occur once every 5s.",
+			"notModeled": {
+				"reason": "We don't model attack speed, and this triggers on CRIT hits, which we don't simulate."
+			}
 		},
 		{
 			"id": "xinyan__constellation__impromptu_opening",

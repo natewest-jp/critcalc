@@ -100,7 +100,14 @@
 			"energyCost": 40,
 			"effects": [],
 			"description": "Aloy throws a Power Cell filled with Cryo in the targeted direction, then detonates it with an arrow, dealing AoE Cryo DMG.",
-			"application": [{ "frame": 100, "element": "cryo", "units": 2 }]
+			"application": [
+				{
+					"frame": 100,
+					"element": "cryo",
+					"units": 2
+				}
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [

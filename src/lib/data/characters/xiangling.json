@@ -234,7 +234,8 @@
 			"id": "xiangling__passive__crossfire",
 			"name": "Crossfire",
 			"abilityType": "passive",
-			"description": "Increases the flame range of Guoba by 20%."
+			"description": "Increases the flame range of Guoba by 20%.",
+			"nothingToModel": true
 		},
 		{
 			"id": "xiangling__passive__beware_its_super_hot",
@@ -243,7 +244,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. When Guoba's duration ends, the active character gains 10% ATK for 10s (the chili pepper pickup). Pickup timing is user-parameterized in gcsim via a4_delay param (delay after Guoba expiry). Probable trigger: afterDuration on skill summon (after Guoba expires). Target: active character. gcsim: c.a4(guoba.Duration + a4Delay) queued relative to Guoba expiry in skill.go; applies ATKP +0.10 to active char for 600 frames."
 			],
-			"description": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s."
+			"description": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s.",
+			"notModeled": {
+				"reason": "We don't model picking up Guoba's chili pepper, so the ATK it grants isn't shown."
+			}
 		}
 	],
 	"constellations": [

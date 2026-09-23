@@ -262,7 +262,10 @@
 			"id": "sayu__passive__no_work_today",
 			"name": "No Work Today!",
 			"abilityType": "passive",
-			"description": "The Muji-Muji Daruma created by Yoohoo Art: Mujina Flurry gains the following effects:\n·When healing a character, it will also heal characters near that healed character for 20% the amount of HP.\n·Increases the AoE of its attack against opponents."
+			"description": "The Muji-Muji Daruma created by Yoohoo Art: Mujina Flurry gains the following effects:\n·When healing a character, it will also heal characters near that healed character for 20% the amount of HP.\n·Increases the AoE of its attack against opponents.",
+			"notModeled": {
+				"reason": "The extra healing reaches characters standing near the one healed, and we don't model positions."
+			}
 		}
 	],
 	"constellations": [
@@ -271,14 +274,18 @@
 			"name": "Multi-Task no Jutsu",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "The Muji-Muji Daruma created by Yoohoo Art: Mujina Flurry will ignore HP limits and can simultaneously attack nearby opponents and heal characters."
+			"description": "The Muji-Muji Daruma created by Yoohoo Art: Mujina Flurry will ignore HP limits and can simultaneously attack nearby opponents and heal characters.",
+			"modeledBy": "sayu__burst__yoohoo_art_mujina_flurry"
 		},
 		{
 			"id": "sayu__constellation__egress_prep",
 			"name": "Egress Prep",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "Yoohoo Art: Fuuin Dash gains the following effects:\n·DMG of Fuufuu Whirlwind Kick in Press Mode increased by 3.3%.\n·Every 0.5s in the Fuufuu Windwheel state will increase the DMG of this Fuufuu Whirlwind Kick by 3.3%. The maximum DMG increase possible through this method is 66%."
+			"description": "Yoohoo Art: Fuuin Dash gains the following effects:\n·DMG of Fuufuu Whirlwind Kick in Press Mode increased by 3.3%.\n·Every 0.5s in the Fuufuu Windwheel state will increase the DMG of this Fuufuu Whirlwind Kick by 3.3%. The maximum DMG increase possible through this method is 66%.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard Fuufuu Whirlwind Kick hits."
+			}
 		},
 		{
 			"id": "sayu__constellation__eh_the_bunshin_can_handle_it",
@@ -295,7 +302,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — energy recovery: 1.2 Energy per Swirl trigger, ICD 2s, active-character condition (shares ICD logic with A1 in gcsim via a1() if c.Base.Cons >= 4). Reviewer to author."
 			],
-			"description": "Sayu recovers 1.2 Energy when she triggers a Swirl or Stellar Swirl reaction while on-field.\nThis effect occurs once every 2s."
+			"description": "Sayu recovers 1.2 Energy when she triggers a Swirl or Stellar Swirl reaction while on-field.\nThis effect occurs once every 2s.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "sayu__constellation__speed_comes_first",

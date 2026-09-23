@@ -90,7 +90,8 @@
 				{ "frame": 26, "element": "electro", "units": 1 },
 				{ "frame": 72, "element": "electro" },
 				{ "frame": 85, "element": "electro" }
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "dori__burst__alcazarzarays_exactitude",
@@ -187,7 +188,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — energy regen scales on ER: restores 5 Energy per 100% ER (max 15 Energy) when Troubleshooter Shot or After-Sales Service Rounds hit. Scaling buff — value field intentionally absent per recipe. Reviewer to implement as BuffValue.scaling form."
 			],
-			"description": "When the Troubleshooter Shots or After-Sales Service Rounds from Spirit-Warding Lamp: Troubleshooter Cannon hit opponents, Dori will restore 5 Elemental Energy for every 100% Energy Recharge possessed.\nPer Spirit-Warding Lamp: Troubleshooter Cannon, only one instance of Energy restoration can be triggered and a maximum of 15 Energy can be restored this way."
+			"description": "When the Troubleshooter Shots or After-Sales Service Rounds from Spirit-Warding Lamp: Troubleshooter Cannon hit opponents, Dori will restore 5 Elemental Energy for every 100% Energy Recharge possessed.\nPer Spirit-Warding Lamp: Troubleshooter Cannon, only one instance of Energy restoration can be triggered and a maximum of 15 Energy can be restored this way.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		}
 	],
 	"constellations": [

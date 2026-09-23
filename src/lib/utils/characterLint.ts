@@ -1131,6 +1131,29 @@ function lintAbility(
 			push('strict', 'nothing-to-model-with-ruling', `nothingToModel beside notModeled`, a.id);
 	}
 
+	// (E.29b) `modeledBy` points at ANOTHER host of this character, and says
+	// the same thing as authored effects or a ruling would, so never beside one.
+	const mb = (a as { modeledBy?: unknown }).modeledBy;
+	if (mb !== undefined) {
+		const ids = new Set(
+			[...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])].map((h) => h.id)
+		);
+		if (typeof mb !== 'string' || !ids.has(mb) || mb === a.id)
+			push(
+				'strict',
+				'modeled-by-target',
+				`modeledBy "${String(mb)}" is not another host of this character`,
+				a.id
+			);
+		if (hasEffects || nm !== undefined || ntm !== undefined)
+			push(
+				'strict',
+				'modeled-by-with-statement',
+				`modeledBy beside effects, notModeled or nothingToModel`,
+				a.id
+			);
+	}
+
 	// (E.25) description doesn't contain implementation phrases
 	const desc = (a as { description?: unknown }).description;
 	if (typeof desc === 'string') {

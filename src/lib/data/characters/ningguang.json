@@ -112,7 +112,8 @@
 				{ "frame": 110, "element": "geo", "units": 2 },
 				{ "frame": 116, "element": "geo" },
 				{ "frame": 124, "element": "geo" }
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -120,7 +121,8 @@
 			"id": "ningguang__passive__backup_plan",
 			"name": "Backup Plan",
 			"abilityType": "passive",
-			"description": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina."
+			"description": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina.",
+			"nothingToModel": true
 		},
 		{
 			"id": "ningguang__passive__strategic_reserve",
@@ -156,7 +158,8 @@
 			"name": "Piercing Fragments",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "When a Normal Attack hits, it deals AoE DMG."
+			"description": "When a Normal Attack hits, it deals AoE DMG.",
+			"nothingToModel": true
 		},
 		{
 			"id": "ningguang__constellation__shock_effect",

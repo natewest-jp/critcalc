@@ -437,7 +437,10 @@
 			"name": "Oozora Genpou",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "When Kaedehara Kazuha's Energy is lower than 45, he obtains the following effects:\n·Pressing or Holding Chihayaburu regenerates 3 or 4 Energy for Kaedehara Kazuha, respectively.\n·When gliding, Kaedehara Kazuha regenerates 2 Energy per second."
+			"description": "When Kaedehara Kazuha's Energy is lower than 45, he obtains the following effects:\n·Pressing or Holding Chihayaburu regenerates 3 or 4 Energy for Kaedehara Kazuha, respectively.\n·When gliding, Kaedehara Kazuha regenerates 2 Energy per second.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "kaedehara_kazuha__constellation__wisdom_of_bansei",

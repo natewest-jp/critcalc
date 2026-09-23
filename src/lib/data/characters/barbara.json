@@ -285,7 +285,8 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. A1: reduces Stamina Consumption of characters within Melody Loop by 12%. Effect trigger is while-in-Melody-Loop (no matching trigger type in schema); target is unclear (all party members in range vs. active only). Reviewer to author effect and confirm trigger/target."
 			],
-			"description": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%."
+			"description": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%.",
+			"nothingToModel": true
 		},
 		{
 			"id": "barbara__passive__encore",
@@ -295,7 +296,10 @@
 				"Effect not yet authored. A4 fits the `durationExtensions[]` primitive (E5, 2026-05-10).",
 				"↻ 2026-08-18: the blocker list above used to read \"(1) Melody Loop having no schema home (currently a duration-bounded self-status, not a summon or stance) and (2) the trigger `onPickup` not yet existing\". Blocker (1) is HALF dead: `activeDuration` (instant branch, 2026-08-14) gives Melody Loop a drawn 15s window, so the Loop is authorable — but `durationExtensions[]` is declared on Summon and on the stance branches only, NOT beside `activeDuration` on the instant branch, so A4 still has no host to extend. Blocker (2) stands: `onPickup` is not a Trigger anywhere in src/lib. See barbara skill _curatorNotes for the shape and the fuller record."
 			],
-			"description": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s."
+			"description": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s.",
+			"notModeled": {
+				"reason": "We don't model particle pickups, and this extension comes from picking up Elemental Orbs and Particles."
+			}
 		}
 	],
 	"constellations": [
@@ -308,7 +312,10 @@
 				"trigger: 'manual' inherited from generator — probable trigger is periodic (10s interval). Target scope: self. No conditions or stack cap. Reviewer should update to appropriate trigger type.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 Gleeful Songs — effects[0] (energy self, amount 1) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/barbara/cons.go:11-16` + `barbara.go:49` — `c1(1)` is started from `Init()` and self-requeues a task every `10*60` frames forever; it is unconditional, untriggered wall-clock regen. Retained: `_curatorNotes` must keep: periodic self-energy, 1 per 10s from the start of combat (gcsim `cons.go:11-16`, self-requeueing task, no gate); RETIRED because no periodic non-summon trigger exists and `passive` would print \"+1 Energy\" with the cadence — the only load-bearing part — silently dropped. The `description` already states it verbatim. ⚠️ none — the corpus has zero `passive`-triggered `energy` effects, so nothing else depends on this shape."
 			],
-			"description": "Barbara regenerates 1 Energy every 10s."
+			"description": "Barbara regenerates 1 Energy every 10s.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "barbara__constellation__vitality_burst",
@@ -379,7 +386,10 @@
 			"name": "Dedicating Everything to You",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"description": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins."
+			"description": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins.",
+			"notModeled": {
+				"reason": "We don't model characters falling in battle, so this revive has nothing to show."
+			}
 		}
 	],
 	"meta": {

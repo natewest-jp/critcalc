@@ -137,7 +137,8 @@
 					"element": "cryo",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "rosaria__burst__rites_of_termination",
@@ -277,7 +278,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C1 grants: on any CRIT hit, ATK SPD +10% and Normal ATK DMG +10% for 4s (self). gcsim implements via makeC1CB() attached to all N/E/Q attack callbacks. Likely two separate self-buffs triggered onHit with onCrit condition, duration: 4s — one for AtkSpd, one for Normal DMG%. Reviewer to author."
 			],
-			"description": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s."
+			"description": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s.",
+			"notModeled": {
+				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — this triggers on CRIT hits."
+			}
 		},
 		{
 			"id": "rosaria__constellation__land_without_promise",
@@ -301,7 +305,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C4 regenerates 5 Energy for Rosaria on E CRIT hits, once per E cast (gcsim uses done=true guard in makeC4CB()). Likely onHit with ability: 'skill', onCrit condition, energy: 5, capped once per cast."
 			],
-			"description": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast."
+			"description": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast.",
+			"notModeled": {
+				"reason": "We don't simulate chance, so two people planning the same rotation always see the same bars — this Energy is restored on CRIT hits."
+			}
 		},
 		{
 			"id": "rosaria__constellation__last_rites",

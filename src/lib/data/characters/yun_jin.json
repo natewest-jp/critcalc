@@ -287,7 +287,10 @@
 			"id": "yun_jin__passive__true_to_oneself",
 			"name": "True to Oneself",
 			"abilityType": "passive",
-			"description": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form."
+			"description": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form.",
+			"notModeled": {
+				"reason": "Opponents don't attack in our model, so there is no hit to counter."
+			}
 		},
 		{
 			"id": "yun_jin__passive__breaking_conventions",
@@ -385,7 +388,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C6: characters under Flying Cloud Flag Formation gain +12% Normal ATK SPD. gcsim: AtkSpd += 0.12 via AddStatMod, active while burstBuffKey tag > 0 (stacks remain). Likely type:'buff', stat:'atkSpd', value:12, target:'team', trigger:onCast with ability:'burst', conditional on stacks remaining."
 			],
-			"description": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%."
+			"description": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%.",
+			"notModeled": {
+				"reason": "We don't model attack speed, so this changes nothing on the timeline."
+			}
 		}
 	],
 	"meta": {

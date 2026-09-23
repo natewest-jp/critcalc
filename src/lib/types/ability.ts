@@ -2213,6 +2213,16 @@ export type AbilityCommon = {
 	 *  default for anything not yet looked at. ⛔ Never beside `effects` or
 	 *  `notModeled` (lint E.29). */
 	nothingToModel?: true;
+	/** ⚓ "Drawn through ANOTHER host" as data (coverage round, ⚓ Nate
+	 *  2026-09-23): the id of the ability/passive/constellation whose data carries
+	 *  this host's mechanic, when nothing in that data names this host — a
+	 *  summon's `durationExtensions` (Collei A4), a tick's `flatScaling` (Aino A4),
+	 *  a buff hosted on a passive (Illuga's skill). A gated condition or a
+	 *  `source`/`attribution` string is found by the derivation on its own and
+	 *  needs no pointer. ⛔ Never beside `effects`, `notModeled` or
+	 *  `nothingToModel`; the target must be another host of the same character
+	 *  (lint E.29b). */
+	modeledBy?: string;
 };
 
 /** Normal-attack ability. Holds normals + charged + plunge frames in one record. */

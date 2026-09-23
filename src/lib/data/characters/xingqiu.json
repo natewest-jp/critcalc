@@ -236,7 +236,8 @@
 			"id": "xingqiu__passive__flash_of_genius",
 			"name": "Flash of Genius",
 			"abilityType": "passive",
-			"description": "When Xingqiu crafts Character Talent Materials, he has a 25% chance to refund a portion of the crafting materials used."
+			"description": "When Xingqiu crafts Character Talent Materials, he has a 25% chance to refund a portion of the crafting materials used.",
+			"nothingToModel": true
 		}
 	],
 	"constellations": [
@@ -245,7 +246,8 @@
 			"name": "The Scent Remained",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Increases the maximum number of Rain Swords by 1."
+			"description": "Increases the maximum number of Rain Swords by 1.",
+			"nothingToModel": true
 		},
 		{
 			"id": "xingqiu__constellation__rainbow_upon_the_azure_sky",

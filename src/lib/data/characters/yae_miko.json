@@ -214,7 +214,10 @@
 			"description": "Every point of Elemental Mastery Yae Miko possesses will increase Sesshou Sakura DMG by 0.15%.",
 			"_curatorNotes": [
 				"Sesshou Sakura DMG +0.15% per point of EM — gcsim a4 AddAttackMod `m[DmgP] = c.Stat(EM) * 0.0015` on the Sesshou Sakura ticks. ↻ RETIRED to description 2026-09-15 (essential-characters T0; docs/manual-trigger-retirement.md step 3): the effect was a `manual` skeleton with no `value` and the wrong stat (`em`), so it reached no surface and claimed a buff that does not exist. What the passive does is damage magnitude, which is out of scope — nothing to draw, so nothing is authored and no caveat is owed."
-			]
+			],
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard Sesshou Sakura hits."
+			}
 		},
 		{
 			"id": "yae_miko__passive__edict_of_cleansing",

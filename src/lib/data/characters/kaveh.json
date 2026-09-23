@@ -194,7 +194,10 @@
 			"name": "Grace of Royal Roads",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome."
+			"description": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome.",
+			"notModeled": {
+				"reason": "We don't model attack speed, so this Normal Attack SPD bonus isn't shown."
+			}
 		},
 		{
 			"id": "kaveh__constellation__profferings_of_dur_untash",

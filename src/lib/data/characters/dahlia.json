@@ -209,7 +209,10 @@
 			"_curatorNotes": [
 				"Scaling buff — ATK SPD scales with Dahlia's Max HP: 0.5% per 1,000 Max HP (gcsim: min(MaxHP*0.001*0.005, 0.2)), cap 20%. target: active character under Favonian Favor. C6 adds a flat 10% on top (uncapped). No value field authored (scaling buff second pass)."
 			],
-			"description": "When your active party member is affected by the Favonian Favor effect of the Elemental Burst **\"Radiant Psalter,\"** their ATK SPD will increase based on Dahlia's Max HP: Every 1,000 Max HP will cause an increase of 0.5%, up to a maximum of 20%."
+			"description": "When your active party member is affected by the Favonian Favor effect of the Elemental Burst **\"Radiant Psalter,\"** their ATK SPD will increase based on Dahlia's Max HP: Every 1,000 Max HP will cause an increase of 0.5%, up to a maximum of 20%.",
+			"notModeled": {
+				"reason": "We don't model attack speed, so Normal Attacks keep their usual timing under this bonus."
+			}
 		}
 	],
 	"constellations": [
@@ -218,7 +221,10 @@
 			"name": "Infallible Procession",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Each time Dahlia gains 1 of his Elemental Burst **Radiant Psalter**'s Benison stacks, he will regain 2.5 Elemental Energy."
+			"description": "Each time Dahlia gains 1 of his Elemental Burst **Radiant Psalter**'s Benison stacks, he will regain 2.5 Elemental Energy.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "dahlia__constellation__revelation_of_mercy",
@@ -228,7 +234,10 @@
 			"_curatorNotes": [
 				"25% Shield Strength for 12s granted to the character protected by the new Shield, triggered when a Benison stack is consumed to summon a Shield of Sacred Favor. Effect not yet authored — needs reviewer pass."
 			],
-			"description": "After Dahlia consumes his Elemental Burst **Radiant Psalter**'s Benison stacks to summon a Shield of Sacred Favor, the character protected by said Shield will gain 25% increased Shield Strength for 12s."
+			"description": "After Dahlia consumes his Elemental Burst **Radiant Psalter**'s Benison stacks to summon a Shield of Sacred Favor, the character protected by said Shield will gain 25% increased Shield Strength for 12s.",
+			"notModeled": {
+				"reason": "We don't draw shield strength, and this only makes the Shield of Sacred Favor sturdier."
+			}
 		},
 		{
 			"id": "dahlia__constellation__windblume_offertory",
@@ -263,7 +272,10 @@
 				"Two effects: (1) ATK SPD +10% (flat) for active character under Favonian Favor — additive with A4 HP-scaling ATK SPD, so C6 cap is effectively 30% (gcsim: burstAttackSpeed = min(HP-based, 0.2) + 0.1). Still unauthored — needs reviewer pass. (2) Revival mechanic: resolved as caveat-only (capability sweep 2026-07-28) — gcsim cons.go:54-88 subscribes OnPlayerHPDrain, SetHPByRatio(1) when the Favonian Favor holder falls, c6Icd = 15*60*60 frames. Death-triggered revive: no on-death trigger primitive and no way to express a 15-minute once-per; a timeline heal effect would misrepresent it.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Attack speed is not in the Stat union at all — no ATK SPD buff is authorable or renderable for ANY character (Mika's whole Soulwind buff and Yun Jin's C6 are handled as curator notes, which is the house pattern), so no bar anywhere claims or omits it, and the only downstream effect would be normal-attack block widths being ~10% wide. The revive is a death-triggered, once-per-15-minutes mechanic with no timeline representation and nothing a player would look for on a Gantt chart. If the ATK SPD half is ever wanted back it belongs in a tool-level line, not on one C6 entry. Category: invisible-omission."
 			],
-			"description": "The current active character affected by the Elemental Burst **Radiant Psalter**'s Favonian Favor has their ATK SPD increased by 10%.\nAdditionally, when an active character affected by Favonian Favor falls, immediately:\n· Revive them.\n· Restore their HP to 100%.\nThis effect can trigger once every 15 minutes."
+			"description": "The current active character affected by the Elemental Burst **Radiant Psalter**'s Favonian Favor has their ATK SPD increased by 10%.\nAdditionally, when an active character affected by Favonian Favor falls, immediately:\n· Revive them.\n· Restore their HP to 100%.\nThis effect can trigger once every 15 minutes.",
+			"notModeled": {
+				"reason": "We don't model attack speed or characters falling in battle, so neither half of this constellation is drawn."
+			}
 		}
 	],
 	"meta": {

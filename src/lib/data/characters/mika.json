@@ -146,7 +146,10 @@
 					"element": "cryo",
 					"units": 1
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "We don't model attack speed, so Soulwind's ATK SPD bonus isn't drawn."
+			}
 		},
 		{
 			"id": "mika__burst__skyfeather_song",
@@ -263,7 +266,10 @@
 			"_curatorNotes": [
 				"Restores 3 Energy to Mika each time Eagleplume heals a party member, up to 5 times per Q cast. gcsim: decrements c4Count (starts at 5) on each heal. Energy restoration mechanic not authored — needs reviewer pass."
 			],
-			"description": "When Mika's own Skyfeather Song's Eagleplume state heals party members, this will restore 3 Energy to Mika. This form of Energy restoration can occur 5 times during the Eagleplume state created by 1 use of Skyfeather Song."
+			"description": "When Mika's own Skyfeather Song's Eagleplume state heals party members, this will restore 3 Energy to Mika. This form of Energy restoration can occur 5 times during the Eagleplume state created by 1 use of Skyfeather Song.",
+			"notModeled": {
+				"reason": "We don't track energy, so the planner doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "mika__constellation__signal_arrow",

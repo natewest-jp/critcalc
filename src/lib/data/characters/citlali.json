@@ -220,7 +220,10 @@
 					"element": "cryo",
 					"units": 1
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "We don't track Nightsoul points, so the points this burst restores to Citlali aren't shown."
+			}
 		}
 	],
 	"passives": [
@@ -276,7 +279,10 @@
 				"+4 Nightsoul on nearby Nightsoul Burst event: pure resource, not modelled.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Itzpapalotl's Star Garments — effects[0] (damage 90% em, cryo) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/citlali/asc.go:66-77` — `a4Dmg()` returns `0.9 * em` only for `frostFallAbil`, and `skill.go:161-170` adds it as `FlatDmg` on the Frostfall Storm tick; the skill's own `Obsidian Tzitzimitl DMG` (`skill.go:37`) gets nothing. Retained: A4 adds 90% of EM as flat DMG to Itzpapa's Frostfall Storm tick ONLY (gcsim `a4Dmg`, `asc.go:66-77`) — not to the skill's initial Obsidian Tzitzimitl hit, which is why `skillFlatDmg` cannot carry it; the +4 Nightsoul on a team Nightsoul Burst stays resource-only. ⚠️ This is the near-miss CONVERT. `skillFlatDmg` would print +90% EM on the always-on chip and claim it for the Tzitzimitl hit too — a named-ability scope inside a class the character has other damage in, which the brief rules a RETIRE. The honest home for a per-tick addend is `DamageEffect.flatScaling` on Itzpapa's existing summon tick (`{\"stat\":\"em\",\"ratio\":90}`), but that reaches no surface either (a summon tick's damage draws a marker, never a number), so it buys nothing.\n\n↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive: Itzpapalotl's Star Garments — effects[1] (damage 1200% em, cryo) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/citlali/asc.go:71-73` — `a4Dmg()` returns `12 * em` for `iceStormAbil`, applied as `FlatDmg` at `burst.go:53`; the burst's second instance `Spiritvessel Skull DMG` (`burst.go:55-66`) is also `AttackTagElementalBurst` and gets none. Retained: +1200% of EM as flat DMG on the burst's Ice Storm hit alone; the Spiritvessel Skulls the same burst throws are burst-tagged and do NOT receive it (`burst.go:55-66`), so `burstFlatDmg` would over-claim. ⚠️ gcsim writes `12 * em` and the kit says 1200% — the same number, stated twice; no disagreement to report. ⚠️ Both A4 effects were authored with no `ascension` gate, so any re-authoring would have had to add `{\"type\":\"ascension\",\"min\":4}`."
 			],
-			"description": "During the Elemental Skill Dawnfrost Darkstar, Itzpapa's Frostfall Storm DMG is increased by 90% of Citlali's Elemental Mastery. During the Elemental Burst Edict of Entwined Splendor, Ice Storm DMG is increased by 1200% of Citlali's Elemental Mastery.\nIn addition, when nearby party members trigger Nightsoul Bursts, Citlali regains 4 Nightsoul points."
+			"description": "During the Elemental Skill Dawnfrost Darkstar, Itzpapa's Frostfall Storm DMG is increased by 90% of Citlali's Elemental Mastery. During the Elemental Burst Edict of Entwined Splendor, Ice Storm DMG is increased by 1200% of Citlali's Elemental Mastery.\nIn addition, when nearby party members trigger Nightsoul Bursts, Citlali regains 4 Nightsoul points.",
+			"notModeled": {
+				"reason": "We don't draw damage amounts, and this only raises how hard Itzpapa's Frostfall Storm and Ice Storm hit. We don't track Nightsoul points either."
+			}
 		}
 	],
 	"constellations": [
@@ -419,7 +425,10 @@
 			"_curatorNotes": [
 				"Cifra of the Secret Law: Citlali earns up to 40 stacks (1 per Nightsoul point Itzpapa consumes). Each stack grants team +1.5% Pyro/Hydro DMG and Citlali +2.5% all DMG. Stack accumulation requires Nightsoul resource tracking; not modelled per the constitution. Itzpapa's Opal Fire 'always active' override also not modelled (resource gating). Removed prior placeholder hydroDmgBonus 2.5% effect that was modelling one stack with the wrong stat target."
 			],
-			"description": "After being summoned with the Elemental Skill Dawnfrost Darkstar, Itzpapa will always be in the Opal Fire state, and when Nightsoul points are exhausted, this state will not end.\nAdditionally, when Dawnfrost Darkstar is used, Itzpapa will consume all Nightsoul points, and while it is on the field, it will continuously consume Nightsoul points. Each Nightsoul point consumed in this way will grant Citlali 1 \"Cifra of the Secret Law\" point.\nA maximum of 40 such points can be gained, and each point Citlali possesses will grant all nearby party members a 1.5% Pyro and Hydro DMG Bonus, and increase the DMG Citlali deals by 2.5%.\nWhen Itzpapa leaves the field, or upon using Citlali's Elemental Skill again, all \"Cifra of the Secret Law\" points she has will be removed."
+			"description": "After being summoned with the Elemental Skill Dawnfrost Darkstar, Itzpapa will always be in the Opal Fire state, and when Nightsoul points are exhausted, this state will not end.\nAdditionally, when Dawnfrost Darkstar is used, Itzpapa will consume all Nightsoul points, and while it is on the field, it will continuously consume Nightsoul points. Each Nightsoul point consumed in this way will grant Citlali 1 \"Cifra of the Secret Law\" point.\nA maximum of 40 such points can be gained, and each point Citlali possesses will grant all nearby party members a 1.5% Pyro and Hydro DMG Bonus, and increase the DMG Citlali deals by 2.5%.\nWhen Itzpapa leaves the field, or upon using Citlali's Elemental Skill again, all \"Cifra of the Secret Law\" points she has will be removed.",
+			"notModeled": {
+				"reason": "We don't track Nightsoul points, and the Cifra of the Secret Law behind this Pyro and Hydro DMG Bonus builds from the points Itzpapa consumes."
+			}
 		}
 	],
 	"meta": {

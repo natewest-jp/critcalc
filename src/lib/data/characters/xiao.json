@@ -229,7 +229,8 @@
 					"element": "anemo",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "xiao__burst__bane_of_all_evil",
@@ -378,7 +379,10 @@
 			"description": "While under the effects of Bane of All Evil, hitting at least 2 opponents with Xiao's Plunging Attack will immediately grant him 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he may use Lemniscatic Wind Cycling while ignoring its CD.",
 			"_curatorNotes": [
 				"Effect not authored — needs reviewer pass. Mechanic: while burstBuffKey is active, an OnDamage AttackCB on plunges counts enemies hit; on the 2nd enemy hit it ResetActionCooldown(skill) + AddStatus(c6BuffKey, 72f, true), which during its 1.2s window allows skill use without consuming a charge or setting CD. Schema has no 'reset-CD-on-plunge-multi-hit-count' construct, and the 'free skill cast' window is a transient skill-mode override. Flag and defer; reviewer to extend schema or annotate."
-			]
+			],
+			"notModeled": {
+				"reason": "We model a single opponent, so a Plunging Attack never hits the two opponents this needs."
+			}
 		}
 	],
 	"meta": {
