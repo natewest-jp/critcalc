@@ -1,8 +1,12 @@
 # The Coverage page — `/coverage`
 
-_Status: PLANNED 2026-09-22 (⚓ Nate: ships WITH launch). Nothing built. This
-document is the spec; §9 is the phase list; §10 holds what still needs Nate.
-When the round ships, its §11 record wins over everything above it._
+_Status: IN PROGRESS on `feat/coverage-page` (2026-09-23). ✅ Phase 1 (derivation, index stamp, the
+three statements + lints E.29–E.31) and a first cut of Phase 3 (the page) are built. ⏳ Phase 2's
+proposals are in `docs/curation/coverage-classification.md`, awaiting Nate — nothing is written to
+the data yet. ⚠️ Deviations from this spec so far: a tenth column, `extra` (a third passive or a
+faction bonus — 16 characters carry one); an absent charged attack is a STAND-IN
+(`GENERIC_CHARGE_FRAMES`), not missing; a stance or window a cast opens counts as its grant. When the
+round ships, its §11 record wins over everything above it._
 
 ## 0. What it is, in one paragraph
 

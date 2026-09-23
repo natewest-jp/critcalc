@@ -41,7 +41,9 @@
 	     in both cases and leaked prose typography onto the chapter NAV and the
 	     settings rows; it only became visible when links gained a resting
 	     underline and the nav sprouted full-width rules. -->
-	<main class="pages-panel">
+	<!-- The coverage list is a table, not prose: it takes a wider panel so the
+	     strip keeps readable segment widths beside the name column. -->
+	<main class="pages-panel" class:is-wide={pathname.startsWith('/coverage')}>
 		{#key pathname}
 			<div in:fade={{ duration: 150 }}>
 				{@render children()}
@@ -76,6 +78,9 @@
 		padding: clamp(1.4rem, 3vw, 2.4rem);
 		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 		will-change: transform;
+	}
+	.pages-panel.is-wide {
+		width: min(1180px, calc(100% - 2.5rem));
 	}
 
 	/* Typography for the content itself is the shared `.prose` class in app.css
