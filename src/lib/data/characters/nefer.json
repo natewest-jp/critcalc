@@ -301,6 +301,7 @@
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.714Z",
-		"curatedAt": "2026-05-08"
+		"curatedAt": "2026-05-08",
+		"framesSource": "gcsim-pr"
 	}
 }

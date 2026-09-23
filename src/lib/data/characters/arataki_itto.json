@@ -205,7 +205,8 @@
 					"duration": 6,
 					"spawnsAt": 14,
 					"mobility": "stationary",
-					"terminatesOn": "recast"
+					"terminatesOn": "recast",
+					"dealsNothing": true
 				}
 			],
 			"effects": [],

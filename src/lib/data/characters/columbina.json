@@ -295,7 +295,8 @@
 					"label": "Lunar Domain",
 					"duration": 20,
 					"spawnsAt": 86,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"dealsNothing": true
 				}
 			],
 			"effects": [

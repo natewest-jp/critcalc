@@ -7,6 +7,7 @@
 import type { Ability, Effect, Element, Reaction } from './ability';
 import type { WeaponType } from './weapon';
 import type { CapabilitySummary } from '../capabilities/deriveCapabilities';
+import type { FramesSource } from '../coverage/deriveCoverage';
 
 // ---------------------------------------------------------------------------
 // Core enums
@@ -39,6 +40,11 @@ export type CharacterRoles = { position: RolePosition[]; function: RoleFunction[
 export type CharacterMeta = {
 	source: 'genshin-db';
 	generatedAt: string;
+	/** Where the FrameMaps came from (coverage round, docs/coverage-round.md
+	 *  §5.3). Absent = `gcsim` (merged main). `gcsim-pr` (an unmerged PR — the
+	 *  Ifa/Varka precedent), `wiki` and `hand` read as stand-in timing on the
+	 *  coverage page. */
+	framesSource?: FramesSource;
 };
 
 /** Canonical character data model — the shape of committed character JSONs. */
@@ -130,6 +136,11 @@ export type CharacterIndexEntry = Pick<
 	/** Derived capability summaries (deriveCapabilities.summarizeCapabilities),
 	 *  computed at index-generation time from the character JSON. */
 	caps: CapabilitySummary[];
+	/** The coverage strip (coverage/deriveCoverage.ts), one state character
+	 *  per segment in `COVERAGE_SEGMENTS` order — `decodeCoverage` reads it.
+	 *  The per-segment lines and caveats are derived on demand from the lazy
+	 *  payload; only the states are eager. */
+	coverage: string;
 };
 
 /** A single character's contribution to a team-wide faction bonus.

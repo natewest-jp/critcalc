@@ -81,7 +81,8 @@
 					"label": "Jade Screen",
 					"duration": 30,
 					"mobility": "stationary",
-					"terminatesOn": "recast"
+					"terminatesOn": "recast",
+					"dealsNothing": true
 				}
 			],
 			"_curatorNotes": [

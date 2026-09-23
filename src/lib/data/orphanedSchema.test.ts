@@ -41,8 +41,6 @@ const INERT: Record<string, string> = {
 	draftedAt: 'curation provenance, documentation only',
 	draftedBy: 'curation provenance, documentation only',
 	generatedAt: 'ingest provenance, documentation only',
-	framesSource:
-		'frame provenance — its consumer is the coverage page (docs/coverage-round.md §5.3), which declares it and reads gcsim-pr as provisional timing',
 	// Forward-looking game truth, each with a stated reason at its declaration.
 	snapshots:
 		'KQM snapshotting; the tools model buff windows, not damage — see docs/library/game/snapshotting.md',

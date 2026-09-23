@@ -1280,6 +1280,14 @@ export type Summon = {
 	 *  reaction). Parser dispatch is currently `onCast`-only; other triggers
 	 *  are schema-accepted but not yet wired. */
 	durationExtensions?: DurationExtension[];
+	/** ⚓ The positive statement that this summon deals and applies NOTHING of
+	 *  its own (coverage round, docs/coverage-round.md §5.2) — a taunt, a
+	 *  shield gadget, a heal-only field. Read by the coverage page only: a
+	 *  summon with no `effects` and no `dealsNothing` reads as a stand-in there
+	 *  (its window draws, its ticks may not). ⛔ Not `effects: []`, which means
+	 *  "none authored" everywhere else. ⛔ Never beside a `damage` effect
+	 *  (lint E.30). */
+	dealsNothing?: true;
 };
 
 // ---------------------------------------------------------------------------
@@ -2192,6 +2200,19 @@ export type AbilityCommon = {
 	/** Availability gate — if present and evaluates false, ability is not resolvable. */
 	conditions?: Condition;
 	effects?: Effect[];
+	/** ⚓ A RULING as data (coverage round, docs/coverage-round.md §5.1): this
+	 *  host describes something we decided not to model — co-op shields,
+	 *  distance-based mechanics, a low-probability proc. `reason` is
+	 *  USER-FACING (the coverage page renders it; caveat style guide: name the
+	 *  thing, ≤2 sentences). ⛔ Never beside `effects` (lint E.29); a `caveat`
+	 *  may still sit beside it. */
+	notModelled?: { reason: string };
+	/** ⚓ n/a as data (coverage round §6): the host describes nothing the planner
+	 *  would ever draw — stamina, movement, a crafting refund. Absent both this
+	 *  and `effects`, the coverage page reads the host as MISSING, the honest
+	 *  default for anything not yet looked at. ⛔ Never beside `effects` or
+	 *  `notModelled` (lint E.29). */
+	nothingToModel?: true;
 };
 
 /** Normal-attack ability. Holds normals + charged + plunge frames in one record. */

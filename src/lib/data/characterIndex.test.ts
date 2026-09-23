@@ -14,6 +14,7 @@ import {
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '$lib/capabilities/deriveCapabilities';
+import { deriveCoverage, encodeCoverage } from '$lib/coverage/deriveCoverage';
 import { isCurated } from '$lib/utils/characterLint';
 import { declaredCastTokens, hasPlungeFrames } from '$lib/utils/castTokens';
 
@@ -46,6 +47,7 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 	entry.casts = declaredCastTokens(source);
 	entry.plunge = hasPlungeFrames(source);
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
+	entry.coverage = encodeCoverage(deriveCoverage(source));
 	const gated = collectGatedReactions(source);
 	if (gated.length > 0) entry.gatedReactions = gated;
 	return entry as CharacterIndexEntry;

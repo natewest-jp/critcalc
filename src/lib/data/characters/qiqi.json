@@ -264,7 +264,8 @@
 				{
 					"label": "Fortune-Preserving Talisman",
 					"duration": 15,
-					"spawnsAt": 40
+					"spawnsAt": 40,
+					"dealsNothing": true
 				}
 			],
 			"_curatorNotes": [

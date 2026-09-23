@@ -85,7 +85,8 @@
 							"value": 10,
 							"conditions": { "type": "constellation", "level": 6 }
 						}
-					]
+					],
+					"dealsNothing": true
 				}
 			],
 			"variants": [

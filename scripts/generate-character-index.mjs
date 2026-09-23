@@ -28,6 +28,7 @@ import {
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '../src/lib/capabilities/deriveCapabilities.ts';
+import { deriveCoverage, encodeCoverage } from '../src/lib/coverage/deriveCoverage.ts';
 import { isCurated } from '../src/lib/utils/characterLint.ts';
 import { declaredCastTokens, hasPlungeFrames } from '../src/lib/utils/castTokens.ts';
 
@@ -72,6 +73,10 @@ for (const file of files) {
 	entry.casts = declaredCastTokens(data);
 	entry.plunge = hasPlungeFrames(data);
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(data).capabilities);
+	// The coverage strip, one state character per segment (deriveCoverage.ts,
+	// COVERAGE_SEGMENTS order) — eager so the /coverage list, the announcement
+	// banner and the TB's uncurated bucket can read it without the payloads.
+	entry.coverage = encodeCoverage(deriveCoverage(data));
 	const gated = collectGatedReactions(data);
 	if (gated.length > 0) entry.gatedReactions = gated;
 	entries.push(entry);

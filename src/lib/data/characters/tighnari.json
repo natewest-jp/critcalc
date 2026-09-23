@@ -120,7 +120,8 @@
 					"label": "Vijnana-Khanda Field",
 					"duration": 8,
 					"spawnsAt": 15,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"dealsNothing": true
 				}
 			],
 			"tags": ["taunt"],

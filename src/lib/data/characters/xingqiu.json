@@ -103,7 +103,8 @@
 				{
 					"label": "Rain Swords",
 					"duration": 15,
-					"mobility": "follows"
+					"mobility": "follows",
+					"dealsNothing": true
 				}
 			],
 			"noICD": true,
