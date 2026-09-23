@@ -8,13 +8,13 @@
 
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, CharacterIndexEntry } from '$lib/types/character';
-import { characterIndex } from './characterIndex.generated';
+import { characterIndex, inTheWorks } from './characterIndex.generated';
 import {
 	collectGatedReactions,
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '$lib/capabilities/deriveCapabilities';
-import { deriveCoverage, encodeCoverage } from '$lib/coverage/deriveCoverage';
+import { decodeCoverage, deriveCoverage, encodeCoverage } from '$lib/coverage/deriveCoverage';
 import { isCurated } from '$lib/utils/characterLint';
 import { declaredCastTokens, hasPlungeFrames } from '$lib/utils/castTokens';
 
@@ -58,6 +58,14 @@ describe('generated character index', () => {
 		const indexIds = characterIndex.map((e) => e.id).sort();
 		const sourceIds = sources.map((c) => c.id).sort();
 		expect(indexIds).toEqual(sourceIds);
+	});
+
+	it('lists the frameless characters as in the works', () => {
+		const expected = characterIndex
+			.filter((e) => e.id !== 'blank' && decodeCoverage(e.coverage)[0] === 'missing')
+			.map((e) => e.displayName);
+		expect(inTheWorks).toEqual(expected);
+		expect(inTheWorks.length).toBeGreaterThan(0);
 	});
 
 	it('matches the source JSON on every index field', () => {

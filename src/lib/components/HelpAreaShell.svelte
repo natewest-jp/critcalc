@@ -2,7 +2,7 @@
 	import type { Component } from 'svelte';
 	import type { Area } from '$lib/help/areas';
 	import { findChapter } from '$lib/help/areas';
-	import { setChapter } from './chromeModal.svelte';
+	import { closeChromeModal, setChapter } from './chromeModal.svelte';
 
 	// One area, two presentations. In `modal` mode the chapter list switches
 	// panes in place (the URL never moves — see chromeModal.svelte.ts); in
@@ -52,6 +52,12 @@
 
 	function onChapterClick(event: MouseEvent, id: string) {
 		if (mode !== 'modal') return; // page mode: let the browser navigate
+		// A standalone page is never a pane: let the link navigate, and close the
+		// overlay so the page is what you land on.
+		if (findChapter(area.id, id).standalone) {
+			closeChromeModal();
+			return;
+		}
 		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
 			return; // leave open-in-new-tab to the browser
 		}

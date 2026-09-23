@@ -8,6 +8,10 @@
 	 Sponsors link belongs in "Supporting critcalc" for the same reason: not
 	 promised until it exists. -->
 
+<script lang="ts">
+	import { resolve } from '$app/paths';
+</script>
+
 <h1>Contribute</h1>
 
 <p class="lede">
@@ -51,6 +55,10 @@
 		Wrong values, missing characters, and kits that behave differently in game than they do here are
 		all worth flagging. Curation happens in stages, so "not curated yet" is a normal state rather
 		than an oversight — but a value that is simply <em>wrong</em> is a bug.
+	</p>
+	<p>
+		The <a href={resolve('/coverage')}>coverage page</a> lists what each character’s kit has in the Rotation
+		Planner so far, and what falls outside it, with the reason.
 	</p>
 	<!-- TODO: replace with the real channel once Nate picks one (public repo
 		 issues / an email alias on the domain / Discord). Until then, do not

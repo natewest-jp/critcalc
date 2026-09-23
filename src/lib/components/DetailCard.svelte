@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { constellations, siteSettings, ownership } from '$lib/stores';
@@ -236,11 +237,13 @@
 				<p class="dc-stub-note">
 					Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”,
 					not “no”.
+					<a class="dc-stub-link" href="{resolve('/coverage')}?c={entry.id}">See coverage</a>
 				</p>
 			{:else}
 				<p class="dc-stub-note">
 					Capabilities below are complete. Frame timing isn’t curated yet, so only this character’s
 					rotation timing is approximate in the Planner.
+					<a class="dc-stub-link" href="{resolve('/coverage')}?c={entry.id}">See coverage</a>
 				</p>
 			{/if}
 		{/if}
@@ -518,6 +521,10 @@
 		background: var(--sel-fill);
 	}
 
+	.dc-stub-link {
+		color: inherit;
+		white-space: nowrap;
+	}
 	.dc-stub-note {
 		margin: 0;
 		padding: 0.55rem 0.7rem;

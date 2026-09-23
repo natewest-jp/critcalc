@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import type { SlotCaveatEntry } from '$lib/timeline/slotCaveats';
 
@@ -30,7 +31,11 @@
 	// panel about somebody's kit.
 	// ⚠ The lines themselves moved verbatim, along with their "no line without a
 	// source in the code" rule. ⛔ Don't re-add an aura block here.
-	let { entries }: { entries: SlotCaveatEntry[] } = $props();
+	// ⚓ Coverage links (coverage round Phase 4, ⚓ Nate 2026-09-23): each
+	// character's notes end in a link to their row on /coverage, and the panel
+	// ends in one for the whole team — the only way to reach a slot whose kit
+	// carries no caveat, since such a character has no entry here at all.
+	let { entries, teamIds = [] }: { entries: SlotCaveatEntry[]; teamIds?: string[] } = $props();
 </script>
 
 <div class="rp-caveat-panel">
@@ -47,8 +52,14 @@
 					<p class="rp-caveat-text">{item.caveat}</p>
 				</div>
 			{/each}
+			<a class="rp-coverage-link" href="{resolve('/coverage')}?c={entry.id}">Coverage</a>
 		</div>
 	{/each}
+	{#if teamIds.length > 1}
+		<a class="rp-coverage-link rp-coverage-team" href="{resolve('/coverage')}?c={teamIds.join(',')}"
+			>Coverage for this team</a
+		>
+	{/if}
 </div>
 
 <style>
@@ -96,6 +107,23 @@
 		text-transform: uppercase;
 		letter-spacing: var(--ls-widest);
 		opacity: 0.8;
+	}
+	.rp-coverage-link {
+		align-self: flex-start;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+		text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+		text-underline-offset: 0.2em;
+		transition: color var(--t-snap);
+	}
+	.rp-coverage-link:hover {
+		color: var(--text);
+	}
+	.rp-coverage-team {
+		margin-top: 2px;
+		padding-top: 10px;
+		border-top: 1px solid var(--border);
+		align-self: stretch;
 	}
 	.rp-caveat-text {
 		margin: 0;

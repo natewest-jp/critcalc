@@ -12,7 +12,10 @@
 	 * and caveats come from `deriveCoverage` over the lazy payload, loaded when a
 	 * row is hovered or opened.
 	 */
+	import { onMount, tick } from 'svelte';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
+	import { replaceState } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { characterIndex } from '$lib/data/characterIndex.generated';
 	import { loadCharacter } from '$lib/data/characterData';
 	import type { CharacterData, CharacterIndexEntry } from '$lib/types/character';
@@ -106,7 +109,38 @@
 		new Set(Object.keys($ownership).filter((id) => $ownership[id] === 'owned'))
 	);
 
+	// -------------------------------------------------------------------------
+	// Deep link — /coverage?c=bennett,xiangling (the planner's Notes panel)
+	// -------------------------------------------------------------------------
+
+	/** Characters named by the link, in the link's order; empty = the full list.
+	 *  Read in onMount, never during render: the page is prerendered, and a
+	 *  query string does not exist at build time. */
+	let pinned = $state<string[]>([]);
+	const byId: Record<string, Row> = Object.fromEntries(rows.map((r) => [r.entry.id, r]));
+
+	onMount(async () => {
+		const ids = (new URLSearchParams(location.search).get('c') ?? '')
+			.split(',')
+			.map((s) => s.trim())
+			.filter((id, i, all) => id in byId && all.indexOf(id) === i);
+		if (ids.length === 0) return;
+		pinned = ids;
+		for (const id of ids) {
+			open.add(id);
+			ensure(id);
+		}
+		await tick();
+		document.getElementById(`cov-${ids[0]}`)?.scrollIntoView({ block: 'start' });
+	});
+
+	function showAll() {
+		pinned = [];
+		replaceState(resolve('/coverage'), {});
+	}
+
 	const visible = $derived.by(() => {
+		if (pinned.length > 0) return pinned.map((id) => byId[id]);
 		const q = search.trim().toLowerCase();
 		const out = rows.filter(
 			(r) =>
@@ -196,51 +230,66 @@
 			{/each}
 		</ul>
 
-		<div class="cov-controls">
-			<input
-				class="cov-search"
-				type="search"
-				placeholder="Search characters"
-				aria-label="Search characters"
-				bind:value={search}
-			/>
-			<div class="chip-group" role="group" aria-label="Element">
-				{#each ELEMENTS as el (el)}
+		<!-- A deep link narrows the list to its characters; the filters would
+		     do nothing there, so they return with "Show all characters". -->
+		{#if pinned.length === 0}
+			<div class="cov-controls">
+				<input
+					class="cov-search"
+					type="search"
+					placeholder="Search characters"
+					aria-label="Search characters"
+					bind:value={search}
+				/>
+				<div class="chip-group" role="group" aria-label="Element">
+					{#each ELEMENTS as el (el)}
+						<button
+							type="button"
+							class="chip"
+							aria-pressed={elements.has(el)}
+							onclick={() => toggle(elements, el)}>{el[0].toUpperCase() + el.slice(1)}</button
+						>
+					{/each}
+				</div>
+				<div class="chip-group" role="group" aria-label="Weapon">
+					{#each WEAPONS as w (w)}
+						<button
+							type="button"
+							class="chip"
+							aria-pressed={weapons.has(w)}
+							onclick={() => toggle(weapons, w)}>{w[0].toUpperCase() + w.slice(1)}</button
+						>
+					{/each}
+				</div>
+				<div class="chip-group" role="group" aria-label="Show">
 					<button
 						type="button"
 						class="chip"
-						aria-pressed={elements.has(el)}
-						onclick={() => toggle(elements, el)}>{el[0].toUpperCase() + el.slice(1)}</button
+						aria-pressed={rosterOnly}
+						onclick={() => (rosterOnly = !rosterOnly)}>My roster</button
 					>
-				{/each}
+				</div>
+				<label class="cov-sort">
+					Sort
+					<select bind:value={sort}>
+						<option value="name">By name</option>
+						<option value="least">Least covered first</option>
+					</select>
+				</label>
 			</div>
-			<div class="chip-group" role="group" aria-label="Weapon">
-				{#each WEAPONS as w (w)}
-					<button
-						type="button"
-						class="chip"
-						aria-pressed={weapons.has(w)}
-						onclick={() => toggle(weapons, w)}>{w[0].toUpperCase() + w.slice(1)}</button
-					>
-				{/each}
-			</div>
-			<div class="chip-group" role="group" aria-label="Show">
-				<button
-					type="button"
-					class="chip"
-					aria-pressed={rosterOnly}
-					onclick={() => (rosterOnly = !rosterOnly)}>My roster</button
-				>
-			</div>
-			<label class="cov-sort">
-				Sort
-				<select bind:value={sort}>
-					<option value="name">By name</option>
-					<option value="least">Least covered first</option>
-				</select>
-			</label>
-		</div>
+		{/if}
 	</header>
+
+	{#if pinned.length > 0}
+		<p class="cov-pinned">
+			<span
+				>{pinned.length === 1
+					? 'Showing 1 character from the Rotation Planner.'
+					: `Showing ${pinned.length} characters from the Rotation Planner.`}</span
+			>
+			<button type="button" class="chip" onclick={showAll}>Show all characters</button>
+		</p>
+	{/if}
 
 	<div class="cov-table" style:--cov-template={layout.template}>
 		<div class="cov-columns" aria-hidden="true">
@@ -256,7 +305,7 @@
 			{#each visible as row (row.entry.id)}
 				{@const id = row.entry.id}
 				{@const isOpen = open.has(id)}
-				<li class="cov-row" class:is-open={isOpen}>
+				<li class="cov-row" class:is-open={isOpen} id="cov-{id}">
 					<button
 						type="button"
 						class="row-button"
@@ -501,6 +550,15 @@
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--r-sm, 3px);
+	}
+
+	.cov-pinned {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+		margin: 0 0 0.75rem;
+		color: var(--text);
 	}
 
 	/* ---- the table ------------------------------------------------------- */

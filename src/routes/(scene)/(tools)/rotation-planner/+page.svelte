@@ -657,7 +657,10 @@
 			/>
 		</div>
 	{:else}
-		<RotationNotes entries={slotCaveats} />
+		<RotationNotes
+			entries={slotCaveats}
+			teamIds={slots.filter((id, i) => id && slots.indexOf(id) === i)}
+		/>
 	{/if}
 {/snippet}
 
