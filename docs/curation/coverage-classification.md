@@ -19,35 +19,41 @@ The agents flagged the same judgment calls independently. One ruling per class s
    ("the planner doesn't show damage amounts"). Alternative: **missing**, authored as a `*DmgBonus`
    buff where a CLASS stat fits (Varka's A1 multiplier precedent) — and a ruling only where no class
    stat exists. The same question covers **ability-scoped CRIT** (Freminet C1, Gaming C6, Ganyu A1,
-   Kinich C1), which the retirement round ruled out.
+   Kinich C1), which the retirement round ruled out. → N: notModeled
 2. **Energy restoration.** Proposed **missing**. But `energy` effects reach no planner surface (the
    Team Builder reads them), so an authored one would light a column the planner doesn't draw.
-   Missing, notModeled, or nothingToModel for the planner?
+   Missing, notModeled, or nothingToModel for the planner? → N: notModeled for the Planner
 3. **Resource pools with no reader** — Nightsoul points (Iansan C1/C4, Kinich A1, Ifa C2) and Will to
    Win (Lohen A1/C1). Proposed **notModeled**. ⚠️ Kinich's curator note leans on the retired
-   "windows, not gauges" line.
+   "windows, not gauges" line. → N: notModeled
 4. **Pickups** — particles, droplets, Puffers, Void Rifts, Bond of Life. Proposed **notModeled**,
-   citing the rubric's out-of-scope list.
+   citing the rubric's out-of-scope list. → N: Agreed, notModeled
 5. **CRIT-triggered effects** (Rosaria C1, Tartaglia A4, Dehya C6's second half). Proposed
-   **missing**. Or rule them like random procs?
+   **missing**. Or rule them like random procs? → N: notModeled - even though we can simulate RNG 
+   like we do for the Roll mini-tool/game on the CRIT Visualizer, we shouldn't simulate RNG on the 
+   Planner - otherwise users will see different windows from each other (different in a sense of 
+   seeing different bars - it's fine for users to see different timings based on ping / human timing)
 6. **Authored ELSEWHERE, with nothing that names the host.** The derivation credits a passive or
    constellation found through a gated condition or a `source`/`attribution` string. These carry
    neither, so they read missing while the planner draws them: Aino A1 (a Moonsign-gated tick series)
    and A4 (`flatScaling`), Collei A4 and Mizuki A1 (a summon's `durationExtensions`), Kachina A4
    (tick `flatScaling`), Yelan A4 (`source: 'passive'`), Illuga's skill (buff hosted on a passive),
    Sayu C1. **Proposal:** a fourth positive statement, `coveredBy: '<hostId>'`, which lint checks
-   points at a real host. Or add `source` to `DurationExtension` instead.
+   points at a real host. Or add `source` to `DurationExtension` instead. → N: Approved to use whichever
+   implementation you judge to be the strongest
 7. **Tags as grants** — `grouping` on Jean, Ifa, Lan Yan and Kazuha's skill/burst. The Team Builder
    reads the tag; the planner has nothing to draw for a pull. Proposed **missing**; nothingToModel
-   seems right to me.
+   seems right to me. → N: I think notModeled is the right call here - grouping does exist in the 
+   game and in their kits; it's just something the Planner can't show. Do you agree?
 8. **Notes that lean on the retired creed** — Citlali C6's "not modelled per the constitution".
-   Proposed missing.
+   Proposed missing. → N: notModeled
 9. **No `physicalDmgBonus` stat** — Eula C1, Xinyan A4, Mika's Detector stacks. "Missing" here means
-   a new Stat as well as data.
+   a new Stat as well as data. → N: this one is a true missing for us, isn't it
 
 Also found along the way (not coverage, for the engine queue): Alhaitham's C4/C6 read a `mirrors`
 stack key nothing grants; Eula's Hold variant keeps a 10s cooldown at C2 (no `cooldownModifiers` on
-variants); Dahlia C4 extends a Favonian Favor window that isn't authored.
+variants); Dahlia C4 extends a Favonian Favor window that isn't authored. → N: Thank you for finding 
+these; let's make sure they don't get dropped after this work!
 
 ## Rows
 

@@ -423,7 +423,9 @@
 		color: var(--muted);
 	}
 
-	/* ---- the five states (one register each; ⛔ never element colours) ---- */
+	/* ---- the five states (one register each; ⛔ never element colours).
+	   ⚓ Nate 2026-09-23: modeled is --ui-positive and not-modeled hatches in
+	   --ui-danger, so the strip reads at a glance. ---- */
 	.swatch {
 		display: inline-block;
 		width: 1.4rem;
@@ -433,7 +435,7 @@
 		align-self: center;
 	}
 	.s-lit {
-		background-color: var(--text);
+		background-color: var(--ui-positive);
 	}
 	.s-provisional {
 		background-color: var(--ui-provisional);
@@ -445,7 +447,7 @@
 		/* One layer only — the Safari veto is on TILED multi-layer backgrounds. */
 		background-image: repeating-linear-gradient(
 			135deg,
-			var(--muted) 0 1.5px,
+			var(--ui-danger) 0 1.5px,
 			transparent 1.5px 4px
 		);
 	}
