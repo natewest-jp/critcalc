@@ -206,15 +206,21 @@
 			segment for its details, or select a character to see all of them.
 		</p>
 
-		<ul class="cov-legend">
-			{#each STATES as s (s)}
-				<li>
-					<span class="swatch cov-state cov-state--{s}"></span>
-					<strong>{STATE_LABEL[s]}</strong>
-					<span class="legend-desc">{STATE_DESCRIPTION[s]}</span>
-				</li>
-			{/each}
-		</ul>
+		<!-- The wrapper is the legend's size container (never the page's): five
+		     across when its own width allows, the stacked list otherwise. -->
+		<div class="cov-legend-wrap">
+			<ul class="cov-legend">
+				{#each STATES as s (s)}
+					<li>
+						<span class="legend-key">
+							<span class="swatch cov-state cov-state--{s}"></span>
+							<strong>{STATE_LABEL[s]}</strong>
+						</span>
+						<span class="legend-desc">{STATE_DESCRIPTION[s]}</span>
+					</li>
+				{/each}
+			</ul>
+		</div>
 
 		<!-- A deep link narrows the list to its characters; the filters would
 		     do nothing there, so they return with "Show all characters". -->
@@ -415,18 +421,38 @@
 		max-width: 60ch;
 	}
 
-	/* ---- legend ---------------------------------------------------------- */
+	/* ---- legend ----------------------------------------------------------
+	   ⚓ Nate 2026-09-23: a ROW of five where the width allows, to give the
+	   list back its height — each key on its own line, its description wrapping
+	   beneath. A CONTAINER query, not a media query: the list's width depends
+	   on where it is shown (the overlay beside its sidebar, a route, a phone),
+	   which the viewport cannot tell apart. The container is this wrapper and
+	   nothing above it — containment on the page would trap a fixed popover
+	   (the bench-card ruling; this tooltip is portalled out regardless). Below
+	   five-across it stays the stacked list rather than wrap 3 + 2. */
+	.cov-legend-wrap {
+		container-type: inline-size;
+		margin: 0 0 1rem;
+	}
 	.cov-legend {
 		list-style: none;
-		margin: 0 0 1rem;
+		margin: 0;
 		padding: 0;
 		display: grid;
-		gap: 0.3rem;
+		gap: 0.55rem;
 		font-size: var(--fs-sm);
 	}
+	/* The key, then its description beneath — in the stacked list and the row
+	   alike, so the two layouts differ only in how many columns. */
 	.cov-legend li {
 		display: flex;
-		align-items: baseline;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.15rem;
+	}
+	.legend-key {
+		display: inline-flex;
+		align-items: center;
 		gap: 0.5rem;
 	}
 	.cov-legend strong {
@@ -436,6 +462,13 @@
 	}
 	.legend-desc {
 		color: var(--muted);
+		line-height: var(--lh-snug);
+	}
+	@container (min-width: 44rem) {
+		.cov-legend {
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+			gap: 0 1.25rem;
+		}
 	}
 
 	/* ---- the five states (one register each; ⛔ never element colours).
