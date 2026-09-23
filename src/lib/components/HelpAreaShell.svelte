@@ -138,7 +138,9 @@
 <style>
 	.area-shell {
 		display: grid;
-		grid-template-columns: 13.5rem minmax(0, 1fr);
+		/* ⚓ Nate 2026-09-23: 12rem — the longest chapter ("Rotation Planner")
+		   is ~170px with its padding. */
+		grid-template-columns: 12rem minmax(0, 1fr);
 		gap: 1.75rem;
 		height: 100%;
 		min-height: 0;

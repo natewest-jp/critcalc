@@ -417,7 +417,7 @@
 
 <style>
 	.coverage {
-		/* Fitted to the standard 64rem modal beside its sidebar (⚓ Nate
+		/* Fitted to the standard 72rem modal beside its sidebar (⚓ Nate
 		   2026-09-23): the count sits under the name, not beside it. */
 		--cov-who-w: 9.5rem;
 		/* Taller since the name and its count stack (⚓ Nate 2026-09-23): the
