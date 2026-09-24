@@ -901,13 +901,7 @@
 	</div>
 </div>
 
-<svelte:window
-	onresize={snapBench}
-	onclick={() => (documentBar.resetConfirm = false)}
-	onkeydown={(e) => {
-		if (e.key === 'Escape') documentBar.resetConfirm = false;
-	}}
-/>
+<svelte:window onresize={snapBench} />
 
 <!-- The saved-team bank. Rendered by the LAYOUT, not by a tool (toolbar round):
      band A's Load is in both benched tools now, and the bank it opens is the
