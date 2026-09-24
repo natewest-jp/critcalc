@@ -682,10 +682,15 @@
 	const rosterIds = new Set(roster.map((c) => c.id));
 	const teamSlots = $derived<TeamSlot[]>(rt.slots.map((id) => (id === 'blank' ? null : id)));
 
-	/** "Clear team" is armed — see its button for why it is sometimes two steps.
+	/** "Clear team" is armed — see its button for why it is always two steps.
 	 *  Disarmed whenever the team changes underneath it, so a confirm can never
-	 *  be left pointing at a document it was not raised against. */
+	 *  be left pointing at a document it was not raised against, and when the
+	 *  hand leaves the plate, so a question nobody answered does not sit there
+	 *  waiting for a stray click. */
 	let clearArmed = $state(false);
+	const clearQuestion = $derived(
+		notationHasActions(rt.notation) ? 'Clear rotation?' : 'Clear team?'
+	);
 	$effect(() => {
 		void rt.notation;
 		clearArmed = false;
@@ -1062,9 +1067,11 @@
 		<!-- ↻ 2026-08-13 (single truth): TWO STEPS WHEN THERE IS A ROTATION TO
 	     LOSE. The team is the notation now, so clearing the team deletes every
 	     slotted character's segments — on a written rotation that is the
-	     rotation. A team of four bare names has nothing to lose and still goes
-	     in one press; the confirm arms only once `notationHasActions` says
-	     otherwise, so the guard appears exactly when it earns its click.
+	     rotation.
+	     ↻ 2026-09-24 (⚓ Nate): ALWAYS two steps. The one-press path for a team
+	     of bare names read as inconsistent — the same button sometimes asked
+	     and sometimes didn't. `notationHasActions` now picks only the QUESTION:
+	     "Clear rotation?" when there is one to lose, "Clear team?" when not.
 	     ⌘Z in the notation box is the other half of this: the deletion lands
 	     as an editor transaction, so a mistaken clear is one undo away. -->
 		<button
@@ -1072,11 +1079,13 @@
 			class:btn--danger={clearArmed}
 			class:is-confirming={clearArmed}
 			disabled={filledCount === 0}
+			onpointerleave={() => (clearArmed = false)}
+			onblur={() => (clearArmed = false)}
 			title={clearArmed
 				? 'Confirm: delete every team member’s segments from the notation'
 				: 'Empty every slot in the working team'}
 			onclick={() => {
-				if (clearArmed || !notationHasActions(rt.notation)) {
+				if (clearArmed) {
 					rt.clearTeam();
 					clearArmed = false;
 				} else {
@@ -1084,7 +1093,7 @@
 				}
 			}}
 			><Mark name={clearArmed ? 'warn' : 'close'} />
-			{clearArmed ? 'Clear rotation?' : 'Clear team'}</button
+			{clearArmed ? clearQuestion : 'Clear team'}</button
 		>
 	{/if}
 {/snippet}
@@ -1195,7 +1204,7 @@
 						role="menuitem"
 						disabled={filledCount === 0}
 						onclick={() => {
-							if (clearArmed || !notationHasActions(rt.notation)) {
+							if (clearArmed) {
 								rt.clearTeam();
 								clearArmed = false;
 								close();
@@ -1207,7 +1216,7 @@
 						}}
 					>
 						<Mark name={clearArmed ? 'warn' : 'close'} />
-						{clearArmed ? 'Clear rotation?' : 'Clear team'}
+						{clearArmed ? clearQuestion : 'Clear team'}
 					</button>
 					<div class="band-menu-rule"></div>
 					<div class="tb-fold-head" aria-hidden="true">Read capabilities at</div>

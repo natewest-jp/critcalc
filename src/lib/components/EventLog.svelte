@@ -87,7 +87,7 @@
 </script>
 
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { tick, untrack, type Snippet } from 'svelte';
 
 	let {
 		rows,
@@ -95,7 +95,9 @@
 		lead,
 		hover = null,
 		onHover,
-		onSeek
+		onSeek,
+		reveal = null,
+		onRevealed
 	}: {
 		rows: EventLogRow[];
 		empty?: string;
@@ -124,6 +126,14 @@
 		 * standing note, and it still arrives first.
 		 */
 		lead?: Snippet;
+		/**
+		 * An instant to scroll into view — the chart asks for it when a pip is
+		 * clicked. Held until there are rows to find it among (the planner only
+		 * projects them once the panel is open), then handed back through
+		 * `onRevealed` so the caller can clear it.
+		 */
+		reveal?: number | null;
+		onRevealed?: () => void;
 	} = $props();
 
 	/**
@@ -177,6 +187,34 @@
 		e.preventDefault();
 	}
 
+	// ── Reveal: bring a requested instant to the middle of the column ─────────
+	// ⚠ The LIST'S OWN scrollTop, never `scrollIntoView` — that scrolls every
+	// scrollable ancestor too, and the tool must never page-scroll.
+	let listEl = $state<HTMLElement | undefined>();
+	$effect(() => {
+		const target = reveal;
+		if (target === null || marked.length === 0 || !listEl) return;
+		// The first row at or after the instant — a pip's row carries its exact
+		// time, so this lands on it; the slack absorbs float noise from frames.
+		let i = marked.findIndex((m) => m.at !== undefined && m.at >= target - 1e-3);
+		if (i < 0) i = marked.length - 1;
+		const list = listEl;
+		void tick().then(() => {
+			const el = list.querySelectorAll<HTMLElement>('.el-row')[i];
+			if (!el) return;
+			const lb = list.getBoundingClientRect();
+			const eb = el.getBoundingClientRect();
+			list.scrollTo({
+				top: list.scrollTop + (eb.top - lb.top) - (lb.height - eb.height) / 2,
+				behavior: 'smooth'
+			});
+		});
+		untrack(() => {
+			kbIndex = i;
+			onRevealed?.();
+		});
+	});
+
 	/**
 	 * Hover is read at the CONTAINER, not per row.
 	 *
@@ -204,6 +242,7 @@
      ⛔ Don't "fix" this by adding a dead `onfocus` beside them. -->
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <div
+	bind:this={listEl}
 	class="el-log"
 	onmouseover={onListOver}
 	onmouseleave={() => onHover?.(null)}

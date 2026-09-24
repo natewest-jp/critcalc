@@ -654,6 +654,8 @@
 				hover={pv.auraHover}
 				onHover={(seconds) => (pv.logHover = seconds)}
 				onSeek={(seconds) => pv.scrollToSeconds?.(seconds)}
+				reveal={pv.logRevealAt}
+				onRevealed={() => (pv.logRevealAt = null)}
 			/>
 		</div>
 	{:else}

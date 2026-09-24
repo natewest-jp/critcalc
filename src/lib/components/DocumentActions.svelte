@@ -145,7 +145,12 @@
 			<button
 				class="band-menu-item band-menu-item--danger"
 				role="menuitem"
-				onclick={() => {
+				onclick={(e) => {
+					// 🐛 2026-09-24: without this the SAME click bubbles to the (tools)
+					// layout's window handler — "a click anywhere disarms" — which
+					// cleared the confirm in the instant it was raised, so the item
+					// did nothing visible at all.
+					e.stopPropagation();
 					close();
 					db.resetConfirm = true;
 				}}
