@@ -333,7 +333,9 @@
 		   background-size ladder, for free). These knobs and the gradient
 		   stops below are read from computed style at renderer init; after a
 		   devtools edit call window.__scene.retune(). */
-		--sky-grain: 0.45;
+		/* ↻ 2026-09-24 (⚓ Nate): sky 0.45 → 0.38, "just a little too heavy";
+		   the floor untouched. */
+		--sky-grain: 0.38;
 		--floor-grain: 0.3;
 
 		/* Additive dither σ (8-bit levels) in the plate shader — breaks the
