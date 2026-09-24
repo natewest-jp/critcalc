@@ -25,7 +25,7 @@ import {
 	keymap,
 	tooltips
 } from '@codemirror/view';
-import { EditorState, type Extension } from '@codemirror/state';
+import { EditorState, StateEffect, StateField, type Extension } from '@codemirror/state';
 import { history, historyKeymap, defaultKeymap } from '@codemirror/commands';
 import {
 	autocompletion,
@@ -40,6 +40,7 @@ import { elementPalette } from './elementColors';
 import { resolveActionElement, type NormalActionKind } from './actionElement';
 import type { Element } from '$lib/types/ability';
 import type { WeaponType } from '$lib/types/weapon';
+import type { NotationTint } from '$lib/timeline/notationTints';
 
 // ---------------------------------------------------------------------------
 // Token → CSS class map
@@ -76,10 +77,12 @@ const TOKEN_CLASS: Partial<Record<TokenKind, string>> = {
  *
  * The character is resolved from the eager identity index (element + weapon),
  * which the editor can read synchronously per keystroke; it passes no infusion
- * to the shared rule (it does not run the parser's stance state machine), so a
- * mid-rotation infusion opened by a stance (e.g. Cyno after Q) stays neutral
- * here while the active row tints it. Permanent weapon-class infusions — the
- * common case — are exact.
+ * to the shared rule (it does not run the parser's stance state machine).
+ * ↻ 2026-09-24: this is now only the FALLBACK — the PARSE's answer
+ * (`resolvedTints`, below) wins wherever it has one, which is what makes a
+ * stance or granted infusion tint here the way the active row does. The guess
+ * still covers the token being typed until the next parse lands, and any token
+ * the parse did not take.
  */
 function elementTintForToken(
 	tok: Token,
@@ -103,6 +106,59 @@ function elementTintForToken(
 	const el = resolveActionElement(kind, t, weapon ?? undefined, element, undefined);
 	return el ? elementPalette(el).main : null;
 }
+
+// ---------------------------------------------------------------------------
+// Resolved tints — what the PARSE decided per token (notation-follows-chart)
+// ---------------------------------------------------------------------------
+
+/**
+ * The timeline hands the editor the element the chart resolved for each token
+ * (`$lib/timeline/notationTints`). ⚓ It WINS over the text-only guess above
+ * wherever it has an answer, including `null` (physical / no hit), which clears
+ * the guess rather than falling back to it.
+ *
+ * ⚠ `doc` is the text that was PARSED. A tint list for any other text is stale
+ * and refused — the parse can land a beat after a keystroke, and a range from
+ * the old text would colour the wrong characters.
+ */
+export const setResolvedTints = StateEffect.define<{ doc: string; tints: NotationTint[] }>();
+
+/**
+ * The accepted tints, kept honest across edits until the next parse arrives:
+ * every range is MAPPED through each change, and a range the change touched is
+ * dropped — the token being typed falls back to the guess for the frame or so
+ * until the parse catches up, and everything else keeps its colour (no flash).
+ */
+type ResolvedTints = {
+	tints: NotationTint[];
+	/** A list for text the editor does not hold YET — held until it does. ⚠ The
+	 *  timeline's effect and the editor's own `setValue` (a tab switch, a bench
+	 *  edit) run in the same flush in no promised order, so the parse of the
+	 *  incoming text can arrive a moment before the text itself. */
+	pending: { doc: string; tints: NotationTint[] } | null;
+};
+
+const resolvedTints = StateField.define<ResolvedTints>({
+	create: () => ({ tints: [], pending: null }),
+	update(value, tr) {
+		const doc = () => tr.state.doc.toString();
+		for (const e of tr.effects) {
+			if (!e.is(setResolvedTints)) continue;
+			return e.value.doc === doc()
+				? { tints: e.value.tints, pending: null }
+				: { tints: value.tints, pending: e.value };
+		}
+		if (!tr.docChanged) return value;
+		if (value.pending && value.pending.doc === doc())
+			return { tints: value.pending.tints, pending: null };
+		const tints: NotationTint[] = [];
+		for (const t of value.tints) {
+			if (tr.changes.touchesRange(t.from, t.to)) continue;
+			tints.push({ ...t, from: tr.changes.mapPos(t.from, 1), to: tr.changes.mapPos(t.to, -1) });
+		}
+		return { tints, pending: value.pending };
+	}
+});
 
 // ---------------------------------------------------------------------------
 // Syntax highlight plugin
@@ -148,7 +204,12 @@ const notationHighlight = ViewPlugin.fromClass(
 			// ⚠ selectionSet MATTERS, not just docChanged: the name-flag suppression
 			// above reads the caret, so moving off a half-typed name has to be able
 			// to bring its squiggle back (and moving onto one, take it away).
-			if (update.docChanged || update.selectionSet) this.decorations = this.build(update.view);
+			if (
+				update.docChanged ||
+				update.selectionSet ||
+				update.startState.field(resolvedTints).tints !== update.state.field(resolvedTints).tints
+			)
+				this.decorations = this.build(update.view);
 		}
 
 		build(view: EditorView): DecorationSet {
@@ -168,6 +229,11 @@ const notationHighlight = ViewPlugin.fromClass(
 			// is exactly what a flag inside a bracket repeat group is. Decoration.set
 			// with sort:true accepts both.
 			const ranges: ReturnType<Decoration['range']>[] = [];
+			// The parse's answers, keyed like the flags. Consumed as tokens claim
+			// them; what is left sits inside a bracket group (below).
+			const resolved = new Map<string, Element | null>();
+			for (const t of view.state.field(resolvedTints).tints)
+				resolved.set(`${t.from}:${t.to}`, t.element);
 			// Segment's caster element/weapon — reset at each character token, which
 			// always opens a segment, and carried across its action tokens.
 			let curElement: Element | null = null;
@@ -183,7 +249,12 @@ const notationHighlight = ViewPlugin.fromClass(
 				const key = `${tok.from}:${tok.to}`;
 				const flag = flags.get(key);
 				flags.delete(key);
-				const tint = elementTintForToken(tok, curElement, curWeapon);
+				let tint: string | null;
+				if (resolved.has(key)) {
+					const el = resolved.get(key) ?? null;
+					resolved.delete(key);
+					tint = el ? elementPalette(el).main : null;
+				} else tint = elementTintForToken(tok, curElement, curWeapon);
 				const attributes: Record<string, string> = {};
 				// Element-bearing tokens keep their structural class (padding/weight)
 				// and override just the color inline with the caster's bright tint.
@@ -194,6 +265,20 @@ const notationHighlight = ViewPlugin.fromClass(
 					Decoration.mark(
 						Object.keys(attributes).length ? { class: className, attributes } : { class: className }
 					).range(tok.from, tok.to)
+				);
+			}
+			// A resolved tint that matched no top-level token is an input INSIDE a
+			// bracket group (`3[N1 C]`) — the group is one token to the tokenizer,
+			// so these colour its inner tokens as nested marks, which the text-only
+			// guess never could.
+			for (const [key, el] of resolved) {
+				if (!el) continue;
+				const [from, to] = key.split(':').map(Number);
+				ranges.push(
+					Decoration.mark({ attributes: { style: `color:${elementPalette(el).main}` } }).range(
+						from,
+						to
+					)
 				);
 			}
 			// Whatever is left never matched a top-level token: a cast inside a
@@ -478,6 +563,7 @@ export function buildNotationExtensions(onChange: (value: string) => void): Exte
 		history(),
 		keymap.of([...defaultKeymap, ...historyKeymap, ...completionKeymap]),
 		EditorView.lineWrapping,
+		resolvedTints,
 		notationHighlight,
 		pasteHandler,
 		autocompletion({ override: [characterCompletionSource] }),

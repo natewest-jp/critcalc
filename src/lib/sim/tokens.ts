@@ -148,7 +148,16 @@ export function expandBrackets(tokens: Token[]): Token[] {
 		// (e.g. 999999999[N1C]) would freeze or OOM the tab.
 		count = Math.min(count, MAX_BRACKET_REPEATS);
 		// Re-tokenize inner content; skip the synthetic character-name token.
-		const innerTokens = tokenizeNotation('_ ' + inner).slice(1);
+		// ⚠ The offsets come back measured from the synthetic string, so they are
+		// shifted onto the SOURCE: the inner text starts after the `[` and its
+		// leading whitespace, and the `_ ` prefix is two characters. Every repeat
+		// shares these tokens, so every repeat's events point at the one inner
+		// token they came from (`src` on the IR events).
+		const innerAt = tok.from + tok.text.indexOf('[') + 1 + (m[2].length - m[2].trimStart().length);
+		const shift = innerAt - 2;
+		const innerTokens = tokenizeNotation('_ ' + inner)
+			.slice(1)
+			.map((t) => ({ ...t, from: t.from + shift, to: t.to + shift }));
 		for (let rep = 0; rep < count; rep++) {
 			// Budget check BEFORE appending, so the cap is a ceiling rather than a
 			// threshold we overshoot by one body's worth.

@@ -579,11 +579,30 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 	}
 }
 
+/**
+ * Every cast and action event points back at the token that produced it
+ * (`src`, notation-follows-chart 2026-09-24) — the editor tints that exact
+ * range with what the chart resolved, so a wrong offset colours the wrong
+ * characters. ⚠ Bracket groups are the case at risk: their inner tokens are
+ * re-tokenized from a synthetic string and shifted back onto the source.
+ */
+function assertEventsPointAtTheirTokens(notation: string, result: ParsedRotation): void {
+	for (const ev of result.events) {
+		if (ev.kind !== 'cast' && ev.kind !== 'action') continue;
+		expect(ev.src, `${ev.kind} "${ev.label}" @${ev.time} carries its source range`).toBeDefined();
+		const text = notation.slice(ev.src!.from, ev.src!.to);
+		if (ev.kind === 'action' && ev.action === 'unset') expect(text.startsWith('~?')).toBe(true);
+		else expect(text, `${ev.kind} "${ev.label}" @${ev.time}`).toBe(ev.label);
+	}
+}
+
 describe('parser IR invariants — roster sweep', () => {
 	for (const c of all) {
 		it(`${c.id}: IR is consistent for its declared inputs`, () => {
-			const result = parseNotation(rosterNotation(c), rosterLookup, 8);
+			const notation = rosterNotation(c);
+			const result = parseNotation(notation, rosterLookup, 8);
 			assertCore(result, { strictStanceGeom: true });
+			assertEventsPointAtTheirTokens(notation, result);
 			assertSummonWindowsMatchGeometry(result);
 			assertBlocksProjectFromEvents(result);
 		});
@@ -596,12 +615,14 @@ describe('parser IR invariants — multi-character rotations', () => {
 		{ id: 'shields', notation: 'Noelle E Q > Zhongli E Q' },
 		{ id: 'summon-swap', notation: 'Fischl E Q > Bennett E Q > Fischl E' },
 		{ id: 'stance-swap', notation: 'Cyno Q E E > Bennett Q' },
-		{ id: 'collei-zone', notation: 'Collei E Q > Xingqiu E Q > Collei E' }
+		{ id: 'collei-zone', notation: 'Collei E Q > Xingqiu E Q > Collei E' },
+		{ id: 'bracket-repeat', notation: '  Xiangling  2[ N1 C ]  E ~? > Xingqiu 3[N2]x2 E' }
 	];
 	for (const r of rotations) {
 		it(`${r.id}: IR consistent across swaps`, () => {
 			const result = parseNotation(r.notation, rosterLookup, 8, r.cons);
 			assertCore(result, { strictStanceGeom: false });
+			assertEventsPointAtTheirTokens(r.notation, result);
 			assertSummonWindowsMatchGeometry(result);
 			assertBlocksProjectFromEvents(result);
 		});

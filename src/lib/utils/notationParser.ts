@@ -139,7 +139,10 @@ export function parseNotation(
 		};
 
 	// Tokenize the full string, then group into segments by separator tokens.
-	const allTokens = tokenizeNotation(raw);
+	// ⚠ The UNTRIMMED text: token offsets are source offsets (`src` on the IR
+	// events, which the editor tints by), and trimming would shift every one of
+	// them by the leading whitespace. `raw` above is only the emptiness test.
+	const allTokens = tokenizeNotation(notation);
 
 	const segments: (typeof allTokens)[] = [];
 	let current: typeof allTokens = [];

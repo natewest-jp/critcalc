@@ -19,7 +19,8 @@
 	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
+	import { notationTints } from '$lib/timeline/notationTints';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
 		elementPalette,
@@ -1676,6 +1677,19 @@
 	let canRedo = $derived.by(() => {
 		void historyTick;
 		return editorApi?.canRedo() ?? false;
+	});
+
+	// ⚓ THE NOTATION WEARS THE CHART'S COLOURS (⚓ Nate 2026-09-24). Each token
+	// is tinted with what the parse resolved for it — infusions, stances, party-
+	// resolved elements, swings that land nothing — rather than the editor's
+	// text-only guess. `doc` travels with the list so the editor can refuse (or
+	// hold) a parse of text it does not show. See `$lib/timeline/notationTints`.
+	$effect(() => {
+		const api = editorApi;
+		if (!api) return;
+		const doc = notation;
+		const tints = notationTints(rotation);
+		untrack(() => api.setTints(doc, tints));
 	});
 
 	function mountEditor(node: HTMLElement, value: string) {

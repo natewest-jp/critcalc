@@ -16,7 +16,8 @@
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
-import { buildNotationExtensions } from './notationEditorExtension';
+import { buildNotationExtensions, setResolvedTints } from './notationEditorExtension';
+import type { NotationTint } from '$lib/timeline/notationTints';
 
 export interface NotationEditor {
 	/** Replace the document (no-op when the value already matches). Lands as a
@@ -30,6 +31,9 @@ export interface NotationEditor {
 	/** Whether there is anything to undo / redo right now. */
 	canUndo(): boolean;
 	canRedo(): boolean;
+	/** Hand over what the parse resolved per token for the text `doc` — see
+	 *  `setResolvedTints`. Refused when `doc` is no longer the editor's text. */
+	setTints(doc: string, tints: NotationTint[]): void;
 	destroy(): void;
 }
 
@@ -103,6 +107,10 @@ export function createNotationEditor(
 		},
 		canRedo() {
 			return redoDepth(view.state) > 0;
+		},
+		setTints(doc: string, tints: NotationTint[]) {
+			// ⚠ Not a history event: a colour is not an edit.
+			view.dispatch({ effects: setResolvedTints.of({ doc, tints }) });
 		},
 		destroy() {
 			view.destroy();
