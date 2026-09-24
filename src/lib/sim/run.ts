@@ -60,7 +60,7 @@ import {
 	GENERIC_BURST,
 	GENERIC_PLUNGE_FRAMES
 } from '$lib/data/genericProfile';
-import type { ActionEvent, CastEvent } from '$lib/utils/rotationEvents';
+import type { ActionEvent, CastEvent, SourceRange } from '$lib/utils/rotationEvents';
 import { Band, createClock } from './clock';
 import type { SimContext } from './context';
 import type { CharacterTrack } from './types';
@@ -267,6 +267,13 @@ export function runRotation(
 		// needs to know whether this turn moved time at all.
 		const turnStart = clock.now;
 
+		// The source range of the token the main loop is on — stamped onto every
+		// event it emits (`src`), which is how the editor learns what the chart
+		// resolved for each token. Set at the loop's top; ⚠ every action and cast
+		// event is emitted synchronously inside its token's iteration (landings
+		// are HIT records, not events), so the loop's token IS the producer.
+		let curSrc: SourceRange | undefined;
+
 		// Post-P4 #2: emit one action event. `blockId` groups the per-swing
 		// events of one input token (pass the anchor id returned by the first
 		// emission); when omitted the event anchors its own group.
@@ -279,7 +286,9 @@ export function runRotation(
 				kind: 'action',
 				id,
 				characterId: char.id,
-				blockId: fields.blockId ?? id
+				blockId: fields.blockId ?? id,
+				// Every action is emitted while its own token is the loop's — see `curSrc`.
+				...(curSrc ? { src: curSrc } : {})
 			};
 			ctx.events.push(ev);
 			ctx.actionRecords.push({ ev, track });
@@ -840,6 +849,7 @@ export function runRotation(
 					abilityId: active.id,
 					variantLabel: variant?.label,
 					label: tok.text,
+					src: { from: tok.from, to: tok.to },
 					time: castStart,
 					castTime,
 					uptime: dur,
@@ -1408,6 +1418,7 @@ export function runRotation(
 					ability: 'burst',
 					abilityId: char.id,
 					label: tok.text,
+					src: { from: tok.from, to: tok.to },
 					time: clock.now,
 					castTime: Q_CAST_F,
 					uptime: 0,
@@ -1434,6 +1445,7 @@ export function runRotation(
 					ability: 'skill',
 					abilityId: char.id,
 					label: tok.text,
+					src: { from: tok.from, to: tok.to },
 					time: clock.now,
 					castTime: E_CAST_F,
 					uptime: 0,
@@ -1454,6 +1466,7 @@ export function runRotation(
 
 		for (let j = 0; j < expandedTokens.length; j++) {
 			const tok = expandedTokens[j];
+			curSrc = { from: tok.from, to: tok.to };
 
 			if (tok.kind === 'Q') {
 				handleCast('burst', tok, j);
