@@ -334,8 +334,10 @@
 		   stops below are read from computed style at renderer init; after a
 		   devtools edit call window.__scene.retune(). */
 		/* ↻ 2026-09-24 (⚓ Nate): sky 0.45 → 0.38, "just a little too heavy";
-		   the floor untouched. */
-		--sky-grain: 0.38;
+		   the floor untouched.
+		   ↻ 2026-09-25 (⚓ Nate): sky 0.38 → 0.32, backed off a little more
+		   with the brightened plate. */
+		--sky-grain: 0.32;
 		--floor-grain: 0.3;
 
 		/* Additive dither σ (8-bit levels) in the plate shader — breaks the
