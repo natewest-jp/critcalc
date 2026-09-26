@@ -403,8 +403,8 @@
 		   (sceneGL.ts FS_DIM; formula + values in sceneDim.ts), so this layer
 		   only paints until the renderer is live — the pre-mount frames of a
 		   cold tool load, and a browser with no WebGL (no scene to curve, so a
-		   straight wash at SCENE_DIM.wash is the whole formula). The colour is
-		   the same --scene-dim the renderer reads. */
+		   straight wash at SCENE_DIM.wash is the whole formula). --scene-dim is
+		   the nearest hex of the renderer's exact tint (SCENE_DIM_TINT). */
 		background: var(--scene-dim);
 		/* ⛔ NO MASK. A shaped scrim was built here (ellipse, then a soft rounded
 		   box from two intersected 1-D falloffs) and ⚓ NATE scrapped it after

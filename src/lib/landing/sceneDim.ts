@@ -29,10 +29,9 @@
  *   stars stop fighting the text.
  *
  * Measured at the crest (plate 05f2722f, source rows 66–2260), against the
- * old dim: typical sky #131623 → #111420, galaxy highlight #1a202d → #151a27,
- * white star #303033 → #2a2d35, and --text over a star 11.19 → 11.67:1
- * (computed by `dimPixel` below; the mockup's figures differ by a level
- * because it ran the unrounded HSL wash rather than #11141d).
+ * old dim (computed by `dimPixel` below, with the 224° tint): typical sky
+ * #131623 → #111520, galaxy highlight #1a202d → #141a28, white star
+ * #303033 → #2a2d36, and --text over a star 11.19 → 11.67:1.
  *
  * ⚠ The output lives on very few 8-bit levels (the whole crest sky spans
  * R 16–21 / G 19–26 / B 30–42), so the renderer dithers AFTER this — the
@@ -45,11 +44,9 @@
  * judges every star against. ⛔ Never change one without the other.
  *
  * ⚓ These are Nate's values, landed verbatim — tune here, never re-derive.
- * The wash COLOUR is `--scene-dim` in app.css (a token, so it sits with the
- * palette); it is read by the renderer at init and by the census.
  */
 export const SCENE_DIM = {
-	/** Opacity of the `--scene-dim` wash — how much of the ground is the tint. */
+	/** Opacity of the wash (SCENE_DIM_TINT) — how much of the ground is the tint. */
 	wash: 0.965,
 	/** How much of the (curved, desaturated) scene survives on top of it. */
 	gain: 0.1,
@@ -59,6 +56,33 @@ export const SCENE_DIM = {
 	gamma: 2
 } as const;
 
+/**
+ * The wash's TINT, in HSL — the dim's hue lives here.
+ * ↻ ⚓ NATE 2026-09-26: hue 226 → 224, "two degrees toward cyan".
+ *
+ * ⚠ HSL and FLOAT on purpose, never a hex: at 9% lightness an 8-bit colour
+ * cannot take a 2° step — 226° and 224° both round to #11141d (whose true
+ * hue is 225°) — and it does not have to, because the shader works in floats
+ * and the final dither averages between output levels, so the exact tint is
+ * what reaches the eye. The mockup Nate tuned in ran on this float value too.
+ * `--scene-dim` in app.css is its nearest hex and paints ONLY the DOM
+ * fallback layer (pre-mount frames, no-WebGL), where a degree cannot show.
+ */
+export const SCENE_DIM_TINT = { hue: 224, saturation: 27, lightness: 9 } as const;
+
+/** SCENE_DIM_TINT as float sRGB, 0–1 — what the shader takes as its wash. */
+export const SCENE_DIM_TINT_RGB: readonly [number, number, number] = (() => {
+	const { hue: h } = SCENE_DIM_TINT;
+	const s = SCENE_DIM_TINT.saturation / 100;
+	const l = SCENE_DIM_TINT.lightness / 100;
+	const a = s * Math.min(l, 1 - l);
+	const f = (n: number) => {
+		const k = (n + h / 30) % 12;
+		return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+	};
+	return [f(0), f(8), f(4)] as const;
+})();
+
 /** Final-pass dither σ in 8-bit levels, applied after the dim (the mockup's
  *  uniform ±½-level dither has σ ≈ 0.29; that is what Nate judged). */
 export const SCENE_DIM_DITHER = 0.29;
@@ -67,20 +91,21 @@ export const SCENE_DIM_DITHER = 0.29;
 const LUMA = [0.2126, 0.7152, 0.0722] as const;
 
 /**
- * The dim applied to one pixel, CPU side. `rgb` and `wash` are 0–255 sRGB;
- * `level` is 0 (no dim — the landing) to 1 (a tool at rest), and blends the
- * way the renderer does during the ascend.
+ * The dim applied to one pixel, CPU side. `rgb` is 0–255 sRGB and comes back
+ * unrounded; `level` is 0 (no dim — the landing) to 1 (a tool at rest), and
+ * blends the way the renderer does during the ascend. The wash is the exact
+ * float tint, the same value the shader gets.
  */
 export function dimPixel(
 	rgb: readonly [number, number, number],
-	wash: readonly [number, number, number],
 	level = 1
 ): [number, number, number] {
+	const wash = SCENE_DIM_TINT_RGB;
 	const s = rgb.map((v) => (v / 255) ** SCENE_DIM.gamma);
 	const l = LUMA[0] * s[0] + LUMA[1] * s[1] + LUMA[2] * s[2];
 	return rgb.map((v, i) => {
 		const c = Math.max(0, Math.min(1, l + (s[i] - l) * SCENE_DIM.saturation));
-		const dimmed = (wash[i] / 255) * SCENE_DIM.wash + c * SCENE_DIM.gain;
+		const dimmed = wash[i] * SCENE_DIM.wash + c * SCENE_DIM.gain;
 		return 255 * ((v / 255) * (1 - level) + dimmed * level);
 	}) as [number, number, number];
 }

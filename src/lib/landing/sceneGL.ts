@@ -45,7 +45,7 @@ import {
 	SCENE_TIERS
 } from '$lib/data/sceneAssets.generated';
 import { createStarPass, STAR_STATIC_ALPHA, type StarPass } from '$lib/landing/starPass';
-import { SCENE_DIM, SCENE_DIM_DITHER } from '$lib/landing/sceneDim';
+import { SCENE_DIM, SCENE_DIM_DITHER, SCENE_DIM_TINT_RGB } from '$lib/landing/sceneDim';
 
 // --- Geometry constants -----------------------------------------------------
 // Mirror the --*-src vars on .scene-stack in (scene)/+layout.svelte AND the
@@ -395,8 +395,6 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			skyTop: resolveColor(cs.getPropertyValue('--sky-top') || '#0a0e1a'),
 			skyBottom: resolveColor(cs.getPropertyValue('--sky-bottom') || '#1f2a48'),
 			bg: resolveColor(cs.getPropertyValue('--bg') || '#050b19'),
-			// The DIM's wash colour (sceneDim.ts has the rest of the formula).
-			dimWash: resolveColor(cs.getPropertyValue('--scene-dim') || '#11141d'),
 			skyGrain: parseFloat(cs.getPropertyValue('--sky-grain')) || 0,
 			floorGrain: parseFloat(cs.getPropertyValue('--floor-grain')) || 0,
 			// Additive dither σ in 8-bit levels (see FS_PLATE). Defaults on: the
@@ -609,7 +607,9 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			gl.uniform1i(u('uGrain'), 1);
 			gl.uniform2f(u('uRes'), gl.drawingBufferWidth, gl.drawingBufferHeight);
 			gl.uniform2f(u('uGrainOff'), -cam.x * dpr, cam.y * dpr);
-			gl.uniform3f(u('uWash'), k.dimWash[0], k.dimWash[1], k.dimWash[2]);
+			// The exact float tint — never read back through CSS, which would
+			// round it to 8 bits (see SCENE_DIM_TINT).
+			gl.uniform3f(u('uWash'), SCENE_DIM_TINT_RGB[0], SCENE_DIM_TINT_RGB[1], SCENE_DIM_TINT_RGB[2]);
 			gl.uniform1f(u('uLevel'), level);
 			gl.uniform1f(u('uWashA'), SCENE_DIM.wash);
 			gl.uniform1f(u('uGain'), SCENE_DIM.gain);

@@ -372,8 +372,7 @@
 	 * (the ground is a colour, composite it properly); it is simply computed
 	 * by the formula that actually ships.
 	 */
-	const SCRIM = rgb(tokens.find((t) => t.name === '--scene-dim')?.resolved ?? '#11141d');
-	const STAR: [number, number, number] = dimPixel([255, 255, 255], SCRIM);
+	const STAR: [number, number, number] = dimPixel([255, 255, 255]);
 	/** The dimmer of the two voices a band speaks in — see .band-b's --text
 	 *  re-point. If --muted clears the floor, --text has already cleared it. */
 	const GLASS_INK = rgb(
