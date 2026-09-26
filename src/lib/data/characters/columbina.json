@@ -295,7 +295,8 @@
 					"label": "Lunar Domain",
 					"duration": 20,
 					"spawnsAt": 86,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"dealsNothing": true
 				}
 			],
 			"effects": [
@@ -418,7 +419,10 @@
 			"description": "When characters within the **Lunar Domain** trigger Lunar reactions, they will gain the following effects respectively: \n· Lunar-Charged: When the Thundercloud performs lightning strike(s) against a valid target, it has a 33% chance to perform an additional lightning strike. \n· Lunar-Bloom: When triggering Lunar-Bloom reactions, the party gains a special **Moonridge Dew**. Up to 3 Moonridge Dews can be gained every 18s. \n· Lunar-Crystallize: When Moondrift Harmony is triggered, every Moondrift has a 33% chance to inflict an extra attack.",
 			"_curatorNotes": [
 				"A4 (Ascension 4): gcsim asc.go a4* — Lunar-Charged +33% extra lightning-strike chance and Lunar-Crystallize +33% extra Moondrift are reaction-mechanic damage multipliers with no schema primitive; Lunar-Bloom generates Moonridge Dew (feeds her Verdant Dew Charged Attack) up to 3 per 18s. All require party Lunar reactions the planner cannot simulate — left as description-only (unmodelable procs)."
-			]
+			],
+			"notModeled": {
+				"reason": "Two of these effects are 33% chances of an extra hit. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone. The third builds Moonridge Dew, a resource the Rotation Planner doesn't track."
+			}
 		},
 		{
 			"id": "columbina__passive__lunar_vigil",
@@ -428,7 +432,10 @@
 			"_curatorNotes": [
 				"Passive4 'Lunar Vigil' ingested from genshin-db 5.2.12 (capability sweep 2026-07-28). Effect-empty by design: revival HP scales with Friendship Level (account progression — no talent-level-10 value exists), no revive/on-death trigger primitive exists, and the effect is disabled in Domains, Trounce Domains, and the Spiral Abyss (all instanced combat). Not implemented in gcsim (no match in ~/Code/gcsim/internal/characters/columbina/).",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Revival has no timeline representation of any kind — there is no death, no HP and no party-state surface anywhere in the planner, so nothing on screen is wrong or missing. It is also disabled in every instanced fight a rotation is planned for, and its magnitude depends on Friendship Level, which the tool has no notion of. Pure kit trivia in a 262px column. Category: invisible-omission."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model characters falling in battle, so this revive has nothing to show."
+			}
 		}
 	],
 	"constellations": [
@@ -951,5 +958,6 @@
 	"_curatorNotes": [
 		"Full curation 2026-07-14 (stub -> curated). Effects + FrameMaps from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged) cross-checked against docs/curation/talents/columbina.json. Web: KQM Columbina quickguide + genshin wiki.",
 		"UNMODELED / FLAGGED: (1) Moonsign Benediction 'Moonlight, Lent Unto You' (extraPassive) — converts party Electro-Charged/Bloom/Hydro-Crystallize into the Lunar variants, grants Lunar reaction Base DMG up to +7% from Max HP (0.2% per 1000 Max HP, needs ~35k HP), and +1 party Moonsign level. No Lunar-conversion / Moonsign-level / lunar-base-DMG primitive exists — excluded per extraPassive convention, flagged. (2) Gravity accumulation system (10/s, +34% C2, 60 limit) has no primitive; Gravity Interference off-field hits use manual triggers. (3) Verdant Dew / Moondew Cleanse CA gated on external party-generated resource."
-	]
+	],
+	"release": "6.3"
 }

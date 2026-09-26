@@ -231,7 +231,8 @@
 								"level": 6
 							}
 						}
-					]
+					],
+					"dealsNothing": true
 				}
 			],
 			"effects": [
@@ -382,7 +383,10 @@
 				"Caveat added 2026-07-28 (capability sweep). Self-only energy — even if authored, it would (correctly) not derive the team-battery facet, which requires a non-self target.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The planner draws no energy at all — there is no energy meter, no particle count, no bar; `energy`-type effects have no consumer anywhere in `src/lib/sim` or `src/lib/timeline` (P8 names the two authors as reaching no planner surface). Self-only energy also derives no Team Builder facet, by its own curator note. Nothing on screen would look different if this were fully modelled, and being constellation-gated it only reaches a C1+ reader anyway. Category: invisible-omission."
 			],
-			"description": "When Iansan is in combat and is in the Nightsoul's Blessing state, she will restore 15 Elemental Energy for every 6 Nightsoul points she consumes. This effect can trigger once every 18s."
+			"description": "When Iansan is in combat and is in the Nightsoul's Blessing state, she will restore 15 Elemental Energy for every 6 Nightsoul points she consumes. This effect can trigger once every 18s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track energy or Nightsoul points, so it doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "iansan__constellation__laziness_is_the_enemy",
@@ -456,7 +460,10 @@
 			"_curatorNotes": [
 				"C4 (Surging Force): when Scale is up and active (non-Iansan) char casts burst, gain 2 stacks. Each stack consumed per Scale NS-restoration tick for +4 NS. Plus overflow handling: 50% of overflow added to next NS restore. All gates on Scale ticks (not modelled) and team-burst-cast trigger (afterCast on teammate's Q — schema's onCast trigger is character-scoped). Not authored — stack interactions with the Scale system are too removed from the schema to express usefully."
 			],
-			"description": "When the Kinetic Energy Scale is present, Iansan will gain 2 stacks of Surging Force after your current active character (excluding herself) uses their Elemental Burst. The stacks last until the Scale leaves the field, and Surging Force can be gained once per Scale summoning. Whenever Iansan restores Nightsoul points via the Scale, she will consume 1 Surging Force stack and restore 4 additional Nightsoul points.\nAdditionally, if her Nightsoul restoration from the Scale overflows, Iansan will gain 50% of the overflow the next time she restores Nightsoul points via the Scale."
+			"description": "When the Kinetic Energy Scale is present, Iansan will gain 2 stacks of Surging Force after your current active character (excluding herself) uses their Elemental Burst. The stacks last until the Scale leaves the field, and Surging Force can be gained once per Scale summoning. Whenever Iansan restores Nightsoul points via the Scale, she will consume 1 Surging Force stack and restore 4 additional Nightsoul points.\nAdditionally, if her Nightsoul restoration from the Scale overflows, Iansan will gain 50% of the overflow the next time she restores Nightsoul points via the Scale.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track Nightsoul points, which is all this constellation changes."
+			}
 		},
 		{
 			"id": "iansan__constellation__we_can_push_it_further",
@@ -481,5 +488,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.698Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"release": "5.5"
 }

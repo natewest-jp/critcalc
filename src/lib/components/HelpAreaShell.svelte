@@ -3,6 +3,8 @@
 	import type { Area } from '$lib/help/areas';
 	import { findChapter } from '$lib/help/areas';
 	import { setChapter } from './chromeModal.svelte';
+	import AreaTabs from './AreaTabs.svelte';
+	import HRule from './HRule.svelte';
 
 	// One area, two presentations. In `modal` mode the chapter list switches
 	// panes in place (the URL never moves — see chromeModal.svelte.ts); in
@@ -71,6 +73,14 @@
 	 again on them here would double the base prefix. The rule cannot see that
 	 from a variable, hence the file-scoped exemption. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
+{#if mode === 'page'}
+	<!-- On a route the tabs head the page, as they head the overlay — one
+	     place, whichever way you arrived. -->
+	<header class="area-page-head">
+		<AreaTabs current={area.id} mode="page" />
+		<HRule />
+	</header>
+{/if}
 <div class="area-shell" class:is-page={mode === 'page'}>
 	<nav class="area-nav" aria-label="{area.title} sections">
 		<ul class="area-chapters">
@@ -104,13 +114,21 @@
 		{#key current.id}
 			{#if chapterComponent}
 				{@const Chapter = chapterComponent}
-				<article class="prose" use:collectToc><Chapter /></article>
+				{#if current.bare}
+					<div use:collectToc><Chapter /></div>
+				{:else}
+					<article class="prose" use:collectToc><Chapter /></article>
+				{/if}
 			{:else}
 				{#await current.load()}
 					<p class="area-loading">Loading…</p>
 				{:then mod}
 					{@const Chapter = mod.default}
-					<article class="prose" use:collectToc><Chapter /></article>
+					{#if current.bare}
+						<div use:collectToc><Chapter /></div>
+					{:else}
+						<article class="prose" use:collectToc><Chapter /></article>
+					{/if}
 				{/await}
 			{/if}
 		{/key}
@@ -120,7 +138,9 @@
 <style>
 	.area-shell {
 		display: grid;
-		grid-template-columns: 13.5rem minmax(0, 1fr);
+		/* ⚓ Nate 2026-09-23: 12rem — the longest chapter ("Rotation Planner")
+		   is ~170px with its padding. */
+		grid-template-columns: 12rem minmax(0, 1fr);
 		gap: 1.75rem;
 		height: 100%;
 		min-height: 0;
@@ -224,6 +244,12 @@
 
 	.is-page .area-body {
 		overflow: visible;
+	}
+
+	.area-page-head {
+		display: grid;
+		gap: 0.6rem;
+		margin-bottom: 1.2rem;
 	}
 
 	.area-loading {

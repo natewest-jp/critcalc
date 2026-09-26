@@ -211,7 +211,8 @@
 					"element": "electro",
 					"units": 1
 				}
-			]
+			],
+			"modeledBy": "cyno__burst__sacred_rite_wolfs_swiftness"
 		},
 		{
 			"id": "cyno__burst__sacred_rite_wolfs_swiftness",
@@ -340,7 +341,8 @@
 				"[Stellar 2026-07-29] NEW talent this patch - Cyno's Witch's Revelation Passive, unlocked by the quest \"Witch's Revelation: Duty's Instruction\" (Fandom \"Witch's Revelation\" system page: character must be owned and Lv70+). Authored as a plain passive because the schema has no additional-talent kind; its mechanical half lives on the skill as opensTransientState {inStance, 6s}.",
 				"[Stellar 2026-07-29] The Radiance: Stellar-Conduct state is the REAL gate for every \"Radiance: Stellar-Conduct\" clause on this character (A1 Starsame bolts, C1 Together We Rise, C2 Stellar-Conduct DMG stacks, C4 energy return): per the Witch's Revelation page, a character enters it \"when they are within a Polestar Field\". teamEnablesReaction {stellarConduct} is the closest gate the schema has - strictly broader (party has Sandrone) than field presence, hence the caveats.",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Assumes this talent is unlocked - the skill always opens its 6s Pactsworn Pathclearer. The Radiance state it grants needs a Polestar Field, which is not shown.\""
-			]
+			],
+			"modeledBy": "cyno__skill__secret_rite_chasmic_soulfarer"
 		}
 	],
 	"constellations": [
@@ -526,5 +528,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.688Z",
 		"curatedAt": "2026-04-20"
-	}
+	},
+	"release": "3.1"
 }

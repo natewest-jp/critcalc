@@ -67,6 +67,23 @@ class PlannerViewState {
 	togglePanel(panel: Exclude<AsidePanel, null>) {
 		this.aside = this.aside === panel ? null : panel;
 	}
+	/**
+	 * An instant the log should bring into view once it has rows — set by a
+	 * click on an aura pip or reaction marker, cleared by the log when it has
+	 * scrolled there (⚓ Nate 2026-09-24).
+	 * ⚠ STATE, unlike `scrollToSeconds` below, because the log may not exist
+	 * yet: the click OPENS it, and its rows are only projected once it is open,
+	 * so the request has to wait for a reader. The reader clears it, so a stale
+	 * value cannot re-fire.
+	 */
+	logRevealAt = $state<number | null>(null);
+
+	/** Open the log (never toggle it shut) and ask it to show `seconds`. */
+	revealInLog(seconds: number) {
+		this.aside = 'log';
+		this.logRevealAt = seconds;
+	}
+
 	/** Close a panel because its CONTENT went away — ⚠ only if it is the one
 	 *  showing, or an empty rotation would shut the other one too. */
 	closeIfShowing(panel: Exclude<AsidePanel, null>) {

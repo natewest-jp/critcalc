@@ -1,8 +1,12 @@
 # The Coverage page — `/coverage`
 
-_Status: PLANNED 2026-09-22 (⚓ Nate: ships WITH launch). Nothing built. This
-document is the spec; §9 is the phase list; §10 holds what still needs Nate.
-When the round ships, its §11 record wins over everything above it._
+_Status: ✅ SHIPPED 2026-09-23 — §11 is the record and wins over everything above it. (Was: IN PROGRESS on `feat/coverage-page`.) ✅ Phase 1 (derivation, index stamp, the
+three statements + lints E.29–E.31) and a first cut of Phase 3 (the page) are built. ⏳ Phase 2's
+proposals are in `docs/curation/coverage-classification.md`, awaiting Nate — nothing is written to
+the data yet. ⚠️ Deviations from this spec so far: a tenth column, `extra` (a third passive or a
+faction bonus — 16 characters carry one); an absent charged attack is a STAND-IN
+(`GENERIC_CHARGE_FRAMES`), not missing; a stance or window a cast opens counts as its grant. When the
+round ships, its §11 record wins over everything above it._
 
 ## 0. What it is, in one paragraph
 
@@ -99,7 +103,7 @@ hairline seam. ⚠️ These are a first cut for Nate's eye, not measurements.
 | **not modelled** | a RULING — co-op shields, distance-based regen, the `onHeal`/`onHP*` class | hatched; listed WITH its reason; ⛔ never counts against the character                                                  |
 | **n/a**          | this ability has nothing of that kind (Xiangling's E grants no buff)       | empty / neutral ground — ⛔ NEVER drawn as missing                                                                      |
 
-⚓ n/a vs missing is the whole honesty of the page (⚓ Nate: not-modelled is
+⚓ n/a vs missing is the whole honesty of the page (⚓ Nate: not-modeled is
 SHOWN — it teaches users what the tool can do). Where the data cannot
 distinguish them today, §5 says what the data must learn.
 
@@ -135,7 +139,7 @@ data says which today. Three sources, in precedence order:
    `onHPChange`, `onHPDecrease`, `onHPIncrease` — memory
    `project_manual_trigger_retirement`) → **provisional** (we took it; the
    planner draws nothing). A `BuffValue {type:'unknown'}` → **provisional**.
-2. `notModelled: { reason }` on the host (§5.1) → **not modelled**.
+2. `notModeled: { reason }` on the host (§5.1) → **not modelled**.
 3. Neither: **missing** if the capability oracle expects something here
    (`capability-expectations.mjs` via the audit's expected-but-absent set —
    consumed, never re-derived), else **n/a**… ⚠️ but the oracle is
@@ -160,13 +164,13 @@ lit sub-segments for the sort key · `caveat` presence per host · the
 Each is a schema addition WITH its consumer (this page), which is what the
 orphaned-schema rule asks for. Each gets a lint.
 
-### 5.1 `notModelled: { reason: string }` on an ability-shaped host
+### 5.1 `notModeled: { reason: string }` on an ability-shaped host
 
 A RULING as data. Today rulings live in `_curatorNotes` prose, which the
 page must not render. `reason` is USER-FACING and follows the caveat style
 guide (name the thing, ≤2 sentences, no curator-speak) — it is rendered.
-⚠️ Lint: a host may not carry both `notModelled` and `effects`; a host with
-`notModelled` may carry a `caveat` (the ruling can still leave a pixel wrong).
+⚠️ Lint: a host may not carry both `notModeled` and `effects`; a host with
+`notModeled` may carry a `caveat` (the ruling can still leave a pixel wrong).
 Census to seed it from: `docs/curation/` rulings (co-op shields — Nicole C2,
 Diona C2, Kirara C2 house form; Iansan distance; Hydro Traveler suffusion;
 Skirk rifts; Ayaka C1 coin flip; Xiao's ICD case; Zibai C2), plus every
@@ -202,15 +206,15 @@ missing; some are rulings. Shown raw on launch day, they would all read
 "missing", which misrepresents us in the wrong direction.
 
 The pass: an agent reads each effect-less host's `description` +
-`_curatorNotes` and proposes ONE of `n/a` / `missing` / `notModelled(reason)`
+`_curatorNotes` and proposes ONE of `n/a` / `missing` / `notModeled(reason)`
 into a review table (`docs/curation/coverage-classification.md`); ⚓ Nate
 reviews; the accepted rows are written as data by a `jsonc-parser` writer
 through `scripts/lib/json-edit.mjs` (`surgicalRewrite`). "n/a" is the
 positive statement `models: 'none'`… ⚠️ naming TBD — it must not collide with
-`notModelled`, and it must be distinguishable from "not yet looked at", which
+`notModeled`, and it must be distinguishable from "not yet looked at", which
 is the state a 7.1 character's constellations arrive in. Proposed:
 
-- `notModelled: { reason }` — a ruling (§5.1)
+- `notModeled: { reason }` — a ruling (§5.1)
 - `nothingToModel: true` — n/a; the host describes nothing the planner would
   ever draw (⚠️ a lint refuses it beside `effects`)
 - absent both, no effects — **missing**, the honest default for anything not
@@ -239,7 +243,7 @@ becomes regenerated: sort the page by missing width and it is the list.
   DIMS the C-columns above what the user owns.
 - **Hover** on a sub-segment → the tooltip: its derived line ("plunge uses a
   generic stand-in", "applications land the element at the cast, counted
-  provisional") + the host's `caveat` + the `notModelled.reason`. A caveat's
+  provisional") + the host's `caveat` + the `notModeled.reason`. A caveat's
   host IS its column (lint E.28 guarantees an ability-shaped host), so the
   mapping needs no metadata.
 - **Click** a row → an IN-FLOW accordion (⛔ never a modal — memory
@@ -257,7 +261,7 @@ becomes regenerated: sort the page by missing width and it is the list.
 ## 8. Tests and gates
 
 - `deriveCoverage.test.ts` — one fixture per state per sub-segment, plus three
-  seeded negatives (an `effects`+`notModelled` host; a `nothingToModel` beside
+  seeded negatives (an `effects`+`notModeled` host; a `nothingToModel` beside
   effects; a `framesSource` value outside the union).
 - `characterIndex.test.ts` — drift guard extends to the coverage block.
 - `characterLint` — the three new lints (§5.1, §5.2, §6).
@@ -291,10 +295,38 @@ can be built against phase 1's stamp while phase 2 runs.
 
 - The widths in §2.1 and the seam-per-form question (§2), on screen.
 - Materials (§7).
-- The two field names in §6 (`nothingToModel` / `notModelled`).
+- The two field names in §6 (`nothingToModel` / `notModeled`).
 - Whether "12 of 15" prints at all, or the sort is silent.
 - The narrow-width e2e promotion (§8).
 
 ## 11. Record
 
-_(written when the round ships; wins over §0–§10)_
+_Shipped 2026-09-23 on `feat/coverage-page`, merged to `main` the same day. This section wins over §0–§10._
+
+**What shipped**
+
+- **Derivation** — `src/lib/coverage/deriveCoverage.ts` reads a character JSON into **nineteen segments in fixed places**: Normals `N|C|P` × timing|element, E and Q × timing|element|effects, A1, A4, **`extra`** (a tenth column the spec lacked — a third passive or a faction bonus; 16 characters carry one), C1/C2/C4/C6. Five states. It emits line CODES, never prose (`coverageText.ts` holds one whole sentence per code). The index carries one state character per segment (`coverage`), drift-guarded.
+- **Four positive statements in the data**, each checked: `notModeled { reason }` (lint E.29), `nothingToModel` (E.29), 🆕 `modeledBy: '<host id>'` (E.29b — a mechanic drawn through a host whose data does not name it), a summon's `dealsNothing` (E.30); plus `meta.framesSource` declared (E.31; `gcsim-pr` on Illuga, Kachina, Linnea, Nefer). 🆕 `CharacterData.release` ("major.minor", genshin-db `version`, the Travelers by hand), required by `characterIndex.test.ts` — ⚠️ a corpus fact, deliberately NOT a `lintCharacter` rule (synthetic sim-test kits carry none).
+- **The classification pass** — 499 effect-less hosts read missing on day one; four agents proposed, ⚓ Nate ruled nine CLASSES plus six follow-ups (`docs/curation/coverage-classification.md` is the record), and 251 statements were written surgically: **notModeled 184 · nothingToModel 57 · modeledBy 10**. What remains missing in the effect columns (~219) is the curation backlog, sorted for free by "Least covered first".
+- **The page** — an About CHAPTER, rendered in the About/Help overlay over whatever surface you are on (`Chapter.bare` skips `.prose`), and at the `/coverage` route. Search, My roster, sort **Newest first (default) · By name · Least covered first**; hover a segment for a tooltip, select a row for its details in place; the legend is a content-sized row of five where its container allows (a container query on the legend's own wrapper).
+- **Links in** — every link opens the overlay IN PLACE (`$lib/coverage/openCoverage`), keeping its `/coverage?c=…` href for new tabs: the planner's Notes panel (per character + "Coverage for this team"), the Team Builder's uncurated bucket and detail card, the landing banner (whose detail line now READS the frameless list from the index — `inTheWorks`), `/contribute`.
+- **The planner's opt-in strips** (Settings → Coverage strips, OFF by default): each slotted character's strip under the notation box, the parts THIS rotation does not reach dimmed (`rotationUse.ts`).
+
+**Rulings made along the way (⚓ Nate, 2026-09-23)**
+
+- The test between the n/a-ish states: _would a player reading the timeline ever expect to see it?_ No → `nothingToModel`; yes but ruled out → `notModeled`. A host with ANY modelable-but-unauthored part stays missing.
+- Every reason names **the Rotation Planner**, never "we" — "we" reads as a stance, the tool's name as a limit of this tool.
+- The planner simulates no chance: two people planning one rotation must see the same bars.
+- Absent a charged attack's frames, `C` takes `GENERIC_CHARGE_FRAMES` — a stand-in, not missing. A stance or window a cast opens IS its grant.
+- Colours: modeled `--ui-positive`, not modeled hatched in `--ui-danger`, stand-in and missing the editor's own marks (`.cov-state` in app.css).
+- The static pages are ONE place: **About | Help tabs** head the overlay and the routes; the overlay and every static route are **72rem**, the sidebar 12rem; prose keeps its 56ch measure.
+- **Links**: a real `text-decoration` underline on every text link (`.prose a`, 🆕 `.link`, `.link--quiet`), 45% at rest and 90% on hover, the font's own thickness and offset. The resting underline is also the accessible one: gold on `--text` is 1.57:1.
+- Element and weapon filters removed (the Team Builder's questions). The row prints no patch number.
+
+**Deviations from §0–§10**: the tenth column; no seams per form (not drawn, not asked for again); the widths table is as §2.1 plus `extra` 0.5; the page is a chapter, not a fourth route beside About/Help.
+
+**Not done**: the editor's stand-in hover still carries no coverage link — it is a plain `title`, which cannot hold one.
+
+**Found on the way, for the engine queue** (memory `project_engine_queue_2026-09-17`): Alhaitham's C4/C6 read a `mirrors` key nothing grants; Eula's Hold variant keeps its 10s cooldown at C2 (variants have no `cooldownModifiers`); Dahlia C4 extends an unauthored Favonian Favor window. And `.gitignore`'s `coverage/` had swallowed `src/lib/coverage/` and the route — anchored to `/coverage/`.
+
+**Verification**: vitest 2027/2027, check, lint; e2e **78 + 78** passed (chrome + webkit) with the new `e2e/coverage.spec.ts` (wide and 390).

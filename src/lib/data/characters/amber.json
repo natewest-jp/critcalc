@@ -181,7 +181,10 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. A4: Aimed Shot hits on weak points increase ATK by 15% for 10s. From asc.go: modifier.NewBaseWithHitlag('amber-a4', 600) = 600 frames = 10s. Trigger: onHit with weakpoint condition. Only fires once per aimed shot (done flag in callback)."
 			],
-			"description": "Aimed Shot hits on weak points increase ATK by 15% for 10s."
+			"description": "Aimed Shot hits on weak points increase ATK by 15% for 10s.",
+			"notModeled": {
+				"reason": "This needs an Aimed Shot to hit a weak point, and the Rotation Planner doesn't model where a shot lands."
+			}
 		}
 	],
 	"constellations": [
@@ -197,7 +200,10 @@
 			"name": "Bunny Triggered",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG."
+			"description": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model where a shot lands, and this needs a fully charged Aimed Shot to hit Baron Bunny's foot."
+			}
 		},
 		{
 			"id": "amber__constellation__it_burns",
@@ -236,5 +242,6 @@
 		"generatedAt": "2026-04-06T11:45:40.675Z",
 		"draftedAt": "2026-05-02",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.0"
 }

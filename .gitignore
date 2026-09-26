@@ -75,7 +75,7 @@ vite.config.ts.timestamp-*
 
 # Misc
 .cache/
-coverage/
+/coverage/
 *.tsbuildinfo
 
 # Design source masters — large PNG plates exported from Blender / Affinity.

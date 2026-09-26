@@ -205,7 +205,10 @@
 					"element": "pyro",
 					"units": 1
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track Nightsoul points, so it doesn't draw the points Plains Scorcher restores."
+			}
 		}
 	],
 	"passives": [
@@ -216,7 +219,8 @@
 			"_curatorNotes": [
 				"A larger Threshold AoE above 20 Nightsoul points — no pixel; description-only. ⚠️ Re-ingested 2026-09-15 from genshin-db: the hand-written passives ('Resounding Battlecries', 'Crackling Adversity') were invented, though this one's mechanic was right."
 			],
-			"description": "When the Traveler has over 20 Nightsoul points, the attack AoE of the Blazing and Scorching Thresholds from the Elemental Skill Flowfire Blade after they hit opponents is increased."
+			"description": "When the Traveler has over 20 Nightsoul points, the attack AoE of the Blazing and Scorching Thresholds from the Elemental Skill Flowfire Blade after they hit opponents is increased.",
+			"nothingToModel": true
 		},
 		{
 			"id": "traveler_pyro__passive__embers_unspent",
@@ -289,7 +293,10 @@
 			"_curatorNotes": [
 				"Nightsoul point regeneration off party Pyro reactions inside 12s of the skill (gcsim `c2OnSkill`, two activations per cast). Nightsoul points are not modelled; description-only. ⚠️ Re-ingested 2026-09-15: the retired entry ('Spreading Flames', +30% ATK) was invented."
 			],
-			"description": "Within 12s of using the Elemental Skill Flowfire Blade, after nearby party members trigger a Pyro-related reaction on an opponent, the Traveler will regain 14 Nightsoul points. Each use of Flowfire Blade will restore at most 28 Nightsoul points in this way."
+			"description": "Within 12s of using the Elemental Skill Flowfire Blade, after nearby party members trigger a Pyro-related reaction on an opponent, the Traveler will regain 14 Nightsoul points. Each use of Flowfire Blade will restore at most 28 Nightsoul points in this way.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track Nightsoul points, so it doesn't draw the points this restores."
+			}
 		},
 		{
 			"id": "traveler_pyro__constellation__relayed_beacon",
@@ -374,5 +381,6 @@
 		"source": "gcsim",
 		"generatedAt": "2026-05-08T00:00:00.000Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"release": "5.0"
 }

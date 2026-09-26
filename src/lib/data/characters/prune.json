@@ -466,5 +466,6 @@
 		"Hexerei layer added 2026-07-29 (Luna VII): factions=['hexerei'] + Secret Rite from the Witch's Eve Rite passive 'Witchseeker's Vow'. Sole evidence is the Fandom wiki talent infobox (pageid 457454, MediaWiki API fetch) — Prune has no gcsim implementation, so no source backstop exists for these values. No permanent (ungated) kit patch found: the rite text describes only the two count-gated ATK buffs, and the Prune page's talent/constellation text shows no revised values, so no regular kit structure was touched.",
 		"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): kit text rewritten from \"Swirl\" to \"Swirl or Stellar Swirl\", so `stellarSwirl` joins the trigger. ⚓ Needed because a Stellar Swirl enabler (Sandrone/Odette/Cryo Traveler) REPLACES every Cryo Swirl party-wide — without this the effect would go dark in those teams. ⛔ Only added where HoYo actually renamed the text: a buff on the base reaction is NOT a buff on the converted one, so characters whose text was left alone (Venti, Lohen) stay as-is.",
 		"AUTHORED 2026-08-31: \"every excess ATK point [above 2,000] increases that instance of DMG by 0.025%, up to a total of 50% max\" = 2.5% per 100 ATK. ⚓ ratio is VALUE PER 100 STAT UNITS (BuffValue JSDoc: contribution = (ratio/100) × stat), which is why a \"per 1% ER\" kit reads as ratio 40, not 0.4. Was an `unknown` placeholder pending `offset`."
-	]
+	],
+	"release": "6.6"
 }

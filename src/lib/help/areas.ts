@@ -28,6 +28,9 @@ export type Chapter = {
 	path: string;
 	/** Overlay-only lazy loader; routes import the component directly. */
 	load: () => Promise<{ default: Component }>;
+	/** Renders WITHOUT the `.prose` article, whose typography would restyle a
+	 *  table's lists and headings. */
+	bare?: true;
 };
 
 export type Area = {
@@ -95,6 +98,14 @@ export const ABOUT_AREA: Area = {
 			title: 'Privacy',
 			path: resolve('/privacy'),
 			load: () => import('./chapters/Privacy.svelte')
+		},
+		{
+			// ⚓ Nate 2026-09-23: the coverage page's home in the navigation.
+			id: 'coverage',
+			title: 'Coverage',
+			path: resolve('/coverage'),
+			load: () => import('$lib/components/CoverageList.svelte'),
+			bare: true
 		}
 	]
 };

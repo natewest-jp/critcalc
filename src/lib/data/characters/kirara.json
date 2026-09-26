@@ -203,7 +203,10 @@
 			"description": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, she will grant other party members she crashes into Critical Transport Shields.\nThe DMG absorption of Critical Transport Shield is 40% of the maximum absorption Meow-teor Kick's normal Shields of Safe Transport are capable of, and will absorb Dendro DMG with 250% effectiveness.\nCritical Transport Shields last 12s and can be triggered once on each character every 10s.",
 			"_curatorNotes": [
 				"Co-op only — not implemented in gcsim (cons.go: `// C2 is not implemented, co-op only`). Reviewer to confirm in-game whether C2 grants any single-player benefit; if not, leave unmodeled."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model co-op, and these shields only go to other players' characters."
+			}
 		},
 		{
 			"id": "kirara__constellation__universal_recognition",
@@ -279,5 +282,6 @@
 		"generatedAt": "2026-04-06T11:45:40.705Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.7"
 }

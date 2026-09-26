@@ -67,7 +67,10 @@
 		bottom: calc(var(--site-footer-h) + clamp(0.5rem, 1.5vh, 1rem));
 		left: 0;
 		right: 0;
-		width: min(860px, calc(100% - 2.5rem));
+		/* ⚓ ONE width for every static page, the About/Help overlay's 72rem (⚓ Nate
+		   2026-09-23): the coverage table fits it, and prose keeps its own 56ch
+		   measure, so the extra width is margin, never longer lines. */
+		width: min(72rem, calc(100% - 2.5rem));
 		margin: 0 auto;
 		overflow-y: auto;
 		background: var(--surface); /* modal role (Nate 2026-07-31) */

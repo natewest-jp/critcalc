@@ -255,7 +255,8 @@
 			"_curatorNotes": [
 				"↻ 2026-09-16 (T0.5): cooldownStartDelay authored on all three forms — press 14 (gcsim skill.go:111 SetCDWithDelay(..., 14)), hold-1 43, hold-2 110 (skill.go:206-224). Without them the ghost CD tail and the next E were early by up to 1.83s on hold-2.",
 				"↻ 2026-09-16 (T0.5): the h2E FrameMap's `anim` was 337 — a stand-in copied from `swap` — where gcsim's animation length is 343, and `J` was 240 where gcsim is 340 (the frames report filed that one as a §2 review candidate). `N: 343` is dropped with the fix, since it now equals `anim` and `anim` is the fallback for every unlisted key."
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "bennett__burst__fantastic_voyage",
@@ -366,7 +367,8 @@
 			"id": "bennett__passive__it_should_be_safe",
 			"name": "It Should Be Safe...",
 			"abilityType": "passive",
-			"description": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%."
+			"description": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%.",
+			"nothingToModel": true
 		}
 	],
 	"constellations": [
@@ -406,7 +408,10 @@
 			"name": "Impasse Conqueror",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%."
+			"description": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%.",
+			"notModeled": {
+				"reason": "This needs Bennett’s HP below 70%, and the Rotation Planner doesn’t track HP."
+			}
 		},
 		{
 			"id": "bennett__constellation__unstoppable_fervor",
@@ -497,5 +502,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.681Z",
 		"curatedAt": "2026-04-07"
-	}
+	},
+	"release": "1.0"
 }

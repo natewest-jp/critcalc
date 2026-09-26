@@ -440,8 +440,41 @@
 	   Visualizers going onto the scene is what asked for it — with no framed
 	   slabs left anywhere, how much world comes through stopped being a per-tool
 	   question. The worst pixel (a star) now lands at rgb(48,48,51), from
-	   rgb(76,76,78). */
-	--scene-dim: #121216;
+	   rgb(76,76,78).
+
+	   ↻ ⚓ NATE 2026-09-26: #121216 → #11141d, and the token LOST ITS JOB. The
+	   dim is no longer this colour laid over the scene at an opacity: it is the
+	   scene renderer's final pass (sceneGL.ts FS_DIM, formula + values in
+	   landing/sceneDim.ts) — the scene squared, half-desaturated and scaled by a
+	   gain, over a TINT (SCENE_DIM_TINT, HSL 222° / 26% / 9%) at .965. The
+	   renderer takes that tint as an exact FLOAT, never through this token: at
+	   9% lightness an 8-bit hex cannot take the 2° step Nate asked for. This is
+	   its nearest hex, and paints ONLY the .dim fallback (pre-mount frames, no
+	   WebGL). Everything above is the wash era's record; its lessons hold (the
+	   census composites through `dimPixel`), its numbers do not. */
+	--scene-dim: #11141d;
+	/* The VEIL GROUND — the site's night gradient for surfaces that stand in
+	   for the world rather than sit on it: the loading veil, the 404, and any
+	   future off-scene page. Drawn by VeilGround.svelte (gradient + grain); use
+	   the component, which keeps the grain with it — these two tokens are the
+	   gradient alone, for plain CSS.
+	   ⚓ NATE 2026-09-26: TAKEN FROM THE DIMMED WORLD — the mean colour of the
+	   top and bottom rows of the crest view (the tool camera, centre frame)
+	   under the scene dim (landing/sceneDim.ts, `dimPixel` over plate
+	   05f2722f, stars excluded), so a veil lifting onto a tool opens onto the
+	   ground it was already showing. The dimmed crest is nearly flat
+	   (#111520 → #121623), so that pair is the ANCHOR and the contrast is
+	   exaggerated from it in OKLCH (hue held, chroma scaled with lightness),
+	   entirely at the top ("take it out of the darker stop": top L −0.05,
+	   ΔL 0.056 against the world's 0.006). Then by eye: both ends a step
+	   darker (L −0.01) and the foot a step more saturated and a touch toward
+	   violet (OKLCH h 270.7° → 274.2°, C 0.025 → 0.029), by A/B over
+	   #111321. At this darkness a hex steps hue in ~1–4° jumps.
+	   It replaced a near-black purple ramp (#01030f → #160d1a) that bridged
+	   the landing's sky and the tools' old crimson dire border.
+	   ⚠ Re-measure if the plate or SCENE_DIM changes. */
+	--veil-ground-top: #06080f;
+	--veil-ground-bottom: #111422;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -2279,17 +2312,96 @@ img {
    them instead — no heading will ever have one — which leaves colour free to
    mean "this is chrome" for both. Still true now that links are the accent and
    headings are --chrome: those two are much further apart than the old pair,
-   but the underline is what makes a link findable in a paragraph, not the hue. */
+   but the underline is what makes a link findable in a paragraph, not the hue.
+   ⚓ Measured 2026-09-23: gold on --text is 1.57:1, far under the 3:1 a colour
+   cue alone would need, so the resting underline is also the accessible one.
+   ↻ It is a real `text-decoration` now, not a border-bottom (⚓ Nate): the
+   border's one advantage — a colour of its own — is `text-decoration-color`'s
+   too, and a real underline wraps with the text and clears descenders. The
+   font's own thickness and offset — no spacing away from the text (⚓ Nate). */
 .prose a {
 	color: var(--accent);
-	text-decoration: none;
-	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-	transition: border-color var(--t-snap);
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: text-decoration-color var(--t-snap);
 }
 
 .prose a:hover,
 .prose a:focus-visible {
-	border-bottom-color: var(--accent);
+	/* 90%, not full: a straight rule reads brighter than the glyphs it sits
+	   under at the same colour (⚓ Nate 2026-09-23). */
+	text-decoration-color: color-mix(in srgb, var(--accent) 90%, transparent);
+}
+
+/* A text link OUTSIDE prose (⚓ Nate 2026-09-23: the coverage links read as
+   plain text). The bare `a` rule above strips all decoration on purpose — tool
+   cards, chrome marks and tabs are anchors too — so a link that sits in running
+   UI text opts in here and gets the prose treatment — ⚓ Nate 2026-09-23: the
+   SAME for every link, accent ink with an underline faint at rest and lit on
+   hover. `.link--quiet` keeps the surrounding ink and only draws the
+   underline, for a line whose own colour is the point (the landing banner). */
+.link {
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: text-decoration-color var(--t-snap);
+}
+.link:hover,
+.link:focus-visible {
+	text-decoration-color: color-mix(in srgb, var(--accent) 90%, transparent);
+}
+.link.link--quiet {
+	color: inherit;
+	text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+.link.link--quiet:hover,
+.link.link--quiet:focus-visible {
+	text-decoration-color: color-mix(in srgb, currentColor 90%, transparent);
+}
+
+/* ── Coverage states ──────────────────────────────────────────────────────
+   The five registers of the coverage strip (docs/coverage-round.md §3), one
+   place for the strip (CoverageStrip) and the legend's swatches. ⚓ Nate
+   2026-09-23: modeled is --ui-positive and not-modeled hatches in --ui-danger,
+   so the strip reads at a glance; stand-in and missing are the editor's own
+   provisional / warning marks. ⛔ Never element colours — coverage is not a
+   mechanic. `.is-dim` (out of this rotation's reach) recedes in the PAINT,
+   never element opacity. The hatch is ONE layer (the Safari veto is on tiled
+   multi-layer backgrounds). */
+.cov-state--lit {
+	background-color: var(--ui-positive);
+}
+.cov-state--provisional {
+	background-color: var(--ui-provisional);
+}
+.cov-state--missing {
+	background-color: var(--ui-warning);
+}
+.cov-state--notModeled {
+	background-image: repeating-linear-gradient(
+		135deg,
+		var(--ui-danger) 0 1.5px,
+		transparent 1.5px 4px
+	);
+}
+.cov-state--na {
+	box-shadow: inset 0 0 0 1px var(--border);
+}
+.cov-state--lit.is-dim {
+	background-color: color-mix(in srgb, var(--ui-positive) 28%, transparent);
+}
+.cov-state--provisional.is-dim {
+	background-color: color-mix(in srgb, var(--ui-provisional) 28%, transparent);
+}
+.cov-state--missing.is-dim {
+	background-color: color-mix(in srgb, var(--ui-warning) 28%, transparent);
+}
+.cov-state--notModeled.is-dim {
+	background-image: repeating-linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--ui-danger) 35%, transparent) 0 1.5px,
+		transparent 1.5px 4px
+	);
 }
 
 /* Jump targets clear the top of whichever container is scrolling — the pages

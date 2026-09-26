@@ -104,7 +104,8 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "aino__burst__precision_hydronic_cooler",
@@ -263,7 +264,10 @@
 			"_curatorNotes": [
 				"A4: +50% Aino's EM as Hydro flat damage on EVERY burst tick (Cool Your Jets Ducky water balls, applied via FlatDmg=c.Stat(EM)*0.5 in burst.go). Authored 2026-05-17 via the new `flatScaling: { stat: \"em\", ratio: 50 }` field on the burst tick damage Effect — co-located with the talent-table scaling on the same Effect entry (no separate passive Effect since the A4 piggybacks on the burst tick's existing damage event)."
 			],
-			"description": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery."
+			"description": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard Precision Hydronic Cooler hits."
+			}
 		}
 	],
 	"constellations": [
@@ -668,5 +672,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.671Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"release": "6.0"
 }

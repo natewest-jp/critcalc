@@ -169,7 +169,8 @@
 					"element": "anemo",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "traveler_anemo__burst__gust_surge",
@@ -245,7 +246,10 @@
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — It describes an on-kill heal. Two independent reasons there is no pixel: heal effects reach NO timeline surface for any character (grep over src/lib/timeline finds no 'heal' consumer; rubric's C15 correction confirms a heal reaches no buff row), and 'defeats an opponent' is not expressible in notation — the planner has no enemy or HP state. The authored effect is heal/manual/self anyway, which is the largest dead-data class in the corpus. Nothing on screen is wrong or conspicuously blank. Category: invisible-omission.",
 				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). passive Second Wind — effects[0] (heal 2% hp, self) carried `trigger: manual` and reached no surface. gcsim: `~/Code/gcsim/internal/characters/traveler/common/anemo/asc.go:47-80` — subscribes to `event.OnTargetDied`, requires the killing blow to be the Traveler's own `AttackTagElementalArt` or `…ArtHold` (`:56-61`), takes a 300f ICD (`:66`), then queues five `HealTypePercent 0.02` self-heals at 1s intervals (`:68-77`). Retained: `_curatorNotes` must keep the gcsim cite and the shape — on a Palm Vortex KILL, 5 × 2% Max HP self-heal at 1s intervals, 5s ICD — and the reason it is retired: the trigger is an opponent's DEATH, and the planner has no enemy, no enemy HP and no notation token for a kill, so there is no trigger to move it to. Keep the 2026-08-19 ruthless-pass note verbatim; its finding (no pixel) is what this verdict acts on. ⚠️ ⛔ Do NOT \"rescue\" this as `onHit` with `abilityType: 'skill'`. That drops the kill condition, and unlike the planner (where heals draw nothing) the Team Builder turns a `heal` effect into a real facet chip, a badge and a coverage row — it would put the Anemo Traveler into \"who can heal\" on the strength of a passive that fires only on a kill. `onHPIncrease` / `onHeal` are equally out: the brief lists both as readerless, as dead as `manual`."
 			],
-			"description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s."
+			"description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model defeating opponents, so there is no kill for this heal to follow."
+			}
 		}
 	],
 	"constellations": [
@@ -254,7 +258,10 @@
 			"name": "Raging Vortex",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Palm Vortex's Storm DMG is increased by 100% in its initial cast (the cast made before any other element is absorbed).\n\nMaximum upgrade level is 15."
+			"description": "Palm Vortex's Storm DMG is increased by 100% in its initial cast (the cast made before any other element is absorbed).\n\nMaximum upgrade level is 15.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the first Storm hits."
+			}
 		},
 		{
 			"id": "traveler_anemo__constellation__uprising_whirlwind",
@@ -279,7 +286,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": ["C4: Reduces stamina consumption by 20%. Stamina-drain not modeled."],
-			"description": "Decreases sprinting Stamina consumption by 20%."
+			"description": "Decreases sprinting Stamina consumption by 20%.",
+			"nothingToModel": true
 		},
 		{
 			"id": "traveler_anemo__constellation__vortex_stormstrike",
@@ -321,5 +329,6 @@
 		"source": "gcsim",
 		"generatedAt": "2026-05-08T00:00:00.000Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"release": "1.0"
 }

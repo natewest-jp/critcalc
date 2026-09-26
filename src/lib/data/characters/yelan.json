@@ -285,7 +285,8 @@
 			"id": "yelan__passive__adapt_with_ease",
 			"name": "Adapt With Ease",
 			"abilityType": "passive",
-			"description": "So long as an Exquisite Throw is in play, your own active character deals 1% more DMG. This increases by a further 3.5% DMG every second. The maximum increase to DMG dealt is 50%.\nThe pre-existing effect will be dispelled if Depth-Clarion Dice is recast during its duration."
+			"description": "So long as an Exquisite Throw is in play, your own active character deals 1% more DMG. This increases by a further 3.5% DMG every second. The maximum increase to DMG dealt is 50%.\nThe pre-existing effect will be dispelled if Depth-Clarion Dice is recast during its duration.",
+			"modeledBy": "yelan__burst__depthclarion_dice"
 		}
 	],
 	"constellations": [
@@ -340,5 +341,6 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.733Z",
 		"curatedAt": "2026-04-21"
-	}
+	},
+	"release": "2.7"
 }

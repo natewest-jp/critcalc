@@ -321,7 +321,10 @@
 			"description": "During Niwabi Fire-Dance, Yoimiya's Normal Attacks have a 50% chance of firing an extra Blazing Arrow that deals 60% of its original DMG. This DMG is considered Normal Attack DMG.",
 			"_curatorNotes": [
 				"Probabilistic extra-hit mechanic: 50% chance per in-stance N for an extra arrow at 60% of total mult. Not modeled — schema has no probabilistic damage-add concept and proc reliability is non-trivial in practice. Reviewer-owned."
-			]
+			],
+			"notModeled": {
+				"reason": "Each extra Blazing Arrow has a 50% chance to fire. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+			}
 		}
 	],
 	"meta": {
@@ -329,5 +332,6 @@
 		"generatedAt": "2026-04-06T11:45:40.733Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "2.0"
 }

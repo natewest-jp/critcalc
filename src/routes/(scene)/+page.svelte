@@ -11,6 +11,7 @@
 	} from '$lib/landing/transition';
 	import { HERO_ART, PLATE_BACK, PLATE_LINE, PLATE_VIEWBOX } from '$lib/landing/heroArt';
 	import { currentAnnouncements } from '$lib/landing/announcements';
+	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { onMount } from 'svelte';
 
 	// The banner's entries are filtered by DATE, and the first paint must be
@@ -129,7 +130,17 @@
 				{#each announcements as a (a.id)}
 					<li class="notice">
 						<span class="notice__text">{a.text}</span>
-						{#if a.detail}<span class="notice__detail">{a.detail}</span>{/if}
+						{#if a.detail}
+							{#if a.href}
+								<a
+									class="notice__detail link link--quiet"
+									href={resolve(a.href as '/coverage')}
+									onclick={(e) => openCoverage(e)}>{a.detail}</a
+								>
+							{:else}
+								<span class="notice__detail">{a.detail}</span>
+							{/if}
+						{/if}
 					</li>
 				{/each}
 			</ul>

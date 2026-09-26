@@ -67,8 +67,6 @@ class DocumentBarState {
 	notice = $state<string | null>(null);
 	/** The saved-rotation bank overlay (rendered by the (tools) layout). */
 	loadOpen = $state(false);
-	/** Two-step destructive confirm for "reset this document". */
-	resetConfirm = $state(false);
 	/**
 	 * A shared link arrived with every tab occupied, so it was parked in the
 	 * bank under this name. Rendered by the (tools) layout as a modal that must
@@ -298,11 +296,6 @@ class DocumentBarState {
 
 	async sharePng(mode: 'copy' | 'download') {
 		await this.exporters?.png(mode);
-	}
-
-	resetDocument() {
-		rt.resetActiveTab();
-		this.resetConfirm = false;
 	}
 }
 

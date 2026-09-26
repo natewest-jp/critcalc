@@ -23,12 +23,16 @@
 		onClose,
 		size = 'compact',
 		onScene = false,
+		heading,
 		children
 	}: {
 		title: string;
 		onClose: () => void;
 		size?: 'compact' | 'wide';
 		onScene?: boolean;
+		/** Replaces the plain title — the About | Help tabs (AreaTabs). `title`
+		 *  still names the dialog for assistive tech. */
+		heading?: Snippet;
 		children: Snippet;
 	} = $props();
 
@@ -67,7 +71,11 @@
 		aria-label={title}
 	>
 		<header class="overlay-header">
-			<h2 class="overlay-title">{title}</h2>
+			{#if heading}
+				{@render heading()}
+			{:else}
+				<h2 class="overlay-title">{title}</h2>
+			{/if}
 			<button class="overlay-close" onclick={onClose} aria-label="Close">
 				<CloseMark />
 			</button>
@@ -112,7 +120,9 @@
 	   takes the remaining space and whatever is inside owns the scrolling, so
 	   an area's sidebar can hold still while its chapter moves. */
 	.overlay-panel.is-wide {
-		width: min(64rem, 100%);
+		/* ⚓ Nate 2026-09-23: 72rem. Prose keeps its 56ch measure, so the width
+		   is margin for reading and room for the coverage table. */
+		width: min(72rem, 100%);
 		height: min(82svh, 46rem);
 		max-height: none;
 		overflow: hidden;

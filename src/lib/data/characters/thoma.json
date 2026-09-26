@@ -269,7 +269,10 @@
 			"_curatorNotes": [
 				"CD reduction effect not yet authored — needs reviewer pass. Conditional: triggers when a character protected by Thoma's Blazing Barrier is attacked; reduces E and Q CD by 3s each. ICD: once per 20s. Externally-triggered (enemy attack on shielded ally), not a standard `onCast`/`onHit`. gcsim simplifies by setting base CD to 12s/17s at C1."
 			],
-			"description": "When a character protected by Thoma's own Blazing Barrier (Thoma excluded) is attacked, Thoma's own Blazing Blessing CD is decreased by 3s, while his own Crimson Ooyoroi's CD is decreased by 3s.\nThis effect can be triggered once every 20s."
+			"description": "When a character protected by Thoma's own Blazing Barrier (Thoma excluded) is attacked, Thoma's own Blazing Blessing CD is decreased by 3s, while his own Crimson Ooyoroi's CD is decreased by 3s.\nThis effect can be triggered once every 20s.",
+			"notModeled": {
+				"reason": "This triggers when an opponent attacks a shielded character, and the Rotation Planner doesn't model incoming attacks."
+			}
 		},
 		{
 			"id": "thoma__constellation__a_subordinates_skills",
@@ -293,7 +296,10 @@
 			"_curatorNotes": [
 				"Energy restore effect not yet authored — needs reviewer pass. Likely `onCast` with `ability: 'burst'`; restores 15 Energy to Thoma. gcsim: `c.AddEnergy('thoma-c4', 15)` via `Tasks.Add` at frame 8 of burst."
 			],
-			"description": "After using Crimson Ooyoroi, 15 Energy will be restored to Thoma."
+			"description": "After using Crimson Ooyoroi, 15 Energy will be restored to Thoma.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't track energy, so it doesn't draw the Energy this restores."
+			}
 		},
 		{
 			"id": "thoma__constellation__raging_wildfire",
@@ -318,5 +324,6 @@
 		"generatedAt": "2026-04-06T11:45:40.723Z",
 		"draftedAt": "2026-05-03",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "2.2"
 }

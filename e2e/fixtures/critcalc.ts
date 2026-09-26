@@ -45,6 +45,12 @@ const DISPLAY_NAME: Record<string, string> = Object.fromEntries(
 		})
 );
 
+/** Characters a player can see — the index minus the planner's `blank` slot.
+ *  DERIVED from the same index the fixture already reads, so a new character
+ *  cannot leave a spec that uses it one short (the hand-kept ROSTER_SIZE in
+ *  team-builder.spec.ts is the class this avoids). */
+export const CHARACTER_COUNT = Object.keys(DISPLAY_NAME).filter((id) => id !== 'blank').length;
+
 /** The notation a seeded team resolves to: whatever the spec wrote, with any
  *  slot it does not already name appended as a bare-name segment — the same
  *  fold the app applies (notationEdit.foldTeamIntoNotation). */

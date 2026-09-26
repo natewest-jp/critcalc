@@ -286,6 +286,10 @@ const SITE_SETTINGS_KEY = 'critcalc:siteSettings';
 
 type SiteSettings = {
 	useNewOutfits: boolean;
+	/** The planner's opt-in coverage strips under the notation box (⚓ Nate
+	 *  2026-09-23): OFF by default — they make the tool taller and busier, so
+	 *  they are a Settings choice, ⛔ never a toolbar button. */
+	showCoverageStrips: boolean;
 	/** Which traveler renders wherever a traveler_* character appears. */
 	travelerVariant: 'aether' | 'lumine';
 	/**
@@ -304,8 +308,8 @@ type SiteSettings = {
 	 * three are what it does, set in the Settings modal. ⚓ `humanTimingMode` is
 	 * a three-way choice rather than two checkboxes so the plate can never be
 	 * lit and do nothing. Per TASTE like the layers, ⛔ never in the `?r=`
-	 * codec — a shared link stays frame-perfect for a reader who has not opted
-	 * in. Model + authority: `$lib/sim/humanTiming.ts`.
+	 * codec — a shared link is read at the READER's setting, not the author's.
+	 * ↻ ON by default since 2026-09-24. Model + authority: `$lib/sim/humanTiming.ts`.
 	 */
 	humanTiming: boolean;
 	humanTimingMode: HumanTimingMode;
@@ -364,7 +368,9 @@ export const TIMELINE_LAYER_DEFAULTS = {
 export type HumanTimingMode = 'padding' | 'animations' | 'both';
 
 export const HUMAN_TIMING_DEFAULTS = {
-	humanTiming: false,
+	// ⚓ Nate 2026-09-24: ON for a new visitor — a person's rotation is the
+	// honest first reading; frame-perfect is the thing you opt into.
+	humanTiming: true,
 	humanTimingMode: 'both' as HumanTimingMode,
 	humanTimingPadFrames: HUMAN_PAD_DEFAULT_F,
 	showHumanPadding: true
@@ -372,6 +378,7 @@ export const HUMAN_TIMING_DEFAULTS = {
 
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
+	showCoverageStrips: false,
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
@@ -409,6 +416,9 @@ function createSiteSettingsStore() {
 		subscribe: store.subscribe,
 		setUseNewOutfits(value: boolean) {
 			store.update((prev) => persist({ ...prev, useNewOutfits: value }));
+		},
+		setShowCoverageStrips(value: boolean) {
+			store.update((prev) => persist({ ...prev, showCoverageStrips: value }));
 		},
 		setTravelerVariant(value: 'aether' | 'lumine') {
 			store.update((prev) => persist({ ...prev, travelerVariant: value }));

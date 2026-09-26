@@ -654,10 +654,15 @@
 				hover={pv.auraHover}
 				onHover={(seconds) => (pv.logHover = seconds)}
 				onSeek={(seconds) => pv.scrollToSeconds?.(seconds)}
+				reveal={pv.logRevealAt}
+				onRevealed={() => (pv.logRevealAt = null)}
 			/>
 		</div>
 	{:else}
-		<RotationNotes entries={slotCaveats} />
+		<RotationNotes
+			entries={slotCaveats}
+			teamIds={slots.filter((id, i) => id && slots.indexOf(id) === i)}
+		/>
 	{/if}
 {/snippet}
 

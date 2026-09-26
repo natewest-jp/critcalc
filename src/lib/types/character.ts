@@ -7,6 +7,7 @@
 import type { Ability, Effect, Element, Reaction } from './ability';
 import type { WeaponType } from './weapon';
 import type { CapabilitySummary } from '../capabilities/deriveCapabilities';
+import type { FramesSource } from '../coverage/deriveCoverage';
 
 // ---------------------------------------------------------------------------
 // Core enums
@@ -39,6 +40,11 @@ export type CharacterRoles = { position: RolePosition[]; function: RoleFunction[
 export type CharacterMeta = {
 	source: 'genshin-db';
 	generatedAt: string;
+	/** Where the FrameMaps came from (coverage round, docs/coverage-round.md
+	 *  §5.3). Absent = `gcsim` (merged main). `gcsim-pr` (an unmerged PR — the
+	 *  Ifa/Varka precedent), `wiki` and `hand` read as stand-in timing on the
+	 *  coverage page. */
+	framesSource?: FramesSource;
 };
 
 /** Canonical character data model — the shape of committed character JSONs. */
@@ -52,6 +58,11 @@ export type CharacterData = {
 	affiliation?: string;
 	region?: string;
 	rarity: Rarity;
+	/** The patch the character released in, `"major.minor"` (genshin-db's
+	 *  `version`; the seven Travelers by hand). Read by the coverage page's
+	 *  "Newest first" sort. The patch only — two releases in one patch tie, and
+	 *  sort by name. Required by characterIndex.test.ts. */
+	release?: string;
 	/** True for characters whose in-game constellations are permanently locked
 	 *  (Aloy: "The time has not yet come…"). Constellation steppers and badges
 	 *  don't render for these — there is nothing to set. */
@@ -102,6 +113,7 @@ export type CharacterIndexEntry = Pick<
 	| 'affiliation'
 	| 'region'
 	| 'rarity'
+	| 'release'
 	| 'noConstellations'
 	| 'factions'
 	| 'enablesReactions'
@@ -130,6 +142,11 @@ export type CharacterIndexEntry = Pick<
 	/** Derived capability summaries (deriveCapabilities.summarizeCapabilities),
 	 *  computed at index-generation time from the character JSON. */
 	caps: CapabilitySummary[];
+	/** The coverage strip (coverage/deriveCoverage.ts), one state character
+	 *  per segment in `COVERAGE_SEGMENTS` order — `decodeCoverage` reads it.
+	 *  The per-segment lines and caveats are derived on demand from the lazy
+	 *  payload; only the states are eager. */
+	coverage: string;
 };
 
 /** A single character's contribution to a team-wide faction bonus.

@@ -110,7 +110,8 @@
 				"A1 (Four Sealing Divination Charms): if the parent Detect hit triggered an elemental absorption (Pyro/Hydro/Electro/Cryo), each ring hit also fires a 'mixed' hit at 50% multiplier with the absorbed element (separate ICDGroup ICDGroupLanyanRingAttackMix, reset_timer=150). Recipe.md § 3.5 says don't author element-absorption-conditional damage; flagged here only.",
 				"C1 (\"As One Might Stride Betwixt the Clouds\") extra hits at frames [38, 64, 90] when the absorbed element is non-Anemo. Same A1-conditional logic; not modeled, flagged on the C1 entry.",
 				"Casting this ability ends leapBackStatus (gcsim DeleteStatus(leapBackStatus) at top of reathermoonRings). The schema's stance window does not have an explicit 'in-stance ability ends stance' field; reviewer to handle in parser. The 1.1s stance duration on the base skill makes the practical impact small."
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "lan_yan__skill__swallow_wisp_pinion_dance",
@@ -206,7 +207,8 @@
 			"_curatorNotes": [
 				"Three hit frames from gcsim ringHitmarks=[38, 62, 85]; not authored as hits[] (single FrameMap only on skill abilities). Frames identical to lan_yan__skill__feathermoon_ring_n above — both map to gcsim ringsFrames. The two entries differ only in `input`. See A1/A4/C1 flags on the N variant; same applies here.",
 				"ActionReady override (lanyan.go) returns true for E during leapBackStatus regardless of base skill CD; this in-stance E bypasses the 16s skill CD."
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "lan_yan__burst__lustrous_moonrise",
@@ -246,7 +248,10 @@
 					"frame": 51,
 					"element": "anemo"
 				}
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model pulling opponents together, which is all Lustrous Moonrise adds beyond its damage."
+			}
 		}
 	],
 	"passives": [
@@ -292,7 +297,10 @@
 				"⚠️ Re-ingested 2026-09-15 from genshin-db 5.2.13: the 2026-05 entry was hand-written with an invented name and curator-speak in place of the kit text; the mechanics (from gcsim) were right and are kept below.",
 				"gcsim cons.go `c2`: on the ACTIVE character's Normal Attack hit while the Swallow-Wisp Shield stands, restore 40% of the shield's absorption, once per 2s (`lanyan-c2-icd`). Not authored — the shield lane draws a span, not an absorption value, so there is no pixel for a restore."
 			],
-			"description": "While the Swallow-Wisp Shield is active, when your active party member's Normal Attacks deal DMG, 40% of the Shield's DMG absorption will be restored, up to its original maximum absorption. This effect can occur once every 2s."
+			"description": "While the Swallow-Wisp Shield is active, when your active party member's Normal Attacks deal DMG, 40% of the Shield's DMG absorption will be restored, up to its original maximum absorption. This effect can occur once every 2s.",
+			"notModeled": {
+				"reason": "The Rotation Planner draws when a shield is up, not how much it absorbs, and this only refills Swallow-Wisp Shield."
+			}
 		},
 		{
 			"id": "lan_yan__constellation__on_white_wings_pierce_through_cloud_and_fog",
@@ -349,5 +357,6 @@
 		"source": "gcsim",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-opus-4-7"
-	}
+	},
+	"release": "5.3"
 }

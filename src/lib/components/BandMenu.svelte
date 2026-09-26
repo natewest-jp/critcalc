@@ -204,7 +204,10 @@
 		color: color-mix(in srgb, var(--ui-danger) 70%, var(--text));
 	}
 
-	.band-menu :global(.band-menu-item--danger:hover:not(:disabled)) {
+	/* `.is-armed`: a destructive item waiting on its confirm holds the hover
+	   reading, so the question stays lit when the pointer moves off it. */
+	.band-menu :global(.band-menu-item--danger:hover:not(:disabled)),
+	.band-menu :global(.band-menu-item--danger.is-armed) {
 		background: var(--ui-danger-soft);
 		color: var(--ui-danger);
 	}

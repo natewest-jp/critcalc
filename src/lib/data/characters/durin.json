@@ -539,7 +539,10 @@
 				"gcsim asc.go a4OnBurst/a4Dmg: on Burst, 10 Primordial Fusion stacks for 20s; each Dragon of White Flame / Dark Decay tick consumes 1 stack for +min(TotalAtk/100*0.03, 0.75) multiplicative DMG. Dynamic ATK-scaling amp on autonomous summon ticks with a per-tick consumption budget — no clean primitive; left out of the summonTick scaling. Replaced the mismodeled genshin-db stub effect (damage scaling:3 stat:atk manual), which misrepresented an ATK-scaling self-amp as a 3%-ATK damage instance.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — It says the amp is \"not folded into the tick values shown\" — there are no tick values on screen. A summon-lane tick mark says the tick HAPPENED; the tool renders no damage magnitudes at all (tool constitution). The passive authors no effects, so no bar is missing either. This is a pure DMG% omission dressed as a rendering divergence. Category: invisible-omission."
 			],
-			"description": "After unleashing an Elemental Burst, Durin gains the Primordial Fusion of Forms effect for 20s: Durin gains 10 stacks of Primordial Fusion. When a periodic attack from Dragon of White Flame or Dragon of Dark Decay deals DMG, 1 stack of Primordial Fusion will be consumed to increase the DMG dealt by 3% of the original DMG for every 100 ATK. A maximum of 75% additional DMG can be dealt this way. When a single attack from Dragon of White Flame or Dragon of Dark Decay hits multiple opponents, only one stack of Primordial Fusion is consumed.\nPrimordial Fusion stacks are reset when the Elemental Burst is unleashed again."
+			"description": "After unleashing an Elemental Burst, Durin gains the Primordial Fusion of Forms effect for 20s: Durin gains 10 stacks of Primordial Fusion. When a periodic attack from Dragon of White Flame or Dragon of Dark Decay deals DMG, 1 stack of Primordial Fusion will be consumed to increase the DMG dealt by 3% of the original DMG for every 100 ATK. A maximum of 75% additional DMG can be dealt this way. When a single attack from Dragon of White Flame or Dragon of Dark Decay hits multiple opponents, only one stack of Primordial Fusion is consumed.\nPrimordial Fusion stacks are reset when the Elemental Burst is unleashed again.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't draw damage amounts, and this only raises how hard the Dragon of White Flame and Dragon of Dark Decay hit."
+			}
 		}
 	],
 	"constellations": [
@@ -851,5 +854,6 @@
 	},
 	"_curatorNotes": [
 		"Full curation 2026-07-14 (stub upgrade). Frames from gcsim main (merged) at ~/Code/gcsim/internal/characters/durin/ (attack.go, charge.go, skill.go, burst.go). Normal/charge/skill/burst FrameMaps + Burst dragon summonTick effects authored; plunge omitted (not rotation-relevant, no plunge.go). All scalings/CD/energy/durations cross-checked against docs/curation/talents/durin.json at talent level 10. Stub artifacts fixed: Burst behavior stance->instant (+summons); mismodeled A4/C1/C6 'damage' effects removed and documented as unmodelable (ATK-scaled dragon amp / source-ATK flat-DMG buff / DEF ignore+shred). Support capabilities modeled: A1 Pyro(+partner-element) RES shred (White form), C2 team Pyro DMG buff, C4 self Burst DMG buff, Skill self energy restore. Durin is a dual-form (White support / Dark DPS) character; form is set by the Skill and cannot be switched inside the planner — Burst is modeled as the default White form with the Dark form as a variant."
-	]
+	],
+	"release": "6.2"
 }

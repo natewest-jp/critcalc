@@ -81,7 +81,8 @@
 					"label": "Jade Screen",
 					"duration": 30,
 					"mobility": "stationary",
-					"terminatesOn": "recast"
+					"terminatesOn": "recast",
+					"dealsNothing": true
 				}
 			],
 			"_curatorNotes": [
@@ -111,7 +112,8 @@
 				{ "frame": 110, "element": "geo", "units": 2 },
 				{ "frame": 116, "element": "geo" },
 				{ "frame": 124, "element": "geo" }
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -119,7 +121,8 @@
 			"id": "ningguang__passive__backup_plan",
 			"name": "Backup Plan",
 			"abilityType": "passive",
-			"description": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina."
+			"description": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina.",
+			"nothingToModel": true
 		},
 		{
 			"id": "ningguang__passive__strategic_reserve",
@@ -155,7 +158,8 @@
 			"name": "Piercing Fragments",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "When a Normal Attack hits, it deals AoE DMG."
+			"description": "When a Normal Attack hits, it deals AoE DMG.",
+			"nothingToModel": true
 		},
 		{
 			"id": "ningguang__constellation__shock_effect",
@@ -204,5 +208,6 @@
 		"generatedAt": "2026-04-06T11:45:40.715Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "1.0"
 }

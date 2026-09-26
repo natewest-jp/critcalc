@@ -229,7 +229,16 @@
 				"No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
 				"C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
 			],
-			"application": [{ "frame": 11, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 11,
+					"element": "electro",
+					"units": 1
+				}
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model Bond of Life, which decides how much this lunge heals Clorinde."
+			}
 		},
 		{
 			"id": "clorinde__burst__last_lightfall",
@@ -255,7 +264,10 @@
 				{ "frame": 109, "element": "electro" },
 				{ "frame": 115, "element": "electro", "units": 1 },
 				{ "frame": 121, "element": "electro" }
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model Bond of Life, so the Bond of Life this burst grants isn't shown."
+			}
 		}
 	],
 	"passives": [
@@ -461,7 +473,10 @@
 			"description": "When Last Lightfall deals DMG to opponent(s), DMG dealt is increased based on Clorinde's Bond of Life percentage. Every 1% of her current Bond of Life will increase Last Lightfall DMG by 2%. The maximum Last Lightfall DMG increase achievable this way is 200%.",
 			"_curatorNotes": [
 				"Bond of Life mechanic — not authored per Tier B recipe BoL exception. Effect: burst DmgP += min(BoL% * 2, 200) (gcsim AddAttackMod with AttackTagElementalBurst filter, base 'clorinde-c4-burst-bonus')."
-			]
+			],
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model Bond of Life, which this constellation's damage bonus depends on."
+			}
 		},
 		{
 			"id": "clorinde__constellation__holding_dawns_coming_as_my_votive",
@@ -554,5 +569,6 @@
 		"generatedAt": "2026-04-06T11:45:40.686Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "4.7"
 }

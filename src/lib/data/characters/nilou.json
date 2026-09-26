@@ -210,7 +210,8 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "nilou__skill__whirling_steps_2",
@@ -245,7 +246,8 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		},
 		{
 			"id": "nilou__skill__whirling_steps_3",
@@ -279,7 +281,8 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"modeledBy": "nilou__skill__dance_of_haftkarsvar"
 		},
 		{
 			"id": "nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring",
@@ -315,7 +318,8 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -632,5 +636,6 @@
 		"generatedAt": "2026-04-06T11:45:40.715Z",
 		"draftedAt": "2026-05-07",
 		"draftedBy": "claude-opus-4-7"
-	}
+	},
+	"release": "3.1"
 }

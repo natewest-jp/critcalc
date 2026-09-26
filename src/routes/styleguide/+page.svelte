@@ -22,7 +22,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { MARK_NODES, type MarkName } from '$lib/marks.generated';
 	import { BAND_A_H, BAND_B_H, BAND_GAP, BAND_STACK_GAP, BAND_RADIUS } from '$lib/toolBands';
-	import { TOOL_DIM } from '$lib/landing/transition';
+	import { SCENE_DIM, dimPixel } from '$lib/landing/sceneDim';
 
 	type Token = { name: string; value: string; resolved: string };
 
@@ -365,9 +365,14 @@
 	 * lighter, which means LESS contrast. Every published figure was ~0.3–0.4
 	 * optimistic in the one direction that matters, and on 2026-08-10 that was
 	 * hiding a shipped glass stop sitting at 4.22:1 under a published 4.53.
+	 *
+	 * ↻ 2026-09-26: the dim is the renderer's final pass now, not a wash, so
+	 * the star goes through `dimPixel` — the CPU mirror of that pass, the SAME
+	 * module the shader takes its numbers from. The lesson above still holds
+	 * (the ground is a colour, composite it properly); it is simply computed
+	 * by the formula that actually ships.
 	 */
-	const SCRIM = rgb(tokens.find((t) => t.name === '--scene-dim')?.resolved ?? '#101013');
-	const STAR: [number, number, number] = composite([255, 255, 255], 1 - TOOL_DIM, SCRIM);
+	const STAR: [number, number, number] = dimPixel([255, 255, 255]);
 	/** The dimmer of the two voices a band speaks in — see .band-b's --text
 	 *  re-point. If --muted clears the floor, --text has already cleared it. */
 	const GLASS_INK = rgb(
@@ -589,10 +594,11 @@
 			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
 			through, which reads as a duller colour. ⚠ The alpha alone does not decide it: glass and the
 			wash <strong>multiply</strong>, so what reaches the eye is
-			<code>(1 − glass)(1 − TOOL_DIM)</code> —
-			<strong>{(100 * (1 - 0.58) * (1 - TOOL_DIM)).toFixed(1)}%</strong> for the panel stop at
-			<code>TOOL_DIM</code>
-			{TOOL_DIM}. <strong>Move one, check the other.</strong>
+			<code>(1 − glass) × gain</code> for a white star —
+			<strong>{(100 * (1 - 0.58) * SCENE_DIM.gain).toFixed(1)}%</strong> for the panel stop at the
+			dim's gain of {SCENE_DIM.gain} (the dim's curve takes more from anything dimmer than a star; ↻ 2026-09-26
+			the dim is the renderer's final pass, <code>sceneDim.ts</code>).
+			<strong>Move one, check the other.</strong>
 			⚓ <strong>But the threshold was never a percentage</strong> (Nate, 2026-08-13). This figure
 			has been 17%, 10.5% and now single digits across three rounds, and the prose that travelled
 			with it declared each new value the one that would read as sheer — while the panes went on
@@ -867,11 +873,11 @@
 			always a star — a tiny, very bright point. Each figure is
 			<code>--muted</code>
 			(the dimmer of the two band voices) against that stop composited over a blank-white star dimmed
-			by
-			<code>TOOL_DIM</code> ({TOOL_DIM}), <strong>unblurred</strong> — which was the rule when the blur
-			was on probation (nothing may depend on a probationary property) and is simply the truth now that
-			it is retired. That rule is what let the blur be struck on 2026-08-11 without a single stop moving.
-			Under 4.5:1 is not a stop we can use at the band voices, whatever it looks like.
+			by the scene dim (<code>dimPixel</code> in <code>sceneDim.ts</code>, gain {SCENE_DIM.gain}),
+			<strong>unblurred</strong> — which was the rule when the blur was on probation (nothing may depend
+			on a probationary property) and is simply the truth now that it is retired. That rule is what let
+			the blur be struck on 2026-08-11 without a single stop moving. Under 4.5:1 is not a stop we can
+			use at the band voices, whatever it looks like.
 		</p>
 		<div class="sg-glassgrid sg-stage--world">
 			<div class="sg-glassgrid-head">

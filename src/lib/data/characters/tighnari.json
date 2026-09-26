@@ -120,7 +120,8 @@
 					"label": "Vijnana-Khanda Field",
 					"duration": 8,
 					"spawnsAt": 15,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"dealsNothing": true
 				}
 			],
 			"tags": ["taunt"],
@@ -211,7 +212,8 @@
 					"frame": 175,
 					"element": "dendro"
 				}
-			]
+			],
+			"nothingToModel": true
 		}
 	],
 	"passives": [
@@ -401,5 +403,6 @@
 		"generatedAt": "2026-04-06T11:45:40.723Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "3.0"
 }

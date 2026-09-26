@@ -36,10 +36,19 @@ import type { Effect, Element, Reaction } from '$lib/types/ability';
  *  #3): the timeline bars (`eBars`/`qBars`) are projections of these events —
  *  every geometric field the renderer needs lives here, so the bar ↔ cast
  *  bijection holds by construction. */
+/** A `[from, to)` range of the notation source. */
+export type SourceRange = { from: number; to: number };
+
 export type CastEvent = {
 	kind: 'cast';
 	/** Stable per-parse event id (emission order, unique across kinds). */
 	id: number;
+	/** Where the token that produced this event sits in the NOTATION TEXT
+	 *  (`[from, to)`, source offsets) — so the editor can tint a token with
+	 *  what the chart resolved for it (notation-follows-chart, 2026-09-24).
+	 *  ⚠ A bracket repeat's events all point at the ONE inner token they were
+	 *  expanded from. Absent only on events no token produced. */
+	src?: SourceRange;
 	characterId: string;
 	ability: 'skill' | 'burst';
 	/** id of the resolved ability variant actually cast (matches the
@@ -174,6 +183,12 @@ export type ActionEvent = {
 	kind: 'action';
 	/** Stable per-parse event id (emission order, unique across kinds). */
 	id: number;
+	/** Where the token that produced this event sits in the NOTATION TEXT
+	 *  (`[from, to)`, source offsets) — so the editor can tint a token with
+	 *  what the chart resolved for it (notation-follows-chart, 2026-09-24).
+	 *  ⚠ A bracket repeat's events all point at the ONE inner token they were
+	 *  expanded from. Absent only on events no token produced. */
+	src?: SourceRange;
 	characterId: string;
 	action: 'normal' | 'charged' | 'plunge' | 'dash' | 'jump' | 'unset';
 	/** Token text as typed — "N5" on EVERY swing of that token, "C"/"C1",

@@ -31,6 +31,19 @@
 	// ---------------------------------------------------------------------------
 
 	const canExportChart = $derived(!!db.exporters);
+
+	/**
+	 * Which destructive item is waiting on its confirm. ⚓ The confirm stays IN
+	 * THE MENU (Nate 2026-09-24) — the Team Builder fold's idiom: the first click
+	 * re-reads the item as its own question and the menu stays open, so the
+	 * answer is where the eye already is. It used to reappear as a band button
+	 * after the menu closed, disarmed by a window-wide click handler — which is
+	 * also what disarmed it on the very click that raised it.
+	 * ⚓ ONE value, so arming one item disarms the other; and closing the menu
+	 * (any way — outside click, Escape, a choice) unmounts the items, whose
+	 * cleanup disarms, so a question never survives the menu it was asked in.
+	 */
+	let armed = $state<'reset' | 'closeAll' | null>(null);
 </script>
 
 <div class="doc-actions">
@@ -63,10 +76,7 @@
 		class="btn"
 		type="button"
 		title="Open a saved rotation"
-		onclick={() => {
-			db.resetConfirm = false;
-			db.loadOpen = true;
-		}}
+		onclick={() => (db.loadOpen = true)}
 	>
 		<Mark name="load" />
 		<span class="da-label">Load</span>
@@ -144,46 +154,45 @@
 			{/if}
 			<button
 				class="band-menu-item band-menu-item--danger"
+				class:is-armed={armed === 'reset'}
 				role="menuitem"
+				{@attach () => () => (armed = null)}
+				title={armed === 'reset'
+					? "Confirm: clear this rotation's notation and unlink it from the bank"
+					: undefined}
 				onclick={() => {
+					if (armed !== 'reset') {
+						armed = 'reset';
+						return;
+					}
 					close();
-					db.resetConfirm = true;
+					rt.resetActiveTab();
 				}}
 			>
-				<Mark name="reset" />
-				Reset this rotation
+				<Mark name={armed === 'reset' ? 'warn' : 'reset'} />
+				{armed === 'reset' ? 'Reset this rotation?' : 'Reset this rotation'}
 			</button>
 			{#if rt.tabs.length > 1}
 				<button
 					class="band-menu-item band-menu-item--danger"
+					class:is-armed={armed === 'closeAll'}
 					role="menuitem"
+					title={armed === 'closeAll' ? 'Confirm: close every rotation tab' : undefined}
 					onclick={() => {
+						if (armed !== 'closeAll') {
+							armed = 'closeAll';
+							return;
+						}
 						close();
 						rt.resetAll();
 					}}
 				>
-					<Mark name="close" />
-					Close all rotations
+					<Mark name={armed === 'closeAll' ? 'warn' : 'close'} />
+					{armed === 'closeAll' ? 'Close all rotations?' : 'Close all rotations'}
 				</button>
 			{/if}
 		{/snippet}
 	</BandMenu>
-
-	<!-- The confirm step comes back OUT of the menu and into the band: a
-	     destructive action must be armed where the eye already is, not behind a
-	     popover that has closed by the time you decide. .btn--danger.is-confirming
-	     is the shared two-step idiom (app.css). -->
-	{#if db.resetConfirm}
-		<button
-			class="btn btn--danger is-confirming"
-			type="button"
-			title="Confirm: clear this rotation's notation and unlink it from the bank"
-			onclick={(e) => {
-				e.stopPropagation();
-				db.resetDocument();
-			}}><Mark name="warn" /> Reset?</button
-		>
-	{/if}
 </div>
 
 <style>

@@ -4,6 +4,7 @@
 	import { isToolPath } from '$lib/landing/transition';
 	import { afterPaint, onVeilReady } from '$lib/landing/veilReady';
 	import HRule from '$lib/components/HRule.svelte';
+	import VeilGround from '$lib/components/VeilGround.svelte';
 
 	// The veil exists only in a server-rendered document — exactly the loads
 	// where content arrives late (first visit, refresh, direct link, bfcache
@@ -98,12 +99,9 @@
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html '<noscript><style>#loading-veil{display:none}</style></noscript>'}
 
-		<svg class="grain" aria-hidden="true">
-			<filter id="veil-grain">
-				<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" />
-			</filter>
-			<rect width="100%" height="100%" filter="url(#veil-grain)" />
-		</svg>
+		<!-- The night gradient + grain — shared with the 404 (VeilGround.svelte,
+		     colours in app.css --veil-ground-*). -->
+		<VeilGround />
 		<!-- The mark: rule / word / rule as one centered column. The rules are laid
 		     out BY the word rather than the viewport, so they inherit its width
 		     exactly and stay locked to it at every size — the frame belongs to the
@@ -157,20 +155,20 @@
 		   Ink: the original #00a8ff read a touch too intense (Nate, 2026-07-26)
 		   — same hue, saturation off 100% and lightness down a little, so the
 		   script still glows without shouting.
-		   Ground: a near-black PURPLE ramp rather than the old neutral
-		   #000→#0e0f12. The veil now opens onto both scenes — the landing's blue
-		   sky and the tools' crimson dire border — and a desaturated violet is
-		   the shade that sits between them instead of picking a side. Top is
-		   darker and bluer, bottom slightly lighter and redder, both held at
-		   roughly the old lightness so the mood is unchanged. */
-		--veil-ink: #2d98f5;
-		--veil-ground-top: #01030f;
-		--veil-ground-bottom: #160d1a;
+		   ↻ 2026-09-26 (⚓ Nate): #2d98f5 → #24a0fe — HSL saturation 91% → 99%,
+		   hue 208° → 206° (a small step toward cyan), lightness held at 57%.
+		   Ground: the shared VEIL GROUND (VeilGround.svelte; its colours and
+		   their derivation are the root tokens --veil-ground-* in app.css). */
+		--veil-ink: #24a0fe;
 
 		/* Horizontal rules. Tint themes the caps AND the line together (both are
-		   currentColor, so there is one value to turn), drawn from the ink so
-		   they belong to the same palette — swap in a neutral like #e6edf8 if
-		   they should read cooler.
+		   currentColor, so there is one value to turn).
+		   ↻ 2026-09-26: #82708a → #607b90. The old violet matched the retired
+		   purple ground; the new tint is a quiet blue-grey on the INK's hue
+		   (HSL 206° / 20% / 47%), so the frame belongs to the script rather
+		   than to the ground, at the old tint's luminance (0.187 vs 0.182) so
+		   the rules are exactly as present as before — only the hue moved.
+		   Retune it WITH the ink: same hue, 20% saturation, luminance held.
 		   ⚠️ The faintness is a GROUP opacity on the whole rule, not a
 		   translucent color on its parts. The line overlaps each cap by 1px to
 		   hide the seam, and two translucent layers stacking there would show
@@ -186,7 +184,7 @@
 		   frame to the word instead of the viewport, and at these opacities it
 		   is not perceptible; forcing an integer origin would mean duplicating
 		   the artwork's aspect ratio in CSS and hoping it never drifts. */
-		--veil-rule-tint: #82708a;
+		--veil-rule-tint: #607b90;
 		--veil-rule-opacity: 0.1;
 
 		/* Geometry of the mark. The word's width lives here rather than on
@@ -208,28 +206,11 @@
 		z-index: 20;
 		display: grid;
 		place-items: center;
-		background: linear-gradient(180deg, var(--veil-ground-top) 0%, var(--veil-ground-bottom) 100%);
+		/* No background of its own: VeilGround paints the whole rect. */
 		transition: opacity 400ms ease;
 		/* CSS-only self-destruct: if JS never arrives (blocked, failed chunk),
 		   the veil clears itself and the SSR'd scene shell remains usable. */
 		animation: veil-bail 600ms ease 8s forwards;
-	}
-
-	/* Grain: inline feTurbulence, not the scene's noise-128 tile — that tile has
-	   a wrap seam that repeats every 128px once composited plainly over
-	   near-black (sky-bg gets away with it because `overlay` blending over its
-	   brighter gradient buries the seam). Turbulence is continuous across the
-	   whole rect: no seams, no tiling, no extra request. Also breaks up banding
-	   in the gradient. */
-	.grain {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		/* High enough to dither the gradient's 8-bit banding steps (a #000→#0e0f12
-		   ramp only has ~14 luminance levels), low enough to stay subliminal. */
-		opacity: 0.08;
-		pointer-events: none;
 	}
 
 	.veil.leaving {
@@ -242,6 +223,9 @@
 	   are stretch-aligned flex children of it — and stay locked to the word at
 	   every viewport size, with no second clamp to keep in sync. */
 	.mark {
+		/* Positioned so it paints ABOVE VeilGround, an absolute layer earlier in
+		   the markup (an in-flow box would paint under it). */
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		width: var(--veil-word-w);

@@ -109,7 +109,8 @@
 					"terminatesOn": "burst",
 					"_curatorNotes": [
 						"`terminatesOn: 'burst'` (summon-ends-on-cast round, 2026-09-19): \"If a General's War Banner created by Gorou currently exists on the field when this ability is used, it will be destroyed\" — the burst's own text."
-					]
+					],
+					"dealsNothing": true
 				}
 			],
 			"effects": [
@@ -552,5 +553,6 @@
 		"generatedAt": "2026-04-06T11:45:40.697Z",
 		"draftedAt": "2026-05-06",
 		"draftedBy": "claude-autonomous"
-	}
+	},
+	"release": "2.3"
 }
