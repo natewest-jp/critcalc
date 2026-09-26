@@ -24,6 +24,7 @@
 	} from '$lib/landing/transition';
 	import { mountSceneGL, type SceneGLHandle } from '$lib/landing/sceneGL';
 	import { SCENE_DIM } from '$lib/landing/sceneDim';
+	import VeilGround from '$lib/components/VeilGround.svelte';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 
 	let { children } = $props();
@@ -70,6 +71,11 @@
 	// tool cold loads feel heavier).
 	let sceneCanvas: HTMLCanvasElement;
 	let sceneHandle = $state<SceneGLHandle | null>(null);
+	// The renderer failed to mount (no WebGL, or a plate that never decoded).
+	// ⚠ The context is created BEFORE the plates load, and an alpha:false
+	// canvas is opaque black until its first draw — so a failed mount must
+	// also HIDE the canvas, or it covers the VeilGround fallback in black.
+	let sceneFailed = $state(false);
 	// The scene is part of first paint on EVERY route now (tools-over-scene),
 	// so it claims the veil on tool cold loads too — the tool's own claim
 	// still gates its content; the veil lifts when both have painted.
@@ -95,6 +101,7 @@
 				// No WebGL → no scene (deliberately no DOM fallback: two scene
 				// implementations is how parity rots). The site itself still works.
 				console.error('scene: GL mount failed', err);
+				sceneFailed = true;
 				releaseVeil();
 			}
 		};
@@ -207,7 +214,16 @@
 	  source-image pixel space — the meteors size to it. -->
 <div class="scene-stack">
 	<div class="scene" class:occluded={$sceneOccluded}>
-		<canvas class="scene-canvas" bind:this={sceneCanvas}></canvas>
+		<!-- ⚓ Nate 2026-09-26: what shows where the world has not drawn (the
+		     frames before the renderer is live, or for good if WebGL fails) is
+		     the VEIL GROUND, so a cold load's veil lifts onto its own colours.
+		     Unmounted once the renderer owns the frame — the canvas is opaque
+		     and covers it, and a full-viewport SVG filter has no business
+		     sitting under a live canvas. -->
+		{#if !sceneHandle}
+			<VeilGround />
+		{/if}
+		<canvas class="scene-canvas" class:failed={sceneFailed} bind:this={sceneCanvas}></canvas>
 
 		<ShootingStars />
 	</div>
@@ -397,6 +413,12 @@
 		height: 100%;
 	}
 
+	/* See sceneFailed: an unmounted context would sit over the fallback as a
+	   black rectangle. */
+	.scene-canvas.failed {
+		display: none;
+	}
+
 	.dim {
 		z-index: 1;
 		/* ↻⚓ NATE 2026-09-26: the dim is the scene renderer's FINAL PASS now
@@ -467,7 +489,11 @@
 		pointer-events: none;
 		z-index: 1;
 		/* ↻ 2026-09-26 (⚓ Nate): was rgba(2, 9, 31, 1) → rgba(3, 6, 16, 0),
-		   with the re-graded plate. */
-		background: linear-gradient(to top, #0d1124, #0d112000);
+		   with the re-graded plate; then #0d1124 → transparent; then the veil
+		   ground's top colour (--veil-ground-top, #06080f) at 60% → 0, so it
+		   blends with both the landing scene AND the VeilGround fallback that
+		   shows where the plate never drew. Written as a literal because an
+		   alpha on a var() would need a color-mix. */
+		background: linear-gradient(to top, #06080f99, #06080f00);
 	}
 </style>

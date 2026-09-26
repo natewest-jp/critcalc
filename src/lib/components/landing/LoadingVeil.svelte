@@ -4,6 +4,7 @@
 	import { isToolPath } from '$lib/landing/transition';
 	import { afterPaint, onVeilReady } from '$lib/landing/veilReady';
 	import HRule from '$lib/components/HRule.svelte';
+	import VeilGround from '$lib/components/VeilGround.svelte';
 
 	// The veil exists only in a server-rendered document — exactly the loads
 	// where content arrives late (first visit, refresh, direct link, bfcache
@@ -98,12 +99,9 @@
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html '<noscript><style>#loading-veil{display:none}</style></noscript>'}
 
-		<svg class="grain" aria-hidden="true">
-			<filter id="veil-grain">
-				<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" />
-			</filter>
-			<rect width="100%" height="100%" filter="url(#veil-grain)" />
-		</svg>
+		<!-- The night gradient + grain — shared with the 404 (VeilGround.svelte,
+		     colours in app.css --veil-ground-*). -->
+		<VeilGround />
 		<!-- The mark: rule / word / rule as one centered column. The rules are laid
 		     out BY the word rather than the viewport, so they inherit its width
 		     exactly and stay locked to it at every size — the frame belongs to the
@@ -159,29 +157,9 @@
 		   script still glows without shouting.
 		   ↻ 2026-09-26 (⚓ Nate): #2d98f5 → #24a0fe — HSL saturation 91% → 99%,
 		   hue 208° → 206° (a small step toward cyan), lightness held at 57%.
-		   Ground (⚓ Nate, 2026-09-26): TAKEN FROM THE DIMMED WORLD — the
-		   mean colour of the top and bottom rows of the crest view (the tool
-		   camera, centre frame) under the scene dim (landing/sceneDim.ts,
-		   `dimPixel` over plate 05f2722f, stars excluded). So a veil lifting
-		   onto a tool opens onto the ground it was already showing. It is
-		   nearly flat because the dimmed crest is (the middle is a hair
-		   darker than the top) — so the measured pair (#111520 → #121623) is
-		   the anchor and the contrast is EXAGGERATED from it, in OKLCH (hue
-		   held, chroma scaled with lightness), ENTIRELY at the top (⚓ Nate:
-		   "take it out of the darker stop") — top L −0.05, so the ramp spans
-		   ΔL 0.056 where the world spans 0.006. Then, by eye: both ends one
-		   small step darker (L −0.01 each) and the foot nudged toward
-		   lavender (OKLCH hue 270.7° → 273.1°), then a step more saturated
-		   and a touch more violet (→ 274.2°, chroma 0.025 → 0.029), chosen
-		   by A/B over #111321 (277.1°, the bigger violet step). At this
-		   darkness a hex can only step in ~1–4° jumps. It replaced a
-		   near-black purple ramp (#01030f → #160d1a) chosen to bridge the
-		   landing's blue sky and the tools' old crimson dire border, a concept
-		   that no longer exists.
-		   ⚠ Re-measure if the plate or SCENE_DIM changes. */
+		   Ground: the shared VEIL GROUND (VeilGround.svelte; its colours and
+		   their derivation are the root tokens --veil-ground-* in app.css). */
 		--veil-ink: #24a0fe;
-		--veil-ground-top: #06080f;
-		--veil-ground-bottom: #111422;
 
 		/* Horizontal rules. Tint themes the caps AND the line together (both are
 		   currentColor, so there is one value to turn).
@@ -228,28 +206,11 @@
 		z-index: 20;
 		display: grid;
 		place-items: center;
-		background: linear-gradient(180deg, var(--veil-ground-top) 0%, var(--veil-ground-bottom) 100%);
+		/* No background of its own: VeilGround paints the whole rect. */
 		transition: opacity 400ms ease;
 		/* CSS-only self-destruct: if JS never arrives (blocked, failed chunk),
 		   the veil clears itself and the SSR'd scene shell remains usable. */
 		animation: veil-bail 600ms ease 8s forwards;
-	}
-
-	/* Grain: inline feTurbulence, not the scene's noise-128 tile — that tile has
-	   a wrap seam that repeats every 128px once composited plainly over
-	   near-black (sky-bg gets away with it because `overlay` blending over its
-	   brighter gradient buries the seam). Turbulence is continuous across the
-	   whole rect: no seams, no tiling, no extra request. Also breaks up banding
-	   in the gradient. */
-	.grain {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		/* High enough to dither the gradient's 8-bit banding steps (a #000→#0e0f12
-		   ramp only has ~14 luminance levels), low enough to stay subliminal. */
-		opacity: 0.08;
-		pointer-events: none;
 	}
 
 	.veil.leaving {
@@ -262,6 +223,9 @@
 	   are stretch-aligned flex children of it — and stay locked to the word at
 	   every viewport size, with no second clamp to keep in sync. */
 	.mark {
+		/* Positioned so it paints ABOVE VeilGround, an absolute layer earlier in
+		   the markup (an in-flow box would paint under it). */
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		width: var(--veil-word-w);

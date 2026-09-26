@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { dev } from '$app/environment';
 	import favicon from '$lib/assets/favicon.svg';
+	import VeilGround from '$lib/components/VeilGround.svelte';
 
 	// ⚠️ THIS PAGE RENDERS OUTSIDE THE SCENE, AND THAT IS DELIBERATE.
 	//
@@ -30,6 +31,10 @@
 </script>
 
 <main class="error-page">
+	<!-- ⚓ Nate 2026-09-26: the loading veil's ground (gradient + grain),
+	     shared through VeilGround. Fixed, so it holds the viewport while a long
+	     message scrolls. -->
+	<VeilGround fixed />
 	<div class="error-inner">
 		<img class="mark" src={favicon} alt="" width="44" height="44" />
 
@@ -78,8 +83,8 @@
 </main>
 
 <style>
-	/* No background: body already paints --bg. Min-height rather than fixed
-	   inset so a long message can scroll on a short window. */
+	/* Min-height rather than fixed inset so a long message can scroll on a
+	   short window. The ground is VeilGround, fixed to the viewport. */
 	.error-page {
 		min-height: 100svh;
 		display: flex;
@@ -89,6 +94,8 @@
 	}
 
 	.error-inner {
+		/* Positioned so it paints above VeilGround. */
+		position: relative;
 		width: min(34rem, 100%);
 		text-align: center;
 	}
