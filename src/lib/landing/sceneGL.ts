@@ -45,6 +45,7 @@ import {
 	SCENE_TIERS
 } from '$lib/data/sceneAssets.generated';
 import { createStarPass, STAR_STATIC_ALPHA, type StarPass } from '$lib/landing/starPass';
+import { SCENE_DIM, SCENE_DIM_DITHER, SCENE_DIM_TINT_RGB } from '$lib/landing/sceneDim';
 
 // --- Geometry constants -----------------------------------------------------
 // Mirror the --*-src vars on .scene-stack in (scene)/+layout.svelte AND the
@@ -217,6 +218,43 @@ void main() {
 	gl_FragColor = vec4(col, 1.0);
 }`;
 
+// The tool-route DIM, as the scene's FINAL pass (⚓ Nate 2026-09-26 — the
+// formula and every number are in sceneDim.ts; this is only its shader half).
+// It has to be a post-pass rather than a term in FS_PLATE because the curve
+// acts on the FINISHED image: the stars are composited into the plate first
+// and the two are dimmed as one (dimming stars separately reads as dirt).
+// uLevel blends undimmed → dimmed on the camera's clock, so the landing (0)
+// never reaches this program at all.
+//
+// ⚠ The dither is the LAST thing written, after the dim. The dimmed crest
+// lives on a handful of 8-bit levels and the plate's own dither is squashed
+// by the curve and the gain along with everything else, so without this term
+// the dust's gradients would band. World-pinned like the plate grain (same
+// tile, same uGrainOff) so it doesn't read as a static curtain during a pan.
+const FS_DIM = `
+precision mediump float;
+uniform sampler2D uScene;
+uniform sampler2D uGrain;
+uniform vec2 uRes;
+uniform vec2 uGrainOff;
+uniform vec3 uWash;
+uniform float uLevel;
+uniform float uWashA;
+uniform float uGain;
+uniform float uSat;
+uniform float uGamma;
+uniform float uDither;
+void main() {
+	vec3 s = texture2D(uScene, gl_FragCoord.xy / uRes).rgb;
+	vec3 c = pow(s, vec3(uGamma));
+	float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+	c = clamp(mix(vec3(l), c, uSat), 0.0, 1.0);
+	vec3 col = mix(s, uWash * uWashA + c * uGain, uLevel);
+	vec3 g = texture2D(uGrain, (gl_FragCoord.xy + uGrainOff) / ${GRAIN_TILE_PX}.0).rgb;
+	col += (g - 128.0 / 255.0) * uDither * uLevel;
+	gl_FragColor = vec4(col, 1.0);
+}`;
+
 type Quad = { buf: WebGLBuffer; count: number };
 
 function makeQuad(gl: WebGLRenderingContext, verts: number[]): Quad {
@@ -273,6 +311,15 @@ export interface SceneGLHandle {
 	 *  during a tool→tool crane). Resume is pop-free: paused time accumulates,
 	 *  so the field picks up at the phase it stopped on. */
 	stop(): void;
+	/** Animate the tool DIM (0 = the open world, 1 = a tool at rest) to
+	 *  `to` on the camera's easing. `startTime` pins it to a shared clock (the
+	 *  transition's), so it moves in lockstep with the camera. Interruptible:
+	 *  starts from wherever the dim is now. */
+	animateDim(to: number, durationMs: number, startTime?: number): void;
+	/** Jump the dim (cold loads, reduced motion, occluded legs). */
+	setDim(level: number): void;
+	/** Current dim level, 0–1. */
+	dim(): number;
 	/** Re-read the CSS knobs (gradient stops, grain opacities) and redraw. */
 	retune(): void;
 	destroy(): void;
@@ -359,6 +406,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 
 	const progColor = link(gl, VS, FS_COLOR);
 	const progPlate = link(gl, VS, FS_PLATE);
+	let progDim = link(gl, VS, FS_DIM);
 	// The twinkle field, drawn between the sky and floor plates (the
 	// starfield-merge chunk): stars ride the camera and the floor occludes
 	// them at the horizon. Rebuilt on context restore.
@@ -378,7 +426,52 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	let floorTex = uploadTexture(gl, floorImg);
 	let grainTex = uploadTexture(gl, grainImg, { repeat: true, nearest: true });
 
-	let quads: { skyBg: Quad; sky: Quad; floor: Quad } | null = null;
+	let quads: { skyBg: Quad; sky: Quad; floor: Quad; screen: Quad } | null = null;
+
+	// The dim pass's render target: the scene draws here instead of to the
+	// canvas whenever the dim is above 0, then FS_DIM writes it out. Sized to
+	// the drawing buffer; NEAREST + clamp because it is read 1:1 by
+	// gl_FragCoord and WebGL1 NPOT textures allow nothing else.
+	let target: { fb: WebGLFramebuffer; tex: WebGLTexture; w: number; h: number } | null = null;
+	function ensureTarget() {
+		const w = gl.drawingBufferWidth;
+		const h = gl.drawingBufferHeight;
+		if (target && target.w === w && target.h === h) return target;
+		if (target) {
+			gl.deleteFramebuffer(target.fb);
+			gl.deleteTexture(target.tex);
+		}
+		const tex = gl.createTexture()!;
+		gl.bindTexture(gl.TEXTURE_2D, tex);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+		const fb = gl.createFramebuffer()!;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		target = { fb, tex, w, h };
+		return target;
+	}
+
+	// The dim level and its animation. The level is a pure function of time
+	// while an animation is live, so every draw — the camera's loop, the
+	// twinkle loop, an on-demand redraw — reads the same value for a frame.
+	let dimLevel = 0;
+	let dimAnim: { from: number; to: number; start: number; duration: number } | null = null;
+	let dimRaf = 0;
+	function dimAt(now: number): number {
+		if (!dimAnim) return dimLevel;
+		const t = Math.min(1, Math.max(0, (now - dimAnim.start) / dimAnim.duration));
+		const v = dimAnim.from + (dimAnim.to - dimAnim.from) * bezierEase(t);
+		if (t >= 1) {
+			dimLevel = dimAnim.to;
+			dimAnim = null;
+		}
+		return v;
+	}
 	// The sky REGION (the old .twinkle geometry): plate-wide, bottomed at the
 	// horizon, --sky-h tall. Star positions are % of this rect.
 	const starRegion = { x: 0, y: 0, w: 0, h: 0 };
@@ -415,7 +508,8 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		quads = {
 			skyBg: gradQuad(gl, 0, vh - sceneH, vw, sceneH, k.skyTop, k.skyBottom),
 			sky: texQuad(gl, plateX, skyTop, plateW, skyH),
-			floor: texQuad(gl, plateX, floorTop, plateW, floorH)
+			floor: texQuad(gl, plateX, floorTop, plateW, floorH),
+			screen: texQuad(gl, 0, 0, vw, vh)
 		};
 	}
 
@@ -443,6 +537,11 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		if (destroyed || lost || !quads) return;
 		const vw = window.innerWidth;
 		const vh = window.innerHeight;
+		const level = dimAt(timeMs);
+		// Above 0 the scene renders offscreen and FS_DIM writes it out; at 0
+		// (the landing, the static pages) it draws straight to the canvas.
+		const dimTarget = level > 0 ? ensureTarget() : null;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, dimTarget ? dimTarget.fb : null);
 		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 		gl.clearColor(k.bg[0], k.bg[1], k.bg[2], 1);
 		gl.clear(gl.COLOR_BUFFER_BIT);
@@ -494,6 +593,44 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		});
 		gl.bindTexture(gl.TEXTURE_2D, floorTex);
 		bind(progPlate, quads.floor, cam.x, k.floorGrain);
+
+		if (dimTarget) {
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+			gl.disable(gl.BLEND);
+			gl.activeTexture(gl.TEXTURE1);
+			gl.bindTexture(gl.TEXTURE_2D, grainTex);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, dimTarget.tex);
+			gl.useProgram(progDim);
+			const u = (n: string) => gl.getUniformLocation(progDim, n);
+			gl.uniform1i(u('uScene'), 0);
+			gl.uniform1i(u('uGrain'), 1);
+			gl.uniform2f(u('uRes'), gl.drawingBufferWidth, gl.drawingBufferHeight);
+			gl.uniform2f(u('uGrainOff'), -cam.x * dpr, cam.y * dpr);
+			// The exact float tint — never read back through CSS, which would
+			// round it to 8 bits (see SCENE_DIM_TINT).
+			gl.uniform3f(u('uWash'), SCENE_DIM_TINT_RGB[0], SCENE_DIM_TINT_RGB[1], SCENE_DIM_TINT_RGB[2]);
+			gl.uniform1f(u('uLevel'), level);
+			gl.uniform1f(u('uWashA'), SCENE_DIM.wash);
+			gl.uniform1f(u('uGain'), SCENE_DIM.gain);
+			gl.uniform1f(u('uSat'), SCENE_DIM.saturation);
+			gl.uniform1f(u('uGamma'), SCENE_DIM.gamma);
+			gl.uniform1f(u('uDither'), SCENE_DIM_DITHER / SCENE_GRAIN_SIGMA);
+			// The screen quad in the same vertex format as the plates, at a
+			// zero camera: it covers the viewport exactly.
+			gl.bindBuffer(gl.ARRAY_BUFFER, quads.screen.buf);
+			const aPos = gl.getAttribLocation(progDim, 'aPos');
+			const aAux = gl.getAttribLocation(progDim, 'aAux');
+			gl.enableVertexAttribArray(aPos);
+			gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 20, 0);
+			if (aAux >= 0) {
+				gl.enableVertexAttribArray(aAux);
+				gl.vertexAttribPointer(aAux, 3, gl.FLOAT, false, 20, 8);
+			}
+			gl.uniform2f(u('uView'), vw, vh);
+			gl.uniform2f(u('uCam'), 0, 0);
+			gl.drawArrays(gl.TRIANGLES, 0, quads.screen.count);
+		}
 	}
 
 	/** rAF-coalesced draw for on-demand updates (parallax, resize, retune). */
@@ -553,6 +690,8 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		floorTex = uploadTexture(gl, floorImg);
 		grainTex = uploadTexture(gl, grainImg, { repeat: true, nearest: true });
 		starPass = createStarPass(gl); // GL resources died with the context
+		progDim = link(gl, VS, FS_DIM);
+		target = null; // its framebuffer + texture died too; rebuilt on demand
 		buildQuads();
 		requestDraw();
 		syncLoop();
@@ -597,6 +736,42 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		},
 		camera: () => ({ ...cam }),
 		animating: () => animPending,
+		animateDim(to, durationMs, startTime = performance.now()) {
+			const now = performance.now();
+			const from = dimAt(now);
+			if (dimRaf) {
+				cancelAnimationFrame(dimRaf);
+				dimRaf = 0;
+			}
+			if (from === to) {
+				dimAnim = null;
+				dimLevel = to;
+				requestDraw();
+				return;
+			}
+			dimAnim = { from, to, start: startTime, duration: Math.max(1, durationMs) };
+			// Its own loop only fills frames nobody else draws: during a camera
+			// move the camera's loop draws every frame and reads dimAt() itself.
+			const step = (t: number) => {
+				dimRaf = 0;
+				if (destroyed) return;
+				const live = dimAnim !== null;
+				if (!animPending) drawNow(t);
+				if (live && dimAnim) dimRaf = requestAnimationFrame(step);
+				else if (!animPending) drawNow(t); // land exactly on the target
+			};
+			dimRaf = requestAnimationFrame(step);
+		},
+		setDim(level) {
+			if (dimRaf) {
+				cancelAnimationFrame(dimRaf);
+				dimRaf = 0;
+			}
+			dimAnim = null;
+			dimLevel = level;
+			requestDraw();
+		},
+		dim: () => dimAt(performance.now()),
 		start() {
 			// Thaw first: the loop's very next frame must already read the
 			// resumed clock, and the paused span must not leak into the phase.
@@ -630,6 +805,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			animTag++;
 			if (raf) cancelAnimationFrame(raf);
 			if (loopRaf) cancelAnimationFrame(loopRaf);
+			if (dimRaf) cancelAnimationFrame(dimRaf);
 			document.removeEventListener('visibilitychange', syncLoop);
 			reducedMq.removeEventListener('change', syncLoop);
 			window.removeEventListener('resize', onResize);
@@ -652,6 +828,8 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		// Probe surface: current camera pose — the choreography probe asserts
 		// crest/rest poses through real hero-click navigations.
 		camera: () => handle.camera(),
+		// Probe surface: the tool dim's current level (0 open world, 1 tool).
+		dim: () => handle.dim(),
 		// Probe surface: the phase the field was last drawn at (ms). Every star
 		// phase is a pure function of it, so "the field is frozen on one frame"
 		// is exactly "this value does not move" — what probe-star-freeze
