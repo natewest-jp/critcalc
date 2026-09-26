@@ -157,20 +157,40 @@
 		   Ink: the original #00a8ff read a touch too intense (Nate, 2026-07-26)
 		   — same hue, saturation off 100% and lightness down a little, so the
 		   script still glows without shouting.
-		   Ground: a near-black PURPLE ramp rather than the old neutral
-		   #000→#0e0f12. The veil now opens onto both scenes — the landing's blue
-		   sky and the tools' crimson dire border — and a desaturated violet is
-		   the shade that sits between them instead of picking a side. Top is
-		   darker and bluer, bottom slightly lighter and redder, both held at
-		   roughly the old lightness so the mood is unchanged. */
-		--veil-ink: #2d98f5;
-		--veil-ground-top: #01030f;
-		--veil-ground-bottom: #160d1a;
+		   ↻ 2026-09-26 (⚓ Nate): #2d98f5 → #24a0fe — HSL saturation 91% → 99%,
+		   hue 208° → 206° (a small step toward cyan), lightness held at 57%.
+		   Ground (⚓ Nate, 2026-09-26): TAKEN FROM THE DIMMED WORLD — the
+		   mean colour of the top and bottom rows of the crest view (the tool
+		   camera, centre frame) under the scene dim (landing/sceneDim.ts,
+		   `dimPixel` over plate 05f2722f, stars excluded). So a veil lifting
+		   onto a tool opens onto the ground it was already showing. It is
+		   nearly flat because the dimmed crest is (the middle is a hair
+		   darker than the top) — so the measured pair (#111520 → #121623) is
+		   the anchor and the contrast is EXAGGERATED from it, in OKLCH (hue
+		   held, chroma scaled with lightness), ENTIRELY at the top (⚓ Nate:
+		   "take it out of the darker stop") — top L −0.05, so the ramp spans
+		   ΔL 0.056 where the world spans 0.006. Then, by eye: both ends one
+		   small step darker (L −0.01 each) and the foot nudged toward
+		   lavender (OKLCH hue 270.7° → 273.1°), then a step more saturated
+		   and a touch more violet (→ 274.2°, chroma 0.025 → 0.029), chosen
+		   by A/B over #111321 (277.1°, the bigger violet step). At this
+		   darkness a hex can only step in ~1–4° jumps. It replaced a
+		   near-black purple ramp (#01030f → #160d1a) chosen to bridge the
+		   landing's blue sky and the tools' old crimson dire border, a concept
+		   that no longer exists.
+		   ⚠ Re-measure if the plate or SCENE_DIM changes. */
+		--veil-ink: #24a0fe;
+		--veil-ground-top: #06080f;
+		--veil-ground-bottom: #111422;
 
 		/* Horizontal rules. Tint themes the caps AND the line together (both are
-		   currentColor, so there is one value to turn), drawn from the ink so
-		   they belong to the same palette — swap in a neutral like #e6edf8 if
-		   they should read cooler.
+		   currentColor, so there is one value to turn).
+		   ↻ 2026-09-26: #82708a → #607b90. The old violet matched the retired
+		   purple ground; the new tint is a quiet blue-grey on the INK's hue
+		   (HSL 206° / 20% / 47%), so the frame belongs to the script rather
+		   than to the ground, at the old tint's luminance (0.187 vs 0.182) so
+		   the rules are exactly as present as before — only the hue moved.
+		   Retune it WITH the ink: same hue, 20% saturation, luminance held.
 		   ⚠️ The faintness is a GROUP opacity on the whole rule, not a
 		   translucent color on its parts. The line overlaps each cap by 1px to
 		   hide the seam, and two translucent layers stacking there would show
@@ -186,7 +206,7 @@
 		   frame to the word instead of the viewport, and at these opacities it
 		   is not perceptible; forcing an integer origin would mean duplicating
 		   the artwork's aspect ratio in CSS and hoping it never drifts. */
-		--veil-rule-tint: #82708a;
+		--veil-rule-tint: #607b90;
 		--veil-rule-opacity: 0.1;
 
 		/* Geometry of the mark. The word's width lives here rather than on
