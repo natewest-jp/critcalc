@@ -29,9 +29,9 @@
  *   stars stop fighting the text.
  *
  * Measured at the crest (plate 05f2722f, source rows 66–2260), against the
- * old dim (computed by `dimPixel` below, with the 224° tint): typical sky
+ * old dim (computed by `dimPixel` below, with the 223° tint): typical sky
  * #131623 → #111520, galaxy highlight #1a202d → #141a28, white star
- * #303033 → #2a2d36, and --text over a star 11.19 → 11.67:1.
+ * #303033 → #2a2d36, and --text over a star 11.19 → 11.65:1.
  *
  * ⚠ The output lives on very few 8-bit levels (the whole crest sky spans
  * R 16–21 / G 19–26 / B 30–42), so the renderer dithers AFTER this — the
@@ -58,7 +58,8 @@ export const SCENE_DIM = {
 
 /**
  * The wash's TINT, in HSL — the dim's hue lives here.
- * ↻ ⚓ NATE 2026-09-26: hue 226 → 224, "two degrees toward cyan".
+ * ↻ ⚓ NATE 2026-09-26: hue 226 → 224, "two degrees toward cyan", then
+ * → 223, "another tiny touch".
  *
  * ⚠ HSL and FLOAT on purpose, never a hex: at 9% lightness an 8-bit colour
  * cannot take a 2° step — 226° and 224° both round to #11141d (whose true
@@ -68,7 +69,7 @@ export const SCENE_DIM = {
  * `--scene-dim` in app.css is its nearest hex and paints ONLY the DOM
  * fallback layer (pre-mount frames, no-WebGL), where a degree cannot show.
  */
-export const SCENE_DIM_TINT = { hue: 224, saturation: 27, lightness: 9 } as const;
+export const SCENE_DIM_TINT = { hue: 223, saturation: 27, lightness: 9 } as const;
 
 /** SCENE_DIM_TINT as float sRGB, 0–1 — what the shader takes as its wash. */
 export const SCENE_DIM_TINT_RGB: readonly [number, number, number] = (() => {

@@ -446,7 +446,7 @@
 	   dim is no longer this colour laid over the scene at an opacity: it is the
 	   scene renderer's final pass (sceneGL.ts FS_DIM, formula + values in
 	   landing/sceneDim.ts) — the scene squared, half-desaturated and scaled by a
-	   gain, over a TINT (SCENE_DIM_TINT, HSL 224° / 27% / 9%) at .965. The
+	   gain, over a TINT (SCENE_DIM_TINT, HSL 223° / 27% / 9%) at .965. The
 	   renderer takes that tint as an exact FLOAT, never through this token: at
 	   9% lightness an 8-bit hex cannot take the 2° step Nate asked for. This is
 	   its nearest hex, and paints ONLY the .dim fallback (pre-mount frames, no
