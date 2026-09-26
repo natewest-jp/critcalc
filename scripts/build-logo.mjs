@@ -218,7 +218,18 @@ const TILE_FILL = 0.88;
 // the whole palette is built on. It measures worse too: the mark keeps
 // 11.2:1 contrast on this blue against 8.3:1 on a comparably light dire, and
 // 16px is where the mark can least afford to lose any.
-const PLATE = '#312537';
+//
+// ↻ The blue above later became an eggplant (#312537), picked to read as a
+// neutral between the landing sky and the tools' dire border — a bridge that
+// no longer exists. ↻ ⚓ NATE 2026-09-26: #312537 → #272a36, the loading
+// veil's hue (OKLCH h 274°, the veil runs #06080f → #111422) at the
+// eggplant's own LIGHTNESS (OKLCH L 0.286 — a tab strip needs the plate far
+// lighter than the veil, or it reads as black again), with chroma held low
+// so it reads as near-neutral — first 0.022 (#272a36), then ⚓ Nate: "a
+// little bit more chroma", → 0.032 (a hair over the veil foot's 0.029), then
+// "just a touch more" → 0.035, then one more bump → 0.039; hue and lightness
+// held throughout. Mark contrast 13.1 → 13.0:1.
+const PLATE = '#25293e';
 const PLATE_RADIUS = 0.18;
 
 const k = (TILE * TILE_FILL) / VH;
