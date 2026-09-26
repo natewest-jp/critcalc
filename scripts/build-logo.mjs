@@ -56,9 +56,13 @@ const OUT_APPLE = join(ROOT, 'static/apple-touch-icon.png');
 
 /** Clockwise lean, degrees. Nate 2026-07-28. */
 const ROTATE_DEG = 7;
-/** Mark colour. (The favicon's plate colour lives in the hand-authored
- *  favicon.svg, which this script reads rather than writes.) */
-const INK = '#eef4fd';
+/** Mark colour — pure white, the chrome's own (--chrome). ↻ ⚓ NATE
+ *  2026-09-26: was #eef4fd, the source art's off-white, while the shipped
+ *  chrome logo had been hand-re-exported white since 2026-08-05 (62cdee4a) —
+ *  so every run of this script silently reverted it. The source SVG is white
+ *  now too, and this script owns every output again: the chrome mark, the
+ *  favicon (whose plate is PLATE below) and the apple-touch icon. */
+const INK = '#ffffff';
 
 // ── matrices (a,b,c,d,e,f): x' = a·x + c·y + e ; y' = b·x + d·y + f ──────────
 
