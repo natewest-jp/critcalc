@@ -440,8 +440,17 @@
 	   Visualizers going onto the scene is what asked for it — with no framed
 	   slabs left anywhere, how much world comes through stopped being a per-tool
 	   question. The worst pixel (a star) now lands at rgb(48,48,51), from
-	   rgb(76,76,78). */
-	--scene-dim: #121216;
+	   rgb(76,76,78).
+
+	   ↻ ⚓ NATE 2026-09-26: #121216 → #11141d, and the token CHANGED JOB. The
+	   dim is no longer this colour laid over the scene at an opacity: it is the
+	   scene renderer's final pass (sceneGL.ts FS_DIM, formula + values in
+	   landing/sceneDim.ts) — the scene squared, half-desaturated and scaled by a
+	   gain, over THIS colour at .965. So it is now the dim's TINT: 226° / 27% /
+	   9%, on the plate's own hue, carrying the saturation the pass takes out of
+	   the scene. Everything above is the wash era's record; its lessons hold
+	   (the census composites it through `dimPixel`), its numbers do not. */
+	--scene-dim: #11141d;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are

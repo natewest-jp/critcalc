@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { get, writable } from 'svelte/store';
 import { getSceneGL, crestPose, PAN_MS } from '$lib/landing/sceneGL';
+import { SCENE_DIM } from '$lib/landing/sceneDim';
 
 /**
  * The ascend choreography (revival 2026-08-02, choreography chunk 2026-08-05).
@@ -261,8 +262,17 @@ export type SceneLayerKind = 'composition' | 'dim';
  *    --scene-dim in app.css the wash COLOUR — how black the floor of the
  *                           composite is. A different axis entirely. Both moved
  *                           together on 2026-08-10 (#15161a → #101013). */
-export const TOOL_DIM = 0.875;
-export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
+/*
+ *  ↻⚓ NATE 2026-09-26: RETIRED AS A NUMBER. The dim is no longer a wash at an
+ *  opacity — it is the scene renderer's final pass (sceneGL.ts FS_DIM, formula
+ *  and values in sceneDim.ts): the scene squared, half-desaturated and scaled
+ *  by a GAIN over a tinted wash. Everything above is the record of the wash
+ *  era, kept because its lessons (composite the wash properly; the worst pixel
+ *  is a star; glass and the dim multiply) still hold — the census in
+ *  /styleguide now computes them through `dimPixel`. What remains here is the
+ *  LEVEL: 0 = the open world, 1 = a tool at rest, animated on the camera's
+ *  clock. */
+export const dimTarget = (path: string) => (isToolPath(path) ? 1 : 0);
 
 // --- Transition clock --------------------------------------------------------
 
@@ -321,7 +331,9 @@ export function revealDelayMs(): number {
  */
 export function syncSceneCamera(): void {
 	if (!browser) return;
-	getSceneGL()?.snapCamera(poseForPath(currentPath));
+	const scene = getSceneGL();
+	scene?.snapCamera(poseForPath(currentPath));
+	scene?.setDim(dimTarget(currentPath));
 }
 
 /**
@@ -346,6 +358,7 @@ export function startSceneTransition(toPath: string): void {
 	// tools layout's slide owns that motion).
 	if (get(sceneOccluded)) {
 		scene?.snapCamera(pose);
+		scene?.setDim(dimTarget(toPath));
 		active = null;
 		return;
 	}
@@ -354,6 +367,7 @@ export function startSceneTransition(toPath: string): void {
 		// Reduced motion (or GL never mounted): snap the world, no shared clock —
 		// every fade then runs undelayed at its own duration.
 		scene?.snapCamera(pose);
+		scene?.setDim(dimTarget(toPath));
 		for (const [el, kind] of layers) {
 			cancelSceneAnimations(el);
 			applyRestState(el, kind, toPath);
@@ -373,6 +387,9 @@ export function startSceneTransition(toPath: string): void {
 	active = { fromPath, toPath, startTime, duration };
 
 	if (cameraMoves) void scene.animateCamera(pose, duration);
+	// The dim rides the same clock and easing as the camera (it used to be the
+	// DOM layer's WAAPI opacity ride, keyed to this same startTime).
+	scene.animateDim(dimTarget(toPath), duration, startTime);
 
 	for (const [el, kind] of layers) {
 		cancelSceneAnimations(el);
@@ -425,8 +442,12 @@ export function restTransform(kind: SceneLayerKind, path: string): string | null
 	}
 }
 
+/** The DOM `.dim` layer's opacity. It only PAINTS before the GL renderer is
+ *  live (the layout hides it once the renderer owns the dim), where there is
+ *  no scene under it to curve — so a straight wash at the dim's own wash
+ *  strength is the whole of the formula that applies. */
 function restOpacity(kind: SceneLayerKind, path: string): number | null {
-	return kind === 'dim' ? dimTarget(path) : null;
+	return kind === 'dim' ? dimTarget(path) * SCENE_DIM.wash : null;
 }
 
 function applyRestState(el: HTMLElement, kind: SceneLayerKind, path: string): void {

@@ -23,6 +23,7 @@
 		FADE_OVERLAP_MS
 	} from '$lib/landing/transition';
 	import { mountSceneGL, type SceneGLHandle } from '$lib/landing/sceneGL';
+	import { SCENE_DIM } from '$lib/landing/sceneDim';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 
 	let { children } = $props();
@@ -55,7 +56,7 @@
 	// styles via direct el.style writes. Built from restTransform so the SSR
 	// strings stay in lockstep with the sceneLayer action, including the side-
 	// tool horizontal crane on a direct hit to /visualizers or /team-builder.
-	const initialDim = dimTarget(initialPath);
+	const initialDim = dimTarget(initialPath) * SCENE_DIM.wash;
 
 	// The GL scene world (sceneGL.ts): plates + gradient in one canvas, camera
 	// as a uniform — the DOM plate layers are gone (the ascend rebuild; a slow
@@ -214,6 +215,7 @@
 	<div
 		class="dim"
 		class:occluded={$sceneOccluded}
+		class:gl-owned={sceneHandle !== null}
 		style:opacity={initialDim}
 		use:sceneLayer={'dim'}
 	></div>
@@ -397,8 +399,12 @@
 
 	.dim {
 		z-index: 1;
-		/* The world's own wash: --scene-dim — see the token's note in app.css
-		   for its colour, and TOOL_DIM in transition.ts for the density. */
+		/* ↻⚓ NATE 2026-09-26: the dim is the scene renderer's FINAL PASS now
+		   (sceneGL.ts FS_DIM; formula + values in sceneDim.ts), so this layer
+		   only paints until the renderer is live — the pre-mount frames of a
+		   cold tool load, and a browser with no WebGL (no scene to curve, so a
+		   straight wash at SCENE_DIM.wash is the whole formula). The colour is
+		   the same --scene-dim the renderer reads. */
 		background: var(--scene-dim);
 		/* ⛔ NO MASK. A shaped scrim was built here (ellipse, then a soft rounded
 		   box from two intersected 1-D falloffs) and ⚓ NATE scrapped it after
@@ -410,6 +416,13 @@
 		/* Initial opacity is set inline at SSR time (style:opacity above);
 		   WAAPI takes over via the sceneLayer action after hydration. */
 		will-change: opacity;
+	}
+
+	/* The renderer owns the dim once it is live — painting this too would dim
+	   the world twice. display (not visibility): nothing measures it, and the
+	   WAAPI ride keeps running harmlessly on an unrendered box. */
+	.dim.gl-owned {
+		display: none;
 	}
 
 	.content {
