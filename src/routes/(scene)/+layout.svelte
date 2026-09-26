@@ -338,7 +338,9 @@
 		   ↻ 2026-09-25 (⚓ Nate): sky 0.38 → 0.32, backed off a little more
 		   with the brightened plate. */
 		--sky-grain: 0.32;
-		--floor-grain: 0.3;
+		/* ↻ 2026-09-26 (⚓ Nate): floor 0.3 → 0.25, backed off a little with
+		   the hazed plate. */
+		--floor-grain: 0.25;
 
 		/* Additive dither σ (8-bit levels) in the plate shader — breaks the
 		   quantisation contours the overlay-blend grain can't reach: overlay's
@@ -440,7 +442,7 @@
 		pointer-events: none;
 	}
 
-	/* Full-frame dark gradient beneath the footer (very dark blue → transparent),
+	/* Full-frame dark gradient beneath the footer (dark navy → transparent),
 	   anchored to the viewport bottom. z:1 keeps it BEHIND the pages panel (z:2)
 	   so it never darkens the panel — it backs the footer + the open scene. */
 	.scene-footer-gradient {
@@ -451,6 +453,8 @@
 		height: 200px;
 		pointer-events: none;
 		z-index: 1;
-		background: linear-gradient(to top, rgba(2, 9, 31, 1), rgba(3, 6, 16, 0));
+		/* ↻ 2026-09-26 (⚓ Nate): was rgba(2, 9, 31, 1) → rgba(3, 6, 16, 0),
+		   with the re-graded plate. */
+		background: linear-gradient(to top, #0d1124, #0d112000);
 	}
 </style>

@@ -16,8 +16,8 @@ export const SCENE_TIERS = [2400, 3200, 4300, 6400] as const;
  *  script. */
 export const SCENE_SKY_OVERLAP_SRC = 4;
 
-export const SCENE_SKY = '/assets/landing/sky-6c490e58';
-export const SCENE_FLOOR = '/assets/landing/floor-6c490e58';
+export const SCENE_SKY = '/assets/landing/sky-05f2722f';
+export const SCENE_FLOOR = '/assets/landing/floor-05f2722f';
 
 /** Mid-grey dither tile laid over the plates to break encode banding.
  *  Lossless PNG — see the note in the script; a lossy re-encode dithers
