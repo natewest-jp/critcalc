@@ -2165,7 +2165,7 @@
 									     than judged: at resting zoom the label is wider than the run
 									     it names, so any extent from the pip reads as an underline of
 									     the text. -->
-									<!-- svelte-ignore a11y_no_static_element_interactions -->
+									<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 									<div
 										class="rp-aura-marker"
 										class:rp-aura-marker--lit={auraRunLit(marker.time, marker.endTime)}
@@ -2175,6 +2175,7 @@
 											onAuraMarkEnter(marker.time);
 										}}
 										onmouseleave={onAuraMarkLeave}
+										onclick={() => pv.revealInLog(marker.time / FPS)}
 									>
 										<span class="rp-aura-marker-pip"></span>
 										<!-- ⚠ DROPPED, never truncated — a two-character stub names
@@ -2202,7 +2203,10 @@
 								style:--rp-pill-r="{AURA_PILL_R}px"
 							>
 								{#each auraLane.ticks as tick, ti (ti)}
-									<!-- svelte-ignore a11y_no_static_element_interactions -->
+									<!-- ⚓ Clicking a pip or a marker opens the LOG at its row
+									     (Nate 2026-09-24). No key handler: the log is reached by
+									     its own band-B plate, and its rows are the keyboard path. -->
+									<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 									<span
 										class="rp-aura-tick"
 										class:rp-aura-tick--provisional={tick.provisional}
@@ -2250,6 +2254,7 @@
 											});
 										}}
 										onmouseleave={onAuraMarkLeave}
+										onclick={() => pv.revealInLog(tick.time / FPS)}
 									></span>
 								{/each}
 							</div>
@@ -3143,7 +3148,7 @@
 		     describes. -->
 		<div class="rp-history" role="group" aria-label="Notation history">
 			<button
-				class="btn btn--sm btn--icon"
+				class="btn btn--sm"
 				type="button"
 				aria-label="Undo the last notation change"
 				title="Undo (⌘Z)"
@@ -3151,10 +3156,10 @@
 				onclick={() => {
 					editorApi?.undo();
 					historyTick++;
-				}}><Mark name="undo" /></button
+				}}><Mark name="undo" /> Undo</button
 			>
 			<button
-				class="btn btn--sm btn--icon"
+				class="btn btn--sm"
 				type="button"
 				aria-label="Redo the last undone notation change"
 				title="Redo (⌘⇧Z)"
@@ -3162,7 +3167,7 @@
 				onclick={() => {
 					editorApi?.redo();
 					historyTick++;
-				}}><Mark name="redo" /></button
+				}}><Mark name="redo" /> Redo</button
 			>
 		</div>
 	</div>
@@ -3442,6 +3447,12 @@
 		min-width: 0;
 		overflow-x: auto;
 		overflow-y: hidden;
+		/* ⚓ Nate 2026-09-24: no rubber band. The ruler and the aura lane are
+		   scroll FOLLOWERS mirrored from scrollLeft, and an elastic overscroll
+		   moves the content without moving scrollLeft — so a sharp fling tore
+		   the ticks away from the bars they time. Momentum itself stays (that
+		   is the OS's, and harmless); only the bounce past the ends goes. */
+		overscroll-behavior-x: none;
 		padding-bottom: var(--rp-scrollbar-gutter);
 		/* Firefox has no ::-webkit-scrollbar; this is its whole vocabulary. */
 		scrollbar-width: thin;
@@ -4033,6 +4044,7 @@
 	}
 	.rp-aura-marker {
 		position: absolute;
+		cursor: pointer;
 		bottom: 0;
 		display: flex;
 		align-items: center;
@@ -4101,6 +4113,7 @@
 	}
 	.rp-aura-tick {
 		position: absolute;
+		cursor: pointer;
 		bottom: 0;
 		width: calc(var(--rp-pill-r) * 2);
 		height: calc(var(--rp-pill-r) * 2);
@@ -4755,11 +4768,25 @@
 	   B's .rp-zoom: the buttons paint themselves, and wrapping them in a second
 	   ground would stack a surface on a surface. `align-self: start` pins them to
 	   the TOP of the row so they stay level with the notation's first line if the
-	   box ever wraps to two. */
+	   box ever wraps to two.
+	   ↻ 2026-09-24 (⚓ Nate): WORDS, and STACKED — Undo over Redo, the pair as
+	   tall as the ONE-LINE notation box. ⚠ That height is the editor's own
+	   metrics (notationEditorExtension: 13px × 1.6 line + 10px padding top and
+	   bottom), restated here — change one, change the other. Not `stretch`: the
+	   box grows with its text and the coverage strips sit under it, and a pair
+	   that grew with them would stop reading as two buttons. */
 	.rp-history {
-		display: flex;
+		display: grid;
+		grid-template-rows: 1fr 1fr;
 		align-self: start;
 		gap: 2px;
+		height: calc(13px * 1.6 + 20px);
+	}
+	.rp-history .btn {
+		justify-content: flex-start;
+		gap: 4px;
+		padding-block: 0;
+		line-height: 1;
 	}
 	/* Disabled dims the INK, not the plate — the same ruling band B's controls
 	   took (⚓ Nate 2026-08-12). These sit on the bare scene beside a full-width

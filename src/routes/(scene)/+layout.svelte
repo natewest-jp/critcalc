@@ -23,6 +23,8 @@
 		FADE_OVERLAP_MS
 	} from '$lib/landing/transition';
 	import { mountSceneGL, type SceneGLHandle } from '$lib/landing/sceneGL';
+	import { SCENE_DIM } from '$lib/landing/sceneDim';
+	import VeilGround from '$lib/components/VeilGround.svelte';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 
 	let { children } = $props();
@@ -55,7 +57,7 @@
 	// styles via direct el.style writes. Built from restTransform so the SSR
 	// strings stay in lockstep with the sceneLayer action, including the side-
 	// tool horizontal crane on a direct hit to /visualizers or /team-builder.
-	const initialDim = dimTarget(initialPath);
+	const initialDim = dimTarget(initialPath) * SCENE_DIM.wash;
 
 	// The GL scene world (sceneGL.ts): plates + gradient in one canvas, camera
 	// as a uniform — the DOM plate layers are gone (the ascend rebuild; a slow
@@ -69,6 +71,11 @@
 	// tool cold loads feel heavier).
 	let sceneCanvas: HTMLCanvasElement;
 	let sceneHandle = $state<SceneGLHandle | null>(null);
+	// The renderer failed to mount (no WebGL, or a plate that never decoded).
+	// ⚠ The context is created BEFORE the plates load, and an alpha:false
+	// canvas is opaque black until its first draw — so a failed mount must
+	// also HIDE the canvas, or it covers the VeilGround fallback in black.
+	let sceneFailed = $state(false);
 	// The scene is part of first paint on EVERY route now (tools-over-scene),
 	// so it claims the veil on tool cold loads too — the tool's own claim
 	// still gates its content; the veil lifts when both have painted.
@@ -94,6 +101,7 @@
 				// No WebGL → no scene (deliberately no DOM fallback: two scene
 				// implementations is how parity rots). The site itself still works.
 				console.error('scene: GL mount failed', err);
+				sceneFailed = true;
 				releaseVeil();
 			}
 		};
@@ -206,7 +214,16 @@
 	  source-image pixel space — the meteors size to it. -->
 <div class="scene-stack">
 	<div class="scene" class:occluded={$sceneOccluded}>
-		<canvas class="scene-canvas" bind:this={sceneCanvas}></canvas>
+		<!-- ⚓ Nate 2026-09-26: what shows where the world has not drawn (the
+		     frames before the renderer is live, or for good if WebGL fails) is
+		     the VEIL GROUND, so a cold load's veil lifts onto its own colours.
+		     Unmounted once the renderer owns the frame — the canvas is opaque
+		     and covers it, and a full-viewport SVG filter has no business
+		     sitting under a live canvas. -->
+		{#if !sceneHandle}
+			<VeilGround />
+		{/if}
+		<canvas class="scene-canvas" class:failed={sceneFailed} bind:this={sceneCanvas}></canvas>
 
 		<ShootingStars />
 	</div>
@@ -214,6 +231,7 @@
 	<div
 		class="dim"
 		class:occluded={$sceneOccluded}
+		class:gl-owned={sceneHandle !== null}
 		style:opacity={initialDim}
 		use:sceneLayer={'dim'}
 	></div>
@@ -333,8 +351,14 @@
 		   background-size ladder, for free). These knobs and the gradient
 		   stops below are read from computed style at renderer init; after a
 		   devtools edit call window.__scene.retune(). */
-		--sky-grain: 0.45;
-		--floor-grain: 0.3;
+		/* ↻ 2026-09-24 (⚓ Nate): sky 0.45 → 0.38, "just a little too heavy";
+		   the floor untouched.
+		   ↻ 2026-09-25 (⚓ Nate): sky 0.38 → 0.32, backed off a little more
+		   with the brightened plate. */
+		--sky-grain: 0.32;
+		/* ↻ 2026-09-26 (⚓ Nate): floor 0.3 → 0.25, backed off a little with
+		   the hazed plate. */
+		--floor-grain: 0.25;
 
 		/* Additive dither σ (8-bit levels) in the plate shader — breaks the
 		   quantisation contours the overlay-blend grain can't reach: overlay's
@@ -389,10 +413,20 @@
 		height: 100%;
 	}
 
+	/* See sceneFailed: an unmounted context would sit over the fallback as a
+	   black rectangle. */
+	.scene-canvas.failed {
+		display: none;
+	}
+
 	.dim {
 		z-index: 1;
-		/* The world's own wash: --scene-dim — see the token's note in app.css
-		   for its colour, and TOOL_DIM in transition.ts for the density. */
+		/* ↻⚓ NATE 2026-09-26: the dim is the scene renderer's FINAL PASS now
+		   (sceneGL.ts FS_DIM; formula + values in sceneDim.ts), so this layer
+		   only paints until the renderer is live — the pre-mount frames of a
+		   cold tool load, and a browser with no WebGL (no scene to curve, so a
+		   straight wash at SCENE_DIM.wash is the whole formula). --scene-dim is
+		   the nearest hex of the renderer's exact tint (SCENE_DIM_TINT). */
 		background: var(--scene-dim);
 		/* ⛔ NO MASK. A shaped scrim was built here (ellipse, then a soft rounded
 		   box from two intersected 1-D falloffs) and ⚓ NATE scrapped it after
@@ -404,6 +438,13 @@
 		/* Initial opacity is set inline at SSR time (style:opacity above);
 		   WAAPI takes over via the sceneLayer action after hydration. */
 		will-change: opacity;
+	}
+
+	/* The renderer owns the dim once it is live — painting this too would dim
+	   the world twice. display (not visibility): nothing measures it, and the
+	   WAAPI ride keeps running harmlessly on an unrendered box. */
+	.dim.gl-owned {
+		display: none;
 	}
 
 	.content {
@@ -436,7 +477,7 @@
 		pointer-events: none;
 	}
 
-	/* Full-frame dark gradient beneath the footer (very dark blue → transparent),
+	/* Full-frame dark gradient beneath the footer (dark navy → transparent),
 	   anchored to the viewport bottom. z:1 keeps it BEHIND the pages panel (z:2)
 	   so it never darkens the panel — it backs the footer + the open scene. */
 	.scene-footer-gradient {
@@ -447,6 +488,12 @@
 		height: 200px;
 		pointer-events: none;
 		z-index: 1;
-		background: linear-gradient(to top, rgba(2, 9, 31, 1), rgba(3, 6, 16, 0));
+		/* ↻ 2026-09-26 (⚓ Nate): was rgba(2, 9, 31, 1) → rgba(3, 6, 16, 0),
+		   with the re-graded plate; then #0d1124 → transparent; then the veil
+		   ground's top colour (--veil-ground-top, #06080f) at 60% → 0, so it
+		   blends with both the landing scene AND the VeilGround fallback that
+		   shows where the plate never drew. Written as a literal because an
+		   alpha on a var() would need a color-mix. */
+		background: linear-gradient(to top, #06080f99, #06080f00);
 	}
 </style>

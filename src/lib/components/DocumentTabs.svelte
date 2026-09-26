@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from '$lib/rotationTabs.svelte';
-	import { documentBar } from '$lib/documentBar.svelte';
 	import { savedNotations } from '$lib/stores';
 	import Mark from './Mark.svelte';
 
@@ -27,12 +26,10 @@
 
 	function switchTab(id: string) {
 		if (id === rt.activeTabId) return;
-		documentBar.resetConfirm = false;
 		rt.switchTab(id);
 	}
 
 	function closeTab(id: string) {
-		documentBar.resetConfirm = false;
 		rt.closeTab(id);
 	}
 

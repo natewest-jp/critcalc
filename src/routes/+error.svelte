@@ -2,38 +2,54 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { dev } from '$app/environment';
-	import favicon from '$lib/assets/favicon.svg';
+	import VeilGround from '$lib/components/VeilGround.svelte';
+	import HRule from '$lib/components/HRule.svelte';
+	import { TOOLS } from '$lib/tools';
 
 	// ⚠️ THIS PAGE RENDERS OUTSIDE THE SCENE, AND THAT IS DELIBERATE.
 	//
 	// SvelteKit resolves an unmatched URL against no route, so no route group
 	// applies: only the ROOT layout wraps this, which means no GL canvas, no
 	// SiteChrome, no footer. Rather than fight that, lean on it — an error page
-	// should not boot a WebGL scene to tell you a link was mistyped. The body
-	// already paints --bg (app.css), so the night ground arrives for free and
-	// this component paints no background of its own.
+	// should not boot a WebGL scene to tell you a link was mistyped.
 	//
-	// Root roles only (--text / --muted / --accent / --border / .btn). No context
-	// claim, matching /styleguide, the only other off-scene route.
+	// ↻ ⚓ Nate 2026-09-26, the design pass (the COPY is the text round's —
+	// docs/text/sheets/errors-and-frame.md — and is carried here verbatim):
+	// - The ground is VeilGround, the loading veil's night gradient + grain.
+	// - The identity is the CHROME'S OWN LOCKUP (mark + critcalc.app), centred,
+	//   as the home link — ⛔ not the favicon, which is an app-icon tile cropped
+	//   for 16px, and ⛔ not the full SiteChrome: its About / Help / Settings
+	//   open overlays hosted by the scene layout this page is outside of, and
+	//   its tool switcher would duplicate the tool links below.
+	// - Everything sits INSIDE two of Nate's capped rules (the veil's own
+	//   device), headed by the lockup, which is the home link. No "Back to
+	//   critcalc" button, no "Looking for a tool?" label and no visible status
+	//   number: the server already sends the 404, SeoHead titles the tab
+	//   "Page not found" (noindex), and the heading says it in words. The
+	//   three tools sit under the lede — four ways out, the page's whole job. Only a non-404 keeps a
+	//   button, "Report a problem", the one action that is not a way out.
+	// - The tool links are the site's plain .link; the type follows the content
+	//   pages (16px prose, 24px heading).
+	//
+	// Root roles only (--text / --muted / --accent / --chrome / .btn). No
+	// context claim, matching /styleguide, the only other off-scene route.
 
-	const status = $derived(page.status);
-	const isNotFound = $derived(status === 404);
-
-	// The three tools, offered on a 404 — someone who mistyped a URL or followed
-	// a broken link is usually trying to reach one of them, and a dead end that
-	// only says "go home" makes them do the navigating twice.
-	const tools = [
-		{ label: 'Team Builder', path: '/team-builder' },
-		{ label: 'Rotation Planner', path: '/rotation-planner' },
-		{ label: 'Visualizers', path: '/visualizers' }
-	] as const;
+	const isNotFound = $derived(page.status === 404);
 </script>
 
 <main class="error-page">
-	<div class="error-inner">
-		<img class="mark" src={favicon} alt="" width="44" height="44" />
+	<VeilGround fixed />
 
-		<p class="status">{status}</p>
+	<div class="error-inner">
+		<div class="rule"><HRule /></div>
+
+		<!-- The chrome's lockup heads the block and IS the home link (same
+		     proportions as SiteChrome .chrome-brand — the mark 1.5714× the
+		     wordmark, lifted −0.18em). -->
+		<a class="brand" href={resolve('/')} aria-label="critcalc.app home">
+			<img src="/critcalc-logo-white.svg" alt="" />
+			<span class="wordmark">critcalc.app</span>
+		</a>
 
 		{#if isNotFound}
 			<h1>We couldn't find that page.</h1>
@@ -48,25 +64,24 @@
 				you were doing is genuinely useful — critcalc is one person's project and reports are how
 				problems get found.
 			</p>
+			<!-- The one action that is not a way OUT, so it keeps its button. -->
+			<div class="actions">
+				<a class="btn btn--glass ctx-glass" href={resolve('/contribute')}>Report a problem</a>
+			</div>
 		{/if}
 
-		<div class="actions">
-			<a class="btn btn--primary" href={resolve('/')}>Back to critcalc</a>
-			{#if !isNotFound}
-				<a class="btn" href={resolve('/contribute')}>Report a problem</a>
-			{/if}
-		</div>
+		<!-- The three tools, read from the one tool registry — someone who
+		     mistyped a URL or followed a broken link is usually trying to reach
+		     one of them. With the lockup above, four ways out. -->
+		<nav class="tools-nav" aria-label="Tools">
+			<ul class="tools">
+				{#each TOOLS as tool (tool.path)}
+					<li><a class="link" href={resolve(tool.path)}>{tool.title}</a></li>
+				{/each}
+			</ul>
+		</nav>
 
-		{#if isNotFound}
-			<nav class="tools" aria-label="Tools">
-				<span class="tools-label">Looking for a tool?</span>
-				<ul>
-					{#each tools as tool (tool.path)}
-						<li><a href={resolve(tool.path)}>{tool.label}</a></li>
-					{/each}
-				</ul>
-			</nav>
-		{/if}
+		<div class="rule"><HRule /></div>
 
 		<!-- Dev only: the real message. In production SvelteKit collapses every
 		     non-404 to "Internal Error", so there is nothing here worth showing a
@@ -78,95 +93,129 @@
 </main>
 
 <style>
-	/* No background: body already paints --bg. Min-height rather than fixed
-	   inset so a long message can scroll on a short window. */
+	/* Min-height rather than fixed inset so a long message can scroll on a
+	   short window. The ground is VeilGround, fixed to the viewport. */
 	.error-page {
 		min-height: 100svh;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: clamp(1.5rem, 6vw, 4rem);
+		padding: clamp(1.5rem, 6vw, 4rem) 1rem;
 	}
 
 	.error-inner {
-		width: min(34rem, 100%);
+		/* Positioned so it paints above VeilGround. */
+		position: relative;
+		width: min(40rem, 100%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 		text-align: center;
 	}
 
-	.mark {
-		display: block;
-		margin: 0 auto clamp(1.25rem, 3vh, 2rem);
-		opacity: 0.9;
+	/* Nate's capped rule, top and bottom, at the footer's quiet strength:
+	   muted ink, faded as a group. A measured column, so the caps read as a
+	   frame around the block rather than a page-wide divider. */
+	.rule {
+		width: min(30rem, 100%);
+		--rule-tint: var(--muted);
+		--rule-opacity: 0.35;
 	}
 
-	/* The status number is the one gold block on the page. Gold names a BLOCK,
-	   never a word (⚓ palette-definition round), and a bare numeral standing
-	   alone is a block — it is not emphasis inside a sentence. */
-	.status {
-		margin: 0 0 0.5rem;
-		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-widest);
-		color: var(--accent);
-	}
-
+	/* The content pages' heading size (--fs-4xl, as AreaTabs), in Bitter. */
 	h1 {
-		margin: 0 0 0.75rem;
+		margin: 0 0 0.9rem;
 		font-family: var(--font-display);
-		font-size: var(--fs-2xl);
+		font-size: var(--fs-4xl);
 		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
 		line-height: var(--lh-tight);
 		color: var(--text);
+		text-wrap: balance;
 	}
 
 	.lede {
 		margin: 0 auto;
-		max-width: 30rem;
-		font-size: var(--fs-md);
+		max-width: 34rem;
+		/* The content pages' prose size. */
+		font-size: var(--fs-xl);
 		line-height: var(--lh-relaxed);
 		color: var(--muted);
+		text-wrap: pretty;
 	}
 
+	/* Non-404 only: a glass pane on the night (.btn.btn--glass + .ctx-glass on
+	   itself — see app.css), a size up from the toolbar default. */
 	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		justify-content: center;
-		margin-top: clamp(1.5rem, 4vh, 2.25rem);
+		margin-top: clamp(1.5rem, 4vh, 2rem);
 	}
 
+	.actions .btn {
+		padding: 0.5rem 1rem;
+		font-size: var(--fs-lg);
+	}
+
+	/* ── The lockup: SiteChrome's .chrome-brand, heading the block ──────── */
+	/* At the chrome's own size, and it is the home link. Same knobs and the
+	   same chrome state contract (rest at .85, hover to opaque, --t-quick).
+	   ⚠ If the chrome's proportions move, move these. */
+	.brand {
+		--brand-size: var(--fs-4xl);
+		--brand-mark: 1.5714;
+		--brand-lift: -0.18;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin: clamp(1.75rem, 4.5vh, 2.5rem) 0 clamp(1.25rem, 3.5vh, 1.75rem);
+		font-size: var(--brand-size);
+		text-decoration: none;
+	}
+
+	.brand img {
+		height: calc(var(--brand-size) * var(--brand-mark));
+		width: auto;
+		margin-top: calc(var(--brand-size) * var(--brand-lift));
+		opacity: 0.85;
+		transition: opacity var(--t-quick);
+	}
+
+	.wordmark {
+		font-family: var(--font-display);
+		font-size: var(--brand-size);
+		font-weight: var(--fw-medium);
+		letter-spacing: var(--ls-tight);
+		color: var(--chrome);
+		opacity: 0.85;
+		transition: opacity var(--t-quick);
+	}
+
+	.brand:hover img,
+	.brand:focus-visible img,
+	.brand:hover .wordmark,
+	.brand:focus-visible .wordmark {
+		opacity: 1;
+	}
+
+	.tools-nav {
+		margin: clamp(1.75rem, 4.5vh, 2.25rem) 0 clamp(1.75rem, 4.5vh, 2.5rem);
+	}
+
+	/* The tools: the site's plain .link at prose size. Spacing, not separator
+	   dots — a dot orphans at the head of a wrapped line on a phone, and the
+	   underlined links already read as three. */
 	.tools {
-		margin-top: clamp(1.75rem, 4vh, 2.5rem);
-		padding-top: clamp(1.25rem, 3vh, 1.75rem);
-		border-top: 1px solid var(--border);
-	}
-
-	.tools-label {
-		display: block;
-		margin-bottom: 0.6rem;
-		font-size: var(--fs-xs);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-
-	.tools ul {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		gap: 0.4rem 1.25rem;
+		gap: 0.5rem 1.75rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
-	}
-
-	.tools a {
-		font-size: var(--fs-sm);
-		color: var(--text);
+		font-size: var(--fs-xl);
 	}
 
 	.dev-detail {
+		width: 100%;
 		margin: 2rem 0 0;
 		padding: 0.75rem 1rem;
 		overflow-x: auto;
@@ -175,7 +224,6 @@
 		text-align: left;
 		color: var(--muted);
 		background: var(--surface);
-		border: 1px solid var(--border);
 		border-radius: var(--r-sm);
 	}
 </style>

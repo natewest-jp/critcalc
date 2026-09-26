@@ -135,6 +135,8 @@ export const AVAILABLE_AVATARS: ReadonlySet<string> = new Set([
 	'varesa',
 	'varka',
 	'venti',
+	'vesna',
+	'vodyanitsa',
 	'wanderer',
 	'wriothesley',
 	'xiangling',

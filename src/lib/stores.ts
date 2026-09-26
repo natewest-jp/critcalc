@@ -308,8 +308,8 @@ type SiteSettings = {
 	 * three are what it does, set in the Settings modal. ⚓ `humanTimingMode` is
 	 * a three-way choice rather than two checkboxes so the plate can never be
 	 * lit and do nothing. Per TASTE like the layers, ⛔ never in the `?r=`
-	 * codec — a shared link stays frame-perfect for a reader who has not opted
-	 * in. Model + authority: `$lib/sim/humanTiming.ts`.
+	 * codec — a shared link is read at the READER's setting, not the author's.
+	 * ↻ ON by default since 2026-09-24. Model + authority: `$lib/sim/humanTiming.ts`.
 	 */
 	humanTiming: boolean;
 	humanTimingMode: HumanTimingMode;
@@ -368,7 +368,9 @@ export const TIMELINE_LAYER_DEFAULTS = {
 export type HumanTimingMode = 'padding' | 'animations' | 'both';
 
 export const HUMAN_TIMING_DEFAULTS = {
-	humanTiming: false,
+	// ⚓ Nate 2026-09-24: ON for a new visitor — a person's rotation is the
+	// honest first reading; frame-perfect is the thing you opt into.
+	humanTiming: true,
 	humanTimingMode: 'both' as HumanTimingMode,
 	humanTimingPadFrames: HUMAN_PAD_DEFAULT_F,
 	showHumanPadding: true

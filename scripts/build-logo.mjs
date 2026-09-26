@@ -56,9 +56,13 @@ const OUT_APPLE = join(ROOT, 'static/apple-touch-icon.png');
 
 /** Clockwise lean, degrees. Nate 2026-07-28. */
 const ROTATE_DEG = 7;
-/** Mark colour. (The favicon's plate colour lives in the hand-authored
- *  favicon.svg, which this script reads rather than writes.) */
-const INK = '#eef4fd';
+/** Mark colour — pure white, the chrome's own (--chrome). ↻ ⚓ NATE
+ *  2026-09-26: was #eef4fd, the source art's off-white, while the shipped
+ *  chrome logo had been hand-re-exported white since 2026-08-05 (62cdee4a) —
+ *  so every run of this script silently reverted it. The source SVG is white
+ *  now too, and this script owns every output again: the chrome mark, the
+ *  favicon (whose plate is PLATE below) and the apple-touch icon. */
+const INK = '#ffffff';
 
 // ── matrices (a,b,c,d,e,f): x' = a·x + c·y + e ; y' = b·x + d·y + f ──────────
 
@@ -218,7 +222,18 @@ const TILE_FILL = 0.88;
 // the whole palette is built on. It measures worse too: the mark keeps
 // 11.2:1 contrast on this blue against 8.3:1 on a comparably light dire, and
 // 16px is where the mark can least afford to lose any.
-const PLATE = '#312537';
+//
+// ↻ The blue above later became an eggplant (#312537), picked to read as a
+// neutral between the landing sky and the tools' dire border — a bridge that
+// no longer exists. ↻ ⚓ NATE 2026-09-26: #312537 → #272a36, the loading
+// veil's hue (OKLCH h 274°, the veil runs #06080f → #111422) at the
+// eggplant's own LIGHTNESS (OKLCH L 0.286 — a tab strip needs the plate far
+// lighter than the veil, or it reads as black again), with chroma held low
+// so it reads as near-neutral — first 0.022 (#272a36), then ⚓ Nate: "a
+// little bit more chroma", → 0.032 (a hair over the veil foot's 0.029), then
+// "just a touch more" → 0.035, then one more bump → 0.039; hue and lightness
+// held throughout. Mark contrast 13.1 → 13.0:1.
+const PLATE = '#25293e';
 const PLATE_RADIUS = 0.18;
 
 const k = (TILE * TILE_FILL) / VH;
