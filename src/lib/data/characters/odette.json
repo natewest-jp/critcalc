@@ -144,7 +144,8 @@
 					"spawnsAt": 23,
 					"_curatorNotes": [
 						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4."
-					]
+					],
+					"opensState": "soloDanceDouble"
 				}
 			],
 			"_curatorNotes": [
@@ -296,7 +297,8 @@
 					"spawnsAt": 1,
 					"_curatorNotes": [
 						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4."
-					]
+					],
+					"opensState": "soloDanceDouble"
 				}
 			],
 			"_curatorNotes": [
@@ -386,11 +388,23 @@
 						"ability": "burst"
 					},
 					"conditions": {
-						"type": "not",
-						"condition": {
-							"type": "constellation",
-							"level": 1
-						}
+						"type": "all",
+						"conditions": [
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 1
+								}
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "soloDanceDouble"
+								}
+							}
+						]
 					},
 					"key": "marvelousSplendor",
 					"amount": 4,
@@ -431,8 +445,20 @@
 						"ability": "burst"
 					},
 					"conditions": {
-						"type": "constellation",
-						"level": 1
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "soloDanceDouble"
+								}
+							}
+						]
 					},
 					"key": "marvelousSplendor",
 					"amount": 6,
@@ -506,7 +532,8 @@
 				"⚠️ 2026-09-15 (essential-characters T0) — THE CODA RE-GRANTS. The Coda is a sibling skill (see its notes), so every `onCast ability: 'skill'` grant here and on C2/C6 fires on it too: measured `Odette E E` at C6 draws a second full set of Splendor bars at 0.68→20.68 beside the E's 0.38→20.38. The kit says Splendor comes from SUMMONING the Double, which the Coda does not do. ⛔ NOT DATA-AUTHORABLE, tried: `onCast.input` cannot tell them apart (both are `E`), onCast has no ability-identity filter, and a `not state: codaWindow` gate changed nothing — the cast buff pass evaluates conditions against an EMPTY state set (essential-characters §1.G), so a state gate is unresolvable there, never false. Needs either an onCast ability-id filter or states carried into the buff projection. Visible cost is small: stacks are at max either way, so no printed value moves — one extra bar set, 0.3s later.",
 				"⚓ EVERY `onCast ability: 'skill'` GRANT ON HER PASSIVES AND CONSTELLATIONS IS GATED `not codaWindow` (2026-09-19, state-gates round §1.G). The Coda is `abilityType: 'skill'`, so it matched those triggers and re-fired every A1 / C2 / C6 bar 0.3s after the E that raised them — but the kit grants Marvelous Splendor \"when Odette summons her Solo Dance Double\", which the Coda does not do. Any skill cast INSIDE a `codaWindow` is the Coda by construction (that window is what resolves the token to it), while the E that OPENS the window is decided by the self-opened rule (`stateIndex.ts`): a state the cast itself opens answers null, so the opener keeps its grants. The live stack dispatchers read the pre-cast state and agree. ⛔ Not gated on the burst-triggered twins: a burst is never the Coda.",
 				"↻ RESOLVED (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`) — see the `not codaWindow` note on this passive. It needed BOTH halves: states in the cast buff pass, and a closed world in the live stack dispatchers (a `not state` gate was never `true` there, so the first attempt silently stopped the opener's own grant).",
-				"⏭ 2026-09-27 (gcsim sync) — PARKED, NOT DATA-AUTHORABLE: gcsim #3020 (\"Fix Odette Q to not add A1 stacks when resummoning\") says a Q cast while a Dance Double is already on the field re-summons it WITHOUT resetting Marvelous Splendor; only a Q with no Double up grants. The obvious gate — `not duringSummon` on the two burst grants — was tried and REFUSED: `liveNegatedStates` never negates `duringSummon` (stateIndex.ts, by design — the live summon resolvers read a pre-extension uptime), so the live stack dispatcher answered `null` and a bare `Odette Q` lost its stacks entirely. Needs a live summon-liveness answer the resolvers can stand behind. Cost today: a Q after the stacks have drained off-field refills them where the game would not."
+				"↻ 2026-09-27 (gcsim sync, #3020 \"Fix Odette Q to not add A1 stacks when resummoning\") — RESOLVED. A Q cast onto a standing Dance Double re-summons it WITHOUT resetting Marvelous Splendor; only a Q with no Double up grants. The two BURST grants are gated `not soloDanceDouble`, a state the Double's own summon opens for exactly its life (`Summon.opensState`, new this round). ⚠️ NOT `not duringSummon`, which was tried first and dropped a bare Q's grant: `liveNegatedStates` never negates `duringSummon` (the live summon resolver sees stationary summons only, and this Double declares no mobility), so the gate was `null` forever. The Skill grants stay ungated — gcsim's E always passes `refresh: false`.",
+				"⏭ 2026-09-27 — THE A1 TRANSFER IS UNMODELLED, AND SO IS THE DRAIN. gcsim `asc.go` (`a1Ticker`, 59.25f average cadence from the summon, alive only while the Double is): each tick Odette is OFF FIELD she loses `c1a1Remove()` stacks (1, or 2 at C1) × `c6a1ReduceMod()` (0 at C6 — she keeps hers) and the OTHER party members' shared count gains the same number, capped at `a1MaxStacks()` (4, 6 at C1); the ticker stops when she is at 0 or they are at max. Teammates get `others × 15%` Stellar Glimmer DMG while the Double is up. A burst onto a standing Double leaves both counts and the ticker alone (#3020); an E resets self = max, others = 0. OURS: the key is segment-scoped, so it simply vanishes at her swap-out and the `drain … offField` spec above is INERT — no sim code resolves an `offField` drain, and only the first drain spec per key is read, so C1's 2/s is never consulted either. Measured after the #3020 gate: `Odette E > Ningguang N1×2 > Odette Q` shows no stacks at the Q where the game has 2. The fix is its own round: a rotation-scoped pair of keys, an off-field drain that TRANSFERS into the party key, and a way to draw a teammate bonus that grows while the bar is up."
 			]
 		},
 		{

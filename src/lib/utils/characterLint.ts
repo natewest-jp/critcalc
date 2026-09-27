@@ -221,6 +221,7 @@ const STATES = new Set([
 	// ⛔ Adding a State member is TWO edits; the suite cannot tell you when the
 	// character that needs it is frameless.
 	'codaWindow',
+	'soloDanceDouble',
 	'pneuma',
 	// Lauma's two charged forms (charged-forms round, 2026-09-16).
 	'spiritEnvoy',
@@ -2084,6 +2085,31 @@ function lintCastAbility(
 
 	// (D.22) summons[].terminatesOn valid
 	for (const s of a.summons ?? []) {
+		// (D.22c) `opensState` names a known State and an end the spawn can know
+		// (gcsim sync, 2026-09-27 — see `Summon.opensState`).
+		const os = (s as { opensState?: unknown }).opensState;
+		if (os !== undefined) {
+			if (typeof os !== 'string' || !STATES.has(os)) {
+				push(
+					'strict',
+					'summon-opens-state',
+					`summon "${s.label}" opensState "${String(os)}" is not a known State`,
+					a.id
+				);
+			}
+			if (
+				(s.terminatesOn !== undefined && s.terminatesOn !== 'recast') ||
+				(s.durationExtensions?.length ?? 0) > 0 ||
+				(a as unknown as Record<string, unknown>).summonsFollowState === true
+			) {
+				push(
+					'strict',
+					'summon-opens-state',
+					`summon "${s.label}" opensState but its end is not known at the spawn (terminatesOn other than recast, durationExtensions, or summonsFollowState)`,
+					a.id
+				);
+			}
+		}
 		if (s.terminatesOn !== undefined && !SUMMON_TERMINATES.has(s.terminatesOn)) {
 			push(
 				'strict',

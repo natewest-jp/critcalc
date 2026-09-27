@@ -79,7 +79,7 @@ import {
 	rotationStackSnapshot
 } from './stacks';
 import { dispatchCooldownReduceOnReaction } from './cooldownReduce';
-import { closeStateWindows, holderStatesAt } from './states';
+import { closeStateWindows, holderStatesAt, openSummonState } from './states';
 import { checkStackThresholds, scheduleAccrualFires } from './thresholds';
 import type { HitEvent } from './hits';
 import { getChainIndexMap } from './cooldowns';
@@ -939,7 +939,7 @@ export function scheduleSummonTicks(
 	variantLabel: string | null | undefined,
 	castTime: number,
 	summonActivatesAt: number | undefined,
-	castEvent: { uptime: number },
+	castEvent: { uptime: number; id?: number },
 	extRec: { ownerUptime: number } | undefined,
 	preStates: ReadonlySet<string>,
 	constellation: number,
@@ -994,6 +994,21 @@ export function scheduleSummonTicks(
 					return s !== undefined && s > spawnAt ? s : Infinity;
 				})()
 			});
+
+		// ⚓ A summon's OWN STATE (`Summon.opensState`) spans this life exactly.
+		// Opened here because this is where the spawn and the end already are —
+		// lint guarantees the end is knowable now (no swap end, no extensions).
+		if (summon.opensState !== undefined) {
+			openSummonState(
+				ctx,
+				ctx.getCharState(char.id),
+				char.id,
+				summon.opensState,
+				spawnAt,
+				endNow(),
+				castEvent.id
+			);
+		}
 
 		/** Superseded by a recast? ⚓ Shared with the proc listener below so the
 		 *  two cannot disagree about which spawn is live. */
