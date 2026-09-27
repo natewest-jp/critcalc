@@ -58,7 +58,9 @@ import {
 	GHOST_CHROMA_KEEP
 } from '$lib/timeline/barMix';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
+import { stepCeiling, stepDensity } from '$lib/timeline/barSteps';
 import type {
+	BarStep,
 	CharReceivedBuffSubrow,
 	MoonsignRow,
 	SummonSubrow,
@@ -960,13 +962,28 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						BAR_LABEL,
 						bar.sourceLabel,
 						icon ? images.get(icon) : undefined,
-						next ? x(next.start) : undefined
+						next ? x(next.start) : undefined,
+						stepRects(bar.steps, bar.stepMax)
 					);
 					drawSeams(bar.seams, rowTop, snap.buffRowH);
 				});
 			});
 		});
 	});
+
+	/** A stepped bar's steps in canvas pixels (stepped stacks round). */
+	function stepRects(
+		steps: BarStep[] | undefined,
+		stepMax: number | undefined
+	): { px0: number; px1: number; density: number }[] | undefined {
+		if (!steps?.length) return undefined;
+		const ceiling = stepCeiling(steps, stepMax);
+		return steps.map((st) => ({
+			px0: x(st.start),
+			px1: x(st.end),
+			density: stepDensity(st.count, ceiling)
+		}));
+	}
 
 	/** A seamed bar's inner ends (pool round, 2026-09-17) — the leading edge's
 	 *  ink at each, mirroring `.rp-buff-seam`. */
@@ -996,11 +1013,26 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		labelColor: string,
 		label: string,
 		icon: HTMLImageElement | undefined,
-		nextPx?: number
+		nextPx?: number,
+		steps?: { px0: number; px1: number; density: number }[]
 	) {
 		ctx!.fillStyle = fill;
 		rr(px, py, pw, ph, 1);
 		ctx!.fill();
+		// ⚓ A STEPPED BAR (stepped stacks round) — each step is the material at
+		// its density, resolved on the export's one ground. Compositing is linear
+		// in alpha, so that is CHART_BG moved toward BAR_FILL by the density —
+		// ⛔ no new literal, and it tracks BAR_FILL when the mirror test moves it.
+		if (steps && steps.length > 0) {
+			ctx!.save();
+			rr(px, py, pw, ph, 1);
+			ctx!.clip();
+			for (const st of steps) {
+				ctx!.fillStyle = mix(fill, CHART_BG, st.density * 100);
+				ctx!.fillRect(st.px0, py, st.px1 - st.px0, ph);
+			}
+			ctx!.restore();
+		}
 		// The 2px left edge — the one bar edge that survives the flattening pass,
 		// because these bars can overlap and glass gives no seam of its own.
 		ctx!.fillStyle = BAR_EDGE;
@@ -1140,7 +1172,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					BAR_LABEL,
 					subrow.sourceLabel,
 					icon ? images.get(icon) : undefined,
-					next ? x(next.start) : undefined
+					next ? x(next.start) : undefined,
+					stepRects(bar.steps, bar.stepMax)
 				);
 				drawSeams(bar.seams, rowTop, snap.buffRowH);
 			});

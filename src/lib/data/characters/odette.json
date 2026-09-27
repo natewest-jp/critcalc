@@ -139,11 +139,148 @@
 							"_curatorNotes": [
 								"The \"Wing\" dance move — the same 4s cadence, offset by one move."
 							]
+						},
+						{
+							"type": "gainStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 1
+										}
+									}
+								]
+							},
+							"key": "marvelousSplendorParty",
+							"amount": 1,
+							"max": 4,
+							"scope": "rotation"
+						},
+						{
+							"type": "gainStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "constellation",
+										"level": 1
+									}
+								]
+							},
+							"key": "marvelousSplendorParty",
+							"amount": 2,
+							"max": 6,
+							"scope": "rotation"
+						},
+						{
+							"type": "consumeStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 1
+										}
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 6
+										}
+									}
+								]
+							},
+							"key": "marvelousSplendor",
+							"amount": 1
+						},
+						{
+							"type": "consumeStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "constellation",
+										"level": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 6
+										}
+									}
+								]
+							},
+							"key": "marvelousSplendor",
+							"amount": 2
 						}
 					],
 					"spawnsAt": 23,
 					"_curatorNotes": [
-						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4."
+						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4.",
+						"↻ 2026-09-27 (stepped stacks round): the last four effects are the A1 TICKER, not damage — gcsim `a1Ticker` (asc.go), 59.25f average cadence from the summon, alive only while the Double is. Each tick Odette is OFF FIELD moves 1 stack (2 at C1) of Marvelous Splendor from her key to the party's; at C6 she keeps hers (`c6a1ReduceMod`). Gains before consumes, so both halves read her pre-tick count. No markers: the lane marks hits and heals only. ⚠️ A Q that refreshes a standing Double restarts this chain from the Q's spawn, where gcsim keeps the old phase — under a second of drift, once per refresh."
 					],
 					"opensState": "soloDanceDouble"
 				}
@@ -292,11 +429,148 @@
 							"_curatorNotes": [
 								"The \"Wing\" dance move — the same 4s cadence, offset by one move."
 							]
+						},
+						{
+							"type": "gainStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 1
+										}
+									}
+								]
+							},
+							"key": "marvelousSplendorParty",
+							"amount": 1,
+							"max": 4,
+							"scope": "rotation"
+						},
+						{
+							"type": "gainStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "constellation",
+										"level": 1
+									}
+								]
+							},
+							"key": "marvelousSplendorParty",
+							"amount": 2,
+							"max": 6,
+							"scope": "rotation"
+						},
+						{
+							"type": "consumeStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 1
+										}
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 6
+										}
+									}
+								]
+							},
+							"key": "marvelousSplendor",
+							"amount": 1
+						},
+						{
+							"type": "consumeStacks",
+							"target": "self",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.9875
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "state",
+										"state": "offField"
+									},
+									{
+										"type": "stacks",
+										"key": "marvelousSplendor",
+										"min": 1
+									},
+									{
+										"type": "constellation",
+										"level": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 6
+										}
+									}
+								]
+							},
+							"key": "marvelousSplendor",
+							"amount": 2
 						}
 					],
 					"spawnsAt": 1,
 					"_curatorNotes": [
-						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4."
+						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4.",
+						"↻ 2026-09-27 (stepped stacks round): the last four effects are the A1 ticker — see the skill's Double for the full note."
 					],
 					"opensState": "soloDanceDouble"
 				}
@@ -344,7 +618,7 @@
 			"id": "odette__passive__spring_rite_of_the_chosen_one",
 			"name": "Spring Rite of the Chosen One",
 			"abilityType": "passive",
-			"description": "When Odette summons her **Solo Dance Double**, she also obtains 4 stacks of **Marvelous Splendor**.",
+			"description": "When Odette summons her **Solo Dance Double**, she also obtains 4 stacks of **Marvelous Splendor**.\n\nMarvelous Splendor\nEvery stack of Marvelous Splendor active increases the character's Stellar Glimmer DMG by 15%. This lasts until her Dance Double exits the field or when she summons her Solo Dance Double again.\nWhen Odette is off-field, she loses 1 stack of Marvelous Splendor every 1 second, while other nearby party members gain the corresponding number of Marvelous Splendor stacks at the same time.",
 			"effects": [
 				{
 					"type": "gainStacks",
@@ -375,10 +649,7 @@
 					"key": "marvelousSplendor",
 					"amount": 4,
 					"max": 4,
-					"drain": {
-						"ratePerSecond": 1,
-						"state": "offField"
-					}
+					"scope": "rotation"
 				},
 				{
 					"type": "gainStacks",
@@ -408,7 +679,8 @@
 					},
 					"key": "marvelousSplendor",
 					"amount": 4,
-					"max": 4
+					"max": 4,
+					"scope": "rotation"
 				},
 				{
 					"type": "gainStacks",
@@ -435,7 +707,8 @@
 					},
 					"key": "marvelousSplendor",
 					"amount": 6,
-					"max": 6
+					"max": 6,
+					"scope": "rotation"
 				},
 				{
 					"type": "gainStacks",
@@ -462,57 +735,51 @@
 					},
 					"key": "marvelousSplendor",
 					"amount": 6,
-					"max": 6
+					"max": 6,
+					"scope": "rotation"
 				},
 				{
-					"type": "buff",
+					"type": "consumeStacks",
 					"target": "self",
 					"trigger": {
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 20,
-					"durationType": "refresh",
 					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "marvelousSplendor",
-								"min": 1
-							},
-							{
-								"type": "not",
-								"condition": {
-									"type": "state",
-									"state": "codaWindow"
-								}
-							}
-						]
+						"type": "not",
+						"condition": {
+							"type": "state",
+							"state": "codaWindow"
+						}
 					},
-					"source": "character",
-					"stat": "stellarGlimmerReactionBonus",
-					"value": {
-						"type": "perStack",
-						"key": "marvelousSplendor",
-						"per": 15
-					},
-					"snapshottable": false
+					"key": "marvelousSplendorParty",
+					"amount": "all"
 				},
 				{
-					"type": "buff",
+					"type": "consumeStacks",
 					"target": "self",
 					"trigger": {
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 20,
-					"durationType": "refresh",
 					"conditions": {
-						"type": "stacks",
-						"key": "marvelousSplendor",
-						"min": 1
+						"type": "not",
+						"condition": {
+							"type": "state",
+							"state": "soloDanceDouble"
+						}
 					},
+					"key": "marvelousSplendorParty",
+					"amount": "all"
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "whileStacks",
+						"key": "marvelousSplendor"
+					},
+					"whileState": "soloDanceDouble",
 					"source": "character",
 					"stat": "stellarGlimmerReactionBonus",
 					"value": {
@@ -520,7 +787,26 @@
 						"key": "marvelousSplendor",
 						"per": 15
 					},
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "Marvelous Splendor"
+				},
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "whileStacks",
+						"key": "marvelousSplendorParty"
+					},
+					"whileState": "soloDanceDouble",
+					"source": "character",
+					"stat": "stellarGlimmerReactionBonus",
+					"value": {
+						"type": "perStack",
+						"key": "marvelousSplendorParty",
+						"per": 15
+					},
+					"snapshottable": false,
+					"attribution": "Marvelous Splendor"
 				}
 			],
 			"_curatorNotes": [
@@ -533,7 +819,8 @@
 				"⚓ EVERY `onCast ability: 'skill'` GRANT ON HER PASSIVES AND CONSTELLATIONS IS GATED `not codaWindow` (2026-09-19, state-gates round §1.G). The Coda is `abilityType: 'skill'`, so it matched those triggers and re-fired every A1 / C2 / C6 bar 0.3s after the E that raised them — but the kit grants Marvelous Splendor \"when Odette summons her Solo Dance Double\", which the Coda does not do. Any skill cast INSIDE a `codaWindow` is the Coda by construction (that window is what resolves the token to it), while the E that OPENS the window is decided by the self-opened rule (`stateIndex.ts`): a state the cast itself opens answers null, so the opener keeps its grants. The live stack dispatchers read the pre-cast state and agree. ⛔ Not gated on the burst-triggered twins: a burst is never the Coda.",
 				"↻ RESOLVED (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`) — see the `not codaWindow` note on this passive. It needed BOTH halves: states in the cast buff pass, and a closed world in the live stack dispatchers (a `not state` gate was never `true` there, so the first attempt silently stopped the opener's own grant).",
 				"↻ 2026-09-27 (gcsim sync, #3020 \"Fix Odette Q to not add A1 stacks when resummoning\") — RESOLVED. A Q cast onto a standing Dance Double re-summons it WITHOUT resetting Marvelous Splendor; only a Q with no Double up grants. The two BURST grants are gated `not soloDanceDouble`, a state the Double's own summon opens for exactly its life (`Summon.opensState`, new this round). ⚠️ NOT `not duringSummon`, which was tried first and dropped a bare Q's grant: `liveNegatedStates` never negates `duringSummon` (the live summon resolver sees stationary summons only, and this Double declares no mobility), so the gate was `null` forever. The Skill grants stay ungated — gcsim's E always passes `refresh: false`.",
-				"⏭ 2026-09-27 — THE A1 TRANSFER IS UNMODELLED, AND SO IS THE DRAIN. gcsim `asc.go` (`a1Ticker`, 59.25f average cadence from the summon, alive only while the Double is): each tick Odette is OFF FIELD she loses `c1a1Remove()` stacks (1, or 2 at C1) × `c6a1ReduceMod()` (0 at C6 — she keeps hers) and the OTHER party members' shared count gains the same number, capped at `a1MaxStacks()` (4, 6 at C1); the ticker stops when she is at 0 or they are at max. Teammates get `others × 15%` Stellar Glimmer DMG while the Double is up. A burst onto a standing Double leaves both counts and the ticker alone (#3020); an E resets self = max, others = 0. OURS: the key is segment-scoped, so it simply vanishes at her swap-out and the `drain … offField` spec above is INERT — no sim code resolves an `offField` drain, and only the first drain spec per key is read, so C1's 2/s is never consulted either. Measured after the #3020 gate: `Odette E > Ningguang N1×2 > Odette Q` shows no stacks at the Q where the game has 2. The fix is its own round: a rotation-scoped pair of keys, an off-field drain that TRANSFERS into the party key, and a way to draw a teammate bonus that grows while the bar is up."
+				"⏭ 2026-09-27 — THE A1 TRANSFER IS UNMODELLED, AND SO IS THE DRAIN. gcsim `asc.go` (`a1Ticker`, 59.25f average cadence from the summon, alive only while the Double is): each tick Odette is OFF FIELD she loses `c1a1Remove()` stacks (1, or 2 at C1) × `c6a1ReduceMod()` (0 at C6 — she keeps hers) and the OTHER party members' shared count gains the same number, capped at `a1MaxStacks()` (4, 6 at C1); the ticker stops when she is at 0 or they are at max. Teammates get `others × 15%` Stellar Glimmer DMG while the Double is up. A burst onto a standing Double leaves both counts and the ticker alone (#3020); an E resets self = max, others = 0. OURS: the key is segment-scoped, so it simply vanishes at her swap-out and the `drain … offField` spec above is INERT — no sim code resolves an `offField` drain, and only the first drain spec per key is read, so C1's 2/s is never consulted either. Measured after the #3020 gate: `Odette E > Ningguang N1×2 > Odette Q` shows no stacks at the Q where the game has 2. The fix is its own round: a rotation-scoped pair of keys, an off-field drain that TRANSFERS into the party key, and a way to draw a teammate bonus that grows while the bar is up.",
+				"↻ 2026-09-27 (stepped stacks round) — THE TRANSFER IS MODELLED, and the note above that queued it is closed. Two ROTATION-scoped keys: `marvelousSplendor` (hers) and `marvelousSplendorParty` (the other party members' shared count, gcsim `a1StacksOthers`). A fresh summon — every E that isn't the Coda, a Q with no Double up — sets hers to max and clears the party's; the Double's own tick series (see its notes) moves stacks between them while she is off field. The two Stellar Glimmer buffs are `whileStacks` on each key, bounded `whileState: soloDanceDouble` (gcsim gates every A1/C2/C6 read on `danceDoubleKey`), and draw STEPPED — density follows the count. ⛔ The retired `drain … offField` spec is gone: no sim code ever resolved it. Description re-synced to the full in-game text gcsim quotes (asc.go header); the old one was the genshin-db stub's first sentence."
 			]
 		},
 		{
@@ -624,28 +911,10 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
+						"type": "whileStacks",
+						"key": "marvelousSplendor"
 					},
-					"duration": 20,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "marvelousSplendor",
-								"min": 1
-							},
-							{
-								"type": "not",
-								"condition": {
-									"type": "state",
-									"state": "codaWindow"
-								}
-							}
-						]
-					},
+					"whileState": "soloDanceDouble",
 					"source": "character",
 					"stat": "atk%",
 					"value": {
@@ -653,30 +922,26 @@
 						"key": "marvelousSplendor",
 						"per": 7
 					},
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "Marvelous Splendor"
 				},
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
+						"type": "whileStacks",
+						"key": "marvelousSplendorParty"
 					},
-					"duration": 20,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "stacks",
-						"key": "marvelousSplendor",
-						"min": 1
-					},
+					"whileState": "soloDanceDouble",
 					"source": "character",
 					"stat": "atk%",
 					"value": {
 						"type": "perStack",
-						"key": "marvelousSplendor",
+						"key": "marvelousSplendorParty",
 						"per": 7
 					},
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "Marvelous Splendor"
 				},
 				{
 					"type": "resShred",
@@ -985,7 +1250,8 @@
 				"⚓ THE RES SHRED IS THE RADIANCE IDIOM, three effects per cast rather than two branches of two. Cryo is shredded under EITHER radiance, Electro only under Stellar-Conduct, Anemo only under Stellar Swirl — so the element that appears in both branches is authored once under an `any`. At most two ever draw, because the Swirl condition wraps the Conduct condition in `not`, which IS the precedence rule (\"where more than one state can be triggered, Radiance: Stellar-Conduct shall apply first\").",
 				"She is Cryo, so `teamElementCount` — which excludes the holder — looks for the OTHER half of each reaction: an Electro teammate for Superconduct, an Anemo teammate for Cryo Swirl. The teamEnablesReaction clause is redundant on her own kit (she is the enabler) and is kept so the idiom reads the same on every character that copies it.",
 				"duration 20 and the two cast triggers stand in for \"while there is a Solo Dance Double on the field\" — the Double's own lifetime, spawned by either cast. There is no enemy-proximity model, so \"opponents near the Dance Double\" is treated as the play happening there, the same house rule fields already get.",
-				"Six effects and not three because a constellation-hosted onCast effect must bind its trigger ability (lint B.8), so skill and burst each need their own."
+				"Six effects and not three because a constellation-hosted onCast effect must bind its trigger ability (lint B.8), so skill and burst each need their own.",
+				"↻ 2026-09-27 (stepped stacks round): the +7% ATK per stack now reads BOTH counts, like gcsim `c2Init` — Odette's own stacks for her, the party's transferred count for everyone else — as `whileStacks` buffs bounded by the Double. The two cast-anchored effects it replaces read only her count, for her, for a flat 20s."
 			]
 		},
 		{
@@ -1041,102 +1307,30 @@
 				{
 					"type": "elevate",
 					"source": "character",
-					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"duration": 20,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "marvelousSplendor",
-								"min": 1
-							},
-							{
-								"type": "not",
-								"condition": {
-									"type": "state",
-									"state": "codaWindow"
-								}
-							}
-						]
-					},
-					"reactions": ["stellarConduct", "stellarSwirl"],
-					"value": 25,
-					"snapshottable": false
-				},
-				{
-					"type": "elevate",
-					"source": "character",
-					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"duration": 20,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "stacks",
-						"key": "marvelousSplendor",
-						"min": 1
-					},
-					"reactions": ["stellarConduct", "stellarSwirl"],
-					"value": 25,
-					"snapshottable": false
-				},
-				{
-					"type": "elevate",
-					"source": "character",
 					"target": "self",
 					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
+						"type": "whileStacks",
+						"key": "marvelousSplendor"
 					},
-					"duration": 20,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "marvelousSplendor",
-								"min": 1
-							},
-							{
-								"type": "not",
-								"condition": {
-									"type": "state",
-									"state": "codaWindow"
-								}
-							}
-						]
-					},
+					"whileState": "soloDanceDouble",
 					"reactions": ["stellarConduct", "stellarSwirl"],
-					"value": 20,
-					"snapshottable": false
+					"value": 45,
+					"snapshottable": false,
+					"attribution": "Marvelous Splendor"
 				},
 				{
 					"type": "elevate",
 					"source": "character",
-					"target": "self",
+					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
+						"type": "whileStacks",
+						"key": "marvelousSplendorParty"
 					},
-					"duration": 20,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "stacks",
-						"key": "marvelousSplendor",
-						"min": 1
-					},
+					"whileState": "soloDanceDouble",
 					"reactions": ["stellarConduct", "stellarSwirl"],
-					"value": 20,
-					"snapshottable": false
+					"value": 25,
+					"snapshottable": false,
+					"attribution": "Marvelous Splendor"
 				}
 			],
 			"description": "The Ascension Talent \"Spring Rite of the Chosen One\" is enhanced as follows: When Odette grants **Marvelous Splendor** to all nearby party members, her own Marvelous Splendor stacks will no longer decrease.\nAdditionally, characters affected by Marvelous Splendor have their Stellar Glimmer reaction DMG dealt to opponents **elevated** by 25%, and Stellar Glimmer reaction DMG dealt by Odette is elevated by an additional 20%.",
@@ -1144,7 +1338,8 @@
 				"Two elevations, matching the two sentences: everyone affected by Marvelous Splendor gets +25%, and Odette gets \"an additional 20%\" on top — so 45% for her, expressed as a separate self effect rather than a single 45 that would over-claim for the team.",
 				"⚓ A FAMILY ELEVATION RENDERS. `['stellarConduct', 'stellarSwirl']` is matched as a SET by FAMILY_ELEVATIONS in effectCollection.ts and synthesized onto the umbrella `stellarGlimmerDmgBonus`, the same route Sandrone's C6 takes since 7.0 widened it. ⛔ Don't split it into two single-reaction effects: that would draw two bars for one talent line.",
 				"Gated on her own Marvelous Splendor stacks standing in for \"characters affected by Marvelous Splendor\" — the per-teammate transfer is unmodelled (see A1), and her stacks are the only count that exists.",
-				"\"Her own Marvelous Splendor stacks will no longer decrease\" is not modelled: one drain spec exists per resource key. ⚠️ Same reasoning as C1's faster drain — the buff value is read from a cast-time snapshot, so no printed number or bar length changes."
+				"\"Her own Marvelous Splendor stacks will no longer decrease\" is not modelled: one drain spec exists per resource key. ⚠️ Same reasoning as C1's faster drain — the buff value is read from a cast-time snapshot, so no printed number or bar length changes.",
+				"↻ 2026-09-27 (stepped stacks round): re-authored to gcsim `c6Init` — Odette's own Stellar Glimmer DMG is elevated 45% (the text's 25% plus her additional 20%, one effect so the two cannot be deduped apart) while SHE holds stacks; every other party member 25% while THEY hold transferred stacks. The previous authoring gave the whole team 25% whenever Odette held stacks, which is backwards once the transfer exists — teammates are elevated by the stacks they RECEIVED."
 			]
 		}
 	],

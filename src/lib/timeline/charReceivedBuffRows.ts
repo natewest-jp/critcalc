@@ -21,6 +21,7 @@ import type {
 } from './types';
 import { formatBuffDisplayValue } from './buffDisplay';
 import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
+import { barStepsOf } from './barSteps';
 
 export type { CharReceivedBuffBar, CharReceivedBuffSubrow };
 
@@ -51,6 +52,12 @@ export function projectCharReceivedBuffRows(
 			const char = getCharacter(w.characterId);
 			const fire = src.fireLabel ?? `${AB_LABEL[src.abilityClass ?? 'skill']} threshold`;
 			sourceLabel = `${char?.displayName ?? w.characterId} ${fire}`;
+		} else if (src.type === 'character' && src.trigger === 'stacks') {
+			// Named after what the count IS (the effect's `attribution`, e.g.
+			// Marvelous Splendor), else its hosting entry — never a cast.
+			const char = getCharacter(w.characterId);
+			const what = (w.effects[0] as BuffEffect).attribution ?? src.hostLabel ?? 'stacks';
+			sourceLabel = `${char?.displayName ?? w.characterId} ${what}`;
 		} else if (src.type === 'character' && src.trigger === 'teamHit') {
 			// Named after the hosting passive — the bar belongs to no cast of the
 			// holder's (cross-character onHit round, 2026-09-21).
@@ -80,10 +87,13 @@ export function projectCharReceivedBuffRows(
 			continue; // artifact windows are team-surface only
 		}
 
-		const effects: MergedEffectDisplay[] = (w.effects as BuffEffect[]).map((e) => ({
-			stat: e.stat,
-			displayValue: formatBuffDisplayValue(e.stat, e.value, w.refinementIndex ?? 0, w.stackContext)
-		}));
+		const format = (ctx: ReadonlyMap<string, number> | undefined): MergedEffectDisplay[] =>
+			(w.effects as BuffEffect[]).map((e) => ({
+				stat: e.stat,
+				displayValue: formatBuffDisplayValue(e.stat, e.value, w.refinementIndex ?? 0, ctx)
+			}));
+		const effects = format(w.stackContext);
+		const steps = barStepsOf(w, w.start, w.end, format);
 
 		const bar: CharReceivedBuffBar = {
 			start: w.start,
@@ -96,10 +106,17 @@ export function projectCharReceivedBuffRows(
 			duration: w.duration!,
 			...(w.buffStart !== undefined ? { naturalEnd: w.buffStart + w.duration! } : {}),
 			...(w.rampParams ? { buffStart: w.buffStart!, rampParams: w.rampParams } : {}),
-			...(w.decayParams ? { buffStart: w.buffStart!, decayParams: w.decayParams } : {})
+			...(w.decayParams ? { buffStart: w.buffStart!, decayParams: w.decayParams } : {}),
+			...(steps ? { steps, ...(w.stackMax ? { stepMax: w.stackMax } : {}) } : {})
 		};
 
-		const key = `${w.receiverId}::${sourceLabel}`;
+		// ⚠️ A count-bound row is keyed by STAT as well: one stack key feeds
+		// several stats (Odette's A1, C2 and C6 all read Marvelous Splendor), and
+		// their stepped bars cannot share a row — they are held out of the fuse.
+		const key =
+			src.type === 'character' && src.trigger === 'stacks'
+				? `${w.receiverId}::${sourceLabel}::${bar.primaryStat}`
+				: `${w.receiverId}::${sourceLabel}`;
 		const existing = rowMap.get(key);
 		if (existing) {
 			existing.bars.push(bar);
@@ -130,8 +147,13 @@ export function projectCharReceivedBuffRows(
 	return [...rowMap.values()].map((row) => ({
 		...row,
 		bars: mergeRefreshedBars(
-			fuseNestedBars(row.bars, (b) => b.rampParams === undefined && b.decayParams === undefined),
+			fuseNestedBars(
+				row.bars,
+				(b) => b.rampParams === undefined && b.decayParams === undefined && b.steps === undefined
+			),
 			(a, b) =>
+				a.steps === undefined &&
+				b.steps === undefined &&
 				a.rampParams === undefined &&
 				b.rampParams === undefined &&
 				a.decayParams === undefined &&

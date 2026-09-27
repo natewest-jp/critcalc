@@ -789,6 +789,27 @@ export type Trigger =
 	 * `dominant` ∈ `keys`.
 	 */
 	| { type: 'onStack'; keys: string[]; count: number; dominant?: string; label?: string }
+	/**
+	 * ⚓ THE BUFF EXISTS WHILE ITS HOLDER HOLDS STACKS OF `key` (stepped stacks
+	 * round, 2026-09-27) — anchored on no cast, so the bar is exactly the spans
+	 * where the count is above zero, and a `perStack` value on the same key is
+	 * drawn as a STEPPED bar whose density follows the count.
+	 *
+	 * ⚓ Odette's Marvelous Splendor is the case: her count steps DOWN while she
+	 * is off field and her party's steps UP by the same amount, across an E, a Q
+	 * that refreshes the Double and back — no cast-anchored window can say "one
+	 * bar from the summon until the Double leaves" without splitting at the Q or
+	 * ending early. Add `whileState` to bound it by something other than the
+	 * count (her Double: `soloDanceDouble`).
+	 *
+	 * ⚠️ The key must be ROTATION-scoped (only those counts are recorded in time
+	 * order — `SimContext.stackHistory`) and granted without a `lifetime` (a
+	 * lifetime drop is swept late and would draw a late step). Target `self`,
+	 * `team` or `teamExcludingSelf`; the row is named after the hosting entry.
+	 * Lint B.20. Conditions are evaluated WITHOUT an instant (constellation,
+	 * team facts) — a `stacks` gate would be redundant, the count IS the window.
+	 */
+	| { type: 'whileStacks'; key: string }
 	/** Always-on passive — not rendered in the team buffs row. */
 	| { type: 'passive' }
 	/** Fires when the host ability's duration expires; buff starts at bar.end.

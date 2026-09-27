@@ -404,7 +404,15 @@ export function summonTickSeries(
 	return out;
 }
 
-/** Tick timestamps for EVERY `summonTick` effect — the summon lane's markers.
+/** ⚓ A tick the summon lane MARKS: one that hits or heals. A tick that only
+ *  moves a stack count (stepped stacks round, 2026-09-27 — Odette's A1 ticker)
+ *  is a clock, not an event on the target, and a marker every second would
+ *  bury the dance moves the lane exists to show. */
+export function isMarkedTickEffect(effect: Effect): boolean {
+	return effect.type === 'damage' || effect.type === 'heal';
+}
+
+/** Tick timestamps for every MARKED `summonTick` effect — the summon lane's markers.
  *  Re-exported by `summonSubrows.ts`, which is where it used to live. */
 export function computeSummonTicks(
 	summon: Summon,
@@ -413,7 +421,9 @@ export function computeSummonTicks(
 	cLevel: number,
 	context?: ConditionContext
 ): number[] {
-	return collectSummonTicks(summon, spawnAt, endAt, cLevel, () => true, context).map((t) => t.time);
+	return collectSummonTicks(summon, spawnAt, endAt, cLevel, isMarkedTickEffect, context).map(
+		(t) => t.time
+	);
 }
 
 /**

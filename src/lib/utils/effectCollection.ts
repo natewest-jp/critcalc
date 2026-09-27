@@ -216,7 +216,7 @@ function elevateReactionToDisplayStat(reaction: Rx): Stat | null {
  *  ingestion. Single-reaction elevations map to the matching `*DmgBonus` stat;
  *  a whole FAMILY maps to that family's umbrella stat; anything else returns
  *  null (not rendered). All other effect types pass through unchanged. */
-function normalizeBuffLikeEffect(effect: Effect): Effect | null {
+export function normalizeBuffLikeEffect(effect: Effect): Effect | null {
 	if (effect.type !== 'elevate') return effect;
 	const stat =
 		effect.reactions.length === 1

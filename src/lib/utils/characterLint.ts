@@ -678,9 +678,12 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 				);
 			}
 			if (field === 'whileState') {
+				// ⚓ A `whileStacks` window has no duration of its own — the count IS
+				// its span (stepped stacks round) — and it is clipped all the same.
+				const trig = node.trigger as { type?: unknown } | undefined;
 				const ok =
 					(node.type === 'buff' || node.type === 'resShred' || node.type === 'elevate') &&
-					typeof node.duration === 'number';
+					(typeof node.duration === 'number' || trig?.type === 'whileStacks');
 				if (!ok)
 					push(
 						'strict',
@@ -726,8 +729,16 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 	// Reference: Alyosha's `huntersMark`, the only corpus author.
 	{
 		const scopesByKey = new Map<string, Set<string>>();
+		// ⚠️ Summon effects too — a summon tick may grant a key (stepped stacks
+		// round), and `stackScopesOf` reads its scope from there.
+		const lists: (readonly Effect[] | undefined)[] = [];
 		for (const src of [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])]) {
-			for (const fx of src.effects ?? []) {
+			lists.push(src.effects);
+			for (const s of (src as { summons?: { effects?: Effect[] }[] }).summons ?? [])
+				lists.push(s.effects);
+		}
+		for (const list of lists) {
+			for (const fx of list ?? []) {
 				if (fx.type !== 'gainStacks') continue;
 				const set = scopesByKey.get(fx.key) ?? new Set<string>();
 				set.add(fx.scope ?? 'segment');
@@ -2507,6 +2518,63 @@ function lintEffect(
 	ctx: { isPassiveOrConstellation: boolean; isSummon?: boolean; isFactionBonus?: boolean }
 ): void {
 	// (B.8) effects on passive/constellation with onCast/afterDuration must set trigger.ability
+	// (B.20) `whileStacks` — a buff that IS its count (stepped stacks round,
+	// 2026-09-27). Only a rotation-scoped key has a time-ordered history, and a
+	// lifetime drop is swept late, so either would draw a wrong window.
+	if (eff.trigger.type === 'whileStacks') {
+		const key = eff.trigger.key;
+		if (eff.type !== 'buff' && eff.type !== 'elevate')
+			push(
+				'strict',
+				'whilestacks-scope',
+				`whileStacks is a buff/elevate trigger (got "${eff.type}")`,
+				location
+			);
+		const target = (eff as { target?: string }).target;
+		if (target !== 'self' && target !== 'team' && target !== 'teamExcludingSelf')
+			push(
+				'strict',
+				'whilestacks-scope',
+				`whileStacks targets self, team or teamExcludingSelf — its window is not sliced per receiver (got "${String(target)}")`,
+				location
+			);
+		if (ctx.isSummon)
+			push(
+				'strict',
+				'whilestacks-scope',
+				`whileStacks is hosted on an ability entry, not a summon`,
+				location
+			);
+		let rotation = false;
+		let lifetime = false;
+		const scan = (list: readonly Effect[] | undefined): void => {
+			for (const fx of list ?? []) {
+				if (fx.type !== 'gainStacks' || fx.key !== key) continue;
+				if (fx.scope === 'rotation') rotation = true;
+				if (fx.lifetime !== undefined) lifetime = true;
+			}
+		};
+		for (const src of [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])]) {
+			scan(src.effects);
+			for (const sm of (src as { summons?: { effects?: Effect[] }[] }).summons ?? [])
+				scan(sm.effects);
+		}
+		if (!rotation || lifetime)
+			push(
+				'strict',
+				'whilestacks-key',
+				`whileStacks key "${key}" must be granted with scope: 'rotation' and no lifetime — only those counts are recorded in time order`,
+				location
+			);
+		if ((eff as { duration?: unknown }).duration !== undefined)
+			push(
+				'strict',
+				'whilestacks-duration',
+				`whileStacks takes no duration — the window is the span the key is above zero`,
+				location
+			);
+	}
+
 	if (ctx.isPassiveOrConstellation) {
 		const t = eff.trigger;
 		if ((t.type === 'onCast' || t.type === 'afterDuration') && !t.ability) {
@@ -3334,12 +3402,25 @@ function lintEffect(
 			// its scope and own-key rules.
 			eff.trigger.type !== 'onStack' &&
 			// Taking the field (swap-in stacks round) — written to the key's HOME.
-			eff.trigger.type !== 'onSwapIn'
+			eff.trigger.type !== 'onSwapIn' &&
+			// A summon's tick (stepped stacks round) — summon-hosted only (D.28)
+			// and rotation-scoped only (below).
+			eff.trigger.type !== 'summonTick'
 		) {
 			push(
 				'strict',
 				'gainstacks-trigger-invalid',
-				`gainStacks effect trigger.type must be one of "onCast", "onReaction", "onHit", "onStack" or "onSwapIn" (got "${eff.trigger.type}")`,
+				`gainStacks effect trigger.type must be one of "onCast", "onReaction", "onHit", "onStack", "onSwapIn" or "summonTick" (got "${eff.trigger.type}")`,
+				location
+			);
+		}
+		// (B.13m) A gainStacks on a summon's tick writes a ROTATION home: the tick
+		// fires inside whoever's segment is live, where the holder has no pool.
+		if (eff.trigger.type === 'summonTick' && eff.scope !== 'rotation') {
+			push(
+				'strict',
+				'summontick-gainstacks-scope',
+				`a gainStacks on a summonTick trigger must declare scope: 'rotation' — a tick has no segment pool to write`,
 				location
 			);
 		}
@@ -3600,11 +3681,16 @@ function lintEffect(
 				);
 			}
 		}
-		if (eff.trigger.type !== 'onCast' && eff.trigger.type !== 'onHit') {
+		if (
+			eff.trigger.type !== 'onCast' &&
+			eff.trigger.type !== 'onHit' &&
+			// A summon's tick (stepped stacks round) — summon-hosted only (D.28).
+			eff.trigger.type !== 'summonTick'
+		) {
 			push(
 				'strict',
 				'consumestacks-trigger-invalid',
-				`consumeStacks effect trigger.type must be "onCast" or "onHit" (got "${eff.trigger.type}")`,
+				`consumeStacks effect trigger.type must be "onCast", "onHit" or "summonTick" (got "${eff.trigger.type}")`,
 				location
 			);
 		}
