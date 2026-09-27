@@ -151,6 +151,7 @@ All three tools are built and merged to `main`; launch is a **readiness decision
 - ✅ **Projectile travel** (2026-09-21) — `PROJECTILE_TRAVEL_F`, `projectileTravelOf()`, `NormalAbility.projectile` (exceptions only, lint A.4d) — `docs/projectile-travel-round.md` §6.
 - ✅ **Coverage page** (2026-09-23) — a derived per-character strip + About chapter; ⚓ reasons name the Rotation Planner, never "we" — `docs/coverage-round.md` §11.
 - ⏳ **NEXT, order open (⚓ Nate):** Lumi + Nilou (after the in-game counts) · elemental absorption (⛔ nothing built until Nate answers `docs/elemental-absorption-survey.md` §6) · direct reaction damage — a DISCUSSION, ⛔ not a schema (`docs/reaction-damage-round.md`). ⏭ The stance-cancel token: a conversation WHEN REACHED.
+- ✅ **Stepped stacks** (2026-09-27, Odette's A1 transfer) — `Summon.opensState`, stack effects on a `summonTick`, the stack ledger, `whileStacks` buffs drawn as density STEPS (⚓ Nate's pick) — `docs/stepped-stacks-round.md`.
 - ✅ **Landing cards** (2026-09-21) — Nate's final artwork; memory `project_landing_card_round` is the record.
 - **Nate-only:** connect-domain (the launch action). ✅ Real-Safari/mobile backlog cleared 2026-09-14 — ⚠ new visual work re-opens a backlog of one.
 

@@ -35,6 +35,7 @@ import type { ConditionContext } from './conditions';
 import type { CharacterTrack, InputBlock, ParsedRotation, TimelineBar } from './types';
 import {
 	collectSummonTicks,
+	isMarkedTickEffect,
 	computeSummonDamageTicks,
 	findSummonsForBar,
 	summonEndAt,
@@ -586,7 +587,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				win.start,
 				win.end,
 				cLevel,
-				() => true,
+				isMarkedTickEffect,
 				tickCtx(win.characterId),
 				win.naturalEnd,
 				fieldOpenAt
@@ -711,7 +712,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			teamFactionCounts: buffFactionCounts,
 			teamEnabledReactions: ctx.team.teamEnabledReactions,
 			teamElementCountsByHolder: buffElementCounts,
-			getCharacter: (id) => charById.get(id) ?? null
+			getCharacter: (id) => charById.get(id) ?? null,
+			stackHistory: ctx.stackHistory
 		});
 		if (buffWindows.length > 0) {
 			// ⛔ NOT `windows.push(...buffWindows)` — spreading an array as arguments

@@ -52,7 +52,8 @@ import {
 	summonOwnerIsStance,
 	summonSpawnAt,
 	summonTickSeries,
-	tickCapOf
+	tickCapOf,
+	type SummonTickSeries
 } from './summons';
 import type { NormalActionKind } from '$lib/utils/actionElement';
 import type { ReactionEvent } from '$lib/utils/rotationEvents';
@@ -76,10 +77,11 @@ import {
 	dispatchConsumeStacksOnHit,
 	dispatchGainStacksOnHit,
 	dispatchGainStacksOnReaction,
+	dispatchStacksOnSummonTick,
 	rotationStackSnapshot
 } from './stacks';
 import { dispatchCooldownReduceOnReaction } from './cooldownReduce';
-import { closeStateWindows, holderStatesAt } from './states';
+import { closeStateWindows, holderStatesAt, openSummonState } from './states';
 import { checkStackThresholds, scheduleAccrualFires } from './thresholds';
 import type { HitEvent } from './hits';
 import { getChainIndexMap } from './cooldowns';
@@ -939,7 +941,7 @@ export function scheduleSummonTicks(
 	variantLabel: string | null | undefined,
 	castTime: number,
 	summonActivatesAt: number | undefined,
-	castEvent: { uptime: number },
+	castEvent: { uptime: number; id?: number },
 	extRec: { ownerUptime: number } | undefined,
 	preStates: ReadonlySet<string>,
 	constellation: number,
@@ -994,6 +996,21 @@ export function scheduleSummonTicks(
 					return s !== undefined && s > spawnAt ? s : Infinity;
 				})()
 			});
+
+		// ⚓ A summon's OWN STATE (`Summon.opensState`) spans this life exactly.
+		// Opened here because this is where the spawn and the end already are —
+		// lint guarantees the end is knowable now (no swap end, no extensions).
+		if (summon.opensState !== undefined) {
+			openSummonState(
+				ctx,
+				ctx.getCharState(char.id),
+				char.id,
+				summon.opensState,
+				spawnAt,
+				endNow(),
+				castEvent.id
+			);
+		}
 
 		/** Superseded by a recast? ⚓ Shared with the proc listener below so the
 		 *  two cannot disagree about which spawn is live. */
@@ -1216,6 +1233,50 @@ export function scheduleSummonTicks(
 
 			const first = spawnAt + series.firstDelay;
 			if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
+		}
+
+		// ⚓ STACK-MOVING TICKS (stepped stacks round, 2026-09-27) — a summon whose
+		// tick moves a count rather than dealing damage (Odette's Dance Double
+		// hands Marvelous Splendor to the party once a second). One chain per
+		// CADENCE, so a gain and the consume it pairs with fire as one tick in
+		// authored order. ⚠️ No marker, no hit and no application: the lane's
+		// markers mean hits and heals (`isMarkedTickEffect`).
+		const cadences = new Map<string, SummonTickSeries[]>();
+		for (const series of summonTickSeries(
+			summon,
+			cLevel,
+			(e) => e.type === 'gainStacks' || e.type === 'consumeStacks',
+			tickConditionCtx(ctx, char.id)
+		)) {
+			const k = `${series.firstDelay}/${series.interval}`;
+			const group = cadences.get(k);
+			if (group) group.push(series);
+			else cadences.set(k, [series]);
+		}
+		for (const group of cadences.values()) {
+			const { interval, firstDelay } = group[0];
+			const effects = group.map((g) => g.effect);
+			const fire = (at: number): void => {
+				if (!liveAt(at) || at >= endNow()) return;
+				// ⚓ Whether the OWNER is on field at this instant is a live fact the
+				// tick can answer and a buff pass cannot — `ctx.activeCharId` is the
+				// segment the clock is inside.
+				const states = new Set(holderStatesAt(ctx, char, at));
+				states.add(ctx.activeCharId === char.id ? 'onField' : 'offField');
+				dispatchStacksOnSummonTick(
+					char,
+					ctx.getCharState(char.id),
+					effects,
+					at,
+					states,
+					cLevel,
+					tickConditionCtx(ctx, char.id)
+				);
+				const next = at + interval;
+				if (next < endNow()) clock.schedule(next, Band.TICK, () => fire(next));
+			};
+			const first = spawnAt + firstDelay;
+			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first));
 		}
 	});
 }

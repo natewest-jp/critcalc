@@ -123,7 +123,7 @@
 					"value": -15
 				}
 			],
-			"tags": ["heal"],
+			"tags": ["heal", "coordinatedAttack"],
 			"frames": {
 				"anim": 57,
 				"Q": 58,
@@ -140,7 +140,8 @@
 					},
 					"conditions": {
 						"type": "state",
-						"state": "duringSummon"
+						"state": "duringSummon",
+						"source": "skill"
 					},
 					"scaling": 19.008,
 					"stat": "atk",
@@ -155,7 +156,8 @@
 					},
 					"conditions": {
 						"type": "state",
-						"state": "duringSummon"
+						"state": "duringSummon",
+						"source": "skill"
 					},
 					"scaling": 19.008,
 					"stat": "atk",
@@ -181,6 +183,31 @@
 							"scaling": 125.28,
 							"stat": "atk",
 							"flat": 991.287
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"source": "active"
+							},
+							"procCooldown": 2.2,
+							"scaling": 43.2,
+							"stat": "atk",
+							"element": "cryo",
+							"application": [
+								{
+									"frame": 1,
+									"element": "cryo",
+									"units": 1
+								}
+							],
+							"attribution": "Herald of Frost",
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-09-27 from gcsim #3046 (skill.go `skillInit`): an OnEnemyHit hook that fires while the Herald is up when the ACTIVE character's attack lands, 1 frame later (\"based on video it's the same frame\", +1 for aura attachment) — Cryo, Durability 25, ICDTagQiqiElementalArt / ICDGroupDefault, TL10 `skillCoord[9]` = 0.432 (sidecar \"Herald of Frost Coordinated Attack DMG\", CD 2.2s). Hosted on the summon, so the Herald's own lifetime is the listening window (Raiden's Eye precedent).",
+								"⚠️ `source: 'active'` — off field it refuses the Herald's swipes (they are the skill cast's own `application[]` hits, flagged `offField` once Qiqi has left), so the attacks follow whoever is fighting: measured `Qiqi E > Bennett N1…` fires at 79 / 257 / 435 off Bennett's swings and never off a swipe. ⚠️ ON field it AGREES with gcsim: a swipe is Qiqi's own Skill DMG while she is active, so it triggers the attack (`Qiqi E N1…` draws 622 / 817, one frame after the 621 / 816 swipes) — gcsim's `ActorIndex == Active()` does the same, and the `+33 / +232 / …` `[icd]` rows in gcsim-frames-diff.md §4 are those. Whether the game counts the Herald's own swipes is UNVERIFIED — a candidate for the in-game batch; ⛔ don't \"fix\" it toward either reading without that. gcsim also excludes EC / Burning / Hydro-swirl damage; we emit no hits for reaction damage, so that is free.",
+								"⚠️ TWO APPROXIMATIONS, caveated on the skill. (1) gcsim's 2.2s cooldown is PER ACTIVE CHARACTER (`char.AddStatus(skillICDKey, …)` on the hitter); `procCooldown` is one clock for the effect, so fast swaps inside 2.2s draw fewer attacks than the game. (2) gcsim shares ONE ICD tag between the Herald swipes and these attacks; our streams keep separate counters, so the combined Cryo stream can over-apply slightly. Both want a primitive (a per-hitter proc clock, a shared ICD key), not data."
+							]
 						}
 					]
 				}
@@ -191,11 +218,12 @@
 				"Continuous heal ('Continuous Regeneration'): gcsim skill.go — one proc immediately at skillHitmark=32 (= summon spawnsAt), then skillHealTickTask re-queues every 4.5*60=270f. Authored as a summonTick on the Herald of Frost summon (Kuki ring / Diona heal-tick shape), interval 4.5, firstTickDelay 0 for the immediate-on-spawn proc → ~4 ticks over the 15s window (0/4.5/9/13.5s; gcsim comment '3 additional times'). Target c.Core.Player.Active() → target 'active'. TL10 (index 9): skillHealContPer[9]=1.2528 → 125.28% ATK, skillHealContFlat[9]=991.2866 (sidecar 'Continuous Regeneration' col 10 = '125.28% ATK+991').",
 				"Herald of Frost's Cryo coordinated-attack DMG ticks (Skill Damage / Coordinated Attack DMG sidecar rows) are NOT authored here — out of scope for this heal-only finding; the skill is not tagged coordinatedAttack.",
 				"STELLAR ROUND 2026-07-29 — CD PATCH. The Witch's Revelation passive 'Seven Sacred Treasures' (Fandom, Luna VIII) reduces this skill's cooldown to 15s with NO Stellar gate (no 'Radiance:' prefix, no Polestar Field wording) — a permanent kit patch once the Witch's Revelation quest is completed (requires owning Qiqi at Lv. 70+). Authored as an unconditional cooldownModifiers entry (flat -15) rather than editing the base `cooldown`, so the canonical 30s stays intact for the genshin-db scalar diff and the source of the reduction is attributed. Fandom gameplay note: it does not lower the BASE cooldown — it subtracts 15s from the remaining cooldown the moment the skill is used, and that subtraction is unaffected by party-wide CD reduction such as Anemo Resonance (so with resonance the real result is 30×0.95−15 = 13.5s). ↻ 2026-09-18: Anemo Resonance is applied by the parser now, as a team skill-cooldown modifier that runs BEFORE an ability's own flat modifiers — measured 13.5s in a Kazuha + Venti party, the divergence this note used to accept is closed.",
-				"STELLAR ROUND 2026-07-29 — the enhanced (buff-field) talent text adds: 'If your current active character hits an opponent with an attack, the Herald of Frost will perform a coordinated attack on the opponent, dealing Cryo DMG' (Herald of Frost Coordinated Attack DMG 24–54%, TL10 = 43.2%, 2.2s CD). NOT Radiance-gated (no such prefix) → permanent once the Revelation is unlocked. Damage magnitude → caveat only, no effect. The `coordinatedAttack` tag was deliberately NOT added: it would derive a new off-field-DMG capability at C0 that the audit fixture does not expect, and the underlying Herald damage is still unauthored. Flag for a follow-up capability pass."
+				"STELLAR ROUND 2026-07-29 — the enhanced (buff-field) talent text adds: 'If your current active character hits an opponent with an attack, the Herald of Frost will perform a coordinated attack on the opponent, dealing Cryo DMG' (Herald of Frost Coordinated Attack DMG 24–54%, TL10 = 43.2%, 2.2s CD). NOT Radiance-gated (no such prefix) → permanent once the Revelation is unlocked. Damage magnitude → caveat only, no effect. The `coordinatedAttack` tag was deliberately NOT added: it would derive a new off-field-DMG capability at C0 that the audit fixture does not expect, and the underlying Herald damage is still unauthored. Flag for a follow-up capability pass.",
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): the Herald's COORDINATED ATTACK IS AUTHORED (see its effect's notes) and the `coordinatedAttack` tag added — the 2026-07-29 note above declined both only because the damage was unauthored. The description gains the Revelation sentence it now carries. ⚠️ The two on-hit heals and A1 are now gated `duringSummon` QUALIFIED to the skill: unqualified, the burst's Fortune-Preserving Talisman (also a `summons[]` entry) satisfied them, so the data claimed Normal Attacks heal the party during a Talisman with no Herald out (no planner surface draws a heal, so only the Team Builder's reading moved) and A1's healing bonus DREW during a lone Talisman — that bar is the visible fix. The 2 Revelation particles (6s ICD) are energy and reach no surface."
 			],
 			"behavior": "instant",
-			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path.",
-			"caveat": "The 15s cooldown assumes the Witch's Revelation talent Seven Sacred Treasures is unlocked; without it the cooldown is 30s. Not modeled: the Herald's coordinated attacks on the active character's hits.",
+			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path.\nIf your current active character hits an opponent with an attack, the Herald of Frost will perform a coordinated attack on the opponent, dealing Cryo DMG.",
+			"caveat": "Assumes the Witch's Revelation is unlocked: a 15s cooldown and the Herald's coordinated attacks. Their 2.2s cooldown is shared by the whole party here; in game each character has their own.",
 			"application": [
 				{
 					"frame": 32,
@@ -298,7 +326,8 @@
 				"Effect not yet authored — needs reviewer pass. A1: when the active char is under Herald of Frost and triggers any elemental reaction, they gain +20% IncomingHealingBonus for 8s. gcsim subscribes to all reaction events (ReactionEventStartDelim+1 through ReactionEventEndDelim) and checks skillBuffKey active (asc.go:a1()). Probable trigger: onReaction with condition that Herald of Frost is active; reaction list needs KQM verification.",
 				"↻ AUTHORED 2026-09-16 (T0.5) — the \"needs reviewer pass\" above is closed. `incomingHealingBonus` already exists as a Stat and the trigger needed no new primitive: `reaction: 'any'` and `source: 'active'` are both in the union, and 'active' is the right one — gcsim requires atk.Info.ActorIndex == Player.ActiveChar().Index(), and 'team' would let the Herald's own swipes grant it.",
 				"⚠️⚠️ AUTHORED FROM THE KIT TEXT, NOT FROM gcsim, ON PURPOSE — gcsim's gate is INVERTED. `asc.go:19-22` opens with `if c.StatusIsActive(skillBuffKey) { return }`, i.e. it grants the bonus when the Herald of Frost is NOT out, where the talent says \"a character under the effects of Adeptus Art: Herald of Frost\". We author `state: duringSummon`, which is the kit. ⛔ Don't 'fix' this toward the oracle. ⚠️ The gate renders optimistically today (a `state` condition is unresolvable on the buff passes, §1.G), so the bar draws off any reaction the active character triggers whether or not the Herald is up.",
-				"↻ RESOLVED (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`). Two things were wrong with the note above, not one. The gate: the reaction buff pass now reads Qiqi's `duringSummon` at the reaction. And the SOURCE: `source: 'active'` had no reader in the buff pass and fell through to Qiqi's OWN reactions, so the bar did not \"draw optimistically\" — it drew for nobody but Qiqi. It is now every reaction the controlled character causes with their own cast or swing (`ReactionEvent.viaEntity` refuses a tick). Measured: `Qiqi E > Bennett E N1` draws 1.35→9.35s on Bennett; with no Herald, or 16s later, nothing; the Herald's own tick reactions draw nothing."
+				"↻ RESOLVED (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`). Two things were wrong with the note above, not one. The gate: the reaction buff pass now reads Qiqi's `duringSummon` at the reaction. And the SOURCE: `source: 'active'` had no reader in the buff pass and fell through to Qiqi's OWN reactions, so the bar did not \"draw optimistically\" — it drew for nobody but Qiqi. It is now every reaction the controlled character causes with their own cast or swing (`ReactionEvent.viaEntity` refuses a tick). Measured: `Qiqi E > Bennett E N1` draws 1.35→9.35s on Bennett; with no Herald, or 16s later, nothing; the Herald's own tick reactions draw nothing.",
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): gcsim FIXED the inverted gate the note above refused to follow — asc.go now reads `if !c.StatusIsActive(skillBuffKey) { return }`, so oracle and kit agree. The gate is now QUALIFIED to the skill's summon (see the skill's notes: the Talisman satisfied the bare one)."
 			],
 			"description": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s.",
 			"effects": [
@@ -312,7 +341,8 @@
 					},
 					"conditions": {
 						"type": "state",
-						"state": "duringSummon"
+						"state": "duringSummon",
+						"source": "skill"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -330,11 +360,12 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. A4: on N/CA hit, 50% proc chance to apply Fortune-Preserving Talisman (6s) to the hit enemy, with 30s ICD on Qiqi (a4ICDKey). Implemented in burst.go:onNACAHitHook(). Does not overwrite a longer existing talisman (gcsim conditional). Reviewer to decide effect-row representation.",
 				"STELLAR ROUND 2026-07-29. Enhanced (buff-field) text, Fandom 'A Glimpse Into Arcanum': 'Radiance: Stellar-Conduct: The effect now has a 100% chance to trigger, and cooldown time is reduced to 15s.' Radiance-gated (Qiqi inside a Polestar Field). Two unmodelable pieces: a proc-chance change (no probability primitive) and a CONDITIONAL cooldown change (cooldownModifiers can express a gate, but this ICD belongs to an effect that is itself unauthored) → deferred CD-modification queue. Caveat only.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Fortune-Preserving Talisman is a lane bar this tool already draws — the burst authors it as a 15s summon, so the player has a named span in front of them. At A4 the same Talisman goes up off Normal/Charged hits and no second bar ever appears, which is a blank in a lane the character already populates. The Polestar upgrade half (100% chance, 15s ICD) is an unmodeled tweak to an unmodeled proc and names no pixel — drop it. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Fortune-Preserving Talisman is a lane bar this tool already draws — the burst authors it as a 15s summon, so the player has a named span in front of them. At A4 the same Talisman goes up off Normal/Charged hits and no second bar ever appears, which is a blank in a lane the character already populates. The Polestar upgrade half (100% chance, 15s ICD) is an unmodeled tweak to an unmodeled proc and names no pixel — drop it. Category: expected-but-absent.",
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): the enhanced line now reads \"Radiance: Stellar Glimmer\" — EITHER radiance, not only Stellar-Conduct (gcsim `revelationA4`: 100% / 15s whenever `getRadiance() != radianceNone`). Inside a Radiance the proc is deterministic, so chance no longer blocks that half; what does is that no effect can SPAWN the Talisman summon off a Normal/Charged hit. The notModeled reason now says both."
 			],
 			"description": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s.",
 			"notModeled": {
-				"reason": "This Talisman only has a 50% chance to apply. The Rotation Planner doesn't simulate chance, so the same rotation always draws the same bars for everyone."
+				"reason": "Outside a Radiance state this Talisman only has a 50% chance to apply, which the Rotation Planner doesn't simulate. In a Radiance state it always applies, but the Rotation Planner can't place a Talisman from an attack hit."
 			}
 		},
 		{
@@ -350,8 +381,19 @@
 						"ability": "skill"
 					},
 					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
 					},
 					"duration": 15,
 					"durationType": "refresh",
@@ -368,13 +410,140 @@
 						"ability": "skill"
 					},
 					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
 					},
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "stellarConductReactionBonus",
+					"value": 50,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarSwirl",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "state",
+								"state": "duringSummon",
+								"source": "skill"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarSwirl"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["anemo"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "all",
+											"conditions": [
+												{
+													"type": "teamEnablesReaction",
+													"reaction": "stellarConduct"
+												},
+												{
+													"type": "teamElementCount",
+													"elements": ["electro"],
+													"comparison": ">=",
+													"value": 1
+												}
+											]
+										}
+									}
+								]
+							}
+						]
+					},
+					"duration": 8,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "cryoSwirlReactionBonus",
+					"value": 50,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarSwirl",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "state",
+								"state": "duringSummon",
+								"source": "skill"
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarSwirl"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["anemo"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "all",
+											"conditions": [
+												{
+													"type": "teamEnablesReaction",
+													"reaction": "stellarConduct"
+												},
+												{
+													"type": "teamElementCount",
+													"elements": ["electro"],
+													"comparison": ">=",
+													"value": 1
+												}
+											]
+										}
+									}
+								]
+							}
+						]
+					},
+					"duration": 8,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "stellarSwirlReactionBonus",
 					"value": 50,
 					"snapshottable": false
 				}
@@ -384,10 +553,11 @@
 				"Line 1 (permanent, no Radiance prefix): skill cooldown reduced to 15s → authored on the skill as a cooldownModifiers flat -15; see that ability's notes for the remaining-CD mechanic and the Anemo-Resonance interaction.",
 				"Line 2 (Radiance-gated): 'While the Herald of Frost is on the field, characters in Qiqi's party have their Superconduct and Stellar-Conduct Reaction DMG increased by 50%.' AUTHORED 2026-07-29 per Nate's bucket-5 ruling as two team buffs on the new Reaction-Bonus stat family (superConductReactionBonus + stellarConductReactionBonus, bucket 5 — additive with the EM bonus; Fandom categories 'Superconduct DMG Bonus Talents' + 'Stellar-Conduct DMG Bonus Talents' map there). Trigger onCast skill, 15s = the Herald's duration; both halves ride teamEnablesReaction since the whole clause is Radiance-gated. NOT `stellarConductDmgBonus` — that stat is the bucket-3 Base DMG bracket (Sandrone's Light of Rationalisme).",
 				"⚠️ The infobox also carries utility3 = 'Cryo Swirl DMG Bonus' and the page sits in 'Cryo Swirl DMG Bonus Talents', which the talent text does not support (it names only Superconduct and Stellar-Conduct). Treated as a wiki tagging artifact; not authored, not caveated. Re-check on the next wiki snapshot refresh.",
-				"Line 3: 'when inside a Polestar Field, Qiqi will enter the Radiance: Stellar-Conduct state' — the state that gates the burst, A4, C1, C2 and C6 enhancements. There is no field-presence primitive, so every Radiance-gated effect in this file is authored on the broader `teamEnablesReaction: stellarConduct` condition (party contains a Stellar-Conduct enabler; currently Sandrone only) with a caveat naming the narrower real gate."
+				"Line 3: 'when inside a Polestar Field, Qiqi will enter the Radiance: Stellar-Conduct state' — the state that gates the burst, A4, C1, C2 and C6 enhancements. There is no field-presence primitive, so every Radiance-gated effect in this file is authored on the broader `teamEnablesReaction: stellarConduct` condition (party contains a Stellar-Conduct enabler; currently Sandrone only) with a caveat naming the narrower real gate.",
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): ⛔ THE \"WIKI TAGGING ARTIFACT\" NOTE ABOVE WAS WRONG — or the text changed after July. Fandom's current talent text has a Stellar Swirl branch (+50% Cryo Swirl and Stellar Swirl reaction DMG, and Radiance: Stellar Swirl for 8s after a party Stellar Swirl), and gcsim #3046 implements exactly that (stellar.go: `qiqi-revelation-ssw`, `radianceSwirlKey` 8*60 on the party's Stellar Swirl). Re-authored on the Radiance idiom (docs/library/game/stellar-reactions.md): the Conduct pair keeps its 15s-from-cast shape with the FULL Conduct condition (enabler + an Electro teammate); the Swirl pair is the genuine 8s window — `onReaction stellarSwirl` from the team, gated on the Herald (skill-qualified `duringSummon`) and on the Swirl clause, whose `not(Conduct)` is the precedence gcsim's `getRadiance()` also applies. ⚠️ No `whileState` can name a summon, so a Swirl bar can run up to 8s past the Herald — caveated. `inPolestarField` deliberately NOT added to the Conduct pair: it resolves at the skill cast, before the Herald has made any Stellar-Conduct, and would erase the bonus in the ordinary opener."
 			],
-			"description": "The cooldown of the Elemental Skill Adeptus Art: Herald of Frost is reduced to 15s.\nRadiance: Stellar-Conduct: While the Herald of Frost is on the field, characters in Qiqi's party have their Superconduct and Stellar-Conduct Reaction DMG increased by 50%.\nAdditionally, when inside a Polestar Field, Qiqi will enter the Radiance: Stellar-Conduct state.",
-			"caveat": "The party's Superconduct and Stellar-Conduct bonuses are shown for 15s from the skill cast whenever a Stellar-Conduct enabler is in the party; in game they also need a Polestar Field and end early if the Herald leaves."
+			"description": "The cooldown of the Elemental Skill Adeptus Art: Herald of Frost is reduced to 15s.\nRadiance: Stellar Glimmer: While the Herald of Frost is on the field, Qiqi's own party members will have the DMG they deal via the corresponding reactions enhanced:\nRadiance: Stellar-Conduct: Superconduct and Stellar-Conduct reaction DMG is increased by 50%.\nRadiance: Stellar Swirl: Cryo Swirl and Stellar Swirl reaction DMG dealt is increased by 50%.\nAdditionally, Qiqi will also enter the Radiance: Stellar-Conduct state when she is inside a Polestar Field, or the Radiance: Stellar Swirl state for 8s after a nearby party character triggers a Stellar Swirl reaction.",
+			"caveat": "The Stellar-Conduct bonuses are shown as if always inside a Polestar Field. A Swirl bonus lasts its full 8s even if the Herald of Frost leaves sooner; in game it ends with the Herald."
 		}
 	],
 	"constellations": [
@@ -400,7 +570,8 @@
 				"trigger: 'manual' is inherited from generator; reviewer to replace. Probable trigger: onHit from Herald of Frost deployable damage (skill tick) hitting a Fortune-Preserving Talisman-marked enemy. In gcsim, c1() callback is appended to Herald tick AttackEvents and checks e.StatusIsActive(talismanKey) (cons.go:c1()). Energy +2 per qualifying hit; no per-hit ICD modeled in gcsim. Target scope: self.",
 				"STELLAR ROUND 2026-07-29 — second effect ADDED. Enhanced (buff-field) text, Fandom 'Ascetics of Frost': 'Radiance: Stellar-Conduct: Qiqi also regenerates 6 Elemental Energy when the Herald of Frost's attacks and coordinated attacks hit opponents. This effect can trigger once every 6s.' Authored as a second energy effect (6, self, procCooldown 6) gated on `teamEnablesReaction: stellarConduct`; the base 2-Energy effect is untouched. trigger 'manual' mirrors the sibling effect — the Herald's ticks and its new coordinated attacks are not authored damage, so no onHit trigger could fire. Real gate is narrower (Radiance state = Qiqi inside a Polestar Field), stated in the caveat.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it talks about ENERGY regeneration. The planner has no energy surface at all: both effects are `energy` on a `manual` trigger (nothing consumes manual, and energy effects have no planner consumer even on wired triggers), and no bar, marker, counter or tooltip anywhere prints energy gained. There is no pixel that is wrong, and none the player would look for. Category: invisible-omission.",
-				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Ascetics of Frost — effects[0] (energy 2, self) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/qiqi/cons.go:13-26` (`c1`) — an `AttackCB` appended to each Herald of Frost damage swipe (`skill.go:131-132`) that returns unless the struck enemy has `talismanKey` active, then `AddEnergy(\"qiqi-c1\", 2)`. No ICD. Retained: +2 Energy per Herald swipe on a Talisman-marked enemy, no ICD — and the two reasons it cannot be triggered: the Herald's damage series is unauthored (our `summons[0].effects` holds the heal tick only) and its cadence is irregular (`skill.go:138-140` alternates 60f / 135f, which a fixed-interval `summonTick` cannot state), and \"marked by a Fortune-Preserving Talisman\" has no `Condition` member. ⚠️ Leaving it as-is is not free — the host is already the one entry whose notes record that an inert `manual` effect still reaches `deriveCapabilities` through `target`. Deleting is byte-identical here because `deriveCapabilities` has skipped `manual` since 2026-09-15 and `energy` self-target is excluded from TB chips. The Herald's missing damage series belongs to the summon-tick-gaps backlog, not to this round.\n\n↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Ascetics of Frost — effects[1] (energy 6, self, stellarConduct-gated) carried `trigger: manual` and reached no surface. gcsim: absent from gcsim — the Herald's coordinated attacks and the whole Radiance upgrade are a Witch's-Revelation addition with no Go implementation; `cons.go:13-26` carries only the base 2-Energy arm. Retained: the whole Radiance clause verbatim (6 Energy, 6s cooldown, gated on Radiance: Stellar-Conduct, sourced from Fandom alone), plus the fact that the coordinated attacks it names are unauthored, so the same hit-stream gap as effects[0] applies. ⚠️ The real gate is narrower than `teamEnablesReaction` — it is the Polestar Field window, for which `{\"type\":\"inPolestarField\"}` now exists — but that does not rescue the effect: there is still no trigger, and `energy` reaches no planner surface even on a live trigger. ⛔ Do not author `inPolestarField` here just because the primitive landed."
+				"↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Ascetics of Frost — effects[0] (energy 2, self) carried `trigger: manual` and reached no surface. gcsim: `internal/characters/qiqi/cons.go:13-26` (`c1`) — an `AttackCB` appended to each Herald of Frost damage swipe (`skill.go:131-132`) that returns unless the struck enemy has `talismanKey` active, then `AddEnergy(\"qiqi-c1\", 2)`. No ICD. Retained: +2 Energy per Herald swipe on a Talisman-marked enemy, no ICD — and the two reasons it cannot be triggered: the Herald's damage series is unauthored (our `summons[0].effects` holds the heal tick only) and its cadence is irregular (`skill.go:138-140` alternates 60f / 135f, which a fixed-interval `summonTick` cannot state), and \"marked by a Fortune-Preserving Talisman\" has no `Condition` member. ⚠️ Leaving it as-is is not free — the host is already the one entry whose notes record that an inert `manual` effect still reaches `deriveCapabilities` through `target`. Deleting is byte-identical here because `deriveCapabilities` has skipped `manual` since 2026-09-15 and `energy` self-target is excluded from TB chips. The Herald's missing damage series belongs to the summon-tick-gaps backlog, not to this round.\n\n↻ EFFECT RETIRED 2026-09-21 (manual-trigger retirement, docs/manual-trigger-retirement-round.md). C1 — Ascetics of Frost — effects[1] (energy 6, self, stellarConduct-gated) carried `trigger: manual` and reached no surface. gcsim: absent from gcsim — the Herald's coordinated attacks and the whole Radiance upgrade are a Witch's-Revelation addition with no Go implementation; `cons.go:13-26` carries only the base 2-Energy arm. Retained: the whole Radiance clause verbatim (6 Energy, 6s cooldown, gated on Radiance: Stellar-Conduct, sourced from Fandom alone), plus the fact that the coordinated attacks it names are unauthored, so the same hit-stream gap as effects[0] applies. ⚠️ The real gate is narrower than `teamEnablesReaction` — it is the Polestar Field window, for which `{\"type\":\"inPolestarField\"}` now exists — but that does not rescue the effect: there is still no trigger, and `energy` reaches no planner surface even on a live trigger. ⛔ Do not author `inPolestarField` here just because the primitive landed.",
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): the Radiance line now reads \"Radiance: Stellar Glimmer\" (either radiance), and gcsim #3046 implements it (`c1RevelationCB`, 6 Energy / 6s on Herald swipes and coordinated attacks). The coordinated attacks ARE authored now, so a trigger exists — but energy still reaches no planner surface, so nothing is authored and the notModeled reason stands."
 			],
 			"description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy.",
 			"notModeled": {
@@ -450,9 +621,68 @@
 						"type": "passive"
 					},
 					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
 					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 50,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarSwirl",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarSwirl"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["anemo"],
+								"comparison": ">=",
+								"value": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["electro"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"duration": 8,
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "atk%",
 					"value": 50,
@@ -462,10 +692,11 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C2: +15% DmgP on N/CA hits against enemies with Cryo or Frozen aura. Implemented in cons.go:c2() as AddAttackMod with permanent (-1) duration; checks e.AuraContains(Cryo, Frozen). No effects[] skeleton from generator. (Still unauthored after the 2026-07-29 Stellar round — out of scope; wireable later as normalDmgBonus + chargeDmgBonus effects gated on `enemyAffectedBy: cryo`.)",
 				"STELLAR ROUND 2026-07-29 — ATK effect ADDED. Enhanced (buff-field) text, Fandom 'Frozen to the Bone': 'Radiance: Stellar-Conduct: Qiqi's ATK is increased by 50%.' Self-facing stat buff → authored as atk% 50 (whole-number percentage-point convention), trigger 'passive' (always-on while the state holds; no duration in the talent text — never invented), gated on `teamEnablesReaction: stellarConduct`. Real gate is narrower (Radiance state = inside a Polestar Field); caveat says so. snapshottable false, matching the Flins C4 always-on atk% precedent.",
-				"↻ THE BASE HALF IS AUTHORED 2026-09-16 (T0.5) — the \"needs reviewer pass\" note above is closed, and the file's own reading of the shape was right. gcsim cons.go:29-50 is a permanent AttackMod adding 15% DmgP to AttackTagNormal and AttackTagExtra when `e.AuraContains(Cryo, Frozen)`, so it is `normalDmgBonus` + `chargeDmgBonus` gated on `enemyAffectedBy: cryo`. ⚓ One condition covers both of gcsim's aura checks: a Frozen enemy carries a Cryo aura, the same reading Kaeya's C2 records. ⚠️ `enemyAffectedBy` renders optimistically — it is a claim about enemy state the planner does not simulate — which is the standing price of the primitive and is why Chongyun and Kaeya carry it too."
+				"↻ THE BASE HALF IS AUTHORED 2026-09-16 (T0.5) — the \"needs reviewer pass\" note above is closed, and the file's own reading of the shape was right. gcsim cons.go:29-50 is a permanent AttackMod adding 15% DmgP to AttackTagNormal and AttackTagExtra when `e.AuraContains(Cryo, Frozen)`, so it is `normalDmgBonus` + `chargeDmgBonus` gated on `enemyAffectedBy: cryo`. ⚓ One condition covers both of gcsim's aura checks: a Frozen enemy carries a Cryo aura, the same reading Kaeya's C2 records. ⚠️ `enemyAffectedBy` renders optimistically — it is a claim about enemy state the planner does not simulate — which is the standing price of the primitive and is why Chongyun and Kaeya carry it too.",
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): the Radiance line now reads \"Radiance: Stellar Glimmer\" — either radiance (gcsim cons.go: `getRadiance() == radianceNone` returns). Two effects on the Radiance idiom: the Conduct half stays a standing `passive` buff (field-presence, assumed entered) with the FULL Conduct condition; the Swirl half is an 8s window off any party Stellar Swirl, `not(Conduct)` for precedence. The old caveat (\"needs a Polestar Field, which is not shown\") contradicted the assume-entered house rule and is rewritten to name what the bar does."
 			],
 			"description": "Qiqi's Normal and Charged Attack DMG against opponents affected by Cryo is increased by 15%.",
-			"caveat": "The 50% ATK bonus also needs a Polestar Field, which is not shown, so it may appear when it would not be active in game."
+			"caveat": "In a Stellar-Conduct party the 50% ATK bonus is shown for the whole rotation, as if always inside a Polestar Field."
 		},
 		{
 			"id": "qiqi__constellation__ascendant_praise",
@@ -519,7 +750,8 @@
 			"_curatorNotes": [
 				"Migrated to onCast burst 2026-05-09 (F1). 50% MaxHP team heal authored. The revival mechanic (dead → alive) is outside the current schema; the 15min ICD is not modeled (gcsim doesn't enforce it either). Heal portion only.",
 				"STELLAR ROUND 2026-07-29 — nothing authored. Enhanced (buff-field) text, Fandom 'Rite of Resurrection': after the burst Qiqi gains 4 stacks of Glimpse of Mystery (12s, refreshed by re-casting the burst); when the current active character OTHER than Qiqi deals Stellar-Conduct DMG, 1 stack is consumed and that DMG is increased by 600% of Qiqi's ATK. Fandom utility tag: 'Stellar-Conduct Additive Base DMG Bonus' — the additive-base-DMG term of the Stellar formula, i.e. damage magnitude, not a stat buff, so no effect (constitution). The stack ledger (per-hit consumption keyed to another character's Stellar-Conduct DMG) is also unmodelable. No 'Radiance:' prefix, but it names Stellar-Conduct and cannot fire without an enabler in the party.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it is an additive base-DMG term, i.e. damage magnitude, which this tool never renders for anyone (constitution + the FROZEN list). The stack ledger it describes buffs nothing we draw, so no bar is short, wrong or missing; a reader at C6 sees the authored 50% Max HP team heal and a burst bar that are both correct. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it is an additive base-DMG term, i.e. damage magnitude, which this tool never renders for anyone (constitution + the FROZEN list). The stack ledger it describes buffs nothing we draw, so no bar is short, wrong or missing; a reader at C6 sees the authored 50% Max HP team heal and a burst bar that are both correct. Category: invisible-omission.",
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): the Glimpse of Mystery clause now names \"Stellar-Conduct or Stellar Swirl DMG\". Still damage magnitude — nothing authored, no caveat."
 			],
 			"description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins."
 		}

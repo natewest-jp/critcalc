@@ -789,6 +789,27 @@ export type Trigger =
 	 * `dominant` ∈ `keys`.
 	 */
 	| { type: 'onStack'; keys: string[]; count: number; dominant?: string; label?: string }
+	/**
+	 * ⚓ THE BUFF EXISTS WHILE ITS HOLDER HOLDS STACKS OF `key` (stepped stacks
+	 * round, 2026-09-27) — anchored on no cast, so the bar is exactly the spans
+	 * where the count is above zero, and a `perStack` value on the same key is
+	 * drawn as a STEPPED bar whose density follows the count.
+	 *
+	 * ⚓ Odette's Marvelous Splendor is the case: her count steps DOWN while she
+	 * is off field and her party's steps UP by the same amount, across an E, a Q
+	 * that refreshes the Double and back — no cast-anchored window can say "one
+	 * bar from the summon until the Double leaves" without splitting at the Q or
+	 * ending early. Add `whileState` to bound it by something other than the
+	 * count (her Double: `soloDanceDouble`).
+	 *
+	 * ⚠️ The key must be ROTATION-scoped (only those counts are recorded in time
+	 * order — `SimContext.stackHistory`) and granted without a `lifetime` (a
+	 * lifetime drop is swept late and would draw a late step). Target `self`,
+	 * `team` or `teamExcludingSelf`; the row is named after the hosting entry.
+	 * Lint B.20. Conditions are evaluated WITHOUT an instant (constellation,
+	 * team facts) — a `stacks` gate would be redundant, the count IS the window.
+	 */
+	| { type: 'whileStacks'; key: string }
 	/** Always-on passive — not rendered in the team buffs row. */
 	| { type: 'passive' }
 	/** Fires when the host ability's duration expires; buff starts at bar.end.
@@ -1063,6 +1084,9 @@ export type State =
 	 *  the talent states and it is the tighter of the two; ⛔ don't switch to
 	 *  the summon's lifetime without an in-game check. */
 	| 'codaWindow'
+	/** Odette: her Solo Dance Double is on the field — opened by the summon
+	 *  itself (`Summon.opensState`), so it spans the Double's life exactly. */
+	| 'soloDanceDouble'
 	/** Furina: her Arkhe alignment is PNEUMA. ⚓ THE ONLY TOGGLE STATE IN THE
 	 *  CORPUS, and the only one whose absence is itself a meaning — Furina
 	 *  starts in Ousia (gcsim `furina.go:61`) and her Charged Attack flips
@@ -1148,6 +1172,17 @@ type TransientStateCommon = {
 	/** Gate on runtime state/constellation — e.g. Varesa's base-form plunge
 	 *  opens Apex Drive only at C2 (`{ type: "constellation", level: 2 }`). */
 	conditions?: Condition;
+	/**
+	 * Open at the cast's FIRST LANDING (`CastEvent.firstHitAt`) instead of its
+	 * start — gcsim's `AddStatus` inside the hitmark task. Illuga's Oriole-Song
+	 * is the case (merged gcsim #2677/#3092 moved it to hitmark 48): the start is
+	 * unobservable, but a 20s window measured from the press ENDS 0.8s early.
+	 *
+	 * ⚠️ `opensTransientState` only (lint): an action-class opener fires at the
+	 * action's END by contract (see `actionOpensState`). A cast that states no
+	 * landing opens at its start, as before.
+	 */
+	atFirstHit?: true;
 	/** Named states to CLOSE when this window opens (gcsim DeleteStatus on
 	 *  the opening action) — a mode commit consumes its entry window and
 	 *  displaces the opposite mode (Durin: darkForm consumes transmuting +
@@ -1280,6 +1315,23 @@ export type Summon = {
 	 *  reaction). Parser dispatch is currently `onCast`-only; other triggers
 	 *  are schema-accepted but not yet wired. */
 	durationExtensions?: DurationExtension[];
+	/**
+	 * ⚓ A NAMED STATE THAT LIVES EXACTLY AS LONG AS THIS SUMMON (gcsim sync,
+	 * 2026-09-27) — open from its spawn to its end, and closed and reopened by a
+	 * recast. Odette is the case: a burst cast onto a standing Dance Double
+	 * re-summons it WITHOUT re-granting Marvelous Splendor (gcsim #3020), so her
+	 * burst's grants are gated `not` this state.
+	 *
+	 * ⚓ Why not `duringSummon`: the live stack dispatchers can never NEGATE it
+	 * (`liveNegatedStates` — the summon resolvers see stationary summons only and
+	 * read a pre-extension uptime), so a `not duringSummon` gate is `null` forever
+	 * and the grant never fires. A named state is closed-world like every other.
+	 *
+	 * ⚠️ Lint refuses it beside an END the opener cannot know at the spawn: a
+	 * `terminatesOn` other than `recast`, a `durationExtensions`, or a host with
+	 * `summonsFollowState`.
+	 */
+	opensState?: State;
 	/** ⚓ The positive statement that this summon deals and applies NOTHING of
 	 *  its own (coverage round, docs/coverage-round.md §5.2) — a taunt, a
 	 *  shield gadget, a heal-only field. Read by the coverage page only: a

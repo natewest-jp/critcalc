@@ -178,6 +178,7 @@ export function runRotation(
 	lookupChar: (name: string) => CharacterData | null
 ): number {
 	const clock = createClock();
+	ctx.stackClock = () => clock.now;
 	// ⚓ WHICH TURN IS ON FIELD, observed live (cast hit-record round, 2026-09-21).
 	// A cast's hit can land after its caster's turn is over — a closure queued in
 	// turn `i` asks `liveSegment === i` before it touches that turn's stack pool.
@@ -1126,7 +1127,9 @@ export function runRotation(
 							active.opensTransientState,
 							cs,
 							char.id,
-							castStart,
+							active.opensTransientState.atFirstHit === true
+								? (castEvent.firstHitAt ?? castStart)
+								: castStart,
 							states,
 							charConstellationLevel,
 							{ sourceCastId: castId, source: kind },

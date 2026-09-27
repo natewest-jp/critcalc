@@ -36,6 +36,24 @@ export type TeamBuffBar = {
 	 *  not a stat, and putting it in the display list would make it part of the
 	 *  refresh-merge key. The merge gets its own equality test instead. */
 	stacks?: number;
+	/** See `BarStep`. Absent = the bar's value holds for its whole span. */
+	steps?: BarStep[];
+	/** The count at which a step is drawn at full density. */
+	stepMax?: number;
+};
+
+/**
+ * ⚓ ONE STRETCH OF A STEPPED BAR (stepped stacks round, 2026-09-27) — a
+ * `whileStacks` buff whose count moved under it. The bar is drawn as hard
+ * density steps (thinner glass = fewer stacks, the ramp envelope's grammar)
+ * and the tooltip reads the step under the pointer. `effects` is the value AT
+ * this count, formatted by the same formatter the bar's own `effects` use.
+ */
+export type BarStep = {
+	start: number;
+	end: number;
+	count: number;
+	effects: MergedEffectDisplay[];
 };
 
 export type TeamBuffSubrow = {
@@ -88,6 +106,9 @@ export type CharReceivedBuffBar = {
 	buffStart?: number; // set when rampParams or decayParams is present, for gradient offset
 	rampParams?: RampParams;
 	decayParams?: DecayParams;
+	/** See `BarStep`. */
+	steps?: BarStep[];
+	stepMax?: number;
 };
 export type CharReceivedBuffSubrow = {
 	characterId: string;

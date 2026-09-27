@@ -26,6 +26,7 @@ import {
 	resShredDisplayStat
 } from './buffDisplay';
 import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
+import { barStepsOf } from './barSteps';
 
 // Re-exported for renderer convenience (the template types against these).
 export type { TeamBuffBar, TeamBuffSubrow };
@@ -59,6 +60,12 @@ export function projectTeamBuffRows(
 
 		// Display formatting — same buffDisplay calls the legacy bars made,
 		// with the window's carried trigger-time context.
+		const formatAt = (ctx: ReadonlyMap<string, number> | undefined): MergedEffectDisplay[] =>
+			(w.effects as BuffEffect[]).map((e) => ({
+				stat: e.stat,
+				displayValue: formatBuffDisplayValue(e.stat, e.value, w.refinementIndex ?? 0, ctx)
+			}));
+		const steps = w.debuff ? undefined : barStepsOf(w, w.start, w.end, formatAt);
 		const effects: MergedEffectDisplay[] = w.debuff
 			? (w.effects as ResShredEffect[]).map((e) => ({
 					stat: resShredDisplayStat(e.element, e.shredStat),
@@ -100,6 +107,13 @@ export function projectTeamBuffRows(
 				const fire = src.fireLabel ?? `${AB_LABEL[src.abilityClass ?? 'skill']} threshold`;
 				rowKey = `${w.characterId}::char::stackThreshold::${fire}${w.debuff ? '::resShred' : ''}`;
 				sourceLabel = `${displayName} ${fire}`;
+			} else if (src.trigger === 'stacks') {
+				// ⚓ Named after what the COUNT is (its `attribution`), else the
+				// hosting entry — the bar is the span the count was held, not a cast.
+				// Keyed by stat: one key feeds several stats (Odette's A1/C2/C6).
+				const what = (w.effects[0] as BuffEffect).attribution ?? src.hostLabel ?? 'stacks';
+				rowKey = `${w.characterId}::char::stacks::${what}::${effects[0].stat}`;
+				sourceLabel = `${displayName} ${what}`;
 			} else if (src.trigger === 'state') {
 				// ⚓ Named after the CONDITION, not a cast — the bar's whole claim is
 				// "while this state holds", and its span already says when. Keyed by
@@ -169,7 +183,8 @@ export function projectTeamBuffRows(
 			start: w.start,
 			end: w.end,
 			effects,
-			...(w.fieldStacks !== undefined ? { stacks: w.fieldStacks } : {})
+			...(w.fieldStacks !== undefined ? { stacks: w.fieldStacks } : {}),
+			...(steps ? { steps, ...(w.stackMax ? { stepMax: w.stackMax } : {}) } : {})
 		};
 		const existing = rowMap.get(rowKey);
 		if (existing) {
@@ -220,8 +235,12 @@ export function projectTeamBuffRows(
 	return [...rowMap].map(([key, row]) => ({
 		...row,
 		bars: mergeRefreshedBars(
-			fuseNestedBars(row.bars, (b) => b.stacks === undefined),
-			(a, b) => a.stacks === undefined && b.stacks === undefined
+			fuseNestedBars(row.bars, (b) => b.stacks === undefined && b.steps === undefined),
+			(a, b) =>
+				a.stacks === undefined &&
+				b.stacks === undefined &&
+				a.steps === undefined &&
+				b.steps === undefined
 		),
 		key
 	}));

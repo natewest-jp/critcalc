@@ -38,7 +38,13 @@
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import type { HumanTiming } from '$lib/sim/humanTiming';
 	import type { InputBlock } from '$lib/sim/types';
-	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
+	import type {
+		BarStep,
+		CharReceivedBuffBar,
+		MergedEffectDisplay,
+		SlottedTrack
+	} from '$lib/timeline/types';
+	import { stepAt, stepCeiling, stepDensity } from '$lib/timeline/barSteps';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
@@ -393,6 +399,52 @@
 		const o0 = 1.0 - p0 * (1 - ENVELOPE_MIN);
 		const o1 = 1.0 - p1 * (1 - ENVELOPE_MIN);
 		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
+	}
+
+	/**
+	 * ⚓ A STEPPED BAR (stepped stacks round, 2026-09-27) — a `whileStacks` buff
+	 * whose count moved under it, drawn in the ramp envelope's grammar (thinner
+	 * glass = weaker) with HARD stops, because the count moves in whole stacks.
+	 * ⚓ Nate's pick of three (Columbina-style overlap and seamed segments were
+	 * the others): one bar per buff, the density IS the count, the tooltip reads
+	 * the step under the pointer. One gradient, one layer (the Safari veto on
+	 * tiled multi-layer bar backgrounds holds).
+	 */
+	function steppedBackground(bar: {
+		start: number;
+		end: number;
+		steps?: BarStep[];
+		stepMax?: number;
+	}): string | undefined {
+		const steps = bar.steps;
+		const span = bar.end - bar.start;
+		if (!steps?.length || !(span > 0)) return undefined;
+		const ceiling = stepCeiling(steps, bar.stepMax);
+		const stops = steps.map((st) => {
+			const a = (((st.start - bar.start) / span) * 100).toFixed(3);
+			const b = (((st.end - bar.start) / span) * 100).toFixed(3);
+			return `${buffStop(stepDensity(st.count, ceiling))} ${a}% ${b}%`;
+		});
+		return `linear-gradient(to right, ${stops.join(', ')})`;
+	}
+
+	/** A stepped bar's tooltip is the STEP under the pointer — anchored to the
+	 *  cursor, because the bar's centre is one moment among several. */
+	function showStepTooltip(
+		e: MouseEvent,
+		bar: { start: number; end: number; steps?: BarStep[] },
+		label: string
+	) {
+		if (!bar.steps?.length) return;
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const frame =
+			bar.start + ((e.clientX - rect.left) / Math.max(1, rect.width)) * (bar.end - bar.start);
+		const st = stepAt(bar.steps, frame);
+		showTooltip(
+			e,
+			{ sourceLabel: `${label} ×${st.count}`, effects: st.effects, isMutuallyExclusive: false },
+			true
+		);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -2842,7 +2894,7 @@
 									</div>
 								{/each}
 								<!-- Per-source received buff subrows — stacked below any proc ICD rows -->
-								{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
+								{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (recRow.key)}
 									<div
 										class="rp-row"
 										style:top="{buffRowsTopForSlot(slotIdx) +
@@ -2853,7 +2905,8 @@
 										{#each recRow.bars as bar, bi (bi)}
 											{@const g = barGeom(bar.start, bar.end - bar.start)}
 											{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
-											{@const envBg = rampingBackground(bar) ?? decayingBackground(bar)}
+											{@const envBg =
+												rampingBackground(bar) ?? decayingBackground(bar) ?? steppedBackground(bar)}
 											<!-- svelte-ignore a11y_no_static_element_interactions -->
 											<div
 												class="rp-team-buff-bar"
@@ -2861,13 +2914,16 @@
 												style:width="{g.width}px"
 												style:background={envBg}
 												onmouseenter={(e) =>
-													showTooltip(e, {
-														sourceLabel: bar.sourceLabel,
-														effects: bar.effects,
-														isMutuallyExclusive: bar.isMutuallyExclusive,
-														duration: bar.duration,
-														procCooldown: bar.procCooldown
-													})}
+													bar.steps
+														? showStepTooltip(e, bar, bar.sourceLabel)
+														: showTooltip(e, {
+																sourceLabel: bar.sourceLabel,
+																effects: bar.effects,
+																isMutuallyExclusive: bar.isMutuallyExclusive,
+																duration: bar.duration,
+																procCooldown: bar.procCooldown
+															})}
+												onmousemove={(e) => bar.steps && showStepTooltip(e, bar, bar.sourceLabel)}
 												onmouseleave={hideTooltip}
 											>
 												{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
@@ -2916,31 +2972,36 @@
 														class="rp-team-buff-bar"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
+														style:background={steppedBackground(bar)}
+														onmousemove={(e) =>
+															bar.steps && showStepTooltip(e, bar, subrow.sourceLabel)}
 														onmouseenter={(e) =>
-															showTooltip(e, {
-																sourceLabel: subrow.sourceLabel,
-																// ⚓ THE COUNT UNDER THE VALUE. A Polestar Field bar's
-																// number is a payout, and the ledger that paid it is
-																// the thing a player recognises — Genshin shows the
-																// count on screen while you play. It rides BELOW the
-																// stats rather than replacing them.
-																// ⚠️ It is the count from the PREVIOUS 4s, which is
-																// what set this bar; the in-game counter is meanwhile
-																// filling toward the next grant. Two clocks — this is
-																// the one this bar can be checked against.
-																effects:
-																	bar.stacks === undefined
-																		? bar.effects
-																		: [
-																				...bar.effects,
-																				{
-																					stat: 'Recorded hits',
-																					displayValue: `${bar.stacks} in the previous 4s`
-																				}
-																			],
-																isMutuallyExclusive: false,
-																duration: bar.end - bar.start
-															})}
+															bar.steps
+																? showStepTooltip(e, bar, subrow.sourceLabel)
+																: showTooltip(e, {
+																		sourceLabel: subrow.sourceLabel,
+																		// ⚓ THE COUNT UNDER THE VALUE. A Polestar Field bar's
+																		// number is a payout, and the ledger that paid it is
+																		// the thing a player recognises — Genshin shows the
+																		// count on screen while you play. It rides BELOW the
+																		// stats rather than replacing them.
+																		// ⚠️ It is the count from the PREVIOUS 4s, which is
+																		// what set this bar; the in-game counter is meanwhile
+																		// filling toward the next grant. Two clocks — this is
+																		// the one this bar can be checked against.
+																		effects:
+																			bar.stacks === undefined
+																				? bar.effects
+																				: [
+																						...bar.effects,
+																						{
+																							stat: 'Recorded hits',
+																							displayValue: `${bar.stacks} in the previous 4s`
+																						}
+																					],
+																		isMutuallyExclusive: false,
+																		duration: bar.end - bar.start
+																	})}
 														onmouseleave={hideTooltip}
 													>
 														{#if icon}

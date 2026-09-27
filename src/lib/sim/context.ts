@@ -275,6 +275,21 @@ export type SimContext = {
 	// ── per-character state ───────────────────────────────────────────────────
 	charStates: Map<string, CharState>;
 	getCharState(charId: string): CharState;
+	/**
+	 * ⚓ EVERY CHANGE TO A ROTATION-SCOPED STACK COUNT, IN TIME ORDER (stepped
+	 * stacks round, 2026-09-27), keyed `holderId::key`. Written by the ledger map
+	 * that IS each holder's `rotationStacks` (see `StackLedgerMap`), so no write
+	 * site has to remember to report — and read at finalize, where a `perStack`
+	 * buff whose count moves under its bar becomes a step series.
+	 *
+	 * ⚠️ Stamped with `stackClock()` — the running task's frame — which is the
+	 * true instant for a cast, a hit and a tick. A LIFETIME instance expires
+	 * LAZILY at the next settle, so its drop is stamped late; the finalize reader
+	 * refuses lifetime keys for that reason rather than draw a wrong step.
+	 */
+	stackHistory: Map<string, { at: number; count: number }[]>;
+	/** The clock the ledger stamps with; `runRotation` points it at `clock.now`. */
+	stackClock: () => number;
 	/** Per-character cast events emitted so far — the mid-parse record
 	 *  `computeCurrentStates` reads for duringSummon detection. */
 	castsByChar: Map<string, CastEvent[]>;
@@ -458,7 +473,7 @@ export type SimContextInput = {
 export function createSimContext(input: SimContextInput): SimContext {
 	const charStates = new Map<string, CharState>();
 	let nextEventId = 0;
-	return {
+	const ctx: SimContext = {
 		swapF: input.swapF,
 		humanTiming: input.humanTiming ?? null,
 		constellationLevels: input.constellationLevels,
@@ -487,10 +502,15 @@ export function createSimContext(input: SimContextInput): SimContext {
 			let cs = charStates.get(charId);
 			if (!cs) {
 				cs = createCharState();
+				cs.rotationStacks = new StackLedgerMap((key, count) =>
+					recordStackChange(ctx.stackHistory, `${charId}::${key}`, ctx.stackClock(), count)
+				);
 				charStates.set(charId, cs);
 			}
 			return cs;
 		},
+		stackHistory: new Map(),
+		stackClock: () => 0,
 		castsByChar: new Map(),
 		castKindsByChar: new Map(),
 		eChargeQueues: new Map(),
@@ -511,4 +531,55 @@ export function createSimContext(input: SimContextInput): SimContext {
 		tickStacks: new Map(),
 		stackFireMarks: []
 	};
+	return ctx;
+}
+
+/**
+ * A holder's `rotationStacks`, reporting every change as it happens. ⚓ A Map
+ * subclass rather than a call at each write site: rotation-scoped counts are
+ * written from casts, hits, ticks, reactions, swap-ins and threshold fires, and
+ * a ledger that depended on each of them remembering would drift the first time
+ * a new site was added.
+ */
+export class StackLedgerMap extends Map<string, number> {
+	#report: ((key: string, count: number) => void) | undefined;
+	constructor(report: (key: string, count: number) => void) {
+		super();
+		this.#report = report;
+	}
+	override set(key: string, value: number): this {
+		super.set(key, value);
+		this.#report?.(key, value);
+		return this;
+	}
+	override delete(key: string): boolean {
+		const had = super.delete(key);
+		if (had) this.#report?.(key, 0);
+		return had;
+	}
+}
+
+/** Appends one count change, collapsing same-frame writes into the LAST one
+ *  (a cast that grants and then consumes lands as its net result) and dropping
+ *  a write that changes nothing. */
+export function recordStackChange(
+	history: Map<string, { at: number; count: number }[]>,
+	id: string,
+	at: number,
+	count: number
+): void {
+	let list = history.get(id);
+	if (!list) {
+		list = [];
+		history.set(id, list);
+	}
+	const last = list[list.length - 1];
+	if (last && last.at === at) {
+		last.count = count;
+		const prev = list[list.length - 2];
+		if (prev && prev.count === count) list.pop();
+		return;
+	}
+	if ((last?.count ?? 0) === count) return;
+	list.push({ at, count });
 }

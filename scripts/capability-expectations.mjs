@@ -264,6 +264,13 @@ export const EXPECTED = [
 	{ id: 'xiangling', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'burst' },
 	{ id: 'furina', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'raiden_shogun', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
+	{
+		id: 'qiqi',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: "ADDED 2026-09-27: the Herald of Frost coordinated attack (Witch's Revelation text; gcsim #3046)"
+	},
 	{ id: 'yae_miko', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'albedo', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
 	{
