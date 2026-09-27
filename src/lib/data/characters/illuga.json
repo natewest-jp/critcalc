@@ -197,7 +197,8 @@
 			"behavior": "instant",
 			"opensTransientState": {
 				"state": "orioleSong",
-				"duration": 20
+				"duration": 20,
+				"atFirstHit": true
 			},
 			"_curatorNotes": [
 				"genshin-db stub artifact fixed: behavior 'stance' → 'instant' (removed the stance 'duration' field). Haunted Night's Oriole-Song is a 20s buff STATE, not a weapon stance: it does not convert Illuga's normals and it persists while Illuga is OFF-field (stacks are consumed by nearby ACTIVE party members' Geo hits). KQM quickguide: 'No stance/field mode.' The 20s window surfaces via the Torchforger's Covenant / C4 buff bars (each duration 20).",
@@ -213,7 +214,8 @@
 				"⚠️⚠️ NO PIXEL MOVES YET AND THAT IS EXPECTED — don't read this as the mechanic being modelled. The pool is tracked and spent, but the thing that would SHOW it is the truncation: gcsim deletes the 20s burst status the moment the pool empties (`if c.nightingalesSong < 1 { c.DeleteStatus(burstKey) }`), so the A1 crit/EM bars and the C4 DEF bar should end early and today draw a flat 20s. Ending a timed window on a stack count has no primitive; the pool is its prerequisite. ⛔ The other two unmodelled halves stay out for stated reasons: the per-hit EM-scaled flat DMG add has no element-scoped flat-DMG Stat key, and C2's Aedon strike fires every 7 stacks consumed, which no procCooldown-shaped gate expresses. ⚠️ `max: 21` rather than 36 because the Geo-Construct bonus needs a construct count the parser does not have; a recast re-caps to 21, which is what gcsim's assignment does.",
 				"⚠️⚠️ MEASURED SEAM, NEW 2026-09-16: a rotation-scoped pool is NOT drained by a TEAMMATE's hit, though the trigger matches. `dispatchConsumeStacksOnHit` writes through `poolsFor(...)` only when the holder IS the hitter; for any other holder it writes to `CharState.onHitStacks`, a different container from the `rotationStacks` a `scope: 'rotation'` grant lives in. Measured `Illuga Q > Zhongli E Q N1 N2 N3 > Illuga E`: Zhongli lands four Geo applications and the pool reads 21 → 20, spent only by Illuga's own E. ⛔ Authored as `source: 'active'` anyway, because that is the mechanic; ⛔ don't narrow it to `'self'` to match the engine. ✅ Verified it does not CORRUPT the pool either — the non-self write lands on the other map and the snapshot at the next cast is intact. Fix this before the truncation.",
 				"↻ 2026-09-21: TEAMMATES SPEND THE POOL NOW. The note above says they do; measured, they did not — `dispatchConsumeStacksOnHit` wrote `onHitStacks` for any hitter but the holder, a container nothing reads for a rotation-scoped key, so `Illuga Q > Ningguang N1 N2 N3 N1 N2 N3 E > Illuga E` left the pool at 20 (her own burst hit and nothing else). It writes the key's HOME (`homeOf`) now: the same rotation reads 0 (Ningguang's swings land two Geo hits each), a Zhongli partner spends one for his E and none for the stele's pulses (`source: 'active'` refuses an entity), a Pyro partner spends nothing. ⏭ The truncation this was the prerequisite for — ending the 20s windows when the pool empties — is still unbuilt: a timed window ended by a stack count has no primitive.",
-				"↻ 2026-09-21 (event-ended buffs round): HAUNTED NIGHT'S ORIOLE-SONG IS A STATE NOW — `opensTransientState: { state: 'orioleSong', duration: 20 }`, opened at the press like gcsim's `AddStatus(burstKey, 20*60)`. The spend is gated on it (gcsim's hook returns unless the status is active) and carries `closesStateWhenEmpty`, so the hit that takes the last stack ends the state at that instant — gcsim's `if c.nightingalesSong < 1 { c.DeleteStatus(burstKey) }`, the kit's \"when all stacks … have been consumed … the effect will end\". ⚠️⚠️ THE 2026-09-16 NOTE ABOVE IS WRONG ABOUT WHAT ENDS WITH IT: the A1 crit/EM bars do NOT. A1 (Lightkeeper's Oath) is a flat 20s from the skill OR the burst in both the kit text and gcsim (`asc.go` `a1()`, `NewBaseWithHitlag(…, 20*60)`, called from both casts) and never looks at the burst status. Only C4 does."
+				"↻ 2026-09-21 (event-ended buffs round): HAUNTED NIGHT'S ORIOLE-SONG IS A STATE NOW — `opensTransientState: { state: 'orioleSong', duration: 20 }`, opened at the press like gcsim's `AddStatus(burstKey, 20*60)`. The spend is gated on it (gcsim's hook returns unless the status is active) and carries `closesStateWhenEmpty`, so the hit that takes the last stack ends the state at that instant — gcsim's `if c.nightingalesSong < 1 { c.DeleteStatus(burstKey) }`, the kit's \"when all stacks … have been consumed … the effect will end\". ⚠️⚠️ THE 2026-09-16 NOTE ABOVE IS WRONG ABOUT WHAT ENDS WITH IT: the A1 crit/EM bars do NOT. A1 (Lightkeeper's Oath) is a flat 20s from the skill OR the burst in both the kit text and gcsim (`asc.go` `a1()`, `NewBaseWithHitlag(…, 20*60)`, called from both casts) and never looks at the burst status. Only C4 does.",
+				"↻ 2026-09-27 (gcsim sync): Oriole-Song OPENS AT THE HIT now — `opensTransientState.atFirstHit`. Merged gcsim (#2677 + #3092) moved `AddStatus(burstKey, 20*60)`, the Song count, C2's reset and C4's first tick INTO the hitmark-48 task; the PR head this file was authored from set them at the press. The start cannot be seen (nothing spends a stack before the burst's own hit), but the window measured from the press ended 0.8s early. The `nightingalesSong` grant stays `onCast`: the spend is gated on the state, so a pool that fills 48 frames early changes nothing."
 			],
 			"description": "Light the lamp, dealing AoE Geo DMG, and gain Haunted Night's Oriole-Song effect for 20s. When this effect is active, Illuga gains 21 stacks of **Nightingale's Song**. When Normal Attacks, Charged Attacks, Plunging Attacks, Elemental Skills, and Elemental Bursts of nearby active party members deal Geo DMG to opponents, 1 stack of Nightingale's Song is consumed to increase the DMG dealt. Increase in DMG is based on Illuga's Elemental Mastery. If DMG is inflicted by Lunar-Crystallize, DMG dealt will increase further.\nWhen Geo DMG dealt in this manner hits multiple opponents, multiple stacks of Nightingale's Song will be consumed, depending on how many opponents are hit.\n\nAdditionally, if there are Geo Constructs created by nearby party members on the battlefield while Illuga unleashes his Elemental Burst, or when nearby party members create Geo Constructs while Haunted Night's Oriole-Song is active, every Geo Construct on the battlefield will allow Illuga to gain 5 additional stacks of Nightingale's Song. Within 20s after unleashing his Elemental Burst, Illuga can gain a maximum of 15 additional stacks of Nightingale's Song this way.\n\nWhen all stacks of Nightingale's Song have been consumed, or when the state's duration ends, the Haunted Night's Oriole-Song effect will end.",
 			"frames": {
@@ -242,7 +244,8 @@
 					"type": "buff",
 					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "onCast"
+						"type": "onCast",
+						"ability": "burst"
 					},
 					"duration": 20,
 					"durationType": "fixed",
@@ -262,7 +265,8 @@
 					"type": "buff",
 					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "onCast"
+						"type": "onCast",
+						"ability": "burst"
 					},
 					"duration": 20,
 					"durationType": "fixed",
@@ -282,7 +286,79 @@
 					"type": "buff",
 					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "onCast"
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "moonsign",
+						"min": 2
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 50,
+					"snapshottable": false,
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
+						"value": 80
+					}
+				},
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"source": "self"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 5,
+					"snapshottable": false,
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
+						"value": 10
+					}
+				},
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"source": "self"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "geoCritDmg",
+					"value": 10,
+					"snapshottable": false,
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
+						"value": 30
+					}
+				},
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"source": "self"
 					},
 					"conditions": {
 						"type": "teamFaction",
@@ -310,7 +386,8 @@
 				"C6 (Nightmare Orioles) enhances these totals to +10% CR / +30% geoCD / +80 EM — AUTHORED via constellationScaling (value REPLACES the base, matching the in-game 'enhanced to' wording, not additive). The C6 node therefore carries no standalone buff effects.",
 				"⚠️⚠️ ↻ 2026-08-18 — AUTHORED IS NOT MODELED, and the note above said 'modeled'. `BuffEffect.constellationScaling` (src/lib/types/ability.ts:1199) has NO reader on any display path: grep it over src/lib and every hit is either `gainStacks.constellationScaling` (a different field, same shape — src/lib/sim/stacks.ts:107/263/442, the per-fire grant amount) or `summonTick.tickCapScaling` (summons.ts:211), plus the lint. It appears NOWHERE in buffWindows.ts or buffDisplay.ts. So at C6 the three bars still print +5% CRIT Rate / +10% geoCritDmg / +50 EM — the bar draws, the who-renders check passes, the NUMBER is wrong. Rubric N9 names this character as the worked example (six authored buff uses corpus-wide: Illuga ×3, Linnea C1, Skirk, Varesa, Xianyun A4).",
 				"⏭ WORK ITEM: the fix is a reader, not data — resolve `constellationScaling` where the buff pool is built or where the value is formatted (buffWindows.ts / buffDisplay.ts), with the same 'definitively-true condition REPLACES the base' contract `tickCapOf` already implements for `tickCapScaling`. ⛔ Until that exists, do not author any further C6 value upgrade as `constellationScaling` and call it modeled — and ⛔ do not 'work around' it by adding a second C6-conditioned buff effect on the same stat, because the buff pools dedupe by `stat` before per-segment condition evaluation and would silently keep whichever was authored first.",
-				"Moonsign: Ascendant Gleam EM buff gated on teamFaction faction:moonsign min:2 (Lauma/Flins Ascendant-Gleam precedent). NOTE: Illuga's own utility passive raises the party's Moonsign by 1, so the true activation threshold may be lower than a bare min:2 count — flagged for Nate."
+				"Moonsign: Ascendant Gleam EM buff gated on teamFaction faction:moonsign min:2 (Lauma/Flins Ascendant-Gleam precedent). NOTE: Illuga's own utility passive raises the party's Moonsign by 1, so the true activation threshold may be lower than a bare min:2 count — flagged for Nate.",
+				"↻ 2026-09-27 (gcsim sync, merged #2677 + #3092): SPLIT BY CAST, six effects not three. Merged gcsim runs `a1()` at the Burst's START but queues it at frame 24 (tap) / 33 (hold) on the Skill — the PR we first authored from called it at both starts. The Burst half stays `onCast burst`; the Skill half is `onHit skill`, anchored on the Skill's landing (27 / 36), 3 frames after gcsim's instant rather than 24–33 before it. The start is unobservable either way; the END of a 20s bar is what moved. ⚓ One effect per trigger, Keqing C6's house form."
 			],
 			"description": "After unleashing Elemental Skill **Dawnbearing Songbird** or Elemental Burst **Shadowless Reflection**, other nearby party members will gain the Lightkeeper's Oath effect for 20s: For Geo DMG dealt to opponents, CRIT Rate increases by 5% and CRIT DMG increases by 10%.\n\nMoonsign: Ascendant Gleam \nParty members affected by the Lightkeeper's Oath effect have their Elemental Mastery increased by 50."
 		},
@@ -384,8 +461,9 @@
 					"type": "buff",
 					"target": "active",
 					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
+						"type": "onHit",
+						"abilityType": "burst",
+						"source": "self"
 					},
 					"conditions": {
 						"type": "constellation",
@@ -402,7 +480,8 @@
 			],
 			"_curatorNotes": [
 				"Flat +200 DEF to nearby active party members while Haunted Night's Oriole-Song is active (the 20s post-burst window). Authored as a def buff, target 'active', duration 20, onCast(burst). Explicit constellation:4 condition included so the buff dispatcher gates it correctly (Escoffier C1 / Gorou C6 precedent: constellation-node buffs gate on effect conditions, not the node level).",
-				"↻ 2026-09-21 (event-ended buffs round): bound to the burst's Oriole-Song — `whileState: 'orioleSong'`. \"When … Haunted Night's Oriole-Song effect is active\": gcsim re-applies a 1.1s DEF mod every second while `burstKey` is up (`cons.go` `c4`), so the bar ends with the state, which ends at 20s or when the Nightingale's Song pool is spent. Measured `Illuga Q > Ningguang N1 N2 N3 N1 N2 N3 E > Illuga E` at C4: the DEF bar drew to 20s with the pool long empty."
+				"↻ 2026-09-21 (event-ended buffs round): bound to the burst's Oriole-Song — `whileState: 'orioleSong'`. \"When … Haunted Night's Oriole-Song effect is active\": gcsim re-applies a 1.1s DEF mod every second while `burstKey` is up (`cons.go` `c4`), so the bar ends with the state, which ends at 20s or when the Nightingale's Song pool is spent. Measured `Illuga Q > Ningguang N1 N2 N3 N1 N2 N3 E > Illuga E` at C4: the DEF bar drew to 20s with the pool long empty.",
+				"↻ 2026-09-27 (gcsim sync): `onHit burst`, not `onCast` — merged gcsim starts the C4 ticker inside the burst's hitmark task, with the Oriole-Song state it clips to (see the burst's notes). Merged gcsim also narrowed the recipient from every OTHER party member to the ACTIVE character, which is what this file already said."
 			],
 			"description": "When Elemental Burst **Shadowless Reflection**'s Haunted Night's Oriole-Song effect is active, nearby active party members will have their DEF increased by 200."
 		},

@@ -1126,7 +1126,9 @@ export function runRotation(
 							active.opensTransientState,
 							cs,
 							char.id,
-							castStart,
+							active.opensTransientState.atFirstHit === true
+								? (castEvent.firstHitAt ?? castStart)
+								: castStart,
 							states,
 							charConstellationLevel,
 							{ sourceCastId: castId, source: kind },

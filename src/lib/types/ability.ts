@@ -1148,6 +1148,17 @@ type TransientStateCommon = {
 	/** Gate on runtime state/constellation — e.g. Varesa's base-form plunge
 	 *  opens Apex Drive only at C2 (`{ type: "constellation", level: 2 }`). */
 	conditions?: Condition;
+	/**
+	 * Open at the cast's FIRST LANDING (`CastEvent.firstHitAt`) instead of its
+	 * start — gcsim's `AddStatus` inside the hitmark task. Illuga's Oriole-Song
+	 * is the case (merged gcsim #2677/#3092 moved it to hitmark 48): the start is
+	 * unobservable, but a 20s window measured from the press ENDS 0.8s early.
+	 *
+	 * ⚠️ `opensTransientState` only (lint): an action-class opener fires at the
+	 * action's END by contract (see `actionOpensState`). A cast that states no
+	 * landing opens at its start, as before.
+	 */
+	atFirstHit?: true;
 	/** Named states to CLOSE when this window opens (gcsim DeleteStatus on
 	 *  the opening action) — a mode commit consumes its entry window and
 	 *  displaces the opposite mode (Durin: darkForm consumes transmuting +

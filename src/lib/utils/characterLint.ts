@@ -953,6 +953,21 @@ function lintAbility(
 				}
 			}
 		}
+		// (gcsim sync, 2026-09-27) `atFirstHit` anchors on a CAST's landing, so it
+		// means nothing on an action-class opener, which fires at the action's end.
+		const s1 = spec as { atFirstHit?: unknown };
+		if (s1.atFirstHit !== undefined) {
+			if (s1.atFirstHit !== true) {
+				push('strict', 'transient-state-spec', `${where}.atFirstHit must be literally true`, a.id);
+			} else if (where !== 'opensTransientState') {
+				push(
+					'strict',
+					'transient-state-spec',
+					`${where}.atFirstHit is only meaningful on opensTransientState (an action opener fires at the action's end)`,
+					a.id
+				);
+			}
+		}
 		// (charged-forms round, 2026-09-16) `terminatesOnAction` is a flag with
 		// one setting, like `toggle`; `onEnd` is a `{state, duration}` pair and
 		// is refused on a toggle, which has no end to chain from.
