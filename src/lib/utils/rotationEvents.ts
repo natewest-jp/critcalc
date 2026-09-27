@@ -332,13 +332,17 @@ export type BuffWindowSource =
 				/** A hit from the PARTY's stream — an `onHit` effect whose trigger
 				 *  names a `source` other than `'self'`, which no cast or swing of
 				 *  the holder's anchors (cross-character onHit round, 2026-09-21). */
-				| 'teamHit';
+				| 'teamHit'
+				/** A `whileStacks` buff — its window is the span the holder held the
+				 *  key, anchored on no event (stepped stacks round, 2026-09-27). */
+				| 'stacks';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 			/** `stackThreshold` only — the fire's in-game name for the row label
 			 *  (stack-threshold round, 2026-09-18). */
 			fireLabel?: string;
-			/** `teamHit` only — the hosting passive's / constellation's name, which
-			 *  is the row's label: the bar belongs to no cast of the holder's. */
+			/** `teamHit` / `stacks` only — the hosting passive's / constellation's
+			 *  name, which is the row's label: the bar belongs to no cast of the
+			 *  holder's. */
 			hostLabel?: string;
 	  }
 	| {
@@ -405,7 +409,8 @@ export type BuffWindowSource =
 				| 'nightsoulBurst'
 				| 'state'
 				| 'stackThreshold'
-				| 'teamHit';
+				| 'teamHit'
+				| 'stacks';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 	  };
 
@@ -602,5 +607,16 @@ export type TimelineWindow =
 			 * value formatter that has no business resolving it.
 			 */
 			fieldStacks?: number;
+			/**
+			 * ⚓ THE COUNT UNDER THE BAR, AS IT MOVED (stepped stacks round,
+			 * 2026-09-27) — a `whileStacks` window whose value is `perStack` on its
+			 * own key. Each entry is the count from `at` until the next entry (the
+			 * first sits at or before `start`); the projections clamp it to each
+			 * bar they cut. ⛔ Not `stackContext`, which stays the count at the
+			 * window's start so every existing formatter reads what it always did.
+			 */
+			stackSteps?: readonly { at: number; count: number }[];
+			/** The key's ceiling (its grants' `max`) — what full density means. */
+			stackMax?: number;
 			source: BuffWindowSource;
 	  } & WindowProvenance);

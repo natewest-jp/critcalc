@@ -13,6 +13,9 @@ export function isPctStat(stat: Stat): boolean {
 	return (
 		stat.endsWith('%') ||
 		stat.endsWith('DmgBonus') ||
+		// ⚠️ The bucket-5 reaction bonuses are percentages too ("Superconduct DMG is
+		// increased by 50%") — they printed as a bare +50 until 2026-09-27.
+		stat.endsWith('ReactionBonus') ||
 		stat.endsWith('Res') ||
 		stat.endsWith('CritDmg') ||
 		stat === 'critRate' ||

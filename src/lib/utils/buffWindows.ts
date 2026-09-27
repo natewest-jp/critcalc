@@ -67,6 +67,8 @@ import {
 	isActiveTargetOnly,
 	resolveCastContext,
 	castLandsNoHit,
+	effectSourcesAtConstellation,
+	normalizeBuffLikeEffect,
 	targetsEnemy,
 	targetsTeamOrActive
 } from '$lib/utils/effectCollection';
@@ -99,6 +101,9 @@ export type BuffWindowInput = {
 	teamEnabledReactions: ReadonlySet<string>;
 	teamElementCountsByHolder: ReadonlyMap<string, ReadonlyMap<Element, number>>;
 	getCharacter: (id: string) => CharacterData | null;
+	/** Every change to a rotation-scoped stack count, `holderId::key` → steps in
+	 *  time order (`SimContext.stackHistory`) — what a `whileStacks` buff IS. */
+	stackHistory?: ReadonlyMap<string, readonly { at: number; count: number }[]>;
 };
 
 export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
@@ -116,7 +121,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		teamFactionCounts,
 		teamEnabledReactions,
 		teamElementCountsByHolder,
-		getCharacter
+		getCharacter,
+		stackHistory
 	} = input;
 
 	const out: BuffWindow[] = [];
@@ -2713,6 +2719,99 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		}
 	}
 
+	// ── whileStacks (stepped stacks round, 2026-09-27) ──
+	//
+	// ⚓ A BUFF THAT IS ITS COUNT. The window is each span the holder held the
+	// key above zero, read off the parse's own ledger (`stackHistory`) — anchored
+	// on no cast, so an E, a Q that refreshes Odette's Double and the off-field
+	// ticks in between are ONE bar. A `perStack` value on the same key carries
+	// the steps, which the projections draw as density. `whileState` then bounds
+	// it (the pass below), exactly as it bounds a cast-anchored window.
+	if (stackHistory && stackHistory.size > 0) {
+		let rotationEnd = 0;
+		for (const t of tracks) rotationEnd = Math.max(rotationEnd, t.activeEnd);
+		for (const w of windows) rotationEnd = Math.max(rotationEnd, w.end);
+		const holders = new Set(tracks.map((t) => t.characterId));
+		for (const holderId of holders) {
+			const char = getCharacter(holderId);
+			if (!char) continue;
+			const cLevel = constellationLevels[holderId] ?? 0;
+			const sources = effectSourcesAtConstellation(char, cLevel);
+			for (const src of sources) {
+				for (const raw of src.effects ?? []) {
+					if (raw.trigger.type !== 'whileStacks') continue;
+					const key = raw.trigger.key;
+					const effect = normalizeBuffLikeEffect(raw);
+					if (!effect || effect.type !== 'buff') continue;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new Set(),
+							cLevel,
+							undefined,
+							undefined,
+							receivedCtxOf(holderId)
+						) === false
+					)
+						continue;
+					const history = stackHistory.get(`${holderId}::${key}`);
+					if (!history || history.length === 0) continue;
+					const value = effect.value as { type?: string; key?: string };
+					const stepped =
+						typeof value === 'object' && value.type === 'perStack' && value.key === key;
+					// ⚠️ Only grants that can fire at THIS constellation — Odette's C1
+					// grants cap at 6, and counting them at C0 drew 4 of 4 as two-thirds.
+					let stackMax: number | undefined;
+					const capOf = (fx: Effect): void => {
+						if (fx.type !== 'gainStacks' || fx.key !== key || fx.max === undefined) return;
+						if (
+							evalCondition(
+								fx.conditions,
+								4,
+								new Set(),
+								cLevel,
+								undefined,
+								undefined,
+								receivedCtxOf(holderId)
+							) === false
+						)
+							return;
+						stackMax = Math.max(stackMax ?? 0, fx.max);
+					};
+					for (const s2 of sources) for (const fx of s2.effects ?? []) capOf(fx);
+					for (const s2 of char.abilities)
+						for (const sm of (s2 as { summons?: { effects?: Effect[] }[] }).summons ?? [])
+							for (const fx of sm.effects ?? []) capOf(fx);
+					const flush = (span: { at: number; count: number }[], end: number): void => {
+						const start = span[0].at;
+						if (end <= start) return;
+						emit({
+							characterId: holderId,
+							...(effect.target === 'self' ? { receiverId: holderId } : {}),
+							start,
+							end,
+							effects: [effect],
+							stackContext: new Map([[key, span[0].count]]),
+							duration: end - start,
+							...(stepped ? { stackSteps: span, ...(stackMax ? { stackMax } : {}) } : {}),
+							source: { type: 'character', trigger: 'stacks', hostLabel: src.name }
+						});
+					};
+					let open: { at: number; count: number }[] | null = null;
+					for (const step of history) {
+						if (step.count > 0) (open ??= []).push({ at: step.at, count: step.count });
+						else if (open) {
+							flush(open, step.at);
+							open = null;
+						}
+					}
+					if (open) flush(open, rotationEnd);
+				}
+			}
+		}
+	}
+
 	return clipToHolderStates(out, windows);
 }
 
@@ -2755,6 +2854,16 @@ function clipToHolderStates(out: BuffWindow[], windows: readonly TimelineWindow[
 				)
 				.map((w) => ({ start: w.start, end: w.end }))
 				.sort((a, b) => a.start - b.start);
+			// ⚓ A state re-opened on the frame it closed is ONE span to a clip
+			// (stepped stacks round): Odette's `soloDanceDouble` closes and reopens
+			// at a refreshing Q, and the bar it bounds must not break there.
+			const merged: { start: number; end: number }[] = [];
+			for (const sp of spans) {
+				const last = merged[merged.length - 1];
+				if (last && sp.start <= last.end) last.end = Math.max(last.end, sp.end);
+				else merged.push({ ...sp });
+			}
+			spans = merged;
 			spanCache.set(key, spans);
 		}
 		return spans;

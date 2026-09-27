@@ -81,8 +81,23 @@ export function stackScopesOf(char: CharacterData): Map<string, StackScope> {
 	const cached = scopeCache.get(char);
 	if (cached) return cached;
 	const m = new Map<string, StackScope>();
+	// ⚠️ SUMMON EFFECTS TOO (stepped stacks round, 2026-09-27): a key granted only
+	// by a summon's tick (Odette's party share of Marvelous Splendor) declares its
+	// scope there, and a walk that missed it filed the key as `'segment'` — where
+	// the tick dispatcher, which writes rotation homes only, silently dropped it.
+	const effectLists: (readonly Effect[] | undefined)[] = [];
 	for (const src of [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])]) {
-		for (const fx of src.effects ?? []) {
+		effectLists.push(src.effects);
+		const summonHosts = [
+			src as { summons?: { effects?: Effect[] }[] },
+			...(((src as { variants?: unknown[] }).variants ?? []) as {
+				summons?: { effects?: Effect[] }[];
+			}[])
+		];
+		for (const host of summonHosts) for (const s of host.summons ?? []) effectLists.push(s.effects);
+	}
+	for (const list of effectLists) {
+		for (const fx of list ?? []) {
 			if (fx.type !== 'gainStacks') continue;
 			if (fx.scope === undefined) continue;
 			if (m.has(fx.key)) continue;
@@ -1280,6 +1295,77 @@ export function dispatchGainStacksOnStackFire(
 			target.write.state.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
 		}
 		mirrorKey(target, fx.key);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Stacks moved by a summon's tick (stepped stacks round, 2026-09-27)
+// ---------------------------------------------------------------------------
+
+/**
+ * Applies the `gainStacks` / `consumeStacks` effects of ONE summon tick — the
+ * Dance Double's A1 ticker moving Marvelous Splendor from Odette to her party
+ * once a second while she is off field (gcsim `a1Ticker`).
+ *
+ * ⚓ GAINS, THEN CONSUMES — the order every other stack site keeps — so a pair
+ * that MOVES stacks from one key to another gates both halves on the SOURCE
+ * key's pre-tick count: the gain reads it before the consume spends it.
+ *
+ * ⚓ ROTATION-SCOPED KEYS ONLY, by the summon-tick rule: a tick fires inside
+ * whoever's segment is live, where the holder has no pool. Lint refuses the
+ * rest. ⚠️ Conditions demand a definitive `true` under the live closed world.
+ */
+export function dispatchStacksOnSummonTick(
+	holder: CharacterData,
+	hcs: CharState,
+	effects: readonly Effect[],
+	time: number,
+	states: ReadonlySet<string>,
+	constellationLevel: number,
+	context: ConditionContext
+): void {
+	applyRotationLifetimeExpiry(holder, time, () => hcs);
+	const ctxWithClosedWorld = { ...context, negatedStates: liveNegatedStates(holder, states) };
+	const passes = (fx: Effect): boolean =>
+		evalCondition(
+			fx.conditions,
+			DEFAULT_ASCENSION,
+			states,
+			constellationLevel,
+			new Map(),
+			stackReadView(hcs, null),
+			ctxWithClosedWorld
+		) === true;
+	for (const fx of effects) {
+		if (fx.type !== 'gainStacks' || stackScopeOf(holder, fx.key) !== 'rotation') continue;
+		if (!passes(fx)) continue;
+		let amount = fx.amount;
+		if (
+			fx.constellationScaling &&
+			evalCondition(
+				fx.constellationScaling.conditions,
+				DEFAULT_ASCENSION,
+				states,
+				constellationLevel,
+				new Map(),
+				undefined,
+				context
+			) === true
+		)
+			amount = fx.constellationScaling.amount;
+		const next = (hcs.rotationStacks.get(fx.key) ?? 0) + amount;
+		hcs.rotationStacks.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+	}
+	for (const fx of effects) {
+		if (fx.type !== 'consumeStacks' || stackScopeOf(holder, fx.key) !== 'rotation') continue;
+		if (!passes(fx)) continue;
+		if (fx.amount === 'all') {
+			hcs.rotationStacks.set(fx.key, 0);
+			hcs.rotationStackInstances.delete(fx.key);
+		} else {
+			const current = hcs.rotationStacks.get(fx.key) ?? 0;
+			hcs.rotationStacks.set(fx.key, Math.max(0, current - fx.amount));
+		}
 	}
 }
 

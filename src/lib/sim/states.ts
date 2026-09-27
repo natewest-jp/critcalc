@@ -146,6 +146,25 @@ export function closeStateWindows(
 }
 
 /**
+ * Open a summon's own state (`Summon.opensState`) for exactly its life —
+ * gcsim sync, 2026-09-27. A recast closes the previous life's window at the new
+ * spawn first, so two lives never overlap in the records.
+ */
+export function openSummonState(
+	ctx: SimContext,
+	cs: CharState,
+	characterId: string,
+	name: string,
+	spawnAt: number,
+	end: number,
+	sourceCastId: number | undefined
+): void {
+	closeStateWindows(ctx, cs, characterId, name, spawnAt);
+	cs.states.set(name, end);
+	ctx.stateWindowRecs.push({ characterId, name, start: spawnAt, end, sourceCastId });
+}
+
+/**
  * Which cast KINDS a character has emitted so far — an incremental index over
  * `castsByChar`, scanned in `castKinds()` below.
  *
