@@ -111,6 +111,20 @@ over a buff or a summon.
 | Summon                | "summon", "a thing left in the world"             | **summon**                                                                             | 🏷                   |                                                                                                                           |
 | Reaction names        | Bloom, Hyperbloom, Lunar-Charged…                 | as HoYo spells them                                                                    | 🔒                   | genshin-db ships these per locale. ⚠️ **Stellar Glimmer is an umbrella term, not a reaction** — ⛔ never use it as one.   |
 
+### ⚓ Frozen and Overloaded — the game's names, locked (⚓ Nate, 2026-09-27)
+
+The game names these reactions **Frozen** and **Overloaded**. Players widely say
+"Freeze" and "Overload", and the site did too — ⛔ never either in user-facing text.
+The frozen label follows the game, not community usage, for the same reason every
+reaction name does: genshin-db ships the game's names per locale, and "Freeze" has no
+translation to match.
+
+⏭ **Code sites for the code pass** (found 2026-09-27): `auraDisplay.ts:159,163,199,203`
+(`'Overload'`, `'Freeze'`) · `GaugeInstrument.svelte:43,46` (the log's reaction names) and
+`:172` (the scenario chip) · `ReactionCurvesInstrument.svelte:65` · `anatomy.ts:66`
+(`Overload ×2.75`). ⚠️ Seven character JSONs say "Overload" in prose — `caveat`s are not
+rewritten (R1), so they are left.
+
 ---
 
 ## 2a. ⚠️⚠️ `Interruption Res` is NOT the frozen `RES` — and my earlier fix was wrong
@@ -234,7 +248,7 @@ decided on the sheet that raises it.
 | ------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- | --------------------------------------- |
 | Band B, again       | ↻ a **third** name: **"the planner's toolbar"**              | the view bar (unchanged)                                   | `settings.md` §2                        |
 | The loadout popover | "picker" (`Close picker`)                                    | the loadout popover                                        | `bench.md` §2                           |
-| The aura log        | "Event log" in the Gauge Explorer, "aura log" in the planner | one name, both tools                                       | `visualizers-instruments-03-gauge.md`   |
+| The aura log        | "Event log" in the Gauge Explorer, "aura log" in the planner | ✅ **Aura log**, both tools (⚓ Nate 2026-09-27)           | `visualizers-instruments-03-gauge.md`   |
 | A capability's stat | `RES shred` (facets) · `RES Shred` (DEF & RES) — ONE term    | RES shred                                                  | `team-builder.md` §1, `…-05-def-res.md` |
 | ⚠️⚠️ Interruption   | `Interruption Res` — a **different** resistance              | ⏭ see §2a, ⛔ not `RES`                                   | §2a below                               |
 | Off-field           | `Off-field DMG` (facets) · `Off-Field DPS` (roles)           | off-field                                                  | `team-builder.md` §2                    |

@@ -80,19 +80,19 @@ is picked. One can go.
 
 ### The curve legends
 
-| Curve           | Detail                               | New |
-| --------------- | ------------------------------------ | --- |
-| Forward ×2      | Hydro→Pyro Vaporize · Pyro→Cryo Melt |     |
-| Reverse ×1.5    | Pyro→Hydro Vaporize · Cryo→Pyro Melt |     |
-| ×3              | Hyperbloom · Burgeon · Shatter       | 🔒  |
-| ×2.75           | Overload                             | 🔒  |
-| ×2              | Electro-Charged (per tick) · Bloom   |     |
-| ×1.5            | Superconduct                         | 🔒  |
-| ×0.6            | Swirl                                | 🔒  |
-| ×0.25           | Burning (per tick)                   |     |
-| Spread ×1.25    | Dendro hit on Quicken                |     |
-| Aggravate ×1.15 | Electro hit on Quicken               |     |
-| Shield          | before the 150% same-element bonus   |     |
+| Curve           | Detail                               | New                         |
+| --------------- | ------------------------------------ | --------------------------- |
+| Forward ×2      | Hydro→Pyro Vaporize · Pyro→Cryo Melt |                             |
+| Reverse ×1.5    | Pyro→Hydro Vaporize · Cryo→Pyro Melt |                             |
+| ×3              | Hyperbloom · Burgeon · Shatter       | 🔒                          |
+| ×2.75           | Overload                             | Overloaded — ⚓ glossary §2 |
+| ×2              | Electro-Charged (per tick) · Bloom   |                             |
+| ×1.5            | Superconduct                         | 🔒                          |
+| ×0.6            | Swirl                                | 🔒                          |
+| ×0.25           | Burning (per tick)                   |                             |
+| Spread ×1.25    | Dendro hit on Quicken                |                             |
+| Aggravate ×1.15 | Electro hit on Quicken               |                             |
+| Shield          | before the 150% same-element bonus   |                             |
 
 ⚠️ **`Hydro→Pyro` typesets an arrow** — `→` is on the mark sweep's banned list
 (`e2e/marks.spec.ts`), and the Gauge Explorer's log dropped it for that reason; the sweep

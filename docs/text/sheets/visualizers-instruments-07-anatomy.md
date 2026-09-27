@@ -120,6 +120,9 @@ Aggravate ×1.15 · Hyperbloom ×3 · Burgeon ×3 · Shatter ×3 · Overload ×2
 Electro-Charged ×2 · Bloom ×2 · Superconduct ×1.5 · Swirl ×0.6 · Burning ×0.25**
 — `anatomy.ts:52–71`
 
+↻ **"Overload ×2.75" → "Overloaded ×2.75"** (⚓ Nate 2026-09-27 — the game's name, locked in
+glossary §2). The only change to this frozen table besides "No reaction".
+
 ⚠️ **Sixteen entries, each a frozen reaction name plus a frozen multiplier** — but
 **"No Reaction"** is ours and translates. ✅ §A makes it **`No reaction`**
 (`anatomy.ts:52`), the only row in the table that changes. ⚓ It is the only row in the list that is not a

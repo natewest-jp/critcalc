@@ -110,16 +110,33 @@ names for each stat, which is worth one deliberate look.
 
 ## Added 2026-09-27 — missed by the first extraction
 
-☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+☑ **Read by Nate 2026-09-27** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
 an approval. These rows come from a parser-based re-run; the first pass skipped strings
 inside script expressions and some attributes. Keys are left to the extraction pass.
 
 ⚠️ **This sheet is already ruled** — these two are the pieces the ruled rows didn't reach.
 
-| Where                       | Context                                                | Now                    | New |
-| --------------------------- | ------------------------------------------------------ | ---------------------- | --- |
-| `CritHeatmap.svelte:737`    | Marker tooltip, third line (risk overlay on)           | {n}% no-crit risk      |     |
-| `CritInstrument.svelte:254` | Roll result, first half (before `vz.crit.roll.result`) | {n} of {n} crit → {n}x |     |
+| Where                       | Context                                                | Now                    | New (→ C: suggested)             |
+| --------------------------- | ------------------------------------------------------ | ---------------------- | -------------------------------- |
+| `CritHeatmap.svelte:737`    | Marker tooltip, third line (risk overlay on)           | {n}% no-crit risk      | → C: No-crit risk {n}%           |
+| `CritInstrument.svelte:254` | Roll result, first half (before `vz.crit.roll.result`) | {n} of {n} crit → {n}x | → C: {n} of {n} hits crit — ×{n} |
+| `CritInstrument.svelte:56`  | Ratio (CD:CR) value when CRIT Rate is 0                | n/a                    | → C: —                           |
+| `CritHeatmap.svelte:592`    | Corner label atop the right-edge Average DMG scale     | 4.00x                  | → C: ×4.00                       |
+
+⚓ **Why these suggestions** (the last two were found by a strict per-sheet re-check,
+2026-09-27 — every string in this instrument's files against THIS sheet, single words
+included):
+
+- **No-crit risk {n}%** — the tooltip's other lines put the label first (`CR {n}%`,
+  `CD {n}%`), and the readout already names it "No-crit risk".
+- **{n} of {n} hits crit — ×{n}** + the ruled `this time (average ×{n})` reads as one
+  sentence: "7 of 12 hits crit — ×1.64 this time (average ×1.72)". The em dash replaces
+  the typeset `→`, "hits" gives the plural a noun to agree with, and the multiplier takes
+  the §G prefix.
+- **—** for an undefined ratio: a dash is the site's "no value" mark and needs no
+  translation, where "n/a" is an English abbreviation.
+- **×4.00** is not a taste call — it is §G (prefix, two decimals) reaching a label the
+  ruled isolines row (`:493`) didn't cover.
 
 ⚠️ **The roll line is ASSEMBLED across two rows** — `{n} of {n} crit →` here, `this time
 (average ×{n})` in the ruled row. A translator needs the whole sentence. It also typesets
