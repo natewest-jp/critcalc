@@ -2894,7 +2894,7 @@
 									</div>
 								{/each}
 								<!-- Per-source received buff subrows — stacked below any proc ICD rows -->
-								{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
+								{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (recRow.key)}
 									<div
 										class="rp-row"
 										style:top="{buffRowsTopForSlot(slotIdx) +

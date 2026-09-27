@@ -32,7 +32,7 @@ const AB_LABEL = { skill: 'E', burst: 'Q', normal: 'N', charged: 'CA', plunge: '
 export function projectCharReceivedBuffRows(
 	windows: ReadonlyArray<TimelineWindow>,
 	getCharacter: (id: string) => CharacterData | null
-): CharReceivedBuffSubrow[] {
+): Array<CharReceivedBuffSubrow & { key: string }> {
 	const buffWins = windows
 		.filter((w): w is BuffWindow => w.kind === 'buff' && w.receiverId !== undefined)
 		.sort((a, b) => a.id - b.id);
@@ -144,7 +144,13 @@ export function projectCharReceivedBuffRows(
 	// share a start and become one seamed bar. An envelope bar is held out of
 	// the fuse — its gradient is drawn over the bar's span, and a fused span is
 	// the longest part's, not the ramping one's.
-	return [...rowMap.values()].map((row) => ({
+	// ⚠️⚠️ THE ROW CARRIES ITS MAP KEY, and the chart's keyed {#each} renders by
+	// it (archive_bug_lessons: the render key must be EXACTLY as unique as the
+	// dedup key). A count-bound row is keyed by stat as well, so Odette's A1
+	// and C2 rows share `receiver::label` — keyed by that alone they crashed the
+	// planner at C2 with each_key_duplicate (stepped stacks round, 2026-09-27).
+	return [...rowMap].map(([key, row]) => ({
+		key,
 		...row,
 		bars: mergeRefreshedBars(
 			fuseNestedBars(
