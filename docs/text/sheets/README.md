@@ -34,6 +34,28 @@ it."**
 
 ---
 
+## ↻ 2026-09-27 — the re-extraction
+
+The first pass read markup well and scripts badly: it missed nearly every string built in
+a script expression, object literal or template literal, plus most `title` / `aria-label`
+attributes. A parser-based re-run (Svelte's own parser for templates and scripts, the
+TypeScript compiler for `.ts`) found **~370 fragments in 14 sheets** that no sheet listed —
+only 17 of them were added after the sheets were written.
+
+⚓ **Each affected sheet now ends with an "Added 2026-09-27" section** carrying a ☐ box.
+⚠️ **Until that box is ticked, a blank `New:` in that section is NOT an approval** — the
+rest of the sheet keeps the usual rule.
+
+The biggest gaps: **Team Builder** (buttons, tooltips, filter hints, the capability
+qualifiers), **Rotation Planner** (the editor's lint messages, the aura log's limits, the
+chart tooltips, the stat labels), **Gauge Explorer** (the twelve scenario notes and the
+event log's grammar), **Reaction Curves** (the four families), **Artifact Rolls** (the
+chart notes). ⛔ Still out: the coverage page, help, About and `seo.ts` (pass 2).
+⚠️ The check can't vouch for **single words** — a one-word string counts as present if
+the word appears anywhere in the sheets.
+
+---
+
 | Sheet                                                                         | Strings | Notes                                                    |
 | ----------------------------------------------------------------------------- | ------- | -------------------------------------------------------- |
 | ✅ ~~[site-chrome](site-chrome.md)~~                                          | 24      | **CLOSED + APPLIED 2026-09-22** — gates green            |

@@ -148,3 +148,63 @@ rotations. Replace your current data?
 tuple array the extractor could not read cleanly. ⚠️ They are user-facing and need their
 own pass — flagged so they are not missed.
 `src/lib/components/SettingsPanel.svelte:271`
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions and array literals. Keys are left to the extraction pass.
+
+### Display — added after the sheets were written
+
+| Where                         | Context      | Now                                                                                                                                    | New |
+| ----------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `SettingsPanel.svelte:130` 🆕 | Toggle label | Coverage strips                                                                                                                        |     |
+| `SettingsPanel.svelte:131` 🆕 | Under it     | Show each slotted character's coverage strip under the Rotation Planner's notation, with the parts your rotation doesn't reach dimmed. |     |
+
+🆕 = added 2026-09-23 (`9af689a7`), the coverage round — written against the style guide.
+
+### Slider readouts
+
+| Where                      | Now          | New |
+| -------------------------- | ------------ | --- |
+| `SettingsPanel.svelte:124` | {n}ms · {n}f |     |
+| `SettingsPanel.svelte:199` | {n}f · {n}s  |     |
+
+⚠️ **`f` for frames** is our abbreviation and appears nowhere else as a unit a reader is
+told about. `ms` and `s` go through `Intl` (style guide §3.7); `f` can't.
+
+### The reset rows
+
+The four per-category rows above "Everything" (`SettingsPanel.svelte:289`, one array):
+
+| Name                 | Description                                             | New |
+| -------------------- | ------------------------------------------------------- | --- |
+| Constellation levels | Clears every saved constellation level.                 |     |
+| Loadout labels       | Clears every saved weapon and artifact label.           |     |
+| Roster ownership     | Clears which characters are marked owned or wishlisted. |     |
+| Saved rotations      | Deletes every rotation in your save bank.               |     |
+
+| Where                      | Context                     | Now                           | New |
+| -------------------------- | --------------------------- | ----------------------------- | --- |
+| `SettingsPanel.svelte:302` | Each row's button / armed   | Clear · Confirm               |     |
+| `SettingsPanel.svelte:319` | Everything's button / armed | Clear all · Confirm clear all |     |
+
+⚠️ **"save bank"** again — the overlay is called **Saved Rotations**, and this row's own
+name says "Saved rotations". (The same word appears in two band A tooltips —
+`document-bar.md`.)
+⚠️ Three rows say "Clears", the fourth "Deletes" — probably deliberate (a rotation is a
+thing you made), worth confirming.
+
+### Backup import errors
+
+| Where                   | Now                                            | New |
+| ----------------------- | ---------------------------------------------- | --- |
+| `settingsBackup.ts:187` | That file isn't valid JSON.                    |     |
+| `settingsBackup.ts:191` | That doesn't look like a critcalc backup file. |     |
+| `settingsBackup.ts:209` | The backup had no recognizable critcalc data.  |     |
+
+⚠️ "critcalc" is 🔒 the brand. ⚠️ "valid JSON" assumes the reader knows what JSON is —
+they chose a file, so perhaps; the other two say the same thing in plain words.

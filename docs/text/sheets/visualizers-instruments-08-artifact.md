@@ -132,3 +132,65 @@ panel. Both are English conventions — `1 in 8` is `8分の1` in Japanese, whic
 order entirely.
 ⚠️ **`P(≥3 rolls)`** embeds an English word inside mathematical notation (§I's case).
 ⚠️ **"lines" appears as "these lines" and "4 lines"** — the community term again (§3).
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions, attributes, and prose split around `{…}` expressions.
+Keys are left to the extraction pass.
+
+⚠️ **Nearly every row here is ASSEMBLED** — the first pass missed them precisely because
+the sentence is interleaved with `{…}` expressions and `{#if}` branches. Each is written
+out whole below, as a translator would need it.
+
+### Chart notes (one under each view's chart)
+
+| Where                           | View          | Now                                                                                                                                                                                                                                      | New |
+| ------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `ArtifactInstrument.svelte:471` | Appraise      | {Crit value \| Roll value into {pair}} across every possible outcome of a piece with these starting lines ({4-line \| 3-line} start, {n} rolls) — the marker is the piece you entered.                                                   |     |
+| `ArtifactInstrument.svelte:476` | Appraise (RV) | RV = roll value, each roll's strength as a % of the strongest possible roll.                                                                                                                                                             |     |
+| `ArtifactInstrument.svelte:500` | Fresh drop    | {pair} on a 5★ {slot} — the game draws starting lines with hidden weights, and the two CRIT stats are its rarest draws.                                                                                                                  |     |
+| `ArtifactInstrument.svelte:561` | Crit value    | Exact distribution of total crit value at +20, assuming CR and CD are both starting lines ({4-line start, 5 rolls \| 3-line start, 4 rolls}{, ≥{n} guaranteed into the pair}). p10 = the unlucky tenth of pieces, p90 = the lucky tenth. |     |
+| `ArtifactInstrument.svelte:647` | Upgrade       | Rolls into {pair} across {n} upgrade events (each event: 25% per line).                                                                                                                                                                  |     |
+| `ArtifactInstrument.svelte:649` | Reshape       | Solid: reshape outcome with the ≥{n} guarantee (ghost: without it). Rolls reallocate across all 4 lines; modeled as a conditional redistribution.                                                                                        |     |
+
+🐛 **`{slot.name.toLowerCase()}` and `{src.name.toLowerCase()}`** lowercase a display name
+in code (`:263`, `:500`) — "on a 5★ sands". Casing is a locale's decision; ⛔ it can't be
+done with `toLowerCase()` once the name is translated (German nouns keep their capital).
+⚠️ **"Solid: … (ghost: without it)"** is a legend written as prose, and "modeled as a
+conditional redistribution" is engineering register.
+⚠️ **"RV = roll value"** and **"p10 = …"** define notation with `=` — fine, but `RV` is
+🏷 community vocabulary.
+
+### Fresh-drop ladder rows
+
+| Where                           | Now                             | New |
+| ------------------------------- | ------------------------------- | --- |
+| `ArtifactInstrument.svelte:261` | Both at craft — you choose them |     |
+| `ArtifactInstrument.svelte:263` | Both at drop ({source})         |     |
+| `ArtifactInstrument.svelte:264` | Both once 4 lines exist         |     |
+| `ArtifactInstrument.svelte:266` | …and {stat} main                |     |
+
+⚠️ **"…and {stat} main" continues the row above it** — a fragment whose sentence is
+split across two rows of a chart.
+
+### Source notes and readout pieces
+
+| Where                           | Context                    | Now                                                                                             | New |
+| ------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------- | --- |
+| `ArtifactInstrument.svelte:768` | Note, Elixir source        | Sanctifying Elixir: {n}% of crafts start with 3 lines, {n}% with 4 — same odds as domain drops. |     |
+| `ArtifactInstrument.svelte:774` | Note, other sources        | {source}: {n}% of 5★ drops start with 3 lines, {n}% with 4.                                     |     |
+| `ArtifactInstrument.svelte:797` | Note under the start chips | {n} value rolls from +0 to +20.                                                                 |     |
+| `ArtifactInstrument.svelte:884` | Readout line               | {4-line \| 3-line} start · {n} upgrade rolls                                                    |     |
+| `ArtifactInstrument.svelte:930` | Reshape odds               | {n}% better · {n}% same · {n}% worse                                                            |     |
+| `ArtifactInstrument.svelte:937` | Reshape readout            | vs {n} rolls from your appraised piece.                                                         |     |
+| `ArtifactInstrument.svelte:939` | Reshape readout            | vs {n} current rolls — appraise your piece and this follows it automatically.                   |     |
+| `ArtifactInstrument.svelte:728` | Value wheel, aria          | Value for substat {n}                                                                           |     |
+
+⚠️ **"Sanctifying Elixir" is 🔒.** "domain drops" — "domain" is 🏷 a game term.
+⚠️ **Two readout lines open with a bare "vs"** — the other half of the comparison is the
+line above them.
+⚠️ All counts need ICU plurals ("1 rolls").

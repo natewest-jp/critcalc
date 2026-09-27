@@ -177,3 +177,166 @@ game terms. ⚠️ **"Fuel"** (`auraDisplay.ts:62`) is **ours** — it names the
 that feeds a Burning aura, which the game does not name. It translates, and it needs a
 context note saying what it is, or a translator will read it as fuel in the ordinary
 sense.
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions, object literals and template literals — which is where the
+planner builds nearly every tooltip. Keys are left to the extraction pass. The planner's
+toasts are in `document-bar.md` (they all render in band A).
+
+### A. The editor's lint messages — `notationFlags.ts`
+
+The squiggles under the notation, on the rule the editor lints by: `--ui-warning` = we
+cannot take this · `--ui-provisional` = we took it and this is a stand-in.
+
+| Where                            | Kind        | Now                                                                                | New |
+| -------------------------------- | ----------- | ---------------------------------------------------------------------------------- | --- |
+| `notationFlags.ts:156`           | warning     | No character called "{text}" — this segment is skipped.                            |     |
+| `notationFlags.ts:170`           | provisional | No slot for {character} — a team holds 4, and this is character {n}.               |     |
+| `notationFlags.ts:184`           | warning     | Walk-cancels aren't simulated. Use ~2s for a deliberate pause.                     |     |
+| `notationFlags.ts:198`           | warning     | Only a bow can take an aimed shot — {character} wields a {weapon \| melee weapon}. |     |
+| `notationFlags.ts:81`            | provisional | {character}'s kit isn't curated yet — this cast is drawn with generic timing.      |     |
+| `notationFlags.ts:84`            | provisional | {character} has no {token} (hold) variant — timed as a plain E.                    |     |
+| `notationFlags.ts:87`            | provisional | {character} has no short-burst variant — timed as a full Q.                        |     |
+| `notationFlags.ts:89`            | provisional | {character} can't perform {token} — this cast is drawn with generic timing.        |     |
+| `notationFlags.ts:213`           | provisional | {character}'s plunge isn't measured yet — drawn with generic timing.               |     |
+| `notationEditorExtension.ts:578` | Placeholder | Type a rotation — e.g. Bennett E Q > Xiangling E Q N3 > …                          |     |
+
+⚓ **These are the most-read explanatory strings in the planner** — every mistake in a
+rotation meets one — and none of them were in a sheet.
+🐛 **`wields a {weapon}` inserts the raw weapon id** ("wields a claymore"), lowercase and
+untranslated, and "a" is wrong before a vowel-initial locale word.
+⚠️ **"Walk-cancels aren't simulated"** is the style guide's own model passage (§1.2).
+⚓ It keeps its job; the wording is still open like everything else.
+⚠️ **Three endings for one idea** — "this cast is drawn with generic timing" / "drawn
+with generic timing" / "timed as a plain E". Worth one phrase.
+⚠️ **"{character}'s"** — a possessive glued to a name, twice.
+⚠️ The KQM tokens (`E`, `Q`, `N3`, `>`, `{token}`) and the placeholder's names are 🔒.
+🐛 **The placeholder has a double space after "e.g."** (`e.g.  Bennett`) — it collapses
+in HTML but not necessarily in CodeMirror's placeholder widget.
+
+### B. The aura log's standing limits
+
+The four lines above the log (`rotation-planner/+page.svelte:325–334`), plus its empty
+states.
+
+| Where                | Now                                                                                                                              | New |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `+page.svelte:326`   | One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mage, and no auras you did not put there. |     |
+| `+page.svelte:327`   | Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.        |     |
+| `+page.svelte:328`   | A pip with a yellow ring means we are using a default gauge strength of 1U for that hit rather than a measured one.              |     |
+| `+page.svelte:334`   | A Starlight Prism bar says when the Polestar Field is up, not where — we assume you are standing in it.                          |     |
+| `+page.svelte:652`   | This rotation puts nothing on the target. _(log, empty)_                                                                         |     |
+| `EventLog.svelte:94` | Nothing to report. _(the shared log's default empty state)_                                                                      |     |
+
+🐛 **"modelled"** — British (R6, US English everywhere).
+🐛 **"we are using" / "we assume"** — ⚓ Nate 2026-09-23: a limitation is the **tool's**
+("The Rotation Planner assumes…"), ⛔ never "we". (The same pass was applied to the
+coverage page's 184 reasons.)
+⚠️ **"did not"** — the style guide takes contractions.
+⚠️ "Blazing Axe Mage", "Starlight Prism", "Polestar Field", "Shatter" are 🔒.
+⚠️ **"A pip with a yellow ring"** names a color a color-blind reader may not see as
+yellow — the chart's own mark is the provisional foot. Worth naming the mark by shape.
+
+### C. The band B controls' tooltips
+
+| Where              | Context              | Now                                                                | New |
+| ------------------ | -------------------- | ------------------------------------------------------------------ | --- |
+| `+page.svelte:519` | Auras plate, tooltip | Draw the target's elemental gauge, with applications and reactions |     |
+| `+page.svelte:541` | Log button, tooltip  | The target's aura, application by application                      |     |
+
+### D. Chart tooltips and in-chart labels — `RotationTimeline.svelte`
+
+| Where        | Context                                             | Now                                                                                                                               | New |
+| ------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `:1184`      | A human-timing pad, after a swap                    | Human timing: {n} frames ({n}s) after the swap — nothing buffers until the new character appears.                                 |     |
+| `:1185`      | A human-timing pad, otherwise                       | Human timing: {n} frames ({n}s) after {action}, before an input the game does not buffer.                                         |     |
+| `:1171–1182` | …where {action} is                                  | a normal attack · a charged attack · a plunge · a skill · a burst · a dash · a jump · the swap · an action                        |     |
+| `:2852`      | An approximated input block                         | No frame data yet — cast animations and normal attacks use generic timings.                                                       |     |
+| `:2890`      | Weapon-proc row label                               | {proc} trigger CD                                                                                                                 |     |
+| `:2287`      | Aura pip tooltip, several applications on one frame | On this frame · {n} applications                                                                                                  |     |
+| `:2299`      | Aura pip tooltip, provisional gauge                 | Gauge strength · not measured — 1U assumed                                                                                        |     |
+| `:1014`      | Gadget run tooltip (cores / a lone gadget)          | On the field · {n} cores / Standing · {n}s                                                                                        |     |
+| `:1021`      | …when some were used                                | Just now · {n} consumed by a reaction                                                                                             |     |
+| `:1043–1064` | Single gadget tooltip                               | On the field · {n}s / Spawned · {n} at once / Alongside · {n} / Ends · consumed by a reaction / Ends · pushed out by a newer core |     |
+| `:2998` 🆕   | Odette's stepped-stack bar                          | Recorded hits · {n} in the previous 4s                                                                                            |     |
+| `:3075`      | Ascendant Gleam bar, tooltip heading                | Ascendant Gleam — {character}                                                                                                     |     |
+| `:3086`      | Ascendant Gleam bar, label                          | {character} · Ascendant Gleam                                                                                                     |     |
+| `:2089–2098` | Ascendant Gleam scaling line                        | +0.6% / 1,000 Max HP (cap 36%) · +1% / 100 DEF (cap 36%) · +2.25% / 100 EM (cap 36%) · +0.9% / 100 ATK (cap 36%)                  |     |
+| `:1532`      | PNG export title when the team is empty             | critcalc rotation                                                                                                                 |     |
+
+🆕 = added 2026-09-27 (`787f0ee1`).
+🐛 **`{n} cores` / `core` is a hand-rolled plural** (`:1016`) — ICU.
+⚠️ **The tooltip rows are `label · value` pairs**, the same grammar as the buff tooltip;
+"Just now", "Standing", "Alongside" only make sense as the left half of that pair.
+⚠️ **"{n} frames"** — a plural; "{n}s" goes through `Intl`.
+⚠️ **The Gleam scaling lines write rates with `/`** — the day-2 ruling says a rate takes
+"per". And `1,000` carries an English thousands separator.
+⚠️ **"trigger CD"** is our coinage; 🏷 "CD" is community shorthand.
+⚠️ **The PNG export repeats two of these** (`timelineExport.ts:943` "trigger CD", `:1248`
+"· Ascendant Gleam") — the export mirrors the chart, so an edit here is an edit there.
+⚠️ **"a skill" / "a burst"** — lowercase here, while the chart's own words for them are
+Skill / Burst (glossary).
+
+### E. Coverage links — added after the sheets 🆕
+
+| Where                           | Now                                                                                | New |
+| ------------------------------- | ---------------------------------------------------------------------------------- | --- |
+| `RotationNotes.svelte:68` 🆕    | Coverage for this team                                                             |     |
+| `RotationCoverage.svelte:63` 🆕 | {character}'s coverage, with the parts this rotation doesn't reach dimmed _(aria)_ |     |
+
+🆕 = added 2026-09-23, the coverage round — written against the style guide.
+
+### F. Stat labels — the buff tooltip's left column
+
+`buffStatMaps.ts:86–155` (`BUFF_STAT_LABEL`). Used by every buff tooltip in the planner
+and by the Team Builder's capability detail. **All 🔒 in principle** (stat names are frozen
+game terms, R2) — but several are **ours**, and those are the rows to read:
+
+> ATK · ATK% · CRIT Rate · CRIT DMG · **Elem. Mastery** · **CD Reduction** · DEF · DEF% ·
+> DEF Ignore · HP · HP% · Healing Bonus · Interruption Res · DMG Bonus · **Skill DMG** ·
+> **Burst DMG** · **Normal DMG** · **Charged DMG** · **Plunge DMG** · **Skill Flat DMG** ·
+> **Burst Flat DMG** · **Normal Flat DMG** · **Charged Flat DMG** · **Plunge Flat DMG** ·
+> Pyro DMG · Hydro DMG · Cryo DMG · Electro DMG · Anemo DMG · Geo DMG · Dendro DMG ·
+> Lunar DMG · Energy Recharge · Lunar-Charged DMG · Lunar-Bloom DMG · Lunar-Crystallize
+> DMG · **Lunar-Crystallize Flat DMG** · Base Stellar-Conduct DMG · Base Stellar Swirl
+> DMG · Base Stellar Glimmer DMG · Superconduct Reaction Bonus · Swirl Reaction Bonus ·
+> Cryo Swirl Reaction Bonus · Electro-Charged Reaction Bonus · Bloom Reaction Bonus ·
+> Stellar-Conduct Reaction Bonus · Stellar Swirl Reaction Bonus · Stellar Glimmer
+> Reaction Bonus · Lunar-Charged Reaction Bonus · Lunar-Bloom Reaction Bonus ·
+> Lunar-Crystallize Reaction Bonus · Anemo RES · Cryo RES · Dendro RES · Electro RES ·
+> Geo RES · Hydro RES · Pyro RES · Physical RES · All Elemental RES · {Element} CRIT DMG ×7
+
+⚠️ **Bold = our abbreviation or coinage**, not the game's wording. The game says
+"Elemental Mastery" (the Reaction Curves sheet spells it out); "Normal Attack DMG Bonus" /
+"Charged Attack DMG Bonus" / "Elemental Skill DMG Bonus" are the game's; "Flat DMG" is
+community shorthand for the game's "DMG increased by…".
+⚠️ **"Elem. Mastery" is the only abbreviated-with-a-period label on the site** — and "EM"
+is used everywhere else, including the Anatomy bars.
+⚠️ **"Interruption Res"** is already ruled (glossary §2a) — listed for completeness.
+
+Plus the scaling words inside a buff's value (`buffDisplay.ts:112–130`): ATK · base ATK ·
+HP · DEF · EM · ER · CRIT Rate · Healing Bonus, and `+{n} → {n} over duration` (`:50`) for
+a decaying buff — ⚠️ typesets `→` (on the mark sweep's banned list).
+
+### G. Reaction labels with their element — `auraDisplay.ts:172–180`
+
+| Now                                                                                   | New |
+| ------------------------------------------------------------------------------------- | --- |
+| Swirl (Pyro) · Swirl (Hydro) · Swirl (Cryo) · Swirl (Electro) · Stellar Swirl         | 🔒  |
+| Crystallize (Pyro) · Crystallize (Hydro) · Crystallize (Cryo) · Crystallize (Electro) | 🔒  |
+
+⚠️ **§8's "🔒 mostly" list didn't reach these.** The names are frozen; the "(Element)"
+construction is ours — the Gauge Explorer's log writes the same thing as "Swirl (Pyro)" too,
+so it is at least consistent.
+
+### H. Assorted
+
+| Where                   | Now                                                          | New |
+| ----------------------- | ------------------------------------------------------------ | --- |
+| `notationParser.ts:250` | Anemo Resonance: {name} _(a cooldown-reduction source name)_ | 🔒  |
+| `sim/fields.ts:292`     | Polestar Field _(a buff's source name)_                      | 🔒  |

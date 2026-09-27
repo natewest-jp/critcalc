@@ -82,3 +82,21 @@ recommendation appears anywhere on it, which the reader can see. ⛔ Saying so o
 also trips §1.3c.
 ⚓ **"Drag on the chart to move your pull budget" is the half worth keeping** — it is
 instruction, which is explicitly welcome.
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions and some attributes. Keys are left to the extraction pass.
+
+| Where                       | Context                           | Now                                  | New |
+| --------------------------- | --------------------------------- | ------------------------------------ | --- |
+| `WishInstrument.svelte:303` | Checkbox, character banner        | Guarantee held (lost the last 50/50) |     |
+| `WishInstrument.svelte:303` | Checkbox, weapon banner           | Fate point held                      |     |
+| `WishInstrument.svelte:226` | Label on the chart's marker (SVG) | {n} pulls → {n}%                     |     |
+
+⚠️ **"{n} pulls → {n}%" is ASSEMBLED and typesets `→`** (on the mark sweep's banned list,
+which evidently doesn't reach SVG chart text). ⚠️ Needs an ICU plural ("1 pulls").
+⚓ "50/50" and "fate point" are 🔒 (this sheet's note above).

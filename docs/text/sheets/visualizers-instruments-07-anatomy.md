@@ -129,3 +129,62 @@ game term, and it will be the one a bulk translation pass gets wrong in both dir
 labels above** (`Stat%` matches, but the fields say `Elemental Mastery` where the bar says
 `EM`). ⚓ Two names for one stat inside one instrument — defensible for space, worth a
 deliberate look.
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script object literals and some attributes. Keys are left to the extraction pass.
+
+### The direct-damage caption
+
+| Where                          | Now                                                                                                                                                                                                                                                                          | New |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `AnatomyInstrument.svelte:289` | Every box is a multiplier on your damage; box width shows how much it moves the hit (a ×2 box is the same width wherever it comes from). Feeding a wide box barely widens it — that is the whole diminishing-returns lesson. Relative only: the game owns your real numbers. |     |
+
+⚠️ **The sibling captions (additive, transformative) are in this sheet; this one — the
+DEFAULT view's — was not.** It is the one most readers see.
+⚠️ "that is the whole diminishing-returns lesson" tells the reader what they just learned
+(R7, explains the obvious). ⚓ "Relative only: the game owns your real numbers" does a real
+job — it says where the explanation stops.
+
+### The equation boxes
+
+Each box in the equation carries a name, a formula and the reader's value.
+`AnatomyInstrument.svelte:55–160`
+
+| Box name     | Formula (🔒)                             | Value shown | New |
+| ------------ | ---------------------------------------- | ----------- | --- |
+| Scaling Stat | 1 + stat% + flat⁄base                    | {n}         |     |
+| DMG Bonus 🔒 | 1 + DMG%                                 | {n}%        |     |
+| Crit (avg)   | 1 + CR·CD                                | {n}% · {n}% |     |
+| {reaction}   | {mult} × (1 + 2.78·EM⁄(1400+EM))         | {n} EM      |     |
+| Enemy DEF 🔒 | (100+yours)⁄(Σ levels)                   | {n} vs {n}  |     |
+| Enemy RES 🔒 | regime(res)                              | {n}%        |     |
+| Level        | level table                              | Lv {n}      |     |
+| EM 🔒        | 1 + 5·EM⁄(1200+EM) · 1 + 16·EM⁄(2000+EM) | {n} EM      |     |
+
+🐛 **The reaction box's NAME is cut out of an English label** —
+`reaction.label.split(' ')[0]` turns "Vaporize ×2" into "Vaporize", and `.pop()` gives
+"×2". That only works while the label is English with one space in the right place;
+"Electro-Charged ×2" survives by luck of the hyphen. ⚠️ A code fix at extraction time,
+not a wording one.
+⚠️ **"Scaling Stat" is Title Case** (§A) and the field above it says "Scaling stat
+percent bonus". ⚠️ **"Crit (avg)"** abbreviates in a box that has room; the Crit sheet
+settled on "Average DMG" for the same idea.
+⚠️ **The formulas are 🔒 math, but `yours`, `level table` and `regime(res)` are words** —
+English inside a formula. "regime(res)" is a function name, not a sentence.
+⚠️ **"vs"** appears here (`{n} vs {n}`) and in "vs a bare hit" — one word, one rule.
+
+### Stat step labels
+
+| Where            | Now               | New |
+| ---------------- | ----------------- | --- |
+| `anatomy.ts:147` | +{n}% per roll    |     |
+| `anatomy.ts:148` | +{n} per roll     |     |
+| `anatomy.ts:175` | +10% (no substat) |     |
+
+⚠️ "+10% (no substat)" explains why DMG Bonus steps by a round 10 — ⚓ a real job, keep
+the function.

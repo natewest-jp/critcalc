@@ -88,3 +88,31 @@ strongest §3.1 case outside Settings' import confirmation.
 ⚠️ **"4pc Viridescent Venerer" is 🔒 frozen**; "The classic" is a judgment word — mild,
 but the constitution is verdict-averse and this is the only place a set is called
 _classic_.
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions and some attributes. Keys are left to the extraction pass.
+
+| Where                         | Context                          | Now                                                 | New |
+| ----------------------------- | -------------------------------- | --------------------------------------------------- | --- |
+| `DefResInstrument.svelte:275` | Panel heading, RES view          | Enemy & Shred                                       |     |
+| `DefResInstrument.svelte:275` | Panel heading, DEF view          | Levels & Shred                                      |     |
+| `DefResInstrument.svelte:141` | X-axis label, RES view           | Enemy RES after shred                               |     |
+| `DefResInstrument.svelte:117` | Chart aria, DEF view             | Enemy DEF multiplier versus enemy level             |     |
+| `DefResInstrument.svelte:118` | Chart aria, RES view             | Damage multiplier versus enemy elemental RES        |     |
+| `DefResInstrument.svelte:102` | Readout regime line, RES below 0 | below 0% — each negative point only counts half     |     |
+| `DefResInstrument.svelte:104` | Readout regime line, RES ≥ 75%   | above 75% — deep diminishing returns                |     |
+| `DefResInstrument.svelte:105` | Readout regime line, otherwise   | linear regime — each point of shred is a full point |     |
+
+⚠️ **The two panel headings are Title Case and use `&`** — §A says sentence case; and `&`
+is a symbol a locale may not use as a conjunction. "Levels" (plural) on the DEF view
+means the character's and the enemy's.
+⚠️ **The three regime lines start lowercase** — they read as the second half of a line
+whose first half is the number. ASSEMBLED in effect; worth checking the readout they sit in.
+⚠️ **"each negative point only counts half"** repeats `vz.dr.res.desc` ("each negative
+point counts half") almost word for word.
+⚠️ "linear regime" is engineering register — the same objection as "element-agnostic".

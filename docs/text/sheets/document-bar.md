@@ -120,3 +120,66 @@ two identical "Close" controls. Same meaning, so ⚓ one key — but worth knowi
 - ⚠️ **tight** — it is an `alertdialog` sized to its content, so growth is fine
   vertically. No cap.
   `src/lib/components/TabsFullDialog.svelte:58–71`
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions and some attributes. Keys are left to the extraction pass.
+
+### Save and the ⋯ menu
+
+| Where                           | Context                              | Now                                                                 | New |
+| ------------------------------- | ------------------------------------ | ------------------------------------------------------------------- | --- |
+| `DocumentActions.svelte:72`     | Save button, when the tab is linked  | Save changes                                                        |     |
+| `DocumentActions.svelte:67`     | Its tooltip                          | Save changes to "{tab}"                                             |     |
+| `DocumentActions.svelte:68`     | Save tooltip, unlinked               | Save this team and rotation to your bank                            |     |
+| `DocumentActions.svelte:137`    | ⋯ menu, aria                         | More rotation actions                                               |     |
+| `DocumentActions.svelte:173` 🆕 | Reset, armed (second click confirms) | Reset this rotation?                                                |     |
+| `DocumentActions.svelte:161` 🆕 | Its tooltip, armed                   | Confirm: clear this rotation's notation and unlink it from the bank |     |
+| `DocumentActions.svelte:191` 🆕 | Close all, armed                     | Close all rotations?                                                |     |
+| `DocumentActions.svelte:180` 🆕 | Its tooltip, armed                   | Confirm: close every rotation tab                                   |     |
+
+🆕 = added 2026-09-24 (`e46d5df1`), after the sheets were written.
+⚠️ **"bank"** appears in two tooltips and nowhere a reader can see — the overlay is called
+**Saved Rotations**. ⚓ Glossary: one name per thing.
+⚠️ The typographic quotes in `Save changes to "{tab}"` are English punctuation — German
+opens with „ and French uses « ».
+
+### Notices (every tool's toasts land in band A's notice slot)
+
+| Where                               | Now                                  | New |
+| ----------------------------------- | ------------------------------------ | --- |
+| `documentBar.svelte.ts:204`         | Saved                                |     |
+| `documentBar.svelte.ts:223`         | Saved as new                         |     |
+| `documentBar.svelte.ts:285`         | Link copied                          |     |
+| `documentBar.svelte.ts:287`         | Share failed                         |     |
+| `documentBar.svelte.ts:294`         | KQM copied                           |     |
+| `documentBar.svelte.ts:294`         | Copy failed                          |     |
+| `RotationTimeline.svelte:1648`      | Image copied                         |     |
+| `RotationTimeline.svelte:1650`      | Image saved                          |     |
+| `RotationTimeline.svelte:1651,1655` | Export failed                        |     |
+| `rotation-planner/+page.svelte:73`  | Loaded shared rotation               |     |
+| `rotation-planner/+page.svelte:192` | Invalid share link                   |     |
+| `rotation-planner/+page.svelte:210` | Team loaded                          |     |
+| `rotation-planner/+page.svelte:210` | Tabs full — close one to load a team |     |
+
+⚠️ **"Copy failed" pairs with "KQM copied" but says less** — which copy? And "Share failed"
+/ "Export failed" give no next step, where "Tabs full — close one to load a team" does.
+⚠️ **"KQM" is 🔒** but here it stands for "the KQM notation", not the organization.
+
+### Default names
+
+| Where                                    | Now                           | New |
+| ---------------------------------------- | ----------------------------- | --- |
+| `rotationTabs.svelte.ts:161,257,355,366` | Tab {n}                       |     |
+| `rotationTabs.svelte.ts:470`             | Imported team                 |     |
+| `documentBar.svelte.ts:58`               | {name} copy · {name} copy {n} |     |
+
+🐛 **"copy" is parsed back out with a regex** (`/ copy(?: \d+)?$/`) so a second fork numbers
+rather than stacks. Once the word translates, the regex must translate with it — or the
+suffix must stop being a word. A code fix at extraction time.
+⚠️ These names are **stored in the reader's data**, so a default written in one locale
+stays in that locale after the reader switches language.

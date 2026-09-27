@@ -92,3 +92,23 @@ is already the longest. ⛔ Don't lengthen any of them without checking the pick
 read as proper names of instruments rather than as headings, so Title Case is defensible
 here in a way `Saved Rotations` (see `document-bar.md` §2) is not — but the two should be
 decided together.
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions and some attributes. Keys are left to the extraction pass.
+
+The lineup control's tooltips (`visualizers/+page.svelte:221–225`):
+
+| Context                         | Now                                                       | New |
+| ------------------------------- | --------------------------------------------------------- | --- |
+| Tooltip, a count that won't fit | The window is too narrow for {n} instruments side by side |     |
+| Tooltip, Auto                   | Show as many instruments as the window fits               |     |
+| Tooltip, a count                | Show {n} instrument{s} at a time                          |     |
+
+🐛 **`instrument${opt === 1 ? '' : 's'}` is a hand-rolled English plural** — ⛔ an ICU
+plural at extraction; Russian and Polish need more than two forms.
+⚠️ The disabled button's tooltip explains _why_ it is disabled — ⚓ a real job, keep it.

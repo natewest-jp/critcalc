@@ -329,3 +329,143 @@ separator-joined list built in a template. 🔒 Its values are frozen, but the `
 `·` joins are presentation and should not end up inside a locale string.
 ⚠️⚠️ **`DetailCard.svelte:367`'s timing line** (`{n} charges · {n} energy`) is a plural
 case the extractor could not read cleanly — **"1 charges"** is reachable. Needs ICU.
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions, object literals, template literals and most attributes.
+Keys are left to the extraction pass.
+
+⚠️ **This is the biggest gap on the shelf** — the Team Builder's buttons, tooltips and
+filter hints are almost all built in expressions.
+
+### Filter chips — hints (tooltips)
+
+| Where                  | Chip         | Now                                                                             | New |
+| ---------------------- | ------------ | ------------------------------------------------------------------------------- | --- |
+| `+page.svelte:282`     | Moonsign 🔒  | Moonsign characters — 2 or more enable Ascendant Gleam and the Lunar reactions  |     |
+| `+page.svelte:287`     | Hexerei 🔒   | Hexerei characters — 2 or more enable Hexerei: Secret Rite                      |     |
+| `+page.svelte:291–292` | Stellar      | Stellar-linked — enables a Stellar reaction, or has buffs that need one enabled |     |
+| `+page.svelte:408`     | C0           | Base kits only — what every copy of the character can do                        |     |
+| `+page.svelte:412`     | C1–C5        | Everything a kit unlocks through C{n}                                           |     |
+| `+page.svelte:414`     | C6           | Everything the kit can ever do                                                  |     |
+| `+page.svelte:418`     | My roster    | Uses your saved constellations (set them in a character's details)              |     |
+| `+page.svelte:449`     | All          | Every character                                                                 |     |
+| `+page.svelte:450`     | Owned        | Only characters you've marked as owned                                          |     |
+| `+page.svelte:451`     | Wishlist     | Only characters you've wishlisted                                               |     |
+| `+page.svelte:1520`    | Search field | Search characters…                                                              |     |
+
+⚠️ **"Stellar" is ours** — the note in code says so: no faction called Stellar exists, it
+groups enablers with the characters whose buffs need one. 🏷 Needs a context note, and a
+reader may look for it in the game.
+⚠️ **"2 or more"** — a number in figures inside a sentence; a plural in some locales.
+⚠️ "(set them in a character's details)" — ⚓ tells the reader where, a real job.
+
+### Roster messages
+
+| Where                     | Context                                     | Now                                                                                                                   | New |
+| ------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | --- |
+| `+page.svelte:376`        | Empty grid, C0 with facets on               | No curated character matches. Some kits unlock these capabilities at higher constellations — try "My roster" or "C6". |     |
+| `+page.svelte:377`        | Empty grid, otherwise                       | No curated character matches.                                                                                         |     |
+| `CharacterGrid.svelte:26` | Empty grid, default                         | No characters match these filters.                                                                                    |     |
+| `+page.svelte:930`        | Roster edit toggle                          | Edit roster… · Done editing                                                                                           |     |
+| `+page.svelte:894` 🆕     | Link after the uncurated note               | See their coverage                                                                                                    |     |
+| `+page.svelte:735`        | Facet badge tooltip, conditional capability | Conditional — depends on runtime state (see details)                                                                  |     |
+
+⚠️ **Three empty-grid messages, two wordings** ("No curated character matches" /
+"No characters match these filters").
+⚠️ **The C0 message names two controls in prose** ("My roster", "C6") — style guide §3.3.
+⚠️ **"runtime state"** is engineering register.
+
+### Card and detail-card actions
+
+| Where                          | Context                                | Now                                                                                                                    | New |
+| ------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --- |
+| `+page.svelte:783–787`         | Card's Team button, tooltip            | In your team · Team is full (4) · Add to team                                                                          |     |
+| `+page.svelte:791`             | Its label when full                    | Full                                                                                                                   |     |
+| `+page.svelte:802–806`         | Card's Compare button, tooltip         | Remove from comparison · Comparison is full (4) · Add to comparison                                                    |     |
+| `DetailCard.svelte:202–205`    | Detail card's Team button              | In team — remove · Team full · Add to team                                                                             |     |
+| `DetailCard.svelte:198`        | Its tooltip when full                  | All four team slots are filled                                                                                         |     |
+| `DetailCard.svelte:222–225`    | Detail card's Compare button           | Comparing — remove · Compare full · Compare                                                                            |     |
+| `DetailCard.svelte:215–218`    | Its tooltip                            | Remove from the comparison · Comparison is full (4) · Add to the comparison — it loads into the Compare tab            |     |
+| `DetailCard.svelte:244,254` 🆕 | Link in the uncurated / partial note   | See coverage                                                                                                           |     |
+| `DetailCard.svelte:281`        | Note, character with no constellations | {character}'s constellations can't be unlocked, so there is no level to set — owning the character is the whole story. |     |
+| `DetailCard.svelte:112–113`    | Provenance suffix                      | {ability} · passive · {ability} · team bonus                                                                           |     |
+| `DetailCard.svelte:378`        | Timing table                           | {n}s CD                                                                                                                |     |
+| `CharacterCard.svelte:105`     | Tile aria, editing the roster          | Toggle owned for {character}                                                                                           |     |
+| `CharacterCard.svelte:107`     | Tile aria, picking for a slot          | {character}, slot {n}                                                                                                  |     |
+| `CharacterCard.svelte:108`     | Tile aria, otherwise                   | {character}, open details                                                                                              |     |
+
+🐛 **The same two actions are worded differently on the card and the detail card** —
+"In your team" / "In team — remove", "Team is full (4)" / "All four team slots are
+filled" / "Team full", "Remove from comparison" / "Remove from the comparison". ⚓ One
+action, one wording (glossary).
+⚠️ **"(4)"** states the limit in brackets; the detail card spells it out ("All four").
+⚠️ **"{character}'s"** — an English possessive glued to a name. ⚓ Needs to be one message
+with the name inside it.
+
+### Band B and Compare
+
+| Where                        | Context                                           | Now                                                                                                                                                                                | New |
+| ---------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `+page.svelte:1096,1219` 🆕  | Clear team button                                 | Clear team                                                                                                                                                                         |     |
+| `+page.svelte:692` 🆕        | Its armed state (rotation has actions / not)      | Clear rotation? · Clear team?                                                                                                                                                      |     |
+| `+page.svelte:1084–1085`     | Its tooltip, armed / resting                      | Confirm: delete every team member's segments from the notation · Empty every slot in the working team                                                                              |     |
+| `+page.svelte:1199`          | The ⋯ fold, aria                                  | Team and reading options                                                                                                                                                           |     |
+| `+page.svelte:1141`          | Compare plate, disabled tooltip                   | Nothing to compare yet — press Compare on a character card to add one                                                                                                              |     |
+| `+page.svelte:1153`          | Compare plate's count badge, aria                 | {n} in comparison                                                                                                                                                                  |     |
+| `CompareView.svelte:360`     | The view, aria                                    | Audition replacements · Compare characters                                                                                                                                         |     |
+| `CompareView.svelte:318–319` | Mode line                                         | pick one to take the slot · {at your constellations \| at C{n}}                                                                                                                    |     |
+| `CompareView.svelte:322`     | Slot name, used in other lines                    | slot {n} · the slot                                                                                                                                                                |     |
+| `CompareView.svelte:511`     | Note, a slot with no facet (auditions by element) | {character \| This slot} has no team-facing capability to match candidates on — a main DPS's job is damage, which this site shows rather than scores. Matching on element instead. |     |
+
+🆕 = added 2026-09-24 (`42b4be7a`).
+⚠️ **"segments" and "the notation"** in a tooltip — our words for the text in the editor.
+⚠️ **"which this site shows rather than scores"** is the creed, restated (R7 — ⛔ no
+creed). ⚓ The job the sentence does is real: it says _why_ the filter switched to element.
+⚠️ **"main DPS"** is 🏷 community vocabulary.
+
+### Coverage panel
+
+| Where                     | Context                          | Now                                                                   | New |
+| ------------------------- | -------------------------------- | --------------------------------------------------------------------- | --- |
+| `CoveragePanel.svelte:73` | Pill                             | {n} Natlan                                                            |     |
+| `CoveragePanel.svelte:74` | Its tooltip                      | Nightsoul Burst triggers scale with Natlan members in the team        |     |
+| `CoveragePanel.svelte:82` | Ascendant Gleam pill's tooltip   | Two or more Moonsign characters — the Lunar reactions are enabled     |     |
+| `CoveragePanel.svelte:90` | Secret Rite pill's tooltip       | Two or more Hexerei characters — Hexerei: Secret Rite is enabled      |     |
+| `CoveragePanel.svelte:97` | Capability chip tooltip, covered | {capability} — provided by {character}, {character}                   |     |
+| `CoveragePanel.svelte:98` | … unknown                        | {capability} — unknown (an uncurated kit is in the team)              |     |
+| `CoveragePanel.svelte:99` | … not covered                    | {capability} — no slotted character provides this. Click to find one. |     |
+
+⚠️ **"Two or more Moonsign characters"** here vs **"2 or more"** in the filter hint above,
+for the same rule. ⚠️ "Natlan", "Nightsoul Burst", "Ascendant Gleam", "Moonsign",
+"Hexerei", "Secret Rite" are 🔒.
+⚠️ **`{character}, {character}`** is joined with an English comma — a list format
+(`Intl.ListFormat`).
+⚠️ The resonance pills' tooltips are the resonance summary lines — see `bench.md`.
+
+### Capability qualifiers
+
+Words appended to a capability wherever it is described (`capabilityText.ts:28–90`),
+and the Compare table's buff families (`compare.ts:104–111`).
+
+| Where                         | Now                                                                                                                                                                                                                                                                                           | New |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| Target (full)                 | team-wide · active character · self only · on enemies                                                                                                                                                                                                                                         |     |
+| Target (short, Compare cells) | team · active · self · enemies                                                                                                                                                                                                                                                                |     |
+| Detail words                  | DEF · all elements                                                                                                                                                                                                                                                                            |     |
+| Conditions                    | during {state} · needs {n} stacks · needs {faction} teammates · depends on team elements · when active character is {character} · depends on enemy HP · depends on own HP · depends on recipient HP · vs {element}-affected enemies · at a specific cast in the chain · weapon-type dependent |     |
+| Buff families                 | ATK buff · EM buff · Crit buff · DMG% buff · HP/DEF buff · Other buff                                                                                                                                                                                                                         |     |
+
+🐛 **"needs {arg} teammates" and "needs {n} stacks" — plurals** ("needs 1 stacks").
+🐛 **`{element}-affected`** hyphenates a raw element id onto an English word, and the
+id arrives lowercase ("vs pyro-affected enemies").
+⚠️ **These are the fragments that assemble the tool's argument** (§1's labels + these).
+They read as English word order — "needs X" / "during X" / "vs X" — and a locale may need
+the condition before the capability. Probably one message per condition with the
+capability as a variable.
+⚠️ **`{state}` in "during {state}"** is an internal state name — check what a reader
+actually sees there.

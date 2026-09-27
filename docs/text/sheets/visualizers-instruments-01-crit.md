@@ -105,3 +105,23 @@ axis visibly changes (§D's correction).
 ⚠️ **`CR` and `CD` appear as bare abbreviations on the markers** while the controls spell
 them out. ⚓ Correct — the marker has no room — but it means the instrument teaches two
 names for each stat, which is worth one deliberate look.
+
+---
+
+## Added 2026-09-27 — missed by the first extraction
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. These rows come from a parser-based re-run; the first pass skipped strings
+inside script expressions and some attributes. Keys are left to the extraction pass.
+
+⚠️ **This sheet is already ruled** — these two are the pieces the ruled rows didn't reach.
+
+| Where                       | Context                                                | Now                    | New |
+| --------------------------- | ------------------------------------------------------ | ---------------------- | --- |
+| `CritHeatmap.svelte:737`    | Marker tooltip, third line (risk overlay on)           | {n}% no-crit risk      |     |
+| `CritInstrument.svelte:254` | Roll result, first half (before `vz.crit.roll.result`) | {n} of {n} crit → {n}x |     |
+
+⚠️ **The roll line is ASSEMBLED across two rows** — `{n} of {n} crit →` here, `this time
+(average ×{n})` in the ruled row. A translator needs the whole sentence. It also typesets
+`→`, and its `x` suffix needs the §G prefix (`×1.72`) like the rest.
+⚠️ Needs an ICU plural on the hit count.
