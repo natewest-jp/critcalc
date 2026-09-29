@@ -8,7 +8,14 @@
 
 import { writable } from 'svelte/store';
 import { HUMAN_PAD_DEFAULT_F } from '$lib/sim/humanTiming';
-import { ASSIGNMENT_IDS, SOUND_SETS, type AssignmentId, type SoundSet } from '$lib/playback/tones';
+import {
+	ASSIGNMENT_IDS,
+	SOUND_SETS,
+	SWAP_STYLES,
+	type AssignmentId,
+	type SoundSet,
+	type SwapStyle
+} from '$lib/playback/tones';
 import { browser } from '$app/environment';
 
 // ---------------------------------------------------------------------------
@@ -356,6 +363,8 @@ type SiteSettings = {
 	/** Which scale degree each input gets, applied to every voice alike
 	 *  (⚓ Nate 2026-09-29 is testing alternatives; `ASSIGNMENTS` in tones.ts). */
 	playbackAssignment: AssignmentId;
+	/** How a swap sounds — a slide or a hum (⚓ Nate 2026-09-29, demoing). */
+	playbackSwap: SwapStyle;
 	/** Master volume, 0–1. The tones have to sit against the game's own level,
 	 *  and that is personal too. */
 	playbackVolume: number;
@@ -396,6 +405,7 @@ export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackSound: PLAYBACK_SOUND_DEFAULT,
 	playbackSoundSet: 'kalimba' as SoundSet,
 	playbackAssignment: 'weight' as AssignmentId,
+	playbackSwap: 'slide' as SwapStyle,
 	playbackVolume: 0.7
 } as const;
 
@@ -447,6 +457,9 @@ function loadSiteSettings(): SiteSettings {
 		}
 		if (!ASSIGNMENT_IDS.includes(merged.playbackAssignment)) {
 			merged.playbackAssignment = PLAYBACK_SOUND_DEFAULTS.playbackAssignment;
+		}
+		if (!SWAP_STYLES.includes(merged.playbackSwap)) {
+			merged.playbackSwap = PLAYBACK_SOUND_DEFAULTS.playbackSwap;
 		}
 		return merged;
 	} catch {

@@ -34,7 +34,7 @@ import { siteSettings } from '$lib/stores';
 import { plannerView as pv } from '$lib/plannerView.svelte';
 import { COUNT_IN_S, countInCues, type Cue } from './cues';
 import { dueBetween, positionAt } from './transport';
-import { createSounder, type AssignmentId, type Sounder, type SoundSet } from './tones';
+import { createSounder, type SoundChoice, type Sounder } from './tones';
 
 /** How far ahead tones are queued. ⚠️ Must exceed the ~1 s timer throttle a
  *  hidden tab applies, or the queue runs dry between ticks. */
@@ -96,9 +96,13 @@ class Playback {
 
 	/** The Settings preview phrase — the way a set or an assignment is chosen.
 	 *  Either argument defaults to the stored setting. */
-	preview(set?: SoundSet, assignment?: AssignmentId) {
+	preview(over: Partial<SoundChoice> = {}) {
+		this.#ensureSounder()?.preview({ ...this.#choice(), ...over });
+	}
+
+	#choice(): SoundChoice {
 		const s = get(siteSettings);
-		this.#ensureSounder()?.preview(set ?? s.playbackSoundSet, assignment ?? s.playbackAssignment);
+		return { set: s.playbackSoundSet, assignment: s.playbackAssignment, swap: s.playbackSwap };
 	}
 
 	play() {
@@ -199,7 +203,7 @@ class Playback {
 		this.#queuedFrom = cues;
 		const to = nowElapsed + LOOKAHEAD_S;
 		if (to <= this.#queuedTo) return;
-		const { playbackSoundSet: set, playbackAssignment: assignment } = get(siteSettings);
+		const choice = this.#choice();
 		for (const due of dueBetween(
 			cues,
 			this.#countIn,
@@ -209,7 +213,7 @@ class Playback {
 			this.#queuedTo,
 			to
 		)) {
-			s.play(due.kind, this.#anchor + due.elapsed, set, assignment, due.dur);
+			s.play(due.kind, this.#anchor + due.elapsed, choice, due.dur);
 		}
 		this.#queuedTo = to;
 	}

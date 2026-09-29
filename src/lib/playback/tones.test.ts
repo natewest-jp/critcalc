@@ -11,6 +11,7 @@ import {
 	SET_TUNING,
 	SOUND_SETS,
 	SOUND_SET_LABELS,
+	SWAP_STYLES,
 	stepHz,
 	paletteFor,
 	ringFor,
@@ -148,6 +149,28 @@ describe('the sound palettes', () => {
 		const a = ASSIGNMENTS.weight;
 		const l = paletteFor('kalimba', 'weight').swap.find(isPitched)!;
 		expect(settle(l) * l.slide!).toBeCloseTo(stepHz(SET_TUNING.kalimba, a.swap[1]), 6);
+	});
+
+	it('the hum is the one sound that is not struck: a slow attack, no click, held', () => {
+		for (const set of SOUND_SETS) {
+			const p = paletteFor(set, 'weight', 'hum');
+			expect(
+				p.swap.every((l) => l.kind === 'tone' && l.attack !== undefined && l.attack >= 0.03),
+				set
+			).toBe(true);
+			expect(
+				p.swap.every((l) => l.sustain === true),
+				set
+			).toBe(true);
+			expect(
+				p.swap.some((l) => l.slide !== undefined),
+				set
+			).toBe(false);
+			// nothing else changes with the swap style
+			for (const kind of KINDS)
+				if (kind !== 'swap') expect(p[kind]).toEqual(paletteFor(set, 'weight', 'slide')[kind]);
+		}
+		expect(SWAP_STYLES).toEqual(['slide', 'hum']);
 	});
 
 	it('every voice sustains, and the count-in never does', () => {

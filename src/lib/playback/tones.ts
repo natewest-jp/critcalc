@@ -188,6 +188,20 @@ export const ASSIGNMENTS: Record<AssignmentId, Assignment> = {
 		mode: 'minor'
 	}
 };
+/**
+ * How a swap sounds (⚓ Nate 2026-09-29, unsettled — a setting to demo by):
+ * `slide` is one note of the voice gliding between the assignment's swap
+ * steps; `hum` is the one sound in the set that is NOT struck — a soft low
+ * tone with a slow attack, held for the swap's length, because a swap is a
+ * transition rather than a beat.
+ */
+export type SwapStyle = 'slide' | 'hum';
+export const SWAP_STYLES: readonly SwapStyle[] = ['slide', 'hum'];
+export const SWAP_STYLE_LABELS: Record<SwapStyle, string> = { slide: 'Slide', hum: 'Hum' };
+
+/** What the voice, the assignment and the swap style together select. */
+export type SoundChoice = { set: SoundSet; assignment: AssignmentId; swap: SwapStyle };
+
 export const ASSIGNMENT_LABELS: Record<AssignmentId, string> = {
 	weight: 'Weight',
 	skillUp: 'Skill up',
@@ -212,6 +226,9 @@ type Common = {
 	sustain?: boolean;
 	/** Glide the pitch by this ratio over the input's length — the swap. */
 	slide?: number;
+	/** Attack in seconds, when a layer is deliberately NOT struck (the hum).
+	 *  Default `ATTACK_S`. */
+	attack?: number;
 };
 /** A pitched layer: an oscillator, optionally gliding on its own. */
 type Tone = Common & {
@@ -457,7 +474,11 @@ export const MASTER_GAIN = 0.5;
  * swap's own length, a little quieter than a press. A mono voice takes its one
  * pitch for every input and the assignment says only which way the swap slides.
  */
-function paletteOf(set: SoundSet, assignment: Assignment): Record<CueKind, Layer[]> {
+function paletteOf(
+	set: SoundSet,
+	assignment: Assignment,
+	swapStyle: SwapStyle
+): Record<CueKind, Layer[]> {
 	const own = SET_TUNING[set];
 	const t: Tuning = assignment.mode ? { ...own, mode: assignment.mode } : own;
 	const note = VOICES[set];
@@ -484,17 +505,42 @@ function paletteOf(set: SoundSet, assignment: Assignment): Record<CueKind, Layer
 			...note(hz(assignment.burst), 0.18 * d, 0.55, 0.06)
 		],
 		movement: note(hz(assignment.cancel), 0.035 * d, 0.32),
-		swap: note(hz(from), 0.1 * d, 0.34).map((l) => (l.kind === 'noise' ? l : { ...l, slide }))
+		swap:
+			swapStyle === 'hum'
+				? hum(t.mono ? t.mono * 0.5 : hz(assignment.burst) / 2)
+				: note(hz(from), 0.1 * d, 0.34).map((l) => (l.kind === 'noise' ? l : { ...l, slide }))
 	};
 }
 
+/** The hum: a soft sine an octave under the burst's note with its octave
+ *  above it (so a phone speaker still carries it), attacked over 40 ms and
+ *  held for the swap's length. No click — nothing here is struck. */
+function hum(freq: number): Layer[] {
+	return [
+		{ kind: 'tone', freq, dur: 0.12, wave: 'sine', gain: 0.5, sustain: true, attack: 0.04 },
+		{
+			kind: 'tone',
+			freq: freq * 2,
+			dur: 0.12,
+			wave: 'sine',
+			gain: 0.18,
+			sustain: true,
+			attack: 0.04
+		}
+	];
+}
+
 const paletteCache = new Map<string, Record<CueKind, Layer[]>>();
-/** The palette for a set under an assignment, built once per pair. */
-export function paletteFor(set: SoundSet, assignment: AssignmentId): Record<CueKind, Layer[]> {
-	const key = `${set}/${assignment}`;
+/** The palette for a choice of voice, assignment and swap style, built once. */
+export function paletteFor(
+	set: SoundSet,
+	assignment: AssignmentId,
+	swap: SwapStyle = 'slide'
+): Record<CueKind, Layer[]> {
+	const key = `${set}/${assignment}/${swap}`;
 	let p = paletteCache.get(key);
 	if (!p) {
-		p = paletteOf(set, ASSIGNMENTS[assignment]);
+		p = paletteOf(set, ASSIGNMENTS[assignment], swap);
 		paletteCache.set(key, p);
 	}
 	return p;
@@ -522,9 +568,9 @@ export function ringFor(base: number, dur: number): number {
 export type Sounder = {
 	/** Queue one cue at an absolute AudioContext time; `dur` is the input's
 	 *  length in seconds (0 = unknown). */
-	play(kind: CueKind, at: number, set: SoundSet, assignment: AssignmentId, dur?: number): void;
+	play(kind: CueKind, at: number, choice: SoundChoice, dur?: number): void;
 	/** Play the preview phrase now. */
-	preview(set: SoundSet, assignment: AssignmentId): void;
+	preview(choice: SoundChoice): void;
 	/** Master volume, 0–1. */
 	setVolume(v: number): void;
 	/** Silence every layer not yet heard — pause, seek, stop. */
@@ -551,10 +597,10 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 	// early; the `ended` handler prunes the ones that played.
 	const pending = new Set<AudioScheduledSourceNode>();
 
-	function envelope(at: number, dur: number, peak: number): GainNode {
+	function envelope(at: number, dur: number, peak: number, attack = ATTACK_S): GainNode {
 		const env = ctx.createGain();
 		env.gain.setValueAtTime(0, at);
-		env.gain.linearRampToValueAtTime(peak, at + ATTACK_S);
+		env.gain.linearRampToValueAtTime(peak, at + attack);
 		env.gain.exponentialRampToValueAtTime(0.001, at + dur);
 		env.connect(master);
 		return env;
@@ -602,7 +648,7 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 			const osc = ctx.createOscillator();
 			osc.type = l.wave;
 			pitch(osc.frequency, l.freq, l, at, inputDur);
-			const env = envelope(at, dur, peak);
+			const env = envelope(at, dur, peak, l.attack);
 			osc.connect(env);
 			track([osc], at, dur, env);
 		} else if (l.kind === 'fm') {
@@ -641,14 +687,14 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 
 	return {
 		ctx,
-		play(kind, at, set, assignment, dur = 0) {
-			const trim = SET_TRIM[set];
-			for (const l of paletteFor(set, assignment)[kind]) layer(l, at, trim, dur);
+		play(kind, at, choice, dur = 0) {
+			const trim = SET_TRIM[choice.set];
+			for (const l of paletteFor(choice.set, choice.assignment, choice.swap)[kind])
+				layer(l, at, trim, dur);
 		},
-		preview(set, assignment) {
+		preview(choice) {
 			const at0 = ctx.currentTime + 0.05;
-			for (const step of PREVIEW_PHRASE)
-				this.play(step.kind, at0 + step.at, set, assignment, step.dur);
+			for (const step of PREVIEW_PHRASE) this.play(step.kind, at0 + step.at, choice, step.dur);
 		},
 		setVolume(v) {
 			master.gain.setTargetAtTime(MASTER_GAIN * Math.max(0, Math.min(1, v)), ctx.currentTime, 0.01);

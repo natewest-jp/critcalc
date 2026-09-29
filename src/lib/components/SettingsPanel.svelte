@@ -8,7 +8,9 @@
 		ASSIGNMENT_IDS,
 		ASSIGNMENT_LABELS,
 		SOUND_SETS,
-		SOUND_SET_LABELS
+		SOUND_SET_LABELS,
+		SWAP_STYLES,
+		SWAP_STYLE_LABELS
 	} from '$lib/playback/tones';
 	import {
 		downloadBackup,
@@ -263,7 +265,7 @@
 							aria-checked={$siteSettings.playbackSoundSet === value}
 							onclick={() => {
 								siteSettings.setPlaybackSound({ playbackSoundSet: value });
-								playback.preview(value);
+								playback.preview({ set: value });
 							}}>{SOUND_SET_LABELS[value]}</button
 						>
 					{/each}
@@ -272,7 +274,7 @@
 					class="btn btn--sm"
 					type="button"
 					aria-label="Preview the sound set"
-					onclick={() => playback.preview($siteSettings.playbackSoundSet)}
+					onclick={() => playback.preview()}
 				>
 					<Mark name="play" size={12} filled />
 					Preview
@@ -306,11 +308,35 @@
 							aria-checked={$siteSettings.playbackAssignment === value}
 							onclick={() => {
 								siteSettings.setPlaybackSound({ playbackAssignment: value });
-								playback.preview(undefined, value);
+								playback.preview({ assignment: value });
 							}}>{ASSIGNMENT_LABELS[value]}</button
 						>
 					{/each}
 				</div>
+			</div>
+		</div>
+
+		<div class="sp-row">
+			<span class="sp-label">
+				<span class="sp-name">Swap</span>
+				<span class="sp-desc">
+					<strong>Slide</strong> is one note gliding up to where the next character arrives.
+					<strong>Hum</strong> is a soft low tone held for the swap, the one sound that is not struck.
+				</span>
+			</span>
+			<div class="segment sp-segment" role="radiogroup" aria-label="Swap sound">
+				{#each SWAP_STYLES as value (value)}
+					<button
+						class="btn"
+						class:is-active={$siteSettings.playbackSwap === value}
+						role="radio"
+						aria-checked={$siteSettings.playbackSwap === value}
+						onclick={() => {
+							siteSettings.setPlaybackSound({ playbackSwap: value });
+							playback.preview({ swap: value });
+						}}>{SWAP_STYLE_LABELS[value]}</button
+					>
+				{/each}
 			</div>
 		</div>
 
@@ -329,7 +355,7 @@
 					value={Math.round($siteSettings.playbackVolume * 100)}
 					oninput={(e) =>
 						siteSettings.setPlaybackSound({ playbackVolume: Number(e.currentTarget.value) / 100 })}
-					onchange={() => playback.preview($siteSettings.playbackSoundSet)}
+					onchange={() => playback.preview()}
 					aria-label="Playback volume"
 				/>
 				<span class="sp-slider-value">{Math.round($siteSettings.playbackVolume * 100)}%</span>
