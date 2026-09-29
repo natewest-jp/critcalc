@@ -261,7 +261,14 @@ const MARKS = {
 	 *  not "sound on"; two waves say it. ⚠️ Both replace nothing — no unicode
 	 *  speaker ever shipped, so this is the first form. */
 	sound: 'Volume2',
-	soundOff: 'VolumeX'
+	soundOff: 'VolumeX',
+	/** The planner's Repeat plate (playback round B, 2026-09-29): two arrows
+	 *  chasing each other, the media idiom for "again". `Repeat` over
+	 *  `Repeat2` (the same arrows curved, which reads as "refresh" beside a
+	 *  transport) and over `RotateCw` (a reload). ⚠️ Repeat here is not the
+	 *  cursor's wrap — it is the STREAM, the next laps drawn — and the mark
+	 *  says "again" either way, which is the right amount of promise. */
+	repeat: 'Repeat'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

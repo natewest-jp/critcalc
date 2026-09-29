@@ -20,8 +20,10 @@
  * State: `plannerView`-class view state, ⛔ never `?r=`, ⛔ never the PNG. The
  * sound PREFERENCE is per taste and lives in `siteSettings.playbackSound`.
  *
- * Repeat (the stream) is Round B. Here `loop` only wraps the cursor at the
- * rotation's end — a rhythm aid, and it makes no claim about the next lap.
+ * Repeat OFF: the cursor WRAPS at the document's end — a rhythm aid that makes
+ * no claim about the next lap. Repeat ON (Round B): the chart draws the next
+ * laps for real, so the cursor runs on through them to the drawn horizon and
+ * stops there; a wrap would be the lie the stream exists to avoid.
  *
  * Domains (see transport.ts): `position` is seconds on the rotation's axis and
  * is what survives a pause; `elapsed` = position + lead is what the clock reads.
@@ -47,9 +49,10 @@ class Playback {
 	/** Rotation-axis position in seconds; negative during the count-in. */
 	t = $state(0);
 	playing = $state(false);
-	/** Wrap at the end. ON by default: a rhythm you are learning wants to come
-	 *  round again, and a single pass is one press of Pause away. */
-	loop = $state(true);
+	/** Wrap at the end — whenever the chart is NOT drawing the next laps. */
+	get loop() {
+		return !pv.repeat;
+	}
 
 	// ── The clock ────────────────────────────────────────────────────────────
 	#clock: 'audio' | 'wall' = 'wall';
@@ -69,7 +72,7 @@ class Playback {
 
 	/** Nothing to play: an empty rotation, or one that parses to zero length. */
 	get canPlay() {
-		return pv.totalDuration > 0;
+		return pv.playbackEnd > 0;
 	}
 
 	#now(): number {
@@ -88,7 +91,7 @@ class Playback {
 
 	play() {
 		if (!this.canPlay || this.playing) return;
-		const duration = pv.totalDuration;
+		const duration = pv.playbackEnd;
 		const sounder = get(siteSettings).playbackSound ? this.#ensureSounder() : null;
 		this.#clock = sounder ? 'audio' : 'wall';
 		// Play at the end of a single pass starts over.
@@ -151,7 +154,7 @@ class Playback {
 	#frame = () => {
 		this.#raf = 0;
 		if (!this.playing) return;
-		const duration = pv.totalDuration;
+		const duration = pv.playbackEnd;
 		if (duration <= 0) {
 			this.stop();
 			return;
@@ -170,7 +173,7 @@ class Playback {
 	#tick() {
 		const s = this.#sounder;
 		if (!s || !this.playing) return;
-		const duration = pv.totalDuration;
+		const duration = pv.playbackEnd;
 		if (duration <= 0) return;
 		const cues = pv.playbackCues;
 		const nowElapsed = s.ctx.currentTime - this.#anchor;

@@ -85,6 +85,7 @@
 	import { toKqmNotation } from '$lib/utils/kqmExport';
 	import { playback } from '$lib/playback/playback.svelte';
 	import { cuesFor } from '$lib/playback/cues';
+	import { REPEAT_LAPS, repeatNotation } from '$lib/playback/repeat';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -484,10 +485,10 @@
 		return char ? slotLabel(char) : id;
 	}
 
-	let rotation = $derived.by(() => {
+	function parse(text: string): ParsedRotation {
 		try {
 			return parseNotation(
-				notation,
+				text,
 				resolveCharacter,
 				swapFrames,
 				effectiveCon,
@@ -510,6 +511,38 @@
 				auraSeries: []
 			} satisfies ParsedRotation;
 		}
+	}
+
+	// ══ THE DOCUMENT AND THE STREAM (playback round B, 2026-09-29) ═════════════
+	//
+	// `docRotation` is the notation as written — what the editor's tints and band
+	// B's Total read. `rotation` is what the chart DRAWS: the document, or, with
+	// Repeat lit, the document joined to itself by a swap `REPEAT_LAPS` times and
+	// simulated as ONE run (`$lib/playback/repeat.ts`). Every projection below
+	// reads `rotation`, so the laps that follow are drawn by the same code as the
+	// first and the sim's own waits, carries and auras come through untouched.
+	// ⚠ The stream is a second parse and is computed only while armed — Repeat
+	// off costs nothing over today. ⛔ Never the editor's text: the lint and the
+	// tints take the document, and `src` ranges past its length are nobody's.
+	let docRotation = $derived.by(() => parse(notation));
+	let rotation = $derived.by(() =>
+		pv.repeat ? parse(repeatNotation(notation, REPEAT_LAPS)) : docRotation
+	);
+
+	// Where each lap after the first begins, in seconds, for the ruler's lap
+	// marks. ⚓ One track per segment (run.ts creates the track at the turn's
+	// head and skips only an unknown name — which the copies skip identically),
+	// so a lap is a fixed STRIDE of the document's track count. The first lap
+	// gets no mark: the ruler's own zero is that.
+	let lapStarts = $derived.by(() => {
+		if (!pv.repeat) return [] as { lap: number; t: number }[];
+		const stride = docRotation.tracks.length;
+		if (stride === 0) return [];
+		const out: { lap: number; t: number }[] = [];
+		for (let k = 1; k * stride < rotation.tracks.length; k++) {
+			out.push({ lap: k + 1, t: rotation.tracks[k * stride].activeStart / FPS });
+		}
+		return out;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -1643,7 +1676,20 @@
 		if (pngBusy) return;
 		pngBusy = true;
 		try {
-			const blob = await renderTimelinePng(buildSnapshot());
+			// ⚓ THE EXPORT IS THE DOCUMENT (plan §3.3), never the Repeat stream.
+			// Every projection is a `$derived` of `rotation`, and deriveds are
+			// pulled, so disarming Repeat for the length of one synchronous
+			// snapshot recomputes them from the document and puts them back before
+			// any effect or the DOM sees the change.
+			const wasRepeat = pv.repeat;
+			pv.repeat = false;
+			let snapshot: TimelineSnapshot;
+			try {
+				snapshot = buildSnapshot();
+			} finally {
+				pv.repeat = wasRepeat;
+			}
+			const blob = await renderTimelinePng(snapshot);
 			const result = await deliverPng(blob, 'critcalc-rotation.png', mode);
 			documentBar.showNotice(
 				result === 'copied'
@@ -1742,7 +1788,9 @@
 		const api = editorApi;
 		if (!api) return;
 		const doc = notation;
-		const tints = notationTints(rotation);
+		// The DOCUMENT's events: a tint is a source range in the editor, and the
+		// stream's copies have ranges past the text's end.
+		const tints = notationTints(docRotation);
 		untrack(() => api.setTints(doc, tints));
 	});
 
@@ -1810,9 +1858,14 @@
 	$effect(() => {
 		// ⚓ Published in SECONDS: its only consumer is band B's `{…}s` readout on
 		// the planner page, so the conversion belongs at the publish, not there.
-		pv.totalDuration = rotation.totalDuration / FPS;
-		// The presses, for the transport (playback round, 2026-09-29) — the same
-		// publish, the same direction of flow, and seconds for the same reason.
+		// The DOCUMENT's: band B's Total says how long one lap runs whatever the
+		// chart is drawing.
+		pv.totalDuration = docRotation.totalDuration / FPS;
+		// The presses and the end, for the transport (playback round, 2026-09-29)
+		// — the same publish, the same direction of flow, and seconds for the
+		// same reason. These are the DRAWN rotation's: with Repeat lit the cursor
+		// runs the stream and the tones sound every lap's presses.
+		pv.playbackEnd = rotation.totalDuration / FPS;
 		pv.playbackCues = cuesFor(rotation);
 	});
 
@@ -2546,6 +2599,15 @@
 								{/if}
 							</div>
 						{/each}
+						<!-- Lap marks (Round B): where each repeat begins. A gold rule
+						     the ruler's height with a ×N label — the axis's own
+						     vocabulary for "again", and gold because a lap seam is
+						     the one thing on the ruler the READER put there. -->
+						{#each lapStarts as lap (lap.lap)}
+							<div class="rp-lap-mark" style:left="{projectX(lap.t, scale)}px">
+								<span class="rp-lap-label">×{lap.lap}</span>
+							</div>
+						{/each}
 					</div>
 					{#if playheadX !== null}
 						<span class="rp-playhead" style:left="{playheadX}px"></span>
@@ -2591,6 +2653,9 @@
 						     is what lets a tick and its line be one stroke. -->
 						{#each ticks as tick (tick.t)}
 							<div class="rp-gridline" class:major={tick.major} style:left="{tick.x}px"></div>
+						{/each}
+						{#each lapStarts as lap (lap.lap)}
+							<div class="rp-lap-line" style:left="{projectX(lap.t, scale)}px"></div>
 						{/each}
 						{#if playheadX !== null}
 							<span class="rp-playhead" style:left="{playheadX}px"></span>
@@ -3640,6 +3705,38 @@
 		background: color-mix(in srgb, var(--accent) 80%, transparent);
 		pointer-events: none;
 		z-index: 6;
+	}
+
+	/* ── Lap marks (playback round B) ──────────────────────────────────────
+	   The seam where a repeat begins: a 1px gold rule on the ruler with its
+	   ×N label, and the same rule faint down the tracks beside the gridlines
+	   (z:0, under every bar — it is furniture, where the playhead is not). */
+	.rp-lap-mark {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		background: color-mix(in srgb, var(--accent) 70%, transparent);
+		pointer-events: none;
+	}
+	.rp-lap-label {
+		position: absolute;
+		top: 2px;
+		left: 4px;
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		color: var(--accent);
+		white-space: nowrap;
+	}
+	.rp-lap-line {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		background: color-mix(in srgb, var(--accent) 28%, transparent);
+		pointer-events: none;
+		z-index: 0;
 	}
 	/* No seam under the ruler (round two, with the slot separators). The ticks
 	   rising to the axis line ARE the axis; a rule beneath them was saying the

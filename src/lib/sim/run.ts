@@ -225,6 +225,20 @@ export function runRotation(
 		if (prevTrack && prevTrack.characterId !== char.id)
 			ctx.lastSwapOutAt.set(prevTrack.characterId, clock.now);
 
+		// ⚓ A `>` BETWEEN TWO SEGMENTS OF ONE CHARACTER IS NOT A SWAP (playback
+		// round B, 2026-09-29). `Bennett E > Bennett Q` is one stay on field
+		// written in two segments: nobody presses the swap key, so no swap delay
+		// is charged after this turn and no swap-in pad opens the next. The
+		// swap-in stack grant and the swap-out record above already read it this
+		// way; the two timing sites below did not, and the Repeat stream — which
+		// joins a rotation to itself by a `>` — made the charge visible when a
+		// rotation ends on its opener. An UNKNOWN next name still counts as a
+		// swap, as it always has: the segment is skipped, the turn is not.
+		const swappedIn = !prevTrack || prevTrack.characterId !== char.id;
+		const nextTokens = segments[i + 1];
+		const nextChar = nextTokens && nextTokens.length > 0 ? lookupChar(nextTokens[0].text) : null;
+		const swapFollows = i < segments.length - 1 && nextChar?.id !== char.id;
+
 		// ⚓ WHO IS ON FIELD, observed live (mark-triggered round, 2026-08-17) —
 		// read by `onReaction`'s `source: 'active'`. Set HERE, where the segment
 		// opens, because that is where the clock already stands: the swap advance
@@ -250,7 +264,7 @@ export function runRotation(
 		// lands at the head of every turn but the first, INSIDE the track (the
 		// strip starts at the swap's end; the sliver is the wait before the first
 		// press). Ahead of `turnStart` on purpose: the pad is not the turn moving.
-		if (i > 0 && ctx.humanTiming && ctx.humanTiming.padFrames > 0) {
+		if (i > 0 && swappedIn && ctx.humanTiming && ctx.humanTiming.padFrames > 0) {
 			const pad = ctx.humanTiming.padFrames;
 			ctx.humanPads.push({
 				id: ctx.nextId(),
@@ -600,10 +614,10 @@ export function runRotation(
 		// when the next input is one the game does not buffer. Called once per
 		// action, after its own advance, so the pad sits between the action's end
 		// and the next input's start and the id minted here sorts it there.
-		// ⚠️ `swapFollows` is the ONLY way a segment's last action learns whether a
-		// swap is real: `peekActionKey` says 'swap' at the end of EVERY segment,
-		// including the rotation's last, where nothing follows to be late for.
-		const swapFollows = i < segments.length - 1;
+		// ⚠️ `swapFollows` (resolved at the turn's head) is the ONLY way a
+		// segment's last action learns whether a swap is real: `peekActionKey`
+		// says 'swap' at the end of EVERY segment, including the rotation's last,
+		// where nothing follows to be late for, and a same-character `>`.
 		const humanPad = (prev: HumanPadAfter, j: number): void => {
 			const ht = ctx.humanTiming;
 			if (!ht) return;
@@ -2332,7 +2346,8 @@ export function runRotation(
 
 		// Swap time before the next character enters. ⚠️ The last turn adds
 		// nothing: the rotation ends when its final action does, not a swap later.
-		if (i < segments.length - 1) clock.advance(clock.now + ctx.swapF);
+		// Nor does a turn the same character continues (see `swapFollows`).
+		if (swapFollows) clock.advance(clock.now + ctx.swapF);
 	}
 
 	// ⚓ Drain the queue, then report the PRE-DRAIN frame. An application that lands

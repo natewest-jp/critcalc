@@ -411,6 +411,27 @@
 				>
 					<Mark name={$siteSettings.playbackSound ? 'sound' : 'soundOff'} size={16} />
 				</button>
+				<!-- ══ REPEAT (Round B) ═══════════════════════════════════════════
+				     Draws the laps that FOLLOW: the notation joined to itself by a
+				     swap, simulated as one run, so a cast on cooldown waits where
+				     it really waits and a buff from lap one is still up in lap two
+				     if it really is. A lit plate announces that the chart is longer
+				     than the notation — the same law as the layers. Never disabled:
+				     it states a standing choice about this rotation. Per LOOK, like
+				     zoom; ⛔ not in the codec; ⛔ not in the PNG (the export takes
+				     the document). The cursor stops at the drawn horizon while this
+				     is lit, and wraps at the document's end when it is not. -->
+				<button
+					class="btn btn--sm rp-repeat"
+					class:is-active={pv.repeat}
+					type="button"
+					aria-pressed={pv.repeat}
+					title="Draw the laps that follow: the rotation runs again from its last action, cooldowns and buffs carried"
+					onclick={() => (pv.repeat = !pv.repeat)}
+				>
+					<Mark name="repeat" />
+					<span class="rp-band-label">Repeat</span>
+				</button>
 			</div>
 			<button
 				class="btn btn--sm rp-reset"
@@ -899,7 +920,8 @@
 		.rp-sound {
 			display: none;
 		}
-		.rp-play {
+		.rp-play,
+		.rp-repeat {
 			min-width: calc(var(--band-ctrl-h) - 12px);
 		}
 	}
