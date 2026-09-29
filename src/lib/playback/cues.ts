@@ -41,6 +41,14 @@ export type Cue = {
 	/** Seconds from the rotation's start. Count-in beats are NEGATIVE. */
 	t: number;
 	kind: CueKind;
+	/**
+	 * How long the input holds the field, in seconds — the block's drawn width:
+	 * a cast's cancel-adjusted animation, a swing's duration, a swap's delay up
+	 * to the next character's arrival. The melodic set rings for this long (⚓
+	 * Nate 2026-09-29: "we have all the frame data"), and a swap's second note
+	 * lands at its end. 0 where the data has no length (the count-in).
+	 */
+	dur: number;
 };
 
 /**
@@ -57,7 +65,8 @@ export const COUNT_IN_S = COUNT_IN_BEATS * COUNT_IN_BEAT_S;
 /** The count-in beats, as cues at negative t (−3, −2, −1 by default). */
 export function countInCues(): Cue[] {
 	const out: Cue[] = [];
-	for (let i = COUNT_IN_BEATS; i >= 1; i--) out.push({ t: -i * COUNT_IN_BEAT_S, kind: 'count' });
+	for (let i = COUNT_IN_BEATS; i >= 1; i--)
+		out.push({ t: -i * COUNT_IN_BEAT_S, kind: 'count', dur: 0 });
 	return out;
 }
 
@@ -68,19 +77,24 @@ export function cuesFor(rotation: ParsedRotation): Cue[] {
 	const out: Cue[] = [];
 	for (const ev of rotation.events) {
 		if (ev.kind === 'cast') {
-			out.push({ t: ev.time / FPS, kind: ev.ability });
+			out.push({ t: ev.time / FPS, kind: ev.ability, dur: ev.castTime / FPS });
 		} else if (ev.kind === 'action') {
 			if (ev.action === 'unset') continue;
 			out.push({
 				t: ev.time / FPS,
-				kind: ev.action === 'dash' || ev.action === 'jump' ? 'movement' : ev.action
+				kind: ev.action === 'dash' || ev.action === 'jump' ? 'movement' : ev.action,
+				dur: ev.duration / FPS
 			});
 		}
 	}
 	const tracks = rotation.tracks;
 	for (let i = 1; i < tracks.length; i++) {
 		if (tracks[i].characterId === tracks[i - 1].characterId) continue;
-		out.push({ t: tracks[i - 1].activeEnd / FPS, kind: 'swap' });
+		out.push({
+			t: tracks[i - 1].activeEnd / FPS,
+			kind: 'swap',
+			dur: (tracks[i].activeStart - tracks[i - 1].activeEnd) / FPS
+		});
 	}
 	out.sort((a, b) => a.t - b.t);
 	return out;

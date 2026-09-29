@@ -48,7 +48,7 @@ export function positionAt(
 	return { t: raw % duration, ended: false };
 }
 
-export type Due = { kind: CueKind; elapsed: number };
+export type Due = { kind: CueKind; elapsed: number; dur: number };
 
 /**
  * The cues that fall in the elapsed window (from, to], as absolute elapsed
@@ -72,7 +72,7 @@ export function dueBetween(
 	if (to <= from) return out;
 	for (const c of countIn) {
 		const at = lead + c.t;
-		if (at >= from && at < to) out.push({ kind: c.kind, elapsed: at });
+		if (at >= from && at < to) out.push({ kind: c.kind, elapsed: at, dur: c.dur });
 	}
 	if (duration > 0) {
 		const firstLap = Math.max(0, Math.floor((from - lead) / duration));
@@ -81,7 +81,7 @@ export function dueBetween(
 			const base = lead + lap * duration;
 			for (const c of cues) {
 				const at = base + c.t;
-				if (at >= from && at < to) out.push({ kind: c.kind, elapsed: at });
+				if (at >= from && at < to) out.push({ kind: c.kind, elapsed: at, dur: c.dur });
 			}
 		}
 	}

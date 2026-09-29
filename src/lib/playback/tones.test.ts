@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { PALETTES, PREVIEW_PHRASE, SOUND_SETS, type Layer } from './tones';
+import {
+	MAX_RING_S,
+	PALETTES,
+	PREVIEW_PHRASE,
+	RELEASE_S,
+	SOUND_SETS,
+	ringFor,
+	type Layer
+} from './tones';
 import type { CueKind } from './cues';
 
 const KINDS: CueKind[] = [
@@ -12,7 +20,7 @@ const KINDS: CueKind[] = [
 	'movement',
 	'swap'
 ];
-const end = (l: Layer) => (l.delay ?? 0) + l.dur;
+const end = (l: Layer) => (typeof l.delay === 'number' ? l.delay : 0) + l.dur;
 
 describe('the sound palettes', () => {
 	it('every set voices every cue kind', () => {
@@ -22,7 +30,7 @@ describe('the sound palettes', () => {
 		}
 	});
 
-	it('stays short enough for the fastest pair of presses; only a burst may ring', () => {
+	it('base lengths stay short enough for the fastest pair of presses; only a burst may ring', () => {
 		for (const set of SOUND_SETS) {
 			for (const kind of KINDS) {
 				const longest = Math.max(...PALETTES[set][kind].map(end));
@@ -57,9 +65,26 @@ describe('the sound palettes', () => {
 		}
 	});
 
-	it('the preview phrase is ordered and under two seconds', () => {
+	it('the preview phrase is ordered and under three seconds', () => {
 		for (let i = 1; i < PREVIEW_PHRASE.length; i++)
 			expect(PREVIEW_PHRASE[i].at).toBeGreaterThan(PREVIEW_PHRASE[i - 1].at);
-		expect(PREVIEW_PHRASE.at(-1)!.at).toBeLessThan(2);
+		expect(PREVIEW_PHRASE.at(-1)!.at).toBeLessThan(3);
+	});
+
+	it('a sustained layer rings for the input less the release, floored and capped', () => {
+		expect(ringFor(0.25, 0)).toBe(0.25); // no length known: the base
+		expect(ringFor(0.25, 0.1)).toBe(0.25); // shorter than the base: the base
+		expect(ringFor(0.25, 2)).toBeCloseTo(2 - RELEASE_S, 9);
+		expect(ringFor(0.25, 30)).toBe(MAX_RING_S);
+	});
+
+	it('only the melodic set sustains, and its swap lands its second note at the arrival', () => {
+		const sustains = (set: 'percussive' | 'melodic') =>
+			KINDS.some((k) => PALETTES[set][k].some((l) => l.sustain === true));
+		expect(sustains('melodic')).toBe(true);
+		expect(sustains('percussive')).toBe(false);
+		for (const set of SOUND_SETS)
+			expect(PALETTES[set].swap.some((l) => l.delay === 'end')).toBe(true);
+		expect(PALETTES.melodic.count.some((l) => l.sustain)).toBe(false);
 	});
 });

@@ -27,6 +27,12 @@ describe('cuesFor', () => {
 		for (let i = 1; i < cues.length; i++) expect(cues[i].t).toBeGreaterThanOrEqual(cues[i - 1].t);
 		const swap = cues.find((c) => c.kind === 'swap')!;
 		expect(swap.t).toBeCloseTo(rotation.tracks[0].activeEnd / FPS, 9);
+		// a swap lasts until the next character arrives — swapF, 9 frames here
+		expect(swap.dur).toBeCloseTo(9 / FPS, 9);
+		// a cast rings for its cancel-adjusted animation; a swing for its own
+		const e = rotation.events.find((ev) => ev.kind === 'cast')!;
+		expect(cues[0].dur).toBeCloseTo(e.castTime / FPS, 9);
+		expect(cues.every((c) => c.dur > 0)).toBe(true);
 		// The swap key is pressed BEFORE the next track opens: swapF later.
 		expect(rotation.tracks[1].activeStart).toBeGreaterThan(rotation.tracks[0].activeEnd);
 	});

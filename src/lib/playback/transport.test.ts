@@ -3,9 +3,9 @@ import { dueBetween, positionAt } from './transport';
 import { COUNT_IN_S, countInCues, type Cue } from './cues';
 
 const cues: Cue[] = [
-	{ t: 0, kind: 'skill' },
-	{ t: 1.5, kind: 'burst' },
-	{ t: 4, kind: 'swap' }
+	{ t: 0, kind: 'skill', dur: 0.5 },
+	{ t: 1.5, kind: 'burst', dur: 2 },
+	{ t: 4, kind: 'swap', dur: 0.15 }
 ];
 const countIn = countInCues();
 
@@ -48,6 +48,8 @@ describe('dueBetween', () => {
 			['skill', 3],
 			['burst', 4.5]
 		]);
+		// the block's length rides along for the voice to ring
+		expect(b.map((d) => d.dur)).toEqual([0.5, 2]);
 	});
 
 	it('repeats rotation cues every lap when looping, and the count-in never', () => {

@@ -207,7 +207,7 @@ class Playback {
 			this.#queuedTo,
 			to
 		)) {
-			s.play(due.kind, this.#anchor + due.elapsed, set);
+			s.play(due.kind, this.#anchor + due.elapsed, set, due.dur);
 		}
 		this.#queuedTo = to;
 	}
