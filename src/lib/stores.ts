@@ -413,7 +413,7 @@ export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackSoundMode: 'melodic' as SoundMode,
 	playbackVoice: 'kalimba' as VoiceId,
 	playbackOrder: 'weighty' as OrderId,
-	playbackNotes: '125' as NoteSetId,
+	playbackNotes: 'open' as NoteSetId,
 	playbackSwap: 'humLow' as SwapStyle,
 	playbackVolume: 0.7
 } as const;

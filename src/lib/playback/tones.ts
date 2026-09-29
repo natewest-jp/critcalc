@@ -13,8 +13,8 @@
  * attack or a plunge is a LONGER note of the same role, because the note rings
  * for the input's own length. A `W` is refused by the planner and makes no
  * sound. Two settings shape the three notes: the ORDER (which role sits low,
- * mid, high) and the NOTE SET (which three steps of the pentatonic those are);
- * the cancel and the count-in are placed by the note set, off the three.
+ * mid, high) and the NOTE SET (which two notes join A at the bottom); the cancel
+ * tick is A5 and the count-in a free note of the set.
  *
  * Rules every voice obeys (the acoustics behind them, so nobody re-derives):
  *   - THE TRANSIENT MARKS THE BEAT. The ear places a sound by its onset and
@@ -35,14 +35,11 @@
  *   - THE COUNT-IN STAYS OUTSIDE THE INPUT VOCABULARY: a plain sine on a step
  *     the three notes do not use.
  *
- * ⚓ KEY AND REGISTER ARE PER VOICE; THE STEPS ARE SHARED. The sets never sound
- * together, so nothing binds them to one key — but which step means which role
- * is a setting the reader changes, never the voice, so the contour learnt on
- * one voice transfers. What moves per voice is the OCTAVE (a marimba's warmth
- * is below 500 Hz, a music box lives high) and the MODE (a handpan is almost
- * always tuned minor). All on A, major or minor pentatonic — ⚓ pentatonic
- * because the scale has no semitone neighbours, so any two notes overlapping
- * (a skill's tail under the burst) are consonant.
+ * ⚓ ONE OCTAVE, EVERY VOICE. A4 is the bottom of every note set and A5 the
+ * cancel tick on top; the two notes between are the set's choice, all drawn
+ * from A B D E F♯ — D major pentatonic, which has no semitone neighbours, so any
+ * two notes overlapping (a skill's tail under the burst) are consonant. Every
+ * voice plays the same notes; only the timbre changes.
  *
  * ⚠️ Gains are normalised BY EAR, not by number: a 440 Hz tone needs
  * noticeably more gain than a 1.7 kHz one to sound as loud.
@@ -82,40 +79,49 @@ export type SoundSet = 'metronome' | VoiceId;
 export const SOUND_SETS: readonly SoundSet[] = ['metronome', ...VOICE_IDS];
 
 export type Tuning = {
-	/** Octaves from the reference (A4 = 440 as the root). */
-	octave: number;
-	mode: 'major' | 'minor';
 	/** Scales every base length — a vibraphone's floor is longer than a tine's. */
 	durScale?: number;
-	/** ONE pitch for every input, in Hz: the metronome. The steps then say
+	/** ONE pitch for every input, in Hz: the metronome. The note set then says
 	 *  nothing about pitch and the length rule carries all the meaning. */
 	mono?: number;
 };
+/** ⚓ EVERY VOICE LIVES ON THE SAME NOTES (⚓ Nate 2026-09-29, at a keyboard):
+ *  no per-voice key or register any more — the handpan's minor and the
+ *  marimba's lower octave went with it, so a note set sounds the same notes on
+ *  every voice and only the timbre changes. */
 export const SET_TUNING: Record<SoundSet, Tuning> = {
-	metronome: { octave: 0, mode: 'major', mono: 1175 },
-	kalimba: { octave: 0, mode: 'major' },
-	epiano: { octave: -1, mode: 'major' },
-	musicbox: { octave: 1, mode: 'major' },
-	handpan: { octave: -1, mode: 'minor' },
-	marimba: { octave: -1, mode: 'major' },
-	vibraphone: { octave: 0, mode: 'major', durScale: 1.8 }
+	metronome: { mono: 1175 },
+	kalimba: {},
+	epiano: {},
+	musicbox: {},
+	handpan: {},
+	marimba: {},
+	vibraphone: { durScale: 1.8 }
 };
 
-// ── Steps, orders, note sets, swaps ───────────────────────────────────────
+// ── Notes, orders, note sets, swaps ──────────────────────────────────────
 
 /**
- * Scale STEPS of the pentatonic, 1 = the root, 6 = the octave, on up to 9.
- * Resolved per mode: major A B C♯ E F♯, minor A C D E G.
+ * A note as semitones above A4, the bottom of the octave every set lives in
+ * (⚓ Nate 2026-09-29: "A as the bottom note and A as the top cancel-type-input
+ * note — that octave framing works very well"). The notes he chose are all in A
+ * major and together make the D major pentatonic: A B D E F♯, with A5 on top.
  */
-export type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-const STEP_SEMITONES: Record<'major' | 'minor', number[]> = {
-	major: [0, 2, 4, 7, 9, 12, 14, 16, 19],
-	minor: [0, 3, 5, 7, 10, 12, 15, 17, 19]
+export type Note = 0 | 2 | 5 | 7 | 9 | 12;
+export const NOTE_NAMES: Record<Note, string> = {
+	0: 'A',
+	2: 'B',
+	5: 'D',
+	7: 'E',
+	9: 'F♯',
+	12: 'A'
 };
-export function stepHz(t: Tuning, step: Step): number {
-	const a = 440 * Math.pow(2, t.octave);
-	return a * Math.pow(2, STEP_SEMITONES[t.mode][step - 1] / 12);
+export function noteHz(n: Note): number {
+	return 440 * Math.pow(2, n / 12);
 }
+/** The bottom of every set, and the cancel tick on top: the octave's frame. */
+export const NOTE_LOW: Note = 0;
+export const NOTE_CANCEL: Note = 12;
 
 /** Which role sits low, mid and high (⚓ Nate 2026-09-29). */
 export type OrderId = 'weighty' | 'skillUp' | 'rising';
@@ -136,36 +142,48 @@ export const ORDER_LABELS: Record<OrderId, string> = {
 };
 
 /**
- * Which three steps the three roles take (⚓ Nate 2026-09-29: 1-2-5, 2-5-6,
- * 2-3-5), ascending, with the cancel tick placed above them and the count-in on
- * a step they leave free.
+ * The four note sets Nate chose at a keyboard (2026-09-29), each A plus two
+ * notes, named for how they sit. The count-in takes a free note inside the
+ * span, in a plain sine. Which role gets which note is the ORDER's business.
  */
-export type NoteSetId = '125' | '256' | '235';
-export const NOTE_SET_IDS: readonly NoteSetId[] = ['125', '256', '235'];
-export const NOTE_SETS: Record<
-	NoteSetId,
-	{ steps: [Step, Step, Step]; cancel: Step; count: Step }
-> = {
-	'125': { steps: [1, 2, 5], cancel: 6, count: 4 },
-	'256': { steps: [2, 5, 6], cancel: 7, count: 4 },
-	'235': { steps: [2, 3, 5], cancel: 6, count: 4 }
+export type NoteSetId = 'open' | 'anchor' | 'lantern' | 'meadow';
+export const NOTE_SET_IDS: readonly NoteSetId[] = ['open', 'anchor', 'lantern', 'meadow'];
+export const NOTE_SETS: Record<NoteSetId, { mid: Note; high: Note; count: Note }> = {
+	/** A · B · E — a second and a fifth, the suspended, unresolved sound: airy,
+	 *  modern, nothing leaning anywhere. Count on D. */
+	open: { mid: 2, high: 7, count: 5 },
+	/** A · D · E — a fourth and a fifth, the oldest cadence there is: grounded,
+	 *  a horn call, a gong. Count on B. */
+	anchor: { mid: 5, high: 7, count: 2 },
+	/** A · B · F♯ — a second and a sixth: the sixth leans toward F♯ minor and
+	 *  makes it wistful, a lullaby in a lit window. Count on D. */
+	lantern: { mid: 2, high: 9, count: 5 },
+	/** A · E · F♯ — a fifth and a sixth, the pastoral added-sixth: bright,
+	 *  folk, a morning field. Count on D. */
+	meadow: { mid: 7, high: 9, count: 5 }
 };
 export const NOTE_SET_LABELS: Record<NoteSetId, string> = {
-	'125': '1 · 2 · 5',
-	'256': '2 · 5 · 6',
-	'235': '2 · 3 · 5'
+	open: 'Open',
+	anchor: 'Anchor',
+	lantern: 'Lantern',
+	meadow: 'Meadow'
 };
+/** "A · B · E" — the notes, for the Settings description. */
+export function noteSetNotes(id: NoteSetId): string {
+	const n = NOTE_SETS[id];
+	return [NOTE_LOW, n.mid, n.high].map((x) => NOTE_NAMES[x]).join(' · ');
+}
 
 /**
- * How the swap hums (⚓ Nate 2026-09-29: "demo a few different hum options").
- * Every one attacks slowly, has no click, and is held for the swap's length.
+ * How the swap hums (⚓ Nate 2026-09-29: "demo a few different hum options";
+ * the breath of noise was struck). Every one attacks slowly, has no click, and
+ * is held for the swap's length.
  */
-export type SwapStyle = 'humLow' | 'humFifth' | 'humBreath' | 'humRise';
-export const SWAP_STYLES: readonly SwapStyle[] = ['humLow', 'humFifth', 'humBreath', 'humRise'];
+export type SwapStyle = 'humLow' | 'humFifth' | 'humRise';
+export const SWAP_STYLES: readonly SwapStyle[] = ['humLow', 'humFifth', 'humRise'];
 export const SWAP_STYLE_LABELS: Record<SwapStyle, string> = {
 	humLow: 'Low',
 	humFifth: 'Fifth',
-	humBreath: 'Breath',
 	humRise: 'Rise'
 };
 
@@ -261,7 +279,7 @@ const kalimba: Voice = (freq, dur, gain) => [
 /** Electric piano: the two things a Rhodes is — a body (modulator at the
  *  carrier's pitch, depth settling over ~150 ms) and the TINE, a second
  *  operator fourteen times up that rings for a few ms and gives the strike its
- *  "ting". A plain sine carries the hold. Lives an octave down (SET_TUNING). */
+ *  "ting". A plain sine carries the hold. */
 const epiano: Voice = (freq, dur, gain) => [
 	{
 		kind: 'fm',
@@ -279,7 +297,7 @@ const epiano: Voice = (freq, dur, gain) => [
 ];
 
 /** Music box: a bright tine with two INHARMONIC partials (a steel comb's),
- *  short. An octave UP (SET_TUNING): a music box is a high instrument. */
+ *  short. */
 const musicbox: Voice = (freq, dur, gain) => [
 	{ kind: 'tone', freq, dur, wave: 'sine', gain, sustain: true },
 	{
@@ -295,8 +313,7 @@ const musicbox: Voice = (freq, dur, gain) => [
 ];
 
 /** Handpan: fundamental, octave and fifth in a 1:2:3 stack, and a small pitch
- *  dip on the strike (the shell flexing). Round and mellow; MINOR and an octave
- *  down (SET_TUNING), as the instrument is almost always tuned. */
+ *  dip on the strike (the shell flexing). Round and mellow. */
 const handpan: Voice = (freq, dur, gain) => [
 	{ kind: 'tone', freq: [freq * 1.015, freq], glide: 0.03, dur, wave: 'sine', gain, sustain: true },
 	{ kind: 'tone', freq: freq * 2, dur: dur * 0.8, wave: 'sine', gain: gain * 0.4, sustain: true },
@@ -305,9 +322,7 @@ const handpan: Voice = (freq, dur, gain) => [
 ];
 
 /** Marimba: a woody bar — the fundamental with a strong FOURTH harmonic (the
- *  tuned bar's signature), short and dry. An octave down (SET_TUNING): at the
- *  reference register it was a xylophone, and the fourth harmonic keeps every
- *  note present on a phone speaker with the fundamental at 220 Hz. */
+ *  tuned bar's signature), short and dry. */
 const marimba: Voice = (freq, dur, gain) => [
 	{ kind: 'tone', freq, dur, wave: 'sine', gain, sustain: true },
 	{ kind: 'tone', freq: freq * 4, dur: dur * 0.35, wave: 'sine', gain: gain * 0.4, sustain: true },
@@ -376,11 +391,6 @@ function hums(low: number): Record<SwapStyle, Layer[]> {
 		humLow: [soft(low / 2, 0.5), soft(low, 0.18)],
 		/** The same with a fifth on top: a soft open dyad. */
 		humFifth: [soft(low / 2, 0.45), soft((low / 2) * 1.5, 0.3), soft(low, 0.12)],
-		/** No pitch at all: a breath of band-limited noise swelling in — the
-		 *  one non-tonal sound, kept mid-band so the game's mix does not eat it. */
-		humBreath: [
-			{ kind: 'noise', freq: 1600, q: 0.6, dur: 0.14, gain: 0.55, sustain: true, attack: 0.06 }
-		],
 		/** The low hum bending gently up a fifth over the swap — the slide's
 		 *  motion with the hum's manners. */
 		humRise: [soft(low / 2, 0.5, { slide: 1.5 }), soft(low, 0.16, { slide: 1.5 })]
@@ -390,9 +400,9 @@ function hums(low: number): Record<SwapStyle, Layer[]> {
 // ── Palettes ──────────────────────────────────────────────────────────────
 
 /**
- * A palette for one choice: the note set's three steps sorted low → high, the
- * order deciding which role takes which; the cancel tick on the note set's
- * step above them; the count-in on its free step in a plain sine; the plunge a
+ * A palette for one choice: A4, the note set's mid and high, the order
+ * deciding which role takes which; the cancel tick on A5; the count-in on the
+ * set's free note in a plain sine; the plunge a
  * long attack note (it always follows a jump's tick, and "tick, then a long
  * attack" is a plunge); the swap the chosen hum. A mono voice takes its one
  * pitch for every role.
@@ -403,9 +413,8 @@ function paletteOf(choice: SoundChoice): Record<CueKind, Layer[]> {
 	const set = NOTE_SETS[choice.notes];
 	const order = ORDERS[choice.order];
 	const d = t.durScale ?? 1;
-	const hz = (step: Step) => t.mono ?? stepHz(t, step);
-	const steps = [...set.steps].sort((a, b) => a - b) as [Step, Step, Step];
-	const slot: Record<Slot, number> = { low: hz(steps[0]), mid: hz(steps[1]), high: hz(steps[2]) };
+	const hz = (n: Note) => t.mono ?? noteHz(n);
+	const slot: Record<Slot, number> = { low: hz(NOTE_LOW), mid: hz(set.mid), high: hz(set.high) };
 	const attack = slot[order.attack];
 	const skill = slot[order.skill];
 	const burst = slot[order.burst];
@@ -424,7 +433,7 @@ function paletteOf(choice: SoundChoice): Record<CueKind, Layer[]> {
 		plunge: note(attack, 0.18 * d, 0.48),
 		skill: note(skill, 0.12 * d, 0.5),
 		burst: note(burst, 0.25 * d, 0.62),
-		movement: note(hz(set.cancel), 0.035 * d, 0.32),
+		movement: note(hz(NOTE_CANCEL), 0.035 * d, 0.32),
 		swap: hums(t.mono ?? slot.low)[choice.swap]
 	};
 }

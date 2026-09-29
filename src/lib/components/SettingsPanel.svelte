@@ -14,7 +14,8 @@
 		SWAP_STYLES,
 		SWAP_STYLE_LABELS,
 		VOICE_IDS,
-		VOICE_LABELS
+		VOICE_LABELS,
+		noteSetNotes
 	} from '$lib/playback/tones';
 	import {
 		downloadBackup,
@@ -333,8 +334,13 @@
 			<span class="sp-label">
 				<span class="sp-name">Notes</span>
 				<span class="sp-desc">
-					Which three steps of the scale the notes take, counting from the root. Every voice plays
-					them in its own key and register.
+					Which two notes join A at the bottom; every set is A up to A, and every voice plays the
+					same notes. <strong>Open</strong> is {noteSetNotes('open')}, a suspended, airy sound.
+					<strong>Anchor</strong>
+					is {noteSetNotes('anchor')}, the grounded fourth-and-fifth. <strong>Lantern</strong> is {noteSetNotes(
+						'lantern'
+					)}, wistful.
+					<strong>Meadow</strong> is {noteSetNotes('meadow')}, bright.
 				</span>
 			</span>
 			<div class="segment sp-segment" role="radiogroup" aria-label="Note set">
@@ -359,8 +365,7 @@
 				<span class="sp-desc">
 					A swap is a soft hum held until the next character arrives, the one sound that is not
 					struck. <strong>Low</strong> is a single low tone, <strong>Fifth</strong> an open pair,
-					<strong>Breath</strong> a breath of air with no pitch, <strong>Rise</strong> the low tone bending
-					gently up.
+					<strong>Rise</strong> the low tone bending gently up.
 				</span>
 			</span>
 			<div class="segment sp-segment" role="radiogroup" aria-label="Swap sound">
