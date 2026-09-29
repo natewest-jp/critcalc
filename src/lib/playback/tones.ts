@@ -29,12 +29,17 @@
  *   - THE COUNT-IN STAYS OUTSIDE THE INPUT VOCABULARY: same family, a pitch or
  *     colour no input uses.
  *
+ * Six sets: the drum kit and five pitched VOICES on one pentatonic assignment
+ * (`melodicPalette`) — kalimba, electric piano, music box, handpan, marimba —
+ * ⚓ Nate 2026-09-29: build them all and strike by ear. Each voice is one note
+ * recipe; the frequency-modulated tine is the only one that is not additive.
+ *
  * `percussive` is a drum machine's kit, on the classic recipes: a metallic hat
  * is six square waves at inharmonic ratios through a high bandpass (the 808's
  * numbers), a rimshot two resonances and a crack, a snare two bodies under a
  * band of noise, a woodblock a fast pitch drop, a tom a slow one, a cowbell
  * two squares a minor sixth apart. It marks
- * the PRESS and sits in the gaps of the game's mix. `melodic` is a kalimba on
+ * the PRESS and sits in the gaps of the game's mix. The voices play on
  * A major pentatonic — ⚓ pentatonic because the scale has no semitone
  * neighbours, so any two notes overlapping (a skill's tail under the burst)
  * are consonant; kept inside an octave and a fifth (A4–C♯6) where hearing is
@@ -46,8 +51,27 @@
 
 import type { CueKind } from './cues';
 
-export type SoundSet = 'percussive' | 'melodic';
-export const SOUND_SETS: readonly SoundSet[] = ['percussive', 'melodic'];
+export type SoundSet = 'percussive' | 'kalimba' | 'epiano' | 'musicbox' | 'handpan' | 'marimba';
+export const SOUND_SETS: readonly SoundSet[] = [
+	'percussive',
+	'kalimba',
+	'epiano',
+	'musicbox',
+	'handpan',
+	'marimba'
+];
+/** The pitched voices — every set but the drum kit. All share one pentatonic
+ *  assignment (`melodicPalette`) and differ only in the NOTE's recipe. */
+export const MELODIC_SETS: readonly SoundSet[] = SOUND_SETS.filter((s) => s !== 'percussive');
+/** What the Settings segment calls each set. */
+export const SOUND_SET_LABELS: Record<SoundSet, string> = {
+	percussive: 'Percussive',
+	kalimba: 'Kalimba',
+	epiano: 'E-piano',
+	musicbox: 'Music box',
+	handpan: 'Handpan',
+	marimba: 'Marimba'
+};
 
 type Common = {
 	/** Base length in seconds; a sustained layer's floor. */
@@ -63,16 +87,30 @@ type Common = {
 /** A pitched layer: an oscillator, optionally gliding. */
 type Tone = Common & {
 	kind: 'tone';
-	/** Hz; a pair glides exponentially from the first to the second over `dur`. */
+	/** Hz; a pair glides exponentially from the first to the second over
+	 *  `glide` seconds (default: `dur`). A short glide is a strike's pitch dip. */
 	freq: number | [number, number];
 	wave: OscillatorType;
+	glide?: number;
+};
+/** A frequency-modulated layer: a sine carrier whose pitch a second sine
+ *  wobbles, the wobble's depth dying away fast — the electric piano's tine. */
+type Fm = Common & {
+	kind: 'fm';
+	freq: number;
+	/** Modulator frequency as a multiple of the carrier's. */
+	ratio: number;
+	/** Peak modulation depth as a multiple of the carrier frequency. */
+	index: number;
+	/** Seconds for the depth to decay away. */
+	indexDecay: number;
 };
 /** A noise layer: white noise through a bandpass. Cracks and clicks. */
 type Noise = Common & { kind: 'noise'; freq: number; q: number };
 /** A metallic layer: a bank of square waves through a bandpass and a highpass.
  *  Hats, cowbells — the inharmonic ratios are what make metal. */
 type Metal = Common & { kind: 'metal'; freqs: number[]; band: number; high: number };
-export type Layer = Tone | Noise | Metal;
+export type Layer = Tone | Noise | Metal | Fm;
 
 /** Attack, in seconds — a hard onset clicks on cheap speakers. */
 const ATTACK_S = 0.003;
@@ -96,23 +134,137 @@ const FS5 = 739.99;
 const A5 = 880;
 const CS6 = 1108.73;
 
-/** A kalimba note: the fundamental, a second harmonic that dies sooner, and a
- *  whisper of click at the onset so the beat is placeable. `sustain` rings the
- *  two partials for the input's length; the click is always a click. */
-function kalimba(freq: number, dur: number, gain: number, delay?: number | 'end'): Layer[] {
-	return [
-		{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
-		{
-			kind: 'tone',
-			freq: freq * 2,
-			dur: dur * 0.4,
-			wave: 'sine',
-			gain: gain * 0.28,
-			delay,
-			sustain: true
-		},
-		{ kind: 'noise', freq: 4500, q: 1, dur: 0.004, gain: 0.12, delay }
-	];
+/** A voice: how one note of `freq` sounds, ringing `dur` at `gain`. */
+type Voice = (freq: number, dur: number, gain: number, delay?: number | 'end') => Layer[];
+
+/** The whisper of click at a note's onset, so the beat is placeable. */
+const click = (delay?: number | 'end'): Layer => ({
+	kind: 'noise',
+	freq: 4500,
+	q: 1,
+	dur: 0.004,
+	gain: 0.12,
+	delay
+});
+
+/** Kalimba: the fundamental and a second harmonic that dies sooner. */
+const kalimba: Voice = (freq, dur, gain, delay) => [
+	{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
+	{
+		kind: 'tone',
+		freq: freq * 2,
+		dur: dur * 0.4,
+		wave: 'sine',
+		gain: gain * 0.28,
+		delay,
+		sustain: true
+	},
+	click(delay)
+];
+
+/** Electric piano: an FM tine (modulator at the carrier's pitch, depth dying
+ *  in ~120 ms) over a plain sine body that carries the hold. */
+const epiano: Voice = (freq, dur, gain, delay) => [
+	{
+		kind: 'fm',
+		freq,
+		ratio: 1,
+		index: 1.8,
+		indexDecay: 0.12,
+		dur,
+		gain: gain * 0.7,
+		delay,
+		sustain: true
+	},
+	{ kind: 'tone', freq, dur, wave: 'sine', gain: gain * 0.5, delay, sustain: true },
+	click(delay)
+];
+
+/** Music box: a bright tine with two INHARMONIC partials (a steel comb's), short. */
+const musicbox: Voice = (freq, dur, gain, delay) => [
+	{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
+	{
+		kind: 'tone',
+		freq: freq * 2.76,
+		dur: dur * 0.5,
+		wave: 'sine',
+		gain: gain * 0.35,
+		delay,
+		sustain: true
+	},
+	{ kind: 'tone', freq: freq * 5.4, dur: dur * 0.25, wave: 'sine', gain: gain * 0.15, delay },
+	click(delay)
+];
+
+/** Handpan: fundamental, octave and fifth in a 1:2:3 stack, and a small pitch
+ *  dip on the strike (the shell flexing). Round and mellow. */
+const handpan: Voice = (freq, dur, gain, delay) => [
+	{
+		kind: 'tone',
+		freq: [freq * 1.015, freq],
+		glide: 0.03,
+		dur,
+		wave: 'sine',
+		gain,
+		delay,
+		sustain: true
+	},
+	{
+		kind: 'tone',
+		freq: freq * 2,
+		dur: dur * 0.8,
+		wave: 'sine',
+		gain: gain * 0.4,
+		delay,
+		sustain: true
+	},
+	{
+		kind: 'tone',
+		freq: freq * 3,
+		dur: dur * 0.5,
+		wave: 'sine',
+		gain: gain * 0.22,
+		delay,
+		sustain: true
+	},
+	click(delay)
+];
+
+/** Marimba: a woody bar — the fundamental with a strong FOURTH harmonic (the
+ *  tuned bar's signature), short and dry. */
+const marimba: Voice = (freq, dur, gain, delay) => [
+	{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
+	{
+		kind: 'tone',
+		freq: freq * 4,
+		dur: dur * 0.35,
+		wave: 'sine',
+		gain: gain * 0.4,
+		delay,
+		sustain: true
+	},
+	{ kind: 'tone', freq: freq * 10, dur: 0.015, wave: 'sine', gain: gain * 0.12, delay },
+	click(delay)
+];
+
+/**
+ * The one pentatonic assignment every pitched voice plays: burst on A4, skill
+ * on E5, the attacks on A5 at two lengths, cancel a very short C♯6, the swap
+ * stepping E5 up to A5 with the second note at the arrival, and the count-in on
+ * F♯5 in a plain sine — the one note no input takes, in a purer colour than
+ * any voice.
+ */
+function melodicPalette(note: Voice): Record<CueKind, Layer[]> {
+	return {
+		count: [{ kind: 'tone', freq: FS5, dur: 0.12, wave: 'sine', gain: 0.45 }],
+		normal: note(A5, 0.07, 0.42),
+		charged: note(A5, 0.16, 0.4),
+		skill: note(E5, 0.12, 0.5),
+		burst: note(A4, 0.25, 0.62),
+		plunge: [...note(E5, 0.05, 0.45), ...note(A4, 0.18, 0.55, 0.06)],
+		movement: note(CS6, 0.035, 0.32),
+		swap: [...note(E5, 0.08, 0.45), ...note(A5, 0.085, 0.45, 'end')]
+	};
 }
 
 export const PALETTES: Record<SoundSet, Record<CueKind, Layer[]>> = {
@@ -162,22 +314,22 @@ export const PALETTES: Record<SoundSet, Record<CueKind, Layer[]>> = {
 			{ kind: 'metal', freqs: BELL_UP, band: 3500, high: 500, dur: 0.06, gain: 0.45, delay: 'end' }
 		]
 	},
-	melodic: {
-		// F♯5, a purer voice than the inputs: the one pentatonic note no input takes.
-		count: [{ kind: 'tone', freq: FS5, dur: 0.12, wave: 'sine', gain: 0.45 }],
-		normal: kalimba(A5, 0.07, 0.42),
-		charged: kalimba(A5, 0.16, 0.4),
-		skill: kalimba(E5, 0.12, 0.5),
-		burst: kalimba(A4, 0.25, 0.62),
-		plunge: [...kalimba(E5, 0.05, 0.45), ...kalimba(A4, 0.18, 0.55, 0.06)],
-		movement: kalimba(CS6, 0.035, 0.32),
-		// The press, and the arrival on the higher note.
-		swap: [...kalimba(E5, 0.08, 0.45), ...kalimba(A5, 0.085, 0.45, 'end')]
-	}
+	kalimba: melodicPalette(kalimba),
+	epiano: melodicPalette(epiano),
+	musicbox: melodicPalette(musicbox),
+	handpan: melodicPalette(handpan),
+	marimba: melodicPalette(marimba)
 };
 
 /** Per-set trim, so switching sets does not switch loudness. By ear. */
-export const SET_TRIM: Record<SoundSet, number> = { percussive: 1, melodic: 1.1 };
+export const SET_TRIM: Record<SoundSet, number> = {
+	percussive: 1,
+	kalimba: 1.1,
+	epiano: 1,
+	musicbox: 1,
+	handpan: 1.05,
+	marimba: 1.1
+};
 /** Master level at volume 1. The palettes' gains are relative to this. */
 export const MASTER_GAIN = 0.5;
 
@@ -263,13 +415,29 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 			osc.type = l.wave;
 			if (Array.isArray(l.freq)) {
 				osc.frequency.setValueAtTime(l.freq[0], at);
-				osc.frequency.exponentialRampToValueAtTime(l.freq[1], at + l.dur);
+				osc.frequency.exponentialRampToValueAtTime(l.freq[1], at + (l.glide ?? l.dur));
 			} else {
 				osc.frequency.setValueAtTime(l.freq, at);
 			}
 			const env = envelope(at, dur, peak);
 			osc.connect(env);
 			track([osc], at, dur, env);
+		} else if (l.kind === 'fm') {
+			const carrier = ctx.createOscillator();
+			carrier.type = 'sine';
+			carrier.frequency.value = l.freq;
+			const mod = ctx.createOscillator();
+			mod.type = 'sine';
+			mod.frequency.value = l.freq * l.ratio;
+			// Depth in Hz, decaying: the tine's bright strike settling to a tone.
+			const depth = ctx.createGain();
+			depth.gain.setValueAtTime(l.freq * l.index, at);
+			depth.gain.exponentialRampToValueAtTime(1, at + l.indexDecay);
+			mod.connect(depth);
+			depth.connect(carrier.frequency);
+			const env = envelope(at, dur, peak);
+			carrier.connect(env);
+			track([carrier, mod], at, dur, depth, env);
 		} else if (l.kind === 'noise') {
 			const src = ctx.createBufferSource();
 			src.buffer = noise;

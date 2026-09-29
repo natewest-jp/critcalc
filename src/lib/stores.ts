@@ -8,7 +8,7 @@
 
 import { writable } from 'svelte/store';
 import { HUMAN_PAD_DEFAULT_F } from '$lib/sim/humanTiming';
-import type { SoundSet } from '$lib/playback/tones';
+import { SOUND_SETS, type SoundSet } from '$lib/playback/tones';
 import { browser } from '$app/environment';
 
 // ---------------------------------------------------------------------------
@@ -428,6 +428,14 @@ function loadSiteSettings(): SiteSettings {
 			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
 		}
 		delete (merged as Record<string, unknown>).swapFrames;
+		// The sound set's ids moved when the voices multiplied ('melodic' became
+		// 'kalimba', 2026-09-29); an id we no longer know falls back to the default.
+		if (!SOUND_SETS.includes(merged.playbackSoundSet)) {
+			merged.playbackSoundSet =
+				(parsed.playbackSoundSet as string) === 'melodic'
+					? 'kalimba'
+					: PLAYBACK_SOUND_DEFAULTS.playbackSoundSet;
+		}
 		return merged;
 	} catch {
 		return { ...SITE_SETTINGS_DEFAULTS };

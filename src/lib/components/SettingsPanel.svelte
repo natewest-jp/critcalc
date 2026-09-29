@@ -4,6 +4,7 @@
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 	import { playback } from '$lib/playback/playback.svelte';
+	import { SOUND_SETS, SOUND_SET_LABELS } from '$lib/playback/tones';
 	import {
 		downloadBackup,
 		parseBackup,
@@ -238,18 +239,19 @@
 			you can follow a rotation with your eyes on the game. Pick the set you can follow.
 		</p>
 
-		<div class="sp-row">
+		<div class="sp-row sp-row--stack">
 			<span class="sp-label">
 				<span class="sp-name">Sound set</span>
 				<span class="sp-desc">
-					Percussive is a drum kit — hats for attacks, a woodblock for a skill, a tom for a burst.
-					Melodic is a kalimba on a pentatonic scale, so notes that overlap never clash. Either way
-					the heavier the input, the lower and longer the sound.
+					Percussive is a drum kit — a rimshot and a snare for attacks, a woodblock for a skill, a
+					tom for a burst — and marks the press. The five voices play a pentatonic scale, so notes
+					that overlap never clash, and each note rings for as long as its input holds the field.
+					Either way the heavier the input, the lower and longer the sound.
 				</span>
 			</span>
 			<div class="sp-sound-ctl">
 				<div class="segment sp-segment" role="radiogroup" aria-label="Sound set">
-					{#each [['percussive', 'Percussive'], ['melodic', 'Melodic']] as const as [value, label] (value)}
+					{#each SOUND_SETS as value (value)}
 						<button
 							class="btn"
 							class:is-active={$siteSettings.playbackSoundSet === value}
@@ -258,7 +260,7 @@
 							onclick={() => {
 								siteSettings.setPlaybackSound({ playbackSoundSet: value });
 								playback.preview(value);
-							}}>{label}</button
+							}}>{SOUND_SET_LABELS[value]}</button
 						>
 					{/each}
 				</div>
@@ -423,13 +425,29 @@
 
 	/* Third segmented control in the product — the global .segment track now.
 	   Only its flex behaviour in the row is local. */
-	/* The sound row's control: the set picker with its Preview beside it, at
-	   the intra-group gap. Wraps on a narrow modal. */
+	/* The sound-set row STACKS: six choices do not fit beside a label, so the
+	   label runs full width and the picker sits under it. A first cut kept the
+	   side-by-side row and the segment folded into a 125px column six buttons
+	   tall. */
+	.sp-row--stack {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.6rem;
+	}
+	/* The picker with its Preview beside it. */
 	.sp-sound-ctl {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.5rem;
+	}
+	/* Six sets on the segment's one recessed track, as a 3×2 grid: the track
+	   is the .segment's own padding and fill, so the grid inherits the
+	   affordance. Grows to the row; the Preview takes what is left. */
+	.sp-sound-ctl .sp-segment {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		flex: 1 1 18rem;
 	}
 	.sp-segment {
 		flex-shrink: 0;
