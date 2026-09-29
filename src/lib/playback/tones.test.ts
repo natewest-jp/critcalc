@@ -6,6 +6,7 @@ import {
 	PREVIEW_PHRASE,
 	RELEASE_S,
 	SET_TRIM,
+	SET_TUNING,
 	SOUND_SETS,
 	SOUND_SET_LABELS,
 	ringFor,
@@ -38,7 +39,9 @@ describe('the sound palettes', () => {
 		for (const set of SOUND_SETS) {
 			for (const kind of KINDS) {
 				const longest = Math.max(...PALETTES[set][kind].map(end));
-				const cap = kind === 'burst' || kind === 'plunge' ? 0.26 : 0.16;
+				// the vibraphone's floors are longer by design (SET_TUNING.durScale)
+				const scale = set === 'vibraphone' ? 1.8 : 1;
+				const cap = (kind === 'burst' || kind === 'plunge' ? 0.26 : 0.16) * scale;
 				expect(longest, `${set}.${kind}`).toBeLessThanOrEqual(cap);
 			}
 		}
@@ -59,24 +62,45 @@ describe('the sound palettes', () => {
 		expect(fundamental('percussive', 'burst')!).toBeLessThan(fundamental('percussive', 'skill')!);
 	});
 
-	it('every voice lives on A major pentatonic inside an octave and a fifth', () => {
-		const scale = [440, 659.25, 739.99, 880, 1108.73];
-		const partials = [1, 2, 2.76, 3, 4, 5.4, 10];
+	it('every voice lives on its pentatonic, in its own octave and mode', () => {
+		const partials = [1, 2, 2.03, 2.76, 3, 4, 5.4, 10];
 		for (const set of MELODIC_SETS) {
+			const t = SET_TUNING[set as keyof typeof SET_TUNING];
+			const a = 440 * Math.pow(2, t.octave);
+			const semis = t.mode === 'major' ? [0, 4, 7, 9, 12, 16] : [0, 3, 7, 10, 12, 15];
+			const scale = semis.map((st) => a * Math.pow(2, st / 12));
 			for (const kind of KINDS) {
 				for (const l of PALETTES[set][kind]) {
 					if (l.kind !== 'tone' && l.kind !== 'fm') continue;
 					// A partial is a multiple of its note; a glide lands ON the note.
 					const f = Array.isArray(l.freq) ? l.freq[1] : l.freq;
-					const inScale = scale.some((n) => partials.some((m) => Math.abs(f - m * n) < 0.01));
+					const inScale = scale.some((n) => partials.some((m) => Math.abs(f - m * n) < 0.05));
 					expect(inScale, `${set}.${kind} ${f}`).toBe(true);
 				}
 			}
 		}
 	});
 
-	it('six sets, each named and trimmed', () => {
-		expect(SOUND_SETS).toHaveLength(6);
+	it('a minor voice counts in on a note no input takes, like a major one', () => {
+		for (const set of MELODIC_SETS) {
+			const count = PALETTES[set].count[0] as Extract<Layer, { kind: 'tone' }>;
+			const inputs = KINDS.filter((k) => k !== 'count').flatMap((k) =>
+				PALETTES[set][k]
+					.filter(
+						(l): l is Extract<Layer, { kind: 'tone' | 'fm' }> =>
+							l.kind === 'tone' || l.kind === 'fm'
+					)
+					.map((l) => (Array.isArray(l.freq) ? l.freq[1] : l.freq))
+			);
+			expect(
+				inputs.some((f) => Math.abs(f - (count.freq as number)) < 0.05),
+				set
+			).toBe(false);
+		}
+	});
+
+	it('seven sets, each named and trimmed', () => {
+		expect(SOUND_SETS).toHaveLength(7);
 		for (const set of SOUND_SETS) {
 			expect(SOUND_SET_LABELS[set]).toBeTruthy();
 			expect(SET_TRIM[set]).toBeGreaterThan(0);

@@ -244,9 +244,9 @@
 				<span class="sp-name">Sound set</span>
 				<span class="sp-desc">
 					Percussive is a drum kit — a rimshot and a snare for attacks, a woodblock for a skill, a
-					tom for a burst — and marks the press. The five voices play a pentatonic scale, so notes
-					that overlap never clash, and each note rings for as long as its input holds the field.
-					Either way the heavier the input, the lower and longer the sound.
+					tom for a burst — and marks the press. The voices play a pentatonic scale, so notes that
+					overlap never clash, and each note rings for as long as its input holds the field. Either
+					way the heavier the input, the lower and longer the sound.
 				</span>
 			</span>
 			<div class="sp-sound-ctl">

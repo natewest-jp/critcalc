@@ -30,8 +30,8 @@
  *     colour no input uses.
  *
  * Six sets: the drum kit and five pitched VOICES on one pentatonic assignment
- * (`melodicPalette`) — kalimba, electric piano, music box, handpan, marimba —
- * ⚓ Nate 2026-09-29: build them all and strike by ear. Each voice is one note
+ * (`melodicPalette`) — kalimba, electric piano, music box, handpan, marimba,
+ * vibraphone — ⚓ Nate 2026-09-29: build them all and strike by ear. Each voice is one note
  * recipe; the frequency-modulated tine is the only one that is not additive.
  *
  * `percussive` is a drum machine's kit, on the classic recipes: a metallic hat
@@ -51,14 +51,22 @@
 
 import type { CueKind } from './cues';
 
-export type SoundSet = 'percussive' | 'kalimba' | 'epiano' | 'musicbox' | 'handpan' | 'marimba';
+export type SoundSet =
+	| 'percussive'
+	| 'kalimba'
+	| 'epiano'
+	| 'musicbox'
+	| 'handpan'
+	| 'marimba'
+	| 'vibraphone';
 export const SOUND_SETS: readonly SoundSet[] = [
 	'percussive',
 	'kalimba',
 	'epiano',
 	'musicbox',
 	'handpan',
-	'marimba'
+	'marimba',
+	'vibraphone'
 ];
 /** The pitched voices — every set but the drum kit. All share one pentatonic
  *  assignment (`melodicPalette`) and differ only in the NOTE's recipe. */
@@ -70,7 +78,8 @@ export const SOUND_SET_LABELS: Record<SoundSet, string> = {
 	epiano: 'E-piano',
 	musicbox: 'Music box',
 	handpan: 'Handpan',
-	marimba: 'Marimba'
+	marimba: 'Marimba',
+	vibraphone: 'Vibraphone'
 };
 
 type Common = {
@@ -127,12 +136,49 @@ const HAT = [205.3, 304.4, 369.6, 522.7, 540, 800];
 const BELL = [540, 800];
 const BELL_UP = [720, 1067];
 
-/** A major pentatonic, the melodic set's five notes. */
-const A4 = 440;
-const E5 = 659.25;
-const FS5 = 739.99;
-const A5 = 880;
-const CS6 = 1108.73;
+/**
+ * ⚓ THE DEGREE ASSIGNMENT IS SHARED; THE KEY AND REGISTER ARE PER VOICE (⚓ Nate
+ * 2026-09-29). The sets never sound together, so nothing binds them to one
+ * key — but which scale degree means which input must not move, or the
+ * contour learnt on one voice would not transfer to the next. What moves is
+ * the OCTAVE (instruments have home registers: a marimba's warmth is below
+ * 500 Hz, a music box lives high) and the MODE (a handpan is almost always
+ * tuned minor). The roles, on A:
+ *
+ *   burst   the root          A4
+ *   skill   the fifth         E5
+ *   attack  the octave        A5 (normal short, charged long)
+ *   cancel  the third above   C♯6 major · C6 minor
+ *   count   the odd note out  F♯5 major · G5 minor — the one no input takes
+ *   swap    fifth → octave    E5 → A5, the second at the arrival
+ */
+export type Tuning = {
+	/** Octaves from the reference (A4 = 440 as the root). */
+	octave: number;
+	mode: 'major' | 'minor';
+	/** Scales every base length — a vibraphone's floor is longer than a tine's. */
+	durScale?: number;
+};
+type Roles = { root: number; fifth: number; octave: number; third: number; count: number };
+function roles(t: Tuning): Roles {
+	const a = 440 * Math.pow(2, t.octave);
+	const r = (semitones: number) => a * Math.pow(2, semitones / 12);
+	return {
+		root: a,
+		fifth: r(7),
+		octave: r(12),
+		third: t.mode === 'major' ? r(16) : r(15),
+		count: t.mode === 'major' ? r(9) : r(10)
+	};
+}
+export const SET_TUNING: Record<Exclude<SoundSet, 'percussive'>, Tuning> = {
+	kalimba: { octave: 0, mode: 'major' },
+	epiano: { octave: -1, mode: 'major' },
+	musicbox: { octave: 1, mode: 'major' },
+	handpan: { octave: -1, mode: 'minor' },
+	marimba: { octave: -1, mode: 'major' },
+	vibraphone: { octave: 0, mode: 'major', durScale: 1.8 }
+};
 
 /** A voice: how one note of `freq` sounds, ringing `dur` at `gain`. */
 type Voice = (freq: number, dur: number, gain: number, delay?: number | 'end') => Layer[];
@@ -147,12 +193,13 @@ const click = (delay?: number | 'end'): Layer => ({
 	delay
 });
 
-/** Kalimba: the fundamental and a second harmonic that dies sooner. */
+/** Kalimba: the fundamental and a second partial that dies sooner — a real
+ *  tine's is a few cents SHARP of the octave (×2.03), which is the life in it. */
 const kalimba: Voice = (freq, dur, gain, delay) => [
 	{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
 	{
 		kind: 'tone',
-		freq: freq * 2,
+		freq: freq * 2.03,
 		dur: dur * 0.4,
 		wave: 'sine',
 		gain: gain * 0.28,
@@ -162,25 +209,38 @@ const kalimba: Voice = (freq, dur, gain, delay) => [
 	click(delay)
 ];
 
-/** Electric piano: an FM tine (modulator at the carrier's pitch, depth dying
- *  in ~120 ms) over a plain sine body that carries the hold. */
+/** Electric piano: the two things a Rhodes is — a body (modulator at the
+ *  carrier's pitch, depth settling over ~150 ms) and the TINE, a second
+ *  operator fourteen times up that rings for a few ms and gives the strike its
+ *  "ting". A plain sine carries the hold. Lives an octave down (SET_TUNING). */
 const epiano: Voice = (freq, dur, gain, delay) => [
 	{
 		kind: 'fm',
 		freq,
 		ratio: 1,
-		index: 1.8,
-		indexDecay: 0.12,
+		index: 1.4,
+		indexDecay: 0.15,
 		dur,
 		gain: gain * 0.7,
 		delay,
 		sustain: true
 	},
+	{
+		kind: 'fm',
+		freq,
+		ratio: 14,
+		index: 0.9,
+		indexDecay: 0.035,
+		dur: 0.05,
+		gain: gain * 0.3,
+		delay
+	},
 	{ kind: 'tone', freq, dur, wave: 'sine', gain: gain * 0.5, delay, sustain: true },
 	click(delay)
 ];
 
-/** Music box: a bright tine with two INHARMONIC partials (a steel comb's), short. */
+/** Music box: a bright tine with two INHARMONIC partials (a steel comb's),
+ *  short. An octave UP (SET_TUNING): a music box is a high instrument. */
 const musicbox: Voice = (freq, dur, gain, delay) => [
 	{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
 	{
@@ -197,7 +257,8 @@ const musicbox: Voice = (freq, dur, gain, delay) => [
 ];
 
 /** Handpan: fundamental, octave and fifth in a 1:2:3 stack, and a small pitch
- *  dip on the strike (the shell flexing). Round and mellow. */
+ *  dip on the strike (the shell flexing). Round and mellow; MINOR and an octave
+ *  down (SET_TUNING), as the instrument is almost always tuned. */
 const handpan: Voice = (freq, dur, gain, delay) => [
 	{
 		kind: 'tone',
@@ -231,7 +292,9 @@ const handpan: Voice = (freq, dur, gain, delay) => [
 ];
 
 /** Marimba: a woody bar — the fundamental with a strong FOURTH harmonic (the
- *  tuned bar's signature), short and dry. */
+ *  tuned bar's signature), short and dry. An octave down (SET_TUNING): at the
+ *  reference register it was a xylophone, and the fourth harmonic keeps every
+ *  note present on a phone speaker with the fundamental at 220 Hz. */
 const marimba: Voice = (freq, dur, gain, delay) => [
 	{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
 	{
@@ -247,23 +310,52 @@ const marimba: Voice = (freq, dur, gain, delay) => [
 	click(delay)
 ];
 
+/** Vibraphone, motor off: the marimba's bar in metal — the fourth harmonic
+ *  SUSTAINS instead of dying, with a faint shimmer on top. The instrument
+ *  built for holding a note, so the length rule shows best here; its floors
+ *  are longer (SET_TUNING.durScale). */
+const vibraphone: Voice = (freq, dur, gain, delay) => [
+	{ kind: 'tone', freq, dur, wave: 'sine', gain, delay, sustain: true },
+	{
+		kind: 'tone',
+		freq: freq * 4,
+		dur: dur * 0.9,
+		wave: 'sine',
+		gain: gain * 0.3,
+		delay,
+		sustain: true
+	},
+	{
+		kind: 'tone',
+		freq: freq * 10,
+		dur: dur * 0.25,
+		wave: 'sine',
+		gain: gain * 0.06,
+		delay,
+		sustain: true
+	},
+	click(delay)
+];
+
 /**
- * The one pentatonic assignment every pitched voice plays: burst on A4, skill
- * on E5, the attacks on A5 at two lengths, cancel a very short C♯6, the swap
- * stepping E5 up to A5 with the second note at the arrival, and the count-in on
- * F♯5 in a plain sine — the one note no input takes, in a purer colour than
- * any voice.
+ * The one degree assignment every pitched voice plays, in its own key and
+ * register (`roles`): burst on the root, skill on the fifth, the attacks on the
+ * octave at two lengths, cancel a very short third above, the swap stepping
+ * fifth → octave with the second note at the arrival, and the count-in on the
+ * odd note out in a plain sine — a purer colour than any voice.
  */
-function melodicPalette(note: Voice): Record<CueKind, Layer[]> {
+function melodicPalette(note: Voice, tuning: Tuning): Record<CueKind, Layer[]> {
+	const n = roles(tuning);
+	const d = tuning.durScale ?? 1;
 	return {
-		count: [{ kind: 'tone', freq: FS5, dur: 0.12, wave: 'sine', gain: 0.45 }],
-		normal: note(A5, 0.07, 0.42),
-		charged: note(A5, 0.16, 0.4),
-		skill: note(E5, 0.12, 0.5),
-		burst: note(A4, 0.25, 0.62),
-		plunge: [...note(E5, 0.05, 0.45), ...note(A4, 0.18, 0.55, 0.06)],
-		movement: note(CS6, 0.035, 0.32),
-		swap: [...note(E5, 0.08, 0.45), ...note(A5, 0.085, 0.45, 'end')]
+		count: [{ kind: 'tone', freq: n.count, dur: 0.12, wave: 'sine', gain: 0.45 }],
+		normal: note(n.octave, 0.07 * d, 0.42),
+		charged: note(n.octave, 0.16 * d, 0.4),
+		skill: note(n.fifth, 0.12 * d, 0.5),
+		burst: note(n.root, 0.25 * d, 0.62),
+		plunge: [...note(n.fifth, 0.05 * d, 0.45), ...note(n.root, 0.18 * d, 0.55, 0.06)],
+		movement: note(n.third, 0.035 * d, 0.32),
+		swap: [...note(n.fifth, 0.08 * d, 0.45), ...note(n.octave, 0.085 * d, 0.45, 'end')]
 	};
 }
 
@@ -314,11 +406,12 @@ export const PALETTES: Record<SoundSet, Record<CueKind, Layer[]>> = {
 			{ kind: 'metal', freqs: BELL_UP, band: 3500, high: 500, dur: 0.06, gain: 0.45, delay: 'end' }
 		]
 	},
-	kalimba: melodicPalette(kalimba),
-	epiano: melodicPalette(epiano),
-	musicbox: melodicPalette(musicbox),
-	handpan: melodicPalette(handpan),
-	marimba: melodicPalette(marimba)
+	kalimba: melodicPalette(kalimba, SET_TUNING.kalimba),
+	epiano: melodicPalette(epiano, SET_TUNING.epiano),
+	musicbox: melodicPalette(musicbox, SET_TUNING.musicbox),
+	handpan: melodicPalette(handpan, SET_TUNING.handpan),
+	marimba: melodicPalette(marimba, SET_TUNING.marimba),
+	vibraphone: melodicPalette(vibraphone, SET_TUNING.vibraphone)
 };
 
 /** Per-set trim, so switching sets does not switch loudness. By ear. */
@@ -328,7 +421,8 @@ export const SET_TRIM: Record<SoundSet, number> = {
 	epiano: 1,
 	musicbox: 1,
 	handpan: 1.05,
-	marimba: 1.1
+	marimba: 1.1,
+	vibraphone: 1
 };
 /** Master level at volume 1. The palettes' gains are relative to this. */
 export const MASTER_GAIN = 0.5;
