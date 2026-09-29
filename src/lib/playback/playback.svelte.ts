@@ -34,7 +34,7 @@ import { siteSettings } from '$lib/stores';
 import { plannerView as pv } from '$lib/plannerView.svelte';
 import { COUNT_IN_S, countInCues, type Cue } from './cues';
 import { dueBetween, positionAt } from './transport';
-import { createSounder, type Sounder } from './tones';
+import { createSounder, type Sounder, type SoundSet } from './tones';
 
 /** How far ahead tones are queued. ⚠️ Must exceed the ~1 s timer throttle a
  *  hidden tab applies, or the queue runs dry between ticks. */
@@ -81,12 +81,22 @@ class Playback {
 			: performance.now() / 1000;
 	}
 
-	/** Lazily create the context INSIDE the gesture that pressed Play. */
+	/** Lazily create the context INSIDE the gesture that pressed Play (or a
+	 *  Settings preview — also a gesture). */
 	#ensureSounder(): Sounder | null {
 		if (typeof AudioContext === 'undefined') return null;
-		if (!this.#sounder) this.#sounder = createSounder(new AudioContext());
+		if (!this.#sounder) {
+			this.#sounder = createSounder(new AudioContext(), get(siteSettings).playbackVolume);
+			// Volume follows the setting for the life of the context.
+			siteSettings.subscribe((v) => this.#sounder?.setVolume(v.playbackVolume));
+		}
 		if (this.#sounder.ctx.state === 'suspended') void this.#sounder.ctx.resume();
 		return this.#sounder;
+	}
+
+	/** The Settings preview phrase, in `set` — the way a set is chosen. */
+	preview(set: SoundSet) {
+		this.#ensureSounder()?.preview(set);
 	}
 
 	play() {
@@ -145,7 +155,7 @@ class Playback {
 
 	/** The sound plate. Mid-play it re-anchors onto the other clock in place. */
 	setSound(on: boolean) {
-		siteSettings.setPlaybackSound(on);
+		siteSettings.setPlaybackSound({ playbackSound: on });
 		if (!this.playing) return;
 		this.pause();
 		this.play();
@@ -187,6 +197,7 @@ class Playback {
 		this.#queuedFrom = cues;
 		const to = nowElapsed + LOOKAHEAD_S;
 		if (to <= this.#queuedTo) return;
+		const set = get(siteSettings).playbackSoundSet;
 		for (const due of dueBetween(
 			cues,
 			this.#countIn,
@@ -196,7 +207,7 @@ class Playback {
 			this.#queuedTo,
 			to
 		)) {
-			s.play(due.kind, this.#anchor + due.elapsed);
+			s.play(due.kind, this.#anchor + due.elapsed, set);
 		}
 		this.#queuedTo = to;
 	}

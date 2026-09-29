@@ -3,6 +3,7 @@
 	import Mark from './Mark.svelte';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
+	import { playback } from '$lib/playback/playback.svelte';
 	import {
 		downloadBackup,
 		parseBackup,
@@ -224,6 +225,78 @@
 		</label>
 	</section>
 
+	<!-- ══ PLAYBACK SOUND (playback round, 2026-09-29) ═══════════════════════
+	     Band B's Sound plate is on/off; WHICH sound is a taste set once, so it
+	     lives here (⚓ Nate: people are picky about sounds, and it is personal).
+	     Choosing a set PLAYS it — picking by listening, not by reading a label —
+	     and Preview plays it again. Both are gestures, which is what creating
+	     the AudioContext needs. -->
+	<section class="sp-section">
+		<h2 class="kicker sp-section-title">Playback sound</h2>
+		<p class="sp-lede">
+			<strong>Play</strong> on the planner's toolbar counts you in and sounds a tone at every press, so
+			you can follow a rotation with your eyes on the game. Pick the set you can follow.
+		</p>
+
+		<div class="sp-row">
+			<span class="sp-label">
+				<span class="sp-name">Sound set</span>
+				<span class="sp-desc">
+					Percussive is a drum kit — hats for attacks, a woodblock for a skill, a tom for a burst.
+					Melodic is a kalimba on a pentatonic scale, so notes that overlap never clash. Either way
+					the heavier the input, the lower and longer the sound.
+				</span>
+			</span>
+			<div class="sp-sound-ctl">
+				<div class="segment sp-segment" role="radiogroup" aria-label="Sound set">
+					{#each [['percussive', 'Percussive'], ['melodic', 'Melodic']] as const as [value, label] (value)}
+						<button
+							class="btn"
+							class:is-active={$siteSettings.playbackSoundSet === value}
+							role="radio"
+							aria-checked={$siteSettings.playbackSoundSet === value}
+							onclick={() => {
+								siteSettings.setPlaybackSound({ playbackSoundSet: value });
+								playback.preview(value);
+							}}>{label}</button
+						>
+					{/each}
+				</div>
+				<button
+					class="btn btn--sm"
+					type="button"
+					aria-label="Preview the sound set"
+					onclick={() => playback.preview($siteSettings.playbackSoundSet)}
+				>
+					<Mark name="play" size={12} filled />
+					Preview
+				</button>
+			</div>
+		</div>
+
+		<div class="sp-row">
+			<span class="sp-label">
+				<span class="sp-name">Volume</span>
+				<span class="sp-desc">The tones against the game's own level.</span>
+			</span>
+			<div class="sp-slider-ctl">
+				<input
+					class="slider sp-slider"
+					type="range"
+					min="0"
+					max="100"
+					step="5"
+					value={Math.round($siteSettings.playbackVolume * 100)}
+					oninput={(e) =>
+						siteSettings.setPlaybackSound({ playbackVolume: Number(e.currentTarget.value) / 100 })}
+					onchange={() => playback.preview($siteSettings.playbackSoundSet)}
+					aria-label="Playback volume"
+				/>
+				<span class="sp-slider-value">{Math.round($siteSettings.playbackVolume * 100)}%</span>
+			</div>
+		</div>
+	</section>
+
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Your data</h2>
 
@@ -350,6 +423,14 @@
 
 	/* Third segmented control in the product — the global .segment track now.
 	   Only its flex behaviour in the row is local. */
+	/* The sound row's control: the set picker with its Preview beside it, at
+	   the intra-group gap. Wraps on a narrow modal. */
+	.sp-sound-ctl {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
 	.sp-segment {
 		flex-shrink: 0;
 	}

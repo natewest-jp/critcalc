@@ -8,6 +8,7 @@
 
 import { writable } from 'svelte/store';
 import { HUMAN_PAD_DEFAULT_F } from '$lib/sim/humanTiming';
+import type { SoundSet } from '$lib/playback/tones';
 import { browser } from '$app/environment';
 
 // ---------------------------------------------------------------------------
@@ -349,6 +350,12 @@ type SiteSettings = {
 	 * codec — a link carries a rotation, not the recipient's speakers.
 	 */
 	playbackSound: boolean;
+	/** Which palette (⚓ Nate 2026-09-29: sounds are personal — two sets, chosen
+	 *  in Settings by listening). `$lib/playback/tones.ts` holds both. */
+	playbackSoundSet: SoundSet;
+	/** Master volume, 0–1. The tones have to sit against the game's own level,
+	 *  and that is personal too. */
+	playbackVolume: number;
 };
 
 /**
@@ -379,6 +386,13 @@ export const TIMELINE_LAYER_DEFAULTS = {
  *  with the game in front of you, and a first press of Play that did nothing
  *  audible would leave the reader wondering what it was for. */
 export const PLAYBACK_SOUND_DEFAULT = true;
+/** Percussive by default: it sits in the gaps of the game's mix, which is where
+ *  a first-time listener needs it to be heard. */
+export const PLAYBACK_SOUND_DEFAULTS = {
+	playbackSound: PLAYBACK_SOUND_DEFAULT,
+	playbackSoundSet: 'percussive' as SoundSet,
+	playbackVolume: 0.7
+} as const;
 
 export type HumanTimingMode = 'padding' | 'animations' | 'both';
 
@@ -398,7 +412,7 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
 	...TIMELINE_LAYER_DEFAULTS,
-	playbackSound: PLAYBACK_SOUND_DEFAULT
+	...PLAYBACK_SOUND_DEFAULTS
 };
 
 function loadSiteSettings(): SiteSettings {
@@ -452,8 +466,10 @@ function createSiteSettingsStore() {
 		setTimelineLayers(next: Partial<Pick<SiteSettings, 'showAuraLane' | 'showTimelineBuffs'>>) {
 			store.update((prev) => persist({ ...prev, ...next }));
 		},
-		setPlaybackSound(on: boolean) {
-			store.update((prev) => persist({ ...prev, playbackSound: on }));
+		/** One setter for the plate and its two settings — the same kind of
+		 *  preference, written from two surfaces (band B and the modal). */
+		setPlaybackSound(next: Partial<Pick<SiteSettings, keyof typeof PLAYBACK_SOUND_DEFAULTS>>) {
+			store.update((prev) => persist({ ...prev, ...next }));
 		}
 	};
 }
