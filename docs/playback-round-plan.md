@@ -162,3 +162,21 @@ Per round: vitest / check / lint / build. `advance()` and the audio SCHEDULE (a 
 - **Nate's notes** — 2026-09-29 (⚓ at a keyboard; the earlier "steps" were A-major intervals, not pentatonic ones). ⚓ EVERY VOICE ON THE SAME NOTES: per-voice key and register are GONE (the handpan's minor, the marimba's and e-piano's lower octave, the music box's upper). ⚓ A4 is the bottom of every set and A5 the cancel tick; the two notes between come from A B D E F♯ (D major pentatonic). Four sets, named by Claude for how they sit: **Open** A·B·E (suspended, airy) · **Anchor** A·D·E (fourth-and-fifth, grounded) · **Lantern** A·B·F♯ (the sixth leans minor, wistful) · **Meadow** A·E·F♯ (added sixth, bright). The count-in takes a free note inside the span (D, B, D, D). Orders unchanged. Swap hums: Breath STRUCK; Low, Fifth, Rise stay. ⏭ Nate picks a set, an order and a hum.
 
 - **Materials** — 2026-09-29 (⚓ Nate: keep only well-differentiated voices, "I like when it sounds like an actual material being struck"; he brought the staggered-envelope advice, which is right and was half-applied). Kalimba and handpan STRUCK (least differentiated, most synthetic); e-piano retargeted to **Pipe** (a closed tube, odd harmonics ×3 ×5 ×7, an octave down — the hollow sound he heard in it); music box retargeted to **Bell** (muted metal, inharmonic ×2.76 ×5.4 ×8.93); **Marimba** rebuilt (×3.93, ×9.5, a felt thud, an octave down); **Vibraphone** kept (×4 sustaining, ×10 shimmer); **Glass** new (×2.32, ×4.25, the brightest faintest chime — the soft option). Every voice is a `Material` — partials with their own gain, base length AND `ringScale` (share of a long ring, ⚓ damping rises with frequency, so the tail sounds like a thing vibrating) plus the material's own transient band. Per-strike humanising: ±3 cents and up to 6 % level, shared by a strike's partials. Per-voice `octave` is back (the NOTES stay the same; a material plays them in its register). Retired voice ids migrate (epiano→pipe, musicbox→bell, kalimba/handpan→glass); default voice glass. ⏭ Nate: every partial and transient is a knob.
+
+- **Defaults** — 2026-09-29 evening (⚓ Nate, `tune(nate)`): Vibraphone · Skill up · Anchor. He may revise in the morning.
+
+## 11. Where to resume (written 2026-09-29 night)
+
+**State:** branch `feat/planner-playback` in the worktree `~/Code/critcalc-playback` (from `main` at `094b3a81`); the text round's checkout stays at `~/Code/critcalc`. Every commit's gates are green (vitest / check / lint / build). ⛔ **e2e has NOT run on this branch** — it runs before the merge, and band B's DOM changed, so expect to look at any band or settings spec. ⛔ Not merged, not pushed.
+
+**Nate owes, in the morning (his words: "more judgment calls"):**
+
+1. Confirm or change the defaults (Vibraphone · Skill up · Anchor).
+2. Keep or trim: the five materials, the three orders, the four note sets, the three hums. Anything that becomes a constant retires its Settings row and its store field (keep the loader's migration for one release).
+3. `REPEAT_LAPS` (5) — he wants to watch DPS-dummy recordings first; maybe up to 10.
+4. The lap-mark register; the metronome's pitch; whether the energy caveat needs a home besides Help.
+5. On a phone the Sound plate folds below `compact` — a Settings row is the candidate home for the on/off (the set choice already lives there).
+
+**Then:** run `npm run test:e2e` (two "N passed" lines), merge with `--no-ff`, push when asked. The strings tables in §6.1–§6.2 go into the text round's worksheets (`rotation-planner.md`, `settings.md`) when the branches meet; the text branch is Nate's, sheet 04 pending.
+
+**Later (parked):** a guzheng pluck needs an AudioWorklet (Karplus-Strong's loop is shorter than a render quantum) · the aura log has no lap column · the stream's `src` ranges point past the document (no reader) · the round-A rulings on `pointer: coarse` and the drawer stay with the responsive survey.

@@ -405,15 +405,15 @@ export const TIMELINE_LAYER_DEFAULTS = {
  *  with the game in front of you, and a first press of Play that did nothing
  *  audible would leave the reader wondering what it was for. */
 export const PLAYBACK_SOUND_DEFAULT = true;
-/** Kalimba by default: measured at the DPS dummy (⚓ Nate 2026-09-29), every
- *  voice carried over the game's audio and the drum kit did not; the kalimba
- *  is the one he reached for first. */
+/** ⚓ Nate's defaults, 2026-09-29 evening, after playing every combination:
+ *  the vibraphone, Skill up, Anchor (A · D · E). His own values, landed
+ *  verbatim — a `tune(nate)`; he may revise them in the morning. */
 export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackSound: PLAYBACK_SOUND_DEFAULT,
 	playbackSoundMode: 'melodic' as SoundMode,
-	playbackVoice: 'glass' as VoiceId,
-	playbackOrder: 'weighty' as OrderId,
-	playbackNotes: 'open' as NoteSetId,
+	playbackVoice: 'vibraphone' as VoiceId,
+	playbackOrder: 'skillUp' as OrderId,
+	playbackNotes: 'anchor' as NoteSetId,
 	playbackSwap: 'humLow' as SwapStyle,
 	playbackVolume: 0.7
 } as const;
