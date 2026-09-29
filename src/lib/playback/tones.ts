@@ -31,8 +31,9 @@
  *
  * `percussive` is a drum machine's kit, on the classic recipes: a metallic hat
  * is six square waves at inharmonic ratios through a high bandpass (the 808's
- * numbers), a rimshot two resonances and a crack, a woodblock a fast pitch
- * drop, a tom a slow one, a cowbell two squares a minor sixth apart. It marks
+ * numbers), a rimshot two resonances and a crack, a snare two bodies under a
+ * band of noise, a woodblock a fast pitch drop, a tom a slow one, a cowbell
+ * two squares a minor sixth apart. It marks
  * the PRESS and sits in the gaps of the game's mix. `melodic` is a kalimba on
  * A major pentatonic — ⚓ pentatonic because the scale has no semitone
  * neighbours, so any two notes overlapping (a skill's tail under the burst)
@@ -127,10 +128,14 @@ export const PALETTES: Record<SoundSet, Record<CueKind, Layer[]>> = {
 			{ kind: 'tone', freq: 455, dur: 0.02, wave: 'sine', gain: 0.3 },
 			{ kind: 'noise', freq: 3600, q: 1, dur: 0.008, gain: 0.32 }
 		],
-		// Cross-stick: lower, woodier, a touch longer than the rim.
+		// Snare: a charged attack is a BIGGER hit, not a longer tap (⚓ Nate
+		// 2026-09-29 — the cross-stick that sat here was too faint). The 808
+		// recipe: two sine bodies, the low one dropping, under a wide band of
+		// noise that outlasts them.
 		charged: [
-			{ kind: 'tone', freq: 950, dur: 0.05, wave: 'sine', gain: 0.45 },
-			{ kind: 'noise', freq: 2200, q: 3, dur: 0.02, gain: 0.35 }
+			{ kind: 'tone', freq: [200, 150], dur: 0.09, wave: 'sine', gain: 0.65 },
+			{ kind: 'tone', freq: 330, dur: 0.06, wave: 'sine', gain: 0.35 },
+			{ kind: 'noise', freq: 1800, q: 0.8, dur: 0.14, gain: 0.6 }
 		],
 		// Woodblock: a fast pitch drop with a bright partial and a crack.
 		skill: [
