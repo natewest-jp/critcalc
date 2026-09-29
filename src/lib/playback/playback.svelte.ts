@@ -102,7 +102,12 @@ class Playback {
 
 	#choice(): SoundChoice {
 		const s = get(siteSettings);
-		return { set: s.playbackSoundSet, assignment: s.playbackAssignment, swap: s.playbackSwap };
+		return {
+			set: s.playbackSoundMode === 'metronome' ? 'metronome' : s.playbackVoice,
+			order: s.playbackOrder,
+			notes: s.playbackNotes,
+			swap: s.playbackSwap
+		};
 	}
 
 	play() {

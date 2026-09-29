@@ -9,12 +9,16 @@
 import { writable } from 'svelte/store';
 import { HUMAN_PAD_DEFAULT_F } from '$lib/sim/humanTiming';
 import {
-	ASSIGNMENT_IDS,
-	SOUND_SETS,
+	NOTE_SET_IDS,
+	ORDER_IDS,
+	SOUND_MODES,
 	SWAP_STYLES,
-	type AssignmentId,
-	type SoundSet,
-	type SwapStyle
+	VOICE_IDS,
+	type NoteSetId,
+	type OrderId,
+	type SoundMode,
+	type SwapStyle,
+	type VoiceId
 } from '$lib/playback/tones';
 import { browser } from '$app/environment';
 
@@ -357,13 +361,16 @@ type SiteSettings = {
 	 * codec — a link carries a rotation, not the recipient's speakers.
 	 */
 	playbackSound: boolean;
-	/** Which palette (⚓ Nate 2026-09-29: sounds are personal — two sets, chosen
-	 *  in Settings by listening). `$lib/playback/tones.ts` holds both. */
-	playbackSoundSet: SoundSet;
-	/** Which scale degree each input gets, applied to every voice alike
-	 *  (⚓ Nate 2026-09-29 is testing alternatives; `ASSIGNMENTS` in tones.ts). */
-	playbackAssignment: AssignmentId;
-	/** How a swap sounds — a slide or a hum (⚓ Nate 2026-09-29, demoing). */
+	/** Metronome or a melodic voice (⚓ Nate 2026-09-29: sounds are personal —
+	 *  chosen in Settings by listening). `$lib/playback/tones.ts` holds them. */
+	playbackSoundMode: SoundMode;
+	/** Which voice plays when the mode is melodic. */
+	playbackVoice: VoiceId;
+	/** Which role sits low, mid and high. */
+	playbackOrder: OrderId;
+	/** Which three steps of the pentatonic the roles take. */
+	playbackNotes: NoteSetId;
+	/** How the swap hums. */
 	playbackSwap: SwapStyle;
 	/** Master volume, 0–1. The tones have to sit against the game's own level,
 	 *  and that is personal too. */
@@ -403,9 +410,11 @@ export const PLAYBACK_SOUND_DEFAULT = true;
  *  is the one he reached for first. */
 export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackSound: PLAYBACK_SOUND_DEFAULT,
-	playbackSoundSet: 'kalimba' as SoundSet,
-	playbackAssignment: 'weight' as AssignmentId,
-	playbackSwap: 'slide' as SwapStyle,
+	playbackSoundMode: 'melodic' as SoundMode,
+	playbackVoice: 'kalimba' as VoiceId,
+	playbackOrder: 'weighty' as OrderId,
+	playbackNotes: '125' as NoteSetId,
+	playbackSwap: 'humLow' as SwapStyle,
 	playbackVolume: 0.7
 } as const;
 
@@ -443,24 +452,32 @@ function loadSiteSettings(): SiteSettings {
 			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
 		}
 		delete (merged as Record<string, unknown>).swapFrames;
-		// The sound set's ids moved as the sets changed (2026-09-29: 'melodic'
-		// became 'kalimba'; the 'percussive' drum kit was retired for the
-		// 'metronome'); an id we no longer know falls back to the default.
-		if (!SOUND_SETS.includes(merged.playbackSoundSet)) {
-			const legacy = parsed.playbackSoundSet as string;
-			merged.playbackSoundSet =
-				legacy === 'melodic'
-					? 'kalimba'
-					: legacy === 'percussive'
-						? 'metronome'
-						: PLAYBACK_SOUND_DEFAULTS.playbackSoundSet;
+		// The playback sound settings were reshaped several times on 2026-09-29
+		// (sets → a mode plus a voice; assignments → an order plus a note set;
+		// the swap's slide → hums). A stored voice id becomes the voice; the
+		// retired drum kit and the metronome become the metronome mode; anything
+		// unknown falls back to the default.
+		const legacySet = parsed.playbackSoundSet as string | undefined;
+		if (legacySet && parsed.playbackSoundMode === undefined) {
+			if ((VOICE_IDS as readonly string[]).includes(legacySet)) {
+				merged.playbackSoundMode = 'melodic';
+				merged.playbackVoice = legacySet as VoiceId;
+			} else if (legacySet === 'metronome' || legacySet === 'percussive') {
+				merged.playbackSoundMode = 'metronome';
+			}
 		}
-		if (!ASSIGNMENT_IDS.includes(merged.playbackAssignment)) {
-			merged.playbackAssignment = PLAYBACK_SOUND_DEFAULTS.playbackAssignment;
-		}
-		if (!SWAP_STYLES.includes(merged.playbackSwap)) {
+		delete (merged as Record<string, unknown>).playbackSoundSet;
+		delete (merged as Record<string, unknown>).playbackAssignment;
+		if (!SOUND_MODES.includes(merged.playbackSoundMode))
+			merged.playbackSoundMode = PLAYBACK_SOUND_DEFAULTS.playbackSoundMode;
+		if (!VOICE_IDS.includes(merged.playbackVoice))
+			merged.playbackVoice = PLAYBACK_SOUND_DEFAULTS.playbackVoice;
+		if (!ORDER_IDS.includes(merged.playbackOrder))
+			merged.playbackOrder = PLAYBACK_SOUND_DEFAULTS.playbackOrder;
+		if (!NOTE_SET_IDS.includes(merged.playbackNotes))
+			merged.playbackNotes = PLAYBACK_SOUND_DEFAULTS.playbackNotes;
+		if (!SWAP_STYLES.includes(merged.playbackSwap))
 			merged.playbackSwap = PLAYBACK_SOUND_DEFAULTS.playbackSwap;
-		}
 		return merged;
 	} catch {
 		return { ...SITE_SETTINGS_DEFAULTS };
