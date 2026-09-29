@@ -339,6 +339,16 @@ type SiteSettings = {
 	 */
 	showAuraLane: boolean;
 	showTimelineBuffs: boolean;
+	/**
+	 * ── PLAYBACK SOUND (playback round, 2026-09-29) ─────────────────────────
+	 *
+	 * Whether the planner's Play makes a sound at every input. Per TASTE like
+	 * the layers: "I follow the rotation by ear" is a standing preference, and
+	 * the sound is the half of playback that works with the tab hidden behind
+	 * the game (`$lib/playback/playback.svelte.ts`). ⛔ Never in the `?r=`
+	 * codec — a link carries a rotation, not the recipient's speakers.
+	 */
+	playbackSound: boolean;
 };
 
 /**
@@ -365,6 +375,11 @@ export const TIMELINE_LAYER_DEFAULTS = {
 	showTimelineBuffs: true
 } as const;
 
+/** Sound ON by default: the count-in and the tones are what make Play usable
+ *  with the game in front of you, and a first press of Play that did nothing
+ *  audible would leave the reader wondering what it was for. */
+export const PLAYBACK_SOUND_DEFAULT = true;
+
 export type HumanTimingMode = 'padding' | 'animations' | 'both';
 
 export const HUMAN_TIMING_DEFAULTS = {
@@ -382,7 +397,8 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
-	...TIMELINE_LAYER_DEFAULTS
+	...TIMELINE_LAYER_DEFAULTS,
+	playbackSound: PLAYBACK_SOUND_DEFAULT
 };
 
 function loadSiteSettings(): SiteSettings {
@@ -435,6 +451,9 @@ function createSiteSettingsStore() {
 		 *  preference and band B's reset writes them together. */
 		setTimelineLayers(next: Partial<Pick<SiteSettings, 'showAuraLane' | 'showTimelineBuffs'>>) {
 			store.update((prev) => persist({ ...prev, ...next }));
+		},
+		setPlaybackSound(on: boolean) {
+			store.update((prev) => persist({ ...prev, playbackSound: on }));
 		}
 	};
 }

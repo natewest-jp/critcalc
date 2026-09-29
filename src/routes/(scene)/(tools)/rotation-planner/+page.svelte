@@ -32,6 +32,7 @@
 		ZOOM_MIN,
 		ZOOM_STEP
 	} from '$lib/plannerView.svelte';
+	import { playback } from '$lib/playback/playback.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab state — hoisted to the shared working-team module (bench-band round):
@@ -373,6 +374,44 @@
 			     button, so the slider beside it says what is being reset.
 			     Inert at the resting scale, like the zoom buttons at their
 			     limits. -->
+			<!-- ══ THE TRANSPORT (playback round, 2026-09-29) ═════════════════════
+			     Play and its sound, AHEAD of the zoom cluster: both zones answer
+			     "how am I looking at the axis", and moving along it comes before
+			     scaling it. Two plates, icon-only at every width — Play carries no
+			     word anywhere on the site (the Gauge Explorer set the form), and the
+			     speaker says on/off by its own mark, so there is nothing to fold.
+			     ⚠ The pair is ONE group at the tight intra-group gap, like the zoom.
+			     Play disables on an empty rotation (nothing to keep time with) and
+			     keeps its glass at full, same rule as its neighbours below.
+			     Loop and Repeat: the cursor wraps at the end here (a rhythm aid);
+			     the Repeat STREAM is Round B (docs/playback-round-plan.md §3). -->
+			<div class="rp-transport" role="group" aria-label="Playback">
+				<button
+					class="btn btn--sm btn--icon rp-play"
+					type="button"
+					aria-pressed={playback.playing}
+					aria-label={playback.playing ? 'Pause' : 'Play the rotation'}
+					title={playback.playing ? 'Pause' : 'Play the rotation at game speed'}
+					disabled={!playback.canPlay}
+					onclick={() => playback.toggle()}
+				>
+					<!-- FILLED, as the Gauge Explorer's: an outlined triangle reads as
+					     "insert" before it reads as "play". -->
+					<Mark name={playback.playing ? 'pause' : 'play'} size={13} filled />
+				</button>
+				<button
+					class="btn btn--sm btn--icon rp-sound"
+					type="button"
+					aria-pressed={$siteSettings.playbackSound}
+					aria-label="Sound"
+					title={$siteSettings.playbackSound
+						? 'Sound on: a three-beat count-in, then a tone at every press'
+						: 'Sound off'}
+					onclick={() => playback.setSound(!$siteSettings.playbackSound)}
+				>
+					<Mark name={$siteSettings.playbackSound ? 'sound' : 'soundOff'} size={16} />
+				</button>
+			</div>
 			<button
 				class="btn btn--sm rp-reset"
 				type="button"
@@ -763,6 +802,7 @@
 	   judged the result. */
 	.rp-reset:disabled,
 	.rp-zoom .btn:disabled,
+	.rp-play:disabled,
 	.rp-notes-btn:disabled {
 		opacity: 1;
 		color: color-mix(in srgb, var(--text) 45%, transparent);
@@ -773,6 +813,15 @@
 	   keep theirs would rebuild the stack that was just removed. Each control
 	   paints itself, exactly as band A's buttons do. */
 	.rp-zoom {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
+	}
+	/* The transport is the zoom's kind of object: a group of plates on the bare
+	   scene at the intra-group gap. Play's triangle is a dense mark and sits at
+	   13 in a 36px plate; the speaker is sparser and takes 16 — ink area, not
+	   height, per the chrome round's rule. */
+	.rp-transport {
 		display: flex;
 		align-items: center;
 		gap: 0.2rem;
@@ -837,6 +886,21 @@
 		}
 		.rp-zoom > .btn--icon {
 			min-width: calc(var(--band-ctrl-h) - 8px);
+		}
+	}
+	/* The transport at the compact rung (playback round, 2026-09-29): the
+	   SOUND plate folds away and Play narrows to a 24px plate — the steppers'
+	   own rule (glyph + 5px a side) applied to a 13px glyph. Measured at 320
+	   with both plates at 36: the right zone ran 36px past the viewport; at a
+	   28px Play the band fit but the rail was 28px for a 30px Total; at 24 the
+	   number clears. ⏭ The sound preference is unreachable below 40rem as a
+	   result — a Settings row is the candidate home (Nate). */
+	@media (max-width: 40rem) {
+		.rp-sound {
+			display: none;
+		}
+		.rp-play {
+			min-width: calc(var(--band-ctrl-h) - 12px);
 		}
 	}
 

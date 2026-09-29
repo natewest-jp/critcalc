@@ -252,7 +252,16 @@ const MARKS = {
 	 *  a magnifier is sparse-topped; if it silts at band size, size it by ink
 	 *  area per button, never via the shared glyph size. */
 	zoomIn: 'ZoomIn',
-	zoomOut: 'ZoomOut'
+	zoomOut: 'ZoomOut',
+	/** The planner's playback sound plate (playback round, 2026-09-29): a
+	 *  speaker with waves for ON, a speaker with a cross for OFF — the pair every
+	 *  media player uses, and the planner's Play is the site's second transport
+	 *  after the Gauge Explorer's. `Volume2` over `Volume1`: at band size the
+	 *  single wave is a dot beside the cone and the mark reads as "speaker",
+	 *  not "sound on"; two waves say it. ⚠️ Both replace nothing — no unicode
+	 *  speaker ever shipped, so this is the first form. */
+	sound: 'Volume2',
+	soundOff: 'VolumeX'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');
