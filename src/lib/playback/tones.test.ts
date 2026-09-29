@@ -11,7 +11,7 @@ import {
 	SET_TUNING,
 	SOUND_SETS,
 	SOUND_SET_LABELS,
-	degreeHz,
+	stepHz,
 	paletteFor,
 	ringFor,
 	type AssignmentId,
@@ -86,14 +86,16 @@ describe('the sound palettes', () => {
 		}
 	});
 
-	it('every pitched voice lives on its pentatonic, in its own octave and mode', () => {
+	it("every pitched voice lives on its pentatonic, in its own octave and the assignment's mode", () => {
 		const partials = [1, 2, 2.03, 2.76, 3, 4, 5.4, 10];
 		for (const set of PITCHED_SETS) {
-			const t = SET_TUNING[set];
-			const a = 440 * Math.pow(2, t.octave);
-			const semis = t.mode === 'major' ? [0, 4, 7, 9, 12, 16] : [0, 3, 7, 10, 12, 15];
-			const scale = semis.map((st) => a * Math.pow(2, st / 12));
 			for (const id of ASSIGNMENT_IDS) {
+				const t = SET_TUNING[set];
+				const a = 440 * Math.pow(2, t.octave);
+				const mode = ASSIGNMENTS[id].mode ?? t.mode;
+				const semis =
+					mode === 'major' ? [0, 2, 4, 7, 9, 12, 14, 16, 19] : [0, 3, 5, 7, 10, 12, 15, 17, 19];
+				const scale = semis.map((st) => a * Math.pow(2, st / 12));
 				for (const kind of KINDS) {
 					for (const l of paletteFor(set, id)[kind]) {
 						if (!isPitched(l)) continue;
@@ -145,7 +147,7 @@ describe('the sound palettes', () => {
 		// the slide lands on the assignment's second degree
 		const a = ASSIGNMENTS.weight;
 		const l = paletteFor('kalimba', 'weight').swap.find(isPitched)!;
-		expect(settle(l) * l.slide!).toBeCloseTo(degreeHz(SET_TUNING.kalimba, a.swap[1]), 6);
+		expect(settle(l) * l.slide!).toBeCloseTo(stepHz(SET_TUNING.kalimba, a.swap[1]), 6);
 	});
 
 	it('every voice sustains, and the count-in never does', () => {
@@ -162,9 +164,22 @@ describe('the sound palettes', () => {
 		}
 	});
 
-	it('seven sets and four assignments, each named and trimmed', () => {
+	it('a chime assignment uses neighbouring steps, in both modes', () => {
+		for (const id of ['chime', 'chimeMinor', 'chimeRising', 'chimeRisingMinor'] as const) {
+			const a = ASSIGNMENTS[id];
+			const steps = [a.normal, a.skill, a.burst].sort((x, y) => x - y);
+			expect(steps, id).toEqual([1, 2, 3]);
+			expect(a.mode, id).toBe(id.endsWith('Minor') ? 'minor' : 'major');
+		}
+		// and the override reaches a major voice: the kalimba's chime-minor burst is A, skill C
+		expect(fundamental('kalimba', 'chimeMinor', 'burst')).toBeCloseTo(440, 6);
+		expect(fundamental('kalimba', 'chimeMinor', 'skill')).toBeCloseTo(523.25, 1);
+		expect(fundamental('kalimba', 'chime', 'skill')).toBeCloseTo(493.88, 1);
+	});
+
+	it('seven sets and eight assignments, each named and trimmed', () => {
 		expect(SOUND_SETS).toHaveLength(7);
-		expect(ASSIGNMENT_IDS).toHaveLength(4);
+		expect(ASSIGNMENT_IDS).toHaveLength(8);
 		for (const set of SOUND_SETS) {
 			expect(SOUND_SET_LABELS[set]).toBeTruthy();
 			expect(SET_TRIM[set]).toBeGreaterThan(0);

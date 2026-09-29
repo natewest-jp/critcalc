@@ -287,7 +287,9 @@
 					Which note each input gets, on any voice. <strong>Weight</strong> puts the heavier input
 					lower — burst at the bottom, attacks at the top. <strong>Skill up</strong> keeps attacks
 					in the middle and lets the skill announce itself. <strong>Rising</strong> puts the heavier
-					input higher. <strong>Close</strong> keeps everything within a fifth.
+					input higher. <strong>Close</strong> keeps everything within a fifth. The
+					<strong>Chime</strong> sets use neighbouring notes of the scale, the way wind chimes are tuned,
+					in major or minor on any voice.
 				</span>
 			</span>
 			<div class="sp-sound-ctl">

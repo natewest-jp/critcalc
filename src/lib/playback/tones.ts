@@ -27,7 +27,7 @@
  *     weight. The default assignment puts the heavier input lower and longer;
  *     the ASSIGNMENT is a setting (Nate is testing alternatives), the length
  *     rule is not.
- *   - A SWAP IS THE ONE SOUND THAT MOVES. One onset, gliding from one degree to
+ *   - A SWAP IS THE ONE SOUND THAT MOVES. One onset, gliding from one step to
  *     another over the swap's own length, so the pitch ARRIVES where the new
  *     character takes the field — the gap is your ping, inside one sound.
  *     ⚓ Nate 2026-09-29: two hits for a swap were confusing at the dummy.
@@ -36,8 +36,9 @@
  *
  * ⚓ THE DEGREE ASSIGNMENT IS SHARED ACROSS VOICES; THE KEY AND REGISTER ARE PER
  * VOICE. The sets never sound together, so nothing binds them to one key — but
- * which degree means which input must not change between voices, or the
- * contour learnt on one would not transfer. What moves per voice is the OCTAVE
+ * which step means which input must not change between voices, or the
+ * contour learnt on one would not transfer (it is a SETTING, so the reader
+ * changes it, never the voice). What moves per voice is the OCTAVE
  * (a marimba's warmth is below 500 Hz, a music box lives high) and the MODE (a
  * handpan is almost always tuned minor). All on A, major or minor pentatonic —
  * ⚓ pentatonic because the scale has no semitone neighbours, so any two notes
@@ -105,86 +106,97 @@ export const PITCHED_SETS: readonly SoundSet[] = SOUND_SETS.filter(
 
 // ── Degrees and assignments ───────────────────────────────────────────────
 
-/** Scale degrees, named so an assignment reads in either mode: the third is
- *  C♯ in major and C in minor, the sixth F♯ or G, the third above the octave
- *  C♯6 or C6. */
-export type Degree = 'root' | 'third' | 'fifth' | 'sixth' | 'octave' | 'thirdUp';
-const SEMITONES: Record<Degree, [major: number, minor: number]> = {
-	root: [0, 0],
-	third: [4, 3],
-	fifth: [7, 7],
-	sixth: [9, 10],
-	octave: [12, 12],
-	thirdUp: [16, 15]
+/**
+ * Scale STEPS of the pentatonic, 1 = the root, 6 = the octave, on up to 9 —
+ * so an assignment can say "the next note up", the way wind chimes are tuned
+ * (⚓ Nate 2026-09-29: neighbouring notes separate well enough by pitch, and
+ * the cluster is what makes a chime). Resolved per mode: major A B C♯ E F♯,
+ * minor A C D E G.
+ */
+export type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+const STEP_SEMITONES: Record<'major' | 'minor', number[]> = {
+	major: [0, 2, 4, 7, 9, 12, 14, 16, 19],
+	minor: [0, 3, 5, 7, 10, 12, 15, 17, 19]
 };
-export function degreeHz(t: Tuning, deg: Degree): number {
+export function stepHz(t: Tuning, step: Step): number {
 	const a = 440 * Math.pow(2, t.octave);
-	return a * Math.pow(2, SEMITONES[deg][t.mode === 'major' ? 0 : 1] / 12);
+	return a * Math.pow(2, STEP_SEMITONES[t.mode][step - 1] / 12);
 }
 
 /**
- * Which degree each input gets. ⚓ Nate 2026-09-29 asked to TEST alternatives,
+ * Which step each input gets. ⚓ Nate 2026-09-29 asked to TEST alternatives,
  * so this is a setting rather than a constant, applied to every voice alike.
- * `count` must be a degree no input takes; `swap` glides from its first degree
- * to its second.
+ * `count` must be a step no input takes; `swap` glides from its first step to
+ * its second; `mode`, when set, overrides the voice's own — the chime
+ * assignments come in both so every voice can be heard both ways.
  */
 export type Assignment = {
-	normal: Degree;
-	skill: Degree;
-	burst: Degree;
-	cancel: Degree;
-	count: Degree;
-	swap: [Degree, Degree];
+	normal: Step;
+	skill: Step;
+	burst: Step;
+	cancel: Step;
+	count: Step;
+	swap: [Step, Step];
+	mode?: 'major' | 'minor';
 };
-export type AssignmentId = 'weight' | 'skillUp' | 'rising' | 'close';
-export const ASSIGNMENT_IDS: readonly AssignmentId[] = ['weight', 'skillUp', 'rising', 'close'];
+export type AssignmentId =
+	| 'weight'
+	| 'skillUp'
+	| 'rising'
+	| 'close'
+	| 'chime'
+	| 'chimeMinor'
+	| 'chimeRising'
+	| 'chimeRisingMinor';
+export const ASSIGNMENT_IDS: readonly AssignmentId[] = [
+	'weight',
+	'skillUp',
+	'rising',
+	'close',
+	'chime',
+	'chimeMinor',
+	'chimeRising',
+	'chimeRisingMinor'
+];
 export const ASSIGNMENTS: Record<AssignmentId, Assignment> = {
 	/** The original: the heavier the input, the lower. Burst root · skill fifth
 	 *  · attacks octave · cancel the third above · count the sixth. */
-	weight: {
-		normal: 'octave',
-		skill: 'fifth',
-		burst: 'root',
-		cancel: 'thirdUp',
-		count: 'sixth',
-		swap: ['fifth', 'octave']
-	},
+	weight: { normal: 6, skill: 4, burst: 1, cancel: 8, count: 5, swap: [4, 6] },
 	/** The frequent event sits in the middle and the skill ANNOUNCES: attacks
 	 *  fifth · skill octave · burst root. */
-	skillUp: {
-		normal: 'fifth',
-		skill: 'octave',
-		burst: 'root',
-		cancel: 'thirdUp',
-		count: 'sixth',
-		swap: ['octave', 'fifth']
-	},
-	/** Weight inverted: the heavier the input, the HIGHER. Attacks root · skill
-	 *  fifth · burst octave, ringing bright. */
-	rising: {
-		normal: 'root',
-		skill: 'fifth',
-		burst: 'octave',
-		cancel: 'thirdUp',
-		count: 'sixth',
-		swap: ['fifth', 'octave']
-	},
-	/** Everything inside a fifth, in thirds — the gentlest: attacks fifth ·
-	 *  skill third · burst root · cancel the sixth · count the octave. */
-	close: {
-		normal: 'fifth',
-		skill: 'third',
-		burst: 'root',
-		cancel: 'sixth',
-		count: 'octave',
-		swap: ['third', 'fifth']
+	skillUp: { normal: 4, skill: 6, burst: 1, cancel: 8, count: 5, swap: [6, 4] },
+	/** Weight inverted: the heavier the input, the HIGHER. */
+	rising: { normal: 1, skill: 4, burst: 6, cancel: 8, count: 5, swap: [4, 6] },
+	/** Everything inside a fifth, in thirds: attacks fifth · skill third · burst
+	 *  root · cancel the sixth · count the octave. */
+	close: { normal: 4, skill: 3, burst: 1, cancel: 5, count: 6, swap: [3, 4] },
+	/** WIND CHIME: neighbouring steps, the heavier the lower — attacks the third
+	 *  step, skill the second, burst the root, cancel the fifth, count the
+	 *  fourth. In major: C♯ · B · A, cancel F♯, count E. */
+	chime: { normal: 3, skill: 2, burst: 1, cancel: 5, count: 4, swap: [2, 3], mode: 'major' },
+	/** The same chime in minor: D · C · A, cancel G, count E. */
+	chimeMinor: { normal: 3, skill: 2, burst: 1, cancel: 5, count: 4, swap: [2, 3], mode: 'minor' },
+	/** The chime climbing with weight: attacks root · skill second · burst third. */
+	chimeRising: { normal: 1, skill: 2, burst: 3, cancel: 5, count: 4, swap: [2, 3], mode: 'major' },
+	chimeRisingMinor: {
+		normal: 1,
+		skill: 2,
+		burst: 3,
+		cancel: 5,
+		count: 4,
+		swap: [2, 3],
+		mode: 'minor'
 	}
 };
 export const ASSIGNMENT_LABELS: Record<AssignmentId, string> = {
 	weight: 'Weight',
 	skillUp: 'Skill up',
 	rising: 'Rising',
-	close: 'Close'
+	close: 'Close',
+	chime: 'Chime',
+	chimeMinor: 'Chime minor',
+	chimeRising: 'Chime up',
+	chimeRisingMinor: 'Chime up minor'
 };
 
 // ── Layers ────────────────────────────────────────────────────────────────
@@ -438,17 +450,18 @@ export const MASTER_GAIN = 0.5;
 // ── Palettes ──────────────────────────────────────────────────────────────
 
 /**
- * A voice's palette under an assignment: the assignment's degree for each
- * input in the voice's key and register, the count-in on the odd note out in
+ * A voice's palette under an assignment: the assignment's step for each
+ * input in the voice's key and register (the assignment's mode, if it has one), the count-in on the odd note out in
  * a plain sine (a purer colour than any voice), and the swap one note of the
- * voice sliding from the assignment's first degree to its second over the
+ * voice sliding from the assignment's first step to its second over the
  * swap's own length, a little quieter than a press. A mono voice takes its one
  * pitch for every input and the assignment says only which way the swap slides.
  */
 function paletteOf(set: SoundSet, assignment: Assignment): Record<CueKind, Layer[]> {
-	const t = SET_TUNING[set];
+	const own = SET_TUNING[set];
+	const t: Tuning = assignment.mode ? { ...own, mode: assignment.mode } : own;
 	const note = VOICES[set];
-	const hz = (deg: Degree) => t.mono ?? degreeHz(t, deg);
+	const hz = (step: Step) => t.mono ?? stepHz(t, step);
 	const d = t.durScale ?? 1;
 	const [from, to] = assignment.swap;
 	const slide = t.mono ? Math.pow(2, 5 / 12) : hz(to) / hz(from);
