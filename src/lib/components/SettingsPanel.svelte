@@ -4,7 +4,12 @@
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 	import { playback } from '$lib/playback/playback.svelte';
-	import { SOUND_SETS, SOUND_SET_LABELS } from '$lib/playback/tones';
+	import {
+		ASSIGNMENT_IDS,
+		ASSIGNMENT_LABELS,
+		SOUND_SETS,
+		SOUND_SET_LABELS
+	} from '$lib/playback/tones';
 	import {
 		downloadBackup,
 		parseBackup,
@@ -243,10 +248,9 @@
 			<span class="sp-label">
 				<span class="sp-name">Sound set</span>
 				<span class="sp-desc">
-					Percussive is a drum kit — a rimshot and a snare for attacks, a woodblock for a skill, a
-					tom for a burst — and marks the press. The voices play a pentatonic scale, so notes that
-					overlap never clash, and each note rings for as long as its input holds the field. Either
-					way the heavier the input, the lower and longer the sound.
+					Every set rings for as long as its input holds the field, so a burst is a long note and a
+					normal attack a short one. The voices play a pentatonic scale, so notes that overlap never
+					clash; the metronome is one pitch and says only when. A swap is the one sound that slides.
 				</span>
 			</span>
 			<div class="sp-sound-ctl">
@@ -273,6 +277,38 @@
 					<Mark name="play" size={12} filled />
 					Preview
 				</button>
+			</div>
+		</div>
+
+		<div class="sp-row sp-row--stack">
+			<span class="sp-label">
+				<span class="sp-name">Notes</span>
+				<span class="sp-desc">
+					Which note each input gets, on any voice. <strong>Weight</strong> puts the heavier input
+					lower — burst at the bottom, attacks at the top. <strong>Skill up</strong> keeps attacks
+					in the middle and lets the skill announce itself. <strong>Rising</strong> puts the heavier
+					input higher. <strong>Close</strong> keeps everything within a fifth.
+				</span>
+			</span>
+			<div class="sp-sound-ctl">
+				<div
+					class="segment sp-segment sp-segment--four"
+					role="radiogroup"
+					aria-label="Note assignment"
+				>
+					{#each ASSIGNMENT_IDS as value (value)}
+						<button
+							class="btn"
+							class:is-active={$siteSettings.playbackAssignment === value}
+							role="radio"
+							aria-checked={$siteSettings.playbackAssignment === value}
+							onclick={() => {
+								siteSettings.setPlaybackSound({ playbackAssignment: value });
+								playback.preview(undefined, value);
+							}}>{ASSIGNMENT_LABELS[value]}</button
+						>
+					{/each}
+				</div>
 			</div>
 		</div>
 
@@ -448,6 +484,10 @@
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		flex: 1 1 18rem;
+	}
+	/* The four assignments fit one row. */
+	.sp-sound-ctl .sp-segment--four {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 	.sp-segment {
 		flex-shrink: 0;

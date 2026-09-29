@@ -1,49 +1,47 @@
 /**
- * The playback sound — two palettes, synthesised (playback round, 2026-09-29;
- * plan docs/playback-round-plan.md §5; the two-set design ⚓ Nate 2026-09-29).
+ * The playback sound — voices, synthesised (playback round, 2026-09-29; plan
+ * docs/playback-round-plan.md §5; sets and assignments ⚓ Nate 2026-09-29).
  *
  * ⚓ SYNTHESISED, NO ASSETS. Every sound is a few LAYERS with gain envelopes,
  * built from the numbers in this file, so it is identical on every browser and
  * OS (only the speakers differ) and every number is a knob for Nate's ear.
  *
- * Rules both sets obey (the acoustics behind them, so nobody re-derives):
+ * Rules every voice obeys (the acoustics behind them, so nobody re-derives):
  *   - THE TRANSIENT MARKS THE BEAT. The ear places a sound by its onset and
  *     hears a slow attack late, so every layer attacks in a few ms — a marimba,
  *     never a flute. `ATTACK_S` is that.
  *   - THE TAIL NEVER CROSSES THE NEXT PRESS. A fixed-length layer stays under
  *     the fastest pair of presses (a dash cancel or an E into Q is 6–10 frames
- *     apart): under ~120 ms, a burst to ~250 ms. A SUSTAINED layer (the kalimba
- *     voice) rings for the INPUT'S OWN LENGTH instead — the cue carries the
- *     block's drawn duration, the cancel-adjusted animation the bar is drawn
- *     from — and releases `RELEASE_S` before it ends, so the next onset is
- *     always heard clean and a human-timing pad plays as silence (⚓ Nate
- *     2026-09-29: "we have all the frame data"). It still DECAYS, kalimba-wise;
- *     a sustained organ would say nothing about weight.
- *   - CUT THROUGH THE GAME. Game audio is dense from ~100 Hz to 2 kHz, so a cue
- *     carries some energy above 3 kHz (a click, a metallic ring, a harmonic),
- *     and nothing lives below ~300 Hz alone — phone speakers cannot make it.
+ *     apart). A SUSTAINED layer rings for the INPUT'S OWN LENGTH instead — the
+ *     cue carries the block's drawn duration, the cancel-adjusted animation the
+ *     bar is drawn from — and releases `RELEASE_S` before it ends, so the next
+ *     onset is always heard clean and a human-timing pad plays as silence (⚓
+ *     Nate 2026-09-29: "we have all the frame data"). It still DECAYS.
+ *   - TONAL AND NARROW, OR IT IS NOT HEARD. ⚓ Measured at the DPS dummy (Nate
+ *     2026-09-29): every voice carried over the game's audio and the drum kit
+ *     did not. Genshin's hit and skill sounds are broadband noise, and a snare
+ *     or a hat is camouflaged by its own kind; a narrow tone that rings pokes
+ *     through and gives the ear time to find it. ⛔ So there is no drum kit —
+ *     the non-melodic option is a METRONOME, one pitch with the length rule.
  *   - MEANING RIDES ON CONTOUR. Nobody learns seven pitches; everyone learns
- *     weight: the heavier the input, the lower and longer the sound. A swap is
- *     the one cue that MOVES: two notes, the press and the ARRIVAL — the second
- *     lands where the new character takes the field, so the gap is your ping.
- *   - THE COUNT-IN STAYS OUTSIDE THE INPUT VOCABULARY: same family, a pitch or
- *     colour no input uses.
+ *     weight. The default assignment puts the heavier input lower and longer;
+ *     the ASSIGNMENT is a setting (Nate is testing alternatives), the length
+ *     rule is not.
+ *   - A SWAP IS THE ONE SOUND THAT MOVES. One onset, gliding from one degree to
+ *     another over the swap's own length, so the pitch ARRIVES where the new
+ *     character takes the field — the gap is your ping, inside one sound.
+ *     ⚓ Nate 2026-09-29: two hits for a swap were confusing at the dummy.
+ *   - THE COUNT-IN STAYS OUTSIDE THE INPUT VOCABULARY: a plain sine on a note
+ *     no input takes.
  *
- * Six sets: the drum kit and five pitched VOICES on one pentatonic assignment
- * (`melodicPalette`) — kalimba, electric piano, music box, handpan, marimba,
- * vibraphone — ⚓ Nate 2026-09-29: build them all and strike by ear. Each voice is one note
- * recipe; the frequency-modulated tine is the only one that is not additive.
- *
- * `percussive` is a drum machine's kit, on the classic recipes: a metallic hat
- * is six square waves at inharmonic ratios through a high bandpass (the 808's
- * numbers), a rimshot two resonances and a crack, a snare two bodies under a
- * band of noise, a woodblock a fast pitch drop, a tom a slow one, a cowbell
- * two squares a minor sixth apart. It marks
- * the PRESS and sits in the gaps of the game's mix. The voices play on
- * A major pentatonic — ⚓ pentatonic because the scale has no semitone
- * neighbours, so any two notes overlapping (a skill's tail under the burst)
- * are consonant; kept inside an octave and a fifth (A4–C♯6) where hearing is
- * most sensitive and small speakers are honest — and it plays the LENGTH too.
+ * ⚓ THE DEGREE ASSIGNMENT IS SHARED ACROSS VOICES; THE KEY AND REGISTER ARE PER
+ * VOICE. The sets never sound together, so nothing binds them to one key — but
+ * which degree means which input must not change between voices, or the
+ * contour learnt on one would not transfer. What moves per voice is the OCTAVE
+ * (a marimba's warmth is below 500 Hz, a music box lives high) and the MODE (a
+ * handpan is almost always tuned minor). All on A, major or minor pentatonic —
+ * ⚓ pentatonic because the scale has no semitone neighbours, so any two notes
+ * overlapping (a skill's tail under the burst) are consonant.
  *
  * ⚠️ Gains are normalised BY EAR, not by number: a 440 Hz tone needs
  * noticeably more gain than a 1.7 kHz one to sound as loud.
@@ -51,8 +49,10 @@
 
 import type { CueKind } from './cues';
 
+// ── Sets ──────────────────────────────────────────────────────────────────
+
 export type SoundSet =
-	| 'percussive'
+	| 'metronome'
 	| 'kalimba'
 	| 'epiano'
 	| 'musicbox'
@@ -60,7 +60,7 @@ export type SoundSet =
 	| 'marimba'
 	| 'vibraphone';
 export const SOUND_SETS: readonly SoundSet[] = [
-	'percussive',
+	'metronome',
 	'kalimba',
 	'epiano',
 	'musicbox',
@@ -68,12 +68,9 @@ export const SOUND_SETS: readonly SoundSet[] = [
 	'marimba',
 	'vibraphone'
 ];
-/** The pitched voices — every set but the drum kit. All share one pentatonic
- *  assignment (`melodicPalette`) and differ only in the NOTE's recipe. */
-export const MELODIC_SETS: readonly SoundSet[] = SOUND_SETS.filter((s) => s !== 'percussive');
 /** What the Settings segment calls each set. */
 export const SOUND_SET_LABELS: Record<SoundSet, string> = {
-	percussive: 'Percussive',
+	metronome: 'Metronome',
 	kalimba: 'Kalimba',
 	epiano: 'E-piano',
 	musicbox: 'Music box',
@@ -82,18 +79,129 @@ export const SOUND_SET_LABELS: Record<SoundSet, string> = {
 	vibraphone: 'Vibraphone'
 };
 
+export type Tuning = {
+	/** Octaves from the reference (A4 = 440 as the root). */
+	octave: number;
+	mode: 'major' | 'minor';
+	/** Scales every base length — a vibraphone's floor is longer than a tine's. */
+	durScale?: number;
+	/** ONE pitch for every input, in Hz: the metronome. The assignment then
+	 *  says nothing about pitch and the length rule carries all the meaning. */
+	mono?: number;
+};
+export const SET_TUNING: Record<SoundSet, Tuning> = {
+	metronome: { octave: 0, mode: 'major', mono: 1175 },
+	kalimba: { octave: 0, mode: 'major' },
+	epiano: { octave: -1, mode: 'major' },
+	musicbox: { octave: 1, mode: 'major' },
+	handpan: { octave: -1, mode: 'minor' },
+	marimba: { octave: -1, mode: 'major' },
+	vibraphone: { octave: 0, mode: 'major', durScale: 1.8 }
+};
+/** The sets whose pitch means something — every set but the metronome. */
+export const PITCHED_SETS: readonly SoundSet[] = SOUND_SETS.filter(
+	(s) => SET_TUNING[s].mono === undefined
+);
+
+// ── Degrees and assignments ───────────────────────────────────────────────
+
+/** Scale degrees, named so an assignment reads in either mode: the third is
+ *  C♯ in major and C in minor, the sixth F♯ or G, the third above the octave
+ *  C♯6 or C6. */
+export type Degree = 'root' | 'third' | 'fifth' | 'sixth' | 'octave' | 'thirdUp';
+const SEMITONES: Record<Degree, [major: number, minor: number]> = {
+	root: [0, 0],
+	third: [4, 3],
+	fifth: [7, 7],
+	sixth: [9, 10],
+	octave: [12, 12],
+	thirdUp: [16, 15]
+};
+export function degreeHz(t: Tuning, deg: Degree): number {
+	const a = 440 * Math.pow(2, t.octave);
+	return a * Math.pow(2, SEMITONES[deg][t.mode === 'major' ? 0 : 1] / 12);
+}
+
+/**
+ * Which degree each input gets. ⚓ Nate 2026-09-29 asked to TEST alternatives,
+ * so this is a setting rather than a constant, applied to every voice alike.
+ * `count` must be a degree no input takes; `swap` glides from its first degree
+ * to its second.
+ */
+export type Assignment = {
+	normal: Degree;
+	skill: Degree;
+	burst: Degree;
+	cancel: Degree;
+	count: Degree;
+	swap: [Degree, Degree];
+};
+export type AssignmentId = 'weight' | 'skillUp' | 'rising' | 'close';
+export const ASSIGNMENT_IDS: readonly AssignmentId[] = ['weight', 'skillUp', 'rising', 'close'];
+export const ASSIGNMENTS: Record<AssignmentId, Assignment> = {
+	/** The original: the heavier the input, the lower. Burst root · skill fifth
+	 *  · attacks octave · cancel the third above · count the sixth. */
+	weight: {
+		normal: 'octave',
+		skill: 'fifth',
+		burst: 'root',
+		cancel: 'thirdUp',
+		count: 'sixth',
+		swap: ['fifth', 'octave']
+	},
+	/** The frequent event sits in the middle and the skill ANNOUNCES: attacks
+	 *  fifth · skill octave · burst root. */
+	skillUp: {
+		normal: 'fifth',
+		skill: 'octave',
+		burst: 'root',
+		cancel: 'thirdUp',
+		count: 'sixth',
+		swap: ['octave', 'fifth']
+	},
+	/** Weight inverted: the heavier the input, the HIGHER. Attacks root · skill
+	 *  fifth · burst octave, ringing bright. */
+	rising: {
+		normal: 'root',
+		skill: 'fifth',
+		burst: 'octave',
+		cancel: 'thirdUp',
+		count: 'sixth',
+		swap: ['fifth', 'octave']
+	},
+	/** Everything inside a fifth, in thirds — the gentlest: attacks fifth ·
+	 *  skill third · burst root · cancel the sixth · count the octave. */
+	close: {
+		normal: 'fifth',
+		skill: 'third',
+		burst: 'root',
+		cancel: 'sixth',
+		count: 'octave',
+		swap: ['third', 'fifth']
+	}
+};
+export const ASSIGNMENT_LABELS: Record<AssignmentId, string> = {
+	weight: 'Weight',
+	skillUp: 'Skill up',
+	rising: 'Rising',
+	close: 'Close'
+};
+
+// ── Layers ────────────────────────────────────────────────────────────────
+
 type Common = {
 	/** Base length in seconds; a sustained layer's floor. */
 	dur: number;
 	gain: number;
-	/** Seconds after the cue's instant, or `'end'`: at the input's end (a
-	 *  swap's arrival). `'end'` falls back to `END_FALLBACK_S` with no length. */
-	delay?: number | 'end';
+	/** Seconds after the cue's instant. */
+	delay?: number;
 	/** Ring for the input's own length (less the release), never shorter than
 	 *  `dur`, never longer than `MAX_RING_S`. */
 	sustain?: boolean;
+	/** Glide the pitch by this ratio over the input's length — the swap. */
+	slide?: number;
 };
-/** A pitched layer: an oscillator, optionally gliding. */
+/** A pitched layer: an oscillator, optionally gliding on its own. */
 type Tone = Common & {
 	kind: 'tone';
 	/** Hz; a pair glides exponentially from the first to the second over
@@ -102,6 +210,8 @@ type Tone = Common & {
 	wave: OscillatorType;
 	glide?: number;
 };
+/** A noise layer: white noise through a bandpass. The click at an onset. */
+type Noise = Common & { kind: 'noise'; freq: number; q: number };
 /** A frequency-modulated layer: a sine carrier whose pitch a second sine
  *  wobbles, the wobble's depth dying away fast — the electric piano's tine. */
 type Fm = Common & {
@@ -114,12 +224,7 @@ type Fm = Common & {
 	/** Seconds for the depth to decay away. */
 	indexDecay: number;
 };
-/** A noise layer: white noise through a bandpass. Cracks and clicks. */
-type Noise = Common & { kind: 'noise'; freq: number; q: number };
-/** A metallic layer: a bank of square waves through a bandpass and a highpass.
- *  Hats, cowbells — the inharmonic ratios are what make metal. */
-type Metal = Common & { kind: 'metal'; freqs: number[]; band: number; high: number };
-export type Layer = Tone | Noise | Metal | Fm;
+export type Layer = Tone | Noise | Fm;
 
 /** Attack, in seconds — a hard onset clicks on cheap speakers. */
 const ATTACK_S = 0.003;
@@ -127,64 +232,16 @@ const ATTACK_S = 0.003;
 export const RELEASE_S = 0.02;
 /** No sustained layer rings past this, however long the hold. */
 export const MAX_RING_S = 4;
-/** Where an `'end'` layer lands when the cue carries no length. */
-const END_FALLBACK_S = 0.075;
+/** How long a slide takes when the cue carries no length. */
+const SLIDE_FALLBACK_S = 0.12;
 
-/** The 808 hat's six partials, Hz. */
-const HAT = [205.3, 304.4, 369.6, 522.7, 540, 800];
-/** The 808 cowbell's two, and the pair a fourth up for the arrival. */
-const BELL = [540, 800];
-const BELL_UP = [720, 1067];
-
-/**
- * ⚓ THE DEGREE ASSIGNMENT IS SHARED; THE KEY AND REGISTER ARE PER VOICE (⚓ Nate
- * 2026-09-29). The sets never sound together, so nothing binds them to one
- * key — but which scale degree means which input must not move, or the
- * contour learnt on one voice would not transfer to the next. What moves is
- * the OCTAVE (instruments have home registers: a marimba's warmth is below
- * 500 Hz, a music box lives high) and the MODE (a handpan is almost always
- * tuned minor). The roles, on A:
- *
- *   burst   the root          A4
- *   skill   the fifth         E5
- *   attack  the octave        A5 (normal short, charged long)
- *   cancel  the third above   C♯6 major · C6 minor
- *   count   the odd note out  F♯5 major · G5 minor — the one no input takes
- *   swap    fifth → octave    E5 → A5, the second at the arrival
- */
-export type Tuning = {
-	/** Octaves from the reference (A4 = 440 as the root). */
-	octave: number;
-	mode: 'major' | 'minor';
-	/** Scales every base length — a vibraphone's floor is longer than a tine's. */
-	durScale?: number;
-};
-type Roles = { root: number; fifth: number; octave: number; third: number; count: number };
-function roles(t: Tuning): Roles {
-	const a = 440 * Math.pow(2, t.octave);
-	const r = (semitones: number) => a * Math.pow(2, semitones / 12);
-	return {
-		root: a,
-		fifth: r(7),
-		octave: r(12),
-		third: t.mode === 'major' ? r(16) : r(15),
-		count: t.mode === 'major' ? r(9) : r(10)
-	};
-}
-export const SET_TUNING: Record<Exclude<SoundSet, 'percussive'>, Tuning> = {
-	kalimba: { octave: 0, mode: 'major' },
-	epiano: { octave: -1, mode: 'major' },
-	musicbox: { octave: 1, mode: 'major' },
-	handpan: { octave: -1, mode: 'minor' },
-	marimba: { octave: -1, mode: 'major' },
-	vibraphone: { octave: 0, mode: 'major', durScale: 1.8 }
-};
+// ── Voices ────────────────────────────────────────────────────────────────
 
 /** A voice: how one note of `freq` sounds, ringing `dur` at `gain`. */
-type Voice = (freq: number, dur: number, gain: number, delay?: number | 'end') => Layer[];
+type Voice = (freq: number, dur: number, gain: number, delay?: number) => Layer[];
 
 /** The whisper of click at a note's onset, so the beat is placeable. */
-const click = (delay?: number | 'end'): Layer => ({
+const click = (delay?: number): Layer => ({
 	kind: 'noise',
 	freq: 4500,
 	q: 1,
@@ -192,6 +249,24 @@ const click = (delay?: number | 'end'): Layer => ({
 	gain: 0.12,
 	delay
 });
+
+/** Metronome: a woodblock's ping — a bright fundamental with a fast dip, a
+ *  short second partial — that RINGS for the input, so a burst is a long tick
+ *  and a normal a short one. One pitch; the length is the whole message. */
+const metronome: Voice = (freq, dur, gain, delay) => [
+	{
+		kind: 'tone',
+		freq: [freq * 1.06, freq],
+		glide: 0.012,
+		dur,
+		wave: 'sine',
+		gain,
+		delay,
+		sustain: true
+	},
+	{ kind: 'tone', freq: freq * 2.4, dur: 0.03, wave: 'sine', gain: gain * 0.3, delay },
+	click(delay)
+];
 
 /** Kalimba: the fundamental and a second partial that dies sooner — a real
  *  tine's is a few cents SHARP of the octave (×2.03), which is the life in it. */
@@ -337,86 +412,19 @@ const vibraphone: Voice = (freq, dur, gain, delay) => [
 	click(delay)
 ];
 
-/**
- * The one degree assignment every pitched voice plays, in its own key and
- * register (`roles`): burst on the root, skill on the fifth, the attacks on the
- * octave at two lengths, cancel a very short third above, the swap stepping
- * fifth → octave with the second note at the arrival, and the count-in on the
- * odd note out in a plain sine — a purer colour than any voice.
- */
-function melodicPalette(note: Voice, tuning: Tuning): Record<CueKind, Layer[]> {
-	const n = roles(tuning);
-	const d = tuning.durScale ?? 1;
-	return {
-		count: [{ kind: 'tone', freq: n.count, dur: 0.12, wave: 'sine', gain: 0.45 }],
-		normal: note(n.octave, 0.07 * d, 0.42),
-		charged: note(n.octave, 0.16 * d, 0.4),
-		skill: note(n.fifth, 0.12 * d, 0.5),
-		burst: note(n.root, 0.25 * d, 0.62),
-		plunge: [...note(n.fifth, 0.05 * d, 0.45), ...note(n.root, 0.18 * d, 0.55, 0.06)],
-		movement: note(n.third, 0.035 * d, 0.32),
-		swap: [...note(n.fifth, 0.08 * d, 0.45), ...note(n.octave, 0.085 * d, 0.45, 'end')]
-	};
-}
-
-export const PALETTES: Record<SoundSet, Record<CueKind, Layer[]>> = {
-	percussive: {
-		// A metronome click: a 1 kHz tick with a bright edge.
-		count: [
-			{ kind: 'tone', freq: 1000, dur: 0.03, wave: 'sine', gain: 0.55 },
-			{ kind: 'noise', freq: 4000, q: 1, dur: 0.012, gain: 0.35 }
-		],
-		// Rimshot: two resonances and a crack.
-		normal: [
-			{ kind: 'tone', freq: 1720, dur: 0.03, wave: 'sine', gain: 0.4 },
-			{ kind: 'tone', freq: 455, dur: 0.02, wave: 'sine', gain: 0.3 },
-			{ kind: 'noise', freq: 3600, q: 1, dur: 0.008, gain: 0.32 }
-		],
-		// Snare: a charged attack is a BIGGER hit, not a longer tap (⚓ Nate
-		// 2026-09-29 — the cross-stick that sat here was too faint). The 808
-		// recipe: two sine bodies, the low one dropping, under a wide band of
-		// noise that outlasts them.
-		charged: [
-			{ kind: 'tone', freq: [200, 150], dur: 0.09, wave: 'sine', gain: 0.65 },
-			{ kind: 'tone', freq: 330, dur: 0.06, wave: 'sine', gain: 0.35 },
-			{ kind: 'noise', freq: 1800, q: 0.8, dur: 0.14, gain: 0.6 }
-		],
-		// Woodblock: a fast pitch drop with a bright partial and a crack.
-		skill: [
-			{ kind: 'tone', freq: [900, 650], dur: 0.06, wave: 'sine', gain: 0.7 },
-			{ kind: 'tone', freq: 1800, dur: 0.02, wave: 'sine', gain: 0.2 },
-			{ kind: 'noise', freq: 2800, q: 2, dur: 0.006, gain: 0.25 }
-		],
-		// Tuned tom: a slow drop to the floor, with a click on top so a phone
-		// speaker still marks it.
-		burst: [
-			{ kind: 'tone', freq: [160, 80], dur: 0.22, wave: 'sine', gain: 0.95 },
-			{ kind: 'noise', freq: 2500, q: 1, dur: 0.01, gain: 0.35 }
-		],
-		// A higher tom that falls further.
-		plunge: [
-			{ kind: 'tone', freq: [300, 90], dur: 0.18, wave: 'sine', gain: 0.85 },
-			{ kind: 'noise', freq: 2500, q: 1, dur: 0.008, gain: 0.3 }
-		],
-		// The tightest closed hat: a metallic tick.
-		movement: [{ kind: 'metal', freqs: HAT, band: 10000, high: 7000, dur: 0.014, gain: 0.5 }],
-		// Cowbell on the press, a fourth up on the arrival.
-		swap: [
-			{ kind: 'metal', freqs: BELL, band: 2640, high: 400, dur: 0.06, gain: 0.45 },
-			{ kind: 'metal', freqs: BELL_UP, band: 3500, high: 500, dur: 0.06, gain: 0.45, delay: 'end' }
-		]
-	},
-	kalimba: melodicPalette(kalimba, SET_TUNING.kalimba),
-	epiano: melodicPalette(epiano, SET_TUNING.epiano),
-	musicbox: melodicPalette(musicbox, SET_TUNING.musicbox),
-	handpan: melodicPalette(handpan, SET_TUNING.handpan),
-	marimba: melodicPalette(marimba, SET_TUNING.marimba),
-	vibraphone: melodicPalette(vibraphone, SET_TUNING.vibraphone)
+const VOICES: Record<SoundSet, Voice> = {
+	metronome,
+	kalimba,
+	epiano,
+	musicbox,
+	handpan,
+	marimba,
+	vibraphone
 };
 
 /** Per-set trim, so switching sets does not switch loudness. By ear. */
 export const SET_TRIM: Record<SoundSet, number> = {
-	percussive: 1,
+	metronome: 1,
 	kalimba: 1.1,
 	epiano: 1,
 	musicbox: 1,
@@ -427,9 +435,61 @@ export const SET_TRIM: Record<SoundSet, number> = {
 /** Master level at volume 1. The palettes' gains are relative to this. */
 export const MASTER_GAIN = 0.5;
 
+// ── Palettes ──────────────────────────────────────────────────────────────
+
+/**
+ * A voice's palette under an assignment: the assignment's degree for each
+ * input in the voice's key and register, the count-in on the odd note out in
+ * a plain sine (a purer colour than any voice), and the swap one note of the
+ * voice sliding from the assignment's first degree to its second over the
+ * swap's own length, a little quieter than a press. A mono voice takes its one
+ * pitch for every input and the assignment says only which way the swap slides.
+ */
+function paletteOf(set: SoundSet, assignment: Assignment): Record<CueKind, Layer[]> {
+	const t = SET_TUNING[set];
+	const note = VOICES[set];
+	const hz = (deg: Degree) => t.mono ?? degreeHz(t, deg);
+	const d = t.durScale ?? 1;
+	const [from, to] = assignment.swap;
+	const slide = t.mono ? Math.pow(2, 5 / 12) : hz(to) / hz(from);
+	return {
+		count: [
+			{
+				kind: 'tone',
+				freq: t.mono ? t.mono * 0.667 : hz(assignment.count),
+				dur: 0.12,
+				wave: 'sine',
+				gain: 0.45
+			}
+		],
+		normal: note(hz(assignment.normal), 0.07 * d, 0.42),
+		charged: note(hz(assignment.normal), 0.16 * d, 0.4),
+		skill: note(hz(assignment.skill), 0.12 * d, 0.5),
+		burst: note(hz(assignment.burst), 0.25 * d, 0.62),
+		plunge: [
+			...note(hz(assignment.skill), 0.05 * d, 0.45),
+			...note(hz(assignment.burst), 0.18 * d, 0.55, 0.06)
+		],
+		movement: note(hz(assignment.cancel), 0.035 * d, 0.32),
+		swap: note(hz(from), 0.1 * d, 0.34).map((l) => (l.kind === 'noise' ? l : { ...l, slide }))
+	};
+}
+
+const paletteCache = new Map<string, Record<CueKind, Layer[]>>();
+/** The palette for a set under an assignment, built once per pair. */
+export function paletteFor(set: SoundSet, assignment: AssignmentId): Record<CueKind, Layer[]> {
+	const key = `${set}/${assignment}`;
+	let p = paletteCache.get(key);
+	if (!p) {
+		p = paletteOf(set, ASSIGNMENTS[assignment]);
+		paletteCache.set(key, p);
+	}
+	return p;
+}
+
 /** The Settings preview: a phrase that shows the set — two normals, a skill, a
- *  burst, a swap — at offsets in seconds, each with a plausible length so the
- *  melodic set is heard ringing. */
+ *  burst, a swap — at offsets in seconds, each with a plausible length so a
+ *  voice is heard ringing. */
 export const PREVIEW_PHRASE: readonly { kind: CueKind; at: number; dur: number }[] = [
 	{ kind: 'normal', at: 0, dur: 0.26 },
 	{ kind: 'normal', at: 0.26, dur: 0.26 },
@@ -444,12 +504,14 @@ export function ringFor(base: number, dur: number): number {
 	return Math.min(MAX_RING_S, Math.max(base, dur - RELEASE_S));
 }
 
+// ── The sounder ───────────────────────────────────────────────────────────
+
 export type Sounder = {
-	/** Queue one cue of `set` at an absolute AudioContext time; `dur` is the
-	 *  input's length in seconds (0 = unknown). */
-	play(kind: CueKind, at: number, set: SoundSet, dur?: number): void;
-	/** Play the preview phrase now, in `set`. */
-	preview(set: SoundSet): void;
+	/** Queue one cue at an absolute AudioContext time; `dur` is the input's
+	 *  length in seconds (0 = unknown). */
+	play(kind: CueKind, at: number, set: SoundSet, assignment: AssignmentId, dur?: number): void;
+	/** Play the preview phrase now. */
+	preview(set: SoundSet, assignment: AssignmentId): void;
 	/** Master volume, 0–1. */
 	setVolume(v: number): void;
 	/** Silence every layer not yet heard — pause, seek, stop. */
@@ -458,7 +520,7 @@ export type Sounder = {
 };
 
 /**
- * Bind the palettes to a context. One sounder per context; the transport keeps
+ * Bind the voices to a context. One sounder per context; the transport keeps
  * one for the session (an AudioContext is a real OS resource, and iOS lets a
  * page create only a few before it starts refusing).
  */
@@ -499,30 +561,44 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 		}
 	}
 
+	/** Pitch a param at `f`, with the layer's own glide and then the swap's slide. */
+	function pitch(
+		param: AudioParam,
+		f: number | [number, number],
+		l: Layer,
+		at: number,
+		inputDur: number
+	) {
+		const start = Array.isArray(f) ? f[0] : f;
+		const settle = Array.isArray(f) ? f[1] : f;
+		param.setValueAtTime(start, at);
+		if (Array.isArray(f) && l.kind === 'tone') {
+			param.exponentialRampToValueAtTime(settle, at + (l.glide ?? l.dur));
+		}
+		if (l.slide) {
+			const over = inputDur > 0 ? inputDur : SLIDE_FALLBACK_S;
+			param.exponentialRampToValueAtTime(settle * l.slide, at + over);
+		}
+	}
+
 	function layer(l: Layer, at0: number, trim: number, inputDur: number) {
-		const at =
-			at0 + (l.delay === 'end' ? (inputDur > 0 ? inputDur : END_FALLBACK_S) : (l.delay ?? 0));
+		const at = at0 + (l.delay ?? 0);
 		const dur = l.sustain ? ringFor(l.dur, inputDur) : l.dur;
 		const peak = l.gain * trim;
 		if (l.kind === 'tone') {
 			const osc = ctx.createOscillator();
 			osc.type = l.wave;
-			if (Array.isArray(l.freq)) {
-				osc.frequency.setValueAtTime(l.freq[0], at);
-				osc.frequency.exponentialRampToValueAtTime(l.freq[1], at + (l.glide ?? l.dur));
-			} else {
-				osc.frequency.setValueAtTime(l.freq, at);
-			}
+			pitch(osc.frequency, l.freq, l, at, inputDur);
 			const env = envelope(at, dur, peak);
 			osc.connect(env);
 			track([osc], at, dur, env);
 		} else if (l.kind === 'fm') {
 			const carrier = ctx.createOscillator();
 			carrier.type = 'sine';
-			carrier.frequency.value = l.freq;
+			pitch(carrier.frequency, l.freq, l, at, inputDur);
 			const mod = ctx.createOscillator();
 			mod.type = 'sine';
-			mod.frequency.value = l.freq * l.ratio;
+			pitch(mod.frequency, l.freq * l.ratio, l, at, inputDur);
 			// Depth in Hz, decaying: the tine's bright strike settling to a tone.
 			const depth = ctx.createGain();
 			depth.gain.setValueAtTime(l.freq * l.index, at);
@@ -532,10 +608,10 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 			const env = envelope(at, dur, peak);
 			carrier.connect(env);
 			track([carrier, mod], at, dur, depth, env);
-		} else if (l.kind === 'noise') {
+		} else {
 			const src = ctx.createBufferSource();
 			src.buffer = noise;
-			// A random slice, so two cracks in a row are not the same grains.
+			// A random slice, so two clicks in a row are not the same grains.
 			src.loop = true;
 			src.loopStart = Math.random() * 0.5;
 			src.loopEnd = src.loopStart + 0.4;
@@ -547,38 +623,19 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 			src.connect(band);
 			band.connect(env);
 			track([src], at, dur, band, env);
-		} else {
-			const band = ctx.createBiquadFilter();
-			band.type = 'bandpass';
-			band.frequency.value = l.band;
-			band.Q.value = 1;
-			const high = ctx.createBiquadFilter();
-			high.type = 'highpass';
-			high.frequency.value = l.high;
-			// Six squares sum loud; the bank is scaled by its size.
-			const env = envelope(at, dur, peak / Math.sqrt(l.freqs.length));
-			band.connect(high);
-			high.connect(env);
-			const oscs = l.freqs.map((f) => {
-				const osc = ctx.createOscillator();
-				osc.type = 'square';
-				osc.frequency.value = f;
-				osc.connect(band);
-				return osc;
-			});
-			track(oscs, at, dur, band, high, env);
 		}
 	}
 
 	return {
 		ctx,
-		play(kind, at, set, dur = 0) {
+		play(kind, at, set, assignment, dur = 0) {
 			const trim = SET_TRIM[set];
-			for (const l of PALETTES[set][kind]) layer(l, at, trim, dur);
+			for (const l of paletteFor(set, assignment)[kind]) layer(l, at, trim, dur);
 		},
-		preview(set) {
+		preview(set, assignment) {
 			const at0 = ctx.currentTime + 0.05;
-			for (const step of PREVIEW_PHRASE) this.play(step.kind, at0 + step.at, set, step.dur);
+			for (const step of PREVIEW_PHRASE)
+				this.play(step.kind, at0 + step.at, set, assignment, step.dur);
 		},
 		setVolume(v) {
 			master.gain.setTargetAtTime(MASTER_GAIN * Math.max(0, Math.min(1, v)), ctx.currentTime, 0.01);

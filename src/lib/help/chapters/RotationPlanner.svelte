@@ -84,15 +84,16 @@
 	</p>
 	<p>
 		<strong>Play and Repeat.</strong> <em>Play</em> in the view bar runs a cursor along the timeline
-		at game speed, with three beats to count you in and a short tone at every press — a click for a
-		normal attack, a longer one for a charged attack, a mid tone for a skill, a low one for a burst,
-		a two-note step for a swap. The tones keep time with the tab hidden, so you can play the
-		rotation with the game in front of you and the chart behind it. <em>Repeat</em> draws the laps that
-		follow: the notation is run again from its last action, joined by a swap back to your opener, and
-		the laps are simulated rather than copied. A skill still on cooldown waits where it really waits,
-		and everything after it moves; a buff or an aura from one lap is still there in the next if it really
-		is. Energy is not modeled, so a burst is drawn as ready whenever its cooldown is — the most common
-		reason a real rotation does not come round cleanly is the one thing the chart cannot show you.
+		at game speed, with three beats to count you in and a note at every press. Each note rings for
+		as long as its input holds the field, so a burst is a long note and a normal attack a short one;
+		a swap is the one note that slides. The voice, which note each input gets, and the volume are
+		set in Settings. The notes keep time with the tab hidden, so you can play the rotation with the
+		game in front of you and the chart behind it. <em>Repeat</em> draws the laps that follow: the notation
+		is run again from its last action, joined by a swap back to your opener, and the laps are simulated
+		rather than copied. A skill still on cooldown waits where it really waits, and everything after it
+		moves; a buff or an aura from one lap is still there in the next if it really is. Energy is not modeled,
+		so a burst is drawn as ready whenever its cooldown is — the most common reason a real rotation does
+		not come round cleanly is the one thing the chart cannot show you.
 	</p>
 </section>
 

@@ -8,7 +8,7 @@
 
 import { writable } from 'svelte/store';
 import { HUMAN_PAD_DEFAULT_F } from '$lib/sim/humanTiming';
-import { SOUND_SETS, type SoundSet } from '$lib/playback/tones';
+import { ASSIGNMENT_IDS, SOUND_SETS, type AssignmentId, type SoundSet } from '$lib/playback/tones';
 import { browser } from '$app/environment';
 
 // ---------------------------------------------------------------------------
@@ -353,6 +353,9 @@ type SiteSettings = {
 	/** Which palette (⚓ Nate 2026-09-29: sounds are personal — two sets, chosen
 	 *  in Settings by listening). `$lib/playback/tones.ts` holds both. */
 	playbackSoundSet: SoundSet;
+	/** Which scale degree each input gets, applied to every voice alike
+	 *  (⚓ Nate 2026-09-29 is testing alternatives; `ASSIGNMENTS` in tones.ts). */
+	playbackAssignment: AssignmentId;
 	/** Master volume, 0–1. The tones have to sit against the game's own level,
 	 *  and that is personal too. */
 	playbackVolume: number;
@@ -386,11 +389,13 @@ export const TIMELINE_LAYER_DEFAULTS = {
  *  with the game in front of you, and a first press of Play that did nothing
  *  audible would leave the reader wondering what it was for. */
 export const PLAYBACK_SOUND_DEFAULT = true;
-/** Percussive by default: it sits in the gaps of the game's mix, which is where
- *  a first-time listener needs it to be heard. */
+/** Kalimba by default: measured at the DPS dummy (⚓ Nate 2026-09-29), every
+ *  voice carried over the game's audio and the drum kit did not; the kalimba
+ *  is the one he reached for first. */
 export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackSound: PLAYBACK_SOUND_DEFAULT,
-	playbackSoundSet: 'percussive' as SoundSet,
+	playbackSoundSet: 'kalimba' as SoundSet,
+	playbackAssignment: 'weight' as AssignmentId,
 	playbackVolume: 0.7
 } as const;
 
@@ -428,13 +433,20 @@ function loadSiteSettings(): SiteSettings {
 			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
 		}
 		delete (merged as Record<string, unknown>).swapFrames;
-		// The sound set's ids moved when the voices multiplied ('melodic' became
-		// 'kalimba', 2026-09-29); an id we no longer know falls back to the default.
+		// The sound set's ids moved as the sets changed (2026-09-29: 'melodic'
+		// became 'kalimba'; the 'percussive' drum kit was retired for the
+		// 'metronome'); an id we no longer know falls back to the default.
 		if (!SOUND_SETS.includes(merged.playbackSoundSet)) {
+			const legacy = parsed.playbackSoundSet as string;
 			merged.playbackSoundSet =
-				(parsed.playbackSoundSet as string) === 'melodic'
+				legacy === 'melodic'
 					? 'kalimba'
-					: PLAYBACK_SOUND_DEFAULTS.playbackSoundSet;
+					: legacy === 'percussive'
+						? 'metronome'
+						: PLAYBACK_SOUND_DEFAULTS.playbackSoundSet;
+		}
+		if (!ASSIGNMENT_IDS.includes(merged.playbackAssignment)) {
+			merged.playbackAssignment = PLAYBACK_SOUND_DEFAULTS.playbackAssignment;
 		}
 		return merged;
 	} catch {
