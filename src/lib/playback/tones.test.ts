@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+	HUMAN_CENTS,
+	HUMAN_GAIN,
 	MAX_RING_S,
 	NOTE_SETS,
 	NOTE_SET_IDS,
@@ -40,7 +42,7 @@ type Pitched = Extract<Layer, { kind: 'tone' | 'fm' }>;
 const isPitched = (l: Layer): l is Pitched => l.kind === 'tone' || l.kind === 'fm';
 const settle = (l: Pitched) => (Array.isArray(l.freq) ? l.freq[1] : l.freq);
 const choice = (over: Partial<SoundChoice> = {}): SoundChoice => ({
-	set: 'kalimba',
+	set: 'glass',
 	order: 'weighty',
 	notes: 'open',
 	swap: 'humLow',
@@ -79,7 +81,9 @@ describe('the sound palettes', () => {
 		for (const set of PITCHED_SETS) {
 			for (const notes of NOTE_SET_IDS) {
 				const n = NOTE_SETS[notes];
-				const [lo, mid, hi] = [NOTE_LOW, n.mid, n.high].map(noteHz);
+				const [lo, mid, hi] = [NOTE_LOW, n.mid, n.high].map((x) =>
+					noteHz(x, SET_TUNING[set].octave)
+				);
 				const f = (order: (typeof ORDER_IDS)[number], kind: CueKind) =>
 					fundamental(choice({ set, notes, order }), kind)!;
 				expect([f('weighty', 'burst'), f('weighty', 'skill'), f('weighty', 'normal')]).toEqual([
@@ -100,8 +104,8 @@ describe('the sound palettes', () => {
 				// a charged attack and a plunge are the attack's note, longer
 				expect(f('weighty', 'charged')).toBe(hi);
 				expect(f('weighty', 'plunge')).toBe(hi);
-				// the same notes on every voice: A4 at the bottom
-				expect(lo).toBe(440);
+				// the same notes on every voice: A at the bottom, in the voice's register
+				expect(lo).toBe(440 * Math.pow(2, SET_TUNING[set].octave));
 			}
 		}
 	});
@@ -113,7 +117,7 @@ describe('the sound palettes', () => {
 			expect([NOTE_LOW, n.mid, n.high, NOTE_CANCEL].includes(n.count)).toBe(false);
 			expect(n.count).toBeGreaterThan(NOTE_LOW);
 			expect(n.count).toBeLessThan(NOTE_CANCEL);
-			expect(fundamental(choice({ notes }), 'movement')).toBe(880);
+			expect(fundamental(choice({ notes }), 'movement')).toBe(880); // glass: reference register
 		}
 	});
 
@@ -128,10 +132,12 @@ describe('the sound palettes', () => {
 			}
 	});
 
-	it('every pitched voice stays on A B D E F♯ between A4 and A5', () => {
-		const partials = [1, 2, 2.03, 2.76, 3, 4, 5.4, 10];
-		const scale = [0, 2, 5, 7, 9, 12].map((st) => 440 * Math.pow(2, st / 12));
-		for (const set of PITCHED_SETS)
+	it('every pitched voice stays on A B D E F♯, an octave of A, in its own register', () => {
+		const partials = [1, 2.32, 2.76, 3, 3.93, 4, 4.25, 5, 5.4, 7, 8.93, 9.5, 10];
+		for (const set of PITCHED_SETS) {
+			const scale = [0, 2, 5, 7, 9, 12].map(
+				(st) => 440 * Math.pow(2, SET_TUNING[set].octave + st / 12)
+			);
 			for (const notes of NOTE_SET_IDS)
 				for (const kind of KINDS) {
 					if (kind === 'swap') continue;
@@ -144,6 +150,28 @@ describe('the sound palettes', () => {
 						).toBe(true);
 					}
 				}
+		}
+	});
+
+	it('a material: partials above the fundamental ring shorter, and every strike differs a little', () => {
+		for (const set of PITCHED_SETS) {
+			const p = paletteFor(choice({ set }));
+			const tones = p.burst.filter(isPitched);
+			expect(tones.length, set).toBeGreaterThanOrEqual(3);
+			for (let i = 1; i < tones.length; i++) {
+				expect(tones[i].ringScale!, `${set} partial ${i}`).toBeLessThan(
+					tones[i - 1].ringScale ?? 1
+				);
+				expect(tones[i].dur, `${set} partial ${i}`).toBeLessThanOrEqual(tones[i - 1].dur);
+			}
+			// one transient per strike, and it is the material's own band
+			const noise = p.burst.filter((l) => l.kind === 'noise');
+			expect(noise, set).toHaveLength(1);
+		}
+		expect(ringFor(0.25, 2, 0.35)).toBeCloseTo((2 - RELEASE_S) * 0.35, 9);
+		expect(ringFor(0.25, 2, 0.05)).toBe(0.25); // never under the base
+		expect(HUMAN_CENTS).toBeLessThanOrEqual(5);
+		expect(HUMAN_GAIN).toBeLessThanOrEqual(0.1);
 	});
 
 	it('every hum is the one sound not struck: slow attack, no click, held, one onset', () => {
@@ -188,8 +216,8 @@ describe('the sound palettes', () => {
 		}
 	});
 
-	it('the vocabulary: six voices, three orders, four note sets, three hums, all named', () => {
-		expect(VOICE_IDS).toHaveLength(6);
+	it('the vocabulary: five voices, three orders, four note sets, three hums, all named', () => {
+		expect(VOICE_IDS).toHaveLength(5);
 		expect(ORDER_IDS).toHaveLength(3);
 		expect(NOTE_SET_IDS).toHaveLength(4);
 		expect(SWAP_STYLES).toHaveLength(3);

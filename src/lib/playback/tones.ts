@@ -39,7 +39,8 @@
  * cancel tick on top; the two notes between are the set's choice, all drawn
  * from A B D E F♯ — D major pentatonic, which has no semitone neighbours, so any
  * two notes overlapping (a skill's tail under the burst) are consonant. Every
- * voice plays the same notes; only the timbre changes.
+ * voice plays the same notes, a material in its own register; only the timbre
+ * changes.
  *
  * ⚠️ Gains are normalised BY EAR, not by number: a 440 Hz tone needs
  * noticeably more gain than a 1.7 kHz one to sound as loud.
@@ -49,23 +50,21 @@ import type { CueKind } from './cues';
 
 // ── Sets ──────────────────────────────────────────────────────────────────
 
-/** The pitched voices. */
-export type VoiceId = 'kalimba' | 'epiano' | 'musicbox' | 'handpan' | 'marimba' | 'vibraphone';
-export const VOICE_IDS: readonly VoiceId[] = [
-	'kalimba',
-	'epiano',
-	'musicbox',
-	'handpan',
-	'marimba',
-	'vibraphone'
-];
+/**
+ * The pitched voices — five MATERIALS (⚓ Nate 2026-09-29: "I like when it
+ * sounds like an actual material being struck"; kalimba and handpan struck as
+ * the least differentiated and most synthetic; the e-piano retargeted to the
+ * pipe it already sounded like; the music box to the muted bell it already
+ * sounded like). Wood, muted metal, sustained metal, a hollow tube, glass.
+ */
+export type VoiceId = 'marimba' | 'bell' | 'vibraphone' | 'pipe' | 'glass';
+export const VOICE_IDS: readonly VoiceId[] = ['marimba', 'bell', 'vibraphone', 'pipe', 'glass'];
 export const VOICE_LABELS: Record<VoiceId, string> = {
-	kalimba: 'Kalimba',
-	epiano: 'E-piano',
-	musicbox: 'Music box',
-	handpan: 'Handpan',
 	marimba: 'Marimba',
-	vibraphone: 'Vibraphone'
+	bell: 'Bell',
+	vibraphone: 'Vibraphone',
+	pipe: 'Pipe',
+	glass: 'Glass'
 };
 /** The Settings' first choice: a metronome, or a melodic voice. */
 export type SoundMode = 'metronome' | 'melodic';
@@ -79,24 +78,24 @@ export type SoundSet = 'metronome' | VoiceId;
 export const SOUND_SETS: readonly SoundSet[] = ['metronome', ...VOICE_IDS];
 
 export type Tuning = {
-	/** Scales every base length — a vibraphone's floor is longer than a tine's. */
+	/** Octaves from the notes' reference (A4 at the bottom). ⚓ The NOTES are the
+	 *  same on every voice (Nate 2026-09-29); a material may play them in its
+	 *  own register — a marimba's warmth and a pipe's hollowness are below
+	 *  500 Hz, and at A4 both sounded like metal. */
+	octave: number;
+	/** Scales every base length — a vibraphone's floor is longer than wood's. */
 	durScale?: number;
 	/** ONE pitch for every input, in Hz: the metronome. The note set then says
 	 *  nothing about pitch and the length rule carries all the meaning. */
 	mono?: number;
 };
-/** ⚓ EVERY VOICE LIVES ON THE SAME NOTES (⚓ Nate 2026-09-29, at a keyboard):
- *  no per-voice key or register any more — the handpan's minor and the
- *  marimba's lower octave went with it, so a note set sounds the same notes on
- *  every voice and only the timbre changes. */
 export const SET_TUNING: Record<SoundSet, Tuning> = {
-	metronome: { mono: 1175 },
-	kalimba: {},
-	epiano: {},
-	musicbox: {},
-	handpan: {},
-	marimba: {},
-	vibraphone: { durScale: 1.8 }
+	metronome: { octave: 0, mono: 1175 },
+	marimba: { octave: -1 },
+	bell: { octave: 0 },
+	vibraphone: { octave: 0, durScale: 1.8 },
+	pipe: { octave: -1 },
+	glass: { octave: 0 }
 };
 
 // ── Notes, orders, note sets, swaps ──────────────────────────────────────
@@ -116,8 +115,8 @@ export const NOTE_NAMES: Record<Note, string> = {
 	9: 'F♯',
 	12: 'A'
 };
-export function noteHz(n: Note): number {
-	return 440 * Math.pow(2, n / 12);
+export function noteHz(n: Note, octave = 0): number {
+	return 440 * Math.pow(2, octave + n / 12);
 }
 /** The bottom of every set, and the cancel tick on top: the octave's frame. */
 export const NOTE_LOW: Note = 0;
@@ -201,6 +200,10 @@ type Common = {
 	/** Ring for the input's own length (less the release), never shorter than
 	 *  `dur`, never longer than `MAX_RING_S`. */
 	sustain?: boolean;
+	/** A sustained partial's share of the ring — ⚓ the organic rule: damping
+	 *  rises with frequency, so an upper partial dies sooner than the
+	 *  fundamental on a long hold too, not only on a short one. */
+	ringScale?: number;
 	/** Glide the pitch by this ratio over the input's length. */
 	slide?: number;
 	/** Attack in seconds, when a layer is deliberately NOT struck (the hum).
@@ -249,8 +252,44 @@ const SLIDE_FALLBACK_S = 0.12;
 /** A voice: how one note of `freq` sounds, ringing `dur` at `gain`. */
 type Voice = (freq: number, dur: number, gain: number) => Layer[];
 
-/** The whisper of click at a note's onset, so the beat is placeable. */
-const click: Layer = { kind: 'noise', freq: 4500, q: 1, dur: 0.004, gain: 0.12 };
+/**
+ * A MATERIAL: partials as ratios of the note, each with its own gain, its own
+ * base length as a share of the note's, and its own share of a long ring —
+ * the fundamental longest, every partial above it shorter, so the tail sounds
+ * like something vibrating rather than an oscillator (⚓ the advice Nate
+ * brought, 2026-09-29, which was right: staggered envelopes are most of the
+ * difference between synthesised and synthetic). Plus the material's own
+ * transient: wood thuds, metal tings, glass chimes, a pipe thocks.
+ */
+type PartialTone = { ratio: number; gain: number; dur: number; ring: number };
+type Material = {
+	partials: PartialTone[];
+	/** The strike: band-limited noise, centred where the material speaks. */
+	transient: { freq: number; q: number; dur: number; gain: number };
+};
+
+function strike(m: Material): Voice {
+	return (freq, dur, gain) => [
+		...m.partials.map(
+			(p): Layer => ({
+				kind: 'tone',
+				freq: freq * p.ratio,
+				dur: dur * p.dur,
+				wave: 'sine',
+				gain: gain * p.gain,
+				sustain: true,
+				ringScale: p.ring
+			})
+		),
+		{
+			kind: 'noise',
+			freq: m.transient.freq,
+			q: m.transient.q,
+			dur: m.transient.dur,
+			gain: m.transient.gain
+		}
+	];
+}
 
 /** Metronome: a woodblock's ping — a bright fundamental with a fast dip, a
  *  short second partial — that RINGS for the input, so a burst is a long tick
@@ -258,115 +297,81 @@ const click: Layer = { kind: 'noise', freq: 4500, q: 1, dur: 0.004, gain: 0.12 }
 const metronome: Voice = (freq, dur, gain) => [
 	{ kind: 'tone', freq: [freq * 1.06, freq], glide: 0.012, dur, wave: 'sine', gain, sustain: true },
 	{ kind: 'tone', freq: freq * 2.4, dur: 0.03, wave: 'sine', gain: gain * 0.3 },
-	click
+	{ kind: 'noise', freq: 4500, q: 1, dur: 0.004, gain: 0.12 }
 ];
 
-/** Kalimba: the fundamental and a second partial that dies sooner — a real
- *  tine's is a few cents SHARP of the octave (×2.03), which is the life in it. */
-const kalimba: Voice = (freq, dur, gain) => [
-	{ kind: 'tone', freq, dur, wave: 'sine', gain, sustain: true },
-	{
-		kind: 'tone',
-		freq: freq * 2.03,
-		dur: dur * 0.4,
-		wave: 'sine',
-		gain: gain * 0.28,
-		sustain: true
-	},
-	click
-];
+/** Wood: a rosewood bar, an octave down. The tuned bar's partials sit near
+ *  ×4 and ×10 (a real marimba's are tuned to them), the upper two dying fast;
+ *  the strike is a low thud, the mallet's felt on wood. */
+const marimba = strike({
+	partials: [
+		{ ratio: 1, gain: 1, dur: 1, ring: 1 },
+		{ ratio: 3.93, gain: 0.45, dur: 0.3, ring: 0.35 },
+		{ ratio: 9.5, gain: 0.15, dur: 0.1, ring: 0.12 }
+	],
+	transient: { freq: 900, q: 1.2, dur: 0.012, gain: 0.28 }
+});
 
-/** Electric piano: the two things a Rhodes is — a body (modulator at the
- *  carrier's pitch, depth settling over ~150 ms) and the TINE, a second
- *  operator fourteen times up that rings for a few ms and gives the strike its
- *  "ting". A plain sine carries the hold. */
-const epiano: Voice = (freq, dur, gain) => [
-	{
-		kind: 'fm',
-		freq,
-		ratio: 1,
-		index: 1.4,
-		indexDecay: 0.15,
-		dur,
-		gain: gain * 0.7,
-		sustain: true
-	},
-	{ kind: 'fm', freq, ratio: 14, index: 0.9, indexDecay: 0.035, dur: 0.05, gain: gain * 0.3 },
-	{ kind: 'tone', freq, dur, wave: 'sine', gain: gain * 0.5, sustain: true },
-	click
-];
+/** Muted metal: a small bell with its damper touching — a bell's inharmonic
+ *  partials (×2.76, ×5.4, ×8.9), each shorter than the last, and a bright
+ *  ting for the strike. */
+const bell = strike({
+	partials: [
+		{ ratio: 1, gain: 1, dur: 1, ring: 1 },
+		{ ratio: 2.76, gain: 0.5, dur: 0.6, ring: 0.6 },
+		{ ratio: 5.4, gain: 0.25, dur: 0.35, ring: 0.35 },
+		{ ratio: 8.93, gain: 0.12, dur: 0.2, ring: 0.2 }
+	],
+	transient: { freq: 5000, q: 1, dur: 0.004, gain: 0.15 }
+});
 
-/** Music box: a bright tine with two INHARMONIC partials (a steel comb's),
- *  short. */
-const musicbox: Voice = (freq, dur, gain) => [
-	{ kind: 'tone', freq, dur, wave: 'sine', gain, sustain: true },
-	{
-		kind: 'tone',
-		freq: freq * 2.76,
-		dur: dur * 0.5,
-		wave: 'sine',
-		gain: gain * 0.35,
-		sustain: true
-	},
-	{ kind: 'tone', freq: freq * 5.4, dur: dur * 0.25, wave: 'sine', gain: gain * 0.15 },
-	click
-];
+/** Sustained metal: a vibraphone bar, motor off — the ×4 partial rings on
+ *  with the fundamental (it is what makes the bar metal), a ×10 shimmer dies
+ *  early. The instrument built for holding a note; longer floors. */
+const vibraphone = strike({
+	partials: [
+		{ ratio: 1, gain: 1, dur: 1, ring: 1 },
+		{ ratio: 4, gain: 0.32, dur: 0.8, ring: 0.7 },
+		{ ratio: 10, gain: 0.06, dur: 0.3, ring: 0.25 }
+	],
+	transient: { freq: 3500, q: 1, dur: 0.004, gain: 0.12 }
+});
 
-/** Handpan: fundamental, octave and fifth in a 1:2:3 stack, and a small pitch
- *  dip on the strike (the shell flexing). Round and mellow. */
-const handpan: Voice = (freq, dur, gain) => [
-	{ kind: 'tone', freq: [freq * 1.015, freq], glide: 0.03, dur, wave: 'sine', gain, sustain: true },
-	{ kind: 'tone', freq: freq * 2, dur: dur * 0.8, wave: 'sine', gain: gain * 0.4, sustain: true },
-	{ kind: 'tone', freq: freq * 3, dur: dur * 0.5, wave: 'sine', gain: gain * 0.22, sustain: true },
-	click
-];
+/** A hollow tube struck with a paddle, an octave down: a closed pipe speaks
+ *  in ODD harmonics only (×3, ×5, ×7), which is the hollow, plastic-wood
+ *  sound Nate heard in the e-piano; the strike is a mid thock. */
+const pipe = strike({
+	partials: [
+		{ ratio: 1, gain: 1, dur: 1, ring: 1 },
+		{ ratio: 3, gain: 0.5, dur: 0.5, ring: 0.5 },
+		{ ratio: 5, gain: 0.25, dur: 0.3, ring: 0.3 },
+		{ ratio: 7, gain: 0.12, dur: 0.2, ring: 0.15 }
+	],
+	transient: { freq: 650, q: 1, dur: 0.014, gain: 0.35 }
+});
 
-/** Marimba: a woody bar — the fundamental with a strong FOURTH harmonic (the
- *  tuned bar's signature), short and dry. */
-const marimba: Voice = (freq, dur, gain) => [
-	{ kind: 'tone', freq, dur, wave: 'sine', gain, sustain: true },
-	{ kind: 'tone', freq: freq * 4, dur: dur * 0.35, wave: 'sine', gain: gain * 0.4, sustain: true },
-	{ kind: 'tone', freq: freq * 10, dur: 0.015, wave: 'sine', gain: gain * 0.12 },
-	click
-];
+/** Glass: a struck glass bar — nearly pure, with glass's inharmonic partials
+ *  (×2.32, ×4.25) ringing long and clean, and the faintest, brightest chime
+ *  for the strike. The soft, airy option. */
+const glass = strike({
+	partials: [
+		{ ratio: 1, gain: 1, dur: 1, ring: 1 },
+		{ ratio: 2.32, gain: 0.35, dur: 0.7, ring: 0.7 },
+		{ ratio: 4.25, gain: 0.12, dur: 0.4, ring: 0.4 }
+	],
+	transient: { freq: 7000, q: 2, dur: 0.003, gain: 0.1 }
+});
 
-/** Vibraphone, motor off: the marimba's bar in metal — the fourth harmonic
- *  SUSTAINS instead of dying, with a faint shimmer on top. The instrument
- *  built for holding a note, so the length rule shows best here; its floors
- *  are longer (SET_TUNING.durScale). */
-const vibraphone: Voice = (freq, dur, gain) => [
-	{ kind: 'tone', freq, dur, wave: 'sine', gain, sustain: true },
-	{ kind: 'tone', freq: freq * 4, dur: dur * 0.9, wave: 'sine', gain: gain * 0.3, sustain: true },
-	{
-		kind: 'tone',
-		freq: freq * 10,
-		dur: dur * 0.25,
-		wave: 'sine',
-		gain: gain * 0.06,
-		sustain: true
-	},
-	click
-];
-
-const VOICES: Record<SoundSet, Voice> = {
-	metronome,
-	kalimba,
-	epiano,
-	musicbox,
-	handpan,
-	marimba,
-	vibraphone
-};
+const VOICES: Record<SoundSet, Voice> = { metronome, marimba, bell, vibraphone, pipe, glass };
 
 /** Per-set trim, so switching sets does not switch loudness. By ear. */
 export const SET_TRIM: Record<SoundSet, number> = {
 	metronome: 1,
-	kalimba: 1.1,
-	epiano: 1,
-	musicbox: 1,
-	handpan: 1.05,
-	marimba: 1.1,
-	vibraphone: 1
+	marimba: 1.15,
+	bell: 1,
+	vibraphone: 1,
+	pipe: 1.1,
+	glass: 1.1
 };
 /** Master level at volume 1. The palettes' gains are relative to this. */
 export const MASTER_GAIN = 0.5;
@@ -413,7 +418,7 @@ function paletteOf(choice: SoundChoice): Record<CueKind, Layer[]> {
 	const set = NOTE_SETS[choice.notes];
 	const order = ORDERS[choice.order];
 	const d = t.durScale ?? 1;
-	const hz = (n: Note) => t.mono ?? noteHz(n);
+	const hz = (n: Note) => t.mono ?? noteHz(n, t.octave);
 	const slot: Record<Slot, number> = { low: hz(NOTE_LOW), mid: hz(set.mid), high: hz(set.high) };
 	const attack = slot[order.attack];
 	const skill = slot[order.skill];
@@ -462,10 +467,17 @@ export const PREVIEW_PHRASE: readonly { kind: CueKind; at: number; dur: number }
 ];
 
 /** How long a sustained layer rings for an input of `dur` seconds. */
-export function ringFor(base: number, dur: number): number {
+export function ringFor(base: number, dur: number, share = 1): number {
 	if (!(dur > 0)) return base;
-	return Math.min(MAX_RING_S, Math.max(base, dur - RELEASE_S));
+	return Math.max(base, Math.min(MAX_RING_S, dur - RELEASE_S) * share);
 }
+
+/** ⚓ Nothing real repeats exactly: every strike is detuned by up to this many
+ *  cents and varied in level by `HUMAN_GAIN`, the same amount for all of a
+ *  cue's partials so they stay one object. Inaudible as tuning; audible as
+ *  life. */
+export const HUMAN_CENTS = 3;
+export const HUMAN_GAIN = 0.06;
 
 // ── The sounder ───────────────────────────────────────────────────────────
 
@@ -530,10 +542,11 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 		f: number | [number, number],
 		l: Layer,
 		at: number,
-		inputDur: number
+		inputDur: number,
+		detune = 1
 	) {
-		const start = Array.isArray(f) ? f[0] : f;
-		const settle = Array.isArray(f) ? f[1] : f;
+		const start = (Array.isArray(f) ? f[0] : f) * detune;
+		const settle = (Array.isArray(f) ? f[1] : f) * detune;
 		param.setValueAtTime(start, at);
 		if (Array.isArray(f) && l.kind === 'tone') {
 			param.exponentialRampToValueAtTime(settle, at + (l.glide ?? l.dur));
@@ -544,14 +557,14 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 		}
 	}
 
-	function layer(l: Layer, at0: number, trim: number, inputDur: number) {
+	function layer(l: Layer, at0: number, trim: number, inputDur: number, detune = 1) {
 		const at = at0 + (l.delay ?? 0);
-		const dur = l.sustain ? ringFor(l.dur, inputDur) : l.dur;
+		const dur = l.sustain ? ringFor(l.dur, inputDur, l.ringScale) : l.dur;
 		const peak = l.gain * trim;
 		if (l.kind === 'tone') {
 			const osc = ctx.createOscillator();
 			osc.type = l.wave;
-			pitch(osc.frequency, l.freq, l, at, inputDur);
+			pitch(osc.frequency, l.freq, l, at, inputDur, detune);
 			const env = envelope(at, dur, peak, l.attack);
 			osc.connect(env);
 			track([osc], at, dur, env);
@@ -592,8 +605,10 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 	return {
 		ctx,
 		play(kind, at, choice, dur = 0) {
-			const trim = SET_TRIM[choice.set];
-			for (const l of paletteFor(choice)[kind]) layer(l, at, trim, dur);
+			// One detune and one level per strike, shared by its partials.
+			const detune = Math.pow(2, ((Math.random() * 2 - 1) * HUMAN_CENTS) / 1200);
+			const trim = SET_TRIM[choice.set] * (1 - Math.random() * HUMAN_GAIN);
+			for (const l of paletteFor(choice)[kind]) layer(l, at, trim, dur, detune);
 		},
 		preview(choice) {
 			const at0 = ctx.currentTime + 0.05;

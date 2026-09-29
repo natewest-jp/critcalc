@@ -411,7 +411,7 @@ export const PLAYBACK_SOUND_DEFAULT = true;
 export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackSound: PLAYBACK_SOUND_DEFAULT,
 	playbackSoundMode: 'melodic' as SoundMode,
-	playbackVoice: 'kalimba' as VoiceId,
+	playbackVoice: 'glass' as VoiceId,
 	playbackOrder: 'weighty' as OrderId,
 	playbackNotes: 'open' as NoteSetId,
 	playbackSwap: 'humLow' as SwapStyle,
@@ -457,9 +457,15 @@ function loadSiteSettings(): SiteSettings {
 		// the swap's slide → hums). A stored voice id becomes the voice; the
 		// retired drum kit and the metronome become the metronome mode; anything
 		// unknown falls back to the default.
+		const RETIRED_VOICES: Record<string, VoiceId> = {
+			epiano: 'pipe',
+			musicbox: 'bell',
+			kalimba: 'glass',
+			handpan: 'glass'
+		};
 		const legacySet = parsed.playbackSoundSet as string | undefined;
 		if (legacySet && parsed.playbackSoundMode === undefined) {
-			if ((VOICE_IDS as readonly string[]).includes(legacySet)) {
+			if ((VOICE_IDS as readonly string[]).includes(legacySet) || legacySet in RETIRED_VOICES) {
 				merged.playbackSoundMode = 'melodic';
 				merged.playbackVoice = legacySet as VoiceId;
 			} else if (legacySet === 'metronome' || legacySet === 'percussive') {
@@ -468,6 +474,11 @@ function loadSiteSettings(): SiteSettings {
 		}
 		delete (merged as Record<string, unknown>).playbackSoundSet;
 		delete (merged as Record<string, unknown>).playbackAssignment;
+		// The voices became materials (2026-09-29): the e-piano is the pipe it
+		// sounded like, the music box the bell; the kalimba and handpan retired
+		// to the glass, the nearest soft voice.
+		const v = merged.playbackVoice as string;
+		if (v in RETIRED_VOICES) merged.playbackVoice = RETIRED_VOICES[v];
 		if (!SOUND_MODES.includes(merged.playbackSoundMode))
 			merged.playbackSoundMode = PLAYBACK_SOUND_DEFAULTS.playbackSoundMode;
 		if (!VOICE_IDS.includes(merged.playbackVoice))
