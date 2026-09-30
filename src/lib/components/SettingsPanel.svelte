@@ -3,6 +3,21 @@
 	import Mark from './Mark.svelte';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
+	import { playback } from '$lib/playback/playback.svelte';
+	import {
+		NOTE_SET_IDS,
+		NOTE_SET_LABELS,
+		ORDER_IDS,
+		ORDER_LABELS,
+		orderHint,
+		SOUND_MODES,
+		SOUND_MODE_LABELS,
+		SWAP_STYLES,
+		SWAP_STYLE_LABELS,
+		VOICE_IDS,
+		VOICE_LABELS,
+		noteSetNotes
+	} from '$lib/playback/tones';
 	import {
 		downloadBackup,
 		parseBackup,
@@ -224,6 +239,180 @@
 		</label>
 	</section>
 
+	<!-- ══ PLAYBACK SOUND (playback round, 2026-09-29; ↻ tidied 2026-09-30) ═══
+	     On/off and WHAT sounds are tastes set once, so they live here (⚓ Nate:
+	     people are picky about sounds, and it is personal); band B's speaker
+	     plate retired into the Sound row's Off. Every choice PLAYS on
+	     selection — picking by listening, not by reading a label — and Preview
+	     plays it again; all gestures, which is what the AudioContext needs.
+	     ↻ 2026-09-30 (⚓ Nate: "condense and combine, simplify"): a row shows
+	     only when it can be heard — nothing under Off, no voice or notes under
+	     the metronome (one pitch) — and Order + Notes are ONE row, "which note
+	     each input gets", with the long per-option prose moved to `title`s. -->
+	<section class="sp-section">
+		<h2 class="kicker sp-section-title">Playback sound</h2>
+		<p class="sp-lede">
+			<strong>Play</strong> on the planner's toolbar counts you in, then plays a note at every press,
+			so you can follow a rotation with your eyes on the game.
+		</p>
+
+		<div class="sp-row sp-row--stack">
+			<span class="sp-label">
+				<span class="sp-name">Sound</span>
+				<span class="sp-desc">
+					The metronome is one pitch. Melodic gives attacks, skills and bursts their own notes.
+				</span>
+			</span>
+			<div class="sp-sound-ctl">
+				<div class="segment sp-segment sp-segment--mode" role="radiogroup" aria-label="Sound">
+					<button
+						class="btn"
+						class:is-active={!$siteSettings.playbackSound}
+						role="radio"
+						aria-checked={!$siteSettings.playbackSound}
+						onclick={() => playback.setSound(false)}>Off</button
+					>
+					{#each SOUND_MODES as value (value)}
+						{@const on = $siteSettings.playbackSound && $siteSettings.playbackSoundMode === value}
+						<button
+							class="btn"
+							class:is-active={on}
+							role="radio"
+							aria-checked={on}
+							onclick={() => {
+								siteSettings.setPlaybackSound({ playbackSoundMode: value });
+								playback.setSound(true);
+								playback.preview();
+							}}>{SOUND_MODE_LABELS[value]}</button
+						>
+					{/each}
+				</div>
+				<button
+					class="btn btn--sm"
+					type="button"
+					aria-label="Preview the sound"
+					disabled={!$siteSettings.playbackSound}
+					onclick={() => playback.preview()}
+				>
+					<Mark name="play" size={12} filled />
+					Preview
+				</button>
+			</div>
+		</div>
+
+		{#if $siteSettings.playbackSound}
+			{#if $siteSettings.playbackSoundMode === 'melodic'}
+				<div class="sp-row sp-row--stack">
+					<span class="sp-label">
+						<span class="sp-name">Voice</span>
+					</span>
+					<div class="segment sp-segment sp-segment--grid3" role="radiogroup" aria-label="Voice">
+						{#each VOICE_IDS as value (value)}
+							<button
+								class="btn"
+								class:is-active={$siteSettings.playbackVoice === value}
+								role="radio"
+								aria-checked={$siteSettings.playbackVoice === value}
+								onclick={() => {
+									siteSettings.setPlaybackSound({ playbackVoice: value });
+									playback.preview({ set: value });
+								}}>{VOICE_LABELS[value]}</button
+							>
+						{/each}
+					</div>
+				</div>
+
+				<div class="sp-row sp-row--stack">
+					<span class="sp-label">
+						<span class="sp-name">Notes</span>
+						<span class="sp-desc">
+							Which note each input gets, then which three notes. Every set comes from one
+							pentatonic scale, so overlapping notes never clash.
+						</span>
+					</span>
+					<div
+						class="segment sp-segment sp-segment--grid3"
+						role="radiogroup"
+						aria-label="Note order"
+					>
+						{#each ORDER_IDS as value (value)}
+							<button
+								class="btn"
+								class:is-active={$siteSettings.playbackOrder === value}
+								role="radio"
+								aria-checked={$siteSettings.playbackOrder === value}
+								title={orderHint(value)}
+								onclick={() => {
+									siteSettings.setPlaybackSound({ playbackOrder: value });
+									playback.preview({ order: value });
+								}}>{ORDER_LABELS[value]}</button
+							>
+						{/each}
+					</div>
+					<div class="segment sp-segment sp-segment--grid4" role="radiogroup" aria-label="Note set">
+						{#each NOTE_SET_IDS as value (value)}
+							<button
+								class="btn"
+								class:is-active={$siteSettings.playbackNotes === value}
+								role="radio"
+								aria-checked={$siteSettings.playbackNotes === value}
+								title={noteSetNotes(value)}
+								onclick={() => {
+									siteSettings.setPlaybackSound({ playbackNotes: value });
+									playback.preview({ notes: value });
+								}}>{NOTE_SET_LABELS[value]}</button
+							>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
+			<div class="sp-row sp-row--stack">
+				<span class="sp-label">
+					<span class="sp-name">Swap</span>
+					<span class="sp-desc">A soft hum while the next character comes in.</span>
+				</span>
+				<div class="segment sp-segment sp-segment--grid4" role="radiogroup" aria-label="Swap sound">
+					{#each SWAP_STYLES as value (value)}
+						<button
+							class="btn"
+							class:is-active={$siteSettings.playbackSwap === value}
+							role="radio"
+							aria-checked={$siteSettings.playbackSwap === value}
+							onclick={() => {
+								siteSettings.setPlaybackSound({ playbackSwap: value });
+								playback.preview({ swap: value });
+							}}>{SWAP_STYLE_LABELS[value]}</button
+						>
+					{/each}
+				</div>
+			</div>
+
+			<div class="sp-row">
+				<span class="sp-label">
+					<span class="sp-name">Volume</span>
+				</span>
+				<div class="sp-slider-ctl">
+					<input
+						class="slider sp-slider"
+						type="range"
+						min="0"
+						max="100"
+						step="5"
+						value={Math.round($siteSettings.playbackVolume * 100)}
+						oninput={(e) =>
+							siteSettings.setPlaybackSound({
+								playbackVolume: Number(e.currentTarget.value) / 100
+							})}
+						onchange={() => playback.preview()}
+						aria-label="Playback volume"
+					/>
+					<span class="sp-slider-value">{Math.round($siteSettings.playbackVolume * 100)}%</span>
+				</div>
+			</div>
+		{/if}
+	</section>
+
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Your data</h2>
 
@@ -350,6 +539,41 @@
 
 	/* Third segmented control in the product — the global .segment track now.
 	   Only its flex behaviour in the row is local. */
+	/* The sound rows STACK: their choices do not fit beside a label, so the
+	   label runs full width and the picker sits under it. A first cut kept the
+	   side-by-side row and the segment folded into a 125px column six buttons
+	   tall. */
+	/* ⚠ Compound: `.sp-row` is declared LATER in this sheet and a lone
+	   modifier ties with it and loses on source order — the rows centred their
+	   label and pickers (the `.panel--paper` trap). */
+	.sp-row.sp-row--stack {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.6rem;
+	}
+	/* The mode picker with its Preview beside it. */
+	.sp-sound-ctl {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.sp-sound-ctl .sp-segment--mode {
+		display: inline-grid;
+		grid-template-columns: repeat(3, minmax(5.5rem, 1fr));
+	}
+	/* The stacked pickers are equal-width grids on one recessed track, so a
+	   long label never widens its neighbours: the voices and the orders in
+	   threes (the five voices are 3 + 2), the note sets and the swaps in
+	   fours. */
+	.sp-segment--grid3,
+	.sp-segment--grid4 {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.sp-segment--grid4 {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
 	.sp-segment {
 		flex-shrink: 0;
 	}
