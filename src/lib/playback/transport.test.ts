@@ -24,6 +24,13 @@ describe('positionAt', () => {
 		expect(positionAt(27.5, 3, 10, true).t).toBeCloseTo(4.5, 9);
 	});
 
+	it('a start from a paused position counts in below it, then runs on from it', () => {
+		expect(positionAt(0, 4, 10, false, 6)).toEqual({ t: 2, ended: false });
+		expect(positionAt(4, 4, 10, false, 6)).toEqual({ t: 6, ended: false });
+		expect(positionAt(8, 4, 10, false, 6)).toEqual({ t: 10, ended: true });
+		expect(positionAt(9, 4, 10, true, 6)).toEqual({ t: 1, ended: false });
+	});
+
 	it('with no lead the cursor starts at zero', () => {
 		expect(positionAt(0, 0, 10, true)).toEqual({ t: 0, ended: false });
 	});
@@ -70,6 +77,32 @@ describe('dueBetween', () => {
 	it('without loop nothing follows the last lap', () => {
 		const due = dueBetween(cues, countIn, 0, 5, false, 4, 12);
 		expect(due.map((d) => d.kind)).toEqual(['swap']);
+	});
+
+	it('a resume counts in, then sounds only what lies ahead of the start', () => {
+		// paused at 1: the skill (t 0) is behind; the burst is 0.5 s past the
+		// count-in's end, the swap 3 s past it
+		const due = dueBetween(cues, countIn, COUNT_IN_S, 5, false, 0, 20, 1);
+		expect(due.map((d) => [d.kind, d.elapsed])).toEqual([
+			['count', 0],
+			['count', 1],
+			['count', 2],
+			['countLast', 3],
+			['burst', 4.5],
+			['swap', 7]
+		]);
+	});
+
+	it('a looping resume sounds the skipped cues on the next lap', () => {
+		const due = dueBetween(cues, countIn, 0, 5, true, 0, 10, 1);
+		expect(due.map((d) => [d.kind, d.elapsed])).toEqual([
+			['burst', 0.5],
+			['swap', 3],
+			['skill', 4],
+			['burst', 5.5],
+			['swap', 8],
+			['skill', 9]
+		]);
 	});
 
 	it('an empty window yields nothing', () => {

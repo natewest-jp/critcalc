@@ -25,8 +25,9 @@
  * laps for real, so the cursor runs on through them to the drawn horizon and
  * stops there; a wrap would be the lie the stream exists to avoid.
  *
- * Domains (see transport.ts): `position` is seconds on the rotation's axis and
- * is what survives a pause; `elapsed` = position + lead is what the clock reads.
+ * Domains (see transport.ts): `t` is seconds on the rotation's axis; `#from`
+ * is where a run started (0, or where a pause left it) and survives a pause;
+ * `elapsed` since the anchor is what the clock reads, count-in included.
  */
 
 import { get } from 'svelte/store';
@@ -46,7 +47,8 @@ const TICK_MS = 100;
 const START_LATENCY_S = 0.05;
 
 class Playback {
-	/** Rotation-axis position in seconds; negative during the count-in. */
+	/** Rotation-axis position in seconds; parked at the start during the
+	 *  count-in. */
 	t = $state(0);
 	playing = $state(false);
 	/** Wrap at the end — whenever the chart is NOT drawing the next laps. */
@@ -58,8 +60,8 @@ class Playback {
 	#clock: 'audio' | 'wall' = 'wall';
 	/** Wall-clock instant at which elapsed = 0. */
 	#anchor = 0;
-	/** Position (lead already removed) carried across a pause. */
-	#positionAtPause = 0;
+	/** The position this run started from — 0, or where a pause left it. */
+	#from = 0;
 	#lead = 0;
 	#raf = 0;
 	#timer: ReturnType<typeof setInterval> | null = null;
@@ -110,24 +112,28 @@ class Playback {
 		};
 	}
 
+	/** Start from where the cursor stands, counting in (⚓ Nate 2026-09-30:
+	 *  every start counts in, a resume included — see transport.ts). */
 	play() {
+		this.#start(true);
+	}
+
+	/** `countIn` false re-anchors in place without the beats — a change of
+	 *  clock or of speed under a rotation that is already playing. */
+	#start(countIn: boolean) {
 		if (!this.canPlay || this.playing) return;
 		const duration = pv.playbackEnd;
 		const sounder = get(siteSettings).playbackSound ? this.#ensureSounder() : null;
 		this.#clock = sounder ? 'audio' : 'wall';
 		// Play at the end of a single pass starts over.
-		if (!this.loop && this.#positionAtPause >= duration) this.#positionAtPause = 0;
-		// The count-in needs something to hear and a start to count into: a
-		// resume mid-rotation counts nothing in.
-		this.#lead = sounder && this.#positionAtPause === 0 ? COUNT_IN_S : 0;
-		// Elapsed resumes at the carried POSITION: a count-in only ever runs from
-		// position 0, where elapsed 0 is t = −lead — the beats are time still to
-		// spend, not time already spent. (A first cut added the lead here and the
-		// cursor set off on the first frame with the count-in unheard.)
-		const elapsed = this.#positionAtPause;
-		this.#anchor = this.#now() + (sounder ? START_LATENCY_S : 0) - elapsed;
-		this.#queuedTo = elapsed;
+		if (!this.loop && this.#from >= duration) this.#from = 0;
+		// The count-in needs something to hear: a silent one is a cursor parked
+		// for four seconds, which reads as a hang.
+		this.#lead = sounder && countIn ? COUNT_IN_S : 0;
+		this.#anchor = this.#now() + (sounder ? START_LATENCY_S : 0);
+		this.#queuedTo = 0;
 		this.#queuedFrom = null;
+		this.t = this.#from;
 		this.playing = true;
 		this.#frame();
 		if (sounder) {
@@ -136,10 +142,17 @@ class Playback {
 		}
 	}
 
+	/** Where the cursor stands now. Inside the count-in it has not left
+	 *  `#from` yet, so that is where a pause leaves it. */
+	#position(): number {
+		const elapsed = this.#now() - this.#anchor;
+		if (elapsed < this.#lead) return this.#from;
+		return positionAt(elapsed, this.#lead, pv.playbackEnd, this.loop, this.#from).t;
+	}
+
 	pause() {
 		if (!this.playing) return;
-		// Paused inside the count-in → back to 0, and the next Play counts in again.
-		this.#positionAtPause = Math.max(0, this.#now() - this.#anchor - this.#lead);
+		this.#from = this.#position();
 		this.#halt();
 	}
 
@@ -148,10 +161,26 @@ class Playback {
 		else this.play();
 	}
 
+	/** Anywhere to rewind from: the cursor has left the start, or is playing. */
+	get canRewind() {
+		return this.playing || this.#from > 0 || this.t > 0;
+	}
+
+	/** Back to the start. Playing, it goes again from the top with the
+	 *  count-in — "once more" is what a rewind mid-play means; stopped, it
+	 *  parks the cursor at 0 for the next Play. */
+	rewind() {
+		const wasPlaying = this.playing;
+		this.#halt();
+		this.#from = 0;
+		this.t = 0;
+		if (wasPlaying) this.play();
+	}
+
 	/** Back to the start, silent. The page left, or there is nothing to play. */
 	stop() {
 		this.#halt();
-		this.#positionAtPause = 0;
+		this.#from = 0;
 		this.t = 0;
 	}
 
@@ -169,7 +198,7 @@ class Playback {
 		siteSettings.setPlaybackSound({ playbackSound: on });
 		if (!this.playing) return;
 		this.pause();
-		this.play();
+		this.#start(false);
 	}
 
 	#frame = () => {
@@ -180,10 +209,12 @@ class Playback {
 			this.stop();
 			return;
 		}
-		const pos = positionAt(this.#now() - this.#anchor, this.#lead, duration, this.loop);
-		this.t = pos.t;
+		const elapsed = this.#now() - this.#anchor;
+		const pos = positionAt(elapsed, this.#lead, duration, this.loop, this.#from);
+		// The cursor waits at its start while the beats count it in.
+		this.t = elapsed < this.#lead ? this.#from : pos.t;
 		if (pos.ended) {
-			this.#positionAtPause = duration;
+			this.#from = duration;
 			this.#halt();
 			return;
 		}
@@ -216,7 +247,8 @@ class Playback {
 			duration,
 			this.loop,
 			this.#queuedTo,
-			to
+			to,
+			this.#from
 		)) {
 			s.play(due.kind, this.#anchor + due.elapsed, choice, due.dur);
 		}

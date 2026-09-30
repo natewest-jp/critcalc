@@ -386,6 +386,20 @@
 			     Loop and Repeat: the cursor wraps at the end here (a rhythm aid);
 			     the Repeat STREAM is Round B (docs/playback-round-plan.md §3). -->
 			<div class="rp-transport" role="group" aria-label="Playback">
+				<!-- REWIND (2026-09-30): back to the start — and while playing, go
+				     again from the top with the count-in, which is the only way to
+				     hear the beats again after a pause. Inert at the start, the
+				     zoom steppers' rule at their limits. -->
+				<button
+					class="btn btn--sm btn--icon rp-rewind"
+					type="button"
+					aria-label="Back to the start"
+					title="Back to the start"
+					disabled={!playback.canRewind}
+					onclick={() => playback.rewind()}
+				>
+					<Mark name="rewind" size={13} filled />
+				</button>
 				<button
 					class="btn btn--sm btn--icon rp-play"
 					type="button"
@@ -824,6 +838,7 @@
 	.rp-reset:disabled,
 	.rp-zoom .btn:disabled,
 	.rp-play:disabled,
+	.rp-rewind:disabled,
 	.rp-notes-btn:disabled {
 		opacity: 1;
 		color: color-mix(in srgb, var(--text) 45%, transparent);
@@ -921,6 +936,7 @@
 			display: none;
 		}
 		.rp-play,
+		.rp-rewind,
 		.rp-repeat {
 			min-width: calc(var(--band-ctrl-h) - 12px);
 		}

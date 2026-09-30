@@ -268,7 +268,13 @@ const MARKS = {
 	 *  transport) and over `RotateCw` (a reload). ⚠️ Repeat here is not the
 	 *  cursor's wrap — it is the STREAM, the next laps drawn — and the mark
 	 *  says "again" either way, which is the right amount of promise. */
-	repeat: 'Repeat'
+	repeat: 'Repeat',
+	/** The planner's rewind plate (2026-09-30): back to the start, and — while
+	 *  playing — go again from the top with the count-in. `SkipBack` (a bar
+	 *  before a triangle, ⏮) over `Rewind` (two triangles, which reads as
+	 *  "scrub backwards" — a gesture this transport does not have). Drawn
+	 *  FILLED beside Play, as Play is. */
+	rewind: 'SkipBack'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

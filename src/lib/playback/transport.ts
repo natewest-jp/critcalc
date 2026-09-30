@@ -14,8 +14,14 @@
  *
  * Domains:
  *   elapsed — seconds since play was pressed (the anchor), always ≥ 0
- *   t       — seconds on the rotation's axis; negative during the count-in
- *   t = elapsed − lead, then wrapped when looping. The count-in plays ONCE.
+ *   t       — seconds on the rotation's axis; below `start` during the count-in
+ *   t = start + elapsed − lead, then wrapped when looping. The count-in plays
+ *   ONCE per press of Play.
+ *
+ * ⚓ EVERY START COUNTS IN (Nate 2026-09-30), a resume included: jumping back
+ * into a rotation mid-flight with no warning is useless with the game in front
+ * of you, so a start from a paused position `start` counts the beats and then
+ * picks up there. The cue before `start` never sounds.
  */
 
 import type { Cue, CueKind } from './cues';
@@ -34,15 +40,16 @@ export type Position = {
  *                 cursor parked at zero for three seconds, which reads as a hang)
  * @param duration the rotation's length in seconds (> 0)
  * @param loop     wrap at the end instead of stopping
+ * @param start    the position play was pressed from (0, or where it paused)
  */
 export function positionAt(
 	elapsed: number,
 	lead: number,
 	duration: number,
-	loop: boolean
+	loop: boolean,
+	start = 0
 ): Position {
-	const raw = elapsed - lead;
-	if (raw < 0) return { t: raw, ended: false };
+	const raw = start + elapsed - lead;
 	if (raw < duration) return { t: raw, ended: false };
 	if (!loop) return { t: duration, ended: true };
 	return { t: raw % duration, ended: false };
@@ -51,9 +58,10 @@ export function positionAt(
 export type Due = { kind: CueKind; elapsed: number; dur: number };
 
 /**
- * The cues that fall in the elapsed window (from, to], as absolute elapsed
+ * The cues that fall in the elapsed window [from, to), as absolute elapsed
  * instants — what the audio scheduler queues. Count-in cues play once at
- * `lead + cue.t`; rotation cues repeat every `duration` while looping.
+ * `lead + cue.t`; rotation cues repeat every `duration` while looping, and a
+ * start from `start` skips every cue before it on the first lap.
  *
  * ⚠️ Half-open on the RIGHT — [from, to) — so a scheduler walking contiguous
  * windows never queues a cue twice, and the very first window (from = 0) still
@@ -66,7 +74,8 @@ export function dueBetween(
 	duration: number,
 	loop: boolean,
 	from: number,
-	to: number
+	to: number,
+	start = 0
 ): Due[] {
 	const out: Due[] = [];
 	if (to <= from) return out;
@@ -75,12 +84,15 @@ export function dueBetween(
 		if (at >= from && at < to) out.push({ kind: c.kind, elapsed: at, dur: c.dur });
 	}
 	if (duration > 0) {
-		const firstLap = Math.max(0, Math.floor((from - lead) / duration));
-		const lastLap = loop ? Math.floor((to - lead) / duration) : 0;
+		// Rotation time x sounds at elapsed `lead + x − start`.
+		const shift = lead - start;
+		const firstLap = Math.max(0, Math.floor((from - shift) / duration));
+		const lastLap = loop ? Math.floor((to - shift) / duration) : 0;
 		for (let lap = firstLap; lap <= lastLap; lap++) {
-			const base = lead + lap * duration;
 			for (const c of cues) {
-				const at = base + c.t;
+				const x = lap * duration + c.t;
+				if (x < start) continue;
+				const at = shift + x;
 				if (at >= from && at < to) out.push({ kind: c.kind, elapsed: at, dur: c.dur });
 			}
 		}
