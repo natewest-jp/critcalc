@@ -1,6 +1,6 @@
 # Playback round — plan (2026-09-29)
 
-**Status:** PLAN. Nothing built. Pitched by Nate 2026-09-29; scoped as two rounds run back to back, both pre-launch.
+**Status:** ✅ SHIPPED — merged to `main` as `6f3195ec` and pushed 2026-09-30 (e2e green at `ff0b5b7a`). Pitched by Nate 2026-09-29; built as two rounds back to back plus two finishing passes (§10). ⏭ Nate checks the first count-in note on iOS on the live site. The body below is the original plan; §10 is the record and wins over it.
 
 ## 1. What this is
 
@@ -181,7 +181,7 @@ Per round: vitest / check / lint / build. `advance()` and the audio SCHEDULE (a 
 
 - **Zoom popover** — 2026-09-30 (⚓ Nate: the zoom cluttered the bar and is set-and-leave). Band B's steppers, slider and Reset became ONE **Zoom** plate (ZoomIn mark + word, a chevron) opening an anchored popover — `BandMenu` with a new `role="dialog"` — holding − slider +, the scale as a % of the resting one, and **Reset** as a word (the ScanSearch/`resetZoom` mark retired). ⛔ Not a scrimmed modal: the chart rescales live behind it. The left zone fell 469 → 295px and `wide` came down **82rem → 71rem**.
 
-## 11. Where to resume (written 2026-09-30)
+## 11. Where to resume (written 2026-09-30, before the merge — ✅ the merge and push are done)
 
 **State:** branch `feat/planner-playback` in the worktree `~/Code/critcalc-playback`; every commit's vitest / check / lint / build green. The finishing round (§10, last entry) is built and committed. ⛔ Not merged, not pushed.
 
