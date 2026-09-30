@@ -208,3 +208,44 @@ thing you made), worth confirming.
 
 ⚠️ "critcalc" is 🔒 the brand. ⚠️ "valid JSON" assumes the reader knows what JSON is —
 they chose a file, so perhaps; the other two say the same thing in plain words.
+
+---
+
+## Added 2026-09-30 — the playback round: "Playback sound"
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. A whole new section of the modal, shipped on `main` (`6f3195ec`) with
+Claude's first-cut strings — condensed once already at ⚓ Nate's ask ("condense and combine
+things, simplify descriptions"). Keys are left to the extraction pass. Line numbers are
+`SettingsPanel.svelte` unless named. ⚠️ Rows HIDE when they cannot be heard: nothing
+below Sound when it is Off; no Voice or Notes under the metronome.
+
+| Where                      | Context                         | Now                                                                                                                                         | New |
+| -------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `:253`                     | Section kicker                  | Playback sound                                                                                                                              |     |
+| `:254`                     | Lede                            | **Play** on the planner's toolbar counts you in, then plays a note at every press, so you can follow a rotation with your eyes on the game. |     |
+| `:261`                     | Row name                        | Sound                                                                                                                                       |     |
+| `:262`                     | Under it                        | The metronome is one pitch. Melodic gives attacks, skills and bursts their own notes.                                                       |     |
+| `:273` · `tones.ts:73`     | Its choices                     | Off · Metronome · Melodic                                                                                                                   |     |
+| `:293` / `:298`            | Preview button, name / label    | Preview the sound / Preview                                                                                                                 |     |
+| `:307` · `tones.ts:63`     | Row name, choices               | Voice — Marimba · Bell · Vibraphone · Pipe · Glass                                                                                          |     |
+| `:327`                     | Row name                        | Notes                                                                                                                                       |     |
+| `:328`                     | Under it                        | Which note each input gets, then which three notes. Every set comes from one pentatonic scale, so overlapping notes never clash.            |     |
+| `:336` · `tones.ts:138`    | First picker, name and choices  | Note order — Weighty · Skill up · Rising                                                                                                    |     |
+| `tones.ts:144` `orderHint` | Each order's tooltip (built)    | Burst low · skill middle · attacks high (and the other two orders' spellings)                                                               |     |
+| `:352` · `tones.ts:185`    | Second picker, name and choices | Note set — Open · Anchor · Lantern · Meadow                                                                                                 |     |
+| `tones.ts` `noteSetNotes`  | Each set's tooltip (built)      | A · B · E (etc.)                                                                                                                            |     |
+| `:372` / `:373`            | Row name / under it             | Swap / A soft hum while the next character comes in.                                                                                        |     |
+| `:375` · `tones.ts:205`    | Its choices                     | Off · Low · Fifth · Rise                                                                                                                    |     |
+| `:393` / `:408`            | Row name / slider's name        | Volume / Playback volume                                                                                                                    |     |
+
+⚠️ **"Weighty", "Skill up", "Open", "Anchor", "Lantern", "Meadow"** are Claude's coinages
+for things that have no standard name — their only job is to be told apart by ear, and
+the tooltips carry the meaning. ⚠️ `orderHint` BUILDS its sentence from parts ("attacks",
+"skill", "burst", "low/middle/high", " · ") — word order will not survive translation;
+it wants one string per order.
+⚠️ **Note names (A B D E F♯)** — letter names are not universal (do-re-mi in FR/ES/IT);
+a 🏷 or a locale-aware table.
+⚠️ **"skills" / "bursts"** — check against the glossary's names for E and Q.
+⚠️ The Sound row's **Off** also silences the count-in — the lede promises one. Worth
+saying, or trusting the reader.

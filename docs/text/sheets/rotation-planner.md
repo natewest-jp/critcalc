@@ -64,6 +64,12 @@ control in the Visualizers means, and the two are different ideas.
 alone on purpose, because a panel and a layer are things you deliberately opened. ⛔ Don't
 write copy that implies it resets the view.
 
+↻ **2026-09-30 (playback round): the zoom moved into a popover** off one Zoom plate, so
+three rows above are **retired** — `rp.zoom.reset.aria`, `rp.zoom.reset.title` and
+`rp.zoom.title` no longer exist (Reset is a plain word inside a panel titled Zoom, and the
+slider has no tooltip). The "three phrasings" ⚠️ is resolved by that. The surviving rows
+and the new ones (the plate, the percentage) are in **Added 2026-09-30 § B** at the end.
+
 ---
 
 ## 3. Human timing
@@ -340,3 +346,70 @@ so it is at least consistent.
 | ----------------------- | ------------------------------------------------------------ | --- |
 | `notationParser.ts:250` | Anemo Resonance: {name} _(a cooldown-reduction source name)_ | 🔒  |
 | `sim/fields.ts:292`     | Polestar Field _(a buff's source name)_                      | 🔒  |
+
+---
+
+## Added 2026-09-30 — the playback round
+
+☐ **Not yet read.** ⚠️ Until this box is ticked, a blank `New:` in this section is **not**
+an approval. The playback round shipped on `main` (`6f3195ec`) with Claude's first-cut
+strings, written against the style guide; its record is `docs/playback-round-plan.md`.
+Keys are left to the extraction pass. Line numbers are `rotation-planner/+page.svelte`
+unless named. ⚠️ The new Help paragraphs (**Play.** and **Laps.** in the Rotation Planner
+chapter) are pass 2 material, like every Help chapter.
+
+### A. The transport — band B's left zone
+
+| Where                   | Context                         | Now                                                                                       | New |
+| ----------------------- | ------------------------------- | ----------------------------------------------------------------------------------------- | --- |
+| `:431`                  | The group's screen-reader name  | Playback                                                                                  |     |
+| `:439`                  | ⏮ plate, screen-reader name    | Back to the start                                                                         |     |
+| `:440`                  | ⏮ plate, tooltip               | Back to the start (Home)                                                                  |     |
+| `:450`                  | Play plate, screen-reader name  | Play the rotation · Pause                                                                 |     |
+| `:451`                  | Play plate, tooltip             | Play the rotation at game speed (Space) · Pause (Space)                                   |     |
+| `:469`                  | Speed plate, screen-reader name | Playback speed {rate}                                                                     |     |
+| `:470`                  | Speed plate, tooltip            | Playback speed: {rate}. Slow down to learn a rotation; the count-in keeps its pace        |     |
+| `playback.svelte.ts:54` | {rate}, the plate's own label   | 1× · 0.75× · 0.5×                                                                         |     |
+| `:502`                  | Laps plate, label               | Laps                                                                                      |     |
+| `:498`                  | Laps plate, tooltip             | Draw the laps that follow: the rotation runs on past its end, cooldowns and buffs carried |     |
+
+⚓ **"Laps"** was chosen over "Repeat" (⚓ Nate: repeat names a loop, and playback already
+loops) and over "Extend" (extend what?) — it names what appears, the ×2, ×3 lap marks.
+The job: say the chart now runs PAST the notation, and that what follows is simulated.
+⚠️ **"(Home)" / "(Space)"** — key names in a tooltip. Keys localize (and "Home" is not on
+every keyboard); worth a convention before more shortcuts arrive.
+⚠️ **"count-in"** is musicians' vocabulary — a 🏷 context note for translators.
+⚠️ **{rate} is decimals on purpose** — ⛔ never ½ ¾ (a vulgar fraction falls back to
+another face). The × is typeset.
+⚠️ The Speed tooltip has **no final period** and the other two do not either — consistent
+with band B's other tooltips, but worth a ruling.
+
+### B. The Zoom plate and its popover
+
+| Where  | Context                               | Now      | New |
+| ------ | ------------------------------------- | -------- | --- |
+| `:520` | The plate's label (folds below 71rem) | Zoom     |     |
+| `:520` | The plate's screen-reader name        | Zoom     |     |
+| `:527` | − button                              | Zoom out |     |
+| `:538` | The slider                            | Zoom     |     |
+| `:543` | + button                              | Zoom in  |     |
+| `:549` | The readout                           | {n}%     |     |
+| `:554` | The reset button                      | Reset    |     |
+
+⚠️ **{n}% is the scale against the resting one** (100% at rest), not a pixels-per-second
+figure — the old slider tooltip said "pixels per second" and it is gone. `%` goes through
+`Intl` (style guide §3.7).
+⚠️ **The plate and the slider share one name, "Zoom".** A screen reader hears "Zoom,
+button" then "Zoom, slider" — probably fine, worth a glance.
+
+### C. The phone fold — one ⋯ below 40rem
+
+| Where  | Context                          | Now                               | New |
+| ------ | -------------------------------- | --------------------------------- | --- |
+| `:674` | The ⋯ plate's screen-reader name | Playback, timing and panels       |     |
+| `:676` | Heading over the speeds          | Speed                             |     |
+| `:687` | The speeds                       | 1× · 0.75× · 0.5×                 |     |
+| `:704` | Items                            | Laps · Human timing · Log · Notes |     |
+
+⚠️ The items reuse the band's words, so a rename on the band is a rename here —
+**one key each**, never two.
