@@ -6,6 +6,7 @@
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import Mark from '$lib/components/Mark.svelte';
+	import BandMenu from '$lib/components/BandMenu.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import RotationNotes from '$lib/components/RotationNotes.svelte';
 	import EventLog from '$lib/components/EventLog.svelte';
@@ -33,7 +34,7 @@
 		ZOOM_MIN,
 		ZOOM_STEP
 	} from '$lib/plannerView.svelte';
-	import { playback, rateLabel } from '$lib/playback/playback.svelte';
+	import { PLAYBACK_RATES, playback, rateLabel } from '$lib/playback/playback.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab state — hoisted to the shared working-team module (bench-band round):
@@ -336,6 +337,19 @@
 		'A Starlight Prism bar says when the Polestar Field is up, not where — we assume you are standing in it.'
 	];
 
+	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════
+	// Below BP.compact band B folds the speed, Repeat, Human timing, Log and
+	// Notes into one ⋯ plate — the Team Builder's fold, the same rung. With the
+	// transport grown to ⏮ ▶ speed, the row ran ~100px past a 320 band. What
+	// folds is what is SET rather than reached for mid-task: a speed, the two
+	// switches that change what is simulated (Repeat, Human timing — both still
+	// announce themselves on the chart, as lap marks and a padding hatch) and
+	// the two panels. ⏮ ▶ stay; so do the layer plates (⚓ never a menu,
+	// standing). ⚠️ The speed plate was first kept on the band here: at its
+	// widest label (41px) it needed the steppers squeezed under their
+	// glyph-plus-5px rule to fit 320.
+	const bandFolded = $derived(below('compact'));
+
 	// ══ TRANSPORT KEYS (2026-09-30) ═══════════════════════════════════════════
 	// Space plays/pauses and Home rewinds: rehearsing a rotation is done with
 	// the hands on the keyboard. Taken only when the key has nothing else to do:
@@ -455,24 +469,27 @@
 					     "insert" before it reads as "play". -->
 					<Mark name={playback.playing ? 'pause' : 'play'} size={13} filled />
 				</button>
-				<!-- SPEED (2026-09-30): full, three-quarter and half, cycled — for
+				{#if !bandFolded}
+					<!-- SPEED (2026-09-30): full, three-quarter and half, cycled — for
 				     learning a rotation away from the game. A plate that says its
 				     own value, LIT whenever it is not full speed: a slowed chart must
 				     announce itself, the layers' law. Fixed width, so cycling never
 				     shifts the band. -->
-				<button
-					class="btn btn--sm rp-speed"
-					class:is-active={playback.rate !== 1}
-					type="button"
-					aria-label="Playback speed {rateLabel(playback.rate)}"
-					title="Playback speed: {rateLabel(
-						playback.rate
-					)}. Slow down to learn a rotation; the count-in keeps its pace"
-					onclick={() => playback.cycleRate()}
-				>
-					{rateLabel(playback.rate)}
-				</button>
-				<!-- ══ REPEAT (Round B) ═══════════════════════════════════════════
+					<button
+						class="btn btn--sm rp-speed"
+						class:is-active={playback.rate !== 1}
+						type="button"
+						aria-label="Playback speed {rateLabel(playback.rate)}"
+						title="Playback speed: {rateLabel(
+							playback.rate
+						)}. Slow down to learn a rotation; the count-in keeps its pace"
+						onclick={() => playback.cycleRate()}
+					>
+						{rateLabel(playback.rate)}
+					</button>
+				{/if}
+				{#if !bandFolded}
+					<!-- ══ REPEAT (Round B) ═══════════════════════════════════════════
 				     Draws the laps that FOLLOW: the notation joined to itself by a
 				     swap, simulated as one run, so a cast on cooldown waits where
 				     it really waits and a buff from lap one is still up in lap two
@@ -482,17 +499,18 @@
 				     zoom; ⛔ not in the codec; ⛔ not in the PNG (the export takes
 				     the document). The cursor stops at the drawn horizon while this
 				     is lit, and wraps at the document's end when it is not. -->
-				<button
-					class="btn btn--sm rp-repeat"
-					class:is-active={pv.repeat}
-					type="button"
-					aria-pressed={pv.repeat}
-					title="Draw the laps that follow: the rotation runs again from its last action, cooldowns and buffs carried"
-					onclick={() => (pv.repeat = !pv.repeat)}
-				>
-					<Mark name="repeat" />
-					<span class="rp-band-label">Repeat</span>
-				</button>
+					<button
+						class="btn btn--sm rp-repeat"
+						class:is-active={pv.repeat}
+						type="button"
+						aria-pressed={pv.repeat}
+						title="Draw the laps that follow: the rotation runs again from its last action, cooldowns and buffs carried"
+						onclick={() => (pv.repeat = !pv.repeat)}
+					>
+						<Mark name="repeat" />
+						<span class="rp-band-label">Repeat</span>
+					</button>
+				{/if}
 			</div>
 			<button
 				class="btn btn--sm rp-reset"
@@ -570,7 +588,8 @@
 		{/snippet}
 
 		{#snippet bandBRight()}
-			<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
+			{#if !bandFolded}
+				<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
 			     Its own group, NOT a third layer plate: the layers change what the
 			     chart DRAWS, this changes what time the parse KEEPS. ⚓ Nate, over
 			     three tries: it sits FIRST in the right zone, ahead of Buffs — after
@@ -582,19 +601,20 @@
 			     the announcement that the chart is padded. What it does is set in
 			     Settings (a three-way choice, so it can never be lit and idle);
 			     the model and its authority live in `$lib/sim/humanTiming.ts`. -->
-			<div class="rp-layers" role="group" aria-label="Human timing">
-				<button
-					class="btn btn--sm"
-					class:is-active={$siteSettings.humanTiming}
-					type="button"
-					aria-pressed={$siteSettings.humanTiming}
-					title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
-					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
-				>
-					<Mark name="hand" />
-					<span class="rp-band-label">Human timing</span>
-				</button>
-			</div>
+				<div class="rp-layers" role="group" aria-label="Human timing">
+					<button
+						class="btn btn--sm"
+						class:is-active={$siteSettings.humanTiming}
+						type="button"
+						aria-pressed={$siteSettings.humanTiming}
+						title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
+						onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
+					>
+						<Mark name="hand" />
+						<span class="rp-band-label">Human timing</span>
+					</button>
+				</div>
+			{/if}
 			<!-- ══ THE LAYERS (2026-08-17) ══════════════════════════════════════
 			     What the chart draws besides ability timings. Band B is the VIEW,
 			     so this is where they belong; ⛔ NOT the Settings modal, and ⛔ not
@@ -645,7 +665,88 @@
 					<span class="rp-band-label">Auras</span>
 				</button>
 			</div>
-			<!-- ══ THE ASIDE'S TWO PANELS (2026-08-17) ═════════════════════════
+			{#if bandFolded}
+				<!-- THE FOLD (see `bandFolded`): the layers stay, and one ⋯ holds the
+				     two simulation switches and the two panels. -->
+				<BandMenu compact mark="more" ariaLabel="Playback, timing and panels">
+					{#snippet items(close)}
+						<div class="rp-fold-head" aria-hidden="true">Speed</div>
+						{#each PLAYBACK_RATES as rate (rate)}
+							<button
+								class="band-menu-item"
+								role="menuitemradio"
+								aria-checked={playback.rate === rate}
+								onclick={() => {
+									playback.setRate(rate);
+									close();
+								}}
+							>
+								<span class="rp-fold-label">{rateLabel(rate)}</span>
+								<span class="rp-fold-check"
+									>{#if playback.rate === rate}<Mark name="check" size={12} />{/if}</span
+								>
+							</button>
+						{/each}
+						<div class="band-menu-rule"></div>
+						<button
+							class="band-menu-item"
+							role="menuitemcheckbox"
+							aria-checked={pv.repeat}
+							onclick={() => {
+								pv.repeat = !pv.repeat;
+								close();
+							}}
+						>
+							<Mark name="repeat" />
+							<span class="rp-fold-label">Repeat</span>
+							<span class="rp-fold-check"
+								>{#if pv.repeat}<Mark name="check" size={12} />{/if}</span
+							>
+						</button>
+						<button
+							class="band-menu-item"
+							role="menuitemcheckbox"
+							aria-checked={$siteSettings.humanTiming}
+							onclick={() => {
+								siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming });
+								close();
+							}}
+						>
+							<Mark name="hand" />
+							<span class="rp-fold-label">Human timing</span>
+							<span class="rp-fold-check"
+								>{#if $siteSettings.humanTiming}<Mark name="check" size={12} />{/if}</span
+							>
+						</button>
+						<div class="band-menu-rule"></div>
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							disabled={!pv.hasAuraLog}
+							onclick={() => {
+								pv.togglePanel('log');
+								close();
+							}}
+						>
+							<Mark name="log" />
+							<span class="rp-fold-label">Log</span>
+						</button>
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							disabled={!pv.hasCaveats}
+							onclick={() => {
+								pv.togglePanel('notes');
+								close();
+							}}
+						>
+							<Mark name="note" />
+							<span class="rp-fold-label">Notes</span>
+						</button>
+					{/snippet}
+				</BandMenu>
+			{:else}
+				<!-- ══ THE ASIDE'S TWO PANELS (2026-08-17) ═════════════════════════
 			     ⚓ TWO PEER TOGGLES, NOT A SEGMENTED PICKER. They share the column,
 			     so opening one closes the other — but each is also independently
 			     closeable, and a 3-state segment (Notes | Log | off) has no honest
@@ -654,29 +755,29 @@
 			     above them and the same tight gap: both answer "what is on screen".
 			     ⚠ Each disables on its OWN content, which is why they are not one
 			     control — a rotation can easily have a log and no caveats. -->
-			<button
-				class="btn btn--sm rp-notes-btn"
-				class:is-active={pv.showLog}
-				type="button"
-				aria-label="Toggle the aura log"
-				title="The target's aura, application by application"
-				disabled={!pv.hasAuraLog}
-				onclick={() => pv.togglePanel('log')}
-			>
-				<Mark name="log" />
-				<span class="rp-band-label">Log</span>
-			</button>
-			<button
-				class="btn btn--sm rp-notes-btn"
-				class:is-active={pv.showNotes}
-				type="button"
-				aria-label="Toggle notes panel"
-				disabled={!pv.hasCaveats}
-				onclick={() => pv.togglePanel('notes')}
-			>
-				<Mark name="note" />
-				<span class="rp-band-label">Notes</span>
-				<!-- ⛔ THE `!` BADGE IS RETIRED (⚓ NATE 2026-08-17), and the reason is
+				<button
+					class="btn btn--sm rp-notes-btn"
+					class:is-active={pv.showLog}
+					type="button"
+					aria-label="Toggle the aura log"
+					title="The target's aura, application by application"
+					disabled={!pv.hasAuraLog}
+					onclick={() => pv.togglePanel('log')}
+				>
+					<Mark name="log" />
+					<span class="rp-band-label">Log</span>
+				</button>
+				<button
+					class="btn btn--sm rp-notes-btn"
+					class:is-active={pv.showNotes}
+					type="button"
+					aria-label="Toggle notes panel"
+					disabled={!pv.hasCaveats}
+					onclick={() => pv.togglePanel('notes')}
+				>
+					<Mark name="note" />
+					<span class="rp-band-label">Notes</span>
+					<!-- ⛔ THE `!` BADGE IS RETIRED (⚓ NATE 2026-08-17), and the reason is
 				     that its job was taken over by its NEIGHBOURS. It existed because
 				     Notes stood alone at the end of band B and a reader might never look
 				     there; with Auras and Buffs beside it the eye goes to that cluster
@@ -689,7 +790,8 @@
 				     fills were wired to --ui-danger/--chrome rather than the SVG's baked
 				     hexes, and it carried a 6° rotation so it read as stuck on rather
 				     than typeset. -->
-			</button>
+				</button>
+			{/if}
 		{/snippet}
 
 		{#snippet surface()}
@@ -904,15 +1006,34 @@
 	   scene at the intra-group gap. Play's triangle is a dense mark and sits at
 	   13 in a 36px plate; the speaker is sparser and takes 16 — ink area, not
 	   height, per the chrome round's rule. */
+	/* The fold's items: label, then a check column at the end for the two
+	   switches, as the Team Builder's lens marks its reading. */
+	.rp-fold-label {
+		flex: 1;
+	}
+	.rp-fold-check {
+		display: inline-flex;
+		width: 12px;
+	}
+	/* The Team Builder's fold head, for the speed's radio group. */
+	.rp-fold-head {
+		padding: 6px 12px 2px;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		color: var(--muted);
+	}
 	.rp-transport {
 		display: flex;
 		align-items: center;
 		gap: 0.2rem;
 	}
-	/* Wide enough for "0.75×" at every value, in tabular figures, so the plate
-	   keeps its width as it cycles. */
+	/* As wide as "0.75×" (49px measured with the plate's padding) at every
+	   value, in tabular figures, so the plate keeps its width as it cycles —
+	   a first cut at 5.5ch grew 36 → 49 and shifted the band. */
 	.rp-speed {
-		min-width: 5.5ch;
+		min-width: 3.1rem;
 		justify-content: center;
 		font-variant-numeric: tabular-nums;
 	}
@@ -938,7 +1059,8 @@
 	/* ══ THE FOLD (responsive round, 2026-09-05; ↻ moved 2026-09-14) ═══════════
 	   Band B's controls drop their WORDS and keep their MARKS, and the zoom
 	   loses its slider (−/+ step the same scale). ↻ ⚓ Nate 2026-09-14: the fold
-	   is BP.wide ($lib/breakpoints.ts — 68rem), a rung minted for exactly this
+	   is BP.wide ($lib/breakpoints.ts — 82rem since 2026-09-30), a rung
+	   minted for exactly this
 	   row, not BP.compact (40rem). The Human timing plate, the full-height
 	   steppers and the slider's plate took the full form to ~806px of band
 	   (zones 268 + 426, rail ~103 for the Total, gaps), and above BP.toolMin the
@@ -953,8 +1075,11 @@
 	   a phone for the same reason it was made: a stripped chart must ANNOUNCE
 	   itself, and a lit mark announces exactly as a lit word does. What a
 	   reader loses is the word, and the `title`s still carry it.
+	   ↻ 2026-09-30 (playback round): the transport (⏮ ▶ speed, Repeat) took
+	   the left zone to 485px, so the full form fits only from ~1285 — see the
+	   table's fact. The fold is otherwise unchanged.
 	   ⚠ Literal from the table, by necessity. */
-	@media (max-width: 68rem) {
+	@media (max-width: 82rem) {
 		.rp-band-label,
 		.rp-zoom-slider-plate {
 			display: none;
@@ -985,8 +1110,7 @@
 	   Total; at 24 the number clears. */
 	@media (max-width: 40rem) {
 		.rp-play,
-		.rp-rewind,
-		.rp-repeat {
+		.rp-rewind {
 			min-width: calc(var(--band-ctrl-h) - 12px);
 		}
 	}

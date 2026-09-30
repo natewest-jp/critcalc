@@ -54,7 +54,8 @@ export const BP = {
 	 */
 	toolMin: '54rem',
 	/**
-	 * `wide` — 68rem / 1088px. ⚓ THE PLANNER'S BAND B IN FULL FORM beside the
+	 * `wide` — 82rem / 1312px (↻ 2026-09-30, was 68rem). ⚓ THE PLANNER'S
+	 * BAND B IN FULL FORM beside the
 	 * bench column (2026-09-14). The Human timing plate, the full-height zoom
 	 * steppers and the slider's plate took band B's zones to 268 + 426px, and
 	 * the rail needs ~103 for the Total, so the full form (every word, the
@@ -65,8 +66,17 @@ export const BP = {
 	 * WORDS and the slider — the fold `compact` used to own, moved up because
 	 * the row it governs grew. ⚠️ A fact about the planner, as `toolMin` is;
 	 * the Team Builder's band B does not need it.
+	 *
+	 * ↻ 2026-09-30 (playback round): the transport — ⏮ ▶ icon-width, the
+	 * speed plate fixed at its widest label (49px), and Repeat with its word —
+	 * grew the left zone 268 → 485px (the right zone is 426). Measured with a
+	 * four-character rotation: the 75px Total is squeezed to a 28px rail at
+	 * 1200–1220, clears both zones by 13px at 1304 and 17 at 1312, so the rung
+	 * is 82rem. ⚠️ The Repeat plate had already broken the old fact on
+	 * 2026-09-29, before the rewind and speed plates arrived. Re-measure when a
+	 * band B word changes (the text round rewrites them).
 	 */
-	wide: '68rem',
+	wide: '82rem',
 	/** `broad` — the Team Builder's tile-density step-up (existing, 2 uses). */
 	broad: '1500px',
 	/** `vast` — the Team Builder's second tile-density step-up (existing, 2 uses). */
