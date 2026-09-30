@@ -67,14 +67,10 @@ const MARKS = {
 	share: 'Share',
 	more: 'Ellipsis',
 	reset: 'RotateCcw',
-	/** The planner's zoom reset, against `reset` (RotateCcw) on a Visualizers
-	 *  tile: two "reset" controls at different scopes, so the MARK carries the
-	 *  scope — the same split `layout` already makes.
-	 *  ⚓ NATE 2026-08-17, and the mark followed a narrowing of the BUTTON: it
-	 *  used to reset "the view" (zoom + the notes panel + the layers) and now
-	 *  resets the zoom alone, so a general revert glyph over-promised. ListRestart
-	 *  reads as "put this scale back", not "undo what I did". */
-	resetZoom: 'ListRestart',
+	/* ⛔ `resetZoom` RETIRED 2026-09-30: the planner's zoom moved into a
+	 * popover whose Reset is a WORD — inside a panel titled Zoom it is obvious
+	 * what it resets. It had been ListRestart (2026-08-17) and, for one pass
+	 * that day, ScanSearch. */
 	/** The notation composer's history pair (single truth, 2026-08-13). Every
 	 *  team edit is a text rewrite now, so undo is a first-class control on the
 	 *  box rather than a keystroke people have to know about.
@@ -252,7 +248,21 @@ const MARKS = {
 	 *  a magnifier is sparse-topped; if it silts at band size, size it by ink
 	 *  area per button, never via the shared glyph size. */
 	zoomIn: 'ZoomIn',
-	zoomOut: 'ZoomOut'
+	zoomOut: 'ZoomOut',
+	/** The planner's LAPS plate (playback round B, 2026-09-29; ↻ renamed from
+	 *  Repeat 2026-09-30): the next laps simulated and drawn past the notation's
+	 *  end. ⚓ Nate: "repeat" is a loop, and playback already loops — the mark
+	 *  must say CARRY ON PAST THE END instead. `ArrowRightFromLine` — an arrow
+	 *  leaving a bar, the bar the document's end — over `ArrowBigRightDash`
+	 *  (heavy, and reads as fast-forward beside a transport). ⛔ Not
+	 *  `Repeat`/`Repeat2`/`RotateCw`: every one of them says "again". */
+	laps: 'ArrowRightFromLine',
+	/** The planner's rewind plate (2026-09-30): back to the start, and — while
+	 *  playing — go again from the top with the count-in. `SkipBack` (a bar
+	 *  before a triangle, ⏮) over `Rewind` (two triangles, which reads as
+	 *  "scrub backwards" — a gesture this transport does not have). Drawn
+	 *  FILLED beside Play, as Play is. */
+	rewind: 'SkipBack'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

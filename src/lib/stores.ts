@@ -8,6 +8,18 @@
 
 import { writable } from 'svelte/store';
 import { HUMAN_PAD_DEFAULT_F } from '$lib/sim/humanTiming';
+import {
+	NOTE_SET_IDS,
+	ORDER_IDS,
+	SOUND_MODES,
+	SWAP_STYLES,
+	VOICE_IDS,
+	type NoteSetId,
+	type OrderId,
+	type SoundMode,
+	type SwapStyle,
+	type VoiceId
+} from '$lib/playback/tones';
 import { browser } from '$app/environment';
 
 // ---------------------------------------------------------------------------
@@ -339,6 +351,30 @@ type SiteSettings = {
 	 */
 	showAuraLane: boolean;
 	showTimelineBuffs: boolean;
+	/**
+	 * ── PLAYBACK SOUND (playback round, 2026-09-29) ─────────────────────────
+	 *
+	 * Whether the planner's Play makes a sound at every input. Per TASTE like
+	 * the layers: "I follow the rotation by ear" is a standing preference, and
+	 * the sound is the half of playback that works with the tab hidden behind
+	 * the game (`$lib/playback/playback.svelte.ts`). ⛔ Never in the `?r=`
+	 * codec — a link carries a rotation, not the recipient's speakers.
+	 */
+	playbackSound: boolean;
+	/** Metronome or a melodic voice (⚓ Nate 2026-09-29: sounds are personal —
+	 *  chosen in Settings by listening). `$lib/playback/tones.ts` holds them. */
+	playbackSoundMode: SoundMode;
+	/** Which voice plays when the mode is melodic. */
+	playbackVoice: VoiceId;
+	/** Which role sits low, mid and high. */
+	playbackOrder: OrderId;
+	/** Which three steps of the pentatonic the roles take. */
+	playbackNotes: NoteSetId;
+	/** How the swap hums. */
+	playbackSwap: SwapStyle;
+	/** Master volume, 0–1. The tones have to sit against the game's own level,
+	 *  and that is personal too. */
+	playbackVolume: number;
 };
 
 /**
@@ -365,6 +401,23 @@ export const TIMELINE_LAYER_DEFAULTS = {
 	showTimelineBuffs: true
 } as const;
 
+/** Sound ON by default: the count-in and the tones are what make Play usable
+ *  with the game in front of you, and a first press of Play that did nothing
+ *  audible would leave the reader wondering what it was for. */
+export const PLAYBACK_SOUND_DEFAULT = true;
+/** ⚓ Nate's defaults, landed verbatim — a `tune(nate)`. ↻ 2026-09-30: the
+ *  vibraphone, WEIGHTY, Anchor (A · D · E) — "the most solid, safest bet for
+ *  most users" (Skill up the evening before). */
+export const PLAYBACK_SOUND_DEFAULTS = {
+	playbackSound: PLAYBACK_SOUND_DEFAULT,
+	playbackSoundMode: 'melodic' as SoundMode,
+	playbackVoice: 'vibraphone' as VoiceId,
+	playbackOrder: 'weighty' as OrderId,
+	playbackNotes: 'anchor' as NoteSetId,
+	playbackSwap: 'humLow' as SwapStyle,
+	playbackVolume: 0.7
+} as const;
+
 export type HumanTimingMode = 'padding' | 'animations' | 'both';
 
 export const HUMAN_TIMING_DEFAULTS = {
@@ -382,7 +435,8 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
-	...TIMELINE_LAYER_DEFAULTS
+	...TIMELINE_LAYER_DEFAULTS,
+	...PLAYBACK_SOUND_DEFAULTS
 };
 
 function loadSiteSettings(): SiteSettings {
@@ -398,6 +452,43 @@ function loadSiteSettings(): SiteSettings {
 			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
 		}
 		delete (merged as Record<string, unknown>).swapFrames;
+		// The playback sound settings were reshaped several times on 2026-09-29
+		// (sets → a mode plus a voice; assignments → an order plus a note set;
+		// the swap's slide → hums). A stored voice id becomes the voice; the
+		// retired drum kit and the metronome become the metronome mode; anything
+		// unknown falls back to the default.
+		const RETIRED_VOICES: Record<string, VoiceId> = {
+			epiano: 'pipe',
+			musicbox: 'bell',
+			kalimba: 'glass',
+			handpan: 'glass'
+		};
+		const legacySet = parsed.playbackSoundSet as string | undefined;
+		if (legacySet && parsed.playbackSoundMode === undefined) {
+			if ((VOICE_IDS as readonly string[]).includes(legacySet) || legacySet in RETIRED_VOICES) {
+				merged.playbackSoundMode = 'melodic';
+				merged.playbackVoice = legacySet as VoiceId;
+			} else if (legacySet === 'metronome' || legacySet === 'percussive') {
+				merged.playbackSoundMode = 'metronome';
+			}
+		}
+		delete (merged as Record<string, unknown>).playbackSoundSet;
+		delete (merged as Record<string, unknown>).playbackAssignment;
+		// The voices became materials (2026-09-29): the e-piano is the pipe it
+		// sounded like, the music box the bell; the kalimba and handpan retired
+		// to the glass, the nearest soft voice.
+		const v = merged.playbackVoice as string;
+		if (v in RETIRED_VOICES) merged.playbackVoice = RETIRED_VOICES[v];
+		if (!SOUND_MODES.includes(merged.playbackSoundMode))
+			merged.playbackSoundMode = PLAYBACK_SOUND_DEFAULTS.playbackSoundMode;
+		if (!VOICE_IDS.includes(merged.playbackVoice))
+			merged.playbackVoice = PLAYBACK_SOUND_DEFAULTS.playbackVoice;
+		if (!ORDER_IDS.includes(merged.playbackOrder))
+			merged.playbackOrder = PLAYBACK_SOUND_DEFAULTS.playbackOrder;
+		if (!NOTE_SET_IDS.includes(merged.playbackNotes))
+			merged.playbackNotes = PLAYBACK_SOUND_DEFAULTS.playbackNotes;
+		if (!SWAP_STYLES.includes(merged.playbackSwap))
+			merged.playbackSwap = PLAYBACK_SOUND_DEFAULTS.playbackSwap;
 		return merged;
 	} catch {
 		return { ...SITE_SETTINGS_DEFAULTS };
@@ -434,6 +525,11 @@ function createSiteSettingsStore() {
 		/** One setter for both timeline layers — they are the same KIND of
 		 *  preference and band B's reset writes them together. */
 		setTimelineLayers(next: Partial<Pick<SiteSettings, 'showAuraLane' | 'showTimelineBuffs'>>) {
+			store.update((prev) => persist({ ...prev, ...next }));
+		},
+		/** One setter for the plate and its two settings — the same kind of
+		 *  preference, written from two surfaces (band B and the modal). */
+		setPlaybackSound(next: Partial<Pick<SiteSettings, keyof typeof PLAYBACK_SOUND_DEFAULTS>>) {
 			store.update((prev) => persist({ ...prev, ...next }));
 		}
 	};

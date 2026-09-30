@@ -31,6 +31,7 @@
  */
 
 import type { EventLogHover, EventLogRow } from '$lib/components/EventLog.svelte';
+import type { Cue } from '$lib/playback/cues';
 
 export const ZOOM_MIN = 20;
 export const ZOOM_MAX = 120;
@@ -97,6 +98,21 @@ class PlannerViewState {
 	 *  same events, and wanting the words without the chart is a real want. */
 	hasAuraLog = $state(false);
 	totalDuration = $state(0);
+	/** The rotation's presses, in seconds — what playback sounds and what the
+	 *  cursor is keeping time with (playback round, 2026-09-29). Published by
+	 *  the chart beside `totalDuration` for the same reason: the parse is the
+	 *  chart's, and the transport (`$lib/playback/playback.svelte.ts`) is a
+	 *  sibling that must not reach into it. */
+	playbackCues = $state<Cue[]>([]);
+	/** Where playback ENDS, in seconds: the document's end, or the stream's
+	 *  horizon while Repeat is on. `totalDuration` stays the document's — band
+	 *  B's Total says how long ONE lap runs whatever the chart is drawing. */
+	playbackEnd = $state(0);
+	/** Repeat (playback round B): draw the rotation joined to itself by a swap,
+	 *  `REPEAT_LAPS` laps, so the laps that follow are simulated rather than
+	 *  assumed. Per LOOK like zoom — you arm it to check the rotation in front
+	 *  of you — so it is not stored; ⛔ never in the `?r=` codec. */
+	repeat = $state(false);
 	// ⛔ `hasAura` RETIRED (2026-08-17). It existed for ONE expression — the notes
 	// panel's second gate, so gauge round L6's standing "how the aura is modelled"
 	// block could reach a fully-curated team with no caveats. That block moved to
