@@ -108,13 +108,20 @@ export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
 export const SIZE = 720;
 // PAD reserves room for tick labels (left/bottom) and, on the right, the
 // isoline value column + its rotated AVERAGE DMG identity label.
-// ↻ 2026-09-30 (⚓ Nate): the three axis titles sit AXIS_TITLE_GAP past their
-// tick labels — they used to hang off the box edge at 11 / 20 / 25px — and the
-// plot took the room back (left 72 → 69, bottom 64 → 50, right 74 → 58).
-export const PAD = { top: 24, right: 58, bottom: 50, left: 69 };
-
-/** Clear space between an axis title and the outer edge of its tick labels. */
-export const AXIS_TITLE_GAP = 8;
+// ↻ 2026-09-30 (⚓ Nate): the three axis titles sit a set gap past their tick
+// labels — they used to hang off the box edge at 11 / 20 / 25px — and the plot
+// took the room back. One gap PER AXIS, because one number does not read as one
+// gap: CRIT RATE is measured from the widest tick ("100%", at the top), while
+// the title sits beside two-digit ticks 7px narrower; and a text box carries
+// empty room below the digits and above the capitals, which the eye adds to
+// CRIT DMG's gap. 🎛️ Nate's values, by eye.
+export const AXIS_TITLE_GAP = { cr: 4, cd: 6, avg: 8 };
+export const PAD = {
+	top: 24,
+	right: 50 + AXIS_TITLE_GAP.avg,
+	bottom: 42 + AXIS_TITLE_GAP.cd,
+	left: 61 + AXIS_TITLE_GAP.cr
+};
 
 // The pixel box the plot is drawn into. Because the CR and CD axes are already
 // normalized independently (unrelated ranges), the box need NOT be square — the

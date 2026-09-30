@@ -127,15 +127,15 @@
 	const cvPath = $derived(buildCvLinePath(cv, geom));
 	const cvLabel = $derived(buildCvLineLabel(cv, geom));
 
-	// The axis titles, each AXIS_TITLE_GAP past the outer edge of its tick
-	// labels. Anchored to the PLOT, not the box, so they travel with it; PAD is
+	// The axis titles, each its AXIS_TITLE_GAP past the outer edge of its tick
+	// labels (crit.ts says why the three differ). Anchored to the PLOT, not the box, so they travel with it; PAD is
 	// sized to hold them. Measured at 11px: a title's glyph box runs 11px above
 	// its baseline and 3px below (rotated, "above" is away from the plot); the
 	// widest CR tick ("100%") ends 40px left of the plot, the CD ticks 25px
 	// below it, the isoline column ("4.00x") 34px right of it.
-	const crTitleX = $derived(PAD.left - 40 - AXIS_TITLE_GAP - 3);
-	const cdTitleY = $derived(PAD.top + plotH + 25 + AXIS_TITLE_GAP + 11);
-	const avgTitleX = $derived(PAD.left + plotW + 34 + AXIS_TITLE_GAP + 3);
+	const crTitleX = $derived(PAD.left - 40 - AXIS_TITLE_GAP.cr - 3);
+	const cdTitleY = $derived(PAD.top + plotH + 25 + AXIS_TITLE_GAP.cd + 11);
+	const avgTitleX = $derived(PAD.left + plotW + 34 + AXIS_TITLE_GAP.avg + 3);
 
 	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
 	// Shown with the CV line: a fixed budget's multiplier peaks exactly where
