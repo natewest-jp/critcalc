@@ -83,22 +83,24 @@
 		for whoever follows it.
 	</p>
 	<p>
-		<strong>Play and Repeat.</strong> <em>Play</em> in the view bar runs a cursor along the timeline
-		at game speed, with four beats to count you in (the last one higher) and a note at every press.
-		Every start counts in, a resume after a pause included, and the button before Play takes you
-		back to the start — or, while playing, goes again from the top. The speed plate after Play slows
-		the rotation to 0.75× or 0.5× for learning it; the count-in keeps its pace. Outside the notation
-		editor, Space plays and pauses and Home goes back to the start. Each note rings for as long as
-		its input holds the field, so a burst is a long note and a normal attack a short one; a swap is
-		a soft hum, the one sound that is not struck. The voice, which note each input gets, and the
-		volume are set in Settings, where the sound can also be turned off. The notes keep time with the
-		tab hidden, so you can play the rotation with the game in front of you and the chart behind it.
-		<em>Repeat</em> draws the laps that follow: the notation is run again from its last action, joined
-		by a swap back to your opener, and the laps are simulated rather than copied. A skill still on cooldown
-		waits where it really waits, and everything after it moves; a buff or an aura from one lap is still
-		there in the next if it really is. Energy is not modeled, so a burst is drawn as ready whenever its
-		cooldown is — the most common reason a real rotation does not come round cleanly is the one thing
-		the chart cannot show you.
+		<strong>Play.</strong> <em>Play</em> in the view bar runs a cursor along the timeline at game speed,
+		with four beats to count you in (the last one higher) and a note at every press. Every start counts
+		in, a resume after a pause included, and the button before Play takes you back to the start — or,
+		while playing, goes again from the top. The speed plate after Play slows the rotation to 0.75× or
+		0.5× for learning it; the count-in keeps its pace. Outside the notation editor, Space plays and pauses
+		and Home goes back to the start. Each note rings for as long as its input holds the field, so a burst
+		is a long note and a normal attack a short one; a swap is a soft hum, the one sound that is not struck.
+		The voice, which note each input gets, and the volume are set in Settings, where the sound can also
+		be turned off. The notes keep time with the tab hidden, so you can play the rotation with the game
+		in front of you and the chart behind it.
+	</p>
+	<p>
+		<strong>Laps.</strong> <em>Laps</em> carries the rotation on past its end: the notation runs again
+		from its last action, joined by a swap back to your opener, and the laps that follow are simulated
+		rather than copied. A skill still on cooldown waits where it really waits, and everything after it
+		moves; a buff or an aura from one lap is still there in the next if it really is. Energy is not modeled,
+		so a burst is drawn as ready whenever its cooldown is — the most common reason a real rotation does
+		not come round cleanly is the one thing the chart cannot show you.
 	</p>
 </section>
 

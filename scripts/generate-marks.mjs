@@ -73,8 +73,14 @@ const MARKS = {
 	 *  ⚓ NATE 2026-08-17, and the mark followed a narrowing of the BUTTON: it
 	 *  used to reset "the view" (zoom + the notes panel + the layers) and now
 	 *  resets the zoom alone, so a general revert glyph over-promised. ListRestart
-	 *  reads as "put this scale back", not "undo what I did". */
-	resetZoom: 'ListRestart',
+	 *  reads as "put this scale back", not "undo what I did".
+	 *  ↻ 2026-09-30 (⚓ Nate): with the transport beside it the list glyph no
+	 *  longer said ZOOM, so the mark joined the magnifier family, and the plate
+	 *  moved to sit after + in the zoom group. `ScanSearch` — a lens inside a
+	 *  viewport's corner marks, "the view's scale" — over `SearchSlash` (a
+	 *  slash in a lens reads as search OFF), `SearchCode` (`<>`: search the
+	 *  code), `SearchX` (clear the results) and a bare `Search` (search). */
+	resetZoom: 'ScanSearch',
 	/** The notation composer's history pair (single truth, 2026-08-13). Every
 	 *  team edit is a text rewrite now, so undo is a first-class control on the
 	 *  box rather than a keystroke people have to know about.
@@ -253,13 +259,14 @@ const MARKS = {
 	 *  area per button, never via the shared glyph size. */
 	zoomIn: 'ZoomIn',
 	zoomOut: 'ZoomOut',
-	/** The planner's Repeat plate (playback round B, 2026-09-29): two arrows
-	 *  chasing each other, the media idiom for "again". `Repeat` over
-	 *  `Repeat2` (the same arrows curved, which reads as "refresh" beside a
-	 *  transport) and over `RotateCw` (a reload). ⚠️ Repeat here is not the
-	 *  cursor's wrap — it is the STREAM, the next laps drawn — and the mark
-	 *  says "again" either way, which is the right amount of promise. */
-	repeat: 'Repeat',
+	/** The planner's LAPS plate (playback round B, 2026-09-29; ↻ renamed from
+	 *  Repeat 2026-09-30): the next laps simulated and drawn past the notation's
+	 *  end. ⚓ Nate: "repeat" is a loop, and playback already loops — the mark
+	 *  must say CARRY ON PAST THE END instead. `ArrowRightFromLine` — an arrow
+	 *  leaving a bar, the bar the document's end — over `ArrowBigRightDash`
+	 *  (heavy, and reads as fast-forward beside a transport). ⛔ Not
+	 *  `Repeat`/`Repeat2`/`RotateCw`: every one of them says "again". */
+	laps: 'ArrowRightFromLine',
 	/** The planner's rewind plate (2026-09-30): back to the start, and — while
 	 *  playing — go again from the top with the count-in. `SkipBack` (a bar
 	 *  before a triangle, ⏮) over `Rewind` (two triangles, which reads as

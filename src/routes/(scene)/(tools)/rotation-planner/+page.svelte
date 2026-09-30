@@ -338,11 +338,11 @@
 	];
 
 	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════
-	// Below BP.compact band B folds the speed, Repeat, Human timing, Log and
+	// Below BP.compact band B folds the speed, Laps, Human timing, Log and
 	// Notes into one ⋯ plate — the Team Builder's fold, the same rung. With the
 	// transport grown to ⏮ ▶ speed, the row ran ~100px past a 320 band. What
 	// folds is what is SET rather than reached for mid-task: a speed, the two
-	// switches that change what is simulated (Repeat, Human timing — both still
+	// switches that change what is simulated (Laps, Human timing — both still
 	// announce themselves on the chart, as lap marks and a padding hatch) and
 	// the two panels. ⏮ ▶ stay; so do the layer plates (⚓ never a menu,
 	// standing). ⚠️ The speed plate was first kept on the band here: at its
@@ -359,7 +359,7 @@
 	//   - never on a control the KEYBOARD brought focus to, which Space
 	//     activates — a keyboard user tabbing to a control must still work it.
 	//     A control focused by a CLICK is taken, and its default prevented:
-	//     after clicking Repeat, Space means play, not "click Repeat again".
+	//     after clicking Laps, Space means play, not "click Laps again".
 	//     ⚠️ Not `:focus-visible` — the first cut used it, and Chrome turns a
 	//     clicked button focus-visible at the first key pressed on it, so the
 	//     second Space clicked the speed plate. The pointer is tracked instead.
@@ -415,19 +415,6 @@
 			     timing rode here for one try and went back: beside the rail it read
 			     as part of the zoom cluster. The zone is plates on the bare scene
 			     like the right one. -->
-			<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
-			     the whole of band B's state — zoom, the notes panel and the two
-			     layers — which is a fair reading of "Reset view" and the wrong
-			     control: a scale is something you fiddle with and want back, while
-			     a panel and a layer are things you deliberately opened, and
-			     sweeping them away as a side effect of fixing your zoom does more
-			     than you asked. One button, one job, and the label says which.
-			     It sits left of the zoom group because that is what it undoes.
-			     ↻ ⚓ Nate 2026-09-14: the word is "Reset" now, not "Reset zoom" —
-			     the cluster moved to the band's LEFT, away from every other
-			     button, so the slider beside it says what is being reset.
-			     Inert at the resting scale, like the zoom buttons at their
-			     limits. -->
 			<!-- ══ THE TRANSPORT (playback round, 2026-09-29) ═════════════════════
 			     Rewind and Play, AHEAD of the zoom cluster: both zones answer
 			     "how am I looking at the axis", and moving along it comes before
@@ -439,8 +426,8 @@
 			     ⚠ The pair is ONE group at the tight intra-group gap, like the zoom.
 			     Play disables on an empty rotation (nothing to keep time with) and
 			     keeps its glass at full, same rule as its neighbours below.
-			     Loop and Repeat: the cursor wraps at the end here (a rhythm aid);
-			     the Repeat STREAM is Round B (docs/playback-round-plan.md §3). -->
+			     Loop and Laps: the cursor wraps at the end here (a rhythm aid);
+			     the Laps STREAM is Round B (docs/playback-round-plan.md §3). -->
 			<div class="rp-transport" role="group" aria-label="Playback">
 				<!-- REWIND (2026-09-30): back to the start — and while playing, go
 				     again from the top with the count-in, which is the only way to
@@ -489,7 +476,11 @@
 					</button>
 				{/if}
 				{#if !bandFolded}
-					<!-- ══ REPEAT (Round B) ═══════════════════════════════════════════
+					<!-- ══ LAPS (Round B; ↻ was "Repeat", ⚓ Nate 2026-09-30) ═══════════
+				     "Repeat" named a LOOP, and playback already loops — so the plate
+				     is named for what it draws, and its mark (ArrowRightFromLine)
+				     for carrying on past the end. ⚠ The state is still
+				     `pv.repeat` / `REPEAT_LAPS` / `repeat.ts` — internal names.
 				     Draws the laps that FOLLOW: the notation joined to itself by a
 				     swap, simulated as one run, so a cast on cooldown waits where
 				     it really waits and a buff from lap one is still up in lap two
@@ -500,29 +491,18 @@
 				     the document). The cursor stops at the drawn horizon while this
 				     is lit, and wraps at the document's end when it is not. -->
 					<button
-						class="btn btn--sm rp-repeat"
+						class="btn btn--sm rp-laps"
 						class:is-active={pv.repeat}
 						type="button"
 						aria-pressed={pv.repeat}
-						title="Draw the laps that follow: the rotation runs again from its last action, cooldowns and buffs carried"
+						title="Draw the laps that follow: the rotation runs on past its end, cooldowns and buffs carried"
 						onclick={() => (pv.repeat = !pv.repeat)}
 					>
-						<Mark name="repeat" />
-						<span class="rp-band-label">Repeat</span>
+						<Mark name="laps" />
+						<span class="rp-band-label">Laps</span>
 					</button>
 				{/if}
 			</div>
-			<button
-				class="btn btn--sm rp-reset"
-				type="button"
-				aria-label="Reset the zoom to its resting level"
-				title="Back to the resting zoom"
-				disabled={pv.scale === ZOOM_DEFAULT}
-				onclick={() => pv.reset()}
-			>
-				<Mark name="resetZoom" />
-				<span class="rp-band-label">Reset</span>
-			</button>
 			<div class="rp-zoom" role="group" aria-label="Zoom">
 				<button
 					class="btn btn--sm btn--icon"
@@ -554,6 +534,33 @@
 					disabled={pv.scale >= ZOOM_MAX}
 					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" size={18} /></button
 				>
+				<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
+				     the whole of band B's state — zoom, the notes panel and the two
+				     layers — which is a fair reading of "Reset view" and the wrong
+				     control: a scale is something you fiddle with and want back, while
+				     a panel and a layer are things you deliberately opened, and
+				     sweeping them away as a side effect of fixing your zoom does more
+				     than you asked. One button, one job, and the label says which.
+				     ↻ ⚓ Nate 2026-09-14: the word is "Reset" now, not "Reset zoom" —
+				     the cluster moved to the band's LEFT, away from every other
+				     button, so the slider beside it says what is being reset.
+				     Inert at the resting scale, like the zoom buttons at their
+				     limits.
+				     ↻ ⚓ Nate 2026-09-30: INSIDE the zoom group, after + — between the
+				     zoom and the Total — and in the magnifier family (ScanSearch; see
+				     generate-marks.mjs). With the transport grown beside it, a plate
+				     left of − read as one more transport control. -->
+				<button
+					class="btn btn--sm rp-reset"
+					type="button"
+					aria-label="Reset the zoom to its resting level"
+					title="Back to the resting zoom"
+					disabled={pv.scale === ZOOM_DEFAULT}
+					onclick={() => pv.reset()}
+				>
+					<Mark name="resetZoom" />
+					<span class="rp-band-label">Reset</span>
+				</button>
 			</div>
 		{/snippet}
 
@@ -697,8 +704,8 @@
 								close();
 							}}
 						>
-							<Mark name="repeat" />
-							<span class="rp-fold-label">Repeat</span>
+							<Mark name="laps" />
+							<span class="rp-fold-label">Laps</span>
 							<span class="rp-fold-check"
 								>{#if pv.repeat}<Mark name="check" size={12} />{/if}</span
 							>
@@ -1075,8 +1082,8 @@
 	   a phone for the same reason it was made: a stripped chart must ANNOUNCE
 	   itself, and a lit mark announces exactly as a lit word does. What a
 	   reader loses is the word, and the `title`s still carry it.
-	   ↻ 2026-09-30 (playback round): the transport (⏮ ▶ speed, Repeat) took
-	   the left zone to 485px, so the full form fits only from ~1285 — see the
+	   ↻ 2026-09-30 (playback round): the transport (⏮ ▶ speed, Laps) took
+	   the left zone to 469px, so the full form fits only from ~1290 — see the
 	   table's fact. The fold is otherwise unchanged.
 	   ⚠ Literal from the table, by necessity. */
 	@media (max-width: 82rem) {

@@ -68,13 +68,13 @@ export const BP = {
 	 * the Team Builder's band B does not need it.
 	 *
 	 * ↻ 2026-09-30 (playback round): the transport — ⏮ ▶ icon-width, the
-	 * speed plate fixed at its widest label (49px), and Repeat with its word —
-	 * grew the left zone 268 → 485px (the right zone is 426). Measured with a
-	 * four-character rotation: the 75px Total is squeezed to a 28px rail at
-	 * 1200–1220, clears both zones by 13px at 1304 and 17 at 1312, so the rung
-	 * is 82rem. ⚠️ The Repeat plate had already broken the old fact on
-	 * 2026-09-29, before the rewind and speed plates arrived. Re-measure when a
-	 * band B word changes (the text round rewrites them).
+	 * speed plate fixed at its widest label (49px), Laps with its word — and
+	 * Reset moved into the zoom group grew the left zone 268 → 469px (the
+	 * right zone is 426). Measured with a four-character rotation: the 75px
+	 * Total is squeezed to a 28px rail at 1200–1220 in full form; at the rung
+	 * it clears the zones by 18 and 33px, so it is 82rem. ⚠️ The Repeat plate
+	 * had already broken the old fact on 2026-09-29. Re-measure when a band B
+	 * word changes (the text round rewrites them).
 	 */
 	wide: '82rem',
 	/** `broad` — the Team Builder's tile-density step-up (existing, 2 uses). */
