@@ -405,14 +405,14 @@ export const TIMELINE_LAYER_DEFAULTS = {
  *  with the game in front of you, and a first press of Play that did nothing
  *  audible would leave the reader wondering what it was for. */
 export const PLAYBACK_SOUND_DEFAULT = true;
-/** ⚓ Nate's defaults, 2026-09-29 evening, after playing every combination:
- *  the vibraphone, Skill up, Anchor (A · D · E). His own values, landed
- *  verbatim — a `tune(nate)`; he may revise them in the morning. */
+/** ⚓ Nate's defaults, landed verbatim — a `tune(nate)`. ↻ 2026-09-30: the
+ *  vibraphone, WEIGHTY, Anchor (A · D · E) — "the most solid, safest bet for
+ *  most users" (Skill up the evening before). */
 export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackSound: PLAYBACK_SOUND_DEFAULT,
 	playbackSoundMode: 'melodic' as SoundMode,
 	playbackVoice: 'vibraphone' as VoiceId,
-	playbackOrder: 'skillUp' as OrderId,
+	playbackOrder: 'weighty' as OrderId,
 	playbackNotes: 'anchor' as NoteSetId,
 	playbackSwap: 'humLow' as SwapStyle,
 	playbackVolume: 0.7
