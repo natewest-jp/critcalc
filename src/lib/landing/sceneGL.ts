@@ -44,7 +44,12 @@ import {
 	SCENE_GRAIN_SIGMA,
 	SCENE_TIERS
 } from '$lib/data/sceneAssets.generated';
-import { createStarPass, STAR_STATIC_ALPHA, type StarPass } from '$lib/landing/starPass';
+import {
+	createStarPass,
+	STAR_KEEPOUT_PAD_PX,
+	STAR_STATIC_ALPHA,
+	type StarPass
+} from '$lib/landing/starPass';
 import { SCENE_DIM, SCENE_DIM_DITHER, SCENE_DIM_TINT_RGB } from '$lib/landing/sceneDim';
 
 // --- Geometry constants -----------------------------------------------------
@@ -327,6 +332,21 @@ export interface SceneGLHandle {
 
 let current: SceneGLHandle | null = null;
 
+/**
+ * The header lockup's box in viewport px, published by the scene chrome (the
+ * landing and the static pages — the tools' chrome sits over the dim, where
+ * stars never fight it). Module state, not a handle method, so a publish that
+ * lands before the renderer mounts, or across a context rebuild, still holds.
+ * `null` = nothing to keep clear. See STAR_KEEPOUT_* in starPass.ts.
+ */
+let brandBox: { x: number; y: number; w: number; h: number } | null = null;
+let brandBoxChanged: (() => void) | null = null;
+
+export function setStarKeepOut(box: { x: number; y: number; w: number; h: number } | null): void {
+	brandBox = box;
+	brandBoxChanged?.();
+}
+
 /** The mounted renderer, for choreography and the dev probe. */
 export function getSceneGL(): SceneGLHandle | null {
 	return current;
@@ -589,7 +609,17 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			cam: { x: cam.x, y: cam.y },
 			region: starRegion,
 			dpr,
-			staticAlpha: reducedMq.matches ? STAR_STATIC_ALPHA : -1
+			staticAlpha: reducedMq.matches ? STAR_STATIC_ALPHA : -1,
+			// ⚓ Fades OUT with the dim: a tool's dim already keeps the stars off
+			// its chrome, and the lockup the box was measured from leaves with
+			// the landing — so the keep-out goes as the tool arrives.
+			keepOut: brandBox && {
+				x: brandBox.x - STAR_KEEPOUT_PAD_PX,
+				y: brandBox.y - STAR_KEEPOUT_PAD_PX,
+				w: brandBox.w + 2 * STAR_KEEPOUT_PAD_PX,
+				h: brandBox.h + 2 * STAR_KEEPOUT_PAD_PX,
+				strength: 1 - level
+			}
 		});
 		gl.bindTexture(gl.TEXTURE_2D, floorTex);
 		bind(progPlate, quads.floor, cam.x, k.floorGrain);
@@ -813,6 +843,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			canvas.removeEventListener('webglcontextrestored', onContextRestored);
 			gl.getExtension('WEBGL_lose_context')?.loseContext();
 			if (current === handle) current = null;
+			if (brandBoxChanged === requestDraw) brandBoxChanged = null;
 		}
 	};
 
@@ -820,6 +851,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	buildQuads();
 	drawNow();
 	current = handle;
+	brandBoxChanged = requestDraw;
 	(window as unknown as Record<string, unknown>).__scene = {
 		retune: handle.retune,
 		// Probe surface: is the twinkle loop live? (The scene-occlusion
