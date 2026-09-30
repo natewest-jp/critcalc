@@ -321,7 +321,7 @@ type SiteSettings = {
 	 * a three-way choice rather than two checkboxes so the plate can never be
 	 * lit and do nothing. Per TASTE like the layers, ⛔ never in the `?r=`
 	 * codec — a shared link is read at the READER's setting, not the author's.
-	 * ↻ ON by default since 2026-09-24. Model + authority: `$lib/sim/humanTiming.ts`.
+	 * ↻ ON by default since 2026-09-24; ↻ mode `padding` by default since 2026-09-30. Model + authority: `$lib/sim/humanTiming.ts`.
 	 */
 	humanTiming: boolean;
 	humanTimingMode: HumanTimingMode;
@@ -424,7 +424,11 @@ export const HUMAN_TIMING_DEFAULTS = {
 	// ⚓ Nate 2026-09-24: ON for a new visitor — a person's rotation is the
 	// honest first reading; frame-perfect is the thing you opt into.
 	humanTiming: true,
-	humanTimingMode: 'both' as HumanTimingMode,
+	// ⚓ Nate 2026-09-30: PADDING, not both. Full animations model a player who
+	// never cancels; a rotation someone knows (Flins' C1 `E sQ N5 E sQ N5 E sQ`)
+	// cancels N5's recovery on purpose, and `both` pushed its last sQ out of the
+	// stance. The pad is the reaction delay every player has; animations are opt-in.
+	humanTimingMode: 'padding' as HumanTimingMode,
 	humanTimingPadFrames: HUMAN_PAD_DEFAULT_F,
 	showHumanPadding: true
 };
