@@ -22,7 +22,7 @@
 		FADE_OUT_MS,
 		FADE_OVERLAP_MS
 	} from '$lib/landing/transition';
-	import { mountSceneGL, type SceneGLHandle } from '$lib/landing/sceneGL';
+	import { mountSceneGL, setStarKeepOut, type SceneGLHandle } from '$lib/landing/sceneGL';
 	import { SCENE_DIM } from '$lib/landing/sceneDim';
 	import VeilGround from '$lib/components/VeilGround.svelte';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -201,6 +201,30 @@
 		// After the kickoff, so timeUntilSettle() sees this leg's fresh clock.
 		scheduleRest(nav.to.url.pathname, nav.from?.url.pathname);
 	});
+
+	// The brand keep-out (starPass.ts § STAR_KEEPOUT_*): hand the renderer the
+	// lockup's box so the stars thin out around it. The chrome is FIXED, so the
+	// box only moves when the viewport or the lockup's own size does (the
+	// webfont landing, the compact wordmark).
+	function publishBrandBox(node: HTMLElement) {
+		const lockup = node.querySelector<HTMLElement>('.chrome-brand-group');
+		if (!lockup) return;
+		const publish = () => {
+			const r = lockup.getBoundingClientRect();
+			setStarKeepOut({ x: r.left, y: r.top, w: r.width, h: r.height });
+		};
+		const ro = new ResizeObserver(publish);
+		ro.observe(lockup);
+		window.addEventListener('resize', publish);
+		publish();
+		return {
+			destroy() {
+				ro.disconnect();
+				window.removeEventListener('resize', publish);
+				setStarKeepOut(null);
+			}
+		};
+	}
 </script>
 
 <!-- The scene is composed from two layers stacked back-to-front:
@@ -251,6 +275,7 @@
 		{#if !isToolPath(pathname)}
 			<div
 				class="scene-chrome"
+				use:publishBrandBox
 				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 				out:fade={{ duration: FADE_OUT_MS }}
 			>

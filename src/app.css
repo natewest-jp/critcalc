@@ -205,12 +205,16 @@
 	--glass-plate: rgb(31 38 53 / 0.9); /* slate-900 — the landing cards */
 	/* A HOVERED hero card's gold (⚓ NATE 2026-09-21) — one rung UP the ramp
 	   from --accent. ⚓ It lights everything gold that is the card's own
-	   CONTENT (the silhouette, the kicker, its rule) and nothing that is the
+	   CONTENT (the silhouette, the kicker) and nothing that is the
 	   card's FRAME: the inner line stays on the accent rung and answers in
 	   density instead, so the border never competes with what it borders.
 	   ⚠ A ROLE and not `var(--gold-300)` at the call site because no component
 	   may name a ramp (the L0 law, guarded by timelineExport.mirror.test.ts). */
 	--hero-lit: var(--gold-300); /* gold-300 — a hovered card's gold */
+	/* A hero card's label RULE (⚓ NATE 2026-09-30) — OPAQUE, because HRule's
+	   parts overlap at their joins. Nate's pick by eye; the first try (the outer
+	   ring's gold-400 at 9% as it lands on the plate) was too faint to read. */
+	--hero-rule: #333b4b;
 	/* HOVER IS DENSITY, NOT TINT (⚓ NATE 2026-08-10). The same rung as the panel
 	   with the alpha driven hard up, so hovering makes a pane MORE MATERIAL
 	   rather than washing it with a colour. Two things fall out that no tint can

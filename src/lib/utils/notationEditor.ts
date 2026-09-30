@@ -24,6 +24,8 @@ export interface NotationEditor {
 	 *  minimal, UNDOABLE transaction — see setValue's note. */
 	setValue(value: string): void;
 	getValue(): string;
+	/** Show another DOCUMENT (a planner tab) — see showDocument's note. */
+	showDocument(key: string, value: string): void;
 	/** Run the editor's own history commands. Exposed so the composer can put
 	 *  buttons beside the box for the same thing ⌘Z already does. */
 	undo(): void;
@@ -40,7 +42,9 @@ export interface NotationEditor {
 export function createNotationEditor(
 	parent: HTMLElement,
 	initialValue: string,
-	onChange: (value: string) => void
+	onChange: (value: string) => void,
+	/** Which document `initialValue` is — the planner's active tab id. */
+	initialKey: string
 ): NotationEditor {
 	// Guard flag: true while an external value change is being dispatched into
 	// CodeMirror so the updateListener's onChange doesn't fire re-entrantly
@@ -48,15 +52,23 @@ export function createNotationEditor(
 	// leave the timeline frozen until the next unrelated state change).
 	let externalUpdate = false;
 
+	const extensions = buildNotationExtensions((v) => {
+		if (!externalUpdate) onChange(v);
+	});
 	const view = new EditorView({
-		state: EditorState.create({
-			doc: initialValue,
-			extensions: buildNotationExtensions((v) => {
-				if (!externalUpdate) onChange(v);
-			})
-		}),
+		state: EditorState.create({ doc: initialValue, extensions }),
 		parent
 	});
+
+	// ⚓ ONE HISTORY PER DOCUMENT (2026-09-30). The editor is shared by every
+	// planner tab, and an EditorState is what owns the undo stack — so each tab
+	// parks its whole state here while another is shown. 🐛 Before this a tab
+	// switch reached the editor through setValue, i.e. as an UNDOABLE edit, and
+	// Undo on a tab with no history of its own undid the switch: the tab's text
+	// became the last tab's. A closed tab's entry is never read again; six tabs'
+	// worth of small states is not worth a pruning protocol.
+	let currentKey = initialKey;
+	const parked = new Map<string, EditorState>();
 
 	return {
 		/**
@@ -93,6 +105,26 @@ export function createNotationEditor(
 		},
 		getValue() {
 			return view.state.doc.toString();
+		},
+		/**
+		 * Swap in `key`'s document: its parked state (history, selection) when
+		 * it has one, else a fresh state with no history. `view.setState` is not
+		 * a transaction, so the swap itself is never undoable. A parked text that
+		 * no longer matches `value` (the tab was written while away) is
+		 * reconciled through setValue — a real edit to that document, so it IS
+		 * undoable there.
+		 */
+		showDocument(key: string, value: string) {
+			if (key === currentKey) {
+				this.setValue(value);
+				return;
+			}
+			parked.set(currentKey, view.state);
+			currentKey = key;
+			const next = parked.get(key);
+			parked.delete(key);
+			view.setState(next ?? EditorState.create({ doc: value, extensions }));
+			this.setValue(value);
 		},
 		undo() {
 			undo(view);

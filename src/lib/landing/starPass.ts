@@ -71,6 +71,22 @@ const HERO_GLOW_INTENSITY = 0.32;
  *  brightness (base = 1 from the generator) and dip only subtly. */
 const HERO_FLICKER_SCALE = 0.5;
 
+/** The BRAND KEEP-OUT (2026-09-30) — stars thin out around the header's
+ *  lockup on the open sky, so no star sits in or against the mark. Measured
+ *  from each star's CENTRE in viewport px, so a star fades whole instead of
+ *  being cut.
+ *  ⚓ WHY NOT A SHADOW OR A PLATE behind the mark: the sky under it changes
+ *  with the viewport (the plate scales to the window), so any painted ground
+ *  would need to match a gradient it cannot see. Removing the STARS leaves the
+ *  sky itself untouched, so there is nothing to match.
+ *  STAR_KEEPOUT_PAD_PX: how far the fully clear box reaches past the lockup.
+ *  STAR_KEEPOUT_FEATHER_PX: the soft edge beyond that, where stars ramp back.
+ *  🎛️ Tuning knobs — Nate's to set. ⚓ Nate 2026-09-30: 0 / 4 — the mark only
+ *  needed the stars out from BEHIND it, where they broke its own outline; a
+ *  wider clearing was not the point. */
+export const STAR_KEEPOUT_PAD_PX = 0;
+export const STAR_KEEPOUT_FEATHER_PX = 4;
+
 // --- Star tints -----------------------------------------------------------
 
 /** Resolve `color-mix(in srgb, white N%, <tint>)` to literal RGB (0–1). */
@@ -176,6 +192,8 @@ uniform vec4 u_region;  // sky region world rect: x, y, w, h (CSS px)
 uniform float u_dpr;    // backing-store device px per CSS px
 uniform float u_time;   // seconds
 uniform float u_static; // >= 0: static frame at this uniform opacity; < 0: animate
+uniform vec4 u_keep;     // brand keep-out box in VIEWPORT px: x, y, w, h (pad included)
+uniform vec2 u_keepSoft; // x: feather px   y: strength 0 (off) – 1
 uniform float u_jPos[${3 * STOPS_PER_VARIANT}];
 uniform float u_jK[${3 * STOPS_PER_VARIANT}];
 
@@ -243,6 +261,12 @@ void main() {
 	world = mix(world, (floor(dev) + 0.5) / u_dpr, step(1.5, a_kind.z));
 	vec2 clip = world / u_view * 2.0 - 1.0;
 	gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
+
+	// The brand keep-out: signed distance from the star's centre to the box
+	// (rounded outside by construction), ramped over the feather.
+	vec2 kq = abs(world - (u_keep.xy + u_keep.zw * 0.5)) - u_keep.zw * 0.5;
+	float kd = length(max(kq, 0.0)) + min(max(kq.x, kq.y), 0.0);
+	alpha *= mix(1.0, smoothstep(0.0, max(u_keepSoft.x, 1.0), kd), u_keepSoft.y);
 
 	v_color = a_color;
 	v_alpha = alpha;
@@ -322,6 +346,9 @@ export interface StarPassDrawOpts {
 	dpr: number;
 	/** >= 0 renders a static frame at that opacity (reduced motion). */
 	staticAlpha: number;
+	/** The brand keep-out box in viewport px (pad included), and how strongly
+	 *  it applies (0 = off). See STAR_KEEPOUT_*. */
+	keepOut?: { x: number; y: number; w: number; h: number; strength: number } | null;
 }
 
 export interface StarPass {
@@ -409,9 +436,11 @@ export function createStarPass(gl: WebGLRenderingContext): StarPass {
 	const uRegion = u('u_region');
 	const uDpr = u('u_dpr');
 	const uStatic = u('u_static');
+	const uKeep = u('u_keep');
+	const uKeepSoft = u('u_keepSoft');
 
 	return {
-		draw({ timeMs, view, cam, region, dpr, staticAlpha }) {
+		draw({ timeMs, view, cam, region, dpr, staticAlpha, keepOut }) {
 			gl.useProgram(program);
 			gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 			for (let i = 0; i < attribs.length; i++) {
@@ -424,6 +453,8 @@ export function createStarPass(gl: WebGLRenderingContext): StarPass {
 			gl.uniform4f(uRegion, region.x, region.y, region.w, region.h);
 			gl.uniform1f(uDpr, dpr);
 			gl.uniform1f(uStatic, staticAlpha);
+			gl.uniform4f(uKeep, keepOut?.x ?? 0, keepOut?.y ?? 0, keepOut?.w ?? 0, keepOut?.h ?? 0);
+			gl.uniform2f(uKeepSoft, STAR_KEEPOUT_FEATHER_PX, keepOut?.strength ?? 0);
 
 			// Premultiplied source-over, scoped to this pass — the plates draw
 			// opaque with blending off.

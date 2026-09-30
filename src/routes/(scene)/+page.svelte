@@ -13,6 +13,7 @@
 	import { currentAnnouncements } from '$lib/landing/announcements';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { onMount } from 'svelte';
+	import HRule from '$lib/components/HRule.svelte';
 
 	// The banner's entries are filtered by DATE, and the first paint must be
 	// deterministic (SSR → hydrate): the prerender bakes the list as of build
@@ -180,12 +181,13 @@
 					</svg>
 
 					<!-- Label block: the plate's 108–152 band (60%–84%), under the art.
-						 Kicker (the tool's real name) → a short gold rule → the poetic
-						 name. The kicker and its rule are gold, the name is not — the
-						 site's own rule that gold names a BLOCK, never a word. -->
+						 Kicker (the tool's real name) → the site's centre-mark rule → the
+						 poetic name. The kicker is gold, the name is not — the site's own
+						 rule that gold names a BLOCK, never a word. The rule belongs to
+						 the ARTWORK (the outer ring's colour), not to the label. -->
 					<span class="hero__label">
 						<span class="hero__kicker">{tool.tool}</span>
-						<span class="hero__rule"></span>
+						<span class="hero__rule"><HRule variant="center" /></span>
 						<span class="hero__name">{tool.title}</span>
 					</span>
 				</a>
@@ -293,6 +295,9 @@
 		   on the accent rung so the frame never competes with what it frames.
 		   ⚓ The figure rests at FULL strength — it is the card's subject, so
 		   it is LIT rather than faded, and its whole answer is the hue.
+		   ↻ 2026-09-30 (⚓ Nate): the label's rule left this set — it is the
+		   HRule centre mark in the outer ring's colour now, and like the rings
+		   it does not answer hover.
 		   ⚓ THE RINGS DO NOT MOVE (⚓ Nate). They are the artwork's fixed
 		   decorative ladder — they exist to balance a sparse drawing by filling
 		   its empty middle, so they belong to the figure's WEIGHT, not to the
@@ -304,13 +309,12 @@
 		   § the night stop). */
 		--ink-figure: var(--accent);
 		/* The label block's .85 as PAINT, one stop per colour in it, because
-		   there is no single fill a text block can carry an alpha on. The rule
-		   folds in its own .6 (.85 × .6 = .51) — ⛔ it cannot wear a second
-		   mix, a color-mix fed by a color-mix crashes WebKit. ⚠ EVERY end mixes
+		   there is no single fill a text block can carry an alpha on.
+		   ⛔ No colour here may wear a second mix — a color-mix fed by a
+		   color-mix crashes WebKit. ⚠ EVERY end mixes
 		   a var that resolves to a LITERAL, which is what keeps that true:
 		   --accent is gold-400, --hero-lit is gold-300, --chrome is #ffffff. */
 		--ink-kicker: color-mix(in srgb, var(--accent) 85%, transparent);
-		--ink-rule: color-mix(in srgb, var(--accent) 51%, transparent);
 		--ink-name: color-mix(in srgb, var(--chrome) 85%, transparent);
 
 		position: relative;
@@ -350,7 +354,6 @@
 	.hero:focus-visible {
 		--ink-figure: var(--hero-lit);
 		--ink-kicker: var(--hero-lit);
-		--ink-rule: color-mix(in srgb, var(--hero-lit) 60%, transparent);
 		--ink-name: var(--chrome);
 		transform: translateY(-1px);
 		outline: none;
@@ -484,14 +487,15 @@
 		}
 	}
 
-	/* The kicker's rule: a short gold hairline, the width of a few characters,
-	   between the plain name and the poetic one. */
+	/* The label's rule: the site's centre-mark HRule (⚓ Nate 2026-09-30) —
+	   decorative ink like the rings, so like them it never answers hover.
+	   ⚠ OPAQUE — `--hero-rule` (app.css) says why.
+	   Width: the mark is 28px, so the rule needs room for a line either side
+	   on the 102px phone card. */
 	.hero__rule {
 		display: block;
-		width: 22%;
-		height: 1px;
-		background: var(--ink-rule);
-		transition: background-color var(--t-snap);
+		width: 52%;
+		--rule-tint: var(--hero-rule);
 	}
 
 	.hero__name {
