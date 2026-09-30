@@ -108,19 +108,61 @@ export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
 export const SIZE = 720;
 // PAD reserves room for tick labels (left/bottom) and, on the right, the
 // isoline value column + its rotated AVERAGE DMG identity label.
-// ↻ 2026-09-30 (⚓ Nate): the three axis titles sit a set gap past their tick
-// labels — they used to hang off the box edge at 11 / 20 / 25px — and the plot
-// took the room back. One gap PER AXIS, because one number does not read as one
-// gap: CRIT RATE is measured from the widest tick ("100%", at the top), while
-// the title sits beside two-digit ticks 7px narrower; and a text box carries
-// empty room below the digits and above the capitals, which the eye adds to
-// CRIT DMG's gap. 🎛️ Nate's values, by eye.
-export const AXIS_TITLE_GAP = { cr: 4, cd: 6, avg: 8 };
+// ↻ 2026-09-30 (⚓ Nate): the three axis titles sit ONE ink gap past the tick
+// labels they actually stand beside, and the plot took the room back. Measured
+// on the GLYPHS, not the text boxes — a box carries empty room above the
+// capitals and below the digits, and CRIT RATE's widest tick ("100%") is at the
+// top, not beside the title — so equal numbers here are equal to the eye.
+// (By box, 4 / 6 / 8px measured 13.9 / 12.1 / 11.3px of ink.)
+/** Clear space between an axis title's glyphs and its tick labels' glyphs. 🎛️ */
+export const AXIS_TITLE_GAP = 10;
+/** Clear space between a title's glyphs and the outer edge of the chart box. */
+export const AXIS_TITLE_MARGIN = 6;
+
+/** Glyph metrics the title placement is built on — IBM Plex Sans at 11px,
+ *  measured with canvas `measureText` (actualBoundingBox*). The ticks' digits
+ *  and the titles' capitals share one cap height and sit a hair under their
+ *  baseline. */
+export const AXIS_INK = {
+	/** Cap / digit height above the baseline. */
+	capHeight: 7.81,
+	/** How far the glyphs dip below the baseline. */
+	belowBaseline: 0.13,
+	/** The widest two-digit crit-rate tick, its ink from its right-aligned end. */
+	crTickInk: 22.98,
+	/** An isoline value ("2.50x"), its ink from its start. */
+	isoTickInk: 25.6
+};
+
 export const PAD = {
 	top: 24,
-	right: 50 + AXIS_TITLE_GAP.avg,
-	bottom: 42 + AXIS_TITLE_GAP.cd,
-	left: 61 + AXIS_TITLE_GAP.cr
+	// isoline labels start 8 past the plot, then the gap, the title, the margin
+	right: Math.ceil(
+		8 +
+			AXIS_INK.isoTickInk +
+			AXIS_TITLE_GAP +
+			AXIS_INK.belowBaseline +
+			AXIS_INK.capHeight +
+			AXIS_TITLE_MARGIN
+	),
+	// tick baselines sit 22 below the plot
+	bottom: Math.ceil(
+		22 +
+			AXIS_INK.belowBaseline +
+			AXIS_TITLE_GAP +
+			AXIS_INK.capHeight +
+			AXIS_INK.belowBaseline +
+			AXIS_TITLE_MARGIN
+	),
+	// crit-rate ticks end 10 left of the plot
+	left: Math.ceil(
+		10 +
+			AXIS_INK.crTickInk +
+			AXIS_TITLE_GAP +
+			AXIS_INK.belowBaseline +
+			AXIS_INK.capHeight +
+			AXIS_TITLE_MARGIN
+	)
 };
 
 // The pixel box the plot is drawn into. Because the CR and CD axes are already

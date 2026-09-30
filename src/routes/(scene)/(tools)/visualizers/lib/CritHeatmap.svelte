@@ -6,6 +6,7 @@
 		CD_MAX,
 		SIZE,
 		PAD,
+		AXIS_INK,
 		AXIS_TITLE_GAP,
 		ISOLINE_VALUES,
 		clamp,
@@ -22,6 +23,7 @@
 		plotHeight,
 		type PlotGeometry
 	} from './crit';
+	import { buildRampLut, RAMP_LUT_SIZE, type RGB } from './critRamp';
 
 	// Axis tick positions
 	const CD_TICKS = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
@@ -92,8 +94,10 @@
 	}
 
 	// Cubehelix-inspired color ramp: deep blue → teal → green → yellow → orange → red-purple.
-	// Mapped over the multiplier range [1.0, 4.0].
-	const colorStops: Array<[number, number, number]> = [
+	// Mapped over the multiplier range [1.0, 4.0]; the curve between the stops
+	// is critRamp.ts's (an OKLab B-spline with its chroma handed back — that file
+	// says why).
+	const colorStops: readonly RGB[] = [
 		[12, 24, 74],
 		[22, 78, 148],
 		[20, 140, 150],
@@ -127,15 +131,18 @@
 	const cvPath = $derived(buildCvLinePath(cv, geom));
 	const cvLabel = $derived(buildCvLineLabel(cv, geom));
 
-	// The axis titles, each its AXIS_TITLE_GAP past the outer edge of its tick
-	// labels (crit.ts says why the three differ). Anchored to the PLOT, not the box, so they travel with it; PAD is
-	// sized to hold them. Measured at 11px: a title's glyph box runs 11px above
-	// its baseline and 3px below (rotated, "above" is away from the plot); the
-	// widest CR tick ("100%") ends 40px left of the plot, the CD ticks 25px
-	// below it, the isoline column ("4.00x") 34px right of it.
-	const crTitleX = $derived(PAD.left - 40 - AXIS_TITLE_GAP.cr - 3);
-	const cdTitleY = $derived(PAD.top + plotH + 25 + AXIS_TITLE_GAP.cd + 11);
-	const avgTitleX = $derived(PAD.left + plotW + 34 + AXIS_TITLE_GAP.avg + 3);
+	// The axis titles, AXIS_TITLE_GAP of clear space between their glyphs and
+	// the glyphs of the tick labels beside them (crit.ts has the metrics). Both
+	// rotated titles face the plot with their BASELINE; CRIT DMG with its caps.
+	const crTitleX = $derived(
+		PAD.left - 10 - AXIS_INK.crTickInk - AXIS_TITLE_GAP - AXIS_INK.belowBaseline
+	);
+	const cdTitleY = $derived(
+		PAD.top + plotH + 22 + AXIS_INK.belowBaseline + AXIS_TITLE_GAP + AXIS_INK.capHeight
+	);
+	const avgTitleX = $derived(
+		PAD.left + plotW + 8 + AXIS_INK.isoTickInk + AXIS_TITLE_GAP + AXIS_INK.belowBaseline
+	);
 
 	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
 	// Shown with the CV line: a fixed budget's multiplier peaks exactly where
@@ -173,20 +180,13 @@
 
 	// ── Canvas rendering ───────────────────────────────────────────────────────
 
-	// Maps a damage multiplier value to an RGB color via the cubehelix-inspired ramp
+	const rampLut = buildRampLut(colorStops);
+
+	// Maps a damage multiplier value to an RGB color via the ramp's lookup table
 	function damageToColor(value: number): [number, number, number] {
 		const normalized = clamp((value - 1.0) / (4.0 - 1.0), 0, 1);
-		const segment = normalized * (colorStops.length - 1);
-		const start = Math.floor(segment);
-		const end = Math.min(start + 1, colorStops.length - 1);
-		const fraction = segment - start;
-		const [r1, g1, b1] = colorStops[start];
-		const [r2, g2, b2] = colorStops[end];
-		return [
-			Math.round(r1 + (r2 - r1) * fraction),
-			Math.round(g1 + (g2 - g1) * fraction),
-			Math.round(b1 + (b2 - b1) * fraction)
-		];
+		const i = Math.round(normalized * (RAMP_LUT_SIZE - 1)) * 3;
+		return [rampLut[i], rampLut[i + 1], rampLut[i + 2]];
 	}
 
 	// Draws the heatmap field onto canvasEl at the current box size. The marker/CV
