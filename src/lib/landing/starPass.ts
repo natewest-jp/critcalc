@@ -81,9 +81,11 @@ const HERO_FLICKER_SCALE = 0.5;
  *  sky itself untouched, so there is nothing to match.
  *  STAR_KEEPOUT_PAD_PX: how far the fully clear box reaches past the lockup.
  *  STAR_KEEPOUT_FEATHER_PX: the soft edge beyond that, where stars ramp back.
- *  🎛️ Tuning knobs — Nate's to set. */
-export const STAR_KEEPOUT_PAD_PX = 10;
-export const STAR_KEEPOUT_FEATHER_PX = 36;
+ *  🎛️ Tuning knobs — Nate's to set. ⚓ Nate 2026-09-30: 0 / 4 — the mark only
+ *  needed the stars out from BEHIND it, where they broke its own outline; a
+ *  wider clearing was not the point. */
+export const STAR_KEEPOUT_PAD_PX = 0;
+export const STAR_KEEPOUT_FEATHER_PX = 4;
 
 // --- Star tints -----------------------------------------------------------
 

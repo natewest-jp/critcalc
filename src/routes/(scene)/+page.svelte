@@ -487,10 +487,9 @@
 		}
 	}
 
-	/* The label's rule: the site's centre-mark HRule (⚓ Nate 2026-09-30), in
-	   the OUTER RING's colour — the artwork's own decorative ink, so it rests
-	   with the rings and, like them, never answers hover.
-	   ⚠ OPAQUE, not the ring's .09 — `--hero-rule` (app.css) says why.
+	/* The label's rule: the site's centre-mark HRule (⚓ Nate 2026-09-30) —
+	   decorative ink like the rings, so like them it never answers hover.
+	   ⚠ OPAQUE — `--hero-rule` (app.css) says why.
 	   Width: the mark is 28px, so the rule needs room for a line either side
 	   on the 102px phone card. */
 	.hero__rule {
