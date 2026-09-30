@@ -32,7 +32,7 @@
 		ZOOM_MIN,
 		ZOOM_STEP
 	} from '$lib/plannerView.svelte';
-	import { playback } from '$lib/playback/playback.svelte';
+	import { playback, rateLabel } from '$lib/playback/playback.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab state — hoisted to the shared working-team module (bench-band round):
@@ -414,6 +414,23 @@
 					<!-- FILLED, as the Gauge Explorer's: an outlined triangle reads as
 					     "insert" before it reads as "play". -->
 					<Mark name={playback.playing ? 'pause' : 'play'} size={13} filled />
+				</button>
+				<!-- SPEED (2026-09-30): full, three-quarter and half, cycled — for
+				     learning a rotation away from the game. A plate that says its
+				     own value, LIT whenever it is not full speed: a slowed chart must
+				     announce itself, the layers' law. Fixed width, so cycling never
+				     shifts the band. -->
+				<button
+					class="btn btn--sm rp-speed"
+					class:is-active={playback.rate !== 1}
+					type="button"
+					aria-label="Playback speed {rateLabel(playback.rate)}"
+					title="Playback speed: {rateLabel(
+						playback.rate
+					)}. Slow down to learn a rotation; the count-in keeps its pace"
+					onclick={() => playback.cycleRate()}
+				>
+					{rateLabel(playback.rate)}
 				</button>
 				<!-- ══ REPEAT (Round B) ═══════════════════════════════════════════
 				     Draws the laps that FOLLOW: the notation joined to itself by a
@@ -851,6 +868,13 @@
 		display: flex;
 		align-items: center;
 		gap: 0.2rem;
+	}
+	/* Wide enough for "0.75×" at every value, in tabular figures, so the plate
+	   keeps its width as it cycles. */
+	.rp-speed {
+		min-width: 5.5ch;
+		justify-content: center;
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* Track/thumb styling comes from the shared .slider (app.css). The PLATE is

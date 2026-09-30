@@ -46,6 +46,13 @@ const TICK_MS = 100;
  *  tone started at `currentTime` exactly plays on the NEXT render quantum. */
 const START_LATENCY_S = 0.05;
 
+/** The speeds the plate cycles, fastest first (Nate 2026-09-30: half speed
+ *  for learning; ¾ because half is often too slow once you nearly have it). */
+export const PLAYBACK_RATES = [1, 0.75, 0.5] as const;
+/** A speed as its plate says it. Decimals, ⛔ never the ½ ¾ glyphs — a
+ *  vulgar fraction falls back to another face (the sub-pixel laws). */
+export const rateLabel = (rate: number) => `${rate}×`;
+
 class Playback {
 	/** Rotation-axis position in seconds; parked at the start during the
 	 *  count-in. */
@@ -70,7 +77,42 @@ class Playback {
 	#queuedTo = 0;
 	/** The cue list the queue was built from — a change re-queues. */
 	#queuedFrom: readonly Cue[] | null = null;
+	/** The count-in on the ROTATION's axis at the current rate — see `rate`. */
 	#countIn = countInCues();
+
+	/**
+	 * Playback speed (2026-09-30): 1, ¾ or ½ — for LEARNING a rotation, away
+	 * from the game (the game will not slow down with it). Per LOOK like zoom,
+	 * so not stored; ⛔ never in `?r=`.
+	 *
+	 * ⚓ The ROTATION slows and the COUNT-IN DOES NOT. The count-in's beats are
+	 * a second apart at every speed (it has never carried the rotation's tempo
+	 * — a rotation has none), so it is scaled onto the rotation's axis here and
+	 * comes out at one second a beat in real time. Everything else — the
+	 * cursor, every press, every note's ring, the human-timing pads — divides
+	 * by the rate, because it is all read on the one axis.
+	 */
+	rate = $state(1);
+
+	/** The next speed down, wrapping back to full — what the plate does. */
+	cycleRate() {
+		const i = PLAYBACK_RATES.indexOf(this.rate as (typeof PLAYBACK_RATES)[number]);
+		this.setRate(PLAYBACK_RATES[(i + 1) % PLAYBACK_RATES.length]);
+	}
+
+	/** Change speed. Mid-play it re-anchors in place, without a count-in. */
+	setRate(rate: number) {
+		if (rate === this.rate) return;
+		const wasPlaying = this.playing;
+		this.pause();
+		this.rate = rate;
+		if (wasPlaying) this.#start(false);
+	}
+
+	/** Elapsed seconds on the rotation's axis since the anchor. */
+	#elapsed(): number {
+		return (this.#now() - this.#anchor) * this.rate;
+	}
 
 	/** Nothing to play: an empty rotation, or one that parses to zero length. */
 	get canPlay() {
@@ -129,7 +171,8 @@ class Playback {
 		if (!this.loop && this.#from >= duration) this.#from = 0;
 		// The count-in needs something to hear: a silent one is a cursor parked
 		// for four seconds, which reads as a hang.
-		this.#lead = sounder && countIn ? COUNT_IN_S : 0;
+		this.#lead = sounder && countIn ? COUNT_IN_S * this.rate : 0;
+		this.#countIn = countInCues().map((c) => ({ ...c, t: c.t * this.rate }));
 		this.#anchor = this.#now() + (sounder ? START_LATENCY_S : 0);
 		this.#queuedTo = 0;
 		this.#queuedFrom = null;
@@ -145,7 +188,7 @@ class Playback {
 	/** Where the cursor stands now. Inside the count-in it has not left
 	 *  `#from` yet, so that is where a pause leaves it. */
 	#position(): number {
-		const elapsed = this.#now() - this.#anchor;
+		const elapsed = this.#elapsed();
 		if (elapsed < this.#lead) return this.#from;
 		return positionAt(elapsed, this.#lead, pv.playbackEnd, this.loop, this.#from).t;
 	}
@@ -210,7 +253,7 @@ class Playback {
 			this.stop();
 			return;
 		}
-		const elapsed = this.#now() - this.#anchor;
+		const elapsed = this.#elapsed();
 		const pos = positionAt(elapsed, this.#lead, duration, this.loop, this.#from);
 		// The cursor waits at its start while the beats count it in.
 		this.t = elapsed < this.#lead ? this.#from : pos.t;
@@ -229,7 +272,8 @@ class Playback {
 		const duration = pv.playbackEnd;
 		if (duration <= 0) return;
 		const cues = pv.playbackCues;
-		const nowElapsed = s.ctx.currentTime - this.#anchor;
+		// On the rotation's axis; the context's clock is real seconds.
+		const nowElapsed = (s.ctx.currentTime - this.#anchor) * this.rate;
 		if (this.#queuedFrom !== null && this.#queuedFrom !== cues) {
 			// The rotation changed under us: drop what was queued from the old
 			// parse and rebuild from now with the new one. A tone already
@@ -238,7 +282,7 @@ class Playback {
 			this.#queuedTo = nowElapsed;
 		}
 		this.#queuedFrom = cues;
-		const to = nowElapsed + LOOKAHEAD_S;
+		const to = nowElapsed + LOOKAHEAD_S * this.rate;
 		if (to <= this.#queuedTo) return;
 		const choice = this.#choice();
 		for (const due of dueBetween(
@@ -251,7 +295,7 @@ class Playback {
 			to,
 			this.#from
 		)) {
-			s.play(due.kind, this.#anchor + due.elapsed, choice, due.dur);
+			s.play(due.kind, this.#anchor + due.elapsed / this.rate, choice, due.dur / this.rate);
 		}
 		this.#queuedTo = to;
 	}
