@@ -89,8 +89,8 @@
 		back to the start — or, while playing, goes again from the top. Each note rings for as long as
 		its input holds the field, so a burst is a long note and a normal attack a short one; a swap is
 		a soft hum, the one sound that is not struck. The voice, which note each input gets, and the
-		volume are set in Settings. The notes keep time with the tab hidden, so you can play the
-		rotation with the game in front of you and the chart behind it.
+		volume are set in Settings, where the sound can also be turned off. The notes keep time with the
+		tab hidden, so you can play the rotation with the game in front of you and the chart behind it.
 		<em>Repeat</em> draws the laps that follow: the notation is run again from its last action, joined
 		by a swap back to your opener, and the laps are simulated rather than copied. A skill still on cooldown
 		waits where it really waits, and everything after it moves; a buff or an aura from one lap is still
