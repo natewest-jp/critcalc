@@ -1053,7 +1053,7 @@
 		justify-content: space-between;
 	}
 	.rp-zoom-value {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-sm);
 		color: var(--muted);
 		font-variant-numeric: tabular-nums;
