@@ -375,11 +375,13 @@
 			     Inert at the resting scale, like the zoom buttons at their
 			     limits. -->
 			<!-- ══ THE TRANSPORT (playback round, 2026-09-29) ═════════════════════
-			     Play and its sound, AHEAD of the zoom cluster: both zones answer
+			     Rewind and Play, AHEAD of the zoom cluster: both zones answer
 			     "how am I looking at the axis", and moving along it comes before
-			     scaling it. Two plates, icon-only at every width — Play carries no
-			     word anywhere on the site (the Gauge Explorer set the form), and the
-			     speaker says on/off by its own mark, so there is nothing to fold.
+			     scaling it. Icon-only at every width — Play carries no word anywhere
+			     on the site (the Gauge Explorer set the form). ↻ 2026-09-30: the
+			     SOUND plate moved to Settings as the Sound row's Off — it is a
+			     preference set once, not a control reached for mid-task, and it
+			     had no home below `compact` at all.
 			     ⚠ The pair is ONE group at the tight intra-group gap, like the zoom.
 			     Play disables on an empty rotation (nothing to keep time with) and
 			     keeps its glass at full, same rule as its neighbours below.
@@ -412,18 +414,6 @@
 					<!-- FILLED, as the Gauge Explorer's: an outlined triangle reads as
 					     "insert" before it reads as "play". -->
 					<Mark name={playback.playing ? 'pause' : 'play'} size={13} filled />
-				</button>
-				<button
-					class="btn btn--sm btn--icon rp-sound"
-					type="button"
-					aria-pressed={$siteSettings.playbackSound}
-					aria-label="Sound"
-					title={$siteSettings.playbackSound
-						? 'Sound on: a three-beat count-in, then a tone at every press'
-						: 'Sound off'}
-					onclick={() => playback.setSound(!$siteSettings.playbackSound)}
-				>
-					<Mark name={$siteSettings.playbackSound ? 'sound' : 'soundOff'} size={16} />
 				</button>
 				<!-- ══ REPEAT (Round B) ═══════════════════════════════════════════
 				     Draws the laps that FOLLOW: the notation joined to itself by a
@@ -925,16 +915,11 @@
 		}
 	}
 	/* The transport at the compact rung (playback round, 2026-09-29): the
-	   SOUND plate folds away and Play narrows to a 24px plate — the steppers'
-	   own rule (glyph + 5px a side) applied to a 13px glyph. Measured at 320
-	   with both plates at 36: the right zone ran 36px past the viewport; at a
-	   28px Play the band fit but the rail was 28px for a 30px Total; at 24 the
-	   number clears. ⏭ The sound preference is unreachable below 40rem as a
-	   result — a Settings row is the candidate home (Nate). */
+	   plates narrow to 24px — the steppers' own rule (glyph + 5px a side)
+	   applied to a 13px glyph. Measured at 320 with the plates at 36: the right
+	   zone ran 36px past the viewport; at 28 the rail was 28px for a 30px
+	   Total; at 24 the number clears. */
 	@media (max-width: 40rem) {
-		.rp-sound {
-			display: none;
-		}
 		.rp-play,
 		.rp-rewind,
 		.rp-repeat {

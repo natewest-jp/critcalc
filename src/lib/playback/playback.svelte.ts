@@ -193,7 +193,8 @@ class Playback {
 		this.#sounder?.cancelPending();
 	}
 
-	/** The sound plate. Mid-play it re-anchors onto the other clock in place. */
+	/** Sound on/off (Settings' Sound row). Mid-play it re-anchors onto the
+	 *  other clock in place, without a count-in. */
 	setSound(on: boolean) {
 		siteSettings.setPlaybackSound({ playbackSound: on });
 		if (!this.playing) return;

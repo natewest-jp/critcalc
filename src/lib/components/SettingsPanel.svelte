@@ -239,8 +239,9 @@
 	</section>
 
 	<!-- ══ PLAYBACK SOUND (playback round, 2026-09-29) ═══════════════════════
-	     Band B's Sound plate is on/off; WHAT sounds is a taste set once, so it
-	     lives here (⚓ Nate: people are picky about sounds, and it is personal).
+	     ↻ 2026-09-30: on/off lives here too, as the Sound row's Off — band B's
+	     speaker plate retired (a preference set once, and unreachable below
+	     `compact`). WHAT sounds is a taste set once, so it lives here (⚓ Nate: people are picky about sounds, and it is personal).
 	     Every choice PLAYS on selection — picking by listening, not by reading a
 	     label — and Preview plays it again. All gestures, which is what creating
 	     the AudioContext needs. The vocabulary is three notes (attack, skill,
@@ -258,20 +259,30 @@
 			<span class="sp-label">
 				<span class="sp-name">Sound</span>
 				<span class="sp-desc">
-					The metronome is one pitch and says only when. A melodic voice gives the attacks, the
-					skill and the burst three notes of a pentatonic scale, so notes that overlap never clash.
+					<strong>Off</strong> runs the cursor in silence, with no count-in. The metronome is one pitch
+					and says only when. A melodic voice gives the attacks, the skill and the burst three notes of
+					a pentatonic scale, so notes that overlap never clash.
 				</span>
 			</span>
 			<div class="sp-sound-ctl">
-				<div class="segment sp-segment sp-segment--two" role="radiogroup" aria-label="Sound">
+				<div class="segment sp-segment sp-segment--mode" role="radiogroup" aria-label="Sound">
+					<button
+						class="btn"
+						class:is-active={!$siteSettings.playbackSound}
+						role="radio"
+						aria-checked={!$siteSettings.playbackSound}
+						onclick={() => playback.setSound(false)}>Off</button
+					>
 					{#each SOUND_MODES as value (value)}
+						{@const on = $siteSettings.playbackSound && $siteSettings.playbackSoundMode === value}
 						<button
 							class="btn"
-							class:is-active={$siteSettings.playbackSoundMode === value}
+							class:is-active={on}
 							role="radio"
-							aria-checked={$siteSettings.playbackSoundMode === value}
+							aria-checked={on}
 							onclick={() => {
 								siteSettings.setPlaybackSound({ playbackSoundMode: value });
+								playback.setSound(true);
 								playback.preview();
 							}}>{SOUND_MODE_LABELS[value]}</button
 						>
@@ -281,13 +292,14 @@
 					class="btn btn--sm"
 					type="button"
 					aria-label="Preview the sound"
+					disabled={!$siteSettings.playbackSound}
 					onclick={() => playback.preview()}
 				>
 					<Mark name="play" size={12} filled />
 					Preview
 				</button>
 			</div>
-			{#if $siteSettings.playbackSoundMode === 'melodic'}
+			{#if $siteSettings.playbackSound && $siteSettings.playbackSoundMode === 'melodic'}
 				<div class="segment sp-segment" role="radiogroup" aria-label="Voice">
 					{#each VOICE_IDS as value (value)}
 						<button
@@ -549,12 +561,12 @@
 		flex-wrap: wrap;
 		gap: 0.5rem;
 	}
-	/* The mode picker is two plates beside Preview; the voices (shown under it
+	/* The mode picker is three plates (Off and the two modes) beside Preview; the voices (shown under it
 	   when Melodic) and the three-way rows sit on one recessed track as a
 	   3-column grid, so the six voices are 3 + 3 and never overflow. */
-	.sp-sound-ctl .sp-segment--two {
+	.sp-sound-ctl .sp-segment--mode {
 		display: inline-grid;
-		grid-template-columns: repeat(2, minmax(6rem, 1fr));
+		grid-template-columns: repeat(3, minmax(5.5rem, 1fr));
 	}
 	.sp-row--stack > .sp-segment {
 		display: grid;
