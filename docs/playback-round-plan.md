@@ -81,16 +81,26 @@ Sound is what makes the in-game case work: a hidden tab freezes `requestAnimatio
 ⚠️ The worksheets live on the text branch; these rows go into the planner sheet's next
 "Added" section when the branches meet. Keys are left to the extraction pass.
 
-| Where                  | Kind       | Now                                                         |
-| ---------------------- | ---------- | ----------------------------------------------------------- |
-| Band B transport group | aria-label | Playback                                                    |
-| Play plate, idle       | aria-label | Play the rotation                                           |
-| Play plate, idle       | title      | Play the rotation at game speed                             |
-| Play plate, playing    | aria-label | Pause                                                       |
-| Play plate, playing    | title      | Pause                                                       |
-| Sound plate            | aria-label | Sound                                                       |
-| Sound plate, on        | title      | Sound on: a three-beat count-in, then a tone at every press |
-| Sound plate, off       | title      | Sound off                                                   |
+| Where                    | Kind       | Now                                                                                          |
+| ------------------------ | ---------- | -------------------------------------------------------------------------------------------- |
+| Band B transport group   | aria-label | Playback                                                                                     |
+| Rewind plate             | aria-label | Back to the start                                                                            |
+| Rewind plate             | title      | Back to the start (Home)                                                                     |
+| Play plate, idle         | aria-label | Play the rotation                                                                            |
+| Play plate, idle         | title      | Play the rotation at game speed (Space)                                                      |
+| Play plate, playing      | aria-label | Pause                                                                                        |
+| Play plate, playing      | title      | Pause (Space)                                                                                |
+| Speed plate              | aria-label | Playback speed {rate}                                                                        |
+| Speed plate              | title      | Playback speed: {rate}. Slow down to learn a rotation; the count-in keeps its pace           |
+| Speed values             | label      | 1× · 0.75× · 0.5×                                                                            |
+| Band B fold (⋯, compact) | aria-label | Playback, timing and panels                                                                  |
+| Band B fold              | heading    | Speed                                                                                        |
+| Band B fold              | items      | Repeat · Human timing · Log · Notes                                                          |
+| Settings, Sound row      | option     | Off (beside Metronome, Melodic)                                                              |
+| Settings, Sound row      | desc       | **Off** runs the cursor in silence, with no count-in. (prefixed to the existing description) |
+
+↻ 2026-09-30: the Sound plate's three strings RETIRED with the plate (on/off moved to the
+Settings Sound row).
 
 Notes: "press" is the glossary-neutral word for an input (a tap or a key) and matches the
 cue rule (§5: the sound marks the PRESS). ⚠️ "count-in" is musicians' vocabulary — a 🏷
@@ -165,18 +175,19 @@ Per round: vitest / check / lint / build. `advance()` and the audio SCHEDULE (a 
 
 - **Defaults** — 2026-09-29 evening (⚓ Nate, `tune(nate)`): Vibraphone · Skill up · Anchor. He may revise in the morning.
 
-## 11. Where to resume (written 2026-09-29 night)
+- **Finishing round** — 2026-09-30 (⚓ Nate greenlit the list, in this order). ⚓ The count-in is **FOUR** beats, a constant (not a setting), and its last beat is the same sine an octave up (`countLast`). ⚓ **Every start counts in**, a resume included — the cursor waits at the paused spot through the beats; `dueBetween`/`positionAt` take a `start`. **⏮ Rewind** beside Play (Lucide `SkipBack`, filled): parks at 0, or mid-play goes again from the top with the count-in. **Sound on/off moved to Settings** (Off beside Metronome | Melodic); the band's speaker plate and the `sound`/`soundOff` marks retired. **Speed** 1× · 0.75× · 0.5× (a cycling plate, lit when not 1×, fixed at 49px): the rotation's axis divides by the rate, ⚓ the count-in keeps its one-second beat; a change inside the count-in restarts the beats. **Keys**: Space plays/pauses, Home rewinds — never in a text field, under a modal, on a keyboard-focused control, or off the planner's route; ⚠️ `:focus-visible` could NOT gate this (Chrome makes a clicked button focus-visible at the first key), so the pointer is tracked. **Band B re-fit**: `wide` 68rem → **82rem** (the left zone is 485px; the Repeat plate had already broken the old fact on 09-29), and below `compact` one ⋯ holds Speed, Repeat, Human timing, Log, Notes. Measured 320–1920: no overflow, the Total clears by ≥ 17px.
 
-**State:** branch `feat/planner-playback` in the worktree `~/Code/critcalc-playback` (from `main` at `094b3a81`); the text round's checkout stays at `~/Code/critcalc`. Every commit's gates are green (vitest / check / lint / build). ⛔ **e2e has NOT run on this branch** — it runs before the merge, and band B's DOM changed, so expect to look at any band or settings spec. ⛔ Not merged, not pushed.
+## 11. Where to resume (written 2026-09-30)
 
-**Nate owes, in the morning (his words: "more judgment calls"):**
+**State:** branch `feat/planner-playback` in the worktree `~/Code/critcalc-playback`; every commit's vitest / check / lint / build green. The finishing round (§10, last entry) is built and committed. ⛔ Not merged, not pushed.
 
-1. Confirm or change the defaults (Vibraphone · Skill up · Anchor).
-2. Keep or trim: the five materials, the three orders, the four note sets, the three hums. Anything that becomes a constant retires its Settings row and its store field (keep the loader's migration for one release).
-3. `REPEAT_LAPS` (5) — he wants to watch DPS-dummy recordings first; maybe up to 10.
-4. The lap-mark register; the metronome's pitch; whether the energy caveat needs a home besides Help.
-5. On a phone the Sound plate folds below `compact` — a Settings row is the candidate home for the on/off (the set choice already lives there).
+**Nate owes:**
 
-**Then:** run `npm run test:e2e` (two "N passed" lines), merge with `--no-ff`, push when asked. The strings tables in §6.1–§6.2 go into the text round's worksheets (`rotation-planner.md`, `settings.md`) when the branches meet; the text branch is Nate's, sheet 04 pending.
+1. Listen to the four-beat count-in and its octave-up last beat.
+2. Judge on screen: the ⏮ and speed plates (desk width), the ⋯ fold at phone width, the full form's arrival at 82rem.
+3. The standing calls from 09-29: keep-or-trim voices / orders / note sets / hums; `REPEAT_LAPS`; the lap-mark register; whether the energy caveat needs a home besides Help.
+4. Real Safari: the transport keys and the first count-in beat on iOS (the context resumes inside the tap).
 
-**Later (parked):** a guzheng pluck needs an AudioWorklet (Karplus-Strong's loop is shorter than a render quantum) · the aura log has no lap column · the stream's `src` ranges point past the document (no reader) · the round-A rulings on `pointer: coarse` and the drawer stay with the responsive survey.
+**Then:** e2e (two "N passed" lines) → merge `--no-ff` → push when asked. The §6.1–§6.2 strings go to the text sheets when the branches meet.
+
+**Later (parked):** clicking the ruler to set the start point (⚓ agreed 2026-09-30 as the next step, before any draggable playhead) · a guzheng pluck needs an AudioWorklet · the aura log has no lap column · the stream's `src` ranges point past the document (no reader) · the round-A rulings on `pointer: coarse` and the drawer stay with the responsive survey.
