@@ -100,13 +100,17 @@ class Playback {
 		this.setRate(PLAYBACK_RATES[(i + 1) % PLAYBACK_RATES.length]);
 	}
 
-	/** Change speed. Mid-play it re-anchors in place, without a count-in. */
+	/** Change speed. Mid-play it re-anchors in place, without a count-in
+	 *  unless one was running. */
 	setRate(rate: number) {
 		if (rate === this.rate) return;
 		const wasPlaying = this.playing;
+		// Changed inside the count-in, the beats start over — a count-in cut
+		// short is a press arriving before the player is ready.
+		const counting = wasPlaying && this.#elapsed() < this.#lead;
 		this.pause();
 		this.rate = rate;
-		if (wasPlaying) this.#start(false);
+		if (wasPlaying) this.#start(counting);
 	}
 
 	/** Elapsed seconds on the rotation's axis since the anchor. */

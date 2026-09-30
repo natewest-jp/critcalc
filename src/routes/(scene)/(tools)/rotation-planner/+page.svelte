@@ -17,6 +17,7 @@
 	import { warmOpenTabCharacters } from '../lib/prewarmPlanner';
 	import { onMount } from 'svelte';
 	import { afterNavigate, goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
@@ -334,7 +335,46 @@
 		// already gets.
 		'A Starlight Prism bar says when the Polestar Field is up, not where — we assume you are standing in it.'
 	];
+
+	// ══ TRANSPORT KEYS (2026-09-30) ═══════════════════════════════════════════
+	// Space plays/pauses and Home rewinds: rehearsing a rotation is done with
+	// the hands on the keyboard. Taken only when the key has nothing else to do:
+	//   - never in a text field — the notation editor is contenteditable, and
+	//     Space and Home are typing there;
+	//   - never under a modal, whose own controls own the keyboard;
+	//   - never on a control the KEYBOARD brought focus to, which Space
+	//     activates — a keyboard user tabbing to a control must still work it.
+	//     A control focused by a CLICK is taken, and its default prevented:
+	//     after clicking Repeat, Space means play, not "click Repeat again".
+	//     ⚠️ Not `:focus-visible` — the first cut used it, and Chrome turns a
+	//     clicked button focus-visible at the first key pressed on it, so the
+	//     second Space clicked the speed plate. The pointer is tracked instead.
+	//   - only while the planner is the page on screen — a tool page is REVIVED,
+	//     not remounted, and outlives its route for a retention window (memory
+	//     `project_tool_page_revival`), so a window listener must ask.
+	let clickFocused: Element | null = null;
+	function onPointerFocus(e: PointerEvent) {
+		clickFocused = (e.target as Element | null)?.closest('button, a, [role="radio"]') ?? null;
+	}
+	function onTransportKey(e: KeyboardEvent) {
+		if (e.key === 'Tab') clickFocused = null;
+		if (e.key !== ' ' && e.key !== 'Home') return;
+		if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || e.defaultPrevented) return;
+		if (!page.url.pathname.startsWith(resolve('/rotation-planner'))) return;
+		const t = e.target as HTMLElement | null;
+		if (t?.closest('input, textarea, select, [contenteditable], [role="textbox"]')) return;
+		if (document.querySelector('[aria-modal="true"]')) return;
+		if (e.key === ' ' && t?.closest('button, a, [role="radio"]') && t !== clickFocused) return;
+		e.preventDefault();
+		if (e.key === ' ') {
+			if (!e.repeat) playback.toggle();
+		} else {
+			playback.rewind();
+		}
+	}
 </script>
+
+<svelte:window onkeydown={onTransportKey} onpointerdowncapture={onPointerFocus} />
 
 <section class="rotation-page">
 	<!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
@@ -396,7 +436,7 @@
 					class="btn btn--sm btn--icon rp-rewind"
 					type="button"
 					aria-label="Back to the start"
-					title="Back to the start"
+					title="Back to the start (Home)"
 					disabled={!playback.canRewind}
 					onclick={() => playback.rewind()}
 				>
@@ -407,7 +447,7 @@
 					type="button"
 					aria-pressed={playback.playing}
 					aria-label={playback.playing ? 'Pause' : 'Play the rotation'}
-					title={playback.playing ? 'Pause' : 'Play the rotation at game speed'}
+					title={playback.playing ? 'Pause (Space)' : 'Play the rotation at game speed (Space)'}
 					disabled={!playback.canPlay}
 					onclick={() => playback.toggle()}
 				>
