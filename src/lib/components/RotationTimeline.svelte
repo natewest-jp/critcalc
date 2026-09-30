@@ -96,10 +96,14 @@
 		notation = $bindable(''),
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		tabCon = {} as Record<string, number>,
+		tabId = '',
 		underChart
 	}: {
 		characterSlots?: string[];
 		notation?: string;
+		/** Which document `notation` is — the planner's active tab. The editor
+		 *  keeps one undo history per id (see `showDocument`). */
+		tabId?: string;
 		tabLoadout?: Record<string, LoadoutEntry>;
 		/** Per-tab constellation overrides (Layer 2). Shadows the roster's global
 		 *  `constellations` field-by-field, exactly like tabLoadout shadows loadout.
@@ -1788,43 +1792,60 @@
 		const api = editorApi;
 		if (!api) return;
 		const doc = notation;
+		// A tab switch swaps the editor's whole state, tints included; two tabs
+		// with the same text would otherwise leave the fresh one untinted.
+		void tabId;
 		// The DOCUMENT's events: a tint is a source range in the editor, and the
 		// stream's copies have ranges past the text's end.
 		const tints = notationTints(docRotation);
 		untrack(() => api.setTints(doc, tints));
 	});
 
-	function mountEditor(node: HTMLElement, value: string) {
+	function mountEditor(node: HTMLElement, doc: { value: string; key: string }) {
 		let editor: NotationEditor | null = null;
 		let destroyed = false;
 		// The latest external value, replayed into the editor when it arrives
 		// (the user can't type into the placeholder, but tab switches / URL
 		// imports can update notation while the chunk is still loading).
-		let pendingValue = value;
+		let pendingValue = doc.value;
+		let pendingKey = doc.key;
 
 		const placeholder = document.createElement('div');
 		placeholder.className = 'rp-notation-placeholder';
-		placeholder.textContent = value;
+		placeholder.textContent = doc.value;
 		node.appendChild(placeholder);
 
 		import('$lib/utils/notationEditor').then(({ createNotationEditor }) => {
 			if (destroyed) return;
 			placeholder.remove();
-			editor = createNotationEditor(node, pendingValue, (v) => {
-				notation = v;
-				historyTick++;
-			});
+			editor = createNotationEditor(
+				node,
+				pendingValue,
+				(v) => {
+					notation = v;
+					historyTick++;
+				},
+				pendingKey
+			);
 			editorApi = editor;
 			historyTick++;
 		});
 
 		return {
-			update(newValue: string) {
-				pendingValue = newValue;
-				if (editor) {
-					editor.setValue(newValue);
-					historyTick++;
-				} else placeholder.textContent = newValue;
+			// ⚠ UNTRACKED. Svelte runs an action's update() inside the effect that
+			// reads its parameter, and `historyTick++` reads the counter it writes.
+			// A string parameter hid that (an equal value skips the call); this
+			// object is new on every run, so a tracked body loops until Svelte
+			// throws `effect_update_depth_exceeded`.
+			update(next: { value: string; key: string }) {
+				untrack(() => {
+					pendingValue = next.value;
+					pendingKey = next.key;
+					if (editor) {
+						editor.showDocument(next.key, next.value);
+						historyTick++;
+					} else placeholder.textContent = next.value;
+				});
 			},
 			destroy() {
 				destroyed = true;
@@ -3295,7 +3316,7 @@
 	     share link — they live in band A's Share menu now. -->
 	<div class="rp-composer">
 		<div class="rp-notation-wrap">
-			<div class="rp-notation" use:mountEditor={notation}></div>
+			<div class="rp-notation" use:mountEditor={{ value: notation, key: tabId }}></div>
 			<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
 			     characters' coverage under the box, what this rotation doesn't
 			     reach dimmed. Under the box rather than beside it, so the strips

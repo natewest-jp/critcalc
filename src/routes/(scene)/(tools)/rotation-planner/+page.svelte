@@ -846,6 +846,7 @@
 {#snippet main()}
 	<RotationTimeline
 		bind:notation={rt.notation}
+		tabId={rt.activeTabId}
 		characterSlots={slots}
 		tabLoadout={rt.tabLoadout}
 		tabCon={rt.tabCon}

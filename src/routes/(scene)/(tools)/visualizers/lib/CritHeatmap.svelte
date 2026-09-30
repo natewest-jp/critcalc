@@ -6,6 +6,8 @@
 		CD_MAX,
 		SIZE,
 		PAD,
+		AXIS_INK,
+		AXIS_TITLE_GAP,
 		ISOLINE_VALUES,
 		clamp,
 		averageDamageMultiplier,
@@ -21,6 +23,7 @@
 		plotHeight,
 		type PlotGeometry
 	} from './crit';
+	import { buildRampLut, RAMP_LUT_SIZE, type RGB } from './critRamp';
 
 	// Axis tick positions
 	const CD_TICKS = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
@@ -91,8 +94,10 @@
 	}
 
 	// Cubehelix-inspired color ramp: deep blue → teal → green → yellow → orange → red-purple.
-	// Mapped over the multiplier range [1.0, 4.0].
-	const colorStops: Array<[number, number, number]> = [
+	// Mapped over the multiplier range [1.0, 4.0]; the curve between the stops
+	// is critRamp.ts's (an OKLab B-spline with its chroma handed back — that file
+	// says why).
+	const colorStops: readonly RGB[] = [
 		[12, 24, 74],
 		[22, 78, 148],
 		[20, 140, 150],
@@ -125,6 +130,19 @@
 	const cv = $derived(critValue(shownCR, shownCD));
 	const cvPath = $derived(buildCvLinePath(cv, geom));
 	const cvLabel = $derived(buildCvLineLabel(cv, geom));
+
+	// The axis titles, AXIS_TITLE_GAP of clear space between their glyphs and
+	// the glyphs of the tick labels beside them (crit.ts has the metrics). Both
+	// rotated titles face the plot with their BASELINE; CRIT DMG with its caps.
+	const crTitleX = $derived(
+		PAD.left - 10 - AXIS_INK.crTickInk - AXIS_TITLE_GAP - AXIS_INK.belowBaseline
+	);
+	const cdTitleY = $derived(
+		PAD.top + plotH + 22 + AXIS_INK.belowBaseline + AXIS_TITLE_GAP + AXIS_INK.capHeight
+	);
+	const avgTitleX = $derived(
+		PAD.left + plotW + 8 + AXIS_INK.isoTickInk + AXIS_TITLE_GAP + AXIS_INK.belowBaseline
+	);
 
 	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
 	// Shown with the CV line: a fixed budget's multiplier peaks exactly where
@@ -162,20 +180,13 @@
 
 	// ── Canvas rendering ───────────────────────────────────────────────────────
 
-	// Maps a damage multiplier value to an RGB color via the cubehelix-inspired ramp
+	const rampLut = buildRampLut(colorStops);
+
+	// Maps a damage multiplier value to an RGB color via the ramp's lookup table
 	function damageToColor(value: number): [number, number, number] {
 		const normalized = clamp((value - 1.0) / (4.0 - 1.0), 0, 1);
-		const segment = normalized * (colorStops.length - 1);
-		const start = Math.floor(segment);
-		const end = Math.min(start + 1, colorStops.length - 1);
-		const fraction = segment - start;
-		const [r1, g1, b1] = colorStops[start];
-		const [r2, g2, b2] = colorStops[end];
-		return [
-			Math.round(r1 + (r2 - r1) * fraction),
-			Math.round(g1 + (g2 - g1) * fraction),
-			Math.round(b1 + (b2 - b1) * fraction)
-		];
+		const i = Math.round(normalized * (RAMP_LUT_SIZE - 1)) * 3;
+		return [rampLut[i], rampLut[i + 1], rampLut[i + 2]];
 	}
 
 	// Draws the heatmap field onto canvasEl at the current box size. The marker/CV
@@ -591,13 +602,13 @@
 			     rotated axis-style label (mirrors CRIT RATE on the left) -->
 			<text x={PAD.left + plotW + 8} y={PAD.top + 10} fill={ink(0.62)} font-size="10"> 4.00x </text>
 			<text
-				x={boxW - 12}
+				x={avgTitleX}
 				y={PAD.top + plotH / 2}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
-				transform={`rotate(90, ${boxW - 12}, ${PAD.top + plotH / 2})`}
+				transform={`rotate(90, ${avgTitleX}, ${PAD.top + plotH / 2})`}
 			>
 				AVERAGE DMG
 			</text>
@@ -605,7 +616,7 @@
 			<!-- Axis labels -->
 			<text
 				x={PAD.left + plotW / 2}
-				y={boxH - 8}
+				y={cdTitleY}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
@@ -614,13 +625,13 @@
 				CRIT DMG
 			</text>
 			<text
-				x={18}
+				x={crTitleX}
 				y={PAD.top + plotH / 2}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
-				transform={`rotate(-90, 18, ${PAD.top + plotH / 2})`}
+				transform={`rotate(-90, ${crTitleX}, ${PAD.top + plotH / 2})`}
 			>
 				CRIT RATE
 			</text>
