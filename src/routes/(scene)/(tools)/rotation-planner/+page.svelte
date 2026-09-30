@@ -503,65 +503,61 @@
 					</button>
 				{/if}
 			</div>
-			<div class="rp-zoom" role="group" aria-label="Zoom">
-				<button
-					class="btn btn--sm btn--icon"
-					type="button"
-					aria-label="Zoom out"
-					disabled={pv.scale <= ZOOM_MIN}
-					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="zoomOut" size={18} /></button
-				>
-				<!-- ⚓ Nate 2026-09-14: the slider rides a glass plate of its own. Bare
-				     over the scene it read fine beside 26px steppers; once every band B
-				     control stands at the full control height the naked track is the
-				     one thing in the row without a ground. -->
-				<span class="rp-zoom-slider-plate">
-					<input
-						type="range"
-						min={ZOOM_MIN}
-						max={ZOOM_MAX}
-						step={ZOOM_STEP}
-						bind:value={pv.scale}
-						class="slider rp-zoom-slider"
-						aria-label="Zoom"
-						title="Zoom — pixels per second"
-					/>
-				</span>
-				<button
-					class="btn btn--sm btn--icon"
-					type="button"
-					aria-label="Zoom in"
-					disabled={pv.scale >= ZOOM_MAX}
-					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" size={18} /></button
-				>
-				<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
-				     the whole of band B's state — zoom, the notes panel and the two
-				     layers — which is a fair reading of "Reset view" and the wrong
-				     control: a scale is something you fiddle with and want back, while
-				     a panel and a layer are things you deliberately opened, and
-				     sweeping them away as a side effect of fixing your zoom does more
-				     than you asked. One button, one job, and the label says which.
-				     ↻ ⚓ Nate 2026-09-14: the word is "Reset" now, not "Reset zoom" —
-				     the cluster moved to the band's LEFT, away from every other
-				     button, so the slider beside it says what is being reset.
-				     Inert at the resting scale, like the zoom buttons at their
-				     limits.
-				     ↻ ⚓ Nate 2026-09-30: INSIDE the zoom group, after + — between the
-				     zoom and the Total — and in the magnifier family (ScanSearch; see
-				     generate-marks.mjs). With the transport grown beside it, a plate
-				     left of − read as one more transport control. -->
-				<button
-					class="btn btn--sm rp-reset"
-					type="button"
-					aria-label="Reset the zoom to its resting level"
-					title="Back to the resting zoom"
-					disabled={pv.scale === ZOOM_DEFAULT}
-					onclick={() => pv.reset()}
-				>
-					<Mark name="resetZoom" />
-					<span class="rp-band-label">Reset</span>
-				</button>
-			</div>
+			<!-- ══ ZOOM (⚓ Nate 2026-09-30) — ONE plate, a popover ══════════════════
+			     The steppers, the slider and Reset lived on the band; with the
+			     transport beside them they cluttered it, and a scale is something
+			     you set and leave, not something reached for mid-task. One Zoom
+			     plate opens an anchored panel with − slider + and a Reset in
+			     WORDS — inside a panel titled by its trigger it is obvious what
+			     it resets, so the ScanSearch mark retired with the plate. A
+			     popover, ⛔ not a scrimmed modal: the chart rescales live behind
+			     it while you drag, which a scrim would hide.
+			     History kept: Reset resets the ZOOM alone (⚓ Nate 2026-08-17 —
+			     a panel and a layer are things you opened; sweeping them away as
+			     a side effect of fixing your zoom does more than you asked), and
+			     is inert at the resting scale. -->
+			<span class="rp-zoom-menu">
+				<BandMenu mark="zoomIn" label="Zoom" ariaLabel="Zoom" role="dialog">
+					{#snippet items()}
+						<div class="rp-zoom-panel">
+							<div class="rp-zoom-row">
+								<button
+									class="btn btn--sm btn--icon"
+									type="button"
+									aria-label="Zoom out"
+									disabled={pv.scale <= ZOOM_MIN}
+									onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="zoomOut" size={18} /></button
+								>
+								<input
+									type="range"
+									min={ZOOM_MIN}
+									max={ZOOM_MAX}
+									step={ZOOM_STEP}
+									bind:value={pv.scale}
+									class="slider rp-zoom-slider"
+									aria-label="Zoom"
+								/>
+								<button
+									class="btn btn--sm btn--icon"
+									type="button"
+									aria-label="Zoom in"
+									disabled={pv.scale >= ZOOM_MAX}
+									onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" size={18} /></button
+								>
+							</div>
+							<div class="rp-zoom-row rp-zoom-foot">
+								<span class="rp-zoom-value">{Math.round((pv.scale / ZOOM_DEFAULT) * 100)}%</span>
+								<button
+									class="btn btn--sm"
+									type="button"
+									disabled={pv.scale === ZOOM_DEFAULT}
+									onclick={() => pv.reset()}>Reset</button
+								>
+							</div>
+						</div>
+					{/snippet}
+				</BandMenu>
+			</span>
 		{/snippet}
 
 		<!-- ══ BAND B IS A 3-UP NOW (⚓ NATE 2026-08-12) ══════════════════════════
@@ -991,8 +987,6 @@
 	   ⏭ A candidate to generalise to every glass `.btn` on the site — deliberately
 	   scoped to this bar for now, because it is the only one where Nate has
 	   judged the result. */
-	.rp-reset:disabled,
-	.rp-zoom .btn:disabled,
 	.rp-play:disabled,
 	.rp-rewind:disabled,
 	.rp-notes-btn:disabled {
@@ -1000,19 +994,6 @@
 		color: color-mix(in srgb, var(--text) 45%, transparent);
 	}
 
-	/* A bare flex group, NOT a plate — band B's 3-up put these controls out on
-	   the scene, and giving the group its own glass while the buttons inside it
-	   keep theirs would rebuild the stack that was just removed. Each control
-	   paints itself, exactly as band A's buttons do. */
-	.rp-zoom {
-		display: flex;
-		align-items: center;
-		gap: 0.2rem;
-	}
-	/* The transport is the zoom's kind of object: a group of plates on the bare
-	   scene at the intra-group gap. Play's triangle is a dense mark and sits at
-	   13 in a 36px plate; the speaker is sparser and takes 16 — ink area, not
-	   height, per the chrome round's rule. */
 	/* The fold's items: label, then a check column at the end for the two
 	   switches, as the Team Builder's lens marks its reading. */
 	.rp-fold-label {
@@ -1031,6 +1012,10 @@
 		text-transform: uppercase;
 		color: var(--muted);
 	}
+	/* The transport: a bare flex group, NOT a plate — band B's 3-up put these
+	   controls out on the scene, and giving the group its own glass while the
+	   buttons inside it keep theirs would rebuild the stack that was just
+	   removed. Each control paints itself, exactly as band A's buttons do. */
 	.rp-transport {
 		display: flex;
 		align-items: center;
@@ -1045,28 +1030,39 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* Track/thumb styling comes from the shared .slider (app.css). The PLATE is
-	   the same object the steppers either side of it are: a pane at the band's
-	   control height with the track centred in it. ⚠ Its ground is --surface,
-	   NOT --btn-face — in a 3-up zone every .btn is repainted to --surface (=
-	   --glass-panel via .ctx-glass; app.css "band--3up > .band-zone .btn"), and
-	   a first cut on --btn-face was visibly a different glass (⚓ Nate). */
-	.rp-zoom-slider-plate {
-		display: inline-flex;
+	/* The zoom panel (2026-09-30): − slider + over the scale and its Reset.
+	   It is portalled into BandMenu's dark surface, so its buttons are ordinary
+	   dark-context buttons. Track/thumb styling comes from the shared .slider
+	   (app.css). The readout is the scale against the resting one, which is
+	   what Reset returns to. */
+	.rp-zoom-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 0.55rem 0.65rem;
+	}
+	.rp-zoom-row {
+		display: flex;
 		align-items: center;
-		height: var(--band-ctrl-h);
-		padding: 0 0.65rem;
-		border-radius: var(--r-sm);
-		background: var(--surface);
+		gap: 0.5rem;
 	}
 	.rp-zoom-slider {
-		width: 88px;
+		width: 150px;
+	}
+	.rp-zoom-foot {
+		justify-content: space-between;
+	}
+	.rp-zoom-value {
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: var(--muted);
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* ══ THE FOLD (responsive round, 2026-09-05; ↻ moved 2026-09-14) ═══════════
-	   Band B's controls drop their WORDS and keep their MARKS, and the zoom
-	   loses its slider (−/+ step the same scale). ↻ ⚓ Nate 2026-09-14: the fold
-	   is BP.wide ($lib/breakpoints.ts — 82rem since 2026-09-30), a rung
+	   Band B's controls drop their WORDS and keep their MARKS (↻ 2026-09-30:
+	   the zoom is one plate now, and its slider lives in the popover). ↻ ⚓ Nate 2026-09-14: the fold
+	   is BP.wide ($lib/breakpoints.ts — 71rem since 2026-09-30), a rung
 	   minted for exactly this
 	   row, not BP.compact (40rem). The Human timing plate, the full-height
 	   steppers and the slider's plate took the full form to ~806px of band
@@ -1082,32 +1078,23 @@
 	   a phone for the same reason it was made: a stripped chart must ANNOUNCE
 	   itself, and a lit mark announces exactly as a lit word does. What a
 	   reader loses is the word, and the `title`s still carry it.
-	   ↻ 2026-09-30 (playback round): the transport (⏮ ▶ speed, Laps) took
-	   the left zone to 469px, so the full form fits only from ~1290 — see the
+	   ↻ 2026-09-30 (playback round): the transport arrived and the zoom left
+	   for a popover; the left zone is 295px and the rung 71rem — see the
 	   table's fact. The fold is otherwise unchanged.
 	   ⚠ Literal from the table, by necessity. */
-	@media (max-width: 82rem) {
+	@media (max-width: 71rem) {
 		.rp-band-label,
-		.rp-zoom-slider-plate {
+		.rp-zoom-menu :global(.band-menu-label) {
 			display: none;
 		}
 	}
-	/* Below BP.compact (40rem) the marks-only row still wants ~354px of band
-	   and a 320 phone gives 288, so the Total spilled 20px under the Human
-	   timing plate on the very form Nate verified. Two things go: the Reset
-	   plate (the steppers still walk the scale back) and the Total's KEY (the
-	   number alone, beside the zoom, reads as the length). And the steppers,
-	   36px squares since the icon-height exception was withdrawn, narrow to
-	   28px plates (the 18px glyph keeps 5px a side) — without it the number
-	   spilled 10px at 320 again. Measured: at 320 the number ends 12px short
-	   of the rail's edge (2px into its padding), and clear of it from 340. */
+	/* Below BP.compact (40rem) the Total drops its KEY: the number alone,
+	   beside the transport, reads as the length. (Measured 2026-09-05, when the
+	   row also had to shed the Reset plate and narrow the zoom steppers; both
+	   left the band for the zoom popover on 2026-09-30.) */
 	@media (max-width: 40rem) {
-		.rp-reset,
 		.rp-total-key {
 			display: none;
-		}
-		.rp-zoom > .btn--icon {
-			min-width: calc(var(--band-ctrl-h) - 8px);
 		}
 	}
 	/* The transport at the compact rung (playback round, 2026-09-29): the
@@ -1125,7 +1112,7 @@
 	/* The two layer toggles read as ONE control — "what is drawn" — so they sit
 	   at the tighter intra-group gap the zoom cluster uses rather than band B's
 	   own item gap. Same reasoning, same number: a group is a thing whose parts
-	   answer one question. Bare flex, no plate — see .rp-zoom. */
+	   answer one question. Bare flex, no plate — see .rp-transport. */
 	.rp-layers {
 		display: flex;
 		align-items: center;

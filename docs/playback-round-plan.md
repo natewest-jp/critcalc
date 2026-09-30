@@ -179,6 +179,8 @@ Per round: vitest / check / lint / build. `advance()` and the audio SCHEDULE (a 
 
 - **Second finishing pass** — 2026-09-30 (⚓ Nate, after testing the first). Defaults **Vibraphone · Weighty · Anchor** (`tune(nate)`). Swap gains **Off**. Settings condensed: rows show only when audible (nothing under Off; no Voice/Notes under the metronome); Order + Notes are ONE "Notes" row; per-option prose moved to titles. Band B: **Reset** moved inside the zoom group after + and took **ScanSearch**; **Repeat → Laps** with **ArrowRightFromLine** (⚓ "repeat" named a loop, and playback already loops). Internal names (`pv.repeat`, `REPEAT_LAPS`, `repeat.ts`) unchanged. `wide` stays 82rem (left zone now 469px).
 
+- **Zoom popover** — 2026-09-30 (⚓ Nate: the zoom cluttered the bar and is set-and-leave). Band B's steppers, slider and Reset became ONE **Zoom** plate (ZoomIn mark + word, a chevron) opening an anchored popover — `BandMenu` with a new `role="dialog"` — holding − slider +, the scale as a % of the resting one, and **Reset** as a word (the ScanSearch/`resetZoom` mark retired). ⛔ Not a scrimmed modal: the chart rescales live behind it. The left zone fell 469 → 295px and `wide` came down **82rem → 71rem**.
+
 ## 11. Where to resume (written 2026-09-30)
 
 **State:** branch `feat/planner-playback` in the worktree `~/Code/critcalc-playback`; every commit's vitest / check / lint / build green. The finishing round (§10, last entry) is built and committed. ⛔ Not merged, not pushed.

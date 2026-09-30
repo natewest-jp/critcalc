@@ -27,6 +27,7 @@
 		disabled = false,
 		compact = false,
 		ariaLabel,
+		role = 'menu',
 		items
 	}: {
 		/** Button text. Omit for an icon-only trigger (pass ariaLabel instead). */
@@ -36,6 +37,10 @@
 		/** Icon-only geometry — the overflow trigger. */
 		compact?: boolean;
 		ariaLabel?: string;
+		/** `dialog` for a small control panel rather than a list of items (the
+		 *  planner's zoom, 2026-09-30): same trigger, same anchored surface,
+		 *  but its contents are controls, not `menuitem`s. */
+		role?: 'menu' | 'dialog';
 		/** Menu contents. Called with a `close` the items invoke when chosen. */
 		items: Snippet<[() => void]>;
 	} = $props();
@@ -73,7 +78,7 @@
 	class:is-active={open}
 	type="button"
 	{disabled}
-	aria-haspopup="menu"
+	aria-haspopup={role}
 	aria-expanded={open}
 	aria-label={ariaLabel}
 	onclick={() => (open ? close(false) : openMenu())}
@@ -116,7 +121,7 @@
 		style:left="{menuX}px"
 		style:top="{menuY}px"
 		style:min-width="{MENU_MIN_W}px"
-		role="menu"
+		{role}
 		tabindex="-1"
 		aria-label={ariaLabel ?? label}
 		onkeydown={(e) => {
