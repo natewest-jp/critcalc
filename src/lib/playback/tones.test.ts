@@ -29,6 +29,7 @@ import type { CueKind } from './cues';
 
 const KINDS: CueKind[] = [
 	'count',
+	'countLast',
 	'normal',
 	'charged',
 	'plunge',
@@ -110,6 +111,13 @@ describe('the sound palettes', () => {
 		}
 	});
 
+	it("the count-in's last beat is the same sine an octave up", () => {
+		for (const set of SOUND_SETS) {
+			const p = paletteFor(choice({ set }));
+			expect(settle(p.countLast[0] as Pitched)).toBeCloseTo(2 * settle(p.count[0] as Pitched), 9);
+		}
+	});
+
 	it('the cancel tick is A5 on top and the count-in a free note inside the span', () => {
 		for (const notes of NOTE_SET_IDS) {
 			const n = NOTE_SETS[notes];
@@ -126,7 +134,9 @@ describe('the sound palettes', () => {
 			for (const notes of NOTE_SET_IDS) {
 				const c = choice({ set: 'metronome', order, notes });
 				const pitches = new Set(
-					KINDS.filter((k) => k !== 'count' && k !== 'swap').map((k) => fundamental(c, k))
+					KINDS.filter((k) => k !== 'count' && k !== 'countLast' && k !== 'swap').map((k) =>
+						fundamental(c, k)
+					)
 				);
 				expect([...pitches]).toEqual([SET_TUNING.metronome.mono!]);
 			}
@@ -140,7 +150,8 @@ describe('the sound palettes', () => {
 			);
 			for (const notes of NOTE_SET_IDS)
 				for (const kind of KINDS) {
-					if (kind === 'swap') continue;
+					// the hums have their own test; the last count beat is the count's octave
+					if (kind === 'swap' || kind === 'countLast') continue;
 					for (const l of paletteFor(choice({ set, notes }))[kind]) {
 						if (!isPitched(l)) continue;
 						const f = settle(l);
@@ -210,7 +221,7 @@ describe('the sound palettes', () => {
 				set
 			).toBe(true);
 			expect(
-				p.count.some((l) => l.sustain),
+				[...p.count, ...p.countLast].some((l) => l.sustain),
 				set
 			).toBe(false);
 		}

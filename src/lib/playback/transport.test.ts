@@ -43,13 +43,15 @@ describe('dueBetween', () => {
 		const a = dueBetween(cues, countIn, COUNT_IN_S, 10, false, 0, 3);
 		const b = dueBetween(cues, countIn, COUNT_IN_S, 10, false, 3, 6);
 		expect(a.map((d) => d.elapsed)).toEqual([0, 1, 2]);
-		// elapsed 3 is t = 0: the skill, on the downbeat after the third beat
+		// elapsed 4 is t = 0: the skill, on the downbeat after the fourth beat,
+		// which is the different one
 		expect(b.map((d) => [d.kind, d.elapsed])).toEqual([
-			['skill', 3],
-			['burst', 4.5]
+			['countLast', 3],
+			['skill', 4],
+			['burst', 5.5]
 		]);
 		// the block's length rides along for the voice to ring
-		expect(b.map((d) => d.dur)).toEqual([0.5, 2]);
+		expect(b.map((d) => d.dur)).toEqual([0, 0.5, 2]);
 	});
 
 	it('repeats rotation cues every lap when looping, and the count-in never', () => {

@@ -29,6 +29,7 @@ import { FPS } from '$lib/utils/frames';
 
 export type CueKind =
 	| 'count' // a count-in beat before the first press
+	| 'countLast' // the count-in's final beat — the press comes on the next one
 	| 'normal'
 	| 'charged'
 	| 'plunge'
@@ -56,17 +57,23 @@ export type Cue = {
  * input lands on the downbeat rather than by surprise. ⏭ Nate tunes both by ear
  * (plan §9): the beat count and the beat spacing are the two knobs a metronome
  * has, and neither has a derivation.
+ *
+ * ⚓ FOUR, and not a setting (Nate 2026-09-30: "my mind wanted there to be
+ * four") — a bar of four is the count the ear already expects. ⚓ The LAST beat
+ * sounds different (`countLast`), so the player does not have to count to
+ * know that the next beat is the press.
  */
-export const COUNT_IN_BEATS = 3;
+export const COUNT_IN_BEATS = 4;
 export const COUNT_IN_BEAT_S = 1;
 /** Seconds of lead the count-in takes before t = 0. */
 export const COUNT_IN_S = COUNT_IN_BEATS * COUNT_IN_BEAT_S;
 
-/** The count-in beats, as cues at negative t (−3, −2, −1 by default). */
+/** The count-in beats, as cues at negative t (−4 … −1 by default), the last
+ *  one `countLast`. */
 export function countInCues(): Cue[] {
 	const out: Cue[] = [];
 	for (let i = COUNT_IN_BEATS; i >= 1; i--)
-		out.push({ t: -i * COUNT_IN_BEAT_S, kind: 'count', dur: 0 });
+		out.push({ t: -i * COUNT_IN_BEAT_S, kind: i === 1 ? 'countLast' : 'count', dur: 0 });
 	return out;
 }
 

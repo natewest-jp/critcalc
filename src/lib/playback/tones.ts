@@ -407,7 +407,7 @@ function hums(low: number): Record<SwapStyle, Layer[]> {
 /**
  * A palette for one choice: A4, the note set's mid and high, the order
  * deciding which role takes which; the cancel tick on A5; the count-in on the
- * set's free note in a plain sine; the plunge a
+ * set's free note in a plain sine, its last beat an octave up; the plunge a
  * long attack note (it always follows a jump's tick, and "tick, then a long
  * attack" is a plunge); the swap the chosen hum. A mono voice takes its one
  * pitch for every role.
@@ -423,16 +423,18 @@ function paletteOf(choice: SoundChoice): Record<CueKind, Layer[]> {
 	const attack = slot[order.attack];
 	const skill = slot[order.skill];
 	const burst = slot[order.burst];
+	const countBeat = (octave: number): Layer => ({
+		kind: 'tone',
+		freq: (t.mono ? t.mono * 0.667 : hz(set.count)) * octave,
+		dur: 0.12,
+		wave: 'sine',
+		gain: 0.45
+	});
 	return {
-		count: [
-			{
-				kind: 'tone',
-				freq: t.mono ? t.mono * 0.667 : hz(set.count),
-				dur: 0.12,
-				wave: 'sine',
-				gain: 0.45
-			}
-		],
+		count: [countBeat(1)],
+		// The last beat an octave up: the same plain sine, so it is still the
+		// count-in, and still outside the input vocabulary (it sits above A5).
+		countLast: [countBeat(2)],
 		normal: note(attack, 0.07 * d, 0.42),
 		charged: note(attack, 0.16 * d, 0.4),
 		plunge: note(attack, 0.18 * d, 0.48),
