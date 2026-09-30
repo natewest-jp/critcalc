@@ -139,6 +139,26 @@ export const ORDER_LABELS: Record<OrderId, string> = {
 	skillUp: 'Skill up',
 	rising: 'Rising'
 };
+/** "Burst low · skill middle · attacks high" — an order spelled out, bottom
+ *  up, for the Settings hint. Derived from `ORDERS`, so it cannot drift. */
+export function orderHint(id: OrderId): string {
+	const o = ORDERS[id];
+	const word: Record<Slot, string> = { low: 'low', mid: 'middle', high: 'high' };
+	const rank: Record<Slot, number> = { low: 0, mid: 1, high: 2 };
+	return (
+		[
+			['attacks', o.attack],
+			['skill', o.skill],
+			['burst', o.burst]
+		] as const
+	)
+		.slice()
+		.sort((a, b) => rank[a[1]] - rank[b[1]])
+		.map(
+			([role, slot], i) => `${i === 0 ? role[0].toUpperCase() + role.slice(1) : role} ${word[slot]}`
+		)
+		.join(' · ');
+}
 
 /**
  * The four note sets Nate chose at a keyboard (2026-09-29), each A plus two
@@ -167,7 +187,7 @@ export const NOTE_SET_LABELS: Record<NoteSetId, string> = {
 	lantern: 'Lantern',
 	meadow: 'Meadow'
 };
-/** "A · B · E" — the notes, for the Settings description. */
+/** "A · B · E" — the notes, for the Settings hint. */
 export function noteSetNotes(id: NoteSetId): string {
 	const n = NOTE_SETS[id];
 	return [NOTE_LOW, n.mid, n.high].map((x) => NOTE_NAMES[x]).join(' · ');
@@ -176,11 +196,13 @@ export function noteSetNotes(id: NoteSetId): string {
 /**
  * How the swap hums (⚓ Nate 2026-09-29: "demo a few different hum options";
  * the breath of noise was struck). Every one attacks slowly, has no click, and
- * is held for the swap's length.
+ * is held for the swap's length. ⚓ `off` (Nate 2026-09-30) voices nothing: a
+ * swap is also heard as the gap before the next character's first note.
  */
-export type SwapStyle = 'humLow' | 'humFifth' | 'humRise';
-export const SWAP_STYLES: readonly SwapStyle[] = ['humLow', 'humFifth', 'humRise'];
+export type SwapStyle = 'off' | 'humLow' | 'humFifth' | 'humRise';
+export const SWAP_STYLES: readonly SwapStyle[] = ['off', 'humLow', 'humFifth', 'humRise'];
 export const SWAP_STYLE_LABELS: Record<SwapStyle, string> = {
+	off: 'Off',
 	humLow: 'Low',
 	humFifth: 'Fifth',
 	humRise: 'Rise'
@@ -391,6 +413,7 @@ function hums(low: number): Record<SwapStyle, Layer[]> {
 		...extra
 	});
 	return {
+		off: [],
 		/** A soft sine an octave under, with its octave above it so a phone
 		 *  speaker still carries it. */
 		humLow: [soft(low / 2, 0.5), soft(low, 0.18)],

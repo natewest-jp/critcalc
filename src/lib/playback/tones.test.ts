@@ -8,6 +8,7 @@ import {
 	NOTE_SET_LABELS,
 	ORDER_IDS,
 	ORDER_LABELS,
+	orderHint,
 	PREVIEW_PHRASE,
 	RELEASE_S,
 	SET_TRIM,
@@ -62,9 +63,19 @@ describe('the sound palettes', () => {
 				for (const notes of NOTE_SET_IDS)
 					for (const swap of SWAP_STYLES)
 						for (const kind of KINDS)
-							expect(paletteFor(choice({ set, order, notes, swap }))[kind].length).toBeGreaterThan(
-								0
-							);
+							if (!(kind === 'swap' && swap === 'off'))
+								expect(
+									paletteFor(choice({ set, order, notes, swap }))[kind].length
+								).toBeGreaterThan(0);
+	});
+
+	it('a swap set Off is silent, and changes nothing else', () => {
+		for (const set of SOUND_SETS) {
+			const p = paletteFor(choice({ set, swap: 'off' }));
+			expect(p.swap).toEqual([]);
+			for (const kind of KINDS)
+				if (kind !== 'swap') expect(p[kind]).toEqual(paletteFor(choice({ set }))[kind]);
+		}
 	});
 
 	it('base lengths stay short enough for the fastest pair of presses; only a burst may ring', () => {
@@ -227,11 +238,17 @@ describe('the sound palettes', () => {
 		}
 	});
 
-	it('the vocabulary: five voices, three orders, four note sets, three hums, all named', () => {
+	it('an order spells itself bottom up', () => {
+		expect(orderHint('weighty')).toBe('Burst low · skill middle · attacks high');
+		expect(orderHint('skillUp')).toBe('Burst low · attacks middle · skill high');
+		expect(orderHint('rising')).toBe('Attacks low · skill middle · burst high');
+	});
+
+	it('the vocabulary: five voices, three orders, four note sets, three hums and Off, all named', () => {
 		expect(VOICE_IDS).toHaveLength(5);
 		expect(ORDER_IDS).toHaveLength(3);
 		expect(NOTE_SET_IDS).toHaveLength(4);
-		expect(SWAP_STYLES).toHaveLength(3);
+		expect(SWAP_STYLES).toHaveLength(4);
 		for (const v of VOICE_IDS) expect(VOICE_LABELS[v]).toBeTruthy();
 		for (const o of ORDER_IDS) expect(ORDER_LABELS[o]).toBeTruthy();
 		for (const n of NOTE_SET_IDS) expect(NOTE_SET_LABELS[n]).toBeTruthy();
