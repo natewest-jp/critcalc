@@ -6,6 +6,7 @@
 		CD_MAX,
 		SIZE,
 		PAD,
+		AXIS_TITLE_GAP,
 		ISOLINE_VALUES,
 		clamp,
 		averageDamageMultiplier,
@@ -125,6 +126,16 @@
 	const cv = $derived(critValue(shownCR, shownCD));
 	const cvPath = $derived(buildCvLinePath(cv, geom));
 	const cvLabel = $derived(buildCvLineLabel(cv, geom));
+
+	// The axis titles, each AXIS_TITLE_GAP past the outer edge of its tick
+	// labels. Anchored to the PLOT, not the box, so they travel with it; PAD is
+	// sized to hold them. Measured at 11px: a title's glyph box runs 11px above
+	// its baseline and 3px below (rotated, "above" is away from the plot); the
+	// widest CR tick ("100%") ends 40px left of the plot, the CD ticks 25px
+	// below it, the isoline column ("4.00x") 34px right of it.
+	const crTitleX = $derived(PAD.left - 40 - AXIS_TITLE_GAP - 3);
+	const cdTitleY = $derived(PAD.top + plotH + 25 + AXIS_TITLE_GAP + 11);
+	const avgTitleX = $derived(PAD.left + plotW + 34 + AXIS_TITLE_GAP + 3);
 
 	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
 	// Shown with the CV line: a fixed budget's multiplier peaks exactly where
@@ -591,13 +602,13 @@
 			     rotated axis-style label (mirrors CRIT RATE on the left) -->
 			<text x={PAD.left + plotW + 8} y={PAD.top + 10} fill={ink(0.62)} font-size="10"> 4.00x </text>
 			<text
-				x={boxW - 12}
+				x={avgTitleX}
 				y={PAD.top + plotH / 2}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
-				transform={`rotate(90, ${boxW - 12}, ${PAD.top + plotH / 2})`}
+				transform={`rotate(90, ${avgTitleX}, ${PAD.top + plotH / 2})`}
 			>
 				AVERAGE DMG
 			</text>
@@ -605,7 +616,7 @@
 			<!-- Axis labels -->
 			<text
 				x={PAD.left + plotW / 2}
-				y={boxH - 8}
+				y={cdTitleY}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
@@ -614,13 +625,13 @@
 				CRIT DMG
 			</text>
 			<text
-				x={18}
+				x={crTitleX}
 				y={PAD.top + plotH / 2}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
-				transform={`rotate(-90, 18, ${PAD.top + plotH / 2})`}
+				transform={`rotate(-90, ${crTitleX}, ${PAD.top + plotH / 2})`}
 			>
 				CRIT RATE
 			</text>

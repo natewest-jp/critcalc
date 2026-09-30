@@ -107,8 +107,14 @@ export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
 
 export const SIZE = 720;
 // PAD reserves room for tick labels (left/bottom) and, on the right, the
-// isoline value column + its rotated AVERAGE DMG identity label
-export const PAD = { top: 24, right: 74, bottom: 64, left: 72 };
+// isoline value column + its rotated AVERAGE DMG identity label.
+// ↻ 2026-09-30 (⚓ Nate): the three axis titles sit AXIS_TITLE_GAP past their
+// tick labels — they used to hang off the box edge at 11 / 20 / 25px — and the
+// plot took the room back (left 72 → 69, bottom 64 → 50, right 74 → 58).
+export const PAD = { top: 24, right: 58, bottom: 50, left: 69 };
+
+/** Clear space between an axis title and the outer edge of its tick labels. */
+export const AXIS_TITLE_GAP = 8;
 
 // The pixel box the plot is drawn into. Because the CR and CD axes are already
 // normalized independently (unrelated ranges), the box need NOT be square — the
