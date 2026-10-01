@@ -207,15 +207,19 @@
   > Redo
 - `planner_starlight_prism` — fields.ts:266 label: · gadgetRows.ts:115 label:
   > Starlight Prism
+  - terms: 🎮 Starlight Prism
 - `planner_polestar_field` — fields.ts:292 fieldName:
   > Polestar Field
+  - terms: 🎮 Polestar Field
 - `planner_dendro_core` — finalize.ts:749 label: · gadgetRows.ts:138 label:
   > Dendro Core
   - terms: 🎮 Dendro Core
 - `planner_moondrift` — gadgets.ts:134 label: · gadgetRows.ts:133 label:
   > Moondrift
+  - terms: 🎮 Moondrift
 - `planner_thundercloud` — gadgets.ts:161 label: · gadgetRows.ts:121 label:
   > Thundercloud
+  - terms: 🎮 Thundercloud
 - `planner_label_gone` — auraLog.ts:152 text:
   > {series.label} gone
   - vars: `series.label`
@@ -625,6 +629,7 @@
   - terms: 🏷 gauge
 - `planner_a_starlight_prism_bar_says_when_the` — +page.svelte:337 AURA_NOTES:
   > A Starlight Prism bar says when the Polestar Field is up, not where — we assume you are standing in it.
+  - terms: 🎮 Starlight Prism · 🎮 Polestar Field
 - `planner_playback` — +page.svelte:431 aria-label=
   > Playback
 - `planner_back_to_the_start` — +page.svelte:439 aria-label=

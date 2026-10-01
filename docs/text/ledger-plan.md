@@ -121,6 +121,8 @@ The seed (99 terms) is the glossary's ruled rows plus the plainly in-game names 
 reactions, stats, resonances, factions). ⏭ Completing it is part of step 2. Its first run
 found 16 off-glossary messages, and they are the same sites the glossary lists by hand
 (Overload/Freeze, Crit Rate/Crit Damage, "Event log", "resistance shred").
-⚠️ An in-game name the seed does not yet hold (gadget names such as Moondrift, Starlight
-Prism, Polestar Field) is NOT protected until it is added. Check each against the game's
-text before classing it `game`.
+✅ **Nate's rulings on the open calls (2026-10-01):** element and reaction names
+TRANSLATE (as the game's own words). The Frozen/Overloaded lock was always against the
+community forms Freeze/Overload, which the termbase's `avoid` now enforces, never against
+translation · Constellation is `game` · the field elements (Dendro Core, Starlight Prism,
+Thundercloud, Moondrift, Polestar Field) are `game`, added to the seed.

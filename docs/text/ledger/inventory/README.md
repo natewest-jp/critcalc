@@ -32,7 +32,7 @@
   vz_rc           97
   vz_wish         23
 flags: off-glossary 16 · assembled 9 · plural? 33 · x-for-× 7 · entity 5 · nbsp 1 · thrown 3
-terms: 99 in the termbase, 532 messages carry one
+terms: 103 in the termbase, 538 messages carry one
 unassigned: none
 orphaned notes: none
 ```

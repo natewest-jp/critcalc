@@ -205,10 +205,11 @@
   - terms: 🎮 Swirl · 🎮 RES
 - `vz_rc_0_96_per_moondrift_hit` — ReactionCurvesInstrument.svelte:258 detail:
   > ×0.96, per Moondrift hit
+  - terms: 🎮 Moondrift
 - `vz_rc_each_moondrift_hit_from_lunar` — ReactionCurvesInstrument.svelte:263 read:
   > Each Moondrift hit from Lunar-Crystallize would deal {c.v} damage before enemy RES and crit.
   - vars: `c.v`
-  - terms: 🎮 Lunar-Crystallize · 🎮 RES
+  - terms: 🎮 Lunar-Crystallize · 🎮 Moondrift · 🎮 RES
 - `vz_rc_stellar_swirl` — ReactionCurvesInstrument.svelte:266 label:
   > Stellar Swirl
   - terms: 🎮 Swirl

@@ -32,7 +32,7 @@
 			"term": "Overloaded",
 			"class": "game",
 			"avoid": ["Overload"],
-			"note": "Glossary §2: the game's name, locked 2026-09-27."
+			"note": "Glossary §2: the game's name, locked 2026-09-27. ⚓ Nate 2026-10-01: it TRANSLATES (the game's word); the lock is against the community forms Overload/Freeze, not against translation."
 		},
 		{ "term": "Superconduct", "class": "game" },
 		{ "term": "Electro-Charged", "class": "game" },
@@ -40,7 +40,7 @@
 			"term": "Frozen",
 			"class": "game",
 			"avoid": ["Freeze"],
-			"note": "Glossary §2: the game's name, locked 2026-09-27."
+			"note": "Glossary §2: the game's name, locked 2026-09-27. ⚓ Nate 2026-10-01: it TRANSLATES (the game's word); the lock is against the community forms Overload/Freeze, not against translation."
 		},
 		{ "term": "Shatter", "class": "game" },
 		{ "term": "Swirl", "class": "game" },
@@ -56,6 +56,14 @@
 		{ "term": "Lunar-Bloom", "class": "game" },
 		{ "term": "Lunar-Crystallize", "class": "game" },
 		{ "term": "Dendro Core", "class": "game" },
+		{
+			"term": "Starlight Prism",
+			"class": "game",
+			"note": "A reaction spawn — the field elements are game terms (⚓ Nate 2026-10-01)."
+		},
+		{ "term": "Thundercloud", "class": "game", "note": "A reaction spawn (⚓ Nate 2026-10-01)." },
+		{ "term": "Moondrift", "class": "game", "note": "A reaction spawn (⚓ Nate 2026-10-01)." },
+		{ "term": "Polestar Field", "class": "game", "note": "A field gadget (⚓ Nate 2026-10-01)." },
 		{ "term": "Nightsoul Burst", "class": "game" },
 		{ "term": "Nightsoul", "class": "game" },
 		{ "term": "Moonsign", "class": "game" },
@@ -90,7 +98,7 @@
 		{
 			"term": "Constellation",
 			"class": "game",
-			"note": "Glossary §1 marks it 🏷; it has an official in-game name, so the game's text wins."
+			"note": "An in-game term (⚓ Nate 2026-10-01); glossary §1's 🏷 is superseded."
 		},
 		{ "term": "Traveler", "class": "game" },
 		{ "term": "Aether", "class": "game" },
