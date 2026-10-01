@@ -144,7 +144,7 @@
 </section>
 
 <section>
-	<h2 id="damage-anatomy">Damage Anatomy</h2>
+	<h2 id="damage-breakdown">Damage Breakdown</h2>
 	<p>
 		Your hit as its formula, one multiplier per row, read top to bottom. Each row shows the
 		multiplier's formula, the numbers from your sheet, and a bar. The bars share one axis whose

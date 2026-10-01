@@ -326,7 +326,7 @@
 	/** The aura's standing modelling limits — see the `auraLimits` snippet below
 	 *  for the sourcing rule that governs every line. */
 	const AURA_NOTES = [
-		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mage, and no auras you did not put there.',
+		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mitachurl, and no auras you did not put there.',
 		'Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.',
 		'A pip with a yellow ring means we are using a default gauge strength of 1U for that hit rather than a measured one.',
 		// ⚠️ The one thing the gadget strip could be misread as. A Prism bar says

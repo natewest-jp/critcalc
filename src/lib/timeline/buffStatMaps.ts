@@ -90,7 +90,7 @@ export const BUFF_STAT_LABEL: Partial<Record<Stat, string>> = {
 	critRate: 'CRIT Rate',
 	critDmg: 'CRIT DMG',
 	em: 'Elem. Mastery',
-	cdReduction: 'CD Reduction',
+	cdReduction: 'Cooldown Reduction',
 	def: 'DEF',
 	'def%': 'DEF%',
 	defIgnore: 'DEF Ignore',

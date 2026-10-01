@@ -155,11 +155,11 @@
 	</p>
 	<p>
 		<strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro
-		from a Blazing Axe Mage, and no auras you did not put there. Hits land on their listed timing, a swing
-		that connects several times counts as one application, and Shatter is not modelled. Where we do not
-		have a measured gauge strength for a hit we use 1U and mark that tick yellow. Everything else — the
-		×0.8 aura tax, decay rates, unit multipliers, the crystallize cooldown, dendro cores and their spawn
-		delay — follows the same model the Gauge Explorer teaches.
+		from a Blazing Axe Mitachurl, and no auras you did not put there. Hits land on their listed timing,
+		a swing that connects several times counts as one application, and Shatter is not modelled. Where
+		we do not have a measured gauge strength for a hit we use 1U and mark that tick yellow. Everything
+		else — the ×0.8 aura tax, decay rates, unit multipliers, the crystallize cooldown, dendro cores and
+		their spawn delay — follows the same model the Gauge Explorer teaches.
 	</p>
 </section>
 

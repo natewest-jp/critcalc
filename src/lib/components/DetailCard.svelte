@@ -375,7 +375,7 @@
 								<td class="dc-timing-slot">{ability.abilityType === 'skill' ? 'E' : 'Q'}</td>
 								<td class="dc-timing-name">{ability.name}</td>
 								<td class="dc-timing-val">
-									{#if 'cooldown' in ability && ability.cooldown}{ability.cooldown}s CD{/if}
+									{#if 'cooldown' in ability && ability.cooldown}{ability.cooldown}s cooldown{/if}
 									{#if 'charges' in ability && ability.charges && ability.charges > 1}
 										· {ability.charges} charges{/if}
 									{#if 'energyCost' in ability && ability.energyCost}

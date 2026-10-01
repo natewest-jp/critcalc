@@ -51,7 +51,7 @@ const ELEMENT_RESONANCE: Record<string, { label: string; effect: string; rows: R
 	},
 	anemo: {
 		label: 'Impetuous Winds',
-		effect: 'Stamina cost −15%, movement speed +10%, skill CD −5%',
+		effect: 'Stamina cost −15%, movement speed +10%, skill cooldown −5%',
 		rows: [
 			{ stat: 'Stamina cost', displayValue: '−15%' },
 			{ stat: 'Movement speed', displayValue: '+10%' },
@@ -60,9 +60,10 @@ const ELEMENT_RESONANCE: Record<string, { label: string; effect: string; rows: R
 	},
 	electro: {
 		label: 'High Voltage',
-		effect: 'Electro reactions generate an elemental particle (5s CD); hydro aura duration −40%',
+		effect:
+			'Electro reactions generate an elemental particle (5s cooldown); hydro aura duration −40%',
 		rows: [
-			{ stat: 'Electro particles', displayValue: '1 per electro reaction · 5s CD' },
+			{ stat: 'Electro particles', displayValue: '1 per electro reaction · 5s cooldown' },
 			{ stat: 'Hydro aura duration', displayValue: '−40%' }
 		]
 	},

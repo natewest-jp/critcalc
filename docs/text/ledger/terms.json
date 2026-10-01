@@ -1,0 +1,999 @@
+{
+	"$comment": "The TERMBASE: every protected term, kept OUT of the strings. scripts/extract-strings.mjs tags each inventory message with the terms it contains (every `forms` spelling counts as the term; longest form first; case-sensitive whole words) and flags as off-glossary any form listed under a term's `avoid` (case-sensitive) or in the top-level `avoid` list (any case). Classes — frozen: English in every locale, never translated · game: the game ships an official translation in every locale; take it from the game's text (genshin-db), never translate it ourselves · label: the English label stays, its explanation translates · house: our own coined term; it DOES translate, but once per locale, fixed here, and reused everywhere. Rulings live in docs/text/glossary.md; this file is the machine-readable half. `proposed` marks an entry that is Claude's suggestion, not yet ruled.",
+	"terms": [
+		{
+			"term": "critcalc",
+			"class": "frozen",
+			"note": "The brand."
+		},
+		{
+			"term": "critcalc.app",
+			"class": "frozen",
+			"note": "The brand."
+		},
+		{
+			"term": "Astrolabe",
+			"class": "frozen",
+			"note": "Landing card name — glossary §1, ruled 2026-09-22."
+		},
+		{
+			"term": "Ephemeris",
+			"class": "frozen",
+			"note": "Landing card name — glossary §1."
+		},
+		{
+			"term": "Observatory",
+			"class": "frozen",
+			"note": "Landing card name — glossary §1."
+		},
+		{
+			"term": "KQM",
+			"class": "frozen",
+			"note": "Keqing Mains, the community. Also its notation tokens (N1, E, Q, C, P, ~2s), round record R2."
+		},
+		{
+			"term": "Keqing Mains",
+			"class": "frozen",
+			"note": "The community's name."
+		},
+		{
+			"term": "gcsim",
+			"class": "frozen",
+			"note": "A tool's name."
+		},
+		{
+			"term": "Genshin Optimizer",
+			"class": "frozen",
+			"note": "A tool's name."
+		},
+		{
+			"term": "HoYoverse",
+			"class": "frozen",
+			"note": "The publisher's global brand. (Its Chinese-market name is miHoYo; whether a zh locale uses that is a question for that locale's pass.)"
+		},
+		{
+			"term": "PNG",
+			"class": "frozen"
+		},
+		{
+			"term": "JSON",
+			"class": "frozen"
+		},
+		{
+			"term": "Genshin Impact",
+			"class": "game",
+			"forms": ["Genshin"],
+			"note": "The title is localized officially (原神 in zh/ja) — use the game's own."
+		},
+		{
+			"term": "Pyro",
+			"class": "game"
+		},
+		{
+			"term": "Hydro",
+			"class": "game"
+		},
+		{
+			"term": "Electro",
+			"class": "game"
+		},
+		{
+			"term": "Cryo",
+			"class": "game"
+		},
+		{
+			"term": "Anemo",
+			"class": "game"
+		},
+		{
+			"term": "Geo",
+			"class": "game"
+		},
+		{
+			"term": "Dendro",
+			"class": "game"
+		},
+		{
+			"term": "Physical",
+			"class": "game"
+		},
+		{
+			"term": "Vaporize",
+			"class": "game"
+		},
+		{
+			"term": "Melt",
+			"class": "game"
+		},
+		{
+			"term": "Overloaded",
+			"class": "game",
+			"avoid": ["Overload"],
+			"note": "Glossary §2: the game's name, locked 2026-09-27. ⚓ Nate 2026-10-01: it TRANSLATES (the game's word); the lock is against the community forms Overload/Freeze, not against translation."
+		},
+		{
+			"term": "Superconduct",
+			"class": "game"
+		},
+		{
+			"term": "Electro-Charged",
+			"class": "game"
+		},
+		{
+			"term": "Frozen",
+			"class": "game",
+			"avoid": ["Freeze"],
+			"note": "Glossary §2: the game's name, locked 2026-09-27. ⚓ Nate 2026-10-01: it TRANSLATES (the game's word); the lock is against the community forms Overload/Freeze, not against translation."
+		},
+		{
+			"term": "Shatter",
+			"class": "game"
+		},
+		{
+			"term": "Swirl",
+			"class": "game"
+		},
+		{
+			"term": "Crystallize",
+			"class": "game"
+		},
+		{
+			"term": "Burning",
+			"class": "game"
+		},
+		{
+			"term": "Bloom",
+			"class": "game"
+		},
+		{
+			"term": "Hyperbloom",
+			"class": "game"
+		},
+		{
+			"term": "Burgeon",
+			"class": "game"
+		},
+		{
+			"term": "Quicken",
+			"class": "game"
+		},
+		{
+			"term": "Aggravate",
+			"class": "game"
+		},
+		{
+			"term": "Spread",
+			"class": "game"
+		},
+		{
+			"term": "Lunar-Charged",
+			"class": "game"
+		},
+		{
+			"term": "Lunar-Bloom",
+			"class": "game"
+		},
+		{
+			"term": "Lunar-Crystallize",
+			"class": "game"
+		},
+		{
+			"term": "Lunar",
+			"class": "game",
+			"note": "The reaction family (6.x), as in 'Lunar reactions'."
+		},
+		{
+			"term": "Stellar-Conduct",
+			"class": "game"
+		},
+		{
+			"term": "Stellar Swirl",
+			"class": "game"
+		},
+		{
+			"term": "Stellar Glimmer",
+			"class": "game",
+			"note": "⚠️ An UMBRELLA term, not a reaction — never translate it as one (glossary §2)."
+		},
+		{
+			"term": "Stellar",
+			"class": "game",
+			"note": "The reaction family (7.x), as in 'Stellar reactions'."
+		},
+		{
+			"term": "Radiance",
+			"class": "game",
+			"note": "The game names three STATES: 'Radiance: Stellar Glimmer', 'Radiance: Stellar-Conduct', 'Radiance: Stellar Swirl' (⚓ Nate 2026-10-01). 'Stellar Radiance' is a coined community term — avoid it. ⚠️ Not Capturing Radiance (the wish mechanic)."
+		},
+		{
+			"term": "Base DMG Bonus",
+			"class": "game",
+			"forms": ["Base DMG"],
+			"note": "The game's own phrase (kit text: 'Base DMG Bonus', 'Base Stellar-Conduct DMG'); the Lunar/Stellar formula bracket is named after it, so there is no conflict."
+		},
+		{
+			"term": "Dendro Core",
+			"class": "game"
+		},
+		{
+			"term": "Starlight Prism",
+			"class": "game",
+			"note": "A reaction spawn — the field elements are game terms (⚓ Nate 2026-10-01)."
+		},
+		{
+			"term": "Thundercloud",
+			"class": "game",
+			"note": "A reaction spawn (⚓ Nate 2026-10-01)."
+		},
+		{
+			"term": "Moondrift",
+			"class": "game",
+			"note": "A reaction spawn (⚓ Nate 2026-10-01)."
+		},
+		{
+			"term": "Polestar Field",
+			"class": "game",
+			"note": "A field gadget (⚓ Nate 2026-10-01)."
+		},
+		{
+			"term": "Nightsoul Burst",
+			"class": "game"
+		},
+		{
+			"term": "Nightsoul",
+			"class": "game"
+		},
+		{
+			"term": "Moonsign",
+			"class": "game"
+		},
+		{
+			"term": "Ascendant Gleam",
+			"class": "game"
+		},
+		{
+			"term": "Hexerei",
+			"class": "game"
+		},
+		{
+			"term": "Secret Rite",
+			"class": "game"
+		},
+		{
+			"term": "Normal Attack",
+			"class": "game",
+			"forms": ["normal attack", "normal attacks", "Normal attack", "Normal attacks", "normals"],
+			"note": "Glossary §2: 'normal attack' in prose, 'normals' only in dense chart furniture. Use the game's word for the ability type."
+		},
+		{
+			"term": "Charged Attack",
+			"class": "game",
+			"forms": ["charged attack", "charged attacks", "Charged attack", "Charged attacks"]
+		},
+		{
+			"term": "Plunging Attack",
+			"class": "game",
+			"forms": ["plunge", "plunges", "Plunge"],
+			"note": "The site writes the short form 'plunge'; use the game's word for the ability type."
+		},
+		{
+			"term": "Elemental Skill",
+			"class": "game",
+			"forms": ["skill", "skills", "Skill"],
+			"note": "Glossary §2: 'skill' in prose, E only as notation (🔒). Use the game's word (or its in-game short form)."
+		},
+		{
+			"term": "Elemental Burst",
+			"class": "game",
+			"forms": ["burst", "bursts", "Burst"],
+			"note": "Glossary §2: 'burst' in prose, Q only as notation (🔒). Use the game's word (or its in-game short form)."
+		},
+		{
+			"term": "talent",
+			"class": "game",
+			"forms": ["talents", "Talent"]
+		},
+		{
+			"term": "ascension",
+			"class": "game",
+			"forms": ["Ascension"]
+		},
+		{
+			"term": "Refinement",
+			"class": "game",
+			"forms": ["refinement"]
+		},
+		{
+			"term": "Constellation",
+			"class": "game",
+			"forms": ["constellation", "constellations", "Constellations"],
+			"avoid": ["con", "cons"],
+			"note": "An in-game term (⚓ Nate 2026-10-01); glossary §1's 🏷 is superseded. ⛔ Never 'con'/'cons' in prose (glossary §2); C0–C6 as levels."
+		},
+		{
+			"term": "Elemental Resonance",
+			"class": "game",
+			"forms": ["Resonance", "resonance"]
+		},
+		{
+			"term": "Elemental Particle",
+			"class": "game",
+			"forms": ["particle", "particles", "Elemental Particles"]
+		},
+		{
+			"term": "Energy",
+			"class": "game",
+			"forms": ["energy"]
+		},
+		{
+			"term": "Infusion",
+			"class": "game",
+			"forms": ["infusion", "infusions"]
+		},
+		{
+			"term": "Stamina",
+			"class": "game"
+		},
+		{
+			"term": "cooldown",
+			"class": "game",
+			"forms": ["cooldowns", "Cooldown"],
+			"avoid": ["s CD", "CD Reduction", "trigger CD", "skill CD"],
+			"note": "⚓ Nate 2026-10-01: always spelled out; CD means CRIT DMG only."
+		},
+		{
+			"term": "ATK",
+			"class": "game"
+		},
+		{
+			"term": "HP",
+			"class": "game"
+		},
+		{
+			"term": "Max HP",
+			"class": "game"
+		},
+		{
+			"term": "DEF",
+			"class": "game"
+		},
+		{
+			"term": "Elemental Mastery",
+			"class": "game",
+			"avoid": ["Elemental mastery"]
+		},
+		{
+			"term": "Energy Recharge",
+			"class": "game"
+		},
+		{
+			"term": "CRIT Rate",
+			"class": "game",
+			"avoid": ["Crit Rate", "CRIT RATE"],
+			"note": "Visible form. Screen-reader names spell 'Crit rate' on purpose (conventions §B)."
+		},
+		{
+			"term": "CRIT DMG",
+			"class": "game",
+			"avoid": ["Crit Damage", "Crit DMG", "CRIT Damage"],
+			"note": "Visible form. Screen-reader names spell 'Crit damage' on purpose (conventions §B)."
+		},
+		{
+			"term": "Healing Bonus",
+			"class": "game"
+		},
+		{
+			"term": "RES",
+			"class": "game",
+			"note": "Damage resistance. ⚠️ NOT 'Interruption res' — glossary §2a."
+		},
+		{
+			"term": "DMG",
+			"class": "game"
+		},
+		{
+			"term": "Traveler",
+			"class": "game"
+		},
+		{
+			"term": "Aether",
+			"class": "game"
+		},
+		{
+			"term": "Lumine",
+			"class": "game"
+		},
+		{
+			"term": "Sword",
+			"class": "game",
+			"forms": ["sword"],
+			"note": "Weapon type — printed as a raw id by the Roster's filter chips and the detail card (see 'Rendered from data')."
+		},
+		{
+			"term": "Claymore",
+			"class": "game",
+			"forms": ["claymore"],
+			"note": "Weapon type — printed as a raw id by the Roster's filter chips and the detail card (see 'Rendered from data')."
+		},
+		{
+			"term": "Polearm",
+			"class": "game",
+			"forms": ["polearm"],
+			"note": "Weapon type — printed as a raw id by the Roster's filter chips and the detail card (see 'Rendered from data')."
+		},
+		{
+			"term": "Bow",
+			"class": "game",
+			"forms": ["bow"],
+			"note": "Weapon type — printed as a raw id by the Roster's filter chips and the detail card (see 'Rendered from data')."
+		},
+		{
+			"term": "Catalyst",
+			"class": "game",
+			"forms": ["catalyst"],
+			"note": "Weapon type — printed as a raw id by the Roster's filter chips and the detail card (see 'Rendered from data')."
+		},
+		{
+			"term": "Mondstadt",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Liyue",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Inazuma",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Sumeru",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Fontaine",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Natlan",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Snezhnaya",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Nod-Krai",
+			"class": "game",
+			"note": "Region — printed from character data by the Roster's filter chips."
+		},
+		{
+			"term": "Blazing Axe Mitachurl",
+			"class": "game",
+			"avoid": ["Blazing Axe Mage"],
+			"note": "An enemy (⚓ Nate 2026-10-01: 'Blazing Axe Mage' was wrong)."
+		},
+		{
+			"term": "Fervent Flames",
+			"class": "game"
+		},
+		{
+			"term": "Soothing Water",
+			"class": "game"
+		},
+		{
+			"term": "Impetuous Winds",
+			"class": "game"
+		},
+		{
+			"term": "High Voltage",
+			"class": "game"
+		},
+		{
+			"term": "Shattering Ice",
+			"class": "game"
+		},
+		{
+			"term": "Enduring Rock",
+			"class": "game"
+		},
+		{
+			"term": "Sprawling Greenery",
+			"class": "game"
+		},
+		{
+			"term": "Protective Canopy",
+			"class": "game"
+		},
+		{
+			"term": "Sanctifying Elixir",
+			"class": "game",
+			"forms": ["Elixir"]
+		},
+		{
+			"term": "Dust of Enlightenment",
+			"class": "game"
+		},
+		{
+			"term": "Flower of Life",
+			"class": "game",
+			"forms": ["Flower"],
+			"note": "The site writes the community short form; use the game's slot name."
+		},
+		{
+			"term": "Plume of Death",
+			"class": "game",
+			"forms": ["Plume"]
+		},
+		{
+			"term": "Sands of Eon",
+			"class": "game",
+			"forms": ["Sands"]
+		},
+		{
+			"term": "Goblet of Eonothem",
+			"class": "game",
+			"forms": ["Goblet"]
+		},
+		{
+			"term": "Circlet of Logos",
+			"class": "game",
+			"forms": ["Circlet"]
+		},
+		{
+			"term": "Crimson Witch of Flames",
+			"class": "game",
+			"forms": ["Crimson Witch"]
+		},
+		{
+			"term": "Viridescent Venerer",
+			"class": "game"
+		},
+		{
+			"term": "Capturing Radiance",
+			"class": "game",
+			"note": "The wish mechanic (5.0). ⚠️ Not the Stellar 'Radiance' window — two different things share the word."
+		},
+		{
+			"term": "Fate Points",
+			"class": "game",
+			"forms": ["fate point", "fate points", "Fate point", "Fate Point"],
+			"note": "Epitomized Path's counter. The site writes it in sentence case."
+		},
+		{
+			"term": "Epitomized Path",
+			"class": "game"
+		},
+		{
+			"term": "ICD",
+			"class": "label",
+			"note": "Glossary §2: the three letters stay; the explanation localizes."
+		},
+		{
+			"term": "CV",
+			"class": "label",
+			"note": "Crit value. Glossary §2."
+		},
+		{
+			"term": "crit value",
+			"class": "label",
+			"forms": ["Crit value", "Crit Value"],
+			"note": "Glossary §2: 'crit value (CV)' on first use, CV after."
+		},
+		{
+			"term": "EM",
+			"class": "label",
+			"note": "Community short form of Elemental Mastery (the game writes it out)."
+		},
+		{
+			"term": "ER",
+			"class": "label",
+			"note": "Community short form of Energy Recharge."
+		},
+		{
+			"term": "CR",
+			"class": "label",
+			"note": "Community short form of CRIT Rate."
+		},
+		{
+			"term": "CD",
+			"class": "label",
+			"note": "CRIT DMG ONLY (⚓ Nate 2026-10-01). Cooldown is always spelled out — see `cooldown`."
+		},
+		{
+			"term": "NB",
+			"class": "label",
+			"note": "Short form of Nightsoul Burst, in the planner's dense chart furniture."
+		},
+		{
+			"term": "RES shred",
+			"class": "label",
+			"avoid": ["resistance shred", "RES Shred"]
+		},
+		{
+			"term": "off-field",
+			"class": "label"
+		},
+		{
+			"term": "uptime",
+			"class": "label"
+		},
+		{
+			"term": "gauge",
+			"class": "label",
+			"note": "The AMOUNT of an aura. ⚠️ Keep distinct from aura in every locale."
+		},
+		{
+			"term": "gauge units",
+			"class": "label",
+			"forms": ["gauge unit", "U"],
+			"note": "Written as U after a number (1U, 2U)."
+		},
+		{
+			"term": "aura",
+			"class": "label",
+			"note": "The element stuck to the enemy. ⚠️ Keep distinct from gauge."
+		},
+		{
+			"term": "summon",
+			"class": "label",
+			"forms": ["summons", "Summon"]
+		},
+		{
+			"term": "substat",
+			"class": "label",
+			"forms": ["substats", "Substat"]
+		},
+		{
+			"term": "Elevation",
+			"class": "label",
+			"note": "The damage-formula bucket. Community noun — the game only writes 'elevated by X%' (library/game/elevation.md)."
+		},
+		{
+			"term": "Reaction Bonus",
+			"class": "label",
+			"note": "The damage-formula bucket (wiki/KQM). The game's own text writes '<Reaction> DMG Bonus'."
+		},
+		{
+			"term": "pity",
+			"class": "label"
+		},
+		{
+			"term": "soft pity",
+			"class": "label"
+		},
+		{
+			"term": "50/50",
+			"class": "label"
+		},
+		{
+			"term": "DPS",
+			"class": "label"
+		},
+		{
+			"term": "selfish carry",
+			"class": "label"
+		},
+		{
+			"term": "Rotation Planner",
+			"class": "house",
+			"note": "Tool names translate — glossary §1."
+		},
+		{
+			"term": "Team Builder",
+			"class": "house"
+		},
+		{
+			"term": "Visualizers",
+			"class": "house"
+		},
+		{
+			"term": "Planner",
+			"class": "house",
+			"note": "Short form of Rotation Planner (tool switcher, coverage text)."
+		},
+		{
+			"term": "Builder",
+			"class": "house",
+			"note": "Short form of Team Builder — glossary §4a."
+		},
+		{
+			"term": "Crit Heatmap",
+			"class": "house",
+			"note": "Instrument names are still OPEN (visualizers-workspace.md §2)."
+		},
+		{
+			"term": "ICD Timeline",
+			"class": "house"
+		},
+		{
+			"term": "Artifact Rolls",
+			"class": "house"
+		},
+		{
+			"term": "Gauge Explorer",
+			"class": "house"
+		},
+		{
+			"term": "Reaction Curves",
+			"class": "house"
+		},
+		{
+			"term": "Enemy DEF & RES",
+			"class": "house"
+		},
+		{
+			"term": "Wish Odds",
+			"class": "house"
+		},
+		{
+			"term": "Damage Breakdown",
+			"class": "house",
+			"avoid": ["Damage Anatomy"],
+			"note": "⚓ Nate 2026-10-01: renamed from Damage Anatomy (a waterfall breaks one hit down; 'anatomy' fit the old side-by-side blocks and is hard English). The internal id stays 'anatomy'."
+		},
+		{
+			"term": "view bar",
+			"class": "house",
+			"avoid": ["view controls"],
+			"note": "Band B. Glossary §1."
+		},
+		{
+			"term": "document bar",
+			"class": "house",
+			"note": "Band A. Glossary §1."
+		},
+		{
+			"term": "composer",
+			"class": "house",
+			"avoid": ["notation editor"]
+		},
+		{
+			"term": "notation",
+			"class": "house",
+			"note": "The KQM notation as a concept. The word translates; the TOKENS do not (🔒)."
+		},
+		{
+			"term": "rotation",
+			"class": "house",
+			"forms": ["rotations", "Rotation", "Rotations"],
+			"note": "What a tab holds (glossary §1)."
+		},
+		{
+			"term": "Saved rotations",
+			"class": "house",
+			"avoid": ["Saved Rotations", "save bank"],
+			"note": "⚓ Nate 2026-10-01: sentence case, one name. Mid-sentence it is a named place ('in Saved rotations'); a verb before it lowercases it ('Open saved rotations')."
+		},
+		{
+			"term": "loadout",
+			"class": "house",
+			"forms": ["loadouts", "Loadout"]
+		},
+		{
+			"term": "bench",
+			"class": "house"
+		},
+		{
+			"term": "bench card",
+			"class": "house"
+		},
+		{
+			"term": "timeline",
+			"class": "house"
+		},
+		{
+			"term": "aura lane",
+			"class": "house"
+		},
+		{
+			"term": "gauge lines",
+			"class": "house"
+		},
+		{
+			"term": "reaction spawns",
+			"class": "house"
+		},
+		{
+			"term": "aura log",
+			"class": "house",
+			"forms": ["Aura log"],
+			"avoid": ["Event log"]
+		},
+		{
+			"term": "notes panel",
+			"class": "house"
+		},
+		{
+			"term": "tile",
+			"class": "house"
+		},
+		{
+			"term": "instrument",
+			"class": "house"
+		},
+		{
+			"term": "Atlas",
+			"class": "house"
+		},
+		{
+			"term": "Roster",
+			"class": "house"
+		},
+		{
+			"term": "Compare",
+			"class": "house"
+		},
+		{
+			"term": "audition",
+			"class": "house"
+		},
+		{
+			"term": "Navigate",
+			"class": "house"
+		},
+		{
+			"term": "Human timing",
+			"class": "house",
+			"forms": ["human timing"]
+		},
+		{
+			"term": "Laps",
+			"class": "house",
+			"note": "Playback: simulate the laps that follow."
+		}
+	],
+	"avoid": [
+		{
+			"pattern": "\\d(?:\\.\\d+)?s CD\\b",
+			"use": "…s cooldown",
+			"why": "⚓ Nate 2026-10-01: CD means CRIT DMG only; cooldown is spelled out"
+		},
+		{
+			"form": "modelled",
+			"use": "modeled",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "modelling",
+			"use": "modeling",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "labelled",
+			"use": "labeled",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "cancelling",
+			"use": "canceling",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "cancelled",
+			"use": "canceled",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "neighbour",
+			"use": "neighbor",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "behaviour",
+			"use": "behavior",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "colour",
+			"use": "color",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "favour",
+			"use": "favor",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "centre",
+			"use": "center",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "analyse",
+			"use": "analyze",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "optimise",
+			"use": "optimize",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "visualise",
+			"use": "visualize",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "summarise",
+			"use": "summarize",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "realise",
+			"use": "realize",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "levelled",
+			"use": "leveled",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "travelled",
+			"use": "traveled",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "grey",
+			"use": "gray",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "whilst",
+			"use": "while",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "amongst",
+			"use": "among",
+			"why": "US English (R6)"
+		},
+		{
+			"form": "5-star",
+			"use": "5★",
+			"why": "glossary §4 (screen-reader text writes five-star)"
+		},
+		{
+			"form": "theory-crafting",
+			"use": "theorycrafting",
+			"why": "glossary §4"
+		},
+		{
+			"form": "data-mined",
+			"use": "datamined",
+			"why": "glossary §4"
+		},
+		{
+			"form": "Source view",
+			"use": null,
+			"why": "the name of a surface retired 2026-08 — glossary §3, leaked into an aria-label"
+		},
+		{
+			"form": "curator",
+			"use": null,
+			"why": "internal vocabulary (glossary §3)"
+		},
+		{
+			"form": "FrameMap",
+			"use": null,
+			"why": "internal vocabulary (glossary §3)"
+		},
+		{
+			"form": "TODO",
+			"use": null,
+			"why": "internal vocabulary (glossary §3)"
+		},
+		{
+			"form": "Stellar Radiance",
+			"use": "Radiance: Stellar-Conduct (or the specific state)",
+			"why": "a coined term; the game names three Radiance states"
+		}
+	]
+}

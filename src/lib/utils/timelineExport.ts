@@ -940,7 +940,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						snap.buffRowH,
 						BAR_FILL,
 						BAR_LABEL,
-						`${row.label} trigger CD`,
+						`${row.label} trigger cooldown`,
 						undefined,
 						next ? x(next.start) : undefined
 					);

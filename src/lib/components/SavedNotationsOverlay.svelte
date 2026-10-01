@@ -108,7 +108,7 @@
 
 <div class="sn-panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
 	<div class="sn-panel-header">
-		<h2 class="title">Saved Rotations</h2>
+		<h2 class="title">Saved rotations</h2>
 		<button class="btn btn--icon sn-close" onclick={onClose} aria-label="Close">
 			<Mark name="close" size={16} />
 		</button>

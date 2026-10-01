@@ -54,7 +54,7 @@ export const CRYSTALLIZE_LEVEL_MULT = [
 export const MAX_LEVEL = 100;
 
 /** The Reaction Bonus sliders' ceiling, shared by Reaction Curves and Damage
- *  Anatomy. What the game offers at 7.1: Ifa's A1 alone reaches 225% on Swirl,
+ *  Breakdown. What the game offers at 7.1: Ifa's A1 alone reaches 225% on Swirl,
  *  and 7.x weapons + Aubade + Ascendant Gleam stack past 150% on Lunar/Stellar
  *  (gcsim, 2026-10-01). */
 export const RB_MAX = 250;

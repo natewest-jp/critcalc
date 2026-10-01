@@ -25,7 +25,7 @@
 		type FamilyId,
 		type ScalingStat,
 		type SheetInputs
-	} from './anatomy';
+	} from './breakdown';
 	import {
 		levelMult,
 		additiveEmBonus,
@@ -697,7 +697,7 @@
 </script>
 
 <div class="instrument">
-	<div class="segment an-tabs" role="radiogroup" aria-label="Damage family">
+	<div class="segment bd-tabs" role="radiogroup" aria-label="Damage family">
 		{#each FAMILIES as f (f.id)}
 			<button
 				class="btn"
@@ -711,8 +711,8 @@
 		{/each}
 	</div>
 
-	<div class="an-chart ctx-dark">
-		<div class="chips an-reactions">
+	<div class="bd-chart ctx-dark">
+		<div class="chips bd-reactions">
 			{#each REACTIONS[family] as r (r.id)}
 				<button
 					class="chip chip--control"
@@ -725,24 +725,24 @@
 		</div>
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="an-wf" onpointerleave={() => (boxIdx = null)}>
+		<div class="bd-wf" onpointerleave={() => (boxIdx = null)}>
 			<!-- The axis: gridlines double; labels sit over the bar column -->
-			<div class="an-wf-axis" aria-hidden="true">
-				<span class="an-wf-track">
+			<div class="bd-wf-axis" aria-hidden="true">
+				<span class="bd-wf-track">
 					{#each ticks as t (t)}
-						<span class="an-wf-tick" style:left="{xPct(t)}%">{fmtTick(t)}</span>
+						<span class="bd-wf-tick" style:left="{xPct(t)}%">{fmtTick(t)}</span>
 					{/each}
 				</span>
 			</div>
 			<!-- ONE layer of gridlines behind every row, so each line runs unbroken -->
 			<span
-				class="an-wf-gridlayer"
+				class="bd-wf-gridlayer"
 				style:grid-row="2 / span {rows.length}"
 				bind:clientWidth={trackW}
 				aria-hidden="true"
 			>
 				{#each ticks as t (t)}
-					<span class="an-wf-grid" style:left="{xPct(t)}%"></span>
+					<span class="bd-wf-grid" style:left="{xPct(t)}%"></span>
 				{/each}
 			</span>
 			{#each rows as r, i (r.id)}
@@ -752,7 +752,7 @@
 				{@const nChev = chevronsFor(((hi - lo) / 100) * trackW)}
 				<button
 					type="button"
-					class="an-wf-row"
+					class="bd-wf-row"
 					class:is-sum={r.kind === 'subtotal' || r.kind === 'total'}
 					class:is-total={r.kind === 'total'}
 					class:is-read={boxIdx === i}
@@ -763,53 +763,53 @@
 					onfocus={() => (boxIdx = i)}
 					onclick={() => (boxIdx = boxIdx === i ? null : i)}
 				>
-					<span class="an-wf-op" aria-hidden="true"
+					<span class="bd-wf-op" aria-hidden="true"
 						>{r.kind === 'mult' ? '×' : r.kind === 'start' ? '' : '='}</span
 					>
-					<span class="an-wf-label">
-						<span class="an-wf-name">{r.name}</span>
-						{#if r.real}<span class="an-wf-real">{r.real}</span>{/if}
-						{#if r.formula}<span class="an-wf-formula-inline">{r.formula}</span>{/if}
+					<span class="bd-wf-label">
+						<span class="bd-wf-name">{r.name}</span>
+						{#if r.real}<span class="bd-wf-real">{r.real}</span>{/if}
+						{#if r.formula}<span class="bd-wf-formula-inline">{r.formula}</span>{/if}
 					</span>
-					<span class="an-wf-formula">{r.formula}</span>
-					<span class="an-wf-track">
+					<span class="bd-wf-formula">{r.formula}</span>
+					<span class="bd-wf-track">
 						<!-- The leading line: down from this bar's leading end, and up
 						     into this row from the end of the one above. Every bar
 						     starts where the last ended, so the halves meet. -->
 						{#if i < rows.length - 1}
 							<span
-								class="an-wf-lead an-wf-lead--down"
+								class="bd-wf-lead bd-wf-lead--down"
 								style:left="{xPct(r.kind === 'start' ? b.from : b.to)}%"
 							></span>
 						{/if}
 						{#if i > 0}
 							<span
-								class="an-wf-lead an-wf-lead--up"
+								class="bd-wf-lead bd-wf-lead--up"
 								style:left="{xPct(r.kind === 'mult' ? b.from : b.to)}%"
 							></span>
 						{/if}
 						{#if r.kind === 'start'}
-							<span class="an-wf-start" style:left="{lo}%"></span>
+							<span class="bd-wf-start" style:left="{lo}%"></span>
 						{:else}
 							<span
-								class="an-wf-bar"
+								class="bd-wf-bar"
 								class:is-loss={b.to < b.from}
 								style:left="{lo}%"
 								style:width="{Math.max(hi - lo, 0.4)}%"
 							>
 								{#each { length: nChev }, k (k)}
 									<!-- k = 0 is the HEAD; each step back toward the tail fades -->
-									<span class="an-wf-chev" style:--k={k} style:--a={chevAlpha(k, nChev)}></span>
+									<span class="bd-wf-chev" style:--k={k} style:--a={chevAlpha(k, nChev)}></span>
 								{/each}
 							</span>
 						{/if}
 					</span>
-					<span class="an-wf-value">
+					<span class="bd-wf-value">
 						<span>{r.kind === 'mult' || family === 'direct' ? fmtX(r.value) : fmtInt(r.value)}</span
 						>
 						{#if r.kind === 'mult'}
 							<!-- the multiplier in plain words: what it adds or takes away -->
-							<span class="an-wf-change">{fmtChange(r.value)}</span>
+							<span class="bd-wf-change">{fmtChange(r.value)}</span>
 						{/if}
 					</span>
 				</button>
@@ -818,9 +818,9 @@
 
 		<!-- The caption and every row's sentence share one cell, so the height
 		     is the longest's and reading a row never moves the panels below -->
-		<div class="an-reading" aria-live="polite">
+		<div class="bd-reading" aria-live="polite">
 			<p class:is-read={boxIdx === null}>
-				{CAPTIONS[family]} <span class="an-hint">Hover or tap a row to read it.</span>
+				{CAPTIONS[family]} <span class="bd-hint">Hover or tap a row to read it.</span>
 			</p>
 			{#each rows as r, i (r.id)}
 				<p class:is-read={boxIdx === i}>{readingOf(r)}</p>
@@ -828,15 +828,15 @@
 		</div>
 	</div>
 
-	<div class="panel panel--paper an-readout">
+	<div class="panel panel--paper bd-readout">
 		<p class="kicker">What the next roll buys</p>
-		<table class="an-table">
+		<table class="bd-table">
 			<thead>
 				<tr>
 					<th scope="col">Substat</th>
-					<th scope="col" class="an-num">One roll</th>
-					<th scope="col" class="an-num">Damage gained</th>
-					<th scope="col" class="an-bar-col" aria-label="Compared"></th>
+					<th scope="col" class="bd-num">One roll</th>
+					<th scope="col" class="bd-num">Damage gained</th>
+					<th scope="col" class="bd-bar-col" aria-label="Compared"></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -849,31 +849,31 @@
 						onclick={() => (rollIdx = i)}
 					>
 						<th scope="row">{g.stat.label}</th>
-						<td class="an-num">{fmtStep(g.stat)}</td>
-						<td class="an-num an-strong">{fmtGain(g.gain)}</td>
-						<td class="an-bar-col">
-							<span class="an-lab-track">
-								<span class="an-lab-fill" style:width="{(g.gain / gainMax) * 100}%"></span>
+						<td class="bd-num">{fmtStep(g.stat)}</td>
+						<td class="bd-num bd-strong">{fmtGain(g.gain)}</td>
+						<td class="bd-bar-col">
+							<span class="bd-lab-track">
+								<span class="bd-lab-fill" style:width="{(g.gain / gainMax) * 100}%"></span>
 							</span>
 						</td>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
-		<div class="an-roll-reading" aria-live="polite">
+		<div class="bd-roll-reading" aria-live="polite">
 			{#each rollReadings as r, i (i)}
 				<p class:is-read={i === rollIdx}>{r}</p>
 			{/each}
 		</div>
-		<p class="an-receipt">
+		<p class="bd-receipt">
 			Each row adds one average 5★ roll of that substat to your current sheet.
 		</p>
 	</div>
 
-	<div class="panel an-build">
+	<div class="panel bd-build">
 		<p class="kicker">Build</p>
 		{#if family === 'direct'}
-			<div class="an-sheet-row">
+			<div class="bd-sheet-row">
 				<div class="segment" role="radiogroup" aria-label="Scaling stat">
 					{#each ['atk', 'hp', 'def'] as const as s (s)}
 						<button
@@ -887,19 +887,19 @@
 						</button>
 					{/each}
 				</div>
-				<label class="an-field">
-					<span class="an-field-label">Base {stat}</span>
+				<label class="bd-field">
+					<span class="bd-field-label">Base {stat}</span>
 					<input
-						class="an-input"
+						class="bd-input"
 						type="number"
 						value={sheet.base}
 						oninput={(e) => commitNumber(e.currentTarget.value, (v) => (sheet.base = v), 50000)}
 					/>
 				</label>
-				<label class="an-field">
-					<span class="an-field-label">Flat {stat}</span>
+				<label class="bd-field">
+					<span class="bd-field-label">Flat {stat}</span>
 					<input
-						class="an-input"
+						class="bd-input"
 						type="number"
 						value={Math.round(sheet.statFlat)}
 						oninput={(e) => commitNumber(e.currentTarget.value, (v) => (sheet.statFlat = v), 50000)}
@@ -907,11 +907,11 @@
 				</label>
 			</div>
 		{/if}
-		<div class="an-sliders">
+		<div class="bd-sliders">
 			{#each sliders.before as d, i (d.key)}
 				<div
 					class="slider-control"
-					class:an-wide={i === sliders.before.length - 1 && sliders.before.length % 2 === 1}
+					class:bd-wide={i === sliders.before.length - 1 && sliders.before.length % 2 === 1}
 				>
 					<div class="slider-header">
 						<span class="slider-label">{d.label}</span>
@@ -928,12 +928,12 @@
 					/>
 				</div>
 			{/each}
-			<div class="slider-control an-wide">
+			<div class="slider-control bd-wide">
 				<div class="slider-header">
 					<span class="slider-label">Level</span>
 					<span class="readout">{sheet.charLevel}</span>
 				</div>
-				<div class="an-level">
+				<div class="bd-level">
 					<input
 						type="range"
 						min="1"
@@ -946,9 +946,9 @@
 						aria-label="Character level"
 					/>
 					<!-- Above 90 only 95 and 100 exist; the slider jumps the gaps. -->
-					<div class="an-level-marks" aria-hidden="true">
+					<div class="bd-level-marks" aria-hidden="true">
 						{#each LEVEL_MARKS as lv (lv)}
-							<span class="an-level-mark" style:--at={markPos(lv)}></span>
+							<span class="bd-level-mark" style:--at={markPos(lv)}></span>
 						{/each}
 					</div>
 				</div>
@@ -956,7 +956,7 @@
 			{#each sliders.after as d, i (d.key)}
 				<div
 					class="slider-control"
-					class:an-wide={i === sliders.after.length - 1 && sliders.after.length % 2 === 1}
+					class:bd-wide={i === sliders.after.length - 1 && sliders.after.length % 2 === 1}
 				>
 					<div class="slider-header">
 						<span class="slider-label">{d.label}</span>
@@ -975,8 +975,8 @@
 			{/each}
 		</div>
 		{#if usesDef}
-			<label class="an-switch">
-				<span class="an-switch-name">DEF shred and ignore</span>
+			<label class="bd-switch">
+				<span class="bd-switch-name">DEF shred and ignore</span>
 				<span class="toggle">
 					<input type="checkbox" checked={defModsOpen} onchange={toggleDefMods} />
 					<span class="toggle-track"><span class="toggle-thumb"></span></span>
@@ -984,7 +984,7 @@
 				</span>
 			</label>
 			{#if defModsOpen}
-				<div class="an-sliders">
+				<div class="bd-sliders">
 					{#each defModSliders as d (d.key)}
 						<div class="slider-control">
 							<div class="slider-header">
@@ -1017,7 +1017,7 @@
 	}
 
 	/* Four families outgrow a narrow tile's width — wrap rather than scroll. */
-	.an-tabs {
+	.bd-tabs {
 		flex-wrap: wrap;
 		justify-self: start;
 		/* start-aligned, it sizes to its content and never wraps — on a 320px
@@ -1027,13 +1027,13 @@
 
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
-	.an-chart {
+	.bd-chart {
 		display: grid;
 		gap: 0.7rem;
 		min-width: 0;
 	}
 
-	.an-reactions :global(.chip) {
+	.bd-reactions :global(.chip) {
 		font-family: var(--font-condensed);
 		/* "Stellar Swirl blast, 1–2 swirls ×1.2" is wider than a phone */
 		white-space: normal;
@@ -1045,7 +1045,7 @@
 	   values line up across rows. Cells are placed by column NUMBER, so the
 	   narrow layout can collapse the formula column without anything sliding
 	   into it. */
-	.an-wf {
+	.bd-wf {
 		display: grid;
 		grid-template-columns: 1rem minmax(7rem, max-content) minmax(0, 17rem) minmax(7rem, 1fr) minmax(
 				4rem,
@@ -1055,21 +1055,21 @@
 		row-gap: 2px;
 	}
 
-	.an-wf-axis,
-	.an-wf-row {
+	.bd-wf-axis,
+	.bd-wf-row {
 		grid-column: 1 / -1;
 		display: grid;
 		grid-template-columns: subgrid;
 		align-items: center;
 	}
 
-	.an-wf-axis {
+	.bd-wf-axis {
 		grid-row: 1;
 		height: 1.1rem;
 	}
 
-	.an-wf-axis > .an-wf-track,
-	.an-wf-row > .an-wf-track {
+	.bd-wf-axis > .bd-wf-track,
+	.bd-wf-row > .bd-wf-track {
 		grid-column: 4;
 	}
 
@@ -1077,13 +1077,13 @@
 	   ⚠ Every row is pinned to its grid line (style:grid-row) — left to
 	   auto-placement, a full-width row can't share a line with this layer's
 	   column, so the rows were pushed BELOW it and it collapsed to ~10px. */
-	.an-wf-gridlayer {
+	.bd-wf-gridlayer {
 		grid-column: 4;
 		position: relative;
 		pointer-events: none;
 	}
 
-	.an-wf-row {
+	.bd-wf-row {
 		/* inline room so the hover highlight doesn't end flush on the value
 		   (⚓ Nate) — on a subgrid this pads the edge tracks only, so the bar
 		   column, and the gridlines above it, stay aligned */
@@ -1098,53 +1098,53 @@
 		transition: background-color var(--t-snap);
 	}
 
-	.an-wf-row.is-read,
-	.an-wf-row:hover {
+	.bd-wf-row.is-read,
+	.bd-wf-row:hover {
 		background: color-mix(in srgb, var(--text) 6%, transparent);
 	}
 
-	.an-wf-row:focus-visible {
+	.bd-wf-row:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: -2px;
 	}
 
-	.an-wf-row.is-sum {
+	.bd-wf-row.is-sum {
 		border-top: 1px solid var(--chart-rule);
 		border-radius: 0 0 var(--r-sm) var(--r-sm);
 	}
 
-	.an-wf-op {
+	.bd-wf-op {
 		grid-column: 1;
 		justify-self: end;
 		color: var(--chart-dim);
 		font-size: var(--fs-lg);
 	}
 
-	.an-wf-label {
+	.bd-wf-label {
 		grid-column: 2;
 		display: grid;
 		line-height: var(--lh-snug);
 		min-width: 0;
 	}
 
-	.an-wf-name {
+	.bd-wf-name {
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--c) 70%, var(--text));
 		white-space: nowrap;
 	}
 
-	.an-wf-row.is-sum .an-wf-name {
+	.bd-wf-row.is-sum .bd-wf-name {
 		color: var(--text);
 	}
 
-	.an-wf-real {
+	.bd-wf-real {
 		font-size: var(--fs-sm);
 		color: var(--muted);
 		white-space: nowrap;
 	}
 
-	.an-wf-formula {
+	.bd-wf-formula {
 		grid-column: 3;
 		font-size: var(--fs-sm);
 		color: var(--chart-ink);
@@ -1152,7 +1152,7 @@
 	}
 
 	/* Shown under the name only when the formula column is gone */
-	.an-wf-formula-inline {
+	.bd-wf-formula-inline {
 		display: none;
 		font-size: var(--fs-xs);
 		color: var(--chart-ink);
@@ -1161,7 +1161,7 @@
 	/* The bar column fills the row's full height (rows grow with 2–3 line
 	   labels), and the bar sits on its middle, so the leading line knows where
 	   the bar stops and the row ends. */
-	.an-wf-track {
+	.bd-wf-track {
 		--bar-h: 0.9rem;
 		position: relative;
 		align-self: stretch;
@@ -1175,7 +1175,7 @@
 	   half a pixel off the connector and read as two lines (Nate's
 	   screenshot). Drawn in two halves (one per row), both on the same x, so
 	   they meet by construction; above the bar it crosses. */
-	.an-wf-lead {
+	.bd-wf-lead {
 		position: absolute;
 		z-index: 1;
 		width: 1px;
@@ -1185,27 +1185,27 @@
 		transition: left var(--t-move);
 	}
 
-	.an-wf-lead--down {
+	.bd-wf-lead--down {
 		top: calc(50% - var(--bar-h) / 2);
 		bottom: calc(-0.2rem - 2px);
 	}
 
-	.an-wf-lead--up {
+	.bd-wf-lead--up {
 		top: -0.2rem;
 		bottom: calc(50% - var(--bar-h) / 2);
 	}
 
 	/* a subtotal or the result has a 1px rule on top to reach through */
-	.an-wf-row.is-sum .an-wf-lead--up {
+	.bd-wf-row.is-sum .bd-wf-lead--up {
 		top: calc(-0.2rem - 1px);
 	}
 
-	.an-wf-axis .an-wf-track {
+	.bd-wf-axis .bd-wf-track {
 		height: 100%;
 		min-height: 0;
 	}
 
-	.an-wf-tick {
+	.bd-wf-tick {
 		position: absolute;
 		bottom: 0;
 		transform: translateX(-50%);
@@ -1214,7 +1214,7 @@
 		white-space: nowrap;
 	}
 
-	.an-wf-grid {
+	.bd-wf-grid {
 		position: absolute;
 		top: 0;
 		bottom: 0;
@@ -1226,7 +1226,7 @@
 	   triangular endcaps and the tail fade both read too faint and too little
 	   like arrows). The arrow sits centred, its shaft fading toward the tail;
 	   a bar too short to hold one keeps only its leading edge. */
-	.an-wf-bar {
+	.bd-wf-bar {
 		position: absolute;
 		top: calc(50% - var(--bar-h) / 2);
 		height: var(--bar-h);
@@ -1246,17 +1246,17 @@
 	   edge thinned to 1px on the leading side (the stripes now carry the
 	   direction; the edge marks where the bar ends), and its stripes fainter
 	   than the element and ink bars' (--chev-scale). */
-	.an-wf-row.is-glass .an-wf-bar {
+	.bd-wf-row.is-glass .bd-wf-bar {
 		background: var(--glass-bar);
 		--arrow-c: rgb(255 255 255);
 		--chev-scale: 0.6;
 	}
 
-	.an-wf-row.is-sum .an-wf-bar {
+	.bd-wf-row.is-sum .bd-wf-bar {
 		background: color-mix(in srgb, var(--text) 40%, transparent);
 	}
 
-	.an-wf-row.is-total .an-wf-bar {
+	.bd-wf-row.is-total .bd-wf-bar {
 		background: color-mix(in srgb, var(--text) 85%, transparent);
 	}
 
@@ -1266,11 +1266,11 @@
 	   with its alpha in its PAINT — no tiled background (real Safari has drawn
 	   1px gaps in tiled bar backgrounds), no element opacity (sub-pixel law).
 	   Drawn pointing right from the head; a cut mirrors them. */
-	.an-wf-bar {
+	.bd-wf-bar {
 		overflow: hidden;
 	}
 
-	.an-wf-chev {
+	.bd-wf-chev {
 		--pitch: 14px;
 		--depth: 6px;
 		position: absolute;
@@ -1293,7 +1293,7 @@
 		);
 	}
 
-	.an-wf-bar.is-loss .an-wf-chev {
+	.bd-wf-bar.is-loss .bd-wf-chev {
 		right: auto;
 		left: calc(2px + var(--k) * var(--pitch));
 		clip-path: polygon(
@@ -1306,7 +1306,7 @@
 		);
 	}
 
-	.an-wf-start {
+	.bd-wf-start {
 		position: absolute;
 		top: calc(50% - var(--bar-h) / 2 - 0.15rem);
 		height: calc(var(--bar-h) + 0.3rem);
@@ -1316,7 +1316,7 @@
 		transition: left var(--t-move);
 	}
 
-	.an-wf-value {
+	.bd-wf-value {
 		grid-column: 5;
 		justify-self: end;
 		display: grid;
@@ -1328,13 +1328,13 @@
 		white-space: nowrap;
 	}
 
-	.an-wf-change {
+	.bd-wf-change {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-normal);
 		color: var(--muted);
 	}
 
-	.an-wf-row.is-total .an-wf-value {
+	.bd-wf-row.is-total .bd-wf-value {
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-bold);
 	}
@@ -1343,7 +1343,7 @@
 	   46rem, not 40: at a 675px tile (1440×900, two tiles) the column left the
 	   bars ~150px, too short to compare */
 	@container instrument (max-width: 46rem) {
-		.an-wf {
+		.bd-wf {
 			/* the label SHARES the width with the bars here — sized to its
 			   longest text (an inline formula), it overflowed a 320px phone
 			   by 39px and left the bars 96px at 390 */
@@ -1353,50 +1353,50 @@
 			column-gap: 0.5rem;
 		}
 
-		.an-wf-name,
-		.an-wf-real {
+		.bd-wf-name,
+		.bd-wf-real {
 			white-space: normal;
 		}
 
-		.an-wf-formula {
+		.bd-wf-formula {
 			display: none;
 		}
 
-		.an-wf-formula-inline {
+		.bd-wf-formula-inline {
 			display: block;
 		}
 	}
 
 	/* Caption + every box's sentence, stacked in one cell */
-	.an-reading,
-	.an-roll-reading {
+	.bd-reading,
+	.bd-roll-reading {
 		display: grid;
 	}
 
-	.an-reading > p,
-	.an-roll-reading > p {
+	.bd-reading > p,
+	.bd-roll-reading > p {
 		grid-area: 1 / 1;
 		margin: 0;
 		visibility: hidden;
 	}
 
-	.an-reading > p.is-read,
-	.an-roll-reading > p.is-read {
+	.bd-reading > p.is-read,
+	.bd-roll-reading > p.is-read {
 		visibility: visible;
 	}
 
-	.an-reading > p {
+	.bd-reading > p {
 		font-size: var(--fs-lg);
 		line-height: 1.35rem;
 		color: var(--muted);
 	}
 
-	.an-hint {
+	.bd-hint {
 		color: var(--chart-dim);
 	}
 
 	/* ── The readout: one row per substat ──────────────────────────────────── */
-	.an-table {
+	.bd-table {
 		width: 100%;
 		border-collapse: collapse;
 		font-size: var(--fs-md);
@@ -1404,7 +1404,7 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	.an-table thead th {
+	.bd-table thead th {
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
@@ -1413,48 +1413,48 @@
 		white-space: nowrap;
 	}
 
-	.an-table tbody th,
-	.an-table tbody td {
+	.bd-table tbody th,
+	.bd-table tbody td {
 		padding: 0.25rem 0.5rem;
 		border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
 		vertical-align: middle;
 	}
 
-	.an-table tbody th {
+	.bd-table tbody th {
 		text-align: left;
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 	}
 
-	.an-table tbody tr {
+	.bd-table tbody tr {
 		cursor: default;
 		transition: background-color var(--t-snap);
 	}
 
-	.an-table tbody tr.is-read {
+	.bd-table tbody tr.is-read {
 		background: color-mix(in srgb, var(--text) 7%, transparent);
 	}
 
-	.an-table tbody tr:focus-visible {
+	.bd-table tbody tr:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: -2px;
 	}
 
-	.an-num,
-	.an-table thead th.an-num {
+	.bd-num,
+	.bd-table thead th.bd-num {
 		text-align: right;
 		white-space: nowrap;
 	}
 
-	.an-strong {
+	.bd-strong {
 		font-weight: var(--fw-semibold);
 	}
 
-	.an-bar-col {
+	.bd-bar-col {
 		width: 40%;
 	}
 
-	.an-lab-track {
+	.bd-lab-track {
 		display: block;
 		height: 9px;
 		border-radius: 3px;
@@ -1463,7 +1463,7 @@
 	}
 
 	/* Alpha in the PAINT, never element opacity (the sub-pixel law) */
-	.an-lab-fill {
+	.bd-lab-fill {
 		display: block;
 		height: 100%;
 		min-width: 2px;
@@ -1472,23 +1472,23 @@
 		transition: width var(--t-move);
 	}
 
-	.an-roll-reading {
+	.bd-roll-reading {
 		margin-top: 0.6rem;
 	}
 
-	.an-roll-reading > p {
+	.bd-roll-reading > p {
 		font-size: var(--fs-md);
 		line-height: var(--lh-normal);
 	}
 
-	.an-receipt {
+	.bd-receipt {
 		margin: 0.4rem 0 0;
 		font-size: var(--fs-sm);
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
 	}
 
 	/* ── Build: one full-width box; sliders two to a line, Level alone ──── */
-	.an-sheet-row {
+	.bd-sheet-row {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -1496,13 +1496,13 @@
 		margin-bottom: 0.6rem;
 	}
 
-	.an-field {
+	.bd-field {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
 	}
 
-	.an-field-label {
+	.bd-field-label {
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
@@ -1510,7 +1510,7 @@
 		color: var(--muted);
 	}
 
-	.an-input {
+	.bd-input {
 		width: 5.2rem;
 		padding: 0.24rem 0.45rem;
 		border: none;
@@ -1526,18 +1526,18 @@
 		-moz-appearance: textfield;
 	}
 
-	.an-input::-webkit-outer-spin-button,
-	.an-input::-webkit-inner-spin-button {
+	.bd-input::-webkit-outer-spin-button,
+	.bd-input::-webkit-inner-spin-button {
 		-webkit-appearance: none;
 		margin: 0;
 	}
 
-	.an-input:focus-visible {
+	.bd-input:focus-visible {
 		outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
 		outline-offset: 1px;
 	}
 
-	.an-sliders {
+	.bd-sliders {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.5rem 1.5rem;
@@ -1545,25 +1545,25 @@
 		align-items: start;
 	}
 
-	.an-wide {
+	.bd-wide {
 		grid-column: 1 / -1;
 	}
 
 	/* The 90 / 95 / 100 marks — ⚠ mirror the range input's UA 2px side margin
 	   (box AND width), or every mark sits 2px left; see ReactionCurvesInstrument */
-	.an-level {
+	.bd-level {
 		position: relative;
 		display: grid;
 	}
 
-	.an-level-marks {
+	.bd-level-marks {
 		position: relative;
 		width: 100%;
 		height: 5px;
 		margin: 3px 2px 0;
 	}
 
-	.an-level-mark {
+	.bd-level-mark {
 		position: absolute;
 		top: 0;
 		left: calc(7.5px + var(--at) * (100% - 15px) - 0.5px);
@@ -1572,7 +1572,7 @@
 		background: color-mix(in srgb, var(--text) 35%, transparent);
 	}
 
-	.an-switch {
+	.bd-switch {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -1580,7 +1580,7 @@
 		margin: 0.8rem 0 0.4rem;
 	}
 
-	.an-switch-name {
+	.bd-switch-name {
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
@@ -1590,17 +1590,17 @@
 	/* Phone-width tile: table headings may wrap (they were the last thing
 	   holding the tile ~20–30px wide at 320px), and the sliders stack */
 	@container instrument (max-width: 30rem) {
-		.an-table thead th,
-		.an-table tbody th {
+		.bd-table thead th,
+		.bd-table tbody th {
 			white-space: normal;
 		}
 
-		.an-bar-col {
+		.bd-bar-col {
 			width: auto;
 			min-width: 2.5rem;
 		}
 
-		.an-sliders {
+		.bd-sliders {
 			grid-template-columns: minmax(0, 1fr);
 		}
 	}

@@ -55,7 +55,7 @@
 		{
 			id: 'all',
 			label: 'All families',
-			note: 'How much EM boosts each family. Level doesn’t change the boost.',
+			note: 'How much EM boosts each family.',
 			yLabel: 'boost from EM',
 			rowHead: 'Family',
 			valueHead: 'Boost from EM',

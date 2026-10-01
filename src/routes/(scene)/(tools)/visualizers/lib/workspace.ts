@@ -21,7 +21,7 @@ export const INSTRUMENTS = [
 	{ id: 'curves', name: 'Reaction Curves' },
 	{ id: 'defres', name: 'Enemy DEF & RES' },
 	{ id: 'wish', name: 'Wish Odds' },
-	{ id: 'anatomy', name: 'Damage Anatomy' }
+	{ id: 'breakdown', name: 'Damage Breakdown' }
 ] as const;
 
 export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
@@ -37,7 +37,7 @@ export const DEFAULT_ASSIGNMENT: InstrumentId[] = [
 	'curves',
 	'defres',
 	'wish',
-	'anatomy'
+	'breakdown'
 ];
 
 // ---------------------------------------------------------------------------
