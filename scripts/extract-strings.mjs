@@ -106,7 +106,7 @@ const SURFACES = [
 	['vz_rc', /ReactionCurves|reactionCurves\.ts$/],
 	['vz_defres', /DefRes|defres\.ts$/],
 	['vz_wish', /Wish|wish\.ts$/],
-	['vz_anatomy', /Anatomy|anatomy\.ts$/],
+	['vz_breakdown', /BreakdownInstrument|visualizers\/lib\/breakdown\.ts$/],
 	['vz_artifact', /Artifact(Instrument)?\.svelte$|artifactRolls|appraise|ValueWheel/],
 	['vz', /visualizers\/|utils\/instrumentUrl\.ts$/],
 	[

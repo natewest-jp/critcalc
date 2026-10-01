@@ -8,7 +8,7 @@ import type { Page } from '@playwright/test';
  * Scope note: the old probe also re-asserted each instrument's arithmetic
  * (×0.900 res multipliers, equation term counts, pity math). That belongs to
  * the Vitest lib tests beside those modules — `defres.test.ts`, `wish.test.ts`,
- * `anatomy.test.ts`, `crit.test.ts`, `gauge.test.ts` and friends already own it,
+ * `breakdown.test.ts`, `crit.test.ts`, `gauge.test.ts` and friends already own it,
  * and a browser is a slow, flaky place to recheck a pure function. What only a
  * browser can prove is the workspace behavior below.
  */

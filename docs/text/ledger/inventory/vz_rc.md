@@ -7,8 +7,8 @@
 
 - `vz_rc_all_families` — ReactionCurvesInstrument.svelte:57 label:
   > All families
-- `vz_rc_how_much_em_boosts_each_family_level` — ReactionCurvesInstrument.svelte:58 note:
-  > How much EM boosts each family. Level doesn’t change the boost.
+- `vz_rc_how_much_em_boosts_each_family` — ReactionCurvesInstrument.svelte:58 note:
+  > How much EM boosts each family.
   - terms: 🏷 EM
 - `vz_rc_boost_from_em_256e` — ReactionCurvesInstrument.svelte:59 yLabel:
   > boost from EM

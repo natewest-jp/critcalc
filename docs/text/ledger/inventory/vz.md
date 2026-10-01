@@ -65,6 +65,6 @@
 - `vz_wish_odds` — workspace.ts:23 name:
   > Wish Odds
   - terms: 📖 Wish Odds
-- `vz_damage_anatomy` — workspace.ts:24 name:
-  > Damage Anatomy
-  - terms: 📖 Damage Anatomy
+- `vz_damage_breakdown` — workspace.ts:24 name:
+  > Damage Breakdown
+  - terms: 📖 Damage Breakdown

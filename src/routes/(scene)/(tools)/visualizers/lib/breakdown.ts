@@ -1,4 +1,4 @@
-// Damage Anatomy — the hit as a product of multiplier buckets, from real
+// Damage Breakdown — the hit as a product of multiplier buckets, from real
 // character-sheet inputs. Outputs are RELATIVE for attack-scaling hits
 // ("×8.06 vs a bare hit" — the talent multiplier is the one bucket a sheet
 // can't supply); additive chunks, transformative and Lunar/Stellar reaction

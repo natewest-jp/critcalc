@@ -733,8 +733,10 @@
 			"class": "house"
 		},
 		{
-			"term": "Damage Anatomy",
-			"class": "house"
+			"term": "Damage Breakdown",
+			"class": "house",
+			"avoid": ["Damage Anatomy"],
+			"note": "⚓ Nate 2026-10-01: renamed from Damage Anatomy (a waterfall breaks one hit down; 'anatomy' fit the old side-by-side blocks and is hard English). The internal id stays 'anatomy'."
 		},
 		{
 			"term": "view bar",

@@ -23,8 +23,8 @@
   settings        92
   tb             232
   vz              23
-  vz_anatomy     125
   vz_artifact    102
+  vz_breakdown   125
   vz_crit         37
   vz_defres       36
   vz_gauge        81

@@ -14,7 +14,7 @@ import {
 	scalingFactor,
 	scalingTotal,
 	transformativeTotal
-} from './anatomy';
+} from './breakdown';
 import {
 	additiveDamage,
 	levelMult,

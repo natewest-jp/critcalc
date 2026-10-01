@@ -10,7 +10,7 @@
 	import ReactionCurvesInstrument from './lib/ReactionCurvesInstrument.svelte';
 	import DefResInstrument from './lib/DefResInstrument.svelte';
 	import WishInstrument from './lib/WishInstrument.svelte';
-	import AnatomyInstrument from './lib/AnatomyInstrument.svelte';
+	import BreakdownInstrument from './lib/BreakdownInstrument.svelte';
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -315,8 +315,8 @@
 								<DefResInstrument bind:this={handles.defres} />
 							{:else if inst.id === 'wish'}
 								<WishInstrument bind:this={handles.wish} />
-							{:else if inst.id === 'anatomy'}
-								<AnatomyInstrument bind:this={handles.anatomy} />
+							{:else if inst.id === 'breakdown'}
+								<BreakdownInstrument bind:this={handles.breakdown} />
 							{/if}
 						{/if}
 					</div>

@@ -87,9 +87,9 @@
 - `help_vz_pity_model_0_6_flat_until_soft_pity` — Visualizers.svelte:138 <p>
   > Pity model: 0.6% flat until soft pity ramps from pull 74 (weapons: 0.7% ramping from 63). Featured odds use the official consolidated rates — 55% character including Capturing Radiance, 37.5% charted weapon, 1 fate point. The Radiance streak counter is not fully datamined and is deliberately not guessed at.
   - terms: 🎮 Capturing Radiance · 🎮 Fate Points · 🏷 soft pity · 🎮 Radiance
-- `help_vz_damage_anatomy` — Visualizers.svelte:147 <h2>
-  > Damage Anatomy
-  - terms: 📖 Damage Anatomy
+- `help_vz_damage_breakdown` — Visualizers.svelte:147 <h2>
+  > Damage Breakdown
+  - terms: 📖 Damage Breakdown
 - `help_vz_your_hit_as_its_formula_one_multiplier` — Visualizers.svelte:148 <p>
   > Your hit as its formula, one multiplier per row, read top to bottom. Each row shows the multiplier's formula, the numbers from your sheet, and a bar. The bars share one axis whose gridlines double the hit, so a ×2 is the same length wherever it sits, each bar starts where the one above it ended, and a cut such as enemy DEF runs backward. Hover or tap a row to have it read out in words, with its share of the boost.
   - terms: 🎮 DEF
