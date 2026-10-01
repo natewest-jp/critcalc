@@ -60,251 +60,348 @@
 	const stat = $derived(statName(scaling));
 	const rb = $derived(sheet.rbPct);
 
-	// ── Equation terms per family ─────────────────────────────────────────────
-	// Provisional bucket palette (element-free lane — no elements render in this
-	// instrument, so hue collisions can't mislead). Nate tunes at review.
+	// ── The waterfall ─────────────────────────────────────────────────────────
+	// One row per bucket, in the formula's own order (⚓ fixed — a row never
+	// moves while a slider is dragged). Every bar starts where the one above
+	// ended, on one shared axis whose gridlines DOUBLE: a ×2 is the same length
+	// wherever it sits, and a cut (×0.49) runs backward by exactly as far as a
+	// ×2.04 runs forward. Labels live in their own columns, so a bar's length is
+	// its multiplier and nothing else.
+	//
+	// Hues: the dataviz reference categorical eight, assigned so EVERY family's
+	// adjacent rows pass the validator in dark mode on the dimmed night (16 of
+	// the 40,320 assignments do). Two pairs share a slot by meaning and never
+	// meet: the starting magnitude (scaling stat / level) and the bonus bracket
+	// (DMG Bonus / Base DMG Bonus). Provisional until Nate's eye.
 	const C = {
-		scaling: '#ddb04a',
-		dmg: '#e2543e',
-		crit: '#c070f0',
-		em: '#80c840',
-		level: '#6a96c0',
-		reaction: '#e2ec6f',
-		def: '#9eacc8',
-		res: '#4ecbb4',
-		base: '#e89a5c',
-		elevation: '#f0d7a0'
+		start: '#d95926',
+		bonus: '#199e70',
+		em: '#c98500',
+		reaction: '#3987e5',
+		crit: '#9085e9',
+		elevation: '#e66767',
+		def: '#008300',
+		res: '#d55181'
 	};
 
-	/** One box. Its four lines are the key's four lines: what it is, how it is
-	 *  worked out, the sheet's numbers that go in, and what it multiplies by. */
-	type Term = {
+	/** One row: a starting value, a multiplier, a subtotal, or the result. */
+	type Row = {
 		id: string;
+		kind: 'start' | 'mult' | 'subtotal' | 'total';
 		name: string;
-		math: string;
+		/** The bucket's formula, in words where words will do */
+		formula: string;
+		/** The sheet's numbers that go in */
 		real: string;
-		factor: number;
-		/** The bottom line when it isn't a multiplier (a level base, a chunk) */
-		display?: string;
+		/** The multiplier (kind 'mult') or the value (the others) */
+		value: number;
 		color: string;
-		/** The box in a sentence, for whoever hovers or taps it */
+		/** The row in a sentence, for whoever hovers or taps it */
 		read: string;
 	};
 
 	const fmtX = (v: number) => `×${v >= 10 ? v.toFixed(1) : v.toFixed(2)}`;
 	const fmtInt = (v: number) => Math.round(v).toLocaleString('en-US');
 	const pct = (v: number) => `${Math.round(v * 100)}%`;
-	const emBracket = (k: number, c: number) => `1 + ${k}·EM⁄(${c}+EM) + bonus`;
+	const bonusWord = $derived(rb > 0 ? ' + Reaction Bonus' : '');
 	const emReal = $derived(rb > 0 ? `${sheet.em} EM · +${rb}%` : `${sheet.em} EM`);
 
-	const critTerm = $derived<Term>({
+	/** Enemy RES has three formulas, and the row shows the one in force */
+	const resFormula = $derived(
+		sheet.enemyRes < 0 ? '1 − RES ÷ 2' : sheet.enemyRes < 75 ? '1 − RES' : '1 ÷ (1 + 4 × RES)'
+	);
+
+	const critRow = $derived<Row>({
 		id: 'crit',
+		kind: 'mult',
 		name: 'Crit, on average',
-		math: '1 + CR·CD',
+		formula: '1 + CRIT Rate × CRIT DMG',
 		real: `${sheet.cr}% · ${sheet.cd}%`,
-		factor: critFactor(sheet),
+		value: critFactor(sheet),
 		color: C.crit,
 		read: `With ${sheet.cr}% CRIT Rate and ${sheet.cd}% CRIT DMG, the hit would average ${fmtX(critFactor(sheet))} a non-crit.`
 	});
-	const dmgTerm = $derived<Term>({
+	const dmgRow = $derived<Row>({
 		id: 'dmg',
+		kind: 'mult',
 		name: 'DMG Bonus',
-		math: '1 + DMG%',
+		formula: '1 + DMG Bonus',
 		real: `${sheet.dmgPct.toFixed(1)}%`,
-		factor: dmgFactor(sheet),
-		color: C.dmg,
+		value: dmgFactor(sheet),
+		color: C.bonus,
 		read: `A ${sheet.dmgPct.toFixed(1)}% DMG Bonus would make the hit ${fmtX(dmgFactor(sheet))} as strong.`
 	});
-	const defTerm = $derived<Term>({
+	const defRow = $derived<Row>({
 		id: 'def',
+		kind: 'mult',
 		name: 'Enemy DEF',
-		math: '(100+yours)⁄(Σ levels)',
-		real: `${sheet.charLevel} vs ${sheet.enemyLevel}`,
-		factor: defFactor(sheet),
+		formula: '(100 + your level) ÷ (both levels + 200)',
+		real: `Lv ${sheet.charLevel} vs ${sheet.enemyLevel}`,
+		value: defFactor(sheet),
 		color: C.def,
 		read: `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF would let ${pct(defFactor(sheet))} of the hit through.`
 	});
-	const resTerm = $derived<Term>({
+	const resRow = $derived<Row>({
 		id: 'res',
+		kind: 'mult',
 		name: 'Enemy RES',
-		math: 'by RES range',
+		formula: resFormula,
 		real: `${sheet.enemyRes}%`,
-		factor: resFactor(sheet),
+		value: resFactor(sheet),
 		color: C.res,
-		read: `At ${sheet.enemyRes}% RES, the enemy would take ${pct(resFactor(sheet))} of the hit.`
+		read:
+			sheet.enemyRes < 0
+				? `Below 0% RES only half the shred counts, so the enemy would take ${pct(resFactor(sheet))} of the hit.`
+				: sheet.enemyRes < 75
+					? `At ${sheet.enemyRes}% RES, the enemy would take ${pct(resFactor(sheet))} of the hit.`
+					: `From 75% RES the formula changes to a curve, and the enemy would take ${pct(resFactor(sheet))} of the hit.`
 	});
-	const levelTerm = $derived<Term>({
+	const levelRow = $derived<Row>({
 		id: 'level',
-		name: 'Level',
-		math: 'level table',
+		kind: 'start',
+		name: 'Level base',
+		formula: 'from the level table',
 		real: `Lv ${sheet.charLevel}`,
-		factor: levelMult(sheet.charLevel),
-		display: fmtInt(levelMult(sheet.charLevel)),
-		color: C.level,
-		read: `The level table gives every level ${sheet.charLevel} character the same reaction base: ${fmtInt(levelMult(sheet.charLevel))}.`
+		value: levelMult(sheet.charLevel),
+		color: C.start,
+		read: `Every level ${sheet.charLevel} character starts a reaction from the same base: ${fmtInt(levelMult(sheet.charLevel))}.`
 	});
-	const reactionTerm = $derived<Term>({
+	const reactionRow = $derived<Row>({
 		id: 'reaction',
+		kind: 'mult',
 		name: reaction.name,
-		math: family === 'lunar' ? `${reaction.mult} × 60% share` : `×${reaction.mult}`,
+		formula:
+			family === 'lunar' ? `${reaction.mult} × 60% top-contributor share` : `× ${reaction.mult}`,
 		real: 'picked above',
-		factor: reaction.shown,
+		value: reaction.shown,
 		color: C.reaction,
 		read:
 			family === 'lunar'
-				? `${reaction.name} multiplies that base by ${reaction.mult}, and the top contributor deals 60% of it: ×${reaction.shown}.`
-				: `${reaction.name} multiplies that base by ${reaction.mult}.`
+				? `${reaction.name} multiplies the base by ${reaction.mult}, and the top contributor deals 60% of it: ×${reaction.shown}.`
+				: `${reaction.name} multiplies the base by ${reaction.mult}.`
 	});
-	const emTerm = $derived.by<Term>(() => {
-		const [factor, math] =
+	const emRow = $derived.by<Row>(() => {
+		const [value, formula] =
 			family === 'additive'
-				? [1 + additiveEmBonus(sheet.em) + rb / 100, emBracket(5, 1200)]
+				? [1 + additiveEmBonus(sheet.em) + rb / 100, `1 + 5 × EM ÷ (EM + 1200)${bonusWord}`]
 				: family === 'lunar'
-					? [1 + specialEmBonus(sheet.em) + rb / 100, emBracket(6, 2000)]
-					: [1 + transformativeEmBonus(sheet.em) + rb / 100, emBracket(16, 2000)];
+					? [1 + specialEmBonus(sheet.em) + rb / 100, `1 + 6 × EM ÷ (EM + 2000)${bonusWord}`]
+					: [
+							1 + transformativeEmBonus(sheet.em) + rb / 100,
+							`1 + 16 × EM ÷ (EM + 2000)${bonusWord}`
+						];
 		return {
 			id: 'em',
-			name: 'EM',
-			math,
+			kind: 'mult',
+			name: rb > 0 ? 'EM + Reaction Bonus' : 'EM',
+			formula,
 			real: emReal,
-			factor,
+			value,
 			color: C.em,
 			read:
 				rb > 0
-					? `EM and the +${rb}% Reaction Bonus together would raise it ${fmtX(factor)}.`
-					: `EM would raise it ${fmtX(factor)}.`
+					? `EM and the +${rb}% Reaction Bonus together would raise it ${fmtX(value)}.`
+					: `EM would raise it ${fmtX(value)}.`
 		};
 	});
 
-	const directTerms = $derived.by((): Term[] => {
-		const t: Term[] = [
-			{
-				id: 'scaling',
-				name: `Scaling ${stat}`,
-				math: '1 + stat% + flat⁄base',
-				real: fmtInt(scalingTotal(sheet)),
-				factor: scalingFactor(sheet),
-				color: C.scaling,
-				read: `Your ${fmtInt(scalingTotal(sheet))} ${stat} would make the hit ${fmtX(scalingFactor(sheet))} what base ${stat} alone deals.`
-			},
-			dmgTerm,
-			critTerm
-		];
-		if (reaction.mult > 1) {
-			const f = ampFactor(sheet, reaction.mult);
-			t.push({
-				id: 'amp',
-				name: reaction.name,
-				math: `${reaction.mult} × (${emBracket(2.78, 1400)})`,
-				real: emReal,
-				factor: f,
-				color: C.em,
-				read: `A ${reaction.mult === 2 ? 'forward' : 'reverse'} ${reaction.name} would multiply the hit by ${fmtX(f)}.`
-			});
-		}
-		t.push(defTerm, resTerm);
-		return t;
-	});
-
-	const chunkTerms = $derived<Term[]>([levelTerm, reactionTerm, emTerm]);
 	const aChunk = $derived(additiveChunk(sheet, reaction.mult));
-	const rideTerms = $derived<Term[]>([
-		{
-			id: 'chunk',
-			name: 'The chunk',
-			math: 'row above',
-			real: `${reaction.name}`,
-			factor: aChunk,
-			display: fmtInt(aChunk),
-			color: C.reaction,
-			read: `The ${fmtInt(aChunk)} from the row above, before it rides the hit.`
-		},
-		dmgTerm,
-		critTerm,
-		defTerm,
-		resTerm
-	]);
-	const transTerms = $derived<Term[]>([levelTerm, reactionTerm, emTerm, resTerm]);
-	const lunarTerms = $derived<Term[]>([
-		levelTerm,
-		reactionTerm,
-		emTerm,
-		{
-			id: 'base',
-			name: 'Base DMG Bonus',
-			math: '1 + base%',
-			real: `${sheet.baseDmgPct}%`,
-			factor: baseDmgFactor(sheet),
-			color: C.base,
-			read: `A ${sheet.baseDmgPct}% Base DMG Bonus would raise it ${fmtX(baseDmgFactor(sheet))}.`
-		},
-		{
-			id: 'elevation',
-			name: 'Elevation',
-			math: '1 + elevation%',
-			real: `${sheet.elevationPct}%`,
-			factor: elevationFactor(sheet),
-			color: C.elevation,
-			read: `A ${sheet.elevationPct}% Elevation would raise it ${fmtX(elevationFactor(sheet))}, after every other bracket.`
-		},
-		critTerm,
-		resTerm
-	]);
 
-	// The rows the equation draws, each ending in its total
-	type EqRow = { terms: Term[]; total: string; totalSub: string };
-	const rows = $derived.by((): EqRow[] => {
-		if (family === 'direct')
-			return [
+	/** The rows each family draws, ending in its result */
+	const rows = $derived.by((): Row[] => {
+		if (family === 'direct') {
+			const out: Row[] = [
 				{
-					terms: directTerms,
-					total: fmtX(directTotal(sheet, reaction.mult)),
-					totalSub: `vs base ${stat} alone`
-				}
+					id: 'scaling',
+					kind: 'mult',
+					name: `Scaling ${stat}`,
+					formula: `1 + ${stat}% + flat ${stat} ÷ base ${stat}`,
+					real: `${fmtInt(scalingTotal(sheet))} ${stat}`,
+					value: scalingFactor(sheet),
+					color: C.start,
+					read: `Your ${fmtInt(scalingTotal(sheet))} ${stat} would make the hit ${fmtX(scalingFactor(sheet))} what base ${stat} alone deals.`
+				},
+				dmgRow,
+				critRow
 			];
+			if (reaction.mult > 1) {
+				const f = ampFactor(sheet, reaction.mult);
+				out.push({
+					id: 'amp',
+					kind: 'mult',
+					name: reaction.name,
+					formula: `${reaction.mult} × (1 + 2.78 × EM ÷ (EM + 1400)${bonusWord})`,
+					real: emReal,
+					value: f,
+					color: C.em,
+					read: `A ${reaction.mult === 2 ? 'forward' : 'reverse'} ${reaction.name} would multiply the hit by ${fmtX(f)}.`
+				});
+			}
+			out.push(defRow, resRow, {
+				id: 'total',
+				kind: 'total',
+				name: 'Your hit',
+				formula: `vs base ${stat} alone`,
+				real: '',
+				value: directTotal(sheet, reaction.mult),
+				color: '',
+				read: `Together, these would make the hit ${fmtX(directTotal(sheet, reaction.mult))} what base ${stat} alone deals, before its talent multiplier.`
+			});
+			return out;
+		}
 		if (family === 'additive')
 			return [
-				{ terms: chunkTerms, total: fmtInt(aChunk), totalSub: 'flat, added to the hit' },
+				levelRow,
+				reactionRow,
+				emRow,
 				{
-					terms: rideTerms,
-					total: fmtInt(additiveEffective(sheet, reaction.mult)),
-					totalSub: 'added, on average'
+					id: 'chunk',
+					kind: 'subtotal',
+					name: 'The chunk',
+					formula: 'added to the hit’s base damage',
+					real: '',
+					value: aChunk,
+					color: '',
+					read: `${reaction.name} would add ${fmtInt(aChunk)} to the hit’s base damage. From here it rides the rest of the hit.`
+				},
+				dmgRow,
+				critRow,
+				defRow,
+				resRow,
+				{
+					id: 'total',
+					kind: 'total',
+					name: 'Damage added',
+					formula: 'on average',
+					real: '',
+					value: additiveEffective(sheet, reaction.mult),
+					color: '',
+					read: `On average, ${reaction.name} would add ${fmtInt(additiveEffective(sheet, reaction.mult))} damage to each hit it triggers on.`
 				}
 			];
 		if (family === 'lunar')
 			return [
+				levelRow,
+				reactionRow,
+				emRow,
 				{
-					terms: lunarTerms,
-					total: fmtInt(lunarTotal(sheet, reaction.mult)),
-					totalSub: 'damage, on average'
+					id: 'base',
+					kind: 'mult',
+					name: 'Base DMG Bonus',
+					formula: '1 + Base DMG Bonus',
+					real: `${sheet.baseDmgPct}%`,
+					value: baseDmgFactor(sheet),
+					color: C.bonus,
+					read: `A ${sheet.baseDmgPct}% Base DMG Bonus would raise it ${fmtX(baseDmgFactor(sheet))}.`
+				},
+				{
+					id: 'elevation',
+					kind: 'mult',
+					name: 'Elevation',
+					formula: '1 + Elevation, after every other bracket',
+					real: `${sheet.elevationPct}%`,
+					value: elevationFactor(sheet),
+					color: C.elevation,
+					read: `A ${sheet.elevationPct}% Elevation would raise it ${fmtX(elevationFactor(sheet))}.`
+				},
+				critRow,
+				resRow,
+				{
+					id: 'total',
+					kind: 'total',
+					name: 'Damage',
+					formula: 'on average',
+					real: '',
+					value: lunarTotal(sheet, reaction.mult),
+					color: '',
+					read: `On average, one ${reaction.name} hit would deal ${fmtInt(lunarTotal(sheet, reaction.mult))} damage as the top contributor.`
 				}
 			];
 		return [
+			levelRow,
+			reactionRow,
+			emRow,
+			resRow,
 			{
-				terms: transTerms,
-				total: fmtInt(transformativeTotal(sheet, reaction.mult)),
-				totalSub: 'damage'
+				id: 'total',
+				kind: 'total',
+				name: 'Damage',
+				formula: '',
+				real: '',
+				value: transformativeTotal(sheet, reaction.mult),
+				color: '',
+				read: `One ${reaction.name} hit would deal ${fmtInt(transformativeTotal(sheet, reaction.mult))} damage.`
 			}
 		];
 	});
-	const allTerms = $derived(rows.flatMap((r) => r.terms));
+
+	/** Each row's bar: where it starts and ends, as running values */
+	const bars = $derived.by(() => {
+		const origin = family === 'direct' ? 1 : levelMult(sheet.charLevel);
+		let run = origin;
+		return rows.map((r) => {
+			if (r.kind === 'start') return { from: run, to: run };
+			if (r.kind === 'mult') {
+				const from = run;
+				run *= r.value;
+				return { from, to: run };
+			}
+			// a subtotal or the result spans the whole journey so far
+			return { from: origin, to: run };
+		});
+	});
+
+	// The axis: log₂, padded, gridlines on doublings — of ×1 for a direct hit,
+	// of 1,000 for damage
+	const unit = $derived(family === 'direct' ? 1 : 1000);
+	const domain = $derived.by(() => {
+		const vals = bars.flatMap((b) => [b.from, b.to]);
+		return {
+			lo: Math.log2(Math.min(...vals) / 1.12),
+			hi: Math.log2(Math.max(...vals) * 1.12)
+		};
+	});
+	const xPct = (v: number) => ((Math.log2(v) - domain.lo) / (domain.hi - domain.lo)) * 100;
+	const ticks = $derived.by(() => {
+		const out: number[] = [];
+		for (let k = Math.ceil(domain.lo - Math.log2(unit)); k <= domain.hi - Math.log2(unit); k++)
+			out.push(unit * 2 ** k);
+		return out;
+	});
+	const fmtTick = (v: number) =>
+		family === 'direct'
+			? `×${v < 1 ? v.toFixed(2).replace(/0+$/, '') : v}`
+			: v >= 1000
+				? `${v / 1000}k`
+				: `${v}`;
+
+	/** A row's share of the total swing — how much of the boost it supplies,
+	 *  or how much of it a cut takes back */
+	const boostLog = $derived(
+		rows.reduce((s, r) => (r.kind === 'mult' && r.value > 1 ? s + Math.log(r.value) : s), 0)
+	);
+	const shareOf = (r: Row) =>
+		r.kind === 'mult' && boostLog > 0 ? Math.abs(Math.log(r.value)) / boostLog : 0;
+	const readingOf = (r: Row) => {
+		const share = shareOf(r);
+		if (r.kind !== 'mult' || share < 0.005) return r.read;
+		return r.value >= 1
+			? `${r.read} It supplies ${Math.round(share * 100)}% of the boost.`
+			: `${r.read} It takes back ${Math.round(share * 100)}% of the boost.`;
+	};
 
 	const CAPTIONS: Record<FamilyId, string> = $derived({
-		direct: `Each box multiplies the hit, and its width shows how far: a ×2 box is the same width wherever it comes from. The total compares against a hit from base ${stat} alone, because the talent multiplier depends on the attack.`,
+		direct: `Each row multiplies the hit, and each gridline doubles it, so a ×2 is the same length wherever it sits and a cut runs backward. The result compares against a hit from base ${stat} alone, because the talent multiplier depends on the attack.`,
 		additive:
 			'Spread and Aggravate add a flat chunk from level and EM alone. The chunk then rides the rest of the hit, so it crits and takes DMG Bonus like the hit does.',
 		transformative:
-			'Damage from level and EM alone, so the number is exact. For most characters, crit, ATK, and DMG% do nothing, and enemy DEF doesn’t apply.',
+			'Damage from level and EM alone, so the result is a number. For most characters, crit, ATK, and DMG% do nothing, and enemy DEF doesn’t apply.',
 		lunar:
 			'Damage from level and EM, with two brackets of its own: Base DMG Bonus and Elevation. It can crit, and enemy DEF doesn’t apply. These figures are the top contributor’s 60% share.'
 	});
 
-	/** The box being read, by its index in `allTerms`; null reads the caption */
+	/** The row being read, by index; null reads the caption */
 	let boxIdx = $state<number | null>(null);
-
-	// Box weight ∝ |ln(factor)| (multiplicative story, B's lesson): a ×2 block
-	// is the same size wherever it comes from; a ×1.05 block stays slim.
-	const weightOf = (f: number) => Math.max(0.45, Math.min(2.8, Math.abs(Math.log(f)) * 1.7));
 
 	// ── What the next roll buys ──────────────────────────────────────────────
 	const lab = $derived(labStats(family, reaction.mult, scaling));
@@ -524,24 +621,6 @@
 	}
 </script>
 
-{#snippet termBox(t: Term, i: number)}
-	<button
-		type="button"
-		class="an-term"
-		class:is-read={boxIdx === i}
-		style:--c={t.color}
-		style:flex-grow={weightOf(t.factor)}
-		onpointerenter={() => (boxIdx = i)}
-		onfocus={() => (boxIdx = i)}
-		onclick={() => (boxIdx = boxIdx === i ? null : i)}
-	>
-		<span class="an-t-name">{t.name}</span>
-		<span class="an-t-math">{t.math}</span>
-		<span class="an-t-real">{t.real}</span>
-		<span class="an-t-factor">{t.display ?? fmtX(t.factor)}</span>
-	</button>
-{/snippet}
-
 <div class="instrument">
 	<div class="segment an-tabs" role="radiogroup" aria-label="Damage family">
 		{#each FAMILIES as f (f.id)}
@@ -571,41 +650,69 @@
 		</div>
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="an-eqs" onpointerleave={() => (boxIdx = null)}>
-			{#each rows as row, ri (ri)}
-				{@const offset = rows.slice(0, ri).reduce((n, r) => n + r.terms.length, 0)}
-				<div class="an-eq">
-					<!-- The key: what each of a box's four lines is -->
-					<span class="an-key" aria-hidden="true">
-						<span>What</span>
-						<span>Formula</span>
-						<span>Your numbers</span>
-						<span>Multiplier</span>
-					</span>
-					{#each row.terms as t, ti (t.id)}
-						{#if ti > 0}<span class="an-op" aria-hidden="true">×</span>{/if}
-						{@render termBox(t, offset + ti)}
+		<div class="an-wf" onpointerleave={() => (boxIdx = null)}>
+			<!-- The axis: gridlines double; labels sit over the bar column -->
+			<div class="an-wf-axis" aria-hidden="true">
+				<span class="an-wf-track">
+					{#each ticks as t (t)}
+						<span class="an-wf-tick" style:left="{xPct(t)}%">{fmtTick(t)}</span>
 					{/each}
-					<!-- "=" and the total wrap as one, or a wrap strands the "=" -->
-					<span class="an-result">
-						<span class="an-op" aria-hidden="true">=</span>
-						<span class="an-total">
-							<span class="an-total-big">{row.total}</span>
-							<span class="an-total-sub">{row.totalSub}</span>
-						</span>
+				</span>
+			</div>
+			{#each rows as r, i (r.id)}
+				{@const b = bars[i]}
+				{@const lo = xPct(Math.min(b.from, b.to))}
+				{@const hi = xPct(Math.max(b.from, b.to))}
+				<button
+					type="button"
+					class="an-wf-row"
+					class:is-sum={r.kind === 'subtotal' || r.kind === 'total'}
+					class:is-total={r.kind === 'total'}
+					class:is-read={boxIdx === i}
+					style:--c={r.color || 'var(--chart-ink)'}
+					onpointerenter={() => (boxIdx = i)}
+					onfocus={() => (boxIdx = i)}
+					onclick={() => (boxIdx = boxIdx === i ? null : i)}
+				>
+					<span class="an-wf-op" aria-hidden="true"
+						>{r.kind === 'mult' ? '×' : r.kind === 'start' ? '' : '='}</span
+					>
+					<span class="an-wf-label">
+						<span class="an-wf-name">{r.name}</span>
+						{#if r.real}<span class="an-wf-real">{r.real}</span>{/if}
+						{#if r.formula}<span class="an-wf-formula-inline">{r.formula}</span>{/if}
 					</span>
-				</div>
+					<span class="an-wf-formula">{r.formula}</span>
+					<span class="an-wf-track">
+						{#each ticks as t (t)}
+							<span class="an-wf-grid" style:left="{xPct(t)}%"></span>
+						{/each}
+						{#if r.kind === 'start'}
+							<span class="an-wf-start" style:left="{lo}%"></span>
+						{:else}
+							<span
+								class="an-wf-bar"
+								class:is-loss={b.to < b.from}
+								style:left="{lo}%"
+								style:width="{Math.max(hi - lo, 0.4)}%"
+							></span>
+						{/if}
+					</span>
+					<span class="an-wf-value"
+						>{r.kind === 'mult' || family === 'direct' ? fmtX(r.value) : fmtInt(r.value)}</span
+					>
+				</button>
 			{/each}
 		</div>
 
-		<!-- Every box's sentence and the caption share one cell, so the height
-		     is the longest's and reading a box never moves the panels below -->
+		<!-- The caption and every row's sentence share one cell, so the height
+		     is the longest's and reading a row never moves the panels below -->
 		<div class="an-reading" aria-live="polite">
 			<p class:is-read={boxIdx === null}>
-				{CAPTIONS[family]} <span class="an-hint">Hover or tap a box to read it.</span>
+				{CAPTIONS[family]} <span class="an-hint">Hover or tap a row to read it.</span>
 			</p>
-			{#each allTerms as t, i (t.id + i)}
-				<p class:is-read={boxIdx === i}>{t.read}</p>
+			{#each rows as r, i (r.id)}
+				<p class:is-read={boxIdx === i}>{readingOf(r)}</p>
 			{/each}
 		</div>
 	</div>
@@ -780,147 +887,205 @@
 		font-family: var(--font-condensed);
 	}
 
-	/* ── The weighted living equation ──────────────────────────────────────
-	   A box is four fixed-height lines, and the key at the start of each row
-	   names them — fixed, so a key line and a box line always sit level. The
-	   operators sit on the MULTIPLIER line: only that line takes part in the
-	   product, and putting the × beside it is what says so. */
-	.an-eqs {
+	/* ── The waterfall ─────────────────────────────────────────────────────
+	   One grid; every row is a SUBGRID of it, so names, formulas, bars and
+	   values line up across rows. Cells are placed by column NUMBER, so the
+	   narrow layout can collapse the formula column without anything sliding
+	   into it. */
+	.an-wf {
 		display: grid;
-		gap: 0.6rem;
+		grid-template-columns: 1rem minmax(7rem, max-content) minmax(0, 17rem) minmax(7rem, 1fr) minmax(
+				4rem,
+				max-content
+			);
+		column-gap: 0.6rem;
+		row-gap: 2px;
 	}
 
-	.an-eq {
-		--line-name: 1.15rem;
-		--line-math: 1.05rem;
-		--line-real: 1.35rem;
-		--line-factor: 1.8rem;
-		--box-pad-y: 0.4rem;
-		display: flex;
-		align-items: flex-start;
-		flex-wrap: wrap;
-		gap: 0.45rem 0.35rem;
-	}
-
-	.an-key,
-	.an-term {
+	.an-wf-axis,
+	.an-wf-row {
+		grid-column: 1 / -1;
 		display: grid;
-		grid-template-rows: var(--line-name) var(--line-math) var(--line-real) var(--line-factor);
+		grid-template-columns: subgrid;
 		align-items: center;
-		padding: var(--box-pad-y) 0.55rem;
 	}
 
-	.an-key {
-		flex: none;
-		padding-left: 0;
-		font-family: var(--font-condensed);
-		font-size: var(--fs-xs);
-		letter-spacing: var(--ls-mid);
-		color: var(--chart-dim);
-		text-align: right;
+	.an-wf-axis {
+		height: 1.1rem;
 	}
 
-	.an-term {
-		--c: var(--accent);
-		flex: 1 1 0;
-		/* at least as wide as its widest line — a cut-off formula is worse than
-		   one more wrapped row */
-		min-width: max-content;
-		justify-items: center;
+	.an-wf-axis > .an-wf-track,
+	.an-wf-row > .an-wf-track {
+		grid-column: 4;
+	}
+
+	.an-wf-row {
+		padding: 0.2rem 0;
 		border: none;
 		border-radius: var(--r-sm);
-		background: color-mix(in srgb, var(--c) 10%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
+		background: transparent;
 		color: inherit;
 		font: inherit;
+		text-align: left;
 		cursor: default;
-		transition:
-			flex-grow var(--t-move),
-			background-color var(--t-snap);
+		transition: background-color var(--t-snap);
 	}
 
-	.an-term > span {
+	.an-wf-row.is-read,
+	.an-wf-row:hover {
+		background: color-mix(in srgb, var(--text) 6%, transparent);
+	}
+
+	.an-wf-row:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+
+	.an-wf-row.is-sum {
+		border-top: 1px solid var(--chart-rule);
+		border-radius: 0 0 var(--r-sm) var(--r-sm);
+	}
+
+	.an-wf-op {
+		grid-column: 1;
+		justify-self: end;
+		color: var(--chart-dim);
+		font-size: var(--fs-lg);
+	}
+
+	.an-wf-label {
+		grid-column: 2;
+		display: grid;
+		line-height: var(--lh-snug);
+		min-width: 0;
+	}
+
+	.an-wf-name {
+		font-weight: var(--fw-semibold);
+		font-size: var(--fs-md);
+		color: color-mix(in srgb, var(--c) 70%, var(--text));
 		white-space: nowrap;
 	}
 
-	.an-term.is-read,
-	.an-term:hover {
-		background: color-mix(in srgb, var(--c) 20%, transparent);
-	}
-
-	.an-term:focus-visible {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
-	}
-
-	.an-t-name {
-		font-family: var(--font-condensed);
-		font-size: var(--fs-sm);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
-		color: color-mix(in srgb, var(--c) 75%, var(--text));
-	}
-
-	.an-t-math {
-		font-size: var(--fs-xs);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
-	}
-
-	.an-t-real {
-		font-size: var(--fs-lg);
-		color: var(--muted);
-	}
-
-	.an-t-factor {
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-bold);
+	.an-wf-row.is-sum .an-wf-name {
 		color: var(--text);
 	}
 
-	/* On the multiplier line: a box's top padding + its first three lines down */
-	.an-op {
-		align-self: flex-start;
-		margin-top: calc(var(--box-pad-y) + var(--line-name) + var(--line-math) + var(--line-real));
-		height: var(--line-factor);
-		display: flex;
-		align-items: center;
-		color: var(--muted);
-		font-size: var(--fs-3xl);
-	}
-
-	/* Bottom-aligned, so it sits on the multiplier line inline AND sits flush
-	   when a narrow row wraps it to a line of its own (a top offset left a
-	   blank band there) */
-	.an-result {
-		align-self: flex-end;
-		display: flex;
-		align-items: baseline;
-		gap: 0.45rem;
-		padding-bottom: var(--box-pad-y);
-	}
-
-	.an-result .an-op {
-		margin-top: 0;
-		height: auto;
-	}
-
-	.an-total {
-		display: flex;
-		align-items: baseline;
-		gap: 0.45rem;
-		padding-left: 0.1rem;
-	}
-
-	.an-total-big {
-		font-size: var(--fs-5xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-none);
-	}
-
-	.an-total-sub {
-		font-size: var(--fs-md);
+	.an-wf-real {
+		font-size: var(--fs-sm);
 		color: var(--muted);
 		white-space: nowrap;
+	}
+
+	.an-wf-formula {
+		grid-column: 3;
+		font-size: var(--fs-sm);
+		color: var(--chart-ink);
+		line-height: var(--lh-snug);
+	}
+
+	/* Shown under the name only when the formula column is gone */
+	.an-wf-formula-inline {
+		display: none;
+		font-size: var(--fs-xs);
+		color: var(--chart-ink);
+	}
+
+	.an-wf-track {
+		position: relative;
+		height: 1.5rem;
+	}
+
+	.an-wf-axis .an-wf-track {
+		height: 100%;
+	}
+
+	.an-wf-tick {
+		position: absolute;
+		bottom: 0;
+		transform: translateX(-50%);
+		font-size: var(--fs-xs);
+		color: var(--chart-dim);
+		white-space: nowrap;
+	}
+
+	.an-wf-grid {
+		position: absolute;
+		top: -2px;
+		bottom: -2px;
+		width: 1px;
+		background: var(--chart-grid);
+	}
+
+	.an-wf-bar {
+		position: absolute;
+		top: 0.3rem;
+		bottom: 0.3rem;
+		border-radius: 2px;
+		background: var(--c);
+		transition:
+			left var(--t-move),
+			width var(--t-move);
+	}
+
+	/* A cut runs backward and is drawn hollow, so a loss never reads as a gain
+	   of the same length */
+	.an-wf-bar.is-loss {
+		background: color-mix(in srgb, var(--c) 22%, transparent);
+		box-shadow: inset 0 0 0 1.5px var(--c);
+	}
+
+	.an-wf-row.is-sum .an-wf-bar {
+		background: color-mix(in srgb, var(--text) 32%, transparent);
+	}
+
+	.an-wf-row.is-total .an-wf-bar {
+		background: color-mix(in srgb, var(--accent) 70%, transparent);
+	}
+
+	.an-wf-start {
+		position: absolute;
+		top: 0.15rem;
+		bottom: 0.15rem;
+		width: 2px;
+		margin-left: -1px;
+		background: var(--c);
+		transition: left var(--t-move);
+	}
+
+	.an-wf-value {
+		grid-column: 5;
+		justify-self: end;
+		font-weight: var(--fw-semibold);
+		font-size: var(--fs-md);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.an-wf-row.is-total .an-wf-value {
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-bold);
+	}
+
+	/* Narrow tile: the formula leaves its column for a line under the name.
+	   46rem, not 40: at a 675px tile (1440×900, two tiles) the column left the
+	   bars ~150px, too short to compare */
+	@container instrument (max-width: 46rem) {
+		.an-wf {
+			grid-template-columns: 1rem minmax(6rem, max-content) 0 minmax(6rem, 1fr) minmax(
+					3.6rem,
+					max-content
+				);
+			column-gap: 0.5rem;
+		}
+
+		.an-wf-formula {
+			display: none;
+		}
+
+		.an-wf-formula-inline {
+			display: block;
+		}
 	}
 
 	/* Caption + every box's sentence, stacked in one cell */
