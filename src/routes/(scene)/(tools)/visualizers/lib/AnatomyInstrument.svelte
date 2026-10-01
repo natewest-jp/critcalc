@@ -397,8 +397,17 @@
 
 	/** The bar column's width, so a bar can tell whether an arrow fits on it */
 	let trackW = $state(0);
-	/** Below this a bar keeps only its leading edge — an arrow needs room */
-	const ARROW_MIN_PX = 30;
+	/** Chevrons run the bar's whole length, one per CHEV_PITCH px, so even a
+	 *  ×1.14 sliver says which way it goes; one needs CHEV_MIN_PX to show. */
+	const CHEV_PITCH = 11;
+	const CHEV_MIN_PX = 9;
+	const chevronsFor = (px: number) =>
+		px < CHEV_MIN_PX ? 0 : Math.max(1, Math.floor((px - 7) / CHEV_PITCH));
+	/** Faint by request (⚓ Nate): 45% at the head, fading to 10% at the tail */
+	const CHEV_HEAD = 0.45;
+	const CHEV_TAIL = 0.1;
+	const chevAlpha = (k: number, n: number) =>
+		n <= 1 ? CHEV_HEAD : CHEV_HEAD - (CHEV_HEAD - CHEV_TAIL) * (k / (n - 1));
 
 	/** A row's share of the total swing — how much of the boost it supplies,
 	 *  or how much of it a cut takes back */
@@ -699,6 +708,7 @@
 				{@const b = bars[i]}
 				{@const lo = xPct(Math.min(b.from, b.to))}
 				{@const hi = xPct(Math.max(b.from, b.to))}
+				{@const nChev = chevronsFor(((hi - lo) / 100) * trackW)}
 				<button
 					type="button"
 					class="an-wf-row"
@@ -731,9 +741,10 @@
 								style:left="{lo}%"
 								style:width="{Math.max(hi - lo, 0.4)}%"
 							>
-								{#if ((hi - lo) / 100) * trackW >= ARROW_MIN_PX}
-									<span class="an-wf-arrow"></span>
-								{/if}
+								{#each { length: nChev }, k (k)}
+									<!-- k = 0 is the HEAD; each step back toward the tail fades -->
+									<span class="an-wf-chev" style:--k={k} style:--a={chevAlpha(k, nChev)}></span>
+								{/each}
 							</span>
 						{/if}
 					</span>
@@ -1096,7 +1107,7 @@
 	.an-wf-row.is-glass .an-wf-bar {
 		background: var(--glass-bar);
 		box-shadow: inset -2px 0 0 rgb(255 255 255 / 0.3);
-		--arrow-c: rgb(255 255 255 / 0.75);
+		--arrow-c: rgb(255 255 255);
 	}
 
 	.an-wf-row.is-glass .an-wf-bar.is-loss {
@@ -1111,29 +1122,28 @@
 		background: color-mix(in srgb, var(--text) 85%, transparent);
 	}
 
-	/* The arrow: a 2px shaft that fades in from its tail, and a solid head.
-	   Drawn pointing right; a cut mirrors it. */
-	.an-wf-arrow {
-		position: relative;
-		width: min(3rem, 60%);
-		height: 2px;
-		background: linear-gradient(to right, transparent, var(--arrow-c));
-	}
-
-	.an-wf-arrow::after {
-		content: '';
+	/* The chevrons (⚓ Nate, 2026-10-01 — a single overlaid arrow wasn't
+	   obvious enough). A row of › marks across the whole bar, the head's mark
+	   full and each one back toward the tail fainter. ⚠ Each mark is its own
+	   element with its alpha in its PAINT — no tiled background (real Safari
+	   has drawn 1px gaps in tiled bar backgrounds) and no element opacity (the
+	   sub-pixel law). Drawn pointing right from the right edge; a cut mirrors
+	   the whole bar's content. */
+	.an-wf-chev {
 		position: absolute;
-		right: -1px;
 		top: 50%;
-		width: 7px;
-		height: 8px;
+		right: calc(6px + var(--k) * 11px);
+		width: 6px;
+		height: 10px;
 		transform: translateY(-50%);
-		background: var(--arrow-c);
-		clip-path: polygon(0 0, 100% 50%, 0 100%);
+		background: color-mix(in srgb, var(--arrow-c) calc(var(--a) * 100%), transparent);
+		clip-path: polygon(0 0, 45% 0, 100% 50%, 45% 100%, 0 100%, 55% 50%);
 	}
 
-	.an-wf-bar.is-loss .an-wf-arrow {
-		transform: scaleX(-1);
+	.an-wf-bar.is-loss .an-wf-chev {
+		right: auto;
+		left: calc(6px + var(--k) * 11px);
+		clip-path: polygon(100% 0, 55% 0, 0 50%, 55% 100%, 100% 100%, 45% 50%);
 	}
 
 	.an-wf-start {
