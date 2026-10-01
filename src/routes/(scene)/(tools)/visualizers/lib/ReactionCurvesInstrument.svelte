@@ -8,6 +8,7 @@
 		emBonus,
 		emWorthOfBonus,
 		snapLevel,
+		stepLevel,
 		AMP_CURVE,
 		TRANSFORMATIVE_CURVE,
 		ADDITIVE_CURVE,
@@ -374,8 +375,23 @@
 
 	function onLevel(e: Event & { currentTarget: HTMLInputElement }) {
 		const el = e.currentTarget;
-		level = snapLevel(Number(el.value), level);
+		level = snapLevel(Number(el.value));
 		el.value = String(level);
+	}
+	// The arrows step 90 → 95 → 100 themselves: a native step lands on 91,
+	// which the nearest-stop snap would send straight back to 90.
+	const STEP_KEYS: Record<string, 1 | -1> = {
+		ArrowRight: 1,
+		ArrowUp: 1,
+		ArrowLeft: -1,
+		ArrowDown: -1
+	};
+	function onLevelKey(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		const dir = STEP_KEYS[e.key];
+		if (!dir) return;
+		e.preventDefault();
+		level = stepLevel(level, dir);
+		e.currentTarget.value = String(level);
 	}
 	/** Where a level sits along the slider's travel, for the 90/95/100 marks. */
 	const LEVEL_MARKS = [90, 95, 100];
@@ -531,6 +547,7 @@
 							step="1"
 							value={level}
 							oninput={onLevel}
+							onkeydown={onLevelKey}
 							class="slider"
 							aria-label="Character level"
 						/>

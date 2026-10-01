@@ -14,6 +14,7 @@ import {
 	emForBonus,
 	emWorthOfBonus,
 	snapLevel,
+	stepLevel,
 	isReachableLevel,
 	AMP_CURVE,
 	TRANSFORMATIVE_CURVE,
@@ -127,15 +128,23 @@ describe('reachable levels', () => {
 		]);
 	});
 
-	it('snapLevel jumps a gap in the direction of travel', () => {
-		expect(snapLevel(91, 90)).toBe(95);
-		expect(snapLevel(94, 95)).toBe(90);
-		expect(snapLevel(96, 95)).toBe(100);
-		expect(snapLevel(99, 100)).toBe(95);
-		// a fast drag can land deep in a gap; direction still decides
-		expect(snapLevel(93, 100)).toBe(90);
-		expect(snapLevel(97, 80)).toBe(100);
-		expect(snapLevel(60, 90)).toBe(60);
-		expect(snapLevel(140, 90)).toBe(MAX_LEVEL);
+	it('snapLevel sends a dragged value to the nearest stop, by position alone', () => {
+		expect([91, 92, 93, 94].map(snapLevel)).toEqual([90, 90, 95, 95]);
+		expect([96, 97, 98, 99].map(snapLevel)).toEqual([95, 95, 100, 100]);
+		expect(snapLevel(60)).toBe(60);
+		expect(snapLevel(140)).toBe(MAX_LEVEL);
+		// the flicker this replaced: the same raw value must always land the same
+		expect(snapLevel(92)).toBe(snapLevel(92));
+	});
+
+	it('stepLevel walks the reachable levels one key press at a time', () => {
+		expect(stepLevel(89, 1)).toBe(90);
+		expect(stepLevel(90, 1)).toBe(95);
+		expect(stepLevel(95, 1)).toBe(100);
+		expect(stepLevel(100, 1)).toBe(100);
+		expect(stepLevel(100, -1)).toBe(95);
+		expect(stepLevel(95, -1)).toBe(90);
+		expect(stepLevel(90, -1)).toBe(89);
+		expect(stepLevel(1, -1)).toBe(1);
 	});
 });

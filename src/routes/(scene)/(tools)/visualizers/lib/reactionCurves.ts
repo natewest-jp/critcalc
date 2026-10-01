@@ -11,7 +11,7 @@
 //
 // ⚠️ Only 95 and 100 are reachable above 90 (Masterless Stellar Fortuna jumps
 // straight to them); the tables carry 91–99 so they stay a plain index, and
-// `snapLevel` keeps the slider off them.
+// `snapLevel` / `stepLevel` keep the slider off them.
 //
 // All values are pre-resistance and pre-crit. A Reaction Bonus (4pc Crimson
 // Witch, Mona C1, …) adds inside the EM bracket, so every damage helper takes one
@@ -56,15 +56,22 @@ export const MAX_LEVEL = 100;
 /** The levels a character can actually hold: 1–90, then 95 and 100. */
 export const isReachableLevel = (level: number) => level <= 90 || level === 95 || level === 100;
 
-/** A slider value moved from `prev` to `next`; a value in an unreachable gap
- *  (91–94, 96–99) jumps ACROSS it in the direction of travel, so dragging right
- *  from 90 lands on 95 and dragging left from 95 lands on 90. */
-export function snapLevel(next: number, prev: number): number {
-	const n = Math.min(MAX_LEVEL, Math.max(1, Math.round(next)));
+/** Where a DRAGGED slider value lands: the nearest reachable level, so the
+ *  answer depends on the pointer's position alone. ⚠️ Deciding by direction of
+ *  travel instead made a drag flicker between stops: with the pointer held at
+ *  92, "up from 90" gave 95 and then "down from 95" gave 90, event after event. */
+export function snapLevel(raw: number): number {
+	const n = Math.min(MAX_LEVEL, Math.max(1, Math.round(raw)));
 	if (isReachableLevel(n)) return n;
-	const up = n > prev;
-	if (n < 95) return up ? 95 : 90;
-	return up ? 100 : 95;
+	if (n < 95) return n - 90 < 95 - n ? 90 : 95;
+	return n - 95 < 100 - n ? 95 : 100;
+}
+
+/** One keyboard step from a reachable level — 90 → 95 → 100 and back. A key
+ *  press has a direction and no position, so it steps; it never snaps. */
+export function stepLevel(level: number, dir: 1 | -1): number {
+	if (dir > 0) return level >= 95 ? 100 : level >= 90 ? 95 : level + 1;
+	return level > 95 ? 95 : level > 90 ? 90 : Math.max(1, level - 1);
 }
 
 const atLevel = (table: number[], level: number) =>
