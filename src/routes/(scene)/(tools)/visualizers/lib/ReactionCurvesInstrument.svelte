@@ -67,7 +67,7 @@
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, _lv, rb) => (emBonus(TRANSFORMATIVE_CURVE, em) + rb) * 100,
-					read: (c) => `Transformative reactions deal ${c.times} times their base damage.`
+					read: (c) => `Transformative reactions would deal ${c.times} times their base damage.`
 				},
 				{
 					label: 'Additive',
@@ -75,7 +75,7 @@
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, _lv, rb) => (emBonus(ADDITIVE_CURVE, em) + rb) * 100,
-					read: (c) => `Spread and Aggravate add ${c.times} times their base damage.`
+					read: (c) => `Spread and Aggravate would add ${c.times} times their base damage.`
 				},
 				{
 					label: 'Lunar & Stellar',
@@ -83,7 +83,7 @@
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
 					value: (em, _lv, rb) => (emBonus(SPECIAL_CURVE, em) + rb) * 100,
-					read: (c) => `Lunar and Stellar reactions deal ${c.times} times their base damage.`
+					read: (c) => `Lunar and Stellar reactions would deal ${c.times} times their base damage.`
 				},
 				{
 					label: 'Crystallize',
@@ -91,7 +91,7 @@
 					color: 'var(--el-geo-main)',
 					em: null,
 					value: (em) => emBonus(CRYSTALLIZE_CURVE, em) * 100,
-					read: (c) => `A Crystallize shield is ${c.times} times its base strength.`
+					read: (c) => `A Crystallize shield would be ${c.times} times its base strength.`
 				},
 				{
 					label: 'Amplifying',
@@ -100,7 +100,7 @@
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => (emBonus(AMP_CURVE, em) + rb) * 100,
 					read: (c) =>
-						`A forward Vaporize or Melt multiplies the hit by ×${(2 * (1 + c.boost)).toFixed(2)} instead of ×2, and a reverse one by ×${(1.5 * (1 + c.boost)).toFixed(2)} instead of ×1.5.`
+						`A forward Vaporize or Melt would multiply the hit by ×${(2 * (1 + c.boost)).toFixed(2)} instead of ×2, and a reverse one by ×${(1.5 * (1 + c.boost)).toFixed(2)} instead of ×1.5.`
 				}
 			]
 		},
@@ -120,7 +120,7 @@
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => ampMultiplier(2, em, rb),
-					read: (c) => `A forward Vaporize or Melt multiplies its hit by ${c.v}.`
+					read: (c) => `A forward Vaporize or Melt would multiply its hit by ${c.v}.`
 				},
 				{
 					label: 'Reverse ×1.5',
@@ -128,7 +128,7 @@
 					color: 'var(--el-cryo-main)',
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => ampMultiplier(1.5, em, rb),
-					read: (c) => `A reverse Vaporize or Melt multiplies its hit by ${c.v}.`
+					read: (c) => `A reverse Vaporize or Melt would multiply its hit by ${c.v}.`
 				}
 			]
 		},
@@ -148,7 +148,8 @@
 					color: 'var(--el-dendro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(3, lv, em, rb),
-					read: (c) => `A Hyperbloom, Burgeon, or Shatter hit deals ${c.v} damage before enemy RES.`
+					read: (c) =>
+						`A Hyperbloom, Burgeon, or Shatter hit would deal ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Overloaded',
@@ -156,7 +157,7 @@
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(2.75, lv, em, rb),
-					read: (c) => `An Overloaded explosion deals ${c.v} damage before enemy RES.`
+					read: (c) => `An Overloaded explosion would deal ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Electro-Charged · Bloom',
@@ -164,7 +165,8 @@
 					color: 'var(--el-electro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(2, lv, em, rb),
-					read: (c) => `An Electro-Charged tick or a Bloom deals ${c.v} damage before enemy RES.`
+					read: (c) =>
+						`An Electro-Charged tick or a Bloom would deal ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Superconduct',
@@ -172,7 +174,7 @@
 					color: 'var(--el-cryo-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(1.5, lv, em, rb),
-					read: (c) => `A Superconduct hit deals ${c.v} damage before enemy RES.`
+					read: (c) => `A Superconduct hit would deal ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Swirl',
@@ -180,7 +182,7 @@
 					color: 'var(--el-anemo-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(0.6, lv, em, rb),
-					read: (c) => `A Swirl hit deals ${c.v} damage before enemy RES.`
+					read: (c) => `A Swirl hit would deal ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Burning',
@@ -188,7 +190,7 @@
 					color: 'var(--rx-burning)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(0.25, lv, em, rb),
-					read: (c) => `Each Burning tick deals ${c.v} damage before enemy RES.`
+					read: (c) => `Each Burning tick would deal ${c.v} damage before enemy RES.`
 				}
 			]
 		},
@@ -209,7 +211,7 @@
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, lv, rb) => additiveDamage(1.25, lv, em, rb),
-					read: (c) => `Spread adds ${c.v} damage to the Dendro hit that triggers it.`
+					read: (c) => `Spread would add ${c.v} damage to the Dendro hit that triggers it.`
 				},
 				{
 					label: 'Aggravate',
@@ -217,7 +219,7 @@
 					color: 'var(--el-electro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, lv, rb) => additiveDamage(1.15, lv, em, rb),
-					read: (c) => `Aggravate adds ${c.v} damage to the Electro hit that triggers it.`
+					read: (c) => `Aggravate would add ${c.v} damage to the Electro hit that triggers it.`
 				}
 			]
 		},
@@ -239,7 +241,7 @@
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(3, lv, em, rb),
 					read: (c) =>
-						`A Lunar-Charged tick, or a Stellar Swirl blast after 3+ swirls, deals ${c.v} damage before enemy RES and crit.`
+						`A Lunar-Charged tick, or a Stellar Swirl blast after 3+ swirls, would deal ${c.v} damage before enemy RES and crit.`
 				},
 				{
 					label: 'Stellar Swirl blast',
@@ -248,7 +250,7 @@
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(2, lv, em, rb),
 					read: (c) =>
-						`A Stellar Swirl blast after 1–2 swirls deals ${c.v} damage before enemy RES and crit.`
+						`A Stellar Swirl blast after 1–2 swirls would deal ${c.v} damage before enemy RES and crit.`
 				},
 				{
 					label: 'Lunar-Crystallize',
@@ -257,7 +259,7 @@
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(1.6, lv, em, rb),
 					read: (c) =>
-						`Each Moondrift hit from Lunar-Crystallize deals ${c.v} damage before enemy RES and crit.`
+						`Each Moondrift hit from Lunar-Crystallize would deal ${c.v} damage before enemy RES and crit.`
 				},
 				{
 					label: 'Stellar Swirl',
@@ -265,7 +267,7 @@
 					color: 'var(--el-anemo-main)',
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(0.75, lv, em, rb),
-					read: (c) => `A Stellar Swirl hit deals ${c.v} damage before enemy RES and crit.`
+					read: (c) => `A Stellar Swirl hit would deal ${c.v} damage before enemy RES and crit.`
 				}
 			]
 		},
@@ -286,7 +288,7 @@
 					em: null,
 					value: (em, lv) => crystallizeShieldHp(lv, em),
 					read: (c) =>
-						`A Crystallize shield absorbs ${c.v} damage, or 2.5 times that against its own element.`
+						`A Crystallize shield would absorb ${c.v} damage, or 2.5 times that against its own element.`
 				}
 			]
 		}
@@ -409,8 +411,8 @@
 		const n = worthOf(c.em);
 		return `${first} ${
 			Number.isFinite(n)
-				? `The +${rbPct}% Reaction Bonus is worth ${fmtInt(n)} more EM here.`
-				: `The +${rbPct}% Reaction Bonus is worth more than any amount of EM here.`
+				? `The +${rbPct}% Reaction Bonus would be worth ${fmtInt(n)} more EM here.`
+				: `The +${rbPct}% Reaction Bonus would be worth more than any amount of EM here.`
 		}`;
 	}
 	const readings = $derived(family.curves.map(readingOf));
