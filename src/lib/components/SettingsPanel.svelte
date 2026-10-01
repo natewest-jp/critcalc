@@ -584,12 +584,9 @@
 		justify-content: space-between;
 		gap: 1.2rem;
 		padding: 0.8rem 0.1rem;
-		border-bottom: 1px solid var(--border);
 	}
-
-	.sp-row:last-child {
-		border-bottom: none;
-	}
+	/* ⛔ No rule between rows (⚓ Nate, 2026-10-01): the section kicker's rule
+	   is the only separator, and the rows' padding carries the rhythm. */
 
 	/* Full-width block below the Restore row for the import error / confirm UI. */
 	.sp-feedback {
