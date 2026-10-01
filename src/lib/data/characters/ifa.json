@@ -183,7 +183,7 @@
 			"abilityType": "passive",
 			"effects": [
 				{
-					"type": "elevate",
+					"type": "buff",
 					"target": "team",
 					"trigger": {
 						"type": "onCast",
@@ -192,15 +192,7 @@
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
-					"reactions": [
-						"pyroSwirl",
-						"hydroSwirl",
-						"cryoSwirl",
-						"electroSwirl",
-						"electroCharged",
-						"stellarSwirl",
-						"lunarCharged"
-					],
+					"stat": "swirlReactionBonus",
 					"value": 90,
 					"snapshottable": false
 				},
@@ -214,18 +206,47 @@
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
-					"stat": "lunarChargedDmgBonus",
+					"stat": "electroChargedReactionBonus",
+					"value": 90,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "lunarChargedReactionBonus",
+					"value": 12,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "stellarSwirlReactionBonus",
 					"value": 12,
 					"snapshottable": false
 				}
 			],
-			"caveat": "Not modeled: the Swirl and Electro-Charged DMG share. The +12% Lunar-Charged buff shown assumes a fixed 60 Rescue Essentials points; in game the bonus scales with the party’s total Nightsoul, rising and falling in real time.",
+			"caveat": "The bonuses shown assume a fixed 60 Rescue Essentials points: +90% Swirl and Electro-Charged and +12% Lunar-Charged and Stellar Swirl reaction DMG. In game they scale with the party’s total Nightsoul, rising and falling in real time.",
 			"_curatorNotes": [
 				"Field Medic's Vision = Ascension 1 (gcsim asc.go a1Init, Base.Ascension < 1 guard). No gcsim source for Ifa existed before PR #2639; A1 numbers from KQM quickguide + Fandom wiki + genshin-db talent text: each Rescue Essentials point grants +1.5% Swirl DMG, +1.5% Electro-Charged DMG, +0.2% Lunar-Charged DMG to nearby party members; Rescue Essentials cap 150 (C0), 200 (C2); points = total party Nightsoul while in Blessing, cleared when Blessing ends.",
 				"Magnitude is a canonical assumption. gcsim a1Init computes Rescue Essentials as m = 60 + max(teamNightsoul-60,0)*c2Mult, capped at 150+c2CapIncrease; at C0 c2Mult=0 so m=60 (fixed reference). Authored at 60 points -> Swirl/EC 60*1.5% = 90; Lunar-Charged 60*0.2% = 12. Real value scales with live party Nightsoul (decays as Ifa's own 80 drains over the 10s hover).",
 				"Bound to the Nightsoul window via trigger onCast(skill) + duration 10 (the hover length), target team. The Swirl + Electro-Charged portion is authored as an `elevate` (reactions pyro/hydro/cryo/electroSwirl + electroCharged) — the semantically-correct reaction-DMG-bonus type — but multi-reaction elevate is not yet rendered and elevate does not map to a capability, so it is documentary. The Lunar-Charged portion IS authored as a buff on lunarChargedDmgBonus so at least one team-buff capability surfaces for the Team Builder. FLAG: the schema has no swirlDmgBonus / electroChargedDmgBonus stat key, so Ifa's HEADLINE Swirl/Electro-Charged team buff cannot surface as a capability today — needs a schema addition or multi-reaction-elevate rendering/capability mapping.",
 				"[A7] Caveat trimmed to the shown Lunar-Charged buff's fixed-60-point canonical assumption. The Swirl + Electro-Charged share (the passive's headline: +1.5% each per Rescue Essentials point, +90% at 60 points) is authored as multi-reaction elevate, which is frozen/unrendered and maps to no capability, so it never surfaces — the old '+90% shown' framing was inaccurate and was dropped rather than restated.",
-				"[A7] Rescue Essentials = total party Nightsoul, cap 150 (C0) / 200 (C2); per-point rates +1.5% Swirl, +1.5% Electro-Charged, +0.2% Lunar-Charged. 60 points is the fixed C0 reference magnitude the source used for the authored values (Swirl/EC 90%, Lunar-Charged 12%)."
+				"[A7] Rescue Essentials = total party Nightsoul, cap 150 (C0) / 200 (C2); per-point rates +1.5% Swirl, +1.5% Electro-Charged, +0.2% Lunar-Charged. 60 points is the fixed C0 reference magnitude the source used for the authored values (Swirl/EC 90%, Lunar-Charged 12%).",
+				"↻ 2026-10-01 — BUCKET FIX (found on the Damage Anatomy pass). Both halves were in the wrong bracket: gcsim `ifa/asc.go` a1Init adds them through `AddReactBonusMod`, i.e. the Reaction Bonus (bucket 5, additive with the EM bonus), NOT Elevation (bucket 4) and NOT Lunar Base DMG Bonus (bucket 3). Re-keyed to the bucket-5 stat family: swirlReactionBonus + electroChargedReactionBonus at 90 (1.5% × 60), lunarChargedReactionBonus + stellarSwirlReactionBonus at 12 (0.2% × 60). ⚠️ Stellar Swirl was inside the old 90 elevate; gcsim gives it the LUNAR rate (0.002/pt, `AttackTagReactionStellarSwirl`), so it moves to 12. The multi-reaction elevate also rendered NOTHING (normalizeBuffLikeEffect maps only one reaction or a whole family), so the Swirl/EC half was invisible until now; the caveat that called it \"not modeled\" is rewritten to match. The 60-point basis is unchanged (see the note above)."
 			],
 			"description": "When Ifa is in the Nightsoul's Blessing state, every 1 Nightsoul point out of the current total in his entire party will grant him 1 **Rescue Essentials** point. Rescue Essentials will increase the Swirl, Stellar Swirl, Electro-Charged, and Lunar-Charged reaction DMG dealt by nearby party members."
 		},
