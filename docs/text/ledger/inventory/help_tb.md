@@ -10,7 +10,7 @@
   - terms: 📖 Team Builder
 - `help_tb_find_characters_by_what_they_can` — TeamBuilder.svelte:9 <p>
   > Find characters by what they can actually provide — healing, shields, off-field damage, RES shred, ally buffs — with every capability derived from curated kit data and traced back to the ability, and the constellation, that grants it.
-  - terms: 🏷 RES shred · 🏷 off-field
+  - terms: 🎮 Constellation · 🏷 RES shred · 🏷 off-field
 - `help_tb_finding_characters` — TeamBuilder.svelte:16 <h2>
   > Finding characters
 - `help_tb_the_middle_panel_has_two_tabs_browse_by` — TeamBuilder.svelte:17 <p>
@@ -25,12 +25,15 @@
   > Characters whose kits aren't curated yet are listed separately when you filter, never silently hidden — a missing badge means "unknown," not "no."
 - `help_tb_constellations_change_the_answer` — TeamBuilder.svelte:38 <h2>
   > Constellations change the answer
+  - terms: 🎮 Constellation
 - `help_tb_many_capabilities_are_gated_behind_a` — TeamBuilder.svelte:39 <p>
   > Many capabilities are gated behind a constellation, so "who can do this" depends on whose constellations you mean. The switch offers three readings:
+  - terms: 🎮 Constellation
 - `help_tb_c0_base_kits_only_the_floor_every_player` — TeamBuilder.svelte:44 <li>
   > <strong>C0</strong> — base kits only, the floor every player shares.
 - `help_tb_my_roster_the_constellation_levels_you` — TeamBuilder.svelte:45 <li>
   > <strong>My roster</strong> — the constellation levels you've saved, i.e. your account.
+  - terms: 🎮 Constellation
 - `help_tb_c6_everything_a_kit_can_ever_do_useful` — TeamBuilder.svelte:47 <li>
   > <strong>C6</strong> — everything a kit can ever do, useful for judging a long-term goal.
 - `help_tb_your_roster_is_shared_across_the_site` — TeamBuilder.svelte:50 <p>
@@ -41,12 +44,13 @@
 - `help_tb_press_compare_on_a_character_card_and_it` — TeamBuilder.svelte:58 <p>
   > Press <strong>Compare</strong> on a character card and it loads into the <strong>Compare</strong> tab — its portrait appears right in the tab, and you keep browsing. Open the tab when you're ready.
   - terms: 📖 Compare
-- `help_tb_the_chart_groups_by_what_an_ability_does` — TeamBuilder.svelte:63 <p>
+- `help_tb_the_chart_groups_by_what_an_ability_does` — TeamBuilder.svelte:63 <p> — ⚑ off-glossary
   > The chart groups by <em>what an ability does</em>, not by which button it sits on: under <em>Heal</em>, Bennett's burst lines up beside Kokomi's skill, each carrying its own cooldown and energy cost. Every bar repeats across the ruler, so how much of the time something is up reads as a rhythm rather than as arithmetic — a nearly solid row is nearly permanent uptime, and the small breaks in one mark where you have to come back and cast again. Repeats assume you recast the moment the cooldown ends; energy isn't modelled, so a burst's later cycles are a best case. Below the chart, a side-by-side table aligns the plain facts — cooldowns, burst costs, and each capability with its constellation gate.
-  - terms: 🏷 uptime
+  - terms: 🎮 Constellation · 🎮 Energy · 🏷 uptime · 🎮 Elemental Skill · 🎮 Elemental Burst
+  - ⚠️ off-glossary: modelled → modeled
 - `help_tb_press_on_a_bench_slot_instead_and_you` — TeamBuilder.svelte:73 <p>
   > Press <strong>⇄</strong> on a bench slot instead and you get an <strong>audition</strong>: the character currently in that slot is pinned at the top as the reference, and the chips narrow the candidates to whoever else does that job. For a main DPS — whose job is damage, which we show rather than score — the chips offer elements instead. <strong>Take slot</strong> makes the swap.
   - terms: 📖 audition · 📖 bench · 🏷 DPS
 - `help_tb_fill_the_team_slots_and_the_panel` — TeamBuilder.svelte:79 <p>
   > Fill the team slots and the panel reports what the composition <em>is</em> — elemental resonance, Natlan count, Moonsign — plus a coverage checklist. Facts, never a score. The bench is the same team the <a>Rotation Planner</a> runs — switch tools and it glides across with you, slots and all, ready to rotate.
-  - terms: 📖 Rotation Planner · 🎮 Moonsign · 🎮 Natlan · 📖 bench
+  - terms: 📖 Rotation Planner · 🎮 Elemental Resonance · 🎮 Moonsign · 🎮 Natlan · 📖 bench

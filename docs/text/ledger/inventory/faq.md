@@ -17,6 +17,7 @@
   - terms: 🔒 critcalc
 - `faq_a_set_of_genshin_impact_theorycrafting` — Faq.svelte:19 <p>
   > A set of Genshin Impact theorycrafting tools that <em>visualize</em> mechanics — crit odds, rotation timing, team capabilities — instead of reducing them to a single score.
+  - terms: 🎮 Genshin Impact · 📖 rotation
 - `faq_does_it_tell_me_my_damage_number_or_the` — Faq.svelte:24 <h3>
   > Does it tell me my damage number or the best team?
 - `faq_no_by_design_critcalc_shows_mechanics` — Faq.svelte:25 <p>
@@ -27,12 +28,14 @@
   - terms: 🔒 critcalc
 - `faq_no_it_s_an_independent_non_commercial` — Faq.svelte:31 <p>
   > No — it's an independent, non-commercial fan project, not affiliated with or endorsed by HoYoverse.
+  - terms: 🔒 HoYoverse
 - `faq_your_data` — Faq.svelte:38 <h2>
   > Your data
 - `faq_do_i_need_an_account_is_anything_saved` — Faq.svelte:40 <h3>
   > Do I need an account? Is anything saved on a server?
 - `faq_no_account_no_sign_in_no_server` — Faq.svelte:41 <p>
   > No account, no sign-in, no server. Everything you set — your roster, loadouts, saved rotations, and settings — lives only in your own browser. See <a>Privacy</a> for the full picture.
+  - terms: 📖 rotation · 📖 loadout
 - `faq_how_do_i_move_my_data_to_another_device` — Faq.svelte:47 <h3>
   > How do I move my data to another device?
 - `faq_open_settings_the_gear_top_right_and_use` — Faq.svelte:48 <p>
@@ -43,7 +46,7 @@
   > Where does the character data come from?
 - `faq_it_is_curated_in_house_and_cross_checked` — Faq.svelte:59 <p>
   > It is curated in-house and cross-checked against <a>gcsim</a> and <a>Keqing Mains</a>, seeded from the sources credited on the <a>About page</a>.
-  - terms: 🔒 gcsim
+  - terms: 🔒 Keqing Mains · 🔒 gcsim
 - `faq_a_value_looks_wrong_or_a_character_is` — Faq.svelte:66 <h3>
   > A value looks wrong, or a character is missing.
 - `faq_some_newer_or_niche_kits_aren_t_fully` — Faq.svelte:67 <p>
@@ -60,7 +63,7 @@
   > Which terminology do you follow?
 - `faq_keqing_mains_kqm_standards_throughout` — Faq.svelte:86 <p>
   > <a>Keqing Mains</a> (KQM) standards throughout, including the rotation notation the planner reads.
-  - terms: 🔒 KQM
+  - terms: 🔒 Keqing Mains · 📖 notation · 📖 rotation · 🔒 KQM
 - `faq_does_the_site_work_offline_or_on_a_phone` — Faq.svelte:90 <h3>
   > Does the site work offline or on a phone?
 - `faq_it_is_a_static_site_so_it_loads_fast_and` — Faq.svelte:91 <p>

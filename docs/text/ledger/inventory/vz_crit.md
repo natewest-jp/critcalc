@@ -12,6 +12,7 @@
   - vars: `isoline.value.toFixed(2)`
 - `vz_crit_cd_2_cr` — CritHeatmap.svelte:526 <text>
   > CD = 2×CR
+  - terms: 🏷 CR · 🏷 CD
 - `vz_crit_x_cv` — CritHeatmap.svelte:537 <text>
   > {Math.round(cv * 100)} CV
   - vars: `Math.round(cv * 100)`
@@ -32,9 +33,11 @@
 - `vz_crit_cr_x` — CritHeatmap.svelte:737 <text>
   > CR {(shownCR * 100).toFixed(1)}%
   - vars: `(shownCR * 100).toFixed(1)`
+  - terms: 🏷 CR
 - `vz_crit_cd_x` — CritHeatmap.svelte:740 <text>
   > CD {(shownCD * 100).toFixed(1)}%
   - vars: `(shownCD * 100).toFixed(1)`
+  - terms: 🏷 CD
 - `vz_crit_x_x_7a3e` — CritHeatmap.svelte:744 <text> — ⚑ x-for-×
   > {dotMultiplier.toFixed(3)}x
   - vars: `dotMultiplier.toFixed(3)`
@@ -60,8 +63,10 @@
   - terms: 🏷 CV
 - `vz_crit_no_crit_risk_overlay_chance_a_whole` — CritInstrument.svelte:212 <span>
   > No-crit risk overlay <span>chance a whole rotation lands zero crits</span>
+  - terms: 📖 rotation
 - `vz_crit_hits_rotation` — CritInstrument.svelte:221 <span>
   > Hits / Rotation
+  - terms: 📖 rotation
 - `vz_crit_roll_hitsperrotation_hits` — CritInstrument.svelte:238 <button> — ⚑ plural?
   > Roll {hitsPerRotation} hits
   - vars: `hitsPerRotation`
@@ -86,10 +91,11 @@
 - `vz_crit_ratio_cd_cr_ratiotext` — CritInstrument.svelte:271 <p>
   > Ratio (CD:CR): <span>{ratioText}</span>
   - vars: `ratioText`
+  - terms: 🏷 CR · 🏷 CD
 - `vz_crit_crit_value_mycv_cv` — CritInstrument.svelte:272 <p>
   > Crit Value: <span>{myCV} CV</span>
   - vars: `myCV`
-  - terms: 🏷 CV
+  - terms: 🏷 crit value · 🏷 CV
 - `vz_crit_cv_2_rate_dmg_your_total_crit_budget` — CritInstrument.svelte:273 <p>
   > CV = 2×Rate + DMG — your total crit budget
   - terms: 🎮 DMG · 🏷 CV

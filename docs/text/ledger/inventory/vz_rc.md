@@ -9,12 +9,15 @@
   > All families
 - `vz_rc_how_much_em_boosts_each_family_level` — ReactionCurvesInstrument.svelte:58 note:
   > How much EM boosts each family. Level doesn’t change the boost.
+  - terms: 🏷 EM
 - `vz_rc_boost_from_em_256e` — ReactionCurvesInstrument.svelte:59 yLabel:
   > boost from EM
+  - terms: 🏷 EM
 - `vz_rc_family` — ReactionCurvesInstrument.svelte:60 rowHead:
   > Family
 - `vz_rc_boost_from_em_5560` — ReactionCurvesInstrument.svelte:61 valueHead:
   > Boost from EM
+  - terms: 🏷 EM
 - `vz_rc_transformative` — ReactionCurvesInstrument.svelte:66 label: · ReactionCurvesInstrument.svelte:138 label:
   > Transformative
 - `vz_rc_overloaded_swirl_bloom_hyperbloom` — ReactionCurvesInstrument.svelte:67 detail:
@@ -34,12 +37,14 @@
   - terms: 🎮 Aggravate · 🎮 Spread
 - `vz_rc_lunar_stellar` — ReactionCurvesInstrument.svelte:82 label: · ReactionCurvesInstrument.svelte:229 label:
   > Lunar & Stellar
+  - terms: 🎮 Stellar · 🎮 Lunar
 - `vz_rc_lunar_charged_lunar_crystallize_stellar` — ReactionCurvesInstrument.svelte:83 detail:
   > Lunar-Charged · Lunar-Crystallize · Stellar Swirl
-  - terms: 🎮 Lunar-Crystallize · 🎮 Lunar-Charged · 🎮 Swirl
+  - terms: 🎮 Lunar-Crystallize · 🎮 Lunar-Charged · 🎮 Stellar Swirl
 - `vz_rc_lunar_and_stellar_reactions_would_deal` — ReactionCurvesInstrument.svelte:87 read: — ⚑ plural?
   > Lunar and Stellar reactions would deal {c.times} times their base damage.
   - vars: `c.times`
+  - terms: 🎮 Stellar · 🎮 Lunar
 - `vz_rc_crystallize` — ReactionCurvesInstrument.svelte:90 label: · ReactionCurvesInstrument.svelte:277 label:
   > Crystallize
   - terms: 🎮 Crystallize
@@ -63,6 +68,7 @@
   - terms: 🎮 Vaporize · 🎮 Melt
 - `vz_rc_2_78_em_1400_em` — ReactionCurvesInstrument.svelte:112 formula:
   > 2.78·EM/(1400+EM)
+  - terms: 🏷 EM
 - `vz_rc_hit_multiplier` — ReactionCurvesInstrument.svelte:113 yLabel:
   > hit multiplier
 - `vz_rc_reaction` — ReactionCurvesInstrument.svelte:114 rowHead: · ReactionCurvesInstrument.svelte:142 rowHead: · ReactionCurvesInstrument.svelte:205 rowHead: · ReactionCurvesInstrument.svelte:234 rowHead:
@@ -89,9 +95,10 @@
   - terms: 🎮 Vaporize · 🎮 Melt
 - `vz_rc_damage_from_the_character_s_level_and_em` — ReactionCurvesInstrument.svelte:139 note:
   > Damage from the character’s level and EM alone. For most characters, crit, ATK, and DMG% do nothing.
-  - terms: 🎮 ATK · 🎮 DMG
+  - terms: 🎮 ATK · 🎮 DMG · 🏷 EM
 - `vz_rc_16_em_2000_em` — ReactionCurvesInstrument.svelte:140 formula:
   > 16·EM/(2000+EM)
+  - terms: 🏷 EM
 - `vz_rc_damage_5419` — ReactionCurvesInstrument.svelte:141 yLabel: · ReactionCurvesInstrument.svelte:233 yLabel:
   > damage
 - `vz_rc_damage_7bf6` — ReactionCurvesInstrument.svelte:143 valueHead: · ReactionCurvesInstrument.svelte:235 valueHead:
@@ -148,6 +155,7 @@
   - terms: 🎮 DMG
 - `vz_rc_5_em_1200_em` — ReactionCurvesInstrument.svelte:202 formula:
   > 5·EM/(1200+EM)
+  - terms: 🏷 EM
 - `vz_rc_before_enemy_res` — ReactionCurvesInstrument.svelte:203 caveat:
   > Before enemy RES.
   - terms: 🎮 RES
@@ -179,30 +187,31 @@
   - terms: 🎮 Aggravate · 🎮 Electro
 - `vz_rc_damage_from_level_and_em_and_it_can_crit` — ReactionCurvesInstrument.svelte:230 note:
   > Damage from level and EM, and it can crit. Each contributing party member is counted separately; these figures are the top contributor’s 60% share. Lunar-Bloom and Stellar-Conduct deal damage only through abilities.
-  - terms: 🎮 Lunar-Bloom
+  - terms: 🎮 Stellar-Conduct · 🎮 Lunar-Bloom · 🏷 EM
 - `vz_rc_6_em_2000_em` — ReactionCurvesInstrument.svelte:231 formula:
   > 6·EM/(2000+EM)
+  - terms: 🏷 EM
 - `vz_rc_stellar_swirl_figures_are_from_gcsim_not` — ReactionCurvesInstrument.svelte:232 caveat:
   > Stellar Swirl figures are from gcsim, not yet confirmed in game.
-  - terms: 🔒 gcsim · 🎮 Swirl
+  - terms: 🎮 Stellar Swirl · 🔒 gcsim
 - `vz_rc_lunar_charged_stellar_swirl_blast` — ReactionCurvesInstrument.svelte:239 label:
   > Lunar-Charged · Stellar Swirl blast
-  - terms: 🎮 Lunar-Charged · 🎮 Swirl
+  - terms: 🎮 Lunar-Charged · 🎮 Stellar Swirl
 - `vz_rc_1_8_per_tick_after_3_swirls` — ReactionCurvesInstrument.svelte:240 detail:
   > ×1.8, per tick · after 3+ swirls
 - `vz_rc_a_lunar_charged_tick_or_a_stellar_swirl` — ReactionCurvesInstrument.svelte:245 read:
   > A Lunar-Charged tick, or a Stellar Swirl blast after 3+ swirls, would deal {c.v} damage before enemy RES and crit.
   - vars: `c.v`
-  - terms: 🎮 Lunar-Charged · 🎮 Swirl · 🎮 RES
+  - terms: 🎮 Lunar-Charged · 🎮 Stellar Swirl · 🎮 RES
 - `vz_rc_stellar_swirl_blast` — ReactionCurvesInstrument.svelte:248 label:
   > Stellar Swirl blast
-  - terms: 🎮 Swirl
+  - terms: 🎮 Stellar Swirl
 - `vz_rc_1_2_after_1_2_swirls` — ReactionCurvesInstrument.svelte:249 detail:
   > ×1.2, after 1–2 swirls
 - `vz_rc_a_stellar_swirl_blast_after_1_2_swirls` — ReactionCurvesInstrument.svelte:254 read:
   > A Stellar Swirl blast after 1–2 swirls would deal {c.v} damage before enemy RES and crit.
   - vars: `c.v`
-  - terms: 🎮 Swirl · 🎮 RES
+  - terms: 🎮 Stellar Swirl · 🎮 RES
 - `vz_rc_0_96_per_moondrift_hit` — ReactionCurvesInstrument.svelte:258 detail:
   > ×0.96, per Moondrift hit
   - terms: 🎮 Moondrift
@@ -212,15 +221,17 @@
   - terms: 🎮 Lunar-Crystallize · 🎮 Moondrift · 🎮 RES
 - `vz_rc_stellar_swirl` — ReactionCurvesInstrument.svelte:266 label:
   > Stellar Swirl
-  - terms: 🎮 Swirl
+  - terms: 🎮 Stellar Swirl
 - `vz_rc_a_stellar_swirl_hit_would_deal_v_damage` — ReactionCurvesInstrument.svelte:271 read:
   > A Stellar Swirl hit would deal {c.v} damage before enemy RES and crit.
   - vars: `c.v`
-  - terms: 🎮 Swirl · 🎮 RES
+  - terms: 🎮 Stellar Swirl · 🎮 RES
 - `vz_rc_the_shard_s_shield_grows_with_the` — ReactionCurvesInstrument.svelte:278 note:
   > The shard’s shield grows with the triggering character’s level and EM, on a level table of its own.
+  - terms: 🏷 EM
 - `vz_rc_4_44_em_1400_em` — ReactionCurvesInstrument.svelte:279 formula:
   > 4.44·EM/(1400+EM)
+  - terms: 🏷 EM
 - `vz_rc_shield_hp_2571` — ReactionCurvesInstrument.svelte:280 yLabel:
   > shield HP
   - terms: 🎮 HP
@@ -238,19 +249,24 @@
 - `vz_rc_n_em` — ReactionCurvesInstrument.svelte:397 fmtWorth:
   > {fmtInt(n)} EM
   - vars: `fmtInt(n)`
+  - terms: 🏷 EM
 - `vz_rc_beyond_any_em` — ReactionCurvesInstrument.svelte:397 fmtWorth:
   > beyond any EM
+  - terms: 🏷 EM
 - `vz_rc_first_number_isfinite_n_the_rbpct` — ReactionCurvesInstrument.svelte:413 script — ⚑ assembled
   > {first} {Number.isFinite(n) ? `The +${rbPct}% Reaction Bonus would be worth ${fmtInt(n)} more EM here.` : `The +${rbPct}% Reaction Bonus would be worth more than any amount of EM here.`}
   - vars: `first` `Number.isFinite(n)
 				? 'The +${rbPct}% Reaction Bonus would be worth ${fmtInt(n)} more EM here.'
 				: 'The +${rbPct}% Reaction Bonus would be worth more than any amount of EM here.'`
+  - terms: 🏷 Reaction Bonus · 🏷 EM
 - `vz_rc_the_rbpct_reaction_bonus_would_be_worth_3f6f` — ReactionCurvesInstrument.svelte:415 script
   > The +{rbPct}% Reaction Bonus would be worth {fmtInt(n)} more EM here.
   - vars: `rbPct` `fmtInt(n)`
+  - terms: 🏷 Reaction Bonus · 🏷 EM
 - `vz_rc_the_rbpct_reaction_bonus_would_be_worth_8787` — ReactionCurvesInstrument.svelte:416 script
   > The +{rbPct}% Reaction Bonus would be worth more than any amount of EM here.
   - vars: `rbPct`
+  - terms: 🏷 Reaction Bonus · 🏷 EM
 - `vz_rc_reaction_family` — ReactionCurvesInstrument.svelte:472 aria-label=
   > Reaction family
 - `vz_rc_reaction_scaling_curves_vs_elemental` — ReactionCurvesInstrument.svelte:492 aria-label=
@@ -264,6 +280,7 @@
 - `vz_rc_next_gain_step_em_adds` — ReactionCurvesInstrument.svelte:580 <th>
   > Next {GAIN_STEP} EM adds
   - vars: `GAIN_STEP`
+  - terms: 🏷 EM
 - `vz_rc_rbpct_bonus_is_worth` — ReactionCurvesInstrument.svelte:582 <th>
   > +{rbPct}% bonus is worth
   - vars: `rbPct`
@@ -273,8 +290,10 @@
   > Build
 - `vz_rc_reaction_bonus` — ReactionCurvesInstrument.svelte:643 <span>
   > Reaction Bonus
+  - terms: 🏷 Reaction Bonus
 - `vz_rc_reaction_bonus_in_percent` — ReactionCurvesInstrument.svelte:653 aria-label=
   > Reaction Bonus in percent
+  - terms: 🏷 Reaction Bonus
 - `vz_rc_level` — ReactionCurvesInstrument.svelte:660 <span>
   > Level
 - `vz_rc_character_level` — ReactionCurvesInstrument.svelte:673 aria-label=

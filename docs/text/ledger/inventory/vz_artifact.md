@@ -25,10 +25,13 @@
   > Reshape
 - `vz_artifact_pick_two_target_substats_below` — ArtifactInstrument.svelte:402 <p>
   > Pick two target substats below.
+  - terms: 🏷 substat
 - `vz_artifact_dial_in_your_piece_s_four_substat_values` — ArtifactInstrument.svelte:405 <p>
   > Dial in your piece's four substat values below.
+  - terms: 🏷 substat
 - `vz_artifact_neither_target_substat_is_on_this_piece` — ArtifactInstrument.svelte:407 <p>
   > Neither target substat is on this piece — pick a pair it has.
+  - terms: 🏷 substat
 - `vz_artifact_where_this_piece_sits_on_its_outcome` — ArtifactInstrument.svelte:415 aria-label=
   > Where this piece sits on its outcome distribution
 - `vz_artifact_your_piece_p_x` — ArtifactInstrument.svelte:455 <text>
@@ -38,6 +41,7 @@
   > RV
 - `vz_artifact_crit_value` — ArtifactInstrument.svelte:472 p:
   > Crit value
+  - terms: 🏷 crit value
 - `vz_artifact_roll_value_into_pairlabel` — ArtifactInstrument.svelte:472 p:
   > Roll value into {pairLabel}
   - vars: `pairLabel`
@@ -46,6 +50,7 @@
   - vars: `apUseCv ? 'Crit value' : 'Roll value into ${pairLabel}'` `resolution.fourLineStart
 						? '4-line start'
 						: '3-line start'` `resolution.events`
+  - terms: 🏷 crit value
 - `vz_artifact_4_line_start` — ArtifactInstrument.svelte:474 p: · ArtifactInstrument.svelte:749 button: · ArtifactInstrument.svelte:786 <button>
   > 4-line start
 - `vz_artifact_3_line_start` — ArtifactInstrument.svelte:475 p: · ArtifactInstrument.svelte:749 button: · ArtifactInstrument.svelte:793 <button>
@@ -57,11 +62,13 @@
   - vars: `oneIn(row.p)`
 - `vz_artifact_crafted_pieces_skip_the_draw_the_main` — ArtifactInstrument.svelte:494 <p>
   > Crafted pieces skip the draw — the main stat and both target substats are chosen at crafting. The Elixir's real story is in Upgrade Rolls: since 5.5, at least 2 rolls are guaranteed into your chosen pair.
+  - terms: 🏷 substat · 🎮 Sanctifying Elixir
 - `vz_artifact_pairlabel_on_a_5_x_the_game_draws` — ArtifactInstrument.svelte:501 <p>
   > {pairLabel} on a 5★ {slot.name.toLowerCase()} — the game draws starting lines with hidden weights, and the two CRIT stats are its rarest draws.
   - vars: `pairLabel` `slot.name.toLowerCase()`
 - `vz_artifact_crit_value_distribution_at_20` — ArtifactInstrument.svelte:508 aria-label=
   > Crit value distribution at +20
+  - terms: 🏷 crit value
 - `vz_artifact_median` — ArtifactInstrument.svelte:542 text:
   > median
 - `vz_artifact_tick_cv` — ArtifactInstrument.svelte:555 <text>
@@ -75,6 +82,7 @@
 					: '3-line start, 4 rolls'` `crafted
 					? ', ≥${ELIXIR_MIN_PAIR_ROLLS} guaranteed into the pair'
 					: ''`
+  - terms: 🏷 crit value · 🏷 CR · 🏷 CD
 - `vz_artifact_4_line_start_5_rolls` — ArtifactInstrument.svelte:563 p:
   > 4-line start, 5 rolls
 - `vz_artifact_3_line_start_4_rolls` — ArtifactInstrument.svelte:564 p:
@@ -98,7 +106,7 @@
   > Target Pair
 - `vz_artifact_two_substats_reshaping_selects_exactly` — ArtifactInstrument.svelte:703 <p>
   > Two substats — reshaping selects exactly two, so the whole instrument thinks in pairs.
-  - terms: 📖 instrument
+  - terms: 📖 instrument · 🏷 substat
 - `vz_artifact_your_piece` — ArtifactInstrument.svelte:709 p:
   > Your Piece
 - `vz_artifact_scenario` — ArtifactInstrument.svelte:709 p:
@@ -106,9 +114,11 @@
 - `vz_artifact_substat_x` — ArtifactInstrument.svelte:717 aria-label=
   > Substat {i + 1}
   - vars: `i + 1`
+  - terms: 🏷 substat
 - `vz_artifact_value_for_substat_x` — ArtifactInstrument.svelte:728 label=
   > Value for substat {i + 1}
   - vars: `i + 1`
+  - terms: 🏷 substat
 - `vz_artifact_rounding_makes_two_roll_totals_possible` — ArtifactInstrument.svelte:753 <p>
   > Rounding makes two roll totals possible — pick the true start.
 - `vz_artifact_sanctifying_elixir_x_of_crafts_start` — ArtifactInstrument.svelte:768 <p>
@@ -134,7 +144,7 @@
 - `vz_artifact_sanctifying_elixir_5_5_your_two_crafted` — ArtifactInstrument.svelte:816 <p> — ⚑ plural?
   > Sanctifying Elixir (5.5+): your two crafted substats are guaranteed at least {ELIXIR_MIN_PAIR_ROLLS} of the {events} rolls.
   - vars: `ELIXIR_MIN_PAIR_ROLLS` `events`
-  - terms: 🎮 Sanctifying Elixir
+  - terms: 🎮 Sanctifying Elixir · 🏷 substat
 - `vz_artifact_standard_2` — ArtifactInstrument.svelte:828 <button>
   > Standard ≥2
 - `vz_artifact_advanced_3` — ArtifactInstrument.svelte:835 <button>
@@ -149,6 +159,7 @@
   > Readout
 - `vz_artifact_pick_two_target_substats` — ArtifactInstrument.svelte:868 <p>
   > Pick two target substats.
+  - terms: 🏷 substat
 - `vz_artifact_p_x_of_pieces_with_these_lines` — ArtifactInstrument.svelte:871 <p>
   > p{Math.round(apPercentile * 100)}<span>of pieces with these lines</span>
   - vars: `Math.round(apPercentile * 100)`
@@ -213,6 +224,7 @@
   > Compared by roll count only: reshaping also rerolls each roll's strength (the 70–100% tiers), which isn't part of this comparison.
 - `vz_artifact_pity_advanced_at_6_dust_of_enlightenment` — ArtifactInstrument.svelte:947 <p>
   > Pity: Advanced at 6 Dust of Enlightenment; Decreed on the 3rd consecutive Advanced. You keep the better of original and reshaped.
+  - terms: 🎮 Dust of Enlightenment
 - `vz_artifact_hp_5200` — artifactRolls.ts:56 name: · artifactRolls.ts:57 short: · artifactRolls.ts:149 name:
   > HP
   - terms: 🎮 HP
@@ -236,29 +248,37 @@
   - terms: 🎮 Energy Recharge
 - `vz_artifact_er` — artifactRolls.ts:105 short:
   > ER
+  - terms: 🏷 ER
 - `vz_artifact_elemental_mastery` — artifactRolls.ts:112 name: · artifactRolls.ts:159 name: · artifactRolls.ts:171 name: · artifactRolls.ts:184 name:
   > Elemental Mastery
   - terms: 🎮 Elemental Mastery
 - `vz_artifact_em` — artifactRolls.ts:113 short:
   > EM
+  - terms: 🏷 EM
 - `vz_artifact_crit_rate` — artifactRolls.ts:120 name: · artifactRolls.ts:181 name:
   > CRIT Rate
   - terms: 🎮 CRIT Rate
 - `vz_artifact_cr` — artifactRolls.ts:121 short:
   > CR
+  - terms: 🏷 CR
 - `vz_artifact_crit_dmg` — artifactRolls.ts:128 name: · artifactRolls.ts:182 name:
   > CRIT DMG
   - terms: 🎮 CRIT DMG
 - `vz_artifact_cd` — artifactRolls.ts:129 short:
   > CD
+  - terms: 🏷 CD
 - `vz_artifact_flower` — artifactRolls.ts:149 name:
   > Flower
+  - terms: 🎮 Flower of Life
 - `vz_artifact_plume` — artifactRolls.ts:150 name:
   > Plume
+  - terms: 🎮 Plume of Death
 - `vz_artifact_sands` — artifactRolls.ts:153 name:
   > Sands
+  - terms: 🎮 Sands of Eon
 - `vz_artifact_goblet` — artifactRolls.ts:164 name:
   > Goblet
+  - terms: 🎮 Goblet of Eonothem
 - `vz_artifact_elemental_dmg` — artifactRolls.ts:169 name:
   > Elemental DMG
   - terms: 🎮 DMG
@@ -267,6 +287,7 @@
   - terms: 🎮 Physical · 🎮 DMG
 - `vz_artifact_circlet` — artifactRolls.ts:176 name:
   > Circlet
+  - terms: 🎮 Circlet of Logos
 - `vz_artifact_healing_bonus` — artifactRolls.ts:183 name:
   > Healing Bonus
   - terms: 🎮 Healing Bonus

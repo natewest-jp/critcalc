@@ -43,6 +43,7 @@
   > No weapon
 - `bench_refinement` — LoadoutPanel.svelte:145 <span>
   > Refinement
+  - terms: 🎮 Refinement
 - `bench_equip_a_weapon_first` — LoadoutPanel.svelte:146 <span>
   > equip a weapon first
 - `bench_r_r` — LoadoutPanel.svelte:156 <button>
@@ -59,16 +60,20 @@
   > Empty slot
 - `bench_frame_timing_not_curated_yet_c9c2` — SlotPortrait.svelte:329 title=
   > Frame timing not curated yet — capabilities are complete, but Planner timing is approximate
+  - terms: 📖 Planner
 - `bench_frame_timing_not_curated_yet_a7f8` — SlotPortrait.svelte:330 aria-label=
   > Frame timing not curated yet
 - `bench_constellations_can_t_be_unlocked_for` — SlotPortrait.svelte:350 title=
   > Constellations can’t be unlocked for this character
+  - terms: 🎮 Constellation
 - `bench_displayname_has_no_constellations` — SlotPortrait.svelte:353 aria-label= — ⚑ plural?
   > {char.displayName} has no constellations
   - vars: `char.displayName`
+  - terms: 🎮 Constellation
 - `bench_set_constellation_for_displayname` — SlotPortrait.svelte:354 aria-label=
   > Set constellation for {char.displayName}, currently C{conLevel}
   - vars: `char.displayName` `conLevel`
+  - terms: 🎮 Constellation
 - `bench_constellation_empty_slot` — SlotPortrait.svelte:355 aria-label=
   > Constellation (empty slot)
   - terms: 🎮 Constellation
@@ -79,15 +84,18 @@
 - `bench_weapon_refinement_currentref` — SlotPortrait.svelte:375 title=
   > Weapon · refinement {currentRef}
   - vars: `currentRef`
+  - terms: 🎮 Refinement
 - `bench_weapon` — SlotPortrait.svelte:375 title=
   > Weapon
 - `bench_choose_weapon_and_refinement` — SlotPortrait.svelte:376 aria-label=
   > Choose weapon and refinement
+  - terms: 🎮 Refinement
 - `bench_close_picker` — SlotPortrait.svelte:418 aria-label=
   > Close picker
 - `bench_label_resonance` — TeamBonusesBlock.svelte:181 sourceLabel:
   > {res.label} — Resonance
   - vars: `res.label`
+  - terms: 🎮 Elemental Resonance
 - `bench_always_on_buffs` — TeamBonusesBlock.svelte:215 <span>
   > Always-on buffs
 - `bench_moonsign_ascendant_gleam` — TeamBonusesBlock.svelte:231 <span>
@@ -110,7 +118,7 @@
   - terms: 🎮 Soothing Water
 - `bench_max_hp_25_pyro_aura_duration_40` — resonance.ts:46 effect:
   > Max HP +25%, pyro aura duration −40%
-  - terms: 🏷 aura · 🎮 HP
+  - terms: 🎮 Max HP · 🏷 aura
 - `bench_pyro_aura_duration` — resonance.ts:49 stat:
   > Pyro aura duration
   - terms: 🎮 Pyro · 🏷 aura
@@ -119,8 +127,10 @@
   - terms: 🎮 Impetuous Winds
 - `bench_stamina_cost_15_movement_speed_10_skill` — resonance.ts:54 effect:
   > Stamina cost −15%, movement speed +10%, skill CD −5%
+  - terms: 🎮 Stamina · 🎮 Elemental Skill · 🏷 CD
 - `bench_stamina_cost` — resonance.ts:56 stat:
   > Stamina cost
+  - terms: 🎮 Stamina
 - `bench_movement_speed` — resonance.ts:57 stat:
   > Movement speed
 - `bench_high_voltage` — resonance.ts:62 label:
@@ -128,12 +138,13 @@
   - terms: 🎮 High Voltage
 - `bench_electro_reactions_generate_an_elemental` — resonance.ts:63 effect:
   > Electro reactions generate an elemental particle (5s CD); hydro aura duration −40%
-  - terms: 🎮 Electro · 🏷 aura
+  - terms: 🎮 Elemental Particle · 🎮 Electro · 🏷 aura · 🏷 CD
 - `bench_electro_particles` — resonance.ts:65 stat:
   > Electro particles
-  - terms: 🎮 Electro
+  - terms: 🎮 Elemental Particle · 🎮 Electro
 - `bench_1_per_electro_reaction_5s_cd` — resonance.ts:65 displayValue:
   > 1 per electro reaction · 5s CD
+  - terms: 🏷 CD
 - `bench_hydro_aura_duration` — resonance.ts:66 stat:
   > Hydro aura duration
   - terms: 🎮 Hydro · 🏷 aura
@@ -164,8 +175,10 @@
   - terms: 🎮 Sprawling Greenery
 - `bench_em_50_reaction_triggered_em_boosts_30_20` — resonance.ts:88 effect:
   > EM +50; reaction-triggered EM boosts (+30/+20, 6s)
+  - terms: 🏷 EM
 - `bench_em_after_reactions` — resonance.ts:91 stat:
   > EM after reactions
+  - terms: 🏷 EM
 - `bench_30_20_6s` — resonance.ts:91 displayValue:
   > +30 / +20 · 6s
 - `bench_protective_canopy` — resonance.ts:132 label:

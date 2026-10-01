@@ -12,6 +12,7 @@
   - terms: 🏷 off-field
 - `vz_icd_2s_burst_ticks` — IcdInstrument.svelte:23 label:
   > ~2s burst ticks
+  - terms: 🎮 Elemental Burst
 - `vz_icd_icd_hit_timeline` — IcdInstrument.svelte:73 aria-label=
   > ICD hit timeline
   - terms: 📖 timeline · 🏷 ICD
@@ -90,3 +91,4 @@
   - terms: 🏷 gauge · 🏷 ICD
 - `vz_icd_send_to_gauge_explorer` — IcdInstrument.svelte:361 <button>
   > Send to Gauge Explorer
+  - terms: 📖 Gauge Explorer

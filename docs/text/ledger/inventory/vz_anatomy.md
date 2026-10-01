@@ -42,13 +42,13 @@
   - terms: 🎮 Burning
 - `vz_anatomy_stellar_swirl` — anatomy.ts:133 lunar:
   > Stellar Swirl
-  - terms: 🎮 Swirl
+  - terms: 🎮 Stellar Swirl
 - `vz_anatomy_stellar_swirl_blast_1_2_swirls` — anatomy.ts:134 lunar:
   > Stellar Swirl blast, 1–2 swirls
-  - terms: 🎮 Swirl
+  - terms: 🎮 Stellar Swirl
 - `vz_anatomy_stellar_swirl_blast_3_swirls` — anatomy.ts:135 lunar:
   > Stellar Swirl blast, 3+ swirls
-  - terms: 🎮 Swirl
+  - terms: 🎮 Stellar Swirl
 - `vz_anatomy_atk` — anatomy.ts:229 atk:
   > ATK
   - terms: 🎮 ATK
@@ -69,14 +69,18 @@
   > Transformative
 - `vz_anatomy_lunar_stellar` — AnatomyInstrument.svelte:43 label:
   > Lunar & Stellar
+  - terms: 🎮 Stellar · 🎮 Lunar
 - `vz_anatomy_reaction_bonus_2e6f` — AnatomyInstrument.svelte:126 bonusWord:
   > + Reaction Bonus
+  - terms: 🏷 Reaction Bonus
 - `vz_anatomy_em_em_rb` — AnatomyInstrument.svelte:127 emReal:
   > {sheet.em} EM · +{rb}%
   - vars: `sheet.em` `rb`
+  - terms: 🏷 EM
 - `vz_anatomy_em_em` — AnatomyInstrument.svelte:127 emReal:
   > {sheet.em} EM
   - vars: `sheet.em`
+  - terms: 🏷 EM
 - `vz_anatomy_1_res_2` — AnatomyInstrument.svelte:131 resFormula:
   > 1 − RES ÷ 2
   - terms: 🎮 RES
@@ -159,22 +163,29 @@
 - `vz_anatomy_1_5_em_em_1200_bonusword` — AnatomyInstrument.svelte:213 emRow:
   > 1 + 5 × EM ÷ (EM + 1200){bonusWord}
   - vars: `bonusWord`
+  - terms: 🏷 EM
 - `vz_anatomy_1_6_em_em_2000_bonusword` — AnatomyInstrument.svelte:215 emRow:
   > 1 + 6 × EM ÷ (EM + 2000){bonusWord}
   - vars: `bonusWord`
+  - terms: 🏷 EM
 - `vz_anatomy_1_16_em_em_2000_bonusword` — AnatomyInstrument.svelte:218 emRow:
   > 1 + 16 × EM ÷ (EM + 2000){bonusWord}
   - vars: `bonusWord`
+  - terms: 🏷 EM
 - `vz_anatomy_em_reaction_bonus` — AnatomyInstrument.svelte:223 name:
   > EM + Reaction Bonus
+  - terms: 🏷 Reaction Bonus · 🏷 EM
 - `vz_anatomy_em` — AnatomyInstrument.svelte:223 name:
   > EM
+  - terms: 🏷 EM
 - `vz_anatomy_em_and_the_rb_reaction_bonus_together` — AnatomyInstrument.svelte:230 read:
   > EM and the +{rb}% Reaction Bonus together would raise it {fmtX(value)}.
   - vars: `rb` `fmtX(value)`
+  - terms: 🏷 Reaction Bonus · 🏷 EM
 - `vz_anatomy_em_would_raise_it_value` — AnatomyInstrument.svelte:231 read:
   > EM would raise it {fmtX(value)}.
   - vars: `fmtX(value)`
+  - terms: 🏷 EM
 - `vz_anatomy_scaling_stat_4658` — AnatomyInstrument.svelte:244 name:
   > Scaling {stat}
   - vars: `stat`
@@ -187,6 +198,7 @@
 - `vz_anatomy_mult_1_2_78_em_em_1400_bonusword` — AnatomyInstrument.svelte:260 formula:
   > {reaction.mult} × (1 + 2.78 × EM ÷ (EM + 1400){bonusWord})
   - vars: `reaction.mult` `bonusWord`
+  - terms: 🏷 EM
 - `vz_anatomy_a_x_name_would_multiply_the_hit_by_f` — AnatomyInstrument.svelte:264 read:
   > A {reaction.mult === 2 ? 'forward' : 'reverse'} {reaction.name} would multiply the hit by {fmtX(f)}.
   - vars: `reaction.mult === 2 ? 'forward' : 'reverse'` `reaction.name` `fmtX(f)`
@@ -198,6 +210,7 @@
 - `vz_anatomy_together_these_would_make_the_hit_mult` — AnatomyInstrument.svelte:275 read:
   > Together, these would make the hit {fmtX(directTotal(sheet, reaction.mult))} what base {stat} alone deals, before its talent multiplier.
   - vars: `fmtX(directTotal(sheet, reaction.mult))` `stat`
+  - terms: 🎮 talent
 - `vz_anatomy_the_chunk` — AnatomyInstrument.svelte:287 name:
   > The chunk
 - `vz_anatomy_added_to_the_hit_s_base_damage` — AnatomyInstrument.svelte:288 formula:
@@ -224,11 +237,14 @@
   - terms: 🎮 DMG
 - `vz_anatomy_elevation` — AnatomyInstrument.svelte:327 name: · AnatomyInstrument.svelte:539 label:
   > Elevation
+  - terms: 🏷 Elevation
 - `vz_anatomy_1_elevation_after_every_other_bracket` — AnatomyInstrument.svelte:328 formula:
   > 1 + Elevation, after every other bracket
+  - terms: 🏷 Elevation
 - `vz_anatomy_a_elevationpct_elevation_would_raise_it` — AnatomyInstrument.svelte:332 read:
   > A {sheet.elevationPct}% Elevation would raise it {fmtX(elevationFactor(sheet))}.
   - vars: `sheet.elevationPct` `fmtX(elevationFactor(sheet))`
+  - terms: 🏷 Elevation
 - `vz_anatomy_damage` — AnatomyInstrument.svelte:339 name: · AnatomyInstrument.svelte:355 name:
   > Damage
 - `vz_anatomy_on_average_one_name_hit_would_deal_mult` — AnatomyInstrument.svelte:344 read:
@@ -249,15 +265,16 @@
 - `vz_anatomy_each_row_multiplies_the_hit_and_each` — AnatomyInstrument.svelte:434 direct:
   > Each row multiplies the hit, and each gridline doubles it, so a ×2 is the same length wherever it sits and a cut runs backward. The result compares against a hit from base {stat} alone, because the talent multiplier depends on the attack.
   - vars: `stat`
+  - terms: 🎮 talent
 - `vz_anatomy_spread_and_aggravate_add_a_flat_chunk` — AnatomyInstrument.svelte:436 additive:
   > Spread and Aggravate add a flat chunk from level and EM alone. The chunk then rides the rest of the hit, so it crits and takes DMG Bonus like the hit does.
-  - terms: 🎮 Aggravate · 🎮 Spread · 🎮 DMG
+  - terms: 🎮 Aggravate · 🎮 Spread · 🎮 DMG · 🏷 EM
 - `vz_anatomy_damage_from_level_and_em_alone_so_the` — AnatomyInstrument.svelte:438 transformative:
   > Damage from level and EM alone, so the result is a number. For most characters, crit, ATK, and DMG% do nothing, and enemy DEF doesn’t apply.
-  - terms: 🎮 ATK · 🎮 DEF · 🎮 DMG
+  - terms: 🎮 ATK · 🎮 DEF · 🎮 DMG · 🏷 EM
 - `vz_anatomy_damage_from_level_and_em_with_two` — AnatomyInstrument.svelte:440 lunar:
   > Damage from level and EM, with two brackets of its own: Base DMG Bonus and Elevation. It can crit, and enemy DEF doesn’t apply. These figures are the top contributor’s 60% share.
-  - terms: 🎮 DEF · 🎮 DMG
+  - terms: 🏷 Elevation · 🎮 DEF · 🎮 DMG · 🏷 EM
 - `vz_anatomy_one_more_label_roll_stat_would_raise_the` — AnatomyInstrument.svelte:459 rollReadings:
   > One more {g.stat.label} roll ({fmtStep(g.stat)}) would raise the damage by {(g.gain * 100).toFixed(1)}%.
   - vars: `g.stat.label` `fmtStep(g.stat)` `(g.gain * 100).toFixed(1)`
@@ -284,13 +301,16 @@
   - terms: 🎮 Elemental Mastery
 - `vz_anatomy_reaction_bonus_b017` — AnatomyInstrument.svelte:521 label:
   > Reaction Bonus
+  - terms: 🏷 Reaction Bonus
 - `vz_anatomy_reaction_bonus_percent` — AnatomyInstrument.svelte:522 aria:
   > Reaction Bonus percent
+  - terms: 🏷 Reaction Bonus
 - `vz_anatomy_base_dmg_bonus_percent` — AnatomyInstrument.svelte:531 aria:
   > Base DMG Bonus percent
   - terms: 🎮 DMG
 - `vz_anatomy_elevation_percent` — AnatomyInstrument.svelte:540 aria:
   > Elevation percent
+  - terms: 🏷 Elevation
 - `vz_anatomy_enemy_level` — AnatomyInstrument.svelte:548 label: · AnatomyInstrument.svelte:549 aria:
   > Enemy level
 - `vz_anatomy_enemy_res_after_shred` — AnatomyInstrument.svelte:557 label:
@@ -320,6 +340,7 @@
   > What the next roll buys
 - `vz_anatomy_substat` — AnatomyInstrument.svelte:836 <th>
   > Substat
+  - terms: 🏷 substat
 - `vz_anatomy_one_roll` — AnatomyInstrument.svelte:837 <th>
   > One roll
 - `vz_anatomy_damage_gained` — AnatomyInstrument.svelte:838 <th>
@@ -328,6 +349,7 @@
   > Compared
 - `vz_anatomy_each_row_adds_one_average_5_roll_of_that` — AnatomyInstrument.svelte:868 <p>
   > Each row adds one average 5★ roll of that substat to your current sheet.
+  - terms: 🏷 substat
 - `vz_anatomy_build` — AnatomyInstrument.svelte:874 <p>
   > Build
 - `vz_anatomy_scaling_stat_1266` — AnatomyInstrument.svelte:877 aria-label=

@@ -34,6 +34,7 @@
   > Swap ping
 - `settings_your_network_latency_the_ms_value` — SettingsPanel.svelte:122 <span>
   > Your network latency — the ms value Genshin shows top-right. A swap takes your ping plus about 90 ms, so the rotation planner delays every character swap by that much.
+  - terms: 📖 rotation · 🎮 Genshin Impact
 - `settings_swap_ping_in_milliseconds` — SettingsPanel.svelte:136 aria-label=
   > Swap ping in milliseconds
 - `settings_swapping_ms_swapping_f` — SettingsPanel.svelte:139 <span>
@@ -43,17 +44,22 @@
   > Coverage strips
 - `settings_show_each_slotted_character_s_coverage` — SettingsPanel.svelte:146 <span>
   > Show each slotted character’s coverage strip under the Rotation Planner’s notation, with the parts your rotation doesn’t reach dimmed.
-  - terms: 📖 Rotation Planner
+  - terms: 📖 Rotation Planner · 📖 notation · 📖 rotation
 - `settings_human_timing` — SettingsPanel.svelte:164 <h2>
   > Human timing
+  - terms: 📖 Human timing
 - `settings_the_rotation_planner_is_frame_perfect_by` — SettingsPanel.svelte:165 <p>
   > The rotation planner is frame-perfect by default: every cancel lands on the first frame the game allows, the way a macro plays. The <strong>Human</strong> button on the planner's toolbar times it the way a person does. These settings say what that changes.
+  - terms: 📖 rotation
 - `settings_what_it_adjusts` — SettingsPanel.svelte:173 <span>
   > What it adjusts
-- `settings_padding_adds_a_few_frames_before_every` — SettingsPanel.svelte:174 <span>
+- `settings_padding_adds_a_few_frames_before_every` — SettingsPanel.svelte:174 <span> — ⚑ off-glossary
   > Padding adds a few frames before every input the game does not buffer — a skill after a normal attack, an aimed shot, the first press after a swap. Full animations let each action finish instead of cancelling it.
+  - terms: 🎮 Normal Attack · 🎮 Elemental Skill
+  - ⚠️ off-glossary: cancelling → canceling
 - `settings_what_human_timing_adjusts` — SettingsPanel.svelte:180 aria-label=
   > What human timing adjusts
+  - terms: 📖 Human timing
 - `settings_padding` — SettingsPanel.svelte:181 script
   > Padding
 - `settings_animations` — SettingsPanel.svelte:181 script
@@ -80,10 +86,12 @@
   > Playback sound
 - `settings_play_on_the_planner_s_toolbar_counts_you` — SettingsPanel.svelte:255 <p>
   > <strong>Play</strong> on the planner's toolbar counts you in, then plays a note at every press, so you can follow a rotation with your eyes on the game.
+  - terms: 📖 rotation
 - `settings_sound` — SettingsPanel.svelte:261 <span> · SettingsPanel.svelte:267 aria-label=
   > Sound
 - `settings_the_metronome_is_one_pitch_melodic_gives` — SettingsPanel.svelte:262 <span>
   > The metronome is one pitch. Melodic gives attacks, skills and bursts their own notes.
+  - terms: 🎮 Elemental Skill · 🎮 Elemental Burst
 - `settings_preview_the_sound` — SettingsPanel.svelte:293 aria-label=
   > Preview the sound
 - `settings_preview` — SettingsPanel.svelte:297 <button>
@@ -114,7 +122,7 @@
   > Backup
 - `settings_critcalc_keeps_nothing_on_a_server_your` — SettingsPanel.svelte:422 <span>
   > critcalc keeps nothing on a server — your roster, loadouts, and saved rotations live in this browser. Download a file to back them up or move them to another device.
-  - terms: 🔒 critcalc
+  - terms: 📖 rotation · 🔒 critcalc · 📖 loadout
 - `settings_export` — SettingsPanel.svelte:428 <button>
   > Export…
 - `settings_restore` — SettingsPanel.svelte:434 <span>
@@ -126,6 +134,7 @@
 - `settings_this_backup_holds_owned_owned_characters` — SettingsPanel.svelte:458 <p>
   > This backup holds <strong>{pending.counts.owned}</strong> owned characters, <strong>{pending.counts.loadouts}</strong> loadouts, and <strong>{pending.counts.rotations}</strong> saved rotations. Replace your current data?
   - vars: `pending.counts.owned` `pending.counts.loadouts` `pending.counts.rotations`
+  - terms: 📖 rotation · 📖 loadout
 - `settings_replace_reload` — SettingsPanel.svelte:466 <button> — ⚑ entity
   > Replace & reload
 - `settings_cancel` — SettingsPanel.svelte:468 <button>
@@ -137,8 +146,10 @@
   - terms: 🎮 Constellation
 - `settings_clears_every_saved_constellation_level` — SettingsPanel.svelte:478 script
   > Clears every saved constellation level.
+  - terms: 🎮 Constellation
 - `settings_loadout_labels` — SettingsPanel.svelte:478 script
   > Loadout labels
+  - terms: 📖 loadout
 - `settings_clears_every_saved_weapon_and_artifact` — SettingsPanel.svelte:478 script
   > Clears every saved weapon and artifact label.
 - `settings_roster_ownership` — SettingsPanel.svelte:478 script
@@ -148,8 +159,11 @@
   > Clears which characters are marked owned or wishlisted.
 - `settings_saved_rotations` — SettingsPanel.svelte:478 script
   > Saved rotations
-- `settings_deletes_every_rotation_in_your_save_bank` — SettingsPanel.svelte:478 script
+  - terms: 📖 Saved Rotations
+- `settings_deletes_every_rotation_in_your_save_bank` — SettingsPanel.svelte:478 script — ⚑ off-glossary
   > Deletes every rotation in your save bank.
+  - terms: 📖 rotation
+  - ⚠️ off-glossary: save bank → Saved Rotations
 - `settings_confirm` — SettingsPanel.svelte:491 button:
   > Confirm
 - `settings_clear` — SettingsPanel.svelte:491 button:
@@ -180,6 +194,7 @@
   > Weighty
 - `settings_skill_up` — tones.ts:139 skillUp:
   > Skill up
+  - terms: 🎮 Elemental Skill
 - `settings_rising` — tones.ts:140 rising:
   > Rising
 - `settings_open` — tones.ts:185 open:
@@ -198,6 +213,7 @@
   > Rise
 - `settings_that_file_isn_t_valid_json` — settingsBackup.ts:187 error:
   > That file isn’t valid JSON.
+  - terms: 🔒 JSON
 - `settings_that_doesn_t_look_like_a_critcalc_backup` — settingsBackup.ts:191 error:
   > That doesn’t look like a critcalc backup file.
   - terms: 🔒 critcalc

@@ -55,6 +55,7 @@
   > Resistance shred percent
 - `vz_defres_the_classic_4pc_viridescent_venerer` — DefResInstrument.svelte:307 <p>
   > The classic 4pc Viridescent Venerer swirl is a 40% shred.
+  - terms: 🎮 Viridescent Venerer
 - `vz_defres_your_level` — DefResInstrument.svelte:311 <span>
   > Your Level
 - `vz_defres_character_level` — DefResInstrument.svelte:321 aria-label=

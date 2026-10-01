@@ -21,10 +21,13 @@
   > Buff
 - `tb_energy` — capabilityText.ts:25 energy: · facets.ts:68 label: · facets.ts:122 energy:
   > Energy
+  - terms: 🎮 Energy
 - `tb_infusion` — capabilityText.ts:26 infuse: · facets.ts:67 label:
   > Infusion
+  - terms: 🎮 Infusion
 - `tb_summon` — capabilityText.ts:27 summon:
   > Summon
+  - terms: 🏷 summon
 - `tb_taunt` — capabilityText.ts:28 taunt: · facets.ts:69 label: · facets.ts:121 taunt:
   > Taunt
 - `tb_team_wide` — capabilityText.ts:34 team:
@@ -83,6 +86,7 @@
   > Grants resistance to interruption / knockback
 - `tb_coordinated_attacks_or_damaging_summons` — facets.ts:57 hint:
   > Coordinated attacks or damaging summons
+  - terms: 🏷 summon
 - `tb_lowers_enemy_elemental_physical_res` — facets.ts:59 hint:
   > Lowers enemy elemental/physical RES
   - terms: 🎮 RES
@@ -98,6 +102,7 @@
   - terms: 🎮 ATK
 - `tb_em_buff` — facets.ts:63 label: · compare.ts:107 em:
   > EM buff
+  - terms: 🏷 EM
 - `tb_buffs_allies_elemental_mastery` — facets.ts:63 hint:
   > Buffs allies’ Elemental Mastery
   - terms: 🎮 Elemental Mastery
@@ -120,8 +125,10 @@
   - terms: 🎮 DEF · 🎮 HP
 - `tb_applies_an_elemental_infusion_to_on` — facets.ts:67 hint:
   > Applies an elemental infusion to on-field attacks
+  - terms: 🎮 Infusion
 - `tb_grants_flat_energy` — facets.ts:68 hint:
   > Grants flat energy
+  - terms: 🎮 Energy
 - `tb_summons_draw_enemy_aggro` — facets.ts:69 hint:
   > Summons draw enemy aggro
 - `tb_shred` — facets.ts:118 resShred:
@@ -144,6 +151,7 @@
   - vars: `entry.displayName`
 - `tb_your_constellation` — CharacterCard.svelte:162 title= · DetailCard.svelte:285 aria-label=
   > Your constellation
+  - terms: 🎮 Constellation
 - `tb_c_con` — CharacterCard.svelte:162 <span>
   > C{con}
   - vars: `con`
@@ -151,6 +159,7 @@
   > Wishlisted
 - `tb_frame_timing_not_curated_yet_c9c2` — CharacterCard.svelte:185 title=
   > Frame timing not curated yet — capabilities are complete, but Planner timing is approximate
+  - terms: 📖 Planner
 - `tb_frame_timing_not_curated_yet_a7f8` — CharacterCard.svelte:186 aria-label=
   > Frame timing not curated yet
 - `tb_search` — CharacterFilterRail.svelte:38 searchPlaceholder:
@@ -207,6 +216,7 @@
   > Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”, not “no”. <a>See coverage</a>
 - `tb_capabilities_below_are_complete_frame` — DetailCard.svelte:248 <p>
   > Capabilities below are complete. Frame timing isn’t curated yet, so only this character’s rotation timing is approximate in the Planner. <a>See coverage</a>
+  - terms: 📖 rotation · 📖 Planner
 - `tb_your_roster` — DetailCard.svelte:262 <p>
   > Your roster
 - `tb_ownership` — DetailCard.svelte:263 aria-label=
@@ -218,14 +228,16 @@
 - `tb_displayname_s_constellations_can_t_be` — DetailCard.svelte:281 <p>
   > {entry.displayName}’s constellations can’t be unlocked, so there is no level to set — owning the character is the whole story.
   - vars: `entry.displayName`
+  - terms: 🎮 Constellation
 - `tb_c_level` — DetailCard.svelte:293 <button>
   > C{level}
   - vars: `level`
 - `tb_saved_to_your_roster_my_roster_filtering` — DetailCard.svelte:298 <p>
   > Saved to your roster — “My roster” filtering across the site uses it. Setting a constellation marks the character owned.
+  - terms: 🎮 Constellation
 - `tb_this_is_your_roster_constellation_and_it` — DetailCard.svelte:305 <p>
   > This is your roster constellation, and it can only be changed in the Team Builder. To set the constellation for <em>this rotation</em>, use the C value on the bench card.
-  - terms: 📖 Team Builder · 📖 bench card
+  - terms: 🎮 Constellation · 📖 Team Builder · 📖 bench card · 📖 rotation
 - `tb_capabilities` — DetailCard.svelte:315 <p>
   > Capabilities
 - `tb_loading_kit_data` — DetailCard.svelte:317 <p> · CompareView.svelte:454 <p>
@@ -237,6 +249,7 @@
 						: ''`
 - `tb_likely_a_selfish_carry_or_curation_hasn` — DetailCard.svelte:321 p:
   > — likely a selfish carry, or curation hasn’t covered its utility yet
+  - terms: 🏷 selfish carry
 - `tb_marked_on_the_ability_but_target_scaling` — DetailCard.svelte:342 title=
   > Marked on the ability, but target/scaling not yet curated
 - `tb_tagged` — DetailCard.svelte:342 <span>
@@ -251,12 +264,14 @@
 - `tb_cooldown_s_cd` — DetailCard.svelte:378 <td>
   > {ability.cooldown}s CD
   - vars: `ability.cooldown`
+  - terms: 🏷 CD
 - `tb_charges_charges` — DetailCard.svelte:379 <td> — ⚑ plural?
   > · {ability.charges} charges
   - vars: `ability.charges`
 - `tb_energycost_energy` — DetailCard.svelte:381 <td>
   > · {ability.energyCost} energy
   - vars: `ability.energyCost`
+  - terms: 🎮 Energy
 - `tb_dps` — roleIcons.ts:30 dps:
   > DPS
   - terms: 🏷 DPS
@@ -274,7 +289,7 @@
   - terms: 🎮 Moonsign
 - `tb_moonsign_characters_2_or_more_enable` — +page.svelte:282 hint:
   > Moonsign characters — 2 or more enable Ascendant Gleam and the Lunar reactions
-  - terms: 🎮 Ascendant Gleam · 🎮 Moonsign
+  - terms: 🎮 Ascendant Gleam · 🎮 Moonsign · 🎮 Lunar
 - `tb_hexerei` — +page.svelte:286 label:
   > Hexerei
   - terms: 🎮 Hexerei
@@ -283,10 +298,13 @@
   - terms: 🎮 Secret Rite · 🎮 Hexerei
 - `tb_stellar` — +page.svelte:291 label:
   > Stellar
+  - terms: 🎮 Stellar
 - `tb_stellar_linked_enables_a_stellar` — +page.svelte:292 hint:
   > Stellar-linked — enables a Stellar reaction, or has buffs that need one enabled
+  - terms: 🎮 Stellar
 - `tb_no_curated_character_matches_some_kits` — +page.svelte:376 rosterEmptyMessage:
   > No curated character matches. Some kits unlock these capabilities at higher constellations — try “My roster” or “C6”.
+  - terms: 🎮 Constellation
 - `tb_no_curated_character_matches` — +page.svelte:377 rosterEmptyMessage:
   > No curated character matches.
 - `tb_base_kits_only_what_every_copy_of_the` — +page.svelte:408 hint:
@@ -300,6 +318,7 @@
   > My roster
 - `tb_uses_your_saved_constellations_set_them` — +page.svelte:418 hint:
   > Uses your saved constellations (set them in a character’s details)
+  - terms: 🎮 Constellation
 - `tb_every_character` — +page.svelte:449 hint:
   > Every character
 - `tb_only_characters_you_ve_marked_as_owned` — +page.svelte:450 hint:
@@ -308,6 +327,7 @@
   > Only characters you’ve wishlisted
 - `tb_clear_rotation` — +page.svelte:692 clearQuestion:
   > Clear rotation?
+  - terms: 📖 rotation
 - `tb_clear_team_9d28` — +page.svelte:692 clearQuestion:
   > Clear team?
 - `tb_label_b_mincon_0_c_mincon` — +page.svelte:732 label:
@@ -338,6 +358,7 @@
   - vars: `split.matches.length` `split.matches.length === 1 ? '' : 's'`
 - `tb_at_your_constellations` — +page.svelte:872 <span> · CompareView.svelte:318 con:
   > at your constellations
+  - terms: 🎮 Constellation
 - `tb_at_x` — +page.svelte:874 <span>
   > at {conMode.toUpperCase()}
   - vars: `conMode.toUpperCase()`
@@ -366,12 +387,14 @@
   > Filter the roster
 - `tb_confirm_delete_every_team_member_s` — +page.svelte:1085 title=
   > Confirm: delete every team member’s segments from the notation
+  - terms: 📖 notation
 - `tb_empty_every_slot_in_the_working_team` — +page.svelte:1086 title=
   > Empty every slot in the working team
 - `tb_clear_team_7f8f` — +page.svelte:1096 button: · +page.svelte:1219 button:
   > Clear team
-- `tb_source_view` — +page.svelte:1127 aria-label=
+- `tb_source_view` — +page.svelte:1127 aria-label= — ⚑ off-glossary
   > Source view
+  - ⚠️ off-glossary: Source view → (the name of a surface retired 2026-08 — glossary §3, leaked into an aria-label)
 - `tb_nothing_to_compare_yet_press_compare_on` — +page.svelte:1141 title=
   > Nothing to compare yet — press Compare on a character card to add one
   - terms: 📖 Compare
@@ -429,6 +452,7 @@
   > Q cooldown
 - `tb_q_energy` — compare.ts:344 label:
   > Q energy
+  - terms: 🎮 Energy
 - `tb_energycost_en` — CompareView.svelte:287 push:
   > {lane.host.energyCost} en
   - vars: `lane.host.energyCost`
@@ -458,6 +482,7 @@
   - terms: 📖 audition
 - `tb_return_to_the_rotation_planner` — CompareView.svelte:378 title=
   > Return to the rotation planner
+  - terms: 📖 rotation
 - `tb_back_to_planner` — CompareView.svelte:379 <button>
   > Back to planner
 - `tb_clear` — CompareView.svelte:384 <button>
@@ -515,8 +540,10 @@
   > Every effect is hidden — turn a chip back on to draw the chart.
 - `tb_no_curated_timing_to_draw_for_this` — CompareView.svelte:596 <p>
   > No curated timing to draw for this selection.
-- `tb_a_lane_is_one_ability_the_heading_is` — CompareView.svelte:599 <p>
+- `tb_a_lane_is_one_ability_the_heading_is` — CompareView.svelte:599 <p> — ⚑ off-glossary
   > A lane is one ability; the heading is what it does. Solid = the cast you make now, faint = the same cast repeated on cooldown — <strong>energy is not modelled</strong>, so a burst's repeats are a best case. Ticks mark a summon's cadence over its first window.
+  - terms: 🎮 Energy · 🏷 summon · 🎮 Elemental Burst
+  - ⚠️ off-glossary: modelled → modeled
 - `tb_side_by_side` — CompareView.svelte:609 <p>
   > Side by side
 - `tb_attribute` — CompareView.svelte:615 aria-label=
@@ -544,7 +571,7 @@
   - terms: 🎮 Ascendant Gleam
 - `tb_two_or_more_moonsign_characters_the` — CoveragePanel.svelte:82 title:
   > Two or more Moonsign characters — the Lunar reactions are enabled
-  - terms: 🎮 Moonsign
+  - terms: 🎮 Moonsign · 🎮 Lunar
 - `tb_secret_rite` — CoveragePanel.svelte:89 label:
   > Secret Rite
   - terms: 🎮 Secret Rite
@@ -564,6 +591,7 @@
   > This team covers
 - `tb_resonance_needs_a_full_party_of_4` — CoveragePanel.svelte:128 <span>
   > resonance needs a full party of 4
+  - terms: 🎮 Elemental Resonance
 - `tb_on_field_dps` — roles.ts:39 label:
   > On-Field DPS
   - terms: 🏷 DPS

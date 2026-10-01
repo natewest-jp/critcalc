@@ -14,7 +14,7 @@
   > Your data stays in your browser
 - `privacy_everything_you_set_in_critcalc_your` — Privacy.svelte:13 <p>
   > Everything you set in critcalc — your roster and constellations, weapon and artifact loadouts, saved rotations, and preferences — is stored only in your own browser, using its built-in <code>localStorage</code>. None of it is ever sent to or stored on a server, because there is no server to send it to: critcalc is a static site with no backend, no database, and no accounts.
-  - terms: 🔒 critcalc
+  - terms: 🎮 Constellation · 📖 rotation · 🔒 critcalc · 📖 loadout
 - `privacy_that_also_means_your_data_is_per_device` — Privacy.svelte:19 <p>
   > That also means your data is per-device and per-browser. To move it, use <strong>Settings → Your data → Export</strong> to download a backup file, and <strong>Import</strong> it elsewhere. You can wipe everything at any time from the same place, or by clearing this site's data in your browser settings.
 - `privacy_no_tracking` — Privacy.svelte:28 <h2>
@@ -29,7 +29,7 @@
   > External links
 - `privacy_some_pages_link_out_to_community` — Privacy.svelte:42 <p>
   > Some pages link out to community resources such as gcsim and Keqing Mains. Those sites have their own privacy practices, which this policy doesn't cover.
-  - terms: 🔒 gcsim
+  - terms: 🔒 Keqing Mains · 🔒 gcsim
 - `privacy_changes` — Privacy.svelte:49 <h2>
   > Changes
 - `privacy_if_this_ever_changes_for_example_if_an` — Privacy.svelte:50 <p>

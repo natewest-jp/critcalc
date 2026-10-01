@@ -57,12 +57,14 @@
   - terms: 🔒 gcsim
 - `coverage_there_is_no_frame_data_for_this_yet_so` — coverageText.ts:27 frames.none:
   > There is no frame data for this yet, so the Planner uses a generic length.
+  - terms: 📖 Planner
 - `coverage_some_forms_have_no_frame_data_and_use_a` — coverageText.ts:28 frames.someForms:
   > Some forms have no frame data and use a generic length.
 - `coverage_this_kit_has_no_charged_attack_frames_so` — coverageText.ts:30 charged.generic:
   > This kit has no charged-attack frames, so C is timed with a generic stand-in.
 - `coverage_this_kit_has_no_plunge_frames_so_p_is` — coverageText.ts:31 plunge.generic:
   > This kit has no plunge frames, so P is timed with a generic stand-in.
+  - terms: 🎮 Plunging Attack
 - `coverage_each_hit_applies_its_element_when_it` — coverageText.ts:32 app.lands:
   > Each hit applies its element when it lands.
 - `coverage_the_element_is_applied_at_the_end_of_the` — coverageText.ts:33 app.atSwingEnd:
@@ -74,7 +76,7 @@
   > This lands no hit.
 - `coverage_element_timing_and_gauge_units_are` — coverageText.ts:36 app.measured:
   > Element, timing and gauge units are measured from gcsim.
-  - terms: 🔒 gcsim · 🏷 gauge
+  - terms: 🏷 gauge units · 🔒 gcsim
 - `coverage_measured_from_gcsim_this_applies_no` — coverageText.ts:37 app.appliesNothing:
   > Measured from gcsim: this applies no element.
   - terms: 🔒 gcsim
@@ -83,7 +85,7 @@
   - terms: 📖 Rotation Planner · 📖 aura lane
 - `coverage_timing_is_measured_but_some_hits_gauge` — coverageText.ts:40 app.unitsUnmeasured:
   > Timing is measured, but some hits’ gauge units are assumed to be 1U.
-  - terms: 🏷 gauge
+  - terms: 🏷 gauge units
 - `coverage_its_effects_are_drawn_on_the_timeline` — coverageText.ts:41 grants.authored:
   > Its effects are drawn on the timeline.
   - terms: 📖 timeline
@@ -91,22 +93,27 @@
   > Drawn as part of another ability.
 - `coverage_its_summon_is_drawn_with_its_hits` — coverageText.ts:43 grants.summon:
   > Its summon is drawn, with its hits.
+  - terms: 🏷 summon
 - `coverage_the_state_it_opens_is_drawn_on_the` — coverageText.ts:44 grants.window:
   > The state it opens is drawn on the timeline.
   - terms: 📖 timeline
 - `coverage_its_summon_s_window_is_drawn_but_its` — coverageText.ts:45 grants.summonSilent:
   > Its summon’s window is drawn, but its hits aren’t yet.
+  - terms: 🏷 summon
 - `coverage_its_summon_is_drawn_it_deals_no_damage` — coverageText.ts:46 grants.summonDealsNothing:
   > Its summon is drawn; it deals no damage of its own.
+  - terms: 🏷 summon
 - `coverage_part_of_this_waits_on_healing_energy_or` — coverageText.ts:48 grants.noReader:
   > Part of this waits on healing, energy or HP changes, which the Planner doesn’t track, so it isn’t drawn.
-  - terms: 🎮 HP
+  - terms: 📖 Planner · 🎮 Energy · 🎮 HP
 - `coverage_its_exact_value_isn_t_known_yet_so_the` — coverageText.ts:49 grants.unknownValue:
   > Its exact value isn’t known yet, so the bar is drawn without one.
 - `coverage_this_hasn_t_been_added_to_the_planner` — coverageText.ts:50 grants.none:
   > This hasn’t been added to the Planner yet.
+  - terms: 📖 Planner
 - `coverage_nothing_here_changes_what_the_planner` — coverageText.ts:51 grants.nothingToModel:
   > Nothing here changes what the Planner draws.
+  - terms: 📖 Planner
 - `coverage_the_rotation_planner_doesn_t_show_this` — coverageText.ts:52 grants.notModeled:
   > The Rotation Planner doesn’t show this.
   - terms: 📖 Rotation Planner
@@ -122,20 +129,25 @@
   > Nothing to model
 - `coverage_drawn_by_the_planner` — coverageText.ts:65 lit:
   > Drawn by the Planner.
+  - terms: 📖 Planner
 - `coverage_drawn_with_a_stand_in` — coverageText.ts:66 provisional:
   > Drawn with a stand-in.
 - `coverage_in_the_kit_not_yet_in_the_planner` — coverageText.ts:67 missing:
   > In the kit, not yet in the Planner.
+  - terms: 📖 Planner
 - `coverage_outside_the_planner_s_scope_the_details` — coverageText.ts:68 notModeled:
   > Outside the Planner’s scope; the details say why.
+  - terms: 📖 Planner
 - `coverage_nothing_of_that_kind_in_the_kit` — coverageText.ts:69 na:
   > Nothing of that kind in the kit.
 - `coverage_normal` — coverageText.ts:74 normals:
   > Normal
 - `coverage_skill` — coverageText.ts:75 skill:
   > Skill
+  - terms: 🎮 Elemental Skill
 - `coverage_burst` — coverageText.ts:76 burst:
   > Burst
+  - terms: 🎮 Elemental Burst
 - `coverage_other` — coverageText.ts:79 extra:
   > Other
 - `coverage_timing` — coverageText.ts:87 timing:
@@ -146,32 +158,46 @@
   > Effects
 - `coverage_normal_attack_timing` — coverageText.ts:94 N.timing:
   > Normal attack · timing
+  - terms: 🎮 Normal Attack
 - `coverage_normal_attack_element` — coverageText.ts:95 N.application:
   > Normal attack · element
+  - terms: 🎮 Normal Attack
 - `coverage_charged_attack_timing` — coverageText.ts:96 C.timing:
   > Charged attack · timing
+  - terms: 🎮 Charged Attack
 - `coverage_charged_attack_element` — coverageText.ts:97 C.application:
   > Charged attack · element
+  - terms: 🎮 Charged Attack
 - `coverage_plunge_timing` — coverageText.ts:98 P.timing:
   > Plunge · timing
+  - terms: 🎮 Plunging Attack
 - `coverage_plunge_element` — coverageText.ts:99 P.application:
   > Plunge · element
+  - terms: 🎮 Plunging Attack
 - `coverage_skill_timing` — coverageText.ts:100 E.timing:
   > Skill · timing
+  - terms: 🎮 Elemental Skill
 - `coverage_skill_element` — coverageText.ts:101 E.application:
   > Skill · element
+  - terms: 🎮 Elemental Skill
 - `coverage_skill_effects` — coverageText.ts:102 E.grants:
   > Skill · effects
+  - terms: 🎮 Elemental Skill
 - `coverage_burst_timing` — coverageText.ts:103 Q.timing:
   > Burst · timing
+  - terms: 🎮 Elemental Burst
 - `coverage_burst_element` — coverageText.ts:104 Q.application:
   > Burst · element
+  - terms: 🎮 Elemental Burst
 - `coverage_burst_effects` — coverageText.ts:105 Q.grants:
   > Burst · effects
+  - terms: 🎮 Elemental Burst
 - `coverage_first_ascension_passive` — coverageText.ts:106 A1:
   > First ascension passive
+  - terms: 🎮 ascension
 - `coverage_fourth_ascension_passive` — coverageText.ts:107 A4:
   > Fourth ascension passive
+  - terms: 🎮 ascension
 - `coverage_other_passives` — coverageText.ts:108 extra:
   > Other passives
 - `coverage_constellation_1` — coverageText.ts:109 C1:

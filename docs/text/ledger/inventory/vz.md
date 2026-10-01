@@ -46,19 +46,25 @@
   - vars: `at + 1`
 - `vz_crit_heatmap` — workspace.ts:17 name:
   > Crit Heatmap
+  - terms: 📖 Crit Heatmap
 - `vz_icd_timeline` — workspace.ts:18 name:
   > ICD Timeline
-  - terms: 🏷 ICD
+  - terms: 📖 ICD Timeline
 - `vz_artifact_rolls` — workspace.ts:19 name:
   > Artifact Rolls
+  - terms: 📖 Artifact Rolls
 - `vz_gauge_explorer` — workspace.ts:20 name:
   > Gauge Explorer
+  - terms: 📖 Gauge Explorer
 - `vz_reaction_curves` — workspace.ts:21 name:
   > Reaction Curves
+  - terms: 📖 Reaction Curves
 - `vz_enemy_def_res` — workspace.ts:22 name:
   > Enemy DEF & RES
-  - terms: 🎮 DEF · 🎮 RES
+  - terms: 📖 Enemy DEF & RES
 - `vz_wish_odds` — workspace.ts:23 name:
   > Wish Odds
+  - terms: 📖 Wish Odds
 - `vz_damage_anatomy` — workspace.ts:24 name:
   > Damage Anatomy
+  - terms: 📖 Damage Anatomy

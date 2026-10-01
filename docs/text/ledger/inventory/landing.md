@@ -7,6 +7,7 @@
 
 - `landing_data_current_to_genshin_impact_7_1` — announcements.ts:30 text:
   > Data current to Genshin Impact 7.1
+  - terms: 🎮 Genshin Impact
 - `landing_names_in_the_works` — announcements.ts:49 script
   > {names} in the works
   - vars: `names`

@@ -10,38 +10,40 @@
   - terms: 🔒 critcalc
 - `about_critcalc_app_is_a_small_set_of` — About.svelte:10 <p>
   > <strong>critcalc.app</strong> is a small set of theorycrafting tools for Genshin Impact. The idea is to <em>visualize</em> the mechanics behind a team — how crit rolls, buffs, cooldowns, and rotations actually stack up — rather than reduce everything to a single number.
-  - terms: 🔒 critcalc.app
+  - terms: 🎮 Genshin Impact · 🔒 critcalc.app · 📖 rotation
 - `about_the_three_tools` — About.svelte:16 <h2>
   > The three tools
 - `about_team_builder_find_characters_by_what` — About.svelte:19 <li>
   > <strong>Team Builder</strong> — find characters by what they actually provide (healing, shields, off-field damage, RES shred, buffs), each traced to the ability and constellation that grants it, and compare their timings side by side.
-  - terms: 📖 Team Builder · 🏷 RES shred · 🏷 off-field
+  - terms: 🎮 Constellation · 📖 Team Builder · 🏷 RES shred · 🏷 off-field
 - `about_rotation_planner_write_a_rotation_in_kqm` — About.svelte:24 <li>
   > <strong>Rotation Planner</strong> — write a rotation in KQM-style notation and watch it render as a frame-accurate timeline: ability windows, buff uptime, cooldowns, and swaps.
-  - terms: 📖 Rotation Planner · 📖 timeline · 🏷 uptime
+  - terms: 📖 Rotation Planner · 📖 notation · 📖 rotation · 📖 timeline · 🏷 uptime
 - `about_visualizers_a_shelf_of_small_graph` — About.svelte:28 <li>
   > <strong>Visualizers</strong> — a shelf of small graph instruments: how crit rate and crit damage combine across the whole spread of possible rolls, how elemental application lands, the real odds behind artifact farming and wishing, how gauges decay, and how reactions scale with EM.
-  - terms: 📖 Visualizers
+  - terms: 📖 Visualizers · 🏷 EM
 - `about_the_philosophy` — About.svelte:36 <h2>
   > The philosophy
 - `about_critcalc_deliberately_visualizes` — About.svelte:37 <p>
   > critcalc deliberately <strong>visualizes mechanics, never verdicts</strong>. There are no damage totals, no tier lists, and no "synergy scores." The tools show you how the pieces fit together so the judgment stays yours. Terminology throughout follows the <a>Keqing Mains</a> (KQM) standards.
-  - terms: 🔒 critcalc · 🔒 KQM
-- `about_the_same_principle_governs_the_data` — About.svelte:44 <p>
+  - terms: 🔒 Keqing Mains · 🔒 critcalc · 🔒 KQM
+- `about_the_same_principle_governs_the_data` — About.svelte:44 <p> — ⚑ off-glossary
   > The same principle governs the data. Timing is only ever taken from gcsim or in-game kit text, never invented, and a kit that hasn't been curated yet is labelled as such rather than filled in with plausible guesses.
   - terms: 🔒 gcsim
+  - ⚠️ off-glossary: labelled → labeled
 - `about_credits` — About.svelte:52 <h2>
   > Credits
 - `about_character_data_is_curated_in_house_but` — About.svelte:53 <p>
   > Character data is curated in-house, but this project stands on the community's work:
 - `about_gcsim_the_open_source_genshin_combat` — About.svelte:56 <li>
   > <a>gcsim</a> — the open-source Genshin combat simulator, our primary source for tick cadences, ability scalings, and targeting.
-  - terms: 🔒 gcsim
+  - terms: 🎮 Genshin Impact · 🔒 gcsim
 - `about_keqing_mains_kqm_theorycrafting` — About.svelte:60 <li>
   > <a>Keqing Mains (KQM)</a> — theorycrafting standards and the action notation the Rotation Planner reads.
-  - terms: 📖 Rotation Planner · 🔒 KQM
+  - terms: 📖 Rotation Planner · 🔒 Keqing Mains · 📖 notation · 🔒 KQM
 - `about_genshin_db_the_datamined_character` — About.svelte:66 <li>
   > <a>genshin-db</a> — the datamined character, talent, and identity data our pipeline is seeded from.
+  - terms: 🎮 talent
 - `about_if_you_get_value_out_of_critcalc_the` — About.svelte:71 <p>
   > If you get value out of critcalc, the best thing you can do is <a>support those projects</a> — their work is what this one is built on.
   - terms: 🔒 critcalc
@@ -49,4 +51,4 @@
   > A fan project
 - `about_critcalc_is_an_independent_non` — About.svelte:80 <p>
   > critcalc is an independent, non-commercial fan project. It is not affiliated with, endorsed by, or sponsored by HoYoverse. Genshin Impact and all related trademarks and assets belong to HoYoverse.
-  - terms: 🔒 critcalc
+  - terms: 🎮 Genshin Impact · 🔒 HoYoverse · 🔒 critcalc

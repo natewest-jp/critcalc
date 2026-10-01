@@ -891,37 +891,49 @@ function extractFile(file) {
 // keep, look up, or translate consistently. Matching is case-sensitive and on
 // word boundaries.
 function loadTerms() {
-	if (!existsSync(TERMS)) return [];
-	const { terms } = JSON.parse(readFileSync(TERMS, 'utf8'));
-	return terms
-		.map((t) => ({ ...t, re: wordRe(t.term), avoidRe: (t.avoid ?? []).map((a) => [a, wordRe(a)]) }))
-		.sort((a, b) => b.term.length - a.term.length);
+	if (!existsSync(TERMS)) return { terms: [], forms: [], avoid: [] };
+	const { terms, avoid = [] } = JSON.parse(readFileSync(TERMS, 'utf8'));
+	// Every surface form (the term + its `forms`), longest first, so a longer
+	// form masks the shorter terms inside it.
+	const forms = terms
+		.flatMap((t) => [t.term, ...(t.forms ?? [])].map((f) => ({ form: f, term: t, re: wordRe(f) })))
+		.sort((a, b) => b.form.length - a.form.length);
+	for (const t of terms) t.avoidRe = (t.avoid ?? []).map((a) => [a, wordRe(a)]);
+	// The house avoid list: spellings and leaked words, matched in any case.
+	const house = avoid.map((a) => ({ ...a, re: wordRe(a.form, 'giu') }));
+	return { terms, forms, avoid: house };
 }
-const wordRe = (w) =>
+const wordRe = (w, flags = 'gu') =>
 	new RegExp(
 		`(?<![\\p{L}\\p{N}-])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}-])`,
-		'gu'
+		flags
 	);
 
-/** The terms a message contains, longest first — a matched span is masked, so
- *  `Electro-Charged` is not also `Electro`. Plus any avoided form it uses. */
-function termsIn(text, terms) {
+/** The terms a message contains, longest form first — a matched span is
+ *  masked, so `Electro-Charged` is not also `Electro`. Plus every form the
+ *  termbase says to avoid: a term's own variants (case-sensitive — `Crit rate`
+ *  in an aria label is deliberate, `Crit Rate` on screen is not) and the house
+ *  list (any case). */
+function termsIn(text, base) {
 	let rest = text.replace(/\{[^{}]*\}/g, ' ').replace(/<[^>]+>/g, ' ');
-	const found = [];
+	const found = new Set();
 	const avoided = [];
-	for (const t of terms) {
+	for (const t of base.terms)
 		for (const [a, re] of t.avoidRe) if (rest.match(re)) avoided.push(`${a} → ${t.term}`);
-		if (rest.match(t.re)) {
-			found.push(t);
-			rest = rest.replace(t.re, (m) => ' '.repeat(m.length));
+	for (const a of base.avoid)
+		for (const m of rest.matchAll(a.re)) avoided.push(`${m[0]} → ${a.use ?? `(${a.why})`}`);
+	for (const f of base.forms) {
+		if (rest.match(f.re)) {
+			found.add(f.term);
+			rest = rest.replace(f.re, (m) => ' '.repeat(m.length));
 		}
 	}
-	return { found, avoided };
+	return { found: [...found], avoided };
 }
 
 // ─── Run ─────────────────────────────────────────────────────────────────────
 for (const f of walkFiles(SRC)) extractFile(f);
-const terms = loadTerms();
+const base = loadTerms();
 
 // Mint keys: <surface>_<slug>, a short text hash only when two texts collide.
 const entries = [];
@@ -937,7 +949,7 @@ for (const [surface, bucket] of inventory) {
 			const hash = createHash('sha1').update(e.text).digest('hex').slice(0, 4);
 			e.key = `${surface}_${s}${group.length > 1 ? '_' + hash : ''}`;
 			e.surface = surface;
-			const { found, avoided } = termsIn(e.text, terms);
+			const { found, avoided } = termsIn(e.text, base);
 			e.terms = found;
 			e.avoided = avoided;
 			if (avoided.length) e.flags.add('off-glossary');
@@ -993,8 +1005,8 @@ const summary = [
 	`${total} messages across ${surfaces.length} surfaces (${entries.reduce((n, e) => n + e.where.length, 0)} occurrences)`,
 	...surfaces.map((s) => `  ${s.padEnd(13)} ${String(bySurface(s).length).padStart(4)}`),
 	`flags: ${FLAG_ORDER.map((f) => `${f} ${flagCount(f)}`).join(' · ')}`,
-	terms.length
-		? `terms: ${terms.length} in the termbase, ${entries.filter((e) => e.terms.length).length} messages carry one`
+	base.terms.length
+		? `terms: ${base.terms.length} terms + ${base.avoid.length} avoided forms in the termbase, ${entries.filter((e) => e.terms.length).length} messages carry one`
 		: 'terms: no termbase yet',
 	unassigned.size
 		? `⚠️ UNASSIGNED files (add them to SURFACES): ${[...unassigned].map(([f, n]) => `${f} (${n})`).join(', ')}`

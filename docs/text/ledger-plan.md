@@ -126,3 +126,37 @@ TRANSLATE (as the game's own words). The Frozen/Overloaded lock was always again
 community forms Freeze/Overload, which the termbase's `avoid` now enforces, never against
 translation · Constellation is `game` · the field elements (Dendro Core, Starlight Prism,
 Thundercloud, Moondrift, Polestar Field) are `game`, added to the seed.
+
+## ✅ Termbase pass — 2026-10-01 (Nate: "tackle the remaining termbase work, then check in")
+
+**165 terms + 27 avoided forms; 781 of 1,572 messages carry a term; 31 are off-glossary.**
+
+- **`forms`** — every spelling that counts as the term. `skill` / `Skill` / `skills` are
+  the game's Elemental Skill, so a translator uses the game's word for each. Matching
+  runs longest form first, so `Nightsoul Burst` is not also `burst`.
+- **The top-level `avoid` list** holds forms with no canonical term: US spellings (R6),
+  glossary §4's fixed forms (`5★`, `datamined`) and leaked internal vocabulary
+  (`Source view`). It matches in any case; a term's own `avoid` stays case-sensitive,
+  because `Crit rate` in an aria label is deliberate and `Crit Rate` on screen is not.
+  The British sweep matches glossary §4 (modelled ×7, modelling ×2, labelled ×2,
+  cancelling ×2, neighbour ×1). The rest of the list guards against new ones.
+- **Sourced from the inventory, not a wishlist:** a capitalized-phrase census of every
+  message not yet covered drove the additions. Weapon types and regions are absent because
+  no message contains them; they arrive with the strings that need them.
+- **Dropped on purpose:** `line` and `roll` (artifact jargon) are ordinary English words
+  in most messages ("Equal-budget line", "Roll {n} hits"). Tagging them would bury the
+  real ones, so they belong in the Artifact Rolls notes instead.
+
+**Open for Nate (all marked in the file):**
+
+1. `Saved Rotations` / `Saved rotations` / "save bank": one thing under three names.
+   `proposed`: Saved Rotations, with the casing to be ruled.
+2. `CD` means CRIT DMG in the Crit Heatmap and COOLDOWN in the planner and on the bench.
+   Keep both and annotate per string, or spell one out?
+3. `Base DMG`: not classed. It is both a game phrase ("increases Base DMG") and the
+   formula bucket. Damage Anatomy uses it, so it can wait for a later pass over that
+   surface.
+4. 🐛 **"Blazing Axe Mage"** (planner assumptions popover + RotationPlanner help): I believe
+   the enemy is the Blazing Axe _Mitachurl_. Not changed.
+5. "Radiance" names two things: Capturing Radiance (wish) and the Stellar Radiance window.
+   Only the first is in the termbase so far.

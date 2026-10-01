@@ -37,7 +37,7 @@
 - `chrome_build_year_critcalc_app_an_unofficial` — SiteFooter.svelte:21 <p>
   > © {__BUILD_YEAR__} critcalc.app — an unofficial fan project, not affiliated with or endorsed by HoYoverse. Genshin Impact and all related trademarks and assets are © HoYoverse.
   - vars: `__BUILD_YEAR__`
-  - terms: 🔒 critcalc.app
+  - terms: 🎮 Genshin Impact · 🔒 critcalc.app · 🔒 HoYoverse
 - `chrome_team_builder` — tools.ts:31 title:
   > Team Builder
   - terms: 📖 Team Builder
@@ -49,6 +49,7 @@
   - terms: 📖 Rotation Planner
 - `chrome_planner` — tools.ts:32 short:
   > Planner
+  - terms: 📖 Planner
 - `chrome_visualizers` — tools.ts:33 title: · tools.ts:33 short:
   > Visualizers
   - terms: 📖 Visualizers

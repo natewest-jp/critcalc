@@ -11,25 +11,28 @@
   > Something went wrong
 - `seo_critcalc_genshin_impact_tools_for` — seo.ts:55 OG_IMAGE_ALT:
   > critcalc — Genshin Impact tools for visualizing mechanics
-  - terms: 🔒 critcalc
+  - terms: 🎮 Genshin Impact · 🔒 critcalc
 - `seo_genshin_impact_tools_for_planning_and` — seo.ts:58 DEFAULT_DESCRIPTION:
   > Genshin Impact tools for planning and theorycrafting.
+  - terms: 🎮 Genshin Impact
 - `seo_genshin_impact_tools` — seo.ts:76 title:
   > Genshin Impact tools
+  - terms: 🎮 Genshin Impact
 - `seo_three_tools_for_seeing_how_genshin_works` — seo.ts:78 description:
   > Three tools for seeing how Genshin works: a frame-accurate rotation timeline, a capability-faceted team builder, and eight graph instruments. Mechanics made visible — no tier lists, no verdicts.
-  - terms: 📖 timeline
+  - terms: 📖 rotation · 📖 timeline · 🎮 Genshin Impact
 - `seo_rotation_planner` — seo.ts:82 title:
   > Rotation Planner
   - terms: 📖 Rotation Planner
 - `seo_write_a_rotation_in_kqm_notation_and` — seo.ts:84 description:
   > Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, energy, buff windows and who is on field when.
-  - terms: 📖 timeline · 🔒 KQM
+  - terms: 📖 notation · 📖 rotation · 📖 timeline · 🎮 Energy · 🔒 KQM
 - `seo_team_builder` — seo.ts:87 title:
   > Team Builder
   - terms: 📖 Team Builder
 - `seo_find_who_covers_what_healing_shielding` — seo.ts:89 description: — ⚑ off-glossary
   > Find who covers what — healing, shielding, resistance shred, buffs — at which constellation, with the ability and the caveat that comes with it.
+  - terms: 🎮 Constellation
   - ⚠️ off-glossary: resistance shred → RES shred
 - `seo_visualizers` — seo.ts:92 title:
   > Visualizers
@@ -47,13 +50,13 @@
   - terms: 📖 Rotation Planner
 - `seo_how_the_critcalc_rotation_planner_works` — seo.ts:105 description:
   > How the critcalc Rotation Planner works: KQM-style notation, reading the timeline, team loadouts and caveats.
-  - terms: 📖 Rotation Planner · 🔒 critcalc · 📖 timeline
+  - terms: 📖 Rotation Planner · 🔒 critcalc · 📖 notation · 📖 loadout · 📖 timeline
 - `seo_team_builder_help` — seo.ts:108 title:
   > Team Builder help
   - terms: 📖 Team Builder
 - `seo_how_the_critcalc_team_builder_works` — seo.ts:110 description:
   > How the critcalc Team Builder works: capability facets, constellation modes, comparison and team slots.
-  - terms: 📖 Team Builder · 🔒 critcalc
+  - terms: 🎮 Constellation · 📖 Team Builder · 🔒 critcalc
 - `seo_visualizers_help` — seo.ts:113 title:
   > Visualizers help
   - terms: 📖 Visualizers
@@ -64,17 +67,17 @@
   > Character coverage
 - `seo_which_parts_of_each_genshin_character_s` — seo.ts:121 description:
   > Which parts of each Genshin character’s kit the critcalc Rotation Planner draws, ability by ability, and what is missing or left out.
-  - terms: 📖 Rotation Planner · 🔒 critcalc
+  - terms: 📖 Rotation Planner · 🔒 critcalc · 🎮 Genshin Impact
 - `seo_about` — seo.ts:125 title:
   > About
 - `seo_what_critcalc_is_a_set_of_genshin_impact` — seo.ts:127 description:
   > What critcalc is: a set of Genshin Impact theorycrafting tools that visualize mechanics rather than reduce them to a score.
-  - terms: 🔒 critcalc
+  - terms: 🎮 Genshin Impact · 🔒 critcalc
 - `seo_contribute` — seo.ts:130 title:
   > Contribute
 - `seo_critcalc_is_built_on_community_data_how` — seo.ts:132 description:
   > critcalc is built on community data. How to support gcsim and Keqing Mains, and how to report something wrong.
-  - terms: 🔒 critcalc · 🔒 gcsim
+  - terms: 🔒 Keqing Mains · 🔒 critcalc · 🔒 gcsim
 - `seo_privacy` — seo.ts:135 title:
   > Privacy
 - `seo_critcalc_keeps_nothing_on_a_server_no` — seo.ts:137 description:

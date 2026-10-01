@@ -13,6 +13,7 @@
 - `planner_cd_proccooldown_s` — BuffTooltip.svelte:95 <div>
   > CD {fmtSecs(tip.procCooldown)}s
   - vars: `fmtSecs(tip.procCooldown)`
+  - terms: 🏷 CD
 - `planner_x_s_f22f` — EventLog.svelte:86 fmtLogTime:
   > {seconds.toFixed(2)}s
   - vars: `seconds.toFixed(2)`
@@ -21,6 +22,7 @@
 - `planner_name_s_coverage_with_the_parts_this` — RotationCoverage.svelte:63 label=
   > {row.name}’s coverage, with the parts this rotation doesn’t reach dimmed
   - vars: `row.name`
+  - terms: 📖 rotation
 - `planner_coverage` — RotationNotes.svelte:59 <a>
   > Coverage
 - `planner_coverage_for_this_team` — RotationNotes.svelte:68 <a>
@@ -67,14 +69,19 @@
   > pushed out by a newer core
 - `planner_a_normal_attack` — RotationTimeline.svelte:1212 normal:
   > a normal attack
+  - terms: 🎮 Normal Attack
 - `planner_a_charged_attack` — RotationTimeline.svelte:1213 charged:
   > a charged attack
+  - terms: 🎮 Charged Attack
 - `planner_a_plunge` — RotationTimeline.svelte:1214 plunge:
   > a plunge
+  - terms: 🎮 Plunging Attack
 - `planner_a_skill` — RotationTimeline.svelte:1215 skill:
   > a skill
+  - terms: 🎮 Elemental Skill
 - `planner_a_burst` — RotationTimeline.svelte:1216 burst:
   > a burst
+  - terms: 🎮 Elemental Burst
 - `planner_a_dash` — RotationTimeline.svelte:1217 dash:
   > a dash
 - `planner_a_jump` — RotationTimeline.svelte:1218 jump:
@@ -86,15 +93,17 @@
 - `planner_human_timing_f_frames_s_s_after_the_swap` — RotationTimeline.svelte:1223 script — ⚑ plural?
   > Human timing: {f} frames ({s}s) after the swap — nothing buffers until the new character appears.
   - vars: `f` `s`
+  - terms: 📖 Human timing
 - `planner_human_timing_f_frames_s_s_after_what` — RotationTimeline.svelte:1224 script — ⚑ plural?
   > Human timing: {f} frames ({s}s) after {what}, before an input the game does not buffer.
   - vars: `f` `s` `what`
+  - terms: 📖 Human timing
 - `planner_x_total_s` — RotationTimeline.svelte:1571 title:
   > {teamNames.join(' · ')} — {total}s
   - vars: `teamNames.join(' · ')` `total`
 - `planner_critcalc_rotation` — RotationTimeline.svelte:1571 title:
   > critcalc rotation
-  - terms: 🔒 critcalc
+  - terms: 🔒 critcalc · 📖 rotation
 - `planner_image_copied` — RotationTimeline.svelte:1700 showNotice:
   > Image copied
 - `planner_image_saved` — RotationTimeline.svelte:1702 showNotice:
@@ -110,6 +119,7 @@
 - `planner_x_u` — RotationTimeline.svelte:2089 displayValue:
   > {(present[mod] ?? 0).toFixed(2)}U
   - vars: `(present[mod] ?? 0).toFixed(2)`
+  - terms: 🏷 gauge units
 - `planner_frames_s` — RotationTimeline.svelte:2118 sourceLabel:
   > {secondsLabel(frames)}s
   - vars: `secondsLabel(frames)`
@@ -118,18 +128,20 @@
   - terms: 🏷 aura
 - `planner_0_6_1_000_max_hp_cap_36` — RotationTimeline.svelte:2209 displayValue:
   > +0.6% / 1,000 Max HP (cap 36%)
-  - terms: 🎮 HP
+  - terms: 🎮 Max HP
 - `planner_1_100_def_cap_36` — RotationTimeline.svelte:2212 displayValue:
   > +1% / 100 DEF (cap 36%)
   - terms: 🎮 DEF
 - `planner_2_25_100_em_cap_36` — RotationTimeline.svelte:2215 displayValue:
   > +2.25% / 100 EM (cap 36%)
+  - terms: 🏷 EM
 - `planner_0_9_100_atk_cap_36` — RotationTimeline.svelte:2218 displayValue:
   > +0.9% / 100 ATK (cap 36%)
   - terms: 🎮 ATK
 - `planner_u_u` — RotationTimeline.svelte:2289 <span>
   > {u}U
   - vars: `u`
+  - terms: 🏷 gauge units
 - `planner_target_aura_6075` — RotationTimeline.svelte:2328 <span>
   > TARGET AURA
 - `planner_characterid_time_s` — RotationTimeline.svelte:2390 sourceLabel:
@@ -141,6 +153,7 @@
 - `planner_units_u` — RotationTimeline.svelte:2394 displayValue:
   > {tick.units}U
   - vars: `tick.units`
+  - terms: 🏷 gauge units
 - `planner_on_this_frame` — RotationTimeline.svelte:2406 stat:
   > On this frame
 - `planner_sameframe_applications` — RotationTimeline.svelte:2407 displayValue: — ⚑ plural?
@@ -164,9 +177,11 @@
   - vars: `secondsLabel(seg.cooldown ?? 0)`
 - `planner_no_frame_data_yet_cast_animations_and` — RotationTimeline.svelte:2989 title=
   > No frame data yet — cast animations and normal attacks use generic timings.
+  - terms: 🎮 Normal Attack
 - `planner_label_trigger_cd_51ec` — RotationTimeline.svelte:3027 <span>
   > {procRow.label} trigger CD
   - vars: `procRow.label`
+  - terms: 🏷 CD
 - `planner_team_buffs` — RotationTimeline.svelte:3100 <span>
   > TEAM BUFFS
 - `planner_recorded_hits` — RotationTimeline.svelte:3135 stat:
@@ -178,6 +193,7 @@
   > NIGHTSOUL BURSTS
 - `planner_nb` — RotationTimeline.svelte:3176 <span> · timelineExport.ts:1192 haloText:
   > NB
+  - terms: 🏷 NB
 - `planner_cooldown_s` — RotationTimeline.svelte:3178 <span> · timelineExport.ts:1197 haloText:
   > {secondsLabel(ev.cooldown)}s
   - vars: `secondsLabel(ev.cooldown)`
@@ -195,12 +211,14 @@
   > Notation history
 - `planner_undo_the_last_notation_change` — RotationTimeline.svelte:3351 aria-label=
   > Undo the last notation change
+  - terms: 📖 notation
 - `planner_undo_z` — RotationTimeline.svelte:3352 title=
   > Undo (⌘Z)
 - `planner_undo` — RotationTimeline.svelte:3357 <button>
   > Undo
 - `planner_redo_the_last_undone_notation_change` — RotationTimeline.svelte:3362 aria-label=
   > Redo the last undone notation change
+  - terms: 📖 notation
 - `planner_redo_z` — RotationTimeline.svelte:3363 title=
   > Redo (⌘⇧Z)
 - `planner_redo` — RotationTimeline.svelte:3368 <button>
@@ -261,8 +279,10 @@
   - terms: 🎮 DEF
 - `planner_em` — buffDisplay.ts:125 em:
   > EM
+  - terms: 🏷 EM
 - `planner_er` — buffDisplay.ts:132 energyRecharge:
   > ER
+  - terms: 🏷 ER
 - `planner_crit_rate` — buffDisplay.ts:133 critRate: · buffStatMaps.ts:90 critRate:
   > CRIT Rate
   - terms: 🎮 CRIT Rate
@@ -279,6 +299,7 @@
   > Elem. Mastery
 - `planner_cd_reduction` — buffStatMaps.ts:93 cdReduction:
   > CD Reduction
+  - terms: 🏷 CD
 - `planner_def_ignore` — buffStatMaps.ts:96 defIgnore:
   > DEF Ignore
   - terms: 🎮 DEF
@@ -289,10 +310,10 @@
   - terms: 🎮 DMG
 - `planner_skill_dmg` — buffStatMaps.ts:102 skillDmgBonus:
   > Skill DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Elemental Skill · 🎮 DMG
 - `planner_burst_dmg` — buffStatMaps.ts:103 burstDmgBonus:
   > Burst DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Elemental Burst · 🎮 DMG
 - `planner_normal_dmg` — buffStatMaps.ts:104 normalDmgBonus:
   > Normal DMG
   - terms: 🎮 DMG
@@ -301,13 +322,13 @@
   - terms: 🎮 DMG
 - `planner_plunge_dmg` — buffStatMaps.ts:106 plungeDmgBonus:
   > Plunge DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Plunging Attack · 🎮 DMG
 - `planner_skill_flat_dmg` — buffStatMaps.ts:107 skillFlatDmg:
   > Skill Flat DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Elemental Skill · 🎮 DMG
 - `planner_burst_flat_dmg` — buffStatMaps.ts:108 burstFlatDmg:
   > Burst Flat DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Elemental Burst · 🎮 DMG
 - `planner_normal_flat_dmg` — buffStatMaps.ts:109 normalFlatDmg:
   > Normal Flat DMG
   - terms: 🎮 DMG
@@ -316,7 +337,7 @@
   - terms: 🎮 DMG
 - `planner_plunge_flat_dmg` — buffStatMaps.ts:111 plungeFlatDmg:
   > Plunge Flat DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Plunging Attack · 🎮 DMG
 - `planner_pyro_dmg` — buffStatMaps.ts:112 pyroDmgBonus:
   > Pyro DMG
   - terms: 🎮 Pyro · 🎮 DMG
@@ -340,7 +361,7 @@
   - terms: 🎮 Dendro · 🎮 DMG
 - `planner_lunar_dmg` — buffStatMaps.ts:119 lunarDmgBonus:
   > Lunar DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Lunar · 🎮 DMG
 - `planner_energy_recharge` — buffStatMaps.ts:120 energyRecharge:
   > Energy Recharge
   - terms: 🎮 Energy Recharge
@@ -358,44 +379,46 @@
   - terms: 🎮 Lunar-Crystallize · 🎮 DMG
 - `planner_base_stellar_conduct_dmg` — buffStatMaps.ts:125 stellarConductDmgBonus:
   > Base Stellar-Conduct DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Stellar-Conduct · 🎮 DMG
 - `planner_base_stellar_swirl_dmg` — buffStatMaps.ts:126 stellarSwirlDmgBonus:
   > Base Stellar Swirl DMG
-  - terms: 🎮 Swirl · 🎮 DMG
+  - terms: 🎮 Stellar Swirl · 🎮 DMG
 - `planner_base_stellar_glimmer_dmg` — buffStatMaps.ts:127 stellarGlimmerDmgBonus:
   > Base Stellar Glimmer DMG
-  - terms: 🎮 DMG
+  - terms: 🎮 Stellar Glimmer · 🎮 DMG
 - `planner_superconduct_reaction_bonus` — buffStatMaps.ts:128 superConductReactionBonus:
   > Superconduct Reaction Bonus
-  - terms: 🎮 Superconduct
+  - terms: 🏷 Reaction Bonus · 🎮 Superconduct
 - `planner_swirl_reaction_bonus` — buffStatMaps.ts:129 swirlReactionBonus:
   > Swirl Reaction Bonus
-  - terms: 🎮 Swirl
+  - terms: 🏷 Reaction Bonus · 🎮 Swirl
 - `planner_cryo_swirl_reaction_bonus` — buffStatMaps.ts:130 cryoSwirlReactionBonus:
   > Cryo Swirl Reaction Bonus
-  - terms: 🎮 Swirl · 🎮 Cryo
+  - terms: 🏷 Reaction Bonus · 🎮 Swirl · 🎮 Cryo
 - `planner_electro_charged_reaction_bonus` — buffStatMaps.ts:131 electroChargedReactionBonus:
   > Electro-Charged Reaction Bonus
-  - terms: 🎮 Electro-Charged
+  - terms: 🎮 Electro-Charged · 🏷 Reaction Bonus
 - `planner_bloom_reaction_bonus` — buffStatMaps.ts:132 bloomReactionBonus:
   > Bloom Reaction Bonus
-  - terms: 🎮 Bloom
+  - terms: 🏷 Reaction Bonus · 🎮 Bloom
 - `planner_stellar_conduct_reaction_bonus` — buffStatMaps.ts:133 stellarConductReactionBonus:
   > Stellar-Conduct Reaction Bonus
+  - terms: 🎮 Stellar-Conduct · 🏷 Reaction Bonus
 - `planner_stellar_swirl_reaction_bonus` — buffStatMaps.ts:134 stellarSwirlReactionBonus:
   > Stellar Swirl Reaction Bonus
-  - terms: 🎮 Swirl
+  - terms: 🏷 Reaction Bonus · 🎮 Stellar Swirl
 - `planner_stellar_glimmer_reaction_bonus` — buffStatMaps.ts:135 stellarGlimmerReactionBonus:
   > Stellar Glimmer Reaction Bonus
+  - terms: 🎮 Stellar Glimmer · 🏷 Reaction Bonus
 - `planner_lunar_charged_reaction_bonus` — buffStatMaps.ts:136 lunarChargedReactionBonus:
   > Lunar-Charged Reaction Bonus
-  - terms: 🎮 Lunar-Charged
+  - terms: 🏷 Reaction Bonus · 🎮 Lunar-Charged
 - `planner_lunar_bloom_reaction_bonus` — buffStatMaps.ts:137 lunarBloomReactionBonus:
   > Lunar-Bloom Reaction Bonus
-  - terms: 🎮 Lunar-Bloom
+  - terms: 🏷 Reaction Bonus · 🎮 Lunar-Bloom
 - `planner_lunar_crystallize_reaction_bonus` — buffStatMaps.ts:138 lunarCrystallizeReactionBonus:
   > Lunar-Crystallize Reaction Bonus
-  - terms: 🎮 Lunar-Crystallize
+  - terms: 🎮 Lunar-Crystallize · 🏷 Reaction Bonus
 - `planner_anemo_res` — buffStatMaps.ts:139 anemoRes:
   > Anemo RES
   - terms: 🎮 Anemo · 🎮 RES
@@ -447,6 +470,7 @@
 - `planner_characterid_nb` — charReceivedBuffRows.ts:49 sourceLabel:
   > {char?.displayName ?? w.characterId} NB
   - vars: `char?.displayName ?? w.characterId`
+  - terms: 🏷 NB
 - `planner_x_threshold` — charReceivedBuffRows.ts:53 fire: · teamBuffRows.ts:107 fire:
   > {AB_LABEL[src.abilityClass ?? 'skill']} threshold
   - vars: `AB_LABEL[src.abilityClass ?? 'skill']`
@@ -464,6 +488,7 @@
 - `planner_displayname_nb` — teamBuffRows.ts:102 sourceLabel:
   > {displayName} NB
   - vars: `displayName`
+  - terms: 🏷 NB
 - `planner_displayname_reaction` — teamBuffRows.ts:129 sourceLabel:
   > {displayName} reaction
   - vars: `displayName`
@@ -539,7 +564,7 @@
   - terms: 🎮 Electro · 🎮 Swirl
 - `planner_stellar_swirl` — auraDisplay.ts:176 stellarSwirl:
   > Stellar Swirl
-  - terms: 🎮 Swirl
+  - terms: 🎮 Stellar Swirl
 - `planner_crystallize_pyro` — auraDisplay.ts:177 pyroCrystallize:
   > Crystallize (Pyro)
   - terms: 🎮 Crystallize · 🎮 Pyro
@@ -560,6 +585,7 @@
   - terms: 🎮 Crystallize
 - `planner_type_a_rotation_e_g_bennett_e_q` — notationEditorExtension.ts:578 placeholder:
   > Type a rotation — e.g. Bennett E Q > Xiangling E Q N3 > …
+  - terms: 📖 rotation
 - `planner_name_s_kit_isn_t_curated_yet_this_cast` — notationFlags.ts:81 script
   > {name}'s kit isn't curated yet — this cast is drawn with generic timing.
   - vars: `name`
@@ -588,15 +614,17 @@
 - `planner_displayname_s_plunge_isn_t_measured_yet` — notationFlags.ts:213 message:
   > {entry.displayName}'s plunge isn't measured yet — drawn with generic timing.
   - vars: `entry.displayName`
+  - terms: 🎮 Plunging Attack
 - `planner_anemo_resonance_label` — notationParser.ts:250 source:
   > Anemo Resonance: {anemo.label}
   - vars: `anemo.label`
-  - terms: 🎮 Anemo
+  - terms: 🎮 Elemental Resonance · 🎮 Anemo
 - `planner_canvas_2d_context_unavailable` — timelineExport.ts:448 script — ⚑ thrown
   > canvas 2d context unavailable
 - `planner_label_trigger_cd_9058` — timelineExport.ts:943 forEach:
   > {row.label} trigger CD
   - vars: `row.label`
+  - terms: 🏷 CD
 - `planner_cd_s` — timelineExport.ts:1105 haloText:
   > {secondsLabel(g.cd)}s
   - vars: `secondsLabel(g.cd)`
@@ -610,8 +638,10 @@
   > toBlob failed
 - `planner_shared_rotation` — +page.svelte:68 label:
   > Shared rotation
+  - terms: 📖 rotation
 - `planner_loaded_shared_rotation` — +page.svelte:76 showNotice:
   > Loaded shared rotation
+  - terms: 📖 rotation
 - `planner_invalid_share_link` — +page.svelte:195 afterNavigate:
   > Invalid share link
 - `planner_team_loaded` — +page.svelte:213 afterNavigate:
@@ -621,9 +651,10 @@
 - `planner_one_enemy_and_it_never_applies_an` — +page.svelte:329 AURA_NOTES:
   > One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mage, and no auras you did not put there.
   - terms: 🎮 Pyro
-- `planner_hits_land_on_their_listed_timing_a_swing` — +page.svelte:330 AURA_NOTES:
+- `planner_hits_land_on_their_listed_timing_a_swing` — +page.svelte:330 AURA_NOTES: — ⚑ off-glossary
   > Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.
   - terms: 🎮 Shatter
+  - ⚠️ off-glossary: modelled → modeled
 - `planner_a_pip_with_a_yellow_ring_means_we_are` — +page.svelte:331 AURA_NOTES:
   > A pip with a yellow ring means we are using a default gauge strength of 1U for that hit rather than a measured one.
   - terms: 🏷 gauge
@@ -640,10 +671,12 @@
   > Pause
 - `planner_play_the_rotation` — +page.svelte:450 aria-label=
   > Play the rotation
+  - terms: 📖 rotation
 - `planner_pause_space` — +page.svelte:451 title=
   > Pause (Space)
 - `planner_play_the_rotation_at_game_speed_space` — +page.svelte:451 title=
   > Play the rotation at game speed (Space)
+  - terms: 📖 rotation
 - `planner_playback_speed_rate` — +page.svelte:469 aria-label=
   > Playback speed {rateLabel(playback.rate)}
   - vars: `rateLabel(playback.rate)`
@@ -652,10 +685,13 @@
   - vars: `rateLabel(
 							playback.rate
 						)`
+  - terms: 📖 rotation
 - `planner_draw_the_laps_that_follow_the_rotation` — +page.svelte:498 title=
   > Draw the laps that follow: the rotation runs on past its end, cooldowns and buffs carried
+  - terms: 📖 rotation
 - `planner_laps` — +page.svelte:502 <span> · +page.svelte:704 <span>
   > Laps
+  - terms: 📖 Laps
 - `planner_zoom` — +page.svelte:520 label= · +page.svelte:520 ariaLabel= · +page.svelte:538 aria-label=
   > Zoom
 - `planner_zoom_out` — +page.svelte:527 aria-label=
@@ -669,13 +705,15 @@
   - vars: `Math.round(pv.totalDuration * 10) / 10`
 - `planner_human_timing` — +page.svelte:607 aria-label= · +page.svelte:617 <span> · +page.svelte:719 <span>
   > Human timing
+  - terms: 📖 Human timing
 - `planner_time_the_rotation_as_a_person_plays_it` — +page.svelte:613 title=
   > Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings.
+  - terms: 📖 rotation
 - `planner_timeline_layers` — +page.svelte:643 aria-label=
   > Timeline layers
 - `planner_draw_buff_bars_weapon_procs_nightsoul` — +page.svelte:649 title=
   > Draw buff bars, weapon procs, Nightsoul bursts and Ascendant Gleam
-  - terms: 🎮 Ascendant Gleam · 🎮 Nightsoul
+  - terms: 🎮 Ascendant Gleam · 🎮 Nightsoul · 🎮 Elemental Burst
 - `planner_buffs` — +page.svelte:656 <span>
   > Buffs
 - `planner_draw_the_target_s_elemental_gauge_with` — +page.svelte:663 title=
@@ -705,3 +743,4 @@
   - terms: 🏷 aura
 - `planner_this_rotation_puts_nothing_on_the_target` — +page.svelte:879 empty=
   > This rotation puts nothing on the target.
+  - terms: 📖 rotation

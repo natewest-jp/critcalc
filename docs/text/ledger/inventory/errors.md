@@ -18,6 +18,7 @@
   > This tool ran into a problem.
 - `errors_the_rest_of_the_site_is_fine_you_can` — +layout.svelte:868 <p>
   > The rest of the site is fine — you can switch tools above, or try again. Your saved rotations are untouched.
+  - terms: 📖 rotation
 - `errors_try_again` — +layout.svelte:873 <button>
   > Try again
 - `errors_report_this` — +layout.svelte:874 <a>

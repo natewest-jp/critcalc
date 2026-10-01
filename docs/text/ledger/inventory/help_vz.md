@@ -17,20 +17,22 @@
   - terms: 📖 instrument · 📖 tile
 - `help_vz_share_copies_a_link_that_reopens_an` — Visualizers.svelte:24 <p>
   > <strong>Share</strong> copies a link that reopens an instrument exactly as it looks, inputs and all. Some instruments can also hand off to each other — the ICD Timeline can send its applying hits straight to the Gauge Explorer, for instance.
-  - terms: 📖 instrument · 🏷 ICD
+  - terms: 📖 Gauge Explorer · 📖 ICD Timeline · 📖 instrument
 - `help_vz_crit_heatmap` — Visualizers.svelte:31 <h2>
   > Crit Heatmap
+  - terms: 📖 Crit Heatmap
 - `help_vz_the_average_damage_multiplier_1_crit` — Visualizers.svelte:32 <p> — ⚑ off-glossary nbsp
   > The average damage multiplier — 1 + (Crit Rate × Crit Damage) — across every stat combination. Drag the marker or use the sliders; cool blue is lower output, yellow through red-purple higher.
   - ⚠️ off-glossary: Crit Rate → CRIT Rate · Crit Damage → CRIT DMG
 - `help_vz_dashed_lines_mark_builds_with_the_same` — Visualizers.svelte:37 <p>
   > Dashed lines mark builds with the same average damage. The solid equal-budget line traces every build sharing your total crit value (CV = 2·CR + CD) — drag along it to see where a fixed stat budget pays out best. Pin a build to freeze a second marker and eyeball a trade against it.
-  - terms: 🏷 CV
+  - terms: 🏷 crit value · 🏷 CV · 🏷 CR · 🏷 CD
 - `help_vz_the_no_crit_risk_overlay_darkens_regions` — Visualizers.svelte:42 <p>
   > The no-crit risk overlay darkens regions where a whole rotation can land zero crits, and <strong>Roll it</strong> samples your rotation for real, so you can watch how often the coin flips betray the average.
+  - terms: 📖 rotation
 - `help_vz_icd_timeline` — Visualizers.svelte:50 <h2>
   > ICD Timeline
-  - terms: 🏷 ICD
+  - terms: 📖 ICD Timeline
 - `help_vz_which_hits_of_an_attack_string_actually` — Visualizers.svelte:51 <p>
   > Which hits of an attack string actually apply their element. Standard ICD allows an application every 2.5 seconds or every 3rd hit; the 3-hit rule does <em>not</em> reset the 2.5s timer, which is why application patterns look irregular.
   - terms: 🏷 ICD
@@ -38,15 +40,20 @@
   > Faster attack strings do not mean proportionally more elemental application — watch the application rate as you drag the hit interval.
 - `help_vz_artifact_rolls` — Visualizers.svelte:63 <h2>
   > Artifact Rolls
+  - terms: 📖 Artifact Rolls
 - `help_vz_the_real_odds_behind_5_artifact_farming` — Visualizers.svelte:64 <p>
   > The real odds behind 5★ artifact farming, from datamined weights. <strong>Fresh Drop</strong>: how rare your target substat pair is. <strong>Upgrade Rolls</strong>: the exact crit-value distribution a piece can reach at +20. <strong>Reshape</strong>: what the Dust of Enlightenment guarantee actually does to the odds.
-- `help_vz_the_reshape_guarantee_is_modelled_as_a` — Visualizers.svelte:70 <p>
+  - terms: 🎮 Dust of Enlightenment · 🏷 substat
+- `help_vz_the_reshape_guarantee_is_modelled_as_a` — Visualizers.svelte:70 <p> — ⚑ off-glossary
   > The reshape guarantee is modelled as a conditional redistribution — at least N rolls into the selected pair, other outcomes renormalized — because the exact in-game implementation is not publicly documented. Sanctifying Elixir crafts skip the substat draw entirely and, since 5.5, guarantee at least 2 upgrade rolls into the crafted pair.
-  - terms: 🎮 Sanctifying Elixir
+  - terms: 🎮 Sanctifying Elixir · 🏷 substat
+  - ⚠️ off-glossary: modelled → modeled
 - `help_vz_appraise_dials_in_a_real_20_piece_s` — Visualizers.svelte:77 <p>
   > <strong>Appraise</strong> dials in a real +20 piece's substat values and shows where it sits on its own outcome distribution. The value wheels only offer numbers the game can actually display; roll counts are inferred from them, cross-validated against the Genshin Optimizer.
+  - terms: 🔒 Genshin Optimizer · 🏷 substat
 - `help_vz_gauge_explorer` — Visualizers.svelte:84 <h2>
   > Gauge Explorer
+  - terms: 📖 Gauge Explorer
 - `help_vz_how_elemental_auras_live_and_die_build_a` — Visualizers.svelte:85 <p>
   > How elemental auras live and die. Build a sequence of applications and watch the gauge decay, the 0.8× aura tax, and how each reaction consumes aura at its own rate: ×2 forward vape/melt, ×0.5 reverse, ×0.5 swirl/crystallize, 1:1 the rest, 2:1 for bloom. Mechanics follow KQM gauge theory cross-checked against gcsim.
   - terms: 🔒 gcsim · 🏷 gauge · 🏷 aura · 🔒 KQM
@@ -55,34 +62,37 @@
   - terms: 🎮 Dendro · 🏷 aura
 - `help_vz_reaction_curves` — Visualizers.svelte:100 <h2>
   > Reaction Curves
+  - terms: 📖 Reaction Curves
 - `help_vz_how_reaction_payouts_scale_with` — Visualizers.svelte:101 <p>
   > How reaction payouts scale with Elemental Mastery. Each family rides a different curve: amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM), Lunar and Stellar 6·EM/(2000+EM), crystallize 4.44·EM/(1400+EM). <strong>All families</strong> puts those five on one chart; pick a family's tab to see its reactions' damage at a given level. Drag on the chart or slide to move along it, and hover or tap a row of the readout to have it read out in words below the table.
-  - terms: 🎮 Elemental Mastery
+  - terms: 🎮 Elemental Mastery · 🎮 Stellar · 🎮 Lunar · 🏷 EM
 - `help_vz_a_reaction_bonus_such_as_4pc_crimson` — Visualizers.svelte:109 <p>
   > A Reaction Bonus such as 4pc Crimson Witch adds inside the same bracket as EM, so the Reaction Bonus slider also says how much EM it is worth from where you are. Values are before enemy RES. Transformative damage can't crit for most characters; additive flat damage joins the hit and crits with it; Lunar and Stellar reaction damage crits on its own.
-  - terms: 🎮 RES
+  - terms: 🏷 Reaction Bonus · 🎮 Crimson Witch of Flames · 🎮 Stellar · 🎮 Lunar · 🎮 RES · 🏷 EM
 - `help_vz_enemy_def_res` — Visualizers.svelte:118 <h2> — ⚑ entity
   > Enemy DEF & RES
-  - terms: 🎮 DEF · 🎮 RES
+  - terms: 📖 Enemy DEF & RES
 - `help_vz_the_two_hidden_multipliers_every_hit` — Visualizers.svelte:119 <p>
   > The two hidden multipliers every hit passes through. <strong>DEF</strong>: your level against the enemy's sets a baseline cut — equal levels already cost you half — and shred or ignore claws it back. <strong>RES</strong>: most enemies resist 10%, and shred subtracts from that.
   - terms: 🎮 DEF · 🎮 RES
 - `help_vz_pushing_res_below_0_still_pays_but_each` — Visualizers.svelte:124 <p>
   > Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep diminishing returns.
-  - terms: 🎮 RES
+  - terms: 🎮 Viridescent Venerer · 🎮 RES
 - `help_vz_wish_odds` — Visualizers.svelte:132 <h2>
   > Wish Odds
+  - terms: 📖 Wish Odds
 - `help_vz_which_pull_actually_lands_the_featured_5` — Visualizers.svelte:133 <p>
   > Which pull actually lands the featured 5★, from your current pity and guarantee state. The filled shape is "which pull gets it", the line is your cumulative chance, and the marker is your saved pulls — drag it.
   - terms: 🏷 pity
 - `help_vz_pity_model_0_6_flat_until_soft_pity` — Visualizers.svelte:138 <p>
   > Pity model: 0.6% flat until soft pity ramps from pull 74 (weapons: 0.7% ramping from 63). Featured odds use the official consolidated rates — 55% character including Capturing Radiance, 37.5% charted weapon, 1 fate point. The Radiance streak counter is not fully datamined and is deliberately not guessed at.
-  - terms: 🏷 soft pity
+  - terms: 🎮 Capturing Radiance · 🎮 Fate Points · 🏷 soft pity
 - `help_vz_damage_anatomy` — Visualizers.svelte:147 <h2>
   > Damage Anatomy
+  - terms: 📖 Damage Anatomy
 - `help_vz_your_hit_as_its_formula_one_multiplier` — Visualizers.svelte:148 <p>
   > Your hit as its formula, one multiplier per row, read top to bottom. Each row shows the multiplier's formula, the numbers from your sheet, and a bar. The bars share one axis whose gridlines double the hit, so a ×2 is the same length wherever it sits, each bar starts where the one above it ended, and a cut such as enemy DEF runs backward. Hover or tap a row to have it read out in words, with its share of the boost.
   - terms: 🎮 DEF
 - `help_vz_a_direct_hit_is_shown_relative_to_a_hit` — Visualizers.svelte:155 <p>
   > A direct hit is shown relative to a hit from its base stat alone, because its talent multiplier depends on the attack. Additive chunks, transformative damage, and Lunar and Stellar reaction damage come from level and EM, so they end in a number. <strong>What the next roll buys</strong> applies one average 5★ substat roll at a time to your sheet; pick ATK, HP or DEF so the rolls match the stat your character scales on.
-  - terms: 🎮 ATK · 🎮 DEF · 🎮 HP
+  - terms: 🎮 Stellar · 🏷 substat · 🎮 talent · 🎮 Lunar · 🎮 ATK · 🎮 DEF · 🎮 HP · 🏷 EM

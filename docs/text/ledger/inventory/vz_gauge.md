@@ -96,7 +96,7 @@
   - terms: 🎮 Dendro Core · 🎮 Dendro · 🎮 Hydro · 🎮 Bloom · 🏷 aura
 - `vz_gauge_burning_a_fixed_2u_aura_plus_a_hidden` — GaugeInstrument.svelte:201 note:
   > Burning = a fixed 2U aura plus a hidden fuel gauge draining at 0.4 U/s, re-applying 1U Pyro to the target every 0.25s until the fuel runs dry. Feeding it more Dendro extends the burn.
-  - terms: 🎮 Burning · 🎮 Dendro · 🏷 gauge · 🎮 Pyro · 🏷 aura
+  - terms: 🎮 Burning · 🎮 Dendro · 🏷 gauge · 🎮 Pyro · 🏷 aura · 🏷 gauge units
 - `vz_gauge_overvape` — GaugeInstrument.svelte:212 label:
   > Overvape
 - `vz_gauge_one_pyro_hit_on_an_electro_charged` — GaugeInstrument.svelte:213 note: — ⚑ off-glossary
@@ -112,6 +112,7 @@
 - `vz_gauge_x_u` — GaugeInstrument.svelte:608 fmtU:
   > {u.toFixed(2).replace(/\.?0+$/, '')}U
   - vars: `u.toFixed(2).replace(/\.?0+$/, '')`
+  - terms: 🏷 gauge units
 - `vz_gauge_x_s_26b1` — GaugeInstrument.svelte:609 fmtT:
   > {t.toFixed(2)}s
   - vars: `t.toFixed(2)`
@@ -180,14 +181,16 @@
 - `vz_gauge_u_u` — GaugeInstrument.svelte:881 <text>
   > {u}U
   - vars: `u`
+  - terms: 🏷 gauge units
 - `vz_gauge_element_gauge_u_at_x_seconds` — GaugeInstrument.svelte:967 aria-label=
   > {m.element} {m.gauge}U at {m.time.toFixed(1)} seconds
   - vars: `m.element` `m.gauge` `m.time.toFixed(1)`
+  - terms: 🏷 gauge units
 - `vz_gauge_applications` — GaugeInstrument.svelte:1125 <p>
   > Applications
 - `vz_gauge_drag_a_marker_along_the_top_of_the_chart` — GaugeInstrument.svelte:1128 text=
   > Drag a marker along the top of the chart to move it in time, or click the empty strip to add one. U = gauge units, the invisible strength of an elemental application — **most hits are 1U**.
-  - terms: 🏷 gauge
+  - terms: 🏷 gauge units
 - `vz_gauge_element` — GaugeInstrument.svelte:1134 aria-label=
   > Element
 - `vz_gauge_gauge_units` — GaugeInstrument.svelte:1155 aria-label=
@@ -195,6 +198,7 @@
 - `vz_gauge_g_u` — GaugeInstrument.svelte:1167 <button>
   > {g}U
   - vars: `g`
+  - terms: 🏷 gauge units
 - `vz_gauge_move_earlier` — GaugeInstrument.svelte:1179 aria-label=
   > Move earlier
 - `vz_gauge_move_earlier_hold_shift_for_1s` — GaugeInstrument.svelte:1180 title=

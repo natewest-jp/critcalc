@@ -9,7 +9,7 @@
   > Contribute
 - `contribute_critcalc_is_built_on_data_the_genshin` — Contribute.svelte:18 <p>
   > critcalc is built on data the Genshin community gathered and gave away. The most useful thing you can do for this site is to support the projects upstream of it.
-  - terms: 🔒 critcalc
+  - terms: 🔒 critcalc · 🎮 Genshin Impact
 - `contribute_support_the_projects_this_is_built_on` — Contribute.svelte:24 <h2>
   > Support the projects this is built on
 - `contribute_every_timing_the_rotation_planner_draws` — Contribute.svelte:25 <p>
@@ -17,12 +17,13 @@
   - terms: 📖 Rotation Planner · 📖 Team Builder
 - `contribute_gcsim_an_open_source_genshin_combat` — Contribute.svelte:31 <li>
   > <a>gcsim</a> — an open-source Genshin combat simulator, and our primary source for tick cadences, ability scalings, and targeting behavior. Its contributors measure the frames that make a frame-accurate timeline possible. Contributing a character implementation or a bug report there improves critcalc directly.
-  - terms: 🔒 critcalc · 📖 timeline · 🔒 gcsim
+  - terms: 🔒 critcalc · 📖 timeline · 🎮 Genshin Impact · 🔒 gcsim
 - `contribute_keqing_mains_the_theorycrafting` — Contribute.svelte:37 <li>
   > <a>Keqing Mains</a> — the theorycrafting standards, the calculation conventions, and the action notation this planner reads. Their guides and libraries are the reason "KQM standard" means anything at all.
-  - terms: 🔒 KQM
+  - terms: 🔒 Keqing Mains · 📖 notation · 🔒 KQM
 - `contribute_genshin_db_the_datamined_character` — Contribute.svelte:42 <li>
   > <a>genshin-db</a> — the datamined character, talent, and identity data every new character here starts from.
+  - terms: 🎮 talent
 - `contribute_data_flows_downhill_a_correction` — Contribute.svelte:47 <p>
   > Data flows downhill. A correction accepted upstream reaches critcalc — and every other community tool — rather than just this one.
   - terms: 🔒 critcalc

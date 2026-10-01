@@ -10,10 +10,12 @@
   - vars: `rt.activeTab.label`
 - `docbar_save_this_team_and_rotation_to_your_bank` — DocumentActions.svelte:68 title=
   > Save this team and rotation to your bank
+  - terms: 📖 rotation
 - `docbar_save_changes` — DocumentActions.svelte:72 span:
   > Save changes
 - `docbar_open_a_saved_rotation` — DocumentActions.svelte:78 title=
   > Open a saved rotation
+  - terms: 📖 rotation
 - `docbar_load` — DocumentActions.svelte:82 <span> · SavedNotationsOverlay.svelte:224 <button>
   > Load
 - `docbar_share` — DocumentActions.svelte:85 label=
@@ -22,7 +24,7 @@
   > Copy link
 - `docbar_copy_kqm_notation` — DocumentActions.svelte:108 <button>
   > Copy KQM notation
-  - terms: 🔒 KQM
+  - terms: 📖 notation · 🔒 KQM
 - `docbar_copy_timeline_image` — DocumentActions.svelte:119 <button>
   > Copy timeline image
   - terms: 📖 timeline
@@ -31,35 +33,47 @@
   - terms: 📖 timeline
 - `docbar_more_rotation_actions` — DocumentActions.svelte:137 ariaLabel=
   > More rotation actions
+  - terms: 📖 rotation
 - `docbar_save_as_new` — DocumentActions.svelte:150 <button>
   > Save as new
 - `docbar_confirm_clear_this_rotation_s_notation` — DocumentActions.svelte:161 title=
   > Confirm: clear this rotation's notation and unlink it from the bank
+  - terms: 📖 notation · 📖 rotation
 - `docbar_reset_this_rotation_cab6` — DocumentActions.svelte:173 button:
   > Reset this rotation?
+  - terms: 📖 rotation
 - `docbar_reset_this_rotation_e94f` — DocumentActions.svelte:173 button:
   > Reset this rotation
+  - terms: 📖 rotation
 - `docbar_confirm_close_every_rotation_tab` — DocumentActions.svelte:180 title=
   > Confirm: close every rotation tab
+  - terms: 📖 rotation
 - `docbar_close_all_rotations_c831` — DocumentActions.svelte:191 button:
   > Close all rotations?
+  - terms: 📖 rotation
 - `docbar_close_all_rotations_109e` — DocumentActions.svelte:191 button:
   > Close all rotations
+  - terms: 📖 rotation
 - `docbar_close_label` — DocumentTabs.svelte:144 aria-label=
   > Close {tab.label}
   - vars: `tab.label`
 - `docbar_new_rotation` — DocumentTabs.svelte:155 aria-label=
   > New rotation
+  - terms: 📖 rotation
 - `docbar_close` — SavedNotationsOverlay.svelte:104 aria-label= · SavedNotationsOverlay.svelte:112 aria-label=
   > Close
 - `docbar_saved_rotations_06c3` — SavedNotationsOverlay.svelte:109 aria-label=
   > Saved rotations
+  - terms: 📖 Saved Rotations
 - `docbar_saved_rotations_a7ad` — SavedNotationsOverlay.svelte:111 <h2>
   > Saved Rotations
+  - terms: 📖 Saved Rotations
 - `docbar_no_saved_rotations_yet` — SavedNotationsOverlay.svelte:119 <p>
   > No saved rotations yet.
+  - terms: 📖 rotation
 - `docbar_write_a_rotation_and_click_save_to_bank` — SavedNotationsOverlay.svelte:120 <p>
   > Write a rotation and click <strong>Save</strong> to bank it here.
+  - terms: 📖 rotation
 - `docbar_rename` — SavedNotationsOverlay.svelte:191 title=
   > Rename
 - `docbar_rename_name` — SavedNotationsOverlay.svelte:192 aria-label=
@@ -81,10 +95,12 @@
 - `docbar_nothing_you_had_open_was_replaced_the` — TabsFullDialog.svelte:59 <p>
   > Nothing you had open was replaced. The shared rotation is in <strong>Saved Rotations</strong>, as <strong>{name}</strong> — close a tab and load it there whenever you want it.
   - vars: `name`
+  - terms: 📖 Saved Rotations · 📖 rotation
 - `docbar_got_it` — TabsFullDialog.svelte:65 <button>
   > Got it
 - `docbar_open_saved_rotations` — TabsFullDialog.svelte:69 <button>
   > Open Saved Rotations
+  - terms: 📖 Saved Rotations
 - `docbar_x_copy` — documentBar.svelte.ts:58 base:
   > {label.replace(/ copy(?: \d+)?$/, '')} copy
   - vars: `label.replace(/ copy(?: \d+)?$/, '')`
