@@ -48,6 +48,10 @@ export type SheetInputs = {
 	enemyLevel: number;
 	/** Enemy RES %, whole number (post-shred) */
 	enemyRes: number;
+	/** Enemy DEF reduction ("shred") %, whole number */
+	defShredPct: number;
+	/** DEF ignore %, whole number — multiplies with shred on the enemy side */
+	defIgnorePct: number;
 };
 
 export const DEFAULT_SHEET: SheetInputs = {
@@ -65,7 +69,9 @@ export const DEFAULT_SHEET: SheetInputs = {
 	elevationPct: 0,
 	charLevel: 90,
 	enemyLevel: 100,
-	enemyRes: 10
+	enemyRes: 10,
+	defShredPct: 0,
+	defIgnorePct: 0
 };
 
 /** Slider ranges for the three reaction buckets, from what the game offers
@@ -145,7 +151,8 @@ export const dmgFactor = (i: SheetInputs) => 1 + Math.max(0, i.dmgPct) / 100;
 export const critFactor = (i: SheetInputs) => 1 + (clampPct01(i.cr) * Math.max(0, i.cd)) / 100;
 export const ampFactor = (i: SheetInputs, mult: number) =>
 	mult <= 1 ? 1 : ampMultiplier(mult, i.em, rbOf(i));
-export const defFactor = (i: SheetInputs) => defMultiplier(i.charLevel, i.enemyLevel);
+export const defFactor = (i: SheetInputs) =>
+	defMultiplier(i.charLevel, i.enemyLevel, i.defShredPct / 100, i.defIgnorePct / 100);
 export const resFactor = (i: SheetInputs) => resMultiplier(i.enemyRes / 100);
 
 /** Direct hit: total multiplier vs a bare hit (base stat, no bonuses, no enemy) */

@@ -5,6 +5,7 @@ import {
 	additiveEffective,
 	averageRoll,
 	critFactor,
+	defFactor,
 	directTotal,
 	familyTotal,
 	labStats,
@@ -164,5 +165,23 @@ describe('the scaling stat picks its own rolls', () => {
 	it('DMG Bonus is never a roll — no artifact substat carries it', () => {
 		for (const f of ['direct', 'additive', 'transformative', 'lunar'] as const)
 			expect(labStats(f, 2).some((s) => s.key === 'dmgPct')).toBe(false);
+	});
+});
+
+describe('DEF shred and ignore', () => {
+	it('multiply together on the enemy side of the DEF bracket (gcsim defmod)', () => {
+		const sheet = { ...I, defShredPct: 20, defIgnorePct: 30 };
+		// (100 + 90) / ((100 + 90) + (100 + 100) × 0.8 × 0.7)
+		expect(defFactor(sheet)).toBeCloseTo(190 / (190 + 200 * 0.8 * 0.7), 10);
+		expect(directTotal(sheet, 1) / directTotal(I, 1)).toBeCloseTo(
+			defFactor(sheet) / defFactor(I),
+			10
+		);
+	});
+
+	it('leave transformative and Lunar/Stellar damage alone — they ignore DEF', () => {
+		const sheet = { ...I, defShredPct: 50 };
+		expect(transformativeTotal(sheet, 3)).toBeCloseTo(transformativeTotal(I, 3), 10);
+		expect(lunarTotal(sheet, 3)).toBeCloseTo(lunarTotal(I, 3), 10);
 	});
 });

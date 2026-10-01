@@ -151,15 +151,22 @@
 		color: null,
 		read: `A ${sheet.dmgPct.toFixed(1)}% DMG Bonus would make the hit ${fmtX(dmgFactor(sheet))} as strong.`
 	});
+	const defMods = $derived(sheet.defShredPct > 0 || sheet.defIgnorePct > 0);
 	const defRow = $derived<Row>({
 		id: 'def',
 		kind: 'mult',
 		name: 'Enemy DEF',
-		formula: '(100 + your level) ÷ (both levels + 200)',
-		real: `Lv ${sheet.charLevel} vs ${sheet.enemyLevel}`,
+		formula: defMods
+			? '(100 + yours) ÷ (100 + yours + (100 + theirs) × (1 − shred) × (1 − ignore))'
+			: '(100 + your level) ÷ (both levels + 200)',
+		real: defMods
+			? `Lv ${sheet.charLevel} vs ${sheet.enemyLevel} · −${sheet.defShredPct}% · −${sheet.defIgnorePct}%`
+			: `Lv ${sheet.charLevel} vs ${sheet.enemyLevel}`,
 		value: defFactor(sheet),
 		color: null,
-		read: `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF would let ${pct(defFactor(sheet))} of the hit through.`
+		read: defMods
+			? `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF after ${sheet.defShredPct}% shred and ${sheet.defIgnorePct}% ignore would let ${pct(defFactor(sheet))} of the hit through.`
+			: `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF would let ${pct(defFactor(sheet))} of the hit through.`
 	});
 	const resRow = $derived<Row>({
 		id: 'res',
@@ -547,8 +554,8 @@
 		},
 		enemyRes: {
 			key: 'enemyRes',
-			label: 'Enemy RES',
-			aria: 'Enemy RES percent',
+			label: 'Enemy RES after shred',
+			aria: 'Enemy RES after shred, percent',
 			min: -50,
 			max: 100,
 			step: 5,
@@ -571,6 +578,37 @@
 			family === 'direct' || family === 'additive' ? ['enemyLevel', 'enemyRes'] : ['enemyRes'];
 		return { before: before.map((k) => S[k]), after: after.map((k) => S[k]) };
 	});
+	const defModSliders: SliderDef[] = [
+		{
+			key: 'defShredPct',
+			label: 'DEF shred',
+			aria: 'DEF shred percent',
+			min: 0,
+			max: 100,
+			step: 1,
+			unit: '%'
+		},
+		{
+			key: 'defIgnorePct',
+			label: 'DEF ignore',
+			aria: 'DEF ignore percent',
+			min: 0,
+			max: 100,
+			step: 1,
+			unit: '%'
+		}
+	];
+	/** Off zeroes both, so nothing hidden keeps acting on the hit */
+	let defModsOpen = $state(false);
+	function toggleDefMods() {
+		defModsOpen = !defModsOpen;
+		if (!defModsOpen) {
+			sheet.defShredPct = 0;
+			sheet.defIgnorePct = 0;
+		}
+	}
+	const usesDef = $derived(family === 'direct' || family === 'additive');
+
 	const fmtSlider = (d: SliderDef) => {
 		const v = sheet[d.key] as number;
 		return `${d.step < 1 ? v.toFixed(1) : v}${d.unit}`;
@@ -609,6 +647,7 @@
 		reactionId = 'none';
 		scaling = 'atk';
 		sheet = { ...DEFAULT_SHEET };
+		defModsOpen = false;
 	}
 
 	export function getShareState() {
@@ -647,7 +686,10 @@
 			next.rbPct = Math.min(RB_MAX, next.rbPct);
 			next.baseDmgPct = Math.min(BASE_DMG_MAX, next.baseDmgPct);
 			next.elevationPct = Math.min(ELEVATION_MAX, next.elevationPct);
+			next.defShredPct = Math.min(100, next.defShredPct);
+			next.defIgnorePct = Math.min(100, next.defIgnorePct);
 			sheet = next;
+			defModsOpen = next.defShredPct > 0 || next.defIgnorePct > 0;
 		}
 		boxIdx = null;
 		rollIdx = 0;
@@ -809,8 +851,7 @@
 			{/each}
 		</div>
 		<p class="an-receipt">
-			Average 5★ substat rolls on your current sheet. A bar shrinks as you feed its stat, and the
-			order stays fixed. DMG Bonus isn’t listed, because no artifact substat carries it.
+			Each row adds one average 5★ roll of that substat to your current sheet.
 		</p>
 	</div>
 
@@ -918,15 +959,55 @@
 				</div>
 			{/each}
 		</div>
-		<p class="note">Shred and DEF ignore live in the Enemy DEF &amp; RES instrument.</p>
+		{#if usesDef}
+			<label class="an-switch">
+				<span class="an-switch-name">DEF shred and ignore</span>
+				<span class="toggle">
+					<input type="checkbox" checked={defModsOpen} onchange={toggleDefMods} />
+					<span class="toggle-track"><span class="toggle-thumb"></span></span>
+					<span class="toggle-label">{defModsOpen ? 'On' : 'Off'}</span>
+				</span>
+			</label>
+			{#if defModsOpen}
+				<div class="an-sliders">
+					{#each defModSliders as d (d.key)}
+						<div class="slider-control">
+							<div class="slider-header">
+								<span class="slider-label">{d.label}</span>
+								<span class="readout">{fmtSlider(d)}</span>
+							</div>
+							<input
+								type="range"
+								min={d.min}
+								max={d.max}
+								step={d.step}
+								bind:value={sheet[d.key]}
+								class="slider"
+								aria-label={d.aria}
+							/>
+						</div>
+					{/each}
+				</div>
+			{/if}
+		{/if}
 	</div>
 </div>
 
 <style>
+	/* One column that can't outgrow the tile. .instrument's implicit column is
+	   AUTO, which grows to its widest unbreakable child — on a 320px phone a
+	   long chip or the tab row pushed this instrument ~40px past its tile. */
+	.instrument {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
 	/* Four families outgrow a narrow tile's width — wrap rather than scroll. */
 	.an-tabs {
 		flex-wrap: wrap;
 		justify-self: start;
+		/* start-aligned, it sizes to its content and never wraps — on a 320px
+		   phone it pushed the whole instrument 39px wide */
+		max-width: 100%;
 	}
 
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
@@ -939,6 +1020,9 @@
 
 	.an-reactions :global(.chip) {
 		font-family: var(--font-condensed);
+		/* "Stellar Swirl blast, 1–2 swirls ×1.2" is wider than a phone */
+		white-space: normal;
+		max-width: 100%;
 	}
 
 	/* ── The waterfall ─────────────────────────────────────────────────────
@@ -985,7 +1069,10 @@
 	}
 
 	.an-wf-row {
-		padding: 0.2rem 0;
+		/* inline room so the hover highlight doesn't end flush on the value
+		   (⚓ Nate) — on a subgrid this pads the edge tracks only, so the bar
+		   column, and the gridlines above it, stay aligned */
+		padding: 0.2rem 0.45rem;
 		border: none;
 		border-radius: var(--r-sm);
 		background: transparent;
@@ -1209,11 +1296,18 @@
 	   bars ~150px, too short to compare */
 	@container instrument (max-width: 46rem) {
 		.an-wf {
-			grid-template-columns: 1rem minmax(6rem, max-content) 0 minmax(6rem, 1fr) minmax(
-					3.6rem,
-					max-content
-				);
+			/* the label SHARES the width with the bars here — sized to its
+			   longest text (an inline formula), it overflowed a 320px phone
+			   by 39px and left the bars 96px at 390 */
+			--label-col: minmax(0, 1fr);
+			--bar-col: minmax(5rem, 1.2fr);
+			grid-template-columns: 1rem var(--label-col) 0 var(--bar-col) minmax(3.4rem, max-content);
 			column-gap: 0.5rem;
+		}
+
+		.an-wf-name,
+		.an-wf-real {
+			white-space: normal;
 		}
 
 		.an-wf-formula {
@@ -1430,7 +1524,36 @@
 		background: color-mix(in srgb, var(--text) 35%, transparent);
 	}
 
-	.an-build .note {
-		margin-top: 0.6rem;
+	.an-switch {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin: 0.8rem 0 0.4rem;
+	}
+
+	.an-switch-name {
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wider);
+		text-transform: uppercase;
+	}
+
+	/* Phone-width tile: table headings may wrap (they were the last thing
+	   holding the tile ~20–30px wide at 320px), and the sliders stack */
+	@container instrument (max-width: 30rem) {
+		.an-table thead th,
+		.an-table tbody th {
+			white-space: normal;
+		}
+
+		.an-bar-col {
+			width: auto;
+			min-width: 2.5rem;
+		}
+
+		.an-sliders {
+			grid-template-columns: minmax(0, 1fr);
+		}
 	}
 </style>
