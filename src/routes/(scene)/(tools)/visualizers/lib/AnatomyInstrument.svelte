@@ -403,9 +403,9 @@
 	const CHEV_MIN_PX = 9;
 	const chevronsFor = (px: number) =>
 		px < CHEV_MIN_PX ? 0 : Math.max(1, Math.floor((px - 7) / CHEV_PITCH));
-	/** Faint by request (⚓ Nate): 45% at the head, fading to 10% at the tail */
-	const CHEV_HEAD = 0.45;
-	const CHEV_TAIL = 0.1;
+	/** Faint by request (⚓ Nate, twice): 35% at the head, fading to 7% at the tail */
+	const CHEV_HEAD = 0.35;
+	const CHEV_TAIL = 0.07;
 	const chevAlpha = (k: number, n: number) =>
 		n <= 1 ? CHEV_HEAD : CHEV_HEAD - (CHEV_HEAD - CHEV_TAIL) * (k / (n - 1));
 
@@ -1138,13 +1138,13 @@
 		right: calc(6px + var(--k) * 12px);
 		width: 8px;
 		background: color-mix(in srgb, var(--arrow-c) calc(var(--a) * 100%), transparent);
-		clip-path: polygon(0 0, 40% 0, 100% 50%, 40% 100%, 0 100%, 60% 50%);
+		clip-path: polygon(0 0, 32% 0, 100% 50%, 32% 100%, 0 100%, 68% 50%);
 	}
 
 	.an-wf-bar.is-loss .an-wf-chev {
 		right: auto;
 		left: calc(6px + var(--k) * 12px);
-		clip-path: polygon(100% 0, 60% 0, 0 50%, 60% 100%, 100% 100%, 40% 50%);
+		clip-path: polygon(100% 0, 68% 0, 0 50%, 68% 100%, 100% 100%, 32% 50%);
 	}
 
 	.an-wf-start {
