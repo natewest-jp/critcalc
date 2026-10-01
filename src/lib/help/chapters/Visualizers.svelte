@@ -146,13 +146,17 @@
 <section>
 	<h2 id="damage-anatomy">Damage Anatomy</h2>
 	<p>
-		Your hit assembled as a living equation. Enter your real sheet numbers; each term shows its
-		multiplier, and box <em>width</em> shows how much that bucket moves the hit — a ×2 box is the same
-		width wherever it comes from, so feeding an already-wide box barely widens it.
+		Your hit as its formula, one multiplier per row, read top to bottom. Each row shows the
+		multiplier's formula, the numbers from your sheet, and a bar. The bars share one axis whose
+		gridlines double the hit, so a ×2 is the same length wherever it sits, each bar starts where the
+		one above it ended, and a cut such as enemy DEF runs backward. Hover or tap a row to have it
+		read out in words, with its share of the boost.
 	</p>
 	<p>
-		Direct hits stay relative ("×8.1 vs a bare hit") because the game owns your real numbers.
-		Additive chunks and transformative damage print exactly, since their formulas are complete
-		without talents. "What the next roll buys" applies average 5★ substat rolls to your sheet.
+		A direct hit is shown relative to a hit from its base stat alone, because its talent multiplier
+		depends on the attack. Additive chunks, transformative damage, and Lunar and Stellar reaction
+		damage come from level and EM, so they end in a number. <strong>What the next roll buys</strong>
+		applies one average 5★ substat roll at a time to your sheet; pick ATK, HP or DEF so the rolls match
+		the stat your character scales on.
 	</p>
 </section>

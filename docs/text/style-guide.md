@@ -265,6 +265,22 @@ that only restates the first is cut.
 
 ⚠️ **Tooltips and empty states get one sentence.** The long form belongs in help.
 
+### 1.8 ⚓ A reading of the reader's own settings says "would" (⚓ Nate, 2026-10-01)
+
+When a sentence reads out a number computed from the reader's sliders, it takes the
+conditional: _"Transformative reactions **would** deal 3.8 times their base damage."_ The
+plain present ("deal") states a rule of the game; the number is only what the reader's
+settings produce. ⚓ Tables, columns and chart labels stay bare — a number in a table
+already reads as "at these settings". First applied: the Reaction Curves readout.
+
+### 1.9 ⚓ Say only what the screen doesn't (⚓ Nate, 2026-10-01)
+
+§1.3c's test applied to an instrument: ⛔ cut a clause the chart, the row or the table
+already shows — "diminishing returns" under a curve that visibly flattens, "at 600 EM" beside
+the slider that says 600, a sentence that restates a column. ✅ Keep what no part of the
+screen can show: who it doesn't apply to, what a figure leaves out, why a control is absent.
+Reaction Curves lost ~40px of readout to this with nothing essential gone.
+
 ---
 
 ## 2. Mechanics

@@ -1,16 +1,26 @@
 // Damage Anatomy — the hit as a product of multiplier buckets, from real
 // character-sheet inputs. Outputs are RELATIVE for attack-scaling hits
-// ("×8.06 vs a bare hit" — never a hit number the game could contradict);
-// additive chunks and transformative damage are printed exactly, because
-// their formulas are complete without talent multipliers (the precedent
-// Reaction Curves set). Formula pieces reused from defres.ts (DEF/RES) and
-// reactionCurves.ts (level table + EM curves); roll steps from artifactRolls.
+// ("×8.06 vs a bare hit" — the talent multiplier is the one bucket a sheet
+// can't supply); additive chunks, transformative and Lunar/Stellar reaction
+// damage are printed exactly, because their formulas are complete without
+// talent multipliers (the precedent Reaction Curves set). Formula pieces reused
+// from defres.ts (DEF/RES) and reactionCurves.ts (level table + EM curves);
+// roll steps from artifactRolls.
 
 import { defMultiplier, resMultiplier } from './defres';
-import { additiveDamage, ampMultiplier, transformativeDamage } from './reactionCurves';
+import {
+	additiveDamage,
+	ampMultiplier,
+	specialReactionDamage,
+	transformativeDamage,
+	TOP_CONTRIBUTOR_SHARE
+} from './reactionCurves';
 import { substatById, type SubstatId } from './artifactRolls';
 
-export type FamilyId = 'direct' | 'additive' | 'transformative';
+export type FamilyId = 'direct' | 'additive' | 'transformative' | 'lunar';
+
+/** The stat a direct hit scales on — it decides which substat rolls apply. */
+export type ScalingStat = 'atk' | 'hp' | 'def';
 
 export type SheetInputs = {
 	/** Base scaling stat (ATK for most characters; HP/DEF for their scalers) */
@@ -26,10 +36,22 @@ export type SheetInputs = {
 	/** CRIT DMG %, whole number */
 	cd: number;
 	em: number;
+	/** Reaction Bonus %, whole number — adds inside the EM bracket (4pc Crimson
+	 *  Witch, Aubade, a weapon's "Reaction DMG +X%"). */
+	rbPct: number;
+	/** Lunar/Stellar Base DMG Bonus %, whole number — its own bracket (Moonsign
+	 *  benedictions, the Stellar Jubilee passives). */
+	baseDmgPct: number;
+	/** Lunar/Stellar Elevation %, whole number — the outermost bracket. */
+	elevationPct: number;
 	charLevel: number;
 	enemyLevel: number;
 	/** Enemy RES %, whole number (post-shred) */
 	enemyRes: number;
+	/** Enemy DEF reduction ("shred") %, whole number */
+	defShredPct: number;
+	/** DEF ignore %, whole number — multiplies with shred on the enemy side */
+	defIgnorePct: number;
 };
 
 export const DEFAULT_SHEET: SheetInputs = {
@@ -40,39 +62,83 @@ export const DEFAULT_SHEET: SheetInputs = {
 	cr: 70,
 	cd: 140,
 	em: 200,
+	rbPct: 0,
+	// one benediction's cap: a Lunar or Stellar reaction needs an enabler in the
+	// party, and every current enabler carries one
+	baseDmgPct: 14,
+	elevationPct: 0,
 	charLevel: 90,
 	enemyLevel: 100,
-	enemyRes: 10
+	enemyRes: 10,
+	defShredPct: 0,
+	defIgnorePct: 0
 };
 
-export type ReactionDef = { id: string; label: string; mult: number };
+/** Slider ranges for the three reaction buckets, from what the game offers
+ *  today (2026-10, 7.1). Reaction Bonus: Ifa's A1 alone reaches 225% on Swirl,
+ *  and 7.x weapons + Aubade + Ascendant Gleam stack past 150% on Lunar/Stellar.
+ *  Base DMG Bonus: two benedictions (14% each) + Ineffa C1 (≤50%) + Flins (20%)
+ *  ≈ 98% on Lunar-Charged. Elevation: Odette C6 (45%) + Sandrone C6 (20%) ≈ 65%
+ *  on the Stellar reactions. Sources: the corpus census + gcsim, 2026-10-01. */
+export const RB_MAX = 250;
+export const BASE_DMG_MAX = 150;
+export const ELEVATION_MAX = 100;
+
+export type ReactionDef = {
+	id: string;
+	/** The reaction's name, alone */
+	name: string;
+	/** The multiplier the formula uses */
+	mult: number;
+	/** The multiplier one character sees — `mult` × the top-contributor share for
+	 *  Lunar/Stellar, `mult` itself everywhere else */
+	shown: number;
+};
+
+const r = (id: string, name: string, mult: number): ReactionDef => ({
+	id,
+	name,
+	mult,
+	shown: mult
+});
+const lunarR = (id: string, name: string, mult: number): ReactionDef => ({
+	id,
+	name,
+	mult,
+	shown: Math.round(mult * TOP_CONTRIBUTOR_SHARE * 100) / 100
+});
 
 export const REACTIONS: Record<FamilyId, ReactionDef[]> = {
 	direct: [
-		{ id: 'none', label: 'No Reaction', mult: 1 },
-		{ id: 'vape2', label: 'Vaporize ×2', mult: 2 },
-		{ id: 'vape15', label: 'Vaporize ×1.5', mult: 1.5 },
-		{ id: 'melt2', label: 'Melt ×2', mult: 2 },
-		{ id: 'melt15', label: 'Melt ×1.5', mult: 1.5 }
+		r('none', 'No reaction', 1),
+		r('vape2', 'Vaporize', 2),
+		r('vape15', 'Vaporize', 1.5),
+		r('melt2', 'Melt', 2),
+		r('melt15', 'Melt', 1.5)
 	],
-	additive: [
-		{ id: 'spread', label: 'Spread ×1.25', mult: 1.25 },
-		{ id: 'aggravate', label: 'Aggravate ×1.15', mult: 1.15 }
-	],
+	additive: [r('spread', 'Spread', 1.25), r('aggravate', 'Aggravate', 1.15)],
 	transformative: [
-		{ id: 'hyperbloom', label: 'Hyperbloom ×3', mult: 3 },
-		{ id: 'burgeon', label: 'Burgeon ×3', mult: 3 },
-		{ id: 'shatter', label: 'Shatter ×3', mult: 3 },
-		{ id: 'overload', label: 'Overload ×2.75', mult: 2.75 },
-		{ id: 'ec', label: 'Electro-Charged ×2', mult: 2 },
-		{ id: 'bloom', label: 'Bloom ×2', mult: 2 },
-		{ id: 'superconduct', label: 'Superconduct ×1.5', mult: 1.5 },
-		{ id: 'swirl', label: 'Swirl ×0.6', mult: 0.6 },
-		{ id: 'burning', label: 'Burning ×0.25', mult: 0.25 }
+		r('hyperbloom', 'Hyperbloom', 3),
+		r('burgeon', 'Burgeon', 3),
+		r('shatter', 'Shatter', 3),
+		r('overload', 'Overloaded', 2.75),
+		r('ec', 'Electro-Charged', 2),
+		r('bloom', 'Bloom', 2),
+		r('superconduct', 'Superconduct', 1.5),
+		r('swirl', 'Swirl', 0.6),
+		r('burning', 'Burning', 0.25)
+	],
+	lunar: [
+		lunarR('lc', 'Lunar-Charged', 3),
+		lunarR('lcrys', 'Lunar-Crystallize', 1.6),
+		lunarR('ssw', 'Stellar Swirl', 0.75),
+		lunarR('sswBlast12', 'Stellar Swirl blast, 1–2 swirls', 2),
+		lunarR('sswBlast3', 'Stellar Swirl blast, 3+ swirls', 3)
 	]
 };
 
 const clampPct01 = (pct: number) => Math.min(1, Math.max(0, pct / 100));
+const rbOf = (i: SheetInputs) => Math.max(0, i.rbPct) / 100;
 
 // ── Bucket factors (direct family) ─────────────────────────────────────────
 
@@ -84,8 +150,9 @@ export const dmgFactor = (i: SheetInputs) => 1 + Math.max(0, i.dmgPct) / 100;
 /** Average crit multiplier: 1 + CR·CD */
 export const critFactor = (i: SheetInputs) => 1 + (clampPct01(i.cr) * Math.max(0, i.cd)) / 100;
 export const ampFactor = (i: SheetInputs, mult: number) =>
-	mult <= 1 ? 1 : ampMultiplier(mult, i.em);
-export const defFactor = (i: SheetInputs) => defMultiplier(i.charLevel, i.enemyLevel);
+	mult <= 1 ? 1 : ampMultiplier(mult, i.em, rbOf(i));
+export const defFactor = (i: SheetInputs) =>
+	defMultiplier(i.charLevel, i.enemyLevel, i.defShredPct / 100, i.defIgnorePct / 100);
 export const resFactor = (i: SheetInputs) => resMultiplier(i.enemyRes / 100);
 
 /** Direct hit: total multiplier vs a bare hit (base stat, no bonuses, no enemy) */
@@ -104,7 +171,7 @@ export function directTotal(i: SheetInputs, reactionMult: number): number {
 
 /** The exact flat chunk the reaction adds to the hit's base damage */
 export const additiveChunk = (i: SheetInputs, mult: number) =>
-	additiveDamage(mult, i.charLevel, i.em);
+	additiveDamage(mult, i.charLevel, i.em, rbOf(i));
 
 /** The chunk after riding DMG%, crit, DEF and RES with the rest of the hit */
 export const additiveEffective = (i: SheetInputs, mult: number) =>
@@ -114,13 +181,31 @@ export const additiveEffective = (i: SheetInputs, mult: number) =>
 
 /** Exact transformative damage after enemy RES (no crit, ATK, or DMG%) */
 export const transformativeTotal = (i: SheetInputs, mult: number) =>
-	transformativeDamage(mult, i.charLevel, i.em) * resFactor(i);
+	transformativeDamage(mult, i.charLevel, i.em, rbOf(i)) * resFactor(i);
+
+// ── Lunar / Stellar family (reaction damage) ───────────────────────────────
+
+export const baseDmgFactor = (i: SheetInputs) => 1 + Math.max(0, i.baseDmgPct) / 100;
+export const elevationFactor = (i: SheetInputs) => 1 + Math.max(0, i.elevationPct) / 100;
+
+/** One character's Lunar/Stellar reaction hit as the top contributor, on
+ *  average: level × reaction × (EM + Reaction Bonus) × Base DMG Bonus ×
+ *  Elevation × crit × RES. No DEF — these reactions ignore it (gcsim
+ *  `IgnoreDefPercent: 1`). */
+export const lunarTotal = (i: SheetInputs, mult: number) =>
+	TOP_CONTRIBUTOR_SHARE *
+	specialReactionDamage(mult, i.charLevel, i.em, rbOf(i)) *
+	baseDmgFactor(i) *
+	elevationFactor(i) *
+	critFactor(i) *
+	resFactor(i);
 
 // ── Family-uniform total (marginal-gain arithmetic works on ratios) ────────
 
 export function familyTotal(family: FamilyId, i: SheetInputs, reactionMult: number): number {
 	if (family === 'direct') return directTotal(i, reactionMult);
 	if (family === 'additive') return additiveEffective(i, reactionMult);
+	if (family === 'lunar') return lunarTotal(i, reactionMult);
 	return transformativeTotal(i, reactionMult);
 }
 
@@ -135,51 +220,44 @@ export function averageRoll(id: SubstatId): number {
 
 export type LabStat = {
 	key: keyof SheetInputs;
+	/** The stat's name as the game writes it */
 	label: string;
-	/** Step description, e.g. "+5.0% per roll" */
-	stepLabel: string;
 	step: number;
+	/** Whether `step` is a percentage (formatting) */
+	isPct: boolean;
 };
 
-/** The adjustable stats that actually feed a family's formula. dmgPct has no
- * substat, so its step is a nominal +10% (labeled as such). */
-export function labStats(family: FamilyId, reactionMult: number): LabStat[] {
-	const pct = (n: number) => `+${n.toFixed(1)}% per roll`;
-	const flat = (n: number) => `+${n.toFixed(1)} per roll`;
-	const rows: Record<string, LabStat> = {
-		statPct: {
-			key: 'statPct',
-			label: 'Stat%',
-			stepLabel: pct(averageRoll('atkPct')),
-			step: averageRoll('atkPct')
-		},
-		statFlat: {
-			key: 'statFlat',
-			label: 'Flat stat',
-			stepLabel: flat(averageRoll('atk')),
-			step: averageRoll('atk')
-		},
-		cr: {
-			key: 'cr',
-			label: 'CRIT Rate',
-			stepLabel: pct(averageRoll('cr')),
-			step: averageRoll('cr')
-		},
-		cd: {
-			key: 'cd',
-			label: 'CRIT DMG',
-			stepLabel: pct(averageRoll('cd')),
-			step: averageRoll('cd')
-		},
-		em: { key: 'em', label: 'EM', stepLabel: flat(averageRoll('em')), step: averageRoll('em') },
-		dmgPct: { key: 'dmgPct', label: 'DMG Bonus', stepLabel: '+10% (no substat)', step: 10 }
-	};
+const STAT_NAMES: Record<ScalingStat, string> = { atk: 'ATK', hp: 'HP', def: 'DEF' };
+const PCT_ROLL: Record<ScalingStat, SubstatId> = { atk: 'atkPct', hp: 'hpPct', def: 'defPct' };
+
+export const statName = (s: ScalingStat) => STAT_NAMES[s];
+
+/** The substats whose rolls feed a family's formula. ⛔ DMG Bonus is not here:
+ *  no artifact substat carries it, so any step it took would be invented, and
+ *  an invented step's bar can't be compared with real rolls. */
+export function labStats(
+	family: FamilyId,
+	reactionMult: number,
+	scaling: ScalingStat = 'atk'
+): LabStat[] {
+	const roll = (key: keyof SheetInputs, label: string, id: SubstatId): LabStat => ({
+		key,
+		label,
+		step: averageRoll(id),
+		isPct: substatById(id).isPct
+	});
+	const name = STAT_NAMES[scaling];
+	const statPct = roll('statPct', `${name}%`, PCT_ROLL[scaling]);
+	const statFlat = roll('statFlat', `Flat ${name}`, scaling);
+	const cr = roll('cr', 'CRIT Rate', 'cr');
+	const cd = roll('cd', 'CRIT DMG', 'cd');
+	const em = roll('em', 'Elemental Mastery', 'em');
 	if (family === 'direct') {
-		const base = [rows.statPct, rows.statFlat, rows.cr, rows.cd, rows.dmgPct];
-		return reactionMult > 1 ? [...base, rows.em] : base;
+		const base = [statPct, statFlat, cr, cd];
+		return reactionMult > 1 ? [...base, em] : base;
 	}
-	if (family === 'additive') return [rows.em, rows.cr, rows.cd, rows.dmgPct];
-	return [rows.em];
+	if (family === 'additive' || family === 'lunar') return [em, cr, cd];
+	return [em];
 }
 
 /** Relative gain of one roll-step of `stat` from the current sheet */

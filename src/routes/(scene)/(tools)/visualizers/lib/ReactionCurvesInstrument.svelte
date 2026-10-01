@@ -685,6 +685,13 @@
 </div>
 
 <style>
+	/* One column that can't outgrow the tile. .instrument's implicit column is
+	   AUTO, which grows to its widest unbreakable child — on a 320px phone a
+	   long chip or the tab row pushed this instrument ~40px past its tile. */
+	.instrument {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
 	.rx-chart {
@@ -708,6 +715,9 @@
 	.rx-tabs {
 		flex-wrap: wrap;
 		justify-self: start;
+		/* start-aligned, it sizes to its content and never wraps — on a 320px
+		   phone it pushed the whole instrument 39px wide */
+		max-width: 100%;
 	}
 
 	/* ── The readout: one row per curve, the columns' heads do the explaining,
@@ -869,5 +879,17 @@
 		width: 1px;
 		height: 5px;
 		background: color-mix(in srgb, var(--text) 35%, transparent);
+	}
+
+	/* Phone-width tile: table headings may wrap (they were the last thing
+	   holding the tile ~20–30px wide at 320px), and the sliders stack */
+	@container instrument (max-width: 30rem) {
+		.rx-table thead th {
+			white-space: normal;
+		}
+
+		.rx-sliders {
+			grid-template-columns: minmax(0, 1fr);
+		}
 	}
 </style>
