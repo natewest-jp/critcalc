@@ -1,4 +1,4 @@
-# The translation ledger — plan (approved 2026-10-01, not started)
+# The translation ledger — plan (approved 2026-10-01; step 1 built 2026-10-01)
 
 ⚓ **Nate approved this, including a PERMANENT extractor script** (a promotion under
 CLAUDE.md's verification policy — the approval is the 2026-10-01 session). It is
@@ -54,3 +54,73 @@ Scope: everything user-facing under `src/` — tools, chrome, help chapters, sta
    Damage Anatomy passes (never in any sheet).
 3. Mark the worksheets superseded (keep them in git history; ⛔ don't delete rulings that
    only live there — move them into the notes first).
+
+---
+
+## ✅ Step 1 — built 2026-10-01 (branch `feat/translation-ledger`)
+
+`node scripts/extract-strings.mjs` prints a summary; `--write` regenerates
+`docs/text/ledger/inventory/` (one file per surface + a README); `--surface=<id>` prints
+one surface. ⛔ The inventory is never edited by hand, and it is in `.prettierignore`
+because prettier would escape the `*` and `_` inside the quoted strings.
+
+- **One AST for everything.** Svelte's `parse()`; a `.ts` file is parsed as the body of a
+  `<script lang="ts">`. ⚠️ acorn + `@sveltejs/acorn-typescript` on its own refuses most
+  of our `.ts` (an acorn version mismatch), which is why the TS compiler is not needed.
+- **A template message is a RUN**: adjacent text, `{expressions}` and inline elements form
+  one message, because that is the unit a translator reorders. A run with no text of its
+  own is layout (`<span><span>Title</span><span>Hint</span></span>`) and splits.
+- **Keys** are `<surface>_<slug>`, identifier-safe for Paraglide; a 4-hex text hash is
+  added only when two texts on one surface share a slug. Identical text on one surface is
+  one message with several locations.
+- **Surfaces** are a first-match path table in the script. A file that yields strings and
+  matches nothing is reported UNASSIGNED; that is the alarm for a new file.
+- **Flags:** `off-glossary` · `assembled` · `plural?` · `x-for-×` · `entity` · `nbsp` ·
+  `thrown`.
+
+**Measured on the first run: 1,572 messages, 27 surfaces.** Checked against the
+worksheets' "Now" column (787 fragments, excluding sheets 04 and 07, whose surfaces were
+reworked): every miss was explained. Most were strings since removed from the code, or
+quote and apostrophe differences between the sheets and the code. ⚠️ Two are genuinely
+out of reach, both **assembled at runtime from code words**, and they are translation
+defects to fix in code, not extractor gaps:
+
+- `orderHint()` in `playback/tones.ts` spells "Burst low · skill middle · attacks high"
+  from the words `attacks`/`skill`/`burst` + `low`/`middle`/`high`, capitalising the first
+  at runtime. No locale can reorder or inflect that.
+- The same file's note-set hint ("A · B · E") is built from note names.
+
+⚠️ **Known limits:** a lone lowercase word in a script is kept only when its context names
+a text field, or it sits in a map whose other values are prose (a "text table") ·
+strings built from DATA (character/ability names, caveats) are out of scope · `/lab` and
+`/styleguide` are excluded.
+
+## ⚓ The termbase — `docs/text/ledger/terms.json` (added 2026-10-01, ⚓ Nate asked)
+
+Protected terms are marked **beside** the strings, never inside them: the extractor tags
+every message with the terms it contains (longest match first, so `Electro-Charged` is
+not also `Electro`), and flags any form a term lists under `avoid` as **off-glossary**.
+At translation time the tagged spans are what a translator, or a translating model, is
+told to keep, look up, or reuse.
+
+| Class    | Mark | Meaning                                                                                                                                 |
+| -------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `frozen` | 🔒   | English in every locale: the brand, the card names, KQM, gcsim                                                                          |
+| `game`   | 🎮   | The game ships an official translation. Take it from the game's text (genshin-db), ⛔ never translate it ourselves                      |
+| `label`  | 🏷   | The English label stays; its explanation translates (ICD, CV, RES shred, uptime…)                                                       |
+| `house`  | 📖   | Our own coined term. It DOES translate, but ONCE per locale, fixed in the termbase and reused (the bench, the composer, the aura lane…) |
+
+⚠️⚠️ **This splits round record R2.** R2 called stat, element and reaction names "frozen",
+and the glossary marks reaction names 🔒 while also saying genshin-db ships them per
+locale. Those are two different rules: the brand stays English in Japanese, while Pyro
+becomes the game's own Japanese word. ⚓ Nate, 2026-10-01: in-game terms take the game's
+own translation and must never be translated by another method. So they are `game`, and
+`frozen` is reserved for what stays English.
+
+The seed (99 terms) is the glossary's ruled rows plus the plainly in-game names (elements,
+reactions, stats, resonances, factions). ⏭ Completing it is part of step 2. Its first run
+found 16 off-glossary messages, and they are the same sites the glossary lists by hand
+(Overload/Freeze, Crit Rate/Crit Damage, "Event log", "resistance shred").
+⚠️ An in-game name the seed does not yet hold (gadget names such as Moondrift, Starlight
+Prism, Polestar Field) is NOT protected until it is added. Check each against the game's
+text before classing it `game`.

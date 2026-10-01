@@ -1,0 +1,157 @@
+{
+	"$comment": "The TERMBASE: every protected term, kept OUT of the strings. scripts/extract-strings.mjs tags each inventory message with the terms it contains (longest match first, case-sensitive, whole words) and flags any `avoid` form as off-glossary. Classes — frozen: English in every locale, never translated · game: the game has an official translation in every locale; take it from the game's text (genshin-db), never translate it ourselves · label: the English label stays, its explanation translates · house: our own coined term; it DOES translate, but once per locale, fixed here, and reused everywhere. Rulings live in docs/text/glossary.md; this file is the machine-readable half. SEED 2026-10-01 — completing it is ledger step 2.",
+	"terms": [
+		{ "term": "critcalc", "class": "frozen", "note": "The brand." },
+		{ "term": "critcalc.app", "class": "frozen", "note": "The brand." },
+		{
+			"term": "Astrolabe",
+			"class": "frozen",
+			"note": "Landing card name — glossary §1, ruled 2026-09-22."
+		},
+		{ "term": "Ephemeris", "class": "frozen", "note": "Landing card name — glossary §1." },
+		{ "term": "Observatory", "class": "frozen", "note": "Landing card name — glossary §1." },
+		{
+			"term": "KQM",
+			"class": "frozen",
+			"note": "Keqing Mains, the community. Also its notation tokens (N1, E, Q, C, P, ~2s), round record R2."
+		},
+		{ "term": "gcsim", "class": "frozen", "note": "A tool's name." },
+
+		{ "term": "Pyro", "class": "game" },
+		{ "term": "Hydro", "class": "game" },
+		{ "term": "Electro", "class": "game" },
+		{ "term": "Cryo", "class": "game" },
+		{ "term": "Anemo", "class": "game" },
+		{ "term": "Geo", "class": "game" },
+		{ "term": "Dendro", "class": "game" },
+		{ "term": "Physical", "class": "game" },
+
+		{ "term": "Vaporize", "class": "game" },
+		{ "term": "Melt", "class": "game" },
+		{
+			"term": "Overloaded",
+			"class": "game",
+			"avoid": ["Overload"],
+			"note": "Glossary §2: the game's name, locked 2026-09-27."
+		},
+		{ "term": "Superconduct", "class": "game" },
+		{ "term": "Electro-Charged", "class": "game" },
+		{
+			"term": "Frozen",
+			"class": "game",
+			"avoid": ["Freeze"],
+			"note": "Glossary §2: the game's name, locked 2026-09-27."
+		},
+		{ "term": "Shatter", "class": "game" },
+		{ "term": "Swirl", "class": "game" },
+		{ "term": "Crystallize", "class": "game" },
+		{ "term": "Burning", "class": "game" },
+		{ "term": "Bloom", "class": "game" },
+		{ "term": "Hyperbloom", "class": "game" },
+		{ "term": "Burgeon", "class": "game" },
+		{ "term": "Quicken", "class": "game" },
+		{ "term": "Aggravate", "class": "game" },
+		{ "term": "Spread", "class": "game" },
+		{ "term": "Lunar-Charged", "class": "game" },
+		{ "term": "Lunar-Bloom", "class": "game" },
+		{ "term": "Lunar-Crystallize", "class": "game" },
+		{ "term": "Dendro Core", "class": "game" },
+		{ "term": "Nightsoul Burst", "class": "game" },
+		{ "term": "Nightsoul", "class": "game" },
+		{ "term": "Moonsign", "class": "game" },
+		{ "term": "Ascendant Gleam", "class": "game" },
+		{ "term": "Hexerei", "class": "game" },
+		{ "term": "Secret Rite", "class": "game" },
+
+		{ "term": "ATK", "class": "game" },
+		{ "term": "HP", "class": "game" },
+		{ "term": "DEF", "class": "game" },
+		{ "term": "Elemental Mastery", "class": "game", "avoid": ["Elemental mastery"] },
+		{ "term": "Energy Recharge", "class": "game" },
+		{
+			"term": "CRIT Rate",
+			"class": "game",
+			"avoid": ["Crit Rate", "CRIT RATE"],
+			"note": "Visible form. Screen-reader names spell 'Crit rate' on purpose (conventions §B)."
+		},
+		{
+			"term": "CRIT DMG",
+			"class": "game",
+			"avoid": ["Crit Damage", "Crit DMG", "CRIT Damage"],
+			"note": "Visible form. Screen-reader names spell 'Crit damage' on purpose (conventions §B)."
+		},
+		{ "term": "Healing Bonus", "class": "game" },
+		{
+			"term": "RES",
+			"class": "game",
+			"note": "Damage resistance. ⚠️ NOT 'Interruption res' — glossary §2a."
+		},
+		{ "term": "DMG", "class": "game" },
+		{
+			"term": "Constellation",
+			"class": "game",
+			"note": "Glossary §1 marks it 🏷; it has an official in-game name, so the game's text wins."
+		},
+		{ "term": "Traveler", "class": "game" },
+		{ "term": "Aether", "class": "game" },
+		{ "term": "Lumine", "class": "game" },
+		{ "term": "Natlan", "class": "game" },
+		{ "term": "Sanctifying Elixir", "class": "game" },
+		{ "term": "Fervent Flames", "class": "game" },
+		{ "term": "Soothing Water", "class": "game" },
+		{ "term": "Impetuous Winds", "class": "game" },
+		{ "term": "High Voltage", "class": "game" },
+		{ "term": "Shattering Ice", "class": "game" },
+		{ "term": "Enduring Rock", "class": "game" },
+		{ "term": "Sprawling Greenery", "class": "game" },
+		{ "term": "Protective Canopy", "class": "game" },
+
+		{
+			"term": "ICD",
+			"class": "label",
+			"note": "Glossary §2: the three letters stay; the explanation localizes."
+		},
+		{ "term": "CV", "class": "label", "note": "Crit value. Glossary §2." },
+		{ "term": "RES shred", "class": "label", "avoid": ["resistance shred", "RES Shred"] },
+		{ "term": "off-field", "class": "label" },
+		{ "term": "uptime", "class": "label" },
+		{
+			"term": "gauge",
+			"class": "label",
+			"note": "The AMOUNT of an aura. ⚠️ Keep distinct from aura in every locale."
+		},
+		{
+			"term": "aura",
+			"class": "label",
+			"note": "The element stuck to the enemy. ⚠️ Keep distinct from gauge."
+		},
+		{ "term": "pity", "class": "label" },
+		{ "term": "soft pity", "class": "label" },
+		{ "term": "50/50", "class": "label" },
+		{ "term": "DPS", "class": "label" },
+
+		{ "term": "Rotation Planner", "class": "house", "note": "Tool names translate — glossary §1." },
+		{ "term": "Team Builder", "class": "house" },
+		{ "term": "Visualizers", "class": "house" },
+		{ "term": "view bar", "class": "house", "note": "Band B. Glossary §1." },
+		{ "term": "document bar", "class": "house", "note": "Band A. Glossary §1." },
+		{ "term": "composer", "class": "house", "avoid": ["notation editor"] },
+		{ "term": "bench", "class": "house" },
+		{ "term": "bench card", "class": "house" },
+		{ "term": "timeline", "class": "house" },
+		{ "term": "aura lane", "class": "house" },
+		{ "term": "gauge lines", "class": "house" },
+		{ "term": "reaction spawns", "class": "house" },
+		{ "term": "aura log", "class": "house", "avoid": ["Event log"] },
+		{ "term": "Aura log", "class": "house" },
+		{ "term": "notes panel", "class": "house" },
+		{ "term": "tile", "class": "house" },
+		{ "term": "instrument", "class": "house" },
+		{ "term": "Atlas", "class": "house" },
+		{ "term": "Roster", "class": "house" },
+		{ "term": "Compare", "class": "house" },
+		{ "term": "audition", "class": "house" },
+		{ "term": "Navigate", "class": "house" },
+		{ "term": "Builder", "class": "house" }
+	]
+}

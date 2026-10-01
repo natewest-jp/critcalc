@@ -37,3 +37,8 @@ docs/curation/gcsim-reaction-diff.md
 # nature (a 32-tick burst is one cell); rewrapping them would make every rerun a
 # whole-file diff.
 docs/curation/gcsim-frames-diff.md
+
+# Generated — scripts/extract-strings.mjs. Each quoted line IS a source string;
+# prettier would escape its `*` and `_`, and the ledger would then misquote the
+# code it inventories.
+docs/text/ledger/inventory/
