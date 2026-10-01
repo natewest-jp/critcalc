@@ -20,8 +20,9 @@
 	} from './reactionCurves';
 
 	type FamilyId = 'all' | 'amplifying' | 'transformative' | 'additive' | 'lunar' | 'crystallize';
-	/** What a row's first reading sentence is built from — all formatted. */
-	type Ctx = { em: number; lv: number; v: string; times: string };
+	/** What a row's reading is built from: its value formatted, the boost as a
+	 *  "times its base" figure, and the raw boost for sums of its own. */
+	type Ctx = { v: string; times: string; boost: number };
 	type Curve = {
 		label: string;
 		detail: string;
@@ -53,7 +54,7 @@
 		{
 			id: 'all',
 			label: 'All families',
-			note: 'How much EM boosts each family of reactions. Each family has its own curve, and none of them depend on level.',
+			note: 'How much EM boosts each family. Level doesn’t change the boost.',
 			yLabel: 'boost from EM',
 			rowHead: 'Family',
 			valueHead: 'Boost from EM',
@@ -66,8 +67,7 @@
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, _lv, rb) => (emBonus(TRANSFORMATIVE_CURVE, em) + rb) * 100,
-					read: (c) =>
-						`At ${c.em} EM, Transformative reactions deal ${c.times} times their base damage.`
+					read: (c) => `Transformative reactions deal ${c.times} times their base damage.`
 				},
 				{
 					label: 'Additive',
@@ -75,7 +75,7 @@
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, _lv, rb) => (emBonus(ADDITIVE_CURVE, em) + rb) * 100,
-					read: (c) => `At ${c.em} EM, Spread and Aggravate add ${c.times} times their base damage.`
+					read: (c) => `Spread and Aggravate add ${c.times} times their base damage.`
 				},
 				{
 					label: 'Lunar & Stellar',
@@ -83,8 +83,7 @@
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
 					value: (em, _lv, rb) => (emBonus(SPECIAL_CURVE, em) + rb) * 100,
-					read: (c) =>
-						`At ${c.em} EM, Lunar and Stellar reactions deal ${c.times} times their base damage.`
+					read: (c) => `Lunar and Stellar reactions deal ${c.times} times their base damage.`
 				},
 				{
 					label: 'Crystallize',
@@ -92,7 +91,7 @@
 					color: 'var(--el-geo-main)',
 					em: null,
 					value: (em) => emBonus(CRYSTALLIZE_CURVE, em) * 100,
-					read: (c) => `At ${c.em} EM, a Crystallize shield is ${c.times} times its base strength.`
+					read: (c) => `A Crystallize shield is ${c.times} times its base strength.`
 				},
 				{
 					label: 'Amplifying',
@@ -101,14 +100,14 @@
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => (emBonus(AMP_CURVE, em) + rb) * 100,
 					read: (c) =>
-						`At ${c.em} EM, the Vaporize and Melt multipliers are ${c.times} times their base ×2 or ×1.5.`
+						`A forward Vaporize or Melt multiplies the hit by ×${(2 * (1 + c.boost)).toFixed(2)} instead of ×2, and a reverse one by ×${(1.5 * (1 + c.boost)).toFixed(2)} instead of ×1.5.`
 				}
 			]
 		},
 		{
 			id: 'amplifying',
 			label: 'Amplifying',
-			note: 'Vaporize and Melt multiply the whole hit, and EM raises the multiplier with diminishing returns. Level plays no part, because the hit being multiplied already scales with everything else.',
+			note: 'Vaporize and Melt multiply the whole hit. Level plays no part, because the hit already scales with everything else.',
 			formula: '2.78·EM/(1400+EM)',
 			yLabel: 'hit multiplier',
 			rowHead: 'Reaction',
@@ -121,7 +120,7 @@
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => ampMultiplier(2, em, rb),
-					read: (c) => `At ${c.em} EM, a forward Vaporize or Melt multiplies its hit by ${c.v}.`
+					read: (c) => `A forward Vaporize or Melt multiplies its hit by ${c.v}.`
 				},
 				{
 					label: 'Reverse ×1.5',
@@ -129,14 +128,14 @@
 					color: 'var(--el-cryo-main)',
 					em: AMP_CURVE,
 					value: (em, _lv, rb) => ampMultiplier(1.5, em, rb),
-					read: (c) => `At ${c.em} EM, a reverse Vaporize or Melt multiplies its hit by ${c.v}.`
+					read: (c) => `A reverse Vaporize or Melt multiplies its hit by ${c.v}.`
 				}
 			]
 		},
 		{
 			id: 'transformative',
 			label: 'Transformative',
-			note: 'Fixed damage from the character’s level and EM — for most characters, crit, ATK, and DMG% do nothing. Every reaction rides the same curve with its own multiplier.',
+			note: 'Damage from the character’s level and EM alone. For most characters, crit, ATK, and DMG% do nothing.',
 			formula: '16·EM/(2000+EM)',
 			yLabel: 'damage',
 			rowHead: 'Reaction',
@@ -149,8 +148,7 @@
 					color: 'var(--el-dendro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(3, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, a Hyperbloom, Burgeon, or Shatter hit deals ${c.v} damage before enemy RES.`
+					read: (c) => `A Hyperbloom, Burgeon, or Shatter hit deals ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Overloaded',
@@ -158,8 +156,7 @@
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(2.75, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, an Overloaded explosion deals ${c.v} damage before enemy RES.`
+					read: (c) => `An Overloaded explosion deals ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Electro-Charged · Bloom',
@@ -167,8 +164,7 @@
 					color: 'var(--el-electro-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(2, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, an Electro-Charged tick or a Bloom deals ${c.v} damage before enemy RES.`
+					read: (c) => `An Electro-Charged tick or a Bloom deals ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Superconduct',
@@ -176,8 +172,7 @@
 					color: 'var(--el-cryo-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(1.5, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, a Superconduct hit deals ${c.v} damage before enemy RES.`
+					read: (c) => `A Superconduct hit deals ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Swirl',
@@ -185,8 +180,7 @@
 					color: 'var(--el-anemo-main)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(0.6, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, a Swirl hit deals ${c.v} damage before enemy RES.`
+					read: (c) => `A Swirl hit deals ${c.v} damage before enemy RES.`
 				},
 				{
 					label: 'Burning',
@@ -194,15 +188,14 @@
 					color: 'var(--rx-burning)',
 					em: TRANSFORMATIVE_CURVE,
 					value: (em, lv, rb) => transformativeDamage(0.25, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, each Burning tick deals ${c.v} damage before enemy RES.`
+					read: (c) => `Each Burning tick deals ${c.v} damage before enemy RES.`
 				}
 			]
 		},
 		{
 			id: 'additive',
 			label: 'Additive',
-			note: 'Spread and Aggravate add a flat chunk of damage to the triggering hit — the chunk then crits and scales with DMG% like the rest of the hit.',
+			note: 'Flat damage added to the hit that triggers it, which then crits and scales with DMG% along with the hit.',
 			formula: '5·EM/(1200+EM)',
 			caveat: 'Before enemy RES.',
 			yLabel: 'flat DMG added',
@@ -216,8 +209,7 @@
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, lv, rb) => additiveDamage(1.25, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, Spread adds ${c.v} damage to the Dendro hit that triggers it.`
+					read: (c) => `Spread adds ${c.v} damage to the Dendro hit that triggers it.`
 				},
 				{
 					label: 'Aggravate',
@@ -225,17 +217,16 @@
 					color: 'var(--el-electro-main)',
 					em: ADDITIVE_CURVE,
 					value: (em, lv, rb) => additiveDamage(1.15, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, Aggravate adds ${c.v} damage to the Electro hit that triggers it.`
+					read: (c) => `Aggravate adds ${c.v} damage to the Electro hit that triggers it.`
 				}
 			]
 		},
 		{
 			id: 'lunar',
 			label: 'Lunar & Stellar',
-			note: 'Damage from level and EM on a gentler curve than Transformative, and it can crit. Each party member who contributes is computed separately; these figures are the top contributor’s 60% share. Lunar-Bloom and Stellar-Conduct deal damage only through abilities.',
+			note: 'Damage from level and EM, and it can crit. Each contributing party member is counted separately; these figures are the top contributor’s 60% share. Lunar-Bloom and Stellar-Conduct deal damage only through abilities.',
 			formula: '6·EM/(2000+EM)',
-			caveat: 'Stellar Swirl’s numbers come from gcsim and aren’t yet confirmed in game.',
+			caveat: 'Stellar Swirl figures are from gcsim, not yet confirmed in game.',
 			yLabel: 'damage',
 			rowHead: 'Reaction',
 			valueHead: 'Damage',
@@ -248,7 +239,7 @@
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(3, lv, em, rb),
 					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, a Lunar-Charged tick, or a Stellar Swirl blast after 3+ swirls, deals ${c.v} damage before enemy RES and crit.`
+						`A Lunar-Charged tick, or a Stellar Swirl blast after 3+ swirls, deals ${c.v} damage before enemy RES and crit.`
 				},
 				{
 					label: 'Stellar Swirl blast',
@@ -257,7 +248,7 @@
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(2, lv, em, rb),
 					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, a Stellar Swirl blast after 1–2 swirls deals ${c.v} damage before enemy RES and crit.`
+						`A Stellar Swirl blast after 1–2 swirls deals ${c.v} damage before enemy RES and crit.`
 				},
 				{
 					label: 'Lunar-Crystallize',
@@ -266,7 +257,7 @@
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(1.6, lv, em, rb),
 					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, each Moondrift hit from Lunar-Crystallize deals ${c.v} damage before enemy RES and crit.`
+						`Each Moondrift hit from Lunar-Crystallize deals ${c.v} damage before enemy RES and crit.`
 				},
 				{
 					label: 'Stellar Swirl',
@@ -274,15 +265,14 @@
 					color: 'var(--el-anemo-main)',
 					em: SPECIAL_CURVE,
 					value: (em, lv, rb) => SHARE * specialReactionDamage(0.75, lv, em, rb),
-					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, a Stellar Swirl hit deals ${c.v} damage before enemy RES and crit.`
+					read: (c) => `A Stellar Swirl hit deals ${c.v} damage before enemy RES and crit.`
 				}
 			]
 		},
 		{
 			id: 'crystallize',
 			label: 'Crystallize',
-			note: 'Crystallize shards grant a shield that grows with the triggering character’s level and EM — on its own level table, higher than the damage one.',
+			note: 'The shard’s shield grows with the triggering character’s level and EM, on a level table of its own.',
 			formula: '4.44·EM/(1400+EM)',
 			yLabel: 'shield HP',
 			rowHead: 'Shard',
@@ -296,7 +286,7 @@
 					em: null,
 					value: (em, lv) => crystallizeShieldHp(lv, em),
 					read: (c) =>
-						`At ${c.em} EM and level ${c.lv}, a Crystallize shield absorbs ${c.v} damage, or 150% of that against its own element.`
+						`A Crystallize shield absorbs ${c.v} damage, or 2.5 times that against its own element.`
 				}
 			]
 		}
@@ -410,25 +400,18 @@
 	// rows never shifts the Build panel below.
 	function readingOf(c: Curve): string {
 		const v = at(c, em);
-		const out = [
-			c.read({ em, lv: level, v: fmt(v), times: fmt1(1 + v / 100) }),
-			family.id === 'all'
-				? `Another ${GAIN_STEP} EM would raise the boost to ${fmt(at(c, em + GAIN_STEP))}.`
-				: `Another ${GAIN_STEP} EM would raise it to ${fmt(at(c, em + GAIN_STEP))}.`
-		];
-		// only where the slider is on screen — Crystallize's own tab hides it
-		if (rbPct > 0 && takesRb) {
-			if (!c.em) out.push('A Reaction Bonus doesn’t apply to it.');
-			else {
-				const n = worthOf(c.em);
-				out.push(
-					Number.isFinite(n)
-						? `That includes the +${rbPct}% Reaction Bonus, which does the same job as ${fmtInt(n)} more EM.`
-						: `That includes the +${rbPct}% Reaction Bonus, which does more than any amount of EM could.`
-				);
-			}
-		}
-		return out.join(' ');
+		const boost = family.id === 'all' ? v / 100 : 0;
+		const first = c.read({ v: fmt(v), times: fmt1(1 + boost), boost });
+		// The bonus's worth has its own column on All families; elsewhere this
+		// sentence is the only place it shows — and only while the slider is on
+		// screen, which Crystallize's own tab hides.
+		if (family.id === 'all' || !takesRb || rbPct === 0 || !c.em) return first;
+		const n = worthOf(c.em);
+		return `${first} ${
+			Number.isFinite(n)
+				? `The +${rbPct}% Reaction Bonus is worth ${fmtInt(n)} more EM here.`
+				: `The +${rbPct}% Reaction Bonus is worth more than any amount of EM here.`
+		}`;
 	}
 	const readings = $derived(family.curves.map(readingOf));
 
@@ -636,7 +619,7 @@
 	<div class="panel rx-build">
 		<p class="kicker">Build</p>
 		<div class="rx-sliders">
-			<div class="slider-control">
+			<div class="slider-control" class:rx-wide={!takesRb}>
 				<div class="slider-header">
 					<span class="slider-label">Elemental Mastery</span>
 					<span class="readout">{em}</span>
@@ -669,7 +652,7 @@
 				</div>
 			{/if}
 			{#if family.usesLevel}
-				<div class="slider-control">
+				<div class="slider-control rx-wide">
 					<div class="slider-header">
 						<span class="slider-label">Level</span>
 						<span class="readout">{level}</span>
@@ -727,7 +710,10 @@
 
 	/* ── The readout: one row per curve, the columns' heads do the explaining,
 	   and the reading says the chosen row in words ── */
+	/* The full box, not .note's 56ch measure — the readout is already bounded,
+	   and the lines it saves are height the Build box gets back */
 	.rx-intro {
+		max-width: none;
 		margin: 0 0 0.6rem;
 	}
 
@@ -838,12 +824,18 @@
 	/* ── Build: one full-width box, the sliders side by side ── */
 	.rx-sliders {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		/* EM and Reaction Bonus share a line; Level always takes a line of its
+		   own (⚓ Nate) — a third of the box was too short a track to land a level */
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.5rem 1.5rem;
 		/* top, not stretch: the Level control is taller by its marks, and a
 		   stretched neighbour spreads that height into its own rows, dropping
 		   its label below Level's */
 		align-items: start;
+	}
+
+	.rx-wide {
+		grid-column: 1 / -1;
 	}
 
 	/* The Level slider's 90 / 95 / 100 marks. Above 90 only 95 and 100 exist,
