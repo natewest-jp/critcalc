@@ -28,7 +28,7 @@ export type ToolInfo = {
 // reference shelf — and matches the landing hero cards left to right. Each
 // tool's send-affordance sits on the edge facing the tool it sends to.
 export const TOOLS: ToolInfo[] = [
-	{ path: '/team-builder', title: 'Team Builder', short: 'Teams' },
+	{ path: '/team-builder', title: 'Team Builder', short: 'Builder' },
 	{ path: '/rotation-planner', title: 'Rotation Planner', short: 'Planner' },
 	{ path: '/visualizers', title: 'Visualizers', short: 'Visualizers' }
 ];

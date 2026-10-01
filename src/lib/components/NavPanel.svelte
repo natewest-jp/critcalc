@@ -31,7 +31,11 @@
 	const currentTool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(t.path)));
 </script>
 
-<nav class="np" aria-label="Site">
+<!-- ⚠ The landmark is named after the CONTROL that opens it (the chrome's
+	 Navigate button and the overlay's own title), never after one of the two
+	 sections inside it — it wraps Tools AND Site, so "Site" named it after half
+	 its contents and collided with the heading below (text round, 2026-09-22). -->
+<nav class="np" aria-label="Navigate">
 	<section class="np-section">
 		<h2 class="kicker np-section-title">Tools</h2>
 		{#each TOOLS as t (t.path)}
@@ -55,7 +59,7 @@
 		     is the same overlay host, so opening an area from here is the same
 		     state write the chrome glyph would have made at a wider viewport. -->
 		<button class="np-row" onclick={() => openArea('about', defaultChapter('about'))}>
-			<span class="np-name">About critcalc</span>
+			<span class="np-name">About</span>
 		</button>
 		<button class="np-row" onclick={() => openArea('help', helpChapter)}>
 			<span class="np-name">Help</span>

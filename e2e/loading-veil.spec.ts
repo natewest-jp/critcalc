@@ -45,7 +45,7 @@ test.describe('lifecycle', () => {
 		await expect(page.locator('#loading-veil')).toHaveCount(0, { timeout: 15_000 });
 
 		let reappeared = false;
-		for (const link of ['Teams', 'Visualizers']) {
+		for (const link of ['Builder', 'Visualizers']) {
 			await page.locator('.chrome-nav a', { hasText: link }).click();
 			await page.waitForTimeout(600);
 			if (await page.locator('#loading-veil').count()) reappeared = true;

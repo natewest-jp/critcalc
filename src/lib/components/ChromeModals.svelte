@@ -20,7 +20,7 @@
 </script>
 
 {#if state?.kind === 'nav'}
-	<ChromeOverlay title="Go to" onClose={closeChromeModal} {onScene}>
+	<ChromeOverlay title="Navigate" onClose={closeChromeModal} {onScene}>
 		<NavPanel />
 	</ChromeOverlay>
 {:else if state?.kind === 'settings'}

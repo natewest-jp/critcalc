@@ -52,7 +52,7 @@
 		     🎛️ Gold, by Nate's ask 2026-09-16 (trying the accent first; a darker
 		     gold is the fallback) — ⚠ this overrides §8's "chrome-toned pill"
 		     and the block-not-word rule for this one mark, on his call. -->
-		<a class="chrome-beta" href={resolve('/contribute')} title="What beta means here">beta</a>
+		<a class="chrome-beta" href={resolve('/contribute')} title="What beta means here">BETA</a>
 	</div>
 
 	<div class="chrome-center">{@render center?.()}</div>
@@ -73,7 +73,7 @@
 	     re-rasterizes text down a different path once a filter applies. (That
 	     filter — a hover halo — is gone now, but the rule stands: drawn shapes
 	     center identically in both engines.) -->
-	<nav class="chrome-actions" aria-label="Site">
+	<nav class="chrome-actions" aria-label="Site actions">
 		<!-- THE COMPASS — every destination on the site, in one control.
 
 		     ⚠ It is NARROW-ONLY, and the pairing is the whole design: below
@@ -92,7 +92,12 @@
 		     a hole: it is a 53:62 PORTRAIT mark in three paths, so it sizes to
 		     25.6px wide at the shared 30px glyph height and cannot overflow the
 		     34px button. -->
-		<button class="chrome-btn chrome-btn--nav" aria-label="Go to" title="Go to" onclick={openNav}>
+		<button
+			class="chrome-btn chrome-btn--nav"
+			aria-label="Navigate"
+			title="Navigate"
+			onclick={openNav}
+		>
 			<svg
 				class="chrome-glyph is-compass"
 				viewBox="0 0 53 62"
@@ -113,7 +118,7 @@
 		</button>
 		<button
 			class="chrome-btn"
-			aria-label="About critcalc"
+			aria-label="About"
 			title="About"
 			onclick={() => openArea('about', defaultChapter('about'))}
 		>

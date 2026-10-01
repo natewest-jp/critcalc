@@ -23,7 +23,7 @@ import type { Page } from '@playwright/test';
  * and it cannot be reordered out from under the test.
  */
 const META = [
-	{ label: 'About critcalc', title: 'About' },
+	{ label: 'About', title: 'About' },
 	{ label: 'Help', title: 'Help' },
 	{ label: 'Settings', title: 'Settings' }
 ];
