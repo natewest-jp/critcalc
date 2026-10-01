@@ -101,9 +101,10 @@
 	<p>
 		How reaction payouts scale with Elemental Mastery. Each family rides a different curve:
 		amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM), Lunar and
-		Stellar 6·EM/(2000+EM), crystallize 4.44·EM/(1400+EM). <em>All families</em> puts those five on one
-		chart; pick a family to see its reactions' damage at a given level. Drag on the chart or slide to
-		move along it.
+		Stellar 6·EM/(2000+EM), crystallize 4.44·EM/(1400+EM). <strong>All families</strong> puts those five
+		on one chart; pick a family's tab to see its reactions' damage at a given level. Drag on the chart
+		or slide to move along it, and hover or tap a row of the readout to have it read out in words below
+		the table.
 	</p>
 	<p>
 		A Reaction Bonus such as 4pc Crimson Witch adds inside the same bracket as EM, so the Reaction

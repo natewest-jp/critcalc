@@ -20,6 +20,8 @@
 	} from './reactionCurves';
 
 	type FamilyId = 'all' | 'amplifying' | 'transformative' | 'additive' | 'lunar' | 'crystallize';
+	/** What a row's first reading sentence is built from — all formatted. */
+	type Ctx = { em: number; lv: number; v: string; times: string };
 	type Curve = {
 		label: string;
 		detail: string;
@@ -28,6 +30,8 @@
 		 *  (Crystallize's shield has no Reaction Bonus bracket). */
 		em: EmCurve | null;
 		value: (em: number, level: number, rb: number) => number;
+		/** The row in plain words: the reading's first sentence. */
+		read: (c: Ctx) => string;
 	};
 
 	const SHARE = TOP_CONTRIBUTOR_SHARE;
@@ -35,86 +39,97 @@
 	const FAMILIES: {
 		id: FamilyId;
 		label: string;
+		/** The family's explainer, at the head of the readout. */
 		note: string;
 		formula?: string;
-		/** Shown in place of the Level slider when the family ignores level. */
-		levelNote?: string;
-		caveat: string;
+		caveat?: string;
 		yLabel: string;
+		/** The readout's first two column heads. */
+		rowHead: string;
+		valueHead: string;
 		usesLevel: boolean;
 		curves: Curve[];
 	}[] = [
 		{
 			id: 'all',
 			label: 'All families',
-			note: 'What EM adds to each family’s payout.',
-			levelNote: 'The EM bonus is the same at every level.',
-			caveat: 'Crystallize’s shield takes no Reaction Bonus.',
-			yLabel: 'EM bonus',
+			note: 'How much EM boosts each family of reactions. Each family has its own curve, and none of them depend on level.',
+			yLabel: 'boost from EM',
+			rowHead: 'Family',
+			valueHead: 'Boost from EM',
 			usesLevel: false,
-			// ordered by height at the right edge, so the legend reads like the chart
+			// ordered by height at the right edge, so the table reads like the chart
 			curves: [
 				{
 					label: 'Transformative',
-					detail: 'Overloaded · Swirl · Bloom · Hyperbloom · …',
+					detail: 'Overloaded · Swirl · Bloom · Hyperbloom',
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
-					value: (em, _lv, rb) => (emBonus(TRANSFORMATIVE_CURVE, em) + rb) * 100
+					value: (em, _lv, rb) => (emBonus(TRANSFORMATIVE_CURVE, em) + rb) * 100,
+					read: (c) =>
+						`At ${c.em} EM, Transformative reactions deal ${c.times} times their base damage.`
 				},
 				{
 					label: 'Additive',
 					detail: 'Spread · Aggravate',
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
-					value: (em, _lv, rb) => (emBonus(ADDITIVE_CURVE, em) + rb) * 100
+					value: (em, _lv, rb) => (emBonus(ADDITIVE_CURVE, em) + rb) * 100,
+					read: (c) => `At ${c.em} EM, Spread and Aggravate add ${c.times} times their base damage.`
 				},
 				{
 					label: 'Lunar & Stellar',
 					detail: 'Lunar-Charged · Lunar-Crystallize · Stellar Swirl',
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
-					value: (em, _lv, rb) => (emBonus(SPECIAL_CURVE, em) + rb) * 100
+					value: (em, _lv, rb) => (emBonus(SPECIAL_CURVE, em) + rb) * 100,
+					read: (c) =>
+						`At ${c.em} EM, Lunar and Stellar reactions deal ${c.times} times their base damage.`
 				},
 				{
 					label: 'Crystallize',
 					detail: 'Shield',
 					color: 'var(--el-geo-main)',
 					em: null,
-					value: (em) => emBonus(CRYSTALLIZE_CURVE, em) * 100
+					value: (em) => emBonus(CRYSTALLIZE_CURVE, em) * 100,
+					read: (c) => `At ${c.em} EM, a Crystallize shield is ${c.times} times its base strength.`
 				},
 				{
 					label: 'Amplifying',
 					detail: 'Vaporize · Melt',
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
-					value: (em, _lv, rb) => (emBonus(AMP_CURVE, em) + rb) * 100
+					value: (em, _lv, rb) => (emBonus(AMP_CURVE, em) + rb) * 100,
+					read: (c) =>
+						`At ${c.em} EM, the Vaporize and Melt multipliers are ${c.times} times their base ×2 or ×1.5.`
 				}
 			]
 		},
 		{
 			id: 'amplifying',
 			label: 'Amplifying',
-			note: 'Vaporize and Melt multiply the whole hit — more EM pushes the multiplier higher with diminishing returns, and character level plays no part.',
+			note: 'Vaporize and Melt multiply the whole hit, and EM raises the multiplier with diminishing returns. Level plays no part, because the hit being multiplied already scales with everything else.',
 			formula: '2.78·EM/(1400+EM)',
-			levelNote:
-				'Amplifying reactions ignore level — the multiplier rides the hit, which already scales with everything else.',
-			caveat: 'Before enemy RES.',
 			yLabel: 'hit multiplier',
+			rowHead: 'Reaction',
+			valueHead: 'Multiplier',
 			usesLevel: false,
 			curves: [
 				{
 					label: 'Forward ×2',
-					detail: 'Hydro→Pyro Vaporize · Pyro→Cryo Melt',
+					detail: 'Hydro on Pyro Vaporize · Pyro on Cryo Melt',
 					color: 'var(--el-hydro-main)',
 					em: AMP_CURVE,
-					value: (em, _lv, rb) => ampMultiplier(2, em, rb)
+					value: (em, _lv, rb) => ampMultiplier(2, em, rb),
+					read: (c) => `At ${c.em} EM, a forward Vaporize or Melt multiplies its hit by ${c.v}.`
 				},
 				{
 					label: 'Reverse ×1.5',
-					detail: 'Pyro→Hydro Vaporize · Cryo→Pyro Melt',
+					detail: 'Pyro on Hydro Vaporize · Cryo on Pyro Melt',
 					color: 'var(--el-cryo-main)',
 					em: AMP_CURVE,
-					value: (em, _lv, rb) => ampMultiplier(1.5, em, rb)
+					value: (em, _lv, rb) => ampMultiplier(1.5, em, rb),
+					read: (c) => `At ${c.em} EM, a reverse Vaporize or Melt multiplies its hit by ${c.v}.`
 				}
 			]
 		},
@@ -123,116 +138,144 @@
 			label: 'Transformative',
 			note: 'Fixed damage from the character’s level and EM — for most characters, crit, ATK, and DMG% do nothing. Every reaction rides the same curve with its own multiplier.',
 			formula: '16·EM/(2000+EM)',
-			caveat: 'Before enemy RES.',
 			yLabel: 'damage',
+			rowHead: 'Reaction',
+			valueHead: 'Damage',
 			usesLevel: true,
 			curves: [
 				{
-					label: '×3',
-					detail: 'Hyperbloom · Burgeon · Shatter',
+					label: 'Hyperbloom · Burgeon · Shatter',
+					detail: '×3',
 					color: 'var(--el-dendro-main)',
 					em: TRANSFORMATIVE_CURVE,
-					value: (em, lv, rb) => transformativeDamage(3, lv, em, rb)
+					value: (em, lv, rb) => transformativeDamage(3, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, a Hyperbloom, Burgeon, or Shatter hit deals ${c.v} damage before enemy RES.`
 				},
 				{
-					label: '×2.75',
-					detail: 'Overload',
+					label: 'Overloaded',
+					detail: '×2.75',
 					color: 'var(--el-pyro-main)',
 					em: TRANSFORMATIVE_CURVE,
-					value: (em, lv, rb) => transformativeDamage(2.75, lv, em, rb)
+					value: (em, lv, rb) => transformativeDamage(2.75, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, an Overloaded explosion deals ${c.v} damage before enemy RES.`
 				},
 				{
-					label: '×2',
-					detail: 'Electro-Charged (per tick) · Bloom',
+					label: 'Electro-Charged · Bloom',
+					detail: '×2, Electro-Charged per tick',
 					color: 'var(--el-electro-main)',
 					em: TRANSFORMATIVE_CURVE,
-					value: (em, lv, rb) => transformativeDamage(2, lv, em, rb)
+					value: (em, lv, rb) => transformativeDamage(2, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, an Electro-Charged tick or a Bloom deals ${c.v} damage before enemy RES.`
 				},
 				{
-					label: '×1.5',
-					detail: 'Superconduct',
+					label: 'Superconduct',
+					detail: '×1.5',
 					color: 'var(--el-cryo-main)',
 					em: TRANSFORMATIVE_CURVE,
-					value: (em, lv, rb) => transformativeDamage(1.5, lv, em, rb)
+					value: (em, lv, rb) => transformativeDamage(1.5, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, a Superconduct hit deals ${c.v} damage before enemy RES.`
 				},
 				{
-					label: '×0.6',
-					detail: 'Swirl',
+					label: 'Swirl',
+					detail: '×0.6',
 					color: 'var(--el-anemo-main)',
 					em: TRANSFORMATIVE_CURVE,
-					value: (em, lv, rb) => transformativeDamage(0.6, lv, em, rb)
+					value: (em, lv, rb) => transformativeDamage(0.6, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, a Swirl hit deals ${c.v} damage before enemy RES.`
 				},
 				{
-					label: '×0.25',
-					detail: 'Burning (per tick)',
+					label: 'Burning',
+					detail: '×0.25 per tick',
 					color: 'var(--rx-burning)',
 					em: TRANSFORMATIVE_CURVE,
-					value: (em, lv, rb) => transformativeDamage(0.25, lv, em, rb)
+					value: (em, lv, rb) => transformativeDamage(0.25, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, each Burning tick deals ${c.v} damage before enemy RES.`
 				}
 			]
 		},
 		{
 			id: 'additive',
 			label: 'Additive',
-			note: 'Spread and Aggravate ADD a flat chunk of damage to the triggering hit — the chunk then crits and scales with DMG% like the rest of the hit.',
+			note: 'Spread and Aggravate add a flat chunk of damage to the triggering hit — the chunk then crits and scales with DMG% like the rest of the hit.',
 			formula: '5·EM/(1200+EM)',
 			caveat: 'Before enemy RES.',
 			yLabel: 'flat DMG added',
+			rowHead: 'Reaction',
+			valueHead: 'DMG added',
 			usesLevel: true,
 			curves: [
 				{
-					label: 'Spread ×1.25',
-					detail: 'Dendro hit on Quicken',
+					label: 'Spread',
+					detail: '×1.25, a Dendro hit on Quicken',
 					color: 'var(--el-dendro-main)',
 					em: ADDITIVE_CURVE,
-					value: (em, lv, rb) => additiveDamage(1.25, lv, em, rb)
+					value: (em, lv, rb) => additiveDamage(1.25, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, Spread adds ${c.v} damage to the Dendro hit that triggers it.`
 				},
 				{
-					label: 'Aggravate ×1.15',
-					detail: 'Electro hit on Quicken',
+					label: 'Aggravate',
+					detail: '×1.15, an Electro hit on Quicken',
 					color: 'var(--el-electro-main)',
 					em: ADDITIVE_CURVE,
-					value: (em, lv, rb) => additiveDamage(1.15, lv, em, rb)
+					value: (em, lv, rb) => additiveDamage(1.15, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, Aggravate adds ${c.v} damage to the Electro hit that triggers it.`
 				}
 			]
 		},
 		{
 			id: 'lunar',
 			label: 'Lunar & Stellar',
-			note: 'Damage from level and EM on a gentler curve than Transformative, and it can crit. Each party member who contributes is computed separately; these curves are the top contributor’s 60% share. Lunar-Bloom and Stellar-Conduct deal damage only through abilities.',
+			note: 'Damage from level and EM on a gentler curve than Transformative, and it can crit. Each party member who contributes is computed separately; these figures are the top contributor’s 60% share. Lunar-Bloom and Stellar-Conduct deal damage only through abilities.',
 			formula: '6·EM/(2000+EM)',
-			caveat:
-				'Before enemy RES and crit. Stellar Swirl’s numbers come from gcsim and aren’t yet confirmed in game.',
+			caveat: 'Stellar Swirl’s numbers come from gcsim and aren’t yet confirmed in game.',
 			yLabel: 'damage',
+			rowHead: 'Reaction',
+			valueHead: 'Damage',
 			usesLevel: true,
 			curves: [
 				{
-					label: '×1.8',
-					detail: 'Lunar-Charged (per tick) · Stellar Swirl blast, 3+ swirls',
+					label: 'Lunar-Charged · Stellar Swirl blast',
+					detail: '×1.8, per tick · after 3+ swirls',
 					color: 'var(--el-electro-main)',
 					em: SPECIAL_CURVE,
-					value: (em, lv, rb) => SHARE * specialReactionDamage(3, lv, em, rb)
+					value: (em, lv, rb) => SHARE * specialReactionDamage(3, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, a Lunar-Charged tick, or a Stellar Swirl blast after 3+ swirls, deals ${c.v} damage before enemy RES and crit.`
 				},
 				{
-					label: '×1.2',
-					detail: 'Stellar Swirl blast, 1–2 swirls',
+					label: 'Stellar Swirl blast',
+					detail: '×1.2, after 1–2 swirls',
 					color: 'var(--el-cryo-main)',
 					em: SPECIAL_CURVE,
-					value: (em, lv, rb) => SHARE * specialReactionDamage(2, lv, em, rb)
+					value: (em, lv, rb) => SHARE * specialReactionDamage(2, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, a Stellar Swirl blast after 1–2 swirls deals ${c.v} damage before enemy RES and crit.`
 				},
 				{
-					label: '×0.96',
-					detail: 'Lunar-Crystallize (per Moondrift hit)',
+					label: 'Lunar-Crystallize',
+					detail: '×0.96, per Moondrift hit',
 					color: 'var(--el-geo-main)',
 					em: SPECIAL_CURVE,
-					value: (em, lv, rb) => SHARE * specialReactionDamage(1.6, lv, em, rb)
+					value: (em, lv, rb) => SHARE * specialReactionDamage(1.6, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, each Moondrift hit from Lunar-Crystallize deals ${c.v} damage before enemy RES and crit.`
 				},
 				{
-					label: '×0.45',
-					detail: 'Stellar Swirl',
+					label: 'Stellar Swirl',
+					detail: '×0.45',
 					color: 'var(--el-anemo-main)',
 					em: SPECIAL_CURVE,
-					value: (em, lv, rb) => SHARE * specialReactionDamage(0.75, lv, em, rb)
+					value: (em, lv, rb) => SHARE * specialReactionDamage(0.75, lv, em, rb),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, a Stellar Swirl hit deals ${c.v} damage before enemy RES and crit.`
 				}
 			]
 		},
@@ -241,16 +284,19 @@
 			label: 'Crystallize',
 			note: 'Crystallize shards grant a shield that grows with the triggering character’s level and EM — on its own level table, higher than the damage one.',
 			formula: '4.44·EM/(1400+EM)',
-			caveat: 'Before the 150% same-element bonus.',
 			yLabel: 'shield HP',
+			rowHead: 'Shard',
+			valueHead: 'Shield HP',
 			usesLevel: true,
 			curves: [
 				{
 					label: 'Shield',
-					detail: 'before the 150% same-element bonus',
+					detail: 'any element',
 					color: 'var(--el-geo-main)',
 					em: null,
-					value: (em, lv) => crystallizeShieldHp(lv, em)
+					value: (em, lv) => crystallizeShieldHp(lv, em),
+					read: (c) =>
+						`At ${c.em} EM and level ${c.lv}, a Crystallize shield absorbs ${c.v} damage, or 150% of that against its own element.`
 				}
 			]
 		}
@@ -262,12 +308,19 @@
 	/** Reaction Bonus in whole percent. */
 	let rbPct = $state(0);
 	const rb = $derived(rbPct / 100);
+	/** The row the reading sentence describes — follows hover, focus and taps. */
+	let readIdx = $state(0);
 
 	const family = $derived(FAMILIES.find((f) => f.id === familyId)!);
 	const takesRb = $derived(family.curves.some((c) => c.em));
 
+	function pickFamily(id: FamilyId) {
+		familyId = id;
+		readIdx = 0;
+	}
+
 	export function reset() {
-		familyId = 'all';
+		pickFamily('all');
 		em = 200;
 		level = 90;
 		rbPct = 0;
@@ -317,6 +370,7 @@
 	);
 
 	const fmtInt = (v: number) => Math.round(v).toLocaleString('en-US');
+	const fmt1 = (v: number) => v.toLocaleString('en-US', { maximumFractionDigits: 1 });
 	const fmt = (v: number) =>
 		family.id === 'all'
 			? `+${fmtInt(v)}%`
@@ -331,7 +385,7 @@
 		return family.id === 'all'
 			? `+${d.toFixed(1)}%`
 			: family.id === 'amplifying'
-				? `+${d.toFixed(3)}×`
+				? `+${d.toFixed(2)}`
 				: `+${fmtInt(d)}`;
 	};
 	const fmtTick = (v: number) =>
@@ -344,10 +398,39 @@
 					: `${Math.round(v)}`;
 
 	/** What the current Reaction Bonus is worth in EM on one curve, from here. */
+	const worthOf = (curve: EmCurve) => emWorthOfBonus(curve, em, rb);
 	const fmtWorth = (curve: EmCurve) => {
-		const n = emWorthOfBonus(curve, em, rb);
-		return Number.isFinite(n) ? `+${fmtInt(n)} EM` : 'more than any EM';
+		const n = worthOf(curve);
+		return Number.isFinite(n) ? `${fmtInt(n)} EM` : 'beyond any EM';
 	};
+
+	// ── The reading: a row, in sentences ─────────────────────────────────
+	// Every row's reading is built and stacked in one grid cell, with only the
+	// chosen one visible — the box is as tall as the LONGEST, so moving between
+	// rows never shifts the Build panel below.
+	function readingOf(c: Curve): string {
+		const v = at(c, em);
+		const out = [
+			c.read({ em, lv: level, v: fmt(v), times: fmt1(1 + v / 100) }),
+			family.id === 'all'
+				? `Another ${GAIN_STEP} EM would raise the boost to ${fmt(at(c, em + GAIN_STEP))}.`
+				: `Another ${GAIN_STEP} EM would raise it to ${fmt(at(c, em + GAIN_STEP))}.`
+		];
+		// only where the slider is on screen — Crystallize's own tab hides it
+		if (rbPct > 0 && takesRb) {
+			if (!c.em) out.push('A Reaction Bonus doesn’t apply to it.');
+			else {
+				const n = worthOf(c.em);
+				out.push(
+					Number.isFinite(n)
+						? `That includes the +${rbPct}% Reaction Bonus, which does the same job as ${fmtInt(n)} more EM.`
+						: `That includes the +${rbPct}% Reaction Bonus, which does more than any amount of EM could.`
+				);
+			}
+		}
+		return out.join(' ');
+	}
+	const readings = $derived(family.curves.map(readingOf));
 
 	// The chart moves the EM marker on press-and-drag only — a plain hover
 	// used to move it too, and leave it wherever the pointer crossed out.
@@ -399,6 +482,21 @@
 </script>
 
 <div class="instrument">
+	<!-- The family picks what the chart draws, so it sits on the chart. -->
+	<div class="segment rx-tabs" role="radiogroup" aria-label="Reaction family">
+		{#each FAMILIES as f (f.id)}
+			<button
+				class="btn"
+				class:is-active={familyId === f.id}
+				role="radio"
+				aria-checked={familyId === f.id}
+				onclick={() => pickFamily(f.id)}
+			>
+				{f.label}
+			</button>
+		{/each}
+	</div>
+
 	<div class="rx-chart ctx-dark">
 		<div class="rx-graph" bind:clientWidth={graphW}>
 			<svg
@@ -447,13 +545,19 @@
 						{fmtTick(v)}
 					</text>
 				{/each}
-				<text x={PADL - 7} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="end">
+				<text x={0} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
 					{family.yLabel}
 				</text>
 
-				<!-- Curves -->
-				{#each paths as p (p.label)}
-					<path d={p.d} fill="none" stroke={p.color} stroke-width="2" stroke-linejoin="round" />
+				<!-- Curves — the one being read draws on top, a little heavier -->
+				{#each paths as p, i (p.label)}
+					<path
+						d={p.d}
+						fill="none"
+						stroke={p.color}
+						stroke-width={i === readIdx ? 2.75 : 2}
+						stroke-linejoin="round"
+					/>
 				{/each}
 
 				<!-- EM marker -->
@@ -479,28 +583,59 @@
 		</div>
 	</div>
 
-	<div class="rx-panels panels">
-		<div class="panel">
-			<p class="kicker">Reaction Family</p>
-			<div class="chips">
-				{#each FAMILIES as f (f.id)}
-					<button
-						class="chip chip--control"
-						class:active={familyId === f.id}
-						onclick={() => (familyId = f.id)}
+	<div class="panel panel--paper rx-readout">
+		<p class="kicker">Readout</p>
+		<p class="note rx-intro">{family.note}</p>
+		<table class="rx-table">
+			<thead>
+				<tr>
+					<th scope="col">{family.rowHead}</th>
+					<th scope="col" class="rx-num">{family.valueHead}</th>
+					<th scope="col" class="rx-num">Next {GAIN_STEP} EM adds</th>
+					{#if family.id === 'all' && rbPct > 0}
+						<th scope="col" class="rx-num">+{rbPct}% bonus is worth</th>
+					{/if}
+				</tr>
+			</thead>
+			<tbody>
+				{#each family.curves as c, i (c.label)}
+					<tr
+						class:is-read={i === readIdx}
+						tabindex="0"
+						onpointerenter={() => (readIdx = i)}
+						onfocus={() => (readIdx = i)}
+						onclick={() => (readIdx = i)}
 					>
-						{f.label}
-					</button>
+						<th scope="row">
+							<span class="rx-dot" style:background={c.color}></span>
+							<span class="rx-name">{c.label}</span>
+							<span class="rx-detail">{c.detail}</span>
+						</th>
+						<td class="rx-num rx-strong">{fmt(at(c, em))}</td>
+						<td class="rx-num">{fmtGain(c)}</td>
+						{#if family.id === 'all' && rbPct > 0}
+							<td class="rx-num">{c.em ? fmtWorth(c.em) : 'doesn’t apply'}</td>
+						{/if}
+					</tr>
 				{/each}
-			</div>
-			<p class="note">
-				{family.note}
-				{#if family.formula}<span class="rx-formula">{family.formula}</span>{/if}
-			</p>
+			</tbody>
+		</table>
+		<div class="rx-reading" aria-live="polite">
+			{#each readings as r, i (i)}
+				<p class:is-read={i === readIdx} aria-hidden={i !== readIdx}>{r}</p>
+			{/each}
 		</div>
+		{#if family.formula || family.caveat}
+			<p class="rx-receipt">
+				{#if family.formula}<span class="rx-formula">{family.formula}</span>{/if}
+				{#if family.caveat}<span>{family.caveat}</span>{/if}
+			</p>
+		{/if}
+	</div>
 
-		<div class="panel">
-			<p class="kicker">Build</p>
+	<div class="panel rx-build">
+		<p class="kicker">Build</p>
+		<div class="rx-sliders">
 			<div class="slider-control">
 				<div class="slider-header">
 					<span class="slider-label">Elemental Mastery</span>
@@ -559,37 +694,7 @@
 						</div>
 					</div>
 				</div>
-			{:else if family.levelNote}
-				<p class="note">{family.levelNote}</p>
 			{/if}
-		</div>
-
-		<div class="panel panel--paper">
-			<p class="kicker">Readout</p>
-			{#each family.curves as c (c.label)}
-				<div class="rx-read">
-					<span class="rx-dot" style:background={c.color}></span>
-					<span class="rx-read-body">
-						<span class="rx-read-label">{c.label}</span>
-						<span class="rx-read-detail">{c.detail}</span>
-					</span>
-					<span class="rx-read-values">
-						<span class="rx-strong">{fmt(at(c, em))}</span>
-						<span class="rx-gain">next +{GAIN_STEP} EM: {fmtGain(c)}</span>
-						{#if family.id === 'all' && rbPct > 0}
-							<span class="rx-gain">
-								{c.em ? `+${rbPct}% ≈ ${fmtWorth(c.em)}` : 'no Reaction Bonus'}
-							</span>
-						{/if}
-					</span>
-				</div>
-			{/each}
-			{#if family.id !== 'all' && rbPct > 0 && family.curves[0].em}
-				<p class="note">
-					A +{rbPct}% Reaction Bonus is worth {fmtWorth(family.curves[0].em)} from here.
-				</p>
-			{/if}
-			<p class="note">{family.caveat}</p>
 		</div>
 	</div>
 </div>
@@ -614,61 +719,142 @@
 		font-family: var(--font-body);
 	}
 
-	.rx-read {
-		display: flex;
-		align-items: center;
-		gap: 0.55rem;
+	/* Six families outgrow a narrow tile's width — wrap rather than scroll. */
+	.rx-tabs {
+		flex-wrap: wrap;
+		justify-self: start;
+	}
+
+	/* ── The readout: one row per curve, the columns' heads do the explaining,
+	   and the reading says the chosen row in words ── */
+	.rx-intro {
+		margin: 0 0 0.6rem;
+	}
+
+	.rx-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: var(--fs-md);
+		line-height: var(--lh-snug);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.rx-table thead th {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+		text-align: left;
+		padding: 0 0.5rem 0.3rem;
+		white-space: nowrap;
+	}
+
+	.rx-table tbody th,
+	.rx-table tbody td {
+		padding: 0.25rem 0.5rem;
+		border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+		vertical-align: baseline;
+	}
+
+	.rx-table tbody th {
+		text-align: left;
+		font-weight: inherit;
+	}
+
+	.rx-table tbody tr {
+		cursor: default;
+		transition: background-color var(--t-snap);
+	}
+
+	.rx-table tbody tr.is-read {
+		background: color-mix(in srgb, var(--text) 7%, transparent);
+	}
+
+	.rx-table tbody tr:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+
+	.rx-num {
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.rx-table thead th.rx-num {
+		text-align: right;
 	}
 
 	.rx-dot {
+		display: inline-block;
 		width: 9px;
 		height: 9px;
 		border-radius: 50%;
-		flex-shrink: 0;
+		margin-right: 0.45rem;
 	}
 
-	.rx-read-body {
-		display: grid;
-		line-height: var(--lh-tight);
-		min-width: 0;
-	}
-
-	.rx-read-label {
-		font-size: var(--fs-xl);
+	.rx-name {
 		font-weight: var(--fw-semibold);
+		margin-right: 0.45rem;
 	}
 
-	.rx-read-detail {
-		font-size: var(--fs-md);
+	.rx-detail {
+		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
 
-	.rx-read-values {
-		margin-left: auto;
-		display: grid;
-		justify-items: end;
-		line-height: var(--lh-tight);
-	}
-
 	.rx-strong {
-		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
-		font-size: var(--fs-2xl);
 	}
 
-	.rx-gain {
-		font-family: var(--font-body);
+	.rx-reading {
+		display: grid;
+		margin-top: 0.6rem;
+		font-size: var(--fs-md);
+		line-height: var(--lh-normal);
+	}
+
+	.rx-reading > p {
+		grid-area: 1 / 1;
+		margin: 0;
+		visibility: hidden;
+	}
+
+	.rx-reading > p.is-read {
+		visibility: visible;
+	}
+
+	.rx-receipt {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.2rem 1rem;
+		margin: 0.4rem 0 0;
 		font-size: var(--fs-sm);
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
-		white-space: nowrap;
+	}
+
+	.rx-formula {
+		font-family: var(--font-body);
+	}
+
+	/* ── Build: one full-width box, the sliders side by side ── */
+	.rx-sliders {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: 0.5rem 1.5rem;
+		/* top, not stretch: the Level control is taller by its marks, and a
+		   stretched neighbour spreads that height into its own rows, dropping
+		   its label below Level's */
+		align-items: start;
 	}
 
 	/* The Level slider's 90 / 95 / 100 marks. Above 90 only 95 and 100 exist,
 	   so the slider keeps the gaps' width and jumps them; the marks say where
 	   it can land. Positioned along the thumb's TRAVEL — its centre runs from
 	   half a thumb (15px, app.css .slider) in from either end. */
+	/* grid, so the input is blockified like its siblings' — inline, it sat on a
+	   text line and rode 12px lower than the other two tracks */
 	.rx-level {
 		position: relative;
+		display: grid;
 	}
 
 	.rx-level-marks {
@@ -684,13 +870,5 @@
 		width: 1px;
 		height: 5px;
 		background: color-mix(in srgb, var(--text) 35%, transparent);
-	}
-
-	/* The receipt: exact curve formula, tucked after the plain-language line */
-	.rx-formula {
-		display: block;
-		font-family: var(--font-body);
-		font-size: var(--fs-md);
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 </style>
