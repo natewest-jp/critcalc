@@ -16,6 +16,7 @@
 		CRYSTALLIZE_CURVE,
 		TOP_CONTRIBUTOR_SHARE,
 		MAX_LEVEL,
+		RB_MAX,
 		type EmCurve
 	} from './reactionCurves';
 
@@ -645,7 +646,7 @@
 					<input
 						type="range"
 						min="0"
-						max="100"
+						max={RB_MAX}
 						step="5"
 						bind:value={rbPct}
 						class="slider"

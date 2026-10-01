@@ -74,13 +74,12 @@ export const DEFAULT_SHEET: SheetInputs = {
 	defIgnorePct: 0
 };
 
-/** Slider ranges for the three reaction buckets, from what the game offers
- *  today (2026-10, 7.1). Reaction Bonus: Ifa's A1 alone reaches 225% on Swirl,
- *  and 7.x weapons + Aubade + Ascendant Gleam stack past 150% on Lunar/Stellar.
+/** Slider ranges for the reaction buckets, from what the game offers today
+ *  (2026-10, 7.1). Reaction Bonus: RB_MAX, shared with Reaction Curves.
  *  Base DMG Bonus: two benedictions (14% each) + Ineffa C1 (≤50%) + Flins (20%)
  *  ≈ 98% on Lunar-Charged. Elevation: Odette C6 (45%) + Sandrone C6 (20%) ≈ 65%
  *  on the Stellar reactions. Sources: the corpus census + gcsim, 2026-10-01. */
-export const RB_MAX = 250;
+export { RB_MAX } from './reactionCurves';
 export const BASE_DMG_MAX = 150;
 export const ELEVATION_MAX = 100;
 
