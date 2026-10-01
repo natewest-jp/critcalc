@@ -58,7 +58,7 @@
 		<h2 class="title" id="tf-title">All your tabs are in use</h2>
 		<p class="tf-body">
 			Nothing you had open was replaced. The shared rotation is in
-			<strong>Saved Rotations</strong>, as <strong>{name}</strong> — close a tab and load it there whenever
+			<strong>Saved rotations</strong>, as <strong>{name}</strong> — close a tab and load it there whenever
 			you want it.
 		</p>
 		<div class="tf-actions">
@@ -67,7 +67,7 @@
 			</button>
 			<button class="btn btn--sm btn--primary" type="button" onclick={onOpenBank}>
 				<Mark name="load" />
-				Open Saved Rotations
+				Open saved rotations
 			</button>
 		</div>
 	</div>

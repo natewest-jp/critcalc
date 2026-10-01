@@ -3024,7 +3024,7 @@
 												<span
 													class="rp-buff-label"
 													style:max-width={labelCapPx(g, procRow.bars[bi + 1], false)}
-													>{procRow.label} trigger CD</span
+													>{procRow.label} trigger cooldown</span
 												>
 											</div>
 										{/each}

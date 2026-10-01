@@ -475,7 +475,7 @@
 	<section class="sp-section sp-section--danger">
 		<h2 class="kicker sp-section-title">Reset saved data</h2>
 
-		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadout labels', 'Clears every saved weapon and artifact label.', () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation in your save bank.', () => savedNotations.clear()]] as const as [key, name, desc, fn] (key)}
+		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadout labels', 'Clears every saved weapon and artifact label.', () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation in Saved rotations.', () => savedNotations.clear()]] as const as [key, name, desc, fn] (key)}
 			<div class="sp-row">
 				<span class="sp-label">
 					<span class="sp-name">{name}</span>

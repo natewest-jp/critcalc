@@ -92,7 +92,7 @@
 			{#if tip.duration != null && tip.procCooldown != null}
 				·
 			{/if}
-			{#if tip.procCooldown != null}CD {fmtSecs(tip.procCooldown)}s{/if}
+			{#if tip.procCooldown != null}Cooldown {fmtSecs(tip.procCooldown)}s{/if}
 		</div>
 	{/if}
 </div>
