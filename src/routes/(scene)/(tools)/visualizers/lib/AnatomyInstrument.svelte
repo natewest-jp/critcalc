@@ -399,7 +399,7 @@
 	let trackW = $state(0);
 	/** Chevrons run the bar's whole length, one per CHEV_PITCH px, so even a
 	 *  ×1.14 sliver says which way it goes; one needs CHEV_MIN_PX to show. */
-	const CHEV_PITCH = 11;
+	const CHEV_PITCH = 12;
 	const CHEV_MIN_PX = 9;
 	const chevronsFor = (px: number) =>
 		px < CHEV_MIN_PX ? 0 : Math.max(1, Math.floor((px - 7) / CHEV_PITCH));
@@ -1129,21 +1129,22 @@
 	   has drawn 1px gaps in tiled bar backgrounds) and no element opacity (the
 	   sub-pixel law). Drawn pointing right from the right edge; a cut mirrors
 	   the whole bar's content. */
+	/* Full height of the bar (⚓ Nate) — the pitch in `right` must match
+	   CHEV_PITCH in the script */
 	.an-wf-chev {
 		position: absolute;
-		top: 50%;
-		right: calc(6px + var(--k) * 11px);
-		width: 6px;
-		height: 10px;
-		transform: translateY(-50%);
+		top: 0;
+		bottom: 0;
+		right: calc(6px + var(--k) * 12px);
+		width: 8px;
 		background: color-mix(in srgb, var(--arrow-c) calc(var(--a) * 100%), transparent);
-		clip-path: polygon(0 0, 45% 0, 100% 50%, 45% 100%, 0 100%, 55% 50%);
+		clip-path: polygon(0 0, 40% 0, 100% 50%, 40% 100%, 0 100%, 60% 50%);
 	}
 
 	.an-wf-bar.is-loss .an-wf-chev {
 		right: auto;
-		left: calc(6px + var(--k) * 11px);
-		clip-path: polygon(100% 0, 55% 0, 0 50%, 55% 100%, 100% 100%, 45% 50%);
+		left: calc(6px + var(--k) * 12px);
+		clip-path: polygon(100% 0, 60% 0, 0 50%, 60% 100%, 100% 100%, 40% 50%);
 	}
 
 	.an-wf-start {
