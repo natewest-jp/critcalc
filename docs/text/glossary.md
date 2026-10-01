@@ -229,13 +229,15 @@ read aloud as "5 black star".
 
 ## 4a. ✅ House phrases settled by a closed worksheet
 
-| Phrase                        | Ruling                                                                                                                        | Where it was set               |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| **an unofficial fan project** | ⚓ The house phrase. ⛔ Retire "an independent, non-commercial fan project" (About, FAQ — pass 2 aligns them).                | `sheets/site-chrome.md` §6     |
-| **Navigate**                  | The compass button, the overlay it opens, and that overlay's `<nav>` landmark — ⚓ one name for all three.                    | `sheets/site-chrome.md` §2     |
-| **Site actions**              | The chrome's About/Help/Settings/compass cluster. ⛔ Not "Site", which is the nav overlay's section heading.                  | `sheets/site-chrome.md` §1     |
-| **Builder**                   | The Team Builder's tool-switcher short form. ⛔ Retire "Teams".                                                               | `sheets/site-chrome.md` §5     |
-| **About**                     | The chrome glyph and the nav row. ⚠️ The `/about` **chapter heading** is still "About critcalc" — a different string, pass 2. | `sheets/site-chrome.md` §1, §4 |
+| Phrase                        | Ruling                                                                                                                        | Where it was set                   |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| **an unofficial fan project** | ⚓ The house phrase. ⛔ Retire "an independent, non-commercial fan project" (About, FAQ — pass 2 aligns them).                | `sheets/site-chrome.md` §6         |
+| **Navigate**                  | The compass button, the overlay it opens, and that overlay's `<nav>` landmark — ⚓ one name for all three.                    | `sheets/site-chrome.md` §2         |
+| **Site actions**              | The chrome's About/Help/Settings/compass cluster. ⛔ Not "Site", which is the nav overlay's section heading.                  | `sheets/site-chrome.md` §1         |
+| **Builder**                   | The Team Builder's tool-switcher short form. ⛔ Retire "Teams".                                                               | `sheets/site-chrome.md` §5         |
+| **About**                     | The chrome glyph and the nav row. ⚠️ The `/about` **chapter heading** is still "About critcalc" — a different string, pass 2. | `sheets/site-chrome.md` §1, §4     |
+| **Saved rotations**           | ⚓ Sentence case, one name; ⛔ "Saved Rotations", "save bank". A verb before it lowercases it ("Open saved rotations").       | Nate, 2026-10-01 (ledger check-in) |
+| **CD**                        | ⚓ CRIT DMG **only**. Cooldown is always spelled out.                                                                         | Nate, 2026-10-01 (ledger check-in) |
 
 ---
 
