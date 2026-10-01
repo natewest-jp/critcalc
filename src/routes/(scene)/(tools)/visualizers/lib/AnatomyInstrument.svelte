@@ -68,21 +68,35 @@
 	// ×2.04 runs forward. Labels live in their own columns, so a bar's length is
 	// its multiplier and nothing else.
 	//
-	// Hues: the dataviz reference categorical eight, assigned so EVERY family's
-	// adjacent rows pass the validator in dark mode on the dimmed night (16 of
-	// the 40,320 assignments do). Two pairs share a slot by meaning and never
-	// meet: the starting magnitude (scaling stat / level) and the bonus bracket
-	// (DMG Bonus / Base DMG Bonus). Provisional until Nate's eye.
-	const C = {
-		start: '#d95926',
-		bonus: '#199e70',
-		em: '#c98500',
-		reaction: '#3987e5',
-		crit: '#9085e9',
-		elevation: '#e66767',
-		def: '#008300',
-		res: '#d55181'
+	// Colour follows the house rule (⚓ Nate, 2026-08-11 bar rework): content
+	// gets chroma, annotation doesn't. The reaction is the GAME, so its row
+	// wears the trigger element's colour (the mapping Reaction Curves uses);
+	// every stat bracket is our READING of the hit and wears --glass-bar, the
+	// planner's buff material. ⛔ No categorical palette: each row is labelled
+	// in its own row, so a hue per row would carry nothing the label doesn't.
+	const RX_COLOR: Record<string, string> = {
+		vape2: 'var(--el-hydro-main)',
+		vape15: 'var(--el-pyro-main)',
+		melt2: 'var(--el-pyro-main)',
+		melt15: 'var(--el-cryo-main)',
+		spread: 'var(--el-dendro-main)',
+		aggravate: 'var(--el-electro-main)',
+		hyperbloom: 'var(--el-dendro-main)',
+		burgeon: 'var(--el-dendro-main)',
+		shatter: 'var(--rx-frozen)',
+		overload: 'var(--el-pyro-main)',
+		ec: 'var(--el-electro-main)',
+		bloom: 'var(--el-dendro-main)',
+		superconduct: 'var(--el-cryo-main)',
+		swirl: 'var(--el-anemo-main)',
+		burning: 'var(--rx-burning)',
+		lc: 'var(--el-electro-main)',
+		lcrys: 'var(--el-geo-main)',
+		ssw: 'var(--el-anemo-main)',
+		sswBlast12: 'var(--el-cryo-main)',
+		sswBlast3: 'var(--el-cryo-main)'
 	};
+	const rxColor = $derived(RX_COLOR[reaction.id] ?? null);
 
 	/** One row: a starting value, a multiplier, a subtotal, or the result. */
 	type Row = {
@@ -95,13 +109,19 @@
 		real: string;
 		/** The multiplier (kind 'mult') or the value (the others) */
 		value: number;
-		color: string;
+		/** null = the glass material (annotation); a colour = the game's own chroma */
+		color: string | null;
 		/** The row in a sentence, for whoever hovers or taps it */
 		read: string;
 	};
 
 	const fmtX = (v: number) => `×${v >= 10 ? v.toFixed(1) : v.toFixed(2)}`;
 	const fmtInt = (v: number) => Math.round(v).toLocaleString('en-US');
+	/** ×1.62 → "+62%", ×0.49 → "−51%" (a true minus sign) */
+	const fmtChange = (v: number) => {
+		const d = Math.round((v - 1) * 100);
+		return d >= 0 ? `+${d}%` : `−${Math.abs(d)}%`;
+	};
 	const pct = (v: number) => `${Math.round(v * 100)}%`;
 	const bonusWord = $derived(rb > 0 ? ' + Reaction Bonus' : '');
 	const emReal = $derived(rb > 0 ? `${sheet.em} EM · +${rb}%` : `${sheet.em} EM`);
@@ -118,7 +138,7 @@
 		formula: '1 + CRIT Rate × CRIT DMG',
 		real: `${sheet.cr}% · ${sheet.cd}%`,
 		value: critFactor(sheet),
-		color: C.crit,
+		color: null,
 		read: `With ${sheet.cr}% CRIT Rate and ${sheet.cd}% CRIT DMG, the hit would average ${fmtX(critFactor(sheet))} a non-crit.`
 	});
 	const dmgRow = $derived<Row>({
@@ -128,7 +148,7 @@
 		formula: '1 + DMG Bonus',
 		real: `${sheet.dmgPct.toFixed(1)}%`,
 		value: dmgFactor(sheet),
-		color: C.bonus,
+		color: null,
 		read: `A ${sheet.dmgPct.toFixed(1)}% DMG Bonus would make the hit ${fmtX(dmgFactor(sheet))} as strong.`
 	});
 	const defRow = $derived<Row>({
@@ -138,7 +158,7 @@
 		formula: '(100 + your level) ÷ (both levels + 200)',
 		real: `Lv ${sheet.charLevel} vs ${sheet.enemyLevel}`,
 		value: defFactor(sheet),
-		color: C.def,
+		color: null,
 		read: `At level ${sheet.charLevel} against a level ${sheet.enemyLevel} enemy, its DEF would let ${pct(defFactor(sheet))} of the hit through.`
 	});
 	const resRow = $derived<Row>({
@@ -148,7 +168,7 @@
 		formula: resFormula,
 		real: `${sheet.enemyRes}%`,
 		value: resFactor(sheet),
-		color: C.res,
+		color: null,
 		read:
 			sheet.enemyRes < 0
 				? `Below 0% RES only half the shred counts, so the enemy would take ${pct(resFactor(sheet))} of the hit.`
@@ -163,7 +183,7 @@
 		formula: 'from the level table',
 		real: `Lv ${sheet.charLevel}`,
 		value: levelMult(sheet.charLevel),
-		color: C.start,
+		color: null,
 		read: `Every level ${sheet.charLevel} character starts a reaction from the same base: ${fmtInt(levelMult(sheet.charLevel))}.`
 	});
 	const reactionRow = $derived<Row>({
@@ -174,7 +194,7 @@
 			family === 'lunar' ? `${reaction.mult} × 60% top-contributor share` : `× ${reaction.mult}`,
 		real: 'picked above',
 		value: reaction.shown,
-		color: C.reaction,
+		color: rxColor,
 		read:
 			family === 'lunar'
 				? `${reaction.name} multiplies the base by ${reaction.mult}, and the top contributor deals 60% of it: ×${reaction.shown}.`
@@ -197,7 +217,7 @@
 			formula,
 			real: emReal,
 			value,
-			color: C.em,
+			color: null,
 			read:
 				rb > 0
 					? `EM and the +${rb}% Reaction Bonus together would raise it ${fmtX(value)}.`
@@ -218,7 +238,7 @@
 					formula: `1 + ${stat}% + flat ${stat} ÷ base ${stat}`,
 					real: `${fmtInt(scalingTotal(sheet))} ${stat}`,
 					value: scalingFactor(sheet),
-					color: C.start,
+					color: null,
 					read: `Your ${fmtInt(scalingTotal(sheet))} ${stat} would make the hit ${fmtX(scalingFactor(sheet))} what base ${stat} alone deals.`
 				},
 				dmgRow,
@@ -233,7 +253,7 @@
 					formula: `${reaction.mult} × (1 + 2.78 × EM ÷ (EM + 1400)${bonusWord})`,
 					real: emReal,
 					value: f,
-					color: C.em,
+					color: rxColor,
 					read: `A ${reaction.mult === 2 ? 'forward' : 'reverse'} ${reaction.name} would multiply the hit by ${fmtX(f)}.`
 				});
 			}
@@ -244,7 +264,7 @@
 				formula: `vs base ${stat} alone`,
 				real: '',
 				value: directTotal(sheet, reaction.mult),
-				color: '',
+				color: null,
 				read: `Together, these would make the hit ${fmtX(directTotal(sheet, reaction.mult))} what base ${stat} alone deals, before its talent multiplier.`
 			});
 			return out;
@@ -261,7 +281,7 @@
 					formula: 'added to the hit’s base damage',
 					real: '',
 					value: aChunk,
-					color: '',
+					color: null,
 					read: `${reaction.name} would add ${fmtInt(aChunk)} to the hit’s base damage. From here it rides the rest of the hit.`
 				},
 				dmgRow,
@@ -275,7 +295,7 @@
 					formula: 'on average',
 					real: '',
 					value: additiveEffective(sheet, reaction.mult),
-					color: '',
+					color: null,
 					read: `On average, ${reaction.name} would add ${fmtInt(additiveEffective(sheet, reaction.mult))} damage to each hit it triggers on.`
 				}
 			];
@@ -291,7 +311,7 @@
 					formula: '1 + Base DMG Bonus',
 					real: `${sheet.baseDmgPct}%`,
 					value: baseDmgFactor(sheet),
-					color: C.bonus,
+					color: null,
 					read: `A ${sheet.baseDmgPct}% Base DMG Bonus would raise it ${fmtX(baseDmgFactor(sheet))}.`
 				},
 				{
@@ -301,7 +321,7 @@
 					formula: '1 + Elevation, after every other bracket',
 					real: `${sheet.elevationPct}%`,
 					value: elevationFactor(sheet),
-					color: C.elevation,
+					color: null,
 					read: `A ${sheet.elevationPct}% Elevation would raise it ${fmtX(elevationFactor(sheet))}.`
 				},
 				critRow,
@@ -313,7 +333,7 @@
 					formula: 'on average',
 					real: '',
 					value: lunarTotal(sheet, reaction.mult),
-					color: '',
+					color: null,
 					read: `On average, one ${reaction.name} hit would deal ${fmtInt(lunarTotal(sheet, reaction.mult))} damage as the top contributor.`
 				}
 			];
@@ -329,7 +349,7 @@
 				formula: '',
 				real: '',
 				value: transformativeTotal(sheet, reaction.mult),
-				color: '',
+				color: null,
 				read: `One ${reaction.name} hit would deal ${fmtInt(transformativeTotal(sheet, reaction.mult))} damage.`
 			}
 		];
@@ -374,6 +394,11 @@
 			: v >= 1000
 				? `${v / 1000}k`
 				: `${v}`;
+
+	/** The bar column's width, so a bar can tell whether an arrow fits on it */
+	let trackW = $state(0);
+	/** Below this a bar keeps only its leading edge — an arrow needs room */
+	const ARROW_MIN_PX = 30;
 
 	/** A row's share of the total swing — how much of the boost it supplies,
 	 *  or how much of it a cut takes back */
@@ -659,6 +684,17 @@
 					{/each}
 				</span>
 			</div>
+			<!-- ONE layer of gridlines behind every row, so each line runs unbroken -->
+			<span
+				class="an-wf-gridlayer"
+				style:grid-row="2 / span {rows.length}"
+				bind:clientWidth={trackW}
+				aria-hidden="true"
+			>
+				{#each ticks as t (t)}
+					<span class="an-wf-grid" style:left="{xPct(t)}%"></span>
+				{/each}
+			</span>
 			{#each rows as r, i (r.id)}
 				{@const b = bars[i]}
 				{@const lo = xPct(Math.min(b.from, b.to))}
@@ -669,7 +705,9 @@
 					class:is-sum={r.kind === 'subtotal' || r.kind === 'total'}
 					class:is-total={r.kind === 'total'}
 					class:is-read={boxIdx === i}
-					style:--c={r.color || 'var(--chart-ink)'}
+					style:grid-row={i + 2}
+					class:is-glass={r.color === null && r.kind === 'mult'}
+					style:--c={r.color ?? 'var(--text)'}
 					onpointerenter={() => (boxIdx = i)}
 					onfocus={() => (boxIdx = i)}
 					onclick={() => (boxIdx = boxIdx === i ? null : i)}
@@ -684,9 +722,6 @@
 					</span>
 					<span class="an-wf-formula">{r.formula}</span>
 					<span class="an-wf-track">
-						{#each ticks as t (t)}
-							<span class="an-wf-grid" style:left="{xPct(t)}%"></span>
-						{/each}
 						{#if r.kind === 'start'}
 							<span class="an-wf-start" style:left="{lo}%"></span>
 						{:else}
@@ -695,12 +730,21 @@
 								class:is-loss={b.to < b.from}
 								style:left="{lo}%"
 								style:width="{Math.max(hi - lo, 0.4)}%"
-							></span>
+							>
+								{#if ((hi - lo) / 100) * trackW >= ARROW_MIN_PX}
+									<span class="an-wf-arrow"></span>
+								{/if}
+							</span>
 						{/if}
 					</span>
-					<span class="an-wf-value"
-						>{r.kind === 'mult' || family === 'direct' ? fmtX(r.value) : fmtInt(r.value)}</span
-					>
+					<span class="an-wf-value">
+						<span>{r.kind === 'mult' || family === 'direct' ? fmtX(r.value) : fmtInt(r.value)}</span
+						>
+						{#if r.kind === 'mult'}
+							<!-- the multiplier in plain words: what it adds or takes away -->
+							<span class="an-wf-change">{fmtChange(r.value)}</span>
+						{/if}
+					</span>
 				</button>
 			{/each}
 		</div>
@@ -911,12 +955,23 @@
 	}
 
 	.an-wf-axis {
+		grid-row: 1;
 		height: 1.1rem;
 	}
 
 	.an-wf-axis > .an-wf-track,
 	.an-wf-row > .an-wf-track {
 		grid-column: 4;
+	}
+
+	/* Behind the rows (they come later in the source and paint over it).
+	   ⚠ Every row is pinned to its grid line (style:grid-row) — left to
+	   auto-placement, a full-width row can't share a line with this layer's
+	   column, so the rows were pushed BELOW it and it collapsed to ~10px. */
+	.an-wf-gridlayer {
+		grid-column: 4;
+		position: relative;
+		pointer-events: none;
 	}
 
 	.an-wf-row {
@@ -1011,36 +1066,74 @@
 
 	.an-wf-grid {
 		position: absolute;
-		top: -2px;
-		bottom: -2px;
+		top: 0;
+		bottom: 0;
 		width: 1px;
 		background: var(--chart-grid);
 	}
 
+	/* Solid bars with an arrow painted over them (⚓ Nate, 2026-10-01 — the
+	   triangular endcaps and the tail fade both read too faint and too little
+	   like arrows). The arrow sits centred, its shaft fading toward the tail;
+	   a bar too short to hold one keeps only its leading edge. */
 	.an-wf-bar {
 		position: absolute;
 		top: 0.3rem;
 		bottom: 0.3rem;
-		border-radius: 2px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 1px;
 		background: var(--c);
+		--arrow-c: var(--bright-ink);
 		transition:
 			left var(--t-move),
 			width var(--t-move);
 	}
 
-	/* A cut runs backward and is drawn hollow, so a loss never reads as a gain
-	   of the same length */
-	.an-wf-bar.is-loss {
-		background: color-mix(in srgb, var(--c) 22%, transparent);
-		box-shadow: inset 0 0 0 1.5px var(--c);
+	/* A stat bracket is our reading — the planner's buff bar exactly: glass,
+	   with its 2px light EDGE on the side the bar moves toward */
+	.an-wf-row.is-glass .an-wf-bar {
+		background: var(--glass-bar);
+		box-shadow: inset -2px 0 0 rgb(255 255 255 / 0.3);
+		--arrow-c: rgb(255 255 255 / 0.75);
+	}
+
+	.an-wf-row.is-glass .an-wf-bar.is-loss {
+		box-shadow: inset 2px 0 0 rgb(255 255 255 / 0.3);
 	}
 
 	.an-wf-row.is-sum .an-wf-bar {
-		background: color-mix(in srgb, var(--text) 32%, transparent);
+		background: color-mix(in srgb, var(--text) 40%, transparent);
 	}
 
 	.an-wf-row.is-total .an-wf-bar {
-		background: color-mix(in srgb, var(--accent) 70%, transparent);
+		background: color-mix(in srgb, var(--text) 85%, transparent);
+	}
+
+	/* The arrow: a 2px shaft that fades in from its tail, and a solid head.
+	   Drawn pointing right; a cut mirrors it. */
+	.an-wf-arrow {
+		position: relative;
+		width: min(3rem, 60%);
+		height: 2px;
+		background: linear-gradient(to right, transparent, var(--arrow-c));
+	}
+
+	.an-wf-arrow::after {
+		content: '';
+		position: absolute;
+		right: -1px;
+		top: 50%;
+		width: 7px;
+		height: 8px;
+		transform: translateY(-50%);
+		background: var(--arrow-c);
+		clip-path: polygon(0 0, 100% 50%, 0 100%);
+	}
+
+	.an-wf-bar.is-loss .an-wf-arrow {
+		transform: scaleX(-1);
 	}
 
 	.an-wf-start {
@@ -1056,10 +1149,19 @@
 	.an-wf-value {
 		grid-column: 5;
 		justify-self: end;
+		display: grid;
+		justify-items: end;
+		line-height: var(--lh-snug);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-md);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
+	}
+
+	.an-wf-change {
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-normal);
+		color: var(--muted);
 	}
 
 	.an-wf-row.is-total .an-wf-value {
