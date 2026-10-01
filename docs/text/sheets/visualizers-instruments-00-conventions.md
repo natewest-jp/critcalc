@@ -95,11 +95,17 @@ English. ⚓ Write them sentence case and let the CSS shout. ⛔ These should ma
 planner's decision, not be decided separately.
 **Applied (Claude), and one correction:** `New` is `Average DMG` · `CRIT DMG` · `CRIT Rate`.
 🐛 ⚠️⚠️ **The note above is wrong about these three: they are NOT styled uppercase.** They're
-SVG `<text>` in `CritHeatmap.svelte:602,614,625` with a letter-spacing and no
+SVG `<text>` in `CritHeatmap.svelte:613,625,636` with a letter-spacing and no
 `text-transform`, so the only uppercase is the source's. **Writing them sentence case
 changes what you see** unless the same change adds `text-transform: uppercase` to those
 three `<text>` elements. The code pass needs to do that, or the look moves. (The planner's
 lane names really are doubled; this one isn't.)
+↻ **2026-09-30 — the trap now also moves GEOMETRY.** The cleanup branch places these
+titles by measured ink (`AXIS_INK` in `crit.ts`: Plex Sans cap height, a 0.13px dip below
+the baseline), so the equal gaps assume all-caps Latin. Dropping the uppercase brings
+descenders in (`g`, `p`), and a locale whose capitals carry accents or descend
+(`É`, `Ç`, any CJK) will sit off the gaps too. ⏭ Not a text decision — flag it for the
+i18n pass (`docs/i18n-plan.md`), where `AXIS_INK` becomes per-locale or is measured live.
 
 ---
 

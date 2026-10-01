@@ -236,6 +236,7 @@ below Sound when it is Off; no Voice or Notes under the metronome.
 | `:352` · `tones.ts:185`    | Second picker, name and choices | Note set — Open · Anchor · Lantern · Meadow                                                                                                 |     |
 | `tones.ts` `noteSetNotes`  | Each set's tooltip (built)      | A · B · E (etc.)                                                                                                                            |     |
 | `:372` / `:373`            | Row name / under it             | Swap / A soft hum while the next character comes in.                                                                                        |     |
+| `:375`                     | Its screen-reader name 🆕       | Swap sound                                                                                                                                  |     |
 | `:375` · `tones.ts:205`    | Its choices                     | Off · Low · Fifth · Rise                                                                                                                    |     |
 | `:393` / `:408`            | Row name / slider's name        | Volume / Playback volume                                                                                                                    |     |
 

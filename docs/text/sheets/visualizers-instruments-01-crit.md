@@ -74,8 +74,8 @@ means _per_ is a RATE, not two nouns joined, so it's settled here and doesn't wa
   `+×0.12` with a prefix is unreadable). It becomes `my / pinned − 1`. Signed, since a
   worse build must read "−4%". ⚠️ Needs an ICU number format for the percentage, not a
   hand-built `+` like `CritInstrument.svelte:292` does now.
-- The heatmap's isoline labels (`1.50x`, `CritHeatmap.svelte:493`) are already two
-  decimals and only take the §G prefix (`×1.50`). The marker tooltip (`:733`) drops to two
+- The heatmap's isoline labels (`1.50x`, `CritHeatmap.svelte:504`) are already two
+  decimals and only take the §G prefix (`×1.50`). The marker tooltip (`:744`) drops to two
   decimals, to match the headline it mirrors.
   ⚠️ **ASSEMBLED**: `Roll {n} hits`, `this time (average {n}x)`, and every `Label:` + value
   pair (§C).
@@ -83,7 +83,7 @@ means _per_ is a RATE, not two nouns joined, so it's settled here and doesn't wa
   §G `×` as a prefix (see §G's note for the position call). ⚠️ The headline number and the
   pin lines (`{n}x` at `CritInstrument.svelte:255,267,288,292`) are bare numbers, not
   rows here. The same `×` fix reaches them in code, and so do two more sites the sheet
-  missed: the isoline labels (`CritHeatmap.svelte:493`) and the marker tooltip (`:733`). ⚠️ `Crit value` follows the glossary's
+  missed: the isoline labels (`CritHeatmap.svelte:504`) and the marker tooltip (`:744`). ⚠️ `Crit value` follows the glossary's
   **crit value (CV)**, not §B, because it's community vocabulary.
 
 ## Chart furniture
@@ -118,10 +118,10 @@ inside script expressions and some attributes. Keys are left to the extraction p
 
 | Where                       | Context                                                | Now                    | New (→ C: suggested)             |
 | --------------------------- | ------------------------------------------------------ | ---------------------- | -------------------------------- |
-| `CritHeatmap.svelte:737`    | Marker tooltip, third line (risk overlay on)           | {n}% no-crit risk      | → C: No-crit risk {n}%           |
+| `CritHeatmap.svelte:748`    | Marker tooltip, third line (risk overlay on)           | {n}% no-crit risk      | → C: No-crit risk {n}%           |
 | `CritInstrument.svelte:254` | Roll result, first half (before `vz.crit.roll.result`) | {n} of {n} crit → {n}x | → C: {n} of {n} hits crit — ×{n} |
 | `CritInstrument.svelte:56`  | Ratio (CD:CR) value when CRIT Rate is 0                | n/a                    | → C: —                           |
-| `CritHeatmap.svelte:592`    | Corner label atop the right-edge Average DMG scale     | 4.00x                  | → C: ×4.00                       |
+| `CritHeatmap.svelte:603`    | Corner label atop the right-edge Average DMG scale     | 4.00x                  | → C: ×4.00                       |
 
 ⚓ **Why these suggestions** (the last two were found by a strict per-sheet re-check,
 2026-09-27 — every string in this instrument's files against THIS sheet, single words

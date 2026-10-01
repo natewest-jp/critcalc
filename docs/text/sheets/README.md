@@ -56,6 +56,23 @@ the word appears anywhere in the sheets.
 
 ---
 
+## ↻ 2026-09-30 / 10-01 — two merges from `main`
+
+- **Playback round** (`cd60053a`): its strings are in `rotation-planner.md` and
+  `settings.md` as **"Added 2026-09-30"** sections, ☐ unread like the 09-27 ones. A diff
+  of every string literal the round added found one more, now in `settings.md`: the Swap
+  row's screen-reader name, **Swap sound**.
+- **Cleanup branch** (`e82b1f2f`): **no new strings.** It changed geometry, colour, undo
+  and one default (Human timing now starts on **Padding**; no sheet or help sentence
+  names the default, so nothing reads wrong).
+- ⚠️ **Line numbers in these sheets are as of extraction and have drifted** with every
+  merge since. A content check (2026-10-01) found every sheet's **Now** text still in the
+  code — only the positions moved. ⚓ The code pass locates a string by its text; the
+  line is a hint. The Crit Heatmap's references are refreshed because they carry code-pass
+  traps.
+
+---
+
 | Sheet                                                                         | Strings | Notes                                                    |
 | ----------------------------------------------------------------------------- | ------- | -------------------------------------------------------- |
 | ✅ ~~[site-chrome](site-chrome.md)~~                                          | 24      | **CLOSED + APPLIED 2026-09-22** — gates green            |
@@ -68,10 +85,10 @@ the word appears anywhere in the sheets.
 | [errors-and-frame](errors-and-frame.md)                                       | 14      | Plus three surfaces not yet written                      |
 | [visualizers-workspace](visualizers-workspace.md)                             | 18      | Workspace + the eight names                              |
 | ✅ **[instruments — conventions](visualizers-instruments-00-conventions.md)** | —       | **RULED 2026-09-23** and pre-applied to all eight sheets |
-| [· Crit Heatmap](visualizers-instruments-01-crit.md)                          | 33      |                                                          |
-| [· ICD Timeline](visualizers-instruments-02-icd.md)                           | 28      | Best prose on the shelf                                  |
-| [· Gauge Explorer](visualizers-instruments-03-gauge.md)                       | 19      |                                                          |
-| [· Reaction Curves](visualizers-instruments-04-reaction-curves.md)            | 12      | Least wrong with it                                      |
+| ✅ **[· Crit Heatmap](visualizers-instruments-01-crit.md)**                   | 33      | **RULED 2026-09-23**, strict re-check 2026-09-27         |
+| ✅ **[· ICD Timeline](visualizers-instruments-02-icd.md)**                    | 28      | **RULED 2026-09-27**                                     |
+| ✅ **[· Gauge Explorer](visualizers-instruments-03-gauge.md)**                | 19      | **RULED 2026-09-27**                                     |
+| ▶️ [· Reaction Curves](visualizers-instruments-04-reaction-curves.md)         | 12      | **Next up.** Least wrong with it                         |
 | [· Enemy DEF & RES](visualizers-instruments-05-def-res.md)                    | 34      |                                                          |
 | [· Wish Odds](visualizers-instruments-06-wish.md)                             | 24      | Closest to the constitution's edge                       |
 | [· Damage Anatomy](visualizers-instruments-07-anatomy.md)                     | 59      |                                                          |
