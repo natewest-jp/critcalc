@@ -1,5 +1,11 @@
 # Worksheets — pass 1
 
+> ↻ **2026-10-01 — these are no longer review documents.** The text round now runs as
+> hands-on surface passes (`../../instrument-passes-2026-10-01.md` §0) and the sheets become
+> Claude's translation ledger (`../ledger-plan.md`). Their rulings still stand; sheets 04
+> (Reaction Curves) and 07 (Damage Anatomy) describe surfaces that have since been
+> reworked, so their rows are stale.
+
 ⚓ **Fill `New:` to change a string. A blank `New:` is an approval, not an omission.**
 Work in any order; nothing here depends on anything else. Hand back whichever sheets are
 done and they get applied one commit per surface.

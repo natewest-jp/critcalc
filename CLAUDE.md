@@ -153,6 +153,8 @@ All three tools are built and merged to `main`; launch is a **readiness decision
 - ⏳ **NEXT, order open (⚓ Nate):** Lumi + Nilou (after the in-game counts) · elemental absorption (⛔ nothing built until Nate answers `docs/elemental-absorption-survey.md` §6) · direct reaction damage — a DISCUSSION, ⛔ not a schema (`docs/reaction-damage-round.md`). ⏭ The stance-cancel token: a conversation WHEN REACHED.
 - ✅ **Stepped stacks** (2026-09-27, Odette's A1 transfer) — `Summon.opensState`, stack effects on a `summonTick`, the stack ledger, `whileStacks` buffs drawn as density STEPS (⚓ Nate's pick) — `docs/stepped-stacks-round.md`.
 - ✅ **Playback** (2026-09-29/30, merged `6f3195ec`) — Play at game speed with a four-beat count-in on every start, ⏮, 1×/0.75×/0.5×, Space/Home; synthesised sound set in Settings; **Laps** simulates the laps that follow (`pv.repeat` internally); Zoom is one plate + a popover and `wide` is 71rem — `docs/playback-round-plan.md` §10.
+- ✅ **Instrument passes: Reaction Curves + Damage Anatomy** (2026-10-01, merged `40666156` / `942dfc61`, pushed) — the text round's new hands-on shape; Lunar & Stellar, Reaction Bonus, levels 95/100, a log₂ waterfall for the hit; Ifa's A1 re-bucketed (`85c6b01c`) — `docs/instrument-passes-2026-10-01.md`. ⚠️ the other six instruments still carry the `.instrument` auto-column phone overflow (§4).
+- ⏳ **Translation ledger** (approved 2026-10-01, incl. a permanent extractor script; not started) — `docs/text/ledger-plan.md`.
 - ✅ **Landing cards** (2026-09-21) — Nate's final artwork; memory `project_landing_card_round` is the record.
 - **Nate-only:** connect-domain (the launch action). ✅ Real-Safari/mobile backlog cleared 2026-09-14 — ⚠ new visual work re-opens a backlog of one.
 
