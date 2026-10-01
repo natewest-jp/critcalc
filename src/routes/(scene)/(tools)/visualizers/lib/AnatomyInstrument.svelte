@@ -397,17 +397,16 @@
 
 	/** The bar column's width, so a bar can tell whether an arrow fits on it */
 	let trackW = $state(0);
-	/** Chevrons run the bar's whole length, one per CHEV_PITCH px, so even a
-	 *  ×1.14 sliver says which way it goes; one needs CHEV_MIN_PX to show. */
-	const CHEV_PITCH = 12;
-	const CHEV_MIN_PX = 9;
-	const chevronsFor = (px: number) =>
-		px < CHEV_MIN_PX ? 0 : Math.max(1, Math.floor((px - 7) / CHEV_PITCH));
-	/** Faint by request (⚓ Nate, twice): 35% at the head, fading to 7% at the tail */
-	const CHEV_HEAD = 0.35;
-	const CHEV_TAIL = 0.07;
-	const chevAlpha = (k: number, n: number) =>
-		n <= 1 ? CHEV_HEAD : CHEV_HEAD - (CHEV_HEAD - CHEV_TAIL) * (k / (n - 1));
+	/** The bar is a band of chevron STRIPES (⚓ Nate's mockup, 2026-10-01):
+	 *  each stripe's stroke is exactly half the pitch, so stripe and gap are
+	 *  equal and the bar reads as one repeating pattern. They tile the whole
+	 *  bar (it clips the overflow) and fade from the head to nothing at the
+	 *  tail. ⚠ CHEV_PITCH is mirrored in the CSS (--pitch). */
+	const CHEV_PITCH = 14;
+	const chevronsFor = (px: number) => (px <= 0 ? 0 : Math.ceil(px / CHEV_PITCH) + 1);
+	/** Faint (⚓ Nate): 12% at the head, fading to nothing at the tail */
+	const CHEV_HEAD = 0.12;
+	const chevAlpha = (k: number, n: number) => (n <= 1 ? CHEV_HEAD : CHEV_HEAD * (1 - k / (n - 1)));
 
 	/** A row's share of the total swing — how much of the boost it supplies,
 	 *  or how much of it a cut takes back */
@@ -1122,29 +1121,46 @@
 		background: color-mix(in srgb, var(--text) 85%, transparent);
 	}
 
-	/* The chevrons (⚓ Nate, 2026-10-01 — a single overlaid arrow wasn't
-	   obvious enough). A row of › marks across the whole bar, the head's mark
-	   full and each one back toward the tail fainter. ⚠ Each mark is its own
-	   element with its alpha in its PAINT — no tiled background (real Safari
-	   has drawn 1px gaps in tiled bar backgrounds) and no element opacity (the
-	   sub-pixel law). Drawn pointing right from the right edge; a cut mirrors
-	   the whole bar's content. */
-	/* Full height of the bar (⚓ Nate) — the pitch in `right` must match
-	   CHEV_PITCH in the script */
+	/* The chevron stripes (⚓ Nate's mockup). Each stripe: stroke = half the
+	   pitch, point depth --depth, so its box is stroke + depth wide and the
+	   next one starts a pitch further back. ⚠ Each stripe is its own element
+	   with its alpha in its PAINT — no tiled background (real Safari has drawn
+	   1px gaps in tiled bar backgrounds), no element opacity (sub-pixel law).
+	   Drawn pointing right from the head; a cut mirrors them. */
+	.an-wf-bar {
+		overflow: hidden;
+	}
+
 	.an-wf-chev {
+		--pitch: 14px;
+		--depth: 6px;
 		position: absolute;
 		top: 0;
 		bottom: 0;
-		right: calc(6px + var(--k) * 12px);
-		width: 8px;
+		right: calc(2px + var(--k) * var(--pitch));
+		width: calc(var(--pitch) / 2 + var(--depth));
 		background: color-mix(in srgb, var(--arrow-c) calc(var(--a) * 100%), transparent);
-		clip-path: polygon(0 0, 32% 0, 100% 50%, 32% 100%, 0 100%, 68% 50%);
+		clip-path: polygon(
+			0 0,
+			calc(var(--pitch) / 2) 0,
+			100% 50%,
+			calc(var(--pitch) / 2) 100%,
+			0 100%,
+			var(--depth) 50%
+		);
 	}
 
 	.an-wf-bar.is-loss .an-wf-chev {
 		right: auto;
-		left: calc(6px + var(--k) * 12px);
-		clip-path: polygon(100% 0, 68% 0, 0 50%, 68% 100%, 100% 100%, 32% 50%);
+		left: calc(2px + var(--k) * var(--pitch));
+		clip-path: polygon(
+			100% 0,
+			calc(100% - var(--pitch) / 2) 0,
+			0 50%,
+			calc(100% - var(--pitch) / 2) 100%,
+			100% 100%,
+			calc(100% - var(--depth)) 50%
+		);
 	}
 
 	.an-wf-start {
