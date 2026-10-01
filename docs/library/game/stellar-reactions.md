@@ -5,6 +5,10 @@ Nate's trigger-model explanation (2026-07-29, recorded in project memory
 `hexerei-stellar-todo`). gcsim had no Stellar implementation as of `5d1ec8c79`
 (2026-07-26) — **wiki + Nate are the arbiters for now** (the Hexerei round showed
 gcsim can be off on current-patch details anyway).
+↻ **2026-10-01:** gcsim now implements both (`pkg/reactable/stellarconduct.go`,
+`stellarswirl.go`, `stellarswirl_gadget.go`; checkout `488e22309`). Its Stellar Swirl
+DAMAGE is the only source this library has for it — see § "Stellar Swirl damage"
+below, ⚠️ NEEDS-CONFIRM against the wiki or in game.
 **Game version reflected:** ↻ **7.0 (genshin-db 5.2.13, ingested 2026-08-31)** —
 Stellar Swirl went live and the enabler roster grew from one to three. The
 pre-7.0 edition of this file is preserved in git history; the tables below are
@@ -220,6 +224,48 @@ Label rule unchanged: wiki category "\<Reaction\> DMG Bonus" → `*ReactionBonus
 Example: Diona + Electro teammates trigger Superconduct. Add Sandrone → every
 Superconduct becomes Stellar-Conduct AND Diona's Stellar-Conduct-related buffs
 activate.
+
+## Stellar Swirl damage (gcsim only — ⚠️ NEEDS-CONFIRM)
+
+⚠️ **Source: gcsim alone** (`stellarswirl.go`, `stellarswirl_gadget.go`, and #2748
+"Add rSSw base damage", 2026-09-06). Neither the wiki page this file was built from nor
+Nate's tutorial notes give numbers. Treat every figure here as provisional until one of
+them does; the Reaction Curves instrument says so in its caveat.
+
+Unlike Stellar-Conduct, Stellar Swirl **does** deal autonomous, level-scaled reaction
+damage. It goes through the same function as Lunar-Charged and Lunar-Crystallize
+(gcsim `CalcSpecialReactionDmg`, `pkg/core/combat/reaction.go:20`):
+
+```
+one contributor = M × LevelMult × (1 + 6·EM/(2000+EM) + Reaction Bonus) × (1 + Base DMG Bonus)
+                  × (1 + Elevation), then crit per contributor
+total           = Σ contributor × [0.6, 0.3, 0.05, 0.05], highest first
+```
+
+| Hit                       | Element | M                                                  | Notes                                          |
+| ------------------------- | ------- | -------------------------------------------------- | ---------------------------------------------- |
+| The swirl itself          | Anemo   | **0.75**                                           | AoE, radius 5; ignores DEF                     |
+| Stellar Vortex detonation | Cryo    | **2** at 1–2 swirls · **3** at 3+ (`sswStackMult`) | 25 durability; radius 6 → 8 at 3+; ignores DEF |
+
+- **Contributors** are the swirler plus every **Cryo character** whose Cryo is on the
+  target. On a Frozen aura, only Cryo characters who caused the Freeze count (gcsim: "even
+  if a non Cryo character triggers frozen with a cryo attack via Chongyun, they won't
+  contribute").
+- **The Vortex** lives 181 frames (~3s), or detonates at once on the 6th swirl. Each
+  swirl inside its life adds a stack; detonating resets them, and grants the airborne
+  buff for 5s.
+- ⚓ The section "Stellar Vortex" above refused to model the explosion's timing and
+  count because the tutorial only says "a certain time / number". gcsim's 181f and
+  6 stacks are numbers, but still unconfirmed ones — ⛔ don't build them into the
+  planner on this source alone.
+- 🐛 **A gcsim oddity worth knowing before trusting its swirl counts:** `newStellarVortex`
+  creates the gadget with type `GadgetTypPolestarField`, while `nearbySSwVortex` searches
+  for `GadgetTypStellarVortex`. If that reads as it looks, every swirl starts a NEW Vortex
+  rather than levelling the existing one. Unverified; worth a look before using gcsim's
+  detonation cadence for anything.
+
+**The Reaction Curves instrument** plots the top contributor's share (×0.6): swirl ×0.45,
+detonation ×1.2 / ×1.8.
 
 ## The damage formula & its buckets
 
