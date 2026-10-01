@@ -849,16 +849,21 @@
 		display: grid;
 	}
 
+	/* ⚠ A range input carries the UA's 2px side margin (Chrome and WebKit
+	   alike), so its track starts 2px in from this wrapper. The marks mirror
+	   that box exactly — margin AND width — or every mark sits 2px left. */
 	.rx-level-marks {
 		position: relative;
+		width: 100%;
 		height: 5px;
-		margin-top: 3px;
+		margin: 3px 2px 0;
 	}
 
 	.rx-level-mark {
 		position: absolute;
 		top: 0;
-		left: calc(7.5px + var(--at) * (100% - 15px));
+		/* centred on the thumb's centre: half the 1px mark back */
+		left: calc(7.5px + var(--at) * (100% - 15px) - 0.5px);
 		width: 1px;
 		height: 5px;
 		background: color-mix(in srgb, var(--text) 35%, transparent);
