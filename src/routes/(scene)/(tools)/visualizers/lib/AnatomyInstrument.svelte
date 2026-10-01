@@ -773,6 +773,21 @@
 					</span>
 					<span class="an-wf-formula">{r.formula}</span>
 					<span class="an-wf-track">
+						<!-- The leading line: down from this bar's leading end, and up
+						     into this row from the end of the one above. Every bar
+						     starts where the last ended, so the halves meet. -->
+						{#if i < rows.length - 1}
+							<span
+								class="an-wf-lead an-wf-lead--down"
+								style:left="{xPct(r.kind === 'start' ? b.from : b.to)}%"
+							></span>
+						{/if}
+						{#if i > 0}
+							<span
+								class="an-wf-lead an-wf-lead--up"
+								style:left="{xPct(r.kind === 'mult' ? b.from : b.to)}%"
+							></span>
+						{/if}
 						{#if r.kind === 'start'}
 							<span class="an-wf-start" style:left="{lo}%"></span>
 						{:else}
@@ -1143,13 +1158,46 @@
 		color: var(--chart-ink);
 	}
 
+	/* The bar column fills the row's full height (rows grow with 2–3 line
+	   labels), and the bar sits on its middle, so the leading line knows where
+	   the bar stops and the row ends. */
 	.an-wf-track {
+		--bar-h: 0.9rem;
 		position: relative;
-		height: 1.5rem;
+		align-self: stretch;
+		min-height: 1.5rem;
+	}
+
+	/* The leading line (⚓ Nate): the glass bar's 1px edge, carried down to
+	   the bar below. Its two halves reach through the row's 0.2rem padding and
+	   the 2px row gap, so they meet. */
+	.an-wf-lead {
+		position: absolute;
+		width: 1px;
+		margin-left: -0.5px;
+		background: rgb(255 255 255 / 0.3);
+		pointer-events: none;
+		transition: left var(--t-move);
+	}
+
+	.an-wf-lead--down {
+		top: calc(50% + var(--bar-h) / 2);
+		bottom: calc(-0.2rem - 2px);
+	}
+
+	.an-wf-lead--up {
+		top: -0.2rem;
+		bottom: calc(50% + var(--bar-h) / 2);
+	}
+
+	/* a subtotal or the result has a 1px rule on top to reach through */
+	.an-wf-row.is-sum .an-wf-lead--up {
+		top: calc(-0.2rem - 1px);
 	}
 
 	.an-wf-axis .an-wf-track {
 		height: 100%;
+		min-height: 0;
 	}
 
 	.an-wf-tick {
@@ -1175,8 +1223,8 @@
 	   a bar too short to hold one keeps only its leading edge. */
 	.an-wf-bar {
 		position: absolute;
-		top: 0.3rem;
-		bottom: 0.3rem;
+		top: calc(50% - var(--bar-h) / 2);
+		height: var(--bar-h);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1260,8 +1308,8 @@
 
 	.an-wf-start {
 		position: absolute;
-		top: 0.15rem;
-		bottom: 0.15rem;
+		top: calc(50% - var(--bar-h) / 2 - 0.15rem);
+		height: calc(var(--bar-h) + 0.3rem);
 		width: 2px;
 		margin-left: -1px;
 		background: var(--c);
