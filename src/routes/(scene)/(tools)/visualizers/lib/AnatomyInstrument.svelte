@@ -1168,11 +1168,16 @@
 		min-height: 1.5rem;
 	}
 
-	/* The leading line (⚓ Nate): the glass bar's 1px edge, carried down to
-	   the bar below. Its two halves reach through the row's 0.2rem padding and
-	   the 2px row gap, so they meet. */
+	/* The leading line (⚓ Nate). ONE 1px stroke per step: from the TOP of a
+	   bar's leading end, down through the gap, to the BOTTOM of the next bar's
+	   starting end — so it caps both bars and spans the gap between them. It
+	   IS the bars' edge now: ⛔ no separate inset edge on the bar, which sat
+	   half a pixel off the connector and read as two lines (Nate's
+	   screenshot). Drawn in two halves (one per row), both on the same x, so
+	   they meet by construction; above the bar it crosses. */
 	.an-wf-lead {
 		position: absolute;
+		z-index: 1;
 		width: 1px;
 		margin-left: -0.5px;
 		background: rgb(255 255 255 / 0.3);
@@ -1181,13 +1186,13 @@
 	}
 
 	.an-wf-lead--down {
-		top: calc(50% + var(--bar-h) / 2);
+		top: calc(50% - var(--bar-h) / 2);
 		bottom: calc(-0.2rem - 2px);
 	}
 
 	.an-wf-lead--up {
 		top: -0.2rem;
-		bottom: calc(50% + var(--bar-h) / 2);
+		bottom: calc(50% - var(--bar-h) / 2);
 	}
 
 	/* a subtotal or the result has a 1px rule on top to reach through */
@@ -1228,7 +1233,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 1px;
+		/* square: the leading line caps the ends, and rounding notched it */
+		border-radius: 0;
 		background: var(--c);
 		--arrow-c: var(--bright-ink);
 		transition:
@@ -1242,14 +1248,8 @@
 	   than the element and ink bars' (--chev-scale). */
 	.an-wf-row.is-glass .an-wf-bar {
 		background: var(--glass-bar);
-		/* the edge at 1px (⚓ Nate's trial — 2px was too much with stripes) */
-		box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.3);
 		--arrow-c: rgb(255 255 255);
 		--chev-scale: 0.6;
-	}
-
-	.an-wf-row.is-glass .an-wf-bar.is-loss {
-		box-shadow: inset 1px 0 0 rgb(255 255 255 / 0.3);
 	}
 
 	.an-wf-row.is-sum .an-wf-bar {
