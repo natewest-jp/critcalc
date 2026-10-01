@@ -1101,16 +1101,14 @@
 			width var(--t-move);
 	}
 
-	/* A stat bracket is our reading — the planner's buff bar exactly: glass,
-	   with its 2px light EDGE on the side the bar moves toward */
+	/* A stat bracket is our reading — the planner's buff material. ↻ Its 2px
+	   light edge is OFF on trial (⚓ Nate, 2026-10-01): the stripes now carry
+	   the direction the edge used to, and glass stripes run fainter than the
+	   element and ink bars' (--chev-scale). */
 	.an-wf-row.is-glass .an-wf-bar {
 		background: var(--glass-bar);
-		box-shadow: inset -2px 0 0 rgb(255 255 255 / 0.3);
 		--arrow-c: rgb(255 255 255);
-	}
-
-	.an-wf-row.is-glass .an-wf-bar.is-loss {
-		box-shadow: inset 2px 0 0 rgb(255 255 255 / 0.3);
+		--chev-scale: 0.6;
 	}
 
 	.an-wf-row.is-sum .an-wf-bar {
@@ -1139,7 +1137,11 @@
 		bottom: 0;
 		right: calc(2px + var(--k) * var(--pitch));
 		width: calc(var(--pitch) / 2 + var(--depth));
-		background: color-mix(in srgb, var(--arrow-c) calc(var(--a) * 100%), transparent);
+		background: color-mix(
+			in srgb,
+			var(--arrow-c) calc(var(--a) * var(--chev-scale, 1) * 100%),
+			transparent
+		);
 		clip-path: polygon(
 			0 0,
 			calc(var(--pitch) / 2) 0,
