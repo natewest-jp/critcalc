@@ -159,11 +159,10 @@
   > Clears which characters are marked owned or wishlisted.
 - `settings_saved_rotations` — SettingsPanel.svelte:478 script
   > Saved rotations
-  - terms: 📖 Saved Rotations
-- `settings_deletes_every_rotation_in_your_save_bank` — SettingsPanel.svelte:478 script — ⚑ off-glossary
-  > Deletes every rotation in your save bank.
-  - terms: 📖 rotation
-  - ⚠️ off-glossary: save bank → Saved Rotations
+  - terms: 📖 Saved rotations
+- `settings_deletes_every_rotation_in_saved` — SettingsPanel.svelte:478 script
+  > Deletes every rotation in Saved rotations.
+  - terms: 📖 Saved rotations · 📖 rotation
 - `settings_confirm` — SettingsPanel.svelte:491 button:
   > Confirm
 - `settings_clear` — SettingsPanel.svelte:491 button:

@@ -10,10 +10,10 @@
 - `planner_duration_s` — BuffTooltip.svelte:91 <div>
   > {fmtSecs(tip.duration)}s
   - vars: `fmtSecs(tip.duration)`
-- `planner_cd_proccooldown_s` — BuffTooltip.svelte:95 <div>
-  > CD {fmtSecs(tip.procCooldown)}s
+- `planner_cooldown_proccooldown_s` — BuffTooltip.svelte:95 <div>
+  > Cooldown {fmtSecs(tip.procCooldown)}s
   - vars: `fmtSecs(tip.procCooldown)`
-  - terms: 🏷 CD
+  - terms: 🎮 cooldown
 - `planner_x_s_f22f` — EventLog.svelte:86 fmtLogTime:
   > {seconds.toFixed(2)}s
   - vars: `seconds.toFixed(2)`
@@ -178,10 +178,10 @@
 - `planner_no_frame_data_yet_cast_animations_and` — RotationTimeline.svelte:2989 title=
   > No frame data yet — cast animations and normal attacks use generic timings.
   - terms: 🎮 Normal Attack
-- `planner_label_trigger_cd_51ec` — RotationTimeline.svelte:3027 <span>
-  > {procRow.label} trigger CD
+- `planner_label_trigger_cooldown_169b` — RotationTimeline.svelte:3027 <span>
+  > {procRow.label} trigger cooldown
   - vars: `procRow.label`
-  - terms: 🏷 CD
+  - terms: 🎮 cooldown
 - `planner_team_buffs` — RotationTimeline.svelte:3100 <span>
   > TEAM BUFFS
 - `planner_recorded_hits` — RotationTimeline.svelte:3135 stat:
@@ -297,9 +297,9 @@
   - terms: 🎮 CRIT DMG
 - `planner_elem_mastery` — buffStatMaps.ts:92 em:
   > Elem. Mastery
-- `planner_cd_reduction` — buffStatMaps.ts:93 cdReduction:
-  > CD Reduction
-  - terms: 🏷 CD
+- `planner_cooldown_reduction` — buffStatMaps.ts:93 cdReduction:
+  > Cooldown Reduction
+  - terms: 🎮 cooldown
 - `planner_def_ignore` — buffStatMaps.ts:96 defIgnore:
   > DEF Ignore
   - terms: 🎮 DEF
@@ -611,6 +611,7 @@
 - `planner_only_a_bow_can_take_an_aimed_shot` — notationFlags.ts:198 message: — ⚑ assembled plural?
   > Only a bow can take an aimed shot — {entry.displayName} wields a {entry.weapon ?? 'melee weapon'}.
   - vars: `entry.displayName` `entry.weapon ?? 'melee weapon'`
+  - terms: 🎮 Bow
 - `planner_displayname_s_plunge_isn_t_measured_yet` — notationFlags.ts:213 message:
   > {entry.displayName}'s plunge isn't measured yet — drawn with generic timing.
   - vars: `entry.displayName`
@@ -621,10 +622,10 @@
   - terms: 🎮 Elemental Resonance · 🎮 Anemo
 - `planner_canvas_2d_context_unavailable` — timelineExport.ts:448 script — ⚑ thrown
   > canvas 2d context unavailable
-- `planner_label_trigger_cd_9058` — timelineExport.ts:943 forEach:
-  > {row.label} trigger CD
+- `planner_label_trigger_cooldown_7631` — timelineExport.ts:943 forEach:
+  > {row.label} trigger cooldown
   - vars: `row.label`
-  - terms: 🏷 CD
+  - terms: 🎮 cooldown
 - `planner_cd_s` — timelineExport.ts:1105 haloText:
   > {secondsLabel(g.cd)}s
   - vars: `secondsLabel(g.cd)`
@@ -649,8 +650,8 @@
 - `planner_tabs_full_close_one_to_load_a_team` — +page.svelte:213 afterNavigate:
   > Tabs full — close one to load a team
 - `planner_one_enemy_and_it_never_applies_an` — +page.svelte:329 AURA_NOTES:
-  > One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mage, and no auras you did not put there.
-  - terms: 🎮 Pyro
+  > One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mitachurl, and no auras you did not put there.
+  - terms: 🎮 Blazing Axe Mitachurl · 🎮 Pyro
 - `planner_hits_land_on_their_listed_timing_a_swing` — +page.svelte:330 AURA_NOTES: — ⚑ off-glossary
   > Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.
   - terms: 🎮 Shatter
@@ -688,7 +689,7 @@
   - terms: 📖 rotation
 - `planner_draw_the_laps_that_follow_the_rotation` — +page.svelte:498 title=
   > Draw the laps that follow: the rotation runs on past its end, cooldowns and buffs carried
-  - terms: 📖 rotation
+  - terms: 🎮 cooldown · 📖 rotation
 - `planner_laps` — +page.svelte:502 <span> · +page.svelte:704 <span>
   > Laps
   - terms: 📖 Laps
@@ -744,3 +745,9 @@
 - `planner_this_rotation_puts_nothing_on_the_target` — +page.svelte:879 empty=
   > This rotation puts nothing on the target.
   - terms: 📖 rotation
+
+## Rendered from data
+
+A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
+
+- `{part}` — RotationTimeline.svelte:2997, each over `block.parts`

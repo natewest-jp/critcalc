@@ -227,14 +227,14 @@
   - vars: `reaction.name` `fmtInt(additiveEffective(sheet, reaction.mult))`
 - `vz_anatomy_base_dmg_bonus` — AnatomyInstrument.svelte:317 name: · AnatomyInstrument.svelte:530 label:
   > Base DMG Bonus
-  - terms: 🎮 DMG
+  - terms: 🎮 Base DMG Bonus
 - `vz_anatomy_1_base_dmg_bonus` — AnatomyInstrument.svelte:318 formula:
   > 1 + Base DMG Bonus
-  - terms: 🎮 DMG
+  - terms: 🎮 Base DMG Bonus
 - `vz_anatomy_a_basedmgpct_base_dmg_bonus_would_raise` — AnatomyInstrument.svelte:322 read:
   > A {sheet.baseDmgPct}% Base DMG Bonus would raise it {fmtX(baseDmgFactor(sheet))}.
   - vars: `sheet.baseDmgPct` `fmtX(baseDmgFactor(sheet))`
-  - terms: 🎮 DMG
+  - terms: 🎮 Base DMG Bonus
 - `vz_anatomy_elevation` — AnatomyInstrument.svelte:327 name: · AnatomyInstrument.svelte:539 label:
   > Elevation
   - terms: 🏷 Elevation
@@ -274,7 +274,7 @@
   - terms: 🎮 ATK · 🎮 DEF · 🎮 DMG · 🏷 EM
 - `vz_anatomy_damage_from_level_and_em_with_two` — AnatomyInstrument.svelte:440 lunar:
   > Damage from level and EM, with two brackets of its own: Base DMG Bonus and Elevation. It can crit, and enemy DEF doesn’t apply. These figures are the top contributor’s 60% share.
-  - terms: 🏷 Elevation · 🎮 DEF · 🎮 DMG · 🏷 EM
+  - terms: 🎮 Base DMG Bonus · 🏷 Elevation · 🎮 DEF · 🏷 EM
 - `vz_anatomy_one_more_label_roll_stat_would_raise_the` — AnatomyInstrument.svelte:459 rollReadings:
   > One more {g.stat.label} roll ({fmtStep(g.stat)}) would raise the damage by {(g.gain * 100).toFixed(1)}%.
   - vars: `g.stat.label` `fmtStep(g.stat)` `(g.gain * 100).toFixed(1)`
@@ -307,7 +307,7 @@
   - terms: 🏷 Reaction Bonus
 - `vz_anatomy_base_dmg_bonus_percent` — AnatomyInstrument.svelte:531 aria:
   > Base DMG Bonus percent
-  - terms: 🎮 DMG
+  - terms: 🎮 Base DMG Bonus
 - `vz_anatomy_elevation_percent` — AnatomyInstrument.svelte:540 aria:
   > Elevation percent
   - terms: 🏷 Elevation

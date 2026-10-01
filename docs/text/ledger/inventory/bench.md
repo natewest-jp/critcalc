@@ -126,8 +126,8 @@
   > Impetuous Winds
   - terms: 🎮 Impetuous Winds
 - `bench_stamina_cost_15_movement_speed_10_skill` — resonance.ts:54 effect:
-  > Stamina cost −15%, movement speed +10%, skill CD −5%
-  - terms: 🎮 Stamina · 🎮 Elemental Skill · 🏷 CD
+  > Stamina cost −15%, movement speed +10%, skill cooldown −5%
+  - terms: 🎮 cooldown · 🎮 Stamina · 🎮 Elemental Skill
 - `bench_stamina_cost` — resonance.ts:56 stat:
   > Stamina cost
   - terms: 🎮 Stamina
@@ -136,57 +136,57 @@
 - `bench_high_voltage` — resonance.ts:62 label:
   > High Voltage
   - terms: 🎮 High Voltage
-- `bench_electro_reactions_generate_an_elemental` — resonance.ts:63 effect:
-  > Electro reactions generate an elemental particle (5s CD); hydro aura duration −40%
-  - terms: 🎮 Elemental Particle · 🎮 Electro · 🏷 aura · 🏷 CD
-- `bench_electro_particles` — resonance.ts:65 stat:
+- `bench_electro_reactions_generate_an_elemental` — resonance.ts:64 effect:
+  > Electro reactions generate an elemental particle (5s cooldown); hydro aura duration −40%
+  - terms: 🎮 Elemental Particle · 🎮 cooldown · 🎮 Electro · 🏷 aura
+- `bench_electro_particles` — resonance.ts:66 stat:
   > Electro particles
   - terms: 🎮 Elemental Particle · 🎮 Electro
-- `bench_1_per_electro_reaction_5s_cd` — resonance.ts:65 displayValue:
-  > 1 per electro reaction · 5s CD
-  - terms: 🏷 CD
-- `bench_hydro_aura_duration` — resonance.ts:66 stat:
+- `bench_1_per_electro_reaction_5s_cooldown` — resonance.ts:66 displayValue:
+  > 1 per electro reaction · 5s cooldown
+  - terms: 🎮 cooldown
+- `bench_hydro_aura_duration` — resonance.ts:67 stat:
   > Hydro aura duration
   - terms: 🎮 Hydro · 🏷 aura
-- `bench_shattering_ice` — resonance.ts:70 label:
+- `bench_shattering_ice` — resonance.ts:71 label:
   > Shattering Ice
   - terms: 🎮 Shattering Ice
-- `bench_crit_rate_15_vs_frozen_or_cryo_affected` — resonance.ts:71 effect:
+- `bench_crit_rate_15_vs_frozen_or_cryo_affected` — resonance.ts:72 effect:
   > CRIT rate +15% vs frozen or cryo-affected enemies; electro aura duration −40%
   - terms: 🏷 aura
-- `bench_electro_aura_duration` — resonance.ts:74 stat:
+- `bench_electro_aura_duration` — resonance.ts:75 stat:
   > Electro aura duration
   - terms: 🎮 Electro · 🏷 aura
-- `bench_enduring_rock` — resonance.ts:78 label:
+- `bench_enduring_rock` — resonance.ts:79 label:
   > Enduring Rock
   - terms: 🎮 Enduring Rock
-- `bench_shield_strength_15_shielded_dmg_15_20` — resonance.ts:79 effect:
+- `bench_shield_strength_15_shielded_dmg_15_20` — resonance.ts:80 effect:
   > Shield strength +15%; shielded: DMG +15%, −20% enemy geo RES (15s)
   - terms: 🎮 RES · 🎮 DMG
-- `bench_shield_strength` — resonance.ts:81 stat:
+- `bench_shield_strength` — resonance.ts:82 stat:
   > Shield strength
-- `bench_enemy_geo_res` — resonance.ts:83 stat:
+- `bench_enemy_geo_res` — resonance.ts:84 stat:
   > Enemy Geo RES
   - terms: 🎮 Geo · 🎮 RES
-- `bench_20_15s` — resonance.ts:83 displayValue:
+- `bench_20_15s` — resonance.ts:84 displayValue:
   > −20% · 15s
-- `bench_sprawling_greenery` — resonance.ts:87 label:
+- `bench_sprawling_greenery` — resonance.ts:88 label:
   > Sprawling Greenery
   - terms: 🎮 Sprawling Greenery
-- `bench_em_50_reaction_triggered_em_boosts_30_20` — resonance.ts:88 effect:
+- `bench_em_50_reaction_triggered_em_boosts_30_20` — resonance.ts:89 effect:
   > EM +50; reaction-triggered EM boosts (+30/+20, 6s)
   - terms: 🏷 EM
-- `bench_em_after_reactions` — resonance.ts:91 stat:
+- `bench_em_after_reactions` — resonance.ts:92 stat:
   > EM after reactions
   - terms: 🏷 EM
-- `bench_30_20_6s` — resonance.ts:91 displayValue:
+- `bench_30_20_6s` — resonance.ts:92 displayValue:
   > +30 / +20 · 6s
-- `bench_protective_canopy` — resonance.ts:132 label:
+- `bench_protective_canopy` — resonance.ts:133 label:
   > Protective Canopy
   - terms: 🎮 Protective Canopy
-- `bench_all_elemental_and_physical_res_15` — resonance.ts:133 effect:
+- `bench_all_elemental_and_physical_res_15` — resonance.ts:134 effect:
   > All elemental and physical RES +15%
   - terms: 🎮 RES
-- `bench_all_res` — resonance.ts:134 stat:
+- `bench_all_res` — resonance.ts:135 stat:
   > All RES
   - terms: 🎮 RES

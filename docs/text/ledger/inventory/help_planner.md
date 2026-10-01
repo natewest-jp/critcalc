@@ -10,7 +10,7 @@
   - terms: 📖 Rotation Planner
 - `help_planner_write_your_rotation_in_kqm_style` — RotationPlanner.svelte:6 <p>
   > Write your rotation in KQM-style notation and the timeline renders its choreography — ability uptimes, cooldowns, swap connectors, and team buff windows, frame-accurate. It visualizes timing and windows; it never computes damage numbers.
-  - terms: 📖 notation · 📖 rotation · 📖 timeline
+  - terms: 🎮 cooldown · 📖 notation · 📖 rotation · 📖 timeline
 - `help_planner_writing_the_notation` — RotationPlanner.svelte:13 <h2>
   > Writing the notation
   - terms: 📖 notation
@@ -19,7 +19,7 @@
   - terms: 📖 composer · 📖 timeline
 - `help_planner_the_notation_follows_the_kqm_standard_e` — RotationPlanner.svelte:18 <p> — ⚑ entity
   > The notation follows the <a>KQM standard</a>: <code>E</code> and <code>Q</code> for skill and burst, <code>N</code> for normal attacks (<code>N2</code> is two hits), <code>C</code> charged, <code>A</code> a bow's aimed shot, <code>D</code> dash, <code>J</code> jump, and <code>></code> to separate swaps. Hold variants are recognized where a kit has them, as are the <strong>special forms</strong> a stance substitutes — <code>sQ</code> for a short burst, <code>sE</code> for a special skill and <code>sC</code> for a special charged attack. <code>~2s</code> waits where you want a deliberate pause.
-  - terms: 🎮 Normal Attack · 🎮 Charged Attack · 📖 notation · 🎮 Elemental Skill · 🎮 Elemental Burst · 🔒 KQM
+  - terms: 🎮 Normal Attack · 🎮 Charged Attack · 📖 notation · 🎮 Elemental Skill · 🎮 Elemental Burst · 🔒 KQM · 🎮 Bow
 - `help_planner_the_composer_underlines_anything_the` — RotationPlanner.svelte:33 <p>
   > The composer underlines anything the timeline can't draw exactly as written, and there are two kinds. An <strong>amber</strong> underline means the text can't be taken: a name that matches no character (the whole segment is skipped), or a token we don't simulate. A <strong>yellow</strong> one means we took it and what you see stands in for it — an action the character doesn't have, or a fifth character, who parses but has no slot to be drawn in. Hover any underlined token for the reason.
   - terms: 📖 composer · 📖 timeline
@@ -52,7 +52,7 @@
   - ⚠️ off-glossary: notation editor → composer
 - `help_planner_laps_laps_carries_the_rotation_on_past` — RotationPlanner.svelte:98 <p>
   > <strong>Laps.</strong> <em>Laps</em> carries the rotation on past its end: the notation runs again from its last action, joined by a swap back to your opener, and the laps that follow are simulated rather than copied. A skill still on cooldown waits where it really waits, and everything after it moves; a buff or an aura from one lap is still there in the next if it really is. Energy is not modeled, so a burst is drawn as ready whenever its cooldown is — the most common reason a real rotation does not come round cleanly is the one thing the chart cannot show you.
-  - terms: 📖 notation · 📖 rotation · 🎮 Energy · 🎮 Elemental Skill · 🎮 Elemental Burst · 🏷 aura · 📖 Laps
+  - terms: 🎮 cooldown · 📖 notation · 📖 rotation · 🎮 Energy · 🎮 Elemental Skill · 🎮 Elemental Burst · 🏷 aura · 📖 Laps
 - `help_planner_the_target_s_aura` — RotationPlanner.svelte:108 <h2>
   > The target's aura
   - terms: 🏷 aura
@@ -78,8 +78,8 @@
   - terms: 🎮 Ascendant Gleam · 🎮 Nightsoul · 📖 view bar · 🎮 Elemental Burst
   - ⚠️ off-glossary: neighbour → neighbor
 - `help_planner_what_it_assumes_one_enemy_standing_still` — RotationPlanner.svelte:157 <p> — ⚑ off-glossary
-  > <strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro from a Blazing Axe Mage, and no auras you did not put there. Hits land on their listed timing, a swing that connects several times counts as one application, and Shatter is not modelled. Where we do not have a measured gauge strength for a hit we use 1U and mark that tick yellow. Everything else — the ×0.8 aura tax, decay rates, unit multipliers, the crystallize cooldown, dendro cores and their spawn delay — follows the same model the Gauge Explorer teaches.
-  - terms: 📖 Gauge Explorer · 🎮 Shatter · 🏷 gauge · 🎮 Pyro · 🏷 aura
+  > <strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro from a Blazing Axe Mitachurl, and no auras you did not put there. Hits land on their listed timing, a swing that connects several times counts as one application, and Shatter is not modelled. Where we do not have a measured gauge strength for a hit we use 1U and mark that tick yellow. Everything else — the ×0.8 aura tax, decay rates, unit multipliers, the crystallize cooldown, dendro cores and their spawn delay — follows the same model the Gauge Explorer teaches.
+  - terms: 🎮 Blazing Axe Mitachurl · 📖 Gauge Explorer · 🎮 cooldown · 🎮 Shatter · 🏷 gauge · 🎮 Pyro · 🏷 aura
   - ⚠️ off-glossary: modelled → modeled
 - `help_planner_team_weapons_and_constellations` — RotationPlanner.svelte:167 <h2>
   > Team, weapons and constellations

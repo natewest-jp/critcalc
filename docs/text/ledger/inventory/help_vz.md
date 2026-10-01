@@ -86,7 +86,7 @@
   - terms: 🏷 pity
 - `help_vz_pity_model_0_6_flat_until_soft_pity` — Visualizers.svelte:138 <p>
   > Pity model: 0.6% flat until soft pity ramps from pull 74 (weapons: 0.7% ramping from 63). Featured odds use the official consolidated rates — 55% character including Capturing Radiance, 37.5% charted weapon, 1 fate point. The Radiance streak counter is not fully datamined and is deliberately not guessed at.
-  - terms: 🎮 Capturing Radiance · 🎮 Fate Points · 🏷 soft pity
+  - terms: 🎮 Capturing Radiance · 🎮 Fate Points · 🏷 soft pity · 🎮 Radiance
 - `help_vz_damage_anatomy` — Visualizers.svelte:147 <h2>
   > Damage Anatomy
   - terms: 📖 Damage Anatomy

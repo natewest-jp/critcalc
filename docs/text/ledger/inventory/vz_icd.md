@@ -46,6 +46,7 @@
   - terms: 🏷 ICD
 - `vz_icd_internal_cooldown_the_hidden_rule_that` — IcdInstrument.svelte:254 <p>
   > Internal Cooldown — the hidden rule that stops every hit from applying its element.
+  - terms: 🎮 cooldown
 - `vz_icd_standard` — IcdInstrument.svelte:262 <button>
   > Standard
 - `vz_icd_no_icd` — IcdInstrument.svelte:269 <button>

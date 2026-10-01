@@ -25,7 +25,7 @@
   > Weapon Event
 - `vz_wish_a_non_guaranteed_5_is_the_featured` — WishInstrument.svelte:252 <p>
   > A non-guaranteed 5★ is the featured character 55% of the time (the official consolidated rate, Capturing Radiance included) — losing makes the next one certain. <span>The Radiance streak counter isn't fully datamined, so it isn't modeled — but officially you can never lose the "50/50" four times in a row.</span>
-  - terms: 🎮 Capturing Radiance · 🏷 50/50
+  - terms: 🎮 Capturing Radiance · 🎮 Radiance · 🏷 50/50
 - `vz_wish_a_non_guaranteed_5_is_your_charted` — WishInstrument.svelte:261 <p>
   > A non-guaranteed 5★ is YOUR charted weapon 37.5% of the time (75% featured pair, split two ways). One fate point: miss once and the next 5★ is it — worst case two 5★s.
   - terms: 🎮 Fate Points

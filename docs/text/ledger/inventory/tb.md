@@ -261,10 +261,10 @@
   > C0
 - `tb_timing_reference` — DetailCard.svelte:370 <p>
   > Timing reference
-- `tb_cooldown_s_cd` — DetailCard.svelte:378 <td>
-  > {ability.cooldown}s CD
+- `tb_cooldown_s_cooldown` — DetailCard.svelte:378 <td>
+  > {ability.cooldown}s cooldown
   - vars: `ability.cooldown`
-  - terms: 🏷 CD
+  - terms: 🎮 cooldown
 - `tb_charges_charges` — DetailCard.svelte:379 <td> — ⚑ plural?
   > · {ability.charges} charges
   - vars: `ability.charges`
@@ -441,6 +441,7 @@
 - `tb_a_as_number_cooldown_s` — compare.ts:85 parts:
   > {(a as { cooldown: number }).cooldown}s
   - vars: `(a as { cooldown: number }).cooldown`
+  - terms: 🎮 cooldown
 - `tb_a_as_number_energycost` — compare.ts:92 parts:
   > {(a as { energyCost: number }).energyCost}
   - vars: `(a as { energyCost: number }).energyCost`
@@ -448,8 +449,10 @@
   > Other buff
 - `tb_e_cooldown` — compare.ts:334 label:
   > E cooldown
+  - terms: 🎮 cooldown
 - `tb_q_cooldown` — compare.ts:339 label:
   > Q cooldown
+  - terms: 🎮 cooldown
 - `tb_q_energy` — compare.ts:344 label:
   > Q energy
   - terms: 🎮 Energy
@@ -542,7 +545,7 @@
   > No curated timing to draw for this selection.
 - `tb_a_lane_is_one_ability_the_heading_is` — CompareView.svelte:599 <p> — ⚑ off-glossary
   > A lane is one ability; the heading is what it does. Solid = the cast you make now, faint = the same cast repeated on cooldown — <strong>energy is not modelled</strong>, so a burst's repeats are a best case. Ticks mark a summon's cadence over its first window.
-  - terms: 🎮 Energy · 🏷 summon · 🎮 Elemental Burst
+  - terms: 🎮 cooldown · 🎮 Energy · 🏷 summon · 🎮 Elemental Burst
   - ⚠️ off-glossary: modelled → modeled
 - `tb_side_by_side` — CompareView.svelte:609 <p>
   > Side by side
@@ -598,3 +601,20 @@
 - `tb_off_field_dps` — roles.ts:40 label:
   > Off-Field DPS
   - terms: 🏷 DPS
+
+## Rendered from data
+
+A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
+
+- `{el}` — CharacterFilterRail.svelte:133, each over `ELEMENTS`
+- `{w}` — CharacterFilterRail.svelte:147, each over `WEAPONS`
+- `{region}` — CharacterFilterRail.svelte:176, each over `allRegions`
+- `{entry?.element}` — DetailCard.svelte:187
+- `{entry?.weapon}` — DetailCard.svelte:188
+- `{row.element}` — +page.svelte:1415
+- `{ref.entry?.element}` — CompareView.svelte:402
+- `{ref.entry?.weapon}` — CompareView.svelte:402
+- `{col.entry?.element}` — CompareView.svelte:421
+- `{col.entry?.weapon}` — CompareView.svelte:421
+- `{el}` — CompareView.svelte:490, each over `LENS_ELEMENTS`
+- `{cell}` — CompareView.svelte:628, each over `row.cells`

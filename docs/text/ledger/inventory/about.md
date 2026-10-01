@@ -10,7 +10,7 @@
   - terms: 🔒 critcalc
 - `about_critcalc_app_is_a_small_set_of` — About.svelte:10 <p>
   > <strong>critcalc.app</strong> is a small set of theorycrafting tools for Genshin Impact. The idea is to <em>visualize</em> the mechanics behind a team — how crit rolls, buffs, cooldowns, and rotations actually stack up — rather than reduce everything to a single number.
-  - terms: 🎮 Genshin Impact · 🔒 critcalc.app · 📖 rotation
+  - terms: 🎮 Genshin Impact · 🔒 critcalc.app · 🎮 cooldown · 📖 rotation
 - `about_the_three_tools` — About.svelte:16 <h2>
   > The three tools
 - `about_team_builder_find_characters_by_what` — About.svelte:19 <li>
@@ -18,7 +18,7 @@
   - terms: 🎮 Constellation · 📖 Team Builder · 🏷 RES shred · 🏷 off-field
 - `about_rotation_planner_write_a_rotation_in_kqm` — About.svelte:24 <li>
   > <strong>Rotation Planner</strong> — write a rotation in KQM-style notation and watch it render as a frame-accurate timeline: ability windows, buff uptime, cooldowns, and swaps.
-  - terms: 📖 Rotation Planner · 📖 notation · 📖 rotation · 📖 timeline · 🏷 uptime
+  - terms: 📖 Rotation Planner · 🎮 cooldown · 📖 notation · 📖 rotation · 📖 timeline · 🏷 uptime
 - `about_visualizers_a_shelf_of_small_graph` — About.svelte:28 <li>
   > <strong>Visualizers</strong> — a shelf of small graph instruments: how crit rate and crit damage combine across the whole spread of possible rolls, how elemental application lands, the real odds behind artifact farming and wishing, how gauges decay, and how reactions scale with EM.
   - terms: 📖 Visualizers · 🏷 EM

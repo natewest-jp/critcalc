@@ -26,7 +26,7 @@
   - terms: 📖 Rotation Planner
 - `seo_write_a_rotation_in_kqm_notation_and` — seo.ts:84 description:
   > Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, energy, buff windows and who is on field when.
-  - terms: 📖 notation · 📖 rotation · 📖 timeline · 🎮 Energy · 🔒 KQM
+  - terms: 🎮 cooldown · 📖 notation · 📖 rotation · 📖 timeline · 🎮 Energy · 🔒 KQM
 - `seo_team_builder` — seo.ts:87 title:
   > Team Builder
   - terms: 📖 Team Builder

@@ -147,16 +147,40 @@ Thundercloud, Moondrift, Polestar Field) are `game`, added to the seed.
   in most messages ("Equal-budget line", "Roll {n} hits"). Tagging them would bury the
   real ones, so they belong in the Artifact Rolls notes instead.
 
-**Open for Nate (all marked in the file):**
+**Nate's rulings on the five (2026-10-01), all applied:**
 
-1. `Saved Rotations` / `Saved rotations` / "save bank": one thing under three names.
-   `proposed`: Saved Rotations, with the casing to be ruled.
-2. `CD` means CRIT DMG in the Crit Heatmap and COOLDOWN in the planner and on the bench.
-   Keep both and annotate per string, or spell one out?
-3. `Base DMG`: not classed. It is both a game phrase ("increases Base DMG") and the
-   formula bucket. Damage Anatomy uses it, so it can wait for a later pass over that
-   surface.
-4. 🐛 **"Blazing Axe Mage"** (planner assumptions popover + RotationPlanner help): I believe
-   the enemy is the Blazing Axe _Mitachurl_. Not changed.
-5. "Radiance" names two things: Capturing Radiance (wish) and the Stellar Radiance window.
-   Only the first is in the termbase so far.
+1. ✅ **Saved rotations**, in sentence case, one name. "Saved Rotations" and "save bank" are
+   now `avoid` forms. In code: the overlay title, the tabs-full dialog (a verb before it
+   lowercases it: "Open saved rotations") and the Settings row.
+2. ✅ **CD means CRIT DMG only; cooldown is always spelled out.** The eight cooldown sites
+   were changed (resonance ×3, the bench detail card, the buff tooltip, the planner's
+   "trigger cooldown" row label in both the timeline and the PNG export, and the stat
+   label, which is now `Cooldown Reduction` to match its Title Case game-stat
+   neighbors). The `cooldown` term's avoid forms, plus a `pattern` entry for `5s CD`,
+   catch a regression. ⚠️ "trigger cooldown" is a timeline row label and longer than
+   before, so Nate should check it on screen.
+3. ✅ **No conflict.** Every Damage Anatomy string says **Base DMG Bonus**, which is the
+   game's own phrase; the formula bracket is named after it. It is now a `game` term, and
+   no string change was needed.
+4. ✅ **Blazing Axe Mitachurl**, fixed in the planner's assumptions list and the Rotation
+   Planner help; `Blazing Axe Mage` is an avoid form.
+5. ✅ **Radiance:** the game names three STATES, "Radiance: Stellar Glimmer / Stellar-Conduct
+   / Stellar Swirl". "Stellar Radiance" is a coined community term and an avoid form.
+
+## ✅ Rendered from data — a class the inventory cannot hold (2026-10-01)
+
+⚓ Nate asked why weapon types and regions were missing from the strings when the Roster
+filters by them. **They are printed straight from data:** `{#each WEAPONS as w}{w}` shows
+the id `claymore`, uppercased by CSS, and there is no string literal anywhere. A locale
+needs a LOOKUP there (id → the game's term), not a message. The extractor now lists these
+sites per surface under **"Rendered from data"** (16 on the first run). Two shapes are
+detected:
+
+- a loop variable printed alone, when the loop runs over something that is not a literal
+  array of prose or numbers (a file's own `const` arrays are resolved, so `AURA_NOTES`
+  (sentences, already messages) is told apart from `ELEMENTS` (ids));
+- an id field (`.element`, `.weapon`, `.weaponType`, `.region`) read anywhere in a
+  template, e.g. the detail card's `{entry?.element} · {entry?.weapon}`.
+
+⚠️ This is a review list, not a guarantee: an id that reaches the screen under another
+field name is not caught. Weapon types and regions are now in the termbase too.

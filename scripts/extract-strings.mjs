@@ -336,6 +336,8 @@ function looksLikeText(raw, field = '') {
 // ─── Inventory ───────────────────────────────────────────────────────────────
 /** surface → text → entry */
 const inventory = new Map();
+/** Data values printed raw by a template — see `noteFromData`. */
+const fromData = [];
 let unassigned = new Map();
 
 function slugOf(text) {
@@ -704,6 +706,7 @@ function extractFile(file) {
 				acc.text += `{${c}}`;
 				acc.vars.push(c);
 				acc.nested += walkJs(n.expression, { inTemplate: true, field: acc.field }, n);
+				noteDataField(n);
 			} else if (n.type === 'RegularElement') {
 				if (n.name === 'br' || n.name === 'wbr') {
 					acc.text += `<${n.name}>`;
@@ -719,6 +722,72 @@ function extractFile(file) {
 				if (/^<(\w+)>\s*<\/\1>$/.test(acc.text.slice(before))) acc.text = acc.text.slice(0, before);
 			}
 		}
+	}
+
+	// `{#each WEAPONS as w}<button>{w}</button>` prints a DATA VALUE — an id
+	// such as `claymore` — with no string literal anywhere, so no message can
+	// hold it; a locale needs a lookup there. Listed separately, per surface.
+	const eachVars = new Map();
+	const constArrays = new Map();
+	const DATA_FIELD = /^(region|element|weapon|weaponType)$/;
+	/** `{entry?.weapon ?? '?'}` anywhere in a template: an id field read straight
+	 *  off a data row, whatever surrounds it. */
+	function noteDataField(tag) {
+		let ex = tag.expression;
+		for (;;) {
+			if (ex.type === 'ChainExpression') ex = ex.expression;
+			else if (ex.type === 'LogicalExpression') ex = ex.left;
+			else break;
+		}
+		if (ex.type !== 'MemberExpression' || !DATA_FIELD.test(ex.property.name ?? '')) return;
+		const surface = surfaceOf(relative(SRC, file));
+		if (!surface || surface === 'unassigned') return;
+		const at = { surface, file: relative(SRC, file), line: L(tag), expr: code(ex) };
+		if (!fromData.some((d) => d.file === at.file && d.line === at.line && d.expr === at.expr))
+			fromData.push(at);
+	}
+	function noteFromData(tag) {
+		const ex = tag.expression;
+		let root = ex;
+		while (root.type === 'MemberExpression') root = root.object;
+		if (root.type !== 'Identifier' || !eachVars.get(root.name)) return;
+		if (ex.type === 'MemberExpression' && !DATA_FIELD.test(ex.property.name ?? '')) return;
+		const surface = surfaceOf(relative(SRC, file));
+		if (!surface || surface === 'unassigned') return;
+		const at = {
+			surface,
+			file: relative(SRC, file),
+			line: L(tag),
+			expr: code(ex),
+			from: eachVars.get(root.name)
+		};
+		if (!fromData.some((d) => d.file === at.file && d.line === at.line && d.expr === at.expr))
+			fromData.push(at);
+	}
+	// What an `{#each}` iterates, as far as this file can say. A literal array
+	// (inline, or a top-level const) of PROSE or of numbers needs no lookup — its
+	// strings are already messages; one of ids (`'claymore'`) does. Anything not
+	// literal (a prop, a call, data rows) is reported, except a numeric axis.
+	function eachSource(ex) {
+		const src = code(ex);
+		while (/^TS(As|Satisfies)Expression$/.test(ex.type)) ex = ex.expression;
+		let arr = ex.type === 'ArrayExpression' ? ex : null;
+		if (!arr && ex.type === 'Identifier') arr = constArrays.get(ex.name) ?? null;
+		if (arr) {
+			const els = arr.elements.filter(Boolean);
+			const ids = els.filter((e) => isStr(e) && !looksLikeText(e.value));
+			return ids.length && ids.length === els.length ? src : null;
+		}
+		return /(ticks?|values|speeds|readings)$/i.test(src) ? null : src;
+	}
+	function patternNames(p) {
+		if (!p) return [];
+		if (p.type === 'Identifier') return [p.name];
+		if (p.type === 'ObjectPattern')
+			return p.properties.flatMap((q) => patternNames(q.value ?? q.argument));
+		if (p.type === 'ArrayPattern') return p.elements.flatMap(patternNames);
+		if (p.type === 'AssignmentPattern') return patternNames(p.left);
+		return [];
 	}
 
 	function walkFragment(fragment, host) {
@@ -748,6 +817,8 @@ function extractFile(file) {
 				const text = acc.text.replace(/\s+/g, ' ').trim();
 				// Only text the TEMPLATE wrote counts; `{ok ? 'Yes' : 'No'}` alone is
 				// two script messages, already recorded by the walk.
+				const tags = run.filter((n) => n.type === 'ExpressionTag');
+				if (!/\p{L}/u.test(acc.staticText) && tags.length === 1) noteFromData(tags[0]);
 				if (/\p{L}/u.test(acc.staticText)) {
 					const flags = [...acc.flags];
 					if (acc.nested) flags.push('assembled');
@@ -854,6 +925,18 @@ function extractFile(file) {
 				return;
 		}
 		// Blocks and tags: walk every expression and every fragment they hold.
+		const bound = node.type === 'EachBlock' ? patternNames(node.context) : [];
+		const saved = bound.map((n) => [n, eachVars.get(n)]);
+		const source = node.type === 'EachBlock' ? eachSource(node.expression) : null;
+		for (const n of bound) eachVars.set(n, source);
+		walkBlock(node, host);
+		for (const [n, prev] of saved) {
+			if (prev === undefined) eachVars.delete(n);
+			else eachVars.set(n, prev);
+		}
+	}
+
+	function walkBlock(node, host) {
 		for (const k of Object.keys(node)) {
 			if (k === 'metadata' || k === 'type') continue;
 			const v = node[k];
@@ -879,6 +962,17 @@ function extractFile(file) {
 		}
 	}
 
+	for (const prog of [ast.module?.content, ast.instance?.content])
+		for (const st of prog?.body ?? []) {
+			const decl = st.type === 'ExportNamedDeclaration' ? st.declaration : st;
+			if (decl?.type !== 'VariableDeclaration') continue;
+			for (const d of decl.declarations) {
+				let init = d.init;
+				while (init && /^TS(As|Satisfies)Expression$/.test(init.type)) init = init.expression;
+				if (d.id.type === 'Identifier' && init?.type === 'ArrayExpression')
+					constArrays.set(d.id.name, init);
+			}
+		}
 	if (ast.module) walkJs(ast.module.content);
 	if (ast.instance) walkJs(ast.instance.content);
 	if (!isTs) walkFragment(ast.fragment, 'root');
@@ -900,7 +994,12 @@ function loadTerms() {
 		.sort((a, b) => b.form.length - a.form.length);
 	for (const t of terms) t.avoidRe = (t.avoid ?? []).map((a) => [a, wordRe(a)]);
 	// The house avoid list: spellings and leaked words, matched in any case.
-	const house = avoid.map((a) => ({ ...a, re: wordRe(a.form, 'giu') }));
+	// An entry may give a `pattern` (a regex) where a literal form can't say it:
+	// `5s CD` has a digit glued to the word.
+	const house = avoid.map((a) => ({
+		...a,
+		re: a.pattern ? new RegExp(a.pattern, 'gu') : wordRe(a.form, 'giu')
+	}));
 	return { terms, forms, avoid: house };
 }
 const wordRe = (w, flags = 'gu') =>
@@ -969,7 +1068,7 @@ if (existsSync(NOTES)) {
 	}
 }
 
-const surfaces = [...new Set(entries.map((e) => e.surface))].sort();
+const surfaces = [...new Set([...entries, ...fromData].map((e) => e.surface))].sort();
 const bySurface = (s) =>
 	entries
 		.filter((e) => e.surface === s)
@@ -996,6 +1095,12 @@ function renderSurface(s) {
 			md += `  - terms: ${e.terms.map((t) => `${TERM_MARK[t.class]} ${t.term}`).join(' · ')}\n`;
 		if (e.avoided.length) md += `  - ⚠️ off-glossary: ${e.avoided.join(' · ')}\n`;
 	}
+	const raw = fromData.filter((d) => d.surface === s);
+	if (raw.length) {
+		md += `\n## Rendered from data\n\nA value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.\n\n`;
+		for (const d of raw)
+			md += `- \`{${d.expr}}\` — ${basename(d.file)}:${d.line}${d.from ? `, each over \`${d.from}\`` : ''}\n`;
+	}
 	return md;
 }
 
@@ -1004,6 +1109,7 @@ const flagCount = (f) => entries.filter((e) => e.flags.has(f)).length;
 const summary = [
 	`${total} messages across ${surfaces.length} surfaces (${entries.reduce((n, e) => n + e.where.length, 0)} occurrences)`,
 	...surfaces.map((s) => `  ${s.padEnd(13)} ${String(bySurface(s).length).padStart(4)}`),
+	`rendered from data (lookups, not messages): ${fromData.length}`,
 	`flags: ${FLAG_ORDER.map((f) => `${f} ${flagCount(f)}`).join(' · ')}`,
 	base.terms.length
 		? `terms: ${base.terms.length} terms + ${base.avoid.length} avoided forms in the termbase, ${entries.filter((e) => e.terms.length).length} messages carry one`

@@ -46,7 +46,7 @@
   - terms: 📖 Compare
 - `help_tb_the_chart_groups_by_what_an_ability_does` — TeamBuilder.svelte:63 <p> — ⚑ off-glossary
   > The chart groups by <em>what an ability does</em>, not by which button it sits on: under <em>Heal</em>, Bennett's burst lines up beside Kokomi's skill, each carrying its own cooldown and energy cost. Every bar repeats across the ruler, so how much of the time something is up reads as a rhythm rather than as arithmetic — a nearly solid row is nearly permanent uptime, and the small breaks in one mark where you have to come back and cast again. Repeats assume you recast the moment the cooldown ends; energy isn't modelled, so a burst's later cycles are a best case. Below the chart, a side-by-side table aligns the plain facts — cooldowns, burst costs, and each capability with its constellation gate.
-  - terms: 🎮 Constellation · 🎮 Energy · 🏷 uptime · 🎮 Elemental Skill · 🎮 Elemental Burst
+  - terms: 🎮 Constellation · 🎮 cooldown · 🎮 Energy · 🏷 uptime · 🎮 Elemental Skill · 🎮 Elemental Burst
   - ⚠️ off-glossary: modelled → modeled
 - `help_tb_press_on_a_bench_slot_instead_and_you` — TeamBuilder.svelte:73 <p>
   > Press <strong>⇄</strong> on a bench slot instead and you get an <strong>audition</strong>: the character currently in that slot is pinned at the top as the reference, and the chips narrow the candidates to whoever else does that job. For a main DPS — whose job is damage, which we show rather than score — the chips offer elements instead. <strong>Take slot</strong> makes the swap.

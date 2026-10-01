@@ -84,7 +84,7 @@
   - terms: 🎮 Anemo · 🏷 aura
 - `vz_gauge_geo_consumes_at_0_5_with_a_1s_reaction` — GaugeInstrument.svelte:149 note:
   > Geo consumes at ×0.5 with a 1s reaction cooldown — the attempt inside the window is blocked and takes no gauge at all.
-  - terms: 🏷 gauge · 🎮 Geo
+  - terms: 🎮 cooldown · 🏷 gauge · 🎮 Geo
 - `vz_gauge_hydro_and_electro_coexist_and_each_tick` — GaugeInstrument.svelte:164 note:
   > Hydro and Electro coexist, and each tick drains 0.4U from **both** gauges — so the **smaller** aura runs out first and the reaction stops with the bigger one still on the target. A 2U Hydro aura outlives a 1U Electro one.
   - terms: 🎮 Electro · 🎮 Hydro · 🏷 aura
@@ -146,6 +146,7 @@
   - terms: 🏷 gauge
 - `vz_gauge_inside_the_1s_cooldown` — GaugeInstrument.svelte:693 logRowsOut:
   > inside the 1s cooldown
+  - terms: 🎮 cooldown
 - `vz_gauge_spent_trigger` — GaugeInstrument.svelte:694 logRowsOut:
   > −{fmtU(e.spent)} trigger
   - vars: `fmtU(e.spent)`
@@ -236,3 +237,9 @@
   - ⚠️ off-glossary: Event log → aura log
 - `vz_gauge_nothing_lands_on_the_target` — GaugeInstrument.svelte:1287 empty=
   > Nothing lands on the target.
+
+## Rendered from data
+
+A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
+
+- `{label}` — GaugeInstrument.svelte:949, each over `m.labels`

@@ -212,3 +212,10 @@
 - `coverage_constellation_6` — coverageText.ts:112 C6:
   > Constellation 6
   - terms: 🎮 Constellation
+
+## Rendered from data
+
+A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
+
+- `{cav}` — CoverageList.svelte:357, each over `caveatsOf(d.data, c.hosts)`
+- `{cav}` — CoverageList.svelte:395, each over `caveatsOf(d.data, c.hosts)`
