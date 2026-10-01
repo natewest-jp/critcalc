@@ -100,12 +100,16 @@
 	<h2 id="reaction-curves">Reaction Curves</h2>
 	<p>
 		How reaction payouts scale with Elemental Mastery. Each family rides a different curve:
-		amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM),
-		crystallize 4.44·EM/(1400+EM). Hover or slide to compare.
+		amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM), Lunar and
+		Stellar 6·EM/(2000+EM), crystallize 4.44·EM/(1400+EM). <em>All families</em> puts those five on one
+		chart; pick a family to see its reactions' damage at a given level. Drag on the chart or slide to
+		move along it.
 	</p>
 	<p>
-		Values are before enemy RES and exclude +% reaction bonuses such as 4pc Crimson Witch.
-		Transformative damage cannot crit; additive flat damage joins the hit and crits with it.
+		A Reaction Bonus such as 4pc Crimson Witch adds inside the same bracket as EM, so the Reaction
+		Bonus slider also says how much EM it is worth from where you are. Values are before enemy RES.
+		Transformative damage can't crit for most characters; additive flat damage joins the hit and
+		crits with it; Lunar and Stellar reaction damage crits on its own.
 	</p>
 </section>
 
