@@ -283,7 +283,7 @@ export function computeAuraLane(
  *    answer, so a number here would be a guess replacing a fact.
  *
  * ⚠️ A marker only merges when EVERY entry on it is a ticking reaction. A frame
- * carrying "Electro-Charged · Overload" is a compound event, not a tick, and
+ * carrying "Electro-Charged · Overloaded" is a compound event, not a tick, and
  * stays where it is.
  */
 function collapseReactionRuns(markers: AuraMarker[], gaugeSeries: SeriesInterval[]): AuraMarker[] {

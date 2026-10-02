@@ -52,14 +52,16 @@
 	<h2 id="gauge-explorer">Gauge Explorer</h2>
 	<p>
 		How elemental auras live and die. Build a sequence of applications and watch the gauge decay,
-		the 0.8× aura tax, and how each reaction consumes aura at its own rate: ×2 forward vape/melt,
-		×0.5 reverse, ×0.5 swirl/crystallize, 1:1 the rest, 2:1 for bloom. Mechanics follow KQM gauge
-		theory cross-checked against gcsim.
+		the ×0.8 aura tax, and how each reaction consumes aura at its own rate: ×2 for forward Vaporize
+		and Melt, ×0.5 reverse, ×0.5 for Swirl and Crystallize, 1:1 the rest, 2:1 for Bloom. Mechanics
+		follow KQM gauge theory, cross-checked against gcsim.
 	</p>
 	<p>
-		The strip under the chart shows which aura icons hang over the enemy at any moment. Press play
-		to watch the gauges drain — slow-motion speeds are a chip away — or drag the paused playhead to
-		read exact values. Single target only: swirl spreading, shatter, and what happens to Dendro
+		Click the band above the chart to add an application there — a copy of the selected one — and
+		drag a marker to move it in time. The toolbar over the chart sets the selected application's
+		element and size. Point at the chart to read every aura at that moment, or press play to watch
+		the gauges drain, at slow motion if you like. The strip under the chart shows which aura icons
+		hang over the enemy. Single target only: Swirl spreading, Shatter, and what happens to Dendro
 		Cores after they spawn are out of scope.
 	</p>
 </section>

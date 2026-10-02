@@ -284,7 +284,7 @@
 
 {#snippet rowContent(row: EventLogRow)}
 	<span class="el-time">{row.time === undefined ? '' : fmtLogTime(row.time)}</span>
-	<span class="el-body">
+	<span class="el-pip-cell">
 		{#if row.pip}
 			<span
 				class="el-pip"
@@ -292,8 +292,9 @@
 				style:background={row.pip.color}
 				style:--label-halo={row.pip.halo}>{row.pip.text}</span
 			>
-		{/if}{row.text}
+		{/if}
 	</span>
+	<span class="el-body">{row.text}</span>
 {/snippet}
 
 <style>
@@ -319,19 +320,38 @@
 	   — is inherited. Measured: the paper card's rows kept resolving to #495366
 	   (the receding ink) with the override in place and no warning anywhere.
 	   ⛔ Don't "tidy" these five fallbacks back into one declaration. */
+	/* ↻ 2026-10-02 (⚓ Nate): THE LIST IS THE GRID, and every row is a
+	   `subgrid` of it — time · pip · text. Three columns so every row's text
+	   starts on ONE line (after a pip, on a wrapped line, on a row with no pip);
+	   ONE grid so the pip column is as wide as the widest pip this log actually
+	   holds, which makes the gap after a pip the same as the gap after the time.
+	   A fixed pip column had to fit "1.5", and left a "1" pip floating in
+	   ~14px of air before its text.
+	   🎛️ The time column is sized to its widest member — "199.99s" — so the text
+	   never shifts as a rotation gets long. */
 	.el-log {
 		display: grid;
-		gap: 0.3rem;
+		grid-template-columns: 3.6rem auto minmax(0, 1fr);
+		column-gap: 0.45rem;
+		row-gap: 0.3rem;
+		align-content: start;
 		min-height: 0;
 		overflow-y: auto;
+	}
+	/* Every child spans the three columns — the rows, and the caller's standing
+	   `lead` content and the empty line, which are not rows. */
+	.el-log > :global(*) {
+		grid-column: 1 / -1;
 	}
 
 	.el-row {
 		display: grid;
-		/* 🎛️ The time column is sized to its widest member — "199.99s" — so the
-		   body column never shifts as a rotation gets long. */
-		grid-template-columns: 3.6rem minmax(0, 1fr);
-		gap: 0.5rem;
+		/* ⚠ The pip used to sit INLINE at the start of the text, so a wrap ran
+		   back under it, and the reaction and bookkeeping rows carried a 0.9rem
+		   indent of their own — three left edges in one log. ⛔ Don't bring the
+		   indent back: a timeless row already reads as hanging under the one
+		   above, and its ink says what kind of line it is. */
+		grid-template-columns: subgrid;
 		margin: 0;
 		font-size: var(--fs-lg);
 		line-height: 1.25rem;
@@ -384,16 +404,17 @@
 		color: var(--el-ink, var(--text));
 	}
 
-	/* ⚠ The indent is on the BODY, not the row — the time column has to stay
-	   where it is, because an indented row's job is to read as hanging under the
-	   text above it, not as a differently-timed event. */
 	.el-row--sub .el-body {
 		color: color-mix(in srgb, var(--el-ink, var(--text)) 76%, transparent);
-		padding-left: 0.9rem;
 	}
 	.el-row--quiet .el-body {
 		color: color-mix(in srgb, var(--el-ink, var(--text)) 58%, transparent);
-		padding-left: 0.9rem;
+	}
+	/* The pip sits at the start of its column, on the first line's centre. */
+	.el-pip-cell {
+		display: flex;
+		align-items: flex-start;
+		padding-top: 2.5px;
 	}
 
 	.el-pip {
@@ -403,12 +424,10 @@
 		min-width: 15px;
 		height: 15px;
 		padding: 0 3px;
-		margin-right: 0.4rem;
 		border-radius: var(--r-round);
 		font-family: var(--font-condensed);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		vertical-align: 1px;
 		/* ↻ ⚓ NATE 2026-08-17: WHITE ON A HALO, not dark ink on the element. It
 		   was `--bright-ink` on the `main` rung, which is the bright-chip idiom the
 		   planner's bars retired in 2026-08-11 for the same reason — ⚓ "I simply
