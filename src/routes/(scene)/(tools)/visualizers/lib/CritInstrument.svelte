@@ -469,13 +469,6 @@
 		align-content: start;
 	}
 
-	/* A rule between the build and the overlays, across both columns. */
-	.cv-overlays,
-	.cv-hits {
-		padding-top: 0.6rem;
-		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
-	}
-
 	.cv-panel-stack {
 		margin-top: 1rem;
 		display: grid;
@@ -487,11 +480,6 @@
 	@container instrument (max-width: 30rem) {
 		.cv-controls {
 			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.cv-hits {
-			padding-top: 0;
-			border-top: none;
 		}
 	}
 
@@ -828,11 +816,6 @@
 		.cv-controls {
 			grid-area: controls;
 			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.cv-hits {
-			padding-top: 0;
-			border-top: none;
 		}
 
 		/* Side column: scroll internally if it outgrows the tile */
