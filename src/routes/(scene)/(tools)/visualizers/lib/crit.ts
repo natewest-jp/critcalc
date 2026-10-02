@@ -1,3 +1,5 @@
+import { toOklab, fromOklab, type RGB } from './critRamp';
+
 // Pure calc + geometry for the Crit Visualizer. Single source of truth shared by
 // +page.svelte (sliders/readouts) and CritHeatmap.svelte (canvas + SVG rendering).
 
@@ -23,6 +25,48 @@ export const averageDamageMultiplier = (critRate: number, critDamage: number) =>
 export const zeroCritProbability = (critRate: number, hitsPerRotation: number) =>
 	Math.pow(1 - clamp(critRate, 0, 1), Math.max(1, Math.round(hitsPerRotation)));
 
+// ── Display ─────────────────────────────────────────────────────────────────
+
+/** A multiplier as the instruments write it: the × leads, two decimals. */
+export const formatMultiplier = (multiplier: number) => `×${multiplier.toFixed(2)}`;
+
+/**
+ * A chance as a percentage. One decimal, except at the ends, where rounding
+ * would state something false: a no-crit risk of 0.3⁸ is 0.007%, and "0.0%"
+ * reads as "cannot happen".
+ */
+export function formatChance(probability: number): string {
+	if (probability > 0 && probability < 0.0005) return '<0.1%';
+	if (probability < 1 && probability > 0.9995) return '>99.9%';
+	return `${(probability * 100).toFixed(1)}%`;
+}
+
+// ── Crit count distribution ─────────────────────────────────────────────────
+
+/**
+ * The chance that exactly k of `hits` crit, for every k from 0 to `hits` —
+ * the binomial distribution, since every hit's crit is its own independent
+ * roll. Index 0 is the no-crit risk; the whole array is what "Roll" samples
+ * one point from. Built by the ratio between neighbours rather than by
+ * factorials, which stays exact enough at the slider's 40 hits.
+ */
+export function critCountDistribution(critRate: number, hits: number): number[] {
+	const n = Math.max(1, Math.round(hits));
+	const p = clamp(critRate, 0, 1);
+	const out = new Array<number>(n + 1).fill(0);
+	if (p === 0) out[0] = 1;
+	else if (p === 1) out[n] = 1;
+	else {
+		out[0] = Math.pow(1 - p, n);
+		for (let k = 0; k < n; k++) out[k + 1] = (out[k] * (n - k) * p) / ((k + 1) * (1 - p));
+	}
+	return out;
+}
+
+/** The rotation's average multiplier when exactly `crits` of `hits` crit. */
+export const rotationMultiplier = (crits: number, hits: number, critDamage: number) =>
+	1 + (crits / Math.max(1, hits)) * Math.max(0, critDamage);
+
 // ── Crit value ──────────────────────────────────────────────────────────────
 
 // KQM crit value: CV = 2·CR + CD. Decimal units like the rest of this module —
@@ -32,6 +76,20 @@ export const critValue = (critRate: number, critDamage: number) => 2 * critRate 
 // CR at a given CD along an equal-CV budget line (every build reachable at that
 // total crit value). Used to draw the budget curve over the heatmap.
 export const cvLineCR = (cv: number, critDamage: number) => (cv - critDamage) / 2;
+
+/**
+ * The best split of a crit-value budget: the point on the equal-CV line where
+ * the average multiplier peaks. Unconstrained that is CR = CV/4, CD = CV/2
+ * (CR·CD is maximised along 2·CR + CD = CV), but the game bounds both stats —
+ * CRIT Rate past 100% is wasted and neither stat goes below its base — and
+ * because the product is concave along the line, the bounded optimum is the
+ * unconstrained one clamped to the line's reachable stretch. So a budget too
+ * big for a 2:1 split puts CR at 100% and the rest into CD.
+ */
+export function bestSplit(cv: number): { critRate: number; critDamage: number } {
+	const critRate = clamp(cv / 4, CR_MIN, Math.max(CR_MIN, Math.min(CR_MAX, (cv - CD_MIN) / 2)));
+	return { critRate, critDamage: cv - 2 * critRate };
+}
 
 /**
  * One rotation of independent crit checks — the "Roll it" sampler. Each hit
@@ -48,25 +106,8 @@ export function sampleRotation(
 
 // ── Isolines ────────────────────────────────────────────────────────────────
 
-// Multiplier values rendered as dashed contour lines on the heatmap and used
-// for the "nearest contour" readout in the build panel.
+// Multiplier values rendered as dashed contour lines on the heatmap.
 export const ISOLINE_VALUES = [1.3, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5];
-
-// The isoline value closest to the given multiplier, plus how far off it is.
-export function nearestIsoline(multiplier: number): { value: number; delta: number } {
-	let best = ISOLINE_VALUES[0];
-	let delta = Math.abs(multiplier - best);
-
-	for (const isoline of ISOLINE_VALUES) {
-		const nextDelta = Math.abs(multiplier - isoline);
-		if (nextDelta < delta) {
-			best = isoline;
-			delta = nextDelta;
-		}
-	}
-
-	return { value: best, delta };
-}
 
 // ── No-crit risk ramp ───────────────────────────────────────────────────────
 // Chart palette — preserved verbatim per the redesign brief guardrails.
@@ -95,12 +136,65 @@ export const RISK_STOPS: ReadonlyArray<{ readonly max: number; readonly color: s
 export const zeroCritRiskColor = (probability: number) =>
 	RISK_STOPS.find((stop) => probability < stop.max)!.color;
 
-// CSS gradient mirroring the risk ramp, high risk → low risk (left → right on
-// the hits/rotation slider: more hits = lower no-crit risk).
-export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
-	.reverse()
-	.map((stop) => stop.color)
-	.join(', ')})`;
+/**
+ * The risk ramp as a CONTINUOUS colour, for the hits slider's track. The same
+ * four colours as RISK_STOPS, each pinned to a risk inside its band and
+ * blended in OKLab between them (an sRGB blend of green and orange goes
+ * muddy). ⚓ Pure green holds through the low end, so a build that cannot miss
+ * — CRIT Rate 100% — paints no yellow at all. 🎛️ The anchors are a look, not
+ * a rule; the bands above stay the rule.
+ */
+const RISK_ANCHORS: ReadonlyArray<readonly [number, string]> = [
+	[0.02, RISK_STOPS[0].color],
+	[0.12, RISK_STOPS[1].color],
+	[0.35, RISK_STOPS[2].color],
+	[0.6, RISK_STOPS[3].color]
+];
+
+const hexToRgb = (hex: string): RGB => [
+	parseInt(hex.slice(1, 3), 16),
+	parseInt(hex.slice(3, 5), 16),
+	parseInt(hex.slice(5, 7), 16)
+];
+
+export function riskColorSmooth(probability: number): string {
+	const first = RISK_ANCHORS[0];
+	const last = RISK_ANCHORS[RISK_ANCHORS.length - 1];
+	if (probability <= first[0]) return first[1];
+	if (probability >= last[0]) return last[1];
+	const i = RISK_ANCHORS.findIndex(([at]) => at > probability);
+	const [p0, c0] = RISK_ANCHORS[i - 1];
+	const [p1, c1] = RISK_ANCHORS[i];
+	const t = (probability - p0) / (p1 - p0);
+	const a = toOklab(hexToRgb(c0));
+	const b = toOklab(hexToRgb(c1));
+	const [r, g, bl] = fromOklab(
+		[0, 1, 2].map((k) => a[k] + (b[k] - a[k]) * t) as [number, number, number]
+	);
+	return `rgb(${r}, ${g}, ${bl})`;
+}
+
+/** The hit counts the hits-per-rotation slider spans. */
+export const HITS_MIN = 1;
+export const HITS_MAX = 40;
+
+/**
+ * The hits-per-rotation slider's track: each hit count painted the risk colour
+ * of a whole rotation landing zero crits AT THAT COUNT, for the build's own
+ * CRIT Rate — so the track recolours as CRIT Rate moves.
+ * ↻ 2026-10-02 (⚓ Nate): it was the four stops spread evenly over 1–40 hits,
+ * which painted the default 8 hits orange at any CRIT Rate — at 70% that is a
+ * 0.007% risk. One stop per hit, each from the continuous ramp, so CSS has
+ * only near neighbours to blend.
+ */
+export function riskGradient(critRate: number, min = HITS_MIN, max = HITS_MAX): string {
+	const stops: string[] = [];
+	for (let hits = min; hits <= max; hits++) {
+		const at = max === min ? 0 : ((hits - min) / (max - min)) * 100;
+		stops.push(`${riskColorSmooth(zeroCritProbability(critRate, hits))} ${+at.toFixed(2)}%`);
+	}
+	return `linear-gradient(to right, ${stops.join(', ')})`;
+}
 
 // ── Chart geometry ──────────────────────────────────────────────────────────
 // Canvas size and plot margins (pixels). PAD reserves room for tick labels.
@@ -130,8 +224,9 @@ export const AXIS_INK = {
 	belowBaseline: 0.13,
 	/** The widest two-digit crit-rate tick, its ink from its right-aligned end. */
 	crTickInk: 22.98,
-	/** An isoline value ("2.50x"), its ink from its start. */
-	isoTickInk: 25.6
+	/** An isoline value ("×2.50", 10px), its ink from its start. ↻ 2026-10-02:
+	 *  re-measured when the × moved to the front (was 25.6 for "2.50x"). */
+	isoTickInk: 26.12
 };
 
 export const PAD = {

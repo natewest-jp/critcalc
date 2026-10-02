@@ -30,19 +30,21 @@
 <section>
 	<h2 id="crit-heatmap">Crit Heatmap</h2>
 	<p>
-		The average damage multiplier — 1&nbsp;+&nbsp;(Crit Rate × Crit Damage) — across every stat
+		The average damage multiplier — 1&nbsp;+&nbsp;(CRIT Rate × CRIT DMG) — across every stat
 		combination. Drag the marker or use the sliders; cool blue is lower output, yellow through
 		red-purple higher.
 	</p>
 	<p>
 		Dashed lines mark builds with the same average damage. The solid equal-budget line traces every
-		build sharing your total crit value (CV = 2·CR + CD) — drag along it to see where a fixed stat
-		budget pays out best. Pin a build to freeze a second marker and eyeball a trade against it.
+		build sharing your total crit value (2 × CRIT Rate + CRIT DMG) — drag along it to see where a
+		fixed stat budget pays out best. Pin a build to freeze a second marker and eyeball a trade
+		against it.
 	</p>
 	<p>
-		The no-crit risk overlay darkens regions where a whole rotation can land zero crits, and
-		<strong>Roll it</strong> samples your rotation for real, so you can watch how often the coin flips
-		betray the average.
+		Below the build, a bar chart shows how likely each number of crits is across one rotation of the
+		hits you set, with a line at the average. <strong>Roll</strong> plays one rotation and lights up the
+		bar it landed on. The no-crit risk overlay darkens the builds where a whole rotation can land zero
+		crits.
 	</p>
 </section>
 

@@ -9,10 +9,14 @@ import {
 	zeroCritProbability,
 	critValue,
 	cvLineCR,
-	nearestIsoline,
-	ISOLINE_VALUES,
+	bestSplit,
+	formatChance,
+	critCountDistribution,
+	rotationMultiplier,
+	formatMultiplier,
 	zeroCritRiskColor,
-	riskRampGradient,
+	riskGradient,
+	riskColorSmooth,
 	cdToX,
 	crToY,
 	xToCD,
@@ -67,11 +71,35 @@ describe('crit value', () => {
 	});
 });
 
-describe('nearestIsoline', () => {
-	it('picks the closest contour value', () => {
-		expect(nearestIsoline(1.98)).toEqual({ value: 2.0, delta: expect.closeTo(0.02) });
-		expect(nearestIsoline(1.0).value).toBe(ISOLINE_VALUES[0]);
-		expect(nearestIsoline(10).value).toBe(ISOLINE_VALUES[ISOLINE_VALUES.length - 1]);
+describe('bestSplit', () => {
+	it('is CR = CV/4, CD = CV/2 when that split is reachable', () => {
+		const best = bestSplit(2.8);
+		expect(best.critRate).toBeCloseTo(0.7);
+		expect(best.critDamage).toBeCloseTo(1.4);
+	});
+
+	it('caps CRIT Rate at 100% and puts the rest into CRIT DMG', () => {
+		const best = bestSplit(4.6);
+		expect(best.critRate).toBeCloseTo(1.0);
+		expect(best.critDamage).toBeCloseTo(2.6);
+	});
+
+	it('keeps CRIT DMG at its base when the budget is too small for a 2:1 split', () => {
+		const best = bestSplit(0.7);
+		expect(best.critDamage).toBeCloseTo(0.5);
+		expect(best.critRate).toBeCloseTo(0.1);
+	});
+
+	it('beats every other point on the same budget line', () => {
+		for (const cv of [0.7, 1.6, 2.8, 4.2, 4.6]) {
+			const best = bestSplit(cv);
+			const peak = averageDamageMultiplier(best.critRate, best.critDamage);
+			for (let cd = CD_MIN; cd <= CD_MAX; cd += 0.01) {
+				const cr = cvLineCR(cv, cd);
+				if (cr < CR_MIN || cr > CR_MAX) continue;
+				expect(averageDamageMultiplier(cr, cd)).toBeLessThanOrEqual(peak + 1e-9);
+			}
+		}
 	});
 });
 
@@ -83,8 +111,26 @@ describe('zeroCritRiskColor', () => {
 		expect(zeroCritRiskColor(0.9)).toBe('#e63946');
 	});
 
-	it('gradient runs high risk → low risk', () => {
-		expect(riskRampGradient).toBe('linear-gradient(to right, #e63946, #f4a261, #f6d365, #5be0ac)');
+	// A gradient's stops — an rgb() stop has commas of its own
+	const stopsOf = (gradient: string) =>
+		gradient.slice('linear-gradient(to right, '.length, -1).split(/, (?=#|rgb)/);
+
+	it("the slider gradient colours each hit count by the build's own risk", () => {
+		// 100% CR cannot miss: green end to end, no yellow anywhere
+		const sure = stopsOf(riskGradient(1));
+		expect(sure.every((stop) => stop.startsWith('#5be0ac'))).toBe(true);
+		// 70% CR: 1 hit is a 30% risk (between yellow and orange), 4 hits (0.8%) is green
+		const high = stopsOf(riskGradient(0.7, 1, 4));
+		expect(high[0]).toMatch(/^rgb\(/);
+		expect(high[3]).toBe('#5be0ac 100%');
+		// 5% CR, 2 hits: a 90% risk is plain red
+		expect(riskGradient(0.05, 1, 2)).toContain('#e63946 100%');
+	});
+
+	it('the continuous ramp lands on each risk colour at its anchor', () => {
+		expect(riskColorSmooth(0)).toBe('#5be0ac');
+		expect(riskColorSmooth(0.12)).toBe('rgb(246, 211, 101)'); // = #f6d365
+		expect(riskColorSmooth(0.9)).toBe('#e63946');
 	});
 });
 
@@ -118,5 +164,51 @@ describe('sampleRotation', () => {
 	it('clamps hit count to a non-negative integer', () => {
 		expect(sampleRotation(0.5, -3)).toEqual([]);
 		expect(sampleRotation(0.5, 2.6, () => 0)).toHaveLength(3);
+	});
+});
+
+describe('display formats', () => {
+	it('writes a multiplier with a leading × and two decimals', () => {
+		expect(formatMultiplier(1.98)).toBe('×1.98');
+		expect(formatMultiplier(4)).toBe('×4.00');
+	});
+
+	it('never rounds a possible risk to 0% or a certain one to 100%', () => {
+		expect(formatChance(Math.pow(0.3, 8))).toBe('<0.1%');
+		expect(formatChance(0)).toBe('0.0%');
+		expect(formatChance(0.1234)).toBe('12.3%');
+		expect(formatChance(0.9999)).toBe('>99.9%');
+		expect(formatChance(1)).toBe('100.0%');
+	});
+});
+
+describe('critCountDistribution', () => {
+	it('is the binomial distribution — 70% over 8 hits', () => {
+		const d = critCountDistribution(0.7, 8);
+		expect(d).toHaveLength(9);
+		expect(d[0]).toBeCloseTo(Math.pow(0.3, 8), 12);
+		expect(d[6]).toBeCloseTo(28 * Math.pow(0.7, 6) * Math.pow(0.3, 2), 12);
+		expect(d[8]).toBeCloseTo(Math.pow(0.7, 8), 12);
+	});
+
+	it('sums to 1 and its first bar is the no-crit risk, up to 40 hits', () => {
+		for (const cr of [0.05, 0.37, 0.7, 0.95]) {
+			for (const hits of [1, 8, 40]) {
+				const d = critCountDistribution(cr, hits);
+				expect(d.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
+				expect(d[0]).toBeCloseTo(zeroCritProbability(cr, hits), 12);
+			}
+		}
+	});
+
+	it('puts everything on one bar at 0% and 100%', () => {
+		expect(critCountDistribution(0, 4)).toEqual([1, 0, 0, 0, 0]);
+		expect(critCountDistribution(1, 4)).toEqual([0, 0, 0, 0, 1]);
+	});
+
+	it("averages, over its bars, to the build's average multiplier", () => {
+		const d = critCountDistribution(0.7, 8);
+		const mean = d.reduce((sum, p, k) => sum + p * rotationMultiplier(k, 8, 1.4), 0);
+		expect(mean).toBeCloseTo(averageDamageMultiplier(0.7, 1.4), 12);
 	});
 });
