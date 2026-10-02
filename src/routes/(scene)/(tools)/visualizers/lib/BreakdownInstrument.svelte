@@ -1162,7 +1162,14 @@
 	   labels), and the bar sits on its middle, so the leading line knows where
 	   the bar stops and the row ends. */
 	.bd-wf-track {
-		--bar-h: 0.9rem;
+		/* ↻ 2026-10-02 (⚓ Nate): a SHARE of the row, not a fixed 0.9rem. The
+		   row's height follows its label (2–3 lines), so a fixed bar left gaps
+		   from 20 to 34px around a 14px bar — the space read louder than the
+		   bars. At 55% the bar is a little taller than the gap at every row
+		   height (46px row → 25px bar, 23px gap with the 2px row gap); the floor
+		   keeps a one-line row from thinning. Every user of --bar-h is
+		   positioned against this box, so a percentage resolves here. 🎛️ */
+		--bar-h: max(0.9rem, 55%);
 		position: relative;
 		align-self: stretch;
 		min-height: 1.5rem;

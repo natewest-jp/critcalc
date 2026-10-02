@@ -14,14 +14,17 @@ import type { IcdHit } from '$lib/utils/icd';
 // ---------------------------------------------------------------------------
 
 export const INSTRUMENTS = [
+	// ⚓ Nate 2026-10-02: the picker's order is CONCEPTUAL — the two defaults
+	// first, then the mechanics (ICD, reactions), the damage maths, and the
+	// two dice (artifact rolls, wishes) last.
 	{ id: 'crit', name: 'Crit Heatmap' },
-	{ id: 'icd', name: 'ICD Timeline' },
-	{ id: 'rolls', name: 'Artifact Rolls' },
 	{ id: 'gauge', name: 'Gauge Explorer' },
+	{ id: 'icd', name: 'ICD Timeline' },
 	{ id: 'curves', name: 'Reaction Curves' },
+	{ id: 'breakdown', name: 'Damage Breakdown' },
 	{ id: 'defres', name: 'Enemy DEF & RES' },
-	{ id: 'wish', name: 'Wish Odds' },
-	{ id: 'breakdown', name: 'Damage Breakdown' }
+	{ id: 'rolls', name: 'Artifact Rolls' },
+	{ id: 'wish', name: 'Wish Odds' }
 ] as const;
 
 export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
