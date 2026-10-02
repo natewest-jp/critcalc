@@ -42,6 +42,7 @@
 		fill = false,
 		bandALeft,
 		bandARight,
+		bandAClass = '',
 		bandBLeft,
 		bandBCenter,
 		bandBRight,
@@ -59,6 +60,13 @@
 		fill?: boolean;
 		bandALeft?: Snippet;
 		bandARight?: Snippet;
+		/**
+		 * A class for band A's row, so a tool can address it from its own
+		 * stylesheet — the Visualizers hides it where its controls do nothing.
+		 * ⚠ A tool that hides band A must also stop reserving --band-a-h and
+		 * --band-gap in any height it computes from them.
+		 */
+		bandAClass?: string;
 		bandBLeft?: Snippet;
 		/**
 		 * A middle RAIL for band B. Opting in splits the band into three separate
@@ -118,7 +126,7 @@
 	     others. See the CSS for why the ctx-glass class stays on rows that no
 	     longer paint. -->
 	<div class="bands">
-		<div class="band band-a ctx-glass">
+		<div class="band band-a ctx-glass {bandAClass}">
 			<div class="band-zone">{@render bandALeft?.()}</div>
 			<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
 		</div>
