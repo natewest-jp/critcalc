@@ -1,5 +1,11 @@
 # Worksheet — Gauge Explorer
 
+> ✅ **CLOSED + APPLIED 2026-10-02** (the Gauge Explorer pass, `docs/gauge-explorer-pass-2026-10-02.md`).
+> ⛔ SUPERSEDED — the rulings a translator needs now live in
+> `docs/text/ledger/notes/vz_gauge.md`, keyed to the generated inventory. Kept for history;
+> ⚠️ the Applications panel it describes is gone (its controls moved to a toolbar over the
+> chart), and so are several of its strings.
+
 ⚠️ **Read `visualizers-instruments-00-conventions.md` first** — §A casing, §C colons.
 
 **Strings:** 19 · `GaugeInstrument.svelte`

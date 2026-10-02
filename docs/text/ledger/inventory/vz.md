@@ -44,27 +44,27 @@
 - `vz_slot_x` — InstrumentPicker.svelte:160 <span>
   > Slot {at + 1}
   - vars: `at + 1`
-- `vz_crit_heatmap` — workspace.ts:17 name:
+- `vz_crit_heatmap` — workspace.ts:20 name:
   > Crit Heatmap
   - terms: 📖 Crit Heatmap
-- `vz_icd_timeline` — workspace.ts:18 name:
-  > ICD Timeline
-  - terms: 📖 ICD Timeline
-- `vz_artifact_rolls` — workspace.ts:19 name:
-  > Artifact Rolls
-  - terms: 📖 Artifact Rolls
-- `vz_gauge_explorer` — workspace.ts:20 name:
+- `vz_gauge_explorer` — workspace.ts:21 name:
   > Gauge Explorer
   - terms: 📖 Gauge Explorer
-- `vz_reaction_curves` — workspace.ts:21 name:
+- `vz_icd_timeline` — workspace.ts:22 name:
+  > ICD Timeline
+  - terms: 📖 ICD Timeline
+- `vz_reaction_curves` — workspace.ts:23 name:
   > Reaction Curves
   - terms: 📖 Reaction Curves
-- `vz_enemy_def_res` — workspace.ts:22 name:
-  > Enemy DEF & RES
-  - terms: 📖 Enemy DEF & RES
-- `vz_wish_odds` — workspace.ts:23 name:
-  > Wish Odds
-  - terms: 📖 Wish Odds
 - `vz_damage_breakdown` — workspace.ts:24 name:
   > Damage Breakdown
   - terms: 📖 Damage Breakdown
+- `vz_enemy_def_res` — workspace.ts:25 name:
+  > Enemy DEF & RES
+  - terms: 📖 Enemy DEF & RES
+- `vz_artifact_rolls` — workspace.ts:26 name:
+  > Artifact Rolls
+  - terms: 📖 Artifact Rolls
+- `vz_wish_odds` — workspace.ts:27 name:
+  > Wish Odds
+  - terms: 📖 Wish Odds

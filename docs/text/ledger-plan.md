@@ -189,5 +189,6 @@ field name is not caught. Weapon types and regions are now in the termbase too.
 
 ⚓ Notes are written as the LAST step of each hands-on surface pass (keys come from the
 text, so notes written before a rewrite orphan). Headings are `### \`key\``, which is
-what the extractor's orphan check reads. ✅ `notes/vz_crit.md` — the first, from the Crit
-Heatmap pass; worksheet 01 marked superseded.
+what the extractor's orphan check reads. ✅ `notes/vz_crit.md`— the first, from the Crit
+Heatmap pass; worksheet 01 marked superseded. ✅`notes/vz_gauge.md` — the Gauge Explorer
+pass; worksheet 03 marked superseded.
