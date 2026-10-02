@@ -157,7 +157,9 @@ test.describe('detail card', () => {
 		const caps = await page.locator('.dc-caps').innerText();
 		expect(caps, 'Fischl shows C4 heal provenance').toMatch(/Heal/);
 		expect(caps).toMatch(/C4/);
-		expect(await page.locator('.dc-timing').innerText(), 'timing shows E cooldown').toMatch(/cooldown/);
+		expect(await page.locator('.dc-timing').innerText(), 'timing shows E cooldown').toMatch(
+			/cooldown/
+		);
 	});
 
 	test('the constellation stepper persists and survives reload', async ({ page }) => {
