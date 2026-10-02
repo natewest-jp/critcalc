@@ -184,3 +184,10 @@ detected:
 
 ⚠️ This is a review list, not a guarantee: an id that reaches the screen under another
 field name is not caught. Weapon types and regions are now in the termbase too.
+
+## ⏳ Step 2 — notes, surface by surface (begun 2026-10-02)
+
+⚓ Notes are written as the LAST step of each hands-on surface pass (keys come from the
+text, so notes written before a rewrite orphan). Headings are `### \`key\``, which is
+what the extractor's orphan check reads. ✅ `notes/vz_crit.md` — the first, from the Crit
+Heatmap pass; worksheet 01 marked superseded.

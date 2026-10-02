@@ -15,6 +15,9 @@
 		zeroCritRiskColor,
 		critValue,
 		cvLineCR,
+		bestSplit,
+		formatMultiplier,
+		formatChance,
 		cdToX,
 		crToY,
 		xToCD,
@@ -145,12 +148,18 @@
 	);
 
 	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
-	// Shown with the CV line: a fixed budget's multiplier peaks exactly where
-	// the budget line crosses this diagonal (CD = CV/2, CR = CV/4).
+	// Shown with the CV line: a fixed budget's multiplier peaks where the budget
+	// line crosses this diagonal (CD = CV/2, CR = CV/4) — unless that point is
+	// out of the game's reach (CR past 100%), when bestSplit clamps it along the
+	// line and the circle leaves the diagonal, which is the honest answer.
 	const RATIO_CD0 = Math.max(CD_MIN, 2 * CR_MIN);
 	const RATIO_CD1 = Math.min(CD_MAX, 2 * CR_MAX);
+	const best = $derived(bestSplit(cv));
 	const tangentInPlot = $derived(
-		cv / 2 >= CD_MIN && cv / 2 <= CD_MAX && cv / 4 >= CR_MIN && cv / 4 <= CR_MAX
+		best.critDamage >= CD_MIN &&
+			best.critDamage <= CD_MAX &&
+			best.critRate >= CR_MIN &&
+			best.critRate <= CR_MAX
 	);
 
 	// ── Derived: pinned build marker ───────────────────────────────────────────
@@ -501,7 +510,7 @@
 						font-size="10"
 						text-anchor={isoline.label.anchor}
 					>
-						{isoline.value.toFixed(2)}x
+						{formatMultiplier(isoline.value)}
 					</text>
 				{/if}
 			{/each}
@@ -538,16 +547,16 @@
 				</text>
 				{#if tangentInPlot}
 					<circle
-						cx={cdToX(cv / 2, geom)}
-						cy={crToY(cv / 4, geom)}
+						cx={cdToX(best.critDamage, geom)}
+						cy={crToY(best.critRate, geom)}
 						r="5"
 						fill="none"
 						stroke="var(--text)"
 						stroke-width="1.5"
 					/>
 					<text
-						x={cdToX(cv / 2, geom) + 9}
-						y={crToY(cv / 4, geom) - 8}
+						x={cdToX(best.critDamage, geom) + 9}
+						y={crToY(best.critRate, geom) - 8}
 						fill={ink(0.75)}
 						font-size="10"
 					>
@@ -600,7 +609,9 @@
 
 			<!-- Right-edge identity for the isoline column: the corner max plus a
 			     rotated axis-style label (mirrors CRIT RATE on the left) -->
-			<text x={PAD.left + plotW + 8} y={PAD.top + 10} fill={ink(0.62)} font-size="10"> 4.00x </text>
+			<text x={PAD.left + plotW + 8} y={PAD.top + 10} fill={ink(0.62)} font-size="10">
+				{formatMultiplier(4)}
+			</text>
 			<text
 				x={avgTitleX}
 				y={PAD.top + plotH / 2}
@@ -608,9 +619,10 @@
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
+				class="cv-axis-title"
 				transform={`rotate(90, ${avgTitleX}, ${PAD.top + plotH / 2})`}
 			>
-				AVERAGE DMG
+				Average DMG
 			</text>
 
 			<!-- Axis labels -->
@@ -621,6 +633,7 @@
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
+				class="cv-axis-title"
 			>
 				CRIT DMG
 			</text>
@@ -631,9 +644,10 @@
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
+				class="cv-axis-title"
 				transform={`rotate(-90, ${crTitleX}, ${PAD.top + plotH / 2})`}
 			>
-				CRIT RATE
+				CRIT Rate
 			</text>
 
 			<!-- Crosshair lines extending from the marker to the axes -->
@@ -741,11 +755,11 @@
 				CD {(shownCD * 100).toFixed(1)}%
 			</text>
 			<text x={tooltip.x + 10} y={tooltip.y + 51} fill={ink(1)} font-size="13" font-weight="700">
-				{dotMultiplier.toFixed(3)}x
+				{formatMultiplier(dotMultiplier)}
 			</text>
 			{#if showVariance}
 				<text x={tooltip.x + 10} y={tooltip.y + 67} fill={riskColor} font-size="10">
-					{(zeroCritRisk * 100).toFixed(1)}% no-crit risk
+					No-crit risk {formatChance(zeroCritRisk)}
 				</text>
 			{/if}
 		</svg>
@@ -753,14 +767,17 @@
 </div>
 
 <style>
-	/* The shell is the box the chart measures itself against. Narrow/stacked tiles:
-	   full-width with a width-derived square-ish height, capped so the chart doesn't
-	   bury the controls below it. Wide tiles override it (below) to fill the tile's
-	   own height. JS then fits the drawn frame inside whatever box this resolves to. */
+	/* The shell is the box the chart measures itself against, and it is sized
+	   entirely BY the instrument: CritInstrument gives the panel around it a
+	   height (a width-derived square, shrunk to leave the control strip on
+	   screen; the tile's full height in the wide layout), and the shell fills
+	   it. JS then fits the drawn frame inside at a clamped aspect.
+	   ↻ 2026-10-02: the narrow layout's square used to live HERE (aspect-ratio
+	   1, max-height 70svh), which is why the controls under it fell below the
+	   fold — the shell could see its width and nothing else. */
 	.cv-heatmap-shell {
 		width: 100%;
-		aspect-ratio: 1;
-		max-height: 70svh;
+		height: 100%;
 		display: grid;
 		place-items: center;
 		/* The shell is sized BY the layout, never by the box it contains — on
@@ -769,10 +786,8 @@
 		   content's min-content) resolve to whatever the box measured LAST time.
 		   Coming back from a wide lineup that stale box then wins: horizontally
 		   the shell refuses to shrink and spills over the next instrument, and
-		   vertically the stale height beats `aspect-ratio` — 765 and 875 are
-		   both self-consistent, so the chart silently keeps the wide aspect.
-		   Zeroing both lets width flow from the tile and height from the ratio;
-		   the ResizeObserver below then refits the box into the result. */
+		   vertically the stale height beats the layout's. Zeroing both lets the
+		   layout decide; the ResizeObserver below then refits the box into it. */
 		min-width: 0;
 		min-height: 0;
 	}
@@ -820,14 +835,11 @@
 		font-family: var(--font-body);
 	}
 
-	/* Wide instrument container (the workspace tile, not the viewport): the shell
-	   fills the tile's definite height instead of the narrow width-derived square,
-	   giving JS a full rectangle to fit the chart into. */
-	@container instrument (min-width: 60rem) {
-		.cv-heatmap-shell {
-			height: 100%;
-			aspect-ratio: auto;
-			max-height: none;
-		}
+	/* The three axis titles are written in sentence case and SHOWN in capitals
+	   (conventions §D: a locale file must not carry shouting English, and CJK
+	   has no case to shout with). ⚠ Their placement is measured on capital ink
+	   (AXIS_INK in crit.ts) — this rule is what keeps that measurement true. */
+	.cv-axis-title {
+		text-transform: uppercase;
 	}
 </style>

@@ -27,7 +27,9 @@ const SRC = join(__dirname, '..');
 const CONTENT_STOPS: Record<string, string> = {
 	'1260px':
 		"AtlasView — two columns of role cards: 'SURVIVABILITY' sets 147px at --fs-2xl and the wall margin takes 96px out of the column; measured, 1180 left 3px of slack",
-	'1024px': "Visualizers — the workspace's second column"
+	'1024px': "Visualizers — the workspace's second column",
+	'1360px':
+		"Visualizers — two instruments fit side by side (viewportCapacity); below it band A's lineup controls do nothing, so the band is hidden"
 };
 
 const walk = (dir: string, out: string[] = []): string[] => {

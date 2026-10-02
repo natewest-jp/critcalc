@@ -199,7 +199,7 @@
      per-tile picker bar predates the round and is the shape the other two
      tools were rebuilt toward. It subdivides by the tile grid instead of
      splitting left/right, which is what bandBFull is for. -->
-<ToolStack>
+<ToolStack bandAClass="ws-lineup-band">
 	{#snippet bandALeft()}
 		<span class="kicker ws-title">Workspace</span>
 	{/snippet}
@@ -439,6 +439,39 @@
 		--scroll-fade: 24px;
 	}
 
+	/* ══ BAND A ONLY WHERE THERE IS A LINEUP (⚓ Nate 2026-10-02) ══════════════
+	   Band A holds the lineup — Auto / 1 / 2 / 3 and Reset layout — and below
+	   1360px the window fits ONE instrument (viewportCapacity), so every one of
+	   those controls is a no-op: 2 and 3 disable, and Reset layout only puts the
+	   default instrument back in the slot, which the picker does in one click.
+	   On a phone it also collided with itself (the kicker under Auto). So the
+	   band is shown from 1360px up and is simply absent below.
+	   ⚠ CSS, not `capacity`: vw is 0 until hydration, so a JS gate would paint
+	   the band on every desktop's first frame and then pull it — or the reverse.
+	   ⚠ 1360px is the literal of viewportCapacity's `vw >= 1360` (innerWidth
+	   and a width query both include the scrollbar), registered as a named
+	   content stop in breakpoints.test.ts. Move one, move both.
+	   ⚠ The band's height and gap leave .ws's height budget with it
+	   (--ws-band-a). The asymmetry with the benched tools is accepted: this one
+	   has no document and no bench, so its band A was never their band A. */
+	.ws {
+		--ws-band-a: 0px;
+	}
+
+	:global(.bands > .band-a.ws-lineup-band) {
+		display: none;
+	}
+
+	@media (min-width: 1360px) {
+		.ws {
+			--ws-band-a: calc(var(--band-a-h) + var(--band-gap));
+		}
+
+		:global(.bands > .band-a.ws-lineup-band) {
+			display: flex;
+		}
+	}
+
 	@media (min-width: 1024px) {
 		/* Fill the viewport below the bands. The band stack and its gap come out
 		   of the budget — BAND_STACK_TO_SURFACE, passed down by ToolStack.
@@ -453,7 +486,7 @@
 		.ws {
 			height: calc(
 				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) -
-					var(--tool-pad-bottom, 1.5rem) - var(--band-a-h) - var(--band-gap) - var(--band-b-h) -
+					var(--tool-pad-bottom, 1.5rem) - var(--ws-band-a) - var(--band-b-h) -
 					var(--band-stack-gap)
 			);
 			/* 🐛 THE ROW HAD TO BE PINNED, and this one declaration is the whole
