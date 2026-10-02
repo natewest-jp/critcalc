@@ -779,7 +779,10 @@
 		width: 100%;
 		height: 100%;
 		display: grid;
-		place-items: center;
+		/* TOP, centred across: when the aspect clamp letterboxes the drawn box,
+		   the spare height goes below it, so the chart starts at the same line
+		   as every other instrument's first edge (⚓ Nate 2026-10-02). */
+		place-items: start center;
 		/* The shell is sized BY the layout, never by the box it contains — on
 		   BOTH axes. JS sets the drawn frame's width AND height inline in px, so
 		   the shell's automatic minimums (min-width/min-height: auto = the
