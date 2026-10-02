@@ -1,5 +1,11 @@
 # Worksheet — Crit Heatmap
 
+> ✅ **CLOSED + APPLIED 2026-10-02** (the Crit Heatmap pass, `docs/crit-heatmap-pass-2026-10-02.md`).
+> ⛔ SUPERSEDED — every ruling below that a translator needs now lives in
+> `docs/text/ledger/notes/vz_crit.md`, keyed to the generated inventory. Kept for history;
+> ⚠️ its line numbers and several of its strings no longer exist (the pass rewrote the
+> readout and added the one-rotation chart).
+
 ⚠️ **Read `visualizers-instruments-00-conventions.md` first** — casing (§A), crit stat
 names (§B), colons (§C), axis labels (§D), `x` vs `×` (§G) are decided there and are not
 repeated per row here.
