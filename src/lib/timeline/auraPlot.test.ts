@@ -148,7 +148,7 @@ describe('computeAuraLane', () => {
 		);
 		expect(lane.markers.map((m) => m.time)).toEqual([120, 300]);
 		expect(lane.markers[0].entries).toHaveLength(2);
-		expect(lane.markers[0].label).toBe('Overload · Vaporize');
+		expect(lane.markers[0].label).toBe('Overloaded · Vaporize');
 	});
 
 	// Two auras present means an Anemo hit swirls twice. The marker says "Swirl"
@@ -427,7 +427,7 @@ describe('collapseReactionRuns (via computeAuraLane)', () => {
 		);
 		expect(lane.markers.map((m) => m.label)).toEqual([
 			'Electro-Charged',
-			'Overload',
+			'Overloaded',
 			'Electro-Charged'
 		]);
 		expect(lane.markers.map((m) => m.count)).toEqual([1, 1, 1]);
@@ -474,7 +474,7 @@ describe('collapseReactionRuns (via computeAuraLane)', () => {
 			]
 		);
 		expect(lane.markers).toHaveLength(3);
-		expect(lane.markers[1].label).toBe('Electro-Charged · Overload');
+		expect(lane.markers[1].label).toBe('Electro-Charged · Overloaded');
 		expect(lane.markers[1].count).toBe(1);
 	});
 });
@@ -645,7 +645,7 @@ describe('auraReactionsAt', () => {
 
 	it('never emits two rows with the same label', () => {
 		const hits = auraReactionsAt(
-			[at(0, 100, 'Electro-Charged'), at(50, 150, 'Electro-Charged'), at(60, 60, 'Overload')],
+			[at(0, 100, 'Electro-Charged'), at(50, 150, 'Electro-Charged'), at(60, 60, 'Overloaded')],
 			60,
 			5
 		);

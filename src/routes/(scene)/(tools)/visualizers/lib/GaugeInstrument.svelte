@@ -6,12 +6,11 @@
 		gaugesAt,
 		GAUGE_OPTIONS,
 		type Application,
-		type AuraKey,
 		type ElementId,
 		type ReactionKind,
 		type SimEvent
 	} from '$lib/utils/gauge';
-	import { AURA_MOD_META, AURA_MOD_ORDER, auraUMax } from '$lib/utils/auraDisplay';
+	import { AURA_MOD_META, AURA_MOD_ORDER, ELEMENT_LABEL, auraUMax } from '$lib/utils/auraDisplay';
 	import { elementPalette, shiftHue } from '$lib/utils/elementColors';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import Emphasis from '$lib/components/Emphasis.svelte';
@@ -40,10 +39,10 @@
 		reverseVaporize: 'Vaporize ×1.5',
 		melt: 'Melt ×2',
 		reverseMelt: 'Melt ×1.5',
-		overload: 'Overload',
+		overload: 'Overloaded',
 		superconduct: 'Superconduct',
 		electroCharged: 'Electro-Charged',
-		freeze: 'Freeze',
+		freeze: 'Frozen',
 		swirl: 'Swirl',
 		crystallize: 'Crystallize',
 		crystallizeBlocked: 'Crystallize (blocked)',
@@ -98,26 +97,51 @@
 	//     Dendro one and reads as the same object, when they are unrelated and
 	//     decay differently. 1.5U is also exactly what Nahida's skill applies,
 	//     which is the meta Quicken enabler.
+	// ⚓ THE ORDER IS CONCEPTUAL (2026-10-02, ⚓ Nate): the aura's own rules
+	// first, then the amplifying reactions, the ones where two auras COEXIST,
+	// and the rest. The chips carry no group headings — the order does it.
+	//
+	// ⚠ The notes are the instrument's teaching, and each claim was checked
+	// against gcsim `pkg/reactable` + `docs/library/game/elemental-reactions.md`
+	// on 2026-10-02. Burning's said "re-applying 1U Pyro every 0.25s": that is
+	// its DAMAGE cadence — the application rides the Burning ICD (BURNING_ICD in
+	// gauge.ts), about every 2s.
 	const PRESETS: PresetDef[] = [
 		{
 			id: 'single',
-			label: 'Single Aura',
-			note: '1U Pyro — the size of most hits in the game — lands as 0.8U after the ×0.8 aura tax, then decays out over 2.5 × 1 + 7 = 9.5s.',
+			label: 'Single aura',
+			note: '1U application — the size of most hits in the game — lands as 0.8U after the ×0.8 aura tax, then decays out over 2.5 × 1 + 7 = **9.5s**.',
 			apps: [[0, 'pyro', 1]]
 		},
 		{
 			id: 'topup',
-			label: 'Top-Up',
-			note: 'Re-applying the same element tops the gauge up but keeps the **first** application’s decay rate — 2U onto a 1U aura refills it and still drains at the slow 1U rate.',
+			label: 'Top-up',
+			note: 'Re-applying the same element (except Pyro, as of version 3.0) tops the gauge up but keeps the **first** application’s decay rate. 2U onto a 1U aura refills it and still drains at the slow 1U rate.',
 			apps: [
 				[0, 'electro', 1],
 				[3, 'electro', 2]
 			]
 		},
 		{
+			// ⚓ Added 2026-10-02: Top-up's exception, and the only scenario that
+			// shows the log's two Pyro-only lines (too weak · refreshed). gcsim
+			// `attachOverlapRefreshDuration`: below the standing aura → no-op; at
+			// or above → the gauge AND the decay rate are replaced.
+			// 2U at 0 stands at ~1.47U at 1s (beats a 0.8U taxed hit) and ~0.67U
+			// at 7s (loses to one).
+			id: 'pyroRefresh',
+			label: 'Pyro refresh',
+			note: 'Since version 3.0, Pyro doesn’t top up. A hit weaker than the aura left on the target does nothing; one at least as strong replaces it, decay rate included. Here the 1U hit at 1s is too weak, and the one at 7s takes over and drains at the 1U rate.',
+			apps: [
+				[0, 'pyro', 2],
+				[1, 'pyro', 1],
+				[7, 'pyro', 1]
+			]
+		},
+		{
 			id: 'vape',
 			label: 'Vaporize',
-			note: 'Hydro on Pyro is the strong direction: the trigger takes 2× its own gauge. A single 1U Hydro hit clears a 2U Pyro aura outright — which is why one vape usually leaves nothing behind.',
+			note: 'Hydro on Pyro is the strong direction: the trigger removes twice its own gauge. A single 1U Hydro hit clears a 2U Pyro aura outright — which is why one Vaporize usually leaves nothing behind.',
 			apps: [
 				[0, 'pyro', 2],
 				[2.5, 'hydro', 1]
@@ -126,12 +150,66 @@
 		{
 			id: 'melt',
 			label: 'Reverse Melt',
-			note: 'Cryo on Pyro is the weak direction: the trigger removes only **half** its own gauge, so each 1U hit nibbles 0.5U off a 2U aura instead of clearing it. (The ×1.5 on the chart is the **damage** multiplier — a different number from what the reaction costs the aura.)',
+			note: 'Cryo on Pyro is the weak direction: the trigger removes only **half** its own gauge, so each 1U hit chips 0.5U off a 2U aura instead of clearing it. (The ×1.5 on the chart is the **damage** multiplier — a different number from what the reaction costs the aura.)',
 			apps: [
 				[0, 'pyro', 2],
 				[2, 'cryo', 1],
 				[4, 'cryo', 1],
 				[6, 'cryo', 1]
+			]
+		},
+		{
+			id: 'ec',
+			label: 'Electro-Charged',
+			note: 'Hydro and Electro coexist, and each tick drains 0.4U from **both** gauges. The smaller aura runs out first, which ends the reaction and leaves the larger one on the target. A 2U Hydro aura outlives a 1U Electro one.',
+			apps: [
+				[0, 'hydro', 2],
+				[1, 'electro', 1]
+			]
+		},
+		{
+			id: 'quicken',
+			label: 'Quicken',
+			note: 'Quicken forms 1:1 and lives 5 × gauge + 6s. Aggravate hits on it consume nothing — but the same hit can re-Quicken off leftover Dendro. This example uses a starting 1.5U of Dendro — the strength of Nahida’s Tri-Karma Purification hits.',
+			apps: [
+				[0, 'dendro', 1.5],
+				[1, 'electro', 1],
+				[2, 'electro', 1]
+			]
+		},
+		{
+			id: 'pyroec',
+			// ⚓ NATE: "Overvape" is the name players use for this interaction; "Pyro
+			// on EC" described the inputs rather than the thing being demonstrated.
+			label: 'Overvape',
+			note: 'One Pyro hit on an Electro-Charged target reacts with the Electro first (Overloaded); whatever gauge it has left then reacts with the Hydro (Vaporize).',
+			apps: [
+				[0, 'hydro', 1],
+				[1, 'electro', 1],
+				[2, 'pyro', 1]
+			]
+		},
+		{
+			id: 'freeze',
+			label: 'Frozen',
+			note: 'Frozen forms at 2 × min(aura, trigger) and decays on its own accelerating clock. Any leftover Hydro keeps ticking down underneath it.',
+			apps: [
+				[0, 'hydro', 2],
+				[1.5, 'cryo', 1]
+			]
+		},
+		{
+			// ⚓ Added 2026-10-02. gcsim `TryMelt`: Pyro reduces Cryo AND Frozen,
+			// each by up to 2 × its gauge, paying for the larger; `TryVaporize`
+			// refuses outright while any Frozen remains. So the Hydro under the
+			// ice outlives a hit that would have vaporized it bare.
+			id: 'meltFrozen',
+			label: 'Melt on Frozen',
+			note: 'Pyro melts Frozen at ×2, just as it melts Cryo. The game refuses Vaporize while any Frozen remains, so the Hydro underneath survives a hit that would have cleared it on a bare target.',
+			apps: [
+				[0, 'hydro', 2],
+				[1, 'cryo', 1],
+				[2, 'pyro', 1]
 			]
 		},
 		{
@@ -159,37 +237,9 @@
 			]
 		},
 		{
-			id: 'ec',
-			label: 'Electro-Charged',
-			note: 'Hydro and Electro coexist, and each tick drains 0.4U from **both** gauges — so the **smaller** aura runs out first and the reaction stops with the bigger one still on the target. A 2U Hydro aura outlives a 1U Electro one.',
-			apps: [
-				[0, 'hydro', 2],
-				[1, 'electro', 1]
-			]
-		},
-		{
-			id: 'freeze',
-			label: 'Freeze',
-			note: 'Frozen forms at 2 × min(aura, trigger) and decays on its own accelerating clock; the leftover Hydro keeps ticking down underneath it.',
-			apps: [
-				[0, 'hydro', 2],
-				[1.5, 'cryo', 1]
-			]
-		},
-		{
-			id: 'quicken',
-			label: 'Quicken',
-			note: 'Quicken forms 1:1 and lives 5 × gauge + 6s. Aggravate hits on it consume nothing — but the same hit can re-Quicken off leftover Dendro. Nahida applies 1.5U, which is what separates the Quicken line from the Dendro one underneath it.',
-			apps: [
-				[0, 'dendro', 1.5],
-				[1, 'electro', 1],
-				[2, 'electro', 1]
-			]
-		},
-		{
 			id: 'bloom',
 			label: 'Bloom',
-			note: 'Hydro is the weak side of Bloom (2:1) — a 1U Hydro trigger removes only 0.5U of Dendro and spawns a Dendro Core, leaving the rest of the aura behind.',
+			note: 'Hydro on Dendro is the weak direction of Bloom: a 1U Hydro trigger removes only 0.5U of Dendro and spawns a Dendro Core, leaving the rest of the aura behind.',
 			apps: [
 				[0, 'dendro', 1],
 				[2, 'hydro', 1]
@@ -198,23 +248,11 @@
 		{
 			id: 'burning',
 			label: 'Burning',
-			note: 'Burning = a fixed 2U aura plus a hidden fuel gauge draining at 0.4 U/s, re-applying 1U Pyro to the target every 0.25s until the fuel runs dry. Feeding it more Dendro extends the burn.',
+			note: 'Burning = a fixed 2U aura plus a hidden fuel gauge that drains at 0.4U per second or faster. It deals damage every 0.25s and re-applies 1U Pyro about every 2s, until the fuel runs out. Feeding it more Dendro extends the burn.',
 			apps: [
 				[0, 'dendro', 1],
 				[1, 'pyro', 1],
 				[2, 'dendro', 1]
-			]
-		},
-		{
-			id: 'pyroec',
-			// ⚓ NATE: "Overvape" is the name players use for this interaction; "Pyro
-			// on EC" described the inputs rather than the thing being demonstrated.
-			label: 'Overvape',
-			note: 'One Pyro hit on an Electro-Charged target triggers Overload **and** Vaporize — leftover trigger gauge flows down the reaction priority list.',
-			apps: [
-				[0, 'hydro', 1],
-				[1, 'electro', 1],
-				[2, 'pyro', 1]
 			]
 		}
 	];
@@ -296,14 +334,26 @@
 		playhead.stop();
 	};
 
+	/**
+	 * ⚓ A NEW APPLICATION IS A COPY OF THE SELECTED ONE (2026-10-02, ⚓ Nate).
+	 * Both ways in — a click on bare band, the toolbar's ＋ — used to make Pyro
+	 * 1U every time, so building a run of Hydro hits was add-then-retype, per
+	 * hit. The selected application is the brush: its element and its size.
+	 * Pyro 1U only when there is nothing to copy.
+	 */
+	const brush = (): Pick<Application, 'element' | 'gauge'> => ({
+		element: selected?.element ?? 'pyro',
+		gauge: selected?.gauge ?? 1
+	});
+
+	/** The ＋ in the toolbar — the keyboard's way in: a copy, 1s after the selected. */
 	function addRow() {
 		if (appRows.length >= MAX_APPS) return;
-		const last = appRows[appRows.length - 1];
+		const after = selected ?? appRows[appRows.length - 1];
 		const row: AppRow = {
 			id: nextAppId++,
-			time: Math.min(MAX_GAUGE_TIME, (last?.time ?? 0) + 2),
-			element: 'pyro',
-			gauge: 1
+			time: snapTime((after?.time ?? -1) + 1),
+			...brush()
 		};
 		appRows.push(row);
 		resort();
@@ -442,6 +492,16 @@
 	const displayT = $derived(
 		playhead.playing || scrubbing || playhead.t > 0 ? Math.min(playhead.t, domain) : null
 	);
+	/**
+	 * ⚓ HOVER READS (2026-10-02, ⚓ Nate). Pointing at the plot reads that moment
+	 * into the Readout — reading used to need Play or a drag of the playhead.
+	 * The pointer wins while it is over the plot; leaving hands the Readout back
+	 * to the playhead (if one is parked) and then to the summary. ⚠ Not while
+	 * playing (the playhead is the thing being watched) and not during a drag.
+	 * A touch has no hover: a tap or drag there scrubs, as before.
+	 */
+	let hoverT = $state<number | null>(null);
+	const readT = $derived(playhead.playing || scrubbing ? displayT : (hoverT ?? displayT));
 	// ⚓ ONE CEILING, SHARED WITH THE PLANNER'S AURA LANE (2026-08-17). This was a
 	// byte-identical copy of `auraUMax`, with nothing keeping the two in step —
 	// and the duplication had already caused a real misreading, because the two
@@ -607,8 +667,6 @@
 
 	const fmtU = (u: number) => `${u.toFixed(2).replace(/\.?0+$/, '')}U`;
 	const fmtT = (t: number) => `${t.toFixed(2)}s`;
-	const consumedText = (list: { mod: AuraKey; amount: number }[]) =>
-		list.map((c) => `−${fmtU(c.amount)} ${MOD_META[c.mod].label}`).join(', ');
 
 	// ══ THE LOG'S VOICE (tightened 2026-08-17, ⚓ NATE: "a bit wordy") ═════════
 	//
@@ -630,21 +688,52 @@
 	// grants `× · →` covers the help chapters' prose, which that spec skips by
 	// selector — a readout panel is not prose. "aura" carries the same meaning in
 	// a word the body face actually has.
+	// ↻ 2026-10-02 (worksheet 03, ⚓ Nate): a line's qualifier rides in
+	// PARENTHESES after the thing it qualifies, where a `·` used to glue
+	// fragments together — a translator can see a phrase now. ⛔ Never two
+	// parentheticals in a row.
+	const elName = (el: ElementId) => ELEMENT_LABEL[el];
 	function attachText(e: Extract<SimEvent, { kind: 'apply' }>): string {
+		const el = elName(e.element);
 		switch (e.attach) {
 			case 'new':
-				return `aura ${fmtU(e.auraAfter)}`;
+				return `${el} (${fmtU(e.auraAfter)} after tax)`;
+			// ⚠ "topped up TO", not "after tax": a top-up keeps the LARGER of the
+			// standing aura and the new taxed gauge, so the number can be the old
+			// aura, untouched by this hit.
 			case 'topUp':
-				return `aura ${fmtU(e.auraAfter)} · topped up, rate kept`;
+				return `${el} (topped up to ${fmtU(e.auraAfter)}, rate kept)`;
 			case 'pyroRefresh':
-				return `aura ${fmtU(e.auraAfter)} · refreshed, new rate`;
+				return `${el} (${fmtU(e.auraAfter)} after tax, refreshed, new rate)`;
 			case 'tooWeak':
-				return '· too weak to attach';
+				return `${el} (too weak to attach)`;
 			case 'none':
 				return e.element === 'anemo' || e.element === 'geo'
-					? '· never attaches'
-					: '· fully reacted';
+					? `${el} (never attaches)`
+					: `${el} (fully reacted)`;
 		}
+	}
+
+	/** "Vaporize ×2: −2U Pyro, −1U Hydro trigger" — what the aura lost AND what the
+	 *  trigger spent, because the two differ by the reaction's modifier, which is
+	 *  the Vaporize / Reverse Melt lesson. */
+	function reactionText(e: Extract<SimEvent, { kind: 'reaction' }>): string {
+		const name =
+			REACTION_NAME[e.reaction] +
+			(e.of && (e.reaction === 'swirl' || e.reaction === 'crystallize')
+				? ` (${MOD_META[e.of].label})`
+				: '');
+		if (e.reaction === 'crystallizeBlocked') return 'Crystallize (blocked by its 1s cooldown)';
+		if (!e.consumed.length && (e.reaction === 'aggravate' || e.reaction === 'spread'))
+			return `${name} (no gauge spent)`;
+		const parts = e.consumed.map((c) => `−${fmtU(c.amount)} ${MOD_META[c.mod].label}`);
+		if (e.spent > 0) {
+			// ⚠ `appRows`, which `appIndex` addresses (see AppRow) — ⛔ not
+			// `applyEvents`, whose positions shift with Burning's own re-applications.
+			const trigger = e.appIndex === null ? null : appRows[e.appIndex]?.element;
+			parts.push(`−${fmtU(e.spent)}${trigger ? ` ${elName(trigger)}` : ''} trigger`);
+		}
+		return parts.length ? `${name}: ${parts.join(', ')}` : name;
 	}
 
 	/**
@@ -669,8 +758,8 @@
 					// drain it actually is. "from both" names what −0.4U comes off.
 					text:
 						row.count === 1
-							? 'Electro-Charged tick · −0.4U from both'
-							: `Electro-Charged ticks ×${row.count} · −0.4U from both`,
+							? 'Electro-Charged tick (−0.4U from both)'
+							: `${row.count} Electro-Charged ticks (−0.4U from both each tick)`,
 					tone: 'quiet'
 				});
 				continue;
@@ -680,25 +769,16 @@
 				rows.push({
 					time: e.time,
 					pip: { text: `${e.gauge}`, ...pipPaint(e.element) },
-					text: `${MOD_META[e.element as AuraKey]?.label ?? e.element} ${attachText(e)}`,
+					text: attachText(e),
 					tone: 'lead'
 				});
 			} else if (e.kind === 'reaction') {
-				const parts: string[] = [REACTION_NAME[e.reaction]];
-				if (e.of && (e.reaction === 'swirl' || e.reaction === 'crystallize'))
-					parts[0] += ` (${MOD_META[e.of].label})`;
-				if (e.consumed.length) parts.push(consumedText(e.consumed));
-				else if (e.reaction === 'aggravate' || e.reaction === 'spread')
-					parts.push('no gauge spent');
-				else if (e.reaction === 'crystallizeBlocked') parts.push('inside the 1s cooldown');
-				if (e.spent > 0) parts.push(`−${fmtU(e.spent)} trigger`);
-				if (e.appIndex === null) parts.push('burning self-tick');
-				rows.push({ text: parts.join(' · '), tone: 'sub' });
+				rows.push({ text: reactionText(e), tone: 'sub' });
 			} else if (e.kind === 'drained') {
 				rows.push({ time: e.time, text: `${MOD_META[e.mod].label} gone`, tone: 'quiet' });
 			} else if (e.kind === 'burningEnd') {
 				const swept = e.swept.length
-					? ` · ${e.swept.map((m) => MOD_META[m].label).join(', ')} swept`
+					? ` (${e.swept.map((m) => MOD_META[m].label).join(', ')} gone)`
 					: '';
 				rows.push({ time: e.time, text: `Burning ends${swept}`, tone: 'quiet' });
 			} else if (e.kind === 'core') {
@@ -736,7 +816,9 @@
 	}
 	function onScrubMove(e: PointerEvent) {
 		if (scrubbing) playhead.seek(timeAtX(e.clientX));
+		else if (e.pointerType === 'mouse' && dragId === null) hoverT = timeAtX(e.clientX);
 	}
+	const onPlotLeave = () => (hoverT = null);
 	function onScrubUp(e: PointerEvent) {
 		scrubbing = false;
 		const el = e.currentTarget as SVGSVGElement;
@@ -782,16 +864,23 @@
 		e.stopPropagation();
 	}
 
-	/** Bare band → a new application at that instant, with the resting element and
-	 *  size. ⚠ Guarded on the cap so the click cannot silently do nothing. */
+	/** Bare band → a copy of the selected application at that instant (see
+	 *  `brush`). ⚠ Guarded on the cap so the click cannot silently do nothing. */
+	/** Where a click on bare band would add, for the ghost marker that says so. */
+	let bandT = $state<number | null>(null);
+	function onBandMove(e: PointerEvent) {
+		e.stopPropagation();
+		hoverT = null;
+		bandT = appRows.length < MAX_APPS && dragId === null ? snapTime(timeAtX(e.clientX)) : null;
+	}
+
 	function onBandDown(e: PointerEvent) {
 		e.stopPropagation();
 		if (appRows.length >= MAX_APPS || e.button !== 0) return;
 		const row: AppRow = {
 			id: nextAppId++,
 			time: snapTime(timeAtX(e.clientX)),
-			element: 'pyro',
-			gauge: 1
+			...brush()
 		};
 		appRows.push(row);
 		resort();
@@ -799,10 +888,10 @@
 		markCustom();
 	}
 	const hoverGauges = $derived(
-		displayT === null
+		readT === null
 			? null
 			: MOD_ORDER.flatMap((mod) => {
-					const u = gaugesAt(sim.series, displayT!)[mod];
+					const u = gaugesAt(sim.series, readT!)[mod];
 					return u === undefined ? [] : [{ mod, meta: MOD_META[mod], u }];
 				})
 	);
@@ -810,29 +899,136 @@
 
 <div class="instrument">
 	<div class="gx-chart ctx-dark">
-		<div class="gx-transport">
-			<button
-				class="btn btn--primary btn--icon gx-play"
-				aria-pressed={playhead.playing}
-				aria-label={playhead.playing ? 'Pause playback' : 'Play the timeline'}
-				onclick={() => playhead.toggle()}
-			>
-				<!-- FILLED — see Mark's `filled` prop. An outlined triangle reads as
-				     "insert" before it reads as "play"; the solid form is the idiom
-				     every media transport on earth uses, and this is the site's only
-				     one. -->
-				<Mark name={playhead.playing ? 'pause' : 'play'} size={12} filled />
-			</button>
-			{#each PLAYHEAD_SPEEDS as sp (sp)}
+		<!-- ══ THE TOOLBAR (2026-10-02, ⚓ Nate) ════════════════════════════════════
+		     The transport, then the SELECTED application's what — element, size,
+		     the fine time step, remove — and ＋. It replaced the Applications
+		     panel, which sat ~270px below the chart it edited, so every edit was a
+		     scroll down and a scroll back up to see what it did. ⚓ The chart still
+		     owns WHEN (drag a pill; click bare band to add a copy of the selected);
+		     this row owns WHAT, directly over it. Wraps onto a second line in a
+		     narrow tile rather than shrinking anything. -->
+		<div class="panel gx-toolbar">
+			<div class="gx-tb-group">
 				<button
-					class="chip chip--control chip--sm"
-					class:active={playhead.speed === sp}
-					onclick={() => playhead.setSpeed(sp)}
+					class="btn btn--primary btn--icon gx-play"
+					aria-pressed={playhead.playing}
+					aria-label={playhead.playing ? 'Pause' : 'Play'}
+					onclick={() => playhead.toggle()}
 				>
-					{sp}×
+					<!-- FILLED — see Mark's `filled` prop. An outlined triangle reads as
+					     "insert" before it reads as "play"; the solid form is the idiom
+					     every media transport on earth uses. -->
+					<Mark name={playhead.playing ? 'pause' : 'play'} size={12} filled />
 				</button>
-			{/each}
-			<span class="gx-transport-time">{Math.min(playhead.t, domain).toFixed(1)}s / {domain}s</span>
+				{#each PLAYHEAD_SPEEDS as sp (sp)}
+					<button
+						class="chip chip--control chip--sm"
+						class:active={playhead.speed === sp}
+						onclick={() => playhead.setSpeed(sp)}
+					>
+						{sp}×
+					</button>
+				{/each}
+				<span class="gx-transport-time">{Math.min(playhead.t, domain).toFixed(1)}s / {domain}s</span
+				>
+			</div>
+
+			<div class="gx-tb-group gx-tb-app">
+				{#if selected}
+					<div class="gx-elements" role="radiogroup" aria-label="Element">
+						{#each ELEMENTS as e (e)}
+							<button
+								class="chip chip--icon gx-el"
+								class:active={selected.element === e}
+								style:--chip-color="var(--el-{e}-main)"
+								role="radio"
+								aria-checked={selected.element === e}
+								aria-label={elName(e)}
+								title={elName(e)}
+								onclick={() => {
+									selected.element = e;
+									markCustom();
+								}}
+							>
+								<img src={elementIcon(e)} alt="" width="16" height="16" />
+							</button>
+						{/each}
+					</div>
+					<div
+						class="gx-gauges"
+						role="radiogroup"
+						aria-label="Gauge units"
+						title="Gauge units (U): the strength of an elemental application. Most hits are 1U."
+					>
+						{#each GAUGE_OPTIONS as g (g)}
+							<button
+								class="chip chip--control chip--sm"
+								class:active={selected.gauge === g}
+								role="radio"
+								aria-checked={selected.gauge === g}
+								onclick={() => {
+									selected.gauge = g;
+									markCustom();
+								}}
+							>
+								{g}U
+							</button>
+						{/each}
+					</div>
+				{/if}
+				<!-- The MARKER group: when, remove, and add — one group, so the
+				     toolbar has four (see .gx-toolbar). -->
+				<div class="gx-tb-marker">
+					{#if selected}
+						<!-- ⚠ THE STEPPER IS THE FINE TIME CONTROL, not a second one: a
+						     drag lands within a tenth, these land ON it — and a touch has
+						     no arrow keys. -->
+						<div class="gx-stepper">
+							<button
+								class="btn btn--sm btn--icon"
+								aria-label="Move earlier"
+								title="Move earlier — hold Shift for 1s"
+								disabled={selected.time <= 0}
+								onclick={(e) => nudge(selected, e.shiftKey ? -1 : -0.1)}
+							>
+								<Mark name="back" />
+							</button>
+							<span class="gx-time-value">{selected.time.toFixed(1)}s</span>
+							<button
+								class="btn btn--sm btn--icon"
+								aria-label="Move later"
+								title="Move later — hold Shift for 1s"
+								disabled={selected.time >= MAX_GAUGE_TIME}
+								onclick={(e) => nudge(selected, e.shiftKey ? 1 : 0.1)}
+							>
+								<Mark name="forward" />
+							</button>
+						</div>
+						<button
+							class="btn btn--sm btn--icon"
+							aria-label="Remove this application"
+							title="Remove this application"
+							onclick={() => removeRow(selected.id)}
+						>
+							<Mark name="delete" />
+						</button>
+					{/if}
+					<!-- ⚠ DISABLED AT THE CAP rather than hidden, with the limit in its
+				     tooltip — a control that vanishes reads as having moved. -->
+					<button
+						class="btn btn--sm gx-add"
+						aria-label="Add application"
+						title={appRows.length >= MAX_APPS
+							? `${MAX_APPS} applications is the most`
+							: 'Add a copy of the selected application'}
+						disabled={appRows.length >= MAX_APPS}
+						onclick={addRow}
+					>
+						<Mark name="plus" />
+						<span class="gx-add-word">Add</span>
+					</button>
+				</div>
+			</div>
 		</div>
 		<div class="gx-graph" bind:clientWidth={graphW}>
 			<svg
@@ -845,6 +1041,7 @@
 				onpointermove={onScrubMove}
 				onpointerup={onScrubUp}
 				onpointercancel={onScrubUp}
+				onpointerleave={onPlotLeave}
 				style:cursor={playhead.playing ? 'default' : 'ew-resize'}
 			>
 				<!-- Time grid -->
@@ -911,8 +1108,46 @@
 					height={TOP}
 					fill="transparent"
 					onpointerdown={onBandDown}
+					onpointermove={onBandMove}
+					onpointerleave={() => (bandT = null)}
 					role="presentation"
 				/>
+
+				<!-- The GHOST: where a click on bare band would add, wearing the
+				     selected application's element and size — the band's whole
+				     instruction, said by showing rather than by a paragraph. -->
+				{#if bandT !== null}
+					{@const b = brush()}
+					<g class="gx-ghost" aria-hidden="true">
+						<text
+							class="gx-word"
+							x={xOf(bandT)}
+							y={MARKER_PILL_CY - MARKER_PILL_R - 6}
+							fill="var(--chart-ink)"
+							font-size="10"
+							text-anchor="middle"
+						>
+							Click to add
+						</text>
+						<circle
+							cx={xOf(bandT)}
+							cy={MARKER_PILL_CY}
+							r={MARKER_PILL_R}
+							fill={pipPaint(b.element).color}
+							fill-opacity="0.45"
+						/>
+						<text
+							class="gx-pill-num"
+							x={xOf(bandT)}
+							y={MARKER_PILL_CY + 3.5}
+							font-size="10"
+							font-weight="600"
+							text-anchor="middle"
+						>
+							{b.gauge}
+						</text>
+					</g>
+				{/if}
 
 				<!-- ⚠ KEYED BY `m.id`, NOT BY POSITION OR BY `m.n`. Dragging one
 				     application past another re-sorts the list, which reorders this
@@ -964,7 +1199,7 @@
 						class:gx-marker--held={dragId === m.id}
 						role="button"
 						tabindex="0"
-						aria-label="{m.element} {m.gauge}U at {m.time.toFixed(1)} seconds"
+						aria-label="{elName(m.element)} {m.gauge}U at {m.time.toFixed(1)} seconds"
 						onpointerdown={(e) => onMarkerDown(e, m)}
 						onpointermove={onMarkerMove}
 						onpointerup={onMarkerUp}
@@ -1086,6 +1321,21 @@
 					{/each}
 				{/each}
 
+				<!-- The hover cursor: the moment the Readout is reading, fainter than the
+				     playhead because nothing is parked there. -->
+				{#if hoverT !== null && readT === hoverT}
+					<line
+						x1={xOf(hoverT)}
+						y1={TOP}
+						x2={xOf(hoverT)}
+						y2={stripY0 + stripRows.length * ROW_H}
+						stroke="var(--chart-ink)"
+						stroke-opacity="0.45"
+						stroke-dasharray="3 3"
+						pointer-events="none"
+					/>
+				{/if}
+
 				<!-- Playhead: the one time cursor — drag it while paused -->
 				{#if displayT !== null}
 					<line
@@ -1102,123 +1352,8 @@
 	</div>
 
 	<div class="gx-panels panels">
-		<!-- 🐛 APPLICATIONS IS FIRST, AND THAT IS A FIX RATHER THAN A PREFERENCE
-		     (2026-08-17). `.panels` is CSS multicolumn with the default
-		     `column-fill: balance`, so every panel's position depends on every
-		     other panel's HEIGHT — and shrinking this one from a per-application
-		     list to a fixed inspector put it right at the balance point. Measured:
-		     one click on an element chip moved it from x=32 to x=448 and back,
-		     because adding a Vaporize grew the event log by two lines. The panel
-		     under your cursor cannot jump columns while you use it.
-		     ⚓ Column one always begins with the first thing in the flow, so being
-		     first is what pins it; the two panels behind it are reading material
-		     and may reflow freely. ⚠ This also puts the editor under the LEFT end
-		     of the marker band it edits, which is where the hand already is. -->
-		<!-- ══ ONE INSPECTOR, NOT N EDITORS (2026-08-17, ⚓ NATE) ══════════════════
-		     This panel used to hold a three-line block per application and grew
-		     with the list; it is now a fixed-height editor for whichever marker
-		     carries the gold ring. ⚓ The chart owns WHEN (drag a pill, click the
-		     band); this owns WHAT. See the AppRow note in the script for why the
-		     old arrangement also let the panel and the event log number the same
-		     applications differently. -->
-		<div class="panel">
-			<p class="kicker">Applications</p>
-			<p class="note">
-				<Emphasis
-					text="Drag a marker along the top of the chart to move it in time, or click the empty strip to add one. U = gauge units, the invisible strength of an elemental application — **most hits are 1U**."
-				/>
-			</p>
-			{#if selected}
-				<div class="gx-inspector">
-					<div class="gx-app-line">
-						<div class="gx-elements" role="radiogroup" aria-label="Element">
-							{#each ELEMENTS as e (e)}
-								<button
-									class="chip chip--icon gx-el"
-									class:active={selected.element === e}
-									style:--chip-color="var(--el-{e}-main)"
-									role="radio"
-									aria-checked={selected.element === e}
-									aria-label={e}
-									title={e}
-									onclick={() => {
-										selected.element = e;
-										markCustom();
-									}}
-								>
-									<img src={elementIcon(e)} alt="" width="16" height="16" />
-								</button>
-							{/each}
-						</div>
-					</div>
-					<div class="gx-app-line">
-						<div class="gx-gauges" role="radiogroup" aria-label="Gauge units">
-							{#each GAUGE_OPTIONS as g (g)}
-								<button
-									class="chip chip--control chip--sm"
-									class:active={selected.gauge === g}
-									role="radio"
-									aria-checked={selected.gauge === g}
-									onclick={() => {
-										selected.gauge = g;
-										markCustom();
-									}}
-								>
-									{g}U
-								</button>
-							{/each}
-						</div>
-					</div>
-					<!-- ⚠ THE STEPPER IS NOT A SECOND TIME CONTROL, it is the FINE one.
-					     A drag crosses the axis in one gesture and lands within a tenth;
-					     these two buttons are how you land on the exact tenth, and how a
-					     keyboard reaches the same place without the chart. -->
-					<div class="gx-app-line gx-time-line">
-						<button
-							class="btn btn--sm btn--icon"
-							aria-label="Move earlier"
-							title="Move earlier — hold Shift for 1s"
-							disabled={selected.time <= 0}
-							onclick={(e) => nudge(selected, e.shiftKey ? -1 : -0.1)}
-						>
-							<Mark name="minus" />
-						</button>
-						<span class="gx-value gx-time-value">{selected.time.toFixed(1)}s</span>
-						<button
-							class="btn btn--sm btn--icon"
-							aria-label="Move later"
-							title="Move later — hold Shift for 1s"
-							disabled={selected.time >= MAX_GAUGE_TIME}
-							onclick={(e) => nudge(selected, e.shiftKey ? 1 : 0.1)}
-						>
-							<Mark name="plus" />
-						</button>
-						<button
-							class="gx-remove"
-							aria-label="Remove this application"
-							title="Remove this application"
-							onclick={() => removeRow(selected.id)}
-						>
-							×
-						</button>
-					</div>
-				</div>
-			{:else}
-				<p class="gx-meta">No applications — add one to start a sequence.</p>
-			{/if}
-			<!-- ⚠ DISABLED AT THE CAP RATHER THAN HIDDEN. The button used to vanish,
-			     which reads as the control having moved rather than as a limit; the
-			     count beside it is what makes the limit answerable. -->
-			<div class="gx-app-line gx-add-line">
-				<button class="btn gx-add" disabled={appRows.length >= MAX_APPS} onclick={addRow}>
-					+ Add application
-				</button>
-				<span class="gx-meta gx-app-count">{appRows.length} / {MAX_APPS}</span>
-			</div>
-		</div>
-
-		<div class="panel">
-			<p class="kicker">Example Scenarios</p>
+		<div class="panel gx-scenarios">
+			<p class="kicker">Example scenarios</p>
 			<div class="chips gx-chips-dense">
 				{#each PRESETS as p (p.id)}
 					<button
@@ -1246,30 +1381,29 @@
 		     true at the playhead, and how it got there), and as two sheets of the
 		     brightest material on the page they competed to be the answer. One
 		     card, the state on top, the transcript under a quiet label. -->
-		<div class="panel panel--paper">
+		<div class="panel panel--paper gx-readout">
 			<p class="kicker">Readout</p>
 			{#if hoverGauges}
-				<p class="note">at {fmtT(displayT!)}</p>
+				<p class="note">at {fmtT(readT!)}</p>
 				{#if hoverGauges.length === 0}
 					<p class="gx-meta">No aura — the next element applies fresh.</p>
 				{:else}
 					{#each hoverGauges as h (h.mod)}
 						<p class="gx-meta gx-status-row">
 							<img src={elementIcon(h.meta.icon)} alt="" width="14" height="14" />
-							<span style:color={h.meta.color}>{h.meta.label}</span>
+							<span>{h.meta.label}</span>
 							<span class="gx-strong">{fmtU(h.u)}</span>
 						</p>
 					{/each}
 				{/if}
 			{:else}
 				<p class="note">
-					Press play — or drag the paused playhead — to read the enemy’s aura state at a moment in
-					time.
+					Point at the chart or press play to read the enemy’s aura state at a moment in time.
 				</p>
 				{#each stripRows as row (row.mod)}
 					<p class="gx-meta gx-status-row">
 						<img src={elementIcon(row.meta.icon)} alt="" width="14" height="14" />
-						<span style:color={row.meta.color}>{row.meta.label}</span>
+						<span>{row.meta.label}</span>
 						<span class="gx-strong">
 							{row.intervals.map((s) => `${s.t0.toFixed(1)}–${s.t1.toFixed(1)}s`).join(', ')}
 						</span>
@@ -1282,7 +1416,7 @@
 			     is local, because only this tool can see `crystallizeBlocked`, a
 			     reverse multiplier or a per-reaction consumption; the IR has
 			     collapsed all three by the time the planner reads it. -->
-			<p class="gx-sub">Event log</p>
+			<p class="gx-sub">Aura log</p>
 			<div class="gx-log">
 				<EventLog rows={logRowsOut} empty="Nothing lands on the target." />
 			</div>
@@ -1308,13 +1442,82 @@
 		-webkit-user-select: none;
 	}
 
-	/* ── Transport ──────────────────────────────────────────────────────────── */
+	/* ⚓ Its own grid column, not `.instrument`'s AUTO one: an auto column grows
+	   to its widest unbreakable child, and the hazard put two instruments 40px
+	   over a 320px phone (instrument passes 2026-10-01 §4). */
+	.instrument {
+		grid-template-columns: minmax(0, 1fr);
+	}
 
-	.gx-transport {
+	/* ── The toolbar ─────────────────────────────────────────────────────────── */
+
+	/* ══ FOUR GROUPS, EVEN GAPS (2026-10-02, ⚓ Nate) ════════════════════════════
+	   Playback (+ time) · elements · gauge sizes · the marker's time, remove and
+	   add. ONE ROW when they fit, spaced evenly across it; otherwise playback
+	   keeps its own line and the three marker groups take the next, spaced
+	   evenly across THAT.
+	   ⚠ The switch is a measured width, not wherever flex-wrap breaks — a free
+	   wrap would put the elements up on the playback line. 🎛️ 55rem: the groups
+	   measured 248 + 195 + 153 + 202 = 798px, plus the plate's 22px of padding
+	   and three gaps of at least 1.25rem (2026-10-02). Re-measure if a group
+	   gains a control.
+	   ⚠ The TOOLBAR is the container, not the tile: in the wide layout it shares
+	   the tile's width with the Readout column, so the tile's width says
+	   nothing about whether four groups fit here. */
+	.gx-toolbar {
+		container: gx-toolbar / inline-size;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6rem 1.25rem;
+		padding: 0.5rem 0.7rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.gx-tb-group {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem 0.6rem;
+		min-width: 0;
+	}
+
+	/* Narrow: the marker groups are a line of their own, spaced evenly. */
+	.gx-tb-app {
+		flex: 1 1 100%;
+		justify-content: space-between;
+		row-gap: 0.6rem;
+		column-gap: 1.25rem;
+	}
+
+	/* Wide: the wrapper dissolves and its three groups join playback as four
+	   items of one evenly spaced row. */
+	@container gx-toolbar (min-width: 55rem) {
+		.gx-tb-app {
+			display: contents;
+		}
+	}
+
+	/* Below `compact` the Add plate keeps its MARK and drops its WORD — the
+	   site's narrow rule for band controls ($lib/breakpoints.ts: 40rem). Its
+	   aria-label still names it. */
+	@media (max-width: 40rem) {
+		.gx-add-word {
+			display: none;
+		}
+	}
+
+	.gx-tb-marker {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 0.25rem 0.2rem 0.35rem;
+	}
+
+	.gx-stepper {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
 	}
 
 	.gx-transport-time {
@@ -1322,6 +1525,7 @@
 		font-family: var(--font-body);
 		font-size: var(--fs-md);
 		color: var(--muted);
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* Chart text: Mono for numbers (ticks, gauge tags), Condensed for word
@@ -1418,27 +1622,9 @@
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
 
-	/* ── The application inspector ──────────────────────────────────────────── */
-
-	/* ⛔ `.gx-app` / `.gx-app-content` RETIRED (2026-08-17) — they were the
-	   per-application block, and there is one editor now rather than N. What is
-	   left is the same well they painted, holding the selected application's
-	   element row, size row and time stepper. */
-	.gx-inspector {
-		display: grid;
-		gap: 0.45rem;
-		padding: 0.6rem 0.65rem;
-		border-radius: 3px;
-		background: var(--fill-rest);
-		min-width: 0;
-	}
-
-	.gx-app-line {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.5rem 0.6rem;
-	}
+	/* ⛔ The application INSPECTOR panel RETIRED (2026-10-02) — its element row,
+	   size row and time stepper live in the toolbar over the chart now (see the
+	   markup). `.gx-elements` / `.gx-gauges` / `.gx-time-value` came with them. */
 
 	.gx-elements {
 		display: flex;
@@ -1450,16 +1636,6 @@
 		gap: 0.3rem;
 	}
 
-	/* The row's whole right edge deletes it — quiet until hovered, then the
-	   shared accent-chip hover treatment */
-	/* .btn with a resting fill — the Applications list's add affordance. */
-	.gx-add {
-		background: var(--fill-rest);
-		font-size: var(--fs-lg);
-		padding: 0.45rem 0.7rem;
-		text-transform: none;
-		letter-spacing: normal;
-	}
 	/* .btn--primary .btn--icon, but round: a transport control, not a chip. */
 	/* ↻ 2026-08-13: the ▶/⏸ inside became <Mark>s, which retires the type
 	   metrics this button used to be balanced against — a glyph sat on the
@@ -1476,55 +1652,27 @@
 		border-radius: var(--r-round);
 	}
 
-	/* The time stepper sits at the row's start and the delete at its far end —
-	   ⚠ `margin-left: auto` rather than a spacer, so the row still collapses
-	   sensibly when the panel is narrow (.gx-app-line wraps). */
-	.gx-time-line > .gx-remove {
-		margin-left: auto;
-	}
+	/* 🎛️ Exactly as wide as the widest time it can show — "15.0s", measured IN
+	   PLACE at 41.6px (2.6em at this size), since MAX_GAUGE_TIME is 15 — so the
+	   arrows sit snug and never move as you step, and a shorter time centres.
+	   🐛 The first cut set this and never applied: a later `.gx-value` rule at
+	   the same specificity won with `min-width: 3.2em; text-align: right` (⚓
+	   Nate found it in the inspector). That class had no other user once the
+	   inspector panel retired, so its font moved here and it is gone. */
 	.gx-time-value {
-		min-width: 3.4em;
-		text-align: center;
-	}
-
-	/* The add row: the button, and the count that makes its disabled state
-	   answerable. */
-	.gx-add-line {
-		justify-content: space-between;
-	}
-	.gx-app-count {
-		font-variant-numeric: tabular-nums;
-	}
-
-	.gx-remove {
-		align-self: stretch;
-		width: 26px;
-		border: none;
-		border-radius: 3px;
-		background: none;
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
-		font-size: var(--fs-2xl);
-		line-height: var(--lh-none);
-		cursor: pointer;
-		padding: 0;
-		transition:
-			background var(--t-snap),
-			color var(--t-snap);
-	}
-
-	.gx-remove:hover {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
-	}
-
-	/* ── Sliders ────────────────────────────────────────────────────────────── */
-
-	.gx-value {
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-xl);
-		min-width: 3.2em;
-		text-align: right;
+		min-width: 2.6em;
+		font-variant-numeric: tabular-nums;
+		text-align: center;
+	}
+
+	/* The ghost on the marker band: what a click there would add. Paint-only
+	   alpha (§ Laws), and never a hit target — the band underneath takes the
+	   press. */
+	.gx-ghost {
+		pointer-events: none;
 	}
 
 	/* ── Readout / log ──────────────────────────────────────────────────────── */
@@ -1536,6 +1684,9 @@
 		color: var(--muted);
 	}
 
+	/* ↻ 2026-10-02: the element NAME is in ink, the icon carries the colour.
+	   The name used to wear the element's own colour, and on parchment Frozen's
+	   and Cryo's pale ice all but vanished. */
 	.gx-status-row {
 		display: flex;
 		align-items: center;
@@ -1587,7 +1738,63 @@
 		   declaration rather than three overrides. */
 		--el-ink: var(--muted);
 	}
-	/* ⛔ `.gx-app-line > .slider` RETIRED with the per-application time slider
-	   (2026-08-17) — time is dragged on the chart now, and the only slider left
-	   in this instrument is the transport's, which is not in an app line. */
+
+	/* ══ WIDE: THE READOUT IS A COLUMN (2026-10-02, ⚓ Nate) ════════════════════
+	   A full tile left the two panels side by side under the chart with a
+	   screen's width of night beside them. Wide now matches the Crit Heatmap's
+	   side column: the chart and the scenarios stacked on the left, and the
+	   Readout down the right edge at the tile's full height, where the aura log
+	   — the panel's long part — gets the height a log wants and scrolls inside
+	   it rather than being cut off at 21rem. The panels' multicolumn wrapper
+	   dissolves so its two children can take grid areas. */
+	@container instrument (min-width: 60rem) {
+		.instrument {
+			/* 🎛️ 25rem: the widest application line the log can print — "Pyro
+			   (3.2U after tax, refreshed, new rate)", 257px — fits on one line
+			   beside its time and pip (measured 2026-10-02; ⚓ Nate: the lines
+			   that start with a marker should not wrap). Reactions may still. */
+			grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
+			grid-template-rows: auto minmax(0, 1fr);
+			grid-template-areas:
+				'chart readout'
+				'scenarios readout';
+			align-content: stretch;
+		}
+
+		.gx-chart {
+			grid-area: chart;
+		}
+
+		.gx-panels {
+			display: contents;
+		}
+
+		.gx-scenarios {
+			grid-area: scenarios;
+			align-self: start;
+			margin-bottom: 0;
+		}
+
+		/* The note keeps a reading measure while the chips use the width */
+		.gx-scenarios .note {
+			max-width: 70ch;
+		}
+
+		.gx-readout {
+			grid-area: readout;
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+			margin-bottom: 0;
+		}
+
+		/* ⚠ align-content: start — a grid given spare height shares it out
+		   between its rows, which spaced the log's lines a column apart. */
+		.gx-log {
+			flex: 1 1 auto;
+			align-content: start;
+			max-height: none;
+			overflow-y: auto;
+		}
+	}
 </style>

@@ -119,7 +119,7 @@ The frozen label follows the game, not community usage, for the same reason ever
 reaction name does: genshin-db ships the game's names per locale, and "Freeze" has no
 translation to match.
 
-⏭ **Code sites for the code pass** (found 2026-09-27): `auraDisplay.ts:159,163,199,203`
+✅ **Applied 2026-10-02** (the Gauge Explorer pass) — every site below now says Frozen / Overloaded; `auraPlot.test.ts` asserts the planner's labels. The sites, as found 2026-09-27: `auraDisplay.ts:159,163,199,203`
 (`'Overload'`, `'Freeze'`) · `GaugeInstrument.svelte:43,46` (the log's reaction names) and
 `:172` (the scenario chip) · `ReactionCurvesInstrument.svelte:65` · `anatomy.ts:66`
 (`Overload ×2.75`). ⚠️ Seven character JSONs say "Overload" in prose — `caveat`s are not

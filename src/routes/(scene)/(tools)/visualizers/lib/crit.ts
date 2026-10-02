@@ -230,7 +230,12 @@ export const AXIS_INK = {
 };
 
 export const PAD = {
-	top: 24,
+	// ↻ 2026-10-02 (⚓ Nate): was 24, which started the heatmap ~20px lower than
+	// every other instrument's first edge. 🎛️ 9 = the marker dot's radius (8)
+	// plus its outline, so a build at CRIT Rate 100% still shows its whole dot
+	// on the plot's top edge — only the faint halo clips, and only there. The
+	// "100%" tick's ink now begins ~5px below the tile's top.
+	top: 9,
 	// isoline labels start 8 past the plot, then the gap, the title, the margin
 	right: Math.ceil(
 		8 +

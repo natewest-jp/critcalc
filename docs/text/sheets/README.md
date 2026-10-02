@@ -93,7 +93,7 @@ the word appears anywhere in the sheets.
 | ✅ **[instruments — conventions](visualizers-instruments-00-conventions.md)** | —       | **RULED 2026-09-23** and pre-applied to all eight sheets |
 | ✅ ~~[· Crit Heatmap](visualizers-instruments-01-crit.md)~~                   | 33      | **CLOSED + APPLIED 2026-10-02** — notes in the ledger    |
 | ✅ **[· ICD Timeline](visualizers-instruments-02-icd.md)**                    | 28      | **RULED 2026-09-27**                                     |
-| ✅ **[· Gauge Explorer](visualizers-instruments-03-gauge.md)**                | 19      | **RULED 2026-09-27**                                     |
+| ✅ ~~[· Gauge Explorer](visualizers-instruments-03-gauge.md)~~                | 19      | **CLOSED + APPLIED 2026-10-02** — notes in the ledger    |
 | ▶️ [· Reaction Curves](visualizers-instruments-04-reaction-curves.md)         | 12      | **Next up.** Least wrong with it                         |
 | [· Enemy DEF & RES](visualizers-instruments-05-def-res.md)                    | 34      |                                                          |
 | [· Wish Odds](visualizers-instruments-06-wish.md)                             | 24      | Closest to the constitution's edge                       |

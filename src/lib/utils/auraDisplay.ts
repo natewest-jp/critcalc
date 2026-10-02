@@ -23,7 +23,7 @@
  * it has become something with a different decay curve.
  */
 
-import type { AuraKey, SeriesInterval } from '$lib/utils/gauge';
+import type { AuraKey, ElementId, SeriesInterval } from '$lib/utils/gauge';
 import type { Reaction } from '$lib/types/ability';
 
 export type AuraModMeta = {
@@ -51,6 +51,24 @@ export type AuraModMeta = {
 	 * borrowed an element ramp.
 	 */
 	compound?: true;
+};
+
+/**
+ * The seven elements' display names — the game's own words (🎮 in the
+ * termbase, a lookup per locale at i18n).
+ *
+ * ⚓ Its own map, not AURA_MOD_META's labels: Anemo and Geo never become an
+ * aura, so that map has no row for them, and a caller that fell back to the
+ * raw id printed "anemo" (the Gauge Explorer's log, 2026-10-02).
+ */
+export const ELEMENT_LABEL: Record<ElementId, string> = {
+	pyro: 'Pyro',
+	hydro: 'Hydro',
+	anemo: 'Anemo',
+	electro: 'Electro',
+	dendro: 'Dendro',
+	cryo: 'Cryo',
+	geo: 'Geo'
 };
 
 export const AURA_MOD_META: Record<AuraKey, AuraModMeta> = {
@@ -156,11 +174,11 @@ export const AURA_MOD_ORDER: AuraKey[] = [
 export const REACTION_LABEL: Record<Reaction, string> = {
 	vaporize: 'Vaporize',
 	melt: 'Melt',
-	overloaded: 'Overload',
+	overloaded: 'Overloaded',
 	superConduct: 'Superconduct',
 	stellarConduct: 'Stellar-Conduct',
 	electroCharged: 'Electro-Charged',
-	frozen: 'Freeze',
+	frozen: 'Frozen',
 	shatter: 'Shatter',
 	burning: 'Burning',
 	bloom: 'Bloom',
@@ -196,11 +214,11 @@ export const REACTION_LABEL: Record<Reaction, string> = {
 export const REACTION_FAMILY: Record<Reaction, string> = {
 	vaporize: 'Vaporize',
 	melt: 'Melt',
-	overloaded: 'Overload',
+	overloaded: 'Overloaded',
 	superConduct: 'Superconduct',
 	stellarConduct: 'Stellar-Conduct',
 	electroCharged: 'Electro-Charged',
-	frozen: 'Freeze',
+	frozen: 'Frozen',
 	shatter: 'Shatter',
 	burning: 'Burning',
 	bloom: 'Bloom',
