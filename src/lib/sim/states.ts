@@ -23,7 +23,7 @@
 import type { TransientStateSpec } from '$lib/types/ability';
 import type { CastAbility } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
-import { getPersistentBehavior, stateKey } from '$lib/types/ability';
+import { getCooldownStartsAtStanceEnd, getPersistentBehavior, stateKey } from '$lib/types/ability';
 import { framesOf } from '$lib/utils/frames';
 import type { CastEvent } from '$lib/utils/rotationEvents';
 import type { CharState } from './charState';
@@ -143,6 +143,54 @@ export function closeStateWindows(
 			rec.end = at;
 		}
 	}
+}
+
+/**
+ * End the holder's open stance at `at` — the ONE stance off edge, shared by a
+ * swap and by a cast that `endsStance` (cast-ends-stance round, 2026-10-04).
+ *
+ * ⚠️ A CLAMP, never an assignment: it can only end a stance early. The window
+ * record is `cs.stance` itself (`stanceWindowRecs` holds the same object), so
+ * the clamp reaches the IR without a second write; the `opensState` companion
+ * closes through `closeStateWindows`. A stance whose cooldown CLOCK starts at
+ * its end (`cooldownStartsAtStanceEnd`) has that clock moved to the new end —
+ * both the cast's `readyAt` (the chart's ghost tail) and the charge queue entry
+ * it wrote (the parser's recast placement), or the two disagree.
+ *
+ * Returns the stance's end after the clamp, or `undefined` when there was no
+ * stance to close.
+ */
+export function clampStance(
+	ctx: SimContext,
+	cs: CharState,
+	characterId: string,
+	at: number
+): number | undefined {
+	const stance = cs.stance;
+	if (!stance) return undefined;
+	const stanceEnd = Math.min(stance.end, at);
+	if (stanceEnd === stance.end) return stanceEnd;
+	stance.end = stanceEnd;
+	if (stance.companion) closeStateWindows(ctx, cs, characterId, stance.companion.name, stanceEnd);
+	if (getCooldownStartsAtStanceEnd(stance.ownerAbility)) {
+		const castRef = stance.castRef;
+		const staleReadyAt = castRef.readyAt;
+		const readyAt = stanceEnd + castRef.cooldown;
+		castRef.readyAt = readyAt;
+		// The queue is keyed by exact ability id, so this cannot reach a
+		// teammate's or a sibling's clock. Replace the entry this cast wrote —
+		// identified by its stale value — rather than q[0], which a multi-charge
+		// sort may have moved off the front.
+		const queue = ctx.eChargeQueues.get(stance.ownerAbility.id);
+		if (queue && staleReadyAt !== undefined) {
+			const idx = queue.indexOf(staleReadyAt);
+			if (idx !== -1) {
+				queue[idx] = readyAt;
+				queue.sort((a, b) => a - b);
+			}
+		}
+	}
+	return stanceEnd;
 }
 
 /**

@@ -2671,6 +2671,34 @@ export type ElementalApplication = {
 };
 
 /** Fields shared by all skill behavior variants. */
+/**
+ * ⚓ THIS CAST ENDS ITS CASTER'S STANCE (cast-ends-stance round, 2026-10-04).
+ * gcsim deletes the stance's status from inside the cast that ends it, and three
+ * kits do it: Zibai's last Spirit Steed's Stride ends Lunar Phase Shift
+ * (`DeleteStatus(skillKey)` at the cast), Nilou's third dance step ends
+ * Pirouette (queued `delaySteps` = 40f after the press), and Wanderer's
+ * in-stance burst ends Windfavored (Skydweller points zeroed; the stance closes
+ * when the next action starts — the cast's END). Without it the stance ran to
+ * its own length and every normal after the closing cast stayed infused.
+ *
+ * - `at` — frames from the cast's START to the instant the stance closes, or
+ *   `'castEnd'` for the end of this cast's animation (as cut by what follows).
+ * - `conditions` — evaluated at the cast against its pre-cast states and its
+ *   `stackContext`, i.e. AFTER this cast's own `gainStacks` (the snapshot
+ *   order). A cast cap counted by a stack key states the post-gain count:
+ *   Zibai's fourth Stride sees `strideCasts` = 4.
+ *
+ * Closing is a CLAMP — it only ever ends a stance early, never extends one —
+ * through the same edge a swap uses: the stance window, its `opensState`
+ * companion, and a `cooldownStartsAtStanceEnd` clock. ⚠️ The STANCE only:
+ * other named states and transient windows are left alone (`consumesState`
+ * closes one of those). A cast with no open stance does nothing.
+ */
+export type EndsStance = {
+	at: number | 'castEnd';
+	conditions?: Condition;
+};
+
 type SkillCommonFields = AbilityCommon & {
 	abilityType: 'skill';
 	input: Input[];
@@ -2682,6 +2710,8 @@ type SkillCommonFields = AbilityCommon & {
 	 *  Sourced from gcsim's `SetCDWithDelay` second argument. Only needed when non-zero. */
 	cooldownStartDelay?: number;
 	cooldownModifiers?: CooldownModifier[];
+	/** Casting this ends the caster's stance — see `EndsStance`. */
+	endsStance?: EndsStance;
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
 	/** Every charge begins RECHARGING the moment the ability becomes available,
@@ -2882,6 +2912,8 @@ type BurstCommonFields = AbilityCommon & {
 	cooldown: number;
 	cooldownStartDelay?: number;
 	cooldownModifiers?: CooldownModifier[];
+	/** Casting this ends the caster's stance — see `EndsStance`. */
+	endsStance?: EndsStance;
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	/** Whether this ability's own damage snapshots the caster's stats at cast
@@ -3108,6 +3140,9 @@ export type AbilityVariant = {
 	 *  (gcsim `DeleteStatus` on cast — Flins Thunderous Symphony consumes
 	 *  `symphonyWindow`; Varesa Volcano Kablam consumes `apexDrive`). */
 	consumesState?: State;
+	/** Overrides the base ability's `endsStance` — see `EndsStance`. Wanderer's
+	 *  Windfavored burst ends the stance its base form is never cast inside. */
+	endsStance?: EndsStance;
 	/** Burst variants only: this variant neither gates on nor writes the
 	 *  character's burst cooldown clock (Flins Thunderous Symphony — gcsim's
 	 *  ActionReady skips the CD check entirely while the window is active).

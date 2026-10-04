@@ -199,6 +199,10 @@ carry the reasoning.
   ⚠️ Unit trap (lint A.4b): FRAMES here, SECONDS in `summonTick.interval`.
 - **`cooldownStartsAtStanceEnd`** (lint D.21/D.22) — a cooldown clock can start
   at the stance end. ⛔ Not the same as `cooldownStartDelay` (animation frames).
+- **`endsStance`** (2026-10-04, lint D.47) — a cast that ENDS its caster's stance
+  (gcsim `DeleteStatus` of the stance key inside another cast): `at` frames from the
+  cast start or `'castEnd'`, optional `conditions` read AFTER the cast's own
+  `gainStacks`. On a skill, burst or variant. Zibai / Nilou / Wanderer.
 - **`CharacterData.enablesReactions`** — the Stellar enabler model. ONE enabler
   in the party converts the base reaction party-wide. ⚠️ Per-reaction: a Swirl
   enabler does nothing for Conduct. `docs/library/game/stellar-reactions.md`.

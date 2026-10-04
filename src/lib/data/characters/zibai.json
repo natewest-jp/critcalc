@@ -283,13 +283,14 @@
 					"amount": "all"
 				}
 			],
-			"caveat": "Each cast is drawn where it is typed. In game it needs 70 Phase Shift Radiance, and the 4th cast (5th from C1) ends Lunar Phase Shift — the timeline keeps the mode open to its full length.",
+			"caveat": "Each cast is drawn where it is typed. In game it needs 70 Phase Shift Radiance.",
 			"_curatorNotes": [
 				"AUTHORED 2026-10-04 (frames-queue round, Stage 4) — gcsim #3093 gave her a source. The special Elemental Skill cast inside Lunar Phase Shift: gcsim's Skill() branches to skillSkill() while `zibai-skill` is active (skill.go), so it is a state-gated SIBLING skill on `inStance` — Lohen's Etched Into Bone and Soul shape, which Nate approved 2026-09-17. Resolution prefers the conditioned sibling, so the base Heaven and Earth Made Manifest resolves only outside the mode or past the cast cap.",
 				"⚓ THE CAST CAP IS A STACK COUNTER (Lohen's): `strideCasts` gains 1 on a skill cast made INSIDE the mode and is cleared by one made OUTSIDE it, both gated on the cast's pre-state. This ability resolves while the count is ≤ 3 (≤ 4 at C1) — gcsim `c1MaxSkillsPerSkill()` = 4 / 5. Stride sets no cooldown in gcsim (the 18s CD belongs to the base cast), hence `cooldown: 0`.",
-				"⚠️ DIVERGENCE (on the caveat): gcsim `DeleteStatus(skillKey)` the moment the cap is reached, so the 4th (C1: 5th) Stride ENDS the mode; our stance window runs its full 15s (+1.7s per in-mode burst), so Normal/Charged Attacks after the last Stride stay Geo-infused here and are Physical in game. No schema closes a stance on a cast count today — `consumeStacks.closesStateWhenEmpty` is onHit-only (lint D.46) and keys on EMPTY, not full. Flagged for Nate.",
+				"⛔ SUPERSEDED 2026-10-04 (cast-ends-stance round) — kept as history: ⚠️ DIVERGENCE (on the caveat): gcsim `DeleteStatus(skillKey)` the moment the cap is reached, so the 4th (C1: 5th) Stride ENDS the mode; our stance window runs its full 15s (+1.7s per in-mode burst), so Normal/Charged Attacks after the last Stride stay Geo-infused here and are Physical in game. No schema closes a stance on a cast count today — `consumeStacks.closesStateWhenEmpty` is onHit-only (lint D.46) and keys on EMPTY, not full. Flagged for Nate.",
 				"⛔ Phase Shift Radiance is NOT tracked (gcsim: 10/s in mode, +5 per Normal hit on a 0.5s ICD, +35 on a party Lunar-Crystallize once per 4s with the ICD reset by a Stride; C1 +100 on cast; C6 ×1.5 and consumes everything). The user asserts ≥70 by typing `E` — the Kinich Cannon / Lohen convention.",
-				"Hits (gcsim skillStrideHitmark {30, 34}): 1st Geo 1U, Elemental Skill, ICDTagNone; 2nd is Direct Lunar-Crystallize with Durability 0 — it keeps its application entry and drops `element` (the ICD cap round rule). Frames: skillSkillFrames = InitAbilSlice(61), N 45 · E 54 · Q 45 · D 42 · J 43. DEF scaling (310.6% / 253.7% DEF at talent 10) is damage magnitude and not authored."
+				"Hits (gcsim skillStrideHitmark {30, 34}): 1st Geo 1U, Elemental Skill, ICDTagNone; 2nd is Direct Lunar-Crystallize with Durability 0 — it keeps its application entry and drops `element` (the ICD cap round rule). Frames: skillSkillFrames = InitAbilSlice(61), N 45 · E 54 · Q 45 · D 42 · J 43. DEF scaling (310.6% / 253.7% DEF at talent 10) is damage magnitude and not authored.",
+				"↻ 2026-10-04 (cast-ends-stance round): the last Stride ENDS the mode (`endsStance`, at: 0 — gcsim `DeleteStatus(skillKey)` inside skillSkill, before its two hits, which still land). The condition reads the cast's stackContext, i.e. AFTER this cast's own gain, so the 4th Stride sees strideCasts = 4 (C1: the 5th sees 5). Measured: C0 `E N4 E N2 E N2 E N2 E N2` — the mode window ends at the 4th Stride and the N2 after it resolves the base (Physical) normal. The caveat's divergence sentence is retired with it."
 			],
 			"description": "While in Lunar Phase Shift, Zibai can consume 70 Phase Shift Radiance to unleash Spirit Steed's Stride, dealing two instances of Geo DMG. The second instance is considered Lunar-Crystallize Reaction DMG. Zibai leaves the mode after unleashing Spirit Steed's Stride 4 times.",
 			"frames": {
@@ -309,7 +310,46 @@
 				{
 					"frame": 34
 				}
-			]
+			],
+			"endsStance": {
+				"at": 0,
+				"conditions": {
+					"type": "any",
+					"conditions": [
+						{
+							"type": "all",
+							"conditions": [
+								{
+									"type": "not",
+									"condition": {
+										"type": "constellation",
+										"level": 1
+									}
+								},
+								{
+									"type": "stacks",
+									"key": "strideCasts",
+									"min": 4
+								}
+							]
+						},
+						{
+							"type": "all",
+							"conditions": [
+								{
+									"type": "constellation",
+									"level": 1
+								},
+								{
+									"type": "stacks",
+									"key": "strideCasts",
+									"min": 5
+								}
+							]
+						}
+					]
+				}
+			}
 		},
 		{
 			"id": "zibai__burst__trisphere_eminence",

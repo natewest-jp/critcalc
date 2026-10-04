@@ -57,7 +57,9 @@ export type StanceRecord = {
 	/** Accumulated owner-bar uptime: initial duration + fired extension deltas.
 	 *  The finalize pass stamps `barRef.uptime = ownerUptime`. Distinct from
 	 *  `end`, which is the (swap-clamped) gating end — a swap-terminated stance
-	 *  keeps its full owner-bar width while `end` clamps to the swap-out time. */
+	 *  keeps its full owner-bar width while `end` clamps to the swap-out time.
+	 *  ⚓ A cast that `endsStance` clamps THIS too (2026-10-04): the stance ended
+	 *  for real, so the bar ends with it. */
 	ownerUptime: number;
 	/** Per-durationExtensions[]-index fire counts (reset each window open). */
 	extCounts: Map<number, number>;

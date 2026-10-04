@@ -1262,6 +1262,7 @@ function lintAbility(
 		case 'burst':
 			lintCastAbility(a, push);
 			lintSummonEffects(c, a, push);
+			lintEndsStance(c, a, push);
 			break;
 		case 'passive':
 		case 'constellation':
@@ -1801,6 +1802,46 @@ function elementRefIssue(ref: ElementRef, allowed: ReadonlySet<string>): string 
 	if (ref.fallback !== undefined && !allowed.has(ref.fallback))
 		return `teamElementPriority fallback "${ref.fallback}" is not a valid Element`;
 	return null;
+}
+
+// (D.47) `endsStance` (cast-ends-stance round, 2026-10-04): `at` is a frame
+// count from the cast's start (a non-negative integer) or 'castEnd', and the
+// character must OWN a stance for the cast to end — on a stanceless kit the
+// field is inert, which is the orphaned-data class wearing a valid shape.
+function lintEndsStance(
+	c: CharacterData,
+	a: SkillAbility | BurstAbility,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	const hosts = [
+		{ where: a.id, ends: a.endsStance },
+		...(a.variants ?? []).map((v) => ({ where: `${a.id} · ${v.label}`, ends: v.endsStance }))
+	].filter((h) => h.ends !== undefined);
+	if (!hosts.length) return;
+	const hasStance = c.abilities.some(
+		(x) =>
+			(x.abilityType === 'skill' || x.abilityType === 'burst') &&
+			(x.behavior === 'stance' || (x.variants ?? []).some((v) => v.behavior === 'stance'))
+	);
+	for (const { where, ends } of hosts) {
+		const at = ends!.at;
+		if (at !== 'castEnd' && !(Number.isInteger(at) && at >= 0)) {
+			push(
+				'strict',
+				'ends-stance-invalid',
+				`${where} endsStance.at must be 'castEnd' or a non-negative frame count, got ${JSON.stringify(at)}`,
+				a.id
+			);
+		}
+		if (!hasStance) {
+			push(
+				'strict',
+				'ends-stance-invalid',
+				`${where} ends a stance, but ${c.id} has no stance-behavior skill or burst — the field would be inert`,
+				a.id
+			);
+		}
+	}
 }
 
 function lintCastAbility(
