@@ -116,9 +116,10 @@
 		"states": { "inStance": [{ "action": "skill" }] }
 	},
 	"nilou": {
-		"note": "Pirouette / Whirling Steps.",
-		"_scored": "skill 4/6 (base 0/6)",
-		"states": { "inStance": [{ "action": "skill" }] }
+		"note": "Pirouette / Whirling Steps. ↻ 2026-10-04: `stacks.danceStep` is what one step of the shared dance counter costs — one more press — so Whirling Steps 2 and 3 are captured behind 2 and 3 presses instead of all three reading step 1.",
+		"_scored": "skill 6/6 (base 0/6)",
+		"states": { "inStance": [{ "action": "skill" }] },
+		"stacks": { "danceStep": [{ "action": "skill" }] }
 	},
 	"odette": {
 		"note": "Coda at Dawn's Tolling. gcsim has no separate entry point: a second Skill() inside the 394f recast window (`useSpecialSkill`) IS the Coda, and the dumper bypasses cooldowns, so the prereq is one skill cast.",

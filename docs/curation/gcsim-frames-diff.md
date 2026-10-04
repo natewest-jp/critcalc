@@ -8,10 +8,10 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **128** authored · **119** with a gcsim source
-- FrameMaps: **1160** authored · **1040** matching gcsim exactly · **40** disagreeing · **80** uncovered
+- FrameMaps: **1160** authored · **1042** matching gcsim exactly · **38** disagreeing · **80** uncovered
 - skill/burst application schedules observed: **301** · unobserved: **17**
-- summon tick streams cross-checked: **59**
-- hits carrying a measured gcsim ICD cadence: **3274** of **3277**
+- summon tick streams cross-checked: **60**
+- hits carrying a measured gcsim ICD cadence: **3369** of **3372**
 
 ⛔ **No gcsim source (9)** — cannot be oracled at all, and nothing here may be written to them:
 
@@ -25,20 +25,20 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 419 / 430 | 11f |
-| E/Q → C | 321 / 332 | 8f |
-| E/Q → Q | 179 / 185 | 3f |
-| E/Q → E | 142 / 148 | 3f |
-| E/Q → N | 138 / 140 | 3f |
+| E/Q → P | 420 / 429 | 11f |
+| E/Q → C | 322 / 331 | 8f |
+| E/Q → Q | 180 / 185 | 3f |
+| E/Q → E | 143 / 148 | 3f |
+| E/Q → N | 139 / 140 | 3f |
 | E/Q → J | 112 / 113 | 14f |
 | E/Q → D | 58 / 59 | 3f |
 | normal → P | 34 / 37 | 24f |
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **424** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **425** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (40)
+## 2. FrameMaps that disagree (38)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -69,8 +69,6 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | lan_yan | `lan_yan__burst__lustrous_moonrise.frames` | anim 75→100 |
 | lauma | `lauma__normal__spiritcall_prayer.chargeFrames` | hit 73→67 |
 | neuvillette | `neuvillette__normal__as_water_seeks_equilibrium.chargeFrames` | C 69→53, E 26→23, Q 27→23, D 25→23, J 26→23, swap 58→50, anim 87→74 |
-| nilou | `nilou__skill__whirling_steps_2.frames` | N 40→27, E 32→27, Q 40→33, D 36→26, J 37→27, swap 62→31, anim 62→33 |
-| nilou | `nilou__skill__whirling_steps_3.frames` | D 57→26, J 57→27, swap 61→31, anim 63→33 |
 | ningguang | `ningguang__normal__sparkling_scatter.chargeFrames` | N 68→76, C 69→76, E 72→77, Q 69→77, D 54→61, J 54→62, swap 67→76, anim 74→82 |
 | qiqi | `qiqi__skill__adeptus_art_herald_of_frost.frames` | anim 57→58 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[0]` | hit 4→2 |
@@ -355,8 +353,8 @@ count; §4b lists the casts whose rule the schema default does not reproduce.
 | nicole | `nicole__burst__revelation_ladder_of_divine_ascent` | +108 pyro (1U) |  | `none` |
 | nilou | `nilou__skill__dance_of_haftkarsvar` | +16 hydro (1U) |  | 150f / every 3 · 8 max |
 | nilou | `nilou__skill__whirling_steps_1` | +21 hydro [icd] |  | 150f / every 3 · 8 max |
-| nilou | `nilou__skill__whirling_steps_2` | +21 hydro [icd] |  | 150f / every 3 · 8 max |
-| nilou | `nilou__skill__whirling_steps_3` | +21 hydro [icd] |  | 150f / every 3 · 8 max |
+| nilou | `nilou__skill__whirling_steps_2` | +29 hydro [icd] |  | 150f / every 3 · 8 max |
+| nilou | `nilou__skill__whirling_steps_3` | +43 hydro (1U) | 25× Tranquility Aura | 150f / every 3 · 8 max |
 | nilou | `nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring` | +91 hydro (1U) · +212 hydro (1U) |  | `none` |
 | ningguang | `ningguang__skill__jade_screen` | **—** | 1× Jade Screen |  |
 | ningguang | `ningguang__burst__starshatter` | +62 geo (2U) · +97 geo [icd] · +106 geo [icd] · +110 geo (2U) · +116 geo [icd] · +124 geo [icd] |  | 150f / every 3 · 8 max |
@@ -522,9 +520,9 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**299** authored casts replayed · **276** agree hit for hit · **0** ⛔ gate · **21** ⚠️ list · **2** on a named counter (§4d)
+**299** authored casts replayed · **276** agree hit for hit · **0** ⛔ gate · **19** ⚠️ list · **4** on a named counter (§4d)
 
-<details><summary>⚠️ list rows (21)</summary>
+<details><summary>⚠️ list rows (19)</summary>
 
 | character | ability | authored entries | gcsim gauge hits | planner applies | gcsim applies |
 | --- | --- | --- | --- | --- | --- |
@@ -539,8 +537,6 @@ A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gaug
 | ganyu | `ganyu__burst__celestial_shower` | +130 +220 +310 +346 +400 +454 +490 +580 +670 +706 +760 +796 +850 | +130 +220 +310 +346 +400 +454 +490 +580 +670 +706 +760 +796 +850 +940 | +130 +310 +454 +490 +670 +796 +850 | +130 +310 +454 +490 +670 +796 +850 |
 | kamisato_ayato | `kamisato_ayato__burst__kamisato_art_suiyuu` | +139 +229 +319 +409 +469 +499 +589 +679 +769 +859 | +139 +229 +319 +409 +469 +499 +589 +679 +769 +859 +949 +1039 +1129 +1189 | +139 +319 +469 +679 +859 | +139 +319 +469 +679 +859 +1039 +1189 |
 | kinich | `kinich__burst__hail_to_the_almighty_dragonlord` | +161 | +161 +253 +403 +553 +703 +848 +993 | +161 | +161 +403 +553 +703 +993 |
-| nilou | `nilou__skill__whirling_steps_2` | +29 | +21 | +29 | — |
-| nilou | `nilou__skill__whirling_steps_3` | +43 | +21 | +43 | — |
 | ningguang | `ningguang__skill__jade_screen` | +17 | — | +17 | — |
 | odette | `odette__skill__adagio_coda_at_dawns_tolling` | +11 +20 +28 | +11 +20 +28 +114 +223 +348 +457 +582 +691 +816 +925 +1050 +1159 | +11 | +11 +114 +223 +348 +457 +582 +691 +816 +925 +1050 +1159 |
 | qiqi | `qiqi__skill__adeptus_art_herald_of_frost` | +32 +96 +231 +291 +426 +486 +621 +681 +816 +876 | +32 +33 +96 +231 +232 +291 +426 +427 +486 +621 +622 +681 +816 +817 +876 | +32 +231 +426 +621 +816 | +32 +231 +426 +621 +816 |
@@ -565,6 +561,14 @@ row needs `icdCounter` on every ability sharing it. ⛔ Opt-in, never a default.
 | nilou | `E@state-inStance` | Whirling Steps 0 +21 blocked | 1 | ✅ `icdCounter` |
 | nilou | `hE@state-inStance` | Whirling Steps 0 +21 blocked | 1 | ✅ `icdCounter` |
 | nilou | `h2E@state-inStance` | Whirling Steps 0 +21 blocked | 1 | ✅ `icdCounter` |
+| nilou | `N1@state-inStance+stacks-danceStep-1` | Sword Dance 1 +12 blocked | 2 | ✅ `icdCounter` |
+| nilou | `E@state-inStance+stacks-danceStep-1` | Whirling Steps 1 +29 blocked | 2 | ✅ `icdCounter` |
+| nilou | `hE@state-inStance+stacks-danceStep-1` | Whirling Steps 1 +29 blocked | 2 | ✅ `icdCounter` |
+| nilou | `h2E@state-inStance+stacks-danceStep-1` | Whirling Steps 1 +29 blocked | 2 | ✅ `icdCounter` |
+| nilou | `N1@state-inStance+stacks-danceStep-2` | Luminous Illusion +35 applied | 3 | ✅ `icdCounter` |
+| nilou | `E@state-inStance+stacks-danceStep-2` | Water Wheel +43 applied | 3 | ✅ `icdCounter` |
+| nilou | `hE@state-inStance+stacks-danceStep-2` | Water Wheel +43 applied | 3 | ✅ `icdCounter` |
+| nilou | `h2E@state-inStance+stacks-danceStep-2` | Water Wheel +43 applied | 3 | ✅ `icdCounter` |
 
 ### No observed schedule (17)
 
@@ -649,6 +653,7 @@ which the pair alone cannot state.
 | mavuika | `the_named_moment` | Rings of Searing Radiance 120f / 120f × 6 · `none` | Rings of Searing Radiance 120f / 120f × 6 · 6/6 `none` | `none` |
 | mona | `mirror_reflection_of_doom` | Phantom 86f / 59f × 4 `cap` · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 · 8 max | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 · 8 max |
+| nilou | `whirling_steps_3` | — | Tranquility Aura 41f / 30f × 25 · 7/25 `other` | 114f / every 4 · 3 max |
 | ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 · 1/1 `either` | `none` |
 | odette | `adagio_phantom_night_dancers` | Solo Dance Double 157f / 234f × 5 · `none`<br>Solo Dance Double 266f / 234f × 5 · `none` | "Plume" Dance Move 157f / 234f × 5 · 5/5 `either`<br>"Wing" Dance Move 266f / 234f × 5 · 5/5 `either` | `none`<br>`none` |
 | odette | `presto_bluebird_finale` | Solo Dance Double 253f / 234f × 5 · `none`<br>Solo Dance Double 362f / 234f × 4 · `none` | "Plume" Dance Move 253f / 234f × 5 · 5/5 `either`<br>"Wing" Dance Move 362f / 234f × 4 · 4/4 `either` | `none`<br>`none` |
@@ -703,6 +708,7 @@ Level-1 stream carries her bespoke one, so her burst is deliberately left bare.
 | fischl | `nightrider` | Oz (Skill) | 3/10 `other` | 300f / every 4 · 8 max | ✅ authored |
 | fischl | `midnight_phantasmagoria` | Oz (Burst) | 3/10 `other` | 300f / every 4 · 8 max | ✅ authored |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support | 6/17 `other` | 720f / every 3 · 8 max | ✅ authored |
+| nilou | `whirling_steps_3` | Tranquility Aura | 7/25 `other` | 114f / every 4 · 3 max | ⚠️ pair by eye (0 authored / 1 observed) — currently — |
 | ororon | `dark_voices_echo` | Soundwave Collision DMG | 3/9 `standard` | 180f / first only | ✅ authored |
 | sigewinne | `rebound_hydrotherapy` | Rebound Hydrotherapy | 3/5 `standard` | 120f / first only | ✅ authored |
 | traveler_cryo | `ice_fog_piercer` | Frostpierce Star | 4/8 `standard` | 150f / first only | ✅ authored |

@@ -59,9 +59,13 @@ export const loadDrivers = () => JSON.parse(readFileSync(DRIVERS_PATH, 'utf8'));
  *   `chainStage {ability, index: N}`  →  N repeats of that action  (Diluc E2/E3,
  *                                        Keqing's recast, Xianyun's Skyladder, Dehya)
  *   `state {state: S}`                →  one lookup in drivers.json's `states`
+ *   `stacks {key: K, min: M}`         →  M repeats of drivers.json's `stacks[K]`, the
+ *                                        steps that earn ONE stack (2026-10-04, Nilou's
+ *                                        dance-step counter). No row, or `min` 0 → nothing.
  *
  * That leaves the driver table answering exactly one question per row — "what puts
- * this character into that state" — which is the only part no rule derives.
+ * this character into that state", or what one stack of a counter costs — which is
+ * the only part no rule derives.
  *
  * Returns `{ label, prereq }`, or `null` when the prerequisite cannot be built.
  * ⚠️ `null` is UNCOVERED, never "compare it against the base": reading a stance
@@ -83,18 +87,36 @@ export function prereqFor(conditions, drv) {
 		if (!steps.length) return { label: '', prereq: [] };
 		return { label: `state-${conditions.state}`, prereq: steps };
 	}
-	// ⚓ An `all` is as gated as its gating member (2026-10-04): a state-gated sibling
+	if (conditions.type === 'stacks') {
+		const steps = drv?.stacks?.[conditions.key];
+		const n = conditions.min ?? 0;
+		if (!steps || n <= 0) return { label: '', prereq: [] };
+		return {
+			label: `stacks-${conditions.key}-${n}`,
+			prereq: Array.from({ length: n }, () => steps).flat(),
+			stacks: true
+		};
+	}
+	// ⚓ An `all` is as gated as its gating members (2026-10-04): a state-gated sibling
 	// that also carries a cast cap — `inStance` AND a stack count, Lohen's and Zibai's
 	// special skills — read the BASE capture until this, because the conjunction fell
-	// through to "no prerequisite". Stacks, constellation and team members contribute
-	// nothing (they return the empty label); two DIFFERENT prerequisites cannot be
-	// sequenced from here, so that is uncovered rather than a guess.
+	// through to "no prerequisite". The STATE (or chain) is entered first and a stack
+	// count is earned inside it, so they sequence in that order; two different states
+	// cannot be sequenced from here, so that is uncovered rather than a guess.
+	// Constellation and team members contribute nothing (the empty label).
 	if (conditions.type === 'all') {
 		const ctxs = (conditions.conditions ?? []).map((c) => prereqFor(c, drv));
 		if (ctxs.some((c) => c === null)) return null;
-		const gating = [...new Map(ctxs.filter((c) => c.label).map((c) => [c.label, c])).values()];
+		const uniq = (xs) => [...new Map(xs.filter((c) => c.label).map((c) => [c.label, c])).values()];
+		const gating = uniq(ctxs.filter((c) => !c.stacks));
+		const counted = uniq(ctxs.filter((c) => c.stacks));
 		if (gating.length > 1) return null;
-		return gating[0] ?? { label: '', prereq: [] };
+		const parts = [...gating, ...counted];
+		if (!parts.length) return { label: '', prereq: [] };
+		return {
+			label: parts.map((c) => c.label).join('+'),
+			prereq: parts.flatMap((c) => c.prereq)
+		};
 	}
 	// Constellation, ascension and team-composition gates do not change the frames a
 	// C0 capture reads, so they are not prerequisites at all.
