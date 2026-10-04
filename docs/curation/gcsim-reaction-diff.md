@@ -13,12 +13,12 @@ no artifacts, no substats — none of which affect elemental application.
 
 | metric | count |
 | --- | --- |
-| applications — ours | 225 |
+| applications — ours | 222 |
 | applications — gcsim | 269 |
-| **we apply, gcsim does not** | **2** |
-| **gcsim applies, we do not** | **46** |
+| **we apply, gcsim does not** | **1** |
+| **gcsim applies, we do not** | **48** |
 | element mismatch on a paired application | 0 |
-| reaction events — ours | 55 |
+| reaction events — ours | 52 |
 | reaction damage instances — gcsim | 80 |
 
 ⚠️ The two reaction rows count different things — ours is one event per
@@ -32,12 +32,12 @@ every aura on the target at that instant, in taxed units.
 
 | metric | count |
 | --- | --- |
-| aura samples compared | 327 |
-| **agree** (within 0.16U) | **174** |
-| 🟡 drift (both present, further apart) | 65 |
-| 🔴 aura gcsim has and we do not | 29 |
-| 🟠 aura we have and gcsim does not | 59 |
-| mean \|Δ\| where both present | 0.158U |
+| aura samples compared | 323 |
+| **agree** (within 0.16U) | **176** |
+| 🟡 drift (both present, further apart) | 61 |
+| 🔴 aura gcsim has and we do not | 31 |
+| 🟠 aura we have and gcsim does not | 55 |
+| mean \|Δ\| where both present | 0.159U |
 
 ## melt — cryo aura then pyro
 
@@ -498,7 +498,7 @@ Compare presence and rough magnitude, never equality.
 Collei E Q > Xiangling E Q
 ```
 
-applications ours **20** / gcsim **22** · extra 1 · missing 3 · element mismatch 0 · reactions ours **3** / gcsim **20**
+applications ours **18** / gcsim **22** · extra 0 · missing 4 · element mismatch 0 · reactions ours **1** / gcsim **20**
 
 ### 1. Applications
 
@@ -506,10 +506,9 @@ applications ours **20** / gcsim **22** · extra 1 · missing 3 · element misma
 | --- | --- | --- | --- | --- | --- | --- |
 | collei | 0 | dendro @ 0.57s (skill) | dendro @ 0.58s (skill) | 1 | 1U | Floral Brush |
 | collei | 1 | dendro @ 1.55s (burst) | dendro @ 1.57s (burst) | 1 | 1U | Trump-Card Kitty (Explosion) |
-| collei | 2 | dendro @ 2.27s (burst) | dendro @ 2.32s (skill) | 3 | 1U | Floral Brush |
-| collei | 3 | dendro @ 2.30s (skill) | dendro @ 4.78s (burst) | 149 | 1U | Trump-Card Kitty (Leap) |
-| collei | 4 | dendro @ 5.27s (burst) | dendro @ 7.78s (burst) | 151 | 1U | Trump-Card Kitty (Leap) |
-| collei 🟠 | 5 | dendro @ 8.27s (burst) | — |  |  |  |
+| collei | 2 | dendro @ 2.30s (skill) | dendro @ 2.32s (skill) | 1 | 1U | Floral Brush |
+| collei | 3 | dendro @ 4.77s (burst) | dendro @ 4.78s (burst) | 1 | 1U | Trump-Card Kitty (Leap) |
+| collei 🔴 | 4 | — | dendro @ 7.78s (burst) |  | 1U | Trump-Card Kitty (Leap) |
 | xiangling | 0 | pyro @ 3.32s (burst) | pyro @ 3.33s (burst) | 1 | 1U | Pyronado Hit 1 |
 | xiangling | 1 | pyro @ 3.95s (burst) | pyro @ 3.58s (22) | -22 | 1U | burning |
 | xiangling | 2 | pyro @ 4.47s (skill) | pyro @ 3.97s (burst) | -30 | 1U | Pyronado |
@@ -537,7 +536,7 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **35** · 🟡 drift 5 · 🔴 aura we do not have 7 · 🟠 aura they do not have 15
+agree **37** · 🟡 drift 1 · 🔴 aura we do not have 9 · 🟠 aura they do not have 11
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
@@ -548,18 +547,18 @@ agree **35** · 🟡 drift 5 · 🔴 aura we do not have 7 · 🟠 aura they do 
 | 3.58s | xiangling | pyro 0.80/0.78, dendro 0.61/0.61, burning 2.00/2.00, 🟠 burningFuel 0.61/— |
 | 3.97s | xiangling | pyro 0.80/0.77, dendro 0.45/0.46, burning 2.00/2.00, 🟠 burningFuel 0.45/— |
 | 4.48s | xiangling | pyro 0.80/0.76, dendro 0.25/0.25, burning 2.00/2.00, 🟠 burningFuel 0.25/— |
-| 4.78s | collei | pyro 0.77/0.77, dendro 0.13/0.13, burning 2.00/2.00, 🟠 burningFuel 0.13/— |
-| 5.18s | xiangling | pyro 0.80/0.74, 🔴 dendro —/0.64, 🔴 burning —/2.00 |
-| 5.83s | xiangling | pyro 0.77/0.75, 🟡 dendro 0.57/0.38, burning 2.00/2.00, 🟠 burningFuel 0.57/— |
-| 6.15s | xiangling | pyro 0.80/0.77, 🟡 dendro 0.45/0.25, burning 2.00/2.00, 🟠 burningFuel 0.45/— |
-| 6.40s | xiangling | pyro 0.80/0.78, 🟡 dendro 0.35/0.15, burning 2.00/2.00, 🟠 burningFuel 0.35/— |
+| 4.78s | collei | pyro 0.77/0.77, 🟡 dendro 0.79/0.13, burning 2.00/2.00, 🟠 burningFuel 0.79/— |
+| 5.18s | xiangling | pyro 0.80/0.74, dendro 0.63/0.64, burning 2.00/2.00, 🟠 burningFuel 0.63/— |
+| 5.83s | xiangling | pyro 0.78/0.75, dendro 0.37/0.38, burning 2.00/2.00, 🟠 burningFuel 0.37/— |
+| 6.15s | xiangling | pyro 0.80/0.77, dendro 0.25/0.25, burning 2.00/2.00, 🟠 burningFuel 0.25/— |
+| 6.40s | xiangling | pyro 0.80/0.78, dendro 0.15/0.15, burning 2.00/2.00, 🟠 burningFuel 0.15/— |
 | 7.62s | xiangling | pyro 0.80/0.70 |
 | 7.78s | collei | pyro 0.78/0.79, 🔴 burning —/2.00 |
 | 7.82s | xiangling | pyro 0.80/0.78, 🔴 dendro —/0.79, 🔴 burning —/2.00 |
 | 8.03s | xiangling | pyro 0.78/0.78, 🔴 dendro —/0.70, 🔴 burning —/2.00 |
-| 8.83s | xiangling | pyro 0.80/0.73, 🟡 dendro 0.57/0.38, burning 2.00/2.00, 🟠 burningFuel 0.57/— |
-| 9.48s | xiangling | pyro 0.80/0.75, 🟡 dendro 0.31/0.12, burning 2.00/2.00, 🟠 burningFuel 0.31/— |
-| 10.05s | xiangling | pyro 0.80/0.75, 🟠 dendro 0.09/—, 🟠 burning 2.00/—, 🟠 burningFuel 0.09/— |
+| 8.83s | xiangling | pyro 0.80/0.73, 🔴 dendro —/0.38, 🔴 burning —/2.00 |
+| 9.48s | xiangling | pyro 0.80/0.75, 🔴 dendro —/0.12, 🔴 burning —/2.00 |
+| 10.05s | xiangling | pyro 0.80/0.75 |
 | 11.27s | xiangling | pyro 0.80/0.70 |
 | 12.48s | xiangling | pyro 0.80/0.70 |
 | 13.70s | xiangling | pyro 0.80/0.70 |
@@ -573,9 +572,9 @@ Compare presence and rough magnitude, never equality.
 
 | reaction | ours | gcsim |
 | --- | --- | --- |
-| burning | 3 | 20 |
+| burning | 1 | 20 |
 
-- **ours:** burning@3.32s, burning@5.27s, burning@8.27s
+- **ours:** burning@3.32s
 - **gcsim:** burning@3.58s, burning@3.83s, burning@4.08s, burning@4.33s, burning@4.58s, burning@4.83s, burning@5.08s, burning@5.33s, burning@5.83s, burning@6.08s, burning@6.33s, burning@6.58s, burning@8.03s, burning@8.28s, burning@8.53s, burning@8.78s, burning@9.03s, burning@9.28s, burning@9.53s, burning@9.78s
 
 ## swirl-heavy — the VV case
@@ -672,9 +671,9 @@ Fischl E Q > Ningguang E N3 > Zhongli E
 
 **Translation notes**
 
-- ⚠️ gcsim is non-deterministic on this fixture (application counts across runs: 28, 27, 27) — the modal run is reported. Some kits roll dice (random normal-attack variants, proc chances) and no CLI flag pins the seed.
+- ⚠️ gcsim is non-deterministic on this fixture (application counts across runs: 27, 28, 27) — the modal run is reported. Some kits roll dice (random normal-attack variants, proc chances) and no CLI flag pins the seed.
 
-applications ours **21** / gcsim **27** · extra 0 · missing 6 · element mismatch 0 · reactions ours **6** / gcsim **6**
+applications ours **20** / gcsim **27** · extra 0 · missing 7 · element mismatch 0 · reactions ours **5** / gcsim **6**
 
 ### 1. Applications
 
@@ -685,28 +684,28 @@ applications ours **21** / gcsim **27** · extra 0 · missing 6 · element misma
 | fischl | 2 | electro @ 1.60s (burst) | electro @ 1.62s (skill) | 1 | 1U | Thundering Retribution (A4) |
 | fischl | 3 | electro @ 1.95s (burst) | electro @ 2.63s (skill) | 41 | 1U | Oz (Burst) |
 | fischl | 4 | electro @ 2.97s (burst) | electro @ 2.98s (skill) | 1 | 1U | Thundering Retribution (A4) |
-| fischl | 5 | electro @ 4.07s (burst) | electro @ 5.18s (skill) | 67 | 1U | Thundering Retribution (A4) |
+| fischl | 5 | electro @ 4.07s (burst) | electro @ 5.15s (skill) | 65 | 1U | Thundering Retribution (A4) |
 | fischl | 6 | electro @ 5.30s (burst) | electro @ 6.57s (skill) | 76 | 1U | Oz (Burst) |
 | fischl | 7 | electro @ 5.88s (burst) | electro @ 8.53s (skill) | 159 | 1U | Oz (Burst) |
-| fischl | 8 | electro @ 7.85s (burst) | electro @ 9.18s (skill) | 80 | 1U | Thundering Retribution (A4) |
-| fischl 🔴 | 9 | — | electro @ 11.18s (skill) |  | 1U | Thundering Retribution (A4) |
+| fischl | 8 | electro @ 7.85s (burst) | electro @ 9.15s (skill) | 78 | 1U | Thundering Retribution (A4) |
+| fischl 🔴 | 9 | — | electro @ 11.15s (skill) |  | 1U | Thundering Retribution (A4) |
 | ningguang | 0 | geo @ 1.53s (skill) | geo @ 1.55s (skill) | 1 | 1U | Jade Screen |
 | ningguang | 1 | geo @ 2.90s (normal) | geo @ 2.92s (normal) | 1 | 1U | Normal (Twirl) |
 | ningguang | 2 | geo @ 4.00s (normal) | geo @ 3.88s (normal) | -7 | 1U | Normal (Right) |
-| zhongli | 0 | geo @ 5.23s (skill) | geo @ 5.12s (skill) | -7 | 2U | Stone Stele (Initial) |
-| zhongli | 1 | geo @ 7.23s (skill) | geo @ 9.12s (skill) | 113 | 1U | Stone Stele (Tick) |
-| zhongli | 2 | geo @ 11.23s (skill) | geo @ 11.12s (skill) | -7 | 1U | Stone Stele (Tick) |
-| zhongli | 3 | geo @ 15.23s (skill) | geo @ 13.12s (skill) | -127 | 1U | Stone Stele (Tick) |
-| zhongli | 4 | geo @ 19.23s (skill) | geo @ 15.12s (skill) | -247 | 1U | Stone Stele (Tick) |
-| zhongli | 5 | geo @ 23.23s (skill) | geo @ 17.12s (skill) | -367 | 1U | Stone Stele (Tick) |
-| zhongli | 6 | geo @ 27.23s (skill) | geo @ 19.12s (skill) | -487 | 1U | Stone Stele (Tick) |
-| zhongli | 7 | geo @ 31.23s (skill) | geo @ 21.12s (skill) | -607 | 1U | Stone Stele (Tick) |
-| zhongli | 8 | geo @ 35.23s (skill) | geo @ 23.12s (skill) | -727 | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 9 | — | geo @ 25.12s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 10 | — | geo @ 27.12s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 11 | — | geo @ 29.12s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 12 | — | geo @ 31.12s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 13 | — | geo @ 33.12s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli | 0 | geo @ 5.23s (skill) | geo @ 5.08s (skill) | -9 | 2U | Stone Stele (Initial) |
+| zhongli | 1 | geo @ 9.23s (skill) | geo @ 9.08s (skill) | -9 | 1U | Stone Stele (Tick) |
+| zhongli | 2 | geo @ 13.23s (skill) | geo @ 11.08s (skill) | -129 | 1U | Stone Stele (Tick) |
+| zhongli | 3 | geo @ 17.23s (skill) | geo @ 13.08s (skill) | -249 | 1U | Stone Stele (Tick) |
+| zhongli | 4 | geo @ 21.23s (skill) | geo @ 15.08s (skill) | -369 | 1U | Stone Stele (Tick) |
+| zhongli | 5 | geo @ 25.23s (skill) | geo @ 17.08s (skill) | -489 | 1U | Stone Stele (Tick) |
+| zhongli | 6 | geo @ 29.23s (skill) | geo @ 19.08s (skill) | -609 | 1U | Stone Stele (Tick) |
+| zhongli | 7 | geo @ 33.23s (skill) | geo @ 21.08s (skill) | -729 | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 8 | — | geo @ 23.08s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 9 | — | geo @ 25.08s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 10 | — | geo @ 27.08s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 11 | — | geo @ 29.08s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 12 | — | geo @ 31.08s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 13 | — | geo @ 33.08s (skill) |  | 1U | Stone Stele (Tick) |
 
 🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
 
@@ -729,25 +728,25 @@ agree **8** · 🟡 drift 6 · 🔴 aura we do not have 1 · 🟠 aura they do n
 | 2.92s | ningguang | 🟡 electro 0.22/0.78 |
 | 2.98s | fischl | 🟡 electro 0.80/0.27 |
 | 3.88s | ningguang | electro 0.72/0.72 |
-| 5.12s | zhongli | electro 0.71/0.62 |
-| 5.18s | fischl | 🟠 electro 0.71/— |
+| 5.08s | zhongli | electro 0.71/0.62 |
+| 5.15s | fischl | 🟠 electro 0.71/— |
 | 6.57s | fischl | electro 0.74/0.68 |
 | 8.53s | fischl | electro 0.74/0.63 |
-| 9.12s | zhongli | electro 0.69/0.75 |
-| 9.18s | fischl | 🟡 electro 0.69/0.25 |
-| 11.12s | zhongli | electro 0.52/0.64 |
-| 11.18s | fischl | 🟡 electro 0.52/0.13 |
-| 13.12s | zhongli | 🔴 electro —/0.64 |
-| 15.12s | zhongli | — |
-| 17.12s | zhongli | — |
-| 19.12s | zhongli | — |
-| 21.12s | zhongli | — |
-| 23.12s | zhongli | — |
-| 25.12s | zhongli | — |
-| 27.12s | zhongli | — |
-| 29.12s | zhongli | — |
-| 31.12s | zhongli | — |
-| 33.12s | zhongli | — |
+| 9.08s | zhongli | electro 0.70/0.75 |
+| 9.15s | fischl | 🟡 electro 0.69/0.25 |
+| 11.08s | zhongli | 🟡 electro 0.03/0.64 |
+| 11.15s | fischl | electro 0.02/0.13 |
+| 13.08s | zhongli | 🔴 electro —/0.64 |
+| 15.08s | zhongli | — |
+| 17.08s | zhongli | — |
+| 19.08s | zhongli | — |
+| 21.08s | zhongli | — |
+| 23.08s | zhongli | — |
+| 25.08s | zhongli | — |
+| 27.08s | zhongli | — |
+| 29.08s | zhongli | — |
+| 31.08s | zhongli | — |
+| 33.08s | zhongli | — |
 
 ### 3. Reactions
 
@@ -759,10 +758,10 @@ Compare presence and rough magnitude, never equality.
 | reaction | ours | gcsim |
 | --- | --- | --- |
 | crystallize-electro | — | 6 |
-| electroCrystallize | 6 | — |
+| electroCrystallize | 5 | — |
 
-- **ours:** electroCrystallize@1.53s, electroCrystallize@2.90s, electroCrystallize@4.00s, electroCrystallize@5.23s, electroCrystallize@7.23s, electroCrystallize@11.23s
-- **gcsim:** crystallize-electro@1.93s, crystallize-electro@3.30s, crystallize-electro@5.50s, crystallize-electro@9.50s, crystallize-electro@11.50s, crystallize-electro@13.50s
+- **ours:** electroCrystallize@1.53s, electroCrystallize@2.90s, electroCrystallize@4.00s, electroCrystallize@5.23s, electroCrystallize@9.23s
+- **gcsim:** crystallize-electro@1.93s, crystallize-electro@3.30s, crystallize-electro@5.47s, crystallize-electro@9.47s, crystallize-electro@11.47s, crystallize-electro@13.47s
 
 ## plunge spam — never ICD-gated
 

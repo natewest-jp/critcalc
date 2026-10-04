@@ -616,11 +616,11 @@ which the pair alone cannot state.
 | amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` | `none` |
 | amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 · 8 max | Fiery Rain 84f / 12f × 18 · 7/18 `other` ⚠️ **count 9→18** | 60f / every 3 · 8 max |
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |
-| chiori | `fluttering_hasode` | Tamoto 60f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · 4/5 `other` | 114f / first only |
+| chiori | `fluttering_hasode` | Tamoto 60f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · shares the cast's counter ✅ · 4/5 `other` | 114f / first only |
 | citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · 90f / first only | — | — |
-| collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 11 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · 2/12 `other` ⚠️ **count 11→12** | 180f / first only |
+| collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 11 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · shares the cast's counter ✅ · 2/12 `other` ⚠️ **count 11→12** | 180f / first only |
 | columbina | `eternal_tides` | Gravity Ripple 138f / 117f × 12 · `none` | Skill (DoT) 138f / 117f × 12 · 12/12 `none` | `none` |
-| diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · 3/6 `standard` | 150f / every 3 · 8 max |
+| diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · shares the cast's counter ✅ · 3/6 `standard` | 150f / every 3 · 8 max |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f × 20 · 90f / first only | Dragon of White Flame 156f / 59f × 20 · 10/20 `other` | 90f / first only |
 | durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 185f / 74f × 16 · 120f / first only | Dragon of Dark Decay 185f / 74f × 16 · 8/16 `other` | 120f / first only |
 | emilie | `fragrance_extraction` | Lumidouce Case 111f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
@@ -636,12 +636,12 @@ which the pair alone cannot state.
 | kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f × 5 · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` | `none` |
 | kaeya | `glacial_waltz` | Glacial Waltz 53f / 40f × 13 `cap` · `standard` | Glacial Waltz 53f / 40f × 13 · 7/13 `standard` | 150f / every 3 · 8 max |
 | kinich | `hail_to_the_almighty_dragonlord` | Ajaw 253f / 147f × 6 · `standard` | — | — |
-| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f × 8 `cap` · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
+| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f × 8 `cap` · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · shares the cast's counter ✅ · 4/8 `standard` | 150f / every 3 · 8 max |
 | kuki_shinobu | `gyoei_narukami_kariyama_rite` | Gyoei Narukami Kariyama Rite 50f / 17f × 7 `cap` · `standard` | Gyoei Narukami Kariyama Rite 50f / 17f × 7 · 3/7 `standard` | 150f / every 3 · 8 max |
 | lauma | `runo_dawnless_rest_of_karsikko` | Frostgrove Sanctuary 62f / 117f × 8 · `none` | Frostgrove Sanctuary 62f / 117f × 8 · 8/8 `none` | `none` |
 | layla | `dream_of_the_starstream_shaker` | Celestial Dreamsphere 114f / 90f × 8 · `standard` | Starlight Slug 114f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | lisa | `lightning_rose` | Lightning Rose 119f / 30f × 30 · `standard` | Lightning Rose (Tick) 119f / 30f × 30 · 12/30 `standard` | 150f / every 3 · 8 max |
-| lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f × 11 · `standard` | Bogglecat Box 136f / 59f × 11 · 4/11 `standard` | 150f / every 3 · 8 max |
+| lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f × 11 · `standard` | Bogglecat Box 136f / 59f × 11 · shares the cast's counter ✅ · 4/11 `standard` | 150f / every 3 · 8 max |
 | mavuika | `the_named_moment` | Rings of Searing Radiance 120f / 120f × 6 · `none` | Rings of Searing Radiance 120f / 120f × 6 · 6/6 `none` | `none` |
 | mona | `mirror_reflection_of_doom` | Phantom 86f / 59f × 4 `cap` · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 · 8 max | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 · 8 max |
@@ -670,7 +670,7 @@ which the pair alone cannot state.
 | yaoyao | `raphanus_sky_cluster` | Yuegui: Throwing Mode 105f / 60f × 10 · 150f / first only | Radish (Skill) 104f / 60f × 10 · 4/10 `standard` | 150f / first only |
 | yaoyao | `moonjade_descent` | Yuegui: Jumping Mode 146f / 60f × 4 `cap` · 90f / first only | — | — |
 | yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 183f / 90f × 8 `cap` · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
-| zhongli | `dominus_lapidis` | Stone Stele 144f / 120f × 15 `cap` · `standard` | Stone Stele (Tick) 144f / 120f × 15 · 7/15 `other` | 150f / every 3 · 8 max |
+| zhongli | `dominus_lapidis` | Stone Stele 144f / 120f × 15 `cap` · `standard` | Stone Stele (Tick) 144f / 120f × 15 · shares the cast's counter ✅ · 7/15 `other` | 150f / every 3 · 8 max |
 
 ### 5b. Tick series whose measured cadence is neither standard nor none
 

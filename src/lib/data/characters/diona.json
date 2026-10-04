@@ -245,7 +245,8 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 2,
-								"firstTickDelay": 2
+								"firstTickDelay": 2,
+								"sharesCastCounter": true
 							},
 							"scaling": 94.75,
 							"stat": "atk",

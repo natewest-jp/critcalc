@@ -112,7 +112,8 @@
 								"firstTickDelay": 0.6833,
 								"icdGate": {
 									"timer": 114
-								}
+								},
+								"sharesCastCounter": true
 							},
 							"scaling": 147.74,
 							"stat": "atk",
@@ -173,7 +174,8 @@
 										"firstTickDelay": 0.6833,
 										"icdGate": {
 											"timer": 114
-										}
+										},
+										"sharesCastCounter": true
 									},
 									"scaling": 147.74,
 									"stat": "atk",

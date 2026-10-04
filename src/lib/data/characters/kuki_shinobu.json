@@ -113,7 +113,8 @@
 										"level": 2
 									},
 									"ticks": 10
-								}
+								},
+								"sharesCastCounter": true
 							},
 							"scaling": 45.43,
 							"stat": "atk",

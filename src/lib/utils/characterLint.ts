@@ -2291,6 +2291,26 @@ function lintSummonEffects(
 						a.id
 					);
 				}
+				// (D.27g) `sharesCastCounter` — the series is fed its cast's counted
+				// hits (ICD cap round follow-up, 2026-10-04). It says nothing on an
+				// ungated series ('none' touches no clock) and nothing beside a cast
+				// that lands no counted hit (no element, all `noICD`, or the ability's
+				// own `noICD` — gcsim's ICDTagNone spends no counter).
+				if (eff.trigger.sharesCastCounter !== undefined) {
+					const counted = (a.application ?? []).some((e) => e.element !== undefined && !e.noICD);
+					if (
+						eff.trigger.sharesCastCounter !== true ||
+						eff.trigger.icdGate === 'none' ||
+						a.noICD ||
+						!counted
+					)
+						push(
+							'strict',
+							'summon-tick-shares-cast-counter',
+							`summonTick on summon "${s.label}" sets sharesCastCounter, but ${eff.trigger.icdGate === 'none' ? "its icdGate is 'none'" : a.noICD ? 'the cast is noICD' : !counted ? 'the cast lands no counted hit' : 'the value must be true'} — the flag shares nothing; drop it`,
+							a.id
+						);
+				}
 				// (D.27b) icdGate window shape — FRAMES, not seconds.
 				//
 				// ⚠️⚠️ THE SAME UNIT TRAP A.4b EXISTS FOR, AND HERE THE TWO UNITS SIT
