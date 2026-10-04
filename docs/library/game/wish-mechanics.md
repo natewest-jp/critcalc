@@ -66,16 +66,49 @@ true — the datamined ramp simply saturates before the official ceiling.
   Worst case: 2 weapon-banner 5★s. Fate points reset when the banner
   changes; the charted weapon can be re-charted.
 
-## 4★ pity (for completeness; not modeled in the instrument)
+## 4★ pity and the featured 4★ (modeled since 2026-10-04)
 
-- Character banner: 5.1% per pull, ~56.1% at pull 9, 100% at 10.
-- Weapon banner: 6.0% per pull, ~66% at pull 8, 100% at 9.
-- 4★ featured/50-50 rules mirror the 5★ structure at those rates.
+| pulls since last 4★ | P(4★ this pull)  |
+| ------------------- | ---------------- |
+| 1–8                 | 5.1%             |
+| 9                   | 56.1%            |
+| 10                  | 100% (guarantee) |
+
+- Character banner table above (wiki `Character_Event_Wish` § Rates, from the
+  9.45M-wish community estimate; GGanalysis `PITY_4STAR`). Weapon banner: 6.0%
+  per pull, 66% at 8, 100% at 9 (`PITY_W4STAR`; not modeled).
+- **Featured rule (official):** a 4★ is one of the three featured characters
+  with 50%; losing makes the next 4★ featured. **Which of the three is
+  unpublished** — the community model (GGanalysis
+  `up_4star_specific_character`, `pick = 1/3`) splits evenly. ⚓ Nate,
+  2026-10-04: we take the even split as given.
+- ⚠️⚠️ **The featured three are NOT in the banner's off-rate pool.** Every
+  4★ character joins the standard pool one version after its debut, but a
+  banner's own Wish Pool lists its non-featured 4★s WITHOUT the featured three
+  (e.g. Surging Ballad 2026-09-23: Diona, Faruzan, Chongyun featured and absent
+  from `character_4`). So a lost 4★ 50/50 never yields a featured character on
+  its own banner. (GGanalysis's header worries about the opposite; on the event
+  banner it cannot happen.)
+- **A 5★ does not reset the 4★ counter** (official), so a 5★ landing on the
+  10th pull pushes the 4★ to the 11th. Not modeled; measured +1 pull (0.4%) on
+  4★ C6 from nothing.
+
+## Copies (constellations, refinements)
+
+- C6 = 7 copies, R5 = 5. Every target is one chain — pity × guarantee × copies
+  — walked a pull at a time (`copiesCdfs` in `visualizers/lib/wish.ts`).
+- Multiple 5★ copies take each 5★ as an independent 55%. GGanalysis's
+  conservative Radiance counter (`CR_P = [0, 0, 0, 1]`) differs by <1% at C6
+  (637.1 vs 632.3 mean pulls) — the truth sits between.
+- A character and their weapon: separate pities, so the pulls ADD
+  (convolution); the combined curve assumes you stop each banner at its goal.
+- Reference means from nothing (GGanalysis, matched to 2 dp in
+  `wish.test.ts`): 4★ C0 34.4 · 4★ C6 241.1 · 5★ C0 90.3 · 5★ C6 632.3 ·
+  R1 86.5 · R5 432.7.
 
 ## Modeling guidance (what the Wish Odds instrument does)
 
-- 5★-timing pmf: exact pity tables above, from the player's current pity.
-- Featured character: `0.55 × first5★ + 0.45 × (first5★ ⊛ second5★-from-0)`
-  (or just `first5★` when the guarantee is held). The radiance counter is NOT
-  modeled — stated in-app.
-- Charted weapon: same shape with 0.375 / 0.625 and the 1-fate-point cap.
+- Drop-timing pmf: exact pity tables above, from the player's current pity.
+- A goal of N more copies: the copies chain above, for each level on the way.
+- Not in the curves: Starglitter shop copies, event freebies, and pulls on
+  banners that don't feature the goal — the player sets what they own.
