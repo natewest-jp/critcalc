@@ -169,8 +169,7 @@
 								"interval": 0.7,
 								"firstTickDelay": 0.167,
 								"icdGate": {
-									"timer": 108,
-									"every": 4
+									"timer": 108
 								},
 								"tickCap": 21
 							},
@@ -189,7 +188,7 @@
 							"attribution": "A1: Modular Efficiency Protocol (Moonsign: Ascendant Gleam)",
 							"_curatorNotes": [
 								"⚓⚓ THE ASCENDANT GLEAM CADENCE. gcsim asc.go a1BurstEnhance: at Ascension ≥ 1 AND GetMoonsignLevel() ≥ 2 the burst’s tickrate becomes 0.7*60 = 42f (from 90f), the radius 1 → 4, and the ICD group becomes ICDGroupAinoBurstMoonHit. ⚠️ It is not only a faster interval — all three change together, which is why this is a SECOND series rather than an interval override.",
-								"icdGate is ICDGroupAinoBurstMoonHit verbatim: 108f reset window, every 4th hit applies (pkg/core/attacks/icd_groups.dm.go:74,135). ⛔ Not the standard, and at a 42f interval the two are very different — the whole reason the group changes with the rate.",
+								"icdGate is ICDGroupAinoBurstMoonHit verbatim: 108f reset window, every 4th hit applies (pkg/core/attacks/icd_groups.dm.go:74,135). ⛔ Not the standard, and at a 42f interval the two are very different — the whole reason the group changes with the rate. ↻ 2026-10-04 (ICD cap round): {timer 108} — FIRST ONLY. The sequence is {1,0,0,0} and gcsim reads past its end as the last entry (0), so there is no 4th-hit application; 'every 4th' read the list as cyclic. At 42f only three hits fit a window, so the applications are unchanged.",
 								"tickCap 21: gcsim’s loop bound is `i < 14.2*60` in steps of 42, i.e. 21 ticks, while the summon’s authored lifetime is 14s and our half-open walk over it yields 20. The cap is how the boundary tick is said — see the tickCap schema note.",
 								"⚠️⚠️ THE ORACLE CANNOT SEE THIS BRANCH. `scripts/gcsim-dump` runs one character in an empty core, where Aino’s own Moonsign is 1 and GetMoonsignLevel() < 2 — so the dump always measures the DEFAULT series and a green frames-diff proves nothing about this one. Authored from the Go, like `chargedIcdWindow` was.",
 								"⚓ This is what the A1 passive’s curator note asked for: it recorded the enhanced rate as unauthorable because \"teamFaction conditions on summon-effect triggers don’t currently resolve at parse time\". They do now — `finalize` is the one producer for a summon’s markers and it builds the condition context."

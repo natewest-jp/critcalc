@@ -177,8 +177,7 @@
 							"units": 1
 						},
 						{
-							"frame": 79,
-							"element": "anemo"
+							"frame": 79
 						}
 					]
 				}
@@ -191,8 +190,7 @@
 					"units": 1
 				},
 				{
-					"frame": 58,
-					"element": "anemo"
+					"frame": 58
 				}
 			]
 		},

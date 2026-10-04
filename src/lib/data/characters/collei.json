@@ -133,7 +133,8 @@
 					"element": "dendro",
 					"units": 1
 				}
-			]
+			],
+			"noICD": true
 		},
 		{
 			"id": "collei__burst__trumpcard_kitty",

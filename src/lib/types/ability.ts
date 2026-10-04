@@ -2604,6 +2604,12 @@ export type ElementalApplication = {
 	frame: number;
 	/** ⛔ ABSENT MEANS PHYSICAL — the hit applies nothing. Never a default element.
 	 *
+	 *  ⚓ Also how an elemental hit with NO GAUGE is written (gcsim `Durability: 0` —
+	 *  Surging Blade, Lisa's Lightning Rose opener; ICD cap round, 2026-10-04): it
+	 *  is still a landing (`CastEvent.hitsAt`), and like gcsim it spends no ICD
+	 *  slot. The hit's DAMAGE element comes from the cast, never from this field.
+	 *  ⛔ Don't delete such an entry — that deletes a hit.
+	 *
 	 *  ⚓ An `ElementRef` object here is an element the TEAM names (2026-09-16) —
 	 *  Varka's right-hand claymore. It resolves at parse time and an
 	 *  unresolvable one is treated exactly like an absent element: the hit

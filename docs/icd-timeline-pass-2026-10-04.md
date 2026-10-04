@@ -20,6 +20,7 @@ groups, every one is **timer · every Nth hit · at most N per window**, so
 - **For several groups the stop is the design** — Chevreuse's eight shells apply on 1
   and 4 only. ⏭ No `IcdWindow` carries a cap yet: Chevreuse's mines and Arlecchino's
   Skill could now be authored exactly (a data round). `icd.md` § "The list is finite".
+  ↻ Done the same day: `docs/icd-cap-round.md`.
 - `IcdHit.capped` marks a hit past its window's last application.
 
 ## 2. Examples — a preset is a HIT LIST plus a RULE (`icdExamples.ts`)

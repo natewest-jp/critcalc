@@ -138,7 +138,8 @@
 								"firstTickDelay": 1.908,
 								"icdGate": {
 									"timer": 1800,
-									"every": 2
+									"every": 2,
+									"cap": 12
 								}
 							},
 							"scaling": 10.73,
@@ -146,7 +147,7 @@
 							"element": "hydro",
 							"_curatorNotes": [
 								"Gentilhomme Usher. TL10: 10.73% of Furina's Max HP per attack (sidecar 'Gentilhomme Usher DMG' 10th column 10.73%; gcsim furina_gen.go skillUsher[9]=0.10728, FlatDmg = skillUsher[lvl] × MaxHP). Cadence from gcsim skill.go consts: usherIntervalMean 202.138f = 3.369s; firstTickDelay = usherInitialTick 74.5f + usherTravel 40f = 114.5f = 1.908s from summon spawn (marker lands at damage time, not attack start).",
-								"icdGate authored 2026-09-04: gcsim skill.go:239 tags this ICDTagFurinaUsher on ICDGroupFurinaSalonSolitaire, whose reset timer is 1800f and whose sequence is {1,0,1,0,...} (icd_groups.dm.go:101,162) — every OTHER hit applies. The timer outlasts the summon, so the counter never resets in-window. Each member carries its own ICDTag, so the three series do not share a counter; ours are already keyed per series."
+								"icdGate authored 2026-09-04: gcsim skill.go:239 tags this ICDTagFurinaUsher on ICDGroupFurinaSalonSolitaire, whose reset timer is 1800f and whose sequence is {1,0,1,0,...} (icd_groups.dm.go:101,162) — every OTHER hit applies. The timer outlasts the summon, so the counter never resets in-window. Each member carries its own ICDTag, so the three series do not share a counter; ours are already keyed per series. ↻ 2026-10-04 (ICD cap round): + cap 12 — the sequence has 24 entries ending in 0, so a window applies at most 12 times. Unreachable at these cadences inside one summon; stated so the rule is gcsim's whole one."
 							]
 						},
 						{
@@ -158,7 +159,8 @@
 								"firstTickDelay": 1.539,
 								"icdGate": {
 									"timer": 1800,
-									"every": 2
+									"every": 2,
+									"cap": 12
 								}
 							},
 							"scaling": 5.82,

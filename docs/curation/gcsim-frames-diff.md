@@ -494,22 +494,22 @@ MODELS (one entry may be several gcsim hits; a Durability-0 hit is not an entry)
 
 | character | ability | stream | applied/total | gcsim cadence | beside it | authored |
 | --- | --- | --- | --- | --- | --- | --- |
-| arlecchino | `arlecchino__skill__all_is_ash` | All is Ash (Spike) + Blood Debt Directive | 2/3 | 600f / every 3 · 3 max | 1 `none` | ⛔ 600f / every 3 |
-| charlotte | `charlotte__skill__framing_freezing_point_composition` | Snappy Silhouette Mark | 2/4 | 720f / every 2 · 5 max | ⚠️ 1 other group | ⛔ `standard` |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | Snappy Silhouette Mark | 2/4 | 720f / every 2 · 5 max | ⚠️ 1 other group | ⛔ `standard` |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | Snappy Silhouette Mark | 2/4 | 720f / every 2 · 5 max | ⚠️ 1 other group | ⛔ `standard` |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · hE` | Focused Impression Mark | 4/8 | 720f / every 2 · 5 max | ⚠️ 1 other group | ⛔ `standard` |
-| charlotte | `charlotte__burst__still_photo_comprehensive_confirmation` | Still Photo: Kamera | 2/8 | 240f / every 4 · 2 max | 1 `none` | ⛔ `standard` |
-| chasca | `chasca__burst__soul_reapers_fatal_round` | Soulseeker Shell | 3/6 | 90f / every 2 · 3 max | 1 `none` | ⛔ `standard` |
-| chevreuse | `chevreuse__burst__ring_of_bursting_grenades` | Secondary Explosive Shell | 2/8 | 180f / every 3 · 2 max | 1 `none` | ⛔ `standard` |
-| diluc | `diluc__burst__dawn` |  | 1/3 | 300f / every 5 · 6 max |  | ⛔ 300f / every 5 |
+| arlecchino | `arlecchino__skill__all_is_ash` | All is Ash (Spike) + Blood Debt Directive | 2/3 | 600f / every 3 · 3 max | 1 `none` | ✅ authored |
+| charlotte | `charlotte__skill__framing_freezing_point_composition` | Snappy Silhouette Mark | 2/4 | 720f / every 2 · 5 max | ⚠️ 1 other group | ✅ authored |
+| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | Snappy Silhouette Mark | 2/4 | 720f / every 2 · 5 max | ⚠️ 1 other group | ✅ authored |
+| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | Snappy Silhouette Mark | 2/4 | 720f / every 2 · 5 max | ⚠️ 1 other group | ✅ authored |
+| charlotte | `charlotte__skill__framing_freezing_point_composition · hE` | Focused Impression Mark | 4/8 | 720f / every 2 · 5 max | ⚠️ 1 other group | ✅ authored |
+| charlotte | `charlotte__burst__still_photo_comprehensive_confirmation` | Still Photo: Kamera | 2/8 | 240f / every 4 · 2 max | 1 `none` | ✅ authored |
+| chasca | `chasca__burst__soul_reapers_fatal_round` | Soulseeker Shell | 3/6 | 90f / every 2 · 3 max | 1 `none` | ✅ authored |
+| chevreuse | `chevreuse__burst__ring_of_bursting_grenades` | Secondary Explosive Shell | 2/8 | 180f / every 3 · 2 max | 1 `none` | ✅ authored |
+| diluc | `diluc__burst__dawn` |  | 1/3 | 300f / every 5 · 6 max |  | ✅ authored |
 | dori | `dori__burst__alcazarzarays_exactitude` |  | 4/32 | 180f / first only |  | ✅ authored |
 | durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | Dragon of White Flame | 10/20 | 90f / first only | ⚠️ 1 other group | ⛔ `standard` |
-| layla | `layla__skill__nights_of_formal_focus` | Shooting Star | 1/4 | 180f / every 7 · 2 max | 1 `none` | ⛔ `standard` |
+| layla | `layla__skill__nights_of_formal_focus` | Shooting Star | 1/4 | 180f / every 7 · 2 max | 1 `none` | ✅ authored |
 | odette | `odette__skill__adagio_coda_at_dawns_tolling` | Coda at Dawn's Tolling | 1/3 | 180f / first only | 11 `none` | ✅ authored |
 | sigewinne | `sigewinne__burst__super_saturated_syringing` |  | 2/6 | 114f / first only |  | ✅ authored |
 | traveler_hydro | `traveler_hydro__skill__aquacrest_saber · hE` | Dewdrop (Hold) | 4/22 | 90f / first only | 2 `none` | ✅ authored |
-| yumemizuki_mizuki | `yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage` | Dreamdrifter Continuous Attack | 4/7 | 72f / first only | 1 `none` | ⛔ `standard` |
+| yumemizuki_mizuki | `yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage` | Dreamdrifter Continuous Attack | 4/7 | 72f / first only | 1 `none` | ✅ authored |
 
 ### 4c. Cast applications — the planner against gcsim, hit for hit
 
@@ -527,61 +527,13 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**294** authored casts replayed · **232** agree hit for hit · **27** ⛔ gate · **35** ⚠️ list
+**294** authored casts replayed · **271** agree hit for hit · **1** ⛔ gate · **22** ⚠️ list
 
 | character | ability | planner applies | gcsim applies | disagrees at |
 | --- | --- | --- | --- | --- |
-| aloy | `aloy__skill__frozen_wilds` | +25 | +25 +31 | +31 missing |
-| bennett | `bennett__skill__passion_overload · h1E` | +45 | +45 +57 | +57 missing |
-| bennett | `bennett__skill__passion_overload · h2E` | +112 | +112 +121 +166 | +121 missing · +166 missing |
-| bennett | `bennett__skill__passion_overload · h2E` | +112 | +112 +121 +166 | +121 missing · +166 missing |
-| charlotte | `charlotte__skill__framing_freezing_point_composition` | +31 +211 +391 | +31 +121 +301 | +121 missing · +211 extra · +301 missing · +391 extra |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | +31 +211 +391 | +31 +121 +301 | +121 missing · +211 extra · +301 missing · +391 extra |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | +31 +211 +391 | +31 +121 +301 | +121 missing · +211 extra · +301 missing · +391 extra |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · hE` | +112 +292 +472 +652 +832 | +112 +202 +382 +562 +742 | +202 missing · +292 extra · +382 missing · +472 extra · +562 missing · +652 extra · +742 missing · +832 extra |
-| charlotte | `charlotte__burst__still_photo_comprehensive_confirmation` | +53 +143 +203 | +53 +95 +179 | +95 missing · +143 extra · +179 missing · +203 extra |
-| chasca | `chasca__burst__soul_reapers_fatal_round` | +96 +147 +160 | +96 +103 +147 +157 | +103 missing · +157 missing · +160 extra |
-| chevreuse | `chevreuse__burst__ring_of_bursting_grenades` | +59 +92 +110 | +59 +83 +101 | +83 missing · +92 extra · +101 missing · +110 extra |
-| chongyun | `chongyun__burst__spirit_blade_cloudparting_star` | +50 | +50 +59 +67 | +59 missing · +67 missing |
-| citlali | `citlali__burst__edict_of_entwined_splendor` | +118 | +118 +232 | +232 missing |
-| collei | `collei__skill__floral_brush` | +34 | +34 +138 | +138 missing |
-| jean | `jean__burst__dandelion_breeze` | +40 +640 | +40 +55 +640 | +55 missing |
-| kirara | `kirara__burst__secret_art_surprise_dispatch` | +38 +800 +854 | +38 +180 +800 +854 | +180 missing |
-| kujou_sara | `kujou_sara__burst__subjugation_koukou_sendou` | +51 +100 | +51 +100 +100 | +100 missing |
-| layla | `layla__skill__nights_of_formal_focus` | +32 +450 +524 | +32 +450 | +524 extra |
 | nilou | `nilou__skill__whirling_steps_1` | +21 | — | +21 extra |
-| nilou | `nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring` | +91 | +91 +212 | +212 missing |
-| rosaria | `rosaria__skill__ravaging_confession` | +24 | +24 +38 | +38 missing |
-| rosaria | `rosaria__burst__rites_of_termination` | +15 | +15 +56 | +56 missing |
-| sayu | `sayu__skill__yoohoo_art_fuuin_dash` | +7 | +7 +25 | +25 missing |
-| sayu | `sayu__skill__yoohoo_art_fuuin_dash · hE` | +18 | +18 +68 | +68 missing |
-| traveler_pyro | `traveler_pyro__skill__flowfire_blade · hE` | +50 | +50 +62 | +62 missing |
-| varka | `varka__skill__four_winds_ascension` | +43 | +40 | +40 missing · +43 extra |
-| yumemizuki_mizuki | `yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage` | +2 +138 +183 +318 | +2 +48 +138 +228 +318 | +48 missing · +183 extra · +228 missing |
 
-#### Entries whose gcsim hit carries no gauge (13 casts)
-
-An authored entry without `units` whose gcsim hit (cast or summon-named, ±2f) applied
-nothing and was not blocked — Durability 0 in gcsim. **applies** marks the ones the
-planner lets through, as a provisional 1U.
-
-| character | ability | entries |
-| --- | --- | --- |
-| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire` | +59 |
-| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire · hE` | +55 |
-| freminet | `freminet__skill__pressurized_floe` | +62 |
-| lisa | `lisa__burst__lightning_rose` | +56 **applies** |
-| lynette | `lynette__skill__enigmatic_feint` | +58 |
-| lynette | `lynette__skill__enigmatic_feint · hE` | +79 |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy` | +75 **applies** |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h1E` | +106 **applies** |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h2E` | +130 **applies** |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber` | +70 |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber · hE` | +418 |
-| wriothesley | `wriothesley__burst__darkgold_wolfbite` | +160 |
-| xianyun | `xianyun__skill__skyladder_1` | +3 **applies** |
-
-<details><summary>⚠️ list rows (35)</summary>
+<details><summary>⚠️ list rows (22)</summary>
 
 | character | ability | authored entries | gcsim gauge hits | planner applies | gcsim applies |
 | --- | --- | --- | --- | --- | --- |
@@ -589,35 +541,22 @@ planner lets through, as a provisional 1U.
 | amber | `amber__skill__explosive_puppet` | +530 | — | +530 | — |
 | baizhu | `baizhu__burst__holistic_revivification` | — | +252 +398 +544 +690 +836 +988 | — | +252 +398 +544 +690 +836 +988 |
 | barbara | `barbara__skill__let_the_show_begin` | +3 +42 +78 +93 +183 +273 +363 +453 +543 +633 +723 +813 | +3 +42 +78 +93 +183 +273 +363 +453 +543 +633 +723 +813 +903 | +3 +93 +183 +363 +543 +723 | +3 +93 +183 +363 +543 +723 +903 |
-| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire` | +25 +59 | +25 | +25 | +25 |
-| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire · hE` | +19 +55 | +19 | +19 | +19 |
 | durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 +121 +154 | +97 +121 +154 +156 +214 +273 +332 +391 +450 +508 +567 +626 +685 +744 +802 +861 +920 +979 +1038 +1096 +1155 +1214 +1273 | +97 | +97 +156 +273 +391 +508 +626 +744 +861 +979 +1096 +1214 |
 | emilie | `emilie__burst__aromatic_explication` | — | +126 +162 +180 +234 | — | +126 +234 |
 | escoffier | `escoffier__skill__lowtemperature_cooking` | +23 | +23 +153 +212 +270 +329 +387 +446 +504 +563 +621 +680 +738 +797 +855 +914 +972 +1031 +1089 +1148 +1206 +1265 +1323 | +23 | +23 +153 +270 +387 +504 +621 +738 +855 +972 +1089 +1206 +1323 |
-| freminet | `freminet__skill__pressurized_floe` | +29 +62 | +29 | +29 | +29 |
 | furina | `furina__skill__salon_solitaire` | +18 | +18 +110 +131 +137 +209 +307 +336 +405 +445 +498 +540 +595 +693 +744 +760 +792 +891 +936 +985 +1072 +1087 +1139 +1184 +1278 +1347 +1378 +1384 +1477 +1546 +1576 +1669 +1700 +1749 | +18 | +18 +110 +131 +137 +307 +445 +498 +540 +693 +760 +891 +936 +1072 +1087 +1278 +1347 +1384 +1477 +1669 +1700 +1749 |
 | ganyu | `ganyu__skill__trail_of_the_qilin` | +13 +373 | — | +13 +373 | — |
 | ganyu | `ganyu__burst__celestial_shower` | +130 +220 +310 +346 +400 +454 +490 +580 +670 +706 +760 +796 +850 | +130 +220 +310 +346 +400 +454 +490 +580 +670 +706 +760 +796 +850 +940 | +130 +310 +454 +490 +670 +796 +850 | +130 +310 +454 +490 +670 +796 +850 |
 | kamisato_ayato | `kamisato_ayato__burst__kamisato_art_suiyuu` | +139 +229 +319 +409 +469 +499 +589 +679 +769 +859 | +139 +229 +319 +409 +469 +499 +589 +679 +769 +859 +949 +1039 +1129 +1189 | +139 +319 +469 +679 +859 | +139 +319 +469 +679 +859 +1039 +1189 |
 | kinich | `kinich__burst__hail_to_the_almighty_dragonlord` | +161 | +161 +253 +403 +553 +703 +848 +993 | +161 | +161 +403 +553 +703 +993 |
-| lisa | `lisa__burst__lightning_rose` | +56 | — | +56 | — |
-| lynette | `lynette__skill__enigmatic_feint` | +28 +58 | +28 | +28 | +28 |
-| lynette | `lynette__skill__enigmatic_feint · hE` | +51 +79 | +51 | +51 | +51 |
 | nilou | `nilou__skill__whirling_steps_2` | +29 | +21 | +29 | — |
 | nilou | `nilou__skill__whirling_steps_3` | +43 | +21 | +43 | — |
 | ningguang | `ningguang__skill__jade_screen` | +17 | — | +17 | — |
 | odette | `odette__skill__adagio_coda_at_dawns_tolling` | +11 +20 +28 | +11 +20 +28 +114 +223 +348 +457 +582 +691 +816 +925 +1050 +1159 | +11 | +11 +114 +223 +348 +457 +582 +691 +816 +925 +1050 +1159 |
 | qiqi | `qiqi__skill__adeptus_art_herald_of_frost` | +32 +96 +231 +291 +426 +486 +621 +681 +816 +876 | +32 +33 +96 +231 +232 +291 +426 +427 +486 +621 +622 +681 +816 +817 +876 | +32 +231 +426 +621 +816 | +32 +231 +426 +621 +816 |
 | qiqi | `qiqi__burst__adeptus_art_preserver_of_fortune` | +82 | — | +82 | — |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy` | +75 | — | +75 | — |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h1E` | +106 | — | +106 | — |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h2E` | +130 | — | +130 | — |
 | traveler_geo | `traveler_geo__burst__wake_of_earth` | +66 +81 +96 +111 | — | +66 +111 | — |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber` | +25 +70 | +25 | +25 | +25 |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber · hE` | +61 +76 +91 +106 +121 +136 +151 +166 +181 +196 +211 +226 +241 +256 +271 +286 +301 +316 +331 +346 +361 +372 +376 +418 | +61 +76 +91 +106 +121 +136 +151 +166 +181 +196 +211 +226 +241 +256 +271 +286 +301 +316 +331 +346 +361 +372 +376 | +61 +151 +241 +331 +372 | +61 +151 +241 +331 +372 |
 | varka | `varka__burst__northwind_avatar` | +131 (+1 ref) | +112 +131 | +112 +131 | +112 +131 |
-| wriothesley | `wriothesley__burst__darkgold_wolfbite` | +99 +104 +109 +114 +119 +160 | +99 +104 +109 +114 +119 | +99 +114 | +99 +114 |
-| xianyun | `xianyun__skill__skyladder_1` | +3 | — | +3 | — |
 | xilonen | `xilonen__burst__ocelotlicue_point · Q` | +96 | +96 +128 +164 | +96 | +96 |
 | yaoyao | `yaoyao__burst__moonjade_descent` | +16 | +16 +145 +203 +205 +262 +263 +265 +322 +323 +325 | +16 | +16 +145 +262 |
 
@@ -675,12 +614,12 @@ which the pair alone cannot state.
 
 | character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) | gcsim cadence |
 | --- | --- | --- | --- | --- |
-| aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 133f / 90f × 10 · `standard`<br>Cool Your Jets Ducky 133f / 42f × 21 `cap` · 108f / every 4 | Cool Your Jets Ducky 133f / 90f × 10 · 5/10 `standard` | 150f / every 3 · 8 max |
+| aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 133f / 90f × 10 · `standard`<br>Cool Your Jets Ducky 133f / 42f × 21 `cap` · 108f / first only | Cool Your Jets Ducky 133f / 90f × 10 · 5/10 `standard` | 150f / every 3 · 8 max |
 | amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` | `none` |
-| amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 | Fiery Rain 84f / 12f × 18 · 7/18 `other` ⚠️ **authored disagrees** ⚠️ **count 9→18** | 60f / every 3 · 8 max |
+| amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 · 8 max | Fiery Rain 84f / 12f × 18 · 7/18 `other` ⚠️ **count 9→18** | 60f / every 3 · 8 max |
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |
 | chiori | `fluttering_hasode` | Tamoto 60f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · 4/5 `other` | 114f / first only |
-| citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · 90f / every 2 | — | — |
+| citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · 90f / first only | — | — |
 | collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 11 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · 2/12 `other` ⚠️ **count 11→12** | 180f / first only |
 | columbina | `eternal_tides` | Gravity Ripple 138f / 117f × 12 · `none` | Skill (DoT) 138f / 117f × 12 · 12/12 `none` | `none` |
 | diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · 3/6 `standard` | 150f / every 3 · 8 max |
@@ -688,10 +627,10 @@ which the pair alone cannot state.
 | durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 176f / 74f × 16 · 120f / first only | — | — |
 | emilie | `fragrance_extraction` | Lumidouce Case 111f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
 | emilie | `aromatic_explication` | Lumidouce Case 126f / 54f × 3 · `standard`<br>Lumidouce Case 401f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 120f / first only |
-| escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 153f / 59f × 19 · 90f / every 6 | — | — |
-| fischl | `nightrider` | Oz 92f / 59f × 9 · 300f / every 4 | Oz (Skill) 92f / 59f × 10 · 3/10 `other` ⚠️ **authored disagrees** ⚠️ **count 9→10** | 300f / every 4 · 8 max |
-| fischl | `midnight_phantasmagoria` | Oz 74f / 59f × 9 · 300f / every 4 | Oz (Burst) 192f / 59f × 10 · 3/10 `other` ⚠️ **authored disagrees** ⚠️ **count 9→10** | 300f / every 4 · 8 max |
-| furina | `salon_solitaire` | Salon Solitaire 132f / 202f × 9 · 1800f / every 2<br>Salon Solitaire 110f / 98f × 18 · 1800f / every 2<br>Salon Solitaire 131f / 314f × 6 · `none` | — | — |
+| escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 153f / 59f × 19 · 90f / first only | — | — |
+| fischl | `nightrider` | Oz 92f / 59f × 9 · 300f / every 4 · 8 max | Oz (Skill) 92f / 59f × 10 · 3/10 `other` ⚠️ **count 9→10** | 300f / every 4 · 8 max |
+| fischl | `midnight_phantasmagoria` | Oz 74f / 59f × 9 · 300f / every 4 · 8 max | Oz (Burst) 192f / 59f × 10 · 3/10 `other` ⚠️ **count 9→10** | 300f / every 4 · 8 max |
+| furina | `salon_solitaire` | Salon Solitaire 132f / 202f × 9 · 1800f / every 2 · 12 max<br>Salon Solitaire 110f / 98f × 18 · 1800f / every 2 · 12 max<br>Salon Solitaire 131f / 314f × 6 · `none` | — | — |
 | ganyu | `trail_of_the_qilin` | — | Ice Lotus 13f / 360f × 2 · 2/2 `either` | `none` |
 | gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f × 5 · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` | 150f / every 3 · 8 max |
 | ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f × 10 · `none` | Birgitta 110f / 119f × 10 · 10/10 `none` | `none` |
@@ -707,7 +646,7 @@ which the pair alone cannot state.
 | lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f × 11 · `standard` | Bogglecat Box 136f / 59f × 11 · 4/11 `standard` | 150f / every 3 · 8 max |
 | mavuika | `the_named_moment` | Rings of Searing Radiance 120f / 120f × 6 · `none` | Rings of Searing Radiance 120f / 120f × 6 · 6/6 `none` | `none` |
 | mona | `mirror_reflection_of_doom` | Phantom 86f / 59f × 4 `cap` · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
-| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` ⚠️ **authored disagrees** | 720f / every 3 · 8 max |
+| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 · 8 max | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 · 8 max |
 | ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 · 1/1 `either` | `none` |
 | odette | `adagio_phantom_night_dancers` | Solo Dance Double 157f / 234f × 5 · `none`<br>Solo Dance Double 266f / 234f × 5 · `none` | "Plume" Dance Move 157f / 234f × 5 · 5/5 `either`<br>"Wing" Dance Move 266f / 234f × 5 · 5/5 `either` | `none`<br>`none` |
 | odette | `presto_bluebird_finale` | Solo Dance Double 253f / 234f × 5 · `none`<br>Solo Dance Double 362f / 234f × 4 · `none` | "Plume" Dance Move 253f / 234f × 5 · 5/5 `either`<br>"Wing" Dance Move 362f / 234f × 4 · 4/4 `either` | `none`<br>`none` |
@@ -720,11 +659,11 @@ which the pair alone cannot state.
 | sigewinne | `rebound_hydrotherapy` | Bolstering Bubblebalm 35f / 107f × 5 `cap` · 120f / first only | Rebound Hydrotherapy 35f / 107f × 5 · 3/5 `standard` | 120f / first only |
 | sucrose | `forbidden_creation_isomer_75_type_ii` | Large Wind Spirit 137f / 113f × 3 `cap` · `none` | Forbidden Creation-Isomer 75/Type II 137f / 113f × 3 · 3/3 `none` | `none` |
 | traveler_anemo | `gust_surge` | Gust Surge 94f / 30f × 9 · `standard` | Gust Surge 94f / 30f × 9 · 4/9 `standard` | 150f / every 3 · 8 max |
-| traveler_cryo | `ice_fog_piercer` | Frostpierce Star 187f / 176f × 4 · `standard` | Frostpierce Star 187f / 13f × 8 · 4/8 `standard` ⚠️ **authored disagrees** ⚠️ **count 4→8** | 150f / first only |
+| traveler_cryo | `ice_fog_piercer` | Frostpierce Star 187f / 176f × 4 · 150f / first only | Frostpierce Star 187f / 13f × 8 · 4/8 `standard` ⚠️ **count 4→8** | 150f / first only |
 | traveler_dendro | `surgent_manifestation` | LeaLotus Lamp 91f / 90f × 8 · `standard` | Lea Lotus Lamp 91f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | traveler_geo | `wake_of_earth` | — | Wake of Earth 66f / 15f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
 | traveler_hydro | `rising_waters` | Rising Waters Bubble 34f / 30f × 8 · `standard` | — | — |
-| venti | `winds_grand_ode` | Stormeye 106f / 24f × 20 · 60f / every 3 | Wind's Grand Ode 106f / 24f × 20 · 7/20 `other` ⚠️ **authored disagrees** | 60f / every 3 · 8 max |
+| venti | `winds_grand_ode` | Stormeye 106f / 24f × 20 · 60f / every 3 · 8 max | Wind's Grand Ode 106f / 24f × 20 · 7/20 `other` | 60f / every 3 · 8 max |
 | xiangling | `guoba_attack` | Guoba 126f / 100f × 4 · `none` | Guoba 126f / 100f × 4 · 4/4 `none` | `none` |
 | xiangling | `pyronado` | Pyronado 56f / 73f × 9 · `none` | Pyronado 56f / 73f × 9 · 9/9 `none` | `none` |
 | xingqiu | `guhua_sword_fatal_rainscreen` | — | Xingqiu Orbital 44f / 135f × 7 · 7/7 `none` | `none` |
@@ -752,17 +691,17 @@ Level-1 stream carries her bespoke one, so her burst is deliberately left bare.
 
 | character | ability | stream | applied/total | gcsim cadence | authored |
 | --- | --- | --- | --- | --- | --- |
-| amber | `fiery_rain` | Fiery Rain | 7/18 `other` | 60f / every 3 · 8 max | ⛔ 60f / every 3 |
+| amber | `fiery_rain` | Fiery Rain | 7/18 `other` | 60f / every 3 · 8 max | ✅ authored |
 | chiori | `fluttering_hasode` | Fluttering Hasode (Tamato) | 4/5 `other` | 114f / first only | ✅ authored |
 | collei | `trumpcard_kitty` | Trump-Card Kitty (Leap) | 2/12 `other` | 180f / first only | ✅ authored |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame | 10/20 `other` | 90f / first only | ✅ authored |
 | emilie | `fragrance_extraction` | Lumidouce Case (Level 1) | 7/14 `standard` | 120f / first only | ✅ authored |
 | emilie | `aromatic_explication` | Lumidouce Case (Level 1) | 7/14 `standard` | 120f / first only | ⚠️ pair by eye (2 authored / 1 observed) — currently — |
-| fischl | `nightrider` | Oz (Skill) | 3/10 `other` | 300f / every 4 · 8 max | ⛔ 300f / every 4 |
-| fischl | `midnight_phantasmagoria` | Oz (Burst) | 3/10 `other` | 300f / every 4 · 8 max | ⛔ 300f / every 4 |
-| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support | 6/17 `other` | 720f / every 3 · 8 max | ⛔ 720f / every 3 |
+| fischl | `nightrider` | Oz (Skill) | 3/10 `other` | 300f / every 4 · 8 max | ✅ authored |
+| fischl | `midnight_phantasmagoria` | Oz (Burst) | 3/10 `other` | 300f / every 4 · 8 max | ✅ authored |
+| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support | 6/17 `other` | 720f / every 3 · 8 max | ✅ authored |
 | ororon | `dark_voices_echo` | Soundwave Collision DMG | 3/9 `standard` | 180f / first only | ✅ authored |
 | sigewinne | `rebound_hydrotherapy` | Rebound Hydrotherapy | 3/5 `standard` | 120f / first only | ✅ authored |
-| traveler_cryo | `ice_fog_piercer` | Frostpierce Star | 4/8 `standard` | 150f / first only | ⛔ `standard` |
-| venti | `winds_grand_ode` | Wind's Grand Ode | 7/20 `other` | 60f / every 3 · 8 max | ⛔ 60f / every 3 |
+| traveler_cryo | `ice_fog_piercer` | Frostpierce Star | 4/8 `standard` | 150f / first only | ✅ authored |
+| venti | `winds_grand_ode` | Wind's Grand Ode | 7/20 `other` | 60f / every 3 · 8 max | ✅ authored |
 | yaoyao | `raphanus_sky_cluster` | Radish (Skill) | 4/10 `standard` | 150f / first only | ✅ authored |

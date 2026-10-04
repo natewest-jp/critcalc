@@ -331,9 +331,6 @@ function replayCast(char, ability, node, cast, all) {
 	const pairs =
 		sorted.length === gauge.length &&
 		sorted.every((e, i) => Math.abs(e.frame - gauge[i].frame) <= PAIR_TOLERANCE_F);
-	// Once the lists pair, which frames the planner and gcsim disagree on — as
-	// MULTISETS: several hits can share a frame, and which of them applied is not
-	// an order the two sides agree on (Klee's Burst lands pairs).
 	// ⚓ The third question: an entry whose gcsim hit carries NO gauge (`[0U]`).
 	// The old capture could not tell that from a blocked hit, so the migration
 	// wrote both as an entry without `units` — and one the planner lets through
@@ -349,15 +346,25 @@ function replayCast(char, ability, node, cast, all) {
 			return near.length > 0 && near.every((x) => !x.applied && x.icdVal !== 0);
 		})
 		.map((e) => ({ frame: e.frame, applies: ours.includes(e.frame) }));
+	// Once the lists pair, where the planner and gcsim disagree — compared per GROUP
+	// of entries sharing an authored frame, as COUNTS: which hit of a same-frame pair
+	// applied is not an order the two sides agree on (Klee's Burst lands pairs), and
+	// a paired entry a few frames off gcsim's (Varka's +43 vs +40) is a frames
+	// question, not a gate one.
 	let gateDiff = null;
 	if (pairs) {
-		const tally = new Map();
-		for (const fr of ours) tally.set(fr, (tally.get(fr) ?? 0) + 1);
-		for (const fr of theirs) tally.set(fr, (tally.get(fr) ?? 0) - 1);
-		gateDiff = [...tally]
-			.filter(([, n]) => n !== 0)
-			.sort((x, y) => x[0] - y[0])
-			.flatMap(([frame, n]) => Array.from({ length: Math.abs(n) }, () => ({ frame, ours: n > 0 })));
+		const ourCount = new Map();
+		for (const fr of ours) ourCount.set(fr, (ourCount.get(fr) ?? 0) + 1);
+		gateDiff = [];
+		for (let i = 0; i < sorted.length; ) {
+			let j = i;
+			while (j < sorted.length && sorted[j].frame === sorted[i].frame) j++;
+			const mine = ourCount.get(sorted[i].frame) ?? 0;
+			const theirsN = gauge.slice(i, j).filter((x) => x.applied).length;
+			for (let k = 0; k < Math.abs(mine - theirsN); k++)
+				gateDiff.push({ frame: sorted[i].frame, ours: mine > theirsN });
+			i = j;
+		}
 	}
 	return {
 		refs,

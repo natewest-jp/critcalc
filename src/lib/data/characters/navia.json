@@ -145,7 +145,11 @@
 								"type": "summonTick",
 								"interval": 0.7,
 								"firstTickDelay": 0.15,
-								"icdGate": { "timer": 720, "every": 3 }
+								"icdGate": {
+									"timer": 720,
+									"every": 3,
+									"cap": 8
+								}
 							},
 							"scaling": 77.67,
 							"stat": "atk",

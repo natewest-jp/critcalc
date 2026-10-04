@@ -173,7 +173,8 @@
 				{
 					"frame": 2,
 					"element": "anemo",
-					"units": 1
+					"units": 1,
+					"noICD": true
 				},
 				{
 					"frame": 48,
@@ -207,7 +208,10 @@
 					"element": "anemo",
 					"units": 1
 				}
-			]
+			],
+			"icdGate": {
+				"timer": 72
+			}
 		},
 		{
 			"id": "yumemizuki_mizuki__burst__anraku_secret_spring_therapy",

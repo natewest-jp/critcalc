@@ -158,7 +158,11 @@
 			],
 			"effects": [],
 			"description": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration.",
-			"application": [{ "frame": 56, "element": "electro" }]
+			"application": [
+				{
+					"frame": 56
+				}
+			]
 		}
 	],
 	"passives": [

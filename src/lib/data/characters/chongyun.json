@@ -133,7 +133,8 @@
 				{ "frame": 59, "element": "cryo", "units": 1 },
 				{ "frame": 67, "element": "cryo", "units": 1 }
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"noICD": true
 		}
 	],
 	"passives": [

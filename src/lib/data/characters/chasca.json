@@ -133,7 +133,12 @@
 			],
 			"description": "Chasca concentrates her will, firing a single \"Galesplitting Soulseeker Shell\" that deals Nightsoul-aligned AoE Anemo DMG. Afterward, the Galesplitting Soulseeker Shell will split into 6 Soulseeker Shells, which attack nearby opponents.\n\nSoulseeker Shells\n·Deal Nightsoul-aligned Anemo DMG.\n·For each Pyro, Hydro, Cryo, or Electro character in the party, two Soulseeker Shells will undergo corresponding Elemental Conversions to become \"Radiant Soulseeker Shells,\" which deal Nightsoul-aligned Elemental DMG from a randomly selected one of the corresponding Elemental Types.",
 			"application": [
-				{ "frame": 96, "element": "anemo", "units": 1 },
+				{
+					"frame": 96,
+					"element": "anemo",
+					"units": 1,
+					"noICD": true
+				},
 				{ "frame": 103, "element": "anemo", "units": 1 },
 				{ "frame": 139, "element": "anemo" },
 				{ "frame": 147, "element": "anemo", "units": 1 },
@@ -141,7 +146,12 @@
 				{ "frame": 157, "element": "anemo", "units": 1 },
 				{ "frame": 160, "element": "anemo" }
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"icdGate": {
+				"timer": 90,
+				"every": 2,
+				"cap": 3
+			}
 		}
 	],
 	"passives": [

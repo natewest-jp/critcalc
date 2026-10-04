@@ -219,8 +219,7 @@
 							"element": "hydro"
 						},
 						{
-							"frame": 418,
-							"element": "hydro"
+							"frame": 418
 						}
 					]
 				}
@@ -245,8 +244,7 @@
 					"units": 1
 				},
 				{
-					"frame": 70,
-					"element": "hydro"
+					"frame": 70
 				}
 			],
 			"icdGate": {

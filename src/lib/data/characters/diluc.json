@@ -174,7 +174,8 @@
 			],
 			"icdGate": {
 				"timer": 300,
-				"every": 5
+				"every": 5,
+				"cap": 6
 			}
 		}
 	],

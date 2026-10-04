@@ -132,7 +132,10 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 2.9333,
-								"firstTickDelay": 3.1167
+								"firstTickDelay": 3.1167,
+								"icdGate": {
+									"timer": 150
+								}
 							},
 							"scaling": 38.51,
 							"stat": "atk",

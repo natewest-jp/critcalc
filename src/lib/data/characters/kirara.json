@@ -154,7 +154,12 @@
 				"C1 adds up to 4 extra cardamoms (1 per 8000 Max HP) — a scaling buff on the summon's projectile count, not a damage scaling on existing hits. Flagged on the C1 constellation entry; not modeled on the burst summon."
 			],
 			"application": [
-				{ "frame": 38, "element": "dendro", "units": 2 },
+				{
+					"frame": 38,
+					"element": "dendro",
+					"units": 2,
+					"noICD": true
+				},
 				{ "frame": 180, "element": "dendro", "units": 1 },
 				{ "frame": 180, "element": "dendro", "units": 1 },
 				{ "frame": 800, "element": "dendro", "units": 1 },

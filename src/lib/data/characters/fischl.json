@@ -127,7 +127,8 @@
 								"firstTickDelay": 1.233,
 								"icdGate": {
 									"timer": 300,
-									"every": 4
+									"every": 4,
+									"cap": 8
 								}
 							},
 							"scaling": 159.84,
@@ -184,7 +185,8 @@
 								"interval": 1,
 								"icdGate": {
 									"timer": 300,
-									"every": 4
+									"every": 4,
+									"cap": 8
 								}
 							},
 							"conditions": {
@@ -272,7 +274,8 @@
 								"firstTickDelay": 1.217,
 								"icdGate": {
 									"timer": 300,
-									"every": 4
+									"every": 4,
+									"cap": 8
 								}
 							},
 							"scaling": 159.84,
@@ -329,7 +332,8 @@
 								"interval": 1,
 								"icdGate": {
 									"timer": 300,
-									"every": 4
+									"every": 4,
+									"cap": 8
 								}
 							},
 							"conditions": {
