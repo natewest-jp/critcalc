@@ -37,7 +37,7 @@ import type {
 	Reaction
 } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
-import type { IcdParams } from '$lib/utils/icd';
+import type { IcdClock, IcdParams } from '$lib/utils/icd';
 import {
 	createIcdClock,
 	icdApplies,
@@ -562,6 +562,21 @@ export function notifyNormalAttack(
  */
 const DEFAULT_UNITS = 1;
 
+/** The ctx key of a NAMED counter (`icdCounter`) — ⚓ one namespace, so a cast
+ *  and a swing naming the same counter meet on one clock. */
+const namedIcdKey = (charId: string, name: string): string => `${charId}:counter:${name}`;
+
+/** A NAMED counter's clock, created on first use. */
+function namedIcdClock(ctx: SimContext, charId: string, name: string): IcdClock {
+	const key = namedIcdKey(charId, name);
+	let icd = ctx.icdClocks.get(key);
+	if (!icd) {
+		icd = createIcdClock();
+		ctx.icdClocks.set(key, icd);
+	}
+	return icd;
+}
+
 /**
  * A cast's applications: the absent-list rule, then its own ICD counter.
  *
@@ -593,7 +608,14 @@ export function resolveCastApplications(
 	 *  element is dropped by the same filter a physical hit takes, which is the
 	 *  right silence: an element nobody can name applies nothing. A literal
 	 *  entry never reads this. */
-	context?: ConditionContext
+	context?: ConditionContext,
+	/** A NAMED counter shared across abilities (`icdCounter`): the clock to
+	 *  spend and the cast's start, so its entries land on it at their real
+	 *  instants. Absent = a fresh per-cast counter, as every cast but Nilou's.
+	 *  ⚠️ The entries are fed at CAST time, in order — sound while a sharing
+	 *  ability's hits land before the next sharer's (Nilou's do: each step's hit
+	 *  precedes the next press). */
+	shared?: { clock: IcdClock; castTime: number }
 ): { frame: number; element: Element; units: number; provisionalUnits: boolean }[] {
 	if (!application) {
 		// Absent → the pre-L4d model, provisionally. See the amendment note below.
@@ -615,11 +637,12 @@ export function resolveCastApplications(
 	}
 	const params = resolveActionIcd(castKind, char.weapon, abilityNoICD, abilityIcdGate);
 	if (!params) return elemental;
-	const clock = createIcdClock();
+	const clock = shared?.clock ?? createIcdClock();
+	const t0 = shared?.castTime ?? 0;
 	// ⚓ An entry on NO counter (`ElementalApplication.noICD`) applies and spends
 	// no slot — it never reaches the clock, so the cast's other hits count as if
 	// it were not there, which is what gcsim's `ICDTagNone` on one hit means.
-	return elemental.filter((a) => a.noICD || icdApplies(clock, a.frame, params).applies);
+	return elemental.filter((a) => a.noICD || icdApplies(clock, t0 + a.frame, params).applies);
 }
 
 /**
@@ -672,7 +695,9 @@ export function emitReactionsAtCast(
 	chainIdx: ChainIndex,
 	stackState: Map<string, number>,
 	/** Team scope, for an `ElementRef` in `application[]`. */
-	context?: ConditionContext
+	context?: ConditionContext,
+	/** `CastAbility.icdCounter` — the named counter this cast shares. */
+	icdCounter?: string
 ): void {
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
 	for (const app of resolveCastApplications(
@@ -681,7 +706,8 @@ export function emitReactionsAtCast(
 		castKind,
 		abilityNoICD,
 		abilityIcdGate,
-		context
+		context,
+		icdCounter ? { clock: namedIcdClock(ctx, char.id, icdCounter), castTime } : undefined
 	)) {
 		const at = castTime + app.frame;
 		clock.schedule(at, Band.LAND, () => {
@@ -749,14 +775,21 @@ export function emitReactionsAtSwing(
 	 * produces nothing, because the Anemo hits an empty target and dissipates.
 	 * Varka self-enables his own Swirl, so the order is the mechanic.
 	 */
-	hand?: 'co'
+	hand?: 'co',
+	/** `NormalAbility.icdCounter` — a stance's normals on a NAMED counter shared
+	 *  with its casts (Nilou's Sword Dance). Normal swings only; ⛔ never the
+	 *  second claymore, which has its own pair. */
+	icdCounter?: string
 ): void {
 	if (!element) return;
 	const params = resolveActionIcd(kind, char.weapon, abilityNoICD, chargedIcdWindow);
 	if (params) {
 		// ⚠️ Named `icd`, not `clock` — the rotation `Clock` is a parameter now
 		// (the reaction-proc dispatch needs it), and the two must not shadow.
-		const key = `${char.id}:${icdTagFor(kind)}${hand ? `:${hand}` : ''}`;
+		const key =
+			icdCounter && !hand
+				? namedIcdKey(char.id, icdCounter)
+				: `${char.id}:${icdTagFor(kind)}${hand ? `:${hand}` : ''}`;
 		let icd = ctx.icdClocks.get(key);
 		if (!icd) {
 			icd = createIcdClock();

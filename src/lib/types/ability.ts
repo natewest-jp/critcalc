@@ -2498,6 +2498,21 @@ export type NormalAbility = AbilityCommon & {
 	 */
 	chargedIcdWindow?: IcdWindow;
 	/**
+	 * ⚓ A NAMED ICD COUNTER shared ACROSS abilities (ICD cap round follow-up,
+	 * 2026-10-04). gcsim keys ICD by `(character, tag, group)`, so hits from
+	 * different casts — and from stance normals — can spend one counter. The
+	 * planner isolates each cast on a fresh counter and each swing on the generic
+	 * normal clock; an ability carrying this name instead spends the
+	 * per-character counter of that name, shared with every ability carrying the
+	 * same one. Nilou is the one case in the corpus (a dumper census over every
+	 * prerequisite-driven capture): her Dance, Whirling Steps and Sword Dance are
+	 * all `ICDTagElementalArt` on the default group, so `E E E E` applies on the
+	 * 1st and 4th hit, not all four. ⛔ Opt-in, never a default — Xiao's skill sits
+	 * on a 5f group and sharing across his casts would delete his second E
+	 * (icd-group-round §4/§10). Lint D.27h.
+	 */
+	icdCounter?: string;
+	/**
 	 * ⚓ The positive claim that this character CANNOT BUFFER an input after a
 	 * Charged Attack (2026-09-17) — Human timing pads the next N/C instead of
 	 * treating it as a stored input. Absent = the default rule in
@@ -2711,6 +2726,21 @@ type SkillCommonFields = AbilityCommon & {
 	 * `ICDGroupEleApplicationSequence`, read off the live `AttackInfo`).
 	 */
 	icdGate?: IcdWindow;
+	/**
+	 * ⚓ A NAMED ICD COUNTER shared ACROSS abilities (ICD cap round follow-up,
+	 * 2026-10-04). gcsim keys ICD by `(character, tag, group)`, so hits from
+	 * different casts — and from stance normals — can spend one counter. The
+	 * planner isolates each cast on a fresh counter and each swing on the generic
+	 * normal clock; an ability carrying this name instead spends the
+	 * per-character counter of that name, shared with every ability carrying the
+	 * same one. Nilou is the one case in the corpus (a dumper census over every
+	 * prerequisite-driven capture): her Dance, Whirling Steps and Sword Dance are
+	 * all `ICDTagElementalArt` on the default group, so `E E E E` applies on the
+	 * 1st and 4th hit, not all four. ⛔ Opt-in, never a default — Xiao's skill sits
+	 * on a 5f group and sharing across his casts would delete his second E
+	 * (icd-group-round §4/§10). Lint D.27h.
+	 */
+	icdCounter?: string;
 	tags?: AbilityTag[];
 	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
 	 *  positive statement that the cast applies nothing; an absent field means we have
@@ -2884,6 +2914,21 @@ type BurstCommonFields = AbilityCommon & {
 	 * `ICDGroupEleApplicationSequence`, read off the live `AttackInfo`).
 	 */
 	icdGate?: IcdWindow;
+	/**
+	 * ⚓ A NAMED ICD COUNTER shared ACROSS abilities (ICD cap round follow-up,
+	 * 2026-10-04). gcsim keys ICD by `(character, tag, group)`, so hits from
+	 * different casts — and from stance normals — can spend one counter. The
+	 * planner isolates each cast on a fresh counter and each swing on the generic
+	 * normal clock; an ability carrying this name instead spends the
+	 * per-character counter of that name, shared with every ability carrying the
+	 * same one. Nilou is the one case in the corpus (a dumper census over every
+	 * prerequisite-driven capture): her Dance, Whirling Steps and Sword Dance are
+	 * all `ICDTagElementalArt` on the default group, so `E E E E` applies on the
+	 * 1st and 4th hit, not all four. ⛔ Opt-in, never a default — Xiao's skill sits
+	 * on a 5f group and sharing across his casts would delete his second E
+	 * (icd-group-round §4/§10). Lint D.27h.
+	 */
+	icdCounter?: string;
 	tags?: AbilityTag[];
 	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
 	 *  positive statement that the cast applies nothing; an absent field means we have

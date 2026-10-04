@@ -148,6 +148,28 @@ true` feeds the series' clock the cast's counted `application[]` entries lazily,
   radish now lands on our 105f (upstream's hitlag char-task fix); the reaction oracle
   moves only by the crystallize fixture's known non-determinism. 🆕 **Zibai has a gcsim
   source** (#3093) — she is still frameless here, so a frames curation pass is open.
-- ⏭ Still open: Nilou's steps (cross-cast), Collei's 12th leap (the cap ×
-  `durationExtensions` limit), the dumper's "charges less than 0" panic on a skill
-  used twice with cooldowns bypassed (Durin's Purity recast, Tartaglia, Xianyun).
+- **The dumper reads every frames capture in a known state** (`6a2f5bba`, merged
+  `ad325961`). Pass A captured a whole set on ONE core in order, so each capture
+  inherited the last one's state: Durin's third skill press ran out of charges (the
+  "charges less than 0" panic, which also skipped the application capture), every Burst
+  was read after three skill presses, and Tartaglia's ranged/melee Bursts were read
+  SWAPPED. Now a fresh core per capture, the combo walked, the prerequisite chained into
+  the captured action, and `drivers.json` `before` for the state one capture needs
+  (Yelan's `hA` spends the Barb, Lauma's `Q` the deer) — one builder,
+  `dumperDriverEntry`, for the audit and all three migrators. Durin's Purity recast
+  `anim` 48 → 83 (gcsim's slice; the swap value had been authored). The rows leaked state
+  had hidden are queued for the frames session with Zibai (memory
+  `project_frames_curation_queue`; ⚓ Nate: Wanderer's base Q takes the plain frames, a
+  Windfavored variant the in-skill ones).
+- **Nilou's shared counter** (⚓ Nate approved). gcsim puts her Dance, Whirling Steps and
+  Sword Dance on ONE `ElementalArt` counter: `E E E E` applies on hits 1 and 4 (Dance 17,
+  Water Wheel 122), `E N3` on the Dance and Luminous Illusion. Ours applied all four
+  steps, and N1 instead of N3. A dumper census (`icdCounter` — the counter position before
+  each hit) over every prerequisite-driven capture found **Nilou alone**, so this
+  reopens a SPECIFIC case, ⛔ not icd-group-round's d. 🆕 `icdCounter: string` on casts and
+  normals — an OPT-IN named per-character counter (absent = today's isolation, so Xiao is
+  untouched); lint D.27h; the audit's new §4d is the standing census, and §4c defers
+  named-counter casts to it. Now `E E E E` → 16, 94 and `E N3` → 16, 95 (gcsim 17/122,
+  17/96 — the step TIMINGS are the queued frames row). §4c: **0 gate rows**.
+- ⏭ Still open: Collei's 12th leap (the cap × `durationExtensions` limit); Mavuika's
+  E re-press inside Nightsoul still panics in pass B (no authored map reads it).

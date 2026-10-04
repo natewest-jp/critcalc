@@ -1273,7 +1273,10 @@ export function runRotation(
 					// ⚓ Team scope, for an `ElementRef` entry in `application[]` —
 					// Varka's right-hand claymore names its element through the party
 					// (2026-09-16). A literal entry never reads it.
-					variantCtx
+					variantCtx,
+					// A NAMED counter shared with the character's other abilities
+					// (Nilou; ICD cap round follow-up, 2026-10-04).
+					active.icdCounter
 				);
 				// ⚓ Summon ticks apply their element too (gauge round L5e-b). Queued
 				// after the summonExt registration above so the chain reads the
@@ -1636,7 +1639,10 @@ export function runRotation(
 								at,
 								nStates,
 								charConstellationLevel,
-								stackState
+								stackState,
+								undefined,
+								undefined,
+								activeNormal?.icdCounter
 							);
 							// ⚓⚓ THE SECOND CLAYMORE (Varka's two claymores round,
 							// 2026-09-16). A swing with a `coInfusion` lands a second

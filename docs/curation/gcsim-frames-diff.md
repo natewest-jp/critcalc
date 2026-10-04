@@ -532,11 +532,7 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**295** authored casts replayed · **273** agree hit for hit · **1** ⛔ gate · **21** ⚠️ list
-
-| character | ability | planner applies | gcsim applies | disagrees at |
-| --- | --- | --- | --- | --- |
-| nilou | `nilou__skill__whirling_steps_1` | +21 | — | +21 extra |
+**295** authored casts replayed · **272** agree hit for hit · **0** ⛔ gate · **21** ⚠️ list · **2** on a named counter (§4d)
 
 <details><summary>⚠️ list rows (21)</summary>
 
@@ -565,6 +561,20 @@ A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gaug
 | yaoyao | `yaoyao__burst__moonjade_descent` | +16 | +16 +146 +204 +206 +263 +264 +266 +323 +324 +326 | +16 | +16 +146 +263 |
 
 </details>
+
+### 4d. Counters a previous ability had already advanced
+
+⚓ ICD cap round follow-up (2026-10-04). Each row is a capture behind a prerequisite
+whose first hit on a gcsim counter read a position above zero — the prerequisite's
+own hits had spent it. The planner isolates each cast on a fresh counter, so the
+row needs `icdCounter` on every ability sharing it. ⛔ Opt-in, never a default.
+
+| character | capture | first hit | counter position | authored |
+| --- | --- | --- | --- | --- |
+| nilou | `N1@state-inStance` | Sword Dance 0 +14 blocked | 1 | ✅ `icdCounter` |
+| nilou | `E@state-inStance` | Whirling Steps 0 +21 blocked | 1 | ✅ `icdCounter` |
+| nilou | `hE@state-inStance` | Whirling Steps 0 +21 blocked | 1 | ✅ `icdCounter` |
+| nilou | `h2E@state-inStance` | Whirling Steps 0 +21 blocked | 1 | ✅ `icdCounter` |
 
 ### No observed schedule (16)
 
