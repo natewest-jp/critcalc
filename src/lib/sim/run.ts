@@ -66,6 +66,8 @@ import type { SimContext } from './context';
 import type { CharacterTrack } from './types';
 import type { HitEvent } from './hits';
 import {
+	DEFAULT_ASCENSION,
+	evalCondition,
 	matchVariant,
 	resolveEffectiveCharges,
 	resolveElementRef,
@@ -84,6 +86,7 @@ import { expandBrackets, peekActionKey, peekHumanPadTarget } from './tokens';
 import { cancelKeyFor, padFramesAfter, type HumanPadAfter } from './humanTiming';
 import {
 	castKinds,
+	clampStance,
 	closeStateWindows,
 	holderStatesAt,
 	inferredStates,
@@ -1182,6 +1185,43 @@ export function runRotation(
 				// record is clamped to the cast start for rendering.
 				if (variant?.consumesState !== undefined) {
 					closeStateWindows(ctx, cs, char.id, variant.consumesState, castStart);
+				}
+				// ⚓ This cast ENDS the caster's stance (`EndsStance`): Zibai's last
+				// Stride, Nilou's third step, Wanderer's Windfavored burst. Read off
+				// the variant first, then the ability. Only a stance OPEN at the cast
+				// can be closed — the guard keeps a stance opened by this very cast
+				// (none today) and a long-expired one out of it.
+				{
+					const ends = variant?.endsStance ?? active.endsStance;
+					if (
+						ends &&
+						cs.stance &&
+						cs.stance.start < castStart &&
+						cs.stance.end > castStart &&
+						(ends.conditions === undefined ||
+							evalCondition(
+								ends.conditions,
+								DEFAULT_ASCENSION,
+								states,
+								charConstellationLevel,
+								chainIdx,
+								stacks,
+								variantCtx
+							) === true)
+					) {
+						const end = clampStance(
+							ctx,
+							cs,
+							char.id,
+							ends.at === 'castEnd' ? castEnd : castStart + ends.at
+						);
+						// ⚓ Unlike a swap, a closing cast ends the stance for real, so the
+						// OWNER BAR ends with it: the bar is the stance, and the IR's
+						// strict stance geometry (bar end === window end) holds. A swap
+						// keeps the full width — see `StanceRecord.ownerUptime`.
+						if (end !== undefined)
+							cs.stance.ownerUptime = Math.min(cs.stance.ownerUptime, end - cs.stance.start);
+					}
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
 				// summon with extensions (Collei A4 — Cuilein-Anbar zone). Replaces
@@ -2304,39 +2344,12 @@ export function runRotation(
 				// buff at `cast + (end − start)` and so fired it seconds late for all
 				// five existing authors (Raiden C4, Diona, Chongyun, Venti, Itto).
 				// The `cs.states` loop below has always clamped; this line had not.
-				const stanceEnd = Math.min(cs.stance.end, clock.now);
-				cs.stance.end = stanceEnd;
+				// ⚓ The shared off edge (`clampStance`): window, companion, and a
+				// stance-end cooldown clock moved to the swap — see its doc. A stance
+				// that already expired on its own is untouched (the clamp keeps the
+				// earlier end), so a later swap never restarts its cooldown.
+				clampStance(ctx, cs, char.id, clock.now);
 				cs.stance.terminatesOnSwap = false;
-				// ⚓ A stance whose cooldown CLOCK starts at the stance END was given
-				// a `readyAt` of `cast + duration + cd` at open time, on the
-				// assumption the window would run its full length. If the swap ended
-				// it early the clock starts THEN: take `stanceEnd + cd` outright —
-				// ⛔ not min/max against the stale value, which is a strictly later
-				// upper bound we are correcting, not competing with. ⚠️ `stanceEnd`
-				// rather than `localCursor` so a stance that already expired on its
-				// own doesn't have its cooldown restarted by a later swap.
-				// Both the ghost tail (castRef.readyAt) and the recast placement
-				// (the charge queue) have to move, or the chart and the parser
-				// disagree about when the ability is castable.
-				if (getCooldownStartsAtStanceEnd(cs.stance.ownerAbility)) {
-					const castRef = cs.stance.castRef;
-					const staleReadyAt = castRef.readyAt;
-					const readyAt = stanceEnd + castRef.cooldown;
-					castRef.readyAt = readyAt;
-					// The queue is keyed by exact ability id (see the cast site), so
-					// this cannot reach a teammate's or a sibling variant's clock.
-					// Replace the entry this cast wrote — identified by its stale
-					// value — rather than q[0], which a multi-charge sort may have
-					// moved off the front.
-					const queue = ctx.eChargeQueues.get(cs.stance.ownerAbility.id);
-					if (queue && staleReadyAt !== undefined) {
-						const idx = queue.indexOf(staleReadyAt);
-						if (idx !== -1) {
-							queue[idx] = readyAt;
-							queue.sort((a, b) => a - b);
-						}
-					}
-				}
 				// barRef is intentionally retained (P4): the finalize pass stamps
 				// the owner bar's uptime from `ownerUptime`, which the swap does NOT
 				// clamp — a swap-terminated stance keeps its full owner-bar width

@@ -57,19 +57,7 @@ why, so ⛔ don't let a writer run strip it.
 
 ## 4. Left open
 
-- ❓ **For Nate: a cast that ENDS a stance.** Three kits do this, and no schema closes a
-  stance on a cast:
-  - Zibai's last Stride ends Lunar Phase Shift (gcsim `DeleteStatus(skillKey)`).
-  - Wanderer's in-stance Q ends Windfavored.
-  - Nilou's third step ends Pirouette.
-
-  In all three our stance runs to its own end, so normals after that point stay infused.
-  Zibai and Nilou say so in a caveat; Wanderer's is a note, because the usual Q→swap
-  hides it. `consumesState` closes only transient states, and
-  `consumeStacks.closesStateWhenEmpty` is onHit-only and keys on empty. Is this worth a
-  primitive, something like a variant- or ability-level `endsStance`, plus a count for
-  Zibai?
-
+- ✅ ~~A cast that ENDS a stance~~ — Nate said yes; built the same day, see §5.
 - Nilou's Sword Dance swing is chosen by the Normal combo index, where gcsim indexes it
   by the shared counter (`E E N` is gcsim's SD2 and our SD1). Lunar Prayer is still the
   stance standing in for itself.
@@ -82,3 +70,40 @@ why, so ⛔ don't let a writer run strip it.
   reads it.
 
 e2e: see the merge commit.
+
+## 5. Follow-up: `endsStance` (Nate-approved, same day, `engine/cast-ends-stance`)
+
+A cast can now end its caster's stance. `endsStance: { at, conditions? }` is declared on
+a skill, a burst or a variant, and a variant's value overrides its ability's.
+
+- **`at`** is frames from the cast's start, or `'castEnd'`.
+- **`conditions`** read the cast's pre-cast states and its `stackContext`, which is
+  AFTER this cast's own gains.
+
+| Kit                          | Authored                                 | gcsim                                                                                 |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------- |
+| Zibai, Spirit Steed's Stride | `at: 0` when `strideCasts` ≥ 4 (C1: ≥ 5) | `DeleteStatus(skillKey)` at the cast; the two hits still land                         |
+| Nilou, Water Wheel           | `at: 40`                                 | queued from Pirouette() at the third press + `delaySteps`, the same frame as the aura |
+| Wanderer, Windfavored burst  | `at: 'castEnd'`                          | Skydweller points zeroed; the stance closes at the next action's `checkForSkillEnd`   |
+
+**Engine.** `clampStance` (`sim/states.ts`) is now the ONE stance off edge, shared with
+the swap close. It clamps the window and its `opensState` companion, and moves a
+`cooldownStartsAtStanceEnd` clock (both `readyAt` and the charge queue). The swap path
+calls it and keeps its own extra behaviour: it clamps every state, and the owner bar
+keeps full width. ⚓ A closing cast also shortens the OWNER BAR, because the stance
+really ended. The roster IR invariant (bar end === window end) caught the first cut
+that didn't. Only a stance open at the cast is affected.
+
+**Lint D.47** (`ends-stance-invalid`, strict): `at` must be a non-negative integer or
+`'castEnd'`, and the character must own a stance-behaviour skill or burst, otherwise the
+field is inert. A seeded negative (Zibai with `at: -3`, Bennett's Q) fires both.
+
+**Rider:** Wanderer's skill gets `cooldownStartsAtStanceEnd: true`. gcsim's
+`SetCD(ActionSkill, 360)` runs only in `skillEndRoutine`; her note had asked for the
+field before it existed. `E … Q` now readies E at stance end + 6s (225 + 360 = 585),
+where it was cast + 6s, i.e. mid-stance.
+
+**Measured** (`E N4 E N2 ×4` and friends): Zibai's mode ends on the 4th Stride (5th at
+C1) and the normals after it are Physical. Nilou's stance ends at 118 and her normals
+are Dance of Samser again; the Sword Dance route is untouched. Wanderer's stance ends at
+the Q's end (225). The Zibai and Nilou caveats lose the sentences this made false.

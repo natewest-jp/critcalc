@@ -177,9 +177,17 @@
 				"Cooldown: gcsim only calls c.SetCD(action.ActionSkill, 360) inside skillEndRoutine — i.e. the 6s CD starts when the stance ends, not on cast. Schema's cooldownStartDelay is a flat frame offset and can't express 'starts on stance end'; cooldownStartDelay omitted with this caveat for reviewer.",
 				"terminatesOnSwap: gcsim's skillActivate sets c.Core.Player.SwapCD = math.MaxInt16 to lock swaps during the stance, making in-practice swap-to-end impossible. The stance is normally ended by Skydweller depletion or by re-pressing E (skillDeactivate). The burst's WindfavoredBurst path also ends the stance and unlocks swap. Setting terminatesOnSwap: true to match the per-character recipe note and the in-game expectation; reviewer to verify if the planner's Windfavored swap semantics need adjustment.",
 				"Element Absorption (recipe.md § 3.5): gcsim absorbCheckA1 absorbs up to 2 of Pyro/Hydro/Cryo/Electro at cast (5-radius circle around player), each granting a distinct Jade-Claimed Flower buff for 20s. Per recipe, no per-element conditional buffs authored; flagged on Jade-Claimed Flower passive.",
-				"Skydweller Points (gcsim: skydwellerPoints): resource pool starting at 100, max 100 (raised to 120 with Hydro absorption via A1), drains 1 per 6 frames passively, -15 per dash (A4-dependent), holding jump/sprint adds drain. State ends when points reach 0. Resource pool not modeled in the schema; flagged here for reviewer."
+				"Skydweller Points (gcsim: skydwellerPoints): resource pool starting at 100, max 100 (raised to 120 with Hydro absorption via A1), drains 1 per 6 frames passively, -15 per dash (A4-dependent), holding jump/sprint adds drain. State ends when points reach 0. Resource pool not modeled in the schema; flagged here for reviewer.",
+				"↻ 2026-10-04 (cast-ends-stance round): cooldownStartsAtStanceEnd: true — the field the Cooldown note above asked for exists now (lint D.21/D.22). gcsim SetCD(ActionSkill, 360) runs only in skillEndRoutine, so the 6s clock starts when Windfavored ends: at its own end, at a swap, or at the end of an in-stance burst (the Windfavored variant's endsStance), all through the one clampStance edge."
 			],
-			"application": [{ "frame": 2, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 2,
+					"element": "anemo",
+					"units": 1
+				}
+			],
+			"cooldownStartsAtStanceEnd": true
 		},
 		{
 			"id": "wanderer__burst__kyougen_five_ceremonial_plays",
@@ -205,7 +213,8 @@
 				"Burst out-of-stance: gcsim burstFramesNormal — explicit swap=94, ActionAttack=94, ActionSkill=95, ActionDash=97, ActionJump=96. Recorded above.",
 				"↻ 2026-10-04 (frames-queue round, ⚓ Nate ruled option 2): SPLIT. The base now carries gcsim burstFramesNormal (anim 101 · N 94 · C 96 · E 95 · D 97 · J 96 · swap 94) and a Windfavored variant gated on inStance carries burstFramesE = InitAbilSlice(145) with N 117 · C 119 · D 119 · J 119 (walk 117; no swap override, so swap is the 145 anim — it includes falling down). gcsim branches on StatusIsActive(skillKey) (burst.go). Before this the base held the in-stance numbers, so an out-of-stance Q was timed 44f long. The variant inherits the base application[] — both branches queue the same five hits at 92 + 6i. Driver row: wanderer inStance:[skill], already present. ⚠️ STILL NOT MODELLED: an in-stance Q ENDS Windfavored in gcsim (skydwellerPoints = 0, then checkForSkillEnd on the swap); our stance runs on until its own end or the swap. No schema closes a stance on a cast today — the same question as Zibai's last Stride (frames-queue round record).",
 				"Generator stub had behavior: \"stance\"; corrected to \"instant\" — the burst itself does not open or extend a stance window. The in-stance variant ends the Windfavored stance.",
-				"Damage shape: 5 hits delivered between frames 92 and 92+4*6=116 from cast (hitmarks [92, 98, 104, 110, 116]), at the same snapshot frame (gcsim burstSnapshotDelay = 55). burstSnapshotDelay carries a TODO comment in gcsim (`Determine correct Frame`); flagged for reviewer."
+				"Damage shape: 5 hits delivered between frames 92 and 92+4*6=116 from cast (hitmarks [92, 98, 104, 110, 116]), at the same snapshot frame (gcsim burstSnapshotDelay = 55). burstSnapshotDelay carries a TODO comment in gcsim (`Determine correct Frame`); flagged for reviewer.",
+				"↻ 2026-10-04 (cast-ends-stance round): the Windfavored variant ENDS the stance (`endsStance`, at: 'castEnd'). gcsim zeroes Skydweller points in WindfavoredBurst and the stance closes at checkForSkillEnd — the start of whatever follows (or the swap, via OnRemoved) — i.e. this cast's end. The ⚠️ STILL NOT MODELLED sentence in the note above is resolved."
 			],
 			"application": [
 				{ "frame": 92, "element": "anemo", "units": 1 },
@@ -228,6 +237,9 @@
 						"C": 119,
 						"D": 119,
 						"J": 119
+					},
+					"endsStance": {
+						"at": "castEnd"
 					}
 				}
 			]
