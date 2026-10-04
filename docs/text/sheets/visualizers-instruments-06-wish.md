@@ -1,5 +1,12 @@
 # Worksheet — Wish Odds
 
+> ✅ **CLOSED + APPLIED 2026-10-04** (the Wish Odds pass, `docs/wish-odds-pass-2026-10-04.md`).
+> ⛔ SUPERSEDED — the rulings a translator needs now live in
+> `docs/text/ledger/notes/vz_wish.md`, keyed to the generated inventory. Kept for history;
+> ⚠️ the banner chips, the pmf silhouette and the three Readout lines it describes are gone
+> (targets + copies, one line per level, a level table), and every explainer was rewritten
+> from the player's vantage point.
+
 ⚠️ **Read `visualizers-instruments-00-conventions.md` first** — §A casing, §C colons,
 §H `5★` vs `five-star`, §J (withdrawn — `modeled` is correct).
 
