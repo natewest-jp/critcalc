@@ -107,3 +107,11 @@ where it was cast + 6s, i.e. mid-stance.
 C1) and the normals after it are Physical. Nilou's stance ends at 118 and her normals
 are Dance of Samser again; the Sword Dance route is untouched. Wanderer's stance ends at
 the Q's end (225). The Zibai and Nilou caveats lose the sentences this made false.
+
+**Candidates, not done (a gcsim sweep for stance statuses deleted outside a swap or a
+recast refresh):** Dehya's JUMP ends her burst and Faruzan's AIMED shot ends her skill
+state. Both are real, but they are an action rather than a cast, and `endsStance` is
+cast-only by design, so they would need their own shape. Skirk's `exitSkillState` may be
+reached by an E re-press; check that against her authoring before assuming either way.
+The rest (Furina, Lauma, Nicole, Kinich, Lyney, Sigewinne, Yaoyao and the `onExitField`
+handlers) are recast refreshes, resource ends, or swap clears.
