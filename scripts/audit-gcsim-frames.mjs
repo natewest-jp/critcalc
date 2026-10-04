@@ -437,6 +437,28 @@ function main() {
 				if (x.icd) icdCoverage.seen++;
 			}
 
+	// ⚓ §4d — counters shared ACROSS abilities (ICD cap round follow-up). A
+	// capture behind a prerequisite whose first hit on a counter reads a position
+	// above zero had that counter advanced by something BEFORE the cast. Only casts
+	// and N1 qualify — any later normal had its own combo walked onto it.
+	const sharedAcross = [];
+	const charById = new Map(chars.map((c) => [gcsimKeyFor(c.id), c]));
+	for (const [gk, cd] of Object.entries(dump.characters)) {
+		const char = charById.get(gk);
+		if (!char) continue;
+		const authored = (char.abilities ?? []).some((a) => a.icdCounter !== undefined);
+		for (const a of cd.abilities ?? []) {
+			if (!/^(E|hE|h2E|Q|N1|C)@/.test(a.key)) continue;
+			const first = new Map();
+			for (const h of a.applications ?? []) {
+				if (h.icdCounter === undefined || !h.icd || h.icd.none) continue;
+				if (!first.has(h.icd.counter)) first.set(h.icd.counter, h);
+			}
+			for (const h of first.values())
+				if (h.icdCounter > 0) sharedAcross.push({ id: char.id, key: a.key, hit: h, authored });
+		}
+	}
+
 	for (const char of chars) {
 		const gk = gcsimKeyFor(char.id);
 		const cd = dump.characters[gk];
@@ -639,6 +661,7 @@ function main() {
 		applicationRows,
 		noApplication,
 		tickRows,
+		sharedAcross,
 		icdCoverage,
 		median
 	});
@@ -878,11 +901,18 @@ function renderReport(d) {
 	p('(`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.');
 	p();
 	const replays = d.applicationRows.filter((r) => r.replay);
-	const gateRows = replays.filter((r) => r.replay.pairs && r.replay.gateDiff.length);
+	// ⚓ An ability on a NAMED counter (`icdCounter`) is judged in §4d: this replay
+	// isolates one cast, which is exactly what such an ability is not.
+	const sharedRows = replays.filter((r) => r.ability.icdCounter !== undefined && r.replay.pairs);
+	const gateRows = replays.filter(
+		(r) => r.ability.icdCounter === undefined && r.replay.pairs && r.replay.gateDiff.length
+	);
 	const listRows = replays.filter((r) => !r.replay.pairs);
-	const agree = replays.length - gateRows.length - listRows.length;
+	const agree = replays.filter(
+		(r) => !gateRows.includes(r) && !listRows.includes(r) && !sharedRows.includes(r)
+	).length;
 	p(
-		`**${replays.length}** authored casts replayed · **${agree}** agree hit for hit · **${gateRows.length}** ⛔ gate · **${listRows.length}** ⚠️ list`
+		`**${replays.length}** authored casts replayed · **${agree}** agree hit for hit · **${gateRows.length}** ⛔ gate · **${listRows.length}** ⚠️ list · **${sharedRows.length}** on a named counter (§4d)`
 	);
 	p();
 	const f = (xs) => (xs.length ? xs.map((x) => `+${x}`).join(' ') : '—');
@@ -928,6 +958,26 @@ function renderReport(d) {
 		}
 		p();
 		p('</details>');
+		p();
+	}
+	// --- 4d: a counter shared ACROSS abilities --------------------------------
+	p('### 4d. Counters a previous ability had already advanced');
+	p();
+	p('⚓ ICD cap round follow-up (2026-10-04). Each row is a capture behind a prerequisite');
+	p("whose first hit on a gcsim counter read a position above zero — the prerequisite's");
+	p('own hits had spent it. The planner isolates each cast on a fresh counter, so the');
+	p('row needs `icdCounter` on every ability sharing it. ⛔ Opt-in, never a default.');
+	p();
+	if (!d.sharedAcross.length) {
+		p('_None._');
+		p();
+	} else {
+		p('| character | capture | first hit | counter position | authored |');
+		p('| --- | --- | --- | --- | --- |');
+		for (const r of d.sharedAcross)
+			p(
+				`| ${r.id} | \`${r.key}\` | ${r.hit.abil} +${r.hit.frame} ${r.hit.applied ? 'applied' : 'blocked'} | ${r.hit.icdCounter} | ${r.authored ? '✅ `icdCounter`' : '⛔ none'} |`
+			);
 		p();
 	}
 	if (d.noApplication.length) {

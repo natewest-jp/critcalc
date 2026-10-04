@@ -513,6 +513,39 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 	if (!hasSkillOrBurst)
 		push('warn', 'missing-cast-ability', 'character has no skill or burst ability');
 
+	// (D.27h) `icdCounter` — a NAMED counter shared across abilities (ICD cap
+	// round follow-up, 2026-10-04). A name only one ability carries shares
+	// nothing, and beside the ability's own `noICD` it contradicts it (no clock
+	// vs a named one). ⛔ Opt-in by design: the per-cast isolation is right for the
+	// rest of the corpus (Xiao), so a lone name is refused rather than tolerated.
+	{
+		const holders = new Map<string, string[]>();
+		for (const a of c.abilities) {
+			const name = (a as { icdCounter?: unknown }).icdCounter;
+			if (name === undefined) continue;
+			if (typeof name !== 'string' || !name) {
+				push('strict', 'icd-counter-invalid', `icdCounter must be a non-empty string`, a.id);
+				continue;
+			}
+			if ((a as { noICD?: boolean }).noICD)
+				push(
+					'strict',
+					'icd-counter-invalid',
+					`${a.id} sets both noICD and icdCounter "${name}" — keep one`,
+					a.id
+				);
+			holders.set(name, [...(holders.get(name) ?? []), a.id]);
+		}
+		for (const [name, ids] of holders)
+			if (ids.length < 2)
+				push(
+					'strict',
+					'icd-counter-invalid',
+					`icdCounter "${name}" is carried by ${ids[0]} alone — a counter one ability spends shares nothing; drop it`,
+					ids[0]
+				);
+	}
+
 	// (A.6) id uniqueness
 	const idsSeen = new Set<string>();
 	for (const a of c.abilities) {

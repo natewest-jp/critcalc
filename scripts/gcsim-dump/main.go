@@ -130,6 +130,12 @@ type Application struct {
 	// one with no gauge to gate — so ⚓ absent-and-not-applied is NO GAUGE, ⛔ never
 	// "blocked".
 	IcdVal *float64 `json:"icdVal,omitempty"`
+	// The counter's position BEFORE this hit (`ele icd check`'s `counter`). ⚓ A
+	// capture's first hit reading > 0 means something before the cast — its
+	// prerequisite — had already advanced the counter: a counter shared ACROSS
+	// casts, which the planner's per-cast isolation does not model (Nilou's Dance
+	// and her steps; ICD cap round follow-up, 2026-10-04).
+	IcdCounter *int `json:"icdCounter,omitempty"`
 }
 
 // ---------------------------------------------------------------------------
@@ -679,6 +685,10 @@ func captureApplications(k keys.Char, cons int, prereq []Step, s spec, horizon i
 			case e.Event == "icd" && e.Msg == "ele icd check" && last >= 0 && hits[last].Frame == e.Frame-castFrame && hits[last].IcdVal == nil:
 				if v, ok := e.Logs["val"].(float64); ok {
 					hits[last].IcdVal = &v
+				}
+				if n, ok := e.Logs["counter"].(float64); ok {
+					ni := int(n)
+					hits[last].IcdCounter = &ni
 				}
 			case e.Event == "element" && e.Msg == "application" && last >= 0 && hits[last].Applied && hits[last].Durability == nil && hits[last].Frame == e.Frame-castFrame:
 				// A reacted hit's pre-reaction durability, written synchronously.

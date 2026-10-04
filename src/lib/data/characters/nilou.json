@@ -117,7 +117,8 @@
 				"Each press advances gcsim's `skillStep` tag (0→1→2→0). The same counter is also advanced by Whirling Steps (in-stance E presses) — meaning a player can mix N and E to advance through the chain. The schema cannot represent the shared counter; flag for parser-side modeling.",
 				"Hydro infusion via `infusion: \"hydro\"`. Both Pirouette (10s) and Lunar Prayer (8s after SD3) are encoded as the same `inStance` condition since the planner only models a single stance state per character. SD3 ends Pirouette and starts Lunar Prayer; the parser cannot distinguish these two states currently.",
 				"C4 (Fricative Pulse): if SD3 (skillStep == 2) hits an enemy while Pirouette is active, +15 energy and +50% burst DMG for 8s. Authored on the C4 entry."
-			]
+			],
+			"icdCounter": "elementalArt"
 		},
 		{
 			"id": "nilou__skill__dance_of_haftkarsvar",
@@ -175,7 +176,8 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"icdCounter": "elementalArt"
 		},
 		{
 			"id": "nilou__skill__whirling_steps_1",
@@ -211,7 +213,8 @@
 					"units": 1
 				}
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"icdCounter": "elementalArt"
 		},
 		{
 			"id": "nilou__skill__whirling_steps_2",
@@ -247,7 +250,8 @@
 					"units": 1
 				}
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"icdCounter": "elementalArt"
 		},
 		{
 			"id": "nilou__skill__whirling_steps_3",
@@ -282,7 +286,8 @@
 					"units": 1
 				}
 			],
-			"modeledBy": "nilou__skill__dance_of_haftkarsvar"
+			"modeledBy": "nilou__skill__dance_of_haftkarsvar",
+			"icdCounter": "elementalArt"
 		},
 		{
 			"id": "nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring",
