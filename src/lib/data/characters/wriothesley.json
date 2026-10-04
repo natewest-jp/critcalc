@@ -258,8 +258,7 @@
 					"element": "cryo"
 				},
 				{
-					"frame": 160,
-					"element": "cryo"
+					"frame": 160
 				}
 			],
 			"nothingToModel": true

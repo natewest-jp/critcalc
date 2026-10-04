@@ -119,6 +119,11 @@ type Application struct {
 	// The CADENCE gcsim gates this hit by — see IcdInfo. Absent means the probe saw
 	// no `OnEnemyDamage` for this hit; ⛔ never read that as "no ICD".
 	Icd *IcdInfo `json:"icd,omitempty"`
+	// The entry of the group's sequence this hit read (`ele icd check`'s `val`):
+	// 0 means its ICD blocked it. Absent when no check ran — an `ICDTagNone` hit, or
+	// one with no gauge to gate — so ⚓ absent-and-not-applied is NO GAUGE, ⛔ never
+	// "blocked".
+	IcdVal *float64 `json:"icdVal,omitempty"`
 }
 
 // ---------------------------------------------------------------------------
@@ -167,13 +172,24 @@ type IcdInfo struct {
 	// Whether the sequence's non-zero entries are evenly spaced at `Period` all
 	// the way to the last one. False is the `Applies` caveat above.
 	Regular bool `json:"regular"`
+	// The sequence's LAST entry is non-zero, so a hit past its end still applies
+	// (gcsim reads past the end as the last entry). Only the two reaction groups.
+	// ⚓ False is what makes `Applies` a CAP — the window stops applying (ICD cap
+	// round, 2026-10-04).
+	Open bool `json:"open,omitempty"`
+	// WHICH counter the hit spends: gcsim keys ICD state `(character, tag, group)`,
+	// so two hits share a counter exactly when both numbers match. ⚠️ An opaque
+	// IDENTITY, compared only for equality — ⛔ never read as a name (the no-taxonomy
+	// rule above). Without it two abilities on separate counters with the same
+	// numbers read as one stream (ICD cap round, 2026-10-04).
+	Counter string `json:"counter,omitempty"`
 }
 
 func icdInfoFor(tag attacks.ICDTag, grp attacks.ICDGroup) IcdInfo {
 	if tag == attacks.ICDTagNone {
 		return IcdInfo{None: true}
 	}
-	out := IcdInfo{}
+	out := IcdInfo{Counter: fmt.Sprintf("%d/%d", int(tag), int(grp))}
 	if int(grp) >= 0 && int(grp) < len(attacks.ICDGroupResetTimer) {
 		out.Timer = attacks.ICDGroupResetTimer[grp]
 	}
@@ -185,6 +201,7 @@ func icdInfoFor(tag attacks.ICDTag, grp attacks.ICDGroup) IcdInfo {
 		return out
 	}
 	out.Mult = seq[0]
+	out.Open = seq[len(seq)-1] > 0
 	var hits []int
 	for i, v := range seq {
 		if v > 0 {
@@ -208,15 +225,30 @@ func icdInfoFor(tag attacks.ICDTag, grp attacks.ICDGroup) IcdInfo {
 	return out
 }
 
-// appKey pairs a hit's frame with the ability string gcsim logs it under — the
-// same join the application capture already uses to marry the `damage` and
-// `element` streams.
+// appKey names the hits gcsim logs under one ability string in one frame. ⚠️ It is
+// a BUCKET, never an identity: Chevreuse's Burst lands two shells at frame 101 under
+// one string, and a map keyed by it married both to one reading — the audit showed
+// both applying when gcsim applied one (ICD cap round, 2026-10-04). Hits inside a
+// bucket are paired by ORDINAL.
 type appKey struct {
 	frame int
 	abil  string
 }
 
-// icdProbe records the ICD numbers of every hit the core lands.
+// probeHit is one hit as the target saw it once its frame's damage was applied.
+type probeHit struct {
+	icd IcdInfo
+	// Whether the hit put gauge on the target: gcsim's own `applyDamage` condition
+	// (post-ICD durability, not physical) or a reaction — ⚠️ a reaction can consume
+	// the durability to zero, and a hit that reacted had passed its ICD check.
+	applied bool
+	reacted bool
+	// Post-ICD durability. Exact for a hit that did not react — the value the
+	// deferred `application` log line records.
+	dur float64
+}
+
+// icdProbe records every hit the core lands, in the order the core lands them.
 //
 // ⚓⚓ SUBSCRIBED IN THE SHIM, AND IT HAS TO BE. gcsim's debug log does NOT carry
 // the tag or the group: `pkg/enemy/attack.go`'s damage event writes `target` /
@@ -233,27 +265,33 @@ type appKey struct {
 // charged groups…). Those hits still emit a `damage` log line, so keying off the
 // gated event would leave holes exactly where a cadence is most interesting.
 //
-// ⚠️ `OnEnemyDamage` is emitted from a zero-delay task, but `Tasks.Run()` drains
-// re-entrant additions inside the same `Tick`, so `c.F` at callback time is still
-// the frame of the hit. Verified by coverage: the probe accounts for every hit in
-// the damage stream across the roster.
+// ⚓ ORDER IS THE PAIRING. `HandleAttack` writes the damage log line and queues a
+// zero-delay task that emits `OnEnemyDamage`; tasks drain FIFO and re-entrant
+// additions run inside the same `Tick`, so within one (frame, abil) bucket the
+// n-th callback is the n-th damage line. ⚠️ The element `application` line can't
+// be paired that way — a plain attach is logged from that deferred task, a reacted
+// one synchronously — which is why `applied` is read off the live attack instead.
 type icdProbe struct {
-	m map[appKey]IcdInfo
+	m map[appKey][]probeHit
 	n int
 }
 
 func subscribeIcd(c *core.Core) *icdProbe {
-	p := &icdProbe{m: map[appKey]IcdInfo{}}
+	p := &icdProbe{m: map[appKey][]probeHit{}}
 	c.Events.Subscribe(event.OnEnemyDamage, func(args ...any) {
 		atk, ok := args[1].(*info.AttackEvent)
 		if !ok {
 			return
 		}
 		p.n++
-		// ⚠️ Last write wins on a collision, which is sound because the tag and
-		// the group are properties of the ability rather than of the hit: two
-		// hits sharing (frame, abil) share their cadence too.
-		p.m[appKey{c.F, atk.Info.Abil}] = icdInfoFor(atk.Info.ICDTag, atk.Info.ICDGroup)
+		k := appKey{c.F, atk.Info.Abil}
+		phys := atk.Info.Element == attributes.Physical
+		p.m[k] = append(p.m[k], probeHit{
+			icd:     icdInfoFor(atk.Info.ICDTag, atk.Info.ICDGroup),
+			applied: !phys && (atk.Reacted || atk.Info.Durability > 0),
+			reacted: atk.Reacted,
+			dur:     float64(atk.Info.Durability),
+		})
 	}, "critcalc-icd-probe")
 	return p
 }
@@ -591,40 +629,57 @@ func captureApplications(k keys.Char, cons int, prereq []Step, s spec, horizon i
 			return
 		}
 		// ⚓ The DAMAGE stream is the NOMINAL hit schedule — gcsim emits it even when
-		// ICD zeroes the application — and the ELEMENT stream is the post-ICD subset.
-		// C3 authors from the first; C4's post-ICD contract is served by icd.ts.
-		applied := map[appKey]float64{}
-		for _, e := range events {
-			if e.Event == "element" && e.Msg == "application" && e.Frame >= castFrame {
-				abil, _ := e.Logs["abil"].(string)
-				dur, _ := e.Logs["dur"].(float64)
-				applied[appKey{e.Frame, abil}] = dur
-			}
-		}
+		// ICD zeroes the application — and the probe says which of those hits put
+		// gauge on. C3 authors from the first; C4's post-ICD contract is served by icd.ts.
+		//
+		// The log is in creation order, and one `HandleAttack` writes its damage line,
+		// then its `ele icd check` (only for a tagged hit with gauge), then — if it
+		// reacted — its `application` line, all synchronously. So the ICD check and a
+		// reacted hit's durability belong to the LAST damage line before them. ⚠️ A
+		// plain attach's `application` line is written later, from a deferred task,
+		// and is never read here.
 		hits := []Application{}
+		cursor := map[appKey]int{}
+		last := -1
 		for _, e := range events {
-			if e.Event != "damage" || e.Frame < castFrame {
+			if e.Frame < castFrame {
 				continue
 			}
-			abil, _ := e.Logs["abil"].(string)
-			ele, _ := e.Logs["ele"].(string)
-			tagf, _ := e.Logs["attack-tag"].(float64)
-			app := Application{
-				Frame:   e.Frame - castFrame,
-				Abil:    abil,
-				Tag:     tagName(int(tagf)),
-				Element: ele,
+			switch {
+			case e.Event == "damage":
+				abil, _ := e.Logs["abil"].(string)
+				ele, _ := e.Logs["ele"].(string)
+				tagf, _ := e.Logs["attack-tag"].(float64)
+				app := Application{
+					Frame:   e.Frame - castFrame,
+					Abil:    abil,
+					Tag:     tagName(int(tagf)),
+					Element: ele,
+				}
+				k := appKey{e.Frame, abil}
+				if i := cursor[k]; i < len(icd.m[k]) {
+					ph := icd.m[k][i]
+					cursor[k] = i + 1
+					v := ph.icd
+					app.Icd = &v
+					app.Applied = ph.applied
+					if ph.applied && !ph.reacted {
+						d := ph.dur
+						app.Durability = &d
+					}
+				}
+				hits = append(hits, app)
+				last = len(hits) - 1
+			case e.Event == "icd" && e.Msg == "ele icd check" && last >= 0 && hits[last].Frame == e.Frame-castFrame && hits[last].IcdVal == nil:
+				if v, ok := e.Logs["val"].(float64); ok {
+					hits[last].IcdVal = &v
+				}
+			case e.Event == "element" && e.Msg == "application" && last >= 0 && hits[last].Applied && hits[last].Durability == nil && hits[last].Frame == e.Frame-castFrame:
+				// A reacted hit's pre-reaction durability, written synchronously.
+				if d, ok := e.Logs["dur"].(float64); ok {
+					hits[last].Durability = &d
+				}
 			}
-			if dur, ok := applied[appKey{e.Frame, abil}]; ok {
-				d := dur
-				app.Durability = &d
-				app.Applied = true
-			}
-			if ic, ok := icd.m[appKey{e.Frame, abil}]; ok {
-				v := ic
-				app.Icd = &v
-			}
-			hits = append(hits, app)
 		}
 		sort.SliceStable(hits, func(i, j int) bool { return hits[i].Frame < hits[j].Frame })
 		out = hits

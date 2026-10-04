@@ -38,8 +38,8 @@ export type IcdParams = {
 	 * `(timer, hits, cap)` states every one of them exactly: Default is
 	 * (2.5s, 3, 8) — 24 entries, applying on hits 1, 4 … 22 — Chevreuse's
 	 * Burst mines (3s, 3, 2), Layla's Shooting Stars (3s, 7, 2).
-	 * ⚠️ No authored `IcdWindow` carries one yet, so a cap reaches the planner
-	 * only through the standard below.
+	 * ↻ `IcdWindow.cap` carries it for an authored window (ICD cap round,
+	 * 2026-10-04), through `icdParamsFor`.
 	 */
 	cap?: number;
 };
@@ -82,7 +82,8 @@ export const NO_ICD: IcdParams = { timer: 0, hits: 1 };
  */
 export const icdParamsFor = (w: IcdWindow): IcdParams => ({
 	timer: w.timer,
-	hits: w.every ?? Infinity
+	hits: w.every ?? Infinity,
+	...(w.cap !== undefined ? { cap: w.cap } : {})
 });
 
 export type IcdHit = {

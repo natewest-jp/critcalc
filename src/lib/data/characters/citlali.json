@@ -110,8 +110,7 @@
 								"type": "summonTick",
 								"interval": 0.983,
 								"icdGate": {
-									"timer": 90,
-									"every": 2
+									"timer": 90
 								}
 							},
 							"scaling": 30.64,
@@ -171,7 +170,7 @@
 			"_curatorNotes": [
 				"Skill spawns two follows-player summons: Itzpapa (combat emitter) at frame 18 and the Opal Shield at frame 37. Authoring as instant + summons[] (not stance) because Citlali's normals don't change in Nightsoul — there's no in-stance N variant to gate.",
 				"Itzpapa's Opal Fire state requires 50+ Nightsoul points to enter, drains 8 points/sec while active, and ends when points hit 0. Per the constitution (windows not gauges), the resource pool is not modelled; the flat 20s window approximates 'maximum possible Itzpapa activity.'",
-				"Frostfall Storm tick (P3): gcsim itzpapaInterval=59f (=0.983s), Cryo damage scaling 30.64% ATK at TalentLvl 10. Ticks render for the full Itzpapa window — see caveat for the over-render note. ↻ 2026-09-15: icdGate {timer 90, every 2} — gcsim tags the tick ICDTagCitlaliFrostfallStorm / ICDGroupCitlaliFrostfallStorm, reset 90f with sequence {1.0, 0.0} (pkg/core/attacks/icd_groups.dm.go), so every second tick applies; the 59f interval is under the 90f timer, so the counter never resets. ⚠️ The oracle never sees this stream (Nightsoul never reaches 50 in the isolated core), so no report would have proposed it.",
+				"Frostfall Storm tick (P3): gcsim itzpapaInterval=59f (=0.983s), Cryo damage scaling 30.64% ATK at TalentLvl 10. Ticks render for the full Itzpapa window — see caveat for the over-render note. ↻ 2026-09-15: icdGate {timer 90, every 2} — gcsim tags the tick ICDTagCitlaliFrostfallStorm / ICDGroupCitlaliFrostfallStorm, reset 90f with sequence {1.0, 0.0} (pkg/core/attacks/icd_groups.dm.go), so every second tick applies; the 59f interval is under the 90f timer, so the counter never resets. ⚠️ The oracle never sees this stream (Nightsoul never reaches 50 in the isolated core), so no report would have proposed it. ↻ 2026-10-04 (ICD cap round): {timer 90} — FIRST ONLY. gcsim reads past a list's end as its LAST entry (0 here), so {1.0, 0.0} never applies a second hit in a window; and the counter DOES reset, 89f after the window's first hit. At the 59f interval both readings apply ticks 1, 3, 5…, so nothing on screen moves — the rule is what changed.",
 				"Opal Shield authored 2026-07-12 as a shield effect (onCast skill, target 'active' — gcsim shield.go addShield sets Tmpl.Target -1 = protects the on-field character; forms at frame 37 per QueueCharTask(c.addShield, 37), matching the Opal Shield summon spawnsAt). Absorption at TalentLvl 10: 1036.8% of Citlali's EM + 3050.92 flat (sidecar 'Shield DMG Absorption' 10th column '1036.8% Elemental Mastery+3051'; gcsim shieldEM[9]=10.368, shieldFlat[9]=3050.9182). Duration 20s (sidecar 'Shield Duration' row; gcsim Expires = c.Core.F + 20*60). The 250% Cryo DMG-absorption efficiency and the brief self-Cryo application on placement (skill.go ApplySelfInfusion Cryo) are not modelled — no per-element shield-efficiency primitive, same as the Diona/Kaeya notes. The Opal Shield summon lane is retained alongside the effect (mirrors Thoma's Blazing Barrier summon + shield-effect pairing).",
 				"C6 Teoiztac removes the Opal Fire end condition (always active) and unlocks Cifra of the Secret Law stacks; not modelled.",
 				"[A7] Nightsoul starts at 24 after the cast and builds toward the 50-point Opal Fire threshold via team-Cryo application and the A4 Frozen/Melt Nightsoul regen. Per the constitution (windows, not gauges) the Nightsoul resource pool is not modeled; the flat 20s window approximates maximum possible Itzpapa activity.",
@@ -213,7 +212,8 @@
 				{
 					"frame": 118,
 					"element": "cryo",
-					"units": 2
+					"units": 2,
+					"noICD": true
 				},
 				{
 					"frame": 232,

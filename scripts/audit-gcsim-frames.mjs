@@ -54,6 +54,10 @@ const { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } = await import('../src
 // ⚓ Same law: the tick-CAP rule is imported, never restated. An audit that
 // re-derives a rule comes to measure a model we no longer have (L4d).
 const { tickCapOf, summonTickSeries } = await import('../src/lib/sim/summons.ts');
+// ⚓ And the cast-side rule (ICD cap round, 2026-10-04): §4c replays each authored
+// `application[]` through the planner's OWN per-cast resolution, so the comparison
+// against gcsim's applied flags is the planner's answer, not a re-derivation of it.
+const { resolveCastApplications } = await import('../src/lib/sim/aura.ts');
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT = join(REPO_ROOT, 'docs/curation/gcsim-frames-diff.md');
@@ -188,14 +192,58 @@ function streamIcd(hits) {
 	return { ...first, mixed: seen.some((x) => sig(x) !== sig(first)) };
 }
 
+/**
+ * A CAST's hits as their per-COUNTER streams, each with its own cadence.
+ *
+ * ⚠️⚠️ Never `streamIcd` over the whole cast (ICD cap round, 2026-10-04): it read the
+ * FIRST hit's cadence for all of them, so Chevreuse's Burst — an `ICDTagNone`
+ * grenade, then eight shells on a 180f group that applies twice — read `none`, and
+ * the cast was missing from §4b. A cast lands several abilities; each is a stream.
+ */
+function castStreams(hits) {
+	// ⚓ Keyed by gcsim's COUNTER (tag + group), not the ability string: two
+	// abilities can share one counter or sit on two with the same numbers (the
+	// Pyro Traveler's hold). Every `ICDTagNone` hit is one stream — it spends nothing.
+	const by = new Map();
+	for (const h of hits) {
+		const k = !h.icd ? `?${h.abil}` : h.icd.none ? 'none' : h.icd.counter;
+		if (!by.has(k)) by.set(k, []);
+		by.get(k).push(h);
+	}
+	return [...by.values()].map((xs) => {
+		const abil = [...new Set(xs.map((x) => x.abil))].join(' + ');
+		const icd = streamIcd(xs);
+		return {
+			abil,
+			n: xs.length,
+			applied: xs.filter((x) => x.applied).length,
+			icd,
+			gate: icdGateFor(icd)
+		};
+	});
+}
+
 /** What the schema would have to say to reproduce a measured cadence:
  *  `'none'` · `'standard'` (absent) · an `IcdWindow` · or `null` when the
  *  measurement is unavailable. */
 function icdGateFor(icd) {
 	if (!icd) return null;
 	if (icd.none) return 'none';
-	if (icd.timer === STANDARD_PAIR.timer && icd.period === STANDARD_PAIR.period) return 'standard';
-	return { timer: icd.timer, ...(icd.period ? { every: icd.period } : {}) };
+	// ⚓ The CAP is the third number (ICD cap round, 2026-10-04): a list that ends in
+	// a 0 stops applying after `applies` hits. Stated only beside `every` — with no
+	// second application, "first only" already says it.
+	const cap = icd.period && !icd.open ? icd.applies : undefined;
+	if (
+		icd.timer === STANDARD_PAIR.timer &&
+		icd.period === STANDARD_PAIR.period &&
+		cap === STANDARD_ICD_FRAMES.cap
+	)
+		return 'standard';
+	return {
+		timer: icd.timer,
+		...(icd.period ? { every: icd.period } : {}),
+		...(cap !== undefined ? { cap } : {})
+	};
 }
 
 /** An AUTHORED gate in the same shorthand the measured column uses, so the two
@@ -203,7 +251,7 @@ function icdGateFor(icd) {
  *  can hold a window, and printing an object here read `[object Object]`. */
 function fmtGate(gate) {
 	if (gate === 'standard' || gate === 'none') return `\`${gate}\``;
-	return `${gate.timer}f / ${gate.every ? `every ${gate.every}` : 'first only'}`;
+	return `${gate.timer}f / ${gate.every ? `every ${gate.every}` : 'first only'}${gate.cap ? ` · ${gate.cap} max` : ''}`;
 }
 
 /** Do an authored gate and a measured cadence say the same thing? ⚠️ Compared as
@@ -214,19 +262,120 @@ const gateAgrees = (authored, measured) =>
 		typeof measured === 'object' &&
 		measured !== null &&
 		authored.timer === measured.timer &&
-		(authored.every ?? null) === (measured.every ?? null));
+		(authored.every ?? null) === (measured.every ?? null) &&
+		(authored.cap ?? null) === (measured.cap ?? null));
 
 /** A measured cadence in the report's own shorthand. ⚓ `first only` is `every`
  *  absent — a counter the window can never reach. */
 function fmtIcd(icd) {
 	if (!icd) return '—';
-	if (icd.none) return '`none`';
+	// ⚠️ `mixed` is printed on `none` too — the early return used to drop it.
+	const mixed = icd.mixed ? ' ⚠️ **mixed**' : '';
+	if (icd.none) return `\`none\`${mixed}`;
 	const period = icd.period ? `every ${icd.period}` : 'first only';
 	const mult = icd.mult !== 1 ? ` · ×${icd.mult}` : '';
-	// ⚠️ `applies` is the half `(timer, period)` cannot state: four groups run at
-	// a regular period and then STOP for the rest of the window.
-	const cap = icd.regular && icd.period ? '' : icd.applies > 1 ? ` · ${icd.applies} max` : '';
-	return `${icd.timer}f / ${period}${cap}${mult}${icd.mixed ? ' ⚠️ **mixed**' : ''}`;
+	// ⚓ `N max` is the window's cap: every list but the reaction groups' ends in a
+	// 0, so it applies N times at its period and then stops (ICD cap round).
+	const cap = icd.period && !icd.open ? ` · ${icd.applies} max` : '';
+	const irregular = icd.regular ? '' : ' ⚠️ **irregular list**';
+	return `${icd.timer}f / ${period}${cap}${mult}${irregular}${mixed}`;
+}
+
+/** One cast's streams' cadences, labelled by stream once there is more than one. */
+function fmtCastIcd(streams) {
+	if (streams.length === 1) return fmtIcd(streams[0].icd);
+	return streams.map((st) => `${st.abil}: ${fmtIcd(st.icd)}`).join('<br>');
+}
+
+/** A hit's application verdict for the §4 list. ⚓ `[icd]` only when gcsim's ICD
+ *  check READ A 0 (`icdVal`) — a hit with no gauge to gate gets no check at all,
+ *  and calling it suppressed mislabelled Chevreuse's Surging Blade. */
+function hitMark(x) {
+	if (x.element === 'physical' || x.applied) return '';
+	return x.icdVal === 0 ? ' [icd]' : ' [0U]';
+}
+
+/** Frames two nominal lists may differ by and still be the same hits. */
+const PAIR_TOLERANCE_F = 6;
+
+/**
+ * §4c: the cast's authored `application[]` replayed through the planner, against
+ * the hits gcsim actually applied (ICD cap round, 2026-10-04).
+ *
+ * ⚓ TWO questions, kept apart, because they have different fixes:
+ *   1. does the authored LIST name gcsim's gauge-carrying hits (count + frames)?
+ *      — a data question, answered by re-reading the capture;
+ *   2. when it does, does the planner's ICD verdict match gcsim's per hit?
+ *      — a gate question, answered by `icdGate` / `noICD` / `cap`.
+ * A "gauge-carrying" gcsim hit is one that applied or that its ICD check BLOCKED;
+ * a hit with no gauge is not an entry (cast-icd-gate round §4).
+ *
+ * ⚠️ Isolated, one cast in an empty core — exactly what the planner's per-cast
+ * counter models. ⛔ A shared counter across casts or characters is not seen here.
+ */
+function replayCast(char, ability, node, cast, all) {
+	const app = node.application ?? ability.application;
+	if (!app) return null;
+	const refs = app.filter((e) => e.element && typeof e.element !== 'string').length;
+	const nominal = app.filter((e) => typeof e.element === 'string');
+	const ours = resolveCastApplications(
+		char,
+		app,
+		ability.abilityType,
+		ability.noICD,
+		ability.icdGate
+	).map((x) => x.frame);
+	const gauge = cast.filter((x) => x.element !== 'physical' && (x.applied || x.icdVal === 0));
+	const theirs = gauge.filter((x) => x.applied).map((x) => x.frame);
+	const sorted = [...nominal].sort((x, y) => x.frame - y.frame);
+	const pairs =
+		sorted.length === gauge.length &&
+		sorted.every((e, i) => Math.abs(e.frame - gauge[i].frame) <= PAIR_TOLERANCE_F);
+	// ⚓ The third question: an entry whose gcsim hit carries NO gauge (`[0U]`).
+	// The old capture could not tell that from a blocked hit, so the migration
+	// wrote both as an entry without `units` — and one the planner lets through
+	// applies a provisional 1U gcsim never applies. Matched against every hit,
+	// summon-named ones included, by frame (±2f) and element.
+	const noGauge = sorted
+		.filter((e) => e.units === undefined)
+		.filter((e) => {
+			const near = all.filter(
+				(x) =>
+					Math.abs(x.frame - e.frame) <= 2 && (x.element === e.element || x.element === 'physical')
+			);
+			return near.length > 0 && near.every((x) => !x.applied && x.icdVal !== 0);
+		})
+		.map((e) => ({ frame: e.frame, applies: ours.includes(e.frame) }));
+	// Once the lists pair, where the planner and gcsim disagree — compared per GROUP
+	// of entries sharing an authored frame, as COUNTS: which hit of a same-frame pair
+	// applied is not an order the two sides agree on (Klee's Burst lands pairs), and
+	// a paired entry a few frames off gcsim's (Varka's +43 vs +40) is a frames
+	// question, not a gate one.
+	let gateDiff = null;
+	if (pairs) {
+		const ourCount = new Map();
+		for (const fr of ours) ourCount.set(fr, (ourCount.get(fr) ?? 0) + 1);
+		gateDiff = [];
+		for (let i = 0; i < sorted.length; ) {
+			let j = i;
+			while (j < sorted.length && sorted[j].frame === sorted[i].frame) j++;
+			const mine = ourCount.get(sorted[i].frame) ?? 0;
+			const theirsN = gauge.slice(i, j).filter((x) => x.applied).length;
+			for (let k = 0; k < Math.abs(mine - theirsN); k++)
+				gateDiff.push({ frame: sorted[i].frame, ours: mine > theirsN });
+			i = j;
+		}
+	}
+	return {
+		refs,
+		nominal: sorted.map((e) => e.frame),
+		gauge: gauge.map((x) => x.frame),
+		ours,
+		theirs,
+		pairs,
+		gateDiff,
+		noGauge
+	};
 }
 
 // ---------------------------------------------------------------------------
@@ -380,15 +529,15 @@ function main() {
 				// the same `streamIcd` / `icdGateFor` the summon cross-check uses, over
 				// the CAST hits — read off gcsim's group tables, never inferred from the
 				// applied count. `node` is the authored form, for §4b's `authored` column.
-				const castIcd = streamIcd(split.cast);
+				const streams = castStreams(split.cast);
 				applicationRows.push({
 					id: char.id,
 					path: t.path,
 					key: t.key,
 					node: t.node,
 					ability: a,
-					castIcd,
-					castGate: icdGateFor(castIcd),
+					streams,
+					replay: replayCast(char, a, t.node, split.cast, g.applications ?? []),
 					...split
 				});
 			}
@@ -600,7 +749,10 @@ function renderReport(d) {
 	p("Tao's E, Itto's Q). ⚠️ An empty cast column with a stream beside it means something");
 	p('quite different: everything this cast applies, it applies on a cadence.');
 	p();
-	p('`[icd]` marks a hit gcsim suppressed at the target. It is still a NOMINAL');
+	p("`[icd]` marks a hit gcsim's ICD check blocked at the target; `[0U]` a hit that");
+	p('carries no gauge at all (no check ran). ↻ Until the ICD cap round both read `[icd]`,');
+	p('and two hits in one frame under one ability were married to ONE reading. A');
+	p('blocked hit is still a NOMINAL');
 	p('application and is still authored — C4: `icd.ts` decides whether one lands, this');
 	p('list says what would.');
 	p();
@@ -611,7 +763,7 @@ function renderReport(d) {
 	p('summon** flags the ambiguous ones for a human — either a multi-hit cast (author it');
 	p('in the list) or a thing left in the world we have not modelled.');
 	p();
-	p("`gcsim cadence` is the cast stream's own ICD group (window / period), read off");
+	p("`gcsim cadence` is each cast stream's own ICD group (window / period / cap), read off");
 	p("gcsim's tables the way §5 reads a tick series' — ⚠️ it is the RULE, not the applied");
 	p('count; §4b lists the casts whose rule the schema default does not reproduce.');
 	p();
@@ -623,7 +775,7 @@ function renderReport(d) {
 				? xs
 						.map(
 							(x) =>
-								`+${x.frame} ${x.element}${x.element !== 'physical' && !x.applied ? ' [icd]' : ''}${x.durability ? ` (${x.durability / 25}U)` : ''}`
+								`+${x.frame} ${x.element}${hitMark(x)}${x.durability ? ` (${x.durability / 25}U)` : ''}`
 						)
 						.join(' · ')
 				: '**—**';
@@ -633,7 +785,7 @@ function renderReport(d) {
 				? `⚠️ regular, no authored summon: ${r.regular.join(', ')}`
 				: '';
 		p(
-			`| ${r.id} | \`${r.path}\` | ${fmt(r.cast)} | ${ticks} | ${r.cast.length ? fmtIcd(r.castIcd) : ''} |`
+			`| ${r.id} | \`${r.path}\` | ${fmt(r.cast)} | ${ticks} | ${r.cast.length ? fmtCastIcd(r.streams) : ''} |`
 		);
 	}
 	p();
@@ -651,28 +803,123 @@ function renderReport(d) {
 	p();
 	const castWork = [];
 	for (const r of d.applicationRows) {
-		if (!r.castGate || r.castGate === 'standard' || r.castGate === 'none') continue;
 		const authoredApp = r.node.application ?? r.ability.application;
 		if (!authoredApp || authoredApp.length < 2) continue;
 		const claim = r.ability.noICD ? 'none' : (r.ability.icdGate ?? 'standard');
-		castWork.push({
-			id: r.id,
-			path: r.path,
-			n: r.cast.length,
-			applied: r.cast.filter((x) => x.applied).length,
-			icd: r.castIcd,
-			state: gateAgrees(claim, r.castGate) ? '✅ authored' : `⛔ ${fmtGate(claim)}`
-		});
+		// ⚓ Per STREAM (ICD cap round): a cast whose grouped hits share it with an
+		// `ICDTagNone` hit lists the grouped stream, and says the other is there —
+		// that hit is what an entry-level `noICD` is for.
+		const untagged = r.streams.filter((st) => st.gate === 'none');
+		for (const st of r.streams) {
+			if (!st.gate || st.gate === 'standard' || st.gate === 'none') continue;
+			// ⚠️ A ONE-hit stream on a counter of its own applies once whatever its
+			// group — nothing to gate. Its fix, when §4c disagrees, is an entry
+			// `noICD` (the one-hit approximation), never a window.
+			if (st.n < 2) continue;
+			const others = r.streams.filter((o) => o !== st && o.gate !== 'none');
+			castWork.push({
+				id: r.id,
+				path: r.path,
+				stream: r.streams.length > 1 ? st.abil : '',
+				n: st.n,
+				applied: st.applied,
+				icd: st.icd,
+				beside: [
+					untagged.length ? `${untagged.reduce((k, o) => k + o.n, 0)} \`none\`` : '',
+					others.length ? `⚠️ ${others.length} other group${others.length > 1 ? 's' : ''}` : ''
+				]
+					.filter(Boolean)
+					.join(' · '),
+				state: gateAgrees(claim, st.gate) ? '✅ authored' : `⛔ ${fmtGate(claim)}`
+			});
+		}
 	}
 	if (!castWork.length) {
 		p('_None — every measured cast stream with two or more authored entries is standard or none._');
 		p();
 	} else {
-		p('| character | ability | applied/total | gcsim cadence | authored |');
-		p('| --- | --- | --- | --- | --- |');
+		p('| character | ability | stream | applied/total | gcsim cadence | beside it | authored |');
+		p('| --- | --- | --- | --- | --- | --- | --- |');
 		for (const w of castWork) {
-			p(`| ${w.id} | \`${w.path}\` | ${w.applied}/${w.n} | ${fmtIcd(w.icd)} | ${w.state} |`);
+			p(
+				`| ${w.id} | \`${w.path}\` | ${w.stream} | ${w.applied}/${w.n} | ${fmtIcd(w.icd)} | ${w.beside} | ${w.state} |`
+			);
 		}
+		p();
+	}
+
+	// --- 4c: the planner's verdict, hit for hit ------------------------------
+	p('### 4c. Cast applications — the planner against gcsim, hit for hit');
+	p();
+	p('⚓ ICD cap round, 2026-10-04. Each authored `application[]` replayed through the');
+	p("planner's own `resolveCastApplications` (one cast, its own counter), beside the hits");
+	p('gcsim applied in the same isolated cast. Two kinds of disagreement, with different');
+	p('fixes:');
+	p();
+	p(
+		'- **⛔ gate** — the list names the same hits as gcsim (count, ±' +
+			PAIR_TOLERANCE_F +
+			'f), and the'
+	);
+	p('  planner applies a different subset: an `icdGate` / `noICD` / `cap` question.');
+	p("- **⚠️ list** — the authored list is not gcsim's gauge-carrying hits (an extra or");
+	p('  missing entry, or a timing shift): a data question. ⚠️ Some are deliberate —');
+	p("  read the ability's notes before calling one wrong.");
+	p();
+	p('A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge');
+	p('(`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.');
+	p();
+	const replays = d.applicationRows.filter((r) => r.replay);
+	const gateRows = replays.filter((r) => r.replay.pairs && r.replay.gateDiff.length);
+	const listRows = replays.filter((r) => !r.replay.pairs);
+	const agree = replays.length - gateRows.length - listRows.length;
+	p(
+		`**${replays.length}** authored casts replayed · **${agree}** agree hit for hit · **${gateRows.length}** ⛔ gate · **${listRows.length}** ⚠️ list`
+	);
+	p();
+	const f = (xs) => (xs.length ? xs.map((x) => `+${x}`).join(' ') : '—');
+	if (gateRows.length) {
+		p('| character | ability | planner applies | gcsim applies | disagrees at |');
+		p('| --- | --- | --- | --- | --- |');
+		for (const r of gateRows) {
+			const at = r.replay.gateDiff
+				.map((g) => `+${g.frame} ${g.ours ? 'extra' : 'missing'}`)
+				.join(' · ');
+			p(`| ${r.id} | \`${r.path}\` | ${f(r.replay.ours)} | ${f(r.replay.theirs)} | ${at} |`);
+		}
+		p();
+	}
+	const ngRows = replays.filter((r) => r.replay.noGauge.length);
+	if (ngRows.length) {
+		p(`#### Entries whose gcsim hit carries no gauge (${ngRows.length} casts)`);
+		p();
+		p('An authored entry without `units` whose gcsim hit (cast or summon-named, ±2f) applied');
+		p('nothing and was not blocked — Durability 0 in gcsim. **applies** marks the ones the');
+		p('planner lets through, as a provisional 1U.');
+		p();
+		p('| character | ability | entries |');
+		p('| --- | --- | --- |');
+		for (const r of ngRows)
+			p(
+				`| ${r.id} | \`${r.path}\` | ${r.replay.noGauge.map((e) => `+${e.frame}${e.applies ? ' **applies**' : ''}`).join(' · ')} |`
+			);
+		p();
+	}
+	if (listRows.length) {
+		p('<details><summary>⚠️ list rows (' + listRows.length + ')</summary>');
+		p();
+		p(
+			'| character | ability | authored entries | gcsim gauge hits | planner applies | gcsim applies |'
+		);
+		p('| --- | --- | --- | --- | --- | --- |');
+		for (const r of listRows) {
+			const ref = r.replay.refs ? ` (+${r.replay.refs} ref)` : '';
+			p(
+				`| ${r.id} | \`${r.path}\` | ${f(r.replay.nominal)}${ref} | ${f(r.replay.gauge)} | ${f(r.replay.ours)} | ${f(r.replay.theirs)} |`
+			);
+		}
+		p();
+		p('</details>');
 		p();
 	}
 	if (d.noApplication.length) {
@@ -776,8 +1023,8 @@ function renderReport(d) {
 	p('gcsim runs her burst case at Level 3 on the default group and only the decayed');
 	p('Level-1 stream carries her bespoke one, so her burst is deliberately left bare.');
 	p();
-	p("⚠️ A group carrying an `N max` cap can't be stated in full — authoring the pair gets");
-	p('the cadence and drops the cap.');
+	p('↻ `N max` is now authorable as `IcdWindow.cap` (ICD cap round, 2026-10-04), and the');
+	p('`authored` column compares all three numbers.');
 	p();
 	const work = [];
 	for (const t of d.tickRows) {

@@ -126,7 +126,8 @@
 						{
 							"frame": 62,
 							"element": "pyro",
-							"units": 1
+							"units": 1,
+							"noICD": true
 						}
 					]
 				}

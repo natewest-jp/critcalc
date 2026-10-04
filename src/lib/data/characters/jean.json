@@ -192,7 +192,8 @@
 					"element": "anemo",
 					"units": 2
 				}
-			]
+			],
+			"noICD": true
 		}
 	],
 	"passives": [

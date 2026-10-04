@@ -107,7 +107,8 @@
 						{
 							"frame": 68,
 							"element": "anemo",
-							"units": 1
+							"units": 1,
+							"noICD": true
 						}
 					]
 				}
@@ -128,7 +129,8 @@
 				{
 					"frame": 25,
 					"element": "anemo",
-					"units": 1
+					"units": 1,
+					"noICD": true
 				}
 			]
 		},

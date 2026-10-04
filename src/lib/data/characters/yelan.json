@@ -183,7 +183,8 @@
 								"interval": 1,
 								"icdGate": {
 									"timer": 120,
-									"every": 3
+									"every": 3,
+									"cap": 8
 								}
 							},
 							"scaling": 8.77,
@@ -208,7 +209,7 @@
 							],
 							"_curatorNotes": [
 								"Coordinated attack, authored 2026-08-18. gcsim yelan/yelan.go:61 registers a minazuki.Watcher on action.NormalAttackState with tickerFreq 60 and a 60f ICD key, firing summonExquisiteThrow (burst.go) — THREE darts at burstTravel(20) + i*6, Hydro, Durability 25, ICDTagYelanBurst/ICDGroupYelanBurst. Talent row 'Exquisite Throw DMG' = 8.77% Max HP ×3 at level 10, so `scaling` is ONE dart.",
-								"icdGate is gcsim's own ICDGroupYelanBurst verbatim — 120f timer, every 3rd hit applies (pkg/core/attacks/icd_groups.dm.go:127,188). With three darts a wave and waves 1s apart the counter never times out, so exactly one dart per wave applies, which is the kit's claim. ⚠️ docs/coordinated-attacks-survey.md read ICDGroupYelanBreakthrough (18f/every 4) here — that is her CHARGED attack's group, not this one."
+								"icdGate is gcsim's own ICDGroupYelanBurst verbatim — 120f timer, every 3rd hit applies (pkg/core/attacks/icd_groups.dm.go:127,188). With three darts a wave and waves 1s apart the counter never times out, so exactly one dart per wave applies, which is the kit's claim. ⚠️ docs/coordinated-attacks-survey.md read ICDGroupYelanBreakthrough (18f/every 4) here — that is her CHARGED attack's group, not this one. ↻ 2026-10-04 (ICD cap round): + cap 8 — the list ends after its 8th application (24 entries, last 0). ⚠️ The counter does reset: 119f after a window's first hit, not never."
 							]
 						},
 						{

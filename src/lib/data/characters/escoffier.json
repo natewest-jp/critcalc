@@ -130,8 +130,7 @@
 								"interval": 0.975,
 								"firstTickDelay": 2.167,
 								"icdGate": {
-									"timer": 90,
-									"every": 6
+									"timer": 90
 								}
 							},
 							"scaling": 216,
@@ -156,7 +155,7 @@
 				"⛔ Frame 83, the Surging Blade, is NOT an application and is gone with the rest: gcsim skill.go:73-84 gives it `Durability: 0`. It carried no `units` either, so it resolved to a provisional 1U — a phantom Cryo pip. ⚠️ This is the `[icd]`-vs-no-durability ambiguity the frames report warns about: the oracle cannot tell a suppressed hit from a zero-durability one.",
 				"⚠️ The initial hit and every parfait share ONE counter in gcsim (both are ICDTagElementalArt on ICDGroupEscoffierSkill); here the cast's application[] runs on our standard cast counter and the series on its own `icdGate`, two clocks. That is the corpus-wide per-cast-ICD gap, not something authorable at this site.",
 				"↻ firstTickDelay 2.467 → 2.167, 2026-09-16 (T0.5). gcsim's 148f is measured FROM THE CAST and the first parfait lands at 148 + travel 5 = 153f; `collectSummonTicks` starts at spawnAt + firstDelay and `spawnsAt` is 23, so the authored 2.467 (=148f) put every marker 18 frames late — 171/230/289 against gcsim's 153/212/270. The correct value is (148 + 5 − 23) / 60 = 2.167.",
-				"↻ icdGate {timer: 90, every: 6} AUTHORED 2026-09-16 (T0.5) — the series is NOT on the standard gate. Every parfait is ICDGroupEscoffierSkill, whose table entry is a 90f window with sequence {1,0,0,0,0,0} (pkg/core/attacks/icd_groups.dm.go:104,170), i.e. every sixth hit applies inside a 1.5s window; ours ran the default 150f / every-3. ⚠️ The ICD-group round missed it for Durin's reason: the frames report's oracle column is EMPTY here, because the dumper files the parfaits under the cast.",
+				"↻ icdGate {timer: 90, every: 6} AUTHORED 2026-09-16 (T0.5) — the series is NOT on the standard gate. Every parfait is ICDGroupEscoffierSkill, whose table entry is a 90f window with sequence {1,0,0,0,0,0} (pkg/core/attacks/icd_groups.dm.go:104,170), i.e. every sixth hit applies inside a 1.5s window; ours ran the default 150f / every-3. ⚠️ The ICD-group round missed it for Durin's reason: the frames report's oracle column is EMPTY here, because the dumper files the parfaits under the cast. ↻ 2026-10-04 (ICD cap round): {timer: 90} — FIRST ONLY. gcsim reads past the list's end as its last entry (0), so {1,0,0,0,0,0} never reaches a 6th-hit application; 'every sixth' read it as cyclic. At 59f two hits fit a window, so nothing moves.",
 				"⏭ OPEN, a decision not an edit: gcsim runs skillTicks = 21 at 58.5f, i.e. a status of 148 + 20 × 58.5 = 1318f ≈ 21.97s, while the kit's (and our) summon duration is 20s, which yields 19 markers. `tickCap` cannot ADD ticks — it only bounds, widening by at most one interval — so recovering the last two needs the authored `duration` to grow, which would then make the summon bar disagree with the 20s the talent publishes. Left alone."
 			],
 			"description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode.",

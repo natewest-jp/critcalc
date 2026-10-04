@@ -190,7 +190,8 @@
 			],
 			"icdGate": {
 				"timer": 600,
-				"every": 3
+				"every": 3,
+				"cap": 3
 			}
 		},
 		{

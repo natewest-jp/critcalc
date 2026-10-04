@@ -138,7 +138,8 @@
 					"units": 1
 				}
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"noICD": true
 		},
 		{
 			"id": "rosaria__burst__rites_of_termination",
@@ -209,7 +210,8 @@
 					"element": "cryo",
 					"units": 1
 				}
-			]
+			],
+			"noICD": true
 		}
 	],
 	"passives": [

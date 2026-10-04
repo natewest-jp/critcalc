@@ -196,7 +196,8 @@
 				{
 					"frame": 51,
 					"element": "electro",
-					"units": 1
+					"units": 1,
+					"noICD": true
 				},
 				{
 					"frame": 100,

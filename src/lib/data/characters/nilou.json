@@ -319,7 +319,8 @@
 					"units": 1
 				}
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"noICD": true
 		}
 	],
 	"passives": [

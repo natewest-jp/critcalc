@@ -125,7 +125,12 @@
 					"label": "\"Snappy Silhouette\" Mark",
 					"duration": 6,
 					"application": [
-						{ "frame": 31, "element": "cryo", "units": 1 },
+						{
+							"frame": 31,
+							"element": "cryo",
+							"units": 1,
+							"noICD": true
+						},
 						{ "frame": 121, "element": "cryo", "units": 1 },
 						{ "frame": 211, "element": "cryo" },
 						{ "frame": 301, "element": "cryo", "units": 1 },
@@ -136,7 +141,12 @@
 					"label": "\"Focused Impression\" Mark",
 					"duration": 12,
 					"application": [
-						{ "frame": 31, "element": "cryo", "units": 1 },
+						{
+							"frame": 31,
+							"element": "cryo",
+							"units": 1,
+							"noICD": true
+						},
 						{ "frame": 121, "element": "cryo", "units": 1 },
 						{ "frame": 211, "element": "cryo" },
 						{ "frame": 301, "element": "cryo", "units": 1 },
@@ -152,7 +162,12 @@
 						"Hold cast (Focused Impression). input:['hE'] added 2026-07-15 — was previously the unreachable input-less 'Finisher Frame Cast' (cooldown only, no frames). gcsim skillHoldCD=1080f=18s (base Press = 720f = 12s). Frames = skillHoldFrames at min hold (hold=1): swap=134+1, N=132+1, E/Q=130+1; the hold parameter adds a variable offset, D/J stay at the InitAbilSlice 137 default (omitted per recipe). Hold cooldownStartDelay is parametric (hitmark-2) — AbilityVariant has no cooldownStartDelay field (see [[curator-notes-deferral-survey]])."
 					],
 					"application": [
-						{ "frame": 112, "element": "cryo", "units": 1 },
+						{
+							"frame": 112,
+							"element": "cryo",
+							"units": 1,
+							"noICD": true
+						},
 						{ "frame": 202, "element": "cryo", "units": 1 },
 						{ "frame": 292, "element": "cryo" },
 						{ "frame": 382, "element": "cryo", "units": 1 },
@@ -223,12 +238,22 @@
 				"'heal' tag removed 2026-07-12: E is damage/marking only — no heal anywhere in gcsim skill.go or kit text. The tag was a mis-tag from the A1 tag batch (heals attached to Charlotte's kit all originate from the burst; even C6's coordinated heal is burst-attributed despite triggering off E's Focused Impression mark)."
 			],
 			"application": [
-				{ "frame": 31, "element": "cryo", "units": 1 },
+				{
+					"frame": 31,
+					"element": "cryo",
+					"units": 1,
+					"noICD": true
+				},
 				{ "frame": 121, "element": "cryo", "units": 1 },
 				{ "frame": 211, "element": "cryo" },
 				{ "frame": 301, "element": "cryo", "units": 1 },
 				{ "frame": 391, "element": "cryo" }
-			]
+			],
+			"icdGate": {
+				"timer": 720,
+				"every": 2,
+				"cap": 5
+			}
 		},
 		{
 			"id": "charlotte__burst__still_photo_comprehensive_confirmation",
@@ -276,7 +301,12 @@
 			],
 			"description": "Condensing ice to create The Steambird's signature, Charlotte creates a Newsflash Field that will deal AoE Cryo DMG and restores HP for all nearby party members based on Charlotte's ATK.\nNewsflash Field\n·While the ability is active, Monsieur Verite will deal Cryo DMG at intervals to opponents within its AoE.\n·Will continuously restore HP to active character(s) within its AoE based on Charlotte's ATK.",
 			"application": [
-				{ "frame": 53, "element": "cryo", "units": 2 },
+				{
+					"frame": 53,
+					"element": "cryo",
+					"units": 2,
+					"noICD": true
+				},
 				{ "frame": 95, "element": "cryo", "units": 1 },
 				{ "frame": 119, "element": "cryo" },
 				{ "frame": 143, "element": "cryo" },
@@ -285,7 +315,12 @@
 				{ "frame": 203, "element": "cryo" },
 				{ "frame": 226, "element": "cryo" },
 				{ "frame": 249, "element": "cryo" }
-			]
+			],
+			"icdGate": {
+				"timer": 240,
+				"every": 4,
+				"cap": 2
+			}
 		}
 	],
 	"passives": [

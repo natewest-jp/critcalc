@@ -2517,6 +2517,19 @@ export type IcdWindow = {
 	timer: number;
 	/** Every `every`-th hit applies inside the window. Absent = only the first. */
 	every?: number;
+	/**
+	 * At most this many applications per window — a COUNT, unit-free. Absent = no
+	 * limit.
+	 *
+	 * ⚓ The group's list is FINITE (ICD cap round, 2026-10-04): gcsim's
+	 * `ICDGroupEleApplicationSequence` reads past its end as its last entry, a 0 in
+	 * every group but the two reaction groups, so a window applies on hits 1,
+	 * 1 + every … and then STOPS until the timer resets. Chevreuse's Burst shells
+	 * are `{180, every 3, cap 2}` — the 7th hit of a window applies nothing.
+	 * Read off the frames audit's measured `N max`, ⛔ never inferred from an
+	 * applied count. Only meaningful beside `every` (lint D.27f).
+	 */
+	cap?: number;
 };
 
 /** Plunge-variant override selected by the preceding E token text. */
@@ -2590,6 +2603,12 @@ export type ElementalApplication = {
 	/** Frames (60fps) from cast start to the hitmark. */
 	frame: number;
 	/** ⛔ ABSENT MEANS PHYSICAL — the hit applies nothing. Never a default element.
+	 *
+	 *  ⚓ Also how an elemental hit with NO GAUGE is written (gcsim `Durability: 0` —
+	 *  Surging Blade, Lisa's Lightning Rose opener; ICD cap round, 2026-10-04): it
+	 *  is still a landing (`CastEvent.hitsAt`), and like gcsim it spends no ICD
+	 *  slot. The hit's DAMAGE element comes from the cast, never from this field.
+	 *  ⛔ Don't delete such an entry — that deletes a hit.
 	 *
 	 *  ⚓ An `ElementRef` object here is an element the TEAM names (2026-09-16) —
 	 *  Varka's right-hand claymore. It resolves at parse time and an
