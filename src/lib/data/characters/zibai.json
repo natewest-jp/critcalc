@@ -36,8 +36,52 @@
 			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"_curatorNotes": [
 				"↻ 2026-09-15 (essential-characters T0): the in-mode Geo conversion is MODELLED now, by the state-gated sibling ability 'Golden Blade's Petaled Touch (Lunar Phase Shift)' below, so the caveat that said the timeline treats in-mode swings as Physical is retired. Out of the mode these swings are Physical, as authored here.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. Neither the Geo conversion nor that extra hit is shown.\""
-			]
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. Neither the Geo conversion nor that extra hit is shown.\"",
+				"↻ 2026-10-04 (frames-queue round): frames from gcsim #3093 (attack.go / charge.go). No plunge.go exists for her, so no plungeFrames — a `P` stays the provisional stand-in."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 40,
+						"hit": 11,
+						"N": 18,
+						"C": 21
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 36,
+						"hit": 12,
+						"N": 18
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 45,
+						"hit": 27,
+						"N": 40
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 67,
+						"hit": 27,
+						"N": 57
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 72,
+				"E": 70,
+				"Q": 70,
+				"D": 32,
+				"J": 32,
+				"swap": 69
+			}
 		},
 		{
 			"id": "zibai__normal__lunar_phase_shift_strikes",
@@ -54,8 +98,52 @@
 			"_curatorNotes": [
 				"Authored 2026-09-15 (essential-characters T0) — the Durin dark-commit shape: a sibling normal gated on the skill's own stance (`state: inStance`), carrying `infusion: 'geo'`, which needs no tracking because the stance IS the window. Kit text (the skill's Lunar Phase Shift paragraph): 'Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions'. `NormalAbility.infusion` covers the charged attack too.",
 				"Measured `Xingqiu E Q > Zibai E N4 C N4`: 1 → 5 lunarCrystallize events, the Moondrift field topped up and refreshed through Moondrift Harmony instead of lapsing at 10.92s.",
-				"⚠️ No `hits` — she is frameless (no gcsim source), so every in-mode swing uses the generic normal profile, exactly as the base ability does. The swing ELEMENT is the claim here, not its timing. The mode's DEF scaling and the 4th hit's extra Lunar-Crystallize instance are damage magnitude and not authored."
-			]
+				"⚠️ No `hits` — she is frameless (no gcsim source), so every in-mode swing uses the generic normal profile, exactly as the base ability does. The swing ELEMENT is the claim here, not its timing. The mode's DEF scaling and the 4th hit's extra Lunar-Crystallize instance are damage magnitude and not authored.",
+				"↻ 2026-10-04 (frames-queue round): she is no longer frameless — gcsim #3093. In-mode swings reuse the base attackFrames/chargeFrames exactly (skillAttack/skillCharge return the same slices), read through the new `zibai` driver row (`inStance: [skill]`). ⚠️ The Ascendant Gleam N4 additional hit (+20f after the N4 hitmark, Direct Lunar-Crystallize, ICDTagNone, 53.0% DEF) is not authored: it is Moonsign-conditional, and gcsim gives it Durability 25 where the burst's and Stride's Lunar-Crystallize hits carry 0 — unresolved which is right."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 40,
+						"hit": 11,
+						"N": 18,
+						"C": 21
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 36,
+						"hit": 12,
+						"N": 18
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 45,
+						"hit": 27,
+						"N": 40
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 67,
+						"hit": 27,
+						"N": 57
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 72,
+				"E": 70,
+				"Q": 70,
+				"D": 32,
+				"J": 32,
+				"swap": 69
+			}
 		},
 		{
 			"id": "zibai__skill__heaven_and_earth_made_manifest",
@@ -81,16 +169,147 @@
 					"delta": 1.7
 				}
 			],
-			"caveat": "Only the mode window is shown — Spirit Steed's Stride, the enhanced Skill you cast from inside it, has no place on the timeline.",
 			"_curatorNotes": [
 				"Modeled as behavior:\"stance\" (Lunar Phase Shift mode): 15s window (sidecar 'Lunar Phase Shift Duration' col 10 = 15.0s), ends on swap-off (terminatesOnSwap:true, KQM: mode lasts '15s, until all Skill charges are consumed, or until she swaps off-field'). CD 18s (sidecar 'CD' col 10 = 18.0s).",
 				"durationExtensions: burst cast while in-stance extends the current mode by +1.7s (kit text: 'if Zibai is in the Lunar Phase Shift, the duration ... will extend by an additional 1.7s'). This replaces the genshin-db stub's spurious burst duration:1.7.",
 				"Removed the genshin-db stub's spurious tags:[\"summon\"] — Lunar Phase Shift is a self stance/mode, not a summoned entity.",
 				"NOT MODELED (personal on-field DPS, no gcsim source / frameless): Phase Shift Radiance economy (KQM: +10/s passive, +5 per Normal hit on a 0.5s ICD; C1 +100 on Skill cast and 5 charges; C6 +50% gain rate), and Spirit Steed's Stride enhanced Skill (needs >=70 Radiance; two DEF-scaling Geo hits, 2nd is Lunar-Crystallize; sidecar 'Spirit Steed's Stride 1/2-Hit DMG' col 10 = 310.6% / 253.7% DEF). Particle gen: 2/3 chance of 1 particle per hit in mode, 2s ICD (KQM). Moonsign: Ascendant Gleam — in mode the 4th Normal adds a Lunar-Crystallize instance (sidecar 'Lunar Phase Shift 4-Hit Additional DMG' col 10 = 53.0% DEF). None of these are team-facing; all require radiance simulation the planner does not do.",
 				"[A7] In-mode Geo conversion of Normal/Charged Attacks is retained on the Normal-attack caveat; dropped here to avoid duplication.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. Only the mode window is shown.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. Only the mode window is shown.\"",
+				"↻ 2026-10-04 (frames-queue round): Spirit Steed's Stride is AUTHORED now, as the state-gated sibling skill below, so the caveat \"Only the mode window is shown — Spirit Steed's Stride, the enhanced Skill you cast from inside it, has no place on the timeline.\" is retired (no pixel left: the mode window is right and the Stride draws where typed). Frames + application from gcsim #3093: the cast is a 0-DMG Physical hit at +18 (no gauge); CD starts after an 18f delay (`SetCDWithDelay(…, 18)`) and the mode runs 15s from the hitmark (`AddStatus(skillKey, 15*60+skillHitmark)`). Radiance and the in-mode N4's extra Lunar-Crystallize hit remain unmodelled as above."
 			],
-			"description": "Summoning a shadow of her former powers, she switches to the **Lunar Phase Shift** mode.\nIn this mode, Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions, and she can accrue special Phase Shift Radiance through different methods. Zibai can consume Phase Shift Radiance to unleash the special Elemental Skill Spirit Steed's Stride.\n\nMoonsign: Ascendant Gleam\nWhile in the Lunar Phase Shift mode, when Zibai performs Normal Attacks, the fourth attack will deal an additional instance of Geo DMG, which is considered Lunar-Crystallize Reaction DMG."
+			"description": "Summoning a shadow of her former powers, she switches to the **Lunar Phase Shift** mode.\nIn this mode, Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions, and she can accrue special Phase Shift Radiance through different methods. Zibai can consume Phase Shift Radiance to unleash the special Elemental Skill Spirit Steed's Stride.\n\nMoonsign: Ascendant Gleam\nWhile in the Lunar Phase Shift mode, when Zibai performs Normal Attacks, the fourth attack will deal an additional instance of Geo DMG, which is considered Lunar-Crystallize Reaction DMG.",
+			"frames": {
+				"anim": 52,
+				"N": 28,
+				"E": 28,
+				"Q": 29,
+				"D": 27,
+				"J": 27
+			},
+			"application": [
+				{
+					"frame": 18
+				}
+			],
+			"cooldownStartDelay": 18
+		},
+		{
+			"id": "zibai__skill__spirit_steeds_stride",
+			"name": "Spirit Steed's Stride",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"cooldown": 0,
+			"conditions": {
+				"type": "all",
+				"conditions": [
+					{
+						"type": "state",
+						"state": "inStance"
+					},
+					{
+						"type": "any",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 1
+										}
+									},
+									{
+										"type": "stacks",
+										"key": "strideCasts",
+										"min": 0,
+										"max": 3
+									}
+								]
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "constellation",
+										"level": 1
+									},
+									{
+										"type": "stacks",
+										"key": "strideCasts",
+										"min": 0,
+										"max": 4
+									}
+								]
+							}
+						]
+					}
+				]
+			},
+			"tags": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
+					"key": "strideCasts",
+					"amount": 1,
+					"max": 5
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "state",
+							"state": "inStance"
+						}
+					},
+					"key": "strideCasts",
+					"amount": "all"
+				}
+			],
+			"caveat": "Each cast is drawn where it is typed. In game it needs 70 Phase Shift Radiance, and the 4th cast (5th from C1) ends Lunar Phase Shift — the timeline keeps the mode open to its full length.",
+			"_curatorNotes": [
+				"AUTHORED 2026-10-04 (frames-queue round, Stage 4) — gcsim #3093 gave her a source. The special Elemental Skill cast inside Lunar Phase Shift: gcsim's Skill() branches to skillSkill() while `zibai-skill` is active (skill.go), so it is a state-gated SIBLING skill on `inStance` — Lohen's Etched Into Bone and Soul shape, which Nate approved 2026-09-17. Resolution prefers the conditioned sibling, so the base Heaven and Earth Made Manifest resolves only outside the mode or past the cast cap.",
+				"⚓ THE CAST CAP IS A STACK COUNTER (Lohen's): `strideCasts` gains 1 on a skill cast made INSIDE the mode and is cleared by one made OUTSIDE it, both gated on the cast's pre-state. This ability resolves while the count is ≤ 3 (≤ 4 at C1) — gcsim `c1MaxSkillsPerSkill()` = 4 / 5. Stride sets no cooldown in gcsim (the 18s CD belongs to the base cast), hence `cooldown: 0`.",
+				"⚠️ DIVERGENCE (on the caveat): gcsim `DeleteStatus(skillKey)` the moment the cap is reached, so the 4th (C1: 5th) Stride ENDS the mode; our stance window runs its full 15s (+1.7s per in-mode burst), so Normal/Charged Attacks after the last Stride stay Geo-infused here and are Physical in game. No schema closes a stance on a cast count today — `consumeStacks.closesStateWhenEmpty` is onHit-only (lint D.46) and keys on EMPTY, not full. Flagged for Nate.",
+				"⛔ Phase Shift Radiance is NOT tracked (gcsim: 10/s in mode, +5 per Normal hit on a 0.5s ICD, +35 on a party Lunar-Crystallize once per 4s with the ICD reset by a Stride; C1 +100 on cast; C6 ×1.5 and consumes everything). The user asserts ≥70 by typing `E` — the Kinich Cannon / Lohen convention.",
+				"Hits (gcsim skillStrideHitmark {30, 34}): 1st Geo 1U, Elemental Skill, ICDTagNone; 2nd is Direct Lunar-Crystallize with Durability 0 — it keeps its application entry and drops `element` (the ICD cap round rule). Frames: skillSkillFrames = InitAbilSlice(61), N 45 · E 54 · Q 45 · D 42 · J 43. DEF scaling (310.6% / 253.7% DEF at talent 10) is damage magnitude and not authored."
+			],
+			"description": "While in Lunar Phase Shift, Zibai can consume 70 Phase Shift Radiance to unleash Spirit Steed's Stride, dealing two instances of Geo DMG. The second instance is considered Lunar-Crystallize Reaction DMG. Zibai leaves the mode after unleashing Spirit Steed's Stride 4 times.",
+			"frames": {
+				"anim": 61,
+				"N": 45,
+				"E": 54,
+				"Q": 45,
+				"D": 42,
+				"J": 43
+			},
+			"application": [
+				{
+					"frame": 30,
+					"element": "geo",
+					"units": 1
+				},
+				{
+					"frame": 34
+				}
+			]
 		},
 		{
 			"id": "zibai__burst__trisphere_eminence",
@@ -108,7 +327,25 @@
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Q bar draws with its cooldown, its energy cost, its +1.7s stance extension and a Geo application on the aura lane. What the caveat names is the hit COUNT and their DEF scalings (damage magnitude, out of scope) plus a hit 'counting as' Lunar-Crystallize Reaction DMG, which is the frozen reaction-DMG-derivation distinction and not a gauge event the lane could ever mark. Category: invisible-omission."
 			],
 			"description": "Zibai operates the Jadelight Canopy, dealing two instances of Geo DMG, with the second damage instance being considered Lunar-Crystallize Reaction DMG.\nWhen cast, if Zibai is in the **Lunar Phase Shift**, the duration of the current Lunar Phase Shift will extend by an additional 1.7s.",
-			"modeledBy": "zibai__skill__heaven_and_earth_made_manifest"
+			"modeledBy": "zibai__skill__heaven_and_earth_made_manifest",
+			"frames": {
+				"anim": 103,
+				"N": 97,
+				"E": 98,
+				"D": 98,
+				"J": 99,
+				"swap": 96
+			},
+			"application": [
+				{
+					"frame": 95,
+					"element": "geo",
+					"units": 1
+				},
+				{
+					"frame": 95
+				}
+			]
 		}
 	],
 	"passives": [

@@ -180,5 +180,10 @@
 		"note": "Niwabi Enshou — frames identical to the base reading.",
 		"_scored": "base 5/5",
 		"states": { "inStance": [] }
+	},
+	"zibai": {
+		"note": "Lunar Phase Shift. ⚠️ An in-mode `skill` is Spirit Steed's Stride, which gcsim gates on 70 Phase Shift Radiance in ActionReady — the dumper calls Skill() directly, so the gate is bypassed and the capture reads the Stride.",
+		"_scored": "skill 6/6 (base 5/6 — the Stride reads the opening cast)",
+		"states": { "inStance": [{ "action": "skill" }] }
 	}
 }

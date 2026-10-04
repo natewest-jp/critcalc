@@ -83,6 +83,19 @@ export function prereqFor(conditions, drv) {
 		if (!steps.length) return { label: '', prereq: [] };
 		return { label: `state-${conditions.state}`, prereq: steps };
 	}
+	// ⚓ An `all` is as gated as its gating member (2026-10-04): a state-gated sibling
+	// that also carries a cast cap — `inStance` AND a stack count, Lohen's and Zibai's
+	// special skills — read the BASE capture until this, because the conjunction fell
+	// through to "no prerequisite". Stacks, constellation and team members contribute
+	// nothing (they return the empty label); two DIFFERENT prerequisites cannot be
+	// sequenced from here, so that is uncovered rather than a guess.
+	if (conditions.type === 'all') {
+		const ctxs = (conditions.conditions ?? []).map((c) => prereqFor(c, drv));
+		if (ctxs.some((c) => c === null)) return null;
+		const gating = [...new Map(ctxs.filter((c) => c.label).map((c) => [c.label, c])).values()];
+		if (gating.length > 1) return null;
+		return gating[0] ?? { label: '', prereq: [] };
+	}
 	// Constellation, ascension and team-composition gates do not change the frames a
 	// C0 capture reads, so they are not prerequisites at all.
 	return { label: '', prereq: [] };
