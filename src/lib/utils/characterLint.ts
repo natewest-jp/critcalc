@@ -74,7 +74,29 @@ const PROC_TRIGGERS = ['onReaction', 'onHit', 'whileNormalAttacking'] as const;
  * cannot quietly bless a wrong annotation. Source of truth is
  * `STANDARD_ICD_FRAMES` in `$lib/utils/icd`.
  */
-const STANDARD_ICD_FRAMES = { timer: 150, hits: 3 };
+const STANDARD_ICD_FRAMES = { timer: 150, hits: 3, cap: 8 };
+
+/**
+ * (D.27f) An `IcdWindow.cap`'s shape, ONE check for all three window sites
+ * (ICD cap round, 2026-10-04). A cap is a COUNT, so it has no unit trap; what
+ * it has is two ways to say nothing: without `every` only the window's first
+ * hit applies, and `cap: 1` IS that — both spell "first only" the long way.
+ */
+function icdCapProblem(w: IcdWindow): string | null {
+	if (w.cap === undefined) return null;
+	if (!isPositiveInt(w.cap)) return `cap must be a positive integer when present (got ${w.cap})`;
+	if (w.every === undefined)
+		return `cap without every says nothing — only the window's first hit applies; omit it`;
+	if (w.cap < 2) return `cap 1 is "first only"; omit both every and cap`;
+	return null;
+}
+
+/** Is this window the standard one spelled out? ⚓ A cap absent and a cap of 8
+ *  are the same rule at the standard's timer and period. */
+const restatesStandard = (w: IcdWindow): boolean =>
+	w.timer === STANDARD_ICD_FRAMES.timer &&
+	w.every === STANDARD_ICD_FRAMES.hits &&
+	(w.cap === undefined || w.cap === STANDARD_ICD_FRAMES.cap);
 
 /** The 7 character-assignable elements. Used for character.element,
  *  NormalAbility.infusion, and the `infuse` Effect — Physical is not a
@@ -1457,6 +1479,9 @@ function lintNormal(
 	// supposed to STOP over-claiming. The smallest real group timer in gcsim's
 	// table is 6 frames, so anything under that is a unit error and not a value.
 	if (a.chargedIcdWindow) {
+		const capProblem = icdCapProblem(a.chargedIcdWindow);
+		if (capProblem)
+			push('strict', 'charged-icd-window-invalid', `chargedIcdWindow.${capProblem}`, a.id);
 		if (!isPositiveInt(a.chargedIcdWindow.timer) || a.chargedIcdWindow.timer < 6) {
 			push(
 				'strict',
@@ -1942,6 +1967,16 @@ function lintCastAbility(
 	// the other names one. And a gate on a cast with NO `application[]` gates
 	// nothing — the absent-list fallback applies once at the cast.
 	if (a.icdGate) {
+		const capProblem = icdCapProblem(a.icdGate);
+		if (capProblem)
+			push('strict', 'cast-icd-gate-invalid', `icdGate.${capProblem} (${a.id})`, a.id);
+		if (restatesStandard(a.icdGate))
+			push(
+				'strict',
+				'cast-icd-gate-invalid',
+				`icdGate on ${a.id} restates the standard window; omit it — absent means standard`,
+				a.id
+			);
 		if (!isPositiveInt(a.icdGate.timer) || a.icdGate.timer < 6) {
 			push(
 				'strict',
@@ -2189,7 +2224,15 @@ function lintIcdGate(
 	// ⚓ A window equal to the standard is the DEFAULT spelled out, and icd.md
 	// forbids annotating the default: absent already means this, and a redundant
 	// annotation asserts a measurement as if it were a finding.
-	if (gate.timer === STANDARD_ICD_FRAMES.timer && gate.every === STANDARD_ICD_FRAMES.hits) {
+	const capProblem = icdCapProblem(gate);
+	if (capProblem)
+		push(
+			'strict',
+			'summon-tick-icd-window-invalid',
+			`${what} icdGate.${capProblem} (summon "${summonLabel}")`,
+			abilityId
+		);
+	if (restatesStandard(gate)) {
 		push(
 			'strict',
 			'summon-tick-icd-window-invalid',
