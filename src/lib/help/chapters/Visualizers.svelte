@@ -159,14 +159,25 @@
 <section>
 	<h2 id="wish-odds">Wish Odds</h2>
 	<p>
-		Which pull actually lands the featured 5★, from your current pity and guarantee state. The
-		filled shape is "which pull gets it", the line is your cumulative chance, and the marker is your
-		saved pulls — drag it.
+		How many pulls a goal takes, from your current pity and guarantee: the featured 5★ or 4★ up to
+		C6, the charted weapon up to R5, or a 5★ and their weapon together. There is one line per level
+		on the way to the goal, each showing your chance of being there by a given pull. The marker is
+		your saved pulls; drag it.
 	</p>
 	<p>
-		Pity model: 0.6% flat until soft pity ramps from pull 74 (weapons: 0.7% ramping from 63).
-		Featured odds use the official consolidated rates — 55% character including Capturing Radiance,
-		37.5% charted weapon, 1 fate point. The Radiance streak counter is not fully datamined and is
-		deliberately not guessed at.
+		Pity model: a 5★ drops at 0.6% per pull until soft pity ramps from pull 74 (on the weapon
+		banner, 0.7% ramping from 63); a 4★ drops at 5.1%, then 56.1% on the 9th pull, and is certain on
+		the 10th. Featured odds use the official rates: 55% for a 5★ character including Capturing
+		Radiance, 37.5% for the charted weapon with one fate point, and 50% for a 4★, which is then one
+		of three featured characters, split evenly. The Radiance streak counter is not fully datamined,
+		so each 5★ is modeled as an independent 55%.
+	</p>
+	<p>
+		Only pulls on a banner that features your goal count. Copies from Starglitter or events are not
+		in the curves, so set <strong>You have</strong> to what you own. A 5★ landing on the 10th pull
+		pushes that 4★ to the 11th; it is left out, and moves 4★ C6 by about one pull. The model matches
+		<a href="https://github.com/OneBST/GGanalysis" target="_blank" rel="noopener noreferrer"
+			>GGanalysis</a
+		>.
 	</p>
 </section>

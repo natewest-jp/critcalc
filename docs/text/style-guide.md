@@ -281,6 +281,17 @@ the slider that says 600, a sentence that restates a column. ✅ Keep what no pa
 screen can show: who it doesn't apply to, what a figure leaves out, why a control is absent.
 Reaction Curves lost ~40px of readout to this with nothing essential gone.
 
+### 1.10 ⚓ Write from the player's side of the screen (⚓ Nate, 2026-10-04)
+
+Say what happens to **you** when you play, in the words players already use, ⛔ not what
+the game's tables say about the items. ✅ "Without a guarantee, you'll win the 50/50 about
+55% of the time." ⛔ "A 5★ that isn't guaranteed is the featured character 55% of the time"
+is the same fact from the pool's side, and a player thinking "I want to win my 50/50"
+can't map it back ("55% of… what?"). The Wish Odds explainers were rewritten this way;
+tightening alone fixed the length and kept the wrong vantage. ⚠️ Keep what the number is
+PER when the player's phrase hides it ("each 4★ you pull", ⛔ not per wish). First applied:
+the Wish Odds pass.
+
 ---
 
 ## 2. Mechanics
