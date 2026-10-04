@@ -110,5 +110,44 @@ the hit this round made the planner apply. gcsim's own count moved 270 → 269
 
 ## 6. Commits
 
-`31ba7433` the audit, dumper and schema · the data + docs commit after it. Gates: vitest
-2229/2229, check, lint, build.
+`31ba7433` the audit, dumper and schema · `1008d233` the data + docs · merged
+`49063b87` (e2e 78 + 78 at `1008d233`).
+
+## 7. Follow-ups (same day, branch `fix/icd-cap-followups`)
+
+⚓ Nate's order: Durin → Frostpierce Star → Collei's shared counter → gcsim sync.
+
+- **Durin's dark burst** (`7cf4a68d`). `drivers.json` gave `darkForm` an EMPTY row on
+  the strength of identical FRAMES, which made its APPLICATION capture the WHITE burst.
+  gcsim enters the form with E then N (inside the skill window `Attack()` is Denial of
+  Darkness, which sets the status `Burst()` branches on); the row is `[skill, attack]`.
+  Captured, the Dark Decay series confirms 16 × 73.6f on `{120}` and lands its first
+  tick at **185f**, not 176f — gcsim's default `travel` of 9 — so `firstTickDelay`
+  1.317 → 1.4667s (the Emilie precedent: an authored tick is where it lands). §4c
+  271 → 272.
+- **Frostpierce Star** (`ce4c6310`) — nothing to fix. Each tick fires TWO crystals 13f
+  apart, and the data already says so on purpose: one series per volley (two series
+  would each get a counter and apply twice) with Frostglow `amount: 2`. The note's
+  cadence was the DRAFT gcsim's; restated. §5's `count 4→8` is that choice.
+- **A summon series can spend its cast's counter** (`e2402d13`, ⚓ Nate approved the
+  hook). A census over the dumper found six summons ticking on their own cast hit's
+  tag AND group, so the cast hit opens the window and blocks the first tick(s):
+  Chiori, Collei, Diona, Kuki, Lynette, Zhongli. 🆕 `summonTick.sharesCastCounter:
+true` feeds the series' clock the cast's counted `application[]` entries lazily, in
+  time order (`aura.ts`, the cast passes `castApps`); lint D.27g; §5 marks a stream on
+  its cast's counter (6 ✅, 0 unflagged). Isolated core, all six now match gcsim tick
+  for tick (Collei 68/248 → 218, gcsim 218/398 — the 398 is her 12th leap, which the
+  data does not model; Kuki's 2f ring offset predates this). ⚠️ One direction only: a
+  recast's hit is not blocked by a still-ticking summon. Reaction oracle: Collei's
+  extra is gone (2 → 1); missing 46 → 48 and mean |Δ| 0.158 → 0.163U are phase against
+  Zhongli's construct resonance and Collei's missing leap, which ordinal pairing had
+  lined up by luck.
+- **gcsim synced** `488e22309` → **`703ac69ba`** (63 commits). ⚠️ The dumper's
+  `GOPROXY=off` build failed on a new dependency until `go mod download` in the
+  checkout. The ICD sections (§4b, §4c, §5b) are byte-identical across it; Yaoyao's
+  radish now lands on our 105f (upstream's hitlag char-task fix); the reaction oracle
+  moves only by the crystallize fixture's known non-determinism. 🆕 **Zibai has a gcsim
+  source** (#3093) — she is still frameless here, so a frames curation pass is open.
+- ⏭ Still open: Nilou's steps (cross-cast), Collei's 12th leap (the cap ×
+  `durationExtensions` limit), the dumper's "charges less than 0" panic on a skill
+  used twice with cooldowns bypassed (Durin's Purity recast, Tartaglia, Xianyun).
