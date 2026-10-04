@@ -45,7 +45,8 @@ import {
 	loadDrivers,
 	prereqFor,
 	splitApplications,
-	variantDumpKey
+	variantDumpKey,
+	variantPrereq
 } from './lib/gcsim-map.mjs';
 
 async function main() {
@@ -94,9 +95,10 @@ async function main() {
 			const targets = [{ node: a, key: suffix === null ? null : `${baseKey}${suffix}` }];
 			for (const v of a.variants ?? []) {
 				const vk = variantDumpKey(v.input ?? [], baseKey, v.conditions);
+				const vctx = variantPrereq(a, v, drivers[gk]);
 				targets.push({
 					node: v,
-					key: vk === null || suffix === null ? null : `${vk}${suffix}`,
+					key: vk === null || vctx === null ? null : `${vk}${vctx.label ? `@${vctx.label}` : ''}`,
 					label: v.label
 				});
 			}
@@ -117,7 +119,12 @@ async function main() {
 					// ⛔ "physical" is written as an ABSENT element, not as a value: the
 					// schema says absent means the hit applies nothing, and spelling it out
 					// would invite a reader to treat physical as an aura.
-					if (h.element && h.element !== 'physical') e.element = h.element;
+					// ⚓ So is a hit with NO GAUGE (gcsim `Durability: 0` — not applied, and no
+					// ICD check ran): it keeps its entry, because it is still a landing, and
+					// drops `element` (ICD cap round, 2026-10-04 — the schema's rule, which the
+					// writer did not yet know; Zibai's burst was the first to need it).
+					const noGauge = !h.applied && (h.icdVal === undefined || h.icdVal === null);
+					if (h.element && h.element !== 'physical' && !noGauge) e.element = h.element;
 					// gcsim reports DURABILITY, 25 per gauge unit. ⚠️ Absent on a hit its
 					// own ICD suppressed — there was no application to measure.
 					if (typeof h.durability === 'number') {

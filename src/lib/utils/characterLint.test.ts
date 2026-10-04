@@ -2163,7 +2163,7 @@ const FRAMELESS_EXEMPT = new Set([
 	// (#2677 / #2697), provenance in their notes; re-run the writers on merge.
 	'lohen',
 	'sandrone',
-	'zibai',
+	// Zibai left 2026-10-04 — gcsim main shipped her (#3093).
 	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for Alyosha — not on
 	// origin/main, not in any open PR, and a repo-wide PR search across all
 	// states returns only a 2022 typo fix. So Stage 4 is blocked: no FrameMaps,

@@ -245,7 +245,11 @@
 			"name": "Last Lightfall",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 128, "N": 127, "E": 127, "D": 127, "swap": 127 },
+			"frames": {
+				"anim": 128,
+				"D": 127,
+				"swap": 127
+			},
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -254,7 +258,7 @@
 			"behavior": "instant",
 			"_curatorNotes": [
 				"Burst frames: gcsim burstFrames = InitAbilSlice(128, 'Q - N1/E/Jump/Walk') with explicit ActionDash=127, ActionSwap=127. N (ActionAttack), E (ActionSkill), and J (ActionJump) left at the 128 anim default and omitted per recipe rule.",
-				"In-stance burst variant: gcsim has a separate burstSkillStateFrames slice used when skillStateKey is active — explicit ActionAttack=127, ActionSkill=127, ActionDash=127, ActionSwap=127. Schema has no condition for casting Q while in stance with different frames; values are nearly identical to the base (N/E rise from anim 128 → explicit 127). Flagged here; reviewer to decide if a state-conditioned variant is warranted.",
+				"↻ 2026-10-04 (frames-queue round): SPLIT. gcsim branches on StatusIsActive(skillStateKey) (burst.go): out of Night Vigil it is burstFrames (InitAbilSlice(128), D 127 · swap 127 — N/E/J stay at 128), inside it burstSkillStateFrames (N 127 · E 127 · D 127 · swap 127). The base held the in-stance N/E; it now carries the base slice and a Night Vigil variant gated on inStance carries the other. 1f either way — split because the audit can now read a state-gated variant, and an exact map costs nothing. Both branches queue the same five hits, so the variant inherits application[].",
 				"Burst grants Bond of Life: gcsim ModifyHPDebtByRatio(burstBOL[8] = 1.14) — 114% max HP at talent 9. Not authored (BoL not modeled).",
 				"Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
 			],
@@ -267,7 +271,24 @@
 			],
 			"notModeled": {
 				"reason": "The Rotation Planner doesn't model Bond of Life, so the Bond of Life this burst grants isn't shown."
-			}
+			},
+			"variants": [
+				{
+					"label": "Night Vigil",
+					"input": ["Q"],
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
+					"frames": {
+						"anim": 128,
+						"N": 127,
+						"E": 127,
+						"D": 127,
+						"swap": 127
+					}
+				}
+			]
 		}
 	],
 	"passives": [
