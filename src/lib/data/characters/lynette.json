@@ -223,7 +223,8 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 0.983,
-								"firstTickDelay": 2.033
+								"firstTickDelay": 2.033,
+								"sharesCastCounter": true
 							},
 							"scaling": 92.16,
 							"stat": "atk",

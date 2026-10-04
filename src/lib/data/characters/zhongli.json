@@ -128,7 +128,8 @@
 								"type": "summonTick",
 								"interval": 2,
 								"firstTickDelay": 2,
-								"tickCap": 15
+								"tickCap": 15,
+								"sharesCastCounter": true
 							},
 							"scaling": 57.6,
 							"stat": "atk",

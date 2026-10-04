@@ -946,12 +946,22 @@ export function scheduleSummonTicks(
 	preStates: ReadonlySet<string>,
 	constellation: number,
 	chainIdx: ChainIndex,
-	stackState: Map<string, number>
+	stackState: Map<string, number>,
+	/** The cast's own `application[]` (variant's replacing the base's), for a
+	 *  series that `sharesCastCounter`. ⚠️ Absent at the lineup hand-off: a
+	 *  hand-off lands no cast hit. */
+	castApplication?: readonly ElementalApplication[]
 ): void {
 	const cLevel = ctx.constellationLevels?.[char.id] ?? 0;
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
 	// Resolved once per cast, the same way finalize resolves it for the window.
 	const ownerIsStance = summonOwnerIsStance(char, kind, abilityId);
+	/** The instants this cast's COUNTED hits land — the ones that spend a slot of
+	 *  a counter (an element, and not `noICD`), in time order. */
+	const castHitTimes = (castApplication ?? [])
+		.filter((e) => e.element !== undefined && !e.noICD)
+		.map((e) => castTime + e.frame)
+		.sort((a, b) => a - b);
 
 	findSummonsForBar(char, kind, label, abilityId, variantLabel ?? null).forEach((summon, index) => {
 		const spawnAt = summonSpawnAt(castTime, summonActivatesAt, summon, index);
@@ -1127,6 +1137,16 @@ export function scheduleSummonTicks(
 				return end + series.interval;
 			};
 			const capReached = (): boolean => cap !== null && fired >= cap;
+			// ⚓ A series on its cast's own counter (`sharesCastCounter`) is fed the
+			// cast's counted hits LAZILY — each one at or before a tick goes through
+			// the clock first, so the window the cast hit opens blocks the ticks
+			// inside it, in time order whatever the two schedules look like.
+			const pendingCastHits =
+				params &&
+				series.effect.trigger.type === 'summonTick' &&
+				series.effect.trigger.sharesCastCounter
+					? [...castHitTimes]
+					: [];
 			const asksField = mentionsPolestarField(series.effect.conditions);
 
 			const fire = (at: number): void => {
@@ -1169,6 +1189,8 @@ export function scheduleSummonTicks(
 						icd = createIcdClock();
 						ctx.icdClocks.set(icdKey, icd);
 					}
+					while (pendingCastHits.length > 0 && pendingCastHits[0] <= at)
+						icdApplies(icd, pendingCastHits.shift()!, params);
 					applies = icdApplies(icd, at, params).applies;
 				}
 				if (applies && element !== undefined) {

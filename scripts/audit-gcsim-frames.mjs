@@ -159,7 +159,8 @@ function authoredTicks(ability) {
 				// it compares the authored RULE against gcsim's own group numbers
 				// rather than against an applied count, which is what caught two
 				// series whose notes called a bespoke group standard.
-				icdGate: t.icdGate ?? 'standard'
+				icdGate: t.icdGate ?? 'standard',
+				sharesCastCounter: t.sharesCastCounter === true
 			});
 		}
 	}
@@ -551,7 +552,13 @@ function main() {
 			const g = base ? byKey.get(base) : null;
 			if (!g || g.error) continue;
 			const authored = authoredTicks(a);
-			const { ticks } = splitApplications(g.applications ?? [], a);
+			const { ticks, cast: castHits } = splitApplications(g.applications ?? [], a);
+			// ⚓ The counters the CAST's own hits spend (ICD cap round follow-up): a
+			// tick stream on one of them opens no window of its own —
+			// `sharesCastCounter`.
+			const castCounters = new Set(
+				castHits.filter((x) => x.icd && !x.icd.none).map((x) => x.icd.counter)
+			);
 			const streams = new Map();
 			for (const x of ticks) {
 				if (!streams.has(x.abil)) streams.set(x.abil, []);
@@ -600,6 +607,7 @@ function main() {
 				// EFFECT on this one stream; this is the rule that produced the effect,
 				// and it is what a migration can be written from.
 				o.icd = streamIcd(mine);
+				o.sharesCast = mine.some((x) => x.icd && !x.icd.none && castCounters.has(x.icd.counter));
 				o.gate = icdGateFor(o.icd);
 				o.verdict =
 					applied === std
@@ -1001,7 +1009,18 @@ function renderReport(d) {
 							mine !== undefined &&
 							mine !== x.n &&
 							x.last <= HORIZON - TICK_COUNT_MARGIN;
-						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}${nOff ? ` ⚠️ **count ${mine}→${x.n}**` : ''}`;
+						const share =
+							x.sharesCast &&
+							!(
+								t.authored.length === 1 &&
+								t.observed.length === 1 &&
+								t.authored[0].sharesCastCounter
+							)
+								? " ⚠️ **shares the cast's counter**"
+								: x.sharesCast
+									? " · shares the cast's counter ✅"
+									: '';
+						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${share}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}${nOff ? ` ⚠️ **count ${mine}→${x.n}**` : ''}`;
 					})
 					.join('<br>')
 			: '—';

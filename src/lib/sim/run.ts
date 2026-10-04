@@ -1301,7 +1301,8 @@ export function runRotation(
 					states,
 					charConstellationLevel,
 					chainIdx,
-					stackState
+					stackState,
+					castApps
 				);
 				// ⚓ A CAST WHOSE SUMMONS FOLLOW A STATE holds its window open for
 				// whichever lineup the state names (Arkhe round, 2026-09-04). Recorded

@@ -992,6 +992,20 @@ export type Trigger =
 			 */
 			icdGate?: 'none' | IcdWindow;
 			/**
+			 * ⚓ THE SERIES SPENDS ITS CAST'S COUNTER (ICD cap round follow-up,
+			 * 2026-10-04). gcsim keys ICD by `(character, tag, group)`, and six
+			 * summons tick on the very tag and group their own cast's hit uses —
+			 * Collei's leaps and her Burst explosion, Zhongli's stele and his E
+			 * hit, Chiori, Diona, Kuki, Lynette — so the cast hit OPENS the
+			 * window and the first tick(s) inside it are blocked. Set, the
+			 * series' clock is fed the cast's own counted `application[]` entries
+			 * (element, not `noICD`) at the instants they land, before any tick
+			 * at or after them. Read off the frames audit's §5 shared-counter
+			 * column, ⛔ never inferred. ⚠️ One direction only: a recast's hit is
+			 * not blocked by a still-ticking summon (the census shows no case).
+			 */
+			sharesCastCounter?: true;
+			/**
 			 * ⚓ HOW MANY TICKS THE SERIES FIRES, when the count is not
 			 * `duration ÷ interval` (tick-cap round, 2026-08-18).
 			 *

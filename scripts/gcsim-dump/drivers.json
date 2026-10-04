@@ -51,9 +51,19 @@
 		"states": { "inStance": [{ "action": "burst" }] }
 	},
 	"durin": {
-		"note": "⚠️ transmuting only. Dark form's burst reads identically to the base, so it gets no row.",
+		"note": "⚠️ transmuting = E (the Purity recast window). darkForm = E then N: inside the skill window gcsim's Attack() IS the Denial of Darkness recast, which sets denial-of-darkness — the status Burst() branches on (burst.go:48). ↻ 2026-10-04 (ICD cap round follow-up): darkForm was an EMPTY row on the strength of identical FRAMES, which made its APPLICATION capture the WHITE burst — the audit read the Dragon of White Flame under the dark Q.",
 		"_scored": "skill 1/1 (base 0/2)",
-		"states": { "transmuting": [{ "action": "skill" }], "darkForm": [] }
+		"states": {
+			"transmuting": [{ "action": "skill" }],
+			"darkForm": [
+				{
+					"action": "skill"
+				},
+				{
+					"action": "attack"
+				}
+			]
+		}
 	},
 	"flins": {
 		"note": "Northland Spearstorm.",
