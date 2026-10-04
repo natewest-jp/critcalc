@@ -5,10 +5,10 @@
 
 **19 messages** · `ChromeModals.svelte` · `ChromeOverlay.svelte` · `NavPanel.svelte` · `SiteChrome.svelte` · `SiteFooter.svelte` · `tools.ts`
 
-- `chrome_navigate` — ChromeModals.svelte:23 title= · NavPanel.svelte:38 aria-label= · SiteChrome.svelte:97 aria-label= · SiteChrome.svelte:98 title=
+- `chrome_navigate` — ChromeModals.svelte:33 title= · NavPanel.svelte:38 aria-label= · SiteChrome.svelte:97 aria-label= · SiteChrome.svelte:98 title=
   > Navigate
   - terms: 📖 Navigate
-- `chrome_settings` — ChromeModals.svelte:27 title= · NavPanel.svelte:68 <span> · SiteChrome.svelte:147 aria-label= · SiteChrome.svelte:148 title=
+- `chrome_settings` — ChromeModals.svelte:37 title= · NavPanel.svelte:68 <span> · SiteChrome.svelte:147 aria-label= · SiteChrome.svelte:148 title=
   > Settings
 - `chrome_close` — ChromeOverlay.svelte:79 aria-label=
   > Close
