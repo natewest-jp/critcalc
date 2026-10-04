@@ -130,6 +130,24 @@ export function variantDumpKey(input, base, conditions) {
 }
 
 /**
+ * The prerequisite a skill/burst VARIANT is captured behind (2026-10-04). A variant
+ * gated on a state the driver table can ENTER reads that state's capture —
+ * Wanderer's Windfavored burst is `burstFramesE` only while `skillKey` is up. One
+ * whose state has NO row (Albedo's `duringSummon`, Xilonen's team gate) keeps the
+ * ability's own context, exactly as before: those were judged to share the base
+ * schedule, and `null` there would turn a reading into "uncovered".
+ * Returns the same shape as `prereqFor`; `null` only when two different
+ * prerequisites would have to be sequenced.
+ */
+export function variantPrereq(ability, variant, drv) {
+	const ctx = prereqFor(ability.conditions, drv);
+	const own = variant.conditions ? prereqFor(variant.conditions, drv) : null;
+	if (!own || !own.label || ctx === null) return ctx;
+	if (ctx.label && ctx.label !== own.label) return null;
+	return own;
+}
+
+/**
  * The dumper's driver entry for one character: the capture SETS derived from the
  * corpus, plus `before` — the state ONE capture needs, stated in drivers.json
  * (ICD cap round follow-up, 2026-10-04). `null` when there is nothing to send.
@@ -147,10 +165,15 @@ export function dumperDriverEntry(char, drv) {
 export function driverSetsFor(char, drv) {
 	const sets = new Map();
 	for (const a of char.abilities ?? []) {
-		const ctx = prereqFor(a.conditions, drv);
-		if (!ctx || !ctx.label) continue;
-		if (!sets.has(ctx.label))
-			sets.set(ctx.label, { label: ctx.label, prereq: ctx.prereq, captures: [] });
+		const ctxs = [
+			prereqFor(a.conditions, drv),
+			...(a.variants ?? []).map((v) => variantPrereq(a, v, drv))
+		];
+		for (const ctx of ctxs) {
+			if (!ctx || !ctx.label) continue;
+			if (!sets.has(ctx.label))
+				sets.set(ctx.label, { label: ctx.label, prereq: ctx.prereq, captures: [] });
+		}
 	}
 	return [...sets.values()];
 }
@@ -332,7 +355,7 @@ export function authoredMaps(char, drv, dumped) {
 				group: a.abilityType,
 				path: `${a.id}.variants[${v.input?.join('/') ?? '?'}]`,
 				frames: v.frames,
-				dumpKey: vk === null ? null : suffixed(vk, ctx),
+				dumpKey: vk === null ? null : suffixed(vk, variantPrereq(a, v, drv)),
 				normalStyle: false,
 				uncoveredReason: why,
 				set: (fm) => (v.frames = fm)

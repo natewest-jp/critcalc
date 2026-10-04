@@ -42,7 +42,8 @@ import {
 	loadDrivers,
 	prereqFor,
 	splitApplications,
-	variantDumpKey
+	variantDumpKey,
+	variantPrereq
 } from './lib/gcsim-map.mjs';
 
 // ⚓ THE REAL ICD MODEL, imported rather than restated — the same reason `gcsim-map.mjs`
@@ -529,9 +530,10 @@ function main() {
 			const targets = [{ path: a.id, key: base, node: a }];
 			for (const v of a.variants ?? []) {
 				const vk = variantDumpKey(v.input ?? [], baseKey, v.conditions);
+				const vctx = variantPrereq(a, v, drivers[gk]);
 				targets.push({
 					path: `${a.id} · ${v.input?.join('/') ?? '?'}`,
-					key: vk === null || suffix === null ? null : `${vk}${suffix}`,
+					key: vk === null || vctx === null ? null : `${vk}${vctx.label ? `@${vctx.label}` : ''}`,
 					node: v
 				});
 			}

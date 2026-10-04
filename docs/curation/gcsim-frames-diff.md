@@ -8,8 +8,8 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **128** authored · **119** with a gcsim source
-- FrameMaps: **1158** authored · **1027** matching gcsim exactly · **51** disagreeing · **80** uncovered
-- skill/burst application schedules observed: **299** · unobserved: **17**
+- FrameMaps: **1159** authored · **1029** matching gcsim exactly · **50** disagreeing · **80** uncovered
+- skill/burst application schedules observed: **300** · unobserved: **17**
 - summon tick streams cross-checked: **59**
 - hits carrying a measured gcsim ICD cadence: **3274** of **3277**
 
@@ -25,9 +25,9 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 419 / 430 | 11f |
+| E/Q → P | 420 / 431 | 11f |
 | E/Q → C | 320 / 331 | 9f |
-| E/Q → Q | 177 / 183 | 3f |
+| E/Q → Q | 178 / 184 | 3f |
 | E/Q → E | 143 / 149 | 3f |
 | E/Q → N | 135 / 137 | 3f |
 | E/Q → J | 111 / 112 | 14f |
@@ -36,9 +36,9 @@ difference, per transition that currently falls back.
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **422** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **423** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (51)
+## 2. FrameMaps that disagree (50)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -90,7 +90,6 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | traveler_anemo | `traveler_anemo__skill__palm_vortex.frames` | anim 74→76 |
 | traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405, anim 90→405 |
 | varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, anim 72→77 |
-| wanderer | `wanderer__burst__kyougen_five_ceremonial_plays.frames` | N 117→94, C 119→96, D 119→97, J 119→96, anim 145→101 |
 | xianyun | `xianyun__skill__skyladder_2.frames` | anim 59→243 |
 | xianyun | `xianyun__skill__skyladder_3.frames` | anim 126→178 |
 | yun_jin | `yun_jin__skill__opening_flourish.frames` | anim 59→62 |
@@ -446,6 +445,7 @@ count; §4b lists the casts whose rule the schema default does not reproduce.
 | venti | `venti__burst__winds_grand_ode` | **—** | 20× Wind's Grand Ode |  |
 | wanderer | `wanderer__skill__hanega_song_of_the_wind` | +2 anemo (1U) |  | `none` |
 | wanderer | `wanderer__burst__kyougen_five_ceremonial_plays` | +92 anemo (1U) · +98 anemo [icd] · +104 anemo [icd] · +110 anemo (1U) · +116 anemo [icd] | ⚠️ regular, no authored summon: Kyougen: Five Ceremonial Plays ×5/6f | 150f / every 3 · 8 max |
+| wanderer | `wanderer__burst__kyougen_five_ceremonial_plays · Q` | +92 anemo (1U) · +98 anemo [icd] · +104 anemo [icd] · +110 anemo (1U) · +116 anemo [icd] | ⚠️ regular, no authored summon: Kyougen: Five Ceremonial Plays (Windfavored) ×5/6f | 150f / every 3 · 8 max |
 | wriothesley | `wriothesley__skill__icefang_rush` | **—** |  |  |
 | wriothesley | `wriothesley__burst__darkgold_wolfbite` | +99 cryo (1U) · +104 cryo [icd] · +109 cryo [icd] · +114 cryo (1U) · +119 cryo [icd] · +160 cryo [0U] | ⚠️ regular, no authored summon: Darkgold Wolfbite ×5/5f | Darkgold Wolfbite: 150f / every 3 · 8 max<br>Surging Blade: `none` |
 | xiangling | `xiangling__skill__guoba_attack` | **—** | 4× Guoba |  |
@@ -531,7 +531,7 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**297** authored casts replayed · **274** agree hit for hit · **0** ⛔ gate · **21** ⚠️ list · **2** on a named counter (§4d)
+**298** authored casts replayed · **275** agree hit for hit · **0** ⛔ gate · **21** ⚠️ list · **2** on a named counter (§4d)
 
 <details><summary>⚠️ list rows (21)</summary>
 

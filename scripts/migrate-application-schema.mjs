@@ -45,7 +45,8 @@ import {
 	loadDrivers,
 	prereqFor,
 	splitApplications,
-	variantDumpKey
+	variantDumpKey,
+	variantPrereq
 } from './lib/gcsim-map.mjs';
 
 async function main() {
@@ -94,9 +95,10 @@ async function main() {
 			const targets = [{ node: a, key: suffix === null ? null : `${baseKey}${suffix}` }];
 			for (const v of a.variants ?? []) {
 				const vk = variantDumpKey(v.input ?? [], baseKey, v.conditions);
+				const vctx = variantPrereq(a, v, drivers[gk]);
 				targets.push({
 					node: v,
-					key: vk === null || suffix === null ? null : `${vk}${suffix}`,
+					key: vk === null || vctx === null ? null : `${vk}${vctx.label ? `@${vctx.label}` : ''}`,
 					label: v.label
 				});
 			}

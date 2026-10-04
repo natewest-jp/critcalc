@@ -187,7 +187,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": { "anim": 145, "N": 117, "C": 119, "D": 119, "J": 119 },
+			"frames": {
+				"anim": 101,
+				"N": 94,
+				"C": 96,
+				"E": 95,
+				"D": 97,
+				"J": 96,
+				"swap": 94
+			},
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -195,7 +203,7 @@
 			"behavior": "instant",
 			"_curatorNotes": [
 				"Burst out-of-stance: gcsim burstFramesNormal — explicit swap=94, ActionAttack=94, ActionSkill=95, ActionDash=97, ActionJump=96. Recorded above.",
-				"Burst in-stance (Windfavored variant) has different frames because it includes the falling-down animation: gcsim burstFramesE = InitAbilSlice(145) with ActionAttack=117, ActionCharge=119, ActionDash=119, ActionJump=119, ActionWalk=117 (no ActionSwap override → swap=145 per recipe's swap exception, no ActionSkill). Casting Q during Windfavored ends the stance and resets c.Core.Player.SwapCD to 26. Authored as a single burst entry with the out-of-stance frames; reviewer may split into a `conditions: { state: \"inStance\" }` variant if the planner needs the longer in-stance cast.",
+				"↻ 2026-10-04 (frames-queue round, ⚓ Nate ruled option 2): SPLIT. The base now carries gcsim burstFramesNormal (anim 101 · N 94 · C 96 · E 95 · D 97 · J 96 · swap 94) and a Windfavored variant gated on inStance carries burstFramesE = InitAbilSlice(145) with N 117 · C 119 · D 119 · J 119 (walk 117; no swap override, so swap is the 145 anim — it includes falling down). gcsim branches on StatusIsActive(skillKey) (burst.go). Before this the base held the in-stance numbers, so an out-of-stance Q was timed 44f long. The variant inherits the base application[] — both branches queue the same five hits at 92 + 6i. Driver row: wanderer inStance:[skill], already present. ⚠️ STILL NOT MODELLED: an in-stance Q ENDS Windfavored in gcsim (skydwellerPoints = 0, then checkForSkillEnd on the swap); our stance runs on until its own end or the swap. No schema closes a stance on a cast today — the same question as Zibai's last Stride (frames-queue round record).",
 				"Generator stub had behavior: \"stance\"; corrected to \"instant\" — the burst itself does not open or extend a stance window. The in-stance variant ends the Windfavored stance.",
 				"Damage shape: 5 hits delivered between frames 92 and 92+4*6=116 from cast (hitmarks [92, 98, 104, 110, 116]), at the same snapshot frame (gcsim burstSnapshotDelay = 55). burstSnapshotDelay carries a TODO comment in gcsim (`Determine correct Frame`); flagged for reviewer."
 			],
@@ -205,6 +213,23 @@
 				{ "frame": 104, "element": "anemo" },
 				{ "frame": 110, "element": "anemo", "units": 1 },
 				{ "frame": 116, "element": "anemo" }
+			],
+			"variants": [
+				{
+					"label": "Windfavored",
+					"input": ["Q"],
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
+					"frames": {
+						"anim": 145,
+						"N": 117,
+						"C": 119,
+						"D": 119,
+						"J": 119
+					}
+				}
 			]
 		}
 	],
