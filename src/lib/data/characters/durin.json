@@ -197,7 +197,7 @@
 			"effects": [],
 			"description": "Transmutation: Confirmation of Purity\nDeal 1 instance of AoE Pyro DMG to nearby opponents, reverse Essential Transmutation, and enter the Confirmation of Purity state for 30s.",
 			"frames": {
-				"anim": 48,
+				"anim": 83,
 				"N": 62,
 				"E": 53,
 				"Q": 50,

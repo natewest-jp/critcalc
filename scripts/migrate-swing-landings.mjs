@@ -48,7 +48,7 @@ import { runDumper } from './lib/gcsim-dump.mjs';
 import {
 	CHAR_DIR,
 	authoredMaps,
-	driverSetsFor,
+	dumperDriverEntry,
 	gcsimKeyFor,
 	loadDrivers
 } from './lib/gcsim-map.mjs';
@@ -103,8 +103,8 @@ async function main() {
 	const driverTable = {};
 	for (const { data } of chars) {
 		const gk = gcsimKeyFor(data.id);
-		const sets = driverSetsFor(data, drivers[gk]);
-		if (sets.length) driverTable[gk] = { sets };
+		const entry = dumperDriverEntry(data, drivers[gk]);
+		if (entry) driverTable[gk] = entry;
 	}
 	process.stderr.write('building + running the gcsim dumper…\n');
 	const dump = runDumper({
