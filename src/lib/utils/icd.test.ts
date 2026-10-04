@@ -49,3 +49,23 @@ describe('simulateIcd — non-standard params', () => {
 		expect(simulateIcd([], STANDARD_ICD)).toEqual([]);
 	});
 });
+
+describe('simulateIcd — cap (applications per window)', () => {
+	it('standard stops after 8 applications in a window — gcsim reads past its 24-entry list as 0', () => {
+		// 0.1s apart: hits 1 … 25 share the first window (t 0 … 2.4s). The list
+		// applies on 1, 4 … 22; hit 25 is past it. Hit 26 (2.5s) starts a new window.
+		const sim = simulateIcd(uniformHitTimes(27, 0.1), STANDARD_ICD);
+		const applied = sim.flatMap((h, i) => (h.applies ? [i + 1] : []));
+		expect(applied).toEqual([1, 4, 7, 10, 13, 16, 19, 22, 26]);
+		expect(sim[22].capped).toBe(true);
+		expect(sim[24].capped).toBe(true);
+		expect(sim[25].viaTimer).toBe(true);
+	});
+
+	it('a small cap stops the window early — every later hit in it is capped', () => {
+		const sim = simulateIcd(uniformHitTimes(8, 0.1), { timer: 3, hits: 3, cap: 2 });
+		expect(applyPattern(sim)).toEqual([true, false, false, true, false, false, false, false]);
+		expect(sim.slice(4).every((h) => h.capped)).toBe(true);
+		expect(sim.slice(0, 4).some((h) => h.capped)).toBe(false);
+	});
+});

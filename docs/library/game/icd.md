@@ -82,6 +82,36 @@ Two independent axes decide who shares an ICD:
 applications don't consume your on-field Normal-attack count and vice-versa — they
 each keep a private 3-hit budget. This is why off-field appliers work at all.
 
+## The list is finite — and some groups are built to stop (2026-10-04)
+
+gcsim's group tables are generated from game data (`icd_groups.dm.go`, "Code generated
+by pipeline"), and each group's application sequence is a **finite list**. Past its end
+gcsim reads the list's **last entry** (`pkg/target/icd.go` `WillApplyEle`), which is `0`
+in every group that ends on one. Tabulating all 64 groups: every list applies on evenly
+spaced hits from hit 1 and then stops, so a group is exactly **timer · every Nth hit ·
+at most N applications per window**:
+
+| Group                   | Timer       | Applies on      | As (timer, every, cap) |
+| ----------------------- | ----------- | --------------- | ---------------------- |
+| Default                 | 2.5 s       | 1, 4 … 22 of 24 | 2.5 s, 3, 8            |
+| Arlecchino's Skill      | 10 s        | 1, 4, 7 of 20   | 10 s, 3, 3             |
+| Chevreuse's Burst mines | 3 s         | 1, 4 of 8       | 3 s, 3, 2              |
+| Layla's Shooting Stars  | 3 s         | 1, 8 of 12      | 3 s, 7, 2              |
+| Nilou / Tighnari        | 1.9 / 2.5 s | 1, 5, 9 of 12   | —, 4, 3                |
+| Fischl (Oz)             | 5 s         | 1, 5 … 29 of 32 | 5 s, 4, 8              |
+| Pole Extra Attack       | 0.5 s       | 1 of 24         | 0.5 s, first only      |
+
+- **For the Default group the end is unreachable in play**: it takes 25 hits on one
+  character's counter inside 2.5 s (one every 0.1 s). What the GAME does past the end
+  is not confirmed — only gcsim's reading of it.
+- **For several groups the stop IS the design**: Chevreuse's eight shells land within
+  0.6 s and apply on shells 1 and 4 only, where "every 3rd" would also apply shell 7.
+- **A real cadence can stop a group before its list does**: Layla's stars fly in
+  volleys of four, so the 8th entry is never reached and each volley applies once.
+- **Model:** `IcdParams.cap` in `icd.ts` (the standard carries `cap: 8`). ⚠️ No authored
+  `IcdWindow` carries a cap yet — Chevreuse's mines and Arlecchino's Skill could now be
+  authored exactly, which is a data round, not this note.
+
 ## Standard ICD is the _default_, not the universal rule
 
 gcsim ships a small set of shared groups plus **~50 bespoke per-ability groups**
@@ -156,8 +186,9 @@ We model elemental-application ICD **binary**, not as full sequences:
   skills and bursts, where 112 of 166 gcsim skills are `ICDTagNone` and our schema has no
   way to say which); gcsim's **counter SHARING** across everything one character emits
   under one tag, which is an engine question and not a data one
-  (`docs/icd-group-round.md` §4, held); the four groups that apply two or three times at a
-  regular period and then **STOP** for the rest of the window; the `1,1` reaction groups
+  (`docs/icd-group-round.md` §4, held); the groups that apply two or three times at a
+  regular period and then **STOP** for the rest of the window (↻ 2026-10-04: the MODEL
+  has `cap` now — see "The list is finite" — but no `IcdWindow` field carries one); the `1,1` reaction groups
   (axis #2, below); and Nahida's `1.5` gauge, which is deliberately **not** in the cadence
   model — a gauge STRENGTH lives beside the application that carries it, as `units`.
 - **Reaction-damage ICD** (axis #2) is **not modeled** — the tools visualize element
@@ -198,8 +229,10 @@ the batch form written in terms of the streaming one so they cannot drift.
   the infused counter fresh.
 
 **Tool surface:** the visualizers **`IcdInstrument.svelte`** (backed by
-`$lib/utils/icd.ts`) visualizes this doc — `standard` / `none` / `custom {timer, hits}`
-presets over a uniform attack string, showing which hits apply.
+`$lib/utils/icd.ts`) visualizes this doc — an even attack string or four real examples
+(`icdExamples.ts`: Oz, Hu Tao's charged attacks, Chevreuse's Burst, Layla's Shooting
+Stars, each with gcsim's hit times and group), under Standard / No ICD / the example's
+own group / Custom `{timer, hits, cap}`, showing which hits apply and why.
 
 ## Curator signal
 
