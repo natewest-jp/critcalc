@@ -83,7 +83,23 @@
 	"lauma": {
 		"note": "Spiritcall Prayer. gcsim's `deerStateReady` starts true, so a bare `C` is the DEER (the base map, non-hitting); the Prayer needs the deer entered and then ENDED — any action but walk/jump ends it — after which `C` is the attack for 4s. ⚠️ The ender is a BURST, not an attack: an `attack` step advances gcsim's normal counter, so the sibling's N1/N2/N3 captures came back rotated by one (3 false rows). The burst leaves no summon ticking and touches no counter. The surviving `hit 73→67` row is the audit's cancel-tier inference, not gcsim's `chargeHitmark` (73) — read it, don't migrate it.",
 		"_scored": "charge+burst 4/5 (charge+attack 1/5 — the attack rotates the combo; base: uncovered — a bare C is the deer)",
-		"states": { "envoyCooldown": [{ "action": "charge" }, { "action": "burst" }] }
+		"states": {
+			"envoyCooldown": [
+				{
+					"action": "charge"
+				},
+				{
+					"action": "burst"
+				}
+			]
+		},
+		"before": {
+			"Q": [
+				{
+					"action": "charge"
+				}
+			]
+		}
 	},
 	"lyney": {
 		"note": "Aimed shots. Default hold is AimParamLv2 = the Prop Arrow; hold 1 is the fully-charged shot.",
@@ -147,8 +163,18 @@
 		"states": { "nightsoulBlessing": [{ "action": "skill" }] }
 	},
 	"yelan": {
-		"note": "Aimed shots. `A` reads the Breakthrough Barb (taken whenever it is ready, and it is at time 0); hold 1 is the fully-charged shot.",
-		"aim": { "A": "Breakthrough Barb", "hA": "Fully-Charged Aimed Shot" }
+		"note": "Aimed shots. gcsim starts Yelan with the Breakthrough Barb READY, and any hold-1 aim fires it. `A` reads the Barb; `hA` must spend it first (`before`), or it reads the Barb too. ↻ 2026-10-04: the capture ORDER used to spend it (pass A shared one core, `A` before `hA`); a fresh core per capture made that explicit.",
+		"aim": {
+			"A": "Breakthrough Barb",
+			"hA": "Fully-Charged Aimed Shot"
+		},
+		"before": {
+			"hA": [
+				{
+					"action": "aim"
+				}
+			]
+		}
 	},
 	"yoimiya": {
 		"note": "Niwabi Enshou — frames identical to the base reading.",

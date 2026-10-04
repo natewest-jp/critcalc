@@ -36,7 +36,7 @@ import {
 	CHAR_DIR,
 	KEYS,
 	authoredMaps,
-	driverSetsFor,
+	dumperDriverEntry,
 	frameMapDisagreements,
 	gcsimKeyFor,
 	loadDrivers,
@@ -402,8 +402,8 @@ function main() {
 	const driverTable = {};
 	for (const char of chars) {
 		const gk = gcsimKeyFor(char.id);
-		const sets = driverSetsFor(char, drivers[gk]);
-		if (sets.length) driverTable[gk] = { sets };
+		const entry = dumperDriverEntry(char, drivers[gk]);
+		if (entry) driverTable[gk] = entry;
 	}
 
 	process.stderr.write('building + running the gcsim dumper…\n');

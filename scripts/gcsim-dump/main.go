@@ -97,7 +97,13 @@ type DriverEntry struct {
 	// reason we already understand, and the error is noise rather than a finding).
 	Skip []string     `json:"skip,omitempty"`
 	Sets []CaptureSet `json:"sets,omitempty"`
-	Note string       `json:"note,omitempty"`
+	// Steps run before ONE capture of the default set, keyed by capture key — the
+	// state a reading NEEDS, stated rather than inherited (ICD cap round follow-up,
+	// 2026-10-04). Until pass A got a fresh core per capture, the capture ORDER
+	// supplied it silently: Yelan's `hA` was read after `A` had spent the
+	// Breakthrough Barb, Lauma's `Q` after a `C` had spent the deer.
+	Before map[string][]Step `json:"before,omitempty"`
+	Note   string            `json:"note,omitempty"`
 }
 
 // ---------------------------------------------------------------------------
@@ -757,19 +763,15 @@ func main() {
 		// The unlabelled default set always runs; driver entries ADD sets.
 		sets := append([]CaptureSet{{Label: "", Prereq: nil}}, drv.Sets...)
 		for _, set := range sets {
-			c, ch, err := makeCore(k, opt.Cons)
-			if err != nil {
-				cd.Abilities = append(cd.Abilities, AbilityDump{Key: set.Label, Err: err.Error()})
-				continue
+			// ⚠️ The combo length is the PREREQUISITE'S: a stance lengthens it (Mavuika's
+			// Nightsoul N5), so it is read off a core that has run the set's steps.
+			hitNum := cd.NormalHitNum
+			if len(set.Prereq) > 0 {
+				if pc, pch, perr := makeCore(k, opt.Cons); perr == nil && runPrereq(pc, pch, set.Prereq, action.ActionAttack) == "" {
+					hitNum = pch.NormalHitNum
+				}
 			}
-			// ⚠️ Prerequisites advance the clock, in BOTH passes. A no-advance version
-			// looked tempting (a mode flag is set at execution, not later) and panics:
-			// Ayato's second Skill inside the same frame drives his charge count below
-			// zero. Advancing by the cancel window is short enough that no stance
-			// window expires under it.
-			prereqErr := runPrereq(c, ch, set.Prereq, action.ActionAttack)
-
-			specs := defaultSpecs(ch.NormalHitNum)
+			specs := defaultSpecs(hitNum)
 			if len(set.Captures) > 0 {
 				want := map[string]bool{}
 				for _, w := range set.Captures {
@@ -788,6 +790,40 @@ func main() {
 				if skip[s.key] {
 					continue
 				}
+				// ⚓ A FRESH core per capture, as pass B has always had (ICD cap round
+				// follow-up, 2026-10-04). One core per SET let every capture inherit the
+				// state the previous one left: Durin's `E` opened his window and spent
+				// the only charge, `hE` read the in-window RECAST and closed it, and
+				// `h2E` was a fresh cast whose SetCD drove the charges below zero —
+				// gcsim's "unexpected charges less than 0" panic, which also skipped the
+				// application capture (pass B runs only on a clean pass A).
+				// ⚠️ Prerequisites advance the clock, in BOTH passes. A no-advance version
+				// looked tempting (a mode flag is set at execution, not later) and panics:
+				// Ayato's second Skill inside the same frame drives his charge count below
+				// zero. Advancing by the cancel window is short enough that no stance
+				// window expires under it.
+				c, ch, err := makeCore(k, opt.Cons)
+				if err != nil {
+					cd.Abilities = append(cd.Abilities, AbilityDump{Key: s.key, Err: err.Error()})
+					continue
+				}
+				prereq := set.Prereq
+				if set.Label == "" {
+					prereq = append(append([]Step{}, prereq...), drv.Before[s.key]...)
+				}
+				// ⚠️ The last step chains into the action UNDER CAPTURE, as pass B's does —
+				// an attack cancel let Xianyun's leap state lapse before her second leap.
+				capAct, _ := actionByName(s.action)
+				prereqErr := runPrereq(c, ch, prereq, capAct)
+				// ⚠️ The shared core used to walk the combo FOR us — N2 was read after N1
+				// had advanced gcsim's NormalCounter — so a fresh core must walk it
+				// itself. Same-frame calls with no clock advance, exactly the reading
+				// the shared core gave (pass B walks its prefix at cancel cadence).
+				for range comboPrefix(s.key) {
+					if _, err := abilityFunc(ch, action.ActionAttack)(nil); err != nil {
+						break
+					}
+				}
 				d := captureFrames(ch, c, s)
 				if set.Label != "" {
 					d.Key = s.key + "@" + set.Label
@@ -797,7 +833,7 @@ func main() {
 					d.Err = prereqErr
 				}
 				if !opt.FramesOnly && d.Err == "" {
-					apps, aerr := captureApplications(k, opt.Cons, set.Prereq, s, opt.Horizon)
+					apps, aerr := captureApplications(k, opt.Cons, prereq, s, opt.Horizon)
 					d.Applications = apps
 					if aerr != "" {
 						d.Err = "applications: " + aerr

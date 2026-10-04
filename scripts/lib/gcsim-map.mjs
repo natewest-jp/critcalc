@@ -116,6 +116,20 @@ export function variantDumpKey(input, base, conditions) {
 	return base;
 }
 
+/**
+ * The dumper's driver entry for one character: the capture SETS derived from the
+ * corpus, plus `before` — the state ONE capture needs, stated in drivers.json
+ * (ICD cap round follow-up, 2026-10-04). `null` when there is nothing to send.
+ * ⚓ ONE builder for every dumper caller: four scripts hand-built `{ sets }`, which
+ * is how a new driver key goes missing at three of them.
+ */
+export function dumperDriverEntry(char, drv) {
+	const sets = driverSetsFor(char, drv);
+	const before = drv?.before;
+	if (!sets.length && !before) return null;
+	return { ...(sets.length ? { sets } : {}), ...(before ? { before } : {}) };
+}
+
 /** The capture sets a character needs, derived from its own abilities. */
 export function driverSetsFor(char, drv) {
 	const sets = new Map();

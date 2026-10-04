@@ -8,10 +8,10 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **128** authored · **119** with a gcsim source
-- FrameMaps: **1145** authored · **1016** matching gcsim exactly · **47** disagreeing · **82** uncovered
-- skill/burst application schedules observed: **296** · unobserved: **19**
+- FrameMaps: **1145** authored · **1014** matching gcsim exactly · **52** disagreeing · **79** uncovered
+- skill/burst application schedules observed: **299** · unobserved: **16**
 - summon tick streams cross-checked: **59**
-- hits carrying a measured gcsim ICD cadence: **3108** of **3111**
+- hits carrying a measured gcsim ICD cadence: **3259** of **3262**
 
 ⛔ **No gcsim source (9)** — cannot be oracled at all, and nothing here may be written to them:
 
@@ -25,20 +25,20 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 408 / 425 | 11f |
-| E/Q → C | 309 / 326 | 9f |
-| E/Q → Q | 171 / 182 | 3f |
-| E/Q → E | 138 / 147 | 3f |
-| E/Q → N | 131 / 135 | 3f |
+| E/Q → P | 416 / 428 | 11f |
+| E/Q → C | 317 / 329 | 9f |
+| E/Q → Q | 176 / 182 | 3f |
+| E/Q → E | 143 / 149 | 3f |
+| E/Q → N | 133 / 135 | 3f |
 | E/Q → J | 111 / 112 | 14f |
-| E/Q → D | 57 / 59 | 3f |
+| E/Q → D | 58 / 59 | 3f |
 | normal → P | 34 / 37 | 24f |
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **411** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **419** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (47)
+## 2. FrameMaps that disagree (52)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -46,24 +46,25 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | character | map | keys (ours → gcsim) |
 | --- | --- | --- |
 | aloy | `aloy__skill__frozen_wilds.frames` | anim 49→66 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` | D 89→51, J 89→51, swap 130→51, anim 130→104, hit —→51 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` | D 89→51, J 89→51, swap 130→51, anim 130→104, hit —→51 |
+| arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` | anim 130→131 |
+| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` | anim 130→131 |
 | bennett | `bennett__skill__passion_overload.variants[h2E]` | D 171→231, J 174→340, anim 175→343 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[0]` | N 17→22, swap 10→15, anim 10→32, hit —→15 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[1]` | N 19→24, swap 8→13, anim 8→34, hit —→13 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[2]` | N 36→41, swap 20→25, anim 20→58, hit —→25 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[3]` | N 73→78, swap 39→44, anim 39→78, hit —→44 |
 | chasca | `chasca__skill__spirit_reins_shadow_hunt.frames` | J 27→623, swap 37→623, anim 37→623 |
-| chasca | `chasca__burst__soul_reapers_fatal_round.frames` | N 99→106, E 102→104, D 101→103, J 100→111, swap 98→111, anim 98→111 |
+| chasca | `chasca__burst__soul_reapers_fatal_round.frames` | anim 98→114 |
+| clorinde | `clorinde__burst__last_lightfall.frames` | N 127→128, E 127→128 |
 | dahlia | `dahlia__normal__favonius_bladework_ritual.hits[3]` | anim 62→71 |
 | escoffier | `escoffier__normal__kitchen_skills.hits[0]` | anim 17→22 |
 | escoffier | `escoffier__normal__kitchen_skills.hits[1]` | anim 21→30 |
 | faruzan | `faruzan__burst__the_winds_secret_ways.frames` | C 61→71 |
-| flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | N 102→53, E 103→53, D 103→51, J 103→50, swap 91→81, anim 91→81 |
+| flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | anim 91→130 |
 | ifa | `ifa__skill__airborne_disease_prevention.frames` | swap 31→631, anim 31→631 |
 | ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator.frames` | anim 127→130 |
 | keqing | `keqing__skill__stellar_restoration.frames` | anim 28→37 |
-| keqing | `keqing__skill__stellar_restoration_recast.frames` | N 42→36, D 16→21, J 16→21, swap 42→28, anim 42→37 |
+| keqing | `keqing__skill__stellar_restoration_recast.frames` | anim 42→43 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[0]` | anim 11→30, hit —→11 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[1]` | anim 37→46, hit —→37 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[2]` | anim 21→53, hit —→21 |
@@ -76,6 +77,7 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | neuvillette | `neuvillette__normal__as_water_seeks_equilibrium.chargeFrames` | C 69→53, E 26→23, Q 27→23, D 25→23, J 26→23, swap 58→50, anim 87→74 |
 | nilou | `nilou__skill__whirling_steps_2.frames` | N 40→27, E 32→27, Q 40→33, D 36→26, J 37→27, swap 62→31, anim 62→33 |
 | nilou | `nilou__skill__whirling_steps_3.frames` | D 57→26, J 57→27, swap 61→31, anim 63→33 |
+| ningguang | `ningguang__normal__sparkling_scatter.chargeFrames` | N 68→76, C 69→76, E 72→77, Q 69→77, D 54→61, J 54→62, swap 67→76, anim 74→82 |
 | qiqi | `qiqi__skill__adeptus_art_herald_of_frost.frames` | anim 57→58 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[0]` | hit 4→2 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[1]` | hit 12→9 |
@@ -83,17 +85,20 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | sayu | `sayu__skill__yoohoo_art_fuuin_dash.frames` | anim 44→45 |
 | sigewinne | `sigewinne__normal__targeted_treatment.hits[2]` | anim 67→82 |
 | sigewinne | `sigewinne__burst__super_saturated_syringing.frames` | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103, anim 245→129 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_ranged.frames` | N 54→102, D 54→103, J 54→102, swap 53→101, anim 53→103 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_melee.frames` | N 102→54, E 102→55, J 102→54, swap 101→53, anim 101→55 |
+| tartaglia | `tartaglia__burst__havoc_obliteration_ranged.frames` | anim 53→55 |
+| tartaglia | `tartaglia__burst__havoc_obliteration_melee.frames` | anim 101→103 |
 | traveler_anemo | `traveler_anemo__skill__palm_vortex.frames` | anim 74→76 |
 | traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405, anim 90→405 |
 | varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, anim 72→77 |
 | varka | `varka__skill__four_winds_ascension.frames` | N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49, anim 68→55 |
+| wanderer | `wanderer__burst__kyougen_five_ceremonial_plays.frames` | N 117→94, C 119→96, D 119→97, J 119→96, anim 145→101 |
+| xianyun | `xianyun__skill__skyladder_2.frames` | anim 59→243 |
+| xianyun | `xianyun__skill__skyladder_3.frames` | anim 126→178 |
 | yun_jin | `yun_jin__skill__opening_flourish.frames` | anim 59→62 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | anim 95→97 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95, anim 138→97 |
 
-## 3. Uncovered maps (82)
+## 3. Uncovered maps (79)
 
 ⚠️ Uncovered is **not** the same as matching. A map here has no gcsim reading at
 all; the migration leaves it alone and it keeps `anim = swap`.
@@ -113,10 +118,6 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 **gcsim models no distinct hold for this character (its hold slice IS the tap)** (3)
 
 > dahlia `dahlia__skill__immersive_ordinance.variants[hE]` · lauma `lauma__skill__runo_dawnless_rest_of_karsikko.variants[hE]` · traveler_geo `traveler_geo__skill__starfell_sword.variants[hE]`
-
-**panic: unexpected charges less than 0** (3)
-
-> durin `durin__skill__transmutation_confirmation_of_purity.frames` · xianyun `xianyun__skill__skyladder_2.frames` · xianyun `xianyun__skill__skyladder_3.frames`
 
 **not captured (N5@state-inStance)** (1)
 
@@ -262,6 +263,7 @@ count; §4b lists the casts whose rule the schema default does not reproduce.
 | dori | `dori__skill__spiritwarding_lamp_troubleshooter_cannon` | +26 electro (1U) · +72 electro [icd] · +85 electro [icd] |  | 150f / every 3 · 8 max |
 | dori | `dori__burst__alcazarzarays_exactitude` | +28 electro (1U) · +52 electro [icd] · +76 electro [icd] · +100 electro [icd] · +124 electro [icd] · +148 electro [icd] · +172 electro [icd] · +196 electro [icd] · +220 electro (1U) · +244 electro [icd] · +268 electro [icd] · +292 electro [icd] · +316 electro [icd] · +340 electro [icd] · +364 electro [icd] · +388 electro [icd] · +412 electro (1U) · +436 electro [icd] · +460 electro [icd] · +484 electro [icd] · +508 electro [icd] · +532 electro [icd] · +556 electro [icd] · +580 electro [icd] · +604 electro (1U) · +628 electro [icd] · +652 electro [icd] · +676 electro [icd] · +700 electro [icd] · +724 electro [icd] · +748 electro [icd] · +772 electro [icd] | ⚠️ regular, no authored summon: Alcazarzaray's Exactitude: Connector DMG ×32/24f | 180f / first only |
 | durin | `durin__skill__binary_form_convergence_and_division` | **—** |  |  |
+| durin | `durin__skill__transmutation_confirmation_of_purity` | +35 pyro (1U) |  | 150f / every 3 · 8 max |
 | durin | `durin__burst__principle_of_purity_as_the_light_shifts` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 20× Dragon of White Flame | 150f / every 3 · 8 max |
 | durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 16× Dragon of Dark Decay | 150f / every 3 · 8 max |
 | emilie | `emilie__skill__fragrance_extraction` | +37 dendro (1U) · +62 dendro [0U] | 14× Lumidouce Case (Level 1) | `none` |
@@ -451,6 +453,8 @@ count; §4b lists the casts whose rule the schema default does not reproduce.
 | xiangling | `xiangling__skill__guoba_attack` | **—** | 4× Guoba |  |
 | xiangling | `xiangling__burst__pyronado` | +18 pyro (1U) · +33 pyro [icd] · +57 pyro [icd] | 9× Pyronado | 150f / every 3 · 8 max |
 | xianyun | `xianyun__skill__skyladder_1` | +3 anemo [0U] |  | `none` |
+| xianyun | `xianyun__skill__skyladder_2` | **—** |  |  |
+| xianyun | `xianyun__skill__skyladder_3` | **—** |  |  |
 | xianyun | `xianyun__burst__stars_gather_at_dusk` | +75 anemo (1U) |  | `none` |
 | xiao | `xiao__skill__lemniscatic_wind_cycling` | +4 anemo (1U) |  | 6f / first only |
 | xiao | `xiao__burst__bane_of_all_evil` | **—** |  |  |
@@ -528,7 +532,7 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**294** authored casts replayed · **272** agree hit for hit · **1** ⛔ gate · **21** ⚠️ list
+**295** authored casts replayed · **273** agree hit for hit · **1** ⛔ gate · **21** ⚠️ list
 
 | character | ability | planner applies | gcsim applies | disagrees at |
 | --- | --- | --- | --- | --- |
@@ -562,13 +566,12 @@ A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gaug
 
 </details>
 
-### No observed schedule (19)
+### No observed schedule (16)
 
 ⚓ These land in the provisional register: absent is not empty, and a bar drawn
 from an absent list carries `--ui-provisional` (L6).
 
 - chiori `chiori__burst__hiyoku_twin_blades · Q` — no gcsl spelling for this variant / no driver row for its state
-- durin `durin__skill__transmutation_confirmation_of_purity` — panic: unexpected charges less than 0
 - emilie `emilie__burst__aromatic_explication · Q` — no gcsl spelling for this variant / no driver row for its state
 - flins `flins__burst__ancient_ritual_cometh_the_night · sQ` — no gcsl spelling for this variant / no driver row for its state
 - freminet `freminet__skill__pressurized_floe · E` — no gcsl spelling for this variant / no driver row for its state
@@ -584,8 +587,6 @@ from an absent list carries `--ui-provisional` (L6).
 - tartaglia `tartaglia__skill__foul_legacy_recast` — applications: panic: unexpected charges less than 0
 - varesa `varesa__skill__fiery_passion_rush` — no gcsl spelling for this variant / no driver row for its state
 - varesa `varesa__burst__guardian_vent · sQ` — no gcsl spelling for this variant / no driver row for its state
-- xianyun `xianyun__skill__skyladder_2` — panic: unexpected charges less than 0
-- xianyun `xianyun__skill__skyladder_3` — panic: unexpected charges less than 0
 
 ## 5. Summon cadence cross-check
 

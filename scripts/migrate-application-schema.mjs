@@ -40,7 +40,7 @@ import { surgicalRewrite } from './lib/json-edit.mjs';
 import { DURABILITY_PER_UNIT } from './lib/gcsim.mjs';
 import {
 	CHAR_DIR,
-	driverSetsFor,
+	dumperDriverEntry,
 	gcsimKeyFor,
 	loadDrivers,
 	prereqFor,
@@ -66,8 +66,8 @@ async function main() {
 
 	const driverTable = {};
 	for (const c of chars) {
-		const sets = driverSetsFor(c.data, drivers[gcsimKeyFor(c.data.id)]);
-		if (sets.length) driverTable[gcsimKeyFor(c.data.id)] = { sets };
+		const entry = dumperDriverEntry(c.data, drivers[gcsimKeyFor(c.data.id)]);
+		if (entry) driverTable[gcsimKeyFor(c.data.id)] = entry;
 	}
 
 	process.stderr.write('building + running the gcsim dumper…\n');
