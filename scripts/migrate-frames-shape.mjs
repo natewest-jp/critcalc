@@ -70,11 +70,11 @@ const HOLDBACK_CHARACTERS = {
 
 const HOLDBACK_PATHS = {
 	'albedo__normal__favonius_bladework_weiss.hits[4]':
-		"⚓ OUR DATA IS RIGHT. The curator note says so and says why: gcsim passes `attackHitmarks[3]` into N5's slice — 17f, which cancels BEFORE the hit lands — and calls it a likely typo for `attackHitmarks[4]`. Our 27 is the real N5 hitmark. ⛔ Do not let C4b overwrite a documented upstream bug.",
-	'tartaglia__burst__havoc_obliteration_ranged.frames':
-		'TRANSPOSED with the melee burst — ours reads 54/53 against gcsim 102/101 and the melee map reads exactly the reverse. A corpus fix, not a migration.',
-	'tartaglia__burst__havoc_obliteration_melee.frames':
-		'TRANSPOSED with the ranged burst — see above.'
+		"⚓ OUR DATA IS RIGHT. The curator note says so and says why: gcsim passes `attackHitmarks[3]` into N5's slice — 17f, which cancels BEFORE the hit lands — and calls it a likely typo for `attackHitmarks[4]`. Our 27 is the real N5 hitmark. ⛔ Do not let C4b overwrite a documented upstream bug."
+	// ↻ 2026-10-04: Tartaglia's two bursts were held back here as TRANSPOSED. That
+	// was the capture, not the corpus — before the driver table, the melee burst
+	// read the RANGED (no-prereq) capture. Behind `inStance: [skill]` both maps
+	// agree with gcsim on every key but the anim, so the entries are gone.
 };
 
 /** Any single key moving by a second or more is not drift; the two records are of

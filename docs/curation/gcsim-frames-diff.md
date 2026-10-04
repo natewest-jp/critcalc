@@ -8,8 +8,8 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **128** authored · **119** with a gcsim source
-- FrameMaps: **1159** authored · **1029** matching gcsim exactly · **50** disagreeing · **80** uncovered
-- skill/burst application schedules observed: **300** · unobserved: **17**
+- FrameMaps: **1160** authored · **1040** matching gcsim exactly · **40** disagreeing · **80** uncovered
+- skill/burst application schedules observed: **301** · unobserved: **17**
 - summon tick streams cross-checked: **59**
 - hits carrying a measured gcsim ICD cadence: **3274** of **3277**
 
@@ -25,20 +25,20 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 420 / 431 | 11f |
-| E/Q → C | 320 / 331 | 9f |
-| E/Q → Q | 178 / 184 | 3f |
-| E/Q → E | 143 / 149 | 3f |
-| E/Q → N | 135 / 137 | 3f |
-| E/Q → J | 111 / 112 | 14f |
+| E/Q → P | 419 / 430 | 11f |
+| E/Q → C | 321 / 332 | 8f |
+| E/Q → Q | 179 / 185 | 3f |
+| E/Q → E | 142 / 148 | 3f |
+| E/Q → N | 138 / 140 | 3f |
+| E/Q → J | 112 / 113 | 14f |
 | E/Q → D | 58 / 59 | 3f |
 | normal → P | 34 / 37 | 24f |
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **423** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **424** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (50)
+## 2. FrameMaps that disagree (40)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -46,16 +46,12 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | character | map | keys (ours → gcsim) |
 | --- | --- | --- |
 | aloy | `aloy__skill__frozen_wilds.frames` | anim 49→66 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` | anim 130→131 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` | anim 130→131 |
 | bennett | `bennett__skill__passion_overload.variants[h2E]` | D 171→231, J 174→340, anim 175→343 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[0]` | N 17→22, swap 10→15, anim 10→32, hit —→15 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[1]` | N 19→24, swap 8→13, anim 8→34, hit —→13 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[2]` | N 36→41, swap 20→25, anim 20→58, hit —→25 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[3]` | N 73→78, swap 39→44, anim 39→78, hit —→44 |
 | chasca | `chasca__skill__spirit_reins_shadow_hunt.frames` | J 27→623, swap 37→623, anim 37→623 |
-| chasca | `chasca__burst__soul_reapers_fatal_round.frames` | anim 98→114 |
-| clorinde | `clorinde__burst__last_lightfall.frames` | N 127→128, E 127→128 |
 | dahlia | `dahlia__normal__favonius_bladework_ritual.hits[3]` | anim 62→71 |
 | escoffier | `escoffier__normal__kitchen_skills.hits[0]` | anim 17→22 |
 | escoffier | `escoffier__normal__kitchen_skills.hits[1]` | anim 21→30 |
@@ -63,8 +59,6 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | anim 91→130 |
 | ifa | `ifa__skill__airborne_disease_prevention.frames` | swap 31→631, anim 31→631 |
 | ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator.frames` | anim 127→130 |
-| keqing | `keqing__skill__stellar_restoration.frames` | anim 28→37 |
-| keqing | `keqing__skill__stellar_restoration_recast.frames` | anim 42→43 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[0]` | anim 11→30, hit —→11 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[1]` | anim 37→46, hit —→37 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[2]` | anim 21→53, hit —→21 |
@@ -85,13 +79,9 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | sayu | `sayu__skill__yoohoo_art_fuuin_dash.frames` | anim 44→45 |
 | sigewinne | `sigewinne__normal__targeted_treatment.hits[2]` | anim 67→82 |
 | sigewinne | `sigewinne__burst__super_saturated_syringing.frames` | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103, anim 245→129 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_ranged.frames` | anim 53→55 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_melee.frames` | anim 101→103 |
 | traveler_anemo | `traveler_anemo__skill__palm_vortex.frames` | anim 74→76 |
 | traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405, anim 90→405 |
 | varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, anim 72→77 |
-| xianyun | `xianyun__skill__skyladder_2.frames` | anim 59→243 |
-| xianyun | `xianyun__skill__skyladder_3.frames` | anim 126→178 |
 | yun_jin | `yun_jin__skill__opening_flourish.frames` | anim 59→62 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | anim 95→97 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95, anim 138→97 |
@@ -238,6 +228,7 @@ count; §4b lists the casts whose rule the schema default does not reproduce.
 | clorinde | `clorinde__skill__hunters_vigil` | **—** |  |  |
 | clorinde | `clorinde__skill__impale_the_night` | +11 electro (1U) |  | 150f / every 3 · 8 max |
 | clorinde | `clorinde__burst__last_lightfall` | +97 electro (1U) · +103 electro [icd] · +109 electro [icd] · +115 electro (1U) · +121 electro [icd] | ⚠️ regular, no authored summon: Last Lightfall ×5/6f | 150f / every 3 · 8 max |
+| clorinde | `clorinde__burst__last_lightfall · Q` | +97 electro (1U) · +103 electro [icd] · +109 electro [icd] · +115 electro (1U) · +121 electro [icd] | ⚠️ regular, no authored summon: Last Lightfall ×5/6f | 150f / every 3 · 8 max |
 | collei | `collei__skill__floral_brush` | +34 dendro (1U) · +138 dendro (1U) |  | `none` |
 | collei | `collei__burst__trumpcard_kitty` | +25 dendro (1U) | 12× Trump-Card Kitty (Leap) | 180f / first only |
 | columbina | `columbina__skill__eternal_tides` | +21 hydro (1U) | 12× Skill (DoT) | `none` |
@@ -531,7 +522,7 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**298** authored casts replayed · **275** agree hit for hit · **0** ⛔ gate · **21** ⚠️ list · **2** on a named counter (§4d)
+**299** authored casts replayed · **276** agree hit for hit · **0** ⛔ gate · **21** ⚠️ list · **2** on a named counter (§4d)
 
 <details><summary>⚠️ list rows (21)</summary>
 

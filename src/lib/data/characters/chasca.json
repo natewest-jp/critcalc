@@ -120,7 +120,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 98, "N": 99, "E": 102, "D": 101, "J": 100, "swap": 98 },
+			"frames": { "anim": 114, "N": 99, "E": 102, "D": 101, "J": 100, "swap": 98 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -129,7 +129,8 @@
 				"Grounded burst: burstFramesGrounded=InitAbilSlice(114), ActionAttack=99 ActionSkill=102 ActionDash=101 ActionJump=100 ActionSwap=98. burstFramesNS variant (when cast during NS) not authored — practical use is grounded.",
 				"Initial wave (Galesplitting Soulseeker Shell): hitmark=96, 158.4% Anemo at lvl=10. 6 secondary bullets at burstSecondaryHitmark=[103,139,147,153,157,160]. Anemo bullets deal 186.12% Anemo (Soulseeker Shell). For each Pyro/Hydro/Cryo/Electro teammate, two bullets are converted to Radiant Soulseeker Shells (372.24% element each). Element-converted bullet count and elements depend on team composition — not modelled per schema's lack of team-element-resolution.",
 				"ConsumeEnergy(3) on cast — drains 3 energy from teammates; not modelled.",
-				"behavior:instant since the entire damage event resolves within 160f (no persistent on-field entity)."
+				"behavior:instant since the entire damage event resolves within 160f (no persistent on-field entity).",
+				"↻ 2026-10-04 (frames-queue round): anim 98 → 114, the InitAbilSlice default (L4b had left it at the swap value). Set by hand rather than by migrate-frames-shape: her normals are an unresolved driver (MIGRATION_HOLDBACK) and must not ride along."
 			],
 			"description": "Chasca concentrates her will, firing a single \"Galesplitting Soulseeker Shell\" that deals Nightsoul-aligned AoE Anemo DMG. Afterward, the Galesplitting Soulseeker Shell will split into 6 Soulseeker Shells, which attack nearby opponents.\n\nSoulseeker Shells\n·Deal Nightsoul-aligned Anemo DMG.\n·For each Pyro, Hydro, Cryo, or Electro character in the party, two Soulseeker Shells will undergo corresponding Elemental Conversions to become \"Radiant Soulseeker Shells,\" which deal Nightsoul-aligned Elemental DMG from a randomly selected one of the corresponding Elemental Types.",
 			"application": [
