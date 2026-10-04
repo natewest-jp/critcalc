@@ -11,7 +11,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 - FrameMaps: **1145** authored · **1016** matching gcsim exactly · **47** disagreeing · **82** uncovered
 - skill/burst application schedules observed: **294** · unobserved: **19**
 - summon tick streams cross-checked: **59**
-- hits carrying a measured gcsim ICD cadence: **3071** of **3074**
+- hits carrying a measured gcsim ICD cadence: **3096** of **3099**
 
 ⛔ **No gcsim source (10)** — cannot be oracled at all, and nothing here may be written to them:
 
@@ -263,7 +263,7 @@ count; §4b lists the casts whose rule the schema default does not reproduce.
 | dori | `dori__burst__alcazarzarays_exactitude` | +28 electro (1U) · +52 electro [icd] · +76 electro [icd] · +100 electro [icd] · +124 electro [icd] · +148 electro [icd] · +172 electro [icd] · +196 electro [icd] · +220 electro (1U) · +244 electro [icd] · +268 electro [icd] · +292 electro [icd] · +316 electro [icd] · +340 electro [icd] · +364 electro [icd] · +388 electro [icd] · +412 electro (1U) · +436 electro [icd] · +460 electro [icd] · +484 electro [icd] · +508 electro [icd] · +532 electro [icd] · +556 electro [icd] · +580 electro [icd] · +604 electro (1U) · +628 electro [icd] · +652 electro [icd] · +676 electro [icd] · +700 electro [icd] · +724 electro [icd] · +748 electro [icd] · +772 electro [icd] | ⚠️ regular, no authored summon: Alcazarzaray's Exactitude: Connector DMG ×32/24f | 180f / first only |
 | durin | `durin__skill__binary_form_convergence_and_division` | **—** |  |  |
 | durin | `durin__burst__principle_of_purity_as_the_light_shifts` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 20× Dragon of White Flame | 150f / every 3 · 8 max |
-| durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] · +156 pyro (1U) · +214 pyro [icd] · +273 pyro (1U) · +332 pyro [icd] · +391 pyro (1U) · +450 pyro [icd] · +508 pyro (1U) · +567 pyro [icd] · +626 pyro (1U) · +685 pyro [icd] · +744 pyro (1U) · +802 pyro [icd] · +861 pyro (1U) · +920 pyro [icd] · +979 pyro (1U) · +1038 pyro [icd] · +1096 pyro (1U) · +1155 pyro [icd] · +1214 pyro (1U) · +1273 pyro [icd] |  | As the Light Shifts: 150f / every 3 · 8 max<br>Dragon of White Flame: 90f / first only |
+| durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 16× Dragon of Dark Decay | 150f / every 3 · 8 max |
 | emilie | `emilie__skill__fragrance_extraction` | +37 dendro (1U) · +62 dendro [0U] | 14× Lumidouce Case (Level 1) | `none` |
 | emilie | `emilie__burst__aromatic_explication` | +126 dendro (1U) · +162 dendro [icd] · +180 dendro [icd] · +234 dendro (1U) | 14× Lumidouce Case (Level 1) | 150f / every 3 · 8 max |
 | escoffier | `escoffier__skill__lowtemperature_cooking` | +23 cryo (1U) · +83 cryo [0U] · +153 cryo (1U) · +212 cryo [icd] · +270 cryo (1U) · +329 cryo [icd] · +387 cryo (1U) · +446 cryo [icd] · +504 cryo (1U) · +563 cryo [icd] · +621 cryo (1U) · +680 cryo [icd] · +738 cryo (1U) · +797 cryo [icd] · +855 cryo (1U) · +914 cryo [icd] · +972 cryo (1U) · +1031 cryo [icd] · +1089 cryo (1U) · +1148 cryo [icd] · +1206 cryo (1U) · +1265 cryo [icd] · +1323 cryo (1U) |  | Low-Temperature Cooking + Frosty Parfait: 90f / first only<br>Surging Blade (escoffier): `none` |
@@ -504,7 +504,6 @@ MODELS (one entry may be several gcsim hits; a Durability-0 hit is not an entry)
 | chevreuse | `chevreuse__burst__ring_of_bursting_grenades` | Secondary Explosive Shell | 2/8 | 180f / every 3 · 2 max | 1 `none` | ✅ authored |
 | diluc | `diluc__burst__dawn` |  | 1/3 | 300f / every 5 · 6 max |  | ✅ authored |
 | dori | `dori__burst__alcazarzarays_exactitude` |  | 4/32 | 180f / first only |  | ✅ authored |
-| durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | Dragon of White Flame | 10/20 | 90f / first only | ⚠️ 1 other group | ⛔ `standard` |
 | layla | `layla__skill__nights_of_formal_focus` | Shooting Star | 1/4 | 180f / every 7 · 2 max | 1 `none` | ✅ authored |
 | odette | `odette__skill__adagio_coda_at_dawns_tolling` | Coda at Dawn's Tolling | 1/3 | 180f / first only | 11 `none` | ✅ authored |
 | sigewinne | `sigewinne__burst__super_saturated_syringing` |  | 2/6 | 114f / first only |  | ✅ authored |
@@ -527,13 +526,13 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**294** authored casts replayed · **271** agree hit for hit · **1** ⛔ gate · **22** ⚠️ list
+**294** authored casts replayed · **272** agree hit for hit · **1** ⛔ gate · **21** ⚠️ list
 
 | character | ability | planner applies | gcsim applies | disagrees at |
 | --- | --- | --- | --- | --- |
 | nilou | `nilou__skill__whirling_steps_1` | +21 | — | +21 extra |
 
-<details><summary>⚠️ list rows (22)</summary>
+<details><summary>⚠️ list rows (21)</summary>
 
 | character | ability | authored entries | gcsim gauge hits | planner applies | gcsim applies |
 | --- | --- | --- | --- | --- | --- |
@@ -541,7 +540,6 @@ A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gaug
 | amber | `amber__skill__explosive_puppet` | +530 | — | +530 | — |
 | baizhu | `baizhu__burst__holistic_revivification` | — | +252 +398 +544 +690 +836 +988 | — | +252 +398 +544 +690 +836 +988 |
 | barbara | `barbara__skill__let_the_show_begin` | +3 +42 +78 +93 +183 +273 +363 +453 +543 +633 +723 +813 | +3 +42 +78 +93 +183 +273 +363 +453 +543 +633 +723 +813 +903 | +3 +93 +183 +363 +543 +723 | +3 +93 +183 +363 +543 +723 +903 |
-| durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 +121 +154 | +97 +121 +154 +156 +214 +273 +332 +391 +450 +508 +567 +626 +685 +744 +802 +861 +920 +979 +1038 +1096 +1155 +1214 +1273 | +97 | +97 +156 +273 +391 +508 +626 +744 +861 +979 +1096 +1214 |
 | emilie | `emilie__burst__aromatic_explication` | — | +126 +162 +180 +234 | — | +126 +234 |
 | escoffier | `escoffier__skill__lowtemperature_cooking` | +23 | +23 +153 +212 +270 +329 +387 +446 +504 +563 +621 +680 +738 +797 +855 +914 +972 +1031 +1089 +1148 +1206 +1265 +1323 | +23 | +23 +153 +270 +387 +504 +621 +738 +855 +972 +1089 +1206 +1323 |
 | furina | `furina__skill__salon_solitaire` | +18 | +18 +110 +131 +137 +209 +307 +336 +405 +445 +498 +540 +595 +693 +744 +760 +792 +891 +936 +985 +1072 +1087 +1139 +1184 +1278 +1347 +1378 +1384 +1477 +1546 +1576 +1669 +1700 +1749 | +18 | +18 +110 +131 +137 +307 +445 +498 +540 +693 +760 +891 +936 +1072 +1087 +1278 +1347 +1384 +1477 +1669 +1700 +1749 |
@@ -624,7 +622,7 @@ which the pair alone cannot state.
 | columbina | `eternal_tides` | Gravity Ripple 138f / 117f × 12 · `none` | Skill (DoT) 138f / 117f × 12 · 12/12 `none` | `none` |
 | diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · 3/6 `standard` | 150f / every 3 · 8 max |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f × 20 · 90f / first only | Dragon of White Flame 156f / 59f × 20 · 10/20 `other` | 90f / first only |
-| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 176f / 74f × 16 · 120f / first only | — | — |
+| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 185f / 74f × 16 · 120f / first only | Dragon of Dark Decay 185f / 74f × 16 · 8/16 `other` | 120f / first only |
 | emilie | `fragrance_extraction` | Lumidouce Case 111f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
 | emilie | `aromatic_explication` | Lumidouce Case 126f / 54f × 3 · `standard`<br>Lumidouce Case 401f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 120f / first only |
 | escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 153f / 59f × 19 · 90f / first only | — | — |
@@ -695,6 +693,7 @@ Level-1 stream carries her bespoke one, so her burst is deliberately left bare.
 | chiori | `fluttering_hasode` | Fluttering Hasode (Tamato) | 4/5 `other` | 114f / first only | ✅ authored |
 | collei | `trumpcard_kitty` | Trump-Card Kitty (Leap) | 2/12 `other` | 180f / first only | ✅ authored |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame | 10/20 `other` | 90f / first only | ✅ authored |
+| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay | 8/16 `other` | 120f / first only | ✅ authored |
 | emilie | `fragrance_extraction` | Lumidouce Case (Level 1) | 7/14 `standard` | 120f / first only | ✅ authored |
 | emilie | `aromatic_explication` | Lumidouce Case (Level 1) | 7/14 `standard` | 120f / first only | ⚠️ pair by eye (2 authored / 1 observed) — currently — |
 | fischl | `nightrider` | Oz (Skill) | 3/10 `other` | 300f / every 4 · 8 max | ✅ authored |
