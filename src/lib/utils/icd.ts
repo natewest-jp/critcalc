@@ -27,6 +27,21 @@ export type IcdParams = {
 	timer: number;
 	/** Counter length: every `hits`-th hit applies (1 = every hit applies) */
 	hits: number;
+	/**
+	 * At most this many applications per timer window; absent = no limit.
+	 *
+	 * ⚓ WHY A THIRD NUMBER (ICD Timeline pass, 2026-10-04). The game does not
+	 * store "every 3rd hit": each ICD group is a reset timer plus a FINITE list
+	 * of which hits apply (gcsim `icd_groups.dm.go`, generated from game data),
+	 * and past the list's end gcsim reads its last entry — a 0 in every group
+	 * that has one. All 64 groups are evenly spaced from hit 1 and then stop, so
+	 * `(timer, hits, cap)` states every one of them exactly: Default is
+	 * (2.5s, 3, 8) — 24 entries, applying on hits 1, 4 … 22 — Chevreuse's
+	 * Burst mines (3s, 3, 2), Layla's Shooting Stars (3s, 7, 2).
+	 * ⚠️ No authored `IcdWindow` carries one yet, so a cap reaches the planner
+	 * only through the standard below.
+	 */
+	cap?: number;
 };
 
 /**
@@ -36,14 +51,14 @@ export type IcdParams = {
  * carry: 150 frames, not 2.5 seconds. The seconds form below is derived from it
  * so the two can never disagree (gauge-round.md C1).
  */
-export const STANDARD_ICD_FRAMES: IcdParams = { timer: 150, hits: 3 };
+export const STANDARD_ICD_FRAMES: IcdParams = { timer: 150, hits: 3, cap: 8 };
 
 /** Standard ICD in SECONDS — the Visualizers' ICD instrument, whose axis, its
  *  presets and its readouts are all seconds because that is what a reader
  *  thinks in. **Derived**, never restated. */
 export const STANDARD_ICD: IcdParams = {
-	timer: STANDARD_ICD_FRAMES.timer / FPS,
-	hits: STANDARD_ICD_FRAMES.hits
+	...STANDARD_ICD_FRAMES,
+	timer: STANDARD_ICD_FRAMES.timer / FPS
 };
 
 /** gcsim's `ICDTagNone` as instrument params: every hit applies. Unit-free — a
@@ -77,6 +92,9 @@ export type IcdHit = {
 	viaTimer: boolean;
 	/** Hit-counter value after this hit (1 … hits) */
 	count: number;
+	/** Blocked because this window's `cap` applications are spent — the group's
+	 *  list has no application left before its timer runs out. */
+	capped: boolean;
 };
 
 // Float-noise guard for interval multiples landing exactly on the timer edge
@@ -88,9 +106,11 @@ export type IcdClock = {
 	timerStart: number;
 	/** Hits taken since the counter last reset. */
 	count: number;
+	/** Applications since the timer last started — what `cap` is checked against. */
+	applied: number;
 };
 
-export const createIcdClock = (): IcdClock => ({ timerStart: -Infinity, count: 0 });
+export const createIcdClock = (): IcdClock => ({ timerStart: -Infinity, count: 0, applied: 0 });
 
 /** Advance `clock` by one hit at `time` and report whether it applies its
  *  element. Mutates the clock — a hit that is offered to the clock is a hit
@@ -101,20 +121,32 @@ export const createIcdClock = (): IcdClock => ({ timerStart: -Infinity, count: 0
  *  feeds it FRAMES with `STANDARD_ICD_FRAMES`, the instrument feeds it SECONDS
  *  with `STANDARD_ICD`. ⛔ Don't "fix" it to one unit — serving both from one
  *  implementation is the point (gauge-round.md C1/C5). */
-export function icdApplies(clock: IcdClock, time: number, { timer, hits }: IcdParams): IcdHit {
+export function icdApplies(
+	clock: IcdClock,
+	time: number,
+	{ timer, hits, cap = Infinity }: IcdParams
+): IcdHit {
 	if (time - clock.timerStart >= timer - EPS) {
 		clock.timerStart = time;
 		clock.count = 1;
-		return { time, applies: true, viaTimer: true, count: 1 };
+		clock.applied = 1;
+		return { time, applies: true, viaTimer: true, count: 1, capped: false };
 	}
 
 	clock.count += 1;
+	// ⚓ Once the window's applications are spent, every later hit in it is
+	// past the list's last 1 — capped, whatever the counter says.
+	if (clock.applied >= cap) {
+		if (clock.count > hits) clock.count = 1;
+		return { time, applies: false, viaTimer: false, count: clock.count, capped: true };
+	}
 	if (clock.count > hits) {
 		clock.count = 1;
-		return { time, applies: true, viaTimer: false, count: 1 };
+		clock.applied += 1;
+		return { time, applies: true, viaTimer: false, count: 1, capped: false };
 	}
 
-	return { time, applies: false, viaTimer: false, count: clock.count };
+	return { time, applies: false, viaTimer: false, count: clock.count, capped: false };
 }
 
 export function simulateIcd(hitTimes: number[], params: IcdParams): IcdHit[] {

@@ -75,7 +75,13 @@
 	</p>
 	<p>
 		Faster attack strings do not mean proportionally more elemental application — watch the
-		application rate as you drag the hit interval.
+		applications per window as you drag the hit interval, and point at a hit to see why it applies
+		or is blocked.
+	</p>
+	<p>
+		Standard is the default, not the only rule. The examples load real hit timings with their own
+		ICD groups — Fischl's Oz, Hu Tao's charged attacks, Chevreuse's Burst and Layla's Shooting
+		Stars. Some groups stop applying after a set number of hits until their timer runs out.
 	</p>
 </section>
 
