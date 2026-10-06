@@ -1,8 +1,9 @@
 # Instrument layout — one form for the Visualizers (2026-10-06)
 
-**Status:** branch `polish/viz-instrument-layout`, awaiting Nate's look at every tier. Started
-from Nate's read of the Enemy RES & DEF pass: its wide layout fills the screen top to bottom,
-and the other instruments' did not (only their Readout reached the bottom).
+**Status:** ✅ merged to `main` and pushed 2026-10-06 (branch `polish/viz-instrument-layout`;
+Nate signed off on all three tiers). Started from Nate's read of the Enemy RES & DEF pass: its
+wide layout filled the screen top to bottom, and the other instruments' did not (only their
+Readout reached the bottom).
 
 ## 1. Every chart takes the tile's height (`3f810bb9`)
 
@@ -79,5 +80,5 @@ Three slots — `.instrument-chart`, `.instrument-controls` (one `.panel`, or a 
 
 - ⚓ Damage Breakdown keeps the bare scene under its waterfall at the wide tier (Nate) — no
   row stretch.
-- Safari: unchecked by eye (the `min-height` + `fr` rows, `contain: size`, the sticky
-  Readout).
+- Safari: Nate's to check by eye (the `min-height` + `fr` rows, `contain: size`, the sticky
+  Readout) — e2e WebKit is green, which catches throws, not rendering.
