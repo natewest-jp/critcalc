@@ -8,9 +8,11 @@ import {
 	pieceNow,
 	pieceFuture,
 	pieceReshape,
+	piecePopulation,
+	upgradeTotals,
 	type PieceQuery
 } from './appraise';
-import { distStats, pairOutcome, substatById, type ValueDist } from './artifactOdds';
+import { collapse, distStats, freshOutcome, substatById } from './artifactOdds';
 
 // Expectations pinned after a full cross-validation against the Genshin
 // Optimizer's generated artifact_sub_rolls.json (2026-07-07): identical
@@ -129,11 +131,11 @@ describe('lineDetail', () => {
 	});
 });
 
-describe("a piece's pair", () => {
-	const sum = (d: ValueDist) => d.reduce((acc, x) => acc + x.p, 0);
+describe('a piece', () => {
+	const sum = (d: { p: number }[]) => d.reduce((acc, x) => acc + x.p, 0);
 	const demo: PieceQuery = {
 		unit: 'cv',
-		pair: ['cr', 'cd'],
+		wanted: ['cr', 'cd'],
 		main: 'hp',
 		level: 20,
 		lines: [
@@ -142,7 +144,8 @@ describe("a piece's pair", () => {
 			{ id: 'atkPct', value: 9.9 },
 			{ id: 'er', value: 5.2 }
 		],
-		counts: [2, 3, 2, 1]
+		counts: [2, 3, 2, 1],
+		selected: ['cr', 'cd']
 	};
 
 	it('now: the displayed crit value', () => {
@@ -152,12 +155,13 @@ describe("a piece's pair", () => {
 		expect(now[0].p).toBeCloseTo(1, 12);
 	});
 
-	it('at +20 the future IS now', () => {
-		const [future, now] = [pieceFuture(demo), pieceNow(demo)];
-		expect(future.map((d) => d.x)).toEqual(now.map((d) => d.x));
+	it('at +20 the future IS now, tagged with the upgrades your stats took', () => {
+		const future = pieceFuture(demo);
+		expect(collapse(future).map((d) => d.x)).toEqual(pieceNow(demo).map((d) => d.x));
+		expect(future.every((o) => o.k === 3)).toBe(true);
 	});
 
-	it('a fresh 4-line +0 piece with both lines is the Level up chart', () => {
+	it('a fresh 4-line +0 piece starts the Level up chart from its own rolls', () => {
 		const fresh: PieceQuery = {
 			...demo,
 			level: 0,
@@ -169,13 +173,12 @@ describe("a piece's pair", () => {
 			],
 			counts: [1, 1, 1, 1]
 		};
-		const future = distStats(pieceFuture(fresh));
-		const generic = distStats(pairOutcome('cv', ['cr', 'cd'], 5));
+		const future = distStats(collapse(pieceFuture(fresh)));
+		const generic = distStats(collapse(freshOutcome('cv', ['cr', 'cd'], 5)));
 		// same rolls to come, but this piece starts on the bottom tier of both
 		// lines: (6.61 − 5.44) CV under the CR average, (6.605 − 5.44) under CD's
 		// (to 0.1 — the display rounds each line)
 		expect(future.mean).toBeCloseTo(generic.mean - (6.61 - 5.44) - (6.605 - 5.44), 1);
-		expect(sum(pieceFuture(fresh))).toBeCloseTo(1, 9);
 	});
 
 	it('a 3-line +0 piece mixes over its 4th line', () => {
@@ -187,23 +190,39 @@ describe("a piece's pair", () => {
 				{ id: 'atkPct', value: 4.1 },
 				{ id: 'er', value: 4.5 }
 			],
-			counts: [1, 1, 1]
+			counts: [1, 1, 1],
+			selected: []
 		};
-		const d = pieceFuture(three);
+		const d = collapse(pieceFuture(three));
 		expect(sum(d)).toBeCloseTo(1, 9);
 		// the bottom: CD never arrives and CR takes no rolls → 2 × 3.9
 		expect(d[0].x).toBeCloseTo(7.8, 9);
 	});
 
-	it('a reshape keeps the initial rolls and deals the rest again', () => {
-		const after = pieceReshape(demo, 4, 2);
+	it('a reshape keeps the first rolls and deals the rest again', () => {
+		const after = collapse(pieceReshape(demo, 4, 2));
 		expect(sum(after)).toBeCloseTo(1, 9);
-		// floor: both initial rolls at their lowest possible + 2 min CR-or-CD rolls
 		expect(after[0].x).toBeGreaterThanOrEqual(2 * 2.7 + 5.4 + 5.4);
 	});
 
-	it('no reshape for a pair the piece does not hold', () => {
-		const one = { ...demo, pair: ['cr', 'em'] as [(typeof demo.pair)[0], 'em'] };
-		expect(pieceReshape(one, 4, 2)).toEqual([]);
+	it('no reshape without two selected lines', () => {
+		expect(pieceReshape({ ...demo, selected: ['cr'] }, 4, 2)).toEqual([]);
+	});
+
+	it('the population is every finished piece with these lines', () => {
+		const pop = piecePopulation(demo, 4);
+		expect(sum(pop)).toBeCloseTo(1, 9);
+		expect(distStats(pop).median).toBeLessThan(34.2);
+	});
+
+	it('upgrade totals list what the values could add up to', () => {
+		const inf = [
+			inferRollCounts('cr', 6.6),
+			inferRollCounts('cd', 21.8),
+			inferRollCounts('atkPct', 9.9),
+			inferRollCounts('er', 5.2)
+		];
+		// CR 1 + CD 2-or-3 + ATK% 1 + ER 0
+		expect(upgradeTotals(inf)).toEqual([4, 5]);
 	});
 });

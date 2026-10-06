@@ -11,19 +11,18 @@
 // covers them all). Cross-validated against GO's artifact_sub_rolls.json.
 
 import {
-	addPairRolls,
-	floorDist,
-	jointOf,
-	mixJoints,
+	collapse,
+	mixOutcomes,
 	nextLineChance,
+	outcome,
 	rollsLeftAt,
 	substatById,
 	SUBSTATS,
-	toValues,
 	uniformLine,
 	unitTiers,
-	type LineSums,
+	type LineState,
 	type MainStatId,
+	type Outcome,
 	type Substat,
 	type SubstatId,
 	type ValueDist,
@@ -218,97 +217,118 @@ export function resolvePiece(inferences: CountInference[][], level = 20): PieceR
 	return resolutions;
 }
 
-// ── A piece's pair: now, at +20, and after a reshape ────────────────────────
+// ── A piece: now, at +20, ranked, and reshaped ──────────────────────────────
 
 export type PieceLine = { id: SubstatId; value: number };
 
 export type PieceQuery = {
 	unit: ValueUnit;
-	/** The target pair, in the unit's order (for `cv`: CR first) */
-	pair: [SubstatId, SubstatId];
+	/** Your stats among the substats (the main stat aside) */
+	wanted: SubstatId[];
 	main: MainStatId;
 	level: number;
+	/** 3 lines only at +0 */
 	lines: PieceLine[];
 	/** Per line, the resolution's roll count */
 	counts: number[];
+	/** The selected lines: a reshape's two, or a defined piece's */
+	selected: SubstatId[];
 };
 
-/** A pair line's sums on this piece (or null when the piece doesn't have it). */
-function pairLine(q: PieceQuery, i: 0 | 1, pick: 'sum' | 'initial'): LineSums {
-	const at = q.lines.findIndex((l) => l.id === q.pair[i]);
-	if (at < 0) return null;
-	const detail = lineDetail(q.lines[at].id, q.lines[at].value, q.counts[at]);
+/** What a line's display says, in the unit: its sum so far, or its first roll. */
+function lineStart(q: PieceQuery, i: number, pick: 'sum' | 'initial'): Map<number, number> {
+	const { id, value } = q.lines[i];
+	const detail = lineDetail(id, value, q.counts[i]);
 	if (pick === 'sum') return q.unit === 'cv' ? detail.units : detail.rv;
-	// the initial roll's tier → its value in the unit
-	const tiers = unitTiers(q.unit, q.pair[i]);
+	const tiers = unitTiers(q.unit, id);
 	return new Map([...detail.initial].map(([tier, p]) => [tiers[tier], p]));
 }
 
-const has = (q: PieceQuery, i: 0 | 1) => q.lines.some((l) => l.id === q.pair[i]);
-
-/** The pair's value on the piece as it is now (exact for CV, read for RV). */
-export function pieceNow(q: PieceQuery): ValueDist {
-	return toValues(q.unit, jointOf(pairLine(q, 0, 'sum'), pairLine(q, 1, 'sum')));
+function lineStates(q: PieceQuery, pick: 'sum' | 'initial' | 'fresh'): LineState[] {
+	return q.lines.map((l, i) => ({
+		id: l.id,
+		wanted: q.wanted.includes(l.id),
+		selected: q.selected.includes(l.id),
+		start: pick === 'fresh' ? uniformLine(unitTiers(q.unit, l.id)) : lineStart(q, i, pick)
+	}));
 }
 
-/** Rolls the pair lines already received beyond their first. */
-const rollsInPair = (q: PieceQuery) =>
-	q.lines.reduce((acc, l, i) => acc + (q.pair.includes(l.id) ? q.counts[i] - 1 : 0), 0);
+/** Upgrades the given lines already took (rolls beyond their first). */
+const upgradesIn = (q: PieceQuery, ids: SubstatId[]) =>
+	q.lines.reduce((acc, l, i) => acc + (ids.includes(l.id) ? q.counts[i] - 1 : 0), 0);
+
+/** Your stats' value on the piece as it is now (exact for CV, read off the display for rolls). */
+export function pieceNow(q: PieceQuery): ValueDist {
+	return collapse(outcome(q.unit, lineStates(q, 'sum'), 0));
+}
 
 /**
- * What the pair can be at +20, from where the piece is. A defined piece's
- * floor counts the rolls the pair already has (the top-up reading: the
+ * What your stats can be at +20, from where the piece is. A defined piece's
+ * floor counts what its selected lines already took (the top-up reading: the
  * guarantee only acts on what is left). A 3-line piece at +0 first draws its
  * 4th line — weighted, from the pool minus the main stat and its three — and
- * that line may be one of the pair.
+ * that line may be one of your stats.
  */
-export function pieceFuture(q: PieceQuery, floor = 0): ValueDist {
-	const tiers = q.pair.map((id) => unitTiers(q.unit, id)) as [number[], number[]];
-	const fromLines = (
-		ids: SubstatId[],
-		start: ReturnType<typeof jointOf>,
-		already: number,
-		left: number
-	) => {
-		const onA = ids.includes(q.pair[0]);
-		const onB = ids.includes(q.pair[1]);
-		const lines = Number(onA) + Number(onB);
-		const counts = floorDist(left, lines / 4, lines === 2 ? floor : 0, already);
-		return addPairRolls(start, counts, onA ? tiers[0] : null, onB ? tiers[1] : null);
-	};
-
-	const start = jointOf(pairLine(q, 0, 'sum'), pairLine(q, 1, 'sum'));
-	const ids = q.lines.map((l) => l.id);
+export function pieceFuture(q: PieceQuery, floor = 0): Outcome {
+	const states = lineStates(q, 'sum');
 	if (q.lines.length === 4)
-		return toValues(q.unit, fromLines(ids, start, rollsInPair(q), rollsLeftAt(q.level)));
+		return outcome(
+			q.unit,
+			states,
+			rollsLeftAt(q.level),
+			floor,
+			upgradesIn(q, q.selected),
+			upgradesIn(q, q.wanted)
+		);
 
-	// 3 lines at +0: the next upgrade adds a line, then 4 value rolls
+	const have = q.lines.map((l) => l.id);
 	const parts = SUBSTATS.map((x) => x.id)
-		.filter((id) => id !== q.main && !ids.includes(id))
-		.map((id) => {
-			const w = nextLineChance(q.main, ids, id);
-			const slot = q.pair.indexOf(id);
-			const seeded =
-				slot < 0
-					? start
-					: jointOf(
-							slot === 0 ? uniformLine(tiers[0]) : pairLine(q, 0, 'sum'),
-							slot === 1 ? uniformLine(tiers[1]) : pairLine(q, 1, 'sum')
-						);
-			return { w, joint: fromLines([...ids, id], seeded, 0, rollsLeftAt(4)) };
-		});
-	return toValues(q.unit, mixJoints(parts));
+		.filter((id) => id !== q.main && !have.includes(id))
+		.map((id) => ({
+			w: nextLineChance(q.main, have, id),
+			out: outcome(
+				q.unit,
+				[
+					...states,
+					{
+						id,
+						wanted: q.wanted.includes(id),
+						selected: q.selected.includes(id),
+						start: uniformLine(unitTiers(q.unit, id))
+					}
+				],
+				rollsLeftAt(4),
+				floor
+			)
+		}));
+	return mixOutcomes(parts);
 }
 
 /**
- * The pair after a reshape of this +20 piece at `floor` (2 Standard, 3
- * Advanced, 4 Decreed): every line keeps its INITIAL roll, and all the
- * piece's value rolls are dealt again, topped up to the floor. Needs both
- * pair lines on the piece — a reshape selects two of its own lines.
+ * Every finished piece with these lines (and this selection, if defined) —
+ * what a finished piece is ranked against.
  */
-export function pieceReshape(q: PieceQuery, events: number, floor: number): ValueDist {
-	if (!has(q, 0) || !has(q, 1)) return [];
-	const [ta, tb] = q.pair.map((id) => unitTiers(q.unit, id));
-	const start = jointOf(pairLine(q, 0, 'initial'), pairLine(q, 1, 'initial'));
-	return toValues(q.unit, addPairRolls(start, floorDist(events, 0.5, floor), ta, tb));
+export function piecePopulation(q: PieceQuery, events: number, floor = 0): ValueDist {
+	return collapse(outcome(q.unit, lineStates(q, 'fresh'), events, floor));
+}
+
+/**
+ * Your stats after a reshape of this +20 piece at `floor` (2 Standard, 3
+ * Advanced, 4 Decreed) on its two selected lines: every line keeps its FIRST
+ * roll, and all the piece's upgrades are dealt again, topped up to the floor.
+ */
+export function pieceReshape(q: PieceQuery, events: number, floor: number): Outcome {
+	if (q.selected.length !== 2) return [];
+	return outcome(q.unit, lineStates(q, 'initial'), events, floor);
+}
+
+/** Every upgrade total these values could add up to (when no level fits). */
+export function upgradeTotals(inferences: CountInference[][]): number[] {
+	let totals = new Set([0]);
+	for (const line of inferences) {
+		const next = new Set<number>();
+		for (const t of totals) for (const c of line) next.add(t + c.count - 1);
+		totals = next;
+	}
+	return [...totals].sort((a, b) => a - b);
 }

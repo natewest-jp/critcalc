@@ -2,7 +2,6 @@
 	import {
 		SLOTS,
 		SUBSTATS,
-		FOUR_LINE,
 		RESIN_PER_RUN,
 		RESIN_PER_DAY,
 		EXTRA_FIVE_STAR,
@@ -10,22 +9,25 @@
 		substatPool,
 		substatById,
 		presenceProbability,
+		targetLinesChance,
 		pieceChance,
 		farmMiss,
 		farmStats,
-		floorDist,
-		pairOutcome,
+		freshOutcome,
+		mixOutcomes,
+		collapse,
 		distStats,
 		compareTo,
 		percentileOf,
 		meanOf,
 		rollEvents,
 		reshapeDust,
+		unitFor,
 		type SlotId,
 		type MainStatId,
 		type SubstatId,
-		type ValueDist,
-		type ValueUnit
+		type Outcome,
+		type ValueDist
 	} from './artifactOdds';
 	import {
 		inferRollCounts,
@@ -33,138 +35,161 @@
 		possibleValues,
 		pieceNow,
 		pieceFuture,
+		piecePopulation,
 		pieceReshape,
+		upgradeTotals,
 		type PieceQuery
 	} from './appraise';
 	import ValueWheel from './ValueWheel.svelte';
 
 	// ⚓ Three views, a piece's life (Nate, 2026-10-06): it DROPS, it is LEVELLED,
-	// and then it is YOUR piece — ranked, levelled further, or reshaped. The old
-	// Appraise and Reshape views merged here: a reshape needs a real piece, and
-	// the "current rolls" slider only ever stood in for one.
+	// and then it is YOUR piece — ranked, levelled further, or reshaped.
+	// ⚓ "What counts as good" is the player's set of stats (1–4), not a pair:
+	// a reshape selects two lines, and that selection lives on the piece card,
+	// where the game puts it (the radial on each line's right).
 	type View = 'drop' | 'level' | 'piece';
 	const VIEWS: { id: View; label: string }[] = [
 		{ id: 'drop', label: 'Drop' },
 		{ id: 'level', label: 'Level up' },
 		{ id: 'piece', label: 'Your piece' }
 	];
-	const LEVELS = [0, 4, 8, 12, 16, 20];
+	/** Levels by the upgrade they have reached: +0–3 has none, +20 all five */
+	const LEVELS = [
+		{ at: 0, label: '+0–3' },
+		{ at: 4, label: '+4–7' },
+		{ at: 8, label: '+8–11' },
+		{ at: 12, label: '+12–15' },
+		{ at: 16, label: '+16–19' },
+		{ at: 20, label: '+20' }
+	];
 	const RESHAPES = [
-		{ floor: 2, label: 'Standard ≥2' },
-		{ floor: 3, label: 'Advanced ≥3' },
-		{ floor: 4, label: 'Decreed ≥4' }
+		{ floor: 2, label: 'Standard', hint: 'at least 2' },
+		{ floor: 3, label: 'Advanced', hint: 'at least 3' },
+		{ floor: 4, label: 'Decreed', hint: 'at least 4' }
 	] as const;
+	const MAX_WANTED = 4;
+	const DEFAULT_DAYS = 7;
 
-	/** A week of resin — where the farming marker starts. */
-	const DEFAULT_RESIN = 7 * RESIN_PER_DAY;
+	type Line = { id: SubstatId | ''; raw: string };
 	/** The demo piece: a +20 flower with double crit, so the view teaches itself. */
-	const demoLines = () => [
-		{ id: 'cr' as SubstatId | '', raw: '6.6' },
-		{ id: 'cd' as SubstatId | '', raw: '21.0' },
-		{ id: 'atkPct' as SubstatId | '', raw: '9.9' },
-		{ id: 'er' as SubstatId | '', raw: '5.2' }
+	const demoLines = (): Line[] => [
+		{ id: 'cr', raw: '6.6' },
+		{ id: 'cd', raw: '21.0' },
+		{ id: 'atkPct', raw: '9.9' },
+		{ id: 'er', raw: '5.2' }
 	];
 
 	// ── State ──────────────────────────────────────────────────────────────
 	let view = $state<View>('drop');
 	let slotId = $state<SlotId>('flower');
-	let mainId = $state<MainStatId>('hp');
-	let pair = $state<SubstatId[]>(['cr', 'cd']);
-	/** A Sanctifying Elixir piece: its two defined lines get ≥2 rolls by +20 */
-	let defined = $state(false);
+	/** Main stats you'd take. Drop accepts several; the other views use the first. */
+	let mains = $state<MainStatId[]>(['hp']);
+	/** Your stats — what counts as good */
+	let wanted = $state<SubstatId[]>(['cr', 'cd']);
+	/** Drop: at least this many of your stats on the piece */
+	let atLeast = $state(2);
+	let eitherSet = $state(false);
+	let days = $state(DEFAULT_DAYS);
+	/** Level up: the piece has this many of your stats */
+	let levelHas = $state(2);
 	let fourLine = $state(true);
-	let resin = $state(DEFAULT_RESIN);
+	/** Made with Sanctifying Elixir: its two selected lines get ≥2 upgrades by +20 */
+	let defined = $state(false);
 	let level = $state(20);
-	/** The 4th line may be '' (not there yet) at +0 only */
-	let lines = $state(demoLines());
+	let lines = $state<Line[]>(demoLines());
+	/** The card's radials: a reshape's two lines (a defined piece's, too) */
+	let selected = $state<SubstatId[]>(['cr', 'cd']);
 	let resolutionPick = $state(0);
 	let reshapeFloor = $state<2 | 3 | 4>(2);
+	/** A value to beat; null = the default (see each view) */
+	let refLevel = $state<number | null>(null);
+	let refPiece = $state<number | null>(null);
 
 	const slot = $derived(SLOTS.find((s) => s.id === slotId)!);
-	const main = $derived(slot.mains.find((m) => m.id === mainId) ?? slot.mains[0]);
+	const mainStats = $derived(slot.mains.filter((m) => mains.includes(m.id)));
+	const main = $derived(mainStats[0] ?? slot.mains[0]);
 	const pool = $derived(substatPool(main.id));
+	/** Your stats a substat line can hold (the main stat aside) */
+	const wantedSubs = $derived(wanted.filter((id) => id !== main.id));
+	const unit = $derived(unitFor(wantedSubs));
+
+	function resetRefs() {
+		refLevel = null;
+		refPiece = null;
+	}
 
 	function pickSlot(id: SlotId) {
 		slotId = id;
 		const s = SLOTS.find((x) => x.id === id)!;
-		if (!s.mains.some((m) => m.id === mainId)) mainId = s.mains[0].id;
-		fixPair();
+		const kept = mains.filter((m) => s.mains.some((x) => x.id === m));
+		mains = kept.length ? kept : [s.mains[0].id];
+		fixLines();
+		resetRefs();
 	}
 
+	// Drop takes every main you'd accept; the other views are ONE piece
 	function pickMain(id: MainStatId) {
-		mainId = id;
-		fixPair();
+		if (view === 'drop' && slot.mains.length > 1) {
+			if (mains.includes(id)) {
+				if (mains.length > 1) mains = mains.filter((m) => m !== id);
+			} else mains = [...mains, id];
+		} else mains = [id, ...mains.filter((m) => m !== id)];
+		fixLines();
+		resetRefs();
 	}
 
-	// The pair must live in the pool; refill from crit-first defaults if the
-	// main stat swallowed one of them
-	function fixPair() {
-		let next = pair.filter((p) => p !== mainId);
-		for (const candidate of ['cr', 'cd', 'atkPct', 'er'] as SubstatId[]) {
-			if (next.length >= 2) break;
-			if (candidate !== mainId && !next.includes(candidate)) next = [...next, candidate];
-		}
-		pair = next;
+	function toggleWanted(id: SubstatId) {
+		if (wanted.includes(id)) {
+			if (wanted.length > 1) wanted = wanted.filter((w) => w !== id);
+		} else if (wanted.length < MAX_WANTED) wanted = [...wanted, id];
+		atLeast = Math.min(Math.max(1, atLeast), wanted.length);
+		resetRefs();
 	}
 
-	// Click: deselect if selected; otherwise select, displacing the oldest
-	function togglePairStat(id: SubstatId) {
-		if (pair.includes(id)) {
-			if (pair.length > 1) pair = pair.filter((p) => p !== id);
-		} else {
-			pair = [...pair, id].slice(-2);
-		}
-	}
-
-	// ── The pair ───────────────────────────────────────────────────────────
-	const pairValid = $derived(pair.length === 2);
-	/** Crit value for the crit pair; roll value for any other */
-	const unit = $derived<ValueUnit>(pair.includes('cr') && pair.includes('cd') ? 'cv' : 'rv');
-	/** The engine's order: CR first for crit value, else as picked */
-	const orderedPair = $derived((unit === 'cv' ? ['cr', 'cd'] : pair) as [SubstatId, SubstatId]);
-	const pairLabel = $derived(pair.map((p) => substatById(p).short).join(' + '));
-	const unitWord = $derived(unit === 'cv' ? 'CV' : 'RV');
-	const floor = $derived(defined ? 2 : 0);
-
-	/** Each substat's chance to be among the piece's 4 lines (by +4) */
+	// ── Drop ───────────────────────────────────────────────────────────────
+	const linesChance = $derived(targetLinesChance(mainStats, wanted, atLeast));
+	const perPiece = $derived(pieceChance(1, linesChance, eitherSet));
+	const farm = $derived({
+		domain: farmStats(perPiece, false),
+		outbreak: farmStats(perPiece, true)
+	});
+	/** Each of your stats' chance to be one of the piece's four lines */
 	const lineChance = $derived(
 		Object.fromEntries(
 			SUBSTATS.map((s) => [s.id, s.id === main.id ? 0 : presenceProbability(pool, [s.id], 4)])
 		) as Record<SubstatId, number>
 	);
 
-	// ── Drop ───────────────────────────────────────────────────────────────
-	const p3 = $derived(pairValid ? presenceProbability(pool, pair, 3) : 0);
-	const p4 = $derived(pairValid ? presenceProbability(pool, pair, 4) : 0);
-	const pAtDrop = $derived((1 - FOUR_LINE.domain) * p3 + FOUR_LINE.domain * p4);
-	const perPiece = $derived(pieceChance(main.chance, p4));
-
-	const farm = $derived({
-		domain: farmStats(perPiece, false),
-		outbreak: farmStats(perPiece, true)
-	});
-
 	/** The axis runs to where the domain alone is 99% done, in whole ticks. */
 	const farmDomain = $derived.by(() => {
 		const perRun = (1 - perPiece) * (1 - EXTRA_FIVE_STAR * perPiece);
 		const runs = perPiece > 0 ? Math.ceil(Math.log(0.01) / Math.log(perRun)) : 100;
-		const step = niceStep(runs * RESIN_PER_RUN, 5);
-		return Math.max(step, Math.ceil((runs * RESIN_PER_RUN) / step) * step);
+		const span = (runs * RESIN_PER_RUN) / RESIN_PER_DAY;
+		const step = niceStep(span, 5);
+		return Math.max(step, Math.ceil(span / step) * step);
 	});
-	const shownResin = $derived(Math.min(resin, farmDomain));
+	const shownDays = $derived(Math.min(days, farmDomain));
+	const resinOf = (d: number) => Math.floor((d * RESIN_PER_DAY) / RESIN_PER_RUN) * RESIN_PER_RUN;
 	const chanceBy = $derived({
-		domain: 1 - farmMiss(shownResin, perPiece, false),
-		outbreak: 1 - farmMiss(shownResin, perPiece, true)
+		domain: 1 - farmMiss(resinOf(shownDays), perPiece, false),
+		outbreak: 1 - farmMiss(resinOf(shownDays), perPiece, true)
 	});
 
 	// ── Level up ───────────────────────────────────────────────────────────
 	const events = $derived(rollEvents(fourLine));
-	const levelDist = $derived(pairValid ? pairOutcome(unit, orderedPair, events, floor) : []);
-	const levelGhost = $derived(
-		pairValid && defined ? pairOutcome(unit, orderedPair, events, 0) : null
-	);
-	const levelStats = $derived(distStats(levelDist));
-	const levelRolls = $derived(floorDist(events, 0.5, floor));
+	const levelK = $derived(Math.min(levelHas, Math.max(1, wantedSubs.length)));
+	const levelFloor = $derived(defined && levelK >= 2 ? 2 : 0);
+	function levelOutcome(floor: number): Outcome {
+		if (!wantedSubs.length) return [];
+		// crit with one of the two on the piece: CR or CD, equally likely
+		if (unit === 'cv' && levelK === 1 && wantedSubs.length === 2)
+			return mixOutcomes(
+				wantedSubs.map((id) => ({ w: 0.5, out: freshOutcome(unit, [id], events, floor) }))
+			);
+		return freshOutcome(unit, wantedSubs.slice(0, levelK), events, floor);
+	}
+	const levelOut = $derived(levelOutcome(levelFloor));
+	const levelGhost = $derived(levelFloor ? collapse(levelOutcome(0)) : null);
 
 	// ── Your piece ─────────────────────────────────────────────────────────
 	const pieceLines = $derived(lines.filter((l) => l.id !== '') as { id: SubstatId; raw: string }[]);
@@ -179,43 +204,69 @@
 	const resolution = $derived(
 		resolutions.length ? resolutions[Math.min(resolutionPick, resolutions.length - 1)] : null
 	);
-	const hasPair = $derived(
-		orderedPair.map((id) => pieceLines.some((l) => l.id === id)) as [boolean, boolean]
+	/** Which levels these values fit — the level chips say so */
+	const fitsLevel = $derived(
+		Object.fromEntries(
+			LEVELS.map((l) => [l.at, resolvePiece(lineInferences, l.at).length > 0])
+		) as Record<number, boolean>
 	);
-	const pairOnPiece = $derived(Number(hasPair[0]) + Number(hasPair[1]));
+	const totals = $derived(
+		lineInferences.every((i) => i.length) ? upgradeTotals(lineInferences) : []
+	);
+	const upgradesAt = (at: number) => Math.floor(at / 4);
+
+	const wantedOnPiece = $derived(pieceLines.filter((l) => wantedSubs.includes(l.id)).length);
+	const sel = $derived(selected.filter((id) => pieceLines.some((l) => l.id === id)));
+	const pieceFloor = $derived(defined && sel.length === 2 ? 2 : 0);
 
 	const query = $derived<PieceQuery | null>(
-		resolution && pairValid && pairOnPiece > 0
+		resolution && wantedOnPiece > 0
 			? {
 					unit,
-					pair: orderedPair,
+					wanted: wantedSubs,
 					main: main.id,
 					level,
 					lines: pieceLines.map((l) => ({ id: l.id, value: Number(l.raw) })),
-					counts: resolution.counts
+					counts: resolution.counts,
+					selected: sel
 				}
 			: null
 	);
+	const finished = $derived(level >= 20);
 	const now = $derived(query ? pieceNow(query) : []);
 	const nowX = $derived(meanOf(now));
-	const finished = $derived(level >= 20);
-	const future = $derived(query && !finished ? pieceFuture(query, floor) : []);
-	const futureStats = $derived(distStats(future));
-	/** Every piece with these lines, for ranking a finished one */
+	/** Every finished piece with these lines: the ranking, and the default to beat */
 	const population = $derived(
-		query && resolution && finished
-			? pairOutcome(unit, orderedPair, resolution.events, floor, hasPair)
-			: []
+		query && resolution ? piecePopulation(query, resolution.events, pieceFloor) : []
 	);
 	const percentile = $derived(population.length ? percentileOf(population, now) : 0);
-	const canReshape = $derived(query !== null && finished && pairOnPiece === 2);
+	const future = $derived(query && !finished ? pieceFuture(query, pieceFloor) : []);
+	const canReshape = $derived(query !== null && finished && sel.length === 2);
 	const reshaped = $derived(
 		canReshape && query && resolution ? pieceReshape(query, resolution.events, reshapeFloor) : []
 	);
-	const reshapeOdds = $derived(compareTo(reshaped, now));
 
-	const pieceSolid = $derived(finished ? (canReshape ? reshaped : population) : future);
-	const pieceGhost = $derived(finished && canReshape ? population : null);
+	// ── The value chart, whichever view draws it ───────────────────────────
+	const solid = $derived<Outcome>(
+		view === 'level' ? levelOut : finished ? (canReshape ? reshaped : []) : future
+	);
+	const solidDist = $derived(collapse(solid));
+	const ghost = $derived<ValueDist | null>(
+		view === 'level' ? levelGhost : finished ? population : null
+	);
+	const stats = $derived(distStats(solidDist.length ? solidDist : (ghost ?? [])));
+	/** The value to beat: dragged, or the default — a typical piece */
+	const refDefault = $derived(
+		view === 'level' ? distStats(collapse(levelOut)).median : distStats(population).median
+	);
+	const reference = $derived(
+		view === 'level' ? (refLevel ?? refDefault) : finished ? nowX : (refPiece ?? refDefault)
+	);
+	const odds = $derived(
+		finished && view === 'piece'
+			? compareTo(collapse(reshaped), now)
+			: compareTo(solidDist, [{ x: reference, p: 1 }])
+	);
 
 	const fmtLineValue = (id: SubstatId, n: number) =>
 		substatById(id).isPct ? n.toFixed(1) : String(n);
@@ -227,28 +278,52 @@
 
 	// Changing a line's stat snaps its value to the nearest legal one
 	function setLineStat(index: number, id: SubstatId | '') {
+		const old = lines[index].id;
 		if (id === '') {
 			lines = lines.map((l, i) => (i === index ? { id: '', raw: '' } : l));
-			return;
+		} else {
+			const options = possibleValues(id);
+			const current = Number(lines[index].raw);
+			const nearest =
+				Number.isFinite(current) && lines[index].raw !== ''
+					? options.reduce((a, b) => (Math.abs(b - current) < Math.abs(a - current) ? b : a))
+					: options[0];
+			lines = lines.map((l, i) => (i === index ? { id, raw: fmtLineValue(id, nearest) } : l));
 		}
-		const options = possibleValues(id);
-		const current = Number(lines[index].raw);
-		const nearest =
-			Number.isFinite(current) && lines[index].raw !== ''
-				? options.reduce((a, b) => (Math.abs(b - current) < Math.abs(a - current) ? b : a))
-				: options[0];
-		lines = lines.map((l, i) => (i === index ? { id, raw: fmtLineValue(id, nearest) } : l));
+		if (old) selected = selected.filter((s) => s !== old);
+		resolutionPick = 0;
+		resetRefs();
 	}
 
-	// Past +0 a piece has all four lines: fill an empty 4th with the first free stat
-	function setLevel(next: number) {
-		level = next;
-		resolutionPick = 0;
-		if (next > 0 && lines[3].id === '') {
-			const free = SUBSTATS.find((s) => s.id !== main.id && !lines.some((l) => l.id === s.id))!;
-			setLineStat(3, free.id);
-		}
+	// A line that became the main stat, or a missing 4th past +0, is refilled
+	function fixLines() {
+		lines.forEach((l, i) => {
+			const taken = (id: SubstatId) => lines.some((x, j) => j !== i && x.id === id);
+			if (l.id === main.id || (l.id === '' && (i < 3 || level > 0))) {
+				const free = SUBSTATS.find((s) => s.id !== main.id && !taken(s.id))!;
+				setLineStat(i, free.id);
+			}
+		});
 	}
+
+	function setLevel(at: number) {
+		level = at;
+		resolutionPick = 0;
+		refPiece = null;
+		fixLines();
+	}
+
+	// The game's radial: two at most, and a third waits for one to be cleared
+	function toggleSelected(id: SubstatId) {
+		if (selected.includes(id)) selected = selected.filter((s) => s !== id);
+		else if (sel.length < 2) selected = [...sel, id];
+	}
+
+	// An ambiguous line's badge cycles the readings
+	function cycleReading() {
+		resolutionPick = (resolutionPick + 1) % Math.max(1, resolutions.length);
+	}
+	const countOptions = (i: number) => [...new Set(resolutions.map((r) => r.counts[i]))];
 
 	// ── Formatting ─────────────────────────────────────────────────────────
 	const fmtPct = (p: number, digits = 1) => {
@@ -258,22 +333,29 @@
 		if (p > 0 && Number(s) <= 0) return `<${(10 ** -digits).toFixed(digits)}%`;
 		return `${s}%`;
 	};
+	/** "N in 100", rounded, never 0 or 100 for an uncertain thing */
+	const inHundred = (p: number) => Math.min(99, Math.max(p > 0 ? 1 : 0, Math.round(p * 100)));
 	const oneIn = (p: number) => (p > 0 ? Math.round(1 / p).toLocaleString('en-US') : '—');
-	const fmtResin = (n: number) =>
-		Number.isFinite(n) ? Math.round(n).toLocaleString('en-US') : '—';
-	const fmtDays = (n: number) => {
-		const d = n / RESIN_PER_DAY;
-		return d < 10 ? d.toFixed(1) : Math.round(d).toLocaleString('en-US');
+	const fmtNum = (n: number) => (Number.isFinite(n) ? Math.round(n).toLocaleString('en-US') : '—');
+	const fmtDays = (resin: number) => {
+		if (!Number.isFinite(resin)) return '—';
+		const d = resin / RESIN_PER_DAY;
+		return d < 10 ? d.toFixed(1) : fmtNum(d);
 	};
-	const fmtAxis = (n: number) => (n >= 10_000 ? `${n / 1000}k` : n.toLocaleString('en-US'));
-	const fmtValue = (x: number) => (unit === 'cv' ? x.toFixed(1) : String(Math.round(x)));
+	const fmtValue = (x: number) => x.toFixed(1);
+	const unitWord = $derived(unit === 'cv' ? 'CV' : 'useful rolls');
+	const valueOf = (x: number) => `${fmtValue(x)} ${unitWord}`;
+	const slotWord = $derived(slot.name.toLowerCase());
+	/** ⚠️ Sands is its own plural */
+	const slotPlural = $derived(slotId === 'sands' ? 'sands' : `${slotWord}s`);
+	const statList = (ids: SubstatId[]) => ids.map((id) => substatById(id).short).join(', ');
 
 	// ── Geometry ───────────────────────────────────────────────────────────
 	let graphW = $state(720);
 	const PADL = 44;
 	const PADR = 16;
-	const TOP = 22;
-	const PLOT_H = 210;
+	const TOP = 26;
+	const PLOT_H = 200;
 	const plotY1 = TOP + PLOT_H;
 	const H = plotY1 + 30;
 	/** Axis labels stay at least this far apart (as in the ICD Timeline). */
@@ -282,137 +364,159 @@
 
 	/** The smallest 1/2/5 × 10ⁿ step that cuts `span` into at most `parts`. */
 	function niceStep(span: number, parts: number) {
-		const raw = span / parts;
+		const raw = span / Math.max(1, parts);
 		const mag = 10 ** Math.floor(Math.log10(Math.max(raw, 1e-9)));
 		return [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? 10 * mag;
 	}
 
-	// The farming chart: chance of the piece by resin spent, two curves
-	const farmXOf = $derived((r: number) => PADL + (r / farmDomain) * plotW);
+	// The farming chart: chance of the piece by days of resin, two curves
+	const farmXOf = $derived((d: number) => PADL + (d / farmDomain) * plotW);
 	const yOf = (p: number) => plotY1 - p * (PLOT_H - 8);
 	const farmTicks = $derived.by(() => {
-		const step = niceStep(farmDomain, Math.max(1, Math.floor(plotW / MIN_TICK_PX / 1.6)));
-		return Array.from({ length: Math.floor(farmDomain / step) + 1 }, (_, i) => i * step);
+		const step = niceStep(farmDomain, Math.floor(plotW / MIN_TICK_PX / 1.6));
+		return Array.from({ length: Math.floor(farmDomain / step + 1e-9) + 1 }, (_, i) => i * step);
 	});
 	function farmPath(outbreak: boolean) {
 		const n = Math.min(240, Math.max(2, Math.round(plotW / 3)));
 		let d = '';
 		for (let i = 0; i <= n; i++) {
-			const r = (i / n) * farmDomain;
-			const p = 1 - farmMiss(r, perPiece, outbreak);
-			d += `${i ? ' L' : 'M'}${farmXOf(r).toFixed(1)},${yOf(p).toFixed(1)}`;
+			const at = (i / n) * farmDomain;
+			const p = 1 - farmMiss(resinOf(at), perPiece, outbreak);
+			d += `${i ? ' L' : 'M'}${farmXOf(at).toFixed(1)},${yOf(p).toFixed(1)}`;
 		}
 		return d;
 	}
-	/** Where each curve crosses half — its label sits there */
-	const farmLabels = $derived(
-		[
-			{ text: 'Domain', median: farm.domain.median, primary: false },
-			{ text: 'Outbreak', median: farm.outbreak.median, primary: true }
-		].map((l) => ({ ...l, x: farmXOf(Math.min(l.median, farmDomain)) }))
-	);
+	const farmLabelX = $derived({
+		domain: farmXOf(Math.min(farm.domain.median / RESIN_PER_DAY, farmDomain)),
+		outbreak: farmXOf(Math.min(farm.outbreak.median / RESIN_PER_DAY, farmDomain))
+	});
 
-	// Drag scrubs the resin marker
+	// The value histogram: 1-CV or 0.1-roll bins, stacked by upgrades into your stats
+	const binW = $derived(unit === 'cv' ? 1 : 0.1);
+	const binOf = (x: number) => Math.round(Math.floor(x / binW + 1e-6) * binW * 10) / 10;
+	type Bin = { x: number; p: number; byK: number[] };
+	const solidBins = $derived.by<Bin[]>(() => {
+		const out: Bin[] = [];
+		for (const o of solid) {
+			const x = binOf(o.x);
+			let bin = out.find((b) => b.x === x);
+			if (!bin) out.push((bin = { x, p: 0, byK: [0, 0, 0, 0, 0, 0] }));
+			bin.p += o.p;
+			bin.byK[o.k] += o.p;
+		}
+		return out.sort((a, b) => a.x - b.x);
+	});
+	const ghostBins = $derived.by(() => {
+		const out: { x: number; p: number }[] = [];
+		for (const d of ghost ?? []) {
+			const x = binOf(d.x);
+			const last = out.find((b) => b.x === x);
+			if (last) last.p += d.p;
+			else out.push({ x, p: d.p });
+		}
+		return out.sort((a, b) => a.x - b.x);
+	});
+	const ks = $derived([...new Set(solid.map((o) => o.k))].sort((a, b) => a - b));
+	const histX0 = $derived(
+		Math.min(
+			solidBins[0]?.x ?? Infinity,
+			ghostBins[0]?.x ?? Infinity,
+			view === 'piece' && query ? binOf(nowX) : Infinity
+		)
+	);
+	const histX1 = $derived(
+		Math.max(
+			(solidBins.at(-1)?.x ?? -Infinity) + binW,
+			(ghostBins.at(-1)?.x ?? -Infinity) + binW,
+			view === 'piece' && query ? binOf(nowX) + binW : -Infinity
+		)
+	);
+	/** A few outcomes shouldn't turn into a handful of slabs: the axis spans at least this */
+	const MIN_SPAN = $derived(unit === 'cv' ? 12 : 1.5);
+	const histLo = $derived(
+		Math.max(0, Math.min(histX0, histX1 - MIN_SPAN / 2 - (histX1 - histX0) / 2))
+	);
+	const histHi = $derived(Math.max(histX1, histLo + MIN_SPAN));
+	const histMax = $derived(
+		Math.max(1e-9, ...solidBins.map((b) => b.p), ...ghostBins.map((b) => b.p))
+	);
+	const histXOf = $derived((x: number) => PADL + ((x - histLo) / (histHi - histLo)) * plotW);
+	const barW = $derived(Math.max(1, (binW / (histHi - histLo)) * plotW - 1));
+	const barH = (p: number) => PLOT_H * (p / histMax);
+	const histTicks = $derived.by(() => {
+		const step = Math.max(binW, niceStep(histHi - histLo, Math.floor(plotW / MIN_TICK_PX / 1.4)));
+		const first = Math.ceil(histLo / step - 1e-9) * step;
+		return Array.from(
+			{ length: Math.max(0, Math.floor((histHi - first) / step + 1e-9) + 1) },
+			(_, i) => Math.round((first + i * step) * 10) / 10
+		);
+	});
+	/** Upgrades into your stats → shade: more upgrades, denser gold */
+	const kOpacity = (k: number) => 0.2 + (0.8 * k) / 5;
+	/** A reference can be dragged in Level up and on an unfinished piece */
+	const draggable = $derived(view === 'level' || (view === 'piece' && !finished));
+
+	// Point to read; press and drag moves the value to beat (or the farming day)
+	let hoverX = $state<number | null>(null);
 	let scrubbing = $state(false);
-	function markerFrom(e: PointerEvent) {
+	function chartX(e: PointerEvent) {
 		const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
-		const frac = Math.min(1, Math.max(0, (e.clientX - rect.left - PADL) / plotW));
-		resin = Math.round((frac * farmDomain) / RESIN_PER_RUN) * RESIN_PER_RUN;
+		return (e.clientX - rect.left - PADL) / plotW;
+	}
+	function scrub(e: PointerEvent) {
+		const frac = Math.min(1, Math.max(0, chartX(e)));
+		if (view === 'drop') {
+			days = Math.max(0.1, Math.round(frac * farmDomain * 10) / 10);
+			return;
+		}
+		const x = Math.round((histLo + frac * (histHi - histLo)) * 10) / 10;
+		if (view === 'level') refLevel = x;
+		else refPiece = x;
 	}
 	function onDown(e: PointerEvent) {
+		if (view !== 'drop' && !draggable) return;
 		scrubbing = true;
-		markerFrom(e);
+		scrub(e);
 		(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
 	}
 	function onMove(e: PointerEvent) {
-		if (scrubbing) markerFrom(e);
+		if (scrubbing) scrub(e);
+		if (view !== 'drop') {
+			const x = histLo + chartX(e) * (histHi - histLo);
+			hoverX = x < histLo || x > histHi ? null : binOf(x);
+		}
 	}
 	function onUp(e: PointerEvent) {
 		scrubbing = false;
 		const el = e.currentTarget as SVGSVGElement;
 		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
 	}
-
-	// The value histogram (Level up, Your piece): 1-CV or 10-RV bins
-	type Bin = { x: number; p: number };
-	const binW = $derived(unit === 'cv' ? 1 : 10);
-	function binsOf(dist: ValueDist, w: number): Bin[] {
-		const out: Bin[] = [];
-		for (const d of dist) {
-			const x = Math.floor(d.x / w + 1e-9) * w;
-			const last = out.at(-1);
-			if (last && last.x === x) last.p += d.p;
-			else out.push({ x, p: d.p });
-		}
-		return out;
-	}
-
-	const histSolid = $derived(view === 'level' ? levelDist : pieceSolid);
-	const histGhost = $derived(view === 'level' ? levelGhost : pieceGhost);
-	const solidBins = $derived(binsOf(histSolid, binW));
-	const ghostBins = $derived(histGhost ? binsOf(histGhost, binW) : []);
-	const histX0 = $derived(
-		Math.min(solidBins[0]?.x ?? 0, ghostBins[0]?.x ?? Infinity, view === 'piece' ? nowX : Infinity)
-	);
-	const histX1 = $derived(
-		Math.max((solidBins.at(-1)?.x ?? 1) + binW, (ghostBins.at(-1)?.x ?? -Infinity) + binW)
-	);
-	const histMax = $derived(
-		Math.max(1e-9, ...solidBins.map((b) => b.p), ...ghostBins.map((b) => b.p))
-	);
-	const histXOf = $derived((x: number) => PADL + ((x - histX0) / (histX1 - histX0)) * plotW);
-	const barW = $derived(Math.max(1, (binW / (histX1 - histX0)) * plotW - 1));
-	const histTicks = $derived.by(() => {
-		const step = Math.max(
-			binW,
-			niceStep(histX1 - histX0, Math.max(1, Math.floor(plotW / MIN_TICK_PX / 1.4)))
-		);
-		const first = Math.ceil(histX0 / step) * step;
-		return Array.from(
-			{ length: Math.floor((histX1 - first) / step) + 1 },
-			(_, i) => first + i * step
-		);
-	});
-
-	type Marker = { x: number; label: string; strong: boolean };
-	const markers = $derived.by<Marker[]>(() => {
-		if (view === 'level')
-			return [
-				{ x: levelStats.p10, label: `p10 ${fmtValue(levelStats.p10)}`, strong: false },
-				{ x: levelStats.median, label: `median ${fmtValue(levelStats.median)}`, strong: false },
-				{ x: levelStats.p90, label: `p90 ${fmtValue(levelStats.p90)}`, strong: false }
-			];
-		if (!query) return [];
-		return [{ x: nowX, label: finished ? 'your piece' : 'now', strong: true }];
-	});
-
-	// Point to read: the bin under the pointer
-	let hoverX = $state<number | null>(null);
-	function onHistMove(e: PointerEvent) {
-		const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
-		const x = histX0 + ((e.clientX - rect.left - PADL) / plotW) * (histX1 - histX0);
-		hoverX = x < histX0 || x > histX1 ? null : Math.floor(x / binW + 1e-9) * binW;
-	}
 	const hovered = $derived.by(() => {
 		if (hoverX === null) return null;
-		const bin = solidBins.find((b) => b.x === hoverX);
-		const atLeast = histSolid.reduce((acc, d) => (d.x >= hoverX! - 1e-9 ? acc + d.p : acc), 0);
-		return { x: hoverX, p: bin?.p ?? 0, atLeast };
+		const at = hoverX;
+		const bin = solidBins.find((b) => b.x === at);
+		const reach = solidDist.reduce((acc, d) => (d.x >= at - 1e-9 ? acc + d.p : acc), 0);
+		return { x: at, p: bin?.p ?? 0, reach };
 	});
 
 	// ── Workspace handle (share + reset) ───────────────────────────────────
 	export function reset() {
 		view = 'drop';
 		slotId = 'flower';
-		mainId = 'hp';
-		pair = ['cr', 'cd'];
-		defined = false;
+		mains = ['hp'];
+		wanted = ['cr', 'cd'];
+		atLeast = 2;
+		eitherSet = false;
+		days = DEFAULT_DAYS;
+		levelHas = 2;
 		fourLine = true;
-		resin = DEFAULT_RESIN;
+		defined = false;
 		level = 20;
 		lines = demoLines();
+		selected = ['cr', 'cd'];
 		resolutionPick = 0;
 		reshapeFloor = 2;
+		resetRefs();
 	}
 
 	export function getShareState() {
@@ -420,12 +524,16 @@
 			v: 1,
 			view,
 			slot: slotId,
-			main: mainId,
-			pair,
-			defined,
+			mains,
+			wanted,
+			atLeast,
+			eitherSet,
+			days,
+			levelHas,
 			fourLine,
-			resin,
+			defined,
 			level,
+			selected,
 			reshape: reshapeFloor,
 			lines: lines.map((l) => [l.id, l.raw])
 		};
@@ -435,49 +543,80 @@
 		if (typeof state !== 'object' || state === null) return;
 		const s = state as Record<string, unknown>;
 		if (s.v !== 1) return;
+		const isSub = (x: unknown): x is SubstatId =>
+			typeof x === 'string' && SUBSTATS.some((ss) => ss.id === x);
+		const int = (v: unknown, lo: number, hi: number) =>
+			typeof v === 'number' && Number.isFinite(v)
+				? Math.min(hi, Math.max(lo, Math.round(v)))
+				: undefined;
 		if (typeof s.slot === 'string' && SLOTS.some((x) => x.id === s.slot)) slotId = s.slot as SlotId;
 		const sl = SLOTS.find((x) => x.id === slotId)!;
-		if (typeof s.main === 'string' && sl.mains.some((m) => m.id === s.main))
-			mainId = s.main as MainStatId;
-		else if (!sl.mains.some((m) => m.id === mainId)) mainId = sl.mains[0].id;
-		if (Array.isArray(s.pair)) {
-			const p = s.pair.filter(
-				(x): x is SubstatId =>
-					typeof x === 'string' && x !== mainId && SUBSTATS.some((ss) => ss.id === x)
-			);
-			if (p.length === 2 && p[0] !== p[1]) pair = p;
+		if (Array.isArray(s.mains)) {
+			const m = s.mains.filter((x) => sl.mains.some((mm) => mm.id === x)) as MainStatId[];
+			mains = m.length ? [...new Set(m)] : [sl.mains[0].id];
+		} else mains = [sl.mains[0].id];
+		if (Array.isArray(s.wanted)) {
+			const w = [...new Set(s.wanted.filter(isSub))].slice(0, MAX_WANTED);
+			if (w.length) wanted = w;
 		}
-		fixPair();
-		if (typeof s.defined === 'boolean') defined = s.defined;
+		atLeast = Math.min(wanted.length, int(s.atLeast, 1, MAX_WANTED) ?? atLeast);
+		if (typeof s.eitherSet === 'boolean') eitherSet = s.eitherSet;
+		if (typeof s.days === 'number' && Number.isFinite(s.days))
+			days = Math.min(100_000, Math.max(0.1, s.days));
+		levelHas = int(s.levelHas, 1, MAX_WANTED) ?? levelHas;
 		if (typeof s.fourLine === 'boolean') fourLine = s.fourLine;
-		if (typeof s.resin === 'number' && Number.isFinite(s.resin))
-			resin = Math.min(
-				10_000_000,
-				Math.max(0, Math.round(s.resin / RESIN_PER_RUN) * RESIN_PER_RUN)
-			);
-		if (typeof s.level === 'number' && LEVELS.includes(s.level)) level = s.level;
+		if (typeof s.defined === 'boolean') defined = s.defined;
+		if (typeof s.level === 'number' && LEVELS.some((l) => l.at === s.level)) level = s.level;
 		if (s.reshape === 2 || s.reshape === 3 || s.reshape === 4) reshapeFloor = s.reshape;
 		if (Array.isArray(s.lines) && s.lines.length === 4) {
-			const next: { id: SubstatId | ''; raw: string }[] = [];
+			const next: Line[] = [];
 			for (const item of s.lines) {
 				if (!Array.isArray(item)) break;
 				const [id, raw] = item;
-				if (typeof id !== 'string' || typeof raw !== 'string' || raw.length > 8) break;
-				if (id !== '' && !SUBSTATS.some((ss) => ss.id === id)) break;
-				next.push({ id: id as SubstatId | '', raw });
+				if (typeof raw !== 'string' || raw.length > 8 || !(id === '' || isSub(id))) break;
+				next.push({ id, raw });
 			}
 			const ids = next.map((l) => l.id).filter((id) => id !== '');
 			// distinct stats only — duplicates would break roll inference; only the
-			// 4th may be empty, and only at +0
+			// 4th may be empty, and only at +0–3
 			const emptyOk = next.every((l, i) => l.id !== '' || (i === 3 && level === 0));
 			if (next.length === 4 && new Set(ids).size === ids.length && emptyOk) {
 				lines = next;
 				resolutionPick = 0;
 			}
 		}
+		if (Array.isArray(s.selected)) selected = [...new Set(s.selected.filter(isSub))].slice(0, 2);
+		fixLines();
+		resetRefs();
 		if (typeof s.view === 'string' && VIEWS.some((v) => v.id === s.view)) view = s.view as View;
 	}
 </script>
+
+{#snippet oddsBar(
+	o: { below: number; equal: number; above: number },
+	labels: [string, string, string]
+)}
+	<div class="ao-odds">
+		<div
+			class="ao-odds-bar"
+			role="img"
+			aria-label="{labels[2]} {fmtPct(o.above)}, {labels[1]} {fmtPct(o.equal)}, {labels[0]} {fmtPct(
+				o.below
+			)}"
+		>
+			<span class="ao-odds-seg is-below" style:flex-grow={o.below}></span>
+			<span class="ao-odds-seg is-equal" style:flex-grow={o.equal}></span>
+			<span class="ao-odds-seg is-above" style:flex-grow={o.above}></span>
+		</div>
+		<div class="ao-odds-keys">
+			<span><i class="is-below"></i>{labels[0]} <b>{fmtPct(o.below, 0)}</b></span>
+			{#if o.equal > 0.0005}
+				<span><i class="is-equal"></i>{labels[1]} <b>{fmtPct(o.equal, 0)}</b></span>
+			{/if}
+			<span><i class="is-above"></i>{labels[2]} <b>{fmtPct(o.above, 0)}</b></span>
+		</div>
+	</div>
+{/snippet}
 
 <div class="instrument">
 	<div class="ao-chart ctx-dark">
@@ -494,15 +633,13 @@
 			{/each}
 		</div>
 
-		{#if !pairValid}
-			<p class="ao-empty">Pick two target substats.</p>
-		{:else if view === 'drop'}
+		{#if view === 'drop'}
 			<div class="ao-graph" bind:clientWidth={graphW}>
 				<svg
 					width={graphW}
 					height={H}
 					role="img"
-					aria-label="Chance of this piece by resin spent"
+					aria-label="Chance of this piece by days of resin"
 					onpointerdown={onDown}
 					onpointermove={onMove}
 					onpointerup={onUp}
@@ -518,17 +655,17 @@
 							font-size="10"
 							text-anchor="middle"
 						>
-							{fmtAxis(t)}
+							{fmtNum(t)}
 						</text>
 					{/each}
 					<text
 						x={graphW - PADR}
-						y={plotY1 + 27}
+						y={plotY1 + 28}
 						fill="var(--chart-dim)"
 						font-size="10"
 						text-anchor="end"
 					>
-						resin spent
+						days of resin
 					</text>
 					{#each [0.25, 0.5, 0.75, 1] as p (p)}
 						<line
@@ -548,49 +685,56 @@
 							{Math.round(p * 100)}%
 						</text>
 					{/each}
-					<text x="4" y={TOP - 8} fill="var(--chart-dim)" font-size="10" text-anchor="start">
-						chance by then
+					<text x="4" y={TOP - 10} fill="var(--chart-dim)" font-size="10" text-anchor="start">
+						chance you have it by then
 					</text>
 
 					<path
-						d={farmPath(false)}
+						d={farmPath(true)}
 						fill="none"
 						stroke="var(--chart-ink)"
 						stroke-width="1.25"
 						stroke-linejoin="round"
 					/>
 					<path
-						d={farmPath(true)}
+						d={farmPath(false)}
 						fill="none"
 						stroke="var(--text)"
 						stroke-width="2"
 						stroke-linejoin="round"
 					/>
-					{#each farmLabels as l (l.text)}
-						<text
-							class="ao-word"
-							x={l.primary ? l.x - 6 : l.x + 6}
-							y={yOf(0.5) + (l.primary ? -6 : 14)}
-							fill={l.primary ? 'var(--text)' : 'var(--chart-ink)'}
-							font-size="11"
-							font-weight={l.primary ? 600 : 400}
-							text-anchor={l.primary ? 'end' : 'start'}
-						>
-							{l.text}
-						</text>
-					{/each}
+					<text
+						class="ao-word"
+						x={farmLabelX.outbreak - 6}
+						y={yOf(0.5) - 6}
+						fill="var(--chart-ink)"
+						font-size="11"
+						text-anchor="end"
+					>
+						In an Outbreak
+					</text>
+					<text
+						class="ao-word"
+						x={farmLabelX.domain + 6}
+						y={yOf(0.5) + 14}
+						fill="var(--text)"
+						font-size="11"
+						font-weight="600"
+					>
+						Domain
+					</text>
 
 					<line
-						x1={farmXOf(shownResin)}
+						x1={farmXOf(shownDays)}
 						y1={TOP}
-						x2={farmXOf(shownResin)}
+						x2={farmXOf(shownDays)}
 						y2={plotY1}
 						stroke="var(--chart-ink)"
 						stroke-width="1.5"
 					/>
-					{#each [chanceBy.domain, chanceBy.outbreak] as p, i (i)}
+					{#each [chanceBy.outbreak, chanceBy.domain] as p, i (i)}
 						<circle
-							cx={farmXOf(shownResin)}
+							cx={farmXOf(shownDays)}
 							cy={yOf(p)}
 							r={i ? 4.5 : 3}
 							fill={i ? 'var(--accent)' : 'var(--chart-ink)'}
@@ -601,43 +745,93 @@
 				</svg>
 			</div>
 			<p class="note">
-				Drag along the chart to choose how much resin you spend. Outbreak: every run during a
-				Stygian Onslaught Disturbance Outbreak, which adds a 5★ from the same domain for each 120
-				resin.
+				Drag along the chart to choose how many days of resin you spend ({RESIN_PER_DAY} a day). In an
+				Outbreak: every run during a Stygian Onslaught Disturbance Outbreak, which adds one more 5★ from
+				the domain for each 120 resin.
 			</p>
+		{:else if view === 'level' && !wantedSubs.length}
+			<p class="ao-empty">Your only stat is the main stat — pick a substat too.</p>
 		{:else if view === 'piece' && !resolution}
-			<p class="ao-empty">Dial in your piece's lines below.</p>
-		{:else if view === 'piece' && pairOnPiece === 0}
-			<p class="ao-empty">Neither target substat is on this piece — pick a pair it has.</p>
+			<div class="ao-empty">
+				{#if lineInferences.some((i) => !i.length)}
+					<p>A value doesn't match any roll this stat can make — check it against the game.</p>
+				{:else}
+					<p>
+						These values add up to {totals.join(' or ')} upgrade{totals.at(-1) === 1 ? '' : 's'},
+						but a {LEVELS.find((l) => l.at === level)?.label} piece has had {Math.max(
+							0,
+							upgradesAt(level) - 1
+						)}–{upgradesAt(level)}.
+					</p>
+					{#if LEVELS.some((l) => fitsLevel[l.at])}
+						<p>
+							They fit {LEVELS.filter((l) => fitsLevel[l.at])
+								.map((l) => l.label)
+								.join(' or ')}.
+						</p>
+					{/if}
+				{/if}
+			</div>
+		{:else if view === 'piece' && wantedOnPiece === 0}
+			<p class="ao-empty">None of your stats is on this piece.</p>
 		{:else}
 			<div class="ao-graph" bind:clientWidth={graphW}>
 				<svg
 					width={graphW}
 					height={H}
 					role="img"
-					aria-label="{unit === 'cv' ? 'Crit value' : 'Roll value'} distribution"
-					onpointermove={onHistMove}
+					aria-label="{unit === 'cv' ? 'Crit value' : 'Useful rolls'} at +20"
+					onpointerdown={onDown}
+					onpointermove={onMove}
+					onpointerup={onUp}
+					onpointercancel={onUp}
 					onpointerleave={() => (hoverX = null)}
+					style:cursor={draggable ? 'ew-resize' : 'default'}
 				>
+					<!-- The likely range: the middle half of outcomes -->
+					{#if solidBins.length}
+						<rect
+							x={histXOf(binOf(stats.p25))}
+							y={TOP}
+							width={Math.max(2, histXOf(binOf(stats.p75) + binW) - histXOf(binOf(stats.p25)))}
+							height={PLOT_H}
+							fill="var(--text)"
+							fill-opacity="0.05"
+						/>
+						<text
+							class="ao-word"
+							x={histXOf(binOf(stats.p25)) + 4}
+							y={TOP + 11}
+							fill="var(--chart-dim)"
+							font-size="10"
+						>
+							likely
+						</text>
+					{/if}
 					{#each ghostBins as bin (bin.x)}
 						<rect
 							x={histXOf(bin.x) + 0.5}
-							y={TOP + PLOT_H * (1 - bin.p / histMax)}
+							y={plotY1 - barH(bin.p)}
 							width={barW}
-							height={PLOT_H * (bin.p / histMax)}
+							height={barH(bin.p)}
 							fill="var(--chart-grid)"
 						/>
 					{/each}
 					{#each solidBins as bin (bin.x)}
-						<rect
-							x={histXOf(bin.x) + 0.5}
-							y={TOP + PLOT_H * (1 - bin.p / histMax)}
-							width={ghostBins.length ? Math.max(1, barW * 0.6) : barW}
-							height={PLOT_H * (bin.p / histMax)}
-							fill="var(--accent)"
-							fill-opacity={hoverX === bin.x ? 1 : 0.75}
-							transform={ghostBins.length ? `translate(${barW * 0.2} 0)` : undefined}
-						/>
+						{@const inset = ghostBins.length ? barW * 0.2 : 0}
+						{#each ks as k (k)}
+							{@const under = bin.byK.slice(0, k).reduce((a, b) => a + b, 0)}
+							{#if bin.byK[k] > 0}
+								<rect
+									x={histXOf(bin.x) + 0.5 + inset}
+									y={plotY1 - barH(under + bin.byK[k])}
+									width={Math.max(1, barW - 2 * inset)}
+									height={barH(bin.byK[k])}
+									fill="var(--accent)"
+									fill-opacity={hoverX === bin.x ? Math.min(1, kOpacity(k) + 0.15) : kOpacity(k)}
+								/>
+							{/if}
+						{/each}
 					{/each}
 					<line x1={PADL} y1={plotY1} x2={graphW - PADR} y2={plotY1} stroke="var(--chart-rule)" />
 					{#each histTicks as t (t)}
@@ -648,56 +842,78 @@
 							font-size="10"
 							text-anchor="middle"
 						>
-							{t}
+							{unit === 'cv' ? t : t.toFixed(1)}
 						</text>
 					{/each}
 					<text
 						x={graphW - PADR}
-						y={plotY1 + 27}
+						y={plotY1 + 28}
 						fill="var(--chart-dim)"
 						font-size="10"
 						text-anchor="end"
 					>
-						{unit === 'cv' ? 'crit value' : `roll value into ${pairLabel}`}
+						{unit === 'cv' ? 'crit value (CV) at +20' : 'useful rolls in your stats at +20'}
 					</text>
-					{#each markers as m, i (i)}
+
+					{#if view === 'level' || query}
+						{@const mx = histXOf(view === 'piece' && finished ? binOf(nowX) + binW / 2 : reference)}
 						<line
-							x1={histXOf(m.x)}
-							y1={TOP - 2}
-							x2={histXOf(m.x)}
+							x1={mx}
+							y1={TOP - 4}
+							x2={mx}
 							y2={plotY1}
-							stroke={m.strong ? 'var(--text)' : 'var(--chart-ink)'}
-							stroke-width={m.strong ? 1.5 : 1}
-							stroke-dasharray={m.strong ? '4 4' : '3 4'}
+							stroke="var(--text)"
+							stroke-width="1.5"
+							stroke-dasharray="4 4"
 						/>
 						<text
-							x={histXOf(m.x)}
-							y={TOP - 7}
-							fill={m.strong ? 'var(--text)' : 'var(--chart-ink)'}
+							x={mx}
+							y={TOP - 9}
+							fill="var(--text)"
 							font-size="10"
-							text-anchor="middle"
+							font-weight="600"
+							text-anchor={mx > graphW - 90 ? 'end' : mx < PADL + 60 ? 'start' : 'middle'}
 						>
-							{m.label}
+							{view === 'piece' && finished
+								? `your piece · ${fmtValue(nowX)}`
+								: `to beat · ${fmtValue(reference)}`}
 						</text>
-					{/each}
+					{/if}
 				</svg>
+			</div>
+			<div class="ao-legend">
+				<span class="ao-legend-title">Upgrades into your stats</span>
+				{#each ks as k (k)}
+					<span class="ao-legend-key">
+						<i
+							style:background="color-mix(in srgb, var(--accent) {Math.round(kOpacity(k) * 100)}%,
+							transparent)"
+						></i>{k}
+					</span>
+				{/each}
+				{#if ghost}
+					<span class="ao-legend-key"
+						><i class="is-ghost"></i>{view === 'level' ? 'farmed' : 'every piece like it'}</span
+					>
+				{/if}
 			</div>
 			<p class="note ao-probe">
 				{#if hovered}
-					<span class="ao-strong">{hovered.x}{binW > 1 ? '' : `–${hovered.x + 1}`} {unitWord}</span
-					>:
-					{fmtPct(hovered.p)} of outcomes · {fmtPct(hovered.atLeast)} reach at least {hovered.x}
+					<span class="ao-strong">{valueOf(hovered.x)}</span>: {fmtPct(hovered.p)} of outcomes ·
+					{fmtPct(hovered.reach)} reach at least {fmtValue(hovered.x)}
 				{:else if view === 'level'}
-					{unit === 'cv' ? 'Crit value' : `Roll value into ${pairLabel}`} at +20 on a piece with both
-					lines ({events} upgrade rolls{defined ? ', at least 2 into the pair' : ''}).
-					{#if defined}Ghost: the same piece farmed.{/if}
+					Your {statList(wantedSubs.slice(0, levelK))} on a {slotWord} that has {levelK === 1
+						? 'one of them'
+						: 'them'}, levelled to +20 ({events} upgrades{levelFloor
+						? ', at least 2 into your stats'
+						: ''}). Drag to set a value to beat.
 				{:else if !finished}
-					What the piece can become by +20, from where it is now.
+					What your stats on this piece can reach by +20. Drag to set a value to beat.
 				{:else if canReshape}
-					Solid: after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape. Ghost: every
-					piece with these lines.
+					Gold: after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape. Grey: every finished
+					{slotWord} with these substats.
 				{:else}
-					Every piece with these lines — a reshape needs both target lines on the piece.
+					Every finished {slotWord} with these substats. Circle two lines on your piece to see a reshape.
 				{/if}
 			</p>
 		{/if}
@@ -705,60 +921,125 @@
 
 	<!-- ONE panel, a section per question (the Wish Odds layout) -->
 	<div class="panel ao-controls">
+		{#if view !== 'piece'}
+			<section class="ao-section">
+				<p class="kicker">Piece</p>
+				<div class="ao-slots">
+					{#each SLOTS as s (s.id)}
+						<button
+							class="ao-slot"
+							class:active={s.id === slotId}
+							onclick={() => pickSlot(s.id)}
+							title={s.name}
+							aria-label={s.name}
+							aria-pressed={s.id === slotId}
+						>
+							<img src="/assets/artifacts/generic-full-set/{s.id}.webp" alt="" />
+						</button>
+					{/each}
+				</div>
+				<div class="chips" role="group" aria-label="Main stat">
+					{#each slot.mains as m (m.id)}
+						{@const on = view === 'drop' ? mains.includes(m.id) : m.id === main.id}
+						<button
+							class="chip chip--control"
+							class:active={on}
+							aria-pressed={on}
+							onclick={() => pickMain(m.id)}
+						>
+							{m.name}{#if slot.mains.length > 1}&nbsp;<span class="chip-sub"
+									>{fmtPct(m.chance, m.chance < 0.05 ? 1 : 0)}{m.each ? ' each' : ''}</span
+								>{/if}
+						</button>
+					{/each}
+				</div>
+				{#if view === 'drop' && slot.mains.length > 1}
+					<p class="note">
+						Pick every main stat you'd take — the percentage is how often each drops.
+					</p>
+				{/if}
+			</section>
+		{/if}
+
 		<section class="ao-section">
-			<p class="kicker">Piece</p>
-			<div class="ao-slots">
-				{#each SLOTS as s (s.id)}
-					<button
-						class="ao-slot"
-						class:active={s.id === slotId}
-						onclick={() => pickSlot(s.id)}
-						title={s.name}
-						aria-label={s.name}
-						aria-pressed={s.id === slotId}
-					>
-						<img src="/assets/artifacts/generic-full-set/{s.id}.webp" alt="" />
-					</button>
-				{/each}
-			</div>
-			<div class="chips">
-				{#each slot.mains as m (m.id)}
+			<p class="kicker">Your stats</p>
+			<div class="chips ao-dense" role="group" aria-label="Your stats">
+				{#each SUBSTATS as s (s.id)}
+					{@const on = wanted.includes(s.id)}
 					<button
 						class="chip chip--control"
-						class:active={m.id === main.id}
-						aria-pressed={m.id === main.id}
-						onclick={() => pickMain(m.id)}
+						class:active={on}
+						aria-pressed={on}
+						disabled={!on && wanted.length >= MAX_WANTED}
+						onclick={() => toggleWanted(s.id)}
 					>
-						{m.name}{#if slot.mains.length > 1}&nbsp;<span class="chip-sub"
-								>{fmtPct(m.chance, m.chance < 0.05 ? 1 : 0)}{m.each ? ' each' : ''}</span
+						{s.short}{#if view === 'drop'}&nbsp;<span class="chip-sub"
+								>{s.id === main.id ? 'main' : fmtPct(lineChance[s.id], 0)}</span
 							>{/if}
 					</button>
 				{/each}
 			</div>
-		</section>
-
-		<section class="ao-section">
-			<p class="kicker">Target pair</p>
-			<div class="chips ao-dense" role="group" aria-label="Target pair">
-				{#each SUBSTATS as s (s.id)}
-					{#if s.id !== main.id}
+			<p class="note">
+				What counts as good, up to four.
+				{#if view === 'drop'}
+					Beside each: its chance to be on a {slotWord} with {main.name} main.
+				{/if}
+			</p>
+			{#if view === 'drop' && wanted.length > 1}
+				<div class="chips" role="group" aria-label="How many of them">
+					{#each Array.from({ length: wanted.length }, (_, i) => i + 1) as n (n)}
 						<button
 							class="chip chip--control"
-							class:active={pair.includes(s.id)}
-							aria-pressed={pair.includes(s.id)}
-							onclick={() => togglePairStat(s.id)}
+							class:active={atLeast === n}
+							aria-pressed={atLeast === n}
+							onclick={() => (atLeast = n)}
 						>
-							{s.short}&nbsp;<span class="chip-sub">{fmtPct(lineChance[s.id], 0)}</span>
+							{n === wanted.length ? (n === 2 ? 'Both' : `All ${n}`) : `At least ${n}`}
 						</button>
-					{/if}
-				{/each}
-			</div>
-			<p class="note">Each substat's chance to be one of the piece's four lines.</p>
+					{/each}
+				</div>
+			{/if}
 		</section>
 
-		{#if view === 'level'}
+		{#if view === 'drop'}
 			<section class="ao-section">
-				<p class="kicker">Rolls</p>
+				<p class="kicker">Set</p>
+				<div class="chips">
+					<button
+						class="chip chip--control"
+						class:active={!eitherSet}
+						aria-pressed={!eitherSet}
+						onclick={() => (eitherSet = false)}
+					>
+						One of the domain's sets
+					</button>
+					<button
+						class="chip chip--control"
+						class:active={eitherSet}
+						aria-pressed={eitherSet}
+						onclick={() => (eitherSet = true)}
+					>
+						Either set
+					</button>
+				</div>
+			</section>
+		{:else if view === 'level'}
+			<section class="ao-section">
+				<p class="kicker">The piece</p>
+				{#if wantedSubs.length > 1}
+					<div class="chips" role="group" aria-label="How many of your stats it has">
+						{#each Array.from({ length: wantedSubs.length }, (_, i) => i + 1) as n (n)}
+							<button
+								class="chip chip--control"
+								class:active={levelK === n}
+								aria-pressed={levelK === n}
+								onclick={() => (levelHas = n)}
+							>
+								Has {n === wantedSubs.length && n > 1 ? `all ${n}` : n}
+							</button>
+						{/each}
+					</div>
+				{/if}
 				<div class="chips">
 					<button
 						class="chip chip--control"
@@ -766,7 +1047,7 @@
 						aria-pressed={fourLine}
 						onclick={() => (fourLine = true)}
 					>
-						4-line start
+						Dropped with 4 substats
 					</button>
 					<button
 						class="chip chip--control"
@@ -774,7 +1055,7 @@
 						aria-pressed={!fourLine}
 						onclick={() => (fourLine = false)}
 					>
-						3-line start
+						With 3
 					</button>
 				</div>
 				<div class="chips">
@@ -790,104 +1071,156 @@
 						class="chip chip--control"
 						class:active={defined}
 						aria-pressed={defined}
+						disabled={levelK < 2}
 						onclick={() => (defined = true)}
 					>
-						Defined
+						Made with Elixir
+					</button>
+				</div>
+				<p class="note">
+					A 4-substat drop gets 5 upgrades by +20; a 3-substat drop spends its first adding the 4th.
+					{#if defined && levelK >= 2}
+						Made with Sanctifying Elixir: two of your stats are guaranteed at least 2 of them.
+					{/if}
+				</p>
+			</section>
+		{:else}
+			<section class="ao-section">
+				<p class="kicker">Your piece</p>
+				<div class="ao-card">
+					<div class="ao-card-head">
+						<div class="ao-slots ao-slots--small">
+							{#each SLOTS as s (s.id)}
+								<button
+									class="ao-slot"
+									class:active={s.id === slotId}
+									onclick={() => pickSlot(s.id)}
+									title={s.name}
+									aria-label={s.name}
+									aria-pressed={s.id === slotId}
+								>
+									<img src="/assets/artifacts/generic-full-set/{s.id}.webp" alt="" />
+								</button>
+							{/each}
+						</div>
+						{#if slot.mains.length > 1}
+							<select
+								class="ao-select ao-main"
+								value={main.id}
+								onchange={(e) => pickMain(e.currentTarget.value as MainStatId)}
+								aria-label="Main stat"
+							>
+								{#each slot.mains as m (m.id)}
+									<option value={m.id}>{m.name}</option>
+								{/each}
+							</select>
+						{:else}
+							<span class="ao-main ao-main--fixed">{main.name}</span>
+						{/if}
+					</div>
+					{#each lines as line, i (i)}
+						{@const at = pieceLines.findIndex((l) => l.id === line.id)}
+						{@const options = at >= 0 ? countOptions(at) : []}
+						{@const isWanted = line.id !== '' && wantedSubs.includes(line.id)}
+						{@const isSel = line.id !== '' && sel.includes(line.id)}
+						<div class="ao-line" class:is-wanted={isWanted}>
+							{#if line.id === ''}
+								<span class="ao-badge is-none" aria-hidden="true"></span>
+							{:else if resolution && options.length > 1}
+								<button
+									class="ao-badge is-choice"
+									onclick={cycleReading}
+									title="These values can be read two ways — match the number the game shows"
+									aria-label="Upgrades: {resolution.counts[at] - 1}. Tap for the other reading"
+								>
+									{resolution.counts[at] - 1}
+								</button>
+							{:else if resolution}
+								<span class="ao-badge" class:is-zero={resolution.counts[at] === 1}
+									>{resolution.counts[at] > 1 ? resolution.counts[at] - 1 : ''}</span
+								>
+							{:else}
+								<span class="ao-badge is-unknown" aria-hidden="true">?</span>
+							{/if}
+							<select
+								class="ao-select"
+								value={line.id}
+								onchange={(e) => setLineStat(i, e.currentTarget.value as SubstatId | '')}
+								aria-label="Substat {i + 1}"
+							>
+								{#if i === 3 && level === 0}
+									<option value="">— not yet</option>
+								{/if}
+								{#each SUBSTATS as s (s.id)}
+									{#if s.id !== main.id && (s.id === line.id || !lines.some((l) => l.id === s.id))}
+										<option value={s.id}>{s.name}</option>
+									{/if}
+								{/each}
+							</select>
+							{#if line.id !== ''}
+								<ValueWheel
+									values={lineOptions[i]}
+									bind:value={lines[i].raw}
+									label="Value for substat {i + 1}"
+								/>
+								<button
+									class="ao-radial"
+									class:is-on={isSel}
+									disabled={!isSel && sel.length >= 2}
+									aria-pressed={isSel}
+									aria-label="Select {substatById(line.id).name} for a reshape"
+									onclick={() => toggleSelected(line.id as SubstatId)}
+								></button>
+							{:else}
+								<span></span><span></span>
+							{/if}
+						</div>
+					{/each}
+				</div>
+				<div class="chips ao-dense ao-levels" role="group" aria-label="Level">
+					{#each LEVELS as l (l.at)}
+						<button
+							class="chip chip--control"
+							class:active={level === l.at}
+							class:is-misfit={!fitsLevel[l.at]}
+							aria-pressed={level === l.at}
+							onclick={() => setLevel(l.at)}
+						>
+							{l.label}
+						</button>
+					{/each}
+				</div>
+				<p class="note">
+					{#if resolution}
+						The number on the left is each line's upgrades, as the game shows them when you reshape.
+						Your stats are highlighted; the circles on the right pick a reshape's two lines.
+					{:else}
+						Pick your piece's level — the ones these values can't be are dimmed.
+					{/if}
+				</p>
+				<div class="chips">
+					<button
+						class="chip chip--control"
+						class:active={!defined}
+						aria-pressed={!defined}
+						onclick={() => (defined = false)}
+					>
+						Farmed
+					</button>
+					<button
+						class="chip chip--control"
+						class:active={defined}
+						aria-pressed={defined}
+						onclick={() => (defined = true)}
+					>
+						Made with Elixir
 					</button>
 				</div>
 				{#if defined}
 					<p class="note">
-						Defined with Sanctifying Elixir: the two lines you chose get at least 2 of the {events} rolls.
+						Circle the two substats you defined: they get at least 2 upgrades between them by +20.
 					</p>
 				{/if}
-			</section>
-		{:else if view === 'piece'}
-			<section class="ao-section">
-				<p class="kicker">Your piece</p>
-				<div class="chips ao-dense" role="group" aria-label="Level">
-					{#each LEVELS as l (l)}
-						<button
-							class="chip chip--control"
-							class:active={level === l}
-							aria-pressed={level === l}
-							onclick={() => setLevel(l)}
-						>
-							+{l}
-						</button>
-					{/each}
-				</div>
-				{#each lines as line, i (i)}
-					<div class="ao-line-row">
-						<select
-							class="ao-select"
-							value={line.id}
-							onchange={(e) => setLineStat(i, e.currentTarget.value as SubstatId | '')}
-							aria-label="Substat {i + 1}"
-						>
-							{#if i === 3 && level === 0}
-								<option value="">—</option>
-							{/if}
-							{#each SUBSTATS as s (s.id)}
-								{#if s.id !== main.id && (s.id === line.id || !lines.some((l) => l.id === s.id))}
-									<option value={s.id}>{s.short}</option>
-								{/if}
-							{/each}
-						</select>
-						{#if line.id !== ''}
-							<ValueWheel
-								values={lineOptions[i]}
-								bind:value={lines[i].raw}
-								label="Value for substat {i + 1}"
-							/>
-							<span class="ao-count-badge">
-								{#if resolution}
-									×{resolution.counts[pieceLines.findIndex((l) => l.id === line.id)]}
-								{:else if lineInferences[pieceLines.findIndex((l) => l.id === line.id)]?.length}
-									×{lineInferences[pieceLines.findIndex((l) => l.id === line.id)]
-										.map((c) => c.count)
-										.join('/')}
-								{:else}
-									—
-								{/if}
-							</span>
-						{:else}
-							<span class="ao-count-badge ao-span2">not yet</span>
-						{/if}
-					</div>
-				{/each}
-				{#if resolutions.length > 1}
-					<div class="chips">
-						{#each resolutions as r, i (i)}
-							<button
-								class="chip chip--control"
-								class:active={resolution === r}
-								aria-pressed={resolution === r}
-								onclick={() => (resolutionPick = i)}
-							>
-								{r.fourLineStart ? '4-line start' : '3-line start'}
-							</button>
-						{/each}
-					</div>
-					<p class="note">Rounding makes two roll totals possible — pick the true start.</p>
-				{/if}
-				<div class="chips">
-					<button
-						class="chip chip--control"
-						class:active={!defined}
-						aria-pressed={!defined}
-						onclick={() => (defined = false)}
-					>
-						Farmed
-					</button>
-					<button
-						class="chip chip--control"
-						class:active={defined}
-						aria-pressed={defined}
-						onclick={() => (defined = true)}
-					>
-						Defined
-					</button>
-				</div>
 			</section>
 			{#if finished}
 				<section class="ao-section">
@@ -901,10 +1234,20 @@
 								disabled={!canReshape}
 								onclick={() => (reshapeFloor = r.floor)}
 							>
-								{r.label}
+								{r.label}&nbsp;<span class="chip-sub">{r.hint}</span>
 							</button>
 						{/each}
 					</div>
+					<p class="note">
+						{#if canReshape}
+							The two circled lines get at least this many of the piece's upgrades. It costs {reshapeDust(
+								slotId
+							)} Dust of Enlightenment for a {slotWord}; every {ADVANCED_EXEGESIS} Dust you spend makes
+							the next reshape Advanced, and the third Advanced is Decreed.
+						{:else}
+							Circle two lines on your piece to reshape it.
+						{/if}
+					</p>
 				</section>
 			{/if}
 		{/if}
@@ -912,117 +1255,100 @@
 
 	<div class="panel panel--paper ao-readout">
 		<p class="kicker">Readout</p>
-		{#if !pairValid}
-			<p class="note">Pick two target substats.</p>
-		{:else if view === 'drop'}
+		{#if view === 'drop'}
 			<p class="ao-big">
-				{fmtPct(chanceBy.outbreak)}<span class="ao-big-unit"
-					>chance of this piece within {fmtResin(shownResin)} resin in an Outbreak</span
+				{inHundred(chanceBy.domain)} in 100<span class="ao-big-unit"
+					>players farming the domain for {fmtValue(shownDays).replace(/\.0$/, '')} day{shownDays ===
+					1
+						? ''
+						: 's'} have this piece</span
 				>
 			</p>
 			<table class="ao-table">
 				<thead>
 					<tr>
-						<th scope="col">Farming</th>
-						<th scope="col" class="ao-num">Chance</th>
-						<th scope="col" class="ao-num">Half by</th>
-						<th scope="col" class="ao-num">Unlucky tenth</th>
+						<th scope="col">Days of resin</th>
+						<th scope="col" class="ao-num">Half have it by</th>
+						<th scope="col" class="ao-num">Unluckiest tenth</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<th scope="row">Domain</th>
-						<td class="ao-num">{fmtPct(chanceBy.domain, 0)}</td>
-						<td class="ao-num">{fmtResin(farm.domain.median)}</td>
-						<td class="ao-num">{fmtResin(farm.domain.p90)}</td>
-					</tr>
 					<tr class="is-goal">
-						<th scope="row">Outbreak</th>
-						<td class="ao-num">{fmtPct(chanceBy.outbreak, 0)}</td>
-						<td class="ao-num">{fmtResin(farm.outbreak.median)}</td>
-						<td class="ao-num">{fmtResin(farm.outbreak.p90)}</td>
+						<th scope="row">Domain</th>
+						<td class="ao-num">{fmtDays(farm.domain.median)}</td>
+						<td class="ao-num">{fmtDays(farm.domain.p90)}</td>
+					</tr>
+					<tr>
+						<th scope="row">In an Outbreak</th>
+						<td class="ao-num">{fmtDays(farm.outbreak.median)}</td>
+						<td class="ao-num">{fmtDays(farm.outbreak.p90)}</td>
 					</tr>
 				</tbody>
 			</table>
 			<p class="ao-meta">
-				Each 5★ from the domain is this piece <span class="ao-strong">1 in {oneIn(perPiece)}</span>.
-			</p>
-			<p class="ao-meta">
-				Both lines at drop: <span class="ao-strong">{fmtPct(pAtDrop)}</span> · by +4:
-				<span class="ao-strong">{fmtPct(p4)}</span>
+				<span class="ao-strong">1 in {oneIn(perPiece)}</span> of the domain's 5★ drops is this piece.
 			</p>
 			<p class="note">
-				In resin. Half by: half of players have the piece by then. Unlucky tenth: the unluckiest 10%
-				need this much or more. {RESIN_PER_DAY} resin is a day's worth — half by is {fmtDays(
-					farm.domain.median
-				)} days from the domain alone.
+				{fmtNum(resinOf(shownDays))} resin is {fmtNum(resinOf(shownDays) / RESIN_PER_RUN)} runs. The unluckiest
+				tenth of players need at least the days in the last column.
 			</p>
 		{:else if view === 'level'}
-			<p class="ao-big">
-				{fmtValue(levelStats.median)}<span class="ao-big-unit">median {unitWord} at +20</span>
-			</p>
-			<p class="ao-meta">
-				p10–p90: <span class="ao-strong"
-					>{fmtValue(levelStats.p10)}–{fmtValue(levelStats.p90)} {unitWord}</span
-				>
-			</p>
-			<p class="ao-meta">
-				Mean: <span class="ao-strong">{levelStats.mean.toFixed(1)} {unitWord}</span>
-			</p>
-			<table class="ao-table">
-				<thead>
-					<tr>
-						<th scope="col">Rolls into {pairLabel}</th>
-						{#each levelRolls as _, k (k)}
-							<th scope="col" class="ao-num">{k}</th>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<th scope="row">Chance</th>
-						{#each levelRolls as p, k (k)}
-							<td class="ao-num">{p > 0 ? fmtPct(p, 0) : '—'}</td>
-						{/each}
-					</tr>
-				</tbody>
-			</table>
-			{#if unit === 'rv'}
-				<p class="note">
-					RV = roll value, each roll's strength as a % of the strongest possible roll.
+			{#if wantedSubs.length}
+				<p class="ao-big">
+					{fmtPct(odds.above, 0)}<span class="ao-big-unit"
+						>chance to end above {valueOf(reference)}</span
+					>
 				</p>
+				{@render oddsBar(odds, ['Below', 'Equal', 'Above'])}
+				<p class="ao-meta">
+					Likely: <span class="ao-strong">{fmtValue(stats.p25)}–{fmtValue(stats.p75)}</span>
+					{unitWord}
+				</p>
+				<p class="ao-meta">Typical: <span class="ao-strong">{valueOf(stats.median)}</span></p>
+				{#if unit === 'rolls'}
+					<p class="note">
+						Useful rolls: each roll into your stats counts by its size — a top roll 1, the smallest
+						0.7 — and a line's first roll counts too.
+					</p>
+				{/if}
 			{/if}
 		{:else if !query}
-			<p class="note">Enter a piece with at least one target line.</p>
+			<p class="note">Enter your piece to see how it measures up.</p>
 		{:else if !finished}
 			<p class="ao-big">
-				{fmtValue(futureStats.median)}<span class="ao-big-unit">median {unitWord} at +20</span>
-			</p>
-			<p class="ao-meta">Now: <span class="ao-strong">{fmtValue(nowX)} {unitWord}</span></p>
-			<p class="ao-meta">
-				p10–p90 at +20: <span class="ao-strong"
-					>{fmtValue(futureStats.p10)}–{fmtValue(futureStats.p90)} {unitWord}</span
+				{fmtPct(odds.above, 0)}<span class="ao-big-unit"
+					>chance it ends above {valueOf(reference)}</span
 				>
 			</p>
+			{@render oddsBar(odds, ['Below', 'Equal', 'Above'])}
+			<p class="ao-meta">Now: <span class="ao-strong">{valueOf(nowX)}</span></p>
+			<p class="ao-meta">
+				Likely at +20: <span class="ao-strong">{fmtValue(stats.p25)}–{fmtValue(stats.p75)}</span>
+				{unitWord}
+			</p>
+			{#if refPiece === null}
+				<p class="note">
+					The default to beat is a typical finished {slotWord} with these substats.
+				</p>
+			{/if}
 		{:else}
 			<p class="ao-big">
-				p{Math.round(percentile * 100)}<span class="ao-big-unit">of pieces with these lines</span>
+				Better than {Math.round(percentile * 100)}%<span class="ao-big-unit"
+					>of finished {slotPlural} with these substats</span
+				>
 			</p>
 			<p class="ao-meta">
-				{pairLabel}: <span class="ao-strong">{fmtValue(nowX)} {unitWord}</span> ·
-				{resolution?.fourLineStart ? '4-line' : '3-line'} start
+				{statList(wantedSubs.filter((id) => pieceLines.some((l) => l.id === id)))}:
+				<span class="ao-strong">{valueOf(nowX)}</span>
 			</p>
 			{#if canReshape}
-				<p class="ao-reshape-odds">
-					<span class="ao-odds better">{fmtPct(reshapeOdds.above)} better</span>
-					<span class="ao-odds same">{fmtPct(reshapeOdds.equal)} same</span>
-					<span class="ao-odds worse">{fmtPct(reshapeOdds.below)} worse</span>
+				<p class="ao-sub">
+					After a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape
 				</p>
+				{@render oddsBar(odds, ['Worse', 'The same', 'Better'])}
 				<p class="note">
-					A reshape keeps each line's first roll and deals every upgrade again. It costs {reshapeDust(
-						slotId
-					)} Dust of Enlightenment here; every {ADVANCED_EXEGESIS} Dust makes the next one Advanced, and
-					the third Advanced is Decreed. You choose which result to keep.
+					A reshape keeps each line's first roll and deals the upgrades again. You choose whether to
+					keep the result.
 				</p>
 			{/if}
 		{/if}
@@ -1039,8 +1365,16 @@
 		align-content: start;
 	}
 
+	/* min-width 0 + a capped svg: otherwise the svg's own width props the box
+	   open, the measured width never shrinks, and a narrower tile clips the
+	   chart's right end */
+	.ao-graph {
+		min-width: 0;
+	}
+
 	.ao-graph svg {
 		display: block;
+		max-width: 100%;
 		touch-action: pan-y;
 		user-select: none;
 		-webkit-user-select: none;
@@ -1054,15 +1388,54 @@
 		font-family: var(--font-condensed);
 	}
 
+	/* As tall as a chart + its legend + note, so the controls don't jump when
+	   a piece stops resolving (the next value you dial brings the chart back) */
 	.ao-empty {
+		display: grid;
+		align-content: center;
+		min-height: calc(256px + 4.6rem);
 		margin: 0;
-		padding: 2rem 0;
+		padding: 0 0.5rem;
 		text-align: center;
 		color: var(--muted);
 	}
 
+	.ao-empty p {
+		margin: 0 0 0.4rem;
+	}
+
 	.ao-probe {
 		min-height: 2.6em;
+	}
+
+	.ao-legend {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.3rem 0.7rem;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+
+	.ao-legend-title {
+		font-weight: var(--fw-semibold);
+	}
+
+	.ao-legend-key {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.ao-legend-key i {
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+	}
+
+	.ao-legend-key i.is-ghost {
+		background: var(--chart-grid);
 	}
 
 	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
@@ -1107,6 +1480,12 @@
 			box-shadow var(--t-snap);
 	}
 
+	.ao-slots--small .ao-slot {
+		width: 34px;
+		height: 34px;
+		padding: 3px;
+	}
+
 	.ao-slot img {
 		width: 100%;
 		height: 100%;
@@ -1126,19 +1505,64 @@
 		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent);
 	}
 
-	/* The densest chip rows (nine substats, six levels) */
+	/* The densest chip rows (ten substats, six levels) */
 	.ao-dense :global(.chip) {
 		font-family: var(--font-condensed);
 	}
 
-	.ao-line-row {
+	.ao-levels :global(.chip) {
+		padding-inline: 0.4rem;
+	}
+
+	.ao-dense :global(.chip.is-misfit:not(.active)) {
+		opacity: 0.45;
+	}
+
+	/* ── The piece card: the game's reshape screen, line for line ─────────── */
+
+	.ao-card {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 5.2rem 3.2rem;
+		gap: 0.3rem;
+	}
+
+	.ao-card-head {
+		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.5rem;
+		margin-bottom: 0.2rem;
+	}
+
+	.ao-main {
+		flex: 1 1 8rem;
+	}
+
+	.ao-main--fixed {
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+		padding-inline: 0.5rem;
+	}
+
+	.ao-line {
+		display: grid;
+		grid-template-columns: 1.5rem minmax(0, 1fr) 5.2rem 1.5rem;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.15rem 0.3rem;
+		border-radius: 3px;
+	}
+
+	.ao-line.is-wanted {
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+	}
+
+	.ao-line.is-wanted .ao-select {
+		color: var(--accent);
 	}
 
 	.ao-select {
+		min-width: 0;
 		padding: 0.32rem 0.5rem;
 		border: none;
 		border-radius: 3px;
@@ -1154,16 +1578,64 @@
 		color: var(--text);
 	}
 
-	.ao-count-badge {
+	/* The upgrade badge: a gold disc with the count, a dot for none (the game's) */
+	.ao-badge {
+		display: inline-grid;
+		place-items: center;
+		width: 1.25rem;
+		height: 1.25rem;
+		border: none;
+		border-radius: 50%;
+		padding: 0;
+		background: var(--accent);
+		color: var(--frame-bg);
 		font-family: var(--font-body);
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-		text-align: right;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		font-variant-numeric: tabular-nums;
 	}
 
-	.ao-span2 {
-		grid-column: span 2;
+	.ao-badge.is-zero {
+		width: 0.4rem;
+		height: 0.4rem;
+		margin: auto;
+		background: var(--muted);
+	}
+
+	.ao-badge.is-none,
+	.ao-badge.is-unknown {
+		background: transparent;
+		color: var(--muted);
+	}
+
+	.ao-badge.is-choice {
+		cursor: pointer;
+		background: transparent;
+		color: var(--accent);
+		box-shadow: inset 0 0 0 1.5px var(--accent);
+	}
+
+	/* The game's reshape radial */
+	.ao-radial {
+		width: 1.15rem;
+		height: 1.15rem;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: transparent;
+		box-shadow: inset 0 0 0 1.5px var(--muted);
+		cursor: pointer;
+		transition: background var(--t-snap);
+	}
+
+	.ao-radial.is-on {
+		background: var(--accent);
+		box-shadow: none;
+	}
+
+	.ao-radial:disabled {
+		cursor: default;
+		opacity: 0.35;
 	}
 
 	/* ── Readout ────────────────────────────────────────────────────────────── */
@@ -1183,6 +1655,12 @@
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
+	}
+
+	.ao-sub {
+		margin: 0.5rem 0 0;
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
 	}
 
 	.ao-meta {
@@ -1238,38 +1716,63 @@
 		white-space: nowrap;
 	}
 
-	.ao-reshape-odds {
-		margin: 0;
+	/* Worse / same / better: INK densities, never verdict colours — on paper
+	   (⚓ Nate: no gold on paper), and the judgment is the player's. Better is
+	   the densest because it is the part you're asking about. */
+	.ao-odds {
+		display: grid;
+		gap: 0.4rem;
+		margin: 0.2rem 0 0.3rem;
+	}
+
+	.ao-odds-bar {
+		display: flex;
+		height: 12px;
+		border-radius: 3px;
+		overflow: hidden;
+		background: color-mix(in srgb, var(--text) 8%, transparent);
+	}
+
+	.ao-odds-seg {
+		flex-basis: 0;
+	}
+
+	.is-below {
+		background: color-mix(in srgb, var(--text) 16%, transparent);
+	}
+
+	.is-equal {
+		background: color-mix(in srgb, var(--text) 42%, transparent);
+	}
+
+	.is-above {
+		background: var(--text);
+	}
+
+	.ao-odds-keys {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem;
+		gap: 0.2rem 0.9rem;
+		font-size: var(--fs-md);
+		color: var(--muted);
 	}
 
-	.ao-odds {
-		padding: 0.3rem 0.6rem;
-		border-radius: 3px;
-		background: var(--fill-rest);
-		font-family: var(--font-body);
-		font-size: var(--fs-lg);
+	.ao-odds-keys span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+	}
+
+	.ao-odds-keys i {
+		width: 10px;
+		height: 10px;
+		border-radius: 2px;
+	}
+
+	.ao-odds-keys b {
+		color: var(--text);
 		font-weight: var(--fw-semibold);
-	}
-
-	/* ⚠ THE CHART'S OWN LITERALS, kept as literals on purpose — § Laws forbids a
-	   UI state token inside a visualization, and these are the risk ramp's stops.
-	   ↻ 2026-08-12: better re-synced #4ecca3 → #5be0ac with crit.ts's RISK_STOPS.
-	   ⛔ `same` is NOT --ui-provisional even though the hex matches: provisional
-	   means "our data is incomplete", and "this roll is a wash" is a full and
-	   confident answer. Same value, different fact. */
-	.ao-odds.better {
-		color: #5be0ac;
-	}
-
-	.ao-odds.same {
-		color: #f6d365;
-	}
-
-	.ao-odds.worse {
-		color: #e63946;
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* ══ SHARED: the Readout sits BESIDE the controls, under a full-width

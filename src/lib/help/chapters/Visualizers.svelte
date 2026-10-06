@@ -138,17 +138,22 @@
 <section>
 	<h2 id="artifact-odds">Artifact Odds</h2>
 	<p>
-		The odds behind a 5★ artifact, from datamined weights, through a piece's life.
-		<strong>Drop</strong>: how likely a domain is to give you the piece you want, by resin spent,
-		with and without a Stygian Onslaught Disturbance Outbreak. <strong>Level up</strong>: the spread
-		of crit value (or roll value) a piece with your two lines reaches at +20.
-		<strong>Your piece</strong>: enter a real piece at any level to see what it can still become,
-		where a finished one ranks, and what a reshape would do to it.
+		The odds behind a 5★ artifact, from datamined weights, through a piece's life. Pick
+		<strong>your stats</strong> — up to four substats that count as good — and every view measures
+		them. <strong>Drop</strong>: how many days of resin it takes to get the piece you want, from a
+		domain or during a Stygian Onslaught Disturbance Outbreak. <strong>Level up</strong>: what your
+		stats reach at +20 on a piece that has them, coloured by how many upgrades landed in them.
+		<strong>Your piece</strong>: enter a real piece, line by line as the game shows it, to see how
+		it ranks, what it can still become, and what a reshape would do.
 	</p>
 	<p>
-		The game doesn't say how a guarantee of at least N rolls is met, for reshaping or for a piece
-		defined with Sanctifying Elixir. The Artifact Odds instrument assumes the rolls land as usual
-		and any shortfall is moved into your two lines — the reading Genshin Optimizer uses.
+		Your stats are measured in crit value when they are CRIT Rate and CRIT DMG, and otherwise in
+		useful rolls: each upgrade into them counts by its size, a top roll 1 and the smallest 0.7.
+	</p>
+	<p>
+		The game doesn't say how a guarantee of at least N upgrades is met, for reshaping or for a piece
+		defined with Sanctifying Elixir. The Artifact Odds instrument assumes the upgrades land as usual
+		and any shortfall is moved into the selected lines — the reading Genshin Optimizer uses.
 	</p>
 </section>
 

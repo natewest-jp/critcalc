@@ -241,6 +241,38 @@ export function presenceProbability(pool: Substat[], need: SubstatId[], draws: n
 	return recurse(pool, needSet, draws);
 }
 
+/**
+ * P(at least `atLeast` of `want` appear within `draws` weighted draws without
+ * replacement from `pool`).
+ */
+export function presenceAtLeast(
+	pool: Substat[],
+	want: SubstatId[],
+	atLeast: number,
+	draws: number
+): number {
+	if (atLeast <= 0) return 1;
+	const wanted = new Set(want.filter((id) => pool.some((s) => s.id === id)));
+	if (wanted.size < atLeast) return 0;
+
+	function recurse(remaining: Substat[], found: number, left: number): number {
+		if (found >= atLeast) return 1;
+		if (left === 0) return 0;
+		const total = remaining.reduce((acc, s) => acc + s.weight, 0);
+		let p = 0;
+		for (const s of remaining)
+			p +=
+				(s.weight / total) *
+				recurse(
+					remaining.filter((x) => x.id !== s.id),
+					found + (wanted.has(s.id) ? 1 : 0),
+					left - 1
+				);
+		return p;
+	}
+	return recurse(pool, 0, draws);
+}
+
 /** P(the next line drawn is `id`), given the lines a piece already has. */
 export function nextLineChance(main: MainStatId, have: SubstatId[], id: SubstatId): number {
 	const pool = substatPool(main).filter((s) => !have.includes(s.id));
@@ -298,129 +330,222 @@ export function floorDist(events: number, hit: number, floor = 0, already = 0): 
 	);
 }
 
-// ── The value of the target pair ────────────────────────────────────────────
-// One engine for every chart that asks "how good are the target lines": the
-// Level up histogram, a piece's future, the population it is ranked against,
-// and a reshape's outcome. It carries the two lines' sums JOINTLY in integer
-// units so the result can be rounded the way the game displays each line.
+// ── The value of your stats ─────────────────────────────────────────────────
+// ⚓ "What counts as good" is the PLAYER's set of stats (1–4), not a pair:
+// a reshape selects two lines, but a piece is worth what all your stats got.
+// One engine answers every value chart — Level up, a piece's future, the
+// population a finished piece is ranked against, and a reshape — by walking
+// every way the remaining upgrades can split across the four lines (at most
+// 56 for 5 upgrades) and adding each wanted line's rolls.
 //
-// - `cv` (the crit pair): units are centi-percent of each stat (CR 2.72% =
-//   272), and a value is 2 × CR + CD as displayed — each line rounded to 0.1
-//   first, so "same as your piece" means same on screen. Kept in tenths of CV.
-// - `rv` (any other pair): roll value, each roll worth 70/80/90/100 regardless
-//   of stat. Summing ATK% and ER in game units would mean nothing; summing
-//   how good each roll was does.
+// - `cv` (your stats are crit only): units are centi-percent of each stat
+//   (CR 2.72% = 272), and the value is 2 × CR + CD AS DISPLAYED — each line
+//   rounded to 0.1 first, so "same as your piece" means same on screen.
+// - `rolls` (anything else): useful rolls — each upgrade into your stats
+//   counts by its size, a top roll 1 and the smallest 0.7 (roll value / 100).
+//   Adding ATK% to ER in game units would mean nothing; adding how good each
+//   roll was does.
 
-export type ValueUnit = 'cv' | 'rv';
+export type ValueUnit = 'cv' | 'rolls';
 
-/** A line's tier steps in the unit's integer resolution. */
+/** A line's tier steps in the unit's integer resolution (centi-% or roll value). */
 export function unitTiers(unit: ValueUnit, id: SubstatId): number[] {
-	if (unit === 'rv') return [70, 80, 90, 100];
+	if (unit === 'rolls') return [70, 80, 90, 100];
 	return substatById(id).tiers.map((t) => Math.round(t * 10000));
 }
 
-/**
- * The pair's two line sums, keyed `a × KEY + b` — a is always the pair's
- * FIRST stat and b its second (for `cv`: CR then CD), and a line the piece
- * doesn't have stays at 0.
- */
-export type Joint = Map<number, number>;
-const KEY = 100_000;
+/** CV when every one of your stats (main stat aside) is CR or CD; useful rolls otherwise. */
+export const unitFor = (wantedSubs: SubstatId[]): ValueUnit =>
+	wantedSubs.length > 0 && wantedSubs.every((id) => id === 'cr' || id === 'cd') ? 'cv' : 'rolls';
 
-/** A line's possible sums (value → chance); absent = the line isn't there. */
-export type LineSums = Map<number, number> | null;
-
-/** Independent start values for the pair's two lines. */
-export function jointOf(a: LineSums, b: LineSums): Joint {
-	const out: Joint = new Map();
-	for (const [va, pa] of a ?? new Map([[0, 1]]))
-		for (const [vb, pb] of b ?? new Map([[0, 1]]))
-			out.set(va * KEY + vb, (out.get(va * KEY + vb) ?? 0) + pa * pb);
-	return out;
-}
-
-/** One uniform tier: a fresh line's initial roll. */
+/** One uniform tier: a fresh line's first roll. */
 export const uniformLine = (tiers: number[]): Map<number, number> =>
 	new Map(tiers.map((t) => [t, 1 / tiers.length]));
 
-/**
- * The pair after k more rolls INTO it, k weighted by `counts[k]`. Each such
- * roll picks one of the pair's lines the piece HAS uniformly (both community
- * models agree on this for a topped-up roll too), and a tier uniformly.
- * `tiersA`/`tiersB` null = that line isn't on the piece.
- */
-export function addPairRolls(
-	start: Joint,
-	counts: number[],
-	tiersA: number[] | null,
-	tiersB: number[] | null
-): Joint {
-	const lines = (tiersA ? 1 : 0) + (tiersB ? 1 : 0);
-	const out: Joint = new Map();
-	let cur = start;
-	for (let k = 0; k < counts.length; k++) {
-		if (k > 0) {
-			if (lines === 0) break;
-			const next: Joint = new Map();
-			const w = 1 / lines / 4;
-			for (const [key, p] of cur) {
-				if (tiersA)
-					for (const t of tiersA) next.set(key + t * KEY, (next.get(key + t * KEY) ?? 0) + p * w);
-				if (tiersB) for (const t of tiersB) next.set(key + t, (next.get(key + t) ?? 0) + p * w);
-			}
-			cur = next;
-		}
-		if (counts[k] === 0) continue;
-		for (const [key, p] of cur) out.set(key, (out.get(key) ?? 0) + p * counts[k]);
-	}
-	return out;
-}
-
-/** Mix weighted joints (a 3-line piece's possible 4th lines). */
-export function mixJoints(parts: { w: number; joint: Joint }[]): Joint {
-	const out: Joint = new Map();
-	for (const { w, joint } of parts)
-		for (const [key, p] of joint) out.set(key, (out.get(key) ?? 0) + w * p);
-	return out;
-}
-
-/** A value distribution in display units (CV or RV), ascending. */
+/** A value distribution in display units (CV, or useful rolls), ascending. */
 export type ValueDist = { x: number; p: number }[];
+/** …tagged with how many upgrades landed in your stats by +20 (the bars' colours). */
+export type Outcome = { x: number; k: number; p: number }[];
 
-/** The displayed value of a pair state (CV from each line rounded to 0.1, or RV). */
-export function pairValue(unit: ValueUnit, a: number, b: number): number {
-	if (unit === 'rv') return a + b;
-	// a is CR in centi-%, b CD; tenths of CV, as integers, then to CV
-	return (2 * Math.round(a / 10) + Math.round(b / 10)) / 10;
+/** One of the piece's four lines, as the engine sees it. */
+export type LineState = {
+	id: SubstatId;
+	/** One of your stats — its rolls count */
+	wanted: boolean;
+	/** Selected for a reshape (or a defined piece's two lines) — the floor's lines */
+	selected: boolean;
+	/** The line's sum so far in the unit (unused when not wanted) */
+	start: Map<number, number>;
+};
+
+const factorial = (n: number): number => (n <= 1 ? 1 : n * factorial(n - 1));
+
+/**
+ * Every split of `rolls` upgrades across 4 lines, with its chance. Rolls pick
+ * a line uniformly; under a floor the TOP-UP reading applies (see the header,
+ * and Genshin Optimizer's `rollCountProb`): a split that leaves the selected
+ * lines above the floor keeps its plain chance, and every split that would
+ * leave them at or below it collapses onto "exactly at the floor", spread
+ * uniformly within and outside the selected lines. `already` = rolls the
+ * selected lines hold from earlier upgrades (a defined piece mid-level).
+ */
+export function countVectors(
+	rolls: number,
+	selected: boolean[],
+	floor = 0,
+	already = 0
+): { n: number[]; p: number }[] {
+	const nSel = selected.filter(Boolean).length;
+	const need = Math.min(rolls, Math.max(0, floor - already));
+	const out: { n: number[]; p: number }[] = [];
+	const multi = (n: number[], lines: number) =>
+		factorial(n.reduce((a, b) => a + b, 0)) /
+		n.reduce((a, b) => a * factorial(b), 1) /
+		Math.pow(
+			lines,
+			n.reduce((a, b) => a + b, 0)
+		);
+	const atOrBelow = binomialDist(rolls, nSel / 4)
+		.slice(0, need + 1)
+		.reduce((a, b) => a + b, 0);
+
+	for (let a = 0; a <= rolls; a++)
+		for (let b = 0; a + b <= rolls; b++)
+			for (let c = 0; a + b + c <= rolls; c++) {
+				const n = [a, b, c, rolls - a - b - c];
+				const base = multi(n, 4);
+				if (need === 0 || nSel === 0 || nSel === 4) {
+					out.push({ n, p: base });
+					continue;
+				}
+				const t = n.reduce((acc, k, i) => acc + (selected[i] ? k : 0), 0);
+				if (t > need) out.push({ n, p: base });
+				else if (t === need) {
+					const inSel = n.filter((_, i) => selected[i]);
+					const outSel = n.filter((_, i) => !selected[i]);
+					out.push({ n, p: atOrBelow * multi(inSel, nSel) * multi(outSel, 4 - nSel) });
+				}
+			}
+	return out.filter((v) => v.p > 0);
 }
 
-export function toValues(unit: ValueUnit, joint: Joint): ValueDist {
-	const out = new Map<number, number>();
-	for (const [key, p] of joint) {
-		const v = pairValue(unit, Math.floor(key / KEY), key % KEY);
-		out.set(v, (out.get(v) ?? 0) + p);
+/** `start` plus `k` uniform tiers, for k = 0…max. */
+function rollPowers(start: Map<number, number>, tiers: number[], max: number) {
+	const out = [start];
+	for (let k = 1; k <= max; k++) {
+		const next = new Map<number, number>();
+		for (const [v, p] of out[k - 1])
+			for (const t of tiers) next.set(v + t, (next.get(v + t) ?? 0) + p / tiers.length);
+		out.push(next);
 	}
-	return [...out.entries()].map(([x, p]) => ({ x, p })).sort((a, b) => a.x - b.x);
+	return out;
+}
+
+/** The value of your stats on screen: CV from each line rounded to 0.1, or useful rolls. */
+export function shownValue(unit: ValueUnit, cr: number, cd: number, rv = 0): number {
+	if (unit === 'rolls') return rv / 100;
+	return (2 * Math.round(cr / 10) + Math.round(cd / 10)) / 10;
 }
 
 /**
- * A pair's value at +20 on a piece that has both lines (by +4): one initial
- * roll each, then `events` upgrades at ½ into the pair under `floor`. The
- * Level up chart, and the population a finished piece is ranked against.
+ * The value of your stats at +20: four lines, `rolls` upgrades still to
+ * come under `floor` on the selected lines. `pastWanted` = upgrades your
+ * stats already took (they colour the bars with the new ones).
  */
-export function pairOutcome(
+export function outcome(
 	unit: ValueUnit,
-	pair: [SubstatId, SubstatId],
+	lines: LineState[],
+	rolls: number,
+	floor = 0,
+	already = 0,
+	pastWanted = 0
+): Outcome {
+	const vectors = countVectors(
+		rolls,
+		lines.map((l) => l.selected),
+		floor,
+		already
+	);
+	const powers = lines.map((l) =>
+		l.wanted ? rollPowers(l.start, unitTiers(unit, l.id), rolls) : null
+	);
+	const acc = new Map<number, { x: number; k: number; p: number }>();
+	const add = (x: number, k: number, p: number) => {
+		const key = Math.round(x * 100) * 16 + k;
+		const e = acc.get(key);
+		if (e) e.p += p;
+		else acc.set(key, { x, k, p });
+	};
+
+	for (const { n, p } of vectors) {
+		const k = pastWanted + n.reduce((s, ni, i) => s + (lines[i].wanted ? ni : 0), 0);
+		if (unit === 'cv') {
+			const of = (id: SubstatId) => {
+				const i = lines.findIndex((l) => l.wanted && l.id === id);
+				return i < 0 ? new Map([[0, 1]]) : powers[i]![n[i]];
+			};
+			for (const [cr, pa] of of('cr'))
+				for (const [cd, pb] of of('cd')) add(shownValue('cv', cr, cd), k, p * pa * pb);
+		} else {
+			let sum = new Map([[0, 1]]);
+			lines.forEach((l, i) => {
+				if (!l.wanted) return;
+				const next = new Map<number, number>();
+				for (const [v, pv] of sum)
+					for (const [w, pw] of powers[i]![n[i]]) next.set(v + w, (next.get(v + w) ?? 0) + pv * pw);
+				sum = next;
+			});
+			for (const [rv, pv] of sum) add(shownValue('rolls', 0, 0, rv), k, p * pv);
+		}
+	}
+	return [...acc.values()].sort((a, b) => a.x - b.x || a.k - b.k);
+}
+
+/** Mix weighted outcomes (a 3-line piece's possible 4th lines). */
+export function mixOutcomes(parts: { w: number; out: Outcome }[]): Outcome {
+	const acc = new Map<number, { x: number; k: number; p: number }>();
+	for (const { w, out } of parts)
+		for (const o of out) {
+			const key = Math.round(o.x * 100) * 16 + o.k;
+			const e = acc.get(key);
+			if (e) e.p += w * o.p;
+			else acc.set(key, { ...o, p: w * o.p });
+		}
+	return [...acc.values()].sort((a, b) => a.x - b.x || a.k - b.k);
+}
+
+/** Drop the colour tag: one chance per value. */
+export function collapse(out: Outcome): ValueDist {
+	const acc = new Map<number, number>();
+	for (const o of out) acc.set(o.x, (acc.get(o.x) ?? 0) + o.p);
+	return [...acc.entries()].map(([x, p]) => ({ x, p })).sort((a, b) => a.x - b.x);
+}
+
+/**
+ * A fresh piece with `wantedIds` among its lines (by +4), levelled to +20:
+ * one first roll each, then `events` upgrades. Under a floor the selected
+ * lines are your stats first (a defined piece is defined on what you want).
+ * The Level up chart, and the population a finished piece is ranked against.
+ */
+export function freshOutcome(
+	unit: ValueUnit,
+	wantedIds: SubstatId[],
 	events: number,
 	floor = 0,
-	/** Which of the pair the piece has (a one-line piece is ranked among its kind) */
-	has: [boolean, boolean] = [true, true]
-): ValueDist {
-	const [ta, tb] = pair.map((id, i) => (has[i] ? unitTiers(unit, id) : null));
-	const lines = Number(has[0]) + Number(has[1]);
-	const start = jointOf(ta && uniformLine(ta), tb && uniformLine(tb));
-	const counts = floorDist(events, lines / 4, lines === 2 ? floor : 0);
-	return toValues(unit, addPairRolls(start, counts, ta, tb));
+	selectedIds?: SubstatId[]
+): Outcome {
+	const filler: SubstatId[] = (['hp', 'def', 'atk', 'em'] as SubstatId[]).filter(
+		(id) => !wantedIds.includes(id)
+	);
+	const ids = [...wantedIds, ...filler].slice(0, 4);
+	const sel = selectedIds ?? ids.slice(0, 2);
+	const lines = ids.map((id, i) => ({
+		id,
+		wanted: i < wantedIds.length,
+		selected: sel.includes(id),
+		start: uniformLine(unitTiers(unit, id))
+	}));
+	return outcome(unit, lines, events, floor);
 }
 
 /** Mean and CDF-based percentiles of a value distribution. */
@@ -434,18 +559,25 @@ export function distStats(dist: ValueDist) {
 		}
 		return dist[dist.length - 1]?.x ?? 0;
 	};
-	return { mean, p10: quantile(0.1), median: quantile(0.5), p90: quantile(0.9) };
+	return {
+		mean,
+		p10: quantile(0.1),
+		p25: quantile(0.25),
+		median: quantile(0.5),
+		p75: quantile(0.75),
+		p90: quantile(0.9)
+	};
 }
 
 /**
- * P(an outcome is below / equal to / above a piece's value). The piece's own
- * value can be uncertain (a roll value read from a rounded display), so it is
- * a distribution too; "equal" compares displayed values.
+ * P(an outcome is below / equal to / above a reference). The reference can
+ * be uncertain (useful rolls read off a rounded display), so it is a
+ * distribution too; "equal" compares displayed values.
  */
-export function compareTo(dist: ValueDist, piece: ValueDist) {
+export function compareTo(dist: ValueDist, ref: ValueDist) {
 	let below = 0;
 	let equal = 0;
-	for (const v of piece) {
+	for (const v of ref) {
 		for (const d of dist) {
 			if (Math.abs(d.x - v.x) < 1e-6) equal += d.p * v.p;
 			else if (d.x < v.x) below += d.p * v.p;
@@ -454,9 +586,9 @@ export function compareTo(dist: ValueDist, piece: ValueDist) {
 	return { below, equal, above: Math.max(0, 1 - below - equal) };
 }
 
-/** Mid-rank percentile: below, plus half the ties (a typical piece reads p50). */
-export function percentileOf(dist: ValueDist, piece: ValueDist): number {
-	const { below, equal } = compareTo(dist, piece);
+/** Mid-rank percentile: below, plus half the ties (a typical piece reads 50). */
+export function percentileOf(dist: ValueDist, ref: ValueDist): number {
+	const { below, equal } = compareTo(dist, ref);
 	return below + equal / 2;
 }
 
@@ -478,8 +610,25 @@ export const SET_CHANCE = 1 / 2;
 export const SLOT_CHANCE = 1 / 5;
 
 /** Chance one 5★ from the domain is the piece you want. */
-export const pieceChance = (mainChance: number, linesChance: number) =>
-	SET_CHANCE * SLOT_CHANCE * mainChance * linesChance;
+export const pieceChance = (mainChance: number, linesChance: number, eitherSet = false) =>
+	(eitherSet ? 1 : SET_CHANCE) * SLOT_CHANCE * mainChance * linesChance;
+
+/**
+ * The chance a piece of this slot has an accepted main stat AND at least
+ * `atLeast` of your stats among its 4 lines (by +4). A main stat that is one
+ * of your stats counts toward them — a CRIT Rate circlet needs only one more.
+ */
+export function targetLinesChance(
+	mains: { id: MainStatId; chance: number }[],
+	wanted: SubstatId[],
+	atLeast: number
+): number {
+	return mains.reduce((acc, m) => {
+		const onMain = wanted.includes(m.id as SubstatId) ? 1 : 0;
+		const subs = wanted.filter((id) => id !== m.id);
+		return acc + m.chance * presenceAtLeast(substatPool(m.id), subs, atLeast - onMain, 4);
+	}, 0);
+}
 
 /** P(no wanted piece yet) after spending `resin` (whole runs only). */
 export function farmMiss(resin: number, q: number, outbreak: boolean): number {

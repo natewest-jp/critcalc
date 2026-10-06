@@ -6,14 +6,19 @@ import {
 	presenceProbability,
 	binomialDist,
 	floorDist,
-	pairOutcome,
+	freshOutcome,
+	countVectors,
+	collapse,
+	unitFor,
+	shownValue,
+	presenceAtLeast,
+	targetLinesChance,
 	distStats,
 	compareTo,
 	percentileOf,
 	rollEvents,
 	rollsLeftAt,
 	unitTiers,
-	pairValue,
 	farmMiss,
 	farmStats,
 	pieceChance,
@@ -155,11 +160,44 @@ describe('floorDist — the top-up floor', () => {
 	});
 });
 
-describe('pairOutcome', () => {
-	const sum = (d: ValueDist) => d.reduce((acc, x) => acc + x.p, 0);
+describe('countVectors', () => {
+	const sel = [true, true, false, false];
+	const total = (v: { p: number }[]) => v.reduce((a, x) => a + x.p, 0);
+
+	it('no floor: the multinomial, 56 splits of 5 upgrades', () => {
+		const v = countVectors(5, sel);
+		expect(v).toHaveLength(56);
+		expect(total(v)).toBeCloseTo(1, 12);
+	});
+
+	for (const [rolls, floor, already] of [
+		[5, 2, 0],
+		[5, 3, 0],
+		[4, 4, 0],
+		[3, 2, 1]
+	])
+		it(`the selected lines' total is floorDist's (${rolls} upgrades, ≥${floor}, ${already} held)`, () => {
+			const v = countVectors(rolls, sel, floor, already);
+			expect(total(v)).toBeCloseTo(1, 12);
+			const bySel = Array(rolls + 1).fill(0);
+			for (const { n, p } of v) bySel[n[0] + n[1]] += p;
+			floorDist(rolls, 0.5, floor, already).forEach((p, k) => expect(bySel[k]).toBeCloseTo(p, 12));
+		});
+
+	it('topped-up rolls split evenly inside and outside the selection', () => {
+		// ≥2 of 2 upgrades: everything lands in the pair, (2,0) (1,1) (0,2) at ¼ ½ ¼
+		const v = countVectors(2, sel, 2);
+		const p = (n: number[]) => v.find((x) => x.n.join() === n.join())?.p ?? 0;
+		expect(p([2, 0, 0, 0])).toBeCloseTo(0.25, 12);
+		expect(p([1, 1, 0, 0])).toBeCloseTo(0.5, 12);
+	});
+});
+
+describe('freshOutcome', () => {
+	const sum = (d: { p: number }[]) => d.reduce((acc, x) => acc + x.p, 0);
 
 	it('CV: sums to 1, spans the displayed extremes', () => {
-		const d = pairOutcome('cv', ['cr', 'cd'], 5);
+		const d = collapse(freshOutcome('cv', ['cr', 'cd'], 5));
 		expect(sum(d)).toBeCloseTo(1, 9);
 		// both lines one min roll: 2 × 2.7 + 5.4
 		expect(d[0].x).toBeCloseTo(10.8, 6);
@@ -168,40 +206,59 @@ describe('pairOutcome', () => {
 		expect(d[d.length - 1].x).toBeCloseTo(54.5, 6);
 	});
 
-	it('RV: the mean is the analytic one', () => {
-		const { mean } = distStats(pairOutcome('rv', ['atkPct', 'er'], 4));
-		expect(mean).toBeCloseTo(2 * 85 + 4 * 0.5 * 85, 9);
+	it('useful rolls: the mean is the analytic one', () => {
+		const { mean } = distStats(collapse(freshOutcome('rolls', ['atkPct', 'er'], 4)));
+		expect(mean).toBeCloseTo(2 * 0.85 + 4 * 0.5 * 0.85, 9);
+	});
+
+	it('four of your stats: every upgrade is useful', () => {
+		const out = freshOutcome('rolls', ['atkPct', 'er', 'cr', 'cd'], 5);
+		expect(out.every((o) => o.k === 5)).toBe(true);
+		expect(distStats(collapse(out)).mean).toBeCloseTo(9 * 0.85, 9);
+	});
+
+	it('the colour tag is the upgrades into your stats: binomial for a pair', () => {
+		const out = freshOutcome('cv', ['cr', 'cd'], 5);
+		const byK = Array(6).fill(0);
+		for (const o of out) byK[o.k] += o.p;
+		binomialDist(5, 0.5).forEach((p, k) => expect(byK[k]).toBeCloseTo(p, 12));
 	});
 
 	it('a floor lifts the bottom and leaves the top', () => {
-		const d = pairOutcome('rv', ['atkPct', 'er'], 5, 2);
-		expect(d[0].x).toBe(280);
-		expect(d[d.length - 1].x).toBe(700);
-		expect(distStats(d).mean).toBeCloseTo(2 * 85 + (87 / 32) * 85, 9);
+		const d = collapse(freshOutcome('rolls', ['atkPct', 'er'], 5, 2));
+		expect(d[0].x).toBeCloseTo(2.8, 9);
+		expect(d[d.length - 1].x).toBeCloseTo(7, 9);
+		expect(distStats(d).mean).toBeCloseTo(2 * 0.85 + (87 / 32) * 0.85, 9);
 	});
 
-	it('a one-line piece is ranked among one-line pieces (¼ per roll)', () => {
-		const { mean } = distStats(pairOutcome('rv', ['cr', 'cd'], 5, 0, [true, false]));
-		expect(mean).toBeCloseTo(85 + 5 * 0.25 * 85, 9);
+	it('a floor on two lines, a third of your stats outside it', () => {
+		// your stats CR, CD, ER; the pair CR+CD at ≥2. ER takes half of what
+		// the pair leaves: E[ER rolls] = ½ × (5 − 87/32)
+		const out = freshOutcome('rolls', ['cr', 'cd', 'er'], 5, 2, ['cr', 'cd']);
+		const mean = distStats(collapse(out)).mean;
+		expect(mean).toBeCloseTo(3 * 0.85 + (87 / 32 + 0.5 * (5 - 87 / 32)) * 0.85, 9);
 	});
 
 	it('CV display: each line is rounded before it counts', () => {
-		expect(pairValue('cv', 389, 777)).toBeCloseTo(15.6, 9); // 2 × 3.9 + 7.8
+		expect(shownValue('cv', 389, 777)).toBeCloseTo(15.6, 9); // 2 × 3.9 + 7.8
 		expect(unitTiers('cv', 'cd')).toEqual([544, 622, 699, 777]);
+		expect(unitFor(['cr', 'cd'])).toBe('cv');
+		expect(unitFor(['cd'])).toBe('cv');
+		expect(unitFor(['cr', 'er'])).toBe('rolls');
 	});
 });
 
 describe('the top-up floor, enumerated the other way round', () => {
 	// SiriYu's enlightenment solver walks the rolls in order and, once the
 	// pair can only reach the floor by taking every remaining roll, forces
-	// them into it. Enumerating that literally must give the same pair values
-	// as floorDist's top-up — the claim the model header rests on.
+	// them into it. Enumerating that literally must give the same values as
+	// the top-up — the claim the model header rests on.
 	function forcedLate(events: number, floor: number): Map<number, number> {
 		const [cr, cd] = [unitTiers('cv', 'cr'), unitTiers('cv', 'cd')];
 		const out = new Map<number, number>();
 		const walk = (step: number, a: number, b: number, inPair: number, p: number) => {
 			if (step === events) {
-				const v = Math.round(pairValue('cv', a, b) * 10);
+				const v = Math.round(shownValue('cv', a, b) * 10);
 				out.set(v, (out.get(v) ?? 0) + p);
 				return;
 			}
@@ -226,7 +283,7 @@ describe('the top-up floor, enumerated the other way round', () => {
 	])
 		it(`${events} rolls, ≥${floor}`, () => {
 			const late = forcedLate(events, floor);
-			const ours = pairOutcome('cv', ['cr', 'cd'], events, floor);
+			const ours = collapse(freshOutcome('cv', ['cr', 'cd'], events, floor));
 			expect(ours.length).toBe(late.size);
 			for (const d of ours) expect(late.get(Math.round(d.x * 10))).toBeCloseTo(d.p, 12);
 		});
@@ -250,6 +307,39 @@ describe('compareTo / percentileOf', () => {
 			{ x: 3, p: 0.5 }
 		]);
 		expect(half).toBeCloseTo(0.5, 12);
+	});
+});
+
+describe('presenceAtLeast / targetLinesChance', () => {
+	const flower = substatPool('hp');
+	it('at least all of them is presenceProbability', () => {
+		expect(presenceAtLeast(flower, ['cr', 'cd'], 2, 4)).toBeCloseTo(
+			presenceProbability(flower, ['cr', 'cd'], 4),
+			12
+		);
+	});
+	it('at least one of CR or CD beats CR alone', () => {
+		expect(presenceAtLeast(flower, ['cr', 'cd'], 1, 4)).toBeGreaterThan(0.342);
+	});
+	it('a main stat that is one of your stats counts toward them', () => {
+		// CRIT Rate circlet, your stats CR + CD: it needs only CD
+		const cd = presenceProbability(substatPool('cr'), ['cd'], 4);
+		expect(targetLinesChance([{ id: 'cr', chance: 0.1 }], ['cr', 'cd'], 2)).toBeCloseTo(
+			0.1 * cd,
+			12
+		);
+	});
+	it('either main: the chances add', () => {
+		const one = targetLinesChance([{ id: 'atkPct', chance: 0.2666 }], ['cr', 'cd'], 2);
+		const two = targetLinesChance(
+			[
+				{ id: 'atkPct', chance: 0.2666 },
+				{ id: 'em', chance: 0.1 }
+			],
+			['cr', 'cd'],
+			2
+		);
+		expect(two).toBeGreaterThan(one);
 	});
 });
 
