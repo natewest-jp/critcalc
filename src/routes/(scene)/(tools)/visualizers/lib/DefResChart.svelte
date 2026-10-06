@@ -262,24 +262,27 @@
 				stroke-width="1"
 				stroke-opacity="0.5"
 			/>
-			<text
-				x={readX + (readRight ? -6 : 6)}
-				y={plotY1 - 8}
-				fill="var(--chart-ink)"
-				font-size="11"
-				text-anchor={readRight ? 'end' : 'start'}
-				class="dc-read"
-			>
-				{read(hoverX)}
-			</text>
 		{/if}
 	</svg>
+	{#if hoverX !== null}
+		<!-- The reading is a TAG, not outlined text: a tight glass plate beside
+		     the crosshair, the same material as the panels it reads beside. -->
+		<span
+			class="dc-read ctx-glass"
+			style:left={readRight ? null : `${readX + 6}px`}
+			style:right={readRight ? `${graphW - readX + 6}px` : null}
+			style:bottom={`${H - plotY1 + 6}px`}
+		>
+			{read(hoverX)}
+		</span>
+	{/if}
 </div>
 
 <style>
 	/* ⚠ An SVG's own width props its box open — without these a narrower tile
 	   clips the chart's right end (Artifact Odds pass, 2026-10-06). */
 	.dc-graph {
+		position: relative;
 		height: 100%;
 		min-width: 0;
 		min-height: 0;
@@ -304,10 +307,18 @@
 	}
 
 	.dc-read {
+		position: absolute;
+		padding: 2px 6px;
+		border-radius: 3px;
+		/* the engaged density of glass, so the reading holds over the curves */
+		background: var(--surface-hover);
+		color: var(--text);
+		font-family: var(--font-body);
+		font-size: 11px;
+		line-height: 1.3;
 		font-variant-numeric: tabular-nums;
-		paint-order: stroke;
-		stroke: var(--frame-bg);
-		stroke-width: 3px;
+		white-space: nowrap;
+		pointer-events: none;
 	}
 
 	.dc-graph.is-dim path,

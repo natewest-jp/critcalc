@@ -33,7 +33,7 @@
 	// ── State ─────────────────────────────────────────────────────────────
 	let element = $state<ShredElement>('pyro');
 	let charLevel = $state(90);
-	/** A Transformative or Lunar hit: DEF plays no part (gcsim IgnoreDefPercent 1). */
+	/** A Transformative, Lunar or Stellar hit: DEF plays no part (gcsim IgnoreDefPercent 1). */
 	let ignoresDef = $state(false);
 	let enemyLevel = $state(100);
 	let baseRes = $state(10);
@@ -154,7 +154,7 @@
 		g.stat !== 'ignore'
 			? null
 			: g.scope === 'skill'
-				? 'own Skill DMG'
+				? 'own Skill DMG only'
 				: g.target === 'team'
 					? 'whole party'
 					: 'own hits';
@@ -233,8 +233,8 @@
 			yLabel="damage kept"
 			curves={resCurves}
 			guides={[
-				{ x: 0, label: 'negative counts half', side: 'left' },
-				{ x: 75, label: 'diminishing', side: 'right' }
+				{ x: 0, label: 'below 0%, shred counts half', side: 'left' },
+				{ x: 75, label: 'diminishing returns', side: 'right' }
 			]}
 			points={resPoints}
 			marker={immune ? null : clampRes(finalRes)}
@@ -242,10 +242,14 @@
 			onset={setFinalRes}
 			snap={(x) => Math.round(x / 5) * 5}
 			dim={immune}
-			message={immune ? 'Immune — no shred reaches it' : undefined}
+			message={immune ? 'Immune: this element deals no damage' : undefined}
 			plotH={140}
 			minPlotH={110}
 		/>
+		<p class="dr-caption">
+			Most enemies resist 10%. Shred subtracts from RES, and below 0% it still helps, at half the
+			rate.
+		</p>
 	</div>
 
 	<div class="dr-chart dr-def ctx-dark">
@@ -269,10 +273,14 @@
 			onset={(x) => (enemyLevel = x)}
 			snap={(x) => Math.round(x)}
 			dim={ignoresDef}
-			message={ignoresDef ? 'This hit ignores DEF' : undefined}
+			message={ignoresDef ? 'Transformative, Lunar and Stellar reactions ignore DEF' : undefined}
 			plotH={110}
 			minPlotH={80}
 		/>
+		<p class="dr-caption">
+			Equal levels already cost you half your damage. DEF shred and DEF ignore win it back, and they
+			multiply together.
+		</p>
 	</div>
 
 	<div class="panel dr-hit">
@@ -333,7 +341,7 @@
 		<label class="check">
 			<input type="checkbox" bind:checked={ignoresDef} />
 			<span class="check-box"></span>
-			<span>A Transformative or Lunar reaction (ignores DEF)</span>
+			<span>Transformative, Lunar or Stellar reaction (ignores DEF)</span>
 		</label>
 	</div>
 
@@ -396,7 +404,7 @@
 		<div class="panel panel--paper dr-readout">
 			<p class="kicker">Readout</p>
 			<p class="dr-big">
-				{fmtX(total)}<span class="dr-big-unit">of the hit gets through</span>
+				{fmtX(total)}<span class="dr-big-unit">of your hit's damage gets through</span>
 			</p>
 			<dl class="dr-rows">
 				<dt>RES</dt>
@@ -405,7 +413,9 @@
 						Immune
 					{:else}
 						<span class="dr-strong">{fmtX(resNow)}</span>
-						<span class="dr-sub">at {finalRes}%{resShred ? `, from ${baseRes}%` : ''}</span>
+						<span class="dr-sub"
+							>at {finalRes}% RES{resShred ? ` (${baseRes}% before shred)` : ''}</span
+						>
 					{/if}
 				</dd>
 				<dt>DEF</dt>
@@ -415,7 +425,7 @@
 						{#if ignoresDef}
 							ignored by this hit
 						{:else}
-							Lv {charLevel} vs {enemyLevel}{defShred ? ` · −${defShred}% DEF` : ''}{defIgnore
+							Lv {charLevel} vs Lv {enemyLevel}{defShred ? ` · −${defShred}% DEF` : ''}{defIgnore
 								? ` · ${defIgnore}% ignored`
 								: ''}
 						{/if}
@@ -424,20 +434,19 @@
 			</dl>
 			{#if !immune && total !== totalBase}
 				<p class="dr-meta">
-					Your shred is worth
-					<span class="dr-strong">+{gainPct(total, totalBase).toFixed(1)}%</span> damage here
+					Your shred and DEF ignore add
+					<span class="dr-strong">{gainPct(total, totalBase).toFixed(1)}%</span> damage against this enemy
 				</p>
 			{/if}
 			<p class="note dr-regime">
 				{#if immune}
-					Immunity is not a RES value: no shred lowers it.
+					An immune enemy takes no damage of this element, whatever the shred.
 				{:else if finalRes < 0}
-					Below 0%, each further point of shred counts half.
+					Below 0% RES, shred works at half strength.
 				{:else if finalRes >= 75}
-					Above 75%, RES has diminishing returns, so each point of shred is worth less — until it
-					brings RES back under 75%.
+					Above 75% RES, shred works at less than full strength, until RES drops back under 75%.
 				{:else}
-					Between 0% and 75%, each point of shred is a full point.
+					Between 0% and 75% RES, shred works at full strength.
 				{/if}
 			</p>
 			<p class="dr-receipt">
@@ -495,12 +504,14 @@
 								{/if}
 							</li>
 						{:else}
-							<li class="dr-none">None in the data for {ELEMENT_NAME[element]}.</li>
+							<li class="dr-none">
+								No character or set in the data shreds {ELEMENT_NAME[element]} RES.
+							</li>
 						{/each}
 					</ul>
 					<div class="slider-control dr-other">
 						<div class="slider-header">
-							<span class="slider-label">Other</span>
+							<span class="slider-label">Other sources</span>
 							<span class="readout">
 								{sec.stat === 'res' ? otherRes : sec.stat === 'def' ? otherDef : otherIgnore}%
 							</span>
@@ -572,8 +583,21 @@
 
 	/* No frame — the charts are on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
+	/* The chart takes the track, its caption the line beneath. ⚠ An explicit
+	   minmax(0, 1fr) column: an auto one grows to the SVG's width and clips it
+	   (the Artifact Odds hazard). */
 	.dr-chart {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) auto;
 		min-width: 0;
+	}
+
+	.dr-caption {
+		margin: 0.25rem 0 0;
+		font-size: var(--fs-sm);
+		line-height: 1.35;
+		color: var(--chart-dim);
 	}
 
 	/* The readout and the sources: grid items in their own right at a narrow
