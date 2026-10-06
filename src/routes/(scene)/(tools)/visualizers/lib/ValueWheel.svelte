@@ -84,7 +84,7 @@
 	</button>
 
 	{#if open}
-		<div class="vw-panel" style:--item-h="{ITEM_H}px" style:--pad-rows={PAD_ROWS}>
+		<div class="vw-panel ctx-dark" style:--item-h="{ITEM_H}px" style:--pad-rows={PAD_ROWS}>
 			<div class="vw-band" aria-hidden="true"></div>
 			<div class="vw-list" role="listbox" bind:this={listEl} onscroll={onScroll} tabindex="-1">
 				<div class="vw-spacer"></div>

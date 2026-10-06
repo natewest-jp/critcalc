@@ -41,6 +41,7 @@
 		type PieceQuery
 	} from './appraise';
 	import ValueWheel from './ValueWheel.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 
 	// ⚓ Three views, a piece's life (Nate, 2026-10-06): it DROPS, it is LEVELLED,
 	// and then it is YOUR piece — ranked, levelled further, or reshaped.
@@ -68,6 +69,12 @@
 		{ floor: 4, label: 'Decreed', hint: 'at least 4' }
 	] as const;
 	const MAX_WANTED = 4;
+	/** The main stat a slot starts on (⚓ Nate: sands ATK%, not the list's first HP%) */
+	const DEFAULT_MAIN: Partial<Record<SlotId, MainStatId>> = {
+		sands: 'atkPct',
+		goblet: 'elemDmg',
+		circlet: 'cr'
+	};
 	const DEFAULT_DAYS = 7;
 
 	type Line = { id: SubstatId | ''; raw: string };
@@ -122,7 +129,7 @@
 		slotId = id;
 		const s = SLOTS.find((x) => x.id === id)!;
 		const kept = mains.filter((m) => s.mains.some((x) => x.id === m));
-		mains = kept.length ? kept : [s.mains[0].id];
+		mains = kept.length ? kept : [DEFAULT_MAIN[id] ?? s.mains[0].id];
 		fixLines();
 		resetRefs();
 	}
@@ -160,15 +167,29 @@
 		) as Record<SubstatId, number>
 	);
 
-	/** The axis runs to where the domain alone is 99% done, in whole ticks. */
+	/**
+	 * The axis runs to where the domain alone is 90% done — the unluckiest
+	 * tenth — in whole ticks. ⚓ Nate: people farm a little and look; at 99%
+	 * three quarters of the width went to the flat top of the curve.
+	 */
 	const farmDomain = $derived.by(() => {
 		const perRun = (1 - perPiece) * (1 - EXTRA_FIVE_STAR * perPiece);
-		const runs = perPiece > 0 ? Math.ceil(Math.log(0.01) / Math.log(perRun)) : 100;
+		const runs = perPiece > 0 ? Math.ceil(Math.log(0.1) / Math.log(perRun)) : 100;
 		const span = (runs * RESIN_PER_RUN) / RESIN_PER_DAY;
 		const step = niceStep(span, 5);
 		return Math.max(step, Math.ceil(span / step) * step);
 	});
 	const shownDays = $derived(Math.min(days, farmDomain));
+	/**
+	 * The days slider runs on a SQUARE-ROOT scale, so its first half covers the
+	 * first quarter of the axis — the early days, where the chance moves fastest.
+	 */
+	const SLIDER_STEPS = 1000;
+	const sliderOf = (d: number) => Math.round(Math.sqrt(Math.min(1, d / farmDomain)) * SLIDER_STEPS);
+	function setDaysFromSlider(t: number) {
+		const d = (t / SLIDER_STEPS) ** 2 * farmDomain;
+		days = Math.max(1, d < 20 ? Math.round(d) : Math.round(d / 5) * 5);
+	}
 	const resinOf = (d: number) => Math.floor((d * RESIN_PER_DAY) / RESIN_PER_RUN) * RESIN_PER_RUN;
 	const chanceBy = $derived({
 		domain: 1 - farmMiss(resinOf(shownDays), perPiece, false),
@@ -204,7 +225,9 @@
 	const resolution = $derived(
 		resolutions.length ? resolutions[Math.min(resolutionPick, resolutions.length - 1)] : null
 	);
-	/** Which levels these values fit — the level chips say so */
+	/** Every substat has a value (3 are enough at +0–3) */
+	const pieceComplete = $derived(pieceLines.length >= (level === 0 ? 3 : 4));
+	/** Which levels these values fit — the level chips say so (once there is a piece) */
 	const fitsLevel = $derived(
 		Object.fromEntries(
 			LEVELS.map((l) => [l.at, resolvePiece(lineInferences, l.at).length > 0])
@@ -295,15 +318,25 @@
 		resetRefs();
 	}
 
-	// A line that became the main stat, or a missing 4th past +0, is refilled
+	// A substat can't be the main stat (the game never makes one): a line the
+	// new main stat collides with is CLEARED, never swapped for a guess
 	function fixLines() {
 		lines.forEach((l, i) => {
-			const taken = (id: SubstatId) => lines.some((x, j) => j !== i && x.id === id);
-			if (l.id === main.id || (l.id === '' && (i < 3 || level > 0))) {
-				const free = SUBSTATS.find((s) => s.id !== main.id && !taken(s.id))!;
-				setLineStat(i, free.id);
-			}
+			if (l.id !== '' && l.id === main.id) setLineStat(i, '');
 		});
+	}
+
+	/** Blank the card to enter a piece from scratch */
+	function clearPiece() {
+		lines = [
+			{ id: '', raw: '' },
+			{ id: '', raw: '' },
+			{ id: '', raw: '' },
+			{ id: '', raw: '' }
+		];
+		selected = [];
+		resolutionPick = 0;
+		resetRefs();
 	}
 
 	function setLevel(at: number) {
@@ -466,7 +499,7 @@
 	function scrub(e: PointerEvent) {
 		const frac = Math.min(1, Math.max(0, chartX(e)));
 		if (view === 'drop') {
-			days = Math.max(0.1, Math.round(frac * farmDomain * 10) / 10);
+			days = Math.max(1, Math.round(frac * farmDomain));
 			return;
 		}
 		const x = Math.round((histLo + frac * (histHi - histLo)) * 10) / 10;
@@ -753,7 +786,13 @@
 			<p class="ao-empty">Your only stat is the main stat — pick a substat too.</p>
 		{:else if view === 'piece' && !resolution}
 			<div class="ao-empty">
-				{#if lineInferences.some((i) => !i.length)}
+				{#if pieceLines.length < (level === 0 ? 3 : 4)}
+					<p>
+						Enter your piece's substats{level === 0
+							? ' — three, or four if it dropped with four'
+							: ' — all four'}.
+					</p>
+				{:else if lineInferences.some((i) => !i.length)}
 					<p>A value doesn't match any roll this stat can make — check it against the game.</p>
 				{:else}
 					<p>
@@ -941,22 +980,25 @@
 				<div class="chips" role="group" aria-label="Main stat">
 					{#each slot.mains as m (m.id)}
 						{@const on = view === 'drop' ? mains.includes(m.id) : m.id === main.id}
+						{@const chance = view === 'drop' && slot.mains.length > 1}
 						<button
 							class="chip chip--control"
+							class:ao-chance-chip={chance}
 							class:active={on}
 							aria-pressed={on}
 							onclick={() => pickMain(m.id)}
 						>
-							{m.name}{#if slot.mains.length > 1}&nbsp;<span class="chip-sub"
+							<span>{m.name}</span>
+							{#if chance}
+								<span class="ao-chance"
 									>{fmtPct(m.chance, m.chance < 0.05 ? 1 : 0)}{m.each ? ' each' : ''}</span
-								>{/if}
+								>
+							{/if}
 						</button>
 					{/each}
 				</div>
 				{#if view === 'drop' && slot.mains.length > 1}
-					<p class="note">
-						Pick every main stat you'd take — the percentage is how often each drops.
-					</p>
+					<p class="note">Pick every main stat you'd take. Under each: how often it drops.</p>
 				{/if}
 			</section>
 		{/if}
@@ -968,21 +1010,25 @@
 					{@const on = wanted.includes(s.id)}
 					<button
 						class="chip chip--control"
+						class:ao-chance-chip={view === 'drop'}
 						class:active={on}
 						aria-pressed={on}
 						disabled={!on && wanted.length >= MAX_WANTED}
 						onclick={() => toggleWanted(s.id)}
 					>
-						{s.short}{#if view === 'drop'}&nbsp;<span class="chip-sub"
+						<span>{s.short}</span>
+						{#if view === 'drop'}
+							<span class="ao-chance"
 								>{s.id === main.id ? 'main' : fmtPct(lineChance[s.id], 0)}</span
-							>{/if}
+							>
+						{/if}
 					</button>
 				{/each}
 			</div>
 			<p class="note">
 				What counts as good, up to four.
 				{#if view === 'drop'}
-					Beside each: its chance to be on a {slotWord} with {main.name} main.
+					Under each: its chance to be one of the substats on a {slotWord} with {main.name} main.
 				{/if}
 			</p>
 			{#if view === 'drop' && wanted.length > 1}
@@ -1003,7 +1049,24 @@
 
 		{#if view === 'drop'}
 			<section class="ao-section">
-				<p class="kicker">Set</p>
+				<p class="kicker">Farming</p>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Days of resin</span>
+						<span class="readout">{fmtNum(shownDays)}</span>
+					</div>
+					<input
+						type="range"
+						min="0"
+						max={SLIDER_STEPS}
+						step="1"
+						value={sliderOf(shownDays)}
+						oninput={(e) => setDaysFromSlider(Number(e.currentTarget.value))}
+						class="slider"
+						aria-label="Days of resin"
+						aria-valuetext="{fmtNum(shownDays)} days"
+					/>
+				</div>
 				<div class="chips">
 					<button
 						class="chip chip--control"
@@ -1103,19 +1166,29 @@
 								</button>
 							{/each}
 						</div>
+						<button class="chip chip--control ao-clear" onclick={clearPiece}>
+							<Mark name="reset" size={12} />
+							<span>Clear</span>
+						</button>
+					</div>
+					<div class="ao-main-row">
+						<span class="ao-main-mark" aria-hidden="true"><Mark name="star" size={12} /></span>
 						{#if slot.mains.length > 1}
-							<select
-								class="ao-select ao-main"
-								value={main.id}
-								onchange={(e) => pickMain(e.currentTarget.value as MainStatId)}
-								aria-label="Main stat"
-							>
-								{#each slot.mains as m (m.id)}
-									<option value={m.id}>{m.name}</option>
-								{/each}
-							</select>
+							<span class="ao-pick">
+								<select
+									class="ao-select"
+									value={main.id}
+									onchange={(e) => pickMain(e.currentTarget.value as MainStatId)}
+									aria-label="Main stat"
+								>
+									{#each slot.mains as m (m.id)}
+										<option value={m.id}>{m.name}</option>
+									{/each}
+								</select>
+								<Mark name="chevron" size={12} />
+							</span>
 						{:else}
-							<span class="ao-main ao-main--fixed">{main.name}</span>
+							<span class="ao-main-fixed">{main.name}</span>
 						{/if}
 					</div>
 					{#each lines as line, i (i)}
@@ -1142,21 +1215,22 @@
 							{:else}
 								<span class="ao-badge is-unknown" aria-hidden="true">?</span>
 							{/if}
-							<select
-								class="ao-select"
-								value={line.id}
-								onchange={(e) => setLineStat(i, e.currentTarget.value as SubstatId | '')}
-								aria-label="Substat {i + 1}"
-							>
-								{#if i === 3 && level === 0}
-									<option value="">— not yet</option>
-								{/if}
-								{#each SUBSTATS as s (s.id)}
-									{#if s.id !== main.id && (s.id === line.id || !lines.some((l) => l.id === s.id))}
-										<option value={s.id}>{s.name}</option>
-									{/if}
-								{/each}
-							</select>
+							<span class="ao-pick" class:is-blank={line.id === ''}>
+								<select
+									class="ao-select"
+									value={line.id}
+									onchange={(e) => setLineStat(i, e.currentTarget.value as SubstatId | '')}
+									aria-label="Substat {i + 1}"
+								>
+									<option value="">{i === 3 && level === 0 ? 'Not yet' : 'Substat…'}</option>
+									{#each SUBSTATS as s (s.id)}
+										{#if s.id !== main.id && (s.id === line.id || !lines.some((l) => l.id === s.id))}
+											<option value={s.id}>{s.name}</option>
+										{/if}
+									{/each}
+								</select>
+								<Mark name="chevron" size={12} />
+							</span>
 							{#if line.id !== ''}
 								<ValueWheel
 									values={lineOptions[i]}
@@ -1172,7 +1246,7 @@
 									onclick={() => toggleSelected(line.id as SubstatId)}
 								></button>
 							{:else}
-								<span></span><span></span>
+								<span class="ao-blank-value" aria-hidden="true">—</span><span></span>
 							{/if}
 						</div>
 					{/each}
@@ -1182,7 +1256,7 @@
 						<button
 							class="chip chip--control"
 							class:active={level === l.at}
-							class:is-misfit={!fitsLevel[l.at]}
+							class:is-misfit={pieceComplete && !fitsLevel[l.at]}
 							aria-pressed={level === l.at}
 							onclick={() => setLevel(l.at)}
 						>
@@ -1194,8 +1268,10 @@
 					{#if resolution}
 						The number on the left is each line's upgrades, as the game shows them when you reshape.
 						Your stats are highlighted; the circles on the right pick a reshape's two lines.
-					{:else}
+					{:else if pieceComplete}
 						Pick your piece's level — the ones these values can't be are dimmed.
+					{:else}
+						Choose each substat and dial in its value as the game shows it, then the piece's level.
 					{/if}
 				</p>
 				<div class="chips">
@@ -1514,6 +1590,26 @@
 		padding-inline: 0.4rem;
 	}
 
+	/* A chip with its chance UNDER its name: side by side, "ATK 58%" read as
+	   58% ATK (⚓ Nate) — a second line makes the number a fact about the chip */
+	.ao-chance-chip {
+		display: inline-grid;
+		justify-items: center;
+		gap: 0.05rem;
+		padding-block: 0.3rem 0.25rem;
+		line-height: 1.1;
+	}
+
+	.ao-chance {
+		font-family: var(--font-body);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-normal);
+		letter-spacing: 0;
+		text-transform: none;
+		opacity: 0.7;
+		font-variant-numeric: tabular-nums;
+	}
+
 	.ao-dense :global(.chip.is-misfit:not(.active)) {
 		opacity: 0.45;
 	}
@@ -1533,15 +1629,39 @@
 		margin-bottom: 0.2rem;
 	}
 
-	.ao-main {
-		flex: 1 1 8rem;
+	.ao-clear {
+		margin-left: auto;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
 	}
 
-	.ao-main--fixed {
+	/* The main stat sits on its own row, above the four substats (the game's) */
+	.ao-main-row {
+		display: grid;
+		grid-template-columns: 1.5rem minmax(0, 1fr) 6.7rem;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0 0.3rem 0.2rem;
+	}
+
+	.ao-main-row .ao-pick {
+		grid-column: 2 / -1;
+	}
+
+	/* The game marks its main stat with a star where substats carry a badge */
+	.ao-main-mark {
+		display: grid;
+		place-items: center;
+		color: var(--muted);
+	}
+
+	.ao-main-fixed {
+		grid-column: 2 / -1;
+		padding-left: 0.6rem;
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-		padding-inline: 0.5rem;
 	}
 
 	.ao-line {
@@ -1549,8 +1669,48 @@
 		grid-template-columns: 1.5rem minmax(0, 1fr) 5.2rem 1.5rem;
 		align-items: center;
 		gap: 0.45rem;
-		padding: 0.15rem 0.3rem;
+		padding: 0.2rem 0.3rem;
 		border-radius: 3px;
+	}
+
+	/* One height for every field on the card: the select, the wheel, the blank */
+	.ao-line .ao-select,
+	.ao-main-row .ao-select,
+	.ao-line :global(.vw-field),
+	.ao-blank-value {
+		height: 2rem;
+	}
+
+	.ao-blank-value {
+		display: grid;
+		align-items: center;
+		justify-items: end;
+		padding-inline: 0.45rem;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--text) 4%, transparent);
+		color: var(--muted);
+		font-family: var(--font-mono);
+	}
+
+	/* A styled select: the native face and arrow go, the site's chevron comes in */
+	.ao-pick {
+		position: relative;
+		display: grid;
+		min-width: 0;
+	}
+
+	.ao-pick :global(svg) {
+		position: absolute;
+		right: 0.55rem;
+		top: 50%;
+		translate: 0 -50%;
+		pointer-events: none;
+		color: var(--muted);
+	}
+
+	.ao-pick.is-blank .ao-select {
+		color: var(--muted);
+		font-weight: var(--fw-normal);
 	}
 
 	.ao-line.is-wanted {
@@ -1562,8 +1722,14 @@
 	}
 
 	.ao-select {
+		appearance: none;
+		-webkit-appearance: none;
+		width: 100%;
 		min-width: 0;
-		padding: 0.32rem 0.5rem;
+		padding: 0 1.7rem 0 0.6rem;
+		font-family: var(--font-body);
+		text-overflow: ellipsis;
+		transition: background var(--t-snap);
 		border: none;
 		border-radius: 3px;
 		background: var(--fill-rest);
@@ -1571,6 +1737,15 @@
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		cursor: pointer;
+	}
+
+	.ao-select:hover {
+		background: var(--fill-hover);
+	}
+
+	.ao-select:focus-visible {
+		outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+		outline-offset: 1px;
 	}
 
 	.ao-select option {
