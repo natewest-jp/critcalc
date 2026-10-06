@@ -79,9 +79,9 @@
 - `vz_damage_breakdown` — workspace.ts:24 name:
   > Damage Breakdown
   - terms: 📖 Damage Breakdown
-- `vz_enemy_def_res` — workspace.ts:25 name:
-  > Enemy DEF & RES
-  - terms: 📖 Enemy DEF & RES
+- `vz_enemy_res_def` — workspace.ts:25 name:
+  > Enemy RES & DEF
+  - terms: 📖 Enemy RES & DEF
 - `vz_artifact_odds` — workspace.ts:26 name:
   > Artifact Odds
   - terms: 📖 Artifact Odds
