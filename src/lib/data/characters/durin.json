@@ -698,7 +698,7 @@
 		{
 			"faction": "hexerei",
 			"name": "Secret Rite",
-			"description": "With 2+ Hexerei members in the team, every effect of Light Manifest of the Divine Calculus is amplified by 75% (durations unchanged): the White-form RES shred deepens from 20% to 35%, and the Dark-form Vaporize/Melt DMG bonus goes from 40% to 70% (no stat to show).",
+			"description": "With 2+ Hexerei members in the team, every effect of Light Manifest of the Divine Calculus is amplified by 75% (durations unchanged): the White-form RES shred deepens from 20% to 35%, and the Dark-form Vaporize/Melt DMG bonus goes from 40% to 70%.",
 			"effects": [
 				{
 					"type": "resShred",
