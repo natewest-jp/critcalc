@@ -466,6 +466,19 @@
 		}
 		return out.sort((a, b) => a.x - b.x);
 	});
+	/** What the gold and the grey ARE, in the legend's words */
+	const solidName = $derived(
+		view === 'level'
+			? levelFloor
+				? 'Made with Elixir'
+				: ''
+			: finished
+				? 'Your piece, reshaped'
+				: ''
+	);
+	const ghostName = $derived(
+		view === 'level' ? 'The same piece, farmed' : `Every +20 ${slotWord} with these substats`
+	);
 	const ks = $derived([...new Set(solid.map((o) => o.k))].sort((a, b) => a - b));
 	const histX0 = $derived(
 		Math.min(
@@ -937,8 +950,15 @@
 					{/if}
 				</svg>
 			</div>
+			<!-- ⚓ Each colour says WHAT it is (Nate: "every piece like it" said
+			     neither). Gold is the question being asked; grey is what it is
+			     measured against. -->
 			<div class="ao-legend">
-				<span class="ao-legend-title">Upgrades into your stats</span>
+				{#if ks.length}
+					<span class="ao-legend-title"
+						>{solidName}{solidName ? ' · ' : ''}upgrades into your stats</span
+					>
+				{/if}
 				{#each ks as k (k)}
 					<span class="ao-legend-key">
 						<i
@@ -948,9 +968,7 @@
 					</span>
 				{/each}
 				{#if ghost}
-					<span class="ao-legend-key"
-						><i class="is-ghost"></i>{view === 'level' ? 'farmed' : 'every piece like it'}</span
-					>
+					<span class="ao-legend-key ao-legend-ghost"><i class="is-ghost"></i>{ghostName}</span>
 				{/if}
 			</div>
 			<p class="note ao-probe">
@@ -966,10 +984,13 @@
 				{:else if !finished}
 					What your stats on this piece can reach by +20. Drag to set a value to beat.
 				{:else if canReshape}
-					Gold: after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape. Grey: every finished
-					{slotWord} with these substats.
+					Gold is your piece after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape.
+					Grey is every +20 {slotWord} with these four substats, each levelled from scratch — the pieces
+					yours is better than {Math.round(percentile * 100)}% of.
 				{:else}
-					Every finished {slotWord} with these substats. Circle two lines on your piece to see a reshape.
+					Grey is every +20 {slotWord} with these four substats, each levelled from scratch — the pieces
+					yours is better than {Math.round(percentile * 100)}% of. Circle two lines to see a
+					reshape.
 				{/if}
 			</p>
 		{/if}
@@ -1189,7 +1210,7 @@
 						</button>
 					</div>
 					<div class="ao-main-row">
-						<span class="ao-main-mark" aria-hidden="true"><Mark name="star" size={12} /></span>
+						<span class="ao-main-mark" aria-hidden="true"><Mark name="mainStat" size={12} /></span>
 						{#if slot.mains.length > 1}
 							<span class="ao-pick">
 								<select
@@ -1530,6 +1551,10 @@
 		width: 10px;
 		height: 10px;
 		border-radius: 2px;
+	}
+
+	.ao-legend-ghost {
+		margin-left: 0.4rem;
 	}
 
 	.ao-legend-key i.is-ghost {

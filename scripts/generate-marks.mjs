@@ -198,6 +198,10 @@ const MARKS = {
 	 * which is why wishlist did not have to move.
 	 */
 	gated: 'Astroid',
+	/** The main stat on Artifact Odds' piece card, where the game draws a ✦
+	 *  (⚓ Nate 2026-10-06). The same picture as `gated` on purpose — the two
+	 *  never share a screen, and the call site should say which it means. */
+	mainStat: 'Astroid',
 	star: 'Star',
 	/** A character whose frame timing isn't curated yet (⚓ NATE: CircleSlash2,
 	 *  which matches the ∅ it replaces). */
