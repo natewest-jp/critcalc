@@ -1887,12 +1887,14 @@
 		cursor: pointer;
 	}
 
+	/* 12px, overlapping the pip by about half its width (⚓ Nate: a touch bigger,
+	   a touch further in) */
 	.ao-warn {
 		position: absolute;
-		top: -4px;
-		right: -5px;
-		width: 10px;
-		height: 10px;
+		top: -5px;
+		right: -4px;
+		width: 12px;
+		height: 12px;
 		pointer-events: none;
 	}
 
