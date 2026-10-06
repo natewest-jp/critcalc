@@ -187,9 +187,25 @@
 	 */
 	const SLIDER_STEPS = 1000;
 	const sliderOf = (d: number) => Math.round(Math.sqrt(Math.min(1, d / farmDomain)) * SLIDER_STEPS);
-	function setDaysFromSlider(t: number) {
+	const daysAt = (t: number) => {
 		const d = (t / SLIDER_STEPS) ** 2 * farmDomain;
-		days = Math.max(1, d < 20 ? Math.round(d) : Math.round(d / 5) * 5);
+		return Math.max(1, d < 20 ? Math.round(d) : Math.round(d / 5) * 5);
+	};
+	/**
+	 * ⚠️ The thumb keeps ITS OWN position while it is the thing being dragged.
+	 * Bound to `sliderOf(days)`, every input rounded the days and wrote the
+	 * rounded position back, pulling the thumb off the pointer between stops —
+	 * the jitter. Now the thumb glides and the days step underneath it; the
+	 * held position is dropped the moment it no longer names the days shown
+	 * (a chart drag, another piece, a reset).
+	 */
+	let sliderHeld = $state<number | null>(null);
+	const sliderValue = $derived(
+		sliderHeld !== null && daysAt(sliderHeld) === days ? sliderHeld : sliderOf(shownDays)
+	);
+	function setDaysFromSlider(t: number) {
+		sliderHeld = t;
+		days = daysAt(t);
 	}
 	const resinOf = (d: number) => Math.floor((d * RESIN_PER_DAY) / RESIN_PER_RUN) * RESIN_PER_RUN;
 	const chanceBy = $derived({
@@ -778,7 +794,7 @@
 					{/each}
 				</svg>
 			</div>
-			<p class="note">
+			<p class="note ao-probe">
 				Drag along the chart to choose how many days of resin you spend ({RESIN_PER_DAY} a day). In an
 				Outbreak: every run during a Stygian Onslaught Disturbance Outbreak, which adds one more 5★ from
 				the domain for each 120 resin.
@@ -1061,7 +1077,7 @@
 						min="0"
 						max={SLIDER_STEPS}
 						step="1"
-						value={sliderOf(shownDays)}
+						value={sliderValue}
 						oninput={(e) => setDaysFromSlider(Number(e.currentTarget.value))}
 						class="slider"
 						aria-label="Days of resin"
@@ -1481,8 +1497,13 @@
 		margin: 0 0 0.4rem;
 	}
 
+	/* The lines under a chart: a wider measure than a panel note's 56ch (they
+	   span the chart, and wrapped early beside empty space), and TWO lines kept
+	   whether they need them or not — a hover readout or a view's note going
+	   from one line to two moved everything below it (⚓ Nate). */
 	.ao-probe {
-		min-height: 2.6em;
+		max-width: 96ch;
+		min-height: calc(2em * var(--lh-relaxed));
 	}
 
 	.ao-legend {
@@ -1657,8 +1678,13 @@
 		color: var(--muted);
 	}
 
+	/* As tall as the dropdown it replaces on a flower or plume, so switching
+	   slots doesn't move the card */
 	.ao-main-fixed {
 		grid-column: 2 / -1;
+		display: flex;
+		align-items: center;
+		height: 2rem;
 		padding-left: 0.6rem;
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
