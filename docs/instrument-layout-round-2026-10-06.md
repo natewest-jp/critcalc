@@ -33,8 +33,14 @@ Three slots — `.instrument-chart`, `.instrument-controls` (one `.panel`, or a 
 | ≥ 38rem | chart across the top; controls \| Readout at an even split (⚓ the Wish Odds form)  |
 | ≥ 60rem | the Readout a column down the right at full height; chart over controls on the left |
 
-- `--instrument-side` 🎛️ is the wide Readout column (18–22rem). Gauge overrides it (18–25rem,
-  the aura log's widest line) and RES & DEF (19–23rem, the shred list's lines).
+- ⚓ **One side-column width for all eight, `--instrument-side` 🎛️ = `minmax(18rem, 25rem)`**
+  (on `:root`, so the Crit Heatmap's bespoke grid reads it too). Nate asked why they
+  differed (22 / 23 / 25rem). Measured: every Readout and list fits 22rem — RES & DEF's shred
+  rows fit even 18rem, and its 23rem came in with a WIP commit and no reason — EXCEPT the
+  Gauge's widest aura-log line, "Pyro (0.8U after tax, refreshed, new rate)", which wraps at
+  24rem and holds at 25rem. The widest need sets the one width.
+- ⚓ **At 38–60rem the controls and the Readout keep their NATURAL heights** (Nate, after
+  seeing them stretched: a short Build panel became a tall box of empty glass).
 - **`.instrument` is `min-height: 100%`, not `height: 100%`.** A grid sizes its `fr` rows
   against a definite min-height too, so the fill still works; and the box now grows with its
   content, which is what lets anything inside it be `sticky` past the first screen.
@@ -71,8 +77,7 @@ Three slots — `.instrument-chart`, `.instrument-controls` (one `.panel`, or a 
 
 ## 4. Open for Nate
 
-- At 38–60rem the controls and the Readout stretch to one height. Where the controls are
-  short (Reaction Curves' Build: two sliders) that is a tall box of empty glass. The
-  alternative is `align-self: start` for the controls only.
+- ⚓ Damage Breakdown keeps the bare scene under its waterfall at the wide tier (Nate) — no
+  row stretch.
 - Safari: unchecked by eye (the `min-height` + `fr` rows, `contain: size`, the sticky
   Readout).

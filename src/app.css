@@ -3533,8 +3533,8 @@ img {
               height; chart over controls on the left
    At every tier the chart's row is `minmax(min-content, 1fr)`: it takes what
    the rest leave (.instrument-graph), and the rest sit at the tile's bottom.
-   🎛️ `--instrument-side` is the wide Readout column; an instrument whose
-   column holds wider lines overrides it (the Gauge Explorer's aura log).
+   🎛️ `--instrument-side` is the wide Readout column — ONE width for every
+   instrument, the Crit Heatmap's included (see :root below).
    ⚠ An instrument that needs a FOURTH area (Enemy RES & DEF's shred list)
    restates the areas at each tier — they are one property, there is no
    adding to them.
@@ -3553,8 +3553,20 @@ img {
    its content past it. A fixed height left a long instrument's content
    overflowing its own box, so nothing inside could be `sticky` past the
    slot's first screen (Enemy RES & DEF's Readout beside its shred list). */
+:root {
+	/* ⚓ ONE WIDTH (2026-10-06, ⚓ Nate asked why they differed). Was 22rem in
+	   five instruments, 25rem in the Gauge Explorer and 23rem in Enemy RES &
+	   DEF. Measured: everything fits 22rem — RES & DEF's shred rows even fit
+	   18rem, and its 23rem came in with a WIP commit and no reason — EXCEPT
+	   the Gauge's widest aura-log line, "Pyro (0.8U after tax, refreshed, new
+	   rate)", which wraps at 24rem and holds one line at 25rem (⚓ Nate
+	   2026-10-02: a line that starts with a marker should not wrap). So the
+	   column is the widest need, and the others gain 3rem of breathing room.
+	   🎛️ Re-measure if a log line grows. */
+	--instrument-side: minmax(18rem, 25rem);
+}
+
 .instrument {
-	--instrument-side: minmax(18rem, 22rem);
 	min-height: 100%;
 	display: grid;
 	gap: 1rem;
@@ -3592,6 +3604,16 @@ img {
 		grid-template-areas:
 			'chart chart'
 			'controls readout';
+	}
+}
+
+/* ⚓ Side by side, each keeps its NATURAL height (Nate 2026-10-06): stretched
+   to one height, a short Build panel was a tall box of empty glass. At the wide
+   tier the Readout is a column again and does run to the bottom. */
+@container instrument (38rem <= width < 60rem) {
+	.instrument-controls,
+	.instrument-readout {
+		align-self: start;
 	}
 }
 

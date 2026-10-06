@@ -565,9 +565,6 @@
 	   tier it takes the height left under the Readout in the right-hand
 	   column. A fourth area means restating the areas at each tier. */
 	.instrument {
-		/* 🎛️ a hair wider than the shared column: the list's names, their
-		   constellation and the option chips share a line */
-		--instrument-side: minmax(19rem, 23rem);
 		grid-template-rows: minmax(min-content, 1fr) auto auto auto;
 		grid-template-areas: 'chart' 'controls' 'sources' 'readout';
 	}
@@ -840,9 +837,10 @@
 	}
 
 	@container instrument (38rem <= width < 60rem) {
-		/* Beside the shred list the Readout would stretch into a column of
-		   empty paper; it keeps its height and stays in view instead, so the
-		   answer is on screen while you work down the list. */
+		/* The shared natural-height rule, said here because .dr-side (the
+		   .instrument-readout) dissolves at this tier; and beside the shred
+		   list the Readout stays in view, so the answer is on screen while you
+		   work down the list. */
 		.dr-readout {
 			position: sticky;
 			top: 0;

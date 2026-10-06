@@ -795,7 +795,8 @@
 	@container instrument (min-width: 60rem) {
 		.cv-layout {
 			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+			/* the shared Readout column's width (app.css --instrument-side) */
+			grid-template-columns: minmax(0, 1fr) var(--instrument-side);
 			grid-template-rows: auto minmax(0, 1fr);
 			grid-template-areas:
 				'chart controls'

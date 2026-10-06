@@ -1449,14 +1449,9 @@
 		-webkit-user-select: none;
 	}
 
-	/* The layout is app.css's .instrument; this column is wider than the
-	   others'. 🎛️ 25rem: the widest application line the log can print — "Pyro
-	   (3.2U after tax, refreshed, new rate)", 257px — fits on one line beside
-	   its time and pip (measured 2026-10-02; ⚓ Nate: the lines that start with
-	   a marker should not wrap). Reactions may still. */
-	.instrument {
-		--instrument-side: minmax(18rem, 25rem);
-	}
+	/* The layout is app.css's .instrument — whose side column is 25rem because
+	   of THIS log: its widest application line holds one line there (see
+	   --instrument-side). Reactions may still wrap. */
 
 	/* ── The toolbar ─────────────────────────────────────────────────────────── */
 
