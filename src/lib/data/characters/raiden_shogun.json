@@ -358,7 +358,32 @@
 			"name": "Steelbreaker",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "While using Musou no Hitotachi and in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, the Raiden Shogun's attacks ignore 60% of opponents' DEF."
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 7,
+					"durationType": "fixed",
+					"whileState": "inStance",
+					"source": "character",
+					"stat": "defIgnore",
+					"value": 60,
+					"snapshottable": false,
+					"attribution": "C2: Steelbreaker",
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
+				}
+			],
+			"description": "While using Musou no Hitotachi and in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, the Raiden Shogun's attacks ignore 60% of opponents' DEF.",
+			"_curatorNotes": [
+				"AUTHORED 2026-10-06 (DEF & RES instrument pass, ⚓ Nate). gcsim cons.go c2Init: every hit by Raiden while BurstKey is active, or during the burst's own animation (`burstAnimSrc`), gets `IgnoreDefPercent += 0.6`. That is every attack she makes in Musou Isshin — her NA/CA/plunge already count as Burst DMG, and the Eye's coordinated hits are hers too — so the plain `defIgnore` Stat on SELF is the exact scope. Opens at the burst cast (Musou no Hitotachi included) for the stance's 7s and `whileState: inStance` clips it where the stance ends early (a swap)."
+			]
 		},
 		{
 			"id": "raiden_shogun__constellation__shinkage_bygones",

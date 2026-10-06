@@ -188,6 +188,7 @@ const STATS = new Set([
 	'plungeDmgBonus',
 	'cdReduction',
 	'defIgnore',
+	'skillDefIgnore',
 	'healingBonus',
 	'incomingHealingBonus',
 	'interruptionRes',
@@ -3880,6 +3881,15 @@ function lintEffect(
 				'strict',
 				'resshred-shredstat-invalid',
 				`resShred shredStat "${shredStat}" must be 'res' or 'def'`,
+				location
+			);
+		}
+		const mod = (eff as { mod?: unknown }).mod;
+		if (mod !== undefined && (typeof mod !== 'string' || !/^[a-z][A-Za-z0-9]*$/.test(mod))) {
+			push(
+				'strict',
+				'resshred-mod-invalid',
+				`resShred mod must be a camelCase key, got ${JSON.stringify(mod)}`,
 				location
 			);
 		}

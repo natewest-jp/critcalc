@@ -506,7 +506,8 @@
 							"type": "constellation",
 							"level": 2
 						}
-					}
+					},
+					"mod": "divineMaidensDeliverance"
 				},
 				{
 					"type": "resShred",
@@ -524,7 +525,8 @@
 							"type": "constellation",
 							"level": 2
 						}
-					}
+					},
+					"mod": "divineMaidensDeliverance"
 				},
 				{
 					"type": "resShred",
@@ -539,7 +541,8 @@
 					"conditions": {
 						"type": "constellation",
 						"level": 2
-					}
+					},
+					"mod": "divineMaidensDeliverance"
 				},
 				{
 					"type": "resShred",
@@ -554,7 +557,8 @@
 					"conditions": {
 						"type": "constellation",
 						"level": 2
-					}
+					},
+					"mod": "divineMaidensDeliverance"
 				}
 			],
 			"_curatorNotes": [

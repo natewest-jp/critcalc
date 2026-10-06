@@ -400,7 +400,8 @@
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "pyro",
-					"value": -20
+					"value": -20,
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -430,7 +431,8 @@
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "electro",
-					"value": -20
+					"value": -20,
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -460,7 +462,8 @@
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "anemo",
-					"value": -20
+					"value": -20,
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -490,7 +493,8 @@
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "geo",
-					"value": -20
+					"value": -20,
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -520,7 +524,8 @@
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "dendro",
-					"value": -20
+					"value": -20,
+					"mod": "divineCalculus"
 				}
 			],
 			"_curatorNotes": [
@@ -723,7 +728,8 @@
 					"value": -35,
 					"_curatorNotes": [
 						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveats have no reader, and factionBonuses are scanned by neither slotCaveats nor caveat-lint. Kit fact retained: with 2+ Hexerei the White-form RES shred deepens 20% → 35%. This is working behavior (mutually exclusive teamFaction gating draws one bar per element either way)."
-					]
+					],
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -753,7 +759,8 @@
 					"value": -35,
 					"_curatorNotes": [
 						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveats have no reader, and factionBonuses are scanned by neither slotCaveats nor caveat-lint. Kit fact retained: with 2+ Hexerei the White-form RES shred deepens 20% → 35%. This is working behavior (mutually exclusive teamFaction gating draws one bar per element either way)."
-					]
+					],
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -783,7 +790,8 @@
 					"value": -35,
 					"_curatorNotes": [
 						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveats have no reader, and factionBonuses are scanned by neither slotCaveats nor caveat-lint. Kit fact retained: with 2+ Hexerei the White-form RES shred deepens 20% → 35%. This is working behavior (mutually exclusive teamFaction gating draws one bar per element either way)."
-					]
+					],
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -813,7 +821,8 @@
 					"value": -35,
 					"_curatorNotes": [
 						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveats have no reader, and factionBonuses are scanned by neither slotCaveats nor caveat-lint. Kit fact retained: with 2+ Hexerei the White-form RES shred deepens 20% → 35%. This is working behavior (mutually exclusive teamFaction gating draws one bar per element either way)."
-					]
+					],
+					"mod": "divineCalculus"
 				},
 				{
 					"type": "resShred",
@@ -843,7 +852,8 @@
 					"value": -35,
 					"_curatorNotes": [
 						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveats have no reader, and factionBonuses are scanned by neither slotCaveats nor caveat-lint. Kit fact retained: with 2+ Hexerei the White-form RES shred deepens 20% → 35%. This is working behavior (mutually exclusive teamFaction gating draws one bar per element either way)."
-					]
+					],
+					"mod": "divineCalculus"
 				}
 			]
 		}

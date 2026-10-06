@@ -332,7 +332,8 @@
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "dendro",
-					"value": -30
+					"value": -30,
+					"mod": "lakelightTopNote"
 				},
 				{
 					"type": "resShred",
@@ -342,7 +343,8 @@
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "dendro",
-					"value": -30
+					"value": -30,
+					"mod": "lakelightTopNote"
 				}
 			],
 			"_curatorNotes": [

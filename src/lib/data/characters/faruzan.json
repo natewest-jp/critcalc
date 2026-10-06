@@ -176,7 +176,8 @@
 							"type": "constellation",
 							"level": 2
 						}
-					}
+					},
+					"mod": "windsSecretWays"
 				},
 				{
 					"type": "resShred",
@@ -191,7 +192,8 @@
 					"conditions": {
 						"type": "constellation",
 						"level": 2
-					}
+					},
+					"mod": "windsSecretWays"
 				},
 				{
 					"type": "buff",

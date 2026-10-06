@@ -1018,7 +1018,8 @@
 						]
 					},
 					"element": "cryo",
-					"value": -20
+					"value": -20,
+					"mod": "snowSwanDream"
 				},
 				{
 					"type": "resShred",
@@ -1052,7 +1053,8 @@
 						]
 					},
 					"element": "electro",
-					"value": -20
+					"value": -20,
+					"mod": "snowSwanDream"
 				},
 				{
 					"type": "resShred",
@@ -1104,7 +1106,8 @@
 						]
 					},
 					"element": "anemo",
-					"value": -20
+					"value": -20,
+					"mod": "snowSwanDream"
 				},
 				{
 					"type": "resShred",
@@ -1169,7 +1172,8 @@
 						]
 					},
 					"element": "cryo",
-					"value": -20
+					"value": -20,
+					"mod": "snowSwanDream"
 				},
 				{
 					"type": "resShred",
@@ -1196,7 +1200,8 @@
 						]
 					},
 					"element": "electro",
-					"value": -20
+					"value": -20,
+					"mod": "snowSwanDream"
 				},
 				{
 					"type": "resShred",
@@ -1241,7 +1246,8 @@
 						]
 					},
 					"element": "anemo",
-					"value": -20
+					"value": -20,
+					"mod": "snowSwanDream"
 				}
 			],
 			"description": "The Ascension Talent \"Spring Rite of the Chosen One\" is enhanced as follows: every stack of **Marvelous Splendor** active also increases the character's ATK by 7%.\nAdditionally, if Odette is in the **Radiance: Stellar Glimmer** state when there is a **Solo Dance Double** on the field, opponents near the Dance Double will also have their corresponding Elemental RES lowered by 20%.\n·Radiance: Stellar-Conduct: Cryo and Electro.\n·Radiance: Stellar Swirl: Cryo and Anemo.",

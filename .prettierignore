@@ -14,6 +14,7 @@ src/lib/stars.ts
 
 # Generated — scripts/generate-character-index.mjs, one index entry per line.
 src/lib/data/characterIndex.generated.ts
+src/lib/data/shredSources.generated.ts
 # Generated — scripts/generate-character-roles.mjs, one role entry per line.
 src/lib/data/characterRoles.generated.ts
 # Generated — scripts/generate-marks.mjs, one MARK per line. Prettier would

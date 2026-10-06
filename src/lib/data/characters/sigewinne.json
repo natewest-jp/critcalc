@@ -635,7 +635,8 @@
 					"duration": 8,
 					"durationType": "refresh",
 					"element": "hydro",
-					"value": -35
+					"value": -35,
+					"mod": "mercifulSpirits"
 				},
 				{
 					"type": "resShred",
@@ -651,7 +652,8 @@
 					"duration": 8,
 					"durationType": "refresh",
 					"element": "hydro",
-					"value": -35
+					"value": -35,
+					"mod": "mercifulSpirits"
 				}
 			],
 			"_curatorNotes": [

@@ -434,7 +434,8 @@
 					"conditions": { "type": "constellation", "level": 6 },
 					"duration": 7,
 					"durationType": "fixed",
-					"value": -20
+					"value": -20,
+					"mod": "searingRadiance"
 				},
 				{
 					"type": "resShred",
@@ -444,7 +445,8 @@
 					"conditions": { "type": "constellation", "level": 6 },
 					"duration": 9,
 					"durationType": "fixed",
-					"value": -20
+					"value": -20,
+					"mod": "searingRadiance"
 				}
 			],
 			"caveat": "The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the following ring's Pyro pulses every 3s.",

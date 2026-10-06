@@ -258,7 +258,8 @@
 					},
 					"duration": 12,
 					"element": "cryo",
-					"value": -5
+					"value": -5,
+					"mod": "immersedSeasoning"
 				},
 				{
 					"type": "resShred",
@@ -275,7 +276,8 @@
 					},
 					"duration": 12,
 					"element": "hydro",
-					"value": -5
+					"value": -5,
+					"mod": "immersedSeasoning"
 				},
 				{
 					"type": "resShred",
@@ -292,7 +294,8 @@
 					},
 					"duration": 12,
 					"element": "cryo",
-					"value": -10
+					"value": -10,
+					"mod": "immersedSeasoning"
 				},
 				{
 					"type": "resShred",
@@ -309,7 +312,8 @@
 					},
 					"duration": 12,
 					"element": "hydro",
-					"value": -10
+					"value": -10,
+					"mod": "immersedSeasoning"
 				},
 				{
 					"type": "resShred",
@@ -326,7 +330,8 @@
 					},
 					"duration": 12,
 					"element": "cryo",
-					"value": -15
+					"value": -15,
+					"mod": "immersedSeasoning"
 				},
 				{
 					"type": "resShred",
@@ -343,7 +348,8 @@
 					},
 					"duration": 12,
 					"element": "hydro",
-					"value": -15
+					"value": -15,
+					"mod": "immersedSeasoning"
 				},
 				{
 					"type": "resShred",
@@ -360,7 +366,8 @@
 					},
 					"duration": 12,
 					"element": "cryo",
-					"value": -55
+					"value": -55,
+					"mod": "immersedSeasoning"
 				},
 				{
 					"type": "resShred",
@@ -377,7 +384,8 @@
 					},
 					"duration": 12,
 					"element": "hydro",
-					"value": -55
+					"value": -55,
+					"mod": "immersedSeasoning"
 				}
 			],
 			"_curatorNotes": [

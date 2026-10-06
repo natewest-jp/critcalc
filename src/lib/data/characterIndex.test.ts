@@ -14,6 +14,8 @@ import {
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '$lib/capabilities/deriveCapabilities';
+import { artifactShredSources, characterShredSources } from '$lib/capabilities/shredSources';
+import { shredSources } from './shredSources.generated';
 import { decodeCoverage, deriveCoverage, encodeCoverage } from '$lib/coverage/deriveCoverage';
 import { isCurated } from '$lib/utils/characterLint';
 import { declaredCastTokens, hasPlungeFrames } from '$lib/utils/castTokens';
@@ -78,6 +80,25 @@ describe('generated character index', () => {
 			if (source.id === 'blank') continue;
 			expect(source.release, source.id).toMatch(/^\d+\.\d+$/);
 		}
+	});
+
+	it('lists every shred source the data derives', () => {
+		const artifacts = Object.entries(import.meta.glob('./artifacts/*.json', { eager: true }))
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([, mod]) => (mod as { default: Parameters<typeof artifactShredSources>[0] }).default);
+		const expected = [
+			...[...sources]
+				.sort((a, b) => a.id.localeCompare(b.id))
+				.flatMap((c) =>
+					characterShredSources(
+						c.id,
+						c.displayName ?? c.name,
+						deriveCharacterCapabilities(c).capabilities
+					)
+				),
+			...artifacts.flatMap(artifactShredSources)
+		];
+		expect(shredSources).toEqual(expected);
 	});
 
 	it('matches the source JSON on every index field', () => {

@@ -178,7 +178,8 @@
 								"ability": "skill"
 							},
 							"duration": 20,
-							"value": -20
+							"value": -20,
+							"mod": "jadeShield"
 						},
 						{
 							"type": "resShred",
@@ -189,7 +190,8 @@
 							},
 							"duration": 20,
 							"element": "physical",
-							"value": -20
+							"value": -20,
+							"mod": "jadeShield"
 						}
 					],
 					"behavior": "instant",
@@ -409,7 +411,8 @@
 						"ability": "burst"
 					},
 					"duration": 20,
-					"value": -20
+					"value": -20,
+					"mod": "jadeShield"
 				},
 				{
 					"type": "resShred",
@@ -420,7 +423,8 @@
 					},
 					"duration": 20,
 					"element": "physical",
-					"value": -20
+					"value": -20,
+					"mod": "jadeShield"
 				}
 			],
 			"_curatorNotes": [
