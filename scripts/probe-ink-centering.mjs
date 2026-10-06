@@ -57,10 +57,15 @@
 //   node scripts/probe-ink-centering.mjs                       # default targets
 //   SEL='.sp-cons-chip' SWEEP=0,-0.5,-1 node scripts/probe-ink-centering.mjs
 //   BASE=http://localhost:5199 SHOTS_DIR=/tmp/shots node scripts/probe-ink-centering.mjs
+//   PAGE='/visualizers?i=artifact.1~…' SEL='.ao-badge' INK=dark node scripts/probe-ink-centering.mjs
 import { chromium, webkit } from 'playwright';
 import fs from 'node:fs';
 
 const BASE = process.env.BASE ?? 'http://localhost:4998';
+/** DARK ink on a light control (a gold pip's digit) instead of light on dark */
+const INK_DARK = process.env.INK === 'dark';
+/** The page to open (path + query) — the planner's bench by default */
+const PAGE = process.env.PAGE ?? '/rotation-planner';
 const SHOTS = process.env.SHOTS_DIR ?? null;
 const SCALE = Number(process.env.SCALE ?? 8); // deviceScaleFactor: subpixel resolution
 const SWEEP = process.env.SWEEP ? process.env.SWEEP.split(',').map(Number) : [null];
@@ -92,7 +97,7 @@ const SEED = {
 
 // Runs in the page: threshold ink, find the control's own stroke, difference the
 // centers. Returns CSS-px offsets (+x = ink right of true center).
-const ANALYZE = ([b64, scale, annotate, refCx, refCy]) => {
+const ANALYZE = ([b64, scale, annotate, refCx, refCy, inkDark]) => {
 	const img = new Image();
 	img.src = 'data:image/png;base64,' + b64;
 	return img.decode().then(() => {
@@ -147,16 +152,17 @@ const ANALYZE = ([b64, scale, annotate, refCx, refCy]) => {
 			for (let px = ix0; px < ix1; px++) row.push(lum(at(px, y)));
 			// This row's own ground, so a vertical gradient drops out.
 			const sorted = [...row].sort((a, b) => a - b);
-			const bg = sorted[Math.floor(sorted.length * 0.4)];
+			// light ink: the ground is the darker majority; dark ink: the lighter
+			const bg = sorted[Math.floor(sorted.length * (inkDark ? 0.6 : 0.4))];
 			row.forEach((L, k) => {
 				const px = ix0 + k;
-				if (L > 90) {
+				if (inkDark ? L < bg - 60 : L > 90) {
 					if (px < tx0) tx0 = px;
 					if (px > tx1) tx1 = px;
 					if (y < ty0) ty0 = y;
 					if (y > ty1) ty1 = y;
 				}
-				const w = Math.max(0, L - bg - 6);
+				const w = Math.max(0, inkDark ? bg - L - 6 : L - bg - 6);
 				wsum += w;
 				wx += w * (px + 0.5);
 			});
@@ -202,7 +208,7 @@ async function capture(browserType, opts) {
 		(seed) => localStorage.setItem('critcalc:rotationTabs', JSON.stringify(seed)),
 		SEED
 	);
-	await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
+	await page.goto(`${BASE}${PAGE}`, { waitUntil: 'networkidle' });
 	await page.waitForTimeout(3000); // veil + tool fade
 	const shots = {};
 	for (const { sel, label } of TARGETS) {
@@ -263,7 +269,7 @@ for (const { label } of TARGETS) {
 		const row = [];
 		for (const [engine, shots] of Object.entries(engines)) {
 			const { b64, refCx, refCy } = shots[label][indent];
-			const m = await apage.evaluate(ANALYZE, [b64, SCALE, !!SHOTS, refCx, refCy]);
+			const m = await apage.evaluate(ANALYZE, [b64, SCALE, !!SHOTS, refCx, refCy, INK_DARK]);
 			if (m.error) {
 				row.push(`${engine}: ${m.error}`);
 				continue;
