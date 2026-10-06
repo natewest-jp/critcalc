@@ -1892,7 +1892,7 @@
 	.ao-warn {
 		position: absolute;
 		top: -5px;
-		right: -4px;
+		right: -6px;
 		width: 12px;
 		height: 12px;
 		pointer-events: none;
