@@ -342,6 +342,15 @@
 		});
 	}
 
+	/**
+	 * A narrow card (a phone, or a narrow tile) names substats by their short
+	 * form — "CRIT DMG" truncated to "CRIT …" at 320px, the dropdown's ~100px
+	 * beside the value and radial — and its Clear drops the word. The CARD's
+	 * width decides, never the screen's.
+	 */
+	let cardW = $state(400);
+	const tightCard = $derived(cardW < 300);
+
 	/** Blank the card to enter a piece from scratch */
 	function clearPiece() {
 		lines = [
@@ -1213,7 +1222,7 @@
 		{:else}
 			<section class="ao-section">
 				<p class="kicker">Your piece</p>
-				<div class="ao-card">
+				<div class="ao-card" bind:clientWidth={cardW}>
 					<div class="ao-card-head">
 						<div class="ao-slots ao-slots--small">
 							{#each SLOTS as s (s.id)}
@@ -1229,9 +1238,14 @@
 								</button>
 							{/each}
 						</div>
-						<button class="chip chip--control ao-clear" onclick={clearPiece}>
+						<button
+							class="chip chip--control ao-clear"
+							onclick={clearPiece}
+							aria-label="Clear"
+							title={tightCard ? 'Clear' : undefined}
+						>
 							<Mark name="reset" size={12} />
-							<span>Clear</span>
+							{#if !tightCard}<span>Clear</span>{/if}
 						</button>
 					</div>
 					<div class="ao-main-row">
@@ -1303,7 +1317,7 @@
 									<option value="">{i === 3 && level === 0 ? 'Not yet' : 'Substat…'}</option>
 									{#each SUBSTATS as s (s.id)}
 										{#if s.id !== main.id && (s.id === line.id || !lines.some((l) => l.id === s.id))}
-											<option value={s.id}>{s.name}</option>
+											<option value={s.id}>{tightCard ? s.short : s.name}</option>
 										{/if}
 									{/each}
 								</select>
