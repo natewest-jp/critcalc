@@ -136,23 +136,19 @@
 </section>
 
 <section>
-	<h2 id="artifact-rolls">Artifact Rolls</h2>
+	<h2 id="artifact-odds">Artifact Odds</h2>
 	<p>
-		The real odds behind 5★ artifact farming, from datamined weights. <strong>Fresh Drop</strong>:
-		how rare your target substat pair is. <strong>Upgrade Rolls</strong>: the exact crit-value
-		distribution a piece can reach at +20. <strong>Reshape</strong>: what the Dust of Enlightenment
-		guarantee actually does to the odds.
+		The odds behind a 5★ artifact, from datamined weights, through a piece's life.
+		<strong>Drop</strong>: how likely a domain is to give you the piece you want, by resin spent,
+		with and without a Stygian Onslaught Disturbance Outbreak. <strong>Level up</strong>: the spread
+		of crit value (or roll value) a piece with your two lines reaches at +20.
+		<strong>Your piece</strong>: enter a real piece at any level to see what it can still become,
+		where a finished one ranks, and what a reshape would do to it.
 	</p>
 	<p>
-		The reshape guarantee is modelled as a conditional redistribution — at least N rolls into the
-		selected pair, other outcomes renormalized — because the exact in-game implementation is not
-		publicly documented. Sanctifying Elixir crafts skip the substat draw entirely and, since 5.5,
-		guarantee at least 2 upgrade rolls into the crafted pair.
-	</p>
-	<p>
-		<strong>Appraise</strong> dials in a real +20 piece's substat values and shows where it sits on its
-		own outcome distribution. The value wheels only offer numbers the game can actually display; roll
-		counts are inferred from them, cross-validated against the Genshin Optimizer.
+		The game doesn't say how a guarantee of at least N rolls is met, for reshaping or for a piece
+		defined with Sanctifying Elixir. The Artifact Odds instrument assumes the rolls land as usual
+		and any shortfall is moved into your two lines — the reading Genshin Optimizer uses.
 	</p>
 </section>
 

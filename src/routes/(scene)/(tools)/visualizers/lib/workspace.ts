@@ -16,14 +16,14 @@ import type { IcdHit } from '$lib/utils/icd';
 export const INSTRUMENTS = [
 	// ⚓ Nate 2026-10-02: the picker's order is CONCEPTUAL — the two defaults
 	// first, then the mechanics (ICD, reactions), the damage maths, and the
-	// two dice (artifact rolls, wishes) last.
+	// two dice (artifacts, wishes) last.
 	{ id: 'crit', name: 'Crit Heatmap' },
 	{ id: 'gauge', name: 'Gauge Explorer' },
 	{ id: 'icd', name: 'ICD Timeline' },
 	{ id: 'curves', name: 'Reaction Curves' },
 	{ id: 'breakdown', name: 'Damage Breakdown' },
 	{ id: 'defres', name: 'Enemy DEF & RES' },
-	{ id: 'rolls', name: 'Artifact Rolls' },
+	{ id: 'artifact', name: 'Artifact Odds' },
 	{ id: 'wish', name: 'Wish Odds' }
 ] as const;
 
@@ -35,7 +35,7 @@ const INSTRUMENT_IDS = INSTRUMENTS.map((i) => i.id) as InstrumentId[];
 export const DEFAULT_ASSIGNMENT: InstrumentId[] = [
 	'crit',
 	'gauge',
-	'rolls',
+	'artifact',
 	'icd',
 	'curves',
 	'defres',
@@ -165,7 +165,7 @@ export type InstrumentHandle = {
 // Cross-instrument handoff
 // ---------------------------------------------------------------------------
 
-/** Grows one union arm per future handoff (e.g. rolls→crit CV). */
+/** Grows one union arm per future handoff (e.g. artifact→crit CV). */
 export type HandoffMessage = {
 	target: 'gauge';
 	kind: 'applications';

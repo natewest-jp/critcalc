@@ -713,8 +713,10 @@
 			"class": "house"
 		},
 		{
-			"term": "Artifact Rolls",
-			"class": "house"
+			"term": "Artifact Odds",
+			"class": "house",
+			"avoid": ["Artifact Rolls"],
+			"note": "⚓ Nate 2026-10-06: renamed from Artifact Rolls — it covers drops and farming as well as rolls, and pairs with Wish Odds (the two dice). Internal id 'artifact'."
 		},
 		{
 			"term": "Gauge Explorer",

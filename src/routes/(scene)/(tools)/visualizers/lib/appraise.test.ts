@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest';
 import {
 	inferRollCounts,
 	resolvePiece,
-	rvDistribution,
-	percentileOf,
 	displayValue,
-	possibleValues
+	possibleValues,
+	lineDetail,
+	pieceNow,
+	pieceFuture,
+	pieceReshape,
+	type PieceQuery
 } from './appraise';
-import { substatById } from './artifactRolls';
+import { distStats, pairOutcome, substatById, type ValueDist } from './artifactOdds';
 
 // Expectations pinned after a full cross-validation against the Genshin
 // Optimizer's generated artifact_sub_rolls.json (2026-07-07): identical
@@ -87,6 +90,21 @@ describe('resolvePiece', () => {
 		expect(res.map((r) => r.events).sort()).toEqual([4, 5]);
 	});
 
+	it('reads a piece at any level', () => {
+		// +8 with 4 lines: 4 + 2 rolls (4-line start) or 3 + 2 (3-line start)
+		const at8 = resolvePiece(
+			[infer('cr', 6.6), infer('cd', 7.8), infer('atkPct', 5.8), infer('er', 6.5)],
+			8
+		);
+		expect(at8).toEqual([{ counts: [2, 1, 1, 1], events: 4, fourLineStart: false }]);
+		// +0: three lines, one roll each
+		expect(
+			resolvePiece([infer('cr', 3.9), infer('cd', 7.8), infer('atkPct', 5.8)], 0)
+		).toHaveLength(1);
+		// three lines past +4 is impossible
+		expect(resolvePiece([infer('cr', 3.9), infer('cd', 7.8), infer('atkPct', 5.8)], 4)).toEqual([]);
+	});
+
 	it('rejects incomplete pieces', () => {
 		expect(resolvePiece([infer('cr', 6.6), infer('cd', 21.0), infer('atkPct', 9.9), []])).toEqual(
 			[]
@@ -94,28 +112,98 @@ describe('resolvePiece', () => {
 	});
 });
 
-describe('rvDistribution', () => {
-	it('sums to 1 with exact support bounds', () => {
-		const dist = rvDistribution(5, 2);
-		expect(dist.reduce((acc, d) => acc + d.p, 0)).toBeCloseTo(1, 9);
-		expect(dist[0].rv).toBe(140); // two initial min rolls
-		expect(dist[dist.length - 1].rv).toBe(700); // 7 max rolls
+describe('lineDetail', () => {
+	it('one max CR roll: its initial roll is the top tier', () => {
+		const d = lineDetail('cr', 3.9, 1);
+		expect([...d.initial]).toEqual([[3, 1]]);
+		expect([...d.units]).toEqual([[389, 1]]);
+		expect([...d.rv]).toEqual([[100, 1]]);
 	});
 
-	it('mean matches the analytic expectation', () => {
-		// lines × 85 + events × (lines/4) × 85
-		const mean = rvDistribution(4, 1).reduce((acc, d) => acc + d.rv * d.p, 0);
-		expect(mean).toBeCloseTo(85 + 4 * 0.25 * 85, 9);
+	it('two rolls: ordered sequences weigh equally', () => {
+		// CR 6.6 over 2 rolls: (2.72, 3.89) → 6.61, (3.11, 3.50) → 6.61 — and
+		// each in either order, so the initial tier is any of the four
+		const d = lineDetail('cr', 6.6, 2);
+		expect([...d.initial.values()].reduce((a, b) => a + b, 0)).toBeCloseTo(1, 12);
+		expect(d.initial.size).toBe(4);
 	});
 });
 
-describe('percentileOf', () => {
-	it('accumulates probability at and below the value', () => {
-		const dist = rvDistribution(5, 2);
-		expect(percentileOf(dist, 'rv', 139)).toBe(0);
-		expect(percentileOf(dist, 'rv', 700)).toBeCloseTo(1, 9);
-		const mid = percentileOf(dist, 'rv', 420);
-		expect(mid).toBeGreaterThan(0.3);
-		expect(mid).toBeLessThan(0.7);
+describe("a piece's pair", () => {
+	const sum = (d: ValueDist) => d.reduce((acc, x) => acc + x.p, 0);
+	const demo: PieceQuery = {
+		unit: 'cv',
+		pair: ['cr', 'cd'],
+		main: 'hp',
+		level: 20,
+		lines: [
+			{ id: 'cr', value: 6.6 },
+			{ id: 'cd', value: 21.0 },
+			{ id: 'atkPct', value: 9.9 },
+			{ id: 'er', value: 5.2 }
+		],
+		counts: [2, 3, 2, 1]
+	};
+
+	it('now: the displayed crit value', () => {
+		const now = pieceNow(demo);
+		expect(now).toHaveLength(1);
+		expect(now[0].x).toBeCloseTo(34.2, 9);
+		expect(now[0].p).toBeCloseTo(1, 12);
+	});
+
+	it('at +20 the future IS now', () => {
+		const [future, now] = [pieceFuture(demo), pieceNow(demo)];
+		expect(future.map((d) => d.x)).toEqual(now.map((d) => d.x));
+	});
+
+	it('a fresh 4-line +0 piece with both lines is the Level up chart', () => {
+		const fresh: PieceQuery = {
+			...demo,
+			level: 0,
+			lines: [
+				{ id: 'cr', value: 2.7 },
+				{ id: 'cd', value: 5.4 },
+				{ id: 'atkPct', value: 4.1 },
+				{ id: 'er', value: 4.5 }
+			],
+			counts: [1, 1, 1, 1]
+		};
+		const future = distStats(pieceFuture(fresh));
+		const generic = distStats(pairOutcome('cv', ['cr', 'cd'], 5));
+		// same rolls to come, but this piece starts on the bottom tier of both
+		// lines: (6.61 − 5.44) CV under the CR average, (6.605 − 5.44) under CD's
+		// (to 0.1 — the display rounds each line)
+		expect(future.mean).toBeCloseTo(generic.mean - (6.61 - 5.44) - (6.605 - 5.44), 1);
+		expect(sum(pieceFuture(fresh))).toBeCloseTo(1, 9);
+	});
+
+	it('a 3-line +0 piece mixes over its 4th line', () => {
+		const three: PieceQuery = {
+			...demo,
+			level: 0,
+			lines: [
+				{ id: 'cr', value: 3.9 },
+				{ id: 'atkPct', value: 4.1 },
+				{ id: 'er', value: 4.5 }
+			],
+			counts: [1, 1, 1]
+		};
+		const d = pieceFuture(three);
+		expect(sum(d)).toBeCloseTo(1, 9);
+		// the bottom: CD never arrives and CR takes no rolls → 2 × 3.9
+		expect(d[0].x).toBeCloseTo(7.8, 9);
+	});
+
+	it('a reshape keeps the initial rolls and deals the rest again', () => {
+		const after = pieceReshape(demo, 4, 2);
+		expect(sum(after)).toBeCloseTo(1, 9);
+		// floor: both initial rolls at their lowest possible + 2 min CR-or-CD rolls
+		expect(after[0].x).toBeGreaterThanOrEqual(2 * 2.7 + 5.4 + 5.4);
+	});
+
+	it('no reshape for a pair the piece does not hold', () => {
+		const one = { ...demo, pair: ['cr', 'em'] as [(typeof demo.pair)[0], 'em'] };
+		expect(pieceReshape(one, 4, 2)).toEqual([]);
 	});
 });
