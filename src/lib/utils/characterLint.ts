@@ -188,6 +188,7 @@ const STATS = new Set([
 	'plungeDmgBonus',
 	'cdReduction',
 	'defIgnore',
+	'skillDefIgnore',
 	'healingBonus',
 	'incomingHealingBonus',
 	'interruptionRes',
@@ -244,6 +245,8 @@ const STATES = new Set([
 	// character that needs it is frameless.
 	'codaWindow',
 	'soloDanceDouble',
+	// Mavuika's Ring (DEF & RES pass, 2026-10-06).
+	'searingRing',
 	'pneuma',
 	// Lauma's two charged forms (charged-forms round, 2026-09-16).
 	'spiritEnvoy',
@@ -2217,15 +2220,17 @@ function lintCastAbility(
 					a.id
 				);
 			}
+			// ⚓ A summon a CAST ends may open one too (2026-10-06): the
+			// terminating cast closes the state where it retires the summon.
 			if (
-				(s.terminatesOn !== undefined && s.terminatesOn !== 'recast') ||
+				s.terminatesOn === 'swap' ||
 				(s.durationExtensions?.length ?? 0) > 0 ||
 				(a as unknown as Record<string, unknown>).summonsFollowState === true
 			) {
 				push(
 					'strict',
 					'summon-opens-state',
-					`summon "${s.label}" opensState but its end is not known at the spawn (terminatesOn other than recast, durationExtensions, or summonsFollowState)`,
+					`summon "${s.label}" opensState but its end is not known at the spawn (terminatesOn swap, durationExtensions, or summonsFollowState)`,
 					a.id
 				);
 			}
@@ -3880,6 +3885,15 @@ function lintEffect(
 				'strict',
 				'resshred-shredstat-invalid',
 				`resShred shredStat "${shredStat}" must be 'res' or 'def'`,
+				location
+			);
+		}
+		const mod = (eff as { mod?: unknown }).mod;
+		if (mod !== undefined && (typeof mod !== 'string' || !/^[a-z][A-Za-z0-9]*$/.test(mod))) {
+			push(
+				'strict',
+				'resshred-mod-invalid',
+				`resShred mod must be a camelCase key, got ${JSON.stringify(mod)}`,
 				location
 			);
 		}

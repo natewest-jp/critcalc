@@ -359,12 +359,31 @@
 			"name": "Forbidden Art: Daisesshou",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "skillDefIgnore",
+					"value": 60,
+					"snapshottable": false,
+					"attribution": "C6: Forbidden Art: Daisesshou",
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
+				}
+			],
 			"description": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF.",
 			"_curatorNotes": [
 				"No effect authored. gcsim sets `ai.IgnoreDefPercent = 0.60` on the Sesshou Sakura tick AttackInfo when Cons >= 6. Schema has no `defIgnore` stat or effect type; reviewer to decide representation.",
 				"[Stellar] Current-patch C6 addition, from the Fandom constellation infobox `buff` field (buffType Revelation, Forbidden Art: Daisesshou, fetched 2026-07-29): 'The CRIT DMG of Yae Miko's Stellar-Conduct DMG is increased by 200%.' Not authored: no Stat key expresses per-reaction CRIT DMG (the anemoCritDmg/electroCritDmg family is element-scoped, not reaction-scoped), and it is a term inside the Stellar damage formula, which this round caveats rather than models.",
 				"[Stellar] Stale-note correction: a `defIgnore` Stat now exists (added for Nicole C6 / Durin C6), so the 'schema has no defIgnore stat' claim above is out of date. Still left unauthored here because the ignore applies only to Sesshou Sakura tick damage, and a self-targeted defIgnore buff would over-apply to every Yae attack; the DEF ignore is caveated instead.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Both halves are pure damage-formula terms — a CRIT DMG multiplier inside the Stellar-Conduct damage derivation (FROZEN out of scope) and a 60% DEF ignore on Sesshou Sakura tick damage. The timeline shows no CRIT, no DEF and no damage magnitude for anyone, so nothing on screen is wrong, short or missing. This is the Nicole 250%-absorption case exactly. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Both halves are pure damage-formula terms — a CRIT DMG multiplier inside the Stellar-Conduct damage derivation (FROZEN out of scope) and a 60% DEF ignore on Sesshou Sakura tick damage. The timeline shows no CRIT, no DEF and no damage magnitude for anyone, so nothing on screen is wrong, short or missing. This is the Nicole 250%-absorption case exactly. Category: invisible-omission.",
+				"↻ AUTHORED 2026-10-06 (DEF & RES instrument pass, ⚓ Nate) — supersedes the three notes above on the DEF ignore half. A new class-scoped Stat, `skillDefIgnore` (the `*FlatDmg` family's precedent), states it exactly: gcsim kitsune.go:139 sets `IgnoreDefPercent: c.c6DefIgnore()` (0.60 at C6, cons.go:239) on the Sesshou Sakura tick's AttackInfo ONLY, and Yae's Elemental Skill deals damage only through those ticks, so 'her Skill DMG' and 'the totems' are the same set. ⛔ Not the plain `defIgnore` — that would reach her burst and normals. `passive`: a property of every tick, no window. The Stellar-Conduct CRIT DMG half stays unauthored (reason above)."
 			]
 		}
 	],

@@ -727,8 +727,10 @@
 			"class": "house"
 		},
 		{
-			"term": "Enemy DEF & RES",
-			"class": "house"
+			"term": "Enemy RES & DEF",
+			"class": "house",
+			"avoid": ["Enemy DEF & RES"],
+			"note": "⚓ Nate 2026-10-06: renamed so the name reads in the order the instrument does — the RES chart, readout row and shred list all come first. The internal id stays 'defres'."
 		},
 		{
 			"term": "Wish Odds",

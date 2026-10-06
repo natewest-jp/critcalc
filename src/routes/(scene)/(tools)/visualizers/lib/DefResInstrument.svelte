@@ -1,428 +1,623 @@
 <script lang="ts">
-	import { defMultiplier, resMultiplier } from './defres';
+	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import { shredSources } from '$lib/data/shredSources.generated';
+	import { SHRED_ELEMENTS, type ShredElement } from '$lib/capabilities/shredSources';
+	import {
+		BASE_RES_MAX,
+		BASE_RES_MIN,
+		ENEMY_LEVEL_MAX,
+		RES_RUNGS,
+		appliesTo,
+		defMultiplier,
+		groupSources,
+		resMultiplier,
+		sumPicks,
+		type SourceGroup
+	} from './defres';
+	import { MAX_LEVEL, snapLevel, stepLevel } from './reactionCurves';
+	import DefResChart, { type ChartCurve, type ChartPoint } from './DefResChart.svelte';
 
-	type ViewId = 'def' | 'res';
-	let view = $state<ViewId>('res');
+	const ELEMENT_NAME: Record<ShredElement, string> = {
+		pyro: 'Pyro',
+		hydro: 'Hydro',
+		anemo: 'Anemo',
+		electro: 'Electro',
+		dendro: 'Dendro',
+		cryo: 'Cryo',
+		geo: 'Geo',
+		physical: 'Physical'
+	};
 
-	// ── DEF controls ─────────────────────────────────────────────────────────
+	const GROUPS = groupSources(shredSources);
+
+	// ── State ─────────────────────────────────────────────────────────────
+	let element = $state<ShredElement>('pyro');
 	let charLevel = $state(90);
+	/** A Transformative, Lunar or Stellar hit: DEF plays no part (gcsim IgnoreDefPercent 1). */
+	let ignoresDef = $state(false);
 	let enemyLevel = $state(100);
-	let defShred = $state(0); // percent
-	let defIgnore = $state(0); // percent
-
-	const ENEMY_LEVEL_MAX = 110;
-	const defNow = $derived(defMultiplier(charLevel, enemyLevel, defShred / 100, defIgnore / 100));
-	const defBase = $derived(defMultiplier(charLevel, enemyLevel));
-
-	// ── RES controls ─────────────────────────────────────────────────────────
-	let baseRes = $state(10); // percent; 10 is the standard enemy
-	let resShred = $state(0); // percent
-
-	const finalRes = $derived((baseRes - resShred) / 100);
-	const resNow = $derived(resMultiplier(finalRes));
-	const resBase = $derived(resMultiplier(baseRes / 100));
-
-	const RES_X0 = -1;
-	const RES_X1 = 1;
+	let baseRes = $state(10);
+	let immune = $state(false);
+	/** Chip key → the amount picked for it. */
+	let picks = $state<Record<string, number>>({});
+	/** Shred from anything not listed, whole percent. */
+	let otherRes = $state(0);
+	let otherDef = $state(0);
+	let otherIgnore = $state(0);
 
 	export function reset() {
-		view = 'res';
+		element = 'pyro';
 		charLevel = 90;
+		ignoresDef = false;
 		enemyLevel = 100;
-		defShred = 0;
-		defIgnore = 0;
 		baseRes = 10;
-		resShred = 0;
+		immune = false;
+		picks = {};
+		otherRes = 0;
+		otherDef = 0;
+		otherIgnore = 0;
 	}
 
-	// ── Geometry (pixel-true; pattern shared with ReactionCurvesInstrument) ──
-	let graphW = $state(720);
-	const PADL = 58;
-	const PADR = 16;
-	const TOP = 16;
-	const PLOT_H = 210;
-	const plotY1 = TOP + PLOT_H;
-	const H = plotY1 + 30;
-
-	const xSpan = $derived(view === 'def' ? ENEMY_LEVEL_MAX - 1 : RES_X1 - RES_X0);
-	const x0 = $derived(view === 'def' ? 1 : RES_X0);
-	const xOf = $derived((v: number) => PADL + ((v - x0) / xSpan) * (graphW - PADL - PADR));
-
-	// y: DEF plots 0..1; RES peaks at 1.5 (−100% halved)
-	const yMax = $derived(view === 'def' ? 1 : 1.5);
-	const yOf = $derived((m: number) => plotY1 - (m / yMax) * (PLOT_H - 8));
-	const yTicks = $derived(view === 'def' ? [0.25, 0.5, 0.75, 1] : [0.25, 0.5, 0.75, 1, 1.25, 1.5]);
-	const X_TICKS_DEF = [1, 20, 40, 60, 80, 100, 110];
-	const X_TICKS_RES = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1];
-
-	const SAMPLES = 88;
-	function tracePath(value: (x: number) => number): string {
-		return Array.from({ length: SAMPLES + 1 }, (_, i) => {
-			const x = x0 + (i / SAMPLES) * xSpan;
-			return `${i ? 'L' : 'M'}${xOf(x).toFixed(1)},${yOf(value(x)).toFixed(1)}`;
-		}).join(' ');
+	export function getShareState() {
+		return {
+			v: 1,
+			element,
+			charLevel,
+			ignoresDef,
+			enemyLevel,
+			baseRes: immune ? 'immune' : baseRes,
+			picks: $state.snapshot(picks),
+			other: [otherRes, otherDef, otherIgnore]
+		};
 	}
 
-	const mainPath = $derived(
-		view === 'def'
-			? tracePath((lv) => defMultiplier(charLevel, lv, defShred / 100, defIgnore / 100))
-			: tracePath((r) => resMultiplier(r))
-	);
-	// DEF ghost: the same curve without shred/ignore — what the modifiers buy
-	const ghostPath = $derived(
-		view === 'def' && (defShred > 0 || defIgnore > 0)
-			? tracePath((lv) => defMultiplier(charLevel, lv))
-			: null
-	);
-
-	const markerX = $derived(view === 'def' ? xOf(enemyLevel) : xOf(clampRes(finalRes)));
-	const markerY = $derived(view === 'def' ? yOf(defNow) : yOf(resMultiplier(clampRes(finalRes))));
-
-	function clampRes(r: number): number {
-		return Math.min(RES_X1, Math.max(RES_X0, r));
-	}
-
-	// Hover scrubs the x-axis quantity (enemy level / enemy base RES)
-	function onMove(e: PointerEvent) {
-		const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
-		const frac = Math.min(1, Math.max(0, (e.clientX - rect.left - PADL) / (graphW - PADL - PADR)));
-		if (view === 'def') {
-			enemyLevel = Math.round(x0 + frac * xSpan);
-		} else {
-			// the marker sits at FINAL res; hovering re-derives the base
-			baseRes = Math.round(((x0 + frac * xSpan) * 100 + resShred) / 5) * 5;
-			baseRes = Math.min(100, Math.max(-50, baseRes));
+	export function applyShareState(state: unknown) {
+		if (typeof state !== 'object' || state === null) return;
+		const s = state as Record<string, unknown>;
+		const int = (v: unknown, lo: number, hi: number, step = 1) =>
+			typeof v === 'number' && Number.isFinite(v)
+				? Math.min(hi, Math.max(lo, Math.round(v / step) * step))
+				: undefined;
+		reset();
+		if (SHRED_ELEMENTS.includes(s.element as ShredElement)) element = s.element as ShredElement;
+		const lv = int(s.charLevel, 1, MAX_LEVEL);
+		if (lv !== undefined) charLevel = snapLevel(lv);
+		ignoresDef = s.ignoresDef === true;
+		enemyLevel = int(s.enemyLevel, 1, ENEMY_LEVEL_MAX) ?? enemyLevel;
+		if (s.baseRes === 'immune') immune = true;
+		else baseRes = int(s.baseRes, BASE_RES_MIN, BASE_RES_MAX, 5) ?? baseRes;
+		if (typeof s.picks === 'object' && s.picks !== null) {
+			const next: Record<string, number> = {};
+			for (const [key, amount] of Object.entries(s.picks)) {
+				const g = GROUPS.find((x) => x.key === key);
+				if (g?.options.some((o) => o.amount === amount)) next[key] = amount as number;
+			}
+			picks = next;
+		}
+		if (Array.isArray(s.other)) {
+			otherRes = int(s.other[0], 0, 100, 5) ?? 0;
+			otherDef = int(s.other[1], 0, 100, 5) ?? 0;
+			otherIgnore = int(s.other[2], 0, 100, 5) ?? 0;
 		}
 	}
 
-	const fmtPct = (v: number, digits = 1) => `${(v * 100).toFixed(digits)}%`;
+	// ── The arithmetic ────────────────────────────────────────────────────
+	const picked = $derived(sumPicks(GROUPS, new Map(Object.entries(picks)), element));
+	const resShred = $derived(picked.res + otherRes);
+	const defShred = $derived(picked.def + otherDef);
+	// several ignores add, and gcsim caps the sum at 100%
+	const defIgnore = $derived(Math.min(100, picked.ignore + otherIgnore));
 
-	const regimeText = $derived(
-		finalRes < 0
-			? 'below 0% — each negative point only counts half'
-			: finalRes >= 0.75
-				? 'above 75% — deep diminishing returns'
-				: 'linear regime — each point of shred is a full point'
+	const finalRes = $derived(baseRes - resShred);
+	const resBase = $derived(immune ? 0 : resMultiplier(baseRes / 100));
+	const resNow = $derived(immune ? 0 : resMultiplier(finalRes / 100));
+	const defBase = $derived(ignoresDef ? 1 : defMultiplier(charLevel, enemyLevel));
+	const defNow = $derived(
+		ignoresDef ? 1 : defMultiplier(charLevel, enemyLevel, defShred / 100, defIgnore / 100)
 	);
+	const total = $derived(resNow * defNow);
+	const totalBase = $derived(resBase * defBase);
+	const minus = (v: number) => (v ? `−${v}%` : '0%');
+	const gainPct = (now: number, base: number) => (base > 0 ? (now / base - 1) * 100 : 0);
+
+	// ── Sources on screen ─────────────────────────────────────────────────
+	const visible = $derived(GROUPS.filter((g) => appliesTo(g, element)));
+	const SECTIONS: { stat: SourceGroup['stat']; label: string }[] = [
+		{ stat: 'res', label: 'RES shred' },
+		{ stat: 'def', label: 'DEF shred' },
+		{ stat: 'ignore', label: 'DEF ignore' }
+	];
+	// characters before sets, then by name
+	const ofStat = (stat: SourceGroup['stat']) =>
+		visible
+			.filter((g) => g.stat === stat)
+			.sort(
+				(a, b) =>
+					Number(a.ownerKind === 'artifact') - Number(b.ownerKind === 'artifact') ||
+					a.ownerName.localeCompare(b.ownerName)
+			);
+
+	function toggle(g: SourceGroup) {
+		const next = { ...picks };
+		if (g.key in next) delete next[g.key];
+		else next[g.key] = g.options[g.options.length - 1].amount;
+		picks = next;
+	}
+	function pickAmount(g: SourceGroup, amount: number) {
+		picks = { ...picks, [g.key]: amount };
+	}
+	const conOf = (g: SourceGroup) => {
+		const amount = picks[g.key] ?? g.options[g.options.length - 1].amount;
+		return g.options.find((o) => o.amount === amount)?.minCon ?? 0;
+	};
+	const whoOf = (g: SourceGroup) =>
+		g.stat !== 'ignore'
+			? null
+			: g.scope === 'skill'
+				? 'own Skill DMG only'
+				: g.target === 'team'
+					? 'whole party'
+					: 'own hits';
+
+	// ── Levels: 1–90, then 95 and 100 ─────────────────────────────────────
+	function onLevel(e: Event & { currentTarget: HTMLInputElement }) {
+		charLevel = snapLevel(Number(e.currentTarget.value));
+		e.currentTarget.value = String(charLevel);
+	}
+	const STEP_KEYS: Record<string, 1 | -1> = {
+		ArrowRight: 1,
+		ArrowUp: 1,
+		ArrowLeft: -1,
+		ArrowDown: -1
+	};
+	function onLevelKey(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		const dir = STEP_KEYS[e.key];
+		if (!dir) return;
+		e.preventDefault();
+		charLevel = stepLevel(charLevel, dir);
+		e.currentTarget.value = String(charLevel);
+	}
+	const LEVEL_MARKS = [90, 95, 100];
+	const markPos = (lv: number) => (lv - 1) / (MAX_LEVEL - 1);
+
+	// ── Charts ────────────────────────────────────────────────────────────
+	const RES_X0 = -100;
+	const RES_X1 = 200;
+	const clampRes = (r: number) => Math.min(RES_X1, Math.max(RES_X0, r));
+	const resAt = (r: number) => resMultiplier(r / 100);
+	const fmtX = (m: number) => `×${m.toFixed(3)}`;
+
+	const resCurves = $derived<ChartCurve[]>([
+		{ value: resAt, kind: 'live' },
+		...(!immune && resShred !== 0
+			? [{ value: resAt, kind: 'span' as const, from: clampRes(finalRes), to: clampRes(baseRes) }]
+			: [])
+	]);
+	const resPoints = $derived<ChartPoint[]>(
+		immune
+			? []
+			: [
+					...(resShred !== 0
+						? [{ x: clampRes(baseRes), y: resAt(clampRes(baseRes)), hollow: true }]
+						: []),
+					{ x: clampRes(finalRes), y: resAt(clampRes(finalRes)) }
+				]
+	);
+	// The marker stands on FINAL RES; dragging it re-derives the base.
+	function setFinalRes(x: number) {
+		immune = false;
+		baseRes = Math.min(BASE_RES_MAX, Math.max(BASE_RES_MIN, x + resShred));
+	}
+
+	const defAt = (lv: number) =>
+		ignoresDef ? 1 : defMultiplier(charLevel, lv, defShred / 100, defIgnore / 100);
+	const defCurves = $derived<ChartCurve[]>([
+		...(!ignoresDef && (defShred > 0 || defIgnore > 0)
+			? [{ value: (lv: number) => defMultiplier(charLevel, lv), kind: 'ghost' as const }]
+			: []),
+		{ value: defAt, kind: 'live' }
+	]);
 </script>
 
-<div class="instrument">
-	<div class="dr-chart ctx-dark">
-		<div class="dr-graph" bind:clientWidth={graphW}>
-			<svg
-				width={graphW}
-				height={H}
-				role="img"
-				aria-label={view === 'def'
-					? 'Enemy DEF multiplier versus enemy level'
-					: 'Damage multiplier versus enemy elemental RES'}
-				onpointermove={onMove}
-			>
-				<!-- X grid -->
-				{#each view === 'def' ? X_TICKS_DEF : X_TICKS_RES as t (t)}
-					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="var(--chart-grid)" />
-					<text
-						x={xOf(t)}
-						y={plotY1 + 15}
-						fill="var(--chart-ink)"
-						font-size="10"
-						text-anchor="middle"
+<div class="instrument dr">
+	<div class="dr-chart dr-res ctx-dark">
+		<DefResChart
+			label="Damage multiplier versus the enemy's elemental RES"
+			xMin={RES_X0}
+			xMax={RES_X1}
+			xTicks={[-100, -50, 0, 50, 100, 150, 200]}
+			xTick={(x) => `${x}%`}
+			xLabel="Enemy {ELEMENT_NAME[element]} RES after shred"
+			yMax={1.5}
+			yTicks={[0.5, 1, 1.5]}
+			yLabel="damage kept"
+			curves={resCurves}
+			guides={[
+				{ x: 0, label: 'below 0%, shred counts half', side: 'left' },
+				{ x: 75, label: 'diminishing returns', side: 'right' }
+			]}
+			points={resPoints}
+			marker={immune ? null : clampRes(finalRes)}
+			read={(x) => `${x}% → ${fmtX(resAt(x))}`}
+			onset={setFinalRes}
+			snap={(x) => Math.round(x / 5) * 5}
+			dim={immune}
+			message={immune ? 'Immune: this element deals no damage' : undefined}
+			plotH={140}
+			minPlotH={110}
+		/>
+		<p class="dr-caption">
+			Most enemies resist 10%. Shred subtracts from RES, and below 0% it still helps, at half the
+			rate.
+		</p>
+	</div>
+
+	<div class="dr-chart dr-def ctx-dark">
+		<DefResChart
+			label="Enemy DEF multiplier versus enemy level"
+			xMin={1}
+			xMax={ENEMY_LEVEL_MAX}
+			xTicks={[1, 20, 40, 60, 80, 100, 110]}
+			xTick={(x) => `${x}`}
+			xLabel="Enemy level"
+			yMax={1}
+			yTicks={[0.25, 0.5, 0.75, 1]}
+			yLabel="damage kept"
+			curves={defCurves}
+			guides={charLevel <= ENEMY_LEVEL_MAX
+				? [{ x: charLevel, label: 'your level', side: 'left' }]
+				: []}
+			points={[{ x: enemyLevel, y: defNow }]}
+			marker={enemyLevel}
+			read={(x) => `Lv ${x} → ${fmtX(defAt(x))}`}
+			onset={(x) => (enemyLevel = x)}
+			snap={(x) => Math.round(x)}
+			dim={ignoresDef}
+			message={ignoresDef ? 'Transformative, Lunar and Stellar reactions ignore DEF' : undefined}
+			plotH={110}
+			minPlotH={80}
+		/>
+		<p class="dr-caption">
+			Equal levels already cost you half your damage. DEF shred and DEF ignore win it back, and they
+			multiply together.
+		</p>
+	</div>
+
+	<div class="panel dr-hit">
+		<p class="kicker">Your hit</p>
+		<div class="dr-elements" role="radiogroup" aria-label="The hit's element">
+			{#each SHRED_ELEMENTS as e (e)}
+				{#if e === 'physical'}
+					<button
+						class="chip chip--sm chip--element"
+						class:active={element === e}
+						style:--chip-color="var(--text)"
+						role="radio"
+						aria-checked={element === e}
+						onclick={() => (element = e)}
 					>
-						{view === 'def' ? t : `${Math.round(Number(t) * 100)}%`}
-					</text>
-				{/each}
-				<text
-					x={graphW - PADR}
-					y={plotY1 + 27}
-					fill="var(--chart-dim)"
-					font-size="10"
-					text-anchor="end"
+						Physical
+					</button>
+				{:else}
+					<button
+						class="chip chip--icon"
+						class:active={element === e}
+						style:--chip-color="var(--el-{e}-main)"
+						role="radio"
+						aria-checked={element === e}
+						aria-label={ELEMENT_NAME[e]}
+						title={ELEMENT_NAME[e]}
+						onclick={() => (element = e)}
+					>
+						<img src={elementIcon(e)} alt="" width="16" height="16" />
+					</button>
+				{/if}
+			{/each}
+		</div>
+		<div class="slider-control">
+			<div class="slider-header">
+				<span class="slider-label">Your level</span>
+				<span class="readout">{charLevel}</span>
+			</div>
+			<div class="dr-level">
+				<input
+					type="range"
+					min="1"
+					max={MAX_LEVEL}
+					step="1"
+					value={charLevel}
+					oninput={onLevel}
+					onkeydown={onLevelKey}
+					class="slider"
+					aria-label="Character level"
+				/>
+				<div class="dr-level-marks" aria-hidden="true">
+					{#each LEVEL_MARKS as lv (lv)}
+						<span class="dr-level-mark" style:--at={markPos(lv)}></span>
+					{/each}
+				</div>
+			</div>
+		</div>
+		<label class="check">
+			<input type="checkbox" bind:checked={ignoresDef} />
+			<span class="check-box"></span>
+			<span>Transformative, Lunar or Stellar reaction (ignores DEF)</span>
+		</label>
+	</div>
+
+	<div class="panel dr-enemy">
+		<p class="kicker">Enemy</p>
+		<div class="slider-control">
+			<div class="slider-header">
+				<span class="slider-label">{ELEMENT_NAME[element]} RES</span>
+				<span class="readout">{immune ? 'Immune' : `${baseRes}%`}</span>
+			</div>
+			<input
+				type="range"
+				min={BASE_RES_MIN}
+				max={BASE_RES_MAX}
+				step="5"
+				value={baseRes}
+				oninput={(e) => {
+					immune = false;
+					baseRes = Number(e.currentTarget.value);
+				}}
+				class="slider"
+				aria-label="Enemy base resistance percent"
+			/>
+		</div>
+		<div class="chips dr-rungs" role="group" aria-label="Common RES values">
+			{#each RES_RUNGS as r (r)}
+				<button
+					class="chip chip--sm"
+					class:active={!immune && baseRes === r}
+					onclick={() => {
+						immune = false;
+						baseRes = r;
+					}}
 				>
-					{view === 'def' ? 'Enemy level' : 'Enemy RES after shred'}
-				</text>
-
-				<!-- Y grid -->
-				{#each yTicks as m (m)}
-					<line
-						x1={PADL}
-						y1={yOf(m)}
-						x2={graphW - PADR}
-						y2={yOf(m)}
-						stroke={m === 1 ? 'var(--chart-rule)' : 'var(--chart-grid)'}
-					/>
-					<text
-						x={PADL - 7}
-						y={yOf(m) + 3.5}
-						fill="var(--chart-ink)"
-						font-size="10"
-						text-anchor="end"
-					>
-						×{m}
-					</text>
-				{/each}
-				<text x="4" y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
-					damage kept
-				</text>
-
-				{#if view === 'res'}
-					<!-- Regime boundaries: 0% (halving starts left of here) and 75% -->
-					<line
-						x1={xOf(0)}
-						y1={TOP}
-						x2={xOf(0)}
-						y2={plotY1}
-						stroke="var(--chart-rule)"
-						stroke-dasharray="4 4"
-					/>
-					<line
-						x1={xOf(0.75)}
-						y1={TOP}
-						x2={xOf(0.75)}
-						y2={plotY1}
-						stroke="var(--chart-rule)"
-						stroke-dasharray="4 4"
-					/>
-					<text
-						x={xOf(0) - 5}
-						y={TOP + 11}
-						fill="var(--chart-dim)"
-						font-size="10"
-						text-anchor="end"
-					>
-						negative counts half
-					</text>
-					<text x={xOf(0.75) + 5} y={TOP + 11} fill="var(--chart-dim)" font-size="10">
-						diminishing
-					</text>
-				{/if}
-
-				<!-- Ghost (DEF without shred/ignore) then the live curve -->
-				{#if ghostPath}
-					<path
-						d={ghostPath}
-						fill="none"
-						stroke="var(--chart-rule)"
-						stroke-width="1.5"
-						stroke-dasharray="5 4"
-					/>
-				{/if}
-				<path
-					d={mainPath}
-					fill="none"
-					stroke="var(--accent)"
-					stroke-width="2"
-					stroke-linejoin="round"
-				/>
-
-				<!-- Marker -->
-				<line
-					x1={markerX}
-					y1={TOP}
-					x2={markerX}
-					y2={plotY1}
-					stroke="var(--chart-dim)"
-					stroke-dasharray="2 3"
-				/>
-				<circle
-					cx={markerX}
-					cy={markerY}
-					r="4"
-					fill="var(--accent)"
-					style="stroke: var(--frame-bg)"
-					stroke-width="1.5"
-				/>
-			</svg>
+					{r}%
+				</button>
+			{/each}
+			<button class="chip chip--sm" class:active={immune} onclick={() => (immune = !immune)}>
+				Immune
+			</button>
+		</div>
+		<div class="slider-control">
+			<div class="slider-header">
+				<span class="slider-label">Enemy level</span>
+				<span class="readout">{enemyLevel}</span>
+			</div>
+			<input
+				type="range"
+				min="1"
+				max={ENEMY_LEVEL_MAX}
+				step="1"
+				bind:value={enemyLevel}
+				class="slider"
+				aria-label="Enemy level"
+			/>
 		</div>
 	</div>
 
-	<div class="dr-panels panels">
-		<div class="panel">
-			<p class="kicker">Hidden Multiplier</p>
-			<div class="chips">
-				<button
-					class="chip chip--control"
-					class:active={view === 'res'}
-					onclick={() => (view = 'res')}
-				>
-					Enemy RES
-				</button>
-				<button
-					class="chip chip--control"
-					class:active={view === 'def'}
-					onclick={() => (view = 'def')}
-				>
-					Enemy DEF
-				</button>
-			</div>
-			{#if view === 'res'}
-				<p class="note">
-					Every hit is cut by the enemy's elemental resistance — most enemies resist 10%. Shred
-					subtracts from it, and pushing BELOW zero still helps: each negative point counts half.
-					<span class="dr-formula">res &lt; 0: 1−res/2 · 0–75%: 1−res · ≥75%: 1/(4·res+1)</span>
-				</p>
-			{:else}
-				<p class="note">
-					Your level against the enemy's sets a baseline cut — equal levels already cost you half.
-					DEF shred and DEF ignore claw it back, and they multiply together.
-					<span class="dr-formula"
-						>(100+yours) / ((100+yours) + (100+enemy)·(1−shred)·(1−ignore))</span
-					>
-				</p>
-			{/if}
-		</div>
-
-		<div class="panel">
-			<p class="kicker">{view === 'res' ? 'Enemy & Shred' : 'Levels & Shred'}</p>
-			{#if view === 'res'}
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Enemy RES</span>
-						<span class="readout">{baseRes}%</span>
-					</div>
-					<input
-						type="range"
-						min="-50"
-						max="100"
-						step="5"
-						bind:value={baseRes}
-						class="slider"
-						aria-label="Enemy base resistance percent"
-					/>
-				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">RES Shred</span>
-						<span class="readout">{resShred}%</span>
-					</div>
-					<input
-						type="range"
-						min="0"
-						max="100"
-						step="5"
-						bind:value={resShred}
-						class="slider"
-						aria-label="Resistance shred percent"
-					/>
-				</div>
-				<p class="note">The classic 4pc Viridescent Venerer swirl is a 40% shred.</p>
-			{:else}
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Your Level</span>
-						<span class="readout">{charLevel}</span>
-					</div>
-					<input
-						type="range"
-						min="1"
-						max="90"
-						step="1"
-						bind:value={charLevel}
-						class="slider"
-						aria-label="Character level"
-					/>
-				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">Enemy Level</span>
-						<span class="readout">{enemyLevel}</span>
-					</div>
-					<input
-						type="range"
-						min="1"
-						max={ENEMY_LEVEL_MAX}
-						step="1"
-						bind:value={enemyLevel}
-						class="slider"
-						aria-label="Enemy level"
-					/>
-				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">DEF Shred</span>
-						<span class="readout">{defShred}%</span>
-					</div>
-					<input
-						type="range"
-						min="0"
-						max="90"
-						step="5"
-						bind:value={defShred}
-						class="slider"
-						aria-label="Defense shred percent"
-					/>
-				</div>
-				<div class="slider-control">
-					<div class="slider-header">
-						<span class="slider-label">DEF Ignore</span>
-						<span class="readout">{defIgnore}%</span>
-					</div>
-					<input
-						type="range"
-						min="0"
-						max="100"
-						step="5"
-						bind:value={defIgnore}
-						class="slider"
-						aria-label="Defense ignore percent"
-					/>
-				</div>
-			{/if}
-		</div>
-
-		<div class="panel panel--paper">
+	<div class="dr-side">
+		<div class="panel panel--paper dr-readout">
 			<p class="kicker">Readout</p>
-			{#if view === 'res'}
-				<p class="dr-big">
-					×{resNow.toFixed(3)}<span class="dr-big-unit">of your damage gets through</span>
-				</p>
+			<p class="dr-big">
+				{fmtX(total)}<span class="dr-big-unit">of your hit's damage gets through</span>
+			</p>
+			<dl class="dr-rows">
+				<dt>RES</dt>
+				<dd>
+					{#if immune}
+						Immune
+					{:else}
+						<span class="dr-strong">{fmtX(resNow)}</span>
+						<span class="dr-sub"
+							>at {finalRes}% RES{resShred ? ` (${baseRes}% before shred)` : ''}</span
+						>
+					{/if}
+				</dd>
+				<dt>DEF</dt>
+				<dd>
+					<span class="dr-strong">{fmtX(defNow)}</span>
+					<span class="dr-sub">
+						{#if ignoresDef}
+							ignored by this hit
+						{:else}
+							Lv {charLevel} vs Lv {enemyLevel}{defShred ? ` · −${defShred}% DEF` : ''}{defIgnore
+								? ` · ${defIgnore}% ignored`
+								: ''}
+						{/if}
+					</span>
+				</dd>
+			</dl>
+			{#if !immune && total !== totalBase}
 				<p class="dr-meta">
-					Final RES: <span class="dr-strong">{fmtPct(finalRes, 0)}</span>
-				</p>
-				<p class="dr-meta">
-					Your shred is worth
-					<span class="dr-strong">+{((resNow / resBase - 1) * 100).toFixed(1)}%</span> damage here
-				</p>
-				<p class="note">{regimeText}</p>
-			{:else}
-				<p class="dr-big">
-					×{defNow.toFixed(3)}<span class="dr-big-unit">of your damage gets through</span>
-				</p>
-				<p class="dr-meta">
-					Without shred/ignore: <span class="dr-strong">×{defBase.toFixed(3)}</span>
-				</p>
-				<p class="dr-meta">
-					Your modifiers are worth
-					<span class="dr-strong">+{((defNow / defBase - 1) * 100).toFixed(1)}%</span> damage here
-				</p>
-				<p class="note">
-					Both views are pure multipliers — combine them with everything else your hit carries.
+					Your shred and DEF ignore add
+					<span class="dr-strong">{gainPct(total, totalBase).toFixed(1)}%</span> damage against this enemy
 				</p>
 			{/if}
+			<p class="note dr-regime">
+				{#if immune}
+					An immune enemy takes no damage of this element, whatever the shred.
+				{:else if finalRes < 0}
+					Below 0% RES, shred works at half strength.
+				{:else if finalRes >= 75}
+					Above 75% RES, shred works at less than full strength, until RES drops back under 75%.
+				{:else}
+					Between 0% and 75% RES, shred works at full strength.
+				{/if}
+			</p>
+			<p class="dr-receipt">
+				<span class="dr-formula">res &lt; 0: 1−res/2 · 0–75%: 1−res · ≥75%: 1/(4·res+1)</span>
+				<span class="dr-formula"
+					>(100+yours) / ((100+yours) + (100+enemy)·(1−shred)·(1−ignore))</span
+				>
+			</p>
+		</div>
+
+		<div class="panel dr-sources">
+			<p class="kicker">Shred</p>
+			{#each SECTIONS as sec (sec.stat)}
+				{@const list = ofStat(sec.stat)}
+				<div class="dr-section">
+					<p class="dr-section-head">
+						<span>{sec.label}{sec.stat === 'res' ? ` · ${ELEMENT_NAME[element]}` : ''}</span>
+						<span class="dr-section-total">
+							{sec.stat === 'res'
+								? minus(resShred)
+								: sec.stat === 'def'
+									? minus(defShred)
+									: `${defIgnore}%`}
+						</span>
+					</p>
+					<ul class="dr-list">
+						{#each list as g (g.key)}
+							{@const on = g.key in picks}
+							{@const who = whoOf(g)}
+							<li class="dr-source" class:is-on={on}>
+								<label class="check" title={g.options.map((o) => o.ability).join(' / ')}>
+									<input type="checkbox" checked={on} onchange={() => toggle(g)} />
+									<span class="check-box"></span>
+									<span class="dr-name">{g.ownerName}</span>
+									{#if conOf(g) > 0}<span class="dr-con">C{conOf(g)}</span>{/if}
+									{#if who}<span class="dr-who">{who}</span>{/if}
+								</label>
+								{#if g.options.length > 1}
+									<span class="dr-options" role="radiogroup" aria-label="{g.ownerName}'s amount">
+										{#each g.options as o (o.amount)}
+											<button
+												class="chip chip--sm"
+												class:active={on && picks[g.key] === o.amount}
+												role="radio"
+												aria-checked={on && picks[g.key] === o.amount}
+												title={o.ability}
+												onclick={() => pickAmount(g, o.amount)}
+											>
+												{o.amount}%
+											</button>
+										{/each}
+									</span>
+								{:else}
+									<span class="dr-amount">{g.options[0].amount}%</span>
+								{/if}
+							</li>
+						{:else}
+							<li class="dr-none">
+								No character or set in the data shreds {ELEMENT_NAME[element]} RES.
+							</li>
+						{/each}
+					</ul>
+					<div class="slider-control dr-other">
+						<div class="slider-header">
+							<span class="slider-label">Other sources</span>
+							<span class="readout">
+								{sec.stat === 'res' ? otherRes : sec.stat === 'def' ? otherDef : otherIgnore}%
+							</span>
+						</div>
+						{#if sec.stat === 'res'}
+							<input
+								type="range"
+								min="0"
+								max="100"
+								step="5"
+								bind:value={otherRes}
+								class="slider"
+								aria-label="Other resistance shred percent"
+							/>
+						{:else if sec.stat === 'def'}
+							<input
+								type="range"
+								min="0"
+								max="100"
+								step="5"
+								bind:value={otherDef}
+								class="slider"
+								aria-label="Other defense shred percent"
+							/>
+						{:else}
+							<input
+								type="range"
+								min="0"
+								max="100"
+								step="5"
+								bind:value={otherIgnore}
+								class="slider"
+								aria-label="Other defense ignore percent"
+							/>
+						{/if}
+					</div>
+				</div>
+			{/each}
 		</div>
 	</div>
 </div>
 
 <style>
-	/* No frame — the chart is on the night; .ctx-dark stays claimed for
+	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
+	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
+	.instrument {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: 'res' 'def' 'readout' 'hit' 'enemy' 'sources';
+	}
+
+	.dr-res {
+		grid-area: res;
+	}
+	.dr-def {
+		grid-area: def;
+	}
+	.dr-readout {
+		grid-area: readout;
+	}
+	.dr-hit {
+		grid-area: hit;
+	}
+	.dr-enemy {
+		grid-area: enemy;
+	}
+	.dr-sources {
+		grid-area: sources;
+	}
+
+	/* No frame — the charts are on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
+	/* The chart takes the track, its caption the line beneath. ⚠ An explicit
+	   minmax(0, 1fr) column: an auto one grows to the SVG's width and clips it
+	   (the Artifact Odds hazard). */
 	.dr-chart {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) auto;
 		min-width: 0;
 	}
 
-	.dr-graph svg {
-		display: block;
+	.dr-caption {
+		margin: 0.25rem 0 0;
+		font-size: var(--fs-sm);
+		line-height: 1.35;
+		color: var(--chart-dim);
 	}
 
-	.dr-graph text {
-		font-family: var(--font-body);
+	/* The readout and the sources: grid items in their own right at a narrow
+	   tile, one right-hand column at a wide one. */
+	.dr-side {
+		display: contents;
 	}
 
+	.panel {
+		margin: 0;
+	}
+
+	/* ── Readout ── */
 	.dr-big {
 		margin: 0;
 		font-family: var(--font-body);
 		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-tight);
+		font-variant-numeric: tabular-nums;
 	}
 
 	.dr-big-unit {
@@ -432,23 +627,248 @@
 		color: var(--muted);
 	}
 
-	.dr-meta {
+	.dr-rows {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.15rem 0.75rem;
+		margin: 0.6rem 0 0;
+		font-size: var(--fs-xl);
+		line-height: 1.5rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.dr-rows dt {
+		color: var(--muted);
+	}
+
+	.dr-rows dd {
 		margin: 0;
+	}
+
+	.dr-sub {
+		margin-left: 0.35rem;
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+
+	.dr-meta {
+		margin: 0.5rem 0 0;
 		font-size: var(--fs-xl);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
 
 	.dr-strong {
-		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
 
-	/* The receipt: exact formula, tucked after the plain-language line */
+	.dr-regime {
+		margin: 0.5rem 0 0;
+		max-width: none;
+	}
+
+	/* The receipts: exact formulas, after the plain-language lines */
+	.dr-receipt {
+		display: grid;
+		gap: 0.1rem;
+		margin: 0.5rem 0 0;
+		font-size: var(--fs-sm);
+		color: color-mix(in srgb, var(--muted) 85%, transparent);
+	}
+
 	.dr-formula {
-		display: block;
+		font-family: var(--font-body);
+	}
+
+	/* ── Your hit / Enemy ── */
+	.dr-elements {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.3rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.dr-rungs {
+		margin: -0.2rem 0 0.75rem;
+	}
+
+	.dr-rungs .chip {
+		text-transform: none;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* The level slider's 90 / 95 / 100 marks — ReactionCurvesInstrument's
+	   construction (the thumb's travel, and the UA's 2px input margin). */
+	.dr-level {
+		position: relative;
+		display: grid;
+	}
+
+	.dr-level-marks {
+		position: relative;
+		width: 100%;
+		height: 5px;
+		margin: 3px 2px 0;
+	}
+
+	.dr-level-mark {
+		position: absolute;
+		top: 0;
+		left: calc(7.5px + var(--at) * (100% - 15px) - 0.5px);
+		width: 1px;
+		height: 5px;
+		background: color-mix(in srgb, var(--text) 35%, transparent);
+	}
+
+	.dr-hit .check {
+		margin-top: 0.6rem;
 		font-size: var(--fs-md);
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
+	}
+
+	/* ── Shred sources ── */
+	.dr-section + .dr-section {
+		margin-top: 0.9rem;
+	}
+
+	.dr-section-head {
+		display: flex;
+		justify-content: space-between;
+		margin: 0 0 0.3rem;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+
+	.dr-section-total {
+		font-variant-numeric: tabular-nums;
+		color: var(--muted);
+	}
+
+	.dr-list {
+		display: grid;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.dr-source {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		min-height: 1.75rem;
+	}
+
+	.dr-source .check {
+		min-width: 0;
+		gap: 0.45rem;
+		font-size: var(--fs-md);
+	}
+
+	.dr-source.is-on .dr-name {
+		color: var(--text);
+	}
+
+	.dr-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.dr-con,
+	.dr-who {
+		flex: none;
+		font-size: var(--fs-sm);
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
+	}
+
+	.dr-amount {
+		flex: none;
+		font-size: var(--fs-md);
+		font-variant-numeric: tabular-nums;
+		color: var(--muted);
+	}
+
+	.dr-options {
+		display: flex;
+		flex: none;
+		gap: 2px;
+	}
+
+	.dr-options .chip {
+		text-transform: none;
+		padding: 0.1rem 0.35rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.dr-none {
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+
+	.dr-other {
+		margin-top: 0.3rem;
+	}
+
+	/* a remainder, not a headline — the section head above already shouts */
+	.dr-other .slider-label {
+		font-size: var(--fs-md);
+		letter-spacing: normal;
+		text-transform: none;
+	}
+
+	/* ── Wider tiles ── */
+	@container instrument (min-width: 38rem) {
+		.instrument {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-areas:
+				'res res'
+				'def def'
+				'readout readout'
+				'hit enemy'
+				'sources sources';
+		}
+	}
+
+	/* The charts and their controls on the left; the readout and the sources
+	   list on the right, the list taking whatever height is left. */
+	@container instrument (min-width: 60rem) {
+		.instrument {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(19rem, 23rem);
+			/* the charts share what the controls leave, RES the larger */
+			grid-template-rows: minmax(0, 3fr) minmax(0, 2fr) auto;
+			grid-template-areas:
+				'res res side'
+				'def def side'
+				'hit enemy side';
+			align-content: stretch;
+		}
+
+		.dr-side {
+			grid-area: side;
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+			min-height: 0;
+		}
+
+		/* ⚠ Only here: a chart and the list may shrink to the tile because the
+		   tracks above are sized to it. In the one- and two-column layouts the
+		   tile SCROLLS, and these would squeeze everything into its height. */
+		.dr-chart {
+			min-height: 0;
+		}
+
+		.dr-readout {
+			flex: none;
+		}
+
+		.dr-sources {
+			flex: 1 1 0;
+			min-height: 0;
+			overflow-y: auto;
+		}
 	}
 </style>

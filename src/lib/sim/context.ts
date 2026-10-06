@@ -369,9 +369,11 @@ export type SimContext = {
 	summonChainSupersededAt: Map<string, number>;
 	/** `${characterId}::${'skill' | 'burst'}` → the summon keys a cast of that
 	 *  kind ENDS (`Summon.terminatesOn: 'skill' | 'burst'`), registered as each
-	 *  such summon is scheduled. The terminating cast retires them by the same
-	 *  generation bump a recast uses — see `retireSummonsOnCast`. */
-	castTerminatedSummons: Map<string, Set<string>>;
+	 *  such summon is scheduled, each with the state it opened (`opensState`)
+	 *  or undefined. The terminating cast retires them by the same generation
+	 *  bump a recast uses, and closes that state there — see
+	 *  `retireSummonsOnCast`. */
+	castTerminatedSummons: Map<string, Map<string, string | undefined>>;
 	/**
 	 * ⚓⚓ THE PARSE RECORDS WHERE A CAST'S LINEUP CHANGED; FINALIZE CUTS THE
 	 * WINDOW ON IT (Arkhe round, 2026-09-04). Keyed by the opening cast's event

@@ -122,16 +122,15 @@
 </section>
 
 <section>
-	<h2 id="enemy-def-res">Enemy DEF &amp; RES</h2>
+	<h2 id="enemy-res-def">Enemy RES &amp; DEF</h2>
 	<p>
-		The two hidden multipliers every hit passes through. <strong>DEF</strong>: your level against
-		the enemy's sets a baseline cut — equal levels already cost you half — and shred or ignore claws
-		it back. <strong>RES</strong>: most enemies resist 10%, and shred subtracts from that.
+		Two hidden multipliers every hit passes through, stacked one above the other. Point at either
+		chart to read it, and drag to move the enemy. Pick your hit's element and level, the enemy's RES
+		and level, and tick the shred you bring; the readout multiplies them together.
 	</p>
 	<p>
-		Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc
-		Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep
-		diminishing returns.
+		Equal levels already cost you half your damage, and DEF shred and ignore win it back. Below 0%
+		RES, shred still helps at half strength; above 75%, it's weaker until RES drops back under 75%.
 	</p>
 </section>
 

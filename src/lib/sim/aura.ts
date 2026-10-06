@@ -948,10 +948,14 @@ export function retireSummonsOnCast(
 ): void {
 	const keys = ctx.castTerminatedSummons.get(`${charId}::${kind}`);
 	if (!keys || keys.size === 0) return;
-	for (const key of keys) {
+	for (const [key, state] of keys) {
 		const prior = ctx.summonChainGen.get(key) ?? 0;
 		ctx.summonChainGen.set(key, prior + 1);
 		ctx.summonChainSupersededAt.set(`${key}#${prior}`, castTime);
+		// The summon's own state ends with it — the clamp a stance's early end
+		// uses, so it can only shorten (Mavuika's `searingRing`, 2026-10-06).
+		if (state !== undefined)
+			closeStateWindows(ctx, ctx.getCharState(charId), charId, state, castTime);
 	}
 	keys.clear();
 }
@@ -1014,8 +1018,8 @@ export function scheduleSummonTicks(
 		if (summon.terminatesOn === 'skill' || summon.terminatesOn === 'burst') {
 			const tk = `${char.id}::${summon.terminatesOn}`;
 			const set = ctx.castTerminatedSummons.get(tk);
-			if (set) set.add(key);
-			else ctx.castTerminatedSummons.set(tk, new Set([key]));
+			if (set) set.set(key, summon.opensState);
+			else ctx.castTerminatedSummons.set(tk, new Map([[key, summon.opensState]]));
 		}
 
 		/** The summon's end AS OF NOW — recomputed at every fire, never cached. */
@@ -1042,7 +1046,9 @@ export function scheduleSummonTicks(
 
 		// ⚓ A summon's OWN STATE (`Summon.opensState`) spans this life exactly.
 		// Opened here because this is where the spawn and the end already are —
-		// lint guarantees the end is knowable now (no swap end, no extensions).
+		// lint guarantees the end is knowable now (no swap end, no extensions);
+		// a cast that ends the summon (`terminatesOn: 'skill' | 'burst'`) closes
+		// it early through `retireSummonsOnCast`.
 		if (summon.opensState !== undefined) {
 			openSummonState(
 				ctx,

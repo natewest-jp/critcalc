@@ -68,35 +68,35 @@
 - `help_vz_a_direct_hit_is_shown_relative_to_a_hit` — Visualizers.svelte:115 <p>
   > A direct hit is shown relative to a hit from its base stat alone, because its talent multiplier depends on the attack. Additive chunks, transformative damage, and Lunar and Stellar reaction damage come from level and EM, so they end in a number. <strong>What the next roll buys</strong> applies one average 5★ substat roll at a time to your sheet; pick ATK, HP or DEF so the rolls match the stat your character scales on.
   - terms: 🎮 Stellar · 🏷 substat · 🎮 talent · 🎮 Lunar · 🎮 ATK · 🎮 DEF · 🎮 HP · 🏷 EM
-- `help_vz_enemy_def_res` — Visualizers.svelte:125 <h2> — ⚑ entity
-  > Enemy DEF & RES
-  - terms: 📖 Enemy DEF & RES
-- `help_vz_the_two_hidden_multipliers_every_hit` — Visualizers.svelte:126 <p>
-  > The two hidden multipliers every hit passes through. <strong>DEF</strong>: your level against the enemy's sets a baseline cut — equal levels already cost you half — and shred or ignore claws it back. <strong>RES</strong>: most enemies resist 10%, and shred subtracts from that.
+- `help_vz_enemy_res_def` — Visualizers.svelte:125 <h2> — ⚑ entity
+  > Enemy RES & DEF
+  - terms: 📖 Enemy RES & DEF
+- `help_vz_two_hidden_multipliers_every_hit_passes` — Visualizers.svelte:126 <p>
+  > Two hidden multipliers every hit passes through, stacked one above the other. Point at either chart to read it, and drag to move the enemy. Pick your hit's element and level, the enemy's RES and level, and tick the shred you bring; the readout multiplies them together.
+  - terms: 🎮 RES
+- `help_vz_equal_levels_already_cost_you_half_your` — Visualizers.svelte:131 <p>
+  > Equal levels already cost you half your damage, and DEF shred and ignore win it back. Below 0% RES, shred still helps at half strength; above 75%, it's weaker until RES drops back under 75%.
   - terms: 🎮 DEF · 🎮 RES
-- `help_vz_pushing_res_below_0_still_pays_but_each` — Visualizers.svelte:131 <p>
-  > Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep diminishing returns.
-  - terms: 🎮 Viridescent Venerer · 🎮 RES
-- `help_vz_artifact_odds` — Visualizers.svelte:139 <h2>
+- `help_vz_artifact_odds` — Visualizers.svelte:138 <h2>
   > Artifact Odds
   - terms: 📖 Artifact Odds
-- `help_vz_the_odds_behind_a_5_artifact_from` — Visualizers.svelte:140 <p>
+- `help_vz_the_odds_behind_a_5_artifact_from` — Visualizers.svelte:139 <p>
   > The odds behind a 5★ artifact, from datamined weights, through a piece's life. Pick <strong>your stats</strong> — up to four substats that count as good — and every view measures them. <strong>Drop</strong>: how many days of resin it takes to get the piece you want, from a domain or during a Stygian Onslaught Disturbance Outbreak. <strong>Level up</strong>: what your stats reach at +20 on a piece that has them, coloured by how many upgrades landed in them. <strong>Your piece</strong>: enter a real piece, line by line as the game shows it, to see how it ranks, what it can still become, and what a reshape would do.
   - terms: 🏷 substat
-- `help_vz_your_stats_are_measured_in_crit_value` — Visualizers.svelte:149 <p>
+- `help_vz_your_stats_are_measured_in_crit_value` — Visualizers.svelte:148 <p>
   > Your stats are measured in crit value when they are CRIT Rate and CRIT DMG, and otherwise in useful rolls: each upgrade into them counts by its size, a top roll 1 and the smallest 0.7.
   - terms: 🏷 crit value · 🎮 CRIT Rate · 🎮 CRIT DMG
-- `help_vz_the_game_doesn_t_say_how_a_guarantee_of` — Visualizers.svelte:153 <p>
+- `help_vz_the_game_doesn_t_say_how_a_guarantee_of` — Visualizers.svelte:152 <p>
   > The game doesn't say how a guarantee of at least N upgrades is met, for reshaping or for a piece defined with Sanctifying Elixir. The Artifact Odds instrument assumes the upgrades land as usual and any shortfall is moved into the selected lines — the reading Genshin Optimizer uses.
   - terms: 🎮 Sanctifying Elixir · 🔒 Genshin Optimizer · 📖 Artifact Odds · 📖 instrument
-- `help_vz_wish_odds` — Visualizers.svelte:161 <h2>
+- `help_vz_wish_odds` — Visualizers.svelte:160 <h2>
   > Wish Odds
   - terms: 📖 Wish Odds
-- `help_vz_how_many_pulls_a_goal_takes_from_your` — Visualizers.svelte:162 <p>
+- `help_vz_how_many_pulls_a_goal_takes_from_your` — Visualizers.svelte:161 <p>
   > How many pulls a goal takes, from your current pity and guarantee: the featured 5★ or 4★ up to C6, the charted weapon up to R5, or a 5★ and their weapon together. There is one line per level on the way to the goal, each showing your chance of being there by a given pull. The marker is your saved pulls; drag it.
   - terms: 🏷 pity
-- `help_vz_pity_model_a_5_drops_at_0_6_per_pull` — Visualizers.svelte:168 <p>
+- `help_vz_pity_model_a_5_drops_at_0_6_per_pull` — Visualizers.svelte:167 <p>
   > Pity model: a 5★ drops at 0.6% per pull until soft pity ramps from pull 74 (on the weapon banner, 0.7% ramping from 63); a 4★ drops at 5.1%, then 56.1% on the 9th pull, and is certain on the 10th. Featured odds use the official rates: 55% for a 5★ character including Capturing Radiance, 37.5% for the charted weapon with one fate point, and 50% for a 4★, which is then one of three featured characters, split evenly. The Radiance streak counter is not fully datamined, so each 5★ is modeled as an independent 55%.
   - terms: 🎮 Capturing Radiance · 🎮 Fate Points · 🏷 soft pity · 🎮 Radiance
-- `help_vz_only_pulls_on_a_banner_that_features` — Visualizers.svelte:176 <p>
+- `help_vz_only_pulls_on_a_banner_that_features` — Visualizers.svelte:175 <p>
   > Only pulls on a banner that features your goal count. Copies from Starglitter or events are not in the curves, so set <strong>You have</strong> to what you own. A 5★ landing on the 10th pull pushes that 4★ to the 11th; it is left out, and moves 4★ C6 by about one pull. The model matches <a>GGanalysis</a>.

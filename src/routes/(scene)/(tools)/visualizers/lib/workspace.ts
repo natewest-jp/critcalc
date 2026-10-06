@@ -22,7 +22,7 @@ export const INSTRUMENTS = [
 	{ id: 'icd', name: 'ICD Timeline' },
 	{ id: 'curves', name: 'Reaction Curves' },
 	{ id: 'breakdown', name: 'Damage Breakdown' },
-	{ id: 'defres', name: 'Enemy DEF & RES' },
+	{ id: 'defres', name: 'Enemy RES & DEF' },
 	{ id: 'artifact', name: 'Artifact Odds' },
 	{ id: 'wish', name: 'Wish Odds' }
 ] as const;

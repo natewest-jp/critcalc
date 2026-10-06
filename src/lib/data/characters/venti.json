@@ -297,7 +297,8 @@
 							"faction": "hexerei",
 							"min": 2
 						}
-					}
+					},
+					"mod": "breezeOfReminiscence"
 				},
 				{
 					"type": "resShred",
@@ -316,7 +317,8 @@
 							"faction": "hexerei",
 							"min": 2
 						}
-					}
+					},
+					"mod": "breezeOfReminiscence"
 				}
 			],
 			"_curatorNotes": [
@@ -450,7 +452,8 @@
 					},
 					"duration": 10,
 					"element": "anemo",
-					"value": -24
+					"value": -24,
+					"mod": "breezeOfReminiscence"
 				},
 				{
 					"type": "resShred",
@@ -475,7 +478,8 @@
 					},
 					"duration": 10,
 					"element": "physical",
-					"value": -24
+					"value": -24,
+					"mod": "breezeOfReminiscence"
 				}
 			]
 		},

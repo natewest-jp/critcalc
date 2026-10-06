@@ -1,5 +1,13 @@
 # Worksheet — Enemy DEF & RES
 
+> ✅ **CLOSED + APPLIED 2026-10-06** (the DEF & RES pass, `docs/defres-pass-2026-10-06.md`).
+> ⛔ SUPERSEDED — the rulings a translator needs now live in
+> `docs/text/ledger/notes/vz_defres.md`, keyed to the generated inventory. Kept for history;
+> ⚠️ the instrument is renamed **Enemy RES & DEF** (id `defres`), its two views are STACKED
+> charts (the RES/DEF toggle and both panel headings are gone), "Hidden multiplier" and the
+> VV note were dropped, the two explanations became one caption per chart, and every
+> readout line was rewritten — shred now works at "half / full strength", not in points.
+
 ⚠️ **Read `visualizers-instruments-00-conventions.md` first** — §A casing, §C colons,
 §F caps-for-emphasis, §I formulas.
 

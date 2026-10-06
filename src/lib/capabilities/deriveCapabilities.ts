@@ -87,6 +87,13 @@ export type DerivedCapability = {
 	 *  The walk is three lines here because `pushSummonCapabilities` already has
 	 *  the trigger in hand; tick OFFSETS are then arithmetic at the consumer. */
 	summon?: { label: string; tickInterval?: number; firstTickDelay?: number };
+	/** The effect's own number when it is a plain one: a shred's size as a
+	 *  POSITIVE percent (the data stores shred negative), a buff's flat value.
+	 *  Absent for scaling/unknown values and tag-derived entries. Read by the
+	 *  Visualizers' DEF & RES sources list. */
+	amount?: number;
+	/** resShred: the in-game debuff it is (`mod`) — shared means "never stacks". */
+	mod?: string;
 	via: 'effect' | 'tag';
 	source: CapabilitySource;
 };
@@ -360,10 +367,18 @@ function pushEffectCapabilities(
 			caveats: [...caveats].sort(),
 			...(duration !== undefined && duration > 0 && { duration }),
 			...(summonLabel !== undefined && { summon: summonHost(summonLabel, effect) }),
+			...amountOf(effect),
 			via: 'effect',
 			source: ctx.source
 		});
 	}
+}
+
+function amountOf(effect: Effect): { amount?: number; mod?: string } {
+	if (effect.type === 'resShred')
+		return { amount: Math.abs(effect.value), ...(effect.mod !== undefined && { mod: effect.mod }) };
+	if (effect.type === 'buff' && typeof effect.value === 'number') return { amount: effect.value };
+	return {};
 }
 
 /** The summon descriptor for one capability: the label always, plus the cadence
