@@ -21,7 +21,6 @@
 		percentileOf,
 		meanOf,
 		rollEvents,
-		reshapeDust,
 		unitFor,
 		primaryMain,
 		type SlotId,
@@ -399,6 +398,28 @@
 	/** ⚠️ Sands is its own plural */
 	const slotPlural = $derived(slotId === 'sands' ? 'sands' : `${slotWord}s`);
 	const statList = (ids: SubstatId[]) => ids.map((id) => substatById(id).short).join(', ');
+	/** "CR", "CR and CD", "CR, CD and ER" */
+	const andList = (ids: SubstatId[]) => {
+		const names = ids.map((id) => substatById(id).short);
+		return names.length < 2
+			? (names[0] ?? '')
+			: `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+	};
+	// Level up's caption names your stats when the piece has all of them
+	const levelSubject = $derived(
+		levelK === wantedSubs.length ? `your ${andList(wantedSubs)}` : 'your stats'
+	);
+	const levelHasWord = $derived(
+		levelK < wantedSubs.length
+			? levelK === 1
+				? 'one of them'
+				: `${levelK} of them`
+			: levelK === 1
+				? 'it'
+				: levelK === 2
+					? 'both'
+					: `all ${levelK}`
+	);
 
 	// ── Geometry ───────────────────────────────────────────────────────────
 	let graphW = $state(720);
@@ -808,12 +829,12 @@
 				</svg>
 			</div>
 			<p class="note ao-probe">
-				Drag along the chart to choose how many days of resin you spend ({RESIN_PER_DAY} a day). In an
-				Outbreak: every run during a Stygian Onslaught Disturbance Outbreak, which adds one more 5★ from
-				the domain for each 120 resin.
+				Drag the chart or use the slider to pick how many days of resin you'll spend ({RESIN_PER_DAY}
+				a day). During a Stygian Onslaught Disturbance Outbreak, every 120 resin you spend also earns
+				one extra 5★ from the domain.
 			</p>
 		{:else if view === 'level' && !wantedSubs.length}
-			<p class="ao-empty">Your only stat is the main stat — pick a substat too.</p>
+			<p class="ao-empty">Your only chosen stat is this piece's main stat. Pick a substat too.</p>
 		{:else if view === 'piece' && !resolution}
 			<div class="ao-empty">
 				{#if pieceLines.length < (level === 0 ? 3 : 4)}
@@ -823,26 +844,26 @@
 							: ' — all four'}.
 					</p>
 				{:else if lineInferences.some((i) => !i.length)}
-					<p>A value doesn't match any roll this stat can make — check it against the game.</p>
+					<p>One of these values isn't possible for that substat. Check it against the game.</p>
 				{:else}
 					<p>
 						These values add up to {totals.join(' or ')} upgrade{totals.at(-1) === 1 ? '' : 's'},
-						but a {LEVELS.find((l) => l.at === level)?.label} piece has had {Math.max(
+						but a {LEVELS.find((l) => l.at === level)?.label} piece has only {Math.max(
 							0,
 							upgradesAt(level) - 1
 						)}–{upgradesAt(level)}.
-					</p>
-					{#if LEVELS.some((l) => fitsLevel[l.at])}
-						<p>
-							They fit {LEVELS.filter((l) => fitsLevel[l.at])
+						{#if LEVELS.some((l) => fitsLevel[l.at])}
+							Recheck your values, or pick {LEVELS.filter((l) => fitsLevel[l.at])
 								.map((l) => l.label)
 								.join(' or ')}.
-						</p>
-					{/if}
+						{:else}
+							Recheck your values.
+						{/if}
+					</p>
 				{/if}
 			</div>
 		{:else if view === 'piece' && wantedOnPiece === 0}
-			<p class="ao-empty">None of your stats is on this piece.</p>
+			<p class="ao-empty">None of your chosen stats are on this piece.</p>
 		{:else}
 			<div class="ao-graph" bind:clientWidth={graphW}>
 				<svg
@@ -973,24 +994,24 @@
 			</div>
 			<p class="note ao-probe">
 				{#if hovered}
-					<span class="ao-strong">{valueOf(hovered.x)}</span>: {fmtPct(hovered.p)} of outcomes ·
-					{fmtPct(hovered.reach)} reach at least {fmtValue(hovered.x)}
+					<span class="ao-strong">{valueOf(hovered.x)}</span>: {fmtPct(hovered.p)} chance of exactly this
+					· {fmtPct(hovered.reach)} chance of this or more
 				{:else if view === 'level'}
-					Your {statList(wantedSubs.slice(0, levelK))} on a {slotWord} that has {levelK === 1
-						? 'one of them'
-						: 'them'}, levelled to +20 ({events} upgrades{levelFloor
-						? ', at least 2 into your stats'
-						: ''}). Drag to set a value to beat.
+					Where {levelSubject} would end up on a {slotWord} that has {levelHasWord}, after all {events}
+					upgrades to +20{levelFloor
+						? ', with at least 2 of them guaranteed to go to your stats'
+						: ''}. Drag the chart to set a value to beat.
 				{:else if !finished}
-					What your stats on this piece can reach by +20. Drag to set a value to beat.
+					Where your stats on this piece would end up at +20. Drag the chart to set a value to beat.
 				{:else if canReshape}
-					Gold is your piece after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape.
-					Grey is every +20 {slotWord} with these four substats, each levelled from scratch — the pieces
-					yours is better than {Math.round(percentile * 100)}% of.
+					Gold shows your piece after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape.
+					Grey shows every +20 {slotWord} with these four substats — yours beats {Math.round(
+						percentile * 100
+					)}% of them.
 				{:else}
-					Grey is every +20 {slotWord} with these four substats, each levelled from scratch — the pieces
-					yours is better than {Math.round(percentile * 100)}% of. Circle two lines to see a
-					reshape.
+					Grey shows every +20 {slotWord} with these four substats — yours beats {Math.round(
+						percentile * 100
+					)}% of them. Select two substats on your piece to see a reshape.
 				{/if}
 			</p>
 		{/if}
@@ -1036,7 +1057,9 @@
 					{/each}
 				</div>
 				{#if view === 'drop' && slot.mains.length > 1}
-					<p class="note">Pick every main stat you'd take. Under each: how often it drops.</p>
+					<p class="note">
+						Pick every main stat you'd be happy with. The number under each is how often it drops.
+					</p>
 				{/if}
 			</section>
 		{/if}
@@ -1064,9 +1087,9 @@
 				{/each}
 			</div>
 			<p class="note">
-				What counts as good, up to four.
+				Pick up to four substats you want.
 				{#if view === 'drop'}
-					Under each: its chance to be one of the substats on a {slotWord} with {main.name} main.
+					The number under each is its chance to be one of the piece's four substats.
 				{/if}
 			</p>
 			{#if view === 'drop' && wanted.length > 1}
@@ -1112,7 +1135,7 @@
 						aria-pressed={!eitherSet}
 						onclick={() => (eitherSet = false)}
 					>
-						One of the domain's sets
+						One set
 					</button>
 					<button
 						class="chip chip--control"
@@ -1179,9 +1202,11 @@
 					</button>
 				</div>
 				<p class="note">
-					A 4-substat drop gets 5 upgrades by +20; a 3-substat drop spends its first adding the 4th.
+					A piece that drops with 4 substats gets 5 upgrades by +20. One that drops with 3 spends
+					its first upgrade adding a 4th substat.
 					{#if defined && levelK >= 2}
-						Made with Sanctifying Elixir: two of your stats are guaranteed at least 2 of them.
+						A piece made with Sanctifying Elixir guarantees at least 2 of those upgrades go to the
+						two substats you chose for it.
 					{/if}
 				</p>
 			</section>
@@ -1241,7 +1266,7 @@
 								<button
 									class="ao-badge is-choice"
 									onclick={cycleReading}
-									title="These values can be read two ways — match the number the game shows"
+									title="These values fit two possible upgrade counts. Tap to match the number the game shows."
 									aria-label="Upgrades: {resolution.counts[at] - 1}. Tap for the other reading"
 								>
 									{resolution.counts[at] - 1}
@@ -1304,12 +1329,14 @@
 				</div>
 				<p class="note">
 					{#if resolution}
-						The number on the left is each line's upgrades, as the game shows them when you reshape.
-						Your stats are highlighted; the circles on the right pick a reshape's two lines.
+						The number beside each substat is how many upgrades it got, the same number the game
+						shows on its reshape screen. Your stats are highlighted. Use the circles on the right to
+						choose two substats to reshape.
 					{:else if pieceComplete}
-						Pick your piece's level — the ones these values can't be are dimmed.
+						Pick your piece's level. Levels these values can't belong to are dimmed.
 					{:else}
-						Choose each substat and dial in its value as the game shows it, then the piece's level.
+						Enter each substat and its value exactly as the game shows them, then pick the piece's
+						level.
 					{/if}
 				</p>
 				<div class="chips">
@@ -1332,7 +1359,8 @@
 				</div>
 				{#if defined}
 					<p class="note">
-						Circle the two substats you defined: they get at least 2 upgrades between them by +20.
+						Select the two substats you chose when making it. Together they're guaranteed at least 2
+						upgrades by +20.
 					</p>
 				{/if}
 			</section>
@@ -1354,12 +1382,12 @@
 					</div>
 					<p class="note">
 						{#if canReshape}
-							The two circled lines get at least this many of the piece's upgrades. It costs {reshapeDust(
-								slotId
-							)} Dust of Enlightenment for a {slotWord}; every {ADVANCED_EXEGESIS} Dust you spend makes
-							the next reshape Advanced, and the third Advanced is Decreed.
+							Your two selected substats are guaranteed at least this many of the piece's upgrades
+							between them. Reshaping a flower or plume costs 1 Dust of Enlightenment (other pieces
+							cost 2). Every {ADVANCED_EXEGESIS} Dust you spend makes your next reshape Advanced, and
+							the third Advanced in a row is Decreed.
 						{:else}
-							Circle two lines on your piece to reshape it.
+							Select two substats on your piece to see a reshape.
 						{/if}
 					</p>
 				</section>
@@ -1372,18 +1400,18 @@
 		{#if view === 'drop'}
 			<p class="ao-big">
 				{inHundred(chanceBy.domain)} in 100<span class="ao-big-unit"
-					>players farming the domain for {fmtValue(shownDays).replace(/\.0$/, '')} day{shownDays ===
+					>players would have this piece after {fmtValue(shownDays).replace(/\.0$/, '')} day{shownDays ===
 					1
 						? ''
-						: 's'} have this piece</span
+						: 's'} of farming the domain</span
 				>
 			</p>
 			<table class="ao-table">
 				<thead>
 					<tr>
 						<th scope="col">Days of resin</th>
-						<th scope="col" class="ao-num">Half have it by</th>
-						<th scope="col" class="ao-num">Unluckiest tenth</th>
+						<th scope="col" class="ao-num">Half by</th>
+						<th scope="col" class="ao-num">Unlucky tenth</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -1400,17 +1428,19 @@
 				</tbody>
 			</table>
 			<p class="ao-meta">
-				<span class="ao-strong">1 in {oneIn(perPiece)}</span> of the domain's 5★ drops is this piece.
+				About <span class="ao-strong">1 in every {oneIn(perPiece)}</span> five-star drops from this domain
+				is the piece you want.
 			</p>
 			<p class="note">
-				{fmtNum(resinOf(shownDays))} resin is {fmtNum(resinOf(shownDays) / RESIN_PER_RUN)} runs. The unluckiest
-				tenth of players need at least the days in the last column.
+				{fmtValue(shownDays).replace(/\.0$/, '')} day{shownDays === 1 ? '' : 's'} is {fmtNum(
+					resinOf(shownDays)
+				)} resin. Unlucky tenth: 1 in 10 players would still be farming after that many days.
 			</p>
 		{:else if view === 'level'}
 			{#if wantedSubs.length}
 				<p class="ao-big">
 					{fmtPct(odds.above, 0)}<span class="ao-big-unit"
-						>chance to end above {valueOf(reference)}</span
+						>chance it would end above {valueOf(reference)}</span
 					>
 				</p>
 				{@render oddsBar(odds, ['Below', 'Equal', 'Above'])}
@@ -1421,8 +1451,8 @@
 				<p class="ao-meta">Typical: <span class="ao-strong">{valueOf(stats.median)}</span></p>
 				{#if unit === 'rolls'}
 					<p class="note">
-						Useful rolls: each roll into your stats counts by its size — a top roll 1, the smallest
-						0.7 — and a line's first roll counts too.
+						Useful rolls count every roll in your stats by its size: a max roll counts as 1, the
+						smallest as 0.7. A substat's starting roll counts too.
 					</p>
 				{/if}
 			{/if}
@@ -1431,7 +1461,7 @@
 		{:else if !finished}
 			<p class="ao-big">
 				{fmtPct(odds.above, 0)}<span class="ao-big-unit"
-					>chance it ends above {valueOf(reference)}</span
+					>chance it would end above {valueOf(reference)}</span
 				>
 			</p>
 			{@render oddsBar(odds, ['Below', 'Equal', 'Above'])}
@@ -1442,13 +1472,13 @@
 			</p>
 			{#if refPiece === null}
 				<p class="note">
-					The default to beat is a typical finished {slotWord} with these substats.
+					Until you drag it, the value to beat is a typical +20 {slotWord} with these substats.
 				</p>
 			{/if}
 		{:else}
 			<p class="ao-big">
 				Better than {Math.round(percentile * 100)}%<span class="ao-big-unit"
-					>of finished {slotPlural} with these substats</span
+					>of +20 {slotPlural} with these four substats</span
 				>
 			</p>
 			<p class="ao-meta">
@@ -1461,8 +1491,8 @@
 				</p>
 				{@render oddsBar(odds, ['Worse', 'The same', 'Better'])}
 				<p class="note">
-					A reshape keeps each line's first roll and deals the upgrades again. You choose whether to
-					keep the result.
+					Reshaping keeps each substat's starting roll and rerolls all its upgrades. You can keep
+					whichever result you prefer.
 				</p>
 			{/if}
 		{/if}

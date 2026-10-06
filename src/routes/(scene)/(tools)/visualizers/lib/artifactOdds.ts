@@ -311,9 +311,6 @@ export const rollsLeftAt = (level: number) => 5 - Math.floor(Math.min(20, level)
 export const FLOORS = [0, 2, 3, 4] as const;
 export type Floor = (typeof FLOORS)[number];
 
-/** Dust of Enlightenment per reshape (flower and plume 1, the rest 2). */
-export const reshapeDust = (slot: SlotId) => (slot === 'flower' || slot === 'plume' ? 1 : 2);
-
 /** Hallowed Exegesis (one per Dust) an Advanced Reshape consumes. */
 export const ADVANCED_EXEGESIS = 6;
 
