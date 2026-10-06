@@ -142,6 +142,6 @@ test('the ICD timeline hands its hits off to a Gauge tile beside it', async ({ p
 	// moving it between columns mid-edit), so a positional selector here would
 	// have been pinning panel ORDER from a test about a handoff.
 	await expect(
-		page.locator('.gx-panels .note').filter({ hasText: 'Custom sequence' })
+		page.locator('.gx-scenarios .note').filter({ hasText: 'Custom sequence' })
 	).toBeVisible();
 });

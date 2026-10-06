@@ -716,7 +716,7 @@
 {/snippet}
 
 <div class="instrument">
-	<div class="ao-chart ctx-dark">
+	<div class="ao-chart instrument-chart ctx-dark">
 		<div class="chips ao-views" role="group" aria-label="View">
 			{#each VIEWS as v (v.id)}
 				<button
@@ -1041,7 +1041,7 @@
 	</div>
 
 	<!-- ONE panel, a section per question (the Wish Odds layout) -->
-	<div class="panel ao-controls">
+	<div class="panel ao-controls instrument-controls">
 		{#if view !== 'piece'}
 			<section class="ao-section">
 				<p class="kicker">Piece</p>
@@ -1438,7 +1438,7 @@
 		{/if}
 	</div>
 
-	<div class="panel panel--paper ao-readout">
+	<div class="panel panel--paper ao-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		{#if view === 'drop'}
 			<p class="ao-big">
@@ -1546,10 +1546,7 @@
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
 	.ao-chart {
-		display: flex;
-		flex-direction: column;
 		gap: 0.5rem;
-		min-width: 0;
 	}
 
 	/* A capped svg (and .instrument-graph's min-width 0): otherwise the svg's
@@ -1629,14 +1626,6 @@
 
 	.ao-legend-key i.is-ghost {
 		background: var(--chart-grid);
-	}
-
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
-	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
-		/* the chart takes what the controls and Readout leave (.instrument-graph) */
-		grid-template-rows: minmax(min-content, 1fr) auto auto;
 	}
 
 	/* ── Controls ───────────────────────────────────────────────────────────── */
@@ -2096,51 +2085,11 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* ══ SHARED: the Readout sits BESIDE the controls, under a full-width
-	   chart, at an even split (the Wish Odds layout). */
-	@container instrument (min-width: 38rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			grid-template-rows: minmax(min-content, 1fr) auto;
-			grid-template-areas:
-				'chart chart'
-				'controls readout';
-		}
-
-		.ao-chart {
-			grid-area: chart;
-		}
-
-		.ao-controls {
-			grid-area: controls;
-			align-self: start;
-		}
-
-		/* ⚠️ Named, never auto-placed (the Wish Odds pass's trap) */
-		.ao-readout {
-			grid-area: readout;
-			align-self: start;
-		}
-	}
-
-	/* ══ WIDE: THE READOUT IS A COLUMN, and the sections sit side by side */
+	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
+	   side by side under the chart. */
 	@container instrument (min-width: 60rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: minmax(min-content, 1fr) auto;
-			grid-template-areas:
-				'chart readout'
-				'controls readout';
-			align-content: stretch;
-		}
-
 		.ao-controls {
 			grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
-		}
-
-		.ao-readout {
-			align-self: stretch;
-			align-content: start;
 		}
 	}
 </style>

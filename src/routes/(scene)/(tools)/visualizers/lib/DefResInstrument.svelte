@@ -220,187 +220,190 @@
 </script>
 
 <div class="instrument dr">
-	<div class="dr-chart dr-res ctx-dark">
-		<DefResChart
-			label="Damage multiplier versus the enemy's elemental RES"
-			xMin={RES_X0}
-			xMax={RES_X1}
-			xTicks={[-100, -50, 0, 50, 100, 150, 200]}
-			xTick={(x) => `${x}%`}
-			xLabel="Enemy {ELEMENT_NAME[element]} RES after shred"
-			yMax={1.5}
-			yTicks={[0.5, 1, 1.5]}
-			yLabel="damage kept"
-			curves={resCurves}
-			guides={[
-				{ x: 0, label: 'below 0%, shred counts half', side: 'left' },
-				{ x: 75, label: 'diminishing returns', side: 'right' }
-			]}
-			points={resPoints}
-			marker={immune ? null : clampRes(finalRes)}
-			read={(x) => `${x}% → ${fmtX(resAt(x))}`}
-			onset={setFinalRes}
-			snap={(x) => Math.round(x / 5) * 5}
-			dim={immune}
-			message={immune ? 'Immune: this element deals no damage' : undefined}
-			plotH={140}
-			minPlotH={110}
-		/>
-		<p class="dr-caption">
-			Most enemies resist 10%. Shred subtracts from RES, and below 0% it still helps, at half the
-			rate.
-		</p>
-	</div>
-
-	<div class="dr-chart dr-def ctx-dark">
-		<DefResChart
-			label="Enemy DEF multiplier versus enemy level"
-			xMin={1}
-			xMax={ENEMY_LEVEL_MAX}
-			xTicks={[1, 20, 40, 60, 80, 100, 110]}
-			xTick={(x) => `${x}`}
-			xLabel="Enemy level"
-			yMax={1}
-			yTicks={[0.25, 0.5, 0.75, 1]}
-			yLabel="damage kept"
-			curves={defCurves}
-			guides={charLevel <= ENEMY_LEVEL_MAX
-				? [{ x: charLevel, label: 'your level', side: 'left' }]
-				: []}
-			points={[{ x: enemyLevel, y: defNow }]}
-			marker={enemyLevel}
-			read={(x) => `Lv ${x} → ${fmtX(defAt(x))}`}
-			onset={(x) => (enemyLevel = x)}
-			snap={(x) => Math.round(x)}
-			dim={ignoresDef}
-			message={ignoresDef ? 'Transformative, Lunar and Stellar reactions ignore DEF' : undefined}
-			plotH={110}
-			minPlotH={80}
-		/>
-		<p class="dr-caption">
-			Equal levels already cost you half your damage. DEF shred and DEF ignore win it back, and they
-			multiply together.
-		</p>
-	</div>
-
-	<div class="panel dr-hit">
-		<p class="kicker">Your hit</p>
-		<div class="dr-elements" role="radiogroup" aria-label="The hit's element">
-			{#each SHRED_ELEMENTS as e (e)}
-				{#if e === 'physical'}
-					<button
-						class="chip chip--sm chip--element"
-						class:active={element === e}
-						style:--chip-color="var(--text)"
-						role="radio"
-						aria-checked={element === e}
-						onclick={() => (element = e)}
-					>
-						Physical
-					</button>
-				{:else}
-					<button
-						class="chip chip--icon"
-						class:active={element === e}
-						style:--chip-color="var(--el-{e}-main)"
-						role="radio"
-						aria-checked={element === e}
-						aria-label={ELEMENT_NAME[e]}
-						title={ELEMENT_NAME[e]}
-						onclick={() => (element = e)}
-					>
-						<img src={elementIcon(e)} alt="" width="16" height="16" />
-					</button>
-				{/if}
-			{/each}
+	<!-- One chart slot, two charts: RES takes the larger share of its height -->
+	<div class="dr-charts instrument-chart">
+		<div class="dr-chart dr-res ctx-dark">
+			<DefResChart
+				label="Damage multiplier versus the enemy's elemental RES"
+				xMin={RES_X0}
+				xMax={RES_X1}
+				xTicks={[-100, -50, 0, 50, 100, 150, 200]}
+				xTick={(x) => `${x}%`}
+				xLabel="Enemy {ELEMENT_NAME[element]} RES after shred"
+				yMax={1.5}
+				yTicks={[0.5, 1, 1.5]}
+				yLabel="damage kept"
+				curves={resCurves}
+				guides={[
+					{ x: 0, label: 'below 0%, shred counts half', side: 'left' },
+					{ x: 75, label: 'diminishing returns', side: 'right' }
+				]}
+				points={resPoints}
+				marker={immune ? null : clampRes(finalRes)}
+				read={(x) => `${x}% → ${fmtX(resAt(x))}`}
+				onset={setFinalRes}
+				snap={(x) => Math.round(x / 5) * 5}
+				dim={immune}
+				message={immune ? 'Immune: this element deals no damage' : undefined}
+				plotH={140}
+			/>
+			<p class="dr-caption">
+				Most enemies resist 10%. Shred subtracts from RES, and below 0% it still helps, at half the
+				rate.
+			</p>
 		</div>
-		<div class="slider-control">
-			<div class="slider-header">
-				<span class="slider-label">Your level</span>
-				<span class="readout">{charLevel}</span>
+
+		<div class="dr-chart dr-def ctx-dark">
+			<DefResChart
+				label="Enemy DEF multiplier versus enemy level"
+				xMin={1}
+				xMax={ENEMY_LEVEL_MAX}
+				xTicks={[1, 20, 40, 60, 80, 100, 110]}
+				xTick={(x) => `${x}`}
+				xLabel="Enemy level"
+				yMax={1}
+				yTicks={[0.25, 0.5, 0.75, 1]}
+				yLabel="damage kept"
+				curves={defCurves}
+				guides={charLevel <= ENEMY_LEVEL_MAX
+					? [{ x: charLevel, label: 'your level', side: 'left' }]
+					: []}
+				points={[{ x: enemyLevel, y: defNow }]}
+				marker={enemyLevel}
+				read={(x) => `Lv ${x} → ${fmtX(defAt(x))}`}
+				onset={(x) => (enemyLevel = x)}
+				snap={(x) => Math.round(x)}
+				dim={ignoresDef}
+				message={ignoresDef ? 'Transformative, Lunar and Stellar reactions ignore DEF' : undefined}
+				plotH={110}
+			/>
+			<p class="dr-caption">
+				Equal levels already cost you half your damage. DEF shred and DEF ignore win it back, and
+				they multiply together.
+			</p>
+		</div>
+	</div>
+
+	<div class="dr-controls panels instrument-controls">
+		<div class="panel dr-hit">
+			<p class="kicker">Your hit</p>
+			<div class="dr-elements" role="radiogroup" aria-label="The hit's element">
+				{#each SHRED_ELEMENTS as e (e)}
+					{#if e === 'physical'}
+						<button
+							class="chip chip--sm chip--element"
+							class:active={element === e}
+							style:--chip-color="var(--text)"
+							role="radio"
+							aria-checked={element === e}
+							onclick={() => (element = e)}
+						>
+							Physical
+						</button>
+					{:else}
+						<button
+							class="chip chip--icon"
+							class:active={element === e}
+							style:--chip-color="var(--el-{e}-main)"
+							role="radio"
+							aria-checked={element === e}
+							aria-label={ELEMENT_NAME[e]}
+							title={ELEMENT_NAME[e]}
+							onclick={() => (element = e)}
+						>
+							<img src={elementIcon(e)} alt="" width="16" height="16" />
+						</button>
+					{/if}
+				{/each}
 			</div>
-			<div class="dr-level">
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Your level</span>
+					<span class="readout">{charLevel}</span>
+				</div>
+				<div class="dr-level">
+					<input
+						type="range"
+						min="1"
+						max={MAX_LEVEL}
+						step="1"
+						value={charLevel}
+						oninput={onLevel}
+						onkeydown={onLevelKey}
+						class="slider"
+						aria-label="Character level"
+					/>
+					<div class="dr-level-marks" aria-hidden="true">
+						{#each LEVEL_MARKS as lv (lv)}
+							<span class="dr-level-mark" style:--at={markPos(lv)}></span>
+						{/each}
+					</div>
+				</div>
+			</div>
+			<label class="check">
+				<input type="checkbox" bind:checked={ignoresDef} />
+				<span class="check-box"></span>
+				<span>Transformative, Lunar or Stellar reaction (ignores DEF)</span>
+			</label>
+		</div>
+
+		<div class="panel dr-enemy">
+			<p class="kicker">Enemy</p>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">{ELEMENT_NAME[element]} RES</span>
+					<span class="readout">{immune ? 'Immune' : `${baseRes}%`}</span>
+				</div>
+				<input
+					type="range"
+					min={BASE_RES_MIN}
+					max={BASE_RES_MAX}
+					step="5"
+					value={baseRes}
+					oninput={(e) => {
+						immune = false;
+						baseRes = Number(e.currentTarget.value);
+					}}
+					class="slider"
+					aria-label="Enemy base resistance percent"
+				/>
+			</div>
+			<div class="chips dr-rungs" role="group" aria-label="Common RES values">
+				{#each RES_RUNGS as r (r)}
+					<button
+						class="chip chip--sm"
+						class:active={!immune && baseRes === r}
+						onclick={() => {
+							immune = false;
+							baseRes = r;
+						}}
+					>
+						{r}%
+					</button>
+				{/each}
+				<button class="chip chip--sm" class:active={immune} onclick={() => (immune = !immune)}>
+					Immune
+				</button>
+			</div>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Enemy level</span>
+					<span class="readout">{enemyLevel}</span>
+				</div>
 				<input
 					type="range"
 					min="1"
-					max={MAX_LEVEL}
+					max={ENEMY_LEVEL_MAX}
 					step="1"
-					value={charLevel}
-					oninput={onLevel}
-					onkeydown={onLevelKey}
+					bind:value={enemyLevel}
 					class="slider"
-					aria-label="Character level"
+					aria-label="Enemy level"
 				/>
-				<div class="dr-level-marks" aria-hidden="true">
-					{#each LEVEL_MARKS as lv (lv)}
-						<span class="dr-level-mark" style:--at={markPos(lv)}></span>
-					{/each}
-				</div>
 			</div>
-		</div>
-		<label class="check">
-			<input type="checkbox" bind:checked={ignoresDef} />
-			<span class="check-box"></span>
-			<span>Transformative, Lunar or Stellar reaction (ignores DEF)</span>
-		</label>
-	</div>
-
-	<div class="panel dr-enemy">
-		<p class="kicker">Enemy</p>
-		<div class="slider-control">
-			<div class="slider-header">
-				<span class="slider-label">{ELEMENT_NAME[element]} RES</span>
-				<span class="readout">{immune ? 'Immune' : `${baseRes}%`}</span>
-			</div>
-			<input
-				type="range"
-				min={BASE_RES_MIN}
-				max={BASE_RES_MAX}
-				step="5"
-				value={baseRes}
-				oninput={(e) => {
-					immune = false;
-					baseRes = Number(e.currentTarget.value);
-				}}
-				class="slider"
-				aria-label="Enemy base resistance percent"
-			/>
-		</div>
-		<div class="chips dr-rungs" role="group" aria-label="Common RES values">
-			{#each RES_RUNGS as r (r)}
-				<button
-					class="chip chip--sm"
-					class:active={!immune && baseRes === r}
-					onclick={() => {
-						immune = false;
-						baseRes = r;
-					}}
-				>
-					{r}%
-				</button>
-			{/each}
-			<button class="chip chip--sm" class:active={immune} onclick={() => (immune = !immune)}>
-				Immune
-			</button>
-		</div>
-		<div class="slider-control">
-			<div class="slider-header">
-				<span class="slider-label">Enemy level</span>
-				<span class="readout">{enemyLevel}</span>
-			</div>
-			<input
-				type="range"
-				min="1"
-				max={ENEMY_LEVEL_MAX}
-				step="1"
-				bind:value={enemyLevel}
-				class="slider"
-				aria-label="Enemy level"
-			/>
 		</div>
 	</div>
 
-	<div class="dr-side">
+	<div class="dr-side instrument-readout">
 		<div class="panel panel--paper dr-readout">
 			<p class="kicker">Readout</p>
 			<p class="dr-big">
@@ -555,41 +558,50 @@
 </div>
 
 <style>
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
-	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
+	/* ══ THE LAYOUT IS app.css's .instrument, PLUS ONE AREA ════════════════════
+	   The shred list is the one part no other instrument has. It is a CONTROL
+	   (a list of toggles), so below the wide tier it sits with the controls,
+	   before the Readout (⚓ Nate 2026-10-06: the Readout LAST); at the wide
+	   tier it takes the height left under the Readout in the right-hand
+	   column. A fourth area means restating the areas at each tier. */
 	.instrument {
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-areas: 'res' 'def' 'readout' 'hit' 'enemy' 'sources';
+		/* 🎛️ a hair wider than the shared column: the list's names, their
+		   constellation and the option chips share a line */
+		--instrument-side: minmax(19rem, 23rem);
+		grid-template-rows: minmax(min-content, 1fr) auto auto auto;
+		grid-template-areas: 'chart' 'controls' 'sources' 'readout';
 	}
 
-	.dr-res {
-		grid-area: res;
-	}
-	.dr-def {
-		grid-area: def;
-	}
 	.dr-readout {
 		grid-area: readout;
 	}
-	.dr-hit {
-		grid-area: hit;
-	}
-	.dr-enemy {
-		grid-area: enemy;
-	}
 	.dr-sources {
 		grid-area: sources;
+	}
+
+	/* RES takes the larger share of the slot's height */
+	.dr-charts {
+		gap: 1rem;
+	}
+
+	.dr-res {
+		flex: 3 1 0;
+	}
+
+	.dr-def {
+		flex: 2 1 0;
 	}
 
 	/* No frame — the charts are on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
 	/* The chart takes the track, its caption the line beneath. ⚠ An explicit
 	   minmax(0, 1fr) column: an auto one grows to the SVG's width and clips it
-	   (the Artifact Odds hazard). */
+	   (the Artifact Odds hazard). The row's min-content is the chart's floor
+	   (.instrument-graph), never the SVG it last drew. */
 	.dr-chart {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr) auto;
+		grid-template-rows: minmax(min-content, 1fr) auto;
 		min-width: 0;
 	}
 
@@ -600,14 +612,10 @@
 		color: var(--chart-dim);
 	}
 
-	/* The readout and the sources: grid items in their own right at a narrow
-	   tile, one right-hand column at a wide one. */
+	/* The readout and the sources: grid items in their own right below the
+	   wide tier, one right-hand column at it. */
 	.dr-side {
 		display: contents;
-	}
-
-	.panel {
-		margin: 0;
 	}
 
 	/* ── Readout ── */
@@ -819,45 +827,43 @@
 		text-transform: none;
 	}
 
-	/* ── Wider tiles ── */
+	/* ── A shared tile: the shred list under the controls, the Readout beside
+	   both ── */
 	@container instrument (min-width: 38rem) {
 		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-rows: minmax(min-content, 1fr) auto auto;
 			grid-template-areas:
-				'res res'
-				'def def'
-				'readout readout'
-				'hit enemy'
-				'sources sources';
+				'chart chart'
+				'controls readout'
+				'sources readout';
 		}
 	}
 
-	/* The charts and their controls on the left; the readout and the sources
-	   list on the right, the list taking whatever height is left. */
+	@container instrument (38rem <= width < 60rem) {
+		/* Beside the shred list the Readout would stretch into a column of
+		   empty paper; it keeps its height and stays in view instead, so the
+		   answer is on screen while you work down the list. */
+		.dr-readout {
+			position: sticky;
+			top: 0;
+			align-self: start;
+		}
+	}
+
+	/* ── Wide: the Readout and the shred list are the right-hand column, the
+	   list taking whatever height is left (and scrolling inside it) ── */
 	@container instrument (min-width: 60rem) {
 		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(19rem, 23rem);
-			/* the charts share what the controls leave, RES the larger */
-			grid-template-rows: minmax(0, 3fr) minmax(0, 2fr) auto;
+			grid-template-rows: minmax(min-content, 1fr) auto;
 			grid-template-areas:
-				'res res side'
-				'def def side'
-				'hit enemy side';
-			align-content: stretch;
+				'chart readout'
+				'controls readout';
 		}
 
 		.dr-side {
-			grid-area: side;
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
-			min-height: 0;
-		}
-
-		/* ⚠ Only here: a chart and the list may shrink to the tile because the
-		   tracks above are sized to it. In the one- and two-column layouts the
-		   tile SCROLLS, and these would squeeze everything into its height. */
-		.dr-chart {
 			min-height: 0;
 		}
 

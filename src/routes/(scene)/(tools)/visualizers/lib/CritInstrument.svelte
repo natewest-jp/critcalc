@@ -395,9 +395,10 @@
 	   itself is that container (.ws-tile in the workspace page), so the
 	   @container rules below resolve one level up; declaring it here as well
 	   would shadow the tile with this element's own width.
-	   A bespoke root rather than the shared .instrument: this is the one
-	   instrument with its own two-column layout, and .instrument's stacking grid
-	   would fight .cv-layout for the height. */
+	   A bespoke root rather than the shared .instrument: below the wide tier
+	   the chart and its strip share one height budget (the stage), which
+	   .instrument's grid would fight. At the wide tier it is the shared form,
+	   restated by hand. */
 	.cv-instrument {
 		height: 100%;
 		min-height: 0;
@@ -736,12 +737,6 @@
 
 	/* ── Container-responsive layout ───────────────────────────────────────── */
 
-	@container instrument (min-width: 48rem) {
-		.panel:not(.cv-heatmap-panel) {
-			padding: 1.25rem 1.35rem;
-		}
-	}
-
 	/* The card spread out under the chart: a stacked tile wide enough for
 	   two columns puts the numbers (and Pin) on the left and the one-rotation
 	   chart beside them, instead of leaving half the card empty. Beside the
@@ -790,7 +785,13 @@
 
 	/* Wide: the chart takes the tile's full height on the left, and the strip
 	   and the readout stack in a side column. The stage dissolves so its two
-	   children can sit in different columns. */
+	   children can sit in different columns.
+	   ⚓ NOT the shared instrument form (app.css .instrument), and measured, not
+	   assumed (2026-10-06): with the strip under the chart the heatmap gave up
+	   ~170px of height, and since it caps its width by its height it shrank by
+	   a fifth with bare night either side — a 2-D field wants the height. What
+	   it does share: the paper card runs to the bottom of the column, as every
+	   Readout does at this width. */
 	@container instrument (min-width: 60rem) {
 		.cv-layout {
 			display: grid;
@@ -818,12 +819,14 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
-		/* Side column: scroll internally if it outgrows the tile */
+		/* Side column: the card fills it, and scrolls inside it if it outgrows
+		   the tile */
 		.cv-panel-stack {
 			grid-area: stack;
 			margin-top: 0;
 			min-height: 0;
 			overflow-y: auto;
+			align-content: stretch;
 		}
 	}
 </style>

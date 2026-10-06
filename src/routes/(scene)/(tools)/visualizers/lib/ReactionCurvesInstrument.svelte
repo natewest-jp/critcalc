@@ -472,22 +472,22 @@
 </script>
 
 <div class="instrument">
-	<!-- The family picks what the chart draws, so it sits on the chart. -->
-	<div class="segment rx-tabs" role="radiogroup" aria-label="Reaction family">
-		{#each FAMILIES as f (f.id)}
-			<button
-				class="btn"
-				class:is-active={familyId === f.id}
-				role="radio"
-				aria-checked={familyId === f.id}
-				onclick={() => pickFamily(f.id)}
-			>
-				{f.label}
-			</button>
-		{/each}
-	</div>
+	<div class="rx-chart instrument-chart ctx-dark">
+		<!-- The family picks what the chart draws, so it sits on the chart. -->
+		<div class="segment rx-tabs" role="radiogroup" aria-label="Reaction family">
+			{#each FAMILIES as f (f.id)}
+				<button
+					class="btn"
+					class:is-active={familyId === f.id}
+					role="radio"
+					aria-checked={familyId === f.id}
+					onclick={() => pickFamily(f.id)}
+				>
+					{f.label}
+				</button>
+			{/each}
+		</div>
 
-	<div class="rx-chart ctx-dark">
 		<div
 			class="rx-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
@@ -578,7 +578,7 @@
 		</div>
 	</div>
 
-	<div class="panel panel--paper rx-readout">
+	<div class="panel panel--paper rx-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="note rx-intro">{family.note}</p>
 		<table class="rx-table">
@@ -628,7 +628,7 @@
 		{/if}
 	</div>
 
-	<div class="panel rx-build">
+	<div class="panel rx-build instrument-controls">
 		<p class="kicker">Build</p>
 		<div class="rx-sliders">
 			<div class="slider-control" class:rx-wide={!takesRb}>
@@ -695,22 +695,11 @@
 </div>
 
 <style>
-	/* One column that can't outgrow the tile. .instrument's implicit column is
-	   AUTO, which grows to its widest unbreakable child — on a 320px phone a
-	   long chip or the tab row pushed this instrument ~40px past its tile. */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
-		/* tabs · chart · Readout · Build — the chart takes what the rest leave
-		   (.instrument-graph) */
-		grid-template-rows: auto minmax(min-content, 1fr) auto auto;
-	}
-
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
-	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
+	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. The family
+	   tabs ride in the chart's slot: they choose what it draws. */
 	.rx-chart {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
+		gap: 1rem;
 	}
 
 	.rx-graph svg {
@@ -729,7 +718,7 @@
 	/* Six families outgrow a narrow tile's width — wrap rather than scroll. */
 	.rx-tabs {
 		flex-wrap: wrap;
-		justify-self: start;
+		align-self: flex-start;
 		/* start-aligned, it sizes to its content and never wraps — on a 320px
 		   phone it pushed the whole instrument 39px wide */
 		max-width: 100%;
@@ -758,7 +747,8 @@
 		color: var(--muted);
 		text-align: left;
 		padding: 0 0.5rem 0.3rem;
-		white-space: nowrap;
+		/* the Readout is a column at most widths now: a head may wrap */
+		vertical-align: bottom;
 	}
 
 	.rx-table tbody th,
@@ -787,9 +777,10 @@
 		outline-offset: -2px;
 	}
 
+	/* No nowrap: a number has no space to break at, and "doesn't apply" may
+	   take two lines in a column */
 	.rx-num {
 		text-align: right;
-		white-space: nowrap;
 	}
 
 	.rx-table thead th.rx-num {
@@ -804,12 +795,16 @@
 		margin-right: 0.45rem;
 	}
 
+	/* The family's name holds one line; its reactions go beneath it, past the
+	   dot — beside it, "Lunar & Stellar" broke over five lines in a column */
 	.rx-name {
 		font-weight: var(--fw-semibold);
-		margin-right: 0.45rem;
+		white-space: nowrap;
 	}
 
 	.rx-detail {
+		display: block;
+		padding-left: calc(9px + 0.45rem);
 		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
@@ -896,63 +891,15 @@
 		background: color-mix(in srgb, var(--text) 35%, transparent);
 	}
 
-	/* Phone-width tile: table headings may wrap (they were the last thing
-	   holding the tile ~20–30px wide at 320px), and the sliders stack */
-	/* ══ WIDE: THE READOUT IS A COLUMN (2026-10-06, ⚓ Nate) — the layout the
-	   other instruments share: the chart and the Build on the left, the
-	   Readout down the right edge at the tile's full height. */
-	@container instrument (min-width: 60rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: auto minmax(min-content, 1fr) auto;
-			grid-template-areas:
-				'tabs readout'
-				'chart readout'
-				'build readout';
-			align-content: stretch;
-		}
-
-		.rx-tabs {
-			grid-area: tabs;
-		}
-
-		.rx-chart {
-			grid-area: chart;
-		}
-
-		.rx-build {
-			grid-area: build;
-		}
-
-		.rx-readout {
-			grid-area: readout;
-			align-content: start;
-		}
-
-		/* A column's width: the family keeps its name on one line and its
-		   reactions go beneath it, and the heads and "doesn't apply" may wrap
-		   (only words wrap — a number has no space to break at) */
-		.rx-table thead th,
-		.rx-table tbody td {
-			white-space: normal;
-		}
-
-		.rx-name {
-			white-space: nowrap;
-		}
-
-		.rx-detail {
-			display: block;
-			/* under the name, past the dot */
-			padding-left: calc(9px + 0.45rem);
+	/* The sliders take a line each on a phone, and in the Build's half of a
+	   shared tile */
+	@container instrument (max-width: 30rem) {
+		.rx-sliders {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 
-	@container instrument (max-width: 30rem) {
-		.rx-table thead th {
-			white-space: normal;
-		}
-
+	@container instrument (38rem <= width < 60rem) {
 		.rx-sliders {
 			grid-template-columns: minmax(0, 1fr);
 		}

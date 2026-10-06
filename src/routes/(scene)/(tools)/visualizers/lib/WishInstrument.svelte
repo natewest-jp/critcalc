@@ -267,7 +267,7 @@
 </script>
 
 <div class="instrument">
-	<div class="wi-chart ctx-dark">
+	<div class="wi-chart instrument-chart ctx-dark">
 		<div
 			class="wi-graph instrument-graph"
 			style:--graph-min="{PLOT_MIN + CHROME_H}px"
@@ -412,7 +412,7 @@
 	<!-- ONE panel, a section per question: what you're pulling for, then each
 	     banner it touches. Sections stack in a shared tile and sit side by side
 	     in a wide one (see the container queries). -->
-	<div class="panel wi-controls">
+	<div class="panel wi-controls instrument-controls">
 		<section class="wi-section">
 			<p class="kicker">Pulling for</p>
 			<div class="chips wi-targets" role="group" aria-label="Pulling for">
@@ -527,7 +527,7 @@
 		{/each}
 	</div>
 
-	<div class="panel panel--paper wi-readout">
+	<div class="panel panel--paper wi-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="wi-big">
 			{fmtPct(goalRow.chance)}<span class="wi-big-unit"
@@ -569,14 +569,8 @@
 </div>
 
 <style>
-	/* No frame — the chart is on the night; .ctx-dark stays claimed for
-	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
-	.wi-chart {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
-	}
-
+	/* No frame — the chart (.wi-chart) is on the night; .ctx-dark stays claimed
+	   for --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
 	.wi-graph svg {
 		display: block;
 		touch-action: pan-y;
@@ -590,14 +584,6 @@
 
 	.wi-graph text.wi-word {
 		font-family: var(--font-condensed);
-	}
-
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
-	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
-		/* the chart takes what the controls and Readout leave (.instrument-graph) */
-		grid-template-rows: minmax(min-content, 1fr) auto auto;
 	}
 
 	/* Label above its chips: a row of eight needs the panel's whole width */
@@ -715,49 +701,9 @@
 		align-content: start;
 	}
 
-	/* ══ SHARED: the Readout sits BESIDE the controls, under a full-width
-	   chart, at an even split (⚓ Nate, 2026-10-04 — a column sized to its
-	   chips changed width with the target). Below this it can't: the level
-	   table needs ~15rem of its own. */
-	@container instrument (min-width: 38rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			grid-template-rows: minmax(min-content, 1fr) auto;
-			grid-template-areas:
-				'chart chart'
-				'controls readout';
-		}
-
-		.wi-chart {
-			grid-area: chart;
-		}
-
-		.wi-controls {
-			grid-area: controls;
-			align-self: start;
-		}
-
-		/* ⚠️ Named, never auto-placed: without its area the Readout landed in
-		   the chart's row in the wide layout, and its height stretched that row
-		   and pushed the panel down (⚓ Nate, 2026-10-04). */
-		.wi-readout {
-			grid-area: readout;
-			align-self: start;
-		}
-	}
-
-	/* ══ WIDE: THE READOUT IS A COLUMN — the Crit Heatmap's, Gauge Explorer's
-	   and ICD Timeline's layout — and the sections sit side by side. */
+	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
+	   side by side under the chart. */
 	@container instrument (min-width: 60rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: minmax(min-content, 1fr) auto;
-			grid-template-areas:
-				'chart readout'
-				'controls readout';
-			align-content: stretch;
-		}
-
 		/* "Pulling for" is a narrow column of stacked chips, so each banner
 		   section keeps the width for its eight level chips on one row. */
 		.wi-controls {
@@ -767,11 +713,6 @@
 		.wi-targets {
 			flex-direction: column;
 			align-items: flex-start;
-		}
-
-		.wi-readout {
-			align-self: stretch;
-			align-content: start;
 		}
 	}
 </style>

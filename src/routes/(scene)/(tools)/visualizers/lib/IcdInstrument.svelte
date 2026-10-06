@@ -297,7 +297,7 @@
 
 <div class="instrument">
 	<!-- Hit timeline: which hits actually apply their element -->
-	<div class="icd-chart ctx-dark">
+	<div class="icd-chart instrument-chart ctx-dark">
 		<div
 			class="icd-graph instrument-graph"
 			style:--graph-min="{H_MIN}px"
@@ -475,7 +475,7 @@
 		</div>
 	</div>
 
-	<div class="icd-panels panels">
+	<div class="icd-panels panels instrument-controls">
 		<div class="panel">
 			<p class="kicker">Attack string</p>
 			<div class="chips">
@@ -628,7 +628,7 @@
 		</div>
 	</div>
 
-	<div class="panel panel--paper icd-readout">
+	<div class="panel panel--paper icd-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="icd-big">
 			{apps}<span class="icd-big-unit">
@@ -684,10 +684,7 @@
 	/* The strip and its key keep together and centre in what the strip
 	   can't use (see STALK_GROW) */
 	.icd-chart {
-		display: flex;
-		flex-direction: column;
 		justify-content: center;
-		min-width: 0;
 	}
 
 	.icd-graph svg {
@@ -697,14 +694,6 @@
 
 	.icd-graph text {
 		font-family: var(--font-body);
-	}
-
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
-	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
-		/* the chart takes what the controls and Readout leave (.instrument-graph) */
-		grid-template-rows: minmax(min-content, 1fr) auto auto;
 	}
 
 	/* ── The key: legend, then the element swatches ────────────────────────── */
@@ -835,34 +824,5 @@
 		font-family: var(--font-condensed);
 		text-transform: none;
 		letter-spacing: var(--ls-mid);
-	}
-
-	/* ══ WIDE: THE READOUT IS A COLUMN — the Crit Heatmap's and the Gauge
-	   Explorer's layout: chart and controls stacked on the left, the Readout
-	   down the right edge at the tile's full height. */
-	@container instrument (min-width: 60rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: minmax(min-content, 1fr) auto;
-			grid-template-areas:
-				'chart readout'
-				'panels readout';
-			align-content: stretch;
-		}
-
-		.icd-chart {
-			grid-area: chart;
-		}
-
-		.icd-panels {
-			grid-area: panels;
-			align-self: start;
-		}
-
-		.icd-readout {
-			grid-area: readout;
-			align-self: stretch;
-			align-content: start;
-		}
 	}
 </style>
