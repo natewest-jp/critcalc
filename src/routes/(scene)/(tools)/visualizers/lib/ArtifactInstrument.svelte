@@ -1271,12 +1271,12 @@
 								>
 									{resolution.counts[at] - 1}
 									<!-- ⚓ Nate's notification mark (assets-src/tools/notification.svg),
-									     inlined as geometry, turned 4° clockwise like the game's own
+									     inlined as geometry, turned 7° clockwise like the game's own
 									     warn mark. Paths re-based to the 24-unit box: the disc is the
 									     source's circle (12,12,r12), the "!" its path shifted by the
 									     source's nested transforms. -->
 									<svg class="ao-warn" viewBox="0 0 24 24" aria-hidden="true">
-										<g transform="rotate(4 12 12)">
+										<g transform="rotate(7 12 12)">
 											<circle class="ao-warn-disc" cx="12" cy="12" r="12" />
 											<path
 												class="ao-warn-ink"
