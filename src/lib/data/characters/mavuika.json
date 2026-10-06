@@ -181,6 +181,7 @@
 						}
 					],
 					"terminatesOn": "burst",
+					"opensState": "searingRing",
 					"_curatorNotes": [
 						"`terminatesOn: 'burst'` (summon-ends-on-cast round, 2026-09-19): gcsim's `Burst()` calls `enterBike()` and `skillRingTask` returns the moment the armament is not the ring, so the Ring is gone the instant Q is pressed. Measured before: `Mavuika E Q` applied Pyro at 4 / 8 / 12s from an entity the game deleted at 0.3s."
 					]
@@ -391,18 +392,17 @@
 					"shredStat": "def",
 					"target": "enemy",
 					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill",
-						"filter": {
-							"abilityName": "Rings of Searing Radiance"
-						}
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E"]
 					},
 					"conditions": {
 						"type": "constellation",
 						"level": 2
 					},
-					"duration": 2,
-					"durationType": "refresh",
+					"duration": 18.6,
+					"durationType": "fixed",
+					"whileState": "searingRing",
 					"value": -20,
 					"mod": "searingRadiance"
 				}
@@ -412,7 +412,7 @@
 				"Removed prior placeholder damage effect (scaling 120 ATK with manual trigger) — the 120% is a burstFlatDmg buff value scaled on Sunfell, not a one-shot damage event.",
 				"Ring's -20% DEF debuff (gcsim internal/characters/mavuika/cons.go:63-82 c2Ring: DefMod -0.2, 0.5s modifier re-queued every 18f, only while isRingFollowing — below C6 that means armamentState == ring per cons.go:129-134): the shredStat:'def' primitive exists now, but our model has no Ring-form state (Tap E stays instant, no NS window) and nightsoulBlessing represents the Flamestrider/bike only — where this C2 slice does NOT apply below C6. Authoring it would draw the debuff exactly in the form where it is inactive; caveated instead. Capability sweep 2026-07-28. (The C6 slice, where the ring follows the bike, IS authored — see the C6 entry.)",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A 20% DEF-shred debuff bar — the exact bar we DO draw for her at C6 — is missing after a Tap E at C2. Tap E is modelled as an instant with no Nightsoul window at all, so the reader gets no stance bar and no debuff row where the game gives both. The asymmetry is what makes it confusing: the same shred appears on the timeline at C6 and vanishes at C2, which reads as a bug rather than a form distinction. Category: expected-but-absent.",
-				"↻ AUTHORED 2026-10-06 (DEF & RES instrument pass, ⚓ Nate) — supersedes the 2026-07-28 note above. Its reason (\"no Ring-form state\") went with the essential-characters T0 round (2026-09-15), which made the Ring a real summon on the Tap: it spawns at the Tap, lives 12.4s (18.6s from C1, which C2 implies), and `terminatesOn: 'burst'` ends it exactly where gcsim's `enterBike` stops `c2Ring`. So the shred rides the Ring's own hits: `onHit` on its ticks (`filter.abilityName`), refreshed for 2s — the tick interval, so the bar is continuous while the Ring hits. ⛔ Not `onCast` with `input: ['E']`: resShred pools ignore the input filter and the Hold (Flamestrider) would draw it too, where below C6 it does NOT apply. ⛔ Not a second effect on the Tap's own hit to cover the head: the Hold's cast opens `nightsoulBlessing` and a state the cast itself opens answers null at that cast, so no gate keeps the Hold out — and it would be two effects for one in-game source. ⚠️ Two honest approximations, ≤2s each: the bar starts at the first Ring tick (2s), where gcsim applies the 0.5s DefMod from the Tap (re-queued every 18f); and it runs up to 2s past the Ring's last tick. `mod: 'searingRadiance'` is the C6 effects' — gcsim's DefMod key is `mavuika-c2` for both, so they never stack. At C6 both draw (the C6 bars from the Burst/Hold, this from the Ring's ticks): the same debuff seen from two hosts."
+				"↻ AUTHORED 2026-10-06 (DEF & RES instrument pass, ⚓ Nate) — supersedes the 2026-07-28 note above. Its reason (\"no Ring-form state\") went with the essential-characters T0 round (2026-09-15), which made the Ring a real summon on the Tap: it lives 12.4s (18.6s from C1, which C2 implies), and `terminatesOn: 'burst'` ends it exactly where gcsim's `enterBike` stops `c2Ring`. ⚓ The Ring now OPENS `searingRing` for its own life (`Summon.opensState`, Odette's Double is the precedent), and this effect is cast at the Skill and CLIPPED to that state (`whileState`): the bar spans the Ring exactly, Tap to Burst. `input: ['E']` keeps the Hold (Flamestrider) out — the bar pools honour `input` since the same day; before that the Hold drew this, and C6's Hold-only shred drew after a Tap. `duration` 18.6 is the Ring's C1+ life (the tooltip's length; the clip makes the real end). ⛔ Superseded first cut (same day): an `onHit` on the Ring's ticks refreshed for 2s, which started 2s late and ran up to 2s long. ⚠️ Unmodelled: re-casting the Skill mid-Blessing to switch forms (gcsim `skillRecast`) — the planner has no form switch, so a Ring outlives a mid-Blessing Hold. `mod: 'searingRadiance'` is the C6 effects' — gcsim's DefMod key is `mavuika-c2` for both, so they never stack; at C6 both draw, the same debuff seen from two hosts."
 			],
 			"description": "When in the Nightsoul's Blessing State, Mavuika's Base ATK is increased by 200, and she obtains the following effects based on All-Fire Armaments' form:\n· Ring of Searing Radiance: Nearby opponents' DEF is decreased by 20%.\n· Flamestrider: Mavuika's Normal Attacks, Charged Attacks, and her Sunfell Slice from the Elemental Burst Hour of Burning Skies deal 60%, 90%, and 120% of her ATK as increased DMG respectively."
 		},

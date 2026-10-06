@@ -343,6 +343,13 @@ function collectOnCastEffects(
 			} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
 				if (src.abilityType !== castType) continue;
 			}
+			// ⚓ An `input` list names the tokens that fire it — the rule the stack
+			// and cooldown passes already kept (2026-10-06: Razor's C6 and Mavuika's
+			// C6 Hold-only effects drew after a Tap too). Applied only when the
+			// caller knows the token; `getNonAbilityEffectsForCast` does not.
+			if (castLabel !== undefined && fx.trigger.input?.length) {
+				if (!fx.trigger.input.includes(castLabel)) continue;
+			}
 			// passive / constellation with no explicit ability → fire for both casts
 			result.push(fx);
 		}

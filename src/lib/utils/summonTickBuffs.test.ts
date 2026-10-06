@@ -200,13 +200,7 @@ describe('summon ticks fire their owner onHit buffs — corpus sweep', () => {
 			const r = parseSolo(c, 6);
 			// A qualifying character whose summon never ticked in this rotation
 			// has nothing to assert; the sweep is about the ones that did.
-			// ↻ 2026-10-06: TWO ticks, because a refresh needs a second one.
-			// Mavuika's Ring ends at her Burst (`terminatesOn`), so this
-			// rotation's `E Q` kills the first Ring before it ticks and the second
-			// ticks once — her C2 shred fires correctly and has nothing to extend.
-			// Measured then: every other subject publishes 8–40 tick instants
-			// here, so the precondition cost the sweep no coverage.
-			if (tickInstants(r.windows).size < 2) return;
+			if (tickInstants(r.windows).size === 0) return;
 			expect(refreshedByTick(r, c).length).toBeGreaterThan(0);
 		});
 	}

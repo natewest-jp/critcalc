@@ -1105,6 +1105,10 @@ export type State =
 	/** Odette: her Solo Dance Double is on the field — opened by the summon
 	 *  itself (`Summon.opensState`), so it spans the Double's life exactly. */
 	| 'soloDanceDouble'
+	/** Mavuika: her Ring of Searing Radiance is following her — opened by the
+	 *  Ring summon itself (`Summon.opensState`), so it spans the Ring's life
+	 *  exactly, Tap to Burst. Her C2 DEF shred is clipped to it (2026-10-06). */
+	| 'searingRing'
 	/** Furina: her Arkhe alignment is PNEUMA. ⚓ THE ONLY TOGGLE STATE IN THE
 	 *  CORPUS, and the only one whose absence is itself a meaning — Furina
 	 *  starts in Ousia (gcsim `furina.go:61`) and her Charged Attack flips
@@ -1346,8 +1350,10 @@ export type Summon = {
 	 * and the grant never fires. A named state is closed-world like every other.
 	 *
 	 * ⚠️ Lint refuses it beside an END the opener cannot know at the spawn: a
-	 * `terminatesOn` other than `recast`, a `durationExtensions`, or a host with
-	 * `summonsFollowState`.
+	 * `terminatesOn: 'swap'`, a `durationExtensions`, or a host with
+	 * `summonsFollowState`. ↻ A cast that ends the summon (`terminatesOn:
+	 * 'skill' | 'burst'`) is allowed since 2026-10-06 — `retireSummonsOnCast`
+	 * closes the state at that cast (Mavuika's Ring, `searingRing`).
 	 */
 	opensState?: State;
 	/** ⚓ The positive statement that this summon deals and applies NOTHING of
