@@ -98,19 +98,23 @@
 
 	// ── Geometry ─────────────────────────────────────────────────────────────
 	let graphW = $state(720);
+	let graphH = $state(0);
 	const PADL = 58;
 	const PADR = 16;
 	const TOP = 16;
-	const PLOT_H = 230;
-	const plotY1 = TOP + PLOT_H;
-	const H = plotY1 + 30;
+	/** The plot's height at its least — the chart grows from here into the tile. */
+	const PLOT_MIN = 230;
+	const CHROME_H = TOP + 30; // above the plot + the axis below it
+	const plotH = $derived(Math.max(PLOT_MIN, graphH - CHROME_H));
+	const plotY1 = $derived(TOP + plotH);
+	const H = $derived(plotY1 + 30);
 	/** Axis labels stay at least this far apart (as in the ICD Timeline). */
 	const MIN_TICK_PX = 44;
 	const TICK_STEPS = [5, 10, 20, 25, 50, 100, 200, 250, 500];
 
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
 	const xOf = $derived((k: number) => PADL + (k / domain) * plotW);
-	const yOf = (p: number) => plotY1 - p * (PLOT_H - 8);
+	const yOf = $derived((p: number) => plotY1 - p * (plotH - 8));
 
 	const xTicks = $derived.by(() => {
 		const step = TICK_STEPS.find((s) => (s / domain) * plotW >= MIN_TICK_PX) ?? TICK_STEPS.at(-1)!;
@@ -264,7 +268,12 @@
 
 <div class="instrument">
 	<div class="wi-chart ctx-dark">
-		<div class="wi-graph" bind:clientWidth={graphW}>
+		<div
+			class="wi-graph instrument-graph"
+			style:--graph-min="{PLOT_MIN + CHROME_H}px"
+			bind:clientWidth={graphW}
+			bind:clientHeight={graphH}
+		>
 			<svg
 				width={graphW}
 				height={H}
@@ -563,6 +572,8 @@
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
 	.wi-chart {
+		display: flex;
+		flex-direction: column;
 		min-width: 0;
 	}
 
@@ -585,6 +596,8 @@
 	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
 	.instrument {
 		grid-template-columns: minmax(0, 1fr);
+		/* the chart takes what the controls and Readout leave (.instrument-graph) */
+		grid-template-rows: minmax(min-content, 1fr) auto auto;
 	}
 
 	/* Label above its chips: a row of eight needs the panel's whole width */
@@ -709,6 +722,7 @@
 	@container instrument (min-width: 38rem) {
 		.instrument {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-rows: minmax(min-content, 1fr) auto;
 			grid-template-areas:
 				'chart chart'
 				'controls readout';
@@ -737,7 +751,7 @@
 	@container instrument (min-width: 60rem) {
 		.instrument {
 			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: auto minmax(0, 1fr);
+			grid-template-rows: minmax(min-content, 1fr) auto;
 			grid-template-areas:
 				'chart readout'
 				'controls readout';

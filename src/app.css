@@ -3548,6 +3548,23 @@ img {
 	align-content: start;
 }
 
+/* ⚓ THE CHART TAKES THE HEIGHT THE TILE HAS LEFT (2026-10-06, the Enemy RES &
+   DEF layout carried to the other instruments). The instrument gives its
+   chart's row `minmax(min-content, 1fr)`, the box grows into it, and the
+   instrument measures the box (`bind:clientHeight`) and draws its plot to
+   fit. `--graph-min` is the chart's natural height — the floor it never goes
+   under, so a tile with no height to spare scrolls exactly as before.
+   ⚠ `contain: size` is the whole trick: without it the box's min-content is
+   the SVG it holds, which is drawn at the box's last height — the row could
+   then grow but never shrink back (the `1fr` = `minmax(auto, 1fr)` trap, one
+   layer down). With it the floor is the only thing the box asks for. */
+.instrument-graph {
+	contain: size;
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: var(--graph-min);
+}
+
 /* Instrument control panels pack into balanced columns (CSS multicolumn) —
    unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
    a whole row hostage: short panels stack above/below it with no dead space.

@@ -461,11 +461,18 @@
 	const TOP = 64;
 	const MARKER_PILL_CY = 50;
 	const MARKER_PILL_R = 9;
-	const PLOT_H = 176;
-	const plotY1 = TOP + PLOT_H;
+	/** The plot's height at its least — it grows from here into the tile; the
+	 *  marker band above it and the strips below keep their size. */
+	const PLOT_MIN = 176;
 	const AXIS_H = 24;
-	const stripY0 = plotY1 + AXIS_H;
 	const ROW_H = 18;
+	let graphH = $state(0);
+	const stripMods = $derived(MOD_ORDER.filter((mod) => sim.series.some((s) => s.key === mod)));
+	// everything in the svg that is not the plot
+	const chromeH = $derived(TOP + AXIS_H + stripMods.length * ROW_H + 6);
+	const plotH = $derived(Math.max(PLOT_MIN, graphH - chromeH));
+	const plotY1 = $derived(TOP + plotH);
+	const stripY0 = $derived(plotY1 + AXIS_H);
 
 	const liveDomain = $derived(
 		Math.max(Math.ceil(Math.max(sim.duration + 0.4, lastAppTime + 2)), 8)
@@ -515,10 +522,10 @@
 	const uTicks = $derived(Array.from({ length: Math.floor(uMax * 2) + 1 }, (_, i) => i / 2));
 
 	const xOf = $derived((t: number) => PADL + (t / domain) * (graphW - PADL - PADR));
-	const yOf = $derived((u: number) => plotY1 - (u / uMax) * (PLOT_H - 10));
+	const yOf = $derived((u: number) => plotY1 - (u / uMax) * (plotH - 10));
 
 	const stripRows = $derived(
-		MOD_ORDER.filter((mod) => sim.series.some((s) => s.key === mod)).map((mod, i) => ({
+		stripMods.map((mod, i) => ({
 			mod,
 			meta: MOD_META[mod],
 			y: stripY0 + i * ROW_H,
@@ -1030,7 +1037,12 @@
 				</div>
 			</div>
 		</div>
-		<div class="gx-graph" bind:clientWidth={graphW}>
+		<div
+			class="gx-graph instrument-graph"
+			style:--graph-min="{PLOT_MIN + chromeH}px"
+			bind:clientWidth={graphW}
+			bind:clientHeight={graphH}
+		>
 			<svg
 				bind:this={svgEl}
 				width={graphW}
@@ -1432,6 +1444,8 @@
 	   dark ground, and --frame-bg has to keep resolving somewhere for the --chart-*
 	   stops that mix against it. Unpainted reference, not a leftover. */
 	.gx-chart {
+		display: flex;
+		flex-direction: column;
 		min-width: 0;
 	}
 
@@ -1447,6 +1461,8 @@
 	   over a 320px phone (instrument passes 2026-10-01 §4). */
 	.instrument {
 		grid-template-columns: minmax(0, 1fr);
+		/* the chart takes what the panels leave (.instrument-graph) */
+		grid-template-rows: minmax(min-content, 1fr) auto;
 	}
 
 	/* ── The toolbar ─────────────────────────────────────────────────────────── */
@@ -1754,7 +1770,7 @@
 			   beside its time and pip (measured 2026-10-02; ⚓ Nate: the lines
 			   that start with a marker should not wrap). Reactions may still. */
 			grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
-			grid-template-rows: auto minmax(0, 1fr);
+			grid-template-rows: minmax(min-content, 1fr) auto;
 			grid-template-areas:
 				'chart readout'
 				'scenarios readout';

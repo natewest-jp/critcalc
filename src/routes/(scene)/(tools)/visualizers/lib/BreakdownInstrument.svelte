@@ -1596,6 +1596,39 @@
 
 	/* Phone-width tile: table headings may wrap (they were the last thing
 	   holding the tile ~20–30px wide at 320px), and the sliders stack */
+	/* ══ WIDE: THE READOUT IS A COLUMN (2026-10-06, ⚓ Nate) — the layout the
+	   other instruments share: the waterfall and the Build on the left, "What
+	   the next roll buys" down the right edge at the tile's full height. */
+	@container instrument (min-width: 60rem) {
+		.instrument {
+			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+			grid-template-rows: auto minmax(min-content, 1fr) auto;
+			grid-template-areas:
+				'tabs readout'
+				'chart readout'
+				'build readout';
+			align-content: stretch;
+		}
+
+		.bd-tabs {
+			grid-area: tabs;
+		}
+
+		.bd-chart {
+			grid-area: chart;
+			align-content: start;
+		}
+
+		.bd-build {
+			grid-area: build;
+		}
+
+		.bd-readout {
+			grid-area: readout;
+			align-content: start;
+		}
+	}
+
 	@container instrument (max-width: 30rem) {
 		.bd-table thead th,
 		.bd-table tbody th {
