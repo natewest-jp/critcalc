@@ -31,7 +31,7 @@ export const shredSources: ShredSource[] = [
 	{"owner":"linnea","ownerName":"Linnea","ownerKind":"character","ability":"Field Observation Notes","stat":"res","elements":["geo"],"amount":15,"minCon":0,"caveats":["teamFaction:moonsign"]},
 	{"owner":"lisa","ownerName":"Lisa","ownerKind":"character","ability":"Static Electricity Field","stat":"def","elements":[],"amount":15,"minCon":0,"caveats":[]},
 	{"owner":"lyney","ownerName":"Lyney","ownerKind":"character","ability":"Well-Versed, Well-Rehearsed","stat":"res","elements":["pyro"],"amount":20,"minCon":4,"caveats":[]},
-	{"owner":"mavuika","ownerName":"Mavuika","ownerKind":"character","ability":"\"Humanity's Name\" Unfettered","stat":"def","elements":[],"amount":20,"minCon":6,"mod":"searingRadiance","caveats":[]},
+	{"owner":"mavuika","ownerName":"Mavuika","ownerKind":"character","ability":"The Ashen Price","stat":"def","elements":[],"amount":20,"minCon":2,"mod":"searingRadiance","caveats":[]},
 	{"owner":"nahida","ownerName":"Nahida","ownerKind":"character","ability":"The Root of All Fullness","stat":"def","elements":[],"amount":30,"minCon":2,"caveats":[]},
 	{"owner":"navia","ownerName":"Navia","ownerKind":"character","ability":"The Oathsworn Never Capitulate","stat":"res","elements":["geo"],"amount":20,"minCon":4,"caveats":[]},
 	{"owner":"nefer","ownerName":"Nefer","ownerKind":"character","ability":"Delusion Ensnares Reason","stat":"res","elements":["dendro"],"amount":20,"minCon":4,"caveats":[]},
