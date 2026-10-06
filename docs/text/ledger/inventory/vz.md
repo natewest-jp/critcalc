@@ -82,9 +82,9 @@
 - `vz_enemy_def_res` — workspace.ts:25 name:
   > Enemy DEF & RES
   - terms: 📖 Enemy DEF & RES
-- `vz_artifact_rolls` — workspace.ts:26 name:
-  > Artifact Rolls
-  - terms: 📖 Artifact Rolls
+- `vz_artifact_odds` — workspace.ts:26 name:
+  > Artifact Odds
+  - terms: 📖 Artifact Odds
 - `vz_wish_odds` — workspace.ts:27 name:
   > Wish Odds
   - terms: 📖 Wish Odds

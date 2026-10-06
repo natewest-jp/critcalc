@@ -24,7 +24,7 @@ describe('instrumentUrl codec', () => {
 	});
 
 	it('decodes a bare id with null state', async () => {
-		expect(await decodeInstrumentParam('rolls')).toEqual({ id: 'rolls', state: null });
+		expect(await decodeInstrumentParam('artifact')).toEqual({ id: 'artifact', state: null });
 	});
 
 	it('rejects ids that are not url-plain', async () => {

@@ -91,7 +91,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/visualizers': {
 		title: 'Visualizers',
 		description:
-			'Eight instruments for the mechanics behind the numbers: crit distribution, elemental gauge and ICD, reaction curves, artifact rolls, enemy defense and more.'
+			'Eight instruments for the mechanics behind the numbers: crit distribution, elemental gauge and ICD, reaction curves, artifact odds, enemy defense and more.'
 	},
 
 	'/help': {

@@ -305,8 +305,8 @@
 									bind:this={handles.icd}
 									onHandoff={(msg) => deliverHandoff(msg, slot)}
 								/>
-							{:else if inst.id === 'rolls'}
-								<ArtifactInstrument bind:this={handles.rolls} />
+							{:else if inst.id === 'artifact'}
+								<ArtifactInstrument bind:this={handles.artifact} />
 							{:else if inst.id === 'gauge'}
 								<GaugeInstrument bind:this={handles.gauge} active={slotOf('gauge') !== -1} />
 							{:else if inst.id === 'curves'}

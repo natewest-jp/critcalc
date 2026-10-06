@@ -23,7 +23,7 @@ describe('normalizeAssignment', () => {
 
 	it('appends instruments a stored layout predates (they land on the bench)', () => {
 		// A pre-defres layout: normalize appends the new id at the end
-		const legacy = ['curves', 'icd', 'crit', 'gauge', 'rolls'];
+		const legacy = ['curves', 'icd', 'crit', 'gauge', 'artifact'];
 		const out = normalizeAssignment(legacy);
 		expect(out.slice(0, 5)).toEqual(legacy);
 		expect([...out].sort()).toEqual([...ALL].sort());
@@ -55,8 +55,8 @@ describe('normalizeAssignment', () => {
 	});
 
 	it('ignores non-string entries', () => {
-		const out = normalizeAssignment([1, null, 'rolls', {}, 'icd']);
-		expect(out.slice(0, 2)).toEqual(['rolls', 'icd']);
+		const out = normalizeAssignment([1, null, 'artifact', {}, 'icd']);
+		expect(out.slice(0, 2)).toEqual(['artifact', 'icd']);
 		expect(out).toHaveLength(ALL.length);
 	});
 

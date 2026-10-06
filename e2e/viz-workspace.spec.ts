@@ -80,8 +80,8 @@ test.describe('lineup and slots', () => {
 
 test.describe('deep links', () => {
 	test('a bare ?i= slots its instrument first and strips the param', async ({ page }) => {
-		await openTool(page, '/visualizers?i=rolls');
-		await expect(triggers(page).first()).toHaveText(/Artifact Rolls/);
+		await openTool(page, '/visualizers?i=artifact');
+		await expect(triggers(page).first()).toHaveText(/Artifact Odds/);
 		expect(page.url(), 'the param is consumed, not left in the URL').not.toContain('i=');
 	});
 

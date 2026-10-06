@@ -5,7 +5,7 @@
 // damage are printed exactly, because their formulas are complete without
 // talent multipliers (the precedent Reaction Curves set). Formula pieces reused
 // from defres.ts (DEF/RES) and reactionCurves.ts (level table + EM curves);
-// roll steps from artifactRolls.
+// roll steps from artifactOdds.
 
 import { defMultiplier, resMultiplier } from './defres';
 import {
@@ -15,7 +15,7 @@ import {
 	transformativeDamage,
 	TOP_CONTRIBUTOR_SHARE
 } from './reactionCurves';
-import { substatById, type SubstatId } from './artifactRolls';
+import { substatById, type SubstatId } from './artifactOdds';
 
 export type FamilyId = 'direct' | 'additive' | 'transformative' | 'lunar';
 
