@@ -3518,48 +3518,139 @@ img {
 	}
 }
 
-/* The root of a Visualizers instrument: fills its workspace tile and scrolls
-   internally, stacking its sections (chart, then .panels) from the top. Was
-   SEVEN byte-identical copies before the slot-count round — the same
-   promote-the-duplicate move that produced .panels below, and it lives here
-   for the same reason. The Crit instrument keeps a bespoke root: it is the one
-   instrument with its own two-column layout, so the grid here would fight it.
-   NOT a container — the TILE owns `container-name: instrument`, so an
-   instrument sizes to the slot it's in, not to itself.
+/* ══ THE INSTRUMENT LAYOUT (2026-10-06, ⚓ Nate) ═══════════════════════════════
+   Every Visualizers instrument but the Crit Heatmap is the same three slots,
+   and each one only says which of its parts goes where:
+     .instrument-chart     the chart (with whatever selects what it shows)
+     .instrument-controls  the glass apparatus — ONE .panel, or a .panels row
+     .instrument-readout   the ONE paper card
+   Three tiers, by the TILE's width (the tile owns `container-name:
+   instrument`, so an instrument sizes to its slot, not to itself):
+     narrow   one column: chart · controls · Readout — ⚓ the Readout LAST
+     ≥ 38rem  the chart across the top; controls | Readout at an even split
+              beneath (the Wish Odds form, ⚓ Nate 2026-10-04)
+     ≥ 60rem  the Readout is a column down the right edge at the tile's full
+              height; chart over controls on the left
+   At every tier the chart's row is `minmax(min-content, 1fr)`: it takes what
+   the rest leave (.instrument-graph), and the rest sit at the tile's bottom.
+   🎛️ `--instrument-side` is the wide Readout column — ONE width for every
+   instrument, the Crit Heatmap's included (see :root below).
+   ⚠ An instrument that needs a FOURTH area (Enemy RES & DEF's shred list)
+   restates the areas at each tier — they are one property, there is no
+   adding to them.
+   The Crit Heatmap keeps a bespoke root: its chart and control strip share one
+   height budget (the stage), which this grid would fight. See its own notes.
 
-   ⛔ NO `overflow-y` HERE ANY MORE (2026-08-17). It said `overflow-y: auto` for
-   as long as this rule has existed and it NEVER ENGAGED — the same silent
-   failure as .tool-stack--fill's old `height: 100%` (see ToolStack), one axis
-   over and one layer down: the tile's grid row was `auto`, so it simply grew to
-   the instrument's natural height, the instrument was never taller than its box,
-   and the whole Visualizers page overflowed into the SHELL scroller instead.
-   Measured at 2-up: `.ws` capped at 796px with 1053px tiles inside it, and 213px
-   of page scroll that carried both bands off the top of the window.
-   ⚓ THE TILE IS THE VIEWPORT NOW, not the instrument — `.ws-body` scrolls and
-   wears the roll-off mask, because a scroller that fades at its edges needs the
-   action attached to it, and there is one tile against eight instrument roots.
-   `height: 100%` STAYS: it is what lets a short instrument fill its slot, and it
-   resolves for the first time now that the row is pinned. */
+   ⛔ NO `overflow-y` HERE (2026-08-17). It said `overflow-y: auto` for as long
+   as this rule had existed and it NEVER ENGAGED — the tile's grid row was
+   `auto`, so the instrument was never taller than its box and the page
+   overflowed into the SHELL scroller instead. ⚓ THE TILE IS THE VIEWPORT:
+   `.ws-body` scrolls and wears the roll-off mask, because a scroller that fades
+   at its edges needs the action attached to it.
+   ↻ `min-height: 100%`, not `height: 100%` (2026-10-06): the box is at least
+   the slot — which is what hands the chart's row the spare height (a grid
+   sizes its `fr` rows against a definite min-height too) — and grows with
+   its content past it. A fixed height left a long instrument's content
+   overflowing its own box, so nothing inside could be `sticky` past the
+   slot's first screen (Enemy RES & DEF's Readout beside its shred list). */
+:root {
+	/* ⚓ ONE WIDTH (2026-10-06, ⚓ Nate asked why they differed). Was 22rem in
+	   five instruments, 25rem in the Gauge Explorer and 23rem in Enemy RES &
+	   DEF. Measured: everything fits 22rem — RES & DEF's shred rows even fit
+	   18rem, and its 23rem came in with a WIP commit and no reason — EXCEPT
+	   the Gauge's widest aura-log line, "Pyro (0.8U after tax, refreshed, new
+	   rate)", which wraps at 24rem and holds one line at 25rem (⚓ Nate
+	   2026-10-02: a line that starts with a marker should not wrap). So the
+	   column is the widest need, and the others gain 3rem of breathing room.
+	   🎛️ Re-measure if a log line grows. */
+	--instrument-side: minmax(18rem, 25rem);
+}
+
 .instrument {
-	height: 100%;
-	min-height: 0;
+	min-height: 100%;
 	display: grid;
 	gap: 1rem;
-	align-content: start;
+	/* ⚠ minmax(0, 1fr), never auto: an auto column grows to its widest
+	   unbreakable child, and that put two instruments 40px over a 320px phone
+	   (instrument passes 2026-10-01 §4) */
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: minmax(min-content, 1fr) auto auto;
+	grid-template-areas: 'chart' 'controls' 'readout';
 }
 
-/* Instrument control panels pack into balanced columns (CSS multicolumn) —
-   unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
-   a whole row hostage: short panels stack above/below it with no dead space.
-   One shared rule; no per-panel sizing. */
+/* ⚠ Named, never auto-placed: a Readout left to auto-placement once landed in
+   the chart's row and stretched it (the Wish Odds pass, 2026-10-04). */
+.instrument-chart {
+	grid-area: chart;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.instrument-controls {
+	grid-area: controls;
+	min-width: 0;
+}
+
+.instrument-readout {
+	grid-area: readout;
+	min-width: 0;
+}
+
+@container instrument (min-width: 38rem) {
+	.instrument {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-rows: minmax(min-content, 1fr) auto;
+		grid-template-areas:
+			'chart chart'
+			'controls readout';
+	}
+}
+
+/* ⚓ Side by side, each keeps its NATURAL height (Nate 2026-10-06): stretched
+   to one height, a short Build panel was a tall box of empty glass. At the wide
+   tier the Readout is a column again and does run to the bottom. */
+@container instrument (38rem <= width < 60rem) {
+	.instrument-controls,
+	.instrument-readout {
+		align-self: start;
+	}
+}
+
+@container instrument (min-width: 60rem) {
+	.instrument {
+		grid-template-columns: minmax(0, 1fr) var(--instrument-side);
+		grid-template-areas:
+			'chart readout'
+			'controls readout';
+	}
+}
+
+/* ⚓ THE CHART TAKES THE HEIGHT THE TILE HAS LEFT (2026-10-06, the Enemy RES &
+   DEF layout carried to the other instruments). The box grows into the chart
+   row, and the instrument measures it (`bind:clientHeight`) and draws its plot
+   to fit. `--graph-min` is the chart's natural height — the floor it never
+   goes under, so a tile with no height to spare scrolls exactly as before.
+   ⚠ `contain: size` is the whole trick: without it the box's min-content is
+   the SVG it holds, which is drawn at the box's last height — the row could
+   then grow but never shrink back (the `1fr` = `minmax(auto, 1fr)` trap, one
+   layer down). With it the floor is the only thing the box asks for. */
+.instrument-graph {
+	contain: size;
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: var(--graph-min);
+}
+
+/* Control panels in a row of EVEN columns, as many as fit (one in the half-
+   width controls slot, side by side under a wide chart). Equal heights in a
+   row — `.panel` packs its own content to the top. ↻ 2026-10-06: was CSS
+   multicolumn at a 22rem column, which left the wide ICD Timeline two panels
+   and an empty third column. */
 .panels {
-	columns: 22rem;
-	column-gap: 1rem;
-}
-
-.panels > .panel {
-	break-inside: avoid;
-	margin-bottom: 1rem;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(17.5rem, 100%), 1fr));
+	gap: 1rem;
 }
 
 /* ↻ 2026-08-12 (motion round): the nine-selector `transition: none` list that

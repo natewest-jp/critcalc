@@ -432,12 +432,16 @@
 
 	// ── Geometry ───────────────────────────────────────────────────────────
 	let graphW = $state(720);
+	let graphH = $state(0);
 	const PADL = 44;
 	const PADR = 16;
 	const TOP = 26;
-	const PLOT_H = 200;
-	const plotY1 = TOP + PLOT_H;
-	const H = plotY1 + 30;
+	/** The plot's height at its least — the chart grows from here into the tile. */
+	const PLOT_MIN = 200;
+	const CHROME_H = TOP + 30; // above the plot + the axis below it
+	const plotH = $derived(Math.max(PLOT_MIN, graphH - CHROME_H));
+	const plotY1 = $derived(TOP + plotH);
+	const H = $derived(plotY1 + 30);
 	/** Axis labels stay at least this far apart (as in the ICD Timeline). */
 	const MIN_TICK_PX = 44;
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
@@ -451,7 +455,7 @@
 
 	// The farming chart: chance of the piece by days of resin, two curves
 	const farmXOf = $derived((d: number) => PADL + (d / farmDomain) * plotW);
-	const yOf = (p: number) => plotY1 - p * (PLOT_H - 8);
+	const yOf = $derived((p: number) => plotY1 - p * (plotH - 8));
 	const farmTicks = $derived.by(() => {
 		const step = niceStep(farmDomain, Math.floor(plotW / MIN_TICK_PX / 1.6));
 		return Array.from({ length: Math.floor(farmDomain / step + 1e-9) + 1 }, (_, i) => i * step);
@@ -535,7 +539,7 @@
 	);
 	const histXOf = $derived((x: number) => PADL + ((x - histLo) / (histHi - histLo)) * plotW);
 	const barW = $derived(Math.max(1, (binW / (histHi - histLo)) * plotW - 1));
-	const barH = (p: number) => PLOT_H * (p / histMax);
+	const barH = $derived((p: number) => plotH * (p / histMax));
 	const histTicks = $derived.by(() => {
 		const step = Math.max(binW, niceStep(histHi - histLo, Math.floor(plotW / MIN_TICK_PX / 1.4)));
 		const first = Math.ceil(histLo / step - 1e-9) * step;
@@ -712,7 +716,7 @@
 {/snippet}
 
 <div class="instrument">
-	<div class="ao-chart ctx-dark">
+	<div class="ao-chart instrument-chart ctx-dark">
 		<div class="chips ao-views" role="group" aria-label="View">
 			{#each VIEWS as v (v.id)}
 				<button
@@ -727,7 +731,12 @@
 		</div>
 
 		{#if view === 'drop'}
-			<div class="ao-graph" bind:clientWidth={graphW}>
+			<div
+				class="ao-graph instrument-graph"
+				style:--graph-min="{PLOT_MIN + CHROME_H}px"
+				bind:clientWidth={graphW}
+				bind:clientHeight={graphH}
+			>
 				<svg
 					width={graphW}
 					height={H}
@@ -874,7 +883,12 @@
 		{:else if view === 'piece' && wantedOnPiece === 0}
 			<p class="ao-empty">None of your chosen stats are on this piece.</p>
 		{:else}
-			<div class="ao-graph" bind:clientWidth={graphW}>
+			<div
+				class="ao-graph instrument-graph"
+				style:--graph-min="{PLOT_MIN + CHROME_H}px"
+				bind:clientWidth={graphW}
+				bind:clientHeight={graphH}
+			>
 				<svg
 					width={graphW}
 					height={H}
@@ -893,7 +907,7 @@
 							x={histXOf(binOf(stats.p25))}
 							y={TOP}
 							width={Math.max(2, histXOf(binOf(stats.p75) + binW) - histXOf(binOf(stats.p25)))}
-							height={PLOT_H}
+							height={plotH}
 							fill="var(--text)"
 							fill-opacity="0.05"
 						/>
@@ -1027,7 +1041,7 @@
 	</div>
 
 	<!-- ONE panel, a section per question (the Wish Odds layout) -->
-	<div class="panel ao-controls">
+	<div class="panel ao-controls instrument-controls">
 		{#if view !== 'piece'}
 			<section class="ao-section">
 				<p class="kicker">Piece</p>
@@ -1424,7 +1438,7 @@
 		{/if}
 	</div>
 
-	<div class="panel panel--paper ao-readout">
+	<div class="panel panel--paper ao-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		{#if view === 'drop'}
 			<p class="ao-big">
@@ -1532,19 +1546,12 @@
 	/* No frame — the chart is on the night; .ctx-dark stays claimed for
 	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
 	.ao-chart {
-		display: grid;
 		gap: 0.5rem;
-		min-width: 0;
-		align-content: start;
 	}
 
-	/* min-width 0 + a capped svg: otherwise the svg's own width props the box
-	   open, the measured width never shrinks, and a narrower tile clips the
-	   chart's right end */
-	.ao-graph {
-		min-width: 0;
-	}
-
+	/* A capped svg (and .instrument-graph's min-width 0): otherwise the svg's
+	   own width props the box open, the measured width never shrinks, and a
+	   narrower tile clips the chart's right end */
 	.ao-graph svg {
 		display: block;
 		max-width: 100%;
@@ -1565,6 +1572,7 @@
 	   a piece stops resolving (the next value you dial brings the chart back) */
 	.ao-empty {
 		display: grid;
+		flex: 1 1 auto;
 		align-content: center;
 		min-height: calc(256px + 4.6rem);
 		margin: 0;
@@ -1618,12 +1626,6 @@
 
 	.ao-legend-key i.is-ghost {
 		background: var(--chart-grid);
-	}
-
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
-	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
 	}
 
 	/* ── Controls ───────────────────────────────────────────────────────────── */
@@ -2083,50 +2085,11 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* ══ SHARED: the Readout sits BESIDE the controls, under a full-width
-	   chart, at an even split (the Wish Odds layout). */
-	@container instrument (min-width: 38rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			grid-template-areas:
-				'chart chart'
-				'controls readout';
-		}
-
-		.ao-chart {
-			grid-area: chart;
-		}
-
-		.ao-controls {
-			grid-area: controls;
-			align-self: start;
-		}
-
-		/* ⚠️ Named, never auto-placed (the Wish Odds pass's trap) */
-		.ao-readout {
-			grid-area: readout;
-			align-self: start;
-		}
-	}
-
-	/* ══ WIDE: THE READOUT IS A COLUMN, and the sections sit side by side */
+	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
+	   side by side under the chart. */
 	@container instrument (min-width: 60rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: auto minmax(0, 1fr);
-			grid-template-areas:
-				'chart readout'
-				'controls readout';
-			align-content: stretch;
-		}
-
 		.ao-controls {
 			grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
-		}
-
-		.ao-readout {
-			align-self: stretch;
-			align-content: start;
 		}
 	}
 </style>

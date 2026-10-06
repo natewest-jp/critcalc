@@ -2357,8 +2357,10 @@
 						instrument mounts once and hides with <code>display: none</code> when unslotted, so its
 						state survives swaps; the lineup size is viewport capacity capped by the reader's
 						preference. The <em>tile</em> owns <code>container-name: instrument</code> — instruments
-						size to the slot they're in, never to the viewport — and their control panels flow in
-						<code>.panels</code> multicolumn. ⚓ 2026-08-13:
+						size to the slot they're in, never to the viewport — and every instrument but the Crit
+						Heatmap is the same three slots (chart, controls, Readout) laid out by
+						<code>.instrument</code>: the Readout last in one column, beside the controls under a
+						full-width chart from 38rem, a full-height column from 60rem. ⚓ 2026-08-13:
 						<strong>band B is cut by the tile gap</strong>
 						here and paints nothing (band A still spans the screen), so each instrument's picker and actions
 						are their own run of glass plates; and the gap

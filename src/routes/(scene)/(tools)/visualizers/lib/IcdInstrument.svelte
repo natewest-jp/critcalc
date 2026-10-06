@@ -147,9 +147,29 @@
 
 	// ── Graph geometry — pixel-true (width measured, not viewBox-scaled) ──────
 	let graphW = $state(720);
-	const H = 146;
+	let graphH = $state(0);
 	const M = { left: 16, right: 16, top: 22 };
-	const ROW = { hitTop: 46, hitBottom: 96, counterY: 114, bandTop: 124, bandH: 10 };
+	/**
+	 * ⚓ THE STALKS GROW, AND ONLY A LITTLE (2026-10-06, ⚓ Nate). Given a taller
+	 * box the hits lengthen — everything above and below them keeps its size —
+	 * up to STALK_GROW × their natural length; past that the strip and its key
+	 * centre in the space and the rest is bare scene. A one-row strip has no
+	 * vertical scale to fill, so a taller one only says the same thing louder.
+	 */
+	const STALK = 50;
+	const STALK_GROW = 2; // 🎛️
+	const H_MIN = 146;
+	const stalk = $derived(Math.min(STALK * STALK_GROW, STALK + Math.max(0, graphH - H_MIN)));
+	const H = $derived(H_MIN + stalk - STALK);
+	const ROW = $derived({
+		hitTop: 46,
+		hitBottom: 46 + stalk,
+		counterY: 64 + stalk,
+		bandTop: 74 + stalk,
+		bandH: 10
+	});
+	/** A blocked hit's tick starts this far down its stalk — short at any length. */
+	const BLOCKED_DROP = 18 / STALK;
 
 	const lastHit = $derived(times.length ? times[times.length - 1] : 0);
 	const gap = $derived(
@@ -277,8 +297,14 @@
 
 <div class="instrument">
 	<!-- Hit timeline: which hits actually apply their element -->
-	<div class="icd-chart ctx-dark">
-		<div class="icd-graph" bind:clientWidth={graphW}>
+	<div class="icd-chart instrument-chart ctx-dark">
+		<div
+			class="icd-graph instrument-graph"
+			style:--graph-min="{H_MIN}px"
+			style:max-height="{H_MIN + STALK * (STALK_GROW - 1)}px"
+			bind:clientWidth={graphW}
+			bind:clientHeight={graphH}
+		>
 			<svg
 				width={graphW}
 				height={H}
@@ -375,7 +401,7 @@
 					{:else}
 						<line
 							x1={x}
-							y1={ROW.hitTop + 18}
+							y1={ROW.hitTop + stalk * BLOCKED_DROP}
 							x2={x}
 							y2={ROW.hitBottom}
 							stroke={el}
@@ -449,7 +475,7 @@
 		</div>
 	</div>
 
-	<div class="icd-panels panels">
+	<div class="icd-panels panels instrument-controls">
 		<div class="panel">
 			<p class="kicker">Attack string</p>
 			<div class="chips">
@@ -602,7 +628,7 @@
 		</div>
 	</div>
 
-	<div class="panel panel--paper icd-readout">
+	<div class="panel panel--paper icd-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="icd-big">
 			{apps}<span class="icd-big-unit">
@@ -655,8 +681,10 @@
 	   app.css). The ground, the radius and the inset padding all left together;
 	   .ctx-dark stays CLAIMED, because at TOOL_DIM the crest is a dark ground and
 	   --chart-* still needs --frame-bg as its notional reference. */
+	/* The strip and its key keep together and centre in what the strip
+	   can't use (see STALK_GROW) */
 	.icd-chart {
-		min-width: 0;
+		justify-content: center;
 	}
 
 	.icd-graph svg {
@@ -666,12 +694,6 @@
 
 	.icd-graph text {
 		font-family: var(--font-body);
-	}
-
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
-	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
 	}
 
 	/* ── The key: legend, then the element swatches ────────────────────────── */
@@ -802,34 +824,5 @@
 		font-family: var(--font-condensed);
 		text-transform: none;
 		letter-spacing: var(--ls-mid);
-	}
-
-	/* ══ WIDE: THE READOUT IS A COLUMN — the Crit Heatmap's and the Gauge
-	   Explorer's layout: chart and controls stacked on the left, the Readout
-	   down the right edge at the tile's full height. */
-	@container instrument (min-width: 60rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: auto minmax(0, 1fr);
-			grid-template-areas:
-				'chart readout'
-				'panels readout';
-			align-content: stretch;
-		}
-
-		.icd-chart {
-			grid-area: chart;
-		}
-
-		.icd-panels {
-			grid-area: panels;
-			align-self: start;
-		}
-
-		.icd-readout {
-			grid-area: readout;
-			align-self: stretch;
-			align-content: start;
-		}
 	}
 </style>

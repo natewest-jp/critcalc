@@ -98,19 +98,23 @@
 
 	// ── Geometry ─────────────────────────────────────────────────────────────
 	let graphW = $state(720);
+	let graphH = $state(0);
 	const PADL = 58;
 	const PADR = 16;
 	const TOP = 16;
-	const PLOT_H = 230;
-	const plotY1 = TOP + PLOT_H;
-	const H = plotY1 + 30;
+	/** The plot's height at its least — the chart grows from here into the tile. */
+	const PLOT_MIN = 230;
+	const CHROME_H = TOP + 30; // above the plot + the axis below it
+	const plotH = $derived(Math.max(PLOT_MIN, graphH - CHROME_H));
+	const plotY1 = $derived(TOP + plotH);
+	const H = $derived(plotY1 + 30);
 	/** Axis labels stay at least this far apart (as in the ICD Timeline). */
 	const MIN_TICK_PX = 44;
 	const TICK_STEPS = [5, 10, 20, 25, 50, 100, 200, 250, 500];
 
 	const plotW = $derived(Math.max(1, graphW - PADL - PADR));
 	const xOf = $derived((k: number) => PADL + (k / domain) * plotW);
-	const yOf = (p: number) => plotY1 - p * (PLOT_H - 8);
+	const yOf = $derived((p: number) => plotY1 - p * (plotH - 8));
 
 	const xTicks = $derived.by(() => {
 		const step = TICK_STEPS.find((s) => (s / domain) * plotW >= MIN_TICK_PX) ?? TICK_STEPS.at(-1)!;
@@ -263,8 +267,13 @@
 </script>
 
 <div class="instrument">
-	<div class="wi-chart ctx-dark">
-		<div class="wi-graph" bind:clientWidth={graphW}>
+	<div class="wi-chart instrument-chart ctx-dark">
+		<div
+			class="wi-graph instrument-graph"
+			style:--graph-min="{PLOT_MIN + CHROME_H}px"
+			bind:clientWidth={graphW}
+			bind:clientHeight={graphH}
+		>
 			<svg
 				width={graphW}
 				height={H}
@@ -403,7 +412,7 @@
 	<!-- ONE panel, a section per question: what you're pulling for, then each
 	     banner it touches. Sections stack in a shared tile and sit side by side
 	     in a wide one (see the container queries). -->
-	<div class="panel wi-controls">
+	<div class="panel wi-controls instrument-controls">
 		<section class="wi-section">
 			<p class="kicker">Pulling for</p>
 			<div class="chips wi-targets" role="group" aria-label="Pulling for">
@@ -518,7 +527,7 @@
 		{/each}
 	</div>
 
-	<div class="panel panel--paper wi-readout">
+	<div class="panel panel--paper wi-readout instrument-readout">
 		<p class="kicker">Readout</p>
 		<p class="wi-big">
 			{fmtPct(goalRow.chance)}<span class="wi-big-unit"
@@ -560,12 +569,8 @@
 </div>
 
 <style>
-	/* No frame — the chart is on the night; .ctx-dark stays claimed for
-	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
-	.wi-chart {
-		min-width: 0;
-	}
-
+	/* No frame — the chart (.wi-chart) is on the night; .ctx-dark stays claimed
+	   for --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
 	.wi-graph svg {
 		display: block;
 		touch-action: pan-y;
@@ -579,12 +584,6 @@
 
 	.wi-graph text.wi-word {
 		font-family: var(--font-condensed);
-	}
-
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one (instrument passes
-	   2026-10-01 §4): an auto column grows to its widest unbreakable child. */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
 	}
 
 	/* Label above its chips: a row of eight needs the panel's whole width */
@@ -702,48 +701,9 @@
 		align-content: start;
 	}
 
-	/* ══ SHARED: the Readout sits BESIDE the controls, under a full-width
-	   chart, at an even split (⚓ Nate, 2026-10-04 — a column sized to its
-	   chips changed width with the target). Below this it can't: the level
-	   table needs ~15rem of its own. */
-	@container instrument (min-width: 38rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			grid-template-areas:
-				'chart chart'
-				'controls readout';
-		}
-
-		.wi-chart {
-			grid-area: chart;
-		}
-
-		.wi-controls {
-			grid-area: controls;
-			align-self: start;
-		}
-
-		/* ⚠️ Named, never auto-placed: without its area the Readout landed in
-		   the chart's row in the wide layout, and its height stretched that row
-		   and pushed the panel down (⚓ Nate, 2026-10-04). */
-		.wi-readout {
-			grid-area: readout;
-			align-self: start;
-		}
-	}
-
-	/* ══ WIDE: THE READOUT IS A COLUMN — the Crit Heatmap's, Gauge Explorer's
-	   and ICD Timeline's layout — and the sections sit side by side. */
+	/* ══ WIDE (the layout itself is app.css's .instrument): the sections sit
+	   side by side under the chart. */
 	@container instrument (min-width: 60rem) {
-		.instrument {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			grid-template-rows: auto minmax(0, 1fr);
-			grid-template-areas:
-				'chart readout'
-				'controls readout';
-			align-content: stretch;
-		}
-
 		/* "Pulling for" is a narrow column of stacked chips, so each banner
 		   section keeps the width for its eight level chips on one row. */
 		.wi-controls {
@@ -753,11 +713,6 @@
 		.wi-targets {
 			flex-direction: column;
 			align-items: flex-start;
-		}
-
-		.wi-readout {
-			align-self: stretch;
-			align-content: start;
 		}
 	}
 </style>

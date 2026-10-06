@@ -507,8 +507,9 @@
 		   each carried their own (inert) `overflow-y: auto`; the scroll lives here
 		   instead, because the roll-off mask needs `use:scrollFade` attached to
 		   the scroller and there is one tile against eight roots. The instrument
-		   keeps `height: 100%` — that is what fills a slot a short instrument does
-		   not need all of, and it resolves for the first time now.
+		   is `min-height: 100%` (↻ 2026-10-06, was `height`) — that is what fills a
+		   slot a short instrument does not need all of, and lets a long one grow
+		   past it (app.css .instrument).
 		   ⚠ In the media query with the height, deliberately: below 1024px `.ws`
 		   has no definite height, so this would be a scroller that can never
 		   scroll — and the narrow layout page-scrolling is correct. */

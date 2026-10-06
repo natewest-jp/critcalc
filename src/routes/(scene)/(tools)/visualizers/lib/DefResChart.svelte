@@ -34,8 +34,7 @@
 		snap = (x: number) => x,
 		dim = false,
 		message,
-		plotH: ownPlotH = 150,
-		minPlotH = 90
+		plotH: ownPlotH = 150
 	}: {
 		label: string;
 		xMin: number;
@@ -59,11 +58,9 @@
 		/** Draw the chart faded — it does not apply to this hit. */
 		dim?: boolean;
 		message?: string;
-		/** The plot's height when the chart sizes itself; a chart whose box is
-		 *  given a height (a wide tile's grid track) fills it instead. */
+		/** The plot's natural height — the least it draws at; a box given more
+		 *  height (the instrument's chart row) is filled instead. */
 		plotH?: number;
-		/** The least plot height a filled chart shrinks to. */
-		minPlotH?: number;
 	} = $props();
 
 	let graphW = $state(720);
@@ -72,9 +69,9 @@
 	const PADR = 16;
 	const TOP = 18;
 	const CHROME_H = TOP + 30; // above the plot + the axis below it
-	// A box with no height of its own measures as the SVG it holds, which this
-	// returns unchanged — so measuring is safe at every tile width.
-	const plotH = $derived(boxH > 0 ? Math.max(minPlotH, boxH - CHROME_H) : ownPlotH);
+	// The box is an .instrument-graph: `contain: size`, floored at the natural
+	// height, so what it measures never depends on the SVG it holds.
+	const plotH = $derived(Math.max(ownPlotH, boxH - CHROME_H));
 	const plotY1 = $derived(TOP + plotH);
 	const H = $derived(plotY1 + 30);
 
@@ -126,7 +123,13 @@
 	const readRight = $derived(readX > graphW - 150);
 </script>
 
-<div class="dc-graph" class:is-dim={dim} bind:clientWidth={graphW} bind:clientHeight={boxH}>
+<div
+	class="dc-graph instrument-graph"
+	class:is-dim={dim}
+	style:--graph-min="{ownPlotH + CHROME_H}px"
+	bind:clientWidth={graphW}
+	bind:clientHeight={boxH}
+>
 	<svg
 		width={graphW}
 		height={H}
@@ -279,13 +282,11 @@
 </div>
 
 <style>
-	/* ⚠ An SVG's own width props its box open — without these a narrower tile
-	   clips the chart's right end (Artifact Odds pass, 2026-10-06). */
+	/* ⚠ An SVG's own width props its box open — .instrument-graph's min-width 0
+	   and the svg's max-width keep a narrower tile from clipping the chart's
+	   right end (Artifact Odds pass, 2026-10-06). */
 	.dc-graph {
 		position: relative;
-		height: 100%;
-		min-width: 0;
-		min-height: 0;
 		overflow: hidden;
 		/* the stretch your shred buys: the accent, softened */
 		--dc-span: color-mix(in srgb, var(--accent) 32%, transparent);

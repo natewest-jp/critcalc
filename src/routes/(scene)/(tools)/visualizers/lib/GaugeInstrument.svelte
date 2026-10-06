@@ -461,11 +461,18 @@
 	const TOP = 64;
 	const MARKER_PILL_CY = 50;
 	const MARKER_PILL_R = 9;
-	const PLOT_H = 176;
-	const plotY1 = TOP + PLOT_H;
+	/** The plot's height at its least — it grows from here into the tile; the
+	 *  marker band above it and the strips below keep their size. */
+	const PLOT_MIN = 176;
 	const AXIS_H = 24;
-	const stripY0 = plotY1 + AXIS_H;
 	const ROW_H = 18;
+	let graphH = $state(0);
+	const stripMods = $derived(MOD_ORDER.filter((mod) => sim.series.some((s) => s.key === mod)));
+	// everything in the svg that is not the plot
+	const chromeH = $derived(TOP + AXIS_H + stripMods.length * ROW_H + 6);
+	const plotH = $derived(Math.max(PLOT_MIN, graphH - chromeH));
+	const plotY1 = $derived(TOP + plotH);
+	const stripY0 = $derived(plotY1 + AXIS_H);
 
 	const liveDomain = $derived(
 		Math.max(Math.ceil(Math.max(sim.duration + 0.4, lastAppTime + 2)), 8)
@@ -515,10 +522,10 @@
 	const uTicks = $derived(Array.from({ length: Math.floor(uMax * 2) + 1 }, (_, i) => i / 2));
 
 	const xOf = $derived((t: number) => PADL + (t / domain) * (graphW - PADL - PADR));
-	const yOf = $derived((u: number) => plotY1 - (u / uMax) * (PLOT_H - 10));
+	const yOf = $derived((u: number) => plotY1 - (u / uMax) * (plotH - 10));
 
 	const stripRows = $derived(
-		MOD_ORDER.filter((mod) => sim.series.some((s) => s.key === mod)).map((mod, i) => ({
+		stripMods.map((mod, i) => ({
 			mod,
 			meta: MOD_META[mod],
 			y: stripY0 + i * ROW_H,
@@ -898,7 +905,7 @@
 </script>
 
 <div class="instrument">
-	<div class="gx-chart ctx-dark">
+	<div class="gx-chart instrument-chart ctx-dark">
 		<!-- ══ THE TOOLBAR (2026-10-02, ⚓ Nate) ════════════════════════════════════
 		     The transport, then the SELECTED application's what — element, size,
 		     the fine time step, remove — and ＋. It replaced the Applications
@@ -1030,7 +1037,12 @@
 				</div>
 			</div>
 		</div>
-		<div class="gx-graph" bind:clientWidth={graphW}>
+		<div
+			class="gx-graph instrument-graph"
+			style:--graph-min="{PLOT_MIN + chromeH}px"
+			bind:clientWidth={graphW}
+			bind:clientHeight={graphH}
+		>
 			<svg
 				bind:this={svgEl}
 				width={graphW}
@@ -1351,75 +1363,73 @@
 		</div>
 	</div>
 
-	<div class="gx-panels panels">
-		<div class="panel gx-scenarios">
-			<p class="kicker">Example scenarios</p>
-			<div class="chips gx-chips-dense">
-				{#each PRESETS as p (p.id)}
-					<button
-						class="chip chip--control gx-preset-chip"
-						class:active={preset === p.id}
-						onclick={() => loadPreset(p)}
-					>
-						<span class="gx-chip-els" aria-hidden="true">
-							{#each presetElements(p) as e (e)}
-								<img src={elementIcon(e)} alt="" width="14" height="14" />
-							{/each}
-						</span>
-						{p.label}
-					</button>
-				{/each}
-			</div>
-			<p class="note">
-				<Emphasis text={presetNote ?? 'Custom sequence — edit applications or pick a scenario.'} />
-			</p>
+	<div class="panel gx-scenarios instrument-controls">
+		<p class="kicker">Example scenarios</p>
+		<div class="chips gx-chips-dense">
+			{#each PRESETS as p (p.id)}
+				<button
+					class="chip chip--control gx-preset-chip"
+					class:active={preset === p.id}
+					onclick={() => loadPreset(p)}
+				>
+					<span class="gx-chip-els" aria-hidden="true">
+						{#each presetElements(p) as e (e)}
+							<img src={elementIcon(e)} alt="" width="14" height="14" />
+						{/each}
+					</span>
+					{p.label}
+				</button>
+			{/each}
 		</div>
+		<p class="note">
+			<Emphasis text={presetNote ?? 'Custom sequence — edit applications or pick a scenario.'} />
+		</p>
+	</div>
 
-		<!-- ⚓ ONE PAPER CARD PER INSTRUMENT (2026-08-13). This was two panels —
-		     Enemy Status and Event Log — and the Gauge is the case that showed why
-		     the rule has to be a rule: they say ONE thing at two speeds (what is
-		     true at the playhead, and how it got there), and as two sheets of the
-		     brightest material on the page they competed to be the answer. One
-		     card, the state on top, the transcript under a quiet label. -->
-		<div class="panel panel--paper gx-readout">
-			<p class="kicker">Readout</p>
-			{#if hoverGauges}
-				<p class="note">at {fmtT(readT!)}</p>
-				{#if hoverGauges.length === 0}
-					<p class="gx-meta">No aura — the next element applies fresh.</p>
-				{:else}
-					{#each hoverGauges as h (h.mod)}
-						<p class="gx-meta gx-status-row">
-							<img src={elementIcon(h.meta.icon)} alt="" width="14" height="14" />
-							<span>{h.meta.label}</span>
-							<span class="gx-strong">{fmtU(h.u)}</span>
-						</p>
-					{/each}
-				{/if}
+	<!-- ⚓ ONE PAPER CARD PER INSTRUMENT (2026-08-13). This was two panels —
+	     Enemy Status and Event Log — and the Gauge is the case that showed why
+	     the rule has to be a rule: they say ONE thing at two speeds (what is
+	     true at the playhead, and how it got there), and as two sheets of the
+	     brightest material on the page they competed to be the answer. One
+	     card, the state on top, the transcript under a quiet label. -->
+	<div class="panel panel--paper gx-readout instrument-readout">
+		<p class="kicker">Readout</p>
+		{#if hoverGauges}
+			<p class="note">at {fmtT(readT!)}</p>
+			{#if hoverGauges.length === 0}
+				<p class="gx-meta">No aura — the next element applies fresh.</p>
 			{:else}
-				<p class="note">
-					Point at the chart or press play to read the enemy’s aura state at a moment in time.
-				</p>
-				{#each stripRows as row (row.mod)}
+				{#each hoverGauges as h (h.mod)}
 					<p class="gx-meta gx-status-row">
-						<img src={elementIcon(row.meta.icon)} alt="" width="14" height="14" />
-						<span>{row.meta.label}</span>
-						<span class="gx-strong">
-							{row.intervals.map((s) => `${s.t0.toFixed(1)}–${s.t1.toFixed(1)}s`).join(', ')}
-						</span>
+						<img src={elementIcon(h.meta.icon)} alt="" width="14" height="14" />
+						<span>{h.meta.label}</span>
+						<span class="gx-strong">{fmtU(h.u)}</span>
 					</p>
 				{/each}
 			{/if}
+		{:else}
+			<p class="note">
+				Point at the chart or press play to read the enemy’s aura state at a moment in time.
+			</p>
+			{#each stripRows as row (row.mod)}
+				<p class="gx-meta gx-status-row">
+					<img src={elementIcon(row.meta.icon)} alt="" width="14" height="14" />
+					<span>{row.meta.label}</span>
+					<span class="gx-strong">
+						{row.intervals.map((s) => `${s.t0.toFixed(1)}–${s.t1.toFixed(1)}s`).join(', ')}
+					</span>
+				</p>
+			{/each}
+		{/if}
 
-			<!-- ⚓ THE ROW GRAMMAR IS SHARED WITH THE PLANNER'S SIDE COLUMN
-			     (2026-08-17) — see $lib/components/EventLog. Only the row BUILDING
-			     is local, because only this tool can see `crystallizeBlocked`, a
-			     reverse multiplier or a per-reaction consumption; the IR has
-			     collapsed all three by the time the planner reads it. -->
-			<p class="gx-sub">Aura log</p>
-			<div class="gx-log">
-				<EventLog rows={logRowsOut} empty="Nothing lands on the target." />
-			</div>
+		<!-- ⚓ THE ROW GRAMMAR IS SHARED WITH THE PLANNER'S SIDE COLUMN
+		     (2026-08-17) — see $lib/components/EventLog. Only the row BUILDING
+		     is local, because only this tool can see `crystallizeBlocked`, a
+		     reverse multiplier or a per-reaction consumption; the IR has
+		     collapsed all three by the time the planner reads it. -->
+		<p class="gx-sub">Aura log</p>
+		<div class="gx-log">
+			<EventLog rows={logRowsOut} empty="Nothing lands on the target." />
 		</div>
 	</div>
 </div>
@@ -1430,11 +1440,8 @@
 	   left together; what remains is a layout box.
 	   ⚠ .ctx-dark stays CLAIMED and is doing real work: at TOOL_DIM the crest IS a
 	   dark ground, and --frame-bg has to keep resolving somewhere for the --chart-*
-	   stops that mix against it. Unpainted reference, not a leftover. */
-	.gx-chart {
-		min-width: 0;
-	}
-
+	   stops that mix against it. Unpainted reference, not a leftover. (.gx-chart
+	   is otherwise only the layout's chart slot — see app.css .instrument.) */
 	.gx-graph svg {
 		display: block;
 		touch-action: none;
@@ -1442,12 +1449,9 @@
 		-webkit-user-select: none;
 	}
 
-	/* ⚓ Its own grid column, not `.instrument`'s AUTO one: an auto column grows
-	   to its widest unbreakable child, and the hazard put two instruments 40px
-	   over a 320px phone (instrument passes 2026-10-01 §4). */
-	.instrument {
-		grid-template-columns: minmax(0, 1fr);
-	}
+	/* The layout is app.css's .instrument — whose side column is 25rem because
+	   of THIS log: its widest application line holds one line there (see
+	   --instrument-side). Reactions may still wrap. */
 
 	/* ── The toolbar ─────────────────────────────────────────────────────────── */
 
@@ -1740,52 +1744,19 @@
 	}
 
 	/* ══ WIDE: THE READOUT IS A COLUMN (2026-10-02, ⚓ Nate) ════════════════════
-	   A full tile left the two panels side by side under the chart with a
-	   screen's width of night beside them. Wide now matches the Crit Heatmap's
-	   side column: the chart and the scenarios stacked on the left, and the
-	   Readout down the right edge at the tile's full height, where the aura log
-	   — the panel's long part — gets the height a log wants and scrolls inside
-	   it rather than being cut off at 21rem. The panels' multicolumn wrapper
-	   dissolves so its two children can take grid areas. */
+	   The Readout runs down the right edge at the tile's full height, where the
+	   aura log — the panel's long part — gets the height a log wants and
+	   scrolls inside it rather than being cut off at 21rem. */
 	@container instrument (min-width: 60rem) {
-		.instrument {
-			/* 🎛️ 25rem: the widest application line the log can print — "Pyro
-			   (3.2U after tax, refreshed, new rate)", 257px — fits on one line
-			   beside its time and pip (measured 2026-10-02; ⚓ Nate: the lines
-			   that start with a marker should not wrap). Reactions may still. */
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
-			grid-template-rows: auto minmax(0, 1fr);
-			grid-template-areas:
-				'chart readout'
-				'scenarios readout';
-			align-content: stretch;
-		}
-
-		.gx-chart {
-			grid-area: chart;
-		}
-
-		.gx-panels {
-			display: contents;
-		}
-
-		.gx-scenarios {
-			grid-area: scenarios;
-			align-self: start;
-			margin-bottom: 0;
-		}
-
 		/* The note keeps a reading measure while the chips use the width */
 		.gx-scenarios .note {
 			max-width: 70ch;
 		}
 
 		.gx-readout {
-			grid-area: readout;
 			display: flex;
 			flex-direction: column;
 			min-height: 0;
-			margin-bottom: 0;
 		}
 
 		/* ⚠ align-content: start — a grid given spare height shares it out
