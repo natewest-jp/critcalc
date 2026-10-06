@@ -23,6 +23,7 @@
 		rollEvents,
 		reshapeDust,
 		unitFor,
+		primaryMain,
 		type SlotId,
 		type MainStatId,
 		type SubstatId,
@@ -114,7 +115,7 @@
 
 	const slot = $derived(SLOTS.find((s) => s.id === slotId)!);
 	const mainStats = $derived(slot.mains.filter((m) => mains.includes(m.id)));
-	const main = $derived(mainStats[0] ?? slot.mains[0]);
+	const main = $derived(primaryMain(slotId, mains));
 	const pool = $derived(substatPool(main.id));
 	/** Your stats a substat line can hold (the main stat aside) */
 	const wantedSubs = $derived(wanted.filter((id) => id !== main.id));

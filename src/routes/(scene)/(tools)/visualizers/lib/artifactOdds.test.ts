@@ -13,6 +13,7 @@ import {
 	shownValue,
 	presenceAtLeast,
 	targetLinesChance,
+	primaryMain,
 	distStats,
 	compareTo,
 	percentileOf,
@@ -99,6 +100,14 @@ describe('main stats', () => {
 			const sum = slot.mains.reduce((acc, m) => acc + m.chance * (m.each ? 7 : 1), 0);
 			expect(sum).toBeCloseTo(1, 6);
 		}
+	});
+
+	it("the piece's main stat is the first PICKED, not the slot list's first", () => {
+		// sands lists HP%, ATK%, DEF%, ER, EM — ER picked ahead of ATK% wins
+		expect(primaryMain('sands', ['er', 'atkPct']).id).toBe('er');
+		expect(primaryMain('sands', ['atkPct', 'er']).id).toBe('atkPct');
+		// nothing valid for the slot: its first main
+		expect(primaryMain('flower', ['er']).id).toBe('hp');
 	});
 
 	it('tier values are datamined: CR runs 70–100% of 3.89%', () => {

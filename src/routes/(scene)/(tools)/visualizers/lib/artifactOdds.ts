@@ -204,6 +204,22 @@ export const SLOTS: { id: SlotId; name: string; mains: MainStat[] }[] = [
 	}
 ];
 
+/**
+ * THE piece's main stat when several are accepted (Drop takes any of them):
+ * the first in the order they were PICKED, never the slot's list order — a
+ * sands with [ER, ATK%] accepted is an ER sands. ⚠️ Reading it in list order
+ * pinned every sands to ATK% (the list's second entry outranks ER), so
+ * picking another main did nothing and ATK% could never be a substat.
+ */
+export function primaryMain(slot: SlotId, accepted: MainStatId[]): MainStat {
+	const mains = SLOTS.find((s) => s.id === slot)!.mains;
+	for (const id of accepted) {
+		const m = mains.find((x) => x.id === id);
+		if (m) return m;
+	}
+	return mains[0];
+}
+
 /** The weighted substat pool for a piece: all substats except its main stat. */
 export const substatPool = (main: MainStatId): Substat[] => SUBSTATS.filter((s) => s.id !== main);
 
