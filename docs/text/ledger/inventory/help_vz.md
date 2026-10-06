@@ -77,27 +77,26 @@
 - `help_vz_pushing_res_below_0_still_pays_but_each` — Visualizers.svelte:131 <p>
   > Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep diminishing returns.
   - terms: 🎮 Viridescent Venerer · 🎮 RES
-- `help_vz_artifact_rolls` — Visualizers.svelte:139 <h2>
-  > Artifact Rolls
-  - terms: 📖 Artifact Rolls
-- `help_vz_the_real_odds_behind_5_artifact_farming` — Visualizers.svelte:140 <p>
-  > The real odds behind 5★ artifact farming, from datamined weights. <strong>Fresh Drop</strong>: how rare your target substat pair is. <strong>Upgrade Rolls</strong>: the exact crit-value distribution a piece can reach at +20. <strong>Reshape</strong>: what the Dust of Enlightenment guarantee actually does to the odds.
-  - terms: 🎮 Dust of Enlightenment · 🏷 substat
-- `help_vz_the_reshape_guarantee_is_modelled_as_a` — Visualizers.svelte:146 <p> — ⚑ off-glossary
-  > The reshape guarantee is modelled as a conditional redistribution — at least N rolls into the selected pair, other outcomes renormalized — because the exact in-game implementation is not publicly documented. Sanctifying Elixir crafts skip the substat draw entirely and, since 5.5, guarantee at least 2 upgrade rolls into the crafted pair.
-  - terms: 🎮 Sanctifying Elixir · 🏷 substat
-  - ⚠️ off-glossary: modelled → modeled
-- `help_vz_appraise_dials_in_a_real_20_piece_s` — Visualizers.svelte:153 <p>
-  > <strong>Appraise</strong> dials in a real +20 piece's substat values and shows where it sits on its own outcome distribution. The value wheels only offer numbers the game can actually display; roll counts are inferred from them, cross-validated against the Genshin Optimizer.
-  - terms: 🔒 Genshin Optimizer · 🏷 substat
-- `help_vz_wish_odds` — Visualizers.svelte:160 <h2>
+- `help_vz_artifact_odds` — Visualizers.svelte:139 <h2>
+  > Artifact Odds
+  - terms: 📖 Artifact Odds
+- `help_vz_the_odds_behind_a_5_artifact_from` — Visualizers.svelte:140 <p>
+  > The odds behind a 5★ artifact, from datamined weights, through a piece's life. Pick <strong>your stats</strong> — up to four substats that count as good — and every view measures them. <strong>Drop</strong>: how many days of resin it takes to get the piece you want, from a domain or during a Stygian Onslaught Disturbance Outbreak. <strong>Level up</strong>: what your stats reach at +20 on a piece that has them, coloured by how many upgrades landed in them. <strong>Your piece</strong>: enter a real piece, line by line as the game shows it, to see how it ranks, what it can still become, and what a reshape would do.
+  - terms: 🏷 substat
+- `help_vz_your_stats_are_measured_in_crit_value` — Visualizers.svelte:149 <p>
+  > Your stats are measured in crit value when they are CRIT Rate and CRIT DMG, and otherwise in useful rolls: each upgrade into them counts by its size, a top roll 1 and the smallest 0.7.
+  - terms: 🏷 crit value · 🎮 CRIT Rate · 🎮 CRIT DMG
+- `help_vz_the_game_doesn_t_say_how_a_guarantee_of` — Visualizers.svelte:153 <p>
+  > The game doesn't say how a guarantee of at least N upgrades is met, for reshaping or for a piece defined with Sanctifying Elixir. The Artifact Odds instrument assumes the upgrades land as usual and any shortfall is moved into the selected lines — the reading Genshin Optimizer uses.
+  - terms: 🎮 Sanctifying Elixir · 🔒 Genshin Optimizer · 📖 Artifact Odds · 📖 instrument
+- `help_vz_wish_odds` — Visualizers.svelte:161 <h2>
   > Wish Odds
   - terms: 📖 Wish Odds
-- `help_vz_how_many_pulls_a_goal_takes_from_your` — Visualizers.svelte:161 <p>
+- `help_vz_how_many_pulls_a_goal_takes_from_your` — Visualizers.svelte:162 <p>
   > How many pulls a goal takes, from your current pity and guarantee: the featured 5★ or 4★ up to C6, the charted weapon up to R5, or a 5★ and their weapon together. There is one line per level on the way to the goal, each showing your chance of being there by a given pull. The marker is your saved pulls; drag it.
   - terms: 🏷 pity
-- `help_vz_pity_model_a_5_drops_at_0_6_per_pull` — Visualizers.svelte:167 <p>
+- `help_vz_pity_model_a_5_drops_at_0_6_per_pull` — Visualizers.svelte:168 <p>
   > Pity model: a 5★ drops at 0.6% per pull until soft pity ramps from pull 74 (on the weapon banner, 0.7% ramping from 63); a 4★ drops at 5.1%, then 56.1% on the 9th pull, and is certain on the 10th. Featured odds use the official rates: 55% for a 5★ character including Capturing Radiance, 37.5% for the charted weapon with one fate point, and 50% for a 4★, which is then one of three featured characters, split evenly. The Radiance streak counter is not fully datamined, so each 5★ is modeled as an independent 55%.
   - terms: 🎮 Capturing Radiance · 🎮 Fate Points · 🏷 soft pity · 🎮 Radiance
-- `help_vz_only_pulls_on_a_banner_that_features` — Visualizers.svelte:175 <p>
+- `help_vz_only_pulls_on_a_banner_that_features` — Visualizers.svelte:176 <p>
   > Only pulls on a banner that features your goal count. Copies from Starglitter or events are not in the curves, so set <strong>You have</strong> to what you own. A 5★ landing on the 10th pull pushes that 4★ to the 11th; it is left out, and moves 4★ C6 by about one pull. The model matches <a>GGanalysis</a>.

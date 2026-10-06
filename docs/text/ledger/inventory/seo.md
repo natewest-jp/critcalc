@@ -38,7 +38,7 @@
   > Visualizers
   - terms: 📖 Visualizers
 - `seo_eight_instruments_for_the_mechanics` — seo.ts:94 description:
-  > Eight instruments for the mechanics behind the numbers: crit distribution, elemental gauge and ICD, reaction curves, artifact rolls, enemy defense and more.
+  > Eight instruments for the mechanics behind the numbers: crit distribution, elemental gauge and ICD, reaction curves, artifact odds, enemy defense and more.
   - terms: 🏷 gauge · 🏷 ICD
 - `seo_help_faq` — seo.ts:98 title:
   > Help & FAQ
