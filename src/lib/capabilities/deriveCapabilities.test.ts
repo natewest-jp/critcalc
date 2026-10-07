@@ -355,3 +355,115 @@ describe('real corpus integration', () => {
 		}
 	});
 });
+
+// ⚓ 2026-10-07 (Team Builder round, phase 1): what opens a window, and how
+// long a coordinated attack stays armed — the two facts Compare's chart was
+// missing for most supports.
+describe('host — the cast or reaction that opens a window', () => {
+	const passiveWith = (trigger: unknown) =>
+		char({
+			passives: [
+				{
+					id: 'p',
+					name: 'P',
+					abilityType: 'passive',
+					effects: [{ type: 'buff', target: 'team', stat: 'em', value: 50, duration: 8, trigger }]
+				}
+			]
+		} as never);
+	const hostOf = (trigger: unknown) =>
+		deriveCharacterCapabilities(passiveWith(trigger)).capabilities[0].host;
+
+	it('names the cast an onCast trigger names', () => {
+		expect(hostOf({ type: 'onCast', ability: 'burst' })).toEqual({ casts: ['burst'] });
+	});
+
+	it('names both casts when an onCast trigger names neither', () => {
+		expect(hostOf({ type: 'onCast' })).toEqual({ casts: ['skill', 'burst'] });
+	});
+
+	it('reads an onHit abilityType scalar or array, keeping only skill and burst', () => {
+		expect(hostOf({ type: 'onHit', abilityType: 'skill' })).toEqual({ casts: ['skill'] });
+		expect(hostOf({ type: 'onHit', abilityType: ['skill', 'burst'] })).toEqual({
+			casts: ['skill', 'burst']
+		});
+		expect(hostOf({ type: 'onHit', abilityType: ['normal', 'charged'] })).toBeUndefined();
+	});
+
+	it('names the reaction an onReaction trigger listens for', () => {
+		expect(hostOf({ type: 'onReaction', reaction: 'pyroSwirl' })).toEqual({
+			reactions: ['pyroSwirl']
+		});
+	});
+
+	it('leaves a passive trigger and an ability’s own effect unhosted', () => {
+		expect(hostOf({ type: 'passive' })).toBeUndefined();
+		const own = deriveCharacterCapabilities(
+			char({
+				abilities: [{ id: 'q', name: 'Q', abilityType: 'burst', effects: [HEAL_EFFECT] }]
+			} as never)
+		).capabilities[0];
+		expect(own.host).toBeUndefined();
+	});
+
+	it('carries a buff’s authored value, every arm', () => {
+		const scaled = { type: 'scaling', stat: 'em', ratio: 20 };
+		const c = deriveCharacterCapabilities(
+			char({
+				passives: [
+					{
+						id: 'p',
+						name: 'P',
+						abilityType: 'passive',
+						effects: [
+							{
+								type: 'buff',
+								target: 'team',
+								stat: 'em',
+								value: scaled,
+								trigger: { type: 'onCast' }
+							}
+						]
+					}
+				]
+			} as never)
+		).capabilities[0];
+		expect(c.value).toEqual(scaled);
+		expect(c.amount).toBeUndefined();
+	});
+});
+
+describe('coordinated attacks carry their window', () => {
+	const corpus = import.meta.glob('$lib/data/characters/*.json', { eager: true }) as Record<
+		string,
+		{ default: CharacterData }
+	>;
+	const byId = new Map(Object.values(corpus).map((m) => [m.default.id, m.default]));
+
+	// The nine the 2026-10-07 census found drawing nothing.
+	it.each([
+		['xingqiu', 15.55, 'Rainbow Bladework'],
+		['yelan', 15, 'Exquisite Throw'],
+		['raiden_shogun', 25, 'Eye of Stormy Judgment'],
+		['nahida', 25, undefined],
+		['beidou', 15, undefined],
+		['albedo', 30, 'Solar Isotoma'],
+		['dehya', 12, 'Fiery Sanctum'],
+		['nicole', 20, undefined],
+		['qiqi', 15, 'Herald of Frost']
+	])('%s: %ss', (id, duration, label) => {
+		const caps = deriveCharacterCapabilities(byId.get(id)!).capabilities;
+		const coord = caps.find((c) => c.detail === 'coordinatedAttack');
+		expect(coord?.duration).toBe(duration);
+		expect(coord?.summon?.label).toBe(label);
+	});
+
+	it('every coordinated attack in the corpus has one', () => {
+		const missing = [...byId.values()].flatMap((ch) =>
+			deriveCharacterCapabilities(ch)
+				.capabilities.filter((c) => c.detail === 'coordinatedAttack' && !(c.duration! > 0))
+				.map(() => ch.id)
+		);
+		expect(missing).toEqual([]);
+	});
+});

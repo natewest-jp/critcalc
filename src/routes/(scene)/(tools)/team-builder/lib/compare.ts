@@ -211,36 +211,79 @@ function hostLabel(ability: Ability, variant: string | undefined, summonLabel?: 
 	return summonLabel ? `${cast} · ${summonLabel}` : cast;
 }
 
+/** An ability's cooldown, when it has a real one — the only thing that makes a
+ *  cast a CYCLE a lane can tile. */
+function cycleOf(ability: Ability | undefined): number {
+	return ability && 'cooldown' in ability ? Number(ability.cooldown) || 0 : 0;
+}
+
+/** What a character's abilities look like to the lane resolver: by id, and the
+ *  first cooldown-bearing skill and burst — the cast a passive's trigger names
+ *  when it says "after Elemental Skill". ⚠ The FIRST, for the nine kits with a
+ *  stance sibling (Cyno, Tartaglia, Varka…): the sibling shares the trigger's
+ *  abilityType, and the base cast is the one you open with. */
+type AbilityLookup = {
+	byId: Map<string, Ability>;
+	byType: Partial<Record<'skill' | 'burst', Ability>>;
+};
+
+function abilityLookup(abilities: readonly Ability[]): AbilityLookup {
+	const byType: AbilityLookup['byType'] = {};
+	for (const a of abilities) {
+		if ((a.abilityType === 'skill' || a.abilityType === 'burst') && !byType[a.abilityType]) {
+			if (cycleOf(a) > 0) byType[a.abilityType] = a;
+		}
+	}
+	return { byId: new Map(abilities.map((a) => [a.id, a])), byType };
+}
+
+/**
+ * The cast(s) whose cycle a capability rides — its own source when that is a
+ * cooldown-bearing cast, else the cast(s) its trigger names (`host.casts`):
+ * Sucrose's A4 EM share rides BOTH her E and her Q, Kazuha's C2 EM his Q.
+ * Empty = no cast cycle to draw against (a reaction-set or always-on effect),
+ * and inventing one would be fake timing.
+ */
+function laneHostsOf(cap: DerivedCapability, lookup: AbilityLookup): Ability[] {
+	const own = lookup.byId.get(cap.source.abilityId);
+	if (cycleOf(own) > 0) return [own!];
+	if (cap.host && 'casts' in cap.host) {
+		return cap.host.casts.map((t) => lookup.byType[t]).filter((a): a is Ability => !!a);
+	}
+	return [];
+}
+
 /**
  * Lanes for one row key and one character.
  *
- * Grouped by HOST — `abilityId` plus the summon label, because a summon is a
- * host in its own right (Xiangling's Q and its Guoba are two different cycles
- * off one cast). A lane needs both halves to be real: a window with a duration
- * AND a cooldown-bearing host. Passives and constellations have no cast cycle,
- * and inventing one would be fake timing.
+ * Grouped by HOST — the cast's `abilityId` plus the summon label, because a
+ * summon is a host in its own right (Xiangling's Q and its Guoba are two
+ * different cycles off one cast). A lane needs both halves to be real: a
+ * window with a duration AND a cooldown-bearing cast. A passive or
+ * constellation joins the lane of the cast its trigger names (`laneHostsOf`)
+ * — until 2026-10-07 they had no lane at all, which left Kazuha, Sucrose and
+ * Nahida's defining buffs off the chart.
  */
 function buildLanes(
 	columnIndex: number,
 	rowKey: CapRowKey,
 	caps: DerivedCapability[],
-	abilityById: Map<string, Ability>,
+	lookup: AbilityLookup,
 	alsoByAbility: Map<string, CapRowKey[]>
 ): CapLane[] {
-	const groups = new Map<string, DerivedCapability[]>();
+	const groups = new Map<string, { ability: Ability; caps: DerivedCapability[] }>();
 	for (const cap of caps) {
 		if (cap.duration === undefined) continue;
-		const ability = abilityById.get(cap.source.abilityId);
-		if (!ability || !('cooldown' in ability) || !(Number(ability.cooldown) > 0)) continue;
-		const key = `${cap.source.abilityId}::${cap.summon?.label ?? ''}`;
-		const list = groups.get(key);
-		if (list) list.push(cap);
-		else groups.set(key, [cap]);
+		for (const ability of laneHostsOf(cap, lookup)) {
+			const key = `${ability.id}::${cap.summon?.label ?? ''}`;
+			const group = groups.get(key);
+			if (group) group.caps.push(cap);
+			else groups.set(key, { ability, caps: [cap] });
+		}
 	}
 
 	const lanes: CapLane[] = [];
-	for (const [key, group] of groups) {
-		const ability = abilityById.get(group[0].source.abilityId)!;
+	for (const [key, { ability, caps: group }] of groups) {
 		const minCon = Math.min(...group.map((c) => c.minConstellation));
 		const atGate = group.filter((c) => c.minConstellation === minCon);
 		// The primary follows the cell's rule (broadest reach, then fewest
@@ -266,7 +309,13 @@ function buildLanes(
 			key,
 			host: {
 				abilityId: ability.id,
-				label: hostLabel(ability, primary.source.variant, group[0].summon?.label),
+				// A variant names THIS cast's form only when the primary came from it —
+				// a passive riding the lane has no say in how the cast is labelled.
+				label: hostLabel(
+					ability,
+					primary.source.abilityId === ability.id ? primary.source.variant : undefined,
+					group[0].summon?.label
+				),
 				cooldown: (ability as { cooldown: number }).cooldown,
 				...(charges !== undefined && charges > 1 && { charges }),
 				...(energyCost !== undefined && energyCost > 0 && { energyCost }),
@@ -357,17 +406,21 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 		return byKey;
 	});
 
-	const abilityLookups = characters.map((c) => new Map(c.abilities.map((a) => [a.id, a])));
+	const lookups = characters.map((c) => abilityLookup(c.abilities));
 
-	// Which rows each ability feeds, per character — the `also:` list on a lane
-	// is read straight off this, so it stays consistent with the rows on screen.
-	const alsoLookups = characters.map((c) => {
+	// Which rows each CAST feeds, per character — the `also:` list on a lane is
+	// read straight off this, so it stays consistent with the rows on screen.
+	// Keyed by the RESOLVED host, so a passive riding Q appears in Q's list.
+	const alsoLookups = characters.map((c, i) => {
 		const byAbility = new Map<string, CapRowKey[]>();
 		for (const cap of c.capabilities) {
 			const key = capRowKeyOf(cap);
-			const list = byAbility.get(cap.source.abilityId);
-			if (!list) byAbility.set(cap.source.abilityId, [key]);
-			else if (!list.includes(key)) list.push(key);
+			const hosts = laneHostsOf(cap, lookups[i]).map((a) => a.id);
+			for (const id of hosts.length > 0 ? hosts : [cap.source.abilityId]) {
+				const list = byAbility.get(id);
+				if (!list) byAbility.set(id, [key]);
+				else if (!list.includes(key)) list.push(key);
+			}
 		}
 		return byAbility;
 	});
@@ -380,7 +433,7 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 			label: capRowLabelOf(key),
 			cells: grouped.map((g) => buildCell(g.get(key) ?? [])),
 			lanes: grouped.flatMap((g, i) =>
-				buildLanes(i, key, g.get(key) ?? [], abilityLookups[i], alsoLookups[i])
+				buildLanes(i, key, g.get(key) ?? [], lookups[i], alsoLookups[i])
 			)
 		});
 	}

@@ -17,13 +17,12 @@
  * is still absolute shared seconds; and PERMANENT UPTIME draws itself, as a bar
  * that simply never breaks.
  *
- * ⚠ A REPEAT IS A CLAIM, AND THE PICTURE HAS TO SAY SO. Cycle 0 is what you get.
- * Everything after it assumes you cast the instant the cooldown lapses — and for
- * a burst it also assumes the energy is there, which this site does not model
- * and (per the Team Builder constitution, where energy data is reference-tier
- * and never load-bearing) should not. So every segment carries its `cycle`
- * index, the renderer draws 1..n weaker than 0, and the chart footnote names
- * energy out loud. The honesty is IN the drawing, not only beside it.
+ * ⚠ A REPEAT IS A CLAIM. Cycle 0 is what you get. Everything after it assumes
+ * you cast the instant the cooldown lapses — and for a burst it also assumes the
+ * energy is there, which this site does not model. Every segment carries its
+ * `cycle` index (the renderer's seam reads it), but repeats are drawn at FULL
+ * strength: the fade that used to mark them is retired (see
+ * `COMPARE_REPEAT_MIX` below), and the caveat lives in words beside the chart.
  *
  * ⛔ Charges are deliberately NOT modelled as banking. A two-charge skill can be
  * held and double-cast, which is a real cadence this tiler would have to invent
