@@ -4,7 +4,9 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { constellations, siteSettings, ownership } from '$lib/stores';
+	import { constellations, siteSettings, ownership, loadout } from '$lib/stores';
+	import { swapFramesForPing } from '$lib/utils/frames';
+	import { readRotationSwap, type RotationRead } from './lib/auditionRotation';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import {
@@ -674,6 +676,63 @@
 			(id) => conCapFor(conMode, cons[id]),
 			(id) => own[id]
 		).matches;
+	});
+
+	// ── "In your rotation" (phase 4) ────────────────────────────────────────
+	// Each candidate's swap, run through the planner's own parse of the working
+	// rotation. Async (the parser loads on demand) and generation-stamped, so a
+	// read that lands after the comparison moved on is dropped, not drawn.
+	let rotationReads = $state<Record<string, RotationRead | null>>({});
+	let readGeneration = 0;
+	$effect(() => {
+		const incumbent = anchorId;
+		const candidates = [...compareIds].filter((id) => id !== incumbent);
+		const notation = rt.notation;
+		const slots = [...rt.slots];
+		// The planner's effective inputs: tab overrides over the roster, its
+		// swap ping and human timing — so this reads the rotation the way the
+		// planner draws it (⚓ Nate 2026-10-07).
+		const cons: Record<string, number> = { ...$constellations, ...rt.tabCon };
+		const lo = { ...$loadout };
+		for (const [id, entry] of Object.entries(rt.tabLoadout))
+			lo[id] = { ...(lo[id] ?? {}), ...entry };
+		const swapFrames = swapFramesForPing($siteSettings.swapPing);
+		const humanTiming = $siteSettings.humanTiming
+			? {
+					padFrames:
+						$siteSettings.humanTimingMode === 'animations' ? 0 : $siteSettings.humanTimingPadFrames,
+					fullAnimations: $siteSettings.humanTimingMode !== 'padding'
+				}
+			: null;
+		const gen = ++readGeneration;
+		if (!incumbent || !mounted) {
+			rotationReads = {};
+			return;
+		}
+		void Promise.all(
+			candidates.map(async (candidateId) => {
+				try {
+					const read = await readRotationSwap({
+						notation,
+						slots,
+						incumbentId: incumbent,
+						candidateId,
+						constellations: cons,
+						loadout: lo,
+						swapFrames,
+						humanTiming
+					});
+					return [candidateId, read] as const;
+				} catch (e) {
+					// The planner's own parse() swallows a throw the same way: a read
+					// that cannot be made is absent, never a broken audition.
+					console.error('rotation audition failed:', e);
+					return [candidateId, null] as const;
+				}
+			})
+		).then((pairs) => {
+			if (gen === readGeneration) rotationReads = Object.fromEntries(pairs);
+		});
 	});
 
 	/** An identity filter that narrows nothing — the audition's base. */
@@ -1423,6 +1482,7 @@
 						onBackToPlanner={anchorId && fromPlanner ? backToPlanner : undefined}
 						candidatesArea={anchorId ? auditionStrip : undefined}
 						teamDeltas={auditionDeltas}
+						rotationReads={anchorId ? rotationReads : undefined}
 					/>
 				{/if}
 

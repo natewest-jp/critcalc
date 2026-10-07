@@ -466,6 +466,39 @@ test.describe('audition', () => {
 		await expect(page.locator('.tb-cand')).toHaveCount(ROSTER_SIZE - 4);
 	});
 
+	test('the audition reads the swap in your real rotation', async ({ page, seed }) => {
+		// ⚓ 2026-10-07 (approved by Nate): the one comparison only this site can
+		// make. The working rotation is parsed as written and with the candidate
+		// renamed into the incumbent's segments; the parser loads on demand.
+		await seed({
+			team: {
+				slots: ['bennett', 'xiangling', 'xingqiu', 'sucrose'],
+				notation:
+					'Bennett E Q > Xiangling E Q > Xingqiu E Q > Sucrose E Q > Xiangling N3 > Bennett E'
+			}
+		});
+		await openTool(page, '/team-builder');
+		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
+		await page.locator('.cmp-ref').first().waitFor();
+
+		// No candidate yet → nothing to read against.
+		await expect(page.locator('.cmp-rot')).toHaveCount(0);
+
+		await page.locator('.cmp-add .band-menu-trigger').click();
+		await page.locator('.cmp-add-input').fill('Furina');
+		await page.locator('.cmp-add-pick').first().click();
+
+		const rot = page.locator('.cmp-rot');
+		await expect(rot).toHaveCount(1);
+		// Bennett's ATK buff is read off the rotation as written — a real share
+		// of it, not the chart's cast-on-cooldown claim — and Furina's DMG bonus
+		// off the swapped one.
+		const atk = rot.locator('.cmp-rot-row', { hasText: 'ATK buff' });
+		await expect(atk.locator('.cmp-rot-val').first()).toHaveText(/^[1-9]\d?%$/);
+		const dmg = rot.locator('.cmp-rot-row', { hasText: 'DMG% buff' });
+		await expect(dmg.locator('.cmp-rot-val').nth(1)).toHaveText(/^[1-9]\d*%$/);
+	});
+
 	test('an audition borrows the comparison and gives it back', async ({ page, seed }) => {
 		// An audition scopes the selection to itself, which used to mean it DELETED
 		// whatever comparison you had going — three picks, one bench ⇄, gone.
