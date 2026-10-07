@@ -65,6 +65,7 @@
 	} from '$lib/capabilities/capabilityText';
 	import type { CapabilityKind, CapabilitySection } from '$lib/capabilities/deriveCapabilities';
 	import CompareBar from './CompareBar.svelte';
+	import type { RotationRead } from './auditionRotation';
 
 	let {
 		ids,
@@ -81,7 +82,8 @@
 		onLensChange = undefined,
 		onElementLensChange = undefined,
 		candidatesArea = undefined,
-		teamDeltas = undefined
+		teamDeltas = undefined,
+		rotationReads = undefined
 	}: {
 		ids: string[];
 		conMode: ConMode;
@@ -117,6 +119,10 @@
 			string,
 			{ gained: string[]; lost: string[]; resonance?: { before: string[]; after: string[] } }
 		>;
+		/** Audition mode: each candidate's swap run through the planner's parse
+		 *  of the working rotation (absent = still reading; null = there is no
+		 *  rotation to read). See auditionRotation.ts. */
+		rotationReads?: Record<string, RotationRead | null>;
 	} = $props();
 
 	/** The element fallback's vocabulary — the Roster filter rail's seven, in order. */
@@ -394,6 +400,32 @@
 					.slice(0, 8)
 	);
 	const canAdd = $derived(onAdd !== undefined && ids.length < MAX_COMPARE);
+
+	// ── In your rotation ─────────────────────────────────────────────────────
+	/** One line per contribution any read reports: the team's uptime with the
+	 *  incumbent (the same in every read — it is the rotation as written) and
+	 *  with each candidate. */
+	const rotationLines = $derived.by(() => {
+		if (!rotationReads) return [];
+		const lines: Record<string, { label: string; before: number; after: Record<string, number> }> =
+			{};
+		for (const [id, read] of Object.entries(rotationReads)) {
+			for (const row of read?.rows ?? []) {
+				lines[row.key] ??= { label: row.label, before: row.before, after: {} };
+				lines[row.key].after[id] = row.after;
+			}
+		}
+		return Object.entries(lines).map(([key, l]) => ({ key, ...l }));
+	});
+	const rotationPending = $derived(
+		!!rotationReads && columns.some((c, i) => i !== anchorIndex && !(c.id in (rotationReads ?? {})))
+	);
+	const rotationAbsent = $derived(
+		!!rotationReads &&
+			Object.keys(rotationReads).length > 0 &&
+			Object.values(rotationReads).every((r) => r === null)
+	);
+	const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 	const erroredAvatars = new SvelteSet<string>();
 	function fallbackFor(id: string): boolean {
@@ -776,6 +808,65 @@
 				</p>
 			{/if}
 
+			{#if rotationReads && anchorIndex >= 0 && columns.length > 1}
+				<!-- ── In your rotation: the planner's parse, not the chart's claim ── -->
+				<section class="cmp-block cmp-rot">
+					<h3 class="cmp-group">In your rotation</h3>
+					{#if rotationAbsent}
+						<p class="cmp-rot-note">
+							Write a rotation in the Rotation Planner to see how each swap plays in it.
+						</p>
+					{:else}
+						<p class="cmp-rot-note">
+							How much of your rotation the team has each effect, with each character in the slot —
+							at the planner's constellations.
+						</p>
+						{#if rotationPending && rotationLines.length === 0}
+							<p class="cmp-rot-note">Reading your rotation…</p>
+						{/if}
+						{#each rotationLines as line (line.key)}
+							<div class="cmp-rot-row">
+								<span class="cmp-rot-label">{line.label}</span>
+								<div class="cmp-facts">
+									{#each columns as col, i (col.id)}
+										<div class="cmp-fact">
+											<span class="cmp-fact-who"
+												>{@render avatarDisc(col.id, col.name, col.color, 18)}</span
+											>
+											<span class="cmp-fact-what cmp-rot-val">
+												{#if i === anchorIndex}
+													{pct(line.before)}
+												{:else if col.id in line.after}
+													{pct(line.after[col.id])}
+												{:else if col.id in (rotationReads ?? {})}
+													{pct(0)}
+												{:else}
+													…
+												{/if}
+											</span>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/each}
+						{#if columns.some((c) => (rotationReads?.[c.id]?.approximated ?? 0) > 0)}
+							<div class="cmp-facts">
+								{#each columns as col (col.id)}
+									{@const n = rotationReads?.[col.id]?.approximated ?? 0}
+									<div class="cmp-fact">
+										{#if n > 0}
+											<span class="cmp-fact-cond"
+												>{n} of {col.name}'s actions {n === 1 ? 'is' : 'are'} timed as a stand-in</span
+											>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						{/if}
+					{/if}
+				</section>
+			{/if}
+
 			<div
 				class="cmp-blocks"
 				style:--track-w="{trackW}px"
@@ -1133,6 +1224,29 @@
 		gap: 0.45rem;
 		padding-top: 0.4rem;
 		border-top: 1px solid var(--chart-grid);
+	}
+	.cmp-rot {
+		padding: 0.6rem 0.5rem 0.7rem;
+		border-radius: var(--r-sm);
+		box-shadow: inset 0 0 0 1px var(--chart-grid);
+	}
+	.cmp-rot-note {
+		margin: 0;
+		font-size: var(--fs-sm);
+		color: var(--chart-ink);
+	}
+	.cmp-rot-row {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.cmp-rot-label {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--chart-ink);
+	}
+	.cmp-rot-val {
+		font-size: var(--fs-md);
 	}
 	.cmp-only-row {
 		display: grid;
