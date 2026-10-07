@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Ability } from '$lib/types/ability';
 import type { DerivedCapability } from '$lib/capabilities/deriveCapabilities';
-import { buildCompareModel, type CompareCharacter } from './compare';
+import {
+	buildCompareModel,
+	factDelta,
+	isShared,
+	type CapCell,
+	type CompareCharacter
+} from './compare';
 
 // ---------------------------------------------------------------------------
 // Fixtures — minimal shapes; the model only reads the fields it aligns on.
@@ -193,11 +199,11 @@ describe('buildCompareModel — lanes', () => {
 			})
 		]);
 		const lanes = model.capRows[0].lanes;
-		expect(lanes.map((l) => l.host.label)).toEqual(['E', 'Q']);
+		expect(lanes.map((l) => l.host!.label)).toEqual(['E', 'Q']);
 		expect(lanes.map((l) => l.uptime)).toEqual([4, 10]);
 		// The price travels with the lane — that is the whole point of host-as-lane.
-		expect(lanes[0].host.cooldown).toBe(6);
-		expect(lanes[1].host.energyCost).toBe(60);
+		expect(lanes[0].host!.cooldown).toBe(6);
+		expect(lanes[1].host!.energyCost).toBe(60);
 	});
 
 	it('carries the column index so stacked lanes know whose they are', () => {
@@ -242,8 +248,8 @@ describe('buildCompareModel — lanes', () => {
 			})
 		]);
 		const lane = model.capRows[0].lanes[0];
-		expect(lane.host.label).toBe('Q · Guoba');
-		expect(lane.host.summonLabel).toBe('Guoba');
+		expect(lane.host!.label).toBe('Q · Guoba');
+		expect(lane.host!.summonLabel).toBe('Guoba');
 		// Offsets stop INSIDE the window — a tick after the summon expires is a lie.
 		expect(lane.ticks).toEqual([2, 6, 10]);
 	});
@@ -290,8 +296,8 @@ describe('buildCompareModel — lanes', () => {
 		]);
 		const lanes = model.capRows[0].lanes;
 		expect(lanes).toHaveLength(1);
-		expect(lanes[0].host.label).toBe('Q');
-		expect(lanes[0].host.cooldown).toBe(20);
+		expect(lanes[0].host!.label).toBe('Q');
+		expect(lanes[0].host!.cooldown).toBe(20);
 		expect(lanes[0].uptime).toBe(8);
 	});
 
@@ -312,27 +318,34 @@ describe('buildCompareModel — lanes', () => {
 				]
 			})
 		]);
-		expect(model.capRows[0].lanes.map((l) => l.host.label).sort()).toEqual(['E', 'Q']);
+		expect(model.capRows[0].lanes.map((l) => l.host!.label).sort()).toEqual(['E', 'Q']);
 	});
 
-	it('draws no lane for a reaction-set effect — it has no cast cycle to tile', () => {
+	it('draws a reaction-set effect as ONE window labelled by its reaction family', () => {
+		// ⚓ Nate 2026-10-07: Kazuha's four per-element Swirl buffs read as one
+		// "per Swirl" window — never tiled, because how often the reaction
+		// happens is the one number the chart cannot know.
+		const swirl = (stat: string, reaction: string) =>
+			cap({
+				kind: 'buff',
+				detail: stat,
+				target: 'team',
+				duration: 8,
+				...passive,
+				host: { reactions: [reaction] }
+			});
 		const model = buildCompareModel([
 			char('a', {
 				abilities: [skillOf('e', 6)],
-				capabilities: [
-					cap({
-						kind: 'buff',
-						detail: 'pyroDmgBonus',
-						target: 'team',
-						duration: 8,
-						...passive,
-						host: { reactions: ['pyroSwirl'] }
-					})
-				]
+				capabilities: [swirl('pyroDmgBonus', 'pyroSwirl'), swirl('hydroDmgBonus', 'hydroSwirl')]
 			})
 		]);
-		expect(model.capRows[0].lanes).toEqual([]);
-		expect(model.capRows[0].cells[0]).not.toBeNull();
+		const lanes = model.capRows[0].lanes;
+		expect(lanes).toHaveLength(1);
+		expect(lanes[0].host).toBeUndefined();
+		expect(lanes[0].perReaction).toEqual(['Swirl']);
+		expect(lanes[0].uptime).toBe(8);
+		expect(model.capRows[0].cells[0]?.opensOn).toEqual(['per Swirl']);
 	});
 
 	it("lists a passive riding a cast in that cast's also: line", () => {
@@ -389,5 +402,110 @@ describe('buildCompareModel — lanes', () => {
 		const lane = model.capRows[0].lanes[0];
 		expect(lane.minCon).toBe(4);
 		expect(lane.conditional).toBe(true);
+	});
+});
+
+describe('contribution rows', () => {
+	it('names an "other" buff by its stat — never one Other-buff bucket', () => {
+		const model = buildCompareModel([
+			char('a', {
+				capabilities: [
+					cap({ kind: 'buff', detail: 'healingBonus', target: 'team' }),
+					cap({ kind: 'buff', detail: 'defIgnore', target: 'team' })
+				]
+			})
+		]);
+		expect(model.capRows.map((r) => r.key)).toEqual([
+			'buff:other:defIgnore',
+			'buff:other:healingBonus'
+		]);
+		expect(model.capRows.map((r) => r.label)).toEqual(['DEF Ignore', 'Healing Bonus']);
+	});
+
+	it('drops the Summon row — what a summon does already has its own row', () => {
+		const model = buildCompareModel([
+			char('a', { capabilities: [cap({ kind: 'summon' }), cap({ kind: 'heal', target: 'team' })] })
+		]);
+		expect(model.capRows.map((r) => r.key)).toEqual(['heal']);
+	});
+
+	it('carries the magnitude, the window and what opens it', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [burstOf('q', 15)],
+				capabilities: [
+					cap({
+						kind: 'buff',
+						detail: 'atk',
+						target: 'team',
+						duration: 12,
+						value: 50,
+						amount: 50,
+						...from('q')
+					})
+				]
+			})
+		]);
+		const cell = model.capRows[0].cells[0]!;
+		expect(cell.magnitude).toEqual({ stat: 'atk', value: 50 });
+		expect(cell.duration).toBe(12);
+		expect(cell.opensOn).toEqual(['Q']);
+		expect(cell.provenance[0].source.abilityId).toBe('q');
+	});
+
+	it('isShared: two or more characters in the row', () => {
+		const model = buildCompareModel([
+			char('a', { capabilities: [cap({ kind: 'heal', target: 'team' })] }),
+			char('b', {
+				capabilities: [
+					cap({ kind: 'heal', target: 'team' }),
+					cap({ kind: 'shield', target: 'active' })
+				]
+			})
+		]);
+		const byKey = Object.fromEntries(model.capRows.map((r) => [r.key, isShared(r)]));
+		expect(byKey).toEqual({ heal: true, shield: false });
+	});
+});
+
+describe('factDelta — neutral differences from the reference', () => {
+	const cell = (over: Partial<CapCell>): CapCell => ({
+		minCon: 0,
+		conditional: false,
+		details: [],
+		caveats: [],
+		sources: [],
+		opensOn: [],
+		magnitudes: [],
+		provenance: [],
+		...over
+	});
+
+	it('compares windows', () => {
+		expect(factDelta(cell({ duration: 12 }), cell({ duration: 15 }))).toEqual(['+3s']);
+		expect(factDelta(cell({ duration: 12 }), cell({ duration: 10 }))).toEqual(['−2s']);
+	});
+
+	it('compares a plain magnitude only on the SAME stat', () => {
+		const ref = cell({ magnitude: { stat: 'atk', value: 20 } });
+		expect(factDelta(ref, cell({ magnitude: { stat: 'atk', value: 25 } }))).toEqual(['+5']);
+		expect(factDelta(ref, cell({ magnitude: { stat: 'em', value: 100 } }))).toEqual([]);
+		expect(
+			factDelta(
+				ref,
+				cell({ magnitude: { stat: 'atk', value: { type: 'scaling', stat: 'em', ratio: 20 } } })
+			)
+		).toEqual([]);
+	});
+
+	it('compares shred sizes', () => {
+		expect(
+			factDelta(cell({ magnitude: { shred: 20 } }), cell({ magnitude: { shred: 40 } }))
+		).toEqual(['+20%']);
+	});
+
+	it('says nothing when either side is empty', () => {
+		expect(factDelta(null, cell({ duration: 3 }))).toEqual([]);
+		expect(factDelta(cell({ duration: 3 }), null)).toEqual([]);
 	});
 });

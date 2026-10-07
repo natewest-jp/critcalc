@@ -131,3 +131,16 @@ export function laneSegments(
 		axisSeconds
 	);
 }
+
+/**
+ * A window a REACTION opens (Kazuha's Swirl bonus): ONE block of its length
+ * at the start of the axis, clipped, and never tiled.
+ *
+ * ⚓ Nate 2026-10-07. It has no cooldown, so tiling would have to invent how
+ * often the reaction happens — the one number this chart cannot know. The
+ * block says how long the buff lasts; the lane's label says what opens it.
+ */
+export function singleWindowSegments(uptime: number, axisSeconds: number): BarPhaseSegment[] {
+	if (!(uptime > 0) || !(axisSeconds > 0)) return [];
+	return [{ role: 'uptime', start: 0, span: Math.min(uptime, axisSeconds), cycle: 0 }];
+}

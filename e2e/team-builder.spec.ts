@@ -213,7 +213,7 @@ test.describe('compare — the tab is the accumulator', () => {
 		await expect(page.locator('.tb-tabstack-circle')).toHaveCount(3);
 	});
 
-	test('the compare view aligns timing lanes and a facts table', async ({ page }) => {
+	test('the compare view is one block per effect — facts over lanes', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 		for (const n of ['Bennett', 'Jean', 'Diona']) await addToCompare(page, n);
@@ -223,7 +223,7 @@ test.describe('compare — the tab is the accumulator', () => {
 
 		// A center Source view in normal flow — no scrim, no dock rules.
 		await expect(page.locator('.cmp')).toHaveCSS('position', 'static');
-		await expect(page.locator('.cmp-chip')).toHaveCount(3);
+		await expect(page.locator('.cmp-col'), 'one header column per character').toHaveCount(3);
 
 		// ⚓ THE GROUPING IS AN EFFECT, NEVER A BUTTON. "E cooldown" was a chart
 		// group until 2026-08-13 and is now a FACTS ROW only: every lane's ghost
@@ -235,16 +235,20 @@ test.describe('compare — the tab is the accumulator', () => {
 		expect(groups).not.toContain('Q cooldown');
 		expect(await page.locator('.cmp-ruler .cmp-rtick').count()).toBeGreaterThan(0);
 
-		const factLabels = await page.locator('.cmp-table .cmp-td-label').allInnerTexts();
-		expect(factLabels, 'Q energy is a facts row').toContain('Q energy');
-		expect(factLabels, 'and so is the cooldown the chart stopped grouping by').toContain(
-			'E cooldown'
-		);
-		await expect(page.locator('.cmp-table thead th'), 'label column + 3').toHaveCount(4);
-		expect(await page.locator('.cmp-cell .cmp-gate').count()).toBeGreaterThanOrEqual(3);
+		// ↻ 2026-10-07: the cooldowns and the burst's cost are the HEADER's cost
+		// line now — always on screen above the blocks, never a row of their own.
+		const cost = await page.locator('.cmp-col-cost').allInnerTexts();
+		expect(cost.join(' '), 'E, Q and energy in the header').toMatch(/E \d.*Q \d.*energy/);
+
+		// The Heal block lines up one fact per character, then that effect's lanes.
+		const heal = page.locator('.cmp-block', {
+			has: page.locator('.cmp-group', { hasText: /^Heal$/ })
+		});
+		await expect(heal.locator('.cmp-fact'), 'a fact per column').toHaveCount(3);
+		expect(await heal.locator('.cmp-lane').count()).toBeGreaterThan(0);
 
 		// A lane carries its host's price — that is the point of host-as-lane.
-		expect(await page.locator('.cmp-lane-host').first().innerText()).toMatch(/^[EQ]\b/);
+		expect(await page.locator('.cmp-lane-cycle').first().innerText()).toMatch(/· [EQ]\b/);
 
 		// The cycle TILES: a lane whose cooldown is shorter than the axis must
 		// draw more than one window, and the repeats must be marked as projected
@@ -268,25 +272,23 @@ test.describe('compare — the tab is the accumulator', () => {
 		expect(new Set(ghosts.map(Math.round)).size, 'non-uniform widths').toBeGreaterThan(1);
 	});
 
-	test('the lens narrows the chart without touching the facts table', async ({ page }) => {
+	test('the lens picks which effect blocks are shown', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 		for (const n of ['Bennett', 'Jean']) await addToCompare(page, n);
 		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
 		await page.locator('.cmp-group').first().waitFor();
 
-		const allGroups = await page.locator('.cmp-group').count();
-		const allRows = await page.locator('.cmp-table tbody tr').count();
-		expect(allGroups).toBeGreaterThan(1);
+		const allBlocks = await page.locator('.cmp-group, .cmp-only-row').count();
+		expect(allBlocks).toBeGreaterThan(1);
 
-		// One chip on = only that effect is drawn. The table is a REFERENCE and
-		// does not follow the lens — the two halves answer different questions.
+		// ↻ 2026-10-07: an effect's facts and its lanes are ONE block, so the
+		// lens shows or hides them together. One chip on = one effect.
 		await page.locator('.cmp-lenses .chip').first().click();
-		await expect(page.locator('.cmp-group')).toHaveCount(1);
-		await expect(page.locator('.cmp-table tbody tr')).toHaveCount(allRows);
+		await expect(page.locator('.cmp-group, .cmp-only-row')).toHaveCount(1);
 
 		await page.locator('.cmp-lenses .chip.active').first().click();
-		await expect(page.locator('.cmp-group')).toHaveCount(allGroups);
+		await expect(page.locator('.cmp-group, .cmp-only-row')).toHaveCount(allBlocks);
 	});
 
 	test('removing and clearing sync the tab stack', async ({ page }) => {
@@ -297,7 +299,7 @@ test.describe('compare — the tab is the accumulator', () => {
 		await page.locator('.cmp-group').first().waitFor();
 
 		await page.locator('.cmp-chip-remove').first().click();
-		await expect(page.locator('.cmp-chip')).toHaveCount(2);
+		await expect(page.locator('.cmp-col')).toHaveCount(2);
 		await expect(page.locator('.tb-tabstack-circle'), 'the stack syncs').toHaveCount(2);
 
 		// ↻ 2026-08-09: clearing no longer lands on a "nothing to compare" page.
@@ -390,7 +392,7 @@ test.describe('audition', () => {
 		// own row above the candidates and is not one of the chips at all.
 		await expect(page.locator('.cmp-ref')).toHaveCount(1);
 		await expect(page.locator('.cmp-ref-role')).toHaveText(/slot 1/);
-		await expect(page.locator('.cmp-chip'), 'no candidates picked yet').toHaveCount(0);
+		await expect(page.locator('.cmp-col'), 'no candidates picked yet').toHaveCount(1);
 
 		// The lens seeds with the jobs this slot does — ONE chip row now, on the
 		// glass plate, grouping the chart AND narrowing the candidates.
@@ -406,7 +408,7 @@ test.describe('audition', () => {
 
 		await page.locator('.tb-cand', { hasText: 'Furina' }).first().click();
 		await page.locator('.cmp-take').first().waitFor();
-		await expect(page.locator('.cmp-chip')).toHaveCount(1);
+		await expect(page.locator('.cmp-col:not(.cmp-ref)')).toHaveCount(1);
 
 		await page.locator('.cmp-take').first().click();
 		await page.locator('.cmp').waitFor({ state: 'detached' });
