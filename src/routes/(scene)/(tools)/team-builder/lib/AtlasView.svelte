@@ -18,10 +18,20 @@
 
 	let {
 		roleCards,
-		onSelectCategory
+		onSelectCategory,
+		activeKey = null,
+		compact = false
 	}: {
 		roleCards: RoleCard[];
+		/** Picking a card is the Roster's role filter; picking the active one
+		 *  again clears it (the page decides — this only reports the click). */
 		onSelectCategory: (category: RoleCategory) => void;
+		/** The card the Roster's role filter currently IS, if any. */
+		activeKey?: string | null;
+		/** ⚓ 2026-10-07: the cards are the Roster's FRONT DOOR now, not a tab.
+		 *  Full size while nothing narrows the roster; once anything does, they
+		 *  fold to one strip so the grid gets the screen. */
+		compact?: boolean;
 	} = $props();
 
 	const elIcon = (el: string) => elementIcon(el);
@@ -44,11 +54,32 @@
      It lives here rather than in +page.svelte for the same reason CoveragePanel
      owns its own: the header belongs to the block, and this component is only
      rendered on the cards view, so it appears and leaves with them. -->
-<h2 class="atlas-head">Explore by role</h2>
+{#if compact}
+	<div class="rolestrip" role="group" aria-label="Roles">
+		{#each roleCards as card (card.category.key)}
+			{@const on = card.category.key === activeKey}
+			<button
+				class="rolechip ctx-glass"
+				class:is-active={on}
+				aria-pressed={on}
+				onclick={() => onSelectCategory(card.category)}
+				title={on ? 'Show every role again' : `Show ${card.category.label} only`}
+			>
+				{#if card.category.position}
+					<img src={positionIcon(card.category.position, 'color')} alt="" />
+				{/if}
+				<img src={functionIcon(card.category.function, 'color')} alt="" />
+				<span class="rolechip-label">{card.category.label}</span>
+				<span class="rolechip-count">{card.providerCount}</span>
+			</button>
+		{/each}
+	</div>
+{:else}
+	<h2 class="atlas-head">Explore by role</h2>
 
-<div class="rolecards">
-	{#each roleCards as card (card.category.key)}
-		<!-- ↻ ⚓ NATE 2026-08-09: THESE ARE GLASS NOW, not parchment. They were
+	<div class="rolecards">
+		{#each roleCards as card (card.category.key)}
+			<!-- ↻ ⚓ NATE 2026-08-09: THESE ARE GLASS NOW, not parchment. They were
 		     ctx-light on the reasoning that a card is the small opaque object
 		     light is for — true as far as it went, but four of them at 210px
 		     tall are not a small object, they are the Atlas's entire front door,
@@ -58,60 +89,60 @@
 		     The context is still CLAIMED rather than inherited (the tool frame
 		     that used to supply one went in 2026-08-08) — it just claims a
 		     different material. -->
-		<button
-			class="rolecard ctx-glass inset inset--plain"
-			style:--role-bg="url({functionIcon(card.category.function, 'monotone')})"
-			onclick={() => onSelectCategory(card.category)}
-			aria-label="{card.category.label}: {card.providerCount} characters, {card.ownedCount} owned"
-		>
-			<!-- THE IDENTITY HALF — what this card IS, and (since 2026-08-12) what
+			<button
+				class="rolecard ctx-glass inset inset--plain"
+				style:--role-bg="url({functionIcon(card.category.function, 'monotone')})"
+				onclick={() => onSelectCategory(card.category)}
+				aria-label="{card.category.label}: {card.providerCount} characters, {card.ownedCount} owned"
+			>
+				<!-- THE IDENTITY HALF — what this card IS, and (since 2026-08-12) what
 			     it is MADE OF. Keeps the glass the card has worn since 2026-08-09
 			     (it simply inherits it from the button); the element breakdown
 			     moved up here because element colour may not run on parchment —
 			     see the note at .rolecard-elements. -->
-			<div class="rolecard-id">
-				<!-- ⚓ NATE 2026-08-12: the glass half divides 2:1, role over pips. The
+				<div class="rolecard-id">
+					<!-- ⚓ NATE 2026-08-12: the glass half divides 2:1, role over pips. The
 				     wrapper is what makes that expressible — two grid rows need two
 				     children, and the glyphs and the label are one thing. -->
-				<div class="rolecard-idmain">
-					<div class="rolecard-glyphs">
-						{#if card.category.position}
+					<div class="rolecard-idmain">
+						<div class="rolecard-glyphs">
+							{#if card.category.position}
+								<img
+									class="rolecard-glyph"
+									src={positionIcon(card.category.position, 'color')}
+									alt=""
+								/>
+								<span class="rolecard-plus" aria-hidden="true">+</span>
+							{/if}
 							<img
 								class="rolecard-glyph"
-								src={positionIcon(card.category.position, 'color')}
+								src={functionIcon(card.category.function, 'color')}
 								alt=""
 							/>
-							<span class="rolecard-plus" aria-hidden="true">+</span>
-						{/if}
-						<img
-							class="rolecard-glyph"
-							src={functionIcon(card.category.function, 'color')}
-							alt=""
-						/>
+						</div>
+						<span class="rolecard-label">{card.category.label}</span>
 					</div>
-					<span class="rolecard-label">{card.category.label}</span>
-				</div>
 
-				<!-- The rule belongs to the breakdown, so it moved up with it: it is
+					<!-- The rule belongs to the breakdown, so it moved up with it: it is
 				     what says "the count of this category decomposes from here",
 				     and on the parchment half it was heading nothing. -->
-				<div class="rolecard-elements">
-					{#each card.byElement as pip (pip.element)}
-						<span class="rolecard-el">
-							{#if pip.element !== 'none'}
-								<img
-									class="rolecard-el-icon"
-									src={elIcon(pip.element)}
-									alt={elLabel(pip.element)}
-								/>
-							{/if}
-							<span class="rolecard-el-count">{pip.count}</span>
-						</span>
-					{/each}
+					<div class="rolecard-elements">
+						{#each card.byElement as pip (pip.element)}
+							<span class="rolecard-el">
+								{#if pip.element !== 'none'}
+									<img
+										class="rolecard-el-icon"
+										src={elIcon(pip.element)}
+										alt={elLabel(pip.element)}
+									/>
+								{/if}
+								<span class="rolecard-el-count">{pip.count}</span>
+							</span>
+						{/each}
+					</div>
 				</div>
-			</div>
 
-			<!-- THE CONTENT HALF — what this card HOLDS.
+				<!-- THE CONTENT HALF — what this card HOLDS.
 			     ⚓ NATE 2026-08-11: no custom vector after all — "with the new
 			     layout, boxes are actually reading quite well, and that's the most
 			     flexible. Let's plan on just using CSS boxes unless a better
@@ -120,36 +151,81 @@
 			     pip row is gone with it.
 			     ↻ 2026-08-12: it holds the two FIGURES and nothing else now —
 			     stacked, with the watermark beside them rather than under them. -->
-			<div class="rolecard-body ctx-light">
-				<div class="rolecard-readout">
-					<!-- ⚓ NATE 2026-08-11: "provide", not "provides". The subject is the
+				<div class="rolecard-body ctx-light">
+					<div class="rolecard-readout">
+						<!-- ⚓ NATE 2026-08-11: "provide", not "provides". The subject is the
 					     characters, not the category — every one of these counts is
 					     plural and structurally always will be, so the -s was reading
 					     as agreement with the number and never agreed with it. -->
-					<span class="rolecard-fig">
-						<b>{card.providerCount}</b><small>provide</small>
-					</span>
-					<span class="rolecard-fig rolecard-fig--owned">
-						<b>{card.ownedCount}</b><small>owned</small>
-					</span>
+						<span class="rolecard-fig">
+							<b>{card.providerCount}</b><small>provide</small>
+						</span>
+						<span class="rolecard-fig rolecard-fig--owned">
+							<b>{card.ownedCount}</b><small>owned</small>
+						</span>
+					</div>
 				</div>
-			</div>
-		</button>
-	{/each}
-</div>
+			</button>
+		{/each}
+	</div>
+{/if}
 
 <style>
+	/* ── The folded form: one strip of four plates ────────────────────────
+	   The same four categories, in the band plates' register (glass at rest,
+	   gold inset when chosen — the selected-plate grammar band B uses), so a
+	   chosen role reads as a SETTING the grid is under rather than as a page. */
+	.rolestrip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+	.rolechip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.3rem 0.65rem 0.3rem 0.45rem;
+		border: none;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		cursor: pointer;
+		transition: background var(--t-snap);
+	}
+	.rolechip:hover {
+		background: var(--surface-hover);
+	}
+	.rolechip.is-active {
+		box-shadow: inset 0 0 0 2px var(--inset-line);
+		background: var(--surface-hover);
+	}
+	.rolechip img {
+		width: 20px;
+		height: 20px;
+		object-fit: contain;
+	}
+	.rolechip-count {
+		margin-left: 0.2rem;
+		font-variant-numeric: tabular-nums;
+		color: var(--muted);
+	}
+
 	/* The block's name. Deliberately the SAME register as CoveragePanel's
 	   "This team covers" — section heading (4xl), display face, centred, bright
 	   ink — because they are peers: two named blocks on one bare surface. On the
 	   scene a header carries no box to lend it presence, so it has to carry its
 	   own, which is why the face is Bitter and the ink is --text rather than the
 	   dim rung. */
+	/* ↻ 2026-10-07: left and --fs-xl — the cards open the Roster now, under
+	   "This team covers", and the two headings are peers in one column. */
 	.atlas-head {
-		margin: 0 0 0.75rem;
-		text-align: center;
+		margin: 0 0 0.6rem;
+		text-align: left;
 		font-family: var(--font-display);
-		font-size: var(--fs-4xl);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		color: var(--text);
@@ -215,7 +291,11 @@
 		   LARGER THAN --atlas-gap — that inequality is the whole effect: it is
 		   what makes four cards read as one group standing off the walls rather
 		   than as a row that happens to stop short. */
-		--atlas-margin-x: 48px;
+		/* ↻ 2026-10-07: 48 → 0. The walls this stood off were the Atlas PAGE's;
+		   the cards open the Roster now, with the grid's edges beneath them, and
+		   an inset row of cards over a full-width grid read as two columns that
+		   did not agree. */
+		--atlas-margin-x: 0px;
 		/* Never crush below this; a shorter window scrolls instead (the zone
 		   carries the scroll fade, so a clipped card reads as clipped).
 		   ⚠ IT IS THE CONTENT'S FLOOR, NOT A ROUND NUMBER, and it has moved four

@@ -10,7 +10,8 @@
 	let {
 		members,
 		conCapOf,
-		onFilterFacet
+		onFilterFacet,
+		compact = false
 	}: {
 		/** The working team, slot order preserved; null = an empty slot. */
 		members: readonly (CharacterIndexEntry | null)[];
@@ -18,6 +19,12 @@
 		conCapOf: (id: string) => number;
 		/** A coverage gap was clicked — drive the Source filter to fill it. */
 		onFilterFacet: (facet: FacetKey) => void;
+		/** ⚓ 2026-10-07: the Roster's top strip, scrolling with the grid — the
+		 *  bench had no room under it once the planner spaced its cards (measured
+		 *  at 1440×900 and 1600×1000: the ribbon runs to y≈880). Left-aligned
+		 *  and one heading size down, so it reads as a line ABOUT the team above
+		 *  the grid rather than as a page section. */
+		compact?: boolean;
 	} = $props();
 
 	const coverage = $derived(deriveCoverage(members, conCapOf));
@@ -104,7 +111,7 @@
      The gaps are FILTER DRIVERS — a `no` chip is a <button> that points the
      roster at whatever would fill it — which is why this wants to be directly
      above the roster rather than tucked into a band. -->
-<div class="tb-cover">
+<div class="tb-cover" class:tb-cover--compact={compact}>
 	<h2 class="cover-head">This team covers</h2>
 
 	<div class="cover-run">
@@ -135,7 +142,11 @@
 					<button
 						class="ts-pill ts-cov ts-cov--no"
 						title={coverageTitle(c.providers, c.state, c.label)}
-						onclick={() => onFilterFacet(c.facet)}>{c.label} <Mark name="close" size={12} /></button
+						onclick={() => onFilterFacet(c.facet)}
+						><!-- ↻ 2026-10-07: a SEARCH mark, not ✕ — the ✕ read as "dismiss this
+						     chip", and the chip's one action is the opposite: go and find
+						     someone who covers it. -->{c.label}
+						<Mark name="search" size={12} /></button
 					>
 				{:else}
 					<span
@@ -173,6 +184,26 @@
 		   between the chips and the Atlas. The axis changed under the property. */
 		flex: 0 0 auto;
 		min-width: 0;
+	}
+
+	.tb-cover--compact {
+		padding-block: 0 0.25rem;
+		gap: 0.45rem;
+	}
+	.tb-cover--compact .cover-head {
+		text-align: left;
+		font-size: var(--fs-xl);
+	}
+	.tb-cover--compact .cover-run,
+	.tb-cover--compact .ts-coverage {
+		justify-content: flex-start;
+	}
+	.tb-cover--compact .ts-coverage {
+		max-width: none;
+	}
+	.tb-cover--compact .ts-pill {
+		font-size: var(--fs-sm);
+		padding: 0.22rem 0.55rem;
 	}
 
 	/* ⚠ ON THE SCENE, PROSE TAKES THE BRIGHT INK, and a heading all the more:

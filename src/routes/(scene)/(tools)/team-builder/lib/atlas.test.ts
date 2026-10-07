@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { CharacterIndexEntry } from '$lib/types/character';
+import type { CharacterIndexEntry, CharacterRoles } from '$lib/types/character';
 import type { CapabilitySummary } from '$lib/capabilities/deriveCapabilities';
-import { buildAtlasCards } from './atlas';
+import { buildRoleSections, categoryOf } from './atlas';
+import { ROLE_CATEGORIES } from './roles';
 
 const cap = (partial: Partial<CapabilitySummary>): CapabilitySummary => ({
 	kind: 'heal',
@@ -21,71 +22,67 @@ const entry = (partial: Partial<CharacterIndexEntry>): CharacterIndexEntry =>
 		...partial
 	}) as CharacterIndexEntry;
 
-describe('buildAtlasCards', () => {
-	const bennett = entry({ id: 'bennett', element: 'pyro', caps: [cap({ kind: 'heal' })] });
-	const jean = entry({ id: 'jean', element: 'anemo', caps: [cap({ kind: 'heal' })] });
-	const gorou = entry({ id: 'gorou', element: 'geo', caps: [cap({ kind: 'heal', minCon: 4 })] });
-	// Uncurated but caps-COMPLETE (a frameless Stages-1-3 stub) — counts.
-	const stub = entry({
-		id: 'stub',
-		curated: false,
+const support = ROLE_CATEGORIES.find((c) => c.key === 'support')!;
+const onFieldDps = ROLE_CATEGORIES.find((c) => c.key === 'onField-dps')!;
+
+describe('categoryOf — is the role filter exactly one card?', () => {
+	it('names the card a function-only filter is', () => {
+		expect(categoryOf(new Set(), new Set(['support']))?.key).toBe('support');
+	});
+	it('names a position-scoped DPS card only with its position', () => {
+		expect(categoryOf(new Set(['onField']), new Set(['dps']))?.key).toBe('onField-dps');
+		expect(categoryOf(new Set(), new Set(['dps']))).toBeNull();
+	});
+	it('is no card for a mixed filter', () => {
+		expect(categoryOf(new Set(), new Set(['support', 'survivability']))).toBeNull();
+		expect(categoryOf(new Set(['onField']), new Set(['support']))).toBeNull();
+	});
+});
+
+describe('buildRoleSections', () => {
+	const roles: Record<string, CharacterRoles> = {
+		bennett: { position: ['offField'], function: ['support', 'survivability'] },
+		gorou: { position: ['offField'], function: ['support'] },
+		oddity: { position: ['offField'], function: ['support'] },
+		diluc: { position: ['onField'], function: ['dps'] },
+		klee: { position: ['onField'], function: ['dps'] }
+	};
+	const rolesOf = (id: string) => roles[id];
+	const bennett = entry({
+		id: 'bennett',
 		element: 'pyro',
-		caps: [cap({ kind: 'heal' })]
+		caps: [cap({ kind: 'buff', detail: 'atk', target: 'team' })]
 	});
-	// Uncurated AND capless — genuinely unknown, must NOT be counted.
-	const caplessStub = entry({ id: 'capless', curated: false, element: 'cryo', caps: [] });
-	const roster = [bennett, jean, gorou, stub, caplessStub];
-
-	it('counts caps-bearing providers per facet — incl. uncurated stubs, excl. capless', () => {
-		const cards = buildAtlasCards(
-			roster,
-			() => 6,
-			() => false
-		);
-		const heal = cards.find((c) => c.facet === 'heal');
-		// bennett, jean, gorou, AND the uncurated stub (its caps are complete);
-		// the capless uncurated stub is genuinely unknown and excluded.
-		expect(heal?.providerCount).toBe(4);
+	const gorou = entry({
+		id: 'gorou',
+		element: 'geo',
+		caps: [cap({ kind: 'buff', detail: 'def', target: 'team', minCon: 0 })]
 	});
+	// A Support by Genshin's table whose kit derives no Support facet.
+	const oddity = entry({ id: 'oddity', element: 'cryo', caps: [] });
 
-	it('honors the constellation cap (Gorou heals only at C4)', () => {
-		const atC0 = buildAtlasCards(
-			roster,
-			() => 0,
-			() => false
-		).find((c) => c.facet === 'heal');
-		expect(atC0?.providerCount).toBe(3); // bennett, jean, stub — gorou gated out at C0
-	});
-
-	it('counts owned providers from the ownership predicate', () => {
-		const owned = new Set(['bennett']);
-		const heal = buildAtlasCards(
-			roster,
-			() => 6,
-			(id) => owned.has(id)
-		).find((c) => c.facet === 'heal');
-		expect(heal?.ownedCount).toBe(1);
-	});
-
-	it('breaks providers down by element in wheel order', () => {
-		const heal = buildAtlasCards(
-			roster,
-			() => 6,
-			() => false
-		).find((c) => c.facet === 'heal');
-		expect(heal?.byElement).toEqual([
-			{ element: 'pyro', count: 2 }, // bennett + the uncurated (caps-complete) stub
-			{ element: 'anemo', count: 1 },
-			{ element: 'geo', count: 1 }
+	it('groups a support role by the facets under it', () => {
+		const sections = buildRoleSections(support, [bennett, gorou, oddity], rolesOf, () => 6);
+		expect(sections.find((s) => s.key === 'buff:atk')?.entries.map((e) => e.id)).toEqual([
+			'bennett'
+		]);
+		expect(sections.find((s) => s.key === 'buff:hpdef')?.entries.map((e) => e.id)).toEqual([
+			'gorou'
 		]);
 	});
 
-	it('omits facets with no providers', () => {
-		const cards = buildAtlasCards(
-			roster,
-			() => 6,
-			() => false
-		);
-		expect(cards.some((c) => c.facet === 'shield')).toBe(false);
+	it('keeps a member who provides none of the facets, in a section of their own', () => {
+		const sections = buildRoleSections(support, [bennett, gorou, oddity], rolesOf, () => 6);
+		expect(sections.at(-1)).toMatchObject({ key: 'rest', label: 'Also in this role' });
+		expect(sections.at(-1)!.entries.map((e) => e.id)).toEqual(['oddity']);
+	});
+
+	it('groups a DPS role by element, in wheel order', () => {
+		const diluc = entry({ id: 'diluc', element: 'pyro' });
+		const klee = entry({ id: 'klee', element: 'pyro' });
+		const sections = buildRoleSections(onFieldDps, [diluc, klee], rolesOf, () => 6);
+		expect(sections).toHaveLength(1);
+		expect(sections[0]).toMatchObject({ key: 'pyro', element: 'pyro' });
+		expect(sections[0].entries).toHaveLength(2);
 	});
 });

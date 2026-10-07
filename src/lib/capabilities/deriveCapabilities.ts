@@ -775,6 +775,19 @@ export function capMatchesFacet(cap: CapabilitySummary, facet: FacetKey): boolea
 	return cap.kind === facet;
 }
 
+/** Does any of these capabilities answer `facet` within `conCap`? THE one
+ *  provider test — the roster filter, the coverage checklist, the role
+ *  sections, the audition seed and the capability sweep all asked it in their
+ *  own words until 2026-10-07 (six copies), which is how two of them came to
+ *  read the constellation cap differently. */
+export function providesFacet(
+	caps: readonly CapabilitySummary[],
+	facet: FacetKey,
+	conCap: number
+): boolean {
+	return caps.some((c) => capMatchesFacet(c, facet) && c.minCon <= conCap);
+}
+
 /** Capability facets grouped under each function — the drill-down rows for the
  *  Support/Survivability cards. DPS drills by element instead, so its list is
  *  empty. `offFieldDamage` is intentionally omitted for now: whether Off-Field
