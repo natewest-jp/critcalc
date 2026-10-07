@@ -1,18 +1,24 @@
 /**
  * team-builder/lib/atlas.ts
  *
- * The Atlas: the Team Builder's question-indexed front door. One card per
- * capability facet — "who can provide this, how many do I own, at which
- * elements" — computed purely over the EAGER character index (no full payload
- * loads; same cost profile as the roster split).
+ * The role Atlas — the Imaginarium Theater categories that open the Roster.
+ * Computed purely over the EAGER character index (no full payload loads).
  *
- * A card exists only when at least one curated provider clears the active
- * constellation cap. Element pips let the browser scope a capability to an
- * element ("off-field PYRO DMG") without a separate card per element×facet.
+ * ↻ 2026-10-07 (Team Builder round, phase 3): the Atlas is no longer a tab of
+ * its own. Its four cards are the Roster's starting screen, picking one is the
+ * Roster's role filter, and the drill-down it used to open is now the
+ * Roster grid's SECTIONS. The per-slot "alternatives" view retired into the
+ * audition, which asks the same question with the slot's own facets.
  */
 
-import type { CharacterIndexEntry, CharacterRoles } from '$lib/types/character';
-import { FACETS, capMatchesFacet, type FacetKey } from './facets';
+import type {
+	CharacterIndexEntry,
+	CharacterRoles,
+	RoleFunction,
+	RolePosition
+} from '$lib/types/character';
+import { providesFacet } from '$lib/capabilities/deriveCapabilities';
+import { FACETS, type FacetKey } from './facets';
 import { FUNCTION_FACETS, inCategory, ROLE_CATEGORIES, type RoleCategory } from './roles';
 
 type RolesOf = (id: string) => CharacterRoles | undefined;
@@ -27,52 +33,6 @@ export const ATLAS_ELEMENT_ORDER = [
 	'anemo',
 	'geo'
 ] as const;
-
-export type AtlasCard = {
-	facet: FacetKey;
-	label: string;
-	hint: string;
-	/** Curated characters providing this capability at the active con cap. */
-	providerCount: number;
-	/** Of the providers, how many the user owns (ownership ledger). */
-	ownedCount: number;
-	/** Provider count per element, nonzero only, in wheel order. */
-	byElement: { element: string; count: number }[];
-};
-
-/**
- * @param roster    eager index entries (CharacterIndexEntry.caps drives this)
- * @param conCapOf  the constellation cap to clear for a character (mode-aware)
- * @param ownedOf   whether the user owns a character (ownership ledger)
- */
-export function buildAtlasCards(
-	roster: CharacterIndexEntry[],
-	conCapOf: (id: string) => number,
-	ownedOf: (id: string) => boolean
-): AtlasCard[] {
-	const cards: AtlasCard[] = [];
-	for (const { key, label, hint } of FACETS) {
-		const providers = roster.filter((e) =>
-			e.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCapOf(e.id))
-		);
-		if (providers.length === 0) continue;
-
-		const perElement = new Map<string, number>();
-		let ownedCount = 0;
-		for (const e of providers) {
-			if (ownedOf(e.id)) ownedCount++;
-			const el = e.element ?? 'none';
-			perElement.set(el, (perElement.get(el) ?? 0) + 1);
-		}
-		const byElement = ATLAS_ELEMENT_ORDER.filter((el) => perElement.has(el)).map((el) => ({
-			element: el,
-			count: perElement.get(el)!
-		}));
-
-		cards.push({ facet: key, label, hint, providerCount: providers.length, ownedCount, byElement });
-	}
-	return cards;
-}
 
 // ---------------------------------------------------------------------------
 // Role Atlas — the editorial Imaginarium Theater front door (roles.ts model).
@@ -168,9 +128,7 @@ export function buildDrillRows(
 
 	const rows: DrillRow[] = [];
 	for (const facet of FUNCTION_FACETS[category.function]) {
-		const providers = members.filter((e) =>
-			e.caps.some((c) => capMatchesFacet(c, facet) && c.minCon <= conCapOf(e.id))
-		);
+		const providers = members.filter((e) => providesFacet(e.caps, facet, conCapOf(e.id)));
 		if (providers.length === 0) continue;
 		const meta = FACET_META.get(facet);
 		rows.push({
@@ -185,43 +143,66 @@ export function buildDrillRows(
 	return rows;
 }
 
-export type SlotAltRow = {
-	/** The imported team character this row offers alternatives to. */
-	slotEntry: CharacterIndexEntry;
-	slotRoles: CharacterRoles | undefined;
-	/** Same-element characters sharing a Position and ≥1 Function, minus the slot. */
-	alternatives: CharacterIndexEntry[];
+/**
+ * The role a pair of role-filter sets IS, when it is exactly one of the four
+ * cards — the Roster draws that card as selected and groups its grid into the
+ * card's sections. Any other combination (two functions, a position on a
+ * function-only card) is just a filter, and draws flat.
+ */
+export function categoryOf(
+	position: ReadonlySet<RolePosition>,
+	fn: ReadonlySet<RoleFunction>
+): RoleCategory | null {
+	if (fn.size !== 1) return null;
+	const [only] = fn;
+	return (
+		ROLE_CATEGORIES.find(
+			(c) =>
+				c.function === only &&
+				(c.position ? position.size === 1 && position.has(c.position) : position.size === 0)
+		) ?? null
+	);
+}
+
+/** One heading's worth of the Roster grid under an active role. */
+export type RoleSection = {
+	key: string;
+	label: string;
+	/** An element icon heads a DPS section; a facet section has none. */
+	element?: string;
+	entries: CharacterIndexEntry[];
 };
 
 /**
- * Rotation-Planner arrival (?team=): one "alternatives" row per filled slot —
- * characters matching the slot's Element + Position(overlap) + any-Function
- * (overlap), excluding the slot's own character. Duplicate/empty slots skipped.
+ * The Roster's sections under a role card — the old drill-down, over whatever
+ * the Roster's OTHER filters let through (so search, element and "Owned" still
+ * narrow inside each section). Support/Survivability group by the facets under
+ * the function; DPS by element.
+ *
+ * ⚠ A facet section only holds PROVIDERS of that facet, so a role member who
+ * provides none of the listed facets would vanish from a grid that claims to
+ * show the role. They get a last section of their own rather than silently
+ * dropping out — the drill had the same hole, unseen because it never had a
+ * count to disagree with.
  */
-export function buildSlotAlternativeRows(
-	teamSlots: (string | null)[],
-	roster: CharacterIndexEntry[],
-	rolesOf: RolesOf
-): SlotAltRow[] {
-	const byId = new Map(roster.map((e) => [e.id, e]));
-	const seen = new Set<string>();
-	const rows: SlotAltRow[] = [];
-	for (const id of teamSlots) {
-		if (!id || seen.has(id)) continue;
-		seen.add(id);
-		const slotEntry = byId.get(id);
-		if (!slotEntry) continue;
-		const slotRoles = rolesOf(id);
-		const alternatives = roster.filter((e) => {
-			if (e.id === id) return false;
-			if ((e.element ?? null) !== (slotEntry.element ?? null)) return false;
-			const r = rolesOf(e.id);
-			if (!r || !slotRoles) return false;
-			if (!r.position.some((p) => slotRoles.position.includes(p))) return false;
-			if (!r.function.some((f) => slotRoles.function.includes(f))) return false;
-			return true;
-		});
-		rows.push({ slotEntry, slotRoles, alternatives });
-	}
-	return rows;
+export function buildRoleSections(
+	category: RoleCategory,
+	entries: CharacterIndexEntry[],
+	rolesOf: RolesOf,
+	conCapOf: (id: string) => number
+): RoleSection[] {
+	const rows = buildDrillRows(category, entries, rolesOf, conCapOf);
+	const sections: RoleSection[] = rows.map((r) =>
+		r.kind === 'element'
+			? { key: r.key, label: r.element, element: r.element, entries: r.entries }
+			: { key: r.key, label: r.label, entries: r.entries }
+	);
+	if (category.function === 'dps') return sections;
+	const placed = new Set(sections.flatMap((s) => s.entries.map((e) => e.id)));
+	const rest = entries.filter((e) => inCategory(rolesOf(e.id), category) && !placed.has(e.id));
+	if (rest.length > 0) sections.push({ key: 'rest', label: 'Also in this role', entries: rest });
+	return sections;
 }
+
+export { FUNCTION_FACETS };
+export type { FacetKey };

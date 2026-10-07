@@ -80,7 +80,8 @@
 		seedLenses = undefined,
 		onLensChange = undefined,
 		onElementLensChange = undefined,
-		candidatesArea = undefined
+		candidatesArea = undefined,
+		teamDeltas = undefined
 	}: {
 		ids: string[];
 		conMode: ConMode;
@@ -110,6 +111,12 @@
 		onElementLensChange?: (elements: string[]) => void;
 		/** Audition mode: the candidates strip — the host owns its tiles. */
 		candidatesArea?: Snippet;
+		/** Audition mode: what each candidate's swap changes about the TEAM —
+		 *  the question an audition is really asking. Facts, never a score. */
+		teamDeltas?: Record<
+			string,
+			{ gained: string[]; lost: string[]; resonance?: { before: string[]; after: string[] } }
+		>;
 	} = $props();
 
 	/** The element fallback's vocabulary — the Roster filter rail's seven, in order. */
@@ -607,6 +614,26 @@
 							>{/if}
 					</span>
 					<span class="cmp-col-cost">{costLine(i)}</span>
+					{#if teamDeltas?.[col.id]}
+						{@const d = teamDeltas[col.id]}
+						{#if d.gained.length + d.lost.length === 0 && !d.resonance}
+							<span class="cmp-col-delta cmp-col-delta--same">Team covers the same</span>
+						{:else}
+							{#if d.gained.length > 0}
+								<span class="cmp-col-delta">+ {d.gained.join(' · ')}</span>
+							{/if}
+							{#if d.lost.length > 0}
+								<span class="cmp-col-delta">− {d.lost.join(' · ')}</span>
+							{/if}
+							{#if d.resonance}
+								<span class="cmp-col-delta"
+									>{d.resonance.before.join(' + ') || 'No resonance'} → {d.resonance.after.join(
+										' + '
+									) || 'no resonance'}</span
+								>
+							{/if}
+						{/if}
+					{/if}
 				</span>
 				<span class="cmp-col-acts">
 					{#if onCommit && i !== anchorIndex}
@@ -945,6 +972,16 @@
 	.cmp-col-cost {
 		text-transform: none;
 		font-variant-numeric: tabular-nums;
+	}
+	/* ⚠ A swap's team delta is a FACT: neutral ink, never good/bad colour — a
+	   "lost" line is not a warning, it is what the swap costs. */
+	.cmp-col-delta {
+		font-size: var(--fs-xs);
+		color: var(--text);
+		white-space: normal;
+	}
+	.cmp-col-delta--same {
+		color: var(--chart-dim);
 	}
 	/* ↻ 2026-08-12: --ui-provisional — a data-quality state, not a domain colour. */
 	.cmp-col-stub {

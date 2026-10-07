@@ -1,3 +1,14 @@
+<script lang="ts" module>
+	import type { CharacterIndexEntry as Entry } from '$lib/types/character';
+	/** A headed run of tiles — the Team Builder's role sections. */
+	export type GridSection = {
+		key: string;
+		label: string;
+		element?: string;
+		entries: Entry[];
+	};
+</script>
+
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
@@ -26,7 +37,9 @@
 		emptyMessage = 'No characters match these filters.',
 		tile,
 		aboveGrid,
-		belowGrid
+		belowGrid,
+		sections,
+		sectionHead
 	}: {
 		roster: CharacterIndexEntry[];
 		filters: GridFilters;
@@ -38,6 +51,12 @@
 		 *  line above, a secondary bucket (the TB's "not yet curated") below. */
 		aboveGrid?: Snippet;
 		belowGrid?: Snippet;
+		/** When set, the tiles render as these HEADED runs instead of one flat
+		 *  grid. ⚠ The entries are taken AS GIVEN — the consumer has already
+		 *  filtered them (a section is a grouping of a result, not a query), and a
+		 *  character may sit in more than one. */
+		sections?: GridSection[];
+		sectionHead?: Snippet<[GridSection]>;
 	} = $props();
 
 	const filtered = $derived(
@@ -62,14 +81,30 @@
 <div class="cg-scroll scroll-fade" use:scrollFade>
 	{#if aboveGrid}{@render aboveGrid()}{/if}
 
-	<div class="cg-grid">
-		{#each shown as entry (entry.id)}
-			{@render tile(entry)}
+	{#if sections}
+		{#each sections as section (section.key)}
+			<section class="cg-section">
+				{#if sectionHead}{@render sectionHead(section)}{/if}
+				<div class="cg-grid">
+					{#each section.entries as entry (entry.id)}
+						{@render tile(entry)}
+					{/each}
+				</div>
+			</section>
 		{/each}
-		{#if filtered.length === 0}
+		{#if sections.length === 0}
 			<p class="cg-empty">{emptyMessage}</p>
 		{/if}
-	</div>
+	{:else}
+		<div class="cg-grid">
+			{#each shown as entry (entry.id)}
+				{@render tile(entry)}
+			{/each}
+			{#if filtered.length === 0}
+				<p class="cg-empty">{emptyMessage}</p>
+			{/if}
+		</div>
+	{/if}
 
 	{#if belowGrid}{@render belowGrid()}{/if}
 </div>
@@ -114,6 +149,12 @@
 		grid-auto-rows: max-content;
 		gap: var(--cg-gap, 8px);
 		align-content: start;
+	}
+	.cg-section {
+		flex: none;
+		display: flex;
+		flex-direction: column;
+		gap: var(--cg-gap, 8px);
 	}
 	.cg-empty {
 		grid-column: 1 / -1;

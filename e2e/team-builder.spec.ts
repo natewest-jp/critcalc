@@ -34,17 +34,30 @@ const ROSTER_SIZE = 127;
 const matchCount = async (page: Page) => parseInt(await page.locator('.tb-count').innerText(), 10);
 
 test.describe('roster and facets', () => {
-	test('atlas is the front door; the roster grid lives under its tab', async ({ page }) => {
+	test('the roster is the front door, opened by the role cards', async ({ page }) => {
+		// ⚓ 2026-10-07: TWO surfaces. The Atlas's role cards open the Roster now
+		// — full-size while nothing narrows it, the grid right beneath them.
 		await openTool(page, '/team-builder');
-		await expect(page.locator('.tb-atlas .rolecard'), '2×2 role cards').toHaveCount(4);
-		await expect(page.locator('.cg-grid'), 'grid hidden on the atlas tab').toHaveCount(0);
-
-		await openRoster(page);
+		await expect(page.locator('.band-b .tb-nav-item'), 'Roster | Compare').toHaveCount(2);
+		await expect(page.locator('.tb-atlas .rolecard'), 'four role cards').toHaveCount(4);
 		await expect(page.locator('.cg-grid').first().locator('.cc')).toHaveCount(ROSTER_SIZE);
 		await expect(
 			page.locator('.tb-stubs'),
 			'no uncurated bucket without capability facets'
 		).toHaveCount(0);
+
+		// A card IS the role filter: the grid narrows and SECTIONS (the old
+		// drill-down), and the cards fold to a strip with that one chosen.
+		await page.locator('.rolecard', { hasText: 'Support' }).click();
+		await expect(page.locator('.tb-atlas .rolecard')).toHaveCount(0);
+		await expect(page.locator('.rolechip.is-active')).toHaveText(/Support/);
+		expect(await page.locator('.cg-section').count()).toBeGreaterThan(1);
+		expect(await matchCount(page)).toBeLessThan(ROSTER_SIZE);
+
+		// Choosing it again clears it, and the front door comes back.
+		await page.locator('.rolechip.is-active').click();
+		await expect(page.locator('.tb-atlas .rolecard')).toHaveCount(4);
+		await expect(page.locator('.cg-section')).toHaveCount(0);
 	});
 
 	test('the heal facet narrows the grid to healers', async ({ page }) => {

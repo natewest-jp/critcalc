@@ -6,7 +6,8 @@ import {
 	deriveResonances,
 	facetsProvidedBy,
 	parseTeamParam,
-	serializeTeamParam
+	serializeTeamParam,
+	teamDelta
 } from './team';
 
 const VALID = new Set(['bennett', 'jean', 'diona', 'gorou', 'xingqiu']);
@@ -126,5 +127,42 @@ describe('deriveCoverage', () => {
 		);
 		expect(cov.find((c) => c.facet === 'heal')!.state).toBe('yes');
 		expect(cov.find((c) => c.facet === 'shield')!.state).toBe('unknown');
+	});
+});
+
+describe('teamDelta — what a swap changes about the team', () => {
+	const mk = (
+		id: string,
+		element: string,
+		caps: Partial<CapabilitySummary>[]
+	): CharacterIndexEntry =>
+		({
+			id,
+			name: id,
+			displayName: id[0].toUpperCase() + id.slice(1),
+			rarity: 4,
+			curated: true,
+			element,
+			caps: caps.map((c) => ({ kind: 'heal', minCon: 0, conditional: false, ...c }))
+		}) as CharacterIndexEntry;
+	const bennett = mk('bennett', 'pyro', [{ kind: 'heal' }]);
+	const xiangling = mk('xiangling', 'pyro', [{ kind: 'offFieldDamage' }]);
+	const xingqiu = mk('xingqiu', 'hydro', [{ kind: 'resShred', target: 'enemy' }]);
+	const diona = mk('diona', 'cryo', [{ kind: 'shield' }]);
+	const kazuha = mk('kazuha', 'anemo', [{ kind: 'grouping' }]);
+	const before = [bennett, xiangling, xingqiu, kazuha];
+
+	it('lists what the team gains and what it loses', () => {
+		const d = teamDelta(before, [bennett, xiangling, diona, kazuha], () => 0);
+		expect(d.gained).toEqual(['Shields']);
+		expect(d.lost).toEqual(['RES shred']);
+	});
+
+	it('names a resonance change only when the party is full and it changes', () => {
+		const d = teamDelta(before, [bennett, mk('yoimiya', 'pyro', []), xingqiu, kazuha], () => 0);
+		expect(d.resonance).toBeUndefined(); // Fervent Flames either way
+		const swapped = teamDelta(before, [bennett, diona, xingqiu, kazuha], () => 0);
+		expect(swapped.resonance?.before).toContain('Fervent Flames');
+		expect(swapped.resonance?.after).not.toContain('Fervent Flames');
 	});
 });

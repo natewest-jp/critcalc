@@ -21,7 +21,7 @@
  */
 
 import type { CapabilitySummary, FacetKey } from '$lib/capabilities/deriveCapabilities';
-import { capMatchesFacet } from '$lib/capabilities/deriveCapabilities';
+import { capMatchesFacet, providesFacet } from '$lib/capabilities/deriveCapabilities';
 import type { CharacterIndexEntry } from '$lib/types/character';
 
 // ---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ export function matchesFacets(
 	conCap: number
 ): boolean {
 	for (const facet of facets) {
-		if (!caps.some((c) => capMatchesFacet(c, facet) && c.minCon <= conCap)) return false;
+		if (!providesFacet(caps, facet, conCap)) return false;
 	}
 	return true;
 }

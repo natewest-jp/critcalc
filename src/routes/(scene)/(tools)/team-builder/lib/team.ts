@@ -9,7 +9,8 @@
  */
 
 import type { CharacterIndexEntry } from '$lib/types/character';
-import { FACETS, capMatchesFacet, isCapabilityUnknown, type FacetKey } from './facets';
+import { FACETS, isCapabilityUnknown, type FacetKey } from './facets';
+import { providesFacet } from '$lib/capabilities/deriveCapabilities';
 
 export const TEAM_SIZE = 4;
 
@@ -51,7 +52,9 @@ export function serializeTeamParam(slots: readonly TeamSlot[]): string {
 // planner's always-on strip); re-exported here for this tool's consumers.
 // ---------------------------------------------------------------------------
 
-export { deriveResonances, type Resonance, type ResonanceFacts } from '$lib/utils/resonance';
+import { deriveResonances } from '$lib/utils/resonance';
+export { deriveResonances };
+export type { Resonance, ResonanceFacts } from '$lib/utils/resonance';
 
 // ---------------------------------------------------------------------------
 // Coverage checklist — present/absent capability facts across the slots
@@ -71,9 +74,7 @@ export type CoverageEntry = {
  *  "find someone who does what this character does" pre-seed. (Phase 6's
  *  in-Team-Builder Audition mode seeds the Source filters with this.) */
 export function facetsProvidedBy(entry: CharacterIndexEntry, conCap: number): FacetKey[] {
-	return FACETS.filter(({ key }) =>
-		entry.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCap)
-	).map(({ key }) => key);
+	return FACETS.filter(({ key }) => providesFacet(entry.caps, key, conCap)).map(({ key }) => key);
 }
 
 /**
@@ -94,9 +95,57 @@ export function deriveCoverage(
 
 	return FACETS.map(({ key, label }) => {
 		const providers = filled
-			.filter((m) => m.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCapOf(m.id)))
+			.filter((m) => providesFacet(m.caps, key, conCapOf(m.id)))
 			.map((m) => m.displayName);
 		const state: CoverageState = providers.length > 0 ? 'yes' : anyUnknown ? 'unknown' : 'no';
 		return { facet: key, label, state, providers };
 	});
+}
+
+// ---------------------------------------------------------------------------
+// Audition delta — what a swap changes about the TEAM
+// ---------------------------------------------------------------------------
+
+export type TeamDelta = {
+	/** Capabilities the team has after the swap and not before (labels). */
+	gained: string[];
+	/** Capabilities the team loses. */
+	lost: string[];
+	/** Resonance labels before and after — present only when the party is
+	 *  full (resonance needs four) and the swap changes it. */
+	resonance?: { before: string[]; after: string[] };
+};
+
+/**
+ * ⚓ The question an audition actually asks (Team Builder round, 2026-10-07):
+ * not "how does this kit compare to that one" but "what happens to my TEAM if
+ * I make this swap". Facts only — gained and lost, never a net score, and an
+ * 'unknown' coverage state (an uncurated kit) counts as neither, so a stub
+ * never reads as a loss.
+ */
+export function teamDelta(
+	before: readonly (CharacterIndexEntry | null)[],
+	after: readonly (CharacterIndexEntry | null)[],
+	conCapOf: (id: string) => number
+): TeamDelta {
+	const was = new Map(deriveCoverage(before, conCapOf).map((c) => [c.facet, c]));
+	const gained: string[] = [];
+	const lost: string[] = [];
+	for (const c of deriveCoverage(after, conCapOf)) {
+		const prior = was.get(c.facet)?.state;
+		if (c.state === 'yes' && prior === 'no') gained.push(c.label);
+		if (c.state === 'no' && prior === 'yes') lost.push(c.label);
+	}
+	const res = (team: readonly (CharacterIndexEntry | null)[]) =>
+		deriveResonances(team.map((m) => m?.element ?? null));
+	const a = res(before);
+	const b = res(after);
+	const labels = (r: typeof a) => r.active.map((x) => x.label);
+	const changed =
+		!a.needsFullTeam && !b.needsFullTeam && labels(a).join('|') !== labels(b).join('|');
+	return {
+		gained,
+		lost,
+		...(changed && { resonance: { before: labels(a), after: labels(b) } })
+	};
 }

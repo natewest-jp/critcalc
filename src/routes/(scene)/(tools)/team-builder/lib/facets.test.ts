@@ -109,7 +109,11 @@ describe('splitRoster', () => {
 	const conCap = () => 0;
 
 	it('returns everyone when no capability facet is active', () => {
-		const { matches, uncurated } = splitRoster(roster, IDENTITY, new Set(), conCap);
+		const { matches, uncurated } = splitRoster(
+			roster,
+			{ identity: IDENTITY, facets: new Set() },
+			conCap
+		);
 		expect(matches.map((e) => e.id)).toEqual(['healer', 'dps', 'stub', 'capstub']);
 		expect(uncurated).toEqual([]);
 	});
@@ -117,8 +121,7 @@ describe('splitRoster', () => {
 	it('buckets only capability-UNKNOWN characters; caps-complete stubs filter normally', () => {
 		const { matches, uncurated } = splitRoster(
 			roster,
-			IDENTITY,
-			new Set<FacetKey>(['heal']),
+			{ identity: IDENTITY, facets: new Set<FacetKey>(['heal']) },
 			conCap
 		);
 		// healer + capStub (uncurated but caps-complete) both match the heal facet;
@@ -132,8 +135,7 @@ describe('splitRoster', () => {
 		const identity = { ...IDENTITY, search: 'healer' };
 		const { matches, uncurated } = splitRoster(
 			roster,
-			identity,
-			new Set<FacetKey>(['heal']),
+			{ identity, facets: new Set<FacetKey>(['heal']) },
 			conCap
 		);
 		expect(matches.map((e) => e.id)).toEqual(['healer']);
@@ -151,22 +153,64 @@ describe('splitRoster — ownership view', () => {
 		id === 'owned' ? 'owned' : id === 'wished' ? 'wishlist' : undefined;
 
 	it("'all' keeps everyone", () => {
-		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap, 'all', ownerOf);
+		const { matches } = splitRoster(
+			roster,
+			{ identity: IDENTITY, facets: new Set(), ownershipView: 'all' },
+			conCap,
+			ownerOf
+		);
 		expect(matches.map((e) => e.id)).toEqual(['owned', 'wished', 'neither']);
 	});
 
 	it("'owned' keeps only owned-marked characters", () => {
-		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap, 'owned', ownerOf);
+		const { matches } = splitRoster(
+			roster,
+			{ identity: IDENTITY, facets: new Set(), ownershipView: 'owned' },
+			conCap,
+			ownerOf
+		);
 		expect(matches.map((e) => e.id)).toEqual(['owned']);
 	});
 
 	it("'wishlist' keeps only wishlisted characters", () => {
-		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap, 'wishlist', ownerOf);
+		const { matches } = splitRoster(
+			roster,
+			{ identity: IDENTITY, facets: new Set(), ownershipView: 'wishlist' },
+			conCap,
+			ownerOf
+		);
 		expect(matches.map((e) => e.id)).toEqual(['wished']);
 	});
 
 	it('defaults to showing everyone when ownership args are omitted', () => {
-		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap);
+		const { matches } = splitRoster(roster, { identity: IDENTITY, facets: new Set() }, conCap);
 		expect(matches.map((e) => e.id)).toEqual(['owned', 'wished', 'neither']);
+	});
+});
+
+describe("splitRoster — the audition's half of the finder", () => {
+	const a = entry({ id: 'a', caps: [] });
+	const b = entry({ id: 'b', caps: [] });
+	const c = entry({ id: 'c', caps: [] });
+	const roster = [a, b, c];
+	const ownerOf = (id: string): 'owned' | undefined => (id === 'c' ? 'owned' : undefined);
+
+	it('never offers an excluded character (the team)', () => {
+		const { matches } = splitRoster(
+			roster,
+			{ identity: IDENTITY, facets: new Set(), exclude: new Set(['b']) },
+			() => 0
+		);
+		expect(matches.map((e) => e.id)).toEqual(['a', 'c']);
+	});
+
+	it('ranks owned characters first, keeping roster order within each half', () => {
+		const { matches } = splitRoster(
+			roster,
+			{ identity: IDENTITY, facets: new Set(), rank: 'ownedFirst' },
+			() => 0,
+			ownerOf
+		);
+		expect(matches.map((e) => e.id)).toEqual(['c', 'a', 'b']);
 	});
 });

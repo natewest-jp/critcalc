@@ -36,6 +36,7 @@ import { fileURLToPath } from 'node:url';
 import {
 	FUNCTION_FACETS,
 	capMatchesFacet,
+	providesFacet,
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '../src/lib/capabilities/deriveCapabilities.ts';
@@ -270,8 +271,7 @@ for (const id of inScope) {
 	for (const fn of ['support', 'survivability']) {
 		if (!roles.function.includes(fn)) continue;
 		const facets = FUNCTION_FACETS[fn];
-		const backedAt = (conCap) =>
-			facets.some((f) => char.summary.some((s) => capMatchesFacet(s, f) && s.minCon <= conCap));
+		const backedAt = (conCap) => facets.some((f) => providesFacet(char.summary, f, conCap));
 		if (!backedAt(6)) {
 			report(
 				'roleUnbacked',

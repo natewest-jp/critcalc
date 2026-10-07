@@ -35,26 +35,21 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
-	import CharacterGrid from '$lib/components/CharacterGrid.svelte';
+	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
 	import CharacterFilterRail from '$lib/components/CharacterFilterRail.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import CoveragePanel from './lib/CoveragePanel.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
-	import {
-		buildRoleCards,
-		buildDrillRows,
-		buildSlotAlternativeRows,
-		type DrillRow
-	} from './lib/atlas';
+	import { buildRoleCards, buildRoleSections, categoryOf } from './lib/atlas';
 	import type { RoleCategory, RoleFilter } from './lib/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
 	import { MAX_COMPARE, lensFacet, type CapRowKey } from './lib/compare';
-	import { facetsProvidedBy, parseTeamParam, type TeamSlot } from './lib/team';
+	import { facetsProvidedBy, parseTeamParam, teamDelta, type TeamSlot } from './lib/team';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 
 	// ---------------------------------------------------------------------------
@@ -143,12 +138,11 @@
 			// audition, which the effect opens as soon as the tabs are restored.
 			return;
 		}
-		// A team arrival (either other param) opens the Atlas on the per-slot
-		// "alternatives" view — the reason both hand-offs exist.
-		if (teamSlots.some((s) => s !== null)) {
-			atlasMode = 'slots';
-			sourceTab = 'atlas';
-		}
+		// A team arrival (either other param) opens the Roster, the team above it.
+		// ↻ 2026-10-07: it used to open the Atlas's per-slot "alternatives" view,
+		// which retired into the audition — ⇄ on a bench card asks the same
+		// question with that slot's own facets, and the constellation lens.
+		sourceTab = 'roster';
 	});
 
 	// ---------------------------------------------------------------------------
@@ -205,12 +199,19 @@
 	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
 
 	// ---------------------------------------------------------------------------
-	// Source panel: Atlas (question-indexed cards) ⇄ Roster (grid) ⇄ Compare
+	// Source panel: Roster (the finder) ⇄ Compare
+	//
+	// ⚓ 2026-10-07 (Nate, the Team Builder round): TWO surfaces, not three. The
+	// Atlas, the Roster and the audition's candidate strip were three finders
+	// answering "who could do this?" with three sets of rules, and each tab felt
+	// thin on its own. The Atlas's role cards are the Roster's front door now
+	// and its drill-down the Roster's sections; the audition asks the same
+	// pipeline (`splitRoster`).
 	// ---------------------------------------------------------------------------
 
-	type SourceTab = 'atlas' | 'roster' | 'compare';
+	type SourceTab = 'roster' | 'compare';
 
-	let sourceTab = $state<SourceTab>('atlas');
+	let sourceTab = $state<SourceTab>('roster');
 	// Sticky: flips true on first Roster visit and stays — the roster grid is
 	// then kept mounted (CSS-hidden) across tab toggles. See the template note.
 	let rosterEverShown = $state(false);
@@ -221,22 +222,11 @@
 	// The three routes, as data — band B's navigation renders them in a loop now
 	// that each is a plate rather than a hand-written .tab.
 	const SOURCES: { key: SourceTab; label: string }[] = [
-		{ key: 'atlas', label: 'Atlas' },
 		{ key: 'roster', label: 'Roster' },
 		{ key: 'compare', label: 'Compare' }
 	];
 
 	// (Compare's reachability gate lives with the compare state, further down.)
-
-	// The Atlas has three faces: the four role cards, one card's drill-down, and
-	// (on Rotation-Planner arrival) per-slot alternatives.
-	let atlasMode = $state<'cards' | 'drill' | 'slots'>('cards');
-	let drilledCategory = $state<RoleCategory | null>(null);
-
-	// Which Source views hand their scroller a definite height to fill, and which
-	// end at their content. Named because it is now asked TWICE — once by the
-	// scroller and once by the box that holds it and the pinned Atlas head.
-	const sourceFills = $derived(sourceTab !== 'atlas' || atlasMode === 'cards');
 
 	// ---------------------------------------------------------------------------
 	// Filters
@@ -317,14 +307,20 @@
 		sourceTab = 'roster';
 	}
 
-	// ── Role Atlas navigation (self-contained: drill shows tiles inline) ──────
+	// ── The role cards ARE the Roster's role filter ─────────────────────────
+	/** The card the role filter currently is, if it is exactly one. */
+	const activeCategory = $derived(categoryOf(rolePosition, roleFunction));
+
+	/** Picking a card sets the role filter to it; picking the active card again
+	 *  clears it. The rail's role chips edit the same two sets, so a card and
+	 *  its chips can never disagree. */
 	function openCategory(cat: RoleCategory): void {
-		drilledCategory = cat;
-		atlasMode = 'drill';
-	}
-	function backToCards(): void {
-		atlasMode = 'cards';
-		drilledCategory = null;
+		const same = activeCategory?.key === cat.key;
+		rolePosition.clear();
+		roleFunction.clear();
+		if (same) return;
+		if (cat.position) rolePosition.add(cat.position);
+		roleFunction.add(cat.function);
 	}
 	function toggleRolePosition(p: RolePosition): void {
 		toggleSet(rolePosition, p);
@@ -353,16 +349,14 @@
 		const own = mounted ? $ownership : {};
 		return splitRoster(
 			roster,
-			filters,
-			activeFacets,
-			(id) => conCapFor(conMode, cons[id]),
-			ownershipView,
-			(id) => own[id],
 			{
-				position: rolePosition,
-				function: roleFunction,
-				rolesOf
-			} satisfies RoleFilter
+				identity: filters,
+				facets: activeFacets,
+				ownershipView,
+				roles: { position: rolePosition, function: roleFunction, rolesOf } satisfies RoleFilter
+			},
+			(id) => conCapFor(conMode, cons[id]),
+			(id) => own[id]
 		);
 	});
 
@@ -377,18 +371,37 @@
 			: 'No curated character matches.'
 	);
 
-	// Role Atlas — the four headline cards + the active card's drill rows, over
-	// the eager index. Roles come from the joined sidecar (rolesOf); capability
-	// drill rows still honor curation + the con cap.
+	// The four role cards, over the eager index. Roles come from the joined
+	// sidecar (rolesOf).
 	const roleCards = $derived.by(() => {
 		const own = mounted ? $ownership : {};
 		return buildRoleCards(roster, rolesOf, (id) => own[id] === 'owned');
 	});
-	const drillRows = $derived.by(() => {
-		if (!drilledCategory) return [] as DrillRow[];
+
+	/** Under an active role card the grid is SECTIONED — the old drill-down,
+	 *  over whatever the other filters let through. Flat otherwise. */
+	const rosterSections = $derived.by((): GridSection[] | undefined => {
+		if (!activeCategory) return undefined;
 		const cons = mounted ? $constellations : {};
-		return buildDrillRows(drilledCategory, roster, rolesOf, (id) => conCapFor(conMode, cons[id]));
+		return buildRoleSections(activeCategory, split.matches, rolesOf, (id) =>
+			conCapFor(conMode, cons[id])
+		);
 	});
+
+	/** Anything narrowing the roster at all? The role cards stand full-size as
+	 *  the front door only while nothing does; then they fold to a strip and
+	 *  hand the screen to the grid. */
+	const rosterNarrowed = $derived(
+		extraFiltersActive ||
+			filters.elements.size > 0 ||
+			filters.weapons.size > 0 ||
+			filters.rarities.size > 0 ||
+			filters.region !== '' ||
+			filters.search.trim() !== '' ||
+			(filters.factionBuffs?.size ?? 0) > 0 ||
+			ownershipView !== 'all' ||
+			editRoster
+	);
 
 	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
 
@@ -494,8 +507,8 @@
 	/** The ELEMENT fallback's selection — populated only when the incumbent has
 	 *  no facet to match on (a main DPS). See CompareView's note. */
 	const auditionElements = new SvelteSet<string>();
-	/** Where commit/cancel returns to — the tab active when the audition began. */
-	let auditionReturnTab = $state<'atlas' | 'roster'>('atlas');
+	/** Where commit/cancel returns to. (One place now — the Roster.) */
+	const auditionReturnTab: SourceTab = 'roster';
 
 	function toggleCompare(id: string): void {
 		if (id === anchorId) return; // the audition anchor stays pinned
@@ -567,7 +580,6 @@
 		// The element fallback seeds itself in CompareView (it owns the decision
 		// about which vocabulary is on offer); this only has to start clean.
 		auditionElements.clear();
-		auditionReturnTab = sourceTab === 'compare' ? 'atlas' : sourceTab;
 		selectedId = null;
 		sourceTab = 'compare';
 	}
@@ -647,15 +659,43 @@
 	const auditionCandidates = $derived.by(() => {
 		if (anchorId === null) return [] as CharacterIndexEntry[];
 		const cons = mounted ? $constellations : {};
-		const wanted = [...auditionFacets];
-		const elements = [...auditionElements];
-		return roster.filter((e) => {
-			if (e.id === anchorId || teamSlots.includes(e.id)) return false;
-			if (elements.length > 0 && !elements.includes(e.element ?? '')) return false;
-			if (wanted.length === 0) return true;
-			const provided = facetsProvidedBy(e, conCapFor(conMode, cons[e.id]));
-			return wanted.every((f) => provided.includes(f));
-		});
+		const own = mounted ? $ownership : {};
+		// ⚓ The SAME finder the Roster grid runs (2026-10-07) — it used to be its
+		// own loop that ignored ownership. Owned candidates first, when you have
+		// told the tool what you own.
+		return splitRoster(
+			roster,
+			{
+				identity: { ...NO_IDENTITY, elements: auditionElements },
+				facets: auditionFacets,
+				exclude: new Set([anchorId, ...teamSlots.filter((s): s is string => s !== null)]),
+				rank: ownsAny ? 'ownedFirst' : undefined
+			},
+			(id) => conCapFor(conMode, cons[id]),
+			(id) => own[id]
+		).matches;
+	});
+
+	/** An identity filter that narrows nothing — the audition's base. */
+	const NO_IDENTITY = {
+		elements: new Set<string>(),
+		weapons: new Set<string>(),
+		rarities: new Set<number>(),
+		region: '',
+		search: ''
+	};
+
+	/** What each candidate's swap would change about the TEAM — gained and lost
+	 *  capabilities, and the resonance when the party is full. */
+	const auditionDeltas = $derived.by(() => {
+		if (anchorId === null || auditionSlot === null) return undefined;
+		const out: Record<string, ReturnType<typeof teamDelta>> = {};
+		for (const id of compareIds) {
+			if (id === anchorId) continue;
+			const after = members.map((m, i) => (i === auditionSlot ? getCharacterIndexEntry(id) : m));
+			out[id] = teamDelta(members, after, coverageCapOf);
+		}
+		return out;
 	});
 
 	/** CompareView's ELEMENT lens changed (the fallback only). */
@@ -709,8 +749,12 @@
 	);
 	const filledCount = $derived(members.filter((m) => m != null).length);
 
-	// Rotation-Planner arrival: one alternatives row per filled slot.
-	const slotRows = $derived.by(() => buildSlotAlternativeRows(teamSlots, roster, rolesOf));
+	/** The constellation a TEAM member is read at — the tab's own override,
+	 *  then the roster's, under the lens. ⚠ Coverage used to skip the lens
+	 *  (`tabCon ?? roster`, whatever the menu said), so at "C6" the checklist
+	 *  and the grid beneath it answered at two different constellations. */
+	const coverageCapOf = (id: string) =>
+		conCapFor(conMode, rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0));
 
 	const teamStateOf = (id: string): 'in' | 'out' | 'full' =>
 		teamSlots.includes(id) ? 'in' : teamSlots.every((s) => s !== null) ? 'full' : 'out';
@@ -828,6 +872,7 @@
 				<button
 					class="tb-cand"
 					class:tb-cand--on={on}
+					class:tb-cand--unowned={ownsAny && $ownership[entry.id] !== 'owned'}
 					style:--el-color={elColor(entry.element)}
 					disabled={!on && compareIds.size >= MAX_COMPARE}
 					onclick={() => toggleCompare(entry.id)}
@@ -864,8 +909,28 @@
 	{@render charTile(entry, false)}
 {/snippet}
 
-<!-- Above the tiles, inside the grid's scroller. -->
+<!-- Above the tiles, inside the grid's scroller: what the team covers, the
+     role cards (full-size as the front door, a strip once anything narrows
+     the roster), and the count. All three scroll away with the grid. -->
 {#snippet rosterCount()}
+	{#if filledCount > 0}
+		<CoveragePanel
+			{members}
+			conCapOf={coverageCapOf}
+			onFilterFacet={(f) => selectCapability(f)}
+			compact
+		/>
+	{/if}
+	<!-- Below `compact` the cards are always the strip: four full cards stack
+	     one per screen at 390, and the grid is what a phone came for. -->
+	<div class="tb-atlas" class:tb-atlas--compact={rosterNarrowed || bandFolded}>
+		<AtlasView
+			{roleCards}
+			onSelectCategory={openCategory}
+			activeKey={activeCategory?.key ?? null}
+			compact={rosterNarrowed || bandFolded}
+		/>
+	</div>
 	<p class="tb-count" role="status">
 		{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
 		{#if activeFacets.size > 0 && conMode === 'mine'}
@@ -901,6 +966,21 @@
 			</div>
 		</section>
 	{/if}
+{/snippet}
+
+<!-- A role section's heading — the old drill row's glass strip. -->
+{#snippet rosterSectionHead(section: GridSection)}
+	<header class="tb-slotrow-head ctx-glass">
+		{#if section.element}
+			<img class="tb-drill-elicon" src={elementIcon(section.element)} alt="" />
+			<span class="tb-slotrow-name tb-slotrow-name--el">{section.element}</span>
+		{:else}
+			<span class="tb-slotrow-name">{section.label}</span>
+		{/if}
+		<span class="tb-slotrow-count"
+			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
+		>
+	</header>
 {/snippet}
 
 <!-- The rail sections the shared grid doesn't own: the roster ledger, the
@@ -1276,31 +1356,11 @@
 	     exception cuts one way only, because there is no light ground anywhere
 	     to inherit from. -->
 	<div class="tb-stack ctx-dark">
-		<!-- WHAT THE TEAM IS and WHAT IT COVERS — two panels, above the roster
-		     the coverage gaps filter. The gate is HERE rather than inside either
-		     component so an empty team costs no boxes and no gutter: four blank
-		     cards in the ribbon already say there is no team. -->
-		{#if filledCount > 0 && sourceTab !== 'compare'}
-			<!-- ↻ 2026-08-09: ONE component again. TeamFacts (resonance + the
-			     faction facts) used to ride the banner's far end; the banner is a
-			     bare on-scene header now and the facts moved INTO the capability
-			     run as its left-hand cluster, which is where they always belonged
-			     — "what the team is" and "what it covers" are one reading.
-
-			     ↻ ⚓ NATE 2026-08-13: NOT ON COMPARE. The coverage read-out answers
-			     "what does my TEAM have", and Compare has already left the team —
-			     you reach it from the Roster's compare buttons as often as from
-			     the bench, and the characters in it need not be on the team at
-			     all. Two panels answering two different questions were competing
-			     for the same vertical space, and the comparison is what that space
-			     is for. It stays on the Atlas and the Roster, where picks are made
-			     against a team. -->
-			<CoveragePanel
-				{members}
-				conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
-				onFilterFacet={(f) => selectCapability(f)}
-			/>
-		{/if}
+		<!-- ↻ 2026-10-07: WHAT THE TEAM COVERS moved INTO the Roster's scroller
+		     (see rosterCount). It was meant to go under the bench, but measured
+		     with the bench spaced by the planner the ribbon runs to y≈880 at
+		     1440×900, leaving nothing beneath it — ⚓ Nate's fallback: a compact
+		     strip at the top of the Roster that scrolls with the grid. -->
 
 		<!-- .tb-frame is GONE — it existed only to supply a ground, a radius and
 		     a clip, and with no ground there is nothing to round or clip. The
@@ -1331,127 +1391,8 @@
 		     instant the content behind it started moving. A mask cannot be told
 		     to spare one child. So the head and the scroller are two boxes, and
 		     only the second one scrolls. -->
-		<div class="tb-sourcebox" class:tb-sourcebox--fill={sourceFills}>
-			{#if sourceTab === 'atlas' && atlasMode === 'slots' && slotRows.length > 0}
-				<div class="tb-atlas-head">
-					<p class="tb-atlas-lead">
-						Alternatives for each character on your team — same element and role.
-					</p>
-					<button class="btn btn--glass ctx-glass" onclick={backToCards}
-						>Browse all roles <Mark name="forward" /></button
-					>
-				</div>
-			{:else if sourceTab === 'atlas' && atlasMode === 'drill' && drilledCategory}
-				<div class="tb-atlas-head">
-					<button class="btn btn--glass ctx-glass" onclick={backToCards}
-						><Mark name="back" /> All roles</button
-					>
-					<div class="tb-drill-title">
-						{#if drilledCategory.position}
-							<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
-						{/if}
-						<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
-						<span>{drilledCategory.label}</span>
-					</div>
-				</div>
-			{/if}
-			<section class="tb-source scroll-fade" class:tb-source--fill={sourceFills} use:scrollFade>
-				{#if sourceTab === 'atlas'}
-					<div class="tb-atlas">
-						{#if atlasMode === 'slots' && slotRows.length > 0}
-							{#each slotRows as row (row.slotEntry.id)}
-								<section class="tb-slotrow">
-									<header
-										class="tb-slotrow-head ctx-glass"
-										style:--el-color={elColor(row.slotEntry.element)}
-									>
-										{#if hasAvatar(row.slotEntry.id)}
-											<img
-												class="tb-slotrow-avatar ctx-dark"
-												src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
-												alt=""
-												loading="lazy"
-											/>
-										{:else}
-											<span class="tb-slotrow-initials ctx-dark"
-												>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
-											>
-										{/if}
-										<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
-										{#if row.slotRoles}
-											<span class="tb-slotrow-roles">
-												{#each row.slotRoles.position as p (p)}
-													<img
-														src={positionIcon(p, 'color')}
-														alt={POSITION_LABEL[p]}
-														title={POSITION_LABEL[p]}
-													/>
-												{/each}
-												{#each row.slotRoles.function as f (f)}
-													<img
-														src={functionIcon(f, 'color')}
-														alt={FUNCTION_LABEL[f]}
-														title={FUNCTION_LABEL[f]}
-													/>
-												{/each}
-											</span>
-										{/if}
-										<span class="tb-slotrow-count"
-											>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
-										>
-									</header>
-									{#if row.alternatives.length > 0}
-										<div class="tb-grid">
-											{#each row.alternatives as entry (entry.id)}
-												{@render charTile(entry, false)}
-											{/each}
-										</div>
-									{:else}
-										<p class="note tb-note">No same-element alternative in this role yet.</p>
-									{/if}
-								</section>
-							{/each}
-						{:else if atlasMode === 'drill' && drilledCategory}
-							{#each drillRows as row (row.key)}
-								<section class="tb-slotrow">
-									<header class="tb-slotrow-head ctx-glass">
-										{#if row.kind === 'element'}
-											<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
-											<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
-										{:else}
-											<span class="tb-slotrow-name">{row.label}</span>
-										{/if}
-										<span class="tb-slotrow-count"
-											>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
-										>
-									</header>
-									<div class="tb-grid">
-										{#each row.entries as entry (entry.id)}
-											{@render charTile(entry, false)}
-										{/each}
-									</div>
-								</section>
-							{/each}
-							{#if drillRows.length === 0}
-								<p class="note tb-note">No curated providers in this role yet.</p>
-							{/if}
-						{:else}
-							<!-- ⚓ NATE 2026-08-10: the lead line and the citation that used to
-						     bracket these cards are GONE — "they're just clutter". Four
-						     cards that each name a role and count its characters do not
-						     need a sentence telling you they are roles.
-						     ⚠ WHAT WENT WITH THEM: the only user-facing statement of where
-						     these roles come from (Genshin's Imaginarium Theater) and the
-						     only place the surface said "a presence classification, not a
-						     ranking". The second is a constitution line — no tier lists —
-						     and it now lives nowhere a reader can see it. If it belongs
-						     anywhere it is the Team Builder's Help chapter, not wrapped
-						     around the cards. -->
-							<AtlasView {roleCards} onSelectCategory={openCategory} />
-						{/if}
-					</div>
-				{/if}
-
+		<div class="tb-sourcebox tb-sourcebox--fill">
+			<section class="tb-source scroll-fade tb-source--fill" use:scrollFade>
 				<!-- ── Compare — a first-class center view, not an inspector: the shared
 			     ruler gets the Source's full width, and the view works at every
 			     viewport (no dock breakpoint, no modal fallback). -->
@@ -1481,6 +1422,7 @@
 						onCancelAudition={anchorId ? cancelAudition : undefined}
 						onBackToPlanner={anchorId && fromPlanner ? backToPlanner : undefined}
 						candidatesArea={anchorId ? auditionStrip : undefined}
+						teamDeltas={auditionDeltas}
 					/>
 				{/if}
 
@@ -1498,6 +1440,8 @@
 							roster={split.matches}
 							{filters}
 							tile={rosterTile}
+							sections={rosterSections}
+							sectionHead={rosterSectionHead}
 							aboveGrid={rosterCount}
 							belowGrid={rosterStubs}
 							emptyMessage={rosterEmptyMessage}
@@ -1859,6 +1803,13 @@
 	}
 
 	/* ── Audition candidates strip (rendered inside CompareView) ── */
+	/* Unowned candidates recede once you have told the tool what you own —
+	   they are ranked after your own, and the strip should say why. ⚠ In the
+	   PAINT (the text colour), never element opacity: these sit in a scroller
+	   inside a transform-animated page. */
+	.tb-cand--unowned:not(.tb-cand--on) .tb-cand-name {
+		color: var(--chart-dim);
+	}
 	.tb-aud {
 		display: flex;
 		flex-direction: column;
@@ -1941,7 +1892,7 @@
 	   sentences had been doing the spacing's job. padding-block does it now,
 	   and the same 0.8rem still separates the drill's rows from each other. */
 	/* ── THE VIEW SWAP FADES IN, AND DOES NOT FADE OUT ───────────────────────
-	   (⚓ Nate 2026-08-12, the motion round's #1.) Atlas / Roster / Compare are
+	   (⚓ Nate 2026-08-12, the motion round's #1.) Roster / Compare (Atlas too, until 2026-10-07) are
 	   three whole regions replacing one another, so they take --t-quick, the
 	   SURFACE band, not the control band the plates above them use.
 
@@ -1970,55 +1921,24 @@
 		}
 	}
 
-	/* flex:1 + min-height:0 so the cards view can hand its grid a definite
-	   height to fill (see the markup note). Inert on the drill and slots views —
-	   their .tb-source is content-height, and flex:1 against an indefinite
-	   parent grows nothing. */
+	/* ↻ 2026-10-07: the role cards ride INSIDE the Roster's scroller, above the
+	   count, so this is content-height now (flex: none — a flex item in a
+	   scrolling column must not be squeezed). Folded to a strip once anything
+	   narrows the roster. */
 	.tb-atlas {
 		display: flex;
 		flex-direction: column;
-		flex: 1;
-		min-height: 0;
-		padding-block: 0.5rem 0.75rem;
+		flex: none;
+		padding-block: 0.25rem 0.5rem;
 		gap: 0.8rem;
 	}
-	/* ⚠ ON THE SCENE, PROSE TAKES THE BRIGHT INK — not the muted rung.
-	   This was --muted, which is right for secondary text INSIDE a panel: the
-	   panel supplies a flat ground and its own hierarchy to be secondary within.
-	   On open ground there is neither. Measured, --muted's WORST pixel under
-	   this run came to 4.70:1 — it passes 4.5:1, with 0.2 to spare, against a
-	   backdrop that varies by ΔL 0.15 along the line. Genshin's on-backdrop
-	   prose is bright for exactly this reason; the dim rung is a panel
-	   affordance. Size comes up a step too: text on open ground carries no box
-	   to lend it presence, so it has to carry its own. */
-	.tb-atlas-lead {
-		margin: 0;
-		font-size: var(--fs-lg);
-		color: var(--text);
+	.tb-atlas--compact {
+		padding-block: 0;
 	}
-	/* PINNED — it lives in .tb-sourcebox, above the scroller, not inside it.
-	   flex: none because the box it now sits in is a flex column that shrinks:
-	   without it a tall drill title would be the first thing squeezed when the
-	   window gets short, which is exactly backwards for the row carrying the way
-	   back out. */
-	.tb-atlas-head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 1rem;
-		flex-wrap: wrap;
-		flex: none;
-	}
-	/* ── RP-arrival slot rows ─────────────────────────────────── */
-	/* ⛔ THE HAIRLINE IS GONE (⚓ NATE 2026-08-11). It marked where a row began;
-	   the header plate now does that far more plainly, and a rule above a plate
-	   says the same thing twice. On the open scene two weak signals read worse
-	   than one clear one. */
-	.tb-slotrow {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-	}
+	/* ── Role section heads (the Roster grid's sections) ──────────
+	   ↻ 2026-10-07: these were the Atlas drill's and the RP-arrival slot rows'
+	   headers; the drill is the Roster's sections now and the slot rows retired
+	   into the audition, so only the head survives. */
 	/* ⚓ NATE 2026-08-11 — A GLASS PANE, not a night scrim. These row headers sit
 	   directly on the dimmed scene (the TB surface has had no frame since
 	   2026-08-08), and the first attempt made them the debut consumer of
@@ -2040,47 +1960,6 @@
 		border-radius: var(--r-sm);
 		background: var(--surface);
 	}
-	/* Up with the name — an 18px heading beside a 30px portrait read as a label
-	   stuck to a chip; 34 keeps the portrait the row's anchor. */
-	.tb-slotrow-avatar,
-	.tb-slotrow-initials {
-		width: 34px;
-		height: 34px;
-		border-radius: 50%;
-		flex: none;
-	}
-	/* ── The disc behind these avatars ────────────────────────────────────────
-	   ↻ 2026-08-11: they were `background: var(--bg)` — the PAGE ground, and the
-	   last two instances of the reach this round set out to remove (the bench's
-	   backing and the roster card's portrait were the other two). Here it was
-	   worse than off-ramp: these sit ON A GLASS PLATE, so a disc borrowing the
-	   colour of the world outside the tools was painting a hole through a pane.
-
-	   They take the element wash instead, which makes EVERY character portrait
-	   on the site one recipe — the bench's 68px disc, the roster card's square,
-	   and these. Flat rather than a gradient: at 34px a two-stop ramp has ~17px
-	   to travel in and reads as a single muddy tone, so this is just the wash's
-	   tinted end.
-	   ⚠ .ctx-dark is CLAIMED on the disc, and it is doing real work: --surface-
-	   well in ctx-glass is --glass-well, i.e. TRANSLUCENT, and the band-plates
-	   round's rule is that alpha stacks — glass on glass is not a ground. The
-	   flip gives the mix a real opaque rung to sit on, which is the same reason
-	   .cc-portrait claims it. */
-	.tb-slotrow-avatar,
-	.tb-slotrow-initials {
-		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
-	}
-	.tb-slotrow-avatar {
-		object-fit: cover;
-	}
-	.tb-slotrow-initials {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--muted);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-	}
 	/* ↻ ⚓ NATE 2026-08-11: --fs-lg → --fs-2xl. "The font sizes in those headers
 	   can probably go up" — and two rungs rather than one, because the job
 	   changed with the ground. This was dense-body-sized when it labelled a row
@@ -2094,16 +1973,6 @@
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
-	}
-	.tb-slotrow-roles {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-	}
-	.tb-slotrow-roles img {
-		width: 18px;
-		height: 18px;
-		object-fit: contain;
 	}
 	/* ↻ 2026-08-11: --fs-xs → --fs-md with the header. The ink stays --muted, and
 	   the reason is worth a line because it briefly wasn't: while the header was
@@ -2126,24 +1995,6 @@
 		height: 22px;
 		object-fit: contain;
 		flex: none;
-	}
-
-	/* Drill header (← All roles + the drilled card's glyphs/label) */
-	.tb-drill-title {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		font-family: var(--font-display);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--text);
-	}
-	.tb-drill-title img {
-		width: 26px;
-		height: 26px;
-		object-fit: contain;
 	}
 
 	/* ── Roster (the shared CharacterGrid) ────────────────────── */
