@@ -37,7 +37,10 @@ import {
 	type FacetKey,
 	type NormalizedTarget
 } from '$lib/capabilities/deriveCapabilities';
-import { KIND_LABEL, KIND_ORDER } from '$lib/capabilities/capabilityText';
+import type { BuffValue, Stat } from '$lib/types/ability';
+import type { CapabilitySource } from '$lib/capabilities/deriveCapabilities';
+import { KIND_LABEL, KIND_ORDER, capDetailText } from '$lib/capabilities/capabilityText';
+import { REACTION_FAMILY } from '$lib/utils/auraDisplay';
 
 /** Columns stay readable side by side up to a full team's worth. */
 export const MAX_COMPARE = 4;
@@ -97,40 +100,60 @@ function burstCostCell(abilities: readonly Ability[]): string | null {
 // Capability rows
 // ---------------------------------------------------------------------------
 
-/** Kind for non-buffs; `buff:<family>` for buffs — mirrors the facet split. */
+/** Kind for non-buffs; `buff:<family>` for the five facet families, and
+ *  `buff:other:<stat>` for everything else — ⛔ never one "Other buff" bucket
+ *  (Healing Bonus and DEF ignore sharing a row compared two unrelated things). */
 export type CapRowKey = string;
 
-const BUFF_FAMILY_ORDER = ['atk', 'em', 'crit', 'dmg', 'hpdef', 'other'] as const;
+const BUFF_FAMILY_ORDER = ['atk', 'em', 'crit', 'dmg', 'hpdef'] as const;
 
 const BUFF_FAMILY_LABEL: Record<(typeof BUFF_FAMILY_ORDER)[number], string> = {
 	atk: 'ATK buff',
 	em: 'EM buff',
 	crit: 'Crit buff',
 	dmg: 'DMG% buff',
-	hpdef: 'HP/DEF buff',
-	other: 'Other buff'
+	hpdef: 'HP/DEF buff'
 };
 
+/** ⛔ `summon` is not a contribution. It is HOW something is delivered (Oz,
+ *  Guoba), and what the summon does already has its own row — Off-field DMG,
+ *  Heal — so a Summon row printed "C0" and nothing else. */
+const DROPPED_KINDS: ReadonlySet<CapabilityKind> = new Set(['summon']);
+
 export function capRowKeyOf(cap: DerivedCapability): CapRowKey {
-	if (cap.kind === 'buff') return `buff:${buffFamilyOf(cap.detail ?? '')}`;
+	if (cap.kind === 'buff') {
+		const family = buffFamilyOf(cap.detail ?? '');
+		return family === 'other' ? `buff:other:${cap.detail ?? ''}` : `buff:${family}`;
+	}
 	return cap.kind;
 }
 
 export function capRowLabelOf(key: CapRowKey): string {
+	if (key.startsWith('buff:other:')) return capDetailText('buff', key.slice('buff:other:'.length));
 	if (key.startsWith('buff:')) {
 		return BUFF_FAMILY_LABEL[key.slice(5) as (typeof BUFF_FAMILY_ORDER)[number]] ?? 'Buff';
 	}
 	return KIND_LABEL[key as CapabilityKind] ?? key;
 }
 
-/** All possible rows in display order: kinds with buff expanded into families. */
-const ROW_KEY_ORDER: CapRowKey[] = KIND_ORDER.flatMap((kind) =>
-	kind === 'buff' ? BUFF_FAMILY_ORDER.map((f) => `buff:${f}`) : [kind]
-);
+/** Display order: kinds in the DetailCard's order, buffs expanded into their
+ *  families, then any named other-stat rows the selection actually has. */
+function rowKeyOrder(present: ReadonlySet<CapRowKey>): CapRowKey[] {
+	return KIND_ORDER.filter((k) => !DROPPED_KINDS.has(k)).flatMap((kind) =>
+		kind === 'buff'
+			? [
+					...BUFF_FAMILY_ORDER.map((f) => `buff:${f}`),
+					...[...present].filter((k) => k.startsWith('buff:other:')).sort()
+				]
+			: [kind]
+	);
+}
 
 /** Broadest reach first — used for tie-breaks at the same constellation gate. */
 const TARGET_RANK: Record<NormalizedTarget, number> = { team: 0, active: 1, enemy: 2, self: 3 };
 const targetRank = (t: NormalizedTarget | undefined) => (t === undefined ? 4 : TARGET_RANK[t]);
+
+export type Magnitude = { stat: Stat; value: BuffValue } | { shred: number };
 
 export type CapCell = {
 	/** Lowest constellation gate at which this row's capability exists. */
@@ -146,6 +169,20 @@ export type CapCell = {
 	sources: string[];
 	/** Broader-target upgrade available at a higher gate, when one exists. */
 	also?: { target: NormalizedTarget; minCon: number };
+	/** The primary's window, in seconds, when it has one. */
+	duration?: number;
+	/** How big, when the primary is a buff (the view formats it) or a shred —
+	 *  the one a delta is read from. */
+	magnitude?: Magnitude;
+	/** Every DISTINCT size at the gate, primary first: Sucrose shares a flat
+	 *  50 EM on Swirl AND 20% of her own EM on a cast hit, and the cell has to
+	 *  say both or it understates her by half. */
+	magnitudes: Magnitude[];
+	/** What opens it: the cast labels ('E', 'Q') or 'per Swirl' — distinct, at
+	 *  the gate. Empty for an always-on or untimed effect. */
+	opensOn: string[];
+	/** Every source at the gate, whole — the inline provenance reads this. */
+	provenance: { source: CapabilitySource; caveats: string[]; target?: NormalizedTarget }[];
 };
 
 export type CapRow = {
@@ -179,7 +216,13 @@ export type CapLane = {
 	columnIndex: number;
 	/** Unique within a row: two hosts on one character must not collide. */
 	key: string;
-	host: LaneHost;
+	/** The cast whose cycle this lane tiles. Absent on a {@link perReaction} lane. */
+	host?: LaneHost;
+	/** Set instead of `host` when a REACTION opens the window (Kazuha's Swirl
+	 *  bonus): the reaction families, e.g. ['Swirl']. ⚓ Nate 2026-10-07: drawn
+	 *  as ONE window, never tiled — it says how long the buff lasts without
+	 *  inventing how often the reaction happens. */
+	perReaction?: string[];
 	/** Effect window in seconds. */
 	uptime: number;
 	/** Tick offsets in seconds from the cast, when a summon sets the cadence. */
@@ -253,6 +296,35 @@ function laneHostsOf(cap: DerivedCapability, lookup: AbilityLookup): Ability[] {
 	return [];
 }
 
+/** The reaction families a reaction-set effect listens for, deduped — four
+ *  per-element Swirl triggers read as one "Swirl". */
+function reactionFamilies(cap: DerivedCapability): string[] {
+	if (!cap.host || !('reactions' in cap.host)) return [];
+	const names = cap.host.reactions.map((r) =>
+		r === 'any' ? 'any reaction' : (REACTION_FAMILY[r as keyof typeof REACTION_FAMILY] ?? r)
+	);
+	return [...new Set(names)];
+}
+
+/** What opens a capability, in the chart's words: the cast it rides ('E',
+ *  'Q'), or — ONE entry — the reactions it waits for ('per Quicken / Spread'). */
+function opensOnOf(cap: DerivedCapability, lookup: AbilityLookup): string[] {
+	const casts = laneHostsOf(cap, lookup).map((a) =>
+		a.abilityType === 'burst' ? 'Q' : a.abilityType === 'skill' ? 'E' : a.name
+	);
+	if (casts.length > 0) return casts;
+	const families = reactionFamilies(cap);
+	return families.length > 0 ? [`per ${families.join(' / ')}`] : [];
+}
+
+function magnitudeOf(cap: DerivedCapability): Magnitude | undefined {
+	if (cap.kind === 'buff' && cap.value !== undefined && cap.detail) {
+		return { stat: cap.detail as Stat, value: cap.value };
+	}
+	if (cap.kind === 'resShred' && cap.amount !== undefined) return { shred: cap.amount };
+	return undefined;
+}
+
 /**
  * Lanes for one row key and one character.
  *
@@ -272,17 +344,45 @@ function buildLanes(
 	alsoByAbility: Map<string, CapRowKey[]>
 ): CapLane[] {
 	const groups = new Map<string, { ability: Ability; caps: DerivedCapability[] }>();
+	const reactionGroups = new Map<string, DerivedCapability[]>();
 	for (const cap of caps) {
 		if (cap.duration === undefined) continue;
-		for (const ability of laneHostsOf(cap, lookup)) {
+		const hosts = laneHostsOf(cap, lookup);
+		for (const ability of hosts) {
 			const key = `${ability.id}::${cap.summon?.label ?? ''}`;
 			const group = groups.get(key);
 			if (group) group.caps.push(cap);
 			else groups.set(key, { ability, caps: [cap] });
 		}
+		const families = hosts.length === 0 ? reactionFamilies(cap) : [];
+		if (families.length > 0) {
+			const key = `react::${families.join('+')}`;
+			const list = reactionGroups.get(key);
+			if (list) list.push(cap);
+			else reactionGroups.set(key, [cap]);
+		}
 	}
 
 	const lanes: CapLane[] = [];
+	for (const [key, group] of reactionGroups) {
+		const minCon = Math.min(...group.map((c) => c.minConstellation));
+		const atGate = group.filter((c) => c.minConstellation === minCon);
+		const primary = [...atGate].sort(
+			(a, b) => targetRank(a.target) - targetRank(b.target) || a.caveats.length - b.caveats.length
+		)[0];
+		lanes.push({
+			columnIndex,
+			key,
+			perReaction: reactionFamilies(primary),
+			uptime: Math.max(...atGate.map((c) => c.duration ?? 0)),
+			alsoCarries: [],
+			minCon,
+			conditional: atGate.every((c) => c.caveats.length > 0),
+			...(primary.target !== undefined && { target: primary.target }),
+			details: [...new Set(atGate.map((c) => c.detail).filter((d): d is string => !!d))],
+			caveats: primary.caveats
+		});
+	}
 	for (const [key, { ability, caps: group }] of groups) {
 		const minCon = Math.min(...group.map((c) => c.minConstellation));
 		const atGate = group.filter((c) => c.minConstellation === minCon);
@@ -332,12 +432,15 @@ function buildLanes(
 		});
 	}
 
-	// Cheapest cycle first — the lane you can renew soonest reads first.
-	lanes.sort((a, b) => a.host.cooldown - b.host.cooldown || a.key.localeCompare(b.key));
+	// Cheapest cycle first — the lane you can renew soonest reads first; a
+	// reaction-set window (no cycle at all) after every cast. Lanes across
+	// characters keep COLUMN order: the caller concatenates per character.
+	const cycle = (l: CapLane) => l.host?.cooldown ?? Infinity;
+	lanes.sort((a, b) => cycle(a) - cycle(b) || a.key.localeCompare(b.key));
 	return lanes;
 }
 
-function buildCell(caps: DerivedCapability[]): CapCell | null {
+function buildCell(caps: DerivedCapability[], lookup: AbilityLookup): CapCell | null {
 	if (caps.length === 0) return null;
 	const minCon = Math.min(...caps.map((c) => c.minConstellation));
 	const atGate = caps.filter((c) => c.minConstellation === minCon);
@@ -356,6 +459,14 @@ function buildCell(caps: DerivedCapability[]): CapCell | null {
 		also = { target: broader.target, minCon: broader.minConstellation };
 	}
 
+	const duration = primary.duration;
+	const magnitude = magnitudeOf(primary);
+	const magnitudes = new Map<string, Magnitude>();
+	for (const c of [primary, ...atGate]) {
+		const m = magnitudeOf(c);
+		if (m) magnitudes.set(JSON.stringify(m), m);
+	}
+
 	return {
 		minCon,
 		conditional: atGate.every((c) => c.caveats.length > 0),
@@ -363,7 +474,16 @@ function buildCell(caps: DerivedCapability[]): CapCell | null {
 		details,
 		caveats: primary.caveats,
 		sources,
-		...(also && { also })
+		...(also && { also }),
+		...(duration !== undefined && { duration }),
+		...(magnitude && { magnitude }),
+		magnitudes: [...magnitudes.values()],
+		opensOn: [...new Set(atGate.flatMap((c) => opensOnOf(c, lookup)))],
+		provenance: atGate.map((c) => ({
+			source: c.source,
+			caveats: c.caveats,
+			...(c.target !== undefined && { target: c.target })
+		}))
 	};
 }
 
@@ -398,6 +518,7 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 	const grouped = characters.map((c) => {
 		const byKey = new Map<CapRowKey, DerivedCapability[]>();
 		for (const cap of c.capabilities) {
+			if (DROPPED_KINDS.has(cap.kind)) continue;
 			const key = capRowKeyOf(cap);
 			const list = byKey.get(key);
 			if (list) list.push(cap);
@@ -414,6 +535,7 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 	const alsoLookups = characters.map((c, i) => {
 		const byAbility = new Map<string, CapRowKey[]>();
 		for (const cap of c.capabilities) {
+			if (DROPPED_KINDS.has(cap.kind)) continue; // never a row, so never an "also"
 			const key = capRowKeyOf(cap);
 			const hosts = laneHostsOf(cap, lookups[i]).map((a) => a.id);
 			for (const id of hosts.length > 0 ? hosts : [cap.source.abilityId]) {
@@ -425,13 +547,14 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 		return byAbility;
 	});
 
+	const present = new Set(grouped.flatMap((g) => [...g.keys()]));
 	const capRows: CapRow[] = [];
-	for (const key of ROW_KEY_ORDER) {
-		if (!grouped.some((g) => g.has(key))) continue;
+	for (const key of rowKeyOrder(present)) {
+		if (!present.has(key)) continue;
 		capRows.push({
 			key,
 			label: capRowLabelOf(key),
-			cells: grouped.map((g) => buildCell(g.get(key) ?? [])),
+			cells: grouped.map((g, i) => buildCell(g.get(key) ?? [], lookups[i])),
 			lanes: grouped.flatMap((g, i) =>
 				buildLanes(i, key, g.get(key) ?? [], lookups[i], alsoLookups[i])
 			)
@@ -472,3 +595,45 @@ const FACET_KEYS = [
 	'buff:dmg',
 	'buff:hpdef'
 ] as const satisfies readonly FacetKey[];
+
+// ---------------------------------------------------------------------------
+// Deltas against a reference column
+// ---------------------------------------------------------------------------
+
+/**
+ * How a cell differs from the REFERENCE cell in the same row — the audition's
+ * incumbent, or the column pinned in plain Compare.
+ *
+ * ⚠ A delta is a FACT, never a verdict: the view prints it in neutral ink,
+ * never good/bad colour, and it says only what is arithmetic — a longer window
+ * is not "better" when the cooldown is longer too. Only like is compared with
+ * like: a duration with a duration, and a magnitude only when both are a
+ * plain number on the SAME stat. Everything else returns nothing rather than
+ * a misleading sign.
+ */
+export function factDelta(ref: CapCell | null, cell: CapCell | null): string[] {
+	if (!ref || !cell) return [];
+	const out: string[] = [];
+	if (ref.duration !== undefined && cell.duration !== undefined) {
+		const d = Math.round((cell.duration - ref.duration) * 100) / 100;
+		if (d !== 0) out.push(`${d > 0 ? '+' : '−'}${Math.abs(d)}s`);
+	}
+	const a = ref.magnitude;
+	const b = cell.magnitude;
+	if (a && b && 'stat' in a && 'stat' in b && a.stat === b.stat) {
+		if (typeof a.value === 'number' && typeof b.value === 'number' && a.value !== b.value) {
+			const d = Math.round((b.value - a.value) * 100) / 100;
+			out.push(`${d > 0 ? '+' : '−'}${Math.abs(d)}`);
+		}
+	} else if (a && b && 'shred' in a && 'shred' in b && a.shred !== b.shred) {
+		const d = b.shred - a.shred;
+		out.push(`${d > 0 ? '+' : '−'}${Math.abs(d)}%`);
+	}
+	return out;
+}
+
+/** True when two or more columns have something in this row — the rows that
+ *  are a real comparison. The rest are what ONE character alone brings. */
+export function isShared(row: CapRow): boolean {
+	return row.cells.filter((c) => c !== null).length >= 2;
+}

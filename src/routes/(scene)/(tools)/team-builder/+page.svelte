@@ -1185,6 +1185,11 @@
 								</span>
 							{/each}
 						</span>
+						<!-- Below `compact` the stack becomes its COUNT: three or four
+						     discs beside the label pushed the plate's word into its
+						     neighbour's at 390. A value mark is round (the TB card
+						     round's rule). -->
+						<span class="tb-tabcount" aria-hidden="true">{compareStack.length}</span>
 					{/if}
 				</button>
 			{/each}
@@ -1470,6 +1475,7 @@
 						onLensChange={anchorId ? applyAuditionLens : undefined}
 						onElementLensChange={anchorId ? applyElementLens : undefined}
 						onRemove={toggleCompare}
+						onAdd={toggleCompare}
 						onCommit={anchorId ? commitAudition : undefined}
 						onClear={anchorId ? undefined : () => compareIds.clear()}
 						onCancelAudition={anchorId ? cancelAudition : undefined}
@@ -1822,6 +1828,29 @@
 		object-fit: cover;
 		/* The side-crop framing every circular side avatar on the site uses. */
 		transform: scale(1.333) translateY(-14%);
+	}
+	.tb-tabcount {
+		display: none;
+	}
+	/* `compact` (40rem, $lib/breakpoints.ts). */
+	@media (max-width: 40rem) {
+		.tb-tabstack {
+			display: none;
+		}
+		.tb-tabcount {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 18px;
+			height: 18px;
+			padding: 0 4px;
+			border-radius: var(--r-round);
+			background: var(--surface);
+			font-size: var(--fs-xs);
+			font-weight: var(--fw-semibold);
+			font-variant-numeric: tabular-nums;
+			text-indent: -0.06em;
+		}
 	}
 	.tb-tabstack-initials {
 		font-size: var(--fs-xs);

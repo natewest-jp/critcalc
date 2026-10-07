@@ -266,7 +266,13 @@ const MARKS = {
 	 *  before a triangle, ⏮) over `Rewind` (two triangles, which reads as
 	 *  "scrub backwards" — a gesture this transport does not have). Drawn
 	 *  FILLED beside Play, as Play is. */
-	rewind: 'SkipBack'
+	rewind: 'SkipBack',
+	/** Compare's REFERENCE column (Team Builder round, 2026-10-07): pin one
+	 *  character and every other column reads its differences from them. `Pin`
+	 *  — the act of fixing one thing in place for the rest to be read against.
+	 *  ⛔ Not `Star` (that is the wishlist) nor `Anchor` (nautical, and reads as
+	 *  a link at 14px). */
+	pin: 'Pin'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

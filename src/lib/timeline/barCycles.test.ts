@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { laneSegments, repeatCycles } from './barCycles';
+import { laneSegments, repeatCycles, singleWindowSegments } from './barCycles';
 import type { BarPhaseSegment } from './barPhases';
 
 const seg = (role: BarPhaseSegment['role'], start: number, span: number): BarPhaseSegment => ({
@@ -89,5 +89,17 @@ describe('laneSegments', () => {
 	it('emits nothing without both halves of a real cycle', () => {
 		expect(laneSegments(0, 10, 30)).toEqual([]);
 		expect(laneSegments(10, 0, 30)).toEqual([]);
+	});
+});
+
+describe('singleWindowSegments — a reaction-set window', () => {
+	it('draws one block of the window, never tiled', () => {
+		expect(singleWindowSegments(8, 30)).toEqual([{ role: 'uptime', start: 0, span: 8, cycle: 0 }]);
+	});
+	it('clips at the axis end', () => {
+		expect(singleWindowSegments(40, 30)[0].span).toBe(30);
+	});
+	it('draws nothing for a window with no length', () => {
+		expect(singleWindowSegments(0, 30)).toEqual([]);
 	});
 });
