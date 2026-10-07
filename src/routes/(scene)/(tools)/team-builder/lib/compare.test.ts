@@ -268,6 +268,94 @@ describe('buildCompareModel — lanes', () => {
 		expect(model.capRows[0].cells[0]).not.toBeNull();
 	});
 
+	// ⚓ 2026-10-07: a passive whose TRIGGER names a cast rides that cast's cycle.
+	// Kazuha's C2 EM, Nahida's A1 EM and Sucrose's A4 had no lane before this.
+	const passive = { source: { section: 'passive' as const, abilityId: 'p1', abilityName: 'A4' } };
+
+	it('puts a passive on the lane of the cast its trigger names', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [skillOf('e', 15), burstOf('q', 20)],
+				capabilities: [
+					cap({
+						kind: 'buff',
+						detail: 'em',
+						target: 'team',
+						duration: 8,
+						...passive,
+						host: { casts: ['burst'] }
+					})
+				]
+			})
+		]);
+		const lanes = model.capRows[0].lanes;
+		expect(lanes).toHaveLength(1);
+		expect(lanes[0].host.label).toBe('Q');
+		expect(lanes[0].host.cooldown).toBe(20);
+		expect(lanes[0].uptime).toBe(8);
+	});
+
+	it('rides EVERY cast its trigger names — one lane per cast', () => {
+		// Sucrose's A4: set off by her E hits and her Q hits alike.
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [skillOf('e', 15), burstOf('q', 20)],
+				capabilities: [
+					cap({
+						kind: 'buff',
+						detail: 'em',
+						target: 'team',
+						duration: 8,
+						...passive,
+						host: { casts: ['skill', 'burst'] }
+					})
+				]
+			})
+		]);
+		expect(model.capRows[0].lanes.map((l) => l.host.label).sort()).toEqual(['E', 'Q']);
+	});
+
+	it('draws no lane for a reaction-set effect — it has no cast cycle to tile', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [skillOf('e', 6)],
+				capabilities: [
+					cap({
+						kind: 'buff',
+						detail: 'pyroDmgBonus',
+						target: 'team',
+						duration: 8,
+						...passive,
+						host: { reactions: ['pyroSwirl'] }
+					})
+				]
+			})
+		]);
+		expect(model.capRows[0].lanes).toEqual([]);
+		expect(model.capRows[0].cells[0]).not.toBeNull();
+	});
+
+	it("lists a passive riding a cast in that cast's also: line", () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [burstOf('q', 15)],
+				capabilities: [
+					cap({ kind: 'heal', target: 'team', duration: 12, ...from('q') }),
+					cap({
+						kind: 'buff',
+						detail: 'atk',
+						target: 'team',
+						duration: 12,
+						...passive,
+						host: { casts: ['burst'] }
+					})
+				]
+			})
+		]);
+		const heal = model.capRows.find((r) => r.key === 'heal')!;
+		expect(heal.lanes[0].alsoCarries).toEqual(['buff:atk']);
+	});
+
 	it('takes the longest window at the gate, so variant order cannot decide it', () => {
 		const model = buildCompareModel([
 			char('a', {

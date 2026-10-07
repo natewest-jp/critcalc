@@ -23,10 +23,12 @@ import type { CharacterData, RoleFunction } from '$lib/types/character';
 import type {
 	Ability,
 	AbilityVariant,
+	BuffValue,
 	Condition,
 	Effect,
 	EffectTarget,
-	Summon
+	Summon,
+	Trigger
 } from '$lib/types/ability';
 
 // ---------------------------------------------------------------------------
@@ -94,6 +96,19 @@ export type DerivedCapability = {
 	amount?: number;
 	/** resShred: the in-game debuff it is (`mod`) — shared means "never stacks". */
 	mod?: string;
+	/** buff: the authored value, every arm (scaling, perStack, …) — the view
+	 *  formats it with `formatBuffDisplayValue`. `amount` above stays the plain-
+	 *  number reading the DEF & RES instrument depends on. */
+	value?: BuffValue;
+	/** What OPENS this window when the source is not itself a cast — a passive
+	 *  or constellation whose trigger names the cast (Sucrose's EM share rides
+	 *  her E and her Q hits), or any effect a REACTION sets off (Kazuha's
+	 *  Swirl bonus). Absent = the source ability is its own host.
+	 *
+	 *  ⚠ `casts` is a LIST: 12 cast-set effects name no ability (either cast
+	 *  arms them) and Sucrose's A4 names both. Narrowing to exactly one would
+	 *  have kept the effect the measurement found missing, missing. */
+	host?: { casts: ('skill' | 'burst')[] } | { reactions: string[] };
 	via: 'effect' | 'tag';
 	source: CapabilitySource;
 };
@@ -359,6 +374,7 @@ function pushEffectCapabilities(
 		const caveats = new Set<string>();
 		collectCaveats(composed, minConstellation, caveats);
 		const duration = typeof effect.duration === 'number' ? effect.duration : fallbackDuration;
+		const host = hostOf(effect.trigger, ctx.source.section);
 		out.push({
 			kind: mapped.kind,
 			detail: mapped.detail,
@@ -368,17 +384,55 @@ function pushEffectCapabilities(
 			...(duration !== undefined && duration > 0 && { duration }),
 			...(summonLabel !== undefined && { summon: summonHost(summonLabel, effect) }),
 			...amountOf(effect),
+			...(host !== undefined && { host }),
 			via: 'effect',
 			source: ctx.source
 		});
 	}
 }
 
-function amountOf(effect: Effect): { amount?: number; mod?: string } {
+function amountOf(effect: Effect): { amount?: number; mod?: string; value?: BuffValue } {
 	if (effect.type === 'resShred')
 		return { amount: Math.abs(effect.value), ...(effect.mod !== undefined && { mod: effect.mod }) };
-	if (effect.type === 'buff' && typeof effect.value === 'number') return { amount: effect.value };
+	if (effect.type === 'buff')
+		return {
+			...(typeof effect.value === 'number' && { amount: effect.value }),
+			value: effect.value
+		};
 	return {};
+}
+
+/**
+ * The cast (or reaction) that opens an effect's window when its host is not a
+ * cast itself — read off the TRIGGER, which already names it.
+ *
+ * Measured 2026-10-07 over passives + constellations: 200 cast-set effects
+ * name their ability, 12 name none (either cast arms them), 43 hit-set
+ * effects name exactly one of skill/burst, Sucrose's A4 names both, and 51
+ * are set off by a reaction. A cast host is only meaningful off an ability —
+ * an ability's own effects already ride their own cast.
+ */
+function hostOf(
+	trigger: Trigger | undefined,
+	section: CapabilitySection
+): DerivedCapability['host'] {
+	if (!trigger) return undefined;
+	if (trigger.type === 'onReaction') {
+		return {
+			reactions: Array.isArray(trigger.reaction) ? [...trigger.reaction] : [trigger.reaction]
+		};
+	}
+	if (section === 'ability') return undefined;
+	if (trigger.type === 'onCast') {
+		return { casts: trigger.ability ? [trigger.ability] : ['skill', 'burst'] };
+	}
+	if (trigger.type === 'onHit') {
+		const named = [trigger.abilityType ?? []]
+			.flat()
+			.filter((t): t is 'skill' | 'burst' => t === 'skill' || t === 'burst');
+		return named.length > 0 ? { casts: named } : undefined;
+	}
+	return undefined;
 }
 
 /** The summon descriptor for one capability: the label always, plus the cadence
@@ -395,10 +449,52 @@ function summonHost(label: string, effect: Effect): DerivedCapability['summon'] 
 	};
 }
 
+/**
+ * How long a coordinated attack stays armed after its cast, read from the
+ * three places the corpus states it — in this order, because the first two
+ * are the attack's OWN window and the third is the cast's:
+ *
+ *   1. the summon that carries its damage (Xingqiu's Rainbow Bladework,
+ *      Yelan's Exquisite Throw, Raiden's Eye) — and its label, so this lane
+ *      and the summon path's merge rather than drawing one window twice;
+ *   2. the `armedFor` on a proc's trigger (Nahida's Tri-Karma, Beidou);
+ *   3. the cast's `activeDuration` (Nicole).
+ *
+ * Until 2026-10-07 the tag path set no duration at all, so all nine
+ * coordinated attacks in the corpus drew nothing on Compare.
+ * ⚠ BASE length only: a constellation `durationModifiers` (Xingqiu C2 +3s,
+ * Dehya C2 +6s — the only two) is not applied. Lengthening the window by a
+ * gate would need a per-constellation duration this model does not carry.
+ */
+function coordinatedWindow(host: {
+	effects?: Effect[];
+	summons?: Summon[];
+	activeDuration?: number;
+}): { duration: number; summonLabel?: string } | undefined {
+	for (const summon of host.summons ?? []) {
+		const deals = (summon.effects ?? []).some((e) => e.type === 'damage');
+		if (deals && typeof summon.duration === 'number' && summon.duration > 0) {
+			return { duration: summon.duration, summonLabel: summon.label };
+		}
+	}
+	let armed = 0;
+	for (const effect of host.effects ?? []) {
+		if (effect.type !== 'damage') continue;
+		const t = effect.trigger as { armedFor?: number } | undefined;
+		if (typeof t?.armedFor === 'number') armed = Math.max(armed, t.armedFor);
+	}
+	if (armed > 0) return { duration: armed };
+	if (typeof host.activeDuration === 'number' && host.activeDuration > 0) {
+		return { duration: host.activeDuration };
+	}
+	return undefined;
+}
+
 function pushTagCapabilities(
 	tags: readonly string[] | undefined,
 	ctx: HostContext,
-	out: DerivedCapability[]
+	out: DerivedCapability[],
+	window?: { duration: number; summonLabel?: string }
 ): void {
 	for (const tag of tags ?? []) {
 		let kind: CapabilityKind;
@@ -425,11 +521,14 @@ function pushTagCapabilities(
 		const minConstellation = Math.max(gate, ctx.hostConstellation);
 		const caveats = new Set<string>();
 		collectCaveats(composed, minConstellation, caveats);
+		const timed = detail === 'coordinatedAttack' ? window : undefined;
 		out.push({
 			kind,
 			detail,
 			minConstellation,
 			caveats: [...caveats].sort(),
+			...(timed && { duration: timed.duration }),
+			...(timed?.summonLabel !== undefined && { summon: { label: timed.summonLabel } }),
 			via: 'tag',
 			source: ctx.source
 		});
@@ -497,7 +596,12 @@ function walkAbility(
 	};
 
 	pushEffectCapabilities(ability.effects, baseCtx, out);
-	pushTagCapabilities('tags' in ability ? ability.tags : undefined, baseCtx, out);
+	pushTagCapabilities(
+		'tags' in ability ? ability.tags : undefined,
+		baseCtx,
+		out,
+		coordinatedWindow(ability as Parameters<typeof coordinatedWindow>[0])
+	);
 	if ('summons' in ability) pushSummonCapabilities(ability.summons, baseCtx, out);
 
 	const variants: AbilityVariant[] | undefined =
@@ -512,7 +616,19 @@ function walkAbility(
 			]
 		};
 		pushEffectCapabilities(variant.effects, ctx, out);
-		pushTagCapabilities(variant.tags, ctx, out);
+		// A variant's summons/effects REPLACE the base's (src/lib/CLAUDE.md), so
+		// its window is read off whatever the variant actually carries, falling
+		// back to the base where the variant restates nothing.
+		pushTagCapabilities(
+			variant.tags,
+			ctx,
+			out,
+			coordinatedWindow({
+				effects: variant.effects ?? ability.effects,
+				summons: variant.summons ?? ('summons' in ability ? ability.summons : undefined),
+				activeDuration: (ability as { activeDuration?: number }).activeDuration
+			})
+		);
 		pushSummonCapabilities(variant.summons, ctx, out);
 	}
 }
