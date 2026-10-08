@@ -471,6 +471,15 @@ way to make difficult teams work, so we assume they can.
   Affinity. The Builder first; ⏭ the Planner's bench is converted afterwards (Nate's
   call if 64px does not fit it), and ⚠️ Safari needs Nate's eyes.
 
+- ↻ ⚓ **Superseded 2026-10-08 (Nate, on /lab; `6a563f2a` + `3c28a239`):** the ring is
+  PLAIN (`--line-strong`, no element tint, no decorative dot) and the portrait is never
+  dulled. Ownership is ONE **constellation chip** at the disc's lower right: filled "C2"
+  when your account covers the team's level, HOLLOW when it asks for more; not owned is
+  the bottom of that scale (hollow "C0"), the hover says which; C0 owned shows nothing.
+  This replaces the dulled element ring AND the ring inside the pip. The portrait is
+  `SidePortrait` (`.ctx-dark`, opaque on every ground); its geometry is Nate's values in
+  `$lib/sidePortrait.ts` (art 90px on a 64px disc).
+
 ### 9.6 Defaults taken without objection
 
 - Roster-full-width (§2.4 state 1) means the active board is EMPTY.
