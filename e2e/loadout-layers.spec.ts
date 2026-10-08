@@ -14,10 +14,10 @@ import type { Locator, Page } from '@playwright/test';
  * saved artifact stays faithful when the roster changes later; an OPEN tab keeps
  * live-falling-back to the roster.
  *
- * The BENCH BAND — the one slot-card column both tools dock — ALWAYS writes
- * Layer 2: it is the plan's team editor everywhere. One shared control routing
- * differently per tool would be incoherent, so the roster surfaces alone own
- * Layer 1. That routing is what these tests pin.
+ * The BENCH BAND ALWAYS writes Layer 2: it is the plan's team editor. Since
+ * 2026-10-08 it is the Planner's alone (the Team Builder has no bench), and the
+ * roster surfaces — the Detail card, the edit-roster grid — alone own Layer 1.
+ * That routing is what these tests pin.
  */
 
 const conChip = (page: Page, i: number) => page.locator('.sp-cons-chip').nth(i);
@@ -99,39 +99,36 @@ test('an open tab falls back live; saving freezes the resolved values', async ({
 	await expectCon(conChip(page, 0), 2, 'the explicit override survives it');
 });
 
-test('the bench band writes Layer 2 on the Team Builder too', async ({ page, seed }) => {
-	await seed({ team: { slots: ['nahida', 'furina', 'bennett', 'xingqiu'] } });
+/**
+ * ↻ 2026-10-08 (lineups design §2.1): the Team Builder has no bench, so the
+ * roster's LOADOUT moved into the Detail card beside its constellation. The
+ * bench is the Planner's alone, and still writes Layer 2.
+ */
+test('the detail card edits the roster loadout (Layer 1)', async ({ page, seed }) => {
+	await seed({ team: { slots: ['nahida', 'furina'] } });
 	await openTool(page, '/team-builder');
-	// One SlotPortrait per FILLED slot — empty slots render no card. (The old
-	// probe asserted a flat 4 against a two-character team; it had been dying
-	// earlier on a dead selector, so that assertion never actually ran.)
-	await expect(page.locator('.bench-band-mount .sp-card'), 'the shared slot cards').toHaveCount(4);
+	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-main').click();
+	await page.locator('.dc-panel').waitFor();
+	// Tile 0 is the "None" tile — pick the first real set.
+	await page.locator('.dc-panel .lp-tile').nth(1).click();
 
-	await setBenchCon(page, 0, 4);
+	const roster = JSON.parse((await readStore(page, 'critcalc:loadout')) ?? '{}');
+	expect(roster.nahida?.artifactSetId, 'the card writes the roster loadout').toBeTruthy();
 	const tabs = JSON.parse((await readStore(page, KEYS.tabs)) ?? '{}');
 	const active = tabs?.tabs?.find((t: { id: string }) => t.id === tabs.activeTabId);
-	expect(active?.tabCon?.nahida, 'the band writes the plan, not the roster').toBe(4);
-	expect(await readStore(page, KEYS.constellations), 'roster constellations untouched').toBeNull();
-	expect(await readStore(page, KEYS.ownership), 'plan is not ownership').toBeNull();
-
-	// An artifact set from the band lands in tabLoadout, never the roster loadout.
-	await page.locator('.bench-band-mount .sp-card').first().locator('.sp-lo-zone').first().click();
-	// Tile 0 is the "None" tile — pick the first real set.
-	await page.locator('.sp-popover--panel .lp-tile').nth(1).click();
-	const tabs2 = JSON.parse((await readStore(page, KEYS.tabs)) ?? '{}');
-	const active2 = tabs2?.tabs?.find((t: { id: string }) => t.id === tabs2.activeTabId);
-	expect(active2?.tabLoadout?.nahida?.artifactSetId).toBeTruthy();
-	expect(await readStore(page, 'critcalc:loadout'), 'roster loadout untouched').toBeNull();
+	expect(active?.tabLoadout?.nahida, 'the plan is untouched').toBeUndefined();
 });
 
 test('the detail card owns Layer 1, and the plan keeps shadowing it', async ({ page, seed }) => {
 	await seed({ team: { slots: ['nahida', 'furina'] } });
-	await openTool(page, '/team-builder');
-	// The CON popover closes on pick (unlike the loadout panel, which stays open
-	// so you can re-lead) — so there is no backdrop left to dismiss here.
+	// The plan's own level first, from the Planner's bench (Layer 2).
+	await openTool(page, '/rotation-planner');
 	await setBenchCon(page, 0, 4);
 
-	await page.locator('.bench-band-mount .sp-avatar-clickable').first().dispatchEvent('click');
+	// The roster's level, from the Builder's Detail card (Layer 1).
+	await page.locator('.chrome-nav a[href*="team-builder"]').click();
+	await page.waitForURL(/team-builder/, { timeout: 10_000 });
+	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-main').click();
 	await page.locator('.dc-panel').waitFor();
 	await page.locator('.dc-constepper .dc-con-btn', { hasText: 'C2' }).click();
 
@@ -141,6 +138,9 @@ test('the detail card owns Layer 1, and the plan keeps shadowing it', async ({ p
 	expect(own.nahida, 'a roster constellation implies ownership').toBe('owned');
 
 	await page.keyboard.press('Escape');
+	await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
+	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
+	await page.waitForTimeout(1400); // the pan + band travel
 	await expectCon(
 		page.locator('.bench-band-mount .sp-cons-chip').first(),
 		4,
