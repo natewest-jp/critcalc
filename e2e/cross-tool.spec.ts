@@ -1,25 +1,33 @@
 import { test, expect, openTool, benchNames } from './fixtures/critcalc';
 
 /**
- * ONE WORKING TEAM: the planner and the Team Builder edit the same active
- * rotation tab, so the team travels between them by itself. The old `?team=`
- * cross-injection is retired — this is the behavior that replaced it, and the
- * assertion that matters is that NO URL hand-off is involved.
+ * ↻ 2026-10-08 (lineups design §2.1): the Team Builder no longer edits the
+ * Planner's working team — it builds BOARDS of several teams, and has no
+ * bench. What still crosses between the tools is the ⇄ errand (?swap=N),
+ * which edits the Planner's own tab.
  */
 
 const TEAM = ['bennett', 'jean', 'diona', 'gorou'];
 const NAMES = ['Bennett', 'Jean', 'Diona', 'Gorou'];
 
-test('the working team survives a tool→tool crane with no URL hand-off', async ({ page, seed }) => {
+test('the bench leaves on the way to the Builder and comes back with the team', async ({
+	page,
+	seed
+}) => {
 	await seed({ team: { slots: TEAM } });
-	await openTool(page, '/team-builder');
+	await openTool(page, '/rotation-planner');
 	expect(await benchNames(page)).toHaveLength(4);
 
-	await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
+	await page.locator('.chrome-nav a[href*="team-builder"]').click();
+	await page.waitForURL(/team-builder/, { timeout: 10_000 });
 	await page.waitForTimeout(1400); // the pan + band travel
+	await expect(page.locator('.bench-band-mount'), 'the Builder has no bench').toBeHidden();
 
+	await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
+	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
+	await page.waitForTimeout(1400);
 	const planner = await benchNames(page);
-	expect(planner, 'the planner finds the SAME team already slotted').toEqual(
+	expect(planner, 'the planner’s team is untouched by the trip').toEqual(
 		expect.arrayContaining(NAMES)
 	);
 	expect(page.url(), 'no ?team= anywhere in the trip').not.toContain('team=');
@@ -59,7 +67,6 @@ test("the planner's ⇄ hands its slot to the Team Builder's audition", async ({
 
 	// ?swap= is consumed on arrival like every other inbound param.
 	expect(page.url(), 'the param is stripped after reading').not.toContain('swap=');
-	expect(await benchNames(page), 'the same working team came along by itself').toHaveLength(4);
 });
 
 test('committing an audition returns to the planner; cancelling stays with a way back', async ({

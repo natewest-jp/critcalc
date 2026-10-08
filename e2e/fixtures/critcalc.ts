@@ -16,7 +16,8 @@ export const KEYS = {
 	constellations: 'critcalc:constellations',
 	ownership: 'critcalc:ownership',
 	saved: 'critcalc:savedNotations',
-	settings: 'critcalc:siteSettings'
+	settings: 'critcalc:siteSettings',
+	boards: 'critcalc:boards'
 } as const;
 
 /**
@@ -73,6 +74,8 @@ export type SeedState = {
 	ownership?: Record<string, 'owned' | 'wishlist'>;
 	settings?: Record<string, unknown>;
 	saved?: unknown[];
+	/** One Team Builder board (lineups design §2.2), made the active one. */
+	board?: { label?: string; teams: (string | null)[][] };
 };
 
 /**
@@ -134,6 +137,23 @@ export const test = base.extend<Fixtures>({
 					if (s.ownership) put(keys.ownership, s.ownership);
 					if (s.settings) put(keys.settings, s.settings);
 					if (s.saved) put(keys.saved, s.saved);
+					if (s.board) {
+						put(keys.boards, {
+							boards: [
+								{
+									id: 'e2e-board',
+									label: s.board.label ?? 'E2E board',
+									preset: 'custom',
+									noRepeats: true,
+									teams: s.board.teams.map((slots, i) => ({
+										id: `e2e-team-${i}`,
+										slots: [0, 1, 2, 3].map((k) => slots[k] ?? null)
+									}))
+								}
+							],
+							activeBoardId: 'e2e-board'
+						});
+					}
 				},
 				[KEYS, state, notation] as [typeof KEYS, SeedState, string]
 			);
@@ -189,10 +209,17 @@ export async function openTool(page: Page, path: string) {
 	await page.locator('.tool-main').waitFor({ state: 'visible' });
 }
 
-/** Switch the Team Builder to its Roster tab and wait for the grid. */
+/** Put the Team Builder's split control on Roster and wait for the grid.
+ *  ⚠ By ROLE with `exact`: "Roster + board" also contains "Roster". */
 export async function openRoster(page: Page) {
-	await page.locator('.band-b .tb-nav-item', { hasText: 'Roster' }).click();
+	await page.locator('.band-b').getByRole('tab', { name: 'Roster', exact: true }).click();
 	await page.locator('.cg-grid').first().waitFor();
+}
+
+/** The names on the Team Builder's active board, slot order, empties skipped. */
+export async function boardNames(page: Page) {
+	const all = await page.locator('.tb-pane--board .bv-slot-name').allInnerTexts();
+	return all.map((t) => t.trim()).filter(Boolean);
 }
 
 /** The names currently rendered in the character grid. */

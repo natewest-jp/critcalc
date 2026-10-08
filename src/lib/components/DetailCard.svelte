@@ -3,7 +3,8 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
-	import { constellations, siteSettings, ownership } from '$lib/stores';
+	import { constellations, siteSettings, ownership, loadout } from '$lib/stores';
+	import LoadoutPanel from '$lib/components/LoadoutPanel.svelte';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import CloseMark from '$lib/components/CloseMark.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -308,6 +309,21 @@
 					</p>
 				{/if}
 			{/if}
+			<!-- The roster's LOADOUT (Layer 1), beside its constellation (lineups
+			     design §2.1): it was editable only through the bench, and the Team
+			     Builder has no bench any more. Same panel the bench opens; writes
+			     land in the roster, where a rotation's own picks fall back to it. -->
+			{#if conEditable}
+				<p class="kicker dc-build-kicker">Default build</p>
+				<LoadoutPanel
+					loadoutEntry={$loadout[id] ?? {}}
+					weaponType={entry?.weapon}
+					elementColor={color}
+					onSetArtifact={(setId) => loadout.setArtifact(id, setId)}
+					onSetWeapon={(weaponId, r) => loadout.setWeapon(id, weaponId, r)}
+					onSetRefinement={(r) => loadout.setWeapon(id, $loadout[id]?.weaponId, r)}
+				/>
+			{/if}
 		</section>
 
 		<!-- ── Capabilities ───────────────────────────────────── -->
@@ -391,6 +407,9 @@
 </div>
 
 <style>
+	.dc-build-kicker {
+		margin-top: 1rem;
+	}
 	.dc-backdrop {
 		position: fixed;
 		inset: 0;

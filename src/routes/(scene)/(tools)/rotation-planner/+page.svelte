@@ -23,7 +23,7 @@
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
-	import { documentBar as db } from '$lib/documentBar.svelte';
+	import { documentBar as db, rotationTabStrip } from '$lib/documentBar.svelte';
 	import { constellations, siteSettings } from '$lib/stores';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
@@ -364,7 +364,7 @@
 	     content margin below the strip's bottom end. -->
 	<ToolStack benched>
 		{#snippet bandALeft()}
-			<DocumentTabs />
+			<DocumentTabs model={rotationTabStrip} />
 		{/snippet}
 
 		{#snippet bandARight()}

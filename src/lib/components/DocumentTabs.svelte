@@ -1,25 +1,32 @@
 <script lang="ts">
-	import { rotationTabs as rt, type RotationTab } from '$lib/rotationTabs.svelte';
-	import { documentBar } from '$lib/documentBar.svelte';
-	import { savedNotations } from '$lib/stores';
+	import type { Snippet } from 'svelte';
+	import type { TabStripModel } from '$lib/tabSet';
 	import Mark from './Mark.svelte';
+	import BandMenu from './BandMenu.svelte';
 	import { fade } from 'svelte/transition';
 	import { portal } from '$lib/actions/portal';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 
 	// ---------------------------------------------------------------------------
-	// THE DOCUMENT TABS — band A's left zone, in EVERY benched tool (toolbar
-	// round, 2026-08-07). Lifted verbatim out of the planner page, where it had
-	// been since before there was a shared working team.
+	// THE DOCUMENT TABS — band A's left zone (toolbar round, 2026-08-07).
 	//
-	// That was the misplacement the round set out to fix: since the bench-band
-	// round these tabs select the site's ONE working document — team, per-tab
-	// loadout/constellations and notation together — and switching them switches
-	// what the Team Builder is editing too. Living only in the planner meant the
-	// Team Builder showed no document identity at all: you could not tell which
-	// team you were editing, and you could not switch to another without
-	// navigating to the other tool first.
+	// ↻ 2026-10-08 (lineups design §2.2): ONE strip for two kinds of document.
+	// The Planner hands it its rotation tabs, the Team Builder its boards, each
+	// through a `TabStripModel` — so both behave identically (⚓ Nate: "so
+	// people already know how they behave"), and a fix to one is a fix to both.
 	// ---------------------------------------------------------------------------
+
+	let {
+		model,
+		newItems
+	}: {
+		model: TabStripModel;
+		/** A menu for the + control instead of `model.addNew` (board presets). */
+		newItems?: Snippet<[() => void]>;
+	} = $props();
+
+	type Tab = { id: string; label: string };
+	const activeTab = $derived(model.tabs.find((t) => t.id === model.activeId) ?? model.tabs[0]);
 
 	let draggedId = $state<string | null>(null);
 	let dragOverId = $state<string | null>(null);
@@ -29,27 +36,22 @@
 	let editingLabel = $state('');
 
 	function switchTab(id: string) {
-		if (id === rt.activeTabId) return;
-		rt.switchTab(id);
+		if (id === model.activeId) return;
+		model.switchTo(id);
 	}
 
-	// Through the document bar: closing keeps the tab in Recently closed.
 	function closeTab(id: string) {
-		documentBar.closeTab(id);
+		model.close(id);
 	}
 
-	function startRename(tab: RotationTab, e: MouseEvent) {
+	function startRename(tab: Tab, e: MouseEvent) {
 		e.stopPropagation();
 		editingTabId = tab.id;
 		editingLabel = tab.label;
 	}
 
 	function commitRename() {
-		if (editingTabId) {
-			const tab = rt.renameTab(editingTabId, editingLabel);
-			// Propagate to the save bank when this document is linked to an entry.
-			if (tab?.savedId) savedNotations.rename(tab.savedId, editingLabel.trim());
-		}
+		if (editingTabId) model.rename(editingTabId, editingLabel);
 		editingTabId = null;
 	}
 
@@ -106,21 +108,36 @@
 	}
 </script>
 
+{#snippet addControl()}
+	{#if newItems}
+		<BandMenu compact mark="plus" ariaLabel={model.newLabel} items={newItems} />
+	{:else}
+		<button
+			class="btn btn--icon doc-tab-add"
+			onclick={() => model.addNew?.()}
+			aria-label={model.newLabel}
+		>
+			<Mark name="plus" />
+		</button>
+	{/if}
+{/snippet}
+
 <div class="doc-tabs-host" bind:this={rootEl}>
 	<!-- The measuring copy: the strip as it would lay out, never seen or reached.
      Same classes, so its width is the strip's width. -->
 	<div class="doc-tabs doc-tabs--measure" bind:this={measureEl} aria-hidden="true" inert>
-		{#each rt.tabs as tab (tab.id)}
+		{#each model.tabs as tab (tab.id)}
 			<span class="tab tab--closeable doc-tab">
 				<span class="doc-tab-label">{tab.label}</span>
-				{#if rt.tabs.length > 1}<span class="tab-close"><Mark name="close" size={11} /></span>{/if}
+				{#if model.tabs.length > 1}<span class="tab-close"><Mark name="close" size={11} /></span
+					>{/if}
 			</span>
 		{/each}
 		<span class="btn btn--icon doc-tab-add"><Mark name="plus" /></span>
 	</div>
 
 	{#if collapsed}
-		{@const active = rt.activeTab}
+		{@const active = activeTab}
 		<!-- The dropdown form: the active tab as a trigger (double-click renames it,
 	     as on the strip), every tab in a portalled list. -->
 		<div class="doc-tabs">
@@ -162,17 +179,11 @@
 					}}
 				>
 					<span class="doc-tab-label">{active.label}</span>
-					<span class="doc-tab-count">{rt.tabs.length}</span>
+					<span class="doc-tab-count">{model.tabs.length}</span>
 					<Mark name="chevron" size={11} />
 				</button>
 			{/if}
-			<button
-				class="btn btn--icon doc-tab-add"
-				onclick={() => documentBar.newTab()}
-				aria-label="New rotation"
-			>
-				<Mark name="plus" />
-			</button>
+			{@render addControl()}
 		</div>
 
 		{#if menuOpen}
@@ -205,12 +216,12 @@
 					}
 				}}
 			>
-				{#each rt.tabs as tab (tab.id)}
+				{#each model.tabs as tab (tab.id)}
 					<div
 						class="doc-tabs-option"
-						class:doc-tabs-option--active={tab.id === rt.activeTabId}
+						class:doc-tabs-option--active={tab.id === model.activeId}
 						role="option"
-						aria-selected={tab.id === rt.activeTabId}
+						aria-selected={tab.id === model.activeId}
 						tabindex="0"
 						onclick={() => {
 							switchTab(tab.id);
@@ -225,7 +236,7 @@
 						}}
 					>
 						<span class="doc-tab-label">{tab.label}</span>
-						{#if rt.tabs.length > 1}
+						{#if model.tabs.length > 1}
 							<button
 								class="tab-close"
 								tabindex="-1"
@@ -253,14 +264,14 @@
 				}
 			}}
 		>
-			{#each rt.tabs as tab (tab.id)}
+			{#each model.tabs as tab (tab.id)}
 				<!--
 			Outer element is a div[role=button] to avoid nesting <button> inside
 			<button> (the close control). Keyboard: Enter = switch.
 		-->
 				<div
 					class="tab tab--closeable doc-tab"
-					class:active={tab.id === rt.activeTabId}
+					class:active={tab.id === model.activeId}
 					class:doc-tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
 					class:doc-tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
 					class:doc-tab--dragging={draggedId === tab.id}
@@ -294,7 +305,7 @@
 					ondrop={(e) => {
 						e.preventDefault();
 						if (draggedId && dragOverId && dragSide) {
-							rt.reorderTabs(draggedId, dragOverId, dragSide);
+							model.reorder(draggedId, dragOverId, dragSide);
 						}
 						draggedId = null;
 						dragOverId = null;
@@ -323,7 +334,7 @@
 						<span class="doc-tab-label">{tab.label}</span>
 					{/if}
 
-					{#if rt.tabs.length > 1}
+					{#if model.tabs.length > 1}
 						<button
 							class="tab-close"
 							tabindex="-1"
@@ -338,13 +349,7 @@
 			{/each}
 
 			<!-- Always offered: at the limit it asks which tab to close (↻ 2026-10-08). -->
-			<button
-				class="btn btn--icon doc-tab-add"
-				onclick={() => documentBar.newTab()}
-				aria-label="New rotation"
-			>
-				<Mark name="plus" />
-			</button>
+			{@render addControl()}
 		</div>
 	{/if}
 </div>

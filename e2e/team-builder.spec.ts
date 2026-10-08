@@ -6,10 +6,12 @@ import {
 	gridNames,
 	facetChip,
 	benchNames,
+	boardNames,
 	setConMode,
 	KEYS
 } from './fixtures/critcalc';
 import type { Page } from '@playwright/test';
+import { encodeBoard } from '../src/lib/utils/boardUrl';
 
 /**
  * Team Builder behavior at the browser surface.
@@ -38,7 +40,8 @@ test.describe('roster and facets', () => {
 		// ⚓ 2026-10-07: TWO surfaces. The Atlas's role cards open the Roster now
 		// — full-size while nothing narrows it, the grid right beneath them.
 		await openTool(page, '/team-builder');
-		await expect(page.locator('.band-b .tb-nav-item'), 'Roster | Compare').toHaveCount(2);
+		// ↻ 2026-10-08: band B is the split control — Roster · Roster + board · Board.
+		await expect(page.locator('.band-b .tb-nav-item'), 'the three split positions').toHaveCount(3);
 		await expect(page.locator('.tb-atlas .rolecard'), 'four role cards').toHaveCount(4);
 		await expect(page.locator('.cg-grid').first().locator('.cc')).toHaveCount(ROSTER_SIZE);
 		await expect(
@@ -199,206 +202,109 @@ test.describe('detail card', () => {
 	});
 });
 
-test.describe('compare — the tab is the accumulator', () => {
-	/**
-	 * The action bar reveals on hover and the fixed nav overlaps tiles at the
-	 * viewport edges, so dispatch the click directly to exercise the handler
-	 * without fighting hit-testing. The hover reveal itself is a visual matter.
-	 */
-	const addToCompare = (page: Page, name: string) =>
-		page
-			.locator('.cc', { hasText: name })
-			.first()
-			.locator('.tb-act--compare')
-			.dispatchEvent('click');
-
-	test('picks accumulate silently in the tab, without navigating', async ({ page }) => {
-		await openTool(page, '/team-builder');
-		await openRoster(page);
-		await expect(page.locator('.tb-tabstack'), 'starts with no avatar stack').toHaveCount(0);
-
-		await addToCompare(page, 'Bennett');
-		await expect(page.locator('.tb-tabstack-circle')).toHaveCount(1);
-		await expect(page.locator('.cg-grid').first(), 'the roster stays put').toBeVisible();
-
-		await addToCompare(page, 'Jean');
-		await addToCompare(page, 'Diona');
-		await expect(page.locator('.tb-tabstack-circle')).toHaveCount(3);
-	});
-
-	test('the compare view is one block per effect — facts over lanes', async ({ page }) => {
-		await openTool(page, '/team-builder');
-		await openRoster(page);
-		for (const n of ['Bennett', 'Jean', 'Diona']) await addToCompare(page, n);
-
-		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
-		await page.locator('.cmp-group').first().waitFor();
-
-		// A center Source view in normal flow — no scrim, no dock rules.
-		await expect(page.locator('.cmp')).toHaveCSS('position', 'static');
-		await expect(page.locator('.cmp-col'), 'one header column per character').toHaveCount(3);
-
-		// ⚓ THE GROUPING IS AN EFFECT, NEVER A BUTTON. "E cooldown" was a chart
-		// group until 2026-08-13 and is now a FACTS ROW only: every lane's ghost
-		// segment already is its cooldown, so a group for it printed the same
-		// fact twice in two geometries.
-		const groups = await page.locator('.cmp-group').allInnerTexts();
-		expect(groups, 'effect groups').toEqual(expect.arrayContaining(['Heal']));
-		expect(groups, 'buttons are not groups').not.toContain('E cooldown');
-		expect(groups).not.toContain('Q cooldown');
-		expect(await page.locator('.cmp-ruler .cmp-rtick').count()).toBeGreaterThan(0);
-
-		// ↻ 2026-10-07: the cooldowns and the burst's cost are the HEADER's cost
-		// line now — always on screen above the blocks, never a row of their own.
-		const cost = await page.locator('.cmp-col-cost').allInnerTexts();
-		expect(cost.join(' '), 'E, Q and energy in the header').toMatch(/E \d.*Q \d.*energy/);
-
-		// The Heal block lines up one fact per character, then that effect's lanes.
-		const heal = page.locator('.cmp-block', {
-			has: page.locator('.cmp-group', { hasText: /^Heal$/ })
-		});
-		await expect(heal.locator('.cmp-fact'), 'a fact per column').toHaveCount(3);
-		expect(await heal.locator('.cmp-lane').count()).toBeGreaterThan(0);
-
-		// A lane carries its host's price — that is the point of host-as-lane.
-		expect(await page.locator('.cmp-lane-cycle').first().innerText()).toMatch(/· [EQ]\b/);
-
-		// The cycle TILES: a lane whose cooldown is shorter than the axis must
-		// draw more than one window, and the repeats must be marked as projected
-		// (cycle > 0) rather than drawn as strongly as the cast you can make now.
-		const uptimes = await page
-			.locator('.cmp-lane')
-			.first()
-			.locator('.cb-uptime')
-			.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
-		expect(uptimes.length, 'a tiled lane repeats its window').toBeGreaterThan(1);
-		expect(
-			uptimes.every((w) => w > 0),
-			`widths ${uptimes.join(',')}`
-		).toBe(true);
-
-		// Stacked bars share one scale, so differing cooldowns differ in width.
-		const ghosts = await page
-			.locator('.cb-ghost')
-			.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
-		expect(ghosts.length).toBeGreaterThanOrEqual(3);
-		expect(new Set(ghosts.map(Math.round)).size, 'non-uniform widths').toBeGreaterThan(1);
-	});
-
-	test('the lens picks which effect blocks are shown', async ({ page }) => {
-		await openTool(page, '/team-builder');
-		await openRoster(page);
-		for (const n of ['Bennett', 'Jean']) await addToCompare(page, n);
-		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
-		await page.locator('.cmp-group').first().waitFor();
-
-		const allBlocks = await page.locator('.cmp-group, .cmp-only-row').count();
-		expect(allBlocks).toBeGreaterThan(1);
-
-		// ↻ 2026-10-07: an effect's facts and its lanes are ONE block, so the
-		// lens shows or hides them together. One chip on = one effect.
-		await page.locator('.cmp-lenses .chip').first().click();
-		await expect(page.locator('.cmp-group, .cmp-only-row')).toHaveCount(1);
-
-		await page.locator('.cmp-lenses .chip.active').first().click();
-		await expect(page.locator('.cmp-group, .cmp-only-row')).toHaveCount(allBlocks);
-	});
-
-	test('removing and clearing sync the tab stack', async ({ page }) => {
-		await openTool(page, '/team-builder');
-		await openRoster(page);
-		for (const n of ['Bennett', 'Jean', 'Diona']) await addToCompare(page, n);
-		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
-		await page.locator('.cmp-group').first().waitFor();
-
-		await page.locator('.cmp-chip-remove').first().click();
-		await expect(page.locator('.cmp-col')).toHaveCount(2);
-		await expect(page.locator('.tb-tabstack-circle'), 'the stack syncs').toHaveCount(2);
-
-		// ↻ 2026-08-09: clearing no longer lands on a "nothing to compare" page.
-		// Compare is unreachable without picks, so emptying it bounces back to the
-		// Roster and the nav plate goes disabled.
-		await page.locator('.cmp-headact').click();
-		await expect(page.locator('.tb-tabstack')).toHaveCount(0);
-		await expect(
-			page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }),
-			'unreachable with nothing in it'
-		).toBeDisabled();
-		await expect(page.locator('.cg-grid').first(), 'bounced to the Roster').toBeVisible();
-	});
-});
-
-test.describe('team slots', () => {
-	const TEAM = ['bennett', 'jean', 'diona', 'gorou'];
-
-	test('slots fill from the detail card and withhold resonance until full', async ({ page }) => {
-		await openTool(page, '/team-builder');
-		await openRoster(page);
-		expect(await benchNames(page), 'four empty slots').toHaveLength(0);
-
-		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
+/**
+ * ⚓ THE BOARD (lineups design §2.2–§2.4, §10, 2026-10-08). The Builder holds
+ * a board of several teams beside the roster, with no bench; the Compare tab
+ * and the shared working team are retired. ⚓ A board team is a set of
+ * characters — the Builder never rewrites a rotation.
+ */
+test.describe('the board', () => {
+	const openDetail = async (page: Page, name: string) => {
+		await page.locator('.cc', { hasText: name }).first().locator('.cc-main').click();
 		await page.locator('.dc-panel').waitFor();
+	};
+
+	test('the cold start is the roster, and a pick lands on the board', async ({ page }) => {
+		await openTool(page, '/team-builder');
+		await expect(page.locator('.tb-split--roster'), 'an empty board leaves the roster').toHaveCount(
+			1
+		);
+		await expect(page.locator('.bench-band-mount'), 'the Builder has no bench').toBeHidden();
+
+		await openDetail(page, 'Bennett');
 		await page.locator('.dc-team').click();
 		await page.keyboard.press('Escape');
 
-		expect(await benchNames(page)).toHaveLength(1);
-		expect(page.url(), 'the slots→URL mirror is retired').not.toContain('team=');
-		await expect(page.locator('.ts-resnote'), 'resonance needs a full party').toHaveCount(1);
+		expect(await boardNames(page)).toEqual(['Bennett']);
+		await expect(page.locator('.tb-split--split'), 'the board opens beside the roster').toHaveCount(
+			1
+		);
+		expect(page.url(), 'the board never rides the URL').not.toContain('team=');
 	});
 
-	test('a full party resolves resonance and a coverage checklist', async ({ page, seed }) => {
-		// pyro + anemo + cryo + geo = four distinct elements → Protective Canopy
-		await seed({ team: { slots: TEAM } });
-		await openTool(page, '/team-builder');
-
-		// innerText arrives uppercased (pill text-transform, as of 2026-08-09 when
-		// the resonance chips joined the coverage run) — match case-insensitively.
-		const res = await page.locator('.ts-lead-pill--res').allInnerTexts();
-		expect(res).toHaveLength(1);
-		expect(res[0]).toMatch(/Protective Canopy/i);
-
-		// innerText arrives uppercased (chip text-transform) — match case-insensitively.
-		const covered = await page.locator('.ts-cov--yes').allInnerTexts();
-		expect(
-			covered.some((t) => /heal/i.test(t)),
-			covered.join(',')
-		).toBe(true);
-		expect(
-			await page.locator('.ts-cov--no').count(),
-			'absent capabilities stay visible as misses'
-		).toBeGreaterThan(0);
-	});
-
-	test('a slotted character reads as in-team and a fifth is refused', async ({ page, seed }) => {
-		await seed({ team: { slots: TEAM } });
+	test('a board member reads as in the team, and leaves it from the card', async ({
+		page,
+		seed
+	}) => {
+		await seed({ board: { teams: [['bennett', 'jean']] } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-
-		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
-		await page.locator('.dc-panel').waitFor();
-		expect(await page.locator('.dc-team').innerText()).toMatch(/In team/);
+		await openDetail(page, 'Bennett');
+		await expect(page.locator('.dc-team')).toHaveText(/In team/);
+		await page.locator('.dc-team').click();
 		await page.keyboard.press('Escape');
-
-		await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
-		await page.locator('.dc-panel').waitFor();
-		await expect(page.locator('.dc-team'), 'a full team refuses a fifth').toBeDisabled();
+		expect(await boardNames(page)).toEqual(['Jean']);
 	});
 
-	test('a ?team= deep link imports the team and strips the param', async ({ page }) => {
-		// The inbound half of ?team= survives the mirror's retirement.
-		await openTool(page, `/team-builder?team=${TEAM.join(',')}`);
-		expect(await benchNames(page)).toHaveLength(4);
+	test('a selected slot is where the next pick lands', async ({ page, seed }) => {
+		await seed({ board: { teams: [['bennett'], [null]] } });
+		await openTool(page, '/team-builder');
+		// Team 2, slot 3.
+		await page.locator('.bv-team').nth(1).locator('.bv-slot').nth(2).click();
+		await openDetail(page, 'Furina');
+		await page.locator('.dc-team').click();
+		await page.keyboard.press('Escape');
+		const team2 = await page.locator('.bv-team').nth(1).locator('.bv-slot-name').allInnerTexts();
+		expect(team2.map((t) => t.trim())).toEqual(['', '', 'Furina', '']);
+	});
+
+	test('a preset board opens with its teams', async ({ page }) => {
+		await openTool(page, '/team-builder');
+		await page.locator('.band-a .band-menu-trigger[aria-label="New board"]').click();
+		await page.getByRole('menuitem', { name: /Stygian Onslaught/ }).click();
+		// ⚠ Not the strip's hidden MEASURING copy, which carries the same classes.
+		await expect(page.locator('.band-a .doc-tabs:not(.doc-tabs--measure) .doc-tab')).toHaveCount(2);
+		await expect(page.locator('.bv-team'), 'Stygian is three teams').toHaveCount(3);
+	});
+
+	test('a ?team= deep link lands on the active board and strips the param', async ({ page }) => {
+		await openTool(page, '/team-builder?team=bennett,jean,diona,gorou');
+		expect(await boardNames(page)).toEqual(['Bennett', 'Jean', 'Diona', 'Gorou']);
 		expect(page.url(), '?team= is stripped after import').not.toContain('team=');
+	});
+
+	test('a ?b= link opens the shared lineup, levels included', async ({ page }) => {
+		const param = await encodeBoard({
+			label: 'Shared lineup',
+			noRepeats: true,
+			teams: [
+				{ slots: ['furina', 'nahida', null, null], constellations: { furina: 2, nahida: 0 } },
+				{ slots: ['bennett', null, null, null], constellations: { bennett: 6 } }
+			]
+		});
+		await openTool(page, `/team-builder?b=${param}`);
+		await expect(page.locator('.bv-team')).toHaveCount(2);
+		expect(await boardNames(page)).toEqual(['Furina', 'Nahida', 'Bennett']);
+		await expect(page.locator('.band-a .doc-tab.active')).toHaveText(/Shared lineup/);
+		const stored = JSON.parse(
+			(await page.evaluate((k) => localStorage.getItem(k), KEYS.boards)) ?? '{}'
+		);
+		const active = stored.boards.find((b: { id: string }) => b.id === stored.activeBoardId);
+		expect(active.teams[0].con, 'the sender’s C0 arrives as C0').toEqual({ furina: 2, nahida: 0 });
+	});
+
+	test('a board survives a reload', async ({ page }) => {
+		await openTool(page, '/team-builder?team=bennett,jean');
+		await page.reload({ waitUntil: 'networkidle' });
+		expect(await boardNames(page)).toEqual(['Bennett', 'Jean']);
 	});
 });
 
 test.describe('audition', () => {
 	test('pins the incumbent, offers candidates, and commits a slot swap', async ({ page, seed }) => {
 		await seed({ team: { slots: ['bennett', 'jean', 'diona', 'gorou'] } });
-		await openTool(page, '/team-builder');
-
-		// Bennett holds slot 0 — audition replacements for him from the bench.
-		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
+		// Bennett holds slot 0 — the Planner bench's ⇄ arrives as ?swap=0.
+		await openTool(page, '/team-builder?swap=0');
 		await page.locator('.cmp-ref').first().waitFor();
 
 		// ⚓ The incumbent is the REFERENCE, not a peer with a badge: it has its
@@ -423,14 +329,14 @@ test.describe('audition', () => {
 		await page.locator('.cmp-take').first().waitFor();
 		await expect(page.locator('.cmp-col:not(.cmp-ref)')).toHaveCount(1);
 
+		// The errand commits into the Planner's tab and returns there.
 		await page.locator('.cmp-take').first().click();
-		await page.locator('.cmp').waitFor({ state: 'detached' });
+		await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
 
 		const names = await benchNames(page);
 		expect(names, 'Furina replaces Bennett in slot 0').toContain('Furina');
 		expect(names).not.toContain('Bennett');
 		expect(page.url(), 'the swap never touches the URL').not.toContain('team=');
-		await expect(page.locator('.tb-tabstack'), 'audition picks are cleared').toHaveCount(0);
 	});
 
 	test('a slot with no capability to match on falls back to element', async ({ page, seed }) => {
@@ -440,9 +346,7 @@ test.describe('audition', () => {
 		// nothing to say, because a DPS's job is damage and this site does not
 		// compute damage. Without the fallback this is a wall of ~118 chips.
 		await seed({ team: { slots: ['diluc', 'jean', 'diona', 'gorou'] } });
-		await openTool(page, '/team-builder');
-
-		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
+		await openTool(page, '/team-builder?swap=0');
 		await page.locator('.cmp-ref').first().waitFor();
 
 		// ⛔ ONE vocabulary, never both: element chips REPLACE the capability chips.
@@ -477,8 +381,7 @@ test.describe('audition', () => {
 					'Bennett E Q > Xiangling E Q > Xingqiu E Q > Sucrose E Q > Xiangling N3 > Bennett E'
 			}
 		});
-		await openTool(page, '/team-builder');
-		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
+		await openTool(page, '/team-builder?swap=0');
 		await page.locator('.cmp-ref').first().waitFor();
 
 		// No candidate yet → nothing to read against.
@@ -497,31 +400,6 @@ test.describe('audition', () => {
 		await expect(atk.locator('.cmp-rot-val').first()).toHaveText(/^[1-9]\d?%$/);
 		const dmg = rot.locator('.cmp-rot-row', { hasText: 'DMG% buff' });
 		await expect(dmg.locator('.cmp-rot-val').nth(1)).toHaveText(/^[1-9]\d*%$/);
-	});
-
-	test('an audition borrows the comparison and gives it back', async ({ page, seed }) => {
-		// An audition scopes the selection to itself, which used to mean it DELETED
-		// whatever comparison you had going — three picks, one bench ⇄, gone.
-		await seed({ team: { slots: ['bennett', 'jean', 'diona', 'gorou'] } });
-		await openTool(page, '/team-builder');
-		await openRoster(page);
-
-		for (const n of ['Furina', 'Xingqiu'] as const) {
-			await page
-				.locator('.cc', { hasText: n })
-				.first()
-				.locator('.tb-act--compare')
-				.dispatchEvent('click');
-		}
-		await expect(page.locator('.tb-tabstack-circle')).toHaveCount(2);
-
-		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
-		await page.locator('.cmp-ref').first().waitFor();
-		await expect(page.locator('.tb-tabstack-circle'), 'scoped to the incumbent').toHaveCount(1);
-
-		await page.locator('.cmp-headact').click(); // cancel
-		await page.locator('.cmp-ref').waitFor({ state: 'detached' });
-		await expect(page.locator('.tb-tabstack-circle'), 'the comparison came back').toHaveCount(2);
 	});
 });
 

@@ -230,9 +230,11 @@
 	// beneath it (the planner's page scrolls; alignment under scroll is free).
 	// ---------------------------------------------------------------------------
 
-	const benchMode = $derived(
-		tool?.path === '/rotation-planner' ? 'rp' : tool?.path === '/team-builder' ? 'tb' : null
-	);
+	// ↻ 2026-10-08 (lineups design §2.1): the Team Builder has NO bench — it
+	// builds several teams, so it cannot hold the Planner's one working team.
+	// A crossing to it takes the ribbon away by the same path a crossing to the
+	// Visualizers always has (the glide timing is Nate's, untouched).
+	const benchMode = $derived(tool?.path === '/rotation-planner' ? 'rp' : null);
 
 	let benchMount: HTMLDivElement | undefined = $state();
 	let benchVisible = $state(false);
@@ -929,7 +931,7 @@
 {#if documentBar.room}
 	{#key documentBar.room}
 		<TabLimitDialog
-			tabs={rotationTabs.tabs}
+			tabs={documentBar.room.tabs}
 			candidateId={documentBar.room.candidateId}
 			onConfirm={(id) => documentBar.confirmRoom(id)}
 			onCancel={() => documentBar.cancelRoom()}
