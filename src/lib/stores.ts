@@ -124,6 +124,77 @@ function createSavedNotationsStore() {
 export const savedNotations = createSavedNotationsStore();
 
 // ---------------------------------------------------------------------------
+// Saved boards (the Team Builder's bank — lineups design §9.6a)
+// ---------------------------------------------------------------------------
+//
+// ⚓ Boards copy the rotation tabs completely (Nate 2026-10-08): open tabs, a
+// saved list with Save/Load, and Recently closed. An entry stores each team's
+// view at save time with every member's level pinned (as a saved rotation is
+// densified), and keeps a team's link: on load, a link whose tab still exists
+// is live again, and any other team is its saved snapshot.
+
+const SAVED_BOARDS_KEY = 'critcalc:savedBoards';
+
+export type SavedBoardTeam = {
+	id: string;
+	slots: (string | null)[];
+	con?: Record<string, number>;
+	linkedTabId?: string;
+};
+
+export type SavedBoard = {
+	id: string;
+	name: string;
+	teams: SavedBoardTeam[];
+	noRepeats: boolean;
+	savedAt: number;
+	openedAt?: number;
+};
+
+function createSavedBoardsStore() {
+	function load(): SavedBoard[] {
+		if (!browser) return [];
+		try {
+			const parsed = JSON.parse(localStorage.getItem(SAVED_BOARDS_KEY) ?? '[]');
+			return Array.isArray(parsed) ? parsed : [];
+		} catch {
+			return [];
+		}
+	}
+	const store = writable<SavedBoard[]>(load());
+	const persist = (items: SavedBoard[]) => {
+		if (browser) localStorage.setItem(SAVED_BOARDS_KEY, JSON.stringify(items));
+		return items;
+	};
+	return {
+		subscribe: store.subscribe,
+		save(entry: Omit<SavedBoard, 'id' | 'savedAt'>): string {
+			const id = Math.random().toString(36).slice(2, 10);
+			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
+			return id;
+		},
+		update(id: string, fields: Partial<Pick<SavedBoard, 'name' | 'teams' | 'noRepeats'>>) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
+			);
+		},
+		markOpened(id: string) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, openedAt: Date.now() } : e)))
+			);
+		},
+		rename(id: string, name: string) {
+			store.update((items) => persist(items.map((e) => (e.id === id ? { ...e, name } : e))));
+		},
+		delete(id: string) {
+			store.update((items) => persist(items.filter((e) => e.id !== id)));
+		}
+	};
+}
+
+export const savedBoards = createSavedBoardsStore();
+
+// ---------------------------------------------------------------------------
 // Constellation levels
 // ---------------------------------------------------------------------------
 //

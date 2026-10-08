@@ -55,7 +55,7 @@ import {
 	deleteCharacterFromNotation,
 	foldTeamIntoNotation,
 	orderedCharacterIds,
-	renameCharacterInNotation,
+	setSlotInNotation,
 	TEAM_SIZE
 } from '$lib/utils/notationEdit';
 import type { LoadoutEntry } from '$lib/stores';
@@ -451,19 +451,7 @@ class RotationTabsState {
 	 * the module header for the trade.
 	 */
 	setSlot(index: number, id: string | null): void {
-		const outgoing = this.slots[index];
-		const incoming = id ?? 'blank';
-		if (outgoing === incoming) return;
-		if (incoming === 'blank') {
-			if (outgoing !== 'blank') {
-				this.notation = deleteCharacterFromNotation(this.notation, outgoing);
-			}
-			return;
-		}
-		this.notation =
-			outgoing === 'blank'
-				? appendCharacterToNotation(this.notation, incoming)
-				: renameCharacterInNotation(this.notation, outgoing, incoming);
+		this.notation = setSlotInNotation(this.notation, index, id === 'blank' ? null : id);
 	}
 
 	/** Add to the team (no-op when full or already present). */

@@ -32,6 +32,7 @@ import {
 	type RotationTab
 } from './rotationTabs.svelte';
 import { closeCandidate, createRecentlyClosed } from './tabSet';
+import { boards } from './boards.svelte';
 import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
 import { foldTeamIntoNotation } from './utils/notationEdit';
 
@@ -120,9 +121,9 @@ class DocumentBarState {
 	/** The open make-room confirm, if any. */
 	room = $state<RoomRequest | null>(null);
 
-	/** Tabs that may not close to make room. Set by the Team Builder's board
-	 *  store (a tab a board team links to); nothing is locked until then. */
-	lockedTab: (tab: RotationTab) => boolean = () => false;
+	/** Tabs that may not close to make room: a tab a board team is a live view
+	 *  of, whose closing would quietly unlink that team (§9.3). */
+	lockedTab: (tab: RotationTab) => boolean = (tab) => boards.linksTab(tab.id);
 
 	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -325,7 +326,10 @@ class DocumentBarState {
 	 */
 	closeTab(id: string) {
 		const closed = rt.closeTab(id);
-		if (closed && worthKeeping(closed, get(savedNotations))) recentlyClosedRotations.push(closed);
+		if (!closed) return;
+		// A board team linked to it keeps its four characters, unlinked (§2.3).
+		boards.tabClosed(closed);
+		if (worthKeeping(closed, get(savedNotations))) recentlyClosedRotations.push(closed);
 	}
 
 	/** Reopen a closed tab (making room first if the strip is full). */

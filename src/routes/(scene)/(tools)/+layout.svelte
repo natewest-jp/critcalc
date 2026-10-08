@@ -23,6 +23,7 @@
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
+	import { boards } from '$lib/boards.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { savedNotations } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
@@ -42,6 +43,8 @@
 
 	onMount(() => {
 		rotationTabs.restore();
+		// After the tabs: a board team's link is checked against them.
+		boards.restore();
 
 		// The breakpoint flags (responsive round, 2026-09-05) — what the bench
 		// ribbon reads to pick its orientation and the Team Builder reads to
@@ -58,6 +61,9 @@
 	// $state — so there's no circular reactivity.
 	$effect(() => {
 		rotationTabs.persist();
+	});
+	$effect(() => {
+		boards.persist();
 	});
 
 	// Sync tab labels when save-bank entries are renamed from the overlay.

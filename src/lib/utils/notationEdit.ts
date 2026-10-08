@@ -207,3 +207,24 @@ export function foldTeamIntoNotation(
 	}
 	return out;
 }
+
+/**
+ * Set slot `index` of the team a notation implies. A filled slot is RENAMED
+ * (the character's segments keep their actions and change who performs them);
+ * an empty one APPENDS a bare-name segment; `null` DELETES the occupant's
+ * segments. ONE rule for both editors of a notation-backed team — the
+ * planner's working tab and a board team linked to a tab (lineups design §2.3).
+ *
+ * ⚠ `index` is honoured for the outgoing character, not the incoming one:
+ * filling an empty slot appends, so slot ORDER stays notation order.
+ */
+export function setSlotInNotation(notation: string, index: number, id: string | null): string {
+	const slots = orderedCharacterIds(notation).slice(0, TEAM_SIZE);
+	const outgoing = slots[index] ?? null;
+	if (outgoing === id) return notation;
+	if (id === null) return outgoing ? deleteCharacterFromNotation(notation, outgoing) : notation;
+	if (slots.includes(id)) return notation;
+	return outgoing
+		? renameCharacterInNotation(notation, outgoing, id)
+		: appendCharacterToNotation(notation, id);
+}
