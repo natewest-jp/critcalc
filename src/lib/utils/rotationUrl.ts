@@ -36,7 +36,9 @@ export type SharedRotation = {
 	/** Rotation notation text, verbatim — and, since single truth, the team as
 	 *  well: the slots are the first four distinct names it holds. */
 	notation: string;
-	/** charId → constellation level (1–6). Only meaningful team members included. */
+	/** charId → constellation level (0–6) for every team member. ↻ 2026-10-08:
+	 *  an explicit 0 travels too — older links omit it, and a missing member
+	 *  then falls back to the recipient's roster as it always did. */
 	constellations: Record<string, number>;
 	/** charId → effective loadout (character default merged with tab override). */
 	loadout: Record<string, LoadoutEntry>;
@@ -118,8 +120,7 @@ function sanitizeCons(raw: Record<string, unknown>): Record<string, number> {
 	const out: Record<string, number> = {};
 	for (const [id, v] of Object.entries(raw)) {
 		if (typeof v === 'number' && Number.isFinite(v)) {
-			const level = Math.min(6, Math.max(0, Math.round(v)));
-			if (level > 0) out[id] = level;
+			out[id] = Math.min(6, Math.max(0, Math.round(v)));
 		}
 	}
 	return out;

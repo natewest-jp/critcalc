@@ -91,6 +91,23 @@ export function orderedCharacterIds(notation: string): string[] {
 }
 
 /**
+ * A team's IDENTITY: its set of characters, order ignored (⚓ Nate 2026-10-08,
+ * lineups design §10.1). "Bennett, Xiangling" and "Xiangling, Bennett, blank,
+ * blank" are one team; a short team is its own key. The library groups by it
+ * and a board team's pinned rotation must share it.
+ */
+export function teamKey(ids: readonly (string | null | undefined)[]): string {
+	const set: string[] = [];
+	for (const id of ids) if (id && id !== 'blank' && !set.includes(id)) set.push(id);
+	return set.slice(0, TEAM_SIZE).sort().join('+');
+}
+
+/** The team key of a notation — the first four distinct names it holds. */
+export function teamKeyOfNotation(notation: string): string {
+	return teamKey(orderedCharacterIds(notation));
+}
+
+/**
  * True when the notation says more than who is on the team — i.e. at least one
  * segment carries an action after its name.
  *
@@ -206,4 +223,25 @@ export function foldTeamIntoNotation(
 		out = appendCharacterToNotation(out, id);
 	}
 	return out;
+}
+
+/**
+ * Set slot `index` of the team a notation implies. A filled slot is RENAMED
+ * (the character's segments keep their actions and change who performs them);
+ * an empty one APPENDS a bare-name segment; `null` DELETES the occupant's
+ * segments. ONE rule for both editors of a notation-backed team — the
+ * planner's working tab and a board team linked to a tab (lineups design §2.3).
+ *
+ * ⚠ `index` is honoured for the outgoing character, not the incoming one:
+ * filling an empty slot appends, so slot ORDER stays notation order.
+ */
+export function setSlotInNotation(notation: string, index: number, id: string | null): string {
+	const slots = orderedCharacterIds(notation).slice(0, TEAM_SIZE);
+	const outgoing = slots[index] ?? null;
+	if (outgoing === id) return notation;
+	if (id === null) return outgoing ? deleteCharacterFromNotation(notation, outgoing) : notation;
+	if (slots.includes(id)) return notation;
+	return outgoing
+		? renameCharacterInNotation(notation, outgoing, id)
+		: appendCharacterToNotation(notation, id);
 }

@@ -48,7 +48,15 @@ export type SavedNotation = {
 	 */
 	tabCon?: Record<string, number>;
 	savedAt: number; // Unix timestamp (ms)
+	/** Last loaded from the bank (ms). The bank sorts by the newer of this and
+	 *  `savedAt` (⚓ Nate 2026-10-08) — see {@link lastTouched}. */
+	openedAt?: number;
 };
+
+/** When an entry was last saved OR opened — the bank's sort key. */
+export function lastTouched(e: Pick<SavedNotation, 'savedAt' | 'openedAt'>): number {
+	return Math.max(e.savedAt, e.openedAt ?? 0);
+}
 
 function loadSavedNotations(): SavedNotation[] {
 	if (!browser) return [];
@@ -90,6 +98,13 @@ function createSavedNotationsStore() {
 			);
 		},
 
+		/** Loaded from the bank — moves it to the top of the list. */
+		markOpened(id: string) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, openedAt: Date.now() } : e)))
+			);
+		},
+
 		/** Rename only — does not bump savedAt so sort order is stable. */
 		rename(id: string, name: string) {
 			store.update((items) => persist(items.map((e) => (e.id === id ? { ...e, name } : e))));
@@ -107,6 +122,77 @@ function createSavedNotationsStore() {
 }
 
 export const savedNotations = createSavedNotationsStore();
+
+// ---------------------------------------------------------------------------
+// Saved boards (the Team Builder's bank — lineups design §9.6a)
+// ---------------------------------------------------------------------------
+//
+// ⚓ Boards copy the rotation tabs completely (Nate 2026-10-08): open tabs, a
+// saved list with Save/Load, and Recently closed. An entry stores each team's
+// view at save time with every member's level pinned (as a saved rotation is
+// densified), and keeps a team's pinned rotation (lineups design §10.2).
+
+const SAVED_BOARDS_KEY = 'critcalc:savedBoards';
+
+export type SavedBoardTeam = {
+	id: string;
+	slots: (string | null)[];
+	con?: Record<string, number>;
+	pinnedRotationId?: string;
+};
+
+export type SavedBoard = {
+	id: string;
+	name: string;
+	preset: 'stygian' | 'abyss' | 'custom';
+	teams: SavedBoardTeam[];
+	noRepeats: boolean;
+	savedAt: number;
+	openedAt?: number;
+};
+
+function createSavedBoardsStore() {
+	function load(): SavedBoard[] {
+		if (!browser) return [];
+		try {
+			const parsed = JSON.parse(localStorage.getItem(SAVED_BOARDS_KEY) ?? '[]');
+			return Array.isArray(parsed) ? parsed : [];
+		} catch {
+			return [];
+		}
+	}
+	const store = writable<SavedBoard[]>(load());
+	const persist = (items: SavedBoard[]) => {
+		if (browser) localStorage.setItem(SAVED_BOARDS_KEY, JSON.stringify(items));
+		return items;
+	};
+	return {
+		subscribe: store.subscribe,
+		save(entry: Omit<SavedBoard, 'id' | 'savedAt'>): string {
+			const id = Math.random().toString(36).slice(2, 10);
+			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
+			return id;
+		},
+		update(id: string, fields: Partial<Pick<SavedBoard, 'name' | 'teams' | 'noRepeats'>>) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
+			);
+		},
+		markOpened(id: string) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, openedAt: Date.now() } : e)))
+			);
+		},
+		rename(id: string, name: string) {
+			store.update((items) => persist(items.map((e) => (e.id === id ? { ...e, name } : e))));
+		},
+		delete(id: string) {
+			store.update((items) => persist(items.filter((e) => e.id !== id)));
+		}
+	};
+}
+
+export const savedBoards = createSavedBoardsStore();
 
 // ---------------------------------------------------------------------------
 // Constellation levels

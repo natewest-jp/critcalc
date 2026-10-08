@@ -22,6 +22,7 @@
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
+	import { documentBar } from '$lib/documentBar.svelte';
 	import { notationHasActions } from '$lib/utils/notationEdit';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { below } from '$lib/media.svelte';
@@ -123,11 +124,8 @@
 		if (teamParam) {
 			const imported = parseTeamParam(teamParam, (id) => rosterIds.has(id));
 			const ids = imported.filter((s): s is string => s !== null);
-			// ⚠ May decline when all six tabs hold work (`rotationTabs.adopt`). The
-			// TB has no document notice of its own, and the team is still right
-			// here to re-send once a tab is free — so this stays a quiet no-op
-			// rather than growing a toast surface for one edge.
-			if (ids.length > 0) rt.importTeam(ids, 'Imported team');
+			// At the tab limit this asks which tab to close (documentBar.receive).
+			if (ids.length > 0) documentBar.receive(rt.teamDocument(ids, 'Imported team'), 'Team loaded');
 		}
 		if (swapParam !== null) {
 			// Validated, not trusted: this is a URL, so anyone can type ?swap=9.

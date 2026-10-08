@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { savedNotations, siteSettings, type SavedNotation } from '$lib/stores';
+	import { lastTouched, savedNotations, siteSettings, type SavedNotation } from '$lib/stores';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { slotsFromNotation } from '$lib/rotationTabs.svelte';
+	import { slotsFromNotation, type RotationTab } from '$lib/rotationTabs.svelte';
+	import { recentlyClosedRotations } from '$lib/documentBar.svelte';
 	import { foldTeamIntoNotation } from '$lib/utils/notationEdit';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import { elementColors } from '$lib/utils/elementColors';
@@ -14,19 +15,23 @@
 		return entry?.main ?? '#17213a';
 	}
 
+	// ↻ 2026-10-08: `canAddTab` is gone — "New tab" is always offered, and at
+	// the tab limit it asks which tab to close (documentBar.withRoom).
 	let {
-		canAddTab,
 		onLoad,
 		onLoadNewTab,
+		onReopen,
+		onSaveClosed,
 		onClose
 	}: {
-		canAddTab: boolean;
 		onLoad: (entry: SavedNotation) => void;
 		onLoadNewTab: (entry: SavedNotation) => void;
+		onReopen: (tab: RotationTab) => void;
+		onSaveClosed: (tab: RotationTab) => void;
 		onClose: () => void;
 	} = $props();
 
-	let entries = $derived([...$savedNotations].sort((a, b) => b.savedAt - a.savedAt));
+	let entries = $derived([...$savedNotations].sort((a, b) => lastTouched(b) - lastTouched(a)));
 
 	/** The four faces on a bank card. ↻ 2026-08-13: one derivation, shared with
 	 *  the store, instead of a third hand-rolled name scan — and a pre-single-truth
@@ -114,54 +119,97 @@
 		</button>
 	</div>
 
-	{#if entries.length === 0}
+	{#snippet faces(charIds: string[])}
+		<!-- 4 overlapping side-avatar circles -->
+		<div class="avatar-stack">
+			{#each charIds as charId, i (i)}
+				<div
+					class="avatar-circle"
+					class:avatar-blank={charId === 'blank'}
+					style:left="{i * 20}px"
+					style:z-index={i + 1}
+					style:border-color={elementBorderColor(charId)}
+				>
+					{#if charId !== 'blank'}
+						<img
+							class="avatar-img"
+							src={getAvatar(
+								charId,
+								$siteSettings.useNewOutfits,
+								'side',
+								$siteSettings.travelerVariant
+							)}
+							alt={charId}
+							onerror={(e) => {
+								const img = e.currentTarget as HTMLImageElement;
+								if ($siteSettings.useNewOutfits && !img.dataset.triedFallback) {
+									img.dataset.triedFallback = '1';
+									img.src = getAvatar(charId, false, 'side', $siteSettings.travelerVariant);
+								} else {
+									img.style.display = 'none';
+								}
+							}}
+						/>
+					{/if}
+				</div>
+			{/each}
+		</div>
+	{/snippet}
+
+	<!-- Recently closed (⚓ Nate 2026-10-08, lineups design §9.3): every tab that
+	     closes with work in it lands here, so closing — and the tab limit — is
+	     never loss. ABOVE the saved list: it is the newer, more temporary thing. -->
+	{#if $recentlyClosedRotations.length > 0}
+		<h3 class="sn-section">Recently closed</h3>
+		<ul class="entry-list entry-list--closed">
+			{#each $recentlyClosedRotations as { tab, closedAt } (tab.id)}
+				<li class="entry">
+					{@render faces(slotsFromNotation(tab.notation))}
+					<div class="entry-content">
+						<div class="entry-top">
+							<span class="entry-name">{tab.label}</span>
+							<span class="entry-date">{formatDate(closedAt)}</span>
+						</div>
+						<div class="entry-bottom">
+							<span class="entry-notation">{tab.notation}</span>
+						</div>
+					</div>
+					<div class="entry-actions">
+						<button class="btn btn--sm" onclick={() => onSaveClosed(tab)}
+							><Mark name="save" size={12} /> Save</button
+						>
+						<button class="btn btn--sm btn--primary" onclick={() => onReopen(tab)}
+							><Mark name="plus" size={12} /> Reopen</button
+						>
+						<button
+							class="btn btn--icon sn-icon"
+							onclick={() => recentlyClosedRotations.remove(tab.id)}
+							aria-label="Forget {tab.label}"><Mark name="close" size={12} /></button
+						>
+					</div>
+				</li>
+			{/each}
+		</ul>
+		{#if entries.length > 0}
+			<h3 class="sn-section">Saved</h3>
+		{/if}
+	{/if}
+
+	{#if entries.length === 0 && $recentlyClosedRotations.length === 0}
 		<div class="empty-state">
 			<p class="empty-title">No saved rotations yet.</p>
 			<p class="empty-hint">
 				Write a rotation and click <strong>Save</strong> to bank it here.
 			</p>
 		</div>
-	{:else}
+	{:else if entries.length > 0}
 		<ul class="entry-list">
 			{#each entries as entry (entry.id)}
 				{@const charIds = entryCharIds(entry)}
 				{@const isDeleting = deletingId === entry.id}
 
 				<li class="entry" class:entry--deleting={isDeleting}>
-					<!-- 4 overlapping side-avatar circles -->
-					<div class="avatar-stack">
-						{#each charIds as charId, i (i)}
-							<div
-								class="avatar-circle"
-								class:avatar-blank={charId === 'blank'}
-								style:left="{i * 20}px"
-								style:z-index={i + 1}
-								style:border-color={elementBorderColor(charId)}
-							>
-								{#if charId !== 'blank'}
-									<img
-										class="avatar-img"
-										src={getAvatar(
-											charId,
-											$siteSettings.useNewOutfits,
-											'side',
-											$siteSettings.travelerVariant
-										)}
-										alt={charId}
-										onerror={(e) => {
-											const img = e.currentTarget as HTMLImageElement;
-											if ($siteSettings.useNewOutfits && !img.dataset.triedFallback) {
-												img.dataset.triedFallback = '1';
-												img.src = getAvatar(charId, false, 'side', $siteSettings.travelerVariant);
-											} else {
-												img.style.display = 'none';
-											}
-										}}
-									/>
-								{/if}
-							</div>
-						{/each}
-					</div>
+					{@render faces(charIds)}
 
 					<!-- Name row + notation preview -->
 					<div class="entry-content">
@@ -204,17 +252,15 @@
 					     Delete — the only irreversible control in the overlay — read with
 					     exactly as much weight as "New tab". -->
 					<div class="entry-actions">
-						{#if canAddTab}
-							<button
-								class="btn btn--sm"
-								onclick={() => {
-									deletingId = null;
-									editingId = null;
-									onLoadNewTab(entry);
-								}}
-								title="Open in a new tab"><Mark name="plus" size={12} /> New tab</button
-							>
-						{/if}
+						<button
+							class="btn btn--sm"
+							onclick={() => {
+								deletingId = null;
+								editingId = null;
+								onLoadNewTab(entry);
+							}}
+							title="Open in a new tab"><Mark name="plus" size={12} /> New tab</button
+						>
 						<button
 							class="btn btn--sm btn--primary"
 							onclick={() => {
@@ -316,6 +362,24 @@
 	}
 	.empty-hint strong {
 		color: var(--text);
+	}
+
+	/* The two lists' headings. Shown only when Recently closed has entries —
+	   a bank with one list needs no label for it. */
+	.sn-section {
+		margin: 0;
+		padding: 10px 16px 4px;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+		letter-spacing: var(--ls-mid);
+		flex-shrink: 0;
+	}
+	/* Recently closed never pushes the saved list out of the panel: it scrolls
+	   on its own, at most a third of the panel. */
+	.entry-list--closed {
+		flex: 0 1 auto;
+		max-height: 33%;
 	}
 
 	.entry-list {

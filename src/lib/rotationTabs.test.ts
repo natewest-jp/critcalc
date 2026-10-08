@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { get } from 'svelte/store';
 import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from './rotationTabs.svelte';
+import { documentBar as db, recentlyClosedRotations, worthKeeping } from './documentBar.svelte';
+import { closeCandidate } from './tabSet';
 
 /**
  * `adopt` — where an INCOMING document goes (a shared `?r=` link, a `?team=`
@@ -84,20 +87,95 @@ describe('rotationTabs.adopt', () => {
 	});
 });
 
-describe('rotationTabs.importTeam', () => {
-	it('goes through adopt — declines instead of clobbering a full set', () => {
-		seed(busy(TAB_LIMIT), 't2');
-		const before = rt.tabs.map((t) => ({ ...t }));
-		expect(rt.importTeam(['bennett', 'xiangling'])).toBe(false);
-		expect(rt.tabs).toEqual(before);
+/**
+ * ⚓ A CONFIRM EVERY TIME (Nate 2026-10-08): an arriving document at the limit
+ * opens the make-room confirm instead of landing or being parked, and either
+ * answer keeps everything — confirming moves the chosen tab to Recently
+ * closed, cancelling keeps the ARRIVING document there. Same data-loss class
+ * as `adopt` above, which is why it is pinned beside it.
+ */
+describe('documentBar.receive — the make-room confirm', () => {
+	const closed = () => get(recentlyClosedRotations).map((e) => e.tab);
+	beforeEach(() => {
+		recentlyClosedRotations.clear();
+		db.room = null;
 	});
 
-	it('lands the team as bare-name notation when there is room', () => {
+	it('lands directly when there is room', () => {
 		seed(busy(2));
-		expect(rt.importTeam(['bennett', 'xiangling'])).toBe(true);
+		db.receive(rt.teamDocument(['bennett', 'xiangling']), 'Team loaded');
+		expect(db.room).toBeNull();
 		expect(rt.tabs).toHaveLength(3);
 		// The team IS the notation since single truth — names in segment order.
 		expect(rt.tabs[2].notation).toContain('Bennett');
 		expect(rt.tabs[2].notation).toContain('Xiangling');
+	});
+
+	it('at the limit, ASKS — and changes nothing until answered', () => {
+		seed(busy(TAB_LIMIT), 't2');
+		const shape = () => rt.tabs.map((t) => [t.id, t.label, t.notation]);
+		const before = shape();
+		db.receive({ ...doc }, 'Loaded shared rotation');
+		expect(db.room).not.toBeNull();
+		expect(shape()).toEqual(before);
+		expect(rt.activeTabId).toBe('t2');
+	});
+
+	it('confirming closes the chosen tab INTO Recently closed, then lands', () => {
+		seed(busy(TAB_LIMIT), 't2');
+		db.receive({ ...doc }, 'Loaded shared rotation');
+		db.confirmRoom('t5');
+		expect(rt.tabs).toHaveLength(TAB_LIMIT);
+		expect(rt.tabs.some((t) => t.id === 't5')).toBe(false);
+		expect(rt.activeTab.notation).toBe(doc.notation);
+		expect(closed().map((t) => t.id)).toEqual(['t5']);
+	});
+
+	it('cancelling keeps the ARRIVING document in Recently closed', () => {
+		seed(busy(TAB_LIMIT), 't2');
+		db.receive({ ...doc }, 'Loaded shared rotation');
+		db.cancelRoom();
+		expect(rt.tabs).toHaveLength(TAB_LIMIT);
+		expect(closed().map((t) => t.notation)).toEqual([doc.notation]);
+	});
+});
+
+describe('closeCandidate', () => {
+	const tabs = [
+		{ id: 'a', viewedAt: 300 },
+		{ id: 'b', viewedAt: 100 },
+		{ id: 'c', viewedAt: 200 },
+		{ id: 'd' } // predates the field — counts as oldest
+	];
+	it('picks the tab VIEWED longest ago', () => {
+		expect(closeCandidate(tabs, 'a')?.id).toBe('d');
+		expect(closeCandidate(tabs.slice(0, 3), 'a')?.id).toBe('b');
+	});
+	it('never the active tab; null when there is no other', () => {
+		expect(closeCandidate(tabs, 'd')?.id).toBe('b');
+		expect(closeCandidate([{ id: 'a' }], 'a')).toBeNull();
+	});
+});
+
+describe('worthKeeping', () => {
+	const saved = [
+		{ id: 's1', name: 'X', notation: 'Bennett E Q', tabCon: { bennett: 6 }, savedAt: 0 }
+	];
+	it('drops an empty tab, and a saved tab with nothing unsaved', () => {
+		expect(worthKeeping({ id: 't', label: 'T', notation: '  ' }, saved)).toBe(false);
+		expect(
+			worthKeeping({ id: 't', label: 'X', notation: 'Bennett E Q', savedId: 's1' }, saved)
+		).toBe(false);
+	});
+	it('keeps unsaved text OR an unsaved constellation', () => {
+		expect(
+			worthKeeping({ id: 't', label: 'X', notation: 'Bennett E Q N1', savedId: 's1' }, saved)
+		).toBe(true);
+		expect(
+			worthKeeping(
+				{ id: 't', label: 'X', notation: 'Bennett E Q', savedId: 's1', tabCon: { bennett: 2 } },
+				saved
+			)
+		).toBe(true);
 	});
 });
