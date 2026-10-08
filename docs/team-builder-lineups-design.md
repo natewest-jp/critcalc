@@ -520,6 +520,16 @@ disagree.**
   other heading: the library cannot disagree with the text.
 - A team saved with no rotation is an entry whose notation is only names ("No rotation
   yet").
+- ⚓ **A team is a REAL entry, never drawn as a rotation** (Nate 2026-10-08, step 4
+  design): the names-only notation IS the heading. It outlives its rotations (delete
+  the last one and the team stays), and **saving a rotation creates its team entry
+  ON SAVE** if absent (and on an overwrite that changes the team), so "every rotation
+  has a team" is enforced at the one place entries are written. Deleting a team that
+  still has rotations is a two-stage confirm naming the count; an empty team deletes
+  in one click. ⚓ **The Builder never files a team on its own**: "Save team" copies
+  a set into the library one way, and deleting that team later leaves boards alone
+  (a pin to a deleted rotation drops, §10.2). ⚓ The team entry's NAME is its
+  nickname, which retires the separate nickname store below.
 - **Team nicknames** (⚓): optional, stored per character set in a small store of their
   own. A label beside the set, never a second copy of the team. Without one, the
   heading is the portraits plus the composition chips (§3). If a rotation's team

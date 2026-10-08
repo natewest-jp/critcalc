@@ -4,23 +4,31 @@
 	 * build step 3). A board stacks its TEAMS vertically, each a row (§3).
 	 *
 	 * ⚠ Step 3's rows are PLAIN on purpose: four slots, a label, Open in
-	 * Planner. The composition chips, the fingerprint, the overhanging 64px
-	 * portraits, "N rotations" and the pin are step 5, and swap mode (what a
+	 * Planner. The portraits are the overhanging side portrait (§9.5a,
+	 * `SidePortrait`); the composition chips, the fingerprint, "N rotations"
+	 * and the pin are step 5, and swap mode (what a
 	 * selected slot opens in the roster pane) is step 6. Until then a selected
 	 * slot is where the roster's next pick lands.
 	 */
 	import Mark from '$lib/components/Mark.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
-	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
-	import { BOARD_TEAM_LIMIT, type Board, type BoardTeam } from '$lib/boards.svelte';
-	import type { TravelerVariant } from '$lib/utils/getAvatar';
+	import SidePortrait from '$lib/components/SidePortrait.svelte';
+	import { constellations, ownership, savedNotations } from '$lib/stores';
+	import {
+		BOARD_TEAM_LIMIT,
+		effectiveCon,
+		teamCon,
+		type Board,
+		type BoardTeam
+	} from '$lib/boards.svelte';
+
+	/** 🎛️ The board's disc (the art rises above it; see `SIDE_ART_PER_DISC`). */
+	const BOARD_PORTRAIT = 64;
 
 	export type SlotRef = { teamId: string; index: number };
 
 	let {
 		board,
-		traveler,
 		selected,
 		onSelect,
 		onEmpty,
@@ -29,7 +37,6 @@
 		onOpenInPlanner
 	}: {
 		board: Board;
-		traveler: TravelerVariant;
 		selected: SlotRef | null;
 		onSelect: (slot: SlotRef | null) => void;
 		onEmpty: (slot: SlotRef) => void;
@@ -38,10 +45,12 @@
 		onOpenInPlanner: (team: BoardTeam) => void;
 	} = $props();
 
-	const elColor = (id: string) => {
-		const el = getCharacterIndexEntry(id)?.element ?? 'none';
-		return (elementColors[el as ElementKey] ?? elementColors.none).main;
-	};
+	/* The constellation chip compares the team's level with your account's,
+	   but only once the roster has something in it, or everyone reads as
+	   unowned (§9.5). `undefined` = nothing to compare against. */
+	const rosterHasContent = $derived(Object.values($ownership).includes('owned'));
+	const ownedConOf = (id: string): number | null | undefined =>
+		!rosterHasContent ? undefined : $ownership[id] === 'owned' ? ($constellations[id] ?? 0) : null;
 
 	const isSelected = (teamId: string, index: number) =>
 		selected?.teamId === teamId && selected.index === index;
@@ -74,25 +83,23 @@
 				{#each team.slots as id, i (i)}
 					{@const sel = isSelected(team.id, i)}
 					{@const entry = id ? getCharacterIndexEntry(id) : undefined}
+					{@const own = teamCon(team, $savedNotations)}
 					<div class="bv-slot-wrap">
 						<button
-							class="bv-slot ctx-dark"
-							class:bv-slot--empty={!id}
-							class:bv-slot--selected={sel}
-							style:--el-color={id ? elColor(id) : undefined}
+							class="bv-slot"
 							aria-pressed={sel}
 							aria-label={entry
 								? `${entry.displayName}, team ${t + 1} slot ${i + 1}`
 								: `Empty, team ${t + 1} slot ${i + 1}`}
 							onclick={() => onSelect(sel ? null : { teamId: team.id, index: i })}
 						>
-							{#if id && hasAvatar(id)}
-								<img src={getAvatarFallback(id, 'circle', traveler)} alt="" />
-							{:else if id}
-								<span class="bv-initials">{(entry?.displayName ?? id).slice(0, 2)}</span>
-							{:else}
-								<Mark name="plus" size={16} />
-							{/if}
+							<SidePortrait
+								{id}
+								size={BOARD_PORTRAIT}
+								con={id ? effectiveCon(own, $constellations, id) : undefined}
+								ownedCon={id ? ownedConOf(id) : undefined}
+								selected={sel}
+							/>
 						</button>
 						{#if id}
 							<button
@@ -154,44 +161,17 @@
 		gap: 0.3rem;
 		width: 72px;
 	}
-	/* The step-3 disc: the circle-trimmed portrait on its element ring. Step 5
-	   replaces it with the 64px overhanging side portrait (§9.5a). */
+	/* The slot is a bare hit area around the portrait, which draws its own
+	   ring, selection and empty state. Hover lifts the ring to ink. */
 	.bv-slot {
-		width: 64px;
-		height: 64px;
 		padding: 0;
-		border: 2px solid color-mix(in srgb, var(--el-color, var(--border)) 70%, transparent);
-		border-radius: 50%;
-		background: var(--surface);
-		color: var(--muted);
-		display: grid;
-		place-items: center;
-		overflow: hidden;
+		border: none;
+		background: none;
 		cursor: pointer;
-		transition:
-			border-color var(--t-snap),
-			box-shadow var(--t-snap);
+		border-radius: var(--r-round);
 	}
-	.bv-slot img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-	.bv-slot--empty {
-		border-style: dashed;
-		border-color: var(--border);
-	}
-	.bv-slot:hover {
+	.bv-slot:hover :global(.spt-disc:not(.spt-disc--selected)) {
 		box-shadow: 0 0 0 1px var(--glass-ring);
-	}
-	/* Selected: the gold ring — "chosen", the site's one meaning for it. */
-	.bv-slot--selected,
-	.bv-slot--selected:hover {
-		box-shadow: 0 0 0 2px var(--sel-ring);
-	}
-	.bv-initials {
-		font-weight: var(--fw-semibold);
-		color: var(--text);
 	}
 	.bv-slot-clear {
 		position: absolute;

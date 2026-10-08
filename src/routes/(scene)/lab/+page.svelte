@@ -1,5 +1,39 @@
 <script lang="ts">
 	import Mark from '$lib/components/Mark.svelte';
+	import SidePortrait from '$lib/components/SidePortrait.svelte';
+	import { SIDE_GEOMETRY, type SideGeometry } from '$lib/sidePortrait';
+	import { getAllCharacterIndex } from '$lib/data/characterLookup';
+
+	/* ══ THE SIDE PORTRAIT (lineups design §9.5a, 2026-10-08) — Nate tunes the
+	   geometry here; the values he settles on land in $lib/sidePortrait.ts as
+	   they are. The sliders work in the ICON's own pixels (of 128). */
+	let spDisc = $state(64);
+	let spRing = $state(Math.round(128 / SIDE_GEOMETRY.artPerDisc));
+	let spCx = $state(Math.round(SIDE_GEOMETRY.cx * 128));
+	let spCy = $state(Math.round(SIDE_GEOMETRY.cy * 128));
+	let spClip = $state(SIDE_GEOMETRY.clipBelow);
+	/* The chip's four cases, one per seat (the empty slot is the fifth). */
+	const SP_CASES: { con: number; ownedCon: number | null; note: string }[] = [
+		{ con: 0, ownedCon: 0, note: 'C0, owned — no chip' },
+		{ con: 2, ownedCon: 6, note: 'C2, you own C6 — filled' },
+		{ con: 2, ownedCon: 0, note: 'C2, you own C0 — hollow' },
+		{ con: 0, ownedCon: null, note: 'not owned — hollow C0' }
+	];
+	const spGeo: SideGeometry = $derived({
+		artPerDisc: 128 / spRing,
+		cx: spCx / 128,
+		cy: spCy / 128,
+		clipBelow: spClip
+	});
+	const SP_TEAM = ['neuvillette', 'nahida', 'xingqiu', 'furina'];
+	const SP_GROUNDS = [
+		{ cls: '', label: 'night' },
+		{ cls: 'ctx-glass', label: 'glass' },
+		{ cls: 'ctx-dark', label: 'dark' }
+	];
+	const spRoster = getAllCharacterIndex()
+		.filter((c) => !c.id.startsWith('traveler_') || c.id === 'traveler_anemo')
+		.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
 	/**
 	 * THE SPECIMEN BOARD (/lab) — ⚓ NATE 2026-08-10.
@@ -970,6 +1004,82 @@
 			<code>/styleguide</code> stays the exhaustive reference; this is the thing to judge from.
 		</p>
 	</header>
+
+	<!-- ═══════════════════════════════════════════ 0 · THE SIDE PORTRAIT ══ -->
+	<section>
+		<h2 class="lab-h">The side portrait <span class="lab-badge">candidate</span></h2>
+		<div class="sp-knobs">
+			<label
+				>Disc <input type="range" min="32" max="96" bind:value={spDisc} />
+				<code>{spDisc}px · art {Math.round(spDisc * spGeo.artPerDisc)}px</code></label
+			>
+			<label
+				>Ring in icon px <input type="range" min="70" max="128" bind:value={spRing} />
+				<code>{spRing} / 128</code></label
+			>
+			<label
+				>Centre x <input type="range" min="40" max="90" bind:value={spCx} />
+				<code>{spCx}</code></label
+			>
+			<label
+				>Centre y <input type="range" min="50" max="110" bind:value={spCy} />
+				<code>{spCy}</code></label
+			>
+			<label><input type="checkbox" bind:checked={spClip} /> Clip below centre</label>
+		</div>
+
+		<div class="lab-grid">
+			{#each SP_GROUNDS as g (g.label)}
+				<div class="spec {g.cls}" class:spec--bare={g.cls === ''}>
+					<div class="spec-tag">{g.label}</div>
+					<div class="sp-row">
+						{#each SP_TEAM as id, i (id)}
+							<SidePortrait
+								{id}
+								size={spDisc}
+								geometry={spGeo}
+								con={SP_CASES[i].con}
+								ownedCon={SP_CASES[i].ownedCon}
+								selected={i === 0}
+							/>
+						{/each}
+						<SidePortrait id={null} size={spDisc} geometry={spGeo} />
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		<p class="sp-note">
+			Left to right: {SP_CASES.map((c) => c.note).join(' · ')}. Hover a chip for its sentence.
+		</p>
+
+		<p class="sp-note">
+			Two candidate sizes. Left: the disc at 64px (the art is upsampled about 1.35× on a 2× screen).
+			Right: the ART at 64px (pixel for pixel on a 2× screen), which makes the disc about 47px.
+		</p>
+		<div class="sp-row sp-row--pair">
+			<div class="sp-row">
+				{#each SP_TEAM as id (id)}<SidePortrait {id} size={64} geometry={spGeo} />{/each}
+			</div>
+			<div class="sp-row">
+				{#each SP_TEAM as id (id)}<SidePortrait
+						{id}
+						size={Math.round(64 / spGeo.artPerDisc)}
+						geometry={spGeo}
+					/>{/each}
+			</div>
+		</div>
+
+		<p class="sp-note">The whole roster at the disc size above. Look for icons that sit oddly.</p>
+		<div class="sp-sheet">
+			{#each spRoster as c (c.id)}
+				<figure class="sp-cell">
+					<SidePortrait id={c.id} size={spDisc} geometry={spGeo} />
+					<figcaption>{c.displayName}</figcaption>
+				</figure>
+			{/each}
+		</div>
+	</section>
 
 	<!-- ══════════════════════════════════════════════════ 1 · THE GROUNDS ══ -->
 	<section>
@@ -2385,6 +2495,53 @@
 		margin-bottom: 1rem;
 	}
 
+	/* ── 0 · the side portrait ── */
+	.sp-knobs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem 1.4rem;
+		align-items: center;
+		margin-bottom: 1rem;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.sp-knobs label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.sp-row {
+		display: flex;
+		align-items: flex-end;
+		gap: 1.25rem;
+		flex-wrap: wrap;
+	}
+	.sp-row--pair {
+		gap: 4rem;
+		margin: 0.5rem 0 1.5rem;
+	}
+	.sp-note {
+		margin: 1.25rem 0 0.5rem;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.sp-sheet {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+		gap: 1rem 0.5rem;
+	}
+	.sp-cell {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+	}
+	.sp-cell figcaption {
+		font-size: var(--fs-xs);
+		color: var(--text);
+		text-align: center;
+	}
 	.lab-h {
 		margin: 0 0 0.5rem;
 		font-family: var(--font-display);

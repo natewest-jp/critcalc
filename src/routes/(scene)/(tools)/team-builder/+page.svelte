@@ -1366,7 +1366,6 @@
 			>
 				<BoardView
 					{board}
-					{traveler}
 					selected={selectedSlot}
 					onSelect={(slot) => (selectedSlot = slot)}
 					onEmpty={(slot) => boards.setSlot(board.id, slot.teamId, slot.index, null)}
