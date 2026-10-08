@@ -130,8 +130,7 @@ export const savedNotations = createSavedNotationsStore();
 // ⚓ Boards copy the rotation tabs completely (Nate 2026-10-08): open tabs, a
 // saved list with Save/Load, and Recently closed. An entry stores each team's
 // view at save time with every member's level pinned (as a saved rotation is
-// densified), and keeps a team's link: on load, a link whose tab still exists
-// is live again, and any other team is its saved snapshot.
+// densified), and keeps a team's pinned rotation (lineups design §10.2).
 
 const SAVED_BOARDS_KEY = 'critcalc:savedBoards';
 
@@ -139,12 +138,13 @@ export type SavedBoardTeam = {
 	id: string;
 	slots: (string | null)[];
 	con?: Record<string, number>;
-	linkedTabId?: string;
+	pinnedRotationId?: string;
 };
 
 export type SavedBoard = {
 	id: string;
 	name: string;
+	preset: 'stygian' | 'abyss' | 'custom';
 	teams: SavedBoardTeam[];
 	noRepeats: boolean;
 	savedAt: number;

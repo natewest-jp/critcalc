@@ -32,7 +32,6 @@ import {
 	type RotationTab
 } from './rotationTabs.svelte';
 import { closeCandidate, createRecentlyClosed } from './tabSet';
-import { boards } from './boards.svelte';
 import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
 import { foldTeamIntoNotation } from './utils/notationEdit';
 
@@ -120,10 +119,6 @@ class DocumentBarState {
 
 	/** The open make-room confirm, if any. */
 	room = $state<RoomRequest | null>(null);
-
-	/** Tabs that may not close to make room: a tab a board team is a live view
-	 *  of, whose closing would quietly unlink that team (§9.3). */
-	lockedTab: (tab: RotationTab) => boolean = (tab) => boards.linksTab(tab.id);
 
 	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -326,10 +321,7 @@ class DocumentBarState {
 	 */
 	closeTab(id: string) {
 		const closed = rt.closeTab(id);
-		if (!closed) return;
-		// A board team linked to it keeps its four characters, unlinked (§2.3).
-		boards.tabClosed(closed);
-		if (worthKeeping(closed, get(savedNotations))) recentlyClosedRotations.push(closed);
+		if (closed && worthKeeping(closed, get(savedNotations))) recentlyClosedRotations.push(closed);
 	}
 
 	/** Reopen a closed tab (making room first if the strip is full). */
@@ -345,7 +337,6 @@ class DocumentBarState {
 
 	/**
 	 * Run `open` now if there is room; otherwise ask which tab to close first.
-	 * Refuses (with a notice) only when every other tab is locked.
 	 */
 	withRoom(open: () => void, onCancel?: () => void) {
 		if (rt.tabs.length < TAB_LIMIT) {
@@ -353,12 +344,8 @@ class DocumentBarState {
 			return;
 		}
 		rt.flush();
-		const candidate = closeCandidate(rt.tabs, rt.activeTabId, this.lockedTab);
-		if (!candidate) {
-			onCancel?.();
-			this.showNotice('Every tab is linked to a team — close one first');
-			return;
-		}
+		// Never null here: at the limit there are twelve tabs and one is active.
+		const candidate = closeCandidate(rt.tabs, rt.activeTabId)!;
 		this.room = { candidateId: candidate.id, run: open, onCancel };
 	}
 

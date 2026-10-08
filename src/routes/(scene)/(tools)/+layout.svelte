@@ -931,7 +931,6 @@
 		<TabLimitDialog
 			tabs={rotationTabs.tabs}
 			candidateId={documentBar.room.candidateId}
-			locked={documentBar.lockedTab}
 			onConfirm={(id) => documentBar.confirmRoom(id)}
 			onCancel={() => documentBar.cancelRoom()}
 		/>

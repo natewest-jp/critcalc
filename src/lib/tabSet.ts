@@ -30,21 +30,20 @@ export type ViewedTab = { id: string; viewedAt?: number };
 
 /**
  * The tab to close when a new one needs room: the one VIEWED longest ago,
- * ⛔ never the one you are looking at, and never a `locked` one — a rotation a
- * board team links to, whose closing would quietly unlink that team.
+ * ⛔ never the one you are looking at. Null only when there is no other tab.
+ * A tab with no `viewedAt` predates the field and counts as the oldest.
  *
- * Returns null when nothing may close (every other tab is locked), and the
- * caller then refuses and says why. A tab with no `viewedAt` predates the
- * field and counts as the oldest.
+ * ↻ 2026-10-08: a `locked` predicate (tabs a board team linked to) existed
+ * for a few hours; links became DERIVED from the library (lineups design
+ * §10.2), so no tab is ever off-limits.
  */
 export function closeCandidate<T extends ViewedTab>(
 	tabs: readonly T[],
-	activeId: string,
-	locked: (tab: T) => boolean = () => false
+	activeId: string
 ): T | null {
 	let best: T | null = null;
 	for (const t of tabs) {
-		if (t.id === activeId || locked(t)) continue;
+		if (t.id === activeId) continue;
 		if (!best || (t.viewedAt ?? 0) < (best.viewedAt ?? 0)) best = t;
 	}
 	return best;

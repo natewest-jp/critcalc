@@ -10,9 +10,6 @@
 	 * should be rare, and a closed tab is never lost (it goes to Recently
 	 * closed), so the prompt is a choice, not a warning.
 	 *
-	 * ⚠️ Tabs a board team links to are LISTED but cannot be picked — closing
-	 * one would quietly unlink that team.
-	 *
 	 * Replaces TabsFullDialog (the parked-link report), whose shape it keeps:
 	 * an `alertdialog` whose backdrop does not dismiss, because a stray click on
 	 * the way to the timeline is exactly how the choice would be missed.
@@ -27,13 +24,11 @@
 	let {
 		tabs,
 		candidateId,
-		locked,
 		onConfirm,
 		onCancel
 	}: {
 		tabs: readonly RotationTab[];
 		candidateId: string;
-		locked: (tab: RotationTab) => boolean;
 		onConfirm: (id: string) => void;
 		onCancel: () => void;
 	} = $props();
@@ -70,20 +65,11 @@
 		</p>
 		<ul class="tl-list" role="radiogroup" aria-label="Tab to close">
 			{#each tabs as tab (tab.id)}
-				{@const isLocked = locked(tab)}
 				<li>
-					<label class="tl-option" class:tl-option--locked={isLocked}>
-						<input
-							type="radio"
-							name="tl-tab"
-							value={tab.id}
-							bind:group={chosen}
-							disabled={isLocked}
-						/>
+					<label class="tl-option">
+						<input type="radio" name="tl-tab" value={tab.id} bind:group={chosen} />
 						<span class="tl-label">{tab.label}</span>
-						{#if isLocked}
-							<span class="tl-note"><Mark name="link" size={12} /> Linked to a team</span>
-						{:else if tab.id === candidateId}
+						{#if tab.id === candidateId}
 							<span class="tl-note">Viewed longest ago</span>
 						{/if}
 					</label>
@@ -161,12 +147,8 @@
 		color: var(--text);
 		transition: background var(--t-snap);
 	}
-	.tl-option:hover:not(.tl-option--locked) {
+	.tl-option:hover {
 		background: var(--fill-rest);
-	}
-	.tl-option--locked {
-		cursor: default;
-		color: var(--muted);
 	}
 	.tl-option input {
 		accent-color: var(--accent);

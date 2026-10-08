@@ -3,125 +3,116 @@ import {
 	boards,
 	makeBoard,
 	makeTeam,
-	teamSlots,
+	PRESET_TEAMS,
+	rotationsForTeam,
+	pinnedRotation,
 	teamCon,
 	effectiveCon,
 	repeatedCharacters,
-	snapshotBoard,
 	toSharedBoard,
 	fromSharedBoard,
 	toSavedTeams,
 	fromSavedTeams,
 	type Board
 } from './boards.svelte';
-import { rotationTabs as rt, type RotationTab } from './rotationTabs.svelte';
-import { documentBar as db } from './documentBar.svelte';
+import { teamKey } from './utils/notationEdit';
+import type { SavedNotation } from './stores';
 
 /**
- * The board model (lineups design §2.2–§2.3, §9.4–§9.6a). The rules pinned
- * here are the ones a refactor must keep: a linked team is a VIEW of its tab
- * (no second copy), every write to it is a notation edit, and a team is never
- * emptied or deleted because its tab went away.
+ * The board model (lineups design §2.2, §9.4–§9.5, §10). The rules pinned
+ * here are the ones a refactor must keep: a team's rotations are DERIVED from
+ * the library by its character set, a pin counts only while it still holds,
+ * and ⚓ the Builder never rewrites a saved rotation.
  *
- * ⚠️ These drive the real singletons, so each test seeds both stores.
+ * ⚠️ These drive the real singleton, so each test seeds it.
  */
-const rotation: RotationTab = {
-	id: 'rot',
-	label: 'Vape',
-	notation: 'Bennett E Q > Xiangling E Q > Xingqiu E Q',
-	tabCon: { bennett: 6 }
+const vape: SavedNotation = {
+	id: 'vape',
+	name: 'Vape',
+	notation: 'Bennett E Q > Xiangling E Q > Xingqiu E Q > Sucrose E',
+	tabCon: { bennett: 6, xiangling: 4, xingqiu: 6, sucrose: 0 },
+	savedAt: 1
 };
-const other: RotationTab = { id: 'other', label: 'Other', notation: 'Nahida E Q' };
-
-function seedTabs(active = 'other') {
-	rt.tabs = [{ ...rotation }, { ...other }];
-	rt.activeTabId = active;
-	const a = rt.tabs.find((t) => t.id === active)!;
-	rt.notation = a.notation;
-	rt.tabCon = a.tabCon ?? {};
-}
+const vapeAlt: SavedNotation = {
+	id: 'vape-alt',
+	name: 'Vape (double swirl)',
+	notation: 'Sucrose E > Xingqiu Q > Bennett Q > Xiangling Q E',
+	savedAt: 2
+};
+const team2: SavedNotation = { id: 't2', name: 'Two', notation: 'Bennett > Xiangling', savedAt: 3 };
+const library = [vape, vapeAlt, team2];
 
 let board: Board;
-function seedBoard() {
-	board = makeBoard('Lineup', 2);
-	board.teams[0] = { ...board.teams[0], linkedTabId: 'rot' };
+beforeEach(() => {
+	board = makeBoard('Lineup', 'abyss');
+	board.teams[0] = {
+		...makeTeam(['xingqiu', 'sucrose', 'xiangling', 'bennett']),
+		pinnedRotationId: 'vape'
+	};
 	board.teams[1] = makeTeam(['furina', null, 'kaedehara_kazuha', null]);
 	boards.boards = [board];
 	boards.activeBoardId = board.id;
-}
+});
 const team = (i: number) => boards.activeBoard.teams[i];
 
-beforeEach(() => {
-	seedTabs();
-	seedBoard();
-});
-
-describe('a linked team is a LIVE VIEW of its tab', () => {
-	it('reads its slots and levels from the tab, not from itself', () => {
-		expect(teamSlots(team(0))).toEqual(['bennett', 'xiangling', 'xingqiu', null]);
-		expect(teamCon(team(0))).toEqual({ bennett: 6 });
-	});
-
-	it('follows the notation as it changes — including the ACTIVE tab’s live copy', () => {
-		seedTabs('rot');
-		rt.notation = 'Bennett E Q > Xiangling E Q > Sucrose E';
-		expect(teamSlots(team(0))).toEqual(['bennett', 'xiangling', 'sucrose', null]);
-	});
-
-	it('a swap RENAMES in the notation — the rotation survives', () => {
-		boards.setSlot(board.id, team(0).id, 2, 'yelan');
-		expect(rt.notationOf('rot')).toBe('Bennett E Q > Xiangling E Q > Yelan E Q');
-	});
-
-	it('filling a gap APPENDS (slot order is notation order)', () => {
-		boards.setSlot(board.id, team(0).id, 3, 'kaedehara_kazuha');
-		expect(teamSlots(team(0))[3]).toBe('kaedehara_kazuha');
-	});
-
-	it('an active-tab write goes through the working copy (so ⌘Z reaches it)', () => {
-		seedTabs('rot');
-		boards.setSlot(board.id, team(0).id, 0, 'chevreuse');
-		expect(rt.notation.startsWith('Chevreuse E Q')).toBe(true);
+describe('presets (§10.5)', () => {
+	it('Stygian ×3, Abyss ×2, Custom ×1', () => {
+		expect(PRESET_TEAMS).toEqual({ stygian: 3, abyss: 2, custom: 1 });
+		expect(makeBoard('S', 'stygian').teams).toHaveLength(3);
+		expect(makeBoard('C').teams).toHaveLength(1);
 	});
 });
 
-describe('a free-standing team edits its own slots', () => {
-	it('any position, gaps allowed', () => {
+describe('a team’s rotations are DERIVED from the library (§10.1–§10.2)', () => {
+	it('a team is its SET — order ignored, blanks ignored', () => {
+		expect(teamKey(['bennett', 'xiangling'])).toBe(
+			teamKey([null, 'xiangling', 'bennett', 'blank'])
+		);
+		expect(teamKey(['bennett', 'xiangling'])).not.toBe(
+			teamKey(['bennett', 'xiangling', 'xingqiu'])
+		);
+	});
+
+	it('finds every saved rotation for the set, whatever order it names them in', () => {
+		expect(rotationsForTeam(team(0), library).map((e) => e.id)).toEqual(['vape', 'vape-alt']);
+		// A short team is its own heading, not filed under a bigger one.
+		expect(rotationsForTeam(makeTeam(['xiangling', 'bennett']), library).map((e) => e.id)).toEqual([
+			't2'
+		]);
+	});
+
+	it('a pin counts while it holds, and the pinned rotation’s levels win', () => {
+		expect(pinnedRotation(team(0), library)?.id).toBe('vape');
+		expect(teamCon(team(0), library)).toEqual(vape.tabCon);
+	});
+
+	it('a pin whose rotation was deleted stops counting', () => {
+		expect(pinnedRotation(team(0), [vapeAlt])).toBeUndefined();
+	});
+});
+
+describe('⚓ the Builder never rewrites a saved rotation', () => {
+	it('a swap changes the board’s team — and drops the pin to the old team’s rotation', () => {
+		boards.setSlot(board.id, team(0).id, 0, 'yelan');
+		expect(team(0).slots).toEqual(['yelan', 'sucrose', 'xiangling', 'bennett']);
+		expect(team(0).pinnedRotationId).toBeUndefined();
+		expect(vape.notation).toBe('Bennett E Q > Xiangling E Q > Xingqiu E Q > Sucrose E');
+	});
+
+	it('an edit that leaves the SET unchanged keeps the pin', () => {
+		boards.pin(board.id, team(1).id, 'x');
+		boards.setSlot(board.id, team(1).id, 1, null); // already empty
+		expect(team(1).pinnedRotationId).toBe('x');
+	});
+
+	it('a free-standing team edits any position, gaps allowed', () => {
 		boards.setSlot(board.id, team(1).id, 1, 'zhongli');
-		expect(teamSlots(team(1))).toEqual(['furina', 'zhongli', 'kaedehara_kazuha', null]);
-	});
-});
-
-describe('a team is never lost because its tab was', () => {
-	it('closing the tab leaves the team its four characters, unlinked', () => {
-		db.closeTab('rot');
-		expect(team(0).linkedTabId).toBeUndefined();
-		expect(teamSlots(team(0))).toEqual(['bennett', 'xiangling', 'xingqiu', null]);
-		expect(teamCon(team(0))).toEqual({ bennett: 6 });
+		expect(team(1).slots).toEqual(['furina', 'zhongli', 'kaedehara_kazuha', null]);
 	});
 
-	it('unlink keeps exactly what it showed', () => {
-		boards.unlink(board.id, team(0).id);
-		expect(team(0).linkedTabId).toBeUndefined();
-		expect(teamSlots(team(0))).toEqual(['bennett', 'xiangling', 'xingqiu', null]);
-	});
-
-	it('"Unlink and remove" leaves the rotation alone', () => {
-		boards.unlinkAndRemove(board.id, team(0).id, 1);
-		expect(teamSlots(team(0))).toEqual(['bennett', null, 'xingqiu', null]);
-		expect(rt.notationOf('rot')).toBe(rotation.notation);
-	});
-
-	it('the persisted copy carries the view, so a vanished tab still shows the team', () => {
-		const snap = snapshotBoard(boards.activeBoard);
-		expect(snap.teams[0].slots).toEqual(['bennett', 'xiangling', 'xingqiu', null]);
-		rt.tabs = [{ ...other }];
-		expect(teamSlots(snap.teams[0])).toEqual(['bennett', 'xiangling', 'xingqiu', null]);
-	});
-
-	it('a linked tab may not close to make room', () => {
-		expect(db.lockedTab(rt.tabs[0])).toBe(true);
-		expect(db.lockedTab(rt.tabs[1])).toBe(false);
+	it('choosing a team from the library fills every slot', () => {
+		boards.setTeam(board.id, team(1).id, ['nahida', 'raiden_shogun']);
+		expect(team(1).slots).toEqual(['nahida', 'raiden_shogun', null, null]);
 	});
 });
 
@@ -132,24 +123,21 @@ describe('constellations — one model with the Planner (§9.5)', () => {
 		expect(effectiveCon({}, {}, 'nahida')).toBe(0);
 	});
 
-	it('a share pins every member’s level, so the recipient never sees their own', () => {
-		const shared = toSharedBoard(boards.activeBoard, { furina: 2 });
+	it('a share pins every member’s level and carries no pin', () => {
+		const shared = toSharedBoard(boards.activeBoard, library, { furina: 2 });
 		expect(shared.teams[1].constellations).toEqual({ furina: 2, kaedehara_kazuha: 0 });
-		expect(shared.teams[0].constellations.bennett).toBe(6); // the tab's own value
+		expect(shared.teams[0].constellations.xiangling).toBe(4); // the pinned rotation's
 		const opened = fromSharedBoard(shared, (id) => id !== 'kaedehara_kazuha');
 		expect(opened.teams[1].slots).toEqual(['furina', null, null, null]);
 		expect(opened.teams[1].con).toEqual({ furina: 2 });
-		expect(opened.teams.every((t) => !t.linkedTabId)).toBe(true); // links never travel
+		expect(opened.teams.every((t) => !t.pinnedRotationId)).toBe(true);
 	});
 
-	it('a saved board keeps a live link and drops a dead one', () => {
-		const saved = toSavedTeams(boards.activeBoard, {});
-		expect(saved[0].linkedTabId).toBe('rot');
-		expect(fromSavedTeams(saved)[0].linkedTabId).toBe('rot');
-		rt.tabs = [{ ...other }];
-		const reopened = fromSavedTeams(saved);
-		expect(reopened[0].linkedTabId).toBeUndefined();
-		expect(reopened[0].slots).toEqual(['bennett', 'xiangling', 'xingqiu', null]);
+	it('a saved board pins levels and keeps the pin', () => {
+		const saved = toSavedTeams(boards.activeBoard, library, {});
+		expect(saved[0].pinnedRotationId).toBe('vape');
+		expect(saved[1].con).toEqual({ furina: 0, kaedehara_kazuha: 0 });
+		expect(fromSavedTeams(saved)[0].pinnedRotationId).toBe('vape');
 	});
 });
 

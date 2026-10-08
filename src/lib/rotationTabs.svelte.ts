@@ -354,34 +354,6 @@ class RotationTabsState {
 		return closed;
 	}
 
-	/**
-	 * Rewrite ONE tab's notation, active or not. A board team linked to a tab
-	 * edits the rotation through here (a swap renames, a removal deletes), so
-	 * the team stays a VIEW of the notation rather than a copy beside it. The
-	 * active tab writes `notation`, so the planner's editor takes it as a
-	 * transaction and ⌘Z reaches it, exactly like a bench edit.
-	 */
-	editTabNotation(id: string, edit: (notation: string) => string): void {
-		if (id === this.activeTabId) {
-			this.notation = edit(this.notation);
-			return;
-		}
-		this.tabs = this.tabs.map((t) => (t.id === id ? { ...t, notation: edit(t.notation) } : t));
-	}
-
-	/** The notation a tab holds RIGHT NOW — the live working copy for the
-	 *  active tab, the stored one otherwise. Undefined for a closed tab. */
-	notationOf(id: string): string | undefined {
-		if (id === this.activeTabId) return this.notation;
-		return this.tabs.find((t) => t.id === id)?.notation;
-	}
-
-	/** A tab's Layer-2 constellations, live for the active tab. */
-	tabConOf(id: string): Record<string, number> | undefined {
-		if (id === this.activeTabId) return this.tabCon;
-		return this.tabs.find((t) => t.id === id)?.tabCon;
-	}
-
 	/** Rename a tab. Returns the tab (pre-rename) so the caller can propagate
 	 *  to the save bank when it's linked. */
 	renameTab(id: string, label: string): RotationTab | undefined {

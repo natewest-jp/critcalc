@@ -138,19 +138,6 @@ describe('documentBar.receive — the make-room confirm', () => {
 		expect(rt.tabs).toHaveLength(TAB_LIMIT);
 		expect(closed().map((t) => t.notation)).toEqual([doc.notation]);
 	});
-
-	it('never offers a LOCKED tab, and refuses when every other tab is locked', () => {
-		seed(busy(TAB_LIMIT), 't1');
-		db.lockedTab = (t) => t.id !== 't3';
-		db.receive({ ...doc }, 'Loaded shared rotation');
-		expect(db.room?.candidateId).toBe('t3');
-		db.room = null;
-		db.lockedTab = () => true;
-		db.receive({ ...doc }, 'Loaded shared rotation');
-		expect(db.room).toBeNull();
-		expect(closed().map((t) => t.notation)).toEqual([doc.notation]); // kept, not lost
-		db.lockedTab = () => false;
-	});
 });
 
 describe('closeCandidate', () => {
@@ -164,11 +151,9 @@ describe('closeCandidate', () => {
 		expect(closeCandidate(tabs, 'a')?.id).toBe('d');
 		expect(closeCandidate(tabs.slice(0, 3), 'a')?.id).toBe('b');
 	});
-	it('never the active tab, never a locked one', () => {
-		expect(closeCandidate(tabs, 'd', (t) => t.id === 'b')?.id).toBe('c');
-	});
-	it('null when nothing may close', () => {
-		expect(closeCandidate(tabs, 'a', () => true)).toBeNull();
+	it('never the active tab; null when there is no other', () => {
+		expect(closeCandidate(tabs, 'd')?.id).toBe('b');
+		expect(closeCandidate([{ id: 'a' }], 'a')).toBeNull();
 	});
 });
 
