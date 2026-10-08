@@ -27,6 +27,8 @@ import type {
 	Condition,
 	Effect,
 	EffectTarget,
+	Element,
+	Reaction,
 	Summon,
 	Trigger
 } from '$lib/types/ability';
@@ -109,6 +111,10 @@ export type DerivedCapability = {
 	 *  arms them) and Sucrose's A4 names both. Narrowing to exactly one would
 	 *  have kept the effect the measurement found missing, missing. */
 	host?: { casts: ('skill' | 'burst')[] } | { reactions: string[] };
+	/** What this capability needs from its TEAM (lineups design §5, §9.2) —
+	 *  absent when nothing about the team decides it. Evaluated by
+	 *  {@link evalTeamNeed}. */
+	teamNeed?: TeamNeed;
 	via: 'effect' | 'tag';
 	source: CapabilitySource;
 };
@@ -121,6 +127,13 @@ export type CapabilitySummary = {
 	minCon: number;
 	/** True when every source achieving minCon is gated on runtime conditions. */
 	conditional: boolean;
+	/** Present when any source depends on the TEAM: every source, each with its
+	 *  own gate and need (null = needs nothing), so a team and a constellation
+	 *  lens can be checked exactly — the capability is there when SOME source
+	 *  is unlocked and its need holds ({@link summaryInTeam}). The eager index
+	 *  carries it so the Team Builder needs no payload to check ~120 candidates
+	 *  (§9.1). */
+	teamGated?: { minCon: number; need: TeamNeed | null }[];
 };
 
 export type CharacterCapabilities = {
@@ -295,6 +308,308 @@ function collectCaveats(cond: Condition | undefined, con: number, out: Set<strin
 }
 
 // ---------------------------------------------------------------------------
+// Checking a capability against a TEAM (lineups design §5, rulings §9.2)
+// ---------------------------------------------------------------------------
+//
+// ⚓ LIT MEANS THE TEAM CAN MAKE IT HAPPEN (Nate 2026-10-08). Players go out of
+// their way to make difficult teams work, so a condition counts as met unless
+// it needs something THIS TEAM cannot supply:
+//
+//   • the character's own kit and the fight — states, stacks, chain stages,
+//     anyone's HP, the enemy's HP — are always possible;
+//   • an INGREDIENT must be on the team: an enemy affected by Pyro needs a Pyro
+//     character, a reaction needs both of its elements (Lunar/Stellar also
+//     their enabler), the Polestar field needs Stellar-Conduct;
+//   • team facts are checked as the Rotation Planner checks them — faction
+//     levels over the whole party, element counts with the HOLDER EXCLUDED
+//     (`teamComposition.computeHolderElementCounts`), enablers over the party;
+//   • a RECEIVER's weapon or faction (Bennett C6, Candace, Nicole, Linnea) asks
+//     no on-field question: it holds when ANY teammate, the provider included,
+//     qualifies.
+//
+// ⛔ This module imports TYPES ONLY, so the parser's `evalCondition` is NOT
+// used; `teamNeeds.test.ts` pins the shared team leaves to it so the two
+// cannot drift.
+
+type Weapon = 'sword' | 'claymore' | 'polearm' | 'bow' | 'catalyst';
+
+/** What a capability needs from its team. Derived, never authored. */
+export type TeamNeed =
+	| { type: 'all'; needs: TeamNeed[] }
+	| { type: 'any'; needs: TeamNeed[] }
+	| { type: 'not'; need: TeamNeed }
+	/** A constellation gate kept beside a team leaf (`any(team, C6)`), read
+	 *  against the lens. */
+	| { type: 'con'; level: number }
+	| { type: 'faction'; faction: string; min: number }
+	/** Holder excluded — the corpus's convention for `teamElementCount`. */
+	| { type: 'elementCount'; elements: Element[]; comparison: '>=' | '=' | '<='; value: number }
+	| { type: 'enabler'; reaction: Reaction }
+	/** Someone on the team, the holder included, is this element. */
+	| { type: 'element'; element: Element }
+	/** The team's elements can make this reaction (`'any'`: some reaction). */
+	| { type: 'reaction'; reaction: Reaction | 'any' }
+	/** Some teammate (the holder included) is — or, `negate`, is NOT — of this
+	 *  faction / one of these weapons. */
+	| { type: 'member'; faction?: string; weapons?: Weapon[]; negate?: boolean };
+
+/**
+ * What each reaction takes: one element from EACH group, somewhere on the
+ * team. `enabler` = the reaction exists only with its enabler in the party;
+ * `replacedBy` = an enabler for that reaction CONVERTS this one away
+ * (`sim/reactionBridge.ts`: ⚓ a buff on the base is not a buff on the
+ * converted reaction, so Venti going dark in an enabler team is CORRECT).
+ * Bloom → Lunar-Bloom is an ADD, so bloom keeps happening.
+ */
+export const REACTION_INGREDIENTS: Record<
+	Reaction,
+	{ elements: Element[][]; enabler?: true; replacedBy?: Reaction }
+> = {
+	vaporize: { elements: [['pyro'], ['hydro']] },
+	melt: { elements: [['pyro'], ['cryo']] },
+	overloaded: { elements: [['pyro'], ['electro']] },
+	burning: { elements: [['pyro'], ['dendro']] },
+	pyroSwirl: { elements: [['anemo'], ['pyro']] },
+	hydroSwirl: { elements: [['anemo'], ['hydro']] },
+	cryoSwirl: { elements: [['anemo'], ['cryo']], replacedBy: 'stellarSwirl' },
+	electroSwirl: { elements: [['anemo'], ['electro']] },
+	pyroCrystallize: { elements: [['geo'], ['pyro']] },
+	hydroCrystallize: { elements: [['geo'], ['hydro']], replacedBy: 'lunarCrystallize' },
+	cryoCrystallize: { elements: [['geo'], ['cryo']] },
+	electroCrystallize: { elements: [['geo'], ['electro']] },
+	lunarCrystallize: { elements: [['geo'], ['hydro']], enabler: true },
+	electroCharged: { elements: [['electro'], ['hydro']], replacedBy: 'lunarCharged' },
+	lunarCharged: { elements: [['electro'], ['hydro']], enabler: true },
+	frozen: { elements: [['cryo'], ['hydro']] },
+	shatter: { elements: [['cryo'], ['hydro']] },
+	bloom: { elements: [['dendro'], ['hydro']] },
+	lunarBloom: { elements: [['dendro'], ['hydro']], enabler: true },
+	burgeon: { elements: [['dendro'], ['hydro'], ['pyro']] },
+	hyperbloom: { elements: [['dendro'], ['hydro'], ['electro']] },
+	superConduct: { elements: [['electro'], ['cryo']], replacedBy: 'stellarConduct' },
+	stellarConduct: { elements: [['electro'], ['cryo']], enabler: true },
+	stellarSwirl: { elements: [['anemo'], ['cryo']], enabler: true },
+	quicken: { elements: [['dendro'], ['electro']] },
+	spread: { elements: [['dendro'], ['electro']] },
+	aggravate: { elements: [['dendro'], ['electro']] }
+};
+
+/** A folded need: `true` (always met), `false` (never), `'free'` (possible
+ *  whatever the team — survives `not`), or a need on the team. */
+type Folded = boolean | 'free' | TeamNeed;
+
+function foldAll(parts: Folded[]): Folded {
+	if (parts.includes(false)) return false;
+	// Flattened, so `all(all(a, b), c)` travels as `all(a, b, c)` — the index
+	// carries these, and nesting is bytes with no meaning.
+	const needs = parts
+		.filter((p): p is TeamNeed => typeof p === 'object')
+		.flatMap((p) => (p.type === 'all' ? p.needs : [p]));
+	if (needs.length === 0) return true;
+	return needs.length === 1 ? needs[0] : { type: 'all', needs };
+}
+
+function foldAny(parts: Folded[]): Folded {
+	if (parts.includes(true) || parts.includes('free')) return true;
+	const needs = parts
+		.filter((p): p is TeamNeed => typeof p === 'object')
+		.flatMap((p) => (p.type === 'any' ? p.needs : [p]));
+	if (needs.length === 0) return false;
+	return needs.length === 1 ? needs[0] : { type: 'any', needs };
+}
+
+/** Fold a condition tree into what it needs from a team. `positive` tracks
+ *  negation, because an INGREDIENT test flips meaning under `not` ("the enemy
+ *  is NOT affected by Pyro" is always possible, not "no Pyro teammate"). */
+function foldCondition(
+	cond: Condition | undefined,
+	holderElement?: string,
+	positive = true
+): Folded {
+	if (!cond) return true;
+	switch (cond.type) {
+		case 'all':
+			return foldAll(cond.conditions.map((c) => foldCondition(c, holderElement, positive)));
+		case 'any':
+			return foldAny(cond.conditions.map((c) => foldCondition(c, holderElement, positive)));
+		case 'not': {
+			const inner = foldCondition(cond.condition, holderElement, !positive);
+			if (inner === 'free') return 'free';
+			if (typeof inner === 'boolean') return !inner;
+			return { type: 'not', need: inner };
+		}
+		case 'ascension':
+			return DEFAULT_ASCENSION >= cond.min;
+		case 'constellation':
+			return cond.level <= 0 ? true : { type: 'con', level: cond.level };
+		case 'teamFaction':
+			return { type: 'faction', faction: cond.faction, min: cond.min };
+		case 'teamElementCount':
+			return {
+				type: 'elementCount',
+				elements: [...cond.elements],
+				comparison: cond.comparison,
+				value: cond.value
+			};
+		case 'teamEnablesReaction':
+			return { type: 'enabler', reaction: cond.reaction };
+		case 'activeCharFaction':
+			return { type: 'member', faction: cond.faction, ...(!positive && { negate: true }) };
+		case 'weaponType':
+			return { type: 'member', weapons: [...cond.weapons], ...(!positive && { negate: true }) };
+		case 'enemyAffectedBy':
+			// The holder applies their own element, so that ingredient is in
+			// every team they are in.
+			if (!positive || cond.element === holderElement) return 'free';
+			return { type: 'element', element: cond.element };
+		case 'inPolestarField':
+			return positive ? { type: 'reaction', reaction: 'stellarConduct' } : 'free';
+		default:
+			// state, stacks, chainStage, self/recipient/enemy HP: the player can
+			// make them happen in any team.
+			return 'free';
+	}
+}
+
+/** A condition's team need on its own — `true`/`false` when the team cannot
+ *  change it, `'free'` when the player always can. Exported for the parity
+ *  test against the parser; consumers read `DerivedCapability.teamNeed`. */
+export function conditionTeamNeed(
+	cond: Condition | undefined,
+	holderElement?: string
+): boolean | 'free' | TeamNeed {
+	return foldCondition(cond, holderElement);
+}
+
+/** Does a need test anything about the TEAM (not just a constellation)? */
+function hasTeamLeaf(need: TeamNeed): boolean {
+	switch (need.type) {
+		case 'all':
+		case 'any':
+			return need.needs.some(hasTeamLeaf);
+		case 'not':
+			return hasTeamLeaf(need.need);
+		case 'con':
+			return false;
+		default:
+			return true;
+	}
+}
+
+/**
+ * Everything a capability needs from its team: its conditions, plus — for an
+ * effect a REACTION sets off — that the team can make one of its reactions.
+ * Undefined when the team decides nothing (the common case).
+ */
+function teamNeedFor(
+	cond: Condition | undefined,
+	trigger: Trigger | undefined,
+	holderElement: string | undefined
+): TeamNeed | undefined {
+	const parts: Folded[] = [foldCondition(cond, holderElement)];
+	if (trigger?.type === 'onReaction') {
+		const reactions = Array.isArray(trigger.reaction) ? trigger.reaction : [trigger.reaction];
+		parts.push(foldAny(reactions.map((r) => ({ type: 'reaction', reaction: r }) as TeamNeed)));
+	}
+	const need = foldAll(parts);
+	return typeof need === 'object' && hasTeamLeaf(need) ? need : undefined;
+}
+
+/** One teammate, as a team check needs them. Index entries satisfy it. */
+export type TeamMember = {
+	id: string;
+	element?: string;
+	weapon?: string;
+	factions?: string[];
+	enablesReactions?: readonly string[];
+};
+
+function canReact(reaction: Reaction | 'any', team: readonly TeamMember[]): boolean {
+	if (reaction === 'any') {
+		return (Object.keys(REACTION_INGREDIENTS) as Reaction[]).some((r) => canReact(r, team));
+	}
+	const spec = REACTION_INGREDIENTS[reaction];
+	if (!spec) return false;
+	const elements = team.map((m) => m.element);
+	if (!spec.elements.every((group) => group.some((e) => elements.includes(e)))) return false;
+	const enabled = (r: string) => team.some((m) => m.enablesReactions?.includes(r));
+	if (spec.enabler && !enabled(reaction)) return false;
+	if (spec.replacedBy && enabled(spec.replacedBy)) return false;
+	return true;
+}
+
+/**
+ * Does `team` meet `need` for the character `holderId`, at constellation
+ * `con`? The team includes the holder.
+ */
+export function evalTeamNeed(
+	need: TeamNeed,
+	team: readonly TeamMember[],
+	holderId: string,
+	con: number
+): boolean {
+	switch (need.type) {
+		case 'all':
+			return need.needs.every((n) => evalTeamNeed(n, team, holderId, con));
+		case 'any':
+			return need.needs.some((n) => evalTeamNeed(n, team, holderId, con));
+		case 'not':
+			return !evalTeamNeed(need.need, team, holderId, con);
+		case 'con':
+			return con >= need.level;
+		case 'faction':
+			// ⚠ Members only: `factionContributions` (a benediction raising the
+			// party level) has no author in the corpus and no index field. Add it
+			// here and to the index together if one appears.
+			return team.filter((m) => m.factions?.includes(need.faction)).length >= need.min;
+		case 'elementCount': {
+			const n = team.filter(
+				(m) => m.id !== holderId && need.elements.includes(m.element as Element)
+			).length;
+			return need.comparison === '>='
+				? n >= need.value
+				: need.comparison === '='
+					? n === need.value
+					: n <= need.value;
+		}
+		case 'enabler':
+			return team.some((m) => m.enablesReactions?.includes(need.reaction));
+		case 'element':
+			return team.some((m) => m.element === need.element);
+		case 'reaction':
+			return canReact(need.reaction, team);
+		case 'member':
+			return team.some((m) => {
+				const is = need.faction
+					? !!m.factions?.includes(need.faction)
+					: !!need.weapons?.includes(m.weapon as Weapon);
+				return need.negate ? !is : is;
+			});
+	}
+}
+
+/**
+ * A capability summary in a concrete team, at the constellation lens `con`:
+ *   'yes'      — some unlocked source is met by this team;
+ *   'inactive' — unlocked, but no unlocked source's need is met here
+ *                (the fingerprint's OUTLINED state);
+ *   'locked'   — no source is unlocked at `con`.
+ */
+export function summaryInTeam(
+	cap: CapabilitySummary,
+	team: readonly TeamMember[],
+	holderId: string,
+	con: number
+): 'yes' | 'inactive' | 'locked' {
+	if (!cap.teamGated) return cap.minCon <= con ? 'yes' : 'locked';
+	const unlocked = cap.teamGated.filter((s) => s.minCon <= con);
+	if (unlocked.length === 0) return 'locked';
+	return unlocked.some((s) => s.need === null || evalTeamNeed(s.need, team, holderId, con))
+		? 'yes'
+		: 'inactive';
+}
+
+// ---------------------------------------------------------------------------
 // Target + effect mapping
 // ---------------------------------------------------------------------------
 
@@ -340,6 +655,8 @@ type HostContext = {
 	hostConstellation: number;
 	/** Conditions inherited from the hosting ability (and variant, when nested). */
 	hostConditions: Condition[];
+	/** The character's own element — an ingredient every team of theirs has. */
+	holderElement?: string;
 };
 
 function composeConditions(host: Condition[], own: Condition | undefined): Condition | undefined {
@@ -375,6 +692,7 @@ function pushEffectCapabilities(
 		collectCaveats(composed, minConstellation, caveats);
 		const duration = typeof effect.duration === 'number' ? effect.duration : fallbackDuration;
 		const host = hostOf(effect.trigger, ctx.source.section);
+		const teamNeed = teamNeedFor(composed, effect.trigger, ctx.holderElement);
 		out.push({
 			kind: mapped.kind,
 			detail: mapped.detail,
@@ -385,6 +703,7 @@ function pushEffectCapabilities(
 			...(summonLabel !== undefined && { summon: summonHost(summonLabel, effect) }),
 			...amountOf(effect),
 			...(host !== undefined && { host }),
+			...(teamNeed && { teamNeed }),
 			via: 'effect',
 			source: ctx.source
 		});
@@ -522,11 +841,13 @@ function pushTagCapabilities(
 		const caveats = new Set<string>();
 		collectCaveats(composed, minConstellation, caveats);
 		const timed = detail === 'coordinatedAttack' ? window : undefined;
+		const teamNeed = teamNeedFor(composed, undefined, ctx.holderElement);
 		out.push({
 			kind,
 			detail,
 			minConstellation,
 			caveats: [...caveats].sort(),
+			...(teamNeed && { teamNeed }),
 			...(timed && { duration: timed.duration }),
 			...(timed?.summonLabel !== undefined && { summon: { label: timed.summonLabel } }),
 			via: 'tag',
@@ -580,7 +901,8 @@ function walkAbility(
 	ability: Ability,
 	section: CapabilitySection,
 	index: number,
-	out: DerivedCapability[]
+	out: DerivedCapability[],
+	holderElement?: string
 ): void {
 	// Explicit constellationLevel is canonical (authored on all 708 corpus
 	// entries); array position is the fallback for hypothetical partial stubs.
@@ -592,7 +914,8 @@ function walkAbility(
 	const baseCtx: HostContext = {
 		source: { section, abilityId: ability.id, abilityName: ability.name },
 		hostConstellation,
-		hostConditions: ability.conditions ? [ability.conditions] : []
+		hostConditions: ability.conditions ? [ability.conditions] : [],
+		holderElement
 	};
 
 	pushEffectCapabilities(ability.effects, baseCtx, out);
@@ -613,7 +936,8 @@ function walkAbility(
 			hostConditions: [
 				...(ability.conditions ? [ability.conditions] : []),
 				...(variant.conditions ? [variant.conditions] : [])
-			]
+			],
+			holderElement
 		};
 		pushEffectCapabilities(variant.effects, ctx, out);
 		// A variant's summons/effects REPLACE the base's (src/lib/CLAUDE.md), so
@@ -636,9 +960,10 @@ function walkAbility(
 /** Derives every capability the character's curated data implies, with provenance. */
 export function deriveCharacterCapabilities(char: CharacterData): CharacterCapabilities {
 	const capabilities: DerivedCapability[] = [];
-	char.abilities?.forEach((a, i) => walkAbility(a, 'ability', i, capabilities));
-	char.passives?.forEach((a, i) => walkAbility(a, 'passive', i, capabilities));
-	char.constellations?.forEach((a, i) => walkAbility(a, 'constellation', i, capabilities));
+	const el = char.element;
+	char.abilities?.forEach((a, i) => walkAbility(a, 'ability', i, capabilities, el));
+	char.passives?.forEach((a, i) => walkAbility(a, 'passive', i, capabilities, el));
+	char.constellations?.forEach((a, i) => walkAbility(a, 'constellation', i, capabilities, el));
 	// Faction bonuses (e.g. Hexerei: Secret Rite) are team-conditional kit
 	// additions hosted outside abilities/passives/constellations — without this
 	// walk their effects are invisible to the facets (Fischl's team ATK/EM buffs
@@ -653,7 +978,8 @@ export function deriveCharacterCapabilities(char: CharacterData): CharacterCapab
 					abilityName: fb.name
 				},
 				hostConstellation: 0,
-				hostConditions: []
+				hostConditions: [],
+				holderElement: el
 			},
 			capabilities
 		);
@@ -686,8 +1012,14 @@ const KIND_ORDER: CapabilityKind[] = [
  */
 export function summarizeCapabilities(caps: DerivedCapability[]): CapabilitySummary[] {
 	const groups = new Map<string, CapabilitySummary>();
+	// Every source of a group, for `teamGated` (kept only where a need exists).
+	const sources = new Map<string, Map<string, { minCon: number; need: TeamNeed | null }>>();
 	for (const cap of caps) {
 		const key = `${cap.kind}|${cap.detail ?? ''}|${cap.target ?? ''}`;
+		const src = { minCon: cap.minConstellation, need: cap.teamNeed ?? null };
+		const bySig = sources.get(key) ?? new Map();
+		bySig.set(JSON.stringify(src), src);
+		sources.set(key, bySig);
 		const conditional = cap.caveats.length > 0;
 		const existing = groups.get(key);
 		if (!existing) {
@@ -703,6 +1035,12 @@ export function summarizeCapabilities(caps: DerivedCapability[]): CapabilitySumm
 			existing.conditional = conditional;
 		} else if (cap.minConstellation === existing.minCon) {
 			existing.conditional = existing.conditional && conditional;
+		}
+	}
+	for (const [key, summary] of groups) {
+		const list = [...(sources.get(key)?.values() ?? [])];
+		if (list.some((s) => s.need !== null)) {
+			summary.teamGated = list.sort((a, b) => a.minCon - b.minCon);
 		}
 	}
 	// A target-less (tag-derived) entry is subsumed by a target-ful (effect-
