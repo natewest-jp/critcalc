@@ -4,7 +4,7 @@
 starting point of the build session(s). Everything below marked ⚓ is Nate's ruling;
 everything else is an agreed default.
 
-**What came before (all merged to `main`, not pushed):**
+**What came before (all merged to `main` and pushed, origin `a99a8cef`):**
 
 - `721a5bee`: Compare's chart sees what supports do (`DerivedCapability.host`/`value`; coordinated-attack windows).
 - `73ee3f06`: Compare as one block per effect.
@@ -365,3 +365,133 @@ lands.
 Gates per round: vitest · check · lint · build. Full cross-engine e2e before each merge
 (two "N passed" lines). ⚠️ The Chrome half can hang in worker teardown (playwright
 #39753); it force-kills and continues, so read the counts, not the exit code.
+
+---
+
+## 9. Rulings of 2026-10-08 (the review before the build)
+
+A review against the code found three errors in §4.2 and §5 and a dozen open questions.
+⚓ Everything below is Nate's ruling or a call he accepted. Where this section and an
+earlier one disagree, **this one wins**.
+
+### 9.1 Corrections
+
+- **§4.2 is fourteen, not fifteen, in `FUNCTION_FACETS`.** Its `dps` cluster is empty and
+  `offFieldDamage` sits in no cluster. Step 4 adds the Damage cluster and ONE order
+  constant for the fingerprint (the code's order and the table's differ; choose once).
+- **§5 understated the core.** `teamDelta`, coverage and the finder run on the eager
+  index's `CapabilitySummary`, which keeps only `conditional: boolean`. It drops the
+  condition tree and merges sources of one kind, detail and target. Measured
+  2026-10-08: **139 of 879 derived capabilities (34 characters) carry a team-resolvable
+  leaf**; 103 depend only on the team, 36 also on a runtime leaf.
+  ⚓ **The index carries a compact team-condition residue** for those entries, so swap
+  mode can check about 120 candidates without loading payloads or the parser.
+
+### 9.2 ⚓ A condition is lit if the team can make it happen
+
+**Outlined means "can't happen in this team", never "unlikely".** Players go out of their
+way to make difficult teams work, so we assume they can.
+
+- **Always lit:** the character's own kit and the fight: `state`, `stacks`,
+  `chainStage`, own HP, recipient HP, enemy HP.
+- **Lit if the team has the ingredient:** `enemyAffectedBy` X needs an X applier; a
+  reaction needs both of its elements somewhere in the team (a two-element character
+  counts); Lunar and Stellar reactions need their enabler; `inPolestarField` needs the
+  reaction that spawns it; a heal-triggered condition, if one is ever authored, needs a
+  healer.
+- **Receiver-scoped leaves** (`weaponType`: Bennett C6, Candace's burst;
+  `activeCharFaction`: Nicole, Linnea): ⚓ no on-field questions. Lit if ANY teammate,
+  the provider included, qualifies.
+- A lit icon that is only POSSIBLE still names its dependency in its sentence
+  ("needs Swirl"), or lit reads as guaranteed.
+- A card in the Roster, with no team around it, never shows outlined.
+
+### 9.3 ⚓ Tabs: a limit of 12, and Recently closed (step 1)
+
+- `TAB_LIMIT` 6 → **12**. Only the active tab is parsed; the constraint is display.
+- **Every closed tab goes to "Recently closed"** (the stash), shown above the saved
+  rotations. It keeps the last 20, oldest dropped. Promoting one is the existing Save.
+  It skips a tab whose notation is empty, and a saved tab with no changes.
+- Tabs record **when they were last viewed**.
+- **At the limit, a confirm names the tab that will close**: the least recently viewed
+  UNLINKED tab, pre-selected. The user may pick another. Linked tabs are listed but
+  disabled (closing one would silently unlink a board team). If every tab is linked,
+  it refuses and says why.
+  ⚠️ If an incoming shared link is cancelled at that prompt, its rotation goes to
+  Recently closed, so the link is never lost.
+- **Saved rotations sort by last opened** (newest of saved and opened). The list already
+  sorts by recency (`savedAt`, `SavedNotationsOverlay`), so this changes which recency.
+  A rename still does not reorder.
+- **The tab strip becomes a dropdown ONLY where it does not fit** (⚓ Nate 2026-10-08),
+  in the shape of the Visualizers' instrument picker (`BandMenu`). Measured overflow,
+  never a container query.
+
+### 9.4 Share links carry teams, not rotations
+
+- A board's share carries its teams, their constellations (§9.5) and the battlefield.
+  **Teams arrive unlinked.**
+- ⏭ Embedding the linked rotations is DEFERRED: it opens up to three tabs on arrival
+  (§9.3) and puts up to three 16 KiB notations in a URL. The codec is versioned from
+  day one, so adding it later is a version bump, not a break.
+
+### 9.5 ⚓ Constellations: one model for the Planner and the Builder
+
+- A team's constellation for a character is **its own value if set, otherwise the
+  roster's** (Layer 2 over Layer 1, exactly as Planner tabs already work).
+- Your own boards hold no values until you set some, so they follow the roster LIVE.
+- **A shared board or rotation arrives with every value filled in**, so it never falls
+  back: their C0 stays C0 even if you own C6. ⏭ Verify that `?r=` fills them all in
+  today; if not, fix it in the same step.
+- A linked team reads its tab's values.
+- **Subtle marks:** a constellation ABOVE the one you own (never below), and a
+  character you do not own. They appear only once the roster has something in it
+  (otherwise everyone reads as unowned). One Settings switch hides both.
+  ⏭ The Planner's bench gets the same marks (§9.5 unifies the two tools).
+- **"Use my constellations"** (working name; copy list) in both tools. It sets
+  **constellations only, never loadouts** (a loadout belongs to its team and rotation),
+  in both directions, for characters you own. A character you do not own keeps the
+  team's value. It is shown only when it would change something, under the same
+  roster-has-content condition, and it is undoable.
+
+### 9.5a Marks and portraits (step 4)
+
+- **Not owned:** the avatar's element ring is DULLED (mixed toward muted ink), echoing
+  the roster's faded cards. **Owned below the shown constellation:** a 2px ring drawn
+  INSIDE the pip (it does not grow); its hover says "You own C2". Both read ONE role
+  token. ⚓ Ink, not gold (gold already means "chosen" and "wishlist"); no side-by-side
+  demo. ⚠️ Nate expects the ink ring may vanish on the already-dark pip; judge on
+  screen. ⏭ Nate may drop the element tint from avatar frames altogether (the game
+  does not tint them, and the element icon beside the name carries it); start with the
+  dulled element ring.
+- **The overhanging portrait** (the Stygian screen): the side icons
+  (`static/assets/characters/side/`, 147, 128×128 with alpha) are ALREADY trimmed to
+  the circle at the bottom, so ⛔ no mask. Hair and ornaments rise over the ring; the
+  ring sits behind the portrait. ⚓ Drawn at **64px**, so 2× screens get the source
+  pixel for pixel. If the circle's alignment is hard to find, Nate measures it in
+  Affinity. The Builder first; ⏭ the Planner's bench is converted afterwards (Nate's
+  call if 64px does not fit it), and ⚠️ Safari needs Nate's eyes.
+
+### 9.6 Defaults taken without objection
+
+- Roster-full-width (§2.4 state 1) means the active board is EMPTY.
+- An **archetype change** is exactly a change in the team's reaction set. **Trades** means
+  capabilities changed but reactions did not. **Keeps everything** means no change after
+  the ripple.
+- The wipe gets a named constant; the value is a placeholder for Nate to tune.
+- Filling an empty slot in a linked team appends a bare-name segment. A linked team's
+  slots follow notation order, so it cannot have a gap.
+
+### 9.6a ⚓ Boards copy the rotation tabs completely
+
+Open board tabs, a saved list with Save/Load, and Recently closed. Step 1 builds the tab
+machinery (limit, last viewed, Recently closed, the confirm) ONCE, shared by both.
+
+### 9.7 Still open (decide when the step reaches them)
+
+- Arriving from the Planner when no board links that tab: add a team to the current
+  board, or make a new board?
+- Board kinds: is "No repeats on by default" a preset chosen at creation (Stygian ×3,
+  Abyss ×2, custom)?
+- The inbound `?team=` link (probably: a team on the active board).
+- User-facing names: board / lineup / battlefield / fingerprint (glossary).
+- §2.5 candidate group order and within-group order; §2.6 curated seasons.
