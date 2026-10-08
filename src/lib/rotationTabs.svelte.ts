@@ -59,6 +59,7 @@ import {
 	TEAM_SIZE
 } from '$lib/utils/notationEdit';
 import type { LoadoutEntry } from '$lib/stores';
+import { TAB_LIMIT } from '$lib/tabSet';
 
 export type RotationTab = {
 	id: string;
@@ -68,6 +69,10 @@ export type RotationTab = {
 	/** Per-tab constellation overrides (Layer 2), parallel to tabLoadout. */
 	tabCon?: Record<string, number>;
 	savedId?: string;
+	/** When this tab was last on screen (ms). The room-making rule closes the
+	 *  one viewed longest ago (`tabSet.closeCandidate`); absent on tabs that
+	 *  predate the field, which count as the oldest. */
+	viewedAt?: number;
 };
 
 /**
@@ -80,7 +85,8 @@ export type RotationTab = {
  */
 export type LegacyTeam = { manualSlots?: string[] | null };
 
-export const TAB_LIMIT = 6;
+/** ONE limit for every tabbed document — see `tabSet.ts`. */
+export { TAB_LIMIT };
 export const TABS_KEY = 'critcalc:rotationTabs';
 
 /** Re-exported so a consumer reading the team from this module does not have to
@@ -128,8 +134,12 @@ function genId(): string {
 	return Math.random().toString(36).slice(2, 10);
 }
 
+/** A fresh tab id, for a document kept in Recently closed before it ever
+ *  had a tab (a shared link cancelled at the make-room confirm). */
+export const newTabId = genId;
+
 function makeTab(label: string): RotationTab {
-	return { id: genId(), label, notation: '' };
+	return { id: genId(), label, notation: '', viewedAt: Date.now() };
 }
 
 /** Strip a restored tab of its retired field, folding whatever team it carried
@@ -236,6 +246,13 @@ class RotationTabsState {
 		);
 	}
 
+	/** The tab being LEFT was on screen until now — that, not when it was
+	 *  opened, is what "viewed longest ago" measures. */
+	#stampLeaving(): void {
+		const now = Date.now();
+		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, viewedAt: now } : t));
+	}
+
 	private loadWorkingState(tab: RotationTab): void {
 		this.notation = tab.notation;
 		this.tabLoadout = tab.tabLoadout ?? {};
@@ -246,29 +263,37 @@ class RotationTabsState {
 	switchTab(id: string): void {
 		if (id === this.activeTabId) return;
 		this.flush();
+		this.#stampLeaving();
 		this.activeTabId = id;
 		const tab = this.tabs.find((t) => t.id === id);
 		if (tab) this.loadWorkingState(tab);
 	}
 
-	addTab(): void {
-		if (this.tabs.length >= TAB_LIMIT) return;
+	addTab(): boolean {
+		if (this.tabs.length >= TAB_LIMIT) return false;
 		this.flush();
+		this.#stampLeaving();
 		const newTab = makeTab(`Tab ${this.tabs.length + 1}`);
 		this.tabs = [...this.tabs, newTab];
 		this.activeTabId = newTab.id;
 		this.loadWorkingState(newTab);
+		return true;
 	}
 
 	/** Open a new tab from a snapshot (a saved entry, a shared rotation) and
-	 *  make it active. No-op at the tab limit — callers gate on TAB_LIMIT. */
-	openTab(partial: Omit<RotationTab, 'id'>): void {
-		if (this.tabs.length >= TAB_LIMIT) return;
+	 *  make it active. Returns false at the tab limit — the caller makes room
+	 *  first (`documentBar.withRoom`). `id` may be passed to reopen a closed tab
+	 *  under its own id; it is ignored if an open tab already holds it. */
+	openTab(partial: Omit<RotationTab, 'id'> & { id?: string }): boolean {
+		if (this.tabs.length >= TAB_LIMIT) return false;
 		this.flush();
-		const newTab: RotationTab = { ...partial, id: genId() };
+		this.#stampLeaving();
+		const id = partial.id && !this.tabs.some((t) => t.id === partial.id) ? partial.id : genId();
+		const newTab: RotationTab = { ...partial, id, viewedAt: Date.now() };
 		this.tabs = [...this.tabs, newTab];
 		this.activeTabId = newTab.id;
 		this.loadWorkingState(newTab);
+		return true;
 	}
 
 	/**
@@ -310,10 +335,15 @@ class RotationTabsState {
 		return true;
 	}
 
-	closeTab(id: string): void {
-		if (this.tabs.length <= 1) return;
+	/** Close a tab and hand it back (with its live state flushed in), so the
+	 *  caller can keep it in Recently closed. Undefined when it is the last
+	 *  tab, which never closes. */
+	closeTab(id: string): RotationTab | undefined {
+		if (this.tabs.length <= 1) return undefined;
 		this.flush();
 		const idx = this.tabs.findIndex((t) => t.id === id);
+		if (idx < 0) return undefined;
+		const closed = this.tabs[idx];
 		const wasActive = id === this.activeTabId;
 		this.tabs = this.tabs.filter((t) => t.id !== id);
 		if (wasActive) {
@@ -321,6 +351,35 @@ class RotationTabsState {
 			this.activeTabId = next.id;
 			this.loadWorkingState(next);
 		}
+		return closed;
+	}
+
+	/**
+	 * Rewrite ONE tab's notation, active or not. A board team linked to a tab
+	 * edits the rotation through here (a swap renames, a removal deletes), so
+	 * the team stays a VIEW of the notation rather than a copy beside it. The
+	 * active tab writes `notation`, so the planner's editor takes it as a
+	 * transaction and ⌘Z reaches it, exactly like a bench edit.
+	 */
+	editTabNotation(id: string, edit: (notation: string) => string): void {
+		if (id === this.activeTabId) {
+			this.notation = edit(this.notation);
+			return;
+		}
+		this.tabs = this.tabs.map((t) => (t.id === id ? { ...t, notation: edit(t.notation) } : t));
+	}
+
+	/** The notation a tab holds RIGHT NOW — the live working copy for the
+	 *  active tab, the stored one otherwise. Undefined for a closed tab. */
+	notationOf(id: string): string | undefined {
+		if (id === this.activeTabId) return this.notation;
+		return this.tabs.find((t) => t.id === id)?.notation;
+	}
+
+	/** A tab's Layer-2 constellations, live for the active tab. */
+	tabConOf(id: string): Record<string, number> | undefined {
+		if (id === this.activeTabId) return this.tabCon;
+		return this.tabs.find((t) => t.id === id)?.tabCon;
 	}
 
 	/** Rename a tab. Returns the tab (pre-rename) so the caller can propagate
@@ -459,17 +518,14 @@ class RotationTabsState {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Import a team by ids. The team arrives as the notation it now IS — a run of
-	 * bare-name segments, ready to have actions typed after each.
-	 *
-	 * ↻ 2026-08-17: goes through {@link adopt}, so it fills an empty tab or opens
-	 * a new one and ⛔ never overwrites a tab with work in it. Returns false when
-	 * every tab is occupied; the caller says so. It used to replace the ACTIVE
-	 * tab at the limit — see `adopt` for why that was the wrong victim.
+	 * A team as a document: the notation it now IS — a run of bare-name
+	 * segments, ready to have actions typed after each. The caller hands it to
+	 * `documentBar.receive`, which places it like any arriving document.
+	 * ↻ 2026-10-08: was `importTeam`, which adopted directly and declined at the
+	 * limit; the make-room confirm lives in documentBar, so this only builds.
 	 */
-	importTeam(ids: string[], label = 'Imported team'): boolean {
-		const notation = foldTeamIntoNotation('', ids.slice(0, TEAM_SIZE));
-		return this.adopt({ label, notation });
+	teamDocument(ids: string[], label = 'Imported team'): Omit<RotationTab, 'id'> {
+		return { label, notation: foldTeamIntoNotation('', ids.slice(0, TEAM_SIZE)) };
 	}
 }
 

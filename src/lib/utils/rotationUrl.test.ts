@@ -89,8 +89,10 @@ describe('rotationUrl codec', () => {
 		};
 		const decoded = await decodeRotation(await encodeRotation(dirty));
 		expect(decoded).not.toBeNull();
-		// cons clamped to 1–6, zero/negative dropped, 4.6 rounded to 5
-		expect(decoded!.constellations).toEqual({ a: 6, d: 5 });
+		// cons clamped to 0–6 and 4.6 rounded to 5. ⚓ An explicit 0 SURVIVES
+		// (lineups design §9.5): the sender's C0 must reach the recipient, or a
+		// missing member falls back to the recipient's own roster.
+		expect(decoded!.constellations).toEqual({ a: 6, b: 0, c: 0, d: 5 });
 		// invalid refinement dropped, empty loadout entry dropped
 		expect(decoded!.loadout).toEqual({ a: { weaponId: 'w', artifactSetId: 'art' } });
 	});

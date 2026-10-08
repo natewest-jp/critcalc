@@ -24,7 +24,14 @@ import {
 	type SavedNotation,
 	type LoadoutEntry
 } from './stores';
-import { rotationTabs as rt, TAB_LIMIT } from './rotationTabs.svelte';
+import {
+	rotationTabs as rt,
+	newTabId,
+	slotsFromNotation,
+	TAB_LIMIT,
+	type RotationTab
+} from './rotationTabs.svelte';
+import { closeCandidate, createRecentlyClosed } from './tabSet';
 import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
 import { foldTeamIntoNotation } from './utils/notationEdit';
 
@@ -62,19 +69,60 @@ export function copyName(label: string, taken: readonly string[]): string {
 	}
 }
 
+/** Rotation tabs closed in this browser, newest first (§9.3 of the lineups
+ *  design). Listed above the saved rotations in the bank. */
+export const recentlyClosedRotations = createRecentlyClosed<RotationTab>(
+	'critcalc:recentlyClosedRotations'
+);
+
+/**
+ * Is a closing tab worth keeping in Recently closed? ⛔ Not an empty one, and
+ * not a saved one with nothing unsaved — the bank already holds it. "Nothing
+ * unsaved" compares what the TAB states against the entry: the entry is
+ * densified on save (every slotted character's constellation pinned) and the
+ * tab is sparse, so only the tab's own keys are compared.
+ */
+export function worthKeeping(tab: RotationTab, saved: readonly SavedNotation[]): boolean {
+	if (!tab.notation.trim()) return false;
+	const entry = tab.savedId ? saved.find((e) => e.id === tab.savedId) : undefined;
+	if (!entry || entry.notation !== tab.notation) return true;
+	const conDiffers = Object.entries(tab.tabCon ?? {}).some(
+		([id, level]) => (entry.tabCon ?? {})[id] !== level
+	);
+	const loadoutDiffers = Object.entries(tab.tabLoadout ?? {}).some(
+		([id, lo]) => JSON.stringify(lo) !== JSON.stringify((entry.tabLoadout ?? {})[id])
+	);
+	return conDiffers || loadoutDiffers;
+}
+
+/**
+ * A request to make room: the tab limit is reached and something wants to
+ * open. Rendered by the (tools) layout as a confirm that NAMES the tab it will
+ * close and lets the reader pick another (⚓ Nate 2026-10-08).
+ */
+export type RoomRequest = {
+	/** The tab closed if the reader just confirms (viewed longest ago). */
+	candidateId: string;
+	/** What opens once there is room. */
+	run: () => void;
+	/** What happens on Cancel. An ARRIVING document (a shared link) is kept in
+	 *  Recently closed, so cancelling never loses the link. */
+	onCancel?: () => void;
+};
+
 class DocumentBarState {
 	/** Transient outcome message, shown in band A beside the actions. */
 	notice = $state<string | null>(null);
 	/** The saved-rotation bank overlay (rendered by the (tools) layout). */
 	loadOpen = $state(false);
-	/**
-	 * A shared link arrived with every tab occupied, so it was parked in the
-	 * bank under this name. Rendered by the (tools) layout as a modal that must
-	 * be ACKNOWLEDGED — see `showParked`.
-	 */
-	parked = $state<string | null>(null);
-
 	exporters = $state<DocumentExporters | null>(null);
+
+	/** The open make-room confirm, if any. */
+	room = $state<RoomRequest | null>(null);
+
+	/** Tabs that may not close to make room. Set by the Team Builder's board
+	 *  store (a tab a board team links to); nothing is locked until then. */
+	lockedTab: (tab: RotationTab) => boolean = () => false;
 
 	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -105,29 +153,6 @@ class DocumentBarState {
 		this.#noticeTimer = setTimeout(() => (this.notice = null), 2200);
 	}
 
-	/**
-	 * Report that a shared rotation was parked in the bank because every tab was
-	 * occupied.
-	 *
-	 * ⚓ A MODAL, NOT A NOTICE (⚓ NATE 2026-08-17), and the difference is what
-	 * happens when it is MISSED. Every other outcome here is confirmable by
-	 * looking — "Saved" leaves a linked tab, "Team loaded" leaves a team — so a
-	 * 2.2s line in band A is enough. This one leaves the planner looking exactly
-	 * as it did, so a reader who misses the line concludes the link is broken and
-	 * clicks it again, and every retry banks another copy. The failure COMPOUNDS,
-	 * silently, and is caused by the report being quiet.
-	 *
-	 * ⚠️ This is not a breach of the non-modal-tools principle. That reserves
-	 * modals for meta surfaces and asks whether a surface REASONS AGAINST its
-	 * surroundings (→ non-modal) or is a focused read (→ modal acceptable). This
-	 * is neither: it is a one-shot REPORT of something that already happened,
-	 * with nothing to reason against, and the principle's own text allows "a tiny
-	 * confirm". ⛔ Don't take it as licence for tool features.
-	 */
-	showParked(name: string) {
-		this.parked = name;
-	}
-
 	registerExporters(ex: DocumentExporters) {
 		this.exporters = ex;
 		return () => {
@@ -145,36 +170,77 @@ class DocumentBarState {
 	 * non-slotted characters are preserved as-is. Only the bank copy is
 	 * densified — the open tab keeps its sparse live-fallback state.
 	 */
-	#densifiedSnapshot(): {
+	#densifiedSnapshot(
+		slots: readonly string[],
+		tabCon: Record<string, number>,
+		tabLoadout: Record<string, LoadoutEntry>
+	): {
 		tabLoadout: Record<string, LoadoutEntry>;
 		tabCon: Record<string, number>;
 	} {
 		const rosterLoadout = get(loadout);
 		const rosterCons = get(constellations);
-		const denseLoadout: Record<string, LoadoutEntry> = { ...rt.tabLoadout };
-		const denseCon: Record<string, number> = { ...rt.tabCon };
-		for (const id of rt.slots) {
+		const denseLoadout: Record<string, LoadoutEntry> = { ...tabLoadout };
+		const denseCon: Record<string, number> = { ...tabCon };
+		for (const id of slots) {
 			if (!id || id === 'blank') continue;
-			const merged: LoadoutEntry = { ...(rosterLoadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
+			const merged: LoadoutEntry = { ...(rosterLoadout[id] ?? {}), ...(tabLoadout[id] ?? {}) };
 			if (merged.weaponId || merged.artifactSetId || merged.weaponRefinement) {
 				denseLoadout[id] = merged;
 			}
 			// Always a number (incl. an explicit 0) so the level is pinned against
 			// later roster edits — the whole point of the freeze.
-			denseCon[id] = rt.tabCon[id] ?? rosterCons[id] ?? 0;
+			denseCon[id] = tabCon[id] ?? rosterCons[id] ?? 0;
 		}
 		return { tabLoadout: denseLoadout, tabCon: denseCon };
 	}
 
 	/** Everything the bank stores about the working document, right now. */
 	#payload(name: string) {
-		const dense = this.#densifiedSnapshot();
+		const dense = this.#densifiedSnapshot(rt.slots, rt.tabCon, rt.tabLoadout);
 		return {
 			name,
 			notation: rt.notation,
 			tabLoadout: dense.tabLoadout,
 			tabCon: dense.tabCon
 		};
+	}
+
+	/** Save a Recently closed tab to the bank (its "promotion"). */
+	saveClosed(tab: RotationTab) {
+		const dense = this.#densifiedSnapshot(
+			slotsFromNotation(tab.notation),
+			tab.tabCon ?? {},
+			tab.tabLoadout ?? {}
+		);
+		if (tab.savedId && get(savedNotations).some((e) => e.id === tab.savedId)) {
+			savedNotations.update(tab.savedId, { name: tab.label, notation: tab.notation, ...dense });
+		} else {
+			savedNotations.save({ name: tab.label, notation: tab.notation, ...dense });
+		}
+		recentlyClosedRotations.remove(tab.id);
+		this.showNotice('Saved');
+	}
+
+	/**
+	 * Take an ARRIVING document (a shared link, a `?team=` hand-off) into a tab.
+	 * An empty tab takes it, else a new tab, else the make-room confirm
+	 * (⚓ Nate 2026-10-08 — a confirm every time, arriving links included,
+	 * overruling the 2026-08-17 "park it in the bank" path). Cancelling keeps
+	 * the document in Recently closed, so the link is never lost.
+	 */
+	receive(doc: Omit<RotationTab, 'id'>, notice: string) {
+		if (rt.adopt(doc)) {
+			this.showNotice(notice);
+			return;
+		}
+		this.withRoom(
+			() => {
+				rt.adopt(doc);
+				this.showNotice(notice);
+			},
+			() => recentlyClosedRotations.push({ ...doc, id: newTabId() })
+		);
 	}
 
 	/** Link the active tab to a bank entry (and take that entry's name). */
@@ -225,6 +291,7 @@ class DocumentBarState {
 
 	load(entry: SavedNotation) {
 		this.#link(entry.id, entry.name);
+		savedNotations.markOpened(entry.id);
 		// Pre-single-truth entries still carry an explicit team; fold it into the
 		// notation on the way in, once, and it is never seen again.
 		rt.notation = foldTeamIntoNotation(entry.notation, entry.manualSlots);
@@ -234,15 +301,77 @@ class DocumentBarState {
 	}
 
 	loadNewTab(entry: SavedNotation) {
-		if (rt.tabs.length >= TAB_LIMIT) return;
-		rt.openTab({
-			label: entry.name,
-			notation: foldTeamIntoNotation(entry.notation, entry.manualSlots),
-			tabLoadout: entry.tabLoadout ?? {},
-			tabCon: entry.tabCon ?? {},
-			savedId: entry.id
-		});
 		this.loadOpen = false;
+		this.withRoom(() => {
+			rt.openTab({
+				label: entry.name,
+				notation: foldTeamIntoNotation(entry.notation, entry.manualSlots),
+				tabLoadout: entry.tabLoadout ?? {},
+				tabCon: entry.tabCon ?? {},
+				savedId: entry.id
+			});
+			savedNotations.markOpened(entry.id);
+		});
+	}
+
+	/** + in the tab strip. */
+	newTab() {
+		this.withRoom(() => rt.addTab());
+	}
+
+	/**
+	 * Close a tab, keeping it in Recently closed when it holds anything worth
+	 * keeping. ⚓ Closing is never loss — this is the only close path.
+	 */
+	closeTab(id: string) {
+		const closed = rt.closeTab(id);
+		if (closed && worthKeeping(closed, get(savedNotations))) recentlyClosedRotations.push(closed);
+	}
+
+	/** Reopen a closed tab (making room first if the strip is full). */
+	reopen(tab: RotationTab) {
+		this.loadOpen = false;
+		this.withRoom(() => {
+			// The bank entry it was linked to may have been deleted since.
+			const linked = tab.savedId && get(savedNotations).some((e) => e.id === tab.savedId);
+			rt.openTab({ ...tab, savedId: linked ? tab.savedId : undefined });
+			recentlyClosedRotations.remove(tab.id);
+		});
+	}
+
+	/**
+	 * Run `open` now if there is room; otherwise ask which tab to close first.
+	 * Refuses (with a notice) only when every other tab is locked.
+	 */
+	withRoom(open: () => void, onCancel?: () => void) {
+		if (rt.tabs.length < TAB_LIMIT) {
+			open();
+			return;
+		}
+		rt.flush();
+		const candidate = closeCandidate(rt.tabs, rt.activeTabId, this.lockedTab);
+		if (!candidate) {
+			onCancel?.();
+			this.showNotice('Every tab is linked to a team — close one first');
+			return;
+		}
+		this.room = { candidateId: candidate.id, run: open, onCancel };
+	}
+
+	/** The make-room confirm was cancelled. */
+	cancelRoom() {
+		const req = this.room;
+		this.room = null;
+		req?.onCancel?.();
+	}
+
+	/** The make-room confirm's answer: close `id`, then open what asked. */
+	confirmRoom(id: string) {
+		const req = this.room;
+		this.room = null;
+		if (!req) return;
+		this.closeTab(id);
+		req.run();
 	}
 
 	/**
@@ -257,18 +386,18 @@ class DocumentBarState {
 		const rosterCons = get(constellations);
 		// Scope the build snapshot to the resolved team (this handles inferred
 		// slots too), plus any character carrying a tab-level loadout override.
-		const teamIds = new Set<string>([
-			...rt.slots.filter((id) => id && id !== 'blank'),
-			...Object.keys(rt.tabLoadout)
-		]);
+		const slotted = new Set(rt.slots.filter((id) => id && id !== 'blank'));
+		const teamIds = new Set<string>([...slotted, ...Object.keys(rt.tabLoadout)]);
 		const cons: Record<string, number> = {};
 		const lo: Record<string, LoadoutEntry> = {};
 		for (const id of teamIds) {
 			// Effective constellation: the tab's Layer-2 override wins over the
 			// roster default, so a shared link carries what the document actually
 			// ran at, not the sharer's roster.
-			const level = rt.tabCon[id] ?? rosterCons[id];
-			if (typeof level === 'number' && level > 0) cons[id] = level;
+			// ⚓ EVERY member's level, an explicit 0 included (lineups design §9.5):
+			// a shared document never falls back to the recipient's roster, so
+			// the sender's C0 must travel or the recipient's own C6 shows instead.
+			if (slotted.has(id)) cons[id] = rt.tabCon[id] ?? rosterCons[id] ?? 0;
 			// Mirror RotationTimeline's effective-loadout merge so a shared link
 			// renders identically regardless of the recipient's own defaults.
 			const entry: LoadoutEntry = { ...(rosterLoadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };

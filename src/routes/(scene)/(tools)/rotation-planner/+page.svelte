@@ -24,8 +24,7 @@
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
-	import { constellations, savedNotations, siteSettings } from '$lib/stores';
-	import { get } from 'svelte/store';
+	import { constellations, siteSettings } from '$lib/stores';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
 		plannerView as pv,
@@ -72,43 +71,10 @@
 			tabLoadout: shared.loadout,
 			tabCon: importedCon
 		};
-		if (rt.adopt(doc)) {
-			db.showNotice('Loaded shared rotation');
-			return;
-		}
-		// ⚓ EVERY TAB IS OCCUPIED, SO THE LINK GOES TO THE BANK — ⛔ never over a
-		// tab with work in it (see `rotationTabs.adopt` for what this replaced).
-		//
-		// The reader clicked a link expecting to RECEIVE something, so refusing
-		// outright is the one answer that fails them twice: the param has already
-		// been stripped by then, so there is nothing left to retry. Parking it in
-		// Saved Rotations delivers the content, costs one entry they can delete,
-		// keeps all six tabs, and uses a surface that is already one button away
-		// in the same band. ⛔ Not a confirm dialog either — tool surfaces here are
-		// non-modal, and a blocking prompt on a link the user just opened
-		// interrupts a flow they did not start.
-		//
-		// ⚠ DEDUPED ON THE WAY IN. Even with the dialog, a reader can legitimately
-		// open the same link twice — from the same message, or after a refresh —
-		// and every arrival would otherwise add another identical entry. Matching
-		// on the NOTATION (not the name, which is always "Shared rotation") means
-		// two genuinely different links still bank separately, and the same one
-		// twice does not.
-		const already = get(savedNotations).some(
-			(e) => e.name === label && e.notation === shared.notation
-		);
-		if (!already) {
-			savedNotations.save({
-				name: label,
-				notation: shared.notation,
-				tabLoadout: shared.loadout,
-				tabCon: importedCon
-			});
-		}
-		// ⚓ A MODAL, NOT A NOTICE (⚓ Nate) — this outcome leaves the planner
-		// looking untouched, so a 2.2s line in band A reads as "nothing happened"
-		// and the reader clicks the link again. See documentBar.showParked.
-		db.showParked(label);
+		// ⚓ An empty tab, else a new one, else the make-room confirm — and a
+		// cancelled confirm keeps the link in Recently closed (documentBar.receive;
+		// ↻ 2026-10-08, it used to be parked in the bank behind a modal report).
+		db.receive(doc, 'Loaded shared rotation');
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
@@ -210,7 +176,7 @@
 			// ⚠ Same rule as a shared link, one line away — `importTeam` had the
 			// identical clobber-the-active-tab bug, and two answers to "where does
 			// an incoming document go" is how they drift.
-			db.showNotice(rt.importTeam(ids) ? 'Team loaded' : 'Tabs full — close one to load a team');
+			db.receive(rt.teamDocument(ids), 'Team loaded');
 		}
 	});
 

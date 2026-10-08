@@ -19,10 +19,10 @@
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import BenchBand from '$lib/components/BenchBand.svelte';
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
-	import TabsFullDialog from '$lib/components/TabsFullDialog.svelte';
+	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
-	import { rotationTabs, TAB_LIMIT } from '$lib/rotationTabs.svelte';
+	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { savedNotations } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
@@ -908,26 +908,28 @@
      document's, not the planner's. -->
 {#if documentBar.loadOpen}
 	<SavedNotationsOverlay
-		canAddTab={rotationTabs.tabs.length < TAB_LIMIT}
 		onLoad={(entry) => documentBar.load(entry)}
 		onLoadNewTab={(entry) => documentBar.loadNewTab(entry)}
+		onReopen={(tab) => documentBar.reopen(tab)}
+		onSaveClosed={(tab) => documentBar.saveClosed(tab)}
 		onClose={() => (documentBar.loadOpen = false)}
 	/>
 {/if}
 
-<!-- A shared link that had nowhere to land. Rendered HERE for the same reason
-     as the bank: it reports on the DOCUMENT, and it must outlive the page that
-     raised it (opening the bank from it navigates nothing, but a tool pan
-     mid-dialog would otherwise take the message with it). -->
-{#if documentBar.parked}
-	<TabsFullDialog
-		name={documentBar.parked}
-		onOpenBank={() => {
-			documentBar.parked = null;
-			documentBar.loadOpen = true;
-		}}
-		onClose={() => (documentBar.parked = null)}
-	/>
+<!-- The make-room confirm: the tab limit is reached and something wants to
+     open. Rendered HERE for the same reason as the bank — it acts on the
+     DOCUMENTS, and it must outlive a tool pan mid-dialog. Keyed on the request
+     so a second one re-seeds the pre-selection. -->
+{#if documentBar.room}
+	{#key documentBar.room}
+		<TabLimitDialog
+			tabs={rotationTabs.tabs}
+			candidateId={documentBar.room.candidateId}
+			locked={documentBar.lockedTab}
+			onConfirm={(id) => documentBar.confirmRoom(id)}
+			onCancel={() => documentBar.cancelRoom()}
+		/>
+	{/key}
 {/if}
 
 <!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing

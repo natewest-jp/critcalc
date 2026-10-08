@@ -363,6 +363,13 @@
 		flex-shrink: 0;
 	}
 
+	/* Band A's start zone takes the room the actions leave, so the document
+	   tabs can MEASURE it and fold into a dropdown when the strip will not fit
+	   (lineups design §9.3). Band A paints nothing, so growing it shows nothing. */
+	.band-a > .band-zone:not(.band-zone--end) {
+		flex: 1;
+	}
+
 	/* ── THE 3-UP SPLIT (⚓ NATE 2026-08-10) ────────────────────────────────
 	       ████ ███████████████████████████████████ ████
 	   Three objects on one row: a control, the navigation RAIL, a control —

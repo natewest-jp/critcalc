@@ -48,7 +48,15 @@ export type SavedNotation = {
 	 */
 	tabCon?: Record<string, number>;
 	savedAt: number; // Unix timestamp (ms)
+	/** Last loaded from the bank (ms). The bank sorts by the newer of this and
+	 *  `savedAt` (⚓ Nate 2026-10-08) — see {@link lastTouched}. */
+	openedAt?: number;
 };
+
+/** When an entry was last saved OR opened — the bank's sort key. */
+export function lastTouched(e: Pick<SavedNotation, 'savedAt' | 'openedAt'>): number {
+	return Math.max(e.savedAt, e.openedAt ?? 0);
+}
 
 function loadSavedNotations(): SavedNotation[] {
 	if (!browser) return [];
@@ -87,6 +95,13 @@ function createSavedNotationsStore() {
 		) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
+			);
+		},
+
+		/** Loaded from the bank — moves it to the top of the list. */
+		markOpened(id: string) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, openedAt: Date.now() } : e)))
 			);
 		},
 
