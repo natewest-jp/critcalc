@@ -31,7 +31,7 @@ import {
 	TAB_LIMIT,
 	type RotationTab
 } from './rotationTabs.svelte';
-import { closeCandidate, createRecentlyClosed } from './tabSet';
+import { closeCandidate, createRecentlyClosed, type TabStripModel } from './tabSet';
 import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
 import { foldTeamIntoNotation } from './utils/notationEdit';
 
@@ -101,6 +101,10 @@ export function worthKeeping(tab: RotationTab, saved: readonly SavedNotation[]):
  * close and lets the reader pick another (⚓ Nate 2026-10-08).
  */
 export type RoomRequest = {
+	/** The open tabs to choose from — rotations or boards. */
+	tabs: { id: string; label: string }[];
+	/** Close the chosen tab (keeping it in its Recently closed). */
+	close: (id: string) => void;
 	/** The tab closed if the reader just confirms (viewed longest ago). */
 	candidateId: string;
 	/** What opens once there is room. */
@@ -117,7 +121,8 @@ class DocumentBarState {
 	loadOpen = $state(false);
 	exporters = $state<DocumentExporters | null>(null);
 
-	/** The open make-room confirm, if any. */
+	/** The open make-room confirm, if any — for rotation tabs, or for board
+	 *  tabs (`boardBar` raises it here too, so ONE dialog serves both). */
 	room = $state<RoomRequest | null>(null);
 
 	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -346,7 +351,13 @@ class DocumentBarState {
 		rt.flush();
 		// Never null here: at the limit there are twelve tabs and one is active.
 		const candidate = closeCandidate(rt.tabs, rt.activeTabId)!;
-		this.room = { candidateId: candidate.id, run: open, onCancel };
+		this.room = {
+			tabs: rt.tabs.map((t) => ({ id: t.id, label: t.label })),
+			close: (id) => this.closeTab(id),
+			candidateId: candidate.id,
+			run: open,
+			onCancel
+		};
 	}
 
 	/** The make-room confirm was cancelled. */
@@ -361,7 +372,7 @@ class DocumentBarState {
 		const req = this.room;
 		this.room = null;
 		if (!req) return;
-		this.closeTab(id);
+		req.close(id);
 		req.run();
 	}
 
@@ -420,3 +431,23 @@ class DocumentBarState {
 }
 
 export const documentBar = new DocumentBarState();
+
+/** Band A's strip over the rotation tabs (see `TabStripModel`). */
+export const rotationTabStrip: TabStripModel = {
+	get tabs() {
+		return rt.tabs;
+	},
+	get activeId() {
+		return rt.activeTabId;
+	},
+	newLabel: 'New rotation',
+	switchTo: (id) => rt.switchTab(id),
+	close: (id) => documentBar.closeTab(id),
+	rename: (id, label) => {
+		const tab = rt.renameTab(id, label);
+		// Propagate to the save bank when this document is linked to an entry.
+		if (tab?.savedId) savedNotations.rename(tab.savedId, label.trim());
+	},
+	reorder: (from, to, side) => rt.reorderTabs(from, to, side),
+	addNew: () => documentBar.newTab()
+};

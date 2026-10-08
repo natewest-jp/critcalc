@@ -4,7 +4,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { constellations, siteSettings, ownership, loadout } from '$lib/stores';
+	import { constellations, siteSettings, ownership, loadout, savedNotations } from '$lib/stores';
 	import { swapFramesForPing } from '$lib/utils/frames';
 	import { readRotationSwap, type RotationRead } from './lib/auditionRotation';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
@@ -23,8 +23,11 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
-	import { notationHasActions } from '$lib/utils/notationEdit';
-	import { benchBand } from '$lib/benchBand.svelte';
+	import { boards, pinnedRotation, type BoardPreset, type BoardTeam } from '$lib/boards.svelte';
+	import { boardBar, boardTabStrip } from '$lib/boardBar.svelte';
+	import { decodeBoard } from '$lib/utils/boardUrl';
+	import { TB_WIPE_MS } from './lib/split';
+	import { motion } from '$lib/motion';
 	import { below } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
@@ -34,7 +37,6 @@
 	// paints no edges.
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
-	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
@@ -43,13 +45,13 @@
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
-	import CoveragePanel from './lib/CoveragePanel.svelte';
+	import BoardView, { type SlotRef } from './lib/BoardView.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
 	import { buildRoleCards, buildRoleSections, categoryOf } from './lib/atlas';
 	import type { RoleCategory, RoleFilter } from './lib/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
-	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
+	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
 	import { MAX_COMPARE, lensFacet, type CapRowKey } from './lib/compare';
 	import { facetsProvidedBy, parseTeamParam, teamDelta, type TeamSlot } from './lib/team';
@@ -79,14 +81,6 @@
 		mounted = true;
 		warmAvatars();
 		afterPaint(releaseVeil);
-		// Bench-band affordances for this tool: a filled card's portrait opens
-		// the Detail card; ⇄ auditions the slot. (Remove/edit writes go straight
-		// to the shared tab state inside the band.)
-		return benchBand.registerHost({
-			tool: 'tb',
-			onOpenDetail: openDetail,
-			onSwap: benchSwap
-		});
 	});
 
 	// URL param consumption lives in afterNavigate, NOT onMount: on chained SPA
@@ -116,7 +110,8 @@
 		const teamParam = url.searchParams.get('team');
 		const altsParam = url.searchParams.get('alts');
 		const swapParam = url.searchParams.get('swap');
-		if (!teamParam && !altsParam && !swapParam) return;
+		const boardParam = url.searchParams.get('b');
+		if (!teamParam && !altsParam && !swapParam && !boardParam) return;
 		// ⛔ Not $app/navigation's replaceState — see stripDeepLinkParams. This is
 		// the call site that carried NO reason at all, and `?swap=` arrives here
 		// cold from a shared audition link.
@@ -124,8 +119,25 @@
 		if (teamParam) {
 			const imported = parseTeamParam(teamParam, (id) => rosterIds.has(id));
 			const ids = imported.filter((s): s is string => s !== null);
-			// At the tab limit this asks which tab to close (documentBar.receive).
-			if (ids.length > 0) documentBar.receive(rt.teamDocument(ids, 'Imported team'), 'Team loaded');
+			// ↻ 2026-10-08: onto the ACTIVE BOARD (§9.7), not into a rotation tab —
+			// the Builder's document is the board now.
+			if (ids.length > 0) {
+				boardBar.receiveTeam(ids);
+				view = 'split';
+			}
+		}
+		if (boardParam) {
+			// A shared lineup (`?b=`). Async decode; an empty active board takes it,
+			// else a new tab (with the make-room confirm at the limit).
+			void decodeBoard(boardParam).then((shared) => {
+				if (!shared) {
+					documentBar.showNotice('Invalid share link');
+					return;
+				}
+				boardBar.receive(shared, (id) => rosterIds.has(id));
+				view = 'split';
+			});
+			return;
 		}
 		if (swapParam !== null) {
 			// Validated, not trusted: this is a URL, so anyone can type ?swap=9.
@@ -133,6 +145,9 @@
 			if (Number.isInteger(n) && n >= 0 && n < rt.slots.length) {
 				pendingSwapSlot = n;
 				fromPlanner = true;
+				// The audition is BOARD-LESS (§10.3): it edits the Planner's team,
+				// so the roster pane takes the whole surface.
+				view = 'roster';
 			}
 			// A swap errand does NOT want the Atlas below — it wants ONE slot's
 			// audition, which the effect opens as soon as the tabs are restored.
@@ -144,6 +159,117 @@
 		// question with that slot's own facets, and the constellation lens.
 		sourceTab = 'roster';
 	});
+
+	// ---------------------------------------------------------------------------
+	// THE SPLIT SCREEN (lineups design §2.4, build step 3)
+	//
+	// Genshin's own endgame party screen is this shape: the roster on the left,
+	// the battlefields on the right. Three states, one control:
+	//   'roster' — full width; the cold start, offering "Build a team";
+	//   'split'  — the roster beside the board;
+	//   'board'  — the board full width, for reviewing a whole lineup.
+	// Each half stays MOUNTED while hidden, so it keeps its scroll and filters.
+	// ⚓ On a phone there is no 50/50: two full-screen states, the same wipe.
+	// ---------------------------------------------------------------------------
+
+	type SplitView = 'roster' | 'split' | 'board';
+	let view = $state<SplitView>('roster');
+	const narrow = $derived(below('toolMin'));
+	/** What actually renders — 'split' has no room below toolMin. */
+	const effectiveView = $derived<SplitView>(narrow && view === 'split' ? 'board' : view);
+
+	/** The cold start: once the boards are restored, a board with anyone on it
+	 *  opens beside the roster; an empty one leaves the roster full width. Runs
+	 *  once — after that, the view is the reader's. */
+	let viewSeeded = false;
+	$effect(() => {
+		if (viewSeeded || !boards.restored || !mounted) return;
+		viewSeeded = true;
+		if (view === 'roster' && pendingSwapSlot === null && !fromPlanner && boardHasAnyone) {
+			view = 'split';
+		}
+	});
+
+	const SPLIT_VIEWS: { key: SplitView; label: string; mark: 'filter' | 'layout' | 'buff' }[] = [
+		{ key: 'roster', label: 'Roster', mark: 'filter' },
+		{ key: 'split', label: 'Roster + board', mark: 'layout' },
+		{ key: 'board', label: 'Board', mark: 'buff' }
+	];
+
+	// ── The board ─────────────────────────────────────────────────────────────
+
+	const board = $derived(boards.activeBoard);
+	const boardHasAnyone = $derived(board.teams.some((t) => t.slots.some((s) => s !== null)));
+
+	/** The slot the roster's next pick lands in (step 6 turns this into swap
+	 *  mode). Cleared when its board or team goes away. */
+	let selectedSlot = $state<SlotRef | null>(null);
+	$effect(() => {
+		if (selectedSlot && !board.teams.some((t) => t.id === selectedSlot!.teamId)) {
+			selectedSlot = null;
+		}
+	});
+
+	/** Every character on the active board. */
+	const onBoard = $derived(board.teams.flatMap((t) => t.slots).filter((s) => s !== null));
+
+	/** Where a roster pick lands: the selected slot, else the first empty slot
+	 *  on the board, else a new team. Returns false when the board is full. */
+	function placeOnBoard(id: string): boolean {
+		if (selectedSlot) {
+			const { teamId, index } = selectedSlot;
+			boards.setSlot(board.id, teamId, index, id);
+			// Walk on to the team's next empty slot, so four picks fill a team.
+			const team = boards.activeBoard.teams.find((t) => t.id === teamId);
+			const next = team?.slots.findIndex((s, i) => s === null && i > index) ?? -1;
+			selectedSlot = next >= 0 ? { teamId, index: next } : null;
+			return true;
+		}
+		for (const team of board.teams) {
+			const i = team.slots.indexOf(null);
+			if (i >= 0) {
+				boards.setSlot(board.id, team.id, i, id);
+				return true;
+			}
+		}
+		const added = boards.addTeam(board.id, [id]);
+		return !!added;
+	}
+
+	function removeFromBoard(id: string): void {
+		for (const team of board.teams) {
+			team.slots.forEach((s, i) => {
+				if (s === id) boards.setSlot(board.id, team.id, i, null);
+			});
+		}
+	}
+
+	/** Open a team in the Planner: its pinned rotation, else its bare names
+	 *  (§10.2). Either opens in a NEW tab, so nothing open is replaced. */
+	function openInPlanner(team: BoardTeam): void {
+		const pinned = pinnedRotation(team, $savedNotations);
+		if (pinned) documentBar.loadNewTab(pinned);
+		else {
+			const ids = team.slots.filter((s): s is string => s !== null);
+			documentBar.receive(
+				{ ...rt.teamDocument(ids, board.label), tabCon: { ...(team.con ?? {}) } },
+				'Team opened'
+			);
+		}
+		void goto(resolve('/rotation-planner'));
+	}
+
+	const PRESETS: { key: BoardPreset; label: string; hint: string }[] = [
+		{ key: 'stygian', label: 'Stygian Onslaught', hint: 'Three teams' },
+		{ key: 'abyss', label: 'Spiral Abyss', hint: 'Two teams' },
+		{ key: 'custom', label: 'Custom', hint: 'One team, add more as you go' }
+	];
+
+	function newBoard(preset: BoardPreset): void {
+		boardBar.newBoard(preset);
+		selectedSlot = null;
+		if (view === 'roster') view = 'split';
+	}
 
 	// ---------------------------------------------------------------------------
 	// THE PLANNER'S SWAP ERRAND (Source retirement, 2026-08-13)
@@ -219,13 +345,6 @@
 		if (sourceTab === 'roster') rosterEverShown = true;
 	});
 
-	// The three routes, as data — band B's navigation renders them in a loop now
-	// that each is a plate rather than a hand-written .tab.
-	const SOURCES: { key: SourceTab; label: string }[] = [
-		{ key: 'roster', label: 'Roster' },
-		{ key: 'compare', label: 'Compare' }
-	];
-
 	// (Compare's reachability gate lives with the compare state, further down.)
 
 	// ---------------------------------------------------------------------------
@@ -293,18 +412,6 @@
 	// Atlas role chips) still need to steer there.
 	function toggleFacet(f: FacetKey): void {
 		toggleSet(activeFacets, f);
-	}
-
-	/** Bench coverage gap → focus that capability and drop onto the filtered
-	 *  Roster (clears any role scope so the capability isn't hidden by it). */
-	function selectCapability(facet: FacetKey, element?: string): void {
-		activeFacets.clear();
-		activeFacets.add(facet);
-		filters.elements.clear();
-		if (element) filters.elements.add(element);
-		rolePosition.clear();
-		roleFunction.clear();
-		sourceTab = 'roster';
 	}
 
 	// ── The role cards ARE the Roster's role filter ─────────────────────────
@@ -456,7 +563,12 @@
 	// Filters plate below exists only where the drawer does, and only there.
 	const sheetAside = $derived(below('toolMin'));
 	let filtersOpen = $state(false);
-	const showFiltersPlate = $derived(sheetAside && sourceTab === 'roster');
+	// ↻ 2026-10-08: the drawer also serves the 50/50 — half a screen has no room
+	// for a filter COLUMN beside the grid.
+	const filterDrawer = $derived(sheetAside || effectiveView === 'split');
+	const showFiltersPlate = $derived(
+		filterDrawer && sourceTab === 'roster' && effectiveView !== 'board'
+	);
 
 	const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
 		{ key: 'all', label: 'All', hint: 'Every character' },
@@ -519,9 +631,6 @@
 		}
 	}
 
-	const compareStateOf = (id: string): 'in' | 'out' | 'full' =>
-		compareIds.has(id) ? 'in' : compareIds.size >= MAX_COMPARE ? 'full' : 'out';
-
 	/**
 	 * ⚓ NATE 2026-08-09: COMPARE IS UNREACHABLE UNTIL THERE IS SOMETHING IN IT.
 	 * It used to accept the click and land you on a paragraph explaining why the
@@ -582,20 +691,6 @@
 		auditionElements.clear();
 		selectedId = null;
 		sourceTab = 'compare';
-	}
-
-	/** The bench's ⇄ (and an EMPTY slot's portrait, since there are no details to
-	 *  read for nobody). An occupied slot auditions its incumbent; an empty one
-	 *  has no incumbent to audition against, so it opens the Roster, which is
-	 *  where you pick somebody. Empty slots used to be inert here — the planner's
-	 *  ⇄ opened its Source and the TB's did nothing. */
-	function benchSwap(index: number, incumbentId: string | null): void {
-		if (incumbentId) {
-			openAudition(index, incumbentId);
-			return;
-		}
-		selectedId = null;
-		sourceTab = 'roster';
 	}
 
 	/** Commit an audition candidate into its slot, then return whence you came —
@@ -761,14 +856,6 @@
 		for (const el of elements) auditionElements.add(el);
 	}
 
-	// The tab's avatar stack — insertion order, the anchor first when auditioning.
-	const compareStack = $derived(
-		[...compareIds].map((id) => {
-			const entry = getCharacterIndexEntry(id);
-			return { id, entry, color: elColor(entry?.element) };
-		})
-	);
-
 	// ---------------------------------------------------------------------------
 	// Team slots — THE working team (the planner's active tab), read from the
 	// shared rotationTabs module. This tool edits it directly; the planner and
@@ -778,20 +865,6 @@
 
 	const rosterIds = new Set(roster.map((c) => c.id));
 	const teamSlots = $derived<TeamSlot[]>(rt.slots.map((id) => (id === 'blank' ? null : id)));
-
-	/** "Clear team" is armed — see its button for why it is always two steps.
-	 *  Disarmed whenever the team changes underneath it, so a confirm can never
-	 *  be left pointing at a document it was not raised against, and when the
-	 *  hand leaves the plate, so a question nobody answered does not sit there
-	 *  waiting for a stray click. */
-	let clearArmed = $state(false);
-	const clearQuestion = $derived(
-		notationHasActions(rt.notation) ? 'Clear rotation?' : 'Clear team?'
-	);
-	$effect(() => {
-		void rt.notation;
-		clearArmed = false;
-	});
 
 	// The resolved team, and whether there IS one. Both used to live inside the
 	// TeamStrip; the breathing-room round split that component into two panels,
@@ -804,7 +877,6 @@
 	const members = $derived<(CharacterIndexEntry | null)[]>(
 		teamSlots.map((id) => (id ? (getCharacterIndexEntry(id) ?? null) : null))
 	);
-	const filledCount = $derived(members.filter((m) => m != null).length);
 
 	/** The constellation a TEAM member is read at — the tab's own override,
 	 *  then the roster's, under the lens. ⚠ Coverage used to skip the lens
@@ -813,12 +885,13 @@
 	const coverageCapOf = (id: string) =>
 		conCapFor(conMode, rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0));
 
-	const teamStateOf = (id: string): 'in' | 'out' | 'full' =>
-		teamSlots.includes(id) ? 'in' : teamSlots.every((s) => s !== null) ? 'full' : 'out';
+	/** A card's team action is about the BOARD now (step 3): on it, or not. A
+	 *  pick always finds room (a new team), so 'full' only at the team limit. */
+	const teamStateOf = (id: string): 'in' | 'out' | 'full' => (onBoard.includes(id) ? 'in' : 'out');
 
 	function toggleTeam(id: string): void {
-		if (teamSlots.includes(id)) rt.removeFromTeam(id);
-		else rt.addToTeam(id);
+		if (onBoard.includes(id)) removeFromBoard(id);
+		else if (placeOnBoard(id) && effectiveView === 'roster') view = narrow ? 'roster' : 'split';
 	}
 
 	// Capability badges → the card's ordered tag chips: active facets first, then
@@ -876,7 +949,6 @@
 <!-- TB-only hover action bar (rendered into the card's overlay shell). -->
 {#snippet teamActions(entry: CharacterIndexEntry)}
 	{@const teamState = teamStateOf(entry.id)}
-	{@const compared = compareIds.has(entry.id)}
 	<button
 		class="tb-act"
 		class:tb-act--on={teamState === 'in'}
@@ -893,24 +965,6 @@
 		<span class="tb-act-glyph"><Mark name={teamState === 'in' ? 'check' : 'plus'} size={16} /></span
 		>
 		<span class="tb-act-label">{teamState === 'full' ? 'Full' : 'Team'}</span>
-	</button>
-	<button
-		class="tb-act tb-act--compare"
-		class:tb-act--on={compared}
-		disabled={!compared && compareIds.size >= MAX_COMPARE}
-		onclick={() => toggleCompare(entry.id)}
-		aria-pressed={compared}
-		title={compared
-			? 'Remove from comparison'
-			: compareIds.size >= MAX_COMPARE
-				? 'Comparison is full (4)'
-				: 'Add to comparison'}
-	>
-		<!-- 16, not the default 14: `compare` (Scale) is the busiest mark in the
-		     set and needs the extra two pixels to resolve its pans. `check` rides
-		     along so the button doesn't resize when you press it. -->
-		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'compare'} size={16} /></span>
-		<span class="tb-act-label">Compare</span>
 	</button>
 {/snippet}
 
@@ -970,13 +1024,15 @@
      role cards (full-size as the front door, a strip once anything narrows
      the roster), and the count. All three scroll away with the grid. -->
 {#snippet rosterCount()}
-	{#if filledCount > 0}
-		<CoveragePanel
-			{members}
-			conCapOf={coverageCapOf}
-			onFilterFacet={(f) => selectCapability(f)}
-			compact
-		/>
+	<!-- The cold start's way in (§2.4): the roster full width, the board empty.
+	     ↻ 2026-10-08: the "what the team covers" strip that sat here retired with
+	     the shared working team; the team fingerprint replaces it (step 5). -->
+	{#if effectiveView === 'roster' && !boardHasAnyone && sourceTab === 'roster'}
+		<div class="tb-cta">
+			<button class="btn btn--primary" onclick={() => (view = narrow ? 'board' : 'split')}>
+				<Mark name="plus" /> Build a team
+			</button>
+		</div>
 	{/if}
 	<!-- Below `compact` the cards are always the strip: four full cards stack
 	     one per screen at 390, and the grid is what a phone came for. -->
@@ -1176,72 +1232,48 @@
 			<span class="tb-band-label">Filters</span>
 		</button>
 	{/if}
-	{#if !bandFolded}
-		<!-- ⛔ "BACK TO PLANNER →" IS NOT IN THIS BAND (⚓ Nate 2026-08-13). It lives
-	     beside "Cancel audition" in CompareView's titlebar and ONLY there — see
-	     that button for what it is actually for.
-
-	     ⚠ AN EARLIER PASS KEPT A COPY HERE, reasoning that `fromPlanner` outlives
-	     the audition and cancelling would otherwise STRAND you. That reasoning was
-	     wrong: `.chrome-nav` renders a link to every other tool on every tool page,
-	     so the way back is always one click away and this plate was never
-	     load-bearing. What it actually was is a second control for a trip the
-	     navigation already offers — and offers better, since a user who has learned
-	     the nav reaches for it from anywhere.
-	     ⛔ Do not re-add it to cover a "what if they cancel" case. The nav covers it. -->
-
-		<!-- The team's one destructive action, moved out of the coverage read-out
-	     (⚓ NATE 2026-08-09) — that run is now a bare header on the scene with
-	     nowhere to hang a control, and a team action belongs in the band with
-	     the other team controls anyway.
-	     ↻ 2026-08-10: a PLATE at the row's height, detached from the band and
-	     mirroring the con lens at the far end, so the navigation rail sits
-	     between two peers. It is a plain .btn rather than .btn--danger: the
-	     danger variant is a deliberate ghost (it must not sit on screen
-	     looking pressable) and Nate asked for a solid ████ here. The
-	     destructive reading moves to the hover, which is where the hand
-	     actually is when it matters. -->
-		<!-- ↻ 2026-08-13 (single truth): TWO STEPS WHEN THERE IS A ROTATION TO
-	     LOSE. The team is the notation now, so clearing the team deletes every
-	     slotted character's segments — on a written rotation that is the
-	     rotation.
-	     ↻ 2026-09-24 (⚓ Nate): ALWAYS two steps. The one-press path for a team
-	     of bare names read as inconsistent — the same button sometimes asked
-	     and sometimes didn't. `notationHasActions` now picks only the QUESTION:
-	     "Clear rotation?" when there is one to lose, "Clear team?" when not.
-	     ⌘Z in the notation box is the other half of this: the deletion lands
-	     as an editor transaction, so a mistaken clear is one undo away. -->
-		<button
-			class="btn tb-clear"
-			class:btn--danger={clearArmed}
-			class:is-confirming={clearArmed}
-			disabled={filledCount === 0}
-			onpointerleave={() => (clearArmed = false)}
-			onblur={() => (clearArmed = false)}
-			title={clearArmed
-				? 'Confirm: delete every team member’s segments from the notation'
-				: 'Empty every slot in the working team'}
-			onclick={() => {
-				if (clearArmed) {
-					rt.clearTeam();
-					clearArmed = false;
-				} else {
-					clearArmed = true;
-				}
-			}}
-			><Mark name={clearArmed ? 'warn' : 'close'} />
-			{clearArmed ? clearQuestion : 'Clear team'}</button
-		>
-	{/if}
 {/snippet}
 
-<ToolStack benched fill bandBLeft={!bandFolded || showFiltersPlate ? bandBLeftPlates : undefined}>
+<!-- The + on the board tabs: a new board from a preset (§10.5). -->
+{#snippet presetItems(close: () => void)}
+	{#each PRESETS as p (p.key)}
+		<button
+			class="band-menu-item"
+			role="menuitem"
+			onclick={() => {
+				close();
+				newBoard(p.key);
+			}}
+		>
+			<span class="tb-conmode-label">{p.label}</span>
+			<span class="tb-conmode-hint">{p.hint}</span>
+		</button>
+	{/each}
+{/snippet}
+
+<!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
+     teams at once, so it cannot hold the Planner's one working team; band A is
+     the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
+<ToolStack fill bandBLeft={showFiltersPlate ? bandBLeftPlates : undefined}>
 	{#snippet bandALeft()}
-		<DocumentTabs />
+		<DocumentTabs model={boardTabStrip} newItems={presetItems} />
 	{/snippet}
 
 	{#snippet bandARight()}
-		<DocumentActions />
+		<div class="tb-doc-actions">
+			{#if documentBar.notice}
+				<span class="tb-notice">{documentBar.notice}</span>
+			{/if}
+			<button
+				class="btn"
+				disabled={!boardHasAnyone}
+				onclick={() => boardBar.shareLink()}
+				title="Copy a link to this board"
+			>
+				<Mark name="share" />
+				<span class="tb-band-label">Share</span>
+			</button>
+		</div>
 	{/snippet}
 
 	<!-- ── THE IN-TOOL NAVIGATION (⚓ NATE 2026-08-09, tuned 08-10) ───────────
@@ -1261,10 +1293,13 @@
 	     (--nav-plate-h against BAND_B_H), which is what makes it read as a thing
 	     sitting on the strip rather than a fill inside it. -->
 	{#snippet bandBCenter()}
-		<div class="tb-nav" role="tablist" aria-label="Source view">
-			{#each SOURCES as s (s.key)}
-				{@const on = sourceTab === s.key}
-				{@const gated = s.key === 'compare' && !compareReady}
+		<!-- THE SPLIT CONTROL (§2.4): one control, three positions — two below
+		     toolMin, where there is no 50/50. It keeps the old navigation's
+		     plates, because it does the old navigation's job: decide what the
+		     tool is showing you. -->
+		<div class="tb-nav" role="tablist" aria-label="Team Builder views">
+			{#each SPLIT_VIEWS.filter((v) => !(narrow && v.key === 'split')) as v (v.key)}
+				{@const on = effectiveView === v.key}
 				<button
 					class="tb-nav-item"
 					class:active={on}
@@ -1273,61 +1308,9 @@
 					class:inset--plain={on}
 					role="tab"
 					aria-selected={on}
-					disabled={gated}
-					title={gated
-						? 'Nothing to compare yet — press Compare on a character card to add one'
-						: undefined}
-					onclick={() => (sourceTab = s.key)}
+					onclick={() => (view = v.key)}
 				>
-					<span class="tb-nav-label">{s.label}</span>
-					<!-- The Compare plate IS the accumulator: a card's "Compare" lands
-					     its pick here as a mini side avatar (the Saved-Rotations stack
-					     grammar) — no tray, no navigation; click when ready. -->
-					{#if s.key === 'compare' && compareStack.length > 0}
-						<span
-							class="tb-tabstack"
-							style:width="{24 + (compareStack.length - 1) * 16}px"
-							aria-label="{compareStack.length} in comparison"
-						>
-							{#each compareStack as pick, i (pick.id)}
-								<!-- ctx-dark: this disc must not follow the plate it rides on.
-								     The Compare plate is glass when unselected and PARCHMENT when
-								     selected, and a portrait backing has to be one opaque thing
-								     in both. See the note at .tb-tabstack-circle. -->
-								<span
-									class="tb-tabstack-circle ctx-dark"
-									style:left="{i * 16}px"
-									style:z-index={i + 1}
-									style:--el-color={pick.color}
-								>
-									{#if hasAvatar(pick.id)}
-										<img
-											src={getAvatar(pick.id, preferNewfit, 'side', traveler)}
-											alt=""
-											onerror={(e) => {
-												const img = e.currentTarget as HTMLImageElement;
-												if (!img.dataset.triedFallback) {
-													img.dataset.triedFallback = '1';
-													img.src = getAvatarFallback(pick.id, 'side', traveler);
-												} else {
-													img.style.display = 'none';
-												}
-											}}
-										/>
-									{:else}
-										<span class="tb-tabstack-initials"
-											>{(pick.entry?.displayName ?? pick.id).slice(0, 1).toUpperCase()}</span
-										>
-									{/if}
-								</span>
-							{/each}
-						</span>
-						<!-- Below `compact` the stack becomes its COUNT: three or four
-						     discs beside the label pushed the plate's word into its
-						     neighbour's at 390. A value mark is round (the TB card
-						     round's rule). -->
-						<span class="tb-tabcount" aria-hidden="true">{compareStack.length}</span>
-					{/if}
+					<span class="tb-nav-label">{v.label}</span>
 				</button>
 			{/each}
 		</div>
@@ -1340,27 +1323,6 @@
 			     row; these are what it could do without seeing. -->
 			<BandMenu compact mark="more" ariaLabel="Team and reading options">
 				{#snippet items(close)}
-					<button
-						class="band-menu-item"
-						class:band-menu-item--danger={clearArmed}
-						role="menuitem"
-						disabled={filledCount === 0}
-						onclick={() => {
-							if (clearArmed) {
-								rt.clearTeam();
-								clearArmed = false;
-								close();
-							} else {
-								// Arm and STAY OPEN: the confirm is the same item re-read,
-								// and a menu that closed here would hide the question.
-								clearArmed = true;
-							}
-						}}
-					>
-						<Mark name={clearArmed ? 'warn' : 'close'} />
-						{clearArmed ? clearQuestion : 'Clear team'}
-					</button>
-					<div class="band-menu-rule"></div>
 					<div class="tb-fold-head" aria-hidden="true">Read capabilities at</div>
 					{@render conModeItems(close)}
 				{/snippet}
@@ -1380,19 +1342,40 @@
 	{/snippet}
 
 	{#snippet surface()}
-		<!-- Two boxes with a gap (aside-column round): the work frame, and — on
-		     the Roster only — the filter column beside it. Atlas and Compare have
-		     nothing to filter, so they get the full width. -->
-		<!-- asideBare: the rail paints its own groups, so the column is a gutter
-		     of objects rather than one box of sections. -->
-		<ToolColumns
-			{main}
-			aside={sourceTab === 'roster' && (!sheetAside || filtersOpen) ? rosterRail : undefined}
-			asideBare
-			sheet={sheetAside}
-			asideTitle="Filters"
-			onCloseAside={() => (filtersOpen = false)}
-		/>
+		<!-- THE SPLIT (§2.4). Both panes stay mounted; the state decides where
+		     each sits. ⚠ The wipe moves the BOARD pane (a transform) and changes
+		     the roster pane's width ONCE, at the start or the end — never per
+		     frame, because reflowing ~120 cards every frame is the cost. -->
+		<div class="tb-split tb-split--{effectiveView}" style:--tb-wipe="{motion(TB_WIPE_MS)}ms">
+			<div class="tb-pane tb-pane--roster" inert={effectiveView === 'board'}>
+				<!-- asideBare: the rail paints its own groups, so the column is a
+				     gutter of objects rather than one box of sections. -->
+				<ToolColumns
+					{main}
+					aside={sourceTab === 'roster' && (!filterDrawer || filtersOpen) ? rosterRail : undefined}
+					asideBare
+					sheet={filterDrawer}
+					asideTitle="Filters"
+					onCloseAside={() => (filtersOpen = false)}
+				/>
+			</div>
+			<div
+				class="tb-pane tb-pane--board scroll-fade"
+				use:scrollFade
+				inert={effectiveView === 'roster'}
+			>
+				<BoardView
+					{board}
+					{traveler}
+					selected={selectedSlot}
+					onSelect={(slot) => (selectedSlot = slot)}
+					onEmpty={(slot) => boards.setSlot(board.id, slot.teamId, slot.index, null)}
+					onAddTeam={() => boards.addTeam(board.id)}
+					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
+					onOpenInPlanner={openInPlanner}
+				/>
+			</div>
+		</div>
 	{/snippet}
 </ToolStack>
 
@@ -1540,12 +1523,88 @@
 		onClose={() => (selectedId = null)}
 		teamState={teamStateOf(selectedId)}
 		onToggleTeam={toggleTeam}
-		compareState={compareStateOf(selectedId)}
-		onToggleCompare={toggleCompare}
 	/>
 {/if}
 
 <style>
+	/* ══ THE SPLIT (lineups design §2.4) ═════════════════════════════════════
+	   Both panes are always laid out. The ROSTER pane is in the flow; the BOARD
+	   pane is absolutely placed over the right side and WIPES in on a
+	   transform. ⚠ The roster's width changes once per change of state — at
+	   the START when it gives up room (roster → split), at the END when it
+	   takes room back (split → roster, after the board has gone) — and never
+	   per frame: ~120 cards reflowing every frame is the cost this avoids.
+	   🎛️ --tb-wipe is TB_WIPE_MS (lib/split.ts), Nate's to tune. */
+	.tb-split {
+		--tb-split-gap: 16px;
+		--tb-wipe-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+		position: relative;
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
+		display: flex;
+		overflow: hidden;
+	}
+	.tb-pane {
+		min-width: 0;
+		min-height: 0;
+	}
+	.tb-pane--roster {
+		display: flex;
+		flex: 0 0 100%;
+		transition:
+			flex-basis 0s linear var(--tb-wipe),
+			transform var(--tb-wipe) var(--tb-wipe-ease);
+	}
+	.tb-split--split .tb-pane--roster,
+	.tb-split--board .tb-pane--roster {
+		flex-basis: calc(50% - var(--tb-split-gap) / 2);
+		transition:
+			flex-basis 0s,
+			transform var(--tb-wipe) var(--tb-wipe-ease);
+	}
+	.tb-split--board .tb-pane--roster {
+		transform: translateX(calc(-100% - var(--tb-split-gap)));
+	}
+	.tb-pane--board {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: calc(50% - var(--tb-split-gap) / 2);
+		overflow-y: auto;
+		transform: translateX(calc(100% + var(--tb-split-gap)));
+		transition:
+			transform var(--tb-wipe) var(--tb-wipe-ease),
+			width var(--tb-wipe) var(--tb-wipe-ease);
+	}
+	.tb-split--split .tb-pane--board {
+		transform: none;
+	}
+	.tb-split--board .tb-pane--board {
+		transform: none;
+		width: 100%;
+	}
+
+	/* Band A's end zone: the board's notice and Share. */
+	.tb-doc-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--band-item-gap, 4px);
+	}
+	.tb-notice {
+		font-size: var(--fs-sm);
+		color: var(--muted);
+		white-space: nowrap;
+	}
+
+	/* The cold start's "Build a team". */
+	.tb-cta {
+		display: flex;
+		justify-content: center;
+		padding: 0.5rem 0 0.25rem;
+	}
+
 	/* ONE frame holding every zone, inside a ToolStack that supplies the
 	   ribbon inset, the band header and the viewport-height budget (toolbar
 	   round). The .tb wrapper is gone with them: it existed to carry the

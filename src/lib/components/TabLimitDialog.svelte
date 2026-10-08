@@ -17,7 +17,6 @@
 	import { untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
-	import type { RotationTab } from '$lib/rotationTabs.svelte';
 	import { TAB_LIMIT } from '$lib/tabSet';
 	import Mark from './Mark.svelte';
 
@@ -27,7 +26,7 @@
 		onConfirm,
 		onCancel
 	}: {
-		tabs: readonly RotationTab[];
+		tabs: readonly { id: string; label: string }[];
 		candidateId: string;
 		onConfirm: (id: string) => void;
 		onCancel: () => void;

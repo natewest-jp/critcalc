@@ -97,3 +97,24 @@ export function createRecentlyClosed<T extends { id: string }>(key: string) {
 		}
 	};
 }
+
+/**
+ * What band A's tab strip (`DocumentTabs`) needs from a kind of document — so
+ * the Planner's rotations and the Team Builder's boards share ONE strip, in
+ * the same grammar (⚓ Nate §2.2: "so people already know how they behave").
+ * Implementations expose `tabs`/`activeId` as getters over their own state.
+ */
+export type TabStripModel = {
+	readonly tabs: readonly { id: string; label: string }[];
+	readonly activeId: string;
+	/** Screen-reader name of the + control. */
+	readonly newLabel: string;
+	switchTo(id: string): void;
+	/** Close — keeping the tab in its Recently closed. */
+	close(id: string): void;
+	rename(id: string, label: string): void;
+	reorder(fromId: string, toId: string, side: 'left' | 'right'): void;
+	/** The + control. A model offering choices (board presets) leaves this out
+	 *  and hands the strip a `newItems` menu instead. */
+	addNew?(): void;
+};
