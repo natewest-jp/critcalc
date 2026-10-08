@@ -199,7 +199,7 @@
 	   short:  HOLLOW — the well with a 1px ink ring, the glyph in the same ink. */
 	.spt-chip {
 		position: absolute;
-		right: calc(var(--d) * -0.04);
+		right: 0; /* tune(nate): snugged in from −0.04d */
 		bottom: 0;
 		height: calc(var(--d) * 0.22);
 		padding: 0 calc(var(--d) * 0.07);

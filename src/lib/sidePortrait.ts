@@ -9,18 +9,20 @@
  * so the head's extent pins the scale), the ring is ~95 of the art's 128px,
  * centred at (70, 81), and its bottom is tangent to the art's bottom.
  *
- * 🎛️ A first read for Nate to tune on /lab. ⛔ Never re-derive them by fitting
- * the icons' alpha: the bottoms are a mix of soft fades and flat cuts, and a
- * fit across the roster scatters by ±7px (tried 2026-10-08).
+ * ⚓ tune(nate) 2026-10-08 on /lab: ring 91 of 128, centre (64, 85), no clip —
+ * his values, landed verbatim (⛔ never re-derive them). The first read above
+ * (95, centre (70, 81), clipped) is what he tuned FROM. ⛔ Nor fit the icons'
+ * alpha: the bottoms are a mix of soft fades and flat cuts, and a fit across
+ * the roster scatters by ±7px (tried 2026-10-08).
  */
 
 /** Art box width ÷ disc diameter. */
-export const SIDE_ART_PER_DISC = 128 / 95;
+export const SIDE_ART_PER_DISC = 128 / 91;
 /** The disc's centre in the art's own coordinates, as fractions of its width. */
-export const SIDE_DISC_CX = 70 / 128;
-export const SIDE_DISC_CY = 81 / 128;
+export const SIDE_DISC_CX = 64 / 128;
+export const SIDE_DISC_CY = 85 / 128;
 /** Clip the art to the disc below its centre line (the top always rises free). */
-export const SIDE_CLIP_BELOW = true;
+export const SIDE_CLIP_BELOW = false;
 
 export type SideGeometry = {
 	artPerDisc: number;
