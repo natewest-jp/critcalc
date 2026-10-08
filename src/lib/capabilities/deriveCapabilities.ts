@@ -538,6 +538,12 @@ function canReact(reaction: Reaction | 'any', team: readonly TeamMember[]): bool
 	return true;
 }
 
+/** Every reaction `team` can make (enablers and conversions applied) — the
+ *  composition chips' source (lineups design §3). */
+export function teamReactions(team: readonly TeamMember[]): Reaction[] {
+	return (Object.keys(REACTION_INGREDIENTS) as Reaction[]).filter((r) => canReact(r, team));
+}
+
 /**
  * Does `team` meet `need` for the character `holderId`, at constellation
  * `con`? The team includes the holder.
