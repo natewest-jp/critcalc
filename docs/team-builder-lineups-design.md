@@ -535,7 +535,7 @@ disagree.**
   ON SAVE** if absent (and on an overwrite that changes the team), so "every rotation
   has a team" is enforced at the one place entries are written. Deleting a team that
   still has rotations is a two-stage confirm naming the count; an empty team deletes
-  in one click. ⚓ **The Builder never files a team on its own**: "Save team" copies
+  in one click (↻ §10.1a: one confirm either way). ⚓ **The Builder never files a team on its own**: "Save team" copies
   a set into the library one way, and deleting that team later leaves boards alone
   (a pin to a deleted rotation drops, §10.2). ⚓ The team entry's NAME is its
   nickname, which retires the separate nickname store below.
@@ -549,6 +549,30 @@ disagree.**
 - Its sections: **Teams** (headings, rotations under them), **Boards** (each as mini
   team rows), **Recently closed** (rotations and boards). Sorted by last touched (a
   heading by its newest entry), with a character filter and the subtle owned marks.
+
+### 10.1a ⚓ The library's shape (Nate, 2026-10-08, from the `/lab/library` demos)
+
+- **The Shelf layout**: teams (headings with their rotations nested) in the main
+  column; **Recently closed tops the side column, collapsed to three**, Boards below it.
+  Index+detail and Gallery were tried and dropped. One column on a phone.
+- ⚓ **The strip is the button.** A rotation row and a team heading are each ONE click
+  target meaning "use this HERE". From the Planner: a rotation opens in a new tab, a
+  heading opens a names-only tab. From the Builder: both put the team on the board (a
+  rotation PINNED), on the selected team if one is selected, else as a new team. As its
+  own page: each goes to its document's HOME (rotations → the Planner, boards → the
+  Builder). A hover hint at the row's end names the click; rename / duplicate / share /
+  delete / nickname / the other tool live in ⋯; **Sync stays visible** (a state, not an
+  action). This retires the "pick mode" question: pick mode is simply the library
+  opened from the Builder.
+- **Sync is per ROTATION** (a team entry is names-only and has nothing to sync).
+- **Delete is ONE confirm** for a rotation AND for a team with rotations; the rotations
+  go to Recently closed. (Supersedes the two-stage confirm in §10.1.)
+- ⚓ **Filtering is the search box** (the strip of every avatar was too clunky to find
+  anyone in): typing suggests, Enter turns the top suggestion into a TAG inside the box,
+  tags AND together, Backspace on an empty box removes the last, leftover text searches
+  names. ⏭ The demo also lets a tag be an ELEMENT or a REACTION — Nate to judge.
+- Headings: portraits at a 48px disc, composition chips, nickname, count, last touched,
+  the boards that use the team. ⛔ No fingerprint in the library.
 
 ### 10.2 ⚓ Links are DERIVED, not stored
 
