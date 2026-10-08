@@ -495,3 +495,103 @@ machinery (limit, last viewed, Recently closed, the confirm) ONCE, shared by bot
 - The inbound `?team=` link (probably: a team on the active board).
 - User-facing names: board / lineup / battlefield / fingerprint (glossary).
 - §2.5 candidate group order and within-group order; §2.6 curated seasons.
+
+---
+
+## 10. The library, and links that are DERIVED (2026-10-08, later)
+
+⚓ Nate's rulings from the same day's design session. **This section wins over §2.3,
+§2.5's linked-swap note, §9.3's locked tabs and §9.6a's link-keeping where they
+disagree.**
+
+### 10.1 ⚓ The notation is the save concept; the library presents it as TEAMS
+
+- **A team is a notation with no actions** ("Bennett > Xiangling > Xingqiu > Sucrose").
+  A rotation is the same thing with actions written in. Both live in ONE store, the
+  existing saved rotations (`savedNotations`). Nothing about who is on a team is stored
+  anywhere but the notation.
+- **The library groups entries by their SET of characters**: the team is the heading,
+  its rotations are the entries under it. ⚓ Order is ignored, and a short team is its
+  own heading ("Bennett, Xiangling" = "Bennett, Xiangling, blank, blank"; it is NOT
+  filed under every four-character team containing them). The key is the first four
+  distinct names, as `slotsFromNotation` reads them.
+- Grouping is a VIEW, so every rotation already saved appears grouped on day one, with
+  no migration. Swap a character in a saved rotation and, once saved, it moves to the
+  other heading: the library cannot disagree with the text.
+- A team saved with no rotation is an entry whose notation is only names ("No rotation
+  yet").
+- **Team nicknames** (⚓): optional, stored per character set in a small store of their
+  own. A label beside the set, never a second copy of the team. Without one, the
+  heading is the portraits plus the composition chips (§3). If a rotation's team
+  changes, it moves to a heading without that nickname.
+- ⚓ **Craft it lovingly** (Nate): the library is what can make both tools pleasing to
+  use. It is an OVERLAY first (opened by Load in either tool), built so it can move to
+  its own page (`/library`) later.
+- Its sections: **Teams** (headings, rotations under them), **Boards** (each as mini
+  team rows), **Recently closed** (rotations and boards). Sorted by last touched (a
+  heading by its newest entry), with a character filter and the subtle owned marks.
+
+### 10.2 ⚓ Links are DERIVED, not stored
+
+- **A board team is a set of characters plus an optional PINNED rotation id.** Its
+  rotations are whatever the library holds for its set; "2 rotations" shows on its row
+  and a click pins one. ⛔ No live view of a Planner tab, no locked tabs, no snapshot
+  on a tab's close, no "remove from the rotation too?" question: the link targeted the
+  wrong thing (tabs are scratch space).
+- ⚓ **The Builder never rewrites a saved rotation.** Swapping on a board changes the
+  board's team; the old rotation stays under the old heading. Carrying a rotation to the
+  new character is explicit: **Try in Planner** opens a NEW tab with the swap made, kept
+  by Save. (Reverses §2.3's "a swap renames in the notation".)
+- If a pinned rotation is deleted, the team keeps its characters and the pin drops; if
+  the pinned rotation's team no longer matches the board team, the pin drops too.
+- **Open in Planner** opens the pinned rotation, else the bare names.
+- **Filling a slot the Genshin way:** a team picker lists the library's team headings,
+  and one choice fills the team. **Save team** on a board row files that set in the
+  library as a team (a preset for next time).
+- A board team's constellations (⚓): the pinned rotation's while pinned, its own
+  otherwise. One source at a time.
+
+### 10.3 ⚓ The Planner's bench
+
+- **⇄ stays** (relabelled "Swap"): the Planner's way into swap mode, and the ONE place
+  the Builder writes a notation, because the reader came from the rotation to change it.
+  It is today's audition, kept as a board-less mode: the Planner's team on top,
+  candidates for the slot, "Take slot N" renames in the tab and returns.
+- ⛔ **✕ goes**, and is NOT moved into swap mode (⚓ Nate): removing a character means
+  deleting their actions, which the text already does.
+- ⏭ The buttons' final layout is decided when the 64px overhanging portrait reaches the
+  bench (§9.5a).
+
+### 10.4 ⚓ "Synced to my roster"
+
+- **Sync** removes a document's own constellation for every character you OWN, so they
+  follow the roster live; a character you do not own keeps its stored level and its
+  not-owned mark.
+- A saved rotation is pinned on save today (`documentBar.#densifiedSnapshot`), so a
+  synced one carries a flag and saves WITHOUT pinning owned characters.
+- The badge reads itself: set a level by hand and the document is no longer synced.
+- In the library: a badge on synced documents, a clickable Sync on the others behind a
+  confirm (working copy: "Your roster's constellations will replace this rotation's for
+  every character you own, and it will keep following your roster from now on.").
+  Shown only once the roster has content. Applies to rotations, teams and boards.
+- This supersedes §9.5's one-shot "Use my constellations" button.
+
+### 10.5 Presets and names (⚓)
+
+- New boards come as **Stygian** (3 teams), **Abyss** (2) or **Custom** (1, add more).
+  Nate sources each preset's boss names, portraits and team-building goals.
+- New boards are named "Board N" unless something better turns up.
+- Every new string from step 1 is approved for now and judged live later.
+
+### 10.6 The build order, revised
+
+1. ✅ Board model (adjusted to §10.2: a pin, not a tab link).
+2. ✅ Team-aware conditions.
+3. The split screen: three states and wipes, the Builder without bench or band-A
+   rotation tabs, board tabs in band A, presets, the bench leaving cleanly.
+4. **The library** (§10.1, §10.4): overlay, team headings, nicknames, sync.
+5. Team rows (avatars at 64px overhanging, composition chips, fingerprint with
+   placeholder glyphs, "N rotations", pin).
+6. Swap mode (consequence groups, ripple, Try in Planner, the ⇄ path from the bench).
+7. No-repeats marks, leftover pool, battlefields.
+8. Copy, Help, ledger, record.
