@@ -18,6 +18,7 @@
 	 * A selected slot is where the roster's next pick lands (swap mode is step 6).
 	 */
 	import Mark from '$lib/components/Mark.svelte';
+	import BandMenu from '$lib/components/BandMenu.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
 	import CompositionChips from '$lib/components/CompositionChips.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -126,30 +127,38 @@
 	} | null>(null);
 </script>
 
-{#snippet bossName(full: string)}
-	<!-- The game writes "Family: Title" — the TITLE is the battlefield's name,
-	     the family says what you are fighting. -->
-	{@const cut = full.indexOf(': ')}
-	<span class="bv-boss-name">
-		<span class="bv-boss-title">{cut > 0 ? full.slice(cut + 2) : full}</span>
-		{#if cut > 0}<span class="bv-boss-family">{full.slice(0, cut)}</span>{/if}
-	</span>
-{/snippet}
-
 <div class="bv">
 	{#if season}
 		<header class="bv-lineup">
 			<span class="bv-lineup-mode">Stygian Onslaught</span>
-			<select
-				class="bv-select"
-				aria-label="Season"
-				value={season.version}
-				onchange={(e) => onSeason(e.currentTarget.value)}
+			<!-- The site's dropdown (a plate, an opaque slate menu) rather than the
+			     platform's select (Nate 2026-10-09). -->
+			<BandMenu
+				label="{season.version} · {fmtDay(season.start)} – {fmtDay(season.end)}"
+				ariaLabel="Season"
+				align="start"
 			>
-				{#each seasons as s (s.version)}
-					<option value={s.version}>{s.version} · {fmtDay(s.start)} – {fmtDay(s.end)}</option>
-				{/each}
-			</select>
+				{#snippet items(close)}
+					{#each seasons as s (s.version)}
+						{@const current = s.version === season.version}
+						<button
+							class="band-menu-item"
+							role="menuitemradio"
+							aria-checked={current}
+							onclick={() => {
+								close();
+								onSeason(s.version);
+							}}
+						>
+							<span class="bv-menu-check"
+								>{#if current}<Mark name="check" size={12} />{/if}</span
+							>
+							<span class="bv-season-version">{s.version}</span>
+							<span class="bv-season-dates">{fmtDay(s.start)} – {fmtDay(s.end)}</span>
+						</button>
+					{/each}
+				{/snippet}
+			</BandMenu>
 		</header>
 	{:else if abyss}
 		<!-- The blessing's own banner (2:1), faded into the night at its edges, its
@@ -173,17 +182,30 @@
 		{@const verdicts = field ? verdictsFor(field, facts.ids, facts.conOf) : undefined}
 		{@const rotations = rotationsForTeam(team, $savedNotations)}
 		{@const pin = pinnedRotation(team, $savedNotations)}
-		<section class="bv-team panel" aria-label="Team {t + 1}">
-			<header class="bv-team-head">
-				<p class="kicker bv-kicker">
-					{field
-						? `Battlefield ${t + 1}`
-						: half
-							? t === 0
-								? 'First half'
-								: 'Second half'
-							: `Team ${t + 1}`}
-				</p>
+		<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
+		     is glass (the site — a battlefield, an Abyss half); everything under
+		     it stands on the night. A battlefield's header fuses its number with
+		     the boss's name, as the game writes "Battlefield 1: …". -->
+		<section class="bv-team" aria-label="Team {t + 1}">
+			<header class="bv-team-head ctx-glass">
+				<div class="bv-head-text">
+					<h3 class="bv-head-title">
+						<span class="kicker bv-head-n"
+							>{field
+								? `Battlefield ${t + 1}:`
+								: half
+									? t === 0
+										? 'First half'
+										: 'Second half'
+									: `Team ${t + 1}`}</span
+						>
+						<!-- The boss's name in full, in the game's order: "Battlefield 1:
+						     Battle-Hardened Domovoy Sculptor: Gale Hewing" — the family is the
+						     NAME, the part after it the title. -->
+						{#if field}<span class="bv-boss-name">{inLang(BOSSES[field.boss].name)}</span>{/if}
+					</h3>
+					{#if half}<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>{/if}
+				</div>
 				<span class="bv-team-actions">
 					{#if half && abyss}
 						<button class="btn btn--sm" onclick={() => (opponents = t as 0 | 1)}
@@ -206,15 +228,10 @@
 					{/if}
 				</span>
 			</header>
-			{#if field}
-				{@render bossName(inLang(BOSSES[field.boss].name))}
-			{:else if half}
-				<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>
-			{/if}
 
 			<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
 			     vertical rule, then the stack — checks, the lineup, the fingerprint. -->
-			<div class="bv-body" class:bv-body--field={!!field}>
+			<div class="bv-body">
 				{#if field && season}
 					<button
 						class="bv-boss"
@@ -241,6 +258,7 @@
 								<div class="bv-slot-wrap">
 									<button
 										class="bv-slot"
+										data-name={entry?.displayName ?? ''}
 										aria-pressed={sel}
 										aria-label={entry
 											? `${entry.displayName}, team ${t + 1} slot ${i + 1}`
@@ -263,7 +281,6 @@
 											><Mark name="close" size={10} /></button
 										>
 									{/if}
-									<span class="bv-slot-name">{entry?.displayName ?? ''}</span>
 								</div>
 							{/each}
 						</div>
@@ -272,26 +289,40 @@
 								<CompositionChips ids={team.slots} reactions={false} />
 								<!-- ⚓ A team's rotations are DERIVED from the library by its set;
 								     a pin names the one you would play here (§10.2). -->
-								<span class="bv-rotations">
-									<Mark name="pin" size={12} />
-									{#if rotations.length === 0}
-										<span>No saved rotation</span>
-									{:else}
-										<select
-											class="bv-select"
-											aria-label="Pinned rotation for team {t + 1}"
-											value={pin?.id ?? ''}
-											onchange={(e) => onPin(team.id, e.currentTarget.value || null)}
-										>
-											<option value=""
-												>{rotations.length === 1
-													? '1 rotation, none pinned'
-													: `${rotations.length} rotations, none pinned`}</option
-											>
-											{#each rotations as r (r.id)}<option value={r.id}>{r.name}</option>{/each}
-										</select>
-									{/if}
-								</span>
+								{#if rotations.length === 0}
+									<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span>
+								{:else}
+									<BandMenu
+										mark="pin"
+										size="sm"
+										align="start"
+										label={pin?.name ??
+											(rotations.length === 1
+												? '1 rotation, none pinned'
+												: `${rotations.length} rotations, none pinned`)}
+										ariaLabel="Pinned rotation for team {t + 1}"
+									>
+										{#snippet items(close)}
+											{#each [null, ...rotations] as r (r?.id ?? '')}
+												{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+												<button
+													class="band-menu-item"
+													role="menuitemradio"
+													aria-checked={current}
+													onclick={() => {
+														close();
+														onPin(team.id, r?.id ?? null);
+													}}
+												>
+													<span class="bv-menu-check"
+														>{#if current}<Mark name="check" size={12} />{/if}</span
+													>
+													{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span>{/if}
+												</button>
+											{/each}
+										{/snippet}
+									</BandMenu>
+								{/if}
 							</div>
 						{/if}
 					</div>
@@ -333,24 +364,27 @@
 		align-items: center;
 		gap: 0.9rem;
 	}
+	/* The menus' rows: a check column, then the choice (a season: version +
+	   dates). */
+	.bv-menu-check {
+		width: 12px;
+		display: grid;
+		place-items: center;
+	}
+	.bv-season-version {
+		min-width: 2.2em;
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+	}
+	.bv-season-dates,
+	.bv-menu-quiet {
+		color: var(--muted);
+	}
 	.bv-lineup-mode {
 		font-family: var(--font-display);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-3xl);
 		color: var(--text);
-	}
-	/* A select that reads as a value well, like the band's. */
-	.bv-select {
-		font: inherit;
-		font-size: var(--fs-md);
-		color: var(--text);
-		background: var(--surface-well);
-		border: none;
-		border-radius: var(--r-sm);
-		padding: 4px 8px;
-		max-width: 100%;
-		min-width: 0;
-		cursor: pointer;
 	}
 
 	/* The Abyss banner: the art across the pane, faded at the foot so the
@@ -369,7 +403,10 @@
 		object-fit: cover;
 		mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
 	}
+	/* ⚠ POSITIONED: the art's mask makes it a stacking context, which paints
+	   OVER in-flow text that shares its grid cell. */
 	.bv-abyss-text {
+		position: relative;
 		align-self: end;
 		display: flex;
 		flex-direction: column;
@@ -383,60 +420,71 @@
 		color: var(--text);
 	}
 
-	/* ── A team: a glass card (an apparatus — "glass touches") ── */
+	/* ── A team: the glass strip names the site, the rest stands on night ── */
 	.bv-team {
-		gap: 0.6rem;
-		padding: 0.9rem 1.1rem 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
 	}
 	.bv-team-head {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
+		padding: 0.5rem 0.6rem 0.5rem 1rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
 	}
-	.bv-kicker {
+	.bv-head-text {
 		flex: 1;
 		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+	/* One run of TEXT, not flex items, so a long name wraps word by word
+	   instead of dropping whole beneath the number. */
+	.bv-head-title {
+		margin: 0;
+		font-size: inherit;
+		line-height: 1.4;
+	}
+	/* The kicker's voice without its rule — it leads a line here. */
+	.bv-head-n {
+		display: inline;
+		margin-right: 0.35em;
 		font-size: var(--fs-md);
 	}
+	.bv-head-n::after {
+		content: none;
+	}
 	.bv-team-actions {
+		flex: none;
 		display: flex;
 		align-items: center;
 		gap: 4px;
 	}
-	/* The battlefield's name, as the game writes it: the title, then the
-	   boss's family. */
 	.bv-boss-name {
-		display: flex;
-		align-items: baseline;
-		flex-wrap: wrap;
-		gap: 0.2rem 0.6rem;
-	}
-	.bv-boss-title {
-		font-family: var(--font-display);
-		font-weight: var(--fw-semibold);
-		font-size: var(--fs-2xl);
-		line-height: 1.2;
-	}
-	.bv-boss-family {
 		font-size: var(--fs-md);
-		color: var(--muted);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		color: var(--accent);
 	}
 	.bv-half {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-md);
 		line-height: 1.45;
 		color: var(--text);
 	}
 	.bv-body {
 		display: flex;
-		align-items: stretch;
-		gap: 1.1rem;
-	}
-	.bv-body--field {
-		padding-top: 0.35rem;
+		align-items: center;
+		gap: 1rem;
+		padding: 0 0.6rem 0 1rem;
 	}
 	.bv-vrule {
 		flex: none;
+		align-self: stretch;
 		width: 1px;
 		background: var(--line-faint);
 	}
@@ -455,15 +503,14 @@
 	.bv-lineup-row {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: flex-end;
-		gap: 0.6rem 1.25rem;
+		align-items: center;
+		gap: 0.6rem 1.1rem;
 	}
 	.bv-side {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 6px;
 		min-width: 0;
-		padding-bottom: 1.35rem;
 	}
 
 	/* The boss: a circle-cut avatar on the members' ring, the game's magnifier
@@ -505,15 +552,19 @@
 	/* ── The lineup ── */
 	.bv-slots {
 		display: flex;
-		gap: 0.6rem;
+		gap: 18px; /* Nate 2026-10-09 */
+	}
+	/* The board's ring is the FAINT line (Nate 2026-10-09): on the night four
+	   strong rings read as a row of buttons, not of portraits. */
+	.bv-slot :global(.spt-disc) {
+		border-color: var(--line-faint);
 	}
 	.bv-slot-wrap {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.25rem;
-		width: 72px;
+		width: 56px;
 	}
 	/* The slot is a bare hit area around the portrait, which draws its own
 	   ring, selection and empty state. Hover lifts the ring to ink. */
@@ -552,21 +603,12 @@
 	.bv-slot-clear:hover {
 		color: var(--text);
 	}
-	.bv-slot-name {
-		font-size: var(--fs-sm);
-		color: var(--muted);
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		min-height: 1.2em;
-	}
 	.bv-rotations {
 		display: flex;
 		align-items: center;
 		gap: 6px;
 		font-size: var(--fs-sm);
-		color: var(--muted);
+		color: var(--text);
 	}
 	.bv-add-team {
 		align-self: flex-start;

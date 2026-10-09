@@ -27,11 +27,6 @@ export type Boss = {
 	/** The boss's named abilities, with the game's text (`**x**` = the game's
 	 *  highlight). */
 	mechanics: { name: Localized; text: Localized }[];
-	/** Elemental RES in percent. */
-	res: Record<
-		'pyro' | 'hydro' | 'dendro' | 'electro' | 'anemo' | 'cryo' | 'geo' | 'physical',
-		number
-	>;
 };
 
 export type BattlefieldCheck = {

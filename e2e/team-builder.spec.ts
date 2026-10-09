@@ -254,8 +254,12 @@ test.describe('the board', () => {
 		await openDetail(page, 'Furina');
 		await page.locator('.dc-team').click();
 		await page.keyboard.press('Escape');
-		const team2 = await page.locator('.bv-team').nth(1).locator('.bv-slot-name').allInnerTexts();
-		expect(team2.map((t) => t.trim())).toEqual(['', '', 'Furina', '']);
+		const team2 = await page
+			.locator('.bv-team')
+			.nth(1)
+			.locator('.bv-slot')
+			.evaluateAll((els) => els.map((e) => e.getAttribute('data-name')));
+		expect(team2).toEqual(['', '', 'Furina', '']);
 	});
 
 	test('a preset board opens with its teams', async ({ page }) => {
@@ -296,7 +300,7 @@ test.describe('the board', () => {
 	test('a board survives a reload', async ({ page }) => {
 		await openTool(page, '/team-builder?team=bennett,jean');
 		await page.reload({ waitUntil: 'networkidle' });
-		expect(await boardNames(page)).toEqual(['Bennett', 'Jean']);
+		await expect.poll(() => boardNames(page)).toEqual(['Bennett', 'Jean']);
 	});
 });
 

@@ -115,7 +115,8 @@
 		align-items: center;
 		padding: 0.45rem 0.6rem;
 		border-radius: var(--r-sm);
-		background: var(--surface-well);
+		/* One rung UP from the modal's ground (slate-700 on slate-800). */
+		background: var(--surface-raised);
 	}
 	.op-row img {
 		grid-row: 1 / 3;

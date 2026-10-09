@@ -3,7 +3,7 @@
 	 * A battlefield's boss, in full (Nate 2026-10-09) — opened from the
 	 * magnifier on the board's boss avatar. The full art (not trimmed), the
 	 * name, HP at Fearless and Dire side by side, the checks (with the team's
-	 * standing), elemental RES, the boss's mechanics in the game's words, its
+	 * standing), the boss's mechanics in the game's words, its
 	 * description, and every other season it ran in.
 	 *
 	 * ⚠ PORTALLED: the board pane mints a containing block, so a fixed dialog
@@ -15,7 +15,6 @@
 	import { onMount } from 'svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { portal } from '$lib/actions/portal';
-	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { BOSSES, bossImage, bossRuns, inLang, type Battlefield, type Season } from '$lib/endgame';
 	import type { CheckVerdict } from '$lib/endgameChecks';
 	import CheckChip from './CheckChip.svelte';
@@ -40,23 +39,14 @@
 		bossRuns(battlefield.boss).filter((s) => s.version !== season.version)
 	);
 	const hp = (n: number) => n.toLocaleString('en-US');
-	const RES_ORDER = [
-		'pyro',
-		'hydro',
-		'electro',
-		'cryo',
-		'dendro',
-		'anemo',
-		'geo',
-		'physical'
-	] as const;
 
 	/** The game's highlight (`**x**`) → parts, so it renders as <strong>. */
 	const runs = (text: string) =>
 		text.split(/\*\*(.+?)\*\*/s).map((t, i) => ({ t, strong: i % 2 === 1 }));
 
 	const fullName = $derived(inLang(boss.name));
-	/** The game writes "Family: Title" — the title is the battlefield's name. */
+	/** The game writes "Name: Title" — "Battle-Hardened Domovoy Sculptor: Gale
+	 *  Hewing". The NAME leads (Nate 2026-10-09); the title is its epithet. */
 	const cut = $derived(fullName.indexOf(': '));
 
 	let closeBtn = $state<HTMLButtonElement>();
@@ -72,28 +62,15 @@
 		><Mark name="close" size={16} /></button
 	>
 
-	<!-- THE HERO (Nate 2026-10-09: a square art column was too much screen for
-	     one image). The boss stands at the header's right, fading into the
-	     panel; what you need first sits beside it on the left. -->
+	<!-- THE HERO (Nate 2026-10-09, second arrangement): the boss stands at the
+	     top right corner, fading leftward and down into the panel; the name and
+	     the battlefield's checks sit beside it. -->
 	<header class="bd-hero">
 		<img class="bd-art" src={bossImage(battlefield.boss, 'art')} alt="" />
 		<div class="bd-hero-text">
 			<p class="kicker bd-kicker">Battlefield {index + 1} · Stygian Onslaught {season.version}</p>
-			<h2 class="bd-title">{cut > 0 ? fullName.slice(cut + 2) : fullName}</h2>
-			{#if cut > 0}<p class="bd-family">{fullName.slice(0, cut)}</p>{/if}
-
-			<!-- THE readout: one paper card ("paper answers"). -->
-			<div class="panel panel--paper bd-hp">
-				<div>
-					<span class="bd-hp-label">Fearless HP</span>
-					<span class="bd-hp-value">{hp(battlefield.hp.fearless)}</span>
-				</div>
-				<div>
-					<span class="bd-hp-label">Dire HP</span>
-					<span class="bd-hp-value">{hp(battlefield.hp.dire)}</span>
-				</div>
-			</div>
-
+			<h2 class="bd-title">{cut > 0 ? fullName.slice(0, cut) : fullName}</h2>
+			{#if cut > 0}<p class="bd-family">{fullName.slice(cut + 2)}</p>{/if}
 			{#if battlefield.checks.length}
 				<div class="bd-checks">
 					{#each battlefield.checks as c, i (i)}<CheckChip
@@ -102,36 +79,40 @@
 						/>{/each}
 				</div>
 			{/if}
+		</div>
 
-			<ul class="bd-res" aria-label="Elemental RES">
-				{#each RES_ORDER as el (el)}
-					<li class:bd-res--high={boss.res[el] > 10}>
-						{#if el !== 'physical' && elementIcon(el)}
-							<img src={elementIcon(el)} alt={el} />
-						{:else}
-							<span class="bd-res-phys">Phys</span>
-						{/if}
-						<span>{boss.res[el]}%</span>
-					</li>
-				{/each}
-			</ul>
+		<!-- THE readout: one paper card ("paper answers") — HP at both
+		     difficulties. -->
+		<div class="panel panel--paper bd-card">
+			<div class="bd-hp">
+				<span class="bd-hp-label">Fearless HP</span>
+				<span class="bd-hp-value">{hp(battlefield.hp.fearless)}</span>
+			</div>
+			<div class="bd-hp">
+				<span class="bd-hp-label">Dire HP</span>
+				<span class="bd-hp-value">{hp(battlefield.hp.dire)}</span>
+			</div>
 		</div>
 	</header>
 
+	<!-- The body: the mechanics in the reading column, the lore and the other
+	     seasons beside them — what a player reads vs what they glance at. -->
 	<div class="bd-body">
-		{#each boss.mechanics as m, i (i)}
-			<section class="bd-mech">
-				<h3>{inLang(m.name)}</h3>
-				{#each inLang(m.text).split('\n') as para, j (j)}
-					<p>
-						{#each runs(para) as r, k (k)}{#if r.strong}<strong>{r.t}</strong
-								>{:else}{r.t}{/if}{/each}
-					</p>
-				{/each}
-			</section>
-		{/each}
+		<div class="bd-mechs">
+			{#each boss.mechanics as m, i (i)}
+				<section class="bd-mech">
+					<h3>{inLang(m.name)}</h3>
+					{#each inLang(m.text).split('\n') as para, j (j)}
+						<p>
+							{#each runs(para) as r, k (k)}{#if r.strong}<strong>{r.t}</strong
+									>{:else}{r.t}{/if}{/each}
+						</p>
+					{/each}
+				</section>
+			{/each}
+		</div>
 
-		<footer class="bd-foot">
+		<aside class="bd-aside">
 			{#each inLang(boss.description).split('\n') as para, j (j)}
 				<p class="bd-lore">{para}</p>
 			{/each}
@@ -140,7 +121,7 @@
 					Also in Stygian Onslaught {otherRuns.map((s) => s.version).join(', ')}
 				</p>
 			{/if}
-		</footer>
+		</aside>
 	</div>
 </div>
 
@@ -175,60 +156,74 @@
 		z-index: 2;
 	}
 
-	/* ── The hero: text on the left, the boss standing at the right ── */
+	/* ── The hero: the boss in the top right corner, the name beside it ── */
 	.bd-hero {
 		position: relative;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 17rem;
-		background: radial-gradient(
-			ellipse 22rem 20rem at 85% 55%,
-			var(--surface-raised) 0%,
-			transparent 70%
-		);
-	}
-	.bd-art {
-		grid-column: 2;
-		grid-row: 1;
-		align-self: end;
-		width: 17rem;
-		height: auto;
-		/* Fading into the panel at its foot and its inner edge. */
-		mask-image:
-			linear-gradient(to top, transparent 0%, #000 22%),
-			linear-gradient(to right, transparent 0%, #000 18%);
-		-webkit-mask-composite: source-in; /* WebKit's spelling of intersect */
-		mask-composite: intersect;
-	}
-	.bd-hero-text {
-		grid-column: 1;
-		grid-row: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-		padding: 1.4rem 0 1.2rem 1.6rem;
-		min-width: 0;
+		gap: 1.1rem;
+		padding: 1.5rem 1.6rem 1.3rem;
+		overflow: hidden;
+	}
+	/* Out of flow, so the art sets no height of its own: it fills the hero's
+	   top right and fades left and down into the panel. */
+	.bd-art {
+		position: absolute;
+		top: -1rem;
+		right: -1rem;
+		width: 22rem;
+		height: auto;
+		max-width: none;
+		mask-image:
+			linear-gradient(to top, transparent 8%, #000 45%),
+			linear-gradient(to right, transparent 0%, #000 35%);
+		-webkit-mask-composite: source-in; /* WebKit's spelling of intersect */
+		mask-composite: intersect;
+		pointer-events: none;
+	}
+	/* Positioned: the art's mask makes it a stacking context, which would
+	   otherwise paint over in-flow content. */
+	.bd-hero-text,
+	.bd-card {
 		position: relative;
-		z-index: 1;
+	}
+	.bd-hero-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		max-width: calc(100% - 15rem);
+		min-width: 0;
 	}
 	.bd-kicker {
 		font-size: var(--fs-sm);
 	}
 	.bd-title {
-		margin: 0;
+		margin: 0.15rem 0 0;
 		font-size: var(--fs-4xl);
 		line-height: 1.15;
 	}
 	.bd-family {
-		margin: -0.5rem 0 0;
+		margin: -0.3rem 0 0;
 		font-size: var(--fs-lg);
 		color: var(--muted);
 	}
-	.bd-hp {
-		grid-template-columns: 1fr 1fr;
-		padding: 0.75rem 1.1rem;
-		max-width: 26rem;
+	.bd-checks {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: 0.35rem;
 	}
-	.bd-hp > div {
+
+	/* The readout: HP at both difficulties. ⛔ No elemental RES (Nate
+	   2026-10-09) — the data had the base template, not the fight's values,
+	   which step with most bosses' mechanics; stygian.moe has them. */
+	.bd-card {
+		grid-template-columns: auto auto;
+		align-self: flex-start;
+		column-gap: 2.5rem;
+		padding: 0.8rem 1.4rem 0.85rem 1.2rem;
+	}
+	.bd-hp {
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
@@ -244,47 +239,19 @@
 		font-variant-numeric: tabular-nums;
 		color: var(--text);
 	}
-	.bd-checks {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-	}
-	.bd-res {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem 1rem;
-		font-size: var(--fs-md);
-		font-variant-numeric: tabular-nums;
-		color: var(--muted);
-	}
-	.bd-res li {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-	}
-	/* A resistance above the usual 10% is what a player looks for. */
-	.bd-res--high {
-		color: var(--text);
-		font-weight: var(--fw-semibold);
-	}
-	.bd-res img {
-		width: 18px;
-		height: 18px;
-	}
-	.bd-res-phys {
-		font-size: var(--fs-xs);
-	}
 
-	/* ── The body: the mechanics, full width, then the description ── */
+	/* ── The body: mechanics to read, lore to glance at ── */
 	.bd-body {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 14rem;
+		gap: 1.25rem 2rem;
+		padding: 1.2rem 1.6rem 1.5rem;
+		border-top: 1px solid var(--line-faint);
+	}
+	.bd-mechs {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
-		padding: 1.1rem 1.6rem 1.5rem;
-		border-top: 1px solid var(--line-faint);
+		gap: 1.1rem;
 	}
 	.bd-mech {
 		display: flex;
@@ -299,17 +266,15 @@
 		margin: 0;
 		font-size: var(--fs-lg);
 		line-height: 1.55;
-		max-width: 46rem;
 	}
 	.bd-mech strong {
 		font-weight: var(--fw-semibold);
 	}
-	.bd-foot {
+	.bd-aside {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
-		padding-top: 0.9rem;
-		border-top: 1px solid var(--line-faint);
+		gap: 0.6rem;
+		padding-top: 0.35rem;
 	}
 	.bd-lore {
 		margin: 0;
@@ -317,26 +282,25 @@
 		line-height: 1.55;
 		font-style: italic;
 		color: var(--muted);
-		max-width: 46rem;
 	}
 	.bd-runs {
-		margin: 0;
+		margin: 0.3rem 0 0;
 		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
-	/* A phone: the boss behind the header's top right, smaller and quieter. */
+	/* A phone: the boss smaller behind the top right, one column below. */
 	@media (max-width: 47.5rem) {
-		.bd-hero {
-			grid-template-columns: minmax(0, 1fr);
-		}
 		.bd-art {
-			grid-column: 1;
-			justify-self: end;
-			align-self: start;
-			width: 9rem;
+			width: 12rem;
 		}
 		.bd-hero-text {
-			padding-right: 1.6rem;
+			max-width: calc(100% - 6rem);
+		}
+		.bd-card {
+			column-gap: 1.5rem;
+		}
+		.bd-body {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

@@ -110,16 +110,10 @@ function clean(s) {
 		.trim();
 }
 
-const RES_KEYS = {
-	pyro: 'fireSubHurt',
-	hydro: 'waterSubHurt',
-	dendro: 'grassSubHurt',
-	electro: 'elecSubHurt',
-	anemo: 'windSubHurt',
-	cryo: 'iceSubHurt',
-	geo: 'rockSubHurt',
-	physical: 'physicalSubHurt'
-};
+// ⛔ No elemental RES (Nate 2026-10-09). lunaris's `monsterStats` is the
+// monster's BASE template — Gale Hewing read 10/30% where the fight opens at
+// 90% and steps down per Stellar Glimmer stack (stygian.moe) — and most
+// bosses' RES moves with their mechanics. A wrong number is worse than none.
 
 const addDays = (iso, n) => {
 	const d = new Date(`${iso}T00:00:00Z`);
@@ -257,14 +251,10 @@ async function main() {
 						text: localized(cfg, 'LevelMaxDescription', j)
 					});
 				});
-				const res = {};
-				for (const [el, key] of Object.entries(RES_KEYS))
-					res[el] = Math.round((cfg.monsterStats?.[key] ?? 0) * 100);
 				bosses[slug] = {
 					name: localized(cfg, 'LevelName'),
 					description: localized(cfg, 'MonsterSpecialDesc'),
-					mechanics,
-					res
+					mechanics
 				};
 				// The circle icon's name is not stored; it is FOUND. Candidates, in
 				// order: the challenge image's suffix (UI_Img_LeyLineChallenge_X ↔

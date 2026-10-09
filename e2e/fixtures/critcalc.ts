@@ -216,10 +216,14 @@ export async function openRoster(page: Page) {
 	await page.locator('.cg-grid').first().waitFor();
 }
 
-/** The names on the Team Builder's active board, slot order, empties skipped. */
+/** The names on the Team Builder's active board, slot order, empties skipped.
+ *  The board draws no names, so they come from each slot's `data-name`. */
 export async function boardNames(page: Page) {
-	const all = await page.locator('.tb-pane--board .bv-slot-name').allInnerTexts();
-	return all.map((t) => t.trim()).filter(Boolean);
+	// ⚠ evaluateAll does not wait: hold for the board to exist first.
+	const slots = page.locator('.tb-pane--board .bv-slot');
+	await slots.first().waitFor();
+	const all = await slots.evaluateAll((els) => els.map((e) => e.getAttribute('data-name') ?? ''));
+	return all.filter(Boolean);
 }
 
 /** The names currently rendered in the character grid. */
