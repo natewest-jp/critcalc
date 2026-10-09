@@ -19,7 +19,23 @@
 				"pt": "Quando um personagem causar Dano de Redemoinho ou Redemoinho Estelar a um oponente, **uma Onda de Choque será liberada** na posição do oponente, causando Dano Real. Este efeito pode ser desencadeado uma vez a cada 4s.",
 				"ru": "Когда персонаж наносит противнику урон реакцией Рассеивание или Звёздное рассеивание, в месте нахождения врага **высвобождается ударная волна**, наносящая истинный урон. Этот эффект может срабатывать не чаще одного раза в 4 сек.",
 				"fr": "Lorsqu'un personnage inflige des DGT de réaction de Dispersion ou de réaction d'Astrodispersion à un ennemi, **une onde de choc est libérée** à l'emplacement de ce dernier, infligeant des DGT réels. Cet effet peut être déclenché une fois toutes les 4 s."
-			}
+			},
+			"halves": [
+				{
+					"en": "Characters' Swirl DMG increased by 200% and Stellar Swirl DMG increased by 75%.",
+					"zh": "角色的扩散反应造成的伤害提升200%，角色造成的星扩散伤害提升75%。",
+					"pt": "O Dano causado por reações de Redemoinho dos personagens aumenta em 200%, e o Dano de Redemoinho Estelar causado pelos personagens aumenta em 75%.",
+					"ru": "Урон от реакции Рассеивание персонажа увеличивается на 200%, а урон от реакции Звёздное рассеивание персонажа увеличивается на 75%.",
+					"fr": "Les DGT infligés par les réactions de Dispersion des personnages augmentent de 200 % et ceux des réactions d'Astrodispersion de 75 %."
+				},
+				{
+					"en": "Characters' Electro-Charged DMG increased by 200% and Lunar-Charged DMG increased by 75%.",
+					"zh": "角色的感电反应造成的伤害提升200%，角色造成的月感电伤害提升75%。",
+					"pt": "Dano de Eletricamente Carregado dos personagens aumentado em 200% e Dano de Carga Lunar aumentado em 75%.",
+					"ru": "Урон от реакции Заряжен персонажа увеличен на 200%, урон от реакции Лунный заряд увеличен на 75%.",
+					"fr": "Les DGT infligés par les réactions d'Électrocution des personnages augmentent de 200 % et ceux des réactions de Sélénocution de 75 %."
+				}
+			]
 		}
 	]
 }

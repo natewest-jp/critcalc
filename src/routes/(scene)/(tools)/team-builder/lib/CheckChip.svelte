@@ -6,7 +6,9 @@
 	 * says how that team stands (`$lib/endgameChecks`):
 	 *   favoured + met     ✓ in --ui-positive — the team brings it
 	 *   disfavoured + met  ⚠ in --ui-danger — the team does what the boss resists
-	 *   unknown            no mark — ⛔ never guessed
+	 *   unmet / unknown    the thumb, unchanged — ⛔ never guessed
+	 * ⚓ The verdict mark REPLACES the thumb (Nate 2026-10-09) — the chip keeps
+	 * its length, and the tint says the rest.
 	 */
 	import Mark from '$lib/components/Mark.svelte';
 	import { checkAlternatives, inLang, spriteImage, type BattlefieldCheck } from '$lib/endgame';
@@ -45,7 +47,10 @@
 	class:ck--warn={flag === 'warn'}
 	{title}
 >
-	<Mark name={good ? 'thumbsUp' : 'thumbsDown'} size={13} />
+	<Mark
+		name={flag === 'met' ? 'check' : flag === 'warn' ? 'warn' : good ? 'thumbsUp' : 'thumbsDown'}
+		size={13}
+	/>
 	{#each alternatives as alt, i (i)}
 		{#if i > 0}<span class="ck-sep" aria-hidden="true"></span>{/if}
 		<span class="ck-alt">
@@ -58,10 +63,6 @@
 			{/each}
 		</span>
 	{/each}
-	{#if flag === 'met'}<Mark name="check" size={13} />{:else if flag === 'warn'}<Mark
-			name="warn"
-			size={13}
-		/>{/if}
 </span>
 
 <style>
@@ -87,13 +88,13 @@
 	.ck--met {
 		background: var(--ui-positive-soft);
 	}
-	.ck--met > :global(.mark:last-child) {
+	.ck--met > :global(.mark:first-child) {
 		color: var(--ui-positive);
 	}
 	.ck--warn {
 		background: var(--ui-danger-soft);
 	}
-	.ck--warn > :global(.mark:last-child) {
+	.ck--warn > :global(.mark:first-child) {
 		color: var(--ui-danger);
 	}
 	.ck-alt {

@@ -146,11 +146,14 @@ export type AbyssCycle = {
 	/** Live dates, ISO (start inclusive, end exclusive). */
 	start: string;
 	end: string;
-	/** The blessing's game icon (`/assets/endgame/abyss/{icon}.webp`). */
+	/** The blessing's banner art, 2:1 (`/assets/endgame/abyss/{icon}.webp`). */
 	icon: string;
 	name: Localized;
 	/** The blessing's text (`**x**` = the game's highlight). */
 	text: Localized;
+	/** Floor 12's first- and second-half blessings — team 1 fights the first
+	 *  half, team 2 the second. */
+	halves: [Localized, Localized];
 };
 
 export const ABYSS_CYCLES = abyssData.cycles as AbyssCycle[];

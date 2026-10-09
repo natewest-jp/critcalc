@@ -97,6 +97,10 @@ describe('the Abyss', () => {
 		for (const c of ABYSS_CYCLES) {
 			expect(c.name.en, c.start).toBeTruthy();
 			expect(c.text.en, c.start).toBeTruthy();
+			expect(
+				c.halves.map((h) => !!h.en),
+				c.start
+			).toEqual([true, true]);
 			expect(existsSync(join(STATIC, blessingImage(c.icon))), c.icon).toBe(true);
 		}
 	});

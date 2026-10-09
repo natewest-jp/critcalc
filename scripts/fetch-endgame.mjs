@@ -160,6 +160,9 @@ async function abyss(table) {
 			continue;
 		}
 		const blessing = { name: {}, text: {} };
+		// ⚓ Floor 12's two half blessings (Nate 2026-10-09: which team goes in
+		// which half is the planning question) — team 1 = first half.
+		const halves = [{}, {}];
 		let icon;
 		for (const [ours, theirs] of Object.entries(LOCALES)) {
 			const c = await get(TOWER_URL(version, theirs, id));
@@ -167,9 +170,14 @@ async function abyss(table) {
 			blessing.name[ours] = clean(c.buffName);
 			blessing.text[ours] = clean(c.monthlyBuff?.description ?? '');
 			icon ??= c.icon;
+			const floor = (c.floors ?? []).find((f) => f.floorIndex === 12);
+			['firstHalfBuff', 'secondHalfBuff'].forEach((k, h) => {
+				const t = floor?.[k]?.description;
+				if (t?.trim()) halves[h][ours] = clean(t);
+			});
 		}
 		const end = starts[i + 1] ?? addMonths(start, 1);
-		cycles.push({ start, end, icon, ...blessing });
+		cycles.push({ start, end, icon, ...blessing, halves });
 		const to = join(ABYSS_ICON_DIR, `${icon}.png`);
 		if (icon && !(await exists(to))) {
 			const buf = await get(BLESSING_ICON_URL(icon), 'buffer');
