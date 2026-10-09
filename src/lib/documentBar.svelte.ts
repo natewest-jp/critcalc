@@ -21,6 +21,7 @@ import {
 	savedNotations,
 	loadout,
 	constellations,
+	ownership,
 	type SavedNotation,
 	type LoadoutEntry
 } from './stores';
@@ -186,13 +187,15 @@ class DocumentBarState {
 	#densifiedSnapshot(
 		slots: readonly string[],
 		tabCon: Record<string, number>,
-		tabLoadout: Record<string, LoadoutEntry>
+		tabLoadout: Record<string, LoadoutEntry>,
+		synced = false
 	): {
 		tabLoadout: Record<string, LoadoutEntry>;
 		tabCon: Record<string, number>;
 	} {
 		const rosterLoadout = get(loadout);
 		const rosterCons = get(constellations);
+		const owned = get(ownership);
 		const denseLoadout: Record<string, LoadoutEntry> = { ...tabLoadout };
 		const denseCon: Record<string, number> = { ...tabCon };
 		for (const id of slots) {
@@ -202,20 +205,24 @@ class DocumentBarState {
 				denseLoadout[id] = merged;
 			}
 			// Always a number (incl. an explicit 0) so the level is pinned against
-			// later roster edits — the whole point of the freeze.
-			denseCon[id] = tabCon[id] ?? rosterCons[id] ?? 0;
+			// later roster edits — the whole point of the freeze. ⚓ Except a
+			// SYNCED document's owned characters, which follow the roster (§10.4).
+			if (synced && owned[id] === 'owned') delete denseCon[id];
+			else denseCon[id] = tabCon[id] ?? rosterCons[id] ?? 0;
 		}
 		return { tabLoadout: denseLoadout, tabCon: denseCon };
 	}
 
 	/** Everything the bank stores about the working document, right now. */
 	#payload(name: string) {
-		const dense = this.#densifiedSnapshot(rt.slots, rt.tabCon, rt.tabLoadout);
+		const synced = !!rt.activeTab.synced;
+		const dense = this.#densifiedSnapshot(rt.slots, rt.tabCon, rt.tabLoadout, synced);
 		return {
 			name,
 			notation: rt.notation,
 			tabLoadout: dense.tabLoadout,
-			tabCon: dense.tabCon
+			tabCon: dense.tabCon,
+			synced
 		};
 	}
 
@@ -250,11 +257,15 @@ class DocumentBarState {
 			recentlyClosedRotations.remove(tab.id);
 			return;
 		}
-		const dense = this.#densifiedSnapshot(
-			slotsFromNotation(tab.notation),
-			tab.tabCon ?? {},
-			tab.tabLoadout ?? {}
-		);
+		const dense = {
+			...this.#densifiedSnapshot(
+				slotsFromNotation(tab.notation),
+				tab.tabCon ?? {},
+				tab.tabLoadout ?? {},
+				!!tab.synced
+			),
+			synced: !!tab.synced
+		};
 		if (tab.savedId && get(savedNotations).some((e) => e.id === tab.savedId)) {
 			savedNotations.update(tab.savedId, { name: tab.label, notation: tab.notation, ...dense });
 		} else {
@@ -364,7 +375,8 @@ class DocumentBarState {
 				notation: foldTeamIntoNotation(entry.notation, entry.manualSlots),
 				tabLoadout: entry.tabLoadout ?? {},
 				tabCon: entry.tabCon ?? {},
-				savedId: entry.id
+				savedId: entry.id,
+				synced: !!entry.synced
 			});
 			savedNotations.markOpened(entry.id);
 		});

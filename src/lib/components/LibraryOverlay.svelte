@@ -508,6 +508,30 @@
 		</div>
 		<div class="lib-rot-side">
 			<span class="lib-date">{ago(lastTouched(r))}</span>
+			<!-- ⚓ Sync is per ROTATION and shown once the roster has content
+			     (§10.4). "Sync", not "Sync with roster" — the longer word read as
+			     nagging (Nate 2026-10-09). -->
+			{#if rosterHasContent}
+				{#if r.synced}
+					<span class="lib-synced" title="Follows your roster's constellations"
+						><Mark name="link" size={11} /> Synced</span
+					>
+				{:else}
+					<button
+						class="btn btn--sm lib-sync"
+						title="Use your roster's constellations from now on"
+						onclick={(e) => {
+							e.stopPropagation();
+							confirm = {
+								title: `Sync “${r.name}” to your roster?`,
+								body: "Your roster's constellations will replace this rotation's for every character you own, and it will keep following your roster from now on.",
+								action: 'Sync',
+								run: () => library.syncRotation(r)
+							};
+						}}><Mark name="link" size={11} /> Sync</button
+					>
+				{/if}
+			{/if}
 			{@render more(`r:${r.id}`, rotationMenu(r), 'More: rename, share, delete')}
 		</div>
 	</div>

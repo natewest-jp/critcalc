@@ -17,10 +17,18 @@
  * state goes away.
  */
 
+import { get } from 'svelte/store';
 import { goto, pushState } from '$app/navigation';
 import { page } from '$app/state';
 import { resolve } from '$app/paths';
-import { savedBoards, savedNotations, type SavedBoard, type SavedNotation } from './stores';
+import {
+	constellations,
+	ownership,
+	savedBoards,
+	savedNotations,
+	type SavedBoard,
+	type SavedNotation
+} from './stores';
 import { documentBar, recentlyClosedRotations } from './documentBar.svelte';
 import { boardBar } from './boardBar.svelte';
 import { fromSavedTeams, makeBoard, recentlyClosedBoards, type Board } from './boards.svelte';
@@ -214,14 +222,37 @@ class LibraryState {
 		this.say('Saved');
 	}
 
+	/**
+	 * ⚓ Sync a saved rotation to the roster (§10.4; one confirm, asked by the
+	 * overlay): every character you OWN loses its stored level and follows the
+	 * roster from now on; one you do not own keeps its level. Open tabs linked
+	 * to it follow.
+	 */
+	syncRotation(e: SavedNotation) {
+		const owned = Object.entries(get(ownership))
+			.filter(([, m]) => m === 'owned')
+			.map(([id]) => id);
+		const tabCon = Object.fromEntries(
+			Object.entries(e.tabCon ?? {}).filter(([id]) => !owned.includes(id))
+		);
+		savedNotations.update(e.id, { tabCon, synced: true });
+		rt.applySync(e.id, owned);
+		this.say('Synced');
+	}
+
 	// ── Sharing ───────────────────────────────────────────────────────────
 
-	/** A saved rotation's link: its own (densified) levels and loadouts travel. */
+	/** A saved rotation's link: its own levels (a synced one's owned members
+	 *  read from the roster, so EVERY level travels — §9.5) and loadouts. */
 	async shareRotation(e: SavedNotation) {
+		const roster = get(constellations);
+		const levels: Record<string, number> = {};
+		for (const id of orderedCharacterIds(e.notation).slice(0, 4))
+			levels[id] = e.tabCon?.[id] ?? roster[id] ?? 0;
 		try {
 			const param = await encodeRotation({
 				notation: foldTeamIntoNotation(e.notation, e.manualSlots),
-				constellations: e.tabCon ?? {},
+				constellations: levels,
 				loadout: e.tabLoadout ?? {}
 			});
 			await navigator.clipboard.writeText(`${location.origin}/rotation-planner?r=${param}`);

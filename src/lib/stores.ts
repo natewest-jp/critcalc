@@ -48,6 +48,14 @@ export type SavedNotation = {
 	 */
 	tabCon?: Record<string, number>;
 	savedAt: number; // Unix timestamp (ms)
+	/**
+	 * ⚓ "Synced to my roster" (lineups design §10.4): the characters you OWN
+	 * are left out of `tabCon`, so they follow the roster live; a character you
+	 * do not own keeps its stored level. Saving a synced document keeps it so.
+	 * Setting an owned character's level by hand ends it — the badge reads
+	 * itself.
+	 */
+	synced?: boolean;
 	/** Last loaded from the bank (ms). The bank sorts by the newer of this and
 	 *  `savedAt` (⚓ Nate 2026-10-08) — see {@link lastTouched}. */
 	openedAt?: number;
@@ -91,7 +99,7 @@ function createSavedNotationsStore() {
 		/** Update an existing entry's content and/or name in-place. */
 		update(
 			id: string,
-			fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'tabLoadout' | 'tabCon'>>
+			fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'tabLoadout' | 'tabCon' | 'synced'>>
 		) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
