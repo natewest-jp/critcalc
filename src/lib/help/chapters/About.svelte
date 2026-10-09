@@ -67,6 +67,19 @@
 				>genshin-db</a
 			> — the datamined character, talent, and identity data our pipeline is seeded from.
 		</li>
+		<li>
+			<a href="https://lunaris.moe" target="_blank" rel="noopener noreferrer">Lunaris</a> — Stygian Onslaught's
+			seasons, bosses and battlefield checks, and the boss artwork, from the game's own data.
+		</li>
+		<li>
+			<a href="https://www.stygian.moe" target="_blank" rel="noopener noreferrer">Stygian.moe</a> — the
+			Stygian Onslaught archive we check each season's dates against.
+		</li>
+		<li>
+			<a href="https://genshin-impact.fandom.com" target="_blank" rel="noopener noreferrer"
+				>Genshin Impact Wiki</a
+			> — kit details our sources leave out, and the capability lists we check ours against.
+		</li>
 	</ul>
 	<p>
 		If you get value out of critcalc, the best thing you can do is

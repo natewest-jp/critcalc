@@ -1,0 +1,17 @@
+{
+	"_note": "HAND-MAINTAINED (Nate 2026-10-09): the live start date of each Stygian Onslaught season, by game version. A season appears on the site only once it has a line here AND its date has passed — the guard that keeps beta (leaked) data off the site, since lunaris.moe tracks beta builds. Add one line per patch. Dates follow the six-week cadence and were cross-checked against lunaris.moe (whose 6.7 and 7.1 entries carry beta dates) and stygian.moe (7.1: 2026-09-30 → 2026-11-11). A season ends where the next begins; the newest ends six weeks after its start.",
+	"stygian": {
+		"5.7": "2025-06-25",
+		"5.8": "2025-08-06",
+		"6.0": "2025-09-17",
+		"6.1": "2025-10-29",
+		"6.2": "2025-12-10",
+		"6.3": "2026-01-21",
+		"6.4": "2026-03-04",
+		"6.5": "2026-04-15",
+		"6.6": "2026-05-27",
+		"6.7": "2026-07-08",
+		"7.0": "2026-08-19",
+		"7.1": "2026-09-30"
+	}
+}
