@@ -131,8 +131,6 @@ export type RoomRequest = {
 class DocumentBarState {
 	/** Transient outcome message, shown in band A beside the actions. */
 	notice = $state<string | null>(null);
-	/** The saved-rotation bank overlay (rendered by the (tools) layout). */
-	loadOpen = $state(false);
 	exporters = $state<DocumentExporters | null>(null);
 
 	/** The open make-room confirm, if any — for rotation tabs, or for board
@@ -311,8 +309,13 @@ class DocumentBarState {
 		}
 		const activeTab = rt.activeTab;
 		const payload = this.#payload(activeTab.label);
-		if (activeTab.savedId) {
-			savedNotations.update(activeTab.savedId, payload);
+		// ⚠️ A link to an entry deleted since (the library sends deletes to
+		// Recently closed) saves as new: updating a missing id writes nothing,
+		// and the notice would still say "Saved".
+		const linkedLive =
+			!!activeTab.savedId && get(savedNotations).some((e) => e.id === activeTab.savedId);
+		if (linkedLive) {
+			savedNotations.update(activeTab.savedId!, payload);
 		} else {
 			// ⚓ Saving what the library already holds (an arriving link to your
 			// own rotation, say) links to it rather than filing a twin. Save as
@@ -354,19 +357,7 @@ class DocumentBarState {
 		this.showNotice('Saved as new');
 	}
 
-	load(entry: SavedNotation) {
-		this.#link(entry.id, entry.name);
-		savedNotations.markOpened(entry.id);
-		// Pre-single-truth entries still carry an explicit team; fold it into the
-		// notation on the way in, once, and it is never seen again.
-		rt.notation = foldTeamIntoNotation(entry.notation, entry.manualSlots);
-		rt.tabLoadout = entry.tabLoadout ?? {};
-		rt.tabCon = entry.tabCon ?? {};
-		this.loadOpen = false;
-	}
-
 	loadNewTab(entry: SavedNotation) {
-		this.loadOpen = false;
 		this.withRoom(() => {
 			rt.openTab({
 				label: entry.name,
@@ -395,7 +386,6 @@ class DocumentBarState {
 
 	/** Reopen a closed tab (making room first if the strip is full). */
 	reopen(tab: RotationTab) {
-		this.loadOpen = false;
 		this.withRoom(() => {
 			// The bank entry it was linked to may have been deleted since.
 			const linked = tab.savedId && get(savedNotations).some((e) => e.id === tab.savedId);

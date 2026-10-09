@@ -7,16 +7,18 @@
  * (raised on `documentBar.room`, so ONE dialog serves both kinds of tab), the
  * same Recently closed.
  *
- * ⏭ Save and Load arrive with the library (§10.1, build step 4); the share
- * link is here now.
+ * Save and Load arrived with the library (§10.1a, build step 4): Load is the
+ * library, opened from the Builder.
  */
 
 import { get } from 'svelte/store';
-import { constellations, savedBoards, savedNotations } from './stores';
+import { constellations, savedBoards, savedNotations, type SavedBoard } from './stores';
 import { documentBar } from './documentBar.svelte';
 import {
 	boards,
+	fromSavedTeams,
 	fromSharedBoard,
+	toSavedTeams,
 	makeBoard,
 	recentlyClosedBoards,
 	toSharedBoard,
@@ -64,6 +66,70 @@ class BoardBarState {
 			boards.openBoard(board);
 			recentlyClosedBoards.remove(board.id);
 		});
+	}
+
+	/** Is the active board linked to a saved entry that still exists? */
+	get linked(): boolean {
+		const id = boards.activeBoard.savedId;
+		return !!id && get(savedBoards).some((b) => b.id === id);
+	}
+
+	/** Save the active board: over its saved entry when linked, else a new
+	 *  entry the tab then links to. Members' levels are PINNED, as a saved
+	 *  rotation's are. */
+	save() {
+		const board = boards.activeBoard;
+		if (!boardWorthKeeping(board)) return;
+		const payload = {
+			name: board.label,
+			preset: board.preset,
+			noRepeats: board.noRepeats,
+			teams: toSavedTeams(board, get(savedNotations), get(constellations))
+		};
+		if (this.linked) savedBoards.update(board.savedId!, payload);
+		else {
+			const id = savedBoards.save(payload);
+			boards.boards = boards.boards.map((b) => (b.id === board.id ? { ...b, savedId: id } : b));
+		}
+		documentBar.showNotice('Saved');
+	}
+
+	/** Open a saved board as a tab (or switch to the tab already showing it). */
+	openSaved(entry: SavedBoard) {
+		savedBoards.markOpened(entry.id);
+		const open = boards.boards.find((b) => b.savedId === entry.id);
+		if (open) {
+			boards.switchBoard(open.id);
+			return;
+		}
+		this.withRoom(() =>
+			boards.openBoard({
+				label: entry.name,
+				preset: entry.preset,
+				noRepeats: entry.noRepeats,
+				teams: fromSavedTeams(entry.teams),
+				savedId: entry.id
+			})
+		);
+	}
+
+	/** Save a Recently closed board (its "promotion"). */
+	saveClosed(board: Board) {
+		const payload = {
+			name: board.label,
+			preset: board.preset,
+			noRepeats: board.noRepeats,
+			teams: toSavedTeams(board, get(savedNotations), get(constellations))
+		};
+		if (board.savedId && get(savedBoards).some((b) => b.id === board.savedId))
+			savedBoards.update(board.savedId, payload);
+		else savedBoards.save(payload);
+		recentlyClosedBoards.remove(board.id);
+	}
+
+	/** A saved board was renamed in the library: its open tab follows. */
+	renameLinked(savedId: string, label: string) {
+		for (const b of boards.boards) if (b.savedId === savedId) boards.renameBoard(b.id, label);
 	}
 
 	/** An arriving shared board (`?b=`). An empty active board takes it, else

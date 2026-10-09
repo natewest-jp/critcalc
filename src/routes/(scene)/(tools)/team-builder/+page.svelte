@@ -4,7 +4,14 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { constellations, siteSettings, ownership, loadout, savedNotations } from '$lib/stores';
+	import {
+		constellations,
+		siteSettings,
+		ownership,
+		loadout,
+		savedBoards,
+		savedNotations
+	} from '$lib/stores';
 	import { swapFramesForPing } from '$lib/utils/frames';
 	import { readRotationSwap, type RotationRead } from './lib/auditionRotation';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
@@ -25,6 +32,7 @@
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { boards, pinnedRotation, type BoardPreset, type BoardTeam } from '$lib/boards.svelte';
 	import { boardBar, boardTabStrip } from '$lib/boardBar.svelte';
+	import { library } from '$lib/library.svelte';
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { TB_WIPE_MS } from './lib/split';
 	import { motion } from '$lib/motion';
@@ -200,6 +208,8 @@
 
 	const board = $derived(boards.activeBoard);
 	const boardHasAnyone = $derived(board.teams.some((t) => t.slots.some((s) => s !== null)));
+	/** Linked to a saved board that still exists (Save → Save changes). */
+	const boardLinked = $derived(!!board.savedId && $savedBoards.some((b) => b.id === board.savedId));
 
 	/** The slot the roster's next pick lands in (step 6 turns this into swap
 	 *  mode). Cleared when its board or team goes away. */
@@ -258,6 +268,37 @@
 		}
 		void goto(resolve('/rotation-planner'));
 	}
+
+	/**
+	 * THE LIBRARY'S TARGET (§10.1a): opened from here, a library pick puts its
+	 * team on THIS board — the selected team if there is one (a rotation
+	 * pinned), else the first empty team, else a new one. Registered while the
+	 * page is mounted; `selectedLabel` is read live, so the library's hover hint
+	 * follows the selection.
+	 */
+	onMount(() =>
+		library.registerTarget({
+			get selectedLabel() {
+				if (!selectedSlot) return null;
+				const i = board.teams.findIndex((t) => t.id === selectedSlot!.teamId);
+				return i >= 0 ? `Team ${i + 1}` : null;
+			},
+			place(slots, pinnedRotationId) {
+				const target =
+					board.teams.find((t) => t.id === selectedSlot?.teamId) ??
+					board.teams.find((t) => t.slots.every((s) => s === null)) ??
+					boards.addTeam(board.id);
+				if (!target) {
+					documentBar.showNotice('The board is full');
+					return;
+				}
+				boards.setTeam(board.id, target.id, slots);
+				if (pinnedRotationId) boards.pin(board.id, target.id, pinnedRotationId);
+				selectedSlot = null;
+				if (view === 'roster') view = 'split';
+			}
+		})
+	);
 
 	const PRESETS: { key: BoardPreset; label: string; hint: string }[] = [
 		{ key: 'stygian', label: 'Stygian Onslaught', hint: 'Three teams' },
@@ -1264,6 +1305,21 @@
 			{#if documentBar.notice}
 				<span class="tb-notice">{documentBar.notice}</span>
 			{/if}
+			<button
+				class="btn"
+				disabled={!boardHasAnyone}
+				onclick={() => boardBar.save()}
+				title={boardBar.linked
+					? `Save changes to “${board.label}”`
+					: 'Save this board to your library'}
+			>
+				<Mark name="save" />
+				<span class="tb-band-label">{boardLinked ? 'Save changes' : 'Save'}</span>
+			</button>
+			<button class="btn" onclick={() => library.show('builder')} title="Open the library">
+				<Mark name="load" />
+				<span class="tb-band-label">Load</span>
+			</button>
 			<button
 				class="btn"
 				disabled={!boardHasAnyone}

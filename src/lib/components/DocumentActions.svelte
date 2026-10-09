@@ -2,6 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
+	import { library } from '$lib/library.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import Mark from './Mark.svelte';
 
@@ -75,8 +76,8 @@
 	<button
 		class="btn"
 		type="button"
-		title="Open a saved rotation"
-		onclick={() => (db.loadOpen = true)}
+		title="Open the library"
+		onclick={() => library.show('planner')}
 	>
 		<Mark name="load" />
 		<span class="da-label">Load</span>
