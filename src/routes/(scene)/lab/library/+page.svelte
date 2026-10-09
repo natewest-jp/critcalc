@@ -751,22 +751,24 @@
 				</div>
 			{/if}
 		</div>
-		<div class="lib-demo">
-			<span class="lib-demo-tag">Demo · opened from</span>
-			{#each [['planner', 'Planner'], ['builder', 'Builder'], ['page', 'Library page']] as [k, l] (k)}
-				<button class="tab" class:active={ctx === k} onclick={() => (ctx = k as Ctx)}>{l}</button>
-			{/each}
-			{#if ctx === 'builder'}
-				<label class="lib-demo-check"
-					><input type="checkbox" bind:checked={teamSelected} /> Team 2 selected</label
-				>
-			{/if}
-			<label class="lib-demo-check"
-				><input type="checkbox" bind:checked={rosterHasContent} /> Roster has content</label
-			>
-		</div>
-		<button class="btn btn--icon" aria-label="Close"><Mark name="close" size={16} /></button>
+		<button class="btn btn--icon lib-close" aria-label="Close"
+			><Mark name="close" size={16} /></button
+		>
 	</header>
+	<div class="lib-demo">
+		<span class="lib-demo-tag">Demo · opened from</span>
+		{#each [['planner', 'Planner'], ['builder', 'Builder'], ['page', 'Library page']] as [k, l] (k)}
+			<button class="tab" class:active={ctx === k} onclick={() => (ctx = k as Ctx)}>{l}</button>
+		{/each}
+		{#if ctx === 'builder'}
+			<label class="lib-demo-check"
+				><input type="checkbox" bind:checked={teamSelected} /> Team 2 selected</label
+			>
+		{/if}
+		<label class="lib-demo-check"
+			><input type="checkbox" bind:checked={rosterHasContent} /> Roster has content</label
+		>
+	</div>
 
 	<div class="lib-body">
 		<div class="lib-col lib-scroll">
@@ -846,24 +848,26 @@
 		color: var(--text);
 		overflow: hidden;
 	}
+	/* Title · search · close. The search sits on the WINDOW's centre line
+	   (Nate 2026-10-09): two equal flanks, the search in the middle track. */
 	.lib-top {
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(max-content, 1fr) minmax(0, 36rem) minmax(max-content, 1fr);
 		align-items: center;
 		gap: 1rem;
-		flex-wrap: wrap;
 	}
+	.lib-close {
+		justify-self: end;
+	}
+	/* Bitter at the headings' shared weight (the global h rule), section size. */
 	.lib-title {
 		margin: 0;
-		font-family: var(--font-display);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-regular, 400);
+		font-size: var(--fs-4xl);
 	}
-
 	/* ── search + tags ── */
 	.lib-search-wrap {
 		position: relative;
-		flex: 1 1 22rem;
-		max-width: 36rem;
+		width: 100%;
 	}
 	.lib-search {
 		display: flex;
@@ -972,12 +976,16 @@
 		color: var(--muted);
 	}
 
+	/* The demo's own controls — NOT part of the design, kept off the header so
+	   the header can be judged as it will ship. */
 	.lib-demo {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		margin-left: auto;
 		flex-wrap: wrap;
+		padding: 0.35rem 0.6rem;
+		border: 1px dashed var(--line-soft);
+		border-radius: var(--r-sm, 3px);
 		font-size: var(--fs-sm);
 	}
 	.lib-demo-tag {
@@ -1067,9 +1075,9 @@
 	.lib-faces--tight {
 		gap: 3px;
 	}
+	/* No rules between teams (Nate 2026-10-09): spacing separates them. */
 	.lib-team {
-		padding: 0.6rem 0 0.8rem;
-		border-bottom: 1px solid var(--line-faint);
+		padding: 0.4rem 0 1.4rem;
 	}
 	.lib-head {
 		display: flex;
@@ -1094,7 +1102,8 @@
 	}
 	.lib-nick {
 		font-family: var(--font-display);
-		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		font-size: var(--fs-2xl);
 	}
 	.lib-meta {
 		font-size: var(--fs-xs);
@@ -1345,6 +1354,14 @@
 			inset: 3.5rem 0 0;
 			border-radius: 0;
 			padding: 0.75rem 1rem 0;
+		}
+		/* Title and close share a row; the search takes the next one whole. */
+		.lib-top {
+			grid-template-columns: 1fr auto;
+		}
+		.lib-search-wrap {
+			grid-column: 1 / -1;
+			grid-row: 2;
 		}
 		.lib-body {
 			display: block;
