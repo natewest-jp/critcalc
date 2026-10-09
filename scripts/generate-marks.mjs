@@ -87,8 +87,9 @@ const MARKS = {
 	copy: 'Copy',
 	image: 'Image',
 
-	// ── The bank's entry rows ───────────────────────────────────────────────
-	rename: 'Pencil',
+	// ── Deleting an entry ───────────────────────────────────────────────────
+	// ↻ 2026-10-09: `rename` (Pencil) retired with SavedNotationsOverlay — the
+	// library renames inline from its ⋯ menu, by word.
 	delete: 'Trash2',
 	/** Settings' backup pair. Two identical-shaped word buttons otherwise —
 	 *  the arrow is the only thing that says which direction the data moves. */
