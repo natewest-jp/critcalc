@@ -194,8 +194,6 @@
 	let teamSelected = $state(true);
 	let rosterHasContent = $state(true);
 	let closedOpen = $state(false);
-	/** Where the hover message sits (demo comparison). */
-	let hintAt = $state<'between' | 'centre'>('between');
 
 	// ── Derived library ──────────────────────────────────────────────────────
 	const ids = (n: string) => slotsFromNotation(n).filter((s) => s !== 'blank');
@@ -550,27 +548,33 @@
 		onclick={run}
 		onkeydown={(e) => activate(e, run)}
 	>
-		<div class="lib-faces">
-			{#each t.slots as id (id)}<SidePortrait {id} size={HEAD_DISC} />{/each}
-			{#each { length: 4 - t.slots.length } as _, i (i)}<SidePortrait
-					id={null}
-					size={HEAD_DISC}
-				/>{/each}
+		<div class="lib-head-left">
+			<div class="lib-faces">
+				{#each t.slots as id (id)}<SidePortrait {id} size={HEAD_DISC} />{/each}
+				{#each { length: 4 - t.slots.length } as _, i (i)}<SidePortrait
+						id={null}
+						size={HEAD_DISC}
+					/>{/each}
+			</div>
+			<div class="lib-head-text">
+				{#if t.nickname}<span class="lib-nick">{t.nickname}</span>{/if}
+				<CompositionChips ids={t.slots} reactions={false} />
+				<span class="lib-meta">
+					{t.rotations.length === 0
+						? 'No rotation yet'
+						: t.rotations.length === 1
+							? '1 rotation'
+							: `${t.rotations.length} rotations`} · {ago(t.touched)}{#if t.boards.length}
+						· on {t.boards.join(', ')}{/if}
+				</span>
+			</div>
 		</div>
-		<div class="lib-head-text">
-			{#if t.nickname}<span class="lib-nick">{t.nickname}</span>{/if}
-			<CompositionChips ids={t.slots} reactions={false} />
-			<span class="lib-meta">
-				{t.rotations.length === 0
-					? 'No rotation yet'
-					: t.rotations.length === 1
-						? '1 rotation'
-						: `${t.rotations.length} rotations`} · {ago(t.touched)}{#if t.boards.length}
-					· on {t.boards.join(', ')}{/if}
-			</span>
+		<!-- A heading needs the left AND middle tracks; its hint sits at its
+		     right end beside ⋯ (empty space on a heading). -->
+		<div class="lib-head-end">
+			<span class="lib-hint">{hint.team()}</span>
+			{@render more(`t:${t.key}`, teamMenu(t), 'More: nickname, delete team')}
 		</div>
-		<div class="lib-mid"><span class="lib-hint">{hint.team()}</span></div>
-		{@render more(`t:${t.key}`, teamMenu(t), 'More: nickname, delete team')}
 	</div>
 {/snippet}
 
@@ -625,7 +629,7 @@
 						onclick={(e) => {
 							e.stopPropagation();
 							syncRotation(r);
-						}}>Sync with roster</button
+						}}><Mark name="link" size={11} /> Sync</button
 					>
 				{/if}
 			{/if}
@@ -697,12 +701,7 @@
 <!-- ══ The page ══ -->
 
 <div class="lib-scrim"></div>
-<div
-	class="lib ctx-dark"
-	class:lib--hint-centre={hintAt === 'centre'}
-	role="dialog"
-	aria-label="Library"
->
+<div class="lib ctx-dark" role="dialog" aria-label="Library">
 	<header class="lib-top">
 		<h2 class="lib-title">Library</h2>
 		<div class="lib-search-wrap">
@@ -777,30 +776,25 @@
 		<label class="lib-demo-check"
 			><input type="checkbox" bind:checked={rosterHasContent} /> Roster has content</label
 		>
-		<span class="lib-demo-tag lib-demo-gap">Hover message</span>
-		<button class="tab" class:active={hintAt === 'between'} onclick={() => (hintAt = 'between')}
-			>Between</button
-		>
-		<button class="tab" class:active={hintAt === 'centre'} onclick={() => (hintAt = 'centre')}
-			>Row centre</button
-		>
 	</div>
 
 	<div class="lib-body">
 		<div class="lib-col lib-scroll">
 			<p class="kicker">Teams</p>
-			{#each shownTeams as t (t.key)}
-				<section class="lib-team">
-					{@render heading(t)}
-					{#if t.rotations.length}
-						<div class="lib-rots">
-							{#each t.rotations as r (r.id)}{@render rotationRow(r)}{/each}
-						</div>
-					{/if}
-				</section>
-			{:else}
-				<p class="lib-empty">No team matches.</p>
-			{/each}
+			<div class="lib-teams">
+				{#each shownTeams as t (t.key)}
+					<section class="lib-team">
+						{@render heading(t)}
+						{#if t.rotations.length}
+							<div class="lib-rots">
+								{#each t.rotations as r (r.id)}{@render rotationRow(r)}{/each}
+							</div>
+						{/if}
+					</section>
+				{:else}
+					<p class="lib-empty">No team matches.</p>
+				{/each}
+			</div>
 		</div>
 		<div class="lib-col lib-scroll">
 			{#if shownClosed.length}
@@ -1010,9 +1004,6 @@
 		letter-spacing: var(--ls-mid, 0.06em);
 		color: var(--accent);
 	}
-	.lib-demo-gap {
-		margin-left: 1rem;
-	}
 	.lib-demo-check {
 		display: flex;
 		align-items: center;
@@ -1024,7 +1015,9 @@
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem);
+		/* Both flexible: a capped side track (minmax(16rem, 26rem)) fills to its
+		   cap BEFORE Teams' fr gets any leftover, and squeezed Teams at ~900. */
+		grid-template-columns: minmax(0, 2.4fr) minmax(16rem, 1fr);
 		gap: 2rem;
 	}
 	.lib-col {
@@ -1064,7 +1057,7 @@
 		grid-area: 1 / 1;
 	}
 	.lib-hint {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-md);
 		color: var(--accent);
 		white-space: nowrap;
 		visibility: hidden;
@@ -1101,13 +1094,26 @@
 	/* Inset like the rotation rows below it (no negative margin: that put the
 	   hover's left padding outside the column and scrolled it sideways). */
 	.lib-head {
-		display: flex;
-		align-items: flex-end;
-		gap: 1rem;
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: subgrid;
+		align-items: center;
 		padding: 0.35rem 0.6rem 0.45rem;
 	}
-	.lib-head > :global(.lib-more) {
-		align-self: center;
+	.lib-head-left {
+		grid-column: 1 / 3;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 0.6rem 1rem;
+		min-width: 0;
+	}
+	.lib-head-end {
+		grid-column: 3;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 8px;
 	}
 	.lib-head:hover:not(:has(.lib-more-btn:hover, .lib-menu:hover)) {
 		background: var(--surface-raised);
@@ -1129,13 +1135,30 @@
 		font-size: var(--fs-xs);
 		color: var(--muted);
 	}
-	/* One column grid per team, shared by its rotations (subgrid), so the
-	   middle zones line up row to row. */
+	/* ⚓ ONE column grid for every row in the Teams column (Nate 2026-10-09:
+	   middles centred against differing left siblings looked sloppy). Teams,
+	   headings, rotation lists and rotations are all SUBGRIDS of it, so:
+	     left   a fixed share; a longer name/notation fades out at its edge;
+	     middle the same track everywhere — chips and hints on one line;
+	     right  as wide as the widest cluster — dates, Sync and ⋯ align. */
+	.lib-teams {
+		display: grid;
+		/* ⚠ The middle's minimum is a LENGTH, not max-content: a heading spans
+		   left + middle, and a content-sized track grows to fit the whole
+		   heading (measured: 540px, the column scrolled sideways at 1100). 11rem
+		   holds the widest chip set and the longest hint. */
+		grid-template-columns: minmax(0, 1.6fr) minmax(11rem, 1fr) max-content;
+		column-gap: 0.75rem;
+	}
+	.lib-team,
+	.lib-rots {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: subgrid;
+	}
 	.lib-rots {
 		margin: 0.4rem 0 0;
-		display: grid;
-		grid-template-columns: minmax(10rem, max-content) minmax(max-content, 1fr) auto;
-		gap: 2px 0;
+		row-gap: 2px;
 	}
 	/* Left · middle · right. The left takes what it needs (the notation
 	   truncates past that), the middle the rest, the right its controls. */
@@ -1170,30 +1193,6 @@
 	.lib-strip:has(.lib-more-btn:hover, .lib-sync:hover, .lib-menu:hover) .lib-cons {
 		visibility: visible;
 	}
-	/* Demo comparison: the hint on the ROW's centre, over whatever is there,
-	   on a backdrop that fades out sideways. The chips stay (overlaid). */
-	.lib--hint-centre .lib-head,
-	.lib--hint-centre .lib-rot {
-		position: relative;
-	}
-	.lib--hint-centre .lib-head .lib-hint,
-	.lib--hint-centre .lib-rot .lib-hint {
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		padding: 0.5rem 3rem;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			var(--surface-raised) 2.5rem,
-			var(--surface-raised) calc(100% - 2.5rem),
-			transparent
-		);
-	}
-	.lib--hint-centre .lib-strip:hover .lib-cons {
-		visibility: visible;
-	}
 	.lib-rot:hover:not(:has(.lib-more-btn:hover, .lib-sync:hover, .lib-menu:hover)) {
 		background: var(--surface-raised);
 	}
@@ -1208,12 +1207,17 @@
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
+	/* Past the left track's edge the text FADES rather than ellipsising — the
+	   track is the limit, and a fade reads as "there is more" without a glyph. */
+	.lib-rot-name,
+	.lib-rot-notation {
+		overflow: hidden;
+		white-space: nowrap;
+		mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+	}
 	.lib-rot-notation {
 		font-size: var(--fs-xs);
 		color: var(--muted);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.lib-rot-side {
 		display: flex;
@@ -1313,13 +1317,44 @@
 		color: var(--muted);
 		padding-bottom: 8px;
 	}
+	/* A narrow side column: the pinned name fades at the card's edge, as the
+	   notation does. */
 	.lib-pin {
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
 		font-size: var(--fs-xs);
 		color: var(--muted);
 		padding-bottom: 8px;
+	}
+
+	/* ── Side-column hints cost no width ──
+	   The side column is narrow, so here the hint is LAID OVER the row's right
+	   end (beside ⋯) on a backdrop in the hover colour that fades out leftward,
+	   instead of reserving a cell it would need only on hover. */
+	.lib-board,
+	.lib-closed-row {
+		position: relative;
+	}
+	.lib-board-head .lib-hint,
+	.lib-closed-row .lib-hint {
+		position: absolute;
+		top: 0.95rem;
+		right: 2.6rem;
+		transform: translateY(-50%);
+		padding: 0.3rem 0.4rem 0.3rem 2rem;
+		background: linear-gradient(90deg, transparent, var(--surface-raised) 1.75rem);
+	}
+	.lib-closed-row .lib-hint {
+		top: 50%;
+		right: 2.3rem;
+	}
+	.lib-closed-row:hover .lib-end--rot .lib-date {
+		visibility: visible;
 	}
 
 	/* ── recently closed ── */
@@ -1414,7 +1449,19 @@
 		gap: 0.5rem;
 	}
 
-	/* ── Narrow: one column (roomy, 47.5rem — $lib/breakpoints.ts) ── */
+	/* ── One column below toolMin (54rem — $lib/breakpoints.ts): under it the
+	   side column squeezes Teams past what a heading needs (measured at 800). */
+	@media (max-width: 54rem) {
+		.lib-body {
+			display: block;
+			overflow-y: auto;
+		}
+		.lib-col {
+			overflow: visible;
+		}
+	}
+
+	/* ── Narrow: phone forms (roomy, 47.5rem — $lib/breakpoints.ts) ── */
 	@media (max-width: 47.5rem) {
 		.lib {
 			inset: 3.5rem 0 0;
@@ -1429,29 +1476,22 @@
 			grid-column: 1 / -1;
 			grid-row: 2;
 		}
-		.lib-body {
-			display: block;
-			overflow-y: auto;
-		}
-		.lib-col {
-			overflow: visible;
-		}
 		/* The heading: portraits and ⋯ on one row, chips + meta beneath. */
-		.lib-head {
-			flex-wrap: wrap;
+		/* Two tracks: content, then ⋯ / the right cluster. */
+		.lib-teams {
+			grid-template-columns: minmax(0, 1fr) max-content;
 		}
-		.lib-head > :global(.lib-more) {
-			margin-left: auto;
+		.lib-head-left {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.6rem;
 		}
-		.lib-head-text {
-			order: 3;
-			flex: 1 1 100%;
+		.lib-head-left {
+			grid-column: 1;
 		}
-		.lib-head .lib-mid {
-			display: none;
-		}
-		.lib-rots {
-			grid-template-columns: minmax(0, 1fr) auto;
+		.lib-head-end {
+			grid-column: 2;
+			align-self: start;
 		}
 		.lib-rot-main {
 			grid-column: 1 / -1;
