@@ -22,7 +22,17 @@
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { Reaction } from '$lib/types/ability';
 
-	let { ids }: { ids: readonly (string | null)[] } = $props();
+	let {
+		ids,
+		reactions = true
+	}: {
+		ids: readonly (string | null)[];
+		/** ⚓ Off in the library heading (Nate 2026-10-09): an Overvape team makes
+		 *  six pairs, and past a few chips they stop being read. There a team is
+		 *  recognised by its portraits and nickname and FOUND by a reaction tag in
+		 *  the search. The board's rows decide their own form (step 5). */
+		reactions?: boolean;
+	} = $props();
 
 	const members = $derived(
 		ids
@@ -39,6 +49,7 @@
 
 	type Pair = { a: string; b: string; label: string; title: string };
 	const pairs = $derived.by(() => {
+		if (!reactions) return [];
 		// A plain object, not a Map: a pure fold, nothing here is state.
 		const byPair: Record<string, Reaction[]> = {};
 		for (const r of teamReactions(members)) {

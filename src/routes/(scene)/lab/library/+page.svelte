@@ -194,6 +194,8 @@
 	let teamSelected = $state(true);
 	let rosterHasContent = $state(true);
 	let closedOpen = $state(false);
+	/** Where the hover message sits (demo comparison). */
+	let hintAt = $state<'between' | 'centre'>('between');
 
 	// ── Derived library ──────────────────────────────────────────────────────
 	const ids = (n: string) => slotsFromNotation(n).filter((s) => s !== 'blank');
@@ -459,7 +461,6 @@
 
 	const rotationMenu = (r: Rotation): MenuItem[] => [
 		{ label: 'Rename', run: () => say(`Would rename “${r.name}”`) },
-		{ label: 'Duplicate', run: () => say(`Would duplicate “${r.name}”`) },
 		{ label: 'Copy share link', run: () => say('Would copy a share link') },
 		{ label: otherTool(), run: () => say(`Would ${otherTool().toLowerCase()}`) },
 		{ label: 'Delete', danger: true, run: () => deleteRotation(r) }
@@ -558,7 +559,7 @@
 		</div>
 		<div class="lib-head-text">
 			{#if t.nickname}<span class="lib-nick">{t.nickname}</span>{/if}
-			<CompositionChips ids={t.slots} />
+			<CompositionChips ids={t.slots} reactions={false} />
 			<span class="lib-meta">
 				{t.rotations.length === 0
 					? 'No rotation yet'
@@ -568,10 +569,8 @@
 					· on {t.boards.join(', ')}{/if}
 			</span>
 		</div>
-		<span class="lib-end">
-			<span class="lib-hint">{hint.team()}</span>
-			{@render more(`t:${t.key}`, teamMenu(t), 'More: nickname, delete team')}
-		</span>
+		<div class="lib-mid"><span class="lib-hint">{hint.team()}</span></div>
+		{@render more(`t:${t.key}`, teamMenu(t), 'More: nickname, delete team')}
 	</div>
 {/snippet}
 
@@ -591,20 +590,29 @@
 			<span class="lib-rot-name">{r.name}</span>
 			<code class="lib-rot-notation">{r.notation}</code>
 		</div>
+		<!-- The middle zone: the constellation chips at rest, the click's hint on
+		     hover. Both live in one grid cell, so the zone is always wide enough
+		     for either and the hint never lands on other content. -->
+		<div class="lib-mid">
+			<span class="lib-cons">
+				{#each raised as [id, c] (id)}
+					{@const own = ownedCon(id)}
+					{@const short = own !== undefined && (own === null || own < c)}
+					<span
+						class="lib-con"
+						class:lib-con--short={short}
+						title={short
+							? own === null
+								? `You don't own ${nameOf(id)}`
+								: `This rotation uses C${c} · you own C${own}`
+							: ''}>{first(id)} C{c}</span
+					>
+				{/each}
+			</span>
+			<span class="lib-hint">{hint.rotation()}</span>
+		</div>
 		<div class="lib-rot-side">
-			{#each raised as [id, c] (id)}
-				{@const own = ownedCon(id)}
-				{@const short = own !== undefined && (own === null || own < c)}
-				<span
-					class="lib-con"
-					class:lib-con--short={short}
-					title={short
-						? own === null
-							? `You don't own ${nameOf(id)}`
-							: `This rotation uses C${c} · you own C${own}`
-						: ''}>{first(id)} C{c}</span
-				>
-			{/each}
+			<span class="lib-date">{ago(r.touched)}</span>
 			{#if rosterHasContent}
 				{#if r.synced}
 					<span class="lib-synced" title="Follows your roster's constellations"
@@ -617,15 +625,11 @@
 						onclick={(e) => {
 							e.stopPropagation();
 							syncRotation(r);
-						}}>Sync</button
+						}}>Sync with roster</button
 					>
 				{/if}
 			{/if}
-			<span class="lib-end lib-end--rot">
-				<span class="lib-date">{ago(r.touched)}</span>
-				<span class="lib-hint">{hint.rotation()}</span>
-			</span>
-			{@render more(`r:${r.id}`, rotationMenu(r), 'More: rename, duplicate, share, delete')}
+			{@render more(`r:${r.id}`, rotationMenu(r), 'More: rename, share, delete')}
 		</div>
 	</div>
 {/snippet}
@@ -693,7 +697,12 @@
 <!-- ══ The page ══ -->
 
 <div class="lib-scrim"></div>
-<div class="lib ctx-dark" role="dialog" aria-label="Library">
+<div
+	class="lib ctx-dark"
+	class:lib--hint-centre={hintAt === 'centre'}
+	role="dialog"
+	aria-label="Library"
+>
 	<header class="lib-top">
 		<h2 class="lib-title">Library</h2>
 		<div class="lib-search-wrap">
@@ -767,6 +776,13 @@
 		{/if}
 		<label class="lib-demo-check"
 			><input type="checkbox" bind:checked={rosterHasContent} /> Roster has content</label
+		>
+		<span class="lib-demo-tag lib-demo-gap">Hover message</span>
+		<button class="tab" class:active={hintAt === 'between'} onclick={() => (hintAt = 'between')}
+			>Between</button
+		>
+		<button class="tab" class:active={hintAt === 'centre'} onclick={() => (hintAt = 'centre')}
+			>Row centre</button
 		>
 	</div>
 
@@ -994,6 +1010,9 @@
 		letter-spacing: var(--ls-mid, 0.06em);
 		color: var(--accent);
 	}
+	.lib-demo-gap {
+		margin-left: 1rem;
+	}
 	.lib-demo-check {
 		display: flex;
 		align-items: center;
@@ -1079,12 +1098,16 @@
 	.lib-team {
 		padding: 0.4rem 0 1.4rem;
 	}
+	/* Inset like the rotation rows below it (no negative margin: that put the
+	   hover's left padding outside the column and scrolled it sideways). */
 	.lib-head {
 		display: flex;
 		align-items: flex-end;
 		gap: 1rem;
 		padding: 0.35rem 0.6rem 0.45rem;
-		margin: 0 -0.6rem;
+	}
+	.lib-head > :global(.lib-more) {
+		align-self: center;
 	}
 	.lib-head:hover:not(:has(.lib-more-btn:hover, .lib-menu:hover)) {
 		background: var(--surface-raised);
@@ -1093,12 +1116,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		flex: 1 1 14rem;
+		flex: 0 1 auto;
 		min-width: 0;
 		padding-bottom: 2px;
-	}
-	.lib-head > .lib-end {
-		align-self: center;
 	}
 	.lib-nick {
 		font-family: var(--font-display);
@@ -1109,20 +1129,70 @@
 		font-size: var(--fs-xs);
 		color: var(--muted);
 	}
+	/* One column grid per team, shared by its rotations (subgrid), so the
+	   middle zones line up row to row. */
 	.lib-rots {
-		list-style: none;
 		margin: 0.4rem 0 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
+		display: grid;
+		grid-template-columns: minmax(10rem, max-content) minmax(max-content, 1fr) auto;
+		gap: 2px 0;
 	}
+	/* Left · middle · right. The left takes what it needs (the notation
+	   truncates past that), the middle the rest, the right its controls. */
 	.lib-rot {
-		display: flex;
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
 		align-items: center;
-		gap: 0.75rem;
+		column-gap: 0.75rem;
 		padding: 0.45rem 0.6rem;
 		background: var(--surface-well);
+	}
+	.lib-mid {
+		flex: 1;
+		align-self: stretch;
+		display: grid;
+		place-items: center;
+	}
+	.lib-mid > * {
+		grid-area: 1 / 1;
+	}
+	.lib-cons {
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+	.lib-strip:hover .lib-cons,
+	.lib-strip:focus-visible .lib-cons {
+		visibility: hidden;
+	}
+	.lib-strip:has(.lib-more-btn:hover, .lib-sync:hover, .lib-menu:hover) .lib-cons {
+		visibility: visible;
+	}
+	/* Demo comparison: the hint on the ROW's centre, over whatever is there,
+	   on a backdrop that fades out sideways. The chips stay (overlaid). */
+	.lib--hint-centre .lib-head,
+	.lib--hint-centre .lib-rot {
+		position: relative;
+	}
+	.lib--hint-centre .lib-head .lib-hint,
+	.lib--hint-centre .lib-rot .lib-hint {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		padding: 0.5rem 3rem;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			var(--surface-raised) 2.5rem,
+			var(--surface-raised) calc(100% - 2.5rem),
+			transparent
+		);
+	}
+	.lib--hint-centre .lib-strip:hover .lib-cons {
+		visibility: visible;
 	}
 	.lib-rot:hover:not(:has(.lib-more-btn:hover, .lib-sync:hover, .lib-menu:hover)) {
 		background: var(--surface-raised);
@@ -1148,8 +1218,7 @@
 	.lib-rot-side {
 		display: flex;
 		align-items: center;
-		gap: 6px;
-		flex-wrap: wrap;
+		gap: 8px;
 		justify-content: flex-end;
 	}
 	.lib-con {
@@ -1173,9 +1242,6 @@
 	.lib-date {
 		font-size: var(--fs-xs);
 		color: var(--muted);
-	}
-	.lib-rot .lib-end--rot {
-		min-width: 8.5rem;
 	}
 
 	/* ── ⋯ ── */
@@ -1370,14 +1436,28 @@
 		.lib-col {
 			overflow: visible;
 		}
-		.lib-rot {
+		/* The heading: portraits and ⋯ on one row, chips + meta beneath. */
+		.lib-head {
 			flex-wrap: wrap;
 		}
-		.lib-rot-main {
-			flex-basis: 100%;
+		.lib-head > :global(.lib-more) {
+			margin-left: auto;
 		}
-		.lib-rot-side {
-			flex: 1;
+		.lib-head-text {
+			order: 3;
+			flex: 1 1 100%;
+		}
+		.lib-head .lib-mid {
+			display: none;
+		}
+		.lib-rots {
+			grid-template-columns: minmax(0, 1fr) auto;
+		}
+		.lib-rot-main {
+			grid-column: 1 / -1;
+		}
+		.lib-mid {
+			justify-items: start;
 		}
 		.lib-hint {
 			display: none;
