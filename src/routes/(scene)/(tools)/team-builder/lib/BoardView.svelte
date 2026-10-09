@@ -47,11 +47,12 @@
 	import Fingerprint from './Fingerprint.svelte';
 	import CheckChip from './CheckChip.svelte';
 	import BossDetail from './BossDetail.svelte';
+	import AbyssOpponents from './AbyssOpponents.svelte';
 
 	/** 🎛️ The board's disc (the art rises above it; see `SIDE_ART_PER_DISC`). */
-	const BOARD_PORTRAIT = 64;
+	const BOARD_PORTRAIT = 56;
 	/** 🎛️ The boss avatar — a little larger than a member, as in the game. */
-	const BOSS_DISC = 72;
+	const BOSS_DISC = 88;
 
 	export type SlotRef = { teamId: string; index: number };
 
@@ -114,6 +115,9 @@
 			? b.checks.map((c) => evaluateCheck(c, ids, conOf).verdict)
 			: (undefined as CheckVerdict[] | undefined);
 
+	/** The Abyss half whose opponents are open. */
+	let opponents = $state<0 | 1 | null>(null);
+
 	let detail = $state<{
 		battlefield: Battlefield;
 		season: Season;
@@ -150,6 +154,9 @@
 	{:else if abyss}
 		<!-- The blessing's own banner (2:1), faded into the night at its edges, its
 		     name and text laid over its foot. -->
+		<!-- The blessing's own art is a 640×320 banner — shown at no more than
+		     half that, beside its text, so a 2× screen gets every source pixel
+		     (Nate 2026-10-09: full width stretched it 2.5× and blurred it). -->
 		<header class="bv-abyss">
 			<img class="bv-abyss-art" src={blessingImage(abyss.icon)} alt="" />
 			<div class="bv-abyss-text">
@@ -179,6 +186,11 @@
 							: `Team ${t + 1}`}
 				</p>
 				<span class="bv-team-actions">
+					{#if half && abyss}
+						<button class="btn btn--sm" onclick={() => (opponents = t as 0 | 1)}
+							><Mark name="search" size={12} /> Opponents</button
+						>
+					{/if}
 					<button
 						class="btn btn--sm"
 						disabled={!filled}
@@ -195,9 +207,16 @@
 					{/if}
 				</span>
 			</header>
+			{#if field}
+				{@render bossName(inLang(BOSSES[field.boss].name))}
+			{:else if half}
+				<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>
+			{/if}
 
-			{#if field && season}
-				<div class="bv-field">
+			<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
+			     vertical rule, then the stack — checks, the lineup, the fingerprint. -->
+			<div class="bv-body" class:bv-body--field={!!field}>
+				{#if field && season}
 					<button
 						class="bv-boss"
 						style:--boss="{BOSS_DISC}px"
@@ -205,89 +224,80 @@
 						onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
 					>
 						<img src={bossImage(field.boss, 'icon')} alt="" />
-						<span class="bv-boss-zoom" aria-hidden="true"><Mark name="search" size={11} /></span>
+						<span class="bv-boss-zoom" aria-hidden="true"><Mark name="search" size={12} /></span>
 					</button>
-					<div class="bv-field-text">
-						{@render bossName(inLang(BOSSES[field.boss].name))}
-						{#if field.checks.length}
-							<div class="bv-checks">
-								{#each field.checks as c, i (i)}<CheckChip
-										check={c}
-										verdict={verdicts?.[i]}
-									/>{/each}
+					<span class="bv-vrule" aria-hidden="true"></span>
+				{/if}
+				<div class="bv-stack">
+					{#if field?.checks.length}
+						<div class="bv-checks">
+							{#each field.checks as c, i (i)}<CheckChip check={c} verdict={verdicts?.[i]} />{/each}
+						</div>
+					{/if}
+					<div class="bv-lineup-row">
+						<div class="bv-slots">
+							{#each team.slots as id, i (i)}
+								{@const sel = isSelected(team.id, i)}
+								{@const entry = id ? getCharacterIndexEntry(id) : undefined}
+								<div class="bv-slot-wrap">
+									<button
+										class="bv-slot"
+										aria-pressed={sel}
+										aria-label={entry
+											? `${entry.displayName}, team ${t + 1} slot ${i + 1}`
+											: `Empty, team ${t + 1} slot ${i + 1}`}
+										onclick={() => onSelect(sel ? null : { teamId: team.id, index: i })}
+									>
+										<SidePortrait
+											{id}
+											size={BOARD_PORTRAIT}
+											con={id ? facts.conOf(id) : undefined}
+											ownedCon={id ? ownedConOf(id) : undefined}
+											selected={sel}
+										/>
+									</button>
+									{#if id}
+										<button
+											class="bv-slot-clear"
+											onclick={() => onEmpty({ teamId: team.id, index: i })}
+											aria-label="Take {entry?.displayName ?? id} off team {t + 1}"
+											><Mark name="close" size={10} /></button
+										>
+									{/if}
+									<span class="bv-slot-name">{entry?.displayName ?? ''}</span>
+								</div>
+							{/each}
+						</div>
+						{#if filled}
+							<div class="bv-side">
+								<CompositionChips ids={team.slots} reactions={false} />
+								<!-- ⚓ A team's rotations are DERIVED from the library by its set;
+								     a pin names the one you would play here (§10.2). -->
+								<span class="bv-rotations">
+									<Mark name="pin" size={12} />
+									{#if rotations.length === 0}
+										<span>No saved rotation</span>
+									{:else}
+										<select
+											class="bv-select"
+											aria-label="Pinned rotation for team {t + 1}"
+											value={pin?.id ?? ''}
+											onchange={(e) => onPin(team.id, e.currentTarget.value || null)}
+										>
+											<option value=""
+												>{rotations.length === 1
+													? '1 rotation, none pinned'
+													: `${rotations.length} rotations, none pinned`}</option
+											>
+											{#each rotations as r (r.id)}<option value={r.id}>{r.name}</option>{/each}
+										</select>
+									{/if}
+								</span>
 							</div>
 						{/if}
 					</div>
+					{#if facts.fingerprint}<Fingerprint clusters={facts.fingerprint} />{/if}
 				</div>
-				<hr class="bv-rule" />
-			{:else if half}
-				<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>
-				<hr class="bv-rule" />
-			{/if}
-
-			<div class="bv-row">
-				<div class="bv-slots">
-					{#each team.slots as id, i (i)}
-						{@const sel = isSelected(team.id, i)}
-						{@const entry = id ? getCharacterIndexEntry(id) : undefined}
-						<div class="bv-slot-wrap">
-							<button
-								class="bv-slot"
-								aria-pressed={sel}
-								aria-label={entry
-									? `${entry.displayName}, team ${t + 1} slot ${i + 1}`
-									: `Empty, team ${t + 1} slot ${i + 1}`}
-								onclick={() => onSelect(sel ? null : { teamId: team.id, index: i })}
-							>
-								<SidePortrait
-									{id}
-									size={BOARD_PORTRAIT}
-									con={id ? facts.conOf(id) : undefined}
-									ownedCon={id ? ownedConOf(id) : undefined}
-									selected={sel}
-								/>
-							</button>
-							{#if id}
-								<button
-									class="bv-slot-clear"
-									onclick={() => onEmpty({ teamId: team.id, index: i })}
-									aria-label="Take {entry?.displayName ?? id} off team {t + 1}"
-									><Mark name="close" size={10} /></button
-								>
-							{/if}
-							<span class="bv-slot-name">{entry?.displayName ?? ''}</span>
-						</div>
-					{/each}
-				</div>
-
-				{#if filled}
-					<div class="bv-meta">
-						<CompositionChips ids={team.slots} reactions={false} />
-						{#if facts.fingerprint}<Fingerprint clusters={facts.fingerprint} />{/if}
-						<!-- ⚓ A team's rotations are DERIVED from the library by its set;
-						     a pin names the one you would play here (§10.2). -->
-						<span class="bv-rotations">
-							<Mark name="pin" size={12} />
-							{#if rotations.length === 0}
-								<span>No saved rotation</span>
-							{:else}
-								<select
-									class="bv-select"
-									aria-label="Pinned rotation for team {t + 1}"
-									value={pin?.id ?? ''}
-									onchange={(e) => onPin(team.id, e.currentTarget.value || null)}
-								>
-									<option value=""
-										>{rotations.length === 1
-											? '1 rotation, none pinned'
-											: `${rotations.length} rotations, none pinned`}</option
-									>
-									{#each rotations as r (r.id)}<option value={r.id}>{r.name}</option>{/each}
-								</select>
-							{/if}
-						</span>
-					</div>
-				{/if}
 			</div>
 		</section>
 	{/each}
@@ -295,6 +305,10 @@
 		<button class="btn bv-add-team" onclick={onAddTeam}><Mark name="plus" /> Add team</button>
 	{/if}
 </div>
+
+{#if opponents !== null && abyss}
+	<AbyssOpponents cycle={abyss} half={opponents} onClose={() => (opponents = null)} />
+{/if}
 
 {#if detail}
 	<BossDetail
@@ -340,32 +354,26 @@
 		cursor: pointer;
 	}
 
-	/* The Abyss banner: the art at its own 2:1, faded at the sides and the
-	   foot so the text sits on the night it melts into. */
+	/* The Abyss banner at its own crisp size beside its text. */
 	.bv-abyss {
-		position: relative;
-		display: grid;
-		border-radius: var(--r-sm);
-		overflow: hidden;
-	}
-	.bv-abyss > * {
-		grid-area: 1 / 1;
+		display: flex;
+		align-items: center;
+		gap: 1.1rem;
 	}
 	.bv-abyss-art {
-		width: 100%;
-		max-height: 14rem;
+		flex: none;
+		width: min(18rem, 40%);
+		aspect-ratio: 2;
 		object-fit: cover;
-		mask-image: linear-gradient(to bottom, #000 35%, transparent 100%);
+		border-radius: var(--r-sm);
 	}
 	.bv-abyss-text {
-		align-self: end;
 		display: flex;
 		flex-direction: column;
-		gap: 0.3rem;
-		padding: 1rem 1.1rem 0.6rem;
+		gap: 0.35rem;
+		min-width: 0;
 	}
 	.bv-abyss-blessing {
-		max-width: 46rem;
 		font-size: var(--fs-lg);
 		line-height: 1.45;
 		color: var(--text);
@@ -373,8 +381,8 @@
 
 	/* ── A team: a glass card (an apparatus — "glass touches") ── */
 	.bv-team {
-		gap: 0.85rem;
-		padding: 0.9rem 1.1rem 0.6rem;
+		gap: 0.6rem;
+		padding: 0.9rem 1.1rem 1rem;
 	}
 	.bv-team-head {
 		display: flex;
@@ -391,22 +399,13 @@
 		align-items: center;
 		gap: 4px;
 	}
-
-	/* The battlefield: the boss, its name as the game writes it, its checks. */
-	.bv-field {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-	.bv-field-text {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		min-width: 0;
-	}
+	/* The battlefield's name, as the game writes it: the title, then the
+	   boss's family. */
 	.bv-boss-name {
 		display: flex;
-		flex-direction: column;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.2rem 0.6rem;
 	}
 	.bv-boss-title {
 		font-family: var(--font-display);
@@ -415,13 +414,8 @@
 		line-height: 1.2;
 	}
 	.bv-boss-family {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
-	}
-	.bv-checks {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
 	}
 	.bv-half {
 		margin: 0;
@@ -429,11 +423,43 @@
 		line-height: 1.45;
 		color: var(--text);
 	}
-	.bv-rule {
-		margin: 0;
-		border: none;
-		height: 1px;
+	.bv-body {
+		display: flex;
+		align-items: stretch;
+		gap: 1.1rem;
+	}
+	.bv-body--field {
+		padding-top: 0.35rem;
+	}
+	.bv-vrule {
+		flex: none;
+		width: 1px;
 		background: var(--line-faint);
+	}
+	.bv-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		min-width: 0;
+		flex: 1;
+	}
+	.bv-checks {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.bv-lineup-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 0.6rem 1.25rem;
+	}
+	.bv-side {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		min-width: 0;
+		padding-bottom: 1.35rem;
 	}
 
 	/* The boss: a circle-cut avatar on the members' ring, the game's magnifier
@@ -472,13 +498,7 @@
 		color: var(--text);
 	}
 
-	/* ── The team: portraits, then what the team is ── */
-	.bv-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem 1.5rem;
-		align-items: center;
-	}
+	/* ── The lineup ── */
 	.bv-slots {
 		display: flex;
 		gap: 0.6rem;
@@ -536,12 +556,6 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		min-height: 1.2em;
-	}
-	.bv-meta {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		min-width: 0;
 	}
 	.bv-rotations {
 		display: flex;

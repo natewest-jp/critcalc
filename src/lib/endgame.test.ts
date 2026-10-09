@@ -7,6 +7,7 @@ import {
 	SEASONS,
 	blessingImage,
 	currentAbyss,
+	monsterImage,
 	SPRITES,
 	bossImage,
 	bossRuns,
@@ -101,6 +102,12 @@ describe('the Abyss', () => {
 				c.halves.map((h) => !!h.en),
 				c.start
 			).toEqual([true, true]);
+			expect(c.chambers, c.start).toHaveLength(3);
+			for (const ch of c.chambers)
+				for (const m of ch.halves.flat()) {
+					expect(m.name.en, m.icon).toBeTruthy();
+					expect(existsSync(join(STATIC, monsterImage(m.icon))), m.icon).toBe(true);
+				}
 			expect(existsSync(join(STATIC, blessingImage(c.icon))), c.icon).toBe(true);
 		}
 	});

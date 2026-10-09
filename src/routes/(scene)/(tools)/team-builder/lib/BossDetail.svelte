@@ -72,50 +72,53 @@
 		><Mark name="close" size={16} /></button
 	>
 
-	<!-- The art on a stage of its own: a soft pool of the night behind it, so
-	     the boss stands IN something rather than on a card. -->
-	<div class="bd-stage">
-		<img src={bossImage(battlefield.boss, 'art')} alt="" />
-	</div>
-
-	<div class="bd-body">
-		<header class="bd-head">
+	<!-- THE HERO (Nate 2026-10-09: a square art column was too much screen for
+	     one image). The boss stands at the header's right, fading into the
+	     panel; what you need first sits beside it on the left. -->
+	<header class="bd-hero">
+		<img class="bd-art" src={bossImage(battlefield.boss, 'art')} alt="" />
+		<div class="bd-hero-text">
 			<p class="kicker bd-kicker">Battlefield {index + 1} · Stygian Onslaught {season.version}</p>
 			<h2 class="bd-title">{cut > 0 ? fullName.slice(cut + 2) : fullName}</h2>
 			{#if cut > 0}<p class="bd-family">{fullName.slice(0, cut)}</p>{/if}
-		</header>
 
-		<!-- THE readout: one paper card ("paper answers"). -->
-		<div class="panel panel--paper bd-hp">
-			<div>
-				<span class="bd-hp-label">Fearless HP</span>
-				<span class="bd-hp-value">{hp(battlefield.hp.fearless)}</span>
+			<!-- THE readout: one paper card ("paper answers"). -->
+			<div class="panel panel--paper bd-hp">
+				<div>
+					<span class="bd-hp-label">Fearless HP</span>
+					<span class="bd-hp-value">{hp(battlefield.hp.fearless)}</span>
+				</div>
+				<div>
+					<span class="bd-hp-label">Dire HP</span>
+					<span class="bd-hp-value">{hp(battlefield.hp.dire)}</span>
+				</div>
 			</div>
-			<div>
-				<span class="bd-hp-label">Dire HP</span>
-				<span class="bd-hp-value">{hp(battlefield.hp.dire)}</span>
-			</div>
+
+			{#if battlefield.checks.length}
+				<div class="bd-checks">
+					{#each battlefield.checks as c, i (i)}<CheckChip
+							check={c}
+							verdict={verdicts?.[i]}
+						/>{/each}
+				</div>
+			{/if}
+
+			<ul class="bd-res" aria-label="Elemental RES">
+				{#each RES_ORDER as el (el)}
+					<li class:bd-res--high={boss.res[el] > 10}>
+						{#if el !== 'physical' && elementIcon(el)}
+							<img src={elementIcon(el)} alt={el} />
+						{:else}
+							<span class="bd-res-phys">Phys</span>
+						{/if}
+						<span>{boss.res[el]}%</span>
+					</li>
+				{/each}
+			</ul>
 		</div>
+	</header>
 
-		{#if battlefield.checks.length}
-			<div class="bd-checks">
-				{#each battlefield.checks as c, i (i)}<CheckChip check={c} verdict={verdicts?.[i]} />{/each}
-			</div>
-		{/if}
-
-		<ul class="bd-res" aria-label="Elemental RES">
-			{#each RES_ORDER as el (el)}
-				<li class:bd-res--high={boss.res[el] > 10}>
-					{#if el !== 'physical' && elementIcon(el)}
-						<img src={elementIcon(el)} alt={el} />
-					{:else}
-						<span class="bd-res-phys">Phys</span>
-					{/if}
-					<span>{boss.res[el]}%</span>
-				</li>
-			{/each}
-		</ul>
-
+	<div class="bd-body">
 		{#each boss.mechanics as m, i (i)}
 			<section class="bd-mech">
 				<h3>{inLang(m.name)}</h3>
@@ -156,54 +159,59 @@
 		inset: 0;
 		margin: auto;
 		height: fit-content;
-		width: min(60rem, calc(100vw - 2rem));
+		width: min(52rem, calc(100vw - 2rem));
 		max-height: calc(100svh - 5rem);
-		display: grid;
-		grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+		display: flex;
+		flex-direction: column;
 		border-radius: var(--r-lg, 6px);
 		background: var(--surface);
 		color: var(--text);
-		overflow: hidden;
+		overflow: hidden auto;
 	}
 	.bd-close {
 		position: absolute;
 		top: 0.75rem;
 		right: 0.75rem;
-		z-index: 1;
+		z-index: 2;
 	}
-	.bd-stage {
+
+	/* ── The hero: text on the left, the boss standing at the right ── */
+	.bd-hero {
+		position: relative;
 		display: grid;
-		place-items: center;
-		padding: 1.5rem;
+		grid-template-columns: minmax(0, 1fr) 17rem;
 		background: radial-gradient(
-			circle at 50% 45%,
+			ellipse 22rem 20rem at 85% 55%,
 			var(--surface-raised) 0%,
-			var(--surface-well) 70%
+			transparent 70%
 		);
 	}
-	.bd-stage img {
-		width: 100%;
-		max-width: 20rem;
+	.bd-art {
+		grid-column: 2;
+		grid-row: 1;
+		align-self: end;
+		width: 17rem;
 		height: auto;
-		display: block;
+		/* Fading into the panel at its foot and its inner edge. */
+		mask-image:
+			linear-gradient(to top, transparent 0%, #000 22%),
+			linear-gradient(to right, transparent 0%, #000 18%);
+		-webkit-mask-composite: source-in; /* WebKit's spelling of intersect */
+		mask-composite: intersect;
 	}
-	.bd-body {
+	.bd-hero-text {
+		grid-column: 1;
+		grid-row: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: 1.4rem 0 1.2rem 1.6rem;
 		min-width: 0;
-		overflow-y: auto;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		padding: 1.4rem 1.6rem 1.5rem;
-	}
-	.bd-head {
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-		padding-right: 2.5rem;
+		position: relative;
+		z-index: 1;
 	}
 	.bd-kicker {
 		font-size: var(--fs-sm);
-		margin-bottom: 0.35rem;
 	}
 	.bd-title {
 		margin: 0;
@@ -211,13 +219,14 @@
 		line-height: 1.15;
 	}
 	.bd-family {
-		margin: 0;
+		margin: -0.5rem 0 0;
 		font-size: var(--fs-lg);
 		color: var(--muted);
 	}
 	.bd-hp {
 		grid-template-columns: 1fr 1fr;
-		padding: 0.8rem 1.1rem;
+		padding: 0.75rem 1.1rem;
+		max-width: 26rem;
 	}
 	.bd-hp > div {
 		display: flex;
@@ -268,6 +277,15 @@
 	.bd-res-phys {
 		font-size: var(--fs-xs);
 	}
+
+	/* ── The body: the mechanics, full width, then the description ── */
+	.bd-body {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		padding: 1.1rem 1.6rem 1.5rem;
+		border-top: 1px solid var(--line-faint);
+	}
 	.bd-mech {
 		display: flex;
 		flex-direction: column;
@@ -281,6 +299,7 @@
 		margin: 0;
 		font-size: var(--fs-lg);
 		line-height: 1.55;
+		max-width: 46rem;
 	}
 	.bd-mech strong {
 		font-weight: var(--fw-semibold);
@@ -298,23 +317,26 @@
 		line-height: 1.55;
 		font-style: italic;
 		color: var(--muted);
+		max-width: 46rem;
 	}
 	.bd-runs {
 		margin: 0;
 		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
-	/* A phone: the stage above, shorter. */
+	/* A phone: the boss behind the header's top right, smaller and quieter. */
 	@media (max-width: 47.5rem) {
-		.bd {
+		.bd-hero {
 			grid-template-columns: minmax(0, 1fr);
-			overflow-y: auto;
 		}
-		.bd-stage img {
-			max-width: 12rem;
+		.bd-art {
+			grid-column: 1;
+			justify-self: end;
+			align-self: start;
+			width: 9rem;
 		}
-		.bd-body {
-			overflow: visible;
+		.bd-hero-text {
+			padding-right: 1.6rem;
 		}
 	}
 </style>

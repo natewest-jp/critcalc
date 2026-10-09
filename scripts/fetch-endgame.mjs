@@ -37,6 +37,7 @@ const DATES = join(ROOT, 'src/lib/data/endgame/season-dates.json');
 const OUT = join(ROOT, 'src/lib/data/endgame/stygian.json');
 const ABYSS_OUT = join(ROOT, 'src/lib/data/endgame/abyss.json');
 const ABYSS_ICON_DIR = join(ROOT, 'assets-src/endgame/abyss');
+const MONSTER_ICON_DIR = join(ROOT, 'assets-src/endgame/monsters');
 const ICON_DIR = join(ROOT, 'assets-src/endgame/stygian-icons');
 const SPRITE_DIR = join(ROOT, 'assets-src/endgame/sprites');
 
@@ -163,6 +164,10 @@ async function abyss(table) {
 		// ⚓ Floor 12's two half blessings (Nate 2026-10-09: which team goes in
 		// which half is the planning question) — team 1 = first half.
 		const halves = [{}, {}];
+		// ⚓ The opponents of each half, per chamber (Nate 2026-10-09 — the
+		// game's "Opponent details", split by half). Names in every language;
+		// icon, level and HP from the record.
+		const chambers = [];
 		let icon;
 		for (const [ours, theirs] of Object.entries(LOCALES)) {
 			const c = await get(TOWER_URL(version, theirs, id));
@@ -175,9 +180,31 @@ async function abyss(table) {
 				const t = floor?.[k]?.description;
 				if (t?.trim()) halves[h][ours] = clean(t);
 			});
+			(floor?.chambers ?? []).forEach((ch, i) => {
+				chambers[i] ??= { level: ch.monsterLevel, halves: [[], []] };
+				['firstHalfMonsters', 'secondHalfMonsters'].forEach((k, h) => {
+					(ch[k] ?? []).forEach((m, j) => {
+						const row = (chambers[i].halves[h][j] ??= {
+							icon: m.icon,
+							hp: Math.round(m.hp ?? 0),
+							name: {}
+						});
+						if (m.name?.trim()) row.name[ours] = clean(m.name);
+					});
+				});
+			});
 		}
 		const end = starts[i + 1] ?? addMonths(start, 1);
-		cycles.push({ start, end, icon, ...blessing, halves });
+		cycles.push({ start, end, icon, ...blessing, halves, chambers });
+		await mkdir(MONSTER_ICON_DIR, { recursive: true });
+		for (const ch of chambers)
+			for (const m of ch.halves.flat()) {
+				const to = join(MONSTER_ICON_DIR, `${m.icon}.png`);
+				if (await exists(to)) continue;
+				const buf = await get(MONSTER_ICON_URL(m.icon), 'buffer');
+				if (buf) await writeFile(to, buf);
+				else console.warn(`  ! no icon for ${m.name.en} (${m.icon})`);
+			}
 		const to = join(ABYSS_ICON_DIR, `${icon}.png`);
 		if (icon && !(await exists(to))) {
 			const buf = await get(BLESSING_ICON_URL(icon), 'buffer');

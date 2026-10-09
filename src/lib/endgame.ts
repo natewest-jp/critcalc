@@ -154,7 +154,13 @@ export type AbyssCycle = {
 	/** Floor 12's first- and second-half blessings — team 1 fights the first
 	 *  half, team 2 the second. */
 	halves: [Localized, Localized];
+	/** Floor 12's three chambers: each half's opponents, in the game's order. */
+	chambers: { level: number; halves: [AbyssOpponent[], AbyssOpponent[]] }[];
 };
+
+export type AbyssOpponent = { name: Localized; icon: string; hp: number };
+
+export const monsterImage = (icon: string) => `/assets/endgame/monsters/${icon}.webp`;
 
 export const ABYSS_CYCLES = abyssData.cycles as AbyssCycle[];
 

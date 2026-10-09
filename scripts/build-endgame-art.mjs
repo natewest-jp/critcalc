@@ -15,6 +15,7 @@
  *   stygian-icons/{slug}.png   → stygian/{slug}-icon.webp  the circle avatar
  *   sprites/{id}.png           → sprites/{id}.webp         a check's icon
  *   abyss/{icon}.png           → abyss/{icon}.webp         an Abyss blessing's banner
+ *   monsters/{icon}.png        → monsters/{icon}.webp      an Abyss opponent
  *
  * ⚠️ `/assets/*` is cached forever (immutable, add-only): a CHANGED image must
  * ship under a new name (`-v2`), never overwrite one already published.
@@ -38,7 +39,10 @@ const DATA = join(ROOT, 'src/lib/data/endgame/stygian.json');
  *  640 at q78 is 3.5 MB where 768 at q82 was 5.1 (measured 2026-10-09). */
 const ART_PX = 640;
 const ART_QUALITY = 78;
-const ICON_PX = 128;
+/** 🎛️ The board's boss disc is 88 (Nate 2026-10-09: larger, as the game's). */
+const ICON_PX = 176;
+/** An Abyss opponent's icon in the opponents list, shown at 40. */
+const MONSTER_PX = 80;
 const SPRITE_PX = 48;
 /** The blessing's art is a 640×320 BANNER (2:1), not an icon — shown at
  *  ≤ 320 wide, so its source width is the 2× size. */
@@ -88,6 +92,14 @@ async function main() {
 	const blessings = await list(join(SRC, 'abyss'));
 	for (const f of blessings)
 		await convert(join(SRC, 'abyss', f), join(OUT, 'abyss', `${parse(f).name}.webp`), BLESSING_PX);
+	await mkdir(join(OUT, 'monsters'), { recursive: true });
+	const monsters = await list(join(SRC, 'monsters'));
+	for (const f of monsters)
+		await convert(
+			join(SRC, 'monsters', f),
+			join(OUT, 'monsters', `${parse(f).name}.webp`),
+			MONSTER_PX
+		);
 	const sprites = await list(join(SRC, 'sprites'));
 	for (const f of sprites)
 		await convert(
