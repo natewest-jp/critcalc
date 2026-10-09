@@ -35,12 +35,18 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DATES = join(ROOT, 'src/lib/data/endgame/season-dates.json');
 const OUT = join(ROOT, 'src/lib/data/endgame/stygian.json');
+const ABYSS_OUT = join(ROOT, 'src/lib/data/endgame/abyss.json');
+const ABYSS_ICON_DIR = join(ROOT, 'assets-src/endgame/abyss');
 const ICON_DIR = join(ROOT, 'assets-src/endgame/stygian-icons');
 const SPRITE_DIR = join(ROOT, 'assets-src/endgame/sprites');
 
 const SCHEDULE_URL = (id) => `https://lunaris.moe/data/leylinechallenge/${id}.json`;
 const MONSTER_ICON_URL = (icon) => `https://api.lunaris.moe/data/assets/monstericon/${icon}.png`;
 const SPRITE_URL = (id) => `https://api.lunaris.moe/data/assets/icons/${id}.png`;
+const API_VERSION_URL = 'https://api.lunaris.moe/data/version.json';
+const TOWER_LIST_URL = (v) => `https://api.lunaris.moe/data/${v}/towerlist.json`;
+const TOWER_URL = (v, lang, id) => `https://api.lunaris.moe/data/${v}/${lang}/tower/${id}.json`;
+const BLESSING_ICON_URL = (icon) => `https://api.lunaris.moe/data/assets/tower/${icon}.png`;
 const FIRST_SCHEDULE = 5269001;
 const USER_AGENT = 'critcalc.app endgame presets (https://critcalc.app)';
 
@@ -129,8 +135,66 @@ async function exists(p) {
 	}
 }
 
+/**
+ * ⚓ THE ABYSS (Nate 2026-10-09): only its blessing, and only cycles named in
+ * `season-dates.json` (date → the blessing's English name, one line per
+ * cycle). lunaris' cycle list carries beta records — one-day cycles, names in
+ * Chinese only — so the NAME is ours and lunaris supplies the rest: the
+ * newest record whose English name matches gives the blessing's text in every
+ * language, and its icon.
+ */
+async function abyss(table) {
+	const version = (await get(API_VERSION_URL))?.version ?? 'latest';
+	const list = (await get(TOWER_LIST_URL(version))) ?? {};
+	const cycles = [];
+	const starts = Object.keys(table).sort();
+	await mkdir(ABYSS_ICON_DIR, { recursive: true });
+	for (const [i, start] of starts.entries()) {
+		const name = table[start];
+		const id = Object.entries(list)
+			.filter(([, c]) => c.enBuffName === name)
+			.map(([k]) => Number(k))
+			.sort((a, b) => b - a)[0];
+		if (!id) {
+			console.warn(`  ! no Abyss blessing named "${name}" on lunaris yet`);
+			continue;
+		}
+		const blessing = { name: {}, text: {} };
+		let icon;
+		for (const [ours, theirs] of Object.entries(LOCALES)) {
+			const c = await get(TOWER_URL(version, theirs, id));
+			if (!c?.buffName?.trim()) continue;
+			blessing.name[ours] = clean(c.buffName);
+			blessing.text[ours] = clean(c.monthlyBuff?.description ?? '');
+			icon ??= c.icon;
+		}
+		const end = starts[i + 1] ?? addMonths(start, 1);
+		cycles.push({ start, end, icon, ...blessing });
+		const to = join(ABYSS_ICON_DIR, `${icon}.png`);
+		if (icon && !(await exists(to))) {
+			const buf = await get(BLESSING_ICON_URL(icon), 'buffer');
+			if (buf) await writeFile(to, buf);
+		}
+		console.log(`  abyss ${start}: ${blessing.name.en} (${icon})`);
+	}
+	const out = {
+		_generated: 'scripts/fetch-endgame.mjs — do not edit; edit season-dates.json and re-run',
+		_sources: 'lunaris.moe',
+		cycles
+	};
+	await writeFile(ABYSS_OUT, JSON.stringify(out, null, '\t') + '\n');
+	console.log(`wrote ${ABYSS_OUT}: ${cycles.length} cycle(s)`);
+}
+
+const addMonths = (iso, n) => {
+	const d = new Date(`${iso}T00:00:00Z`);
+	d.setUTCMonth(d.getUTCMonth() + n);
+	return d.toISOString().slice(0, 10);
+};
+
 async function main() {
-	const dates = JSON.parse(await readFile(DATES, 'utf8')).stygian;
+	const table = JSON.parse(await readFile(DATES, 'utf8'));
+	const dates = table.stygian;
 	const bosses = {};
 	const seasons = [];
 	const sprites = new Set();
@@ -233,6 +297,7 @@ async function main() {
 	console.log(
 		`icons: ${Object.keys(icons).length} · sprites: ${sprites.size} (in assets-src/endgame/)`
 	);
+	await abyss(table.abyss ?? {});
 }
 
 // Run only when invoked directly — build-endgame-art imports `bossSlug`.

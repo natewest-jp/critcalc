@@ -2,8 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+	ABYSS_CYCLES,
 	BOSSES,
 	SEASONS,
+	blessingImage,
+	currentAbyss,
 	SPRITES,
 	bossImage,
 	bossRuns,
@@ -86,5 +89,20 @@ describe('a check, as parts', () => {
 			[{ sprite: 11034 }, { text: 'reactions' }],
 			[{ sprite: 11004 }, { text: 'characters' }]
 		]);
+	});
+});
+
+describe('the Abyss', () => {
+	it('every cycle has its blessing text and icon', () => {
+		for (const c of ABYSS_CYCLES) {
+			expect(c.name.en, c.start).toBeTruthy();
+			expect(c.text.en, c.start).toBeTruthy();
+			expect(existsSync(join(STATIC, blessingImage(c.icon))), c.icon).toBe(true);
+		}
+	});
+
+	it('the current cycle is the newest live one', () => {
+		expect(currentAbyss(new Date('2026-10-09T12:00:00Z'))?.name.en).toBe('Cascading Moon');
+		expect(currentAbyss(new Date('2026-09-15T12:00:00Z'))).toBeUndefined();
 	});
 });

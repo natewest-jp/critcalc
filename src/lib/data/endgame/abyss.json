@@ -1,0 +1,25 @@
+{
+	"_generated": "scripts/fetch-endgame.mjs — do not edit; edit season-dates.json and re-run",
+	"_sources": "lunaris.moe",
+	"cycles": [
+		{
+			"start": "2026-09-16",
+			"end": "2026-10-16",
+			"icon": "UI_TowerBlessing_107",
+			"name": {
+				"en": "Cascading Moon",
+				"zh": "辉卷之月",
+				"pt": "Lua em Cascata",
+				"ru": "Каскадная луна",
+				"fr": "Lune cascadante"
+			},
+			"text": {
+				"en": "When a character deals Swirl or Stellar Swirl DMG to an opponent, **a shockwave will be unleashed** at the opponent's position, dealing True DMG. This effect can be triggered once every 4s.",
+				"zh": "角色对敌人造成扩散反应伤害或星扩散伤害时，将在敌人的位置**释放冲击波**，造成真实伤害，此效果每4秒至多触发一次。",
+				"pt": "Quando um personagem causar Dano de Redemoinho ou Redemoinho Estelar a um oponente, **uma Onda de Choque será liberada** na posição do oponente, causando Dano Real. Este efeito pode ser desencadeado uma vez a cada 4s.",
+				"ru": "Когда персонаж наносит противнику урон реакцией Рассеивание или Звёздное рассеивание, в месте нахождения врага **высвобождается ударная волна**, наносящая истинный урон. Этот эффект может срабатывать не чаще одного раза в 4 сек.",
+				"fr": "Lorsqu'un personnage inflige des DGT de réaction de Dispersion ou de réaction d'Astrodispersion à un ennemi, **une onde de choc est libérée** à l'emplacement de ce dernier, infligeant des DGT réels. Cet effet peut être déclenché une fois toutes les 4 s."
+			}
+		}
+	]
+}

@@ -68,8 +68,8 @@
 			> — the datamined character, talent, and identity data our pipeline is seeded from.
 		</li>
 		<li>
-			<a href="https://lunaris.moe" target="_blank" rel="noopener noreferrer">Lunaris</a> — Stygian Onslaught's
-			seasons, bosses and battlefield checks, and the boss artwork, from the game's own data.
+			<a href="https://lunaris.moe" target="_blank" rel="noopener noreferrer">Lunaris.moe</a> — Stygian
+			Onslaught's seasons, bosses and battlefield checks, and the boss artwork, from the game's own data.
 		</li>
 		<li>
 			<a href="https://www.stygian.moe" target="_blank" rel="noopener noreferrer">Stygian.moe</a> — the

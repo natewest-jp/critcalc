@@ -13,5 +13,9 @@
 		"6.7": "2026-07-08",
 		"7.0": "2026-08-19",
 		"7.1": "2026-09-30"
+	},
+	"_note_abyss": "HAND-MAINTAINED (Nate 2026-10-09): each Spiral Abyss cycle's live start date → its blessing's ENGLISH name, as the game shows it. Add one line per cycle (the Abyss resets on the 16th). fetch-endgame.mjs finds the blessing's text and icon on lunaris.moe by that name; a cycle ends where the next begins, the newest a month after its start.",
+	"abyss": {
+		"2026-09-16": "Cascading Moon"
 	}
 }

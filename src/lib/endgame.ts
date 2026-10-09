@@ -16,6 +16,7 @@
  */
 
 import data from './data/endgame/stygian.json';
+import abyssData from './data/endgame/abyss.json';
 
 /** One string in every language the source carries ('' is dropped). */
 export type Localized = { en: string; zh?: string; pt?: string; ru?: string; fr?: string };
@@ -136,3 +137,31 @@ export const spriteImage = (id: number) => `/assets/endgame/sprites/${id}.webp`;
 /** A localized field in `lang`, falling back to English. */
 export const inLang = (l: Localized, lang = 'en') =>
 	(l as Record<string, string | undefined>)[lang] ?? l.en;
+
+// ---------------------------------------------------------------------------
+// The Abyss — its blessing only (Nate 2026-10-09)
+// ---------------------------------------------------------------------------
+
+export type AbyssCycle = {
+	/** Live dates, ISO (start inclusive, end exclusive). */
+	start: string;
+	end: string;
+	/** The blessing's game icon (`/assets/endgame/abyss/{icon}.webp`). */
+	icon: string;
+	name: Localized;
+	/** The blessing's text (`**x**` = the game's highlight). */
+	text: Localized;
+};
+
+export const ABYSS_CYCLES = abyssData.cycles as AbyssCycle[];
+
+/** The Abyss cycle running on `today`, else the most recent live one. */
+export function currentAbyss(
+	today: Date = new Date(),
+	cycles: readonly AbyssCycle[] = ABYSS_CYCLES
+): AbyssCycle | undefined {
+	const day = isoDay(today);
+	return cycles.filter((c) => c.start <= day).sort((a, b) => b.start.localeCompare(a.start))[0];
+}
+
+export const blessingImage = (icon: string) => `/assets/endgame/abyss/${icon}.webp`;
