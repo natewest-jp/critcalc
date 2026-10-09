@@ -34,6 +34,7 @@
 	import { REACTION_INGREDIENTS, teamReactions } from '$lib/capabilities/deriveCapabilities';
 	import { REACTION_FAMILY, REACTION_LABEL } from '$lib/utils/auraDisplay';
 	import { slotsFromNotation } from '$lib/rotationTabs.svelte';
+	import { sideLayout } from '$lib/sidePortrait';
 	import type { Reaction } from '$lib/types/ability';
 
 	// ── Fixture ──────────────────────────────────────────────────────────────
@@ -497,6 +498,10 @@
 	}
 
 	const HEAD_DISC = 48;
+	/** How far a heading's hair rises above its discs. The hover box is fitted
+	 *  to the DISCS and the hair breaks out of its top edge (the Stygian look);
+	 *  the section's top padding pays for it instead. */
+	const HEAD_OVERHANG = sideLayout(HEAD_DISC).overhang;
 </script>
 
 <svelte:head><title>Library demo — critcalc.app</title></svelte:head>
@@ -549,7 +554,7 @@
 		onkeydown={(e) => activate(e, run)}
 	>
 		<div class="lib-head-left">
-			<div class="lib-faces">
+			<div class="lib-faces lib-faces--head" style:--head-over="{HEAD_OVERHANG}px">
 				{#each t.slots as id (id)}<SidePortrait {id} size={HEAD_DISC} />{/each}
 				{#each { length: 4 - t.slots.length } as _, i (i)}<SidePortrait
 						id={null}
@@ -649,11 +654,13 @@
 	>
 		<header class="lib-board-head">
 			<span class="lib-board-name">{b.name}</span>
-			<span class="lib-meta">{b.preset} · {ago(b.touched)}</span>
-			<span class="lib-end">
+			<!-- The meta and the hint share one cell: the hint REPLACES it on hover,
+			     as the chips give way on a rotation strip. -->
+			<span class="lib-end lib-end--rot">
+				<span class="lib-meta lib-date">{b.preset} · {ago(b.touched)}</span>
 				<span class="lib-hint">{hint.board()}</span>
-				{@render more(`b:${b.id}`, boardMenu(b), 'More: rename, share, delete')}
 			</span>
+			{@render more(`b:${b.id}`, boardMenu(b), 'More: rename, share, delete')}
 		</header>
 		{#each b.teams as bt, i (i)}
 			{@const slots = ids(bt.notation)}
@@ -1084,12 +1091,16 @@
 		align-items: flex-end;
 		gap: 6px;
 	}
+	.lib-faces--head {
+		margin-top: calc(-1 * var(--head-over));
+	}
 	.lib-faces--tight {
 		gap: 3px;
 	}
 	/* No rules between teams (Nate 2026-10-09): spacing separates them. */
+	/* The top padding holds the hair that rises out of the heading's box. */
 	.lib-team {
-		padding: 0.4rem 0 1.4rem;
+		padding: 1.6rem 0 0.6rem;
 	}
 	/* Inset like the rotation rows below it (no negative margin: that put the
 	   hover's left padding outside the column and scrolled it sideways). */
@@ -1104,7 +1115,7 @@
 		grid-column: 1 / 3;
 		display: flex;
 		flex-wrap: wrap;
-		align-items: flex-end;
+		align-items: center;
 		gap: 0.6rem 1rem;
 		min-width: 0;
 	}
@@ -1295,13 +1306,18 @@
 	.lib-board:hover:not(:has(.lib-more-btn:hover, .lib-menu:hover)) {
 		background: var(--surface-raised);
 	}
+	/* Name · meta (the hint replaces it) · ⋯. The name's track is what is left,
+	   so it fades only when it truly runs into the meta. */
 	.lib-board-head {
-		display: flex;
-		align-items: baseline;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+		align-items: center;
 		gap: 0.6rem;
 	}
-	.lib-board-head .lib-end {
-		margin-left: auto;
+	.lib-board-name {
+		overflow: hidden;
+		white-space: nowrap;
+		mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
 	}
 	.lib-board-name {
 		font-weight: var(--fw-semibold);
@@ -1323,6 +1339,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
+		flex: 1 1 0;
 		min-width: 0;
 		overflow: hidden;
 		white-space: nowrap;
@@ -1330,31 +1347,6 @@
 		font-size: var(--fs-xs);
 		color: var(--muted);
 		padding-bottom: 8px;
-	}
-
-	/* ── Side-column hints cost no width ──
-	   The side column is narrow, so here the hint is LAID OVER the row's right
-	   end (beside ⋯) on a backdrop in the hover colour that fades out leftward,
-	   instead of reserving a cell it would need only on hover. */
-	.lib-board,
-	.lib-closed-row {
-		position: relative;
-	}
-	.lib-board-head .lib-hint,
-	.lib-closed-row .lib-hint {
-		position: absolute;
-		top: 0.95rem;
-		right: 2.6rem;
-		transform: translateY(-50%);
-		padding: 0.3rem 0.4rem 0.3rem 2rem;
-		background: linear-gradient(90deg, transparent, var(--surface-raised) 1.75rem);
-	}
-	.lib-closed-row .lib-hint {
-		top: 50%;
-		right: 2.3rem;
-	}
-	.lib-closed-row:hover .lib-end--rot .lib-date {
-		visibility: visible;
 	}
 
 	/* ── recently closed ── */
@@ -1381,8 +1373,12 @@
 		flex: 1;
 		min-width: 0;
 	}
+	/* In-place swap under the name; clipped rather than widening the row. */
 	.lib-closed-text .lib-end--rot {
 		justify-items: start;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
 	}
 	.lib-closed-name {
 		font-size: var(--fs-sm);
