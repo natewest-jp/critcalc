@@ -69,6 +69,8 @@ export type RotationTab = {
 	/** Per-tab constellation overrides (Layer 2), parallel to tabLoadout. */
 	tabCon?: Record<string, number>;
 	savedId?: string;
+	/** Synced to the roster (§10.4) — see `SavedNotation.synced`. */
+	synced?: boolean;
 	/** When this tab was last on screen (ms). The room-making rule closes the
 	 *  one viewed longest ago (`tabSet.closeCandidate`); absent on tabs that
 	 *  predate the field, which count as the oldest. */
@@ -464,6 +466,22 @@ class RotationTabsState {
 
 	setTabCon(charId: string, level: number): void {
 		this.tabCon = { ...this.tabCon, [charId]: level };
+		// ⚓ A level set by hand ends a sync — the badge reads itself (§10.4).
+		if (this.activeTab.synced) {
+			this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, synced: false } : t));
+		}
+	}
+
+	/** A saved rotation was synced in the library: every open tab linked to it
+	 *  drops its owned characters' levels (they follow the roster now). */
+	applySync(savedId: string, owned: readonly string[]): void {
+		const drop = (con: Record<string, number> = {}) =>
+			Object.fromEntries(Object.entries(con).filter(([id]) => !owned.includes(id)));
+		this.flush();
+		this.tabs = this.tabs.map((t) =>
+			t.savedId === savedId ? { ...t, tabCon: drop(t.tabCon), synced: true } : t
+		);
+		if (this.activeTab.savedId === savedId) this.tabCon = drop(this.tabCon);
 	}
 
 	setTabLoadout(charId: string, update: Partial<LoadoutEntry>): void {

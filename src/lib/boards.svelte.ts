@@ -34,7 +34,7 @@
  */
 
 import { browser } from '$app/environment';
-import { TEAM_SIZE, teamKey, teamKeyOfNotation } from './utils/notationEdit';
+import { TEAM_SIZE, notationHasActions, teamKey, teamKeyOfNotation } from './utils/notationEdit';
 import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
 import type { SavedBoardTeam, SavedNotation } from './stores';
@@ -120,7 +120,11 @@ export function rotationsForTeam(
 ): SavedNotation[] {
 	const key = teamKey(team.slots);
 	if (!key) return [];
-	return saved.filter((e) => teamKeyOfNotation(e.notation) === key);
+	// A names-only entry is the TEAM itself (the library's heading), never one
+	// of its rotations.
+	return saved.filter(
+		(e) => notationHasActions(e.notation) && teamKeyOfNotation(e.notation) === key
+	);
 }
 
 /** The pinned rotation, if it still exists AND is still this team's. */

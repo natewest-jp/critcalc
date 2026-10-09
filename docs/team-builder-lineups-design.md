@@ -574,6 +574,17 @@ disagree.**
 - Headings: portraits at a 48px disc, composition chips, nickname, count, last touched,
   the boards that use the team. ⛔ No fingerprint in the library.
 
+- ✅ **Built 2026-10-09** on `tb/library` (stacked on `tb/portraits`): `library.ts` (the
+  pure model + tags), `library.svelte.ts` (the flows; the Builder registers a TARGET),
+  `LibraryOverlay.svelte` (replaces `SavedNotationsOverlay`), board Save/Load in the
+  Builder's band A, Sync (`SavedNotation.synced` / `RotationTab.synced`). Further
+  rulings taken on the way (Nate, 2026-10-09): the library heading carries NO reaction
+  chips (`CompositionChips reactions={false}`; reactions are found through search) ·
+  Duplicate is not in the library (the Planner's Save as new forks) · saving an
+  unlinked rotation the library already holds links to it ("Already saved as …") ·
+  a nicknamed team names its new tab · Travelers are separate characters, and one
+  "Traveler" tag matches them all · the Synced badge is library-only.
+
 ### 10.2 ⚓ Links are DERIVED, not stored
 
 - **A board team is a set of characters plus an optional PINNED rotation id.** Its

@@ -18,7 +18,8 @@
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import BenchBand from '$lib/components/BenchBand.svelte';
-	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
+	import LibraryOverlay from '$lib/components/LibraryOverlay.svelte';
+	import { library } from '$lib/library.svelte';
 	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
@@ -804,6 +805,12 @@
 		};
 		requestAnimationFrame(tick);
 	});
+
+	// ⚓ Back closes the library (Nate 2026-10-08): opening it pushed a shallow
+	// history entry, so when that entry's state goes away, so does the overlay.
+	$effect(() => {
+		if (library.open && !page.state.library) library.open = false;
+	});
 </script>
 
 <div
@@ -911,17 +918,10 @@
 
 <svelte:window onresize={snapBench} />
 
-<!-- The saved-team bank. Rendered by the LAYOUT, not by a tool (toolbar round):
-     band A's Load is in both benched tools now, and the bank it opens is the
-     document's, not the planner's. -->
-{#if documentBar.loadOpen}
-	<SavedNotationsOverlay
-		onLoad={(entry) => documentBar.load(entry)}
-		onLoadNewTab={(entry) => documentBar.loadNewTab(entry)}
-		onReopen={(tab) => documentBar.reopen(tab)}
-		onSaveClosed={(tab) => documentBar.saveClosed(tab)}
-		onClose={() => (documentBar.loadOpen = false)}
-	/>
+<!-- THE LIBRARY (lineups design §10.1a). Rendered by the LAYOUT, not by a
+     tool: Load opens it in both tools, and it must outlive a tool pan. -->
+{#if library.open}
+	<LibraryOverlay />
 {/if}
 
 <!-- The make-room confirm: the tab limit is reached and something wants to

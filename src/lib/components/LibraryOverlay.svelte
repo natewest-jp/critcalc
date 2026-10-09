@@ -1,291 +1,123 @@
 <script lang="ts">
 	/**
-	 * THE LIBRARY — the Shelf layout (lineups design §10.1, build step 4; ⚓ Nate
-	 * 2026-10-08 picked it over Index+detail and Gallery). A DEMO: fixture data,
-	 * no store. Delete, Sync and Forget really act on the fixture so the flow can
-	 * be felt; everything else shows what it would do.
+	 * LibraryOverlay — THE LIBRARY (lineups design §10.1, §10.1a; build step 4),
+	 * opened by Load in either tool and rendered by the (tools) layout. It
+	 * replaced SavedNotationsOverlay. The flows are `library.svelte.ts`; the
+	 * grouping and the tags are `library.ts`; this file is the view.
 	 *
-	 * ⚓ THE STRIP IS THE BUTTON. A rotation's row and a team's heading are each
-	 * one click target meaning "use this HERE": opened from the Planner, a
-	 * rotation opens in a new tab and a heading opens a names-only tab; from the
-	 * Builder, both put the team on the board (a rotation pinned); as its own
-	 * page, each goes to its document's HOME (rotations → the Planner, boards →
-	 * the Builder). A hover hint at the row's end names the click. Everything
-	 * else lives in ⋯; Sync stays visible because it is a state, not an action.
+	 * ⚓ The Shelf (Nate 2026-10-09, from the /lab/library demos): teams in the
+	 * main column — the heading is the names-only TEAM entry, never a rotation —
+	 * and Recently closed (three, then "N more") over Boards in the side column.
 	 *
-	 * ⚓ FILTERING IS THE SEARCH BOX (Nate: a strip of every avatar is too clunky
-	 * to find anyone in). Typing suggests; Enter turns the top suggestion into a
-	 * TAG inside the box; tags AND together; leftover text searches names.
-	 * Candidate extension, shown here: a tag may be a character, an ELEMENT or a
-	 * REACTION, so a team can be found by what it does.
+	 * ⚓ THE STRIP IS THE BUTTON: a rotation row, a team heading, a board card
+	 * and a Recently closed row are each one click meaning "use this here"; a
+	 * hover hint names the click, ⋯ holds the rest.
 	 *
-	 * Other rulings it follows: a team is a real names-only entry and the heading
-	 * IS that entry; portraits smaller than the board's + composition chips +
-	 * nickname + count + date, ⛔ no fingerprint; portrait order = the newest
-	 * entry's; last-touched order; Sync is per ROTATION; delete is ONE confirm
-	 * and the rotations go to Recently closed (a team with rotations too);
-	 * Recently closed tops the side column, collapsed to three.
+	 * ⚓ ONE GRID for every row in the Teams column (Nate 2026-10-09): teams,
+	 * headings, rotation lists and rotations are subgrids, so the middle zone
+	 * (constellation chips at rest, the hint on hover) sits on one line through
+	 * the whole library and the right clusters align. A heading spans left +
+	 * middle and is always as tall as a NICKNAMED one (an invisible sizer).
+	 *
+	 * ⚓ Filtering is the search box: Enter turns a suggestion into a TAG (a
+	 * character, "Traveler", an element or a reaction); tags AND together;
+	 * leftover text searches names.
 	 */
-	import Mark from '$lib/components/Mark.svelte';
-	import SidePortrait from '$lib/components/SidePortrait.svelte';
-	import CompositionChips from '$lib/components/CompositionChips.svelte';
+	import { onMount, tick } from 'svelte';
+	import Mark from './Mark.svelte';
+	import SidePortrait from './SidePortrait.svelte';
+	import CompositionChips from './CompositionChips.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import { REACTION_INGREDIENTS, teamReactions } from '$lib/capabilities/deriveCapabilities';
-	import { REACTION_FAMILY, REACTION_LABEL } from '$lib/utils/auraDisplay';
-	import { slotsFromNotation } from '$lib/rotationTabs.svelte';
+	import {
+		constellations,
+		lastTouched,
+		ownership,
+		savedBoards,
+		savedNotations,
+		type SavedBoard,
+		type SavedNotation
+	} from '$lib/stores';
+	import { recentlyClosedRotations } from '$lib/documentBar.svelte';
+	import { recentlyClosedBoards, type Board } from '$lib/boards.svelte';
+	import type { RotationTab } from '$lib/rotationTabs.svelte';
+	import { orderedCharacterIds, teamKey } from '$lib/utils/notationEdit';
 	import { sideLayout } from '$lib/sidePortrait';
-	import type { Reaction } from '$lib/types/ability';
+	import {
+		libraryTeams,
+		reactionsOf,
+		suggestTags,
+		tagMatches,
+		type LibraryTag,
+		type LibraryTeam
+	} from '$lib/library';
+	import { library } from '$lib/library.svelte';
 
-	// ── Fixture ──────────────────────────────────────────────────────────────
-	const DAY = 86_400_000;
-	const HOUR = 3_600_000;
-	const NOW = Date.UTC(2026, 9, 8, 18);
-
-	type Rotation = {
-		id: string;
-		name: string;
-		notation: string;
-		touched: number;
-		con: Record<string, number>;
-		synced?: boolean;
-	};
-	let rotations = $state<Rotation[]>([
-		{
-			id: 'r1',
-			name: 'Varka quickswap',
-			notation: 'Nicole E > Durin EEQ > Prune ENQ > Varka E QN5sCN5sC',
-			touched: NOW - 2 * DAY,
-			con: { varka: 0, durin: 0, prune: 0, nicole: 1 }
-		},
-		{
-			id: 'r2',
-			name: 'Columbina Lunar-Bloom',
-			notation: 'Columbina EQ > Nahida hEQ > Lauma hEQ > Nilou EN2E > Columbina CCC',
-			touched: NOW - 3 * HOUR,
-			con: { columbina: 0, nahida: 2, lauma: 0, nilou: 0 },
-			synced: true
-		},
-		{
-			id: 'r3',
-			name: 'Odette freeze',
-			notation: 'Odette EE > Alyosha EQ > Lynette EQ > Cryo Traveler E3[N2C]Q',
-			touched: NOW - 6 * DAY,
-			con: { odette: 0, alyosha: 0, lynette: 6, traveler_cryo: 0 }
-		},
-		{
-			id: 'r4',
-			name: 'Mavuika · E first',
-			notation: 'Mavuika E > Ororon EQ > Chevreuse hE > Iansan ENQ > Mavuika Q',
-			touched: NOW - 1 * DAY,
-			con: { mavuika: 2, ororon: 0, chevreuse: 6, iansan: 0 }
-		},
-		{
-			id: 'r5',
-			name: 'Mavuika · double Chevreuse',
-			notation: 'Ororon EQ > Chevreuse QhEhE > Iansan ENQ > Mavuika Q',
-			touched: NOW - 4 * DAY,
-			con: { mavuika: 0, ororon: 0, chevreuse: 6, iansan: 0 },
-			synced: true
-		}
-	]);
-	/** Team entries (names-only). Every rotation's team has one — created on
-	 *  save (§10.1) — plus a team saved with no rotation. */
-	let teamEntries = $state<{ notation: string; touched: number }[]>([
-		{ notation: 'Furina > Neuvillette > Kazuha > Zhongli', touched: NOW - 9 * DAY },
-		{ notation: 'Varka > Durin > Prune > Nicole', touched: NOW - 12 * DAY },
-		{ notation: 'Columbina > Nahida > Lauma > Nilou', touched: NOW - 12 * DAY },
-		{ notation: 'Odette > Alyosha > Lynette > Cryo Traveler', touched: NOW - 12 * DAY },
-		{ notation: 'Mavuika > Ororon > Chevreuse > Iansan', touched: NOW - 12 * DAY }
-	]);
-	const NICKNAMES: Record<string, string> = {
-		'chevreuse|iansan|mavuika|ororon': 'Natlan Overloaded'
-	};
-	type BoardFixture = {
-		id: string;
-		name: string;
-		preset: string;
-		touched: number;
-		teams: { notation: string; pinned?: string }[];
-	};
-	const BOARDS: BoardFixture[] = [
-		{
-			id: 'b1',
-			name: 'Stygian · October',
-			preset: 'Stygian',
-			touched: NOW - 5 * HOUR,
-			teams: [
-				{ notation: 'Mavuika > Ororon > Chevreuse > Iansan', pinned: 'r4' },
-				{ notation: 'Columbina > Nahida > Lauma > Nilou', pinned: 'r2' },
-				{ notation: 'Odette > Alyosha > Lynette > Cryo Traveler' }
-			]
-		},
-		{
-			id: 'b2',
-			name: 'Abyss 12',
-			preset: 'Abyss',
-			touched: NOW - 7 * DAY,
-			teams: [
-				{ notation: 'Nicole > Durin > Prune > Varka', pinned: 'r1' },
-				{ notation: 'Furina > Neuvillette > Kazuha > Zhongli' }
-			]
-		}
-	];
-	type Closed = {
-		id: string;
-		kind: 'rotation' | 'board';
-		name: string;
-		notation: string;
-		when: number;
-	};
-	let closed = $state<Closed[]>([
-		{
-			id: 'c1',
-			kind: 'rotation',
-			name: 'Columbina CCC test',
-			notation: 'Columbina EQ > Nilou EN2E > Columbina CCC',
-			when: NOW - 40 * 60_000
-		},
-		{
-			id: 'c2',
-			kind: 'board',
-			name: 'Board 3',
-			notation: 'Mavuika > Ororon > Chevreuse > Iansan',
-			when: NOW - 2 * DAY
-		},
-		{
-			id: 'c3',
-			kind: 'rotation',
-			name: 'Untitled 4',
-			notation: 'Furina E > Neuvillette Q > Kazuha hEQ',
-			when: NOW - 3 * DAY
-		},
-		{
-			id: 'c4',
-			kind: 'rotation',
-			name: 'Varka N5 loop',
-			notation: 'Varka E N5 N5',
-			when: NOW - 5 * DAY
-		}
-	]);
-	/** Your account, when the roster has content. */
-	const OWNED: Record<string, number> = {
-		columbina: 0,
-		nahida: 0,
-		lauma: 0,
-		nilou: 0,
-		odette: 0,
-		lynette: 6,
-		traveler_cryo: 6,
-		mavuika: 2,
-		ororon: 0,
-		chevreuse: 2,
-		iansan: 0,
-		nicole: 0,
-		prune: 0,
-		furina: 1,
-		neuvillette: 0,
-		kaedehara_kazuha: 0,
-		zhongli: 0
-	};
-
-	// ── Demo controls ────────────────────────────────────────────────────────
-	type Ctx = 'planner' | 'builder' | 'page';
-	let ctx = $state<Ctx>('planner');
-	let teamSelected = $state(true);
-	let rosterHasContent = $state(true);
-	let closedOpen = $state(false);
-
-	// ── Derived library ──────────────────────────────────────────────────────
-	const ids = (n: string) => slotsFromNotation(n).filter((s) => s !== 'blank');
-	const keyOf = (n: string) => [...ids(n)].sort().join('|');
+	// ── The bank, grouped ────────────────────────────────────────────────────
+	const teams = $derived(libraryTeams($savedNotations, $savedBoards));
+	const ids = (notation: string) => orderedCharacterIds(notation).slice(0, 4);
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
 	const first = (id: string) => nameOf(id).split(' ')[0];
 
-	type Team = {
-		key: string;
-		slots: string[];
-		nickname?: string;
-		rotations: Rotation[];
-		touched: number;
-		boards: string[];
-	};
-	const teams = $derived.by((): Team[] => {
-		// A plain object, not a Map: a pure fold, nothing here is state.
-		const map: Record<string, Team> = {};
-		for (const e of teamEntries) {
-			const key = keyOf(e.notation);
-			map[key] ??= {
-				key,
-				slots: ids(e.notation),
-				nickname: NICKNAMES[key],
-				rotations: [],
-				touched: e.touched,
-				boards: []
-			};
-		}
-		for (const r of [...rotations].sort((a, b) => b.touched - a.touched)) {
-			const t = map[keyOf(r.notation)];
-			if (!t) continue;
-			// Portrait order = the newest entry's.
-			if (t.rotations.length === 0) t.slots = ids(r.notation);
-			t.rotations.push(r);
-			t.touched = Math.max(t.touched, r.touched);
-		}
-		for (const b of BOARDS)
-			for (const bt of b.teams) {
-				const t = map[keyOf(bt.notation)];
-				if (t && !t.boards.includes(b.name)) t.boards.push(b.name);
-			}
-		return Object.values(map).sort((a, b) => b.touched - a.touched);
-	});
+	const boardsList = $derived([...$savedBoards].sort((a, b) => lastTouched(b) - lastTouched(a)));
 
-	// ── Search: free text + TAGS (character · element · reaction) ───────────
-	type Tag =
-		| { kind: 'char'; id: string; label: string }
-		| { kind: 'element'; id: string; label: string }
-		| { kind: 'reaction'; id: string; label: string };
+	type Closed =
+		| {
+				kind: 'rotation';
+				id: string;
+				name: string;
+				slots: string[];
+				when: number;
+				tab: RotationTab;
+		  }
+		| { kind: 'board'; id: string; name: string; slots: string[]; when: number; board: Board };
+	const closed = $derived(
+		[
+			...$recentlyClosedRotations.map(
+				(e): Closed => ({
+					kind: 'rotation',
+					id: `r:${e.tab.id}`,
+					name: e.tab.label,
+					slots: ids(e.tab.notation),
+					when: e.closedAt,
+					tab: e.tab
+				})
+			),
+			...$recentlyClosedBoards.map(
+				(e): Closed => ({
+					kind: 'board',
+					id: `b:${e.tab.id}`,
+					name: e.tab.label,
+					slots:
+						(e.tab.teams.find((t) => t.slots.some((s) => s)) ?? e.tab.teams[0])?.slots.filter(
+							(s): s is string => !!s
+						) ?? [],
+					when: e.closedAt,
+					board: e.tab
+				})
+			)
+		].sort((a, b) => b.when - a.when)
+	);
+
+	// ── Ownership (§9.5): compared only once the roster has content ─────────
+	const rosterHasContent = $derived(Object.values($ownership).includes('owned'));
+	const ownedCon = (id: string): number | null | undefined =>
+		!rosterHasContent ? undefined : $ownership[id] === 'owned' ? ($constellations[id] ?? 0) : null;
+	/** A rotation's level for a member: its own (saved levels are pinned), else
+	 *  the roster's. */
+	const levelOf = (e: SavedNotation, id: string) => e.tabCon?.[id] ?? $constellations[id] ?? 0;
+
+	// ── Search ───────────────────────────────────────────────────────────────
 	let query = $state('');
-	let tags = $state<Tag[]>([]);
+	let tags = $state<LibraryTag[]>([]);
 	let activeSuggestion = $state(0);
 	let inputEl = $state<HTMLInputElement>();
 
-	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'dendro', 'cryo', 'geo'];
-	const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
-	/** A reaction tag names what a player calls it: the family, except a
-	 *  converted reaction keeps its own name (the chips' rule). */
-	const reactionName = (r: Reaction) =>
-		REACTION_INGREDIENTS[r].enabler ? REACTION_LABEL[r] : REACTION_FAMILY[r];
-	const membersOf = (slots: string[]) =>
-		slots.map((id) => getCharacterIndexEntry(id)).filter((m) => m !== null);
-	const reactionsOf = (slots: string[]) => teamReactions(membersOf(slots)).map(reactionName);
-
 	const everyone = $derived([...new Set(teams.flatMap((t) => t.slots))]);
 	const allReactions = $derived([...new Set(teams.flatMap((t) => reactionsOf(t.slots)))]);
+	const suggestions = $derived(suggestTags(query, everyone, allReactions, tags));
 
-	const suggestions = $derived.by((): Tag[] => {
-		const q = query.trim().toLowerCase();
-		if (!q) return [];
-		const taken = (t: Tag) => tags.some((x) => x.kind === t.kind && x.id === t.id);
-		const all: Tag[] = [
-			...everyone.map((id) => ({ kind: 'char' as const, id, label: nameOf(id) })),
-			...ELEMENTS.map((e) => ({ kind: 'element' as const, id: e, label: cap(e) })),
-			...allReactions.map((r) => ({ kind: 'reaction' as const, id: r, label: r }))
-		];
-		// Prefix matches first, then any word starting with the query.
-		const starts = all.filter((t) => t.label.toLowerCase().startsWith(q));
-		const words = all.filter(
-			(t) =>
-				!starts.includes(t) &&
-				t.label
-					.toLowerCase()
-					.split(/[\s-]/)
-					.some((w) => w.startsWith(q))
-		);
-		return [...starts, ...words].filter((t) => !taken(t)).slice(0, 6);
-	});
-
-	function addTag(t: Tag) {
+	function addTag(t: LibraryTag) {
 		tags = [...tags, t];
 		query = '';
 		activeSuggestion = 0;
@@ -303,17 +135,9 @@
 			activeSuggestion = (activeSuggestion - 1 + suggestions.length) % suggestions.length;
 		} else if (e.key === 'Backspace' && query === '' && tags.length) {
 			tags = tags.slice(0, -1);
-		} else if (e.key === 'Escape') {
-			query = '';
 		}
 	}
 
-	const tagMatches = (t: Tag, slots: string[]) =>
-		t.kind === 'char'
-			? slots.includes(t.id)
-			: t.kind === 'element'
-				? membersOf(slots).some((m) => m.element === t.id)
-				: reactionsOf(slots).includes(t.id);
 	/** Tags AND together. Free text matches only while no suggestion is being
 	 *  typed toward — otherwise "Mav" would empty the list before Enter. */
 	const matches = (slots: string[], words: string[]) => {
@@ -332,20 +156,23 @@
 			])
 		)
 	);
+	const boardSlots = (b: SavedBoard) => b.teams.map((t) => t.slots.filter((s): s is string => !!s));
 	const shownBoards = $derived(
-		BOARDS.filter((b) =>
-			b.teams.some((bt) => matches(ids(bt.notation), [b.name, ...ids(bt.notation).map(nameOf)]))
+		boardsList.filter((b) =>
+			boardSlots(b).some((slots) => matches(slots, [b.name, ...slots.map(nameOf)]))
 		)
 	);
 	const shownClosed = $derived(
-		closed
-			.filter((c) => matches(ids(c.notation), [c.name, ...ids(c.notation).map(nameOf)]))
-			.sort((a, b) => b.when - a.when)
+		closed.filter((c) => matches(c.slots, [c.name, ...c.slots.map(nameOf)]))
 	);
+	let closedOpen = $state(false);
 	const CLOSED_PEEK = 3;
 
+	// ── Words ────────────────────────────────────────────────────────────────
+	// ⏭ Working copy from the demos; the copy step (8) judges every string.
+	const now = Date.now();
 	const ago = (t: number) => {
-		const m = Math.round((NOW - t) / 60_000);
+		const m = Math.round((now - t) / 60_000);
 		if (m < 1) return 'Just now';
 		if (m < 60) return `${m} min ago`;
 		const h = Math.round(m / 60);
@@ -353,46 +180,30 @@
 		const d = Math.round(h / 24);
 		return d === 1 ? 'Yesterday' : `${d} days ago`;
 	};
-	const ownedCon = (id: string): number | null | undefined =>
-		!rosterHasContent ? undefined : id in OWNED ? OWNED[id] : null;
-
-	// ── What a click does, per context (the hover hint says it) ─────────────
-	const hint = {
-		rotation: () =>
-			ctx === 'planner'
-				? 'Open in a new tab'
-				: ctx === 'builder'
-					? teamSelected
-						? 'Pin to Team 2'
-						: 'Add to the board, pinned'
-					: 'Open in the Planner',
-		team: () =>
-			ctx === 'planner'
-				? 'New tab with these four'
-				: ctx === 'builder'
-					? teamSelected
-						? 'Put on Team 2'
-						: 'Add to the board'
-					: 'New rotation in the Planner',
-		board: () => (ctx === 'builder' ? 'Open as a tab' : 'Open in the Team Builder'),
-		closed: (c: Closed) =>
-			c.kind === 'board'
-				? ctx === 'builder'
-					? 'Reopen'
-					: 'Reopen in the Team Builder'
-				: ctx === 'builder'
-					? 'Reopen in the Planner'
-					: 'Reopen'
+	const PRESET_NAME: Record<string, string> = {
+		stygian: 'Stygian',
+		abyss: 'Abyss',
+		custom: 'Custom'
 	};
 
-	// ── Demo feedback: a toast for what WOULD happen ────────────────────────
-	let toast = $state<string | null>(null);
-	let toastTimer: ReturnType<typeof setTimeout> | undefined;
-	function say(msg: string) {
-		toast = msg;
-		clearTimeout(toastTimer);
-		toastTimer = setTimeout(() => (toast = null), 2200);
-	}
+	/** What a click does, in words — per the tool that opened the library. */
+	const hint = $derived({
+		rotation:
+			library.from === 'planner'
+				? 'Open in a new tab'
+				: library.builderHere
+					? `Pin to ${library.builderHere}`
+					: 'Add to the board, pinned',
+		team:
+			library.from === 'planner'
+				? 'New tab with these four'
+				: library.builderHere
+					? `Put on ${library.builderHere}`
+					: 'Add to the board',
+		board: library.from === 'builder' ? 'Open as a tab' : 'Open in the Team Builder',
+		closedBoard: library.from === 'builder' ? 'Reopen' : 'Reopen in the Team Builder',
+		closedRotation: library.from === 'planner' ? 'Reopen' : 'Reopen in the Planner'
+	});
 
 	// ── The ⋯ menu (one open at a time) ──────────────────────────────────────
 	type MenuItem = { label: string; danger?: boolean; run: () => void };
@@ -401,91 +212,111 @@
 		e.stopPropagation();
 		menu = menu?.id === id ? null : { id, items };
 	}
-	const otherTool = () => (ctx === 'builder' ? 'Open in the Planner' : 'Open in the Team Builder');
+
+	// ── Inline rename (a rotation, a nickname, a board) ─────────────────────
+	let editing = $state<{ id: string; value: string; commit: (v: string) => void } | null>(null);
+	async function startEdit(id: string, value: string, commit: (v: string) => void) {
+		editing = { id, value, commit };
+		await tick();
+		const el = document.querySelector<HTMLInputElement>('.lib-edit');
+		el?.focus();
+		el?.select();
+	}
+	function finishEdit(save: boolean) {
+		const e = editing;
+		editing = null;
+		if (save && e) e.commit(e.value);
+	}
+	function editKey(e: KeyboardEvent) {
+		e.stopPropagation();
+		if (e.key === 'Enter') finishEdit(true);
+		else if (e.key === 'Escape') finishEdit(false);
+	}
 
 	// ── The one confirm ──────────────────────────────────────────────────────
 	let confirm = $state<{ title: string; body: string; action: string; run: () => void } | null>(
 		null
 	);
 
-	let nextId = 100;
-	function toClosed(r: Rotation) {
-		closed = [
-			{ id: `c${nextId++}`, kind: 'rotation', name: r.name, notation: r.notation, when: NOW },
-			...closed
-		];
-	}
-	function deleteRotation(r: Rotation) {
-		confirm = {
-			title: `Delete “${r.name}”?`,
-			body: 'It goes to Recently closed, where you can reopen it.',
-			action: 'Delete',
-			run: () => {
-				rotations = rotations.filter((x) => x.id !== r.id);
-				toClosed(r);
-			}
-		};
-	}
-	function deleteTeam(t: Team) {
-		const n = t.rotations.length;
-		confirm = {
-			title: 'Delete this team?',
-			body:
-				n === 0
-					? 'Boards that use it keep their four characters.'
-					: `Its ${n === 1 ? 'rotation goes' : `${n} rotations go`} to Recently closed. Boards that use the team keep their four characters.`,
-			action: 'Delete team',
-			run: () => {
-				for (const r of t.rotations) toClosed(r);
-				rotations = rotations.filter((x) => keyOf(x.notation) !== t.key);
-				teamEntries = teamEntries.filter((e) => keyOf(e.notation) !== t.key);
-			}
-		};
-	}
-	function syncRotation(r: Rotation) {
-		confirm = {
-			title: `Sync “${r.name}” to your roster?`,
-			body: "Your roster's constellations will replace this rotation's for every character you own, and it will keep following your roster from now on.",
-			action: 'Sync',
-			run: () => {
-				rotations = rotations.map((x) => {
-					if (x.id !== r.id) return x;
-					const con: Record<string, number> = {};
-					for (const [id, c] of Object.entries(x.con)) con[id] = id in OWNED ? OWNED[id] : c;
-					return { ...x, con, synced: true };
-				});
-			}
-		};
-	}
-
-	const rotationMenu = (r: Rotation): MenuItem[] => [
-		{ label: 'Rename', run: () => say(`Would rename “${r.name}”`) },
-		{ label: 'Copy share link', run: () => say('Would copy a share link') },
-		{ label: otherTool(), run: () => say(`Would ${otherTool().toLowerCase()}`) },
-		{ label: 'Delete', danger: true, run: () => deleteRotation(r) }
-	];
-	const teamMenu = (t: Team): MenuItem[] => [
+	const rotationMenu = (r: SavedNotation): MenuItem[] => [
 		{
-			label: t.nickname ? 'Rename nickname' : 'Add a nickname',
-			run: () => say('Would edit the nickname')
+			label: 'Rename',
+			run: () => startEdit(`r:${r.id}`, r.name, (v) => library.renameRotation(r, v))
 		},
-		...(ctx !== 'builder'
-			? [{ label: 'Put on a board', run: () => say('Would put this team on a board') }]
-			: []),
-		{ label: 'Delete team', danger: true, run: () => deleteTeam(t) }
-	];
-	const boardMenu = (b: BoardFixture): MenuItem[] => [
-		{ label: 'Rename', run: () => say(`Would rename “${b.name}”`) },
-		{ label: 'Copy share link', run: () => say('Would copy a share link') },
+		{ label: 'Copy share link', run: () => library.shareRotation(r) },
+		{
+			label: library.from === 'builder' ? 'Open in the Planner' : 'Put on a board',
+			run: () => library.openRotationElsewhere(r)
+		},
 		{
 			label: 'Delete',
 			danger: true,
-			run: () => say('Would ask, then send it to Recently closed')
+			run: () =>
+				(confirm = {
+					title: `Delete “${r.name}”?`,
+					body: 'It goes to Recently closed, where you can reopen it.',
+					action: 'Delete',
+					run: () => library.deleteRotation(r)
+				})
+		}
+	];
+	const teamMenu = (t: LibraryTeam): MenuItem[] => [
+		{
+			label: t.nickname ? 'Rename nickname' : 'Add a nickname',
+			run: () => startEdit(`t:${t.key}`, t.nickname ?? '', (v) => library.setNickname(t, v))
+		},
+		...(library.from !== 'builder'
+			? [{ label: 'Put on a board', run: () => library.putTeamOnBoard(t) }]
+			: []),
+		{
+			label: 'Delete team',
+			danger: true,
+			run: () =>
+				(confirm = {
+					title: 'Delete this team?',
+					body:
+						t.rotations.length === 0
+							? 'Boards that use it keep their four characters.'
+							: t.rotations.length === 1
+								? 'Its rotation goes to Recently closed. Boards that use the team keep their four characters.'
+								: `Its ${t.rotations.length} rotations go to Recently closed. Boards that use the team keep their four characters.`,
+					action: 'Delete team',
+					run: () => library.deleteTeam(t)
+				})
+		}
+	];
+	const boardMenu = (b: SavedBoard): MenuItem[] => [
+		{
+			label: 'Rename',
+			run: () => startEdit(`b:${b.id}`, b.name, (v) => library.renameBoard(b, v))
+		},
+		{ label: 'Copy share link', run: () => library.shareBoard(b) },
+		{
+			label: 'Delete',
+			danger: true,
+			run: () =>
+				(confirm = {
+					title: `Delete “${b.name}”?`,
+					body: 'It goes to Recently closed, where you can reopen it.',
+					action: 'Delete',
+					run: () => library.deleteBoard(b)
+				})
 		}
 	];
 	const closedMenu = (c: Closed): MenuItem[] => [
-		{ label: 'Save to library', run: () => say(`Would save “${c.name}”`) },
-		{ label: 'Forget', danger: true, run: () => (closed = closed.filter((x) => x.id !== c.id)) }
+		{
+			label: 'Save to library',
+			run: () =>
+				c.kind === 'rotation' ? library.saveClosedRotation(c.tab) : library.saveClosedBoard(c.board)
+		},
+		{
+			label: 'Forget',
+			danger: true,
+			run: () =>
+				c.kind === 'rotation'
+					? recentlyClosedRotations.remove(c.tab.id)
+					: recentlyClosedBoards.remove(c.board.id)
+		}
 	];
 
 	/** A strip is a div with button semantics, so ⋯ and Sync can live inside it. */
@@ -497,22 +328,41 @@
 		}
 	}
 
+	/** Escape unwinds one layer at a time: an edit, the confirm, a menu, the
+	 *  search's suggestions, then the library itself. */
+	function onKey(e: KeyboardEvent) {
+		if (e.key !== 'Escape') return;
+		if (editing) finishEdit(false);
+		else if (confirm) confirm = null;
+		else if (menu) menu = null;
+		else if (query) query = '';
+		else library.close();
+	}
+
 	const HEAD_DISC = 48;
 	/** How far a heading's hair rises above its discs. The hover box is fitted
 	 *  to the DISCS and the hair breaks out of its top edge (the Stygian look);
 	 *  the section's top padding pays for it instead. */
 	const HEAD_OVERHANG = sideLayout(HEAD_DISC).overhang;
+
+	const pinName = (id?: string) =>
+		id ? $savedNotations.find((e) => e.id === id)?.name : undefined;
+	const pinHolds = (slots: (string | null)[], id?: string) => {
+		const e = id ? $savedNotations.find((x) => x.id === id) : undefined;
+		return !!e && teamKey(ids(e.notation)) === teamKey(slots);
+	};
+
+	onMount(() => inputEl?.focus());
 </script>
 
-<svelte:head><title>Library demo — critcalc.app</title></svelte:head>
-<svelte:window onclick={() => (menu = null)} />
+<svelte:window onclick={() => (menu = null)} onkeydown={onKey} />
 
-{#snippet tagMark(t: Tag, size: number)}
-	{#if t.kind === 'char'}
+{#snippet tagMark(t: LibraryTag, size: number)}
+	{#if t.kind === 'char' && t.id !== 'traveler'}
 		<SidePortrait id={t.id} {size} />
 	{:else if t.kind === 'element' && elementIcon(t.id)}
 		<img class="lib-tag-icon" src={elementIcon(t.id)} alt="" />
-	{:else}
+	{:else if t.kind === 'reaction'}
 		<Mark name="aura" size={12} />
 	{/if}
 {/snippet}
@@ -544,13 +394,26 @@
 	</span>
 {/snippet}
 
-{#snippet heading(t: Team)}
-	{@const run = () => say(`${hint.team()}: ${t.slots.map(first).join(', ')}`)}
+{#snippet editField()}
+	{#if editing}
+		<input
+			class="lib-edit"
+			bind:value={editing.value}
+			onkeydown={editKey}
+			onclick={(e) => e.stopPropagation()}
+			onblur={() => finishEdit(true)}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet heading(t: LibraryTeam)}
+	{@const run = () => library.openTeam(t)}
+	{@const isEditing = editing?.id === `t:${t.key}`}
 	<div
 		class="lib-strip lib-head"
 		role="button"
 		tabindex="0"
-		onclick={run}
+		onclick={() => !isEditing && run()}
 		onkeydown={(e) => activate(e, run)}
 	>
 		<div class="lib-head-left">
@@ -566,7 +429,7 @@
 			     a nickname line in the same cell, and the real text centres against
 			     it, so the heights match by construction, not by a number. -->
 			<div class="lib-head-textbox">
-				{#if !t.nickname}
+				{#if !t.nickname && !isEditing}
 					<div class="lib-head-text lib-head-sizer" aria-hidden="true">
 						<span class="lib-nick">&nbsp;</span>
 						<CompositionChips ids={t.slots} reactions={false} />
@@ -574,7 +437,9 @@
 					</div>
 				{/if}
 				<div class="lib-head-text">
-					{#if t.nickname}<span class="lib-nick">{t.nickname}</span>{/if}
+					{#if isEditing}
+						{@render editField()}
+					{:else if t.nickname}<span class="lib-nick">{t.nickname}</span>{/if}
 					<CompositionChips ids={t.slots} reactions={false} />
 					<span class="lib-meta">
 						{t.rotations.length === 0
@@ -590,26 +455,34 @@
 		<!-- A heading needs the left AND middle tracks; its hint sits at its
 		     right end beside ⋯ (empty space on a heading). -->
 		<div class="lib-head-end">
-			<span class="lib-hint">{hint.team()}</span>
+			<span class="lib-hint">{hint.team}</span>
 			{@render more(`t:${t.key}`, teamMenu(t), 'More: nickname, delete team')}
 		</div>
 	</div>
 {/snippet}
 
-{#snippet rotationRow(r: Rotation)}
-	{@const run = () => say(`${hint.rotation()}: “${r.name}”`)}
-	{@const raised = Object.entries(r.con).filter(
-		([id, c]) => c > 0 || (rosterHasContent && (ownedCon(id) === null || (ownedCon(id) ?? 0) < c))
-	)}
+{#snippet rotationRow(r: SavedNotation)}
+	{@const run = () => library.openRotation(r)}
+	{@const isEditing = editing?.id === `r:${r.id}`}
+	{@const raised = ids(r.notation)
+		.map((id) => [id, levelOf(r, id)] as const)
+		.filter(([id, c]) => {
+			const own = ownedCon(id);
+			return c > 0 || (own !== undefined && (own === null || own < c));
+		})}
 	<div
 		class="lib-strip lib-rot"
 		role="button"
 		tabindex="0"
-		onclick={run}
+		onclick={() => !isEditing && run()}
 		onkeydown={(e) => activate(e, run)}
 	>
 		<div class="lib-rot-main">
-			<span class="lib-rot-name">{r.name}</span>
+			{#if isEditing}
+				{@render editField()}
+			{:else}
+				<span class="lib-rot-name">{r.name}</span>
+			{/if}
 			<code class="lib-rot-notation">{r.notation}</code>
 		</div>
 		<!-- The middle zone: the constellation chips at rest, the click's hint on
@@ -631,10 +504,13 @@
 					>
 				{/each}
 			</span>
-			<span class="lib-hint">{hint.rotation()}</span>
+			<span class="lib-hint">{hint.rotation}</span>
 		</div>
 		<div class="lib-rot-side">
-			<span class="lib-date">{ago(r.touched)}</span>
+			<span class="lib-date">{ago(lastTouched(r))}</span>
+			<!-- ⚓ Sync is per ROTATION and shown once the roster has content
+			     (§10.4). "Sync", not "Sync with roster" — the longer word read as
+			     nagging (Nate 2026-10-09). -->
 			{#if rosterHasContent}
 				{#if r.synced}
 					<span class="lib-synced" title="Follows your roster's constellations"
@@ -646,7 +522,12 @@
 						title="Use your roster's constellations from now on"
 						onclick={(e) => {
 							e.stopPropagation();
-							syncRotation(r);
+							confirm = {
+								title: `Sync “${r.name}” to your roster?`,
+								body: "Your roster's constellations will replace this rotation's for every character you own, and it will keep following your roster from now on.",
+								action: 'Sync',
+								run: () => library.syncRotation(r)
+							};
 						}}><Mark name="link" size={11} /> Sync</button
 					>
 				{/if}
@@ -656,37 +537,44 @@
 	</div>
 {/snippet}
 
-{#snippet boardCard(b: BoardFixture)}
-	{@const run = () => say(`${hint.board()}: “${b.name}”`)}
+{#snippet boardCard(b: SavedBoard)}
+	{@const run = () => library.openBoard(b)}
+	{@const isEditing = editing?.id === `b:${b.id}`}
 	<div
 		class="lib-strip lib-board"
 		role="button"
 		tabindex="0"
-		onclick={run}
+		onclick={() => !isEditing && run()}
 		onkeydown={(e) => activate(e, run)}
 	>
 		<header class="lib-board-head">
-			<span class="lib-board-name">{b.name}</span>
+			{#if isEditing}
+				{@render editField()}
+			{:else}
+				<span class="lib-board-name">{b.name}</span>
+			{/if}
 			<!-- The meta and the hint share one cell: the hint REPLACES it on hover,
 			     as the chips give way on a rotation strip. -->
 			<span class="lib-end lib-end--rot">
-				<span class="lib-meta lib-date">{b.preset} · {ago(b.touched)}</span>
-				<span class="lib-hint">{hint.board()}</span>
+				<span class="lib-meta lib-date"
+					>{PRESET_NAME[b.preset] ?? b.preset} · {ago(lastTouched(b))}</span
+				>
+				<span class="lib-hint">{hint.board}</span>
 			</span>
 			{@render more(`b:${b.id}`, boardMenu(b), 'More: rename, share, delete')}
 		</header>
-		{#each b.teams as bt, i (i)}
-			{@const slots = ids(bt.notation)}
-			{@const pin = rotations.find((r) => r.id === bt.pinned)}
+		{#each b.teams as bt, i (bt.id)}
+			{@const slots = bt.slots.filter((s): s is string => !!s)}
+			{@const pin = pinHolds(bt.slots, bt.pinnedRotationId)
+				? pinName(bt.pinnedRotationId)
+				: undefined}
 			<div class="lib-board-team">
 				<span class="lib-board-n">{i + 1}</span>
 				<div class="lib-faces lib-faces--tight">
 					{#each slots as id (id)}<SidePortrait {id} size={32} />{/each}
 				</div>
 				{#if pin}
-					<span class="lib-pin" title="Pinned rotation"
-						><Mark name="pin" size={11} /> {pin.name}</span
-					>
+					<span class="lib-pin" title="Pinned rotation"><Mark name="pin" size={11} /> {pin}</span>
 				{/if}
 			</div>
 		{/each}
@@ -694,7 +582,8 @@
 {/snippet}
 
 {#snippet closedRow(c: Closed)}
-	{@const run = () => say(`${hint.closed(c)}: “${c.name}”`)}
+	{@const run = () =>
+		c.kind === 'rotation' ? library.reopenRotation(c.tab) : library.reopenBoard(c.board)}
 	<div
 		class="lib-strip lib-closed-row"
 		role="button"
@@ -703,7 +592,7 @@
 		onkeydown={(e) => activate(e, run)}
 	>
 		<div class="lib-faces lib-faces--tight">
-			{#each ids(c.notation) as id (id)}<SidePortrait {id} size={28} />{/each}
+			{#each c.slots as id (id)}<SidePortrait {id} size={28} />{/each}
 		</div>
 		<span class="lib-closed-text">
 			<span class="lib-closed-name">{c.name}</span>
@@ -711,17 +600,16 @@
 				<span class="lib-meta lib-date"
 					>{c.kind === 'board' ? 'Board' : 'Rotation'} · closed {ago(c.when)}</span
 				>
-				<span class="lib-hint">{hint.closed(c)}</span>
+				<span class="lib-hint">{c.kind === 'board' ? hint.closedBoard : hint.closedRotation}</span>
 			</span>
 		</span>
 		{@render more(`c:${c.id}`, closedMenu(c), 'More: save, forget')}
 	</div>
 {/snippet}
 
-<!-- ══ The page ══ -->
-
-<div class="lib-scrim"></div>
-<div class="lib ctx-dark" role="dialog" aria-label="Library">
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div class="lib-scrim" onclick={() => library.close()}></div>
+<div class="lib ctx-dark" role="dialog" aria-modal="true" aria-label="Library">
 	<header class="lib-top">
 		<h2 class="lib-title">Library</h2>
 		<div class="lib-search-wrap">
@@ -745,6 +633,7 @@
 				<input
 					bind:this={inputEl}
 					type="search"
+					aria-label="Search the library"
 					placeholder={tags.length
 						? 'Add another'
 						: 'Search, or type a character, element or reaction'}
@@ -779,24 +668,10 @@
 				</div>
 			{/if}
 		</div>
-		<button class="btn btn--icon lib-close" aria-label="Close"
+		<button class="btn btn--icon lib-close" aria-label="Close" onclick={() => library.close()}
 			><Mark name="close" size={16} /></button
 		>
 	</header>
-	<div class="lib-demo">
-		<span class="lib-demo-tag">Demo · opened from</span>
-		{#each [['planner', 'Planner'], ['builder', 'Builder'], ['page', 'Library page']] as [k, l] (k)}
-			<button class="tab" class:active={ctx === k} onclick={() => (ctx = k as Ctx)}>{l}</button>
-		{/each}
-		{#if ctx === 'builder'}
-			<label class="lib-demo-check"
-				><input type="checkbox" bind:checked={teamSelected} /> Team 2 selected</label
-			>
-		{/if}
-		<label class="lib-demo-check"
-			><input type="checkbox" bind:checked={rosterHasContent} /> Roster has content</label
-		>
-	</div>
 
 	<div class="lib-body">
 		<div class="lib-col lib-scroll">
@@ -812,7 +687,11 @@
 						{/if}
 					</section>
 				{:else}
-					<p class="lib-empty">No team matches.</p>
+					<p class="lib-empty">
+						{teams.length
+							? 'No team matches.'
+							: 'Nothing saved yet. Save a rotation and its team appears here.'}
+					</p>
 				{/each}
 			</div>
 		</div>
@@ -833,18 +712,19 @@
 			{/if}
 			<p class="kicker">Boards</p>
 			{#each shownBoards as b (b.id)}{@render boardCard(b)}{:else}
-				<p class="lib-empty">No board matches.</p>
+				<p class="lib-empty">{boardsList.length ? 'No board matches.' : 'No saved boards yet.'}</p>
 			{/each}
 		</div>
 	</div>
 
-	{#if toast}<div class="lib-toast" role="status">{toast}</div>{/if}
+	{#if library.toast}<div class="lib-toast" role="status">{library.toast}</div>{/if}
 </div>
 
 {#if confirm}
 	{@const c = confirm}
-	<div class="lib-confirm-scrim" role="presentation" onclick={() => (confirm = null)}></div>
-	<div class="lib-confirm ctx-dark" role="alertdialog" aria-label={c.title}>
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<div class="lib-confirm-scrim" onclick={() => (confirm = null)}></div>
+	<div class="lib-confirm ctx-dark" role="alertdialog" aria-modal="true" aria-label={c.title}>
 		<p class="lib-confirm-title">{c.title}</p>
 		<p class="lib-confirm-body">{c.body}</p>
 		<div class="lib-confirm-actions">
@@ -864,10 +744,12 @@
 	.lib-scrim {
 		position: fixed;
 		inset: 0;
+		z-index: 60;
 		background: rgb(0 0 0 / 0.35);
 	}
 	.lib {
 		position: fixed;
+		z-index: 61;
 		inset: 4.25rem 1.5rem 1.5rem;
 		display: flex;
 		flex-direction: column;
@@ -1004,31 +886,6 @@
 		border-radius: var(--r-sm, 3px);
 		background: var(--surface-raised);
 		color: var(--muted);
-	}
-
-	/* The demo's own controls — NOT part of the design, kept off the header so
-	   the header can be judged as it will ship. */
-	.lib-demo {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		flex-wrap: wrap;
-		padding: 0.35rem 0.6rem;
-		border: 1px dashed var(--line-soft);
-		border-radius: var(--r-sm, 3px);
-		font-size: var(--fs-sm);
-	}
-	.lib-demo-tag {
-		font-size: var(--fs-xs);
-		text-transform: uppercase;
-		letter-spacing: var(--ls-mid, 0.06em);
-		color: var(--accent);
-	}
-	.lib-demo-check {
-		display: flex;
-		align-items: center;
-		gap: 0.3rem;
-		margin-left: 0.5rem;
 	}
 
 	.lib-body {
@@ -1407,6 +1264,20 @@
 	.lib-closed-name {
 		font-size: var(--fs-sm);
 	}
+	/* Inline rename: the field stands where the name stood. */
+	.lib-edit {
+		min-width: 0;
+		width: 100%;
+		max-width: 22rem;
+		padding: 2px 6px;
+		border: none;
+		border-radius: var(--r-sm, 3px);
+		background: var(--surface-well);
+		color: var(--text);
+		font: inherit;
+		font-size: var(--fs-sm);
+		outline: 1px solid var(--sel-ring);
+	}
 	.lib-closed-toggle {
 		display: inline-flex;
 		align-items: center;
@@ -1440,10 +1311,12 @@
 	.lib-confirm-scrim {
 		position: fixed;
 		inset: 0;
+		z-index: 210;
 		background: rgb(0 0 0 / 0.4);
 	}
 	.lib-confirm {
 		position: fixed;
+		z-index: 211;
 		left: 50%;
 		top: 40%;
 		transform: translate(-50%, -50%);

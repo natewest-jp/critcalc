@@ -9,7 +9,11 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			/** The library overlay is open (lib/library.svelte.ts) — a shallow
+			 *  history entry, so Back closes it. */
+			library?: boolean;
+		}
 		// interface Platform {}
 	}
 }
