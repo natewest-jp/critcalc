@@ -14,7 +14,9 @@
  *      with ':' written as '_', so it is also the join key to the data)
  *   stygian-icons/{slug}.png   → stygian/{slug}-icon.webp  the circle avatar
  *   sprites/{id}.png           → sprites/{id}.webp         a check's icon
- *   abyss/{icon}.png           → abyss/{icon}.webp         an Abyss blessing's banner
+ *   abyss/{icon}.png           → abyss/{icon}-v2.webp      an Abyss blessing's banner
+ *     (-v2: the first build wrote these at 96px under the bare name, and a
+ *      browser holding that copy kept showing it — 2026-10-09)
  *   monsters/{icon}.png        → monsters/{icon}.webp      an Abyss opponent
  *
  * ⚠️ `/assets/*` is cached forever (immutable, add-only): a CHANGED image must
@@ -91,7 +93,11 @@ async function main() {
 	await mkdir(join(OUT, 'abyss'), { recursive: true });
 	const blessings = await list(join(SRC, 'abyss'));
 	for (const f of blessings)
-		await convert(join(SRC, 'abyss', f), join(OUT, 'abyss', `${parse(f).name}.webp`), BLESSING_PX);
+		await convert(
+			join(SRC, 'abyss', f),
+			join(OUT, 'abyss', `${parse(f).name}-v2.webp`),
+			BLESSING_PX
+		);
 	await mkdir(join(OUT, 'monsters'), { recursive: true });
 	const monsters = await list(join(SRC, 'monsters'));
 	for (const f of monsters)

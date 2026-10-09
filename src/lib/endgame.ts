@@ -173,4 +173,4 @@ export function currentAbyss(
 	return cycles.filter((c) => c.start <= day).sort((a, b) => b.start.localeCompare(a.start))[0];
 }
 
-export const blessingImage = (icon: string) => `/assets/endgame/abyss/${icon}.webp`;
+export const blessingImage = (icon: string) => `/assets/endgame/abyss/${icon}-v2.webp`;

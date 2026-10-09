@@ -154,9 +154,8 @@
 	{:else if abyss}
 		<!-- The blessing's own banner (2:1), faded into the night at its edges, its
 		     name and text laid over its foot. -->
-		<!-- The blessing's own art is a 640×320 banner — shown at no more than
-		     half that, beside its text, so a 2× screen gets every source pixel
-		     (Nate 2026-10-09: full width stretched it 2.5× and blurred it). -->
+		<!-- The blessing's own art (640×320, the game's), as a banner faded into
+		     the night at its foot, the blessing laid over it (Nate 2026-10-09). -->
 		<header class="bv-abyss">
 			<img class="bv-abyss-art" src={blessingImage(abyss.icon)} alt="" />
 			<div class="bv-abyss-text">
@@ -354,26 +353,31 @@
 		cursor: pointer;
 	}
 
-	/* The Abyss banner at its own crisp size beside its text. */
+	/* The Abyss banner: the art across the pane, faded at the foot so the
+	   blessing sits on the night it melts into. */
 	.bv-abyss {
-		display: flex;
-		align-items: center;
-		gap: 1.1rem;
+		display: grid;
+		border-radius: var(--r-sm);
+		overflow: hidden;
+	}
+	.bv-abyss > * {
+		grid-area: 1 / 1;
 	}
 	.bv-abyss-art {
-		flex: none;
-		width: min(18rem, 40%);
-		aspect-ratio: 2;
+		width: 100%;
+		height: 14rem;
 		object-fit: cover;
-		border-radius: var(--r-sm);
+		mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
 	}
 	.bv-abyss-text {
+		align-self: end;
 		display: flex;
 		flex-direction: column;
-		gap: 0.35rem;
-		min-width: 0;
+		gap: 0.3rem;
+		padding: 1rem 1.1rem 0.6rem;
 	}
 	.bv-abyss-blessing {
+		max-width: 46rem;
 		font-size: var(--fs-lg);
 		line-height: 1.45;
 		color: var(--text);
