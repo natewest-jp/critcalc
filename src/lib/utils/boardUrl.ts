@@ -43,9 +43,14 @@ export type SharedTeam = {
 export type SharedBoard = {
 	label: string;
 	noRepeats: boolean;
+	/** What the board was made as, and a Stygian lineup's season (§2.6). Both
+	 *  OPTIONAL and additive — a link made before them decodes as Custom. */
+	preset?: 'stygian' | 'abyss' | 'custom';
+	season?: string;
 	teams: SharedTeam[];
 };
 
+const PRESETS = ['stygian', 'abyss', 'custom'];
 const FORMAT = '1';
 const MARKER = `${FORMAT}~`;
 
@@ -54,6 +59,8 @@ export async function encodeBoard(b: SharedBoard): Promise<string> {
 		v: 1,
 		label: b.label,
 		noRepeats: b.noRepeats,
+		...(b.preset && { preset: b.preset }),
+		...(b.season && { season: b.season }),
 		teams: b.teams.map((t) => ({ slots: t.slots, con: t.constellations }))
 	};
 	return MARKER + (await deflateToBase64Url(JSON.stringify(payload)));
@@ -77,6 +84,11 @@ export async function decodeBoard(param: string | null | undefined): Promise<Sha
 					? data.label.trim().slice(0, MAX_LABEL)
 					: 'Shared board',
 			noRepeats: data.noRepeats !== false,
+			...(PRESETS.includes(data.preset as string) && {
+				preset: data.preset as SharedBoard['preset']
+			}),
+			...(typeof data.season === 'string' &&
+				/^\d+\.\d+$/.test(data.season) && { season: data.season }),
 			teams: data.teams.map((t: unknown) => sanitizeTeam(t))
 		};
 	} catch {

@@ -273,7 +273,11 @@ const MARKS = {
 	 *  — the act of fixing one thing in place for the rest to be read against.
 	 *  ⛔ Not `Star` (that is the wishlist) nor `Anchor` (nautical, and reads as
 	 *  a link at 14px). */
-	pin: 'Pin'
+	pin: 'Pin',
+	/** A battlefield's checks (lineups design §2.6): the game marks each one
+	 *  favoured or disfavoured with a thumb. */
+	thumbsUp: 'ThumbsUp',
+	thumbsDown: 'ThumbsDown'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

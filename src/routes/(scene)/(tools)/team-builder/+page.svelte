@@ -33,6 +33,7 @@
 	import { boards, pinnedRotation, type BoardPreset, type BoardTeam } from '$lib/boards.svelte';
 	import { boardBar, boardTabStrip } from '$lib/boardBar.svelte';
 	import { library } from '$lib/library.svelte';
+	import { currentSeason } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { TB_WIPE_MS } from './lib/split';
 	import { motion } from '$lib/motion';
@@ -307,7 +308,8 @@
 	];
 
 	function newBoard(preset: BoardPreset): void {
-		boardBar.newBoard(preset);
+		// A Stygian lineup opens on the season running now (§2.6).
+		boardBar.newBoard(preset, preset === 'stygian' ? currentSeason()?.version : undefined);
 		selectedSlot = null;
 		if (view === 'roster') view = 'split';
 	}
@@ -1428,6 +1430,8 @@
 					onAddTeam={() => boards.addTeam(board.id)}
 					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
 					onOpenInPlanner={openInPlanner}
+					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
+					onSeason={(version) => boards.setSeason(board.id, version)}
 				/>
 			</div>
 		</div>

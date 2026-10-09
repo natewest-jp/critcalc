@@ -51,8 +51,10 @@ class BoardBarState {
 		};
 	}
 
-	newBoard(preset: BoardPreset) {
-		this.withRoom(() => boards.addBoard(preset));
+	/** A new board; a Stygian one opens on `season` (the page passes the
+	 *  current one — this module must not import the season data). */
+	newBoard(preset: BoardPreset, season?: string) {
+		this.withRoom(() => boards.addBoard(preset, season));
 	}
 
 	/** Close a board, keeping it in Recently closed when it holds anyone. */
@@ -83,6 +85,7 @@ class BoardBarState {
 		const payload = {
 			name: board.label,
 			preset: board.preset,
+			...(board.season && { season: board.season }),
 			noRepeats: board.noRepeats,
 			teams: toSavedTeams(board, get(savedNotations), get(constellations))
 		};
@@ -106,6 +109,7 @@ class BoardBarState {
 			boards.openBoard({
 				label: entry.name,
 				preset: entry.preset,
+				...(entry.season && { season: entry.season }),
 				noRepeats: entry.noRepeats,
 				teams: fromSavedTeams(entry.teams),
 				savedId: entry.id
@@ -118,6 +122,7 @@ class BoardBarState {
 		const payload = {
 			name: board.label,
 			preset: board.preset,
+			...(board.season && { season: board.season }),
 			noRepeats: board.noRepeats,
 			teams: toSavedTeams(board, get(savedNotations), get(constellations))
 		};
