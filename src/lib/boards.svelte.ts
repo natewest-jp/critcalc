@@ -64,8 +64,15 @@ export type Board = {
 	preset: BoardPreset;
 	teams: BoardTeam[];
 	/** ⚓ "No repeats" — ALLOW AND MARK (§2.2): a character on two teams is
-	 *  marked on both, never refused. On by default. */
+	 *  marked on both, never refused. ON for the endgame presets, where the game
+	 *  forbids it; OFF for Custom (Nate 2026-10-09). */
 	noRepeats: boolean;
+	/** A Stygian lineup's season — its game VERSION ("7.1"), set to the current
+	 *  season when the board is made and changeable from the board (§2.6). Team
+	 *  i stands on battlefield i. ⚠ A string only: the season DATA is the Team
+	 *  Builder's (`$lib/endgame`), and this module is reached from the Planner
+	 *  too, so it must not import 187 KB of bosses. */
+	season?: string;
 	/** The saved-board entry this tab is linked to, as `RotationTab.savedId`. */
 	savedId?: string;
 	/** When this board was last on screen (ms) — see `tabSet.closeCandidate`. */
@@ -108,7 +115,7 @@ export function makeBoard(label: string, preset: BoardPreset = 'custom'): Board 
 		label,
 		preset,
 		teams: Array.from({ length: PRESET_TEAMS[preset] }, () => makeTeam()),
-		noRepeats: true,
+		noRepeats: preset !== 'custom',
 		viewedAt: Date.now()
 	};
 }
@@ -245,8 +252,11 @@ class BoardsState {
 		return true;
 	}
 
-	addBoard(preset: BoardPreset = 'custom'): boolean {
-		return this.openBoard(makeBoard(`Board ${this.boards.length + 1}`, preset));
+	addBoard(preset: BoardPreset = 'custom', season?: string): boolean {
+		return this.openBoard({
+			...makeBoard(`Board ${this.boards.length + 1}`, preset),
+			...(season && { season })
+		});
 	}
 
 	/** Close a board and hand it back for Recently closed. The last board
@@ -281,6 +291,10 @@ class BoardsState {
 		const toIdx = arr.findIndex((b) => b.id === toId);
 		arr.splice(side === 'left' ? toIdx : toIdx + 1, 0, dragged);
 		this.boards = arr;
+	}
+
+	setSeason(id: string, season: string): void {
+		this.#updateBoard(id, (b) => ({ ...b, season }));
 	}
 
 	setNoRepeats(id: string, on: boolean): void {
@@ -379,6 +393,8 @@ export function toSharedBoard(
 	return {
 		label: board.label,
 		noRepeats: board.noRepeats,
+		preset: board.preset,
+		...(board.season && { season: board.season }),
 		teams: board.teams.map((t) => ({ slots: t.slots, constellations: denseCon(t, saved, roster) }))
 	};
 }
@@ -391,7 +407,8 @@ export function fromSharedBoard(
 ): Omit<Board, 'id'> {
 	return {
 		label: shared.label,
-		preset: 'custom',
+		preset: shared.preset ?? 'custom',
+		...(shared.season && { season: shared.season }),
 		noRepeats: shared.noRepeats,
 		teams: shared.teams.map((t) => {
 			const slots = normalizeSlots(t.slots.map((id) => (id && isValidId(id) ? id : null)));

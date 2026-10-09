@@ -153,6 +153,8 @@ export type SavedBoard = {
 	id: string;
 	name: string;
 	preset: 'stygian' | 'abyss' | 'custom';
+	/** A Stygian lineup's season (`Board.season`). */
+	season?: string;
 	teams: SavedBoardTeam[];
 	noRepeats: boolean;
 	savedAt: number;
@@ -181,7 +183,10 @@ function createSavedBoardsStore() {
 			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
 			return id;
 		},
-		update(id: string, fields: Partial<Pick<SavedBoard, 'name' | 'teams' | 'noRepeats'>>) {
+		update(
+			id: string,
+			fields: Partial<Pick<SavedBoard, 'name' | 'teams' | 'noRepeats' | 'season'>>
+		) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
 			);

@@ -2573,6 +2573,17 @@ img {
 	}
 }
 
+/* THE NUDGE (Nate 2026-10-09): "that didn't go in" — a pick into a full team.
+   Two pixels either way, whole pixels (the sub-pixel law), short. A keyframe,
+   so a user must honour reduced motion by hand (none at all). */
+@keyframes nudge {
+	25% {
+		translate: -2px 0;
+	}
+	75% {
+		translate: 2px 0;
+	}
+}
 /* Segmented group, second pass. The first version was a 1px --border box with
    --border dividers and an accent-filled active segment — a calm-family
    outline wrapped around a gilt/dire fill, two families fighting over one

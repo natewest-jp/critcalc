@@ -28,6 +28,8 @@
 		compact = false,
 		ariaLabel,
 		role = 'menu',
+		align = 'end',
+		size,
 		items
 	}: {
 		/** Button text. Omit for an icon-only trigger (pass ariaLabel instead). */
@@ -41,6 +43,12 @@
 		 *  planner's zoom, 2026-09-30): same trigger, same anchored surface,
 		 *  but its contents are controls, not `menuitem`s. */
 		role?: 'menu' | 'dialog';
+		/** Which trigger edge the menu hangs from. `end` (the band's END zone,
+		 *  opening inward) unless the trigger leads its row (the Team Builder's
+		 *  season picker, 2026-10-09). */
+		align?: 'start' | 'end';
+		/** `sm` = the compact `.btn--sm` trigger, for a menu inside content. */
+		size?: 'sm';
 		/** Menu contents. Called with a `close` the items invoke when chosen. */
 		items: Snippet<[() => void]>;
 	} = $props();
@@ -59,7 +67,8 @@
 		const r = triggerEl.getBoundingClientRect();
 		// Right-aligned to the trigger — band menus live in the bands' END zone,
 		// so they open inward. Clamped to the viewport at both edges.
-		menuX = Math.max(8, Math.min(r.right - MENU_MIN_W, window.innerWidth - MENU_MIN_W - 8));
+		const x = align === 'start' ? r.left : r.right - MENU_MIN_W;
+		menuX = Math.max(8, Math.min(x, window.innerWidth - MENU_MIN_W - 8));
 		menuY = r.bottom + GAP;
 		open = true;
 		queueMicrotask(() => menuEl?.focus());
@@ -75,6 +84,7 @@
 	bind:this={triggerEl}
 	class="btn band-menu-trigger"
 	class:btn--icon={compact}
+	class:btn--sm={size === 'sm'}
 	class:is-active={open}
 	type="button"
 	{disabled}

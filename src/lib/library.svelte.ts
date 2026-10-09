@@ -207,6 +207,7 @@ class LibraryState {
 		savedBoards.delete(b.id);
 		recentlyClosedBoards.push({
 			...makeBoard(b.name, b.preset),
+			...(b.season && { season: b.season }),
 			teams: fromSavedTeams(b.teams),
 			noRepeats: b.noRepeats
 		});

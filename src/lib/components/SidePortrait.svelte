@@ -34,7 +34,6 @@
 	 * `ownedCon` undefined = no ownership to compare against (the roster is
 	 * empty, or marks are off) — the chip then only states the level.
 	 */
-	import Mark from './Mark.svelte';
 	import ConMark from './ConMark.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
@@ -90,10 +89,8 @@
 	style:--mx="{geometry.cx * lay.art}px"
 	style:--my="{geometry.cy * lay.art}px"
 >
-	<span class="spt-disc" class:spt-disc--empty={!id} class:spt-disc--selected={selected}>
-		{#if !id}
-			<Mark name="plus" size={Math.round(size / 4)} />
-		{:else if !hasAvatar(id)}
+	<span class="spt-disc" class:spt-disc--selected={selected}>
+		{#if id && !hasAvatar(id)}
 			<span class="spt-initials">{name.slice(0, 2)}</span>
 		{/if}
 	</span>
@@ -104,6 +101,15 @@
 			src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
 			alt={name}
 			onerror={handleError}
+		/>
+	{:else if !id}
+		<!-- An empty slot wears the game's own blank side portrait (Nate
+		     2026-10-09) — the Planner's `blank` placeholder's art. -->
+		<img
+			class="spt-art"
+			class:spt-art--clip={geometry.clipBelow}
+			src={getAvatar('blank', false, 'side')}
+			alt=""
 		/>
 	{/if}
 	{#if showChip && con !== undefined}
@@ -146,10 +152,6 @@
 		transition:
 			border-color var(--t-snap),
 			box-shadow var(--t-snap);
-	}
-	.spt-disc--empty {
-		border-style: dashed;
-		border-color: var(--line-soft);
 	}
 	/* Selected: the gold ring, the site's one meaning for "chosen". Outside the
 	   plain ring, so the plain ring stays the portrait's own edge. */

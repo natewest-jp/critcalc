@@ -1,0 +1,158 @@
+{
+	"_generated": "scripts/fetch-endgame.mjs — do not edit; edit season-dates.json and re-run",
+	"_sources": "lunaris.moe",
+	"cycles": [
+		{
+			"start": "2026-09-16",
+			"end": "2026-10-16",
+			"icon": "UI_TowerBlessing_107",
+			"name": {
+				"en": "Cascading Moon",
+				"zh": "辉卷之月",
+				"pt": "Lua em Cascata",
+				"ru": "Каскадная луна",
+				"fr": "Lune cascadante"
+			},
+			"text": {
+				"en": "When a character deals Swirl or Stellar Swirl DMG to an opponent, **a shockwave will be unleashed** at the opponent's position, dealing True DMG. This effect can be triggered once every 4s.",
+				"zh": "角色对敌人造成扩散反应伤害或星扩散伤害时，将在敌人的位置**释放冲击波**，造成真实伤害，此效果每4秒至多触发一次。",
+				"pt": "Quando um personagem causar Dano de Redemoinho ou Redemoinho Estelar a um oponente, **uma Onda de Choque será liberada** na posição do oponente, causando Dano Real. Este efeito pode ser desencadeado uma vez a cada 4s.",
+				"ru": "Когда персонаж наносит противнику урон реакцией Рассеивание или Звёздное рассеивание, в месте нахождения врага **высвобождается ударная волна**, наносящая истинный урон. Этот эффект может срабатывать не чаще одного раза в 4 сек.",
+				"fr": "Lorsqu'un personnage inflige des DGT de réaction de Dispersion ou de réaction d'Astrodispersion à un ennemi, **une onde de choc est libérée** à l'emplacement de ce dernier, infligeant des DGT réels. Cet effet peut être déclenché une fois toutes les 4 s."
+			},
+			"halves": [
+				{
+					"en": "Characters' Swirl DMG increased by 200% and Stellar Swirl DMG increased by 75%.",
+					"zh": "角色的扩散反应造成的伤害提升200%，角色造成的星扩散伤害提升75%。",
+					"pt": "O Dano causado por reações de Redemoinho dos personagens aumenta em 200%, e o Dano de Redemoinho Estelar causado pelos personagens aumenta em 75%.",
+					"ru": "Урон от реакции Рассеивание персонажа увеличивается на 200%, а урон от реакции Звёздное рассеивание персонажа увеличивается на 75%.",
+					"fr": "Les DGT infligés par les réactions de Dispersion des personnages augmentent de 200 % et ceux des réactions d'Astrodispersion de 75 %."
+				},
+				{
+					"en": "Characters' Electro-Charged DMG increased by 200% and Lunar-Charged DMG increased by 75%.",
+					"zh": "角色的感电反应造成的伤害提升200%，角色造成的月感电伤害提升75%。",
+					"pt": "Dano de Eletricamente Carregado dos personagens aumentado em 200% e Dano de Carga Lunar aumentado em 75%.",
+					"ru": "Урон от реакции Заряжен персонажа увеличен на 200%, урон от реакции Лунный заряд увеличен на 75%.",
+					"fr": "Les DGT infligés par les réactions d'Électrocution des personnages augmentent de 200 % et ceux des réactions de Sélénocution de 75 %."
+				}
+			],
+			"chambers": [
+				{
+					"level": 95,
+					"halves": [
+						[
+							{
+								"icon": "UI_MonsterIcon_Chimera_OwlPangolin_02",
+								"hp": 3452578,
+								"name": {
+									"en": "Battle-Hardened Chimeric Burrowbeast",
+									"zh": "历经百战的嵌合梭地兽",
+									"pt": "Besta Quimérica Enterrada Veterana",
+									"ru": "Бывалая химера-землерой",
+									"fr": "Bête-fouisse chimérique vétérane"
+								}
+							}
+						],
+						[
+							{
+								"icon": "UI_MonsterIcon_WildHunt",
+								"hp": 408857,
+								"name": {
+									"en": "Wilderness Exile",
+									"zh": "荒野幽徒",
+									"pt": "Exilado Selvagem",
+									"ru": "Изгнанник пустошей",
+									"fr": "Exilé des terres sauvages"
+								}
+							},
+							{
+								"icon": "UI_MonsterIcon_Oprichnik_Male_Strong_LanceArquebus",
+								"hp": 3660672,
+								"name": {
+									"en": "Battle-Hardened Fireblade Shock Trooper",
+									"zh": "历经百战的火刃突击队员",
+									"pt": "Tropa de Choque Lâmina Flamejante Veterana",
+									"ru": "Бывалый Штурмовик огненного клинка",
+									"fr": "Troupier lame-de-feu vétéran"
+								}
+							}
+						]
+					]
+				},
+				{
+					"level": 98,
+					"halves": [
+						[
+							{
+								"icon": "UI_MonsterIcon_Zharptitsa_02",
+								"hp": 5986943,
+								"name": {
+									"en": "Immortal Construct",
+									"zh": "不灭衍生造物",
+									"pt": "Criação Derivada Imortal",
+									"ru": "Бессмертный конструкт",
+									"fr": "Structure immortelle"
+								}
+							}
+						],
+						[
+							{
+								"icon": "UI_MonsterIcon_Lloigor_Sub",
+								"hp": 579381,
+								"name": {
+									"en": "Fisher of Hidden Depths",
+									"zh": "深黯钓客",
+									"pt": "Pescador das Profundezas Desconhecidas",
+									"ru": "Рыболов скрытых глубин",
+									"fr": "Pêcheur des fonds cachés"
+								}
+							},
+							{
+								"icon": "UI_MonsterIcon_Lloigor_Primo",
+								"hp": 6140545,
+								"name": {
+									"en": "Lord of the Hidden Depths: Whisperer of Nightmares",
+									"zh": "深黯魇语之主",
+									"pt": "Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos",
+									"ru": "Повелитель скрытых глубин: Шёпот кошмаров",
+									"fr": "Seigneur chuchoteur de cauchemars des fonds cachés"
+								}
+							}
+						]
+					]
+				},
+				{
+					"level": 100,
+					"halves": [
+						[
+							{
+								"icon": "UI_MonsterIcon_Karzelek_Tsereteli_01",
+								"hp": 5767841,
+								"name": {
+									"en": "Battle-Hardened Domovoy Sculptor",
+									"zh": "历经百战的矮灵雕刻师",
+									"pt": "Escultor Domovoy Veterano",
+									"ru": "Бывалый домовой-ваятель",
+									"fr": "Sculpteur domovoy vétéran"
+								}
+							}
+						],
+						[
+							{
+								"icon": "UI_MonsterIcon_WildHunt_Male_Sigurd",
+								"hp": 2145122,
+								"name": {
+									"en": "Battle-Hardened Lightkeeper",
+									"zh": "历经百战的执灯人",
+									"pt": "Portador da Lâmpada Veterano",
+									"ru": "Бывалый светоносец",
+									"fr": "Gardien de lumière vétéran"
+								}
+							}
+						]
+					]
+				}
+			]
+		}
+	]
+}
