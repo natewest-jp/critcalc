@@ -84,36 +84,36 @@
 	});
 </script>
 
-<span class="cc">
+<span class="comp">
 	{#each resonances as res (res.key)}
-		<span class="cc-chip" title={res.effect}>
+		<span class="comp-chip" title={res.effect}>
 			{#if res.element && elementIcon(res.element)}
-				<img class="cc-icon" src={elementIcon(res.element)} alt="" />
+				<img class="comp-icon" src={elementIcon(res.element)} alt="" />
 			{/if}
 			{res.label}
 		</span>
 	{/each}
 	{#each pairs as p (p.a + p.b)}
-		<span class="cc-chip" title={p.title}>
-			<span class="cc-pair" aria-hidden="true">
-				<img class="cc-icon cc-half cc-half--a" src={elementIcon(p.a)} alt="" />
-				<img class="cc-icon cc-half cc-half--b" src={elementIcon(p.b)} alt="" />
+		<span class="comp-chip" title={p.title}>
+			<span class="comp-pair" aria-hidden="true">
+				<img class="comp-icon comp-half comp-half--a" src={elementIcon(p.a)} alt="" />
+				<img class="comp-icon comp-half comp-half--b" src={elementIcon(p.b)} alt="" />
 			</span>
 			{p.label}
 		</span>
 	{/each}
 	{#each factions as f (f)}
-		<span class="cc-chip">{f}</span>
+		<span class="comp-chip">{f}</span>
 	{/each}
 </span>
 
 <style>
-	.cc {
+	.comp {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 4px;
 	}
-	.cc-chip {
+	.comp-chip {
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
@@ -125,30 +125,30 @@
 		font-size: var(--fs-xs);
 		white-space: nowrap;
 	}
-	.cc-chip:not(:has(img)) {
+	.comp-chip:not(:has(img)) {
 		padding-left: 7px;
 	}
-	.cc-icon {
+	.comp-icon {
 		width: 14px;
 		height: 14px;
 	}
 	/* The diagonal: both icons in one box, each keeping its side of the line
 	   from the top-right corner to the bottom-left. */
-	.cc-pair {
+	.comp-pair {
 		position: relative;
 		width: 16px;
 		height: 16px;
 	}
-	.cc-half {
+	.comp-half {
 		position: absolute;
 		inset: 0;
 		width: 16px;
 		height: 16px;
 	}
-	.cc-half--a {
+	.comp-half--a {
 		clip-path: polygon(0 0, 100% 0, 0 100%);
 	}
-	.cc-half--b {
+	.comp-half--b {
 		clip-path: polygon(100% 0, 100% 100%, 0 100%);
 	}
 </style>

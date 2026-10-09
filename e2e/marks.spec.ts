@@ -83,7 +83,7 @@ test.describe('control glyphs are geometry, not type', () => {
 		await expectSwept(page, '.bench-band-mount');
 	});
 
-	test('rotation planner — saved bank', async ({ page, seed }) => {
+	test('rotation planner — the library', async ({ page, seed }) => {
 		// Several swept glyphs only render once there is a saved entry to render.
 		await seed({
 			saved: [
@@ -93,7 +93,7 @@ test.describe('control glyphs are geometry, not type', () => {
 					notation: 'Hu Tao E N3 Q > Xingqiu E Q',
 					// ⚠ A PRE-SINGLE-TRUTH entry, kept deliberately: `manualSlots` is
 					// retired but still READ, and this is the one place the legacy fold
-					// (documentBar.load → foldTeamIntoNotation) runs at the browser
+					// (documentBar.loadNewTab → foldTeamIntoNotation) runs at the browser
 					// surface. Zhongli and Albedo are not in the notation, so opening
 					// this entry is what proves they still arrive.
 					manualSlots: ['hu_tao', 'xingqiu', 'zhongli', 'albedo'],
@@ -105,7 +105,7 @@ test.describe('control glyphs are geometry, not type', () => {
 		});
 		await openTool(page, '/rotation-planner');
 		await page.locator('.doc-actions button', { hasText: /Load/ }).first().click();
-		await expectSwept(page, '.sn-panel');
+		await expectSwept(page, '.lib');
 	});
 
 	test('visualizers — workspace and instrument picker', async ({ page }) => {

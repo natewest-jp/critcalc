@@ -2482,9 +2482,8 @@
 						<strong>The border sweep is unfinished.</strong> The pattern layer is done —
 						<code>.panel</code> and the Atlas cards (<code>.frame</code> is gone entirely). Roughly
 						<strong>70 bespoke edge borders</strong> remain in components, concentrated in
-						<code>RotationTimeline</code> (28), <code>SavedNotationsOverlay</code> (8) and
-						<code>CharacterCard</code> (6). Most should simply go; several are structural hairlines that
-						are a different thing entirely and should stay.
+						<code>RotationTimeline</code> (28) and <code>CharacterCard</code> (6). Most should simply
+						go; several are structural hairlines that are a different thing entirely and should stay.
 					</li>
 					<li>
 						<strong>Which surfaces earn an inset border?</strong> There are
