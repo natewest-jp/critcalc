@@ -39,8 +39,20 @@ const vapeAlt: SavedNotation = {
 	notation: 'Sucrose E > Xingqiu Q > Bennett Q > Xiangling Q E',
 	savedAt: 2
 };
-const team2: SavedNotation = { id: 't2', name: 'Two', notation: 'Bennett > Xiangling', savedAt: 3 };
-const library = [vape, vapeAlt, team2];
+const team2: SavedNotation = {
+	id: 't2',
+	name: 'Two',
+	notation: 'Bennett Q > Xiangling E',
+	savedAt: 3
+};
+/** A names-only entry is the TEAM (the library's heading), never a rotation. */
+const vapeTeam: SavedNotation = {
+	id: 'vape-team',
+	name: '',
+	notation: 'Bennett > Xiangling > Xingqiu > Sucrose',
+	savedAt: 4
+};
+const library = [vape, vapeAlt, team2, vapeTeam];
 
 let board: Board;
 beforeEach(() => {

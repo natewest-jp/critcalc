@@ -33,7 +33,14 @@ import {
 } from './rotationTabs.svelte';
 import { closeCandidate, createRecentlyClosed, type TabStripModel } from './tabSet';
 import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
-import { foldTeamIntoNotation } from './utils/notationEdit';
+import {
+	foldTeamIntoNotation,
+	notationHasActions,
+	orderedCharacterIds,
+	teamKey,
+	teamKeyOfNotation
+} from './utils/notationEdit';
+import { isTeamEntry, teamNotation } from './library';
 
 /**
  * The planner's timeline registers its two chart-bound exporters here on
@@ -67,6 +74,13 @@ export function copyName(label: string, taken: readonly string[]): string {
 	for (let n = 2; ; n++) {
 		if (!taken.includes(`${base} ${n}`)) return `${base} ${n}`;
 	}
+}
+
+/** Two level maps agree on every character either names. */
+function sameLevels(a: Record<string, number>, b: Record<string, number>): boolean {
+	const ids = new Set([...Object.keys(a), ...Object.keys(b)]);
+	for (const id of ids) if ((a[id] ?? 0) !== (b[id] ?? 0)) return false;
+	return true;
 }
 
 /** Rotation tabs closed in this browser, newest first (§9.3 of the lineups
@@ -207,8 +221,37 @@ class DocumentBarState {
 		};
 	}
 
+	/**
+	 * ⚓ Every rotation has a TEAM ENTRY (lineups design §10.1): a names-only
+	 * entry for its set, created here — at the one place entries are written —
+	 * so the team outlives its last rotation. Its name is the team's nickname,
+	 * '' until the player gives it one. Returns whether it already existed.
+	 */
+	#ensureTeamEntry(notation: string): boolean {
+		const ids = orderedCharacterIds(notation).slice(0, 4);
+		const key = teamKey(ids);
+		if (!key) return true;
+		const exists = get(savedNotations).some(
+			(e) => isTeamEntry(e) && teamKeyOfNotation(e.notation) === key
+		);
+		if (!exists) {
+			savedNotations.save({ name: '', notation: teamNotation(ids), tabLoadout: {}, tabCon: {} });
+		}
+		return exists;
+	}
+
+	/** Saving a document with no actions saves its TEAM, never a rotation. */
+	#saveTeamOnly(notation: string) {
+		this.showNotice(this.#ensureTeamEntry(notation) ? 'Already in your library' : 'Team saved');
+	}
+
 	/** Save a Recently closed tab to the bank (its "promotion"). */
 	saveClosed(tab: RotationTab) {
+		if (!notationHasActions(tab.notation)) {
+			this.#saveTeamOnly(tab.notation);
+			recentlyClosedRotations.remove(tab.id);
+			return;
+		}
 		const dense = this.#densifiedSnapshot(
 			slotsFromNotation(tab.notation),
 			tab.tabCon ?? {},
@@ -219,6 +262,7 @@ class DocumentBarState {
 		} else {
 			savedNotations.save({ name: tab.label, notation: tab.notation, ...dense });
 		}
+		this.#ensureTeamEntry(tab.notation);
 		recentlyClosedRotations.remove(tab.id);
 		this.showNotice('Saved');
 	}
@@ -261,13 +305,32 @@ class DocumentBarState {
 	 */
 	save() {
 		if (!this.hasContent) return;
+		if (!notationHasActions(rt.notation)) {
+			this.#saveTeamOnly(rt.notation);
+			return;
+		}
 		const activeTab = rt.activeTab;
 		const payload = this.#payload(activeTab.label);
 		if (activeTab.savedId) {
 			savedNotations.update(activeTab.savedId, payload);
 		} else {
+			// ⚓ Saving what the library already holds (an arriving link to your
+			// own rotation, say) links to it rather than filing a twin. Save as
+			// new never asks — forking is its point.
+			const twin = get(savedNotations).find(
+				(e) =>
+					!isTeamEntry(e) &&
+					e.notation.trim() === payload.notation.trim() &&
+					sameLevels(e.tabCon ?? {}, payload.tabCon)
+			);
+			if (twin) {
+				this.#link(twin.id, twin.name);
+				this.showNotice(`Already saved as “${twin.name}”`);
+				return;
+			}
 			this.#link(savedNotations.save(payload), activeTab.label);
 		}
+		this.#ensureTeamEntry(payload.notation);
 		this.showNotice('Saved');
 	}
 
@@ -287,6 +350,7 @@ class DocumentBarState {
 			get(savedNotations).map((e) => e.name)
 		);
 		this.#link(savedNotations.save(this.#payload(name)), name);
+		this.#ensureTeamEntry(rt.notation);
 		this.showNotice('Saved as new');
 	}
 
