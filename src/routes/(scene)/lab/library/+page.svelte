@@ -561,17 +561,30 @@
 						size={HEAD_DISC}
 					/>{/each}
 			</div>
-			<div class="lib-head-text">
-				{#if t.nickname}<span class="lib-nick">{t.nickname}</span>{/if}
-				<CompositionChips ids={t.slots} reactions={false} />
-				<span class="lib-meta">
-					{t.rotations.length === 0
-						? 'No rotation yet'
-						: t.rotations.length === 1
-							? '1 rotation'
-							: `${t.rotations.length} rotations`} · {ago(t.touched)}{#if t.boards.length}
-						· on {t.boards.join(', ')}{/if}
-				</span>
+			<!-- Every heading is as tall as a NICKNAMED one (Nate 2026-10-09). A
+			     heading without a nickname carries an invisible copy of itself WITH
+			     a nickname line in the same cell, and the real text centres against
+			     it, so the heights match by construction, not by a number. -->
+			<div class="lib-head-textbox">
+				{#if !t.nickname}
+					<div class="lib-head-text lib-head-sizer" aria-hidden="true">
+						<span class="lib-nick">&nbsp;</span>
+						<CompositionChips ids={t.slots} reactions={false} />
+						<span class="lib-meta">&nbsp;</span>
+					</div>
+				{/if}
+				<div class="lib-head-text">
+					{#if t.nickname}<span class="lib-nick">{t.nickname}</span>{/if}
+					<CompositionChips ids={t.slots} reactions={false} />
+					<span class="lib-meta">
+						{t.rotations.length === 0
+							? 'No rotation yet'
+							: t.rotations.length === 1
+								? '1 rotation'
+								: `${t.rotations.length} rotations`} · {ago(t.touched)}{#if t.boards.length}
+							· on {t.boards.join(', ')}{/if}
+					</span>
+				</div>
 			</div>
 		</div>
 		<!-- A heading needs the left AND middle tracks; its hint sits at its
@@ -1129,13 +1142,24 @@
 	.lib-head:hover:not(:has(.lib-more-btn:hover, .lib-menu:hover)) {
 		background: var(--surface-raised);
 	}
+	.lib-head-textbox {
+		display: grid;
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+	.lib-head-textbox > * {
+		grid-area: 1 / 1;
+	}
 	.lib-head-text {
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		flex: 0 1 auto;
 		min-width: 0;
+		align-self: center;
 		padding-bottom: 2px;
+	}
+	.lib-head-sizer {
+		visibility: hidden;
 	}
 	.lib-nick {
 		font-family: var(--font-display);
