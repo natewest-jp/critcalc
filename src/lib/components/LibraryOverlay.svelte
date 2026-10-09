@@ -741,6 +741,11 @@
 {/if}
 
 <style>
+	/* The portrait ring at --line-soft (Nate 2026-10-09): the library sits on
+	   slate, where the board's faint night ring would vanish. */
+	.lib :global(.spt-disc) {
+		border-color: var(--line-soft);
+	}
 	.lib-scrim {
 		position: fixed;
 		inset: 0;

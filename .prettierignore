@@ -43,3 +43,4 @@ docs/curation/gcsim-frames-diff.md
 # prettier would escape its `*` and `_`, and the ledger would then misquote the
 # code it inventories.
 docs/text/ledger/inventory/
+src/lib/fingerprintGlyphs.generated.ts

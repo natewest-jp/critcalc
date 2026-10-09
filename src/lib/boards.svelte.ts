@@ -64,7 +64,8 @@ export type Board = {
 	preset: BoardPreset;
 	teams: BoardTeam[];
 	/** ⚓ "No repeats" — ALLOW AND MARK (§2.2): a character on two teams is
-	 *  marked on both, never refused. On by default. */
+	 *  marked on both, never refused. ON for the endgame presets, where the game
+	 *  forbids it; OFF for Custom (Nate 2026-10-09). */
 	noRepeats: boolean;
 	/** A Stygian lineup's season — its game VERSION ("7.1"), set to the current
 	 *  season when the board is made and changeable from the board (§2.6). Team
@@ -114,7 +115,7 @@ export function makeBoard(label: string, preset: BoardPreset = 'custom'): Board 
 		label,
 		preset,
 		teams: Array.from({ length: PRESET_TEAMS[preset] }, () => makeTeam()),
-		noRepeats: true,
+		noRepeats: preset !== 'custom',
 		viewedAt: Date.now()
 	};
 }

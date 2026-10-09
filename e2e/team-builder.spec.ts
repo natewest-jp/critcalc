@@ -40,8 +40,9 @@ test.describe('roster and facets', () => {
 		// ⚓ 2026-10-07: TWO surfaces. The Atlas's role cards open the Roster now
 		// — full-size while nothing narrows it, the grid right beneath them.
 		await openTool(page, '/team-builder');
-		// ↻ 2026-10-08: band B is the split control — Roster · Roster + board · Board.
-		await expect(page.locator('.band-b .tb-nav-item'), 'the three split positions').toHaveCount(3);
+		// ↻ 2026-10-09: band B is the split control — TWO positions at any width
+		// (Roster · Roster + board wide, Roster · Board on a phone).
+		await expect(page.locator('.band-b .tb-nav-item'), 'the two split positions').toHaveCount(2);
 		await expect(page.locator('.tb-atlas .rolecard'), 'four role cards').toHaveCount(4);
 		await expect(page.locator('.cg-grid').first().locator('.cc')).toHaveCount(ROSTER_SIZE);
 		await expect(
@@ -246,20 +247,31 @@ test.describe('the board', () => {
 		expect(await boardNames(page)).toEqual(['Jean']);
 	});
 
-	test('a selected slot is where the next pick lands', async ({ page, seed }) => {
+	test('a selected TEAM fills in click order, and a second pick frees the slot', async ({
+		page,
+		seed
+	}) => {
 		await seed({ board: { teams: [['bennett'], [null]] } });
 		await openTool(page, '/team-builder');
-		// Team 2, slot 3.
+		// ⚓ The game's model: select a ROW (any slot selects it), picks land in
+		// its earliest empty slot, the same pick again takes it out.
 		await page.locator('.bv-team').nth(1).locator('.bv-slot').nth(2).click();
-		await openDetail(page, 'Furina');
-		await page.locator('.dc-team').click();
-		await page.keyboard.press('Escape');
-		const team2 = await page
-			.locator('.bv-team')
-			.nth(1)
-			.locator('.bv-slot')
-			.evaluateAll((els) => els.map((e) => e.getAttribute('data-name')));
-		expect(team2).toEqual(['', '', 'Furina', '']);
+		const pick = async (name: string) => {
+			await openDetail(page, name);
+			await page.locator('.dc-team').click();
+			await page.keyboard.press('Escape');
+		};
+		const team2 = () =>
+			page
+				.locator('.bv-team')
+				.nth(1)
+				.locator('.bv-slot')
+				.evaluateAll((els) => els.map((e) => e.getAttribute('data-name')));
+		await pick('Furina');
+		await pick('Xingqiu');
+		expect(await team2()).toEqual(['Furina', 'Xingqiu', '', '']);
+		await pick('Furina');
+		expect(await team2(), 'the others keep their places').toEqual(['', 'Xingqiu', '', '']);
 	});
 
 	test('a preset board opens with its teams', async ({ page }) => {

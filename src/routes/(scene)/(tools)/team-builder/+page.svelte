@@ -54,7 +54,7 @@
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
-	import BoardView, { type SlotRef } from './lib/BoardView.svelte';
+	import BoardView from './lib/BoardView.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
 	import { buildRoleCards, buildRoleSections, categoryOf } from './lib/atlas';
 	import type { RoleCategory, RoleFilter } from './lib/roles';
@@ -173,19 +173,24 @@
 	// THE SPLIT SCREEN (lineups design §2.4, build step 3)
 	//
 	// Genshin's own endgame party screen is this shape: the roster on the left,
-	// the battlefields on the right. Three states, one control:
+	// the battlefields on the right. ONE control, TWO states at any width:
 	//   'roster' — full width; the cold start, offering "Build a team";
-	//   'split'  — the roster beside the board;
-	//   'board'  — the board full width, for reviewing a whole lineup.
-	// Each half stays MOUNTED while hidden, so it keeps its scroll and filters.
-	// ⚓ On a phone there is no 50/50: two full-screen states, the same wipe.
+	//   'split'  — the roster beside the board (a wide screen);
+	//   'board'  — the board full width (a phone, where there is no 50/50).
+	// ↻ Nate 2026-10-09: a full-width board on a WIDE screen was dead space — a
+	// column of rows with nothing in the width — so it is a phone state only,
+	// and the split is a wide state only. Each half stays MOUNTED while hidden,
+	// so it keeps its scroll and filters.
 	// ---------------------------------------------------------------------------
 
 	type SplitView = 'roster' | 'split' | 'board';
 	let view = $state<SplitView>('roster');
 	const narrow = $derived(below('toolMin'));
-	/** What actually renders — 'split' has no room below toolMin. */
-	const effectiveView = $derived<SplitView>(narrow && view === 'split' ? 'board' : view);
+	/** What actually renders — 'split' has no room below toolMin, and 'board'
+	 *  has nothing to fill above it. */
+	const effectiveView = $derived<SplitView>(
+		narrow && view === 'split' ? 'board' : !narrow && view === 'board' ? 'split' : view
+	);
 
 	/** The cold start: once the boards are restored, a board with anyone on it
 	 *  opens beside the roster; an empty one leaves the roster full width. Runs
@@ -212,47 +217,53 @@
 	/** Linked to a saved board that still exists (Save → Save changes). */
 	const boardLinked = $derived(!!board.savedId && $savedBoards.some((b) => b.id === board.savedId));
 
-	/** The slot the roster's next pick lands in (step 6 turns this into swap
-	 *  mode). Cleared when its board or team goes away. */
-	let selectedSlot = $state<SlotRef | null>(null);
+	/** THE TEAM the roster's picks fill (Nate 2026-10-09, the game's own model):
+	 *  a ROW is selected, never a slot, and picks land in its earliest empty
+	 *  slot in the order clicked. `chosenTeamId` is the reader's click; with
+	 *  none, the selection FOLLOWS the board — the first team with room, else
+	 *  the first — so four picks fill a team and the fifth starts the next.
+	 *  ⚠ The library places only into a CHOSEN team: a default is not a
+	 *  request to replace someone's lineup. */
+	let chosenTeamId = $state<string | null>(null);
 	$effect(() => {
-		if (selectedSlot && !board.teams.some((t) => t.id === selectedSlot!.teamId)) {
-			selectedSlot = null;
-		}
+		if (chosenTeamId && !board.teams.some((t) => t.id === chosenTeamId)) chosenTeamId = null;
+	});
+	const selectedTeam = $derived(
+		board.teams.find((t) => t.id === chosenTeamId) ??
+			board.teams.find((t) => t.slots.includes(null)) ??
+			board.teams[0]
+	);
+	/** A pick that found the team full — the card's button and the row shake
+	 *  once (a nudge, ⛔ never a dialog). */
+	let nudge = $state<{ id: string; at: number } | null>(null);
+	$effect(() => {
+		if (!nudge) return;
+		const t = setTimeout(() => (nudge = null), 600);
+		return () => clearTimeout(t);
 	});
 
-	/** Every character on the active board. */
-	const onBoard = $derived(board.teams.flatMap((t) => t.slots).filter((s) => s !== null));
-
-	/** Where a roster pick lands: the selected slot, else the first empty slot
-	 *  on the board, else a new team. Returns false when the board is full. */
-	function placeOnBoard(id: string): boolean {
-		if (selectedSlot) {
-			const { teamId, index } = selectedSlot;
-			boards.setSlot(board.id, teamId, index, id);
-			// Walk on to the team's next empty slot, so four picks fill a team.
-			const team = boards.activeBoard.teams.find((t) => t.id === teamId);
-			const next = team?.slots.findIndex((s, i) => s === null && i > index) ?? -1;
-			selectedSlot = next >= 0 ? { teamId, index: next } : null;
-			return true;
+	/** A pick lands in the selected team's EARLIEST empty slot. Returns
+	 *  whether that filled the team, or null when it was already full (the
+	 *  nudge). ⚓ A character on ANOTHER team is not moved: repeats are allowed
+	 *  and marked (`Board.noRepeats`). */
+	function placeOnBoard(id: string): boolean | null {
+		const team = selectedTeam;
+		if (!team) return null;
+		const i = team.slots.indexOf(null);
+		if (i < 0) {
+			nudge = { id, at: Date.now() };
+			return null;
 		}
-		for (const team of board.teams) {
-			const i = team.slots.indexOf(null);
-			if (i >= 0) {
-				boards.setSlot(board.id, team.id, i, id);
-				return true;
-			}
-		}
-		const added = boards.addTeam(board.id, [id]);
-		return !!added;
+		boards.setSlot(board.id, team.id, i, id);
+		return team.slots.filter((s) => s === null).length === 1;
 	}
 
+	/** Out of the SELECTED team, leaving its slot empty — the others keep
+	 *  their places, as in the game, and the next pick fills the gap. */
 	function removeFromBoard(id: string): void {
-		for (const team of board.teams) {
-			team.slots.forEach((s, i) => {
-				if (s === id) boards.setSlot(board.id, team.id, i, null);
-			});
-		}
+		const team = selectedTeam;
+		const i = team?.slots.indexOf(id) ?? -1;
+		if (team && i >= 0) boards.setSlot(board.id, team.id, i, null);
 	}
 
 	/** Open a team in the Planner: its pinned rotation, else its bare names
@@ -280,13 +291,13 @@
 	onMount(() =>
 		library.registerTarget({
 			get selectedLabel() {
-				if (!selectedSlot) return null;
-				const i = board.teams.findIndex((t) => t.id === selectedSlot!.teamId);
+				if (!chosenTeamId) return null;
+				const i = board.teams.findIndex((t) => t.id === chosenTeamId);
 				return i >= 0 ? `Team ${i + 1}` : null;
 			},
 			place(slots, pinnedRotationId) {
 				const target =
-					board.teams.find((t) => t.id === selectedSlot?.teamId) ??
+					board.teams.find((t) => t.id === chosenTeamId) ??
 					board.teams.find((t) => t.slots.every((s) => s === null)) ??
 					boards.addTeam(board.id);
 				if (!target) {
@@ -295,7 +306,7 @@
 				}
 				boards.setTeam(board.id, target.id, slots);
 				if (pinnedRotationId) boards.pin(board.id, target.id, pinnedRotationId);
-				selectedSlot = null;
+				chosenTeamId = null;
 				if (view === 'roster') view = 'split';
 			}
 		})
@@ -310,7 +321,7 @@
 	function newBoard(preset: BoardPreset): void {
 		// A Stygian lineup opens on the season running now (§2.6).
 		boardBar.newBoard(preset, preset === 'stygian' ? currentSeason()?.version : undefined);
-		selectedSlot = null;
+		chosenTeamId = null;
 		if (view === 'roster') view = 'split';
 	}
 
@@ -928,13 +939,20 @@
 	const coverageCapOf = (id: string) =>
 		conCapFor(conMode, rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0));
 
-	/** A card's team action is about the BOARD now (step 3): on it, or not. A
-	 *  pick always finds room (a new team), so 'full' only at the team limit. */
-	const teamStateOf = (id: string): 'in' | 'out' | 'full' => (onBoard.includes(id) ? 'in' : 'out');
+	/** A card's team action is about the SELECTED team: in it, or not, or it
+	 *  is full ('full' stays clickable — the click is what earns the nudge). */
+	const teamStateOf = (id: string): 'in' | 'out' | 'full' =>
+		selectedTeam?.slots.includes(id) ? 'in' : selectedTeam?.slots.includes(null) ? 'out' : 'full';
 
+	/** ⚓ The game's toggle: a pick fills the selected team, the same pick again
+	 *  frees its slot. From the full-width roster a wide screen opens the split
+	 *  at once; a phone lets you fill the team first, then shows the board. */
 	function toggleTeam(id: string): void {
-		if (onBoard.includes(id)) removeFromBoard(id);
-		else if (placeOnBoard(id) && effectiveView === 'roster') view = narrow ? 'roster' : 'split';
+		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
+		const filled = placeOnBoard(id);
+		if (filled === null || effectiveView !== 'roster') return;
+		if (!narrow) view = 'split';
+		else if (filled) view = 'board';
 	}
 
 	// Capability badges → the card's ordered tag chips: active facets first, then
@@ -995,7 +1013,7 @@
 	<button
 		class="tb-act"
 		class:tb-act--on={teamState === 'in'}
-		disabled={teamState === 'full'}
+		class:tb-nudge={nudge?.id === entry.id}
 		onclick={() => toggleTeam(entry.id)}
 		title={teamState === 'in'
 			? 'In your team'
@@ -1356,7 +1374,7 @@
 		     plates, because it does the old navigation's job: decide what the
 		     tool is showing you. -->
 		<div class="tb-nav" role="tablist" aria-label="Team Builder views">
-			{#each SPLIT_VIEWS.filter((v) => !(narrow && v.key === 'split')) as v (v.key)}
+			{#each SPLIT_VIEWS.filter((v) => v.key !== (narrow ? 'split' : 'board')) as v (v.key)}
 				{@const on = effectiveView === v.key}
 				<button
 					class="tb-nav-item"
@@ -1424,9 +1442,10 @@
 			>
 				<BoardView
 					{board}
-					selected={selectedSlot}
-					onSelect={(slot) => (selectedSlot = slot)}
-					onEmpty={(slot) => boards.setSlot(board.id, slot.teamId, slot.index, null)}
+					selectedTeamId={selectedTeam?.id ?? null}
+					onSelectTeam={(id) => (chosenTeamId = id)}
+					nudgeAt={nudge?.at ?? null}
+					onNoRepeats={(on) => boards.setNoRepeats(board.id, on)}
 					onAddTeam={() => boards.addTeam(board.id)}
 					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
 					onOpenInPlanner={openInPlanner}
@@ -2296,6 +2315,15 @@
 			border-color var(--t-snap),
 			background var(--t-snap),
 			color var(--t-snap);
+	}
+	.tb-act.tb-nudge {
+		animation: nudge 120ms 2;
+		border-color: var(--ui-warning);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.tb-act.tb-nudge {
+			animation: none;
+		}
 	}
 	.tb-act-glyph {
 		display: flex;

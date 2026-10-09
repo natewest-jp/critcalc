@@ -15,11 +15,17 @@
 	 *     the reactions that matter here), the FINGERPRINT (placeholder pips
 	 *     until Nate's icons), and its rotations with the PIN (§10.2).
 	 *
-	 * A selected slot is where the roster's next pick lands (swap mode is step 6).
+	 * A selected TEAM is where the roster's picks land, in click order (Nate
+	 * 2026-10-09, the game's own model) — a frame around its portraits, gold
+	 * as everywhere a thing is chosen. A filled portrait is not a control: it
+	 * selects its row and nothing else, and a pick leaves by being picked again.
+	 * ⚓ "No repeats" ALLOWS AND MARKS: a character on two teams wears a warning
+	 * mark on both, while the board's toggle is on.
 	 */
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
+	import { sideLayout } from '$lib/sidePortrait';
 	import CompositionChips from '$lib/components/CompositionChips.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { constellations, ownership, savedNotations } from '$lib/stores';
@@ -27,6 +33,7 @@
 		BOARD_TEAM_LIMIT,
 		effectiveCon,
 		pinnedRotation,
+		repeatedCharacters,
 		rotationsForTeam,
 		teamCon,
 		type Board,
@@ -54,14 +61,17 @@
 	const BOARD_PORTRAIT = 56;
 	/** 🎛️ The boss avatar — a little larger than a member, as in the game. */
 	const BOSS_DISC = 88;
-
-	export type SlotRef = { teamId: string; index: number };
+	/** How far a member's art rises above its ring — the portrait reserves it,
+	 *  and the row frame hugs the RINGS, so hair rises out over the frame as in
+	 *  the game rather than being boxed in a strip of empty headroom. */
+	const OVERHANG = sideLayout(BOARD_PORTRAIT).overhang;
 
 	let {
 		board,
-		selected,
-		onSelect,
-		onEmpty,
+		selectedTeamId,
+		onSelectTeam,
+		nudgeAt,
+		onNoRepeats,
 		onAddTeam,
 		onRemoveTeam,
 		onOpenInPlanner,
@@ -69,9 +79,11 @@
 		onSeason
 	}: {
 		board: Board;
-		selected: SlotRef | null;
-		onSelect: (slot: SlotRef | null) => void;
-		onEmpty: (slot: SlotRef) => void;
+		selectedTeamId: string | null;
+		onSelectTeam: (teamId: string) => void;
+		/** Set when a pick found the selected team full — the row shakes once. */
+		nudgeAt: number | null;
+		onNoRepeats: (on: boolean) => void;
 		onAddTeam: () => void;
 		onRemoveTeam: (teamId: string) => void;
 		onOpenInPlanner: (team: BoardTeam) => void;
@@ -86,8 +98,27 @@
 	const ownedConOf = (id: string): number | null | undefined =>
 		!rosterHasContent ? undefined : $ownership[id] === 'owned' ? ($constellations[id] ?? 0) : null;
 
-	const isSelected = (teamId: string, index: number) =>
-		selected?.teamId === teamId && selected.index === index;
+	let shaking = $state(false);
+	$effect(() => {
+		if (!nudgeAt) return;
+		shaking = true;
+		const t = setTimeout(() => (shaking = false), 300);
+		return () => clearTimeout(t);
+	});
+
+	/** Who sits on more than one team — shown only while the toggle is on. */
+	const repeats = $derived(
+		board.noRepeats ? repeatedCharacters(board.teams.map((t) => t.slots)) : {}
+	);
+	/** A team's name as its header says it, for the repeat mark's sentence. */
+	const teamName = (t: number) =>
+		season?.battlefields[t]
+			? `Battlefield ${t + 1}`
+			: abyss && t < 2
+				? t === 0
+					? 'the first half'
+					: 'the second half'
+				: `Team ${t + 1}`;
 
 	// ── The lineup's battlefields ────────────────────────────────────────────
 	const seasons = liveSeasons();
@@ -182,6 +213,7 @@
 		{@const verdicts = field ? verdictsFor(field, facts.ids, facts.conOf) : undefined}
 		{@const rotations = rotationsForTeam(team, $savedNotations)}
 		{@const pin = pinnedRotation(team, $savedNotations)}
+		{@const sel = team.id === selectedTeamId}
 		<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
 		     is glass (the site — a battlefield, an Abyss half); everything under
 		     it stands on the night. A battlefield's header fuses its number with
@@ -251,10 +283,19 @@
 						</div>
 					{/if}
 					<div class="bv-lineup-row">
-						<div class="bv-slots">
+						<!-- The whole strip is the row's hit area (the slots are its
+						     keyboard path), framed when selected. -->
+						<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+						<div
+							class="bv-slots"
+							style:--over="{OVERHANG}px"
+							class:bv-slots--sel={sel}
+							class:bv-slots--nudge={sel && shaking}
+							onclick={() => onSelectTeam(team.id)}
+						>
 							{#each team.slots as id, i (i)}
-								{@const sel = isSelected(team.id, i)}
 								{@const entry = id ? getCharacterIndexEntry(id) : undefined}
+								{@const others = id ? repeats[id]?.filter((x) => x !== t) : undefined}
 								<div class="bv-slot-wrap">
 									<button
 										class="bv-slot"
@@ -263,22 +304,27 @@
 										aria-label={entry
 											? `${entry.displayName}, team ${t + 1} slot ${i + 1}`
 											: `Empty, team ${t + 1} slot ${i + 1}`}
-										onclick={() => onSelect(sel ? null : { teamId: team.id, index: i })}
+										onclick={(e) => {
+											e.stopPropagation();
+											onSelectTeam(team.id);
+										}}
 									>
 										<SidePortrait
 											{id}
 											size={BOARD_PORTRAIT}
 											con={id ? facts.conOf(id) : undefined}
 											ownedCon={id ? ownedConOf(id) : undefined}
-											selected={sel}
 										/>
 									</button>
-									{#if id}
-										<button
-											class="bv-slot-clear"
-											onclick={() => onEmpty({ teamId: team.id, index: i })}
-											aria-label="Take {entry?.displayName ?? id} off team {t + 1}"
-											><Mark name="close" size={10} /></button
+									{#if others?.length}
+										<!-- ⏭ Working copy (copy step 8). -->
+										<span
+											class="bv-repeat"
+											role="img"
+											aria-label="Also on {others.map(teamName).join(' and ')}"
+											title="{entry?.displayName ?? id} is also on {others
+												.map(teamName)
+												.join(' and ')}"><Mark name="warn" size={12} /></span
 										>
 									{/if}
 								</div>
@@ -331,9 +377,21 @@
 			</div>
 		</section>
 	{/each}
-	{#if board.teams.length < BOARD_TEAM_LIMIT}
-		<button class="btn bv-add-team" onclick={onAddTeam}><Mark name="plus" /> Add team</button>
-	{/if}
+	<footer class="bv-foot">
+		{#if board.teams.length < BOARD_TEAM_LIMIT}
+			<button class="btn bv-add-team" onclick={onAddTeam}><Mark name="plus" /> Add team</button>
+		{/if}
+		<!-- ⏭ Working copy (copy step 8). -->
+		<label class="toggle bv-norepeat" title="Mark a character who is on more than one team">
+			<input
+				type="checkbox"
+				checked={board.noRepeats}
+				onchange={(e) => onNoRepeats(e.currentTarget.checked)}
+			/>
+			<span class="toggle-track"><span class="toggle-thumb"></span></span>
+			<span class="toggle-label">No repeats</span>
+		</label>
+	</footer>
 </div>
 
 {#if opponents !== null && abyss}
@@ -521,7 +579,7 @@
 		width: var(--boss);
 		height: var(--boss);
 		padding: 0;
-		border: 2px solid var(--line-strong);
+		border: 2px solid var(--line-faint); /* the members' night ring */
 		border-radius: var(--r-round);
 		background: var(--surface-well);
 		cursor: pointer;
@@ -550,9 +608,45 @@
 	}
 
 	/* ── The lineup ── */
+	/* The row's frame. At rest it holds its geometry with no paint, so
+	   selecting a row moves nothing; selected, the game's frame — a ring and a
+	   gold bar at its end — in the site's gold for "chosen". */
+	/* The row's frame hugs the RINGS: the art's overhang is pulled out of the
+	   layout (a negative margin) and the frame (::before) starts below it, so
+	   hair rises over the frame's top edge. At rest the frame is unpainted, so
+	   selecting a row moves nothing; selected it is the game's — a ring whose
+	   END is heavier — in the site's gold for "chosen". */
 	.bv-slots {
+		position: relative;
 		display: flex;
 		gap: 18px; /* Nate 2026-10-09 */
+		padding: 6px 20px 6px 8px;
+		margin: calc(-1 * var(--over)) 0 -6px -8px;
+		cursor: pointer;
+	}
+	.bv-slots::before {
+		content: '';
+		position: absolute;
+		inset: var(--over) 0 0;
+		border: 1px solid transparent;
+		border-right-width: 5px;
+		border-radius: var(--r-md);
+		pointer-events: none;
+		transition: border-color var(--t-snap);
+	}
+	.bv-slots:hover:not(.bv-slots--sel)::before {
+		border-color: var(--line-soft);
+	}
+	.bv-slots--sel::before {
+		border-color: var(--sel-ring);
+	}
+	.bv-slots--nudge {
+		animation: nudge 120ms 2;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.bv-slots--nudge {
+			animation: none;
+		}
 	}
 	/* The board's ring is the FAINT line (Nate 2026-10-09): on the night four
 	   strong rings read as a row of buttons, not of portraits. */
@@ -567,7 +661,7 @@
 		width: 56px;
 	}
 	/* The slot is a bare hit area around the portrait, which draws its own
-	   ring, selection and empty state. Hover lifts the ring to ink. */
+	   ring and empty state; the ROW frames the selection. */
 	.bv-slot {
 		padding: 0;
 		border: none;
@@ -575,33 +669,20 @@
 		cursor: pointer;
 		border-radius: var(--r-round);
 	}
-	.bv-slot:hover :global(.spt-disc:not(.spt-disc--selected)) {
-		box-shadow: 0 0 0 1px var(--glass-ring);
-	}
-	/* The remove control appears with the slot's hover (or keyboard focus), so
-	   four resting ✕s do not crowd the portraits. */
-	.bv-slot-clear {
+	/* A repeat: the warning mark, on its own ground so art never muddies it. */
+	.bv-repeat {
 		position: absolute;
-		top: 0;
-		right: 0;
-		width: 18px;
-		height: 18px;
+		/* The disc's bottom left (Nate 2026-10-09) — the constellation chip holds
+		   the bottom right. ⏭ Watch it against chins over time. */
+		bottom: 0;
+		left: -4px;
+		width: 20px;
+		height: 20px;
 		display: grid;
 		place-items: center;
-		padding: 0;
-		border: none;
-		border-radius: 50%;
-		background: var(--btn-face, var(--surface-raised));
-		color: var(--muted);
-		cursor: pointer;
-		visibility: hidden;
-	}
-	.bv-slot-wrap:hover .bv-slot-clear,
-	.bv-slot-clear:focus-visible {
-		visibility: visible;
-	}
-	.bv-slot-clear:hover {
-		color: var(--text);
+		border-radius: var(--r-round);
+		background: var(--surface-well);
+		color: var(--ui-warning);
 	}
 	.bv-rotations {
 		display: flex;
@@ -610,7 +691,14 @@
 		font-size: var(--fs-sm);
 		color: var(--text);
 	}
-	.bv-add-team {
-		align-self: flex-start;
+	.bv-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+	.bv-norepeat {
+		margin-left: auto;
+		font-size: var(--fs-sm);
 	}
 </style>
