@@ -46,6 +46,14 @@ export type { IdentityFilters };
 /** Roster-ledger view: everyone, only owned, or only wishlisted. */
 export type OwnershipView = 'all' | 'owned' | 'wishlist';
 
+/** The Show segment's choices — band B's character cell, or More when the
+ *  cell folds it. */
+export const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
+	{ key: 'all', label: 'All', hint: 'Every character' },
+	{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
+	{ key: 'wishlist', label: 'Wishlist', hint: 'Only characters you’ve wishlisted' }
+];
+
 export type RosterSplit = {
 	/** Characters passing every active filter (judged on their capability data). */
 	matches: CharacterIndexEntry[];

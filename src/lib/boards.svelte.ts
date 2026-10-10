@@ -67,9 +67,10 @@ export type Board = {
 	 *  marked on both, never refused. ON for the endgame presets, where the game
 	 *  forbids it; OFF for Custom (Nate 2026-10-09). */
 	noRepeats: boolean;
-	/** A Stygian lineup's season — its game VERSION ("7.1"), set to the current
-	 *  season when the board is made and changeable from the board (§2.6). Team
-	 *  i stands on battlefield i. ⚠ A string only: the season DATA is the Team
+	/** A Stygian lineup's season — its game VERSION ("7.1"), changeable from the
+	 *  board (§2.6). Team i stands on battlefield i. ↻ §11.6: UNSET means "the
+	 *  current season" — an untouched board follows the game, and the Team
+	 *  Builder pins it here on the board's first edit. ⚠ A string only: the season DATA is the Team
 	 *  Builder's (`$lib/endgame`), and this module is reached from the Planner
 	 *  too, so it must not import 187 KB of bosses. */
 	season?: string;
@@ -195,7 +196,11 @@ function loadFromStorage(): { boards: Board[]; activeBoardId: string } | null {
 }
 
 class BoardsState {
-	boards = $state<Board[]>([makeBoard('Board 1')]);
+	/** ⚓ The cold start is the CURRENT Stygian Onslaught (§11.2): the tool at
+	 *  its most useful, the mode most players come for. No `season` is stored, so
+	 *  the board FOLLOWS the season (the Team Builder reads an unset season as
+	 *  the current one) until its first edit pins it (§11.6 item 4). */
+	boards = $state<Board[]>([makeBoard('Board 1', 'stygian')]);
 	activeBoardId = $state<string>(this.boards[0].id);
 	restored = $state(false);
 

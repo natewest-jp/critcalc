@@ -794,3 +794,84 @@ Also pending: 🎨 Nate is drawing the glyphs (memory `project_tb_round_2026_10`
 concept list); ⚠️ data gaps for a later data pass — Chongyun has NO infuse effect;
 Xingqiu's interruption resistance doesn't derive (`interruptionRes` = Gorou + Columbina
 only; Noelle/Thoma absent too).
+
+### 11.6 ⚓ Rulings of 2026-10-10 (later) — §11.4 decided
+
+1. **Entry points.** Band A's Load becomes **Library**, with Lucide's `LibraryBig` (books on
+   a shelf) in place of the folder. A **Roster** button joins the SITE CHROME beside the
+   settings cog: the roster belongs to the account, not to the document band A edits, and
+   the chrome reaches every tool, the Visualizers included. It opens the Library on its
+   Roster tab, so there is still only one Roster screen; below `roomy` it folds into the
+   compass. Its mark is Nate's hand-drawn **Aether silhouette**, traced from the game's
+   Character button: that button is where a player sees what they own and unlocks
+   constellations. ⛔ Not the game's Party Setup glyph, which names what the Team Builder
+   now is. The word stays **Roster** (⛔ "Characters" is the grid's word).
+2. **Only the Roster tab edits the roster.** The character details in BOTH tools become
+   read-only ("Owned · C2") with a link that opens the Roster tab on that character. The
+   Planner's note "can only be changed in the Team Builder" goes.
+3. **Docking width is MEASURED in step 1**, at the width where the roster still holds
+   enough columns, with the phone's Characters | Lineup tabs below it. The **compact card**
+   (portrait + name, no chips; the deleted 2026-08-11 band) comes back only if the
+   measurement shows it lowers that threshold.
+4. **An untouched default Stygian board follows the season**: a board the user never
+   edited moves to the newest live season. ⛔ An edited board never changes.
+5. **The level 70+ flag is DEFERRED** and ships with the Imaginarium Theater feature
+   (post-launch). ⛔ No field without a reader.
+6. **Wishlist stays.**
+7. **The Roster tab is designed together** before step 2 is built.
+8. **Frame colours are PER TEAM** (re-reading the reference: Battlefield 1 green,
+   Battlefield 2 blue, the selected Battlefield 3 empty). A placeholder hue per team,
+   with a MATCHING-HUE EDGE on each Lineup row as the key, judged live (on element-washed
+   backs). The corner number stays the slot.
+   - ⚓ **Selecting vs swapping**: anything on an UNSELECTED row (its edge, empty space, a
+     portrait) selects the row, nothing else. A FILLED portrait in the SELECTED row enters
+     swap mode; Escape or a second click leaves it. A swap always takes a deliberate click
+     on a row already shown as selected.
+9. **Audition is a temporary casualty** of steps 1–4: it may break or read oddly until
+   swap mode replaces it in step 5. Nobody else uses the site yet.
+10. **No sectioned grid.** The game's "Exalted Ones" is a live, usage-driven buff list we
+    will not show. Section only if a filtering need asks for it.
+11. **Phone tabs: Characters | Lineup.** The details panel runs capabilities →
+    owned/constellation (read-only) → coverage → kit, judged once the tool is played with.
+12. **The empty roster gets a hint**: until the roster has content, the filter bar carries
+    one quiet line pointing at the Roster, because the Owned filter and the "My
+    constellations" lens do nothing without it.
+13. **The battlefield header** (all 28 Stygian bosses measured in Chrome):
+    - The whole heading, "Battlefield 1: …", is **Bitter bold 13px, mixed case**. The old
+      Plex 12px caps with `--ls-widest` ran a median 509px and a longest 707px; Bitter 13px
+      runs 372 / 508, so every English name fits on ONE line. EN names have no length cap
+      (longest 69 characters; PT 82, RU 75).
+    - **Colour: white, to be judged** (gold is the game's; the house rule makes a title
+      not gold). It can switch back.
+    - **"Open in Planner" moves to the rotation line** under the portraits (📌 pinned
+      rotation ▾ · → Open in Planner). That line appears exactly when the team is full,
+      which is when the button works, and the rotation is its subject.
+    - **✕ is Custom-only.** It showed on Stygian/Abyss boards whenever `teams.length > 1`.
+    - A Stygian header holds only the name; Abyss keeps "Opponents" per half.
+14. `main` is NOT pushed until these changes are further along (⚓ Nate).
+15. **Band B is CUT AT THE DOCK** (⚓ Nate, the same evening — the freed band "is a gift"),
+    the Visualizers' per-tile shape: the band paints nothing, and its cells sit on the
+    dock's own columns (`lib/dock.ts` holds `BOARD_W`/`DOCK_GAP` once for both rows).
+    - The character cell holds search · All/Owned/Wishlist · More · the constellation lens
+      (last). The cell is MEASURED and folds Show, then the lens, into More when it runs
+      short (`FOLD_SHOW_W` / `FOLD_LENS_W`). The roles, elements and count stay on a strip
+      over the grid.
+    - The lineup cell's first resident is No repeats; more will settle there as we build.
+    - Below the dock ONE cell shows, the open pane's, led by the **pane switch**:
+      ⚓ ONE glass plate naming the pane it OPENS (Lucide `PanelRightOpen` "Lineup" /
+      `PanelLeftOpen` "Characters"). The Bitter parchment tab plates are retired. Tapping
+      an EMPTY slot on the Lineup also opens Characters.
+16. **Refinements, the same evening (⚓ Nate):**
+    - The character cell's order is **Show · search · More · lens**. The Show segment's
+      buttons are the control height less the track's 2px, so its selected ring and
+      hover sit inside the track.
+    - The lineup cell is a **rail** that always spans its pane, the Planner's band B
+      middle, with the controls at its END: **+ Add team** (Custom only) then
+      **No repeats**. The board's own footer is gone.
+    - The role and element strip is a glass context, so its plates hover as glass.
+    - **The board's width steps at `broad` and `vast`: 580 / 720 / 800** (fixed within
+      each range). From `broad` the board is ROOMY and its contents grow with it:
+      portraits 64 (the side art's planned size, pixel for pixel on 2×), boss 104,
+      fingerprint glyphs 20, chip type one rung up.
+    - The heading is **14px** (back on the ladder); at 580 the longest few names wrap.
+      More room between teams (1.75rem) and inside them.

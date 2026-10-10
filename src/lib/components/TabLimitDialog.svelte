@@ -59,8 +59,8 @@
 	<div class="tl-panel ctx-dark" role="alertdialog" aria-modal="true" aria-labelledby="tl-title">
 		<h2 class="title" id="tl-title">Close a tab to open this one</h2>
 		<p class="tl-body">
-			All {TAB_LIMIT} tabs are open. The tab you close goes to <strong>Recently closed</strong>,
-			under Load, where you can reopen it.
+			All {TAB_LIMIT} tabs are open. The tab you close goes to <strong>Recently closed</strong>, in
+			the Library, where you can reopen it.
 		</p>
 		<ul class="tl-list" role="radiogroup" aria-label="Tab to close">
 			{#each tabs as tab (tab.id)}

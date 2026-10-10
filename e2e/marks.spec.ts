@@ -55,11 +55,6 @@ async function expectSwept(page: Page, present: string) {
 }
 
 test.describe('control glyphs are geometry, not type', () => {
-	test('team builder — atlas', async ({ page }) => {
-		await openTool(page, '/team-builder');
-		await expectSwept(page, '.tb-atlas');
-	});
-
 	test('team builder — roster', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
@@ -104,7 +99,10 @@ test.describe('control glyphs are geometry, not type', () => {
 			]
 		});
 		await openTool(page, '/rotation-planner');
-		await page.locator('.doc-actions button', { hasText: /Load/ }).first().click();
+		await page
+			.locator('.doc-actions button', { hasText: /Library/ })
+			.first()
+			.click();
 		await expectSwept(page, '.lib');
 	});
 

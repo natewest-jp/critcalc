@@ -79,8 +79,8 @@
 		title="Open the library"
 		onclick={() => library.show('planner')}
 	>
-		<Mark name="load" />
-		<span class="da-label">Load</span>
+		<Mark name="library" />
+		<span class="da-label">Library</span>
 	</button>
 
 	<BandMenu label="Share" mark="share" disabled={!db.hasContent}>

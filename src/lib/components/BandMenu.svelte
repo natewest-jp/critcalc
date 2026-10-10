@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { portal } from '$lib/actions/portal';
 	import Mark from './Mark.svelte';
@@ -30,6 +30,7 @@
 		role = 'menu',
 		align = 'end',
 		size,
+		glass = false,
 		items
 	}: {
 		/** Button text. Omit for an icon-only trigger (pass ariaLabel instead). */
@@ -49,6 +50,10 @@
 		align?: 'start' | 'end';
 		/** `sm` = the compact `.btn--sm` trigger, for a menu inside content. */
 		size?: 'sm';
+		/** A glass PLATE (`.btn--glass`) — for a band B that paints no ground of
+		 *  its own (ToolStack's `bandBFull`), where a bare trigger would have
+		 *  nothing to stand on. */
+		glass?: boolean;
 		/** Menu contents. Called with a `close` the items invoke when chosen. */
 		items: Snippet<[() => void]>;
 	} = $props();
@@ -67,11 +72,21 @@
 		const r = triggerEl.getBoundingClientRect();
 		// Right-aligned to the trigger — band menus live in the bands' END zone,
 		// so they open inward. Clamped to the viewport at both edges.
-		const x = align === 'start' ? r.left : r.right - MENU_MIN_W;
-		menuX = Math.max(8, Math.min(x, window.innerWidth - MENU_MIN_W - 8));
+		const place = (w: number) => {
+			const x = align === 'start' ? r.left : r.right - w;
+			menuX = Math.max(8, Math.min(x, window.innerWidth - w - 8));
+		};
+		place(MENU_MIN_W);
 		menuY = r.bottom + GAP;
 		open = true;
-		queueMicrotask(() => menuEl?.focus());
+		// ⚠ Re-placed at its RENDERED width: an `end` menu wider than the minimum
+		// (the Team Builder's More filters, 2026-10-10) used to hang from
+		// `right − MENU_MIN_W` and grow PAST its trigger — over whatever stood
+		// beyond it.
+		void tick().then(() => {
+			if (menuEl) place(menuEl.offsetWidth);
+			menuEl?.focus();
+		});
 	}
 
 	function close(refocus = true) {
@@ -85,6 +100,7 @@
 	class="btn band-menu-trigger"
 	class:btn--icon={compact}
 	class:btn--sm={size === 'sm'}
+	class:btn--glass={glass}
 	class:is-active={open}
 	type="button"
 	{disabled}
