@@ -69,7 +69,11 @@
 	.ck {
 		display: inline-flex;
 		align-items: center;
-		gap: 6px;
+		/* A check with alternatives ("… | … characters") is wider than a phone's
+		   column beside the boss: it wraps at an alternative, never past the edge. */
+		flex-wrap: wrap;
+		max-width: 100%;
+		gap: 2px 6px;
 		min-height: 24px;
 		padding: 2px 10px 2px 8px;
 		border-radius: var(--r-round);

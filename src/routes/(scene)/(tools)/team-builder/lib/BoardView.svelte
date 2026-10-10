@@ -61,6 +61,9 @@
 	const BOARD_PORTRAIT = 56;
 	/** 🎛️ The boss avatar — a little larger than a member, as in the game. */
 	const BOSS_DISC = 88;
+	/** 🎛️ …and below `compact`, where it shares a line with the checks and
+	 *  hands the lineup the full width — still larger than a member's 56. */
+	const BOSS_DISC_NARROW = 64;
 	/** How far a member's art rises above its ring — the portrait reserves it,
 	 *  and the row frame hugs the RINGS, so hair rises out over the frame as in
 	 *  the game rather than being boxed in a strip of empty headroom. */
@@ -239,17 +242,23 @@
 					{#if half}<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>{/if}
 				</div>
 				<span class="bv-team-actions">
+					<!-- Below `compact` each keeps its MARK and drops its WORD, as band
+					     controls do, so the battlefield's name has the strip's width. -->
 					{#if half && abyss}
-						<button class="btn btn--sm" onclick={() => (opponents = t as 0 | 1)}
-							><Mark name="search" size={12} /> Opponents</button
+						<button
+							class="btn btn--sm"
+							aria-label="Opponents"
+							onclick={() => (opponents = t as 0 | 1)}
+							><Mark name="search" size={12} /><span class="bv-word">Opponents</span></button
 						>
 					{/if}
 					<button
 						class="btn btn--sm"
 						disabled={!filled}
 						onclick={() => onOpenInPlanner(team)}
+						aria-label="Open in Planner"
 						title="Open this team in the Rotation Planner"
-						><Mark name="forward" size={12} /> Open in Planner</button
+						><Mark name="forward" size={12} /><span class="bv-word">Open in Planner</span></button
 					>
 					{#if board.teams.length > 1}
 						<button
@@ -268,6 +277,7 @@
 					<button
 						class="bv-boss"
 						style:--boss="{BOSS_DISC}px"
+						style:--boss-narrow="{BOSS_DISC_NARROW}px"
 						aria-label="Details: {inLang(BOSSES[field.boss].name)}"
 						onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
 					>
@@ -700,5 +710,68 @@
 	.bv-norepeat {
 		margin-left: auto;
 		font-size: var(--fs-sm);
+	}
+	/* ── Below `compact` (40rem — $lib/breakpoints.ts): the board is the whole
+	   screen ── The wide row puts the boss BESIDE a stack whose lineup (four
+	   56px portraits, 306px with its frame) and fingerprint (~308px) can't fit
+	   next to it on a phone. Here the boss shares a line with the checks, and the
+	   lineup and the fingerprint take the full width beneath. The split pane
+	   never gets this narrow (472px at 1000), so the wide form is untouched. */
+	@media (max-width: 40rem) {
+		.bv-lineup {
+			flex-wrap: wrap;
+			gap: 0.4rem 0.9rem;
+		}
+		.bv-word {
+			display: none;
+		}
+		.bv-team-head {
+			align-items: start;
+			padding-left: 0.75rem;
+		}
+		.bv-body {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr);
+			align-items: center;
+			gap: 0.8rem 0.9rem;
+			padding: 0 0 0 8px;
+		}
+		/* The stack dissolves into the body's grid: its checks sit beside the
+		   boss, everything else spans the row. */
+		.bv-stack {
+			display: contents;
+		}
+		.bv-vrule {
+			display: none;
+		}
+		/* The blessing runs to five lines at 320 and would cover the art whole:
+		   on a phone it follows the banner, overlapping only its faded foot. */
+		.bv-abyss-text {
+			grid-area: 2 / 1;
+			margin-top: -4.5rem;
+			padding-inline: 0.75rem;
+		}
+		.bv-abyss-art {
+			height: 11rem;
+		}
+		.bv-boss {
+			width: var(--boss-narrow);
+			height: var(--boss-narrow);
+		}
+		.bv-body > :global(*),
+		.bv-stack > :global(*) {
+			grid-column: 1 / -1;
+		}
+		.bv-body > .bv-boss {
+			grid-column: 1;
+		}
+		.bv-stack > .bv-checks {
+			grid-column: 2;
+		}
+		/* Four portraits in 288px of screen (320 less its gutters): 224 of
+		   discs, the frame's 28, three gaps of 12. */
+		.bv-slots {
+			gap: 12px;
+		}
 	}
 </style>
