@@ -30,7 +30,6 @@
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { constellations, ownership, savedNotations } from '$lib/stores';
 	import {
-		BOARD_TEAM_LIMIT,
 		effectiveCon,
 		pinnedRotation,
 		repeatedCharacters,
@@ -59,29 +58,37 @@
 
 	/** 🎛️ The board's disc (the art rises above it; see `SIDE_ART_PER_DISC`). */
 	const BOARD_PORTRAIT = 56;
+	/** 🎛️ …and on the ROOMY board (from `broad`, where the board grows to 720):
+	 *  64, the size the side art was planned for — pixel for pixel on a 2×
+	 *  screen (§9.5a). */
+	const BOARD_PORTRAIT_ROOMY = 64;
 	/** 🎛️ The boss avatar — a little larger than a member, as in the game. */
 	const BOSS_DISC = 88;
+	const BOSS_DISC_ROOMY = 104;
 	/** 🎛️ …and below `compact`, where it shares a line with the checks and
 	 *  hands the lineup the full width — still larger than a member's 56. */
 	const BOSS_DISC_NARROW = 64;
 	/** How far a member's art rises above its ring — the portrait reserves it,
 	 *  and the row frame hugs the RINGS, so hair rises out over the frame as in
 	 *  the game rather than being boxed in a strip of empty headroom. */
-	const OVERHANG = sideLayout(BOARD_PORTRAIT).overhang;
 
 	let {
 		board,
+		roomy = false,
 		selectedTeamId,
 		onSelectTeam,
 		nudgeAt,
 		onEmptySlot,
-		onAddTeam,
 		onRemoveTeam,
 		onOpenInPlanner,
 		onPin,
 		onSeason
 	}: {
 		board: Board;
+		/** The board's wide form (⚓ Nate 2026-10-10: "too cramped and too
+		 *  diminutive"): from `broad` it is 720 wide, and its contents grow with
+		 *  it rather than leaving the width empty. */
+		roomy?: boolean;
 		selectedTeamId: string | null;
 		onSelectTeam: (teamId: string) => void;
 		/** Set when a pick found the selected team full — the row shakes once. */
@@ -89,12 +96,14 @@
 		/** An EMPTY slot was clicked (after it selected its row) — below the
 		 *  dock this is the way to the characters that fill it (§11.6). */
 		onEmptySlot?: (teamId: string) => void;
-		onAddTeam: () => void;
 		onRemoveTeam: (teamId: string) => void;
 		onOpenInPlanner: (team: BoardTeam) => void;
 		onPin: (teamId: string, rotationId: string | null) => void;
 		onSeason: (version: string) => void;
 	} = $props();
+
+	const portrait = $derived(roomy ? BOARD_PORTRAIT_ROOMY : BOARD_PORTRAIT);
+	const OVERHANG = $derived(sideLayout(portrait).overhang);
 
 	/* The constellation chip compares the team's level with your account's,
 	   but only once the roster has something in it, or everyone reads as
@@ -163,7 +172,7 @@
 	} | null>(null);
 </script>
 
-<div class="bv">
+<div class="bv" class:bv--roomy={roomy} style:--portrait="{portrait}px">
 	{#if season}
 		<header class="bv-lineup">
 			<span class="bv-lineup-mode">Stygian Onslaught</span>
@@ -273,7 +282,7 @@
 				{#if field && season}
 					<button
 						class="bv-boss"
-						style:--boss="{BOSS_DISC}px"
+						style:--boss="{roomy ? BOSS_DISC_ROOMY : BOSS_DISC}px"
 						style:--boss-narrow="{BOSS_DISC_NARROW}px"
 						aria-label="Details: {inLang(BOSSES[field.boss].name)}"
 						onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
@@ -319,7 +328,7 @@
 									>
 										<SidePortrait
 											{id}
-											size={BOARD_PORTRAIT}
+											size={portrait}
 											con={id ? facts.conOf(id) : undefined}
 											ownedCon={id ? ownedConOf(id) : undefined}
 										/>
@@ -398,14 +407,6 @@
 			</div>
 		</section>
 	{/each}
-	<!-- A battlefield is the game's, not yours to add or remove — teams come and
-	     go on a Custom board only (with ✕, §11.6 item 13). No repeats moved to
-	     band B's lineup cell (§11.6). -->
-	{#if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
-		<footer class="bv-foot">
-			<button class="btn bv-add-team" onclick={onAddTeam}><Mark name="plus" /> Add team</button>
-		</footer>
-	{/if}
 </div>
 
 {#if opponents !== null && abyss}
@@ -423,10 +424,12 @@
 {/if}
 
 <style>
+	/* 🎛️ Breathing room (⚓ Nate 2026-10-10: "a little more"): the rhythm
+	   between teams, inside a team, and inside its header. */
 	.bv {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 1.75rem;
 		padding: 0 0 1.5rem;
 	}
 
@@ -496,13 +499,13 @@
 	.bv-team {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 1rem;
 	}
 	.bv-team-head {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 0.5rem 0.6rem 0.5rem 1rem;
+		padding: 0.65rem 0.75rem 0.65rem 1rem;
 		border-radius: var(--r-sm);
 		background: var(--surface);
 	}
@@ -517,14 +520,13 @@
 	   bold, mixed case, the number and the boss one run of text. White for now
 	   (the house rule: gold names a block, a title is not gold); the game's is
 	   gold, and Nate may switch it back.
-	   🎛️ 13px is OFF the --fs ladder on purpose: measured over all 28 Stygian
-	   bosses, 13px puts every English name on one line of the docked board
-	   (longest 508px), where 14px wraps the longest few. */
+	   ↻ ⚓ Nate 2026-10-10: 13 → 14px (back on the ladder), with the board
+	   grown to 720 from `broad`. At 580 the longest few names now wrap to a
+	   second line — as the game's own do. */
 	.bv-head-title {
-		--bv-head-size: 0.8125rem;
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: var(--bv-head-size);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-bold);
 		line-height: 1.4;
 		color: var(--text);
@@ -544,7 +546,7 @@
 	.bv-body {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
+		gap: 1.25rem;
 		padding: 0 0.6rem 0 1rem;
 	}
 	.bv-vrule {
@@ -556,7 +558,7 @@
 	.bv-stack {
 		display: flex;
 		flex-direction: column;
-		gap: 0.7rem;
+		gap: 0.85rem;
 		min-width: 0;
 		flex: 1;
 	}
@@ -665,7 +667,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 56px;
+		width: var(--portrait);
 	}
 	/* The slot is a bare hit area around the portrait, which draws its own
 	   ring and empty state; the ROW frames the selection. */
@@ -704,12 +706,42 @@
 		font-size: var(--fs-sm);
 		color: var(--text);
 	}
-	.bv-foot {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
+	/* ── THE ROOMY BOARD (from `broad`, 1500px — the page's --tb-board-w) ──
+	   The contents grow with the board: the portraits and the boss are set in
+	   the script; here, the gaps between them, the fingerprint's glyphs, and
+	   the chips' type step up one rung each. */
+	.bv--roomy .bv-slots {
+		gap: 22px;
 	}
+	.bv--roomy :global(.fp) {
+		gap: 14px;
+	}
+	.bv--roomy :global(.fp-cluster) {
+		gap: 6px;
+	}
+	.bv--roomy :global(.fp-slot) {
+		width: 20px;
+	}
+	.bv--roomy :global(.fp-glyph) {
+		width: 20px;
+		height: 20px;
+	}
+	.bv--roomy :global(.fp-pip) {
+		width: 15px;
+		height: 15px;
+	}
+	.bv--roomy :global(.ck) {
+		min-height: 28px;
+		font-size: var(--fs-md);
+	}
+	.bv--roomy :global(.comp-chip) {
+		height: 24px;
+		font-size: var(--fs-sm);
+	}
+	.bv--roomy .bv-rotations {
+		font-size: var(--fs-md);
+	}
+
 	/* ── Below `compact` (40rem — $lib/breakpoints.ts): the board is the whole
 	   screen ── The wide row puts the boss BESIDE a stack whose lineup (four
 	   56px portraits, 306px with its frame) and fingerprint (~308px) can't fit

@@ -861,3 +861,17 @@ only; Noelle/Thoma absent too).
       ⚓ ONE glass plate naming the pane it OPENS (Lucide `PanelRightOpen` "Lineup" /
       `PanelLeftOpen` "Characters"). The Bitter parchment tab plates are retired. Tapping
       an EMPTY slot on the Lineup also opens Characters.
+16. **Refinements, the same evening (⚓ Nate):**
+    - The character cell's order is **Show · search · More · lens**. The Show segment's
+      buttons are the control height less the track's 2px, so its selected ring and
+      hover sit inside the track.
+    - The lineup cell is a **rail** that always spans its pane, the Planner's band B
+      middle, with the controls at its END: **+ Add team** (Custom only) then
+      **No repeats**. The board's own footer is gone.
+    - The role and element strip is a glass context, so its plates hover as glass.
+    - **The board's width steps at `broad` and `vast`: 580 / 720 / 800** (fixed within
+      each range). From `broad` the board is ROOMY and its contents grow with it:
+      portraits 64 (the side art's planned size, pixel for pixel on 2×), boss 104,
+      fingerprint glyphs 20, chip type one rung up.
+    - The heading is **14px** (back on the ladder); at 580 the longest few names wrap.
+      More room between teams (1.75rem) and inside them.

@@ -31,12 +31,18 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
-	import { boards, pinnedRotation, type BoardPreset, type BoardTeam } from '$lib/boards.svelte';
+	import {
+		BOARD_TEAM_LIMIT,
+		boards,
+		pinnedRotation,
+		type BoardPreset,
+		type BoardTeam
+	} from '$lib/boards.svelte';
 	import { boardBar, boardTabStrip } from '$lib/boardBar.svelte';
 	import { library } from '$lib/library.svelte';
 	import { currentSeason } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
-	import { BOARD_W, DOCK_GAP, FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
+	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
 	import { motion } from '$lib/motion';
 	import { below } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
@@ -1175,16 +1181,25 @@
 	     lineup's No repeats. Below the dock ONE cell shows, the open pane's,
 	     led by the switch to the other. -->
 	{#snippet bandBFull()}
-		<div
-			class="tb-band"
-			class:tb-band--tabbed={tabbed}
-			style:--tb-board-w="{BOARD_W}px"
-			style:--tb-dock-gap="{DOCK_GAP}px"
-		>
+		<div class="tb-band" class:tb-band--tabbed={tabbed}>
 			{#if showing !== 'lineup'}
 				<div class="tb-band-cell" bind:clientWidth={charCellW}>
 					{#if tabbed}{@render paneSwitch()}{/if}
 					{#if sourceTab === 'roster'}
+						{#if !foldShow}
+							<div class="segment tb-show" role="radiogroup" aria-label="Show">
+								{#each OWNERSHIP_VIEWS as v (v.key)}
+									<button
+										class="btn"
+										class:is-active={ownershipView === v.key}
+										role="radio"
+										aria-checked={ownershipView === v.key}
+										title={v.hint}
+										onclick={() => (ownershipView = v.key)}>{v.label}</button
+									>
+								{/each}
+							</div>
+						{/if}
 						<!-- The mark is painted OVER the field, so .field keeps owning its
 						     inset stroke and focus ring (the old rail's search, same reasoning). -->
 						<div class="tb-search">
@@ -1200,20 +1215,6 @@
 								spellcheck={false}
 							/>
 						</div>
-						{#if !foldShow}
-							<div class="segment tb-show" role="radiogroup" aria-label="Show">
-								{#each OWNERSHIP_VIEWS as v (v.key)}
-									<button
-										class="btn"
-										class:is-active={ownershipView === v.key}
-										role="radio"
-										aria-checked={ownershipView === v.key}
-										title={v.hint}
-										onclick={() => (ownershipView = v.key)}>{v.label}</button
-									>
-								{/each}
-							</div>
-						{/if}
 						<!-- More hangs from its END and opens leftward, so it stays over the
 						     roster column — never over the board you are filtering for. -->
 						<BandMenu
@@ -1251,6 +1252,17 @@
 			{#if showing !== 'characters'}
 				<div class="tb-band-cell">
 					{#if tabbed}{@render paneSwitch()}{/if}
+					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
+					     Planner's band B rail spans its middle — an empty plate today,
+					     the lineup's controls standing at its end. -->
+					<span class="tb-rail" aria-hidden="true"></span>
+					{#if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
+						<!-- A battlefield is the game's, not yours to add — teams come and go
+						     on a Custom board only (with ✕, §11.6 item 13). -->
+						<button class="btn btn--glass" onclick={() => boards.addTeam(board.id)}
+							><Mark name="plus" /> Add team</button
+						>
+					{/if}
 					<!-- ⏭ Working copy (copy step 8). -->
 					<label class="toggle tb-norepeat" title="Mark a character who is on more than one team">
 						<input
@@ -1269,12 +1281,7 @@
 	{#snippet surface()}
 		<!-- THE DOCK (§11.2). Both panes stay mounted; below the dock the tab
 		     decides which one shows, and the board slides in over the roster. -->
-		<div
-			class="tb-dock tb-dock--{showing}"
-			style:--tb-wipe="{motion(TB_WIPE_MS)}ms"
-			style:--tb-board-w="{BOARD_W}px"
-			style:--tb-dock-gap="{DOCK_GAP}px"
-		>
+		<div class="tb-dock tb-dock--{showing}" style:--tb-wipe="{motion(TB_WIPE_MS)}ms">
 			<div class="tb-pane tb-pane--roster" inert={showing === 'lineup'}>
 				{@render main()}
 			</div>
@@ -1285,13 +1292,13 @@
 			>
 				<BoardView
 					{board}
+					roomy={!below('broad')}
 					selectedTeamId={selectedTeam?.id ?? null}
 					onSelectTeam={(id) => (chosenTeamId = id)}
 					nudgeAt={nudge?.at ?? null}
 					onEmptySlot={() => {
 						if (tabbed) tab = 'characters';
 					}}
-					onAddTeam={() => boards.addTeam(board.id)}
 					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
@@ -1413,9 +1420,33 @@
 	   each takes the whole width and the board slides in over the roster on a
 	   transform. ⚠ Both panes always lay out, so neither loses its scroll or
 	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/split.ts). */
-	.tb-dock {
+	/* 🎛️ THE BOARD'S WIDTH, read by the dock AND band B's cells (one rule, so
+	   the two rows cannot drift). FIXED within a range, so the board's layout
+	   stays stable; it steps up where the screen has room to give (⚓ Nate
+	   2026-10-10: 580 alone read cramped and diminutive on a 1728px laptop).
+	   The steps are the table's `broad` and `vast` — the same two the roster's
+	   cards grow at ($lib/breakpoints.ts).
+	     · 580 from the dock (1137): every boss heading on one line at 13px, and
+	       the roster still holds four columns.
+	     · 720 from 1500 · 800 from 1900. */
+	.tb-dock,
+	.tb-band {
 		--tb-board-w: 580px;
 		--tb-dock-gap: 16px;
+	}
+	@media (min-width: 1500px) {
+		.tb-dock,
+		.tb-band {
+			--tb-board-w: 720px;
+		}
+	}
+	@media (min-width: 1900px) {
+		.tb-dock,
+		.tb-band {
+			--tb-board-w: 800px;
+		}
+	}
+	.tb-dock {
 		--tb-wipe-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 		flex: 1;
 		min-width: 0;
@@ -1623,6 +1654,22 @@
 	.tb-norepeat {
 		flex: none;
 		height: var(--band-ctrl-h);
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+	/* ⚠ The SEGMENT'S buttons sit INSIDE its 2px track, so they are the band's
+	   control height less the track — band B's blanket `.btn { height }` made
+	   them 36 in a 36 track, and the selected ring and the hover hung 4px off
+	   the track's foot. The track keeps the glass a band A segment wears. */
+	.tb-show > .btn {
+		height: calc(var(--band-ctrl-h) - 4px);
+	}
+	/* The lineup's rail: an empty plate that spans what its controls leave,
+	   the shape of the Planner's band B middle. */
+	.tb-rail {
+		flex: 1;
+		min-width: 0;
+		align-self: stretch;
 		border-radius: var(--r-sm);
 		background: var(--surface);
 	}

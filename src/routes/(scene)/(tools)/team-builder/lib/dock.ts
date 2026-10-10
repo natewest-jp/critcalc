@@ -1,16 +1,11 @@
 /**
- * THE DOCK's geometry (design doc §11.2): the board docked on the right at a
- * fixed width, the roster column taking the rest. Band B lays its two cells on
- * the SAME columns (§11.6, the Visualizers' per-tile band), so the numbers
- * live here once and both rows read them — two literals would drift.
+ * THE DOCK's knobs (design doc §11.2).
+ *
+ * ⚠ The board's WIDTH is not here: it steps at `broad` and `vast`, and a
+ * custom property cannot reach a media query, so the widths are CSS — one
+ * rule in the Team Builder page that both the dock and band B's cells read
+ * (`--tb-board-w`), so the two rows cannot drift.
  */
-
-/** 🎛️ The board column. Measured 2026-10-10: every English boss heading fits
- *  one line at 13px, and a full Stygian row fits without wrapping. */
-export const BOARD_W = 580;
-
-/** 🎛️ The scene between the roster column and the board. */
-export const DOCK_GAP = 16;
 
 /**
  * The slide between Characters and Lineup below the dock.

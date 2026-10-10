@@ -45,7 +45,9 @@
 	const elColor = (el: string) => (elementColors[el as ElementKey] ?? elementColors.none).main;
 </script>
 
-<div class="rfs" role="group" aria-label="Role and element">
+<!-- ctx-glass: the plates stand on the night, so their tokens are glass ones —
+     under the page's ctx-dark a btn--glass rested and HOVERED in slate. -->
+<div class="rfs ctx-glass" role="group" aria-label="Role and element">
 	<div class="rfs-icons" role="group" aria-label="Role">
 		{#each ROLE_CATEGORIES as cat (cat.key)}
 			{@const on = activeRole === cat.key}
