@@ -608,8 +608,8 @@
 	/* 🎛️ 26 with a 14px mark (⚓ Nate's placement, 2026-10-10). */
 	.bv-boss-zoom {
 		position: absolute;
-		top: 2px;
-		right: -4px;
+		top: 3px;
+		right: -2px;
 		width: 26px;
 		height: 26px;
 		display: grid;
