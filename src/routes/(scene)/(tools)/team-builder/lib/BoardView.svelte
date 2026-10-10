@@ -288,7 +288,7 @@
 						onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
 					>
 						<img src={bossImage(field.boss, 'icon')} alt="" />
-						<span class="bv-boss-zoom" aria-hidden="true"><Mark name="search" size={12} /></span>
+						<span class="bv-boss-zoom" aria-hidden="true"><Mark name="search" size={14} /></span>
 					</button>
 					<span class="bv-vrule" aria-hidden="true"></span>
 				{/if}
@@ -592,7 +592,7 @@
 		border-radius: var(--r-round);
 		background: var(--surface-well);
 		cursor: pointer;
-		transition: box-shadow var(--t-snap);
+		transition: border-color var(--t-snap);
 	}
 	.bv-boss img {
 		width: 100%;
@@ -600,20 +600,30 @@
 		border-radius: var(--r-round);
 		object-fit: cover;
 	}
+	/* ⚓ Nate 2026-10-10: hover recolours the RING itself — no second outline
+	   outside it — and the magnifier turns with it, to the same colour. */
 	.bv-boss:hover {
-		box-shadow: 0 0 0 2px var(--sel-ring);
+		border-color: var(--sel-ring);
 	}
+	/* 🎛️ 26 with a 14px mark, snugged 1px in from the disc's corner. */
 	.bv-boss-zoom {
 		position: absolute;
-		top: -3px;
-		right: -3px;
-		width: 22px;
-		height: 22px;
+		top: -1px;
+		right: -1px;
+		width: 26px;
+		height: 26px;
 		display: grid;
 		place-items: center;
 		border-radius: var(--r-round);
 		background: var(--btn-face, var(--surface-raised));
 		color: var(--text);
+		transition: background var(--t-snap);
+	}
+	/* ⚠ The ring's colour is translucent gold laid over the disc's well, so the
+	   magnifier lays the SAME gold over the SAME well — one colour, not two that
+	   happen to share a token. */
+	.bv-boss:hover .bv-boss-zoom {
+		background: linear-gradient(var(--sel-ring), var(--sel-ring)), var(--surface-well);
 	}
 
 	/* ── The lineup ── */

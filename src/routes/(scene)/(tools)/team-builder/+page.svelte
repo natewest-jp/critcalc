@@ -1270,8 +1270,9 @@
 							checked={board.noRepeats}
 							onchange={(e) => boards.setNoRepeats(board.id, e.currentTarget.checked)}
 						/>
-						<span class="toggle-track"><span class="toggle-thumb"></span></span>
+						<!-- The label leads and the switch ends the row (⚓ Nate). -->
 						<span class="toggle-label">No repeats</span>
+						<span class="toggle-track"><span class="toggle-thumb"></span></span>
 					</label>
 				</div>
 			{/if}

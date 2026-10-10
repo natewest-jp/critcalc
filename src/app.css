@@ -2461,7 +2461,7 @@ img {
 .tab:focus-visible,
 .tab-close:focus-visible,
 .field:focus-visible,
-.toggle input:focus-visible + .toggle-track,
+.toggle input:focus-visible ~ .toggle-track,
 .check input:focus-visible + .check-box {
 	outline: 2px solid var(--accent);
 	outline-offset: 2px;
@@ -2831,11 +2831,14 @@ img {
 		transform var(--t-move),
 		background var(--t-snap);
 }
-.toggle input:checked + .toggle-track {
+/* `~`, not `+`: the label may lead the switch (the Team Builder's No repeats,
+   2026-10-10), and `+` silently stopped matching — the switch drew OFF while
+   it was on. */
+.toggle input:checked ~ .toggle-track {
 	background: var(--ui-positive-soft);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-positive) 55%, transparent);
 }
-.toggle input:checked + .toggle-track .toggle-thumb {
+.toggle input:checked ~ .toggle-track .toggle-thumb {
 	transform: translateX(1.05rem);
 	background: var(--ui-positive);
 }
