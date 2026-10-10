@@ -22,7 +22,7 @@ const TRAVELER_VARIANTS = 7;
 /** The traveler cards' background-image URLs — one per element variant. */
 async function travelerPortraits(page: import('@playwright/test').Page) {
 	await openRoster(page);
-	await page.locator('.cg-rail .field').fill('traveler');
+	await page.locator('.rfb-search-field').fill('traveler');
 	const imgs = page.locator('.cg-grid .cc-img');
 	await imgs.first().waitFor();
 	return imgs.evaluateAll((els) => els.map((e) => (e as HTMLElement).style.backgroundImage));

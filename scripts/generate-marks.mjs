@@ -61,7 +61,9 @@ const MARKS = {
 	 *  RefreshCw — the universal reload/sync glyph — which is half of why
 	 *  "Update" read as a software update. Same action, same mark. */
 	save: 'Save',
-	load: 'FolderOpen',
+	/** The Library button (§11.6 item 1): books on a shelf — the library's own
+	 *  "Shelf" layout. It replaced Load's FolderOpen, which said "open a file". */
+	library: 'LibraryBig',
 	/** `Share`, not `Share2`: the node-graph glyph is three circles and two
 	 *  lines, which silts up at 14px. The arrow-out-of-box reads at any size. */
 	share: 'Share',

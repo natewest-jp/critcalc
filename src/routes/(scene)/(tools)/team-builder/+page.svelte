@@ -39,29 +39,22 @@
 	import { motion } from '$lib/motion';
 	import { below } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
-	import ToolColumns from '$lib/components/ToolColumns.svelte';
-	// The Atlas cards fill their column now, so on a short viewport they CLIP —
-	// which is exactly the case the fade exists for. Harmless on Roster/Compare:
-	// their inner scroller does the travelling, so this one measures none and
-	// paints no edges.
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
-	import CharacterFilterRail from '$lib/components/CharacterFilterRail.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import BoardView from './lib/BoardView.svelte';
-	import AtlasView from './lib/AtlasView.svelte';
-	import { buildRoleCards, buildRoleSections, categoryOf } from './lib/atlas';
+	import RosterFilterBar from './lib/RosterFilterBar.svelte';
+	import { buildRoleSections, categoryOf } from './lib/atlas';
 	import type { RoleCategory, RoleFilter } from './lib/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
 	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
-	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
 	import { MAX_COMPARE, lensFacet, type CapRowKey } from './lib/compare';
 	import { facetsProvidedBy, parseTeamParam, teamDelta, type TeamSlot } from './lib/team';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
@@ -132,7 +125,7 @@
 			// the Builder's document is the board now.
 			if (ids.length > 0) {
 				boardBar.receiveTeam(ids);
-				view = 'split';
+				showLineup();
 			}
 		}
 		if (boardParam) {
@@ -144,7 +137,7 @@
 					return;
 				}
 				boardBar.receive(shared, (id) => rosterIds.has(id));
-				view = 'split';
+				showLineup();
 			});
 			return;
 		}
@@ -154,9 +147,10 @@
 			if (Number.isInteger(n) && n >= 0 && n < rt.slots.length) {
 				pendingSwapSlot = n;
 				fromPlanner = true;
-				// The audition is BOARD-LESS (§10.3): it edits the Planner's team,
-				// so the roster pane takes the whole surface.
-				view = 'roster';
+				// The audition is BOARD-LESS (§10.3): it edits the Planner's team.
+				// ⏳ It renders in the roster column until swap mode replaces it
+				// (step 5) — a temporary casualty, §11.6 item 9.
+				tab = 'characters';
 			}
 			// A swap errand does NOT want the Atlas below — it wants ONE slot's
 			// audition, which the effect opens as soon as the tabs are restored.
@@ -170,44 +164,44 @@
 	});
 
 	// ---------------------------------------------------------------------------
-	// THE SPLIT SCREEN (lineups design §2.4, build step 3)
+	// THE PARTY SETUP SHAPE (design doc §11.2, build step 1)
 	//
-	// Genshin's own endgame party screen is this shape: the roster on the left,
-	// the battlefields on the right. ONE control, TWO states at any width:
-	//   'roster' — full width; the cold start, offering "Build a team";
-	//   'split'  — the roster beside the board (a wide screen);
-	//   'board'  — the board full width (a phone, where there is no 50/50).
-	// ↻ Nate 2026-10-09: a full-width board on a WIDE screen was dead space — a
-	// column of rows with nothing in the width — so it is a phone state only,
-	// and the split is a wide state only. Each half stays MOUNTED while hidden,
-	// so it keeps its scroll and filters.
+	// ⚓ The board is DOCKED on the right at a fixed width, where Genshin's
+	// endgames always put it; the roster column is the only thing that grows and
+	// shrinks, so the board's layout can be made stable. No view switch and no
+	// wipe on a wide screen — the old Roster | Roster + board control kept the
+	// ROSTER as the subject, and the thing you build was its add-on.
+	// Below the dock the two are TABS — Characters | Lineup — and the board
+	// slides in over the roster. Both panes stay MOUNTED while hidden, so each
+	// keeps its scroll and filters.
 	// ---------------------------------------------------------------------------
 
-	type SplitView = 'roster' | 'split' | 'board';
-	let view = $state<SplitView>('roster');
-	const narrow = $derived(below('toolMin'));
-	/** What actually renders — 'split' has no room below toolMin, and 'board'
-	 *  has nothing to fill above it. */
-	const effectiveView = $derived<SplitView>(
-		narrow && view === 'split' ? 'board' : !narrow && view === 'board' ? 'split' : view
-	);
+	type PaneTab = 'characters' | 'lineup';
+	let tab = $state<PaneTab>('characters');
+	/** Below the dock the panes are tabs. ⚠ The literal is in the CSS too
+	 *  (`@media (max-width: 71rem)`) — custom properties can't reach a query. */
+	const tabbed = $derived(below('wide'));
+	/** Which pane is showing — on a wide screen, both. */
+	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
 
-	/** The cold start: once the boards are restored, a board with anyone on it
-	 *  opens beside the roster; an empty one leaves the roster full width. Runs
-	 *  once — after that, the view is the reader's. */
-	let viewSeeded = false;
+	/** Show the lineup — a no-op beside the dock, the tab below it. */
+	function showLineup(): void {
+		tab = 'lineup';
+	}
+
+	/** The cold start below the dock: a board with anyone on it opens on the
+	 *  Lineup, an empty one on the Characters it is waiting for. Runs once —
+	 *  after that, the tab is the reader's. */
+	let tabSeeded = false;
 	$effect(() => {
-		if (viewSeeded || !boards.restored || !mounted) return;
-		viewSeeded = true;
-		if (view === 'roster' && pendingSwapSlot === null && !fromPlanner && boardHasAnyone) {
-			view = 'split';
-		}
+		if (tabSeeded || !boards.restored || !mounted) return;
+		tabSeeded = true;
+		if (pendingSwapSlot === null && !fromPlanner && boardHasAnyone) tab = 'lineup';
 	});
 
-	const SPLIT_VIEWS: { key: SplitView; label: string; mark: 'filter' | 'layout' | 'buff' }[] = [
-		{ key: 'roster', label: 'Roster', mark: 'filter' },
-		{ key: 'split', label: 'Roster + board', mark: 'layout' },
-		{ key: 'board', label: 'Board', mark: 'buff' }
+	const PANE_TABS: { key: PaneTab; label: string }[] = [
+		{ key: 'characters', label: 'Characters' },
+		{ key: 'lineup', label: 'Lineup' }
 	];
 
 	// ── The board ─────────────────────────────────────────────────────────────
@@ -299,7 +293,8 @@
 				const target =
 					board.teams.find((t) => t.id === chosenTeamId) ??
 					board.teams.find((t) => t.slots.every((s) => s === null)) ??
-					boards.addTeam(board.id);
+					// A battlefield board's teams are the game's — only Custom grows.
+					(board.preset === 'custom' ? boards.addTeam(board.id) : undefined);
 				if (!target) {
 					documentBar.showNotice('The board is full');
 					return;
@@ -307,7 +302,7 @@
 				boards.setTeam(board.id, target.id, slots);
 				if (pinnedRotationId) boards.pin(board.id, target.id, pinnedRotationId);
 				chosenTeamId = null;
-				if (view === 'roster') view = 'split';
+				showLineup();
 			}
 		})
 	);
@@ -319,11 +314,20 @@
 	];
 
 	function newBoard(preset: BoardPreset): void {
-		// A Stygian lineup opens on the season running now (§2.6).
-		boardBar.newBoard(preset, preset === 'stygian' ? currentSeason()?.version : undefined);
+		// ↻ §11.6: no season is stored — a new Stygian lineup FOLLOWS the season
+		// running now until its first edit pins it (the effect below).
+		boardBar.newBoard(preset);
 		chosenTeamId = null;
-		if (view === 'roster') view = 'split';
 	}
+
+	/** ⚓ An UNTOUCHED Stygian board follows the game's season; an edited one
+	 *  never changes under you (§11.6 item 4). The first character placed pins
+	 *  the season the reader was looking at. */
+	$effect(() => {
+		if (board.preset !== 'stygian' || board.season || !boardHasAnyone) return;
+		const v = currentSeason()?.version;
+		if (v) boards.setSeason(board.id, v);
+	});
 
 	// ---------------------------------------------------------------------------
 	// THE PLANNER'S SWAP ERRAND (Source retirement, 2026-08-13)
@@ -424,51 +428,16 @@
 	const activeFacets = new SvelteSet<FacetKey>();
 	let conMode = $state<ConMode>('mine');
 	let ownershipView = $state<OwnershipView>('all');
-	let editRoster = $state(false);
 
-	// Editorial role filters (Position / Function) for the Roster tab, set by the
-	// roster-rail role chips. The Atlas is self-contained (drills show tiles
-	// inline), so it no longer pivots here. Roles join the roster by id.
+	// Editorial role filters (Position / Function), set by the filter bar's four
+	// role icons — each one a category (`openCategory`). Roles join the roster
+	// by id.
 	const rolePosition = new SvelteSet<RolePosition>();
 	const roleFunction = new SvelteSet<RoleFunction>();
 	const rolesOf = (id: string) => characterRoles[id];
 
-	const POSITIONS: RolePosition[] = ['onField', 'offField'];
-	const FUNCTIONS: RoleFunction[] = ['dps', 'support', 'survivability'];
-
-	// Factions/Buffs chips — faction membership for Moonsign/Hexerei;
-	// "Stellar" is enabler-or-gated-buffs (no faction exists for Stellar).
-	const FACTION_BUFFS = [
-		{
-			key: 'moonsign',
-			label: 'Moonsign',
-			hint: 'Moonsign characters — 2 or more enable Ascendant Gleam and the Lunar reactions'
-		},
-		{
-			key: 'hexerei',
-			label: 'Hexerei',
-			hint: 'Hexerei characters — 2 or more enable Hexerei: Secret Rite'
-		},
-		{
-			key: 'stellar',
-			label: 'Stellar',
-			hint: 'Stellar-linked — enables a Stellar reaction, or has buffs that need one enabled'
-		}
-	] as const;
-
-	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
-		if (set.has(val)) set.delete(val);
-		else set.add(val);
-	}
-
-	// Filtering is a Roster-tab activity — and the filter rail only EXISTS on
-	// the Roster tab, so only the off-rail entry points (bench coverage gaps,
-	// Atlas role chips) still need to steer there.
-	function toggleFacet(f: FacetKey): void {
-		toggleSet(activeFacets, f);
-	}
-
-	// ── The role cards ARE the Roster's role filter ─────────────────────────
+	// ── The bar's role icons ARE the role filter (↻ §11: the Atlas cards retired
+	// into them) ───────────────────────────────────────────────────────────
 	/** The card the role filter currently is, if it is exactly one. */
 	const activeCategory = $derived(categoryOf(rolePosition, roleFunction));
 
@@ -483,15 +452,6 @@
 		if (cat.position) rolePosition.add(cat.position);
 		roleFunction.add(cat.function);
 	}
-	function toggleRolePosition(p: RolePosition): void {
-		toggleSet(rolePosition, p);
-		sourceTab = 'roster';
-	}
-	function toggleRoleFunction(f: RoleFunction): void {
-		toggleSet(roleFunction, f);
-		sourceTab = 'roster';
-	}
-
 	/** The TB's own filters — everything the shared rail doesn't own. Wired to
 	 *  CharacterGrid's Clear button so one press clears the whole column. */
 	function clearExtraFilters(): void {
@@ -532,13 +492,6 @@
 			: 'No curated character matches.'
 	);
 
-	// The four role cards, over the eager index. Roles come from the joined
-	// sidecar (rolesOf).
-	const roleCards = $derived.by(() => {
-		const own = mounted ? $ownership : {};
-		return buildRoleCards(roster, rolesOf, (id) => own[id] === 'owned');
-	});
-
 	/** Under an active role card the grid is SECTIONED — the old drill-down,
 	 *  over whatever the other filters let through. Flat otherwise. */
 	const rosterSections = $derived.by((): GridSection[] | undefined => {
@@ -549,10 +502,17 @@
 		);
 	});
 
-	/** Anything narrowing the roster at all? The role cards stand full-size as
-	 *  the front door only while nothing does; then they fold to a strip and
-	 *  hand the screen to the grid. */
-	const rosterNarrowed = $derived(
+	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
+
+	// A tile fades when it's a not-owned character shown among owned ones: in the
+	// 'all' view once the user owns anything (Genshin-collection style).
+	function tileFaded(id: string): boolean {
+		if (!mounted) return false;
+		return ownsAny && ownershipView === 'all' && $ownership[id] !== 'owned';
+	}
+
+	/** Anything narrowing the roster — lights the bar's Clear. */
+	const anyFilterActive = $derived(
 		extraFiltersActive ||
 			filters.elements.size > 0 ||
 			filters.weapons.size > 0 ||
@@ -560,21 +520,28 @@
 			filters.region !== '' ||
 			filters.search.trim() !== '' ||
 			(filters.factionBuffs?.size ?? 0) > 0 ||
-			ownershipView !== 'all' ||
-			editRoster
+			ownershipView !== 'all'
 	);
-
-	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
-
-	// A tile fades when it's a not-owned character shown among owned ones: in the
-	// 'all' view once the user owns anything, and always while editing the roster
-	// (so owned vs not-owned reads at a glance, Genshin-collection style).
-	function tileFaded(id: string): boolean {
-		if (!mounted) return false;
-		const notOwned = $ownership[id] !== 'owned';
-		if (editRoster) return notOwned;
-		return ownsAny && ownershipView === 'all' && notOwned;
+	function clearAllFilters(): void {
+		filters.elements.clear();
+		filters.weapons.clear();
+		filters.rarities.clear();
+		filters.factionBuffs?.clear();
+		filters.region = '';
+		filters.search = '';
+		ownershipView = 'all';
+		clearExtraFilters();
 	}
+	/** The lens the count was read at — said only while facets are asked. */
+	const countNote = $derived(
+		activeFacets.size === 0
+			? undefined
+			: conMode === 'mine'
+				? 'at your constellations'
+				: conMode !== 'c0'
+					? `at ${conMode.toUpperCase()}`
+					: undefined
+	);
 
 	// The full stepper (Nate 2026-07-30): every fixed step so "who can do this
 	// at exactly C2" is answerable, with the roster mode alongside.
@@ -608,27 +575,6 @@
 	// table's `compact` (40rem): the full row's content stop is 531px with the
 	// tool's pads, and 40rem is the first rung above it — see $lib/breakpoints.
 	const bandFolded = $derived(below('compact'));
-
-	// ══ THE FILTER DRAWER (responsive round, 2026-09-05) ═══════════════════════
-	// Below BP.toolMin the Roster's filter rail is a DRAWER (ToolColumns'
-	// sheet) rather than a column — at phone width the column left the grid
-	// ~80px, one tile of nothing beside 262px of chips. As a column the rail is
-	// simply PRESENT on the Roster; as a drawer it has to be ASKED for, so the
-	// Filters plate below exists only where the drawer does, and only there.
-	const sheetAside = $derived(below('toolMin'));
-	let filtersOpen = $state(false);
-	// ↻ 2026-10-08: the drawer also serves the 50/50 — half a screen has no room
-	// for a filter COLUMN beside the grid.
-	const filterDrawer = $derived(sheetAside || effectiveView === 'split');
-	const showFiltersPlate = $derived(
-		filterDrawer && sourceTab === 'roster' && effectiveView !== 'board'
-	);
-
-	const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
-		{ key: 'all', label: 'All', hint: 'Every character' },
-		{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
-		{ key: 'wishlist', label: 'Wishlist', hint: 'Only characters you’ve wishlisted' }
-	];
 
 	// ---------------------------------------------------------------------------
 	// Detail card — a focused single-character modal (the tool's one deliberate
@@ -945,14 +891,11 @@
 		selectedTeam?.slots.includes(id) ? 'in' : selectedTeam?.slots.includes(null) ? 'out' : 'full';
 
 	/** ⚓ The game's toggle: a pick fills the selected team, the same pick again
-	 *  frees its slot. From the full-width roster a wide screen opens the split
-	 *  at once; a phone lets you fill the team first, then shows the board. */
+	 *  frees its slot. Below the dock, the pick that fills the team shows it. */
 	function toggleTeam(id: string): void {
 		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
 		const filled = placeOnBoard(id);
-		if (filled === null || effectiveView !== 'roster') return;
-		if (!narrow) view = 'split';
-		else if (filled) view = 'board';
+		if (filled && tabbed) tab = 'lineup';
 	}
 
 	// Capability badges → the card's ordered tag chips: active facets first, then
@@ -971,14 +914,10 @@
 			}));
 	}
 
-	// Primary tile click: edit mode toggles owned (Genshin collection style);
-	// otherwise open the detail card.
+	// Primary tile click opens the detail card. ⏭ Step 3: the whole card picks
+	// and a corner magnifier opens details (§11.2).
 	function activate(id: string): void {
-		if (editRoster) {
-			ownership.setMark(id, $ownership[id] === 'owned' ? null : 'owned');
-		} else {
-			openDetail(id);
-		}
+		openDetail(id);
 	}
 
 	// The old slots→URL mirror is retired with the ?team= injection: the
@@ -995,7 +934,7 @@
 		{preferNewfit}
 		{traveler}
 		onActivate={activate}
-		intent={editRoster ? 'edit' : 'open'}
+		intent="open"
 		con={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
 		wishlist={mounted && $ownership[entry.id] === 'wishlist'}
 		showUncuratedMark
@@ -1003,7 +942,7 @@
 		accent={compareIds.has(entry.id)}
 		faded={tileFaded(entry.id)}
 		{dimmed}
-		actions={editRoster ? undefined : teamActions}
+		actions={teamActions}
 	/>
 {/snippet}
 
@@ -1081,40 +1020,6 @@
 	{@render charTile(entry, false)}
 {/snippet}
 
-<!-- Above the tiles, inside the grid's scroller: what the team covers, the
-     role cards (full-size as the front door, a strip once anything narrows
-     the roster), and the count. All three scroll away with the grid. -->
-{#snippet rosterCount()}
-	<!-- The cold start's way in (§2.4): the roster full width, the board empty.
-	     ↻ 2026-10-08: the "what the team covers" strip that sat here retired with
-	     the shared working team; the team fingerprint replaces it (step 5). -->
-	{#if effectiveView === 'roster' && !boardHasAnyone && sourceTab === 'roster'}
-		<div class="tb-cta">
-			<button class="btn btn--primary" onclick={() => (view = narrow ? 'board' : 'split')}>
-				<Mark name="plus" /> Build a team
-			</button>
-		</div>
-	{/if}
-	<!-- Below `compact` the cards are always the strip: four full cards stack
-	     one per screen at 390, and the grid is what a phone came for. -->
-	<div class="tb-atlas" class:tb-atlas--compact={rosterNarrowed || bandFolded}>
-		<AtlasView
-			{roleCards}
-			onSelectCategory={openCategory}
-			activeKey={activeCategory?.key ?? null}
-			compact={rosterNarrowed || bandFolded}
-		/>
-	</div>
-	<p class="tb-count" role="status">
-		{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
-		{#if activeFacets.size > 0 && conMode === 'mine'}
-			<span class="tb-count-mode">at your constellations</span>
-		{:else if activeFacets.size > 0 && conMode !== 'c0'}
-			<span class="tb-count-mode">at {conMode.toUpperCase()}</span>
-		{/if}
-	</p>
-{/snippet}
-
 <!-- Below the tiles: capability-unknown kits, never silently dropped. -->
 {#snippet rosterStubs()}
 	{#if split.uncurated.length > 0}
@@ -1157,95 +1062,6 @@
 	</header>
 {/snippet}
 
-<!-- The rail sections the shared grid doesn't own: the roster ledger, the
-     editorial roles, the faction/buff groups and the capability facets. They
-     render between the grid's search field and its identity chip groups. -->
-{#snippet rosterFacetRail()}
-	<div class="cg-sec">
-		<p class="kicker">Roster</p>
-		<div class="segment tb-seg" role="radiogroup" aria-label="Roster view">
-			{#each OWNERSHIP_VIEWS as v (v.key)}
-				<button
-					class="btn"
-					class:is-active={ownershipView === v.key}
-					role="radio"
-					aria-checked={ownershipView === v.key}
-					title={v.hint}
-					onclick={() => (ownershipView = v.key)}>{v.label}</button
-				>
-			{/each}
-		</div>
-		<button
-			class="btn tb-edit-toggle"
-			class:active={editRoster}
-			aria-pressed={editRoster}
-			onclick={() => (editRoster = !editRoster)}
-			title="Click tiles to mark which characters you own"
-			>{editRoster ? 'Done editing' : 'Edit roster…'}</button
-		>
-	</div>
-
-	<div class="cg-sec">
-		<p class="kicker">Role</p>
-		<div class="chips tb-chips">
-			{#each POSITIONS as p (p)}
-				<button
-					class="chip tb-chip--role"
-					class:active={rolePosition.has(p)}
-					aria-pressed={rolePosition.has(p)}
-					onclick={() => toggleRolePosition(p)}
-				>
-					<img class="tb-chip-icon" src={positionIcon(p, 'color')} alt="" />{POSITION_LABEL[p]}
-				</button>
-			{/each}
-			{#each FUNCTIONS as f (f)}
-				<button
-					class="chip tb-chip--role"
-					class:active={roleFunction.has(f)}
-					aria-pressed={roleFunction.has(f)}
-					onclick={() => toggleRoleFunction(f)}
-				>
-					<img class="tb-chip-icon" src={functionIcon(f, 'color')} alt="" />{FUNCTION_LABEL[f]}
-				</button>
-			{/each}
-		</div>
-	</div>
-
-	<div class="cg-sec">
-		<p class="kicker">Factions / Buffs</p>
-		<div class="chips tb-chips">
-			{#each FACTION_BUFFS as fb (fb.key)}
-				<button
-					class="chip"
-					class:active={filters.factionBuffs?.has(fb.key)}
-					title={fb.hint}
-					aria-pressed={filters.factionBuffs?.has(fb.key)}
-					onclick={() => filters.factionBuffs && toggleSet(filters.factionBuffs, fb.key)}
-					>{fb.label}</button
-				>
-			{/each}
-		</div>
-	</div>
-
-	<div class="cg-sec">
-		<p class="kicker">Can provide</p>
-		<div class="chips tb-chips">
-			{#each FACETS as facet (facet.key)}
-				<button
-					class="chip"
-					class:active={activeFacets.has(facet.key)}
-					title={facet.hint}
-					aria-pressed={activeFacets.has(facet.key)}
-					onclick={() => toggleFacet(facet.key)}>{facet.label}</button
-				>
-			{/each}
-		</div>
-		{#if activeFacets.size > 1}
-			<p class="note tb-note">Matching characters provide all of these.</p>
-		{/if}
-	</div>
-{/snippet}
-
 <!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
      both (toolbar round). Band A is the DOCUMENT — the same tabs and the same
      save/load/share the planner shows, because since the bench-band round both
@@ -1273,28 +1089,6 @@
 	{/each}
 {/snippet}
 
-<!-- Band B's LEFT plate at desk width; below BP.compact it is handed to
-     ToolStack as `undefined` so the zone is not rendered at all — an empty zone
-     still costs its gap, and the rail would sit 4px off the tabs above it. -->
-{#snippet bandBLeftPlates()}
-	{#if showFiltersPlate}
-		<!-- Opens the filter drawer. `is-active` while it is open, like the
-		     planner's Log/Notes plates — the same "a panel is open" statement in
-		     the same register. The word folds with band B's others. -->
-		<button
-			class="btn tb-filters"
-			class:is-active={filtersOpen}
-			type="button"
-			aria-pressed={filtersOpen}
-			title="Filter the roster"
-			onclick={() => (filtersOpen = !filtersOpen)}
-		>
-			<Mark name="filter" />
-			<span class="tb-band-label">Filters</span>
-		</button>
-	{/if}
-{/snippet}
-
 <!-- The + on the board tabs: a new board from a preset (§10.5). -->
 {#snippet presetItems(close: () => void)}
 	{#each PRESETS as p (p.key)}
@@ -1315,7 +1109,7 @@
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
      teams at once, so it cannot hold the Planner's one working team; band A is
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
-<ToolStack fill bandBLeft={showFiltersPlate ? bandBLeftPlates : undefined}>
+<ToolStack fill>
 	{#snippet bandALeft()}
 		<DocumentTabs model={boardTabStrip} newItems={presetItems} />
 	{/snippet}
@@ -1336,9 +1130,12 @@
 				<Mark name="save" />
 				<span class="tb-band-label">{boardLinked ? 'Save changes' : 'Save'}</span>
 			</button>
+			<!-- ↻ §11.6 item 1: "Load" was the only door to the library, and nobody
+			     looks under Load to mark what they own — the button is named for the
+			     place it opens. -->
 			<button class="btn" onclick={() => library.show('builder')} title="Open the library">
-				<Mark name="load" />
-				<span class="tb-band-label">Load</span>
+				<Mark name="library" />
+				<span class="tb-band-label">Library</span>
 			</button>
 			<button
 				class="btn"
@@ -1353,43 +1150,33 @@
 	{/snippet}
 
 	<!-- ── THE IN-TOOL NAVIGATION (⚓ NATE 2026-08-09, tuned 08-10) ───────────
-	     Three plates in Bitter on their own glass rail, the selected one on a
-	     parchment ground with a --plain inset border — Genshin's own three-part
-	     tab strip, which is the shape this navigation always was without ever
-	     looking like it. It used to be three 11px .tab chips in the band's left
-	     corner: "too small and inconspicuous" for the control that decides what
-	     the whole tool is showing you.
-
-	     ↻ ⚓ NATE 2026-08-10, three tweaks: the flanking star ornaments are OUT
-	     (the `sparkle` mark went with them — nothing else used it), the plate's
-	     border is a GOLD mix rather than the light context's slate line, and the
-	     items are sized from the rail rather than from their text.
-
-	     The selected plate still stands PROUD of the rail at both ends
-	     (--nav-plate-h against BAND_B_H), which is what makes it read as a thing
-	     sitting on the strip rather than a fill inside it. -->
+	     Plates in Bitter on their own glass rail, the selected one on a
+	     parchment ground with a --plain inset border — Genshin's own tab strip.
+	     ↻ §11.2: beside the docked board there is nothing to switch, so the
+	     rail exists only below the dock, as the phone's Characters | Lineup.
+	     The selected plate stands PROUD of the rail at both ends (--nav-plate-h
+	     against BAND_B_H), which is what makes it read as a thing sitting on
+	     the strip rather than a fill inside it. -->
 	{#snippet bandBCenter()}
-		<!-- THE SPLIT CONTROL (§2.4): one control, three positions — two below
-		     toolMin, where there is no 50/50. It keeps the old navigation's
-		     plates, because it does the old navigation's job: decide what the
-		     tool is showing you. -->
-		<div class="tb-nav" role="tablist" aria-label="Team Builder views">
-			{#each SPLIT_VIEWS.filter((v) => v.key !== (narrow ? 'split' : 'board')) as v (v.key)}
-				{@const on = effectiveView === v.key}
-				<button
-					class="tb-nav-item"
-					class:active={on}
-					class:ctx-light={on}
-					class:inset={on}
-					class:inset--plain={on}
-					role="tab"
-					aria-selected={on}
-					onclick={() => (view = v.key)}
-				>
-					<span class="tb-nav-label">{v.label}</span>
-				</button>
-			{/each}
-		</div>
+		{#if tabbed}
+			<div class="tb-nav" role="tablist" aria-label="Team Builder panes">
+				{#each PANE_TABS as v (v.key)}
+					{@const on = tab === v.key}
+					<button
+						class="tb-nav-item"
+						class:active={on}
+						class:ctx-light={on}
+						class:inset={on}
+						class:inset--plain={on}
+						role="tab"
+						aria-selected={on}
+						onclick={() => (tab = v.key)}
+					>
+						<span class="tb-nav-label">{v.label}</span>
+					</button>
+				{/each}
+			</div>
+		{/if}
 	{/snippet}
 
 	{#snippet bandBRight()}
@@ -1418,27 +1205,16 @@
 	{/snippet}
 
 	{#snippet surface()}
-		<!-- THE SPLIT (§2.4). Both panes stay mounted; the state decides where
-		     each sits. ⚠ The wipe moves the BOARD pane (a transform) and changes
-		     the roster pane's width ONCE, at the start or the end — never per
-		     frame, because reflowing ~120 cards every frame is the cost. -->
-		<div class="tb-split tb-split--{effectiveView}" style:--tb-wipe="{motion(TB_WIPE_MS)}ms">
-			<div class="tb-pane tb-pane--roster" inert={effectiveView === 'board'}>
-				<!-- asideBare: the rail paints its own groups, so the column is a
-				     gutter of objects rather than one box of sections. -->
-				<ToolColumns
-					{main}
-					aside={sourceTab === 'roster' && (!filterDrawer || filtersOpen) ? rosterRail : undefined}
-					asideBare
-					sheet={filterDrawer}
-					asideTitle="Filters"
-					onCloseAside={() => (filtersOpen = false)}
-				/>
+		<!-- THE DOCK (§11.2). Both panes stay mounted; below the dock the tab
+		     decides which one shows, and the board slides in over the roster. -->
+		<div class="tb-dock tb-dock--{showing}" style:--tb-wipe="{motion(TB_WIPE_MS)}ms">
+			<div class="tb-pane tb-pane--roster" inert={showing === 'lineup'}>
+				{@render main()}
 			</div>
 			<div
 				class="tb-pane tb-pane--board scroll-fade"
 				use:scrollFade
-				inert={effectiveView === 'roster'}
+				inert={showing === 'characters'}
 			>
 				<BoardView
 					{board}
@@ -1474,41 +1250,22 @@
 	     exception cuts one way only, because there is no light ground anywhere
 	     to inherit from. -->
 	<div class="tb-stack ctx-dark">
-		<!-- ↻ 2026-10-07: WHAT THE TEAM COVERS moved INTO the Roster's scroller
-		     (see rosterCount). It was meant to go under the bench, but measured
-		     with the bench spaced by the planner the ribbon runs to y≈880 at
-		     1440×900, leaving nothing beneath it — ⚓ Nate's fallback: a compact
-		     strip at the top of the Roster that scrolls with the grid. -->
-
-		<!-- .tb-frame is GONE — it existed only to supply a ground, a radius and
-		     a clip, and with no ground there is nothing to round or clip. The
-		     scroll zone below is the box now, one level shallower.
-
-		     FILLS on Roster and Compare, ends at its content on the Atlas. The
-		     Atlas is four role cards (or ≤4 slot rows); the other two can be
-		     arbitrarily long AND the Roster's bounded scroller depends on this
-		     having a definite height. So it is per-VIEW. ⚠ Never
-		     `max-height: 100%` here — a percentage against a flex-derived
-		     height is exactly the shape that silently failed on 2026-08-08, and
-		     probe-bench-align's bounded-scroller check is what catches it. -->
-		<!-- ↻ 2026-08-11: THE ATLAS CARDS VIEW FILLS TOO. It was content-height on
-		     the reasoning that four cards are a short, known thing — true while
-		     the cards asserted their own height, and false the moment they had to
-		     FIT the column instead (⚓ Nate: "the cards aren't fitting on the
-		     screen vertically"). A grid can only size itself to the space left
-		     over if something gives it a definite one. The drill and slots views
-		     keep the old behaviour: those are lists, and a list should end where
-		     its content does. -->
-		<!-- ⚓ NATE 2026-08-11: THE ATLAS HEAD IS PINNED — and pinning it meant
-		     lifting it OUT of the scroller, not sticking it inside one. That head
-		     carries the way BACK from a drill-down, and it was scrolling off the
-		     top the moment you went looking through the characters it introduced.
-		     ⚠ WHY NOT `position: sticky`. It would park the head in exactly the
-		     pixels the scroll-fade mask erases: the fade is what tells you there
-		     is more above, so a sticky head sitting at top:0 would dissolve the
-		     instant the content behind it started moving. A mask cannot be told
-		     to spare one child. So the head and the scroller are two boxes, and
-		     only the second one scrolls. -->
+		<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
+		     the board you are filtering for. -->
+		{#if sourceTab === 'roster'}
+			<RosterFilterBar
+				{roster}
+				{filters}
+				{activeFacets}
+				activeRole={activeCategory?.key ?? null}
+				onRole={openCategory}
+				bind:ownershipView
+				count={split.matches.length}
+				{countNote}
+				anyActive={anyFilterActive}
+				onClear={clearAllFilters}
+			/>
+		{/if}
 		<div class="tb-sourcebox tb-sourcebox--fill">
 			<section class="tb-source scroll-fade tb-source--fill" use:scrollFade>
 				<!-- ── Compare — a first-class center view, not an inspector: the shared
@@ -1549,10 +1306,8 @@
 				     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
 				     stall in Safari 26.x, and keeping it warm makes the toggle instant
 				     in every browser.
-				     ↻ ASIDE-COLUMN ROUND 2026-08-08: the filter column left this box.
-				     It is the surface's ASIDE now — its own dark box beside the frame
-				     with bare scene between them (see the rosterRail snippet below).
-				     What is left in here is the grid proper. -->
+				     ↻ §11.2: the filters are the bar above; what is left in here is
+				     the grid proper. -->
 				{#if rosterEverShown}
 					<div class="tb-roster" hidden={sourceTab !== 'roster'}>
 						<CharacterGrid
@@ -1561,7 +1316,6 @@
 							tile={rosterTile}
 							sections={rosterSections}
 							sectionHead={rosterSectionHead}
-							aboveGrid={rosterCount}
 							belowGrid={rosterStubs}
 							emptyMessage={rosterEmptyMessage}
 						/>
@@ -1570,27 +1324,6 @@
 			</section>
 		</div>
 	</div>
-{/snippet}
-
-<!-- ── The aside column: the filter column ────────────────────────────────
-     The shared identity groups (search · element · weapon · rarity · region ·
-     Clear) come from <CharacterFilterRail>; the TB's own groups — the roster
-     ledger, the editorial roles, factions/buffs and the capability facets —
-     ride in through railStart, and reach the same Clear.
-
-     The rail is handed the UNFILTERED roster, not split.matches: its Region
-     chips are drawn from whatever it is given, and from the filtered list
-     choosing a region collapsed the group to the one chip you had just
-     pressed. (Live before this round; the extraction is where it surfaced.) -->
-{#snippet rosterRail()}
-	<CharacterFilterRail
-		{roster}
-		{filters}
-		searchPlaceholder="Search characters…"
-		railStart={rosterFacetRail}
-		{extraFiltersActive}
-		onClearExtras={clearExtraFilters}
-	/>
 {/snippet}
 
 <!-- The one deliberate modal: a focused single-character read. -->
@@ -1605,23 +1338,28 @@
 {/if}
 
 <style>
-	/* ══ THE SPLIT (lineups design §2.4) ═════════════════════════════════════
-	   Both panes are always laid out. The ROSTER pane is in the flow; the BOARD
-	   pane is absolutely placed over the right side and WIPES in on a
-	   transform. ⚠ The roster's width changes once per change of state — at
-	   the START when it gives up room (roster → split), at the END when it
-	   takes room back (split → roster, after the board has gone) — and never
-	   per frame: ~120 cards reflowing every frame is the cost this avoids.
-	   🎛️ --tb-wipe is TB_WIPE_MS (lib/split.ts), Nate's to tune. */
-	.tb-split {
-		--tb-split-gap: 16px;
+	/* ══ THE DOCK (design doc §11.2) ═══════════════════════════════════════
+	   ⚓ The board is docked on the RIGHT at a FIXED width and the roster column
+	   is the only thing that flexes, so the board's layout can be made stable.
+	   🎛️ --tb-board-w: ⏳ a first value, measured in step 1 against a full
+	   Stygian board (§11.6 item 3).
+	   Below the dock (`wide`, 71rem — $lib/breakpoints.ts) the panes are TABS:
+	   each takes the whole width and the board slides in over the roster on a
+	   transform. ⚠ Both panes always lay out, so neither loses its scroll or
+	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/split.ts). */
+	.tb-dock {
+		--tb-board-w: 580px;
+		--tb-dock-gap: 16px;
 		--tb-wipe-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-		position: relative;
 		flex: 1;
 		min-width: 0;
 		min-height: 0;
-		display: flex;
-		overflow: hidden;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) var(--tb-board-w);
+		/* ⚠ minmax(0, 1fr), never 1fr — the `auto` minimum would let the
+		   roster's content hold the row open past the viewport. */
+		grid-template-rows: minmax(0, 1fr);
+		gap: var(--tb-dock-gap);
 	}
 	.tb-pane {
 		min-width: 0;
@@ -1629,39 +1367,32 @@
 	}
 	.tb-pane--roster {
 		display: flex;
-		flex: 0 0 100%;
-		transition:
-			flex-basis 0s linear var(--tb-wipe),
-			transform var(--tb-wipe) var(--tb-wipe-ease);
-	}
-	.tb-split--split .tb-pane--roster,
-	.tb-split--board .tb-pane--roster {
-		flex-basis: calc(50% - var(--tb-split-gap) / 2);
-		transition:
-			flex-basis 0s,
-			transform var(--tb-wipe) var(--tb-wipe-ease);
-	}
-	.tb-split--board .tb-pane--roster {
-		transform: translateX(calc(-100% - var(--tb-split-gap)));
 	}
 	.tb-pane--board {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		width: calc(50% - var(--tb-split-gap) / 2);
 		overflow-y: auto;
-		transform: translateX(calc(100% + var(--tb-split-gap)));
-		transition:
-			transform var(--tb-wipe) var(--tb-wipe-ease),
-			width var(--tb-wipe) var(--tb-wipe-ease);
 	}
-	.tb-split--split .tb-pane--board {
-		transform: none;
-	}
-	.tb-split--board .tb-pane--board {
-		transform: none;
-		width: 100%;
+	@media (max-width: 71rem) {
+		.tb-dock {
+			position: relative;
+			display: flex;
+			gap: 0;
+			overflow: hidden;
+		}
+		.tb-pane {
+			flex: 0 0 100%;
+			transition: transform var(--tb-wipe) var(--tb-wipe-ease);
+		}
+		.tb-pane--board {
+			position: absolute;
+			inset: 0;
+			transform: translateX(calc(100% + var(--tb-dock-gap)));
+		}
+		.tb-dock--lineup .tb-pane--roster {
+			transform: translateX(calc(-100% - var(--tb-dock-gap)));
+		}
+		.tb-dock--lineup .tb-pane--board {
+			transform: none;
+		}
 	}
 
 	/* Band A's end zone: the board's notice and Share. */
@@ -1674,13 +1405,6 @@
 		font-size: var(--fs-sm);
 		color: var(--muted);
 		white-space: nowrap;
-	}
-
-	/* The cold start's "Build a team". */
-	.tb-cta {
-		display: flex;
-		justify-content: center;
-		padding: 0.5rem 0 0.25rem;
 	}
 
 	/* ONE frame holding every zone, inside a ToolStack that supplies the
@@ -1718,8 +1442,11 @@
 	   own edges and can sit close; bare runs have nothing but the space around
 	   them to say where one ends, so they need more of it. Two knobs because
 	   they answer two questions. */
+	/* ↻ §11.2: the stack is the FILTER BAR over the grid now — one reading, a
+	   control plate and the cards it narrows, so they sit at a box's distance
+	   rather than a section's (the grid's own 6px gutter adds to it). */
 	.tb-stack {
-		--tb-section-gap: 2rem;
+		--tb-section-gap: 0.5rem;
 		/* 🎛️ THE SURFACE'S CENTRED MEASURE — how wide a centred block on this
 		   column is allowed to get. One consumer today: the capability run's cap
 		   (CoveragePanel reads it with a local fallback).
@@ -2036,20 +1763,6 @@
 		}
 	}
 
-	/* ↻ 2026-10-07: the role cards ride INSIDE the Roster's scroller, above the
-	   count, so this is content-height now (flex: none — a flex item in a
-	   scrolling column must not be squeezed). Folded to a strip once anything
-	   narrows the roster. */
-	.tb-atlas {
-		display: flex;
-		flex-direction: column;
-		flex: none;
-		padding-block: 0.25rem 0.5rem;
-		gap: 0.8rem;
-	}
-	.tb-atlas--compact {
-		padding-block: 0;
-	}
 	/* ── Role section heads (the Roster grid's sections) ──────────
 	   ↻ 2026-10-07: these were the Atlas drill's and the RP-arrival slot rows'
 	   headers; the drill is the Roster's sections now and the slot rows retired
@@ -2176,21 +1889,6 @@
 		}
 	}
 
-	.tb-seg {
-		margin-top: 0.55rem;
-	}
-
-	/* The rail's segmented group is the global .segment track; the only local
-	   part is that it stretches its buttons to equal widths, which a
-	   free-standing segment shouldn't do. (The constellation lens used to be
-	   the second member of this rule — it is a band menu now.) */
-	.tb-seg {
-		display: flex;
-	}
-	.tb-seg > .btn {
-		flex: 1;
-	}
-
 	/* ── The constellation lens's menu rows ─────────────────────
 	   Three columns: the check gutter (fixed, so every label starts on one
 	   line), the reading, and the sentence that explains it. */
@@ -2212,11 +1910,6 @@
 		white-space: normal;
 		max-width: 22rem;
 	}
-	.tb-edit-toggle {
-		margin-top: 0.4rem;
-		width: 100%;
-	}
-
 	/* .chips, plus the facet rail's own top spacing. */
 	/* .note, plus the offset its container doesn't provide. */
 	.tb-stubs-link {
@@ -2225,37 +1918,6 @@
 	.tb-note {
 		margin-top: 0.5rem;
 		font-size: var(--fs-md);
-	}
-
-	.tb-chips {
-		margin-top: 0.55rem;
-	}
-
-	.tb-chip--role {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		text-transform: none;
-	}
-	.tb-chip-icon {
-		width: 14px;
-		height: 14px;
-		object-fit: contain;
-	}
-
-	/* ── Content ──────────────────────────────────────────────── */
-	.tb-count {
-		margin: 0;
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	.tb-count-mode {
-		opacity: 0.7;
-		text-transform: none;
-		letter-spacing: var(--ls-tight);
 	}
 
 	/* The Atlas rows' and the stubs bucket's grid (the roster's own is

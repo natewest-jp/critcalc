@@ -224,50 +224,45 @@
 		<section class="bv-team" aria-label="Team {t + 1}">
 			<header class="bv-team-head ctx-glass">
 				<div class="bv-head-text">
+					<!-- ↻ §11.6 item 13: ONE run of Bitter bold, mixed case, as the game
+					     writes "Battlefield 1: Aeonblight Drake: Skyshaker" — measured
+					     over all 28 bosses, every English name fits one line of the
+					     docked board (the old Plex caps ran a third wider). -->
 					<h3 class="bv-head-title">
-						<span class="kicker bv-head-n"
-							>{field
-								? `Battlefield ${t + 1}:`
-								: half
-									? t === 0
-										? 'First half'
-										: 'Second half'
-									: `Team ${t + 1}`}</span
-						>
-						<!-- The boss's name in full, in the game's order: "Battlefield 1:
-						     Battle-Hardened Domovoy Sculptor: Gale Hewing" — the family is the
-						     NAME, the part after it the title. -->
-						{#if field}<span class="bv-boss-name">{inLang(BOSSES[field.boss].name)}</span>{/if}
+						{field
+							? `Battlefield ${t + 1}: ${inLang(BOSSES[field.boss].name)}`
+							: half
+								? t === 0
+									? 'First half'
+									: 'Second half'
+								: `Team ${t + 1}`}
 					</h3>
 					{#if half}<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>{/if}
 				</div>
-				<span class="bv-team-actions">
-					<!-- Below `compact` each keeps its MARK and drops its WORD, as band
-					     controls do, so the battlefield's name has the strip's width. -->
-					{#if half && abyss}
-						<button
-							class="btn btn--sm"
-							aria-label="Opponents"
-							onclick={() => (opponents = t as 0 | 1)}
-							><Mark name="search" size={12} /><span class="bv-word">Opponents</span></button
-						>
-					{/if}
-					<button
-						class="btn btn--sm"
-						disabled={!filled}
-						onclick={() => onOpenInPlanner(team)}
-						aria-label="Open in Planner"
-						title="Open this team in the Rotation Planner"
-						><Mark name="forward" size={12} /><span class="bv-word">Open in Planner</span></button
-					>
-					{#if board.teams.length > 1}
-						<button
-							class="btn btn--icon bv-remove-team"
-							onclick={() => onRemoveTeam(team.id)}
-							aria-label="Remove team {t + 1}"><Mark name="close" size={12} /></button
-						>
-					{/if}
-				</span>
+				<!-- ↻ §11.6: the header names the SITE and nothing else. "Open in
+				     Planner" moved to the rotation line, and ✕ belongs to a Custom
+				     board only — a battlefield is not yours to remove. -->
+				{#if (half && abyss) || (board.preset === 'custom' && board.teams.length > 1)}
+					<span class="bv-team-actions">
+						<!-- Below `compact` it keeps its MARK and drops its WORD, as band
+						     controls do, so the half's name has the strip's width. -->
+						{#if half && abyss}
+							<button
+								class="btn btn--sm"
+								aria-label="Opponents"
+								onclick={() => (opponents = t as 0 | 1)}
+								><Mark name="search" size={12} /><span class="bv-word">Opponents</span></button
+							>
+						{/if}
+						{#if board.preset === 'custom' && board.teams.length > 1}
+							<button
+								class="btn btn--icon bv-remove-team"
+								onclick={() => onRemoveTeam(team.id)}
+								aria-label="Remove team {t + 1}"><Mark name="close" size={12} /></button
+							>
+						{/if}
+					</span>
+				{/if}
 			</header>
 
 			<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
@@ -343,42 +338,55 @@
 						{#if filled}
 							<div class="bv-side">
 								<CompositionChips ids={team.slots} reactions={false} />
-								<!-- ⚓ A team's rotations are DERIVED from the library by its set;
+								<!-- The team's rotation, and the way to play it: the line exists
+								     exactly when the team does, and the rotation is the button's
+								     subject (§11.6 item 13). -->
+								<div class="bv-play">
+									<!-- ⚓ A team's rotations are DERIVED from the library by its set;
 								     a pin names the one you would play here (§10.2). -->
-								{#if rotations.length === 0}
-									<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span>
-								{:else}
-									<BandMenu
-										mark="pin"
-										size="sm"
-										align="start"
-										label={pin?.name ??
-											(rotations.length === 1
-												? '1 rotation, none pinned'
-												: `${rotations.length} rotations, none pinned`)}
-										ariaLabel="Pinned rotation for team {t + 1}"
-									>
-										{#snippet items(close)}
-											{#each [null, ...rotations] as r (r?.id ?? '')}
-												{@const current = (pin?.id ?? null) === (r?.id ?? null)}
-												<button
-													class="band-menu-item"
-													role="menuitemradio"
-													aria-checked={current}
-													onclick={() => {
-														close();
-														onPin(team.id, r?.id ?? null);
-													}}
-												>
-													<span class="bv-menu-check"
-														>{#if current}<Mark name="check" size={12} />{/if}</span
+									{#if rotations.length === 0}
+										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
+										>
+									{:else}
+										<BandMenu
+											mark="pin"
+											size="sm"
+											align="start"
+											label={pin?.name ??
+												(rotations.length === 1
+													? '1 rotation, none pinned'
+													: `${rotations.length} rotations, none pinned`)}
+											ariaLabel="Pinned rotation for team {t + 1}"
+										>
+											{#snippet items(close)}
+												{#each [null, ...rotations] as r (r?.id ?? '')}
+													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+													<button
+														class="band-menu-item"
+														role="menuitemradio"
+														aria-checked={current}
+														onclick={() => {
+															close();
+															onPin(team.id, r?.id ?? null);
+														}}
 													>
-													{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span>{/if}
-												</button>
-											{/each}
-										{/snippet}
-									</BandMenu>
-								{/if}
+														<span class="bv-menu-check"
+															>{#if current}<Mark name="check" size={12} />{/if}</span
+														>
+														{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span
+															>{/if}
+													</button>
+												{/each}
+											{/snippet}
+										</BandMenu>
+									{/if}
+									<button
+										class="btn btn--sm"
+										onclick={() => onOpenInPlanner(team)}
+										title="Open this team in the Rotation Planner"
+										><Mark name="forward" size={12} /> Open in Planner</button
+									>
+								</div>
 							</div>
 						{/if}
 					</div>
@@ -388,7 +396,9 @@
 		</section>
 	{/each}
 	<footer class="bv-foot">
-		{#if board.teams.length < BOARD_TEAM_LIMIT}
+		<!-- A battlefield is the game's, not yours to add or remove — teams come
+		     and go on a Custom board only (with ✕, §11.6 item 13). -->
+		{#if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
 			<button class="btn bv-add-team" onclick={onAddTeam}><Mark name="plus" /> Add team</button>
 		{/if}
 		<!-- ⏭ Working copy (copy step 8). -->
@@ -509,34 +519,27 @@
 		flex-direction: column;
 		gap: 0.25rem;
 	}
-	/* One run of TEXT, not flex items, so a long name wraps word by word
-	   instead of dropping whole beneath the number. */
+	/* ↻ §11.6 item 13: the battlefield's heading in the game's voice — Bitter
+	   bold, mixed case, the number and the boss one run of text. White for now
+	   (the house rule: gold names a block, a title is not gold); the game's is
+	   gold, and Nate may switch it back.
+	   🎛️ 13px is OFF the --fs ladder on purpose: measured over all 28 Stygian
+	   bosses, 13px puts every English name on one line of the docked board
+	   (longest 508px), where 14px wraps the longest few. */
 	.bv-head-title {
+		--bv-head-size: 0.8125rem;
 		margin: 0;
-		font-size: inherit;
+		font-family: var(--font-display);
+		font-size: var(--bv-head-size);
+		font-weight: var(--fw-bold);
 		line-height: 1.4;
-	}
-	/* The kicker's voice without its rule — it leads a line here. */
-	.bv-head-n {
-		display: inline;
-		margin-right: 0.35em;
-		font-size: var(--fs-md);
-	}
-	.bv-head-n::after {
-		content: none;
+		color: var(--text);
 	}
 	.bv-team-actions {
 		flex: none;
 		display: flex;
 		align-items: center;
 		gap: 4px;
-	}
-	.bv-boss-name {
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
-		color: var(--accent);
 	}
 	.bv-half {
 		margin: 0;
@@ -693,6 +696,12 @@
 		border-radius: var(--r-round);
 		background: var(--surface-well);
 		color: var(--ui-warning);
+	}
+	.bv-play {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px 10px;
 	}
 	.bv-rotations {
 		display: flex;

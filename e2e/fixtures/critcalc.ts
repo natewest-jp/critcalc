@@ -212,7 +212,10 @@ export async function openTool(page: Page, path: string) {
 /** Put the Team Builder's split control on Roster and wait for the grid.
  *  ⚠ By ROLE with `exact`: "Roster + board" also contains "Roster". */
 export async function openRoster(page: Page) {
-	await page.locator('.band-b').getByRole('tab', { name: 'Roster', exact: true }).click();
+	// ↻ §11.2: beside the docked board the roster is always showing; below the
+	// dock it is the Characters tab.
+	const tab = page.locator('.band-b').getByRole('tab', { name: 'Characters', exact: true });
+	if (await tab.count()) await tab.click();
 	await page.locator('.cg-grid').first().waitFor();
 }
 
@@ -231,9 +234,12 @@ export function gridNames(page: Page) {
 	return page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 }
 
-/** A capability facet chip in the filter rail. */
-export function facetChip(page: Page, label: string) {
-	return page.locator('.tb-chips .chip', { hasText: label }).first();
+/** Toggle a chip in the filter bar's More popover (a capability facet, a
+ *  faction…), closing the popover again so the grid is reachable. */
+export async function moreChip(page: Page, label: string) {
+	await page.locator('.rfb .band-menu-trigger').click();
+	await page.locator('.rfb-more .chip', { hasText: label }).first().click();
+	await page.keyboard.press('Escape');
 }
 
 /** The names in the bench band's four team slots (empties excluded). */

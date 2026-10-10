@@ -4,7 +4,7 @@ import {
 	openTool,
 	openRoster,
 	gridNames,
-	facetChip,
+	moreChip,
 	benchNames,
 	boardNames,
 	setConMode,
@@ -33,41 +33,38 @@ import { encodeBoard } from '../src/lib/utils/boardUrl';
  *  +Vodyanitsa). */
 const ROSTER_SIZE = 127;
 
-const matchCount = async (page: Page) => parseInt(await page.locator('.tb-count').innerText(), 10);
+const matchCount = async (page: Page) => parseInt(await page.locator('.rfb-count').innerText(), 10);
 
 test.describe('roster and facets', () => {
-	test('the roster is the front door, opened by the role cards', async ({ page }) => {
-		// ⚓ 2026-10-07: TWO surfaces. The Atlas's role cards open the Roster now
-		// — full-size while nothing narrows it, the grid right beneath them.
+	test("the filter bar's role icons narrow and section the roster", async ({ page }) => {
+		// ↻ §11.2: the Atlas role cards retired into the filter bar, which lives
+		// IN the roster column beside the docked board.
 		await openTool(page, '/team-builder');
-		// ↻ 2026-10-09: band B is the split control — TWO positions at any width
-		// (Roster · Roster + board wide, Roster · Board on a phone).
-		await expect(page.locator('.band-b .tb-nav-item'), 'the two split positions').toHaveCount(2);
-		await expect(page.locator('.tb-atlas .rolecard'), 'four role cards').toHaveCount(4);
+		await expect(
+			page.locator('.band-b .tb-nav-item'),
+			'no view switch beside the dock'
+		).toHaveCount(0);
+		await expect(page.locator('.rfb-role'), 'four role icons').toHaveCount(4);
 		await expect(page.locator('.cg-grid').first().locator('.cc')).toHaveCount(ROSTER_SIZE);
 		await expect(
 			page.locator('.tb-stubs'),
 			'no uncurated bucket without capability facets'
 		).toHaveCount(0);
 
-		// A card IS the role filter: the grid narrows and SECTIONS (the old
-		// drill-down), and the cards fold to a strip with that one chosen.
-		await page.locator('.rolecard', { hasText: 'Support' }).click();
-		await expect(page.locator('.tb-atlas .rolecard')).toHaveCount(0);
-		await expect(page.locator('.rolechip.is-active')).toHaveText(/Support/);
+		// A role IS the filter: the grid narrows and SECTIONS (the old drill-down).
+		await page.locator('.rfb-role[aria-label="Support"]').click();
 		expect(await page.locator('.cg-section').count()).toBeGreaterThan(1);
 		expect(await matchCount(page)).toBeLessThan(ROSTER_SIZE);
 
-		// Choosing it again clears it, and the front door comes back.
-		await page.locator('.rolechip.is-active').click();
-		await expect(page.locator('.tb-atlas .rolecard')).toHaveCount(4);
+		// Choosing it again clears it.
+		await page.locator('.rfb-role.is-active').click();
 		await expect(page.locator('.cg-section')).toHaveCount(0);
 	});
 
 	test('the heal facet narrows the grid to healers', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await facetChip(page, 'Heals').click();
+		await moreChip(page, 'Heals');
 
 		const healers = await matchCount(page);
 		expect(healers, 'heal facet narrows the grid').toBeGreaterThan(15);
@@ -107,10 +104,10 @@ test.describe('roster and facets', () => {
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await facetChip(page, 'Heals').click();
+		await moreChip(page, 'Heals');
 		const healers = await matchCount(page);
 
-		await facetChip(page, 'ATK buff').click();
+		await moreChip(page, 'ATK buff');
 		const both = await matchCount(page);
 		expect(both, 'heal ∩ ATK-buff is strictly smaller').toBeLessThan(healers);
 		expect(await gridNames(page), 'Bennett does both').toContain('Bennett');
@@ -124,7 +121,7 @@ test.describe('roster and facets', () => {
 	test('the constellation lens widens capability gates', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await facetChip(page, 'Heals').click();
+		await moreChip(page, 'Heals');
 
 		await setConMode(page, 'C0');
 		const atC0 = await matchCount(page);
@@ -140,7 +137,7 @@ test.describe('roster and facets', () => {
 		await seed({ constellations: { fischl: 4 } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await facetChip(page, 'Heals').click();
+		await moreChip(page, 'Heals');
 		await setConMode(page, 'My roster');
 
 		const names = await gridNames(page);
@@ -197,7 +194,7 @@ test.describe('detail card', () => {
 
 		await page.reload({ waitUntil: 'networkidle' });
 		await openRoster(page);
-		await facetChip(page, 'Heals').click();
+		await moreChip(page, 'Heals');
 		await setConMode(page, 'My roster');
 		expect(await gridNames(page), 'the constellation survived reload').toContain('Fischl');
 	});
@@ -215,11 +212,12 @@ test.describe('the board', () => {
 		await page.locator('.dc-panel').waitFor();
 	};
 
-	test('the cold start is the roster, and a pick lands on the board', async ({ page }) => {
+	test('the cold start is the current Stygian lineup, and a pick lands on it', async ({ page }) => {
+		// ⚓ §11.2: a first visit shows the tool at its most useful — the season's
+		// Stygian Onslaught, docked beside the roster.
 		await openTool(page, '/team-builder');
-		await expect(page.locator('.tb-split--roster'), 'an empty board leaves the roster').toHaveCount(
-			1
-		);
+		await expect(page.locator('.bv-team'), 'three battlefields').toHaveCount(3);
+		await expect(page.locator('.bv-head-title').first()).toHaveText(/^Battlefield 1: /);
 		await expect(page.locator('.bench-band-mount'), 'the Builder has no bench').toBeHidden();
 
 		await openDetail(page, 'Bennett');
@@ -227,9 +225,6 @@ test.describe('the board', () => {
 		await page.keyboard.press('Escape');
 
 		expect(await boardNames(page)).toEqual(['Bennett']);
-		await expect(page.locator('.tb-split--split'), 'the board opens beside the roster').toHaveCount(
-			1
-		);
 		expect(page.url(), 'the board never rides the URL').not.toContain('team=');
 	});
 
@@ -435,26 +430,11 @@ test.describe('ownership ledger', () => {
 		).toBe('wishlist');
 		await page.keyboard.press('Escape');
 
-		await page.locator('.tb-seg .btn', { hasText: 'Wishlist' }).click();
+		await page.locator('.rfb-own .btn', { hasText: 'Wishlist' }).click();
 		const names = await gridNames(page);
 		expect(names).toContain('Bennett');
 		expect(names).not.toContain('Jean');
 		expect(names.length, 'the view is narrowed, not the full roster').toBeLessThan(5);
-	});
-
-	test('edit mode toggles ownership by tile click', async ({ page }) => {
-		await openTool(page, '/team-builder');
-		await openRoster(page);
-
-		await page.locator('.tb-edit-toggle').click();
-		await page.locator('.cc', { hasText: 'Diona' }).first().locator('.cc-main').click();
-		expect(
-			await page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? '{}').diona, KEYS.ownership)
-		).toBe('owned');
-		expect(
-			await page.locator('.cc--faded').count(),
-			'not-owned characters fade while editing'
-		).toBeGreaterThan(0);
 	});
 });
 
@@ -463,10 +443,12 @@ test.describe('factions and buffs filter', () => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 
-		const chips = page.locator('.cg-rail .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
+		await page.locator('.rfb .band-menu-trigger').click();
+		const chips = page.locator('.rfb-more .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
 		await expect(chips, 'three faction/buff chips').toHaveCount(3);
+		await page.keyboard.press('Escape');
 
-		await page.locator('.cg-rail .chip', { hasText: 'Stellar' }).click();
+		await moreChip(page, 'Stellar');
 		const names = await gridNames(page);
 		// Sandrone enables the reaction; Diona carries a stellar-gated C6 buff;
 		// Bennett is neither.
