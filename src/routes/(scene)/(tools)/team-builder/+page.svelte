@@ -18,6 +18,7 @@
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import {
 		FACETS,
+		OWNERSHIP_VIEWS,
 		conCapFor,
 		facetBadges,
 		splitRoster,
@@ -35,7 +36,7 @@
 	import { library } from '$lib/library.svelte';
 	import { currentSeason } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
-	import { TB_WIPE_MS } from './lib/split';
+	import { BOARD_W, DOCK_GAP, FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
 	import { motion } from '$lib/motion';
 	import { below } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
@@ -49,7 +50,8 @@
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import BoardView from './lib/BoardView.svelte';
-	import RosterFilterBar from './lib/RosterFilterBar.svelte';
+	import RosterFilterStrip from './lib/RosterFilterStrip.svelte';
+	import MoreFilters from './lib/MoreFilters.svelte';
 	import { buildRoleSections, categoryOf } from './lib/atlas';
 	import type { RoleCategory, RoleFilter } from './lib/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
@@ -199,10 +201,12 @@
 		if (pendingSwapSlot === null && !fromPlanner && boardHasAnyone) tab = 'lineup';
 	});
 
-	const PANE_TABS: { key: PaneTab; label: string }[] = [
-		{ key: 'characters', label: 'Characters' },
-		{ key: 'lineup', label: 'Lineup' }
-	];
+	/** The character cell's width in band B — it folds Show, then the lens,
+	 *  into More when the cell runs out (`FOLD_*_W`, lib/dock). 0 before the
+	 *  first measure, so the first paint is the folded one. */
+	let charCellW = $state(0);
+	const foldShow = $derived(charCellW < FOLD_SHOW_W);
+	const foldLens = $derived(charCellW < FOLD_LENS_W);
 
 	// ── The board ─────────────────────────────────────────────────────────────
 
@@ -511,7 +515,18 @@
 		return ownsAny && ownershipView === 'all' && $ownership[id] !== 'owned';
 	}
 
-	/** Anything narrowing the roster — lights the bar's Clear. */
+	/** How many choices are hidden inside More — its plate says so, or a
+	 *  filter you set and closed would be invisible. */
+	const moreCount = $derived(
+		filters.weapons.size +
+			filters.rarities.size +
+			(filters.region ? 1 : 0) +
+			(filters.factionBuffs?.size ?? 0) +
+			activeFacets.size +
+			(foldShow && ownershipView !== 'all' ? 1 : 0)
+	);
+
+	/** Anything narrowing the roster — lights the strip's Clear. */
 	const anyFilterActive = $derived(
 		extraFiltersActive ||
 			filters.elements.size > 0 ||
@@ -563,18 +578,6 @@
 	/** The lens's current reading — band B's menu states it on the trigger, so
 	 *  the setting stays visible now that its eight segments are gone. */
 	const activeConMode = $derived(CON_MODES.find((m) => m.key === conMode) ?? CON_MODES[0]);
-
-	// ══ BAND B FOLDS BELOW BP.compact (responsive round, 2026-09-05) ═══════════
-	// 🐛 The bug it fixes: below ~430px the Atlas/Roster/Compare rail sat past
-	// the right edge and the Team Builder was STUCK on whichever view it opened
-	// with (survey § 8.4; measured — the rail's honest minimum is 229px, and
-	// with Clear team's 120 and the con lens's 110 beside it the row wants
-	// 467px). Same missing priority rule the site chrome had, one band down,
-	// and the same fix: the NAVIGATION is the incompressible occupant, the two
-	// flanking controls fold into one disclosure. ⚠ The threshold is the
-	// table's `compact` (40rem): the full row's content stop is 531px with the
-	// tool's pads, and 40rem is the first rung above it — see $lib/breakpoints.
-	const bandFolded = $derived(below('compact'));
 
 	// ---------------------------------------------------------------------------
 	// Detail card — a focused single-character modal (the tool's one deliberate
@@ -1069,6 +1072,22 @@
      are browsing, and at which constellations you are reading it. -->
 <!-- The con lens's options — one list, rendered by the lens's own menu at
      desk width and by band B's fold below BP.compact. -->
+<!-- THE PANE SWITCH below the dock (§11.6, Nate's pick): ONE plate naming
+     the pane it OPENS — the lineup's panel opens on the right, the
+     characters' on the left. It leads the open pane's band cell. -->
+{#snippet paneSwitch()}
+	<button
+		class="btn btn--glass tb-pane-switch"
+		onclick={() => (tab = tab === 'characters' ? 'lineup' : 'characters')}
+	>
+		{#if tab === 'characters'}
+			<Mark name="panelRight" /> Lineup
+		{:else}
+			<Mark name="panelLeft" /> Characters
+		{/if}
+	</button>
+{/snippet}
+
 {#snippet conModeItems(close: () => void)}
 	{#each CON_MODES as m (m.key)}
 		<button
@@ -1149,65 +1168,113 @@
 		</div>
 	{/snippet}
 
-	<!-- ── THE IN-TOOL NAVIGATION (⚓ NATE 2026-08-09, tuned 08-10) ───────────
-	     Plates in Bitter on their own glass rail, the selected one on a
-	     parchment ground with a --plain inset border — Genshin's own tab strip.
-	     ↻ §11.2: beside the docked board there is nothing to switch, so the
-	     rail exists only below the dock, as the phone's Characters | Lineup.
-	     The selected plate stands PROUD of the rail at both ends (--nav-plate-h
-	     against BAND_B_H), which is what makes it read as a thing sitting on
-	     the strip rather than a fill inside it. -->
-	{#snippet bandBCenter()}
-		{#if tabbed}
-			<div class="tb-nav" role="tablist" aria-label="Team Builder panes">
-				{#each PANE_TABS as v (v.key)}
-					{@const on = tab === v.key}
-					<button
-						class="tb-nav-item"
-						class:active={on}
-						class:ctx-light={on}
-						class:inset={on}
-						class:inset--plain={on}
-						role="tab"
-						aria-selected={on}
-						onclick={() => (tab = v.key)}
-					>
-						<span class="tb-nav-label">{v.label}</span>
-					</button>
-				{/each}
-			</div>
-		{/if}
-	{/snippet}
-
-	{#snippet bandBRight()}
-		{#if bandFolded}
-			<!-- THE FOLD. One plate where two stood: Clear team, then the con lens's
-			     options as the radio group they always were. The rail keeps the
-			     row; these are what it could do without seeing. -->
-			<BandMenu compact mark="more" ariaLabel="Team and reading options">
-				{#snippet items(close)}
-					<div class="tb-fold-head" aria-hidden="true">Read capabilities at</div>
-					{@render conModeItems(close)}
-				{/snippet}
-			</BandMenu>
-		{:else}
-			<!-- The constellation LENS. It was an eight-segment C0…C6 + My roster
-			     rail — 356px, the widest single control on the site, for something
-			     you set once and rarely touch. A menu states the current reading in
-			     one chip and gives each option room for the sentence that explains
-			     it. -->
-			<BandMenu label={activeConMode.label} ariaLabel="Read capabilities at">
-				{#snippet items(close)}
-					{@render conModeItems(close)}
-				{/snippet}
-			</BandMenu>
-		{/if}
+	<!-- ── BAND B, CUT AT THE DOCK (§11.6) ───────────────────────────────────
+	     The Visualizers' shape: band B paints no ground and lays its cells on
+	     the columns below it, so each cell's plates sit over the pane they
+	     control — the character grid's search, Show, More and lens; the
+	     lineup's No repeats. Below the dock ONE cell shows, the open pane's,
+	     led by the switch to the other. -->
+	{#snippet bandBFull()}
+		<div
+			class="tb-band"
+			class:tb-band--tabbed={tabbed}
+			style:--tb-board-w="{BOARD_W}px"
+			style:--tb-dock-gap="{DOCK_GAP}px"
+		>
+			{#if showing !== 'lineup'}
+				<div class="tb-band-cell" bind:clientWidth={charCellW}>
+					{#if tabbed}{@render paneSwitch()}{/if}
+					{#if sourceTab === 'roster'}
+						<!-- The mark is painted OVER the field, so .field keeps owning its
+						     inset stroke and focus ring (the old rail's search, same reasoning). -->
+						<div class="tb-search">
+							<Mark name="search" size={13} />
+							<input
+								class="field tb-search-field"
+								type="text"
+								placeholder="Search…"
+								aria-label="Search characters"
+								bind:value={filters.search}
+								autocomplete="off"
+								autocorrect="off"
+								spellcheck={false}
+							/>
+						</div>
+						{#if !foldShow}
+							<div class="segment tb-show" role="radiogroup" aria-label="Show">
+								{#each OWNERSHIP_VIEWS as v (v.key)}
+									<button
+										class="btn"
+										class:is-active={ownershipView === v.key}
+										role="radio"
+										aria-checked={ownershipView === v.key}
+										title={v.hint}
+										onclick={() => (ownershipView = v.key)}>{v.label}</button
+									>
+								{/each}
+							</div>
+						{/if}
+						<!-- More hangs from its END and opens leftward, so it stays over the
+						     roster column — never over the board you are filtering for. -->
+						<BandMenu
+							glass
+							role="dialog"
+							mark="filter"
+							label={moreCount > 0 ? `More · ${moreCount}` : 'More'}
+							ariaLabel="More filters"
+						>
+							{#snippet items(close)}
+								<MoreFilters
+									{roster}
+									{filters}
+									{activeFacets}
+									bind:ownershipView
+									showOwnership={foldShow}
+									lens={foldLens ? conModeItems : undefined}
+									{close}
+								/>
+							{/snippet}
+						</BandMenu>
+						{#if !foldLens}
+							<!-- The constellation LENS — what the grid's capabilities are read at.
+							     A menu states the reading in one plate and gives each option room
+							     for the sentence that explains it. -->
+							<BandMenu glass label={activeConMode.label} ariaLabel="Read capabilities at">
+								{#snippet items(close)}
+									{@render conModeItems(close)}
+								{/snippet}
+							</BandMenu>
+						{/if}
+					{/if}
+				</div>
+			{/if}
+			{#if showing !== 'characters'}
+				<div class="tb-band-cell">
+					{#if tabbed}{@render paneSwitch()}{/if}
+					<!-- ⏭ Working copy (copy step 8). -->
+					<label class="toggle tb-norepeat" title="Mark a character who is on more than one team">
+						<input
+							type="checkbox"
+							checked={board.noRepeats}
+							onchange={(e) => boards.setNoRepeats(board.id, e.currentTarget.checked)}
+						/>
+						<span class="toggle-track"><span class="toggle-thumb"></span></span>
+						<span class="toggle-label">No repeats</span>
+					</label>
+				</div>
+			{/if}
+		</div>
 	{/snippet}
 
 	{#snippet surface()}
 		<!-- THE DOCK (§11.2). Both panes stay mounted; below the dock the tab
 		     decides which one shows, and the board slides in over the roster. -->
-		<div class="tb-dock tb-dock--{showing}" style:--tb-wipe="{motion(TB_WIPE_MS)}ms">
+		<div
+			class="tb-dock tb-dock--{showing}"
+			style:--tb-wipe="{motion(TB_WIPE_MS)}ms"
+			style:--tb-board-w="{BOARD_W}px"
+			style:--tb-dock-gap="{DOCK_GAP}px"
+		>
 			<div class="tb-pane tb-pane--roster" inert={showing === 'lineup'}>
 				{@render main()}
 			</div>
@@ -1221,7 +1288,9 @@
 					selectedTeamId={selectedTeam?.id ?? null}
 					onSelectTeam={(id) => (chosenTeamId = id)}
 					nudgeAt={nudge?.at ?? null}
-					onNoRepeats={(on) => boards.setNoRepeats(board.id, on)}
+					onEmptySlot={() => {
+						if (tabbed) tab = 'characters';
+					}}
 					onAddTeam={() => boards.addTeam(board.id)}
 					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
 					onOpenInPlanner={openInPlanner}
@@ -1253,13 +1322,10 @@
 		<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
 		     the board you are filtering for. -->
 		{#if sourceTab === 'roster'}
-			<RosterFilterBar
-				{roster}
+			<RosterFilterStrip
 				{filters}
-				{activeFacets}
 				activeRole={activeCategory?.key ?? null}
 				onRole={openCategory}
-				bind:ownershipView
 				count={split.matches.length}
 				{countNote}
 				anyActive={anyFilterActive}
@@ -1509,136 +1575,70 @@
 		flex: 1;
 	}
 
-	/* ── The in-tool navigation (band B's centre zone, i.e. the rail) ───────
-	   ⚓ NATE's knobs, both of them.
-
-	   --nav-plate-h: the selected plate is TALLER THAN THE RAIL on purpose —
-	   that overhang is most of what makes it read as a plate laid on the strip
-	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 38
-	   stands 1px proud at each end (⚓ Nate 2026-08-10, walked down 42 → 40 → 38
-	   across the day). Move one, look at the other.
-	   ⚠ 1px is the floor for this idiom, not a waypoint on the way to 0: at 36
-	   the plate stops being proud of anything and becomes a selected cell inside
-	   the rail, which is the shape this whole treatment exists to avoid.
-
-	   --nav-fill: how much of the rail the three items take between them.
-	   ⚓ NATE: "make the buttons wider than their text requires… not entirely
-	   filling up the space… but maybe filling at least 50%." A PERCENTAGE rather
-	   than a width, so it stays true at every viewport — the items are sized
-	   from the rail, never from their labels. Rail visible at both ends is what
-	   keeps the group reading as three plates ON a strip. */
-	.tb-nav {
-		--nav-plate-h: 38px;
-		--nav-fill: 76%;
-		width: var(--nav-fill);
+	/* ── BAND B, CUT AT THE DOCK (§11.6) ─────────────────────────────────────
+	   The cells sit on the dock's own columns (--tb-board-w / --tb-dock-gap,
+	   from lib/dock), so each run of plates stands over the pane it controls —
+	   the Visualizers' per-tile band. The band paints nothing; every control is
+	   a glass plate (band--full's half of the bargain). */
+	.tb-band {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) var(--tb-board-w);
+		gap: var(--tb-dock-gap);
+		height: 100%;
+	}
+	.tb-band--tabbed {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.tb-band-cell {
 		display: flex;
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
+		min-width: 0;
 	}
-	/* Below BP.compact ($lib/breakpoints.ts — 40rem) the three plates take the
-	   whole rail: with the flanks folded into one menu the rail is ~260px on a
-	   320px phone, and 76% of that is 65px a plate against "Compare"'s 71px of
-	   type. Rail-visible-at-both-ends is the desk read; on a phone the plates
-	   ARE the rail. ⚠ Literal from the table, by necessity. */
+	.tb-band-cell :global(.btn) {
+		flex: none;
+	}
+	/* The mark is painted over the field; the field takes the slack. */
+	.tb-search {
+		position: relative;
+		flex: 1 1 8rem;
+		min-width: 6rem;
+		display: flex;
+		align-items: center;
+	}
+	.tb-search :global(.mark) {
+		position: absolute;
+		left: 0.6rem;
+		color: var(--muted);
+		pointer-events: none;
+	}
+	.tb-search-field {
+		width: 100%;
+		height: var(--band-ctrl-h);
+		padding-left: calc(0.6rem + 13px + 0.4rem);
+	}
+	/* A segment and a toggle have no plate of their own — on an unpainted band
+	   they wear the glass a band A segment wears. */
+	.tb-show,
+	.tb-norepeat {
+		flex: none;
+		height: var(--band-ctrl-h);
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+	.tb-norepeat {
+		padding: 0 0.75rem;
+		font-size: var(--fs-md);
+	}
+	.tb-pane-switch {
+		gap: 0.45rem;
+	}
+	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
+	   their mark and fold their word — one rule for every band control. */
 	@media (max-width: 40rem) {
-		.tb-nav {
-			--nav-fill: 100%;
-		}
-		/* The Filters plate keeps its mark and folds its word, as band A's
-		   controls do — one rule for every band control below compact. */
 		.tb-band-label {
 			display: none;
 		}
-	}
-
-	/* Bitter, a full step up from the .tab it replaces (11px → 14px), and BOLD
-	   (⚓ Nate 2026-08-10 — semibold did not carry at this size against the
-	   parchment plate beside it). The face is the whole point of the change:
-	   this is the tool's main navigation, and Nate's heading rule puts a voice
-	   like that on the display face.
-
-	   `flex: 1 1 0` with a zero basis is what makes the three EQUAL rather than
-	   proportional to their words — "Atlas" and "Compare" get the same plate,
-	   which is what a three-part navigation looks like. */
-	.tb-nav-item {
-		flex: 1 1 0;
-		min-width: 0;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		height: var(--nav-plate-h);
-		padding: 0 0.6rem;
-		border: none;
-		border-radius: var(--r-sm);
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-display);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-tight);
-		white-space: nowrap;
-		cursor: pointer;
-		transition: color var(--t-snap);
-	}
-	.tb-nav-item:hover:not(.active):not(:disabled) {
-		color: var(--ink-active);
-	}
-	/* Unreachable, not merely unpressed — see `compareReady`. Kept legible
-	   enough to read as a place you could get to, unlike .btn:disabled's 0.3.
-	   ↻ ⚓ NATE 2026-08-11: the cursor goes to HELP, not default. The `title`
-	   already explains why you can't get here; `default` is the cursor for dead
-	   space and gives no reason to wait for it, where a question mark says "this
-	   has an explanation" the instant you arrive. Same idiom as the coverage
-	   chips and the lead pills — cursor:help wherever the answer is in a tooltip.
-	   ⚠ This works only because .tb-nav-item is NOT a .btn. The global
-	   `.btn:disabled` sets `pointer-events: none`, which would kill the cursor
-	   AND the title together — so if this ever adopts .btn, the tooltip goes
-	   with it and the affordance has to move to a wrapper. */
-	.tb-nav-item:disabled {
-		opacity: 0.45;
-		cursor: help;
-	}
-
-	/* THE SELECTED PLATE. It CLAIMS .ctx-light rather than naming a light token,
-	   which is the same move AtlasView's cards make and for the same reason: it
-	   paints its own opaque light ground, so the ink ladder and the ACCENT RUNG
-	   flip with it — gold-400 measures 1.48:1 on this paper, gold-700 is what
-	   .ctx-light resolves --accent to, and the edge below depends on that.
-
-	   ↻ ⚓ NATE 2026-08-10: the plate is PARCHMENT-100 now, via --sel-surface —
-	   "the unified character-card-sharing parchment value". It is literally the
-	   paper a character card is made of rather than a near-miss beside it, and
-	   it takes the light family off the gold ramp: the plate was gold-300, so
-	   selection and jewelry were sharing a hue for no reason. Gold keeps the
-	   EDGE; paper keeps the FILL.
-
-	   ⚠ THE EDGE IS THE FAMILY'S, WITH NO LOCAL STRENGTH. The gold-edge reasoning
-	   started on this plate and then generalised into the whole --inset-line
-	   family (see app.css), so what is left here is nothing: it takes the
-	   context's own stop. ⚓ Nate on the 42% mix that lived here — "an unwanted
-	   artifact of the development process, not a line strength to be preserved".
-	   It came from a round where this was the only gold edge in the system and
-	   had to carry the idea by itself; it does not any more. */
-	.tb-nav-item.active {
-		background: var(--sel-surface);
-		color: var(--sel-ink);
-		/* ⚠ --frame-inset only. The 1.5px stroke this used to declare IS the
-		   family default now (⚓ Nate: 1.5px for small elements, 2px for large
-		   panels), so the override retired rather than being restated. 7px of
-		   inset is still wrong here — it would put the line through the type. */
-		--frame-inset: 3px;
-	}
-
-	/* The fold's section heading — the kicker voice, since it labels a group of
-	   options rather than being one. */
-	.tb-fold-head {
-		padding: 6px 12px 2px;
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
-		color: var(--muted);
 	}
 
 	/* ↻ 2026-10-08: Clear team and the Compare plate's avatar stack retired

@@ -1,0 +1,150 @@
+<script lang="ts">
+	/**
+	 * THE ROSTER'S FILTER STRIP (Party Setup shape, design doc §11.2 / §11.6).
+	 *
+	 * The four roles as icons, the seven elements, and the count — the filters
+	 * you READ the grid by, so they sit on top of it. Search, Show and More live
+	 * in band B's character cell (`MoreFilters` is that popover's contents).
+	 * It owns no state: every set is the page's, the same objects the grid
+	 * filters against.
+	 */
+	import type { GridFilters } from '$lib/characterFilters';
+	import type { Element } from '$lib/types/ability';
+	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import { positionIcon, functionIcon } from '$lib/utils/roleIcons';
+	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
+	import { ROLE_CATEGORIES, type RoleCategory } from './roles';
+
+	let {
+		filters,
+		activeRole,
+		onRole,
+		count,
+		countNote,
+		anyActive,
+		onClear
+	}: {
+		filters: GridFilters;
+		/** The role the filter currently is, if it is exactly one. */
+		activeRole: string | null;
+		onRole: (cat: RoleCategory) => void;
+		count: number;
+		/** "at your constellations" — the lens the count was read at. */
+		countNote?: string;
+		/** Anything narrowing the roster, band B's filters included. */
+		anyActive: boolean;
+		onClear: () => void;
+	} = $props();
+
+	const ELEMENTS: Element[] = ['anemo', 'cryo', 'dendro', 'electro', 'geo', 'hydro', 'pyro'];
+
+	function toggle(el: string): void {
+		if (filters.elements.has(el)) filters.elements.delete(el);
+		else filters.elements.add(el);
+	}
+	const elColor = (el: string) => (elementColors[el as ElementKey] ?? elementColors.none).main;
+</script>
+
+<div class="rfs" role="group" aria-label="Role and element">
+	<div class="rfs-icons" role="group" aria-label="Role">
+		{#each ROLE_CATEGORIES as cat (cat.key)}
+			{@const on = activeRole === cat.key}
+			<button
+				class="btn btn--icon btn--glass rfs-role"
+				class:is-active={on}
+				aria-pressed={on}
+				aria-label={cat.label}
+				title={on ? 'Show every role again' : cat.label}
+				onclick={() => onRole(cat)}
+			>
+				{#if cat.position}<img src={positionIcon(cat.position, 'color')} alt="" />{/if}
+				<img src={functionIcon(cat.function, 'color')} alt="" />
+			</button>
+		{/each}
+	</div>
+	<div class="rfs-icons" role="group" aria-label="Element">
+		{#each ELEMENTS as el (el)}
+			{@const on = filters.elements.has(el)}
+			<button
+				class="btn btn--icon btn--glass rfs-el"
+				class:is-active={on}
+				style:--el={elColor(el)}
+				aria-pressed={on}
+				aria-label={el}
+				title={el[0].toUpperCase() + el.slice(1)}
+				onclick={() => toggle(el)}
+			>
+				<img src={elementIcon(el)} alt="" />
+			</button>
+		{/each}
+	</div>
+	<span class="rfs-end">
+		<p class="rfs-count" role="status">
+			{count} character{count === 1 ? '' : 's'}{#if countNote}<span class="rfs-count-note">
+					{countNote}</span
+				>{/if}
+		</p>
+		{#if anyActive}
+			<button class="btn btn--sm btn--glass" onclick={onClear}>Clear</button>
+		{/if}
+	</span>
+</div>
+
+<style>
+	/* Plates on the night, groups at EVEN gaps with no rules between them
+	   (⚓ Nate's toolbar rulings). */
+	.rfs {
+		flex: none;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1rem;
+	}
+	.rfs-icons {
+		display: flex;
+		gap: 4px;
+	}
+	.rfs-role,
+	.rfs-el {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		height: 30px;
+		min-width: 30px;
+	}
+	.rfs-role img {
+		width: 16px;
+		height: 16px;
+		object-fit: contain;
+	}
+	.rfs-el img {
+		width: 18px;
+		height: 18px;
+		object-fit: contain;
+	}
+	/* An element is chosen in its own hue — the element chip's grammar. */
+	.rfs-el.is-active {
+		box-shadow: inset 0 0 0 1px var(--el);
+	}
+	.rfs-end {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+	.rfs-count {
+		margin: 0;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--muted);
+		white-space: nowrap;
+	}
+	.rfs-count-note {
+		text-transform: none;
+		letter-spacing: var(--ls-tight);
+		font-weight: var(--fw-regular, 400);
+	}
+</style>

@@ -74,7 +74,7 @@
 		selectedTeamId,
 		onSelectTeam,
 		nudgeAt,
-		onNoRepeats,
+		onEmptySlot,
 		onAddTeam,
 		onRemoveTeam,
 		onOpenInPlanner,
@@ -86,7 +86,9 @@
 		onSelectTeam: (teamId: string) => void;
 		/** Set when a pick found the selected team full — the row shakes once. */
 		nudgeAt: number | null;
-		onNoRepeats: (on: boolean) => void;
+		/** An EMPTY slot was clicked (after it selected its row) — below the
+		 *  dock this is the way to the characters that fill it (§11.6). */
+		onEmptySlot?: (teamId: string) => void;
 		onAddTeam: () => void;
 		onRemoveTeam: (teamId: string) => void;
 		onOpenInPlanner: (team: BoardTeam) => void;
@@ -312,6 +314,7 @@
 										onclick={(e) => {
 											e.stopPropagation();
 											onSelectTeam(team.id);
+											if (!id) onEmptySlot?.(team.id);
 										}}
 									>
 										<SidePortrait
@@ -395,23 +398,14 @@
 			</div>
 		</section>
 	{/each}
-	<footer class="bv-foot">
-		<!-- A battlefield is the game's, not yours to add or remove — teams come
-		     and go on a Custom board only (with ✕, §11.6 item 13). -->
-		{#if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
+	<!-- A battlefield is the game's, not yours to add or remove — teams come and
+	     go on a Custom board only (with ✕, §11.6 item 13). No repeats moved to
+	     band B's lineup cell (§11.6). -->
+	{#if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
+		<footer class="bv-foot">
 			<button class="btn bv-add-team" onclick={onAddTeam}><Mark name="plus" /> Add team</button>
-		{/if}
-		<!-- ⏭ Working copy (copy step 8). -->
-		<label class="toggle bv-norepeat" title="Mark a character who is on more than one team">
-			<input
-				type="checkbox"
-				checked={board.noRepeats}
-				onchange={(e) => onNoRepeats(e.currentTarget.checked)}
-			/>
-			<span class="toggle-track"><span class="toggle-thumb"></span></span>
-			<span class="toggle-label">No repeats</span>
-		</label>
-	</footer>
+		</footer>
+	{/if}
 </div>
 
 {#if opponents !== null && abyss}
@@ -715,10 +709,6 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-	}
-	.bv-norepeat {
-		margin-left: auto;
-		font-size: var(--fs-sm);
 	}
 	/* ── Below `compact` (40rem — $lib/breakpoints.ts): the board is the whole
 	   screen ── The wide row puts the boss BESIDE a stack whose lineup (four

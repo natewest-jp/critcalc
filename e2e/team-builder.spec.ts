@@ -33,18 +33,16 @@ import { encodeBoard } from '../src/lib/utils/boardUrl';
  *  +Vodyanitsa). */
 const ROSTER_SIZE = 127;
 
-const matchCount = async (page: Page) => parseInt(await page.locator('.rfb-count').innerText(), 10);
+const matchCount = async (page: Page) => parseInt(await page.locator('.rfs-count').innerText(), 10);
 
 test.describe('roster and facets', () => {
 	test("the filter bar's role icons narrow and section the roster", async ({ page }) => {
-		// ↻ §11.2: the Atlas role cards retired into the filter bar, which lives
-		// IN the roster column beside the docked board.
+		// ↻ §11.2/§11.6: the Atlas role cards retired into the strip over the
+		// grid; band B is cut at the dock, one cell per pane.
 		await openTool(page, '/team-builder');
-		await expect(
-			page.locator('.band-b .tb-nav-item'),
-			'no view switch beside the dock'
-		).toHaveCount(0);
-		await expect(page.locator('.rfb-role'), 'four role icons').toHaveCount(4);
+		await expect(page.locator('.tb-pane-switch'), 'no pane switch beside the dock').toHaveCount(0);
+		await expect(page.locator('.tb-band-cell'), 'a band cell over each pane').toHaveCount(2);
+		await expect(page.locator('.rfs-role'), 'four role icons').toHaveCount(4);
 		await expect(page.locator('.cg-grid').first().locator('.cc')).toHaveCount(ROSTER_SIZE);
 		await expect(
 			page.locator('.tb-stubs'),
@@ -52,12 +50,12 @@ test.describe('roster and facets', () => {
 		).toHaveCount(0);
 
 		// A role IS the filter: the grid narrows and SECTIONS (the old drill-down).
-		await page.locator('.rfb-role[aria-label="Support"]').click();
+		await page.locator('.rfs-role[aria-label="Support"]').click();
 		expect(await page.locator('.cg-section').count()).toBeGreaterThan(1);
 		expect(await matchCount(page)).toBeLessThan(ROSTER_SIZE);
 
 		// Choosing it again clears it.
-		await page.locator('.rfb-role.is-active').click();
+		await page.locator('.rfs-role.is-active').click();
 		await expect(page.locator('.cg-section')).toHaveCount(0);
 	});
 
@@ -430,7 +428,7 @@ test.describe('ownership ledger', () => {
 		).toBe('wishlist');
 		await page.keyboard.press('Escape');
 
-		await page.locator('.rfb-own .btn', { hasText: 'Wishlist' }).click();
+		await page.locator('.tb-show .btn', { hasText: 'Wishlist' }).click();
 		const names = await gridNames(page);
 		expect(names).toContain('Bennett');
 		expect(names).not.toContain('Jean');
@@ -443,8 +441,8 @@ test.describe('factions and buffs filter', () => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 
-		await page.locator('.rfb .band-menu-trigger').click();
-		const chips = page.locator('.rfb-more .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
+		await page.locator('.tb-band .band-menu-trigger[aria-label="More filters"]').click();
+		const chips = page.locator('.mf .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
 		await expect(chips, 'three faction/buff chips').toHaveCount(3);
 		await page.keyboard.press('Escape');
 

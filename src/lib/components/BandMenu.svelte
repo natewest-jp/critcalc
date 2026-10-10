@@ -30,6 +30,7 @@
 		role = 'menu',
 		align = 'end',
 		size,
+		glass = false,
 		items
 	}: {
 		/** Button text. Omit for an icon-only trigger (pass ariaLabel instead). */
@@ -49,6 +50,10 @@
 		align?: 'start' | 'end';
 		/** `sm` = the compact `.btn--sm` trigger, for a menu inside content. */
 		size?: 'sm';
+		/** A glass PLATE (`.btn--glass`) — for a band B that paints no ground of
+		 *  its own (ToolStack's `bandBFull`), where a bare trigger would have
+		 *  nothing to stand on. */
+		glass?: boolean;
 		/** Menu contents. Called with a `close` the items invoke when chosen. */
 		items: Snippet<[() => void]>;
 	} = $props();
@@ -95,6 +100,7 @@
 	class="btn band-menu-trigger"
 	class:btn--icon={compact}
 	class:btn--sm={size === 'sm'}
+	class:btn--glass={glass}
 	class:is-active={open}
 	type="button"
 	{disabled}

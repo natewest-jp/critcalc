@@ -849,3 +849,15 @@ only; Noelle/Thoma absent too).
     - **✕ is Custom-only.** It showed on Stygian/Abyss boards whenever `teams.length > 1`.
     - A Stygian header holds only the name; Abyss keeps "Opponents" per half.
 14. `main` is NOT pushed until these changes are further along (⚓ Nate).
+15. **Band B is CUT AT THE DOCK** (⚓ Nate, the same evening — the freed band "is a gift"),
+    the Visualizers' per-tile shape: the band paints nothing, and its cells sit on the
+    dock's own columns (`lib/dock.ts` holds `BOARD_W`/`DOCK_GAP` once for both rows).
+    - The character cell holds search · All/Owned/Wishlist · More · the constellation lens
+      (last). The cell is MEASURED and folds Show, then the lens, into More when it runs
+      short (`FOLD_SHOW_W` / `FOLD_LENS_W`). The roles, elements and count stay on a strip
+      over the grid.
+    - The lineup cell's first resident is No repeats; more will settle there as we build.
+    - Below the dock ONE cell shows, the open pane's, led by the **pane switch**:
+      ⚓ ONE glass plate naming the pane it OPENS (Lucide `PanelRightOpen` "Lineup" /
+      `PanelLeftOpen` "Characters"). The Bitter parchment tab plates are retired. Tapping
+      an EMPTY slot on the Lineup also opens Characters.

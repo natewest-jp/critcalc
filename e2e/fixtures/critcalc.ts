@@ -214,8 +214,8 @@ export async function openTool(page: Page, path: string) {
 export async function openRoster(page: Page) {
 	// ↻ §11.2: beside the docked board the roster is always showing; below the
 	// dock it is the Characters tab.
-	const tab = page.locator('.band-b').getByRole('tab', { name: 'Characters', exact: true });
-	if (await tab.count()) await tab.click();
+	const toChars = page.locator('.tb-pane-switch', { hasText: 'Characters' });
+	if (await toChars.count()) await toChars.click();
 	await page.locator('.cg-grid').first().waitFor();
 }
 
@@ -237,8 +237,8 @@ export function gridNames(page: Page) {
 /** Toggle a chip in the filter bar's More popover (a capability facet, a
  *  faction…), closing the popover again so the grid is reachable. */
 export async function moreChip(page: Page, label: string) {
-	await page.locator('.rfb .band-menu-trigger').click();
-	await page.locator('.rfb-more .chip', { hasText: label }).first().click();
+	await page.locator('.tb-band .band-menu-trigger[aria-label="More filters"]').click();
+	await page.locator('.mf .chip', { hasText: label }).first().click();
 	await page.keyboard.press('Escape');
 }
 
@@ -253,7 +253,7 @@ export async function benchNames(page: Page) {
  * item selector is deliberately not scoped to the band.
  */
 export async function setConMode(page: Page, label: string) {
-	await page.locator('.band-b .band-menu-trigger').click();
+	await page.locator('.band-b .band-menu-trigger[aria-label="Read capabilities at"]').click();
 	await page
 		.locator('.band-menu-item', {
 			has: page.locator('.tb-conmode-label', { hasText: new RegExp(`^${label}$`) })
