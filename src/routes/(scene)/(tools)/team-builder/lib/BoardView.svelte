@@ -605,25 +605,34 @@
 	.bv-boss:hover {
 		border-color: var(--sel-ring);
 	}
-	/* 🎛️ 26 with a 14px mark, snugged 1px in from the disc's corner. */
+	/* 🎛️ 26 with a 14px mark (⚓ Nate's placement, 2026-10-10). */
 	.bv-boss-zoom {
 		position: absolute;
-		top: -1px;
-		right: -1px;
+		top: 2px;
+		right: -4px;
 		width: 26px;
 		height: 26px;
 		display: grid;
 		place-items: center;
 		border-radius: var(--r-round);
-		background: var(--btn-face, var(--surface-raised));
+		background-color: var(--btn-face, var(--surface-raised));
+		/* The gold layer, transparent at rest (see the hover). */
+		box-shadow: inset 0 0 0 13px transparent;
 		color: var(--text);
-		transition: background var(--t-snap);
+		transition:
+			background-color var(--t-snap),
+			box-shadow var(--t-snap);
 	}
 	/* ⚠ The ring's colour is translucent gold laid over the disc's well, so the
 	   magnifier lays the SAME gold over the SAME well — one colour, not two that
-	   happen to share a token. */
+	   happen to share a token.
+	   ⚠ The gold is an INSET SHADOW filling the 26px circle, never a gradient
+	   layer: a gradient cannot interpolate, so it SNAPPED while the colour under
+	   it faded — a one-frame flash in and, worse, out. A shadow's colour fades
+	   with the backing, so the two move as one. */
 	.bv-boss:hover .bv-boss-zoom {
-		background: linear-gradient(var(--sel-ring), var(--sel-ring)), var(--surface-well);
+		background-color: var(--surface-well);
+		box-shadow: inset 0 0 0 13px var(--sel-ring);
 	}
 
 	/* ── The lineup ── */
