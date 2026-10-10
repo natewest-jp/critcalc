@@ -1,6 +1,8 @@
 # Team Builder — lineups, the split screen, the fingerprint (design, 2026-10-07)
 
-**Status:** ⚓ DESIGN AGREED with Nate, 2026-10-07. Not built. This record is the
+**Status:** ⚓ DESIGN AGREED with Nate, 2026-10-07. ⚠️⚠️ **§11 (2026-10-10) WINS over every
+earlier section** — it reshapes the tool into the game's Party Setup and replaces §2.4 and the
+remaining build steps (§10.6 6–8). Read §11 first. This record is the
 starting point of the build session(s). Everything below marked ⚓ is Nate's ruling;
 everything else is an agreed default.
 
@@ -649,3 +651,146 @@ disagree.**
 6. Swap mode (consequence groups, ripple, Try in Planner, the ⇄ path from the bench).
 7. No-repeats marks, leftover pool, battlefields.
 8. Copy, Help, ledger, record.
+
+---
+
+## 11. ⚓ The Party Setup shape (2026-10-10 — WINS over everything above)
+
+Survey of the tool after steps 1–5 (screenshots at 1440×900 plus Nate's in-game
+reference, `~/Code/critcalc-review/tb-party-setup-2026-10-10/`; the game's screen is
+`stygian-party-setup-menacing.png`). Nate: "I'm already certain that this is the shape
+the tool should take" — no lab demo.
+
+### 11.1 Why (what the survey found)
+
+1. The view switch (Roster | Roster + board) kept the ROSTER as the subject — the thing
+   you build was the add-on, and full-width Roster was the old Builder kept alive.
+2. The wipe JUMPS by construction: the board slides, but the roster's width changes in
+   one step at the start, so ~127 cards reflow 9 → 5 columns. (On a phone both panes
+   are full width, so the slide never reflows there.)
+3. The Atlas role cards are the filter rail's Role section at poster size: ~300 of 900px
+   in the split, one row of characters above the fold, "SURVIVABILIT" clipped, and
+   "0 owned" ×4 on an empty roster.
+4. The filter drawer overlays the board you are filtering FOR.
+5. The card's hover "+ Team" bar covers the chips you were reading, and never says
+   which team the pick goes to.
+6. The detail modal covers the board at the moment you ask what someone brings to it;
+   half of it is roster/loadout settings.
+7. "Roster" meant four things (the view, the "My roster" lens, All/Owned/Wishlist,
+   "Edit roster…").
+8. Compare/Audition is still live (the Planner's ⇄ lands in it) and much of
+   `+page.svelte`'s 2,358 lines is its residue (plus the retired working-team coverage:
+   `members`, `coverageCapOf`, `rt.tabCon`).
+
+### 11.2 ⚓ Rulings
+
+- ⚓ **The board is ALWAYS docked on wide screens, on the RIGHT** (where Genshin's
+  endgames always put it), at a FIXED width. **The roster is the only thing that shrinks
+  and grows**, so the board's layout can be made stable and polished. No view switch and
+  no wipe at `toolMin`+. Phone keeps two tabs (proposed names **Characters | Lineup**)
+  and its slide.
+- ⚓ **The default board is the CURRENT Stygian Onslaught** — for a first visit and
+  whenever the tool has no open tabs (all closed, storage cleared). Show the tool at its
+  greatest usefulness, as sample rotations will for the Planner; Stygian is the mode most
+  players want this for. Its empty board is the cold start (replaces "Build a team").
+- ⚓ **The blank "?" portrait IS the empty slot** — exactly how Stygian draws one
+  (Claude's suggestion of a ring with + was withdrawn).
+- ⚓ **The whole card picks; a corner MAGNIFIER opens details** (the boss disc's grammar).
+  The hover "+ Team" bar retires.
+- ⚓ **Slot frames after the game's** (see the reference image): a coloured corner tab at
+  the card's TOP RIGHT carrying the slot number (1–4), a heavy bar along the BOTTOM in
+  the same colour, thin sides. ⚓ **Our own colours** — the game backs portraits gold/purple
+  by rarity, ours are element-shaded, so its green/blue don't carry over. Whole-pixel
+  borders only (Chrome floors fractional widths).
+- ⚓ **Roster curation LEAVES the Builder.** Nate: the only reason to keep a full-width
+  character grid was to curate your owned list, and that deserves its own surface in a
+  place that makes sense for it: **Roster becomes a second tab of the Library.** It is
+  optimised for quick entry: owned, constellation, a NEW "level 70+" flag (for a future
+  Imaginarium Theater lineup feature), and loadout. The Builder no longer serves mainly
+  the Planner, so **the Builder's character details carry no loadout settings**.
+  - The Builder still READS the roster (the Owned filter, the constellation lens, the
+    con chip on portraits); only EDITING leaves. Details show a read-only "Owned · C2"
+    with a way to the Roster tab. Edit-roster mode retires (which also ends its clash
+    with whole-card picking).
+  - ⚠ `DetailCard` is shared with the Planner, and the Planner edits per-rotation
+    loadout through `LoadoutPanel`: the Roster tab holds the DEFAULT build, the Planner
+    keeps its per-rotation override, only the Builder's details drop the section.
+- ✅ Agreed (Claude's proposal, Nate: "completely agree with all your ideas"):
+  - **Filters live IN the roster column as a bar** — search, the four roles as an icon
+    row, the elements; weapon/rarity/region/factions in a "More" popover anchored in
+    the roster column, ⛔ never over the board. The Atlas role cards retire. (The game
+    puts its filter button inside the roster column too.)
+  - **The fingerprint is the filter vocabulary**: the 15 glyphs are the "Can provide"
+    filter; clicking a FAINT glyph on a team filters the roster to who would provide it.
+  - **Hovering a card previews it in the selected team's fingerprint** (which glyphs
+    would light) — the old fact cell, on demand; still presence only.
+  - **A destination strip above the grid**: "Adding to Battlefield 2 · 3/4".
+  - **Details become a panel inside the roster column** (the board stays visible, so the
+    preview stays readable), capabilities with provenance first; full screen + Back on
+    a phone.
+  - **Swap mode lives in the grid**: clicking a filled portrait (today it only selects its
+    row) puts that slot in swap mode — the roster regroups keeps / trades / archetype
+    change (§2.5). The Planner's ⇄ arrives in that state. Then Compare + Audition retire
+    with a sweep of their code.
+  - **One meaning per word**: the grid = Characters · the board = Lineup on screen (code
+    keeps `board`) · the ownership section = Owned · the lens = "My constellations" ·
+    "Roster" = the Library tab only.
+
+### 11.3 Read off the game's screen (reference for the build)
+
+- ⚠️ **The frame colours look PER TEAM, not selected-vs-other** — in the reference,
+  Battlefield 1's four (incl. the one under "Other Characters") are GREEN and Battlefield
+  2's are BLUE, while the SELECTED row is Battlefield 3 (empty; grey frame, gold end
+  bar). Nate described them as "green for the active lineup, blue for the non-selected" —
+  check which before building (open item 3).
+- The corner number is the SLOT within its team; the colour says which team.
+- The grid is SECTIONED: "Exalted Ones" (the mode's featured characters) above "Other
+  Characters" — a picked character keeps its place in its section.
+- Every card shows its level ("Lv. 90"); the game's filter is a button at the roster
+  column's bottom left; the board says "Drag to adjust the order"; "Preset Teams" (≈ our
+  Library) and "Confirm Adjustment" sit under the board.
+- The selected row: a grey frame with a heavy GOLD end bar — ours already matches.
+
+### 11.4 Open decisions (⏭ Nate decides with Claude later)
+
+1. **The Library's entry point** — today only band A's "Load" opens it, and nobody looks
+   under Load to mark what they own. Rename the button "Library"? An entry in the site
+   chrome? Build the standalone `/library` page now?
+2. **Does Wishlist stay** in the new Roster tab?
+3. **Frame colours**: per team (as the reference seems to show) or selected vs other
+   teams? Which of OUR hues — avoid `--ui-positive` green (it means "met" on the checks)
+   and hues that sit badly on element-shaded backs. If per team, the corner number stays
+   the slot (the game's way) and Claude's "B2" proposal is moot.
+4. **The Roster tab's design** — a fast data-entry surface (phone included); design it
+   together before building. The level 70+ flag's shape (a per-character boolean beside
+   ownership/constellation, localStorage, not in share links) and whether a card shows it.
+5. **A sectioned grid like "Exalted Ones"** — e.g. characters who satisfy the selected
+   battlefield's 👍 checks first?
+6. **Between seasons** (the `season-dates.json` guard finds none current): proposed — the
+   latest live season, never Custom.
+7. **The docked board's width** (proposed 560–600px; measure with a full Stygian board).
+8. **Phone tab names** (proposed Characters | Lineup) and the details panel's order after
+   capabilities.
+9. Left from the phone pass (fits, judged fine; polish only): 3–4 line uppercase boss
+   names at 320; the Damage glyph wrapping at 320; the Abyss blessing under its banner.
+
+### 11.5 The build order (replaces §10.6 steps 6–8)
+
+1. **Party Setup layout** — docked board right at a fixed width, no switch/wipe wide,
+   phone tabs, the filter bar + "More" popover, the Atlas cards retire, default board =
+   current Stygian (⚠ e2e fixtures assume a Custom "Board 1" in places).
+2. **Library Roster tab** — owned / constellation / 70+ / default loadout. ⚠ MUST land
+   before step 3 removes the Builder's editing tools, or there is a stretch with no way to
+   mark what you own. Can run alongside step 1.
+3. **Cards + details** — whole-card pick + magnifier, slot frames + corner numbers, the
+   destination strip, details as a roster-column panel (no loadout), edit-roster mode out.
+4. **Fingerprint as filter** — glyph filters, faint-glyph → filter, hover preview. Works
+   with the placeholder pips; does not wait on the art.
+5. **Swap mode in the grid** + the Planner's ⇄ into it; Compare/Audition retire + the
+   `+page.svelte` sweep.
+6. **Copy, Help, glossary, ledger, record.**
+
+Also pending: 🎨 Nate is drawing the glyphs (memory `project_tb_round_2026_10` holds his
+concept list); ⚠️ data gaps for a later data pass — Chongyun has NO infuse effect;
+Xingqiu's interruption resistance doesn't derive (`interruptionRes` = Gorou + Columbina
+only; Noelle/Thoma absent too).

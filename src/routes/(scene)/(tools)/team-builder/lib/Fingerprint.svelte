@@ -130,4 +130,16 @@
 		border-radius: var(--r-round);
 		background: currentColor;
 	}
+
+	/* Below `compact` (40rem — $lib/breakpoints.ts) the row is a phone's
+	   width: tighter gaps keep the fifteen on ONE line from 360 (296px), and at
+	   320 the Damage cluster wraps whole — a cluster never splits. */
+	@media (max-width: 40rem) {
+		.fp {
+			gap: 8px;
+		}
+		.fp-cluster {
+			gap: 3px;
+		}
+	}
 </style>
