@@ -804,7 +804,7 @@
 		id={detailId}
 		conMode="mine"
 		onClose={() => (detailId = null)}
-		conEditable={false}
+		defaultBuild={false}
 	/>
 {/if}
 

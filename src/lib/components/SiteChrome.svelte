@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Snippet } from 'svelte';
-	import { openArea, openNav, openSettings } from './chromeModal.svelte';
+	import { openArea, openNav, openSettings, roster } from './chromeModal.svelte';
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 	import { page } from '$app/state';
 
@@ -142,6 +142,23 @@
 				/></svg
 			>
 		</button>
+		{#if roster.available}
+			<!-- THE ROSTER (lineups design §11.6 item 1): the Library on its Roster
+			     tab. Beside the cog because the roster belongs to the account, like
+			     the settings, and reaches every tool. Below `roomy` it folds into
+			     the compass with About and Help.
+			     ⏳ PLACEHOLDER GLYPH — a disc with a figure cut out of it, in the
+			     set's hole-in-a-disc grammar. ⚓ Nate is drawing the real mark (the
+			     Aether and Lumine silhouettes from the game's Character button),
+			     which will follow siteSettings.travelerVariant. -->
+			<button class="chrome-btn" aria-label="Roster" title="Roster" onclick={roster.open}>
+				<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
+					><path
+						d="M20 0a20 20 0 1 1 0 40a20 20 0 1 1 0-40ZM20 8.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13ZM9.5 32.5C10.5 26.5 14.5 23.5 20 23.5S29.5 26.5 30.5 32.5Z"
+					/></svg
+				>
+			</button>
+		{/if}
 		<button
 			class="chrome-btn chrome-btn--settings"
 			aria-label="Settings"

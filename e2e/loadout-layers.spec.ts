@@ -119,21 +119,23 @@ test('the detail card edits the roster loadout (Layer 1)', async ({ page, seed }
 	expect(active?.tabLoadout?.nahida, 'the plan is untouched').toBeUndefined();
 });
 
-test('the detail card owns Layer 1, and the plan keeps shadowing it', async ({ page, seed }) => {
+test('the Roster tab owns Layer 1, and the plan keeps shadowing it', async ({ page, seed }) => {
 	await seed({ team: { slots: ['nahida', 'furina'] } });
 	// The plan's own level first, from the Planner's bench (Layer 2).
 	await openTool(page, '/rotation-planner');
 	await setBenchCon(page, 0, 4);
 
-	// The roster's level, from the Builder's Detail card (Layer 1).
+	// The roster's level (Layer 1). ↻ 2026-10-11: the Detail card only READS it;
+	// its link opens the Library's Roster tab on the character, the one editor.
 	await page.locator('.chrome-nav a[href*="team-builder"]').click();
 	await page.waitForURL(/team-builder/, { timeout: 10_000 });
 	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-main').click();
 	await page.locator('.dc-panel').waitFor();
-	await page.locator('.dc-constepper .dc-con-btn', { hasText: 'C2' }).click();
+	await page.getByRole('button', { name: 'Edit in Roster' }).click();
+	await page.locator('.til-card[data-id="nahida"]').getByRole('button', { name: 'C2' }).click();
 
 	const roster = JSON.parse((await readStore(page, KEYS.constellations)) ?? '{}');
-	expect(roster.nahida, 'the stepper writes the roster').toBe(2);
+	expect(roster.nahida, 'the Roster tab writes the roster').toBe(2);
 	const own = JSON.parse((await readStore(page, KEYS.ownership)) ?? '{}');
 	expect(own.nahida, 'a roster constellation implies ownership').toBe('owned');
 

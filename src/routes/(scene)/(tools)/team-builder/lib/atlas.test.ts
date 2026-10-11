@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { CharacterIndexEntry, CharacterRoles } from '$lib/types/character';
 import type { CapabilitySummary } from '$lib/capabilities/deriveCapabilities';
 import { buildRoleSections, categoryOf } from './atlas';
-import { ROLE_CATEGORIES } from './roles';
+import { ROLE_CATEGORIES } from '$lib/capabilities/roles';
 
 const cap = (partial: Partial<CapabilitySummary>): CapabilitySummary => ({
 	kind: 'heal',

@@ -52,6 +52,8 @@
 		type LibraryTeam
 	} from '$lib/library';
 	import { library } from '$lib/library.svelte';
+	import RosterTab from './RosterTab.svelte';
+	import { rosterView } from '$lib/rosterView.svelte';
 
 	// ── The bank, grouped ────────────────────────────────────────────────────
 	const teams = $derived(libraryTeams($savedNotations, $savedBoards));
@@ -353,6 +355,9 @@
 	};
 
 	onMount(() => inputEl?.focus());
+
+	const ownedTotal = $derived(Object.values($ownership).filter((m) => m === 'owned').length);
+	const wishTotal = $derived(Object.values($ownership).filter((m) => m === 'wishlist').length);
 </script>
 
 <svelte:window onclick={() => (menu = null)} onkeydown={onKey} />
@@ -611,111 +616,158 @@
 <div class="lib-scrim" onclick={() => library.close()}></div>
 <div class="lib ctx-dark" role="dialog" aria-modal="true" aria-label="Library">
 	<header class="lib-top">
-		<h2 class="lib-title">Library</h2>
-		<div class="lib-search-wrap">
-			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-			<div class="lib-search" onclick={() => inputEl?.focus()}>
-				<Mark name="search" size={14} />
-				{#each tags as t, i (t.kind + t.id)}
-					<span class="lib-tag lib-tag--{t.kind}">
-						{@render tagMark(t, 18)}
-						{t.label}
-						<button
-							class="lib-tag-x"
-							aria-label="Remove {t.label}"
-							onclick={(e) => {
-								e.stopPropagation();
-								tags = tags.filter((_, j) => j !== i);
-							}}><Mark name="close" size={10} /></button
-						>
-					</span>
-				{/each}
-				<input
-					bind:this={inputEl}
-					type="search"
-					aria-label="Search the library"
-					placeholder={tags.length
-						? 'Add another'
-						: 'Search, or type a character, element or reaction'}
-					bind:value={query}
-					oninput={() => (activeSuggestion = 0)}
-					onkeydown={onSearchKey}
-				/>
+		<div class="lib-head-start">
+			<h2 class="lib-title">Library</h2>
+			<!-- ⚓ Two tabs (lineups design §11.6): the saved teams and boards, and
+			     the ROSTER — the one place the roster is edited. -->
+			<div class="segment lib-tabs" role="tablist" aria-label="Library">
+				<button
+					class="btn"
+					class:is-active={library.tab === 'teams'}
+					role="tab"
+					aria-selected={library.tab === 'teams'}
+					onclick={() => (library.tab = 'teams')}>Teams</button
+				>
+				<button
+					class="btn"
+					class:is-active={library.tab === 'roster'}
+					role="tab"
+					aria-selected={library.tab === 'roster'}
+					onclick={() => (library.tab = 'roster')}>Roster</button
+				>
 			</div>
-			{#if suggestions.length}
-				<div class="lib-suggest" role="listbox">
-					{#each suggestions as s, i (s.kind + s.id)}
-						<button
-							role="option"
-							aria-selected={i === activeSuggestion}
-							class="lib-suggest-item"
-							class:lib-suggest-item--on={i === activeSuggestion}
-							onmouseenter={() => (activeSuggestion = i)}
-							onclick={() => addTag(s)}
-						>
-							{@render tagMark(s, 22)}
-							<span>{s.label}</span>
-							<span class="lib-meta lib-suggest-kind"
-								>{s.kind === 'char'
-									? 'Character'
-									: s.kind === 'element'
-										? 'Element'
-										: 'Reaction'}</span
-							>
-							{#if i === activeSuggestion}<kbd class="lib-kbd">Enter</kbd>{/if}
-						</button>
-					{/each}
-				</div>
-			{/if}
 		</div>
+		{#if library.tab === 'roster'}
+			<!-- The totals ARE the Show filter: a click shows just those. -->
+			<p class="lib-tally">
+				<button
+					class="lib-tally-btn"
+					class:is-active={rosterView.show === 'owned'}
+					aria-pressed={rosterView.show === 'owned'}
+					onclick={() => (rosterView.show = rosterView.show === 'owned' ? 'all' : 'owned')}
+					><strong>{ownedTotal}</strong> owned</button
+				>
+				·
+				<button
+					class="lib-tally-btn"
+					class:is-active={rosterView.show === 'wishlist'}
+					aria-pressed={rosterView.show === 'wishlist'}
+					onclick={() => (rosterView.show = rosterView.show === 'wishlist' ? 'all' : 'wishlist')}
+					><strong>{wishTotal}</strong> on your wishlist</button
+				>
+			</p>
+		{:else}
+			<div class="lib-search-wrap">
+				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+				<div class="lib-search" onclick={() => inputEl?.focus()}>
+					<Mark name="search" size={14} />
+					{#each tags as t, i (t.kind + t.id)}
+						<span class="lib-tag lib-tag--{t.kind}">
+							{@render tagMark(t, 18)}
+							{t.label}
+							<button
+								class="lib-tag-x"
+								aria-label="Remove {t.label}"
+								onclick={(e) => {
+									e.stopPropagation();
+									tags = tags.filter((_, j) => j !== i);
+								}}><Mark name="close" size={10} /></button
+							>
+						</span>
+					{/each}
+					<input
+						bind:this={inputEl}
+						type="search"
+						aria-label="Search the library"
+						placeholder={tags.length
+							? 'Add another'
+							: 'Search, or type a character, element or reaction'}
+						bind:value={query}
+						oninput={() => (activeSuggestion = 0)}
+						onkeydown={onSearchKey}
+					/>
+				</div>
+				{#if suggestions.length}
+					<div class="lib-suggest" role="listbox">
+						{#each suggestions as s, i (s.kind + s.id)}
+							<button
+								role="option"
+								aria-selected={i === activeSuggestion}
+								class="lib-suggest-item"
+								class:lib-suggest-item--on={i === activeSuggestion}
+								onmouseenter={() => (activeSuggestion = i)}
+								onclick={() => addTag(s)}
+							>
+								{@render tagMark(s, 22)}
+								<span>{s.label}</span>
+								<span class="lib-meta lib-suggest-kind"
+									>{s.kind === 'char'
+										? 'Character'
+										: s.kind === 'element'
+											? 'Element'
+											: 'Reaction'}</span
+								>
+								{#if i === activeSuggestion}<kbd class="lib-kbd">Enter</kbd>{/if}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		{/if}
 		<button class="btn btn--icon lib-close" aria-label="Close" onclick={() => library.close()}
 			><Mark name="close" size={16} /></button
 		>
 	</header>
 
-	<div class="lib-body">
-		<div class="lib-col lib-scroll">
-			<p class="kicker">Teams</p>
-			<div class="lib-teams">
-				{#each shownTeams as t (t.key)}
-					<section class="lib-team">
-						{@render heading(t)}
-						{#if t.rotations.length}
-							<div class="lib-rots">
-								{#each t.rotations as r (r.id)}{@render rotationRow(r)}{/each}
-							</div>
-						{/if}
-					</section>
-				{:else}
+	{#if library.tab === 'roster'}
+		<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
+	{:else}
+		<div class="lib-body">
+			<div class="lib-col lib-scroll">
+				<p class="kicker">Teams</p>
+				<div class="lib-teams">
+					{#each shownTeams as t (t.key)}
+						<section class="lib-team">
+							{@render heading(t)}
+							{#if t.rotations.length}
+								<div class="lib-rots">
+									{#each t.rotations as r (r.id)}{@render rotationRow(r)}{/each}
+								</div>
+							{/if}
+						</section>
+					{:else}
+						<p class="lib-empty">
+							{teams.length
+								? 'No team matches.'
+								: 'Nothing saved yet. Save a rotation and its team appears here.'}
+						</p>
+					{/each}
+				</div>
+			</div>
+			<div class="lib-col lib-scroll">
+				{#if shownClosed.length}
+					<p class="kicker">Recently closed</p>
+					<div class="lib-closed">
+						{#each closedOpen ? shownClosed : shownClosed.slice(0, CLOSED_PEEK) as c (c.id)}
+							{@render closedRow(c)}
+						{/each}
+					</div>
+					{#if shownClosed.length > CLOSED_PEEK}
+						<button class="lib-closed-toggle" onclick={() => (closedOpen = !closedOpen)}>
+							{closedOpen ? 'Show fewer' : `${shownClosed.length - CLOSED_PEEK} more`}
+							<Mark name="chevron" size={12} />
+						</button>
+					{/if}
+				{/if}
+				<p class="kicker">Boards</p>
+				{#each shownBoards as b (b.id)}{@render boardCard(b)}{:else}
 					<p class="lib-empty">
-						{teams.length
-							? 'No team matches.'
-							: 'Nothing saved yet. Save a rotation and its team appears here.'}
+						{boardsList.length ? 'No board matches.' : 'No saved boards yet.'}
 					</p>
 				{/each}
 			</div>
 		</div>
-		<div class="lib-col lib-scroll">
-			{#if shownClosed.length}
-				<p class="kicker">Recently closed</p>
-				<div class="lib-closed">
-					{#each closedOpen ? shownClosed : shownClosed.slice(0, CLOSED_PEEK) as c (c.id)}
-						{@render closedRow(c)}
-					{/each}
-				</div>
-				{#if shownClosed.length > CLOSED_PEEK}
-					<button class="lib-closed-toggle" onclick={() => (closedOpen = !closedOpen)}>
-						{closedOpen ? 'Show fewer' : `${shownClosed.length - CLOSED_PEEK} more`}
-						<Mark name="chevron" size={12} />
-					</button>
-				{/if}
-			{/if}
-			<p class="kicker">Boards</p>
-			{#each shownBoards as b (b.id)}{@render boardCard(b)}{:else}
-				<p class="lib-empty">{boardsList.length ? 'No board matches.' : 'No saved boards yet.'}</p>
-			{/each}
-		</div>
-	</div>
+	{/if}
 
 	{#if library.toast}<div class="lib-toast" role="status">{library.toast}</div>{/if}
 </div>
@@ -775,6 +827,41 @@
 	}
 	.lib-close {
 		justify-self: end;
+	}
+	.lib-head-start {
+		display: flex;
+		align-items: center;
+		gap: 1.25rem;
+	}
+	.lib-tabs > .btn {
+		height: 28px;
+		padding: 0 0.9rem;
+	}
+	.lib-tally {
+		margin: 0;
+		justify-self: center;
+		color: var(--muted);
+		font-size: var(--fs-sm);
+	}
+	.lib-tally-btn {
+		padding: 2px 4px;
+		border: none;
+		border-radius: var(--r-xs);
+		background: none;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+	}
+	.lib-tally-btn:hover {
+		background: var(--fill-hover);
+	}
+	.lib-tally-btn.is-active {
+		background: var(--sel-fill);
+		box-shadow: inset 0 0 0 1px var(--sel-ring);
+	}
+	.lib-tally strong {
+		color: var(--text);
+		font-weight: var(--fw-semibold);
 	}
 	/* Bitter at the headings' shared weight (the global h rule), section size. */
 	.lib-title {
@@ -1370,9 +1457,13 @@
 		.lib-top {
 			grid-template-columns: 1fr auto;
 		}
-		.lib-search-wrap {
+		.lib-search-wrap,
+		.lib-tally {
 			grid-column: 1 / -1;
 			grid-row: 2;
+		}
+		.lib-tally {
+			justify-self: start;
 		}
 		/* The heading: portraits and ⋯ on one row, chips + meta beneath. */
 		/* Two tracks: content, then ⋯ / the right cluster. */

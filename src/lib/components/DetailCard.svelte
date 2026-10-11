@@ -4,6 +4,7 @@
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { constellations, siteSettings, ownership, loadout } from '$lib/stores';
+	import { library } from '$lib/library.svelte';
 	import LoadoutPanel from '$lib/components/LoadoutPanel.svelte';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import CloseMark from '$lib/components/CloseMark.svelte';
@@ -33,7 +34,7 @@
 		onToggleTeam,
 		compareState,
 		onToggleCompare,
-		conEditable = true
+		defaultBuild = true
 	}: {
 		id: string;
 		conMode: ConMode;
@@ -46,28 +47,14 @@
 		compareState?: 'in' | 'out' | 'full';
 		onToggleCompare?: (id: string) => void;
 		/**
-		 * ⚓ NATE 2026-08-12 — false on the Rotation Planner, and this is PARKED,
-		 * not solved.
-		 *
-		 * THE PROBLEM: constellations live in two layers. Layer 1 is your account
-		 * roster (`constellations` in stores, what this stepper writes); Layer 2
-		 * is the rotation tab's override (what the bench card's C chip writes),
-		 * and display resolves L2 ⇒ L1. On the Team Builder that split has a
-		 * surface for each — the roster grid and Detail card edit L1, the bench
-		 * edits L2. The planner has never had an L1 editor, so opening this card
-		 * from its bench would put two constellation steppers one click apart,
-		 * writing different layers, with nothing on screen saying so — and the
-		 * one further from your eye would silently be the one that doesn't
-		 * affect the rotation you are looking at.
-		 *
-		 * ⏭ TO THINK ABOUT PROPERLY: whether the planner should get an L1 editor
-		 * at all, whether this card should edit whichever layer its HOST owns, or
-		 * whether the two layers want naming in the UI before either. Disabled is
-		 * the honest holding position — the control is visible, so the fact that
-		 * your roster constellation exists is not hidden, and the note beneath it
-		 * says where to change it.
+		 * The Team Builder's "Default build" (the roster's Layer-1 loadout); false
+		 * on the Rotation Planner, which edits a rotation's own loadout on the
+		 * bench. ↻ 2026-10-11 this was `conEditable`, and it held a PARKED
+		 * problem — two constellation steppers one click apart writing different
+		 * layers. The Roster tab settled it: the roster is edited there only, and
+		 * this card reads it in both tools.
 		 */
-		conEditable?: boolean;
+		defaultBuild?: boolean;
 	} = $props();
 
 	const entry = $derived(getCharacterIndexEntry(id));
@@ -84,12 +71,6 @@
 	const myCon = $derived($constellations[id] ?? 0);
 	const myOwnership = $derived($ownership[id]);
 
-	// Setting a constellation implies you own the character — enforced here at the
-	// call site, not baked into store cross-coupling.
-	function setCon(level: number): void {
-		constellations.setLevel(id, level);
-		if (!$ownership[id]) ownership.setMark(id, 'owned');
-	}
 	const viewCon = $derived(conCapFor(conMode, myCon));
 
 	// Full provenance derivation, client-side from the loaded payload — the same
@@ -259,61 +240,41 @@
 		{/if}
 
 		<!-- ── Your roster ────────────────────────────────────── -->
+		<!-- ⚓ READ-ONLY (lineups design §11.6 item 2): the Library's Roster tab is
+		     the one place the roster is edited, so details in both tools say what
+		     it holds and link there, arriving on this character. -->
 		<section>
 			<p class="kicker">Your roster</p>
-			<div class="dc-own" role="group" aria-label="Ownership">
-				<button
-					class="btn"
-					class:is-active={myOwnership === 'owned'}
-					aria-pressed={myOwnership === 'owned'}
-					onclick={() => ownership.setMark(id, myOwnership === 'owned' ? null : 'owned')}
-					><Mark name="check" /> Owned</button
+			<p class="dc-roster">
+				<span class="dc-roster-state"
+					>{#if myOwnership === 'owned'}<Mark name="check" size={13} /> Owned{#if !entry?.noConstellations}{` · C${myCon}`}{/if}{:else if myOwnership === 'wishlist'}<Mark
+							name="star"
+							size={13}
+							filled
+						/> On your wishlist{:else}Not owned{/if}</span
 				>
 				<button
-					class="btn dc-own-btn--wish"
-					class:is-active={myOwnership === 'wishlist'}
-					aria-pressed={myOwnership === 'wishlist'}
-					onclick={() => ownership.setMark(id, myOwnership === 'wishlist' ? null : 'wishlist')}
-					><Mark name="star" /> Wishlist</button
+					class="btn btn--sm"
+					onclick={() => {
+						// ⚠ Read the id BEFORE closing: props are live, and the host
+						// clears the one this card was opened with.
+						const target = id;
+						onClose();
+						library.openRoster(target);
+					}}>Edit in Roster</button
 				>
-			</div>
-			{#if entry?.noConstellations}
+			</p>
+			{#if !defaultBuild}
 				<p class="note dc-note">
-					{entry.displayName}’s constellations can’t be unlocked, so there is no level to set —
-					owning the character is the whole story.
+					To set the constellations for this rotation only, use the selectors on the Planner’s
+					slots.
 				</p>
-			{:else}
-				<div class="segment dc-constepper" role="radiogroup" aria-label="Your constellation">
-					{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
-						<button
-							class="btn dc-con-btn"
-							class:is-active={myCon === level}
-							role="radio"
-							aria-checked={myCon === level}
-							disabled={!conEditable}
-							onclick={() => setCon(level)}>C{level}</button
-						>
-					{/each}
-				</div>
-				{#if conEditable}
-					<p class="note dc-note">
-						Saved to your roster — “My roster” filtering across the site uses it. Setting a
-						constellation marks the character owned.
-					</p>
-				{:else}
-					<!-- See the `conEditable` prop for why this is disabled rather than
-					     hidden, and what still has to be decided. -->
-					<p class="note dc-note">
-						This is your roster constellation, and it can only be changed in the Team Builder. To
-						set the constellation for <em>this rotation</em>, use the C value on the bench card.
-					</p>
-				{/if}
 			{/if}
 			<!-- The roster's LOADOUT (Layer 1), beside its constellation (lineups
 			     design §2.1): it was editable only through the bench, and the Team
 			     Builder has no bench any more. Same panel the bench opens; writes
 			     land in the roster, where a rotation's own picks fall back to it. -->
-			{#if conEditable}
+			{#if defaultBuild}
 				<p class="kicker dc-build-kicker">Default build</p>
 				<LoadoutPanel
 					loadoutEntry={$loadout[id] ?? {}}
@@ -540,15 +501,6 @@
 		color: var(--text);
 		cursor: pointer;
 	}
-	/* ↻ 2026-08-11: --accent, not --el-geo-main. A wishlist is not a Geo fact —
-	   that token was borrowed for being the gold-coloured one, which is exactly
-	   the drift the layer law exists to catch. Same correction .cc-wish took on
-	   the roster card (it had borrowed --el-geo-HI for the same reason). */
-	.dc-own-btn--wish.is-active {
-		border-color: var(--sel-ring);
-		background: var(--sel-fill);
-	}
-
 	.dc-stub-link {
 		white-space: nowrap;
 	}
@@ -571,18 +523,25 @@
 		color: var(--text);
 	}
 
-	/* ── Ownership toggle ─────────────────────────────────────── */
+	/* ── Your roster (read-only) ───────────────────────────────── */
 	.dc-note {
 		margin-top: 0.5rem;
 		font-size: var(--fs-md);
 	}
-
-	.dc-own {
+	.dc-roster {
 		display: flex;
-		gap: 0.5rem;
-		margin-bottom: 0.55rem;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem 1rem;
+		margin: 0;
 	}
-	/* ── Constellation stepper ────────────────────────────────── */
+	.dc-roster-state {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: var(--fs-md);
+	}
 
 	/* ── Capabilities list ────────────────────────────────────── */
 	.dc-caps {
