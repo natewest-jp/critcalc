@@ -645,12 +645,13 @@
 	   → (11.17, 50.00), 13.36 units; Lumine (3.30, 35.52) → (10.54, 45.94),
 	   12.68 units. Her face matches his 7.10px at 32.5px tall; 32 keeps the
 	   mark on whole pixels (the face 1.5% smaller). Centred at 32 her chin
-	   falls 2.7px left of his, so she moves 3px (his 1px nudge included),
-	   and her nose then lands within ~0.4px of his. It also answers her
+	   falls 2.7px left of his — 3px by the math — and ↻ ⚓ Nate set 2px by
+	   eye, which splits the chin and the nose (her face is a shade shorter
+	   than his, so no one shift lands both). It also answers her
 	   weight: at Aether's 34px she carried 17% more ink; at 32, 4%. */
 	.chrome-btn--roster .is-roster--lumine {
 		height: 32px;
-		left: 3px;
+		left: 2px;
 	}
 
 	/* 🎛️ OPTICAL LIFT, ⚓ NATE 2026-09-04 — 1px, by eye, and it is the same
