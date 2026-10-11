@@ -906,3 +906,62 @@ only; Noelle/Thoma absent too).
       (13×29), and undo is the net.
       Measured: the grid went 300 → 663px at 390, the controls fit one 30px
       row, and nothing overflows at 320–390.
+18. **Step 3: the card (2026-10-11, `tb/cards`).** Designed on `/lab/cards`
+    (branch `experiment/tb-card-shapes`, concept E; never merged), and it
+    supersedes §11.2's "corner magnifier" placement and §11.6 item 11's panel.
+    - ⚓ **The card carries the character's OWN fingerprint**: only the glyphs they
+      have or can unlock, lit at your settings and dim from a higher
+      constellation, with no labels and no numbers. ⛔ Never the full fifteen. The
+      chip row went because 24 of 128 characters overflowed its cap into "+N".
+      The fifteen chip labels ARE the fingerprint's fifteen functions, so one
+      icon set serves the grid, the board and step 4's filters.
+    - ⚓ **The game's Stygian card, in our materials.** The portrait and its name
+      are one opaque rounded card: the art on its element wash, the name on a
+      parchment strip under the portrait only, and the game's large rounded
+      corner (22px) at the art's lower right with parchment run up behind it.
+      It sits on a SHEER glass ground (`--glass-sheer`, slate-700 at .32, Nate's
+      value) that also holds the glyph column, centred in the card's height.
+      A character with no capabilities shows an empty column; the sheer glass
+      keeps that from reading as a hole.
+    - The glyph rows spread over the card's height between 3 and 9px, so only a
+      long fingerprint tightens. 🎛️ Glyph size (13) and the gap range are
+      named constants, to retune once all fifteen glyphs are drawn.
+    - ⚓ **Details stay a MODAL** (Nate): the Planner's details and the boss's
+      are modals too. ⛔ The roster-column panel is dropped.
+    - The constellation chip (owned, C1+) is the lineup's, on the WELL, at the
+      portrait's TOP right (the art's lower right is too busy). The magnifier
+      is the boss disc's (26px, 14px mark), opaque in both states and centred
+      on the chip, which it covers exactly on hover. ⚓ On touch it sits at the
+      portrait's lower right instead, so the chip stays visible.
+    - ⚓ **The frame: top and bottom bars only** (3px / 4px), in the team's hue.
+      The slot number hangs from the top bar in a tab at the card's top right
+      (bar + tab = one 20px square). The name sits 1px high so it clears the
+      bottom bar.
+    - ⚓ **The frame wears the LAST-SELECTED team** that holds the character
+      (this visit's selection order). Each Lineup row carries its team's hue as
+      a left edge, the key. ⏳ Four placeholder hues, `--team-hue-*`, cycling.
+    - ⚓⚓ **No repeats ENFORCES** (↻ it allowed and marked): a pick MOVES the
+      character from another team and band A says so. Turning it on keeps
+      each repeat on its last-selected team. ⛔ The warning mark is gone. ⚠ A
+      pick settles only the character it places; a repeat already on a board
+      is the toggle's to settle.
+    - ⚓ **The followed team is sticky**: with no team chosen, the selection
+      holds the team it is filling while it has room. A move that frees a slot
+      on an earlier team no longer pulls the selection back there.
+    - ⛔ **Unowned characters are not dimmed** (the lineup's ruling, and the fade
+      was element opacity on a transformed card). ⛔ No wishlist star on the
+      card (the Wishlist filter covers it). Hover is DENSITY: the sheer ground
+      firms to the panel stop.
+    - The destination strip ("Adding to Battlefield 3 · 2/4") sits under the
+      filter strip, keyed by the team's hue.
+    - **Default build STAYS** in the Builder's details for now (Nate). Step 2
+      deferred loadout editing from the Roster tab, so this is its only editor;
+      it leaves when the Roster tab gains it.
+    - ⏭ **Open at merge (2026-10-11):** Columbina's nine glyphs don't fit a card
+      narrower than ~156px (the 108px tile minimum, below a 1500px viewport),
+      so her grid ROW grows taller. ⚓ Deferred by Nate until all fifteen
+      glyphs are drawn — their size and gap get retuned then anyway (options:
+      accept · shrink a long fingerprint's glyphs · raise the tile minimum).
+      The team hues are placeholders to tune live. The card's strings are
+      working copy for step 6 (strip, full-team strip, move notice, No repeats
+      tooltip, card and magnifier labels, glyph and chip tooltips).

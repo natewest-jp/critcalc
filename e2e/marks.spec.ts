@@ -65,7 +65,7 @@ test.describe('control glyphs are geometry, not type', () => {
 		await seed({ ownership: { bennett: 'owned' }, constellations: { bennett: 2 } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
+		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-mag').click();
 		await expectSwept(page, '.dc-panel');
 	});
 

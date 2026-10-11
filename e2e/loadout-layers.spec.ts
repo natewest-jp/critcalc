@@ -107,7 +107,7 @@ test('an open tab falls back live; saving freezes the resolved values', async ({
 test('the detail card edits the roster loadout (Layer 1)', async ({ page, seed }) => {
 	await seed({ team: { slots: ['nahida', 'furina'] } });
 	await openTool(page, '/team-builder');
-	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-main').click();
+	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-mag').click();
 	await page.locator('.dc-panel').waitFor();
 	// Tile 0 is the "None" tile — pick the first real set.
 	await page.locator('.dc-panel .lp-tile').nth(1).click();
@@ -129,7 +129,7 @@ test('the Roster tab owns Layer 1, and the plan keeps shadowing it', async ({ pa
 	// its link opens the Library's Roster tab on the character, the one editor.
 	await page.locator('.chrome-nav a[href*="team-builder"]').click();
 	await page.waitForURL(/team-builder/, { timeout: 10_000 });
-	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-main').click();
+	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-mag').click();
 	await page.locator('.dc-panel').waitFor();
 	await page.getByRole('button', { name: 'Edit in Roster' }).click();
 	await page.locator('.til-card[data-id="nahida"]').getByRole('button', { name: 'C2' }).click();
