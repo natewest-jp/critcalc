@@ -177,7 +177,7 @@
 				{#if $siteSettings.travelerVariant === 'lumine'}
 					<!-- Lumine, from assets-src/tools/character-lumine.svg (51:58): the silhouette and ONE hair-shading gradient. -->
 					<svg
-						class="chrome-glyph is-roster"
+						class="chrome-glyph is-roster is-roster--lumine"
 						viewBox="0 0 51 58"
 						fill-rule="evenodd"
 						aria-hidden="true"
@@ -638,6 +638,19 @@
 	.chrome-btn--roster .chrome-glyph {
 		position: relative;
 		left: 1px;
+	}
+	/* 🎛️ LUMINE IS ALIGNED TO AETHER BY THE FACE, ⚓ Nate 2026-10-11 ("align
+	   their faces/chins"). Both profiles are built on the same two points,
+	   read from the path data: the nose tip and the chin — Aether (2.85, 39.54)
+	   → (11.17, 50.00), 13.36 units; Lumine (3.30, 35.52) → (10.54, 45.94),
+	   12.68 units. Her face matches his 7.10px at 32.5px tall; 32 keeps the
+	   mark on whole pixels (the face 1.5% smaller). Centred at 32 her chin
+	   falls 2.7px left of his, so she moves 3px (his 1px nudge included),
+	   and her nose then lands within ~0.4px of his. It also answers her
+	   weight: at Aether's 34px she carried 17% more ink; at 32, 4%. */
+	.chrome-btn--roster .is-roster--lumine {
+		height: 32px;
+		left: 3px;
 	}
 
 	/* 🎛️ OPTICAL LIFT, ⚓ NATE 2026-09-04 — 1px, by eye, and it is the same
