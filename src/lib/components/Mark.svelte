@@ -2,18 +2,40 @@
 	/**
 	 * ⚓ NATE — the two knobs for the whole set.
 	 *
-	 * Both are in Lucide's 24-unit grid, so the ink that actually lands is
-	 * `strokeWidth × size / 24`: at the defaults, 1.9 × 14 / 24 ≈ 1.11 device px.
-	 * That is deliberately a hair under the 1.225 the hand-cut 16-grid set
-	 * rendered, because Lucide's ink fills more of its box (20 of 24 units
-	 * against the old set's 12 of 16), so the same nominal weight reads heavier.
+	 * ↻ 2026-10-11: THE STROKE IS HELD, NOT SCALED. It used to live in Lucide's
+	 * 24-unit grid (1.9 units, so the ink was `1.9 × size / 24`: 0.79px at 10,
+	 * 1.11 at 14, 1.42 at 18). Small marks drew thin and large ones stubby.
+	 * Every shape now carries `vector-effect: non-scaling-stroke`, so
+	 * MARK_STROKE is CSS px and EVERY mark draws the same line at every size —
+	 * including where CSS, not `size`, sizes the box (SlotPortrait,
+	 * CharacterCard), which a stroke derived from `size` would have missed.
+	 * ⚓ Nate picked 1.15 on the /lab/marks specimen (2026-10-11, removed once
+	 * shipped — in history at `e9d3198d`), at 2× and at 1×.
+	 *
+	 * ⚠ WHAT THE WIDTH CANNOT DO: make a straight edge crisp. A horizontal or
+	 * vertical line is crisp only when it lands on the pixel grid, and where
+	 * it lands is set by the mark's SIZE and its sub-pixel POSITION, not by
+	 * this number (the filter's top edge went pale at 1.10 and filled in at
+	 * 1.15 — that was the line's phase, not its weight). Diagonals average out
+	 * and look the same at any width.
+	 *
+	 * 📐 AT 1× DPR, 12px IS THE CRISP SIZE. Lucide draws on integer coordinates
+	 * of a 24 grid; at 12px a unit is exactly half a pixel, so its lines land
+	 * on pixel centres and fill one row cleanly. At 14px (and most others) the
+	 * same lines straddle two rows and read as a pale double line — at every
+	 * weight from 1.00 to 1.25 (measured 2026-10-11). Our sizes are tuned for
+	 * how they sit beside text, not for this; but if 1× crispness ever becomes
+	 * the goal, SIZE is the lever, and ⛔ a thinner or "whole-pixel" stroke is
+	 * not (1.00 is the most exposed width: crispest when it lands, palest —
+	 * two rows at ~50% — when it splits).
 	 *
 	 * ⚠ Tune against CHROME, per the sub-pixel law: WebKit snaps strokes to whole
 	 * pixels and its rendering of a given value moves with layout position, so
 	 * tuning there chases a number that is not stable.
 	 */
 	export const MARK_SIZE = 14;
-	export const MARK_STROKE = 1.9;
+	/** The line, in CSS px, at every size (held — see above). */
+	export const MARK_STROKE = 1.15;
 </script>
 
 <script lang="ts">
@@ -31,7 +53,7 @@
 	// and an upstream icon can never smuggle in an element we did not expect.
 	//
 	// Stroked in currentColor, so a mark inherits its control's ink — including
-	// the disabled and active states — and scales with `size` alone.
+	// the disabled and active states. `size` scales the picture; the line holds.
 	//
 	// Marks are decorative WITHOUT EXCEPTION: every control that carries one also
 	// carries a text label or an aria-label, so they are aria-hidden. If a mark
@@ -45,9 +67,10 @@
 		filled = false
 	}: {
 		name: MarkName;
-		/** Edge of the square box, in px. The stroke scales with it. */
+		/** Edge of the square box, in px. The stroke does NOT scale with it. */
 		size?: number;
-		/** Override for a mark that needs to hold its own beside heavier text. */
+		/** Override for a mark that needs to hold its own beside heavier text,
+		 *  in CSS px like MARK_STROKE. */
 		strokeWidth?: number;
 		/**
 		 * Fill the geometry in currentColor as well as stroking it.
@@ -100,5 +123,10 @@
 	.mark {
 		display: block;
 		flex-shrink: 0;
+	}
+	/* The HELD stroke (see MARK_STROKE). vector-effect is NOT inherited, so it
+	   must reach every shape, not the <svg>. */
+	.mark :global(*) {
+		vector-effect: non-scaling-stroke;
 	}
 </style>
