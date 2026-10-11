@@ -2,8 +2,8 @@
 	/**
 	 * THE ROSTER — the Library's second tab (lineups design §11.6 items 1, 2, 7,
 	 * 17), and the ONE place the roster is edited: details in both tools only
-	 * read it. Designed with Nate on /lab/roster, 2026-10-11 (in history on
-	 * `experiment/roster-tab`).
+	 * read it. Designed with Nate on a /lab/roster demo, 2026-10-11 (since
+	 * retired; lineups design §11.6 items 17–18 hold every ruling).
 	 *
 	 * ⚓ TILES, not a ledger of rows: the rows were dense without being more
 	 * usable. The portrait toggles owned; six ASTROIDS under it set the
