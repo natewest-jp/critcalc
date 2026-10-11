@@ -197,6 +197,11 @@
 	   stop IS that rung at an alpha, so it has to move with it or the well
 	   silently stops being the well. Star figure improved, 5.22 → 5.44:1. */
 	--glass-well: rgb(31 38 53 / 0.45); /* slate-900 — band B, recessed fields */
+	/* THE SHEER STOP (⚓ NATE 2026-10-11, by eye on the Team Builder's card
+	   demo): the panel's rung at about half its alpha — just enough to say an
+	   edge is there, and no more. First reader: the character card's ground,
+	   where the panel stop drew the eye to an empty glyph column. */
+	--glass-sheer: rgb(54 62 77 / 0.32); /* slate-700 — a hint of an edge */
 	/* The landing's hero cards (2026-09-16). Same rung as the well, driven
 	   nearly opaque: the landing scene is BRIGHT and wears no dim, so a card
 	   has to hold gold text and a gold line against sky — .9 keeps a tenth of
@@ -1028,6 +1033,16 @@
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+
+	/* ⏳ THE TEAM HUES (lineups design §11.6 item 8) — PLACEHOLDERS, to be
+	   judged live on the element-washed cards. A picked character's frame
+	   wears its team's hue and each Lineup row carries the same hue as its key;
+	   teams past the fourth cycle. ⛔ Not --ui-positive's green ("met" on the
+	   checks) and not gold (selection). */
+	--team-hue-first: #6aa8ff;
+	--team-hue-second: #b28cff;
+	--team-hue-third: #ff8f8a;
+	--team-hue-fourth: #d9dee8;
 
 	/* ↻ 2026-08-01 lightness-structure round: the MID RUNG. Sampled from
 	   Genshin's own button face (#586071 = oklch L.488 C.029 H265.4 — their

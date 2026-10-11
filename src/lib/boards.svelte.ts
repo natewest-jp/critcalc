@@ -162,24 +162,47 @@ export function effectiveCon(
 }
 
 /**
- * ⚓ "No repeats" — ALLOW AND MARK. Every character that sits on more than one
- * team, mapped to the indexes of the teams that hold them. The board's
- * `noRepeats` decides whether a consumer SHOWS the marks; this only counts.
+ * ⚓ "No repeats" — ONE TEAM PER CHARACTER (Nate 2026-10-11; ↻ it used to
+ * allow and mark). Keeps each character's first appearance in `keepOrder`
+ * (team indexes, most-preferred first; teams it leaves out follow in board
+ * order) and empties every other slot they hold. Slots keep their places, as
+ * a removal does in the game. Pure: the store applies it.
  */
-export function repeatedCharacters(teams: readonly TeamSlot[][]): Record<string, number[]> {
-	// A plain record, not a Map: this is a pure function and nothing here is
-	// state (the repo's svelte/prefer-svelte-reactivity rule would rather see a
-	// SvelteMap, which would be wrong — see documentBar.copyName).
-	const holders: Record<string, number[]> = {};
-	teams.forEach((slots, t) => {
-		for (const id of slots) {
-			if (!id) continue;
-			const ts = (holders[id] ??= []);
-			if (!ts.includes(t)) ts.push(t);
-		}
-	});
-	for (const id of Object.keys(holders)) if (holders[id].length < 2) delete holders[id];
-	return holders;
+/** A team with new slots; its pin drops if the set of characters changed. */
+function withSlots(t: BoardTeam, slots: TeamSlot[]): BoardTeam {
+	const sameTeam = teamKey(slots) === teamKey(t.slots);
+	return { ...t, slots, ...(!sameTeam && { pinnedRotationId: undefined }) };
+}
+
+/** A board whose teams take these slots, in order (unchanged teams kept as-is). */
+function withTeams(b: Board, slots: TeamSlot[][]): Board {
+	return {
+		...b,
+		teams: b.teams.map((t, i) =>
+			slots[i].every((s, j) => s === t.slots[j]) ? t : withSlots(t, slots[i])
+		)
+	};
+}
+
+export function withoutRepeats(
+	teams: readonly TeamSlot[][],
+	keepOrder: readonly number[] = []
+): TeamSlot[][] {
+	const order = [...keepOrder, ...teams.map((_, i) => i).filter((i) => !keepOrder.includes(i))];
+	// A plain array, not a Set: this is a pure function and nothing here is
+	// state (see documentBar.copyName for the lint rule's false alarm).
+	const seen: string[] = [];
+	const out = teams.map((slots) => [...slots]);
+	for (const t of order) {
+		const slots = out[t];
+		if (!slots) continue;
+		slots.forEach((id, i) => {
+			if (!id) return;
+			if (seen.includes(id)) slots[i] = null;
+			else seen.push(id);
+		});
+	}
+	return out;
 }
 
 function loadFromStorage(): { boards: Board[]; activeBoardId: string } | null {
@@ -302,8 +325,24 @@ class BoardsState {
 		this.#updateBoard(id, (b) => ({ ...b, season }));
 	}
 
-	setNoRepeats(id: string, on: boolean): void {
-		this.#updateBoard(id, (b) => ({ ...b, noRepeats: on }));
+	/** Turning it ON settles any repeats at once, keeping each character on
+	 *  the team that comes first in `keepOrder` (team ids — the Builder passes
+	 *  the order teams were last selected in). */
+	setNoRepeats(id: string, on: boolean, keepOrder: readonly string[] = []): void {
+		this.#updateBoard(id, (b) => {
+			if (!on) return { ...b, noRepeats: false };
+			const order = keepOrder.map((tid) => b.teams.findIndex((t) => t.id === tid));
+			return {
+				...withTeams(
+					b,
+					withoutRepeats(
+						b.teams.map((t) => t.slots),
+						order
+					)
+				),
+				noRepeats: true
+			};
+		});
 	}
 
 	// ── Teams ───────────────────────────────────────────────────────────────
@@ -333,23 +372,57 @@ class BoardsState {
 
 	/** Put `id` in slot `index` (null empties it). The board's team changes and
 	 *  nothing else — ⚓ no saved rotation is touched (§10.2). A pin to a
-	 *  rotation for the OLD team drops, since it is no longer this team's. */
-	setSlot(boardId: string, teamId: string, index: number, id: TeamSlot): void {
+	 *  rotation for the OLD team drops, since it is no longer this team's.
+	 *  Under No repeats a character placed here LEAVES any other team; returns
+	 *  the ids of the teams they left. */
+	setSlot(boardId: string, teamId: string, index: number, id: TeamSlot): string[] {
+		const left = this.#teamsHolding(boardId, id, teamId);
 		this.#updateTeam(boardId, teamId, (t) => {
 			const slots = [...t.slots];
 			slots[index] = id;
-			const sameTeam = teamKey(slots) === teamKey(t.slots);
-			return { ...t, slots, ...(!sameTeam && { pinnedRotationId: undefined }) };
+			return withSlots(t, slots);
 		});
+		if (id) this.#settleRepeats(boardId, teamId, [id]);
+		return left;
 	}
 
-	/** Fill every slot at once — a team chosen from the library (§10.2). */
+	/** Fill every slot at once — a team chosen from the library (§10.2). Under
+	 *  No repeats its members leave any other team. */
 	setTeam(boardId: string, teamId: string, slots: TeamSlot[]): void {
 		this.#updateTeam(boardId, teamId, (t) => ({
 			id: t.id,
 			slots: normalizeSlots(slots),
 			...(t.con && { con: t.con })
 		}));
+		this.#settleRepeats(
+			boardId,
+			teamId,
+			slots.filter((s): s is string => !!s)
+		);
+	}
+
+	/** The OTHER teams `id` sits on, when the board forbids repeats. */
+	#teamsHolding(boardId: string, id: TeamSlot, exceptTeamId: string): string[] {
+		const board = this.boards.find((b) => b.id === boardId);
+		if (!id || !board?.noRepeats) return [];
+		return board.teams
+			.filter((t) => t.id !== exceptTeamId && t.slots.includes(id))
+			.map((t) => t.id);
+	}
+
+	/** Under No repeats, `keepTeamId` keeps `ids` and every other team lets
+	 *  them go. ⚠ Only the characters just placed: a repeat already on the
+	 *  board is the toggle's to settle, never an unrelated pick's. */
+	#settleRepeats(boardId: string, keepTeamId: string, ids: readonly string[]): void {
+		this.#updateBoard(boardId, (b) => {
+			if (!b.noRepeats) return b;
+			return withTeams(
+				b,
+				b.teams.map((t) =>
+					t.id === keepTeamId ? t.slots : t.slots.map((s) => (s && ids.includes(s) ? null : s))
+				)
+			);
+		});
 	}
 
 	/** Set a team's own constellation for a character. */

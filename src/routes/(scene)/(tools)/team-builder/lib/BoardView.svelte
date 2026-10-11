@@ -19,8 +19,10 @@
 	 * 2026-10-09, the game's own model) — a frame around its portraits, gold
 	 * as everywhere a thing is chosen. A filled portrait is not a control: it
 	 * selects its row and nothing else, and a pick leaves by being picked again.
-	 * ⚓ "No repeats" ALLOWS AND MARKS: a character on two teams wears a warning
-	 * mark on both, while the board's toggle is on.
+	 * ⚓ "No repeats" is ONE TEAM PER CHARACTER (↻ 2026-10-11 — it allowed
+	 * and marked): the store moves a pick, so there is no mark to draw. Each
+	 * row carries its team's HUE as a left edge, the key to the frames its
+	 * members wear in the Characters grid.
 	 */
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
@@ -32,7 +34,6 @@
 	import {
 		effectiveCon,
 		pinnedRotation,
-		repeatedCharacters,
 		rotationsForTeam,
 		teamCon,
 		type Board,
@@ -51,6 +52,7 @@
 	} from '$lib/endgame';
 	import { evaluateCheck, type CheckVerdict } from '$lib/endgameChecks';
 	import { teamFingerprint } from '$lib/fingerprint';
+	import { teamHue } from './team';
 	import Fingerprint from './Fingerprint.svelte';
 	import CheckChip from './CheckChip.svelte';
 	import BossDetail from './BossDetail.svelte';
@@ -119,20 +121,6 @@
 		const t = setTimeout(() => (shaking = false), 300);
 		return () => clearTimeout(t);
 	});
-
-	/** Who sits on more than one team — shown only while the toggle is on. */
-	const repeats = $derived(
-		board.noRepeats ? repeatedCharacters(board.teams.map((t) => t.slots)) : {}
-	);
-	/** A team's name as its header says it, for the repeat mark's sentence. */
-	const teamName = (t: number) =>
-		season?.battlefields[t]
-			? `Battlefield ${t + 1}`
-			: abyss && t < 2
-				? t === 0
-					? 'the first half'
-					: 'the second half'
-				: `Team ${t + 1}`;
 
 	// ── The lineup's battlefields ────────────────────────────────────────────
 	const seasons = liveSeasons();
@@ -305,13 +293,13 @@
 						<div
 							class="bv-slots"
 							style:--over="{OVERHANG}px"
+							style:--team-hue={teamHue(t)}
 							class:bv-slots--sel={sel}
 							class:bv-slots--nudge={sel && shaking}
 							onclick={() => onSelectTeam(team.id)}
 						>
 							{#each team.slots as id, i (i)}
 								{@const entry = id ? getCharacterIndexEntry(id) : undefined}
-								{@const others = id ? repeats[id]?.filter((x) => x !== t) : undefined}
 								<div class="bv-slot-wrap">
 									<button
 										class="bv-slot"
@@ -333,17 +321,6 @@
 											ownedCon={id ? ownedConOf(id) : undefined}
 										/>
 									</button>
-									{#if others?.length}
-										<!-- ⏭ Working copy (copy step 8). -->
-										<span
-											class="bv-repeat"
-											role="img"
-											aria-label="Also on {others.map(teamName).join(' and ')}"
-											title="{entry?.displayName ?? id} is also on {others
-												.map(teamName)
-												.join(' and ')}"><Mark name="warn" size={12} /></span
-										>
-									{/if}
 								</div>
 							{/each}
 						</div>
@@ -662,6 +639,19 @@
 		pointer-events: none;
 		transition: border-color var(--t-snap);
 	}
+	/* The team's HUE, as an edge on the row's left — the key to the frames
+	   its members wear in the Characters grid (§11.6 item 8). */
+	.bv-slots::after {
+		content: '';
+		position: absolute;
+		top: var(--over);
+		bottom: 0;
+		left: 0;
+		width: 3px;
+		border-radius: var(--r-md) 0 0 var(--r-md);
+		background: var(--team-hue);
+		pointer-events: none;
+	}
 	.bv-slots:hover:not(.bv-slots--sel)::before {
 		border-color: var(--line-soft);
 	}
@@ -696,21 +686,6 @@
 		background: none;
 		cursor: pointer;
 		border-radius: var(--r-round);
-	}
-	/* A repeat: the warning mark, on its own ground so art never muddies it. */
-	.bv-repeat {
-		position: absolute;
-		/* The disc's bottom left (Nate 2026-10-09) — the constellation chip holds
-		   the bottom right. ⏭ Watch it against chins over time. */
-		bottom: 0;
-		left: -4px;
-		width: 20px;
-		height: 20px;
-		display: grid;
-		place-items: center;
-		border-radius: var(--r-round);
-		background: var(--surface-well);
-		color: var(--ui-warning);
 	}
 	.bv-play {
 		display: flex;

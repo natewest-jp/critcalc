@@ -157,7 +157,7 @@ test.describe('detail card', () => {
 			if (r.url().includes('/chunks/') && r.url().endsWith('.js')) chunks.push(r.url());
 		});
 
-		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-main').click();
+		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-mag').click();
 		await page.locator('.dc-panel').waitFor();
 		await page.locator('.dc-caps .dc-cap').first().waitFor();
 
@@ -177,7 +177,7 @@ test.describe('detail card', () => {
 	test('the Roster tab sets a constellation that survives reload', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-main').click();
+		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-mag').click();
 		await page.locator('.dc-panel').waitFor();
 		await expect(page.locator('.dc-roster-state'), 'details read the roster').toHaveText(
 			'Not owned'
@@ -215,7 +215,7 @@ test.describe('detail card', () => {
  */
 test.describe('the board', () => {
 	const openDetail = async (page: Page, name: string) => {
-		await page.locator('.cc', { hasText: name }).first().locator('.cc-main').click();
+		await page.locator('.cc', { hasText: name }).first().locator('.cc-mag').click();
 		await page.locator('.dc-panel').waitFor();
 	};
 
@@ -426,7 +426,7 @@ test.describe('ownership ledger', () => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 
-		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
+		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-mag').click();
 		await page.locator('.dc-panel').waitFor();
 		// The roster is edited in the Library's Roster tab; W wishlists the tile
 		// the details link arrives on.

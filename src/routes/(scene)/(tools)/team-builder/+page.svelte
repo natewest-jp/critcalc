@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -50,7 +50,7 @@
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
-	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
+	import CharacterCard, { type CardGlyph } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
@@ -64,7 +64,15 @@
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
 	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { MAX_COMPARE, lensFacet, type CapRowKey } from './lib/compare';
-	import { facetsProvidedBy, parseTeamParam, teamDelta, type TeamSlot } from './lib/team';
+	import {
+		facetsProvidedBy,
+		parseTeamParam,
+		teamDelta,
+		teamHue,
+		teamLabel,
+		type TeamSlot
+	} from './lib/team';
+	import { FINGERPRINT } from '$lib/fingerprint';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 
 	// ---------------------------------------------------------------------------
@@ -232,8 +240,13 @@
 	$effect(() => {
 		if (chosenTeamId && !board.teams.some((t) => t.id === chosenTeamId)) chosenTeamId = null;
 	});
+	/** The team the selection is FOLLOWING: it holds while it has room, so a
+	 *  move that frees a slot on an earlier team does not pull the selection
+	 *  back there; a full team hands on to the next with room. */
+	let followTeamId = $state<string | null>(null);
 	const selectedTeam = $derived(
 		board.teams.find((t) => t.id === chosenTeamId) ??
+			board.teams.find((t) => t.id === followTeamId && t.slots.includes(null)) ??
 			board.teams.find((t) => t.slots.includes(null)) ??
 			board.teams[0]
 	);
@@ -246,10 +259,36 @@
 		return () => clearTimeout(t);
 	});
 
+	/** The order teams were last selected in, most recent first. A
+	 *  character's frame wears the newest team that holds them, and turning No
+	 *  repeats on keeps each one there (⚓ Nate 2026-10-11). This visit only. */
+	let teamRecency = $state<string[]>([]);
+	$effect(() => {
+		const id = selectedTeam?.id;
+		if (!id) return;
+		untrack(() => {
+			if (teamRecency[0] !== id) teamRecency = [id, ...teamRecency.filter((x) => x !== id)];
+			if (!chosenTeamId) followTeamId = id;
+		});
+	});
+	const indexOfTeam = (teamId: string) => board.teams.findIndex((t) => t.id === teamId);
+	const selectedIndex = $derived(selectedTeam ? indexOfTeam(selectedTeam.id) : 0);
+
+	/** The frame a card wears: the most recently selected team holding them. */
+	function frameOf(id: string): { hue: string; slot: number } | undefined {
+		const order = [...teamRecency, ...board.teams.map((t) => t.id)];
+		for (const teamId of order) {
+			const t = indexOfTeam(teamId);
+			const slot = board.teams[t]?.slots.indexOf(id) ?? -1;
+			if (slot >= 0) return { hue: teamHue(t), slot: slot + 1 };
+		}
+		return undefined;
+	}
+
 	/** A pick lands in the selected team's EARLIEST empty slot. Returns
 	 *  whether that filled the team, or null when it was already full (the
-	 *  nudge). ⚓ A character on ANOTHER team is not moved: repeats are allowed
-	 *  and marked (`Board.noRepeats`). */
+	 *  nudge). ⚓ Under No repeats a character on ANOTHER team MOVES here (the
+	 *  store frees their old slot) and the band says so. */
 	function placeOnBoard(id: string): boolean | null {
 		const team = selectedTeam;
 		if (!team) return null;
@@ -258,7 +297,14 @@
 			nudge = { id, at: Date.now() };
 			return null;
 		}
-		boards.setSlot(board.id, team.id, i, id);
+		const left = boards.setSlot(board.id, team.id, i, id);
+		if (left.length) {
+			const name = getCharacterIndexEntry(id)?.displayName ?? id;
+			// ⏭ Working copy (copy step 6).
+			documentBar.showNotice(
+				`${name} moved from ${teamLabel(board, indexOfTeam(left[0]))} to ${teamLabel(board, indexOfTeam(team.id))}.`
+			);
+		}
 		return team.slots.filter((s) => s === null).length === 1;
 	}
 
@@ -513,13 +559,6 @@
 	});
 
 	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
-
-	// A tile fades when it's a not-owned character shown among owned ones: in the
-	// 'all' view once the user owns anything (Genshin-collection style).
-	function tileFaded(id: string): boolean {
-		if (!mounted) return false;
-		return ownsAny && ownershipView === 'all' && $ownership[id] !== 'owned';
-	}
 
 	/** How many choices are hidden inside More — its plate says so, or a
 	 *  filter you set and closed would be invisible. */
@@ -907,27 +946,35 @@
 		if (filled && tabbed) tab = 'lineup';
 	}
 
-	// Capability badges → the card's ordered tag chips: active facets first, then
-	// FACETS order; the card slices to its cap + renders the +overflow count.
-	function tagsFor(entry: CharacterIndexEntry): TagChip[] {
-		const badges = facetBadges(entry.caps);
-		const rank = (b: (typeof badges)[number]) =>
-			(activeFacets.has(b.facet) ? 0 : 100) + FACETS.findIndex((f) => f.key === b.facet);
-		return [...badges]
-			.sort((a, b) => rank(a) - rank(b))
-			.map((b) => ({
-				label: `${b.label}${b.minCon > 0 ? ` C${b.minCon}` : ''}`,
-				active: activeFacets.has(b.facet),
-				conditional: b.conditional,
-				title: b.conditional ? 'Conditional — depends on runtime state (see details)' : undefined
-			}));
+	/** A card's own fingerprint: the facets the character has or can unlock,
+	 *  in the fingerprint's one order — lit at the lens, dim from a higher
+	 *  constellation (⚓ Nate 2026-10-11; ⛔ never the full fifteen). */
+	const FINGERPRINT_ORDER = FINGERPRINT.flatMap((c) => c.facets);
+	const FACET_LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
+	function glyphsFor(entry: CharacterIndexEntry): CardGlyph[] {
+		const cap = conCapFor(conMode, mounted ? $constellations[entry.id] : undefined);
+		return facetBadges(entry.caps)
+			.sort((a, b) => FINGERPRINT_ORDER.indexOf(a.facet) - FINGERPRINT_ORDER.indexOf(b.facet))
+			.map((b) => {
+				const label = FACET_LABEL[b.facet] ?? b.facet;
+				const lit = b.minCon <= cap;
+				// ⏭ Working copy (copy step 6).
+				return { facet: b.facet, lit, title: lit ? label : `${label} · from C${b.minCon}` };
+			});
 	}
 
-	// Primary tile click opens the detail card. ⏭ Step 3: the whole card picks
-	// and a corner magnifier opens details (§11.2).
-	function activate(id: string): void {
-		openDetail(id);
+	/** The pick's screen-reader name — it names the team it acts on. */
+	function pickLabel(entry: CharacterIndexEntry): string {
+		const team = teamLabel(board, selectedIndex);
+		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
+		// ⏭ Working copy (copy step 6).
+		return slot >= 0
+			? `${entry.displayName}, in ${team}, slot ${slot + 1}. Remove.`
+			: `${entry.displayName}, add to ${team}`;
 	}
+
+	/** The destination strip over the grid: where a pick goes. */
+	const destFilled = $derived(selectedTeam?.slots.filter((s) => s !== null).length ?? 0);
 
 	// The old slots→URL mirror is retired with the ?team= injection: the
 	// working team lives in the shared tab state (persisted there), and a URL
@@ -935,46 +982,22 @@
 	// longer owns. Shareable teams travel through the planner's ⤴ Share link.
 </script>
 
-<!-- One roster tile, shared by the roster grid, the "not yet curated" bucket,
-     and the Rotation-Planner per-slot alternative rows. -->
-{#snippet charTile(entry: CharacterIndexEntry, dimmed: boolean)}
+<!-- One grid tile: the roster grid and the "not yet curated" bucket. -->
+{#snippet charTile(entry: CharacterIndexEntry)}
 	<CharacterCard
 		{entry}
 		{preferNewfit}
 		{traveler}
-		onActivate={activate}
-		intent="open"
-		con={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
-		wishlist={mounted && $ownership[entry.id] === 'wishlist'}
-		showUncuratedMark
-		tags={tagsFor(entry)}
-		accent={compareIds.has(entry.id)}
-		faded={tileFaded(entry.id)}
-		{dimmed}
-		actions={teamActions}
+		glyphs={glyphsFor(entry)}
+		ownedCon={mounted && $ownership[entry.id] === 'owned'
+			? ($constellations[entry.id] ?? 0)
+			: undefined}
+		frame={frameOf(entry.id)}
+		nudged={nudge?.id === entry.id}
+		pickLabel={pickLabel(entry)}
+		onPick={toggleTeam}
+		onDetails={openDetail}
 	/>
-{/snippet}
-
-<!-- TB-only hover action bar (rendered into the card's overlay shell). -->
-{#snippet teamActions(entry: CharacterIndexEntry)}
-	{@const teamState = teamStateOf(entry.id)}
-	<button
-		class="tb-act"
-		class:tb-act--on={teamState === 'in'}
-		class:tb-nudge={nudge?.id === entry.id}
-		onclick={() => toggleTeam(entry.id)}
-		title={teamState === 'in'
-			? 'In your team'
-			: teamState === 'full'
-				? 'Team is full (4)'
-				: 'Add to team'}
-	>
-		<!-- 16 to match its peer — see the note on the Compare button. Two glyphs
-		     side by side in one bar have to be one size whatever each needs. -->
-		<span class="tb-act-glyph"><Mark name={teamState === 'in' ? 'check' : 'plus'} size={16} /></span
-		>
-		<span class="tb-act-label">{teamState === 'full' ? 'Full' : 'Team'}</span>
-	</button>
 {/snippet}
 
 <!-- Audition candidates — rendered inside CompareView (below the reference row):
@@ -1026,7 +1049,7 @@
 
 <!-- One grid tile (the grid's own snippet takes just the entry). -->
 {#snippet rosterTile(entry: CharacterIndexEntry)}
-	{@render charTile(entry, false)}
+	{@render charTile(entry)}
 {/snippet}
 
 <!-- Below the tiles: capability-unknown kits, never silently dropped. -->
@@ -1049,7 +1072,7 @@
 			</p>
 			<div class="tb-grid">
 				{#each split.uncurated as entry (entry.id)}
-					{@render charTile(entry, true)}
+					{@render charTile(entry)}
 				{/each}
 			</div>
 		</section>
@@ -1263,12 +1286,15 @@
 							><Mark name="plus" /> Add team</button
 						>
 					{/if}
-					<!-- ⏭ Working copy (copy step 8). -->
-					<label class="toggle tb-norepeat" title="Mark a character who is on more than one team">
+					<!-- ⏭ Working copy (copy step 6). -->
+					<label
+						class="toggle tb-norepeat"
+						title="One team per character: picking someone moves them"
+					>
 						<input
 							type="checkbox"
 							checked={board.noRepeats}
-							onchange={(e) => boards.setNoRepeats(board.id, e.currentTarget.checked)}
+							onchange={(e) => boards.setNoRepeats(board.id, e.currentTarget.checked, teamRecency)}
 						/>
 						<!-- The label leads and the switch ends the row (⚓ Nate). -->
 						<span class="toggle-label">No repeats</span>
@@ -1346,6 +1372,18 @@
 				<p class="tb-roster-hint">
 					The Owned filter and “My constellations” read your roster, which is empty.
 					<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
+				</p>
+			{/if}
+			<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
+			     team's hue. ⏭ Working copy (copy step 6). -->
+			{#if selectedTeam}
+				<p class="tb-dest" role="status">
+					<span class="tb-dest-key" style:--team-hue={teamHue(selectedIndex)}></span>
+					{#if destFilled === 4}
+						{teamLabel(board, selectedIndex)} is full. Pick a member again to take them out.
+					{:else}
+						Adding to {teamLabel(board, selectedIndex)} · {destFilled}/4
+					{/if}
 				</p>
 			{/if}
 		{/if}
@@ -1996,83 +2034,29 @@
 		}
 	}
 
-	/* Hover action buttons rendered into CharacterCard's overlay shell (Team /
-	   Compare). The card owns the reveal + positioning; these are the contents.
-
-	   ⚓ NATE 2026-08-11: "the hover buttons are all wrong — wrong colors." They
-	   were, and by one mistake made three times: every state mixed against
-	   `--bg`. That is the PAGE ground, a near-black that belongs to the world
-	   outside the tools — so a control living on a parchment card painted itself
-	   a dark translucent slab, and the accent mixes on top of it ("gold 18% of
-	   near-black") came out as mud rather than gold. The card is ctx-light and
-	   the light context already owns a full set of control roles for exactly
-	   this; they are what it wears now, so the buttons follow the paper through
-	   any future ground change instead of being pinned to a hex three contexts
-	   away.
-	     rest   --fill-rest      + ink border  + --muted ink  (a quiet control)
-	     hover  --accent-hover-fill + gold edge + --ink-active (the promoted ink)
-	     on     --sel-fill       + --sel-ring  + --ink-active (standing state)
-	   ⚠ --fill-rest / --sel-fill / --accent-hover-fill all mix toward
-	   TRANSPARENT, and the alpha-compositing law says a fill needs a real ground:
-	   theirs is .cc-actions, which is opaque --surface. That is why the overlay
-	   had to stop being 90%. */
-	.tb-act {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 2px;
-		padding: 0.2rem;
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm);
-		background: var(--fill-rest);
-		color: var(--muted);
-		font-family: var(--font-body);
-		cursor: pointer;
-		transition:
-			border-color var(--t-snap),
-			background var(--t-snap),
-			color var(--t-snap);
-	}
-	.tb-act.tb-nudge {
-		animation: nudge 120ms 2;
-		border-color: var(--ui-warning);
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.tb-act.tb-nudge {
-			animation: none;
-		}
-	}
-	.tb-act-glyph {
-		display: flex;
-	}
-	.tb-act-label {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-	}
-	.tb-act:hover:not(:disabled) {
-		border-color: var(--sel-ring);
-		background: var(--accent-hover-fill);
-		color: var(--ink-active);
-	}
-	.tb-act--on {
-		border-color: var(--sel-ring);
-		background: var(--sel-fill);
-		color: var(--ink-active);
-	}
-	.tb-act:disabled {
-		opacity: 0.4;
-		cursor: default;
-	}
-
 	.tb-stubs {
 		margin-top: 1.4rem;
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
+	}
+	/* The destination strip: where a pick goes, keyed by its team's hue. */
+	.tb-dest {
+		flex: none;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0;
+		color: var(--text);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+	}
+	.tb-dest-key {
+		flex: none;
+		width: 3px;
+		height: 1em;
+		border-radius: 1px;
+		background: var(--team-hue);
 	}
 	.tb-roster-hint {
 		flex: none;

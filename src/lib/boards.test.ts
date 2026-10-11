@@ -8,7 +8,7 @@ import {
 	pinnedRotation,
 	teamCon,
 	effectiveCon,
-	repeatedCharacters,
+	withoutRepeats,
 	toSharedBoard,
 	fromSharedBoard,
 	toSavedTeams,
@@ -153,13 +153,24 @@ describe('constellations — one model with the Planner (§9.5)', () => {
 	});
 });
 
-describe('No repeats — allow and mark', () => {
-	it('names every character on more than one team, with the teams holding them', () => {
-		const marks = repeatedCharacters([
+describe('No repeats — one team per character', () => {
+	const teams = [
+		['bennett', 'xiangling', null, null],
+		['bennett', 'furina', null, null],
+		['furina', 'bennett', null, null]
+	];
+	it('keeps each character on the first team in board order, slots in place', () => {
+		expect(withoutRepeats(teams)).toEqual([
 			['bennett', 'xiangling', null, null],
-			['bennett', 'furina', null, null],
+			[null, 'furina', null, null],
+			[null, null, null, null]
+		]);
+	});
+	it('prefers the teams named first (the last-selected order)', () => {
+		expect(withoutRepeats(teams, [2])).toEqual([
+			[null, 'xiangling', null, null],
+			[null, null, null, null],
 			['furina', 'bennett', null, null]
 		]);
-		expect(marks).toEqual({ bennett: [0, 1, 2], furina: [1, 2] });
 	});
 });

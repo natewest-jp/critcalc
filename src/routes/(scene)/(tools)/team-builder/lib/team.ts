@@ -11,6 +11,8 @@
 import type { CharacterIndexEntry } from '$lib/types/character';
 import { FACETS, isCapabilityUnknown, type FacetKey } from './facets';
 import { providesFacet } from '$lib/capabilities/deriveCapabilities';
+import type { Board } from '$lib/boards.svelte';
+import { SEASONS, liveSeasons } from '$lib/endgame';
 
 export const TEAM_SIZE = 4;
 
@@ -149,3 +151,25 @@ export function teamDelta(
 		...(changed && { resonance: { before: labels(a), after: labels(b) } })
 	};
 }
+
+// ---------------------------------------------------------------------------
+// A board team's name and hue
+// ---------------------------------------------------------------------------
+
+/** A team's name as its board says it: a Stygian battlefield, an Abyss half,
+ *  else "Team N" (lineups design §11.6; the destination strip and the
+ *  cards' screen-reader names read it). */
+export function teamLabel(board: Pick<Board, 'preset' | 'season'>, index: number): string {
+	if (board.preset === 'stygian') {
+		const season = SEASONS.find((s) => s.version === board.season) ?? liveSeasons()[0];
+		if (season?.battlefields[index]) return `Battlefield ${index + 1}`;
+	}
+	if (board.preset === 'abyss' && index < 2) return index === 0 ? 'First Half' : 'Second Half';
+	return `Team ${index + 1}`;
+}
+
+const TEAM_HUES = ['first', 'second', 'third', 'fourth'] as const;
+
+/** A team's hue (app.css `--team-hue-*`): four, cycling past the fourth. */
+export const teamHue = (index: number): string =>
+	`var(--team-hue-${TEAM_HUES[index % TEAM_HUES.length]})`;
