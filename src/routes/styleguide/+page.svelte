@@ -1757,8 +1757,11 @@
 						artifacts of the <code>--el-*</code> tokens and of <code>build-logo</code>.
 					</li>
 					<li>
-						<code>MARK_SIZE</code> (14) and <code>MARK_STROKE</code> (1.9) are the two knobs, in
-						Lucide's 24-unit grid — landed ink is <code>stroke × size / 24</code>. ⚠ Tune against
+						<code>MARK_SIZE</code> (14) and <code>MARK_STROKE</code> (1.15) are the two knobs. ↻
+						2026-10-11 the stroke is HELD: CSS px at every size (<code
+							>vector-effect: non-scaling-stroke</code
+						>), no longer Lucide units that scaled with the box. At 1×, 12px is the size whose
+						straight edges land crisp — see Mark.svelte. ⚠ Tune against
 						<strong>Chrome</strong> (the sub-pixel law).
 					</li>
 					<li>

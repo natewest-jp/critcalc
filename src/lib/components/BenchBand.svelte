@@ -542,7 +542,7 @@
 			--bb-act-fill var(--t-snap);
 	}
 	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
-	   MARK_STROKE — the .bb-glyph rules that used to set them here are gone,
+	   MARK_STROKE (a held px line since 2026-10-11) — the .bb-glyph rules that used to set them here are gone,
 	   which is the point of a shared set. The button's grid still centers
 	   them, and the size knob is site-wide now rather than local. */
 	/* Disabled = the card's shared dim (the constellation chip's exact recipe),
