@@ -5,6 +5,9 @@
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 	import { page } from '$app/state';
 
+	/** Per-instance prefix for the Roster mark's gradient ids (see its markup). */
+	const uid = $props.id();
+
 	// THE site chrome — one bar on every surface. Brand left, a host-supplied
 	// center, three meta glyphs right; identical pixels on the landing, the
 	// content pages and inside a tool.
@@ -147,16 +150,79 @@
 			     tab. Beside the cog because the roster belongs to the account, like
 			     the settings, and reaches every tool. Below `roomy` it folds into
 			     the compass with About and Help.
-			     ⏳ PLACEHOLDER GLYPH — a disc with a figure cut out of it, in the
-			     set's hole-in-a-disc grammar. ⚓ Nate is drawing the real mark (the
-			     Aether and Lumine silhouettes from the game's Character button),
-			     which will follow siteSettings.travelerVariant. -->
-			<button class="chrome-btn" aria-label="Roster" title="Roster" onclick={roster.open}>
-				<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
-					><path
-						d="M20 0a20 20 0 1 1 0 40a20 20 0 1 1 0-40ZM20 8.5a6.5 6.5 0 1 0 0 13a6.5 6.5 0 1 0 0-13ZM9.5 32.5C10.5 26.5 14.5 23.5 20 23.5S29.5 26.5 30.5 32.5Z"
-					/></svg
+
+			     Artwork is Nate's, from assets-src/tools/character-aether.svg — the
+			     game's Character button, the place a player sees what they own. Like
+			     the compass it is a PORTRAIT mark (47:64), and like the compass it
+			     is NOT a disc with a hole: a silhouette in currentColor (so the
+			     chrome's hover and state reach it) under two line-shading shapes,
+			     linear gradients of translucent black that reproduce the game's
+			     fading line art.
+			     ⚠ The gradient ids are per INSTANCE (`$props.id()`): Affinity names
+			     every export's gradients _Linear1/_Linear2 and an inlined SVG's ids
+			     are global to the page, so a second chrome mid-transition — or any
+			     other export — would hand this url(#…) the wrong gradient, or one
+			     inside a display:none copy, which Chrome does not paint.
+			     ⚠ fill-opacity="1" on the shading: .chrome-glyph's 0.85 inherits,
+			     and the stops' alpha is the artwork's, not the hover state's.
+			     ⏳ Lumine's silhouette is Nate's next; until it lands both variants
+			     draw Aether. It will follow siteSettings.travelerVariant. -->
+			<button
+				class="chrome-btn chrome-btn--roster"
+				aria-label="Roster"
+				title="Roster"
+				onclick={roster.open}
+			>
+				<svg
+					class="chrome-glyph is-roster"
+					viewBox="0 0 47 64"
+					fill-rule="evenodd"
+					aria-hidden="true"
 				>
+					<defs>
+						<linearGradient
+							id="{uid}-ros-hair"
+							x1="0"
+							y1="0"
+							x2="1"
+							y2="0"
+							gradientUnits="userSpaceOnUse"
+							gradientTransform="matrix(0,37.107393,-35.53525,0,22.434811,19.238114)"
+							><stop offset="0" stop-color="#000" stop-opacity="0" /><stop
+								offset="0.64"
+								stop-color="#000"
+								stop-opacity="0.66"
+							/><stop offset="1" stop-color="#000" stop-opacity="0.31" /></linearGradient
+						>
+						<linearGradient
+							id="{uid}-ros-lapel"
+							x1="0"
+							y1="0"
+							x2="1"
+							y2="0"
+							gradientUnits="userSpaceOnUse"
+							gradientTransform="matrix(-12.83231,9.846156,-11.460507,-14.936263,24.886146,51.242753)"
+							><stop offset="0" stop-color="#000" stop-opacity="0.66" /><stop
+								offset="1"
+								stop-color="#000"
+								stop-opacity="0.31"
+							/></linearGradient
+						>
+					</defs>
+					<path
+						d="M11.885,8.251C13.57,7.159 15.26,6.123 16.632,5.376C20.46,3.29 30.471,3.967 33.354,7.056C33.853,7.591 33.825,7.99 34.27,8.037C35.812,8.201 41.891,8.239 41.891,8.239C41.891,8.239 41.005,10.065 37.822,10.336C37.847,12.783 39.849,12.129 41.891,17.408C43.343,21.16 43.582,25.777 43.009,29.022C42.896,29.661 46.17,34.384 46.17,34.384C46.17,34.384 44.357,34.661 41.891,33.627C40.435,33.016 41.242,35.175 40.281,37.465C39.524,39.271 37.675,41.77 37.589,43.045C37.395,45.939 38.582,47.327 40.728,50.704L40.728,59.541C40.367,59.614 38.549,56.346 35.599,54.401C34.531,53.697 30.183,51.203 30.138,51.176C29.714,51.232 29.406,51.469 29.324,51.961C29.324,51.961 29.675,52.01 32.87,56.021C25.478,56.531 16.632,60.632 12.593,63.779C12.593,63.779 13.47,54.713 17.212,52.656C18.466,51.967 16.841,50.528 16.632,48.953C16.493,47.9 12.378,50.204 11.166,49.998C9.625,49.737 5.554,45.023 2.851,39.539C2.851,39.539 5.29,36.419 5.283,36.419C5.276,36.419 0,31.921 0,25.744C0,18.002 3.128,14.835 4.582,13.472C5.326,12.775 7.421,11.24 9.822,9.617C10.11,9.13 7.495,5.807 7.28,4.753C7.161,4.174 11.607,-1.519 19.168,0.39C19.168,0.39 13.506,1.515 11.488,3.862C10.566,4.934 10.263,8.215 11.885,8.251Z"
+					/>
+					<path
+						d="M3.741,34.828L8.462,34.494C4.889,29.878 5.118,26.02 5.336,25.148L5.323,25.135L5.341,25.131C5.361,25.051 5.382,24.999 5.399,24.977C5.537,24.794 5.791,24.728 6.002,24.819C6.402,24.944 8.895,25.742 11.529,25.879C13.29,25.971 14.734,25.823 15.802,25.664C14.418,24.868 12.16,23.231 11.122,20.559C10.951,20.119 10.613,19.261 11.207,19.264C12.816,19.272 14.43,19.184 16.036,19.294C16.188,19.304 16.207,19.606 16.359,19.617L11.677,19.941C12.997,23.874 17.27,25.417 17.424,25.564C17.657,25.787 17.56,26.207 17.211,26.279C12.96,27.165 9.78,26.818 7.027,26.134C9.416,29.372 11.061,30.412 14.433,32.069C14.958,32.327 15.327,32.525 15.603,32.686C15.637,31.771 15.636,31.701 15.515,31.433C15.197,30.726 16.138,30.261 16.529,30.847C16.692,31.092 17.751,32.806 17.913,35.001C17.993,36.088 17.829,36.98 17.632,37.629C18.955,37.096 21.344,35.476 24.149,30.515C24.654,29.523 25.119,28.652 25.457,27.986C25.949,26.935 26.005,26.707 26.428,26.655C26.734,26.617 27.483,26.873 27.082,27.806C27.01,27.975 26.845,28.3 26.618,28.742C26.43,29.126 26.197,29.589 25.922,30.102C24.15,33.606 21.217,39.844 22.907,41.465C23.032,41.431 23.164,41.394 23.302,41.354C23.7,39.967 24.98,38.95 26.495,38.95C26.953,38.95 27.389,39.043 27.785,39.21C29.917,37.685 32.24,35.151 34.158,30.813C34.176,30.772 34.319,30.207 34.806,30.137C35.062,30.1 35.951,30.388 37.591,30.552C38.473,30.64 39.265,30.656 39.88,30.647C37.616,27.963 36.432,23.335 36.315,22.896C36.286,22.787 36.209,22.679 36.229,22.568C36.256,22.419 36.419,22.319 36.446,22.17C36.534,22.292 36.754,22.265 36.842,22.388C36.845,22.393 38.478,27.802 41.068,30.284C41.46,30.659 41.946,30.853 41.774,31.353C41.672,31.649 41.581,31.777 39.943,31.864C37.91,31.971 36.195,31.741 35.329,31.595C34.582,33.374 32.792,37.29 29.041,40.138C29.525,40.716 29.817,41.46 29.817,42.272C29.817,43.969 28.543,45.37 26.901,45.57C26.806,46.663 26.733,47.747 27.326,48.565C28.085,49.612 29.07,50.435 30.138,51.176C29.714,51.232 29.406,51.469 29.324,51.961C25.907,49.672 25.745,49.593 25.678,49.089C25.674,49.061 25.697,47.131 25.719,45.503C24.465,45.203 23.487,44.19 23.236,42.918L23.211,42.924C23.18,42.932 22.501,43.339 21.655,42.281C20.586,40.945 20.865,38.662 21.654,36.247C20.214,37.748 18.566,38.903 16.803,39.121C15.944,39.227 15.905,38.521 16.041,38.233C16.379,37.521 17.014,36.146 16.581,34.106C16.397,34.332 16.055,34.398 15.781,34.192C13.94,32.81 12.296,32.565 9.835,30.629C8.217,29.356 7.013,27.886 6.248,26.832C6.341,28.46 6.957,31.235 9.678,34.582C9.937,34.9 9.695,35.32 9.34,35.319L4.152,35.295C4.021,35.152 3.884,34.996 3.741,34.828ZM29.324,51.961C29.324,51.961 29.346,51.964 29.429,52.031C29.393,52.008 29.359,51.984 29.324,51.961ZM26.495,39.95C25.213,39.95 24.173,40.991 24.173,42.272C24.173,43.554 25.213,44.595 26.495,44.595C27.777,44.595 28.817,43.554 28.817,42.272C28.817,40.991 27.777,39.95 26.495,39.95Z"
+						fill="url(#{uid}-ros-hair)"
+						fill-opacity="1"
+					/>
+					<path
+						d="M17.682,51.897C18.328,52.333 18.946,52.84 19.544,53.395C22.315,51.701 24.405,51.014 24.406,51.015C24.578,51.056 24.714,51.201 24.886,51.243C24.771,51.377 24.775,51.588 24.659,51.722C24.51,51.895 24.392,51.684 22.1,52.991C16.028,56.454 13.167,60.93 13.104,60.951C13.081,60.96 13.057,60.967 13.033,60.973C13.22,60.043 13.477,58.972 13.821,57.906C15.447,56.263 17.134,54.96 18.669,53.95C18.166,53.496 17.648,53.078 17.108,52.715C17.143,52.695 17.177,52.675 17.212,52.656C17.57,52.46 17.693,52.202 17.682,51.897Z"
+						fill="url(#{uid}-ros-lapel)"
+						fill-opacity="1"
+					/>
+				</svg>
 			</button>
 		{/if}
 		<button
