@@ -585,6 +585,18 @@
 		--chrome-glyph-size: 33px;
 	}
 
+	/* 🎛️ THE ROSTER MARK IS SIZED BY VISUAL WEIGHT, ⚓ Nate 2026-10-11 — the
+	   compass's method, and the compass's answer. Measured as luminous ink per
+	   height² (rasterised at 400px, the shading counted against it): About and
+	   Help 0.71, the cog 0.56, the compass 0.431 and Aether 0.433 — so this mark
+	   is as sparse as the compass, and lands where it did. Ink parity with the
+	   cog is 34.2px; with the discs 38.6, past the 34px button that is the
+	   ceiling. 33 sits just under cog parity, where Nate put the compass, and
+	   makes the two portrait marks one size. At 47:64 it is 24.2px wide. */
+	.chrome-btn--roster {
+		--chrome-glyph-size: 33px;
+	}
+
 	/* 🎛️ OPTICAL LIFT, ⚓ NATE 2026-09-04 — 1px, by eye, and it is the same
 	   correction the brand mark carries as --brand-lift. The compass's visual
 	   centre is not its geometric one: the hanging loop puts ink at the top
