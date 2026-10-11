@@ -21,6 +21,10 @@
 	 * under a filter. "Not owned" keeps the constellations stored (the stores
 	 * keep them apart), so an accidental flip comes back intact.
 	 *
+	 * ON A PHONE (⚓ Nate, before the merge): the sidebar becomes a sheet behind
+	 * a Filters button, the bulk actions fold into ⋯, and touch gets an
+	 * always-visible wishlist star and taller astroid tap areas — see the CSS.
+	 *
 	 * Filters mirror the Builder's vocabulary in a right sidebar. Blank is left
 	 * out: it is the Planner's generic stand-in, no one's to own. Default
 	 * loadout, the 70+ flag and bulk wishlisting are deferred or declined.
@@ -144,6 +148,13 @@
 	function clickPip(id: string, n: number): void {
 		setCon(id, marks[id] === 'owned' && (cons[id] ?? 0) === n ? n - 1 : n);
 	}
+
+	// ── Phone (below toolMin / compact) ─────────────────────────────────────
+	/** Below toolMin the filters are a SHEET over the grid, opened by the
+	 *  Filters button — stacked under it they took half a phone's screen. */
+	let filtersOpen = $state(false);
+	/** Below compact the three bulk actions fold into one ⋯ menu. */
+	let bulkOpen = $state(false);
 
 	// ── Filters ──────────────────────────────────────────────────────────────
 	const filters: GridFilters = $state({
@@ -361,35 +372,81 @@
 	const ASTROID_SIZE = 13;
 </script>
 
-<svelte:window onkeydown={onWindowKey} />
+<svelte:window onkeydown={onWindowKey} onclick={() => (bulkOpen = false)} />
 
 <div class="ros">
 	<div class="ros-main">
 		<div class="ros-bar">
 			<p class="ros-count">{shown.length} of {ALL.length} characters</p>
+			<!-- Below toolMin: the sidebar becomes a sheet behind this button. Its
+			     word goes below compact (the band rule: keep the MARK). -->
+			<button
+				class="btn btn--sm ros-filters-btn"
+				class:is-active={filtered}
+				aria-expanded={filtersOpen}
+				aria-label="Filters"
+				onclick={() => (filtersOpen = true)}
+				><Mark name="filter" size={13} /><span class="ros-filters-word">Filters</span></button
+			>
+			{#if editing && (unownedShown.length || belowC6Shown.length || ownedShown.length)}
+				<!-- Below compact the bulk actions fold into one ⋯. -->
+				<span class="ros-bulk-fold">
+					<button
+						class="btn btn--sm btn--icon"
+						aria-label="Mark all…"
+						aria-expanded={bulkOpen}
+						onclick={(e) => {
+							e.stopPropagation();
+							bulkOpen = !bulkOpen;
+						}}><Mark name="more" size={13} /></button
+					>
+					{#if bulkOpen}
+						<div class="ros-menu ctx-dark" role="menu">
+							{#if unownedShown.length}
+								<button class="ros-menu-item" role="menuitem" onclick={markAllOwned}
+									><Mark name="check" size={12} />
+									{filtered ? 'Mark all shown owned' : 'Mark all owned'}</button
+								>
+							{/if}
+							{#if belowC6Shown.length}
+								<button class="ros-menu-item" role="menuitem" onclick={markAllC6}
+									><Mark name="constellation" size={12} filled />
+									{filtered ? 'Mark all shown C6' : 'Mark all C6'}</button
+								>
+							{/if}
+							{#if ownedShown.length}
+								<button class="ros-menu-item" role="menuitem" onclick={markAllNotOwned}
+									><Mark name="close" size={12} />
+									{filtered ? 'Mark all shown not owned' : 'Mark all not owned'}</button
+								>
+							{/if}
+						</div>
+					{/if}
+				</span>
+			{/if}
 			{#if editing}
 				{#if unownedShown.length}
-					<button class="btn btn--sm" onclick={markAllOwned}
+					<button class="btn btn--sm ros-bulk" onclick={markAllOwned}
 						><Mark name="check" size={12} />
 						{filtered ? 'Mark all shown owned' : 'Mark all owned'}</button
 					>
 				{/if}
 				{#if belowC6Shown.length}
-					<button class="btn btn--sm" onclick={markAllC6}
+					<button class="btn btn--sm ros-bulk" onclick={markAllC6}
 						><Mark name="constellation" size={12} filled />
 						{filtered ? 'Mark all shown C6' : 'Mark all C6'}</button
 					>
 				{/if}
 				{#if ownedShown.length}
-					<button class="btn btn--sm" onclick={markAllNotOwned}
+					<button class="btn btn--sm ros-bulk" onclick={markAllNotOwned}
 						><Mark name="close" size={12} />
 						{filtered ? 'Mark all shown not owned' : 'Mark all not owned'}</button
 					>
 				{/if}
 			{/if}
+			{#if editing && notice}<span class="ros-notice" role="status">{notice}</span>{/if}
 			<span class="ros-end">
 				{#if editing}
-					{#if notice}<span class="ros-notice" role="status">{notice}</span>{/if}
 					<button
 						class="btn btn--sm btn--icon"
 						aria-label="Undo"
@@ -516,7 +573,12 @@
 		</div>
 	</div>
 
-	<div class="ros-side">
+	<div class="ros-side" class:is-open={filtersOpen}>
+		<!-- The sheet's own head, shown only when the sidebar is a sheet. -->
+		<div class="ros-sheet-head">
+			<p class="ros-count">{shown.length} of {ALL.length} characters</p>
+			<button class="btn btn--sm" onclick={() => (filtersOpen = false)}>Done</button>
+		</div>
 		<CharacterFilterRail
 			roster={ALL}
 			{filters}
@@ -574,6 +636,7 @@
 
 <style>
 	.ros {
+		position: relative;
 		flex: 1;
 		min-height: 0;
 		display: grid;
@@ -644,12 +707,18 @@
 		align-items: center;
 		gap: 0.4rem;
 	}
+	/* The notice sits just before the end cluster; on a phone it takes its own
+	   row (below). */
+	.ros-notice + .ros-end {
+		margin-left: 0;
+	}
 	.ros-count {
 		margin: 0;
 		color: var(--muted);
 		font-size: var(--fs-xs);
 	}
 	.ros-notice {
+		margin-left: auto;
 		margin-right: 0.25rem;
 		color: var(--muted);
 		font-size: var(--fs-xs);
@@ -868,24 +937,139 @@
 		color: var(--accent);
 	}
 
+	/* ── Phone controls: hidden on wide ── */
+	.ros-filters-btn,
+	.ros-bulk-fold,
+	.ros-sheet-head {
+		display: none;
+	}
+	.ros-filters-btn {
+		gap: 5px;
+	}
+	.ros-bulk-fold {
+		position: relative;
+	}
+	.ros-menu {
+		position: absolute;
+		z-index: 3;
+		top: calc(100% + 4px);
+		left: 0;
+		display: flex;
+		flex-direction: column;
+		min-width: 14rem;
+		padding: 4px;
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+	}
+	.ros-menu-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 40px;
+		padding: 0 10px;
+		border: none;
+		border-radius: var(--r-xs);
+		background: none;
+		color: var(--text);
+		font: inherit;
+		font-size: var(--fs-sm);
+		text-align: left;
+		cursor: pointer;
+	}
+	.ros-menu-item:hover {
+		background: var(--fill-hover);
+	}
+
 	/* No keyboard to speak of on a touch screen: the legend would be noise.
 	   (A different AXIS from the width table — see responsive survey.) */
 	@media (hover: none) {
 		.ros-keys {
 			display: none;
 		}
+		/* No hover, so the wishlist star would never appear: while editing it
+		   always shows, quietly. */
+		.til-card:not(.is-locked) .til-wish {
+			visibility: visible;
+		}
 	}
-	/* ⏭ The phone form is designed later (⚓ Nate: the wide shape first). Until
-	   then, below toolMin (54rem — $lib/breakpoints.ts) the filters stack
-	   under the grid rather than squeezing it. */
+	/* A thumb is not a cursor: the astroids keep their paint (13px, six to a
+	   tile) and grow their tap area DOWNWARD and UPWARD only — sideways they
+	   touch already. The slider's `pointer: coarse` precedent; undo is the net
+	   for a neighbour hit. */
+	@media (pointer: coarse) {
+		.til-pip {
+			padding-block: 8px;
+			margin-block: -8px;
+		}
+	}
+
+	/* ── Below toolMin (54rem — $lib/breakpoints.ts): the sidebar is a SHEET
+	   over the grid, opened by the Filters button; the grid gets the screen. */
 	@media (max-width: 54rem) {
 		.ros {
 			display: flex;
 			flex-direction: column;
 		}
+		.ros-main {
+			flex: 1;
+		}
+		.ros-filters-btn {
+			display: inline-flex;
+		}
+		.ros-bar .ros-count {
+			display: none;
+		}
 		.ros-side {
-			flex: none;
-			max-height: 40%;
+			display: none;
+		}
+		.ros-side.is-open {
+			position: absolute;
+			inset: 0;
+			z-index: 4;
+			display: flex;
+			padding-bottom: 0.75rem;
+			background: var(--surface);
+		}
+		.ros-sheet-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 6px 8px;
+		}
+	}
+
+	/* ── Below compact (40rem — $lib/breakpoints.ts): one row of controls.
+	   The bulk actions fold into ⋯, the Filters button keeps its mark, the
+	   notice takes its own row, and three tiles fit at 320 (88px: 3 × 88 + gaps
+	   in the 278px a 320 screen leaves; the portrait is 76, the astroids 78). */
+	@media (max-width: 40rem) {
+		.ros-bulk {
+			display: none;
+		}
+		.ros-bulk-fold {
+			display: inline-flex;
+		}
+		.ros-filters-word {
+			display: none;
+		}
+		/* Mark only: the .btn--icon box, so it matches ⋯ and undo beside it. */
+		.ros-filters-btn {
+			padding: 0.25rem;
+			min-width: 1.6rem;
+			justify-content: center;
+		}
+		.ros-notice {
+			order: 99;
+			flex-basis: 100%;
+			margin: 0;
+		}
+		.ros-notice + .ros-end {
+			margin-left: auto;
+		}
+		.til {
+			grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+			gap: 0.75rem 0.25rem;
 		}
 	}
 </style>

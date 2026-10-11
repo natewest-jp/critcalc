@@ -895,5 +895,14 @@ only; Noelle/Thoma absent too).
       write). `roles.ts` moved to `$lib/capabilities/` (two readers now).
     - ⚠ **A details card must read its `id` BEFORE calling `onClose`**: props are live, and
       the host clears the one the card was opened with (the arrival silently got `null`).
-    - ⏭ The phone form is still a holding layout: filters stack under the grid, and the
-      key legend hides without hover.
+    - **The phone form (same day, ⚓ Nate asked before the merge):** below `toolMin`
+      the sidebar is a SHEET over the grid (a Filters button opens it, Done
+      closes it, and the count moves into its head). Below `compact` the bulk
+      actions fold into one ⋯, Filters keeps only its mark, the notice takes its
+      own row, and tiles drop to an 88px minimum, so 320 holds three columns.
+      With `hover: none` the key legend hides and the wishlist star always
+      shows while editing (it was hover-only, so touch could not wishlist).
+      With `pointer: coarse` the astroids' tap area grows vertically only
+      (13×29), and undo is the net.
+      Measured: the grid went 300 → 663px at 390, the controls fit one 30px
+      row, and nothing overflows at 320–390.
