@@ -174,21 +174,30 @@ test.describe('detail card', () => {
 		);
 	});
 
-	test('the constellation stepper persists and survives reload', async ({ page }) => {
+	test('the Roster tab sets a constellation that survives reload', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-main').click();
 		await page.locator('.dc-panel').waitFor();
+		await expect(page.locator('.dc-roster-state'), 'details read the roster').toHaveText(
+			'Not owned'
+		);
 
-		await page.locator('.dc-con-btn', { hasText: 'C4' }).click();
+		// ⚓ Details only READ the roster; their link opens the Library's Roster
+		// tab on this character, unlocked (lineups design §11.6 items 2, 17).
+		await page.getByRole('button', { name: 'Edit in Roster' }).click();
+		const tile = page.locator('.til-card[data-id="fischl"]');
+		await expect(tile, 'the Roster tab arrives on the character').toBeFocused();
+		await tile.getByRole('button', { name: 'C4' }).click();
 		const stored = await page.evaluate(
 			(k) => JSON.parse(localStorage.getItem(k) ?? '{}'),
 			KEYS.constellations
 		);
-		expect(stored.fischl, 'stepper writes the constellations store').toBe(4);
+		expect(stored.fischl, 'the astroid writes the constellations store').toBe(4);
+		await expect(tile, 'a constellation marks the character owned').toHaveClass(/is-owned/);
 
 		await page.keyboard.press('Escape');
-		await expect(page.locator('.dc-panel'), 'Escape closes the card').toHaveCount(0);
+		await expect(page.locator('.lib'), 'Escape closes the Library').toHaveCount(0);
 
 		await page.reload({ waitUntil: 'networkidle' });
 		await openRoster(page);
@@ -419,7 +428,11 @@ test.describe('ownership ledger', () => {
 
 		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
 		await page.locator('.dc-panel').waitFor();
-		await page.locator('.dc-own-btn--wish').click();
+		// The roster is edited in the Library's Roster tab; W wishlists the tile
+		// the details link arrives on.
+		await page.getByRole('button', { name: 'Edit in Roster' }).click();
+		await expect(page.locator('.til-card[data-id="bennett"]')).toBeFocused();
+		await page.keyboard.press('w');
 		expect(
 			await page.evaluate(
 				(k) => JSON.parse(localStorage.getItem(k) ?? '{}').bennett,

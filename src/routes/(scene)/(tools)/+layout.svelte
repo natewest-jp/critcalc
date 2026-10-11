@@ -20,6 +20,7 @@
 	import BenchBand from '$lib/components/BenchBand.svelte';
 	import LibraryOverlay from '$lib/components/LibraryOverlay.svelte';
 	import { library } from '$lib/library.svelte';
+	import { registerRosterOpener } from '$lib/components/chromeModal.svelte';
 	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
@@ -805,6 +806,10 @@
 		};
 		requestAnimationFrame(tick);
 	});
+
+	// The chrome's Roster button opens the Library, which lives here — so it
+	// exists exactly while a tool is mounted (chromeModal.svelte.ts).
+	onMount(() => registerRosterOpener(() => library.openRoster()));
 
 	// ⚓ Back closes the library (Nate 2026-10-08): opening it pushed a shallow
 	// history entry, so when that entry's state goes away, so does the overlay.

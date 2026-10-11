@@ -39,6 +39,9 @@ import { encodeBoard } from './utils/boardUrl';
 import { teamNotation, type LibraryTeam } from './library';
 
 export type LibraryFrom = 'planner' | 'builder';
+/** ⚓ The Library's two tabs (lineups design §11.6 items 1, 7, 17): the saved
+ *  teams and boards, and the ROSTER — the one place the roster is edited. */
+export type LibraryTab = 'teams' | 'roster';
 
 /** Where a pick lands when the library was opened from the Builder. */
 export type LibraryTarget = {
@@ -51,6 +54,14 @@ export type LibraryTarget = {
 class LibraryState {
 	open = $state(false);
 	from = $state<LibraryFrom>('planner');
+	tab = $state<LibraryTab>('teams');
+	/** The character the Roster tab should scroll to and flash when it opens
+	 *  (a details card's "Edit in Roster"). Read once by the tab, then cleared. */
+	rosterFocus = $state<string | null>(null);
+	/** Opened from a page that is neither tool (the Visualizers, via the
+	 *  chrome's Roster button): a Teams pick acts as the Planner's and then
+	 *  goes there, since nothing on this page would show it. */
+	#away = false;
 	/** The overlay's own outcome line (band A's notice is behind it). */
 	toast = $state<string | null>(null);
 	#toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -69,10 +80,29 @@ class LibraryState {
 		};
 	}
 
-	show(from: LibraryFrom) {
+	show(from: LibraryFrom, tab: LibraryTab = 'teams') {
 		this.from = from;
+		this.tab = tab;
+		this.#away = false;
+		if (this.open) return;
 		this.open = true;
 		pushState('', { ...page.state, library: true });
+	}
+
+	/** The chrome's Roster button and a details card's link: the Library on its
+	 *  Roster tab, from whichever page we are on, optionally arriving on one
+	 *  character. Already open, it just switches tab. */
+	openRoster(focusId: string | null = null) {
+		const path = page.url.pathname;
+		const builder = path.startsWith(resolve('/team-builder'));
+		this.show(builder ? 'builder' : 'planner', 'roster');
+		this.#away = !builder && !path.startsWith(resolve('/rotation-planner'));
+		this.rosterFocus = focusId;
+	}
+
+	/** A Planner pick made from neither tool: carry it out, then go there. */
+	#followToPlanner() {
+		if (this.#away) void goto(resolve('/rotation-planner'));
 	}
 
 	/** Close. `navigating`: the caller is about to `goto` elsewhere, so the
@@ -103,8 +133,9 @@ class LibraryState {
 			this.close();
 			return;
 		}
-		this.close();
+		this.close(this.#away);
 		documentBar.loadNewTab(e);
+		this.#followToPlanner();
 	}
 
 	openTeam(t: LibraryTeam) {
@@ -113,13 +144,14 @@ class LibraryState {
 			this.close();
 			return;
 		}
-		this.close();
+		this.close(this.#away);
 		// ⚓ A nicknamed team names its tab, so saving it later names the
 		// rotation for free (Nate 2026-10-09).
 		documentBar.receive(
 			rt.teamDocument(t.slots, t.nickname ?? `Tab ${rt.tabs.length + 1}`),
 			'Team opened'
 		);
+		this.#followToPlanner();
 	}
 
 	openBoard(b: SavedBoard) {
@@ -130,7 +162,7 @@ class LibraryState {
 	}
 
 	reopenRotation(tab: RotationTab) {
-		const elsewhere = this.from !== 'planner';
+		const elsewhere = this.from !== 'planner' || this.#away;
 		this.close(elsewhere);
 		documentBar.reopen(tab);
 		if (elsewhere) void goto(resolve('/rotation-planner'));

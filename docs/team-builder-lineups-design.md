@@ -875,3 +875,34 @@ only; Noelle/Thoma absent too).
       fingerprint glyphs 20, chip type one rung up.
     - The heading is **14px** (back on the ladder); at 580 the longest few names wrap.
       More room between teams (1.75rem) and inside them.
+17. **Step 2 built (2026-10-11, `tb/roster-tab`):** the demo, on the real stores.
+    - **Where it lives:** `RosterTab.svelte` is the Library's second tab. The header shows
+      the tabs and, on Roster, the totals; the totals share the Show filter through
+      `rosterView.svelte.ts`.
+    - **Opening it:** `library.openRoster(id?)` opens the tab, optionally arriving on one
+      character, from any tool. From the Visualizers, a Teams pick goes on to the Planner
+      (`#away`).
+    - **The chrome's Roster button** sits beside the cog. It exists only while a tool is
+      mounted (`registerRosterOpener`, since the Library is the tools layout's overlay).
+      Below `roomy` it folds into the compass. ⏳ Placeholder disc glyph until Nate's
+      Aether/Lumine silhouettes land (they will follow `travelerVariant`).
+    - **Details are READ-ONLY** in both tools: "Owned · C2" plus an **Edit in Roster** link
+      that arrives on that character, unlocked. The Builder keeps "Default build" (prop
+      `defaultBuild`, was `conEditable`) until step 3.
+    - **The Builder's empty-roster hint** sits under the filter strip and links to the
+      Roster.
+    - `ownership` and `constellations` gain `replaceAll` (undo, and bulk actions in one
+      write). `roles.ts` moved to `$lib/capabilities/` (two readers now).
+    - ⚠ **A details card must read its `id` BEFORE calling `onClose`**: props are live, and
+      the host clears the one the card was opened with (the arrival silently got `null`).
+    - **The phone form (same day, ⚓ Nate asked before the merge):** below `toolMin`
+      the sidebar is a SHEET over the grid (a Filters button opens it, Done
+      closes it, and the count moves into its head). Below `compact` the bulk
+      actions fold into one ⋯, Filters keeps only its mark, the notice takes its
+      own row, and tiles drop to an 88px minimum, so 320 holds three columns.
+      With `hover: none` the key legend hides and the wishlist star always
+      shows while editing (it was hover-only, so touch could not wishlist).
+      With `pointer: coarse` the astroids' tap area grows vertically only
+      (13×29), and undo is the net.
+      Measured: the grid went 300 → 663px at 390, the controls fit one 30px
+      row, and nothing overflows at 320–390.

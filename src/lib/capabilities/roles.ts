@@ -1,5 +1,6 @@
 /**
- * team-builder/lib/roles.ts
+ * src/lib/capabilities/roles.ts (moved from team-builder/lib 2026-10-11, when
+ * the Library's Roster tab became its second reader)
  *
  * Editorial Imaginarium Theater role model for the Team Builder Atlas. Roles
  * (Position + Function) are the coarse, cited, icon'd layer that sits ON TOP of

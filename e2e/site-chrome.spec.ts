@@ -47,7 +47,10 @@ test.describe('one chrome, every surface', () => {
 		// and display:none above 47.5rem, so a plain count reads 4 at the 1600px
 		// test viewport and says nothing about what a reader can press.
 		expect(landingBtns, 'three meta glyphs on the landing').toBe(3);
-		expect(toolBtns, 'the same three inside a tool').toBe(3);
+		// ↻ 2026-10-11: plus ROSTER inside a tool — it opens the Library, which is
+		// the tools layout's overlay, so it exists exactly where that can open.
+		expect(toolBtns, 'the same three plus Roster inside a tool').toBe(4);
+		await expect(metaBtn(page, 'Roster'), 'Roster sits in the tool chrome').toBeVisible();
 		await expect(
 			page.locator('.chrome-btn--nav'),
 			'the compass is the narrow form and stays hidden at desk width'

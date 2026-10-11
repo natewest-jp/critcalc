@@ -70,3 +70,35 @@ export function closeChromeModal(): void {
 export function setChapter(chapter: string): void {
 	if (state?.kind === 'area') state = { ...state, chapter };
 }
+
+/**
+ * THE ROSTER BUTTON's opener (lineups design §11.6 item 1). The roster belongs
+ * to the account, not to the document band A edits, so its button lives in the
+ * site chrome beside the cog — but it opens the Library on its Roster tab, and
+ * the Library is the tools layout's overlay. So the tools layout REGISTERS the
+ * opener while it is mounted, and the chrome (and the compass, which takes the
+ * button below `roomy`) shows the button exactly when there is one: on every
+ * tool, and nowhere the Library cannot open. Module state, for the same reason
+ * as the modal state above — the button and the overlay live in different
+ * subtrees.
+ */
+let rosterOpener = $state<(() => void) | null>(null);
+
+export const roster = {
+	get available() {
+		return rosterOpener !== null;
+	},
+	open() {
+		closeChromeModal();
+		rosterOpener?.();
+	}
+};
+
+/** The tools layout's registration; the cleanup clears it only if it is still
+ *  ours (two layouts are briefly alive during a page transition). */
+export function registerRosterOpener(open: () => void): () => void {
+	rosterOpener = open;
+	return () => {
+		if (rosterOpener === open) rosterOpener = null;
+	};
+}

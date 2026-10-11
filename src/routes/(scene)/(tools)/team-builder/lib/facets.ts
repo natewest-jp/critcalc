@@ -18,7 +18,7 @@ import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 import { buffFamilyOf, capMatchesFacet } from '$lib/capabilities/deriveCapabilities';
 import { isCapabilityUnknown, matchesFacets } from '$lib/capabilities/facets';
 import { matchesIdentity, type IdentityFilters } from '$lib/characterFilters';
-import { matchesRoleFilter, roleFilterActive, type RoleFilter } from './roles';
+import { matchesRoleFilter, roleFilterActive, type RoleFilter } from '$lib/capabilities/roles';
 
 export { buffFamilyOf, capMatchesFacet };
 export type { BuffFamily, FacetKey } from '$lib/capabilities/deriveCapabilities';

@@ -237,6 +237,12 @@ function createConstellationStore() {
 				return next;
 			});
 		},
+		/** Replace the whole map in ONE write — the Roster tab's bulk actions and
+		 *  its undo, which would otherwise persist once per character. */
+		replaceAll(next: Record<string, number>) {
+			store.set({ ...next });
+			if (browser) localStorage.setItem(CONSTELLATION_KEY, JSON.stringify(next));
+		},
 		clear() {
 			store.set({});
 			if (browser) localStorage.removeItem(CONSTELLATION_KEY);
@@ -312,6 +318,10 @@ function createOwnershipStore() {
 				else next[characterId] = mark;
 				return persist(next);
 			});
+		},
+		/** Replace the whole map in ONE write (see constellations.replaceAll). */
+		replaceAll(next: Record<string, OwnershipMark>) {
+			store.set(persist({ ...next }));
 		},
 		clear() {
 			store.set({});

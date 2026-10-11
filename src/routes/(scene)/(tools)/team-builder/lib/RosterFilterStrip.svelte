@@ -13,7 +13,7 @@
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { positionIcon, functionIcon } from '$lib/utils/roleIcons';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
-	import { ROLE_CATEGORIES, type RoleCategory } from './roles';
+	import { ROLE_CATEGORIES, type RoleCategory } from '$lib/capabilities/roles';
 
 	let {
 		filters,

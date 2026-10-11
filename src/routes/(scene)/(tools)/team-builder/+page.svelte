@@ -59,7 +59,7 @@
 	import RosterFilterStrip from './lib/RosterFilterStrip.svelte';
 	import MoreFilters from './lib/MoreFilters.svelte';
 	import { buildRoleSections, categoryOf } from './lib/atlas';
-	import type { RoleCategory, RoleFilter } from './lib/roles';
+	import type { RoleCategory, RoleFilter } from '$lib/capabilities/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
 	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
@@ -1339,6 +1339,15 @@
 				anyActive={anyFilterActive}
 				onClear={clearAllFilters}
 			/>
+			<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
+			     filter and the "My constellations" lens read the roster, and do
+			     nothing until it has something in it. -->
+			{#if mounted && !ownsAny}
+				<p class="tb-roster-hint">
+					The Owned filter and “My constellations” read your roster, which is empty.
+					<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
+				</p>
+			{/if}
 		{/if}
 		<div class="tb-sourcebox tb-sourcebox--fill">
 			<section class="tb-source scroll-fade tb-source--fill" use:scrollFade>
@@ -2064,5 +2073,18 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
+	}
+	.tb-roster-hint {
+		flex: none;
+		margin: 0;
+		color: var(--muted);
+		font-size: var(--fs-sm);
+	}
+	.tb-roster-hint .link {
+		padding: 0;
+		border: none;
+		background: none;
+		font: inherit;
+		cursor: pointer;
 	}
 </style>

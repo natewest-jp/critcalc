@@ -210,6 +210,16 @@ const MARKS = {
 	 *  (⚓ Nate 2026-10-06). The same picture as `gated` on purpose — the two
 	 *  never share a screen, and the call site should say which it means. */
 	mainStat: 'Astroid',
+	/** A constellation on the Library's Roster tab (⚓ Nate 2026-10-11): six
+	 *  of them under a portrait, FILLED up to the character's level. The same
+	 *  picture as `gated` — the game's constellation node — named for what the
+	 *  call site means. */
+	constellation: 'Astroid',
+	/** The Roster tab's edit lock (⚓ Nate 2026-10-11): a roster you can fumble
+	 *  with a stray click is locked until you open it for editing. A real lock
+	 *  this time — unlike `gated`, the user holds the key. */
+	locked: 'Lock',
+	unlocked: 'LockOpen',
 	star: 'Star',
 	/** A character whose frame timing isn't curated yet (⚓ NATE: CircleSlash2,
 	 *  which matches the ∅ it replaces). */

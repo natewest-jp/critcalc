@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { TOOLS } from '$lib/tools';
-	import { openArea, openSettings, closeChromeModal } from './chromeModal.svelte';
+	import { openArea, openSettings, closeChromeModal, roster } from './chromeModal.svelte';
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 
 	// What the compass opens: every destination on the site, in one panel.
@@ -64,6 +64,11 @@
 		<button class="np-row" onclick={() => openArea('help', helpChapter)}>
 			<span class="np-name">Help</span>
 		</button>
+		{#if roster.available}
+			<button class="np-row" onclick={roster.open}>
+				<span class="np-name">Roster</span>
+			</button>
+		{/if}
 		<button class="np-row" onclick={openSettings}>
 			<span class="np-name">Settings</span>
 		</button>

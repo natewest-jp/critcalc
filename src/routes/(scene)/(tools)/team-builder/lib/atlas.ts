@@ -19,7 +19,12 @@ import type {
 } from '$lib/types/character';
 import { providesFacet } from '$lib/capabilities/deriveCapabilities';
 import { FACETS, type FacetKey } from './facets';
-import { FUNCTION_FACETS, inCategory, ROLE_CATEGORIES, type RoleCategory } from './roles';
+import {
+	FUNCTION_FACETS,
+	inCategory,
+	ROLE_CATEGORIES,
+	type RoleCategory
+} from '$lib/capabilities/roles';
 
 type RolesOf = (id: string) => CharacterRoles | undefined;
 
