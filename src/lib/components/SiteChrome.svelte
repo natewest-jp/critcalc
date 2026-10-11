@@ -592,9 +592,19 @@
 	   is as sparse as the compass, and lands where it did. Ink parity with the
 	   cog is 34.2px; with the discs 38.6, past the 34px button that is the
 	   ceiling. 33 sits just under cog parity, where Nate put the compass, and
-	   makes the two portrait marks one size. At 47:64 it is 24.2px wide. */
+	   makes the two portrait marks one size.
+	   ↻ ⚓ NATE 2026-10-11, by eye: 34 — the button's ceiling (25px wide at
+	   47:64), so the mark cannot grow again without the box growing with it. */
 	.chrome-btn--roster {
-		--chrome-glyph-size: 33px;
+		--chrome-glyph-size: 34px;
+	}
+	/* 🎛️ OPTICAL NUDGE, ⚓ Nate 2026-10-11 — 1px right, by eye. The profile
+	   faces left, so its ink sits left of its box's centre. `position:
+	   relative`, not a transform or a margin, for the compass lift's reasons
+	   below: paint moves by a whole pixel and nothing becomes transform-placed. */
+	.chrome-btn--roster .chrome-glyph {
+		position: relative;
+		left: 1px;
 	}
 
 	/* 🎛️ OPTICAL LIFT, ⚓ NATE 2026-09-04 — 1px, by eye, and it is the same
