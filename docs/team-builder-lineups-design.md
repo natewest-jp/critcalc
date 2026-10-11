@@ -957,3 +957,11 @@ only; Noelle/Thoma absent too).
     - **Default build STAYS** in the Builder's details for now (Nate). Step 2
       deferred loadout editing from the Roster tab, so this is its only editor;
       it leaves when the Roster tab gains it.
+    - ⏭ **Open at merge (2026-10-11):** Columbina's nine glyphs don't fit a card
+      narrower than ~156px (the 108px tile minimum, below a 1500px viewport),
+      so her grid ROW grows taller. ⚓ Deferred by Nate until all fifteen
+      glyphs are drawn — their size and gap get retuned then anyway (options:
+      accept · shrink a long fingerprint's glyphs · raise the tile minimum).
+      The team hues are placeholders to tune live. The card's strings are
+      working copy for step 6 (strip, full-team strip, move notice, No repeats
+      tooltip, card and magnifier labels, glyph and chip tooltips).
