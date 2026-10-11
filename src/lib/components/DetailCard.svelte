@@ -266,8 +266,8 @@
 			</p>
 			{#if !defaultBuild}
 				<p class="note dc-note">
-					To set the constellations for this rotation only, use the selectors on the Planner’s
-					slots.
+					To set this character’s constellation for this rotation only, use the selector on the
+					Planner rather than the Roster.
 				</p>
 			{/if}
 			<!-- The roster's LOADOUT (Layer 1), beside its constellation (lineups
