@@ -55,10 +55,17 @@ const GLYPHS = {
 //    it can). Taste, not derivation.
 const DENSITY_K = 0.5;
 // 🎛️ Per-glyph by-eye corrections, applied after the balance: `scale`
-//    multiplies the glyph's size (1 = as balanced; >1 may clip at the box),
+//    multiplies the glyph's size (1 = as balanced; past the box it spills
+//    into the gap — FingerprintGlyph draws with overflow visible),
 //    `dx`/`dy` move it, in fractions of the box (+ = right / down).
 /** @type {Record<string, { scale?: number; dx?: number; dy?: number }>} */
-const NUDGE = {};
+const NUDGE = {
+	// tune(nate) 2026-10-12, by eye on the balanced set
+	energy: { scale: 1.05 },
+	resShred: { scale: 1.06 },
+	grouping: { scale: 1.2 },
+	interruptionRes: { scale: 1.04 }
+};
 
 /** The path's outline as polygons: absolute M/L/C/Z only (Affinity's
  *  export), each cubic flattened to 24 segments. */

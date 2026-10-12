@@ -31,7 +31,10 @@
 		width: 100%;
 		height: 100%;
 	}
+	/* overflow visible: a glyph NUDGEd past its box (Grouping at 120%) spills
+	   into the gap rather than losing its tips to the svg's default clip. */
 	svg.fg {
+		overflow: visible;
 		fill: currentColor;
 		fill-rule: evenodd;
 	}
