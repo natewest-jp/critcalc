@@ -5,8 +5,7 @@
 	 *  each line as its glyph lands in `fingerprintGlyphs.generated.ts`. */
 	const STAND_IN: Partial<Record<FacetKey, string>> = {
 		resShred: 'SH',
-		grouping: 'GR',
-		offFieldDamage: 'OF'
+		grouping: 'GR'
 	};
 </script>
 

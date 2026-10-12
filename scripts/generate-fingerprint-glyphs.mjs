@@ -38,7 +38,8 @@ const GLYPHS = {
 	energy: 'Icon_Attribute_Energy_Recharge',
 	interruptionRes: 'Icon_Attribute_Interruption_Res',
 	infuse: 'Icon_Attribute_Infusion',
-	cleanse: 'Icon_Attribute_Cleanse'
+	cleanse: 'Icon_Attribute_Cleanse',
+	offFieldDamage: 'Icon_Attribute_Off-field_DMG'
 };
 
 const glyphs = {};
