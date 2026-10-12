@@ -15,7 +15,16 @@
 	import { onMount } from 'svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { portal } from '$lib/actions/portal';
-	import { BOSSES, bossImage, bossRuns, inLang, type Battlefield, type Season } from '$lib/endgame';
+	import {
+		BOSSES,
+		bossImage,
+		bossRuns,
+		inLang,
+		loadBossText,
+		type Battlefield,
+		type BossText,
+		type Season
+	} from '$lib/endgame';
 	import type { CheckVerdict } from '$lib/endgameChecks';
 	import CheckChip from './CheckChip.svelte';
 
@@ -35,6 +44,19 @@
 	} = $props();
 
 	const boss = $derived(BOSSES[battlefield.boss]);
+	/** The mechanics and the lore load with the modal (their own chunk); the
+	 *  header — name, art, HP, checks — needs none of it and paints at once. */
+	let text = $state<BossText | null>(null);
+	$effect(() => {
+		const slug = battlefield.boss;
+		let live = true;
+		loadBossText().then((all) => {
+			if (live) text = all[slug] ?? null;
+		});
+		return () => {
+			live = false;
+		};
+	});
 	const otherRuns = $derived(
 		bossRuns(battlefield.boss).filter((s) => s.version !== season.version)
 	);
@@ -99,7 +121,7 @@
 	     seasons beside them — what a player reads vs what they glance at. -->
 	<div class="bd-body">
 		<div class="bd-mechs">
-			{#each boss.mechanics as m, i (i)}
+			{#each text?.mechanics ?? [] as m, i (i)}
 				<section class="bd-mech">
 					<h3>{inLang(m.name)}</h3>
 					{#each inLang(m.text).split('\n') as para, j (j)}
@@ -113,7 +135,7 @@
 		</div>
 
 		<aside class="bd-aside">
-			{#each inLang(boss.description).split('\n') as para, j (j)}
+			{#each text ? inLang(text.description).split('\n') : [] as para, j (j)}
 				<p class="bd-lore">{para}</p>
 			{/each}
 			{#if otherRuns.length}
