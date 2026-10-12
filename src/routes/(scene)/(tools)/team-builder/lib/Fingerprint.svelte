@@ -153,15 +153,20 @@
 	.fp-slot.fp-lit {
 		color: var(--text);
 	}
-	/* 🎛️ THE PREVIEW (placeholder paint, for Nate's eye): what the pick would
-	   light wears the accent, what it would put out wears --ui-danger —
-	   both faint-or-lit as they would END, so the row still reads as the team
-	   it would become. */
+	/* THE PREVIEW (⚓ Nate 2026-10-12): each changed slot keeps the BRIGHTNESS
+	   it would end at, and the hue says it moved. A gain is --ui-positive
+	   straight, as bright as a lit glyph ("this will be lit"); a loss is the
+	   red pulled toward the faint paint ("this will go dim").
+	   🎛️ --fp-loss-mix is how much red survives the dimming. ⚠ One mix of two
+	   literals — a color-mix fed by a color-mix crashes WebKit. */
+	.fp {
+		--fp-loss-mix: 55%;
+	}
 	.fp-slot.fp-gain {
-		color: var(--accent);
+		color: var(--ui-positive);
 	}
 	.fp-slot.fp-loss {
-		color: var(--ui-danger);
+		color: color-mix(in srgb, var(--ui-danger) var(--fp-loss-mix), var(--line-strong));
 	}
 	.fp-glyph {
 		width: 16px;
@@ -212,7 +217,7 @@
 		background: currentColor;
 	}
 	.fp-dot--new {
-		background: var(--accent);
+		background: var(--ui-positive);
 	}
 
 	/* Below `compact` (40rem — $lib/breakpoints.ts) the row is a phone's

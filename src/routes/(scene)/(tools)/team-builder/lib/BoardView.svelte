@@ -306,9 +306,72 @@
 					<span class="bv-vrule" aria-hidden="true"></span>
 				{/if}
 				<div class="bv-stack">
-					{#if field?.checks.length}
-						<div class="bv-checks">
-							{#each field.checks as c, i (i)}<CheckChip check={c} verdict={verdicts?.[i]} />{/each}
+					<!-- ⚓ Nate 2026-10-12: the checks and the way to play share the TOP
+					     line — the play cluster aligned right, and when the two can't
+					     share one line the pin breaks to BELOW "Open in Planner"
+					     (wrap-reverse), before the checks ever wrap — so the lineup
+					     and the fingerprint keep the height under it. -->
+					{#if field?.checks.length || filled}
+						<div class="bv-top">
+							{#if field?.checks.length}
+								<div class="bv-checks">
+									{#each field.checks as c, i (i)}<CheckChip
+											check={c}
+											verdict={verdicts?.[i]}
+										/>{/each}
+								</div>
+							{/if}
+							{#if filled}
+								<!-- The team's rotation, and the way to play it: the line exists
+						     exactly when the team does, and the rotation is the button's
+						     subject (§11.6 item 13). -->
+								<div class="bv-play">
+									<!-- ⚓ A team's rotations are DERIVED from the library by its set;
+						     a pin names the one you would play here (§10.2). -->
+									{#if rotations.length === 0}
+										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
+										>
+									{:else}
+										<BandMenu
+											mark="pin"
+											size="sm"
+											align="end"
+											label={pin?.name ??
+												(rotations.length === 1
+													? '1 rotation, none pinned'
+													: `${rotations.length} rotations, none pinned`)}
+											ariaLabel="Pinned rotation for team {t + 1}"
+										>
+											{#snippet items(close)}
+												{#each [null, ...rotations] as r (r?.id ?? '')}
+													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+													<button
+														class="band-menu-item"
+														role="menuitemradio"
+														aria-checked={current}
+														onclick={() => {
+															close();
+															onPin(team.id, r?.id ?? null);
+														}}
+													>
+														<span class="bv-menu-check"
+															>{#if current}<Mark name="check" size={12} />{/if}</span
+														>
+														{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span
+															>{/if}
+													</button>
+												{/each}
+											{/snippet}
+										</BandMenu>
+									{/if}
+									<button
+										class="btn btn--sm"
+										onclick={() => onOpenInPlanner(team)}
+										title="Open this team in the Rotation Planner"
+										><Mark name="forward" size={12} /> Open in Planner</button
+									>
+								</div>
+							{/if}
 						</div>
 					{/if}
 					<div class="bv-lineup-row">
@@ -352,67 +415,23 @@
 						{#if filled}
 							<div class="bv-side">
 								<CompositionChips ids={team.slots} reactions={false} />
-								<!-- The team's rotation, and the way to play it: the line exists
-								     exactly when the team does, and the rotation is the button's
-								     subject (§11.6 item 13). -->
-								<div class="bv-play">
-									<!-- ⚓ A team's rotations are DERIVED from the library by its set;
-								     a pin names the one you would play here (§10.2). -->
-									{#if rotations.length === 0}
-										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
-										>
-									{:else}
-										<BandMenu
-											mark="pin"
-											size="sm"
-											align="start"
-											label={pin?.name ??
-												(rotations.length === 1
-													? '1 rotation, none pinned'
-													: `${rotations.length} rotations, none pinned`)}
-											ariaLabel="Pinned rotation for team {t + 1}"
-										>
-											{#snippet items(close)}
-												{#each [null, ...rotations] as r (r?.id ?? '')}
-													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
-													<button
-														class="band-menu-item"
-														role="menuitemradio"
-														aria-checked={current}
-														onclick={() => {
-															close();
-															onPin(team.id, r?.id ?? null);
-														}}
-													>
-														<span class="bv-menu-check"
-															>{#if current}<Mark name="check" size={12} />{/if}</span
-														>
-														{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span
-															>{/if}
-													</button>
-												{/each}
-											{/snippet}
-										</BandMenu>
-									{/if}
-									<button
-										class="btn btn--sm"
-										onclick={() => onOpenInPlanner(team)}
-										title="Open this team in the Rotation Planner"
-										><Mark name="forward" size={12} /> Open in Planner</button
-									>
-								</div>
 							</div>
 						{/if}
 					</div>
-					{#if facts.fingerprint || preview}
-						<Fingerprint
-							clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
-							{preview}
-							previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
-							filtered={sel ? filteredFacets : undefined}
-							onFind={onFind && ((facet) => onFind(team.id, facet))}
-						/>
-					{/if}
+					<!-- The fingerprint's line is RESERVED (⚓ Nate 2026-10-12): an empty
+					     team keeps its height, so the board doesn't move when a team
+					     fills, empties or previews. -->
+					<div class="bv-fp">
+						{#if facts.fingerprint || preview}
+							<Fingerprint
+								clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
+								{preview}
+								previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
+								filtered={sel ? filteredFacets : undefined}
+								onFind={onFind && ((facet) => onFind(team.id, facet))}
+							/>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</section>
@@ -572,10 +591,26 @@
 		min-width: 0;
 		flex: 1;
 	}
+	/* The TOP line: the checks at the left, the play cluster at the right.
+	   The cluster's basis is its MIN-CONTENT (one button wide) and it takes
+	   the leftover, so it only lays its two controls side by side when the
+	   line has the room — otherwise it stacks first, and the checks wrap only
+	   once the stack is as narrow as it gets. */
+	.bv-top {
+		display: flex;
+		align-items: flex-start;
+		gap: 6px 1rem;
+	}
 	.bv-checks {
+		flex: 0 1 auto;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 6px;
+	}
+	/* The fingerprint's reserved line: one fingerprint tall (glyph 16 + gap
+	   2 + dots 3), so an empty team holds the board's shape. */
+	.bv-fp {
+		min-height: 21px;
 	}
 	.bv-lineup-row {
 		display: flex;
@@ -720,11 +755,17 @@
 		cursor: pointer;
 		border-radius: var(--r-round);
 	}
+	/* wrap-reverse: when the two can't share a line, the pin (first in the
+	   markup) lands on the LOWER line — under "Open in Planner", both flush
+	   right (⚓ Nate 2026-10-12). */
 	.bv-play {
+		flex: 1 1 min-content;
 		display: flex;
-		flex-wrap: wrap;
+		flex-wrap: wrap-reverse;
+		justify-content: flex-end;
 		align-items: center;
 		gap: 6px 10px;
+		min-width: 0;
 	}
 	.bv-rotations {
 		display: flex;
@@ -745,6 +786,9 @@
 	}
 	.bv--roomy :global(.fp-cluster) {
 		gap: 6px;
+	}
+	.bv--roomy .bv-fp {
+		min-height: 25px;
 	}
 	.bv--roomy :global(.fp-slot) {
 		width: 20px;
@@ -816,14 +860,20 @@
 			width: var(--boss-narrow);
 			height: var(--boss-narrow);
 		}
-		.bv-body > :global(*),
-		.bv-stack > :global(*) {
+		.bv-body > :global(*) {
 			grid-column: 1 / -1;
 		}
 		.bv-body > .bv-boss {
 			grid-column: 1;
 		}
-		.bv-stack > .bv-checks {
+		.bv-top {
+			display: contents;
+		}
+		.bv-stack > :global(*),
+		.bv-top > :global(*) {
+			grid-column: 1 / -1;
+		}
+		.bv-top > .bv-checks {
 			grid-column: 2;
 		}
 		/* Four portraits in 288px of screen (320 less its gutters): 224 of

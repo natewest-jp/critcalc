@@ -989,15 +989,15 @@ only; Noelle/Thoma absent too).
     - **Hovering a card PREVIEWS the selected team's fingerprint** after the
       pick. The pick is the game's toggle, so a member previews their own
       REMOVAL and a full team previews nothing (that pick only nudges). The
-      row is drawn as it would END: a slot the pick lights wears `--accent`, a
-      slot it puts out wears `--ui-danger`, and the candidate's own dot is
-      gold. Losses happen because a member can break a teammate's condition
+      row is drawn as it would END, and each changed slot keeps the
+      BRIGHTNESS it would end at (⚓ Nate 2026-10-12): a gain is `--ui-positive`
+      straight, as bright as a lit glyph, and so is the candidate's own dot. A
+      loss is `--ui-danger` pulled toward the faint paint (🎛️ `--fp-loss-mix`,
+      55%), so it reads as "this will go dim". Losses happen because a member can break a teammate's condition
       (Furina into Chevreuse + Fischl + Xiangling puts out the ATK buff and the
       RES shred). Mouse, pen and keyboard focus only; after a pick the preview
       rests until the pointer leaves the card, or the row would flip at once
-      to previewing the undo. 🎛️ Both preview paints are placeholders for
-      Nate's eye. `--debuff` no longer exists as a role, and no role means
-      "lost".
+      to previewing the undo. ⚠ `--debuff` no longer exists as a role.
     - The filter is team-agnostic: it asks "who provides X at the lens". The
       preview is what answers "in THIS team". ⏭ Open: should a find from a team
       narrow to who would be LIT in that team?
@@ -1006,7 +1006,17 @@ only; Noelle/Thoma absent too).
       now a margin.
     - **Glyph 7 of 15 landed: HP/DEF** (Nate's split, `Icon_Attribute_HPDEF_Buff.svg`:
       the HP drop on the left with its wave as the shade, the DEF shield on the
-      right). It came with a 14-unit viewBox cropped to the art, so the generator
-      now accepts any square viewBox ≤ 24 and CENTRES it in the 24 grid (an
-      `inset`). Measured, the traced six fill a ~13–16-unit box centred in 24,
-      and the split's 14 × 13 lands at the same weight.
+      right). ⚠ Export the whole 24-unit ARTBOARD: the traced set fills a
+      ~15-unit box centred in 24, and that inset is the optical size. The
+      first export was cropped to the art (a 14-unit viewBox) and came out
+      under-sized; the re-export measures 15 × 14 centred, Healing's box.
+    - ⚓ **The team row's stack, re-cut (Nate 2026-10-12).** It had grown to four
+      lines (checks · lineup · pin + Open in Planner · fingerprint). The play
+      cluster now shares the TOP line with the checks, aligned right. When the
+      two can't share a line, the pin breaks to BELOW "Open in Planner"
+      (`wrap-reverse`; the cluster's basis is its min-content, so it stacks
+      before the checks ever wrap). At the docked 580 and 720 it stacks; at
+      1000 (one pane) it sits on one line; on a phone it takes its own
+      right-aligned line under the checks. The fingerprint's line is RESERVED
+      (`.bv-fp`, 21px / 25px roomy), so a team that fills, empties or previews
+      doesn't move the board. The composition chips stay beside the lineup.
