@@ -35,13 +35,21 @@ export function warmAvatars(): void {
 		'requestIdleCallback' in window
 			? requestIdleCallback(fn, { timeout: 400 })
 			: setTimeout(fn, 200);
+	// ⚠ WebKit reports a fetch the NAVIGATION cancels as a page error ("…due
+	// to access control checks"), past any .catch() — a reload mid-warm-up
+	// printed a burst of them (and flaked the e2e reload test, 2 in 15).
+	// Aborting our own fetches as the page hides turns each into an
+	// AbortError, which the .catch() below does swallow.
+	const controller = new AbortController();
+	addEventListener('pagehide', () => controller.abort(), { once: true });
 	const BATCH = 24;
 	const pump = () => {
+		if (controller.signal.aborted) return;
 		for (const src of queue.splice(0, BATCH)) {
 			// fetch(), not new Image(): warming only needs the HTTP cache filled,
 			// and Safari 26.x charges ~2ms of main-thread setup per img-with-src
 			// (the same engine regression the grids' background-image divs dodge).
-			fetch(src).catch(() => {});
+			fetch(src, { signal: controller.signal }).catch(() => {});
 		}
 		if (queue.length) idle(pump);
 	};
