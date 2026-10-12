@@ -39,7 +39,8 @@ const GLYPHS = {
 	interruptionRes: 'Icon_Attribute_Interruption_Res',
 	infuse: 'Icon_Attribute_Infusion',
 	cleanse: 'Icon_Attribute_Cleanse',
-	offFieldDamage: 'Icon_Attribute_Off-field_DMG'
+	offFieldDamage: 'Icon_Attribute_Off-field_DMG',
+	resShred: 'Icon_Attribute_RES_Shred'
 };
 
 const glyphs = {};
