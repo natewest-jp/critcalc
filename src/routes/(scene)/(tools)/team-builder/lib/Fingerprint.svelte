@@ -4,8 +4,9 @@
 	 * Fifteen slots in three clusters — Survival · Support · Damage — the same
 	 * order for every team, so two teams compare as SHAPES.
 	 *
-	 * GLYPHS: Nate's traced icons (`fingerprintGlyphs.generated.ts`, six of
-	 * fifteen on 2026-10-09); a facet without one keeps its circle pip.
+	 * GLYPHS: `FingerprintGlyph`, the one icon set the card and the roster's
+	 * filter draw too (Nate's traces; a facet he has not drawn yet shows its
+	 * two-letter stand-in).
 	 *
 	 * ⚓ TWO STATES, EVERY GLYPH ALWAYS DRAWN (Nate 2026-10-09) — a missing
 	 * capability has to be SEEN missing, so no slot shrinks to a dot:
@@ -17,17 +18,50 @@
 	 * which says which kind of "would" it is. An uncurated member reads as
 	 * faint with no dots — the sentence says the kit is unknown.
 	 * Painted, ⛔ never element opacity (the sub-pixel law).
+	 *
+	 * STEP 4 (§11.2, §11.5): the fingerprint is the filter vocabulary.
+	 *   · A FAINT slot is a button: it finds who would provide it (the page
+	 *     filters the roster to that facet and selects this team).
+	 *   · Hovering a card PREVIEWS the team the pick would make — the row is
+	 *     drawn as it would end, with what it gains and what it loses marked.
 	 */
 	import { FACETS } from '$lib/capabilities/facets';
+	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import type { FingerprintCluster, FingerprintSlot } from '$lib/fingerprint';
-	import { FINGERPRINT_GLYPHS } from '$lib/fingerprintGlyphs.generated';
+	import FingerprintGlyph from '$lib/components/FingerprintGlyph.svelte';
 
-	let { clusters }: { clusters: { cluster: FingerprintCluster; slots: FingerprintSlot[] }[] } =
-		$props();
+	type Clusters = { cluster: FingerprintCluster; slots: FingerprintSlot[] }[];
+
+	let {
+		clusters,
+		preview = null,
+		previewId = null,
+		filtered,
+		onFind
+	}: {
+		clusters: Clusters;
+		/** The team AFTER the hovered card's pick (lineups design §11.2 — "the
+		 *  old fact cell, on demand"): drawn in place of `clusters`, with every
+		 *  slot the pick would light or put out marked. Still presence only. */
+		preview?: Clusters | null;
+		/** Who the preview adds — their dot is the previewed one. */
+		previewId?: string | null;
+		/** The facets the roster is filtered by — their slots say so. */
+		filtered?: ReadonlySet<FacetKey>;
+		/** A FAINT slot was clicked: find who would provide it (§11.2). Absent,
+		 *  no slot is a control. */
+		onFind?: (facet: FacetKey) => void;
+	} = $props();
 
 	const LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
 	const first = (id: string) => (getCharacterIndexEntry(id)?.displayName ?? id).split(' ')[0];
+
+	/** Whether each facet is lit now — what the preview is compared against. */
+	const litNow = $derived(
+		new Map(clusters.flatMap((c) => c.slots.map((s) => [s.facet, s.state === 'lit'] as const)))
+	);
+	const shown = $derived(preview ?? clusters);
 
 	/** Who the dots count: the providers when lit, the would-be providers when
 	 *  faint. */
@@ -36,8 +70,8 @@
 			? s.providers
 			: s.members.filter((m) => m.state === 'locked' || m.state === 'outlined').map((m) => m.id);
 
-	/** ⏭ Working copy for the slot's sentence (copy step 8). */
-	function sentence(s: FingerprintSlot): string {
+	/** ⏭ Working copy for the slot's sentence (copy step 6). */
+	function sentence(s: FingerprintSlot, change: 'gain' | 'loss' | null): string {
 		const label = LABEL[s.facet] ?? s.facet;
 		const who = (state: string) =>
 			s.members.filter((m) => m.state === state).map((m) => first(m.id));
@@ -46,29 +80,51 @@
 		if (who('outlined').length) parts.push(`${who('outlined').join(', ')} — not in this team`);
 		if (who('locked').length) parts.push(`${who('locked').join(', ')} — at a higher constellation`);
 		if (who('unknown').length) parts.push(`${who('unknown').join(', ')} — not yet curated`);
-		return `${label}: ${parts.length ? parts.join('; ') : 'nobody'}`;
+		const line = `${label}: ${parts.length ? parts.join('; ') : 'nobody'}`;
+		if (change === 'gain') return `${line} (with this pick)`;
+		if (change === 'loss') return `${line} (lost with this pick)`;
+		if (onFind && s.state !== 'lit') return `${line}. Find who provides it`;
+		return line;
 	}
 </script>
 
-<div class="fp" role="list" aria-label="The team's capabilities">
-	{#each clusters as c (c.cluster)}
+<div class="fp" class:fp--preview={!!preview} role="list" aria-label="The team's capabilities">
+	{#each shown as c (c.cluster)}
 		<span class="fp-cluster">
 			{#each c.slots as s (s.facet)}
-				{@const glyph = FINGERPRINT_GLYPHS[s.facet]}
 				{@const lit = s.state === 'lit'}
-				<span class="fp-slot" role="listitem" title={sentence(s)} aria-label={sentence(s)}>
-					{#if glyph}
-						<svg class="fp-glyph" class:fp-lit={lit} viewBox="0 0 24 24" aria-hidden="true">
-							{#each glyph.shade ?? [] as d, i (i)}<path class="fp-shade" {d} />{/each}
-							{#each glyph.fill as d, i (i)}<path {d} />{/each}
-						</svg>
-					{:else}
-						<span class="fp-pip" class:fp-lit={lit}></span>
-					{/if}
-					<span class="fp-dots" class:fp-lit={lit}>
-						{#each dotsOf(s) as p (p)}<span class="fp-dot"></span>{/each}
+				{@const was = litNow.get(s.facet) ?? false}
+				{@const change = preview ? (lit && !was ? 'gain' : !lit && was ? 'loss' : null) : null}
+				{@const find = onFind && !lit && !preview}
+				{@const label = sentence(s, change)}
+				<svelte:element
+					this={find ? 'button' : 'span'}
+					class="fp-slot"
+					class:fp-find={find}
+					class:fp-lit={lit}
+					class:fp-gain={change === 'gain'}
+					class:fp-loss={change === 'loss'}
+					class:fp-filtered={filtered?.has(s.facet)}
+					role={find ? undefined : 'listitem'}
+					type={find ? 'button' : undefined}
+					aria-pressed={find ? (filtered?.has(s.facet) ?? false) : undefined}
+					title={label}
+					aria-label={label}
+					onclick={find
+						? (e: MouseEvent) => {
+								e.stopPropagation();
+								onFind?.(s.facet);
+							}
+						: undefined}
+				>
+					<span class="fp-glyph"><FingerprintGlyph facet={s.facet} /></span>
+					<span class="fp-dots">
+						{#each dotsOf(s) as p (p)}<span
+								class="fp-dot"
+								class:fp-dot--new={p === previewId && lit}
+							></span>{/each}
 					</span>
-				</span>
+				</svelte:element>
 			{/each}
 		</span>
 	{/each}
@@ -89,39 +145,64 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 2px;
+		position: relative;
 		width: 16px;
+		/* FAINT is the resting paint; LIT is the ink. */
+		color: var(--line-strong);
 	}
-	/* FAINT is the resting paint; LIT is the ink. A shade half rides at half
-	   whichever it wears. */
+	.fp-slot.fp-lit {
+		color: var(--text);
+	}
+	/* 🎛️ THE PREVIEW (placeholder paint, for Nate's eye): what the pick would
+	   light wears the accent, what it would put out wears --ui-danger —
+	   both faint-or-lit as they would END, so the row still reads as the team
+	   it would become. */
+	.fp-slot.fp-gain {
+		color: var(--accent);
+	}
+	.fp-slot.fp-loss {
+		color: var(--ui-danger);
+	}
 	.fp-glyph {
 		width: 16px;
 		height: 16px;
-		fill-rule: evenodd;
-		fill: var(--line-strong);
 	}
-	.fp-glyph.fp-lit {
-		fill: var(--text);
+	/* A faint slot that FINDS: a bare button, its hover the ink brightening. */
+	button.fp-slot {
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		cursor: pointer;
+		transition: color var(--t-snap);
 	}
-	.fp-shade {
-		fill-opacity: 0.5;
+	button.fp-slot:hover {
+		color: color-mix(in srgb, var(--text) 60%, transparent);
 	}
-	.fp-pip {
-		width: 12px;
-		height: 12px;
-		margin: 2px 0;
-		border-radius: var(--r-round);
-		background: var(--line-strong);
+	button.fp-slot:focus-visible {
+		outline: 1px solid var(--accent);
+		outline-offset: 2px;
+		border-radius: var(--r-sm, 3px);
 	}
-	.fp-pip.fp-lit {
-		background: var(--text);
+	/* The roster is filtered by this slot: a gold rule under its dots. */
+	.fp-filtered::after {
+		content: '';
+		position: absolute;
+		left: 2px;
+		right: 2px;
+		bottom: -3px;
+		height: 1px;
+		background: var(--accent);
 	}
 	.fp-dots {
 		display: flex;
 		gap: 1px;
 		height: 3px;
+		min-width: 8px;
+		justify-content: center;
 		color: var(--line-edge);
 	}
-	.fp-dots.fp-lit {
+	.fp-lit .fp-dots {
 		color: var(--text);
 	}
 	.fp-dot {
@@ -129,6 +210,9 @@
 		height: 3px;
 		border-radius: var(--r-round);
 		background: currentColor;
+	}
+	.fp-dot--new {
+		background: var(--accent);
 	}
 
 	/* Below `compact` (40rem — $lib/breakpoints.ts) the row is a phone's

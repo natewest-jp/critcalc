@@ -52,6 +52,7 @@
 	} from '$lib/endgame';
 	import { evaluateCheck, type CheckVerdict } from '$lib/endgameChecks';
 	import { teamFingerprint } from '$lib/fingerprint';
+	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 	import { teamHue } from './team';
 	import Fingerprint from './Fingerprint.svelte';
 	import CheckChip from './CheckChip.svelte';
@@ -84,7 +85,10 @@
 		onRemoveTeam,
 		onOpenInPlanner,
 		onPin,
-		onSeason
+		onSeason,
+		previewId = null,
+		filteredFacets,
+		onFind
 	}: {
 		board: Board;
 		/** The board's wide form (⚓ Nate 2026-10-10: "too cramped and too
@@ -102,6 +106,14 @@
 		onOpenInPlanner: (team: BoardTeam) => void;
 		onPin: (teamId: string, rotationId: string | null) => void;
 		onSeason: (version: string) => void;
+		/** The card the pointer rests on — the SELECTED team's fingerprint
+		 *  previews the team its pick would make (§11.2). */
+		previewId?: string | null;
+		/** The roster's capability filter — the fingerprint marks its slots. */
+		filteredFacets?: ReadonlySet<FacetKey>;
+		/** A faint fingerprint slot was clicked: find who would provide it, for
+		 *  this team. */
+		onFind?: (teamId: string, facet: FacetKey) => void;
 	} = $props();
 
 	const portrait = $derived(roomy ? BOARD_PORTRAIT_ROOMY : BOARD_PORTRAIT);
@@ -143,6 +155,18 @@
 		const own = teamCon(team, $savedNotations);
 		const conOf = (id: string) => effectiveCon(own, $constellations, id);
 		return { ids, own, conOf, fingerprint: ids.length ? teamFingerprint(ids, conOf) : null };
+	}
+	/** The team a pick of `previewId` would make — the pick is the game's
+	 *  toggle, so a member previews their own removal, and a full team
+	 *  previews nothing (the pick would only nudge). */
+	function previewFor(team: BoardTeam, facts: ReturnType<typeof teamFacts>) {
+		if (!previewId || team.id !== selectedTeamId) return null;
+		const ids = facts.ids.includes(previewId)
+			? facts.ids.filter((id) => id !== previewId)
+			: team.slots.includes(null)
+				? [...facts.ids, previewId]
+				: null;
+		return ids ? teamFingerprint(ids, facts.conOf) : null;
 	}
 	const verdictsFor = (b: Battlefield, ids: string[], conOf: (id: string) => number) =>
 		ids.length
@@ -216,6 +240,7 @@
 		{@const rotations = rotationsForTeam(team, $savedNotations)}
 		{@const pin = pinnedRotation(team, $savedNotations)}
 		{@const sel = team.id === selectedTeamId}
+		{@const preview = previewFor(team, facts)}
 		<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
 		     is glass (the site — a battlefield, an Abyss half); everything under
 		     it stands on the night. A battlefield's header fuses its number with
@@ -379,7 +404,15 @@
 							</div>
 						{/if}
 					</div>
-					{#if facts.fingerprint}<Fingerprint clusters={facts.fingerprint} />{/if}
+					{#if facts.fingerprint || preview}
+						<Fingerprint
+							clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
+							{preview}
+							previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
+							filtered={sel ? filteredFacets : undefined}
+							onFind={onFind && ((facet) => onFind(team.id, facet))}
+						/>
+					{/if}
 				</div>
 			</div>
 		</section>

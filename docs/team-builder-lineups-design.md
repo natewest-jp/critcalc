@@ -965,3 +965,48 @@ only; Noelle/Thoma absent too).
       The team hues are placeholders to tune live. The card's strings are
       working copy for step 6 (strip, full-team strip, move notice, No repeats
       tooltip, card and magnifier labels, glyph and chip tooltips).
+19. **Step 4: the fingerprint as the filter (2026-10-12, `tb/fingerprint-filter`).**
+    Built on the placeholder art while Nate draws the nine glyphs.
+    - **ONE glyph component** (`$lib/components/FingerprintGlyph.svelte`) draws a
+      capability everywhere: the card's column, the team's fingerprint and the
+      filter row. It paints in `currentColor` and fills its box, and the
+      consumer decides size and state. A facet Nate has not drawn shows its
+      two-letter stand-in, so the board's blank circle pips are gone. ⏭ Nate's
+      art lands in all three at once (one line per glyph in
+      `scripts/generate-fingerprint-glyphs.mjs`, then retire its `STAND_IN`
+      line).
+    - **"Can provide" left More** and became a row of fifteen glyph plates in the
+      filter strip, in the fingerprint's clusters and order. Two at once still
+      ask for characters who provide BOTH. At the docked widths the row wraps
+      to its own line under the roles and elements.
+    - **A FAINT glyph on a team is a button**: it selects that team as the
+      destination and narrows the roster to that one capability. The same
+      glyph again clears it. The filtered slot carries a gold rule under its
+      dots. ⚠ This is the one place a click on an UNSELECTED row does more
+      than select it (§11.6 item 8). Filtering is harmless, and "find someone
+      for THIS team" needs that team as the destination. A lit glyph is not a
+      control.
+    - **Hovering a card PREVIEWS the selected team's fingerprint** after the
+      pick. The pick is the game's toggle, so a member previews their own
+      REMOVAL and a full team previews nothing (that pick only nudges). The
+      row is drawn as it would END: a slot the pick lights wears `--accent`, a
+      slot it puts out wears `--ui-danger`, and the candidate's own dot is
+      gold. Losses happen because a member can break a teammate's condition
+      (Furina into Chevreuse + Fischl + Xiangling puts out the ATK buff and the
+      RES shred). Mouse, pen and keyboard focus only; after a pick the preview
+      rests until the pointer leaves the card, or the row would flip at once
+      to previewing the undo. 🎛️ Both preview paints are placeholders for
+      Nate's eye. `--debuff` no longer exists as a role, and no role means
+      "lost".
+    - The filter is team-agnostic: it asks "who provides X at the lens". The
+      preview is what answers "in THIS team". ⏭ Open: should a find from a team
+      narrow to who would be LIT in that team?
+    - Rider: the count's note ran into the count ("16 CHARACTERSat your
+      constellations"). The markup's line break was trimmed, so the space is
+      now a margin.
+    - **Glyph 7 of 15 landed: HP/DEF** (Nate's split, `Icon_Attribute_HPDEF_Buff.svg`:
+      the HP drop on the left with its wave as the shade, the DEF shield on the
+      right). It came with a 14-unit viewBox cropped to the art, so the generator
+      now accepts any square viewBox ≤ 24 and CENTRES it in the 24 grid (an
+      `inset`). Measured, the traced six fill a ~13–16-unit box centred in 24,
+      and the split's 14 × 13 lands at the same weight.

@@ -567,7 +567,6 @@
 			filters.rarities.size +
 			(filters.region ? 1 : 0) +
 			(filters.factionBuffs?.size ?? 0) +
-			activeFacets.size +
 			(foldShow && ownershipView !== 'all' ? 1 : 0)
 	);
 
@@ -941,9 +940,36 @@
 	/** ⚓ The game's toggle: a pick fills the selected team, the same pick again
 	 *  frees its slot. Below the dock, the pick that fills the team shows it. */
 	function toggleTeam(id: string): void {
+		// The pick has been seen: the preview rests until the pointer leaves,
+		// or the row would flip at once to previewing the pick's UNDO.
+		previewHeld = id;
 		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
 		const filled = placeOnBoard(id);
 		if (filled && tabbed) tab = 'lineup';
+	}
+
+	// ── THE FINGERPRINT AS THE FILTER (lineups design §11.2, step 4) ─────────
+	/** The card the pointer (or focus) rests on — the selected team's
+	 *  fingerprint previews the team its pick would make. */
+	let hoverId = $state<string | null>(null);
+	/** A card just picked: no preview until the pointer leaves it. */
+	let previewHeld = $state<string | null>(null);
+	const previewId = $derived(hoverId && hoverId !== previewHeld ? hoverId : null);
+	function onCardPreview(id: string | null): void {
+		if (id === null || id !== hoverId) previewHeld = null;
+		hoverId = id;
+	}
+
+	/** A faint glyph on a team's fingerprint: find who would provide it — the
+	 *  team becomes the destination and the roster narrows to that one
+	 *  capability; the same glyph again lets it go. */
+	function findFor(teamId: string, facet: FacetKey): void {
+		const only = activeFacets.size === 1 && activeFacets.has(facet);
+		activeFacets.clear();
+		if (!only) activeFacets.add(facet);
+		chosenTeamId = teamId;
+		sourceTab = 'roster';
+		if (tabbed && !only) tab = 'characters';
 	}
 
 	/** A card's own fingerprint: the facets the character has or can unlock,
@@ -997,6 +1023,7 @@
 		pickLabel={pickLabel(entry)}
 		onPick={toggleTeam}
 		onDetails={openDetail}
+		onPreview={onCardPreview}
 	/>
 {/snippet}
 
@@ -1251,7 +1278,6 @@
 								<MoreFilters
 									{roster}
 									{filters}
-									{activeFacets}
 									bind:ownershipView
 									showOwnership={foldShow}
 									lens={foldLens ? conModeItems : undefined}
@@ -1330,6 +1356,9 @@
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
 					onSeason={(version) => boards.setSeason(board.id, version)}
+					{previewId}
+					filteredFacets={activeFacets}
+					onFind={findFor}
 				/>
 			</div>
 		</div>
@@ -1358,6 +1387,7 @@
 		{#if sourceTab === 'roster'}
 			<RosterFilterStrip
 				{filters}
+				{activeFacets}
 				activeRole={activeCategory?.key ?? null}
 				onRole={openCategory}
 				count={split.matches.length}

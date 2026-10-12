@@ -37,7 +37,7 @@
 	 * Purely presentational + callback-driven: it never touches a store.
 	 */
 	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import { FINGERPRINT_GLYPHS } from '$lib/fingerprintGlyphs.generated';
+	import FingerprintGlyph from './FingerprintGlyph.svelte';
 	import Mark from './Mark.svelte';
 	import ConMark from './ConMark.svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
@@ -54,7 +54,8 @@
 		nudged = false,
 		pickLabel,
 		onPick,
-		onDetails
+		onDetails,
+		onPreview
 	}: {
 		entry: CharacterIndexEntry;
 		preferNewfit?: boolean;
@@ -70,20 +71,14 @@
 		pickLabel: string;
 		onPick: (id: string) => void;
 		onDetails: (id: string) => void;
+		/** The pointer or keyboard focus has come to rest on the card (`id`)
+		 *  or left it (`null`) — the board previews what a pick would do. A
+		 *  mouse or pen only: a touch has no resting state, and its
+		 *  `pointerleave` is not promised. */
+		onPreview?: (id: string | null) => void;
 	} = $props();
 
-	/** ⏳ Two-letter stand-ins for the facets Nate has not drawn yet. */
-	const STAND_IN: Partial<Record<FacetKey, string>> = {
-		cleanse: 'CL',
-		taunt: 'TA',
-		'buff:dmg': 'DM',
-		'buff:hpdef': 'HP',
-		resShred: 'SH',
-		grouping: 'GR',
-		infuse: 'IN',
-		interruptionRes: 'IR',
-		offFieldDamage: 'OF'
-	};
+	const hoverable = (e: PointerEvent) => e.pointerType !== 'touch';
 
 	const color = $derived(elementPalette(entry.element).main);
 	/** Rows of the glyph column — the gap spreads them over the card's height. */
@@ -97,12 +92,21 @@
 	const fallback = $derived(!hasAvatar(entry.id));
 </script>
 
+<!-- The preview handlers are a pointer ENHANCEMENT; the keyboard reaches the
+     same preview through focusin on the card's own buttons. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="cc ctx-dark"
 	class:cc--nudged={nudged}
 	style:--el-color={color}
 	style:--rows={rows}
 	data-id={entry.id}
+	onpointerenter={(e) => hoverable(e) && onPreview?.(entry.id)}
+	onpointerleave={(e) => hoverable(e) && onPreview?.(null)}
+	onfocusin={() => onPreview?.(entry.id)}
+	onfocusout={(e) => {
+		if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) onPreview?.(null);
+	}}
 >
 	<button class="cc-main" onclick={() => onPick(entry.id)} aria-label={pickLabel}>
 		<span class="cc-pt">
@@ -132,16 +136,8 @@
 		</span>
 		<span class="cc-glyphs ctx-glass">
 			{#each glyphs as g (g.facet)}
-				{@const art = FINGERPRINT_GLYPHS[g.facet]}
 				<span class="cc-g" class:cc-g--dim={!g.lit} title={g.title}>
-					{#if art}
-						<svg viewBox="0 0 24 24" aria-hidden="true">
-							{#each art.shade ?? [] as d, i (i)}<path class="cc-g-shade" {d} />{/each}
-							{#each art.fill as d, i (i)}<path {d} />{/each}
-						</svg>
-					{:else}
-						<span class="cc-g-stand" aria-hidden="true">{STAND_IN[g.facet]}</span>
-					{/if}
+					<FingerprintGlyph facet={g.facet} />
 				</span>
 			{/each}
 		</span>
@@ -320,31 +316,9 @@
 		height: var(--cc-glyph);
 		color: var(--text);
 	}
-	.cc-g svg {
-		width: 100%;
-		height: 100%;
-		fill: currentColor;
-		fill-rule: evenodd;
-	}
-	.cc-g-shade {
-		fill-opacity: 0.5;
-	}
 	/* 🎛️ DIM = painted (the sub-pixel law), never element opacity. */
 	.cc-g--dim {
 		color: color-mix(in srgb, var(--text) 30%, transparent);
-	}
-	.cc-g-stand {
-		display: grid;
-		place-items: center;
-		width: 100%;
-		height: 100%;
-		box-sizing: border-box;
-		border: 1px solid currentColor;
-		border-radius: var(--r-round);
-		font-family: var(--font-condensed);
-		font-size: calc(var(--cc-glyph) * 0.5);
-		font-weight: var(--fw-bold);
-		line-height: 1;
 	}
 
 	/* ── The name: a parchment strip under the portrait only ── */

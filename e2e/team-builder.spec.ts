@@ -5,6 +5,7 @@ import {
 	openRoster,
 	gridNames,
 	moreChip,
+	provideGlyph,
 	benchNames,
 	boardNames,
 	setConMode,
@@ -62,7 +63,7 @@ test.describe('roster and facets', () => {
 	test('the heal facet narrows the grid to healers', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Heals');
 
 		const healers = await matchCount(page);
 		expect(healers, 'heal facet narrows the grid').toBeGreaterThan(15);
@@ -102,10 +103,10 @@ test.describe('roster and facets', () => {
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Heals');
 		const healers = await matchCount(page);
 
-		await moreChip(page, 'ATK buff');
+		await provideGlyph(page, 'ATK buff');
 		const both = await matchCount(page);
 		expect(both, 'heal ∩ ATK-buff is strictly smaller').toBeLessThan(healers);
 		expect(await gridNames(page), 'Bennett does both').toContain('Bennett');
@@ -119,7 +120,7 @@ test.describe('roster and facets', () => {
 	test('the constellation lens widens capability gates', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Heals');
 
 		await setConMode(page, 'C0');
 		const atC0 = await matchCount(page);
@@ -135,7 +136,7 @@ test.describe('roster and facets', () => {
 		await seed({ constellations: { fischl: 4 } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Heals');
 		await setConMode(page, 'My roster');
 
 		const names = await gridNames(page);
@@ -201,7 +202,7 @@ test.describe('detail card', () => {
 
 		await page.reload({ waitUntil: 'networkidle' });
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Heals');
 		await setConMode(page, 'My roster');
 		expect(await gridNames(page), 'the constellation survived reload').toContain('Fischl');
 	});
