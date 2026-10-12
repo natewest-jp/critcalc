@@ -132,12 +132,12 @@ test.describe('roster and facets', () => {
 		expect(await gridNames(page), 'Fischl appears at C6').toContain('Fischl');
 	});
 
-	test('"My roster" mode gates on your own constellations', async ({ page, seed }) => {
+	test('"My constellations" mode gates on your own constellations', async ({ page, seed }) => {
 		await seed({ constellations: { fischl: 4 } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 		await provideGlyph(page, 'Healing');
-		await setConMode(page, 'My roster');
+		await setConMode(page, 'My constellations');
 
 		const names = await gridNames(page);
 		expect(names, 'your C4 Fischl now matches heal').toContain('Fischl');
@@ -203,7 +203,7 @@ test.describe('detail card', () => {
 		await page.reload({ waitUntil: 'networkidle' });
 		await openRoster(page);
 		await provideGlyph(page, 'Healing');
-		await setConMode(page, 'My roster');
+		await setConMode(page, 'My constellations');
 		expect(await gridNames(page), 'the constellation survived reload').toContain('Fischl');
 	});
 });

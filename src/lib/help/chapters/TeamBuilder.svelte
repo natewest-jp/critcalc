@@ -42,7 +42,9 @@
 	</p>
 	<ul>
 		<li><strong>C0</strong> — base kits only, the floor every player shares.</li>
-		<li><strong>My roster</strong> — the constellation levels you've saved, i.e. your account.</li>
+		<li>
+			<strong>My constellations</strong> — the constellation levels you've saved, i.e. your account.
+		</li>
 		<li>
 			<strong>C6</strong> — everything a kit can ever do, useful for judging a long-term goal.
 		</li>

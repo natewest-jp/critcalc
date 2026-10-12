@@ -543,7 +543,7 @@
 	 *  variable part, and it only helps while capability facets are on. */
 	const rosterEmptyMessage = $derived(
 		conMode === 'c0' && activeFacets.size > 0
-			? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My roster” or “C6”.'
+			? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My constellations” or “C6”.'
 			: 'No curated character matches.'
 	);
 
@@ -613,7 +613,7 @@
 		{ key: 'c6', label: 'C6', hint: 'Everything the kit can ever do' },
 		{
 			key: 'mine',
-			label: 'My roster',
+			label: 'My constellations',
 			hint: 'Uses your saved constellations (set them in a character’s details)'
 		}
 	];
