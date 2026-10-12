@@ -4,7 +4,6 @@
 	/** ⏳ Two-letter stand-ins for the facets Nate has not drawn yet — retire
 	 *  each line as its glyph lands in `fingerprintGlyphs.generated.ts`. */
 	const STAND_IN: Partial<Record<FacetKey, string>> = {
-		cleanse: 'CL',
 		resShred: 'SH',
 		grouping: 'GR',
 		offFieldDamage: 'OF'

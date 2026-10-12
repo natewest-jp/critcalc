@@ -37,7 +37,8 @@ const GLYPHS = {
 	'buff:hpdef': 'Icon_Attribute_HPDEF_Buff',
 	energy: 'Icon_Attribute_Energy_Recharge',
 	interruptionRes: 'Icon_Attribute_Interruption_Res',
-	infuse: 'Icon_Attribute_Infusion'
+	infuse: 'Icon_Attribute_Infusion',
+	cleanse: 'Icon_Attribute_Cleanse'
 };
 
 const glyphs = {};
