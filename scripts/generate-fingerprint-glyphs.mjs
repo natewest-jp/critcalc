@@ -35,7 +35,8 @@ const GLYPHS = {
 	'buff:crit': 'Icon_Attribute_Critical_Hit',
 	'buff:dmg': 'Icon_Attribute_DMG_Buff',
 	'buff:hpdef': 'Icon_Attribute_HPDEF_Buff',
-	energy: 'Icon_Attribute_Energy_Recharge'
+	energy: 'Icon_Attribute_Energy_Recharge',
+	interruptionRes: 'Icon_Attribute_Interruption_Res'
 };
 
 const glyphs = {};

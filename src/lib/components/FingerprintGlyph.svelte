@@ -8,7 +8,6 @@
 		resShred: 'SH',
 		grouping: 'GR',
 		infuse: 'IN',
-		interruptionRes: 'IR',
 		offFieldDamage: 'OF'
 	};
 </script>
