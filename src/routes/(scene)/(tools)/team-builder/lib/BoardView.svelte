@@ -820,17 +820,17 @@
 		gap: 14px;
 	}
 	.bv--roomy :global(.fp-cluster) {
-		gap: 6px;
+		gap: 10px;
 	}
 	.bv--roomy .bv-fp {
 		min-height: 25px;
 	}
 	.bv--roomy :global(.fp-slot) {
-		width: 20px;
+		width: 16px;
 	}
 	.bv--roomy :global(.fp-glyph) {
-		width: 20px;
-		height: 20px;
+		width: 16px;
+		height: 16px;
 	}
 	.bv--roomy :global(.fp-pip) {
 		width: 15px;

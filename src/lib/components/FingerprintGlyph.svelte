@@ -19,7 +19,7 @@
 </script>
 
 {#if art}
-	<svg class="fg" viewBox="0 0 24 24" aria-hidden="true">
+	<svg class="fg" viewBox={art.box} aria-hidden="true">
 		{#each art.shade ?? [] as d, i (i)}<path class="fg-shade" {d} />{/each}
 		{#each art.fill as d, i (i)}<path {d} />{/each}
 	</svg>

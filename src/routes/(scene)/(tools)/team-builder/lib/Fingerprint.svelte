@@ -152,7 +152,7 @@
 	}
 	.fp-cluster {
 		display: flex;
-		gap: 4px;
+		gap: 7px;
 	}
 	.fp-slot {
 		display: flex;
@@ -160,7 +160,7 @@
 		align-items: center;
 		gap: 2px;
 		position: relative;
-		width: 16px;
+		width: 13px;
 		/* FAINT is the resting paint; LIT is the ink. */
 		color: var(--line-strong);
 	}
@@ -182,9 +182,12 @@
 	.fp-slot.fp-loss {
 		color: color-mix(in srgb, var(--ui-danger) var(--fp-loss-mix), var(--line-strong));
 	}
+	/* ↻ 2026-10-12: the glyph box IS the glyph now (the generator crops each
+	   to its art), so 16px of padded box became 13px of glyph + 3px more gap —
+	   the slot pitch is unchanged and the art is ~30% larger. */
 	.fp-glyph {
-		width: 16px;
-		height: 16px;
+		width: 13px;
+		height: 13px;
 	}
 	/* A faint slot that FINDS: a bare button, its hover the ink brightening. */
 	button.fp-slot {
@@ -242,7 +245,7 @@
 			gap: 8px;
 		}
 		.fp-cluster {
-			gap: 3px;
+			gap: 6px;
 		}
 	}
 </style>

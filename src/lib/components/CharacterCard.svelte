@@ -162,10 +162,10 @@
 		   the fifteen glyphs are drawn): glyph size, and the row gap's range.
 		   Rows spread over the card's height between the two, so only a long
 		   fingerprint (Columbina's nine) tightens. */
-		--cc-glyph: 13px;
-		--cc-gap-min: 3px;
-		--cc-gap-max: 9px;
-		--cc-col-pad: 7px;
+		--cc-glyph: 11px;
+		--cc-gap-min: 5px;
+		--cc-gap-max: 11px;
+		--cc-col-pad: 8px;
 		/* 🎛️ The art's rounded corner and the name strip's height. */
 		--cc-corner: 22px;
 		--cc-name-h: 26px;

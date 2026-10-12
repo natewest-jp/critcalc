@@ -169,8 +169,8 @@
 		color: var(--text);
 	}
 	.rfs-glyph-art {
-		width: 16px;
-		height: 16px;
+		width: 13px;
+		height: 13px;
 	}
 	.rfs-role img {
 		width: 16px;
