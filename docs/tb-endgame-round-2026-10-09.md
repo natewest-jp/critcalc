@@ -65,7 +65,8 @@ holds the model; this is what shipped and what Nate ruled live.
     the phrasings (the rules live in `endgameChecks.ts`'s header): the
     Nightsoul pair = any Natlan character or the Pyro Traveler; crowd control
     (both spellings) = a Grouping provider, else still unknown; Multi
-    Elemental = 2+ member elements; Single Elemental = one shared element,
-    from 2 members; Bond of Life = Arlecchino and Clorinde (hand-kept). Still
-    UNKNOWN on purpose: the three frequency checks and Plunging-Attack
-    Characters. So 5 of 40 stay unknown, plus crowd control without a grouper.
+    Elemental = 2+ member elements; Bond of Life = Arlecchino and Clorinde
+    (hand-kept). Still UNKNOWN on purpose: the three frequency checks,
+    Plunging-Attack Characters and Single Elemental DMG (↻ same day: a
+    member's element is not the element they deal — infusions, buffers who
+    barely hit). So 6 of 40 stay unknown, plus crowd control without a grouper.

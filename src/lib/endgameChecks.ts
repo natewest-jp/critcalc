@@ -23,13 +23,14 @@
  *     Pyro Traveler.
  *   · Crowd control (two spellings) — a GROUPING provider is met; anything
  *     else stays unknown (knockback, freeze and launch have no data).
- *   · "Multi Elemental DMG" — the members cover 2+ elements. "Single
- *     Elemental DMG" — every member shares one element (from 2 members, so a
- *     first pick doesn't raise a disfavoured warning).
+ *   · "Multi Elemental DMG" — the members cover 2+ elements.
  *   · "Bond of Life Characters" — Arlecchino and Clorinde, a hand-kept list
  *     (Nate: new Bond of Life characters are unlikely).
- *   · Unknown on purpose: the frequency checks (how often a team hits) and
- *     "Plunging-Attack Characters".
+ *   · Unknown on purpose: the frequency checks (how often a team hits),
+ *     "Plunging-Attack Characters", and "Single Elemental DMG" (↻ same day:
+ *     a member's element is not the element they DEAL — an Anemo teammate
+ *     infused into Pyro, a buffer who barely hits — so a mixed team can
+ *     still deal one element).
  */
 
 import { REACTION_INGREDIENTS, teamReactions } from '$lib/capabilities/deriveCapabilities';
@@ -116,8 +117,6 @@ function alternative(f: Facts, parts: ReturnType<typeof checkAlternatives>[numbe
 	if (/^crowd[- ]control character/.test(text)) return lit(f, 'grouping') ? 'met' : 'unknown';
 	if (text.startsWith('multi elemental dmg'))
 		return yes(new Set(f.members.map((m) => m.element)).size >= 2);
-	if (text.startsWith('single elemental dmg'))
-		return yes(f.members.length >= 2 && new Set(f.members.map((m) => m.element)).size === 1);
 	if (text.startsWith('bond of life character'))
 		return yes(f.members.some((m) => BOND_OF_LIFE.includes(m.id)));
 	return 'unknown';
