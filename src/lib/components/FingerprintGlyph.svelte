@@ -6,7 +6,6 @@
 	const STAND_IN: Partial<Record<FacetKey, string>> = {
 		cleanse: 'CL',
 		taunt: 'TA',
-		'buff:dmg': 'DM',
 		resShred: 'SH',
 		grouping: 'GR',
 		infuse: 'IN',

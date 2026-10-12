@@ -32,6 +32,7 @@ const GLYPHS = {
 	'buff:atk': 'Icon_Attribute_Attack',
 	'buff:em': 'Icon_Attribute_Elemental_Mastery',
 	'buff:crit': 'Icon_Attribute_Critical_Hit',
+	'buff:dmg': 'Icon_Attribute_DMG_Buff',
 	'buff:hpdef': 'Icon_Attribute_HPDEF_Buff',
 	energy: 'Icon_Attribute_Energy_Recharge'
 };
