@@ -56,7 +56,10 @@ test(
 
 		await seed({
 			team: {
-				slots: null as never, // exercise the derived-slot path, not manual slots
+				// The notation IS the team (single truth, 2026-08-13); the seed's
+				// `slots` only folds extra names in, so it names none. (It was
+				// `null` from the manual-slots era, which the fold can't iterate.)
+				slots: [],
 				notation: 'Furina E Q > Bennett E Q > Xingqiu E Q > Kazuha E Q',
 				label: 'Seed'
 			}
