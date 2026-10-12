@@ -160,7 +160,7 @@
 	   🎛️ --fp-loss-mix is how much red survives the dimming. ⚠ One mix of two
 	   literals — a color-mix fed by a color-mix crashes WebKit. */
 	.fp {
-		--fp-loss-mix: 55%;
+		--fp-loss-mix: 60%;
 	}
 	.fp-slot.fp-gain {
 		color: var(--ui-positive);

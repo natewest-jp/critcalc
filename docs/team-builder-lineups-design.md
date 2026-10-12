@@ -993,7 +993,7 @@ only; Noelle/Thoma absent too).
       BRIGHTNESS it would end at (⚓ Nate 2026-10-12): a gain is `--ui-positive`
       straight, as bright as a lit glyph, and so is the candidate's own dot. A
       loss is `--ui-danger` pulled toward the faint paint (🎛️ `--fp-loss-mix`,
-      55%), so it reads as "this will go dim". Losses happen because a member can break a teammate's condition
+      60%, ↻ from 55% — a touch too dull), so it reads as "this will go dim". Losses happen because a member can break a teammate's condition
       (Furina into Chevreuse + Fischl + Xiangling puts out the ATK buff and the
       RES shred). Mouse, pen and keyboard focus only; after a pick the preview
       rests until the pointer leaves the card, or the row would flip at once
@@ -1010,13 +1010,26 @@ only; Noelle/Thoma absent too).
       ~15-unit box centred in 24, and that inset is the optical size. The
       first export was cropped to the art (a 14-unit viewBox) and came out
       under-sized; the re-export measures 15 × 14 centred, Healing's box.
-    - ⚓ **The team row's stack, re-cut (Nate 2026-10-12).** It had grown to four
-      lines (checks · lineup · pin + Open in Planner · fingerprint). The play
-      cluster now shares the TOP line with the checks, aligned right. When the
-      two can't share a line, the pin breaks to BELOW "Open in Planner"
-      (`wrap-reverse`; the cluster's basis is its min-content, so it stacks
-      before the checks ever wrap). At the docked 580 and 720 it stacks; at
-      1000 (one pane) it sits on one line; on a phone it takes its own
-      right-aligned line under the checks. The fingerprint's line is RESERVED
-      (`.bv-fp`, 21px / 25px roomy), so a team that fills, empties or previews
-      doesn't move the board. The composition chips stay beside the lineup.
+    - **Glyph 8 of 15: DMG%** (`Icon_Attribute_DMG_Buff.svg`, a drawn percent
+      sign; 14 × 13.4 centred in 24). Its stand-in retires.
+    - ⚓ **The team row's stack, re-cut (Nate 2026-10-12, two passes).** It had
+      grown to four lines (checks · lineup · pin + Open in Planner ·
+      fingerprint). Now it is TWO COLUMNS under a spanning top line:
+      - The top line: the checks at the left, **"Planner →"** at the right,
+        centred on the checks' line. The word was "Open in Planner"; the
+        pinned rotation (or "No saved rotation") sits right under it, so the
+        one word says enough, and long checks no longer wrap around it.
+      - The LEFT column: the lineup, the fingerprint beneath.
+      - The RIGHT column: the pin flush right under the Planner button,
+        ALWAYS stacked there (the first pass let the two share a line when
+        they fit, and the stacked form simply read better), with the
+        composition chips under it. It spans the lineup's AND the
+        fingerprint's rows, so a pin plus two lines of chips fit with no
+        added height. Every team row is one height at a given width. A long
+        rotation name truncates to the column: in the 580 dock "1 rotation,
+        none pinned" reads "1 ROTA…" (⏭ the unpinned label is step 6 copy).
+      - The fingerprint's line is RESERVED (`.bv-fp`, 21px / 25px roomy), so
+        a team that fills, empties or previews doesn't move the board.
+      - On a phone the stack dissolves into the boss's grid as before:
+        Planner → takes its own right-aligned line, the pin and chips follow
+        the lineup flush right.

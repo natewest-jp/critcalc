@@ -305,12 +305,10 @@
 					</button>
 					<span class="bv-vrule" aria-hidden="true"></span>
 				{/if}
-				<div class="bv-stack">
-					<!-- ⚓ Nate 2026-10-12: the checks and the way to play share the TOP
-					     line — the play cluster aligned right, and when the two can't
-					     share one line the pin breaks to BELOW "Open in Planner"
-					     (wrap-reverse), before the checks ever wrap — so the lineup
-					     and the fingerprint keep the height under it. -->
+				<div class="bv-stack" class:bv-stack--top={!!field?.checks.length || filled}>
+					<!-- ⚓ Nate 2026-10-12: the checks and "Planner →" share the TOP line,
+					     which spans the stack's two columns; the pin hangs under the
+					     button in the right column (see .bv-stack). -->
 					{#if field?.checks.length || filled}
 						<div class="bv-top">
 							{#if field?.checks.length}
@@ -322,55 +320,17 @@
 								</div>
 							{/if}
 							{#if filled}
-								<!-- The team's rotation, and the way to play it: the line exists
-						     exactly when the team does, and the rotation is the button's
-						     subject (§11.6 item 13). -->
-								<div class="bv-play">
-									<!-- ⚓ A team's rotations are DERIVED from the library by its set;
-						     a pin names the one you would play here (§10.2). -->
-									{#if rotations.length === 0}
-										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
-										>
-									{:else}
-										<BandMenu
-											mark="pin"
-											size="sm"
-											align="end"
-											label={pin?.name ??
-												(rotations.length === 1
-													? '1 rotation, none pinned'
-													: `${rotations.length} rotations, none pinned`)}
-											ariaLabel="Pinned rotation for team {t + 1}"
-										>
-											{#snippet items(close)}
-												{#each [null, ...rotations] as r (r?.id ?? '')}
-													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
-													<button
-														class="band-menu-item"
-														role="menuitemradio"
-														aria-checked={current}
-														onclick={() => {
-															close();
-															onPin(team.id, r?.id ?? null);
-														}}
-													>
-														<span class="bv-menu-check"
-															>{#if current}<Mark name="check" size={12} />{/if}</span
-														>
-														{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span
-															>{/if}
-													</button>
-												{/each}
-											{/snippet}
-										</BandMenu>
-									{/if}
-									<button
-										class="btn btn--sm"
-										onclick={() => onOpenInPlanner(team)}
-										title="Open this team in the Rotation Planner"
-										><Mark name="forward" size={12} /> Open in Planner</button
-									>
-								</div>
+								<!-- ⚓ Nate 2026-10-12: "Planner →" — the pinned rotation (or "No
+								     saved rotation") sits right under it, so the word says
+								     enough. Centred on the checks' line; the pin hangs under it
+								     inside the LINEUP row, so it never pushes the lineup down. -->
+								<button
+									class="btn btn--sm bv-planner"
+									onclick={() => onOpenInPlanner(team)}
+									title="Open this team in the Rotation Planner"
+									aria-label="Open this team in the Rotation Planner"
+									>Planner <Mark name="forward" size={12} /></button
+								>
 							{/if}
 						</div>
 					{/if}
@@ -414,6 +374,47 @@
 						</div>
 						{#if filled}
 							<div class="bv-side">
+								<!-- The team's rotation: DERIVED from the library by its set; a pin
+								     names the one you would play here (§10.2). It sits under the
+								     Planner button above — its subject (§11.6 item 13). -->
+								<div class="bv-pin">
+									{#if rotations.length === 0}
+										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
+										>
+									{:else}
+										<BandMenu
+											mark="pin"
+											size="sm"
+											align="end"
+											label={pin?.name ??
+												(rotations.length === 1
+													? '1 rotation, none pinned'
+													: `${rotations.length} rotations, none pinned`)}
+											ariaLabel="Pinned rotation for team {t + 1}"
+										>
+											{#snippet items(close)}
+												{#each [null, ...rotations] as r (r?.id ?? '')}
+													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+													<button
+														class="band-menu-item"
+														role="menuitemradio"
+														aria-checked={current}
+														onclick={() => {
+															close();
+															onPin(team.id, r?.id ?? null);
+														}}
+													>
+														<span class="bv-menu-check"
+															>{#if current}<Mark name="check" size={12} />{/if}</span
+														>
+														{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span
+															>{/if}
+													</button>
+												{/each}
+											{/snippet}
+										</BandMenu>
+									{/if}
+								</div>
 								<CompositionChips ids={team.slots} reactions={false} />
 							</div>
 						{/if}
@@ -584,22 +585,53 @@
 		width: 1px;
 		background: var(--line-faint);
 	}
+	/* ⚓ THE STACK IS TWO COLUMNS (Nate 2026-10-12): the top line spans
+	   both (checks · Planner →); under it the LEFT column is the lineup with
+	   the fingerprint beneath, and the RIGHT column hangs the pinned rotation
+	   directly under the Planner button with the composition chips under it.
+	   The right column spans the lineup AND the fingerprint's rows, so a pin
+	   plus two lines of chips fit beside them without adding height — no line
+	   of the right column ever pushes the lineup or the fingerprint down. */
 	.bv-stack {
-		display: flex;
-		flex-direction: column;
-		gap: 0.85rem;
+		display: grid;
+		grid-template-columns: max-content minmax(0, 1fr);
+		grid-template-areas:
+			'slots side'
+			'fp side';
+		align-content: start;
+		gap: 0.85rem 0.75rem;
 		min-width: 0;
 		flex: 1;
 	}
-	/* The TOP line: the checks at the left, the play cluster at the right.
-	   The cluster's basis is its MIN-CONTENT (one button wide) and it takes
-	   the leftover, so it only lays its two controls side by side when the
-	   line has the room — otherwise it stacks first, and the checks wrap only
-	   once the stack is as narrow as it gets. */
+	.bv-stack--top {
+		grid-template-areas:
+			'top top'
+			'slots side'
+			'fp side';
+	}
+	.bv-top {
+		grid-area: top;
+	}
+	.bv-lineup-row {
+		display: contents;
+	}
+	.bv-slots {
+		grid-area: slots;
+		justify-self: start;
+	}
+	.bv-fp {
+		grid-area: fp;
+	}
+	/* The TOP line: the checks at the left, the Planner button at the right,
+	   centred on the checks' line (⚓ Nate 2026-10-12). */
 	.bv-top {
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
 		gap: 6px 1rem;
+	}
+	.bv-planner {
+		flex: none;
+		margin-left: auto;
 	}
 	.bv-checks {
 		flex: 0 1 auto;
@@ -612,17 +644,35 @@
 	.bv-fp {
 		min-height: 21px;
 	}
-	.bv-lineup-row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.6rem 1.1rem;
-	}
+	/* The right column: the pin flush right under the Planner button, the
+	   composition chips under it. A long rotation name truncates to the
+	   column. */
 	.bv-side {
+		grid-area: side;
+		align-self: start;
 		display: flex;
 		flex-direction: column;
+		align-items: flex-end;
 		gap: 6px;
 		min-width: 0;
+	}
+	.bv-pin {
+		display: flex;
+		justify-content: flex-end;
+		max-width: 100%;
+		min-width: 0;
+	}
+	.bv-pin :global(.band-menu-trigger) {
+		max-width: 100%;
+		min-width: 0;
+	}
+	.bv-side :global(.comp) {
+		justify-content: flex-end;
+	}
+	.bv-pin :global(.band-menu-label) {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	/* The boss: a circle-cut avatar on the members' ring, the game's magnifier
@@ -755,19 +805,8 @@
 		cursor: pointer;
 		border-radius: var(--r-round);
 	}
-	/* wrap-reverse: when the two can't share a line, the pin (first in the
-	   markup) lands on the LOWER line — under "Open in Planner", both flush
-	   right (⚓ Nate 2026-10-12). */
-	.bv-play {
-		flex: 1 1 min-content;
-		display: flex;
-		flex-wrap: wrap-reverse;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 6px 10px;
-		min-width: 0;
-	}
 	.bv-rotations {
+		white-space: nowrap;
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -869,8 +908,21 @@
 		.bv-top {
 			display: contents;
 		}
+		/* The named areas belong to the wide stack's grid; out here every
+		   piece is placed by the body's rules below. */
+		.bv-top,
+		.bv-slots,
+		.bv-side,
+		.bv-fp {
+			grid-area: auto;
+		}
+		/* The pin and chips follow the lineup, flush right. */
+		.bv-side {
+			justify-self: end;
+		}
 		.bv-stack > :global(*),
-		.bv-top > :global(*) {
+		.bv-top > :global(*),
+		.bv-lineup-row > :global(*) {
 			grid-column: 1 / -1;
 		}
 		.bv-top > .bv-checks {
