@@ -29,7 +29,7 @@
 		"test:e2e:chrome": "playwright test --project=chrome --grep-invert @storm",
 		"test:e2e:webkit": "playwright test --project=webkit --grep-invert @storm",
 		"test:e2e:ui": "playwright test --project=chrome --ui",
-		"test:e2e:storm": "playwright test --grep @storm --workers=1 --retries=0",
+		"test:e2e:storm": "playwright test --project=chrome --project=webkit --grep @storm --workers=1 --retries=0",
 		"test:e2e:report": "playwright show-report",
 		"generate-marks": "node scripts/generate-marks.mjs",
 		"generate-con-marks": "node scripts/generate-constellation-marks.mjs",

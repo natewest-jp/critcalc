@@ -54,9 +54,9 @@ describe('battlefield checks', () => {
 	});
 
 	it('leaves a check it cannot decide unknown, never guessed', () => {
-		expect(evaluateCheck(check('Multi Elemental DMG'), ['bennett'], at0).verdict).toBe('unknown');
+		expect(evaluateCheck(check('High-frequency DMG'), ['bennett'], at0).verdict).toBe('unknown');
 		// …but a decidable alternative beside it still decides
-		const mixed = check('Multi Elemental DMG | Bow characters');
+		const mixed = check('High-frequency DMG | Bow characters');
 		expect(evaluateCheck(mixed, ['fischl'], at0).verdict).toBe('met');
 		expect(evaluateCheck(mixed, ['bennett'], at0).verdict).toBe('unknown');
 	});

@@ -119,13 +119,31 @@
 					"scaling": 6,
 					"stat": "hp",
 					"attribution": "A1: Hydropathic"
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					}
 				}
 			],
 			"description": "Xingqiu performs twin strikes with his sword, dealing Hydro DMG. At the same time, this ability creates the maximum number of Rain Swords, which will orbit your active character.\nThe Rain Swords have the following properties:\n·When a character takes DMG, the Rain Sword will shatter, reducing the amount of DMG taken.\n·Increases the character's resistance to interruption.\n\n20% of Xingqiu's Hydro DMG Bonus will be converted to additional DMG Reduction for the Rain Swords.\n\nThe maximum amount of additional DMG Reduction that can be gained this way is 24%.\nThe initial maximum number of Rain Swords is 3.\nUsing this ability applies the Wet status onto the character.",
 			"_curatorNotes": [
 				"A1 Hydropathic heal authored 2026-07-12 on this skill — the ability that spawns the Rain Swords and carries the 'heal' tag. Each Rain Sword shatter (active character takes DMG) or expiry regenerates the active character for a FIXED 6% of Xingqiu's Max HP: kit constant, NOT talent-scaled (passive text 'based on 6% of Xingqiu's Max HP'; the sidecar skill table has no heal row; gcsim asc.go documents the same 6% and notes A1 is unimplemented there, so there is no tick cadence/formula to cross-check). Target 'active' = the current on-field character ('the current character's HP'). Trigger 'onHPDecrease' is the closest honest primitive for the shatter branch (the sword breaks when the active char takes a hit); there is no 'on rain-sword shatter/expiry' trigger, and the planner does not simulate incoming DMG, so this defensive event-driven heal renders no timeline markers by design. The expiry branch (swords healing when the 15s window ends) shares the same 6% and is not separately modeled. attribution 'A1: Hydropathic' records the passive source collapsed onto the skill.",
 				"DMG reduction (scales from Hydro DMG Bonus) — skipped: no dmgReduction Stat variant + scaling defensive mechanic not simulated",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The caveat talks about a defensive heal magnitude keyed to incoming damage. Heals draw no bar, marker or value anywhere in the planner, and 'no enemy or HP state' is a tool-level constant stated in the constitution and the shield module's own header — so nothing on screen looks wrong and no player is confused. Its trigger is `onHPDecrease`, which per N6 has no reader at all, meaning the absence is total and uniform rather than a divergence from something drawn. This is the Nicole shape exactly: a true statement about a mechanic with no rendered counterpart. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The caveat talks about a defensive heal magnitude keyed to incoming damage. Heals draw no bar, marker or value anywhere in the planner, and 'no enemy or HP state' is a tool-level constant stated in the constitution and the shield module's own header — so nothing on screen looks wrong and no player is confused. Its trigger is `onHPDecrease`, which per N6 has no reader at all, meaning the absence is total and uniform rather than a divergence from something drawn. This is the Nicole shape exactly: a true statement about a mechanic with no rendered counterpart. Category: invisible-omission.",
+				"interruptionRes authored 2026-10-12: the Rain Swords orbit the active character and “increase the character’s resistance to interruption” (kit text). 15s = the orbital’s life (gcsim xingqiu/skill.go:78)."
 			],
 			"application": [
 				{
@@ -138,7 +156,8 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"caveat": "Interruption resistance is shown for the Rain Swords’ full 15s; in play it ends early once hits have shattered all of them."
 		},
 		{
 			"id": "xingqiu__burst__guhua_sword_raincutter",
@@ -201,9 +220,57 @@
 			"energyCost": 80,
 			"description": "Initiate Rainbow Bladework and fight using an illusory sword rain, while creating the maximum number of Rain Swords.\n\nRainbow Bladework\n·Your active character's Normal Attacks will trigger consecutive sword rain attacks, dealing Hydro DMG.\n·Rain Swords will remain at the maximum number throughout the ability's duration.",
 			"_curatorNotes": [
-				"C4: +50% skill DMG bonus while burst is active — skipped: no skillDmgBonus Stat variant + no 'burstActive' State condition; also needs effect duration to extend with burst's durationModifier at C2"
+				"C4: +50% skill DMG bonus while burst is active — skipped: no skillDmgBonus Stat variant + no 'burstActive' State condition; also needs effect duration to extend with burst's durationModifier at C2",
+				"interruptionRes authored 2026-10-12: the burst creates the maximum Rain Swords and keeps them topped up, so it grants the swords’ interruption resistance on its own. 15s, 18s at C2 (gcsim burst.go applyOrbital(dur)); the Faruzan pair shape."
 			],
-			"application": []
+			"application": [],
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 2
+						}
+					},
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					}
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 18,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					}
+				}
+			]
 		}
 	],
 	"passives": [

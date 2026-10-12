@@ -965,3 +965,102 @@ only; Noelle/Thoma absent too).
       The team hues are placeholders to tune live. The card's strings are
       working copy for step 6 (strip, full-team strip, move notice, No repeats
       tooltip, card and magnifier labels, glyph and chip tooltips).
+19. **Step 4: the fingerprint as the filter (2026-10-12, `tb/fingerprint-filter`).**
+    Built on the placeholder art while Nate drew the nine glyphs; all fifteen
+    landed the same day (below).
+    - **ONE glyph component** (`$lib/components/FingerprintGlyph.svelte`) draws a
+      capability everywhere: the card's column, the team's fingerprint and the
+      filter row. It paints in `currentColor` and fills its box, and the
+      consumer decides size and state. A facet Nate has not drawn shows its
+      two-letter stand-in, so the board's blank circle pips are gone. ⏭ Nate's
+      art lands in all three at once (one line per glyph in
+      `scripts/generate-fingerprint-glyphs.mjs`, then retire its `STAND_IN`
+      line).
+    - **"Can provide" left More** and became a row of fifteen glyph plates in the
+      filter strip, in the fingerprint's clusters and order. Two at once still
+      ask for characters who provide BOTH. At the docked widths the row wraps
+      to its own line under the roles and elements.
+    - **A FAINT glyph on a team is a button**: it selects that team as the
+      destination and narrows the roster to that one capability. The same
+      glyph again clears it. The filtered slot carries a gold rule under its
+      dots. ⚠ This is the one place a click on an UNSELECTED row does more
+      than select it (§11.6 item 8). Filtering is harmless, and "find someone
+      for THIS team" needs that team as the destination. A lit glyph is not a
+      control.
+    - **Hovering a card PREVIEWS the selected team's fingerprint** after the
+      pick. The pick is the game's toggle, so a member previews their own
+      REMOVAL and a full team previews nothing (that pick only nudges). The
+      row is drawn as it would END, and each changed slot keeps the
+      BRIGHTNESS it would end at (⚓ Nate 2026-10-12): a gain is `--ui-positive`
+      straight, as bright as a lit glyph, and so is the candidate's own dot. A
+      loss is `--ui-danger` pulled toward the faint paint (🎛️ `--fp-loss-mix`,
+      60%, ↻ from 55% — a touch too dull), so it reads as "this will go dim". Losses happen because a member can break a teammate's condition
+      (Furina into Chevreuse + Fischl + Xiangling puts out the ATK buff and the
+      RES shred). Mouse, pen and keyboard focus only; after a pick the preview
+      rests until the pointer leaves the card, or the row would flip at once
+      to previewing the undo. ⚠ `--debuff` no longer exists as a role.
+    - The filter is team-agnostic: it asks "who provides X at the lens". The
+      preview is what answers "in THIS team". ⏭ Open: should a find from a team
+      narrow to who would be LIT in that team?
+    - Rider: the count's note ran into the count ("16 CHARACTERSat your
+      constellations"). The markup's line break was trimmed, so the space is
+      now a margin.
+    - **Glyph 7 of 15 landed: HP/DEF** (Nate's split, `Icon_Attribute_HPDEF_Buff.svg`:
+      the HP drop on the left with its wave as the shade, the DEF shield on the
+      right). ⚠ Export the whole 24-unit ARTBOARD: the traced set fills a
+      ~15-unit box centred in 24, and that inset is the optical size. The
+      first export was cropped to the art (a 14-unit viewBox) and came out
+      under-sized; the re-export measures 15 × 14 centred, Healing's box.
+    - **Glyph 8 of 15: DMG%** (`Icon_Attribute_DMG_Buff.svg`, a drawn percent
+      sign; 14 × 13.4 centred in 24). Its stand-in retires.
+    - ⚓ **The team row's stack, re-cut (Nate 2026-10-12, two passes).** It had
+      grown to four lines (checks · lineup · pin + Open in Planner ·
+      fingerprint). Now it is TWO COLUMNS under a spanning top line:
+      - The top line: the checks at the left, **"Planner →"** at the right,
+        centred on the checks' line. The word was "Open in Planner"; the
+        pinned rotation (or "No saved rotation") sits right under it, so the
+        one word says enough, and long checks no longer wrap around it.
+      - The LEFT column: the lineup, the fingerprint beneath.
+      - The RIGHT column: the pin flush right under the Planner button,
+        ALWAYS stacked there (the first pass let the two share a line when
+        they fit, and the stacked form simply read better), with the
+        composition chips under it. It spans the lineup's AND the
+        fingerprint's rows, so a pin plus two lines of chips fit with no
+        added height. Every team row is one height at a given width. A long
+        rotation name truncates to the column: in the 580 dock "1 rotation,
+        none pinned" reads "1 ROTA…" (⏭ the unpinned label is step 6 copy).
+      - The fingerprint's line is RESERVED (`.bv-fp`, 21px / 25px roomy), so
+        a team that fills, empties or previews doesn't move the board.
+      - On a phone the stack dissolves into the boss's grid as before:
+        Planner → takes its own right-aligned line, the pin and chips follow
+        the lineup flush right.
+    - **All fifteen glyphs drawn (Nate, 2026-10-12)**, the rest in order: the
+      heavier Taunt (⚓ kept), Interruption RES (an anchor), Infusion (a
+      wreathed sword), Cleanse (redrawn with the erased circle FILLED — the
+      outline cut read as hairline at 13px), Off-field DMG (three strikes),
+      RES shred (a cracked shield; ⚠ its 13px silhouette sits close to
+      Shield's, saved by the notched top and the clusters), Grouping (four
+      wedges converging). The stand-ins are deleted and the generator refuses
+      a facet with no art.
+    - ⚓ **The glyphs are CROPPED and BALANCED in the generator (Nate's ask).**
+      ↻ Supersedes the "export the whole 24-unit artboard" note above: the
+      artboard still is the source contract, but each glyph now gets its own
+      viewBox cropped to its art, so the box a surface draws IS the glyph and
+      the gaps are layout values. The longest side fits the box; a glyph
+      denser than the set's median ink is shrunk toward it (🎛️ `DENSITY_K`
+      0.5). A sparse glyph can't grow past its box, so this balances SIZE,
+      not weight. 🎛️ `NUDGE` holds Nate's by-eye corrections (tune(nate):
+      Energy 1.05, RES shred 1.06, Grouping 1.2, Interruption RES 1.04); the
+      svg draws with overflow visible so a glyph past its box spills into the
+      gap. Every surface kept its pitch: board 16 → 13px (roomy 20 → 16),
+      the strip 16 → 13, the card 13 → 11, the padding turned into gap.
+    - **Copy step 6 for steps 3–4, ruled 2026-10-12** — the facet names and
+      hints (Healing / Shield / CRIT buff / ⚓ Interruption RES, the game's
+      spelling), verb-first pick labels, "Pin a rotation" / "No pin", No
+      repeats = "Each character joins only one team.", and the fingerprint
+      tooltip as whole sentences per state (style guide §3.1). The glossary
+      gained Lineup, battlefield, Characters, Owned / My constellations, the
+      team's capabilities and pinned rotation. ⚓ The lens reads **My
+      constellations**; band B's fold thresholds were re-measured for it
+      (`FOLD_SHOW_W` 680, `FOLD_LENS_W` 472 — the old pair was already short).
+      ⏭ The Coverage page's toggle still says "My roster".

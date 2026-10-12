@@ -102,15 +102,33 @@
 			"_curatorNotes": [
 				"Variants above are pre-existing display variants from the generator showing infusion duration (talent-scaling, 2.0–3.0s) and field duration (10s). Field entity lifetime is now canonical on summons[0]. Infusion duration (infuseDur[talentLevel]) is applied as a stat modifier on characters within the field on each tick — not a separate summon entity.",
 				"Field ticks every 60 frames from skillHitmark (frame 36) through expiry at frame 636 (skillHitmark + 600). Each tick checks if active character is within the field area and applies cryo infusion + A1 ATK SPD buff for infuseDur seconds. This is a proc mechanic, not a persistent aura — reviewer to decide effect representation.",
-				"A6 rigor 2026-07-12: Infusion variant duration corrected 2.8 → 2.9 (talent-level-10 value; sidecar Infusion Duration col 10 = 2.9s, gcsim infuseDur[9]=2.9). Was the level-9 value."
+				"A6 rigor 2026-07-12: Infusion variant duration corrected 2.8 → 2.9 (talent-level-10 value; sidecar Infusion Duration col 10 = 2.9s, gcsim infuseDur[9]=2.9). Was the level-9 value.",
+				"Infusion authored 2026-10-12 (Nate approved): Candace’s shape — target active, sword/claymore/polearm. gcsim re-infuses the active character every 60f while inside the field (600f from the 36f hitmark), each lasting infuseDur (2.9s at talent level 10), so the honest window is 0.6 + 10 + 2.9 = 13.5s from the cast. Anchored at the cast (no start-delay field), so the first 0.6s is an over-claim before the field forms. Settles the representation question noted above."
 			],
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "infuse",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 13.5,
+					"durationType": "fixed",
+					"element": "cryo",
+					"conditions": {
+						"type": "weaponType",
+						"weapons": ["sword", "claymore", "polearm"]
+					}
+				}
+			],
 			"description": "Chongyun strikes the ground with his greatsword, causing a Cryo explosion in a circular AoE in front of him that deals Cryo DMG.\nAfter a short delay, the cold air created by the Cryo explosion will coalesce into a Chonghua Frost Field, within which all Sword, Claymore and Polearm-wielding characters' weapons will be infused with Cryo.",
 			"application": [
 				{ "frame": 36, "element": "cryo", "units": 2 },
 				{ "frame": 655, "element": "cryo", "units": 1 }
-			]
+			],
+			"caveat": "Assumes the active character stays inside the Frost Field; in play the infusion lasts only 2.9s after they leave it."
 		},
 		{
 			"id": "chongyun__burst__spirit_blade_cloudparting_star",

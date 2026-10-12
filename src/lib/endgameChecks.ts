@@ -8,22 +8,33 @@
  *
  *   met      — the team does it (a favoured check gets ✓; a disfavoured one ⚠)
  *   unmet    — it cannot
- *   unknown  — we have no rule we trust ("Multi Elemental DMG", "Crowd-control
- *              characters"…). ⚓ Shown, never marked — ⛔ never guessed.
+ *   unknown  — we have no rule we trust ("Multi Elemental DMG", "High-
+ *              frequency DMG"…). ⚓ Shown, never marked — ⛔ never guessed.
  *
  * Alternatives: met if ANY is met; else unknown if any is unknown; else unmet.
  * "A reaction" means the team's elements can make it (§9.2's "can happen",
  * enablers and conversions applied — `teamReactions`); "an X character" means
  * a member of element X; "shield / healing characters" means the fingerprint
  * slot is LIT for someone.
+ *
+ * ⚓ Nate's rulings on the rest (2026-10-12):
+ *   · Nightsoul — "Nightsoul's Blessing Characters" and "Nightsoul-aligned
+ *     DMG" are met by any Nightsoul user: every Natlan character, and the
+ *     Pyro Traveler.
+ *   · Crowd control (two spellings) — a GROUPING provider is met; anything
+ *     else stays unknown (knockback, freeze and launch have no data).
+ *   · "Bond of Life Characters" — Arlecchino and Clorinde, a hand-kept list
+ *     (Nate: new Bond of Life characters are unlikely).
+ *   · Unknown on purpose: the frequency checks (how often a team hits),
+ *     "Plunging-Attack Characters", and both "Single" and "Multi Elemental
+ *     DMG" (↻ same day: a member's element is not the element they DEAL —
+ *     an Anemo teammate infused into Pyro, a buffer who barely hits — so the
+ *     members' elements answer neither).
  */
 
-import {
-	REACTION_INGREDIENTS,
-	teamReactions,
-	type TeamMember
-} from '$lib/capabilities/deriveCapabilities';
+import { REACTION_INGREDIENTS, teamReactions } from '$lib/capabilities/deriveCapabilities';
 import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import type { CharacterIndexEntry } from '$lib/types/character';
 import { deriveTeamComposition } from '$lib/utils/teamComposition';
 import { checkAlternatives, SPRITES, type BattlefieldCheck } from './endgame';
 import { memberState } from './fingerprint';
@@ -33,12 +44,17 @@ export type CheckVerdict = 'met' | 'unmet' | 'unknown';
 
 type Facts = {
 	ids: string[];
-	members: TeamMember[];
+	/** Index entries (a TeamMember, plus the region the Nightsoul check reads). */
+	members: CharacterIndexEntry[];
 	reactions: string[];
 	conOf: (id: string) => number;
 };
 
 const MELEE = ['sword', 'claymore', 'polearm'];
+/** ⚓ Nate 2026-10-12: Arlecchino and Clorinde only. */
+const BOND_OF_LIFE = ['arlecchino', 'clorinde'];
+/** Nightsoul users outside Natlan's roster. */
+const NIGHTSOUL_ELSEWHERE = ['traveler_pyro'];
 const RANGED = ['bow', 'catalyst'];
 
 function lit(f: Facts, facet: FacetKey): boolean {
@@ -95,6 +111,11 @@ function alternative(f: Facts, parts: ReturnType<typeof checkAlternatives>[numbe
 	if (text.startsWith('ranged character'))
 		return yes(f.members.some((m) => RANGED.includes(m.weapon ?? '')));
 	if (text.startsWith('bow character')) return yes(f.members.some((m) => m.weapon === 'bow'));
+	if (text.startsWith('nightsoul'))
+		return yes(f.members.some((m) => m.region === 'Natlan' || NIGHTSOUL_ELSEWHERE.includes(m.id)));
+	if (/^crowd[- ]control character/.test(text)) return lit(f, 'grouping') ? 'met' : 'unknown';
+	if (text.startsWith('bond of life character'))
+		return yes(f.members.some((m) => BOND_OF_LIFE.includes(m.id)));
 	return 'unknown';
 }
 

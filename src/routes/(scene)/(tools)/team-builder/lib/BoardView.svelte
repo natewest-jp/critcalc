@@ -52,6 +52,7 @@
 	} from '$lib/endgame';
 	import { evaluateCheck, type CheckVerdict } from '$lib/endgameChecks';
 	import { teamFingerprint } from '$lib/fingerprint';
+	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 	import { teamHue } from './team';
 	import Fingerprint from './Fingerprint.svelte';
 	import CheckChip from './CheckChip.svelte';
@@ -84,7 +85,10 @@
 		onRemoveTeam,
 		onOpenInPlanner,
 		onPin,
-		onSeason
+		onSeason,
+		previewId = null,
+		filteredFacets,
+		onFind
 	}: {
 		board: Board;
 		/** The board's wide form (⚓ Nate 2026-10-10: "too cramped and too
@@ -102,6 +106,14 @@
 		onOpenInPlanner: (team: BoardTeam) => void;
 		onPin: (teamId: string, rotationId: string | null) => void;
 		onSeason: (version: string) => void;
+		/** The card the pointer rests on — the SELECTED team's fingerprint
+		 *  previews the team its pick would make (§11.2). */
+		previewId?: string | null;
+		/** The roster's capability filter — the fingerprint marks its slots. */
+		filteredFacets?: ReadonlySet<FacetKey>;
+		/** A faint fingerprint slot was clicked: find who would provide it, for
+		 *  this team. */
+		onFind?: (teamId: string, facet: FacetKey) => void;
 	} = $props();
 
 	const portrait = $derived(roomy ? BOARD_PORTRAIT_ROOMY : BOARD_PORTRAIT);
@@ -143,6 +155,18 @@
 		const own = teamCon(team, $savedNotations);
 		const conOf = (id: string) => effectiveCon(own, $constellations, id);
 		return { ids, own, conOf, fingerprint: ids.length ? teamFingerprint(ids, conOf) : null };
+	}
+	/** The team a pick of `previewId` would make — the pick is the game's
+	 *  toggle, so a member previews their own removal, and a full team
+	 *  previews nothing (the pick would only nudge). */
+	function previewFor(team: BoardTeam, facts: ReturnType<typeof teamFacts>) {
+		if (!previewId || team.id !== selectedTeamId) return null;
+		const ids = facts.ids.includes(previewId)
+			? facts.ids.filter((id) => id !== previewId)
+			: team.slots.includes(null)
+				? [...facts.ids, previewId]
+				: null;
+		return ids ? teamFingerprint(ids, facts.conOf) : null;
 	}
 	const verdictsFor = (b: Battlefield, ids: string[], conOf: (id: string) => number) =>
 		ids.length
@@ -216,6 +240,7 @@
 		{@const rotations = rotationsForTeam(team, $savedNotations)}
 		{@const pin = pinnedRotation(team, $savedNotations)}
 		{@const sel = team.id === selectedTeamId}
+		{@const preview = previewFor(team, facts)}
 		<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
 		     is glass (the site — a battlefield, an Abyss half); everything under
 		     it stands on the night. A battlefield's header fuses its number with
@@ -280,10 +305,33 @@
 					</button>
 					<span class="bv-vrule" aria-hidden="true"></span>
 				{/if}
-				<div class="bv-stack">
-					{#if field?.checks.length}
-						<div class="bv-checks">
-							{#each field.checks as c, i (i)}<CheckChip check={c} verdict={verdicts?.[i]} />{/each}
+				<div class="bv-stack" class:bv-stack--top={!!field?.checks.length || filled}>
+					<!-- ⚓ Nate 2026-10-12: the checks and "Planner →" share the TOP line,
+					     which spans the stack's two columns; the pin hangs under the
+					     button in the right column (see .bv-stack). -->
+					{#if field?.checks.length || filled}
+						<div class="bv-top">
+							{#if field?.checks.length}
+								<div class="bv-checks">
+									{#each field.checks as c, i (i)}<CheckChip
+											check={c}
+											verdict={verdicts?.[i]}
+										/>{/each}
+								</div>
+							{/if}
+							{#if filled}
+								<!-- ⚓ Nate 2026-10-12: "Planner →" — the pinned rotation (or "No
+								     saved rotation") sits right under it, so the word says
+								     enough. Centred on the checks' line; the pin hangs under it
+								     inside the LINEUP row, so it never pushes the lineup down. -->
+								<button
+									class="btn btn--sm bv-planner"
+									onclick={() => onOpenInPlanner(team)}
+									title="Open this team in the Rotation Planner"
+									aria-label="Open this team in the Rotation Planner"
+									>Planner <Mark name="forward" size={12} /></button
+								>
+							{/if}
 						</div>
 					{/if}
 					<div class="bv-lineup-row">
@@ -326,13 +374,10 @@
 						</div>
 						{#if filled}
 							<div class="bv-side">
-								<CompositionChips ids={team.slots} reactions={false} />
-								<!-- The team's rotation, and the way to play it: the line exists
-								     exactly when the team does, and the rotation is the button's
-								     subject (§11.6 item 13). -->
-								<div class="bv-play">
-									<!-- ⚓ A team's rotations are DERIVED from the library by its set;
-								     a pin names the one you would play here (§10.2). -->
+								<!-- The team's rotation: DERIVED from the library by its set; a pin
+								     names the one you would play here (§10.2). It sits under the
+								     Planner button above — its subject (§11.6 item 13). -->
+								<div class="bv-pin">
 									{#if rotations.length === 0}
 										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
 										>
@@ -340,11 +385,8 @@
 										<BandMenu
 											mark="pin"
 											size="sm"
-											align="start"
-											label={pin?.name ??
-												(rotations.length === 1
-													? '1 rotation, none pinned'
-													: `${rotations.length} rotations, none pinned`)}
+											align="end"
+											label={pin?.name ?? 'Pin a rotation'}
 											ariaLabel="Pinned rotation for team {t + 1}"
 										>
 											{#snippet items(close)}
@@ -362,24 +404,31 @@
 														<span class="bv-menu-check"
 															>{#if current}<Mark name="check" size={12} />{/if}</span
 														>
-														{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span
-															>{/if}
+														{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
 													</button>
 												{/each}
 											{/snippet}
 										</BandMenu>
 									{/if}
-									<button
-										class="btn btn--sm"
-										onclick={() => onOpenInPlanner(team)}
-										title="Open this team in the Rotation Planner"
-										><Mark name="forward" size={12} /> Open in Planner</button
-									>
 								</div>
+								<CompositionChips ids={team.slots} reactions={false} />
 							</div>
 						{/if}
 					</div>
-					{#if facts.fingerprint}<Fingerprint clusters={facts.fingerprint} />{/if}
+					<!-- The fingerprint's line is RESERVED (⚓ Nate 2026-10-12): an empty
+					     team keeps its height, so the board doesn't move when a team
+					     fills, empties or previews. -->
+					<div class="bv-fp">
+						{#if facts.fingerprint || preview}
+							<Fingerprint
+								clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
+								{preview}
+								previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
+								filtered={sel ? filteredFacets : undefined}
+								onFind={onFind && ((facet) => onFind(team.id, facet))}
+							/>
+						{/if}
+					</div>
 				</div>
 			</div>
 		</section>
@@ -532,29 +581,94 @@
 		width: 1px;
 		background: var(--line-faint);
 	}
+	/* ⚓ THE STACK IS TWO COLUMNS (Nate 2026-10-12): the top line spans
+	   both (checks · Planner →); under it the LEFT column is the lineup with
+	   the fingerprint beneath, and the RIGHT column hangs the pinned rotation
+	   directly under the Planner button with the composition chips under it.
+	   The right column spans the lineup AND the fingerprint's rows, so a pin
+	   plus two lines of chips fit beside them without adding height — no line
+	   of the right column ever pushes the lineup or the fingerprint down. */
 	.bv-stack {
-		display: flex;
-		flex-direction: column;
-		gap: 0.85rem;
+		display: grid;
+		grid-template-columns: max-content minmax(0, 1fr);
+		grid-template-areas:
+			'slots side'
+			'fp side';
+		align-content: start;
+		gap: 0.85rem 0.75rem;
 		min-width: 0;
 		flex: 1;
 	}
-	.bv-checks {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
+	.bv-stack--top {
+		grid-template-areas:
+			'top top'
+			'slots side'
+			'fp side';
+	}
+	.bv-top {
+		grid-area: top;
 	}
 	.bv-lineup-row {
+		display: contents;
+	}
+	.bv-slots {
+		grid-area: slots;
+		justify-self: start;
+	}
+	.bv-fp {
+		grid-area: fp;
+	}
+	/* The TOP line: the checks at the left, the Planner button at the right,
+	   centred on the checks' line (⚓ Nate 2026-10-12). */
+	.bv-top {
+		display: flex;
+		align-items: center;
+		gap: 6px 1rem;
+	}
+	.bv-planner {
+		flex: none;
+		margin-left: auto;
+	}
+	.bv-checks {
+		flex: 0 1 auto;
 		display: flex;
 		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.6rem 1.1rem;
+		gap: 6px;
 	}
+	/* The fingerprint's reserved line: one fingerprint tall (glyph 16 + gap
+	   2 + dots 3), so an empty team holds the board's shape. */
+	.bv-fp {
+		min-height: 21px;
+	}
+	/* The right column: the pin flush right under the Planner button, the
+	   composition chips under it. A long rotation name truncates to the
+	   column. */
 	.bv-side {
+		grid-area: side;
+		align-self: start;
 		display: flex;
 		flex-direction: column;
+		align-items: flex-end;
 		gap: 6px;
 		min-width: 0;
+	}
+	.bv-pin {
+		display: flex;
+		justify-content: flex-end;
+		max-width: 100%;
+		min-width: 0;
+	}
+	.bv-pin :global(.band-menu-trigger) {
+		max-width: 100%;
+		min-width: 0;
+	}
+	.bv-side :global(.comp) {
+		justify-content: flex-end;
+	}
+	.bv-pin :global(.band-menu-label) {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	/* The boss: a circle-cut avatar on the members' ring, the game's magnifier
@@ -687,13 +801,8 @@
 		cursor: pointer;
 		border-radius: var(--r-round);
 	}
-	.bv-play {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 6px 10px;
-	}
 	.bv-rotations {
+		white-space: nowrap;
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -711,14 +820,17 @@
 		gap: 14px;
 	}
 	.bv--roomy :global(.fp-cluster) {
-		gap: 6px;
+		gap: 10px;
+	}
+	.bv--roomy .bv-fp {
+		min-height: 25px;
 	}
 	.bv--roomy :global(.fp-slot) {
-		width: 20px;
+		width: 16px;
 	}
 	.bv--roomy :global(.fp-glyph) {
-		width: 20px;
-		height: 20px;
+		width: 16px;
+		height: 16px;
 	}
 	.bv--roomy :global(.fp-pip) {
 		width: 15px;
@@ -783,14 +895,33 @@
 			width: var(--boss-narrow);
 			height: var(--boss-narrow);
 		}
-		.bv-body > :global(*),
-		.bv-stack > :global(*) {
+		.bv-body > :global(*) {
 			grid-column: 1 / -1;
 		}
 		.bv-body > .bv-boss {
 			grid-column: 1;
 		}
-		.bv-stack > .bv-checks {
+		.bv-top {
+			display: contents;
+		}
+		/* The named areas belong to the wide stack's grid; out here every
+		   piece is placed by the body's rules below. */
+		.bv-top,
+		.bv-slots,
+		.bv-side,
+		.bv-fp {
+			grid-area: auto;
+		}
+		/* The pin and chips follow the lineup, flush right. */
+		.bv-side {
+			justify-self: end;
+		}
+		.bv-stack > :global(*),
+		.bv-top > :global(*),
+		.bv-lineup-row > :global(*) {
+			grid-column: 1 / -1;
+		}
+		.bv-top > .bv-checks {
 			grid-column: 2;
 		}
 		/* Four portraits in 288px of screen (320 less its gutters): 224 of

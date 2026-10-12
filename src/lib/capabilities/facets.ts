@@ -44,12 +44,12 @@ export function conCapFor(mode: ConMode, myConstellation: number | undefined): n
 // ---------------------------------------------------------------------------
 
 export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
-	{ key: 'heal', label: 'Heals', hint: 'Restores HP to someone' },
-	{ key: 'shield', label: 'Shields', hint: 'Creates a damage-absorbing shield' },
+	{ key: 'heal', label: 'Healing', hint: 'Restores teammates’ HP.' },
+	{ key: 'shield', label: 'Shield', hint: 'Shields the active character.' },
 	{
 		key: 'interruptionRes',
-		label: 'Interruption Res',
-		hint: 'Grants resistance to interruption / knockback'
+		label: 'Interruption RES',
+		hint: 'Makes teammates harder to interrupt.'
 	},
 	{
 		key: 'offFieldDamage',
@@ -61,12 +61,20 @@ export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'grouping', label: 'Grouping', hint: 'Pulls or gathers enemies' },
 	{ key: 'buff:atk', label: 'ATK buff', hint: 'Buffs allies’ ATK' },
 	{ key: 'buff:em', label: 'EM buff', hint: 'Buffs allies’ Elemental Mastery' },
-	{ key: 'buff:crit', label: 'Crit buff', hint: 'Buffs allies’ Crit Rate / Crit DMG' },
+	{ key: 'buff:crit', label: 'CRIT buff', hint: 'Buffs allies’ Crit Rate / Crit DMG' },
 	{ key: 'buff:dmg', label: 'DMG% buff', hint: 'Buffs allies’ damage bonuses' },
 	{ key: 'buff:hpdef', label: 'HP/DEF buff', hint: 'Buffs allies’ HP or DEF' },
-	{ key: 'infuse', label: 'Infusion', hint: 'Applies an elemental infusion to on-field attacks' },
-	{ key: 'energy', label: 'Energy', hint: 'Grants flat energy' },
-	{ key: 'taunt', label: 'Taunt', hint: 'Summons draw enemy aggro' }
+	{
+		key: 'infuse',
+		label: 'Infusion',
+		hint: 'Infuses the active character’s attacks with an element.'
+	},
+	{
+		key: 'energy',
+		label: 'Energy',
+		hint: 'Gives teammates flat Energy (particles aren’t counted).'
+	},
+	{ key: 'taunt', label: 'Taunt', hint: 'Draws opponents’ attacks away from you.' }
 ];
 
 /**

@@ -110,7 +110,7 @@ const BUFF_FAMILY_ORDER = ['atk', 'em', 'crit', 'dmg', 'hpdef'] as const;
 const BUFF_FAMILY_LABEL: Record<(typeof BUFF_FAMILY_ORDER)[number], string> = {
 	atk: 'ATK buff',
 	em: 'EM buff',
-	crit: 'Crit buff',
+	crit: 'CRIT buff',
 	dmg: 'DMG% buff',
 	hpdef: 'HP/DEF buff'
 };

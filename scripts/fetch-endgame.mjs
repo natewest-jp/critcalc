@@ -35,6 +35,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DATES = join(ROOT, 'src/lib/data/endgame/season-dates.json');
 const OUT = join(ROOT, 'src/lib/data/endgame/stygian.json');
+/** The bosses' WORDS — description and mechanics, ~95% of the data — in a
+ *  file of their own, so only the boss detail modal loads them (it imports
+ *  this on open); the board reads names alone from OUT. */
+const BOSS_TEXT_OUT = join(ROOT, 'src/lib/data/endgame/stygian-bosses.json');
 const ABYSS_OUT = join(ROOT, 'src/lib/data/endgame/abyss.json');
 const ABYSS_ICON_DIR = join(ROOT, 'assets-src/endgame/abyss');
 const MONSTER_ICON_DIR = join(ROOT, 'assets-src/endgame/monsters');
@@ -292,14 +296,25 @@ async function main() {
 	seasons.sort((a, b) => a.start.localeCompare(b.start));
 	seasons.forEach((s, i) => (s.end = seasons[i + 1]?.start ?? addDays(s.start, SEASON_DAYS)));
 
-	const out = {
+	const sorted = Object.entries(bosses).sort(([a], [b]) => a.localeCompare(b));
+	const header = {
 		_generated: 'scripts/fetch-endgame.mjs — do not edit; edit season-dates.json and re-run',
-		_sources: 'lunaris.moe (season data, icons) · stygian.moe (dates, cross-checked)',
-		bosses: Object.fromEntries(Object.entries(bosses).sort(([a], [b]) => a.localeCompare(b))),
+		_sources: 'lunaris.moe (season data, icons) · stygian.moe (dates, cross-checked)'
+	};
+	const out = {
+		...header,
+		bosses: Object.fromEntries(sorted.map(([slug, b]) => [slug, { name: b.name }])),
 		seasons
+	};
+	const text = {
+		...header,
+		bosses: Object.fromEntries(
+			sorted.map(([slug, b]) => [slug, { description: b.description, mechanics: b.mechanics }])
+		)
 	};
 	await mkdir(dirname(OUT), { recursive: true });
 	await writeFile(OUT, JSON.stringify(out, null, '\t') + '\n');
+	await writeFile(BOSS_TEXT_OUT, JSON.stringify(text, null, '\t') + '\n');
 	console.log(`wrote ${OUT}: ${Object.keys(bosses).length} bosses, ${seasons.length} seasons`);
 
 	await mkdir(ICON_DIR, { recursive: true });

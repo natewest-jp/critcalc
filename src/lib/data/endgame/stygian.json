@@ -8,57 +8,7 @@
 				"zh": "兆载永劫龙兽·歼灭构型",
 				"pt": "Dragão Calamitoso: Mecanismo Aniquilador",
 				"ru": "Дракон вечных бедствий: Конфигурация истребления"
-			},
-			"description": {
-				"en": "This dragon-shaped combat machine is a being that inspires fear, much like the lord who once ruled these vast lands.\nThis mysterious, tireless mechanical monstrosity seems to be proof that the now-destroyed realm had reached heights that mortals should never have.\nDue to sustained corruption from the disordered Ley Lines, its frame has been enhanced, and it has adapted to its mission of annihilation so well that it has become a nightmare of death on the battlefield...",
-				"zh": "如同古时曾制御大地的君王一般，令人望而生畏的龙形战斗机械。\n这架不知疲倦的神秘机械巨兽似乎证明，传说已经覆灭的国度确已触及了人所不应抵达的领域。\n经由地脉乱象的长久侵染，它的框架竟已悄然演进，对歼灭任务产生了卓越的适应逻辑，成为战场上至为致命的噩梦…",
-				"pt": "Essa máquina de combate na forma de um dragão é um ser amedrontador, assim como o senhor que governou estas vastas terras.\nEsta monstruosidade mecânica misteriosa incansável parece ser a prova de que a lendária nação já dizimada de fato alcançou o que os mortais nunca deveriam alcançar.\nDevido a passar muito tempo exposto a contaminação das Linhas Ley, sua estrutura evoluiu, gerando uma lógica super destrutiva, e tornando-se um pesadelo mortal no campo de combate...",
-				"ru": "Эта боевая машина в форме дракона внушает страх, как и правитель, который когда-то владел этими землями.\nЗагадочное неутомимое механическое чудище словно подтверждает, что давно сгинувшее царство достигало таких высот, которые оказались не по силам простым смертным.\nПод длительным воздействием заражения артерий земли его структура незаметно подверглась эволюции - оно приобрело превосходную логику адаптации к задачам уничтожения и стало самым смертоносным кошмаром на поле боя..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Emergency Countermeasures",
-						"zh": "紧急反制措施",
-						"pt": "Contramedidas de Emergência",
-						"ru": "Экстренные контрмеры"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, every time DMG equaling a certain percentage of its HP is taken, a torrent of energy will be unleashed, and the creature will change form in response to the type of Elemental DMG it has suffered the most during that period, **significantly increasing its Elemental RES to that Element**.",
-						"zh": "受到地脉紊乱的影响，每承受一定比例生命值的伤害，就会释放能量洪流，并根据这段时间所受伤害最高的元素类型来切换形态，**极大提升对应元素抗性**。",
-						"pt": "Quando está sob influência da perturbação de Linha Ley, cada vez que sofre uma certa quantidade de Dano proporcional a Vida, lança uma onda de energia, e que troca o estado de acordo com o Tipo Elemental de Dano mais alto sofrido nesse período, **aumentando consideravelmente a RES Elemental correspondente**.",
-						"ru": "Под воздействием флуктуации артерий земли, после того как дракон получает урон, равный определённой части HP, он выпускает поток энергии и меняет форму в зависимости от основного типа элемента урона, полученного им в этот период, **значительно повышая своё сопротивление этому элементу**."
-					}
-				},
-				{
-					"name": {
-						"en": "Multi-Combat Mechanics",
-						"zh": "多重交战机制",
-						"pt": "Mecânica Multi-Combate",
-						"ru": "Множественные механики боя"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the creature will start combat in the ground-attack state. If it fails to release a torrent of energy for a long enough time, it will switch to the aerial-attack state to continue combat.",
-						"zh": "受到地脉紊乱的影响，初始会以地面状态开始战斗。如果长时间未释放能量洪流，就会切换到升空状态进行战斗。",
-						"pt": "Quando está sob a influência de uma perturbação da Linha Ley, inicia a batalha no estado de combate terrestre. Se não lançar sua corrente de energia por muito tempo, trocará para o estado de combate aéreo.",
-						"ru": "Под воздействием флуктуации артерий земли начинает бой в состоянии наземных атак. Если он не сможет выпустить Всплеск энергии в течение долгого времени, то он переходит в состояние воздушных атак и продолжает бой."
-					}
-				},
-				{
-					"name": {
-						"en": "Core Armor Compartment",
-						"zh": "核心装甲隔舱",
-						"pt": "Compartimento de Armadura Nuclear",
-						"ru": "Бронеотсеки ядер"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the creature's many cores are now protected, and it will no longer be paralyzed when they are attacked, nor will its Elemental RES boost be removed.",
-						"zh": "受到地脉紊乱的影响，身体的诸多核心都被保护了起来，不再会因为核心受到攻击而瘫痪，也不会因此而清除已有的元素抗性。",
-						"pt": "Devido a uma perturbação das Linhas Ley, os muitos núcleos da criatura estão protegidos, e não será paralisada quando eles forem atacadas, nem perderá o aumento de sua RES Elemental.",
-						"ru": "Под воздействием флуктуации артерий земли ядра на его теле теперь защищены. Атаки ядер больше не парализуют его, а его элементальное сопротивление не снимается."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-domovoy-sculptor-gale-hewing": {
 			"name": {
@@ -66,43 +16,7 @@
 				"zh": "历经百战的矮灵雕刻师·运风成斤",
 				"pt": "Escultor Domovoy Veterano: Talho Vendaval",
 				"ru": "Бывалый домовой-ваятель: Топор ветра ЪЪЪ"
-			},
-			"description": {
-				"en": "An ice sculptor with a body honed through countless trials, capable of shaping Prime Ice by wielding Anemo energy as hammer and chisel.\nTwisted by Ley Line currents even more appalling than his own artistic taste, the sculptor has succumbed to a frenzy of irrepressible inspiration. He now seeks to carve flesh and bone with howling gales and seal souls within unbreakable Prime Ice, eager to turn every intruder before him into the latest masterpiece in this exhibition of calamity.",
-				"zh": "拥有千锤百炼的体魄，能将风元素化作斧凿的臻冰雕塑师。\n在比其审美更为糟糕扭曲的地脉奔流演绎下，这位雕刻师陷入了无可救药的癫狂灵感。他势要以呼啸的狂风雕琢骨肉，用坚不可摧的臻冰封存灵魂，迫不及待地将眼前的所有入侵者，凿刻成这场灾厄展览里的最新杰作。",
-				"pt": "Um escultor de gelo com um corpo fortalecido por incontáveis testes, capaz de moldar Gelo Puro ao empunhar a Energia Anemo como martelo e cinzel.\nDistorcido pelas correntes da Linha Ley ainda mais assustadoramente do que seu próprio gosto artístico, o escultor sucumbiu a um frenesi de inspiração irreprimível. Ele agora busca talhar carne e osso com lufadas de vento uivantes e selar almas em Gelo Puro inquebrável, ansioso para transformar cada intruso perante ele na obra-prima mais recente nesta exposição da calamidade.",
-				"ru": "Скульптор из вечного льда, закалённый в тысячах битв, способный обращать силу Анемо в резец и топор.\nПод воздействием потоков артерий земли, искажённых сильнее, чем его собственное чувство прекрасного, этот скульптор впал в безумие творческого вдохновения. Он жаждет высечь плоть воющим ветром, запечатать души в несокрушимом вечном льду и превратить всех вторгшихся в новые шедевры этой выставки бедствий."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Big-Mouthed Jack Frost",
-						"zh": "巨口霜精",
-						"pt": "Geladinho de Boca Grande",
-						"ru": "Большеротый ледовик"
-					},
-					"text": {
-						"en": "When battle begins, the Nemesis will harness Anemo energy to create a Prime Ice sculpture. After a short delay, the sculpture will transform into a Big-Mouthed Jack Frost that continuously launches snowballs.\nInflict **Radiance: Stellar Glimmer** on the Nemesis while it is creating the sculpture to interrupt the process and turn the ice sculpture into a harmless animal statue instead.",
-						"zh": "战斗开始时，强敌会运用风元素的力量，尝试塑造臻冰雕像。一段时间后，雕像将化为能够持续发射雪球的「巨口霜精」。\n若在塑形期间使强敌处于**辉映·星烁**效果的影响之下，即可打断该过程，将冰雕转化为无害的小动物雕像。",
-						"pt": "Quando a batalha começa, o Vilão acumulará Energia Anemo para criar uma escultura de Gelo Puro. Após um breve tempo, a escultura se transformará num Geladinho de Boca Grande que dispara bolas de neve continuamente.\nInflija **Brilho Reluzente: Brilho Estelar** no Vilão enquanto ele estiver criando a escultura para interromper o processo e transformá-la numa estátua de um animal inofensivo.",
-						"ru": "В начале боя сильный противник силой Анемо создаёт скульптуру из вечного льда. Через некоторое время она превращается в Большеротого ледовика, который непрерывно выпускает снежки.\nЕсли во время создания скульптуры сильный противник окажется под воздействием эффекта **Сияние: Звёздный блеск**, этот процесс будет прерван, а ледяная скульптура превратится в безобидную фигурку животного."
-					}
-				},
-				{
-					"name": {
-						"en": "Creative Frenzy",
-						"zh": "灵感迭出",
-						"pt": "Frenesi Criativo",
-						"ru": "Неиссякаемое вдохновение"
-					},
-					"text": {
-						"en": "Due to the effects of the Ley Line disturbance, the Nemesis will **start the battle with greatly increased All Elemental RES and Physical RES** and will create Prime Ice sculptures more frequently.\nAfter an ice sculpture is transformed into a small animal statue, it will explode following a brief delay, dealing damage to the Nemesis and **reducing its All Elemental RES and Physical RES, while further reducing its Anemo RES**. This effect can **stack up to 3 times**.",
-						"zh": "受到地脉紊乱的影响，强敌**将在战斗开始时，获得较高的所有元素抗性与物理抗性**，且会更为频繁地塑造臻冰雕像。\n冰雕被转化为小动物雕像后，会在短暂延迟后爆炸，对强敌造成一定伤害，同时**降低其所有元素抗性与物理抗性，并额外降低其风元素抗性**，此效果**至多叠加3层**。",
-						"pt": "Devido aos efeitos da perturbação da Linha Ley, o Vilão **iniciará a batalha com RES contra Todos os Elementos e RES Física aumentadas drasticamente**, além de criar esculturas de Gelo Puro mais frequentemente.\nApós uma escultura de gelo ser transformada numa estátua de animal pequena, ela explodirá após um breve tempo, causando Dano ao Vilão e **reduzindo toda a sua RES contra Todos os Elementos e RES Física, enquanto reduz ainda mais sua RES Anemo**. Esse efeito pode **acumular até 3 vezes**.",
-						"ru": "Под воздействием флуктуации артерий земли сильный противник **в начале битвы получит повышенное сопротивление всем элементам и физ. сопротивление**, а также будет чаще создавать скульптуры из вечного льда.\nКогда ледяная скульптура превратится в фигурку животного, она вскоре взорвётся, нанося сильному противнику определённый урон и **понижая его сопротивление всем элементам и физ. сопротивление, а также дополнительно понижая его Анемо сопротивление**. Этот эффект **складывается до 3 раз**."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-fireblade-shock-trooper-forlorn-hope": {
 			"name": {
@@ -110,57 +24,7 @@
 				"zh": "历经百战的火刃突击队员·决死武装",
 				"pt": "Tropa de Choque Lâmina Flamejante Veterana: Arsenal Perigoso",
 				"ru": "Бывалый Штурмовик огненного клинка: Смертный бой"
-			},
-			"description": {
-				"en": "An elite officer of the Fatui Oprichniki who specializes in close combat using a giant blade.\nWhether it be in the war against the dark calamity or against those ignoramuses who dare stand against the Tsaritsa's ideals, those who breach at the tip of the spear suffer the greatest casualties. Those who survive a hundred battles only to fall all the same become a fearful memory in the Ley Lines. Due to sustained immersion in the twisted currents, these warriors' lingering shades turn the blades they once wielded in desperate battle against the challenger who seeks to quell the disorder....",
-				"zh": "隶属于愚人众特辖队的精锐士官，擅长以巨剑与敌人近身相搏。\n无论是在抵御漆黑灾厄的战斗中，还是在与那些胆敢阻拦女皇理想的无知者们的战斗中，冲在最前线的突击队都是伤亡最高的编制之一，历经百战却遗憾倒下的老兵，却成为了地脉恐惧记忆的一环，深浸于扭曲奔流许久之后，老兵的残像将过去决死一战所用的锋刃转向了前来平息动乱的挑战者…",
-				"pt": "Um oficial de elite dos Oprichniki dos Fatui, especialista em combate próximo com uma lâmina gigante.\nSeja na guerra contra a calamidade escura ou contra os ignorantes que ficam no caminho dos ideais da Tsaritsa, aqueles avançam na ponta da lança são os que sofrem as mais pesadas baixas. Aqueles que sobrevivem cem batalhas para então caírem se tornam então memórias temerosas nas Linhas Ley. Devido à constante imersão nas correntes distorcidas, as sombras residuais erguem suas lâminas em uma batalha desesperada contra o desafiante que busca acabar com essa desordem...",
-				"ru": "Элитный офицер опричников с гигантским клинком, специализирующийся на ближнем бою.\nБудь то противостояние чёрному бедствию или невеждам, осмеливающимся противостоять идеалам Царицы, те, кто прорвётся на острие копья, понесут наибольшие потери. Павшие солдаты, которые пережили сотни сражений, превращаются в страшное воспоминание в артериях земли. После долгого погружения в бурные, искривлённые потоки, тени этих воинов обратили свои клинки, с которыми они сражались в решающем бою, против пришедшего усмирить беспорядок..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Multi-Shield",
-						"zh": "多重护盾",
-						"pt": "Escudo Múltiplo",
-						"ru": "Мультищит"
-					},
-					"text": {
-						"en": "In battle, the opponent will deploy a special Experimental Multi-Shield to protect themselves while they prepare to activate Thundering Suite. The Shield will repair itself by a certain amount at regular intervals. Destroying all 3 layers of the Shield will prevent Thundering Suite's activation and paralyze the opponent. **Electro-Charged and Lunar-Charged DMG** are more effective at destroying the Shield. Additional Elemental Orbs will be generated for each layer of the Shield that is destroyed.",
-						"zh": "战斗中，敌人将准备启动雷矩套件，并展开特殊的「实验型多重护盾」保护自身，每隔一段时间，护盾会进行一定程度的自我修复。破坏3层护盾后，即可阻止雷矩套件启动，并使敌人瘫痪。**感电和月感电伤害**对护盾具有更高的破坏效率。每层护盾被破坏时，都会使敌人受到一次高额伤害，并产生额外的元素晶球。",
-						"pt": "Em combate, o inimigo lançará um Escudo Experimental para se proteger enquanto se prepara para ativar o Conjunto Trovejante. O Escudo se reparará em uma certa quantidade periodicamente. Destruir as 3 camadas do Escudo impedirá que o Conjunto Trovejante seja ativado, paralisando o oponente. **Dano de Eletricamente Carregado e Carga Lunar** é mais eficaz em destruir o Escudo. Quando cada camada do Escudo for destruída, causará dano massivo no inimigo e serão gerados Orbes Elementais adicionais.",
-						"ru": "В бою враг готовится активировать Громовой набор, для защиты развернув особый Экспериментальный мультищит. Щит через определённые промежутки времени восстанавливается. Уничтожьте все три слоя щита, чтобы помешать активации Громового набора и парализовать врага. Против него более эффективен **урон реакций Заряжен и Лунный заряд**. Уничтожение каждого слоя щита наносит противнику огромный урон и создаёт дополнительные элементальные сферы."
-					}
-				},
-				{
-					"name": {
-						"en": "Thundering Barrage",
-						"zh": "雷矩轰击",
-						"pt": "Saraivada de Raios",
-						"ru": "Громовой залп"
-					},
-					"text": {
-						"en": "When Thundering Suite is activated, it will deal Electro DMG over a large AoE and then unleash continuous Electro attacks for a period of time. If you successfully prevent the suite's activation, the opponent's equipment will malfunction, causing their **Electro RES to be greatly decreased**.",
-						"zh": "雷矩套件成功启动时，将造成大范围雷元素伤害，并在接下来的一段时间内持续进行雷元素攻击。如果成功阻止套件启动，则会使敌人的装备故障，导致敌人的**雷元素抗性大幅降低**。",
-						"pt": "Quando ativa com sucesso o Conjunto Trovejante, causa Dano Electro em uma grande AdE, e continua por um tempo realizando ataques Electro. Se interromper a ativação com sucesso, o equipamento do inimigo quebrará, **reduzindo consideravelmente a RES Electro**.",
-						"ru": "Громовой набор при активации наносит Электро урон по большой площади и некоторое время периодически выполняет Электро атаки. Если вы не дадите ему активироваться, то снаряжение врага выйдет из строя, а его **Электро сопротивление значительно снизится**."
-					}
-				},
-				{
-					"name": {
-						"en": "Emergency Power Surge",
-						"zh": "紧急功率增幅",
-						"pt": "Surto de Energia de Emergência",
-						"ru": "Аварийное усиление мощности"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Experimental Multi-Shield increases All RES except Electro, and its self-repairing abilities are boosted. However, after taking **Electro-Charged or Lunar-Charged DMG**, its rate of self-repair will be greatly reduced. Once activated, the DMG dealt by Thundering Suite is greatly increased, as is the duration of its attacks.",
-						"zh": "受到地脉紊乱的影响，「实验型多重护盾」会提升雷元素以外的所有抗性，且具有更强的自我修复能力，但是在受到**感电和月感电伤害**后自我修复的速度会大大降低。雷矩套件成功启动后，会大幅提升造成的伤害，并大幅延长攻击的持续时间。",
-						"pt": "Afetado pela perturbação da Linha Ley, o Escudo Múltiplo Experimental aumenta todas as RES Elementais, exceto Electro, e suas habilidades de autorreparo são fortalecidas. Contudo, após sofrer **Dano de Eletricamente Carregado e Carga Lunar**, sua taxa de autorreparo será reduzida imensamente. Ao ser ativado, o Dano causado por Conjunto Trovejante é amplamente aumentado, assim como a duração de seus ataques.",
-						"ru": "Под воздействием флуктуации артерий земли Экспериментальный мультищит повышает сопротивление всем элементам, кроме Электро, а его способность к восстановлению усиливается, однако при получении **урона реакций Заряжен и Лунный заряд** его скорость восстановления значительно снижается. Урон и длительность атак Громового набора после активации значительно увеличиваются."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-glacial-wolf-glacial-soul": {
 			"name": {
@@ -168,29 +32,7 @@
 				"zh": "历经百战的凛狼·极寒冰魄",
 				"pt": "Lobo Glacial Veterano: Alma Cryo Gélida",
 				"ru": "Бывалый ледниковый волк: Дух мерзлоты"
-			},
-			"description": {
-				"en": "A lone wolf estranged from the local pack, with its teal mane indicating a bloodline from a faraway land.\nIn the wake of the Ley Lines' chaotic surging, the memories of its ancestors have been warped into a horrific curse. A frigid hatred now permeates its very being, ruthlessly driving the beast to tear asunder anything, and everything within its sight.",
-				"zh": "与当地狼群格格不入的孤狼，碧色的鬃毛昭示着它的血统来自遥远的异乡。\n在地脉能量狂乱的激荡中，先祖的记忆已然扭曲为可怕的诅咒。极寒的恨意浸透了它的身躯，正无情地驱动着这头野兽，去撕碎其所能看到的一切。",
-				"pt": "Um lobo solitário que não se encaixa com a alcateia local, sua juba azul-esverdeada revela uma linhagem de terras distantes.\nEm meio ao turbilhão caótico da Energia da Linha Ley, as memórias ancestrais se distorceram numa Maldição terrível. Um ódio gélido permeia seu corpo, impelindo implacavelmente essa fera a despedaçar tudo o que seus olhos alcançam.",
-				"ru": "Одинокий волк, не вписывающийся в местную стаю. Его изумрудная грива выдаёт происхождение из далёких земель.\nПод яростными всплесками энергии артерий земли память предков исказилась и превратилась в ужасающее проклятие. Ледяная ненависть пропитала его тело и безжалостно движет зверем, заставляя его рвать на части всё, что попадается на глаза."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Ancestral Wolf Spirit: Manifestation",
-						"zh": "先祖狼魂·降灵",
-						"pt": "Espírito do Lobo Ancestral: Manifestação",
-						"ru": "Дух-Предок волка: Сошедший дух"
-					},
-					"text": {
-						"en": "At the start of the combat, the powerful opponent will summon an \"Ancestral Wolf Spirit\" to fight by its side. Affected by the Ley Line disturbances, the opponent **is invulnerable to all DMG while blessed by the spirit**. As a spiritual entity, the \"Ancestral Wolf Spirit\" is protected by a special Cryo Shield that can only be broken by **Pyro or Electro Swirl Reactions**. Once the shield is shattered, the spirit will vanish, leaving the opponent temporarily paralyzed and dealing massive backlash DMG. The more DMG the opponent absorbs while the shield is active, the greater the backlash DMG will be; furthermore, **Pyro and Anemo DMG** will further increase this backlash DMG.",
-						"zh": "战斗开始时，强敌会召唤「先祖狼魂」与自身协同作战。受到地脉紊乱的影响，强敌**受「先祖狼魂」护佑时，将不会承受伤害**。作为灵体的「先祖狼魂」具有特殊的冰元素护罩，只有通过**火元素扩散反应或雷元素扩散反应**才能将其破除。护罩被破除后，「先祖狼魂」将会消散，强敌也将随之陷入短暂的瘫痪状态，并受到反噬大量伤害。护罩存在期间，强敌受到的伤害越高，反噬伤害也越高；其中，**火元素伤害和风元素伤害**将进一步提高反噬伤害。",
-						"pt": "No início da batalha, o Vilão invocará o \"Espírito do Lobo Ancestral\" para lutar ao seu lado. Afetado pela perturbação das Linhas Ley, **enquanto estiver sob a proteção do \"Espírito do Lobo Ancestral\", o Vilão é invulnerável a todo Dano**. O \"Espírito do Lobo Ancestral\", sendo uma entidade espiritual, possui um Revestimento Cryo especial que só pode ser destruído por meio de **Reação de Redemoinho Pyro ou Electro**. Quando o Revestimento for destruído, o espírito desaparecerá e o Vilão ficará brevemente Paralisado, sofrendo uma grande quantidade de Dano de contra-ataque. Enquanto o Revestimento existir, quanto maior for o Dano recebido pelo Vilão, maior será o Dano de contra-ataque; além disso, **Dano Pyro e Dano Anemo** aumentarão ainda mais o Dano de contra-ataque.",
-						"ru": "В начале боя сильный противник призывает Духа-Предка волка и сражается вместе с ним. Под влиянием флуктуаций артерий земли, **пока противник находится под защитой Духа-Предка волка, он не получает урон**. Как духовная сущность, «Дух-Предок волка обладает особым Крио барьером, который можно разрушить только с помощью **реакции Рассеивание с Пиро или Электро**. После разрушения барьера Дух-Предок волка исчезает, а противник на короткое время впадает в состояние оглушения и получает значительный урон от обратного удара. Пока барьер существует, чем больше урона получает противник, тем сильнее будет урон от обратного удара. При этом **Пиро и Анемо урон** дополнительно усиливают этот эффект."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-hexadecatonic-mandragora-stormvine": {
 			"name": {
@@ -198,57 +40,7 @@
 				"zh": "历经百战的十六倍曼陀草·风滚狂蔓",
 				"pt": "Mandrágora Hexadecagonal Veterana: Vinha Tempestade",
 				"ru": "Бывалая шестнадцатикратная мандрагора: Лозы вихря"
-			},
-			"description": {
-				"en": "An exceptionally large Mandragora, likely an exotic variant produced through an extended artificial selection process. Although the original objective behind its cultivation is no longer known, its unique sense of territoriality suggests it may have been the product of some kind of special experiment.\nAmidst the inchoate chaos of the Ley Lines, its form has long since mutated, and it is now determined to harness the howling winds to let its spores swallow the land whole...",
-				"zh": "异乎寻常的巨大曼陀草，似乎是经历了漫长的人工选育才诞生的奇异品种。虽然最初培育它的目的早已不得而知，但从其拥有着独特的领地意识来看，或许它曾是某个特殊实验的产物。\n在地脉极端紊乱的扭曲下，它的形态早已异化，势要借着呼啸的狂风，让孢子将整片大地侵吞殆尽…",
-				"pt": "Uma Mandrágora excepcionalmente grande, provavelmente produzida por meio de seleção artificial prolongada. Embora o objetivo original por detrás de seu cultivo não ser mais conhecido, o organismo exibe um perfil de comportamento territorial atípico, o que sugere que foi criado como parte de um experimento.\nCom sua forma totalmente distorcida devido ao extremo distúrbio da Linha Ley, agora está determinada a utilizar os ventos uivantes para cobrir a terra com seus esporos...",
-				"ru": "Необычайно крупная мандрагора, вероятно выведенная в результате длительной селекции. Хотя первоначальная цель её культивации уже забыта, организм демонстрирует нетипичное территориальное поведение, что допускает вероятность её создания в рамках специального эксперимента.\nПод влиянием искажения течения артерий земли давно мутировала. Теперь ветра разносят споры, чтобы они поглотили всю землю..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Powerful Agglomerated State",
-						"zh": "强效聚合状态",
-						"pt": "Estado Aglomerado Poderoso",
-						"ru": "Мощное объединение"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, when battle begins, this Nemesis enters the Agglomerated State, during which **all RES is dramatically increased**. While in this state, the Nemesis's Agglomeration Energy is constantly consumed. Dealing **Pyro or Electro** DMG to the Nemesis drains this energy more quickly. When its Agglomeration Energy is fully depleted, the Nemesis unleashes Sporebloom and switches to the Split State.",
-						"zh": "受到地脉紊乱的影响，战斗开始时，强敌将进入「聚合状态」：**所有抗性极大幅提升**。该状态会不断消耗强敌的「聚合能量」，使用**火元素或雷元素**对强敌造成伤害，也会加速能量的消耗。当「聚合能量」耗尽后，强敌将释放「滋蔓之茵」，并转变为「分裂状态」。",
-						"pt": "Devido aos efeitos do distúrbio das Linhas Ley nesse Vilão, quando a batalha começa, ele entra no Estado Aglomerado, durante o qual **toda sua RES é drasticamente aumentada**. Enquanto nesse estado, a Energia de Aglomeração do Vilão é constantemente drenada. Causar **Dano Pyro ou Electro** ao Vilão drenará essa energia mais rapidamente. Quando sua Energia de Aglomeração for totalmente consumida, o Vilão lançará \"Floração de Esporos\" e trocará para o Estado Dividido.",
-						"ru": "Под влиянием флуктуации артерий земли в начале битвы сильный противник войдёт в состояние объединения: **все виды сопротивления очень сильно повышаются**. Это состояние постоянно расходует энергию объединения противника. Нанесение **Пиро или Электро** урона противнику также ускорит расход энергии. Когда энергия объединения будет истощена, противник применит Разрастание спор и перейдёт в состояние разделения."
-					}
-				},
-				{
-					"name": {
-						"en": "Split State",
-						"zh": "分裂状态",
-						"pt": "Estado Dividido",
-						"ru": "Разделение"
-					},
-					"text": {
-						"en": "When this Nemesis enters the Split State, it splits into a large number of spores. When these spores take damage, a certain percentage of the total damage is also dealt to the Nemesis. After remaining in the Split State for a period of time, the Nemesis will return to the Agglomerated State. In this case, if the number of spores on the field falls below a certain number, the Nemesis will enter the Brittle Agglomerated State, during which **all RES is greatly reduced** and its combat abilities are diminished. Additionally, if all spores generated in Split State are defeated, the Nemesis will exit the Split State early and go into the Brittle Agglomerated State instead.",
-						"zh": "强敌进入「分裂状态」时，将分裂为大量孢子。孢子受到伤害时，会根据其所受伤害总值对强敌造成一定比例的伤害。「分裂状态」持续一段时间后，强敌将回到「聚合状态」。此情况下，一旦前场上的孢子少于一定数量，强敌将会进入「脆性聚合状态」：**所有抗性大幅降低**，且战斗能力将被削弱。另外，若「分裂状态」产生出的所有孢子均被击败，则强敌提前退出「分裂状态」并转变为「脆性聚合状态」。",
-						"pt": "Uma grande quantidade de esporos vão se espalhar e dividir quando o Vilão entra no Estado Dividido. Quando esses esporos levam dano, uma porção do dano também é causada no Vilão, que sairá do Estado Dividido e retornará para o Estado Aglomerado após um certo tempo. Porém, se o número de esporos em campo cair abaixo de um certo número, o Vilão entrará no Estado Aglomerado Frágil, durante sua duração, **toda resistência é bastante reduzida** e suas habilidades de combate são reduzidas. Adicionalmente, se todos os esporos gerados no Estado Dividido forem derrotados, o Vilão sairá do Estado Dividido cedo e entrar no Estado Aglomerado Frágil.",
-						"ru": "Когда сильный противник входит в состояние разделения, он разделяется на множество спор. Когда споры получают урон, определённый процент общего урона наносится сильному противнику в зависимости от общего полученного ими урона. После того как состояние разделения продлится некоторое время, сильный противник вернётся в состояние объединения. Как только спор на поле боя станет меньше определённого количества, сильный противник войдёт в состояние хрупкого объединения: **все виды сопротивления значительно понижаются**, а боевые способности ослабляются. Кроме того, если все споры, созданные в состоянии разделения, будут побеждены, сильный противник досрочно выйдет из состояния разделения и перейдёт в состояние хрупкого объединения."
-					}
-				},
-				{
-					"name": {
-						"en": "Hollow Structure",
-						"zh": "空洞结构",
-						"pt": "Estrutura Oca",
-						"ru": "Полая структура"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, when this Nemesis is in the Split State or the Brittle Agglomerated State, its **Anemo RES is greatly reduced**.",
-						"zh": "受到地脉紊乱的影响，强敌处于「分裂状态」或「脆性聚合状态」时，**风元素抗性大幅降低**。",
-						"pt": "Devido ao efeito do distúrbio das Linhas Ley nesse Vilão, quando no Estado Dividido ou Estado Aglomerado Frágil sua **RES Anemo é bastante reduzida**.",
-						"ru": "Под влиянием флуктуации артерий земли, когда сильный противник находится в состоянии разделения или состоянии хрупкого объединения, **Анемо сопротивление значительно понижается**."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-iktomisaurus-frostbound-resolve": {
 			"name": {
@@ -256,57 +48,7 @@
 				"zh": "历经百战的暝视龙·霜雪苛念",
 				"pt": "Iktomissauro Veterano: Reminiscência Gélida",
 				"ru": "Бывалый иктомизавр: Морозная одержимость"
-			},
-			"description": {
-				"en": "Able to use its plumage for leaping, it is the only type of Saurian to have grasped how to enter the \"Spiritspeaker\" state.\nObserving the totality of suffering and sorrow, it has been consumed by the twisted memories of the Ley Lines, transforming into a blizzard of near-absolute cold that rages with the winds of unfathomable chaos...",
-				"zh": "能够利用生长出的覆羽进行腾跃，亦是唯一一种掌握了进入「灵觉」状态技巧的龙。\n它观测到一切苦楚和悲痛，尽被地脉的扭曲追忆吞噬，化作极寒的霜雪风暴，带来无尽的混乱…",
-				"pt": "Pode usar sua plumagem para saltar, é o único tipo de Sauriano que compreende como entrar no estado Proferespírito.\nObservando a totalidade de sofrimento e arrependimento, foi consumido pelas memórias distorcidas das Linhas Ley, transformando-se em uma nevasca gélida que enfurece com os ventos de caos incompreensível...",
-				"ru": "Иктомизавры, способные использовать своё оперение для прыжков. Единственная разновидность заврианов, которые научились входить в состояние Говорящего с духами.\nУзревшие муки и скорбь, целиком поглощённые извращёнными воспоминаниями артерий земли, они превратились в ледяные бури, что несут бесконечный хаос..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Sonic Shockwave: Sonorous Sequence",
-						"zh": "强音震波·连奏",
-						"pt": "Onda de Choque Sônica: Sequência",
-						"ru": "Звуковая волна: Звучная серия"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the foe gains increased All RES. During battle, it leaps into the air more frequently, temporarily hovering in place and continuously unleashing powerful sonic shockwaves while airborne.",
-						"zh": "受到地脉紊乱的影响，会具有更高的所有抗性；在战斗中，会更为频繁地腾跃升空，在空中停留一段时间，并不断释放强音震波进行攻击。",
-						"pt": "Devido a perturbação das Linhas Ley, o inimigo ganha fortalecimento de todas as RES. Durante o combate, salta no ar com mais frequência, flutua no ar por um tempo e continuamente lança ondas de choque sônicas do ar.",
-						"ru": "Под воздействием флуктуации артерий земли обладает повышенным сопротивлением всем элементам. В бою взлетает и некоторое время остаётся в воздухе, постоянно атакует мощными звуковыми волнами."
-					}
-				},
-				{
-					"name": {
-						"en": "Frosthail Execution: Sweeping Strike",
-						"zh": "冰霰骤袭·袤攻",
-						"pt": "Ataque Súbito Gélido: Assalto Prolongado",
-						"ru": "Казнь морозного града: Массированная атака"
-					},
-					"text": {
-						"en": "During battle, the foe will deploy a **Cryo Ward** for protection and leap into the air to charge up Frosthail Execution. After a period of time, it will unleash Frosthail Execution and **instantly defeat your active character**. **Break the Ward with Elemental Reactions** to knock the foe to the ground, interrupt its attack preparation, and deal a single instance of massive DMG based on the **amount of DMG the Ward absorbed**. While the foe is preparing its attack, all characters in your party will **regain Elemental Energy, Fighting Spirit, or Serpent's Subtlety**. If, after a period of time, the Ward has not been broken, Frosthail Zones will appear on the ground: **Triggering Elemental Reactions to destroy each Frosthail Zone** can also weaken and eventually break the Cryo Ward.",
-						"zh": "战斗中，会展开**冰元素护罩**保护自身，并腾跃至空中为「冰霰骤袭」进行准备，一段时间后释放「冰霰骤袭」，**使我方场上的角色直接倒下**。**通过元素反应破除护罩**，即可将敌人击落至地面，根据**护罩抵挡的伤害值**使其受到一次高额伤害，并打断其攻击准备。该敌人准备上述攻击时，我方队伍中所有角色将**恢复元素能量、战意或蛇之狡谋**。一段时间后如果护罩仍未破除，地面上将出现「冰霰之阵」：**通过元素反应逐一破坏「冰霰之阵」**，也可以逐渐破除该敌人的冰元素护罩。",
-						"pt": "Durante o combate, o inimigo aplicará um **Revestimento Cryo** para se proteger, saltar no ar e começar a carregar o Ataque Súbito Gélido. Após um certo tempo, lançará Ataque Súbito Gélido e **derrotará instantaneamente seu personagem ativo**. **Destrua o Revestimento Cryo com Reações Elementais** para derrubar o inimigo, interromper a preparação do ataque dele e causar uma única instância de Dano gigantesco baseado na **quantidade de Dano que o Revestimento absorveu**. Enquanto o inimigo está preparando esse ataque, todos os personagens na sua equipe **recuperarão Energia Elemental, Espírito Lutador ou Sutileza da Serpente**. Se o Revestimento não for destruído após um tempo, Zonas da Geada aparecerão no chão: **desencadeie Reações Elementais para destruir cada Zona da Geada** para gradualmente enfraquecer e eventualmente destruir o Revestimento Cryo.",
-						"ru": "В бою развёртывает защитный **барьер Крио**, взлетает в воздух и готовится применить Казнь морозного града. Через некоторое время он выполняет Казнь морозного града и **сразу выводит вашего активного персонажа из строя**. **Уничтожьте барьер с помощью элементальных реакций**, чтобы сбить врага на землю, нанести ему высокий однократный урон, равный **поглощённому барьером урону**, и прервать подготовку атаки. Когда противник готовится выполнить эту атаку, все персонажи вашего отряда **восстанавливают энергию, Боевой дух или Змеиное коварство**. Если барьер не разбит, через некоторое время на земле появляются области Морозного града: **уничтожая области Морозного града элементальными реакциями**, вы также постепенно ослабите и разрушите Крио барьер противника."
-					}
-				},
-				{
-					"name": {
-						"en": "Disruption Vortex",
-						"zh": "扰乱风涡",
-						"pt": "Perturbação de Vórtice",
-						"ru": "Вихрь хаоса"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, when the foe begins charging up Frosthail Execution, a Disruption Vortex will appear on the field, dealing AoE Cryo DMG to **both allies and enemies**. If the vortex hits the foe, the foe's **Anemo RES** will be reduced and its Ward will be depleted.\nAdditionally, the Disruption Vortex can also be affected by pull effects, which may alter its movement path.",
-						"zh": "受到地脉紊乱的影响，该敌人在进行「冰霰骤袭」的准备时，场上将出现「扰乱风涡」，造成**不分敌我**的冰元素范围伤害。「扰乱风涡」命中该敌人时，将使其**风元素抗性**降低，并削减其护罩。\n此外，「扰乱风涡」可被牵引效果影响，改变移动路径。",
-						"pt": "Devido a uma perturbação de Linhas Ley, quando o inimigo começar a carregar Ataque Súbito Gélido, uma Perturbação de Vórtice aparecerá no campo, causando Dano Anemo em AdE contra **inimigos e aliados**. Se o vórtice atingir o inimigo, sua **RES Cryo** será reduzida, bem como seu Revestimento.\nAlém disso, a Perturbação de Vórtice pode ser afetada por efeitos de puxão, que alteram sua trajetória de movimento.",
-						"ru": "Под воздействием флуктуации артерий земли, когда враг готовится выполнить Казнь морозного града, на поле появляются Вихри хаоса, которые наносят Крио урон по площади **и врагу, и вам**. Вихри хаоса, поражая противника, снижают его **Анемо сопротивление** и истощают его барьер.\nКроме того, траекторию Вихрей хаоса можно изменить с помощью эффектов притяжения."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-lightkeeper-mourning-echoes": {
 			"name": {
@@ -314,57 +56,7 @@
 				"zh": "历经百战的执灯人·哀恸回响",
 				"pt": "Portador da Lâmpada Veterano: Eco do Lamento",
 				"ru": "Бывалый светоносец: Эхо скорби"
-			},
-			"description": {
-				"en": "A valiant warrior who resisted the dark calamity in ancient days. Though his life's spark has been extinguished, his unbending will has yet to fade, and those who swore to become hunters of the Wild Hunt continue his endless battle even today. Twisted by the chaotic Ley Lines, any intruders who enter his sight are treated no differently than the fiercest abominations of the Wild Hunt and are faced with the full force of his determination and strength...",
-				"zh": "昔日对抗漆黑灾厄的英勇战士，即使生命之光已然消逝，其不屈的意志仍未消散，永誓猎杀狂猎之人时至今日仍继续着他的无尽战斗。受到地脉乱象至为扭曲的干扰后，他的视野之内，所有来访者都与最为凶险的狂猎别无二致，需要他倾尽全部力量，不惜一切代价去死斗…",
-				"pt": "Um bravo guerreiro que resistiu à Calamidade Tenebrosa do passado. Embora o brilho de sua vida tenha se extinguido, sua determinação inflexível ainda não se dissipou, e aqueles que prometeram se tornar caçadores da Caçada Feroz continuam suas batalhas incessantes até hoje. Retorcidos pelas Linhas Ley caóticas, qualquer intruso que entre em seu campo de visão não é tratado diferente do que as mais ferozes abominações da Caçada Feroz e enfrenta toda a força de sua determinação e poder...",
-				"ru": "Доблестный воин, противостоявший чёрному бедствию в древности. Хотя искра его жизни погасла, его несгибаемая воля ещё не исчезла, и те, кто поклялся стать охотниками Дикой Охоты, продолжают его бесконечную битву и по сей день. Под воздействием искажений артерий земли всех, кто вторгся в его поле зрения, он считает свирепыми исчадиями Дикой Охоты, с которыми готов сражаться всеми силами до последнего издыхания..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Wandering Lament",
-						"zh": "悲哀游荡",
-						"pt": "Lamento Vagante",
-						"ru": "Печаль скитания"
-					},
-					"text": {
-						"en": "Begins the battle in the \"Roaming\" state. When its HP is completely depleted, it will enter the \"Wild Hunt\" state.",
-						"zh": "战斗开始时，处于「游荡」状态，将其生命全部削减后，可以令其陷入「狂猎」状态。",
-						"pt": "Quando a batalha começar, entra no estado Devaneio. Depois de perder toda a Vida, poderá entrar no estado Caçada Feroz.",
-						"ru": "В бою пребывает в состоянии Блужданий. После того как его HP снизится до нуля, он войдёт в состояние Дикой Охоты."
-					}
-				},
-				{
-					"name": {
-						"en": "Grief-Stricken",
-						"zh": "失色哀恸",
-						"pt": "Enlutado",
-						"ru": "Подавленность горем"
-					},
-					"text": {
-						"en": "When in the Wild Hunt state, even if its HP is reduced to zero, it will regain its HP up to its maximum after a period of time. It can only be defeated when its Max HP is reduced to zero. **Drain its HP completely or use Skills enhanced by Moonsign: Ascendant Gleam** to send it into a brief Grief-Stricken state. A certain ratio of the DMG dealt to it while in this state will be converted to reduce its Max HP. If you have Moonsign: Ascendant Gleam, this ratio will be increased.",
-						"zh": "「狂猎」状态下，即使失去了全部生命值，也会在一定时间后将生命值恢复至上限，只有将其生命值上限全部削减，才能将其压制。**将其生命全部削减或施放被月兆·满辉强化的技能时**，可以令其陷入短暂的「失色哀恸」状态。在此状态下对其造成伤害，可以根据伤害的一定比例削减其生命值上限；如果具有月兆·满辉，削减比例将提高。",
-						"pt": "Quando está no estado de Caçada Feroz, mesmo que sua Vida seja reduzida a zero, recuperará sua Vida até o máximo depois de um período de tempo. Só pode ser derrotado quando sua Vida Máxima for reduzida a zero. **Reduza sua Vida completamente ou use Habilidades fortalecidas por Presságio Lunar: Reluzir Cheio** para o fazer entrar no estado Enlutado. Uma certa proporção de Dano causado durante esse estado será convertida para reduzir sua Vida Máxima. Se você possuir Presságio Lunar: Reluzir Cheio, essa proporção será aumentada.",
-						"ru": "В состоянии Дикой Охоты даже после потери всего HP чудовище всё равно через определённое время восстановит его до максимума. Чтобы подавить его, понадобится полностью истощить его HP. **Полностью истощив его HP или применив навыки, усиленные Высшим сиянием Лунного знамения**, вы кратковременно переведёте его в состояние Подавленности горем. Урон, нанесённый ему в этом состоянии, истощает его макс. HP на определённый процент. Лунное знамение - Высшее сияние повышает этот процент."
-					}
-				},
-				{
-					"name": {
-						"en": "Exiles Surge",
-						"zh": "幽徒狂涌",
-						"pt": "Surto de Exilados",
-						"ru": "Набег изгнанников"
-					},
-					"text": {
-						"en": "When in the Wild Hunt state, Wilderness Exiles will appear periodically. If you fail to defeat all of these exiles within a certain period of time, your foe will perform a harvest, dealing massive AoE DMG and slaughtering the Wilderness Exiles, restoring its own Max HP based on the remaining Max HP of the exiles. Affected by the Ley Line disturbance, the Wilderness Exiles' Max HP is increased, and the ratio at which the foe's Max HP is restored upon harvesting the exiles is higher.",
-						"zh": "处于「狂猎」状态时，战斗中会间歇性出现荒野幽徒。如果未能在一定时间内击败所有荒野幽徒，该敌人就会进行收割：造成极高的范围伤害，肃清所有荒野幽徒，并根据荒野幽徒剩余的生命值上限恢复自身的生命值上限。受到地脉紊乱的影响，荒野幽徒的生命值上限更高，且肃清荒野幽徒时，该敌人的生命值上限的恢复比例也更高。",
-						"pt": "Quando está no estado de Caçada Feroz, Exilados Selvagens aparecerão periodicamente. Se você não os derrotar dentro de um certo período, seus inimigos farão uma colheita, causando Dano em AdE massivo e derrotando os Exilados Selvagens, restaurando sua Vida Máxima de acordo com a Vida Máxima restante dos Exilados. Devido às perturbações das Linhas Ley, a Vida Máxima dos Exilados Selvagens é aumentada, e a proporção que a Vida Máxima do inimigo é restaurada ao colher Exilados é maior.",
-						"ru": "Когда чудовище пребывает в состоянии Дикой охоты, в бой будут периодически вступать изгнанники пустошей. Если не победить всех изгнанников пустошей за определённое время, то враг выполнит Жатву: он нанесёт огромный урон по площади, уничтожив всех изгнанников пустошей, и согласно их оставшемуся макс. HP восстановит своё собственное макс. HP. Под воздействием флуктуации артерий земли изгнанники пустошей обладают повышенным макс. HP, а при их уничтожении чудовище восстанавливает себе ещё больший процент от макс. HP."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-pioneer-secret-source-control-array-will-of-the-hive": {
 			"name": {
@@ -372,57 +64,7 @@
 				"zh": "历经百战的先驱秘源统辖阵列·蜂巢意志",
 				"pt": "Matriz de Controle da Fonte Pioneira Secreta Veterana - Vontade da Colmeia",
 				"ru": "Бывалый массив-предшественник управления таинственного источника: Воля улья"
-			},
-			"description": {
-				"en": "This was originally just a device developed to assist in lunar research. Later, however, it was granted powers and responsibilities far beyond its original purpose.\nAs the Ley Line disturbance has warped and corrupted it over time, its core and detection devices have become completely overwritten. The original purpose for which it was designed is all but gone. All that drives it now is a destructive will that drives endless machine hordes forward to drown all life.",
-				"zh": "原本只是为了辅助进行月球研究的工作而研发出的协作机关，却在日后被赋予了远超其设计初衷的威能与重任。\n在地脉乱象长久的扭曲与侵蚀下，其核心与探侦机关已被彻底覆写。昔日的设计初衷荡然无存，如今驱动它的，唯有命令无尽机群淹没一切生灵的毁灭意志。",
-				"pt": "Originalmente desenvolvido como um mecanismo auxiliar para pesquisas lunares, acabou sendo dotado de poderes e responsabilidades muito além de sua concepção original.\nApós longa exposição à distorção e corrosão das Linhas Ley, seu núcleo e dispositivo de exploração foram completamente reescritos. Nenhum traço de seu propósito inicial sobreviveu. O que o impulsiona agora é apenas uma vontade destrutiva: comandar enxames infinitos para consumir toda forma de vida.",
-				"ru": "Изначально этот механизм был разработан лишь как вспомогательное устройство для лунных исследований, однако впоследствии он был наделён мощью и обязанностями, далеко превосходящими его первоначальное предназначение.\nДолгое искажение и разрушительное воздействие флуктуаций артерий земли полностью переписали его ядро и подконтрольные ему разведывательные механизмы. От первоначальной цели не осталось и следа. Теперь им движет лишь разрушительная воля, приказывающая бесконечным легионам механизмов затопить всё живое."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Suppression Field: Energy Cycler",
-						"zh": "镇压力场·能量循环",
-						"pt": "Campo de Supressão - Loop de Energia",
-						"ru": "Подавляющее поле: Циркуляция энергии"
-					},
-					"text": {
-						"en": "When combat begins, the Battle-Hardened Pioneer Secret Source Control Array will deploy 4 detection devices protected by **Hydro Wards**, constructing a special Suppression Field that will create a **Force Shield** for the Nemesis and increase **all its RES except for Cryo and Electro RES**. When the field has been active for some time, the Nemesis will unleash Alpha Strike, dealing AoE DMG over a massive area and retrieving all detection devices. It will then deploy a **Hydro Ward** whose absorption is based on the number of devices retrieved.",
-						"zh": "战斗开始时，历经百战的先驱秘源统辖阵列会部署4架受**水元素护罩**保护的探侦机关，构建特殊的镇压力场。该力场将为强敌生成**力场能量护盾**，并提高强敌**冰元素与雷元素外的所有抗性**。力场维持一段时间后，强敌将发动「阿尔法突袭」：造成大范围伤害，同时收回所有探侦机关，并根据回收数量，获得相应吸收量的**水元素护罩**。",
-						"pt": "No início do combate, a Matriz de Controle da Fonte Pioneira Secreta Veterana implanta 4 dispositivos de detecção protegidos por **Revestimentos Hydro**, criando um Campo de Supressão especial. Esse campo gera um **Escudo de Energia** para o Vilão e aumenta **todas as RES do Vilão, exceto Cryo e Electro**. Após o Campo de Supressão ser mantido por algum tempo, o Vilão desencadeará um Ataque Alfa, causando dano em uma grande AdE, recolhe todos os dispositivos de detecção e, com base na quantidade recolhida, obtém um **Revestimento Hydro** com absorção proporcional à quantidade de dispositivos recolhidos.",
-						"ru": "В начале боя Бывалый массив-предшественник управления таинственного источника размещает 4 разведывательных механизма, защищённых **Гидро барьерами**, создавая особое подавляющее поле. Это поле создаёт для сильного противника **силовой щит** и повышает **все его сопротивления, кроме Крио и Электро**. Когда поле просуществует некоторое время, противник наносит Альфа-удар, который наносит урон по огромной площади, одновременно собирая все разведывательные механизмы. Затем он размещает **Гидро барьер**, прочность которого зависит от количества собранных механизмов."
-					}
-				},
-				{
-					"name": {
-						"en": "Force Shield",
-						"zh": "力场能量护盾",
-						"pt": "Campo de Força",
-						"ru": "Силовой щит"
-					},
-					"text": {
-						"en": "Due to the Ley Line disturbance, the Nemesis' Suppression Field will fail when the Force Shield is broken, causing the Nemesis to take one instance of massive rebound DMG and enter a state of paralysis.\nAdditionally, each time the Nemesis takes **Superconduct and Stellar-Conduct Reaction DMG**, it will lose a fixed amount of Force Shield. When this Shield is active, the amounts of **Stellar-Conduct Reaction, Cryo, and Electro DMG** it absorbs will further increase the rebound DMG the Nemesis will take when the Shield is broken.",
-						"zh": "受地脉紊乱影响，强敌的力场能量护盾被破除时，镇压力场将随之瓦解，强敌自身也将受到一次高额反噬伤害，并陷入短暂的瘫痪状态。\n此外，强敌每次**受到超导、星超导反应伤害**时，均会被削减固定量的力场能量护盾。该护盾存在期间，其所吸收的**超导、星超导反应伤害**，均将进一步提高护盾被破除时强敌所受到的反噬伤害。",
-						"pt": "Devido à perturbação das Linhas Ley, quando o Escudo de Energia do campo de força do Vilão for destruído, o Campo de Supressão entrará em colapso, o Vilão sofrerá um grande dano de retaliação e ficará brevemente Paralisado.\nAlém disso, sempre que o Vilão **sofrer Dano da Reação de Supercondutor ou Supercondutor Estelar**, uma quantidade fixa do Escudo de Energia do campo de força será reduzida. Enquanto esse Escudo estiver ativo, o **Dano da Reação de Supercondutor Estelar, o Dano Cryo ou o Dano Electro** absorvido por ele aumentará o dano de retaliação sofrido pelo Vilão quando o escudo for destruído.",
-						"ru": "Из-за флуктуаций артерий земли, когда силовой щит сильного противника разрушен, его подавляющее поле рассеивается, а сам противник получает однократный огромный отражённый урон и на короткое время впадает в паралич.\nКроме того, каждый раз, когда сильный противник **получает урон от реакций Сверхпроводник или Звёздный сверхпроводник**, его силовой щит уменьшается на фиксированную величину. Пока этот щит активен, поглощённый им **урон от реакции Звёздный сверхпроводник, Крио урон или Электро урон** дополнительно увеличивает отражённый урон, который сильный противник получит при разрушении щита."
-					}
-				},
-				{
-					"name": {
-						"en": "Detection Device: Pressurized Component",
-						"zh": "探侦机关·冲压构件",
-						"pt": "Dispositivo de Detecção - Componente Pressurizado",
-						"ru": "Разведывательный механизм: Штамповочный узел"
-					},
-					"text": {
-						"en": "Detection devices will be destroyed when **their Hydro Ward is broken** or **if they are Frozen and then affected by Shatter, Melt, or other Elemental Reaction DMG**. Due to the Ley Line disturbance, the Nemesis' Shield will be damaged for every detection device that is destroyed.",
-						"zh": "探侦机关在**水元素护罩被破除**或**陷入冻结状态后受到碎冰或融化等元素反应伤害**时将被摧毁。受地脉紊乱影响，每当一架探侦机关被摧毁时，都会使强敌的护罩受损。",
-						"pt": "Os dispositivos de detecção serão destruídos quando o **Revestimento Hydro for quebrado** ou quando **estiverem Congelados e receberem Dano de Reações Elementais como Quebrar Gelo ou Fusão**. Sob a influência da perturbação das Linhas Ley, sempre que um dispositivo de detecção for destruído, o Revestimento do Vilão será danificado.",
-						"ru": "Разведывательные механизмы уничтожаются, когда **их Гидро барьер разрушен** или когда **они находятся в состоянии Заморозки и затем получают урон от элементальных реакций, таких как Разбит или Таяние**. Из-за флуктуации артерий земли каждый уничтоженный разведывательный механизм повреждает щит сильного противника."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-pipilpan-idol-hundred-deceptions": {
 			"name": {
@@ -430,43 +72,7 @@
 				"zh": "历经百战的皮皮潘偶像·百诈瞬变",
 				"pt": "Ídolo Pippipan Veterano de Cem Batalhas: Mutação Instantânea",
 				"ru": "Бывалый айдол Пипильпан: Сто заблуждений"
-			},
-			"description": {
-				"en": "A Pipilpan Idol who channels the essence of Tenoch. Adept at dazzling hat tricks and stratagems of battle, it can attack from a wide range of angles, leaving reckless challengers paying the price for hasty missteps...\nAmidst the inchoate chaos of the Ley Lines, the performer's obsession takes form as flurries of rejection and annihilation. Any slight mistake may result in the challenger being ground into dust, just as Tenoch's opponents once were...",
-				"zh": "以「特诺切」为演绎目标的皮皮潘偶像，精通奇妙的帽子戏法与战斗策略，能从多变的角度攻来，让鲁莽者付出代价…\n在地脉极端紊乱的投映下，演绎者的偏执具象为拒绝与扼杀的攻势。挑战者稍有不慎，就会如「特诺切」碾碎的对手般化为齑粉…",
-				"pt": "Ídolo Pippipan inspirado em \"Tenoch\", mestre de truques de chapéu mirabolantes e estratégias de combate, é capaz de atacar de ângulos variados, fazendo os imprudentes pagarem caro...\nSob a projeção extremamente caótica das linhas ley, a obsessão do intérprete se concretiza numa ofensiva de rejeição e aniquilação. Um pequeno descuido do desafiante, e ele será reduzido a pó como os inimigos esmagados por \"Tenoch\"...",
-				"ru": "Айдол Пипильпан, воплотивший сущность Теноча. Мастер трюков со шляпой и боевой стратегии, способный атаковать с разных сторон, заставляя безрассудных соперников расплачиваться за опрометчивые шаги...\nВ крайнем хаосе артерий земли одержимость исполнителя принимает форму неприятия и истребления. Малейшая ошибка - и бросивший вызов превратится в порошок, как когда-то противники Теноча..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Hat Show",
-						"zh": "帽子演绎",
-						"pt": "Capas e Chapéus",
-						"ru": "Игра шляп"
-					},
-					"text": {
-						"en": "During battle, the entity will create multiple hats and hide within one of them, then rapidly switch the positions of these hats. After a certain number of switches, if **the hat that conceals the entity takes Electro-Charged or Lunar-Charged damage**, the entity will temporarily halt all hat-swapping actions.\nDeal a certain amount of DMG to **the hat concealing the entity** to break all of the hats, causing the entity to reveal itself, receive a single instance of immense DMG, and temporarily enter a weakened state. **Electro-Charged or Lunar-Charged reactions** are more effective at breaking the hat. The DMG received by the entity when the hat breaks will increase based on the **Hydro DMG**, **Electro DMG**, **Electro-Charged DMG, or Lunar-Charged DMG** the hat has taken.",
-						"zh": "战斗中，会创造多顶帽子，并将本体隐藏于其中一顶帽子下，随后快速变换帽子的位置。变换一定次数后，如果**本体所隐藏的帽子受到感电或月感电伤害**，则会使所有帽子位置的变换暂时停止。\n对**本体所隐藏的帽子**造成一定伤害即可将所有帽子破坏，从而使本体现身，受到一次高额伤害，并陷入一段时间的虚弱状态；**感电或月感电反应**对帽子有着更高的破坏效率。帽子被破坏时本体所受到的伤害，会基于帽子受到**水元素伤害**、**雷元素伤害**、**感电或月感电伤害**而提高。",
-						"pt": "Durante a batalha, cria vários chapéus, e se esconde dentro de um deles, para depois trocar rapidamente a posição do chapéu. Depois de uma certa quantidade de trocas, **o chapéu que está escondido sofrer Dano de Eletricamente Carregado ou Carga Lunar**, interromperá temporariamente a troca de posição de todos os chapéus.\nDepois que causar uma certa quantidade de Dano contra **o chapéu que está escondido**, destrói todos os chapéus e revela-o, sofrendo uma instância de muito Dano entrando no estado enfraquecido. **Reações de Eletricamente Carregado ou Carga Lunar** tem maior eficácia para destruir os chapéus. Quando os chapéus forem destruídos, sofrerá Dano, esse Dano será aumentado com base no Dano **Hydro**, **Electro**, **Eletricamente Carregado ou Carga Lunar** que o chapéu sofreu.",
-						"ru": "В бою создаётся несколько шляп. Сущность прячется в одну из них, после чего шляпы быстро меняются местами. Если после определённого количества смены мест **шляпа, в которой спряталась сущность, получает урон от реакций Заряжен или Лунный заряд**, шляпы кратковременно перестают меняться местами.\nНанесите определённое количество урона **шляпе, в которой прячется сущность**, чтобы разрушить её, заставить сущность явить себя, нанести ей огромный однократный урон и привести её в ослабленное состояние. Против шляпы более эффективны реакции **Заряжен или Лунный заряд**. Урон, получаемый сущностью при разрушении шляпы, увеличивается в зависимости от количества **Гидро** и **Электро** урона, а также урона реакций **Заряжен или Лунный заряд**, полученного шляпой."
-					}
-				},
-				{
-					"name": {
-						"en": "Hat Denial",
-						"zh": "帽子拒绝",
-						"pt": "Rejeição do Chapéu",
-						"ru": "Отторжение шляп"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the foe will unleash a powerful \"Hat Denial\" attack: Continuously hurls hats that deal **high Electro DMG** and have **powerful interruption capabilities**.",
-						"zh": "受到地脉紊乱的影响，该敌人会发动强力的「帽子拒绝」攻击：持续投掷能够造成**高额雷元素伤害**的帽子，且帽子具有**强大打断效果**。",
-						"pt": "Por causa da perturbação das Linhas Ley, esse inimigo fará um poderoso ataque Rejeição do Chapéu: poderá jogar um chapéu que causa **muito Dano Electro** por um tempo, e esse chapéu possui um **efeito interruptor forte**.",
-						"ru": "Из-за воздействия флуктуации артерий земли этот враг применяет мощную атаку Отторжения шляп: он постоянно бросается шляпами, которые наносят **высокий Электро урон**, а также обладают **сильным эффектом прерывания**."
-					}
-				}
-			]
+			}
 		},
 		"battle-hardened-tent-tortoise-thunderous-aegis": {
 			"name": {
@@ -474,43 +80,7 @@
 				"zh": "历经百战的玳龟·坚盾轰霆",
 				"pt": "Tartaruga Ondulada Forjada em Batalhas: Escudo Trovejante",
 				"ru": "Бывалая шишковатая черепаха: Щит грома"
-			},
-			"description": {
-				"en": "Gentle and slow by nature, this reptile is seen by some as a symbol of wisdom and good fortune. Yet when backed into a corner, this remarkable creature is capable of unleashing fierce assaults upon its foes, using its thick shell as a battering ram to crush any and all opposition.\nAmidst the inchoate chaos of the Ley Lines, its form has been twisted, eagerly charging into battle in a fury, like a lightning storm of attack and defense...",
-				"zh": "平日里性情温和，行动迟缓的爬行动物，被一些人视为吉祥与智慧的象征。但必要之时，这一特殊的个体也会对挑战者发起迅猛的攻势，将厚实的甲壳化为击碎敌人的重锤。\n在地脉极端紊乱的投映下，它的形象遭到扭曲，以狂热好战的姿态参战，成为攻守兼备的雷霆…",
-				"pt": "Geralmente dócil e lento, este réptil é visto por alguns como um símbolo de sabedoria e boa sorte. No entanto, quando necessário, esse indivíduo especial também pode lançar ataques ferozes contra os desafiantes, transformando seu casco espesso em um pesado martelo que esmaga inimigos.\nSob a projeção extremamente caótica das linhas ley, sua imagem foi distorcida, assumindo uma postura belicosa e fanática, tornando-se um trovão que ataca e defende com igual ferocidade...",
-				"ru": "Кроткая и медлительная рептилия. По мнению некоторых, это удивительное существо является символом удачи и мудрости, однако в случае необходимости оно способно обрушивать на врагов стремительные атаки, сокрушая их своим толстым панцирем, словно тараном.\nВ крайнем беспорядке артерий земли её форма исказилась, и она яростно бросалась в бой, атакуя и защищаясь, словно молния..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Thunderthorn Ward",
-						"zh": "雷棘护罩",
-						"pt": "Revestimento de Espinhos Trovejantes",
-						"ru": "Барьер громовых терний"
-					},
-					"text": {
-						"en": "After taking **a certain number of attacks**, it will deploy a \"Thunderthorn Ward\": While the Ward is active, DMG will be reflected to nearby characters when it is attacked. The Ward can be broken by using Elemental Reactions to **drain the Ward of Electro**.",
-						"zh": "受到**一定次数的攻击**后，会展开「雷棘护罩」：护罩存在期间受到攻击时，会对附近的角色造成反噬伤害；通过元素反应**耗尽护罩的雷元素**，才能破除护罩。",
-						"pt": "Após receber **um certo número de ataques**, ele implantará um \"Revestimento de Espinhos Trovejantes\": quando Revestimento sofrer ataques, redirecionará o Dano para os personagens próximos. O Revestimento pode ser quebrado usando Reações Elementais para **drenar a energia Electro do Revestimento**.",
-						"ru": "Получив **определённое количество атак**, развёртывает Барьер громовых терний: при получении атак во время действия барьера наносит персонажам поблизости отражённый урон. Истощите **Электро энергию барьера** с помощью элементальных реакций, чтобы уничтожить его."
-					}
-				},
-				{
-					"name": {
-						"en": "Thunderous Attrition",
-						"zh": "久续之霆",
-						"pt": "Trovejar Duradouro",
-						"ru": "Неугасающий гром"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, every time the foe is attacked, its progress toward deploying a Thunderthorn Ward will increase by a greater amount, but that progress will also gradually decrease over time. In addition, the Elemental requirements for breaking the Thunderthorn Ward are greatly increased.",
-						"zh": "受到地脉紊乱的影响，每次受到攻击时，该敌人展开「雷棘护罩」的进度将以更高的幅度累积，但进度将随着时间流逝缓慢回退；此外，破除「雷棘护罩」所需的元素将显著增加。",
-						"pt": "Por causa da perturbação das Linhas Ley, cada vez que sofrer um ataque, o progresso do Revestimento de Espinhos Trovejantes acumulará mais, mas o progresso reverterá com o passar do tempo. Além disso, o Elemento necessário para destruir o Revestimento de Espinhos Trovejantes terá um aumento notável.",
-						"ru": "Вследствие воздействия флуктуации артерий земли прогресс развёртывания Барьера громовых терний с каждой атакой, получаемой врагом, накапливается быстрее, но со временем замедляется обратно. Кроме того, значительно увеличивается количество элементов, требуемых для уничтожения Барьера громовых терний."
-					}
-				}
-			]
+			}
 		},
 		"battle-scarred-rock-crab-one-million-blasts": {
 			"name": {
@@ -518,57 +88,7 @@
 				"zh": "历经百战的岩居蟹·百万爆轰",
 				"pt": "Caranguejo de Pedra Veterano: Um Milhão de Explosões",
 				"ru": "Бывалый каменный краб: Миллион взрывов"
-			},
-			"description": {
-				"en": "A crab that lives within shells and conches. A distant relation to the Fontainian Armored Crab. Most specimens are docile and gentle, but there are stories of crabs fighting to the death to defend their territory — their gentle nature transforming to fuel a wild, frenzied rage.\nAmong the twisted illusions of the Ley Lines, the mighty Rock Crab warrior who fell to a horde of foes has reforged its offensive abilities to withstand the onslaught of a hundred thousand enemies — an endeavor rewarded with alarming success...",
-				"zh": "寄居在螺与壳之中的蟹类，是枫丹重甲蟹的远亲，原本大多性情温顺，几乎不具备攻击性，但也不乏为了整个族群的领地，挺身而出决死搏杀的案例。此时，原本温顺的底色反倒成为了狂烈躁戾的助燃剂。\n地脉至为扭曲的虚像中，不敌诸多对手的强大「斗士」岩居蟹反复锤炼着自身的进攻手段，追求着面对百千强敌都屹立不倒的战力，最终取得了卓绝的成效…",
-				"pt": "Um caranguejo que vive dentro de conchas. Possui uma relação distante com o Caranguejo de Armadura de Fontaine. A maioria deles são dóceis e gentis, mas há histórias desses caranguejos lutarem até a morte para defenderem seu território, com sua gentil natureza transformando-se numa fúria selvagem.\nEntre as ilusões tortas das Linhas Ley, o Caranguejo de Pedra guerreiro que caiu contra uma hora de guerreiros reforjou sua habilidade ofensiva para sobreviver ao massacre de milhares de inimigos, uma empreitada que lhe rendeu um enorme sucesso...",
-				"ru": "Дальний родственник фонтейнского бронекраба, предпочитающий селиться в раковинах. В основном эти крабы миролюбивы и не проявляют агрессии, но нередко они готовы до смерти отстаивать территорию своего семейства. В такие моменты их покладистый нрав сменяется неистовой яростью.\nВ искажённых иллюзиях артерий земли могучий каменный краб-воин, повергший сотни врагов, постоянно совершенствовал свои навыки атаки, стремясь обрести силу, которая позволила бы ему оставаться непобедимым перед лицом вражеских орд, и добился выдающихся успехов..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Stoneborne Seeds",
-						"zh": "岩居之种",
-						"pt": "Sementes da Rocha",
-						"ru": "Каменные семена"
-					},
-					"text": {
-						"en": "In battle, Stoneborne Seeds will be scattered across the battlefield before exploding after a short delay. If these seeds take **Bloom, Hyperbloom, Lunar-Bloom, or Burgeon DMG** before they explode, they will undergo conversion and turn their attacks toward the Rock Crab instead, dealing DMG based on the total amount of DMG they themselves received.",
-						"zh": "战斗中，将在场上散布「岩居之种」：短暂间隔后爆炸；若在爆炸前受到**绽放、烈绽放、超绽放或月绽放反应伤害**，则会被转化，对岩居蟹发动反噬攻击，并根据所受伤害的总值造成对应伤害。",
-						"pt": "Em uma batalha, Sementes da Rocha serão espalhadas pelo campo de batalha até explodirem depois de um certo tempo. Se essas sementes sofrerem **Dano de Florescimento, Germinação, Superflorescimento ou Florescimento Lunar** antes de explodirão, seus ataques serão convertidos para causarem Dano contra o Caranguejo de Pedra, causando Dano baseado na quantidade total de Dano que sofreram.",
-						"ru": "В бою на поле разбрасываются Каменные семена, которые через короткий промежуток времени взрываются. Если до взрыва они получают урон реакций **Бутонизация, Цветение, Вегетация или Лунная бутонизация**, они трансформируются и атакуют каменного краба, нанося ему урон, который зависит от общего количества полученного ими урона."
-					}
-				},
-				{
-					"name": {
-						"en": "Flammable Hermit",
-						"zh": "易燃寄种",
-						"pt": "Ermitão Inflamável",
-						"ru": "Воспламеняющийся отшельник"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, Stoneborne Seeds will violently explode after taking Pyro DMG, knocking characters back and dealing massive DMG.",
-						"zh": "受到地脉紊乱的影响，「岩居之种」受到火元素伤害后将剧烈爆炸，击飞角色并造成极高伤害。",
-						"pt": "Por causa da perturbação das Linhas Ley, Sementes da Rocha explodirão após sofrerem Dano Pyro, atirando personagens atingidos pelos ares e causando muito Dano.",
-						"ru": "Под воздействием флуктуации артерий земли после атаки Каменных семян уроном Пиро происходит мощный взрыв, который отбрасывает персонажей и наносит огромный урон."
-					}
-				},
-				{
-					"name": {
-						"en": "Almighty Tsarly Bombardment",
-						"zh": "伟大君临轰袭",
-						"pt": "Bombardeio Czariano Todo-Poderoso",
-						"ru": "Бомбардировка великого властителя"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, after the battle begins, the Rock Crab will leap into the air, scatter a large number of Stoneborne Seeds, and then begin charging up. It will detonate the Stoneborne Seeds, dealing DMG over a wide area, **immediately defeating your current active character** and greatly increasing its own All RES for a period of time. While charging, the Rock Crab will deploy a Ward, which can be broken by **converting a certain amount of Stoneborne Seeds**. Breaking its Ward will interrupt the Rock Crab's charging and leave it paralyzed.",
-						"zh": "受到地脉紊乱的影响，战斗开始后，岩居蟹会升空，散布大量「岩居之种」后开始蓄力，并在蓄力完成后引爆「岩居之种」，造成大范围伤害**使我方当前场上的角色直接倒下**，并使自身所有抗性在一段时间内大幅提升。蓄力期间，岩居蟹将展开护罩，通过**转化一定数量的「岩居之种」**破坏护罩，即可打断岩居蟹的蓄力并使其瘫痪。",
-						"pt": "Devido à perturbação da Linha Ley, após o início da batalha, o Caranguejo de Pedra saltará no ar, lançará várias Sementes da Rocha, então começará a carregar. Ele detonará as Sementes da Rocha, causando Dano sobre uma área ampla, **derrotando imediatamente seu personagem ativo atual** e aumentando imensamente sua própria RES por um período. Enquanto estiver carregando, o Caranguejo de Pedra se cobrirá com um Revestimento que pode ser destruído se receber uma certa quantidade de Dano **convertido de Sementes da Rocha**. Destruir o Revestimento interromperá o carregamento do Caranguejo de Pedra e o paralisará.",
-						"ru": "Под воздействием флуктуации артерий земли, когда бой начинается, каменный краб прыгает в воздух, разбрасывает много Каменных семян и начинает заряжаться. После зарядки он подрывает Каменные семена, нанося урон по большой площади, который **сразу выводит вашего активного персонажа из строя**, а его сопротивление всем элементам на определённый период времени значительно увеличивается. Во время зарядки краб устанавливает барьер, который можно уничтожить **определённым количеством трансформированных Каменных семян**. Уничтожив барьер, вы прервёте зарядку краба и парализуете его."
-					}
-				}
-			]
+			}
 		},
 		"chimeric-winged-lion-power-overwhelming": {
 			"name": {
@@ -577,48 +97,7 @@
 				"pt": "Leão Alado Quimérico: Poder Destruidor",
 				"ru": "Крылатая химера-лев: Сокрушительная мощь",
 				"fr": "1"
-			},
-			"description": {
-				"en": "A product of bio-alchemy, one of the abandoned man-made monsters.\nIn the Ley Lines' utterly warped reflection, its command over the elements has grown ever more violent. Lightning and stormwinds surge and roar at its bidding, leaving nothing in their wake...",
-				"zh": "生物炼金的产物，是被弃置的合成魔兽之一。\n在地脉极致扭曲的映照中，其驾驭元素的威能愈发狂暴——雷电与风暴在它的控制下奔涌咆哮，所过之处寸草不留…",
-				"pt": "Um produto da bioalquimia, um dos monstros artificiais abandonados.\nNo reflexo totalmente distorcido das Linhas Ley, seu domínio sobre os elementos se tornou ainda mais violento. Relâmpagos e vendavais surgem e rugem ao seu comando, não deixando nada em seu rastro...",
-				"ru": "Порождение биоалхимии, одно из отбракованных гибридных магических существ.\nПод воздействием предельно искажённых артерий земли его власть над стихиями становится всё более неистовой. Молнии и бури, подвластные его воле, яростно бушуют, сметая всё на своём пути...",
-				"fr": "1"
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Thundercall: Sturdy Shield",
-						"zh": "唤雷·坚盾",
-						"pt": "Invocação do Trovão: Escudo Robusto",
-						"ru": "Призыв Электро: Щит",
-						"fr": "1"
-					},
-					"text": {
-						"en": "Due to the effects of the Ley Line disturbance, at the start of battle, the Nemesis will draw on the power of its Electro head to generate a **resilient Electro Ward** to protect itself. At regular intervals, the Nemesis's two heads will act in tandem, channeling Anemo power into its Electro greatsword to unleash a large Electro shockwave. If the Nemesis is under the effect of **Radiance: Stellar Glimmer** at this time, its power will be thrown into disarray and backfire, **damaging its Ward**. Once the **Ward is broken** through Elemental Reactions, the Nemesis will stop attacking from exhaustion and become paralyzed. Its **Cryo and Anemo RES will also be greatly reduced**, and it will take a single instance of high backlash DMG based on the DMG blocked by the Ward. **Stellar Glimmer reaction DMG** will increase the backlash DMG the Nemesis takes when the Ward is broken.",
-						"zh": "受到地脉紊乱的影响，战斗开始时，强敌将以雷元素之首的力量为引，生成**坚韧的雷元素护罩**保护自身。每隔一段时间，强敌的双首将相互配合，将风元素之力灌注于雷元素大剑之中，释放大范围雷元素冲击波；此时，若强敌正处于**辉映·星烁**效果的影响之下，则将因力量紊乱而遭受反噬，**使护罩受损**。通过元素反应**破除护罩**后，强敌将因脱力而停止攻击，陷入瘫痪，同时**冰元素和风元素抗性将大幅降低**，并根据护罩所抵挡的伤害，受到一次高额反噬伤害。**星烁反应伤害**会提高护罩被破除时强敌受到的反噬伤害。",
-						"pt": "Devido aos efeitos do distúrbio das Linhas Ley, no início da batalha, o Vilão utilizará o poder de sua cabeça Electro para gerar um **Revestimento Electro resistente** para se proteger. Em intervalos regulares, as duas cabeças do Vilão agirão em conjunto, canalizando poder Anemo em seu espadão Electro para lançar uma grande onda de choque Electro. Se o Vilão estiver sob o efeito de **Brilho Reluzente: Brilho Estelar** nesse momento, seu poder será desestabilizado e causará um ricochete, **causando Dano ao seu Revestimento**. Assim que o **Revestimento for quebrado** através de Reações Elementais, o Vilão parará de atacar por exaustão e ficará paralisado. Sua **RES a Cryo e Anemo também será reduzida drasticamente**, e ele receberá uma única instância de Dano de ricochete massivo com base no Dano bloqueado pelo Revestimento. O **Dano da reação de Brilho Estelar** aumentará o Dano de ricochete que o Vilão sofre quando o Revestimento é quebrado.",
-						"ru": "Под воздействием флуктуации артерий земли в начале боя сильный противник использует силу своей Электро головы, чтобы создать вокруг себя **прочный Электро барьер**. Через определённые промежутки времени обе его головы действуют сообща, наполняя Электро двуручный меч силой Анемо и высвобождая мощную Электро ударную волну большого радиуса. Если в этот момент противник находится под воздействием эффекта **Сияние: Звёздный блеск**, конфликт стихий вызовет ответную реакцию и **повредит барьер**. После **разрушения барьера** с помощью элементальных реакций противник потеряет силы, прекратит атаковать и впадёт в состояние паралича. **Его Крио и Анемо сопротивление значительно снизится.** Он получит мощный отражённый урон, величина которого зависит от количества урона, поглощённого барьером. **Урон реакции Звёздного блеска** дополнительно увеличивает отражённый урон, получаемый противником при разрушении барьера.",
-						"fr": "1"
-					}
-				},
-				{
-					"name": {
-						"en": "Galeforce: Fierce Assault",
-						"zh": "驱风·烈袭",
-						"pt": "Ventania: Ataque Feroz",
-						"ru": "Повелитель ветра: Яростный натиск",
-						"fr": "1"
-					},
-					"text": {
-						"en": "Due to the effects of the Ley Line disturbance, during battle, the Nemesis will draw on the power of its Anemo head to take to the air, circle rapidly, and attack by firing Gale Bolts. After it finishes circling, the Nemesis will create a vortex, attempting to draw in and absorb Anemo Orbs on the field to recover its power. After absorbing enough Anemo Orbs, it will take to the air once more and launch another circling attack. Anemo Orbs can be destroyed with **Hydro/Pyro/Electro/Cryo DMG**. You can also place the Nemesis under the effect of **Radiance: Stellar Glimmer** to prevent it from absorbing Anemo Orbs. If the vortex dissipates before the Nemesis has absorbed enough Anemo Orbs, it will immediately become paralyzed. Its **Cryo and Anemo RES will also be greatly reduced**.",
-						"zh": "受到地脉紊乱的影响，战斗中，强敌将以风元素之首的力量为引，飞临空中快速盘旋，发射烈风弹展开攻击。盘旋结束后，强敌将创造风涡，尝试牵引并吸收场上的风球以恢复力量；吸收足够的风球后，将再度升空发动盘旋攻击。风球可被**水/火/雷/冰元素伤害破坏**；亦可通过令强敌陷入**辉映·星烁**的影响，使其无法吸收风球。若风涡消散时强敌仍未吸收足量的风球，将立刻陷入瘫痪状态，同时强敌的**冰元素和风元素抗性将大幅降低**。",
-						"pt": "Devido aos efeitos da perturbação da Linha Ley, durante a batalha, o Vilão utilizará o poder de sua cabeça Anemo para levantar voo, circular rapidamente e atacar disparando Rajadas de Vento. Após terminar de circular, o Vilão criará um vórtice, tentando atrair e absorver Orbes Anemo no campo para recuperar seu poder. Após absorver Orbes Anemo suficientes, ele levantará voo mais uma vez e lançará outro ataque circular. Os Orbes Anemo podem ser destruídos com **Dano Hydro/Pyro/Electro/Cryo**. Você também pode colocar o Vilão sob o efeito de **Brilho Reluzente: Brilho Estelar** para impedi-lo de absorver os Orbes Anemo. Se o vórtice se dissipar antes que o Vilão tenha absorvido Orbes Anemo suficientes, ele ficará imediatamente paralisado. Sua **RES Cryo e RES Anemo também serão reduzidas imensamente**.",
-						"ru": "Под действием флуктуации артерий земли во время боя сильный противник, используя силу Анемо головы, взмывает в воздух и быстро кружит, выпуская снаряды яростного ветра для атаки. После завершения кружения сильный противник создаёт вихрь, пытаясь притянуть и поглотить Анемо сферы на поле боя для восстановления сил; поглотив достаточное количество Анемо сфер, он снова поднимется в воздух и начнёт атаку кружением. Анемо сферы можно уничтожить **Гидро/Пиро/Электро/Крио уроном**; также можно наложить на сильного противника эффект **Сияние: Звёздный блеск**, чтобы он не мог поглощать Анемо сферы. Если к моменту рассеивания вихря сильный противник не поглотит достаточное количество Анемо сфер, он немедленно впадёт в состояние паралича, а его **сопротивление Крио и Анемо урону значительно снизится**.",
-						"fr": "1"
-					}
-				}
-			]
+			}
 		},
 		"emperor-of-fire-and-iron-ordained-conquest": {
 			"name": {
@@ -626,57 +105,7 @@
 				"zh": "铁甲熔火帝皇·敕命远征",
 				"pt": "Imperador do Fogo e Ferro: Conquista Ordenada",
 				"ru": "Император огня и железа: Поход"
-			},
-			"description": {
-				"en": "One of the two sovereigns who once stood at the apex of the aberrant species of the Fontemer, and the subject of many a tale among sailors. Avoiding predation, it keeps hunting and eating and so continues to grow, constantly seeking out suitable shells to become its new armor.\nTwisted by the turbulence of the Ley Lines, its violent nature has grown so intense that it now rampages like a small army, lashing out at everything it sees — a crab-shaped calamity crawling across the land...",
-				"zh": "矗立在原海异种顶端的两位霸主之一，曾经是海员之间的逸闻。不遇天敌，能够一直狩猎、进食的重甲蟹会随着成长，不断寻找适合的螺与贝壳，作为新的甲胄。\n经由地脉乱象的扭曲演绎，它凶横的身姿已化作小型军队，对目之所及的事物大张挞伐，仿若一场会移动的蟹形凶灾…",
-				"pt": "Um dos dois soberanos que já estiveram no ápice das espécies das aberrações primordiais, e assunto de muitos contos entre marinheiros. Sem predadores naturais, continuará a caçar e se alimentar enquanto cresce, buscando constantemente conchas adequadas como novas armaduras.\nDistorcido pela perturbação das Linhas Ley, sua natureza violenta ficou tão intensa que agora ele ataca em descontrole como um exército pequeno, golpeando tudo que perceber, uma calamidade em formato de caranguejo em movimento...",
-				"ru": "Один из двух владык, некогда возвышавшихся над инородами Фонтмера, и герой легенд среди моряков. Не встречая природных врагов, бронекраб постоянно охотился, питался и искал подходящих моллюсков и улиток для нового панциря.\nИскажённый хаосом артерий земли, он превратился в небольшую армию, беспощадно уничтожающую всё на своём пути, словно движущееся крабовое бедствие..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Molten Crown",
-						"zh": "熔火角冠",
-						"pt": "Chifres Fundidos",
-						"ru": "Огненная корона-рога"
-					},
-					"text": {
-						"en": "The twin molten horns located high up on the body of the Emperor of Fire and Iron are **Pyro-aligned** organs that enable it to unleash more vicious elemental attacks and grant it even stronger defensive capabilities. When unleashing certain attacks, its twin molten horns will **stay close to the ground**, providing an opportunity to **use Elemental Reactions to destroy them**. Once the Pyro element stored within the twin molten horns is exhausted, they will be destroyed, causing the powerful foe to take a single instance of immense DMG. Once destroyed, the horns cannot be restored for a period of time.",
-						"zh": "铁甲熔火帝皇身躯上方高处的熔火双角是**火元素**的身体器官，使其能够进行更猛烈的元素攻击，并且拥有更强的防御能力。在进行部分攻击时，熔火双角会**贴近地面**，此时是**利用元素反应摧毁双角**的较好时机。当熔火双角的火元素耗尽后，双角会被破坏，强敌将受到一次高额伤害；熔火双角需经过一段时间才能恢复。",
-						"pt": "Os chifres duplos fundidos localizados no alto do corpo do Imperador do Fogo e Ferro são órgãos **alinhados ao Pyro** que permitem ele lançar ataques elementais mais poderosos e concedem ainda mais capacidades defensivas. Quando o inimigo lança certos ataques, seus chifres duplos fundidos ficam **próximos ao chão**, fornecendo uma ótima oportunidade para **usar Reações Elementais para destruir os chifres duplos fundidos**. Quando o elemento Pyro nos chifres é removido, o oponente poderoso sofrerá uma única instância de dano gigantesco e não poderá restaurar os chifres por um breve período.",
-						"ru": "Двойной рог, расположенный высоко на Императоре огня и железа, является органами **Пиро**, которые позволяют ему использовать более мощные элементальные атаки и наделяют его ещё более сильными оборонительными возможностями. Когда он использует определённые атаки, его Двойной рог находится **близко к земле**, что даёт отличную возможность **использовать элементальные реакции для уничтожения рогов**. Как только элемент Пиро внутри Двойного рога исчезнет, сильный противник получит один раз большой урон и рога будут уничтожены и не смогут быть восстановлены в течение некоторого времени."
-					}
-				},
-				{
-					"name": {
-						"en": "Shield Bearers",
-						"zh": "持盾扈从",
-						"pt": "Escudeiro",
-						"ru": "Щитоносный вассал"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Emperor of Fire and Iron will summon Sternshield Crabs to assist during battle. Sternshield Crabs continuously channel Pyro to the twin molten horns. Once their Pyro is exhausted, the Sternshield Crabs will be defeated. Once a Sternshield Crab is defeated, it will lose control and collide with the Emperor of Fire and Iron, overloading the Pyro element within its twin molten horns and damaging them, causing the Emperor of Fire and Iron to take DMG proportional to the DMG the Sternshield Crab itself has received. A maximum of three Sternshield Crabs can be on the field at once.",
-						"zh": "受到地脉紊乱的影响，铁甲熔火帝皇在进行部分攻击时会召唤「坚盾重甲蟹」助战。「坚盾重甲蟹」会持续为熔火双角补充火元素，但当其自身的火元素被耗尽后将被击败。被击败的「坚盾重甲蟹」会失控撞向铁甲熔火帝皇，使其熔火双角的火元素因过载而受损，并根据「坚盾重甲蟹」所受伤害的总值对铁甲熔火帝皇造成一定比例伤害。场上最多同时存在三只「坚盾重甲蟹」。",
-						"pt": "Afetado pela perturbação da Linha Ley, o Imperador do Fogo e Ferro invocará Caranguejos Escudo-Firme para auxiliar na batalha. Os Caranguejos Escudo-Firme canalizarão continuamente o elemento Pyro para os chifres duplos fundidos. Quando a energia Pyro for removida totalmente, eles serão derrotados. Quando um Caranguejo Escudo-Firme é derrotado, ele perderá o controle e se chocará contra o Imperador do Fogo e Ferro, sobrecarregando o elemento Pyro nos chifres duplos fundidos e os danificando. O Imperador do Fogo e Ferro também sofre dano adicional proporcional ao dano total que o Caranguejo Escudo-Firme recebeu anteriormente. Um máximo de três Caranguejos Escudo-Firme podem estar em campo simultaneamente.",
-						"ru": "Под влиянием флуктуации артерий земли, Император огня и железа во время боя призывает себе на помощь бронекрабов-щитовиков. Они постоянно пополняют Пиро в Двойном роге, но когда их собственная энергия Пиро истощается, они терпят поражение. Побеждённые бронекрабы-щитовики теряют контроль и врезаются в Императора огня и железа, что приводит к перегрузке Пиро в его Двойном роге и наносит определённый процент урона Императору огня и железа, основанный на общем уроне, полученном бронекрабами-щитовиками. На поле боя одновременно может находиться не более трёх бронекрабов-щитовиков."
-					}
-				},
-				{
-					"name": {
-						"en": "Radiant Coronation",
-						"zh": "璀璨加冕",
-						"pt": "Coroação Radiante",
-						"ru": "Блистательная коронация"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Emperor of Fire and Iron will perform Radiant Coronation in battle, charging briefly before dealing DMG over a large AoE. Destroy the twin molten horns to interrupt its charging.",
-						"zh": "受到地脉紊乱的影响，铁甲熔火帝皇会在战斗中进行「璀璨加冕」：进行一段时间的蓄能，完成后将造成大范围伤害。破坏熔火双角，即可打断铁甲熔火帝皇的蓄能。",
-						"pt": "Afetado pela perturbação da Linha Ley, o Imperador do Fogo e Ferro realizará \"Coroação Radiante\" em batalha, carregando brevemente antes de causar dano em uma grande área. Destruir os chifres duplos fundidos interrompe a carga.",
-						"ru": "Под влиянием флуктуации артерий земли Император огня и железа во время боя выполняет Блистательную коронацию: накапливает энергию в течение некоторого времени, после чего наносит урон по большой площади. Разрушение Двойного рога прервёт накопление энергии Императором огня и железа."
-					}
-				}
-			]
+			}
 		},
 		"experimental-field-generator-extreme-potential": {
 			"name": {
@@ -684,43 +113,7 @@
 				"zh": "实验性场力发生装置·极端势能",
 				"pt": "Gerador de Campo Experimental: Potencial Extremo",
 				"ru": "Экспериментальный генератор поля: Экстремальный потенциал"
-			},
-			"description": {
-				"en": "A product of the Fontaine Research Institute of Kinetic Energy Engineering that has gone out of control due to an accident. It has the ability to \"counteract\" the effects of gravity.\nTransformed by the chaotic Ley Lines, its core has grown violently unstable, and the gravitational fields it unleashes now surge with the force of tsunamis, ready to engulf the land...",
-				"zh": "枫丹动能工程科学研究院的作品，拥有「抵消」重力的效果，因为事故而失控。\n在紊乱地脉的作用下，其核心狂暴异常，释放的重力场能量如海啸般奔涌，仿佛要将大地倾覆…",
-				"pt": "Um produto do Instituto de Pesquisas de Engenharia de Energia Cinética de Fontaine que perdeu o controle acidentalmente. Possui a habilidade de anular os efeitos da gravidade.\nTransformado pelas caóticas Linhas Ley, seu núcleo está instável, e o campo gravitacional que libera agora emerge com uma força de tsunamis para engolir a terra...",
-				"ru": "Продукт Научно-исследовательского института кинетической энергии. Из-за происшествия потерял управление.\nПод воздействием возмущений артерий земли его неистовое ядро высвобождает силовое поле, подобное цунами, которое угрожает перевернуть землю..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Gravitational Core: Critical Depth",
-						"zh": "重力核心·深度过载",
-						"pt": "Núcleo Gravitacional: Profundeza Crítica",
-						"ru": "Гравитационное ядро: Глубокая перегрузка"
-					},
-					"text": {
-						"en": "Affected by the Ley Lines disturbance, the foe generates a Gravity Reduction Field during combat, greatly increasing characters' jump height. Each time a character reaches a certain height, their ATK is significantly increased for 1.5s. When the field is active, **gravitational shockwaves that cannot be dodged periodically erupt on the ground**. The strength and frequency of these shockwaves will gain 1 stack of enhancement every 5s. Each **Plunging Attack** received will remove 1 stack of enhancement.",
-						"zh": "受到地脉紊乱的影响，会在战斗中展开重力削减力场，使角色的跳跃高度获得显著提升，并且每次跳跃至一定高度，角色的攻击力都会在1.5秒内大幅提升。力场持续期间，每隔一段时间就会**在地面上产生无法被闪避的引力冲击波**。每经过5秒，引力冲击波的威力和频率就会获得1层强化；每受到一次**下落攻击**，就会移除1层引力冲击波强化。",
-						"pt": "Devido a perturbação das Linhas Ley, o inimigo gera um Campo de Redução de Gravidade durante o combate, aumentando consideravelmente a altura dos saltos dos personagens. Cada vez que um personagem alcançar uma certa altura, seu ATQ é consideravelmente aumentado por 1.5s. Quando o campo está ativo, **ondas de choque gravitacionais inevitáveis surgirão do chão periodicamente**, ganhando 1 acúmulo de poder fortalecido e frequência a cada 5s. Cada **Ataque Imersivo** remove 1 acúmulo desse fortalecimento.",
-						"ru": "Под воздействием флуктуации артерий земли в бою создаёт поле снижения гравитации, значительно увеличивающее высоту прыжка персонажей. Каждый раз, когда персонаж подпрыгивает до определённой высоты, его сила атаки существенно увеличивается на 1,5 сек. Когда поле активно, на земле периодически **генерируются неизбежные гравитационные ударные волны**, которые получают 1 уровень повышения силы и частоты каждые 5 сек. Каждая полученная **атака в падении** снимает 1 уровень этого усиления."
-					}
-				},
-				{
-					"name": {
-						"en": "Resilient Core",
-						"zh": "强韧核心",
-						"pt": "Núcleo Resiliente",
-						"ru": "Прочное ядро"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Ousia core grows more robust, and the Gravity Reduction Field will remain active even after receiving **3 Pneuma attacks**.",
-						"zh": "受到地脉紊乱的影响，荒性核心变得更加坚固，即使在受到**3次芒性攻击**后，也不再会导致重力削减力场关闭。",
-						"pt": "Devido a perturbação das Linhas Ley, o núcleo Ousia se torna mais forte, e o Campo de Redução da Gravidade permanecerá ativo, mesmo após sofrer **3 ataques Pneuma**.",
-						"ru": "Под воздействием флуктуации артерий земли ядро усии становится ещё прочнее. Даже получив **3 атаки пневмы**, поле снижения гравитации останется активным."
-					}
-				}
-			]
+			}
 		},
 		"frostnight-herra-hatred-and-rage": {
 			"name": {
@@ -728,43 +121,7 @@
 				"zh": "霜夜巡天灵主·惊恨憎愤",
 				"pt": "Nobre da Noite Gelada: Ódio e Fúria",
 				"ru": "Повелитель морозной ночи: Ненависть и ярость"
-			},
-			"description": {
-				"en": "A majestic being that strides with pride through the frost-laden night, wielding ancient powers long since tamed by the Lord of the Sky. Yet under the unspeakable influence of the Ley Lines, its solemn nobility has been usurped by a ferocious appetite for prey and a willingness to meet intruders with the freezing edge of a blade...",
-				"zh": "傲然巡行于霜夜的奇异生灵，能自如驱使如今早已被高天之主驯化的古老力量。但在难以名状的地脉侵扰下，它已与尊贵庄严绝缘，转而化为凶狠险绝的捕猎者，向来访者展现出极寒的锋芒…",
-				"pt": "Um ser majestoso que caminha com orgulho pela noite coberta de gelo, empunhando poderes ancestrais há muito tempo domados pelo Senhor do Céu. Porém, sob a influência indescritível das Linhas Ley, sua nobreza solene foi usurpada pelo apetite feroz por presas e uma disposição para enfrentar intrusos com o gume gelado de uma lâmina...",
-				"ru": "Величественное существо гордо шествует сквозь морозную ночь. Оно владеет древними силами, давно укрощёнными Владыкой Неба. Однако невыразимым влиянием артерий земли его торжественное благородство вытеснилось жестокой жаждой добычи и готовностью встречать вторгшихся ледяным клинком..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Gloomveiled",
-						"zh": "晦隐状态",
-						"pt": "Estado Véu Melancólico",
-						"ru": "Состояние Вуали мрака"
-					},
-					"text": {
-						"en": "Will enter a Gloomveiled state while in combat: **All RES is greatly increased**. After taking **a certain number of DMG instances**, it will exit the Gloomveiled state and change its Elemental Type to the element whose DMG it received the most during the time it was Gloomveiled, thereby **gaining the corresponding Elemental DMG Immunity and Elemental Effects**.",
-						"zh": "战斗中会进入「晦隐」状态：**所有抗性大幅提升**。受到**一定次数的伤害**后，会退出「晦隐」状态，并将自身元素类型转换为「晦隐」期间受到伤害量最多的元素类型，**获得对应元素伤害免疫效果和元素附着**。",
-						"pt": "Quando em batalha, entrará no estado Véu Melancólico: **aumenta consideravelmente todas as RES**. Ao **sofrer uma certa quantidade de instâncias de Dano**, sairá do estado Véu Melancólico, e mudará o Tipo Elemental para o Elemento do Dano que recebeu mais durante o período de Véu Melancólico, **obtendo a Imunidade e os Efeitos Elementais correspondentes**.",
-						"ru": "В бою входит в состояние Вуали мрака: **сопротивление всем элементам значительно увеличивается**. Получив **определённое количество ударов**, выходит из состояния Вуали мрака и меняет тип своего элемента на тот, которым ему был нанесён наибольший урон во время действия Вуали мрака, **получая иммунитет к соответствующему элементальному урону и эффект этого элемента**."
-					}
-				},
-				{
-					"name": {
-						"en": "Purest Moonglow",
-						"zh": "明净月曜",
-						"pt": "Luar Puro",
-						"ru": "Чистейшее лунное сияние"
-					},
-					"text": {
-						"en": "**Lunar Reaction DMG** is more effective when breaking the Gloomveiled state. If it has taken more Lunar Reaction DMG when it exits the Gloomveiled state, its Elemental Type will change to Elementless, and it **will not gain any Elemental DMG Immunity or Elemental Effects**.",
-						"zh": "破除「晦隐」状态时，**月曜反应伤害**具有更高的效率。退出「晦隐」状态时如果受到了较高的月曜反应伤害，则会转化为无元素状态，**不会获得任何元素伤害免疫效果和元素附着**。",
-						"pt": "Ao remover o estado Véu Melancólico, aumenta a eficiência do **Dano de Reações Lunares**. Ao sair do estado Véu Melancólico, se sofrer Dano altos de Reações Lunares, converte para o estado Sem Elemento, **não obtendo nenhum efeito de Imunidade a Dano Elemental e Encantamento Elemental**.",
-						"ru": "Когда Вуаль мрака разрушается, эффективность **урона Лунных реакций** возрастает. Если чудовище к моменту выхода из состояния Вуали мрака получило высокий урон от Лунных реакций, то оно утратит тип элемента, а также **не будет наделяться иммунитетом к какому-либо элементу и эффектом элемента**."
-					}
-				}
-			]
+			}
 		},
 		"guardian-blade-of-drifting-snow-endless-reverberation": {
 			"name": {
@@ -772,44 +129,7 @@
 				"zh": "游雪的护刃·不绝余音",
 				"pt": "Guarda-Lâmina da Neve Errante: Reverberação Incessante",
 				"ru": "Клинок снегов: Благозвучие струн"
-			},
-			"description": {
-				"en": "An ancient Snegovik held in high esteem by her clan, she was once entrusted with the lifelong duty of protecting her people.\nWarped by the turbulent flood within the Ley Lines, the hollow delusion she once called \"protection\" has been stripped down to a pure instinct for slaughter. Concealed within the shadow of the Ice Coffin, she lies in wait, ready at any moment to become an elusive, razor-sharp blade of ice and tear apart any living thing that ventures near.",
-				"zh": "在雪精一族之中也拥有相当声望的古老雪精，曾被授予「须毕生守护雪精一族」的重任。\n在地脉洪流的错乱影响下，其名为「守护」的空洞执妄仅余杀戮的本能，她潜藏于冰棺的阴影下，随时准备化作一道不可捉摸的凌厉冰剑，撕裂一切试图靠近的生命。",
-				"pt": "Uma Snegovik antiga muito estimada pelo clã dela. No passado, ela foi confiada o dever vitalício de proteger o povo dela.\nDistorcida pela enchente turbulenta nas Linhas Ley, a ilusão vazia que ela outrora chamou de \"proteção\" foi reduzida a um puro instinto pela matança. Oculta na sombra do Caixão de Gelo, ela aguarda, pronta para a qualquer momento se tornar uma lâmina de gelo afiada e elusiva, e destruir qualquer ser vivo que se aproxime.",
-				"ru": "Древняя снегурочка, пользующаяся большим уважением среди своего народа, некогда получивший важную миссию - «до конца жизни защищать племя снеговиков».\nПод хаотичным воздействием потоков артерий земли её опустевшая одержимость, именуемая «Защитой», свелась лишь к инстинкту убийства. Она скрывается в тени ледяного гроба, готовая в любой миг обратиться в неуловимый ледяной клинок и рассечь каждого, кто осмелится приблизиться.",
-				"fr": "???"
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Ice Coffin: Twinned Crystal Lattice",
-						"zh": "冰棺·孪晶晶格",
-						"pt": "Caixão de Gelo: Trama de Cristal Geminada",
-						"ru": "Ледяной гроб: Двойная кристаллическая решётка"
-					},
-					"text": {
-						"en": "During battle, when the Nemesis's HP falls below a certain threshold, it will encase itself in an Ice Coffin and gain a **Cryo Ward** to protect itself.\nWhile the Ice Coffin is active, the Nemesis will continuously unleash icy storms around itself. If the Ice Coffin is not destroyed, the Nemesis restores a portion of its HP and creates ice swords to launch a counterattack. However, if the Ice Coffin sustaining its life is destroyed, it enters a weakened state for a period of time. Due to the Ley Line disturbance, **the Ice Coffin will be more durable**. A short time after it is destroyed for the first time, the Nemesis will **encase itself in another Ice Coffin**.",
-						"zh": "战斗中，当强敌生命值低于一定比例时，会将自身封入「冰棺」之中，利用「冰棺」的**冰元素护罩**保护自身。\n「冰棺」存在期间，强敌会以自身为中心持续释放冰风暴进行攻击。如果「冰棺」未被破坏，强敌将恢复部分生命值并凝造冰剑进行反击；但若性命所寄的「冰棺」被破坏，强敌将陷入一段虚弱期。受地脉紊乱影响，该**「冰棺」将更加坚韧**；且在首次被破坏的一段时间后，强敌会**再次将自身封入「冰棺」**。",
-						"pt": "Durante a batalha, quando a Vida dele cai abaixo de um certo limite, o Vilão recua para um Caixão de Gelo e ganha um **Revestimento Cryo** para se proteger.\nEnquanto o Caixão de Gelo estiver ativo, o Vilão lançará Tempestades de Gelo continuamente ao redor de si. Se o Caixão de Gelo não for destruído, o Vilão recuperará uma porção da própria Vida e criará espadas de gelo para lançar um contra-ataque. Contudo, se o Caixão de Gelo sustentando a vida dele for destruído, o Vilão entra num estado enfraquecido por um período. Devido à perturbação da Linha Ley, seu **Caixão de Gelo será mais resistente**. Em um breve período após ser destruído pela primeira vez, o Vilão **recuará para outro Caixão de Gelo**.",
-						"ru": "Во время боя, когда HP сильного противника опускается ниже определённого порога, он запечатывает себя в ледяном гробу, используя **Крио барьер** ледяного гроба для защиты.\nПока ледяной гроб активен, сильный противник непрерывно вызывает вокруг себя ледяную бурю. Если ледяной гроб не разбить, то сильный противник восстанавливает часть HP, создаёт ледяной клинок и наносит ответный удар. Но если ледяной гроб, поддерживающий его жизнь, удалось разбить, то он на некоторое время ослабнет. Под воздействием флуктуации артерий земли **ледяной гроб становится прочнее**. Кроме того, спустя некоторое время после первого разрушения ледяного гроба сильный противник **снова запечатывает себя в ледяном гробу**."
-					}
-				},
-				{
-					"name": {
-						"en": "Ice Coffin: Warped Crystal Lattice",
-						"zh": "冰棺·畸变晶格",
-						"pt": "Caixão de Gelo: Trama de Cristal Distorcida",
-						"ru": "Ледяной гроб: Искажённая кристаллическая решётка"
-					},
-					"text": {
-						"en": "While the **Ice Coffin is active**, if the Nemesis is affected by **Radiance: Stellar Glimmer**, **the Ice Coffin's Cryo Ward will transform into a shield that absorbs DMG.** Once the shield is destroyed, the Nemesis will take a large amount of backlash DMG.",
-						"zh": "**「冰棺」存在**期间，若强敌处于**辉映·星烁**效果影响之下，**则「冰棺」的冰元素护罩将转化为能够吸收伤害的护盾**。护盾被破坏后，强敌将受到一次高额反噬伤害。",
-						"pt": "Enquanto o **Caixão de Gelo estiver ativo**, se o Vilão for afetado por **Brilho Reluzente: Brilho Estelar**, **o Revestimento Cryo do Caixão de Gelo se transformará em um escudo que absorve Dano.** Quando o escudo for destruído, o Vilão sofrerá uma grande quantidade de Dano de retaliação.",
-						"ru": "Пока **ледяной гроб существует**, если сильный противник находится под воздействием эффекта **Сияние: Звёздный блеск**, **Крио барьер ледяного гроба превращается в щит**, поглощающий урон. После разрушения щита сильный противник получит высокий урон от отдачи."
-					}
-				}
-			]
+			}
 		},
 		"hydro-tulpa-turbulent-vortex": {
 			"name": {
@@ -817,43 +137,7 @@
 				"zh": "水形幻人·极旋湍流",
 				"pt": "Tulpa Hydro: Vórtice Turbulento",
 				"ru": "Гидротульпа: Стремительная воронка"
-			},
-			"description": {
-				"en": "A humanoid monster formed from the agglomeration of water.\nCountless wills dissolved in the water, which, like the universe, was full of souls that wished to be born.\nSuffering and hatred, suffused into those waters, intersected to warp what was once human shape amidst the inchoate chaos of the Ley Lines. The tragic dissolution is soon to repeat itself...",
-				"zh": "由水凝聚成的初具人形的魔物。\n曾有无数的意志消融在水中，但水中原本就与宇宙一样充满了渴求被诞下的灵魂。\n在地脉极端紊乱的投映下，深浸于水下的苦痛与怨恨，以某种扭曲的形式交织于原本的人形之上，要将可悲的消逝再度重演…",
-				"pt": "Um monstro humanóide formado pela aglomeração da água.\nIncontáveis vontades se dissolveram na água, que, como o universo, estava repleta de almas desejando nascer.\nSofrimento e ódio infundidos nessas águas se cruzaram, distorcendo o que um dia foi uma forma humana em meio ao caos embrionário das Linhas Ley. A trágica dissolução está prestes a se repetir...",
-				"ru": "Человекоподобный монстр, состоящий из воды.\nВоля многих существ растворялась в воде, где, как и во всей Вселенной, уже было немало душ, ожидавших рождения.\nВ крайнем хаосе артерий земли страдания и ненависть, заполнившие эти воды, переплелись и исказили то, что однажды было человеческой формой, чтобы повторить прискорбный исход..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Twin Half-Tulpas",
-						"zh": "双重半幻人",
-						"pt": "Dupla de Meias-Tulpas",
-						"ru": "Полутульпы-близнецы"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, **2 Half-Tulpas** will emerge during the challenge at intervals. After some time, the Hydro Tulpa will absorb Half-Tulpas to **enhance itself**: **It will heal a large amount of HP** and grow larger, its ATK will increase, and it will launch more dangerous attacks.\nUse attacks or Elemental Reactions to destroy the Half-Tulpas in time or **Freeze** them to interrupt this absorption.",
-						"zh": "受到地脉紊乱的影响，挑战中，间歇性出现**「半幻人」将增加至2位**。一段时间后，水形幻人将吸收半幻人以**强化自身**：**恢复大量生命值**、体型变大，攻击力提升，且将发动更具威胁的攻击。\n及时通过攻击或元素反应消灭「半幻人」或将其**冻结**可以中断吸收的进程。",
-						"pt": "Afetado pela perturbação das Linhas Ley, **2 Meias-Tulpas** surgirão em intervalos durante o desafio. Após certo tempo, a Tulpa Hydro irá absorver as Meias-Tulpas para **se fortalecer**: **recuperará uma grande quantidade de Vida**, aumentará de tamanho, seu ATQ será elevado e lançará ataques ainda mais perigosos.\nUse ataques ou Reações Elementais para destruir as Meias-Tulpas a tempo ou **congele-as** para interromper essa absorção.",
-						"ru": "Под воздействием флуктуации артерий земли во время испытания будут периодически появляться **2 полутульпы**. Через определённое время Гидротульпа поглотит их и **станет сильнее**: **она восстановит большое количество HP**, её размер увеличится, сила атаки повысится, а также она станет выполнять более опасные атаки.\nСвоевременно уничтожайте полутульп атаками или элементальными реакциями, либо активируйте на них **Заморозку**, чтобы прервать поглощение."
-					}
-				},
-				{
-					"name": {
-						"en": "Torrential Flurry",
-						"zh": "洪流环击",
-						"pt": "Torrente Destruidora",
-						"ru": "Удар потока"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Hydro Tulpa will deploy a Shield during the challenge and enter a charging state as it prepares to launch Torrential Flurry. If it is successfully unleashed, **your current active character will be immediately defeated**.\nWhen the Hydro Tulpa deploys its Shield, all party members' Elemental Skill and Burst CDs will be reset, while their Elemental Energy, Fighting Spirit, and Serpent's Subtlety will be restored. Breaking the Shield before the Hydro Tulpa can charge up will interrupt Torrential Flurry.",
-						"zh": "受到地脉紊乱的影响，挑战中，水形幻人将展开护盾，进入蓄能态势，准备释放「洪流环击」。如果「洪流环击」成功释放，**将使我方当前场上的角色直接倒下**。\n水形幻人展开护盾时，队伍中所有角色的元素战技和元素爆发冷却时间将重置，且将恢复元素能量、战意或蛇之狡谋。在水形幻人蓄能完成前破除护盾，即可打断「洪流环击」的释放。",
-						"pt": "Devido às perturbações das Linhas Ley, durante o desafio, o Tulpa Hydro colocará um Escudo e entrará no estado de carregamento, preparando-se para desencadear uma Torrente Destruidora. Se for lançada **o seu personagem ativo será derrotado imediatamente**.\nQuando o Tulpa Hydro colocar o Escudo, o tempo de recarga das Habilidades Elementais e Supremos de todos os membros da equipe será redefinido, e a Energia Elemental, Espírito Lutador e Sutileza da Serpente serão restaurados. Destrua o Escudo do Tulpa Hydro antes de carregar completamente para impedir que lance a Torrente Destruidora.",
-						"ru": "Под воздействием флуктуации артерий земли во время испытания гидротульпа развёртывает щит и входит в состояние зарядки, чтобы подготовить Удар потока. Если она выпустит его, **ваш активный персонаж сразу окажется без сознания**.\nКогда гидротульпа развёртывает щит, откат элементальных навыков и взрывов стихии персонажей отряда сбрасывается, а энергия, боевая решимость и Змеиное коварство восстанавливаются. Если вы уничтожите щит, пока гидротульпа заряжается, зарядка Удара потока прерывается."
-					}
-				}
-			]
+			}
 		},
 		"iniquitous-baptist-resonant-wrath": {
 			"name": {
@@ -861,29 +145,7 @@
 				"zh": "深罪浸礼者·肃烈狂音",
 				"pt": "Batizador Iníquo: Fúria Ressonante",
 				"ru": "Чудовищный креститель: Звучный гнев"
-			},
-			"description": {
-				"en": "A creature of the Abyss that, through the dark's stygian powers, has gained additional appendages via \"evolution.\" It is capable of wielding multiple types of elemental powers.\nIn the twisted recollections of the Ley Lines, they surface as frenzied destroyers, raising wave after wave of calamity with their blasphemous powers...",
-				"zh": "因为深渊的力量取得「进化」而获得了多余的肢体的深渊魔物。能够驱役多种元素的力量。\n在地脉扭曲的追忆中，它们跃升为狂乱的破坏者，以其亵渎的力量掀起接踵而至的灾厄浪潮…",
-				"pt": "Um monstro do Abismo que através dos poderes obscuros do estígio, ganhou membros extras através da \"evolução\".É capaz de possuir múltiplos tipos de poderes elementais.\nNas memórias distorcidas das Linhas Ley, aparecem como destruidores frenéticos, erguendo-se uma onda após a outra com seus poderes calamitosos blasfemos...",
-				"ru": "Существо Бездны, которое благодаря силам тьмы в ходе эволюции обрело дополнительные конечности. Способно управлять силой нескольких типов элементов.\nВ искривлённых воспоминаниях артерий земли они возносятся как безумные разрушители, обрушивающие волны бедствий своей нечестивой силой..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Elemental Ward: Frenzied Chaos",
-						"zh": "元素护罩·纷变狂乱",
-						"pt": "Revestimento Elemental: Variante Frenética",
-						"ru": "Элементальный барьер: Хаотичная изменчивость"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, after the battle begins, the foe will sequentially deploy **Electro, Pyro, and Hydro Wards** to protect itself, while adjusting its attacks to match the corresponding element. **Breaking a Ward using Elemental Reactions** will deal immense DMG to the foe, based on the **amount of DMG the Ward absorbed**, forcing it to shift to another elemental form and deploy the corresponding Ward. Breaking all three Wards will cause the foe to be temporarily paralyzed.",
-						"zh": "受到地脉紊乱的影响，战斗开始后，该敌人会依次展开**雷元素护罩、火元素护罩和水元素护罩**来保护自身，同时根据元素护罩的类型改变自身的攻击方式。**通过元素反应破除一种元素护罩**后，该敌人将根据**护罩抵挡的伤害值**受到一次高额伤害，然后切换元素形态并展开对应元素护罩；全部的三种护罩都被破除后，敌人会瘫痪一段时间。",
-						"pt": "Devido a perturbação das linhas Ley, no começo da batalha, o inimigo revela **Revestimentos Electro, Pyro e Hydro** em sequência para se proteger, ajustando seus ataques para combinar com o Elemento ativo. **Destruir um Revestimento com Reações Elementais** causará muito Dano baseado na **quantidade de Dano absorvida pelo Revestimento**, e forçará o inimigo a trocar para outra forma Elemental, e a invocar o Revestimento correspondente. Quando todos os três Revestimentos forem destruídos, o inimigo será paralisado por um curto período de tempo.",
-						"ru": "Под воздействием флуктуации артерий земли после начала боя противник последовательно развёртывает **барьеры Электро, Пиро и Гидро**, причём способ его атаки меняется в зависимости от типа элементального барьера. После того как вы **с помощью элементальных реакций разрушите один из элементальных барьеров**, противник согласно **поглощённому барьером урону** получает высокий однократный урон, после чего сменяет свою элементальную форму и создаёт барьер соответствующего элемента. После уничтожения всех трёх барьеров противник на некоторое время парализуется."
-					}
-				}
-			]
+			}
 		},
 		"knuckle-duckle-armored-arsenal": {
 			"name": {
@@ -891,57 +153,7 @@
 				"zh": "重拳出击鸭·重甲武库",
 				"pt": "Marreco Marreta: Arsenal Blindado",
 				"ru": "Железный утёнок: Тяжёлая броня"
-			},
-			"description": {
-				"en": "A strangely shaped kuuvahki mechanism, made from scrap metal and mechanical bearings, that bears a partial resemblance — as per its creator's preferences, apparently — to a duck. Its output and resistance to damage are comparable to the Fatui's most cutting-edge weapons of war... But even so, it remains simply a toy duck that can punch its opponents very, very hard.\nDue to the transformation caused by the extreme Ley Line disorder, the projection of this mechanism has evolved into a mobile factory fully loaded with armor and weaponry. One wrong move, and a swarm of Stamping Devices will overwhelm the challenger like a tsunami...",
-				"zh": "由废弃的金属与机关轴承拼接而成的、造型奇特的月矩力机关，似乎是因为制造者的偏好而被部分赋予了「鸭子」的外观特征。即便是与愚人众最尖端的战争兵器相比，在出力与抗打击性能方面都毫不逊色，但依然只是一只会对敌人重拳出击的玩具鸭子。\n在地脉极端紊乱的改造下，该机关的投影已然化为了一座满载武备与装甲的机动工厂。稍有不慎，蜂拥而至的冲鸭机关便会如同海啸般将挑战者淹没…",
-				"pt": "Um dispositivo Kuuvahki feito de ferro-velho e rolamentos mecânicos, lembrando vagamente, provavelmente devido a sua criadora, um pato. Sua resistência contra dano é comparável aos armamentos de ponta dos Fatui... Mas, ainda assim, é um pato de brinquedo que só pode socar contra seus inimigos com muita, muita força.\nDevido às transformações causadas pelas perturbações extremas das Linhas Ley, a projeção deste mecanismo evoluiu em uma fábrica móvel totalmente equipada com blindagem e armamento. Um movimento errado e um bando de Dispositivos Carregadores atropelará o adversário como um maremoto...",
-				"ru": "Странный механизм, работающий на куувяки, собранный из металлолома и подшипников механизмов. Из-за предпочтений создателя он частично приобрёл внешние черты «утки». Даже если сравнить с самыми передовыми боевыми машинами Фатуи, он не уступает им ни по мощности, ни по прочности, но при этом остаётся всего лишь игрушечной уткой, бьющей противников тяжёлыми кулаками.\nПод воздействием экстремальных искажений артерий земли проекция этого механизма превратилась в мобильную фабрику, загруженную вооружением и бронёй. Малейшая оплошность - и уткоботы обрушатся на того, кто бросил им вызов, подобно цунами..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Heavy Duckstruction Mode",
-						"zh": "「全装甲歼灭鸭」模式",
-						"pt": "Modo de \"Patostrução Pesado\"",
-						"ru": "Режим Бронированного крушителя"
-					},
-					"text": {
-						"en": "Due to the effects of the Ley Line disturbance, when battle begins, this Nemesis will go into Heavy Duckstruction Mode, in which its aggression increases. It also generates a Ward for itself **that increases all RES**, and summons floating Stamping Devices to harass you.",
-						"zh": "受到地脉紊乱的影响，战斗开始后，强敌会进入「全装甲歼灭鸭」模式，进攻欲望上升，并为自身生成护罩**提升所有抗性**，还会召唤浮游的冲鸭机关进行骚扰。",
-						"pt": "Devido aos efeitos das perturbações das Linhas Ley, quando a batalha começar, esse Vilão entra no modo \"Patostrução Pesada\", do qual sua agressão aumenta. Também cria um Revestimento para si **que aumenta toda sua RES** e invoca Dispositivos Carregadores para te incomodar.",
-						"ru": "Под влиянием флуктуации артерий земли после начала боя сильный противник войдёт в режим Бронированного крушителя, его агрессивность повысится, и он создаст барьер, **повышающий все виды сопротивления**, а также призовёт парящие уткоботы для отвлекающих атак."
-					}
-				},
-				{
-					"name": {
-						"en": "Low-Resistance Stamping Devices",
-						"zh": "低阻冲鸭机关",
-						"pt": "Dispositivos Carregadores de Baixa Resistência",
-						"ru": "Уткоботы с низким сопротивлением"
-					},
-					"text": {
-						"en": "**Deal Electro-Charged or Lunar-Charged DMG repeatedly, or simply deal enough damage to destroy the stamping devices** to disrupt them. Disrupted devices will lose control and crash into the Knuckle Duckle, dealing a certain amount of damage to its Ward. Destroying the Nemesis's Ward this way will cause it to exit Heavy Duckstruction Mode and become incapacitated from Overloaded. This will also **greatly reduce the Nemesis's Electro RES for a certain time**.",
-						"zh": "**通过多次造成感电或月感电伤害，或直接造成足量伤害破坏冲鸭机关**，均可干扰它们的运行。被干扰的冲鸭机关会失控撞向重拳出击鸭，并对重拳出击鸭的护罩造成一定伤害。通过这种方式破坏强敌的护罩，即可使强敌退出「全装甲歼灭鸭」模式，因过载而陷入瘫痪，同时使强敌的**雷元素抗性在一段时间内大幅降低**。",
-						"pt": "**Cause Dano de Carregado Eletricamente e/ou de Carga Lunar repetidamente, ou apenas cause Dano o suficiente** para perturbar esses dispositivos. Dispositivos Carregadores perturbados ficarão fora de controle, baterão no Marreco Marreta e causarão uma certa quantidade de Dano ao seu Revestimento. Ao destruir o Revestimento do Vilão dessa forma, você pode fazer com que ele saia do modo de \"Patostrução\" e ficar incapacitado devido à sobrecarga. Isso também **reduzirá imensamente a RES Electro do Vilão por um certo período**.",
-						"ru": "**Многократно нанося урон реакциями Заряжен и/или Лунный заряд или нанося достаточное количество урона иным образом,** можно вывести уткобота из строя. Вышедший из строя уткобот врежется в Железного утёнка и нанесёт определённый урон его барьеру. Уничтожив таким образом барьер сильного противника, можно вывести его из режима Бронированного крушителя, парализовать его из-за перегрузки и одновременно **значительно понизить Электро сопротивление сильного противника на некоторое время**."
-					}
-				},
-				{
-					"name": {
-						"en": "Fast Frequency-Hopping System",
-						"zh": "快速跳频系统",
-						"pt": "Sistema de Mudança Rápida de Frequência",
-						"ru": "Система быстрой перестройки частоты"
-					},
-					"text": {
-						"en": "Due to the effects of the Ley Line disturbance, the stamping devices become more resilient — deal **more instances of Electro-Charged or Lunar-Charged DMG** or **more damage** to these devices to disrupt them. **Electro-Charged or Lunar-Charged DMG** dealt to stamping devices will be more effective, and when they lose control and crash into the Knuckle Duckle, the damage dealt to the latter increases based on **the total damage taken** by the devices.",
-						"zh": "受到地脉紊乱的影响，冲鸭机关变得更加坚固：需要**造成更多次感电或月感电伤害**，或**造成更高伤害**才能干扰其运行。**感电或月感电伤害**对冲鸭机关具有更高的破坏效率。当失控的冲鸭机关撞向重拳出击鸭时，其造成的伤害将根据冲鸭机关**所受伤害的总值**提升。",
-						"pt": "Devido aos efeitos das perturbações das Linhas Ley, os Dispositivos Carregadores se tornam mais resistentes — cause **mais instâncias de Dano de Eletricamente Carregado e/ou Carga Lunar**, ou **mais dano** a esses dispositivos para os interromper. **Dano de Eletricamente Carregado e Carga Lunar** causados a esses Dispositivos Carregadores serão mais efetivos, e quando perdem controle e batem contra o Marreco Marreta, o Dano causado a este último aumenta com base no **Dano total sofrido** pelos dispositivos.",
-						"ru": "Под воздействием флуктуации артерий земли уткоботы стали более прочными: требуется **нанести больше урона реакциями Заряжен или Лунный заряд** либо **нанести больше урона иным образом**, чтобы вывести их из строя. **Урон от реакций Заряжен или Лунный заряд** более эффективен для разрушения уткоботов. Когда вышедший из-под контроля уткобот врезается в Железного утёнка, нанесённый им урон увеличивается в зависимости от **общего объёма полученного уткоботом урона**."
-					}
-				}
-			]
+			}
 		},
 		"lava-dragon-statue-blazing-flame": {
 			"name": {
@@ -949,57 +161,7 @@
 				"zh": "熔岩辉龙像·炽烈流焰",
 				"pt": "Estátua do Dragão de Lava: Chamas Ardentes",
 				"ru": "Статуя лавового дракона: Жаркое пламя"
-			},
-			"description": {
-				"en": "A monster that can continuously generate heat to sustain its activities.\nA failed attempt to birth wisdom from pure energy that bears the outline of a great race yet possesses no more consciousness than a stone.\nThough this being was once no different from a corpse, the Ley Lines in turmoil have imparted the virulent animus of the deceased upon it, adding thoughts fell and perilous to its instinct for battle.",
-				"zh": "能够自身持续产生热量，以维持活动状态的魔物。\n无法从纯粹的能量中诞生智慧，无知无觉，而徒具伟大种族形廓的失败品。\n即便曾与死物无异，紊乱地脉中至为暴戾的奔流，也将亡者的「憎恨」教给了它，在它出于本能的战斗中嵌入了至危的邪念…",
-				"pt": "Um monstro que pode gerar calor continuamente para sustentar sua atividade.\nNão possuem sabedoria, nem consciência, são apenas o resultado do fracasso de uma raça superior.\nAs perturbações das Linhas Ley chegam a desordenar as coisas mortas, apesar de não serem diferentes delas, chegando ao ponto de infundirem o ódio nelas, bem como as memórias e instintos de batalha...",
-				"ru": "Монстры, которые способны самостоятельно генерировать жар для поддержания своих жизненных функций.\nНеудачная попытка породить мудрость из чистой энергии, которая несёт в себе очертания великой расы, но сознания у неё не больше, чем у камня.\nОно мало чем отличается от мертвеца, но флуктуация артерий земли наделила его ненавистью умершего, вложив в его инстинкты борьбы опаснейшие дурные помыслы..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Dual Pyroclast",
-						"zh": "炽岩双身",
-						"pt": "Gêmeos de Pedra Ardente",
-						"ru": "Двойной пирокласт"
-					},
-					"text": {
-						"en": "Starts in the Geohuman form, which possesses **higher All Elemental and Physical RES**. After it takes a certain number of **Pyro DMG** instances, it will completely enter its Molten Dragon form, in which **All Elemental and Physical RES apart from Pyro RES is greatly decreased**. After it goes on to take **Pyro DMG**, it will progressively take additional DMG. If it takes a certain number of additional **Pyro DMG** instances while in Molten Dragon form, it will enter Overburn, falling down and becoming immobilized. This will also cause its **All Elemental and Physical RES to be further decreased**. After being immobilized for a time, it will return to Geohuman form.",
-						"zh": "初始处于「岩之人」状态，具备**较高的所有元素与物理抗性**，受到一定次数的**火元素伤害**后，将完全进入「熔焰之龙」的状态，**火元素外的所有元素与物理抗性大幅降低**；继续受到**火元素伤害**后，将阶段性承受额外伤害，在「熔焰之龙」状态下受到一定次数的**火元素伤害**后，将过度燃烧，倒下瘫痪，**所有元素与物理抗性进一步降低**。瘫痪一段时间后，将恢复回「岩之人」状态。",
-						"pt": "Inicia no estado Humano Geo, possui **alta RES Física e contra todos os Elementos**. Depois de sofrer **Dano Pyro** uma certa quantidade de vezes, entra no estado Dragão Flamejante, **reduzindo ainda mais a RES Física e contra todos os Elementos, menos Pyro**. Ao continuar a sofrer **Dano Pyro**, sofrerá Dano adicional até um certo ponto, para que enquanto estiver no estado Dragão Flamejante e sofrer **Dano Pyro** uma certa quantidade de vezes, sofrerá Queimaduras e será paralisado, **reduzindo ainda mais a RES contra todos os Elementos e a RES Física**. Depois de ficar paralisado por um tempo, regenera-se para o estado Humano Geo.",
-						"ru": "Вначале пребывает в форме «геочеловека» с **высоким сопротивлением всем элементам и физическому урону**. Попав под определённое количество атак с **Пиро уроном**, он принимает форму «расплавленного дракона», в которой **существенно понижено его сопротивление физическому урону и всем элементам, кроме Пиро**. Продолжив подвергаться **Пиро урону**, он периодически получает дополнительный урон. Приняв определённое количество атак с **Пиро уроном** в форме «расплавленного дракона», он переходит в состояние Сверхгорения, падает и парализуется, а его **сопротивление всем элементам и физическое сопротивление снижаются ещё больше**. Через некоторое время после парализации он возвращается в форму «геочеловека»."
-					}
-				},
-				{
-					"name": {
-						"en": "Cooldown Effect",
-						"zh": "冷却效果",
-						"pt": "Efeito de Recarga",
-						"ru": "Эффект отката"
-					},
-					"text": {
-						"en": "After taking **Hydro DMG** or **Cryo DMG**, it will gradually return to the higher-RES Geohuman form.",
-						"zh": "受到**水元素伤害**或**冰元素伤害**后，将逐渐恢复回抗性较高的「岩之人」状态。",
-						"pt": "Ao receber **Dano Hydro** ou **Dano Cryo**, ele retornará gradualmente à forma Humanoide Geo com maior RES.",
-						"ru": "После получения **Гидро** или **Крио** урона он постепенно восстановит форму «геочеловека» с высоким сопротивлением."
-					}
-				},
-				{
-					"name": {
-						"en": "Roiling Agglomeration",
-						"zh": "滚热固化",
-						"pt": "Solidificação do Calor",
-						"ru": "Обжигающее застывание"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, this great foe has its All RES further increased, and the number of Pyro DMG instances it must take to change form is increased.",
-						"zh": "受到地脉紊乱的影响，强敌的所有抗性进一步提升。并且致使其转换形态所需的火元素伤害次数增加。",
-						"pt": "Devido às perturbações das Linhas Ley, fortalece todas as RES dos inimigos ainda mais e aumenta o número de instâncias de Dano Pyro necessárias para mudar de forma.",
-						"ru": "Под воздействием флуктуаций артерий земли сопротивление всем элементам этого создания увеличивается ещё больше, а количество атак с Пиро уроном, необходимое для изменения его формы, повышается."
-					}
-				}
-			]
+			}
 		},
 		"lord-of-the-hidden-depths-whisperer-of-nightmares-ravager-s-edge": {
 			"name": {
@@ -1007,43 +169,7 @@
 				"zh": "深黯魇语之主·袭掠锋刃",
 				"pt": "Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos - Lâmina Devastadora",
 				"ru": "Повелитель скрытых глубин: Шёпот кошмаров - Разящее лезвие"
-			},
-			"description": {
-				"en": "An Abyss creature that creeps through rifts in the hidden depths, quietly watching this world. Its eerie, faceless form is said to be nothing more than a projection, while its true body exists only as a formless mass of pure Abyssal energy.\nDriven by the turmoil of the chaotic Ley Lines, its frenzied, delirious whispers have been honed into a cutting edge aimed squarely at rending the world's hard-won order atwain...",
-				"zh": "伏行于深黯的裂隙，窥伺此世的深渊魔物。据说那怪异、亵渎的无面形貌不过是投射于世界上的影像，其真实姿态乃是以纯粹深渊能量形式存在的无形之物。\n在地脉乱象狂乱的裹挟中，它疯狂与谵妄的低语被锻成了锐不可当的刀锋，誓要将此世的安稳秩序撕碎…",
-				"pt": "Uma criatura do Abismo que se esgueira pelas fendas nas profundezas ocultas, silenciosamente assistindo esse mundo. Dizem que sua forma sinistra, sem rosto, não é nada além de uma projeção, enquanto seu verdadeiro corpo existe apenas como uma massa sem forma de energia abissal pura.\nMovido pela agitação das Linhas Ley caóticas, seus sussurros delirantes e frenéticos foram lapidados em um poder de corte direcionado a romper com a ordem mundial conquistada com muita dificuldade...",
-				"ru": "Существо Бездны, крадущееся сквозь разломы в скрытых глубинах, тихо наблюдающее за этим миром.\nГоворят, что его жуткая, безликая форма всего лишь проекция, в то время как его истинное тело существует лишь как бесформенная масса чистой энергии Бездны.\nВ хаосе бушующих артерий земли их безумный, бредовый шёпот превратился в неудержимое лезвие, поклявшееся разорвать спокойствие и порядок этого мира..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Deepdark Shield: Deeproot Blight",
-						"zh": "深黯护盾·沉疴",
-						"pt": "Escudo das Profundezas: Praga Enraizada",
-						"ru": "Тёмный щит: Хронический недуг"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Lord of the Hidden Depths: Whisperer of Nightmares gathers Abyssal energy to create an extremely durable protective Shield. **Lunar Reaction DMG** is more effective at destroying this Shield. When the Shield is destroyed, the Lord of the Hidden Depths: Whisperer of Nightmares takes a single instance of immense DMG and temporarily enters a weakened state.",
-						"zh": "受到地脉紊乱的影响，深黯魇语之主会凝聚深渊之力结成极为坚韧的护盾保护自身。使用**月曜反应伤害**可以更高效地破坏该护盾。强敌在展开护盾后，其护盾首次承受月曜反应伤害时，会产生额外的元素晶球。护盾被破坏后，深黯魇语之主将受到一次高额伤害，并陷入一段时间的虚弱状态。",
-						"pt": "Afetado pela perturbação da Linha Ley, o Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos reunirá energia do Abismo para criar um escudo protetor extremamente resistente. **Dano de Reações Lunares** é especialmente eficaz em quebrá-lo. Quando um inimigo poderoso aplica um Escudo, a primeira vez que esse Escudo sofrer Dano de Reações Lunares, ele gera um Orbe Elemental adicional. Quando o escudo é destruído, o Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos sofre uma única instância de dano gigantesco e entra num estado enfraquecido por um breve período.",
-						"ru": "Под влиянием флуктуаций артерий земли Повелитель скрытых глубин: Шёпот кошмаров концентрирует силу Бездны, создавая чрезвычайно прочный щит. Используйте **урон от Лунной реакции** для более эффективного разрушения этого щита. После разрушения щита Повелитель скрытых глубин: Шёпот кошмаров получит один раз значительный урон и впадёт в ослабленное состояние на некоторое время."
-					}
-				},
-				{
-					"name": {
-						"en": "Rift Assault",
-						"zh": "裂隙强袭",
-						"pt": "Ataque da Fenda",
-						"ru": "Разрывающий натиск"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Lord of the Hidden Depths: Whisperer of Nightmares will enter a lengthy charging state and summon multiple Fishers of Hidden Depths. Once it has fully charged, it will deal DMG over a large AoE and devour all Fishers. Defeat Fishers before this happens to destroy the Shield and interrupt the Lord of the Hidden Depths: Whisperer of Nightmares' charging.",
-						"zh": "受到地脉紊乱的影响，战斗中，深黯魇语之主会进行长时间的蓄力，同时召唤数名深黯钓客。蓄力完成后，将造成大范围伤害，并吞噬所有深黯钓客。蓄力期间，通过击败深黯钓客破坏护盾，即可打断深黯魇语之主的蓄力。",
-						"pt": "Afetado pela perturbação da Linha Ley, o Lorde das Profundezas Desconhecidas: Sussurrador de Pesadelos entrará num estado de carga e invocará múltiplos Pescadores das Profundezas. Se a carga for concluída, causará dano em uma grande área e consumirá todos os Pescadores. Derrotar os Pescadores durante a carga quebra o escudo e interrompe a carga.",
-						"ru": "Под влиянием флуктуаций артерий земли в бою Повелитель скрытых глубин: Шёпот кошмаров будет продолжительное время накапливать заряд, одновременно призывая несколько Рыболовов скрытых глубин. После завершения зарядки он нанесёт урон по большой площади и поглотит всех Рыболовов скрытых глубин. Во время зарядки можно прервать накопление энергии Повелителя скрытых глубин: Шёпот кошмаров, уничтожив Рыболовов скрытых глубин и разрушив его щит."
-					}
-				}
-			]
+			}
 		},
 		"radiant-moongecko-entangled-fangs": {
 			"name": {
@@ -1051,57 +177,7 @@
 				"zh": "蕴光月守宫·根牙磐错",
 				"pt": "Lagartixa Radiante: Presas Entrelaçadas",
 				"ru": "Лучезарный лунный геккон: Переплетённые клыки"
-			},
-			"description": {
-				"en": "This gecko, an ancient monster drawn to moonlight, dwells deep within the rock. The gradual accumulation of kuuvahki in its body has crystallized it into segments as precise as mechanical components. These parts can turn into stony spikes against enemies.\nDue to the effects of extreme Ley Line disturbances, its kuuvahki-affected segments have grown wildly, intertwining into a vast web that appears intent on devouring the mountain range whole.",
-				"zh": "眷恋月光的古老魔物，在岩层深处栖息的守宫。躯体因长久以来积蓄的月矩力而发生晶化，形成如同机关构件般精密的节段，能化作岩刺攻击敌人。\n受地脉极端紊乱的影响，其因月矩力催化生成的节段肆意生长，彼此交缠盘结，如巨网般试图将整座山峦侵吞殆尽。",
-				"pt": "Um monstro antigo atraído pelo luar, essa lagartixa vive nas profundezas das camadas de pedras. O acúmulo gradual de Kuuvahki cristalizou seu corpo em segmentos tão precisos quanto componentes mecânicos. Essas partes podem endurecer e formar espinhos de pedra usados para repelir intrusos.\nAfetado pelo extremo distúrbio das Linhas Ley, seus segmentos cristalizados por Kuuvahki crescem descontroladamente, se entrelaçando e colidindo juntos como uma enorme teia que parece determinada a devorar toda a cordilheira.",
-				"ru": "Древнее чудовище, тоскующее по лунному свету, геккон, обитающий в глубинах каменных пластов. Его тело кристаллизовалось под долгим воздействием куувяки, образовав точные сегменты, подобные частям механизма, способные превращаться в каменные шипы для атаки врагов.\nПод влиянием максимальных флуктуаций артерий земли его сегменты, образованные под действием куувяки, разрослись бесконтрольно, переплетаясь и сплетаясь друг с другом, подобно гигантской сети, стремящейся поглотить целую гору."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Vagrant Reverberation",
-						"zh": "无依的虚荡",
-						"pt": "Reverberação Errante",
-						"ru": "Несдерживаемый размах"
-					},
-					"text": {
-						"en": "After the battle begins, the Nemesis leaves a Moonstone Anchor in its place before leaping to higher ground to prepare for Vagrant Reverberation. Then, after some time, it unleashes a large and powerful AoE strike. Use ** methods suited to dealing with Geo** to break through the multiple Geo ward layers on the Moonstone Anchor. Destroying it interrupts the skill's charge-up and deals massive DMG to the Nemesis. The more DMG the Moonstone Anchor takes during the preparation phase, the greater the DMG dealt to the Nemesis when the Moonstone Anchor is destroyed. Due to the effects of the Ley Line disturbance, using **Geo** attacks against the Moonstone Anchor further increases the DMG dealt to the Nemesis.",
-						"zh": "战斗开始后，强敌会在原地留下「月锚岩」，然后跳至高处准备施展「无依的虚荡」：一段时间后，释放强力的大范围攻击。可以利用**对付岩元素的方法**来破坏「月锚岩」的多层岩元素护罩，以将其摧毁。摧毁「月锚岩」即可终止该技能的准备，并对强敌造成大量伤害。准备期间「月锚岩」受到的伤害越高，「月锚岩」被摧毁时强敌受到的伤害也越高。受地脉紊乱影响，使用**岩元素**攻击「月锚岩」将进一步增加强敌受到的伤害。",
-						"pt": "Após o início da batalha, o Vilão deixará a Âncora da Pedra Lunar em campo, então saltar para um lugar alto e se preparar para usar Reverberação Errante. Após um tempo, desencadeará um golpe poderoso em AdE. Use **métodos adequados para lidar contra Geo** para destruir as múltiplas camadas de Revestimento Geo da Âncora da Pedra Lunar. Destruí-la interromperá que a habilidade carregue e causar Dano massivo ao Vilão. Quanto mais Dano a Âncora da Pedra Lunar levar durante a fase de preparação, maior será o Dano causado ao Vilão quando a Âncora da Pedra Lunar for destruída. Afetado pelos distúrbios das Linhas Ley, usar ataques **Geo** contra a Âncora da Pedra Lunar aumentará ainda mais o Dano causado ao Vilão.",
-						"ru": "После начала боя сильный противник оставляет на своём изначальном месте якорный лунный камень и взмывает вверх, готовясь к приёму Несдерживаемый размах: через некоторое время он совершит мощную атаку по большой площади. Можно использовать **способы противодействия Гео**, чтобы разрушить многослойный Гео барьер якорного лунного камня и уничтожить его. Его уничтожение прерывает подготовку атаки и наносит противнику значительный урон. Чем больше урона получит камень во время подготовки, тем больше урона будет нанесено противник при уничтожении камня. Под влиянием флуктуаций артерий земли **Гео** атаки по якорному лунному камню дополнительно повышают урон, получаемый сильным противником."
-					}
-				},
-				{
-					"name": {
-						"en": "Unshakable Rock",
-						"zh": "难撼的础石",
-						"pt": "Rocha Imovível",
-						"ru": "Незыблемый камень"
-					},
-					"text": {
-						"en": "Due to the effects of the Ley Line disturbance, the Moonstone Anchor's multi-layered Geo Ward becomes more resilient.",
-						"zh": "受到地脉紊乱的影响，「月锚岩」的多层岩元素护罩会变得更加坚韧。",
-						"pt": "Devido aos efeitos dos distúrbios das Linhas Ley, o Revestimento Geo em camadas da Âncora da Pedra Lunar se tornou mais resiliente.",
-						"ru": "Из-за флуктуации артерий земли многослойный Гео барьер якорного лунного камня становится более прочным."
-					}
-				},
-				{
-					"name": {
-						"en": "Radiant Cocoon",
-						"zh": "蕴光之茧",
-						"pt": "Casulos Brilhantes",
-						"ru": "Сияющий кокон"
-					},
-					"text": {
-						"en": "During battle, the Nemesis harnesses Geo to apply Radiant Cocoon to characters and increase its own Geo RES. Characters afflicted by Radiant Cocoon **deal less DMG and receive less healing**. **When a character's HP is restored to full through healing**, they break free from the cocoon and gain the Disentangled effect, which boosts their abilities for a short time. Once any character in the party successfully breaks free, the Nemesis loses the Geo RES granted by Radiant Cocoon.",
-						"zh": "战斗中，强敌将驱使岩元素力，对角色施加「蕴光之茧」，并提升自身的岩元素抗性。被「蕴光之茧」束缚的角色，**造成的伤害以及受到治疗的效果都会降低**。**通过治疗使角色的生命值达到上限**时，该角色即可自「蕴光之茧」中破茧而出，并获得「出缠」效果，短时间内能力将得到提升。当队伍中任意角色成功破茧后，强敌将失去「蕴光之茧」带来的岩元素抗性。",
-						"pt": "Durante o combate, o Vilão conduzirá Geo para aplicar Casulos Brilhantes aos personagens e aumentar sua própria RES Geo. Personagens presos nos Casulos Brilhantes **causam Dano reduzido e recebem menos cura**. **Quando a Vida de um personagem é completamente recuperada através da cura**, ele se liberta do casulo e obtém o efeito de Desemaranhado, temporariamente aprimorando sua habilidade. Quando qualquer personagem na equipe conseguir se libertar, o Vilão perderá a RES Geo concedida pelos Casulos Brilhantes.",
-						"ru": "В бою сильный противник использует силу Гео, чтобы опутать персонажей сияющим коконом, и повышает своё Гео сопротивление. Персонажи в коконе **наносят меньше урона и получают меньше лечения**. Когда **лечение восполняет HP персонажа до максимума**, он разрывает кокон и получает эффект Освобождение, временно повышающий его характеристики. Как только любой персонаж в отряде освободится, противник потеряет Гео сопротивление от сияющего кокона."
-					}
-				}
-			]
+			}
 		},
 		"secret-source-automaton-configuration-device-lysis-shears": {
 			"name": {
@@ -1109,43 +185,7 @@
 				"zh": "秘源机兵构型械·裂解剪钳",
 				"pt": "Autômato da Fonte Secreta: Mecanismo de Configuração — Tesoura da Dissolução",
 				"ru": "Автоматон таинственного источника: Конфигуратор: Пассатижи"
-			},
-			"description": {
-				"en": "A machine used in the building of old ruins. The masters of those ancient domains used this machine that could change its shape for various manufacturing tasks.\nAmidst the turbulent flood within the Ley Lines, its lava-resistant shell has been transformed into armor, the great might that built colossal cities now forged into titanic pincers. What was once a command to \"construct\" has been warped into a desire to \"destroy,\" driving it to complete the \"grand endeavor\" of rendering all things into rubble.",
-				"zh": "深古遗迹的制造用机械体，远古遗迹的主人们用这种会改变形态的机器进行各种制造的工作。\n在地脉洪流的错乱重构下，其抵御熔岩的外壳化作了盔甲，构筑庞然巨城的伟力铸成了巨钳。曾经的「制造」指令被篡改为「毁灭」的意志，正驱使着它无休止地践行着将一切化为废墟的「伟大事业」。",
-				"pt": "Uma máquina de fabricação das ruínas ancestrais profundas. Os antigos senhores dessas ruínas utilizavam essas máquinas de forma mutável para realizar diversos trabalhos de construção.\nSob o fluxo caótico das correntes de Linha Ley, sua blindagem resistente à lava transformou-se em armadura, e o poder que erguia cidades colossais foi reforjado em garras gigantescas. Os antigos comandos de \"construção\" foram corrompidos pela vontade de \"destruição\", impulsionando-o a executar incessantemente a \"grande obra\" de reduzir tudo a escombros.",
-				"ru": "Производственный механизм, использовавшийся при строительстве древних руин. Хозяева тех древних владений применяли эту машину, способную менять свою форму, для различных производственных задач.\nВ ходе хаотичного преобразования, вызванного бурными потоками артерий земли, её устойчивый к лаве корпус превратился в броню, а великая мощь, возводившая исполинские города, перековалась в гигантские пассатижи. Некогда заложенная команда «созидать» была искажена волей к «разрушению», и теперь она неустанно побуждает машину претворять в жизнь «великое дело» - обращать всё в руины."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Adaptive Countermeasures: Cold Start",
-						"zh": "应战对策·冷启动",
-						"pt": "Contramedidas Adaptativas - Inicialização Fria",
-						"ru": "Адаптивные контрмеры: Холодный запуск"
-					},
-					"text": {
-						"en": "When the battle begins, the Nemesis will gain **much higher All Elemental and Physical RES**. When a character enters and maintains the Nightsoul's Blessing state, the Nemesis will accumulate progress toward Adaptive Countermeasures. Due to the Ley Line disorder, after the Nemesis finishes accumulating Adaptive Countermeasures for the first time, it will lose **all of the RES it gained at the start of the battle**.",
-						"zh": "战斗开始时，强敌将受护盾保护，并获得**较高的所有元素抗性与物理抗性**。在角色进入和维持「夜魂加持」状态时，强敌会积累「应战对策」的进度。受地脉紊乱影响，强敌首次完成「应战对策」的积累时，将损失**战斗开始时获得的所有抗性**，其护盾也将随之破除，并使强敌受到大量反噬伤害。",
-						"pt": "No início do combate, o Vilão obtém **RES contra Todos os Elementos e RES Física extremamente elevadas**. Enquanto os Personagens entram ou se mantêm no estado de Bênção do Espírito da Noite, o Vilão acumula Progresso de Contramedidas Adaptativas. Devido à perturbação das Linhas Ley, após o primeiro acúmulo completo de Contramedidas Adaptativas, o Vilão perde **toda a RES contra Todos os Elementos e RES Física obtidas no início do combate**.",
-						"ru": "В начале битвы сильный противник получает **чрезвычайно высокое сопротивление всем элементам и физический урон**. Когда персонаж входит в состояние Благословение Ночного духа и поддерживает его, у противника накапливается прогресс Адаптивных контрмер. Из-за возмущения артерий земли, после того как противник впервые полностью накопит Адаптивные контрмеры, он теряет **сопротивление всем элементам и физическое сопротивление, полученные в начале битвы**."
-					}
-				},
-				{
-					"name": {
-						"en": "Boltsphere Cannon: High-Pressure Pumps",
-						"zh": "球状雷炮·高压塞泵",
-						"pt": "Canhão Esférico de Raios - Pistão de Alta Pressão",
-						"ru": "Пушка сферических молний: Насос высокого давления"
-					},
-					"text": {
-						"en": "After Adaptive Countermeasures progress fills up, the Nemesis will activate Accretion Mechanisms and excavate 2 blocks of solid Phlogiston before absorbing energy from within them to charge the Boltsphere Cannon. The Accretion Mechanisms will generate force fields to protect themselves. You must **climb up solid Phlogiston to get inside the force fields** to destroy them. After all the Accretion Mechanisms are destroyed, Boltsphere Cannon charging will be interrupted, while the Nemesis will **get paralyzed and simultaneously take massive rebound DMG**. Due to the Ley Line disorder, Adaptive Countermeasures will accrue progress as time passes, but the threshold required to activate Boltsphere Cannon will be higher.",
-						"zh": "在「应战对策」进度积累满后，强敌将启动「汲聚械」，开掘出2块固态燃素并汲取其中的能量，以准备「球状雷炮」。「汲聚械」会产生力场保护自身，需要**先攀上固态燃素进入力场内**，才能将其破坏。破坏所有「汲聚械」后，即可打断「球状雷炮」的蓄能，并使强敌**在陷入瘫痪的同时受到反噬伤害**。受地脉紊乱影响，「应战对策」进度会随时间推进积累，但触发「球状雷炮」所需的进度阈值也会提升。",
-						"pt": "Quando o Progresso das Contramedidas Adaptativas estiver completo, o Vilão ativará o Mecanismo de Coleta, extraindo 2 unidades de Flogisto Sólido e absorvendo sua Energia para preparar o Canhão Esférico de Raios. O Mecanismo de Coleta gera um campo de força para se proteger. Você deve **escalar o Flogisto Sólido e entrar no campo de força** para destruí-lo. Ao destruir todos os Mecanismos de Coleta, o Carregamento do Canhão Esférico de Raios será interrompido, deixando o Vilão **Paralisado e sofrendo Dano de ricochete simultaneamente**. Devido à perturbação das Linhas Ley, o Progresso das Contramedidas Adaptativas se acumula com o tempo, mas o limite de Progresso necessário para acionar o Canhão Esférico de Raios também aumenta.",
-						"ru": "После того как шкала Адаптивных контрмер заполнится, противник активирует накопители, извлекая 2 блока твёрдого флогистона и поглощая из них энергию для зарядки пушки сферических молний. Накопители создают силовые поля для своей защиты. Чтобы уничтожить их, необходимо **забраться на твёрдый флогистон и проникнуть внутрь силового поля**. После уничтожения всех накопителей зарядка пушки сферических молний прерывается, а противник **парализуется и получает огромный отражённый урон**. Из-за флуктуаций артерий земли Адаптивные контрмеры накапливаются со временем, но порог, необходимый для активации пушки сферических молний, также повышается."
-					}
-				}
-			]
+			}
 		},
 		"secret-source-automaton-overseer-device-obliterator-panoply": {
 			"name": {
@@ -1153,57 +193,7 @@
 				"zh": "秘源机兵统御械·毁灭武装",
 				"pt": "Autômato da Fonte Secreta: Manopla Destruidora",
 				"ru": "Автоматон таинственного источника: Опустошающее оружие"
-			},
-			"description": {
-				"en": "A domination mechanism from the ancient ruins.\nIn the distant past, a once-mighty ancient race used this mechanism to oversee the operation of their cities. Even now, long after the fall of their civilization, it still retains immense authority.\nIn the depths of the chaotic Ley Lines, the core energy module that deteriorated over the lengthening years has been restored, indeed, even \"overclocked\" to a dangerous degree. This machine is now unchained by its original specifications, capable of freeing itself from the planet's shackles and using its horrific \"Obliterator Panoply\"...",
-				"zh": "深古遗迹的统御用机关。\n曾经，一度伟大的古老种族借由这种机关来统御城市的运转，即使在旧日文明崩毁的现在，也依然拥有着极高的权能。\n在地脉乱象的深处，曾因时间流逝而衰损的核心能量重归充盈，甚至达到万分危险的「过载」级别。这一机关足以挣脱星球束缚的恐怖功率，最终以超出设计规格的水准完全释放，驱动起它那可怖的「毁灭武装」…",
-				"pt": "Um dispositivo utilizado para controlar ruínas antigas. \nNo passado distante, uma raça antiga que outrora foi poderosa usava esse mecanismo para supervisionar o funcionamento de sua cidade. Mesmo agora, muito depois da queda de sua civilização, ele ainda retém uma autoridade imensa.\nNas profundezas das anomalias da Linha Ley, a energia do núcleo, outrora enfraquecida pelo passar do tempo, voltou a se reconstituir, alcançando até mesmo o nível extremamente perigoso de \"Sobrecarga\". Esse dispositivo possui uma potência aterradora, capaz de romper as amarras do planeta, sendo totalmente liberada além dos parâmetros originais de projeto, ativando sua terrível \"Manopla Destruidora\"...",
-				"ru": "Древний механизм, созданный для установления господства.\nВ далёком прошлом некогда могущественная древняя раса использовала этот механизм для контроля работы своего города. Даже сейчас, спустя много лет после падения той цивилизации, он всё ещё остаётся могущественным.\nВ глубинах хаоса артерий земли разрушившееся за долгие годы энергетическое ядро восстановилось до опасного уровня перегрузки. Теперь этот механизм, выйдя за пределы исходных характеристик, способен избавиться от оков планеты и применить своё ужасающее «Опустошающее оружие»..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Preemptive Sweeper Mode",
-						"zh": "「先制荡除模式」",
-						"pt": "Modo de Varredura Prévia",
-						"ru": "Упреждающий режим зачистки"
-					},
-					"text": {
-						"en": "Will immediately enter Sweeper Mode when combat starts: **All Elemental and Physical RES is greatly increased**, and it will generate Flow Momentum while performing attacks. The higher its Flow Momentum, the faster it will rotate and the more DMG it will deal.\nIt will lose Flow Momentum after taking **Cryo DMG**. Below a certain Flow Momentum value, it will stop rotating and attacking, and its **All Elemental and Physical RES will be greatly decreased**, with its **Cryo RES** **decreasing still more**.\nEach time it enters Sweeper Mode, it will produce additional Elemental Orbs the first time its rotating attacks are stopped.",
-						"zh": "战斗开始后将立即进入「荡除模式」：**所有元素与物理抗性大幅提升**，并会一边产生「液流动量」一边进行攻击，「液流动量」越高，旋转速度与造成的伤害越高。\n受到**冰元素伤害**后，将损失「液流动量」，「液流动量」低于一定值时，将停止旋转攻击，且**所有元素与物理抗性大幅降低**。且**冰元素抗性****额外降低**。\n每次进入「荡除模式」后首次停止旋转攻击时，将产生额外的元素晶球。",
-						"pt": "Entra em Modo de Varredura imediatamente ao começar a batalha: **aumenta consideravelmente a RES Física e contra todos os Elementos**, e gera Energia Fluida enquanto ataca. Quanto maior a Energia Fluida, maior a velocidade do rodopio, e maior o Dano causado.\nDepois de sofrer **Dano Cryo**, perde Energia Fluida, e quando perder Energia Fluida até um certo valor, interrompe o ataque rodopiante e **reduz consideravelmente a RES Física e contra todos os Elementos**. Além disso, **reduz ainda mais** a **RES Cryo**.\nToda vez que interromper o primeiro ataque rodopiante após entrar no estado do Modo de Varredura, gera um Orbe Elemental adicional.",
-						"ru": "В начале боя сразу переходит в режим зачистки: **сопротивление всем элементам и физ. сопротивление значительно повышено**, а также он генерирует импульс потока и атакует. Чем выше импульс потока, тем быстрее он вращается и тем больше наносит урона.\nПолучив **Крио урон**, он теряет импульс потока. Когда импульс потока опустится ниже определённого значения, он прекратит вращаться и атаковать, а его **сопротивление всем элементам и физ. сопротивление существенно понизятся**. Кроме того, **дополнительно снижается** его **Крио сопротивление**.\nКаждый раз, когда он впервые прекращает вращаться и атаковать в режиме зачистки, будут выпадать дополнительные элементальные сферы."
-					}
-				},
-				{
-					"name": {
-						"en": "Forced Counterstrike Mode",
-						"zh": "「强载应战状态」",
-						"pt": "Estado de Combate Fortalecido",
-						"ru": "Режим форсированного контрудара"
-					},
-					"text": {
-						"en": "If an active character enters and maintains the **Nightsoul's Blessing** state for a time, this opponent will enter Forced Counterstrike Mode and switch to attacking with powerful tracking rays. At this time, its **All Elemental and Physical RES will be decreased**.\nIn this state, after it takes a certain number of **Cryo DMG** instances, it will cease attacking altogether and its ** All Elemental and Physical RES will be further decreased**.",
-						"zh": "若场上角色进入并维持**「夜魂加持」**状态一段时间，此敌人将进入「强载应战状态」，改为使用强力的追踪射线进行攻击，此时其**所有元素与物理抗性降低**。\n此状态下，受到一定次数的**冰元素伤害**后，将停止攻击，且**所有元素与物理抗性进一步降低**。",
-						"pt": "Se o personagem ativo entrar e se mantiver no estado **Bênção do Espírito da Noite** por um certo tempo, o inimigo entrará no Estado de Combate Fortalecido, passando a fazer ataques de disparos rastreadores mais fortes, mas **reduzindo a RES Física e contra todos os Elementos**.\nQuando estiver nesse estado, depois de sofrer uma certa quantidade de vezes de **Dano Cryo**, interromperá seus ataques e **reduzirá ainda mais a RES Física e contra todos os Elementos**.",
-						"ru": "Если активный персонаж на некоторое время входит в состояние **Благословения Ночного духа** и поддерживает его, то этот враг переключается в режим форсированного контрудара и атакует с помощью мощных наводящихся лучей. В это время его **сопротивление всем элементам и физ. сопротивление значительно снижаются**.\nПопав под определённое количество атак с **Крио уроном** в этом состоянии, он прекращает атаковать, а его **сопротивление всем элементам и физ. сопротивление снижаются ещё больше**."
-					}
-				},
-				{
-					"name": {
-						"en": "Damage-Resistant Structure",
-						"zh": "「抗损结构」",
-						"pt": "Resistência Estruturada",
-						"ru": "Устойчивая к повреждению конструкция"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, this great foe has its All RES further increased, and it loses less Flow Momentum when struck by **Cryo DMG**. It will also lose less RES when in Forced Counterstrike Mode.",
-						"zh": "受到地脉紊乱的影响，强敌的所有抗性进一步提高，并且受到**冰元素伤害**时损失的「液流动量」更少。处于「强载应战状态」时，自身的抗性下降程度较低。",
-						"pt": "Afetado pela perturbação das Linhas Ley, todas as Resistências do inimigo poderoso aumentam ainda mais, e ele perderá menos \"Energia Fluida\" ao receber **Dano Cryo**. Quando estiver no \"Estado de Combate Fortalecido\", a redução de suas Resistências será menor.",
-						"ru": "Под воздействием флуктуации артерий земли сопротивление всем элементам этого могучего врага повышается ещё больше, а при получении **Крио урона** он теряет меньше импульса потока. В режиме форсированного контрудара его снижение сопротивления уменьшается."
-					}
-				}
-			]
+			}
 		},
 		"tenebrous-papilla-shadow-void-transfiguration": {
 			"name": {
@@ -1211,71 +201,7 @@
 				"zh": "深邃摹结株·虚暗幻变",
 				"pt": "Umbo Tenebroso - Ilusão da Desolação",
 				"ru": "Сумрачная папилла: Трансформация тени пустоты"
-			},
-			"description": {
-				"en": "Abyssal monsters that grow like parasitic plants.\nAgents of continuous corrosion, these distorters are capable of extracting memories from deeper layers of the earth, and through the power of the Abyss, reconstructing memories of greater potency. The hatred once spread from their roots coalesced amidst the inchoate chaos of the Ley Lines to form blades of untold savagery that would inflict deep suffering on those foolhardy enough to challenge them...",
-				"zh": "如植株般侵蚀生长的深渊魔物。\n持续侵蚀此界的扭曲者，能够提取大地之中相对深层的记忆，亦能通过深渊的力量复现更为强大的记忆体。在地脉极端紊乱的投映下，曾随此物之根须散播的憎恶，逐渐转变为凶锐的锋刃，要让来访的挑战者们体会至为深刻的痛苦…",
-				"pt": "Como um monstro abissal que se espalha e cresce como uma planta.\nUm agente da corrosão que continua a corroer este mundo, capaz de extrair memórias relativamente profundas da terra e de reviver memórias ainda mais poderosas por meio da força do Abismo. Sob a projeção extremamente caótica das linhas ley, o ódio que antes se espalhava com as raízes desta criatura gradualmente se transforma em lâminas afiadas, prontas para infligir uma dor profunda aos desafiantes...",
-				"ru": "Чудовища Бездны, которые растут, словно паразитические растения.\nИсточники непрерывного разложения, эти исказители способны извлекать воспоминания из глубоких слоёв земли и, используя силу Бездны, восстанавливать могущественные воспоминания. Ненависть, источаемая их корнями, сплелась с хаосом артерий земли и создала клинки невыразимой свирепости, способные причинить ужасные страдания тем, кто отважится бросить им вызов..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Tenebrous Mimesis",
-						"zh": "深邃拟态",
-						"pt": "Mimetismo Abissal",
-						"ru": "Сумрачный мимесис"
-					},
-					"text": {
-						"en": "It can warp itself and transform into a formidable foe to attack.",
-						"zh": "能够扭曲自己的姿态，变化成强大的敌人进行攻击。",
-						"pt": "Um grande monstro escuro que veio das profundezas do Abismo, erodindo as memórias da terra. Pode se distorcer e se transformar em um inimigo poderoso que realiza ataques.",
-						"ru": "Монстр способен искажать форму и превращаться в грозного противника."
-					}
-				},
-				{
-					"name": {
-						"en": "Attrition Assault",
-						"zh": "蚀破攻击",
-						"pt": "Apreensão",
-						"ru": "Атака разложения"
-					},
-					"text": {
-						"en": "Some attacks will inflict the stackable \"Attrition\" state, which will cause your own active party member to lose HP after a certain amount of time passes.",
-						"zh": "部分攻击会施加可叠加的「蚀破」状态，会在一定时间后，使队伍中自己的当前场上角色损失生命值。",
-						"pt": "Alguns ataques do monstro podem acumular o estado \"Apreensão\", que fará com que o personagem ativo da equipe perca Vida após um certo tempo.",
-						"ru": "Его некоторые атаки налагают складывающееся разложение, из-за которого активный персонаж со временем теряет HP."
-					}
-				},
-				{
-					"name": {
-						"en": "Shadow Void Aegis",
-						"zh": "虚暗加护",
-						"pt": "Proteção da Escuridão",
-						"ru": "Защита тени пустоты"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the Tenebrous Papilla will deploy a Void Ward while initiating attacks. Perform **a certain number of Elemental attacks** to break the Ward. Once the Void Ward is broken, the Tenebrous Papilla will receive a single instance of immense DMG based on the DMG absorbed by the Ward and enter a weakened state for an extended period of time. **Nightsoul-aligned Elemental attacks** are more effective at breaking the Ward and will increase the DMG dealt when the Ward is broken. After being in the weakened state for a while, the Tenebrous Papilla will attempt to re-deploy its Void Ward.",
-						"zh": "受到地脉紊乱的影响，深邃摹结株会一边展开虚界力护罩，一边进行战斗。通过**一定次数的元素攻击**可以破坏虚界力护罩；护罩被破坏后，深邃摹结株会依据虚界力护罩所抵挡的伤害值受到一次高额伤害，并陷入较长时间的虚弱。**具有夜魂性质的元素攻击**会有更高的破坏效率，并且使护罩破坏时受到的伤害提高。陷入虚弱状态一段时间后，深邃摹结株会尝试重新展开虚界力护罩。",
-						"pt": "Por estar sofrendo da perturbação das Linhas Ley, o Umbo Tenebroso lutará enquanto revela o Revestimento do Vazio. **Você pode realizar uma certa quantidade de ataques Elementais** para destruir o Revestimento do Vazio. Depois de destruí-lo, o Umbo Tenebroso sofrerá uma instância de Dano adicional baseado no Dano resistido pelo Revestimento do Vazio, e ficará Enfraquecido por um tempo. **Ataques com alinhamento Espírito da Noite** possuem uma eficácia maior para destruí-lo, e ao o destruir, sofrerá mais Dano. Depois de entrar no estado Enfraquecido por um tempo, o Umbo Tenebroso tentará reerguer seu Revestimento do Vazio novamente.",
-						"ru": "Под воздействием флуктуаций артерий земли Сумрачная папилла одновременно развёртывает барьер пустоты и атакует. Её барьер можно уничтожить **определённым количеством элементальных атак**. Когда барьер будет разрушен, в зависимости от поглощённого им урона Сумрачная папилла однократно получит высокий урон и надолго перейдёт в ослабленное состояние. **Элементальные атаки с характеристикой Ночного духа** уничтожают барьер с большей эффективностью и повышают урон, получаемый врагом после устранения барьера. Через некоторое время Сумрачная папилла выходит из ослабленного состояния и вновь развёртывает барьер пустоты."
-					}
-				},
-				{
-					"name": {
-						"en": "Hatefully Beseech the Dark",
-						"zh": "憎戾晦暗祝祷",
-						"pt": "Ira: Súplica à Escuridão",
-						"ru": "Гневное воззвание ко тьме"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, if the Void Ward remains unbroken for too long, the Tenebrous Papilla will initiate Hatefully Beseech the Dark: Enters a charging state, which, if the Void Ward continues to remain unbroken, will conclude with the Tenebrous Papilla unleashing a Wrathful Dark Bombardment, **immediately defeating your current active character**.",
-						"zh": "受到地脉紊乱的影响，如果虚界力护罩长时间未被破坏，深邃摹结株会进行「憎戾晦暗祝祷」：进入蓄能态势，如果一段时间后虚界力护罩仍未被破坏，则会释放「憎戾晦暗轰击」，**使我方当前场上的角色直接倒下**。",
-						"pt": "Por estar afetado pela perturbação das Linhas Ley, se o Revestimento do Vazio não for destruído por muito tempo, o Umbo Tenebroso realizará Ira: Súplica à Escuridão: entrará no estado de carregamento, e se depois de um tempo o Revestimento do Vazio não for destruído, lançará Choque da Escuridão Tenebroso, **derrotando o personagem ativo**.",
-						"ru": "Вследствие воздействия флуктуации артерий земли, если долгое время не уничтожать барьер пустоты, Сумрачная папилла задействует Гневное воззвание ко тьме и входит в состояние зарядки. Если через некоторое время вы так и не уничтожите барьер, враг задействует Гневную сумрачную бомбардировку, которая **сразу выведет вашего активного персонажа из строя**."
-					}
-				}
-			]
+			}
 		},
 		"the-open-eyed-overbearing-contempt": {
 			"name": {
@@ -1283,43 +209,7 @@
 				"zh": "开眼者·傲然睥睨",
 				"pt": "Despertado: Olhar Desdenhoso",
 				"ru": "Прозревший: Гордыня"
-			},
-			"description": {
-				"en": "A shadow construct born from the overflow of the mighty primordial being, a Watcher who once dwelt in the highest heavens, yet was cast down into the mortal realm for daring to open its eye.\nUnder the onslaught of turbulent ley lines and a chaotic flood of corrupted information, its once-arrogant nature has warped into pure destructive impulse, driving it to annihilate everything within its sight.",
-				"zh": "原初的大能者流溢而出的影之造物，曾居于高天之上的守望者，终因开眼而堕入尘世，拥有监控并反制元素攻击的权能。\n在地脉狂暴且错谬的信息洪流轰炸下， 其傲慢的本质异化为纯粹的破坏欲，驱使它将目光所及的一切尽数湮灭。",
-				"pt": "Uma criação das sombras que emanou de um Grande ser primordial, um vigilante que outrora habitou os céus mais elevados, acabou caindo ao mundo mortal ao abrir seus olhos, possuindo a autorização de monitorar e neutralizar ataques elementais.\nSob o bombardeio do fluxo de informações frenético e distorcido das Linhas Ley, sua essência arrogante se transformou em puro desejo de Destruição, levando-o a aniquilar tudo o que seus olhos alcançam.",
-				"ru": "Теневая сущность, рождённая из избытка могущества первозданного существа. Созерцатель, некогда обитавший в небесных высях и низвергнутый в мир смертных за то, что открыл глаза. После этого он обрёл способность отслеживать элементальные атаки и противодействовать им.\nПод натиском бурного и искажённого потока информации артерий земли его высокомерная сущность исказилась, превратившись в чистую жажду разрушения, которая побуждает его уничтожать всё, что попадает в поле зрения."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Oversight of Vigil",
-						"zh": "「监候之统摄」",
-						"pt": "\"Supervisão Coordenada\"",
-						"ru": "Смертный приговор"
-					},
-					"text": {
-						"en": "During combat, the Open-Eyed will enter the \"Oversight of Vigil\" state. While in this state, it tracks the number of times it takes **Pyro/Hydro/Electro/Cryo** damage. When the number of hits from any one element reaches 3, it will exit this state and **record that element as a monitored target**. If no element is successfully monitored, the record will remain empty, and it will instead deal a single instance of Geo DMG. After the first \"Oversight of Vigil\" ends, the enemy will re-enter this state again after a set interval. Due to the effects of the Ley Line Disturbances, the second monitoring phase lasts longer, and elements that have already been recorded will require a significantly higher number of hits to be monitored again.",
-						"zh": "战斗开始时，开眼者会进入「监候之统摄」状态。在该状态下，并分别记录受到的**火/水/雷/冰**元素伤害的次数，当某一元素的伤害次数达到5次时，便会退出该状态，并**记录该元素为监控目标**。若未能成功监控任何元素，则记录为空，并造成一次岩元素伤害。首次「监候之统摄」结束后，强敌将在一定间隔后再次进入该状态。受到地脉紊乱的影响，第二次记录的时间会变长，对于已被监控的元素，需要累计极多次伤害方可被再次监控。受到地脉紊乱的影响，「监候之统摄」期间，开眼者的所有元素抗性与物理抗性提升。",
-						"pt": "Durante a batalha, o Despertado entra no estado \"Supervisão Coordenada\". Nesse estado, ele registra separadamente o número de vezes que recebe Dano Elemental de **Pyro/Hydro/Electro/Cryo**. Quando o número de Danos sofridos de um Elemento específico atinge 3, ele sai desse estado e **registra esse elemento como alvo monitorado**. Se nenhum elemento for monitorado com sucesso, o registro fica vazio e ele causa Dano Geo. Após a primeira monitoração, esse inimigo de elite irá reiniciá-la após um curto período de tempo. Devido à influência das Linhas Ley, o tempo de registro será prolongado, e elementos já monitorados exigem um número maior de ataques acumulados para serem monitorados novamente.",
-						"ru": "В бою Прозревший входит в состояние Смертный приговор. В этом состоянии он аналогично фиксирует количество полученных **Пиро/Гидро/Электро/Крио** ударов. Если ни один элемент не был успешно зафиксирован, запись остаётся пустой, и противник наносит один удар Гео. После окончания первого периода состояния Высший надзиратель через некоторое время начинается второй. Из-за влияния флуктуаций артерий земли длительность второго этапа фиксации увеличивается. Для уже зафиксированных элементов требуется значительно большее число попаданий для повторной фиксации."
-					}
-				},
-				{
-					"name": {
-						"en": "Phenomena's Delirium",
-						"zh": "「现象之谵妄」",
-						"pt": "\"Delírio dos Fenômenos\"",
-						"ru": "Делирий феномена"
-					},
-					"text": {
-						"en": "After completing two rounds of Elemental Monitoring, the Open-Eyed will take to the air and begin preparing \"Phenomena's Delirium.\" It will release the previously recorded elements and summon two corresponding Active Elemental Stars. If no elements were recorded, it will instead summon Inert Elemental Stars with **high resistance to all elements and Physical DMG**. If the enemy summons two Active Elemental Stars of different elements, both stars will become easier to destroy. When an Active Elemental Star is destroyed, it deals a large amount of damage to the enemy based on the recorded element. If an Inert Elemental Star is destroyed, it instead deals Geo DMG to the enemy. **Destroy all Elemental Stars** to interrupt the preparation of \"Phenomena's Delirium.\" If both stars are not destroyed within the time limit, they will explode, dealing massive AoE damage.",
-						"zh": "在完成两次元素监控后，开眼者将飞临空中，准备施展「现象之谵妄」，释放此前监控到的元素类型，并召唤两颗对应元素的「活性元素星」。若元素记录为空，则会召唤具有**较高的所有元素抗性与物理抗性**的「惰性元素星」。如果强敌召唤了两颗不同元素的「活性元素星」，则两颗元素星将变得更易被破坏。当「活性元素星」被摧毁时，将对强敌造成一次其所记录元素的高额伤害。若被摧毁的为「惰性元素星」，则将对强敌造成岩元素伤害。**击破全部元素星**，即可终止「现象之谵妄」的准备。若未能在限定时间内摧毁两颗元素星，它们将引发爆炸，造成高额大范围伤害。",
-						"pt": "Após completar o monitoramento de dois elementos, o Despertado voará para o alto, se preparando para invocar o Delírio dos Fenômenos, liberando os Tipos Elementais monitorados anteriormente e invocando duas Estrelas Elementais Ativas dos elementos correspondentes. Se o registro de elementos estiver vazio, ele invocará uma Estrela Elemental Inerte com **RES contra Todos os Elementos e RES Física elevadas**. Se o Vilão invocar duas Estrelas Elementais Ativas de elementos diferentes, ambas as estrelas se tornarão mais fáceis de serem destruídas. Quando uma Estrela Elemental Ativa for destruída, causará ao Vilão uma grande quantidade de Dano do elemento registrado. Se for uma Estrela Elemental Inerte que for destruída, causará Dano Geo ao Vilão. **Destrua todas as estrelas elementais** para interromper a preparação do Delírio dos Fenômenos. Se as duas estrelas elementais não forem destruídas dentro do tempo limite, elas causarão uma Explosão, gerando uma grande quantidade de Dano em uma AdE.",
-						"ru": "После двух фаз наблюдения Прозревший поднимается в воздух и начинает подготовку Делирия феномена, высвобождая зафиксированные элементы и призывая две Активные элементальные звезды. Если запись пуста, призываются Инертные элементальные звёзды с **высоким сопротивлением ко всем элементам и физическому урону**. Если противник призывает две Активные элементальные звезды разных элементов, они становятся более уязвимыми для разрушения. Уничтожение Активных элементальных звёзд наносит противнику сильный урон соответствующего элемента. Уничтожение Инертных элементальных звёзд наносит Гео урон. **Уничтожение всех звёзд** прерывает подготовку Делирия феномена. Если за отведённое время звёзды не уничтожены, они взрываются, нанося значительный урон по области."
-					}
-				}
-			]
+			}
 		},
 		"veteran-frost-operative-bloodsoaked-blade": {
 			"name": {
@@ -1327,43 +217,7 @@
 				"zh": "历经百战的霜役人·涉血芒锋",
 				"pt": "Fatui Oficial do Gelo Veterano: Lâmina Sangrenta",
 				"ru": "Бывалый оперативник мороза: Окровавленное лезвие"
-			},
-			"description": {
-				"en": "An elite agent of the Fatui. Selected from childhood, she rose to the top after long years of rigorous training — an experience which instilled in her extraordinary skill and unswerving loyalty.\nRegrettably, in the perilous chaos of the Ley Lines, her sense of reason has long since been swallowed by a lust for battle — one that leads her to mercilessly hunt down intruders and subject them to an onslaught of pure rage...",
-				"zh": "愚人众当中精锐的特务。自幼就被选中，在长久的训练与无数次的汰换后，成为阵列中最优秀的士兵，有着出色的身手与不渝的忠诚心。\n遗憾的是，在凶险至极点的地脉乱象中，役人的理性已被战斗的欲望吞噬，只知重复猎杀的循环，对来访者倾泻纯粹的狂怒…",
-				"pt": "Um agente de elite entre os Fatui. Selecionados enquanto crianças, eles podem se tornar um \"Oficial\" após muitos anos de treino e ensino, após incontáveis rodadas terem joeirado o campo. Eles são os soldados mais excepcionais entre os Fatui, com habilidade extraordinária e lealdade incondicional.\nInfelizmente, no caos perigoso das Linhas Ley, seu senso de razão há muito foi engolido por uma sede de batalha — uma que levou ela a impiedosamente caçar intrusos e submetê-los a um massacre de pura raiva...",
-				"ru": "Элита среди Фатуи. Её завербовали ещё в детстве, и после долгих лет подготовки и бесчисленных испытаний она заняла место среди самых выдающихся воинов Фатуи, обладающих необыкновенным мастерством и абсолютной преданностью.\nК сожалению, в коварном хаосе артерий земли её разум был поглощён жаждой сражений, которая заставляет её безжалостно преследовать вторгшихся и обрушивать на них чистую ярость..."
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Rapid Kill",
-						"zh": "迅疾猎杀",
-						"pt": "Caçada Veloz",
-						"ru": "Стремительное убийство"
-					},
-					"text": {
-						"en": "Consumes a certain percentage of HP in combat to use Hunt Down: When this hits a character, it restores a certain percentage of the foe's HP and attaches a Bond of Life to the character hit. While Bond of Life is active, the affected character will take continuous DMG. Characters with Bond of Life attached will take increased DMG from this attack.",
-						"zh": "战斗中，会消耗一定比例的生命值，进行「猎杀」：命中角色时，该敌人自身恢复一定比例的生命值，并向命中的角色施加生命之契，在生命之契存在时使其持续受到伤害。对于具有生命之契的角色，此攻击造成的伤害提升。",
-						"pt": "Quando estive em batalha, consome uma certa quantidade de Vida para fazer uma Caçada: ao atingir o personagem, esse inimigo regenera uma certa proporção de Vida, e aplica um Contrato de Vida na personagem atingida. Enquanto o Contrato de Vida existir, ele sofrerá o Dano recebido. A personagem que possuir o Contrato de Vida causará mais Dano.",
-						"ru": "В бою расходует определённую часть HP и использует Травлю: поразив персонажа, этот враг восстанавливает себе HP в определённой пропорции и накладывает на поражённого персонажа Долг жизни. Долг жизни во время действия постоянно наносит урон и повышает урон этой атаки."
-					}
-				},
-				{
-					"name": {
-						"en": "Bloody Pursuit",
-						"zh": "涉血追猎",
-						"pt": "Perseguição Sangrenta",
-						"ru": "Кровавая погоня"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the foe possesses greater interruption capabilities and interruption resistance. When preparing to use Hunt Down, it will enter the Bloody Pursuit state, creating a Shield to protect itself. While the Shield is active, the foe will **continuously attach Bonds of Life to all characters**. After the Shield is broken, the foe will take immense DMG.",
-						"zh": "受到地脉紊乱的影响，该敌人具有更高的打断能力与抗打断能力。准备进行「猎杀」时，将进入「涉血追猎」状态：生成护盾保护自身，护盾存在期间，该敌人将**持续向所有角色施加生命之契**。护盾被破坏后，该敌人会受到大量伤害。",
-						"pt": "Devido às perturbações das Linhas Ley, as habilidades de interrupção do inimigo, bem como sua resistência contra interrupção são elevadas consideravelmente. Ao se preparar para Caçar, entra no estado Perseguição Sangrenta, criando um Escudo. Enquanto o Escudo estiver ativo, **aplicará continuamente os Contratos de Vida contra todos os personagens**. Depois que o Escudo for destruído, o inimigo sofrerá muito Dano.",
-						"ru": "Под воздействием флуктуации артерий земли этот враг обладает повышенной способностью к прерыванию и сопротивлению прерыванию. Готовясь применить Травлю, он входит в состояние Кровавой погони: он развёртывает щит. Во время действия щита этот враг **периодически накладывает Долг жизни на всех персонажей**. Если щит разрушить, он получит огромный урон."
-					}
-				}
-			]
+			}
 		},
 		"veteran-wind-operative-treacherous-blade": {
 			"name": {
@@ -1372,48 +226,7 @@
 				"pt": "Fatui Oficial do Vento Veterano: Lâmina Traiçoeira",
 				"ru": "Бывалый оперативник ветра: Коварное лезвие",
 				"fr": "1"
-			},
-			"description": {
-				"en": "An elite agent of the Fatui. Depending on her orders and mission objectives, she may advance and retreat alongside soldiers, or act alone or with \"embedded assets\" planted across the land to conduct intelligence gathering, counter-reconnaissance, escort, assassination, and other operations.\nTragically, amid the deadly chaos of the disordered Ley Lines, the Operative's sense of self has been consumed by the erosion of the turbulent currents. All that remains is a battle-worn shell, acting on instinct alone and turning her cold blade upon all who dare approach...",
-				"zh": "愚人众当中精锐的特务。依据命令与任务的内容，她们既可以与士兵同进退，也能独自或者与埋在各地的「钉子」一同，进行谍报、反侦察、护卫、抹杀等工作。\n遗憾的是，在凶险至极的地脉乱象中，役人的自我已被乱流的侵蚀所吞噬，徒留一具久经战阵的空壳，依凭本能，向一切来犯者展露寒锋…",
-				"pt": "Uma agente de elite entre os Fatui. Dependendo de suas ordens e dos objetivos da missão, ela pode avançar e recuar ao lado de soldados, ou agir sozinha ou em conjunto com \"ativos infiltrados\" posicionados por todo o território para realizar coleta de informações, contrarreconhecimento, escolta, assassinatos e outras operações.\nTragicamente, em meio ao caos mortal das Linhas Ley desordenadas, o senso de identidade da Oficial foi consumido pela erosão de suas correntes turbulentas. Tudo o que resta é uma casca desgastada por batalhas, agindo puramente por instinto e apontando sua lâmina fria contra todos que ousam se aproximar...",
-				"ru": "Элитные оперативники Фатуи. В зависимости от приказа и поставленной задачи они могут сражаться плечом к плечу с солдатами, действовать в одиночку или вместе с законспирированными агентами, выполняя разведку, контрразведку, охрану и ликвидацию целей.\nК несчастью, среди смертельно опасных аномалий артерий земли личность оперативника была поглощена бушующими потоками. От неё осталась лишь закалённая бесчисленными битвами оболочка, которая, повинуясь одним лишь инстинктам, обращает холодное лезвие на всякого, кто осмелится приблизиться...",
-				"fr": "1"
-			},
-			"mechanics": [
-				{
-					"name": {
-						"en": "Rapid Kill",
-						"zh": "迅疾猎杀",
-						"pt": "Caçada Veloz",
-						"ru": "Стремительное убийство",
-						"fr": "Élimination rapide"
-					},
-					"text": {
-						"en": "Consumes a certain percentage of HP in combat to use Hunt Down: When this hits a character, it restores a certain percentage of her HP and attaches a Bond of Life to the character hit. While Bond of Life is active, the affected character will take continuous DMG. Characters with Bond of Life attached will take increased DMG from this attack.",
-						"zh": "战斗中，会消耗一定比例的生命值，进行「猎杀」：命中角色时，该敌人自身恢复一定比例的生命值，并向命中的角色施加生命之契，在生命之契存在时使其持续受到伤害。对于具有生命之契的角色，此攻击造成的伤害提升。",
-						"pt": "Quando estive em batalha, consome uma certa quantidade de Vida para fazer uma Caçada: ao atingir o personagem, esse inimigo regenera uma certa proporção de Vida, e aplica um Contrato de Vida na personagem atingida. Enquanto o Contrato de Vida existir, ele sofrerá o Dano recebido. A personagem que possuir o Contrato de Vida causará mais Dano.",
-						"ru": "В бою расходует определённую часть HP и использует Травлю: поразив персонажа, этот враг восстанавливает себе HP в определённой пропорции и накладывает на поражённого персонажа Долг жизни. Во время действия Долг жизни постоянно наносит урон и повышает урон этой атаки.",
-						"fr": "Au combat, l'Opératrice du vent vétérane consomme un certain pourcentage de ses PV pour passer dans l'état Traque : toucher un personnage lui permet de restaurer ses PV d'un certain pourcentage et d'appliquer un engagement vital au personnage touché. Tant que l'engagement est actif, le personnage subit des DGT de façon continue. Les personnages ayant déjà un engagement vital subiront davantage de DGT lors de cette attaque."
-					}
-				},
-				{
-					"name": {
-						"en": "Bloody Pursuit: Treacherous",
-						"zh": "涉血追猎·诡谲",
-						"pt": "Perseguição Sangrenta: Traiçoeiro",
-						"ru": "Кровавая погоня: Коварство",
-						"fr": "1"
-					},
-					"text": {
-						"en": "Affected by the Ley Line disturbance, the foe's interruption capabilities and interruption resistance are both greatly increased. When her stance breaks in midair, she can immediately teleport away and quickly regain her footing. When preparing to use Hunt Down, she will enter the Bloody Pursuit state, creating a Shield to protect herself. While the Shield is active, the foe will **continuously attach Bonds of Life to all characters**. After the Shield is broken, the foe will take immense DMG.",
-						"zh": "受到地脉紊乱的影响，该敌人的打断能力与抗打断能力大幅提升，且可在空中架势崩溃时即刻闪避脱离，迅速重整态势。准备进行「猎杀」时，将进入「涉血追猎」状态：生成护盾保护自身，护盾存在期间，该敌人将**持续向所有角色施加生命之契**。护盾被破坏后，该敌人会受到大量伤害。",
-						"pt": "Devido às perturbações das Linhas Ley, as habilidades de interrupção do inimigo, bem como sua resistência contra interrupção, são elevadas consideravelmente. Quando sua postura é quebrada no ar, ela pode se esquivar imediatamente e se recompor rapidamente. Ao se preparar para Caçar, entra no estado Perseguição Sangrenta, criando um Escudo. Enquanto o Escudo estiver ativo, **aplicará continuamente os Contratos de Vida contra todos os personagens**. Depois que o Escudo for destruído, o inimigo sofrerá um Dano massivo.",
-						"ru": "Под воздействием флуктуации артерий земли способность этого противника прерывать атаки и сопротивление прерыванию значительно повышаются. Кроме того, при сломе стойки в воздухе он может мгновенно уклониться и выйти из боя, быстро восстановив боевую позицию. Готовясь применить Травлю, он входит в состояние Кровавая охота: создаёт вокруг себя щит. Пока щит существует, этот противник **непрерывно накладывает Долг жизни на всех персонажей**. После разрушения щита противник получает огромный урон.",
-						"fr": "1"
-					}
-				}
-			]
+			}
 		}
 	},
 	"seasons": [

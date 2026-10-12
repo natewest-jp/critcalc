@@ -239,12 +239,58 @@
 					},
 					"stat": "critRate",
 					"value": 10
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 6
+						}
+					},
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					}
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					}
 				}
 			],
 			"caveat": "Drawn for the whole field; in play it holds only while the active character stands inside the wall.",
 			"_curatorNotes": [
 				"gcsim cons.go `c1`: a 1s ticker for the wall's life (15 ticks, 20 at C6) that re-applies a 2s +10% CR mod to the ACTIVE character whenever the player is inside `burstArea`. Authored as an active-target onCast-burst buff for the wall's life — two mutually exclusive effects because the wall runs 15s below C6 and 20s at C6 (the summon carries that as a durationModifier, which an effect cannot read).",
-				"The interruption resistance has no pixel and is description-only. ⚠️ Re-ingested 2026-09-15: the retired entry was named 'Aftershock' and carried this text unauthored."
+				"The interruption resistance has no pixel and is description-only. ⚠️ Re-ingested 2026-09-15: the retired entry was named 'Aftershock' and carried this text unauthored.",
+				"interruptionRes authored 2026-10-12 beside the CRIT Rate pair: “increased resistance against interruption” for party members within the stele’s radius; 15s, 20s at C6. The entry’s caveat already covers standing inside the wall."
 			],
 			"description": "Party members within the radius of Wake of Earth have their CRIT Rate increased by 10% and have increased resistance against interruption."
 		},

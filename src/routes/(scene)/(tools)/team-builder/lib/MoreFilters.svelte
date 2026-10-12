@@ -1,8 +1,8 @@
 <script lang="ts">
 	/**
 	 * THE "MORE" POPOVER'S CONTENTS (design doc §11.2 / §11.6) — the rarer
-	 * filters: weapon, rarity, region, factions, and the capability facets until
-	 * the fingerprint becomes the filter (step 4).
+	 * filters: weapon, rarity, region, factions. (The capability facets left
+	 * for the filter strip in step 4 — the fingerprint's glyphs are that filter.)
 	 *
 	 * When band B's character cell is too narrow to hold them, the Show segment
 	 * and the constellation lens FOLD in here too, at the top — the cell keeps
@@ -13,12 +13,11 @@
 	import type { CharacterIndexEntry } from '$lib/types/character';
 	import type { GridFilters } from '$lib/characterFilters';
 	import type { WeaponType } from '$lib/types/weapon';
-	import { FACETS, OWNERSHIP_VIEWS, type FacetKey, type OwnershipView } from './facets';
+	import { OWNERSHIP_VIEWS, type OwnershipView } from './facets';
 
 	let {
 		roster,
 		filters,
-		activeFacets,
 		ownershipView = $bindable(),
 		showOwnership = false,
 		lens,
@@ -27,7 +26,6 @@
 		/** The UNFILTERED roster — Region's choices are drawn from it. */
 		roster: CharacterIndexEntry[];
 		filters: GridFilters;
-		activeFacets: SvelteSet<FacetKey>;
 		ownershipView: OwnershipView;
 		/** The Show segment, folded in from the cell. */
 		showOwnership?: boolean;
@@ -147,24 +145,6 @@
 			{/each}
 		</div>
 	</div>
-	<!-- ⏭ Step 4: the fingerprint's glyphs become this filter. -->
-	<div class="mf-group">
-		<p class="kicker">Can provide</p>
-		<div class="chips">
-			{#each FACETS as facet (facet.key)}
-				<button
-					class="chip"
-					class:active={activeFacets.has(facet.key)}
-					title={facet.hint}
-					aria-pressed={activeFacets.has(facet.key)}
-					onclick={() => toggleSet(activeFacets, facet.key)}>{facet.label}</button
-				>
-			{/each}
-		</div>
-		{#if activeFacets.size > 1}
-			<p class="note mf-note">Matching characters provide all of these.</p>
-		{/if}
-	</div>
 </div>
 
 <style>
@@ -181,9 +161,5 @@
 	}
 	.mf-lens {
 		display: grid;
-	}
-	.mf-note {
-		margin-top: 0.45rem;
-		font-size: var(--fs-md);
 	}
 </style>

@@ -300,7 +300,6 @@
 		const left = boards.setSlot(board.id, team.id, i, id);
 		if (left.length) {
 			const name = getCharacterIndexEntry(id)?.displayName ?? id;
-			// ⏭ Working copy (copy step 6).
 			documentBar.showNotice(
 				`${name} moved from ${teamLabel(board, indexOfTeam(left[0]))} to ${teamLabel(board, indexOfTeam(team.id))}.`
 			);
@@ -544,7 +543,7 @@
 	 *  variable part, and it only helps while capability facets are on. */
 	const rosterEmptyMessage = $derived(
 		conMode === 'c0' && activeFacets.size > 0
-			? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My roster” or “C6”.'
+			? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My constellations” or “C6”.'
 			: 'No curated character matches.'
 	);
 
@@ -567,7 +566,6 @@
 			filters.rarities.size +
 			(filters.region ? 1 : 0) +
 			(filters.factionBuffs?.size ?? 0) +
-			activeFacets.size +
 			(foldShow && ownershipView !== 'all' ? 1 : 0)
 	);
 
@@ -615,7 +613,7 @@
 		{ key: 'c6', label: 'C6', hint: 'Everything the kit can ever do' },
 		{
 			key: 'mine',
-			label: 'My roster',
+			label: 'My constellations',
 			hint: 'Uses your saved constellations (set them in a character’s details)'
 		}
 	];
@@ -941,9 +939,36 @@
 	/** ⚓ The game's toggle: a pick fills the selected team, the same pick again
 	 *  frees its slot. Below the dock, the pick that fills the team shows it. */
 	function toggleTeam(id: string): void {
+		// The pick has been seen: the preview rests until the pointer leaves,
+		// or the row would flip at once to previewing the pick's UNDO.
+		previewHeld = id;
 		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
 		const filled = placeOnBoard(id);
 		if (filled && tabbed) tab = 'lineup';
+	}
+
+	// ── THE FINGERPRINT AS THE FILTER (lineups design §11.2, step 4) ─────────
+	/** The card the pointer (or focus) rests on — the selected team's
+	 *  fingerprint previews the team its pick would make. */
+	let hoverId = $state<string | null>(null);
+	/** A card just picked: no preview until the pointer leaves it. */
+	let previewHeld = $state<string | null>(null);
+	const previewId = $derived(hoverId && hoverId !== previewHeld ? hoverId : null);
+	function onCardPreview(id: string | null): void {
+		if (id === null || id !== hoverId) previewHeld = null;
+		hoverId = id;
+	}
+
+	/** A faint glyph on a team's fingerprint: find who would provide it — the
+	 *  team becomes the destination and the roster narrows to that one
+	 *  capability; the same glyph again lets it go. */
+	function findFor(teamId: string, facet: FacetKey): void {
+		const only = activeFacets.size === 1 && activeFacets.has(facet);
+		activeFacets.clear();
+		if (!only) activeFacets.add(facet);
+		chosenTeamId = teamId;
+		sourceTab = 'roster';
+		if (tabbed && !only) tab = 'characters';
 	}
 
 	/** A card's own fingerprint: the facets the character has or can unlock,
@@ -958,7 +983,6 @@
 			.map((b) => {
 				const label = FACET_LABEL[b.facet] ?? b.facet;
 				const lit = b.minCon <= cap;
-				// ⏭ Working copy (copy step 6).
 				return { facet: b.facet, lit, title: lit ? label : `${label} · from C${b.minCon}` };
 			});
 	}
@@ -967,10 +991,9 @@
 	function pickLabel(entry: CharacterIndexEntry): string {
 		const team = teamLabel(board, selectedIndex);
 		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
-		// ⏭ Working copy (copy step 6).
 		return slot >= 0
-			? `${entry.displayName}, in ${team}, slot ${slot + 1}. Remove.`
-			: `${entry.displayName}, add to ${team}`;
+			? `Remove ${entry.displayName} from ${team} (slot ${slot + 1})`
+			: `Add ${entry.displayName} to ${team}`;
 	}
 
 	/** The destination strip over the grid: where a pick goes. */
@@ -997,6 +1020,7 @@
 		pickLabel={pickLabel(entry)}
 		onPick={toggleTeam}
 		onDetails={openDetail}
+		onPreview={onCardPreview}
 	/>
 {/snippet}
 
@@ -1251,7 +1275,6 @@
 								<MoreFilters
 									{roster}
 									{filters}
-									{activeFacets}
 									bind:ownershipView
 									showOwnership={foldShow}
 									lens={foldLens ? conModeItems : undefined}
@@ -1286,11 +1309,7 @@
 							><Mark name="plus" /> Add team</button
 						>
 					{/if}
-					<!-- ⏭ Working copy (copy step 6). -->
-					<label
-						class="toggle tb-norepeat"
-						title="One team per character: picking someone moves them"
-					>
+					<label class="toggle tb-norepeat" title="Each character joins only one team.">
 						<input
 							type="checkbox"
 							checked={board.noRepeats}
@@ -1330,6 +1349,9 @@
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
 					onSeason={(version) => boards.setSeason(board.id, version)}
+					{previewId}
+					filteredFacets={activeFacets}
+					onFind={findFor}
 				/>
 			</div>
 		</div>
@@ -1358,6 +1380,7 @@
 		{#if sourceTab === 'roster'}
 			<RosterFilterStrip
 				{filters}
+				{activeFacets}
 				activeRole={activeCategory?.key ?? null}
 				onRole={openCategory}
 				count={split.matches.length}
@@ -1375,12 +1398,12 @@
 				</p>
 			{/if}
 			<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
-			     team's hue. ⏭ Working copy (copy step 6). -->
+			     team's hue. -->
 			{#if selectedTeam}
 				<p class="tb-dest" role="status">
 					<span class="tb-dest-key" style:--team-hue={teamHue(selectedIndex)}></span>
 					{#if destFilled === 4}
-						{teamLabel(board, selectedIndex)} is full. Pick a member again to take them out.
+						{teamLabel(board, selectedIndex)} is full. Pick a member again to remove them.
 					{:else}
 						Adding to {teamLabel(board, selectedIndex)} · {destFilled}/4
 					{/if}

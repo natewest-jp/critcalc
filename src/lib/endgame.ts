@@ -23,6 +23,11 @@ export type Localized = { en: string; zh?: string; pt?: string; ru?: string; fr?
 
 export type Boss = {
 	name: Localized;
+};
+
+/** A boss's WORDS — read only by the boss detail modal, so they live in their
+ *  own file and load on open (`loadBossText`); they are ~95% of the data. */
+export type BossText = {
 	description: Localized;
 	/** The boss's named abilities, with the game's text (`**x**` = the game's
 	 *  highlight). */
@@ -53,6 +58,12 @@ export type Season = {
 
 export const BOSSES = data.bosses as Record<string, Boss>;
 export const SEASONS = data.seasons as Season[];
+
+/** Every boss's words, fetched on first use (a separate chunk). */
+export const loadBossText = (): Promise<Record<string, BossText>> =>
+	import('./data/endgame/stygian-bosses.json').then(
+		(m) => m.default.bosses as Record<string, BossText>
+	);
 
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 

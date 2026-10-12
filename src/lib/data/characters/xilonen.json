@@ -428,9 +428,34 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"↻ 2026-09-17: the +45% Nightsoul TIMER is modelled — see the skill's durationModifiers and note. The −30% consumption stays out (point drain is not tracked)."
+				"↻ 2026-09-17: the +45% Nightsoul TIMER is modelled — see the skill's durationModifiers and note. The −30% consumption stays out (point drain is not tracked).",
+				"interruptionRes authored 2026-10-12: “when Xilonen’s Source Samples are active, she can also increase nearby active characters’ interruption resistance.” 15s = the samplers’ status (gcsim asc.go:75 activeSamplerKey), the same window as her skill’s RES shred. gcsim C1 does not implement the resistance."
 			],
-			"description": "Xilonen's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30%, and her Nightsoul point time limit is extended by 45%.\nAdditionally, when Xilonen's Source Samples are active, she can also increase nearby active characters' interruption resistance."
+			"description": "Xilonen's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30%, and her Nightsoul point time limit is extended by 45%.\nAdditionally, when Xilonen's Source Samples are active, she can also increase nearby active characters' interruption resistance.",
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					}
+				}
+			],
+			"caveat": "Assumes the active character stays near the Source Samples, the only place the interruption resistance reaches."
 		},
 		{
 			"id": "xilonen__constellation__chiucue_mix",

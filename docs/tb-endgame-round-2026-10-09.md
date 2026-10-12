@@ -60,3 +60,13 @@ holds the model; this is what shipped and what Nate ruled live.
   board is showing, with details behind a small button?
 - 11 of 40 check phrasings are UNKNOWN (never guessed); the 187 KB season data
   could lazy-load.
+  - ↻ 2026-10-12: both settled. The bosses' words now load with their modal
+    (`stygian-bosses.json`; the page chunk went 346 → 135 KB). ⚓ Nate ruled
+    the phrasings (the rules live in `endgameChecks.ts`'s header): the
+    Nightsoul pair = any Natlan character or the Pyro Traveler; crowd control
+    (both spellings) = a Grouping provider, else still unknown; Bond of Life =
+    Arlecchino and Clorinde (hand-kept). Still UNKNOWN on purpose: the three
+    frequency checks, Plunging-Attack Characters, and Single and Multi
+    Elemental DMG (↻ same day: a member's element is not the element they
+    deal — infusions, buffers who barely hit). So 7 of 40 stay unknown, plus
+    crowd control without a grouper.

@@ -154,7 +154,7 @@ describe('teamDelta — what a swap changes about the team', () => {
 
 	it('lists what the team gains and what it loses', () => {
 		const d = teamDelta(before, [bennett, xiangling, diona, kazuha], () => 0);
-		expect(d.gained).toEqual(['Shields']);
+		expect(d.gained).toEqual(['Shield']);
 		expect(d.lost).toEqual(['RES shred']);
 	});
 

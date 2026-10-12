@@ -5,6 +5,7 @@ import {
 	openRoster,
 	gridNames,
 	moreChip,
+	provideGlyph,
 	benchNames,
 	boardNames,
 	setConMode,
@@ -62,7 +63,7 @@ test.describe('roster and facets', () => {
 	test('the heal facet narrows the grid to healers', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 
 		const healers = await matchCount(page);
 		expect(healers, 'heal facet narrows the grid').toBeGreaterThan(15);
@@ -102,10 +103,10 @@ test.describe('roster and facets', () => {
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 		const healers = await matchCount(page);
 
-		await moreChip(page, 'ATK buff');
+		await provideGlyph(page, 'ATK buff');
 		const both = await matchCount(page);
 		expect(both, 'heal ∩ ATK-buff is strictly smaller').toBeLessThan(healers);
 		expect(await gridNames(page), 'Bennett does both').toContain('Bennett');
@@ -119,7 +120,7 @@ test.describe('roster and facets', () => {
 	test('the constellation lens widens capability gates', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 
 		await setConMode(page, 'C0');
 		const atC0 = await matchCount(page);
@@ -131,12 +132,12 @@ test.describe('roster and facets', () => {
 		expect(await gridNames(page), 'Fischl appears at C6').toContain('Fischl');
 	});
 
-	test('"My roster" mode gates on your own constellations', async ({ page, seed }) => {
+	test('"My constellations" mode gates on your own constellations', async ({ page, seed }) => {
 		await seed({ constellations: { fischl: 4 } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await moreChip(page, 'Heals');
-		await setConMode(page, 'My roster');
+		await provideGlyph(page, 'Healing');
+		await setConMode(page, 'My constellations');
 
 		const names = await gridNames(page);
 		expect(names, 'your C4 Fischl now matches heal').toContain('Fischl');
@@ -201,8 +202,8 @@ test.describe('detail card', () => {
 
 		await page.reload({ waitUntil: 'networkidle' });
 		await openRoster(page);
-		await moreChip(page, 'Heals');
-		await setConMode(page, 'My roster');
+		await provideGlyph(page, 'Healing');
+		await setConMode(page, 'My constellations');
 		expect(await gridNames(page), 'the constellation survived reload').toContain('Fischl');
 	});
 });

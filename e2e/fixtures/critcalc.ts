@@ -234,12 +234,18 @@ export function gridNames(page: Page) {
 	return page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 }
 
-/** Toggle a chip in the filter bar's More popover (a capability facet, a
- *  faction…), closing the popover again so the grid is reachable. */
+/** Toggle a chip in the filter bar's More popover (a faction, a weapon…),
+ *  closing the popover again so the grid is reachable. */
 export async function moreChip(page: Page, label: string) {
 	await page.locator('.tb-band .band-menu-trigger[aria-label="More filters"]').click();
 	await page.locator('.mf .chip', { hasText: label }).first().click();
 	await page.keyboard.press('Escape');
+}
+
+/** Toggle a "Can provide" glyph in the filter strip (step 4: the
+ *  fingerprint's glyphs are the capability filter), by its facet label. */
+export async function provideGlyph(page: Page, label: string) {
+	await page.locator(`.rfs-glyph[aria-label="Can provide: ${label}"]`).click();
 }
 
 /** The names in the bench band's four team slots (empties excluded). */

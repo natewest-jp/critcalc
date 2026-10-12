@@ -143,14 +143,51 @@
 					]
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					}
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 9,
+					"durationType": "fixed",
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					},
+					"attribution": "A1: Unstinting Succor"
+				}
+			],
 			"_curatorNotes": [
 				"Indomitable Flame is the cold-open of the skill chain — cast when no field is up. chainStage(skill, 0, window: 12) advances chain to index 1 with 12s window aligned to field duration. Pressing E again within 12s fires Ranging Flame (skill 2).",
 				"↻ 2026-08-18: this line used to read 'On-hit coordinated-attack emission is the P3 (Summon.effects[]) gap; flag and migrate when proposal lands.' The proposal LANDED and the migration is done — the coordinated-attack round (docs/coordinated-attacks-round.md) wired `onHit` damage effects hosted on `Summon.effects[]` through one proc registry (`src/lib/sim/procs.ts`), and the Fiery Sanctum's is authored above at summons[0].effects[0] with its own dated note. Kept for provenance: this note WAS the deferral, and the effect beside it is what closed it. ⚠️ What the migration does not carry is recorded on the effect itself, not here — the radius-10 positional gate, and gcsim letting the field hear its own output.",
 				"C2 +6s field duration: modelled as durationModifier on the summon. The C2 'next coordinated attack +50% DMG' half is not modelled — single-hit conditional buff isn't expressible.",
 				"A1 Gold-Forged Form (interrupt resistance for party in field): not modelled — interrupt resistance is not in our stat set.",
 				"[A7] Dropped the coordinated attack's stat scaling from the user caveat (DMG math is out of scope). Note: the prior caveat said 'DEF + HP' scaling, but the skill description scales the coordinated attack on ATK + Max HP — the DEF reference looks like an error worth verifying.",
-				"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): STALE — the coordinated-attack round (2026-08-18) authored this mechanic and it was measured firing. Live parse of `Dehya E Diluc N5 x8` gives the Fiery Sanctum window ticks at 80/242/435/628f with four matching Pyro applications. The caveat said the field attacks were not modelled; they are."
+				"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): STALE — the coordinated-attack round (2026-08-18) authored this mechanic and it was measured firing. Live parse of `Dehya E Diluc N5 x8` gives the Fiery Sanctum window ticks at 80/242/435/628f with four matching Pyro applications. The caveat said the field attacks were not modelled; they are.",
+				"interruptionRes authored 2026-10-12: “Active characters within this field have their resistance to interruption increased” (kit text). 12s = the field’s base life (summons[0]); the C2 recast extension is not drawn (an under-claim). gcsim does not implement it (skill.go:235)."
 			],
 			"description": "This art of Dehya's own invention changes its method of use depending on the combat situation.\n\nIndomitable Flame\nThis skill will be unleashed should there be no Fiery Sanctum field created by Dehya herself present at the time.\nDeals AoE Pyro DMG, and creates a field known as Fiery Sanctum.\n\nFiery Sanctum\nWhen an opponent within a Fiery Sanctum field takes DMG, the field will unleash a coordinated attack, dealing AoE Pyro DMG to them based on Dehya's ATK and Max HP. This effect can be triggered once every 2.5s.\nActive characters within this field have their resistance to interruption increased, and when such characters take DMG, a portion of that damage will be mitigated and flow into Redmane's Blood. Dehya will then take this DMG over 10s. When the mitigated DMG stored by Redmane's Blood reaches or goes over a certain percentage of Dehya's Max HP, she will stop mitigating DMG in this way.\n\nOnly 1 Fiery Sanctum created by Dehya herself can exist at the same time.",
 			"application": [
@@ -159,7 +196,8 @@
 					"element": "pyro",
 					"units": 1
 				}
-			]
+			],
+			"caveat": "Assumes the active character stays inside Fiery Sanctum, the only place its interruption resistance applies. Gold-Forged Form is shown on every party member for 9s, but it too works only inside the field."
 		},
 		{
 			"id": "dehya__skill__ranging_flame",
@@ -265,10 +303,11 @@
 			"name": "Unstinting Succor",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Two effects: (1) 60% Redmane's Blood DMG reduction post-field-pickup (2s ICD, 6s window) — irrelevant for visualization (mitigation isn't on the timeline); (2) Gold-Forged Form post-Indomitable Flame (interrupt resistance for party in field) — not modelled, interrupt resistance not in stat set."
+				"Two effects: (1) 60% Redmane's Blood DMG reduction post-field-pickup (2s ICD, 6s window) — irrelevant for visualization (mitigation isn't on the timeline); (2) Gold-Forged Form post-Indomitable Flame (interrupt resistance for party in field) — not modelled, interrupt resistance not in stat set.",
+				"interruptionRes authored 2026-10-12 (A1 Gold-Forged Form): all party members for 9s after Indomitable Flame, once every 18s; it helps only inside Fiery Sanctum. gcsim TODO (asc.go:38).",
+				"↻ 2026-10-12, same day: the Gold-Forged Form grant is HOSTED ON Indomitable Flame (attribution A1: Unstinting Succor). Hosted here, a passive onCast skill also fired on Ranging Flame (measured), and only Indomitable Flame grants it; the 18s cooldown is then moot (the skill CD is 20s)."
 			],
-			"description": "Within 6 seconds after Dehya retrieves the Fiery Sanctum field through Molten Inferno: Ranging Flame or Leonine Bite, she will take 60% less DMG when receiving DMG from Redmane's Blood. This effect can be triggered once every 2s.\nAdditionally, within 9s after Dehya unleashes Molten Inferno: Indomitable Flame, she will grant all party members the Gold-Forged Form state. This state will further increase a character's resistance to interruption when they are within the Fiery Sanctum field. Gold-Forged Form can be activated once every 18s.",
-			"nothingToModel": true
+			"description": "Within 6 seconds after Dehya retrieves the Fiery Sanctum field through Molten Inferno: Ranging Flame or Leonine Bite, she will take 60% less DMG when receiving DMG from Redmane's Blood. This effect can be triggered once every 2s.\nAdditionally, within 9s after Dehya unleashes Molten Inferno: Indomitable Flame, she will grant all party members the Gold-Forged Form state. This state will further increase a character's resistance to interruption when they are within the Fiery Sanctum field. Gold-Forged Form can be activated once every 18s."
 		},
 		{
 			"id": "dehya__passive__stalwart_and_true",
