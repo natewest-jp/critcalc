@@ -63,7 +63,7 @@ test.describe('roster and facets', () => {
 	test('the heal facet narrows the grid to healers', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await provideGlyph(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 
 		const healers = await matchCount(page);
 		expect(healers, 'heal facet narrows the grid').toBeGreaterThan(15);
@@ -103,7 +103,7 @@ test.describe('roster and facets', () => {
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await provideGlyph(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 		const healers = await matchCount(page);
 
 		await provideGlyph(page, 'ATK buff');
@@ -120,7 +120,7 @@ test.describe('roster and facets', () => {
 	test('the constellation lens widens capability gates', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await provideGlyph(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 
 		await setConMode(page, 'C0');
 		const atC0 = await matchCount(page);
@@ -136,7 +136,7 @@ test.describe('roster and facets', () => {
 		await seed({ constellations: { fischl: 4 } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await provideGlyph(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 		await setConMode(page, 'My roster');
 
 		const names = await gridNames(page);
@@ -202,7 +202,7 @@ test.describe('detail card', () => {
 
 		await page.reload({ waitUntil: 'networkidle' });
 		await openRoster(page);
-		await provideGlyph(page, 'Heals');
+		await provideGlyph(page, 'Healing');
 		await setConMode(page, 'My roster');
 		expect(await gridNames(page), 'the constellation survived reload').toContain('Fischl');
 	});

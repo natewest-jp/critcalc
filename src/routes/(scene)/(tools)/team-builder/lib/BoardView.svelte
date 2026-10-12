@@ -386,10 +386,7 @@
 											mark="pin"
 											size="sm"
 											align="end"
-											label={pin?.name ??
-												(rotations.length === 1
-													? '1 rotation, none pinned'
-													: `${rotations.length} rotations, none pinned`)}
+											label={pin?.name ?? 'Pin a rotation'}
 											ariaLabel="Pinned rotation for team {t + 1}"
 										>
 											{#snippet items(close)}
@@ -407,8 +404,7 @@
 														<span class="bv-menu-check"
 															>{#if current}<Mark name="check" size={12} />{/if}</span
 														>
-														{#if r}{r.name}{:else}<span class="bv-menu-quiet">None pinned</span
-															>{/if}
+														{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
 													</button>
 												{/each}
 											{/snippet}

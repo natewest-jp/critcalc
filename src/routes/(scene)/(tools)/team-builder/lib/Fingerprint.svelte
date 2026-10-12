@@ -70,21 +70,35 @@
 			? s.providers
 			: s.members.filter((m) => m.state === 'locked' || m.state === 'outlined').map((m) => m.id);
 
-	/** ⏭ Working copy for the slot's sentence (copy step 6). */
+	const names = new Intl.ListFormat('en', { type: 'conjunction' });
+
+	/** The slot's tooltip: its label, then one WHOLE sentence per member state
+	 *  (style guide §3.1 — each is a string of its own, with a plural form where
+	 *  the verb agrees, never a run assembled from fragments). */
 	function sentence(s: FingerprintSlot, change: 'gain' | 'loss' | null): string {
-		const label = LABEL[s.facet] ?? s.facet;
 		const who = (state: string) =>
 			s.members.filter((m) => m.state === state).map((m) => first(m.id));
-		const parts: string[] = [];
-		if (who('lit').length) parts.push(who('lit').join(', '));
-		if (who('outlined').length) parts.push(`${who('outlined').join(', ')} — not in this team`);
-		if (who('locked').length) parts.push(`${who('locked').join(', ')} — at a higher constellation`);
-		if (who('unknown').length) parts.push(`${who('unknown').join(', ')} — not yet curated`);
-		const line = `${label}: ${parts.length ? parts.join('; ') : 'nobody'}`;
-		if (change === 'gain') return `${line} (with this pick)`;
-		if (change === 'loss') return `${line} (lost with this pick)`;
-		if (onFind && s.state !== 'lit') return `${line}. Find who provides it`;
-		return line;
+		const lit = who('lit');
+		const outlined = who('outlined');
+		const locked = who('locked');
+		const unknown = who('unknown');
+		const lines = [`${LABEL[s.facet] ?? s.facet}.`];
+		if (lit.length)
+			lines.push(lit.length === 1 ? `${lit[0]} provides it.` : `${names.format(lit)} provide it.`);
+		if (outlined.length) lines.push(`${names.format(outlined)} would, but not in this team.`);
+		if (locked.length) lines.push(`${names.format(locked)} would from a higher constellation.`);
+		if (unknown.length)
+			lines.push(
+				unknown.length === 1
+					? `${unknown[0]} isn’t curated yet.`
+					: `${names.format(unknown)} aren’t curated yet.`
+			);
+		if (!lit.length && !outlined.length && !locked.length && !unknown.length)
+			lines.push('Nobody here provides it.');
+		if (change === 'gain') lines.push('This pick adds it.');
+		else if (change === 'loss') lines.push('This pick takes it away.');
+		else if (onFind && s.state !== 'lit') lines.push('Click to find who provides it.');
+		return lines.join(' ');
 	}
 </script>
 

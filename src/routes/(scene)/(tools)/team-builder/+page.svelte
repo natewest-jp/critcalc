@@ -300,7 +300,6 @@
 		const left = boards.setSlot(board.id, team.id, i, id);
 		if (left.length) {
 			const name = getCharacterIndexEntry(id)?.displayName ?? id;
-			// ⏭ Working copy (copy step 6).
 			documentBar.showNotice(
 				`${name} moved from ${teamLabel(board, indexOfTeam(left[0]))} to ${teamLabel(board, indexOfTeam(team.id))}.`
 			);
@@ -984,7 +983,6 @@
 			.map((b) => {
 				const label = FACET_LABEL[b.facet] ?? b.facet;
 				const lit = b.minCon <= cap;
-				// ⏭ Working copy (copy step 6).
 				return { facet: b.facet, lit, title: lit ? label : `${label} · from C${b.minCon}` };
 			});
 	}
@@ -993,10 +991,9 @@
 	function pickLabel(entry: CharacterIndexEntry): string {
 		const team = teamLabel(board, selectedIndex);
 		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
-		// ⏭ Working copy (copy step 6).
 		return slot >= 0
-			? `${entry.displayName}, in ${team}, slot ${slot + 1}. Remove.`
-			: `${entry.displayName}, add to ${team}`;
+			? `Remove ${entry.displayName} from ${team} (slot ${slot + 1})`
+			: `Add ${entry.displayName} to ${team}`;
 	}
 
 	/** The destination strip over the grid: where a pick goes. */
@@ -1312,11 +1309,7 @@
 							><Mark name="plus" /> Add team</button
 						>
 					{/if}
-					<!-- ⏭ Working copy (copy step 6). -->
-					<label
-						class="toggle tb-norepeat"
-						title="One team per character: picking someone moves them"
-					>
+					<label class="toggle tb-norepeat" title="Each character joins only one team.">
 						<input
 							type="checkbox"
 							checked={board.noRepeats}
@@ -1405,12 +1398,12 @@
 				</p>
 			{/if}
 			<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
-			     team's hue. ⏭ Working copy (copy step 6). -->
+			     team's hue. -->
 			{#if selectedTeam}
 				<p class="tb-dest" role="status">
 					<span class="tb-dest-key" style:--team-hue={teamHue(selectedIndex)}></span>
 					{#if destFilled === 4}
-						{teamLabel(board, selectedIndex)} is full. Pick a member again to take them out.
+						{teamLabel(board, selectedIndex)} is full. Pick a member again to remove them.
 					{:else}
 						Adding to {teamLabel(board, selectedIndex)} · {destFilled}/4
 					{/if}

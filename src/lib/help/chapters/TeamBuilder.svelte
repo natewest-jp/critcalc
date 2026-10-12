@@ -20,7 +20,7 @@
 	</p>
 	<ul>
 		<li>
-			Capability filters combine. "Heals + ATK buff" means characters that provide <em>both</em>,
+			Capability filters combine. "Healing + ATK buff" means characters that provide <em>both</em>,
 			not either.
 		</li>
 		<li>

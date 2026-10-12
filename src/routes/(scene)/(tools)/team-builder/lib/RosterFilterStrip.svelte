@@ -96,8 +96,7 @@
 			</button>
 		{/each}
 	</div>
-	<!-- The fingerprint's own order and clusters (Survival · Support · Damage).
-	     ⏭ Working copy (copy step 6). -->
+	<!-- The fingerprint's own order and clusters (Survival · Support · Damage). -->
 	<div class="rfs-glyphs" role="group" aria-label="Can provide">
 		{#each FINGERPRINT as c (c.cluster)}
 			<span class="rfs-icons">
