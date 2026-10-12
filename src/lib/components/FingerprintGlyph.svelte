@@ -36,10 +36,8 @@
 
 {#if art}
 	<svg class="fg" viewBox="0 0 24 24" aria-hidden="true">
-		<g transform={art.inset ? `translate(${art.inset} ${art.inset})` : undefined}>
-			{#each art.shade ?? [] as d, i (i)}<path class="fg-shade" {d} />{/each}
-			{#each art.fill as d, i (i)}<path {d} />{/each}
-		</g>
+		{#each art.shade ?? [] as d, i (i)}<path class="fg-shade" {d} />{/each}
+		{#each art.fill as d, i (i)}<path {d} />{/each}
 	</svg>
 {:else}
 	<span class="fg fg-stand" aria-hidden="true"><span>{STAND_IN[facet] ?? '?'}</span></span>
