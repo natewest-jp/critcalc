@@ -7,7 +7,6 @@
 		cleanse: 'CL',
 		resShred: 'SH',
 		grouping: 'GR',
-		infuse: 'IN',
 		offFieldDamage: 'OF'
 	};
 </script>
