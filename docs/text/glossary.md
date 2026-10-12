@@ -135,6 +135,10 @@ rewritten (R1), so they are left.
 
 ## 2a. ⚠️⚠️ `Interruption Res` is NOT the frozen `RES` — and my earlier fix was wrong
 
+✅ **RULED 2026-10-12 (⚓ Nate): `Interruption RES` — the game's own spelling** (Alyosha's kit
+text writes it so). The two stats ARE different, as below; Nate judged the risk of
+confusion small now that each facet carries a glyph. The proposals below are superseded.
+
 ⚓ **Nate's check, 2026-09-22, was right and it caught an error.** `Interruption Res` and
 `RES shred` are **different stats**: `RES` (frozen, game-owned) is Elemental and Physical
 **damage** resistance; interruption resistance is the poise/stagger stat that stops you

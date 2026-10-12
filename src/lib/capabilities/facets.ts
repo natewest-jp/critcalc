@@ -48,7 +48,7 @@ export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'shield', label: 'Shield', hint: 'Shields the active character.' },
 	{
 		key: 'interruptionRes',
-		label: 'Interruption Res',
+		label: 'Interruption RES',
 		hint: 'Makes teammates harder to interrupt.'
 	},
 	{

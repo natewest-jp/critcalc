@@ -99,7 +99,7 @@ export const BUFF_STAT_LABEL: Partial<Record<Stat, string>> = {
 	hp: 'HP',
 	'hp%': 'HP%',
 	healingBonus: 'Healing Bonus',
-	interruptionRes: 'Interruption Res',
+	interruptionRes: 'Interruption RES',
 	allDmgBonus: 'DMG Bonus',
 	skillDmgBonus: 'Skill DMG',
 	burstDmgBonus: 'Burst DMG',
