@@ -966,7 +966,8 @@ only; Noelle/Thoma absent too).
       working copy for step 6 (strip, full-team strip, move notice, No repeats
       tooltip, card and magnifier labels, glyph and chip tooltips).
 19. **Step 4: the fingerprint as the filter (2026-10-12, `tb/fingerprint-filter`).**
-    Built on the placeholder art while Nate draws the nine glyphs.
+    Built on the placeholder art while Nate drew the nine glyphs; all fifteen
+    landed the same day (below).
     - **ONE glyph component** (`$lib/components/FingerprintGlyph.svelte`) draws a
       capability everywhere: the card's column, the team's fingerprint and the
       filter row. It paints in `currentColor` and fills its box, and the
@@ -1033,3 +1034,33 @@ only; Noelle/Thoma absent too).
       - On a phone the stack dissolves into the boss's grid as before:
         Planner → takes its own right-aligned line, the pin and chips follow
         the lineup flush right.
+    - **All fifteen glyphs drawn (Nate, 2026-10-12)**, the rest in order: the
+      heavier Taunt (⚓ kept), Interruption RES (an anchor), Infusion (a
+      wreathed sword), Cleanse (redrawn with the erased circle FILLED — the
+      outline cut read as hairline at 13px), Off-field DMG (three strikes),
+      RES shred (a cracked shield; ⚠ its 13px silhouette sits close to
+      Shield's, saved by the notched top and the clusters), Grouping (four
+      wedges converging). The stand-ins are deleted and the generator refuses
+      a facet with no art.
+    - ⚓ **The glyphs are CROPPED and BALANCED in the generator (Nate's ask).**
+      ↻ Supersedes the "export the whole 24-unit artboard" note above: the
+      artboard still is the source contract, but each glyph now gets its own
+      viewBox cropped to its art, so the box a surface draws IS the glyph and
+      the gaps are layout values. The longest side fits the box; a glyph
+      denser than the set's median ink is shrunk toward it (🎛️ `DENSITY_K`
+      0.5). A sparse glyph can't grow past its box, so this balances SIZE,
+      not weight. 🎛️ `NUDGE` holds Nate's by-eye corrections (tune(nate):
+      Energy 1.05, RES shred 1.06, Grouping 1.2, Interruption RES 1.04); the
+      svg draws with overflow visible so a glyph past its box spills into the
+      gap. Every surface kept its pitch: board 16 → 13px (roomy 20 → 16),
+      the strip 16 → 13, the card 13 → 11, the padding turned into gap.
+    - **Copy step 6 for steps 3–4, ruled 2026-10-12** — the facet names and
+      hints (Healing / Shield / CRIT buff / ⚓ Interruption RES, the game's
+      spelling), verb-first pick labels, "Pin a rotation" / "No pin", No
+      repeats = "Each character joins only one team.", and the fingerprint
+      tooltip as whole sentences per state (style guide §3.1). The glossary
+      gained Lineup, battlefield, Characters, Owned / My constellations, the
+      team's capabilities and pinned rotation. ⚓ The lens reads **My
+      constellations**; band B's fold thresholds were re-measured for it
+      (`FOLD_SHOW_W` 680, `FOLD_LENS_W` 472 — the old pair was already short).
+      ⏭ The Coverage page's toggle still says "My roster".
