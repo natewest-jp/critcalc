@@ -8,8 +8,8 @@
  *
  *   met      — the team does it (a favoured check gets ✓; a disfavoured one ⚠)
  *   unmet    — it cannot
- *   unknown  — we have no rule we trust ("Multi Elemental DMG", "Crowd-control
- *              characters"…). ⚓ Shown, never marked — ⛔ never guessed.
+ *   unknown  — we have no rule we trust ("Multi Elemental DMG", "High-
+ *              frequency DMG"…). ⚓ Shown, never marked — ⛔ never guessed.
  *
  * Alternatives: met if ANY is met; else unknown if any is unknown; else unmet.
  * "A reaction" means the team's elements can make it (§9.2's "can happen",
@@ -23,14 +23,13 @@
  *     Pyro Traveler.
  *   · Crowd control (two spellings) — a GROUPING provider is met; anything
  *     else stays unknown (knockback, freeze and launch have no data).
- *   · "Multi Elemental DMG" — the members cover 2+ elements.
  *   · "Bond of Life Characters" — Arlecchino and Clorinde, a hand-kept list
  *     (Nate: new Bond of Life characters are unlikely).
  *   · Unknown on purpose: the frequency checks (how often a team hits),
- *     "Plunging-Attack Characters", and "Single Elemental DMG" (↻ same day:
- *     a member's element is not the element they DEAL — an Anemo teammate
- *     infused into Pyro, a buffer who barely hits — so a mixed team can
- *     still deal one element).
+ *     "Plunging-Attack Characters", and both "Single" and "Multi Elemental
+ *     DMG" (↻ same day: a member's element is not the element they DEAL —
+ *     an Anemo teammate infused into Pyro, a buffer who barely hits — so the
+ *     members' elements answer neither).
  */
 
 import { REACTION_INGREDIENTS, teamReactions } from '$lib/capabilities/deriveCapabilities';
@@ -115,8 +114,6 @@ function alternative(f: Facts, parts: ReturnType<typeof checkAlternatives>[numbe
 	if (text.startsWith('nightsoul'))
 		return yes(f.members.some((m) => m.region === 'Natlan' || NIGHTSOUL_ELSEWHERE.includes(m.id)));
 	if (/^crowd[- ]control character/.test(text)) return lit(f, 'grouping') ? 'met' : 'unknown';
-	if (text.startsWith('multi elemental dmg'))
-		return yes(new Set(f.members.map((m) => m.element)).size >= 2);
 	if (text.startsWith('bond of life character'))
 		return yes(f.members.some((m) => BOND_OF_LIFE.includes(m.id)));
 	return 'unknown';
