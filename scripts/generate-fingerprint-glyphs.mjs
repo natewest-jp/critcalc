@@ -29,6 +29,7 @@ const OUT = join(ROOT, 'src/lib/fingerprintGlyphs.generated.ts');
 const GLYPHS = {
 	heal: 'Icon_Attribute_Healing',
 	shield: 'Icon_Attribute_Shield_Strength',
+	taunt: 'Icon_Attribute_Taunt',
 	'buff:atk': 'Icon_Attribute_Attack',
 	'buff:em': 'Icon_Attribute_Elemental_Mastery',
 	'buff:crit': 'Icon_Attribute_Critical_Hit',
