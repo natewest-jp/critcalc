@@ -1263,8 +1263,14 @@
 	.lib-menu-item:hover {
 		background: var(--surface-well);
 	}
+	/* The band menu's destructive reading (BandMenu.svelte) — ⚠ this was
+	   `var(--debuff)`, which doesn't exist, so Delete rendered plain white. */
 	.lib-menu-item--danger {
-		color: var(--debuff);
+		color: color-mix(in srgb, var(--ui-danger) 70%, var(--text));
+	}
+	.lib-menu-item--danger:hover {
+		background: var(--ui-danger-soft);
+		color: var(--ui-danger);
 	}
 
 	/* ── boards ── */
