@@ -445,42 +445,71 @@
 						<ConMark level={conLevel} height={CON_GLYPH_H} />
 					</button>
 				{/if}
-				<div class="sp-loadout" class:sp-loadout--disabled={!char}>
+				{#if side && compact}
+					<!-- 🧪 The upright phone pill is ONE button (⚓ Nate 2026-10-13): both
+					     zones open the same panel, so on a phone the whole pill is the
+					     touch target (≈22 × 47) instead of two ≈22px squares whose
+					     24px circles would overlap (WCAG 2.5.8). -->
 					<button
-						class="sp-lo-zone"
-						class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}
+						class="sp-loadout sp-loadout--one"
+						class:sp-loadout--disabled={!char}
 						disabled={!char}
 						onclick={(e) => openLoadout(e, 'artifact')}
-						title={char ? 'Artifact set' : undefined}
-						aria-label="Choose artifact set"
+						title={char ? 'Artifact set and weapon' : undefined}
+						aria-label="Choose artifact set and weapon"
 					>
-						<img class="sp-lo-icon" src={artifactIcon} alt="" />
+						<span class="sp-lo-zone" class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}>
+							<img class="sp-lo-icon" src={artifactIcon} alt="" />
+						</span>
+						<span class="sp-lo-zone" class:sp-lo-zone--unset={!hasWeapon}>
+							<img class="sp-lo-icon" src={weaponIcon} alt="" />
+							{#if hasWeapon}
+								<span class="sp-lo-ref" aria-hidden="true">{currentRef}</span>
+							{/if}
+						</span>
 					</button>
-					<button
-						class="sp-lo-zone"
-						class:sp-lo-zone--unset={!hasWeapon}
-						disabled={!char}
-						onclick={(e) => openLoadout(e, 'weapon')}
-						title={char ? (hasWeapon ? `Weapon · refinement ${currentRef}` : 'Weapon') : undefined}
-						aria-label="Choose weapon and refinement"
-					>
-						<img class="sp-lo-icon" src={weaponIcon} alt="" />
-						<!-- The refinement, as the in-game weapon card draws it: a digit
-							     on the icon's corner rather than a hit zone of its own. It is
-							     DISPLAY only — the panel this zone opens always renders its
-							     refinement pips, so nothing became unreachable.
-							     ⚓ NATE 2026-08-12: ABSENT with no weapon equipped, rather
-							     than dimmed. Dimmed is this card's "nothing here yet" voice,
-							     and it is the right one for a slot you can FILL — but there
-							     is no refinement to set until a weapon exists, which is a
-							     different statement. A digit on an icon corner has no room
-							     to draw that distinction, so it makes no claim at all; the
-							     panel's inert pips carry the explanation instead. -->
-						{#if hasWeapon}
-							<span class="sp-lo-ref" aria-hidden="true">{currentRef}</span>
-						{/if}
-					</button>
-				</div>
+				{:else}
+					<div class="sp-loadout" class:sp-loadout--disabled={!char}>
+						<button
+							class="sp-lo-zone"
+							class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}
+							disabled={!char}
+							onclick={(e) => openLoadout(e, 'artifact')}
+							title={char ? 'Artifact set' : undefined}
+							aria-label="Choose artifact set"
+						>
+							<img class="sp-lo-icon" src={artifactIcon} alt="" />
+						</button>
+						<button
+							class="sp-lo-zone"
+							class:sp-lo-zone--unset={!hasWeapon}
+							disabled={!char}
+							onclick={(e) => openLoadout(e, 'weapon')}
+							title={char
+								? hasWeapon
+									? `Weapon · refinement ${currentRef}`
+									: 'Weapon'
+								: undefined}
+							aria-label="Choose weapon and refinement"
+						>
+							<img class="sp-lo-icon" src={weaponIcon} alt="" />
+							<!-- The refinement, as the in-game weapon card draws it: a digit
+								     on the icon's corner rather than a hit zone of its own. It is
+								     DISPLAY only — the panel this zone opens always renders its
+								     refinement pips, so nothing became unreachable.
+								     ⚓ NATE 2026-08-12: ABSENT with no weapon equipped, rather
+								     than dimmed. Dimmed is this card's "nothing here yet" voice,
+								     and it is the right one for a slot you can FILL — but there
+								     is no refinement to set until a weapon exists, which is a
+								     different statement. A digit on an icon corner has no room
+								     to draw that distinction, so it makes no claim at all; the
+								     panel's inert pips carry the explanation instead. -->
+							{#if hasWeapon}
+								<span class="sp-lo-ref" aria-hidden="true">{currentRef}</span>
+							{/if}
+						</button>
+					</div>
+				{/if}
 				<!-- 🧪 The upright phone card has no Swap (⚓ Nate 2026-10-13). -->
 				{#if discCon && actions && !compact}
 					<span class="sp-col-actions">{@render actions()}</span>
@@ -1427,8 +1456,22 @@
 	   BOTTOM, so the loadout pill and ⇄ end where the disc's chip ends (they
 	   were centred in their half of the band, 1px short — measured). The name
 	   comes down 6px (⚓ Nate). */
+	.sp-card--side:not(.sp-card--compact) {
+		/* ⚓ Nate 2026-10-13: 6px of breathing room inside the ribbon's frame,
+		   and 6 (not 4) between the portrait and the column. */
+		padding-inline: 6px;
+		--sp-col-inset: 6px;
+	}
 	.sp-card--side:not(.sp-card--compact) .sp-controls {
 		align-self: end;
+	}
+	/* The column paints OVER the portrait's art (⚓ Nate 2026-10-13): a
+	   ponytail that reaches sideways (Nahida's) slips under the loadout pill's
+	   well instead of sitting on top of it. The portrait is its own stacking
+	   context at z 1; the column outranks it. */
+	.sp-card--side .sp-col {
+		position: relative;
+		z-index: 2;
 	}
 	.sp-card--side:not(.sp-card--compact) .sp-id-row {
 		position: relative;
@@ -1448,8 +1491,15 @@
 	.sp-card--side.sp-card--compact .sp-body {
 		display: flex;
 		align-items: flex-end;
-		gap: 4px;
+		gap: var(--sp-up-gap);
 		height: auto;
+	}
+	.sp-card--side.sp-card--compact {
+		/* 🎛️ The upright pill: snug to the portrait, and 4px narrower than the
+		   desk pill (22, its zones 20) — the width goes to the portrait. */
+		--sp-up-gap: 2px;
+		--sp-up-w: 22px;
+		--sp-up-zone: 20px;
 	}
 	.sp-card--side.sp-card--compact .sp-avatar-chip {
 		height: var(--sp-side-d);
@@ -1465,14 +1515,18 @@
 	.sp-card--side.sp-card--compact .sp-loadout {
 		flex: none;
 		flex-direction: column;
-		width: var(--sp-pill-h);
+		width: var(--sp-up-w);
 		height: auto;
 		padding: 3px 0;
+		cursor: pointer;
 	}
 	.sp-card--side.sp-card--compact .sp-lo-zone {
 		flex: none;
-		width: 24px;
+		width: var(--sp-up-zone);
 		max-width: none;
-		height: 24px;
+		height: var(--sp-up-zone);
+	}
+	.sp-loadout--one:disabled {
+		cursor: default;
 	}
 </style>

@@ -25,13 +25,16 @@
 		{ id: null, con: 0, owned: null, note: 'an empty slot' }
 	];
 	/** 🎛️ C's card width — no rail and no element badge give back ~48px of the
-	 *  200. 152 = disc 60 + inset 4 + an 88px column ("Kuki Shinobu" on one line
-	 *  at --fs-lg is 87.8; the control row needs 84). */
-	let bcCardW = $state(152);
+	 *  200. ⚓ Nate 2026-10-13: 165 = pad 6 + disc 60 + inset 6 + an 87px
+	 *  column + pad 6 (the control row needs 84; "Kuki Shinobu" at --fs-lg is
+	 *  87.8, so it may wrap to two lines — the clamp allows it). */
+	let bcCardW = $state(165);
 	/** The phone row: a viewport width, and the strip the bench would get there. */
 	let bcVw = $state(390);
 	const BC_DISC_MIN = 40;
-	const BC_DISC_MAX = 60;
+	const BC_DISC_MAX = 64;
+	/** The upright card beside its portrait: the 2px gap + the 22px pill. */
+	const BC_UP = 24;
 	/** The hair above the upright card: reserved inside the strip, or left to spill. */
 	let bcReserve = $state(false);
 	const bcRow = $derived.by(() => {
@@ -40,9 +43,9 @@
 		const full = fit >= bcCardW;
 		// The upright card: portrait + 4 + the 26px pill, the portrait taking
 		// whatever the width leaves, between a floor and a cap (🎛️ both).
-		const d = Math.round(Math.max(BC_DISC_MIN, Math.min(fit - 30, BC_DISC_MAX)));
-		const w = full ? bcCardW : d + 30;
-		return { inner, w, full, d, h: full ? 78 : Math.max(d, 55), over: sideLayout(d).overhang };
+		const d = Math.round(Math.max(BC_DISC_MIN, Math.min(fit - BC_UP, BC_DISC_MAX)));
+		const w = full ? bcCardW : d + BC_UP;
+		return { inner, w, full, d, h: full ? 78 : Math.max(d, 47), over: sideLayout(d).overhang };
 	});
 	let bcSlotH = $state(BENCH_SLOT_H);
 	let bcRosterKnown = $state(true);
