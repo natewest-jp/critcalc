@@ -63,12 +63,12 @@ const DENSITY_K = 0.5;
 /** @type {Record<string, { scale?: number; dx?: number; dy?: number }>} */
 const NUDGE = {
 	// tune(nate) 2026-10-12, by eye on the balanced set; 2026-10-13 after
-	// the DMG% / Cleanse / Grouping redraws (Grouping 1.2 × 0.99)
+	// the DMG% / Cleanse / Grouping redraws (Grouping 1.2 × 0.99); DMG% 0.93 × 0.94 the same evening
 	energy: { scale: 1.05 },
 	resShred: { scale: 1.06 },
 	grouping: { scale: 1.188 },
 	interruptionRes: { scale: 1.04 },
-	'buff:dmg': { scale: 0.93 },
+	'buff:dmg': { scale: 0.874 },
 	shield: { scale: 1.03 },
 	'buff:hpdef': { scale: 1.03 }
 };

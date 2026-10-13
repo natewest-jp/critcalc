@@ -14,19 +14,12 @@
 	import CheckChip from './CheckChip.svelte';
 	import type { DeltaItem } from './team';
 
-	let {
-		items,
-		stacked = false
-	}: {
-		items: DeltaItem[];
-		/** One item per line — a run's caption cell, a tile wide. */
-		stacked?: boolean;
-	} = $props();
+	let { items }: { items: DeltaItem[] } = $props();
 
 	const LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
 </script>
 
-<span class="sd" class:sd--stacked={stacked}>
+<span class="sd">
 	{#each items as item, i (i)}
 		<span class="sd-item" class:sd-gain={item.sign > 0} class:sd-loss={item.sign < 0}>
 			<span class="sd-sign" aria-label={item.sign > 0 ? 'Gains' : 'Loses'}
@@ -60,14 +53,6 @@
 		align-items: center;
 		gap: 4px 14px;
 		min-width: 0;
-	}
-	.sd--stacked {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 6px;
-	}
-	.sd--stacked .sd-item {
-		white-space: normal;
 	}
 	.sd-item {
 		display: inline-flex;
