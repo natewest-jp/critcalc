@@ -12,6 +12,7 @@
 	 * and caveats come from `deriveCoverage` over the lazy payload, loaded when a
 	 * row is hovered or opened.
 	 */
+	import { newestFirst } from '$lib/utils/release';
 	import { onMount, tick } from 'svelte';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 	import { replaceState } from '$app/navigation';
@@ -128,22 +129,12 @@
 		);
 		const byName = (a: Row, b: Row) => a.entry.displayName.localeCompare(b.entry.displayName);
 		if (sort === 'name') return out.sort(byName);
-		if (sort === 'newest')
-			return out.sort(
-				(a, b) => patchOrder(b.entry.release) - patchOrder(a.entry.release) || byName(a, b)
-			);
+		if (sort === 'newest') return out.sort((a, b) => newestFirst(a.entry, b.entry));
 		return out.sort(
 			(a, b) =>
 				a.lit / Math.max(a.of, 1) - b.lit / Math.max(b.of, 1) || b.gaps - a.gaps || byName(a, b)
 		);
 	});
-
-	/** "7.1" → 7001: a patch's minor never reaches 1000, and "6.10" must sort
-	 *  after "6.9", which a float would not. Unknown sorts last. */
-	function patchOrder(release: string | undefined): number {
-		const m = /^(\d+)\.(\d+)$/.exec(release ?? '');
-		return m ? Number(m[1]) * 1000 + Number(m[2]) : -1;
-	}
 
 	/** "My constellations" dims the constellation columns above what you own. */
 	const C_LEVEL: [number, CoverageSegmentKey][] = [

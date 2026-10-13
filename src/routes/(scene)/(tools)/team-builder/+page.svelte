@@ -4,6 +4,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { newestFirst } from '$lib/utils/release';
 	import {
 		constellations,
 		siteSettings,
@@ -75,9 +76,11 @@
 	// Roster (eager index; full payloads stay lazy behind the detail card)
 	// ---------------------------------------------------------------------------
 
+	// ⚓ Newest first (Nate 2026-10-13) — "is the new release in yet?" is the
+	// first question a visit brings, as on the Coverage page.
 	const roster = getAllCharacterIndex()
 		.filter((c) => c.id !== 'blank')
-		.sort((a, b) => a.displayName.localeCompare(b.displayName));
+		.sort(newestFirst);
 	const rosterIds = new Set(roster.map((c) => c.id));
 
 	// ---------------------------------------------------------------------------

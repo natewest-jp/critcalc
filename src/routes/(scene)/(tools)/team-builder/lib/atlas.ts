@@ -105,7 +105,7 @@ export type DrillRow =
  * Role-scoped drill rows for a card. Support/Survivability → capability facet
  * rows (curated providers within the role, honoring the con cap); DPS → element
  * rows (all role members by element — on-field carries carry no facet). Roster
- * order is preserved, so entries stay sorted by displayName.
+ * order is preserved, so entries keep the grid's order (newest first).
  */
 export function buildDrillRows(
 	category: RoleCategory,

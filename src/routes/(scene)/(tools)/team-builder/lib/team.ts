@@ -221,7 +221,8 @@ const TIER_ORDER: SwapTier[] = ['keeps', 'trades', 'reactions', 'uncurated'];
  * The candidates for slot `slot`, grouped by what the swap does — ⚓ ONE
  * SECTION PER SPECIFIC CHANGE within a tier (Nate 2026-10-13; fall back to
  * tier-only headers if it fragments too far on real teams). Within a section:
- * owned first, then by name — ⛔ never "fewest losses first", which is advice.
+ * owned first, then the order the candidates came in (the grid's, newest
+ * first) — ⛔ never "fewest losses first", which is advice.
  */
 export function swapSections(
 	candidates: readonly CharacterIndexEntry[],
@@ -245,10 +246,9 @@ export function swapSections(
 	const rankList = (s: SwapSection) => s.items.map(itemRank);
 	const sections = [...byKey.values()];
 	for (const s of sections)
-		s.entries.sort(
-			(x, y) =>
-				Number(owned(y.id)) - Number(owned(x.id)) || x.displayName.localeCompare(y.displayName)
-		);
+		// Stable, so the candidates' own order (the grid's: newest first) holds
+		// within each half.
+		s.entries.sort((x, y) => Number(owned(y.id)) - Number(owned(x.id)));
 	return sections.sort((x, y) => {
 		const t = TIER_ORDER.indexOf(x.tier) - TIER_ORDER.indexOf(y.tier);
 		if (t) return t;
