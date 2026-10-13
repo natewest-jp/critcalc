@@ -1063,4 +1063,50 @@ only; Noelle/Thoma absent too).
       team's capabilities and pinned rotation. ⚓ The lens reads **My
       constellations**; band B's fold thresholds were re-measured for it
       (`FOLD_SHOW_W` 680, `FOLD_LENS_W` 472 — the old pair was already short).
-      ⏭ The Coverage page's toggle still says "My roster".
+      ✅ The Coverage page's toggle reads "My constellations" too (2026-10-13).
+20. **Step 5: swap mode (2026-10-13, `tb/swap-mode`)** — a written proposal, approved
+    without a demo (⚓ Nate: build it and judge it live).
+    - **Entering:** a filled portrait in the SELECTED row (item 8). It wears a gold
+      ring; the destination strip reads "Replacing Furina · Battlefield 2" with a ✕.
+      Escape, the ✕, a second click on the portrait, or a pick leaves it.
+    - **The grid regroups by what the swap does to the TEAM** — the team's
+      fingerprint with the candidate in the slot against the current one, so a
+      teammate's condition going out is a loss (the ripple, §1.7). Four tiers:
+      Keeps everything · Trades · Changes the reactions · Not curated yet. ⚓ Within
+      a tier, ONE HEADER PER SPECIFIC CHANGE ("+ RES shred · − ATK buff"); if it
+      fragments too far on real teams, fall back to tier-only headers. Owned first,
+      then by name — ⛔ never "fewest losses first" (advice).
+    - ⚓ **Resonance is part of the delta**, in the reactions tier (losing Pyro
+      Resonance is as real as losing an ATK buff).
+    - ⚓ **Checks**: a battlefield check enters a header only when no capability or
+      reaction in that header already names it ("breaks Nightsoul"); every check
+      previews on hover.
+    - **Hover previews the REPLACEMENT** — the fingerprint and the checks as they
+      would end.
+    - **A pick swaps and leaves swap mode** (the game's pick). ⚠ The proposal said
+      "undo is the net" and the Builder HAD no undo — so band A's notice now carries
+      **Undo** (`boards.restoreTeams`, whole teams + pins, since No repeats may have
+      moved the candidate off another team). The notice holds 8s when it has a
+      button (`NOTICE_ACTION_MS`), 2.2s otherwise.
+    - ⚓ **Try in Planner lives in band A's notice**: a swap that breaks a pin says so
+      and offers "Try it with Yelan in the Planner" — a NEW tab, the rotation's
+      notation with the name changed (§10.2: the saved rotation is never rewritten).
+      Verified: "National · Furina", unsaved, the saved entry untouched.
+    - **The Planner's ⇄ (`?swap=N`)** arrives as a temporary row at the top of the
+      Lineup ("From the Planner: ⟨tab⟩"), already swapping slot N; a pick renames in
+      that tab and returns, Cancel returns unchanged (§10.3).
+    - **Retired:** Compare, Audition, `compare.ts`, `auditionRotation.ts` (uptime is
+      out, §1; Try in Planner answers it honestly), `CoveragePanel`, the
+      coverage-checklist half of `team.ts` (`deriveCoverage`, `facetsProvidedBy`,
+      `teamDelta` → `swapDelta`/`swapSections`), the finder's `exclude`/`rank`, and
+      §2.5's "stack two fingerprints" (every card carries its own). The bench's
+      `'tb'` host type went too — the Planner is its only host.
+    - **Built:** the model is `team.ts` (`swapDelta`, `swapSections`,
+      `checkNamedElsewhere`, `checkShift`); reactions are named by ONE helper,
+      `$lib/utils/reactionPairs.ts`, shared with `CompositionChips`; a section head
+      is `SwapDelta.svelte`; a check's preview is a ring on `CheckChip` (`shift`).
+      The board's team row became a snippet so the Planner's row reuses it.
+    - ⏭ **Judge live (Nate):** fragmentation of the per-change headers; the tier
+      kicker's spacing; the gold swap ring; the notice's length in band A at
+      narrow widths (it does not fold yet); the working copy (tier names, "Nothing
+      changes", "Replacing X · Battlefield 2", the notice sentences) is step 6's.
