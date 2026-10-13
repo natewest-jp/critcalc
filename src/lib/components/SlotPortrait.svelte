@@ -93,7 +93,7 @@
 		conOnDisc = false,
 		ownedCon,
 		compactDisc = CARD_PORTRAIT_COMPACT,
-		swapCorner = 'bl'
+		onDetails
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -152,9 +152,10 @@
 		/** 🧪 The side form's COMPACT portrait, which the host solves from the
 		 *  card's width (the upright phone card: portrait + 4 + the 26px pill). */
 		compactDisc?: number;
-		/** 🧪 Which corner of the portrait the host's actions tuck into (desk side
-		 *  form with `conOnDisc`): bottom-left or top-left. */
-		swapCorner?: 'bl' | 'tl';
+		/** 🧪 The side form's magnifier: when set, a corner button opens the
+		 *  character's details, and `onPortraitClick` is free to do something
+		 *  else (the desk bench: Swap). */
+		onDetails?: () => void;
 	} = $props();
 
 	const side = $derived(portrait === 'side');
@@ -336,26 +337,16 @@
 
 		{#if side}
 			<!-- 🧪 The side portrait (candidate): anchored at the band's bottom, so
-			     the art's overhang rises ABOVE the card rather than growing it. -->
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div
-				class="sp-avatar-chip sp-side"
-				class:sp-avatar-clickable={!!onPortraitClick}
-				onclick={onPortraitClick}
-				role={onPortraitClick ? 'button' : undefined}
-				tabindex={onPortraitClick ? 0 : undefined}
-				aria-label={onPortraitClick ? portraitLabel : undefined}
-			>
-				{#if discCon && actions && !compact}
-					<!-- 🧪 Swap TUCKS BEHIND the portrait (⚓ Nate 2026-10-13: on the
-					     left, the Builder's side, never beside the timeline): a raised
-					     tile in the corner whose inner part the opaque disc covers, so
-					     only its outer corner shows, with the mark in it. -->
-					<span class="sp-corner sp-corner--{swapCorner}">{@render actions()}</span>
-				{/if}
+			     the art's overhang rises ABOVE the card rather than growing it.
+			     The portrait, its constellation and the magnifier are SIBLING
+			     buttons — never one inside another. -->
+			<div class="sp-avatar-chip sp-side">
 				<span class="sp-side-art">
 					<SidePortrait id={char ? slotId : null} size={compact ? compactDisc : CARD_PORTRAIT} />
 				</span>
+				{#if onPortraitClick}
+					<button class="sp-side-hit" onclick={onPortraitClick} aria-label={portraitLabel}></button>
+				{/if}
 				{#if discCon && char}
 					<button
 						class="sp-disc-con"
@@ -371,6 +362,17 @@
 					>
 						<ConMark level={conLevel} height={7} />
 					</button>
+				{/if}
+				{#if onDetails && char && char.id !== 'blank'}
+					<!-- 🧪 THE MAGNIFIER (⚓ Nate 2026-10-13): the Builder card's grammar —
+					     the portrait ACTS (Swap), the corner button READS (details).
+					     Shown on hover / focus; always on a screen with no hover. -->
+					<button
+						class="sp-mag"
+						aria-label={`${char.displayName}'s details`}
+						title={`${char.displayName}'s details`}
+						onclick={onDetails}><Mark name="search" size={12} /></button
+					>
 				{/if}
 			</div>
 		{:else}
@@ -1056,24 +1058,58 @@
 	.sp-disc-con:disabled {
 		cursor: default;
 	}
-	/* The corner tile: behind the portrait's disc (it comes first, and the
-	   art box is positioned after it), reaching into the card's 6px pad so its
-	   visible corner can hold a 12px mark clear of the ring. 🎛️ size + reach. */
-	.sp-corner {
+	/* The portrait's hit area: the disc (the hair above it is not a target).
+	   Hover rings it in INK — engaged, not chosen (gold means chosen). */
+	.sp-side-hit {
 		position: absolute;
-		width: var(--sp-corner, 28px);
-		height: var(--sp-corner, 28px);
-		left: calc(-1 * var(--sp-corner-reach, 6px));
-		display: flex;
+		inset: 0;
+		padding: 0;
+		border: none;
+		border-radius: var(--r-round);
+		background: none;
+		cursor: pointer;
+		transition: box-shadow var(--t-snap);
 	}
-	.sp-corner--bl {
-		bottom: calc(-1 * var(--sp-corner-drop, 4px));
+	.sp-side-hit:hover,
+	.sp-side-hit:focus-visible {
+		box-shadow: inset 0 0 0 2px var(--text);
 	}
-	.sp-corner--tl {
-		top: calc(-1 * var(--sp-corner-drop, 4px));
+	/* The magnifier: the Builder card's, at the disc's top right. Shown by
+	   VISIBILITY, not opacity — the ribbon is transform-placed, and element
+	   opacity there dances in WebKit (the sub-pixel laws). 🎛️ 22px, mark 12. */
+	.sp-mag {
+		position: absolute;
+		top: -2px;
+		right: -2px;
+		z-index: 3;
+		width: 22px;
+		height: 22px;
+		display: grid;
+		place-items: center;
+		padding: 0;
+		border: none;
+		border-radius: var(--r-round);
+		background-color: var(--btn-face);
+		box-shadow: inset 0 0 0 11px transparent;
+		color: var(--text);
+		cursor: zoom-in;
+		visibility: hidden;
+		transition:
+			background-color var(--t-snap),
+			box-shadow var(--t-snap);
 	}
-	.sp-corner :global(> *) {
-		flex: 1;
+	.sp-side:hover .sp-mag,
+	.sp-side:focus-within .sp-mag {
+		visibility: visible;
+	}
+	.sp-mag:hover {
+		background-color: var(--surface-well);
+		box-shadow: inset 0 0 0 11px var(--sel-ring);
+	}
+	@media (hover: none) {
+		.sp-mag {
+			visibility: visible;
+		}
 	}
 
 	/* ── Loadout pill ─────────────────────────────────────────────────────────

@@ -37,8 +37,8 @@
 	const BC_UP = 24;
 	/** The hair above the upright card: reserved inside the strip, or left to spill. */
 	let bcReserve = $state(false);
-	/** Which corner of the portrait Swap tucks into. */
-	let bcCorner = $state<'bl' | 'tl'>('bl');
+	/** What the last click on the board would have done. */
+	let bcLast = $state('—');
 	const bcRow = $derived.by(() => {
 		const inner = bcVw - 2 * TOOL_GUTTER - 2 * RIBBON_CHROME;
 		const fit = (inner - 3 * BENCH_ROW_CARD_GAP) / 4;
@@ -1060,9 +1060,10 @@
 	<section>
 		<h2 class="lab-h">The bench card, form C <span class="lab-badge">candidate</span></h2>
 		<p class="sp-note">
-			The real slot card: the Team Builder's portrait with the constellation on the disc, Swap at
-			the end of the controls, no rail and no element icon. Click a constellation to set it; the
-			portraits and ⇄ do nothing here.
+			The real slot card: the Team Builder's portrait with the constellation on the disc, no rail
+			and no element icon. On the desk the portrait is Swap and the magnifier (on hover) opens
+			details; on the phone the portrait opens details and there is no Swap. "Last click" says what
+			a click would have done. Constellations really change.
 		</p>
 		{#snippet bcCard(seat: (typeof BC_SEATS)[number], compact: boolean)}
 			{@const char = bcChar(seat.id)}
@@ -1077,24 +1078,27 @@
 				onSetArtifact={() => {}}
 				onSetWeapon={() => {}}
 				onSetRefinement={() => {}}
-				onPortraitClick={() => {}}
-				portraitLabel="(demo)"
+				onPortraitClick={() =>
+					(bcLast = compact
+						? char
+							? `details · ${char.displayName}`
+							: '(an empty slot does nothing on the phone)'
+						: char
+							? `Swap · ${char.displayName}`
+							: 'Swap · adding')}
+				onDetails={compact ? undefined : () => (bcLast = `details · ${char?.displayName}`)}
+				portraitLabel={compact
+					? char
+						? `${char.displayName}'s details`
+						: 'Empty slot'
+					: char
+						? `Swap ${char.displayName}`
+						: 'Choose a character for this slot'}
 				emptyLabel=""
 				portrait="side"
 				conOnDisc
 				ownedCon={bcRosterKnown ? seat.owned : undefined}
-				swapCorner={bcCorner}
-			>
-				{#snippet actions()}
-					<button
-						class="bc-swap bc-swap--{bcCorner}"
-						disabled={!char}
-						title={char ? 'Swap' : undefined}
-						aria-label={char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
-						><Mark name="swap" size={12} /></button
-					>
-				{/snippet}
-			</SlotPortrait>
+			/>
 		{/snippet}
 
 		<div class="sp-knobs">
@@ -1107,11 +1111,7 @@
 				<code>{bcSlotH}px</code></label
 			>
 			<label><input type="checkbox" bind:checked={bcRosterKnown} /> Roster known</label>
-			<label
-				>Swap corner <select bind:value={bcCorner}
-					><option value="bl">bottom left</option><option value="tl">top left</option></select
-				></label
-			>
+			<span>Last click: <code>{bcLast}</code></span>
 		</div>
 		<div class="bc-forms">
 			<figure class="bc-form">
@@ -2728,33 +2728,6 @@
 		font-size: var(--fs-sm);
 		color: var(--muted);
 		border-radius: var(--r-sm);
-	}
-	/* A stand-in for BenchBand's .bb-act (scoped there): the raised corner
-	   tile. Only its OUTER corner shows past the disc, so the mark sits there
-	   (3px in from the tile's two outer edges). */
-	.bc-swap {
-		display: flex;
-		padding: 3px;
-		border: none;
-		border-radius: var(--r-sm);
-		background: var(--surface-raised);
-		color: var(--sp-unset-ink, var(--muted));
-		cursor: pointer;
-	}
-	.bc-swap--bl {
-		align-items: flex-end;
-		justify-content: flex-start;
-	}
-	.bc-swap--tl {
-		align-items: flex-start;
-		justify-content: flex-start;
-	}
-	.bc-swap:hover:not(:disabled) {
-		background: color-mix(in srgb, white 7%, var(--surface-raised));
-		color: var(--text);
-	}
-	.bc-swap:disabled {
-		visibility: hidden;
 	}
 	.sp-knobs {
 		display: flex;
