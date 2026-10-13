@@ -36,9 +36,9 @@
 	import { PLAYBACK_RATES, playback, rateLabel } from '$lib/playback/playback.svelte';
 
 	// ---------------------------------------------------------------------------
-	// Tab state — hoisted to the shared working-team module (bench-band round):
-	// the active tab's team IS the site's working team, so the Team Builder and
-	// the bench band read and write the same state. Restore, persistence and
+	// Tab state — hoisted to a shared module (bench-band round) so the bench
+	// band and the Team Builder's ⇄ errand reach it while this page is not
+	// mounted. Restore, persistence and
 	// the save-bank label sync live in the (tools) layout, which stays mounted
 	// across every tool. This page keeps the planner-only flows: save/load,
 	// share links, tab-strip UI state.
@@ -119,8 +119,10 @@
 			// Planner's team as a temporary row, §10.3), and a pick there renames
 			// in this tab and navigates back here.
 			//
-			// The team itself does NOT travel — it IS the shared working team
-			// (bench-band round), so the slot INDEX is the whole payload.
+			// The team itself does NOT travel — the Builder reads this tab from
+			// the shared module — so the slot INDEX is the whole payload. An
+			// EMPTY slot (or a typed Blank) arrives the same way and ADDS there
+			// (⚓ Nate 2026-10-13).
 			onSwap: (index) => {
 				// The path IS resolved — but `no-navigation-without-resolve` requires
 				// resolve() to be goto's argument *syntactically*, and it cannot be

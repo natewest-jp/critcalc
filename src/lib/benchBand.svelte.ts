@@ -1,28 +1,25 @@
 /**
  * src/lib/benchBand.svelte.ts
  *
- * Shared state for the BENCH BAND — the one slot-card column both tools dock
- * (bench-band round, 2026-08-05). The band itself is rendered by the (tools)
- * layout, OUTSIDE the keyed .tool-page layers, so it survives tool navigation
- * and glides across the screen on the pan clock. This module is what the band
- * and its two hosts agree through:
+ * Shared state for the BENCH BAND — the Planner's slot cards (bench-band
+ * round, 2026-08-05; ↻ the Planner's alone since the lineups round,
+ * 2026-10-08). The band itself is rendered by the (tools) layout, OUTSIDE the
+ * keyed .tool-page layers, so it survives page revival and rides the pan
+ * clock in and out. This module is what the band and its host agree through:
  *
- * - Host registration: each tool page registers its bench affordances on
- *   mount (the planner: portrait click opens the character Source; the TB:
- *   portrait click opens the Detail card, plus audition). During a tool pan
- *   BOTH pages are briefly alive — registration is last-writer-wins and an
- *   unregister only clears its own registration, so the incoming page's
- *   callbacks survive the outgoing page's (retention-delayed) teardown.
+ * - Host registration: the planner registers its bench affordances on mount
+ *   (a filled portrait opens the Detail card; ⇄ and an empty portrait go to
+ *   the Team Builder's swap mode). Keyed by tool — see `#hosts`.
  *
  * - Slot metrics: the planner's timeline publishes its per-slot block heights
  *   (they vary with buff/summon rows) so the band's cards align to their
- *   track groups DATA-driven, never DOM-coupled. Ownership-guarded the same
- *   way. `blankUsed` marks slots where the generic Blank kit is actually cast
+ *   track groups DATA-driven, never DOM-coupled. Ownership-guarded.
+ *   `blankUsed` marks slots where the generic Blank kit is actually cast
  *   in the notation — those render as a real "Blank" card; unused blanks stay
  *   empty add-slots.
  *
- * Card geometry constants live here too — the TB bench zone reserves the
- * band's footprint with them, and the band uses them as its resting rhythm.
+ * Card geometry constants live here too — the band uses them as its resting
+ * rhythm, and ToolStack reserves its footprint with them.
  */
 
 // ⚠ Extensions are load-bearing on these two — see toolGutter.ts. This file is
@@ -32,26 +29,21 @@ import { BAND_STACK_TO_SURFACE } from './toolBands.ts';
 import { RIBBON_GAP } from './toolGutter.ts';
 
 /**
- * ⚓ NATE 2026-08-12: ONE shape for both tools, where there used to be a
- * discriminated pair. "I'd like to make clicking on the portrait behave the
- * same as on the Team Builder — it pulls up the modal of the character's
- * details… it teaches the user that it's the exact same set of actions
- * regardless of the tool they're on."
+ * ⚓ NATE 2026-08-12: the portrait behaves as it does in the Team Builder —
+ * "it pulls up the modal of the character's details… it teaches the user
+ * that it's the exact same set of actions regardless of the tool they're on."
  *
- * So the AFFORDANCES are now identical and only their destinations differ:
- * - a FILLED portrait opens that character's Detail card, in both tools;
- * - an EMPTY portrait, and ⇄ on any slot, asks the host to swap — which the
- *   planner answers by sending the slot to the Team Builder's swap mode.
- *   There are no details for nobody, and "click the empty disc to fill it" is
- *   the one thing that must not stop working.
+ * - a FILLED portrait opens that character's Detail card;
+ * - ⇄ on a filled slot, an EMPTY portrait, and a typed Blank's portrait ask
+ *   the host to swap — which the planner answers by sending the slot to the
+ *   Team Builder's swap mode (replacing, or ADDING on an empty slot, ⚓ Nate
+ *   2026-10-13). There are no details for nobody, and "click the empty disc
+ *   to fill it" is the one thing that must not stop working.
  *
  * ↻ 2026-10-08 the Team Builder left the bench (lineups design §2.1), and
  * 2026-10-13 its audition retired into swap mode: the planner is the only
- * host now. The registry stays KEYED BY TOOL (see `#hosts`) — the hazard it
+ * host. The registry stays KEYED BY TOOL (see `#hosts`) — the hazard it
  * guards is page revival, not the number of tools.
- *
- * This also gives ⇄ a job of its own for the first time: on the planner it used
- * to call the very same handler the portrait did.
  */
 export type BenchHostRegistration = {
 	tool: 'rp';
@@ -153,11 +145,8 @@ export const CARD_PAD_Y = 18;
 export const BENCH_SLOT_MIN_H = CARD_PORTRAIT + CARD_PAD_Y;
 
 /**
- * The band's resting rhythm: one card at the planner's BASELINE slot height,
- * so the "even default rhythm" the band relaxes to on the Team Builder is the
- * exact height a typical planner slot occupies — the RP↔TB height animation is
- * a no-op for typical rotations and only moves in the extreme many-bars cases,
- * which is Nate's spec.
+ * The band's resting rhythm: one card at the planner's BASELINE slot height —
+ * what the cards show before the timeline has published any heights.
  *
  * ↻ 2026-08-11: was 158, a hand-copied sum of RotationTimeline's constants that
  * went stale the moment those constants moved — twice in one day. It is the
@@ -249,7 +238,7 @@ export const RIBBON_FRAME_R_WIDE = 30;
 
 /** Total chrome per side: bare ground + stroke + interior pad. */
 export const RIBBON_CHROME = RIBBON_EDGE + RIBBON_FRAME_BORDER + RIBBON_PAD;
-/** Full ribbon width — the dock anchors and the TB zone math read this. */
+/** Full ribbon width — the dock anchor reads this. */
 export const RIBBON_W = BENCH_CARD_W + 2 * RIBBON_CHROME;
 
 /**
@@ -349,9 +338,7 @@ export const RIBBON_FRAME_TOP_INSET = 28;
 /**
  * Dead space between the ribbon's interior top and the FIRST card — the strip
  * now opens above the timeline's ruler, so the cards sit this far down inside
- * it. Shared by both tools (the TB has no ruler, but its cards must land on
- * the same screen y or they'd jump across the tool fade), and the frame tops
- * already align across the seam (probe-bench-align).
+ * it.
  *
  * ↻ TOOLBAR ROUND 2026-08-07: the ribbon now stands proud of the BAND STACK,
  * not of the frame — its dock spans bands + surface — so the head grows by
@@ -361,9 +348,7 @@ export const RIBBON_FRAME_TOP_INSET = 28;
  * goes.
  *
  * ↻ 2026-08-17: A FUNCTION OF THE PUBLISHED TRACK TOP, not a constant. Called
- * with `benchBand.trackTop`, which the planner's timeline publishes and both
- * tools read — see that field for why the Team Builder must read the SAME
- * number rather than keep its own.
+ * with `benchBand.trackTop`, which the planner's timeline publishes.
  */
 export function ribbonHead(trackTop: number): number {
 	return BAND_STACK_TO_SURFACE + trackTop + RIBBON_OVERHANG_Y - RIBBON_CHROME;
@@ -646,12 +631,13 @@ class BenchBandState {
 	 * REVIVAL rather than ordering:
 	 *
 	 *   1. planner mounts          host = P
-	 *   2. → Team Builder          host = T; the planner OUTROES but is retained,
-	 *                              so it is never destroyed and never unregisters
+	 *   2. → another tool          that tool's host (at the time, the Team
+	 *                              Builder's) = T; the planner OUTROES but is
+	 *                              retained, so it never unregisters
 	 *   3. → planner               Svelte cancels the outro and reinserts the SAME
 	 *                              component — no second onMount, no re-register,
 	 *                              host is still T
-	 *   4. the TB finally tears down; host === T, so it nulls the host
+	 *   4. the other tool tears down; host === T, so it nulls the host
 	 *
 	 * …and the bench is left hostless on a planner that is on screen and looks
 	 * fine. ⇄ and the portraits go dead until you reload. The (tools) layout
@@ -661,9 +647,9 @@ class BenchBandState {
 	 * is simply the entry `mode` is not asking for.
 	 *
 	 * ⚠️ It is PRE-EXISTING (measured on 847acdb, where the same round trip kills
-	 * the character Source). What changed is the stakes: ⇄ is now the planner's
+	 * the character Source). What changed is the stakes: ⇄ is the planner's
 	 * only way to change a slot, and leaving the tool and coming back is the
-	 * flow, not an edge case.
+	 * flow, not an edge case (cross-tool.spec's second ⇄ is the guard).
 	 */
 	#hosts = $state<Partial<Record<BenchHostRegistration['tool'], BenchHostRegistration>>>({});
 
@@ -676,19 +662,15 @@ class BenchBandState {
 	 * Per-slot block heights published by the planner's timeline (px), or null
 	 * until one has ever been mounted this session.
 	 *
-	 * ⚓ NATE 2026-08-12: THEY ARE RETAINED WHEN THE TIMELINE GOES AWAY. The
-	 * cards used to relax to an even resting rhythm on the Team Builder, which
-	 * meant the four cards you were just looking at silently changed shape as
-	 * you crossed — the one moment the ribbon exists to make continuous. The
-	 * heights are a property of the TEAM, which both tools share, not of the
-	 * timeline that happens to compute them.
+	 * ⚓ NATE 2026-08-12: THEY ARE RETAINED WHEN THE TIMELINE GOES AWAY — the
+	 * heights are a property of the TEAM, not of the timeline that happens to
+	 * compute them. (The original reason was the RP↔TB crossing, when both
+	 * tools showed the ribbon; it now saves the cards a re-flow on the way
+	 * back INTO the planner, before its timeline republishes.)
 	 *
 	 * ⚠ SO A DESTROY PUBLISHES null AND IS IGNORED (see claimMetrics). What is
-	 * left over is deliberately stale: edit the team on the Team Builder and the
-	 * cards keep the departing rotation's rhythm until the planner recomputes
-	 * it. That is the right trade — a card height is a rhythm, not a claim about
-	 * anything, and holding it still beats re-flowing four cards on a surface
-	 * that has no rows to justify the change.
+	 * left over is deliberately stale until the planner recomputes it — a card
+	 * height is a rhythm, not a claim about anything.
 	 */
 	slotHeights = $state<number[] | null>(null);
 
@@ -706,14 +688,9 @@ class BenchBandState {
 	 * gone quietly wrong the first time that happened, which is exactly how
 	 * `RIBBON_FRAME_TOP_INSET`'s own note says the number behaves.
 	 *
-	 * ⚠⚠ ONE NUMBER FOR BOTH TOOLS, and this is the load-bearing part. The Team
-	 * Builder has no ruler and no header, but its cards must land on the SAME
-	 * screen y as the planner's or the four cards you are looking at slide on
-	 * every RP↔TB crossing — and the ribbon's whole job across that seam is to be
-	 * the thing that does not change (⚓ Nate, the tail round). So the TB reads
-	 * this too and simply carries the taller head as empty ribbon: the cost of a
-	 * planner-side layer lands as dead space in the region the decorative motif
-	 * was earmarked for, and never as movement.
+	 * (Until 2026-10-08 the Team Builder read it too, so its cards landed on
+	 * the planner's screen y across the crossing; the planner is its only
+	 * reader now.)
 	 *
 	 * ⚠ RETAINED ON UNMOUNT like `slotHeights`, and for the same reason: it is a
 	 * property of how the plan is being READ, not of the component that happened

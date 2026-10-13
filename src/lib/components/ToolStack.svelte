@@ -50,10 +50,10 @@
 		surface
 	}: {
 		/**
-		 * Does the bench ribbon dock against this tool? True for the planner and
-		 * the Team Builder (they share one working team); false for the
-		 * Visualizers, which has no team and whose stack therefore starts at the
-		 * content margin instead of after the ribbon's column.
+		 * Does the bench ribbon dock against this tool? True for the planner
+		 * only (↻ the Team Builder left the bench, 2026-10-08); a tool without it
+		 * starts its stack at the content margin instead of after the ribbon's
+		 * column.
 		 */
 		benched?: boolean;
 		/** The surface flexes to fill the stack's height (viewport-fit tools). */
@@ -71,8 +71,7 @@
 		/**
 		 * A middle RAIL for band B. Opting in splits the band into three separate
 		 * plates — control · rail · control — and moves the ground off the band
-		 * onto this zone. The Team Builder's Atlas/Roster/Compare navigation is
-		 * its one caller.
+		 * onto this zone. The planner's band B is its one caller.
 		 */
 		bandBCenter?: Snippet;
 		bandBRight?: Snippet;

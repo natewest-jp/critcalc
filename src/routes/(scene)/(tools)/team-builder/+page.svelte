@@ -111,15 +111,10 @@
 	//   strips them before the destination can read them. Guard on nav.to.
 	// - read nav.to.url, never window.location — location can lag the router.
 	//
-	// The team itself is the shared WORKING TEAM now (the planner's active
-	// tab) — no URL mirroring, no cross-tool injection. Two inbound params
-	// remain, both stripped after reading:
-	// - ?team=a,b,c,d — an external deep link: imports the team into a tab
-	//   (pristine-tab reuse rules), same as the planner's own ?team=.
-	// - ?alts=1 — the planner's "← Explore alternatives" hand-off: the team is
-	//   already here, so the link only asks for the per-slot alternatives view.
-	//   ⛔ The chip that sent it is RETIRED (2026-08-13); the param is kept
-	//   because it is a shareable URL like any other and costs one branch.
+	// Three inbound params, each stripped after reading:
+	// - ?team=a,b,c,d — an external deep link: the team lands on the ACTIVE
+	//   BOARD (§9.7), not in a rotation tab.
+	// - ?b= — a shared lineup.
 	// - ?swap=N — the planner's bench ⇄: swap mode on slot N of the Planner's
 	//   OWN team, drawn as a temporary row on top of the lineup (§10.3, §11.6
 	//   item 20). The team does not travel — it is the Planner's active tab —
@@ -128,10 +123,9 @@
 		const url = nav.to?.url;
 		if (!url || !url.pathname.endsWith('/team-builder')) return;
 		const teamParam = url.searchParams.get('team');
-		const altsParam = url.searchParams.get('alts');
 		const swapParam = url.searchParams.get('swap');
 		const boardParam = url.searchParams.get('b');
-		if (!teamParam && !altsParam && !swapParam && !boardParam) return;
+		if (!teamParam && !swapParam && !boardParam) return;
 		// ⛔ Not $app/navigation's replaceState — see stripDeepLinkParams. This is
 		// the call site that carried NO reason at all, and `?swap=` arrives here
 		// cold from the planner's ⇄.
@@ -417,16 +411,21 @@
 	// do these kits compare" but "what happens to my team".
 	// ---------------------------------------------------------------------------
 
-	let swapping = $state<{ teamId: string; slot: number; incumbent: string } | null>(null);
+	/** `incumbent` null = ADDING: the Planner's errand on an EMPTY slot of
+	 *  its team (⚓ Nate 2026-10-13) — nobody leaves, so the grid is grouped
+	 *  by what each candidate brings. Only the errand adds this way; a board
+	 *  fills its empty slots by picks, the game's way. */
+	let swapping = $state<{ teamId: string; slot: number; incumbent: string | null } | null>(null);
 
-	/** The portrait again leaves swap mode; another filled one moves it. */
+	/** The portrait again leaves swap mode; another filled one moves it (on
+	 *  the Planner's row, an empty one too). */
 	function toggleSwap(teamId: string, slot: number): void {
 		if (swapping?.teamId === teamId && swapping.slot === slot) {
 			swapping = null;
 			return;
 		}
 		const incumbent = teamById(teamId)?.slots[slot];
-		if (!incumbent) return;
+		if (incumbent === undefined || (incumbent === null && teamId !== ERRAND_ID)) return;
 		swapping = { teamId, slot, incumbent };
 		if (tabbed) tab = 'characters';
 	}
@@ -483,7 +482,8 @@
 			return;
 		}
 		const team = teamById(s.teamId);
-		if (!team) return;
+		if (!team || !s.incumbent) return;
+		const incumbent = s.incumbent;
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
 		const pin = pinnedRotation(team, $savedNotations);
@@ -495,15 +495,15 @@
 			actions.push({
 				label: `Try it with ${name} in the Planner`,
 				run: () => {
-					documentBar.tryWithSwap(pin, s.incumbent, id, `${pin.name} · ${name}`);
+					documentBar.tryWithSwap(pin, incumbent, id, `${pin.name} · ${name}`);
 					void goto(resolve('/rotation-planner'));
 				}
 			});
 		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
 		documentBar.showNotice(
 			pin
-				? `${name} replaced ${nameOf(s.incumbent)}${from}. “${pin.name}” is no longer pinned.`
-				: `${name} replaced ${nameOf(s.incumbent)}${from}.`,
+				? `${name} replaced ${nameOf(incumbent)}${from}. “${pin.name}” is no longer pinned.`
+				: `${name} replaced ${nameOf(incumbent)}${from}.`,
 			actions
 		);
 		if (tabbed) tab = 'lineup';
@@ -513,7 +513,9 @@
 	// The Planner has no character grid: ⇄ on its bench sends the slot here.
 	// Its team is drawn as a TEMPORARY row on top of the lineup — board-less,
 	// never stored — already swapping slot N. A pick renames in the Planner's
-	// tab and returns; Cancel returns unchanged.
+	// tab and returns; Cancel returns unchanged. An EMPTY slot (or a typed
+	// Blank) arrives the same way and ADDS (⚓ Nate 2026-10-13): the pick
+	// appends a bare name, or renames the Blank, through the same setSlot.
 
 	// ⚠ NOT DONE IN afterNavigate: the tabs are restored by the (tools)
 	// LAYOUT's onMount, and on a COLD load of /team-builder?swap=2 the param is
@@ -523,9 +525,8 @@
 		if (pendingSwapSlot === null || !rt.restored || !mounted) return;
 		const slot = pendingSwapSlot;
 		pendingSwapSlot = null;
-		const incumbent = rt.slots[slot];
-		// An empty slot has no one to replace — the plain grid.
-		if (!incumbent || incumbent === 'blank') return;
+		const id = rt.slots[slot];
+		const incumbent = !id || id === 'blank' ? null : id;
 		errandOpen = true;
 		chosenTeamId = ERRAND_ID;
 		swapping = { teamId: ERRAND_ID, slot, incumbent };
@@ -809,7 +810,10 @@
 
 	/** The pick's screen-reader name — it names the team it acts on. */
 	function pickLabel(entry: CharacterIndexEntry): string {
-		if (swapping) return `Swap ${entry.displayName} in for ${nameOf(swapping.incumbent)}`;
+		if (swapping)
+			return swapping.incumbent
+				? `Swap ${entry.displayName} in for ${nameOf(swapping.incumbent)}`
+				: `Add ${entry.displayName} to ${selectedLabel}`;
 		const team = selectedLabel;
 		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
 		return slot >= 0
@@ -858,7 +862,10 @@
 		onField: 'On-field',
 		offField: 'Off-field'
 	};
-	const swapPosition = $derived(swapping ? (rolesOf(swapping.incumbent)?.position ?? []) : []);
+	/** Adding has no position to respect — everyone is offered. */
+	const swapPosition = $derived(
+		swapping?.incumbent ? (rolesOf(swapping.incumbent)?.position ?? []) : []
+	);
 	const samePosition = (id: string): boolean => {
 		const theirs = rolesOf(id)?.position ?? [];
 		return !swapPosition.length || !theirs.length || theirs.some((p) => swapPosition.includes(p));
@@ -927,11 +934,6 @@
 
 	/** The destination strip over the grid: where a pick goes. */
 	const destFilled = $derived(selectedTeam?.slots.filter((s) => s !== null).length ?? 0);
-
-	// The old slots→URL mirror is retired with the ?team= injection: the
-	// working team lives in the shared tab state (persisted there), and a URL
-	// that silently tracked it would imply a share mechanism this page no
-	// longer owns. Shareable teams travel through the planner's ⤴ Share link.
 </script>
 
 <!-- One grid tile: the roster grid and the "not yet curated" bucket. -->
@@ -1348,14 +1350,21 @@
 		<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
 			     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
 		{#if swapping}
+			{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
 			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
-				Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
+				{#if swapping.incumbent}
+					Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
+				{:else}
+					Adding to {selectedLabel}
+				{/if}
 				{@render destCount()}
 				<button
 					class="btn btn--icon tb-dest-close"
 					onclick={() => (swapping = null)}
-					aria-label="Stop replacing {nameOf(swapping.incumbent)}"
-					title="Stop replacing (Esc)"><Mark name="close" size={12} /></button
+					aria-label={swapping.incumbent
+						? `Stop replacing ${nameOf(swapping.incumbent)}`
+						: `Stop adding to ${selectedLabel}`}
+					title="Stop {verb} (Esc)"><Mark name="close" size={12} /></button
 				>
 			</p>
 		{:else if selectedTeam}

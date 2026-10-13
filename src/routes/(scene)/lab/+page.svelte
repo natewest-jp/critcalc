@@ -798,11 +798,7 @@
 		{
 			job: 'a destructive ACTION — a verb, what a control will do',
 			red: true,
-			sites: [
-				'SettingsPanel .sp-section--danger',
-				'BandMenu .band-menu-item--danger',
-				'BenchBand .bb-act--remove'
-			]
+			sites: ['SettingsPanel .sp-section--danger', 'BandMenu .band-menu-item--danger']
 		},
 		{
 			job: 'data is INCOMPLETE or APPROXIMATE — a provenance statement, not an action',

@@ -9,8 +9,9 @@
 	 * ══ IT IS A ROW (⚓ NATE's mockup, the bench-card round 2026-08-12) ═══════
 	 * THREE COLUMNS on ONE band the height of the portrait:
 	 *
-	 *   1. rail — the host's slot commands (⇄ · ✕), stacked, splitting the
-	 *      portrait's height between them. On the strip's quiet inner edge:
+	 *   1. rail — the host's slot commands, stacked, splitting the portrait's
+	 *      height between them (↻ ⇄ alone since ✕ retired, 2026-10-13 — it
+	 *      takes the whole height until the portrait round re-lays the card). On the strip's quiet inner edge:
 	 *      a rail on the RIGHT would sit flush against the E/Q bars at the
 	 *      planner's busiest seam, which is the objection that killed this
 	 *      layout's first outing in 2026-07-30.
@@ -31,7 +32,7 @@
 	 * ══ TWO REGISTERS OF CONTROL (⚓ NATE, same round) ═══════════════════════
 	 * VALUE CONTROLS ARE WELLS; COMMAND BUTTONS ARE RAISED. The constellation
 	 * chip and the loadout pill are places data sits, cut into the card
-	 * (--surface-well); the rail's ⇄/✕ are things you press, standing on it
+	 * (--surface-well); the rail's ⇄ is a thing you press, standing on it
 	 * (--surface-raised, and they are squares rather than capsules). They used
 	 * to share one fill as "one family", which is precisely why the old base
 	 * band read as a single continuous bar of chrome heavy enough to outweigh
@@ -120,8 +121,8 @@
 		 *  "Empty" labels only adds noise. Kept as a prop for a host that wants one. */
 		emptyLabel?: string;
 		/** Host-supplied slot commands, stacked in the card's left RAIL and
-		 *  stretched to split the portrait's height between them. Both tools pass
-		 *  ⇄ + ✕.
+		 *  stretched to split the portrait's height between them. The bench
+		 *  passes ⇄ alone (✕ retired 2026-10-13).
 		 *  ↻ 2026-08-12: this used to be a `display: contents` + `order` trick
 		 *  seating one snippet on BOTH sides of the loadout pill. The rail is an
 		 *  ordinary flex column, so the trick is gone — buttons render in source
@@ -213,8 +214,8 @@
 	function anchorTo(e: MouseEvent): { x: number; y: number; flip: boolean } {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		// Default opens to the chip's right (the planner's left-edge portrait
-		// column); the TB Bench holds the RIGHT viewport edge, where that side
-		// can't fit — flip to the chip's left when it would overflow.
+		// column); flip to the chip's left when that would overflow the viewport
+		// (the row form's rightmost cards at narrow widths).
 		const flip = rect.right + 8 + POPOVER_W > window.innerWidth;
 		return { x: flip ? rect.left - 8 : rect.right + 8, y: rect.top + rect.height / 2, flip };
 	}
@@ -1128,7 +1129,7 @@
 		position: fixed;
 		inset: 0;
 		/* Portaled to <body>, so this competes at the root stacking level. High
-		   enough to clear the tool panels (Bench sticky, Source rail) but below the
+		   enough to clear the tool panels (the bench ribbon, the band plates) but below the
 		   1000 modal layer, which never coexists with this picker. */
 		z-index: 949;
 	}
@@ -1136,8 +1137,8 @@
 		position: fixed;
 		transform: translateY(-50%);
 	}
-	/* Anchored at the chip's LEFT edge when the right side can't fit it (the
-	   TB Bench holds the right viewport edge) — same vertical centering. */
+	/* Anchored at the chip's LEFT edge when the right side can't fit it — same
+	   vertical centering. */
 	.sp-popover--flip {
 		transform: translate(-100%, -50%);
 	}

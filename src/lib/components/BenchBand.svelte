@@ -1,15 +1,14 @@
 <script lang="ts">
 	/**
 	 * BenchBand — THE bench RIBBON: a self-contained box holding the four slot
-	 * cards of the working team, rendered ONCE at the (tools) layout level and
-	 * docked over each tool's [data-bench-anchor] (planner LEFT, Team Builder
-	 * RIGHT — the tool frames tuck beneath its edges as loose siblings). The
-	 * layout owns its position and travel; this component owns its content.
+	 * cards of the Planner's active tab, rendered ONCE at the (tools) layout
+	 * level and docked over the planner's [data-bench-anchor]. ↻ The Team
+	 * Builder left the bench in the lineups round (2026-10-08). The layout owns
+	 * its position and travel; this component owns its content.
 	 *
-	 * - The team is the shared working team (rotationTabs.slots — the
-	 *   planner's active tab). Constellation/loadout edits here ALWAYS write
-	 *   Layer 2 (the tab's overrides): the bench is the plan's team editor in
-	 *   both tools. The TB roster grid + Detail card remain the Layer-1
+	 * - The team is DERIVED from the tab's notation (rotationTabs.slots).
+	 *   Constellation/loadout edits here ALWAYS write Layer 2 (the tab's
+	 *   overrides); the Library's Roster and the Detail card are the Layer-1
 	 *   editors.
 	 * - ONE identity everywhere: its own ground and double frame (the per-tool
 	 *   ctx flip retired with the ribbon round). ⚓ NATE 2026-08-09: the strip is
@@ -18,10 +17,8 @@
 	 *   Night round and reverted the same day. Its double frame could not have
 	 *   survived the move regardless: two crossing strokes over alpha lines
 	 *   double-composite at every crossing (see .inset--double in app.css).
-	 * - `mode` is the tool the ribbon is (or is becoming) docked to. It sets
-	 *   the card heights (planner: coupled to the timeline's published slot
-	 *   metrics; TB: the even resting rhythm) and the ⇄ action's meaning
-	 *   (audition on the TB; open the Source on the planner).
+	 * - `mode` is 'rp' while the ribbon is (or is becoming) docked to the
+	 *   planner, null elsewhere; it picks the host whose affordances apply.
 	 * - ⚓ IT ENDS IN A POINT (tail round 2026-08-12), Genshin's banner shape:
 	 *   square top, straight sides, a tapered tail. Its height is now simply
 	 *   its CONTENT — top chrome + the head + the four cards + the tail —
@@ -93,13 +90,9 @@
 	// The layout no longer measures for us. See the tail block in
 	// benchBand.svelte.ts for the whole argument.
 
-	// Card heights: the planner's published slot metrics, wherever we are.
-	// ⚓ NATE 2026-08-12 — this used to be gated on `mode === 'rp'`, so the cards
-	// relaxed to an even rhythm on the Team Builder and the four cards you were
-	// looking at changed shape as you crossed. The ribbon's whole job across
-	// that seam is to be the thing that DOESN'T change. The resting rhythm now
-	// only carries a session that has never had a timeline mounted at all (a
-	// cold load straight onto the Team Builder).
+	// Card heights: the planner's published slot metrics, retained across a
+	// trip away (see benchBand.slotHeights). The resting rhythm carries only
+	// the first frames before the timeline has published at all.
 	const heights = $derived(
 		benchBand.slotHeights ?? [BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H]
 	);
@@ -111,9 +104,8 @@
 	// first TAIL_LEAD px are straight, so that space is more generous than the
 	// 12px it replaces rather than less.
 	// ↻ 2026-08-17: the head is a FUNCTION of the planner's published track top,
-	// which grows when a lane rides above the time axis. Read here rather than
-	// per-tool — see `benchBand.trackTop` for why the Team Builder must carry
-	// the same head as empty ribbon instead of keeping its own.
+	// which grows when a lane rides above the time axis — see
+	// `benchBand.trackTop`.
 	const head = $derived(ribbonHead(benchBand.trackTop));
 
 	// ══ THE ROW FORM (responsive round, 2026-09-05) ═══════════════════════════
@@ -171,18 +163,16 @@
 		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
 	}
 
-	// The affordances of the tool we are docked to (or traveling toward) — during
-	// a pan BOTH pages are alive, and after an A→B→A pan both are still
-	// REGISTERED, which is why the lookup is keyed rather than filtered. See the
-	// note on BenchBandState#hosts for the revival this survives.
+	// The affordances of the tool we are docked to (or traveling toward) —
+	// keyed, not last-writer-wins. See the note on BenchBandState#hosts for the
+	// page revival this survives.
 	const host = $derived(benchBand.hostFor(mode));
 
 	/**
-	 * ⚓ NATE 2026-08-12: the portrait does the SAME thing in both tools now.
-	 * A filled slot opens that character's Detail card; an empty one — and the
+	 * ⚓ NATE 2026-08-12: the portrait does what the Team Builder's does. A
+	 * filled slot opens that character's Detail card; an empty one — and the
 	 * generic Blank, which has no details worth reading — asks the host to fill
-	 * it. Nothing here is tool-aware any more; the host decides what "swap"
-	 * means (the planner's Source picker, the TB's audition).
+	 * it (the Team Builder's swap mode, ADDING — ⚓ Nate 2026-10-13).
 	 */
 	function portraitClickFor(char: { id: string; displayName: string } | null, i: number) {
 		if (!host) return undefined;
@@ -285,44 +275,30 @@
 					emptyLabel=""
 				>
 					{#snippet actions()}
-						<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
-					     ⇄ auditions on the TB but opens the character Source on the
-					     planner (stays in-tool). They stack in the card's left RAIL
-					     and split the portrait's height between them.
-					     Always rendered — an EMPTY slot renders them and the card
-					     HIDES them, holding their box so the portraits don't step
-					     sideways. The generic-Blank card gets LIVE actions (Nate
-					     2026-08-06): a deliberately-typed Blank is a placeholder the
-					     user may well want to swap a real character into. -->
+						<!-- ⇄ Swap, the card's one command (lineups design §10.3): the
+						     Planner's way into the Team Builder's swap mode. ⛔ ✕ is GONE
+						     (⚓ Nate) — removing a character is deleting their actions,
+						     which the text already does. Always rendered — an EMPTY slot
+						     renders it and the card HIDES it, holding its box so the
+						     portraits don't step sideways (the empty portrait itself goes
+						     to swap mode, adding). The generic-Blank card gets a LIVE one
+						     (Nate 2026-08-06): a deliberately-typed Blank is a placeholder
+						     the user may well want to swap a real character into. -->
 						{@const live = !!char}
 						<button
 							class="bb-act"
 							disabled={!live}
 							onclick={() => char && host?.onSwap(i, char.id)}
-							title={live && char ? 'Change who fills this slot' : undefined}
-							aria-label={live && char ? 'Change who fills this slot' : 'Swap (empty slot)'}
+							title={live ? 'Swap' : undefined}
+							aria-label={live && char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
 						>
 							<!-- The shared mark set (Lucide via the generator), not hand-cut
-					     paths and certainly not the ⇄/✕ code points — those aren't in
-					     IBM Plex, so each engine drew its own fallback at its own size
-					     (Safari's ✕ came out visibly smaller than Chrome's). Strokes
-					     ride currentColor, so the button's color states apply
-					     unchanged. NO size override — MARK_SIZE (14) is the standard,
-					     and it lands the ✕'s ink at 7px: exactly the height of the C0 /
-					     R1 digits beside it (--fs-xs, 10px). ⚓ NATE 2026-08-07; the
-					     hand-cut 14×12 / 9×9 they replaced were never a tuned target. -->
+					     paths and certainly not the ⇄ code point — it isn't in IBM
+					     Plex, so each engine drew its own fallback at its own size.
+					     Strokes ride currentColor, so the button's color states apply
+					     unchanged. NO size override — MARK_SIZE (14) is the standard.
+					     ⚓ NATE 2026-08-07. -->
 							<Mark name="swap" />
-						</button>
-						<button
-							class="bb-act bb-act--remove"
-							disabled={!live}
-							onclick={() => rt.setSlot(i, null)}
-							title={live && char ? `Remove ${char.displayName} from team` : undefined}
-							aria-label={live && char
-								? `Remove ${char.displayName} from team`
-								: 'Remove (empty slot)'}
-						>
-							<Mark name="close" />
 						</button>
 					{/snippet}
 				</SlotPortrait>
@@ -470,7 +446,7 @@
 	   ⚠ If a separator ever comes back it must still take NO height: card k's
 	   top has to stay on the cumulative sum the planner's track groups use. */
 
-	/* ── Slot commands (⇄ · ✕) — THE RAISED REGISTER ─────────────────────────
+	/* ── The slot command (⇄) — THE RAISED REGISTER ─────────────────────────
 	   ⚓ NATE 2026-08-12, from his mockup: VALUE CONTROLS ARE WELLS; COMMAND
 	   BUTTONS ARE RAISED. The constellation chip and the loadout pill are places
 	   data sits, cut into the card (--surface-well); these are things you press,
@@ -506,8 +482,7 @@
 		   the rest of the tile. */
 		border-radius: var(--r-sm) 0 0 var(--r-sm);
 		/* ONE fill, TWO painted boxes. Routed through a custom property so the
-		   button and its hidden extension can never disagree — including on the
-		   danger hover below, which would otherwise need stating twice.
+		   button and its hidden extension can never disagree.
 		   🐛 AND THE PROPERTY IS WHAT ANIMATES, NOT THE TWO BACKGROUNDS. ⚓ Nate
 		   saw "a split down the middle that very slightly changes opacity at
 		   different timings" on hover, in both engines: PSEUDO-ELEMENTS DO NOT
@@ -560,13 +535,11 @@
 		border-radius: 0 var(--r-sm) var(--r-sm) 0;
 		pointer-events: none;
 	}
-	/* ── BOTH tiles fill on hover; the HUE is what separates them ────────────
-	   ⚓ NATE 2026-08-12 asked for ⇄ to fill like ✕ does, "one shade up of
-	   slate". That completes a rule the palette round already settled for the
-	   glass panes and it is worth stating in the same words: DENSITY separates
-	   resting from engaged, HUE separates the two engaged states. The raised
-	   register lights up whenever you are on it; only the destructive one goes
-	   red.
+	/* ── The tile fills on hover ────────────────────────────────────────────
+	   ⚓ NATE 2026-08-12 asked for ⇄ to fill like ✕ did, "one shade up of
+	   slate" (✕ retired 2026-10-13, lineups design §10.3): DENSITY separates
+	   resting from engaged, the glass panes' rule. The raised register lights
+	   up whenever you are on it.
 
 	   ⚠ 7% white, not `--slate-600`: a component may not name a primitive (the
 	   layer law, grep-enforced). 7% is where slate-700 meets slate-600 on the
@@ -577,24 +550,5 @@
 	.bb-act:hover:not(:disabled) {
 		--bb-act-fill: color-mix(in srgb, white 7%, var(--surface-raised));
 		color: var(--sp-unset-ink-hover);
-	}
-	/* ── ✕ hovers by FILLING, and that is the round's second sanctioned
-	   exception (⚓ NATE 2026-08-12, from the mockup: "danger fill on hover
-	   specifically"). The card's rule since 2026-07-30 is that hover brightens
-	   content and never fills, and it holds everywhere else — but destructive is
-	   the one action that should announce itself with a surface rather than a
-	   shade, and the contrast against ⇄'s ink-only hover is what makes the two
-	   buttons read as different KINDS of thing rather than a pair.
-
-	   The alpha lives in the PAINT (an opaque mix, not element opacity) — the
-	   ribbon is transform-placed at fractional coordinates and any
-	   element-opacity subtree dances in real Safari. Mixed onto the raised rung
-	   these buttons already wear, so the fill reads as the same object lighting
-	   up rather than a different plate appearing. */
-	.bb-act--remove:hover:not(:disabled) {
-		--bb-act-fill: color-mix(in srgb, var(--ui-danger) 22%, var(--surface-raised));
-		/* Danger mixes into WHITE, not --text — the beige base would pull the
-		   red warm against the card's white-mix ladder. */
-		color: color-mix(in srgb, var(--ui-danger) 45%, white);
 	}
 </style>
