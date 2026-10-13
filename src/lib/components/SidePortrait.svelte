@@ -46,7 +46,8 @@
 		con,
 		ownedCon,
 		selected = false,
-		geometry = SIDE_GEOMETRY
+		geometry = SIDE_GEOMETRY,
+		fadeRight
 	}: {
 		id: string | null;
 		/** The DISC's diameter in px. The art is larger (see `SIDE_ART_PER_DISC`). */
@@ -58,7 +59,15 @@
 		selected?: boolean;
 		/** /lab's tuning sliders only — every surface takes the default. */
 		geometry?: SideGeometry;
+		/** Fade the art out toward the RIGHT, gone by this many px past the
+		 *  disc's right edge (over `FADE_W`), so hair reaching sideways eases
+		 *  into the ground before whatever sits beside the portrait (the bench
+		 *  card's name and loadout). Absent: no fade. */
+		fadeRight?: number;
 	} = $props();
+
+	/** 🎛️ The fade's length, px. */
+	const FADE_W = 8;
 
 	const short = $derived(
 		con !== undefined && ownedCon !== undefined && (ownedCon === null || ownedCon < con)
@@ -88,6 +97,8 @@
 	style:--art-top="{lay.top}px"
 	style:--mx="{geometry.cx * lay.art}px"
 	style:--my="{geometry.cy * lay.art}px"
+	style:--fade-end={fadeRight === undefined ? undefined : `${size - lay.left + fadeRight}px`}
+	style:--fade-w="{FADE_W}px"
 >
 	<span class="spt-disc" class:spt-disc--selected={selected}>
 		{#if id && !hasAvatar(id)}
@@ -98,6 +109,7 @@
 		<img
 			class="spt-art"
 			class:spt-art--clip={geometry.clipBelow}
+			class:spt-art--fade={fadeRight !== undefined && !geometry.clipBelow}
 			src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
 			alt={name}
 			onerror={handleError}
@@ -193,6 +205,15 @@
 			0 0,
 			0 0;
 		mask-repeat: no-repeat;
+	}
+	/* The sideways fade, in the art's own coordinates: opaque to the fade's
+	   start, transparent at --fade-end (the disc's right edge + fadeRight). */
+	.spt-art--fade {
+		mask-image: linear-gradient(
+			to right,
+			#000 calc(var(--fade-end) - var(--fade-w)),
+			transparent var(--fade-end)
+		);
 	}
 	/* ── The constellation chip ──
 	   A pill at the lower right, sized off the disc. It always carries its own

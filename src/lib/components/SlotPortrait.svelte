@@ -342,7 +342,11 @@
 			     buttons — never one inside another. -->
 			<div class="sp-avatar-chip sp-side">
 				<span class="sp-side-art">
-					<SidePortrait id={char ? slotId : null} size={compact ? compactDisc : CARD_PORTRAIT} />
+					<SidePortrait
+						id={char ? slotId : null}
+						size={compact ? compactDisc : CARD_PORTRAIT}
+						fadeRight={compact ? 2 : 6}
+					/>
 				</span>
 				{#if onPortraitClick}
 					<button class="sp-side-hit" onclick={onPortraitClick} aria-label={portraitLabel}></button>
@@ -1058,8 +1062,20 @@
 	.sp-disc-con:disabled {
 		cursor: default;
 	}
-	/* The portrait's hit area: the disc (the hair above it is not a target).
-	   Hover rings it in INK — engaged, not chosen (gold means chosen). */
+	/* The ring: the SOFT line at rest (⚓ Nate 2026-10-13), and a gentle gold
+	   (--sel-ring, the accent at 55%) while the portrait is pointed at — the
+	   Builder's language. Drawn by the ring BEHIND the art, so hair keeps
+	   crossing it. The hair fades out sideways before the column
+	   (SidePortrait `fadeRight`: gone at the column's edge — 6px on the desk,
+	   2px on the phone). */
+	.sp-side :global(.spt-disc) {
+		border-color: var(--line-soft);
+	}
+	.sp-side:has(.sp-side-hit:hover) :global(.spt-disc),
+	.sp-side:has(.sp-side-hit:focus-visible) :global(.spt-disc) {
+		border-color: var(--sel-ring);
+	}
+	/* The portrait's hit area: the disc (the hair above it is not a target). */
 	.sp-side-hit {
 		position: absolute;
 		inset: 0;
@@ -1068,11 +1084,9 @@
 		border-radius: var(--r-round);
 		background: none;
 		cursor: pointer;
-		transition: box-shadow var(--t-snap);
 	}
-	.sp-side-hit:hover,
 	.sp-side-hit:focus-visible {
-		box-shadow: inset 0 0 0 2px var(--text);
+		outline: none;
 	}
 	/* The magnifier: the Builder card's, at the disc's top right. Shown by
 	   VISIBILITY, not opacity — the ribbon is transform-placed, and element
