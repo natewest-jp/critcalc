@@ -95,6 +95,14 @@ export type BenchHostRegistration = {
 
 /** The converged slot-card width (RotationTimeline's LABEL_W imports this).
  *
+ *  🎛️ ⚓ NATE 2026-10-13, the portrait round: 200 → 165. The side portrait
+ *  carries the constellation, the rail and the element badge are gone, so the
+ *  card is pad 6 + portrait 60 + inset 6 + an 87px column + pad 6 (the
+ *  control row needs 54; "Kuki Shinobu" at --fs-lg is 87.8 and may wrap — the
+ *  two-line clamp allows it). The 35px goes back to the chart.
+ *
+ *  The history below is the 200's.
+ *
  *  🎛️ ⚓ NATE, bench-card round: 160 → 200. This is the width at which NOTHING
  *  in the card has to shrink — the text column lands at 84px, which is exactly
  *  a constellation chip (26) + gap (4) + the two-zone loadout pill (54), and a
@@ -104,7 +112,7 @@ export type BenchHostRegistration = {
  *  ⚠ THE PLANNER PAYS FOR THIS IN CHART WIDTH, and that is the good direction
  *  of the trade: horizontal is scrollable AND zoomable in a Gantt, vertical is
  *  neither. 40px of tracks (~3% at 1600) buys 40px × 4 slots of height. */
-export const BENCH_CARD_W = 200;
+export const BENCH_CARD_W = 165;
 
 /** 🎛️ The portrait disc, which is also THE CARD'S WHOLE HEIGHT — the band, the
  *  rail's two tiles, and the column's two rows all derive from it.
@@ -390,76 +398,59 @@ export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * A row card's height — the same 78px as a column card at its floor, in BOTH
- * of the card's forms (SlotPortrait's full row, and its compact stack below
- * ~165px of width). ⚓ THAT EQUALITY IS DESIGNED, NOT INCIDENTAL: it is what
- * lets the strip be one constant height across every narrow width, so
- * ToolStack can reserve BENCH_ROW_H in pure CSS and nothing has to measure
- * the bench to lay out the tool beneath it. The compact form's disc
- * (CARD_PORTRAIT_COMPACT) is solved from it — see there.
+ * ══ THE UPRIGHT CARD (bench portrait round, ⚓ Nate 2026-10-13) ════════════
+ * The row's ONE form: the side portrait with the loadout pill standing
+ * UPRIGHT beside it (flower over weapon), no name and no Swap — swap mode
+ * needs the lineup beside the grid, which a phone cannot show, and the
+ * notation is the phone's control.
+ *
+ *       ⟨hair⟩
+ *      (  d  )ⓒ▣        card = d + BENCH_ROW_PILL_GAP + BENCH_ROW_PILL_W
+ *      (     ) ⚔
+ *
+ * The portrait takes whatever width four cards get, between a floor and a
+ * cap, and the cap IS the card's height — so the strip is one CONSTANT height
+ * (BENCH_ROW_H) that ToolStack reserves in pure CSS, nothing measuring the
+ * bench to lay out the tool beneath it. It replaced a 78px compact STACK
+ * (portrait over a control row), so the planner gets 22px of height back on a
+ * phone. ⛔ The desk card no longer appears in the row at any width.
  */
-export const BENCH_ROW_CARD_H = BENCH_SLOT_MIN_H;
+
+/** 🎛️ The upright pill's width (its zones are 20, the desk's 24 — the width
+ *  goes to the portrait). It is ONE button on the phone, so the touch target
+ *  is the whole ~22 × 47 pill (WCAG 2.5.8). */
+export const BENCH_ROW_PILL_W = 22;
+/** 🎛️ Portrait → pill: snug. */
+export const BENCH_ROW_PILL_GAP = 2;
+
+/** 🎛️ The upright card's height, which is also its portrait's CAP (the pill is
+ *  47 and fits under it). 56 is the portrait a 390px phone gets. */
+export const BENCH_ROW_CARD_H = 56;
 
 /** The strip's full height in the row form: chrome above and below one card. */
 export const BENCH_ROW_H = BENCH_ROW_CARD_H + 2 * RIBBON_CHROME;
 
-/** Gap between cards in the row — the rail's own tile gap, so the strip reads
- *  at one rhythm inside and out. */
+/** Gap between cards in the row. */
 export const BENCH_ROW_CARD_GAP = 4;
 
-/**
- * A row card's PREFERRED width — the desk card's, so that wherever four of
- * them fit the row shows exactly the card the column shows. Below that the
- * cards SHRINK (flex-basis, never a fixed width) down to the floor.
- */
-export const BENCH_ROW_CARD_W = BENCH_CARD_W;
+/** 🎛️ The portrait's floor, solved for the narrowest phone: a 320px viewport
+ *  leaves the strip 288 (two 16px gutters), and four cards at 38 need
+ *  4 × (38 + 2 + 22) + 3 × 4 + 2 × RIBBON_CHROME = 284 — so all four fit
+ *  without scrolling. Portraits by viewport: 38 at 320, 49 at 360, 56 (the
+ *  cap) from ~390. */
+export const BENCH_ROW_PORTRAIT_MIN = 38;
 
-/**
- * 🎛️ The narrowest card that still takes the FULL row form; below it the card
- * goes compact (SlotPortrait's `compact`). Rail 16 + disc 60 + inset 4 leaves
- * a 92px column here — enough for the control row (84) and for a one-word
- * name beside its 18px element badge up to ~70px of type ("Xiangling" at
- * --fs-lg semibold is 70). ⚠ Measured on the first cut: 164 clipped that name,
- * because the bench-card round's "84px column" is the CONTROL row's need, not
- * the name's. A tablet in portrait (768) lands its four cards at 175, so this
- * is what decides that it gets the complete card. The half-dozen longest
- * single-word names (Neuvillette-class, ~82px) still clip by a few px between
- * 172 and ~190 — the same class of compromise the two-line clamp already
- * makes at 200, and not worth a third form.
- */
-export const BENCH_ROW_CARD_FULL_MIN = 172;
+/** The upright card's width for a given portrait. */
+export const rowCardWidth = (d: number) => d + BENCH_ROW_PILL_GAP + BENCH_ROW_PILL_W;
 
-/**
- * The compact card's NATURAL width, and its cap: max(rail 17 + disc 48, the
- * control row 26 + 4 + 54) = 84. ⚠ Capped rather than left to grow, because
- * the control row's pill zones flex — measured at 560px a compact card grew to
- * 123px and its loadout ARTWORK grew with the zones. Between the floor and
- * this cap the card shrinks; above it the strip spreads the four cards out
- * instead (space-between), so a tablet-narrow strip reads as four stations
- * across the width rather than four stretched ones.
- */
-export const BENCH_ROW_CARD_COMPACT_W = 84;
-
-/**
- * 🎛️ A row card's floor. The compact form's control row is a 26px chip + a 4px
- * gap + the two-zone loadout pill, whose zones flex down to ~21px each here —
- * the artwork inside them is 16px. Four cards at this floor need 72 × 4 + 3
- * gaps + the strip's 24px of chrome = 324px, so a 360px phone holds all four
- * and a 320px one scrolls the strip by ~36px. ⚠ 320 scrolling is a floor being
- * protected, not a form being designed for.
- */
-export const BENCH_ROW_CARD_MIN_W = 72;
-
-/**
- * 🎛️ The compact card's portrait. Solved so the compact STACK (disc, gap, the
- * 26px control row) is exactly as tall as the full ROW form's band:
- *
- *     BENCH_ROW_CARD_H 78 = disc + --sp-rail-gap 4 + --sp-pill-h 26
- *
- * → 48. ⚠ RE-SOLVE IF THE PILL HEIGHT OR THE RAIL GAP MOVES, or the two forms
- * stop agreeing and the strip's height stops being a constant.
- */
-export const CARD_PORTRAIT_COMPACT = BENCH_ROW_CARD_H - 4 - 26;
+/** The portrait four cards get from a strip `stripW` wide (its frame chrome
+ *  included), floored and capped — whole px, so the art lands on the grid. */
+export function rowPortrait(stripW: number): number {
+	const fit = (stripW - 2 * RIBBON_CHROME - 3 * BENCH_ROW_CARD_GAP) / 4;
+	return Math.round(
+		Math.max(BENCH_ROW_PORTRAIT_MIN, Math.min(BENCH_ROW_CARD_H, fit - rowCardWidth(0)))
+	);
+}
 
 /**
  * The double frame as a plain rounded RECTANGLE ring — the row form's frame.

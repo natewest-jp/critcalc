@@ -1,63 +1,51 @@
 <script lang="ts">
-	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import Mark from './Mark.svelte';
 	import ConMark from './ConMark.svelte';
 	import SidePortrait from './SidePortrait.svelte';
 	/**
-	 * SlotPortrait — the slot card of the bench ribbon, shared by the Rotation
-	 * Planner (where it labels a timeline track group) and the Team Builder.
+	 * SlotPortrait — the slot card of the Planner's bench ribbon, labelling a
+	 * timeline track group.
 	 *
-	 * ══ IT IS A ROW (⚓ NATE's mockup, the bench-card round 2026-08-12) ═══════
-	 * THREE COLUMNS on ONE band the height of the portrait:
+	 * ══ THE PORTRAIT ROUND (⚓ Nate 2026-10-13, judged on /lab — lineups design
+	 *    §9.5 / §9.5a / §10.3) ════════════════════════════════════════════════
+	 * The card speaks the Team Builder's language now:
 	 *
-	 *   1. rail — the host's slot commands, stacked, splitting the portrait's
-	 *      height between them (↻ ⇄ alone since ✕ retired, 2026-10-13 — it
-	 *      takes the whole height until the portrait round re-lays the card). On the strip's quiet inner edge:
-	 *      a rail on the RIGHT would sit flush against the E/Q bars at the
-	 *      planner's busiest seam, which is the objection that killed this
-	 *      layout's first outing in 2026-07-30.
-	 *   2. portrait — the circular side avatar, overlapping the rail by
-	 *      --sp-rail-overlap so the two columns cost less than their sum.
-	 *   3. column — the name ranged along the disc's TOP edge, the value
-	 *      controls along its BOTTOM. Two lines of --fs-lg name over a 26px
-	 *      control row is exactly 68px, which is exactly the disc: the three
-	 *      columns square up on one band by construction.
+	 *   · the PORTRAIT is the Builder's overhanging side portrait (SidePortrait),
+	 *     its hair rising over the card's top edge and fading out sideways
+	 *     before the column; the ring is the soft line, gentle gold on hover;
+	 *   · it ACTS — a click is the host's swap (the Builder card's whole card
+	 *     picks) — and a MAGNIFIER in its top-right corner, shown on hover,
+	 *     READS (the character's details);
+	 *   · the CONSTELLATION sits on the disc, the Builder chip's place and
+	 *     shape, and goes HOLLOW when the plan asks for more than you own;
+	 *   · the column holds the NAME (no element badge — the planner's bars wear
+	 *     the element) over the LOADOUT pill, and paints over the portrait's
+	 *     art so a ponytail slips under the pill's well.
 	 *
-	 * It replaced a three-band STACK (identity / portrait / loadout) whose outer
-	 * two bands were fixed at 86px, leaving the portrait as the only thing that
-	 * could absorb a change in slot height — so on a typical rotation the disc
-	 * rendered at 40px, the smallest object on a card it is supposed to lead.
-	 * The full argument is in benchBand.svelte.ts; the short version is that a
-	 * name BESIDE a portrait is free and a name BELOW one is not.
+	 * ⛔ The rail, ✕ and ⇄ are gone: Swap IS the portrait.
 	 *
-	 * ══ TWO REGISTERS OF CONTROL (⚓ NATE, same round) ═══════════════════════
-	 * VALUE CONTROLS ARE WELLS; COMMAND BUTTONS ARE RAISED. The constellation
-	 * chip and the loadout pill are places data sits, cut into the card
-	 * (--surface-well); the rail's ⇄ is a thing you press, standing on it
-	 * (--surface-raised, and they are squares rather than capsules). They used
-	 * to share one fill as "one family", which is precisely why the old base
-	 * band read as a single continuous bar of chrome heavy enough to outweigh
-	 * the portrait.
+	 * The COMPACT form is the phone row's UPRIGHT card: the portrait with the
+	 * loadout pill standing beside it as ONE button, no name, no magnifier and
+	 * no swap (see benchBand.svelte.ts § THE UPRIGHT CARD).
 	 *
-	 * The loadout pill is one shape with TWO hit zones now — artifact and
-	 * weapon, the refinement having become a corner digit on the weapon icon.
-	 * Both open the same LoadoutPanel — which zone you clicked decides only
-	 * whether a second click closes it, not how the panel reads (the lead
-	 * emphasis went 2026-08-14) — and that panel always renders its refinement
-	 * pips, so nothing became unreachable;
-	 * setting refinement alone costs one extra click and gave back 24px of card.
+	 * VALUE CONTROLS ARE WELLS (⚓ Nate 2026-08-12): the constellation and the
+	 * loadout pill are places data sits, cut into the card (--surface-well).
+	 *
+	 * The loadout pill is one shape with TWO hit zones on the desk — artifact
+	 * and weapon, the refinement a corner digit on the weapon icon. Both open
+	 * the same LoadoutPanel — which zone you clicked decides only whether a
+	 * second click closes it — and that panel always renders its refinement
+	 * pips, so nothing is unreachable.
 	 *
 	 * Purely presentational: it displays the resolved (effective) constellation +
-	 * loadout it's handed and reports edits through callbacks. Each host decides
+	 * loadout it's handed and reports edits through callbacks. The host decides
 	 * which layer those writes land in — so this component never touches a store
 	 * or knows about layers. The popovers and their viewport-fixed positioning
 	 * live here (a full-screen backdrop guarantees only one is ever open, so
 	 * per-instance state is safe).
 	 */
-	import type { Snippet } from 'svelte';
-	import { siteSettings, type LoadoutEntry } from '$lib/stores';
-	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
-	import { CARD_PORTRAIT, CARD_PORTRAIT_COMPACT } from '$lib/benchBand.svelte';
+	import type { LoadoutEntry } from '$lib/stores';
+	import { BENCH_ROW_CARD_H, CARD_PORTRAIT } from '$lib/benchBand.svelte';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
@@ -66,7 +54,7 @@
 	import LoadoutPanel from '$lib/components/LoadoutPanel.svelte';
 	import type { LoadoutSection } from '$lib/components/LoadoutPanel.svelte';
 	// Popovers + backdrops are viewport-fixed but must clear ANY host stacking
-	// context (the Team Builder Bench is `position: sticky`) — see $lib/actions/portal
+	// context (the ribbon is transform-placed) — see $lib/actions/portal
 	import { portal } from '$lib/actions/portal';
 	import { fade } from 'svelte/transition';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
@@ -79,7 +67,9 @@
 		slotId,
 		char,
 		compact = false,
+		compactDisc = BENCH_ROW_CARD_H,
 		conLevel,
+		ownedCon,
 		loadoutEntry,
 		onSetCon,
 		onSetArtifact,
@@ -87,79 +77,42 @@
 		onSetRefinement,
 		onPortraitClick,
 		portraitLabel = 'Open character selector',
-		emptyLabel = 'Empty',
-		actions,
-		portrait = 'disc',
-		conOnDisc = false,
-		ownedCon,
-		compactDisc = CARD_PORTRAIT_COMPACT,
-		onDetails
+		onDetails,
+		emptyLabel = 'Empty'
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
-		/**
-		 * The COMPACT form (responsive round, 2026-09-05): the bench ribbon's
-		 * row, when four cards do not fit at full width. The disc and the rail on
-		 * one row, the value controls on the next, the name gone — the portrait
-		 * is the name at this size. Same 78px height as the full row form, by
-		 * construction (CARD_PORTRAIT_COMPACT is solved from it), so the strip
-		 * that holds four of these is one height whichever form they take.
-		 */
-		compact?: boolean;
 		/** Resolved character, or null while unresolved / empty. */
 		char: SlotChar;
+		/** The phone row's UPRIGHT card (see the header). */
+		compact?: boolean;
+		/** The upright card's portrait, which the host solves from the width four
+		 *  cards get (benchBand `rowPortrait`). */
+		compactDisc?: number;
 		/** Effective constellation level to display (already layer-resolved). */
 		conLevel: number;
+		/** Your account's constellation for this character — a level, `null` = not
+		 *  owned, undefined = unknown (an empty roster). When it falls short of
+		 *  `conLevel` the constellation goes HOLLOW (§9.5a). */
+		ownedCon?: number | null;
 		/** Effective loadout to display (already layer-resolved). */
 		loadoutEntry: LoadoutEntry;
 		onSetCon: (level: number) => void;
 		onSetArtifact: (artifactSetId: string | undefined) => void;
 		onSetWeapon: (weaponId: string | undefined, refinement: 1 | 2 | 3 | 4 | 5) => void;
 		onSetRefinement: (r: 1 | 2 | 3 | 4 | 5) => void;
-		/** When set, the portrait becomes an interactive button. Both tools route
-		 *  a FILLED portrait to the character's Detail card and an EMPTY one to
-		 *  their swap affordance; the card doesn't need to know which is which.
-		 *  Omit for a static portrait. */
+		/** The portrait as a button: the desk bench's Swap (filled AND empty), the
+		 *  phone's details. Omit for a static portrait. */
 		onPortraitClick?: () => void;
 		portraitLabel?: string;
-		/** Text shown in the name area for an empty (char===null) slot. Both tools
-		 *  pass '' — four blank portraits ARE the empty state, and a column of
-		 *  "Empty" labels only adds noise. Kept as a prop for a host that wants one. */
-		emptyLabel?: string;
-		/** Host-supplied slot commands, stacked in the card's left RAIL and
-		 *  stretched to split the portrait's height between them. The bench
-		 *  passes ⇄ alone (✕ retired 2026-10-13).
-		 *  ↻ 2026-08-12: this used to be a `display: contents` + `order` trick
-		 *  seating one snippet on BOTH sides of the loadout pill. The rail is an
-		 *  ordinary flex column, so the trick is gone — buttons render in source
-		 *  order, top to bottom. */
-		actions?: Snippet;
-		/**
-		 * 🧪 CANDIDATE (bench portrait round, 2026-10-13 — judged on /lab, lineups
-		 * design §9.5 / §9.5a): `side` draws the Team Builder's overhanging side
-		 * portrait in the disc's place — the same band, the hair rising over the
-		 * card's top edge. Every host passes nothing until Nate rules.
-		 */
-		portrait?: 'disc' | 'side';
-		/** With `portrait: 'side'`: the constellation control moves ONTO the disc
-		 *  (the TB chip's place, still the editor), and the column keeps the name,
-		 *  the loadout pill and the host's actions — no rail. */
-		conOnDisc?: boolean;
-		/** Your account's constellation for this character — a level, `null` = not
-		 *  owned, undefined = unknown (empty roster / marks off). When it falls
-		 *  short of `conLevel` the constellation control goes HOLLOW (§9.5a). */
-		ownedCon?: number | null;
-		/** 🧪 The side form's COMPACT portrait, which the host solves from the
-		 *  card's width (the upright phone card: portrait + 4 + the 26px pill). */
-		compactDisc?: number;
-		/** 🧪 The side form's magnifier: when set, a corner button opens the
-		 *  character's details, and `onPortraitClick` is free to do something
-		 *  else (the desk bench: Swap). */
+		/** The magnifier: a corner button that opens the character's details,
+		 *  shown on hover (always, with no hover). Omit and there is none. */
 		onDetails?: () => void;
+		/** Text shown in the name area for an empty (char===null) slot. The bench
+		 *  passes '' — four blank portraits ARE the empty state. */
+		emptyLabel?: string;
 	} = $props();
 
-	const side = $derived(portrait === 'side');
-	const discCon = $derived(side && conOnDisc);
 	/** The plan asks for more than the account has (or for someone not owned). */
 	const conShort = $derived(
 		!!char &&
@@ -176,11 +129,6 @@
 	);
 
 	const p = $derived(elementPalette(char?.element));
-
-	/** 🎛️ The constellation glyph's cap height. 8px is the ink the old --fs-sm
-	 *  text laid down (11px × Plex Sans' 0.698 cap ratio ≈ 7.7), so the swap from
-	 *  type to vector changed nothing about how big the value reads. */
-	const CON_GLYPH_H = 8;
 
 	// Frame-timing-not-curated mark. `curated` lives on the INDEX entry, not on
 	// the loaded payload the planner hands us, so it is looked up here rather
@@ -204,25 +152,6 @@
 	function slotLabel(c: NonNullable<SlotChar>): string {
 		return c.id.startsWith('traveler') ? 'Traveler' : c.displayName;
 	}
-	function initials(name: string): string {
-		return name.slice(0, 2).toUpperCase();
-	}
-
-	// Avatar fallback (per instance) — reset whenever the slot's character changes.
-	let avatarFallback = $state(false);
-	$effect(() => {
-		void slotId;
-		avatarFallback = false;
-	});
-	function handleAvatarError(event: Event) {
-		const img = event.target as HTMLImageElement;
-		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(slotId, 'side', $siteSettings.travelerVariant);
-		} else {
-			avatarFallback = true;
-		}
-	}
-
 	// ── Loadout pill state ───────────────────────────────────────────────────
 	const currentRef = $derived(loadoutEntry?.weaponRefinement ?? 1);
 	const hasWeapon = $derived(!!loadoutEntry?.weaponId);
@@ -300,173 +229,89 @@
 	}
 </script>
 
-<!-- ↻ 2026-08-05 (archetype consistency pass): the `ctx-light` class that used
-     to sit here is REMOVED, and the card inherits the ribbon's dark context.
-     It was declaring a context it never painted — .sp-card has no background
-     of its own, so the light context's warm-brown --text was rendering
-     straight onto BenchBand's navy at 2.33:1, the worst contrast in the app,
-     while --frame-bg resolved to paper and blew the inset pills and the
-     avatar disc out to near-white (the three brightest objects in the planner
-     were the ⇄ / loadout / ✕ chips). A context class has to come with its
-     ground; this component is used only inside the always-dark ribbon, so the
-     ground is dark. Almost certainly a leftover from when these cards lived in
-     the Team Builder's light bench zone.
-     ⚠ NOT a redesign — the card-interior restyle to Nate's mockup (ringed
-     portrait, circular chips) is its own queued round. This only makes the
-     card legible on the ground it actually sits on. -->
+<!-- The card inherits the ribbon's DARK context (it has no ground of its own).
+     ⚠ A context class has to come with its ground — the `ctx-light` this
+     used to carry (2026-08-05) rendered beige ink on the navy ribbon. -->
 <div
 	class="sp-card"
 	class:sp-card--compact={compact}
-	class:sp-card--side={side}
 	style:--el={p.main}
-	style:--sp-band="{CARD_PORTRAIT}px"
-	style:--sp-band-compact="{CARD_PORTRAIT_COMPACT}px"
-	style:--sp-side-d="{compactDisc}px"
+	style:--sp-band="{compact ? compactDisc : CARD_PORTRAIT}px"
 >
-	<!-- ONE band, three columns. `max-height: 100%` on the body is what keeps a
-	     card in a slot shorter than its own content from spilling instead of
-	     shrinking — see .sp-avatar-chip for the bug that taught us. -->
 	<div class="sp-body">
-		<!-- The RAIL. Rendered and VISIBLE on every slot; the host disables its
-		     buttons on an empty one. See the empty-slot note on .sp-controls. -->
-		{#if !discCon}
-			<div class="sp-rail">
-				{#if actions}{@render actions()}{/if}
-			</div>
-		{/if}
-
-		{#if side}
-			<!-- 🧪 The side portrait (candidate): anchored at the band's bottom, so
-			     the art's overhang rises ABOVE the card rather than growing it.
-			     The portrait, its constellation and the magnifier are SIBLING
-			     buttons — never one inside another. -->
-			<div class="sp-avatar-chip sp-side">
-				<span class="sp-side-art">
-					<SidePortrait
-						id={char ? slotId : null}
-						size={compact ? compactDisc : CARD_PORTRAIT}
-						fadeRight={compact ? 2 : 6}
-					/>
-				</span>
-				{#if onPortraitClick}
-					<button class="sp-side-hit" onclick={onPortraitClick} aria-label={portraitLabel}></button>
-				{/if}
-				{#if discCon && char}
-					<button
-						class="sp-disc-con"
-						class:sp-disc-con--short={conShort}
-						class:sp-disc-con--zero={conLevel === 0 && !conShort}
-						disabled={noCons}
-						onclick={openConstellation}
-						title={conTitle ??
-							(noCons ? 'Constellations can’t be unlocked for this character' : undefined)}
-						aria-label={noCons
-							? `${char.displayName} has no constellations`
-							: `Set constellation for ${char.displayName}, currently C${conLevel}`}
-					>
-						<ConMark level={conLevel} height={7} />
-					</button>
-				{/if}
-				{#if onDetails && char && char.id !== 'blank'}
-					<!-- 🧪 THE MAGNIFIER (⚓ Nate 2026-10-13): the Builder card's grammar —
-					     the portrait ACTS (Swap), the corner button READS (details).
-					     Shown on hover / focus; always on a screen with no hover. -->
-					<button
-						class="sp-mag"
-						aria-label={`${char.displayName}'s details`}
-						title={`${char.displayName}'s details`}
-						onclick={onDetails}><Mark name="search" size={12} /></button
-					>
-				{/if}
-			</div>
-		{:else}
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div
-				class="sp-avatar-chip"
-				class:sp-avatar-clickable={!!onPortraitClick}
-				onclick={onPortraitClick}
-				role={onPortraitClick ? 'button' : undefined}
-				tabindex={onPortraitClick ? 0 : undefined}
-				aria-label={onPortraitClick ? portraitLabel : undefined}
-			>
-				<span class="sp-avatar-clip">
-					{#if !avatarFallback}
-						<img
-							class="sp-avatar-img"
-							src={getAvatar(
-								slotId,
-								$siteSettings.useNewOutfits,
-								'side',
-								$siteSettings.travelerVariant
-							)}
-							alt={char?.displayName ?? 'Empty slot'}
-							onerror={handleAvatarError}
-						/>
-					{:else}
-						<span class="sp-avatar-initials">{initials(char?.displayName ?? slotId)}</span>
-					{/if}
-				</span>
-			</div>
-		{/if}
-
-		<!-- The column: name along the disc's top edge, value controls along its
-		     bottom. -->
-		<div class="sp-col">
-			<div class="sp-id-row">
-				<!-- 🧪 The side form drops the element badge (⚓ Nate 2026-10-13): the
-				     planner's bars already wear the element, as the Builder's cards do
-				     for its slots, and the name gets the width back. -->
-				{#if char?.element && !side}
-					<img class="sp-el-badge" src={elementIcon(char.element)} alt={char.element} />
-				{/if}
-				<span class="sp-char-name" class:sp-char-name--empty={!char}
-					>{char ? slotLabel(char) : emptyLabel}</span
+		<!-- The portrait. Anchored at the band's bottom, so the art's overhang
+		     rises ABOVE the card rather than growing it. The portrait, its
+		     constellation and the magnifier are SIBLING buttons — never one
+		     inside another. -->
+		<div class="sp-avatar-chip">
+			<span class="sp-side-art">
+				<SidePortrait
+					id={char ? slotId : null}
+					size={compact ? compactDisc : CARD_PORTRAIT}
+					fadeRight={compact ? 2 : 6}
+				/>
+			</span>
+			{#if onPortraitClick}
+				<button class="sp-side-hit" onclick={onPortraitClick} aria-label={portraitLabel}></button>
+			{/if}
+			{#if char}
+				<!-- ⚠ `ctx-dark` on the button itself, as SidePortrait claims it: an
+				     OBJECT is opaque on every ground, and the hollow chip's well must
+				     not resolve to whatever context the host stands in (⚓ Nate
+				     2026-10-13 — it took the glass well on /lab). -->
+				<button
+					class="sp-disc-con ctx-dark"
+					class:sp-disc-con--short={conShort}
+					class:sp-disc-con--zero={conLevel === 0 && !conShort}
+					disabled={noCons}
+					onclick={openConstellation}
+					title={conTitle ??
+						(noCons ? 'Constellations can’t be unlocked for this character' : undefined)}
+					aria-label={noCons
+						? `${char.displayName} has no constellations`
+						: `Set constellation for ${char.displayName}, currently C${conLevel}`}
 				>
-				{#if uncurated}
-					<span
-						class="sp-namemark"
-						title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
-						aria-label="Frame timing not curated yet"><Mark name="uncurated" size={11} /></span
-					>
-				{/if}
-			</div>
+					<ConMark level={conLevel} height={7} />
+				</button>
+			{/if}
+			{#if onDetails && char && char.id !== 'blank'}
+				<!-- THE MAGNIFIER: the Builder card's grammar — the portrait ACTS,
+				     the corner button READS. -->
+				<button
+					class="sp-mag"
+					aria-label={`${char.displayName}'s details`}
+					title={`${char.displayName}'s details`}
+					onclick={onDetails}><Mark name="search" size={12} /></button
+				>
+			{/if}
+		</div>
 
-			<!-- ⚓ NATE 2026-08-12: AN EMPTY SLOT KEEPS ITS FOUR STATIONS, all inert.
-			     A first pass hid them — four blank discs being the empty state, and
-			     eight dead controls only saying it louder. That reasoning was wrong
-			     about what the strip is FOR: the controls are the slot's shape, and
-			     a card that loses them stops reading as a slot waiting to be filled
-			     and starts reading as a different, smaller kind of card. The one
-			     thing that genuinely has nothing to say is the NAME, which stays
-			     empty (both hosts pass emptyLabel=''). Restores the four-station
-			     rhythm from 2026-08-06, which was right the first time. -->
-			<div class="sp-controls">
-				{#if !discCon}
-					<button
-						class="sp-cons-chip"
-						class:sp-cons-chip--set={conLevel > 0}
-						class:sp-cons-chip--short={side && conShort}
-						disabled={!char || noCons}
-						onclick={openConstellation}
-						title={noCons
-							? 'Constellations can’t be unlocked for this character'
-							: side
-								? conTitle
-								: undefined}
-						aria-label={char
-							? noCons
-								? `${char.displayName} has no constellations`
-								: `Set constellation for ${char.displayName}, currently C${conLevel}`
-							: 'Constellation (empty slot)'}
+		<!-- The column: the name over the loadout pill (the pill alone on the
+		     phone). It paints OVER the portrait's art. -->
+		<div class="sp-col">
+			{#if !compact}
+				<div class="sp-id-row">
+					<span class="sp-char-name" class:sp-char-name--empty={!char}
+						>{char ? slotLabel(char) : emptyLabel}</span
 					>
-						<ConMark level={conLevel} height={CON_GLYPH_H} />
-					</button>
-				{/if}
-				{#if side && compact}
-					<!-- 🧪 The upright phone pill is ONE button (⚓ Nate 2026-10-13): both
-					     zones open the same panel, so on a phone the whole pill is the
-					     touch target (≈22 × 47) instead of two ≈22px squares whose
-					     24px circles would overlap (WCAG 2.5.8). -->
+					{#if uncurated}
+						<span
+							class="sp-namemark"
+							title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
+							aria-label="Frame timing not curated yet"><Mark name="uncurated" size={11} /></span
+						>
+					{/if}
+				</div>
+			{/if}
+
+			<!-- ⚓ NATE 2026-08-12: AN EMPTY SLOT KEEPS ITS STATIONS, inert — the
+			     controls are the slot's shape, and a card that loses them reads as
+			     a different, smaller kind of card. -->
+			<div class="sp-controls">
+				{#if compact}
+					<!-- The upright pill is ONE button: both zones open the same panel,
+					     so the whole ~22 × 47 pill is the touch target instead of two
+					     ~22px squares whose 24px circles would overlap (WCAG 2.5.8). -->
 					<button
 						class="sp-loadout sp-loadout--one"
 						class:sp-loadout--disabled={!char}
@@ -511,26 +356,15 @@
 						>
 							<img class="sp-lo-icon" src={weaponIcon} alt="" />
 							<!-- The refinement, as the in-game weapon card draws it: a digit
-								     on the icon's corner rather than a hit zone of its own. It is
-								     DISPLAY only — the panel this zone opens always renders its
-								     refinement pips, so nothing became unreachable.
-								     ⚓ NATE 2026-08-12: ABSENT with no weapon equipped, rather
-								     than dimmed. Dimmed is this card's "nothing here yet" voice,
-								     and it is the right one for a slot you can FILL — but there
-								     is no refinement to set until a weapon exists, which is a
-								     different statement. A digit on an icon corner has no room
-								     to draw that distinction, so it makes no claim at all; the
-								     panel's inert pips carry the explanation instead. -->
+							     on the icon's corner, DISPLAY only (the panel always renders
+							     its pips). ⚓ NATE 2026-08-12: ABSENT with no weapon equipped
+							     — there is no refinement to set until a weapon exists. -->
 							{#if hasWeapon}
 								<span class="sp-lo-ref" aria-hidden="true">{currentRef}</span>
 							{/if}
 						</button>
 					</div>
 				{/if}
-				<!-- 🧪 With the constellation on the disc, Swap lives in the portrait's
-				     corner on the desk, and the phone has none (⚓ Nate 2026-10-13: the
-				     notation is the phone's control, and swap mode needs the lineup
-				     beside the grid). -->
 			</div>
 		</div>
 	</div>
@@ -620,7 +454,7 @@
 	}
 
 	/* ── Card ─────────────────────────────────────────────────────────────────
-	   ONE band, three columns (rail · portrait · column), TOP-ALIGNED inside
+	   ONE band, two columns (portrait · column), TOP-ALIGNED inside
 	   whatever cell the host gives it. `flex: 1` lets it fill a planner slot,
 	   whose height varies; the slack falls BELOW the band, which is where the
 	   timeline puts its own slack too — so a busy slot's card stays level with
@@ -633,71 +467,16 @@
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
-		/* No HORIZONTAL padding: the ribbon's own RIBBON_PAD is the card's side
-		   inset, and having both was the doubling ⚓ Nate trimmed on 2026-08-12.
-		   Vertical padding stays — it is the only thing holding the band off the
-		   slot's top edge. */
-		padding: 8px 0 10px;
+		/* ⚓ Nate 2026-10-13: 6px of breathing room inside the ribbon's frame on
+		   each side, on top of its own RIBBON_PAD (the 2026-08-12 trim removed a
+		   doubling when the rail stood at the edge; the portrait wants air).
+		   Vertical padding holds the band off the slot's top edge. */
+		padding: 8px 6px 10px;
 
-		/* ══ THE RAIL, SOLVED RATHER THAN PICKED ═════════════════════════════
-		   ⚓ NATE 2026-08-12: "if you would be able to make the buttons' right
-		   edge reach the half-way point of the avatars' circle, that would look
-		   the cleanest (so the buttons cleanly extend right under the avatar all
-		   the way)."
-
-		   So the tile's fill runs to the disc's CENTRE — one expression, half the
-		   band, rather than a tuned number — and because the circle's left edge
-		   sweeps from disc.x+30 at the band's top down to disc.x at its middle,
-		   the fill's own right edge is never visible anywhere. It slides under
-		   the avatar and stops. That is the whole effect.
-
-		   ⚠ BUT THE BUTTON IS NOT THAT WIDE, AND MUST NOT BE. A 46px tile with
-		   its right 30px under an opaque disc has its CENTRE POINT — the place
-		   every click lands by default — inside the portrait, which owns the
-		   pointer there. It shipped that way for one build and Playwright caught
-		   it immediately ("the portrait subtree intercepts pointer events"); a
-		   human would have found a button that works at its left edge and not
-		   its middle. So --sp-rail-w is THE VISIBLE, CLICKABLE STRIP, and the
-		   hidden remainder is a pseudo-element on .bb-act that paints but cannot
-		   be clicked. The thing you can press is the thing you can see.
-
-		   The strip's width is then set by the MARK clearing the circle's arc,
-		   solved at its worst corner (lower-right of the top mark; by symmetry
-		   upper-right of the bottom one):
-
-		     R  = band/2                     = 30    (circle radius)
-		     t  = (band − gap)/2             = 28    (tile height)
-		     dy = R − (t + mark)/2           = 9     (that corner off-centre)
-		     arc left at dy = R − √(R²−dy²)  = 1.43  (px right of disc.x)
-		     W  ≥ inset + mark − 1.43        = 3 + 14 − 1.43 = 15.6
-
-		   16 clears it, and the marks' ink stops a further 1.78px inside their
-		   box, so the real margin is ~2.2px. ⚠ RE-SOLVE IF THE BAND, THE GAP OR
-		   MARK_SIZE MOVE — the failure is a glyph with its corner shaved off by
-		   the portrait, subtle enough to read as a rendering bug rather than a
-		   layout one. */
-		--sp-rail-w: 16px;
-		--sp-rail-gap: 4px;
-		--sp-rail-mark-inset: 3px;
-		/** How far the tile's FILL (not its box) runs on under the portrait. */
-		--sp-rail-underlap: calc(var(--sp-band) / 2);
-
-		/* ══ THE COLUMN'S TWO LEFT EDGES (⚓ NATE 2026-08-12) ══════════════════
-		   They are deliberately NOT the same edge. What lines up is the two
-		   rows' LEADING CONTROLS — the constellation chip under the element
-		   badge — because those are what the eye tracks down the strip, and the
-		   chip (26) is wider than the badge (18).
-
-		   Box-concentric would be a 4px offset (half the difference). ⚓ Nate's
-		   eye says 2: "not quite centered on each other, but very close."
-		   ⚠ AND THERE IS NO SOLVING IT — the element icons' glyph sizing is
-		   deliberately NOT normalised across the seven (see the icon generator),
-		   so each element's ink sits differently inside its 18px box and no
-		   single offset is optically right for all of them. This is a chosen
-		   value, not a derived one; it stops being a compromise only if the
-		   icons are ever normalised. */
-		--sp-col-inset: 4px;
-		--sp-id-nudge: 2px;
+		/* The gap between the column's two rows. */
+		--sp-gap: 4px;
+		/* 🎛️ Portrait → column (⚓ Nate 2026-10-13: 6, up from 4). */
+		--sp-col-inset: 6px;
 
 		/* The two VALUE controls — the constellation chip and the loadout pill.
 		   Change them here, never on one alone. (The rail's COMMANDS are a
@@ -751,30 +530,6 @@
 		   Reading the fill token keeps the mix correct through any depth change. */
 		--sp-unset-ink: color-mix(in srgb, white 40%, var(--sp-pill-fill));
 		--sp-unset-ink-hover: color-mix(in srgb, white 65%, var(--sp-pill-fill));
-
-		/* The portrait's backing: a WELL the element lights from below.
-		   ↻ 2026-08-11 (⚓ Nate: the old backing "might be a bit outdated"). It ran
-		   --frame-bg → color-mix(el 14%, --bg), and both ends were the problem.
-		   --bg is the PAGE ground — the deepest rung on the site and not on the
-		   slate ramp at all — so the gradient fell a long way out of the card's own
-		   depth ladder and landed somewhere near black, where 14% of an element
-		   barely registers. Two grounds, one hue-shift and a near-invisible tint.
-		   It is ONE ground now, and the only thing that travels is the element.
-		   --surface-well is the rung the card's own controls wear (--sp-pill-fill),
-		   so the portrait reads as cut into the same card rather than punched
-		   through to the page behind it, and the element gets a lit rung to sit on
-		   instead of a black one. Still tinted at the BOTTOM, like the pills.
-		   ⚠ --surface-well resolves to a LITERAL in every context (slate-900 /
-		   parchment-200 / --glass-well), so the mix below is not a mix of a mix. */
-		/* 🎛️ How much element the bottom stop carries. Up from the old 14%: that
-		   number was picked against a near-black stop, and the same fraction reads
-		   weaker on a ground three rungs lighter. */
-		--sp-avatar-el: 26%;
-		--sp-avatar-fill: linear-gradient(
-			180deg,
-			var(--surface-well) 0%,
-			color-mix(in srgb, var(--el, var(--neutral)) var(--sp-avatar-el), var(--surface-well)) 100%
-		);
 	}
 
 	/* ── The band ─────────────────────────────────────────────────────────────
@@ -790,70 +545,42 @@
 		min-height: 0;
 	}
 
-	/* ── The rail ─────────────────────────────────────────────────────────────
-	   The host's slot commands, stretched to SPLIT the band between them, so the
-	   pair spans exactly the portrait's height and the card's three columns
-	   square up. Its buttons are styled by their host (BenchBand's .bb-act) —
-	   only their box is this card's business. */
-	.sp-rail {
-		flex: 0 0 var(--sp-rail-w);
-		width: var(--sp-rail-w);
-		display: flex;
-		flex-direction: column;
-		gap: var(--sp-rail-gap);
-		min-height: 0;
-	}
-	.sp-rail :global(> *) {
-		flex: 1 1 0;
-		width: 100%;
-		height: auto;
-		min-height: 0;
-	}
-
 	/* ── The column ───────────────────────────────────────────────────────────
-	   ⚓ NATE 2026-08-12 asked for the two rows to sit on "the UI controls'
-	   centers", and found by inspector that it meant moving the name down 7px
-	   and the controls up 2px. THE RULE BEHIND THOSE TWO NUMBERS: the column
-	   runs the RAIL'S GRID. Same two tracks, same gap, each row centring its
-	   content — so the name lands on the ⇄ tile's centre-line and the controls
-	   on the ✕'s, and the card reads as 2 × 2 stations with the portrait
-	   spanning both rows.
+	   Two tracks on the band, the name over the controls. ⚓ Nate 2026-10-13:
+	   the controls sit on the band's BOTTOM, so the loadout pill ends where the
+	   disc's constellation ends (centred in their track they fell 1px short —
+	   measured), and the name comes down 6px.
 
-	   Checked against his own values: at the 68px band he was measuring, the
-	   tracks are 32 and their centres +16 / +52, against a top-aligned name at
-	   +9 and a bottom-aligned control row at +55 — i.e. down 7 and up 2, to the
-	   pixel. Deriving it means it stays true when the band moves, which it did
-	   in the same message (68 → 60).
+	   ⚠ A TWO-LINE NAME (34) OVERFLOWS ITS TRACK, by design, and still clears
+	   the control row. "Kuki Shinobu" (87.8px at --fs-lg) is ~1px over the
+	   165px card's column and may wrap; the clamp allows it.
 
-	   ⚠ A TWO-LINE NAME (34) OVERFLOWS ITS 28px TRACK, by design: centred, it
-	   spends 3px into the 4px gap at each end and still clears the control row,
-	   which sits 1px inside its own track. Names up to Kuki Shinobu (87.8px at
-	   --fs-lg, ⚓ Nate's stated bar) fit on one line at this width; the six
-	   longer ones in the roster wrap and are the reason the clamp stays. */
+	   It PAINTS OVER the portrait's art (z 2 over the portrait's 1, ⚓ Nate): a
+	   ponytail reaching sideways slips under the loadout pill's well. */
 	.sp-col {
+		position: relative;
+		z-index: 2;
 		flex: 1 1 auto;
 		min-width: 0;
 		min-height: 0;
 		margin-left: var(--sp-col-inset);
 		display: grid;
 		grid-template-rows: 1fr 1fr;
-		gap: var(--sp-rail-gap);
+		gap: var(--sp-gap);
 		align-items: center;
 	}
-	/* flex-START, not center: for a one-line name the row is the badge's own
-	   height and the two are identical, but a name that wraps to two lines must
-	   keep its glyph on line ONE rather than floating to the middle of the
-	   block. */
+	/* flex-START, not center: a name that wraps to two lines keeps its mark on
+	   line ONE rather than floating to the middle of the block. */
 	.sp-id-row {
+		position: relative;
+		top: 6px;
 		display: flex;
 		align-items: flex-start;
 		gap: 0.3rem;
 		min-width: 0;
-		/* Sits --sp-id-nudge right of the control row, so the element badge lands
-		   just off-centre under the constellation chip. See the knob. */
-		padding-left: var(--sp-id-nudge);
 	}
 	.sp-controls {
+		align-self: end;
 		display: flex;
 		align-items: center;
 		gap: 4px;
@@ -930,95 +657,23 @@
 		height: 14px;
 	}
 
-	/* Element glyph inline with the name — the in-game card language.
-	   ↻ 2026-08-11 (⚓ NATE): 15 → 18px. It had been pinned to the roster card's
-	   .cc-el and both were sized against a --fs-md (12px) name; the size-up took
-	   the name to --fs-lg (14px) and left the glyph where it was, so the badge
-	   quietly stopped being the name's peer. 18 restores the ratio it was built
-	   at (1.25 × the name's size — glyph a touch taller than the cap, which is
-	   how the in-game cards draw it).
-	   ⚠ THE TWO FAMILIES HAVE PARTED HERE, deliberately, and this is the last
-	   place they still agree about the idiom. On 2026-08-12 the roster card's
-	   .cc-el moved OUT of its name row and into the portrait's top-left corner,
-	   following Genshin's own character cards; the bench's badge stays inline
-	   because this card has no portrait corner to put it in — the portrait is a
-	   disc, and its corners are outside the art. So the sizing rule above no
-	   longer has a roster twin to stay in step with: it is this card's alone. */
-	.sp-el-badge {
-		flex-shrink: 0;
-		width: 18px;
-		height: 18px;
-		background: none;
-		pointer-events: none;
-	}
-
-	/* Constellation selector: the loadout pill's twin — same height, fill and
-	   radius, because both are VALUE controls (see the two-register note at the
-	   top). Only the value changes with state: dimmed white unset (the icons'
-	   ladder), element-tinted when set — the contract the refinement digit
-	   follows too.
-
-	   ══ IT IS A GLYPH NOW, NOT TEXT (⚓ NATE 2026-08-12) ═════════════════════
-	   And with it went the centering apparatus this rule used to carry: a
-	   `letter-spacing: normal` override (tracking lands after the LAST glyph
-	   too, so the advance box the grid centers is one unit wider than the ink)
-	   and a −0.07em optical nudge for the bearings residual, both measured at 8×
-	   in two engines — with the WebKit half only true at the ribbon's current
-	   dock x, since WebKit snaps text to whole pixels while boxes sit at
-	   sub-pixel precision. A path has no advance box and no bearings, so
-	   `place-items: center` is now simply correct in both engines, and the font
-	   declarations that fed the old sums are gone with it.
-	   ⚠ THE LESSON SURVIVES THE FIX (see reference_subpixel_rendering_laws): the
-	   trap was never the C chip, it was centering INK by centering a BOX. This
-	   one control stopped having the problem; nothing else did. */
-	.sp-cons-chip {
-		box-sizing: border-box;
-		flex-shrink: 0;
-		height: var(--sp-pill-h);
-		width: var(--sp-pill-h);
-		display: grid;
-		place-items: center;
-		border: none;
-		border-radius: var(--r-round);
-		background: var(--sp-pill-fill);
-		color: var(--sp-unset-ink);
-		cursor: pointer;
-		transition: color var(--t-snap);
+	/* ── Portrait ─────────────────────────────────────────────────────────────
+	   The square the disc occupies: the band's height, its width from the
+	   aspect ratio. The side portrait inside is anchored at its BOTTOM, so the
+	   disc lands on the band and the hair rises over the card's top padding
+	   and beyond — nothing reserves that overhang, and nothing clips it.
+	   🎛️ THE SIZE KNOB is `CARD_PORTRAIT` (desk) / the host's `compactDisc`
+	   (phone), arriving as --sp-band. ⚠ The disc is a CAP, never a floor: the
+	   floor is the slot's (BENCH_SLOT_MIN_H), the side that knows what a
+	   portrait needs. */
+	.sp-avatar-chip {
+		position: relative;
 		z-index: 1;
-	}
-	/* Unset hover climbs the icons' ladder (0.4 → 0.65 white); a SET value
-	   hovers to --text, exactly as before. ↻ 2026-08-11: the element-tinted
-	   border-color that used to ride along went with the stroke. The ink was
-	   always the louder half of this hover, and the element already speaks
-	   through the glyph, the portrait ring and the set value. */
-	.sp-cons-chip:hover:not(:disabled) {
-		color: var(--sp-unset-ink-hover);
-	}
-	.sp-cons-chip--set:hover:not(:disabled) {
-		color: var(--text);
-	}
-	.sp-cons-chip:disabled {
-		opacity: 0.35;
-		cursor: default;
-		pointer-events: none;
-	}
-	.sp-cons-chip--set {
-		color: color-mix(in srgb, var(--el) 75%, white);
-	}
-	/* 🧪 §9.5a's hollow mark: the plan asks for more than the account has. */
-	.sp-cons-chip--short {
-		background: transparent;
-		box-shadow: inset 0 0 0 1px var(--muted);
-		color: var(--muted);
-	}
-
-	/* ── 🧪 The side portrait (candidate) ─────────────────────────────────────
-	   The chip keeps the band's square; the portrait inside is anchored at its
-	   BOTTOM, so the disc lands exactly where the round chip's did and the hair
-	   rises over the card's top padding and beyond. Nothing reserves that
-	   overhang — that is the question the demo asks. */
-	.sp-side {
-		overflow: visible;
+		flex: 0 0 auto;
+		height: 100%;
+		width: auto;
+		aspect-ratio: 1;
+		min-height: 0;
 	}
 	.sp-side-art {
 		position: absolute;
@@ -1027,9 +682,9 @@
 		display: block;
 		pointer-events: none;
 	}
-	/* The constellation control on the disc — the TB chip's place and shape,
-	   but a BUTTON (it is still the editor). Filled = covered (or no roster);
-	   hollow = short; at C0 and covered it recedes to a ghost until hovered. */
+	/* The constellation on the disc — the Builder chip's place and shape, but a
+	   BUTTON (it is the editor). Filled = covered (or no roster); HOLLOW =
+	   short; at C0 and covered it recedes to a ghost until hovered. */
 	.sp-disc-con {
 		position: absolute;
 		right: 0;
@@ -1062,20 +717,18 @@
 	.sp-disc-con:disabled {
 		cursor: default;
 	}
-	/* The ring: the SOFT line at rest (⚓ Nate 2026-10-13), and a gentle gold
-	   (--sel-ring, the accent at 55%) while the portrait is pointed at — the
-	   Builder's language. Drawn by the ring BEHIND the art, so hair keeps
-	   crossing it. The hair fades out sideways before the column
-	   (SidePortrait `fadeRight`: gone at the column's edge — 6px on the desk,
-	   2px on the phone). */
-	.sp-side :global(.spt-disc) {
+	/* The ring: the SOFT line at rest, a gentle gold (--sel-ring, the accent at
+	   55%) while the portrait is pointed at — the Builder's language (⚓ Nate
+	   2026-10-13). The ring is BEHIND the art, so hair keeps crossing it. */
+	.sp-avatar-chip :global(.spt-disc) {
 		border-color: var(--line-soft);
 	}
-	.sp-side:has(.sp-side-hit:hover) :global(.spt-disc),
-	.sp-side:has(.sp-side-hit:focus-visible) :global(.spt-disc) {
+	.sp-avatar-chip:has(.sp-side-hit:hover) :global(.spt-disc),
+	.sp-avatar-chip:has(.sp-side-hit:focus-visible) :global(.spt-disc) {
 		border-color: var(--sel-ring);
 	}
-	/* The portrait's hit area: the disc (the hair above it is not a target). */
+	/* The portrait's hit area: the disc (the hair above it is not a target).
+	   Its focus ring IS the gold ring above. */
 	.sp-side-hit {
 		position: absolute;
 		inset: 0;
@@ -1088,9 +741,16 @@
 	.sp-side-hit:focus-visible {
 		outline: none;
 	}
-	/* The magnifier: the Builder card's, at the disc's top right. Shown by
-	   VISIBILITY, not opacity — the ribbon is transform-placed, and element
-	   opacity there dances in WebKit (the sub-pixel laws). 🎛️ 22px, mark 12. */
+	/* ── The magnifier: the Builder card's, at the disc's top right. 🎛️ 22px,
+	   mark 12.
+	   ⚠ IT FADES ON THE RING'S CLOCK (⚓ Nate 2026-10-13: it snapped in while
+	   the ring eased, so one hover ran two clocks and the magnifier LED). The
+	   fade is in the PAINT — the face and the mark's ink going from transparent
+	   — never element opacity, because the ribbon is transform-placed (the
+	   sub-pixel laws). `visibility` rides the same transition: a discrete
+	   property stays VISIBLE for the whole of a transition that involves
+	   `visible`, so the face fades out before the button stops taking clicks,
+	   and appears at once on the way in. */
 	.sp-mag {
 		position: absolute;
 		top: -2px;
@@ -1103,26 +763,33 @@
 		padding: 0;
 		border: none;
 		border-radius: var(--r-round);
-		background-color: var(--btn-face);
+		background-color: transparent;
 		box-shadow: inset 0 0 0 11px transparent;
-		color: var(--text);
+		color: transparent;
 		cursor: zoom-in;
 		visibility: hidden;
 		transition:
 			background-color var(--t-snap),
-			box-shadow var(--t-snap);
+			color var(--t-snap),
+			box-shadow var(--t-snap),
+			visibility var(--t-snap);
 	}
-	.sp-side:hover .sp-mag,
-	.sp-side:focus-within .sp-mag {
+	.sp-avatar-chip:hover .sp-mag,
+	.sp-avatar-chip:focus-within .sp-mag {
 		visibility: visible;
+		background-color: var(--btn-face);
+		color: var(--text);
 	}
-	.sp-mag:hover {
+	.sp-avatar-chip .sp-mag:hover {
 		background-color: var(--surface-well);
 		box-shadow: inset 0 0 0 11px var(--sel-ring);
 	}
+	/* No hover on touch, so the magnifier is always shown (the Builder's rule). */
 	@media (hover: none) {
 		.sp-mag {
 			visibility: visible;
+			background-color: var(--btn-face);
+			color: var(--text);
 		}
 	}
 
@@ -1284,101 +951,6 @@
 		color: var(--text);
 	}
 
-	/* ── Portrait ─────────────────────────────────────────────────────────────
-	   Circular — the side-avatar art is cropped to a circle in-game, so the
-	   portrait honours that shape. Backed by --sp-avatar-fill: the roster cards'
-	   element wash, flipped so the tint sits at the BOTTOM like everything else
-	   on this card. Element identity also rides the small glyph badge in the
-	   identity row and the clip border. */
-	/* ══ THE DISC FITS ITS CARD (bug fix, 2026-08-11) ═════════════════════════
-	   This was `width: 68px; height: 68px; flex-shrink: 0` — a fixed square that
-	   could not yield. That held for as long as the host cell was 158px tall,
-	   which is what the card was designed against; the timeline's condensing
-	   rounds took the planner's slot to 136 and then lower, and a chip that
-	   cannot shrink does not shrink — IT SPILLS. Measured at an 84px slot the
-	   68px disc ran straight through the identity row above it and the loadout
-	   pill below. ⚠ THE BUG WAS INVISIBLE TO EVERY CHECK WE RUN: it is layout
-	   overflow, not an error, and the round-one probe measured the TRACKS and
-	   never looked at the cards beside them.
-
-	   It is now the AREA that decides. The disc takes its host's height and its
-	   width from the aspect ratio, capped at --sp-avatar-max. So it is 68px
-	   wherever there is room for 68px — the TB bench, a tall planner slot — and
-	   smaller, but never overflowing, wherever there is not. ⚓ Nate asked for
-	   exactly this in round one: "simply adjust the bench's portrait area to
-	   follow this need."
-
-	   ⚠ A CAP IS NOT A FLOOR. Nothing here stops the disc becoming 10px in a
-	   short slot; it only stops it breaking the card. The floor is the SLOT's
-	   (BENCH_SLOT_MIN_H in benchBand.svelte.ts), because that is the side that
-	   knows what a portrait needs to still be a portrait.
-
-	   🎛️ THE SIZE KNOB IS `CARD_PORTRAIT` IN benchBand.svelte.ts NOW, arriving
-	   here as --sp-band. The local --sp-avatar-max it replaced was a second copy
-	   of the same 68 that the slot floor also had to know — one number in one
-	   place, and the floor follows it by construction. The art's framing is
-	   independent of the diameter (see .sp-avatar-img), so it stays free to
-	   retune; only BENCH_CARD_W needs to follow it. */
-	.sp-avatar-chip {
-		position: relative;
-		/* Over the rail tiles' painted extension — the mockup's foreground/
-		   background read. The disc sits FLUSH against the rail (no negative
-		   margin): it is the tiles' fill that reaches under the disc, not the
-		   disc that laps over the tiles' boxes. See --sp-rail-underlap. */
-		z-index: 1;
-		flex: 0 0 auto;
-		height: 100%;
-		width: auto;
-		aspect-ratio: 1;
-		min-height: 0;
-		border-radius: var(--r-round);
-	}
-	.sp-avatar-clip {
-		position: absolute;
-		inset: 0;
-		border-radius: var(--r-round);
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--sp-avatar-fill);
-		/* Resting is the RECEDED edge; hover brings it up to full element. The
-		   two used to be the other way round, which left hover with nowhere to
-		   go — it dimmed on interaction.
-		   🎛️ 1.5 → 2px (bench-card round). ⚓ Nate: "seeing that avatar with the
-		   elemental-colored border is the immediate read" — this ring is the one
-		   thing on the card doing that job at distance, and it was drawn at the
-		   same weight as the card's hairlines. */
-		border: 2px solid color-mix(in srgb, var(--el, #6a7080) 85%, transparent);
-		transition: box-shadow var(--t-snap);
-	}
-	.sp-avatar-clickable {
-		cursor: pointer;
-	}
-	/* Element-tinted EDGE on hover, not a glow. The glow this used to carry
-	   ("same recipe as the chrome ?/gear buttons") outlived its own reference:
-	   the chrome dropped its halo, and so has everything else. */
-	.sp-avatar-clickable:hover .sp-avatar-clip {
-		border-color: var(--el, #9eacc8);
-	}
-	.sp-avatar-img {
-		/* Side avatars are 128×128 with the character positioned toward the
-		   center/bottom. This scale+offset is the correct framing of that art in
-		   a circle, measured by Nate in the inspector — it is INDEPENDENT of the
-		   circle's diameter (the transform rides along), so the size knob above
-		   can move without retuning these two numbers. */
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transform: scale(1.25) translateY(-12%);
-	}
-	.sp-avatar-initials {
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-mid);
-		color: var(--text);
-	}
-
 	/* ── Popovers (constellation pips + the loadout panel) ────────────────────
 	   Full-screen backdrop (z 949) captures the dismiss click and guarantees only
 	   one popover is open at a time; the picker (z 950) is viewport-fixed beside
@@ -1452,141 +1024,38 @@
 		background: var(--fill-hover);
 		color: var(--pip-color, var(--text));
 	}
-	/* ══ THE COMPACT FORM (responsive round, 2026-09-05) ═══════════════════════
-	   The same three parts, re-stacked for a card ~80px wide:
-
-	     ┌──┐╭────╮
-	     │⇄ │( 48 )        ← rail + disc, one row, the disc at CARD_PORTRAIT_COMPACT
-	     │✕ │╰────╯
-	     ⓒ ( ▣ ⚔¹ )        ← the value controls, full width
-	
-	   The NAME goes, and only the name: at this width the portrait is the
-	   name, and every other station survives — nothing a reader could do on a
-	   desk is lost on a phone. The card's own vertical padding goes with it
-	   (the ribbon's RIBBON_PAD is the inset here), which is what lets
-	   48 + 4 + 26 land on the full form's 78 exactly.
-
-	   ⚠ THE RAIL RE-SOLVES. --sp-rail-w's derivation above is for a 60px disc;
-	   at 48 the tile is 22 tall, the mark's worst corner sits 6px off the
-	   centre-line, the arc there is 0.76px right of disc.x, and W ≥ 3 + 14 −
-	   0.76 = 16.24 → 17. ⚠ --sp-rail-underlap is re-derived too: it is
-	   computed on .sp-card from the FULL band, and a custom property resolves
-	   where it is declared, not where it is read. */
-	.sp-card--compact {
-		padding: 0;
-	}
-	.sp-card--compact .sp-body {
-		--sp-band: var(--sp-band-compact);
-		--sp-rail-w: 17px;
-		--sp-rail-underlap: calc(var(--sp-band-compact) / 2);
-		height: auto;
-		max-height: none;
-		display: grid;
-		grid-template-columns: var(--sp-rail-w) auto minmax(0, 1fr);
-		grid-template-rows: var(--sp-band-compact) var(--sp-pill-h);
-		row-gap: var(--sp-rail-gap);
-		column-gap: 0;
-		align-items: stretch;
-	}
-	.sp-card--compact .sp-rail {
-		grid-row: 1;
-		grid-column: 1;
-	}
-	.sp-card--compact .sp-avatar-chip {
-		grid-row: 1;
-		grid-column: 2;
-		height: var(--sp-band-compact);
-	}
-	.sp-card--compact .sp-col {
-		grid-row: 2;
-		grid-column: 1 / -1;
-		display: flex;
-		margin: 0;
-		min-width: 0;
-	}
-	.sp-card--compact .sp-id-row {
-		display: none;
-	}
-	.sp-card--compact .sp-controls {
-		width: 100%;
-	}
-	/* The pill takes the row's remainder and its two zones SHARE it, down to a
-	   floor the 16px artwork still sits inside — this is where the card's floor
-	   (BENCH_ROW_CARD_MIN_W) comes from. */
-	.sp-card--compact .sp-loadout {
-		flex: 1 1 0;
-		min-width: 0;
-	}
-	.sp-card--compact .sp-lo-zone {
-		flex: 1 1 0;
-		width: auto;
-		min-width: 20px;
-		/* Never wider than the desk zone — the artwork inside scales with the
-		   zone, and a zone that grew with a roomy card grew its icons with it. */
-		max-width: 24px;
-	}
-
-	/* ── 🧪 The side form on the desk: the controls row sits on the band's
-	   BOTTOM, so the loadout pill and ⇄ end where the disc's chip ends (they
-	   were centred in their half of the band, 1px short — measured). The name
-	   comes down 6px (⚓ Nate). */
-	.sp-card--side:not(.sp-card--compact) {
-		/* ⚓ Nate 2026-10-13: 6px of breathing room inside the ribbon's frame,
-		   and 6 (not 4) between the portrait and the column. */
-		padding-inline: 6px;
-		--sp-col-inset: 6px;
-	}
-	.sp-card--side:not(.sp-card--compact) .sp-controls {
-		align-self: end;
-	}
-	/* The column paints OVER the portrait's art (⚓ Nate 2026-10-13): a
-	   ponytail that reaches sideways (Nahida's) slips under the loadout pill's
-	   well instead of sitting on top of it. The portrait is its own stacking
-	   context at z 1; the column outranks it. */
-	.sp-card--side .sp-col {
-		position: relative;
-		z-index: 2;
-	}
-	.sp-card--side:not(.sp-card--compact) .sp-id-row {
-		position: relative;
-		top: 6px;
-	}
-
-	/* ══ 🧪 THE SIDE FORM, COMPACT — THE UPRIGHT CARD (⚓ Nate 2026-10-13) ═════
-	   The loadout pill stands UPRIGHT (flower over weapon) to the right of the
-	   portrait, and Swap is gone, so the card is ONE row:
+	/* ══ THE UPRIGHT CARD — the phone row (⚓ Nate 2026-10-13) ════════════════
+	   The loadout pill stands UPRIGHT (flower over weapon) beside the portrait,
+	   and the card is ONE row with no name, no magnifier and no swap:
 
 	       ⟨hair⟩
-	      (  d  )ⓒ ▣      ← the portrait, bottom-aligned with the pill
-	      (     )  ⚔¹
-	
-	   width = d + 4 + 26, height = max(d, the pill's 55). The host solves d
-	   from the width four cards get (`compactDisc`). */
-	.sp-card--side.sp-card--compact .sp-body {
-		display: flex;
-		align-items: flex-end;
-		gap: var(--sp-up-gap);
-		height: auto;
-	}
-	.sp-card--side.sp-card--compact {
-		/* 🎛️ The upright pill: snug to the portrait, and 4px narrower than the
-		   desk pill (22, its zones 20) — the width goes to the portrait. */
+	      (  d  )ⓒ▣       ← the portrait, bottom-aligned with the pill
+	      (     ) ⚔
+
+	   width = d + 2 + 22 (benchBand `rowCardWidth`), height = the constant
+	   BENCH_ROW_CARD_H. ⚠ Keep the gap and the pill in step with
+	   BENCH_ROW_PILL_GAP / BENCH_ROW_PILL_W. */
+	.sp-card--compact {
+		padding: 0;
 		--sp-up-gap: 2px;
 		--sp-up-w: 22px;
 		--sp-up-zone: 20px;
 	}
-	.sp-card--side.sp-card--compact .sp-avatar-chip {
-		height: var(--sp-side-d);
-		width: var(--sp-side-d);
+	.sp-card--compact .sp-body {
+		align-items: flex-end;
+		gap: var(--sp-up-gap);
+		height: 100%;
+		max-height: none;
 	}
-	.sp-card--side.sp-card--compact .sp-col {
+	.sp-card--compact .sp-avatar-chip {
+		height: var(--sp-band);
+		width: var(--sp-band);
+	}
+	.sp-card--compact .sp-col {
 		display: flex;
 		margin: 0;
 	}
-	.sp-card--side.sp-card--compact .sp-controls {
-		width: auto;
-	}
-	.sp-card--side.sp-card--compact .sp-loadout {
+	.sp-card--compact .sp-loadout {
 		flex: none;
 		flex-direction: column;
 		width: var(--sp-up-w);
@@ -1594,7 +1063,7 @@
 		padding: 3px 0;
 		cursor: pointer;
 	}
-	.sp-card--side.sp-card--compact .sp-lo-zone {
+	.sp-card--compact .sp-lo-zone {
 		flex: none;
 		width: var(--sp-up-zone);
 		max-width: none;
