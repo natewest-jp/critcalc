@@ -41,19 +41,23 @@ test('the bench leaves on the way to the Builder and comes back with the team', 
  */
 
 const ERRAND = '.bv-team--errand';
+/** The portrait of a FILLED card — on the desk it IS Swap (2026-10-13, the
+ *  Builder card's grammar: the portrait acts, the magnifier reads). */
+const SWAP = '.bench-band-mount .sp-side-hit[aria-label^="Swap "]';
 
 test("the planner's ⇄ opens swap mode on its own team", async ({ page, seed }) => {
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/rotation-planner');
 
-	// ↻ 2026-08-12: the portrait does not change the slot — it opens the
-	// character's Detail card. ⇄ is what changes who fills a slot.
-	await page.locator('.sp-avatar-chip').first().click();
-	await expect(page.locator('.dc-backdrop'), 'the portrait reads the character').toHaveCount(1);
+	// ↻ 2026-10-13: the MAGNIFIER reads the character (shown on hover), and
+	// the portrait itself is Swap.
+	await page.locator('.bench-band-mount .sp-avatar-chip').first().hover();
+	await page.locator('.bench-band-mount .sp-mag').first().click();
+	await expect(page.locator('.dc-backdrop'), 'the magnifier reads the character').toHaveCount(1);
 	await page.keyboard.press('Escape');
 	await expect(page.locator('.dc-backdrop')).toHaveCount(0);
 
-	await page.locator('.bb-act[aria-label="Change who fills this slot"]').first().click();
+	await page.locator(SWAP).first().click();
 	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
 	await expect(page.locator('.tb-dest')).toHaveText(/Replacing Bennett/);
 	await expect(page.locator(`${ERRAND} .bv-slot--swap`), 'the slot that was clicked').toHaveCount(
@@ -70,7 +74,7 @@ test('Cancel returns unchanged; a pick renames in the planner and returns', asyn
 }) => {
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/rotation-planner');
-	await page.locator('.bb-act[aria-label="Change who fills this slot"]').first().click();
+	await page.locator(SWAP).first().click();
 	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
 
 	await page.locator(ERRAND).getByRole('button', { name: 'Cancel' }).click();
@@ -84,7 +88,7 @@ test('Cancel returns unchanged; a pick renames in the planner and returns', asyn
 	// register left the bench hostless the moment the Team Builder finally tore
 	// down. Keyed registration (BenchBandState#hosts) is the fix, and this click
 	// is what proves it.
-	await page.locator('.bb-act[aria-label="Change who fills this slot"]').first().click();
+	await page.locator(SWAP).first().click();
 	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
 	await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
 

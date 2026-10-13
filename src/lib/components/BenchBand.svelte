@@ -1,15 +1,14 @@
 <script lang="ts">
 	/**
 	 * BenchBand — THE bench RIBBON: a self-contained box holding the four slot
-	 * cards of the working team, rendered ONCE at the (tools) layout level and
-	 * docked over each tool's [data-bench-anchor] (planner LEFT, Team Builder
-	 * RIGHT — the tool frames tuck beneath its edges as loose siblings). The
-	 * layout owns its position and travel; this component owns its content.
+	 * cards of the Planner's active tab, rendered ONCE at the (tools) layout
+	 * level and docked over the planner's [data-bench-anchor]. ↻ The Team
+	 * Builder left the bench in the lineups round (2026-10-08). The layout owns
+	 * its position and travel; this component owns its content.
 	 *
-	 * - The team is the shared working team (rotationTabs.slots — the
-	 *   planner's active tab). Constellation/loadout edits here ALWAYS write
-	 *   Layer 2 (the tab's overrides): the bench is the plan's team editor in
-	 *   both tools. The TB roster grid + Detail card remain the Layer-1
+	 * - The team is DERIVED from the tab's notation (rotationTabs.slots).
+	 *   Constellation/loadout edits here ALWAYS write Layer 2 (the tab's
+	 *   overrides); the Library's Roster and the Detail card are the Layer-1
 	 *   editors.
 	 * - ONE identity everywhere: its own ground and double frame (the per-tool
 	 *   ctx flip retired with the ribbon round). ⚓ NATE 2026-08-09: the strip is
@@ -18,10 +17,8 @@
 	 *   Night round and reverted the same day. Its double frame could not have
 	 *   survived the move regardless: two crossing strokes over alpha lines
 	 *   double-composite at every crossing (see .inset--double in app.css).
-	 * - `mode` is the tool the ribbon is (or is becoming) docked to. It sets
-	 *   the card heights (planner: coupled to the timeline's published slot
-	 *   metrics; TB: the even resting rhythm) and the ⇄ action's meaning
-	 *   (audition on the TB; open the Source on the planner).
+	 * - `mode` is 'rp' while the ribbon is (or is becoming) docked to the
+	 *   planner, null elsewhere; it picks the host whose affordances apply.
 	 * - ⚓ IT ENDS IN A POINT (tail round 2026-08-12), Genshin's banner shape:
 	 *   square top, straight sides, a tapered tail. Its height is now simply
 	 *   its CONTENT — top chrome + the head + the four cards + the tail —
@@ -46,11 +43,9 @@
 	 *   for why neither could stay a CSS box.
 	 */
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
-	import Mark from '$lib/components/Mark.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import {
 		benchBand,
-		BENCH_CARD_W,
 		BENCH_SLOT_H,
 		RIBBON_PAD,
 		// RIBBON_EDGE / RIBBON_FRAME_BORDER / RIBBON_RADIUS are no longer read
@@ -66,16 +61,14 @@
 		BENCH_ROW_H,
 		BENCH_ROW_CARD_H,
 		BENCH_ROW_CARD_GAP,
-		BENCH_ROW_CARD_W,
-		BENCH_ROW_CARD_FULL_MIN,
-		BENCH_ROW_CARD_COMPACT_W,
-		BENCH_ROW_CARD_MIN_W,
+		rowCardWidth,
+		rowPortrait,
 		ribbonClipPath,
 		ribbonFramePath,
 		ribbonFramePathRect
 	} from '$lib/benchBand.svelte';
 	import { below } from '$lib/media.svelte';
-	import { constellations, loadout, type LoadoutEntry } from '$lib/stores';
+	import { constellations, loadout, ownership, type LoadoutEntry } from '$lib/stores';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 
@@ -93,13 +86,9 @@
 	// The layout no longer measures for us. See the tail block in
 	// benchBand.svelte.ts for the whole argument.
 
-	// Card heights: the planner's published slot metrics, wherever we are.
-	// ⚓ NATE 2026-08-12 — this used to be gated on `mode === 'rp'`, so the cards
-	// relaxed to an even rhythm on the Team Builder and the four cards you were
-	// looking at changed shape as you crossed. The ribbon's whole job across
-	// that seam is to be the thing that DOESN'T change. The resting rhythm now
-	// only carries a session that has never had a timeline mounted at all (a
-	// cold load straight onto the Team Builder).
+	// Card heights: the planner's published slot metrics, retained across a
+	// trip away (see benchBand.slotHeights). The resting rhythm carries only
+	// the first frames before the timeline has published at all.
 	const heights = $derived(
 		benchBand.slotHeights ?? [BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H]
 	);
@@ -111,9 +100,8 @@
 	// first TAIL_LEAD px are straight, so that space is more generous than the
 	// 12px it replaces rather than less.
 	// ↻ 2026-08-17: the head is a FUNCTION of the planner's published track top,
-	// which grows when a lane rides above the time axis. Read here rather than
-	// per-tool — see `benchBand.trackTop` for why the Team Builder must carry
-	// the same head as empty ribbon instead of keeping its own.
+	// which grows when a lane rides above the time axis — see
+	// `benchBand.trackTop`.
 	const head = $derived(ribbonHead(benchBand.trackTop));
 
 	// ══ THE ROW FORM (responsive round, 2026-09-05) ═══════════════════════════
@@ -131,21 +119,15 @@
 		row ? BENCH_ROW_H : RIBBON_CHROME + head + heights.reduce((a, b) => a + b, 0) + RIBBON_TAIL_H
 	);
 
-	// A row card's width is what flex hands it: BENCH_ROW_CARD_W when four fit,
-	// less down to the floor when they don't. The card takes its COMPACT form
-	// below its full width — decided HERE from the same arithmetic, rather than
-	// by a container query on the slot, because `container-type` implies layout
+	// The row's ONE form is the UPRIGHT card (portrait round, ⚓ Nate
+	// 2026-10-13): the portrait takes what four cards get from the strip,
+	// floored and capped (benchBand `rowPortrait`), and the card is that plus
+	// the upright pill. Decided HERE from the arithmetic rather than by a
+	// container query on the slot, because `container-type` implies layout
 	// containment and would make each slot the containing block for the card's
 	// viewport-fixed popovers.
-	const rowCardW = $derived(
-		row
-			? Math.max(
-					BENCH_ROW_CARD_MIN_W,
-					Math.min(BENCH_ROW_CARD_W, (boxW - 2 * RIBBON_CHROME - 3 * BENCH_ROW_CARD_GAP) / 4)
-				)
-			: BENCH_CARD_W
-	);
-	const compact = $derived(row && rowCardW < BENCH_ROW_CARD_FULL_MIN);
+	const rowDisc = $derived(row ? rowPortrait(boxW) : 0);
+	const compact = $derived(row);
 
 	// Resolved card characters. Index entries satisfy SlotPortrait's SlotChar
 	// shape and are available eagerly (no payload wait). A 'blank' slot shows
@@ -171,27 +153,38 @@
 		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
 	}
 
-	// The affordances of the tool we are docked to (or traveling toward) — during
-	// a pan BOTH pages are alive, and after an A→B→A pan both are still
-	// REGISTERED, which is why the lookup is keyed rather than filtered. See the
-	// note on BenchBandState#hosts for the revival this survives.
+	/** Your account's constellation — the Builder's rule (BoardView
+	 *  `ownedConOf`): unknown while the roster is empty, null when not owned. */
+	const rosterHasContent = $derived(Object.values($ownership).includes('owned'));
+	function ownedConOf(id: string): number | null | undefined {
+		if (!rosterHasContent || id === 'blank') return undefined;
+		return $ownership[id] === 'owned' ? ($constellations[id] ?? 0) : null;
+	}
+
+	// The affordances of the tool we are docked to (or traveling toward) —
+	// keyed, not last-writer-wins. See the note on BenchBandState#hosts for the
+	// page revival this survives.
 	const host = $derived(benchBand.hostFor(mode));
 
 	/**
-	 * ⚓ NATE 2026-08-12: the portrait does the SAME thing in both tools now.
-	 * A filled slot opens that character's Detail card; an empty one — and the
-	 * generic Blank, which has no details worth reading — asks the host to fill
-	 * it. Nothing here is tool-aware any more; the host decides what "swap"
-	 * means (the planner's Source picker, the TB's audition).
+	 * ⚓ THE BUILDER CARD'S GRAMMAR (Nate 2026-10-13): on the desk the portrait
+	 * ACTS — Swap, filled or empty (an empty slot or a typed Blank ADDS) — and
+	 * the magnifier READS. On the phone there is no Swap (swap mode needs the
+	 * lineup beside the grid, which a phone cannot show; the notation is the
+	 * phone's control), so the portrait READS and an empty one does nothing.
 	 */
 	function portraitClickFor(char: { id: string; displayName: string } | null, i: number) {
 		if (!host) return undefined;
 		const h = host;
-		if (char && char.id !== 'blank') {
-			const id = char.id;
-			return () => h.onOpenDetail(id);
-		}
+		const filled = char && char.id !== 'blank' ? char.id : null;
+		if (row) return filled ? () => h.onOpenDetail(filled) : undefined;
 		return () => h.onSwap(i, char?.id ?? null);
+	}
+	function detailsFor(char: { id: string } | null) {
+		if (!host || row || !char || char.id === 'blank') return undefined;
+		const h = host;
+		const id = char.id;
+		return () => h.onOpenDetail(id);
 	}
 </script>
 
@@ -218,9 +211,7 @@
 	style:border-radius={row ? `${RIBBON_RADIUS}px` : undefined}
 	style:--bb-pad="{RIBBON_PAD}px"
 	style:--bb-card-gap="{BENCH_ROW_CARD_GAP}px"
-	style:--bb-card-w="{BENCH_ROW_CARD_W}px"
-	style:--bb-card-min-w="{BENCH_ROW_CARD_MIN_W}px"
-	style:--bb-card-compact-w="{BENCH_ROW_CARD_COMPACT_W}px"
+	style:--bb-card-w="{rowCardWidth(rowDisc)}px"
 >
 	<!-- ── THE DOUBLE FRAME, NOW ONE SVG (tail round 2026-08-12) ──────────────
 	     It was two absolutely-positioned <span>s wearing CSS borders, which is
@@ -255,23 +246,18 @@
 		/>
 	</svg>
 	<!-- The card run: a column at rest, a row below BP.toolMin. In the row the
-	     cards flex between their full and floor widths and the run SCROLLS
-	     sideways once even the floor does not fit (a 320px phone, by ~36px) —
-	     a scroller rather than a fifth arrangement, because 320 is a floor
-	     being protected, not a form being designed for. -->
+	     cards take their solved width and the strip spreads them. -->
 	<div class="bb-cards" class:bb-cards--row={row}>
 		{#each rt.slots as _id, i (i)}
 			{@const char = chars[i]}
-			<div
-				class="bb-slot"
-				class:bb-slot--compact={compact}
-				style:height="{row ? BENCH_ROW_CARD_H : heights[i]}px"
-			>
+			<div class="bb-slot" style:height="{row ? BENCH_ROW_CARD_H : heights[i]}px">
 				<SlotPortrait
 					slotId={char ? char.id : 'blank'}
 					{char}
 					{compact}
+					compactDisc={rowDisc || undefined}
 					conLevel={char ? effectiveCon(char.id) : 0}
+					ownedCon={char ? ownedConOf(char.id) : undefined}
 					loadoutEntry={char ? effectiveLoadout(char.id) : {}}
 					onSetCon={(level) => char && rt.setTabCon(char.id, level)}
 					onSetArtifact={(artId) => char && rt.setTabLoadout(char.id, { artifactSetId: artId })}
@@ -279,73 +265,22 @@
 						char && rt.setTabLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
 					onSetRefinement={(r) => char && rt.setTabLoadout(char.id, { weaponRefinement: r })}
 					onPortraitClick={portraitClickFor(char, i)}
-					portraitLabel={char && char.id !== 'blank'
-						? `Open ${char.displayName}`
-						: 'Choose a character for this slot'}
+					portraitLabel={row
+						? char && char.id !== 'blank'
+							? `${char.displayName}'s details`
+							: 'Empty slot'
+						: char && char.id !== 'blank'
+							? `Swap ${char.displayName}`
+							: 'Choose a character for this slot'}
+					onDetails={detailsFor(char)}
 					emptyLabel=""
-				>
-					{#snippet actions()}
-						<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
-					     ⇄ auditions on the TB but opens the character Source on the
-					     planner (stays in-tool). They stack in the card's left RAIL
-					     and split the portrait's height between them.
-					     Always rendered — an EMPTY slot renders them and the card
-					     HIDES them, holding their box so the portraits don't step
-					     sideways. The generic-Blank card gets LIVE actions (Nate
-					     2026-08-06): a deliberately-typed Blank is a placeholder the
-					     user may well want to swap a real character into. -->
-						{@const live = !!char}
-						<button
-							class="bb-act"
-							disabled={!live}
-							onclick={() => char && host?.onSwap(i, char.id)}
-							title={live && char ? 'Change who fills this slot' : undefined}
-							aria-label={live && char ? 'Change who fills this slot' : 'Swap (empty slot)'}
-						>
-							<!-- The shared mark set (Lucide via the generator), not hand-cut
-					     paths and certainly not the ⇄/✕ code points — those aren't in
-					     IBM Plex, so each engine drew its own fallback at its own size
-					     (Safari's ✕ came out visibly smaller than Chrome's). Strokes
-					     ride currentColor, so the button's color states apply
-					     unchanged. NO size override — MARK_SIZE (14) is the standard,
-					     and it lands the ✕'s ink at 7px: exactly the height of the C0 /
-					     R1 digits beside it (--fs-xs, 10px). ⚓ NATE 2026-08-07; the
-					     hand-cut 14×12 / 9×9 they replaced were never a tuned target. -->
-							<Mark name="swap" />
-						</button>
-						<button
-							class="bb-act bb-act--remove"
-							disabled={!live}
-							onclick={() => rt.setSlot(i, null)}
-							title={live && char ? `Remove ${char.displayName} from team` : undefined}
-							aria-label={live && char
-								? `Remove ${char.displayName} from team`
-								: 'Remove (empty slot)'}
-						>
-							<Mark name="close" />
-						</button>
-					{/snippet}
-				</SlotPortrait>
+				/>
 			</div>
 		{/each}
 	</div>
 </div>
 
 <style>
-	/* Registered so the tile's fill INTERPOLATES rather than snapping, and — the
-	   part that matters — so the button and its ::before extension read ONE
-	   animating value instead of running two transitions that must agree. See
-	   the bug note at .bb-act.
-	   ⚠ inherits: TRUE, unlike SlotPortrait's --sp-wash-a: ::before resolves
-	   var(--bb-act-fill) through inheritance from its originating element, so a
-	   non-inherited registration would hand the extension the initial value and
-	   paint it transparent. */
-	@property --bb-act-fill {
-		syntax: '<color>';
-		inherits: true;
-		initial-value: transparent;
-	}
-
 	/* The ribbon box: its OWN surface — the dark context's ground and its
 	   radius — one identity everywhere. Width, height, padding and radius come
 	   inline from the RIBBON_* knobs so the dock math and the box always agree.
@@ -422,28 +357,22 @@
 	}
 	.bb-cards--row {
 		flex-direction: row;
-		/* No effect while the cards fill the strip (their basis is the desk
-		   card's width); it is what spreads four CAPPED compact cards across a
-		   strip wider than their sum. */
+		/* Spreads the four solved cards across the strip: from ~390px their
+		   portraits are capped and the cards are narrower than a quarter. */
 		justify-content: space-between;
 		gap: var(--bb-card-gap);
 		overflow-x: auto;
 		overflow-y: hidden;
-		/* Its scrollbar would sit inside the frame ring, on the ground, where a
-		   permanent bar reads as a fifth control. Trackpads and thumbs scroll it
-		   without one; the strip only ever overflows by a few dozen px. */
+		/* A guard, not a form: from 320px up four cards always fit (see
+		   BENCH_ROW_PORTRAIT_MIN). Its scrollbar would sit inside the frame
+		   ring, where a permanent bar reads as a fifth control. */
 		scrollbar-width: none;
 	}
 	.bb-cards--row::-webkit-scrollbar {
 		display: none;
 	}
 	.bb-cards--row > .bb-slot {
-		flex: 0 1 var(--bb-card-w);
-		min-width: var(--bb-card-min-w);
-	}
-	.bb-cards--row > .bb-slot--compact {
-		flex-basis: var(--bb-card-compact-w);
-		max-width: var(--bb-card-compact-w);
+		flex: 0 0 var(--bb-card-w);
 	}
 
 	.bb-slot {
@@ -469,132 +398,4 @@
 	   their slot height." The cards' own spacing separates them now.
 	   ⚠ If a separator ever comes back it must still take NO height: card k's
 	   top has to stay on the cumulative sum the planner's track groups use. */
-
-	/* ── Slot commands (⇄ · ✕) — THE RAISED REGISTER ─────────────────────────
-	   ⚓ NATE 2026-08-12, from his mockup: VALUE CONTROLS ARE WELLS; COMMAND
-	   BUTTONS ARE RAISED. The constellation chip and the loadout pill are places
-	   data sits, cut into the card (--surface-well); these are things you press,
-	   standing on it (--surface-raised, one rung the other way). They are also
-	   SQUARES where the value controls are capsules, so the split survives at a
-	   glance and at distance.
-
-	   ⚠ THIS INVERTS THE 2026-08-11 RULING that all four controls share one flat
-	   fill "so they read as one family". That is exactly what went wrong: four
-	   identical objects in a row read as ONE continuous bar of chrome, heavy
-	   enough to outweigh the portrait it was supposed to caption. The family was
-	   real; it was just the wrong family.
-
-	   The box is the CARD's — .sp-rail stretches them to split the portrait's
-	   height, so no width/height here. Glyph-only; title/aria carry the meaning.
-
-	   ⚠ THE MARK IS RANGED LEFT, NOT CENTRED (⚓ NATE 2026-08-12), and that is
-	   geometry rather than taste: the tile's right edge now sits at the disc's
-	   CENTRE, so its right half is behind an opaque circle. A centred glyph
-	   would be centred in a box the user cannot see most of. --sp-rail-w is
-	   solved from this inset (see .sp-card) so the mark clears the circle's arc
-	   at every corner. */
-	.bb-act {
-		position: relative;
-		box-sizing: border-box;
-		display: grid;
-		place-items: center start;
-		padding: 0 0 0 var(--sp-rail-mark-inset);
-		border: none;
-		/* Square, not round: --r-sm is the box vocabulary's tightest corner, and
-		   at this size it reads as a plain square while staying on the scale.
-		   LEFT corners only — the right pair belongs to ::before, which carries
-		   the rest of the tile. */
-		border-radius: var(--r-sm) 0 0 var(--r-sm);
-		/* ONE fill, TWO painted boxes. Routed through a custom property so the
-		   button and its hidden extension can never disagree — including on the
-		   danger hover below, which would otherwise need stating twice.
-		   🐛 AND THE PROPERTY IS WHAT ANIMATES, NOT THE TWO BACKGROUNDS. ⚓ Nate
-		   saw "a split down the middle that very slightly changes opacity at
-		   different timings" on hover, in both engines: PSEUDO-ELEMENTS DO NOT
-		   INHERIT THEIR ORIGINATING ELEMENT'S TRANSITIONS, so `transition:
-		   background-color` on .bb-act reached the button and not its ::before —
-		   the extension SNAPPED while the button eased, and the seam between the
-		   two painted boxes showed for the length of the ease. Declaring the
-		   transition twice would fix the symptom and leave two numbers to keep in
-		   step; registering --bb-act-fill (@property, below) makes ONE
-		   interpolating value that both boxes re-resolve per frame, so they
-		   cannot desync by construction. Engines without @property snap — but
-		   they snap TOGETHER, which is still no seam. Same technique as
-		   --sp-wash-a in SlotPortrait, and for the same reason. */
-		--bb-act-fill: var(--surface-raised);
-		background: var(--bb-act-fill);
-		/* The card's dimmed-white ladder (inherited from .sp-card — these
-		   buttons render inside it via the actions snippet), not --muted: the
-		   beige glyphs sat oddly against the white-mix C/R values and icons
-		   (Nate 2026-08-06). Rest 40% → hover 65%, like every unset value. */
-		color: var(--sp-unset-ink);
-		cursor: pointer;
-		transition:
-			color var(--t-snap),
-			--bb-act-fill var(--t-snap);
-	}
-	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
-	   MARK_STROKE (a held px line since 2026-10-11) — the .bb-glyph rules that used to set them here are gone,
-	   which is the point of a shared set. The button's grid still centers
-	   them, and the size knob is site-wide now rather than local. */
-	/* Disabled = the card's shared dim (the constellation chip's exact recipe),
-	   so an empty slot's four stations fade as one family. */
-	.bb-act:disabled {
-		opacity: 0.35;
-		cursor: default;
-		pointer-events: none;
-	}
-	/* The tile's hidden half: it PAINTS on under the portrait to the disc's
-	   centre and stops, but it is not part of the button's box, so it cannot
-	   take a click the portrait should have had. The disc (z-index 1) covers it
-	   from its own left edge, and because that edge sweeps left as the circle
-	   widens, this extension's right end is never visible at any height. */
-	.bb-act::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 100%;
-		width: var(--sp-rail-underlap);
-		background: var(--bb-act-fill);
-		border-radius: 0 var(--r-sm) var(--r-sm) 0;
-		pointer-events: none;
-	}
-	/* ── BOTH tiles fill on hover; the HUE is what separates them ────────────
-	   ⚓ NATE 2026-08-12 asked for ⇄ to fill like ✕ does, "one shade up of
-	   slate". That completes a rule the palette round already settled for the
-	   glass panes and it is worth stating in the same words: DENSITY separates
-	   resting from engaged, HUE separates the two engaged states. The raised
-	   register lights up whenever you are on it; only the destructive one goes
-	   red.
-
-	   ⚠ 7% white, not `--slate-600`: a component may not name a primitive (the
-	   layer law, grep-enforced). 7% is where slate-700 meets slate-600 on the
-	   ramp, i.e. it IS the one-rung step Nate asked for, expressed as the mix a
-	   role is allowed to carry — the same move --sp-unset-ink and
-	   --control-face-hover already make.
-	   The glyph keeps brightening too: the ink was always the half you read. */
-	.bb-act:hover:not(:disabled) {
-		--bb-act-fill: color-mix(in srgb, white 7%, var(--surface-raised));
-		color: var(--sp-unset-ink-hover);
-	}
-	/* ── ✕ hovers by FILLING, and that is the round's second sanctioned
-	   exception (⚓ NATE 2026-08-12, from the mockup: "danger fill on hover
-	   specifically"). The card's rule since 2026-07-30 is that hover brightens
-	   content and never fills, and it holds everywhere else — but destructive is
-	   the one action that should announce itself with a surface rather than a
-	   shade, and the contrast against ⇄'s ink-only hover is what makes the two
-	   buttons read as different KINDS of thing rather than a pair.
-
-	   The alpha lives in the PAINT (an opaque mix, not element opacity) — the
-	   ribbon is transform-placed at fractional coordinates and any
-	   element-opacity subtree dances in real Safari. Mixed onto the raised rung
-	   these buttons already wear, so the fill reads as the same object lighting
-	   up rather than a different plate appearing. */
-	.bb-act--remove:hover:not(:disabled) {
-		--bb-act-fill: color-mix(in srgb, var(--ui-danger) 22%, var(--surface-raised));
-		/* Danger mixes into WHITE, not --text — the beige base would pull the
-		   red warm against the card's white-mix ladder. */
-		color: color-mix(in srgb, var(--ui-danger) 45%, white);
-	}
 </style>

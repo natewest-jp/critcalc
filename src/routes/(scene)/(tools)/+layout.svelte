@@ -37,8 +37,8 @@
 	// ---------------------------------------------------------------------------
 	// Working-team lifecycle (bench-band round). The tab model lives in the
 	// shared rotationTabs module; its restore + persistence belong HERE — the
-	// layout stays mounted across every tool, and the Team Builder edits the
-	// working team while the planner page is unmounted. Restore runs in onMount
+	// layout stays mounted across every tool, and the Team Builder's ⇄ errand
+	// writes the Planner's tab while the planner page is unmounted. Restore runs in onMount
 	// (after hydration, before the next paint) so SSR markup and first client
 	// paint stay deterministic.
 	// ---------------------------------------------------------------------------
@@ -135,10 +135,9 @@
 	// surface is LOCKED to the world: it drifts by exactly the camera's
 	// screen-space pose delta (toolPoseShift) while fading out/in. Two layers
 	// site-wide: world-locked things (the tool frames) and screen-locked HUD
-	// (the ribbon, chrome, underline). Continuity across the fade is the
-	// RIBBON, which simply never moves — both tools dock it at the same screen
-	// spot (bench left · work center · filters right, one grammar) and the
-	// working team persists opaque while the world sweeps behind it.
+	// (the ribbon, chrome, underline). ↻ Only the Planner docks the ribbon
+	// since the lineups round (2026-10-08), so every leg that involves it is
+	// docked↔dockless and it rides the tool surface — see benchNavTransition.
 	//
 	// Mechanics:
 	// - Transforms ride WAAPI with startTime pinned to the SCENE transition's
@@ -219,14 +218,11 @@
 	let toolMain: HTMLDivElement | undefined = $state();
 
 	// ---------------------------------------------------------------------------
-	// The bench RIBBON: ONE slot-card box for both benched tools, rendered
-	// here — OUTSIDE the keyed page layers — as screen-locked HUD. Both tools
-	// dock it at the SAME screen spot (bench left, one grammar), so across a
-	// tool navigation it simply persists, opaque and motionless, while the
-	// world-locked frames fade beneath it — the continuity of the transition.
-	// It docks over a [data-bench-anchor] gutter
-	// each benched page reserves (planner: the label column's card cells; TB:
-	// the bench zone's left edge). Position is measured from the real anchor and
+	// The bench RIBBON: the Planner's slot cards, rendered here — OUTSIDE the
+	// keyed page layers — so it outlives a page revival and rides the tool
+	// pan on its own clock. It docks over the [data-bench-anchor] gutter
+	// ToolStack reserves when `benched` (the label column's card cells).
+	// Position is measured from the real anchor and
 	// applied as a transform in .tool-main coordinates — the band lives inside
 	// the scrolled subtree, so it rides page scroll exactly like the gutter
 	// beneath it (the planner's page scrolls; alignment under scroll is free).
@@ -285,9 +281,9 @@
 		// co-located with the frame it measures. This is the guard for any
 		// future fractional layout, and it is the REAL fix on Y, where the
 		// fraction comes from the text line boxes above the frame and can't be
-		// rounded at the source (RP measured 97.109 against the TB's 97.375 —
-		// a quarter pixel that WebKit could turn into a whole-pixel glyph jump
-		// on arrival; rounding lands both docks on the same integer).
+		// rounded at the source (measured 97.109 on the planner — a quarter
+		// pixel that WebKit could turn into a whole-pixel glyph jump on
+		// arrival; rounding lands the dock on an integer).
 		//
 		// Rounded HERE, at the one measurement boundary, so the WAAPI drift
 		// target and the rest position are the same number — round only at rest
@@ -326,10 +322,10 @@
 	}
 
 	/** Park the ribbon on the current page's dock, untransitioned. The no-dock
-	 *  case (Visualizers, or a page that hasn't rendered yet) hides it. The
+	 *  case (the Builder, the Visualizers, or a page that hasn't rendered
+	 *  yet) hides it. The
 	 *  ribbon is a self-contained sibling now — it never scrolls or clips with
-	 *  a frame zone (the TB zone starts its own scroll viewport BELOW the
-	 *  ribbon instead; the old scroll-mirror/clip machinery retired with the
+	 *  a frame zone (the old scroll-mirror/clip machinery retired with the
 	 *  ribbon round). */
 	function snapBench() {
 		if (!benchMount) return;
@@ -346,14 +342,9 @@
 		observeBenchAnchor(a.anchorEl);
 	}
 
-	/** The ribbon during a tool navigation. Between two DOCKED tools it is
-	 *  screen-locked HUD: it simply DOES NOT MOVE — both docks share one screen
-	 *  spot, and the persistent opaque ribbon (same place, same team) IS the
-	 *  continuity across the fade. Its card heights still relax between the
-	 *  tools' rhythms on the world clock.
-	 *
-	 *  On a leg where one side has no dock (Visualizers), the ribbon is part of
-	 *  the TOOL SURFACE instead (Nate 2026-08-06, replacing the fade-in-place):
+	/** The ribbon during a tool navigation. ↻ Only the Planner has a dock
+	 *  (lineups round, 2026-10-08), so every leg is docked↔dockless and the
+	 *  ribbon is part of the TOOL SURFACE (Nate 2026-08-06, replacing the fade-in-place):
 	 *  it drifts by the camera's pose delta while fading, glued to the
 	 *  departing/arriving frame — the page layers' exact recipe, WAAPI with
 	 *  startTime pinned to the scene clock.
@@ -401,11 +392,11 @@
 					fade.startTime = startTime;
 				};
 			} else {
-				// Docked→docked: nothing moves — both one-keyframe animations run
-				// current→current in the normal case. They exist for interrupts:
-				// a Viz leg cut short leaves the ribbon baked mid-drift/mid-fade,
-				// and these glide it back to dock and back to opaque on the world
-				// clock instead of stranding it there until settle.
+				// Still visible on the way IN — only an INTERRUPT gets here now
+				// (leave the planner, come back before the exit leg's timer hid
+				// the ribbon): it is baked mid-drift/mid-fade, and these
+				// one-keyframe animations glide it back to dock and back to opaque
+				// on the world clock instead of stranding it there until settle.
 				const drift = mount.animate([{ transform: dock }], {
 					duration: SLIDE_MS,
 					easing: SLIDE_EASE,
@@ -748,9 +739,8 @@
 		);
 		drift.startTime = clock;
 
-		// The ribbon: persists in place across docked↔docked legs (both tools
-		// dock it at the same screen spot); fades in place at the world clock
-		// for legs where one side has no dock.
+		// The ribbon: drifts and fades with the planner's surface on the world
+		// clock (the planner is the only tool that docks it).
 		benchNavTransition(fromPath, path, clock);
 
 		// Paint-gate + settle-gate for the INCOMING's fade-in (knobs above).
@@ -902,9 +892,9 @@
 			</div>
 		{/key}
 
-		<!-- The bench band — one slot-card column, docked over the current
-		     tool's [data-bench-anchor] gutter and gliding between docks on the
-		     pan clock. Inside .tool-main so it scrolls with the page it's
+		<!-- The bench band — the Planner's slot cards, docked over its
+		     [data-bench-anchor] gutter and riding the pan clock in and out.
+		     Inside .tool-main so it scrolls with the page it's
 		     docked to; above the page layers so it stays interactive. -->
 		<div
 			class="bench-band-mount"

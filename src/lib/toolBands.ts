@@ -41,12 +41,12 @@
  *
  * The split is a RULE about what a control is, not a place to put things:
  *
- *   BAND A — the DOCUMENT.  Which working team am I editing, and what can I do
- *            to it as a whole (save · load · share · reset). Identical content
- *            in the planner and the Team Builder, because since the bench-band
- *            round they edit ONE document (rotationTabs).
+ *   BAND A — the DOCUMENT.  Which document am I editing, and what can I do
+ *            to it as a whole (save · library · share). Each tool's own
+ *            document: the planner's rotation tabs, the Team Builder's boards
+ *            (↻ lineups round, 2026-10-08 — they no longer share one).
  *   BAND B — the VIEW.  What am I looking at inside this tool, and how (the
- *            planner's zoom/notes, the TB's Atlas/Roster/Compare + con lens,
+ *            planner's zoom/notes/layers, the TB's panes + con lens,
  *            the Visualizers' per-tile instrument pickers).
  *
  * ⚠ THE BANDS TRAVEL WITH THEIR TOOL. Band A was going to be screen-locked HUD
@@ -54,9 +54,7 @@
  * persistent document HUD) — but the moment A and B ABUT they are one object,
  * and a screen-locked A over a world-locked B tears at their shared seam on
  * every tool→tool leg. So both bands are part of the tool surface and drift
- * with it. Continuity across the fade is still the ribbon, exactly as before;
- * band A merely cross-dissolves into an identical band A, since the planner
- * and the Team Builder render the same components into it.
+ * with it.
  *
  * All knobs — Nate tunes these in the inspector.
  */

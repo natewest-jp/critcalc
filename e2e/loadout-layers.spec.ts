@@ -20,7 +20,7 @@ import type { Locator, Page } from '@playwright/test';
  * That routing is what these tests pin.
  */
 
-const conChip = (page: Page, i: number) => page.locator('.sp-cons-chip').nth(i);
+const conChip = (page: Page, i: number) => page.locator('.sp-disc-con').nth(i);
 const readStore = (page: Page, key: string) => page.evaluate((k) => localStorage.getItem(k), key);
 
 /**
@@ -40,7 +40,7 @@ const expectCon = (chip: Locator, level: number, why: string) =>
 
 /** Set a slot's constellation from its bench card chip. */
 async function setBenchCon(page: Page, slot: number, pip: number) {
-	await page.locator('.bench-band-mount .sp-cons-chip').nth(slot).click();
+	await page.locator('.bench-band-mount .sp-disc-con').nth(slot).click();
 	await page.locator('.sp-popover .sp-pip').nth(pip).click();
 }
 
@@ -144,7 +144,7 @@ test('the Roster tab owns Layer 1, and the plan keeps shadowing it', async ({ pa
 	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
 	await page.waitForTimeout(1400); // the pan + band travel
 	await expectCon(
-		page.locator('.bench-band-mount .sp-cons-chip').first(),
+		page.locator('.bench-band-mount .sp-disc-con').first(),
 		4,
 		'the plan keeps shadowing the new roster value'
 	);

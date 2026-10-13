@@ -333,7 +333,8 @@
 							<div class="bv-slot-wrap">
 								<!-- ⚓ §11.6 item 8: on an UNSELECTED row a portrait selects
 									     the row and nothing else; a FILLED portrait in the
-									     SELECTED row swaps its slot, and again leaves swap mode. -->
+									     SELECTED row swaps its slot, and again leaves swap mode.
+									     On the Planner's row an EMPTY one does too — it adds. -->
 								<button
 									class="bv-slot"
 									class:bv-slot--swap={swapSlot === i}
@@ -345,10 +346,14 @@
 												? `Stop replacing ${entry.displayName}`
 												: `Replace ${entry.displayName}, ${name} slot ${i + 1}`
 											: `${entry.displayName}, ${name} slot ${i + 1}`
-										: `Empty, ${name} slot ${i + 1}`}
+										: sel && isErrand
+											? swapSlot === i
+												? `Stop adding to ${name}`
+												: `Add to ${name}, slot ${i + 1}`
+											: `Empty, ${name} slot ${i + 1}`}
 									onclick={(e) => {
 										e.stopPropagation();
-										if (sel && id && onSwap) return onSwap(team.id, i);
+										if (sel && (id || isErrand) && onSwap) return onSwap(team.id, i);
 										onSelectTeam(team.id);
 										if (!id) onEmptySlot?.(team.id);
 									}}

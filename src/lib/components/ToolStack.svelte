@@ -50,10 +50,10 @@
 		surface
 	}: {
 		/**
-		 * Does the bench ribbon dock against this tool? True for the planner and
-		 * the Team Builder (they share one working team); false for the
-		 * Visualizers, which has no team and whose stack therefore starts at the
-		 * content margin instead of after the ribbon's column.
+		 * Does the bench ribbon dock against this tool? True for the planner
+		 * only (↻ the Team Builder left the bench, 2026-10-08); a tool without it
+		 * starts its stack at the content margin instead of after the ribbon's
+		 * column.
 		 */
 		benched?: boolean;
 		/** The surface flexes to fill the stack's height (viewport-fit tools). */
@@ -71,8 +71,7 @@
 		/**
 		 * A middle RAIL for band B. Opting in splits the band into three separate
 		 * plates — control · rail · control — and moves the ground off the band
-		 * onto this zone. The Team Builder's Atlas/Roster/Compare navigation is
-		 * its one caller.
+		 * onto this zone. The planner's band B is its one caller.
 		 */
 		bandBCenter?: Snippet;
 		bandBRight?: Snippet;
@@ -231,31 +230,42 @@
 
 	/* ══ THE ROW FORM (responsive round, 2026-09-05) ══════════════════════════
 	   Below BP.toolMin ($lib/breakpoints.ts — 54rem, the planner's measured
-	   minimum WITH the column beside it) the bench ribbon turns horizontal and
-	   sits ABOVE the band stack, so the stack hands back the column it was
-	   holding off the ribbon and reserves the strip's height at its top instead.
-	   The dock becomes a full-width band at the top of the padding box, which
-	   is exactly what the ribbon then measures itself against.
+	   minimum WITH the column beside it) the bench ribbon turns horizontal, so
+	   the stack hands back the column it was holding off the ribbon and the
+	   dock becomes a full-width ROW in the stack's own flow, which is exactly
+	   what the ribbon then measures itself against.
+
+	   ↻ ⚓ NATE 2026-10-13 (the portrait round): the row sits BETWEEN BAND B
+	   AND THE SURFACE — beside the timeline it labels, under the controls —
+	   where it used to sit above band A. The upright card made it compact
+	   enough to belong there. `order` moves the dock (first in source, for the
+	   column form) after the bands; the stack's flex gap spaces it on both
+	   sides.
 
 	   ⚠ THE LITERAL IS THE TABLE'S, BY HAND: custom properties do not work in
 	   media queries, so 54rem is written here and cited there. The ribbon's own
 	   orientation flag is set by the layout from matchMedia on the SAME string
 	   (belowQuery('toolMin')), which is what keeps the two halves on one number.
 	   ⚠ Reserved in pure CSS from a CONSTANT — BENCH_ROW_H — rather than a
-	   measured height, because the strip is designed to be one height in both
-	   of its card forms (see benchBand.svelte.ts § THE ROW); nothing here has
-	   to wait for the ribbon to mount to lay the tool out correctly. */
+	   measured height, because the upright card is one height at every width
+	   (see benchBand.svelte.ts § THE UPRIGHT CARD); nothing here has to wait
+	   for the ribbon to mount to lay the tool out correctly. */
 	@media (max-width: 54rem) {
 		.tool-stack--benched {
 			padding-left: 0;
-			padding-top: calc(var(--bench-row-h) + var(--band-stack-gap));
+		}
+		.tool-stack--benched .bands {
+			order: 0;
 		}
 		.tool-stack--benched .tool-stack-dock {
-			top: 0;
-			bottom: auto;
-			right: 0;
+			position: static;
+			order: 1;
+			flex-shrink: 0;
 			width: auto;
 			height: var(--bench-row-h);
+		}
+		.tool-stack--benched .tool-surface {
+			order: 2;
 		}
 	}
 

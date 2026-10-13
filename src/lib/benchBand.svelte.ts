@@ -1,28 +1,25 @@
 /**
  * src/lib/benchBand.svelte.ts
  *
- * Shared state for the BENCH BAND — the one slot-card column both tools dock
- * (bench-band round, 2026-08-05). The band itself is rendered by the (tools)
- * layout, OUTSIDE the keyed .tool-page layers, so it survives tool navigation
- * and glides across the screen on the pan clock. This module is what the band
- * and its two hosts agree through:
+ * Shared state for the BENCH BAND — the Planner's slot cards (bench-band
+ * round, 2026-08-05; ↻ the Planner's alone since the lineups round,
+ * 2026-10-08). The band itself is rendered by the (tools) layout, OUTSIDE the
+ * keyed .tool-page layers, so it survives page revival and rides the pan
+ * clock in and out. This module is what the band and its host agree through:
  *
- * - Host registration: each tool page registers its bench affordances on
- *   mount (the planner: portrait click opens the character Source; the TB:
- *   portrait click opens the Detail card, plus audition). During a tool pan
- *   BOTH pages are briefly alive — registration is last-writer-wins and an
- *   unregister only clears its own registration, so the incoming page's
- *   callbacks survive the outgoing page's (retention-delayed) teardown.
+ * - Host registration: the planner registers its bench affordances on mount
+ *   (a filled portrait opens the Detail card; ⇄ and an empty portrait go to
+ *   the Team Builder's swap mode). Keyed by tool — see `#hosts`.
  *
  * - Slot metrics: the planner's timeline publishes its per-slot block heights
  *   (they vary with buff/summon rows) so the band's cards align to their
- *   track groups DATA-driven, never DOM-coupled. Ownership-guarded the same
- *   way. `blankUsed` marks slots where the generic Blank kit is actually cast
+ *   track groups DATA-driven, never DOM-coupled. Ownership-guarded.
+ *   `blankUsed` marks slots where the generic Blank kit is actually cast
  *   in the notation — those render as a real "Blank" card; unused blanks stay
  *   empty add-slots.
  *
- * Card geometry constants live here too — the TB bench zone reserves the
- * band's footprint with them, and the band uses them as its resting rhythm.
+ * Card geometry constants live here too — the band uses them as its resting
+ * rhythm, and ToolStack reserves its footprint with them.
  */
 
 // ⚠ Extensions are load-bearing on these two — see toolGutter.ts. This file is
@@ -32,26 +29,21 @@ import { BAND_STACK_TO_SURFACE } from './toolBands.ts';
 import { RIBBON_GAP } from './toolGutter.ts';
 
 /**
- * ⚓ NATE 2026-08-12: ONE shape for both tools, where there used to be a
- * discriminated pair. "I'd like to make clicking on the portrait behave the
- * same as on the Team Builder — it pulls up the modal of the character's
- * details… it teaches the user that it's the exact same set of actions
- * regardless of the tool they're on."
+ * ⚓ NATE 2026-08-12: the portrait behaves as it does in the Team Builder —
+ * "it pulls up the modal of the character's details… it teaches the user
+ * that it's the exact same set of actions regardless of the tool they're on."
  *
- * So the AFFORDANCES are now identical and only their destinations differ:
- * - a FILLED portrait opens that character's Detail card, in both tools;
- * - an EMPTY portrait, and ⇄ on any slot, asks the host to swap — which the
- *   planner answers by sending the slot to the Team Builder's swap mode.
- *   There are no details for nobody, and "click the empty disc to fill it" is
- *   the one thing that must not stop working.
+ * - a FILLED portrait opens that character's Detail card;
+ * - ⇄ on a filled slot, an EMPTY portrait, and a typed Blank's portrait ask
+ *   the host to swap — which the planner answers by sending the slot to the
+ *   Team Builder's swap mode (replacing, or ADDING on an empty slot, ⚓ Nate
+ *   2026-10-13). There are no details for nobody, and "click the empty disc
+ *   to fill it" is the one thing that must not stop working.
  *
  * ↻ 2026-10-08 the Team Builder left the bench (lineups design §2.1), and
  * 2026-10-13 its audition retired into swap mode: the planner is the only
- * host now. The registry stays KEYED BY TOOL (see `#hosts`) — the hazard it
+ * host. The registry stays KEYED BY TOOL (see `#hosts`) — the hazard it
  * guards is page revival, not the number of tools.
- *
- * This also gives ⇄ a job of its own for the first time: on the planner it used
- * to call the very same handler the portrait did.
  */
 export type BenchHostRegistration = {
 	tool: 'rp';
@@ -103,6 +95,24 @@ export type BenchHostRegistration = {
 
 /** The converged slot-card width (RotationTimeline's LABEL_W imports this).
  *
+ *  ⚓ NATE 2026-10-13: THE RIBBON IS AS WIDE AS THE BRAND above it — the
+ *  critcalc.app mark + wordmark, ⛔ NOT the BETA tag (it will be dropped).
+ *  MEASURED, not derived: the mark's ink starts at the tool gutter (32px, the
+ *  ribbon's own left edge) and the wordmark's INK ends at 234.96 (its box at
+ *  236.47 — trailing letter-spacing + the p's side bearing), so the ribbon
+ *  measured 203. 🎛️ tune(nate): 210 by eye (205 → 207 → 208 → 210), so
+ *  the card is 210 − 2 × RIBBON_CHROME = 186 — his value, ⛔ never re-derived. ⚠ RE-MEASURE if the
+ *  wordmark's face, size or tracking moves (SiteChrome `.chrome-wordmark`),
+ *  or if the mark is redrawn.
+ *
+ *  The portrait round first cut it 200 → 165: The side portrait
+ *  carries the constellation, the rail and the element badge are gone, so the
+ *  card is pad 6 + portrait 60 + inset 6 + an 87px column + pad 6 (the
+ *  control row needs 54; "Kuki Shinobu" at --fs-lg is 87.8 and may wrap — the
+ *  two-line clamp allows it). The 35px goes back to the chart.
+ *
+ *  The history below is the 200's.
+ *
  *  🎛️ ⚓ NATE, bench-card round: 160 → 200. This is the width at which NOTHING
  *  in the card has to shrink — the text column lands at 84px, which is exactly
  *  a constellation chip (26) + gap (4) + the two-zone loadout pill (54), and a
@@ -112,7 +122,7 @@ export type BenchHostRegistration = {
  *  ⚠ THE PLANNER PAYS FOR THIS IN CHART WIDTH, and that is the good direction
  *  of the trade: horizontal is scrollable AND zoomable in a Gantt, vertical is
  *  neither. 40px of tracks (~3% at 1600) buys 40px × 4 slots of height. */
-export const BENCH_CARD_W = 200;
+export const BENCH_CARD_W = 186;
 
 /** 🎛️ The portrait disc, which is also THE CARD'S WHOLE HEIGHT — the band, the
  *  rail's two tiles, and the column's two rows all derive from it.
@@ -153,11 +163,8 @@ export const CARD_PAD_Y = 18;
 export const BENCH_SLOT_MIN_H = CARD_PORTRAIT + CARD_PAD_Y;
 
 /**
- * The band's resting rhythm: one card at the planner's BASELINE slot height,
- * so the "even default rhythm" the band relaxes to on the Team Builder is the
- * exact height a typical planner slot occupies — the RP↔TB height animation is
- * a no-op for typical rotations and only moves in the extreme many-bars cases,
- * which is Nate's spec.
+ * The band's resting rhythm: one card at the planner's BASELINE slot height —
+ * what the cards show before the timeline has published any heights.
  *
  * ↻ 2026-08-11: was 158, a hand-copied sum of RotationTimeline's constants that
  * went stale the moment those constants moved — twice in one day. It is the
@@ -249,7 +256,7 @@ export const RIBBON_FRAME_R_WIDE = 30;
 
 /** Total chrome per side: bare ground + stroke + interior pad. */
 export const RIBBON_CHROME = RIBBON_EDGE + RIBBON_FRAME_BORDER + RIBBON_PAD;
-/** Full ribbon width — the dock anchors and the TB zone math read this. */
+/** Full ribbon width — the dock anchor reads this. */
 export const RIBBON_W = BENCH_CARD_W + 2 * RIBBON_CHROME;
 
 /**
@@ -349,9 +356,7 @@ export const RIBBON_FRAME_TOP_INSET = 28;
 /**
  * Dead space between the ribbon's interior top and the FIRST card — the strip
  * now opens above the timeline's ruler, so the cards sit this far down inside
- * it. Shared by both tools (the TB has no ruler, but its cards must land on
- * the same screen y or they'd jump across the tool fade), and the frame tops
- * already align across the seam (probe-bench-align).
+ * it.
  *
  * ↻ TOOLBAR ROUND 2026-08-07: the ribbon now stands proud of the BAND STACK,
  * not of the frame — its dock spans bands + surface — so the head grows by
@@ -361,9 +366,7 @@ export const RIBBON_FRAME_TOP_INSET = 28;
  * goes.
  *
  * ↻ 2026-08-17: A FUNCTION OF THE PUBLISHED TRACK TOP, not a constant. Called
- * with `benchBand.trackTop`, which the planner's timeline publishes and both
- * tools read — see that field for why the Team Builder must read the SAME
- * number rather than keep its own.
+ * with `benchBand.trackTop`, which the planner's timeline publishes.
  */
 export function ribbonHead(trackTop: number): number {
 	return BAND_STACK_TO_SURFACE + trackTop + RIBBON_OVERHANG_Y - RIBBON_CHROME;
@@ -405,76 +408,59 @@ export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * A row card's height — the same 78px as a column card at its floor, in BOTH
- * of the card's forms (SlotPortrait's full row, and its compact stack below
- * ~165px of width). ⚓ THAT EQUALITY IS DESIGNED, NOT INCIDENTAL: it is what
- * lets the strip be one constant height across every narrow width, so
- * ToolStack can reserve BENCH_ROW_H in pure CSS and nothing has to measure
- * the bench to lay out the tool beneath it. The compact form's disc
- * (CARD_PORTRAIT_COMPACT) is solved from it — see there.
+ * ══ THE UPRIGHT CARD (bench portrait round, ⚓ Nate 2026-10-13) ════════════
+ * The row's ONE form: the side portrait with the loadout pill standing
+ * UPRIGHT beside it (flower over weapon), no name and no Swap — swap mode
+ * needs the lineup beside the grid, which a phone cannot show, and the
+ * notation is the phone's control.
+ *
+ *       ⟨hair⟩
+ *      (  d  )ⓒ▣        card = d + BENCH_ROW_PILL_GAP + BENCH_ROW_PILL_W
+ *      (     ) ⚔
+ *
+ * The portrait takes whatever width four cards get, between a floor and a
+ * cap, and the cap IS the card's height — so the strip is one CONSTANT height
+ * (BENCH_ROW_H) that ToolStack reserves in pure CSS, nothing measuring the
+ * bench to lay out the tool beneath it. It replaced a 78px compact STACK
+ * (portrait over a control row), so the planner gets 22px of height back on a
+ * phone. ⛔ The desk card no longer appears in the row at any width.
  */
-export const BENCH_ROW_CARD_H = BENCH_SLOT_MIN_H;
+
+/** 🎛️ The upright pill's width (its zones are 20, the desk's 24 — the width
+ *  goes to the portrait). It is ONE button on the phone, so the touch target
+ *  is the whole ~22 × 47 pill (WCAG 2.5.8). */
+export const BENCH_ROW_PILL_W = 22;
+/** 🎛️ Portrait → pill: snug. */
+export const BENCH_ROW_PILL_GAP = 2;
+
+/** 🎛️ The upright card's height, which is also its portrait's CAP (the pill is
+ *  47 and fits under it). 56 is the portrait a 390px phone gets. */
+export const BENCH_ROW_CARD_H = 56;
 
 /** The strip's full height in the row form: chrome above and below one card. */
 export const BENCH_ROW_H = BENCH_ROW_CARD_H + 2 * RIBBON_CHROME;
 
-/** Gap between cards in the row — the rail's own tile gap, so the strip reads
- *  at one rhythm inside and out. */
+/** Gap between cards in the row. */
 export const BENCH_ROW_CARD_GAP = 4;
 
-/**
- * A row card's PREFERRED width — the desk card's, so that wherever four of
- * them fit the row shows exactly the card the column shows. Below that the
- * cards SHRINK (flex-basis, never a fixed width) down to the floor.
- */
-export const BENCH_ROW_CARD_W = BENCH_CARD_W;
+/** 🎛️ The portrait's floor, solved for the narrowest phone: a 320px viewport
+ *  leaves the strip 288 (two 16px gutters), and four cards at 38 need
+ *  4 × (38 + 2 + 22) + 3 × 4 + 2 × RIBBON_CHROME = 284 — so all four fit
+ *  without scrolling. Portraits by viewport: 38 at 320, 49 at 360, 56 (the
+ *  cap) from ~390. */
+export const BENCH_ROW_PORTRAIT_MIN = 38;
 
-/**
- * 🎛️ The narrowest card that still takes the FULL row form; below it the card
- * goes compact (SlotPortrait's `compact`). Rail 16 + disc 60 + inset 4 leaves
- * a 92px column here — enough for the control row (84) and for a one-word
- * name beside its 18px element badge up to ~70px of type ("Xiangling" at
- * --fs-lg semibold is 70). ⚠ Measured on the first cut: 164 clipped that name,
- * because the bench-card round's "84px column" is the CONTROL row's need, not
- * the name's. A tablet in portrait (768) lands its four cards at 175, so this
- * is what decides that it gets the complete card. The half-dozen longest
- * single-word names (Neuvillette-class, ~82px) still clip by a few px between
- * 172 and ~190 — the same class of compromise the two-line clamp already
- * makes at 200, and not worth a third form.
- */
-export const BENCH_ROW_CARD_FULL_MIN = 172;
+/** The upright card's width for a given portrait. */
+export const rowCardWidth = (d: number) => d + BENCH_ROW_PILL_GAP + BENCH_ROW_PILL_W;
 
-/**
- * The compact card's NATURAL width, and its cap: max(rail 17 + disc 48, the
- * control row 26 + 4 + 54) = 84. ⚠ Capped rather than left to grow, because
- * the control row's pill zones flex — measured at 560px a compact card grew to
- * 123px and its loadout ARTWORK grew with the zones. Between the floor and
- * this cap the card shrinks; above it the strip spreads the four cards out
- * instead (space-between), so a tablet-narrow strip reads as four stations
- * across the width rather than four stretched ones.
- */
-export const BENCH_ROW_CARD_COMPACT_W = 84;
-
-/**
- * 🎛️ A row card's floor. The compact form's control row is a 26px chip + a 4px
- * gap + the two-zone loadout pill, whose zones flex down to ~21px each here —
- * the artwork inside them is 16px. Four cards at this floor need 72 × 4 + 3
- * gaps + the strip's 24px of chrome = 324px, so a 360px phone holds all four
- * and a 320px one scrolls the strip by ~36px. ⚠ 320 scrolling is a floor being
- * protected, not a form being designed for.
- */
-export const BENCH_ROW_CARD_MIN_W = 72;
-
-/**
- * 🎛️ The compact card's portrait. Solved so the compact STACK (disc, gap, the
- * 26px control row) is exactly as tall as the full ROW form's band:
- *
- *     BENCH_ROW_CARD_H 78 = disc + --sp-rail-gap 4 + --sp-pill-h 26
- *
- * → 48. ⚠ RE-SOLVE IF THE PILL HEIGHT OR THE RAIL GAP MOVES, or the two forms
- * stop agreeing and the strip's height stops being a constant.
- */
-export const CARD_PORTRAIT_COMPACT = BENCH_ROW_CARD_H - 4 - 26;
+/** The portrait four cards get from a strip `stripW` wide (its frame chrome
+ *  included), floored and capped — whole px, so the art lands on the grid. */
+export function rowPortrait(stripW: number): number {
+	const fit = (stripW - 2 * RIBBON_CHROME - 3 * BENCH_ROW_CARD_GAP) / 4;
+	return Math.round(
+		Math.max(BENCH_ROW_PORTRAIT_MIN, Math.min(BENCH_ROW_CARD_H, fit - rowCardWidth(0)))
+	);
+}
 
 /**
  * The double frame as a plain rounded RECTANGLE ring — the row form's frame.
@@ -560,26 +546,42 @@ const TAIL_LEAD = 23.059;
  * at this edge's 20.96° the tip has to lift ~14px along the axis to stay 5px
  * away. The artwork is a true parallel offset.
  */
+/** The ribbon width Nate's tail artwork was drawn at (2× = 448). */
+const TAIL_ART_W = 224;
+
+/**
+ * ⚠ STOPGAP until the artwork is redrawn at the current RIBBON_W (bench
+ * portrait round, 2026-10-13): each path's x is stretched LINEARLY so its own
+ * end points land on its own sides — `inset` (0 silhouette, RIBBON_EDGE ring
+ * outer, + RIBBON_FRAME_BORDER ring inner) stays put and `TAIL_ART_W − inset`
+ * maps to `RIBBON_W − inset`. The tip still lands on the centre line, but the
+ * frame is no longer an exact parallel offset of the silhouette along the
+ * taper. ⛔ Delete this the moment the redrawn art is transcribed at
+ * TAIL_ART_W === RIBBON_W.
+ */
+const X = (x: number, inset: number) =>
+	+(inset + ((x - inset) * (RIBBON_W - 2 * inset)) / (TAIL_ART_W - 2 * inset)).toFixed(3);
+
 const TAIL = {
 	/** Silhouette, x 0…RIBBON_W, y measured from the tail's top. */
 	outer: (t: number) =>
-		`C 224,${t + 43.772} 211.229,${t + 62.34} 191.887,${t + 69.75}` +
-		`L 113.7885,${t + 99.669}` +
-		`C 112.637,${t + 100.1105} 111.363,${t + 100.1105} 110.2115,${t + 99.669}` +
-		`L 32.113,${t + 69.75}` +
-		`C 12.771,${t + 62.34} 0,${t + 43.772} 0,${t + 23.059}`,
+		`C ${X(224, 0)},${t + 43.772} ${X(211.229, 0)},${t + 62.34} ${X(191.887, 0)},${t + 69.75}` +
+		`L ${X(113.7885, 0)},${t + 99.669}` +
+		`C ${X(112.637, 0)},${t + 100.1105} ${X(111.363, 0)},${t + 100.1105} ${X(110.2115, 0)},${t + 99.669}` +
+		`L ${X(32.113, 0)},${t + 69.75}` +
+		`C ${X(12.771, 0)},${t + 62.34} ${X(0, 0)},${t + 43.772} ${X(0, 0)},${t + 23.059}`,
 	/** Frame ring, OUTER edge — the silhouette inset by RIBBON_EDGE. */
 	ringOuter: (t: number) =>
-		`C 219,${t + 41.7005} 207.506,${t + 58.412} 190.0985,${t + 65.081}` +
-		`L 112,${t + 95}` +
-		`L 33.9015,${t + 65.081}` +
-		`C 16.494,${t + 58.412} 5,${t + 41.7005} 5,${t + 23.059}`,
+		`C ${X(219, 5)},${t + 41.7005} ${X(207.506, 5)},${t + 58.412} ${X(190.0985, 5)},${t + 65.081}` +
+		`L ${X(112, 5)},${t + 95}` +
+		`L ${X(33.9015, 5)},${t + 65.081}` +
+		`C ${X(16.494, 5)},${t + 58.412} ${X(5, 5)},${t + 41.7005} ${X(5, 5)},${t + 23.059}`,
 	/** Frame ring, INNER edge — a sharp point; only the silhouette's is capped. */
 	ringInner: (t: number) =>
-		`C 217,${t + 40.872} 206.017,${t + 56.841} 189.383,${t + 63.2135}` +
-		`L 112,${t + 92.8585}` +
-		`L 34.617,${t + 63.2135}` +
-		`C 17.983,${t + 56.841} 7,${t + 40.872} 7,${t + 23.059}`
+		`C ${X(217, 7)},${t + 40.872} ${X(206.017, 7)},${t + 56.841} ${X(189.383, 7)},${t + 63.2135}` +
+		`L ${X(112, 7)},${t + 92.8585}` +
+		`L ${X(34.617, 7)},${t + 63.2135}` +
+		`C ${X(17.983, 7)},${t + 56.841} ${X(7, 7)},${t + 40.872} ${X(7, 7)},${t + 23.059}`
 };
 
 /**
@@ -646,12 +648,13 @@ class BenchBandState {
 	 * REVIVAL rather than ordering:
 	 *
 	 *   1. planner mounts          host = P
-	 *   2. → Team Builder          host = T; the planner OUTROES but is retained,
-	 *                              so it is never destroyed and never unregisters
+	 *   2. → another tool          that tool's host (at the time, the Team
+	 *                              Builder's) = T; the planner OUTROES but is
+	 *                              retained, so it never unregisters
 	 *   3. → planner               Svelte cancels the outro and reinserts the SAME
 	 *                              component — no second onMount, no re-register,
 	 *                              host is still T
-	 *   4. the TB finally tears down; host === T, so it nulls the host
+	 *   4. the other tool tears down; host === T, so it nulls the host
 	 *
 	 * …and the bench is left hostless on a planner that is on screen and looks
 	 * fine. ⇄ and the portraits go dead until you reload. The (tools) layout
@@ -661,9 +664,9 @@ class BenchBandState {
 	 * is simply the entry `mode` is not asking for.
 	 *
 	 * ⚠️ It is PRE-EXISTING (measured on 847acdb, where the same round trip kills
-	 * the character Source). What changed is the stakes: ⇄ is now the planner's
+	 * the character Source). What changed is the stakes: ⇄ is the planner's
 	 * only way to change a slot, and leaving the tool and coming back is the
-	 * flow, not an edge case.
+	 * flow, not an edge case (cross-tool.spec's second ⇄ is the guard).
 	 */
 	#hosts = $state<Partial<Record<BenchHostRegistration['tool'], BenchHostRegistration>>>({});
 
@@ -676,19 +679,15 @@ class BenchBandState {
 	 * Per-slot block heights published by the planner's timeline (px), or null
 	 * until one has ever been mounted this session.
 	 *
-	 * ⚓ NATE 2026-08-12: THEY ARE RETAINED WHEN THE TIMELINE GOES AWAY. The
-	 * cards used to relax to an even resting rhythm on the Team Builder, which
-	 * meant the four cards you were just looking at silently changed shape as
-	 * you crossed — the one moment the ribbon exists to make continuous. The
-	 * heights are a property of the TEAM, which both tools share, not of the
-	 * timeline that happens to compute them.
+	 * ⚓ NATE 2026-08-12: THEY ARE RETAINED WHEN THE TIMELINE GOES AWAY — the
+	 * heights are a property of the TEAM, not of the timeline that happens to
+	 * compute them. (The original reason was the RP↔TB crossing, when both
+	 * tools showed the ribbon; it now saves the cards a re-flow on the way
+	 * back INTO the planner, before its timeline republishes.)
 	 *
 	 * ⚠ SO A DESTROY PUBLISHES null AND IS IGNORED (see claimMetrics). What is
-	 * left over is deliberately stale: edit the team on the Team Builder and the
-	 * cards keep the departing rotation's rhythm until the planner recomputes
-	 * it. That is the right trade — a card height is a rhythm, not a claim about
-	 * anything, and holding it still beats re-flowing four cards on a surface
-	 * that has no rows to justify the change.
+	 * left over is deliberately stale until the planner recomputes it — a card
+	 * height is a rhythm, not a claim about anything.
 	 */
 	slotHeights = $state<number[] | null>(null);
 
@@ -706,14 +705,9 @@ class BenchBandState {
 	 * gone quietly wrong the first time that happened, which is exactly how
 	 * `RIBBON_FRAME_TOP_INSET`'s own note says the number behaves.
 	 *
-	 * ⚠⚠ ONE NUMBER FOR BOTH TOOLS, and this is the load-bearing part. The Team
-	 * Builder has no ruler and no header, but its cards must land on the SAME
-	 * screen y as the planner's or the four cards you are looking at slide on
-	 * every RP↔TB crossing — and the ribbon's whole job across that seam is to be
-	 * the thing that does not change (⚓ Nate, the tail round). So the TB reads
-	 * this too and simply carries the taller head as empty ribbon: the cost of a
-	 * planner-side layer lands as dead space in the region the decorative motif
-	 * was earmarked for, and never as movement.
+	 * (Until 2026-10-08 the Team Builder read it too, so its cards landed on
+	 * the planner's screen y across the crossing; the planner is its only
+	 * reader now.)
 	 *
 	 * ⚠ RETAINED ON UNMOUNT like `slotHeights`, and for the same reason: it is a
 	 * property of how the plan is being READ, not of the component that happened

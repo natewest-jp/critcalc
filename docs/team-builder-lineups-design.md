@@ -617,6 +617,10 @@ disagree.**
   deleting their actions, which the text already does.
 - ⏭ The buttons' final layout is decided when the 64px overhanging portrait reaches the
   bench (§9.5a).
+- ✅ **Done 2026-10-13** (`docs/bench-portrait-round-2026-10-13.md`, which wins over
+  this section): ✕ gone; the side portrait at 60px with the constellation ON the disc
+  (§9.5's marks included); ⇄ became the PORTRAIT itself, with a hover magnifier for
+  details; an empty slot opens swap mode ADDING; no Swap on phones.
 
 ### 10.4 ⚓ "Synced to my roster"
 

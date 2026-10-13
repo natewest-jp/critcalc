@@ -1,21 +1,21 @@
 /**
  * src/lib/rotationTabs.svelte.ts
  *
- * The planner's tab model, hoisted to a shared module — THE working team
- * (bench-band unification, 2026-08-05). Team composition exists ONCE: it is
- * the active rotation tab's team. The Rotation Planner reads and writes it as
- * its tab state; the Team Builder edits the same slots directly; the shared
- * bench band displays it in both tools and writes Layer-2 overrides
- * (tabCon/tabLoadout) wherever it is. The old `?team=` cross-injection
- * mechanism is retired — deep links now open a tab with the team via
- * importTeam(), in either tool.
+ * The planner's tab model, hoisted to a shared module (bench-band round,
+ * 2026-08-05) so it outlives the planner page. The Rotation Planner reads and
+ * writes it as its tab state; the bench band displays the active tab's team
+ * and writes Layer-2 overrides (tabCon/tabLoadout); the Team Builder writes it
+ * only through the planner's ⇄ errand (swap mode, `setSlot`). ↻ Since the
+ * lineups round (2026-10-08) the Builder's own document is the BOARD, not
+ * this. The `?team=` cross-injection is retired — the planner's deep link
+ * opens a tab via importTeam().
  *
  * Layer discipline (unchanged in shape, re-routed at the bench):
  *   Layer 1 = the roster (`constellations`/`loadout` stores) — edited in the
- *             TB roster grid + Detail card only.
+ *             Library's Roster + the Detail card only.
  *   Layer 2 = the active tab (`tabCon`/`tabLoadout` here) — edited by the
- *             bench band in BOTH tools. The bench is the plan's team editor
- *             everywhere; it never marks ownership.
+ *             bench band. The bench is the plan's team editor; it never marks
+ *             ownership.
  *
  * ══ THE NOTATION IS THE SINGLE SOURCE OF TRUTH (⚓ NATE 2026-08-13) ═══════════
  *
@@ -51,8 +51,6 @@
 
 import { browser } from '$app/environment';
 import {
-	appendCharacterToNotation,
-	deleteCharacterFromNotation,
 	foldTeamIntoNotation,
 	orderedCharacterIds,
 	setSlotInNotation,
@@ -428,40 +426,8 @@ class RotationTabsState {
 		this.notation = setSlotInNotation(this.notation, index, id === 'blank' ? null : id);
 	}
 
-	/** Add to the team (no-op when full or already present). */
-	addToTeam(id: string): void {
-		if (this.slots.includes(id)) return;
-		if (!this.slots.includes('blank')) return;
-		this.notation = appendCharacterToNotation(this.notation, id);
-	}
-
-	/** Remove a character wherever it sits — deletes their segments. */
-	removeFromTeam(id: string): void {
-		if (!this.slots.includes(id)) return;
-		this.notation = deleteCharacterFromNotation(this.notation, id);
-	}
-
-	/**
-	 * Empty every slot. Under single truth that means deleting every slotted
-	 * character's segments — i.e. the rotation, if one was written. The Team
-	 * Builder asks first when there is more than bare names to lose
-	 * (notationEdit.notationHasActions); the ⌘Z that follows a mistake is the
-	 * other half of that safety.
-	 *
-	 * Anything the notation holds that ISN'T a slotted character survives — an
-	 * unresolvable name, a fifth character with no slot — because this clears
-	 * the TEAM, and those were never on it.
-	 */
-	clearTeam(): void {
-		let next = this.notation;
-		for (const id of this.slots) {
-			if (id && id !== 'blank') next = deleteCharacterFromNotation(next, id);
-		}
-		this.notation = next;
-	}
-
 	// -------------------------------------------------------------------------
-	// Layer-2 writes (the bench band, both tools)
+	// Layer-2 writes (the bench band)
 	// -------------------------------------------------------------------------
 
 	setTabCon(charId: string, level: number): void {
