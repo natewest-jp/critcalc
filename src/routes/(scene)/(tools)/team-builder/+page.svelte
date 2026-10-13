@@ -38,6 +38,7 @@
 		type BoardTeam
 	} from '$lib/boards.svelte';
 	import { boardBar, boardTabStrip } from '$lib/boardBar.svelte';
+	import type { TabStripModel } from '$lib/tabSet';
 	import { library } from '$lib/library.svelte';
 	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
@@ -50,7 +51,10 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type CardGlyph } from '$lib/components/CharacterCard.svelte';
-	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
+	import CharacterGrid, {
+		type GridRun,
+		type GridSection
+	} from '$lib/components/CharacterGrid.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import SwapDelta from './lib/SwapDelta.svelte';
@@ -66,6 +70,7 @@
 		swapSections,
 		teamHue,
 		teamLabel,
+		type DeltaItem,
 		type SwapSection,
 		type SwapTier
 	} from './lib/team';
@@ -391,6 +396,7 @@
 	function newBoard(preset: BoardPreset): void {
 		// ↻ §11.6: no season is stored — a new Stygian lineup FOLLOWS the season
 		// running now until its first edit pins it (the effect below).
+		leaveErrand();
 		boardBar.newBoard(preset);
 		chosenTeamId = null;
 	}
@@ -510,6 +516,36 @@
 		chosenTeamId = ERRAND_ID;
 		swapping = { teamId: ERRAND_ID, slot, incumbent };
 	});
+
+	/** Leave the errand IN the Builder — a board tab, or a new board, was
+	 *  asked for. The board was never touched, so it simply shows again. */
+	function leaveErrand(): void {
+		errandOpen = false;
+		swapping = null;
+		chosenTeamId = null;
+	}
+
+	/** Band A's tabs, as the board strip — except that during the errand NO
+	 *  tab is active (the Lineup isn't showing any board), and clicking one
+	 *  ends the errand and shows that board (Nate 2026-10-13: a state of its
+	 *  own, not a temporary tab — it never takes one of the twelve, lands in
+	 *  Recently closed, or asks to make room). */
+	const tabStrip: TabStripModel = {
+		get tabs() {
+			return boardTabStrip.tabs;
+		},
+		get activeId() {
+			return errandOpen ? '' : boardTabStrip.activeId;
+		},
+		newLabel: boardTabStrip.newLabel,
+		switchTo: (id) => {
+			leaveErrand();
+			boardTabStrip.switchTo(id);
+		},
+		close: (id) => boardTabStrip.close(id),
+		rename: (id, label) => boardTabStrip.rename(id, label),
+		reorder: (from, to, side) => boardTabStrip.reorder(from, to, side)
+	};
 
 	function cancelErrand(): void {
 		errandOpen = false;
@@ -747,7 +783,13 @@
 			.map((b) => {
 				const label = FACET_LABEL[b.facet] ?? b.facet;
 				const lit = b.minCon <= cap;
-				return { facet: b.facet, lit, title: lit ? label : `${label} · from C${b.minCon}` };
+				const gain = swapGrid?.gains[entry.id]?.includes(b.facet) ?? false;
+				return {
+					facet: b.facet,
+					lit,
+					gain,
+					title: gain ? `${label} · new to the team` : lit ? label : `${label} · from C${b.minCon}`
+				};
 			});
 	}
 
@@ -824,6 +866,10 @@
 		const other = everyone.filter((e) => !samePosition(e.id));
 		// Plain objects, not a Set/Map: a pure fold, nothing here is state.
 		const meta: Record<string, { section: SwapSection; tierStart: boolean; kicker: string }> = {};
+		/** Each run's further gains — its caption (A). */
+		const runGains: Record<string, DeltaItem[]> = {};
+		/** Each candidate's gained capabilities — their card's green glyphs (B). */
+		const gains: Record<string, FacetKey[]> = {};
 		const sections: GridSection[] = [];
 		const add = (
 			entries: CharacterIndexEntry[],
@@ -846,13 +892,21 @@
 					kicker: kickerOf(sec.tier)
 				};
 				seen.push(sec.tier);
-				sections.push({ key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries });
+				const runs = sec.runs.map((r) => {
+					runGains[prefix + r.key] = r.gains;
+					const facets = [...sec.items, ...r.gains].flatMap((i) =>
+						i.kind === 'facet' && i.sign > 0 ? [i.facet] : []
+					);
+					for (const e of r.entries) gains[e.id] = facets;
+					return { key: prefix + r.key, entries: r.entries };
+				});
+				sections.push({ key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries, runs });
 			}
 		};
 		add(same, '', (t) => SWAP_TIER_LABEL[t]);
 		const otherLabel = swapOtherPosition ? POSITION_LABEL[swapOtherPosition] : '';
 		if (swapOtherShown) add(other, 'other:', (t) => `${otherLabel} · ${SWAP_TIER_LABEL[t]}`);
-		return { sections, meta, otherCount: other.length, otherLabel };
+		return { sections, meta, runGains, gains, otherCount: other.length, otherLabel };
 	});
 
 	/** Escape leaves swap mode — unless a modal or a menu took it first. */
@@ -949,12 +1003,25 @@
 		{:else if m?.section.tier === 'uncurated'}
 			<span class="tb-swap-quiet">No capability data yet, so this swap can’t be read.</span>
 		{:else}
-			<span class="tb-swap-quiet">Nothing changes</span>
+			<span class="tb-swap-quiet">Loses nothing</span>
 		{/if}
 		<span class="tb-slotrow-count"
 			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
 		>
 	</header>
+{/snippet}
+
+<!-- A run's caption (§11.6 item 20, ↻ option A): what these candidates ADD
+     beyond the section's header, as one cell in the grid's own flow — so a
+     run of one costs a tile's width, not a row. A run that adds nothing
+     more has no caption. -->
+{#snippet swapRunHead(_section: GridSection, run: GridRun)}
+	{@const items = swapGrid?.runGains[run.key] ?? []}
+	{#if items.length}
+		<div class="tb-swap-run">
+			<SwapDelta {items} stacked />
+		</div>
+	{/if}
 {/snippet}
 
 <!-- The other position's door, at the foot of the swap grid. -->
@@ -1037,7 +1104,7 @@
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
 <ToolStack fill>
 	{#snippet bandALeft()}
-		<DocumentTabs model={boardTabStrip} newItems={presetItems} />
+		<DocumentTabs model={tabStrip} newItems={presetItems} />
 	{/snippet}
 
 	{#snippet bandARight()}
@@ -1052,7 +1119,7 @@
 			{/if}
 			<button
 				class="btn"
-				disabled={!boardHasAnyone}
+				disabled={!boardHasAnyone || errandOpen}
 				onclick={() => boardBar.save()}
 				title={boardBar.linked
 					? `Save changes to “${board.label}”`
@@ -1070,7 +1137,7 @@
 			</button>
 			<button
 				class="btn"
-				disabled={!boardHasAnyone}
+				disabled={!boardHasAnyone || errandOpen}
 				onclick={() => boardBar.shareLink()}
 				title="Copy a link to this board"
 			>
@@ -1159,23 +1226,29 @@
 					     Planner's band B rail spans its middle — an empty plate today,
 					     the lineup's controls standing at its end. -->
 					<span class="tb-rail" aria-hidden="true"></span>
-					{#if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
+					{#if errandOpen}
+						<!-- The errand edits the Planner's team, not a board: the board's
+						     own controls wait for it. -->
+					{:else if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
 						<!-- A battlefield is the game's, not yours to add — teams come and go
 						     on a Custom board only (with ✕, §11.6 item 13). -->
 						<button class="btn btn--glass" onclick={() => boards.addTeam(board.id)}
 							><Mark name="plus" /> Add team</button
 						>
 					{/if}
-					<label class="toggle tb-norepeat" title="Each character joins only one team.">
-						<input
-							type="checkbox"
-							checked={board.noRepeats}
-							onchange={(e) => boards.setNoRepeats(board.id, e.currentTarget.checked, teamRecency)}
-						/>
-						<!-- The label leads and the switch ends the row (⚓ Nate). -->
-						<span class="toggle-label">No repeats</span>
-						<span class="toggle-track"><span class="toggle-thumb"></span></span>
-					</label>
+					{#if !errandOpen}
+						<label class="toggle tb-norepeat" title="Each character joins only one team.">
+							<input
+								type="checkbox"
+								checked={board.noRepeats}
+								onchange={(e) =>
+									boards.setNoRepeats(board.id, e.currentTarget.checked, teamRecency)}
+							/>
+							<!-- The label leads and the switch ends the row (⚓ Nate). -->
+							<span class="toggle-label">No repeats</span>
+							<span class="toggle-track"><span class="toggle-thumb"></span></span>
+						</label>
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -1295,6 +1368,7 @@
 						tile={rosterTile}
 						sections={swapGrid?.sections ?? rosterSections}
 						sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
+						runHead={swapGrid ? swapRunHead : undefined}
 						belowGrid={swapGrid ? swapFoot : rosterStubs}
 						emptyMessage={rosterEmptyMessage}
 					/>
@@ -1843,6 +1917,14 @@
 		margin: 0.6rem 0 0;
 		display: flex;
 		justify-content: center;
+	}
+	/* A run's caption cell: the gains stacked, top-left, bare on the night
+	   with a rule in the gain hue down its leading edge. */
+	.tb-swap-run {
+		align-self: start;
+		padding: 4px 0 4px 10px;
+		border-left: 2px solid var(--ui-positive);
+		font-size: var(--fs-sm);
 	}
 	.tb-swap-quiet {
 		color: var(--muted);

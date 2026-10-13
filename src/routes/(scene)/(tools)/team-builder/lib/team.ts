@@ -208,21 +208,43 @@ export function swapDelta(
 	return { tier, items };
 }
 
+/** One run inside a section: the candidates who ADD the same things. */
+export type SwapRun = { key: string; gains: DeltaItem[]; entries: CharacterIndexEntry[] };
+
 export type SwapSection = {
 	key: string;
 	tier: SwapTier;
+	/** The header: what the swap COSTS, plus any change of reactions or
+	 *  resonance (the archetype — a gain there is the header's business too). */
 	items: DeltaItem[];
+	/** Within it, one run per set of further gains — a caption, then cards. */
+	runs: SwapRun[];
 	entries: CharacterIndexEntry[];
 };
 
 const TIER_ORDER: SwapTier[] = ['keeps', 'trades', 'reactions', 'uncurated'];
 
+const keyOf = (items: readonly DeltaItem[]) =>
+	items.map((i) => `${i.sign}${i.kind}:${itemId(i)}`).join(',');
+/** Lexicographic over the items' ranks, shorter first on a tie. */
+function byItems(a: readonly DeltaItem[], b: readonly DeltaItem[]): number {
+	for (let i = 0; i < Math.min(a.length, b.length); i++) {
+		const d = itemRank(a[i]) - itemRank(b[i]);
+		if (d) return d;
+	}
+	return a.length - b.length;
+}
+
 /**
- * The candidates for slot `slot`, grouped by what the swap does — ⚓ ONE
- * SECTION PER SPECIFIC CHANGE within a tier (Nate 2026-10-13; fall back to
- * tier-only headers if it fragments too far on real teams). Within a section:
- * owned first, then the order the candidates came in (the grid's, newest
- * first) — ⛔ never "fewest losses first", which is advice.
+ * The candidates for slot `slot`, grouped by what the swap does (lineups
+ * design §11.6 item 20). ↻ 2026-10-13, after Nate used it: one section per
+ * specific change ran to ~50 strips, ~80% of them one or two characters —
+ * nearly all the variety is in what a candidate ADDS (every kit brings its
+ * own), while what you LOSE falls into 4–6 groups. So a SECTION is the cost
+ * (+ any archetype change) and the gains are RUNS inside it, each a caption
+ * tile in the grid's own flow. Within a run: owned first, then the order the
+ * candidates came in (the grid's, newest first) — ⛔ never "fewest losses
+ * first", which is advice.
  */
 export function swapSections(
 	candidates: readonly CharacterIndexEntry[],
@@ -233,30 +255,34 @@ export function swapSections(
 	owned: (id: string) => boolean = () => false
 ): SwapSection[] {
 	const before = slots.filter((s): s is string => !!s);
-	const byKey = new Map<string, SwapSection>();
+	// A plain object, not a Map: a pure fold, nothing here is state.
+	const byKey: Record<string, SwapSection> = {};
 	for (const c of candidates) {
 		if (slots.includes(c.id)) continue;
 		const after = slots.map((s, i) => (i === slot ? c.id : s)).filter((s): s is string => !!s);
 		const d = swapDelta(before, after, conOf, checks);
-		const key = `${d.tier}:${d.items.map((i) => `${i.sign}${i.kind}:${itemId(i)}`).join(',')}`;
-		let section = byKey.get(key);
-		if (!section) byKey.set(key, (section = { key, tier: d.tier, items: d.items, entries: [] }));
-		section.entries.push(c);
+		const head = d.items.filter(
+			(i) => i.sign < 0 || i.kind === 'reaction' || i.kind === 'resonance'
+		);
+		const gains = d.items.filter((i) => !head.includes(i));
+		const key = `${d.tier}:${keyOf(head)}`;
+		const section = (byKey[key] ??= { key, tier: d.tier, items: head, runs: [], entries: [] });
+		const runKey = `${key}|${keyOf(gains)}`;
+		let run = section.runs.find((r) => r.key === runKey);
+		if (!run) section.runs.push((run = { key: runKey, gains, entries: [] }));
+		run.entries.push(c);
 	}
-	const rankList = (s: SwapSection) => s.items.map(itemRank);
-	const sections = [...byKey.values()];
-	for (const s of sections)
+	const sections = Object.values(byKey);
+	for (const s of sections) {
+		s.runs.sort((x, y) => byItems(x.gains, y.gains));
 		// Stable, so the candidates' own order (the grid's: newest first) holds
 		// within each half.
-		s.entries.sort((x, y) => Number(owned(y.id)) - Number(owned(x.id)));
-	return sections.sort((x, y) => {
-		const t = TIER_ORDER.indexOf(x.tier) - TIER_ORDER.indexOf(y.tier);
-		if (t) return t;
-		const a = rankList(x);
-		const b = rankList(y);
-		for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] - b[i];
-		return a.length - b.length;
-	});
+		for (const r of s.runs) r.entries.sort((x, y) => Number(owned(y.id)) - Number(owned(x.id)));
+		s.entries = s.runs.flatMap((r) => r.entries);
+	}
+	return sections.sort(
+		(x, y) => TIER_ORDER.indexOf(x.tier) - TIER_ORDER.indexOf(y.tier) || byItems(x.items, y.items)
+	);
 }
 
 // ---------------------------------------------------------------------------

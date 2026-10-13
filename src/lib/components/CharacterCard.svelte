@@ -4,7 +4,14 @@
 	/** One glyph of the card's fingerprint. The consumer supplies them ALREADY
 	 *  ORDERED (the fingerprint's one order) and decides `lit` against its own
 	 *  lens — the card stays decoupled from the Team Builder's facet system. */
-	export type CardGlyph = { facet: FacetKey; lit: boolean; title: string };
+	export type CardGlyph = {
+		facet: FacetKey;
+		lit: boolean;
+		title: string;
+		/** Swap mode: this capability would be NEW to the team — painted in
+		 *  the fingerprint preview's gain hue. */
+		gain?: boolean;
+	};
 </script>
 
 <script lang="ts">
@@ -136,7 +143,7 @@
 		</span>
 		<span class="cc-glyphs ctx-glass">
 			{#each glyphs as g (g.facet)}
-				<span class="cc-g" class:cc-g--dim={!g.lit} title={g.title}>
+				<span class="cc-g" class:cc-g--dim={!g.lit} class:cc-g--gain={g.gain} title={g.title}>
 					<FingerprintGlyph facet={g.facet} />
 				</span>
 			{/each}
@@ -319,6 +326,11 @@
 	/* 🎛️ DIM = painted (the sub-pixel law), never element opacity. */
 	.cc-g--dim {
 		color: color-mix(in srgb, var(--text) 30%, transparent);
+	}
+	/* Swap mode: what this character would ADD to the team — the preview's
+	   gain hue, straight (Fingerprint.svelte's .fp-gain). */
+	.cc-g--gain {
+		color: var(--ui-positive);
 	}
 
 	/* ── The name: a parchment strip under the portrait only ── */

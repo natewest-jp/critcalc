@@ -6,7 +6,12 @@
 		label: string;
 		element?: string;
 		entries: Entry[];
+		/** Optional sub-groups that FLOW in one grid: each run's caption
+		 *  (`runHead`) takes one cell, then its tiles follow — so a group of one
+		 *  costs a tile's width, not a row (the Team Builder's swap mode). */
+		runs?: GridRun[];
 	};
+	export type GridRun = { key: string; entries: Entry[] };
 </script>
 
 <script lang="ts">
@@ -39,7 +44,8 @@
 		aboveGrid,
 		belowGrid,
 		sections,
-		sectionHead
+		sectionHead,
+		runHead
 	}: {
 		roster: CharacterIndexEntry[];
 		filters: GridFilters;
@@ -57,6 +63,8 @@
 		 *  character may sit in more than one. */
 		sections?: GridSection[];
 		sectionHead?: Snippet<[GridSection]>;
+		/** A run's caption cell, when a section has `runs`. */
+		runHead?: Snippet<[GridSection, GridRun]>;
 	} = $props();
 
 	const filtered = $derived(
@@ -86,9 +94,18 @@
 			<section class="cg-section">
 				{#if sectionHead}{@render sectionHead(section)}{/if}
 				<div class="cg-grid">
-					{#each section.entries as entry (entry.id)}
-						{@render tile(entry)}
-					{/each}
+					{#if section.runs}
+						{#each section.runs as run (run.key)}
+							{#if runHead}{@render runHead(section, run)}{/if}
+							{#each run.entries as entry (entry.id)}
+								{@render tile(entry)}
+							{/each}
+						{/each}
+					{:else}
+						{#each section.entries as entry (entry.id)}
+							{@render tile(entry)}
+						{/each}
+					{/if}
 				</div>
 			</section>
 		{/each}

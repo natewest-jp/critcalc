@@ -123,8 +123,8 @@
 		/** A FILLED portrait in the SELECTED row was clicked — swap that slot
 		 *  (or leave swap mode, if it is the one being swapped). */
 		onSwap?: (teamId: string, slot: number) => void;
-		/** The Planner's ⇄ (`?swap=N`): ITS team, as a temporary row on top of
-		 *  the lineup (§10.3) — board-less, so it is drawn and never stored. */
+		/** The Planner's ⇄ (`?swap=N`): ITS team, drawn ALONE in place of the
+		 *  board (§10.3) — board-less, so it is drawn and never stored. */
 		errand?: { team: BoardTeam; label: string; onCancel: () => void } | null;
 	} = $props();
 
@@ -426,7 +426,12 @@
 {/snippet}
 
 <div class="bv" class:bv--roomy={roomy} style:--portrait="{portrait}px">
-	{#if season}
+	<!-- ⚓ The Planner's ⇄ is a state of its OWN (Nate 2026-10-13): its team
+	     alone, not a row above whatever board was open — the board waits,
+	     untouched, and comes back when the errand ends. -->
+	{#if errand}
+		{@render teamRow(errand.team, -1, true)}
+	{:else if season}
 		<header class="bv-lineup">
 			<span class="bv-lineup-mode">Stygian Onslaught</span>
 			<!-- The site's dropdown (a plate, an opaque slate menu) rather than the
@@ -472,8 +477,9 @@
 		</header>
 	{/if}
 
-	{#if errand}{@render teamRow(errand.team, -1, true)}{/if}
-	{#each board.teams as team, t (team.id)}{@render teamRow(team, t, false)}{/each}
+	{#if !errand}
+		{#each board.teams as team, t (team.id)}{@render teamRow(team, t, false)}{/each}
+	{/if}
 </div>
 
 {#if opponents !== null && abyss}
