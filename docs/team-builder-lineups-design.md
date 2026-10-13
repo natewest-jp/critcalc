@@ -1106,7 +1106,43 @@ only; Noelle/Thoma absent too).
       `$lib/utils/reactionPairs.ts`, shared with `CompositionChips`; a section head
       is `SwapDelta.svelte`; a check's preview is a ring on `CheckChip` (`shift`).
       The board's team row became a snippet so the Planner's row reuses it.
-    - ⏭ **Judge live (Nate):** fragmentation of the per-change headers; the tier
-      kicker's spacing; the gold swap ring; the notice's length in band A at
-      narrow widths (it does not fold yet); the working copy (tier names, "Nothing
-      changes", "Replacing X · Battlefield 2", the notice sentences) is step 6's.
+    - ↻ **After Nate used it (same day, two passes) — these WIN over the bullets above:**
+      - ⚓ **Fragmentation:** one header per change ran to ~40–60 strips, ~80% of
+        them one or two characters — the variety is in what a candidate ADDS,
+        while what you LOSE falls into a handful of groups. So a SECTION is the
+        COST (losses + any reaction/resonance change, which keeps the reaction
+        split — ⚓ a definite keep) and like gains are RUNS inside it: 9–16
+        headers on real teams. Two demos ran together: (A) a caption tile per
+        run in the grid's flow — ⛔ CUT, 27–40 captions per ~75 cards read as
+        noise; (B) a candidate's gained glyphs drawn in `--ui-positive` on its
+        own card — ⚓ KEPT, it carries the gains alone. Runs survive only to seat
+        like gains together. Within a section: owned first, then by run, then
+        the grid's order.
+      - ⚓ **On-field / off-field:** a slot is offered its incumbent's position
+        (IT roles; none, or both — Mavuika — counts as either); the other
+        position waits behind one button at the grid's foot.
+      - ⚓ **Default order is newest release first** (`$lib/utils/release.ts`
+        `newestFirst`, shared with the Coverage page).
+      - ⚓ **The destination banner** is a full-width narrow band in the selected
+        team's hue (bright-fill ink, bare ✕), and it carries the grid's COUNT at
+        its end (beside the filters it wrapped); swapping, it counts who is
+        offered. With no team selected the count stays in the filter strip.
+      - ⚓ **The Planner's ⇄ is a state of its own** (option A), not a row on
+        whatever board was open: the Lineup shows only the Planner's team, band
+        A shows no active tab, Save/Share disable and No repeats hides; a tab
+        click or a new board ends it in place.
+      - ⚓ **A swap reads from the top:** entering swap mode (or moving it) scrolls
+        the grid to the top; leaving it restores the roster's scroll.
+      - ⚓ **The board row's frame:** the heavy right END is the team's hue at
+        rest, and selecting the row closes the ring in the same hue (was a 3px
+        hue edge on the left, gold ring + end on selection).
+      - ⚓ **The filter strip's groups are joined glass bars** — roles, elements,
+        and each fingerprint cluster one bar (the segmented group's build on
+        the band plate).
+      - ⚓ **A picked card's slot tab is as wide as the glyph column** (27px).
+      - tune(nate): DMG% `NUDGE` 0.93 → 0.874.
+    - ⏭ **Still open:** the notice's length in band A at narrow widths (it does
+      not fold yet — the phone pass); the working copy (tier names, "Loses
+      nothing", "Replacing X · Battlefield 2", the notice sentences) and the Help
+      chapter, which still describes Compare/Audition, go to the static-pages
+      rewrite (⚓ Nate 2026-10-13: the next major work).
