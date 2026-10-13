@@ -2,6 +2,7 @@
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import Mark from './Mark.svelte';
 	import ConMark from './ConMark.svelte';
+	import SidePortrait from './SidePortrait.svelte';
 	/**
 	 * SlotPortrait — the slot card of the bench ribbon, shared by the Rotation
 	 * Planner (where it labels a timeline track group) and the Team Builder.
@@ -87,7 +88,10 @@
 		onPortraitClick,
 		portraitLabel = 'Open character selector',
 		emptyLabel = 'Empty',
-		actions
+		actions,
+		portrait = 'disc',
+		conOnDisc = false,
+		ownedCon
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -128,7 +132,39 @@
 		 *  ordinary flex column, so the trick is gone — buttons render in source
 		 *  order, top to bottom. */
 		actions?: Snippet;
+		/**
+		 * 🧪 CANDIDATE (bench portrait round, 2026-10-13 — judged on /lab, lineups
+		 * design §9.5 / §9.5a): `side` draws the Team Builder's overhanging side
+		 * portrait in the disc's place — the same band, the hair rising over the
+		 * card's top edge. Every host passes nothing until Nate rules.
+		 */
+		portrait?: 'disc' | 'side';
+		/** With `portrait: 'side'`: the constellation control moves ONTO the disc
+		 *  (the TB chip's place, still the editor), and the column keeps the name,
+		 *  the loadout pill and the host's actions — no rail. */
+		conOnDisc?: boolean;
+		/** Your account's constellation for this character — a level, `null` = not
+		 *  owned, undefined = unknown (empty roster / marks off). When it falls
+		 *  short of `conLevel` the constellation control goes HOLLOW (§9.5a). */
+		ownedCon?: number | null;
 	} = $props();
+
+	const side = $derived(portrait === 'side');
+	const discCon = $derived(side && conOnDisc);
+	/** The plan asks for more than the account has (or for someone not owned). */
+	const conShort = $derived(
+		!!char &&
+			char.id !== 'blank' &&
+			ownedCon !== undefined &&
+			(ownedCon === null || ownedCon < conLevel)
+	);
+	const conTitle = $derived(
+		!char || !conShort
+			? undefined
+			: ownedCon === null
+				? `You don't own ${char.displayName}`
+				: `This rotation uses C${conLevel} · you own C${ownedCon}`
+	);
 
 	const p = $derived(elementPalette(char?.element));
 
@@ -282,37 +318,73 @@
 	<div class="sp-body">
 		<!-- The RAIL. Rendered and VISIBLE on every slot; the host disables its
 		     buttons on an empty one. See the empty-slot note on .sp-controls. -->
-		<div class="sp-rail">
-			{#if actions}{@render actions()}{/if}
-		</div>
+		{#if !discCon}
+			<div class="sp-rail">
+				{#if actions}{@render actions()}{/if}
+			</div>
+		{/if}
 
-		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-		<div
-			class="sp-avatar-chip"
-			class:sp-avatar-clickable={!!onPortraitClick}
-			onclick={onPortraitClick}
-			role={onPortraitClick ? 'button' : undefined}
-			tabindex={onPortraitClick ? 0 : undefined}
-			aria-label={onPortraitClick ? portraitLabel : undefined}
-		>
-			<span class="sp-avatar-clip">
-				{#if !avatarFallback}
-					<img
-						class="sp-avatar-img"
-						src={getAvatar(
-							slotId,
-							$siteSettings.useNewOutfits,
-							'side',
-							$siteSettings.travelerVariant
-						)}
-						alt={char?.displayName ?? 'Empty slot'}
-						onerror={handleAvatarError}
-					/>
-				{:else}
-					<span class="sp-avatar-initials">{initials(char?.displayName ?? slotId)}</span>
+		{#if side}
+			<!-- 🧪 The side portrait (candidate): anchored at the band's bottom, so
+			     the art's overhang rises ABOVE the card rather than growing it. -->
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<div
+				class="sp-avatar-chip sp-side"
+				class:sp-avatar-clickable={!!onPortraitClick}
+				onclick={onPortraitClick}
+				role={onPortraitClick ? 'button' : undefined}
+				tabindex={onPortraitClick ? 0 : undefined}
+				aria-label={onPortraitClick ? portraitLabel : undefined}
+			>
+				<span class="sp-side-art">
+					<SidePortrait id={char ? slotId : null} size={CARD_PORTRAIT} />
+				</span>
+				{#if discCon && char}
+					<button
+						class="sp-disc-con"
+						class:sp-disc-con--short={conShort}
+						class:sp-disc-con--zero={conLevel === 0 && !conShort}
+						disabled={noCons}
+						onclick={openConstellation}
+						title={conTitle ??
+							(noCons ? 'Constellations can’t be unlocked for this character' : undefined)}
+						aria-label={noCons
+							? `${char.displayName} has no constellations`
+							: `Set constellation for ${char.displayName}, currently C${conLevel}`}
+					>
+						<ConMark level={conLevel} height={7} />
+					</button>
 				{/if}
-			</span>
-		</div>
+			</div>
+		{:else}
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<div
+				class="sp-avatar-chip"
+				class:sp-avatar-clickable={!!onPortraitClick}
+				onclick={onPortraitClick}
+				role={onPortraitClick ? 'button' : undefined}
+				tabindex={onPortraitClick ? 0 : undefined}
+				aria-label={onPortraitClick ? portraitLabel : undefined}
+			>
+				<span class="sp-avatar-clip">
+					{#if !avatarFallback}
+						<img
+							class="sp-avatar-img"
+							src={getAvatar(
+								slotId,
+								$siteSettings.useNewOutfits,
+								'side',
+								$siteSettings.travelerVariant
+							)}
+							alt={char?.displayName ?? 'Empty slot'}
+							onerror={handleAvatarError}
+						/>
+					{:else}
+						<span class="sp-avatar-initials">{initials(char?.displayName ?? slotId)}</span>
+					{/if}
+				</span>
+			</div>
+		{/if}
 
 		<!-- The column: name along the disc's top edge, value controls along its
 		     bottom. -->
@@ -343,20 +415,27 @@
 			     empty (both hosts pass emptyLabel=''). Restores the four-station
 			     rhythm from 2026-08-06, which was right the first time. -->
 			<div class="sp-controls">
-				<button
-					class="sp-cons-chip"
-					class:sp-cons-chip--set={conLevel > 0}
-					disabled={!char || noCons}
-					onclick={openConstellation}
-					title={noCons ? 'Constellations can’t be unlocked for this character' : undefined}
-					aria-label={char
-						? noCons
-							? `${char.displayName} has no constellations`
-							: `Set constellation for ${char.displayName}, currently C${conLevel}`
-						: 'Constellation (empty slot)'}
-				>
-					<ConMark level={conLevel} height={CON_GLYPH_H} />
-				</button>
+				{#if !discCon}
+					<button
+						class="sp-cons-chip"
+						class:sp-cons-chip--set={conLevel > 0}
+						class:sp-cons-chip--short={side && conShort}
+						disabled={!char || noCons}
+						onclick={openConstellation}
+						title={noCons
+							? 'Constellations can’t be unlocked for this character'
+							: side
+								? conTitle
+								: undefined}
+						aria-label={char
+							? noCons
+								? `${char.displayName} has no constellations`
+								: `Set constellation for ${char.displayName}, currently C${conLevel}`
+							: 'Constellation (empty slot)'}
+					>
+						<ConMark level={conLevel} height={CON_GLYPH_H} />
+					</button>
+				{/if}
 				<div class="sp-loadout" class:sp-loadout--disabled={!char}>
 					<button
 						class="sp-lo-zone"
@@ -393,6 +472,9 @@
 						{/if}
 					</button>
 				</div>
+				{#if discCon && actions}
+					<span class="sp-col-actions">{@render actions()}</span>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -866,6 +948,69 @@
 	}
 	.sp-cons-chip--set {
 		color: color-mix(in srgb, var(--el) 75%, white);
+	}
+	/* 🧪 §9.5a's hollow mark: the plan asks for more than the account has. */
+	.sp-cons-chip--short {
+		background: transparent;
+		box-shadow: inset 0 0 0 1px var(--muted);
+		color: var(--muted);
+	}
+
+	/* ── 🧪 The side portrait (candidate) ─────────────────────────────────────
+	   The chip keeps the band's square; the portrait inside is anchored at its
+	   BOTTOM, so the disc lands exactly where the round chip's did and the hair
+	   rises over the card's top padding and beyond. Nothing reserves that
+	   overhang — that is the question the demo asks. */
+	.sp-side {
+		overflow: visible;
+	}
+	.sp-side-art {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		display: block;
+		pointer-events: none;
+	}
+	/* The constellation control on the disc — the TB chip's place and shape,
+	   but a BUTTON (it is still the editor). Filled = covered (or no roster);
+	   hollow = short; at C0 and covered it recedes to a ghost until hovered. */
+	.sp-disc-con {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		z-index: 2;
+		height: 14px;
+		padding: 0 4px;
+		box-sizing: border-box;
+		display: grid;
+		place-items: center;
+		border: none;
+		border-radius: var(--r-round);
+		background: var(--line-strong);
+		color: var(--text);
+		cursor: pointer;
+		transition: color var(--t-snap);
+	}
+	.sp-disc-con--short {
+		background: var(--surface-well);
+		box-shadow: inset 0 0 0 1px var(--muted);
+		color: var(--muted);
+	}
+	.sp-disc-con--zero {
+		background: var(--surface-well);
+		color: var(--sp-unset-ink);
+	}
+	.sp-disc-con:hover:not(:disabled) {
+		color: var(--text);
+	}
+	.sp-disc-con:disabled {
+		cursor: default;
+	}
+	/* Without a rail the host's actions sit at the controls row's end. */
+	.sp-col-actions {
+		display: flex;
+		align-self: stretch;
+		margin-left: auto;
 	}
 
 	/* ── Loadout pill ─────────────────────────────────────────────────────────

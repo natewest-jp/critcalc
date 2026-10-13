@@ -2,7 +2,39 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
 	import { SIDE_GEOMETRY, type SideGeometry } from '$lib/sidePortrait';
-	import { getAllCharacterIndex } from '$lib/data/characterLookup';
+	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
+	import { BENCH_CARD_W, RIBBON_PAD, BENCH_SLOT_H } from '$lib/benchBand.svelte';
+
+	/* ══ THE BENCH CARD after the lineups round (2026-10-13, lineups design
+	   §9.5 / §9.5a / §10.3) — the REAL SlotPortrait in three forms, so nothing
+	   here is a drawing. The seats exercise the constellation mark's cases;
+	   "Roster known" off is an empty roster, where no mark can be drawn. */
+	const BC_SEATS: { id: string | null; con: number; owned: number | null; note: string }[] = [
+		{ id: 'bennett', con: 6, owned: 1, note: 'Bennett C6, you own C1 — short' },
+		{ id: 'xiangling', con: 4, owned: 6, note: 'Xiangling C4, you own C6 — covered' },
+		{ id: 'xingqiu', con: 0, owned: null, note: 'Xingqiu C0, not owned — short' },
+		{ id: null, con: 0, owned: null, note: 'an empty slot' }
+	];
+	const BC_FORMS = [
+		{ key: 'today', label: 'A · today (disc, rail ⇄)', portrait: 'disc', onDisc: false },
+		{
+			key: 'side',
+			label: 'B · side portrait, chip in the column',
+			portrait: 'side',
+			onDisc: false
+		},
+		{ key: 'disc', label: 'C · side portrait, chip on the disc', portrait: 'side', onDisc: true }
+	] as const;
+	let bcSlotH = $state(BENCH_SLOT_H);
+	let bcRosterKnown = $state(true);
+	let bcCon = $state<Record<string, number>>({});
+	const bcChar = (id: string | null) => {
+		const e = id ? getCharacterIndexEntry(id) : null;
+		return e
+			? { id: e.id, displayName: e.displayName, element: e.element, weapon: e.weapon }
+			: null;
+	};
 
 	/* ══ THE SIDE PORTRAIT (lineups design §9.5a, 2026-10-08) — Nate tunes the
 	   geometry here; the values he settles on land in $lib/sidePortrait.ts as
@@ -1000,6 +1032,74 @@
 			<code>/styleguide</code> stays the exhaustive reference; this is the thing to judge from.
 		</p>
 	</header>
+
+	<!-- ═════════════════════════════════════════════ 00 · THE BENCH CARD ══ -->
+	<section>
+		<h2 class="lab-h">
+			The bench card, after the lineups round <span class="lab-badge">candidate</span>
+		</h2>
+		<p class="sp-note">
+			The real slot card at true width ({BENCH_CARD_W}px inside the ribbon's {RIBBON_PAD}px pad),
+			stacked at the planner's slot height. Click a constellation to set it; the portraits and ⇄ do
+			nothing here.
+		</p>
+		<div class="sp-knobs">
+			<label
+				>Slot height <input type="range" min={BENCH_SLOT_H} max="140" bind:value={bcSlotH} />
+				<code>{bcSlotH}px</code></label
+			>
+			<label><input type="checkbox" bind:checked={bcRosterKnown} /> Roster known</label>
+		</div>
+		<div class="bc-forms">
+			{#each BC_FORMS as f (f.key)}
+				<figure class="bc-form">
+					<figcaption class="spec-tag">{f.label}</figcaption>
+					<div class="bc-strip ctx-dark" style:--bc-pad="{RIBBON_PAD}px">
+						{#each BC_SEATS as seat, i (i)}
+							{@const char = bcChar(seat.id)}
+							{@const con = seat.id ? (bcCon[seat.id] ?? seat.con) : 0}
+							<div class="bc-slot" style:height="{bcSlotH}px">
+								<SlotPortrait
+									slotId={seat.id ?? 'blank'}
+									{char}
+									conLevel={con}
+									loadoutEntry={{}}
+									onSetCon={(l) => seat.id && (bcCon = { ...bcCon, [seat.id]: l })}
+									onSetArtifact={() => {}}
+									onSetWeapon={() => {}}
+									onSetRefinement={() => {}}
+									onPortraitClick={() => {}}
+									portraitLabel="(demo)"
+									emptyLabel=""
+									portrait={f.portrait}
+									conOnDisc={f.onDisc}
+									ownedCon={bcRosterKnown ? seat.owned : undefined}
+								>
+									{#snippet actions()}
+										<button
+											class="bc-swap"
+											class:bc-swap--col={f.onDisc}
+											disabled={!char}
+											title={char ? 'Swap' : undefined}
+											aria-label={char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
+											><Mark name="swap" /></button
+										>
+									{/snippet}
+								</SlotPortrait>
+							</div>
+						{/each}
+					</div>
+				</figure>
+			{/each}
+		</div>
+		<p class="sp-note">
+			Top to bottom: {BC_SEATS.map((x) => x.note).join(' · ')}. B and C put the Team Builder's
+			portrait in the disc's place at the same 60px, so the card keeps its 78px and the hair rises
+			over the card's top edge, onto the card above when slots are short. The 64px of §9.5a would
+			grow every card by 4px. Below 54rem the bench is a row of compact cards; this board shows the
+			column form only.
+		</p>
+	</section>
 
 	<!-- ═══════════════════════════════════════════ 0 · THE SIDE PORTRAIT ══ -->
 	<section>
@@ -2492,6 +2592,49 @@
 	}
 
 	/* ── 0 · the side portrait ── */
+	/* ── the bench card board ── */
+	.bc-forms {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2.5rem;
+		align-items: flex-start;
+	}
+	.bc-form {
+		margin: 0;
+	}
+	.bc-strip {
+		box-sizing: content-box;
+		width: calc(var(--bc-w, 200px));
+		padding: 28px var(--bc-pad) 16px;
+		background: var(--surface);
+		border-radius: var(--r-md);
+	}
+	.bc-slot {
+		display: flex;
+		flex-direction: column;
+	}
+	/* A stand-in for BenchBand's .bb-act (scoped there): the raised square. */
+	.bc-swap {
+		display: grid;
+		place-items: center;
+		padding: 0;
+		border: none;
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+		color: var(--sp-unset-ink, var(--muted));
+		cursor: pointer;
+	}
+	.bc-swap:hover:not(:disabled) {
+		background: color-mix(in srgb, white 7%, var(--surface-raised));
+		color: var(--text);
+	}
+	.bc-swap:disabled {
+		visibility: hidden;
+	}
+	.bc-swap--col {
+		width: 26px;
+		height: 26px;
+	}
 	.sp-knobs {
 		display: flex;
 		flex-wrap: wrap;
