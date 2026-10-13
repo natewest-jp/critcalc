@@ -4,7 +4,15 @@
 	import { SIDE_GEOMETRY, type SideGeometry } from '$lib/sidePortrait';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
-	import { BENCH_CARD_W, RIBBON_PAD, BENCH_SLOT_H } from '$lib/benchBand.svelte';
+	import {
+		BENCH_ROW_CARD_COMPACT_W,
+		BENCH_ROW_CARD_GAP,
+		BENCH_ROW_CARD_MIN_W,
+		BENCH_SLOT_H,
+		RIBBON_CHROME,
+		RIBBON_PAD
+	} from '$lib/benchBand.svelte';
+	import { TOOL_GUTTER } from '$lib/toolGutter';
 
 	/* ══ THE BENCH CARD after the lineups round (2026-10-13, lineups design
 	   §9.5 / §9.5a / §10.3) — the REAL SlotPortrait in three forms, so nothing
@@ -16,16 +24,21 @@
 		{ id: 'xingqiu', con: 0, owned: null, note: 'Xingqiu C0, not owned — short' },
 		{ id: null, con: 0, owned: null, note: 'an empty slot' }
 	];
-	const BC_FORMS = [
-		{ key: 'today', label: 'A · today (disc, rail ⇄)', portrait: 'disc', onDisc: false },
-		{
-			key: 'side',
-			label: 'B · side portrait, chip in the column',
-			portrait: 'side',
-			onDisc: false
-		},
-		{ key: 'disc', label: 'C · side portrait, chip on the disc', portrait: 'side', onDisc: true }
-	] as const;
+	/** 🎛️ C's card width — no rail and no element badge give back ~48px of the
+	 *  200. 152 = disc 60 + inset 4 + an 88px column ("Kuki Shinobu" on one line
+	 *  at --fs-lg is 87.8; the control row needs 84). */
+	let bcCardW = $state(152);
+	/** The phone row: a viewport width, and the strip the bench would get there. */
+	let bcVw = $state(390);
+	const bcRow = $derived.by(() => {
+		const inner = bcVw - 2 * TOOL_GUTTER - 2 * RIBBON_CHROME;
+		const fit = (inner - 3 * BENCH_ROW_CARD_GAP) / 4;
+		const full = fit >= bcCardW;
+		const w = full
+			? bcCardW
+			: Math.max(BENCH_ROW_CARD_MIN_W, Math.min(fit, BENCH_ROW_CARD_COMPACT_W));
+		return { inner, w, full };
+	});
 	let bcSlotH = $state(BENCH_SLOT_H);
 	let bcRosterKnown = $state(true);
 	let bcCon = $state<Record<string, number>>({});
@@ -1035,15 +1048,48 @@
 
 	<!-- ═════════════════════════════════════════════ 00 · THE BENCH CARD ══ -->
 	<section>
-		<h2 class="lab-h">
-			The bench card, after the lineups round <span class="lab-badge">candidate</span>
-		</h2>
+		<h2 class="lab-h">The bench card, form C <span class="lab-badge">candidate</span></h2>
 		<p class="sp-note">
-			The real slot card at true width ({BENCH_CARD_W}px inside the ribbon's {RIBBON_PAD}px pad),
-			stacked at the planner's slot height. Click a constellation to set it; the portraits and ⇄ do
-			nothing here.
+			The real slot card: the Team Builder's portrait with the constellation on the disc, Swap at
+			the end of the controls, no rail and no element icon. Click a constellation to set it; the
+			portraits and ⇄ do nothing here.
 		</p>
+		{#snippet bcCard(seat: (typeof BC_SEATS)[number], compact: boolean)}
+			{@const char = bcChar(seat.id)}
+			<SlotPortrait
+				slotId={seat.id ?? 'blank'}
+				{char}
+				{compact}
+				conLevel={seat.id ? (bcCon[seat.id] ?? seat.con) : 0}
+				loadoutEntry={{}}
+				onSetCon={(l) => seat.id && (bcCon = { ...bcCon, [seat.id]: l })}
+				onSetArtifact={() => {}}
+				onSetWeapon={() => {}}
+				onSetRefinement={() => {}}
+				onPortraitClick={() => {}}
+				portraitLabel="(demo)"
+				emptyLabel=""
+				portrait="side"
+				conOnDisc
+				ownedCon={bcRosterKnown ? seat.owned : undefined}
+			>
+				{#snippet actions()}
+					<button
+						class="bc-swap"
+						disabled={!char}
+						title={char ? 'Swap' : undefined}
+						aria-label={char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
+						><Mark name="swap" /></button
+					>
+				{/snippet}
+			</SlotPortrait>
+		{/snippet}
+
 		<div class="sp-knobs">
+			<label
+				>Card width <input type="range" min="130" max="200" bind:value={bcCardW} />
+				<code>{bcCardW}px (today 200)</code></label
+			>
 			<label
 				>Slot height <input type="range" min={BENCH_SLOT_H} max="140" bind:value={bcSlotH} />
 				<code>{bcSlotH}px</code></label
@@ -1051,53 +1097,45 @@
 			<label><input type="checkbox" bind:checked={bcRosterKnown} /> Roster known</label>
 		</div>
 		<div class="bc-forms">
-			{#each BC_FORMS as f (f.key)}
-				<figure class="bc-form">
-					<figcaption class="spec-tag">{f.label}</figcaption>
-					<div class="bc-strip ctx-dark" style:--bc-pad="{RIBBON_PAD}px">
+			<figure class="bc-form">
+				<figcaption class="spec-tag">desk · the column beside the timeline</figcaption>
+				<div class="bc-strip ctx-dark" style:--bc-w="{bcCardW}px" style:--bc-pad="{RIBBON_PAD}px">
+					{#each BC_SEATS as seat, i (i)}
+						<div class="bc-slot" style:height="{bcSlotH}px">{@render bcCard(seat, false)}</div>
+					{/each}
+				</div>
+			</figure>
+			<figure class="bc-form">
+				<figcaption class="spec-tag">below 54rem · the row above band A</figcaption>
+				<div class="sp-knobs">
+					<label
+						>Viewport <input type="range" min="320" max="863" bind:value={bcVw} />
+						<code>{bcVw}px · cards {Math.round(bcRow.w)}px · {bcRow.full ? 'full' : 'compact'}</code
+						></label
+					>
+				</div>
+				<div class="bc-phone" style:width="{bcVw}px">
+					<div
+						class="bc-row ctx-dark"
+						class:bc-row--spread={!bcRow.full}
+						style:--bc-chrome="{RIBBON_CHROME}px"
+						style:--bc-gap="{BENCH_ROW_CARD_GAP}px"
+					>
 						{#each BC_SEATS as seat, i (i)}
-							{@const char = bcChar(seat.id)}
-							{@const con = seat.id ? (bcCon[seat.id] ?? seat.con) : 0}
-							<div class="bc-slot" style:height="{bcSlotH}px">
-								<SlotPortrait
-									slotId={seat.id ?? 'blank'}
-									{char}
-									conLevel={con}
-									loadoutEntry={{}}
-									onSetCon={(l) => seat.id && (bcCon = { ...bcCon, [seat.id]: l })}
-									onSetArtifact={() => {}}
-									onSetWeapon={() => {}}
-									onSetRefinement={() => {}}
-									onPortraitClick={() => {}}
-									portraitLabel="(demo)"
-									emptyLabel=""
-									portrait={f.portrait}
-									conOnDisc={f.onDisc}
-									ownedCon={bcRosterKnown ? seat.owned : undefined}
-								>
-									{#snippet actions()}
-										<button
-											class="bc-swap"
-											class:bc-swap--col={f.onDisc}
-											disabled={!char}
-											title={char ? 'Swap' : undefined}
-											aria-label={char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
-											><Mark name="swap" /></button
-										>
-									{/snippet}
-								</SlotPortrait>
+							<div class="bc-cell" style:width="{bcRow.w}px">
+								{@render bcCard(seat, !bcRow.full)}
 							</div>
 						{/each}
 					</div>
-				</figure>
-			{/each}
+					<div class="bc-band">band A</div>
+				</div>
+			</figure>
 		</div>
 		<p class="sp-note">
-			Top to bottom: {BC_SEATS.map((x) => x.note).join(' · ')}. B and C put the Team Builder's
-			portrait in the disc's place at the same 60px, so the card keeps its 78px and the hair rises
-			over the card's top edge, onto the card above when slots are short. The 64px of §9.5a would
-			grow every card by 4px. Below 54rem the bench is a row of compact cards; this board shows the
-			column form only.
+			Top to bottom / left to right: {BC_SEATS.map((x) => x.note).join(' · ')}. The phone row keeps
+			today's 78px strip and 84px card cap: the constellation left the controls row for the disc and
+			Swap took its 26px. A card takes the full form wherever four fit at the card width above. The
+			hair rises past the strip's top edge; nothing reserves it yet.
 		</p>
 	</section>
 
@@ -2596,15 +2634,16 @@
 	.bc-forms {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 2.5rem;
+		gap: 3rem;
 		align-items: flex-start;
 	}
 	.bc-form {
 		margin: 0;
+		min-width: 0;
 	}
 	.bc-strip {
 		box-sizing: content-box;
-		width: calc(var(--bc-w, 200px));
+		width: var(--bc-w);
 		padding: 28px var(--bc-pad) 16px;
 		background: var(--surface);
 		border-radius: var(--r-md);
@@ -2613,8 +2652,43 @@
 		display: flex;
 		flex-direction: column;
 	}
+	/* The phone: a viewport-wide box with the tool gutter, the bench row, and
+	   a stand-in for band A beneath it. */
+	.bc-phone {
+		box-sizing: border-box;
+		max-width: 100%;
+		padding: 24px 16px 16px;
+		outline: 1px dashed var(--line);
+		border-radius: var(--r-md);
+	}
+	.bc-row {
+		display: flex;
+		gap: var(--bc-gap);
+		padding: var(--bc-chrome);
+		background: var(--surface);
+		border-radius: var(--r-md);
+	}
+	.bc-row--spread {
+		justify-content: space-between;
+	}
+	.bc-cell {
+		flex: none;
+		height: 78px;
+		display: flex;
+		flex-direction: column;
+	}
+	.bc-band {
+		margin-top: 8px;
+		padding: 6px 10px;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+		border-radius: var(--r-sm);
+	}
 	/* A stand-in for BenchBand's .bb-act (scoped there): the raised square. */
 	.bc-swap {
+		flex: none;
+		width: 26px;
+		height: 26px;
 		display: grid;
 		place-items: center;
 		padding: 0;
@@ -2630,10 +2704,6 @@
 	}
 	.bc-swap:disabled {
 		visibility: hidden;
-	}
-	.bc-swap--col {
-		width: 26px;
-		height: 26px;
 	}
 	.sp-knobs {
 		display: flex;

@@ -308,6 +308,7 @@
 <div
 	class="sp-card"
 	class:sp-card--compact={compact}
+	class:sp-card--side={side}
 	style:--el={p.main}
 	style:--sp-band="{CARD_PORTRAIT}px"
 	style:--sp-band-compact="{CARD_PORTRAIT_COMPACT}px"
@@ -337,7 +338,10 @@
 				aria-label={onPortraitClick ? portraitLabel : undefined}
 			>
 				<span class="sp-side-art">
-					<SidePortrait id={char ? slotId : null} size={CARD_PORTRAIT} />
+					<SidePortrait
+						id={char ? slotId : null}
+						size={compact ? CARD_PORTRAIT_COMPACT : CARD_PORTRAIT}
+					/>
 				</span>
 				{#if discCon && char}
 					<button
@@ -390,7 +394,10 @@
 		     bottom. -->
 		<div class="sp-col">
 			<div class="sp-id-row">
-				{#if char?.element}
+				<!-- 🧪 The side form drops the element badge (⚓ Nate 2026-10-13): the
+				     planner's bars already wear the element, as the Builder's cards do
+				     for its slots, and the name gets the width back. -->
+				{#if char?.element && !side}
 					<img class="sp-el-badge" src={elementIcon(char.element)} alt={char.element} />
 				{/if}
 				<span class="sp-char-name" class:sp-char-name--empty={!char}
@@ -1411,5 +1418,26 @@
 		/* Never wider than the desk zone — the artwork inside scales with the
 		   zone, and a zone that grew with a roomy card grew its icons with it. */
 		max-width: 24px;
+	}
+
+	/* ══ 🧪 THE SIDE FORM, COMPACT (candidate C, 2026-10-13) ═══════════════════
+	   The same 78px stack as the disc's compact form, and the same 84px cap,
+	   because the control row's arithmetic is unchanged — the constellation
+	   chip left it for the disc and ⇄ took its 26px:
+
+	         ⟨hair⟩
+	        (  48 )ⓒ       ← the portrait, centred; its chip is the editor
+	     ( ▣ ⚔¹ )  ⇄      ← loadout pill + Swap
+
+	   No rail, no name. The hair rises above the card as on the desk. */
+	.sp-card--side.sp-card--compact .sp-body {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.sp-card--side.sp-card--compact .sp-avatar-chip {
+		grid-column: 1;
+		justify-self: center;
+	}
+	.sp-card--side.sp-card--compact .sp-col-actions {
+		margin-left: var(--sp-rail-gap);
 	}
 </style>
