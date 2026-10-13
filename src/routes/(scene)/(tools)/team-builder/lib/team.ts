@@ -208,7 +208,8 @@ export function swapDelta(
 	return { tier, items };
 }
 
-/** One run inside a section: the candidates who ADD the same things. */
+/** One run inside a section: the candidates who ADD the same things —
+ *  seated together, and their gains are their cards' green glyphs. */
 export type SwapRun = { key: string; gains: DeltaItem[]; entries: CharacterIndexEntry[] };
 
 export type SwapSection = {
@@ -217,7 +218,7 @@ export type SwapSection = {
 	/** The header: what the swap COSTS, plus any change of reactions or
 	 *  resonance (the archetype — a gain there is the header's business too). */
 	items: DeltaItem[];
-	/** Within it, one run per set of further gains — a caption, then cards. */
+	/** Within it, one run per set of further gains. */
 	runs: SwapRun[];
 	entries: CharacterIndexEntry[];
 };
@@ -241,10 +242,12 @@ function byItems(a: readonly DeltaItem[], b: readonly DeltaItem[]): number {
  * specific change ran to ~50 strips, ~80% of them one or two characters —
  * nearly all the variety is in what a candidate ADDS (every kit brings its
  * own), while what you LOSE falls into 4–6 groups. So a SECTION is the cost
- * (+ any archetype change) and the gains are RUNS inside it, each a caption
- * tile in the grid's own flow. Within a run: owned first, then the order the
- * candidates came in (the grid's, newest first) — ⛔ never "fewest losses
- * first", which is advice.
+ * (+ any archetype change) and the gains are RUNS inside it, seated
+ * together and said by each card's green glyphs (↻ the runs' caption tiles
+ * were tried the same day and cut — ⚓ Nate: the glyphs carry it). Within a
+ * section: owned first, then by run, then the order the candidates came in
+ * (the grid's, newest first) — ⛔ never "fewest losses first", which is
+ * advice.
  */
 export function swapSections(
 	candidates: readonly CharacterIndexEntry[],
@@ -275,10 +278,11 @@ export function swapSections(
 	const sections = Object.values(byKey);
 	for (const s of sections) {
 		s.runs.sort((x, y) => byItems(x.gains, y.gains));
-		// Stable, so the candidates' own order (the grid's: newest first) holds
-		// within each half.
-		for (const r of s.runs) r.entries.sort((x, y) => Number(owned(y.id)) - Number(owned(x.id)));
-		s.entries = s.runs.flatMap((r) => r.entries);
+		// Stable, so run order and then the candidates' own order (the grid's:
+		// newest first) hold within each half.
+		s.entries = s.runs
+			.flatMap((r) => r.entries)
+			.sort((x, y) => Number(owned(y.id)) - Number(owned(x.id)));
 	}
 	return sections.sort(
 		(x, y) => TIER_ORDER.indexOf(x.tier) - TIER_ORDER.indexOf(y.tier) || byItems(x.items, y.items)

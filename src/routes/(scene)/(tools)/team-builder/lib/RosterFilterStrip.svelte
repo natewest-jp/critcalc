@@ -4,8 +4,10 @@
 	 *
 	 * The four roles as icons, the seven elements, the fingerprint's glyphs
 	 * ("Can provide" — step 4: the fingerprint IS the filter vocabulary, so
-	 * the icons you read on a card and a team are the ones you filter by), and
-	 * the count — the filters you READ the grid by, so they sit on top of it.
+	 * the icons you read on a card and a team are the ones you filter by) —
+	 * the filters you READ the grid by, so they sit on top of it. Each group
+	 * is ONE joined glass bar (⚓ Nate 2026-10-13), and the count lives in the
+	 * destination banner below when there is one, here only when there isn't.
 	 * Two glyphs at once ask for characters who provide BOTH. Search, Show and More live
 	 * in band B's character cell (`MoreFilters` is that popover's contents).
 	 * It owns no state: every set is the page's, the same objects the grid
@@ -39,7 +41,8 @@
 		/** The role the filter currently is, if it is exactly one. */
 		activeRole: string | null;
 		onRole: (cat: RoleCategory) => void;
-		count: number;
+		/** Unset when the destination banner says it instead. */
+		count?: number;
 		/** "at your constellations" — the lens the count was read at. */
 		countNote?: string;
 		/** Anything narrowing the roster, band B's filters included. */
@@ -64,11 +67,11 @@
 <!-- ctx-glass: the plates stand on the night, so their tokens are glass ones —
      under the page's ctx-dark a btn--glass rested and HOVERED in slate. -->
 <div class="rfs ctx-glass" role="group" aria-label="Role and element">
-	<div class="rfs-icons" role="group" aria-label="Role">
+	<div class="rfs-bar" role="group" aria-label="Role">
 		{#each ROLE_CATEGORIES as cat (cat.key)}
 			{@const on = activeRole === cat.key}
 			<button
-				class="btn btn--icon btn--glass rfs-role"
+				class="btn btn--icon rfs-role"
 				class:is-active={on}
 				aria-pressed={on}
 				aria-label={cat.label}
@@ -80,11 +83,11 @@
 			</button>
 		{/each}
 	</div>
-	<div class="rfs-icons" role="group" aria-label="Element">
+	<div class="rfs-bar" role="group" aria-label="Element">
 		{#each ELEMENTS as el (el)}
 			{@const on = filters.elements.has(el)}
 			<button
-				class="btn btn--icon btn--glass rfs-el"
+				class="btn btn--icon rfs-el"
 				class:is-active={on}
 				style:--el={elColor(el)}
 				aria-pressed={on}
@@ -99,12 +102,12 @@
 	<!-- The fingerprint's own order and clusters (Survival · Support · Damage). -->
 	<div class="rfs-glyphs" role="group" aria-label="Can provide">
 		{#each FINGERPRINT as c (c.cluster)}
-			<span class="rfs-icons">
+			<span class="rfs-bar">
 				{#each c.facets as facet (facet)}
 					{@const on = activeFacets.has(facet)}
 					{@const f = FACET[facet]}
 					<button
-						class="btn btn--icon btn--glass rfs-glyph"
+						class="btn btn--icon rfs-glyph"
 						class:is-active={on}
 						aria-pressed={on}
 						aria-label={`Can provide: ${f?.label ?? facet}`}
@@ -118,11 +121,13 @@
 		{/each}
 	</div>
 	<span class="rfs-end">
-		<p class="rfs-count" role="status">
-			{count} character{count === 1 ? '' : 's'}{#if countNote}<span class="rfs-count-note"
-					>{countNote}</span
-				>{/if}
-		</p>
+		{#if count !== undefined}
+			<p class="rfs-count" role="status">
+				{count} character{count === 1 ? '' : 's'}{#if countNote}<span class="rfs-count-note"
+						>{countNote}</span
+					>{/if}
+			</p>
+		{/if}
 		{#if anyActive}
 			<button class="btn btn--sm btn--glass" onclick={onClear}>Clear</button>
 		{/if}
@@ -139,9 +144,30 @@
 		align-items: center;
 		gap: 0.5rem 1rem;
 	}
-	.rfs-icons {
+	/* ONE glass bar per group (⚓ Nate 2026-10-13), the segmented group's
+	   build on the band's plate: a 2px track, its buttons bare inside it, so
+	   a group reads as one object and the gaps between groups do the
+	   grouping. Hover and chosen are the glass ladder's (app.css: density +
+	   an ink ring / a gold ring). */
+	.rfs-bar {
 		display: flex;
-		gap: 4px;
+		gap: 2px;
+		padding: 2px;
+		border-radius: var(--r-sm);
+		background: var(--surface); /* = --glass-panel, via .ctx-glass */
+	}
+	.rfs-bar > .btn {
+		border-radius: var(--r-xs);
+		background: transparent;
+	}
+	.rfs-bar > .btn:hover:not(:disabled) {
+		background: var(--surface-hover);
+		box-shadow: inset 0 0 0 1px var(--glass-ring);
+	}
+	.rfs-bar > .btn.is-active {
+		background: var(--surface-hover);
+		box-shadow: inset 0 0 0 1px var(--sel-ring);
+		color: var(--text);
 	}
 	.rfs-role,
 	.rfs-el {
@@ -149,8 +175,8 @@
 		align-items: center;
 		justify-content: center;
 		gap: 1px;
-		height: 30px;
-		min-width: 30px;
+		height: 26px;
+		min-width: 28px;
 	}
 	/* The glyph row: its clusters at the fingerprint's own spacing, a wider
 	   gap between them than inside them. */
@@ -163,7 +189,7 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		height: 30px;
+		height: 26px;
 		min-width: 26px;
 		padding: 0;
 		color: var(--text);
@@ -183,7 +209,7 @@
 		object-fit: contain;
 	}
 	/* An element is chosen in its own hue — the element chip's grammar. */
-	.rfs-el.is-active {
+	.rfs-bar > .rfs-el.is-active {
 		box-shadow: inset 0 0 0 1px var(--el);
 	}
 	.rfs-end {

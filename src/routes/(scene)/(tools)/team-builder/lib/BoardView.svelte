@@ -774,14 +774,10 @@
 	}
 
 	/* ── The lineup ── */
-	/* The row's frame. At rest it holds its geometry with no paint, so
-	   selecting a row moves nothing; selected, the game's frame — a ring and a
-	   gold bar at its end — in the site's gold for "chosen". */
 	/* The row's frame hugs the RINGS: the art's overhang is pulled out of the
 	   layout (a negative margin) and the frame (::before) starts below it, so
-	   hair rises over the frame's top edge. At rest the frame is unpainted, so
-	   selecting a row moves nothing; selected it is the game's — a ring whose
-	   END is heavier — in the site's gold for "chosen". */
+	   hair rises over the frame's top edge. Its heavy END is the team's hue at
+	   rest too; selecting the row closes the ring, so selecting moves nothing. */
 	.bv-slots {
 		position: relative;
 		display: flex;
@@ -795,29 +791,22 @@
 		position: absolute;
 		inset: var(--over) 0 0;
 		border: 1px solid transparent;
-		border-right-width: 5px;
+		border-right: 5px solid var(--team-hue);
 		border-radius: var(--r-md);
 		pointer-events: none;
 		transition: border-color var(--t-snap);
 	}
-	/* The team's HUE, as an edge on the row's left — the key to the frames
-	   its members wear in the Characters grid (§11.6 item 8). */
-	.bv-slots::after {
-		content: '';
-		position: absolute;
-		top: var(--over);
-		bottom: 0;
-		left: 0;
-		width: 3px;
-		border-radius: var(--r-md) 0 0 var(--r-md);
-		background: var(--team-hue);
-		pointer-events: none;
-	}
+	/* ↻ Nate 2026-10-13: the team's HUE is the row's heavy END, always — the
+	   key to the frames its members wear in the Characters grid (§11.6 item
+	   8) — and selecting the row closes the ring in the same hue. (It was a
+	   3px edge on the left with a gold ring and end on selection.) */
 	.bv-slots:hover:not(.bv-slots--sel)::before {
-		border-color: var(--line-soft);
+		border-top-color: var(--line-soft);
+		border-bottom-color: var(--line-soft);
+		border-left-color: var(--line-soft);
 	}
 	.bv-slots--sel::before {
-		border-color: var(--sel-ring);
+		border-color: var(--team-hue);
 	}
 	.bv-slots--nudge {
 		animation: nudge 120ms 2;

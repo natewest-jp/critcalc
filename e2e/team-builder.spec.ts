@@ -33,7 +33,10 @@ import { encodeBoard } from '../src/lib/utils/boardUrl';
  *  +Vodyanitsa). */
 const ROSTER_SIZE = 127;
 
-const matchCount = async (page: Page) => parseInt(await page.locator('.rfs-count').innerText(), 10);
+// The count lives in the destination banner while a team is selected, in the
+// filter strip otherwise.
+const matchCount = async (page: Page) =>
+	parseInt(await page.locator('.rfs-count, .tb-dest-count').first().innerText(), 10);
 
 test.describe('roster and facets', () => {
 	test("the filter bar's role icons narrow and section the roster", async ({ page }) => {

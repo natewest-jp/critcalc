@@ -408,20 +408,21 @@
 		border-radius: 6px;
 		pointer-events: none;
 	}
-	/* The tab hangs FROM the top bar: bar + tab is one 20px square and the
-	   number centres in the whole of it. */
+	/* The tab hangs FROM the top bar: bar + tab is one square and the number
+	   centres in the whole of it. ↻ Nate 2026-10-13: as wide as the glyph
+	   column under it (was 20px), so the tab caps the column. */
 	.cc-tab {
 		position: absolute;
 		top: calc(-1 * var(--cc-bar-top));
 		right: 0;
-		width: 20px;
-		height: 20px;
+		width: var(--cc-col);
+		height: var(--cc-col);
 		display: grid;
 		place-items: center;
 		border-radius: 0 6px 0 6px;
 		background: var(--hue);
 		color: var(--bright-ink); /* ink on a bright fill */
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-bold);
 		line-height: 1;
 	}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import { onMount, untrack } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -51,10 +51,7 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type CardGlyph } from '$lib/components/CharacterCard.svelte';
-	import CharacterGrid, {
-		type GridRun,
-		type GridSection
-	} from '$lib/components/CharacterGrid.svelte';
+	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import SwapDelta from './lib/SwapDelta.svelte';
@@ -70,7 +67,6 @@
 		swapSections,
 		teamHue,
 		teamLabel,
-		type DeltaItem,
 		type SwapSection,
 		type SwapTier
 	} from './lib/team';
@@ -450,6 +446,24 @@
 	});
 
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
+
+	// ⚓ A swap's suggestions are read from the TOP (Nate 2026-10-13): the
+	// grid's scroller is the roster's too, so entering swap mode — or moving
+	// it to another slot — puts it back at the first section, and leaving it
+	// returns the roster to where you were reading.
+	let rosterHost: HTMLElement | undefined = $state();
+	let lastSwapKey: string | null = null;
+	let rosterScrollTop = 0;
+	$effect.pre(() => {
+		const key = swapping ? `${swapping.teamId}:${swapping.slot}:${swapping.incumbent}` : null;
+		const was = lastSwapKey;
+		lastSwapKey = key;
+		if (key === was) return;
+		const scroller = untrack(() => rosterHost)?.querySelector<HTMLElement>('.cg-scroll');
+		if (!scroller) return;
+		if (was === null) rosterScrollTop = scroller.scrollTop;
+		void tick().then(() => (scroller.scrollTop = key === null ? rosterScrollTop : 0));
+	});
 
 	/** The pick, in swap mode: the swap itself, then out of the mode. Band A
 	 *  says what happened, with Undo; when the swap broke a pinned rotation it
@@ -866,8 +880,6 @@
 		const other = everyone.filter((e) => !samePosition(e.id));
 		// Plain objects, not a Set/Map: a pure fold, nothing here is state.
 		const meta: Record<string, { section: SwapSection; tierStart: boolean; kicker: string }> = {};
-		/** Each run's further gains — its caption (A). */
-		const runGains: Record<string, DeltaItem[]> = {};
 		/** Each candidate's gained capabilities — their card's green glyphs (B). */
 		const gains: Record<string, FacetKey[]> = {};
 		const sections: GridSection[] = [];
@@ -892,21 +904,19 @@
 					kicker: kickerOf(sec.tier)
 				};
 				seen.push(sec.tier);
-				const runs = sec.runs.map((r) => {
-					runGains[prefix + r.key] = r.gains;
+				for (const r of sec.runs) {
 					const facets = [...sec.items, ...r.gains].flatMap((i) =>
 						i.kind === 'facet' && i.sign > 0 ? [i.facet] : []
 					);
 					for (const e of r.entries) gains[e.id] = facets;
-					return { key: prefix + r.key, entries: r.entries };
-				});
-				sections.push({ key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries, runs });
+				}
+				sections.push({ key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries });
 			}
 		};
 		add(same, '', (t) => SWAP_TIER_LABEL[t]);
 		const otherLabel = swapOtherPosition ? POSITION_LABEL[swapOtherPosition] : '';
 		if (swapOtherShown) add(other, 'other:', (t) => `${otherLabel} · ${SWAP_TIER_LABEL[t]}`);
-		return { sections, meta, runGains, gains, otherCount: other.length, otherLabel };
+		return { sections, meta, gains, otherCount: other.length, otherLabel };
 	});
 
 	/** Escape leaves swap mode — unless a modal or a menu took it first. */
@@ -1011,17 +1021,17 @@
 	</header>
 {/snippet}
 
-<!-- A run's caption (§11.6 item 20, ↻ option A): what these candidates ADD
-     beyond the section's header, as one cell in the grid's own flow — so a
-     run of one costs a tile's width, not a row. A run that adds nothing
-     more has no caption. -->
-{#snippet swapRunHead(_section: GridSection, run: GridRun)}
-	{@const items = swapGrid?.runGains[run.key] ?? []}
-	{#if items.length}
-		<div class="tb-swap-run">
-			<SwapDelta {items} stacked />
-		</div>
-	{/if}
+<!-- The grid's count, at the destination banner's end (⚓ Nate 2026-10-13:
+     beside the filters it wrapped to a line of its own). Swapping, it counts
+     who is offered. -->
+{#snippet destCount()}
+	{@const n = swapGrid
+		? swapGrid.sections.reduce((sum, s) => sum + s.entries.length, 0)
+		: split.matches.length}
+	<span class="tb-dest-count"
+		>{n} character{n === 1 ? '' : 's'}{#if countNote}<span class="tb-dest-note">{countNote}</span
+			>{/if}</span
+	>
 {/snippet}
 
 <!-- The other position's door, at the foot of the swap grid. -->
@@ -1321,7 +1331,7 @@
 			{activeFacets}
 			activeRole={activeCategory?.key ?? null}
 			onRole={openCategory}
-			count={split.matches.length}
+			count={swapping || selectedTeam ? undefined : split.matches.length}
 			{countNote}
 			anyActive={anyFilterActive}
 			onClear={clearAllFilters}
@@ -1340,6 +1350,7 @@
 		{#if swapping}
 			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 				Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
+				{@render destCount()}
 				<button
 					class="btn btn--icon tb-dest-close"
 					onclick={() => (swapping = null)}
@@ -1354,6 +1365,7 @@
 				{:else}
 					Adding to {selectedLabel} · {destFilled}/4
 				{/if}
+				{@render destCount()}
 			</p>
 		{/if}
 		<div class="tb-sourcebox tb-sourcebox--fill">
@@ -1361,14 +1373,13 @@
 				<!-- ↻ §11.2: the filters are the bar above; what is left in here is
 				     the grid proper. In swap mode it is sectioned by what each swap
 				     does, the uncurated kits a tier of their own. -->
-				<div class="tb-roster">
+				<div class="tb-roster" bind:this={rosterHost}>
 					<CharacterGrid
 						roster={split.matches}
 						{filters}
 						tile={rosterTile}
 						sections={swapGrid?.sections ?? rosterSections}
 						sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
-						runHead={swapGrid ? swapRunHead : undefined}
 						belowGrid={swapGrid ? swapFoot : rosterStubs}
 						emptyMessage={rosterEmptyMessage}
 					/>
@@ -1897,10 +1908,22 @@
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
+	.tb-dest-count {
+		margin-left: auto;
+		padding-right: 6px;
+		text-transform: uppercase;
+		letter-spacing: var(--ls-wide);
+		white-space: nowrap;
+	}
+	.tb-dest-note {
+		margin-left: 0.35em;
+		text-transform: none;
+		letter-spacing: var(--ls-tight);
+		font-weight: var(--fw-regular, 400);
+	}
 	/* Swapping, the banner ends in its ✕ (Escape does the same) — bare ink on
 	   the hue, not a plate. */
 	.tb-dest-close {
-		margin-left: auto;
 		width: 22px;
 		height: 22px;
 		background: none;
@@ -1917,14 +1940,6 @@
 		margin: 0.6rem 0 0;
 		display: flex;
 		justify-content: center;
-	}
-	/* A run's caption cell: the gains stacked, top-left, bare on the night
-	   with a rule in the gain hue down its leading edge. */
-	.tb-swap-run {
-		align-self: start;
-		padding: 4px 0 4px 10px;
-		border-left: 2px solid var(--ui-positive);
-		font-size: var(--fs-sm);
 	}
 	.tb-swap-quiet {
 		color: var(--muted);
