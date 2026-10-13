@@ -93,19 +93,39 @@ pick there filled a BOARD team.
   the upright card frees 22px of height.
 - Forms A (today's disc) and B (side portrait, chip in the column).
 
-## 4. Open
+## 4. Open (at the merge, 2026-10-13)
 
-- ⏭ **Help #team** describes the old bench ("one and the same team in both
-  tools", "⇄ … to compare replacements") — rewritten with the static pages;
-  the line-by-line proposal is in the session's hand-off.
-- ⏭ Swap mode's first section when ADDING still reads "Keeps everything"
-  (proposed: "Adds") — copy, waiting on Nate.
-- ⏭ At 80px tall the row frame's wide corner radius makes the strip read as a
-  pill — judge on a phone.
-- 👤 Nate redraws the tail artwork at the 210 ribbon (`bench-clip-path.svg` 420
-  wide at 2×, `bench-inset-point.svg` ring 400 = 210 − 2 × RIBBON_EDGE at 2×,
-  stroke 4 at 2×); then re-transcribe `TAIL` and delete the `X` stretch.
-- ⏭ The lab's older "The bench, on the scene" specimen is a hand-drawn
-  proposal of the 200px card and is now stale.
-- 👤 Safari: new visual work (the hover ring via `:has()`, the paint fade, the
-  art mask) — Nate's eyes.
+**This round's own leftovers**
+
+- 👤 **Tail artwork** — Nate redraws it at the 210 ribbon: `bench-clip-path.svg`
+  420 wide at 2×, `bench-inset-point.svg` ring 400 (= 210 − 2 × RIBBON_EDGE) at
+  2×, stroke 4 at 2×. Then re-transcribe `TAIL` in `benchBand.svelte.ts` and
+  delete the `X` stretch + `TAIL_ART_W`.
+- ⏭ **Copy, proposed and unruled:** swap mode's first section when ADDING still
+  reads "Keeps everything" (proposed: "Adds"); the destination strip's "Adding
+  to the Planner's team" is kept from the board's existing pattern.
+- ⏭ **Help #team** still describes the old bench ("one and the same team in both
+  tools", ⇄ "to compare replacements", ✕, "the Team Builder's roster") — goes to
+  the static-pages rewrite, as a numbered line-by-line proposal.
+- ⏭ At 80px tall the phone strip's wide frame radius reads as a pill — judge on
+  a real phone.
+- 👤 **Safari** — the `:has()` hover ring, the magnifier's paint fade, the art's
+  `fadeRight` mask and the ribbon at 210 are new visual work.
+- ⏭ The lab's older "The bench, on the scene" specimen is a hand-drawn 200px
+  card and is stale; the PNG export's label column also still draws the
+  pre-bench portrait label (stale before this round).
+
+**Before the static-pages rewrite (from the 2026-10-13 scan)**
+
+- The Team Builder's **phone pass**: band A's swap notice doesn't fold at narrow
+  widths; team hues are still `--team-hue-*` placeholders.
+- **Step-6 copy** (tier names, "Loses nothing", "Replacing X · Battlefield 2",
+  the notice sentences) — rule now or inside the rewrite.
+- Decide whether CLAUDE.md's launch-boundary **simplification pass** comes before
+  the help is written.
+- The static pages themselves: the TB Help chapter is almost entirely stale; the
+  retired "never verdicts" creed is still in About, the FAQ, the Planner chapter
+  and `seo.ts`; undocumented — boards/battlefields/fingerprint/swap mode/Library,
+  the aura log, team bonuses, Total, zoom popover, tabs, Share menu, the Viz
+  "Instruments shown" control, `?c=`.
+- **Pre-launch:** a site-wide animation sweep (roadmap memory).
