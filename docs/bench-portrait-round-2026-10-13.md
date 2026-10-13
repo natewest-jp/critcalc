@@ -56,9 +56,9 @@ pick there filled a BOARD team.
   the band's BOTTOM (centred, it ended 1px short of the chip — measured).
 - `BENCH_CARD_W` 200 → 165 (⚓ Nate) → **181**: ⚓ the RIBBON is as wide as the
   brand above it (mark + wordmark, ⛔ not the BETA tag, which will be dropped).
-  Measured to the wordmark's ink: 203; tune(nate) by eye: **208** (card 184).
-  ⚠️ Nate's tail artwork was drawn at a 224 ribbon — until it is redrawn at 208
-  (2× = 416), `benchBand.svelte.ts` stretches each tail path linearly to the
+  Measured to the wordmark's ink: 203; tune(nate) by eye: **210** (card 186).
+  ⚠️ Nate's tail artwork was drawn at a 224 ribbon — until it is redrawn at 210
+  (2× = 420), `benchBand.svelte.ts` stretches each tail path linearly to the
   new width (the frame is then not an exact parallel offset along the taper).
 - ⚠️ The magnifier fades on the ring's clock (`--t-snap`) in the PAINT, never
   element opacity (the ribbon is transform-placed); `visibility` rides the same
@@ -102,8 +102,8 @@ pick there filled a BOARD team.
   (proposed: "Adds") — copy, waiting on Nate.
 - ⏭ At 80px tall the row frame's wide corner radius makes the strip read as a
   pill — judge on a phone.
-- 👤 Nate redraws the tail artwork at the 208 ribbon (`bench-clip-path.svg` 416
-  wide at 2×, `bench-inset-point.svg` ring 396 = 208 − 2 × RIBBON_EDGE at 2×,
+- 👤 Nate redraws the tail artwork at the 210 ribbon (`bench-clip-path.svg` 420
+  wide at 2×, `bench-inset-point.svg` ring 400 = 210 − 2 × RIBBON_EDGE at 2×,
   stroke 4 at 2×); then re-transcribe `TAIL` and delete the `X` stretch.
 - ⏭ The lab's older "The bench, on the scene" specimen is a hand-drawn
   proposal of the 200px card and is now stale.

@@ -100,8 +100,8 @@ export type BenchHostRegistration = {
  *  MEASURED, not derived: the mark's ink starts at the tool gutter (32px, the
  *  ribbon's own left edge) and the wordmark's INK ends at 234.96 (its box at
  *  236.47 — trailing letter-spacing + the p's side bearing), so the ribbon
- *  measured 203. 🎛️ tune(nate): 208 by eye (205 → 207 → 208), so the
- *  card is 208 − 2 × RIBBON_CHROME = 184 — his value, ⛔ never re-derived. ⚠ RE-MEASURE if the
+ *  measured 203. 🎛️ tune(nate): 210 by eye (205 → 207 → 208 → 210), so
+ *  the card is 210 − 2 × RIBBON_CHROME = 186 — his value, ⛔ never re-derived. ⚠ RE-MEASURE if the
  *  wordmark's face, size or tracking moves (SiteChrome `.chrome-wordmark`),
  *  or if the mark is redrawn.
  *
@@ -122,7 +122,7 @@ export type BenchHostRegistration = {
  *  ⚠ THE PLANNER PAYS FOR THIS IN CHART WIDTH, and that is the good direction
  *  of the trade: horizontal is scrollable AND zoomable in a Gantt, vertical is
  *  neither. 40px of tracks (~3% at 1600) buys 40px × 4 slots of height. */
-export const BENCH_CARD_W = 184;
+export const BENCH_CARD_W = 186;
 
 /** 🎛️ The portrait disc, which is also THE CARD'S WHOLE HEIGHT — the band, the
  *  rail's two tiles, and the column's two rows all derive from it.
