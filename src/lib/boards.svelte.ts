@@ -433,6 +433,13 @@ class BoardsState {
 		}));
 	}
 
+	/** Put a board's teams back exactly as they were — a swap's Undo. Whole
+	 *  teams, pins included: under No repeats a swap may have moved its
+	 *  candidate off another team, and that team comes back too. */
+	restoreTeams(boardId: string, teams: readonly BoardTeam[]): void {
+		this.#updateBoard(boardId, (b) => ({ ...b, teams: teams.map((t) => ({ ...t })) }));
+	}
+
 	/** Pin a saved rotation as this team's (null unpins). */
 	pin(boardId: string, teamId: string, rotationId: string | null): void {
 		this.#updateTeam(boardId, teamId, (t) => ({ ...t, pinnedRotationId: rotationId ?? undefined }));

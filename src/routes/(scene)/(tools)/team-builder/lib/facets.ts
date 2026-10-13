@@ -65,20 +65,18 @@ export type RosterSplit = {
 };
 
 /**
- * What the ONE finder is asked. ⚓ 2026-10-07: the Roster grid and the
- * audition's candidates are the same question now — four pipelines used to
- * answer "who could do this?" and disagreed (the audition ignored ownership,
- * the slot alternatives ignored the constellation lens).
+ * What the ONE finder is asked. ⚓ 2026-10-07: four pipelines used to answer
+ * "who could do this?" and disagreed (the audition ignored ownership, the
+ * slot alternatives ignored the constellation lens). ↻ 2026-10-13: swap mode
+ * asks this same finder and groups what it returns, so `exclude` and `rank`
+ * — the audition's half — retired with it (a swap leaves out the team and
+ * sorts owned first per section, in `swapSections`).
  */
 export type FinderQuery = {
 	identity: IdentityFilters;
 	facets: ReadonlySet<FacetKey>;
 	ownershipView?: OwnershipView;
 	roles?: RoleFilter;
-	/** Never offered — an audition's own team. */
-	exclude?: ReadonlySet<string>;
-	/** Owned characters first, keeping the roster's order within each half. */
-	rank?: 'ownedFirst';
 };
 
 export function splitRoster(
@@ -87,11 +85,10 @@ export function splitRoster(
 	conCapOf: (id: string) => number,
 	ownershipOf: (id: string) => 'owned' | 'wishlist' | undefined = () => undefined
 ): RosterSplit {
-	const { identity, facets, ownershipView = 'all', roles, exclude, rank } = query;
+	const { identity, facets, ownershipView = 'all', roles } = query;
 	const matches: CharacterIndexEntry[] = [];
 	const uncurated: CharacterIndexEntry[] = [];
 	for (const entry of roster) {
-		if (exclude?.has(entry.id)) continue;
 		if (!matchesIdentity(entry, identity)) continue;
 		if (ownershipView !== 'all' && ownershipOf(entry.id) !== ownershipView) continue;
 		if (roleFilterActive(roles) && !matchesRoleFilter(roles.rolesOf(entry.id), roles)) continue;
@@ -102,11 +99,6 @@ export function splitRoster(
 		} else if (matchesFacets(entry.caps, facets, conCapOf(entry.id))) {
 			matches.push(entry);
 		}
-	}
-	if (rank === 'ownedFirst') {
-		const owned = (e: CharacterIndexEntry) => (ownershipOf(e.id) === 'owned' ? 0 : 1);
-		// Array.prototype.sort is stable, so roster order holds within each half.
-		matches.sort((x, y) => owned(x) - owned(y));
 	}
 	return { matches, uncurated };
 }

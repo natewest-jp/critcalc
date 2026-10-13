@@ -6,7 +6,6 @@ import {
 	gridNames,
 	moreChip,
 	provideGlyph,
-	benchNames,
 	boardNames,
 	setConMode,
 	KEYS
@@ -34,7 +33,10 @@ import { encodeBoard } from '../src/lib/utils/boardUrl';
  *  +Vodyanitsa). */
 const ROSTER_SIZE = 127;
 
-const matchCount = async (page: Page) => parseInt(await page.locator('.rfs-count').innerText(), 10);
+// The count lives in the destination banner while a team is selected, in the
+// filter strip otherwise.
+const matchCount = async (page: Page) =>
+	parseInt(await page.locator('.rfs-count, .tb-dest-count').first().innerText(), 10);
 
 test.describe('roster and facets', () => {
 	test("the filter bar's role icons narrow and section the roster", async ({ page }) => {
@@ -319,106 +321,59 @@ test.describe('the board', () => {
 	});
 });
 
-test.describe('audition', () => {
-	test('pins the incumbent, offers candidates, and commits a slot swap', async ({ page, seed }) => {
-		await seed({ team: { slots: ['bennett', 'jean', 'diona', 'gorou'] } });
-		// Bennett holds slot 0 — the Planner bench's ⇄ arrives as ?swap=0.
-		await openTool(page, '/team-builder?swap=0');
-		await page.locator('.cmp-ref').first().waitFor();
+/**
+ * ⚓ SWAP MODE (lineups design §11.6 item 20, 2026-10-13) — Compare and
+ * Audition retired into it. A FILLED portrait in the SELECTED row swaps its
+ * slot: the grid regroups by what the swap does to the TEAM, a pick swaps
+ * and leaves, and band A offers Undo.
+ */
+test.describe('swap mode', () => {
+	const enterSwap = async (page: Page, slot: number) => {
+		// A one-team board shows its row selected already, so the portrait swaps
+		// at once (§11.6 item 8: a swap takes a click on a row SHOWN selected).
+		const row = page.locator('.bv-team').first();
+		await expect(row.locator('.bv-slots--sel')).toHaveCount(1);
+		await row.locator('.bv-slot').nth(slot).click();
+		await expect(page.locator('.tb-dest')).toHaveText(/Replacing/);
+	};
 
-		// ⚓ The incumbent is the REFERENCE, not a peer with a badge: it has its
-		// own row above the candidates and is not one of the chips at all.
-		await expect(page.locator('.cmp-ref')).toHaveCount(1);
-		await expect(page.locator('.cmp-ref-role')).toHaveText(/slot 1/);
-		await expect(page.locator('.cmp-col'), 'no candidates picked yet').toHaveCount(1);
+	test('regroups the grid, swaps on a pick, and undoes', async ({ page, seed }) => {
+		await seed({ board: { teams: [['bennett', 'xiangling', 'xingqiu', 'sucrose']] } });
+		await openTool(page, '/team-builder');
+		await enterSwap(page, 0);
+		await expect(page.locator('.tb-dest')).toHaveText(/Replacing Bennett/);
 
-		// The lens seeds with the jobs this slot does — ONE chip row now, on the
-		// glass plate, grouping the chart AND narrowing the candidates.
-		await expect(page.locator('.tb-aud')).toHaveCount(1);
-		expect(await page.locator('.cmp-lenses .chip.active').count()).toBeGreaterThan(0);
+		// Every section says what its swap does; the team is never offered.
+		await expect(page.locator('.tb-swap-head').first()).toBeVisible();
+		// ⚓ Bennett is an off-fielder, so off-fielders are offered; the
+		// on-fielders wait behind one button at the foot of the grid.
+		const offered = await page.locator('.cg-section .cc').count();
+		expect(offered, 'one position at a time').toBeLessThan(ROSTER_SIZE - 4);
+		await page.locator('.tb-swap-foot button').click();
+		await expect(page.locator('.cg-section .cc'), 'everyone but the team').toHaveCount(
+			ROSTER_SIZE - 4
+		);
 
-		// Relaxing every chip is the AND escape hatch, and broadens candidates to
-		// the whole roster minus the team — the deterministic bound.
-		while ((await page.locator('.cmp-lenses .chip.active').count()) > 0) {
-			await page.locator('.cmp-lenses .chip.active').first().click();
-		}
-		await expect(page.locator('.tb-cand')).toHaveCount(ROSTER_SIZE - 4);
+		await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
+		expect(await boardNames(page)).toEqual(['Furina', 'Xiangling', 'Xingqiu', 'Sucrose']);
+		await expect(page.locator('.tb-dest'), 'a pick leaves swap mode').not.toHaveText(/Replacing/);
 
-		await page.locator('.tb-cand', { hasText: 'Furina' }).first().click();
-		await page.locator('.cmp-take').first().waitFor();
-		await expect(page.locator('.cmp-col:not(.cmp-ref)')).toHaveCount(1);
-
-		// The errand commits into the Planner's tab and returns there.
-		await page.locator('.cmp-take').first().click();
-		await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
-
-		const names = await benchNames(page);
-		expect(names, 'Furina replaces Bennett in slot 0').toContain('Furina');
-		expect(names).not.toContain('Bennett');
-		expect(page.url(), 'the swap never touches the URL').not.toContain('team=');
+		await page.getByRole('button', { name: 'Undo' }).click();
+		expect(await boardNames(page)).toEqual(['Bennett', 'Xiangling', 'Xingqiu', 'Sucrose']);
 	});
 
-	test('a slot with no capability to match on falls back to element', async ({ page, seed }) => {
-		// ⚓ 17 of 123 characters have no ally-facing capability, and they are not a
-		// curation gap — they are MAIN DPS as a role (Diluc here). Auditioning your
-		// carry is normal, and it is exactly where "who covers what they cover" has
-		// nothing to say, because a DPS's job is damage and this site does not
-		// compute damage. Without the fallback this is a wall of ~118 chips.
-		await seed({ team: { slots: ['diluc', 'jean', 'diona', 'gorou'] } });
-		await openTool(page, '/team-builder?swap=0');
-		await page.locator('.cmp-ref').first().waitFor();
+	test('Escape, or the portrait again, leaves without a swap', async ({ page, seed }) => {
+		await seed({ board: { teams: [['bennett', 'jean', 'diona', 'gorou']] } });
+		await openTool(page, '/team-builder');
+		await enterSwap(page, 1);
+		await page.keyboard.press('Escape');
+		await expect(page.locator('.tb-swap-head')).toHaveCount(0);
 
-		// ⛔ ONE vocabulary, never both: element chips REPLACE the capability chips.
-		const chips = page.locator('.cmp-lenses .chip');
-		await expect(chips).toHaveCount(7);
-		await expect(page.locator('.cmp-lenses .chip--element')).toHaveCount(7);
-		await expect(page.locator('.cmp-ctrl-label', { hasText: 'Element' })).toHaveCount(1);
-
-		// Seeded to the incumbent's own element — the opening question is "who else
-		// is Pyro", not a blank one.
-		await expect(page.locator('.cmp-lenses .chip.active')).toHaveCount(1);
-		await expect(page.locator('.cmp-lenses .chip.active')).toHaveText(/pyro/i);
-
-		// …and that is what makes the list usable rather than the whole roster.
-		const pyro = await page.locator('.tb-cand').count();
-		expect(pyro).toBeGreaterThan(0);
-		expect(pyro, 'a slice, not a wall').toBeLessThan(30);
-
-		// Turning it off is still the escape hatch to everyone outside the team.
-		await page.locator('.cmp-lenses .chip.active').click();
-		await expect(page.locator('.tb-cand')).toHaveCount(ROSTER_SIZE - 4);
-	});
-
-	test('the audition reads the swap in your real rotation', async ({ page, seed }) => {
-		// ⚓ 2026-10-07 (approved by Nate): the one comparison only this site can
-		// make. The working rotation is parsed as written and with the candidate
-		// renamed into the incumbent's segments; the parser loads on demand.
-		await seed({
-			team: {
-				slots: ['bennett', 'xiangling', 'xingqiu', 'sucrose'],
-				notation:
-					'Bennett E Q > Xiangling E Q > Xingqiu E Q > Sucrose E Q > Xiangling N3 > Bennett E'
-			}
-		});
-		await openTool(page, '/team-builder?swap=0');
-		await page.locator('.cmp-ref').first().waitFor();
-
-		// No candidate yet → nothing to read against.
-		await expect(page.locator('.cmp-rot')).toHaveCount(0);
-
-		await page.locator('.cmp-add .band-menu-trigger').click();
-		await page.locator('.cmp-add-input').fill('Furina');
-		await page.locator('.cmp-add-pick').first().click();
-
-		const rot = page.locator('.cmp-rot');
-		await expect(rot).toHaveCount(1);
-		// Bennett's ATK buff is read off the rotation as written — a real share
-		// of it, not the chart's cast-on-cooldown claim — and Furina's DMG bonus
-		// off the swapped one.
-		const atk = rot.locator('.cmp-rot-row', { hasText: 'ATK buff' });
-		await expect(atk.locator('.cmp-rot-val').first()).toHaveText(/^[1-9]\d?%$/);
-		const dmg = rot.locator('.cmp-rot-row', { hasText: 'DMG% buff' });
-		await expect(dmg.locator('.cmp-rot-val').nth(1)).toHaveText(/^[1-9]\d*%$/);
+		await page.locator('.bv-team').first().locator('.bv-slot').nth(1).click();
+		await expect(page.locator('.tb-swap-head').first()).toBeVisible();
+		await page.locator('.bv-team').first().locator('.bv-slot').nth(1).click();
+		await expect(page.locator('.tb-swap-head')).toHaveCount(0);
+		expect(await boardNames(page)).toEqual(['Bennett', 'Jean', 'Diona', 'Gorou']);
 	});
 });
 

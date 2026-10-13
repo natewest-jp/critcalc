@@ -4,7 +4,14 @@
 	/** One glyph of the card's fingerprint. The consumer supplies them ALREADY
 	 *  ORDERED (the fingerprint's one order) and decides `lit` against its own
 	 *  lens — the card stays decoupled from the Team Builder's facet system. */
-	export type CardGlyph = { facet: FacetKey; lit: boolean; title: string };
+	export type CardGlyph = {
+		facet: FacetKey;
+		lit: boolean;
+		title: string;
+		/** Swap mode: this capability would be NEW to the team — painted in
+		 *  the fingerprint preview's gain hue. */
+		gain?: boolean;
+	};
 </script>
 
 <script lang="ts">
@@ -136,7 +143,7 @@
 		</span>
 		<span class="cc-glyphs ctx-glass">
 			{#each glyphs as g (g.facet)}
-				<span class="cc-g" class:cc-g--dim={!g.lit} title={g.title}>
+				<span class="cc-g" class:cc-g--dim={!g.lit} class:cc-g--gain={g.gain} title={g.title}>
 					<FingerprintGlyph facet={g.facet} />
 				</span>
 			{/each}
@@ -320,6 +327,11 @@
 	.cc-g--dim {
 		color: color-mix(in srgb, var(--text) 30%, transparent);
 	}
+	/* Swap mode: what this character would ADD to the team — the preview's
+	   gain hue, straight (Fingerprint.svelte's .fp-gain). */
+	.cc-g--gain {
+		color: var(--ui-positive);
+	}
 
 	/* ── The name: a parchment strip under the portrait only ── */
 	.cc-name {
@@ -396,20 +408,21 @@
 		border-radius: 6px;
 		pointer-events: none;
 	}
-	/* The tab hangs FROM the top bar: bar + tab is one 20px square and the
-	   number centres in the whole of it. */
+	/* The tab hangs FROM the top bar: bar + tab is one square and the number
+	   centres in the whole of it. ↻ Nate 2026-10-13: as wide as the glyph
+	   column under it (was 20px), so the tab caps the column. */
 	.cc-tab {
 		position: absolute;
 		top: calc(-1 * var(--cc-bar-top));
 		right: 0;
-		width: 20px;
-		height: 20px;
+		width: var(--cc-col);
+		height: var(--cc-col);
 		display: grid;
 		place-items: center;
 		border-radius: 0 6px 0 6px;
 		background: var(--hue);
 		color: var(--bright-ink); /* ink on a bright fill */
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-bold);
 		line-height: 1;
 	}

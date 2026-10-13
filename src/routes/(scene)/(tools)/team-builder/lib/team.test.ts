@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { CharacterIndexEntry } from '$lib/types/character';
-import type { CapabilitySummary } from '$lib/capabilities/deriveCapabilities';
+import { getAllCharacterIndex } from '$lib/data/characterLookup';
 import {
-	deriveCoverage,
+	checkNamedElsewhere,
+	checkShift,
 	deriveResonances,
-	facetsProvidedBy,
 	parseTeamParam,
 	serializeTeamParam,
-	teamDelta
+	swapDelta,
+	swapSections
 } from './team';
 
 const VALID = new Set(['bennett', 'jean', 'diona', 'gorou', 'xingqiu']);
@@ -69,100 +69,71 @@ describe('deriveResonances', () => {
 	});
 });
 
-describe('deriveCoverage', () => {
-	const entry = (
-		id: string,
-		caps: Partial<CapabilitySummary>[],
-		curated = true
-	): CharacterIndexEntry =>
-		({
-			id,
-			displayName: id.toUpperCase(),
-			curated,
-			caps: caps.map((c) => ({ minCon: 0, conditional: false, ...c }))
-		}) as CharacterIndexEntry;
+describe('swapDelta — what a swap does to the TEAM', () => {
+	const c0 = () => 0;
+	const check = (tag: 'favoured' | 'disfavoured', en: string) => ({ tag, text: { en } });
 
-	it('empty team → empty checklist', () => {
-		expect(deriveCoverage([null, null, null, null], () => 6)).toEqual([]);
-	});
-
-	it('marks facets yes with providers, no otherwise (all-curated team)', () => {
-		const cov = deriveCoverage(
-			[entry('bennett', [{ kind: 'heal', target: 'active' }]), null, null, null],
-			() => 0
+	it('counts a TEAMMATE going dark as a loss (the ripple)', () => {
+		// Chevreuse's ATK buff and RES shred need a Pyro + Electro party; Furina
+		// for Bennett brings Hydro, so they go out though Chevreuse never moved.
+		const d = swapDelta(
+			['chevreuse', 'fischl', 'xiangling', 'bennett'],
+			['chevreuse', 'fischl', 'xiangling', 'furina'],
+			c0
 		);
-		const heal = cov.find((c) => c.facet === 'heal')!;
-		const shield = cov.find((c) => c.facet === 'shield')!;
-		expect(heal.state).toBe('yes');
-		expect(heal.providers).toEqual(['BENNETT']);
-		expect(shield.state).toBe('no');
+		const lost = d.items.flatMap((i) => (i.kind === 'facet' && i.sign < 0 ? [i.facet] : []));
+		expect(lost).toEqual(expect.arrayContaining(['buff:atk', 'resShred']));
+		expect(d.tier).toBe('reactions');
 	});
 
-	it('respects per-member constellation caps', () => {
-		const gorou = entry('gorou', [{ kind: 'heal', target: 'team', minCon: 4 }]);
-		const capAt = (n: number) => deriveCoverage([gorou, null, null, null], () => n);
-		expect(capAt(0).find((c) => c.facet === 'heal')!.state).toBe('no');
-		expect(capAt(4).find((c) => c.facet === 'heal')!.state).toBe('yes');
-	});
-
-	it('facetsProvidedBy lists gate-cleared facets (the audition pre-seed)', () => {
-		const bennett = entry('bennett', [
-			{ kind: 'heal', target: 'active' },
-			{ kind: 'buff', detail: 'baseAtk', target: 'active' },
-			{ kind: 'buff', detail: 'pyroDmgBonus', target: 'active', minCon: 6 }
-		]);
-		expect(facetsProvidedBy(bennett, 0)).toEqual(['heal', 'buff:atk']);
-		expect(facetsProvidedBy(bennett, 6)).toEqual(['heal', 'buff:atk', 'buff:dmg']);
-	});
-
-	it('an uncurated member turns absences into unknown, not no', () => {
-		const cov = deriveCoverage(
-			[
-				entry('bennett', [{ kind: 'heal', target: 'active' }]),
-				entry('stub', [], false),
-				null,
-				null
-			],
-			() => 0
+	it('resonance is part of the delta (⚓ Nate 2026-10-13)', () => {
+		// Two Pyro become one: Fervent Flames goes, and Overloaded arrives.
+		const d = swapDelta(
+			['bennett', 'xiangling', 'xingqiu', 'sucrose'],
+			['bennett', 'fischl', 'xingqiu', 'sucrose'],
+			c0
 		);
-		expect(cov.find((c) => c.facet === 'heal')!.state).toBe('yes');
-		expect(cov.find((c) => c.facet === 'shield')!.state).toBe('unknown');
-	});
-});
-
-describe('teamDelta — what a swap changes about the team', () => {
-	const mk = (
-		id: string,
-		element: string,
-		caps: Partial<CapabilitySummary>[]
-	): CharacterIndexEntry =>
-		({
-			id,
-			name: id,
-			displayName: id[0].toUpperCase() + id.slice(1),
-			rarity: 4,
-			curated: true,
-			element,
-			caps: caps.map((c) => ({ kind: 'heal', minCon: 0, conditional: false, ...c }))
-		}) as CharacterIndexEntry;
-	const bennett = mk('bennett', 'pyro', [{ kind: 'heal' }]);
-	const xiangling = mk('xiangling', 'pyro', [{ kind: 'offFieldDamage' }]);
-	const xingqiu = mk('xingqiu', 'hydro', [{ kind: 'resShred', target: 'enemy' }]);
-	const diona = mk('diona', 'cryo', [{ kind: 'shield' }]);
-	const kazuha = mk('kazuha', 'anemo', [{ kind: 'grouping' }]);
-	const before = [bennett, xiangling, xingqiu, kazuha];
-
-	it('lists what the team gains and what it loses', () => {
-		const d = teamDelta(before, [bennett, xiangling, diona, kazuha], () => 0);
-		expect(d.gained).toEqual(['Shield']);
-		expect(d.lost).toEqual(['RES shred']);
+		expect(d.items).toContainEqual(
+			expect.objectContaining({ kind: 'resonance', sign: -1, key: 'pyro' })
+		);
+		expect(d.tier).toBe('reactions');
 	});
 
-	it('names a resonance change only when the party is full and it changes', () => {
-		const d = teamDelta(before, [bennett, mk('yoimiya', 'pyro', []), xingqiu, kazuha], () => 0);
-		expect(d.resonance).toBeUndefined(); // Fervent Flames either way
-		const swapped = teamDelta(before, [bennett, diona, xingqiu, kazuha], () => 0);
-		expect(swapped.resonance?.before).toContain('Fervent Flames');
-		expect(swapped.resonance?.after).not.toContain('Fervent Flames');
+	it('the same element in and out is a trade, not an archetype change', () => {
+		const d = swapDelta(
+			['xingqiu', 'xiangling', 'bennett', 'sucrose'],
+			['xingqiu', 'xiangling', 'bennett', 'kaedehara_kazuha'],
+			c0
+		);
+		expect(d.items.some((i) => i.kind === 'reaction' || i.kind === 'resonance')).toBe(false);
+		expect(d.items).toContainEqual({ kind: 'facet', sign: -1, facet: 'buff:em' });
+		expect(d.tier).toBe('trades');
+	});
+
+	it('a check enters the delta only when no capability or reaction names it', () => {
+		expect(checkNamedElsewhere(check('favoured', 'Shields'))).toBe(true);
+		expect(checkNamedElsewhere(check('favoured', '{sprite:11034} reactions | Shields'))).toBe(true);
+		expect(checkNamedElsewhere(check('favoured', "Nightsoul's Blessing Characters"))).toBe(false);
+		expect(checkNamedElsewhere(check('favoured', '{sprite:11003} characters | Shields'))).toBe(
+			false
+		);
+	});
+
+	it('a check shift is the team standing better or worse with the boss', () => {
+		expect(checkShift(check('favoured', 'x'), 'unmet', 'met')).toBe(1);
+		expect(checkShift(check('disfavoured', 'x'), 'unmet', 'met')).toBe(-1);
+		expect(checkShift(check('disfavoured', 'x'), 'met', 'unmet')).toBe(1);
+		expect(checkShift(check('favoured', 'x'), 'unknown', 'met')).toBe(0);
+	});
+
+	it('sections skip the team, and run keeps → trades → reactions', () => {
+		const team = ['xingqiu', 'xiangling', 'bennett', 'sucrose'];
+		const roster = getAllCharacterIndex();
+		const sections = swapSections(roster, team, 3, c0);
+		const ids = sections.flatMap((s) => s.entries.map((e) => e.id));
+		for (const id of team) expect(ids).not.toContain(id);
+		const order = ['keeps', 'trades', 'reactions', 'uncurated'];
+		const tiers = sections.map((s) => order.indexOf(s.tier));
+		expect(tiers).toEqual([...tiers].sort((x, y) => x - y));
 	});
 });

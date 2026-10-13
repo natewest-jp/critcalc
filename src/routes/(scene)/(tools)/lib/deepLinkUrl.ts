@@ -5,7 +5,7 @@
  *
  * All three tools take one: the planner's `?r=` (a shared rotation), the Team
  * Builder's `?team=` / `?alts=` / `?swap=` (a hand-off, including the planner's
- * audition), and the Visualizers' `?i=`. Each reads its param in
+ * ⇄ into swap mode), and the Visualizers' `?i=`. Each reads its param in
  * `afterNavigate` and then wants the URL clean, so a refresh or a re-share does
  * not replay a link that has already been applied and a bad one does not linger
  * where a reader will copy it.

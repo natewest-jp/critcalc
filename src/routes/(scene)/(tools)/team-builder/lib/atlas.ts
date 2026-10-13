@@ -8,7 +8,7 @@
  * its own. Its four cards are the Roster's starting screen, picking one is the
  * Roster's role filter, and the drill-down it used to open is now the
  * Roster grid's SECTIONS. The per-slot "alternatives" view retired into the
- * audition, which asks the same question with the slot's own facets.
+ * audition, and the audition into swap mode (2026-10-13).
  */
 
 import type {
@@ -105,7 +105,7 @@ export type DrillRow =
  * Role-scoped drill rows for a card. Support/Survivability → capability facet
  * rows (curated providers within the role, honoring the con cap); DPS → element
  * rows (all role members by element — on-field carries carry no facet). Roster
- * order is preserved, so entries stay sorted by displayName.
+ * order is preserved, so entries keep the grid's order (newest first).
  */
 export function buildDrillRows(
 	category: RoleCategory,

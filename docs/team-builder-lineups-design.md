@@ -1063,4 +1063,86 @@ only; Noelle/Thoma absent too).
       team's capabilities and pinned rotation. ⚓ The lens reads **My
       constellations**; band B's fold thresholds were re-measured for it
       (`FOLD_SHOW_W` 680, `FOLD_LENS_W` 472 — the old pair was already short).
-      ⏭ The Coverage page's toggle still says "My roster".
+      ✅ The Coverage page's toggle reads "My constellations" too (2026-10-13).
+20. **Step 5: swap mode (2026-10-13, `tb/swap-mode`)** — a written proposal, approved
+    without a demo (⚓ Nate: build it and judge it live).
+    - **Entering:** a filled portrait in the SELECTED row (item 8). It wears a gold
+      ring; the destination strip reads "Replacing Furina · Battlefield 2" with a ✕.
+      Escape, the ✕, a second click on the portrait, or a pick leaves it.
+    - **The grid regroups by what the swap does to the TEAM** — the team's
+      fingerprint with the candidate in the slot against the current one, so a
+      teammate's condition going out is a loss (the ripple, §1.7). Four tiers:
+      Keeps everything · Trades · Changes the reactions · Not curated yet. ⚓ Within
+      a tier, ONE HEADER PER SPECIFIC CHANGE ("+ RES shred · − ATK buff"); if it
+      fragments too far on real teams, fall back to tier-only headers. Owned first,
+      then by name — ⛔ never "fewest losses first" (advice).
+    - ⚓ **Resonance is part of the delta**, in the reactions tier (losing Pyro
+      Resonance is as real as losing an ATK buff).
+    - ⚓ **Checks**: a battlefield check enters a header only when no capability or
+      reaction in that header already names it ("breaks Nightsoul"); every check
+      previews on hover.
+    - **Hover previews the REPLACEMENT** — the fingerprint and the checks as they
+      would end.
+    - **A pick swaps and leaves swap mode** (the game's pick). ⚠ The proposal said
+      "undo is the net" and the Builder HAD no undo — so band A's notice now carries
+      **Undo** (`boards.restoreTeams`, whole teams + pins, since No repeats may have
+      moved the candidate off another team). The notice holds 8s when it has a
+      button (`NOTICE_ACTION_MS`), 2.2s otherwise.
+    - ⚓ **Try in Planner lives in band A's notice**: a swap that breaks a pin says so
+      and offers "Try it with Yelan in the Planner" — a NEW tab, the rotation's
+      notation with the name changed (§10.2: the saved rotation is never rewritten).
+      Verified: "National · Furina", unsaved, the saved entry untouched.
+    - **The Planner's ⇄ (`?swap=N`)** arrives as a temporary row at the top of the
+      Lineup ("From the Planner: ⟨tab⟩"), already swapping slot N; a pick renames in
+      that tab and returns, Cancel returns unchanged (§10.3).
+    - **Retired:** Compare, Audition, `compare.ts`, `auditionRotation.ts` (uptime is
+      out, §1; Try in Planner answers it honestly), `CoveragePanel`, the
+      coverage-checklist half of `team.ts` (`deriveCoverage`, `facetsProvidedBy`,
+      `teamDelta` → `swapDelta`/`swapSections`), the finder's `exclude`/`rank`, and
+      §2.5's "stack two fingerprints" (every card carries its own). The bench's
+      `'tb'` host type went too — the Planner is its only host.
+    - **Built:** the model is `team.ts` (`swapDelta`, `swapSections`,
+      `checkNamedElsewhere`, `checkShift`); reactions are named by ONE helper,
+      `$lib/utils/reactionPairs.ts`, shared with `CompositionChips`; a section head
+      is `SwapDelta.svelte`; a check's preview is a ring on `CheckChip` (`shift`).
+      The board's team row became a snippet so the Planner's row reuses it.
+    - ↻ **After Nate used it (same day, two passes) — these WIN over the bullets above:**
+      - ⚓ **Fragmentation:** one header per change ran to ~40–60 strips, ~80% of
+        them one or two characters — the variety is in what a candidate ADDS,
+        while what you LOSE falls into a handful of groups. So a SECTION is the
+        COST (losses + any reaction/resonance change, which keeps the reaction
+        split — ⚓ a definite keep) and like gains are RUNS inside it: 9–16
+        headers on real teams. Two demos ran together: (A) a caption tile per
+        run in the grid's flow — ⛔ CUT, 27–40 captions per ~75 cards read as
+        noise; (B) a candidate's gained glyphs drawn in `--ui-positive` on its
+        own card — ⚓ KEPT, it carries the gains alone. Runs survive only to seat
+        like gains together. Within a section: owned first, then by run, then
+        the grid's order.
+      - ⚓ **On-field / off-field:** a slot is offered its incumbent's position
+        (IT roles; none, or both — Mavuika — counts as either); the other
+        position waits behind one button at the grid's foot.
+      - ⚓ **Default order is newest release first** (`$lib/utils/release.ts`
+        `newestFirst`, shared with the Coverage page).
+      - ⚓ **The destination banner** is a full-width narrow band in the selected
+        team's hue (bright-fill ink, bare ✕), and it carries the grid's COUNT at
+        its end (beside the filters it wrapped); swapping, it counts who is
+        offered. With no team selected the count stays in the filter strip.
+      - ⚓ **The Planner's ⇄ is a state of its own** (option A), not a row on
+        whatever board was open: the Lineup shows only the Planner's team, band
+        A shows no active tab, Save/Share disable and No repeats hides; a tab
+        click or a new board ends it in place.
+      - ⚓ **A swap reads from the top:** entering swap mode (or moving it) scrolls
+        the grid to the top; leaving it restores the roster's scroll.
+      - ⚓ **The board row's frame:** the heavy right END is the team's hue at
+        rest, and selecting the row closes the ring in the same hue (was a 3px
+        hue edge on the left, gold ring + end on selection).
+      - ⚓ **The filter strip's groups are joined glass bars** — roles, elements,
+        and each fingerprint cluster one bar (the segmented group's build on
+        the band plate).
+      - ⚓ **A picked card's slot tab is as wide as the glyph column** (27px).
+      - tune(nate): DMG% `NUDGE` 0.93 → 0.874.
+    - ⏭ **Still open:** the notice's length in band A at narrow widths (it does
+      not fold yet — the phone pass); the working copy (tier names, "Loses
+      nothing", "Replacing X · Battlefield 2", the notice sentences) and the Help
+      chapter, which still describes Compare/Audition, go to the static-pages
+      rewrite (⚓ Nate 2026-10-13: the next major work).

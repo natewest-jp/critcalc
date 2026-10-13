@@ -16,11 +16,16 @@
 
 	let {
 		check,
-		verdict
+		verdict,
+		shift = 0
 	}: {
 		check: BattlefieldCheck;
 		/** The team's standing, when the chip sits beside a team. */
 		verdict?: CheckVerdict;
+		/** A PREVIEW moved this check (swap mode, §11.6 item 20): +1 the team
+		 *  would stand better with the boss, −1 worse. `verdict` is then the
+		 *  standing it would END at, as the fingerprint's preview draws. */
+		shift?: number;
 	} = $props();
 
 	const alternatives = $derived(checkAlternatives(inLang(check.text)));
@@ -45,6 +50,8 @@
 	class:ck--bad={!good}
 	class:ck--met={flag === 'met'}
 	class:ck--warn={flag === 'warn'}
+	class:ck--better={shift > 0}
+	class:ck--worse={shift < 0}
 	{title}
 >
 	<Mark
@@ -100,6 +107,14 @@
 	}
 	.ck--warn > :global(.mark:first-child) {
 		color: var(--ui-danger);
+	}
+	/* THE PREVIEW: a ring in the fingerprint preview's own two hues — gain
+	   straight, loss pulled toward the faint line (--fp-loss-mix's 60%). */
+	.ck--better {
+		box-shadow: inset 0 0 0 1px var(--ui-positive);
+	}
+	.ck--worse {
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-danger) 60%, var(--line-strong));
 	}
 	.ck-alt {
 		display: inline-flex;

@@ -187,30 +187,3 @@ describe('splitRoster — ownership view', () => {
 		expect(matches.map((e) => e.id)).toEqual(['owned', 'wished', 'neither']);
 	});
 });
-
-describe("splitRoster — the audition's half of the finder", () => {
-	const a = entry({ id: 'a', caps: [] });
-	const b = entry({ id: 'b', caps: [] });
-	const c = entry({ id: 'c', caps: [] });
-	const roster = [a, b, c];
-	const ownerOf = (id: string): 'owned' | undefined => (id === 'c' ? 'owned' : undefined);
-
-	it('never offers an excluded character (the team)', () => {
-		const { matches } = splitRoster(
-			roster,
-			{ identity: IDENTITY, facets: new Set(), exclude: new Set(['b']) },
-			() => 0
-		);
-		expect(matches.map((e) => e.id)).toEqual(['a', 'c']);
-	});
-
-	it('ranks owned characters first, keeping roster order within each half', () => {
-		const { matches } = splitRoster(
-			roster,
-			{ identity: IDENTITY, facets: new Set(), rank: 'ownedFirst' },
-			() => 0,
-			ownerOf
-		);
-		expect(matches.map((e) => e.id)).toEqual(['c', 'a', 'b']);
-	});
-});
