@@ -54,8 +54,12 @@ pick there filled a BOARD team.
 - No element badge (⚓ Nate: the planner's bars wear the element, as the
   Builder's cards do for its slots). Names 6px lower; the controls row sits on
   the band's BOTTOM (centred, it ended 1px short of the chip — measured).
-- `BENCH_CARD_W` 200 → **165** (⚓ Nate): pad 6 · portrait 60 · inset 6 · an
-  87px column · pad 6. "Kuki Shinobu" (87.8px) may wrap; the clamp allows it.
+- `BENCH_CARD_W` 200 → 165 (⚓ Nate) → **181**: ⚓ the RIBBON is as wide as the
+  brand above it (mark + wordmark, ⛔ not the BETA tag, which will be dropped).
+  Measured to the wordmark's ink: 203; tune(nate) by eye: **208** (card 184).
+  ⚠️ Nate's tail artwork was drawn at a 224 ribbon — until it is redrawn at 208
+  (2× = 416), `benchBand.svelte.ts` stretches each tail path linearly to the
+  new width (the frame is then not an exact parallel offset along the taper).
 - ⚠️ The magnifier fades on the ring's clock (`--t-snap`) in the PAINT, never
   element opacity (the ribbon is transform-placed); `visibility` rides the same
   transition so it stops taking clicks only once faded.
@@ -74,6 +78,9 @@ pick there filled a BOARD team.
   four cards fit at 320 now, no scroll), 49 at 360, 56 from ~390.
 - ⛔ The desk card no longer appears in the row at any width (the old
   `BENCH_ROW_CARD_FULL_MIN` form).
+- ⚓ The row sits BETWEEN BAND B AND THE SURFACE (Nate: compact enough to belong
+  beside the timeline it labels), where it used to sit above band A —
+  `ToolStack` puts the dock in flow with `order`.
 
 ## 3. Rejected on the way (⛔ don't re-propose)
 
@@ -95,6 +102,9 @@ pick there filled a BOARD team.
   (proposed: "Adds") — copy, waiting on Nate.
 - ⏭ At 80px tall the row frame's wide corner radius makes the strip read as a
   pill — judge on a phone.
+- 👤 Nate redraws the tail artwork at the 208 ribbon (`bench-clip-path.svg` 416
+  wide at 2×, `bench-inset-point.svg` ring 396 = 208 − 2 × RIBBON_EDGE at 2×,
+  stroke 4 at 2×); then re-transcribe `TAIL` and delete the `X` stretch.
 - ⏭ The lab's older "The bench, on the scene" specimen is a hand-drawn
   proposal of the 200px card and is now stale.
 - 👤 Safari: new visual work (the hover ring via `:has()`, the paint fade, the

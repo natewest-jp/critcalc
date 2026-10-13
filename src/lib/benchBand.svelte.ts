@@ -95,7 +95,17 @@ export type BenchHostRegistration = {
 
 /** The converged slot-card width (RotationTimeline's LABEL_W imports this).
  *
- *  🎛️ ⚓ NATE 2026-10-13, the portrait round: 200 → 165. The side portrait
+ *  ⚓ NATE 2026-10-13: THE RIBBON IS AS WIDE AS THE BRAND above it — the
+ *  critcalc.app mark + wordmark, ⛔ NOT the BETA tag (it will be dropped).
+ *  MEASURED, not derived: the mark's ink starts at the tool gutter (32px, the
+ *  ribbon's own left edge) and the wordmark's INK ends at 234.96 (its box at
+ *  236.47 — trailing letter-spacing + the p's side bearing), so the ribbon
+ *  measured 203. 🎛️ tune(nate): 208 by eye (205 → 207 → 208), so the
+ *  card is 208 − 2 × RIBBON_CHROME = 184 — his value, ⛔ never re-derived. ⚠ RE-MEASURE if the
+ *  wordmark's face, size or tracking moves (SiteChrome `.chrome-wordmark`),
+ *  or if the mark is redrawn.
+ *
+ *  The portrait round first cut it 200 → 165: The side portrait
  *  carries the constellation, the rail and the element badge are gone, so the
  *  card is pad 6 + portrait 60 + inset 6 + an 87px column + pad 6 (the
  *  control row needs 54; "Kuki Shinobu" at --fs-lg is 87.8 and may wrap — the
@@ -112,7 +122,7 @@ export type BenchHostRegistration = {
  *  ⚠ THE PLANNER PAYS FOR THIS IN CHART WIDTH, and that is the good direction
  *  of the trade: horizontal is scrollable AND zoomable in a Gantt, vertical is
  *  neither. 40px of tracks (~3% at 1600) buys 40px × 4 slots of height. */
-export const BENCH_CARD_W = 165;
+export const BENCH_CARD_W = 184;
 
 /** 🎛️ The portrait disc, which is also THE CARD'S WHOLE HEIGHT — the band, the
  *  rail's two tiles, and the column's two rows all derive from it.
@@ -536,26 +546,42 @@ const TAIL_LEAD = 23.059;
  * at this edge's 20.96° the tip has to lift ~14px along the axis to stay 5px
  * away. The artwork is a true parallel offset.
  */
+/** The ribbon width Nate's tail artwork was drawn at (2× = 448). */
+const TAIL_ART_W = 224;
+
+/**
+ * ⚠ STOPGAP until the artwork is redrawn at the current RIBBON_W (bench
+ * portrait round, 2026-10-13): each path's x is stretched LINEARLY so its own
+ * end points land on its own sides — `inset` (0 silhouette, RIBBON_EDGE ring
+ * outer, + RIBBON_FRAME_BORDER ring inner) stays put and `TAIL_ART_W − inset`
+ * maps to `RIBBON_W − inset`. The tip still lands on the centre line, but the
+ * frame is no longer an exact parallel offset of the silhouette along the
+ * taper. ⛔ Delete this the moment the redrawn art is transcribed at
+ * TAIL_ART_W === RIBBON_W.
+ */
+const X = (x: number, inset: number) =>
+	+(inset + ((x - inset) * (RIBBON_W - 2 * inset)) / (TAIL_ART_W - 2 * inset)).toFixed(3);
+
 const TAIL = {
 	/** Silhouette, x 0…RIBBON_W, y measured from the tail's top. */
 	outer: (t: number) =>
-		`C 224,${t + 43.772} 211.229,${t + 62.34} 191.887,${t + 69.75}` +
-		`L 113.7885,${t + 99.669}` +
-		`C 112.637,${t + 100.1105} 111.363,${t + 100.1105} 110.2115,${t + 99.669}` +
-		`L 32.113,${t + 69.75}` +
-		`C 12.771,${t + 62.34} 0,${t + 43.772} 0,${t + 23.059}`,
+		`C ${X(224, 0)},${t + 43.772} ${X(211.229, 0)},${t + 62.34} ${X(191.887, 0)},${t + 69.75}` +
+		`L ${X(113.7885, 0)},${t + 99.669}` +
+		`C ${X(112.637, 0)},${t + 100.1105} ${X(111.363, 0)},${t + 100.1105} ${X(110.2115, 0)},${t + 99.669}` +
+		`L ${X(32.113, 0)},${t + 69.75}` +
+		`C ${X(12.771, 0)},${t + 62.34} ${X(0, 0)},${t + 43.772} ${X(0, 0)},${t + 23.059}`,
 	/** Frame ring, OUTER edge — the silhouette inset by RIBBON_EDGE. */
 	ringOuter: (t: number) =>
-		`C 219,${t + 41.7005} 207.506,${t + 58.412} 190.0985,${t + 65.081}` +
-		`L 112,${t + 95}` +
-		`L 33.9015,${t + 65.081}` +
-		`C 16.494,${t + 58.412} 5,${t + 41.7005} 5,${t + 23.059}`,
+		`C ${X(219, 5)},${t + 41.7005} ${X(207.506, 5)},${t + 58.412} ${X(190.0985, 5)},${t + 65.081}` +
+		`L ${X(112, 5)},${t + 95}` +
+		`L ${X(33.9015, 5)},${t + 65.081}` +
+		`C ${X(16.494, 5)},${t + 58.412} ${X(5, 5)},${t + 41.7005} ${X(5, 5)},${t + 23.059}`,
 	/** Frame ring, INNER edge — a sharp point; only the silhouette's is capped. */
 	ringInner: (t: number) =>
-		`C 217,${t + 40.872} 206.017,${t + 56.841} 189.383,${t + 63.2135}` +
-		`L 112,${t + 92.8585}` +
-		`L 34.617,${t + 63.2135}` +
-		`C 17.983,${t + 56.841} 7,${t + 40.872} 7,${t + 23.059}`
+		`C ${X(217, 7)},${t + 40.872} ${X(206.017, 7)},${t + 56.841} ${X(189.383, 7)},${t + 63.2135}` +
+		`L ${X(112, 7)},${t + 92.8585}` +
+		`L ${X(34.617, 7)},${t + 63.2135}` +
+		`C ${X(17.983, 7)},${t + 56.841} ${X(7, 7)},${t + 40.872} ${X(7, 7)},${t + 23.059}`
 };
 
 /**
