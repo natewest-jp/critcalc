@@ -83,7 +83,7 @@
 		mode
 	}: {
 		/** The tool the band is docked to (or traveling toward). */
-		mode: 'rp' | 'tb' | null;
+		mode: 'rp' | null;
 	} = $props();
 
 	// ⚠ FOUR PROPS LEFT WITH THE TAIL (2026-08-12): `height`, `traveling`,
@@ -299,16 +299,8 @@
 							class="bb-act"
 							disabled={!live}
 							onclick={() => char && host?.onSwap(i, char.id)}
-							title={live && char
-								? mode === 'rp'
-									? 'Change who fills this slot'
-									: `Compare ${char.displayName} against replacements`
-								: undefined}
-							aria-label={live && char
-								? mode === 'rp'
-									? 'Change who fills this slot'
-									: `Audition replacements for ${char.displayName}`
-								: 'Swap (empty slot)'}
+							title={live && char ? 'Change who fills this slot' : undefined}
+							aria-label={live && char ? 'Change who fills this slot' : 'Swap (empty slot)'}
 						>
 							<!-- The shared mark set (Lucide via the generator), not hand-cut
 					     paths and certainly not the ⇄/✕ code points — those aren't in

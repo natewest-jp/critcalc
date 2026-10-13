@@ -8,7 +8,7 @@
  * its own. Its four cards are the Roster's starting screen, picking one is the
  * Roster's role filter, and the drill-down it used to open is now the
  * Roster grid's SECTIONS. The per-slot "alternatives" view retired into the
- * audition, which asks the same question with the slot's own facets.
+ * audition, and the audition into swap mode (2026-10-13).
  */
 
 import type {

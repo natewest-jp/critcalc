@@ -53,7 +53,7 @@
 	import { evaluateCheck, type CheckVerdict } from '$lib/endgameChecks';
 	import { teamFingerprint } from '$lib/fingerprint';
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
-	import { teamHue } from './team';
+	import { checkShift, teamHue } from './team';
 	import Fingerprint from './Fingerprint.svelte';
 	import CheckChip from './CheckChip.svelte';
 	import BossDetail from './BossDetail.svelte';
@@ -88,7 +88,10 @@
 		onSeason,
 		previewId = null,
 		filteredFacets,
-		onFind
+		onFind,
+		swapping = null,
+		onSwap,
+		errand = null
 	}: {
 		board: Board;
 		/** The board's wide form (⚓ Nate 2026-10-10: "too cramped and too
@@ -114,6 +117,15 @@
 		/** A faint fingerprint slot was clicked: find who would provide it, for
 		 *  this team. */
 		onFind?: (teamId: string, facet: FacetKey) => void;
+		/** SWAP MODE (§11.6 item 20): the slot being replaced. The hovered card
+		 *  previews the team with it in that slot. */
+		swapping?: { teamId: string; slot: number } | null;
+		/** A FILLED portrait in the SELECTED row was clicked — swap that slot
+		 *  (or leave swap mode, if it is the one being swapped). */
+		onSwap?: (teamId: string, slot: number) => void;
+		/** The Planner's ⇄ (`?swap=N`): ITS team, as a temporary row on top of
+		 *  the lineup (§10.3) — board-less, so it is drawn and never stored. */
+		errand?: { team: BoardTeam; label: string; onCancel: () => void } | null;
 	} = $props();
 
 	const portrait = $derived(roomy ? BOARD_PORTRAIT_ROOMY : BOARD_PORTRAIT);
@@ -159,14 +171,20 @@
 	/** The team a pick of `previewId` would make — the pick is the game's
 	 *  toggle, so a member previews their own removal, and a full team
 	 *  previews nothing (the pick would only nudge). */
-	function previewFor(team: BoardTeam, facts: ReturnType<typeof teamFacts>) {
+	function previewIds(team: BoardTeam, facts: ReturnType<typeof teamFacts>): string[] | null {
 		if (!previewId || team.id !== selectedTeamId) return null;
-		const ids = facts.ids.includes(previewId)
+		// Swapping: the candidate takes the slot (a teammate is never offered).
+		if (swapping?.teamId === team.id)
+			return facts.ids.includes(previewId)
+				? null
+				: team.slots
+						.map((s, i) => (i === swapping.slot ? previewId : s))
+						.filter((s): s is string => !!s);
+		return facts.ids.includes(previewId)
 			? facts.ids.filter((id) => id !== previewId)
 			: team.slots.includes(null)
 				? [...facts.ids, previewId]
 				: null;
-		return ids ? teamFingerprint(ids, facts.conOf) : null;
 	}
 	const verdictsFor = (b: Battlefield, ids: string[], conOf: (id: string) => number) =>
 		ids.length
@@ -183,6 +201,229 @@
 		verdicts?: CheckVerdict[];
 	} | null>(null);
 </script>
+
+{#snippet teamRow(team: BoardTeam, t: number, isErrand: boolean)}
+	{@const filled = team.slots.some((s) => s !== null)}
+	{@const facts = teamFacts(team)}
+	{@const field = isErrand ? undefined : season?.battlefields[t]}
+	{@const half = !isErrand && abyss && t < 2 ? abyss.halves[t] : undefined}
+	{@const verdicts = field ? verdictsFor(field, facts.ids, facts.conOf) : undefined}
+	{@const rotations = rotationsForTeam(team, $savedNotations)}
+	{@const pin = pinnedRotation(team, $savedNotations)}
+	{@const sel = team.id === selectedTeamId}
+	{@const after = previewIds(team, facts)}
+	{@const preview = after ? teamFingerprint(after, facts.conOf) : null}
+	{@const afterVerdicts = after && field ? verdictsFor(field, after, facts.conOf) : undefined}
+	{@const name = isErrand ? (errand?.label ?? '') : `Team ${t + 1}`}
+	{@const swapSlot = swapping?.teamId === team.id ? swapping.slot : null}
+	<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
+		     is glass (the site — a battlefield, an Abyss half); everything under
+		     it stands on the night. A battlefield's header fuses its number with
+		     the boss's name, as the game writes "Battlefield 1: …". -->
+	<section class="bv-team" class:bv-team--errand={isErrand} aria-label={name}>
+		<header class="bv-team-head ctx-glass">
+			<div class="bv-head-text">
+				<!-- ↻ §11.6 item 13: ONE run of Bitter bold, mixed case, as the game
+					     writes "Battlefield 1: Aeonblight Drake: Skyshaker" — measured
+					     over all 28 bosses, every English name fits one line of the
+					     docked board (the old Plex caps ran a third wider). -->
+				<h3 class="bv-head-title">
+					{field
+						? `Battlefield ${t + 1}: ${inLang(BOSSES[field.boss].name)}`
+						: half
+							? t === 0
+								? 'First half'
+								: 'Second half'
+							: name}
+				</h3>
+				{#if half}<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>{/if}
+			</div>
+			<!-- ↻ §11.6: the header names the SITE and nothing else. "Open in
+				     Planner" moved to the rotation line, and ✕ belongs to a Custom
+				     board only — a battlefield is not yours to remove. -->
+			{#if isErrand}
+				<span class="bv-team-actions">
+					<button class="btn btn--sm" onclick={() => errand?.onCancel()}>Cancel</button>
+				</span>
+			{:else if (half && abyss) || (board.preset === 'custom' && board.teams.length > 1)}
+				<span class="bv-team-actions">
+					<!-- Below `compact` it keeps its MARK and drops its WORD, as band
+						     controls do, so the half's name has the strip's width. -->
+					{#if half && abyss}
+						<button
+							class="btn btn--sm"
+							aria-label="Opponents"
+							onclick={() => (opponents = t as 0 | 1)}
+							><Mark name="search" size={12} /><span class="bv-word">Opponents</span></button
+						>
+					{/if}
+					{#if board.preset === 'custom' && board.teams.length > 1}
+						<button
+							class="btn btn--icon bv-remove-team"
+							onclick={() => onRemoveTeam(team.id)}
+							aria-label="Remove team {t + 1}"><Mark name="close" size={12} /></button
+						>
+					{/if}
+				</span>
+			{/if}
+		</header>
+
+		<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
+			     vertical rule, then the stack — checks, the lineup, the fingerprint. -->
+		<div class="bv-body">
+			{#if field && season}
+				<button
+					class="bv-boss"
+					style:--boss="{roomy ? BOSS_DISC_ROOMY : BOSS_DISC}px"
+					style:--boss-narrow="{BOSS_DISC_NARROW}px"
+					aria-label="Details: {inLang(BOSSES[field.boss].name)}"
+					onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
+				>
+					<img src={bossImage(field.boss, 'icon')} alt="" />
+					<span class="bv-boss-zoom" aria-hidden="true"><Mark name="search" size={14} /></span>
+				</button>
+				<span class="bv-vrule" aria-hidden="true"></span>
+			{/if}
+			<div class="bv-stack" class:bv-stack--top={!!field?.checks.length || filled}>
+				<!-- ⚓ Nate 2026-10-12: the checks and "Planner →" share the TOP line,
+					     which spans the stack's two columns; the pin hangs under the
+					     button in the right column (see .bv-stack). -->
+				{#if field?.checks.length || (filled && !isErrand)}
+					<div class="bv-top">
+						{#if field?.checks.length}
+							<div class="bv-checks">
+								{#each field.checks as c, i (i)}<CheckChip
+										check={c}
+										verdict={afterVerdicts?.[i] ?? verdicts?.[i]}
+										shift={afterVerdicts && verdicts
+											? checkShift(c, verdicts[i], afterVerdicts[i])
+											: 0}
+									/>{/each}
+							</div>
+						{/if}
+						{#if filled && !isErrand}
+							<!-- ⚓ Nate 2026-10-12: "Planner →" — the pinned rotation (or "No
+								     saved rotation") sits right under it, so the word says
+								     enough. Centred on the checks' line; the pin hangs under it
+								     inside the LINEUP row, so it never pushes the lineup down. -->
+							<button
+								class="btn btn--sm bv-planner"
+								onclick={() => onOpenInPlanner(team)}
+								title="Open this team in the Rotation Planner"
+								aria-label="Open this team in the Rotation Planner"
+								>Planner <Mark name="forward" size={12} /></button
+							>
+						{/if}
+					</div>
+				{/if}
+				<div class="bv-lineup-row">
+					<!-- The whole strip is the row's hit area (the slots are its
+						     keyboard path), framed when selected. -->
+					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+					<div
+						class="bv-slots"
+						style:--over="{OVERHANG}px"
+						style:--team-hue={isErrand ? 'var(--accent)' : teamHue(t)}
+						class:bv-slots--sel={sel}
+						class:bv-slots--nudge={sel && shaking}
+						onclick={() => onSelectTeam(team.id)}
+					>
+						{#each team.slots as id, i (i)}
+							{@const entry = id ? getCharacterIndexEntry(id) : undefined}
+							<div class="bv-slot-wrap">
+								<!-- ⚓ §11.6 item 8: on an UNSELECTED row a portrait selects
+									     the row and nothing else; a FILLED portrait in the
+									     SELECTED row swaps its slot, and again leaves swap mode. -->
+								<button
+									class="bv-slot"
+									class:bv-slot--swap={swapSlot === i}
+									data-name={entry?.displayName ?? ''}
+									aria-pressed={sel}
+									aria-label={entry
+										? sel
+											? swapSlot === i
+												? `Stop replacing ${entry.displayName}`
+												: `Replace ${entry.displayName}, ${name} slot ${i + 1}`
+											: `${entry.displayName}, ${name} slot ${i + 1}`
+										: `Empty, ${name} slot ${i + 1}`}
+									onclick={(e) => {
+										e.stopPropagation();
+										if (sel && id && onSwap) return onSwap(team.id, i);
+										onSelectTeam(team.id);
+										if (!id) onEmptySlot?.(team.id);
+									}}
+								>
+									<SidePortrait
+										{id}
+										size={portrait}
+										con={id ? facts.conOf(id) : undefined}
+										ownedCon={id ? ownedConOf(id) : undefined}
+									/>
+								</button>
+							</div>
+						{/each}
+					</div>
+					{#if filled}
+						<div class="bv-side">
+							<!-- The team's rotation: DERIVED from the library by its set; a pin
+								     names the one you would play here (§10.2). It sits under the
+								     Planner button above — its subject (§11.6 item 13). -->
+							{#if !isErrand}<div class="bv-pin">
+									{#if rotations.length === 0}
+										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
+										>
+									{:else}
+										<BandMenu
+											mark="pin"
+											size="sm"
+											align="end"
+											label={pin?.name ?? 'Pin a rotation'}
+											ariaLabel="Pinned rotation for {name}"
+										>
+											{#snippet items(close)}
+												{#each [null, ...rotations] as r (r?.id ?? '')}
+													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+													<button
+														class="band-menu-item"
+														role="menuitemradio"
+														aria-checked={current}
+														onclick={() => {
+															close();
+															onPin(team.id, r?.id ?? null);
+														}}
+													>
+														<span class="bv-menu-check"
+															>{#if current}<Mark name="check" size={12} />{/if}</span
+														>
+														{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
+													</button>
+												{/each}
+											{/snippet}
+										</BandMenu>
+									{/if}
+								</div>{/if}
+							<CompositionChips ids={team.slots} reactions={false} />
+						</div>
+					{/if}
+				</div>
+				<!-- The fingerprint's line is RESERVED (⚓ Nate 2026-10-12): an empty
+					     team keeps its height, so the board doesn't move when a team
+					     fills, empties or previews. -->
+				<div class="bv-fp">
+					{#if facts.fingerprint || preview}
+						<Fingerprint
+							clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
+							{preview}
+							previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
+							filtered={sel ? filteredFacets : undefined}
+							onFind={!isErrand && onFind ? (facet) => onFind(team.id, facet) : undefined}
+						/>
+					{/if}
+				</div>
+			</div>
+		</div>
+	</section>
+{/snippet}
 
 <div class="bv" class:bv--roomy={roomy} style:--portrait="{portrait}px">
 	{#if season}
@@ -231,208 +472,8 @@
 		</header>
 	{/if}
 
-	{#each board.teams as team, t (team.id)}
-		{@const filled = team.slots.some((s) => s !== null)}
-		{@const facts = teamFacts(team)}
-		{@const field = season?.battlefields[t]}
-		{@const half = abyss && t < 2 ? abyss.halves[t] : undefined}
-		{@const verdicts = field ? verdictsFor(field, facts.ids, facts.conOf) : undefined}
-		{@const rotations = rotationsForTeam(team, $savedNotations)}
-		{@const pin = pinnedRotation(team, $savedNotations)}
-		{@const sel = team.id === selectedTeamId}
-		{@const preview = previewFor(team, facts)}
-		<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
-		     is glass (the site — a battlefield, an Abyss half); everything under
-		     it stands on the night. A battlefield's header fuses its number with
-		     the boss's name, as the game writes "Battlefield 1: …". -->
-		<section class="bv-team" aria-label="Team {t + 1}">
-			<header class="bv-team-head ctx-glass">
-				<div class="bv-head-text">
-					<!-- ↻ §11.6 item 13: ONE run of Bitter bold, mixed case, as the game
-					     writes "Battlefield 1: Aeonblight Drake: Skyshaker" — measured
-					     over all 28 bosses, every English name fits one line of the
-					     docked board (the old Plex caps ran a third wider). -->
-					<h3 class="bv-head-title">
-						{field
-							? `Battlefield ${t + 1}: ${inLang(BOSSES[field.boss].name)}`
-							: half
-								? t === 0
-									? 'First half'
-									: 'Second half'
-								: `Team ${t + 1}`}
-					</h3>
-					{#if half}<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>{/if}
-				</div>
-				<!-- ↻ §11.6: the header names the SITE and nothing else. "Open in
-				     Planner" moved to the rotation line, and ✕ belongs to a Custom
-				     board only — a battlefield is not yours to remove. -->
-				{#if (half && abyss) || (board.preset === 'custom' && board.teams.length > 1)}
-					<span class="bv-team-actions">
-						<!-- Below `compact` it keeps its MARK and drops its WORD, as band
-						     controls do, so the half's name has the strip's width. -->
-						{#if half && abyss}
-							<button
-								class="btn btn--sm"
-								aria-label="Opponents"
-								onclick={() => (opponents = t as 0 | 1)}
-								><Mark name="search" size={12} /><span class="bv-word">Opponents</span></button
-							>
-						{/if}
-						{#if board.preset === 'custom' && board.teams.length > 1}
-							<button
-								class="btn btn--icon bv-remove-team"
-								onclick={() => onRemoveTeam(team.id)}
-								aria-label="Remove team {t + 1}"><Mark name="close" size={12} /></button
-							>
-						{/if}
-					</span>
-				{/if}
-			</header>
-
-			<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
-			     vertical rule, then the stack — checks, the lineup, the fingerprint. -->
-			<div class="bv-body">
-				{#if field && season}
-					<button
-						class="bv-boss"
-						style:--boss="{roomy ? BOSS_DISC_ROOMY : BOSS_DISC}px"
-						style:--boss-narrow="{BOSS_DISC_NARROW}px"
-						aria-label="Details: {inLang(BOSSES[field.boss].name)}"
-						onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
-					>
-						<img src={bossImage(field.boss, 'icon')} alt="" />
-						<span class="bv-boss-zoom" aria-hidden="true"><Mark name="search" size={14} /></span>
-					</button>
-					<span class="bv-vrule" aria-hidden="true"></span>
-				{/if}
-				<div class="bv-stack" class:bv-stack--top={!!field?.checks.length || filled}>
-					<!-- ⚓ Nate 2026-10-12: the checks and "Planner →" share the TOP line,
-					     which spans the stack's two columns; the pin hangs under the
-					     button in the right column (see .bv-stack). -->
-					{#if field?.checks.length || filled}
-						<div class="bv-top">
-							{#if field?.checks.length}
-								<div class="bv-checks">
-									{#each field.checks as c, i (i)}<CheckChip
-											check={c}
-											verdict={verdicts?.[i]}
-										/>{/each}
-								</div>
-							{/if}
-							{#if filled}
-								<!-- ⚓ Nate 2026-10-12: "Planner →" — the pinned rotation (or "No
-								     saved rotation") sits right under it, so the word says
-								     enough. Centred on the checks' line; the pin hangs under it
-								     inside the LINEUP row, so it never pushes the lineup down. -->
-								<button
-									class="btn btn--sm bv-planner"
-									onclick={() => onOpenInPlanner(team)}
-									title="Open this team in the Rotation Planner"
-									aria-label="Open this team in the Rotation Planner"
-									>Planner <Mark name="forward" size={12} /></button
-								>
-							{/if}
-						</div>
-					{/if}
-					<div class="bv-lineup-row">
-						<!-- The whole strip is the row's hit area (the slots are its
-						     keyboard path), framed when selected. -->
-						<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-						<div
-							class="bv-slots"
-							style:--over="{OVERHANG}px"
-							style:--team-hue={teamHue(t)}
-							class:bv-slots--sel={sel}
-							class:bv-slots--nudge={sel && shaking}
-							onclick={() => onSelectTeam(team.id)}
-						>
-							{#each team.slots as id, i (i)}
-								{@const entry = id ? getCharacterIndexEntry(id) : undefined}
-								<div class="bv-slot-wrap">
-									<button
-										class="bv-slot"
-										data-name={entry?.displayName ?? ''}
-										aria-pressed={sel}
-										aria-label={entry
-											? `${entry.displayName}, team ${t + 1} slot ${i + 1}`
-											: `Empty, team ${t + 1} slot ${i + 1}`}
-										onclick={(e) => {
-											e.stopPropagation();
-											onSelectTeam(team.id);
-											if (!id) onEmptySlot?.(team.id);
-										}}
-									>
-										<SidePortrait
-											{id}
-											size={portrait}
-											con={id ? facts.conOf(id) : undefined}
-											ownedCon={id ? ownedConOf(id) : undefined}
-										/>
-									</button>
-								</div>
-							{/each}
-						</div>
-						{#if filled}
-							<div class="bv-side">
-								<!-- The team's rotation: DERIVED from the library by its set; a pin
-								     names the one you would play here (§10.2). It sits under the
-								     Planner button above — its subject (§11.6 item 13). -->
-								<div class="bv-pin">
-									{#if rotations.length === 0}
-										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
-										>
-									{:else}
-										<BandMenu
-											mark="pin"
-											size="sm"
-											align="end"
-											label={pin?.name ?? 'Pin a rotation'}
-											ariaLabel="Pinned rotation for team {t + 1}"
-										>
-											{#snippet items(close)}
-												{#each [null, ...rotations] as r (r?.id ?? '')}
-													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
-													<button
-														class="band-menu-item"
-														role="menuitemradio"
-														aria-checked={current}
-														onclick={() => {
-															close();
-															onPin(team.id, r?.id ?? null);
-														}}
-													>
-														<span class="bv-menu-check"
-															>{#if current}<Mark name="check" size={12} />{/if}</span
-														>
-														{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
-													</button>
-												{/each}
-											{/snippet}
-										</BandMenu>
-									{/if}
-								</div>
-								<CompositionChips ids={team.slots} reactions={false} />
-							</div>
-						{/if}
-					</div>
-					<!-- The fingerprint's line is RESERVED (⚓ Nate 2026-10-12): an empty
-					     team keeps its height, so the board doesn't move when a team
-					     fills, empties or previews. -->
-					<div class="bv-fp">
-						{#if facts.fingerprint || preview}
-							<Fingerprint
-								clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
-								{preview}
-								previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
-								filtered={sel ? filteredFacets : undefined}
-								onFind={onFind && ((facet) => onFind(team.id, facet))}
-							/>
-						{/if}
-					</div>
-				</div>
-			</div>
-		</section>
-	{/each}
+	{#if errand}{@render teamRow(errand.team, -1, true)}{/if}
+	{#each board.teams as team, t (team.id)}{@render teamRow(team, t, false)}{/each}
 </div>
 
 {#if opponents !== null && abyss}
@@ -794,6 +835,12 @@
 	}
 	/* The slot is a bare hit area around the portrait, which draws its own
 	   ring and empty state; the ROW frames the selection. */
+	/* SWAP MODE: the slot being replaced wears the gold ring — gold is where
+	   a thing is chosen (§11.6 item 20). */
+	.bv-slot--swap :global(.spt-disc) {
+		border-color: var(--accent);
+		box-shadow: 0 0 0 1px var(--accent);
+	}
 	.bv-slot {
 		padding: 0;
 		border: none;

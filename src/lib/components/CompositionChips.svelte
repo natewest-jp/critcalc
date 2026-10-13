@@ -16,11 +16,9 @@
 	 */
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import { REACTION_INGREDIENTS, teamReactions } from '$lib/capabilities/deriveCapabilities';
-	import { REACTION_FAMILY, REACTION_LABEL } from '$lib/utils/auraDisplay';
+	import { reactionPairs } from '$lib/utils/reactionPairs';
 	import { deriveResonances } from '$lib/utils/resonance';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
-	import type { Reaction } from '$lib/types/ability';
 
 	let {
 		ids,
@@ -47,32 +45,7 @@
 		).active
 	);
 
-	type Pair = { a: string; b: string; label: string; title: string };
-	const pairs = $derived.by(() => {
-		if (!reactions) return [];
-		// A plain object, not a Map: a pure fold, nothing here is state.
-		const byPair: Record<string, Reaction[]> = {};
-		for (const r of teamReactions(members)) {
-			const groups = REACTION_INGREDIENTS[r].elements;
-			if (groups.length !== 2) continue;
-			const key = `${groups[0][0]}|${groups[1][0]}`;
-			(byPair[key] ??= []).push(r);
-		}
-		const out: Pair[] = [];
-		for (const [key, rs] of Object.entries(byPair)) {
-			const [a, b] = key.split('|');
-			// A converted reaction keeps its own name (Stellar Swirl beside a
-			// plain Swirl must not read as two Swirls); the rest read by family.
-			const lead = rs[0];
-			out.push({
-				a,
-				b,
-				label: REACTION_INGREDIENTS[lead].enabler ? REACTION_LABEL[lead] : REACTION_FAMILY[lead],
-				title: rs.map((r) => REACTION_LABEL[r]).join(' · ')
-			});
-		}
-		return out;
-	});
+	const pairs = $derived(reactions ? reactionPairs(members) : []);
 
 	const factions = $derived.by(() => {
 		const c = deriveTeamComposition(members);

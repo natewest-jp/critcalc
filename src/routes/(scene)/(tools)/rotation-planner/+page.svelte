@@ -112,11 +112,12 @@
 			},
 			// ⇄ LEAVES THE TOOL (2026-08-13). The planner's own Source could only
 			// ever fill the LOWEST EMPTY SLOT — it had no way to say "replace THIS
-			// one" — while the Team Builder's audition pins the incumbent and
-			// compares candidates against it, which is the question you actually
-			// have at a bench card. So the errand travels instead of being
-			// re-implemented worse: ?swap=N asks for that slot's audition, and
-			// committing a candidate there navigates back here.
+			// one" — while the Team Builder's SWAP MODE groups every candidate by
+			// what replacing THIS one does to the team, which is the question you
+			// actually have at a bench card. So the errand travels instead of being
+			// re-implemented worse: ?swap=N opens swap mode on that slot (the
+			// Planner's team as a temporary row, §10.3), and a pick there renames
+			// in this tab and navigates back here.
 			//
 			// The team itself does NOT travel — it IS the shared working team
 			// (bench-band round), so the slot INDEX is the whole payload.

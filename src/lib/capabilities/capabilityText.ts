@@ -2,12 +2,13 @@
  * $lib/capabilities/capabilityText.ts
  *
  * Shared presentation vocabulary for derived capabilities — used by the
- * DetailCard and the CompareView so the two surfaces can't drift.
+ * DetailCard (both tools open it) and anything that names a capability beside it.
  *
  * ↻ 2026-08-12: hoisted out of team-builder/lib with the DetailCard, which the
  * Rotation Planner now opens too (the bench portrait does the same thing in
- * both tools). The CompareView and compare.ts, both still Team-Builder-only,
- * import it from here.
+ * both tools). ↻ 2026-10-13: its other reader, the Team Builder's Compare,
+ * retired into swap mode (lineups design §11.6 item 20), and TARGET_SHORT
+ * with it.
  */
 
 import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
@@ -35,14 +36,6 @@ export const TARGET_LABEL: Record<string, string> = {
 	active: 'active character',
 	self: 'self only',
 	enemy: 'on enemies'
-};
-
-/** Compact target words for dense cells (CompareView). */
-export const TARGET_SHORT: Record<string, string> = {
-	team: 'team',
-	active: 'active',
-	self: 'self',
-	enemy: 'enemies'
 };
 
 /** Shred-stat / element detail words that aren't plain capitalizations. */

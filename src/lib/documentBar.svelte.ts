@@ -38,6 +38,7 @@ import {
 	foldTeamIntoNotation,
 	notationHasActions,
 	orderedCharacterIds,
+	renameCharacterInNotation,
 	teamKey,
 	teamKeyOfNotation
 } from './utils/notationEdit';
@@ -129,9 +130,18 @@ export type RoomRequest = {
 	onCancel?: () => void;
 };
 
+/** A button on band A's notice. */
+export type NoticeAction = { label: string; run: () => void };
+
+/** 🎛️ How long a notice stays: a plain one, and one with a button to reach. */
+const NOTICE_MS = 2200;
+const NOTICE_ACTION_MS = 8000;
+
 class DocumentBarState {
 	/** Transient outcome message, shown in band A beside the actions. */
 	notice = $state<string | null>(null);
+	/** Buttons riding the notice — a swap's "Undo" and "Try in Planner". */
+	noticeActions = $state<NoticeAction[]>([]);
 	exporters = $state<DocumentExporters | null>(null);
 
 	/** The open make-room confirm, if any — for rotation tabs, or for board
@@ -161,10 +171,26 @@ class DocumentBarState {
 		return !!rt.notation.trim();
 	}
 
-	showNotice(msg: string) {
+	showNotice(msg: string, actions: NoticeAction[] = []) {
 		clearTimeout(this.#noticeTimer);
 		this.notice = msg;
-		this.#noticeTimer = setTimeout(() => (this.notice = null), 2200);
+		this.noticeActions = actions;
+		// A notice with a button stays long enough to reach it.
+		this.#noticeTimer = setTimeout(
+			() => {
+				this.notice = null;
+				this.noticeActions = [];
+			},
+			actions.length ? NOTICE_ACTION_MS : NOTICE_MS
+		);
+	}
+
+	/** Run one of the notice's buttons — the notice has done its job. */
+	runNoticeAction(action: NoticeAction) {
+		clearTimeout(this.#noticeTimer);
+		this.notice = null;
+		this.noticeActions = [];
+		action.run();
 	}
 
 	registerExporters(ex: DocumentExporters) {
@@ -366,6 +392,24 @@ class DocumentBarState {
 		this.#link(savedNotations.save(this.#payload(name)), name);
 		this.#ensureTeamEntry(rt.notation);
 		this.showNotice('Saved as new');
+	}
+
+	/** A saved rotation with one character renamed, in a NEW unsaved tab —
+	 *  the Team Builder's "Try in Planner" after a swap. ⚓ §10.2: the saved
+	 *  rotation is never rewritten; Save keeps the trial as its own. */
+	tryWithSwap(entry: SavedNotation, fromId: string, toId: string, label: string) {
+		this.withRoom(() => {
+			rt.openTab({
+				label,
+				notation: renameCharacterInNotation(
+					foldTeamIntoNotation(entry.notation, entry.manualSlots),
+					fromId,
+					toId
+				),
+				tabLoadout: entry.tabLoadout ?? {},
+				tabCon: entry.tabCon ?? {}
+			});
+		});
 	}
 
 	loadNewTab(entry: SavedNotation) {

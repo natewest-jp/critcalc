@@ -8,13 +8,9 @@
 		constellations,
 		siteSettings,
 		ownership,
-		loadout,
 		savedBoards,
 		savedNotations
 	} from '$lib/stores';
-	import { swapFramesForPing } from '$lib/utils/frames';
-	import { readRotationSwap, type RotationRead } from './lib/auditionRotation';
-	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import {
 		FACETS,
@@ -30,17 +26,19 @@
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
-	import { documentBar } from '$lib/documentBar.svelte';
+	import { documentBar, type NoticeAction } from '$lib/documentBar.svelte';
 	import {
 		BOARD_TEAM_LIMIT,
 		boards,
+		effectiveCon,
 		pinnedRotation,
+		teamCon,
 		type BoardPreset,
 		type BoardTeam
 	} from '$lib/boards.svelte';
 	import { boardBar, boardTabStrip } from '$lib/boardBar.svelte';
 	import { library } from '$lib/library.svelte';
-	import { currentSeason } from '$lib/endgame';
+	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
 	import { motion } from '$lib/motion';
@@ -54,7 +52,7 @@
 	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from '$lib/components/DetailCard.svelte';
-	import CompareView from './lib/CompareView.svelte';
+	import SwapDelta from './lib/SwapDelta.svelte';
 	import BoardView from './lib/BoardView.svelte';
 	import RosterFilterStrip from './lib/RosterFilterStrip.svelte';
 	import MoreFilters from './lib/MoreFilters.svelte';
@@ -62,15 +60,13 @@
 	import type { RoleCategory, RoleFilter } from '$lib/capabilities/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
-	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
-	import { MAX_COMPARE, lensFacet, type CapRowKey } from './lib/compare';
 	import {
-		facetsProvidedBy,
 		parseTeamParam,
-		teamDelta,
+		swapSections,
 		teamHue,
 		teamLabel,
-		type TeamSlot
+		type SwapSection,
+		type SwapTier
 	} from './lib/team';
 	import { FINGERPRINT } from '$lib/fingerprint';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
@@ -82,6 +78,7 @@
 	const roster = getAllCharacterIndex()
 		.filter((c) => c.id !== 'blank')
 		.sort((a, b) => a.displayName.localeCompare(b.displayName));
+	const rosterIds = new Set(roster.map((c) => c.id));
 
 	// ---------------------------------------------------------------------------
 	// SSR/hydration safety (see project_rotation_planner_ssr_fix): the server and
@@ -119,9 +116,10 @@
 	//   already here, so the link only asks for the per-slot alternatives view.
 	//   ⛔ The chip that sent it is RETIRED (2026-08-13); the param is kept
 	//   because it is a shareable URL like any other and costs one branch.
-	// - ?swap=N — the planner's bench ⇄ (Source retirement, 2026-08-13): audition
-	//   slot N. The team does not travel — it IS the shared working team — so the
-	//   slot index is the entire payload.
+	// - ?swap=N — the planner's bench ⇄: swap mode on slot N of the Planner's
+	//   OWN team, drawn as a temporary row on top of the lineup (§10.3, §11.6
+	//   item 20). The team does not travel — it is the Planner's active tab —
+	//   so the slot index is the entire payload.
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
 		if (!url || !url.pathname.endsWith('/team-builder')) return;
@@ -132,7 +130,7 @@
 		if (!teamParam && !altsParam && !swapParam && !boardParam) return;
 		// ⛔ Not $app/navigation's replaceState — see stripDeepLinkParams. This is
 		// the call site that carried NO reason at all, and `?swap=` arrives here
-		// cold from a shared audition link.
+		// cold from the planner's ⇄.
 		stripDeepLinkParams(url);
 		if (teamParam) {
 			const imported = parseTeamParam(teamParam, (id) => rosterIds.has(id));
@@ -160,23 +158,11 @@
 		if (swapParam !== null) {
 			// Validated, not trusted: this is a URL, so anyone can type ?swap=9.
 			const n = Number(swapParam);
-			if (Number.isInteger(n) && n >= 0 && n < rt.slots.length) {
+			if (Number.isInteger(n) && n >= 0 && n < 4) {
 				pendingSwapSlot = n;
-				fromPlanner = true;
-				// The audition is BOARD-LESS (§10.3): it edits the Planner's team.
-				// ⏳ It renders in the roster column until swap mode replaces it
-				// (step 5) — a temporary casualty, §11.6 item 9.
 				tab = 'characters';
 			}
-			// A swap errand does NOT want the Atlas below — it wants ONE slot's
-			// audition, which the effect opens as soon as the tabs are restored.
-			return;
 		}
-		// A team arrival (either other param) opens the Roster, the team above it.
-		// ↻ 2026-10-07: it used to open the Atlas's per-slot "alternatives" view,
-		// which retired into the audition — ⇄ on a bench card asks the same
-		// question with that slot's own facets, and the constellation lens.
-		sourceTab = 'roster';
 	});
 
 	// ---------------------------------------------------------------------------
@@ -212,7 +198,7 @@
 	$effect(() => {
 		if (tabSeeded || !boards.restored || !mounted) return;
 		tabSeeded = true;
-		if (pendingSwapSlot === null && !fromPlanner && boardHasAnyone) tab = 'lineup';
+		if (pendingSwapSlot === null && !errandOpen && boardHasAnyone) tab = 'lineup';
 	});
 
 	/** The character cell's width in band B — it folds Show, then the lens,
@@ -225,6 +211,26 @@
 	// ── The board ─────────────────────────────────────────────────────────────
 
 	const board = $derived(boards.activeBoard);
+
+	// The Planner's ⇄ row (swap mode, below) — declared here because the
+	// selection reads it.
+	const ERRAND_ID = 'planner-errand';
+	let errandOpen = $state(false);
+	/** The slot asked for, until the tabs are restored and it can be read. */
+	let pendingSwapSlot = $state<number | null>(null);
+	const errandTeam = $derived<BoardTeam | null>(
+		errandOpen
+			? {
+					id: ERRAND_ID,
+					slots: rt.slots.map((s) => (s === 'blank' ? null : s)),
+					con: { ...rt.tabCon }
+				}
+			: null
+	);
+	/** A team by id — the board's, or the Planner's temporary row. */
+	const teamById = (id: string): BoardTeam | undefined =>
+		id === ERRAND_ID ? (errandTeam ?? undefined) : board.teams.find((t) => t.id === id);
+
 	const boardHasAnyone = $derived(board.teams.some((t) => t.slots.some((s) => s !== null)));
 	/** Linked to a saved board that still exists (Save → Save changes). */
 	const boardLinked = $derived(!!board.savedId && $savedBoards.some((b) => b.id === board.savedId));
@@ -238,14 +244,15 @@
 	 *  request to replace someone's lineup. */
 	let chosenTeamId = $state<string | null>(null);
 	$effect(() => {
-		if (chosenTeamId && !board.teams.some((t) => t.id === chosenTeamId)) chosenTeamId = null;
+		if (chosenTeamId && !teamById(chosenTeamId)) chosenTeamId = null;
 	});
 	/** The team the selection is FOLLOWING: it holds while it has room, so a
 	 *  move that frees a slot on an earlier team does not pull the selection
 	 *  back there; a full team hands on to the next with room. */
 	let followTeamId = $state<string | null>(null);
 	const selectedTeam = $derived(
-		board.teams.find((t) => t.id === chosenTeamId) ??
+		(chosenTeamId === ERRAND_ID ? errandTeam : null) ??
+			board.teams.find((t) => t.id === chosenTeamId) ??
 			board.teams.find((t) => t.id === followTeamId && t.slots.includes(null)) ??
 			board.teams.find((t) => t.slots.includes(null)) ??
 			board.teams[0]
@@ -265,7 +272,7 @@
 	let teamRecency = $state<string[]>([]);
 	$effect(() => {
 		const id = selectedTeam?.id;
-		if (!id) return;
+		if (!id || id === ERRAND_ID) return;
 		untrack(() => {
 			if (teamRecency[0] !== id) teamRecency = [id, ...teamRecency.filter((x) => x !== id)];
 			if (!chosenTeamId) followTeamId = id;
@@ -273,6 +280,14 @@
 	});
 	const indexOfTeam = (teamId: string) => board.teams.findIndex((t) => t.id === teamId);
 	const selectedIndex = $derived(selectedTeam ? indexOfTeam(selectedTeam.id) : 0);
+	/** The selected team's name and hue — the Planner's row is neither a
+	 *  battlefield nor a numbered team, and wears the gold of an errand. */
+	const selectedLabel = $derived(
+		selectedTeam?.id === ERRAND_ID ? 'the Planner’s team' : teamLabel(board, selectedIndex)
+	);
+	const selectedHue = $derived(
+		selectedTeam?.id === ERRAND_ID ? 'var(--accent)' : teamHue(selectedIndex)
+	);
 
 	/** The frame a card wears: the most recently selected team holding them. */
 	function frameOf(id: string): { hue: string; slot: number } | undefined {
@@ -293,7 +308,9 @@
 		const team = selectedTeam;
 		if (!team) return null;
 		const i = team.slots.indexOf(null);
-		if (i < 0) {
+		// The Planner's row changes by swapping only — its edits are the
+		// notation's, made where the rotation is.
+		if (i < 0 || team.id === ERRAND_ID) {
 			nudge = { id, at: Date.now() };
 			return null;
 		}
@@ -312,7 +329,7 @@
 	function removeFromBoard(id: string): void {
 		const team = selectedTeam;
 		const i = team?.slots.indexOf(id) ?? -1;
-		if (team && i >= 0) boards.setSlot(board.id, team.id, i, null);
+		if (team && i >= 0 && team.id !== ERRAND_ID) boards.setSlot(board.id, team.id, i, null);
 	}
 
 	/** Open a team in the Planner: its pinned rotation, else its bare names
@@ -385,80 +402,121 @@
 	});
 
 	// ---------------------------------------------------------------------------
-	// THE PLANNER'S SWAP ERRAND (Source retirement, 2026-08-13)
+	// SWAP MODE (lineups design §11.6 item 20)
 	//
-	// The planner has no character grid of its own any more: ⇄ on a bench card
-	// sends the slot here, because an audition can pin the incumbent and compare
-	// against it and the planner's picker could only ever fill the lowest empty
-	// slot. Two flags, because they answer two different questions:
+	// A FILLED portrait in the SELECTED row puts its slot in swap mode: the
+	// Characters grid regroups by what the swap would do to the TEAM, the
+	// hovered card previews it on the board, and a pick swaps and leaves.
+	// Escape, the strip's ✕ or the portrait again leaves without a swap.
+	// ⚓ Compare and Audition retired into this — the question was never "how
+	// do these kits compare" but "what happens to my team".
 	// ---------------------------------------------------------------------------
 
-	/** Arrived on an errand — drives the "Back to planner" plate. Deliberately
-	 *  lives for the whole VISIT: cancelling an audition means "let me look
-	 *  around", not "I no longer came from the planner", and the way back must
-	 *  not evaporate at the moment it becomes the only way back. */
-	let fromPlanner = $state(false);
+	let swapping = $state<{ teamId: string; slot: number; incumbent: string } | null>(null);
 
-	/** Does committing THIS audition return to the planner? Scoped to the one
-	 *  audition the errand opened — cancel and commit both discharge it. Without
-	 *  the scope, a commit two auditions later would yank you out of a tool you
-	 *  had decided to stay in. */
-	let returnOnCommit = $state(false);
+	/** The portrait again leaves swap mode; another filled one moves it. */
+	function toggleSwap(teamId: string, slot: number): void {
+		if (swapping?.teamId === teamId && swapping.slot === slot) {
+			swapping = null;
+			return;
+		}
+		const incumbent = teamById(teamId)?.slots[slot];
+		if (!incumbent) return;
+		swapping = { teamId, slot, incumbent };
+		if (tabbed) tab = 'characters';
+	}
 
-	/** The slot to audition once the document is actually here. */
-	let pendingSwapSlot = $state<number | null>(null);
+	// Swap mode belongs to ONE occupant of ONE slot of the selected team: it
+	// ends when any of the three changes under it (another row selected, the
+	// board switched, a member moved off by No repeats).
+	$effect(() => {
+		if (!swapping) return;
+		const team = teamById(swapping.teamId);
+		if (
+			!team ||
+			team.slots[swapping.slot] !== swapping.incumbent ||
+			selectedTeam?.id !== swapping.teamId
+		)
+			swapping = null;
+	});
 
-	// ⚠ NOT DONE IN afterNavigate, and the gate is the whole point (same shape as
-	// the planner's warm effect): the tabs are restored by the (tools) LAYOUT's
-	// onMount, and on a COLD load of /team-builder?swap=2 the param is read
-	// before that happens — so the slot would read 'blank' and the errand would
-	// silently degrade to "open the Roster" for a team that does have someone in
-	// it. Depending on `restored` is right whichever way the ordering falls; on
-	// SPA arrival from the planner it is already true and this runs immediately.
-	// `mounted` joins it because openAudition seeds its facet chips from the
-	// roster constellations, which are localStorage-backed.
+	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
+
+	/** The pick, in swap mode: the swap itself, then out of the mode. Band A
+	 *  says what happened, with Undo; when the swap broke a pinned rotation it
+	 *  also offers that rotation with the newcomer in it — a NEW tab, never a
+	 *  rewrite of the saved one (§10.2). */
+	function swapIn(id: string): void {
+		const s = swapping;
+		if (!s) return;
+		swapping = null;
+		previewHeld = id;
+		if (s.teamId === ERRAND_ID) {
+			// The Planner's own team: rename in its tab and go back to it.
+			rt.setSlot(s.slot, id);
+			errandOpen = false;
+			chosenTeamId = null;
+			void goto(resolve('/rotation-planner'));
+			return;
+		}
+		const team = teamById(s.teamId);
+		if (!team) return;
+		const boardId = board.id;
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		const pin = pinnedRotation(team, $savedNotations);
+		const left = boards.setSlot(boardId, team.id, s.slot, id);
+		const name = nameOf(id);
+		const from = left.length ? ` (from ${teamLabel(board, indexOfTeam(left[0]))})` : '';
+		const actions: NoticeAction[] = [];
+		if (pin)
+			actions.push({
+				label: `Try it with ${name} in the Planner`,
+				run: () => {
+					documentBar.tryWithSwap(pin, s.incumbent, id, `${pin.name} · ${name}`);
+					void goto(resolve('/rotation-planner'));
+				}
+			});
+		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
+		documentBar.showNotice(
+			pin
+				? `${name} replaced ${nameOf(s.incumbent)}${from}. “${pin.name}” is no longer pinned.`
+				: `${name} replaced ${nameOf(s.incumbent)}${from}.`,
+			actions
+		);
+		if (tabbed) tab = 'lineup';
+	}
+
+	// ── THE PLANNER'S ⇄ (`?swap=N`, §10.3) ───────────────────────────────────
+	// The Planner has no character grid: ⇄ on its bench sends the slot here.
+	// Its team is drawn as a TEMPORARY row on top of the lineup — board-less,
+	// never stored — already swapping slot N. A pick renames in the Planner's
+	// tab and returns; Cancel returns unchanged.
+
+	// ⚠ NOT DONE IN afterNavigate: the tabs are restored by the (tools)
+	// LAYOUT's onMount, and on a COLD load of /team-builder?swap=2 the param is
+	// read before that — the slot would read 'blank'. Waiting on `restored` is
+	// right whichever way the ordering falls.
 	$effect(() => {
 		if (pendingSwapSlot === null || !rt.restored || !mounted) return;
 		const slot = pendingSwapSlot;
 		pendingSwapSlot = null;
 		const incumbent = rt.slots[slot];
-		if (incumbent && incumbent !== 'blank') {
-			openAudition(slot, incumbent);
-			returnOnCommit = true;
-		} else {
-			// No incumbent to audition against — the same fall-through the bench's
-			// own ⇄ takes for an empty slot. There is no commit to return on: a
-			// roster add is freeform, so the plate is the way back.
-			selectedId = null;
-			sourceTab = 'roster';
-		}
+		// An empty slot has no one to replace — the plain grid.
+		if (!incumbent || incumbent === 'blank') return;
+		errandOpen = true;
+		chosenTeamId = ERRAND_ID;
+		swapping = { teamId: ERRAND_ID, slot, incumbent };
 	});
+
+	function cancelErrand(): void {
+		errandOpen = false;
+		swapping = null;
+		chosenTeamId = null;
+		void goto(resolve('/rotation-planner'));
+	}
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
 	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
-
-	// ---------------------------------------------------------------------------
-	// Source panel: Roster (the finder) ⇄ Compare
-	//
-	// ⚓ 2026-10-07 (Nate, the Team Builder round): TWO surfaces, not three. The
-	// Atlas, the Roster and the audition's candidate strip were three finders
-	// answering "who could do this?" with three sets of rules, and each tab felt
-	// thin on its own. The Atlas's role cards are the Roster's front door now
-	// and its drill-down the Roster's sections; the audition asks the same
-	// pipeline (`splitRoster`).
-	// ---------------------------------------------------------------------------
-
-	type SourceTab = 'roster' | 'compare';
-
-	let sourceTab = $state<SourceTab>('roster');
-	// Sticky: flips true on first Roster visit and stays — the roster grid is
-	// then kept mounted (CSS-hidden) across tab toggles. See the template note.
-	let rosterEverShown = $state(false);
-	$effect(() => {
-		if (sourceTab === 'roster') rosterEverShown = true;
-	});
-
-	// (Compare's reachability gate lives with the compare state, further down.)
 
 	// ---------------------------------------------------------------------------
 	// Filters
@@ -630,306 +688,9 @@
 
 	let selectedId = $state<string | null>(null);
 
-	function elColor(element: string | undefined): string {
-		return (elementColors[(element ?? 'none') as ElementKey] ?? elementColors.none).main;
-	}
-
 	function openDetail(id: string): void {
 		selectedId = id;
 	}
-
-	// ---------------------------------------------------------------------------
-	// Compare (Layer 2) — the Compare tab itself is the accumulator: a card's
-	// "Compare" silently adds the character here (the tab's avatar stack is
-	// the feedback), and clicking the tab lands on an already-loaded view.
-	// Audition is Compare with a pinned anchor (the incumbent), an in-view
-	// candidates strip, and a commit that swaps the slot.
-	// ---------------------------------------------------------------------------
-
-	const compareIds = new SvelteSet<string>();
-	/** Audition: the pinned incumbent + the slot it holds (null = plain compare). */
-	let anchorId = $state<string | null>(null);
-	let auditionSlot = $state<number | null>(null);
-	/** The comparison an audition interrupted. An audition scopes the selection
-	 *  to itself, which used to mean it DESTROYED whatever you were building —
-	 *  three characters lined up, one bench ⇄, and they were gone with no undo.
-	 *  Stashed on open, put back on commit or cancel. */
-	let stashedCompare: string[] = [];
-	/** The facets the incumbent provides — what this SLOT does, which is what
-	 *  seeds the audition's lens. */
-	let auditionSeedFacets = $state<{ key: FacetKey; label: string }[]>([]);
-	/** The currently-active subset, driven by CompareView's lens chips — ONE
-	 *  control doing two jobs: it groups the chart AND narrows the candidates.
-	 *  Toggleable so an over-narrow AND of every seed facet can be relaxed. */
-	const auditionFacets = new SvelteSet<FacetKey>();
-	/** The ELEMENT fallback's selection — populated only when the incumbent has
-	 *  no facet to match on (a main DPS). See CompareView's note. */
-	const auditionElements = new SvelteSet<string>();
-	/** Where commit/cancel returns to. (One place now — the Roster.) */
-	const auditionReturnTab: SourceTab = 'roster';
-
-	function toggleCompare(id: string): void {
-		if (id === anchorId) return; // the audition anchor stays pinned
-		if (compareIds.has(id)) {
-			compareIds.delete(id);
-		} else if (compareIds.size < MAX_COMPARE) {
-			compareIds.add(id);
-		}
-	}
-
-	/**
-	 * ⚓ NATE 2026-08-09: COMPARE IS UNREACHABLE UNTIL THERE IS SOMETHING IN IT.
-	 * It used to accept the click and land you on a paragraph explaining why the
-	 * page was empty — a route whose only content is an apology for existing. The
-	 * accumulator teaches itself without that: a card's Compare button fills the
-	 * plate's avatar stack, and the plate wakes up the moment it holds a pick.
-	 */
-	const compareReady = $derived(compareIds.size > 0);
-
-	// ...which means the route has to be able to LOSE the argument too. Removing
-	// the last pick — or CompareView's own Clear — would otherwise strand you on
-	// a route the navigation has just said you cannot be on. Bounce to the
-	// Roster, where picks are made. `anchorId` is checked for completeness: an
-	// audition always holds its incumbent, so it can never empty.
-	$effect(() => {
-		if (sourceTab === 'compare' && compareIds.size === 0 && anchorId === null) {
-			sourceTab = 'roster';
-		}
-	});
-
-	function endAudition(): void {
-		compareIds.clear(); // the audition selection is scoped…
-		for (const id of stashedCompare) compareIds.add(id); // …and gives back what it borrowed
-		stashedCompare = [];
-		anchorId = null;
-		auditionSlot = null;
-		auditionSeedFacets = [];
-		auditionFacets.clear();
-		auditionElements.clear();
-	}
-
-	/** Audition replacements for a filled slot: pin the incumbent as the anchor
-	 *  and open the Compare tab, whose in-view candidates strip suggests
-	 *  characters covering the facets the incumbent provides. */
-	function openAudition(index: number, incumbentId: string): void {
-		// Re-auditioning from inside an audition must not stash the audition's own
-		// scoped selection over the comparison it is already holding for you.
-		if (anchorId === null) stashedCompare = [...compareIds];
-		compareIds.clear();
-		compareIds.add(incumbentId);
-		anchorId = incumbentId;
-		auditionSlot = index;
-		const cap = conCapFor(conMode, mounted ? ($constellations[incumbentId] ?? 0) : 0);
-		const entry = getCharacterIndexEntry(incumbentId);
-		// ⚠ Labels come from FACETS, the same source the Roster rail reads, so the
-		// audition's chips cannot drift from the wording used to find characters
-		// everywhere else on this tool.
-		auditionSeedFacets = entry
-			? [...facetsProvidedBy(entry, cap)].map((key) => ({
-					key,
-					label: FACETS.find((f) => f.key === key)?.label ?? key
-				}))
-			: [];
-		auditionFacets.clear();
-		for (const f of auditionSeedFacets) auditionFacets.add(f.key);
-		// The element fallback seeds itself in CompareView (it owns the decision
-		// about which vocabulary is on offer); this only has to start clean.
-		auditionElements.clear();
-		selectedId = null;
-		sourceTab = 'compare';
-	}
-
-	/** Commit an audition candidate into its slot, then return whence you came —
-	 *  which is the TOOL you came from when the planner sent the errand, and the
-	 *  tab you were on otherwise. */
-	function commitAudition(candidateId: string): void {
-		if (auditionSlot !== null) rt.setSlot(auditionSlot, candidateId);
-		const goBack = returnOnCommit;
-		returnOnCommit = false;
-		endAudition();
-		sourceTab = auditionReturnTab;
-		// The slot is already written — the working team is shared state, not
-		// something the navigation carries — so the planner redraws with the new
-		// character on arrival.
-		if (goBack) void goto(resolve('/rotation-planner'));
-	}
-
-	/** The errand's way back. Leaves the team exactly as it is — the working team
-	 *  is shared state, so nothing needs carrying. */
-	function backToPlanner(): void {
-		void goto(resolve('/rotation-planner'));
-	}
-
-	function cancelAudition(): void {
-		// Cancelling discharges the auto-return but NOT the errand: you are still
-		// someone who arrived from the planner, and the plate stays put.
-		returnOnCommit = false;
-		endAudition();
-		sourceTab = auditionReturnTab;
-	}
-
-	/**
-	 * CompareView's lens changed — re-point the candidate filter at it.
-	 *
-	 * ⚠ The two vocabularies overlap but are not identical, so `lensFacet` drops
-	 * what has no facet (`summon`, `buff:other`). One consequence worth knowing:
-	 * a facet the incumbent provides that the CHART cannot draw (an instant heal
-	 * has no window, so no lane) is not offered as a chip and so stops narrowing
-	 * the candidate list. That loosens the search slightly — in the same
-	 * direction as the fix that made these chips toggleable in the first place
-	 * (⚓ Nate: the AND of every provided facet went near-empty).
-	 */
-	function applyAuditionLens(keys: CapRowKey[]): void {
-		auditionFacets.clear();
-		for (const key of keys) {
-			const facet = lensFacet(key);
-			if (facet) auditionFacets.add(facet);
-		}
-	}
-
-	/**
-	 * Candidates for the audition strip: everyone outside the team who covers ALL
-	 * currently-active facets at the mode's constellation cap.
-	 *
-	 * ⚓ …or, when the slot has no facet to match on (a main DPS — see
-	 * CompareView's element-fallback note), everyone outside the team of the
-	 * selected ELEMENT. The two filters are alternatives, never both: only one
-	 * chip vocabulary is ever on offer, so only one of these sets is ever
-	 * populated.
-	 */
-	const auditionCandidates = $derived.by(() => {
-		if (anchorId === null) return [] as CharacterIndexEntry[];
-		const cons = mounted ? $constellations : {};
-		const own = mounted ? $ownership : {};
-		// ⚓ The SAME finder the Roster grid runs (2026-10-07) — it used to be its
-		// own loop that ignored ownership. Owned candidates first, when you have
-		// told the tool what you own.
-		return splitRoster(
-			roster,
-			{
-				identity: { ...NO_IDENTITY, elements: auditionElements },
-				facets: auditionFacets,
-				exclude: new Set([anchorId, ...teamSlots.filter((s): s is string => s !== null)]),
-				rank: ownsAny ? 'ownedFirst' : undefined
-			},
-			(id) => conCapFor(conMode, cons[id]),
-			(id) => own[id]
-		).matches;
-	});
-
-	// ── "In your rotation" (phase 4) ────────────────────────────────────────
-	// Each candidate's swap, run through the planner's own parse of the working
-	// rotation. Async (the parser loads on demand) and generation-stamped, so a
-	// read that lands after the comparison moved on is dropped, not drawn.
-	let rotationReads = $state<Record<string, RotationRead | null>>({});
-	let readGeneration = 0;
-	$effect(() => {
-		const incumbent = anchorId;
-		const candidates = [...compareIds].filter((id) => id !== incumbent);
-		const notation = rt.notation;
-		const slots = [...rt.slots];
-		// The planner's effective inputs: tab overrides over the roster, its
-		// swap ping and human timing — so this reads the rotation the way the
-		// planner draws it (⚓ Nate 2026-10-07).
-		const cons: Record<string, number> = { ...$constellations, ...rt.tabCon };
-		const lo = { ...$loadout };
-		for (const [id, entry] of Object.entries(rt.tabLoadout))
-			lo[id] = { ...(lo[id] ?? {}), ...entry };
-		const swapFrames = swapFramesForPing($siteSettings.swapPing);
-		const humanTiming = $siteSettings.humanTiming
-			? {
-					padFrames:
-						$siteSettings.humanTimingMode === 'animations' ? 0 : $siteSettings.humanTimingPadFrames,
-					fullAnimations: $siteSettings.humanTimingMode !== 'padding'
-				}
-			: null;
-		const gen = ++readGeneration;
-		if (!incumbent || !mounted) {
-			rotationReads = {};
-			return;
-		}
-		void Promise.all(
-			candidates.map(async (candidateId) => {
-				try {
-					const read = await readRotationSwap({
-						notation,
-						slots,
-						incumbentId: incumbent,
-						candidateId,
-						constellations: cons,
-						loadout: lo,
-						swapFrames,
-						humanTiming
-					});
-					return [candidateId, read] as const;
-				} catch (e) {
-					// The planner's own parse() swallows a throw the same way: a read
-					// that cannot be made is absent, never a broken audition.
-					console.error('rotation audition failed:', e);
-					return [candidateId, null] as const;
-				}
-			})
-		).then((pairs) => {
-			if (gen === readGeneration) rotationReads = Object.fromEntries(pairs);
-		});
-	});
-
-	/** An identity filter that narrows nothing — the audition's base. */
-	const NO_IDENTITY = {
-		elements: new Set<string>(),
-		weapons: new Set<string>(),
-		rarities: new Set<number>(),
-		region: '',
-		search: ''
-	};
-
-	/** What each candidate's swap would change about the TEAM — gained and lost
-	 *  capabilities, and the resonance when the party is full. */
-	const auditionDeltas = $derived.by(() => {
-		if (anchorId === null || auditionSlot === null) return undefined;
-		const out: Record<string, ReturnType<typeof teamDelta>> = {};
-		for (const id of compareIds) {
-			if (id === anchorId) continue;
-			const after = members.map((m, i) => (i === auditionSlot ? getCharacterIndexEntry(id) : m));
-			out[id] = teamDelta(members, after, coverageCapOf);
-		}
-		return out;
-	});
-
-	/** CompareView's ELEMENT lens changed (the fallback only). */
-	function applyElementLens(elements: string[]): void {
-		auditionElements.clear();
-		for (const el of elements) auditionElements.add(el);
-	}
-
-	// ---------------------------------------------------------------------------
-	// Team slots — THE working team (the planner's active tab), read from the
-	// shared rotationTabs module. This tool edits it directly; the planner and
-	// the bench band see every change live. The module speaks the planner's
-	// representation ('blank' = empty); this tool's TeamSlot uses null.
-	// ---------------------------------------------------------------------------
-
-	const rosterIds = new Set(roster.map((c) => c.id));
-	const teamSlots = $derived<TeamSlot[]>(rt.slots.map((id) => (id === 'blank' ? null : id)));
-
-	// The resolved team, and whether there IS one. Both used to live inside the
-	// TeamStrip; the breathing-room round split that component into two panels,
-	// and the presence test has to sit above BOTH of them — otherwise an empty
-	// team leaves two empty boxes and a gutter between them. Deriving `members`
-	// here also means the two panels share one lookup pass instead of each
-	// mapping the slots themselves.
-	// `?? null` normalizes the lookup's `undefined` (an id with no index entry)
-	// into the empty-slot representation, so the panels take one clean type.
-	const members = $derived<(CharacterIndexEntry | null)[]>(
-		teamSlots.map((id) => (id ? (getCharacterIndexEntry(id) ?? null) : null))
-	);
-
-	/** The constellation a TEAM member is read at — the tab's own override,
-	 *  then the roster's, under the lens. ⚠ Coverage used to skip the lens
-	 *  (`tabCon ?? roster`, whatever the menu said), so at "C6" the checklist
-	 *  and the grid beneath it answered at two different constellations. */
-	const coverageCapOf = (id: string) =>
-		conCapFor(conMode, rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0));
 
 	/** A card's team action is about the SELECTED team: in it, or not, or it
 	 *  is full ('full' stays clickable — the click is what earns the nudge). */
@@ -941,6 +702,7 @@
 	function toggleTeam(id: string): void {
 		// The pick has been seen: the preview rests until the pointer leaves,
 		// or the row would flip at once to previewing the pick's UNDO.
+		if (swapping) return swapIn(id);
 		previewHeld = id;
 		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
 		const filled = placeOnBoard(id);
@@ -967,7 +729,6 @@
 		activeFacets.clear();
 		if (!only) activeFacets.add(facet);
 		chosenTeamId = teamId;
-		sourceTab = 'roster';
 		if (tabbed && !only) tab = 'characters';
 	}
 
@@ -989,11 +750,66 @@
 
 	/** The pick's screen-reader name — it names the team it acts on. */
 	function pickLabel(entry: CharacterIndexEntry): string {
-		const team = teamLabel(board, selectedIndex);
+		if (swapping) return `Swap ${entry.displayName} in for ${nameOf(swapping.incumbent)}`;
+		const team = selectedLabel;
 		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
 		return slot >= 0
 			? `Remove ${entry.displayName} from ${team} (slot ${slot + 1})`
 			: `Add ${entry.displayName} to ${team}`;
+	}
+
+	// ── SWAP MODE'S GRID (§11.6 item 20) ─────────────────────────────────────
+	/** The team being swapped in, read at the board's own constellations —
+	 *  the same resolution its row draws with, so a header and the preview
+	 *  above it can never disagree. */
+	const swapTeam = $derived(swapping ? teamById(swapping.teamId) : undefined);
+	const swapConOf = $derived.by(() => {
+		const own = swapTeam ? teamCon(swapTeam, $savedNotations) : {};
+		const roster = mounted ? $constellations : {};
+		return (id: string) => effectiveCon(own, roster, id);
+	});
+	/** The battlefield's checks, when the team stands on one. */
+	const swapChecks = $derived.by(() => {
+		if (!swapTeam || board.preset !== 'stygian') return [];
+		const season = SEASONS.find((x) => x.version === board.season) ?? liveSeasons()[0];
+		return season?.battlefields[indexOfTeam(swapTeam.id)]?.checks ?? [];
+	});
+
+	const SWAP_TIER_LABEL: Record<SwapTier, string> = {
+		keeps: 'Keeps everything',
+		trades: 'Trades',
+		reactions: 'Changes the reactions',
+		uncurated: 'Not curated yet'
+	};
+
+	/** The grid's sections while swapping: one per specific change, each
+	 *  tier's name above its first. The filters still narrow who is offered. */
+	const swapGrid = $derived.by(() => {
+		if (!swapping || !swapTeam) return undefined;
+		const own = mounted ? $ownership : {};
+		const list = swapSections(
+			[...split.matches, ...split.uncurated],
+			swapTeam.slots,
+			swapping.slot,
+			swapConOf,
+			swapChecks,
+			(id) => own[id] === 'owned'
+		);
+		// Plain objects, not a Set/Map: a pure fold, nothing here is state.
+		const seen: SwapTier[] = [];
+		const meta: Record<string, { section: SwapSection; tierStart: boolean }> = {};
+		const sections: GridSection[] = list.map((sec) => {
+			meta[sec.key] = { section: sec, tierStart: !seen.includes(sec.tier) };
+			seen.push(sec.tier);
+			return { key: sec.key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries };
+		});
+		return { sections, meta };
+	});
+
+	/** Escape leaves swap mode — unless a modal or a menu took it first. */
+	function onKeydown(e: KeyboardEvent): void {
+		if (e.key !== 'Escape' || !swapping || selectedId || e.defaultPrevented) return;
+		swapping = null;
 	}
 
 	/** The destination strip over the grid: where a pick goes. */
@@ -1022,51 +838,6 @@
 		onDetails={openDetail}
 		onPreview={onCardPreview}
 	/>
-{/snippet}
-
-<!-- Audition candidates — rendered inside CompareView (below the reference row):
-     who else covers what this slot does. Handlers live here with the other
-     tiles'.
-     ↻ 2026-08-13: the "covers" chip row LEFT this snippet. It is now
-     CompareView's lens, on the glass control plate — the same chips group the
-     chart and narrow this list, because they were always asking the same
-     question and asking it twice put two chip rows on one screen. -->
-{#snippet auditionStrip()}
-	<div class="tb-aud">
-		<div class="tb-aud-cands">
-			{#each auditionCandidates as entry (entry.id)}
-				{@const on = compareIds.has(entry.id)}
-				<button
-					class="tb-cand"
-					class:tb-cand--on={on}
-					class:tb-cand--unowned={ownsAny && $ownership[entry.id] !== 'owned'}
-					style:--el-color={elColor(entry.element)}
-					disabled={!on && compareIds.size >= MAX_COMPARE}
-					onclick={() => toggleCompare(entry.id)}
-					title={on
-						? `Remove ${entry.displayName} from the comparison`
-						: `Add ${entry.displayName} to the comparison`}
-				>
-					<!-- ctx-dark for the same reason the compare chip's disc claims it:
-					     a portrait backing must not follow its surroundings to paper. -->
-					<span class="tb-cand-avatar ctx-dark">
-						{#if hasAvatar(entry.id)}
-							<img src={getAvatarFallback(entry.id, 'circle', traveler)} alt="" />
-						{:else}
-							<span class="tb-cand-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
-						{/if}
-					</span>
-					<span class="tb-cand-name">{entry.displayName}</span>
-					{#if on}<span class="tb-cand-mark"><Mark name="check" size={12} /></span>{/if}
-				</button>
-			{/each}
-			{#if auditionCandidates.length === 0}
-				<p class="note tb-aud-none">
-					No one covers all of these at once — turn a “Show” chip off to broaden the search.
-				</p>
-			{/if}
-		</div>
-	</div>
 {/snippet}
 
 <!-- ── Roster-view slots handed to the shared CharacterGrid ───────────────── -->
@@ -1117,6 +888,27 @@
 		>
 	</header>
 {/snippet}
+
+<!-- SWAP MODE'S section head (§11.6 item 20): the tier's name over its
+     first section, then what this section's swap does, as signed items. -->
+{#snippet swapSectionHead(section: GridSection)}
+	{@const m = swapGrid?.meta[section.key]}
+	{#if m?.tierStart}<p class="kicker tb-swap-tier">{section.label}</p>{/if}
+	<header class="tb-slotrow-head tb-swap-head ctx-glass">
+		{#if m?.section.items.length}
+			<SwapDelta items={m.section.items} />
+		{:else if m?.section.tier === 'uncurated'}
+			<span class="tb-swap-quiet">No capability data yet, so this swap can’t be read.</span>
+		{:else}
+			<span class="tb-swap-quiet">Nothing changes</span>
+		{/if}
+		<span class="tb-slotrow-count"
+			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
+		>
+	</header>
+{/snippet}
+
+<svelte:window onkeydown={onKeydown} />
 
 <!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
      both (toolbar round). Band A is the DOCUMENT — the same tabs and the same
@@ -1189,7 +981,12 @@
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
 			{#if documentBar.notice}
-				<span class="tb-notice">{documentBar.notice}</span>
+				<span class="tb-notice" role="status">{documentBar.notice}</span>
+				{#each documentBar.noticeActions as action (action.label)}
+					<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
+						>{action.label}</button
+					>
+				{/each}
 			{/if}
 			<button
 				class="btn"
@@ -1232,66 +1029,64 @@
 			{#if showing !== 'lineup'}
 				<div class="tb-band-cell" bind:clientWidth={charCellW}>
 					{#if tabbed}{@render paneSwitch()}{/if}
-					{#if sourceTab === 'roster'}
-						{#if !foldShow}
-							<div class="segment tb-show" role="radiogroup" aria-label="Show">
-								{#each OWNERSHIP_VIEWS as v (v.key)}
-									<button
-										class="btn"
-										class:is-active={ownershipView === v.key}
-										role="radio"
-										aria-checked={ownershipView === v.key}
-										title={v.hint}
-										onclick={() => (ownershipView = v.key)}>{v.label}</button
-									>
-								{/each}
-							</div>
-						{/if}
-						<!-- The mark is painted OVER the field, so .field keeps owning its
-						     inset stroke and focus ring (the old rail's search, same reasoning). -->
-						<div class="tb-search">
-							<Mark name="search" size={13} />
-							<input
-								class="field tb-search-field"
-								type="text"
-								placeholder="Search…"
-								aria-label="Search characters"
-								bind:value={filters.search}
-								autocomplete="off"
-								autocorrect="off"
-								spellcheck={false}
-							/>
+					{#if !foldShow}
+						<div class="segment tb-show" role="radiogroup" aria-label="Show">
+							{#each OWNERSHIP_VIEWS as v (v.key)}
+								<button
+									class="btn"
+									class:is-active={ownershipView === v.key}
+									role="radio"
+									aria-checked={ownershipView === v.key}
+									title={v.hint}
+									onclick={() => (ownershipView = v.key)}>{v.label}</button
+								>
+							{/each}
 						</div>
-						<!-- More hangs from its END and opens leftward, so it stays over the
+					{/if}
+					<!-- The mark is painted OVER the field, so .field keeps owning its
+						     inset stroke and focus ring (the old rail's search, same reasoning). -->
+					<div class="tb-search">
+						<Mark name="search" size={13} />
+						<input
+							class="field tb-search-field"
+							type="text"
+							placeholder="Search…"
+							aria-label="Search characters"
+							bind:value={filters.search}
+							autocomplete="off"
+							autocorrect="off"
+							spellcheck={false}
+						/>
+					</div>
+					<!-- More hangs from its END and opens leftward, so it stays over the
 						     roster column — never over the board you are filtering for. -->
-						<BandMenu
-							glass
-							role="dialog"
-							mark="filter"
-							label={moreCount > 0 ? `More · ${moreCount}` : 'More'}
-							ariaLabel="More filters"
-						>
-							{#snippet items(close)}
-								<MoreFilters
-									{roster}
-									{filters}
-									bind:ownershipView
-									showOwnership={foldShow}
-									lens={foldLens ? conModeItems : undefined}
-									{close}
-								/>
-							{/snippet}
-						</BandMenu>
-						{#if !foldLens}
-							<!-- The constellation LENS — what the grid's capabilities are read at.
+					<BandMenu
+						glass
+						role="dialog"
+						mark="filter"
+						label={moreCount > 0 ? `More · ${moreCount}` : 'More'}
+						ariaLabel="More filters"
+					>
+						{#snippet items(close)}
+							<MoreFilters
+								{roster}
+								{filters}
+								bind:ownershipView
+								showOwnership={foldShow}
+								lens={foldLens ? conModeItems : undefined}
+								{close}
+							/>
+						{/snippet}
+					</BandMenu>
+					{#if !foldLens}
+						<!-- The constellation LENS — what the grid's capabilities are read at.
 							     A menu states the reading in one plate and gives each option room
 							     for the sentence that explains it. -->
-							<BandMenu glass label={activeConMode.label} ariaLabel="Read capabilities at">
-								{#snippet items(close)}
-									{@render conModeItems(close)}
-								{/snippet}
-							</BandMenu>
-						{/if}
+						<BandMenu glass label={activeConMode.label} ariaLabel="Read capabilities at">
+							{#snippet items(close)}
+								{@render conModeItems(close)}
+							{/snippet}
+						</BandMenu>
 					{/if}
 				</div>
 			{/if}
@@ -1352,6 +1147,15 @@
 					{previewId}
 					filteredFacets={activeFacets}
 					onFind={findFor}
+					swapping={swapping ? { teamId: swapping.teamId, slot: swapping.slot } : null}
+					onSwap={toggleSwap}
+					errand={errandTeam
+						? {
+								team: errandTeam,
+								label: `From the Planner: ${rt.activeTab.label}`,
+								onCancel: cancelErrand
+							}
+						: null}
 				/>
 			</div>
 		</div>
@@ -1377,94 +1181,64 @@
 	<div class="tb-stack ctx-dark">
 		<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
 		     the board you are filtering for. -->
-		{#if sourceTab === 'roster'}
-			<RosterFilterStrip
-				{filters}
-				{activeFacets}
-				activeRole={activeCategory?.key ?? null}
-				onRole={openCategory}
-				count={split.matches.length}
-				{countNote}
-				anyActive={anyFilterActive}
-				onClear={clearAllFilters}
-			/>
-			<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
+		<RosterFilterStrip
+			{filters}
+			{activeFacets}
+			activeRole={activeCategory?.key ?? null}
+			onRole={openCategory}
+			count={split.matches.length}
+			{countNote}
+			anyActive={anyFilterActive}
+			onClear={clearAllFilters}
+		/>
+		<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
 			     filter and the "My constellations" lens read the roster, and do
 			     nothing until it has something in it. -->
-			{#if mounted && !ownsAny}
-				<p class="tb-roster-hint">
-					The Owned filter and “My constellations” read your roster, which is empty.
-					<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
-				</p>
-			{/if}
-			<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
-			     team's hue. -->
-			{#if selectedTeam}
-				<p class="tb-dest" role="status">
-					<span class="tb-dest-key" style:--team-hue={teamHue(selectedIndex)}></span>
-					{#if destFilled === 4}
-						{teamLabel(board, selectedIndex)} is full. Pick a member again to remove them.
-					{:else}
-						Adding to {teamLabel(board, selectedIndex)} · {destFilled}/4
-					{/if}
-				</p>
-			{/if}
+		{#if mounted && !ownsAny}
+			<p class="tb-roster-hint">
+				The Owned filter and “My constellations” read your roster, which is empty.
+				<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
+			</p>
+		{/if}
+		<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
+			     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
+		{#if swapping}
+			<p class="tb-dest" role="status">
+				<span class="tb-dest-key" style:--team-hue={selectedHue}></span>
+				Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
+				<button
+					class="btn btn--icon tb-dest-close"
+					onclick={() => (swapping = null)}
+					aria-label="Stop replacing {nameOf(swapping.incumbent)}"
+					title="Stop replacing (Esc)"><Mark name="close" size={12} /></button
+				>
+			</p>
+		{:else if selectedTeam}
+			<p class="tb-dest" role="status">
+				<span class="tb-dest-key" style:--team-hue={selectedHue}></span>
+				{#if destFilled === 4}
+					{selectedLabel} is full. Pick a member again to remove them.
+				{:else}
+					Adding to {selectedLabel} · {destFilled}/4
+				{/if}
+			</p>
 		{/if}
 		<div class="tb-sourcebox tb-sourcebox--fill">
 			<section class="tb-source scroll-fade tb-source--fill" use:scrollFade>
-				<!-- ── Compare — a first-class center view, not an inspector: the shared
-			     ruler gets the Source's full width, and the view works at every
-			     viewport (no dock breakpoint, no modal fallback). -->
-				<!-- ↻ 2026-08-09: THE TAUGHT EMPTY STATE IS GONE, and its absence is the
-			     feature. "Nothing to compare yet — hover a card and press Compare"
-			     was a whole view explaining why it had nothing to show; the
-			     navigation says that now, by refusing the click and putting the
-			     same sentence in the plate's title.
-			     `compareReady` is still tested HERE, not just on the plate: the
-			     bounce back to the Roster is an effect, so there is one frame after
-			     the last pick leaves where this branch is still selected. Rendering
-			     nothing for that frame is what keeps the old empty state from
-			     flashing on its way out. -->
-				{#if sourceTab === 'compare' && compareReady}
-					<CompareView
-						ids={[...compareIds]}
-						{conMode}
-						anchorId={anchorId ?? undefined}
-						auditionSlot={auditionSlot ?? undefined}
-						seedLenses={anchorId ? auditionSeedFacets : undefined}
-						onLensChange={anchorId ? applyAuditionLens : undefined}
-						onElementLensChange={anchorId ? applyElementLens : undefined}
-						onRemove={toggleCompare}
-						onAdd={toggleCompare}
-						onCommit={anchorId ? commitAudition : undefined}
-						onClear={anchorId ? undefined : () => compareIds.clear()}
-						onCancelAudition={anchorId ? cancelAudition : undefined}
-						onBackToPlanner={anchorId && fromPlanner ? backToPlanner : undefined}
-						candidatesArea={anchorId ? auditionStrip : undefined}
-						teamDeltas={auditionDeltas}
-						rotationReads={anchorId ? rotationReads : undefined}
+				<!-- ↻ §11.2: the filters are the bar above; what is left in here is
+				     the grid proper. In swap mode it is sectioned by what each swap
+				     does, the uncurated kits a tier of their own. -->
+				<div class="tb-roster">
+					<CharacterGrid
+						roster={split.matches}
+						{filters}
+						tile={rosterTile}
+						sections={swapGrid?.sections ?? rosterSections}
+						sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
+						belowGrid={swapGrid ? undefined : rosterStubs}
+						emptyMessage={rosterEmptyMessage}
 					/>
-				{/if}
-
-				<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
-				     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
-				     stall in Safari 26.x, and keeping it warm makes the toggle instant
-				     in every browser.
-				     ↻ §11.2: the filters are the bar above; what is left in here is
-				     the grid proper. -->
-				{#if rosterEverShown}
-					<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-						<CharacterGrid
-							roster={split.matches}
-							{filters}
-							tile={rosterTile}
-							sections={rosterSections}
-							sectionHead={rosterSectionHead}
-							belowGrid={rosterStubs}
-							emptyMessage={rosterEmptyMessage}
-						/>
-					</div>
-				{/if}
+				</div>
 			</section>
 		</div>
 	</div>
@@ -1762,89 +1536,6 @@
 	/* ↻ 2026-10-08: Clear team and the Compare plate's avatar stack retired
 	   with the shared working team and the Compare tab (lineups design §6). */
 
-	/* ── Audition candidates strip (rendered inside CompareView) ── */
-	/* Unowned candidates recede once you have told the tool what you own —
-	   they are ranked after your own, and the strip should say why. ⚠ In the
-	   PAINT (the text colour), never element opacity: these sit in a scroller
-	   inside a transform-animated page. */
-	.tb-cand--unowned:not(.tb-cand--on) .tb-cand-name {
-		color: var(--chart-dim);
-	}
-	.tb-aud {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-	/* ⛔ `.tb-aud-facets` / `.tb-aud-label` are GONE, not commented out — the
-	   "covers" chip row moved onto CompareView's glass control plate. */
-	.tb-aud-cands {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.3rem;
-	}
-	.tb-aud-none {
-		font-size: var(--fs-sm);
-	}
-	.tb-cand {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.35rem;
-		padding: 0.18rem 0.5rem 0.18rem 0.22rem;
-		border: 1px solid color-mix(in srgb, var(--el-color) 40%, var(--border));
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--el-color) 8%, transparent);
-		color: var(--text);
-		font-family: var(--font-body);
-		font-size: var(--fs-md);
-		cursor: pointer;
-		transition:
-			border-color var(--t-snap),
-			background var(--t-snap);
-	}
-	.tb-cand:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--el-color) 80%, var(--border));
-	}
-	.tb-cand--on {
-		background: color-mix(in srgb, var(--el-color) 22%, transparent);
-		border-color: color-mix(in srgb, var(--el-color) 70%, var(--border));
-	}
-	.tb-cand:disabled {
-		opacity: 0.4;
-		cursor: default;
-	}
-	/* Same correction as .tb-slotrow-avatar, from a different starting point: a
-	   raw rgba(0,0,0,.5) rather than a token. Half-black over an unknown ground
-	   is the alpha-compositing law's own counter-example — the result depended on
-	   whatever the audition strip happened to be sitting on. */
-	.tb-cand-avatar {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 22px;
-		height: 22px;
-		border-radius: 50%;
-		overflow: hidden;
-		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
-		flex-shrink: 0;
-	}
-	.tb-cand-avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-	.tb-cand-initials {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		color: var(--el-color);
-	}
-	.tb-cand-name {
-		white-space: nowrap;
-	}
-	.tb-cand-mark {
-		display: flex;
-		color: var(--el-color);
-	}
-
 	/* ── Atlas ────────────────────────────────────────────────── */
 	/* ⚓ NATE 2026-08-10: the Atlas breathes too. With the lead line and the
 	   citation gone the four cards were the section's whole content and they
@@ -1884,7 +1575,8 @@
 	/* ── Role section heads (the Roster grid's sections) ──────────
 	   ↻ 2026-10-07: these were the Atlas drill's and the RP-arrival slot rows'
 	   headers; the drill is the Roster's sections now and the slot rows retired
-	   into the audition, so only the head survives. */
+	   into the audition (since retired into swap mode), so only the head
+	   survives. */
 	/* ⚓ NATE 2026-08-11 — A GLASS PANE, not a night scrim. These row headers sit
 	   directly on the dimmed scene (the TB surface has had no frame since
 	   2026-08-08), and the first attempt made them the debut consumer of
@@ -1982,17 +1674,6 @@
 			opacity var(--t-quick),
 			display var(--t-quick) allow-discrete;
 	}
-	/* The explicit display:flex above would beat the UA's [hidden] rule.
-	   ⚠ `transition: none` IS THE INSTANT EXIT. A transition is driven by the
-	   AFTER-change style, so hiding reads THIS rule and revealing reads the one
-	   above — which is what lets one element fade in and snap out with no second
-	   class to track. Drop it and allow-discrete starts deferring display:none
-	   to the end of the fade, leaving the old roster sitting there opaque after
-	   you have already asked for another view. */
-	.tb-roster[hidden] {
-		display: none;
-		transition: none;
-	}
 	/* Reward wide screens with roomier cards (fewer-but-bigger), not more tiles
 	   at once — the wider cells cross CharacterCard's `roomy` container-query
 	   band. Thresholds tuned live; the card adapts to whatever width it's given. */
@@ -2080,6 +1761,21 @@
 		height: 1em;
 		border-radius: 1px;
 		background: var(--team-hue);
+	}
+	/* Swapping, the strip ends in its ✕ (Escape does the same). */
+	.tb-dest-close {
+		width: 22px;
+		height: 22px;
+	}
+	/* ── SWAP MODE'S SECTIONS (§11.6 item 20) ── */
+	.tb-swap-tier {
+		margin: 0.6rem 0 -0.1rem;
+	}
+	.tb-swap-head {
+		font-size: var(--fs-md);
+	}
+	.tb-swap-quiet {
+		color: var(--muted);
 	}
 	.tb-roster-hint {
 		flex: none;

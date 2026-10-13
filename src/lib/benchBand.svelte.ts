@@ -41,19 +41,24 @@ import { RIBBON_GAP } from './toolGutter.ts';
  * So the AFFORDANCES are now identical and only their destinations differ:
  * - a FILLED portrait opens that character's Detail card, in both tools;
  * - an EMPTY portrait, and ⇄ on any slot, asks the host to swap — which the
- *   planner answers with its character Source and the Team Builder with an
- *   audition. There are no details for nobody, and "click the empty disc to
- *   fill it" is the one thing that must not stop working.
+ *   planner answers by sending the slot to the Team Builder's swap mode.
+ *   There are no details for nobody, and "click the empty disc to fill it" is
+ *   the one thing that must not stop working.
+ *
+ * ↻ 2026-10-08 the Team Builder left the bench (lineups design §2.1), and
+ * 2026-10-13 its audition retired into swap mode: the planner is the only
+ * host now. The registry stays KEYED BY TOOL (see `#hosts`) — the hazard it
+ * guards is page revival, not the number of tools.
  *
  * This also gives ⇄ a job of its own for the first time: on the planner it used
  * to call the very same handler the portrait did.
  */
 export type BenchHostRegistration = {
-	tool: 'rp' | 'tb';
+	tool: 'rp';
 	/** Filled-slot portrait click — the character's Detail card. */
 	onOpenDetail: (id: string) => void;
-	/** ⇄, and an empty slot's portrait. RP: open the character Source. TB:
-	 *  audition replacements (`incumbentId` null on an empty slot). */
+	/** ⇄, and an empty slot's portrait (`incumbentId` null on an empty
+	 *  slot): the Team Builder's swap mode on that slot. */
 	onSwap: (index: number, incumbentId: string | null) => void;
 };
 

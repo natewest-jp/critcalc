@@ -157,10 +157,8 @@ export function elementPalette(element: string | undefined): ElementPalette {
 // surface that is no longer under it. Nate's word for the direction was
 // "flattening colors (taking away highlight gradients)".
 //
-// ⚠ THIS FUNCTION IS A TEAM BUILDER DEPENDENCY TOO (CompareBar). The flattening
-// deliberately takes both — the whole point of the shared helper is that the
-// two finishes cannot drift, and a lit Compare bar beside a flat planner bar is
-// exactly the drift it exists to prevent.
+// ↻ 2026-10-13: its Team Builder reader (Compare's bars) retired with Compare;
+// the helper stays the one place a cast bar's finish is decided.
 //
 // ⚠ HISTORY (2026-07-18): a hue-wave version (tiling ±18° hue-rotated wave
 // layers) was reverted — real Safari rendered a zoom-dependent 1px bottom gap
