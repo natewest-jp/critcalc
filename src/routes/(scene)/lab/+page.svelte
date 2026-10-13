@@ -1,15 +1,15 @@
 <script lang="ts">
 	import Mark from '$lib/components/Mark.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
-	import { SIDE_GEOMETRY, type SideGeometry } from '$lib/sidePortrait';
+	import { SIDE_GEOMETRY, sideLayout, type SideGeometry } from '$lib/sidePortrait';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
 	import {
-		BENCH_ROW_CARD_COMPACT_W,
 		BENCH_ROW_CARD_GAP,
-		BENCH_ROW_CARD_MIN_W,
 		BENCH_SLOT_H,
 		RIBBON_CHROME,
+		RIBBON_EDGE,
+		RIBBON_FRAME_BORDER,
 		RIBBON_PAD
 	} from '$lib/benchBand.svelte';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
@@ -21,7 +21,7 @@
 	const BC_SEATS: { id: string | null; con: number; owned: number | null; note: string }[] = [
 		{ id: 'bennett', con: 6, owned: 1, note: 'Bennett C6, you own C1 — short' },
 		{ id: 'xiangling', con: 4, owned: 6, note: 'Xiangling C4, you own C6 — covered' },
-		{ id: 'xingqiu', con: 0, owned: null, note: 'Xingqiu C0, not owned — short' },
+		{ id: 'nahida', con: 0, owned: null, note: 'Nahida C0, not owned — short (the tallest hair)' },
 		{ id: null, con: 0, owned: null, note: 'an empty slot' }
 	];
 	/** 🎛️ C's card width — no rail and no element badge give back ~48px of the
@@ -30,14 +30,19 @@
 	let bcCardW = $state(152);
 	/** The phone row: a viewport width, and the strip the bench would get there. */
 	let bcVw = $state(390);
+	const BC_DISC_MIN = 40;
+	const BC_DISC_MAX = 60;
+	/** The hair above the upright card: reserved inside the strip, or left to spill. */
+	let bcReserve = $state(false);
 	const bcRow = $derived.by(() => {
 		const inner = bcVw - 2 * TOOL_GUTTER - 2 * RIBBON_CHROME;
 		const fit = (inner - 3 * BENCH_ROW_CARD_GAP) / 4;
 		const full = fit >= bcCardW;
-		const w = full
-			? bcCardW
-			: Math.max(BENCH_ROW_CARD_MIN_W, Math.min(fit, BENCH_ROW_CARD_COMPACT_W));
-		return { inner, w, full };
+		// The upright card: portrait + 4 + the 26px pill, the portrait taking
+		// whatever the width leaves, between a floor and a cap (🎛️ both).
+		const d = Math.round(Math.max(BC_DISC_MIN, Math.min(fit - 30, BC_DISC_MAX)));
+		const w = full ? bcCardW : d + 30;
+		return { inner, w, full, d, h: full ? 78 : Math.max(d, 55), over: sideLayout(d).overhang };
 	});
 	let bcSlotH = $state(BENCH_SLOT_H);
 	let bcRosterKnown = $state(true);
@@ -1060,6 +1065,7 @@
 				slotId={seat.id ?? 'blank'}
 				{char}
 				{compact}
+				compactDisc={bcRow.d}
 				conLevel={seat.id ? (bcCon[seat.id] ?? seat.con) : 0}
 				loadoutEntry={{}}
 				onSetCon={(l) => seat.id && (bcCon = { ...bcCon, [seat.id]: l })}
@@ -1099,7 +1105,13 @@
 		<div class="bc-forms">
 			<figure class="bc-form">
 				<figcaption class="spec-tag">desk · the column beside the timeline</figcaption>
-				<div class="bc-strip ctx-dark" style:--bc-w="{bcCardW}px" style:--bc-pad="{RIBBON_PAD}px">
+				<div
+					class="bc-strip ctx-dark"
+					style:--bc-w="{bcCardW}px"
+					style:--bc-pad="{RIBBON_PAD}px"
+					style:--bc-edge="{RIBBON_EDGE}px"
+					style:--bc-frame="{RIBBON_FRAME_BORDER}px"
+				>
 					{#each BC_SEATS as seat, i (i)}
 						<div class="bc-slot" style:height="{bcSlotH}px">{@render bcCard(seat, false)}</div>
 					{/each}
@@ -1110,19 +1122,25 @@
 				<div class="sp-knobs">
 					<label
 						>Viewport <input type="range" min="320" max="863" bind:value={bcVw} />
-						<code>{bcVw}px · cards {Math.round(bcRow.w)}px · {bcRow.full ? 'full' : 'compact'}</code
+						<code
+							>{bcVw}px · cards {Math.round(bcRow.w)}×{bcRow.h}px{bcRow.full
+								? ' · full'
+								: ` · portrait ${bcRow.d}px, hair ${Math.round(bcRow.over)}px`}</code
 						></label
 					>
+					<label><input type="checkbox" bind:checked={bcReserve} /> Reserve the hair</label>
 				</div>
 				<div class="bc-phone" style:width="{bcVw}px">
 					<div
 						class="bc-row ctx-dark"
 						class:bc-row--spread={!bcRow.full}
+						class:bc-row--reserve={bcReserve && !bcRow.full}
+						style:--bc-over="{Math.round(bcRow.over)}px"
 						style:--bc-chrome="{RIBBON_CHROME}px"
 						style:--bc-gap="{BENCH_ROW_CARD_GAP}px"
 					>
 						{#each BC_SEATS as seat, i (i)}
-							<div class="bc-cell" style:width="{bcRow.w}px">
+							<div class="bc-cell" style:width="{bcRow.w}px" style:height="{bcRow.h}px">
 								{@render bcCard(seat, !bcRow.full)}
 							</div>
 						{/each}
@@ -1132,10 +1150,14 @@
 			</figure>
 		</div>
 		<p class="sp-note">
-			Top to bottom / left to right: {BC_SEATS.map((x) => x.note).join(' · ')}. The phone row keeps
-			today's 78px strip and 84px card cap: the constellation left the controls row for the disc and
-			Swap took its 26px. A card takes the full form wherever four fit at the card width above. The
-			hair rises past the strip's top edge; nothing reserves it yet.
+			Top to bottom / left to right: {BC_SEATS.map((x) => x.note).join(' · ')}. The phone row is the
+			upright card: the loadout stands beside the portrait and Swap is gone, so a card is one row
+			(today's compact card is 78px tall). Wherever four cards fit at the card width above, the row
+			shows the full desk card. "Reserve the hair" grows the strip by the overhang instead of
+			letting it spill. The desk strip draws the ribbon's real side chrome: {RIBBON_EDGE}px of bare
+			edge, the
+			{RIBBON_FRAME_BORDER}px frame (one stroke here; the real one is double), then the {RIBBON_PAD}px
+			pad. The phone row uses the same {RIBBON_CHROME}px of chrome, without the frame.
 		</p>
 	</section>
 
@@ -2641,12 +2663,22 @@
 		margin: 0;
 		min-width: 0;
 	}
+	/* The ribbon's real side chrome: the bare edge, the frame, the pad. */
 	.bc-strip {
+		position: relative;
 		box-sizing: content-box;
 		width: var(--bc-w);
-		padding: 28px var(--bc-pad) 16px;
+		padding: 28px calc(var(--bc-edge) + var(--bc-frame) + var(--bc-pad)) 16px;
 		background: var(--surface);
 		border-radius: var(--r-md);
+	}
+	.bc-strip::before {
+		content: '';
+		position: absolute;
+		inset: var(--bc-edge);
+		border: var(--bc-frame) solid var(--inset-line);
+		border-radius: calc(var(--r-md) - 2px);
+		pointer-events: none;
 	}
 	.bc-slot {
 		display: flex;
@@ -2671,9 +2703,11 @@
 	.bc-row--spread {
 		justify-content: space-between;
 	}
+	.bc-row--reserve {
+		padding-top: calc(var(--bc-chrome) + var(--bc-over));
+	}
 	.bc-cell {
 		flex: none;
-		height: 78px;
 		display: flex;
 		flex-direction: column;
 	}

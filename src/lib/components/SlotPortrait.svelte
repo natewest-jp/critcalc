@@ -91,7 +91,8 @@
 		actions,
 		portrait = 'disc',
 		conOnDisc = false,
-		ownedCon
+		ownedCon,
+		compactDisc = CARD_PORTRAIT_COMPACT
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -147,6 +148,9 @@
 		 *  owned, undefined = unknown (empty roster / marks off). When it falls
 		 *  short of `conLevel` the constellation control goes HOLLOW (§9.5a). */
 		ownedCon?: number | null;
+		/** 🧪 The side form's COMPACT portrait, which the host solves from the
+		 *  card's width (the upright phone card: portrait + 4 + the 26px pill). */
+		compactDisc?: number;
 	} = $props();
 
 	const side = $derived(portrait === 'side');
@@ -312,6 +316,7 @@
 	style:--el={p.main}
 	style:--sp-band="{CARD_PORTRAIT}px"
 	style:--sp-band-compact="{CARD_PORTRAIT_COMPACT}px"
+	style:--sp-side-d="{compactDisc}px"
 >
 	<!-- ONE band, three columns. `max-height: 100%` on the body is what keeps a
 	     card in a slot shorter than its own content from spilling instead of
@@ -338,10 +343,7 @@
 				aria-label={onPortraitClick ? portraitLabel : undefined}
 			>
 				<span class="sp-side-art">
-					<SidePortrait
-						id={char ? slotId : null}
-						size={compact ? CARD_PORTRAIT_COMPACT : CARD_PORTRAIT}
-					/>
+					<SidePortrait id={char ? slotId : null} size={compact ? compactDisc : CARD_PORTRAIT} />
 				</span>
 				{#if discCon && char}
 					<button
@@ -479,7 +481,8 @@
 						{/if}
 					</button>
 				</div>
-				{#if discCon && actions}
+				<!-- 🧪 The upright phone card has no Swap (⚓ Nate 2026-10-13). -->
+				{#if discCon && actions && !compact}
 					<span class="sp-col-actions">{@render actions()}</span>
 				{/if}
 			</div>
@@ -1420,24 +1423,56 @@
 		max-width: 24px;
 	}
 
-	/* ══ 🧪 THE SIDE FORM, COMPACT (candidate C, 2026-10-13) ═══════════════════
-	   The same 78px stack as the disc's compact form, and the same 84px cap,
-	   because the control row's arithmetic is unchanged — the constellation
-	   chip left it for the disc and ⇄ took its 26px:
+	/* ── 🧪 The side form on the desk: the controls row sits on the band's
+	   BOTTOM, so the loadout pill and ⇄ end where the disc's chip ends (they
+	   were centred in their half of the band, 1px short — measured). The name
+	   comes down 6px (⚓ Nate). */
+	.sp-card--side:not(.sp-card--compact) .sp-controls {
+		align-self: end;
+	}
+	.sp-card--side:not(.sp-card--compact) .sp-id-row {
+		position: relative;
+		top: 6px;
+	}
 
-	         ⟨hair⟩
-	        (  48 )ⓒ       ← the portrait, centred; its chip is the editor
-	     ( ▣ ⚔¹ )  ⇄      ← loadout pill + Swap
+	/* ══ 🧪 THE SIDE FORM, COMPACT — THE UPRIGHT CARD (⚓ Nate 2026-10-13) ═════
+	   The loadout pill stands UPRIGHT (flower over weapon) to the right of the
+	   portrait, and Swap is gone, so the card is ONE row:
 
-	   No rail, no name. The hair rises above the card as on the desk. */
+	       ⟨hair⟩
+	      (  d  )ⓒ ▣      ← the portrait, bottom-aligned with the pill
+	      (     )  ⚔¹
+	
+	   width = d + 4 + 26, height = max(d, the pill's 55). The host solves d
+	   from the width four cards get (`compactDisc`). */
 	.sp-card--side.sp-card--compact .sp-body {
-		grid-template-columns: minmax(0, 1fr);
+		display: flex;
+		align-items: flex-end;
+		gap: 4px;
+		height: auto;
 	}
 	.sp-card--side.sp-card--compact .sp-avatar-chip {
-		grid-column: 1;
-		justify-self: center;
+		height: var(--sp-side-d);
+		width: var(--sp-side-d);
 	}
-	.sp-card--side.sp-card--compact .sp-col-actions {
-		margin-left: var(--sp-rail-gap);
+	.sp-card--side.sp-card--compact .sp-col {
+		display: flex;
+		margin: 0;
+	}
+	.sp-card--side.sp-card--compact .sp-controls {
+		width: auto;
+	}
+	.sp-card--side.sp-card--compact .sp-loadout {
+		flex: none;
+		flex-direction: column;
+		width: var(--sp-pill-h);
+		height: auto;
+		padding: 3px 0;
+	}
+	.sp-card--side.sp-card--compact .sp-lo-zone {
+		flex: none;
+		width: 24px;
+		max-width: none;
+		height: 24px;
 	}
 </style>
