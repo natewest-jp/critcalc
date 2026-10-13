@@ -784,26 +784,72 @@
 
 	/** The grid's sections while swapping: one per specific change, each
 	 *  tier's name above its first. The filters still narrow who is offered. */
+	/** ⚓ Swap mode respects ON-FIELD / OFF-FIELD (Nate 2026-10-13): an
+	 *  off-fielder's slot is offered off-fielders and an on-fielder's
+	 *  on-fielders — mixed together, the two read as a category error. The
+	 *  other position waits behind one button at the foot of the grid, under
+	 *  its own kickers. A character with no editorial position, or both
+	 *  (Mavuika), counts as either. */
+	let swapOtherShown = $state(false);
+	$effect(() => {
+		void swapping?.incumbent;
+		swapOtherShown = false;
+	});
+	const POSITION_LABEL: Record<RolePosition, string> = {
+		onField: 'On-field',
+		offField: 'Off-field'
+	};
+	const swapPosition = $derived(swapping ? (rolesOf(swapping.incumbent)?.position ?? []) : []);
+	const samePosition = (id: string): boolean => {
+		const theirs = rolesOf(id)?.position ?? [];
+		return !swapPosition.length || !theirs.length || theirs.some((p) => swapPosition.includes(p));
+	};
+	/** The position the button offers — the one the incumbent doesn't hold. */
+	const swapOtherPosition = $derived(
+		swapPosition.length === 1 ? (swapPosition[0] === 'onField' ? 'offField' : 'onField') : null
+	);
+
+	/** The grid's sections while swapping: one per specific change, each
+	 *  tier's name above its first. The filters still narrow who is offered. */
 	const swapGrid = $derived.by(() => {
 		if (!swapping || !swapTeam) return undefined;
+		const team = swapTeam;
+		const slot = swapping.slot;
 		const own = mounted ? $ownership : {};
-		const list = swapSections(
-			[...split.matches, ...split.uncurated],
-			swapTeam.slots,
-			swapping.slot,
-			swapConOf,
-			swapChecks,
-			(id) => own[id] === 'owned'
-		);
+		const everyone = [...split.matches, ...split.uncurated];
+		const same = everyone.filter((e) => samePosition(e.id));
+		const other = everyone.filter((e) => !samePosition(e.id));
 		// Plain objects, not a Set/Map: a pure fold, nothing here is state.
-		const seen: SwapTier[] = [];
-		const meta: Record<string, { section: SwapSection; tierStart: boolean }> = {};
-		const sections: GridSection[] = list.map((sec) => {
-			meta[sec.key] = { section: sec, tierStart: !seen.includes(sec.tier) };
-			seen.push(sec.tier);
-			return { key: sec.key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries };
-		});
-		return { sections, meta };
+		const meta: Record<string, { section: SwapSection; tierStart: boolean; kicker: string }> = {};
+		const sections: GridSection[] = [];
+		const add = (
+			entries: CharacterIndexEntry[],
+			prefix: string,
+			kickerOf: (t: SwapTier) => string
+		) => {
+			const seen: SwapTier[] = [];
+			for (const sec of swapSections(
+				entries,
+				team.slots,
+				slot,
+				swapConOf,
+				swapChecks,
+				(id) => own[id] === 'owned'
+			)) {
+				const key = prefix + sec.key;
+				meta[key] = {
+					section: sec,
+					tierStart: !seen.includes(sec.tier),
+					kicker: kickerOf(sec.tier)
+				};
+				seen.push(sec.tier);
+				sections.push({ key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries });
+			}
+		};
+		add(same, '', (t) => SWAP_TIER_LABEL[t]);
+		const otherLabel = swapOtherPosition ? POSITION_LABEL[swapOtherPosition] : '';
+		if (swapOtherShown) add(other, 'other:', (t) => `${otherLabel} · ${SWAP_TIER_LABEL[t]}`);
+		return { sections, meta, otherCount: other.length, otherLabel };
 	});
 
 	/** Escape leaves swap mode — unless a modal or a menu took it first. */
@@ -893,7 +939,7 @@
      first section, then what this section's swap does, as signed items. -->
 {#snippet swapSectionHead(section: GridSection)}
 	{@const m = swapGrid?.meta[section.key]}
-	{#if m?.tierStart}<p class="kicker tb-swap-tier">{section.label}</p>{/if}
+	{#if m?.tierStart}<p class="kicker tb-swap-tier">{m.kicker}</p>{/if}
 	<header class="tb-slotrow-head tb-swap-head ctx-glass">
 		{#if m?.section.items.length}
 			<SwapDelta items={m.section.items} />
@@ -906,6 +952,19 @@
 			>{section.entries.length} character{section.entries.length === 1 ? '' : 's'}</span
 		>
 	</header>
+{/snippet}
+
+<!-- The other position's door, at the foot of the swap grid. -->
+{#snippet swapFoot()}
+	{#if swapGrid?.otherCount}
+		<p class="tb-swap-foot">
+			<button class="btn btn--glass" onclick={() => (swapOtherShown = !swapOtherShown)}>
+				{swapOtherShown
+					? `Hide the ${swapGrid.otherLabel.toLowerCase()} characters`
+					: `Show ${swapGrid.otherCount} ${swapGrid.otherLabel.toLowerCase()} characters too`}
+			</button>
+		</p>
+	{/if}
 {/snippet}
 
 <svelte:window onkeydown={onKeydown} />
@@ -1203,8 +1262,7 @@
 		<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
 			     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
 		{#if swapping}
-			<p class="tb-dest" role="status">
-				<span class="tb-dest-key" style:--team-hue={selectedHue}></span>
+			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 				Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
 				<button
 					class="btn btn--icon tb-dest-close"
@@ -1214,8 +1272,7 @@
 				>
 			</p>
 		{:else if selectedTeam}
-			<p class="tb-dest" role="status">
-				<span class="tb-dest-key" style:--team-hue={selectedHue}></span>
+			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 				{#if destFilled === 4}
 					{selectedLabel} is full. Pick a member again to remove them.
 				{:else}
@@ -1235,7 +1292,7 @@
 						tile={rosterTile}
 						sections={swapGrid?.sections ?? rosterSections}
 						sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
-						belowGrid={swapGrid ? undefined : rosterStubs}
+						belowGrid={swapGrid ? swapFoot : rosterStubs}
 						emptyMessage={rosterEmptyMessage}
 					/>
 				</div>
@@ -1745,27 +1802,32 @@
 		gap: 0.4rem;
 	}
 	/* The destination strip: where a pick goes, keyed by its team's hue. */
+	/* THE DESTINATION BANNER (⚓ Nate 2026-10-13): a full-width narrow band in
+	   the selected team's hue — the team the grid is working FOR, said in
+	   the colour its frames and its row's edge already wear. The hues are
+	   bright, so the ink is the bright-fill ink. */
 	.tb-dest {
 		flex: none;
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		min-height: 26px;
 		margin: 0;
-		color: var(--text);
+		padding: 2px 4px 2px 10px;
+		border-radius: var(--r-sm);
+		background: var(--team-hue);
+		color: var(--bright-ink);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
-	.tb-dest-key {
-		flex: none;
-		width: 3px;
-		height: 1em;
-		border-radius: 1px;
-		background: var(--team-hue);
-	}
-	/* Swapping, the strip ends in its ✕ (Escape does the same). */
+	/* Swapping, the banner ends in its ✕ (Escape does the same) — bare ink on
+	   the hue, not a plate. */
 	.tb-dest-close {
+		margin-left: auto;
 		width: 22px;
 		height: 22px;
+		background: none;
+		color: inherit;
 	}
 	/* ── SWAP MODE'S SECTIONS (§11.6 item 20) ── */
 	.tb-swap-tier {
@@ -1773,6 +1835,11 @@
 	}
 	.tb-swap-head {
 		font-size: var(--fs-md);
+	}
+	.tb-swap-foot {
+		margin: 0.6rem 0 0;
+		display: flex;
+		justify-content: center;
 	}
 	.tb-swap-quiet {
 		color: var(--muted);

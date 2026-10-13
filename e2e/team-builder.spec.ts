@@ -6,7 +6,6 @@ import {
 	gridNames,
 	moreChip,
 	provideGlyph,
-	benchNames,
 	boardNames,
 	setConMode,
 	KEYS
@@ -343,8 +342,14 @@ test.describe('swap mode', () => {
 
 		// Every section says what its swap does; the team is never offered.
 		await expect(page.locator('.tb-swap-head').first()).toBeVisible();
+		// ⚓ Bennett is an off-fielder, so off-fielders are offered; the
+		// on-fielders wait behind one button at the foot of the grid.
 		const offered = await page.locator('.cg-section .cc').count();
-		expect(offered, 'everyone but the team').toBe(ROSTER_SIZE - 4);
+		expect(offered, 'one position at a time').toBeLessThan(ROSTER_SIZE - 4);
+		await page.locator('.tb-swap-foot button').click();
+		await expect(page.locator('.cg-section .cc'), 'everyone but the team').toHaveCount(
+			ROSTER_SIZE - 4
+		);
 
 		await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
 		expect(await boardNames(page)).toEqual(['Furina', 'Xiangling', 'Xingqiu', 'Sucrose']);
