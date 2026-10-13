@@ -1378,7 +1378,7 @@
 					<button class="btn btn--danger"><Mark name="delete" /> Delete</button>
 					<button class="btn btn--danger is-confirming"><Mark name="warn" /> Sure?</button>
 					<div class="segment">
-						<button class="btn is-active">My roster</button>
+						<button class="btn is-active">My constellations</button>
 						<button class="btn">All C0</button>
 					</div>
 				</div>

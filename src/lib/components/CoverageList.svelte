@@ -145,7 +145,7 @@
 		return m ? Number(m[1]) * 1000 + Number(m[2]) : -1;
 	}
 
-	/** "My roster" dims the constellation columns above what you own. */
+	/** "My constellations" dims the constellation columns above what you own. */
 	const C_LEVEL: [number, CoverageSegmentKey][] = [
 		[1, 'C1'],
 		[2, 'C2'],
@@ -240,7 +240,7 @@
 						class="chip cov-phrase"
 						class:active={rosterOnly}
 						aria-pressed={rosterOnly}
-						onclick={() => (rosterOnly = !rosterOnly)}>My roster</button
+						onclick={() => (rosterOnly = !rosterOnly)}>My constellations</button
 					>
 				</div>
 				<div class="segment cov-sort" role="radiogroup" aria-label="Sort">
