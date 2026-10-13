@@ -92,7 +92,8 @@
 		portrait = 'disc',
 		conOnDisc = false,
 		ownedCon,
-		compactDisc = CARD_PORTRAIT_COMPACT
+		compactDisc = CARD_PORTRAIT_COMPACT,
+		swapCorner = 'bl'
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -151,6 +152,9 @@
 		/** 🧪 The side form's COMPACT portrait, which the host solves from the
 		 *  card's width (the upright phone card: portrait + 4 + the 26px pill). */
 		compactDisc?: number;
+		/** 🧪 Which corner of the portrait the host's actions tuck into (desk side
+		 *  form with `conOnDisc`): bottom-left or top-left. */
+		swapCorner?: 'bl' | 'tl';
 	} = $props();
 
 	const side = $derived(portrait === 'side');
@@ -342,6 +346,13 @@
 				tabindex={onPortraitClick ? 0 : undefined}
 				aria-label={onPortraitClick ? portraitLabel : undefined}
 			>
+				{#if discCon && actions && !compact}
+					<!-- 🧪 Swap TUCKS BEHIND the portrait (⚓ Nate 2026-10-13: on the
+					     left, the Builder's side, never beside the timeline): a raised
+					     tile in the corner whose inner part the opaque disc covers, so
+					     only its outer corner shows, with the mark in it. -->
+					<span class="sp-corner sp-corner--{swapCorner}">{@render actions()}</span>
+				{/if}
 				<span class="sp-side-art">
 					<SidePortrait id={char ? slotId : null} size={compact ? compactDisc : CARD_PORTRAIT} />
 				</span>
@@ -510,10 +521,10 @@
 						</button>
 					</div>
 				{/if}
-				<!-- 🧪 The upright phone card has no Swap (⚓ Nate 2026-10-13). -->
-				{#if discCon && actions && !compact}
-					<span class="sp-col-actions">{@render actions()}</span>
-				{/if}
+				<!-- 🧪 With the constellation on the disc, Swap lives in the portrait's
+				     corner on the desk, and the phone has none (⚓ Nate 2026-10-13: the
+				     notation is the phone's control, and swap mode needs the lineup
+				     beside the grid). -->
 			</div>
 		</div>
 	</div>
@@ -1045,11 +1056,24 @@
 	.sp-disc-con:disabled {
 		cursor: default;
 	}
-	/* Without a rail the host's actions sit at the controls row's end. */
-	.sp-col-actions {
+	/* The corner tile: behind the portrait's disc (it comes first, and the
+	   art box is positioned after it), reaching into the card's 6px pad so its
+	   visible corner can hold a 12px mark clear of the ring. 🎛️ size + reach. */
+	.sp-corner {
+		position: absolute;
+		width: var(--sp-corner, 28px);
+		height: var(--sp-corner, 28px);
+		left: calc(-1 * var(--sp-corner-reach, 6px));
 		display: flex;
-		align-self: stretch;
-		margin-left: auto;
+	}
+	.sp-corner--bl {
+		bottom: calc(-1 * var(--sp-corner-drop, 4px));
+	}
+	.sp-corner--tl {
+		top: calc(-1 * var(--sp-corner-drop, 4px));
+	}
+	.sp-corner :global(> *) {
+		flex: 1;
 	}
 
 	/* ── Loadout pill ─────────────────────────────────────────────────────────

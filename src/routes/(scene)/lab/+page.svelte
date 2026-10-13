@@ -37,6 +37,8 @@
 	const BC_UP = 24;
 	/** The hair above the upright card: reserved inside the strip, or left to spill. */
 	let bcReserve = $state(false);
+	/** Which corner of the portrait Swap tucks into. */
+	let bcCorner = $state<'bl' | 'tl'>('bl');
 	const bcRow = $derived.by(() => {
 		const inner = bcVw - 2 * TOOL_GUTTER - 2 * RIBBON_CHROME;
 		const fit = (inner - 3 * BENCH_ROW_CARD_GAP) / 4;
@@ -1081,14 +1083,15 @@
 				portrait="side"
 				conOnDisc
 				ownedCon={bcRosterKnown ? seat.owned : undefined}
+				swapCorner={bcCorner}
 			>
 				{#snippet actions()}
 					<button
-						class="bc-swap"
+						class="bc-swap bc-swap--{bcCorner}"
 						disabled={!char}
 						title={char ? 'Swap' : undefined}
 						aria-label={char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
-						><Mark name="swap" /></button
+						><Mark name="swap" size={12} /></button
 					>
 				{/snippet}
 			</SlotPortrait>
@@ -1104,6 +1107,11 @@
 				<code>{bcSlotH}px</code></label
 			>
 			<label><input type="checkbox" bind:checked={bcRosterKnown} /> Roster known</label>
+			<label
+				>Swap corner <select bind:value={bcCorner}
+					><option value="bl">bottom left</option><option value="tl">top left</option></select
+				></label
+			>
 		</div>
 		<div class="bc-forms">
 			<figure class="bc-form">
@@ -2721,19 +2729,25 @@
 		color: var(--muted);
 		border-radius: var(--r-sm);
 	}
-	/* A stand-in for BenchBand's .bb-act (scoped there): the raised square. */
+	/* A stand-in for BenchBand's .bb-act (scoped there): the raised corner
+	   tile. Only its OUTER corner shows past the disc, so the mark sits there
+	   (3px in from the tile's two outer edges). */
 	.bc-swap {
-		flex: none;
-		width: 26px;
-		height: 26px;
-		display: grid;
-		place-items: center;
-		padding: 0;
+		display: flex;
+		padding: 3px;
 		border: none;
 		border-radius: var(--r-sm);
 		background: var(--surface-raised);
 		color: var(--sp-unset-ink, var(--muted));
 		cursor: pointer;
+	}
+	.bc-swap--bl {
+		align-items: flex-end;
+		justify-content: flex-start;
+	}
+	.bc-swap--tl {
+		align-items: flex-start;
+		justify-content: flex-start;
 	}
 	.bc-swap:hover:not(:disabled) {
 		background: color-mix(in srgb, white 7%, var(--surface-raised));
