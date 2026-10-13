@@ -14,9 +14,11 @@ import { fileURLToPath } from 'node:url';
 //
 // All fifteen facets are drawn (2026-10-12); the two-letter stand-ins are
 // retired. A NEW facet needs a line in GLYPHS — until it has one it draws
-// nothing, and the generator refuses to finish (below). ⚠ Export the
-// whole 24-unit artboard, not the art cropped to its bounds: the traced set
-// fills a ~15-unit box centred in 24, and that inset IS the optical size.
+// nothing, and the generator refuses to finish (below). Export the whole
+// 24-unit artboard (the viewBox check below), but where the art sits in it
+// and how much of it it fills are DISCARDED: each glyph is cropped to its
+// ink and balanced below. ⚠ So optical sizing done in the drawing does not
+// survive — a by-eye correction belongs in NUDGE.
 //
 // Auto-run by the predev/prebuild hooks. Manual: npm run generate-fingerprint
 
@@ -60,11 +62,15 @@ const DENSITY_K = 0.5;
 //    `dx`/`dy` move it, in fractions of the box (+ = right / down).
 /** @type {Record<string, { scale?: number; dx?: number; dy?: number }>} */
 const NUDGE = {
-	// tune(nate) 2026-10-12, by eye on the balanced set
+	// tune(nate) 2026-10-12, by eye on the balanced set; 2026-10-13 after
+	// the DMG% / Cleanse / Grouping redraws (Grouping 1.2 × 0.99)
 	energy: { scale: 1.05 },
 	resShred: { scale: 1.06 },
-	grouping: { scale: 1.2 },
-	interruptionRes: { scale: 1.04 }
+	grouping: { scale: 1.188 },
+	interruptionRes: { scale: 1.04 },
+	'buff:dmg': { scale: 0.93 },
+	shield: { scale: 1.03 },
+	'buff:hpdef': { scale: 1.03 }
 };
 
 /** The path's outline as polygons: absolute M/L/C/Z only (Affinity's
