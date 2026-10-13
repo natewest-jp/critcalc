@@ -14,9 +14,11 @@ import { fileURLToPath } from 'node:url';
 //
 // All fifteen facets are drawn (2026-10-12); the two-letter stand-ins are
 // retired. A NEW facet needs a line in GLYPHS — until it has one it draws
-// nothing, and the generator refuses to finish (below). ⚠ Export the
-// whole 24-unit artboard, not the art cropped to its bounds: the traced set
-// fills a ~15-unit box centred in 24, and that inset IS the optical size.
+// nothing, and the generator refuses to finish (below). Export the whole
+// 24-unit artboard (the viewBox check below), but where the art sits in it
+// and how much of it it fills are DISCARDED: each glyph is cropped to its
+// ink and balanced below. ⚠ So optical sizing done in the drawing does not
+// survive — a by-eye correction belongs in NUDGE.
 //
 // Auto-run by the predev/prebuild hooks. Manual: npm run generate-fingerprint
 
