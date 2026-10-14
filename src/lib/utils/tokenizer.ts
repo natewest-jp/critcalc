@@ -19,11 +19,11 @@
  *                 ordinary charge when the resolved ability authors none.
  *   Q           — Q burst cast (Q, or the KQM short-burst sQ — Flins
  *                 Thunderous Symphony / Varesa Volcano Kablam)
- *   E           — E skill cast (any variant: E, hE, tE, h1E, h2E)
+ *   E           — E skill cast (E, tE, pE, hE, h1E, h2E, and sE above)
  *   time        — ~Xs pure time advance
  *   unset-time  — ~?s duration placeholder
  *   optional    — (...) optional action group
- *   label       — known KQM label tokens: N1–N9, C, C1–C9, A, P, hP, lP, D, J, W,
+ *   label       — known KQM label tokens: N, N1–N9, C, C1–C9, sC (above), A, P, hP, lP, D, J, W,
  *                 and bracket repeat groups (with optional numeric prefix: 3[C], [N2D]x3)
  *   stack-assert — {key:N} assertion of a named-resource stack count
  *                  (Heizou Declension, Yanfei Scarlet Seals, etc.). Updates
@@ -70,13 +70,6 @@ export type Token = {
 	text: string;
 };
 
-/** Pattern matching the `{key:N}` stack-assert form. Anchored, no flags.
- *  - key: lowercase letter followed by camelCase / digits / underscore / hyphen
- *    (camelCase accepted to match the codebase's `coldDish` / `huntersExperience`
- *    JSON-key convention; first char must still be lowercase to keep the
- *    pattern unambiguous against character names that begin uppercase).
- *  - count: non-negative integer
- *  Captures: [1] = key, [2] = count (as string). */
 /**
  * Upper bound on a notation we are willing to tokenize or parse, in characters.
  *
@@ -128,6 +121,13 @@ export const MAX_NOTATION_CHARS = 16_384;
  * consistency fix, and it is not what bought the speed here.
  */
 
+/** Pattern matching the `{key:N}` stack-assert form. Anchored, no flags.
+ *  - key: lowercase letter followed by camelCase / digits / underscore / hyphen
+ *    (camelCase accepted to match the codebase's `coldDish` / `huntersExperience`
+ *    JSON-key convention; first char must still be lowercase to keep the
+ *    pattern unambiguous against character names that begin uppercase).
+ *  - count: non-negative integer
+ *  Captures: [1] = key, [2] = count (as string). */
 export const STACK_ASSERT_RE = /^\{([a-z][a-zA-Z0-9_-]*):(\d+)\}$/;
 
 // ---------------------------------------------------------------------------
@@ -144,7 +144,7 @@ function classifyWord(text: string): TokenKind {
 	// Q variants: sQ is the KQM "short-Q" token (Flins Thunderous Symphony,
 	// Varesa Volcano Kablam) — same cast kind, variant-resolved by the parser.
 	if (text === 'Q' || text === 'sQ') return 'Q';
-	// E variants: optional prefix (t|p|h|h1|h2), optional suffix P.
+	// E variants: optional prefix (t|p|h|h1|h2|s).
 	// ⚓ `sE` is KQM's token for a SPECIAL Elemental Skill — the one that
 	// replaces the ordinary E inside a stance (Varka's Four Winds' Ascension),
 	// the sibling of `sQ` above. It classifies as an ordinary E: which ability
@@ -278,8 +278,8 @@ export function tokenizeActionRun(text: string, startOffset = 0): Token[] {
  * Tokenize a full KQM notation string into an array of position-aware tokens.
  *
  * The outer regex captures one structural unit per match. Priority order:
- *   ~?s                       — unset-duration placeholder (must precede ~[\d.]+s)
- *   ~[\d.]+s                  — time advance
+ *   ~?s                       — unset-duration placeholder (must precede the time advance)
+ *   ~(?:\d+(?:\.\d+)?|\.\d+)s  — time advance
  *   (?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?   — bracket repeat group, with optional numeric prefix
  *   \([^)]*\)                 — optional action group
  *   >                         — segment separator (also splits unspaced words: 'Q>Raiden')
