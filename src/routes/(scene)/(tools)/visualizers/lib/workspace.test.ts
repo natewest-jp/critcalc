@@ -139,10 +139,10 @@ describe('icdHitsToGaugeApps', () => {
 		expect(icdHitsToGaugeApps(sim, 'pyro')).toHaveLength(MAX_GAUGE_APPS);
 	});
 
-	it('clamps times into the gauge slider range and rounds to 0.1s', () => {
-		const sim = simulateIcd([0.123, 25], { timer: 0, hits: 1 });
+	it('drops applications past the gauge axis and rounds to 0.1s', () => {
+		const sim = simulateIcd([0.123, MAX_GAUGE_TIME + 10], { timer: 0, hits: 1 });
 		const apps = icdHitsToGaugeApps(sim, 'hydro');
+		expect(apps).toHaveLength(1);
 		expect(apps[0].time).toBeCloseTo(0.1);
-		expect(apps[1].time).toBe(MAX_GAUGE_TIME);
 	});
 });

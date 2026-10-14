@@ -175,22 +175,21 @@ export type HandoffMessage = {
 /** Gauge Explorer caps at this many application rows (shared with its UI). */
 export const MAX_GAUGE_APPS = 8;
 
-/** The gauge time slider's ceiling — handoff times clamp into it. */
+/** The gauge time slider's ceiling — a handoff leaves out what lands past it. */
 export const MAX_GAUGE_TIME = 15;
 
 /**
  * Convert an ICD attack string into Gauge Explorer application rows: only the
- * hits that actually APPLY their element, capped at the gauge row limit.
- * Gauge size is not something ICD models, so every application is an honest
- * 1U default (the send button says so).
+ * hits that actually APPLY their element within the gauge's 15s axis, capped
+ * at the gauge row limit. A later hit is left out rather than clamped — folding
+ * it onto 15s would chart a top-up the ICD chart never showed. Gauge size is
+ * not something ICD models, so every application is an honest 1U default (the
+ * send button says so).
  */
 export function icdHitsToGaugeApps(hits: IcdHit[], element: ElementId): Application[] {
 	return hits
-		.filter((h) => h.applies)
+		.map((h) => ({ applies: h.applies, time: Math.round(h.time * 10) / 10 }))
+		.filter((h) => h.applies && h.time <= MAX_GAUGE_TIME)
 		.slice(0, MAX_GAUGE_APPS)
-		.map((h) => ({
-			time: Math.min(Math.round(h.time * 10) / 10, MAX_GAUGE_TIME),
-			element,
-			gauge: 1
-		}));
+		.map((h) => ({ time: h.time, element, gauge: 1 }));
 }
