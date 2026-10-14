@@ -1977,6 +1977,12 @@
 	async function openDock() {
 		dockProxy?.focus();
 		dockOpen = true;
+		// ⚠️ Chrome on iOS sometimes widens its address pill over the page a
+		// beat AFTER the keyboard lands (Nate's phone), and the key row went
+		// under it. If that settles into the visual viewport with no event of
+		// its own, a late look catches it; if Chrome draws over the page
+		// without telling it, nothing here can — see the round record.
+		for (const ms of [150, 400, 800]) setTimeout(measureKeyboard, ms);
 		await tick();
 		const content = composerEl?.querySelector<HTMLElement>('.cm-content');
 		content?.focus();
@@ -2021,11 +2027,14 @@
 		};
 	});
 
+	function measureKeyboard() {
+		const vv = window.visualViewport;
+		if (vv) keyboardInset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+	}
 	$effect(() => {
 		if (!dockOn || !window.visualViewport) return;
 		const vv = window.visualViewport;
-		const measure = () =>
-			(keyboardInset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)));
+		const measure = measureKeyboard;
 		measure();
 		vv.addEventListener('resize', measure);
 		vv.addEventListener('scroll', measure);
@@ -5408,6 +5417,10 @@
 		border-radius: var(--r-md) var(--r-md) 0 0;
 		background: var(--glass-dock);
 	}
+	/* ⚓ Nate 2026-10-14: OPEN, it floats on the keyboard — four corners. */
+	.rp-composer--docked:not(.rp-composer--collapsed) {
+		border-radius: var(--r-md);
+	}
 	/* ⚓ Nate 2026-10-14: ONE plate, not a box within a box — the dock IS the
 	   field, so the editor drops its own ground and ring. */
 	.rp-composer--docked :global(.cm-editor),
@@ -5443,6 +5456,10 @@
 		justify-content: center;
 		font-family: var(--font-mono);
 		font-size: 15px;
+		/* ⚠ CASE IS NOTATION: .btn uppercases its label, and `sQ` is not `SQ`.
+		   The key shows exactly what it types. */
+		text-transform: none;
+		letter-spacing: 0;
 	}
 	.rp-composer--collapsed .rp-notation-wrap,
 	.rp-composer--collapsed .rp-history {
