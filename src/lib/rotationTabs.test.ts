@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from './rotationTabs.svelte';
 import { documentBar as db, recentlyClosedRotations, worthKeeping } from './documentBar.svelte';
 import { closeCandidate } from './tabSet';
+import { savedNotations } from './stores';
 
 /**
  * `adopt` — where an INCOMING document goes (a shared `?r=` link, a `?team=`
@@ -177,5 +178,38 @@ describe('worthKeeping', () => {
 				saved
 			)
 		).toBe(true);
+	});
+});
+
+describe('documentBar.closeAll — closing is never loss', () => {
+	const closed = () => get(recentlyClosedRotations).map((e) => e.tab.id);
+	beforeEach(() => recentlyClosedRotations.clear());
+
+	it('sends every tab worth keeping to Recently closed, in strip order, and leaves one empty tab', () => {
+		seed([...busy(2), { id: 'empty', label: 'Empty', notation: '' }]);
+		db.closeAll();
+		expect(closed()).toEqual(['t1', 't2']);
+		expect(rt.tabs).toHaveLength(1);
+		expect(rt.notation).toBe('');
+	});
+});
+
+describe('documentBar.loadNewTab / linked', () => {
+	const entry = { id: 'saved-x', name: 'X', notation: 'Bennett E Q', savedAt: 0 };
+	beforeEach(() => savedNotations.clear());
+
+	it('switches to a tab already linked to the entry instead of opening a second', () => {
+		seed([...busy(2), { id: 'linked', label: 'X', notation: 'Bennett E Q', savedId: entry.id }]);
+		db.loadNewTab(entry);
+		expect(rt.tabs).toHaveLength(3);
+		expect(rt.activeTabId).toBe('linked');
+	});
+
+	it('is linked only while the entry still exists', () => {
+		const id = savedNotations.save({ name: 'X', notation: 'Bennett E Q' });
+		seed([{ id: 't', label: 'X', notation: 'Bennett E Q', savedId: id }]);
+		expect(db.linked).toBe(true);
+		savedNotations.delete(id);
+		expect(db.linked).toBe(false);
 	});
 });

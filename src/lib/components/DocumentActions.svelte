@@ -185,7 +185,7 @@
 							return;
 						}
 						close();
-						rt.resetAll();
+						db.closeAll();
 					}}
 				>
 					<Mark name={armed === 'closeAll' ? 'warn' : 'close'} />

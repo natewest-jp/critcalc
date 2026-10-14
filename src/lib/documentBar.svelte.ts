@@ -16,7 +16,7 @@
  * document. Band B is each tool's own business.
  */
 
-import { get } from 'svelte/store';
+import { fromStore, get } from 'svelte/store';
 import {
 	savedNotations,
 	loadout,
@@ -150,10 +150,17 @@ class DocumentBarState {
 
 	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
+	/** The bank, read reactively — `linked` must follow a Library delete. */
+	#saved = fromStore(savedNotations);
+
 	/** Whether the active document is linked to a bank entry (Save → Save changes,
-	 *  and "Save as new" appears in the overflow). */
+	 *  and "Save as new" appears in the overflow). ⚠️ The entry must still EXIST:
+	 *  nothing clears a tab's savedId when its entry goes (a Library delete,
+	 *  Settings' Clear, an import), and a dead link saves as new — so the button
+	 *  must not say "Save changes" for it (boardBar.linked's rule). */
 	get linked() {
-		return !!rt.activeTab.savedId;
+		const id = rt.activeTab.savedId;
+		return !!id && this.#saved.current.some((e) => e.id === id);
 	}
 
 	/**
@@ -349,9 +356,7 @@ class DocumentBarState {
 		// ⚠️ A link to an entry deleted since (the library sends deletes to
 		// Recently closed) saves as new: updating a missing id writes nothing,
 		// and the notice would still say "Saved".
-		const linkedLive =
-			!!activeTab.savedId && get(savedNotations).some((e) => e.id === activeTab.savedId);
-		if (linkedLive) {
+		if (this.linked) {
 			savedNotations.update(activeTab.savedId!, payload);
 		} else {
 			// ⚓ Saving what the library already holds (an arriving link to your
@@ -413,6 +418,15 @@ class DocumentBarState {
 	}
 
 	loadNewTab(entry: SavedNotation) {
+		// ⚓ An entry already open is SWITCHED TO, never opened twice (the board
+		// rule, boardBar.openSaved): two tabs linked to one entry would let the
+		// older one's Save changes silently overwrite the newer one's.
+		const open = rt.tabs.find((t) => t.savedId === entry.id);
+		if (open) {
+			rt.switchTab(open.id);
+			savedNotations.markOpened(entry.id);
+			return;
+		}
 		this.withRoom(() => {
 			rt.openTab({
 				label: entry.name,
@@ -438,6 +452,20 @@ class DocumentBarState {
 	closeTab(id: string) {
 		const closed = rt.closeTab(id);
 		if (closed && worthKeeping(closed, get(savedNotations))) recentlyClosedRotations.push(closed);
+	}
+
+	/**
+	 * Band A's "Close all rotations": every tab goes through the close rule, so
+	 * each one worth keeping lands in Recently closed — pushed right to left so
+	 * the list reads in strip order — and one fresh tab is left.
+	 */
+	closeAll() {
+		rt.flush();
+		const saved = get(savedNotations);
+		for (const t of [...rt.tabs].reverse()) {
+			if (worthKeeping(t, saved)) recentlyClosedRotations.push(t);
+		}
+		rt.resetAll();
 	}
 
 	/** Reopen a closed tab (making room first if the strip is full). */

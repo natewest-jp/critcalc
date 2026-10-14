@@ -11,7 +11,7 @@
  * library, opened from the Builder.
  */
 
-import { get } from 'svelte/store';
+import { fromStore, get } from 'svelte/store';
 import { constellations, savedBoards, savedNotations, type SavedBoard } from './stores';
 import { documentBar } from './documentBar.svelte';
 import {
@@ -70,10 +70,13 @@ class BoardBarState {
 		});
 	}
 
+	/** The saved lineups, read reactively — `linked` must follow a delete. */
+	#saved = fromStore(savedBoards);
+
 	/** Is the active board linked to a saved entry that still exists? */
 	get linked(): boolean {
 		const id = boards.activeBoard.savedId;
-		return !!id && get(savedBoards).some((b) => b.id === id);
+		return !!id && this.#saved.current.some((b) => b.id === id);
 	}
 
 	/** Save the active board: over its saved entry when linked, else a new
