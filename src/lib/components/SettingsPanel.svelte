@@ -188,9 +188,9 @@
 			<span class="sp-label">
 				<span class="sp-name">What it adjusts</span>
 				<span class="sp-desc">
-					Padding adds a few frames before every input the game does not buffer — a skill after a
-					normal attack, an aimed shot, the first press after a swap. Full animations let each
-					action finish instead of canceling it.
+					<strong>Padding</strong> adds a few frames before every input the game does not buffer — a
+					skill after a normal attack, an aimed shot, the first press after a swap.
+					<strong>Animations</strong> lets each action finish instead of canceling it.
 				</span>
 			</span>
 			<div class="segment sp-segment" role="radiogroup" aria-label="What human timing adjusts">
