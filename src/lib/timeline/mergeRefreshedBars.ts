@@ -14,8 +14,9 @@
  *
  * ⛔ NO INTERIOR SEAMS (⚓ Nate 2026-08-15). A merged bar gets ONE lit leading
  * edge and nothing inside it. The seam was considered and refused on a
- * principle worth keeping: in the Team Builder's Compare the lane IS the
- * ability, so a seam is the only place "where does this cast end" can live —
+ * principle worth keeping: in the Team Builder's Compare view (retired
+ * 2026-10-13) the lane WAS the ability, so a seam was the only place "where
+ * does this cast end" could live —
  * but in the planner the cast markers and E/Q bars sit one row up, so a seam in
  * a buff row re-encodes what the chart already says. That is the same
  * redundancy the labels were guilty of. The 2px edge itself STAYS; it was only

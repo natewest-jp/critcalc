@@ -1328,14 +1328,14 @@ export type Summon = {
 	/** Effects emitted by the summon while active. Damage effects with
 	 *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
 	 *  during the summon's lifetime; the timeline renders one marker per tick
-	 *  on the summon bar. Other trigger types (onHit, onReaction, etc.) are
-	 *  reserved for future P3 extensions and currently unused. */
+	 *  on the summon bar. onHit, onReaction and whileNormalAttacking summon
+	 *  effects are dispatched too (the procs registry). */
 	effects?: Effect[];
 	/** Dynamic event-triggered duration extensions for this summon. Each entry
 	 *  describes an event that adds `delta` seconds to the summon's lifetime
 	 *  while it's active (e.g. Collei's Cuilein-Anbar zone +1s per dendro
-	 *  reaction). Parser dispatch is currently `onCast`-only; other triggers
-	 *  are schema-accepted but not yet wired. */
+	 *  reaction). onCast and onReaction dispatch (extensions.ts); other
+	 *  triggers are schema-accepted, lint-warned and inert. */
 	durationExtensions?: DurationExtension[];
 	/**
 	 * ⚓ A NAMED STATE THAT LIVES EXACTLY AS LONG AS THIS SUMMON (gcsim sync,

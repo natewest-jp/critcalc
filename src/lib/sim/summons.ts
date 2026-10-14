@@ -31,15 +31,14 @@ import {
 // ---------------------------------------------------------------------------
 
 /**
- * Resolves ALL summons owned by a given E/Q cast bar (variant-aware). Mirrors
- * `findCastSummons` in `summonSubrows.ts` exactly — the parser now authors the
- * summon `TimelineWindow`s the renderer used to reconstruct, so the spawn/end
- * resolution must agree. Prefers the exact RESOLVED ability (`abilityId` from
+ * Resolves ALL summons owned by a given E/Q cast bar (variant-aware). THE one
+ * resolver — `summonSubrows.ts` re-exports it as `findCastSummons`, so the
+ * parser's windows and the renderer's lanes cannot disagree. Prefers the exact RESOLVED ability (`abilityId` from
  * the cast/bar — a state-gated sibling can carry its own summon, e.g. Durin's
  * Dark burst); falls back to the unconditioned base ability (stance-conditioned
- * variants represent caster state and don't carry summons). Kept parser-side
- * (not imported from summonSubrows) to preserve the parser's runtime-import-free
- * purity — summonSubrows imports back from here.
+ * variants represent caster state and don't carry summons). It lives
+ * parser-side to keep the parser runtime-import-free; summonSubrows imports
+ * it from here.
  *
  * ↻ 2026-08-14 — RETURNS THE WHOLE ARRAY, not `summons[0]`. Three abilities own
  * two summons and the second was silently unreachable: Ineffa's E (a shield

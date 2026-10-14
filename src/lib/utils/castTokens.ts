@@ -10,8 +10,8 @@
  * ability gets a generic 15s-cooldown bar; an `hE` on a character with no hold
  * variant silently uses the tap timing. That tolerance is right — a half-typed
  * rotation should still draw — but it is silent, and silence became a problem
- * the moment the notation started being REWRITTEN for the user (the audition
- * commit renames a character's segments, so tokens written for Bennett arrive
+ * the moment the notation started being REWRITTEN for the user (a swap
+ * renames a character's segments, so tokens written for Bennett arrive
  * on Nahida). A rename that invents timings without saying so is the one thing
  * single-truth must not do.
  *

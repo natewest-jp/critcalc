@@ -79,8 +79,9 @@ export function notationSegments(notation: string): NotationSegment[] {
 	return segments;
 }
 
-/** The first `TEAM_SIZE` distinct character ids the notation names, in segment
- *  order — see rotationTabs.slotsFromNotation, which pads this to four. */
+/** Every distinct character id the notation names, in segment order — callers
+ *  take the first TEAM_SIZE (see rotationTabs.slotsFromNotation, which pads to
+ *  four). */
 export function orderedCharacterIds(notation: string): string[] {
 	const seen: string[] = [];
 	for (const seg of notationSegments(notation)) {
@@ -126,8 +127,8 @@ function displayNameFor(charId: string): string {
 }
 
 /**
- * Rename every segment led by `charId` to `toCharId` — what an audition commit
- * does. The segments keep their actions verbatim; whether the new character can
+ * Rename every segment led by `charId` to `toCharId` — what a swap does (the
+ * Team Builder's swap mode, Try in Planner). The segments keep their actions verbatim; whether the new character can
  * PERFORM them is the linter's sentence to pass (notationFlags), not this
  * module's to censor.
  */

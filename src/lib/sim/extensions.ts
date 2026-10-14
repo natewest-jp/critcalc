@@ -31,8 +31,9 @@ import {
 /** Fires `onCast`-trigger duration extensions on the currently-active stance
  *  window for the given character, against the cast event described by
  *  `castType` at time `castTime`. Caller passes the pre-cast state snapshot
- *  + per-character resolution context for evalCondition. Other trigger types
- *  (onReaction, onHit, ...) are accepted in schema but not dispatched yet. */
+ *  + per-character resolution context for evalCondition. onReaction has its
+ *  own dispatcher (`dispatchOnReactionExtensions`); the rest are accepted in
+ *  schema and inert. */
 export function dispatchOnCastExtensions(
 	ctx: SimContext,
 	charId: string,
