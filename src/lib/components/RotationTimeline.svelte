@@ -23,7 +23,7 @@
 	import { resolve } from '$app/paths';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
-	import { onDestroy, tick, untrack } from 'svelte';
+	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { notationTints } from '$lib/timeline/notationTints';
 	import { tokenizeNotation } from '$lib/utils/tokenizer';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
@@ -1826,6 +1826,12 @@
 	 *  There the open dock carries extra bottom padding the pill can cover
 	 *  instead — breathing room when the pill stays down. */
 	const iosChrome = typeof navigator !== 'undefined' && /CriOS/.test(navigator.userAgent);
+	/** The history buttons' shortcut hint. CodeMirror's keymap is `Mod-z`,
+	 *  which is Ctrl off Apple platforms. Mac on the first paint, read at mount. */
+	let isMac = $state(true);
+	onMount(() => {
+		isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
+	});
 	/** px a finger may travel and still count as a tap (dock collapse, key row). */
 	const TAP_SLOP = 10;
 	let composerEl = $state<HTMLElement | null>(null);
@@ -3683,7 +3689,7 @@
 				class="btn btn--sm"
 				type="button"
 				aria-label="Undo the last notation change"
-				title="Undo (⌘Z)"
+				title={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
 				disabled={!canUndo}
 				onclick={() => {
 					editorApi?.undo();
@@ -3694,7 +3700,7 @@
 				class="btn btn--sm"
 				type="button"
 				aria-label="Redo the last undone notation change"
-				title="Redo (⌘⇧Z)"
+				title={isMac ? 'Redo (⌘⇧Z)' : 'Redo (Ctrl+Shift+Z)'}
 				disabled={!canRedo}
 				onclick={() => {
 					editorApi?.redo();
