@@ -13,7 +13,8 @@ export function portal(node: HTMLElement) {
 	// to <body> severs that ancestry, so a tool popover would silently flip to
 	// the gilt accent. Read the zone BEFORE the move, stamp it after. One choke
 	// point covers every portalled surface, present and future.
-	const inTool = !!node.closest('.tool-shell');
+	// ↻ 2026-10-14: the site chrome left .tool-shell and carries the zone itself.
+	const inTool = !!node.closest(".tool-shell, [data-zone='tool']");
 	document.body.appendChild(node);
 	if (inTool) node.dataset.zone = 'tool';
 	return {

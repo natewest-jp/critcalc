@@ -68,6 +68,9 @@ const EPSILON = 1;
  */
 export interface ScrollFadeOptions {
 	axis?: 'x' | 'y';
+	/** 'start' fades only the leading edge (top / left) — the tool shell's
+	 *  roll-off under the site chrome, where the screen's foot stays hard. */
+	edges?: 'both' | 'start';
 }
 
 export const scrollFade: Action<HTMLElement, ScrollFadeOptions | undefined> = (node, options) => {
@@ -106,7 +109,8 @@ export const scrollFade: Action<HTMLElement, ScrollFadeOptions | undefined> = (n
 		// scrollLeft can be NEGATIVE in a right-to-left scroller and fractional
 		// everywhere; the clamp covers both.
 		const offset = horizontal ? node.scrollLeft : node.scrollTop;
-		apply(Math.max(0, Math.min(offset, length)), Math.max(0, Math.min(travel - offset, length)));
+		const end = options?.edges === 'start' ? 0 : Math.max(0, Math.min(travel - offset, length));
+		apply(Math.max(0, Math.min(offset, length)), end);
 	}
 
 	/** Scroll fires per frame; coalesce so a fling does one measure per paint. */

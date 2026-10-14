@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { scrollFade } from '$lib/actions/scrollFade';
 	import { onMount, untrack } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { dev } from '$app/environment';
@@ -809,48 +810,13 @@
 </script>
 
 <div
-	class="tool-shell"
+	class="tool-shell scroll-fade"
 	class:revealed
 	style:--tool-fade="{FADE_DURATION_MS}ms"
 	style:--tool-gutter="{TOOL_GUTTER}px"
+	use:scrollFade={{ edges: 'start' }}
 	out:plainExit|global
 >
-	<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
-	     center slot. Identical across all tools — and, apart from the switcher,
-	     identical to the landing's. -->
-	<div class="tool-chrome-mount">
-		<SiteChrome>
-			{#snippet center()}
-				<nav
-					class="chrome-nav"
-					class:nav-measured={underline.w > 0}
-					aria-label="Tools"
-					bind:this={navEl}
-				>
-					{#each TOOLS as t (t.path)}
-						{#if t === tool}
-							<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
-						{:else}
-							<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
-						{/if}
-					{/each}
-					<!-- The shared "you are here" underline: one bar gliding between links
-					     on navigation, riding the page pan's own duration + easing. The
-					     per-link ::after below is the SSR/pre-measure fallback; it hides
-					     once this bar has a measured position (nav-measured). -->
-					<span
-						class="chrome-nav-underline"
-						style:transform="translateX({underline.x}px)"
-						style:width="{underline.w}px"
-						style:transition={underlineAnimates
-							? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
-							: 'none'}
-					></span>
-				</nav>
-			{/snippet}
-		</SiteChrome>
-	</div>
-
 	<div class="tool-main" bind:this={toolMain}>
 		{#key page.url.pathname}
 			<div class="tool-page" use:stampPage out:holdPage>
@@ -911,6 +877,53 @@
 	</div>
 </div>
 
+<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
+     center slot. Identical across all tools — and, apart from the switcher,
+     identical to the landing's. -->
+<!-- ↻ 2026-10-14 (the chrome-fade round): OUTSIDE .tool-shell. The shell is
+     the page's scroller and now wears a mask that rolls content off under
+     this strip — a mask on the scroller would fade the strip with it. It
+     keeps the shell's reveal + exit (its own `revealed` and plainExit) and
+     its accent zone (`data-zone`, the rung portalled tool nodes use). -->
+<div
+	class="tool-chrome-mount"
+	class:revealed
+	data-zone="tool"
+	style:--tool-fade="{FADE_DURATION_MS}ms"
+	out:plainExit|global
+>
+	<SiteChrome>
+		{#snippet center()}
+			<nav
+				class="chrome-nav"
+				class:nav-measured={underline.w > 0}
+				aria-label="Tools"
+				bind:this={navEl}
+			>
+				{#each TOOLS as t (t.path)}
+					{#if t === tool}
+						<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
+					{:else}
+						<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
+					{/if}
+				{/each}
+				<!-- The shared "you are here" underline: one bar gliding between links
+				     on navigation, riding the page pan's own duration + easing. The
+				     per-link ::after below is the SSR/pre-measure fallback; it hides
+				     once this bar has a measured position (nav-measured). -->
+				<span
+					class="chrome-nav-underline"
+					style:transform="translateX({underline.x}px)"
+					style:width="{underline.w}px"
+					style:transition={underlineAnimates
+						? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
+						: 'none'}
+				></span>
+			</nav>
+		{/snippet}
+	</SiteChrome>
+</div>
+
 <svelte:window onresize={snapBench} />
 
 <!-- THE LIBRARY (lineups design §10.1a). Rendered by the LAYOUT, not by a
@@ -968,9 +981,7 @@
 
 		/* Layout pads. --tool-pad-top is breathing room below the fixed chrome
 		   (.tool-main adds --chrome-h itself; viewport-height workspaces
-		   subtract both). 0.5rem holds content at the 72px top the site-chrome
-		   probe pins; the dire border's fade-terminator rationale for that
-		   number retired with the border — retune freely. The bottom pad lets
+		   subtract both). See the value below for its current reading. The bottom pad lets
 		   content end clear of the viewport edge.
 
 		   ↻ ⚓ NATE 2026-08-17: the bottom pad is 1.5rem, and the 24px it gives
@@ -986,7 +997,11 @@
 		   bonus, not an accident — ⛔ don't "fix" it by scoping the pad to the
 		   planner, which would put the three tools' bottom edges on different
 		   lines for the first time. */
-		--tool-pad-top: 0.5rem;
+		/* ↻ 🎛️ ⚓ Nate 2026-10-14: 0 (was 0.5rem). With the roll-off under the
+		   chrome, the tool can start right at the strip's box (64) — the strip's
+		   own content ends at 53, so 11px of air remain — and the fade line and
+		   the content's top edge are now the same line. Still the knob. */
+		--tool-pad-top: 0px;
 		--tool-pad-bottom: 1.5rem;
 		/* ROUNDED to whole pixels, deliberately. This pad is the tool frames'
 		   left edge, and the bench ribbon docks by measuring an anchor inside
@@ -1012,6 +1027,15 @@
 		   with .revealed already set — no transition runs on initial paint. */
 		visibility: hidden;
 		opacity: 0;
+		/* ⚓ THE ROLL-OFF UNDER THE CHROME (Nate 2026-10-14): content scrolling
+		   up fades out at the strip's bottom edge instead of sliding under the
+		   brand. The mask is the shared .scroll-fade, offset by the strip's
+		   height and on the START edge only (the screen's foot stays a hard
+		   edge). It lives on the SCROLLER, so it never moves with the scroll —
+		   only its length grows over the first --scroll-fade px of travel.
+		   🎛️ 24px, a first value. */
+		--scroll-fade-inset: var(--chrome-h);
+		--scroll-fade: 24px;
 	}
 
 	.tool-shell.revealed {
@@ -1031,6 +1055,16 @@
 	   2026-07-21) — if it recurs, the fix is a chrome backing on the new
 	   ground, not un-fixing. Pointer-events pass-through keeps it
 	   click-transparent. */
+	/* The shell's reveal, restated — the strip left the shell (see markup). */
+	.tool-chrome-mount {
+		visibility: hidden;
+		opacity: 0;
+	}
+	.tool-chrome-mount.revealed {
+		visibility: visible;
+		opacity: 1;
+		transition: opacity var(--tool-fade, 0ms) linear;
+	}
 	.tool-chrome-mount {
 		position: fixed;
 		top: 0;
