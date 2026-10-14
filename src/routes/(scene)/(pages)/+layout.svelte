@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import { FADE_DURATION_MS, FADE_OUT_MS, revealDelayMs } from '$lib/landing/transition';
+	import { motion, T_QUICK } from '$lib/motion';
 
 	let { children } = $props();
 	const pathname = $derived(page.url.pathname);
@@ -43,7 +44,7 @@
 	     underline and the nav sprouted full-width rules. -->
 	<main class="pages-panel">
 		{#key pathname}
-			<div in:fade={{ duration: 150 }}>
+			<div in:fade={{ duration: motion(T_QUICK) }}>
 				{@render children()}
 			</div>
 		{/key}
