@@ -606,8 +606,14 @@ describe('parseNotation — variant-driven stance + opensState', () => {
 		// After hE opens the bike-NS, swap to another character and back. The
 		// re-entered VStub should NOT have nightsoulBlessing active — pressing N1
 		// resolves to the base normal again.
-		const result = parseNotation('VStub hE > VStub N1', lookup, 8);
-		const track2 = result.tracks[1];
+		// ⚠️ A REAL swap, through a second character: `VStub hE > VStub N1` is one
+		// stay on field written in two segments, which ends nothing (run.ts,
+		// `swapFollows`).
+		const other = { ...stub, id: 'otherstub', name: 'OStub', displayName: 'OStub' };
+		const lookupBoth = (n: string): CharacterData | null => (n === 'OStub' ? other : lookup(n));
+		const result = parseNotation('VStub hE > OStub N1 > VStub N1', lookupBoth, 8);
+		const track2 = result.tracks[2];
+		expect(track2.characterId).toBe('variantstub');
 		const nBlock = track2.inputBlocks.find((b) => b.parts[0] === 'N1');
 		expect(nBlock?.kind).toBe('normal');
 	});

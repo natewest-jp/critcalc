@@ -235,7 +235,9 @@ export function runRotation(
 		// swap-in stack grant and the swap-out record above already read it this
 		// way; the two timing sites below did not, and the Repeat stream — which
 		// joins a rotation to itself by a `>` — made the charge visible when a
-		// rotation ends on its opener. An UNKNOWN next name still counts as a
+		// rotation ends on its opener. The swap-out CLOSES at the bottom of the
+		// loop (`terminatesOnSwap` states, their chains, the stance clamp) follow
+		// the same rule: a turn the same character continues ends nothing. An UNKNOWN next name still counts as a
 		// swap, as it always has: the segment is skipped, the turn is not.
 		const swappedIn = !prevTrack || prevTrack.characterId !== char.id;
 		const nextTokens = segments[i + 1];
@@ -1557,7 +1559,8 @@ export function runRotation(
 				// User-asserted stack count: `{key:N}` updates the per-segment
 				// stackState for subsequent ability/effect resolution. No timeline
 				// effect — the assertion itself doesn't emit a block or advance
-				// the cursor. The next ability that gates on this stack key picks
+				// the cursor, and the cancel lookahead (`peekActionKey`) steps over
+				// it, so it doesn't move the previous action's window either. The next ability that gates on this stack key picks
 				// up the new count via the threaded `stackState` parameter.
 				const m = tok.text.match(STACK_ASSERT_RE);
 				if (m) {
@@ -2320,7 +2323,7 @@ export function runRotation(
 		// the flag set (mirrors the stance terminatesOnSwap=false reset).
 		// ⚓ Through `closeStateWindows`, the ONE off edge (charged-forms round,
 		// 2026-09-16): the inline clamp it replaced made the same two writes.
-		if (i < segments.length - 1 && cs.statesTerminatingOnSwap.size > 0) {
+		if (swapFollows && cs.statesTerminatingOnSwap.size > 0) {
 			for (const name of cs.statesTerminatingOnSwap) {
 				closeStateWindows(ctx, cs, char.id, name, clock.now);
 			}
@@ -2330,9 +2333,9 @@ export function runRotation(
 		// its cooldown, which keeps running off-field). Step 2 of the settle
 		// only: a swap is not an action, so nothing flagged `terminatesOnAction`
 		// closes here on its own account.
-		if (i < segments.length - 1) materialiseStateChains(ctx, cs, char.id, clock.now);
+		if (swapFollows) materialiseStateChains(ctx, cs, char.id, clock.now);
 
-		if (i < segments.length - 1 && cs.stance) {
+		if (swapFollows && cs.stance) {
 			if (cs.stance.terminatesOnSwap === true) {
 				// ⚠️ CLAMP, never assign. `end` was set at open to `cast + duration`,
 				// and a swap can only ever end a stance EARLY. An unconditional
