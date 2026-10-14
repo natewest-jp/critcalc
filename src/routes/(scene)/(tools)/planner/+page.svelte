@@ -56,7 +56,7 @@
 	// <DocumentActions>, and the flows behind them live in $lib/documentBar —
 	// because they act on the shared working DOCUMENT, which the Team Builder
 	// edits too. What is left here is the planner-only part: importing a `?r=`
-	// link, and the character Source.
+	// link.
 
 	/** Apply a decoded shared rotation: cons + loadout → the tab (Layer 2), build+notation → a tab. */
 	function importShared(shared: SharedRotation) {
@@ -138,7 +138,7 @@
 		});
 	});
 
-	// Import a rotation carried in `?r=` — or a Team Builder hand-off in `?team=`
+	// Import a rotation carried in `?r=` — or a team deep link in `?team=`
 	// (`?r=` wins when both are present) — and strip the params. Lives in
 	// afterNavigate, NOT onMount: on chained SPA navigation the component mounts
 	// before the router updates location, so onMount would read the previous

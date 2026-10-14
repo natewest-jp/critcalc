@@ -8,7 +8,7 @@
  * only through the planner's ⇄ errand (swap mode, `setSlot`). ↻ Since the
  * lineups round (2026-10-08) the Builder's own document is the BOARD, not
  * this. The `?team=` cross-injection is retired — the planner's deep link
- * opens a tab via importTeam().
+ * opens a tab via teamDocument() and documentBar.receive().
  *
  * Layer discipline (unchanged in shape, re-routed at the bench):
  *   Layer 1 = the roster (`constellations`/`loadout` stores) — edited in the
