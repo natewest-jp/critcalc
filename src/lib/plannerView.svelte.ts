@@ -32,12 +32,27 @@
 
 import type { EventLogHover, EventLogRow } from '$lib/components/EventLog.svelte';
 import type { Cue } from '$lib/playback/cues';
+import { belowQuery } from '$lib/breakpoints';
 
 export const ZOOM_MIN = 20;
 export const ZOOM_MAX = 120;
 export const ZOOM_STEP = 5;
 /** px per second — the timeline's resting zoom. */
 export const ZOOM_DEFAULT = 60;
+/**
+ * 🎛️ The resting zoom below `toolMin` (⚓ Nate 2026-10-14: a narrow screen
+ * opens further out, so more of the rotation shows). A 390px phone's track is
+ * 330px — 5.5s at 60, 11s at 30 — and 30 still leaves two steps out. A first
+ * value, to be tuned by eye.
+ */
+export const ZOOM_DEFAULT_NARROW = 30;
+
+/** The resting zoom for this screen, decided ONCE at load like the layer
+ *  defaults (`stores.ts`): rotating a tablet does not re-zoom the chart. */
+export const restingZoom: number =
+	typeof window !== 'undefined' && window.matchMedia(belowQuery('toolMin')).matches
+		? ZOOM_DEFAULT_NARROW
+		: ZOOM_DEFAULT;
 
 /**
  * What the aside column is showing. ⚓ ONE COLUMN, ONE OCCUPANT (2026-08-17) —
@@ -53,7 +68,7 @@ export type AsidePanel = 'notes' | 'log' | null;
 
 class PlannerViewState {
 	/** px per second. */
-	scale = $state(ZOOM_DEFAULT);
+	scale = $state(restingZoom);
 	/** ⛔ Not two booleans — see AsidePanel. */
 	aside = $state<AsidePanel>(null);
 
@@ -205,7 +220,7 @@ class PlannerViewState {
 	 * content disappearing, not a reset.
 	 */
 	reset() {
-		this.scale = ZOOM_DEFAULT;
+		this.scale = restingZoom;
 	}
 }
 

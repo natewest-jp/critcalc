@@ -28,7 +28,7 @@
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
 		plannerView as pv,
-		ZOOM_DEFAULT,
+		restingZoom,
 		ZOOM_MAX,
 		ZOOM_MIN,
 		ZOOM_STEP
@@ -515,11 +515,11 @@
 								>
 							</div>
 							<div class="rp-zoom-row rp-zoom-foot">
-								<span class="rp-zoom-value">{Math.round((pv.scale / ZOOM_DEFAULT) * 100)}%</span>
+								<span class="rp-zoom-value">{Math.round((pv.scale / restingZoom) * 100)}%</span>
 								<button
 									class="btn btn--sm"
 									type="button"
-									disabled={pv.scale === ZOOM_DEFAULT}
+									disabled={pv.scale === restingZoom}
 									onclick={() => pv.reset()}>Reset</button
 								>
 							</div>
