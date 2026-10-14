@@ -1819,6 +1819,12 @@
 	let onPlanner = $derived(page.url.pathname.startsWith(resolve('/planner')));
 	let dockOn = $derived(docked && onPlanner);
 	let dockOpen = $state(false);
+	/** ⚠️ Chrome on iOS can widen its address pill over the page AFTER the
+	 *  keyboard lands and never tell the page (Nate's phone: the late
+	 *  re-measure did not catch it), covering the key row. Its UA says `CriOS`.
+	 *  There the open dock carries extra bottom padding the pill can cover
+	 *  instead — breathing room when the pill stays down. */
+	const iosChrome = typeof navigator !== 'undefined' && /CriOS/.test(navigator.userAgent);
 	/** px a finger may travel and still count as a tap (dock collapse, key row). */
 	const TAP_SLOP = 10;
 	let composerEl = $state<HTMLElement | null>(null);
@@ -3606,6 +3612,7 @@
 		class:rp-composer--docked={dockOn}
 		class:rp-composer--collapsed={dockOn && !dockOpen}
 		class:ctx-glass={dockOn}
+		class:rp-composer--ios-chrome={dockOn && iosChrome}
 		style:--rp-kb-inset="{dockOn ? keyboardInset : 0}px"
 		bind:this={composerEl}
 		use:dockable={dockOn}
@@ -5422,6 +5429,10 @@
 		align-items: flex-start;
 		border-radius: var(--r-md) var(--r-md) 0 0;
 		background: var(--glass-dock);
+	}
+	/* 🎛️ The pill's overlap in Nate's screenshot, ~22pt; 24 clears it. */
+	.rp-composer--ios-chrome:not(.rp-composer--collapsed) {
+		padding-bottom: calc(8px + 24px);
 	}
 	/* ⚓ Nate 2026-10-14: OPEN, it floats on the keyboard — four corners. */
 	.rp-composer--docked:not(.rp-composer--collapsed) {

@@ -2206,6 +2206,16 @@ body {
 	min-height: 100%;
 }
 
+/* ⚓ 2026-10-14 (Nate, on his phone): iOS "text autosizing" ENLARGES small
+   text after a rotation to landscape and keeps it enlarged on the way back —
+   the 13px notation came back visibly bigger until a reload. 100% opts the
+   whole site out; every size here is chosen, never a guess for the browser
+   to correct. (Pinch-zoom is unaffected.) */
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
 body {
 	font-family: var(--font-body);
 	font-weight: var(--fw-normal);
