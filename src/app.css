@@ -748,11 +748,8 @@
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
 	   so this is its single definition — the tools layout no longer sets its
 	   own. 64px is the midpoint of the two bars it replaced (site 70 / tool
-	   56), picked so the tool content top lands exactly where it did before:
-	   --tool-pad-top 0.5rem puts it at 64 + 8 = 72px, ~2px below the dire
-	   border's 70px top-fade terminator (see DireBorder.svelte's .fade-top).
-	   The chrome's own bottom edge then sits 6px above that terminator — the
-	   one clearance to eyeball if this number ever moves again. */
+	   56). ↻ 2026-10-14: the tools start right at it (--tool-pad-top 0) and
+	   their content rolls off under it — the strip's own content ends at 53. */
 	--chrome-h: 64px;
 	--site-footer-h: 64px;
 	/* ══ COLOR ARCHITECTURE (Genshin-UI archetype, Nate 2026-08-05) ═════════════
@@ -3116,7 +3113,16 @@ img {
 
    --scroll-fade-inset (0 by default) moves the TOP edge down: everything above
    it is masked out, and the roll-off starts there. The tool shell sets it to
-   the site chrome's height, so content fades under the strip (2026-10-14). */
+   the site chrome's height, so content fades under the strip (2026-10-14).
+   ⚠️ REGISTERED NON-INHERITING: a plain custom property inherits, so the
+   shell's inset reached every .scroll-fade INSIDE it and masked the top 64px
+   of the Team Builder's grid (Nate, the same day). Each scroller's inset is
+   its own. */
+@property --scroll-fade-inset {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
 .scroll-fade {
 	--scroll-fade: 32px;
 	/* Unprefixed is Safari 15.4+ and every current engine; the prefix is kept as

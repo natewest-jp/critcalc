@@ -981,9 +981,7 @@
 
 		/* Layout pads. --tool-pad-top is breathing room below the fixed chrome
 		   (.tool-main adds --chrome-h itself; viewport-height workspaces
-		   subtract both). 0.5rem holds content at the 72px top the site-chrome
-		   probe pins; the dire border's fade-terminator rationale for that
-		   number retired with the border — retune freely. The bottom pad lets
+		   subtract both). See the value below for its current reading. The bottom pad lets
 		   content end clear of the viewport edge.
 
 		   ↻ ⚓ NATE 2026-08-17: the bottom pad is 1.5rem, and the 24px it gives
@@ -999,7 +997,11 @@
 		   bonus, not an accident — ⛔ don't "fix" it by scoping the pad to the
 		   planner, which would put the three tools' bottom edges on different
 		   lines for the first time. */
-		--tool-pad-top: 0.5rem;
+		/* ↻ 🎛️ ⚓ Nate 2026-10-14: 0 (was 0.5rem). With the roll-off under the
+		   chrome, the tool can start right at the strip's box (64) — the strip's
+		   own content ends at 53, so 11px of air remain — and the fade line and
+		   the content's top edge are now the same line. Still the knob. */
+		--tool-pad-top: 0px;
 		--tool-pad-bottom: 1.5rem;
 		/* ROUNDED to whole pixels, deliberately. This pad is the tool frames'
 		   left edge, and the bench ribbon docks by measuring an anchor inside
