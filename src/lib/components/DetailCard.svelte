@@ -78,8 +78,8 @@
 		)
 	);
 
-	// Convention (settled 2026-05-12, constellationFilter.ts): the planner hides
-	// locked effects; the Team Builder shows everything with a locked badge.
+	// Convention (settled 2026-05-12): the planner hides locked effects; the
+	// Team Builder shows everything with a locked badge.
 	const locked = (cap: DerivedCapability) => cap.minConstellation > viewCon;
 
 	function sectionLabel(cap: DerivedCapability): string {
