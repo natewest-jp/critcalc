@@ -524,64 +524,79 @@ export function ribbonFramePathRect(w: number, h: number, r: number): string {
 export const RIBBON_TAIL_H = 100;
 
 /**
- * How far the tail runs STRAIGHT before the taper starts. Read off Nate's
- * artwork (`assets-src/tools/bench-clip-path.svg`, 46.118 at 2×) rather than
- * chosen — and it is the number that makes the splice below exact: above this
- * point both the silhouette and the frame are plain vertical lines, so the
- * generated straight run and the drawn taper meet with nothing to align.
+ * The tail artwork's own height — `assets-src/tools/bench-tail.svg` is 152
+ * tall at 2×. It draws the TAPER only, from the instant the sides stop being
+ * straight to the tip.
  */
-const TAIL_LEAD = 23.059;
+const TAIL_ART_H = 76;
 
 /**
- * ⚓ NATE'S ARTWORK, TRANSCRIBED — `assets-src/tools/bench-clip-path.svg` (the
- * silhouette) and `bench-inset-point.svg` (the frame line), both drawn at 2×
- * and halved here. ⛔ Do not re-tune these numbers by eye; redraw the assets
- * and re-transcribe, the same rule the element palette carries.
+ * How far the tail runs STRAIGHT before the taper starts — whatever
+ * RIBBON_TAIL_H leaves above the artwork, so the art's box ends exactly at the
+ * ribbon's bottom and the tip lands at 99.96 (the old drawing's capped tip
+ * reached 100). ↻ 2026-10-14: it was read off the previous artwork (23.059);
+ * the redraw carries no straight run, so it is derived now. Above this point
+ * both the silhouette and the frame are plain vertical lines, so the generated
+ * straight run and the drawn taper meet with nothing to align — the art's
+ * curves leave y = 0 with VERTICAL tangents.
+ */
+const TAIL_LEAD = RIBBON_TAIL_H - TAIL_ART_H;
+
+/**
+ * ⚓ NATE'S ARTWORK, TRANSCRIBED — `assets-src/tools/bench-tail.svg` (2026-10-14,
+ * redrawn at the 210 ribbon): the `background` path is the silhouette, the
+ * `inset-line` path the frame ring, both at 2×. The numbers below are the
+ * file's own, VERBATIM; `at` halves them and hangs them off the straight run.
+ * ⛔ Do not re-tune them by eye; redraw the asset and re-transcribe, the same
+ * rule the element palette carries.
  *
- * VERIFIED against the ribbon's own knobs when they landed: the silhouette is
- * 448/2 = RIBBON_W, the frame ring 428/2 = RIBBON_W − 2·RIBBON_EDGE, the ring
- * 4/2 = RIBBON_FRAME_BORDER thick — and, the part that is easy to get wrong,
- * the perpendicular distance between silhouette and frame AT THE TIP measures
- * exactly RIBBON_EDGE. A naive "put the inner tip 5px higher" would converge:
- * at this edge's 20.96° the tip has to lift ~14px along the axis to stay 5px
+ * ⚓ Nate kept the HEIGHT and let the angle steepen (20.96° → 22.97°) when the
+ * ribbon narrowed 224 → 210. VERIFIED against the ribbon's knobs when it
+ * landed: the silhouette is 420/2 = RIBBON_W, the ring 400/2 = RIBBON_W −
+ * 2·RIBBON_EDGE outer and 392/2 inner, so 4/2 = RIBBON_FRAME_BORDER thick —
+ * and, the part that is easy to get wrong, the PERPENDICULAR distance from
+ * silhouette to ring along the taper is exactly 10.0 at 2× (RIBBON_EDGE), and
+ * 14.0 to the ring's inner edge. A naive "put the inner tip 5px higher" would
+ * converge: at 22.97° the tip has to lift 5.43px along the axis to stay 5px
  * away. The artwork is a true parallel offset.
+ *
+ * ↻ The tip is SHARP now on all three edges; the previous silhouette carried
+ * a tiny cap.
  */
-/** The ribbon width Nate's tail artwork was drawn at (2× = 448). */
-const TAIL_ART_W = 224;
-
-/**
- * ⚠ STOPGAP until the artwork is redrawn at the current RIBBON_W (bench
- * portrait round, 2026-10-13): each path's x is stretched LINEARLY so its own
- * end points land on its own sides — `inset` (0 silhouette, RIBBON_EDGE ring
- * outer, + RIBBON_FRAME_BORDER ring inner) stays put and `TAIL_ART_W − inset`
- * maps to `RIBBON_W − inset`. The tip still lands on the centre line, but the
- * frame is no longer an exact parallel offset of the silhouette along the
- * taper. ⛔ Delete this the moment the redrawn art is transcribed at
- * TAIL_ART_W === RIBBON_W.
- */
-const X = (x: number, inset: number) =>
-	+(inset + ((x - inset) * (RIBBON_W - 2 * inset)) / (TAIL_ART_W - 2 * inset)).toFixed(3);
+const at = (t: number) => (x: number, y: number) =>
+	`${+(x / 2).toFixed(4)},${+(t + TAIL_LEAD + y / 2).toFixed(4)}`;
 
 const TAIL = {
-	/** Silhouette, x 0…RIBBON_W, y measured from the tail's top. */
-	outer: (t: number) =>
-		`C ${X(224, 0)},${t + 43.772} ${X(211.229, 0)},${t + 62.34} ${X(191.887, 0)},${t + 69.75}` +
-		`L ${X(113.7885, 0)},${t + 99.669}` +
-		`C ${X(112.637, 0)},${t + 100.1105} ${X(111.363, 0)},${t + 100.1105} ${X(110.2115, 0)},${t + 99.669}` +
-		`L ${X(32.113, 0)},${t + 69.75}` +
-		`C ${X(12.771, 0)},${t + 62.34} ${X(0, 0)},${t + 43.772} ${X(0, 0)},${t + 23.059}`,
+	/** Silhouette, x 0…RIBBON_W, clockwise from the right side's foot. */
+	outer: (t: number) => {
+		const p = at(t);
+		return (
+			`C ${p(420, 38.142)} ${p(397.188, 72.585)} ${p(362.07, 87.469)}` +
+			`L ${p(210, 151.918)}` +
+			`L ${p(57.93, 87.469)}` +
+			`C ${p(22.812, 72.585)} ${p(0, 38.142)} ${p(0, 0)}`
+		);
+	},
 	/** Frame ring, OUTER edge — the silhouette inset by RIBBON_EDGE. */
-	ringOuter: (t: number) =>
-		`C ${X(219, 5)},${t + 41.7005} ${X(207.506, 5)},${t + 58.412} ${X(190.0985, 5)},${t + 65.081}` +
-		`L ${X(112, 5)},${t + 95}` +
-		`L ${X(33.9015, 5)},${t + 65.081}` +
-		`C ${X(16.494, 5)},${t + 58.412} ${X(5, 5)},${t + 41.7005} ${X(5, 5)},${t + 23.059}`,
-	/** Frame ring, INNER edge — a sharp point; only the silhouette's is capped. */
-	ringInner: (t: number) =>
-		`C ${X(217, 7)},${t + 40.872} ${X(206.017, 7)},${t + 56.841} ${X(189.383, 7)},${t + 63.2135}` +
-		`L ${X(112, 7)},${t + 92.8585}` +
-		`L ${X(34.617, 7)},${t + 63.2135}` +
-		`C ${X(17.983, 7)},${t + 56.841} ${X(7, 7)},${t + 40.872} ${X(7, 7)},${t + 23.059}`
+	ringOuter: (t: number) => {
+		const p = at(t);
+		return (
+			`C ${p(410, 34.127)} ${p(389.59, 64.945)} ${p(358.168, 78.262)}` +
+			`L ${p(210, 141.057)}` +
+			`L ${p(61.832, 78.262)}` +
+			`C ${p(30.41, 64.945)} ${p(10, 34.127)} ${p(10, 0)}`
+		);
+	},
+	/** Frame ring, INNER edge (the file draws it counter-clockwise; reversed here). */
+	ringInner: (t: number) => {
+		const p = at(t);
+		return (
+			`C ${p(406, 32.521)} ${p(386.55, 61.889)} ${p(356.607, 74.579)}` +
+			`L ${p(210, 136.712)}` +
+			`L ${p(63.393, 74.579)}` +
+			`C ${p(33.45, 61.889)} ${p(14, 32.521)} ${p(14, 0)}`
+		);
+	}
 };
 
 /**

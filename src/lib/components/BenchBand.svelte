@@ -238,12 +238,11 @@
 				: ribbonFramePath(boxH, RIBBON_FRAME_R_TIGHT)}
 			fill-rule="evenodd"
 		/>
-		<path
-			d={row
-				? ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)
-				: ribbonFramePath(boxH, RIBBON_FRAME_R_WIDE)}
-			fill-rule="evenodd"
-		/>
+		<!-- ⚓ Nate 2026-10-14, trying it: the column (desktop) drops the wide
+		     arc and keeps the tight corner alone; the phone row keeps both. -->
+		{#if row}
+			<path d={ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)} fill-rule="evenodd" />
+		{/if}
 	</svg>
 	<!-- The card run: a column at rest, a row below BP.toolMin. In the row the
 	     cards take their solved width and the strip spreads them. -->
@@ -327,6 +326,15 @@
 		   cost of keeping it is nothing. */
 		overflow: hidden;
 	}
+	/* ⚓ Nate 2026-10-14: THE ROW CLIPS NOTHING. The upright card has no head
+	   room — its disc fills the card — so the portrait's hair rises over the
+	   double line and, for the tallest icons, past the strip's edge (Amber's
+	   bow ~8px at the 56 disc), the desk card's rule ("nothing clips it").
+	   Measured over the 147 side icons: 105 rise above the disc, median 2.8px,
+	   5 by more than the strip's 12px of chrome. */
+	.bb--row {
+		overflow: visible;
+	}
 
 	/* The two frame strokes, drawn as one overlay. Geometry (both radii, both
 	   edges of each 2px band, and the taper) is generated in benchBand.svelte.ts
@@ -361,15 +369,11 @@
 		   portraits are capped and the cards are narrower than a quarter. */
 		justify-content: space-between;
 		gap: var(--bb-card-gap);
-		overflow-x: auto;
-		overflow-y: hidden;
-		/* A guard, not a form: from 320px up four cards always fit (see
-		   BENCH_ROW_PORTRAIT_MIN). Its scrollbar would sit inside the frame
-		   ring, where a permanent bar reads as a fifth control. */
-		scrollbar-width: none;
-	}
-	.bb-cards--row::-webkit-scrollbar {
-		display: none;
+		/* ↻ 2026-10-14: NOT a scroller any more. It was `overflow-x: auto` as a
+		   guard that never fired (from 320px up four cards always fit — see
+		   BENCH_ROW_PORTRAIT_MIN), and a scroller cannot show anything outside
+		   its box on EITHER axis, so it was cutting every portrait's hair at
+		   the disc's top. */
 	}
 	.bb-cards--row > .bb-slot {
 		flex: 0 0 var(--bb-card-w);
