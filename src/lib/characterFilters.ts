@@ -7,7 +7,7 @@
  *
  * "Identity" = the character's own fixed traits (element / weapon / rarity /
  * region / name), as opposed to the Team Builder's derived *capability* facets
- * (heal / shield / buff:atk / …), which stay in team-builder/lib/facets.ts.
+ * (heal / shield / buff:atk / …), which stay in builder/lib/facets.ts.
  * The split keeps this module runtime-import-free and reusable by both tools;
  * facets.ts re-exports these symbols so its existing consumers are unaffected.
  *

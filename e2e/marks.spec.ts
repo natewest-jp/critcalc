@@ -56,14 +56,14 @@ async function expectSwept(page: Page, present: string) {
 
 test.describe('control glyphs are geometry, not type', () => {
 	test('team builder — roster', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await expectSwept(page, '.cg-grid');
 	});
 
 	test('team builder — detail card', async ({ page, seed }) => {
 		await seed({ ownership: { bennett: 'owned' }, constellations: { bennett: 2 } });
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-mag').click();
 		await expectSwept(page, '.dc-panel');
@@ -74,7 +74,7 @@ test.describe('control glyphs are geometry, not type', () => {
 			team: { slots: ['hu_tao', 'xingqiu', 'zhongli', 'albedo'], notation: 'Hu Tao E N3 Q' },
 			constellations: { hu_tao: 1, xingqiu: 6 }
 		});
-		await openTool(page, '/rotation-planner');
+		await openTool(page, '/planner');
 		await expectSwept(page, '.bench-band-mount');
 	});
 
@@ -98,7 +98,7 @@ test.describe('control glyphs are geometry, not type', () => {
 				}
 			]
 		});
-		await openTool(page, '/rotation-planner');
+		await openTool(page, '/planner');
 		await page
 			.locator('.doc-actions button', { hasText: /Library/ })
 			.first()

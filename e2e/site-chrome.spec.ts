@@ -38,7 +38,7 @@ test.describe('one chrome, every surface', () => {
 		const landingBtns = await page.locator('.chrome-btn:visible').count();
 		await expect(page.locator('.chrome-nav'), 'no tool switcher on the landing').toHaveCount(0);
 
-		await openTool(page, '/rotation-planner');
+		await openTool(page, '/planner');
 		const toolBrand = await page.locator('.chrome-brand').first().boundingBox();
 		const toolBtns = await page.locator('.chrome-btn:visible').count();
 		await expect(page.locator('.chrome-nav'), 'the switcher appears inside a tool').toHaveCount(1);
@@ -65,7 +65,7 @@ test.describe('one chrome, every surface', () => {
 });
 
 test.describe('meta overlays never navigate', () => {
-	for (const surface of ['/', '/team-builder']) {
+	for (const surface of ['/', '/builder']) {
 		for (const { label, title } of META) {
 			test(`${surface} — "${title}" opens and closes without moving the URL`, async ({ page }) => {
 				await page.goto(surface, { waitUntil: 'networkidle' });
@@ -86,7 +86,7 @@ test.describe('meta overlays never navigate', () => {
 
 test.describe('help is contextual and non-destructive', () => {
 	test('the "?" opens the current tool\'s chapter and never remounts it', async ({ page }) => {
-		await openTool(page, '/rotation-planner');
+		await openTool(page, '/planner');
 		await metaBtn(page, 'Help').click();
 		await page.locator('.area-chapter.is-current').waitFor();
 
@@ -131,7 +131,7 @@ test.describe('overlay containing blocks', () => {
 
 	for (const [label, url] of [
 		['landing', '/'],
-		['tool', '/rotation-planner']
+		['tool', '/planner']
 	]) {
 		test(`${label}: panel and backdrop carry no transform`, async ({ page }) => {
 			const t = await overlayTransforms(page, url);
@@ -144,8 +144,8 @@ test.describe('overlay containing blocks', () => {
 test.describe('every chapter is also a real route', () => {
 	const ROUTES: [string, string][] = [
 		['/help', 'Help & FAQ'],
-		['/help/team-builder', 'Team Builder'],
-		['/help/rotation-planner', 'Rotation Planner'],
+		['/help/builder', 'Team Builder'],
+		['/help/planner', 'Rotation Planner'],
 		['/help/visualizers', 'Visualizers'],
 		['/about', 'About critcalc'],
 		['/contribute', 'Contribute'],

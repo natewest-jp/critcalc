@@ -139,7 +139,7 @@
 	let handles = $state<Partial<Record<InstrumentId, InstrumentHandle>>>({});
 
 	// ── `?i=` deep links ───────────────────────────────────────────────────
-	// afterNavigate, NOT onMount (team-builder lessons): SPA mounts run before
+	// afterNavigate, NOT onMount (Team Builder lessons): SPA mounts run before
 	// location updates; afterNavigate also fires for the navigation that
 	// REMOVES this component (guard nav.to); read nav.to.url, never
 	// window.location. ⛔ The strip goes through `stripDeepLinkParams` — see that

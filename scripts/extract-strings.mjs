@@ -111,11 +111,11 @@ const SURFACES = [
 	['vz', /visualizers\/|utils\/instrumentUrl\.ts$/],
 	[
 		'tb',
-		/team-builder\/|CharacterCard|CharacterFilterRail|CharacterGrid|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons/
+		/builder\/|CharacterCard|CharacterFilterRail|CharacterGrid|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons/
 	],
 	[
 		'planner',
-		/rotation-planner\/|RotationTimeline|RotationNotes|RotationCoverage|BuffTooltip|EventLog|^lib\/timeline\/|^lib\/sim\/|^lib\/playback\/|utils\/(notation|auraDisplay|kqmExport|timelineExport|castTokens|rotationUrl|urlCodec|tokenizer)/
+		/planner\/|RotationTimeline|RotationNotes|RotationCoverage|BuffTooltip|EventLog|^lib\/timeline\/|^lib\/sim\/|^lib\/playback\/|utils\/(notation|auraDisplay|kqmExport|timelineExport|castTokens|rotationUrl|urlCodec|tokenizer)/
 	]
 ];
 

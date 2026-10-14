@@ -94,15 +94,15 @@ class LibraryState {
 	 *  character. Already open, it just switches tab. */
 	openRoster(focusId: string | null = null) {
 		const path = page.url.pathname;
-		const builder = path.startsWith(resolve('/team-builder'));
+		const builder = path.startsWith(resolve('/builder'));
 		this.show(builder ? 'builder' : 'planner', 'roster');
-		this.#away = !builder && !path.startsWith(resolve('/rotation-planner'));
+		this.#away = !builder && !path.startsWith(resolve('/planner'));
 		this.rosterFocus = focusId;
 	}
 
 	/** A Planner pick made from neither tool: carry it out, then go there. */
 	#followToPlanner() {
-		if (this.#away) void goto(resolve('/rotation-planner'));
+		if (this.#away) void goto(resolve('/planner'));
 	}
 
 	/** Close. `navigating`: the caller is about to `goto` elsewhere, so the
@@ -158,21 +158,21 @@ class LibraryState {
 		const elsewhere = this.from !== 'builder';
 		this.close(elsewhere);
 		boardBar.openSaved(b);
-		if (elsewhere) void goto(resolve('/team-builder'));
+		if (elsewhere) void goto(resolve('/builder'));
 	}
 
 	reopenRotation(tab: RotationTab) {
 		const elsewhere = this.from !== 'planner' || this.#away;
 		this.close(elsewhere);
 		documentBar.reopen(tab);
-		if (elsewhere) void goto(resolve('/rotation-planner'));
+		if (elsewhere) void goto(resolve('/planner'));
 	}
 
 	reopenBoard(board: Board) {
 		const elsewhere = this.from !== 'builder';
 		this.close(elsewhere);
 		boardBar.reopen(board);
-		if (elsewhere) void goto(resolve('/team-builder'));
+		if (elsewhere) void goto(resolve('/builder'));
 	}
 
 	/** The rotation's other tool: from the Builder, open it in the Planner;
@@ -181,11 +181,11 @@ class LibraryState {
 		if (this.from === 'builder') {
 			this.close(true);
 			documentBar.loadNewTab(e);
-			void goto(resolve('/rotation-planner'));
+			void goto(resolve('/planner'));
 		} else {
 			this.close(true);
 			boardBar.receiveTeam(slotsFromNotationIds(e.notation));
-			void goto(resolve('/team-builder'));
+			void goto(resolve('/builder'));
 		}
 	}
 
@@ -194,7 +194,7 @@ class LibraryState {
 	putTeamOnBoard(t: LibraryTeam) {
 		this.close(true);
 		boardBar.receiveTeam(t.slots);
-		void goto(resolve('/team-builder'));
+		void goto(resolve('/builder'));
 	}
 
 	// ── Editing the library ───────────────────────────────────────────────
@@ -288,7 +288,7 @@ class LibraryState {
 				constellations: levels,
 				loadout: e.tabLoadout ?? {}
 			});
-			await navigator.clipboard.writeText(`${location.origin}/rotation-planner?r=${param}`);
+			await navigator.clipboard.writeText(`${location.origin}/planner?r=${param}`);
 			this.say('Link copied');
 		} catch {
 			this.say('Share failed');
@@ -302,7 +302,7 @@ class LibraryState {
 				noRepeats: b.noRepeats,
 				teams: b.teams.map((t) => ({ slots: t.slots, constellations: t.con ?? {} }))
 			});
-			await navigator.clipboard.writeText(`${location.origin}/team-builder?b=${param}`);
+			await navigator.clipboard.writeText(`${location.origin}/builder?b=${param}`);
 			this.say('Link copied');
 		} catch {
 			this.say('Share failed');

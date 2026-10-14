@@ -30,7 +30,7 @@ describe('rotationUrl codec', () => {
 	it('survives a real URLSearchParams round-trip in a query string', async () => {
 		const encoded = await encodeRotation(SAMPLE);
 		// Simulate the receiving end: parse the query string the browser hands us.
-		const url = new URL(`https://critcalc.app/rotation-planner?r=${encoded}`);
+		const url = new URL(`https://critcalc.app/planner?r=${encoded}`);
 		const param = url.searchParams.get('r');
 		expect(param).toBe(encoded); // the `+`-becomes-space trap does not fire
 		expect(await decodeRotation(param)).toEqual(SAMPLE);

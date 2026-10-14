@@ -50,14 +50,14 @@ test('a coverage link opens over the tool, and closing it stays on the tool', as
 	seed
 }) => {
 	await seed({ team: { slots: ['baizhu', 'bennett'], notation: 'Baizhu E Q > Bennett E Q' } });
-	await page.goto('/rotation-planner');
+	await page.goto('/planner');
 	await page.getByRole('button', { name: 'Toggle notes panel' }).click();
 	await page.getByRole('link', { name: 'Coverage for this team' }).click();
 
 	await expect(page.locator('.overlay-panel .cov-row')).toHaveCount(2);
-	await expect(page).toHaveURL(/\/rotation-planner$/);
+	await expect(page).toHaveURL(/\/planner$/);
 
 	await page.keyboard.press('Escape');
 	await expect(page.locator('.overlay-panel')).toHaveCount(0);
-	await expect(page).toHaveURL(/\/rotation-planner$/);
+	await expect(page).toHaveURL(/\/planner$/);
 });

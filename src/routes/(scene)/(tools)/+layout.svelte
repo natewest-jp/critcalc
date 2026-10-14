@@ -232,7 +232,7 @@
 	// builds several teams, so it cannot hold the Planner's one working team.
 	// A crossing to it takes the ribbon away by the same path a crossing to the
 	// Visualizers always has (the glide timing is Nate's, untouched).
-	const benchMode = $derived(tool?.path === '/rotation-planner' ? 'rp' : null);
+	const benchMode = $derived(tool?.path === '/planner' ? 'rp' : null);
 
 	let benchMount: HTMLDivElement | undefined = $state();
 	let benchVisible = $state(false);
@@ -513,7 +513,7 @@
 	// before the cross-fade instead of re-parsing the rotation mid-fade
 	// (see prewarmPlanner.ts).
 	beforeNavigate((nav) => {
-		if (nav.to?.url.pathname.startsWith('/rotation-planner')) prewarmPlannerCharacters();
+		if (nav.to?.url.pathname.startsWith('/planner')) prewarmPlannerCharacters();
 		// Cover the URL-flip → afterNavigate window (see the watchdog note).
 		lastNavAt = performance.now();
 		navSettleDeadline = watchdogDeadline(performance.now());

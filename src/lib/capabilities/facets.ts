@@ -10,7 +10,7 @@
  * This is the capability counterpart to `$lib/characterFilters` (identity:
  * element / weapon / rarity / region / name). Same split, same reason: keep the
  * module runtime-import-free so Node scripts and both tools can read it.
- * `team-builder/lib/facets.ts` re-exports everything here, so the Team
+ * `builder/lib/facets.ts` re-exports everything here, so the Team
  * Builder's own imports are unaffected.
  *
  * Semantics:

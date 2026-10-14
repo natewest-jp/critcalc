@@ -4,7 +4,7 @@
  * Shared presentation vocabulary for derived capabilities — used by the
  * DetailCard (both tools open it) and anything that names a capability beside it.
  *
- * ↻ 2026-08-12: hoisted out of team-builder/lib with the DetailCard, which the
+ * ↻ 2026-08-12: hoisted out of builder/lib with the DetailCard, which the
  * Rotation Planner now opens too (the bench portrait does the same thing in
  * both tools). ↻ 2026-10-13: its other reader, the Team Builder's Compare,
  * retired into swap mode (lineups design §11.6 item 20), and TARGET_SHORT

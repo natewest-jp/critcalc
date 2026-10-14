@@ -15,16 +15,16 @@ test('the bench leaves on the way to the Builder and comes back with the team', 
 	seed
 }) => {
 	await seed({ team: { slots: TEAM } });
-	await openTool(page, '/rotation-planner');
+	await openTool(page, '/planner');
 	expect(await benchNames(page)).toHaveLength(4);
 
-	await page.locator('.chrome-nav a[href*="team-builder"]').click();
-	await page.waitForURL(/team-builder/, { timeout: 10_000 });
+	await page.locator('.chrome-nav a[href*="builder"]').click();
+	await page.waitForURL(/builder/, { timeout: 10_000 });
 	await page.waitForTimeout(1400); // the pan + band travel
 	await expect(page.locator('.bench-band-mount'), 'the Builder has no bench').toBeHidden();
 
-	await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
-	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
+	await page.locator('.chrome-nav a[href*="planner"]').click();
+	await page.waitForURL(/planner/, { timeout: 10_000 });
 	await page.waitForTimeout(1400);
 	const planner = await benchNames(page);
 	expect(planner, 'the planner’s team is untouched by the trip').toEqual(
@@ -47,7 +47,7 @@ const SWAP = '.bench-band-mount .sp-side-hit[aria-label^="Swap "]';
 
 test("the planner's ⇄ opens swap mode on its own team", async ({ page, seed }) => {
 	await seed({ team: { slots: TEAM } });
-	await openTool(page, '/rotation-planner');
+	await openTool(page, '/planner');
 
 	// ↻ 2026-10-13: the MAGNIFIER reads the character (shown on hover), and
 	// the portrait itself is Swap.
@@ -73,12 +73,12 @@ test('Cancel returns unchanged; a pick renames in the planner and returns', asyn
 	seed
 }) => {
 	await seed({ team: { slots: TEAM } });
-	await openTool(page, '/rotation-planner');
+	await openTool(page, '/planner');
 	await page.locator(SWAP).first().click();
 	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
 
 	await page.locator(ERRAND).getByRole('button', { name: 'Cancel' }).click();
-	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
+	await page.waitForURL(/planner/, { timeout: 10_000 });
 	await page.waitForTimeout(1400); // the pan + band travel
 	expect(await benchNames(page), 'Cancel changes nothing').toEqual(NAMES);
 
@@ -92,7 +92,7 @@ test('Cancel returns unchanged; a pick renames in the planner and returns', asyn
 	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
 	await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
 
-	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
+	await page.waitForURL(/planner/, { timeout: 10_000 });
 	const names = await benchNames(page);
 	expect(names, 'Furina replaces Bennett in slot 1').toContain('Furina');
 	expect(names).not.toContain('Bennett');

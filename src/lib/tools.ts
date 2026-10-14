@@ -14,7 +14,7 @@
 // chrome's "?" overlay. Tool paths and help chapter ids are deliberately the
 // same slug, which helpChapterForPath() relies on.
 
-export type ToolPath = '/visualizers' | '/rotation-planner' | '/team-builder';
+export type ToolPath = '/visualizers' | '/planner' | '/builder';
 
 export type ToolInfo = {
 	path: ToolPath;
@@ -28,7 +28,7 @@ export type ToolInfo = {
 // reference shelf — and matches the landing hero cards left to right. Each
 // tool's send-affordance sits on the edge facing the tool it sends to.
 export const TOOLS: ToolInfo[] = [
-	{ path: '/team-builder', title: 'Team Builder', short: 'Builder' },
-	{ path: '/rotation-planner', title: 'Rotation Planner', short: 'Planner' },
+	{ path: '/builder', title: 'Team Builder', short: 'Builder' },
+	{ path: '/planner', title: 'Rotation Planner', short: 'Planner' },
 	{ path: '/visualizers', title: 'Visualizers', short: 'Visualizers' }
 ];

@@ -53,15 +53,15 @@ export const HELP_AREA: Area = {
 			load: () => import('./chapters/Faq.svelte')
 		},
 		{
-			id: 'team-builder',
+			id: 'builder',
 			title: 'Team Builder',
-			path: resolve('/help/team-builder'),
+			path: resolve('/help/builder'),
 			load: () => import('./chapters/TeamBuilder.svelte')
 		},
 		{
-			id: 'rotation-planner',
+			id: 'planner',
 			title: 'Rotation Planner',
-			path: resolve('/help/rotation-planner'),
+			path: resolve('/help/planner'),
 			load: () => import('./chapters/RotationPlanner.svelte')
 		},
 		{
@@ -124,7 +124,7 @@ export const findChapter = (area: ChromeAreaId, id: string): Chapter =>
 /**
  * The help chapter for a tool route, so the in-tool "?" opens that tool's own
  * chapter. Tool paths and help chapter ids are deliberately the same slug
- * ('/rotation-planner' → 'rotation-planner'); anything unrecognized falls back
+ * ('/planner' → 'planner'); anything unrecognized falls back
  * to the FAQ.
  */
 export function helpChapterForPath(pathname: string): string {

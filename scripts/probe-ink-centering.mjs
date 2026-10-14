@@ -65,7 +65,7 @@ const BASE = process.env.BASE ?? 'http://localhost:4998';
 /** DARK ink on a light control (a gold pip's digit) instead of light on dark */
 const INK_DARK = process.env.INK === 'dark';
 /** The page to open (path + query) — the planner's bench by default */
-const PAGE = process.env.PAGE ?? '/rotation-planner';
+const PAGE = process.env.PAGE ?? '/planner';
 const SHOTS = process.env.SHOTS_DIR ?? null;
 const SCALE = Number(process.env.SCALE ?? 8); // deviceScaleFactor: subpixel resolution
 const SWEEP = process.env.SWEEP ? process.env.SWEEP.split(',').map(Number) : [null];

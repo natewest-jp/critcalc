@@ -133,7 +133,7 @@
 				// concat and a `new URL()` all fail it equally. `index` is a bench
 				// slot index, so there is nothing to escape either way.
 				// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() is inside the template; the rule cannot see through one
-				void goto(`${resolve('/team-builder')}?swap=${index}`);
+				void goto(`${resolve('/builder')}?swap=${index}`);
 			}
 		});
 	});
@@ -149,7 +149,7 @@
 	// - read nav.to.url, never window.location — location can lag the router.
 	afterNavigate(async (nav) => {
 		const url = nav.to?.url;
-		if (!url || !url.pathname.endsWith('/rotation-planner')) return;
+		if (!url || !url.pathname.endsWith('/planner')) return;
 		const param = url.searchParams.get('r');
 		const teamParam = url.searchParams.get('team');
 		if (!param && !teamParam) return;
@@ -343,7 +343,7 @@
 		if (e.key === 'Tab') clickFocused = null;
 		if (e.key !== ' ' && e.key !== 'Home') return;
 		if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || e.defaultPrevented) return;
-		if (!page.url.pathname.startsWith(resolve('/rotation-planner'))) return;
+		if (!page.url.pathname.startsWith(resolve('/planner'))) return;
 		const t = e.target as HTMLElement | null;
 		if (t?.closest('input, textarea, select, [contenteditable], [role="textbox"]')) return;
 		if (document.querySelector('[aria-modal="true"]')) return;

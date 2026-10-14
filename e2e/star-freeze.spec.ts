@@ -57,7 +57,7 @@ test('the star clock holds one frame across every tool leg, and thaws on descend
 }) => {
 	test.slow(); // three settle holds plus a descend
 
-	await page.goto('/rotation-planner', { waitUntil: 'networkidle' });
+	await page.goto('/planner', { waitUntil: 'networkidle' });
 	await page.waitForTimeout(1500); // settle + REST_AFTER_SETTLE_MS margin
 
 	const rest0 = await scene(page);

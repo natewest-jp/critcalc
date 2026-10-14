@@ -121,7 +121,7 @@
 	//   so the slot index is the entire payload.
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
-		if (!url || !url.pathname.endsWith('/team-builder')) return;
+		if (!url || !url.pathname.endsWith('/builder')) return;
 		const teamParam = url.searchParams.get('team');
 		const swapParam = url.searchParams.get('swap');
 		const boardParam = url.searchParams.get('b');
@@ -342,7 +342,7 @@
 				'Team opened'
 			);
 		}
-		void goto(resolve('/rotation-planner'));
+		void goto(resolve('/planner'));
 	}
 
 	/**
@@ -478,7 +478,7 @@
 			rt.setSlot(s.slot, id);
 			errandOpen = false;
 			chosenTeamId = null;
-			void goto(resolve('/rotation-planner'));
+			void goto(resolve('/planner'));
 			return;
 		}
 		const team = teamById(s.teamId);
@@ -496,7 +496,7 @@
 				label: `Try it with ${name} in the Planner`,
 				run: () => {
 					documentBar.tryWithSwap(pin, incumbent, id, `${pin.name} · ${name}`);
-					void goto(resolve('/rotation-planner'));
+					void goto(resolve('/planner'));
 				}
 			});
 		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
@@ -518,7 +518,7 @@
 	// appends a bare name, or renames the Blank, through the same setSlot.
 
 	// ⚠ NOT DONE IN afterNavigate: the tabs are restored by the (tools)
-	// LAYOUT's onMount, and on a COLD load of /team-builder?swap=2 the param is
+	// LAYOUT's onMount, and on a COLD load of /builder?swap=2 the param is
 	// read before that — the slot would read 'blank'. Waiting on `restored` is
 	// right whichever way the ordering falls.
 	$effect(() => {
@@ -566,7 +566,7 @@
 		errandOpen = false;
 		swapping = null;
 		chosenTeamId = null;
-		void goto(resolve('/rotation-planner'));
+		void goto(resolve('/planner'));
 	}
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);

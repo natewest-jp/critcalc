@@ -29,7 +29,7 @@ async function travelerPortraits(page: import('@playwright/test').Page) {
 }
 
 test('defaults to Aether across every traveler card', async ({ page }) => {
-	await openTool(page, '/team-builder');
+	await openTool(page, '/builder');
 	const srcs = await travelerPortraits(page);
 	expect(srcs).toHaveLength(TRAVELER_VARIANTS);
 	expect(
@@ -40,7 +40,7 @@ test('defaults to Aether across every traveler card', async ({ page }) => {
 
 test('the stored variant flips every portrait to Lumine', async ({ page, seed }) => {
 	await seed({ settings: { travelerVariant: 'lumine' } });
-	await openTool(page, '/team-builder');
+	await openTool(page, '/builder');
 	const srcs = await travelerPortraits(page);
 	expect(srcs).toHaveLength(TRAVELER_VARIANTS);
 	expect(

@@ -88,7 +88,7 @@ export function warmOpenTabCharacters(): void {
 	try {
 		// Active tab FIRST in the queue. Warmer #1 has usually resolved it
 		// already, which makes those entries free — and if this is a cold load
-		// straight onto /rotation-planner, warmer #1 never ran and the ordering
+		// straight onto /planner, warmer #1 never ran and the ordering
 		// is what stops a speculative tab from being fetched ahead of the one
 		// on screen.
 		const ordered = [

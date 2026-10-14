@@ -64,7 +64,7 @@ test(
 				label: 'Seed'
 			}
 		});
-		await page.goto('/rotation-planner', { waitUntil: 'networkidle' });
+		await page.goto('/planner', { waitUntil: 'networkidle' });
 		await page.waitForTimeout(1000);
 
 		const click = (tool: string) => page.click(`.chrome-nav a[href*="${tool}"]`);
@@ -74,13 +74,13 @@ test(
 			// then the storm: navigate away and interrupt back mid-flight.
 			await click('visualizers');
 			await page.waitForTimeout(4600);
-			await click('rotation-planner');
+			await click('planner');
 			await page.waitForTimeout(3400);
-			await click('team-builder');
+			await click('builder');
 			await page.waitForTimeout(3600);
-			await click('rotation-planner');
+			await click('planner');
 			await page.waitForTimeout(1100); // interrupt mid-transition
-			await click('team-builder');
+			await click('builder');
 			await page.waitForTimeout(3600);
 		}
 
