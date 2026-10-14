@@ -32,8 +32,6 @@
 		onClose,
 		teamState,
 		onToggleTeam,
-		compareState,
-		onToggleCompare,
 		defaultBuild = true
 	}: {
 		id: string;
@@ -42,10 +40,6 @@
 		/** Slot membership for the team strip; undefined hides the button. */
 		teamState?: 'in' | 'out' | 'full';
 		onToggleTeam?: (id: string) => void;
-		/** Compare membership — mirrors the card hover action's silent add; the
-		 *  Compare tab's avatar stack is the feedback. Undefined hides the button. */
-		compareState?: 'in' | 'out' | 'full';
-		onToggleCompare?: (id: string) => void;
 		/**
 		 * The Team Builder's "Default build" (the roster's Layer-1 loadout); false
 		 * on the Rotation Planner, which edits a rotation's own loadout on the
@@ -169,44 +163,22 @@
 					<span style:color>{entry?.element ?? '?'}</span>
 					· {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region ? ` · ${entry.region}` : ''}
 				</p>
-				{#if (onToggleTeam && teamState) || (onToggleCompare && compareState)}
+				{#if onToggleTeam && teamState}
 					<div class="dc-actions">
-						{#if onToggleTeam && teamState}
-							<button
-								class="dc-team"
-								class:dc-team--in={teamState === 'in'}
-								disabled={teamState === 'full'}
-								onclick={() => onToggleTeam(id)}
-								title={teamState === 'full' ? 'All four team slots are filled' : undefined}
-							>
-								<Mark name={teamState === 'in' ? 'check' : 'plus'} />
-								{teamState === 'in'
-									? 'In team — remove'
-									: teamState === 'full'
-										? 'Team full'
-										: 'Add to team'}
-							</button>
-						{/if}
-						{#if onToggleCompare && compareState}
-							<button
-								class="dc-compare"
-								class:dc-team--in={compareState === 'in'}
-								disabled={compareState === 'full'}
-								onclick={() => onToggleCompare(id)}
-								title={compareState === 'in'
-									? 'Remove from the comparison'
-									: compareState === 'full'
-										? 'Comparison is full (4)'
-										: 'Add to the comparison — it loads into the Compare tab'}
-							>
-								<Mark name={compareState === 'in' ? 'check' : 'forward'} />
-								{compareState === 'in'
-									? 'Comparing — remove'
-									: compareState === 'full'
-										? 'Compare full'
-										: 'Compare'}
-							</button>
-						{/if}
+						<button
+							class="dc-team"
+							class:dc-team--in={teamState === 'in'}
+							disabled={teamState === 'full'}
+							onclick={() => onToggleTeam(id)}
+							title={teamState === 'full' ? 'All four team slots are filled' : undefined}
+						>
+							<Mark name={teamState === 'in' ? 'check' : 'plus'} />
+							{teamState === 'in'
+								? 'In team — remove'
+								: teamState === 'full'
+									? 'Team full'
+									: 'Add to team'}
+						</button>
 					</div>
 				{/if}
 			</div>
@@ -450,10 +422,7 @@
 		gap: 0.4rem;
 		margin-top: 0.45rem;
 	}
-	/* Two names, one register: .dc-compare is .dc-team's twin, kept distinct so
-	   probes/tests can target each action unambiguously. */
-	.dc-team,
-	.dc-compare {
+	.dc-team {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
@@ -471,15 +440,13 @@
 			background var(--t-snap),
 			border-color var(--t-snap);
 	}
-	.dc-team:hover:not(:disabled),
-	.dc-compare:hover:not(:disabled) {
+	.dc-team:hover:not(:disabled) {
 		background: color-mix(in srgb, var(--el-color) 14%, transparent);
 	}
 	.dc-team--in {
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
-	.dc-team:disabled,
-	.dc-compare:disabled {
+	.dc-team:disabled {
 		opacity: 0.5;
 		cursor: default;
 	}

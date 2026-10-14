@@ -739,8 +739,7 @@
 
 	// ---------------------------------------------------------------------------
 	// Detail card — a focused single-character modal (the tool's one deliberate
-	// modal: an isolated read where focus is a feature, unlike the in-frame
-	// Compare workspace that reasons against the roster/team around it).
+	// modal: an isolated read where focus is a feature).
 	// ---------------------------------------------------------------------------
 
 	let selectedId = $state<string | null>(null);
@@ -1058,11 +1057,9 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
-     both (toolbar round). Band A is the DOCUMENT — the same tabs and the same
-     save/load/share the planner shows, because since the bench-band round both
-     tools edit ONE working team. Band B is this tool's VIEW: which source you
-     are browsing, and at which constellations you are reading it. -->
+<!-- The tool stack: bands + surface (toolbar round). Band A is this tool's
+     DOCUMENT — its lineup tabs and Save/Library/Share. Band B is its VIEW: the
+     panes, the filters, and the constellations you are reading at. -->
 <!-- The con lens's options — one list, rendered by the lens's own menu at
      desk width and by band B's fold below BP.compact. -->
 <!-- THE PANE SWITCH below the dock (§11.6, Nate's pick): ONE plate naming
@@ -1425,7 +1422,7 @@
 	   Below the dock (`wide`, 71rem — $lib/breakpoints.ts) the panes are TABS:
 	   each takes the whole width and the board slides in over the roster on a
 	   transform. ⚠ Both panes always lay out, so neither loses its scroll or
-	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/split.ts). */
+	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/dock.ts). */
 	/* 🎛️ THE BOARD'S WIDTH, read by the dock AND band B's cells (one rule, so
 	   the two rows cannot drift). FIXED within a range, so the board's layout
 	   stays stable; it steps up where the screen has room to give (⚓ Nate

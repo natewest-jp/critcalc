@@ -5,7 +5,6 @@ import {
 	checkShift,
 	deriveResonances,
 	parseTeamParam,
-	serializeTeamParam,
 	swapDelta,
 	swapSections
 } from './team';
@@ -13,7 +12,7 @@ import {
 const VALID = new Set(['bennett', 'jean', 'diona', 'gorou', 'xingqiu']);
 const isValid = (id: string) => VALID.has(id);
 
-describe('parseTeamParam / serializeTeamParam', () => {
+describe('parseTeamParam', () => {
 	it('parses up to four known ids in order', () => {
 		expect(parseTeamParam('bennett,jean,diona,gorou', isValid)).toEqual([
 			'bennett',
@@ -35,12 +34,6 @@ describe('parseTeamParam / serializeTeamParam', () => {
 	it('null/empty param → four empty slots', () => {
 		expect(parseTeamParam(null, isValid)).toEqual([null, null, null, null]);
 		expect(parseTeamParam('', isValid)).toEqual([null, null, null, null]);
-	});
-
-	it('round-trips through serialize (filled slots only)', () => {
-		const slots = parseTeamParam('bennett,jean', isValid);
-		expect(serializeTeamParam(slots)).toBe('bennett,jean');
-		expect(serializeTeamParam([null, null, null, null])).toBe('');
 	});
 });
 

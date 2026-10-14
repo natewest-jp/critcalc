@@ -12,17 +12,18 @@
 	 *     current blessing.
 	 *   · Every team: the portraits (`SidePortrait`), resonance + factions
 	 *     (`CompositionChips` without reactions — a battlefield's checks are
-	 *     the reactions that matter here), the FINGERPRINT (placeholder pips
-	 *     until Nate's icons), and its rotations with the PIN (§10.2).
+	 *     the reactions that matter here), the FINGERPRINT (the fifteen
+	 *     glyphs), and its rotations with the PIN (§10.2).
 	 *
 	 * A selected TEAM is where the roster's picks land, in click order (Nate
-	 * 2026-10-09, the game's own model) — a frame around its portraits, gold
-	 * as everywhere a thing is chosen. A filled portrait is not a control: it
-	 * selects its row and nothing else, and a pick leaves by being picked again.
-	 * ⚓ "No repeats" is ONE TEAM PER CHARACTER (↻ 2026-10-11 — it allowed
-	 * and marked): the store moves a pick, so there is no mark to draw. Each
-	 * row carries its team's HUE as a left edge, the key to the frames its
-	 * members wear in the Characters grid.
+	 * 2026-10-09, the game's own model) — its strip closes a ring in the
+	 * team's hue. A filled portrait in the SELECTED row enters swap mode
+	 * (§11.6 item 20); elsewhere it selects its row and nothing else, and a
+	 * pick leaves by being picked again. ⚓ "No repeats" is ONE TEAM PER
+	 * CHARACTER (↻ 2026-10-11 — it allowed and marked): the store moves a
+	 * pick, so there is no mark to draw. Each row carries its team's HUE as a
+	 * heavy right end, the key to the frames its members wear in the
+	 * Characters grid.
 	 */
 	import Mark from '$lib/components/Mark.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
