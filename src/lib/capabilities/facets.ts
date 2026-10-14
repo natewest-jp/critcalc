@@ -61,7 +61,7 @@ export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'grouping', label: 'Grouping', hint: 'Pulls or gathers enemies' },
 	{ key: 'buff:atk', label: 'ATK buff', hint: 'Buffs allies’ ATK' },
 	{ key: 'buff:em', label: 'EM buff', hint: 'Buffs allies’ Elemental Mastery' },
-	{ key: 'buff:crit', label: 'CRIT buff', hint: 'Buffs allies’ Crit Rate / Crit DMG' },
+	{ key: 'buff:crit', label: 'CRIT buff', hint: 'Buffs allies’ CRIT Rate / CRIT DMG' },
 	{ key: 'buff:dmg', label: 'DMG% buff', hint: 'Buffs allies’ damage bonuses' },
 	{ key: 'buff:hpdef', label: 'HP/DEF buff', hint: 'Buffs allies’ HP or DEF' },
 	{
