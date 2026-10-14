@@ -144,13 +144,13 @@ class BoardBarState {
 		const active = boards.activeBoard;
 		if (!boardWorthKeeping(active) && !active.savedId) {
 			boards.boards = boards.boards.map((b) => (b.id === active.id ? { ...doc, id: b.id } : b));
-			documentBar.showNotice('Loaded shared board');
+			documentBar.showNotice('Loaded shared lineup');
 			return;
 		}
 		this.withRoom(
 			() => {
 				boards.openBoard(doc);
-				documentBar.showNotice('Loaded shared board');
+				documentBar.showNotice('Loaded shared lineup');
 			},
 			() => recentlyClosedBoards.push({ ...makeBoard(doc.label), ...doc })
 		);
@@ -168,10 +168,10 @@ class BoardBarState {
 		if (empty) boards.setTeam(board.id, empty.id, slots);
 		// A battlefield board's teams are the game's — only Custom grows.
 		else if (board.preset !== 'custom' || !boards.addTeam(board.id, slots)) {
-			documentBar.showNotice('The board is full');
+			documentBar.showNotice('The lineup is full');
 			return;
 		}
-		documentBar.showNotice('Team added to the board');
+		documentBar.showNotice('Team added to the lineup');
 	}
 
 	/** Copy a `?b=` link to the active board. Teams and levels travel, pins
@@ -202,7 +202,7 @@ export const boardTabStrip: TabStripModel = {
 	get activeId() {
 		return boards.activeBoardId;
 	},
-	newLabel: 'New board',
+	newLabel: 'New lineup',
 	switchTo: (id) => boards.switchBoard(id),
 	close: (id) => boardBar.closeBoard(id),
 	rename: (id, label) => {

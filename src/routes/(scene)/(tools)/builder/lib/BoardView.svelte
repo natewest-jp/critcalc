@@ -53,7 +53,7 @@
 	import { evaluateCheck, type CheckVerdict } from '$lib/endgameChecks';
 	import { teamFingerprint } from '$lib/fingerprint';
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
-	import { checkShift, teamHue } from './team';
+	import { checkShift, teamHue, teamLabel } from './team';
 	import Fingerprint from './Fingerprint.svelte';
 	import CheckChip from './CheckChip.svelte';
 	import BossDetail from './BossDetail.svelte';
@@ -214,7 +214,7 @@
 	{@const after = previewIds(team, facts)}
 	{@const preview = after ? teamFingerprint(after, facts.conOf) : null}
 	{@const afterVerdicts = after && field ? verdictsFor(field, after, facts.conOf) : undefined}
-	{@const name = isErrand ? (errand?.label ?? '') : `Team ${t + 1}`}
+	{@const name = isErrand ? (errand?.label ?? '') : teamLabel(board, t)}
 	{@const swapSlot = swapping?.teamId === team.id ? swapping.slot : null}
 	<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
 		     is glass (the site — a battlefield, an Abyss half); everything under

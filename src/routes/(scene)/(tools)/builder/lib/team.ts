@@ -301,7 +301,7 @@ export function teamLabel(board: Pick<Board, 'preset' | 'season'>, index: number
 		const season = SEASONS.find((s) => s.version === board.season) ?? liveSeasons()[0];
 		if (season?.battlefields[index]) return `Battlefield ${index + 1}`;
 	}
-	if (board.preset === 'abyss' && index < 2) return index === 0 ? 'First Half' : 'Second Half';
+	if (board.preset === 'abyss' && index < 2) return index === 0 ? 'First half' : 'Second half';
 	return `Team ${index + 1}`;
 }
 

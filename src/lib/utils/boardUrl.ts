@@ -82,7 +82,7 @@ export async function decodeBoard(param: string | null | undefined): Promise<Sha
 			label:
 				typeof data.label === 'string' && data.label.trim()
 					? data.label.trim().slice(0, MAX_LABEL)
-					: 'Shared board',
+					: 'Shared lineup',
 			noRepeats: data.noRepeats !== false,
 			...(PRESETS.includes(data.preset as string) && {
 				preset: data.preset as SharedBoard['preset']

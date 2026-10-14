@@ -357,7 +357,7 @@
 			get selectedLabel() {
 				if (!chosenTeamId) return null;
 				const i = board.teams.findIndex((t) => t.id === chosenTeamId);
-				return i >= 0 ? `Team ${i + 1}` : null;
+				return i >= 0 ? teamLabel(board, i) : null;
 			},
 			place(slots, pinnedRotationId) {
 				// The Planner's swap hides the board: a pick ends it, as a tab click
@@ -369,7 +369,7 @@
 					// A battlefield board's teams are the game's — only Custom grows.
 					(board.preset === 'custom' ? boards.addTeam(board.id) : undefined);
 				if (!target) {
-					documentBar.showNotice('The board is full');
+					documentBar.showNotice('The lineup is full');
 					return;
 				}
 				boards.setTeam(board.id, target.id, slots);
@@ -729,7 +729,7 @@
 		{
 			key: 'mine',
 			label: 'My constellations',
-			hint: 'Uses your saved constellations (set them in a character’s details)'
+			hint: 'Uses the constellations in your Roster'
 		}
 	];
 
@@ -845,7 +845,7 @@
 		keeps: 'Keeps everything',
 		trades: 'Trades',
 		reactions: 'Changes the reactions',
-		uncurated: 'Not curated yet'
+		uncurated: 'Not yet curated'
 	};
 	/** ⚓ Nate 2026-10-14: ADDING to a free slot loses nothing by construction,
 	 *  so its first tier says what it does — "Adds", not "Keeps everything". */
@@ -975,8 +975,8 @@
 		<section class="tb-stubs">
 			<p class="kicker">Not yet curated</p>
 			<p class="note tb-note">
-				These kits have no capability data yet — they may well do what you’re filtering for. Absence
-				of a badge here means “unknown”, not “no”.
+				These kits have no capability data yet — they may well do what you’re filtering for. A card
+				with no capabilities here means “unknown”, not “no”.
 				<a
 					class="link tb-stubs-link"
 					href="{resolve('/coverage')}?c={split.uncurated.map((e) => e.id).join(',')}"
@@ -1142,7 +1142,7 @@
 				onclick={() => boardBar.save()}
 				title={boardBar.linked
 					? `Save changes to “${board.label}”`
-					: 'Save this board to your library'}
+					: 'Save this lineup to your library'}
 			>
 				<Mark name="save" />
 				<span class="tb-band-label">{boardLinked ? 'Save changes' : 'Save'}</span>
@@ -1158,7 +1158,7 @@
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
 				onclick={() => boardBar.shareLink()}
-				title="Copy a link to this board"
+				title="Copy a link to this lineup"
 			>
 				<Mark name="share" />
 				<span class="tb-band-label">Share</span>

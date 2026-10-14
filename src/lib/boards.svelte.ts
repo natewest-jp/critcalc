@@ -223,7 +223,7 @@ class BoardsState {
 	 *  its most useful, the mode most players come for. No `season` is stored, so
 	 *  the board FOLLOWS the season (the Team Builder reads an unset season as
 	 *  the current one) until its first edit pins it (§11.6 item 4). */
-	boards = $state<Board[]>([makeBoard('Board 1', 'stygian')]);
+	boards = $state<Board[]>([makeBoard('Lineup 1', 'stygian')]);
 	activeBoardId = $state<string>(this.boards[0].id);
 	restored = $state(false);
 
@@ -282,7 +282,7 @@ class BoardsState {
 
 	addBoard(preset: BoardPreset = 'custom', season?: string): boolean {
 		return this.openBoard({
-			...makeBoard(`Board ${this.boards.length + 1}`, preset),
+			...makeBoard(`Lineup ${this.boards.length + 1}`, preset),
 			...(season && { season })
 		});
 	}
