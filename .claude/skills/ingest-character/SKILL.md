@@ -206,10 +206,10 @@ carry the reasoning.
 - **`CharacterData.enablesReactions`** — the Stellar enabler model. ONE enabler
   in the party converts the base reaction party-wide. ⚠️ Per-reaction: a Swirl
   enabler does nothing for Conduct. `docs/library/game/stellar-reactions.md`.
-- **`manual` triggers reach NO surface** (one code occurrence, its own type
-  declaration). Authoring one is authoring an inert effect — legitimate as a
-  record, but ⛔ never write a caveat that says "add it manually", and don't
-  count it as modelled. `node scripts/audit-manual-triggers.mjs` lists them.
+- **`manual` is RETIRED (2026-09-21)** — the member is gone from `Trigger` and
+  lint B.18 refuses one. Name the in-game source instead (one effect per in-game
+  source; `docs/manual-trigger-retirement-round.md`), and ⛔ never write a
+  caveat that says "add it manually".
 
 ⚠️ **A field with no consumer FAILS the gate** (`orphanedSchema.test.ts`) — the
 project's most productive bug class. On failure: wire it, retire it, or add it
