@@ -204,7 +204,7 @@
 		color: rxColor,
 		read:
 			family === 'lunar'
-				? `${reaction.name} multiplies the base by ${reaction.mult}, and the top contributor deals 60% of it: ×${reaction.shown}.`
+				? `${reaction.phrase ? `A ${reaction.phrase}` : reaction.name} multiplies the base by ${reaction.mult}, and the top contributor deals 60% of it: ×${reaction.shown}.`
 				: `${reaction.name} multiplies the base by ${reaction.mult}.`
 	});
 	const emRow = $derived.by<Row>(() => {
@@ -341,7 +341,7 @@
 					real: '',
 					value: lunarTotal(sheet, reaction.mult),
 					color: null,
-					read: `On average, one ${reaction.name} hit would deal ${fmtInt(lunarTotal(sheet, reaction.mult))} damage as the top contributor.`
+					read: `On average, one ${reaction.phrase ?? `${reaction.name} hit`} would deal ${fmtInt(lunarTotal(sheet, reaction.mult))} damage as the top contributor.`
 				}
 			];
 		return [
