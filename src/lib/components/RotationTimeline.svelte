@@ -23,7 +23,7 @@
 	import { resolve } from '$app/paths';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy, tick, untrack } from 'svelte';
 	import { notationTints } from '$lib/timeline/notationTints';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
@@ -1881,18 +1881,25 @@
 		};
 	}
 
-	function openDock() {
+	/** An invisible input the strip focuses INSIDE the tap. ⚠️ iOS raises the
+	 *  keyboard only for a focus made during the user's gesture, and the editor
+	 *  is not shown until the next render — so focusing it a frame later (the
+	 *  first cut) opened the box with no keyboard and cost a second tap
+	 *  (⚓ Nate, on his phone). Focus moving from this input to the editor keeps
+	 *  the keyboard up. 16px so iOS has nothing to zoom into. */
+	let dockProxy = $state<HTMLInputElement | null>(null);
+
+	async function openDock() {
+		dockProxy?.focus();
 		dockOpen = true;
-		// After the editor is shown again: focus it, caret at the end.
-		requestAnimationFrame(() => {
-			const content = composerEl?.querySelector<HTMLElement>('.cm-content');
-			content?.focus();
-			const sel = window.getSelection();
-			if (content && sel) {
-				sel.selectAllChildren(content);
-				sel.collapseToEnd();
-			}
-		});
+		await tick();
+		const content = composerEl?.querySelector<HTMLElement>('.cm-content');
+		content?.focus();
+		const sel = window.getSelection();
+		if (content && sel) {
+			sel.selectAllChildren(content);
+			sel.collapseToEnd();
+		}
 	}
 
 	$effect(() => {
@@ -3485,8 +3492,15 @@
 				<span class="rp-dock-tail" class:rp-dock-tail--empty={!notationTail}
 					><bdi>{notationTail || 'Type a rotation in KQM notation'}</bdi></span
 				>
-				<Mark name="note" />
+				<Mark name="edit" />
 			</button>
+			<input
+				class="rp-dock-proxy"
+				bind:this={dockProxy}
+				tabindex="-1"
+				aria-hidden="true"
+				autocomplete="off"
+			/>
 		{/if}
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={{ value: notation, key: tabId }}></div>
@@ -5267,7 +5281,15 @@
 		padding: 8px 16px;
 		align-items: flex-start;
 		border-radius: var(--r-md) var(--r-md) 0 0;
-		background: var(--surface); /* = --glass-panel, via .ctx-glass */
+		background: var(--glass-dock);
+	}
+	/* ⚓ Nate 2026-10-14: ONE plate, not a box within a box — the dock IS the
+	   field, so the editor drops its own ground and ring. */
+	.rp-composer--docked :global(.cm-editor),
+	.rp-composer--docked :global(.cm-editor:hover),
+	.rp-composer--docked :global(.cm-editor.cm-focused) {
+		background: none;
+		box-shadow: none;
 	}
 	.rp-composer--docked :global(.cm-editor) {
 		max-height: 35svh;
@@ -5305,6 +5327,18 @@
 	}
 	.rp-dock-tail--empty {
 		color: color-mix(in srgb, var(--text) 55%, transparent);
+	}
+	.rp-dock-proxy {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+		font-size: 16px;
+		border: 0;
+		padding: 0;
+		pointer-events: none;
 	}
 	/* The collapsed strip's height (8 + 36 + 8) plus a gutter. */
 	.rp-dock-spacer {
