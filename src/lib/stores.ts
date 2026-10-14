@@ -55,7 +55,7 @@ export function safeRemoveItem(key: string): void {
 // ---------------------------------------------------------------------------
 //
 // A persistent bank of named rotations the user has explicitly saved.
-// Shared across tools — eventually the Team Builder may load from here too.
+// Shared across tools — the Library lists it, and the Builder pins rotations from it.
 
 const SAVED_NOTATIONS_KEY = 'critcalc:savedNotations';
 

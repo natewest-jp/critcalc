@@ -1,16 +1,15 @@
 /**
  * src/lib/documentBar.svelte.ts
  *
- * THE DOCUMENT BAR — band A's state, shared by every tool that edits the
- * working team (toolbar round, 2026-08-07).
+ * THE DOCUMENT BAR — the Planner's band A: the flows of its document, the
+ * active rotation tab (rotationTabs.svelte.ts), which carries the team, the
+ * per-tab loadout/constellation overrides and the notation.
  *
- * Since the bench-band round there has been exactly ONE working document: the
- * active rotation tab (rotationTabs.svelte.ts), carrying the team, the
- * per-tab loadout/constellation overrides and the notation. Both the planner
- * and the Team Builder edit it. But save/load/share lived in the planner PAGE,
- * so the Team Builder could build a team and had no way to keep it — the
- * gap the round set out to close. Hoisting the flows here makes them the
- * document's, not one tool's, and band A renders identically in both.
+ * The toolbar round (2026-08-07) hoisted save/load/share out of the planner
+ * PAGE so the Team Builder, which edited the same tab then, could keep a team
+ * it built. ↻ Since the lineups round (2026-10-08) the Builder's document is
+ * the BOARD, with its own band A (boardBar.svelte.ts), which raises its
+ * make-room confirm and its notices here so one dialog serves both.
  *
  * What deliberately stays out: anything about how a tool DISPLAYS the
  * document. Band B is each tool's own business.

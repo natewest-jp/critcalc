@@ -28,16 +28,17 @@
  *
  * So the team is DERIVED, always: the first four distinct characters the
  * notation names, in segment order. Every team edit is therefore a TEXT edit —
- * a swap renames that character's segments, ✕ deletes them, adding somebody
- * appends a bare-name segment (see notationEdit.ts, which owns the rewrites).
+ * a swap renames that character's segments, `setSlot(i, null)` deletes them
+ * (the bench ✕ that did so retired 2026-10-13), adding somebody appends a
+ * bare-name segment (see notationEdit.ts, which owns the rewrites).
  * ⚠ The cost, taken knowingly: slot ORDER is notation order, so you cannot fill
  * slot 3 while 1–2 are empty. Nate traded reordering away for the tool and the
  * text agreeing, and has a separate idea for reordering.
  *
  * The gain that pays for it is undo. Because the slot is derived from the text,
  * undoing the text restores the slot by itself — there is no separate
- * slot-restore path, and ⌘Z in the notation box reaches a ✕ pressed on the
- * bench (see RotationTimeline's editor handle for the routing that makes the
+ * slot-restore path, and ⌘Z in the notation box reaches a team edit made
+ * outside the editor (see RotationTimeline's editor handle for the routing that makes the
  * store's write land as a CodeMirror transaction).
  *
  * SSR/hydration safety: the module initializes the same deterministic default
@@ -405,13 +406,13 @@ class RotationTabsState {
 	// but each resolves to a rewrite of the notation, which is the only place a
 	// team is recorded. Writing `this.notation` is also what makes them
 	// undoable: the planner's editor mirrors the value in as a CodeMirror
-	// transaction, so ⌘Z reaches a ✕ pressed on the bench.
+	// transaction, so ⌘Z reaches a team edit made outside the editor.
 	// -------------------------------------------------------------------------
 
 	/**
 	 * Set one slot of the working team. A filled slot is RENAMED (that
 	 * character's segments keep their actions and change who performs them —
-	 * the audition commit's move); an empty one APPENDS a bare-name segment;
+	 * a swap-mode commit's move); an empty one APPENDS a bare-name segment;
 	 * `null`/'blank' DELETES the occupant's segments.
 	 *
 	 * ⚠ `index` is honoured for the outgoing character, not the incoming one:
