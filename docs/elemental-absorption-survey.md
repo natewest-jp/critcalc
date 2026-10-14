@@ -176,7 +176,7 @@ to absorb — which is the honest answer for a rotation that casts Venti first.
    absorbs Hydro (priority). The earlier "1U + 1U absorbs nothing" tries were a
    THAW: 1U-on-1U Frozen lives ~2.9s, about the swap-and-cast time. ⚓ So the
    proposal narrows to **Frozen → Cryo** — exactly gcsim's `AuraContains(cryo)`.
-   (⏭ Nate to confirm `866`'s colour is Cryo.) Swirl also reacts with Frozen as its
+   (`866` is Cryo cyan, confirmed by Nate.) Swirl also reacts with Frozen as its
    own aura — see `docs/library/game/stellar-reactions.md` § Swirling a Frozen target.
 4. **Sucrose C6's length.** gcsim: 10s from the lock. Kit text: "during its
    duration", which reads as the burst's. The restore spec flagged the
