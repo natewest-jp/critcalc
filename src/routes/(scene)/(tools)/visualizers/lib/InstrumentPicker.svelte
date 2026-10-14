@@ -157,7 +157,7 @@
 				{#if at !== -1 && at !== slot}
 					<!-- Picking this one SWAPS the two tiles — the same exchange the
 					     bench slots make, so it wears the same mark. -->
-					<span class="ip-badge">Slot {at + 1} <Mark name="swap" size={12} /></span>
+					<span class="ip-badge">Tile {at + 1} <Mark name="swap" size={12} /></span>
 				{:else if inst.id === current}
 					<span class="ip-badge ip-badge-here"><Mark name="check" size={12} /></span>
 				{/if}

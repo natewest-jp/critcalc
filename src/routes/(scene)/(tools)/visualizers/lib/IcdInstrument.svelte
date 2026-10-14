@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import { ELEMENT_LABEL } from '$lib/utils/auraDisplay';
 	import Mark from '$lib/components/Mark.svelte';
 	import {
 		simulateIcd,
@@ -465,8 +466,8 @@
 						class:active={element === e}
 						style:--chip-color="var(--el-{e}-main)"
 						onclick={() => (element = e)}
-						aria-label={e}
-						title={e}
+						aria-label={ELEMENT_LABEL[e]}
+						title={ELEMENT_LABEL[e]}
 					>
 						<img src={elementIcon(e)} alt="" width="16" height="16" />
 					</button>

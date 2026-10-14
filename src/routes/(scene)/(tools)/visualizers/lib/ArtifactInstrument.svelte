@@ -1028,11 +1028,11 @@
 					Where your stats on this piece would end up at +20. Drag the chart to set a value to beat.
 				{:else if canReshape}
 					Gold shows your piece after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape.
-					Grey shows every +20 {slotWord} with these four substats — yours beats {Math.round(
+					Gray shows every +20 {slotWord} with these four substats — yours beats {Math.round(
 						percentile * 100
 					)}% of them.
 				{:else}
-					Grey shows every +20 {slotWord} with these four substats — yours beats {Math.round(
+					Gray shows every +20 {slotWord} with these four substats — yours beats {Math.round(
 						percentile * 100
 					)}% of them. Select two substats on your piece to see a reshape.
 				{/if}
