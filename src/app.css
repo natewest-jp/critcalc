@@ -3112,22 +3112,26 @@ img {
    roster's cards carry more roll-off than the rail's small groups, and the
    planner's timeline wants more than either (its content is continuous, so
    there is no gap for the roll-off to hide in). The action reads this same
-   property, so the clamp and the gradient cannot disagree. */
+   property, so the clamp and the gradient cannot disagree.
+
+   --scroll-fade-inset (0 by default) moves the TOP edge down: everything above
+   it is masked out, and the roll-off starts there. The tool shell sets it to
+   the site chrome's height, so content fades under the strip (2026-10-14). */
 .scroll-fade {
 	--scroll-fade: 32px;
 	/* Unprefixed is Safari 15.4+ and every current engine; the prefix is kept as
 	   free insurance because a missing mask is invisible, not loud. */
 	-webkit-mask-image: linear-gradient(
 		to bottom,
-		transparent 0,
-		#000 var(--scroll-fade-top, 0px),
+		transparent var(--scroll-fade-inset, 0px),
+		#000 calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px)),
 		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
 		transparent 100%
 	);
 	mask-image: linear-gradient(
 		to bottom,
-		transparent 0,
-		#000 var(--scroll-fade-top, 0px),
+		transparent var(--scroll-fade-inset, 0px),
+		#000 calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px)),
 		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
 		transparent 100%
 	);
