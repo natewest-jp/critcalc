@@ -12,6 +12,7 @@
 		initScenePath,
 		startSceneTransition,
 		syncSceneCamera,
+		hasActiveSceneTransition,
 		sceneLayer,
 		dimTarget,
 		isToolPath,
@@ -111,9 +112,22 @@
 				void initGL();
 			}
 		});
+		// ⚠️ THE CAMERA POSE IS PIXELS, worked out from the viewport height at the
+		// moment it was set (crestPose: PAN_DVH% of vh). Rotating a phone on a
+		// tool route kept the PORTRAIT pan in a landscape viewport — the camera
+		// tilted up by twice what the shorter screen needs, so the world slid
+		// down and plain background showed above it (Nate's phone, 2026-10-14).
+		// The renderer already rebuilds its geometry from the new size; this
+		// re-poses the camera to match. Never mid-transition — that leg is
+		// re-deriving its own poses as it runs.
+		const reposeOnResize = new ResizeObserver(() => {
+			if (handle && !hasActiveSceneTransition()) syncSceneCamera();
+		});
+		reposeOnResize.observe(sceneCanvas);
 		return () => {
 			disposed = true;
 			unsubOcc();
+			reposeOnResize.disconnect();
 			handle?.destroy();
 		};
 	});
