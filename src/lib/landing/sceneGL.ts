@@ -304,6 +304,8 @@ export interface SceneGLHandle {
 	snapCamera(to: { x: number; y: number }): void;
 	/** Current camera pose (sans parallax). */
 	camera(): { x: number; y: number };
+	/** The size the scene is laid out at — its canvas's own box. */
+	viewport(): { w: number; h: number };
 	/** True while a camera animation is in flight. */
 	animating(): boolean;
 	/** Run the twinkle field: the loop resumes AND the star clock thaws from
@@ -503,14 +505,27 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	let destroyed = false;
 	let lost = false;
 
+	/**
+	 * ⚓ THE SCENE'S OWN BOX, not the window's (2026-10-14). The canvas is
+	 * sized `100lvh` — Safari's LARGE viewport, which does not move when its
+	 * toolbars do — so the scene no longer re-lays-out (and stretched for a
+	 * frame) during a pull-to-refresh. `innerHeight` is the DYNAMIC height and
+	 * would now disagree with the box being drawn into; reading the box keeps
+	 * the buffer, the geometry and the camera on one number.
+	 */
+	const view = () => ({
+		w: canvas.clientWidth || window.innerWidth,
+		h: canvas.clientHeight || window.innerHeight
+	});
+
 	function size() {
-		canvas.width = Math.round(window.innerWidth * dpr);
-		canvas.height = Math.round(window.innerHeight * dpr);
+		const { w, h } = view();
+		canvas.width = Math.round(w * dpr);
+		canvas.height = Math.round(h * dpr);
 	}
 
 	function buildQuads() {
-		const vw = window.innerWidth;
-		const vh = window.innerHeight;
+		const { w: vw, h: vh } = view();
 		const px = (vh * VIEWPORT_ASPECT) / FRAME_W_SRC;
 		const sceneH = MASTER_H_SRC * px;
 		const plateW = PLATE_W_SRC * px;
@@ -555,8 +570,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 
 	function drawNow(timeMs: number = performance.now()) {
 		if (destroyed || lost || !quads) return;
-		const vw = window.innerWidth;
-		const vh = window.innerHeight;
+		const { w: vw, h: vh } = view();
 		const level = dimAt(timeMs);
 		// Above 0 the scene renders offscreen and FS_DIM writes it out; at 0
 		// (the landing, the static pages) it draws straight to the canvas.
@@ -678,6 +692,14 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		requestDraw();
 	}
 	window.addEventListener('resize', onResize);
+	// ⚠️ THE WINDOW'S `resize` IS NOT ENOUGH ON iOS (Nate's phone, 2026-10-14):
+	// it can fire MID-rotation with the old orientation's numbers, and nothing
+	// fires again — the buffer and quads kept the portrait geometry while CSS
+	// stretched the canvas to landscape (the field stretched sideways, the sky
+	// starting ~60% down). The canvas's own box settles after layout, so
+	// observing it re-sizes on the FINAL numbers. Same handler, one more door.
+	const sizeObserver = new ResizeObserver(onResize);
+	sizeObserver.observe(canvas);
 
 	// --- The twinkle loop (ported from the retired starfield controller) ----
 	// While the scene is visible on a scene route, one rAF loop redraws the
@@ -765,6 +787,10 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			requestDraw();
 		},
 		camera: () => ({ ...cam }),
+		viewport: () => {
+			const { w, h } = view();
+			return { w, h };
+		},
 		animating: () => animPending,
 		animateDim(to, durationMs, startTime = performance.now()) {
 			const now = performance.now();
@@ -839,6 +865,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			document.removeEventListener('visibilitychange', syncLoop);
 			reducedMq.removeEventListener('change', syncLoop);
 			window.removeEventListener('resize', onResize);
+			sizeObserver.disconnect();
 			canvas.removeEventListener('webglcontextlost', onContextLost);
 			canvas.removeEventListener('webglcontextrestored', onContextRestored);
 			gl.getExtension('WEBGL_lose_context')?.loseContext();

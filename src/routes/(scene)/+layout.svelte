@@ -12,6 +12,7 @@
 		initScenePath,
 		startSceneTransition,
 		syncSceneCamera,
+		hasActiveSceneTransition,
 		sceneLayer,
 		dimTarget,
 		isToolPath,
@@ -111,9 +112,22 @@
 				void initGL();
 			}
 		});
+		// ⚠️ THE CAMERA POSE IS PIXELS, worked out from the viewport height at the
+		// moment it was set (crestPose: PAN_DVH% of vh). Rotating a phone on a
+		// tool route kept the PORTRAIT pan in a landscape viewport — the camera
+		// tilted up by twice what the shorter screen needs, so the world slid
+		// down and plain background showed above it (Nate's phone, 2026-10-14).
+		// The renderer already rebuilds its geometry from the new size; this
+		// re-poses the camera to match. Never mid-transition — that leg is
+		// re-deriving its own poses as it runs.
+		const reposeOnResize = new ResizeObserver(() => {
+			if (handle && !hasActiveSceneTransition()) syncSceneCamera();
+		});
+		reposeOnResize.observe(sceneCanvas);
 		return () => {
 			disposed = true;
 			unsubOcc();
+			reposeOnResize.disconnect();
 			handle?.destroy();
 		};
 	});
@@ -349,7 +363,8 @@
 		--viewport-aspect: calc(21 / 9);
 
 		/* Source-px → CSS, based on the FRAME mapping to the viewport. */
-		--px: calc(100dvh * var(--viewport-aspect) / var(--frame-w-src));
+		/* ↻ 2026-10-14: 100lvh, with the scene layers below — see .scene. */
+		--px: calc(100lvh * var(--viewport-aspect) / var(--frame-w-src));
 
 		/* --scene-w is the IMAGE width (frame + bleed); --scene-h backs the
 		   sky-bg gradient. sky/floor/twinkle/meteors all size to --scene-w. */
@@ -410,6 +425,18 @@
 		inset: 0;
 		width: 100dvw;
 		height: 100dvh;
+	}
+	/* 🧪 EXPERIMENT (⚓ Nate 2026-10-14): the WORLD takes Safari's LARGE
+	   viewport, which does not change while its toolbars move — a
+	   pull-to-refresh moved the toolbars, the dynamic height changed under the
+	   canvas mid-gesture, and the scene stretched. The page content keeps the
+	   dynamic height. Cost: the scene is bottom-anchored, so with Safari's
+	   toolbars showing, the horizon sits one toolbar lower, partly behind it.
+	   `inset: 0` would pin the bottom too, so the box is top-anchored here. */
+	.scene,
+	.dim {
+		bottom: auto;
+		height: 100lvh;
 	}
 
 	.scene {

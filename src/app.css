@@ -193,6 +193,12 @@
 	   and /styleguide's census computes both from these tokens, so it is the
 	   number to trust if this comment ever drifts. */
 	--glass-panel: rgb(54 62 77 / 0.58); /* slate-700 — band A, menus, panels */
+	/* THE DOCK (⚓ Nate 2026-10-14, on his phone: "up the opacity a little").
+	   The panel's rung, denser: the phone's notation dock sits over the
+	   CHART's bars rather than over sky, and at .58 the bars read through the
+	   notation. 🎛️ tune(nate): .80 by eye on his phone (.72 first) — the same
+	   density as hover, as a role of its own. */
+	--glass-dock: rgb(54 62 77 / 0.8); /* slate-700 — the phone's notation dock */
 	/* ↻ 2026-08-11: follows slate-900's merge (rgb 38 44 56 → 31 38 53) — the
 	   stop IS that rung at an alpha, so it has to move with it or the well
 	   silently stops being the well. Star figure improved, 5.22 → 5.44:1. */
@@ -2198,6 +2204,16 @@ body {
 	margin: 0;
 	padding: 0;
 	min-height: 100%;
+}
+
+/* ⚓ 2026-10-14 (Nate, on his phone): iOS "text autosizing" ENLARGES small
+   text after a rotation to landscape and keeps it enlarged on the way back —
+   the 13px notation came back visibly bigger until a reload. 100% opts the
+   whole site out; every size here is chosen, never a guess for the browser
+   to correct. (Pinch-zoom is unaffected.) */
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
 }
 
 body {

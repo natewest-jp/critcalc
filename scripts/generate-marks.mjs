@@ -105,6 +105,9 @@ const MARKS = {
 
 	// ── Band B and general controls ─────────────────────────────────────────
 	note: 'FileText',
+	/** The phone's collapsed notation dock (mobile round, 2026-10-14): tap to
+	 *  write. ⚓ Nate read FileText as a document, which it is. */
+	edit: 'PencilLine',
 	/** The Team Builder's filter drawer (responsive round, 2026-09-05): the
 	 *  roster's filter rail becomes a drawer below BP.toolMin, and this plate is
 	 *  what opens it. The funnel, the one glyph every product uses for "narrow

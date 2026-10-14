@@ -251,8 +251,12 @@
 	   (see benchBand.svelte.ts § THE UPRIGHT CARD); nothing here has to wait
 	   for the ribbon to mount to lay the tool out correctly. */
 	@media (max-width: 54rem) {
+		/* ⚓ Nate 2026-10-14 (the mobile round): band B → bench → surface take
+		   the BAND gap, the one band A and B already keep, so the narrow stack
+		   reads as one tight instrument head rather than three spaced rows. */
 		.tool-stack--benched {
 			padding-left: 0;
+			gap: var(--band-gap);
 		}
 		.tool-stack--benched .bands {
 			order: 0;

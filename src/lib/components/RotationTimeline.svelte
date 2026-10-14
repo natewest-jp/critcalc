@@ -17,10 +17,15 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
+	import { below } from '$lib/media.svelte';
+	import { page } from '$app/state';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy, tick, untrack } from 'svelte';
 	import { notationTints } from '$lib/timeline/notationTints';
+	import { tokenizeNotation } from '$lib/utils/tokenizer';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
 		elementPalette,
@@ -802,10 +807,32 @@
 		Math.max(BENCH_SLOT_MIN_H, ...characterSlots.map((_, i) => slotNaturalH(i)))
 	);
 
-	// Cumulative Y offsets per slot. ↻ The blocks are uniform now, so this is an
-	// arithmetic series — kept as a walk because every consumer indexes it and a
-	// multiply would read as if the heights could still differ.
-	let slotTopOffsets = $derived(characterSlots.map((_, i) => i * slotBlockH));
+	// ── BELOW `toolMin` EACH SLOT IS ITS OWN HEIGHT (⚓ Nate 2026-10-14) ───────
+	// The uniform height above exists for ONE reader: the bench's cards, which
+	// stand beside the track groups they label and must be as tall as them.
+	// Below `toolMin` the bench is a ROW above the chart and labels nothing
+	// vertically, so the reason is gone and a phone — where the chart's height
+	// is the scarce thing — stops paying for the busiest slot's rows in every
+	// slot. Each takes its OWN summon lane (already per slot) and its OWN
+	// received-buff rows, with no card floor (there is no card beside it).
+	// ⚠ Every height reader takes `slotHeights`, so the bench metrics, the
+	// connectors and the PNG snapshot (which has always carried a per-slot
+	// `blockH`) follow the screen with no second path.
+	let fitSlotHeights = $derived(below('toolMin'));
+	function slotOwnH(slotIdx: number): number {
+		const rows = slotReceivedSubrowCounts[slotIdx] ?? 0;
+		const buffH = rows > 0 ? rows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
+		return buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM;
+	}
+	let slotHeights = $derived(
+		characterSlots.map((_, i) => (fitSlotHeights ? slotOwnH(i) : slotBlockH))
+	);
+
+	// Cumulative Y offsets per slot — a walk, because below `toolMin` the
+	// heights genuinely differ.
+	let slotTopOffsets = $derived(
+		slotHeights.map((_, i) => slotHeights.slice(0, i).reduce((a, h) => a + h, 0))
+	);
 
 	// ── Which below-slot lanes are on screen ─────────────────────────────────
 	// ⚠ ONE ANSWER EACH, read by the height math, the markup AND the PNG
@@ -1237,7 +1264,7 @@
 	const publishBenchMetrics = benchBand.claimMetrics();
 	$effect(() => {
 		publishBenchMetrics(
-			characterSlots.map(() => slotBlockH),
+			slotHeights,
 			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0),
 			// ⚠ The third value is the HEADER's height — how far the first track
 			// row sits below the surface's top — and it is published rather than
@@ -1532,7 +1559,7 @@
 	// than a term at the end; the SUM is unchanged, which is the point.
 	let contentH = $derived(
 		headerH +
-			characterSlots.length * slotBlockH +
+			slotHeights.reduce((a, h) => a + h, 0) +
 			teamBuffsH +
 			(showNbLane ? nbLaneH : 0) +
 			(showMoonsignLane ? moonsignLaneH : 0)
@@ -1549,7 +1576,7 @@
 		// Lanes open directly under the 4th track group (the ribbon-clearance
 		// gap retired with the tall bench — the strip clears the lanes by
 		// standing over the whole label column instead).
-		const slotsBottom = slotTopOffsets[3] + slotBlockH;
+		const slotsBottom = slotTopOffsets[3] + slotHeights[3];
 		const nbVisible = showNbLane;
 		const moonVisible = showMoonsignLane;
 		const teamNames = slotCharacters
@@ -1586,7 +1613,7 @@
 					// No-frame-map (uncurated, non-Blank) → dire N/C/P treatment in export.
 					isApprox: char != null && !isCurated(char) && char.id !== 'blank',
 					consLevel: char ? effectiveConLevel(char.id) : 0,
-					blockH: slotBlockH,
+					blockH: slotHeights[i],
 					qRowTop: qRowTopForSlot(i),
 					activeRowTop: activeRowOffsetForSlot(i),
 					buffRowsTop: buffRowsTopForSlot(i),
@@ -1773,6 +1800,262 @@
 	 * greyed out immediately after the one edit most likely to want it.
 	 */
 	let editorApi = $state<NotationEditor | null>(null);
+
+	// ── THE DOCK (⚓ Nate 2026-10-14, the mobile round, item 6) ──────────────
+	// Below `compact` the composer is not a row in the page: it is PINNED to the
+	// bottom of the screen over the chart, and when you are not typing it
+	// collapses to a one-line strip showing the END of the notation — the part
+	// you were just writing. ⚓ ANY tap outside it collapses it, a bar included
+	// (Nate: touching a bar to read its details is exactly when you are done
+	// typing); the tap still lands, so the bar's tooltip opens too.
+	//
+	// ⚠ It is MOVED to <body> while docked, never re-mounted — the editor (and
+	// its undo history) is one instance either way. It has to leave the page:
+	// the tool pan TRANSFORMS the page layer, and a transformed ancestor makes
+	// `position: fixed` relative to itself. It moves BACK the moment the planner
+	// stops being the route, so on a pan away it slides out with its page
+	// rather than hanging over the next tool.
+	let docked = $derived(below('compact'));
+	let onPlanner = $derived(page.url.pathname.startsWith(resolve('/planner')));
+	let dockOn = $derived(docked && onPlanner);
+	let dockOpen = $state(false);
+	/** ⚠️ Chrome on iOS can widen its address pill over the page AFTER the
+	 *  keyboard lands and never tell the page (Nate's phone: the late
+	 *  re-measure did not catch it), covering the key row. Its UA says `CriOS`.
+	 *  There the open dock carries extra bottom padding the pill can cover
+	 *  instead — breathing room when the pill stays down. */
+	const iosChrome = typeof navigator !== 'undefined' && /CriOS/.test(navigator.userAgent);
+	/** px a finger may travel and still count as a tap (dock collapse, key row). */
+	const TAP_SLOP = 10;
+	let composerEl = $state<HTMLElement | null>(null);
+	/** How far the on-screen keyboard reaches up the screen. iOS does not
+	 *  shrink the layout viewport for the keyboard, so a `bottom: 0` dock sits
+	 *  BEHIND it; the visual viewport is the only honest measure. */
+	let keyboardInset = $state(0);
+
+	/**
+	 * The collapsed strip's text: the notation's LAST non-empty line, painted
+	 * the way the editor paints it (⚓ Nate 2026-10-14). The same two answers
+	 * the editor reads — the tokenizer's kinds, and the parse's per-token tint
+	 * (`notationTints`, keyed by source range) — so a token wears the colour the
+	 * chart resolved for it. Gaps between tokens ride along as plain text.
+	 */
+	type TailSpan = { text: string; kind: 'char' | 'sep' | 'plain'; color?: string };
+	let tailSpans = $derived.by((): TailSpan[] => {
+		const lines = [...notation.matchAll(/[^\n]*\S[^\n]*/g)];
+		const last = lines.at(-1);
+		if (!last || last.index === undefined) return [];
+		const from = last.index;
+		const to = from + last[0].length;
+		const tint: Record<string, string | undefined> = {};
+		for (const t of notationTints(docRotation))
+			tint[`${t.from}:${t.to}`] = t.element ? elementPalette(t.element).main : undefined;
+		const spans: TailSpan[] = [];
+		let at = from;
+		for (const tok of tokenizeNotation(notation)) {
+			if (tok.to <= from || tok.from >= to) continue;
+			if (tok.from > at) spans.push({ text: notation.slice(at, tok.from), kind: 'plain' });
+			const kind = tok.kind === 'character' ? 'char' : tok.kind === 'separator' ? 'sep' : 'plain';
+			spans.push({ text: tok.text, kind, color: tint[`${tok.from}:${tok.to}`] });
+			at = tok.to;
+		}
+		if (at < to) spans.push({ text: notation.slice(at, to), kind: 'plain' });
+		return spans;
+	});
+
+	/** The action's own placer, so the navigation hooks below can move the
+	 *  node without waiting on an effect. */
+	let dockPlace: ((on: boolean) => void) | null = null;
+
+	// ⚠️ WHY NOT JUST `dockOn`: leaving the planner does not destroy this page —
+	// the tool pan keeps it alive for the slide-out, and Svelte PAUSES the
+	// effects of a block on its way out, so `dockOn` never re-runs and the dock
+	// stayed pinned over the Team Builder (measured). These hooks are plain
+	// callbacks registered at mount, not effects, so they still fire: leaving
+	// puts the composer back in its page (it slides out with it), arriving
+	// re-docks it — on a revival the action's `update` would not run, because
+	// `dockOn` is the same value it was before the pause.
+	beforeNavigate((nav) => {
+		if (!nav.to?.url.pathname.startsWith(resolve('/planner'))) {
+			dockOpen = false;
+			dockPlace?.(false);
+		}
+	});
+	afterNavigate((nav) => {
+		if (nav.to?.url.pathname.startsWith(resolve('/planner'))) dockPlace?.(docked);
+	});
+
+	function dockable(node: HTMLElement, on: boolean) {
+		const anchor = document.createComment('composer');
+		node.before(anchor);
+		const inTool = !!node.closest('.tool-shell');
+		const place = (d: boolean) => {
+			if (d && node.parentNode !== document.body) {
+				document.body.appendChild(node);
+				// The accent zone rides along, as `portal` does for popovers.
+				if (inTool) node.dataset.zone = 'tool';
+			} else if (!d && node.parentNode === document.body) {
+				anchor.after(node);
+				delete node.dataset.zone;
+			}
+		};
+		place(on);
+		dockPlace = place;
+		return {
+			update: place,
+			destroy() {
+				dockPlace = null;
+				if (node.parentNode === document.body) node.remove();
+				anchor.remove();
+			}
+		};
+	}
+
+	// ── THE KEY ROW (⚓ Nate 2026-10-14) ─────────────────────────────────────
+	// A phone keyboard cannot be given a ">" key — a page may only choose among
+	// the system layouts — so the dock carries its own row above it, and the
+	// row READS THE SEGMENT THE CARET IS IN:
+	//   · a segment with no character yet → the team's names (the notation's
+	//     own, so it is the team the planner derived — single truth);
+	//   · inside a character's segment → ">", that character's casts (the
+	//     eager index's `casts`, the same list the editor's lint reads, so
+	//     Flins offers sQ), N, C, and P when the kit has a plunge;
+	//   · right after an N → the digits 1–5 first.
+	// A key types what a keystroke would (one undoable edit), spacing itself.
+	let cursorPos = $state(0);
+	type DockKey = { label: string; insert: string };
+	let dockKeys = $derived.by((): DockKey[] => {
+		const pos = Math.min(cursorPos, notation.length);
+		const tokens = tokenizeNotation(notation);
+		const before = tokens.filter((t) => t.to <= pos);
+		const segStart = before.findLast((t) => t.kind === 'separator')?.to ?? 0;
+		const name = before.findLast((t) => t.kind === 'character' && t.from >= segStart)?.text;
+		const prev = notation.slice(0, pos).trimEnd().at(-1) ?? '';
+		const gap = /\s/.test(notation[pos - 1] ?? ' ') ? '' : ' ';
+		const sep: DockKey = { label: '>', insert: `${gap}> ` };
+		if (!name) {
+			const team = [
+				...new Set(tokens.filter((t) => t.kind === 'character').map((t) => t.text))
+			].slice(0, 4);
+			return [
+				...team.map((n) => ({ label: n, insert: `${gap}${n} ` })),
+				...(pos > 0 && prev !== '>' ? [sep] : [])
+			];
+		}
+		const entry = getIndexEntryByDisplayName(name);
+		const tok = (t: string): DockKey => ({ label: t, insert: `${gap}${t}` });
+		// ⚓ Nate: `tE` and `pE` are KQM's other spellings of a plain `E` (the
+		// parser times all three alike — castTokens.ts adds them to every
+		// skill), so the row offers the one spelling.
+		const ALIASES = ['tE', 'pE'];
+		const casts = entry?.casts?.length
+			? entry.casts.filter((c) => !ALIASES.includes(c))
+			: ['E', 'Q'];
+		const keys = [sep, ...casts.map(tok), tok('N'), tok('C'), ...(entry?.plunge ? [tok('P')] : [])];
+		if (prev === 'N' && notation[pos - 1] === 'N')
+			return [...['1', '2', '3', '4', '5'].map((d) => ({ label: d, insert: d })), ...keys];
+		return keys;
+	});
+
+	function pressDockKey(key: DockKey) {
+		editorApi?.insert(key.insert);
+	}
+	/** ⚠️ A key fires on LIFT, not on `click`: its pointerdown is cancelled so
+	 *  the press never takes focus from the editor (the keyboard stays up), and
+	 *  in WebKit's touch path that swallowed the click as well (measured). The
+	 *  tap rule is the dock's — lifted within TAP_SLOP — so swiping the row
+	 *  sideways never types. `click` stays for KEYBOARD activation only
+	 *  (`detail === 0`). */
+	let keyDown: { id: number; x: number; y: number } | null = null;
+	function keyPointerDown(e: PointerEvent) {
+		e.preventDefault();
+		keyDown = { id: e.pointerId, x: e.clientX, y: e.clientY };
+	}
+	function keyPointerUp(e: PointerEvent, key: DockKey) {
+		const d = keyDown;
+		keyDown = null;
+		if (!d || d.id !== e.pointerId) return;
+		if (Math.hypot(e.clientX - d.x, e.clientY - d.y) <= TAP_SLOP) pressDockKey(key);
+	}
+
+	/** An invisible input the strip focuses INSIDE the tap. ⚠️ iOS raises the
+	 *  keyboard only for a focus made during the user's gesture, and the editor
+	 *  is not shown until the next render — so focusing it a frame later (the
+	 *  first cut) opened the box with no keyboard and cost a second tap
+	 *  (⚓ Nate, on his phone). Focus moving from this input to the editor keeps
+	 *  the keyboard up. 16px so iOS has nothing to zoom into. */
+	let dockProxy = $state<HTMLInputElement | null>(null);
+
+	async function openDock() {
+		dockProxy?.focus();
+		dockOpen = true;
+		// ⚠️ Chrome on iOS sometimes widens its address pill over the page a
+		// beat AFTER the keyboard lands (Nate's phone), and the key row went
+		// under it. If that settles into the visual viewport with no event of
+		// its own, a late look catches it; if Chrome draws over the page
+		// without telling it, nothing here can — see the round record.
+		for (const ms of [150, 400, 800]) setTimeout(measureKeyboard, ms);
+		await tick();
+		const content = composerEl?.querySelector<HTMLElement>('.cm-content');
+		content?.focus();
+		const sel = window.getSelection();
+		if (content && sel) {
+			sel.selectAllChildren(content);
+			sel.collapseToEnd();
+		}
+	}
+
+	// ⚓ A TAP collapses, a DRAG does not (Nate 2026-10-14, on his phone): you
+	// should be able to scroll the chart up, down and along with the keyboard
+	// still up. A tap is a press that lifts within TAP_SLOP of where it landed;
+	// a scroll never gets that far — the browser takes the touch over and sends
+	// `pointercancel` instead of `pointerup`. ⛔ Not `click`: iOS fires it only
+	// on elements that look clickable, so a tap on bare chart would not count.
+	// Capture phase, and the tap is never stopped — a bar's tooltip still opens.
+	$effect(() => {
+		if (!dockOn || !dockOpen) return;
+		let down: { id: number; x: number; y: number } | null = null;
+		const outside = (t: EventTarget | null) =>
+			t instanceof Element && !composerEl?.contains(t) && !t.closest('.cm-tooltip');
+		const onDown = (e: PointerEvent) => {
+			down = outside(e.target) ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
+		};
+		const onUp = (e: PointerEvent) => {
+			if (!down || e.pointerId !== down.id) return;
+			const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+			down = null;
+			if (moved > TAP_SLOP) return;
+			dockOpen = false;
+			(document.activeElement as HTMLElement | null)?.blur();
+		};
+		const onCancel = () => (down = null);
+		document.addEventListener('pointerdown', onDown, true);
+		document.addEventListener('pointerup', onUp, true);
+		document.addEventListener('pointercancel', onCancel, true);
+		return () => {
+			document.removeEventListener('pointerdown', onDown, true);
+			document.removeEventListener('pointerup', onUp, true);
+			document.removeEventListener('pointercancel', onCancel, true);
+		};
+	});
+
+	function measureKeyboard() {
+		const vv = window.visualViewport;
+		if (vv) keyboardInset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+	}
+	$effect(() => {
+		if (!dockOn || !window.visualViewport) return;
+		const vv = window.visualViewport;
+		const measure = measureKeyboard;
+		measure();
+		vv.addEventListener('resize', measure);
+		vv.addEventListener('scroll', measure);
+		return () => {
+			vv.removeEventListener('resize', measure);
+			vv.removeEventListener('scroll', measure);
+			keyboardInset = 0;
+		};
+	});
 	let historyTick = $state(0);
 	let canUndo = $derived.by(() => {
 		void historyTick;
@@ -1825,7 +2108,8 @@
 					notation = v;
 					historyTick++;
 				},
-				pendingKey
+				pendingKey,
+				(pos) => (cursorPos = pos)
 			);
 			editorApi = editor;
 			historyTick++;
@@ -1990,9 +2274,18 @@
 	function showTooltip(e: MouseEvent, data: TooltipPayload, anchorToCursor = false) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const above = rect.top > 80;
+		// The centre of the bar's VISIBLE part — a long bar running off either
+		// edge anchors on what is on screen (⚓ Nate 2026-10-14). BuffTooltip
+		// then keeps the whole box inside the viewport.
+		const left = Math.max(rect.left, 0);
+		const right = Math.min(rect.right, window.innerWidth);
 		tooltip = {
 			...data,
-			x: anchorToCursor ? e.clientX : rect.left + rect.width / 2,
+			x: anchorToCursor
+				? e.clientX
+				: right > left
+					? (left + right) / 2
+					: rect.left + rect.width / 2,
 			y: above ? rect.top - 6 : rect.bottom + 6,
 			above
 		};
@@ -2700,7 +2993,7 @@
 							     whatever the bar is; the /lab board judged it this way. -->
 							<div
 								class="rp-char-block"
-								style:height="{slotBlockH}px"
+								style:height="{slotHeights[slotIdx]}px"
 								style:--label-halo={char ? shiftHue(p.bar, 0, -30, 1) : undefined}
 							>
 								<!-- E row -->
@@ -3282,7 +3575,11 @@
 	     inside the tool now — so it takes the ordinary single gutter that
 	     .rp-root's `gap` already provides, and the page's double-gutter rule
 	     went with the element. -->
-	{#if underChart}
+	<!-- ⚓ Nate 2026-10-14: the always-on buffs ride the BUFFS layer too, at
+	     every width — a team bonus is what an ability GRANTS, the side of the
+	     layer cut that goes. A markup gate is the honest one HERE: nothing
+	     measures this strip, and the PNG does not draw it. -->
+	{#if underChart && showBuffs}
 		<div class="rp-underchart">{@render underChart()}</div>
 	{/if}
 
@@ -3314,7 +3611,37 @@
 	     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the box
 	     is gone from here. Both are EXPORTS, and exports are one family with the
 	     share link — they live in band A's Share menu now. -->
-	<div class="rp-composer">
+	<!-- The dock's room in the page: the chart's end has to scroll clear of
+	     the collapsed strip. -->
+	{#if dockOn}
+		<div class="rp-dock-spacer" aria-hidden="true"></div>
+	{/if}
+	<div
+		class="rp-composer"
+		class:rp-composer--docked={dockOn}
+		class:rp-composer--collapsed={dockOn && !dockOpen}
+		class:ctx-glass={dockOn}
+		class:rp-composer--ios-chrome={dockOn && iosChrome}
+		style:--rp-kb-inset="{dockOn ? keyboardInset : 0}px"
+		bind:this={composerEl}
+		use:dockable={dockOn}
+	>
+		{#if dockOn && !dockOpen}
+			<button class="rp-dock-strip" type="button" aria-label="Edit the notation" onclick={openDock}>
+				<span class="rp-dock-tail" class:rp-dock-tail--empty={!tailSpans.length}>
+					<!-- prettier-ignore -->
+					<bdi>{#if tailSpans.length}{#each tailSpans as sp, i (i)}<span class="rp-dock-{sp.kind}" style:color={sp.color}>{sp.text}</span>{/each}{:else}Type a rotation in KQM notation{/if}</bdi>
+				</span>
+				<Mark name="edit" />
+			</button>
+			<input
+				class="rp-dock-proxy"
+				bind:this={dockProxy}
+				tabindex="-1"
+				aria-hidden="true"
+				autocomplete="off"
+			/>
+		{/if}
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={{ value: notation, key: tabId }}></div>
 			<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
@@ -3354,7 +3681,7 @@
 				onclick={() => {
 					editorApi?.undo();
 					historyTick++;
-				}}><Mark name="undo" /> Undo</button
+				}}><Mark name="undo" /><span class="rp-history-word">Undo</span></button
 			>
 			<button
 				class="btn btn--sm"
@@ -3365,9 +3692,25 @@
 				onclick={() => {
 					editorApi?.redo();
 					historyTick++;
-				}}><Mark name="redo" /> Redo</button
+				}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
 			>
 		</div>
+		{#if dockOn && dockOpen && dockKeys.length}
+			<!-- The key row. pointerdown is cancelled so a press never takes focus
+			     from the editor — the keyboard stays up. -->
+			<div class="rp-dock-keys" role="toolbar" aria-label="Notation keys">
+				{#each dockKeys as key (key.label)}
+					<button
+						class="btn btn--sm rp-dock-key"
+						type="button"
+						onpointerdown={keyPointerDown}
+						onpointerup={(e) => keyPointerUp(e, key)}
+						onpointercancel={() => (keyDown = null)}
+						onclick={(e) => e.detail === 0 && pressDockKey(key)}>{key.label}</button
+					>
+				{/each}
+			</div>
+		{/if}
 	</div>
 
 	<!-- Constellation + refinement popovers now live inside SlotPortrait. -->
@@ -5068,11 +5411,178 @@
 		box-shadow: inset 0 0 0 1px var(--border);
 		border: none;
 		border-radius: var(--r-sm);
-		font-family: var(--font-body);
+		/* ↻ 2026-10-14: mono, 1.6 and WRAPPING, as the editor is — it had
+		   drifted to the body face, --lh-relaxed and `pre`. */
+		font-family: var(--font-mono);
 		font-size: 13px;
-		line-height: var(--lh-relaxed);
+		line-height: 1.6;
 		color: var(--text);
-		white-space: pre;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
 		overflow: auto;
+	}
+
+	/* ── THE DOCK (⚓ Nate 2026-10-14, the mobile round, item 6) ─────────────
+	   Below `compact` the composer is pinned to the screen's foot as a glass
+	   plate (the band material — it floats over the night chart, never over
+	   another glass). z 15: over the tool layer (10), under the loading veil
+	   (20), the drawer and the chrome overlays (50), the menus (90) and the
+	   tooltips (100). It rides up over the keyboard by --rp-kb-inset. */
+	.rp-composer--docked {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: var(--rp-kb-inset, 0px);
+		z-index: 15;
+		padding: 8px 16px;
+		align-items: flex-start;
+		border-radius: var(--r-md) var(--r-md) 0 0;
+		background: var(--glass-dock);
+	}
+	/* 🎛️ The pill's overlap in Nate's screenshot, ~22pt; 24 clears it. */
+	.rp-composer--ios-chrome:not(.rp-composer--collapsed) {
+		padding-bottom: calc(8px + 24px);
+	}
+	/* ⚓ Nate 2026-10-14: OPEN, it floats on the keyboard — four corners. */
+	.rp-composer--docked:not(.rp-composer--collapsed) {
+		border-radius: var(--r-md);
+	}
+	/* ⚓ Nate 2026-10-14: ONE plate, not a box within a box — the dock IS the
+	   field, so the editor drops its own ground and ring. */
+	.rp-composer--docked :global(.cm-editor),
+	.rp-composer--docked :global(.cm-editor:hover),
+	.rp-composer--docked :global(.cm-editor.cm-focused) {
+		background: none;
+		box-shadow: none;
+	}
+	.rp-composer--docked {
+		flex-wrap: wrap;
+		row-gap: 8px;
+	}
+	.rp-composer--docked :global(.cm-editor) {
+		max-height: 35svh;
+	}
+	/* The key row: the dock's last line, against the keyboard. One line that
+	   scrolls sideways rather than wraps — its height must not move under
+	   the thumb as the segment changes. */
+	.rp-dock-keys {
+		flex: 1 0 100%;
+		display: flex;
+		gap: 6px;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.rp-dock-keys::-webkit-scrollbar {
+		display: none;
+	}
+	.rp-dock-key {
+		flex: none;
+		min-width: 40px;
+		height: 36px;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-size: 15px;
+		/* ⚠ CASE IS NOTATION: .btn uppercases its label, and `sQ` is not `SQ`.
+		   The key shows exactly what it types. */
+		text-transform: none;
+		letter-spacing: 0;
+	}
+	.rp-composer--collapsed .rp-notation-wrap,
+	.rp-composer--collapsed .rp-history {
+		display: none;
+	}
+	/* The collapsed strip: the notation's LAST LINE, its START cut rather than
+	   its end — `direction: rtl` puts the ellipsis on the left, and the <bdi>
+	   keeps the notation itself reading left to right. */
+	.rp-dock-strip {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		min-height: 36px;
+		padding: 0 4px;
+		border: none;
+		background: none;
+		color: var(--text);
+		font: inherit;
+		cursor: pointer;
+	}
+	.rp-dock-tail {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		direction: rtl;
+		text-align: left;
+		font-family: var(--font-mono);
+		font-size: 13px;
+	}
+	/* The editor's two class colours (notationEditorExtension: .rp-tok-char,
+	   .rp-tok-sep — the separator is --muted at 30% over the composer ground). */
+	.rp-dock-char {
+		font-weight: 500;
+	}
+	.rp-dock-sep {
+		color: color-mix(in srgb, var(--muted) 30%, transparent);
+		padding: 0 3px;
+	}
+	.rp-dock-tail--empty {
+		color: color-mix(in srgb, var(--text) 55%, transparent);
+	}
+	.rp-dock-proxy {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+		font-size: 16px;
+		border: 0;
+		padding: 0;
+		pointer-events: none;
+	}
+	/* The collapsed strip's height (8 + 36 + 8) plus a gutter. */
+	.rp-dock-spacer {
+		flex: none;
+		height: 68px;
+	}
+
+	/* ── AUTOCOMPLETE UNDER A FINGER (⚓ Nate 2026-10-14) ───────────────────
+	   The suggestion list was a 0.8rem list with 5px rows — a mouse's target.
+	   On a touch screen each row is a ~44px target (WCAG 2.5.5's size). Keyed
+	   on `pointer: coarse`, the AXIS the narrow round named for touch, never a
+	   width. The list is portalled to <body> by CodeMirror, hence :global; the
+	   leading `body` outranks the editor theme's scoped rule.
+	   ⏭ Its desktop look is queued for Nate's eye, not touched here. */
+	@media (pointer: coarse) {
+		:global(body .cm-tooltip.cm-tooltip-autocomplete > ul) {
+			max-height: 40svh;
+			font-size: 15px;
+		}
+		:global(body .cm-tooltip.cm-tooltip-autocomplete > ul > li) {
+			padding: 12px 14px;
+		}
+	}
+
+	/* ── THE COMPOSER ON A PHONE (⚓ Nate 2026-10-14, the mobile round) ──────
+	   The notation wraps by design; what a phone can do is give the TEXT the
+	   row. Below `compact` (BP.compact, 40rem):
+	   · the history pair keeps its MARKS and drops its WORDS — the narrow
+	     round's rule for every band control (breakpoints.ts);
+	   · the box's side padding tightens 12 → 8 (the pre-load stand-in follows,
+	     or the swap-in jumps).
+	   Measured on an eight-segment rotation (see the round record). */
+	@media (max-width: 40rem) {
+		.rp-history-word {
+			display: none;
+		}
+		.rp-history .btn {
+			justify-content: center;
+		}
+		.rp-notation :global(.cm-content),
+		.rp-notation :global(.rp-notation-placeholder) {
+			padding-inline: 8px;
+		}
 	}
 </style>
