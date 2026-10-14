@@ -840,9 +840,13 @@
 	// snapshot. The team-buff lane keeps its own long-standing rule (present at
 	// full height even with no rows — the empty lane is the "no team buffs here"
 	// signal); the layer toggle is a different question and removes it outright.
+	// The Gleam lane appears only when someone RECEIVES the grant — an
+	// all-Moonsign team (or Moonsign pair beside empty slots) has nobody to draw.
 	let showTeamBuffsLane = $derived(showBuffs);
 	let showNbLane = $derived(showBuffs && teamComp.natlanCount >= 1);
-	let showMoonsignLane = $derived(showBuffs && teamComp.hasAscendantGleam);
+	let showMoonsignLane = $derived(
+		showBuffs && teamComp.hasAscendantGleam && teamComp.nonMoonsignSlots.length > 0
+	);
 
 	let teamBuffsH = $derived(showTeamBuffsLane ? auxLaneH(teamBuffRows.length) : 0);
 	// NB events all stack onto a single sub-row; the lane is always 1-row tall.
