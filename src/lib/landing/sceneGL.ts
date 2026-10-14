@@ -678,6 +678,14 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		requestDraw();
 	}
 	window.addEventListener('resize', onResize);
+	// ⚠️ THE WINDOW'S `resize` IS NOT ENOUGH ON iOS (Nate's phone, 2026-10-14):
+	// it can fire MID-rotation with the old orientation's numbers, and nothing
+	// fires again — the buffer and quads kept the portrait geometry while CSS
+	// stretched the canvas to landscape (the field stretched sideways, the sky
+	// starting ~60% down). The canvas's own box settles after layout, so
+	// observing it re-sizes on the FINAL numbers. Same handler, one more door.
+	const sizeObserver = new ResizeObserver(onResize);
+	sizeObserver.observe(canvas);
 
 	// --- The twinkle loop (ported from the retired starfield controller) ----
 	// While the scene is visible on a scene route, one rAF loop redraws the
@@ -839,6 +847,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			document.removeEventListener('visibilitychange', syncLoop);
 			reducedMq.removeEventListener('change', syncLoop);
 			window.removeEventListener('resize', onResize);
+			sizeObserver.disconnect();
 			canvas.removeEventListener('webglcontextlost', onContextLost);
 			canvas.removeEventListener('webglcontextrestored', onContextRestored);
 			gl.getExtension('WEBGL_lose_context')?.loseContext();
