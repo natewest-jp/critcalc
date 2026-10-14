@@ -80,13 +80,15 @@ its own ground):
 
 ## 3. Open
 
-- ⏭ **The fade under the site chrome** (Nate's ask) — its own small round: the
-  chrome lives INSIDE the tool scroller, so the mask goes on the content and
-  rides the scroll offset; measure it in real Safari.
-- ⏭ **A web app manifest** (roadmap to-do): standalone removes the browser bars
-  on a home-screen install. It does not change the keyboard.
+- ✅ **The fade under the site chrome** — shipped the same day (merge
+  `1340db2d`): the chrome became `.tool-shell`'s sibling and the shell wears a
+  still `.scroll-fade` offset by the chrome's height (`--scroll-fade-inset`,
+  registered non-inheriting); `--tool-pad-top` went to 0.
+- ✅ **A web app manifest** — shipped the same day (`feat/web-manifest`):
+  standalone, the starfield home-screen icons (`npm run build-app-icons`).
+  Nate installed it on his iPhone. ⏭ Optional: a `black-translucent` status
+  bar, which needs safe-area padding on the chrome.
 - ⏭ Untried on a device: an iPad (the zoom fix's iPadOS branch), Play on a phone.
 - ⏭ Autocomplete's desktop look, for Nate's eye. The narrow round's
   `pointer: coarse` pass for band controls is still queued.
-- 🗒️ A narrow e2e smoke for the dock (docks, collapses on a tap, returns to
-  its page on navigation) was proposed and not yet approved.
+- ✅ The dock's e2e spec (`e2e/planner-dock.spec.ts`) was approved and landed.
