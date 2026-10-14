@@ -164,9 +164,22 @@
 
 	// ── Per-tile share ─────────────────────────────────────────────────────
 	let copiedTile = $state<InstrumentId | null>(null);
+	let failedTile = $state<InstrumentId | null>(null);
 	async function shareTile(id: InstrumentId) {
-		const param = await encodeInstrumentParam(id, handles[id]?.getShareState?.());
-		await navigator.clipboard.writeText(`${location.origin}/visualizers?i=${param}`);
+		try {
+			const param = await encodeInstrumentParam(id, handles[id]?.getShareState?.());
+			await navigator.clipboard.writeText(`${location.origin}/visualizers?i=${param}`);
+		} catch {
+			// a denied clipboard (or a lost user activation after the await) —
+			// say so on the button, as the planner's Share does
+			copiedTile = null;
+			failedTile = id;
+			setTimeout(() => {
+				if (failedTile === id) failedTile = null;
+			}, 1500);
+			return;
+		}
+		failedTile = null;
 		copiedTile = id;
 		setTimeout(() => {
 			if (copiedTile === id) copiedTile = null;
@@ -278,7 +291,7 @@
 								title="Copy a link that reopens this instrument as it looks now"
 							>
 								<Mark name={copiedTile === id ? 'check' : 'share'} size={12} />
-								{copiedTile === id ? 'Copied' : 'Share'}
+								{failedTile === id ? 'Share failed' : copiedTile === id ? 'Copied' : 'Share'}
 							</button>
 						{/if}
 					</span>
