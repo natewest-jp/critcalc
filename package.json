@@ -13,6 +13,7 @@
 		"audit-scene-plate": "node scripts/audit-scene-plate.mjs",
 		"optimize-portal": "node scripts/optimize-portal.js",
 		"build-logo": "node scripts/build-logo.mjs",
+		"build-app-icons": "node scripts/build-app-icons.mjs",
 		"generate-newfit": "node scripts/generate-newfit.js",
 		"generate-stars": "node scripts/generate-stars.js",
 		"generate-character-index": "node scripts/generate-character-index.mjs",
