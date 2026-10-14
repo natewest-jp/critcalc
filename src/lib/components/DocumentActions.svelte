@@ -66,7 +66,7 @@
 		disabled={!db.hasContent}
 		title={db.linked
 			? `Save changes to “${rt.activeTab.label}”`
-			: 'Save this team and rotation to your bank'}
+			: 'Save this team and rotation to your library'}
 		onclick={() => db.save()}
 	>
 		<Mark name="save" />
@@ -159,7 +159,7 @@
 				role="menuitem"
 				{@attach () => () => (armed = null)}
 				title={armed === 'reset'
-					? "Confirm: clear this rotation's notation and unlink it from the bank"
+					? "Confirm: clear this rotation's notation and unlink it from your library"
 					: undefined}
 				onclick={() => {
 					if (armed !== 'reset') {

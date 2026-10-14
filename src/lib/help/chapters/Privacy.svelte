@@ -12,15 +12,17 @@
 	<h2 id="your-data">Your data stays in your browser</h2>
 	<p>
 		Everything you set in critcalc — your roster and constellations, weapon and artifact loadouts,
-		saved rotations, and preferences — is stored only in your own browser, using its built-in
+		saved rotations and lineups, and preferences — is stored only in your own browser, using its
+		built-in
 		<code>localStorage</code>. None of it is ever sent to or stored on a server, because there is no
 		server to send it to: critcalc is a static site with no backend, no database, and no accounts.
 	</p>
 	<p>
 		That also means your data is per-device and per-browser. To move it, use
 		<strong>Settings → Your data → Export</strong> to download a backup file, and
-		<strong>Import</strong> it elsewhere. You can wipe everything at any time from the same place, or
-		by clearing this site's data in your browser settings.
+		<strong>Import</strong> it elsewhere. You can clear your saved data at any time from
+		<strong>Settings → Reset saved data</strong>, or wipe everything by clearing this site's data in
+		your browser settings.
 	</p>
 </section>
 
