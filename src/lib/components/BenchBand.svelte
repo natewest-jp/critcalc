@@ -319,7 +319,7 @@
 		   ramp's BOTTOM rung, with nothing below to fall back to (⚓ Nate merged
 		   it with slate-950 on 2026-08-11).
 		   ⚓ SETTLED: it stays at --surface. /lab § "The bench, on the scene"
-		   holds the comparison against a real band. */
+		   held the comparison against a real band (git: 40bcb5b1). */
 		background: var(--surface);
 		/* Belt to clip-path's braces: the silhouette already cuts the box, but a
 		   card column that outgrew a short frame used to rely on this and the

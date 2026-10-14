@@ -844,6 +844,10 @@
 		reactions: 'Changes the reactions',
 		uncurated: 'Not curated yet'
 	};
+	/** ⚓ Nate 2026-10-14: ADDING to a free slot loses nothing by construction,
+	 *  so its first tier says what it does — "Adds", not "Keeps everything". */
+	const swapTierLabel = (t: SwapTier): string =>
+		t === 'keeps' && !swapping?.incumbent ? 'Adds' : SWAP_TIER_LABEL[t];
 
 	/** The grid's sections while swapping: one per specific change, each
 	 *  tier's name above its first. The filters still narrow who is offered. */
@@ -917,12 +921,12 @@
 					);
 					for (const e of r.entries) gains[e.id] = facets;
 				}
-				sections.push({ key, label: SWAP_TIER_LABEL[sec.tier], entries: sec.entries });
+				sections.push({ key, label: swapTierLabel(sec.tier), entries: sec.entries });
 			}
 		};
-		add(same, '', (t) => SWAP_TIER_LABEL[t]);
+		add(same, '', swapTierLabel);
 		const otherLabel = swapOtherPosition ? POSITION_LABEL[swapOtherPosition] : '';
-		if (swapOtherShown) add(other, 'other:', (t) => `${otherLabel} · ${SWAP_TIER_LABEL[t]}`);
+		if (swapOtherShown) add(other, 'other:', (t) => `${otherLabel} · ${swapTierLabel(t)}`);
 		return { sections, meta, gains, otherCount: other.length, otherLabel };
 	});
 

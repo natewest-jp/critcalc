@@ -1248,7 +1248,7 @@
 	   as the ink on it. `bar` travels 30% of the way there and spends half the
 	   chroma headroom the drop frees:
 
-	     BAR_BALANCE 0.3 · BAR_DENSITY 0.5   (/lab section 10, candidate D)
+	     BAR_BALANCE 0.3 · BAR_DENSITY 0.5   (the lab's section 10, candidate D)
 	     worst white-on-fill 1.33 → 1.59 · worst fill-vs-star 2.95 → 2.93
 
 	   ⚠⚠ AND THAT SECOND FIGURE IS WHY THIS IS NOT THE REJECTED DIVERGENCE. That
@@ -1272,9 +1272,9 @@
 	   pips, portrait washes, avatar rings and the C-level readout stay on `main`
 	   — the /lab board's whole test is a bar beside an unchanged icon, and the
 	   rung only works because the icon did not follow it down.
-	   🎛️ The two knobs and every figure above live at the top of /lab's script
-	   and re-measure themselves. ⚠ /lab is dev-only (not in the production
-	   build), so drive it with `npm run dev`. */
+	   🎛️ The two knobs and the code that measured every figure above live in
+	   /lab's script at 40bcb5b1 (the board was cleared 2026-10-14):
+	   `git show 40bcb5b1:"src/routes/(scene)/lab/+page.svelte"`. */
 	--el-pyro-main: #ff6640;
 	--el-pyro-bar: #ff653e;
 	--el-pyro-border: rgba(255, 102, 64, 0.5);
@@ -1887,7 +1887,7 @@
    failure.
    ⛔ SO DON'T DEFEND A PERCENTAGE. The test is the one the rule always stated:
    can you tell, looking at it, that this is a translucent material? Judge it on
-   /lab or /styleguide § Palette census (which composites the wash properly and
+   /lab's grounds or /styleguide § Palette census (which composites the wash properly and
    recomputes from the imported TOOL_DIM, so its star figures are never stale
    the way this paragraph twice was).
 
@@ -1964,7 +1964,7 @@
 	   so the hover ring keeps the pane's own ink. Had lines gone gold globally a
 	   gold hover ring would have stopped distinguishing hover from selected —
 	   the one thing it has to do. The two rejected candidates (gold, a brighter
-	   slate) stay on /lab as the evidence. */
+	   slate) are the evidence on /lab at 40bcb5b1 (cleared 2026-10-14). */
 	--glass-ring: var(--line-edge);
 	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
