@@ -21,6 +21,7 @@ import {
 	type VoiceId
 } from '$lib/playback/tones';
 import { browser } from '$app/environment';
+import { belowQuery } from '$lib/breakpoints';
 
 // ---------------------------------------------------------------------------
 // Saved notations (save bank)
@@ -487,9 +488,9 @@ type SiteSettings = {
 };
 
 /**
- * The resting layers, exported because band B's "Reset view" restores exactly
- * these — ⛔ two copies of this pair is how a reset comes to disagree with a
- * fresh browser.
+ * The resting layers at full width (below `toolMin`, see
+ * TIMELINE_LAYER_DEFAULTS_NARROW). ↻ Nothing resets to them any more — band
+ * B's reset narrowed to the zoom alone (2026-08-17).
  *
  * ↻ ⚓ NATE 2026-09-01: **BOTH ON.** The original call below (auras OFF) was
  * made the day the lane shipped, when it was one plot and the newest thing in
@@ -509,6 +510,46 @@ export const TIMELINE_LAYER_DEFAULTS = {
 	showAuraLane: true,
 	showTimelineBuffs: true
 } as const;
+
+/**
+ * ⚓ NATE 2026-10-14: BELOW `toolMin` BOTH LAYERS START OFF. On a narrow screen
+ * the chart's height is the scarce thing, and the buff rows and the aura lane
+ * are the two things that spend it on what an ability grants rather than when
+ * it is. `toolMin` because that is where the planner already turns narrow (the
+ * bench becomes a row, the aside a drawer).
+ *
+ * ⚠️ A DEFAULT, NEVER A CHOICE — which is why the layers persist apart from
+ * everything else (`timelineLayers`, holding only what was TOGGLED). This
+ * store used to merge its defaults into the saved object and write the whole
+ * thing back, so the first save of ANY setting stored both layers as if
+ * chosen, and a width-dependent default could never reach that browser
+ * again. The default is decided ONCE, at load: rotating a tablet mid-session
+ * does not flip a layer, and once toggled a layer holds at every width.
+ */
+export const TIMELINE_LAYER_DEFAULTS_NARROW = {
+	showAuraLane: false,
+	showTimelineBuffs: false
+} as const;
+
+type LayerKey = keyof typeof TIMELINE_LAYER_DEFAULTS;
+type ChosenLayers = Partial<Record<LayerKey, boolean>>;
+
+function layerDefaults(): Record<LayerKey, boolean> {
+	return browser && window.matchMedia(belowQuery('toolMin')).matches
+		? { ...TIMELINE_LAYER_DEFAULTS_NARROW }
+		: { ...TIMELINE_LAYER_DEFAULTS };
+}
+
+/** What was toggled, read back from storage — only booleans survive. */
+function readChosenLayers(raw: unknown): ChosenLayers {
+	const out: ChosenLayers = {};
+	if (raw && typeof raw === 'object')
+		for (const k of Object.keys(TIMELINE_LAYER_DEFAULTS) as LayerKey[]) {
+			const v = (raw as Record<string, unknown>)[k];
+			if (typeof v === 'boolean') out[k] = v;
+		}
+	return out;
+}
 
 /** Sound ON by default: the count-in and the tones are what make Play usable
  *  with the game in front of you, and a first press of Play that did nothing
@@ -557,6 +598,11 @@ function loadSiteSettings(): SiteSettings {
 	try {
 		const parsed = JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}');
 		const merged: SiteSettings = { ...SITE_SETTINGS_DEFAULTS, ...parsed };
+		// The layers: the width's default under whatever was TOGGLED. Top-level
+		// `showAuraLane`/`showTimelineBuffs` keys were written before 2026-10-14
+		// by every save, chosen or not, so they say nothing and are dropped.
+		Object.assign(merged, layerDefaults(), readChosenLayers(parsed.timelineLayers));
+		delete (merged as Record<string, unknown>).timelineLayers;
 		// Migrate the legacy frame-based setting to ping-ms. ⚠️ Inverts the OLD
 		// gcsim relationship (frames = ping × 0.12) ON PURPOSE: that is the formula
 		// the stored frames were authored under, and the PING is what persists —
@@ -608,11 +654,30 @@ function loadSiteSettings(): SiteSettings {
 	}
 }
 
+function readStoredChosenLayers(): ChosenLayers {
+	try {
+		return readChosenLayers(
+			JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}').timelineLayers
+		);
+	} catch {
+		return {};
+	}
+}
+
 function createSiteSettingsStore() {
 	const store = writable<SiteSettings>(loadSiteSettings());
+	let chosenLayers: ChosenLayers = browser ? readStoredChosenLayers() : {};
 
+	/** Everything but the effective layers, which are derived; what was
+	 *  toggled travels as `timelineLayers`. */
 	function persist(next: SiteSettings) {
-		if (browser) localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(next));
+		if (browser) {
+			const { showAuraLane: _a, showTimelineBuffs: _b, ...rest } = next;
+			localStorage.setItem(
+				SITE_SETTINGS_KEY,
+				JSON.stringify({ ...rest, timelineLayers: chosenLayers })
+			);
+		}
 		return next;
 	}
 
@@ -636,8 +701,9 @@ function createSiteSettingsStore() {
 			store.update((prev) => persist({ ...prev, ...next }));
 		},
 		/** One setter for both timeline layers — they are the same KIND of
-		 *  preference and band B's reset writes them together. */
-		setTimelineLayers(next: Partial<Pick<SiteSettings, 'showAuraLane' | 'showTimelineBuffs'>>) {
+		 *  preference, written from band B's two plates. Records them as CHOSEN. */
+		setTimelineLayers(next: ChosenLayers) {
+			chosenLayers = { ...chosenLayers, ...next };
 			store.update((prev) => persist({ ...prev, ...next }));
 		},
 		/** One setter for the plate and its two settings — the same kind of

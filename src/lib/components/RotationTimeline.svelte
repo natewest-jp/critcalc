@@ -3282,7 +3282,11 @@
 	     inside the tool now — so it takes the ordinary single gutter that
 	     .rp-root's `gap` already provides, and the page's double-gutter rule
 	     went with the element. -->
-	{#if underChart}
+	<!-- ⚓ Nate 2026-10-14: the always-on buffs ride the BUFFS layer too, at
+	     every width — a team bonus is what an ability GRANTS, the side of the
+	     layer cut that goes. A markup gate is the honest one HERE: nothing
+	     measures this strip, and the PNG does not draw it. -->
+	{#if underChart && showBuffs}
 		<div class="rp-underchart">{@render underChart()}</div>
 	{/if}
 
