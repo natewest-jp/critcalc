@@ -1,10 +1,10 @@
 // Pure time→pixel projection for timeline bars and rulers.
 //
-// Lifted verbatim from RotationTimeline.svelte so a second renderer (the Team
-// Builder's stacked-bar Compare) can position bars on the SAME geometry the
-// planner uses — the two can never drift. The planner keeps thin local wrappers
-// that close over its reactive `scale`; every caller here passes `scale`
-// explicitly. Framework-free and side-effect-free.
+// Lifted verbatim from RotationTimeline.svelte so a second renderer could
+// position bars on the SAME geometry the planner uses (the Team Builder's
+// stacked-bar Compare did, until it retired 2026-10-13). The planner keeps thin
+// local wrappers that close over its reactive `scale`; every caller here passes
+// `scale` explicitly. Framework-free and side-effect-free.
 
 /** THE time→x mapping. Every horizontal position derives from this one helper,
  *  so DOM bars, ruler ticks, and any overlay layer can never disagree. */

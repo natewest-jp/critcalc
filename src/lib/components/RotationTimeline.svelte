@@ -351,8 +351,9 @@
 	};
 
 	// castFill (the cast-pill / summon vertical top-light) now lives in
-	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
-	// finish. Its Safari-revert history travelled with it.
+	// $lib/utils/elementColors so the PNG export shares the exact finish (the
+	// Team Builder's Compare bars did too, until 2026-10-13). Its Safari-revert
+	// history travelled with it.
 
 	/** The thinnest a scaling buff's material gets, as a fraction of --glass-bar's
 	 *  own density. 🎛️ ⚠ IT IS NOT THE OLD 0.2. When the envelope mixed an
@@ -1420,7 +1421,7 @@
 	// ⛔ `majorTicks` is gone (2026-08-11): it existed only to draw gridlines for
 	// the 5s marks, and every tick draws one now.
 	// ⚠ `rulerTicks` walks SECONDS (its 1s/2s/5s step ladder and `t % 5` major
-	// rule are seconds rules, and Compare shares it) — so the axis converts here.
+	// rule are seconds rules) — so the axis converts here.
 	let ticks = $derived(rulerTicks(totalDuration / FPS, scale));
 
 	// ---------------------------------------------------------------------------
@@ -1429,15 +1430,15 @@
 
 	/** Thin reactive wrappers over the pure projection in
 	 *  $lib/timeline/barGeometry — they close over this component's live `scale`
-	 *  so every existing call site stays unchanged. The pure module is shared
-	 *  with the Team Builder's Compare bars so the two renderers can never
-	 *  drift.
+	 *  so every existing call site stays unchanged. (The Team Builder's Compare
+	 *  bars shared the pure module until they retired, 2026-10-13.)
 	 *
 	 *  ⚓⚓ THESE TWO FUNCTIONS ARE THE FRAMES→SECONDS SEAM, and they are the
 	 *  reason the ~20 `barGeom(...)` call sites in the template below did not
 	 *  change when the IR went frames-native (gauge-round.md C1). Everything on
 	 *  the parser side of this line is frames; `scale` is px per SECOND, because
-	 *  `barGeometry` is shared with Compare, whose data has no frame in it.
+	 *  `barGeometry` was shared with the Team Builder's Compare (retired
+	 *  2026-10-13), whose data had no frame in it.
 	 *  ⛔ Don't push the division outward into the call sites — one seam that is
 	 *  named is worth twenty that are not. */
 	/** FRAMES → the "12.5s" readout. ⚓ The surface is the ONE place the frames
@@ -1794,8 +1795,8 @@
 	 * ⚠ `historyTick` is what makes `canUndo`/`canRedo` REACTIVE. CodeMirror's
 	 * undo depth is its own state, invisible to Svelte, so the two deriveds
 	 * below read this counter to know when to ask again. It is bumped on BOTH
-	 * sync directions on purpose: a programmatic write (a bench ✕, an audition
-	 * commit) runs through the action's update() with the change callback
+	 * sync directions on purpose: a programmatic write (a bench or Builder edit,
+	 * a swap) runs through the action's update() with the change callback
 	 * suppressed, so counting only typed changes would leave the Undo button
 	 * greyed out immediately after the one edit most likely to want it.
 	 */
@@ -3559,7 +3560,8 @@
 		     the LOWEST EMPTY SLOT, while the Team Builder's audition targets the
 		     slot you clicked and pins its incumbent to compare against. ⇄ on a
 		     bench card goes there now (?swap=N), so the planner has no grid of
-		     its own to cover its own instrument with. -->
+		     its own to cover its own instrument with. ↻ 2026-10-13: the audition
+		     retired into the Builder's swap mode; ?swap=N lands there. -->
 	</div>
 	<!-- /rp-frame -->
 
@@ -3660,8 +3662,8 @@
 		     ⚓ NATE asked for undo/redo buttons on one side of the notation box.
 		     They are a thin wrapper over CodeMirror's own history commands, which
 		     ⌘Z/⌘⇧Z have always reached — what changed is that the box is no longer
-		     the only thing that writes here. A swap on the bench renames a
-		     character's segments and ✕ deletes them, and those land as editor
+		     the only thing that writes here. A swap renames a character's
+		     segments and a removal deletes them, and those land as editor
 		     transactions precisely so this pair can walk them back. A keystroke is
 		     not a discoverable way to undo something you did with a mouse two
 		     panels away.

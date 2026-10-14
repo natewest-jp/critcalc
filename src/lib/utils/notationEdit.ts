@@ -4,9 +4,8 @@
  * REWRITING THE NOTATION ON THE USER'S BEHALF — the write half of single truth.
  *
  * Once the notation IS the team (rotationTabs.slots is derived from it), every
- * team edit has to become a text edit: an audition commit RENAMES a character's
- * segments, the bench ✕ DELETES them, and adding somebody APPENDS a bare-name
- * segment. This module is the only place that happens, and it is pure — the
+ * team edit has to become a text edit: a swap RENAMES a character's segments,
+ * removing one DELETES them, and adding somebody APPENDS a bare-name segment. This module is the only place that happens, and it is pure — the
  * store calls it, the tools call the store.
  *
  * ⚠ NEVER A SEARCH-AND-REPLACE. That is the trap this module exists to avoid:
@@ -148,7 +147,7 @@ export function renameCharacterInNotation(
 }
 
 /**
- * Delete every segment led by `charId` — what the bench ✕ does.
+ * Delete every segment led by `charId` — what removing a character from the team does.
  *
  * ⚠ THE JOINS ARE THE HARD PART, not the segments. Removing a middle segment
  * has to take ONE `>` with it or the survivors collide; removing the LAST has
