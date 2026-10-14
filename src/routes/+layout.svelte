@@ -69,6 +69,19 @@
 	<!-- iOS ignores the SVG and composites its own tile onto white, so it needs
 	     a raster of the same opaque plate. Both come out of build-logo.mjs. -->
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+	<!-- ⚓ THE WEB APP (2026-10-14): added to a home screen, the site opens
+	     full-screen with no browser bars — the one way to give a phone back the
+	     strip Safari and Chrome spend above the keyboard. Icons and manifest
+	     from scripts/build-app-icons.mjs + static/manifest.webmanifest.
+	     theme-color is the page ground, so a browser tinting its bars to the
+	     page lands where it already lands; the iOS tags cover a home-screen
+	     launch on Safari versions that read them rather than the manifest. -->
+	<link rel="manifest" href="/manifest.webmanifest" />
+	<meta name="theme-color" content="#050b19" />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-title" content="critcalc" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bitterLatinUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodyVariableUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={monoRegularUrl} />

@@ -52,7 +52,6 @@ const ROOT = resolve(HERE, '..');
 const SRC = join(ROOT, 'assets-src/landing/new_critcalc-logo-white.svg');
 const OUT_CHROME = join(ROOT, 'static/critcalc-logo-white.svg');
 const OUT_FAVICON = join(ROOT, 'src/lib/assets/favicon.svg');
-const OUT_APPLE = join(ROOT, 'static/apple-touch-icon.png');
 
 /** Clockwise lean, degrees. Nate 2026-07-28. */
 const ROTATE_DEG = 7;
@@ -60,8 +59,9 @@ const ROTATE_DEG = 7;
  *  2026-09-26: was #eef4fd, the source art's off-white, while the shipped
  *  chrome logo had been hand-re-exported white since 2026-08-05 (62cdee4a) —
  *  so every run of this script silently reverted it. The source SVG is white
- *  now too, and this script owns every output again: the chrome mark, the
- *  favicon (whose plate is PLATE below) and the apple-touch icon. */
+ *  now too, and this script owns every output again: the chrome mark and the
+ *  favicon (whose plate is PLATE below). ↻ 2026-10-14: the apple-touch icon
+ *  moved to build-app-icons.mjs. */
 const INK = '#ffffff';
 
 // ── matrices (a,b,c,d,e,f): x' = a·x + c·y + e ; y' = b·x + d·y + f ──────────
@@ -298,20 +298,11 @@ const favicon =
 	`<path d="${path}" fill="${INK}"/></g></g></svg>\n`;
 writeFileSync(OUT_FAVICON, favicon);
 
-// ── the apple-touch icon, rastered from the favicon ─────────────────────────
-
-// FULL-BLEED SQUARE, per Apple's own guidance: iOS applies its rounded mask
-// itself, at a LARGER radius (~22.4% of the side) than the plate is drawn with
-// (18%). Shipping the SVG's transparent corners as-is would leave a ring of
-// transparency between the plate's curve and iOS's, composited to whatever the
-// OS felt like. Flattening onto the plate colour fills the corners with the same
-// navy the plate already is, so the drawn curve becomes invisible and iOS's mask
-// is the only rounding — which is exactly what it expects to be cutting.
-await sharp(Buffer.from(favicon), { density: 400 })
-	.resize(180, 180)
-	.flatten({ background: PLATE })
-	.png({ compressionLevel: 9 })
-	.toFile(OUT_APPLE);
+// ── the apple-touch icon: NOT this script's any more ────────────────────────
+// ↻ 2026-10-14: the home-screen icons (iOS and the web app manifest) are the
+// starfield artwork, built by scripts/build-app-icons.mjs. This script used to
+// raster the favicon tile into static/apple-touch-icon.png; it would now
+// silently overwrite that icon, so it no longer writes it.
 
 // ── report ─────────────────────────────────────────────────────────────────
 
@@ -363,4 +354,3 @@ console.log(
 		`${headroom.toFixed(1)} of headroom)`
 );
 console.log(`  favicon -> ${OUT_FAVICON.replace(ROOT + '/', '')}  ${favicon.length} bytes`);
-console.log(`  apple   -> ${OUT_APPLE.replace(ROOT + '/', '')}  180x180`);
