@@ -267,6 +267,35 @@ total           = Σ contributor × [0.6, 0.3, 0.05, 0.05], highest first
 **The Reaction Curves instrument** plots the top contributor's share (×0.6): swirl ×0.45,
 detonation ×1.2 / ×1.8.
 
+### Swirling a Frozen target (community source + Nate's logs, 2026-10-14)
+
+Source: TarZBlammo, `youtu.be/FGQm1_vFN1E` 3:22–7:04 (transcript via Nate), plus
+Nate's UGC-dummy combat logs (`assets-src/ingame-logs/2026-10-14/frozen-*.PNG`).
+
+- **Anemo reacts with Frozen as its own aura.** Frozen + leftover Cryo (2U Cryo →
+  1U Hydro) swirls TWICE — two Stellar Swirls; Frozen + leftover Hydro (2U Hydro →
+  1U Cryo) gives a Hydro Swirl and a (Stellar) Swirl. Equal gauges leave Frozen
+  alone, which swirls once. Nate's log reproduces the Hydro + Frozen double.
+- **Both instances level the Vortex** — after a double, one more swirl reaches Lv. 2.
+- **It is gauge- and DECAY-dependent**, and the sequential reduce explains why: a 1U
+  Anemo hit spends ×0.5 per aura in order (gcsim `reduce`, our `gauge.ts` `reduce`
+  — the same rule), so the second aura is reached only when the first is below
+  0.5U. A permanent Cryo + Frozen swirls once (Nate's log); a decayed 0.6U Cryo
+  leftover swirls twice. ✅ Nothing contradicts the model we already ship.
+- **Ownership:** each instance's damage uses the stats of whoever applied THAT aura
+  (Frozen belongs to the character whose hit froze it). Damage-side only — the
+  tools draw no reaction damage today; ⏭ relevant to Vodyanitsa's authoring.
+- **Plain Swirl has a per-target damage gate that Stellar Swirl lacks** (two
+  reactions, one damage number) — gcsim's 0.1s per-element swirl GCD; per the
+  video the devs did not give Stellar Swirl one.
+- **Re-tested with Kaeya's 2U E (Nate, 2026-10-14):** 2U Cryo → 1U Hydro leaves ~0.49U
+  Cryo beside the Frozen at once (the swap decays it below 0.5), so a 1U Sucrose E
+  swirled BOTH, immediately and 3s later — two Swirl lines, ONE damage number (the
+  same-element gate). In practice the double is the normal case.
+- **Absorption:** Frozen counts as Cryo (`docs/elemental-absorption-survey.md` §6 Q3).
+- Side note: Swirl damage read 6395 for ~8s after any Columbina hit and 6156
+  otherwise, across five runs — an unidentified ~4% buff, not an element effect.
+
 ## The damage formula & its buckets
 
 Stellar-Conduct DMG is dealt **through certain character abilities**, like Direct

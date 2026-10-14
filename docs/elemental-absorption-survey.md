@@ -167,6 +167,17 @@ to absorb — which is the honest answer for a rotation that casts Venti first.
    is true on a Frozen target. Proposed: a compound counts as its parents
    (Frozen → Cryo and Hydro; Burning → Pyro; Quicken → nothing, Dendro is not
    absorbable). Needs a yes.
+   ✅ **ANSWERED IN GAME (Nate's combat logs, 2026-10-14, Sucrose Q):
+   Frozen counts as CRYO, never as Hydro.** A Frozen-ONLY target (2U Hydro → 2U
+   Cryo, and the reverse — the trigger swallows the aura) absorbs: the Swirl line
+   proves the Frozen was alive at the check, and the absorbed hit (`866`, 1U) lands
+   every tick after, identical in both orders. Permanent Cryo + Frozen absorbs Cryo
+   (if Frozen were Hydro, Hydro would win by priority); permanent Hydro + Frozen
+   absorbs Hydro (priority). The earlier "1U + 1U absorbs nothing" tries were a
+   THAW: 1U-on-1U Frozen lives ~2.9s, about the swap-and-cast time. ⚓ So the
+   proposal narrows to **Frozen → Cryo** — exactly gcsim's `AuraContains(cryo)`.
+   (⏭ Nate to confirm `866`'s colour is Cryo.) Swirl also reacts with Frozen as its
+   own aura — see `docs/library/game/stellar-reactions.md` § Swirling a Frozen target.
 4. **Sucrose C6's length.** gcsim: 10s from the lock. Kit text: "during its
    duration", which reads as the burst's. The restore spec flagged the
    disagreement; it is an in-game check (add to the 2026-09-23 batch?).

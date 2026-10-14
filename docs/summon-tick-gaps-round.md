@@ -194,6 +194,52 @@ source that outranks all four):
    gives these; (1) plus the fact that there are two Pounds per cycle is enough
    to author from if no recording exists.
 
+### 1.5 ✅ The live game, read off the combat log (Nate, 2026-10-14)
+
+⚓ **This section outranks §1.1 and §1.4.** Five UGC-dummy combat logs (100% crit
+for four of them, so `4671` = a Pound hit, `33049` = a Heavy, `132194` = the
+Ultimate nuke, `7643 ×3` = the Moondrifts' own attacks; screenshots
+`~/Downloads/IMG_0103`, `0107`–`0111`). The log stamps every hit to the ms and
+prints the gauge, so these are measurements, not stopwatch reads. Individual gaps
+jitter ±0.06s (~4f) run to run, so the figures are MEANS.
+
+|                                   | Live game                       | April  | September   |
+| --------------------------------- | ------------------------------- | ------ | ----------- |
+| First attack after E              | 1.75–1.89s (105–113f; two runs) | 114f ✓ | 158f        |
+| First attack after Q, Lumi absent | **3.569s = 214f**               | 170f   | **214f ✓**  |
+| Pound's second hit                | +0.33s ≈ **20f**                | +16f   | +21f ≈      |
+| Cycle, Moondrifts: Pound → Heavy  | 1.80s ≈ **108f**                | 111f   | —           |
+| Heavy → Pound                     | 1.03s ≈ **62f**                 | 63f    | —           |
+| Pound → Pound                     | 2.35s ≈ **141f**                | 144f   | —           |
+| Lunar period (Heavy → Heavy)      | **5.18s ≈ 311f** (both runs)    | 318f   | 274f        |
+| No aura: Pound → Pound            | **2.39s ≈ 144f**, even gaps     | 111f ✗ | 62f ✗       |
+| Standard Power: Pound → Pound     | **5.37s ≈ 322f**                | 340f   | 120f ✗      |
+| Standard: nuke → first Pound      | 2.28s ≈ 137f                    | —      | —           |
+| Taps to Ultimate Power            | **5** (4 does not trigger it)   | —      | 4 presses ✗ |
+
+Neither head is right as a whole: April is closest on the cycle, September on
+the Q delay and the pair gap, and NEITHER on the bare interval (the reset reads
+the wrong slot in both — the game repeats the in-cycle Pound→Pound gap). ⚓
+Author the live column.
+
+Settled by the same logs:
+
+- **Geo-first is the rule**: with a Hydro aura and no Moondrift, both the E and
+  the Q run open on a Pound; its Lunar-Crystallize makes the Moondrifts and the
+  Heavy follows at the ordinary Pound→Heavy gap.
+- **A Q while Lumi is out RESTARTS the sequence** (stopwatch, item 5): the next
+  attack waits the full ~3.5s deploy delay and is a Heavy if Moondrifts stand —
+  the same reset as an E redeploy. ⚠️ §1.3's "Q continues the chain" was wrong.
+- **The Heavy and the nuke apply NOTHING** — no gauge, no Lunar-Crystallize line.
+- **Geo applications follow the standard ICD (2.5s / 3 hits) over BOTH hits of
+  every pair**, exactly — 8 of 11 pairs apply in the no-aura run (pairs 3, 6, 9
+  apply nothing), and the cycle runs reproduce too (one hit lands 0.05s past the
+  window, inside the log's jitter). ⚠️ So §1.2's "one application per
+  Pound-Pound" holds in the Moondrift cycle only; at the bare 144f gap it fails.
+  Model both hits on the real counter.
+- Stopwatch reads were ~0.4s long on the period (15.9s vs the log's 15.5s for
+  first → fourth Heavy) — ⛔ never author from a stopwatch when a log exists.
+
 **What the video changes in §1.3:** Phase 1's static gate is dead (⚓ §6.2) and the
 video says why it would have been wrong where it matters — the 4-vs-3 count is
 DECIDED by whether a Moondrift stood at the deploy, which a party-composition gate
@@ -267,6 +313,28 @@ record, no `notifyDamage` (a 0-damage tick must not feed Raiden's Eye or any
 `onHit` stream). Authored at the true 0.5s with `icdGate {timer: 114, every: 4}`,
 drawing 24 marks. The existing caveat (the aura is drawn from the first cast)
 stands untouched.
+
+✅ **The live game (Nate's combat logs, 2026-10-14; `assets-src/ingame-logs/2026-10-14/nilou-*.PNG`).**
+Two runs on a permanent Dendro aura, one with no aura:
+
+- **One Hydro application every 2.0s** (gaps 1.95–2.01s; 119.6f mean) —
+  gcsim's 30f attempts behind a 114f window reproduce exactly.
+- **The first lands on the Water Wheel's own hit** (two Bloom lines on that frame:
+  the step's and the aura's).
+- **Ten applications spanning 17.94 / 17.97s** — the 18s duration. ✅ Nate's Nilou is C1, so this CONFIRMS 12 + 6s. (Hinged on
+  Nate's constellation: at C1 this confirms 12 + 6s; at C0 the base would have been wrong.)
+  (His earlier count of nine aura icons is the same ten — the first coincides
+  with the step's own application.)
+- **The ticks deal NO damage**: their Bloom lines carry no damage number, and with
+  no aura the log shows nothing at all. E1b's "applies, lands no hit" is right.
+- ⚠️ **The log prints a gauge only on a damage line**, so the aura's unit size is
+  unreadable there (gcsim: 25 = 1U). A dummy limit, not a Nilou fact.
+- The dance steps: the press and the Water Wheel apply 1U, WS1/WS2 nothing
+  (standard ICD), as authored.
+- **By-product — the Dendro core lifetime (batch item 11):** this party is not
+  pure Hydro/Dendro, so no Bountiful Cores; every Bloom's core detonates **6.47s
+  after its reaction** (22 cores, 6.36–6.60s). Our `CORE_SPAWN_DELAY` 30 +
+  `CORE_LIFETIME` 360 = 390f = 6.5s — confirmed; gcsim's `300 // ??` is not.
 
 **Jahoda — the robots.** gcsim `burst.go`: under Ascendant Gleam only, each of 2
 robots (3 with A1's Electro) absorbs the enemy's aura element (PHEC priority) and
