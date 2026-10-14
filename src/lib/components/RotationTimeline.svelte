@@ -2630,7 +2630,7 @@
 						     IR since P4 and drawn NOWHERE — the player saw the buff
 						     bars a reaction caused but never the reaction itself. -->
 							<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
-								<span class="rp-lane-name">TARGET AURA</span>
+								<span class="rp-lane-name">Target aura</span>
 								{#each auraLane.markers as marker (marker.time)}
 									<!-- ⚓ A RUN IS ONE MARKER. A ticking reaction (Electro-Charged,
 									     Lunar-Charged, Burning) collapses into a single marker whose
@@ -3402,7 +3402,7 @@
 						{#if showTeamBuffsLane}
 							<div class="rp-team-buffs" style:height="{teamBuffsH}px">
 								{#if teamBuffRows.length > 0}
-									<span class="rp-lane-name">TEAM BUFFS</span>
+									<span class="rp-lane-name">Team buffs</span>
 									<div class="rp-team-buff-rows">
 										{#each teamBuffRows as subrow (subrow.key)}
 											<div class="rp-team-buff-subrow">
@@ -3472,7 +3472,7 @@
 						<!-- NB (Nightsoul Burst) lane -->
 						{#if showNbLane}
 							<div class="rp-nb-lane" style:height="{nbLaneH}px">
-								<span class="rp-lane-name">NIGHTSOUL BURSTS</span>
+								<span class="rp-lane-name">Nightsoul bursts</span>
 								<div class="rp-nb-rows">
 									<div class="rp-nb-subrow">
 										{#each nbBars as ev, i (i)}
@@ -3492,7 +3492,7 @@
 						<!-- Moonsign lane -->
 						{#if showMoonsignLane}
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
-								<span class="rp-lane-name">ASCENDANT GLEAM</span>
+								<span class="rp-lane-name">Ascendant Gleam</span>
 								<div class="rp-moonsign-rows">
 									{#each moonsignRows as row (row.slotIdx)}
 										{@const msChar = slotCharacters[row.slotIdx]}

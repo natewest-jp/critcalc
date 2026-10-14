@@ -295,15 +295,15 @@
 	/** The aura's standing modelling limits — see the `auraLimits` snippet below
 	 *  for the sourcing rule that governs every line. */
 	const AURA_NOTES = [
-		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mitachurl, and no auras you did not put there.',
-		'Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.',
-		'A pip with a yellow ring means we are using a default gauge strength of 1U for that hit rather than a measured one.',
+		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mitachurl, and no auras you didn’t put there.',
+		'Hits land on their listed timing, and Shatter is not modeled.',
+		'A pip with a yellow ring has no measured gauge strength, so the Rotation Planner uses 1U for that hit.',
 		// ⚠️ The one thing the gadget strip could be misread as. A Prism bar says
 		// WHEN the field exists; nothing on the chart says where it is, and the
 		// house rule (docs/library/game/stellar-reactions.md) is that a field is
 		// assumed entered — the same assumption every character's dropped field
 		// already gets.
-		'A Starlight Prism bar says when the Polestar Field is up, not where — we assume you are standing in it.'
+		'A Starlight Prism bar says when the Polestar Field is up, not where — the Rotation Planner assumes you are standing in it.'
 	];
 
 	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════
@@ -881,7 +881,6 @@
        nothing back       — no path applies an aura the enemy owns
        no Shatter         — `sim/reactionBridge.ts` leaves it unemitted
        nominal schedule   — `application[]`'s contract C4 (types/ability.ts)
-       one hit per swing  — the hit stream's documented approximation
        1U default         — `DEFAULT_UNITS` in `sim/aura.ts`, and what the
                             ring-footed pips mark -->
 {#snippet auraLimits()}
