@@ -97,23 +97,47 @@ pick there filled a BOARD team.
 
 **This round's own leftovers**
 
-- 👤 **Tail artwork** — Nate redraws it at the 210 ribbon: `bench-clip-path.svg`
-  420 wide at 2×, `bench-inset-point.svg` ring 400 (= 210 − 2 × RIBBON_EDGE) at
-  2×, stroke 4 at 2×. Then re-transcribe `TAIL` in `benchBand.svelte.ts` and
-  delete the `X` stretch + `TAIL_ART_W`.
-- ⏭ **Copy, proposed and unruled:** swap mode's first section when ADDING still
-  reads "Keeps everything" (proposed: "Adds"); the destination strip's "Adding
-  to the Planner's team" is kept from the board's existing pattern.
-- ⏭ **Help #team** still describes the old bench ("one and the same team in both
-  tools", ⇄ "to compare replacements", ✕, "the Team Builder's roster") — goes to
-  the static-pages rewrite, as a numbered line-by-line proposal.
-- ⏭ At 80px tall the phone strip's wide frame radius reads as a pill — judge on
-  a real phone.
-- 👤 **Safari** — the `:has()` hover ring, the magnifier's paint fade, the art's
-  `fadeRight` mask and the ribbon at 210 are new visual work.
-- ⏭ The lab's older "The bench, on the scene" specimen is a hand-drawn 200px
-  card and is stale; the PNG export's label column also still draws the
-  pre-bench portrait label (stale before this round).
+✅ **Closed on `polish/bench-cleanup` (2026-10-14):**
+
+- ✅ **Tail artwork** — Nate redrew it at 210 as ONE file,
+  `assets-src/tools/bench-tail.svg` (silhouette 420, ring 400/392, stroke 4,
+  all at 2×; the taper only, 152 tall). He kept the height and let the angle
+  steepen, 20.96° → 22.97°; the ring is a true parallel offset (10.0 / 14.0
+  at 2×, perpendicular). Transcribed verbatim in `benchBand.svelte.ts`; the
+  `X` stretch and `TAIL_ART_W` are gone; `TAIL_LEAD` is now derived
+  (`RIBBON_TAIL_H − 76`), tip at 99.96.
+- ✅ **Placement, by Nate's eye:** the name + loadout block CENTRED on the
+  portrait, dropped 3px (`--sp-col-drop`), gap 1 (`--sp-gap`), the name
+  indented 4px to the flower's edge (`--sp-name-inset`); the uncurated mark
+  12px, standing on the name's baseline (set inline in a line box of the
+  name's type — an svg flex item has no baseline). Today no name wraps: the
+  row holds 104px, Kuki Shinobu is 89.3; with the mark 87.2 is left, and the
+  longest uncurated name (Vodyanitsa) is 74.6.
+- ✅ **The frame:** desktop draws the TIGHT corner only; the phone row keeps
+  both.
+- ✅ **The phone row:** the pill is centred on the portrait when it fits (a
+  `minmax(portrait, auto)` grid track; WebKit ignored `min-height:
+max-content`), and the row CLIPS NOTHING — its card run was an
+  `overflow-x` scroller that never scrolled, and it cut every portrait at the
+  disc's top (105 of 147 icons rise above it). ⚓ Nate picked unclipped, the
+  desk rule: hair crosses the double line and, for Amber, the strip's edge.
+- ✅ **Copy:** swap mode's first section reads **"Adds"** when adding; the
+  destination strip's wording stays.
+- ✅ **Safari** — Nate checked the Planner and the Builder.
+- ✅ **/lab cleared** to its standing job, the grounds board (4017 → 393
+  lines). The full board — side-portrait knobs, element/bar/UI-state
+  derivations and their measuring code — is at `40bcb5b1`. `SidePortrait`'s
+  `geometry` prop retired with its only caller.
+
+**Still open**
+
+- ⏭ **Help #team** still describes the old bench — goes to the static-pages
+  rewrite, as a numbered line-by-line proposal.
+- ⏭ At 80px tall the phone strip's wide frame radius reads as a pill — judge
+  on a real phone (it is now the only form that draws the wide arc).
+- ⏭ **The PNG export** still draws the pre-bench portrait label — queued
+  PRE-LAUNCH beside the animation sweep (⚓ Nate 2026-10-14), to be
+  re-surveyed whole rather than patched.
 
 **Before the static-pages rewrite (from the 2026-10-13 scan)**
 

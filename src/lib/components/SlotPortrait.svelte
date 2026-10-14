@@ -298,7 +298,7 @@
 						<span
 							class="sp-namemark"
 							title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
-							aria-label="Frame timing not curated yet"><Mark name="uncurated" size={11} /></span
+							aria-label="Frame timing not curated yet"><Mark name="uncurated" size={12} /></span
 						>
 					{/if}
 				</div>
@@ -473,8 +473,15 @@
 		   Vertical padding holds the band off the slot's top edge. */
 		padding: 8px 6px 10px;
 
-		/* The gap between the column's two rows. */
-		--sp-gap: 4px;
+		/* The gap between the name and the controls. 🎛️ ⚓ Nate 2026-10-14:
+		   1 (4 → 0 → 1) — the line box's own leading does most of the work. */
+		--sp-gap: 1px;
+		/* 🎛️ The centred column, dropped below the portrait's centre (⚓ Nate
+		   2026-10-14: 3). */
+		--sp-col-drop: 3px;
+		/* 🎛️ The name's indent past the controls' edge (⚓ Nate 2026-10-14:
+		   4, so the name lines up with the flower's left edge). */
+		--sp-name-inset: 4px;
 		/* 🎛️ Portrait → column (⚓ Nate 2026-10-13: 6, up from 4). */
 		--sp-col-inset: 6px;
 
@@ -546,41 +553,41 @@
 	}
 
 	/* ── The column ───────────────────────────────────────────────────────────
-	   Two tracks on the band, the name over the controls. ⚓ Nate 2026-10-13:
-	   the controls sit on the band's BOTTOM, so the loadout pill ends where the
-	   disc's constellation ends (centred in their track they fell 1px short —
-	   measured), and the name comes down 6px.
+	   The name over the controls, as ONE block CENTRED on the portrait (⚓ Nate
+	   2026-10-14, trying it — it used to be two 1fr tracks with the controls on
+	   the band's bottom, level with the disc's constellation chip, and the name
+	   brought down 6px). The name is indented --sp-name-inset past the pill so
+	   its ink starts at the flower's edge; the pill does not move.
 
-	   ⚠ A TWO-LINE NAME (34) OVERFLOWS ITS TRACK, by design, and still clears
-	   the control row. "Kuki Shinobu" (87.8px at --fs-lg) is ~1px over the
-	   165px card's column and may wrap; the clamp allows it.
+	   A two-line name (34) makes the block 34 + 1 + 26 = 61 — a px taller than
+	   the portrait, and with the 3px drop its pill bottom sits 3.5px under the
+	   portrait's. The card's 10px bottom padding absorbs it.
 
 	   It PAINTS OVER the portrait's art (z 2 over the portrait's 1, ⚓ Nate): a
 	   ponytail reaching sideways slips under the loadout pill's well. */
 	.sp-col {
 		position: relative;
+		top: var(--sp-col-drop);
 		z-index: 2;
 		flex: 1 1 auto;
 		min-width: 0;
 		min-height: 0;
 		margin-left: var(--sp-col-inset);
-		display: grid;
-		grid-template-rows: 1fr 1fr;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
 		gap: var(--sp-gap);
-		align-items: center;
 	}
 	/* flex-START, not center: a name that wraps to two lines keeps its mark on
 	   line ONE rather than floating to the middle of the block. */
 	.sp-id-row {
-		position: relative;
-		top: 6px;
+		padding-left: var(--sp-name-inset);
 		display: flex;
 		align-items: flex-start;
 		gap: 0.3rem;
 		min-width: 0;
 	}
 	.sp-controls {
-		align-self: end;
 		display: flex;
 		align-items: center;
 		gap: 4px;
@@ -590,8 +597,8 @@
 	   one line; multi-word outliers (Sangonomiya Kokomi, Shikanoin Heizou…) wrap
 	   to a second line rather than truncate.
 	   ⚠ TWO LINES IS THE CARD'S HEIGHT BUDGET, not a preference: 2 × --lh-tight
-	   at --fs-lg (34) + the gap (8) + the control row (26) is exactly the 68px
-	   portrait. Move this size or the clamp and the column stops matching the
+	   at --fs-lg (34) + the gap (--sp-gap, 1) + the control row (26) is 61 —
+	   a px over the 60px portrait, and --sp-col-drop moves it 3 lower still. Move this size or the clamp and the column stops matching the
 	   disc — the card still works, it just stops looking designed. */
 	.sp-char-name {
 		min-width: 0;
@@ -626,7 +633,16 @@
 	.sp-namemark {
 		margin-right: auto;
 		flex-shrink: 0;
-		display: flex;
+		/* ⚓ Nate 2026-10-14: the mark's bottom sits on the name's BASELINE (the
+		   first line's, on a two-line name — the mark stays with line one). An svg has no baseline, so a flex
+		   item made of one falls back to the row's bottom — 3–4px under the
+		   letters. So the mark is set INLINE, in a line box of the name's own
+		   type: an inline svg stands on the baseline, and that line box gives
+		   the row a real baseline to align. */
+		display: block;
+		font-size: var(--fs-lg);
+		line-height: var(--lh-tight);
+		align-self: baseline;
 		/* Not a domain color — a data-quality consequence, not a game fact
 		   (dire-retirement round, 2026-08-05; mirrors .cc-namemark).
 		   ↻ 2026-08-12: and the right STATE colour is --ui-provisional, not
@@ -653,8 +669,10 @@
 	   (The element badge above sits at 1.25× the name instead. Identity outranks
 	   annotation, so it is the one that gets to be bigger than the words.) */
 	.sp-namemark :global(.mark) {
-		width: 14px;
-		height: 14px;
+		display: inline;
+		vertical-align: baseline;
+		width: 12px;
+		height: 12px;
 	}
 
 	/* ── Portrait ─────────────────────────────────────────────────────────────
@@ -1029,7 +1047,7 @@
 	   and the card is ONE row with no name, no magnifier and no swap:
 
 	       ⟨hair⟩
-	      (  d  )ⓒ▣       ← the portrait, bottom-aligned with the pill
+	      (  d  )ⓒ▣       ← the pill, centred on the portrait
 	      (     ) ⚔
 
 	   width = d + 2 + 22 (benchBand `rowCardWidth`), height = the constant
@@ -1051,8 +1069,17 @@
 		height: var(--sp-band);
 		width: var(--sp-band);
 	}
+	/* ⚓ Nate 2026-10-14: the pill is CENTRED on the portrait. The column is
+	   the portrait's height, or the pill's (47) if that is taller — so below a
+	   ~47 portrait (phones under ~350px) it stands on the portrait's foot as
+	   before rather than hang under the card. */
 	.sp-card--compact .sp-col {
-		display: flex;
+		/* ⚠ A grid track, not `min-height: max-content` — WebKit ignores that
+		   on this flex item and the pill hung 4px under the card at 320. */
+		display: grid;
+		grid-template-rows: minmax(var(--sp-band), auto);
+		align-items: center;
+		top: 0;
 		margin: 0;
 	}
 	.sp-card--compact .sp-loadout {

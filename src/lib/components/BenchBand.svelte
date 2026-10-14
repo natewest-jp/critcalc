@@ -238,12 +238,11 @@
 				: ribbonFramePath(boxH, RIBBON_FRAME_R_TIGHT)}
 			fill-rule="evenodd"
 		/>
-		<path
-			d={row
-				? ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)
-				: ribbonFramePath(boxH, RIBBON_FRAME_R_WIDE)}
-			fill-rule="evenodd"
-		/>
+		<!-- ⚓ Nate 2026-10-14, trying it: the column (desktop) drops the wide
+		     arc and keeps the tight corner alone; the phone row keeps both. -->
+		{#if row}
+			<path d={ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)} fill-rule="evenodd" />
+		{/if}
 	</svg>
 	<!-- The card run: a column at rest, a row below BP.toolMin. In the row the
 	     cards take their solved width and the strip spreads them. -->
@@ -320,12 +319,21 @@
 		   ramp's BOTTOM rung, with nothing below to fall back to (⚓ Nate merged
 		   it with slate-950 on 2026-08-11).
 		   ⚓ SETTLED: it stays at --surface. /lab § "The bench, on the scene"
-		   holds the comparison against a real band. */
+		   held the comparison against a real band (git: 40bcb5b1). */
 		background: var(--surface);
 		/* Belt to clip-path's braces: the silhouette already cuts the box, but a
 		   card column that outgrew a short frame used to rely on this and the
 		   cost of keeping it is nothing. */
 		overflow: hidden;
+	}
+	/* ⚓ Nate 2026-10-14: THE ROW CLIPS NOTHING. The upright card has no head
+	   room — its disc fills the card — so the portrait's hair rises over the
+	   double line and, for the tallest icons, past the strip's edge (Amber's
+	   bow ~8px at the 56 disc), the desk card's rule ("nothing clips it").
+	   Measured over the 147 side icons: 105 rise above the disc, median 2.8px,
+	   5 by more than the strip's 12px of chrome. */
+	.bb--row {
+		overflow: visible;
 	}
 
 	/* The two frame strokes, drawn as one overlay. Geometry (both radii, both
@@ -361,15 +369,11 @@
 		   portraits are capped and the cards are narrower than a quarter. */
 		justify-content: space-between;
 		gap: var(--bb-card-gap);
-		overflow-x: auto;
-		overflow-y: hidden;
-		/* A guard, not a form: from 320px up four cards always fit (see
-		   BENCH_ROW_PORTRAIT_MIN). Its scrollbar would sit inside the frame
-		   ring, where a permanent bar reads as a fifth control. */
-		scrollbar-width: none;
-	}
-	.bb-cards--row::-webkit-scrollbar {
-		display: none;
+		/* ↻ 2026-10-14: NOT a scroller any more. It was `overflow-x: auto` as a
+		   guard that never fired (from 320px up four cards always fit — see
+		   BENCH_ROW_PORTRAIT_MIN), and a scroller cannot show anything outside
+		   its box on EITHER axis, so it was cutting every portrait's hair at
+		   the disc's top. */
 	}
 	.bb-cards--row > .bb-slot {
 		flex: 0 0 var(--bb-card-w);

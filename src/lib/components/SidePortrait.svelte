@@ -38,7 +38,7 @@
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { siteSettings } from '$lib/stores';
-	import { SIDE_GEOMETRY, sideLayout, type SideGeometry } from '$lib/sidePortrait';
+	import { SIDE_GEOMETRY, sideLayout } from '$lib/sidePortrait';
 
 	let {
 		id,
@@ -46,7 +46,6 @@
 		con,
 		ownedCon,
 		selected = false,
-		geometry = SIDE_GEOMETRY,
 		fadeRight
 	}: {
 		id: string | null;
@@ -57,8 +56,6 @@
 		/** Your account's: a level, `null` = not owned, undefined = unknown. */
 		ownedCon?: number | null;
 		selected?: boolean;
-		/** /lab's tuning sliders only — every surface takes the default. */
-		geometry?: SideGeometry;
 		/** Fade the art out toward the RIGHT, gone by this many px past the
 		 *  disc's right edge (over `FADE_W`), so hair reaching sideways eases
 		 *  into the ground before whatever sits beside the portrait (the bench
@@ -74,6 +71,8 @@
 	);
 	const showChip = $derived(!!id && con !== undefined && (short || con > 0));
 
+	// The lab's tuning sliders retired 2026-10-14; every surface takes the default.
+	const geometry = SIDE_GEOMETRY;
 	const lay = $derived(sideLayout(size, geometry));
 	const name = $derived(id ? (getCharacterIndexEntry(id)?.displayName ?? id) : '');
 

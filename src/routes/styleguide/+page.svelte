@@ -1185,8 +1185,10 @@
 			works because the icon did not follow the bar down. ⚠ <code>none</code> and
 			<code>physical</code> have <code>main</code> alone — they are near-neutrals, and the
 			derivation spends freed gamut on chroma, which on a gray invents a hue it does not have.
-			<code>/lab</code> section 10 holds the board and the two knobs; the full argument (including
-			why this is not the rejected divergence) is at <code>--el-*</code> in
+			<code>/lab</code> section 10 held the board and the two knobs (git: <code>40bcb5b1</code>);
+			the full argument (including why this is not the rejected divergence) is at
+			<code>--el-*</code>
+			in
 			<code>app.css</code>. Runtime mirror:
 			<code>src/lib/utils/elementColors.ts</code> — keep in lockstep.
 		</p>
