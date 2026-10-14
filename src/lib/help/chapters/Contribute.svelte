@@ -35,8 +35,8 @@
 		</li>
 		<li>
 			<a href="https://keqingmains.com" target="_blank" rel="noopener noreferrer">Keqing Mains</a> — the
-			theorycrafting standards, the calculation conventions, and the action notation this planner reads.
-			Their guides and libraries are the reason "KQM standard" means anything at all.
+			theorycrafting standards, the calculation conventions, and the action notation the Rotation Planner
+			reads. Their guides and libraries are the reason "KQM standard" means anything at all.
 		</li>
 		<li>
 			<a href="https://github.com/theBowja/genshin-db" target="_blank" rel="noopener noreferrer"

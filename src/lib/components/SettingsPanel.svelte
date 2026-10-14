@@ -137,7 +137,7 @@
 				<span class="sp-name">Swap ping</span>
 				<span class="sp-desc">
 					Your network latency — the ms value Genshin shows top-right. A swap takes your ping plus
-					about 90 ms, so the rotation planner delays every character swap by that much.
+					about 90 ms, so the Rotation Planner delays every character swap by that much.
 				</span>
 			</span>
 			<div class="sp-slider-ctl">
@@ -179,9 +179,9 @@
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Human timing</h2>
 		<p class="sp-lede">
-			The rotation planner is frame-perfect by default: every cancel lands on the first frame the
-			game allows, the way a macro plays. The <strong>Human</strong> button on the planner's toolbar times
-			it the way a person does. These settings say what that changes.
+			The Rotation Planner is frame-perfect by default: every cancel lands on the first frame the
+			game allows, the way a macro plays. <strong>Human timing</strong> in its view bar times a rotation
+			the way a person plays it. These settings say what that changes.
 		</p>
 
 		<div class="sp-row">
@@ -190,7 +190,7 @@
 				<span class="sp-desc">
 					Padding adds a few frames before every input the game does not buffer — a skill after a
 					normal attack, an aimed shot, the first press after a swap. Full animations let each
-					action finish instead of cancelling it.
+					action finish instead of canceling it.
 				</span>
 			</span>
 			<div class="segment sp-segment" role="radiogroup" aria-label="What human timing adjusts">
@@ -268,8 +268,8 @@
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Playback sound</h2>
 		<p class="sp-lede">
-			<strong>Play</strong> on the planner's toolbar counts you in, then plays a note at every press,
-			so you can follow a rotation with your eyes on the game.
+			<strong>Play</strong> in the Rotation Planner's view bar counts you in, then plays a note at every
+			press, so you can follow a rotation with your eyes on the game.
 		</p>
 
 		<div class="sp-row sp-row--stack">

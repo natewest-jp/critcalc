@@ -28,10 +28,7 @@
 	</p>
 
 	<h3>Is critcalc official?</h3>
-	<p>
-		No — it's an independent, non-commercial fan project, not affiliated with or endorsed by
-		HoYoverse.
-	</p>
+	<p>No — it's an unofficial fan project, not affiliated with or endorsed by HoYoverse.</p>
 </section>
 
 <section>
@@ -90,7 +87,6 @@
 	<h3>Does the site work offline or on a phone?</h3>
 	<p>
 		It is a static site, so it loads fast and keeps working while you are on it. The tools are built
-		for wide screens — the planner timeline and the Team Builder's comparison in particular reward
-		the room — but they scale down.
+		for wide screens — the planner timeline in particular rewards the room — but they scale down.
 	</p>
 </section>
