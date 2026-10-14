@@ -823,7 +823,7 @@
 		<!-- The always-on bonuses strip, rendered between the chart's last lane
 		     and the notation field. -->
 		{#snippet underChart()}
-			<TeamBonusesBlock {slots} />
+			<TeamBonusesBlock {slots} conLevels={effectiveCon} />
 		{/snippet}
 	</RotationTimeline>
 {/snippet}
