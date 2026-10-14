@@ -166,7 +166,11 @@ class BoardBarState {
 		const slots: TeamSlot[] = ids.slice(0, 4);
 		const empty = board.teams.find((t) => t.slots.every((s) => s === null));
 		if (empty) boards.setTeam(board.id, empty.id, slots);
-		else if (!boards.addTeam(board.id, slots)) return;
+		// A battlefield board's teams are the game's — only Custom grows.
+		else if (board.preset !== 'custom' || !boards.addTeam(board.id, slots)) {
+			documentBar.showNotice('The board is full');
+			return;
+		}
 		documentBar.showNotice('Team added to the board');
 	}
 

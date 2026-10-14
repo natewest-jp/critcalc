@@ -360,6 +360,9 @@
 				return i >= 0 ? `Team ${i + 1}` : null;
 			},
 			place(slots, pinnedRotationId) {
+				// The Planner's swap hides the board: a pick ends it, as a tab click
+				// does, so the team lands where it can be seen.
+				if (errandOpen) leaveErrand();
 				const target =
 					board.teams.find((t) => t.id === chosenTeamId) ??
 					board.teams.find((t) => t.slots.every((s) => s === null)) ??
@@ -1408,7 +1411,7 @@
 		id={selectedId}
 		{conMode}
 		onClose={() => (selectedId = null)}
-		teamState={teamStateOf(selectedId)}
+		teamState={swapping ? undefined : teamStateOf(selectedId)}
 		onToggleTeam={toggleTeam}
 	/>
 {/if}
