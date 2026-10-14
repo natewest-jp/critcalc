@@ -1880,6 +1880,10 @@
 		if (!nav.to?.url.pathname.startsWith(resolve('/planner'))) {
 			dockOpen = false;
 			dockPlace?.(false);
+			// The transport's clock and scheduler are not effects either, so the
+			// pause does not reach them: without this the count-in and the press
+			// tones play on over the next tool until the page is destroyed.
+			playback.stop();
 		}
 	});
 	afterNavigate((nav) => {
@@ -2212,7 +2216,8 @@
 
 	// Leaving the tool stops the transport: a cursor keeping time on a chart
 	// nobody can see is a timer nobody asked for. ⚠ An effect cleanup, not
-	// onDestroy, for the tool-page revival (A→B→A) — see plannerView.
+	// onDestroy, for the tool-page revival (A→B→A) — see plannerView. It runs
+	// only at a real destroy; the navigation itself is `beforeNavigate` above.
 	$effect(() => () => playback.stop());
 
 	// ⛔ `pv.hasAura = showAuraLane` RETIRED (2026-08-17). It was the notes panel's
