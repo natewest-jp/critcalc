@@ -18,6 +18,9 @@
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { below } from '$lib/media.svelte';
+	import { page } from '$app/state';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy, untrack } from 'svelte';
@@ -1796,6 +1799,128 @@
 	 * greyed out immediately after the one edit most likely to want it.
 	 */
 	let editorApi = $state<NotationEditor | null>(null);
+
+	// ── THE DOCK (⚓ Nate 2026-10-14, the mobile round, item 6) ──────────────
+	// Below `compact` the composer is not a row in the page: it is PINNED to the
+	// bottom of the screen over the chart, and when you are not typing it
+	// collapses to a one-line strip showing the END of the notation — the part
+	// you were just writing. ⚓ ANY tap outside it collapses it, a bar included
+	// (Nate: touching a bar to read its details is exactly when you are done
+	// typing); the tap still lands, so the bar's tooltip opens too.
+	//
+	// ⚠ It is MOVED to <body> while docked, never re-mounted — the editor (and
+	// its undo history) is one instance either way. It has to leave the page:
+	// the tool pan TRANSFORMS the page layer, and a transformed ancestor makes
+	// `position: fixed` relative to itself. It moves BACK the moment the planner
+	// stops being the route, so on a pan away it slides out with its page
+	// rather than hanging over the next tool.
+	let docked = $derived(below('compact'));
+	let onPlanner = $derived(page.url.pathname.startsWith(resolve('/planner')));
+	let dockOn = $derived(docked && onPlanner);
+	let dockOpen = $state(false);
+	let composerEl = $state<HTMLElement | null>(null);
+	/** How far the on-screen keyboard reaches up the screen. iOS does not
+	 *  shrink the layout viewport for the keyboard, so a `bottom: 0` dock sits
+	 *  BEHIND it; the visual viewport is the only honest measure. */
+	let keyboardInset = $state(0);
+
+	/** The last line of the notation — what the collapsed strip shows. */
+	let notationTail = $derived(
+		notation
+			.split('\n')
+			.map((l) => l.trim())
+			.filter(Boolean)
+			.at(-1) ?? ''
+	);
+
+	/** The action's own placer, so the navigation hooks below can move the
+	 *  node without waiting on an effect. */
+	let dockPlace: ((on: boolean) => void) | null = null;
+
+	// ⚠️ WHY NOT JUST `dockOn`: leaving the planner does not destroy this page —
+	// the tool pan keeps it alive for the slide-out, and Svelte PAUSES the
+	// effects of a block on its way out, so `dockOn` never re-runs and the dock
+	// stayed pinned over the Team Builder (measured). These hooks are plain
+	// callbacks registered at mount, not effects, so they still fire: leaving
+	// puts the composer back in its page (it slides out with it), arriving
+	// re-docks it — on a revival the action's `update` would not run, because
+	// `dockOn` is the same value it was before the pause.
+	beforeNavigate((nav) => {
+		if (!nav.to?.url.pathname.startsWith(resolve('/planner'))) {
+			dockOpen = false;
+			dockPlace?.(false);
+		}
+	});
+	afterNavigate((nav) => {
+		if (nav.to?.url.pathname.startsWith(resolve('/planner'))) dockPlace?.(docked);
+	});
+
+	function dockable(node: HTMLElement, on: boolean) {
+		const anchor = document.createComment('composer');
+		node.before(anchor);
+		const inTool = !!node.closest('.tool-shell');
+		const place = (d: boolean) => {
+			if (d && node.parentNode !== document.body) {
+				document.body.appendChild(node);
+				// The accent zone rides along, as `portal` does for popovers.
+				if (inTool) node.dataset.zone = 'tool';
+			} else if (!d && node.parentNode === document.body) {
+				anchor.after(node);
+				delete node.dataset.zone;
+			}
+		};
+		place(on);
+		dockPlace = place;
+		return {
+			update: place,
+			destroy() {
+				dockPlace = null;
+				if (node.parentNode === document.body) node.remove();
+				anchor.remove();
+			}
+		};
+	}
+
+	function openDock() {
+		dockOpen = true;
+		// After the editor is shown again: focus it, caret at the end.
+		requestAnimationFrame(() => {
+			const content = composerEl?.querySelector<HTMLElement>('.cm-content');
+			content?.focus();
+			const sel = window.getSelection();
+			if (content && sel) {
+				sel.selectAllChildren(content);
+				sel.collapseToEnd();
+			}
+		});
+	}
+
+	$effect(() => {
+		if (!dockOn || !dockOpen) return;
+		const onDown = (e: PointerEvent) => {
+			const t = e.target as Element | null;
+			if (!t || composerEl?.contains(t) || t.closest('.cm-tooltip')) return;
+			dockOpen = false;
+			(document.activeElement as HTMLElement | null)?.blur();
+		};
+		document.addEventListener('pointerdown', onDown, true);
+		return () => document.removeEventListener('pointerdown', onDown, true);
+	});
+
+	$effect(() => {
+		if (!dockOn || !window.visualViewport) return;
+		const vv = window.visualViewport;
+		const measure = () =>
+			(keyboardInset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)));
+		measure();
+		vv.addEventListener('resize', measure);
+		vv.addEventListener('scroll', measure);
+		return () => {
+			vv.removeEventListener('resize', measure);
+			vv.removeEventListener('scroll', measure);
+			keyboardInset = 0;
+		};
+	});
 	let historyTick = $state(0);
 	let canUndo = $derived.by(() => {
 		void historyTick;
@@ -3341,7 +3466,28 @@
 	     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the box
 	     is gone from here. Both are EXPORTS, and exports are one family with the
 	     share link — they live in band A's Share menu now. -->
-	<div class="rp-composer">
+	<!-- The dock's room in the page: the chart's end has to scroll clear of
+	     the collapsed strip. -->
+	{#if dockOn}
+		<div class="rp-dock-spacer" aria-hidden="true"></div>
+	{/if}
+	<div
+		class="rp-composer"
+		class:rp-composer--docked={dockOn}
+		class:rp-composer--collapsed={dockOn && !dockOpen}
+		class:ctx-glass={dockOn}
+		style:--rp-kb-inset="{dockOn ? keyboardInset : 0}px"
+		bind:this={composerEl}
+		use:dockable={dockOn}
+	>
+		{#if dockOn && !dockOpen}
+			<button class="rp-dock-strip" type="button" aria-label="Edit the notation" onclick={openDock}>
+				<span class="rp-dock-tail" class:rp-dock-tail--empty={!notationTail}
+					><bdi>{notationTail || 'Type a rotation in KQM notation'}</bdi></span
+				>
+				<Mark name="note" />
+			</button>
+		{/if}
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={{ value: notation, key: tabId }}></div>
 			<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
@@ -5104,6 +5250,66 @@
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
 		overflow: auto;
+	}
+
+	/* ── THE DOCK (⚓ Nate 2026-10-14, the mobile round, item 6) ─────────────
+	   Below `compact` the composer is pinned to the screen's foot as a glass
+	   plate (the band material — it floats over the night chart, never over
+	   another glass). z 15: over the tool layer (10), under the loading veil
+	   (20), the drawer and the chrome overlays (50), the menus (90) and the
+	   tooltips (100). It rides up over the keyboard by --rp-kb-inset. */
+	.rp-composer--docked {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: var(--rp-kb-inset, 0px);
+		z-index: 15;
+		padding: 8px 16px;
+		align-items: flex-start;
+		border-radius: var(--r-md) var(--r-md) 0 0;
+		background: var(--surface); /* = --glass-panel, via .ctx-glass */
+	}
+	.rp-composer--docked :global(.cm-editor) {
+		max-height: 35svh;
+	}
+	.rp-composer--collapsed .rp-notation-wrap,
+	.rp-composer--collapsed .rp-history {
+		display: none;
+	}
+	/* The collapsed strip: the notation's LAST LINE, its START cut rather than
+	   its end — `direction: rtl` puts the ellipsis on the left, and the <bdi>
+	   keeps the notation itself reading left to right. */
+	.rp-dock-strip {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		min-height: 36px;
+		padding: 0 4px;
+		border: none;
+		background: none;
+		color: var(--text);
+		font: inherit;
+		cursor: pointer;
+	}
+	.rp-dock-tail {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		direction: rtl;
+		text-align: left;
+		font-family: var(--font-mono);
+		font-size: 13px;
+	}
+	.rp-dock-tail--empty {
+		color: color-mix(in srgb, var(--text) 55%, transparent);
+	}
+	/* The collapsed strip's height (8 + 36 + 8) plus a gutter. */
+	.rp-dock-spacer {
+		flex: none;
+		height: 68px;
 	}
 
 	/* ── THE COMPOSER ON A PHONE (⚓ Nate 2026-10-14, the mobile round) ──────
