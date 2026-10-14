@@ -363,7 +363,8 @@
 		--viewport-aspect: calc(21 / 9);
 
 		/* Source-px → CSS, based on the FRAME mapping to the viewport. */
-		--px: calc(100dvh * var(--viewport-aspect) / var(--frame-w-src));
+		/* ↻ 2026-10-14: 100lvh, with the scene layers below — see .scene. */
+		--px: calc(100lvh * var(--viewport-aspect) / var(--frame-w-src));
 
 		/* --scene-w is the IMAGE width (frame + bleed); --scene-h backs the
 		   sky-bg gradient. sky/floor/twinkle/meteors all size to --scene-w. */
@@ -424,6 +425,18 @@
 		inset: 0;
 		width: 100dvw;
 		height: 100dvh;
+	}
+	/* 🧪 EXPERIMENT (⚓ Nate 2026-10-14): the WORLD takes Safari's LARGE
+	   viewport, which does not change while its toolbars move — a
+	   pull-to-refresh moved the toolbars, the dynamic height changed under the
+	   canvas mid-gesture, and the scene stretched. The page content keeps the
+	   dynamic height. Cost: the scene is bottom-anchored, so with Safari's
+	   toolbars showing, the horizon sits one toolbar lower, partly behind it.
+	   `inset: 0` would pin the bottom too, so the box is top-anchored here. */
+	.scene,
+	.dim {
+		bottom: auto;
+		height: 100lvh;
 	}
 
 	.scene {

@@ -126,7 +126,9 @@ export const isToolPath = (path: string) =>
  *  landing and content pages at rest. Point-in-time px — never cache. */
 function poseForPath(path: string): { x: number; y: number } {
 	if (!isToolPath(path)) return { x: 0, y: 0 };
-	return crestPose(sideSign(path), window.innerWidth, window.innerHeight);
+	// The scene's own box (100lvh), so the pose and the drawn geometry agree.
+	const v = getSceneGL()?.viewport() ?? { w: window.innerWidth, h: window.innerHeight };
+	return crestPose(sideSign(path), v.w, v.h);
 }
 
 /**
