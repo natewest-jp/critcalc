@@ -320,9 +320,13 @@ class RotationTabsState {
 	 * is not spare even when blank — the link is a thing the user made.
 	 */
 	adopt(partial: Omit<RotationTab, 'id'>): boolean {
-		const spare = this.tabs.find((t) => !t.notation.trim() && !t.savedId);
+		// ⚠️ The active tab's typed text lives in `notation` until a flush, so its
+		// stored copy can read empty while it holds work. Test the LIVE text.
+		const live = (t: RotationTab) => (t.id === this.activeTabId ? this.notation : t.notation);
+		const spare = this.tabs.find((t) => !live(t).trim() && !t.savedId);
 		if (spare) {
 			this.flush();
+			this.#stampLeaving();
 			this.tabs = this.tabs.map((t) => (t.id === spare.id ? { ...partial, id: t.id } : t));
 			this.activeTabId = spare.id;
 			this.loadWorkingState({ ...partial, id: spare.id });
@@ -385,7 +389,8 @@ class RotationTabsState {
 						notation: '',
 						tabLoadout: {},
 						tabCon: {},
-						savedId: undefined
+						savedId: undefined,
+						synced: undefined
 					}
 				: t
 		);
