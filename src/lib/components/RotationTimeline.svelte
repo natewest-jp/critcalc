@@ -17,6 +17,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
+	import { below } from '$lib/media.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy, untrack } from 'svelte';
@@ -802,10 +803,32 @@
 		Math.max(BENCH_SLOT_MIN_H, ...characterSlots.map((_, i) => slotNaturalH(i)))
 	);
 
-	// Cumulative Y offsets per slot. ↻ The blocks are uniform now, so this is an
-	// arithmetic series — kept as a walk because every consumer indexes it and a
-	// multiply would read as if the heights could still differ.
-	let slotTopOffsets = $derived(characterSlots.map((_, i) => i * slotBlockH));
+	// ── BELOW `toolMin` EACH SLOT IS ITS OWN HEIGHT (⚓ Nate 2026-10-14) ───────
+	// The uniform height above exists for ONE reader: the bench's cards, which
+	// stand beside the track groups they label and must be as tall as them.
+	// Below `toolMin` the bench is a ROW above the chart and labels nothing
+	// vertically, so the reason is gone and a phone — where the chart's height
+	// is the scarce thing — stops paying for the busiest slot's rows in every
+	// slot. Each takes its OWN summon lane (already per slot) and its OWN
+	// received-buff rows, with no card floor (there is no card beside it).
+	// ⚠ Every height reader takes `slotHeights`, so the bench metrics, the
+	// connectors and the PNG snapshot (which has always carried a per-slot
+	// `blockH`) follow the screen with no second path.
+	let fitSlotHeights = $derived(below('toolMin'));
+	function slotOwnH(slotIdx: number): number {
+		const rows = slotReceivedSubrowCounts[slotIdx] ?? 0;
+		const buffH = rows > 0 ? rows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
+		return buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM;
+	}
+	let slotHeights = $derived(
+		characterSlots.map((_, i) => (fitSlotHeights ? slotOwnH(i) : slotBlockH))
+	);
+
+	// Cumulative Y offsets per slot — a walk, because below `toolMin` the
+	// heights genuinely differ.
+	let slotTopOffsets = $derived(
+		slotHeights.map((_, i) => slotHeights.slice(0, i).reduce((a, h) => a + h, 0))
+	);
 
 	// ── Which below-slot lanes are on screen ─────────────────────────────────
 	// ⚠ ONE ANSWER EACH, read by the height math, the markup AND the PNG
@@ -1237,7 +1260,7 @@
 	const publishBenchMetrics = benchBand.claimMetrics();
 	$effect(() => {
 		publishBenchMetrics(
-			characterSlots.map(() => slotBlockH),
+			slotHeights,
 			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0),
 			// ⚠ The third value is the HEADER's height — how far the first track
 			// row sits below the surface's top — and it is published rather than
@@ -1532,7 +1555,7 @@
 	// than a term at the end; the SUM is unchanged, which is the point.
 	let contentH = $derived(
 		headerH +
-			characterSlots.length * slotBlockH +
+			slotHeights.reduce((a, h) => a + h, 0) +
 			teamBuffsH +
 			(showNbLane ? nbLaneH : 0) +
 			(showMoonsignLane ? moonsignLaneH : 0)
@@ -1549,7 +1572,7 @@
 		// Lanes open directly under the 4th track group (the ribbon-clearance
 		// gap retired with the tall bench — the strip clears the lanes by
 		// standing over the whole label column instead).
-		const slotsBottom = slotTopOffsets[3] + slotBlockH;
+		const slotsBottom = slotTopOffsets[3] + slotHeights[3];
 		const nbVisible = showNbLane;
 		const moonVisible = showMoonsignLane;
 		const teamNames = slotCharacters
@@ -1586,7 +1609,7 @@
 					// No-frame-map (uncurated, non-Blank) → dire N/C/P treatment in export.
 					isApprox: char != null && !isCurated(char) && char.id !== 'blank',
 					consLevel: char ? effectiveConLevel(char.id) : 0,
-					blockH: slotBlockH,
+					blockH: slotHeights[i],
 					qRowTop: qRowTopForSlot(i),
 					activeRowTop: activeRowOffsetForSlot(i),
 					buffRowsTop: buffRowsTopForSlot(i),
@@ -2700,7 +2723,7 @@
 							     whatever the bar is; the /lab board judged it this way. -->
 							<div
 								class="rp-char-block"
-								style:height="{slotBlockH}px"
+								style:height="{slotHeights[slotIdx]}px"
 								style:--label-halo={char ? shiftHue(p.bar, 0, -30, 1) : undefined}
 							>
 								<!-- E row -->
