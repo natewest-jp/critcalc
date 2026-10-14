@@ -3,6 +3,22 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			// ⚓ 2026-10-14: iOS Safari zooms the page into any editable field under
+			// 16px and stays zoomed — the 13px notation editor tripped it. On iOS
+			// (and iPadOS, which reports itself as a Mac) `maximum-scale=1` stops
+			// that zoom while pinch-zoom still works (ignored for pinch since
+			// iOS 10). ⛔ NOT for everyone: Android never zooms on focus, and there
+			// the same tag WOULD disable pinch-zoom. ⛔ Nor 16px notation — it
+			// wraps too often already.
+			if (
+				/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+				(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+			)
+				document
+					.querySelector('meta[name="viewport"]')
+					.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

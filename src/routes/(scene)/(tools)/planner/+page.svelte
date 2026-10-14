@@ -615,7 +615,7 @@
 					class:is-active={$siteSettings.showTimelineBuffs}
 					type="button"
 					aria-pressed={$siteSettings.showTimelineBuffs}
-					title="Draw buff bars, weapon procs, Nightsoul bursts and Ascendant Gleam"
+					title="Draw buff bars, weapon procs, always-on buffs, Nightsoul bursts and Ascendant Gleam"
 					onclick={() =>
 						siteSettings.setTimelineLayers({
 							showTimelineBuffs: !$siteSettings.showTimelineBuffs
