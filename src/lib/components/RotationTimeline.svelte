@@ -1938,7 +1938,13 @@
 		}
 		const entry = getIndexEntryByDisplayName(name);
 		const tok = (t: string): DockKey => ({ label: t, insert: `${gap}${t}` });
-		const casts = entry?.casts?.length ? entry.casts : ['E', 'Q'];
+		// ⚓ Nate: `tE` and `pE` are KQM's other spellings of a plain `E` (the
+		// parser times all three alike — castTokens.ts adds them to every
+		// skill), so the row offers the one spelling.
+		const ALIASES = ['tE', 'pE'];
+		const casts = entry?.casts?.length
+			? entry.casts.filter((c) => !ALIASES.includes(c))
+			: ['E', 'Q'];
 		const keys = [sep, ...casts.map(tok), tok('N'), tok('C'), ...(entry?.plunge ? [tok('P')] : [])];
 		if (prev === 'N' && notation[pos - 1] === 'N')
 			return [...['1', '2', '3', '4', '5'].map((d) => ({ label: d, insert: d })), ...keys];
