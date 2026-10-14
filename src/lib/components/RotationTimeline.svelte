@@ -25,6 +25,7 @@
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy, tick, untrack } from 'svelte';
 	import { notationTints } from '$lib/timeline/notationTints';
+	import { tokenizeNotation } from '$lib/utils/tokenizer';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
 		elementPalette,
@@ -1818,20 +1819,43 @@
 	let onPlanner = $derived(page.url.pathname.startsWith(resolve('/planner')));
 	let dockOn = $derived(docked && onPlanner);
 	let dockOpen = $state(false);
+	/** px a finger may travel and still count as a tap (dock collapse, key row). */
+	const TAP_SLOP = 10;
 	let composerEl = $state<HTMLElement | null>(null);
 	/** How far the on-screen keyboard reaches up the screen. iOS does not
 	 *  shrink the layout viewport for the keyboard, so a `bottom: 0` dock sits
 	 *  BEHIND it; the visual viewport is the only honest measure. */
 	let keyboardInset = $state(0);
 
-	/** The last line of the notation — what the collapsed strip shows. */
-	let notationTail = $derived(
-		notation
-			.split('\n')
-			.map((l) => l.trim())
-			.filter(Boolean)
-			.at(-1) ?? ''
-	);
+	/**
+	 * The collapsed strip's text: the notation's LAST non-empty line, painted
+	 * the way the editor paints it (⚓ Nate 2026-10-14). The same two answers
+	 * the editor reads — the tokenizer's kinds, and the parse's per-token tint
+	 * (`notationTints`, keyed by source range) — so a token wears the colour the
+	 * chart resolved for it. Gaps between tokens ride along as plain text.
+	 */
+	type TailSpan = { text: string; kind: 'char' | 'sep' | 'plain'; color?: string };
+	let tailSpans = $derived.by((): TailSpan[] => {
+		const lines = [...notation.matchAll(/[^\n]*\S[^\n]*/g)];
+		const last = lines.at(-1);
+		if (!last || last.index === undefined) return [];
+		const from = last.index;
+		const to = from + last[0].length;
+		const tint: Record<string, string | undefined> = {};
+		for (const t of notationTints(docRotation))
+			tint[`${t.from}:${t.to}`] = t.element ? elementPalette(t.element).main : undefined;
+		const spans: TailSpan[] = [];
+		let at = from;
+		for (const tok of tokenizeNotation(notation)) {
+			if (tok.to <= from || tok.from >= to) continue;
+			if (tok.from > at) spans.push({ text: notation.slice(at, tok.from), kind: 'plain' });
+			const kind = tok.kind === 'character' ? 'char' : tok.kind === 'separator' ? 'sep' : 'plain';
+			spans.push({ text: tok.text, kind, color: tint[`${tok.from}:${tok.to}`] });
+			at = tok.to;
+		}
+		if (at < to) spans.push({ text: notation.slice(at, to), kind: 'plain' });
+		return spans;
+	});
 
 	/** The action's own placer, so the navigation hooks below can move the
 	 *  node without waiting on an effect. */
@@ -1881,6 +1905,67 @@
 		};
 	}
 
+	// ── THE KEY ROW (⚓ Nate 2026-10-14) ─────────────────────────────────────
+	// A phone keyboard cannot be given a ">" key — a page may only choose among
+	// the system layouts — so the dock carries its own row above it, and the
+	// row READS THE SEGMENT THE CARET IS IN:
+	//   · a segment with no character yet → the team's names (the notation's
+	//     own, so it is the team the planner derived — single truth);
+	//   · inside a character's segment → ">", that character's casts (the
+	//     eager index's `casts`, the same list the editor's lint reads, so
+	//     Flins offers sQ), N, C, and P when the kit has a plunge;
+	//   · right after an N → the digits 1–5 first.
+	// A key types what a keystroke would (one undoable edit), spacing itself.
+	let cursorPos = $state(0);
+	type DockKey = { label: string; insert: string };
+	let dockKeys = $derived.by((): DockKey[] => {
+		const pos = Math.min(cursorPos, notation.length);
+		const tokens = tokenizeNotation(notation);
+		const before = tokens.filter((t) => t.to <= pos);
+		const segStart = before.findLast((t) => t.kind === 'separator')?.to ?? 0;
+		const name = before.findLast((t) => t.kind === 'character' && t.from >= segStart)?.text;
+		const prev = notation.slice(0, pos).trimEnd().at(-1) ?? '';
+		const gap = /\s/.test(notation[pos - 1] ?? ' ') ? '' : ' ';
+		const sep: DockKey = { label: '>', insert: `${gap}> ` };
+		if (!name) {
+			const team = [
+				...new Set(tokens.filter((t) => t.kind === 'character').map((t) => t.text))
+			].slice(0, 4);
+			return [
+				...team.map((n) => ({ label: n, insert: `${gap}${n} ` })),
+				...(pos > 0 && prev !== '>' ? [sep] : [])
+			];
+		}
+		const entry = getIndexEntryByDisplayName(name);
+		const tok = (t: string): DockKey => ({ label: t, insert: `${gap}${t}` });
+		const casts = entry?.casts?.length ? entry.casts : ['E', 'Q'];
+		const keys = [sep, ...casts.map(tok), tok('N'), tok('C'), ...(entry?.plunge ? [tok('P')] : [])];
+		if (prev === 'N' && notation[pos - 1] === 'N')
+			return [...['1', '2', '3', '4', '5'].map((d) => ({ label: d, insert: d })), ...keys];
+		return keys;
+	});
+
+	function pressDockKey(key: DockKey) {
+		editorApi?.insert(key.insert);
+	}
+	/** ⚠️ A key fires on LIFT, not on `click`: its pointerdown is cancelled so
+	 *  the press never takes focus from the editor (the keyboard stays up), and
+	 *  in WebKit's touch path that swallowed the click as well (measured). The
+	 *  tap rule is the dock's — lifted within TAP_SLOP — so swiping the row
+	 *  sideways never types. `click` stays for KEYBOARD activation only
+	 *  (`detail === 0`). */
+	let keyDown: { id: number; x: number; y: number } | null = null;
+	function keyPointerDown(e: PointerEvent) {
+		e.preventDefault();
+		keyDown = { id: e.pointerId, x: e.clientX, y: e.clientY };
+	}
+	function keyPointerUp(e: PointerEvent, key: DockKey) {
+		const d = keyDown;
+		keyDown = null;
+		if (!d || d.id !== e.pointerId) return;
+		if (Math.hypot(e.clientX - d.x, e.clientY - d.y) <= TAP_SLOP) pressDockKey(key);
+	}
+
 	/** An invisible input the strip focuses INSIDE the tap. ⚠️ iOS raises the
 	 *  keyboard only for a focus made during the user's gesture, and the editor
 	 *  is not shown until the next render — so focusing it a frame later (the
@@ -1902,16 +1987,38 @@
 		}
 	}
 
+	// ⚓ A TAP collapses, a DRAG does not (Nate 2026-10-14, on his phone): you
+	// should be able to scroll the chart up, down and along with the keyboard
+	// still up. A tap is a press that lifts within TAP_SLOP of where it landed;
+	// a scroll never gets that far — the browser takes the touch over and sends
+	// `pointercancel` instead of `pointerup`. ⛔ Not `click`: iOS fires it only
+	// on elements that look clickable, so a tap on bare chart would not count.
+	// Capture phase, and the tap is never stopped — a bar's tooltip still opens.
 	$effect(() => {
 		if (!dockOn || !dockOpen) return;
+		let down: { id: number; x: number; y: number } | null = null;
+		const outside = (t: EventTarget | null) =>
+			t instanceof Element && !composerEl?.contains(t) && !t.closest('.cm-tooltip');
 		const onDown = (e: PointerEvent) => {
-			const t = e.target as Element | null;
-			if (!t || composerEl?.contains(t) || t.closest('.cm-tooltip')) return;
+			down = outside(e.target) ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
+		};
+		const onUp = (e: PointerEvent) => {
+			if (!down || e.pointerId !== down.id) return;
+			const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+			down = null;
+			if (moved > TAP_SLOP) return;
 			dockOpen = false;
 			(document.activeElement as HTMLElement | null)?.blur();
 		};
+		const onCancel = () => (down = null);
 		document.addEventListener('pointerdown', onDown, true);
-		return () => document.removeEventListener('pointerdown', onDown, true);
+		document.addEventListener('pointerup', onUp, true);
+		document.addEventListener('pointercancel', onCancel, true);
+		return () => {
+			document.removeEventListener('pointerdown', onDown, true);
+			document.removeEventListener('pointerup', onUp, true);
+			document.removeEventListener('pointercancel', onCancel, true);
+		};
 	});
 
 	$effect(() => {
@@ -1980,7 +2087,8 @@
 					notation = v;
 					historyTick++;
 				},
-				pendingKey
+				pendingKey,
+				(pos) => (cursorPos = pos)
 			);
 			editorApi = editor;
 			historyTick++;
@@ -3489,9 +3597,10 @@
 	>
 		{#if dockOn && !dockOpen}
 			<button class="rp-dock-strip" type="button" aria-label="Edit the notation" onclick={openDock}>
-				<span class="rp-dock-tail" class:rp-dock-tail--empty={!notationTail}
-					><bdi>{notationTail || 'Type a rotation in KQM notation'}</bdi></span
-				>
+				<span class="rp-dock-tail" class:rp-dock-tail--empty={!tailSpans.length}>
+					<!-- prettier-ignore -->
+					<bdi>{#if tailSpans.length}{#each tailSpans as sp, i (i)}<span class="rp-dock-{sp.kind}" style:color={sp.color}>{sp.text}</span>{/each}{:else}Type a rotation in KQM notation{/if}</bdi>
+				</span>
 				<Mark name="edit" />
 			</button>
 			<input
@@ -3555,6 +3664,22 @@
 				}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
 			>
 		</div>
+		{#if dockOn && dockOpen && dockKeys.length}
+			<!-- The key row. pointerdown is cancelled so a press never takes focus
+			     from the editor — the keyboard stays up. -->
+			<div class="rp-dock-keys" role="toolbar" aria-label="Notation keys">
+				{#each dockKeys as key (key.label)}
+					<button
+						class="btn btn--sm rp-dock-key"
+						type="button"
+						onpointerdown={keyPointerDown}
+						onpointerup={(e) => keyPointerUp(e, key)}
+						onpointercancel={() => (keyDown = null)}
+						onclick={(e) => e.detail === 0 && pressDockKey(key)}>{key.label}</button
+					>
+				{/each}
+			</div>
+		{/if}
 	</div>
 
 	<!-- Constellation + refinement popovers now live inside SlotPortrait. -->
@@ -5291,8 +5416,33 @@
 		background: none;
 		box-shadow: none;
 	}
+	.rp-composer--docked {
+		flex-wrap: wrap;
+		row-gap: 8px;
+	}
 	.rp-composer--docked :global(.cm-editor) {
 		max-height: 35svh;
+	}
+	/* The key row: the dock's last line, against the keyboard. One line that
+	   scrolls sideways rather than wraps — its height must not move under
+	   the thumb as the segment changes. */
+	.rp-dock-keys {
+		flex: 1 0 100%;
+		display: flex;
+		gap: 6px;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.rp-dock-keys::-webkit-scrollbar {
+		display: none;
+	}
+	.rp-dock-key {
+		flex: none;
+		min-width: 40px;
+		height: 36px;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-size: 15px;
 	}
 	.rp-composer--collapsed .rp-notation-wrap,
 	.rp-composer--collapsed .rp-history {
@@ -5325,6 +5475,15 @@
 		font-family: var(--font-mono);
 		font-size: 13px;
 	}
+	/* The editor's two class colours (notationEditorExtension: .rp-tok-char,
+	   .rp-tok-sep — the separator is --muted at 30% over the composer ground). */
+	.rp-dock-char {
+		font-weight: 500;
+	}
+	.rp-dock-sep {
+		color: color-mix(in srgb, var(--muted) 30%, transparent);
+		padding: 0 3px;
+	}
 	.rp-dock-tail--empty {
 		color: color-mix(in srgb, var(--text) 55%, transparent);
 	}
@@ -5344,6 +5503,23 @@
 	.rp-dock-spacer {
 		flex: none;
 		height: 68px;
+	}
+
+	/* ── AUTOCOMPLETE UNDER A FINGER (⚓ Nate 2026-10-14) ───────────────────
+	   The suggestion list was a 0.8rem list with 5px rows — a mouse's target.
+	   On a touch screen each row is a ~44px target (WCAG 2.5.5's size). Keyed
+	   on `pointer: coarse`, the AXIS the narrow round named for touch, never a
+	   width. The list is portalled to <body> by CodeMirror, hence :global; the
+	   leading `body` outranks the editor theme's scoped rule.
+	   ⏭ Its desktop look is queued for Nate's eye, not touched here. */
+	@media (pointer: coarse) {
+		:global(body .cm-tooltip.cm-tooltip-autocomplete > ul) {
+			max-height: 40svh;
+			font-size: 15px;
+		}
+		:global(body .cm-tooltip.cm-tooltip-autocomplete > ul > li) {
+			padding: 12px 14px;
+		}
 	}
 
 	/* ── THE COMPOSER ON A PHONE (⚓ Nate 2026-10-14, the mobile round) ──────

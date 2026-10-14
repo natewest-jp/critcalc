@@ -36,6 +36,9 @@ export interface NotationEditor {
 	/** Hand over what the parse resolved per token for the text `doc` — see
 	 *  `setResolvedTints`. Refused when `doc` is no longer the editor's text. */
 	setTints(doc: string, tints: NotationTint[]): void;
+	/** Type `text` at the caret, as a keystroke would (one undoable edit,
+	 *  caret after it). The phone dock's key row. */
+	insert(text: string): void;
 	destroy(): void;
 }
 
@@ -44,7 +47,10 @@ export function createNotationEditor(
 	initialValue: string,
 	onChange: (value: string) => void,
 	/** Which document `initialValue` is — the planner's active tab id. */
-	initialKey: string
+	initialKey: string,
+	/** Where the caret is, on every move or edit — the dock's key row reads
+	 *  the segment it sits in. */
+	onCursor?: (pos: number) => void
 ): NotationEditor {
 	// Guard flag: true while an external value change is being dispatched into
 	// CodeMirror so the updateListener's onChange doesn't fire re-entrantly
@@ -52,9 +58,14 @@ export function createNotationEditor(
 	// leave the timeline frozen until the next unrelated state change).
 	let externalUpdate = false;
 
-	const extensions = buildNotationExtensions((v) => {
-		if (!externalUpdate) onChange(v);
-	});
+	const extensions = [
+		...buildNotationExtensions((v) => {
+			if (!externalUpdate) onChange(v);
+		}),
+		EditorView.updateListener.of((u) => {
+			if (onCursor && (u.selectionSet || u.docChanged)) onCursor(u.state.selection.main.head);
+		})
+	];
 	const view = new EditorView({
 		state: EditorState.create({ doc: initialValue, extensions }),
 		parent
@@ -143,6 +154,13 @@ export function createNotationEditor(
 		setTints(doc: string, tints: NotationTint[]) {
 			// ⚠ Not a history event: a colour is not an edit.
 			view.dispatch({ effects: setResolvedTints.of({ doc, tints }) });
+		},
+		insert(text: string) {
+			view.dispatch({
+				...view.state.replaceSelection(text),
+				scrollIntoView: true,
+				userEvent: 'input.type'
+			});
 		},
 		destroy() {
 			view.destroy();
