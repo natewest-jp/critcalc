@@ -56,7 +56,7 @@ import {
 	setSlotInNotation,
 	TEAM_SIZE
 } from '$lib/utils/notationEdit';
-import type { LoadoutEntry } from '$lib/stores';
+import { safeSetItem, type LoadoutEntry } from '$lib/stores';
 import { TAB_LIMIT } from '$lib/tabSet';
 
 export type RotationTab = {
@@ -226,10 +226,7 @@ class RotationTabsState {
 				: t
 		);
 		if (!this.restored) return;
-		localStorage.setItem(
-			TABS_KEY,
-			JSON.stringify({ tabs: snapshot, activeTabId: this.activeTabId })
-		);
+		safeSetItem(TABS_KEY, JSON.stringify({ tabs: snapshot, activeTabId: this.activeTabId }));
 	}
 
 	/** Flush live working state back into the tabs array before any switch. */

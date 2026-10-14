@@ -37,7 +37,7 @@ import { browser } from '$app/environment';
 import { TEAM_SIZE, notationHasActions, teamKey, teamKeyOfNotation } from './utils/notationEdit';
 import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
-import type { SavedBoardTeam, SavedNotation } from './stores';
+import { safeSetItem, type SavedBoardTeam, type SavedNotation } from './stores';
 
 export type TeamSlot = string | null;
 
@@ -251,7 +251,7 @@ class BoardsState {
 	persist(): void {
 		const snapshot = { boards: this.boards, activeBoardId: this.activeBoardId };
 		if (!this.restored) return;
-		localStorage.setItem(BOARDS_KEY, JSON.stringify(snapshot));
+		safeSetItem(BOARDS_KEY, JSON.stringify(snapshot));
 	}
 
 	// ── Board tabs ──────────────────────────────────────────────────────────

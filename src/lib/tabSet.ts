@@ -17,6 +17,7 @@
 
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { safeRemoveItem, safeSetItem } from '$lib/stores';
 
 /** Open tabs per kind of document. ↻ 6 → 12 (2026-10-08): a board's linked
  *  teams each hold a rotation tab, and Stygian alone wants three. */
@@ -70,7 +71,7 @@ export function createRecentlyClosed<T extends { id: string }>(key: string) {
 	}
 	const store = writable<ClosedEntry<T>[]>(load());
 	const persist = (items: ClosedEntry<T>[]) => {
-		if (browser) localStorage.setItem(key, JSON.stringify(items));
+		if (browser) safeSetItem(key, JSON.stringify(items));
 		return items;
 	};
 	return {
@@ -93,7 +94,7 @@ export function createRecentlyClosed<T extends { id: string }>(key: string) {
 		},
 		clear() {
 			store.set([]);
-			if (browser) localStorage.removeItem(key);
+			if (browser) safeRemoveItem(key);
 		}
 	};
 }

@@ -68,7 +68,15 @@
 
 	function confirmImport() {
 		if (!pending || !pending.data.ok) return;
-		applyBackup(pending.data.data);
+		// applyBackup throws when the browser blocks site data or the quota is
+		// full — say so rather than reload into the data the file was meant to replace.
+		try {
+			applyBackup(pending.data.data);
+		} catch {
+			pending = null;
+			importError = 'This browser isn’t letting critcalc save data.';
+			return;
+		}
 		location.reload();
 	}
 
