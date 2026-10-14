@@ -97,7 +97,7 @@ function elementTintForToken(
 	const t = tok.text;
 	const kind: NormalActionKind | null = /^N\d*$/.test(t)
 		? 'normal'
-		: /^C\d*$/.test(t)
+		: /^s?C\d*$/.test(t)
 			? 'charged'
 			: /^[lh]?P$/.test(t)
 				? 'plunge'
