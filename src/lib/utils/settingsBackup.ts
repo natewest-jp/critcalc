@@ -14,6 +14,8 @@
 
 import { browser } from '$app/environment';
 import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
+import { NOTE_SET_IDS, ORDER_IDS, SOUND_MODES, SWAP_STYLES, VOICE_IDS } from '$lib/playback/tones';
+import { notationHasActions } from '$lib/utils/notationEdit';
 import type { LoadoutEntry } from '$lib/stores';
 
 // Must stay in sync with the private key constants in stores.ts.
@@ -22,7 +24,8 @@ export const BACKUP_KEYS = [
 	'critcalc:constellations',
 	'critcalc:ownership',
 	'critcalc:loadout',
-	'critcalc:savedNotations'
+	'critcalc:savedNotations',
+	'critcalc:savedBoards'
 ] as const;
 
 export type BackupKey = (typeof BACKUP_KEYS)[number];
@@ -43,6 +46,7 @@ export type BackupCounts = {
 	owned: number;
 	loadouts: number;
 	rotations: number;
+	lineups: number;
 };
 
 export type ParseResult =
@@ -96,6 +100,31 @@ function sanitizeSiteSettings(v: unknown): Record<string, unknown> | undefined {
 		);
 	}
 	if (typeof v.showHumanPadding === 'boolean') out.showHumanPadding = v.showHumanPadding;
+	if (typeof v.showCoverageStrips === 'boolean') out.showCoverageStrips = v.showCoverageStrips;
+	// The layers persist only what was TOGGLED (2026-10-14), the rule of
+	// stores.readChosenLayers. Top-level showAuraLane/showTimelineBuffs keys
+	// were written by every save before then, chosen or not, and say nothing.
+	if (isObject(v.timelineLayers)) {
+		const layers: Record<string, boolean> = {};
+		for (const k of ['showAuraLane', 'showTimelineBuffs']) {
+			if (typeof v.timelineLayers[k] === 'boolean') layers[k] = v.timelineLayers[k];
+		}
+		out.timelineLayers = layers;
+	}
+	// Playback sound (2026-09-29) — each choice only if it names one that exists.
+	if (typeof v.playbackSound === 'boolean') out.playbackSound = v.playbackSound;
+	const oneOf = (key: string, allowed: readonly string[]) => {
+		const x = v[key];
+		if (typeof x === 'string' && allowed.includes(x)) out[key] = x;
+	};
+	oneOf('playbackSoundMode', SOUND_MODES);
+	oneOf('playbackVoice', VOICE_IDS);
+	oneOf('playbackOrder', ORDER_IDS);
+	oneOf('playbackNotes', NOTE_SET_IDS);
+	oneOf('playbackSwap', SWAP_STYLES);
+	if (typeof v.playbackVolume === 'number' && Number.isFinite(v.playbackVolume)) {
+		out.playbackVolume = clamp(v.playbackVolume, 0, 1);
+	}
 	return out;
 }
 
@@ -165,6 +194,59 @@ function sanitizeSavedNotations(v: unknown, now: number): Record<string, unknown
 		};
 		if (isObject(entry.tabLoadout)) clean.tabLoadout = entry.tabLoadout;
 		if (isObject(entry.tabCon)) clean.tabCon = entry.tabCon;
+		// A synced rotation follows the roster (lineups §10.4); `openedAt` is
+		// half the Library's sort key (stores.lastTouched).
+		if (entry.synced === true) clean.synced = true;
+		if (typeof entry.openedAt === 'number' && Number.isFinite(entry.openedAt)) {
+			clean.openedAt = entry.openedAt;
+		}
+		out.push(clean);
+	}
+	return out;
+}
+
+function sanitizeSavedBoards(v: unknown, now: number): Record<string, unknown>[] | undefined {
+	if (!Array.isArray(v)) return undefined;
+	const out: Record<string, unknown>[] = [];
+	for (const entry of v) {
+		if (!isObject(entry)) continue;
+		if (
+			typeof entry.id !== 'string' ||
+			typeof entry.name !== 'string' ||
+			(entry.preset !== 'stygian' && entry.preset !== 'abyss' && entry.preset !== 'custom')
+		) {
+			continue;
+		}
+		const teams: Record<string, unknown>[] = [];
+		for (const team of Array.isArray(entry.teams) ? entry.teams : []) {
+			if (!isObject(team) || typeof team.id !== 'string') continue;
+			const raw = Array.isArray(team.slots) ? team.slots : [];
+			const clean: Record<string, unknown> = {
+				id: team.id,
+				slots: Array.from({ length: 4 }, (_, i) => (typeof raw[i] === 'string' ? raw[i] : null))
+			};
+			if (isObject(team.con)) {
+				const con = sanitizeConstellations(team.con);
+				if (con) clean.con = con;
+			}
+			if (typeof team.pinnedRotationId === 'string') clean.pinnedRotationId = team.pinnedRotationId;
+			teams.push(clean);
+		}
+		const clean: Record<string, unknown> = {
+			id: entry.id,
+			name: entry.name,
+			preset: entry.preset,
+			teams,
+			noRepeats: entry.noRepeats === true,
+			savedAt:
+				typeof entry.savedAt === 'number' && Number.isFinite(entry.savedAt) ? entry.savedAt : now
+		};
+		if (typeof entry.season === 'string' && /^\d+\.\d+$/.test(entry.season)) {
+			clean.season = entry.season;
+		}
+		if (typeof entry.openedAt === 'number' && Number.isFinite(entry.openedAt)) {
+			clean.openedAt = entry.openedAt;
+		}
 		out.push(clean);
 	}
 	return out;
@@ -204,6 +286,8 @@ export function parseBackup(text: string, now = Date.now()): ParseResult {
 	if (load) data['critcalc:loadout'] = load;
 	const notes = sanitizeSavedNotations(src['critcalc:savedNotations'], now);
 	if (notes) data['critcalc:savedNotations'] = notes;
+	const boards = sanitizeSavedBoards(src['critcalc:savedBoards'], now);
+	if (boards) data['critcalc:savedBoards'] = boards;
 
 	if (Object.keys(data).length === 0) {
 		return { ok: false, error: 'The backup had no recognizable critcalc data.' };
@@ -213,7 +297,9 @@ export function parseBackup(text: string, now = Date.now()): ParseResult {
 		characters: Object.keys(cons ?? {}).length,
 		owned: Object.values(own ?? {}).filter((m) => m === 'owned').length,
 		loadouts: Object.keys(load ?? {}).length,
-		rotations: (notes ?? []).length
+		// A names-only entry is a TEAM (library.isTeamEntry), not a rotation.
+		rotations: (notes ?? []).filter((e) => notationHasActions(e.notation as string)).length,
+		lineups: (boards ?? []).length
 	};
 
 	return { ok: true, data, counts };

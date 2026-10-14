@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { constellations, loadout, ownership, savedNotations, siteSettings } from '$lib/stores';
+	import {
+		constellations,
+		loadout,
+		ownership,
+		savedBoards,
+		savedNotations,
+		siteSettings
+	} from '$lib/stores';
 	import Mark from './Mark.svelte';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
@@ -42,6 +49,7 @@
 		ownership.clear();
 		loadout.clear();
 		savedNotations.clear();
+		savedBoards.clear();
 	}
 
 	// Import flow: pick file → parse+validate → show a summary → confirm → apply
@@ -428,8 +436,9 @@
 			<span class="sp-label">
 				<span class="sp-name">Backup</span>
 				<span class="sp-desc">
-					critcalc keeps nothing on a server — your roster, loadouts, and saved rotations live in
-					this browser. Download a file to back them up or move them to another device.
+					critcalc keeps nothing on a server — your roster, loadouts, saved rotations, and saved
+					lineups live in this browser. Download a file to back them up or move them to another
+					device.
 				</span>
 			</span>
 			<button class="btn btn--primary" onclick={() => downloadBackup()}>
@@ -440,7 +449,10 @@
 		<div class="sp-row">
 			<span class="sp-label">
 				<span class="sp-name">Restore</span>
-				<span class="sp-desc">Load a backup file. This replaces everything on this device.</span>
+				<span class="sp-desc">
+					Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups, and
+					settings on this device.
+				</span>
 			</span>
 			<button class="btn btn--primary" onclick={() => fileInput?.click()}>
 				<Mark name="upload" /> Import…
@@ -466,8 +478,9 @@
 					<p class="sp-import-summary">
 						This backup holds
 						<strong>{pending.counts.owned}</strong> owned characters,
-						<strong>{pending.counts.loadouts}</strong> loadouts, and
-						<strong>{pending.counts.rotations}</strong> saved rotations. Replace your current data?
+						<strong>{pending.counts.loadouts}</strong> loadouts,
+						<strong>{pending.counts.rotations}</strong> saved rotations, and
+						<strong>{pending.counts.lineups}</strong> saved lineups. Replace your current data?
 					</p>
 					<div class="sp-import-actions">
 						<button class="btn btn--danger is-confirming" onclick={confirmImport}>
@@ -483,7 +496,7 @@
 	<section class="sp-section sp-section--danger">
 		<h2 class="kicker sp-section-title">Reset saved data</h2>
 
-		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadout labels', 'Clears every saved weapon and artifact label.', () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation in Saved rotations.', () => savedNotations.clear()]] as const as [key, name, desc, fn] (key)}
+		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadout labels', 'Clears every saved weapon and artifact label.', () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation in Saved rotations.', () => savedNotations.clear()], ['boards', 'Saved lineups', 'Deletes every lineup saved in your library.', () => savedBoards.clear()]] as const as [key, name, desc, fn] (key)}
 			<div class="sp-row">
 				<span class="sp-label">
 					<span class="sp-name">{name}</span>

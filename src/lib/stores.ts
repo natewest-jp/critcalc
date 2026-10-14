@@ -229,6 +229,10 @@ function createSavedBoardsStore() {
 		},
 		delete(id: string) {
 			store.update((items) => persist(items.filter((e) => e.id !== id)));
+		},
+		clear() {
+			store.set([]);
+			if (browser) safeRemoveItem(SAVED_BOARDS_KEY);
 		}
 	};
 }
