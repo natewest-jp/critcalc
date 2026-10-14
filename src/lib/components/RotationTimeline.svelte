@@ -2274,9 +2274,18 @@
 	function showTooltip(e: MouseEvent, data: TooltipPayload, anchorToCursor = false) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const above = rect.top > 80;
+		// The centre of the bar's VISIBLE part — a long bar running off either
+		// edge anchors on what is on screen (⚓ Nate 2026-10-14). BuffTooltip
+		// then keeps the whole box inside the viewport.
+		const left = Math.max(rect.left, 0);
+		const right = Math.min(rect.right, window.innerWidth);
 		tooltip = {
 			...data,
-			x: anchorToCursor ? e.clientX : rect.left + rect.width / 2,
+			x: anchorToCursor
+				? e.clientX
+				: right > left
+					? (left + right) / 2
+					: rect.left + rect.width / 2,
 			y: above ? rect.top - 6 : rect.bottom + 6,
 			above
 		};

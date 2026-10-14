@@ -34,6 +34,23 @@
 
 	let { tip }: { tip: BuffTooltipData } = $props();
 
+	/**
+	 * ⚓ KEPT ON SCREEN (Nate 2026-10-14, on his phone): the box is centred on
+	 * its anchor, and a bar whose centre sat off-screen dragged the tooltip
+	 * half out with it — it then squeezed itself against the edge. The centre
+	 * is clamped so the whole box stays EDGE_GUTTER inside the viewport,
+	 * measured from the box's own width (and the width is capped at the
+	 * viewport, so the clamp always has room).
+	 */
+	const EDGE_GUTTER = 8;
+	let boxW = $state(0);
+	let viewW = $state(0);
+	let centre = $derived(
+		boxW && viewW
+			? Math.min(Math.max(tip.x, EDGE_GUTTER + boxW / 2), viewW - EDGE_GUTTER - boxW / 2)
+			: tip.x
+	);
+
 	// Loose-row lookups: a prose `stat` simply misses both maps and renders
 	// its own text with no icon.
 	const iconFor = (stat: string) => BUFF_STAT_ICON[stat as Stat];
@@ -51,10 +68,13 @@
 	const fmtSecs = (frames: number) => Number((frames / 60).toFixed(2));
 </script>
 
+<svelte:window bind:innerWidth={viewW} />
+
 <div
 	class="bt-tooltip"
 	class:bt-tooltip--above={tip.above}
-	style:left="{tip.x}px"
+	bind:offsetWidth={boxW}
+	style:left="{centre}px"
 	style:top="{tip.y}px"
 >
 	<div class="bt-source">{tip.sourceLabel}</div>
@@ -111,7 +131,9 @@
 		min-width: 120px;
 		/* No max-width: content self-regulates (a source label + short stat
 		   rows) and the old 230px cap made long ability names wrap awkwardly.
-		   The viewport still constrains naturally near screen edges. */
+		   ↻ 2026-10-14: capped at the VIEWPORT (less both gutters) so the
+		   on-screen clamp in the script always has room to work. */
+		max-width: calc(100vw - 16px);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
 		display: flex;
 		flex-direction: column;
