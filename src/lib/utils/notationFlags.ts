@@ -7,7 +7,7 @@
  * a cast the character cannot perform draws a generic bar, and a fifth
  * character has no slot to be drawn in. All three are SILENT, and silence is
  * what the single-truth round removes: once the notation IS the team, and once
- * the tool REWRITES it for you (an audition commit renames a character's
+ * the tool REWRITES it for you (a swap renames a character's
  * segments), a drop the user cannot see is a drop they cannot fix.
  *
  * ══ TWO REGISTERS, AND THE LINE BETWEEN THEM ═════════════════════════════════
@@ -82,6 +82,11 @@ function approximateCastMessage(name: string, token: string, casts: readonly str
 	}
 	if (HOLD_TOKEN_RE.test(token)) {
 		return `${name} has no ${token} (hold) variant — timed as a plain E.`;
+	}
+	// The parser finds no special skill and casts the BASE skill's frames, so
+	// "generic timing" would be untrue here.
+	if (token === 'sE' && casts.includes('E')) {
+		return `${name} has no sE variant — timed as a plain E.`;
 	}
 	if (token === 'sQ') {
 		return `${name} has no short-burst variant — timed as a full Q.`;
