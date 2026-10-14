@@ -3358,7 +3358,7 @@
 				onclick={() => {
 					editorApi?.undo();
 					historyTick++;
-				}}><Mark name="undo" /> Undo</button
+				}}><Mark name="undo" /><span class="rp-history-word">Undo</span></button
 			>
 			<button
 				class="btn btn--sm"
@@ -3369,7 +3369,7 @@
 				onclick={() => {
 					editorApi?.redo();
 					historyTick++;
-				}}><Mark name="redo" /> Redo</button
+				}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
 			>
 		</div>
 	</div>
@@ -5072,11 +5072,35 @@
 		box-shadow: inset 0 0 0 1px var(--border);
 		border: none;
 		border-radius: var(--r-sm);
-		font-family: var(--font-body);
+		/* ↻ 2026-10-14: mono, 1.6 and WRAPPING, as the editor is — it had
+		   drifted to the body face, --lh-relaxed and `pre`. */
+		font-family: var(--font-mono);
 		font-size: 13px;
-		line-height: var(--lh-relaxed);
+		line-height: 1.6;
 		color: var(--text);
-		white-space: pre;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
 		overflow: auto;
+	}
+
+	/* ── THE COMPOSER ON A PHONE (⚓ Nate 2026-10-14, the mobile round) ──────
+	   The notation wraps by design; what a phone can do is give the TEXT the
+	   row. Below `compact` (BP.compact, 40rem):
+	   · the history pair keeps its MARKS and drops its WORDS — the narrow
+	     round's rule for every band control (breakpoints.ts);
+	   · the box's side padding tightens 12 → 8 (the pre-load stand-in follows,
+	     or the swap-in jumps).
+	   Measured on an eight-segment rotation (see the round record). */
+	@media (max-width: 40rem) {
+		.rp-history-word {
+			display: none;
+		}
+		.rp-history .btn {
+			justify-content: center;
+		}
+		.rp-notation :global(.cm-content),
+		.rp-notation :global(.rp-notation-placeholder) {
+			padding-inline: 8px;
+		}
 	}
 </style>

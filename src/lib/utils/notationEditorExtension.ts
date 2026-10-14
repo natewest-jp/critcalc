@@ -575,7 +575,7 @@ export function buildNotationExtensions(onChange: (value: string) => void): Exte
 		// client-only — document is safe here.)
 		tooltips({ position: 'fixed', parent: document.body }),
 		// Empty-state invitation: shows what to type and models the syntax.
-		placeholder('Type a rotation — e.g.  Bennett E Q > Xiangling E Q N3 > …'),
+		placeholder('Type a rotation in KQM notation'),
 		notationTheme,
 		// Hard ceiling on document length. Highlighting, linting and parsing all
 		// run synchronously per keystroke, and a few hundred bytes of legal-but-
