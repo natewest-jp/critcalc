@@ -247,9 +247,6 @@ export function armCastProcs(args: {
 	}
 }
 
-/** ⚓ The pre-rename name, kept because `run.ts` and the round docs use it. */
-export const armCastReactionProcs = armCastProcs;
-
 /** Arm a summon's listeners. ⚓ Each borrows the tick chain's own `endNow` and
  *  generation check, so a swap-out, a duration extension or a recast reaches it
  *  through the one answer the ticks already use — and the host key is the
@@ -292,9 +289,6 @@ export function armSummonProcs(args: {
 		});
 	}
 }
-
-/** ⚓ The pre-rename name, kept because `aura.ts` and the round docs use it. */
-export const armSummonReactionProcs = armSummonProcs;
 
 /** Who caused the reaction — as much of it as the source filter needs. */
 export type ReactionSource = {

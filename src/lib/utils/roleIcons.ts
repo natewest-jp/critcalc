@@ -26,11 +26,6 @@ export const POSITION_LABEL: Record<RolePosition, string> = {
 	onField: 'On-Field',
 	offField: 'Off-Field'
 };
-export const FUNCTION_LABEL: Record<RoleFunction, string> = {
-	dps: 'DPS',
-	support: 'Support',
-	survivability: 'Survivability'
-};
 
 export function roleIconPath(slug: string, variant: RoleIconVariant): string {
 	return `/assets/roles/${variant}/${slug}.svg`;

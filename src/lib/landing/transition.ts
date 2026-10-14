@@ -101,8 +101,6 @@ function sideSign(path: string): -1 | 0 | 1 {
 	return 0;
 }
 
-export const isLandingPath = (path: string) => path === '/';
-
 /**
  * ⚠ /lab IS IN THIS LIST ON PURPOSE (2026-08-10). It is the dev-only specimen
  * board, and the ONE thing it exists to provide is the real crest under the
