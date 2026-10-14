@@ -4,7 +4,7 @@
  * The shared resonance model's two postures: strict (default — the in-game
  * full-party-of-four rule, Team Builder) and relaxed (`requireFullParty:
  * false` — the rotation planner's flexible-slot behavior). team.test.ts
- * covers the strict path through the team-builder re-export; this pins the
+ * covers the strict path through the builder re-export; this pins the
  * relaxed mode and the Canopy edge.
  */
 

@@ -42,7 +42,7 @@ test.describe('roster and facets', () => {
 	test("the filter bar's role icons narrow and section the roster", async ({ page }) => {
 		// ↻ §11.2/§11.6: the Atlas role cards retired into the strip over the
 		// grid; band B is cut at the dock, one cell per pane.
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await expect(page.locator('.tb-pane-switch'), 'no pane switch beside the dock').toHaveCount(0);
 		await expect(page.locator('.tb-band-cell'), 'a band cell over each pane').toHaveCount(2);
 		await expect(page.locator('.rfs-role'), 'four role icons').toHaveCount(4);
@@ -63,7 +63,7 @@ test.describe('roster and facets', () => {
 	});
 
 	test('the heal facet narrows the grid to healers', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await provideGlyph(page, 'Healing');
 
@@ -103,7 +103,7 @@ test.describe('roster and facets', () => {
 	});
 
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await provideGlyph(page, 'Healing');
 		const healers = await matchCount(page);
@@ -120,7 +120,7 @@ test.describe('roster and facets', () => {
 	// C4 self-heal is `onCast` and her ONLY heal, so she is absent at C0 and present
 	// from C4 — the same shape. The e2e gate is what caught the swap; vitest could not.
 	test('the constellation lens widens capability gates', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await provideGlyph(page, 'Healing');
 
@@ -136,7 +136,7 @@ test.describe('roster and facets', () => {
 
 	test('"My constellations" mode gates on your own constellations', async ({ page, seed }) => {
 		await seed({ constellations: { fischl: 4 } });
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await provideGlyph(page, 'Healing');
 		await setConMode(page, 'My constellations');
@@ -152,7 +152,7 @@ test.describe('roster and facets', () => {
 
 test.describe('detail card', () => {
 	test('lazy-loads the character payload and shows gated provenance', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 
 		const chunks: string[] = [];
@@ -178,7 +178,7 @@ test.describe('detail card', () => {
 	});
 
 	test('the Roster tab sets a constellation that survives reload', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-mag').click();
 		await page.locator('.dc-panel').waitFor();
@@ -225,7 +225,7 @@ test.describe('the board', () => {
 	test('the cold start is the current Stygian lineup, and a pick lands on it', async ({ page }) => {
 		// ⚓ §11.2: a first visit shows the tool at its most useful — the season's
 		// Stygian Onslaught, docked beside the roster.
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await expect(page.locator('.bv-team'), 'three battlefields').toHaveCount(3);
 		await expect(page.locator('.bv-head-title').first()).toHaveText(/^Battlefield 1: /);
 		await expect(page.locator('.bench-band-mount'), 'the Builder has no bench').toBeHidden();
@@ -243,7 +243,7 @@ test.describe('the board', () => {
 		seed
 	}) => {
 		await seed({ board: { teams: [['bennett', 'jean']] } });
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 		await openDetail(page, 'Bennett');
 		await expect(page.locator('.dc-team')).toHaveText(/In team/);
@@ -257,7 +257,7 @@ test.describe('the board', () => {
 		seed
 	}) => {
 		await seed({ board: { teams: [['bennett'], [null]] } });
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		// ⚓ The game's model: select a ROW (any slot selects it), picks land in
 		// its earliest empty slot, the same pick again takes it out.
 		await page.locator('.bv-team').nth(1).locator('.bv-slot').nth(2).click();
@@ -280,7 +280,7 @@ test.describe('the board', () => {
 	});
 
 	test('a preset board opens with its teams', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await page.locator('.band-a .band-menu-trigger[aria-label="New board"]').click();
 		await page.getByRole('menuitem', { name: /Stygian Onslaught/ }).click();
 		// ⚠ Not the strip's hidden MEASURING copy, which carries the same classes.
@@ -289,7 +289,7 @@ test.describe('the board', () => {
 	});
 
 	test('a ?team= deep link lands on the active board and strips the param', async ({ page }) => {
-		await openTool(page, '/team-builder?team=bennett,jean,diona,gorou');
+		await openTool(page, '/builder?team=bennett,jean,diona,gorou');
 		expect(await boardNames(page)).toEqual(['Bennett', 'Jean', 'Diona', 'Gorou']);
 		expect(page.url(), '?team= is stripped after import').not.toContain('team=');
 	});
@@ -303,7 +303,7 @@ test.describe('the board', () => {
 				{ slots: ['bennett', null, null, null], constellations: { bennett: 6 } }
 			]
 		});
-		await openTool(page, `/team-builder?b=${param}`);
+		await openTool(page, `/builder?b=${param}`);
 		await expect(page.locator('.bv-team')).toHaveCount(2);
 		expect(await boardNames(page)).toEqual(['Furina', 'Nahida', 'Bennett']);
 		await expect(page.locator('.band-a .doc-tab.active')).toHaveText(/Shared lineup/);
@@ -315,7 +315,7 @@ test.describe('the board', () => {
 	});
 
 	test('a board survives a reload', async ({ page }) => {
-		await openTool(page, '/team-builder?team=bennett,jean');
+		await openTool(page, '/builder?team=bennett,jean');
 		await page.reload({ waitUntil: 'networkidle' });
 		await expect.poll(() => boardNames(page)).toEqual(['Bennett', 'Jean']);
 	});
@@ -339,7 +339,7 @@ test.describe('swap mode', () => {
 
 	test('regroups the grid, swaps on a pick, and undoes', async ({ page, seed }) => {
 		await seed({ board: { teams: [['bennett', 'xiangling', 'xingqiu', 'sucrose']] } });
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await enterSwap(page, 0);
 		await expect(page.locator('.tb-dest')).toHaveText(/Replacing Bennett/);
 
@@ -364,7 +364,7 @@ test.describe('swap mode', () => {
 
 	test('Escape, or the portrait again, leaves without a swap', async ({ page, seed }) => {
 		await seed({ board: { teams: [['bennett', 'jean', 'diona', 'gorou']] } });
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await enterSwap(page, 1);
 		await page.keyboard.press('Escape');
 		await expect(page.locator('.tb-swap-head')).toHaveCount(0);
@@ -379,7 +379,7 @@ test.describe('swap mode', () => {
 
 test.describe('ownership ledger', () => {
 	test('wishlisting persists and narrows the roster view', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 
 		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-mag').click();
@@ -407,7 +407,7 @@ test.describe('ownership ledger', () => {
 
 test.describe('factions and buffs filter', () => {
 	test('the Stellar facet finds enablers and gated-buff carriers', async ({ page }) => {
-		await openTool(page, '/team-builder');
+		await openTool(page, '/builder');
 		await openRoster(page);
 
 		await page.locator('.tb-band .band-menu-trigger[aria-label="More filters"]').click();

@@ -4,4 +4,4 @@
 	import Chapter from '$lib/help/chapters/TeamBuilder.svelte';
 </script>
 
-<HelpAreaShell area={HELP_AREA} chapter="team-builder" chapterComponent={Chapter} />
+<HelpAreaShell area={HELP_AREA} chapter="builder" chapterComponent={Chapter} />

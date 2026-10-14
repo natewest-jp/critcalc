@@ -522,7 +522,7 @@ class DocumentBarState {
 		};
 		try {
 			const param = await encodeRotation(shared);
-			await navigator.clipboard.writeText(`${location.origin}/rotation-planner?r=${param}`);
+			await navigator.clipboard.writeText(`${location.origin}/planner?r=${param}`);
 			this.showNotice('Link copied');
 		} catch {
 			this.showNotice('Share failed');

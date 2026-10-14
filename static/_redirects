@@ -10,3 +10,13 @@
 # deep link like /crit-visualizer?i=icd landing on the right instrument.
 /crit-visualizer       /visualizers       301
 /help/crit-visualizer  /help/visualizers  301
+
+# ── /rotation-planner → /planner, /team-builder → /builder (2026-10-14) ─────
+# ⚓ Nate: the tools are "the Planner" and "the Builder" in every short form
+# the site already uses, so their paths say so too. Pre-launch, but links
+# (?r= rotations, ?b= boards) have been shared by hand since July — and Pages
+# forwards the query string, so a shared rotation still opens.
+/rotation-planner       /planner       301
+/team-builder           /builder       301
+/help/rotation-planner  /help/planner  301
+/help/team-builder      /help/builder  301

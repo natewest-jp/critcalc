@@ -4,4 +4,4 @@
 	import Chapter from '$lib/help/chapters/RotationPlanner.svelte';
 </script>
 
-<HelpAreaShell area={HELP_AREA} chapter="rotation-planner" chapterComponent={Chapter} />
+<HelpAreaShell area={HELP_AREA} chapter="planner" chapterComponent={Chapter} />

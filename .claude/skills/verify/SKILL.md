@@ -53,7 +53,7 @@ code-splitting; `npm run dev` is fine for pure behavior changes.
 import { chromium } from 'playwright';
 const browser = await chromium.launch({ channel: 'chrome', headless: true }); // system Chrome, no download
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-await page.goto('http://localhost:4998/rotation-planner', { waitUntil: 'networkidle' });
+await page.goto('http://localhost:4998/planner', { waitUntil: 'networkidle' });
 ```
 
 ## Headless WebKit (Safari-class bugs)

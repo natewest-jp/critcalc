@@ -13,7 +13,7 @@ import { test, expect } from './fixtures/critcalc';
  * timing cannot judge honestly.
  */
 
-const SURFACES = ['/', '/about', '/rotation-planner', '/team-builder', '/visualizers'];
+const SURFACES = ['/', '/about', '/planner', '/builder', '/visualizers'];
 
 test.describe('served markup', () => {
 	for (const path of SURFACES) {
@@ -34,14 +34,14 @@ test.describe('served markup', () => {
 
 test.describe('lifecycle', () => {
 	test('a hard load paints the veil, then removes it after hydration', async ({ page }) => {
-		await page.goto('/rotation-planner');
+		await page.goto('/planner');
 		// It may already be gone by the time we look on a fast machine — what must
 		// hold is that it does not LINGER.
 		await expect(page.locator('#loading-veil')).toHaveCount(0, { timeout: 15_000 });
 	});
 
 	test('an SPA navigation never brings it back', async ({ page }) => {
-		await page.goto('/rotation-planner', { waitUntil: 'networkidle' });
+		await page.goto('/planner', { waitUntil: 'networkidle' });
 		await expect(page.locator('#loading-veil')).toHaveCount(0, { timeout: 15_000 });
 
 		let reappeared = false;

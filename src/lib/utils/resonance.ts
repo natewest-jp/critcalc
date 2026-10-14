@@ -2,7 +2,7 @@
  * src/lib/utils/resonance.ts
  *
  * Elemental resonance — shared game facts (KQM-aligned), derived from the
- * four team slots' elements. Extracted from team-builder/lib/team.ts so the
+ * four team slots' elements. Extracted from builder/lib/team.ts so the
  * rotation planner's always-on strip can consume the same source of truth
  * (team.ts re-exports for its existing consumers).
  *

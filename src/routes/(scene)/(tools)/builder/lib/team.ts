@@ -1,5 +1,5 @@
 /**
- * team-builder/lib/team.ts
+ * builder/lib/team.ts
  *
  * Pure model for a team: the four slots, the `?team=` URL param, and the
  * derived team-level FACTS — elemental resonance, and what a swap changes.

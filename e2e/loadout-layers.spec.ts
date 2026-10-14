@@ -45,7 +45,7 @@ async function setBenchCon(page: Page, slot: number, pip: number) {
 }
 
 test('the planner con chip writes the plan, never the roster', async ({ page }) => {
-	await openTool(page, '/rotation-planner');
+	await openTool(page, '/planner');
 	await page.locator('.cm-content').first().click();
 	await page.keyboard.type('Furina E Q > Bennett E Q');
 	await expectCon(conChip(page, 0), 0, 'a fresh tab starts at C0');
@@ -67,7 +67,7 @@ test('an open tab falls back live; saving freezes the resolved values', async ({
 		team: { slots: ['furina', 'bennett'], notation: 'Furina E Q > Bennett E Q' },
 		constellations: { bennett: 1 }
 	});
-	await openTool(page, '/rotation-planner');
+	await openTool(page, '/planner');
 	await conChip(page, 0).click();
 	await page.locator('.sp-popover .sp-pip').nth(2).click();
 
@@ -106,7 +106,7 @@ test('an open tab falls back live; saving freezes the resolved values', async ({
  */
 test('the detail card edits the roster loadout (Layer 1)', async ({ page, seed }) => {
 	await seed({ team: { slots: ['nahida', 'furina'] } });
-	await openTool(page, '/team-builder');
+	await openTool(page, '/builder');
 	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-mag').click();
 	await page.locator('.dc-panel').waitFor();
 	// Tile 0 is the "None" tile — pick the first real set.
@@ -122,13 +122,13 @@ test('the detail card edits the roster loadout (Layer 1)', async ({ page, seed }
 test('the Roster tab owns Layer 1, and the plan keeps shadowing it', async ({ page, seed }) => {
 	await seed({ team: { slots: ['nahida', 'furina'] } });
 	// The plan's own level first, from the Planner's bench (Layer 2).
-	await openTool(page, '/rotation-planner');
+	await openTool(page, '/planner');
 	await setBenchCon(page, 0, 4);
 
 	// The roster's level (Layer 1). ↻ 2026-10-11: the Detail card only READS it;
 	// its link opens the Library's Roster tab on the character, the one editor.
-	await page.locator('.chrome-nav a[href*="team-builder"]').click();
-	await page.waitForURL(/team-builder/, { timeout: 10_000 });
+	await page.locator('.chrome-nav a[href*="builder"]').click();
+	await page.waitForURL(/builder/, { timeout: 10_000 });
 	await page.locator('.cc', { hasText: 'Nahida' }).first().locator('.cc-mag').click();
 	await page.locator('.dc-panel').waitFor();
 	await page.getByRole('button', { name: 'Edit in Roster' }).click();
@@ -140,8 +140,8 @@ test('the Roster tab owns Layer 1, and the plan keeps shadowing it', async ({ pa
 	expect(own.nahida, 'a roster constellation implies ownership').toBe('owned');
 
 	await page.keyboard.press('Escape');
-	await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
-	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
+	await page.locator('.chrome-nav a[href*="planner"]').click();
+	await page.waitForURL(/planner/, { timeout: 10_000 });
 	await page.waitForTimeout(1400); // the pan + band travel
 	await expectCon(
 		page.locator('.bench-band-mount .sp-disc-con').first(),

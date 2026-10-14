@@ -179,7 +179,7 @@ class BoardBarState {
 			const param = await encodeBoard(
 				toSharedBoard(board, get(savedNotations), get(constellations))
 			);
-			await navigator.clipboard.writeText(`${location.origin}/team-builder?b=${param}`);
+			await navigator.clipboard.writeText(`${location.origin}/builder?b=${param}`);
 			documentBar.showNotice('Link copied');
 		} catch {
 			documentBar.showNotice('Share failed');

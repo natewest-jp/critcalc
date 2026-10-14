@@ -1077,10 +1077,10 @@ export function summarizeCapabilities(caps: DerivedCapability[]): CapabilitySumm
 // ---------------------------------------------------------------------------
 // Facet model — the filterable surface over capability summaries
 //
-// Lives here (not in the team-builder route lib) so the capability sweep
+// Lives here (not in the builder route lib) so the capability sweep
 // audit (scripts/audit-capability-sweep.mjs) and the UI share ONE predicate
 // and one role→facet grouping — they must never drift. The route modules
-// (team-builder/lib/facets.ts, roles.ts) re-export these.
+// (builder/lib/facets.ts, roles.ts) re-export these.
 // ---------------------------------------------------------------------------
 
 export type FacetKey =

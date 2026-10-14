@@ -1,5 +1,5 @@
 /**
- * team-builder/lib/facets.ts
+ * builder/lib/facets.ts
  *
  * The Team Builder's roster split — the part of capability filtering that is
  * genuinely this tool's: the ownership ledger view, the "capability unknown"
@@ -10,7 +10,7 @@
  * facetBadges) moved to `$lib/capabilities/facets` when the Rotation Planner's
  * character picker adopted the same filters — same move identity filtering made
  * to `$lib/characterFilters` earlier. Both are re-exported here, so every
- * existing team-builder import keeps working unchanged.
+ * existing builder import keeps working unchanged.
  */
 
 import type { CharacterIndexEntry } from '$lib/types/character';
@@ -35,7 +35,7 @@ export type { ConMode, Badge } from '$lib/capabilities/facets';
 
 // Identity filtering lives in the shared `$lib/characterFilters` module (reused
 // by the planner's character Source overlay + the CharacterGrid component).
-// Re-exported here so existing team-builder imports keep working.
+// Re-exported here so existing builder imports keep working.
 export { matchesIdentity };
 export type { IdentityFilters };
 

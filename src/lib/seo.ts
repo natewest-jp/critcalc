@@ -78,12 +78,12 @@ export const PAGE_META: Record<string, PageMeta> = {
 			'Three tools for seeing how Genshin works: a frame-accurate rotation timeline, a capability-faceted team builder, and eight graph instruments. Mechanics made visible — no tier lists, no verdicts.'
 	},
 
-	'/rotation-planner': {
+	'/planner': {
 		title: 'Rotation Planner',
 		description:
 			'Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, energy, buff windows and who is on field when.'
 	},
-	'/team-builder': {
+	'/builder': {
 		title: 'Team Builder',
 		description:
 			'Find who covers what — healing, shielding, resistance shred, buffs — at which constellation, with the ability and the caveat that comes with it.'
@@ -99,12 +99,12 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			"How to use critcalc's tools, plus answers to common questions about the site and its data."
 	},
-	'/help/rotation-planner': {
+	'/help/planner': {
 		title: 'Rotation Planner help',
 		description:
 			'How the critcalc Rotation Planner works: KQM-style notation, reading the timeline, team loadouts and caveats.'
 	},
-	'/help/team-builder': {
+	'/help/builder': {
 		title: 'Team Builder help',
 		description:
 			'How the critcalc Team Builder works: capability facets, constellation modes, comparison and team slots.'

@@ -1,5 +1,5 @@
 /**
- * team-builder/lib/atlas.ts
+ * builder/lib/atlas.ts
  *
  * The role Atlas — the Imaginarium Theater categories that open the Roster.
  * Computed purely over the EAGER character index (no full payload loads).

@@ -51,17 +51,17 @@
 	// them back to nudge a figure; that edit belongs in the artwork.
 	const tools = [
 		{
-			id: 'team-builder',
+			id: 'builder',
 			title: 'Astrolabe',
 			tool: 'Team Builder',
-			path: '/team-builder',
+			path: '/builder',
 			art: 'astrolabe'
 		},
 		{
-			id: 'rotation-planner',
+			id: 'planner',
 			title: 'Ephemeris',
 			tool: 'Rotation Planner',
-			path: '/rotation-planner',
+			path: '/planner',
 			art: 'ephemeris'
 		},
 		{
