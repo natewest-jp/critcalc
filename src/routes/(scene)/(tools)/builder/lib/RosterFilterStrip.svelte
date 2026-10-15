@@ -13,7 +13,9 @@
 	 * It owns no state: every set is the page's, the same objects the grid
 	 * filters against.
 	 */
+	import type { Snippet } from 'svelte';
 	import type { SvelteSet } from 'svelte/reactivity';
+	import BandMenu from '$lib/components/BandMenu.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 	import { FACETS } from '$lib/capabilities/facets';
@@ -62,11 +64,21 @@
 		else activeFacets.add(facet);
 	}
 	const elColor = (el: string) => (elementColors[el as ElementKey] ?? elementColors.none).main;
+
+	/** A phone plate shows every choice up to this many, then two and "+N". */
+	const PLATE_SHOWN = 3;
+	/** The chosen elements and facets in the strip's own order, which is the
+	 *  order a plate shows them in. */
+	const chosenElements = $derived(ELEMENTS.filter((el) => filters.elements.has(el)));
+	const chosenFacets = $derived(
+		FINGERPRINT.flatMap((c) => c.facets).filter((f) => activeFacets.has(f))
+	);
+	const plateLabel = (word: string, n: number) => (n === 0 ? word : `${word}: ${n} selected`);
 </script>
 
-<!-- ctx-glass: the plates stand on the night, so their tokens are glass ones —
-     under the page's ctx-dark a btn--glass rested and HOVERED in slate. -->
-<div class="rfs ctx-glass" role="group" aria-label="Role and element">
+<!-- The three groups, each ONE snippet so the phone's popovers hold the very
+     controls the strip shows at width — same sets, same handlers. -->
+{#snippet roleBar()}
 	<div class="rfs-bar" role="group" aria-label="Role">
 		{#each ROLE_CATEGORIES as cat (cat.key)}
 			{@const on = activeRole === cat.key}
@@ -78,11 +90,18 @@
 				title={on ? 'Show every role again' : cat.label}
 				onclick={() => onRole(cat)}
 			>
-				{#if cat.position}<img src={positionIcon(cat.position, 'color')} alt="" />{/if}
-				<img src={functionIcon(cat.function, 'color')} alt="" />
+				{@render roleIcons(cat)}
 			</button>
 		{/each}
 	</div>
+{/snippet}
+
+{#snippet roleIcons(cat: RoleCategory)}
+	{#if cat.position}<img src={positionIcon(cat.position, 'color')} alt="" />{/if}
+	<img src={functionIcon(cat.function, 'color')} alt="" />
+{/snippet}
+
+{#snippet elementBar()}
 	<div class="rfs-bar" role="group" aria-label="Element">
 		{#each ELEMENTS as el (el)}
 			{@const on = filters.elements.has(el)}
@@ -99,7 +118,10 @@
 			</button>
 		{/each}
 	</div>
-	<!-- The fingerprint's own order and clusters (Survival · Support · Damage). -->
+{/snippet}
+
+<!-- The fingerprint's own order and clusters (Survival · Support · Damage). -->
+{#snippet glyphRow()}
 	<div class="rfs-glyphs" role="group" aria-label="Can provide">
 		{#each FINGERPRINT as c (c.cluster)}
 			<span class="rfs-bar">
@@ -119,6 +141,93 @@
 				{/each}
 			</span>
 		{/each}
+	</div>
+{/snippet}
+
+<!-- A plate's resting face: the word while it holds nothing, else what it
+     holds — all of it up to PLATE_SHOWN, past that the first two and a count. -->
+{#snippet plateFace(word: string, n: number, icon: Snippet<[number]>)}
+	{#if n === 0}
+		<span class="band-menu-label">{word}</span>
+	{:else}
+		<span class="rfs-plate-icons">
+			{#each { length: n > PLATE_SHOWN ? 2 : n } as _, i (i)}{@render icon(i)}{/each}
+			{#if n > PLATE_SHOWN}<span class="rfs-plate-more">+{n - 2}</span>{/if}
+		</span>
+	{/if}
+{/snippet}
+
+{#snippet roleFace()}
+	{@const cat = ROLE_CATEGORIES.find((c) => c.key === activeRole)}
+	{#if cat}
+		<span class="rfs-plate-icons rfs-plate-icons--role">{@render roleIcons(cat)}</span>
+	{:else}
+		<span class="band-menu-label">Roles</span>
+	{/if}
+{/snippet}
+
+{#snippet elementIconAt(i: number)}
+	<img class="rfs-plate-el" src={elementIcon(chosenElements[i])} alt="" />
+{/snippet}
+{#snippet elementFace()}
+	{@render plateFace('Elements', chosenElements.length, elementIconAt)}
+{/snippet}
+
+{#snippet glyphAt(i: number)}
+	<span class="rfs-glyph-art"><FingerprintGlyph facet={chosenFacets[i]} /></span>
+{/snippet}
+{#snippet capabilityFace()}
+	{@render plateFace('Capabilities', chosenFacets.length, glyphAt)}
+{/snippet}
+
+<!-- ctx-glass: the plates stand on the night, so their tokens are glass ones —
+     under the page's ctx-dark a btn--glass rested and HOVERED in slate. -->
+<div class="rfs ctx-glass" role="group" aria-label="Role and element">
+	<div class="rfs-inline">
+		{@render roleBar()}
+		{@render elementBar()}
+		{@render glyphRow()}
+	</div>
+	<!-- BELOW `compact` THE THREE ROWS ARE THREE PLATES (2026-10-15, ⚓ Nate):
+	     on a phone they wrapped to four rows over the grid. Each plate opens
+	     its row in a popover — BandMenu's, portalled, as More is. -->
+	<div class="rfs-plates">
+		<BandMenu
+			glass
+			size="sm"
+			role="dialog"
+			align="start"
+			ariaLabel={activeRole ? 'Roles: 1 selected' : 'Roles'}
+			face={roleFace}
+		>
+			{#snippet items()}
+				<div class="rfs-pop ctx-glass">{@render roleBar()}</div>
+			{/snippet}
+		</BandMenu>
+		<BandMenu
+			glass
+			size="sm"
+			role="dialog"
+			align="start"
+			ariaLabel={plateLabel('Elements', chosenElements.length)}
+			face={elementFace}
+		>
+			{#snippet items()}
+				<div class="rfs-pop ctx-glass">{@render elementBar()}</div>
+			{/snippet}
+		</BandMenu>
+		<BandMenu
+			glass
+			size="sm"
+			role="dialog"
+			align="start"
+			ariaLabel={plateLabel('Capabilities', chosenFacets.length)}
+			face={capabilityFace}
+		>
+			{#snippet items()}
+				<div class="rfs-pop ctx-glass">{@render glyphRow()}</div>
+			{/snippet}
+		</BandMenu>
 	</div>
 	<span class="rfs-end">
 		{#if count !== undefined}
@@ -233,5 +342,73 @@
 		text-transform: none;
 		letter-spacing: var(--ls-tight);
 		font-weight: var(--fw-regular, 400);
+	}
+	/* THE PHONE FORM (2026-10-15). At width the three groups are the strip's
+	   own flex items (`contents`), exactly as before the plates existed; below
+	   `compact` they give way to three plates in one row. */
+	.rfs-inline {
+		display: contents;
+	}
+	.rfs-plates {
+		display: none;
+	}
+	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
+		.rfs-inline {
+			display: none;
+		}
+		.rfs-plates {
+			display: flex;
+			gap: 6px;
+		}
+		/* An empty end (the count is in the destination banner, nothing to
+		   clear) must not wrap to a row of its own and spend the row gap.
+		   ⚠ `:has`, not `:empty` — the if-blocks leave a space between them. */
+		.rfs-end:not(:has(*)) {
+			display: none;
+		}
+	}
+	/* 🎛️ The plates are `.btn--sm` at the strip's 26px row, and the word sits
+	   nearer its chevron than a band menu's does: so measured, the three empty
+	   plates take 286px of 288 at 320 (Chrome and WebKit agree), and at the
+	   band-menu defaults they took 322 and overflowed. */
+	.rfs-plates :global(.band-menu-trigger) {
+		height: 26px;
+		gap: 0.25rem;
+	}
+	/* A plate's resting face: what it holds, at the strip's own icon sizes. */
+	.rfs-plate-icons {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+	}
+	.rfs-plate-icons--role {
+		gap: 1px;
+	}
+	.rfs-plate-icons--role img {
+		width: 16px;
+		height: 16px;
+		object-fit: contain;
+	}
+	.rfs-plate-el {
+		width: 16px;
+		height: 16px;
+		object-fit: contain;
+	}
+	.rfs-plate-icons .rfs-glyph-art {
+		display: inline-block;
+	}
+	.rfs-plate-more {
+		margin-left: 2px;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+	/* The popover: the same bar, on the glass ladder (the menu itself is slate),
+	   with the menu's breathing room around it. */
+	.rfs-pop {
+		padding: 6px 8px;
+	}
+	.rfs-pop .rfs-glyphs {
+		max-width: calc(100vw - 32px);
 	}
 </style>

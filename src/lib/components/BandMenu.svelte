@@ -32,6 +32,7 @@
 		align = 'end',
 		size,
 		glass = false,
+		face,
 		items
 	}: {
 		/** Button text. Omit for an icon-only trigger (pass ariaLabel instead). */
@@ -55,6 +56,10 @@
 		 *  its own (ToolStack's `bandBFull`), where a bare trigger would have
 		 *  nothing to stand on. */
 		glass?: boolean;
+		/** The trigger's own contents, in place of `label`, when the plate says
+		 *  more than a word — the Team Builder's phone filter plates show what
+		 *  they hold (2026-10-15). Pass `ariaLabel` with it. */
+		face?: Snippet;
 		/** Menu contents. Called with a `close` the items invoke when chosen. */
 		items: Snippet<[() => void]>;
 	} = $props();
@@ -77,7 +82,13 @@
 			const x = align === 'start' ? r.left : r.right - w;
 			menuX = Math.max(8, Math.min(x, window.innerWidth - w - 8));
 		};
-		place(MENU_MIN_W);
+		// Measured at the viewport's left margin, not at its trigger: a fixed
+		// box shrinks to the room left of the viewport's edge, so a WIDE menu
+		// measured where a `start` trigger stands (the Builder's phone
+		// Capabilities plate, 2026-10-15) came back at that room's width and
+		// was then placed too far right for its real one. The re-place below
+		// lands in the same frame.
+		menuX = 8;
 		menuY = r.bottom + GAP;
 		open = true;
 		// ⚠ Re-placed at its RENDERED width: an `end` menu wider than the minimum
@@ -126,7 +137,7 @@
 	{#if mark}<Mark name={mark} />{/if}
 	<!-- The label in its own box so a host can fold it away at narrow widths
 	     (DocumentActions does, below BP.compact) while the mark stays. -->
-	{#if label}<span class="band-menu-label">{label}</span>{/if}
+	{#if face}{@render face()}{:else if label}<span class="band-menu-label">{label}</span>{/if}
 	{#if !compact}<Mark name="chevron" size={11} />{/if}
 </button>
 

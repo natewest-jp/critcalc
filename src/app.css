@@ -3622,6 +3622,7 @@ img {
 		.rp-dock-key,
 		.sp-disc-con,
 		.fp-find,
+		.rfs-plates .band-menu-trigger,
 		.dr-source .check,
 		.dr-hit .check,
 		.cov-search-hit
@@ -3638,6 +3639,7 @@ img {
 		.rp-dock-key,
 		.sp-disc-con,
 		.fp-find,
+		.rfs-plates .band-menu-trigger,
 		.dr-source .check,
 		.dr-hit .check,
 		.cov-search-hit
@@ -3758,6 +3760,12 @@ img {
 	.fp-find::before {
 		--hit-x: 3px;
 		--hit-top: 6px;
+	}
+	/* The Builder's phone filter plates (Roles · Elements · Capabilities):
+	   6px apart in their row, band B's plates above and the grid below. */
+	.rfs-plates .band-menu-trigger::before {
+		--hit-x: 3px;
+		--hit-y: 6px;
 	}
 	/* RES & DEF's shred list: rows abut at 1.75rem, so a toggle fills its own
 	   row and no more — and takes the row's width up to its amount. */
