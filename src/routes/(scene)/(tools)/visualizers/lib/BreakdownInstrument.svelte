@@ -1393,6 +1393,17 @@
 		visibility: visible;
 	}
 
+	/* A measure for the line under the chart: the 266-character caption ran
+	   as ONE line in a 3440 1-up tile and two in a 1920 one. 96ch is the
+	   Artifact Odds probe's (.ao-probe) — a line under a chart is wider than
+	   .note's 56ch. On the CELL, not the p, so the stacked readings keep
+	   sharing one height; the cell takes the sentences' size so a ch here is
+	   a ch of theirs. */
+	.bd-reading {
+		max-width: 96ch;
+		font-size: var(--fs-lg);
+	}
+
 	.bd-reading > p {
 		font-size: var(--fs-lg);
 		line-height: 1.35rem;
