@@ -1677,11 +1677,15 @@
 	.tb-band-cell :global(.btn) {
 		flex: none;
 	}
-	/* The mark is painted over the field; the field takes the slack. */
+	/* The mark is painted over the field; the field takes the slack — up to
+	   28rem, with More and the lens following it (↻ responsive sweep
+	   2026-10-15 item 15, ⚓ Nate: uncapped, the field ran 2078px at 3440 and
+	   the cell's controls sat a screen's width from where you type). */
 	.tb-search {
 		position: relative;
 		flex: 1 1 8rem;
 		min-width: 6rem;
+		max-width: 28rem;
 		display: flex;
 		align-items: center;
 	}
@@ -1961,8 +1965,11 @@
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
+	/* The count FOLLOWS the message (↻ responsive sweep 2026-10-15 item 15,
+	   ⚓ Nate): pushed to the band's end it sat 2560px from what it counts at
+	   3440. Swapping, the ✕ still ends the band (.tb-dest-close). */
 	.tb-dest-count {
-		margin-left: auto;
+		margin-left: 0.75rem;
 		padding-right: 6px;
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -1977,6 +1984,7 @@
 	/* Swapping, the banner ends in its ✕ (Escape does the same) — bare ink on
 	   the hue, not a plate. */
 	.tb-dest-close {
+		margin-left: auto;
 		width: 22px;
 		height: 22px;
 		background: none;
