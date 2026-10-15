@@ -21,6 +21,7 @@
 		main,
 		aside,
 		asideBare = false,
+		asideSticky = false,
 		sheet = false,
 		asideTitle = '',
 		onCloseAside
@@ -43,6 +44,14 @@
 		 * which is why it is a prop and not a rule.
 		 */
 		asideBare?: boolean;
+		/**
+		 * The aside COLUMN stays on screen while a content-height tool scrolls
+		 * (responsive sweep 2026-10-15, §3 item 11 — the planner). Its box sticks
+		 * where the surface begins and is no taller than the screen below that,
+		 * so a long aura log reads beside the chart instead of running past the
+		 * fold; the main column scrolls on under it. The drawer is unaffected.
+		 */
+		asideSticky?: boolean;
 		/**
 		 * ══ THE SHEET (responsive round, 2026-09-05) ══════════════════════════
 		 * Below BP.toolMin the aside is not a COLUMN but a DRAWER: the same
@@ -139,7 +148,7 @@
 		       content-height one alike.
 		     A plain stretched flex child would do neither: its content height
 		     joins the row's max() and the surface grows to fit the notes. -->
-		<div class="tc-aside">
+		<div class="tc-aside" class:tc-aside--sticky={asideSticky}>
 			<div class="tc-aside-box ctx-dark" class:tc-aside-box--bare={asideBare}>
 				{@render aside()}
 			</div>
@@ -189,6 +198,36 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+	}
+
+	/* ── THE STICKY COLUMN (`asideSticky`) ──────────────────────────────────
+	   The box joins the flow so it can stick, which would let its content grow
+	   the row — the very thing the absolute box exists to prevent (above).
+	   `contain: size` keeps that guarantee instead: the wrapper's own content
+	   size is zero, so the main box alone still sets the row's height, and the
+	   stretched wrapper is a definite height for the box's 100% to resolve
+	   against.
+	   · top: where the surface begins on screen — the chrome, the shell's top
+	     pad and the stack above the surface (ToolStack's --stack-to-surface) —
+	     so at rest it sits exactly where it always did, and from the first
+	     pixel of scroll it stays there.
+	   · height: the main column's, or the screen below that line less the
+	     shell's bottom pad if that is shorter — the viewport-fit calc
+	     .tool-stack--fill uses (100svh, the aside-column round's ⚠). So its
+	     ground ends at the screen's foot while the main column continues, and
+	     a short rotation's column is the height it always was.
+	   It leaves with the main column's end, like any sticky box. */
+	.tc-aside--sticky {
+		contain: size;
+		--aside-top: calc(
+			var(--chrome-h, 64px) + var(--tool-pad-top, 0px) + var(--stack-to-surface, 0px)
+		);
+	}
+	.tc-aside--sticky .tc-aside-box {
+		position: sticky;
+		inset: auto;
+		top: var(--aside-top);
+		height: min(100%, calc(100svh - var(--aside-top) - var(--tool-pad-bottom, 1.5rem)));
 	}
 
 	/* Groundless: the column stops being a box and becomes a gutter its occupant

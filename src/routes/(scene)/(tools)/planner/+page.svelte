@@ -784,6 +784,7 @@
 			<ToolColumns
 				{main}
 				aside={showAside ? asideColumn : undefined}
+				asideSticky
 				sheet={below('toolMin')}
 				asideTitle={pv.showLog ? 'Aura log' : 'Notes'}
 				onCloseAside={() => (pv.aside = null)}
@@ -1093,8 +1094,9 @@
 
 	/* The log fills the aside box and scrolls inside it — the same arrangement
 	   RotationNotes makes, for the same reason: the box's height is the main
-	   column's, so a long transcript scrolls in place and can never grow the
-	   tool. */
+	   column's (or the screen's below the bands, if shorter — the column is
+	   sticky, `asideSticky`), so a long transcript scrolls in place and can
+	   never grow the tool. */
 	.rp-log-panel {
 		flex: 1;
 		min-height: 0;
