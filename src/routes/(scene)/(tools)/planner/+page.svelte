@@ -634,7 +634,7 @@
 						class:is-active={$siteSettings.showBenchRow}
 						type="button"
 						aria-pressed={$siteSettings.showBenchRow}
-						title="Show the bench, with your team's constellations and loadouts"
+						title="The bench: your team's constellations and loadouts"
 						onclick={() => siteSettings.setShowBenchRow(!$siteSettings.showBenchRow)}
 					>
 						<Mark name="bench" />
