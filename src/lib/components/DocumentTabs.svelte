@@ -130,16 +130,19 @@
 
 <div class="doc-tabs-host" bind:this={rootEl}>
 	<!-- The measuring copy: the strip as it would lay out, never seen or reached.
-     Same classes, so its width is the strip's width. -->
-	<div class="doc-tabs doc-tabs--measure" bind:this={measureEl} aria-hidden="true" inert>
-		{#each model.tabs as tab (tab.id)}
-			<span class="tab tab--closeable doc-tab">
-				<span class="doc-tab-label">{tab.label}</span>
-				{#if model.tabs.length > 1}<span class="tab-close"><Mark name="close" size={11} /></span
-					>{/if}
-			</span>
-		{/each}
-		<span class="btn btn--icon doc-tab-add"><Mark name="plus" /></span>
+     Same classes, so its width is the strip's width. Its box clips it to the
+     host, so its overflow never reaches an ancestor's scroll range. -->
+	<div class="doc-tabs-measure-box" aria-hidden="true" inert>
+		<div class="doc-tabs doc-tabs--measure" bind:this={measureEl}>
+			{#each model.tabs as tab (tab.id)}
+				<span class="tab tab--closeable doc-tab">
+					<span class="doc-tab-label">{tab.label}</span>
+					{#if model.tabs.length > 1}<span class="tab-close"><Mark name="close" size={11} /></span
+						>{/if}
+				</span>
+			{/each}
+			<span class="btn btn--icon doc-tab-add"><Mark name="plus" /></span>
+		</div>
 	</div>
 
 	{#if collapsed}
@@ -368,6 +371,18 @@
 		flex: 1;
 		min-width: 0;
 		display: flex;
+	}
+	/* The measuring copy's box: the host's own size, clipping. Unclipped, the
+	   copy's max-content width (675px for five tabs) widened every scroll
+	   ancestor's range — .tool-shell scrolled 371px past a 320 screen, unseen
+	   only because the shell is overflow-x: hidden. ⛔ Not overflow on
+	   .doc-tabs-host itself: that would clip the real tabs' focus rings. */
+	.doc-tabs-measure-box {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		visibility: hidden;
+		pointer-events: none;
 	}
 	/* Laid out, never painted or hit: only its width is read. */
 	.doc-tabs--measure {
