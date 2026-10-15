@@ -37,7 +37,9 @@ export const GENERIC_NORMAL_HITS: NormalHit[] = [
 	{ frames: { anim: 66, hit: 26 } }
 ];
 
-/** Median full-charge FrameMap after MAD-trimming channeled/AoE outliers. */
+/** Median full-charge FrameMap after MAD-trimming channeled/AoE outliers.
+ *  A stand-in like the plunge below, and flagged the same way (2026-10-15): the
+ *  notation lint keys on `chargeFrames`/`chargeHits` being ABSENT. */
 export const GENERIC_CHARGE_FRAMES: FrameMap = {
 	anim: 57,
 	N: 51,

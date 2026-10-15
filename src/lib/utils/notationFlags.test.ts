@@ -118,3 +118,49 @@ describe('the two tokens the planner may not be able to draw', () => {
 		expect(reasons('Bennett 2[A W]')).toEqual(['unsupported-token', 'unsupported-token']);
 	});
 });
+
+// ── C and sC (⚓ Nate 2026-10-15) ─────────────────────────────────────────────
+describe('charged attacks drawn with a stand-in', () => {
+	it('says nothing about a C the character has measured frames for', () => {
+		expect(flagNotation('Hu Tao E N2C C1 C2')).toEqual([]);
+	});
+
+	it('flags a C with no measured frames as PROVISIONAL, in the plunge line’s shape', () => {
+		// Diluc's spin has no `chargeFrames`: the parser takes the token on the
+		// generic profile, so this is a stand-in, not a refusal.
+		const flags = flagNotation('Diluc E C');
+		expect(flags).toHaveLength(1);
+		expect(flags[0].text).toBe('C');
+		expect(flags[0].reason).toBe('approximate-cast');
+		expect(flagSeverity(flags[0].reason)).toBe('provisional');
+		expect(flags[0].message).toBe(
+			"Diluc's charged attack isn't measured yet — drawn with generic timing."
+		);
+	});
+
+	it('catches every charged token, including concatenated and bracketed ones', () => {
+		expect(texts('Diluc N2C C1 2[N1C]')).toEqual(['C', 'C1', 'C']);
+	});
+
+	it('flags sC on a character with no special charged attack', () => {
+		const flags = flagNotation('Hu Tao E sC');
+		expect(flags).toHaveLength(1);
+		expect(flags[0].text).toBe('sC');
+		expect(flagSeverity(flags[0].reason)).toBe('provisional');
+		expect(flags[0].message).toBe('Hu Tao has no special charged attack — timed as a plain C.');
+	});
+
+	it('says nothing about sC where it is declared', () => {
+		expect(flagNotation('Varka E sC')).toEqual([]);
+	});
+
+	it('says the plain C is the stand-in when it is one', () => {
+		// "timed as a plain C" would be true and useless: Diluc's plain C is
+		// itself generic, so the sentence that says so wins.
+		expect(flagNotation('Diluc sC')[0].message).toMatch(/charged attack isn't measured yet/);
+	});
+
+	it('says nothing about a bow’s C, A or sC — its aimed shot is measured', () => {
+		expect(flagNotation('Ganyu C1 C A sC')).toEqual([]);
+	});
+});
