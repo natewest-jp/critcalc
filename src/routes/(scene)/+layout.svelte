@@ -302,6 +302,7 @@
 			></div>
 			<div
 				class="scene-footer"
+				class:scene-footer--page={pathname !== '/'}
 				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 				out:fade={{ duration: FADE_OUT_MS }}
 			>
@@ -527,6 +528,16 @@
 		justify-content: center;
 		z-index: 4;
 		pointer-events: none;
+	}
+
+	/* A SHORT screen's page carries the footer at the END of its panel instead
+	   (the pages layout), so the fixed one steps aside there — the landing
+	   keeps it. (max-height: 30rem): breakpoints.ts § THE HEIGHT AXIS; the
+	   literal, because custom properties do not work in media queries. */
+	@media (max-height: 30rem) {
+		.scene-footer--page {
+			display: none;
+		}
 	}
 
 	/* Full-frame dark gradient beneath the footer (dark navy → transparent),

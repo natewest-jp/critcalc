@@ -5,6 +5,7 @@
 	import { fade } from 'svelte/transition';
 	import { FADE_DURATION_MS, FADE_OUT_MS, revealDelayMs } from '$lib/landing/transition';
 	import { motion, T_QUICK } from '$lib/motion';
+	import SiteFooter from '$lib/components/SiteFooter.svelte';
 
 	let { children } = $props();
 	const pathname = $derived(page.url.pathname);
@@ -48,6 +49,9 @@
 				{@render children()}
 			</div>
 		{/key}
+		<!-- The legal footer's SHORT-screen place: the end of the reading (see
+		     the style). Shown only there, where the fixed one steps aside. -->
+		<div class="pages-legal"><SiteFooter inPanel /></div>
 	</main>
 </div>
 
@@ -80,6 +84,26 @@
 		padding: clamp(1.4rem, 3vw, 2.4rem);
 		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 		will-change: transform;
+	}
+
+	/* ── A SHORT SCREEN (responsive sweep §3 item 7, ⚓ Nate 2026-10-15) ──
+	   (max-height: 30rem) — breakpoints.ts § THE HEIGHT AXIS; the literal,
+	   because custom properties do not work in media queries. On a landscape
+	   phone the fixed chrome and footer took 148px and left the panel 170–280px
+	   to read in. So the panel runs to the screen's foot, and the legal footer
+	   is the last thing IN it, met at the end of the scroll; the fixed one
+	   steps aside (the scene layout). The landing keeps its fixed footer. */
+	.pages-legal {
+		display: none;
+	}
+	@media (max-height: 30rem) {
+		.pages-panel {
+			bottom: clamp(0.5rem, 1.5vh, 1rem);
+		}
+		.pages-legal {
+			display: block;
+			margin-top: 2rem;
+		}
 	}
 
 	/* Typography for the content itself is the shared `.prose` class in app.css

@@ -3,9 +3,13 @@
 	 layout). Quiet dimmed tone, no hover. -->
 <script lang="ts">
 	import HRule from '$lib/components/HRule.svelte';
+
+	/** The copy at the END of a page panel (short screens — see the pages
+	 *  layout), which is transform-placed: its fade goes in the PAINT. */
+	let { inPanel = false }: { inPanel?: boolean } = $props();
 </script>
 
-<footer class="ftr">
+<footer class="ftr" class:ftr--panel={inPanel}>
 	<!-- Test placement of the center-marked rule (Nate, 2026-07-26): same
 	     measure as the disclaimer beneath it, so the two read as one block.
 	     Shows on the landing AND the static content pages — the footer is
@@ -30,6 +34,19 @@
 		color: var(--muted);
 		padding: 0 1rem;
 		opacity: 0.6;
+	}
+	/* Inside the parallaxed page panel the 0.6 moves into the paint (the
+	   sub-pixel law: element opacity on a transform-placed subtree is
+	   rasterized at rounded coordinates and dances in WebKit). The rule's own
+	   fade is HRule's group opacity over opaque parts, its documented form,
+	   so it takes the product. */
+	.ftr--panel {
+		opacity: 1;
+		color: color-mix(in srgb, var(--muted) 60%, transparent);
+		padding: 0;
+	}
+	.ftr--panel .ftr__rule {
+		--rule-opacity: 0.21;
 	}
 
 	/* Same measure as the legal text below it — the rule sizes to the content
