@@ -175,25 +175,44 @@
 	let conOpen = $state(false);
 	let conX = $state(0);
 	let conY = $state(0);
-	let conFlip = $state(false);
+	let conAnchor = $state<Anchor | null>(null);
+	let conEl = $state<HTMLDivElement | undefined>();
 	let loadoutOpen = $state(false);
 	let loadoutX = $state(0);
 	let loadoutY = $state(0);
-	let loadoutFlip = $state(false);
+	let loadoutAnchor = $state<Anchor | null>(null);
+	let loadoutEl = $state<HTMLDivElement | undefined>();
 	let loadoutSection = $state<LoadoutSection>('artifact');
 
-	// The widest picker (the loadout panel) — the flip decision's estimate, since
-	// the popover hasn't rendered when the side is chosen.
-	const POPOVER_W = 220;
+	// The chip's horizontal edges and vertical centre, read at the click.
+	type Anchor = { left: number; right: number; y: number };
+	// The gap to the chip, and the least margin to either screen edge.
+	const POPOVER_GAP = 8;
 
-	function anchorTo(e: MouseEvent): { x: number; y: number; flip: boolean } {
+	function anchorTo(e: MouseEvent): Anchor {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		// Default opens to the chip's right (the planner's left-edge portrait
-		// column); flip to the chip's left when that would overflow the viewport
-		// (the row form's rightmost cards at narrow widths).
-		const flip = rect.right + 8 + POPOVER_W > window.innerWidth;
-		return { x: flip ? rect.left - 8 : rect.right + 8, y: rect.top + rect.height / 2, flip };
+		return { left: rect.left, right: rect.right, y: rect.top + rect.height / 2 };
 	}
+
+	// Opens to the chip's right (the planner's left-edge portrait column); to
+	// its left when the right can't hold it; then CLAMPED inside the screen.
+	// The bench row's middle cards at 320–430 have room on neither side — a
+	// side choice alone opened the loadout panel up to 98px off the left edge,
+	// out of reach. Measured from the RENDERED picker: a single 220 estimate
+	// was smaller than the 226px loadout panel, so the first card at 320
+	// didn't flip and spilled 5px off the right.
+	function placeBeside(anchor: Anchor, w: number): number {
+		const vw = document.documentElement.clientWidth;
+		let x = anchor.right + POPOVER_GAP;
+		if (x + w + POPOVER_GAP > vw) x = anchor.left - POPOVER_GAP - w;
+		return Math.max(POPOVER_GAP, Math.min(x, vw - w - POPOVER_GAP));
+	}
+	$effect(() => {
+		if (conEl && conAnchor) conX = placeBeside(conAnchor, conEl.offsetWidth);
+	});
+	$effect(() => {
+		if (loadoutEl && loadoutAnchor) loadoutX = placeBeside(loadoutAnchor, loadoutEl.offsetWidth);
+	});
 
 	function openConstellation(e: MouseEvent) {
 		e.stopPropagation();
@@ -202,7 +221,8 @@
 			conOpen = false;
 			return;
 		}
-		({ x: conX, y: conY, flip: conFlip } = anchorTo(e));
+		conAnchor = anchorTo(e);
+		conY = conAnchor.y;
 		conOpen = true;
 	}
 	function chooseCon(level: number) {
@@ -220,7 +240,8 @@
 			return;
 		}
 		loadoutSection = section;
-		({ x: loadoutX, y: loadoutY, flip: loadoutFlip } = anchorTo(e));
+		loadoutAnchor = anchorTo(e);
+		loadoutY = loadoutAnchor.y;
 		loadoutOpen = true;
 	}
 
@@ -408,7 +429,7 @@
 {#if conOpen}
 	<div
 		class="sp-popover"
-		class:sp-popover--flip={conFlip}
+		bind:this={conEl}
 		use:portal
 		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
@@ -430,7 +451,7 @@
 {#if loadoutOpen && char}
 	<div
 		class="sp-popover sp-popover--panel"
-		class:sp-popover--flip={loadoutFlip}
+		bind:this={loadoutEl}
 		use:portal
 		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
@@ -990,11 +1011,6 @@
 	.sp-popover {
 		position: fixed;
 		transform: translateY(-50%);
-	}
-	/* Anchored at the chip's LEFT edge when the right side can't fit it — same
-	   vertical centering. */
-	.sp-popover--flip {
-		transform: translate(-100%, -50%);
 	}
 	.sp-popover {
 		z-index: 950;
