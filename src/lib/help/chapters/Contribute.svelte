@@ -64,8 +64,8 @@
 	<p>
 		Send reports through the
 		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>. Inside
-		a tool, <strong>Report a problem</strong> in the ⋯ menu opens the same form with a link to what you’re
-		looking at already filled in.
+		a tool, <strong>Report a problem</strong> in its More menu opens the same form with a link to what
+		you’re looking at already filled in.
 	</p>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	<p>
