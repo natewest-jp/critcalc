@@ -5463,6 +5463,18 @@
 		flex-direction: column;
 		flex: 1;
 		min-width: 0;
+		/* ── A READING MEASURE (responsive sweep 2026-10-15, §3 item 14) ─────
+		   140 characters of the notation, then it wraps: the box ran to 196
+		   characters a line at 1920 and 391 at 3440. Its left edge stays the
+		   tracks' (the composer's padding), and the history pair follows the
+		   bounded field instead of standing at the far end of the row.
+		   ⚠ The editor's own metrics, restated (as .rp-history's height is):
+		   IBM Plex Mono advances 0.6em, at notationEditorExtension's 13px, plus
+		   .cm-content's 12px a side — change one, change the other. `ch` cannot
+		   say it: it resolves in THIS box's font, which is the body face.
+		   No media query: the field is narrower than this below ~1500px, which
+		   is above `wide` (71rem), so the bound only ever binds there. */
+		max-width: calc(140 * 0.6 * 13px + 2 * 12px);
 	}
 	/* The history pair. A bare flex group, not a plate — same reasoning as band
 	   B's .rp-zoom: the buttons paint themselves, and wrapping them in a second
