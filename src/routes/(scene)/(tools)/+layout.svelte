@@ -30,10 +30,10 @@
 	import { documentBar } from '$lib/documentBar.svelte';
 	import ReportLink from '$lib/components/ReportLink.svelte';
 	import { feedbackToolForPath } from '$lib/feedback';
-	import { savedNotations } from '$lib/stores';
+	import { savedNotations, siteSettings } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
 	import { benchBand } from '$lib/benchBand.svelte';
-	import { attachMediaFlags } from '$lib/media.svelte';
+	import { attachMediaFlags, benchRowHidden } from '$lib/media.svelte';
 
 	let { children } = $props();
 
@@ -885,10 +885,17 @@
 		     [data-bench-anchor] gutter and riding the pan clock in and out.
 		     Inside .tool-main so it scrolls with the page it's
 		     docked to; above the page layers so it stays interactive. -->
+		<!-- ↻ 2026-10-15: and hidden while the planner's bench ROW is turned off
+		     (band B's Bench plate) — the dock is display:none then, so the
+		     strip would otherwise land 0×0 at its corner. The same condition
+		     ToolStack drops the reserve on (`benchRowHidden`), and the anchor's
+		     ResizeObserver re-snaps the strip when the row comes back. -->
 		<div
 			class="bench-band-mount"
 			bind:this={benchMount}
-			style:visibility={benchVisible ? 'visible' : 'hidden'}
+			style:visibility={benchVisible && !benchRowHidden($siteSettings.showBenchRow)
+				? 'visible'
+				: 'hidden'}
 		>
 			<!-- ↻ TAIL ROUND 2026-08-12: four props gone. The strip used to be told
 			     how tall to be, measured from the dock so its bottom edge met the

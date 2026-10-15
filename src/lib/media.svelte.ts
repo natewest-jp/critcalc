@@ -75,3 +75,16 @@ export function short(): boolean {
 export function narrowForm(): boolean {
 	return flags.toolMin || height.short;
 }
+
+/**
+ * Is the planner's bench row HIDDEN (band B's Bench plate, 2026-10-15)? Only
+ * in the narrow form — where the bench is a row — and only when the reader
+ * turned it off (`siteSettings.showBenchRow`). The desk column ignores the
+ * setting. ONE condition, two readers: ToolStack's reserve (via the planner)
+ * and the ribbon's visibility (the tools layout), which must never disagree.
+ * ⚠ False until the flags attach in onMount, so the first paint is the
+ * default (the row shown) and the choice is restored after hydration.
+ */
+export function benchRowHidden(showBenchRow: boolean): boolean {
+	return narrowForm() && !showBenchRow;
+}

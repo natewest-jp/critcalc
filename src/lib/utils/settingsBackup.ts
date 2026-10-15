@@ -111,6 +111,8 @@ function sanitizeSiteSettings(v: unknown): Record<string, unknown> | undefined {
 		}
 		out.timelineLayers = layers;
 	}
+	// The bench row (2026-10-15) — the same rule: present only once toggled.
+	if (typeof v.benchRow === 'boolean') out.benchRow = v.benchRow;
 	// Playback sound (2026-09-29) — each choice only if it names one that exists.
 	if (typeof v.playbackSound === 'boolean') out.playbackSound = v.playbackSound;
 	const oneOf = (key: string, allowed: readonly string[]) => {
