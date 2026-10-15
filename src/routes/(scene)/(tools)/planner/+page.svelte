@@ -484,9 +484,12 @@
 			     History kept: Reset resets the ZOOM alone (⚓ Nate 2026-08-17 —
 			     a panel and a layer are things you opened; sweeping them away as
 			     a side effect of fixing your zoom does more than you asked), and
-			     is inert at the resting scale. -->
+			     is inert at the resting scale.
+			     It hangs from the trigger's START edge: Zoom leads band B's
+			     start zone, so the default `end` grew the panel leftward past
+			     the band and over the bench ribbon (864–1136, 2026-10-15). -->
 			<span class="rp-zoom-menu">
-				<BandMenu mark="zoomIn" label="Zoom" ariaLabel="Zoom" role="dialog">
+				<BandMenu mark="zoomIn" label="Zoom" ariaLabel="Zoom" role="dialog" align="start">
 					{#snippet items()}
 						<div class="rp-zoom-panel">
 							<div class="rp-zoom-row">
