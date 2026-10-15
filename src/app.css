@@ -3131,6 +3131,14 @@ img {
    shell's inset reached every .scroll-fade INSIDE it and masked the top 64px
    of the Team Builder's grid (Nate, the same day). Each scroller's inset is
    its own. */
+/* How far the Planner's sticky aside has risen toward the chrome (ToolColumns
+   `asideSticky`, a scroll-driven animation): registered so it interpolates as
+   a length. */
+@property --aside-rise {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
 @property --scroll-fade-inset {
 	syntax: '<length>';
 	inherits: false;

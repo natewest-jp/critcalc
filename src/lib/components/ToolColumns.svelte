@@ -230,6 +230,45 @@
 		height: min(100%, calc(100svh - var(--aside-top) - var(--tool-pad-bottom, 1.5rem)));
 	}
 
+	/* ── TRIAL: THE COLUMN RIDES UP TO THE CHROME (responsive sweep 2026-10-15
+	   item 11 follow-up, ⚓ Nate) ─────────────────────────────────────────────
+	   Held at the surface's start, the column left a slab of night above it
+	   once the chart rode up. Here it rides up WITH the page until its top
+	   meets the chrome's foot plus the bands' gap (--aside-low), then holds,
+	   and its height grows by exactly the distance it rose (--aside-rise), so
+	   its foot stays --tool-pad-bottom above the screen's the whole way.
+	   · The rise is a SCROLL-DRIVEN animation of one registered length
+	     (app.css @property --aside-rise) on the tool shell's named timeline
+	     (--tool-scroll, the tools layout), over the first --aside-top −
+	     --aside-low px of scroll — pure CSS, no listener.
+	   · Inside @supports: an engine without scroll timelines keeps the rule
+	     above, the column held at the surface's start.
+	   · The box still never outgrows the wrapper (min(100%, …)), so the page's
+	     scroll height cannot change. */
+	@supports (animation-timeline: scroll()) {
+		.tc-aside--sticky {
+			--aside-low: calc(var(--chrome-h, 64px) + var(--band-gap, 6px));
+		}
+		.tc-aside--sticky .tc-aside-box {
+			top: var(--aside-low);
+			height: min(
+				100%,
+				calc(100svh - var(--aside-top) - var(--tool-pad-bottom, 1.5rem) + var(--aside-rise))
+			);
+			animation: tc-aside-rise linear both;
+			animation-timeline: --tool-scroll;
+			animation-range: 0px calc(var(--aside-top) - var(--aside-low));
+		}
+	}
+	@keyframes tc-aside-rise {
+		from {
+			--aside-rise: 0px;
+		}
+		to {
+			--aside-rise: calc(var(--aside-top) - var(--aside-low));
+		}
+	}
+
 	/* Groundless: the column stops being a box and becomes a gutter its occupant
 	   fills with its own objects. Keeps the context (the sections inside still
 	   read the dark palette) and keeps min-height/flex — it loses only the paint
