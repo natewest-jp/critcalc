@@ -465,8 +465,8 @@ Nate answered §3 in groups. Per item:
   - 13 is left, 17 is accepted, and 20 is left for the Builder's phone pass.
   - **22:** the source has no higher-resolution avatars, so the slight
     softness of the side portraits on a 2× display is accepted.
-- **Item 8** is Nate's check on his iPhone: open a long rotation's dock with
-  the keyboard up.
+- **Item 8:** accepted with no cap. Nate checked a long rotation's dock with
+  the keyboard up on his iPhone: the editor takes the space while you type.
 - **Items 26–31:** approved, except **26**, which Nate wanted reverted.
 
 The work ran as five fixers on `sweep/responsive`: 18 commits, `b2d4cf42` to
@@ -594,7 +594,8 @@ The in-panel copy fades in its paint, not through element opacity.
 | 568×320 | 170px                         | 234px |
 | 932×430 | 280px                         | 344px |
 
-**8. The open dock with a keyboard up:** Nate's check on the iPhone.
+**8. The open dock with a keyboard up: accepted, no cap.** Nate checked it on
+his iPhone; the editor taking the space while typing is right.
 
 **9. The legal line on narrow phones: done, `b0b3d075`.** Below compact it
 steps from `--fs-md` to `--fs-sm` (12 → 11px), and the rule's bottom margin
