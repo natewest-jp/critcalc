@@ -179,9 +179,10 @@
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Human timing</h2>
 		<p class="sp-lede">
-			The Rotation Planner is frame-perfect by default: every cancel lands on the first frame the
-			game allows, the way a macro plays. <strong>Human timing</strong> in its view bar times a rotation
-			the way a person plays it. These settings say what that changes.
+			Without Human timing, the Rotation Planner is frame-perfect: every cancel lands on the first
+			frame the game allows, the way a macro plays. <strong>Human timing</strong>, on by default in
+			its view bar, times a rotation the way a person plays it. These settings say what that
+			changes.
 		</p>
 
 		<div class="sp-row">
