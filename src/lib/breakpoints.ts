@@ -89,3 +89,39 @@ export type Breakpoint = keyof typeof BP;
 export function belowQuery(bp: Breakpoint): string {
 	return `(max-width: ${BP[bp]})`;
 }
+
+/**
+ * THE HEIGHT AXIS (responsive sweep 2026-10-15, §3 item 3 — ⚓ Nate approved).
+ *
+ * A second axis, kept OUT of the width table the way `pointer: coarse` is: a
+ * landscape phone is 568–932 wide, so no width rung can find it (932×430 is
+ * above `toolMin` and gets the desk form). ONE condition:
+ *
+ * `short` — `(max-height: 30rem)` / 480px. ⚓ LANDSCAPE PHONES, whose layout
+ * viewport is 320–430 tall (568×320, 667×375, 844×390, 896×414, 932×430).
+ * Every surface the sweep measured there ran out of HEIGHT, not width: 19–146px
+ * of planner chart at rest, a 13–83px Builder grid under its pinned filter
+ * strip, landing captions 44–106px into the legal footer, 170–280px of page
+ * panel. 30rem sits 50px over the tallest of them and well under a laptop
+ * window (1366×768 less the browser's own chrome is ~650). ⚠ REM, like the
+ * width rungs, so it scales with the root font size.
+ *
+ * ⚠ It ADDS to a width condition, never replaces one: a surface with a narrow
+ * form writes `(max-width: <rung>), (max-height: 30rem)` (a media query LIST
+ * is an OR), and the TS side reads `narrowFormQuery` / `narrowForm()`. Guarded
+ * by `breakpoints.test.ts`: a height literal in an `@media` is this one.
+ */
+export const HEIGHT = {
+	short: '30rem'
+} as const;
+
+/** `(max-height: 30rem)` — the short-screen condition, for `matchMedia`. */
+export const SHORT_QUERY = `(max-height: ${HEIGHT.short})`;
+
+/**
+ * The PLANNER'S NARROW FORM — below `toolMin` OR short (sweep §3 item 4): the
+ * bench as a row, slots at their own heights, layers off and zoom 30 at load.
+ * ⚠ Only those. The aside DRAWER and the band folds stay width-only: they
+ * answer a width shortage, and a short screen has the width.
+ */
+export const narrowFormQuery = `${belowQuery('toolMin')}, ${SHORT_QUERY}`;

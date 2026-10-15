@@ -19,7 +19,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { BP } from './breakpoints';
+import { BP, HEIGHT } from './breakpoints';
 
 const SRC = join(__dirname, '..');
 
@@ -42,6 +42,9 @@ const walk = (dir: string, out: string[] = []): string[] => {
 };
 
 const WIDTH_QUERY = /@media[^{]*?\((?:min|max)-width:\s*([\d.]+(?:px|rem|em))\)/g;
+/** Every height feature anywhere in an `@media` prelude (a list may hold several). */
+const MEDIA_PRELUDE = /@media([^{]*)\{/g;
+const HEIGHT_FEATURE = /\((?:min|max)-height:\s*([\d.]+(?:px|rem|em))\)/g;
 
 describe('breakpoint table', () => {
 	const allowed = new Set<string>([...Object.values(BP), ...Object.keys(CONTENT_STOPS)]);
@@ -72,5 +75,22 @@ describe('breakpoint table', () => {
 		const values = Object.values(BP) as string[];
 		expect(new Set(values).size).toBe(values.length);
 		for (const v of values) expect(v).toMatch(/^[\d.]+(px|rem)$/);
+	});
+
+	it('every height @media literal is the height axis (THE HEIGHT AXIS, breakpoints.ts)', () => {
+		const heights = new Set<string>(Object.values(HEIGHT));
+		const strays: string[] = [];
+		for (const file of walk(SRC)) {
+			const text = readFileSync(file, 'utf8');
+			for (const m of text.matchAll(MEDIA_PRELUDE)) {
+				for (const h of m[1].matchAll(HEIGHT_FEATURE)) {
+					if (!heights.has(h[1])) strays.push(`${relative(SRC, file)}: @media${m[1].trim()}`);
+				}
+			}
+		}
+		expect(
+			strays,
+			'a height literal outside HEIGHT in $lib/breakpoints.ts — a short screen is (max-height: 30rem)'
+		).toEqual([]);
 	});
 });

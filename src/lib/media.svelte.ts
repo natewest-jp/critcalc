@@ -17,7 +17,7 @@
  * attach would be a state write inside whatever `$derived` first asked, which
  * Svelte 5 refuses (and rightly).
  */
-import { belowQuery, BP, type Breakpoint } from './breakpoints';
+import { belowQuery, BP, SHORT_QUERY, type Breakpoint } from './breakpoints';
 
 const flags = $state<Record<Breakpoint, boolean>>({
 	compact: false,
@@ -27,6 +27,9 @@ const flags = $state<Record<Breakpoint, boolean>>({
 	broad: false,
 	vast: false
 });
+
+/** The height axis's one condition (breakpoints.ts § THE HEIGHT AXIS). */
+const height = $state({ short: false });
 
 let attached = false;
 
@@ -44,6 +47,13 @@ export function attachMediaFlags(): () => void {
 		mq.addEventListener('change', apply);
 		detach.push(() => mq.removeEventListener('change', apply));
 	}
+	const shortMq = window.matchMedia(SHORT_QUERY);
+	const applyShort = () => {
+		height.short = shortMq.matches;
+	};
+	applyShort();
+	shortMq.addEventListener('change', applyShort);
+	detach.push(() => shortMq.removeEventListener('change', applyShort));
 	return () => {
 		for (const d of detach) d();
 		attached = false;
@@ -53,4 +63,14 @@ export function attachMediaFlags(): () => void {
 /** Is the viewport at or below this breakpoint? Reactive when read in a rune. */
 export function below(bp: Breakpoint): boolean {
 	return flags[bp];
+}
+
+/** Is the viewport short (`(max-height: 30rem)`, a landscape phone)? Reactive. */
+export function short(): boolean {
+	return height.short;
+}
+
+/** The planner's narrow form: below `toolMin` OR short (`narrowFormQuery`). */
+export function narrowForm(): boolean {
+	return flags.toolMin || height.short;
 }
