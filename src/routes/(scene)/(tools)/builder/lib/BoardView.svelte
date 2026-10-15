@@ -379,12 +379,18 @@
 										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
 										>
 									{:else}
+										<!-- ↻ Responsive sweep 2026-10-15 item 21 (⚓ Nate): the plate
+										     says "Rotation" and the pin Mark says the verb; "Pin a
+										     rotation" was cut in the column's 62px of label room. The
+										     aria-label keeps the whole sentence. -->
 										<BandMenu
 											mark="pin"
 											size="sm"
 											align="end"
-											label={pin?.name ?? 'Pin a rotation'}
-											ariaLabel="Pinned rotation for {name}"
+											label={pin?.name ?? 'Rotation'}
+											ariaLabel={pin
+												? `Pinned rotation for ${name}: ${pin.name}`
+												: `Pin a rotation for ${name}`}
 										>
 											{#snippet items(close)}
 												{#each [null, ...rotations] as r (r?.id ?? '')}
