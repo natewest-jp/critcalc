@@ -114,12 +114,16 @@
 	}
 </script>
 
-{#snippet addControl()}
+<!-- `folds`: the dropdown form's + leaves the row below `compact` and becomes
+     the menu's last row (see .doc-tabs-new). Only the plain + folds — a
+     preset menu (`newItems`) stays a menu of its own. -->
+{#snippet addControl(folds = false)}
 	{#if newItems}
 		<BandMenu compact mark="plus" ariaLabel={model.newLabel} items={newItems} />
 	{:else}
 		<button
 			class="btn btn--icon doc-tab-add"
+			class:doc-tab-add--folds={folds}
 			onclick={() => model.addNew?.()}
 			aria-label={model.newLabel}
 		>
@@ -192,7 +196,7 @@
 					<Mark name="chevron" size={11} />
 				</button>
 			{/if}
-			{@render addControl()}
+			{@render addControl(true)}
 		</div>
 
 		{#if menuOpen}
@@ -258,6 +262,32 @@
 						{/if}
 					</div>
 				{/each}
+				{#if !newItems && model.addNew}
+					<!-- The + folded into the menu below `compact` (responsive sweep
+					     2026-10-15, §3 item 24): at 320 the trigger kept four
+					     characters of the name, and the + was 30px of it. Its own
+					     label, shown; hidden above `compact`, where the + stays. -->
+					<div
+						class="doc-tabs-option doc-tabs-new"
+						role="option"
+						aria-selected="false"
+						tabindex="0"
+						onclick={() => {
+							closeMenu();
+							model.addNew?.();
+						}}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								closeMenu();
+								model.addNew?.();
+							}
+						}}
+					>
+						<Mark name="plus" size={11} />
+						<span class="doc-tab-label">{model.newLabel}</span>
+					</div>
+				{/if}
 			</div>
 		{/if}
 	{:else}
@@ -446,6 +476,21 @@
 	.doc-tabs-option--active {
 		color: var(--text);
 		box-shadow: inset 0 0 0 1px var(--sel-ring);
+	}
+	/* The folded + (see the markup). The row exists at every width and shows
+	   only where the trigger's + is gone, so the two are one switch.
+	   ⚠ Literal from $lib/breakpoints.ts: `compact`, 40rem — the narrow round's
+	   rung where a band control keeps its mark and drops its word. */
+	.doc-tabs-new {
+		display: none;
+	}
+	@media (max-width: 40rem) {
+		.doc-tabs-new {
+			display: flex;
+		}
+		.doc-tab-add--folds {
+			display: none;
+		}
 	}
 
 	/* gap: BAND_ITEM_GAP, shared with the actions zone across the row (⚓ Nate
