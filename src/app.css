@@ -3586,6 +3586,194 @@ img {
 	}
 }
 
+/* ── THE COARSE-POINTER HIT BOXES (touch round, 2026-10-15, ⚓ Nate: 44px) ──
+   The rest of the survey's open item 1, on the slider's terms: under a coarse
+   pointer a control's TAP area grows and its PAINT does not. Every control
+   below wears an empty, absolutely placed ::before that stretches it toward
+   44px per axis — a box already 44 or more is left alone (the max(0, …)) —
+   and the paint, the sizes and every hand-tuned number stay as they are.
+   🎛️ THE NEIGHBOUR RULE. A grown box may only take HALF the gap to the next
+   target on that side (--hit-x / --hit-y, or one side's --hit-top/-right/
+   -bottom/-left), so a tap in a gap goes to the NEARER control and no box
+   ever reaches into another's paint. A side held short hands what it can't
+   take to the opposite side, if that side has room. Where the rule holds a
+   control under 44 the reason is its neighbours — dense rows Nate tuned by
+   hand — and the record (docs/responsive-sweep-2026-10-15.md §3 item 1)
+   lists each one. Where two rows of one kind wrap (the fingerprint), the
+   later row paints over the earlier one's reach, so its own glyphs keep
+   their area.
+   ⚠ ::before, on every host. Each host must be positioned: :where() makes
+   the `relative` lose to any component that places its control itself
+   (.sp-disc-con is absolute and stays absolute).
+   ⚠ An `overflow: hidden` host or ancestor clips its box, and a clipped box
+   doesn't take taps — which is why the dock's collapsed strip (an ellipsis
+   clip) and the document tabs (the strip clips) are not in the list.
+   ⚠ This list names component classes from the one place every hit box can
+   be read together; a renamed class drops out of it silently.
+   ⚠ `pointer: coarse` is not a width — not in the breakpoint table. */
+@media (pointer: coarse) {
+	:where(
+		.chrome-btn,
+		.overlay-close,
+		.band button,
+		.band .toggle,
+		.tab-close,
+		.rp-history .btn,
+		.rp-dock-key,
+		.sp-disc-con,
+		.fp-find,
+		.dr-source .check,
+		.dr-hit .check,
+		.cov-search-hit
+	) {
+		position: relative;
+	}
+	:where(
+		.chrome-btn,
+		.overlay-close,
+		.band button,
+		.band .toggle,
+		.tab-close,
+		.rp-history .btn,
+		.rp-dock-key,
+		.sp-disc-con,
+		.fp-find,
+		.dr-source .check,
+		.dr-hit .check,
+		.cov-search-hit
+	)::before {
+		content: '';
+		position: absolute;
+		/* Each side takes half of what the box lacks of 44px, or more when the
+		   opposite side is held short — never more than its own cap, never
+		   less than nothing. (100% is the box's height in top/bottom and its
+		   width in left/right.) */
+		top: calc(
+			-1 *
+				max(
+					0px,
+					min(
+						var(--hit-top, var(--hit-y, 22px)),
+						max((44px - 100%) / 2, 44px - 100% - var(--hit-bottom, var(--hit-y, 22px)))
+					)
+				)
+		);
+		bottom: calc(
+			-1 *
+				max(
+					0px,
+					min(
+						var(--hit-bottom, var(--hit-y, 22px)),
+						max((44px - 100%) / 2, 44px - 100% - var(--hit-top, var(--hit-y, 22px)))
+					)
+				)
+		);
+		left: calc(
+			-1 *
+				max(
+					0px,
+					min(
+						var(--hit-left, var(--hit-x, 22px)),
+						max((44px - 100%) / 2, 44px - 100% - var(--hit-right, var(--hit-x, 22px)))
+					)
+				)
+		);
+		right: calc(
+			-1 *
+				max(
+					0px,
+					min(
+						var(--hit-right, var(--hit-x, 22px)),
+						max((44px - 100%) / 2, 44px - 100% - var(--hit-left, var(--hit-x, 22px)))
+					)
+				)
+		);
+	}
+
+	/* The site chrome: Navigate and Settings sit 6px apart. */
+	.chrome-btn::before {
+		--hit-x: 3px;
+	}
+	/* Band controls sit --band-item-gap apart. Band A's buttons are 7px over
+	   band B's (its tabs, 28px, only ~4.5) and ~16px under the chrome; band B
+	   has the bench row or the surface 7px or more below it. */
+	.band button::before,
+	.band .toggle::before {
+		--hit-x: calc(var(--band-item-gap, 4px) / 2);
+	}
+	.band-a button::before {
+		--hit-top: 8px;
+		--hit-bottom: 3px;
+	}
+	.band-b button::before,
+	.band-b .toggle::before {
+		--hit-top: 2px;
+		--hit-bottom: 6px;
+	}
+	/* A tab's ✕ grows inside its own tab (the strip clips the rest) and its
+	   menu row: 7px a side, about the tab's height. It takes that much of the
+	   label's end — the price of a ✕ inside the thing it closes. */
+	.band .tab-close::before,
+	.tab-close::before {
+		--hit-x: 7px;
+		--hit-top: 7px;
+		--hit-bottom: 7px;
+	}
+	/* Undo over Redo, 2px apart, with the notation box to their left. */
+	.rp-history .btn::before {
+		--hit-left: 4px;
+		--hit-right: 16px;
+		--hit-y: 1px;
+	}
+	.rp-history .btn:first-child::before {
+		--hit-top: 8px;
+	}
+	.rp-history .btn:last-child::before {
+		--hit-bottom: 12px;
+	}
+	/* The dock's key row: keys 6px apart, the composer's padding under them.
+	   The row scrolls sideways, and a scroller clips — so it takes the boxes'
+	   reach as padding and gives it back as margin: the same place, no paint,
+	   room inside the clip. */
+	.rp-dock-keys {
+		padding: 4px 3px;
+		margin: -4px -3px;
+	}
+	.rp-dock-key::before {
+		--hit-x: 3px;
+		--hit-y: 4px;
+	}
+	/* The constellation sits ON the portrait, and the portrait is the card's
+	   own action — so it grows only DOWN, into the bench's padding, and a
+	   hair right toward the loadout pill; never further into the disc (on a
+	   38px phone disc its own box already covers a sixth of it). */
+	.sp-disc-con::before {
+		--hit-top: 0px;
+		--hit-left: 0px;
+		--hit-right: 1px;
+		--hit-bottom: 10px;
+	}
+	/* The fingerprint: glyphs 6–7px apart in a cluster, the team's last row
+	   (set bonuses, the pin) ~14px above. */
+	.fp-find::before {
+		--hit-x: 3px;
+		--hit-top: 6px;
+	}
+	/* RES & DEF's shred list: rows abut at 1.75rem, so a toggle fills its own
+	   row and no more — and takes the row's width up to its amount. */
+	.dr-source .check {
+		flex: 1 1 auto;
+	}
+	.dr-source .check::before {
+		--hit-x: 0px;
+		--hit-y: 5px;
+	}
+	/* The Coverage search sits 0.5rem over the chip row. */
+	.cov-search-hit::before {
+		--hit-y: 4px;
+	}
+}
+
 /* ══ THE INSTRUMENT LAYOUT (2026-10-06, ⚓ Nate) ═══════════════════════════════
    Every Visualizers instrument but the Crit Heatmap is the same three slots,
    and each one only says which of its parts goes where:

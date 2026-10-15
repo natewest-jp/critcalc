@@ -226,13 +226,17 @@
 		     do nothing there, so they return with "Show all characters". -->
 		{#if pinned.length === 0}
 			<div class="cov-controls">
-				<input
-					class="field cov-search"
-					type="search"
-					placeholder="Search characters"
-					aria-label="Search characters"
-					bind:value={search}
-				/>
+				<!-- The label is the search's touch box (app.css, the coarse-pointer
+				     hit boxes): an input can wear no ::before of its own. -->
+				<label class="cov-search-hit">
+					<input
+						class="field cov-search"
+						type="search"
+						placeholder="Search characters"
+						aria-label="Search characters"
+						bind:value={search}
+					/>
+				</label>
 				<div class="chips" role="group" aria-label="Show">
 					<!-- A phrase, so it opts out of the chip's capitalize (app.css .chip). -->
 					<button
@@ -496,8 +500,13 @@
 	/* At the chips' scale: the shared .field is sized for a form row, and beside
 	   a line of chips it read a size too large. The focus ring is drawn INSIDE —
 	   the chapter's scroller clips an outside ring at its left edge. */
-	.cov-search {
+	.cov-search-hit {
+		display: flex;
 		flex: 1 1 12rem;
+		min-width: 0;
+	}
+	.cov-search {
+		flex: 1 1 auto;
 		width: auto;
 		min-width: 0;
 		padding: 0.3rem 0.6rem;
