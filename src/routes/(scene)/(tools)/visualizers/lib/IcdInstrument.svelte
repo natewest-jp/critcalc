@@ -90,6 +90,48 @@
 		rule = 'custom';
 	}
 
+	// ── Workspace handle (share) ───────────────────────────────────────────────
+	// The even string's sliders and the Custom rule's ride along even while an
+	// example or another rule is on screen: going back to them shows what was set.
+	export function getShareState() {
+		return {
+			v: 1,
+			source,
+			interval,
+			hits: hitCount,
+			rule,
+			custom: [customTimer, customHits, customCap],
+			element
+		};
+	}
+
+	export function applyShareState(state: unknown) {
+		if (typeof state !== 'object' || state === null) return;
+		const s = state as Record<string, unknown>;
+		if (s.v !== 1) return;
+		// Clamped to the slider's range and snapped to its step, `per` steps to
+		// the unit — dividing by it keeps 0.45 from coming back as 0.45000000000000007
+		const num = (v: unknown, lo: number, hi: number, per = 1) =>
+			typeof v === 'number' && Number.isFinite(v)
+				? Math.round(Math.min(hi, Math.max(lo, v)) * per) / per
+				: undefined;
+		reset();
+		// an example brings its own rule and element, as picking it does
+		if (s.source === 'even' || ICD_EXAMPLES.some((e) => e.id === s.source))
+			pickSource(s.source as Source);
+		interval = num(s.interval, 0.1, 3, 20) ?? interval;
+		hitCount = num(s.hits, 5, 30) ?? hitCount;
+		if (Array.isArray(s.custom)) {
+			customTimer = num(s.custom[0], 0.5, 10, 10) ?? customTimer;
+			customHits = num(s.custom[1], 1, COUNTER_OFF) ?? customHits;
+			customCap = num(s.custom[2], 1, NO_LIMIT) ?? customCap;
+		}
+		if (s.rule === 'standard' || s.rule === 'none' || s.rule === 'custom') rule = s.rule;
+		// `own` only means something while an example is loaded
+		else if (s.rule === 'own' && source !== 'even') rule = 'own';
+		if (ELEMENTS.includes(s.element as ElementId)) element = s.element as ElementId;
+	}
+
 	const params = $derived<IcdParams>(
 		rule === 'standard'
 			? STANDARD_ICD

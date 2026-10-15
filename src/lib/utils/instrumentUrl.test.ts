@@ -23,6 +23,31 @@ describe('instrumentUrl codec', () => {
 		});
 	});
 
+	// The ICD Timeline's and Reaction Curves' shapes, as their getShareState
+	// writes them: a step-snapped float, a string id and a mixed tuple must all
+	// come back exactly, since each sanitizer compares against literal values.
+	it('round-trips the ICD Timeline state', async () => {
+		const state = {
+			v: 1,
+			source: 'layla',
+			interval: 0.45,
+			hits: 17,
+			rule: 'custom',
+			custom: [3.7, 9, 2],
+			element: 'cryo'
+		};
+		const param = await encodeInstrumentParam('icd', state);
+		const back = new URLSearchParams(new URLSearchParams({ i: param }).toString()).get('i');
+		expect(await decodeInstrumentParam(back)).toEqual({ id: 'icd', state });
+	});
+
+	it('round-trips the Reaction Curves state', async () => {
+		const state = { v: 1, family: 'lunar', em: 735, level: 95, rb: 40 };
+		const param = await encodeInstrumentParam('curves', state);
+		const back = new URLSearchParams(new URLSearchParams({ i: param }).toString()).get('i');
+		expect(await decodeInstrumentParam(back)).toEqual({ id: 'curves', state });
+	});
+
 	it('decodes a bare id with null state', async () => {
 		expect(await decodeInstrumentParam('artifact')).toEqual({ id: 'artifact', state: null });
 	});
