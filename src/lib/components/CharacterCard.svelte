@@ -176,6 +176,9 @@
 		/* 🎛️ The art's rounded corner and the name strip's height. */
 		--cc-corner: 22px;
 		--cc-name-h: 26px;
+		/* A wrapped name's line pitch (12px type): two lines and the strip's
+		   6px of padding make a 34px strip. */
+		--cc-name-lh: 14px;
 		/* 🎛️ The team frame's bars (Nate's 3/4). */
 		--cc-bar-top: 3px;
 		--cc-bar-bottom: 4px;
@@ -184,6 +187,10 @@
 		   (its width less the column, plus the name) and spread its rows. */
 		container-type: inline-size;
 		position: relative;
+		/* A column, so the pick button fills the cell the grid stretched this
+		   card to — see .cc-name. */
+		display: flex;
+		flex-direction: column;
 		border-radius: 6px;
 		background: var(--glass-sheer);
 		transition:
@@ -215,9 +222,10 @@
 
 	/* The whole card is the pick. */
 	.cc-main {
+		flex: 1;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) var(--cc-col);
-		grid-template-rows: auto var(--cc-name-h);
+		grid-template-rows: auto minmax(var(--cc-name-h), 1fr);
 		width: 100%;
 		padding: 0;
 		border: none;
@@ -334,23 +342,35 @@
 	}
 
 	/* ── The name: a parchment strip under the portrait only ── */
+	/* ↻ Responsive sweep 2026-10-15 item 23 (⚓ Nate): a name that doesn't fit
+	   takes a SECOND LINE instead of an ellipsis — six Travelers and Kuki
+	   Shinobu were cut by up to 19px at 390 and still 7px at 1440.
+	   The strip is --cc-name-h at least and two lines at most. ⚠ Its track is
+	   `1fr` and the card fills the cell the grid stretched it to, so every
+	   strip in a ROW grows with the tallest name in it and the parchment ends
+	   on one line across the row. The cap keeps a row grown by something else
+	   (a long fingerprint) from turning every strip into a slab: past two
+	   lines the sheer ground shows below. */
 	.cc-name {
 		grid-column: 1;
 		grid-row: 2;
-		height: var(--cc-name-h);
-		/* 2px short of the strip, so the name sits 1px high and clears the
-		   frame's bottom bar when the card is picked (⚓ Nate). */
-		line-height: calc(var(--cc-name-h) - 2px);
-		padding: 0 6px;
+		align-self: stretch;
+		max-height: calc(2 * var(--cc-name-lh) + 6px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		/* 2px more at the foot than the head, so the name sits 1px high and
+		   clears the frame's bottom bar when the card is picked (⚓ Nate) — one
+		   line lands where the old 24px line box in a 26px strip put it. */
+		padding: 2px 6px 4px;
 		border-radius: 0 0 6px 6px;
 		background: var(--surface);
 		color: var(--text);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
+		line-height: var(--cc-name-lh);
 		text-align: center;
-		white-space: nowrap;
 		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 
 	/* ── The magnifier: the boss disc's, 26px with a 14px mark — the width
@@ -392,8 +412,9 @@
 	   leaving the chip its top right. */
 	@media (hover: none) {
 		.cc-mag {
-			top: auto;
-			bottom: calc(var(--cc-name-h) + 4px);
+			/* From the TOP: the portrait is square (100cqw less the glyph
+			   column), and the name strip under it may be two lines tall. */
+			top: calc(100cqw - var(--cc-col) - 26px - 4px);
 			right: calc(var(--cc-col) + 4px);
 			opacity: 1;
 		}
