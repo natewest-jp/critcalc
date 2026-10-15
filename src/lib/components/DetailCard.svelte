@@ -357,11 +357,13 @@
 								<td class="dc-timing-slot">{ability.abilityType === 'skill' ? 'E' : 'Q'}</td>
 								<td class="dc-timing-name">{ability.name}</td>
 								<td class="dc-timing-val">
-									{#if 'cooldown' in ability && ability.cooldown}{ability.cooldown}s cooldown{/if}
+									{#if 'cooldown' in ability && ability.cooldown}<span class="dc-timing-part"
+											>{ability.cooldown}s cooldown</span
+										>{/if}
 									{#if 'charges' in ability && ability.charges && ability.charges > 1}
-										· {ability.charges} charges{/if}
+										<span class="dc-timing-part">· {ability.charges} charges</span>{/if}
 									{#if 'energyCost' in ability && ability.energyCost}
-										· {ability.energyCost} energy{/if}
+										<span class="dc-timing-part">· {ability.energyCost} energy</span>{/if}
 								</td>
 							</tr>
 						{/each}
@@ -643,5 +645,17 @@
 		text-align: right;
 		white-space: nowrap;
 		color: var(--muted);
+	}
+	/* Each fact holds together, so a wrapped value breaks only BETWEEN them. */
+	.dc-timing-part {
+		white-space: nowrap;
+	}
+	/* On a phone the value may wrap: at 320 "15s cooldown · 60 energy" needs
+	   300px against the panel's 275 and scrolled the card 5px sideways. Only
+	   below compact — wider, the name column is the one that gives. */
+	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
+		.dc-timing-val {
+			white-space: normal;
+		}
 	}
 </style>
