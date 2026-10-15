@@ -49,6 +49,7 @@
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
+	import ReportLink from '$lib/components/ReportLink.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type CardGlyph } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridSection } from '$lib/components/CharacterGrid.svelte';
@@ -1168,6 +1169,22 @@
 				<Mark name="share" />
 				<span class="tb-band-label">Share</span>
 			</button>
+			<!-- The Planner's ⋯, holding what is not a document action: the
+			     feedback form, carrying this lineup's share link. -->
+			<BandMenu compact mark="more" ariaLabel="More lineup actions">
+				{#snippet items(close)}
+					<ReportLink
+						class="band-menu-item"
+						role="menuitem"
+						prefill={{ category: 'broken', tool: 'builder', includeTech: true }}
+						shareUrl={() => boardBar.shareUrl()}
+						onclick={close}
+					>
+						<Mark name="report" />
+						Report a problem
+					</ReportLink>
+				{/snippet}
+			</BandMenu>
 		</div>
 	{/snippet}
 

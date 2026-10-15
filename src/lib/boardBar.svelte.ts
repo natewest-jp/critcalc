@@ -180,17 +180,24 @@ class BoardBarState {
 	/** Copy a `?b=` link to the active board. Teams and levels travel, pins
 	 *  never (§9.4). */
 	async shareLink() {
-		const board = boards.activeBoard;
-		if (!boardWorthKeeping(board)) return;
+		if (!boardWorthKeeping(boards.activeBoard)) return;
 		try {
-			const param = await encodeBoard(
-				toSharedBoard(board, get(savedNotations), get(constellations))
-			);
-			await navigator.clipboard.writeText(`${location.origin}/builder?b=${param}`);
+			const url = await this.shareUrl();
+			if (!url) return;
+			await navigator.clipboard.writeText(url);
 			documentBar.showNotice('Link copied');
 		} catch {
 			documentBar.showNotice('Share failed');
 		}
+	}
+
+	/** The `?b=` link to the active board — what Share copies, and what a
+	 *  problem report carries ($lib/feedback.ts). `null` for an empty board. */
+	async shareUrl(): Promise<string | null> {
+		const board = boards.activeBoard;
+		if (!boardWorthKeeping(board)) return null;
+		const param = await encodeBoard(toSharedBoard(board, get(savedNotations), get(constellations)));
+		return `${location.origin}/builder?b=${param}`;
 	}
 }
 
