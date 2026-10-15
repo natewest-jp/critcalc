@@ -150,7 +150,11 @@
 		display: grid;
 		gap: 0.6rem;
 		width: min(24rem, calc(100vw - 2rem));
-		max-height: min(32rem, calc(100svh - 8rem));
+		/* The cap is measured from where the popover OPENS (top ≈ 143px under
+		   band B, + its 4px frame), not a guess: at 8rem the box ran 19px past
+		   the foot of any screen shorter than ~650px (844x390, 320x568). 10rem
+		   lands the foot ~13px clear at every height. */
+		max-height: min(32rem, calc(100svh - 10rem));
 		overflow-y: auto;
 		padding: 0.6rem;
 	}
