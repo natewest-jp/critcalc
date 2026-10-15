@@ -784,3 +784,57 @@ list, 30px clear of the screen's foot. At 320×568 it is unchanged at 408px.
    - the in-panel footer fade (item 7);
    - the size container and `cqh` (item 16);
    - every tap area (item 1).
+
+## 7. Follow-ups (2026-10-15 evening)
+
+Nate's answers to §6 "Still open", built on `sweep/responsive`. Numbers are
+headless Chrome on a private preview; WebKit was spot-checked where noted.
+⚠️ Nothing is pushed or merged. Items marked TRIAL are their own commits so
+they can be dropped.
+
+- **Item 16, centred: `e7ae8d6f`.** The capped instruments and the Crit group
+  centre in a wider tile. At 3440×1440 one-up the capped four have 435px of
+  night on each side, and the Crit group 688. Crit is centred at 2560 and 1920
+  too (248 and 153 on each side). Default lineups have no free track space, so
+  they are unchanged.
+- **Item 18, band B: `8a1026bc`.** In the Lineup tab the lineup cell caps at
+  `--tb-board-w`, so No repeats ends at the board's edge: 625 → 596 at 641,
+  1112 → 603 at 1135. The phone form and the docked form are unchanged.
+- **Item 6, the landing's footer: `57f87ad5`.** Below 30rem tall the landing's
+  fixed footer is hidden too. The legal line (it has no links) is still at
+  the end of every page panel on a short screen (item 7), About included.
+  ⚠️ Not fixed: at 844×390 and 568×320 the notices still run 16–48px off the
+  screen's foot, and at 568×320 the cards touch the wordmark. These are left
+  for Nate's look on a phone.
+- **Item 26, More: `649d4468`.** Below compact, More keeps its filter mark, its
+  count and its chevron (93 → 57px at rest, 113 → 65 with a count). The
+  aria-label is "More filters", or "More filters, N set" with a count.
+  BandMenu gains `count`. The pane switch's word was **not** put back: the
+  Lineup cell on a Custom board still spills 15px at 320 with "Characters"
+  (0 from 338). Every Characters-cell state fits at every width.
+- **Item 26, TRIAL: `fae679b8`.** Below wide, "Lineup" ends band B on the
+  right, on the side its pane docks. "Characters" still leads the Lineup cell.
+  There is no overflow at 320, 390, 639, 641, 1000 or 1136.
+- **Item 21, measured only.** The pin sits in a 114px column. The label room
+  is 62px (it needs 95), and the plate's own width is 52px. Natural widths:
+  "Pin a rotation" 147.5, "Pin rotation" 136.2, "Rotation" 111.3, "Pin" 73.8,
+  and the Mark alone 46.6. Only "Rotation", "Pin" and the Mark fit. A pinned
+  name gets the same 62px: "Vape" shows whole, and "Vape (double swirl)" reads
+  "VAPE (D…".
+- **Item 23, the card's glyph cap: `c78a39ab`.** The glyph column holds
+  `glyphFit(width)` rows: 6 below broad, 9 at 166px and 11 at 198px. Past that
+  it shows fit−1 glyphs and a "+K". A glyph you are filtering by comes first.
+  Only Columbina (9) exceeds the cap, and only below broad. Her row is back to
+  the normal height: 155 → 107.9 at 390, → 112.1 at 1024, → 120 at 1440.
+- **Item 24, a11y: `7bc01077`.** The tabs menu is now a dialog holding a
+  listbox of the tabs. New rotation follows the list as a button, with no
+  visual change.
+- **Item 11, TRIAL: `94e85a16`.** The sticky aside rides up to 68px (the
+  chrome plus the bands' gap) and grows as it rises, so its foot stays 24px
+  above the screen's. It is pure CSS: a scroll-driven animation, behind
+  `@supports`. At 1366×768 it goes from 149/744 to 68/744 by 85px of scroll,
+  and the scroll height is unchanged. Playwright WebKit agrees. Its top 20px
+  sit inside the roll-off fade.
+
+Gates on the tip: vitest `2373 passed`, check 0/0, lint clean, build exit 0,
+e2e `76 passed` on Chrome and on WebKit.
