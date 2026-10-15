@@ -280,7 +280,7 @@
 								title="Reset this instrument's controls to their defaults"
 							>
 								<Mark name="reset" size={12} />
-								Defaults
+								<span class="ws-band-word">Defaults</span>
 							</button>
 						{/if}
 						{#if handles[id]?.getShareState}
@@ -291,7 +291,13 @@
 								title="Copy a link that reopens this instrument as it looks now"
 							>
 								<Mark name={copiedTile === id ? 'check' : 'share'} size={12} />
-								{failedTile === id ? 'Share failed' : copiedTile === id ? 'Copied' : 'Share'}
+								<span class="ws-band-word" class:ws-band-word--keep={failedTile === id}
+									>{failedTile === id
+										? 'Share failed'
+										: copiedTile === id
+											? 'Copied'
+											: 'Share'}</span
+								>
 							</button>
 						{/if}
 					</span>
@@ -398,6 +404,21 @@
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
 		flex-shrink: 0;
+	}
+
+	/* THE FOLD, reaching band B (responsive sweep, 2026-10-15). Below
+	   BP.compact ($lib/breakpoints.ts — 40rem) Defaults and Share drop their
+	   WORDS and keep their marks, the same fold band A's DocumentActions has
+	   had since 2026-09-05. The picker shrinks first and these plates never
+	   do, so at 320 the one label saying WHICH instrument you are looking at
+	   read "DAMA…" beside two worded buttons (Damage Breakdown ellipsised by
+	   104px). The `title`s still carry the words. A FAILED share keeps its
+	   words: a check mark says "copied", but nothing but words says "it
+	   didn't work". ⚠ Literal from the table, by necessity. */
+	@media (max-width: 40rem) {
+		.ws-band-word:not(.ws-band-word--keep) {
+			display: none;
+		}
 	}
 
 	/* ⚠ The copied state overrides .btn--glass's ground on purpose and has to
