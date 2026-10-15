@@ -40,3 +40,14 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## License
+
+critcalc is split across four sets of terms. [`COPYRIGHT.md`](COPYRIGHT.md) maps each path to its license.
+
+- **Code**: [GNU AGPL-3.0](LICENSE). If you run a modified version as a public website, you must offer its users the source.
+- **Curated data and docs** (`src/lib/data/`, `docs/`): [CC BY-SA 4.0](LICENSE-DATA). Credit it as "Data from critcalc (critcalc.app), CC BY-SA 4.0".
+- **critcalc's own artwork** (the logo, app icons, social card, scene plates and landing art): all rights reserved.
+- **Genshin Impact content**: © HoYoverse. critcalc is a fan project and is not affiliated with or endorsed by HoYoverse.
+
+Third-party code, fonts and data sources are credited in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
