@@ -88,6 +88,12 @@ utility, but a `passive3` no longer is. Heed any `_curatorNotes` the generator e
 labels etc.). The script refuses to overwrite existing files without
 `--force` — never `--force` a curated character.
 
+⚠️ **genshin-db often has NO `region`** (Skirk, Nicole, most of the 7.x cast;
+Aloy's is `""`), and the stub then carries none — `characterIndex.test.ts`
+fails until you add one with `jsonc-parser` `modify` (a character with none is
+hidden by every Region chip). Ask Nate for the nation; someone from outside
+Teyvat is `"Other"`.
+
 A stub is already shippable: tools report it honestly as "not yet curated"
 (Team Builder buckets it; planner shows no frames). Add the character to
 `FRAMELESS_EXEMPT` in `src/lib/utils/characterLint.test.ts` — the coverage

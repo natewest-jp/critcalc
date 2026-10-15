@@ -6,6 +6,7 @@
 	"weapon": "claymore",
 	"gender": "Female",
 	"affiliation": "Fatui",
+	"region": "Snezhnaya",
 	"rarity": 5,
 	"enablesReactions": ["stellarConduct", "stellarSwirl"],
 	"abilities": [

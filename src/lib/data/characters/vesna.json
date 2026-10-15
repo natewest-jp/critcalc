@@ -6,6 +6,7 @@
 	"weapon": "sword",
 	"gender": "Female",
 	"affiliation": "Druzhna",
+	"region": "Snezhnaya",
 	"rarity": 5,
 	"enablesReactions": ["stellarSwirl"],
 	"abilities": [

@@ -6,6 +6,7 @@
 	"weapon": "polearm",
 	"gender": "Male",
 	"affiliation": "Snezhnaya",
+	"region": "Snezhnaya",
 	"rarity": 4,
 	"abilities": [
 		{

@@ -89,6 +89,28 @@ describe('generated character index', () => {
 		}
 	});
 
+	// The same kind of corpus fact: a character with no region is hidden by every
+	// Region chip (seven were, until the pre-launch sweep). ⚓ Nate, 2026-10-15:
+	// the Travelers, Skirk and Aloy come from outside Teyvat and read "Other". A
+	// new nation is a deliberate edit to this list, and so is a misspelt one.
+	it('every character names one of the known regions', () => {
+		const REGIONS = [
+			'Fontaine',
+			'Inazuma',
+			'Liyue',
+			'Mondstadt',
+			'Natlan',
+			'Nod-Krai',
+			'Other',
+			'Snezhnaya',
+			'Sumeru'
+		];
+		for (const source of sources) {
+			if (source.id === 'blank') continue;
+			expect(REGIONS, source.id).toContain(source.region);
+		}
+	});
+
 	it('lists every shred source the data derives', () => {
 		const artifacts = Object.entries(import.meta.glob('./artifacts/*.json', { eager: true }))
 			.sort(([a], [b]) => a.localeCompare(b))
