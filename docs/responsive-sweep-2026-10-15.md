@@ -835,6 +835,18 @@ they can be dropped.
   `@supports`. At 1366×768 it goes from 149/744 to 68/744 by 85px of scroll,
   and the scroll height is unchanged. Playwright WebKit agrees. Its top 20px
   sit inside the roll-off fade.
+- **Item 26, the pane switch's word: `e72092e1`.** "Lineup" and "Characters"
+  are back below compact and fold only below a new content stop, `paneWord`
+  (21.25rem / 340px, in `$lib/breakpoints.ts`). Re-measured in Chrome and
+  WebKit: on a Custom board the Lineup cell spills 15.4px at 320 and fits
+  from 335.4. 0px of overflow at 320, 339, 340, 341, 360, 390 and 639, on
+  Custom and Stygian, both cells, at rest, with a More count and with the
+  lens on "My constellations". "Lineup" still ends band B (D2).
+- **Item 21, "Rotation": `63b3210d`.** The pin plate says "Rotation". Its
+  aria-label is "Pin a rotation for <team>", or "Pinned rotation for <team>:
+  <name>" once pinned. On the 580 Stygian board at 641, 1000, 1137 and 1440
+  the label is 59px and uncut, and the plate is 111.3px in its 114.4 column.
 
 Gates on the tip: vitest `2373 passed`, check 0/0, lint clean, build exit 0,
-e2e `76 passed` on Chrome and on WebKit.
+e2e `76 passed` on Chrome and on WebKit. On the last two items: vitest, check,
+lint and build again, and `team-builder.spec.ts` `18 passed` on each engine.

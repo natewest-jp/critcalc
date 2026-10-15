@@ -20,6 +20,7 @@
 import { belowQuery, BP, SHORT_QUERY, type Breakpoint } from './breakpoints';
 
 const flags = $state<Record<Breakpoint, boolean>>({
+	paneWord: false,
 	compact: false,
 	roomy: false,
 	toolMin: false,

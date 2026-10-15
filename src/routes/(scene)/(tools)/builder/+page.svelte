@@ -1094,9 +1094,9 @@
 		onclick={() => (tab = tab === 'characters' ? 'lineup' : 'characters')}
 	>
 		{#if tab === 'characters'}
-			<Mark name="panelRight" /> <span class="tb-band-label">Lineup</span>
+			<Mark name="panelRight" /> <span class="tb-band-label tb-pane-word">Lineup</span>
 		{:else}
-			<Mark name="panelLeft" /> <span class="tb-band-label">Characters</span>
+			<Mark name="panelLeft" /> <span class="tb-band-label tb-pane-word">Characters</span>
 		{/if}
 	</button>
 {/snippet}
@@ -1791,9 +1791,10 @@
 	   their mark and fold their word — one rule for every band control. ↻ The
 	   lineup cell of band B too (pane switch + Add team): on a Custom board
 	   below ~407px its flex:none children pushed No repeats off the screen
-	   (87px spill at 320), and the fold returns ~160px. */
+	   (87px spill at 320), and the fold returns ~160px. ↻ Except the pane
+	   switch's word, which folds at BP.paneWord (below). */
 	@media (max-width: 40rem) {
-		.tb-band-label {
+		.tb-band-label:not(.tb-pane-word) {
 			display: none;
 		}
 		/* ↻ More too (responsive sweep 2026-10-15 item 26, ⚓ Nate): its word and
@@ -1802,6 +1803,15 @@
 		   band's own 13px type. The aria-label keeps "More filters". */
 		.tb-more :global(.band-menu-word),
 		.tb-more :global(.band-menu-sep) {
+			display: none;
+		}
+	}
+	/* ↻ The pane switch keeps its word through the compact fold (responsive
+	   sweep 2026-10-15 item 26, ⚓ Nate) and folds it only below BP.paneWord
+	   ($lib/breakpoints.ts — 21.25rem), where "Characters" no longer fits
+	   beside Add team and No repeats on a Custom board. */
+	@media (max-width: 21.25rem) {
+		.tb-pane-word {
 			display: none;
 		}
 	}
