@@ -50,4 +50,20 @@
 		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 	}
+
+	/* `compact` — 40rem, $lib/breakpoints.ts (the literal: custom properties do
+	   not work in media queries). ↻ Responsive sweep §3 item 9 (⚓ Nate
+	   2026-10-15): on a phone the sentence is three or four lines in a 64px
+	   footer (--site-footer-h), and at 320 its last line, "HoYoverse.", was cut
+	   by the screen's foot. One type step down and a tighter rule fit it; a
+	   taller footer was the other option and would cost the pages ~24px of
+	   reading height. */
+	@media (max-width: 40rem) {
+		.ftr__rule {
+			margin-bottom: 0.3rem;
+		}
+		.ftr__legal {
+			font-size: var(--fs-sm);
+		}
+	}
 </style>
