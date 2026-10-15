@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
@@ -32,6 +33,25 @@ const devAssetCache: Plugin = {
 	}
 };
 
+/** Which build this is, for the feedback form's "Technical details" — the
+ *  commit's short SHA plus the build date (`abde521d · 2026-10-15`), so a
+ *  report names the code it was filed against. Read once, at config time.
+ *  Falls back to Cloudflare Pages' own commit variable, then to "unknown",
+ *  so a build outside a git checkout still succeeds. ⚠ A build constant for
+ *  the same reason as __BUILD_YEAR__ below: one literal in the prerendered
+ *  HTML and the bundle alike. */
+function buildId(): string {
+	let sha: string | undefined;
+	try {
+		sha = execSync('git rev-parse --short=8 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+			.toString()
+			.trim();
+	} catch {
+		sha = process.env.CF_PAGES_COMMIT_SHA?.slice(0, 8);
+	}
+	return `${sha || 'unknown'} · ${new Date().toISOString().slice(0, 10)}`;
+}
+
 export default defineConfig({
 	plugins: [sveltekit(), devAssetCache],
 	define: {
@@ -46,7 +66,8 @@ export default defineConfig({
 		 * literal into both the prerendered HTML and the client bundle, so they
 		 * cannot disagree. ⚠ A redeploy is what moves it, which is correct for a
 		 * copyright line. */
-		__BUILD_YEAR__: new Date().getFullYear()
+		__BUILD_YEAR__: new Date().getFullYear(),
+		__BUILD_ID__: JSON.stringify(buildId())
 	},
 	test: {
 		include: ['src/**/*.{test,spec}.ts']

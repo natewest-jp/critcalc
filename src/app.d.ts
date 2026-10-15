@@ -4,6 +4,9 @@ declare global {
 	/** The year the site was built, inlined by Vite's `define` — see vite.config.ts
 	 *  for why the footer must not read the clock at runtime. */
 	const __BUILD_YEAR__: number;
+	/** The build's short commit SHA and date (`abde521d · 2026-10-15`), inlined
+	 *  by Vite's `define` — see vite.config.ts. Read by $lib/feedback.ts. */
+	const __BUILD_ID__: string;
 
 	namespace App {
 		// interface Error {}
