@@ -838,7 +838,8 @@
 	   chart column wider than that only held bare night: at 3440 one-up the
 	   stage sat centred with ~720px between it and the side column. The column
 	   is capped at exactly the widest box the heatmap will draw, so the side
-	   column butts the chart and the spare width goes to the right of both.
+	   column butts the chart and the spare width is split either side of both
+	   (↻ centred, ⚓ Nate 2026-10-15; it went to the right at first).
 	   ⚠ `100cqh` is the tile's height only where the tile is a SIZE container,
 	   from 1024px (the Visualizers' named content stop in breakpoints.test.ts;
 	   +page.svelte); below it the column stays 1fr, the stage centred. */
@@ -848,7 +849,7 @@
 				grid-template-columns:
 					minmax(0, calc(100cqh * var(--cv-max-aspect)))
 					var(--instrument-side);
-				justify-content: start;
+				justify-content: center;
 			}
 		}
 	}
