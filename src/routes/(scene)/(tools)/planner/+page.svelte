@@ -1,7 +1,7 @@
 <script lang="ts">
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
-	import { below } from '$lib/media.svelte';
+	import { below, benchRowHidden, narrowForm } from '$lib/media.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import DocumentActions from '$lib/components/DocumentActions.svelte';
@@ -365,7 +365,7 @@
 	     band A's left zone now, and the view controls that rode the ruler's
 	     right end are band B. TeamBonusesBlock stays OUTSIDE the stack, at the
 	     content margin below the strip's bottom end. -->
-	<ToolStack benched>
+	<ToolStack benched benchHidden={benchRowHidden($siteSettings.showBenchRow)}>
 		{#snippet bandALeft()}
 			<DocumentTabs model={rotationTabStrip} />
 		{/snippet}
@@ -612,33 +612,63 @@
 			     buffs · auras · the aura's transcript rather than interleaving two
 			     subjects. ⚠ The pair is still ONE group at the tighter gap; only
 			     their order moved. -->
-			<div class="rp-layers" role="group" aria-label="Timeline layers">
-				<button
-					class="btn btn--sm"
-					class:is-active={$siteSettings.showTimelineBuffs}
-					type="button"
-					aria-pressed={$siteSettings.showTimelineBuffs}
-					title="Draw buff bars, weapon procs, always-on buffs, Nightsoul bursts and Ascendant Gleam"
-					onclick={() =>
-						siteSettings.setTimelineLayers({
-							showTimelineBuffs: !$siteSettings.showTimelineBuffs
-						})}
-				>
-					<Mark name="buff" />
-					<span class="rp-band-label">Buffs</span>
-				</button>
-				<button
-					class="btn btn--sm"
-					class:is-active={$siteSettings.showAuraLane}
-					type="button"
-					aria-pressed={$siteSettings.showAuraLane}
-					title="Draw the target's elemental gauge, with applications and reactions"
-					onclick={() =>
-						siteSettings.setTimelineLayers({ showAuraLane: !$siteSettings.showAuraLane })}
-				>
-					<Mark name="aura" />
-					<span class="rp-band-label">Auras</span>
-				</button>
+			<!-- ══ THE BENCH PLATE (2026-10-15, ⚓ Nate) ═══════════════════════════
+			     Shows or hides the bench where it is a ROW (the narrow form — below
+			     `toolMin`, or short): once loadouts and constellations are set a
+			     player rarely reaches for it, and on a phone it costs ~80px of
+			     chart. The END CAP of the layer group, at its tight gap, because it
+			     answers the group's question — what is on screen — but it is not a
+			     layer of the CHART, so the layers keep their own role=group inside.
+			     The layers' laws, all of them: a PLATE, ⛔ never a menu item (a
+			     hidden bench must announce itself — unlit says "hidden" — exactly
+			     as an unlit Buffs does); lit = shown, aria-pressed = shown; never
+			     disabled; nothing resets it; per taste (`siteSettings`), ⛔ never
+			     in the `?r=` codec. ⚠ At the desk the bench is a column that costs
+			     no height, so the plate is not rendered there and the setting is
+			     ignored (`benchRowHidden`). Not rendered before hydration either:
+			     the flags attach in onMount, so first paint is the default. -->
+			<div class="rp-layers">
+				{#if narrowForm()}
+					<button
+						class="btn btn--sm"
+						class:is-active={$siteSettings.showBenchRow}
+						type="button"
+						aria-pressed={$siteSettings.showBenchRow}
+						title="The bench: your team's constellations and loadouts"
+						onclick={() => siteSettings.setShowBenchRow(!$siteSettings.showBenchRow)}
+					>
+						<Mark name="bench" />
+						<span class="rp-band-label">Bench</span>
+					</button>
+				{/if}
+				<div class="rp-layers" role="group" aria-label="Timeline layers">
+					<button
+						class="btn btn--sm"
+						class:is-active={$siteSettings.showTimelineBuffs}
+						type="button"
+						aria-pressed={$siteSettings.showTimelineBuffs}
+						title="Draw buff bars, weapon procs, always-on buffs, Nightsoul bursts and Ascendant Gleam"
+						onclick={() =>
+							siteSettings.setTimelineLayers({
+								showTimelineBuffs: !$siteSettings.showTimelineBuffs
+							})}
+					>
+						<Mark name="buff" />
+						<span class="rp-band-label">Buffs</span>
+					</button>
+					<button
+						class="btn btn--sm"
+						class:is-active={$siteSettings.showAuraLane}
+						type="button"
+						aria-pressed={$siteSettings.showAuraLane}
+						title="Draw the target's elemental gauge, with applications and reactions"
+						onclick={() =>
+							siteSettings.setTimelineLayers({ showAuraLane: !$siteSettings.showAuraLane })}
+					>
+						<Mark name="aura" />
+						<span class="rp-band-label">Auras</span>
+					</button>
+				</div>
 			</div>
 			{#if bandFolded}
 				<!-- THE FOLD (see `bandFolded`): the layers stay, and one ⋯ holds the

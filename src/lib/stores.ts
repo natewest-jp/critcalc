@@ -493,6 +493,21 @@ type SiteSettings = {
 	showAuraLane: boolean;
 	showTimelineBuffs: boolean;
 	/**
+	 * ── THE BENCH ROW (2026-10-15, ⚓ Nate) ──────────────────────────────────
+	 *
+	 * Whether the planner draws its bench where the bench is a ROW (the narrow
+	 * form: below `toolMin`, or short). Once loadouts and constellations are
+	 * set a player rarely reaches for it, and on a phone it costs ~80px of
+	 * chart. Band B's Bench plate toggles it; at the desk the ribbon is a
+	 * column that costs no height and ignores this entirely.
+	 *
+	 * Per TASTE like the layers, and persisted the layers' way: only a TOGGLED
+	 * choice is stored (as `benchRow`), so a default can still move later.
+	 * ⛔ Never in the `?r=` codec — a link carries a rotation, not the
+	 * reader's screen.
+	 */
+	showBenchRow: boolean;
+	/**
 	 * ── PLAYBACK SOUND (playback round, 2026-09-29) ─────────────────────────
 	 *
 	 * Whether the planner's Play makes a sound at every input. Per TASTE like
@@ -584,6 +599,10 @@ function readChosenLayers(raw: unknown): ChosenLayers {
 	return out;
 }
 
+/** The bench row starts VISIBLE: it is the team editor, and a first-time
+ *  visitor has a team to set up. */
+export const BENCH_ROW_DEFAULT = true;
+
 /** Sound ON by default: the count-in and the tones are what make Play usable
  *  with the game in front of you, and a first press of Play that did nothing
  *  audible would leave the reader wondering what it was for. */
@@ -623,6 +642,7 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
 	...TIMELINE_LAYER_DEFAULTS,
+	showBenchRow: BENCH_ROW_DEFAULT,
 	...PLAYBACK_SOUND_DEFAULTS
 };
 
@@ -636,6 +656,9 @@ function loadSiteSettings(): SiteSettings {
 		// by every save, chosen or not, so they say nothing and are dropped.
 		Object.assign(merged, layerDefaults(), readChosenLayers(parsed.timelineLayers));
 		delete (merged as Record<string, unknown>).timelineLayers;
+		// The bench row: the default under whatever was TOGGLED, the layers' rule.
+		merged.showBenchRow = readChosenBenchRow(parsed) ?? BENCH_ROW_DEFAULT;
+		delete (merged as Record<string, unknown>).benchRow;
 		// Migrate the legacy frame-based setting to ping-ms. ⚠️ Inverts the OLD
 		// gcsim relationship (frames = ping × 0.12) ON PURPOSE: that is the formula
 		// the stored frames were authored under, and the PING is what persists —
@@ -687,6 +710,20 @@ function loadSiteSettings(): SiteSettings {
 	}
 }
 
+/** The bench row's TOGGLED choice, or undefined if it was never toggled. */
+function readChosenBenchRow(parsed: unknown): boolean | undefined {
+	const v = (parsed as Record<string, unknown> | null)?.benchRow;
+	return typeof v === 'boolean' ? v : undefined;
+}
+
+function readStoredChosenBenchRow(): boolean | undefined {
+	try {
+		return readChosenBenchRow(JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}'));
+	} catch {
+		return undefined;
+	}
+}
+
 function readStoredChosenLayers(): ChosenLayers {
 	try {
 		return readChosenLayers(
@@ -700,13 +737,21 @@ function readStoredChosenLayers(): ChosenLayers {
 function createSiteSettingsStore() {
 	const store = writable<SiteSettings>(loadSiteSettings());
 	let chosenLayers: ChosenLayers = browser ? readStoredChosenLayers() : {};
+	let chosenBenchRow: boolean | undefined = browser ? readStoredChosenBenchRow() : undefined;
 
-	/** Everything but the effective layers, which are derived; what was
-	 *  toggled travels as `timelineLayers`. */
+	/** Everything but the effective layers and bench row, which are derived;
+	 *  what was toggled travels as `timelineLayers` and `benchRow`. */
 	function persist(next: SiteSettings) {
 		if (browser) {
-			const { showAuraLane: _a, showTimelineBuffs: _b, ...rest } = next;
-			safeSetItem(SITE_SETTINGS_KEY, JSON.stringify({ ...rest, timelineLayers: chosenLayers }));
+			const { showAuraLane: _a, showTimelineBuffs: _b, showBenchRow: _c, ...rest } = next;
+			safeSetItem(
+				SITE_SETTINGS_KEY,
+				JSON.stringify({
+					...rest,
+					timelineLayers: chosenLayers,
+					...(chosenBenchRow === undefined ? {} : { benchRow: chosenBenchRow })
+				})
+			);
 		}
 		return next;
 	}
@@ -735,6 +780,11 @@ function createSiteSettingsStore() {
 		setTimelineLayers(next: ChosenLayers) {
 			chosenLayers = { ...chosenLayers, ...next };
 			store.update((prev) => persist({ ...prev, ...next }));
+		},
+		/** Band B's Bench plate. Records the choice as CHOSEN. */
+		setShowBenchRow(value: boolean) {
+			chosenBenchRow = value;
+			store.update((prev) => persist({ ...prev, showBenchRow: value }));
 		},
 		/** One setter for the plate and its two settings — the same kind of
 		 *  preference, written from two surfaces (band B and the modal). */

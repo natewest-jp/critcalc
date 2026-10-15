@@ -1288,6 +1288,16 @@
 
 	let trackScrollWidth = $state(0);
 	let trackScrollEl: HTMLDivElement | undefined;
+	/** The track scroller's inline padding, per side: 0 at and above `compact`;
+	 *  below it the scrollers bleed to the screen's edges and pad back by the
+	 *  insets they crossed (see THE SIDE FADES ON A PHONE in the styles), so a
+	 *  content x sits `trackPad` further along the scroll than it reads. Re-read
+	 *  whenever the client width moves — crossing the breakpoint moves both. */
+	let trackPad = $derived.by(() => {
+		void trackScrollWidth;
+		if (!trackScrollEl) return 0;
+		return parseFloat(getComputedStyle(trackScrollEl).paddingLeft) || 0;
+	});
 	// The ruler strip viewport — a pure FOLLOWER of the track scroller (overflow
 	// hidden, no user scroll): it only ever receives programmatic scrollLeft
 	// writes, so it can't be momentum-scrolling when one lands.
@@ -1419,7 +1429,8 @@
 		// ⚠️ `scale` is px per SECOND, so the viewport width converts to frames via
 		// the same seam the geometry wrappers use. The tail pad (2s) and the floor
 		// (25s) are frame counts now — they are axis lengths, not px.
-		const viewportFrames = trackScrollWidth > 0 ? (trackScrollWidth / scale) * FPS : 25 * FPS;
+		const viewportW = trackScrollWidth - 2 * trackPad;
+		const viewportFrames = viewportW > 0 ? (viewportW / scale) * FPS : 25 * FPS;
 		return Math.max(max + 2 * FPS, viewportFrames, 25 * FPS);
 	});
 	let totalWidth = $derived(Math.round((totalDuration / FPS) * scale));
@@ -2268,7 +2279,8 @@
 		if (!playback.playing || playheadX === null) return;
 		const el = trackScrollEl;
 		if (!el) return;
-		const x = playheadX;
+		// In the scroller's own coordinates, past the phone's bleed padding.
+		const x = playheadX + trackPad;
 		const left = el.scrollLeft;
 		if (x >= left && x <= left + el.clientWidth) return;
 		el.scrollTo({ left: Math.max(0, x - el.clientWidth * FOLLOW_LEAD), behavior: 'auto' });
@@ -2528,7 +2540,7 @@
 	function scrollToSeconds(seconds: number) {
 		if (!trackScrollEl) return;
 		const el = trackScrollEl;
-		const target = projectX(seconds, scale) - el.clientWidth / 2;
+		const target = projectX(seconds, scale) + trackPad - el.clientWidth / 2;
 		// ⚠ THE NATIVE OPTION, deliberately: it is one line, the UA already honours
 		// `prefers-reduced-motion` for it, and the scroller clamps the target
 		// itself. A hand-rolled rAF tween lived here for an hour on the strength of
@@ -5693,6 +5705,33 @@
 		}
 		:global(body .cm-tooltip.cm-tooltip-autocomplete > ul > li) {
 			padding: 12px 14px;
+		}
+	}
+
+	/* ── THE SIDE FADES ON A PHONE (⚓ Nate 2026-10-15, iPhone 13) ──────────
+	   Below `compact` (BP.compact, 40rem) the x roll-off ate the bars: the
+	   scrollers sat inside the tool gutter (--tool-pad-x, 16) AND the frame's
+	   side padding (--rp-frame-pad-x, 14), then faded over 33.6 more, so at
+	   mid-scroll the bars went whole ~64px in from each screen edge.
+	   · THE SCROLLERS BLEED to the screen's edges (a negative inline margin of
+	     the two insets) and PAD BACK by the same amount, so at scrollLeft 0 the
+	     first bar still starts where it did and, at max scroll, the last one
+	     still ends there — the padding is scrollable overflow at both ends.
+	   · The fade shortens to 20 (14 effective at the 0.7 scale), so it sits AT
+	     the screen's edges and takes a sliver rather than a band.
+	   ⚠ BOTH SCROLLERS, ONE RULE: the ruler (and the aura lane inside it) is a
+	   scroll follower mirrored from scrollLeft, so its box, padding and fade must
+	   match the tracks' exactly or the ticks slide off the bars they time.
+	   ⚠ The padding is read back in JS (`trackPad`): the content viewport is the
+	   client width MINUS it, for the axis floor, the playback follow and
+	   scroll-to-seconds. */
+	@media (max-width: 40rem) {
+		.rp-track-scroll,
+		.rp-ruler-scroll {
+			--rp-bleed-x: calc(var(--tool-pad-x, 1rem) + var(--rp-frame-pad-x));
+			--scroll-fade: 20px;
+			margin-inline: calc(var(--rp-bleed-x) * -1);
+			padding-inline: var(--rp-bleed-x);
 		}
 	}
 

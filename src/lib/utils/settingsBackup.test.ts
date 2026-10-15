@@ -233,13 +233,15 @@ describe('parseBackup', () => {
 		expect(res.counts.lineups).toBe(2);
 	});
 
-	it('carries the coverage strips, chosen layers and playback sound, and drops bad values', () => {
+	it('carries the coverage strips, chosen layers, bench row and playback sound, and drops bad values', () => {
 		const res = parseBackup(
 			envelope({
 				'critcalc:siteSettings': {
 					showCoverageStrips: true,
 					showAuraLane: false,
+					showBenchRow: false,
 					timelineLayers: { showAuraLane: false, showTimelineBuffs: 'no' },
+					benchRow: false,
 					playbackSound: false,
 					playbackSoundMode: 'metronome',
 					playbackVoice: 'kazoo',
@@ -252,6 +254,7 @@ describe('parseBackup', () => {
 		expect(res.data['critcalc:siteSettings']).toEqual({
 			showCoverageStrips: true,
 			timelineLayers: { showAuraLane: false },
+			benchRow: false,
 			playbackSound: false,
 			playbackSoundMode: 'metronome',
 			playbackVolume: 1

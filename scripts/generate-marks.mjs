@@ -271,6 +271,12 @@ const MARKS = {
 	 *  "scrub backwards" — a gesture this transport does not have). Drawn
 	 *  FILLED beside Play, as Play is. */
 	rewind: 'SkipBack',
+	/** The planner's BENCH plate (2026-10-15): below `toolMin`, where the
+	 *  bench is a row, it shows or hides that row. `Users` — the bench is the
+	 *  TEAM, and two figures read as people at band size. ⛔ Not a panel glyph
+	 *  (`PanelTopClose` and kin): those say "a pane of the layout", and beside
+	 *  the layer plates it would read as a third layer of the chart. */
+	bench: 'Users',
 	/** Compare's REFERENCE column (Team Builder round, 2026-10-07): pin one
 	 *  character and every other column reads its differences from them. `Pin`
 	 *  — the act of fixing one thing in place for the rest to be read against.

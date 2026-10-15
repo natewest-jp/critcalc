@@ -39,6 +39,7 @@
 
 	let {
 		benched = false,
+		benchHidden = false,
 		fill = false,
 		bandALeft,
 		bandARight,
@@ -56,6 +57,16 @@
 		 * column.
 		 */
 		benched?: boolean;
+		/**
+		 * The bench ROW is hidden (band B's Bench plate, 2026-10-15). Honoured
+		 * only in the row form — the CSS rule lives inside its media query, so
+		 * the column form is untouched whatever this says — and it takes the
+		 * RESERVE with it: the dock, its flex gap and --stack-to-surface, so a
+		 * hidden row costs the layout nothing. The caller passes
+		 * `benchRowHidden()` ($lib/media.svelte), the same condition the
+		 * ribbon's visibility reads.
+		 */
+		benchHidden?: boolean;
 		/** The surface flexes to fill the stack's height (viewport-fit tools). */
 		fill?: boolean;
 		bandALeft?: Snippet;
@@ -89,6 +100,7 @@
 	class="tool-stack"
 	class:tool-stack--fill={fill}
 	class:tool-stack--benched={benched}
+	class:tool-stack--bench-hidden={benched && benchHidden}
 	style:--band-a-h="{BAND_A_H}px"
 	style:--band-b-h="{BAND_B_H}px"
 	style:--band-ctrl-h="{BAND_CTRL_H}px"
@@ -289,6 +301,17 @@
 		}
 		.tool-stack--benched .tool-surface {
 			order: 2;
+		}
+		/* ↻ 2026-10-15: the row HIDDEN (band B's Bench plate). ⚠ The RESERVE
+		   goes, not only the paint: display:none drops the dock and its flex
+		   gap, and --stack-to-surface loses the row and one gap, so the
+		   surface snugs up to band B at the band gap. The ribbon measures a
+		   0×0 dock and the layout hides it on the same condition. */
+		.tool-stack--bench-hidden {
+			--stack-to-surface: calc(var(--band-a-h) + var(--band-b-h) + 2 * var(--band-gap));
+		}
+		.tool-stack--bench-hidden .tool-stack-dock {
+			display: none;
 		}
 	}
 
