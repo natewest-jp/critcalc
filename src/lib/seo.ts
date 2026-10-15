@@ -86,7 +86,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/builder': {
 		title: 'Team Builder',
 		description:
-			'Find who covers what — healing, shielding, RES shred, buffs — at which constellation, with the ability and the caveat that comes with it.'
+			'Build lineups for Stygian Onslaught and the Spiral Abyss: see what each team brings — healing, shields, RES shred, buffs — at your constellations, and what a swap would change.'
 	},
 	'/visualizers': {
 		title: 'Visualizers',
