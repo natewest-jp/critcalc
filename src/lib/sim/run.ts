@@ -82,7 +82,7 @@ import {
 	resolveNormalCastTime,
 	resolveStanceFields
 } from './resolve';
-import { expandBrackets, peekActionKey, peekHumanPadTarget } from './tokens';
+import { expandBrackets, isInert, peekActionKey, peekHumanPadTarget } from './tokens';
 import { cancelKeyFor, padFramesAfter, type HumanPadAfter } from './humanTiming';
 import {
 	castKinds,
@@ -185,10 +185,52 @@ export function runRotation(
 	// ⚓ WHICH TURN IS ON FIELD, observed live (cast hit-record round, 2026-09-21).
 	// A cast's hit can land after its caster's turn is over — a closure queued in
 	// turn `i` asks `liveSegment === i` before it touches that turn's stack pool.
-	// ⚠️ The turn, not the character: a second consecutive segment of one character
-	// mints a fresh pool too. The swap frames at a turn's tail still belong to it,
-	// which is the same instant `lastSwapOutAt` stamps.
+	// ⚠️ The turn, not the character — but a TURN is a stay on field, so a
+	// same-character `>` continues it (`carry` below) and the number is the index
+	// of the segment that OPENED the stay. The swap frames at a turn's tail still
+	// belong to it, which is the same instant `lastSwapOutAt` stamps.
 	let liveSegment = -1;
+
+	// ⚓ A SAME-CHARACTER `>` JOINS TWO SEGMENTS INTO ONE TURN (join round,
+	// 2026-10-15). `Xilonen E N2 > Xilonen N2` is one stay on field written in two
+	// segments, and it must time exactly as `Xilonen E N2 N2`: playback round B
+	// dropped the swap delay, a8af205d kept the stance and the swap-ended states,
+	// and this carries the rest of what a segment boundary used to reset as if it
+	// were a swap — the normal-attack string, the plunge's `lastEText`, the stack
+	// pool and the stay's identity (`liveSegment`), plus a cancel lookahead that
+	// reads ON into the next segment instead of taking the end-of-segment slice.
+	// Measured before: 93f against 129f. Laps reaches it without anybody typing it,
+	// since `repeatNotation` joins laps by ' > ' and a rotation that ends on its
+	// opener crosses the join every lap.
+	// ⚠️ Each segment keeps its own TRACK: the lap marks count tracks per lap
+	// (RotationTimeline `lapStarts`), so merging the segments upstream is ⛔ not
+	// the fix — it would merge the last track of one lap into the next.
+	type TurnCarry = {
+		turn: number;
+		start: number;
+		normalCounter: number;
+		lastEText: string | null;
+		stackState: Map<string, number>;
+		stackInstances: Map<string, number[]>;
+	};
+	let carry: TurnCarry | null = null;
+	// Does segment `k`'s turn continue into `k + 1`? The same test as `swapFollows`
+	// (an unknown next name is a swap), asked of any segment.
+	const continuesInto = (k: number, charId: string): boolean => {
+		const head = segments[k + 1]?.[0];
+		return head !== undefined && lookupChar(head.text)?.id === charId;
+	};
+	// Each segment's bracket expansion, computed once: the lookahead reads the next
+	// segment's before its own turn runs.
+	const expansions = new Map<number, Token[]>();
+	const expansionOf = (k: number): Token[] => {
+		let exp = expansions.get(k);
+		if (!exp) {
+			exp = expandBrackets(segments[k].slice(1));
+			expansions.set(k, exp);
+		}
+		return exp;
+	};
 
 	for (let i = 0; i < segments.length; i++) {
 		const tokens = segments[i];
@@ -237,12 +279,17 @@ export function runRotation(
 		// joins a rotation to itself by a `>` — made the charge visible when a
 		// rotation ends on its opener. The swap-out CLOSES at the bottom of the
 		// loop (`terminatesOnSwap` states, their chains, the stance clamp) follow
-		// the same rule: a turn the same character continues ends nothing. An UNKNOWN next name still counts as a
-		// swap, as it always has: the segment is skipped, the turn is not.
+		// the same rule: a turn the same character continues ends nothing, and
+		// neither does anything else a boundary resets (see `carry`). An UNKNOWN
+		// next name still counts as a swap, as it always has: the segment is
+		// skipped, the turn is not.
 		const swappedIn = !prevTrack || prevTrack.characterId !== char.id;
-		const nextTokens = segments[i + 1];
-		const nextChar = nextTokens && nextTokens.length > 0 ? lookupChar(nextTokens[0].text) : null;
-		const swapFollows = i < segments.length - 1 && nextChar?.id !== char.id;
+		const swapFollows = i < segments.length - 1 && !continuesInto(i, char.id);
+		// What the previous segment handed on, when this one continues its turn.
+		// Taken here and cleared, so it can only ever reach the segment it was
+		// written for.
+		const carried = carry as TurnCarry | null;
+		carry = null;
 
 		// ⚓ WHO IS ON FIELD, observed live (mark-triggered round, 2026-08-17) —
 		// read by `onReaction`'s `source: 'active'`. Set HERE, where the segment
@@ -250,7 +297,9 @@ export function runRotation(
 		// at the bottom of the previous iteration has drained everything before
 		// this instant, so no pending task can fire under the wrong owner.
 		ctx.activeCharId = char.id;
-		liveSegment = i;
+		// The stay this segment belongs to — its opener's index (see `liveSegment`).
+		const turn: number = carried?.turn ?? i;
+		liveSegment = turn;
 
 		const track: CharacterTrack = {
 			characterId: char.id,
@@ -339,23 +388,26 @@ export function runRotation(
 			(a) => a.abilityType === 'normal' && a.noBufferAfterCharged === true
 		);
 		// Tracks which hit in the combo sequence the next N token refers to.
-		// Reset at segment start and when a stance opens (mid-segment Q cast).
-		let normalCounter = 0;
-		// Text of the most recent E token cast in this segment. Used by the P handler
+		// Reset at a swap-in and when a stance opens (mid-segment Q cast); a
+		// same-character `>` carries it, so `N2 > Xilonen N2` swings N3 and N4.
+		let normalCounter: number = carried?.normalCounter ?? 0;
+		// Text of the most recent E token cast in this turn. Used by the P handler
 		// to auto-select the correct plunge variant (e.g. "hE" → "After Hold E" frames).
-		let lastEText: string | null = null;
-		// Per-segment stack state (resource counts asserted by `{key:N}` tokens).
-		// Resets at segment start so a swap-out clears the resource pool — matches
+		let lastEText: string | null = carried?.lastEText ?? null;
+		// Per-turn stack state (resource counts asserted by `{key:N}` tokens).
+		// Resets at a swap-in so a swap-out clears the resource pool — matches
 		// in-game behavior for Heizou Declension, Yanfei Scarlet Seals, etc.
-		// Within the segment, assertions persist across actions until the next
-		// assertion of the same key changes the value.
-		const stackState = new Map<string, number>();
-		// Per-segment per-stack-instance expiry list (E3 v2.x lifetime). For each
+		// Within the turn, assertions persist across actions until the next
+		// assertion of the same key changes the value. ⚠️ A same-character `>` is
+		// not a swap-out, so the pool is CARRIED — the same Map, which is what keeps
+		// a landing queued in the first segment writing to the live pool.
+		const stackState: Map<string, number> = carried?.stackState ?? new Map();
+		// Per-turn per-stack-instance expiry list (E3 v2.x lifetime). For each
 		// gainStacks key with a `lifetime` spec, this map tracks the absolute
 		// expiry times of every individual stack instance. `applyLifetimeExpiry`
 		// drops expired instances and updates `stackState[key]` to match the
-		// remaining instance count. Per-segment scope (matching `stackState`).
-		const stackInstances = new Map<string, number[]>();
+		// remaining instance count. Per-turn scope (matching `stackState`).
+		const stackInstances: Map<string, number[]> = carried?.stackInstances ?? new Map();
 
 		// Returns the full set of resolved runtime states at `cursor`: duringSummon
 		// (from stationary persistent casts), inStance (from stanceWindows), and any
@@ -586,7 +638,6 @@ export function runRotation(
 			travel = 0
 		): number => {
 			const frames = fm ? landingsOf(fm) : [];
-			const turn = i;
 			const queue = (at: number): void =>
 				clock.schedule(at, Band.LAND, () => land(at, liveSegment === turn));
 			if (travel > 0 && swingF !== null) {
@@ -605,7 +656,26 @@ export function runRotation(
 
 		// Expand bracket repeat groups (e.g. 2[N5C] → N5 C N5 C) before the main
 		// loop so that lookahead and counter logic see a flat token sequence.
-		const expandedTokens = expandBrackets(tokens.slice(1));
+		const expandedTokens = expansionOf(i);
+
+		// ⚓ The CANCEL LOOKAHEAD reads past a same-character `>` (see `carry`):
+		// the last action before the join takes the slice for the next segment's
+		// first action, as it would written in one segment, instead of the
+		// end-of-segment 'swap' slice. Appends segment after segment while the
+		// turn continues and nothing it appended could stop a peek (a segment of
+		// only `(Q)` or `{key:N}`). `lookaheadSwapFollows` is `swapFollows` asked
+		// of the last segment appended — what the human pad needs at the very end.
+		// The loop below still walks `expandedTokens` alone; indices agree because
+		// the lookahead only ever appends.
+		let lookahead = expandedTokens;
+		let lookaheadEnd = i;
+		while (continuesInto(lookaheadEnd, char.id)) {
+			const next = expansionOf(++lookaheadEnd);
+			lookahead = lookahead.concat(next);
+			if (next.some((t) => !isInert(t))) break;
+		}
+		const lookaheadSwapFollows =
+			lookaheadEnd < segments.length - 1 && !continuesInto(lookaheadEnd, char.id);
 
 		// Unified E/Q cast pipeline. One sequence with small kind-branches; the
 		// shared step order is the Q handler's (the reference the 2026-07-05 bug
@@ -619,14 +689,14 @@ export function runRotation(
 		// when the next input is one the game does not buffer. Called once per
 		// action, after its own advance, so the pad sits between the action's end
 		// and the next input's start and the id minted here sorts it there.
-		// ⚠️ `swapFollows` (resolved at the turn's head) is the ONLY way a
-		// segment's last action learns whether a swap is real: `peekActionKey`
-		// says 'swap' at the end of EVERY segment, including the rotation's last,
-		// where nothing follows to be late for, and a same-character `>`.
+		// ⚠️ `lookaheadSwapFollows` is the ONLY way a turn's last action learns
+		// whether a swap is real: `peekActionKey` says 'swap' at the end of EVERY
+		// lookahead, including the rotation's last, where nothing follows to be
+		// late for. A same-character `>` never gets here — the lookahead reads on.
 		const humanPad = (prev: HumanPadAfter, j: number): void => {
 			const ht = ctx.humanTiming;
 			if (!ht) return;
-			const next = peekHumanPadTarget(expandedTokens, j, isBow, swapFollows);
+			const next = peekHumanPadTarget(lookahead, j, isBow, lookaheadSwapFollows);
 			if (next === null) return;
 			const pad = padFramesAfter(ht, prev, next, isBow, chargedBuffers);
 			if (pad <= 0) return;
@@ -667,7 +737,7 @@ export function runRotation(
 			}
 
 			if (ability) {
-				const nextKey = peekActionKey(expandedTokens, j, isBow);
+				const nextKey = peekActionKey(lookahead, j, isBow);
 
 				// E: cooldown wait + variant re-resolution (sweep 2026-07-05 #5).
 				// The active skill variant is time-dependent (stance/state windows)
@@ -1427,7 +1497,6 @@ export function runRotation(
 						sourceEventId: castId
 					};
 					if (landings.length > 0 && landings[0].frame > 0) {
-						const turn = i;
 						// ↻ ONE RECORD PER LANDING (every-landing round): same cast, same
 						// snapshot, same name — its own instant and its own element.
 						for (const landing of landings) {
@@ -1571,7 +1640,7 @@ export function runRotation(
 				if (tok.kind === 'unknown') ctx.unknownTokens.push(tok.text);
 
 				const t = tok.text;
-				const nextKey = peekActionKey(expandedTokens, j, isBow);
+				const nextKey = peekActionKey(lookahead, j, isBow);
 
 				if (/^N\d*$/.test(t)) {
 					// Normal attack: N5 means "perform 5 normals in a row" starting from
@@ -2294,11 +2363,28 @@ export function runRotation(
 			}
 		}
 
-		// Ensure minimum on-field width
-		if (clock.now <= turnStart) clock.advance(turnStart + MIN_ACTIVE_F);
+		// Ensure minimum on-field width — of the STAY, so it is asked once, where the
+		// turn ends, against where it began. A segment a same-character `>`
+		// continues adds nothing here: `Xilonen > Xilonen E` is `Xilonen E`, and a
+		// lap that ends on its bare opener walks straight into the next lap's
+		// first action. ⚠️ Its track can then be zero-width; it is still pushed,
+		// since a lap is a fixed stride of tracks (RotationTimeline `lapStarts`).
+		const continues = i < segments.length - 1 && !swapFollows;
+		const stayStart: number = carried?.start ?? turnStart;
+		if (!continues && clock.now <= stayStart) clock.advance(stayStart + MIN_ACTIVE_F);
 
 		track.activeEnd = clock.now;
 		ctx.tracks.push(track);
+
+		if (continues)
+			carry = {
+				turn,
+				start: stayStart,
+				normalCounter,
+				lastEText,
+				stackState,
+				stackInstances
+			};
 
 		// When a character swaps off, close any stance window flagged terminatesOnSwap.
 		// The flag was recorded at open time (resolveStanceFields applies variant

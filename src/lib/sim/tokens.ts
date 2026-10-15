@@ -14,8 +14,10 @@
 import type { ActionKey } from '$lib/types/ability';
 import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
 
-/** A token that lands nothing on the timeline, so the lookahead steps over it. */
-const isInert = (t: Token | undefined): boolean =>
+/** A token that lands nothing on the timeline, so the lookahead steps over it.
+ *  Exported for the driver, which joins a same-character `>` into one lookahead
+ *  and needs to know where a peek would stop. */
+export const isInert = (t: Token | undefined): boolean =>
 	!!t &&
 	(t.kind === 'stack-assert' ||
 		t.kind === 'or-alt' ||
@@ -25,7 +27,9 @@ const isInert = (t: Token | undefined): boolean =>
 /**
  * Maps the next token after position j to the ActionKey used for cancel-window
  * selection. Returns 'swap' (full animation fallback) for end-of-segment,
- * time advances, or anything else that isn't a direct action. Inert tokens
+ * time advances, or anything else that isn't a direct action. ⚠️ "End of
+ * segment" is the end of `tokens`: the driver hands in the next segment's
+ * tokens too when a same-character `>` continues the turn (run.ts, `lookahead`). Inert tokens
  * (`W`, `{key:N}`, `/alt`, `(…)`) are stepped over, never read.
  *
  * `isBow` is threaded for ONE token: KQM's `A` is an aimed shot, which only a
@@ -77,7 +81,7 @@ export function peekActionKey(tokens: Token[], j: number, isBow: boolean): Actio
  * 'swap' for all of those because the SLICE question has a right answer there
  * (the animation runs out); the PAD question does not — a player who typed a
  * wait is already waiting, and nothing follows the last action at all.
- * `swapFollows` says whether a real swap comes after this segment's last token.
+ * `swapFollows` says whether a real swap comes after the last token of `tokens`.
  */
 export function peekHumanPadTarget(
 	tokens: Token[],

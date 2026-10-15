@@ -1765,9 +1765,13 @@
 			const t = annotatedTracks[i];
 			const prev = annotatedTracks[i - 1];
 			const next = annotatedTracks[i + 1];
+			// ⚠️ OR'd into a key already set: a bare name a same-character `>`
+			// continues is a ZERO-width track sharing its start with the next one
+			// (run.ts, the stay's min width), and the swap arrives at the first.
+			const prior = map.get(t.activeStart);
 			map.set(t.activeStart, {
-				hasArrival: prev != null && prev.slotIdx !== t.slotIdx,
-				hasDeparture: next != null && next.slotIdx !== t.slotIdx
+				hasArrival: (prior?.hasArrival ?? false) || (prev != null && prev.slotIdx !== t.slotIdx),
+				hasDeparture: (prior?.hasDeparture ?? false) || (next != null && next.slotIdx !== t.slotIdx)
 			});
 		}
 		return map;
