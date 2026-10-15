@@ -1,12 +1,12 @@
 # critcalc
 
-**[critcalc.app](https://critcalc.app)** — theorycrafting tools for Genshin Impact that show how the game's mechanics work: buff windows, cancel timings, elemental gauges, ICD, and the odds behind artifacts and wishes. What to make of them is left to the player.
+**[critcalc.app](https://critcalc.app)** — theorycrafting tools for Genshin Impact that help you visualize and plan: rotation timings, durations, and uptimes; endgame lineups and how character swaps change team composition; elemental gauges, crit ratios, wish and artifact odds, and more.
 
 ## The tools
 
-- **Rotation Planner** — type a rotation in [KQM](https://library.keqingmains.com) notation (`bennett E Q > xiangling E Q > …`) and get a frame-accurate timeline: every cast and cancel, every buff and who receives it, summon ticks, shields, the target's aura, and the reactions between them. Laps, playback at game speed, and share links.
+- **Rotation Planner** — type a rotation in [KQM notation](https://library.keqingmains.com/theorycrafting#combat-notation) to see the rotation drawn as a frame-accurate timeline. Makes the order of events and uptimes visible at a glance and easy to compare. Supports playback at game speed with audio cues for rotation practice.
 - **Team Builder** — lineups for the Spiral Abyss and Stygian Onslaught, with each team's capabilities (healing, shields, RES shred, buffs, grouping…) derived from the character data at your constellations, and what swapping a member would change.
-- **Visualizers** — eight instruments for single mechanics: the crit heatmap, ICD timeline, gauge explorer, reaction curves, enemy RES & DEF, damage breakdown, artifact odds and wish odds.
+- **Visualizers** — a variety of instruments making game mechanics visual and interactive: a crit-ratio heatmap, ICD timeline, gauge explorer, reaction curves, enemy RES & DEF, damage breakdown, artifact odds and wish odds.
 
 ## How the data is built
 
