@@ -805,13 +805,20 @@
 
 	/** A card's own fingerprint: the facets the character has or can unlock,
 	 *  in the fingerprint's one order — lit at the lens, dim from a higher
-	 *  constellation (⚓ Nate 2026-10-11; ⛔ never the full fifteen). */
+	 *  constellation (⚓ Nate 2026-10-11; ⛔ never the full fifteen). ↻ A
+	 *  capability you are FILTERING by leads (responsive sweep 2026-10-15 item
+	 *  23, ⚓ Nate): a card caps its column at what its height holds (glyphFit),
+	 *  and the one you filtered for must never be the one behind its "+K". */
 	const FINGERPRINT_ORDER = FINGERPRINT.flatMap((c) => c.facets);
 	const FACET_LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
 	function glyphsFor(entry: CharacterIndexEntry): CardGlyph[] {
 		const cap = conCapFor(conMode, mounted ? $constellations[entry.id] : undefined);
 		return facetBadges(entry.caps)
-			.sort((a, b) => FINGERPRINT_ORDER.indexOf(a.facet) - FINGERPRINT_ORDER.indexOf(b.facet))
+			.sort(
+				(a, b) =>
+					Number(activeFacets.has(b.facet)) - Number(activeFacets.has(a.facet)) ||
+					FINGERPRINT_ORDER.indexOf(a.facet) - FINGERPRINT_ORDER.indexOf(b.facet)
+			)
 			.map((b) => {
 				const label = FACET_LABEL[b.facet] ?? b.facet;
 				const lit = b.minCon <= cap;
