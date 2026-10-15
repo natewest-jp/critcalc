@@ -609,3 +609,130 @@ only reason `npm run lint` failed. Many of its `clear` rows are now done (§2,
 "Static pages and meta"). What's left for the rewrite: its §12 questions, the
 Team Builder section (§3 item 13), the creed lines (§3 item 12) and the
 frame-perfect claim (§3 item 3).
+
+## 7. Nate's answers (2026-10-15)
+
+Each answer was built on its own branch off `ee3915a6` and cherry-picked onto
+`sweep/prelaunch`. The only conflict was the generated character index (the
+`charged` fact from item 5 and the regions from item 14), which was regenerated,
+not hand-merged. At the tip: vitest 83 files / 2365 tests, `npm run check` 0
+errors, `npm run lint` clean, `npm run build` ok, e2e 75 passed on Chrome and 75
+passed on WebKit.
+
+1. **Stardread Moon: not added yet; the end guard is in** (`b7166e06`).
+   `currentAbyss()` now returns only the cycle whose start–end window holds
+   today, so from 2026-10-16 the Abyss board shows its no-banner form until the
+   next line is added (vitest pins the last day, the end day, and a successor
+   on the end day). The Stygian's `currentSeason` is unchanged: a board pins a
+   season and its picker prints the dates. Lunaris.moe (API 7.1.52) cannot
+   source the cycle yet: the only record is beta 20097 (骇星之月) with an empty
+   English name, and its icon is Cascading Moon's `UI_TowerBlessing_107` (`_108`
+   is a 404), so there is no banner art. ⏭ Re-check in a couple of days: add
+   `"2026-10-16": "Stardread Moon"` under `abyss` in `season-dates.json`, run
+   `fetch-endgame.mjs` then `build-endgame-art.mjs`, and confirm the new
+   cycle's `icon` is NOT `UI_TowerBlessing_107`. ⚠️ If the English name lands
+   before the icon is replaced, the fetcher silently reuses Cascading Moon's
+   banner.
+2. **The LaunchAgents are Nate's to remove.** The auto-mode classifier refused
+   `launchctl` and `rm` in `~/Library`, so the commands in item 2 stand as
+   written.
+3. **Applied verbatim** (`5649cc25`): the Settings lede and the Planner help's
+   Human timing paragraph. No other surface claimed frame-perfect by default.
+4. **Applied** (`30ac821a`): "the Rotation Planner uses 1U and marks…" ("mark"
+   agrees with the new subject) and "⌘Z / Ctrl+Z".
+5. **Yes, applied** (`1b1f51ff`, `f658078c`). The index gains `charged`
+   (always written) and `specialCharge` (Varka only); `C`, `C1`–`C9` and `sC`
+   are linted with the two approved sentences, both provisional. Bows are
+   exempt: their C reads the aimed-shot frames, and every bow has them. 21
+   entries flag a C: 15 framed claymores, the 5 frameless kits and Blank. ⏭ Open:
+   nine stance normal attacks (Clorinde, Durin, Ayato, Kinich, Mavuika, Mualani,
+   Nilou, Wriothesley, Xilonen) draw a stand-in C unflagged, because the
+   composer cannot see a stance; Chasca's Nightsoul C draws nothing (no
+   `chargeHits` in that form) and is not flagged.
+6. **Fixed in the sim** (`c83288d3`, `d2209411`). A same-character `>` now
+   times exactly like one segment, in all three timing modes: the cancel
+   lookahead reads into the next segment (and through an inert one such as
+   `(Q)`), the normal-attack string continues, the per-turn state and the stack
+   pool carry (one `TurnCarry`), the human pad sees the real next input, and
+   the 30f minimum on-field width is checked once per stay. Nicole's
+   on-field wait counts from the arrival, not each track. Of 51 notations
+   measured, 23 changed, and every changed total now equals the one-segment
+   spelling. Before → after (frame-perfect unless noted):
+   - `Xilonen E N2 > Xilonen N2`: 93 → 129 (equals `Xilonen E N2 N2`).
+   - `Bennett E > Bennett Q`: 92 → 93; padded 92 → 103.
+   - `Diluc E > Diluc Q`: 168 → 170; padded 168 → 180.
+   - `Kazuha E > Kazuha Q`: unchanged; padded 167 → 177.
+   - `Kaeya N5 > Kaeya N5`: 298 → 332 (N5 no longer swap-cancels at 30f).
+   - `Nahida E Q > Fischl E Q > Fischl N3`: 289 → 413 (Fischl's Q cancels to
+     a swap at 24f, to an attack only at 148f).
+   - `Xilonen > Xilonen E N2`: 86 → 56 (the bare name's 30f stub is gone).
+   - Laps of `Xilonen N2 > Bennett N1 > Xilonen`: 555 → 435 (four lap joins ×
+     the 30f stub).
+   - Nicole's Guidance on `Nicole E > Kaeya N5 > Kaeya N5`: [3.65, 3.7] +
+     [6.7, 20] → [3.65, 3.7] + [3.7, 20].
+   - Every rotation with no same-character join and no Laps is unchanged.
+
+   ⚠️ A `'segment'`-scoped stack key now lives for the TURN (noted in
+   `src/lib/CLAUDE.md`), so `Stub {declension:4} E > Stub E` resolves the loaded
+   skill on the second E; three old tests that wrote a swap-out as `Stub > Stub`
+   now swap through a second stub. ⏭ For Nate's eye: a continued bare name
+   leaves a zero-width track under the next one (try Laps on
+   `Xilonen N2 > Bennett N1 > Xilonen`), and an `active` buff still draws as two
+   bars meeting at the join where one segment draws one.
+
+7. **Escape, the ✕ and the portrait again cancel the whole swap** (`ea85080a`,
+   `013436b3`): from the Planner they return to `/planner` unchanged, like the
+   row's Cancel; on a board they end swap mode where you are. The false strip
+   can no longer show. Ruling added to `docs/team-builder-lineups-design.md`;
+   e2e pins all three exits. ⏭ For the copy pass: the ✕ still reads "Stop
+   replacing (Esc)", and on the Planner's row it now does what Cancel does.
+8. **Applied verbatim** (`39b45a24`).
+9. **Applied** (`1f2fbe40`): the panel heading and the phone drawer say "Aura
+   log"; the lane heading TARGET AURA stays.
+10. **Share on all eight instruments** (`252918fc`, `8cdddc70`).
+    The ICD Timeline and Reaction Curves got `v:1` share states
+    (sanitized and step-snapped like the rest; no codec change). The audit of
+    the other six found Artifact Odds dropping the value to beat and the chosen
+    reading; both are now optional v1 fields, so old links open as before.
+    Help's line is true as written. A link carries what you SET, never what you
+    were pointing at (as Damage Breakdown already did).
+11. **Shatter** (`5000de6e`). Every user-facing surface already said Shatter;
+    glossary §2 gains the ruling (kit prose and names such as Shattered
+    Darkrock exempt), and the library's four "Shattered" are corrected.
+12. **Creed lines SKIPPED.** To be discussed with Nate right before the
+    static-pages rewrite; he wants the new line NOT similar to the previous
+    ones, so the proposals in item 12 are withdrawn.
+13. **The Team Builder help section is to be written in the rewrite**, from the
+    outline in item 13.
+14. **Applied** (`e21a2765`, `d2a3e775`): Nicole is Mondstadt; Odette,
+    Vodyanitsa, Vesna, Alyosha and Sandrone are Snezhnaya; Skirk, Aloy and all
+    seven Travelers are "Other", whose chip sits after the nations. A vitest
+    case now requires every character but `blank` to name a region from a fixed
+    list, and the ingest script and skill warn that genshin-db often has none.
+    ⏭ The detail card's identity line now ends "· Other" for those ten.
+15. **Backup scope stays as is**: open tabs, open lineups and the Visualizers
+    workspace are working state, not saved data.
+16. **Deleted** (`031f31b5`): `scripts/optimize-portal.js` and its npm script;
+    `docs/archive/portal-handoff.md` records the call.
+17. **Nate will review these during the text rewrite.**
+18. **Both tests added** (`d15a13fe`); each fails with its fix undone.
+19. **Nate could not reproduce the drawer flash** (planner-13 was already on the
+    build he tested, so it was working). He found the Builder's More menu
+    staying open through a swipe-back instead. Fixed (`b673ff44`): one shared
+    `closeOnLeave` closes every portalled menu, popover and dialog a tool page
+    opens as the path changes — `BandMenu` (More, the con lens, board menus,
+    band A's menus, the Planner's Zoom and ⋯), the rotation-tab dropdown, the
+    instrument picker, the Abyss dialogs, the `ToolColumns` drawer and the
+    Planner bench's constellation/loadout popovers (which used to stay over the
+    next tool). Measured before: the More menu stayed up past 3s, and coming
+    back revived it with a backdrop that blocked clicks; after: gone within
+    200ms. ⏭ Nate: does the 150ms fade read as part of the leave? The site
+    chrome's overlays and the Library still stay open across a leave, which may
+    be intended.
+20. **(i) Fixed for real** (`0400f5f7`): the planner's empty slot is the id
+    `blank`, which has a payload, so `deriveTeamComposition` counted it as a
+    non-Moonsign receiver; it now skips `blank`. The "Moonsign: Ascendant
+    Gleam" chip in the Always-on strip still shows for Columbina + Ineffa, by
+    design (they reach level 2). (ii) not reported on.
+21. **Nate wants to rework the landing announcement banner anyway** — queued.
+22. **`scratch/runtime-smoke/` removed.**
