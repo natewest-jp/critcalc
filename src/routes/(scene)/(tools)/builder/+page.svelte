@@ -1205,7 +1205,6 @@
 		<div class="tb-band" class:tb-band--tabbed={tabbed}>
 			{#if showing !== 'lineup'}
 				<div class="tb-band-cell" bind:clientWidth={charCellW}>
-					{#if tabbed}{@render paneSwitch()}{/if}
 					{#if !foldShow}
 						<div class="segment tb-show" role="radiogroup" aria-label="Show">
 							{#each OWNERSHIP_VIEWS as v (v.key)}
@@ -1268,6 +1267,10 @@
 							{/snippet}
 						</BandMenu>
 					{/if}
+					<!-- TRIAL (responsive sweep 2026-10-15 item 26, D2): "Lineup" ends
+					     the band, beside the edge its pane docks on (panelRight);
+					     "Characters" still leads the Lineup cell, on the left. -->
+					{#if tabbed}{@render paneSwitch()}{/if}
 				</div>
 			{/if}
 			{#if showing !== 'characters'}
@@ -1751,6 +1754,11 @@
 	}
 	.tb-pane-switch {
 		gap: 0.45rem;
+	}
+	/* TRIAL (item 26, D2): the Characters cell's switch is its LAST child,
+	   pushed to the band's right end past the capped search. */
+	.tb-band-cell > .tb-pane-switch:last-child {
+		margin-left: auto;
 	}
 	/* More's box, only so the fold below can reach its word without reaching
 	   the lens's (both are BandMenus); it lays out nothing itself. */
