@@ -698,5 +698,16 @@
 		.row-details {
 			padding-left: 0;
 		}
+		/* The sort segment shares the row in thirds and a label wraps inside
+		   its own third; at 320 it ran 137px past the controls and pushed the
+		   pages panel into a sideways scroll. */
+		.cov-sort {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			flex: 1 1 100%;
+		}
+		.cov-sort > .btn {
+			white-space: normal;
+		}
 	}
 </style>
