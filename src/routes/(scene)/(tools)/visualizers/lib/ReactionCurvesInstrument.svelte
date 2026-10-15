@@ -37,6 +37,8 @@
 	};
 
 	const SHARE = TOP_CONTRIBUTOR_SHARE;
+	/** A row's label joins its reactions with this; the name breaks only here. */
+	const NAME_SEP = ' · ';
 
 	const FAMILIES: {
 		id: FamilyId;
@@ -627,7 +629,11 @@
 					>
 						<th scope="row">
 							<span class="rx-dot" style:background={c.color}></span>
-							<span class="rx-name">{c.label}</span>
+							<span class="rx-name"
+								>{#each c.label.split(NAME_SEP) as part, j (j)}{#if j}{NAME_SEP}{/if}<span
+										class="rx-part">{part}</span
+									>{/each}</span
+							>
 							<span class="rx-detail">{c.detail}</span>
 						</th>
 						<td class="rx-num rx-strong">{fmt(at(c, em))}</td>
@@ -819,10 +825,16 @@
 		margin-right: 0.45rem;
 	}
 
-	/* The family's name holds one line; its reactions go beneath it, past the
-	   dot — beside it, "Lunar & Stellar" broke over five lines in a column */
+	/* The family's name breaks BETWEEN reactions, never inside one; its
+	   reactions go beneath it, past the dot — beside it, "Lunar & Stellar"
+	   broke over five lines in a column. A whole-name nowrap set the table's
+	   min-content past a phone's paper card (Lunar-Charged · Stellar Swirl
+	   blast, 208px) */
 	.rx-name {
 		font-weight: var(--fw-semibold);
+	}
+
+	.rx-part {
 		white-space: nowrap;
 	}
 
