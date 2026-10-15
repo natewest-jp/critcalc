@@ -11,7 +11,7 @@
 	import type { Snippet } from 'svelte';
 	import type { SvelteSet } from 'svelte/reactivity';
 	import type { CharacterIndexEntry } from '$lib/types/character';
-	import type { GridFilters } from '$lib/characterFilters';
+	import { regionChips, type GridFilters } from '$lib/characterFilters';
 	import type { WeaponType } from '$lib/types/weapon';
 	import { OWNERSHIP_VIEWS, type OwnershipView } from './facets';
 
@@ -56,9 +56,7 @@
 		}
 	] as const;
 
-	const allRegions = $derived(
-		[...new Set(roster.map((c) => c.region).filter(Boolean) as string[])].sort()
-	);
+	const allRegions = $derived(regionChips(roster));
 
 	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
 		if (set.has(val)) set.delete(val);
