@@ -1053,15 +1053,36 @@
 		   with .revealed already set — no transition runs on initial paint. */
 		visibility: hidden;
 		opacity: 0;
-		/* ⚓ THE ROLL-OFF UNDER THE CHROME (Nate 2026-10-14): content scrolling
-		   up fades out at the strip's bottom edge instead of sliding under the
-		   brand. The mask is the shared .scroll-fade, offset by the strip's
-		   height and on the START edge only (the screen's foot stays a hard
-		   edge). It lives on the SCROLLER, so it never moves with the scroll —
-		   only its length grows over the first --scroll-fade px of travel.
-		   🎛️ 24px, a first value. */
-		--scroll-fade-inset: var(--chrome-h);
-		--scroll-fade: 24px;
+		/* ⚓ THE ROLL-OFF UNDER THE CHROME (Nate 2026-10-14; ↻ 2026-10-15, his
+		   hybrid). The chrome has NO ground: the wordmark and the glyph buttons
+		   sit straight on the night, and so do the tools. A fade that ENDED at
+		   the strip's bottom edge was content fading into a bar that does not
+		   exist. So the roll-off now STARTS a little below the strip (content
+		   whole until then) and climbs UP under it, transparent by the icons'
+		   MIDLINE: a little content passes under the lower half of the glyphs,
+		   already faint enough not to fight them. The shared .scroll-fade mask
+		   does it (the eased ramp, START edge only; the screen's foot stays a
+		   hard edge): the inset is the transparent end, and the length is set
+		   HERE rather than through --scroll-fade, so --scroll-fade-scale does
+		   not reach it. Both ends are named positions on the chrome, and a
+		   multiplier would slide the opaque end off its anchor. It lives on the
+		   SCROLLER, so it never moves with the scroll; only its length grows
+		   over the first --scroll-fade-length px of travel.
+
+		   📏 MEASURED 2026-10-15 at 390 and 1440 alike: the strip is 0–64, every
+		   glyph's box is centred on y = 32 (tops 14.5–17, bottoms 47–49), and
+		   the wordmark's baseline is y = 40. At the defaults (32 → 74) the mask
+		   alpha is 0 at the midline, ≈.06 at the baseline, ≈.25–.33 across the
+		   glyphs' bottom edges (≈.29 at 48), and 1 from y = 74.
+		   🎛️ First values; Nate tunes by eye. */
+		/* How far below the chrome's bottom edge the content is still whole. */
+		--chrome-fade-below: 10px;
+		/* Where the content is fully gone: the chrome glyphs' vertical midline
+		   (the strip centres its children, so half its height). */
+		--chrome-fade-end: calc(var(--chrome-h) / 2);
+		--chrome-fade-start: calc(var(--chrome-h) + var(--chrome-fade-below));
+		--scroll-fade-inset: var(--chrome-fade-end);
+		--scroll-fade-length: calc(var(--chrome-fade-start) - var(--chrome-fade-end));
 	}
 
 	.tool-shell.revealed {

@@ -31,9 +31,14 @@
  * edges at all — which is what makes this safe to attach unconditionally.
  *
  * ⚠ THE LENGTH LIVES IN CSS, NOT HERE. `--scroll-fade` on the element is the
- * knob (see .scroll-fade in app.css); this reads it so the clamp and the
- * gradient can never disagree. Tune it per consumer — the roster's cards want
- * more roll-off than the rail's small groups.
+ * per-consumer knob and `--scroll-fade-scale` on :root the site-wide one (see
+ * .scroll-fade in app.css); CSS multiplies them into the registered
+ * `--scroll-fade-length`, and this reads THAT, so the clamp and the gradient
+ * can never disagree. Tune it per consumer — the roster's cards want more
+ * roll-off than the rail's small groups. A consumer anchored to geometry (the
+ * tool shell under the chrome) sets `--scroll-fade-length` directly.
+ * It is re-read on every measure, not only on resize, so a knob changed in
+ * devtools lands on the next scroll.
  *
  * ⚠ REAL-SAFARI WATCH ITEM. A mask makes the scroller a composited layer, and
  * these scrollers live inside .tool-page, which is WAAPI-transform-animated
@@ -45,7 +50,8 @@
  */
 import type { Action } from 'svelte/action';
 
-/** Fallback when the element declares no `--scroll-fade` (it always should). */
+/** Fallback when the element's `--scroll-fade-length` does not compute (an
+ *  engine without @property; the class always declares it). */
 const DEFAULT_LENGTH = 32;
 
 /**
@@ -79,8 +85,8 @@ export const scrollFade: Action<HTMLElement, ScrollFadeOptions | undefined> = (n
 	let frame = 0;
 
 	function readLength(): void {
-		const declared = parseFloat(getComputedStyle(node).getPropertyValue('--scroll-fade'));
-		if (Number.isFinite(declared) && declared > 0) length = declared;
+		const declared = parseFloat(getComputedStyle(node).getPropertyValue('--scroll-fade-length'));
+		if (Number.isFinite(declared) && declared >= 0) length = declared;
 	}
 
 	function apply(start: number, end: number): void {
@@ -96,6 +102,7 @@ export const scrollFade: Action<HTMLElement, ScrollFadeOptions | undefined> = (n
 
 	function measure(): void {
 		frame = 0;
+		readLength();
 		const travel = horizontal
 			? node.scrollWidth - node.clientWidth
 			: node.scrollHeight - node.clientHeight;
@@ -125,10 +132,7 @@ export const scrollFade: Action<HTMLElement, ScrollFadeOptions | undefined> = (n
 	// observed too, and a childList watcher keeps that set current. childList
 	// only, never subtree: the roster appends over a hundred tiles a few at a
 	// time, and each one is a subtree mutation we would otherwise re-handle.
-	const ro = new ResizeObserver(() => {
-		readLength();
-		schedule();
-	});
+	const ro = new ResizeObserver(schedule);
 	function observeChildren(): void {
 		for (const child of node.children) ro.observe(child);
 	}
@@ -139,7 +143,6 @@ export const scrollFade: Action<HTMLElement, ScrollFadeOptions | undefined> = (n
 	mo.observe(node, { childList: true });
 	node.addEventListener('scroll', schedule, { passive: true });
 
-	readLength();
 	measure();
 
 	return {

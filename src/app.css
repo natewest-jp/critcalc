@@ -3121,12 +3121,15 @@ img {
    🎛️ --scroll-fade is THE KNOB and is meant to be overridden per consumer: the
    roster's cards carry more roll-off than the rail's small groups, and the
    planner's timeline wants more than either (its content is continuous, so
-   there is no gap for the roll-off to hide in). The action reads this same
-   property, so the clamp and the gradient cannot disagree.
+   there is no gap for the roll-off to hide in). The PAINTED length is it
+   times --scroll-fade-scale (the site-wide knob; see THE EASED RAMP below),
+   computed into --scroll-fade-length, which is what the action reads, so the
+   clamp and the gradient cannot disagree.
 
    --scroll-fade-inset (0 by default) moves the TOP edge down: everything above
    it is masked out, and the roll-off starts there. The tool shell sets it to
-   the site chrome's height, so content fades under the strip (2026-10-14).
+   the chrome glyphs' midline and its own --scroll-fade-length, so content
+   fades UP under the strip (2026-10-14; the hybrid, 2026-10-15).
    ⚠️ REGISTERED NON-INHERITING: a plain custom property inherits, so the
    shell's inset reached every .scroll-fade INSIDE it and masked the top 64px
    of the Team Builder's grid (Nate, the same day). Each scroller's inset is
@@ -3139,29 +3142,84 @@ img {
 	inherits: false;
 	initial-value: 0px;
 }
+/* ── THE EASED RAMP (2026-10-15) ─────────────────────────────────────────
+   Every roll-off below is a TEN-STOP ramp, not a two-stop one. A linear ramp
+   has a slope break at each end (the content goes from untouched to fading at
+   a constant rate within one pixel) and the eye reads that as a KNEE: a line
+   where the fade begins and another where it ends. The cure is the "easing
+   gradient": sample a curve with zero slope at BOTH ends and let the gradient
+   interpolate linearly between the samples.
+
+   🧮 THE CURVE IS SMOOTHERSTEP, a(t) = 6t⁵ − 15t⁴ + 10t³, sampled at t = k/9,
+   k = 0…9 (t = 0 at the fully transparent edge, 1 where the content is whole).
+   Chosen over smoothstep (3t² − 2t³) and the sine ease because it is flat to
+   the SECOND derivative at both ends, so its first and last segments are the
+   flattest of the three (a(1/9) = .012, smoothstep .034) and neither edge
+   draws a line. The price is a steeper middle (peak slope 1.875 against 1.5),
+   which reads as a slightly SHORTER fade at the same length — one reason the
+   site-wide multiplier below starts under 1. Regenerate the alphas with
+     node -e "const f=t=>t*t*t*(t*(6*t-15)+10);for(let k=0;k<=9;k++)console.log(k/9,f(k/9).toFixed(3))"
+   Positions are calc(origin + length × t), so every consumer's length keeps
+   working. ⛔ Plain rgb() alpha literals only, never a color-mix (a color-mix
+   fed by a color-mix crashes WebKit, and a mask needs only alpha anyway).
+   Each axis writes its gradient ONCE, into --scroll-fade-mask / -mask-x, and
+   the prefixed and unprefixed properties both read it, so they cannot drift.
+
+   🎛️ --scroll-fade-scale MULTIPLIES EVERY CONSUMER'S --scroll-fade. It does so
+   in --scroll-fade-length (registered, so it computes to px), and THAT is the
+   number $lib/actions/scrollFade clamps to; the action then writes the edge
+   lengths the gradient paints, so the clamp and the paint are one number. A
+   consumer whose fade is anchored to GEOMETRY rather than feel (the tool shell
+   under the chrome) sets --scroll-fade-length itself and is unscaled.
+   0.7 is a first value, under the old lengths on purpose: an eased ramp looks
+   softer than a linear one of the same length. */
+:root {
+	--scroll-fade-scale: 0.7;
+}
 @property --scroll-fade-inset {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+/* ⚠ Registered and NON-INHERITING for the inset's reason: the tool shell sets
+   its own, and a plain custom property would hand it to every .scroll-fade
+   inside the shell. Registering also makes it COMPUTE, so the action reads a
+   px number rather than the string "calc(32px * 0.7)". */
+@property --scroll-fade-length {
 	syntax: '<length>';
 	inherits: false;
 	initial-value: 0px;
 }
 .scroll-fade {
 	--scroll-fade: 32px;
+	--scroll-fade-length: calc(var(--scroll-fade) * var(--scroll-fade-scale, 1));
+	--scroll-fade-mask: linear-gradient(
+		to bottom,
+		transparent var(--scroll-fade-inset, 0px),
+		rgb(0 0 0 / 0.012) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.1111),
+		rgb(0 0 0 / 0.076) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.2222),
+		rgb(0 0 0 / 0.21) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.3333),
+		rgb(0 0 0 / 0.397) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.4444),
+		rgb(0 0 0 / 0.603) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.5556),
+		rgb(0 0 0 / 0.79) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.6667),
+		rgb(0 0 0 / 0.924) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.7778),
+		rgb(0 0 0 / 0.988) calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px) * 0.8889),
+		#000 calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px)),
+		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
+		rgb(0 0 0 / 0.988) calc(100% - var(--scroll-fade-bottom, 0px) * 0.8889),
+		rgb(0 0 0 / 0.924) calc(100% - var(--scroll-fade-bottom, 0px) * 0.7778),
+		rgb(0 0 0 / 0.79) calc(100% - var(--scroll-fade-bottom, 0px) * 0.6667),
+		rgb(0 0 0 / 0.603) calc(100% - var(--scroll-fade-bottom, 0px) * 0.5556),
+		rgb(0 0 0 / 0.397) calc(100% - var(--scroll-fade-bottom, 0px) * 0.4444),
+		rgb(0 0 0 / 0.21) calc(100% - var(--scroll-fade-bottom, 0px) * 0.3333),
+		rgb(0 0 0 / 0.076) calc(100% - var(--scroll-fade-bottom, 0px) * 0.2222),
+		rgb(0 0 0 / 0.012) calc(100% - var(--scroll-fade-bottom, 0px) * 0.1111),
+		transparent 100%
+	);
 	/* Unprefixed is Safari 15.4+ and every current engine; the prefix is kept as
 	   free insurance because a missing mask is invisible, not loud. */
-	-webkit-mask-image: linear-gradient(
-		to bottom,
-		transparent var(--scroll-fade-inset, 0px),
-		#000 calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px)),
-		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
-		transparent 100%
-	);
-	mask-image: linear-gradient(
-		to bottom,
-		transparent var(--scroll-fade-inset, 0px),
-		#000 calc(var(--scroll-fade-inset, 0px) + var(--scroll-fade-top, 0px)),
-		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
-		transparent 100%
-	);
+	-webkit-mask-image: var(--scroll-fade-mask);
+	mask-image: var(--scroll-fade-mask);
 }
 /* The sideways twin (⚓ NATE 2026-08-11, the timeline round). Same construction,
    same knob, `to right` — the planner's ruler and track scrollers both take it
@@ -3169,20 +3227,32 @@ img {
    the bars with a hard-cut time axis above them. */
 .scroll-fade-x {
 	--scroll-fade: 32px;
-	-webkit-mask-image: linear-gradient(
+	--scroll-fade-length: calc(var(--scroll-fade) * var(--scroll-fade-scale, 1));
+	--scroll-fade-mask-x: linear-gradient(
 		to right,
-		transparent 0,
-		#000 var(--scroll-fade-left, 0px),
+		transparent 0px,
+		rgb(0 0 0 / 0.012) calc(var(--scroll-fade-left, 0px) * 0.1111),
+		rgb(0 0 0 / 0.076) calc(var(--scroll-fade-left, 0px) * 0.2222),
+		rgb(0 0 0 / 0.21) calc(var(--scroll-fade-left, 0px) * 0.3333),
+		rgb(0 0 0 / 0.397) calc(var(--scroll-fade-left, 0px) * 0.4444),
+		rgb(0 0 0 / 0.603) calc(var(--scroll-fade-left, 0px) * 0.5556),
+		rgb(0 0 0 / 0.79) calc(var(--scroll-fade-left, 0px) * 0.6667),
+		rgb(0 0 0 / 0.924) calc(var(--scroll-fade-left, 0px) * 0.7778),
+		rgb(0 0 0 / 0.988) calc(var(--scroll-fade-left, 0px) * 0.8889),
+		#000 calc(var(--scroll-fade-left, 0px)),
 		#000 calc(100% - var(--scroll-fade-right, 0px)),
+		rgb(0 0 0 / 0.988) calc(100% - var(--scroll-fade-right, 0px) * 0.8889),
+		rgb(0 0 0 / 0.924) calc(100% - var(--scroll-fade-right, 0px) * 0.7778),
+		rgb(0 0 0 / 0.79) calc(100% - var(--scroll-fade-right, 0px) * 0.6667),
+		rgb(0 0 0 / 0.603) calc(100% - var(--scroll-fade-right, 0px) * 0.5556),
+		rgb(0 0 0 / 0.397) calc(100% - var(--scroll-fade-right, 0px) * 0.4444),
+		rgb(0 0 0 / 0.21) calc(100% - var(--scroll-fade-right, 0px) * 0.3333),
+		rgb(0 0 0 / 0.076) calc(100% - var(--scroll-fade-right, 0px) * 0.2222),
+		rgb(0 0 0 / 0.012) calc(100% - var(--scroll-fade-right, 0px) * 0.1111),
 		transparent 100%
 	);
-	mask-image: linear-gradient(
-		to right,
-		transparent 0,
-		#000 var(--scroll-fade-left, 0px),
-		#000 calc(100% - var(--scroll-fade-right, 0px)),
-		transparent 100%
-	);
+	-webkit-mask-image: var(--scroll-fade-mask-x);
+	mask-image: var(--scroll-fade-mask-x);
 }
 
 /* ── THE GROUND-SPANNING INSET STOP (⚓ NATE 2026-08-11) ────────────────────
