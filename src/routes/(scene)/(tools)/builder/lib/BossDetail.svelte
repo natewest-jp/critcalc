@@ -15,6 +15,7 @@
 	import { onMount } from 'svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { portal } from '$lib/actions/portal';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 	import {
 		BOSSES,
 		bossImage,
@@ -73,6 +74,11 @@
 
 	let closeBtn = $state<HTMLButtonElement>();
 	onMount(() => closeBtn?.focus());
+	// Portalled out of a page the tool pan keeps alive, paused, through the leave.
+	closeOnLeave(
+		() => true,
+		() => onClose()
+	);
 </script>
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && onClose()} />

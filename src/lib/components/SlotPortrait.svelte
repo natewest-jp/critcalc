@@ -58,6 +58,7 @@
 	import { portal } from '$lib/actions/portal';
 	import { fade } from 'svelte/transition';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 
 	/** The minimal character shape the card renders — an index entry or a loaded
 	 *  payload both satisfy it. null = empty slot. */
@@ -227,6 +228,11 @@
 		conOpen = false;
 		loadoutOpen = false;
 	}
+
+	// ⚠️ The bench is the tools LAYOUT's, so leaving the planner only hides it
+	// (`visibility`) — and these popovers are portalled out of that, so one
+	// open at the leave stayed over the next tool until it was dismissed.
+	closeOnLeave(() => conOpen || loadoutOpen, closePopovers);
 </script>
 
 <!-- The card inherits the ribbon's DARK context (it has no ground of its own).

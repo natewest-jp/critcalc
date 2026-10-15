@@ -10,6 +10,7 @@
 	import { onMount } from 'svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { portal } from '$lib/actions/portal';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { inLang, monsterImage, type AbyssCycle } from '$lib/endgame';
 
 	let { cycle, half, onClose }: { cycle: AbyssCycle; half: 0 | 1; onClose: () => void } = $props();
@@ -17,6 +18,11 @@
 	const hp = (n: number) => n.toLocaleString('en-US');
 	let closeBtn = $state<HTMLButtonElement>();
 	onMount(() => closeBtn?.focus());
+	// Portalled out of a page the tool pan keeps alive, paused, through the leave.
+	closeOnLeave(
+		() => true,
+		() => onClose()
+	);
 </script>
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && onClose()} />

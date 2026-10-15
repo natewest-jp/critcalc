@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { beforeNavigate } from '$app/navigation';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { ASIDE_W, COLUMN_GAP } from '$lib/toolColumns';
 	import { portal } from '$lib/actions/portal';
 	import CloseMark from '$lib/components/CloseMark.svelte';
@@ -74,16 +74,14 @@
 		if (sheet && aside && event.key === 'Escape') onCloseAside?.();
 	}
 
-	// ⚠️ Leaving the tool does not destroy this page: the tool pan keeps it for
-	// the slide-out with its effects PAUSED, so a close that lands then cannot
-	// unmount the drawer, and its scrim sat over the incoming tool eating clicks
-	// (the planner's dock had the same defect). A navigation hook is a plain
-	// callback and still fires; closing here flushes while the block is live.
-	// Only the DRAWER, which is a modal — an open column is a panel the reader
-	// opened, and nothing resets one.
-	beforeNavigate((nav) => {
-		if (sheet && aside && nav.to?.url.pathname !== nav.from?.url.pathname) onCloseAside?.();
-	});
+	// ⚠️ Leaving the tool does not destroy this page (see closeOnLeave), and the
+	// drawer's scrim sat over the incoming tool eating clicks. Only the DRAWER,
+	// which is a modal — an open column is a panel the reader opened, and
+	// nothing resets one.
+	closeOnLeave(
+		() => !!(sheet && aside),
+		() => onCloseAside?.()
+	);
 </script>
 
 <svelte:window onkeydown={onWindowKeydown} />

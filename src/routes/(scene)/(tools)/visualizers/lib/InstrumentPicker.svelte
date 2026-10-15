@@ -3,6 +3,7 @@
 	import { portal } from '$lib/actions/portal';
 	import Mark from '$lib/components/Mark.svelte';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { INSTRUMENTS, type InstrumentId } from './workspace';
 
 	// Per-tile instrument switcher: the chip row didn't scale past five
@@ -45,6 +46,12 @@
 	$effect(() => {
 		if (slot === -1) open = false;
 	});
+	// …and for the same reason, leaving the tool: the page is kept, paused, for
+	// the pan, and the popover would ride over the incoming tool.
+	closeOnLeave(
+		() => open,
+		() => close(false)
+	);
 
 	function openMenu() {
 		if (!triggerEl) return;

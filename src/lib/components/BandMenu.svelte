@@ -5,6 +5,7 @@
 	import Mark from './Mark.svelte';
 	import type { MarkName } from '$lib/marks.generated';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 
 	// ---------------------------------------------------------------------------
 	// A dropdown for a band control (toolbar round, 2026-08-07).
@@ -93,6 +94,13 @@
 		open = false;
 		if (refocus) triggerEl?.focus();
 	}
+
+	// Portalled, so it outlived its page's leave (the Builder's More, on an
+	// iPhone swipe-back). No refocus: the trigger is on the page going away.
+	closeOnLeave(
+		() => open,
+		() => close(false)
+	);
 </script>
 
 <button
