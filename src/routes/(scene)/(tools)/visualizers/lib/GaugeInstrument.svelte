@@ -613,6 +613,34 @@
 	);
 	type Marker = (typeof markers)[number];
 
+	/** A pill's hit target reaches this far from its centre. */
+	const MARKER_HIT_R = MARKER_PILL_R + 6;
+	/**
+	 * ⚓ A PRESS GOES TO THE NEAREST PILL (responsive sweep 2026-10-15, R2).
+	 * Each pill's target is ±MARKER_HIT_R around its centre, CUT at the midpoint
+	 * to its neighbour on either side. As overlapping circles, the pill painted
+	 * last took the whole shared strip — on a phone two applications 0.3s apart
+	 * overlap by up to 17px, so a tap squarely on one pill could pick the other.
+	 * Cut at the midpoints, the browser's own hit test picks the nearer centre,
+	 * and an isolated pill keeps its full width.
+	 * ⚠ Compared against EVERY other pill, not just the next in the array: the
+	 * cut must not depend on the markers' order. Two pills at the same instant
+	 * split at their shared centre, the earlier application to the left.
+	 */
+	const hitCells = $derived(
+		markers.map((m, i) => {
+			let lo = m.x - MARKER_HIT_R;
+			let hi = m.x + MARKER_HIT_R;
+			markers.forEach((o, j) => {
+				if (j === i) return;
+				const mid = (m.x + o.x) / 2;
+				if (o.x < m.x || (o.x === m.x && j < i)) lo = Math.max(lo, mid);
+				else hi = Math.min(hi, mid);
+			});
+			return { x: lo, w: Math.max(0, hi - lo) };
+		})
+	);
+
 	/**
 	 * ⚓ REACTION LABELS STAGGER RATHER THAN COLLIDE (⚓ NATE 2026-08-17).
 	 *
@@ -1260,11 +1288,13 @@
 						>
 							{m.gauge}
 						</text>
-						<!-- The target, painted last so nothing sits over it. -->
-						<circle
-							cx={m.x}
-							cy={MARKER_PILL_CY}
-							r={MARKER_PILL_R + 6}
+						<!-- The target, painted last so nothing sits over it, and cut
+						     where it would reach a neighbour's (see `hitCells`). -->
+						<rect
+							x={hitCells[mi].x}
+							y={MARKER_PILL_CY - MARKER_HIT_R}
+							width={hitCells[mi].w}
+							height={MARKER_HIT_R * 2}
 							fill="transparent"
 							role="presentation"
 						/>
@@ -1575,6 +1605,11 @@
 	.gx-marker {
 		cursor: grab;
 	}
+	/* The disc and the ring paint; only the cut target takes the press, so a
+	   neighbour's disc drawn over this pill's half cannot take it back. */
+	.gx-marker circle {
+		pointer-events: none;
+	}
 	.gx-marker--held {
 		cursor: grabbing;
 	}
@@ -1590,8 +1625,10 @@
 		outline: none;
 	}
 	/* A real focus stop needs a real focus ring. ⚠ `outline` on an SVG group is
-	   drawn around its bounding box, which here is the hit circle — deliberately
-	   the largest child, so the ring frames the target rather than the disc. */
+	   drawn around its bounding box, which here is the hit target — deliberately
+	   the largest child, so the ring frames the target rather than the disc.
+	   (Where a neighbour cuts the target narrower, the disc still sets the
+	   box's least width.) */
 	.gx-marker:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: 1px;
