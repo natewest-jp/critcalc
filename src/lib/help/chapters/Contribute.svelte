@@ -1,16 +1,15 @@
 <!-- About chapter — see $lib/help/areas.ts. Every <h2> carries an id; the area
 	 shell reads them for the sidebar's table of contents.
 
-	 ⚠️ AUTHORING HOLE (2026-07-26): the "Report something" section below has no
-	 contact channel to point at — critcalc has no public issue tracker, email
-	 alias, or Discord yet. Pick one and the paragraph marked TODO becomes a
-	 real link; until then it says only what is true. A future Ko-fi / GitHub
-	 Sponsors link belongs in "Supporting critcalc" for the same reason: not
-	 promised until it exists. -->
+	 ↻ 2026-10-15: the "Report something" section has its channel — the
+	 feedback form ($lib/feedback.ts owns its address). A future Ko-fi / GitHub
+	 Sponsors link belongs in "Supporting critcalc": not promised until it
+	 exists. -->
 
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
+	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 </script>
 
 <h1>Contribute</h1>
@@ -61,13 +60,20 @@
 		The <a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> lists what each
 		character’s kit has in the Rotation Planner so far, and what falls outside it, with the reason.
 	</p>
-	<!-- TODO: replace with the real channel once Nate picks one (public repo
-		 issues / an email alias on the domain / Discord). Until then, do not
-		 promise a route that does not exist. -->
+	<!-- eslint-disable svelte/no-navigation-without-resolve -- the external form -->
 	<p>
-		A public place to send those reports is being set up. In the meantime, checking a suspect value
-		against <a href="https://gcsim.app" target="_blank" rel="noopener noreferrer">gcsim</a> is the fastest
-		way to tell a curation gap from a genuine mistake.
+		Send reports through the
+		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>. Inside
+		a tool, <strong>Report a problem</strong> in the ⋯ menu opens the same form with a link to what you’re
+		looking at already filled in.
+	</p>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
+	<p>
+		Checking a suspect value against <a
+			href="https://gcsim.app"
+			target="_blank"
+			rel="noopener noreferrer">gcsim</a
+		> is the fastest way to tell a curation gap from a genuine mistake.
 	</p>
 </section>
 
