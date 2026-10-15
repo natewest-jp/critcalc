@@ -44,7 +44,7 @@
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
 	import { motion } from '$lib/motion';
-	import { below } from '$lib/media.svelte';
+	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
@@ -181,6 +181,12 @@
 	/** Below the dock the panes are tabs. ⚠ The literal is in the CSS too
 	 *  (`@media (max-width: 71rem)`) — custom properties can't reach a query. */
 	const tabbed = $derived(below('wide'));
+	/** ↻ Responsive sweep §3 item 5 (⚓ Nate 2026-10-15): on a SHORT screen
+	 *  (`(max-height: 30rem)`, breakpoints.ts § THE HEIGHT AXIS) the roster's
+	 *  head — filter strip, hint, destination banner — rides INSIDE the grid's
+	 *  scroller instead of pinned over it. Pinned, it left the grid 13–83px of a
+	 *  landscape phone (a card is ~120). */
+	const headScrolls = $derived(short());
 	/** Which pane is showing — on a wide screen, both. */
 	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
 
@@ -1325,6 +1331,64 @@
 	{/snippet}
 </ToolStack>
 
+<!-- ── The roster's HEAD: the filter strip, the empty-roster hint and the
+     destination banner. Pinned over the grid's scroller, or — on a short
+     screen (`headScrolls`) — the first thing INSIDE it, so it scrolls away with
+     the cards. One snippet, so the two placements cannot drift. -->
+{#snippet rosterHead()}
+	<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
+	     the board you are filtering for. -->
+	<RosterFilterStrip
+		{filters}
+		{activeFacets}
+		activeRole={activeCategory?.key ?? null}
+		onRole={openCategory}
+		count={swapping || selectedTeam ? undefined : split.matches.length}
+		{countNote}
+		anyActive={anyFilterActive}
+		onClear={clearAllFilters}
+	/>
+	<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
+	     filter and the "My constellations" lens read the roster, and do
+	     nothing until it has something in it. -->
+	{#if mounted && !ownsAny}
+		<p class="tb-roster-hint">
+			The Owned filter and “My constellations” read your roster, which is empty.
+			<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
+		</p>
+	{/if}
+	<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
+	     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
+	{#if swapping}
+		{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
+		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
+			{#if swapping.incumbent}
+				Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
+			{:else}
+				Adding to {selectedLabel}
+			{/if}
+			{@render destCount()}
+			<button
+				class="btn btn--icon tb-dest-close"
+				onclick={stopSwap}
+				aria-label={swapping.incumbent
+					? `Stop replacing ${nameOf(swapping.incumbent)}`
+					: `Stop adding to ${selectedLabel}`}
+				title="Stop {verb} (Esc)"><Mark name="close" size={12} /></button
+			>
+		</p>
+	{:else if selectedTeam}
+		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
+			{#if destFilled === 4}
+				{selectedLabel} is full. Pick a member again to remove them.
+			{:else}
+				Adding to {selectedLabel} · {destFilled}/4
+			{/if}
+			{@render destCount()}
+		</p>
+	{/if}
+{/snippet}
+
 <!-- ── The main column: the work frame ────────────────────────────────────── -->
 {#snippet main()}
 	<!-- ── THE SURFACE HAS NO FRAME (⚓ NATE 2026-08-08).
@@ -1342,57 +1406,7 @@
 	     exception cuts one way only, because there is no light ground anywhere
 	     to inherit from. -->
 	<div class="tb-stack ctx-dark">
-		<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
-		     the board you are filtering for. -->
-		<RosterFilterStrip
-			{filters}
-			{activeFacets}
-			activeRole={activeCategory?.key ?? null}
-			onRole={openCategory}
-			count={swapping || selectedTeam ? undefined : split.matches.length}
-			{countNote}
-			anyActive={anyFilterActive}
-			onClear={clearAllFilters}
-		/>
-		<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
-			     filter and the "My constellations" lens read the roster, and do
-			     nothing until it has something in it. -->
-		{#if mounted && !ownsAny}
-			<p class="tb-roster-hint">
-				The Owned filter and “My constellations” read your roster, which is empty.
-				<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
-			</p>
-		{/if}
-		<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
-			     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
-		{#if swapping}
-			{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
-			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
-				{#if swapping.incumbent}
-					Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
-				{:else}
-					Adding to {selectedLabel}
-				{/if}
-				{@render destCount()}
-				<button
-					class="btn btn--icon tb-dest-close"
-					onclick={stopSwap}
-					aria-label={swapping.incumbent
-						? `Stop replacing ${nameOf(swapping.incumbent)}`
-						: `Stop adding to ${selectedLabel}`}
-					title="Stop {verb} (Esc)"><Mark name="close" size={12} /></button
-				>
-			</p>
-		{:else if selectedTeam}
-			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
-				{#if destFilled === 4}
-					{selectedLabel} is full. Pick a member again to remove them.
-				{:else}
-					Adding to {selectedLabel} · {destFilled}/4
-				{/if}
-				{@render destCount()}
-			</p>
-		{/if}
+		{#if !headScrolls}{@render rosterHead()}{/if}
 		<div class="tb-sourcebox tb-sourcebox--fill">
 			<section class="tb-source scroll-fade tb-source--fill" use:scrollFade>
 				<!-- ↻ §11.2: the filters are the bar above; what is left in here is
@@ -1405,6 +1419,7 @@
 						tile={rosterTile}
 						sections={swapGrid?.sections ?? rosterSections}
 						sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
+						aboveGrid={headScrolls ? rosterHead : undefined}
 						belowGrid={swapGrid ? swapFoot : rosterStubs}
 						emptyMessage={rosterEmptyMessage}
 					/>
