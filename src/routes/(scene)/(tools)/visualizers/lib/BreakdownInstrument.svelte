@@ -1558,14 +1558,17 @@
 
 	.bd-sliders {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		/* 🎛️ capped columns — see ReactionCurvesInstrument's .rx-sliders */
+		grid-template-columns: repeat(2, minmax(0, var(--instrument-slider-max)));
 		gap: 0.5rem 1.5rem;
 		/* top, not stretch — see ReactionCurvesInstrument's .rx-sliders */
 		align-items: start;
 	}
 
-	.bd-wide {
+	/* the pair's length — see ReactionCurvesInstrument's .rx-wide */
+	.slider-control.bd-wide {
 		grid-column: 1 / -1;
+		max-width: none;
 	}
 
 	/* The 90 / 95 / 100 marks — ⚠ mirror the range input's UA 2px side margin

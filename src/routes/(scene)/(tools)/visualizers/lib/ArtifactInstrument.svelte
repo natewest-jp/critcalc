@@ -729,7 +729,7 @@
 	</div>
 {/snippet}
 
-<div class="instrument">
+<div class="instrument instrument--capped">
 	<div class="ao-chart instrument-chart ctx-dark">
 		<div class="chips ao-views" role="group" aria-label="View">
 			{#each VIEWS as v (v.id)}

@@ -442,7 +442,8 @@
 	   bearing, since the same window now yields 1-, 2- or 3-up tiles. Only the
 	   generic name `instrument` exists; the per-instrument container names were
 	   declared but never queried, and retired with the slot-count round.
-	   inline-size only — size containment would collapse indefinite heights. */
+	   inline-size only — size containment would collapse indefinite heights
+	   (from 1024px, where the height is the row's, it is size; see below). */
 	.ws-tile {
 		display: flex;
 		flex-direction: column;
@@ -536,6 +537,17 @@
 			   `auto` minimum is exactly the term that was doing the damage. Same
 			   law as .ws-body's min-width note, one axis over. */
 			grid-template-rows: minmax(0, 1fr);
+		}
+		/* ↻ 2026-10-15 (responsive sweep §3 item 16): here, and only here, the
+		   tile is a SIZE container. Its height is the row's now — definite, and
+		   never its content's — so the containment the rule above warns about
+		   has nothing to collapse, and `100cqh` is the tile's height: what the
+		   capped instruments' chart column and the Crit Heatmap's stage measure
+		   their width against (app.css .instrument--capped). The name and the
+		   width queries are unchanged; layout containment already came with
+		   inline-size, so nothing positioned inside moves. */
+		.ws-tile {
+			container-type: size;
 		}
 		/* ⚓ THE TILE IS THE VIEWPORT, not the instrument. Eight instrument roots
 		   each carried their own (inert) `overflow-y: auto`; the scroll lives here

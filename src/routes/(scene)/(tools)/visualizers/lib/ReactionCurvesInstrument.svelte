@@ -497,7 +497,7 @@
 	const markPos = (lv: number) => (lv - 1) / (MAX_LEVEL - 1);
 </script>
 
-<div class="instrument">
+<div class="instrument instrument--capped">
 	<div class="rx-chart instrument-chart ctx-dark">
 		<!-- The family picks what the chart draws, so it sits on the chart. -->
 		<div class="segment rx-tabs" role="radiogroup" aria-label="Reaction family">
@@ -884,7 +884,10 @@
 		display: grid;
 		/* EM and Reaction Bonus share a line; Level always takes a line of its
 		   own (⚓ Nate) — a third of the box was too short a track to land a level */
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		/* 🎛️ each column stops at the shared slider length (app.css
+		   --instrument-slider-max, sweep 2026-10-15 §3 item 16), so the pair
+		   stays a pair on a wide tile rather than two halves of the panel */
+		grid-template-columns: repeat(2, minmax(0, var(--instrument-slider-max)));
 		gap: 0.5rem 1.5rem;
 		/* top, not stretch: the Level control is taller by its marks, and a
 		   stretched neighbour spreads that height into its own rows, dropping
@@ -892,8 +895,11 @@
 		align-items: start;
 	}
 
-	.rx-wide {
+	/* A line of its own runs under BOTH columns, so it is the pair's length,
+	   not one slider's (the app.css cap is per control) */
+	.slider-control.rx-wide {
 		grid-column: 1 / -1;
+		max-width: none;
 	}
 
 	/* The Level slider's 90 / 95 / 100 marks. Above 90 only 95 and 100 exist,

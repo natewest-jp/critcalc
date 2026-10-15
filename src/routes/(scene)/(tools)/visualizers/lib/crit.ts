@@ -200,6 +200,13 @@ export function riskGradient(critRate: number, min = HITS_MIN, max = HITS_MAX): 
 // Canvas size and plot margins (pixels). PAD reserves room for tick labels.
 
 export const SIZE = 720;
+
+/** The heatmap's drawn box keeps its width:height inside this band — the
+ *  chart fills its shell, but never stretches into an unreadable sliver.
+ *  MAX is also the wide Crit Heatmap's stage width per unit of tile height
+ *  (CritInstrument's wide tier), which is how its Readout meets the chart. */
+export const HEATMAP_MIN_ASPECT = 0.82; // narrowest w:h (tallest the plot may get)
+export const HEATMAP_MAX_ASPECT = 1.25; // widest w:h (widest the plot may get)
 // PAD reserves room for tick labels (left/bottom) and, on the right, the
 // isoline value column + its rotated AVERAGE DMG identity label.
 // ↻ 2026-09-30 (⚓ Nate): the three axis titles sit ONE ink gap past the tick

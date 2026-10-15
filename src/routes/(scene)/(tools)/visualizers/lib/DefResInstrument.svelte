@@ -219,7 +219,7 @@
 	]);
 </script>
 
-<div class="instrument dr">
+<div class="instrument instrument--capped dr">
 	<!-- One chart slot, two charts: RES takes the larger share of its height -->
 	<div class="dr-charts instrument-chart">
 		<div class="dr-chart dr-res ctx-dark">

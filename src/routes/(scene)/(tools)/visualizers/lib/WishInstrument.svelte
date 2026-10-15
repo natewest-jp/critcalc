@@ -266,7 +266,7 @@
 	}
 </script>
 
-<div class="instrument">
+<div class="instrument instrument--capped">
 	<div class="wi-chart instrument-chart ctx-dark">
 		<div
 			class="wi-graph instrument-graph"

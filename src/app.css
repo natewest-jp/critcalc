@@ -3820,6 +3820,18 @@ img {
 	   column is the widest need, and the others gain 3rem of breathing room.
 	   🎛️ Re-measure if a log line grows. */
 	--instrument-side: minmax(18rem, 25rem);
+	/* 🎛️ THE WIDEST A CHART'S COLUMN GETS, as a multiple of the TILE'S height
+	   (responsive sweep 2026-10-15, §3 item 16). Only the four charts that
+	   are not time series wear it (.instrument--capped). Set where a 16:9
+	   screen already sits, so it bites only past that shape: a one-up tile is
+	   1440/907 = 1.59 at 1920×1080 and 2080/1267 = 1.64 at 2560×1440, and
+	   2960/1267 = 2.34 at 3440×1440, where Wish Odds drew 2960×896. */
+	--instrument-main-aspect: 1.65;
+	/* 🎛️ The longest a control slider runs (§3 item 16): Wish Odds' pity
+	   slider was 2722px one-up at 3440. Set just above the longest track a
+	   DEFAULT lineup draws — the same slider, 651px one-up at 1359 — so only a
+	   lineup the reader chose (one or two up on a wide window) is shortened. */
+	--instrument-slider-max: 41rem;
 }
 
 .instrument {
@@ -3880,6 +3892,44 @@ img {
 			'chart readout'
 			'controls readout';
 	}
+}
+
+/* ⚓ A CHART THAT IS NOT A TIME SERIES STOPS GROWING SIDEWAYS (responsive
+   sweep 2026-10-15, §3 item 16). One Visualizers slot on an ultrawide drew
+   Wish Odds 2960×896: a curve's shape is its slope, and stretched that far
+   every slope reads flat. So Wish Odds, Reaction Curves, Artifact Odds and
+   Enemy RES & DEF cap their chart-and-controls column at
+   --instrument-main-aspect × the tile's height, and the Readout follows the
+   column instead of holding the tile's right edge; the spare width is bare
+   night on the right. The Gauge Explorer and the ICD Timeline keep the full
+   width: their x axis is time, and more width is more time to read.
+   ⚠ Against the TILE's height, never the chart's: the chart's height is what
+   the controls leave, and the controls wrap with the width, so a cap on the
+   chart's own aspect would feed itself and ratchet (the `contain: size`
+   lesson above, one axis over).
+   ⚠ `100cqh` needs a SIZE container, and the tile is one only from 1024px
+   (the Visualizers' named content stop in breakpoints.test.ts, where `.ws`
+   takes the viewport's height — +page.svelte). Below it the tile has no
+   definite height and `cqh` would fall back to the viewport's. */
+@media (min-width: 1024px) {
+	@container instrument (min-width: 60rem) {
+		.instrument--capped {
+			grid-template-columns:
+				minmax(0, calc(100cqh * var(--instrument-main-aspect)))
+				var(--instrument-side);
+			justify-content: start;
+		}
+	}
+}
+
+/* 🎛️ A slider stops at --instrument-slider-max (§3 item 16), its value with
+   it, since the header is part of the control. Every instrument's controls,
+   the ICD Timeline's included (the Gauge has no slider): a track as long as
+   the chart is only more distance for the hand. A two-up slider grid caps its COLUMNS
+   instead (Reaction Curves, Damage Breakdown), or its second slider would
+   start halfway across the panel. */
+.instrument-controls .slider-control {
+	max-width: var(--instrument-slider-max);
 }
 
 /* ⚓ THE CHART TAKES THE HEIGHT THE TILE HAS LEFT (2026-10-06, the Enemy RES &
