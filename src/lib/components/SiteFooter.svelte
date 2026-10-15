@@ -3,9 +3,13 @@
 	 layout). Quiet dimmed tone, no hover. -->
 <script lang="ts">
 	import HRule from '$lib/components/HRule.svelte';
+
+	/** The copy at the END of a page panel (short screens — see the pages
+	 *  layout), which is transform-placed: its fade goes in the PAINT. */
+	let { inPanel = false }: { inPanel?: boolean } = $props();
 </script>
 
-<footer class="ftr">
+<footer class="ftr" class:ftr--panel={inPanel}>
 	<!-- Test placement of the center-marked rule (Nate, 2026-07-26): same
 	     measure as the disclaimer beneath it, so the two read as one block.
 	     Shows on the landing AND the static content pages — the footer is
@@ -31,6 +35,19 @@
 		padding: 0 1rem;
 		opacity: 0.6;
 	}
+	/* Inside the parallaxed page panel the 0.6 moves into the paint (the
+	   sub-pixel law: element opacity on a transform-placed subtree is
+	   rasterized at rounded coordinates and dances in WebKit). The rule's own
+	   fade is HRule's group opacity over opaque parts, its documented form,
+	   so it takes the product. */
+	.ftr--panel {
+		opacity: 1;
+		color: color-mix(in srgb, var(--muted) 60%, transparent);
+		padding: 0;
+	}
+	.ftr--panel .ftr__rule {
+		--rule-opacity: 0.21;
+	}
 
 	/* Same measure as the legal text below it — the rule sizes to the content
 	   it caps, not to the viewport. --rule-tint/-opacity are the shared HRule
@@ -49,5 +66,21 @@
 		   2026-09-16): at 14px the sentence wrapped inside its 62rem measure. */
 		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
+	}
+
+	/* `compact` — 40rem, $lib/breakpoints.ts (the literal: custom properties do
+	   not work in media queries). ↻ Responsive sweep §3 item 9 (⚓ Nate
+	   2026-10-15): on a phone the sentence is three or four lines in a 64px
+	   footer (--site-footer-h), and at 320 its last line, "HoYoverse.", was cut
+	   by the screen's foot. One type step down and a tighter rule fit it; a
+	   taller footer was the other option and would cost the pages ~24px of
+	   reading height. */
+	@media (max-width: 40rem) {
+		.ftr__rule {
+			margin-bottom: 0.3rem;
+		}
+		.ftr__legal {
+			font-size: var(--fs-sm);
+		}
 	}
 </style>

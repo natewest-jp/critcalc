@@ -347,10 +347,15 @@
 	}
 
 	/* Per-character permanent bonus chip — ownership via the 2px element
-	   stripe (the same element-color identity the timeline bars carry). */
+	   stripe (the same element-color identity the timeline bars carry).
+	   A chip wider than its column WRAPS rather than running off it: at 320
+	   "Xingqiu: Blades Amidst Raindrops" ran 26px past the screen's edge
+	   beside the key. A block (not a flex box), so the owner prefix and the
+	   buff name flow as ONE text run; the owner's &nbsp; keeps "Name: First"
+	   together. A chip that fits is unchanged. */
 	.bonus-chip {
-		display: inline-flex;
-		align-items: center;
+		display: inline-block;
+		max-width: 100%;
 		padding: 2px 6px 3px;
 		border-radius: 0 3px 3px 0;
 		border-left: 2px solid transparent;
@@ -358,7 +363,6 @@
 		font-weight: var(--fw-medium);
 		background: var(--fill-rest);
 		color: var(--muted);
-		white-space: nowrap;
 	}
 
 	/* Owner prefix ("Name: ") — the same brighter register the chip's element

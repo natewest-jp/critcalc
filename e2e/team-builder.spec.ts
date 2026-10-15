@@ -410,7 +410,7 @@ test.describe('factions and buffs filter', () => {
 		await openTool(page, '/builder');
 		await openRoster(page);
 
-		await page.locator('.tb-band .band-menu-trigger[aria-label="More filters"]').click();
+		await page.locator('.tb-band .band-menu-trigger[aria-label^="More filters"]').click();
 		const chips = page.locator('.mf .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
 		await expect(chips, 'three faction/buff chips').toHaveCount(3);
 		await page.keyboard.press('Escape');

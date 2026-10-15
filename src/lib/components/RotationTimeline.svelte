@@ -17,7 +17,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
-	import { below } from '$lib/media.svelte';
+	import { below, narrowForm } from '$lib/media.svelte';
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -819,7 +819,9 @@
 	// ⚠ Every height reader takes `slotHeights`, so the bench metrics, the
 	// connectors and the PNG snapshot (which has always carried a per-slot
 	// `blockH`) follow the screen with no second path.
-	let fitSlotHeights = $derived(below('toolMin'));
+	// ↻ It follows the BENCH'S FORM, so a short screen's row (`narrowForm()`,
+	// responsive sweep §3 item 4) fits its slots too.
+	let fitSlotHeights = $derived(narrowForm());
 	function slotOwnH(slotIdx: number): number {
 		const rows = slotReceivedSubrowCounts[slotIdx] ?? 0;
 		const buffH = rows > 0 ? rows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
@@ -1843,6 +1845,50 @@
 	/** px a finger may travel and still count as a tap (dock collapse, key row). */
 	const TAP_SLOP = 10;
 	let composerEl = $state<HTMLElement | null>(null);
+
+	// ── THE PINNED COMPOSER (responsive sweep 2026-10-15, §3 item 10) ─────────
+	// Above `toolMin` the composer is `position: sticky; bottom` (see the CSS),
+	// so at a laptop height you can type without scrolling band B, the ruler and
+	// the top bench cards away. It only PAINTS a plate while it is actually
+	// pinned — at rest at the end of the page it is the bare row it always was,
+	// which is why 1080p and up see no change at all. CSS cannot ask "am I
+	// stuck" in Safari, so this does: the composer is .rp-root's LAST flow
+	// child, so its box ends where .rp-root's does unless sticky has lifted it.
+	// ⚠ The answer may change PAINT only, never a size: anything that moved the
+	// composer's height would move the page's, and the answer with it.
+	let composerPinned = $state(false);
+	function pinWatch(node: HTMLElement) {
+		// ⚠ Read BEFORE `dockable` runs (it is listed first on the element):
+		// the dock moves this node to <body>, and then it has no page to end in.
+		const root = node.parentElement;
+		let raf = 0;
+		const measure = () => {
+			raf = 0;
+			if (!root || node.parentElement !== root) {
+				composerPinned = false;
+				return;
+			}
+			const lifted = root.getBoundingClientRect().bottom - node.getBoundingClientRect().bottom;
+			composerPinned = getComputedStyle(node).position === 'sticky' && lifted > 0.5;
+		};
+		const schedule = () => {
+			if (!raf) raf = requestAnimationFrame(measure);
+		};
+		// Capture: the scroller is .tool-shell, and a scroll event does not bubble.
+		document.addEventListener('scroll', schedule, { capture: true, passive: true });
+		window.addEventListener('resize', schedule);
+		const ro = new ResizeObserver(schedule);
+		if (root) ro.observe(root);
+		schedule();
+		return {
+			destroy() {
+				document.removeEventListener('scroll', schedule, { capture: true });
+				window.removeEventListener('resize', schedule);
+				ro.disconnect();
+				if (raf) cancelAnimationFrame(raf);
+			}
+		};
+	}
 	/** How far the on-screen keyboard reaches up the screen. iOS does not
 	 *  shrink the layout viewport for the keyboard, so a `bottom: 0` dock sits
 	 *  BEHIND it; the visual viewport is the only honest measure. */
@@ -3643,8 +3689,10 @@
 		class:rp-composer--collapsed={dockOn && !dockOpen}
 		class:ctx-glass={dockOn}
 		class:rp-composer--ios-chrome={dockOn && iosChrome}
+		class:rp-composer--pinned={composerPinned}
 		style:--rp-kb-inset="{dockOn ? keyboardInset : 0}px"
 		bind:this={composerEl}
+		use:pinWatch
 		use:dockable={dockOn}
 	>
 		{#if dockOn && !dockOpen}
@@ -5364,6 +5412,45 @@
 		gap: 8px;
 		padding: 0 var(--rp-frame-pad-x);
 	}
+	/* ── PINNED TO THE FOOT (responsive sweep 2026-10-15, §3 item 10) ────────
+	   Above `toolMin` the composer sticks to the shell's foot, the way the
+	   phone dock pins it: at 1366×768 it started at y≈997 for a four-character
+	   rotation, so typing meant scrolling band B, the ruler and the top bench
+	   cards off screen. Sticky moves PAINT, never layout — the page is as tall
+	   as before, the bench's metrics and its alignment to the track groups are
+	   untouched, and where the page does not scroll (1080p and up, a short
+	   rotation) nothing sticks and nothing changes.
+	   · 8px off the foot, so the field never sits on the screen's edge; the
+	     plate below covers that gap.
+	   · z 7: over the chart it now floats across (the playhead tops out at 6).
+	   ⛔ No padding here and no size change while pinned — see pinWatch.
+	   Released below `toolMin` (the block at the end of this sheet). */
+	.rp-composer {
+		position: sticky;
+		bottom: 8px;
+		z-index: 7;
+	}
+	/* The plate it stands on while pinned, as a pseudo-element that reaches 8px
+	   past the box on both sides so the row keeps its size. Transparent at rest,
+	   so at the page's end it is the bare row it always was; the SURFACE band
+	   (--t-quick), alpha in the paint.
+	   OPAQUE, the aside's own rung (--surface-raised, slate-700): the dock's
+	   glass (slate-700 at .8) was tried first, and at 1366×768 the bars under a
+	   pinned box read straight through the notation — the dock's chart is
+	   behind one collapsed line, this one is behind every line you type. */
+	.rp-composer::before {
+		content: '';
+		position: absolute;
+		inset: -8px 0;
+		z-index: -1;
+		border-radius: var(--r-md) var(--r-md) 0 0;
+		background-color: transparent;
+		transition: background-color var(--t-quick);
+		pointer-events: none;
+	}
+	.rp-composer--pinned::before {
+		background-color: var(--surface-raised);
+	}
 	/* ⛔ `.rp-composer--picking` AND `.rp-explore-link` LEFT WITH THE SOURCE
 	   (2026-08-13). The first dimmed and blanked the composer while the picker
 	   was up — the overlay bounded to the frame and no longer reached down here,
@@ -5376,6 +5463,18 @@
 		flex-direction: column;
 		flex: 1;
 		min-width: 0;
+		/* ── A READING MEASURE (responsive sweep 2026-10-15, §3 item 14) ─────
+		   140 characters of the notation, then it wraps: the box ran to 196
+		   characters a line at 1920 and 391 at 3440. Its left edge stays the
+		   tracks' (the composer's padding), and the history pair follows the
+		   bounded field instead of standing at the far end of the row.
+		   ⚠ The editor's own metrics, restated (as .rp-history's height is):
+		   IBM Plex Mono advances 0.6em, at notationEditorExtension's 13px, plus
+		   .cm-content's 12px a side — change one, change the other. `ch` cannot
+		   say it: it resolves in THIS box's font, which is the body face.
+		   No media query: the field is narrower than this below ~1500px, which
+		   is above `wide` (71rem), so the bound only ever binds there. */
+		max-width: calc(140 * 0.6 * 13px + 2 * 12px);
 	}
 	/* The history pair. A bare flex group, not a plate — same reasoning as band
 	   B's .rp-zoom: the buttons paint themselves, and wrapping them in a second
@@ -5576,6 +5675,17 @@
 	   width. The list is portalled to <body> by CodeMirror, hence :global; the
 	   leading `body` outranks the editor theme's scoped rule.
 	   ⏭ Its desktop look is queued for Nate's eye, not touched here. */
+	/* The pinned composer is a desk form (sweep §3 item 10): below `toolMin`
+	   ($lib/breakpoints.ts — 54rem, where the bench turns into a row) it rides
+	   in the page again, and below `compact` the dock takes it over. Relative,
+	   not static, so the plate's pseudo-element keeps this box as its own. */
+	@media (max-width: 54rem) {
+		.rp-composer:not(.rp-composer--docked) {
+			position: relative;
+			bottom: auto;
+		}
+	}
+
 	@media (pointer: coarse) {
 		:global(body .cm-tooltip.cm-tooltip-autocomplete > ul) {
 			max-height: 40svh;

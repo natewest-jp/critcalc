@@ -44,7 +44,7 @@
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
 	import { motion } from '$lib/motion';
-	import { below } from '$lib/media.svelte';
+	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
@@ -182,6 +182,12 @@
 	/** Below the dock the panes are tabs. ⚠ The literal is in the CSS too
 	 *  (`@media (max-width: 71rem)`) — custom properties can't reach a query. */
 	const tabbed = $derived(below('wide'));
+	/** ↻ Responsive sweep §3 item 5 (⚓ Nate 2026-10-15): on a SHORT screen
+	 *  (`(max-height: 30rem)`, breakpoints.ts § THE HEIGHT AXIS) the roster's
+	 *  head — filter strip, hint, destination banner — rides INSIDE the grid's
+	 *  scroller instead of pinned over it. Pinned, it left the grid 13–83px of a
+	 *  landscape phone (a card is ~120). */
+	const headScrolls = $derived(short());
 	/** Which pane is showing — on a wide screen, both. */
 	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
 
@@ -799,13 +805,20 @@
 
 	/** A card's own fingerprint: the facets the character has or can unlock,
 	 *  in the fingerprint's one order — lit at the lens, dim from a higher
-	 *  constellation (⚓ Nate 2026-10-11; ⛔ never the full fifteen). */
+	 *  constellation (⚓ Nate 2026-10-11; ⛔ never the full fifteen). ↻ A
+	 *  capability you are FILTERING by leads (responsive sweep 2026-10-15 item
+	 *  23, ⚓ Nate): a card caps its column at what its height holds (glyphFit),
+	 *  and the one you filtered for must never be the one behind its "+K". */
 	const FINGERPRINT_ORDER = FINGERPRINT.flatMap((c) => c.facets);
 	const FACET_LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
 	function glyphsFor(entry: CharacterIndexEntry): CardGlyph[] {
 		const cap = conCapFor(conMode, mounted ? $constellations[entry.id] : undefined);
 		return facetBadges(entry.caps)
-			.sort((a, b) => FINGERPRINT_ORDER.indexOf(a.facet) - FINGERPRINT_ORDER.indexOf(b.facet))
+			.sort(
+				(a, b) =>
+					Number(activeFacets.has(b.facet)) - Number(activeFacets.has(a.facet)) ||
+					FINGERPRINT_ORDER.indexOf(a.facet) - FINGERPRINT_ORDER.indexOf(b.facet)
+			)
 			.map((b) => {
 				const label = FACET_LABEL[b.facet] ?? b.facet;
 				const lit = b.minCon <= cap;
@@ -1077,12 +1090,13 @@
 {#snippet paneSwitch()}
 	<button
 		class="btn btn--glass tb-pane-switch"
+		aria-label={tab === 'characters' ? 'Lineup' : 'Characters'}
 		onclick={() => (tab = tab === 'characters' ? 'lineup' : 'characters')}
 	>
 		{#if tab === 'characters'}
-			<Mark name="panelRight" /> Lineup
+			<Mark name="panelRight" /> <span class="tb-band-label tb-pane-word">Lineup</span>
 		{:else}
-			<Mark name="panelLeft" /> Characters
+			<Mark name="panelLeft" /> <span class="tb-band-label tb-pane-word">Characters</span>
 		{/if}
 	</button>
 {/snippet}
@@ -1198,7 +1212,6 @@
 		<div class="tb-band" class:tb-band--tabbed={tabbed}>
 			{#if showing !== 'lineup'}
 				<div class="tb-band-cell" bind:clientWidth={charCellW}>
-					{#if tabbed}{@render paneSwitch()}{/if}
 					{#if !foldShow}
 						<div class="segment tb-show" role="radiogroup" aria-label="Show">
 							{#each OWNERSHIP_VIEWS as v (v.key)}
@@ -1230,24 +1243,27 @@
 					</div>
 					<!-- More hangs from its END and opens leftward, so it stays over the
 						     roster column — never over the board you are filtering for. -->
-					<BandMenu
-						glass
-						role="dialog"
-						mark="filter"
-						label={moreCount > 0 ? `More · ${moreCount}` : 'More'}
-						ariaLabel="More filters"
-					>
-						{#snippet items(close)}
-							<MoreFilters
-								{roster}
-								{filters}
-								bind:ownershipView
-								showOwnership={foldShow}
-								lens={foldLens ? conModeItems : undefined}
-								{close}
-							/>
-						{/snippet}
-					</BandMenu>
+					<span class="tb-more">
+						<BandMenu
+							glass
+							role="dialog"
+							mark="filter"
+							label="More"
+							count={moreCount}
+							ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+						>
+							{#snippet items(close)}
+								<MoreFilters
+									{roster}
+									{filters}
+									bind:ownershipView
+									showOwnership={foldShow}
+									lens={foldLens ? conModeItems : undefined}
+									{close}
+								/>
+							{/snippet}
+						</BandMenu>
+					</span>
 					{#if !foldLens}
 						<!-- The constellation LENS — what the grid's capabilities are read at.
 							     A menu states the reading in one plate and gives each option room
@@ -1258,10 +1274,14 @@
 							{/snippet}
 						</BandMenu>
 					{/if}
+					<!-- TRIAL (responsive sweep 2026-10-15 item 26, D2): "Lineup" ends
+					     the band, beside the edge its pane docks on (panelRight);
+					     "Characters" still leads the Lineup cell, on the left. -->
+					{#if tabbed}{@render paneSwitch()}{/if}
 				</div>
 			{/if}
 			{#if showing !== 'characters'}
-				<div class="tb-band-cell">
+				<div class="tb-band-cell tb-band-cell--lineup">
 					{#if tabbed}{@render paneSwitch()}{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
@@ -1273,8 +1293,11 @@
 					{:else if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
 						<!-- A battlefield is the game's, not yours to add — teams come and go
 						     on a Custom board only (with ✕, §11.6 item 13). -->
-						<button class="btn btn--glass" onclick={() => boards.addTeam(board.id)}
-							><Mark name="plus" /> Add team</button
+						<button
+							class="btn btn--glass"
+							aria-label="Add team"
+							onclick={() => boards.addTeam(board.id)}
+							><Mark name="plus" /> <span class="tb-band-label">Add team</span></button
 						>
 					{/if}
 					{#if !errandOpen}
@@ -1338,6 +1361,64 @@
 	{/snippet}
 </ToolStack>
 
+<!-- ── The roster's HEAD: the filter strip, the empty-roster hint and the
+     destination banner. Pinned over the grid's scroller, or — on a short
+     screen (`headScrolls`) — the first thing INSIDE it, so it scrolls away with
+     the cards. One snippet, so the two placements cannot drift. -->
+{#snippet rosterHead()}
+	<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
+	     the board you are filtering for. -->
+	<RosterFilterStrip
+		{filters}
+		{activeFacets}
+		activeRole={activeCategory?.key ?? null}
+		onRole={openCategory}
+		count={swapping || selectedTeam ? undefined : split.matches.length}
+		{countNote}
+		anyActive={anyFilterActive}
+		onClear={clearAllFilters}
+	/>
+	<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
+	     filter and the "My constellations" lens read the roster, and do
+	     nothing until it has something in it. -->
+	{#if mounted && !ownsAny}
+		<p class="tb-roster-hint">
+			The Owned filter and “My constellations” read your roster, which is empty.
+			<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
+		</p>
+	{/if}
+	<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
+	     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
+	{#if swapping}
+		{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
+		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
+			{#if swapping.incumbent}
+				Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
+			{:else}
+				Adding to {selectedLabel}
+			{/if}
+			{@render destCount()}
+			<button
+				class="btn btn--icon tb-dest-close"
+				onclick={stopSwap}
+				aria-label={swapping.incumbent
+					? `Stop replacing ${nameOf(swapping.incumbent)}`
+					: `Stop adding to ${selectedLabel}`}
+				title="Stop {verb} (Esc)"><Mark name="close" size={12} /></button
+			>
+		</p>
+	{:else if selectedTeam}
+		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
+			{#if destFilled === 4}
+				{selectedLabel} is full. Pick a member again to remove them.
+			{:else}
+				Adding to {selectedLabel} · {destFilled}/4
+			{/if}
+			{@render destCount()}
+		</p>
+	{/if}
+{/snippet}
+
 <!-- ── The main column: the work frame ────────────────────────────────────── -->
 {#snippet main()}
 	<!-- ── THE SURFACE HAS NO FRAME (⚓ NATE 2026-08-08).
@@ -1355,57 +1436,7 @@
 	     exception cuts one way only, because there is no light ground anywhere
 	     to inherit from. -->
 	<div class="tb-stack ctx-dark">
-		<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
-		     the board you are filtering for. -->
-		<RosterFilterStrip
-			{filters}
-			{activeFacets}
-			activeRole={activeCategory?.key ?? null}
-			onRole={openCategory}
-			count={swapping || selectedTeam ? undefined : split.matches.length}
-			{countNote}
-			anyActive={anyFilterActive}
-			onClear={clearAllFilters}
-		/>
-		<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
-			     filter and the "My constellations" lens read the roster, and do
-			     nothing until it has something in it. -->
-		{#if mounted && !ownsAny}
-			<p class="tb-roster-hint">
-				The Owned filter and “My constellations” read your roster, which is empty.
-				<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
-			</p>
-		{/if}
-		<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
-			     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
-		{#if swapping}
-			{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
-			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
-				{#if swapping.incumbent}
-					Replacing {nameOf(swapping.incumbent)} · {selectedLabel}
-				{:else}
-					Adding to {selectedLabel}
-				{/if}
-				{@render destCount()}
-				<button
-					class="btn btn--icon tb-dest-close"
-					onclick={stopSwap}
-					aria-label={swapping.incumbent
-						? `Stop replacing ${nameOf(swapping.incumbent)}`
-						: `Stop adding to ${selectedLabel}`}
-					title="Stop {verb} (Esc)"><Mark name="close" size={12} /></button
-				>
-			</p>
-		{:else if selectedTeam}
-			<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
-				{#if destFilled === 4}
-					{selectedLabel} is full. Pick a member again to remove them.
-				{:else}
-					Adding to {selectedLabel} · {destFilled}/4
-				{/if}
-				{@render destCount()}
-			</p>
-		{/if}
+		{#if !headScrolls}{@render rosterHead()}{/if}
 		<div class="tb-sourcebox tb-sourcebox--fill">
 			<section class="tb-source scroll-fade tb-source--fill" use:scrollFade>
 				<!-- ↻ §11.2: the filters are the bar above; what is left in here is
@@ -1418,6 +1449,7 @@
 						tile={rosterTile}
 						sections={swapGrid?.sections ?? rosterSections}
 						sectionHead={swapGrid ? swapSectionHead : rosterSectionHead}
+						aboveGrid={headScrolls ? rosterHead : undefined}
 						belowGrid={swapGrid ? swapFoot : rosterStubs}
 						emptyMessage={rosterEmptyMessage}
 					/>
@@ -1517,6 +1549,24 @@
 		}
 		.tb-dock--lineup .tb-pane--board {
 			transform: none;
+		}
+		/* ↻ Responsive sweep 2026-10-15 item 18 (⚓ Nate): in the Lineup TAB the
+		   board keeps the width it docks at, start-aligned, instead of
+		   stretching to the pane. Stretched, a team ran 1089px wide at 1135
+		   while its content ended at 440, so Planner →, the pin and the chips
+		   stood ~520px from the lineup they belong to, and the 640px Abyss art
+		   was drawn at up to 1089px. ⚠ --tb-board-w is 580 throughout this
+		   range (it steps at `broad`), so this is the docked board exactly. */
+		.tb-pane--board > :global(.bv) {
+			max-width: var(--tb-board-w);
+		}
+	}
+	/* …but not the phone form (below BP.compact, 40rem — $lib/breakpoints.ts):
+	   there the board is the whole screen (BoardView's own narrow form), and
+	   431–640 is left to the Builder's phone pass (sweep item 20). */
+	@media (max-width: 40rem) {
+		.tb-pane--board > :global(.bv) {
+			max-width: none;
 		}
 	}
 
@@ -1657,11 +1707,15 @@
 	.tb-band-cell :global(.btn) {
 		flex: none;
 	}
-	/* The mark is painted over the field; the field takes the slack. */
+	/* The mark is painted over the field; the field takes the slack — up to
+	   28rem, with More and the lens following it (↻ responsive sweep
+	   2026-10-15 item 15, ⚓ Nate: uncapped, the field ran 2078px at 3440 and
+	   the cell's controls sat a screen's width from where you type). */
 	.tb-search {
 		position: relative;
 		flex: 1 1 8rem;
 		min-width: 6rem;
+		max-width: 28rem;
 		display: flex;
 		align-items: center;
 	}
@@ -1708,10 +1762,56 @@
 	.tb-pane-switch {
 		gap: 0.45rem;
 	}
-	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
-	   their mark and fold their word — one rule for every band control. */
+	/* TRIAL (item 26, D2): the Characters cell's switch is its LAST child,
+	   pushed to the band's right end past the capped search. */
+	.tb-band-cell > .tb-pane-switch:last-child {
+		margin-left: auto;
+	}
+	/* More's box, only so the fold below can reach its word without reaching
+	   the lens's (both are BandMenus); it lays out nothing itself. */
+	.tb-more {
+		display: contents;
+	}
+	/* ↻ Responsive sweep 2026-10-15 item 18 follow-up (⚓ Nate): in the
+	   Lineup TAB the cell stops where the board does (the board keeps its
+	   docked --tb-board-w there, above), so No repeats ends at the board's
+	   right edge, not a pane's width past it. Not the phone form: below
+	   BP.compact (40rem) the board is the whole screen, and so is the cell. */
+	@media (max-width: 71rem) {
+		.tb-band--tabbed .tb-band-cell--lineup {
+			max-width: var(--tb-board-w);
+		}
+	}
 	@media (max-width: 40rem) {
-		.tb-band-label {
+		.tb-band--tabbed .tb-band-cell--lineup {
+			max-width: none;
+		}
+	}
+	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
+	   their mark and fold their word — one rule for every band control. ↻ The
+	   lineup cell of band B too (pane switch + Add team): on a Custom board
+	   below ~407px its flex:none children pushed No repeats off the screen
+	   (87px spill at 320), and the fold returns ~160px. ↻ Except the pane
+	   switch's word, which folds at BP.paneWord (below). */
+	@media (max-width: 40rem) {
+		.tb-band-label:not(.tb-pane-word) {
+			display: none;
+		}
+		/* ↻ More too (responsive sweep 2026-10-15 item 26, ⚓ Nate): its word and
+		   the separator fold, and the filter mark, the count and the chevron
+		   stay — so a filter you set and closed is still announced, in the
+		   band's own 13px type. The aria-label keeps "More filters". */
+		.tb-more :global(.band-menu-word),
+		.tb-more :global(.band-menu-sep) {
+			display: none;
+		}
+	}
+	/* ↻ The pane switch keeps its word through the compact fold (responsive
+	   sweep 2026-10-15 item 26, ⚓ Nate) and folds it only below BP.paneWord
+	   ($lib/breakpoints.ts — 21.25rem), where "Characters" no longer fits
+	   beside Add team and No repeats on a Custom board. */
+	@media (max-width: 21.25rem) {
+		.tb-pane-word {
 			display: none;
 		}
 	}
@@ -1902,23 +2002,15 @@
 		font-size: var(--fs-md);
 	}
 
-	/* The Atlas rows' and the stubs bucket's grid (the roster's own is
-	   CharacterGrid's, tuned through the --cg-* knobs on .tb-roster). Same
-	   scale, so tiles read identically wherever they appear. */
+	/* The stubs bucket's grid (the roster's own is CharacterGrid's). It READS
+	   the roster's --cg-* knobs on .tb-roster rather than restating them, so
+	   tiles read identically beside the roster at every width — ↻ the copied
+	   118px literal outlived the roster's 108 retune and drew the stub tile up
+	   to 54% wider (390: 168 vs 109). The 1500/1900 steps ride the knobs too. */
 	.tb-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-		gap: 0.6rem;
-	}
-	@media (min-width: 1500px) {
-		.tb-grid {
-			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		}
-	}
-	@media (min-width: 1900px) {
-		.tb-grid {
-			grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-		}
+		grid-template-columns: repeat(auto-fill, minmax(var(--cg-tile-min, 108px), 1fr));
+		gap: var(--cg-gap, 0.6rem);
 	}
 
 	.tb-stubs {
@@ -1946,8 +2038,11 @@
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
+	/* The count FOLLOWS the message (↻ responsive sweep 2026-10-15 item 15,
+	   ⚓ Nate): pushed to the band's end it sat 2560px from what it counts at
+	   3440. Swapping, the ✕ still ends the band (.tb-dest-close). */
 	.tb-dest-count {
-		margin-left: auto;
+		margin-left: 0.75rem;
 		padding-right: 6px;
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -1962,6 +2057,7 @@
 	/* Swapping, the banner ends in its ✕ (Escape does the same) — bare ink on
 	   the hue, not a plate. */
 	.tb-dest-close {
+		margin-left: auto;
 		width: 22px;
 		height: 22px;
 		background: none;

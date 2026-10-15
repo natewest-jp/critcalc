@@ -337,6 +337,15 @@
 		align-content: start;
 		min-height: 0;
 		overflow-y: auto;
+		/* The rows' hover-ground bleed (.el-row's `margin-inline: -4px` +
+		   padding) has to land INSIDE the scroller: `overflow-y: auto` computes
+		   overflow-x to auto, so a bleed past the box made the log a 4px
+		   sideways scroller at every width (a bar under it with classic
+		   scrollbars) and clipped the left half of the lit row's fill. The pad
+		   and its matching negative margin leave the text where it was.
+		   ⛔ Not `overflow-x: clip`: that cuts the very bleed the rows want. */
+		padding-inline: 4px;
+		margin-inline: -4px;
 	}
 	/* Every child spans the three columns — the rows, and the caller's standing
 	   `lead` content and the empty line, which are not rows. */

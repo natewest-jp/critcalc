@@ -379,12 +379,18 @@
 										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
 										>
 									{:else}
+										<!-- ↻ Responsive sweep 2026-10-15 item 21 (⚓ Nate): the plate
+										     says "Rotation" and the pin Mark says the verb; "Pin a
+										     rotation" was cut in the column's 62px of label room. The
+										     aria-label keeps the whole sentence. -->
 										<BandMenu
 											mark="pin"
 											size="sm"
 											align="end"
-											label={pin?.name ?? 'Pin a rotation'}
-											ariaLabel="Pinned rotation for {name}"
+											label={pin?.name ?? 'Rotation'}
+											ariaLabel={pin
+												? `Pinned rotation for ${name}: ${pin.name}`
+												: `Pin a rotation for ${name}`}
 										>
 											{#snippet items(close)}
 												{#each [null, ...rotations] as r (r?.id ?? '')}
@@ -900,8 +906,10 @@
 	   screen ── The wide row puts the boss BESIDE a stack whose lineup (four
 	   56px portraits, 306px with its frame) and fingerprint (~308px) can't fit
 	   next to it on a phone. Here the boss shares a line with the checks, and the
-	   lineup and the fingerprint take the full width beneath. The split pane
-	   never gets this narrow (472px at 1000), so the wide form is untouched. */
+	   lineup and the fingerprint take the full width beneath. Above compact the
+	   board is 580px or wider (the page's --tb-board-w: docked from `wide`,
+	   and capped at the same width in the Lineup tab below it), so the wide
+	   form is untouched. */
 	@media (max-width: 40rem) {
 		.bv-lineup {
 			flex-wrap: wrap;

@@ -6,6 +6,8 @@
 		CD_MAX,
 		SIZE,
 		PAD,
+		HEATMAP_MIN_ASPECT,
+		HEATMAP_MAX_ASPECT,
 		AXIS_INK,
 		AXIS_TITLE_GAP,
 		ISOLINE_VALUES,
@@ -73,8 +75,8 @@
 	// clamped so it never stretches into an unreadable sliver. JS measures the
 	// shell (a ResizeObserver) and derives the drawn box (boxW × boxH); the SVG
 	// viewBox, canvas buffers, and every coordinate mapping track that box.
-	const MIN_ASPECT = 0.82; // narrowest w:h (tallest the plot may get)
-	const MAX_ASPECT = 1.25; // widest w:h (widest the plot may get)
+	const MIN_ASPECT = HEATMAP_MIN_ASPECT;
+	const MAX_ASPECT = HEATMAP_MAX_ASPECT;
 	let shellEl = $state<HTMLDivElement | null>(null);
 	let boxW = $state(SIZE);
 	let boxH = $state(SIZE);

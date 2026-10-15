@@ -21,6 +21,7 @@
 		main,
 		aside,
 		asideBare = false,
+		asideSticky = false,
 		sheet = false,
 		asideTitle = '',
 		onCloseAside
@@ -43,6 +44,14 @@
 		 * which is why it is a prop and not a rule.
 		 */
 		asideBare?: boolean;
+		/**
+		 * The aside COLUMN stays on screen while a content-height tool scrolls
+		 * (responsive sweep 2026-10-15, §3 item 11 — the planner). Its box sticks
+		 * where the surface begins and is no taller than the screen below that,
+		 * so a long aura log reads beside the chart instead of running past the
+		 * fold; the main column scrolls on under it. The drawer is unaffected.
+		 */
+		asideSticky?: boolean;
 		/**
 		 * ══ THE SHEET (responsive round, 2026-09-05) ══════════════════════════
 		 * Below BP.toolMin the aside is not a COLUMN but a DRAWER: the same
@@ -139,7 +148,7 @@
 		       content-height one alike.
 		     A plain stretched flex child would do neither: its content height
 		     joins the row's max() and the surface grows to fit the notes. -->
-		<div class="tc-aside">
+		<div class="tc-aside" class:tc-aside--sticky={asideSticky}>
 			<div class="tc-aside-box ctx-dark" class:tc-aside-box--bare={asideBare}>
 				{@render aside()}
 			</div>
@@ -189,6 +198,75 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+	}
+
+	/* ── THE STICKY COLUMN (`asideSticky`) ──────────────────────────────────
+	   The box joins the flow so it can stick, which would let its content grow
+	   the row — the very thing the absolute box exists to prevent (above).
+	   `contain: size` keeps that guarantee instead: the wrapper's own content
+	   size is zero, so the main box alone still sets the row's height, and the
+	   stretched wrapper is a definite height for the box's 100% to resolve
+	   against.
+	   · top: where the surface begins on screen — the chrome, the shell's top
+	     pad and the stack above the surface (ToolStack's --stack-to-surface) —
+	     so at rest it sits exactly where it always did, and from the first
+	     pixel of scroll it stays there.
+	   · height: the main column's, or the screen below that line less the
+	     shell's bottom pad if that is shorter — the viewport-fit calc
+	     .tool-stack--fill uses (100svh, the aside-column round's ⚠). So its
+	     ground ends at the screen's foot while the main column continues, and
+	     a short rotation's column is the height it always was.
+	   It leaves with the main column's end, like any sticky box. */
+	.tc-aside--sticky {
+		contain: size;
+		--aside-top: calc(
+			var(--chrome-h, 64px) + var(--tool-pad-top, 0px) + var(--stack-to-surface, 0px)
+		);
+	}
+	.tc-aside--sticky .tc-aside-box {
+		position: sticky;
+		inset: auto;
+		top: var(--aside-top);
+		height: min(100%, calc(100svh - var(--aside-top) - var(--tool-pad-bottom, 1.5rem)));
+	}
+
+	/* ── TRIAL: THE COLUMN RIDES UP TO THE CHROME (responsive sweep 2026-10-15
+	   item 11 follow-up, ⚓ Nate) ─────────────────────────────────────────────
+	   Held at the surface's start, the column left a slab of night above it
+	   once the chart rode up. Here it rides up WITH the page until its top
+	   meets the chrome's foot plus the bands' gap (--aside-low), then holds,
+	   and its height grows by exactly the distance it rose (--aside-rise), so
+	   its foot stays --tool-pad-bottom above the screen's the whole way.
+	   · The rise is a SCROLL-DRIVEN animation of one registered length
+	     (app.css @property --aside-rise) on the tool shell's named timeline
+	     (--tool-scroll, the tools layout), over the first --aside-top −
+	     --aside-low px of scroll — pure CSS, no listener.
+	   · Inside @supports: an engine without scroll timelines keeps the rule
+	     above, the column held at the surface's start.
+	   · The box still never outgrows the wrapper (min(100%, …)), so the page's
+	     scroll height cannot change. */
+	@supports (animation-timeline: scroll()) {
+		.tc-aside--sticky {
+			--aside-low: calc(var(--chrome-h, 64px) + var(--band-gap, 6px));
+		}
+		.tc-aside--sticky .tc-aside-box {
+			top: var(--aside-low);
+			height: min(
+				100%,
+				calc(100svh - var(--aside-top) - var(--tool-pad-bottom, 1.5rem) + var(--aside-rise))
+			);
+			animation: tc-aside-rise linear both;
+			animation-timeline: --tool-scroll;
+			animation-range: 0px calc(var(--aside-top) - var(--aside-low));
+		}
+	}
+	@keyframes tc-aside-rise {
+		from {
+			--aside-rise: 0px;
+		}
+		to {
+			--aside-rise: calc(var(--aside-top) - var(--aside-low));
+		}
 	}
 
 	/* Groundless: the column stops being a box and becomes a gutter its occupant

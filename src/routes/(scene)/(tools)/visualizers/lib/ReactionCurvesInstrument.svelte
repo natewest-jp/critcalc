@@ -37,6 +37,8 @@
 	};
 
 	const SHARE = TOP_CONTRIBUTOR_SHARE;
+	/** A row's label joins its reactions with this; the name breaks only here. */
+	const NAME_SEP = ' · ';
 
 	const FAMILIES: {
 		id: FamilyId;
@@ -495,7 +497,7 @@
 	const markPos = (lv: number) => (lv - 1) / (MAX_LEVEL - 1);
 </script>
 
-<div class="instrument">
+<div class="instrument instrument--capped">
 	<div class="rx-chart instrument-chart ctx-dark">
 		<!-- The family picks what the chart draws, so it sits on the chart. -->
 		<div class="segment rx-tabs" role="radiogroup" aria-label="Reaction family">
@@ -627,7 +629,11 @@
 					>
 						<th scope="row">
 							<span class="rx-dot" style:background={c.color}></span>
-							<span class="rx-name">{c.label}</span>
+							<span class="rx-name"
+								>{#each c.label.split(NAME_SEP) as part, j (j)}{#if j}{NAME_SEP}{/if}<span
+										class="rx-part">{part}</span
+									>{/each}</span
+							>
 							<span class="rx-detail">{c.detail}</span>
 						</th>
 						<td class="rx-num rx-strong">{fmt(at(c, em))}</td>
@@ -819,10 +825,16 @@
 		margin-right: 0.45rem;
 	}
 
-	/* The family's name holds one line; its reactions go beneath it, past the
-	   dot — beside it, "Lunar & Stellar" broke over five lines in a column */
+	/* The family's name breaks BETWEEN reactions, never inside one; its
+	   reactions go beneath it, past the dot — beside it, "Lunar & Stellar"
+	   broke over five lines in a column. A whole-name nowrap set the table's
+	   min-content past a phone's paper card (Lunar-Charged · Stellar Swirl
+	   blast, 208px) */
 	.rx-name {
 		font-weight: var(--fw-semibold);
+	}
+
+	.rx-part {
 		white-space: nowrap;
 	}
 
@@ -872,7 +884,10 @@
 		display: grid;
 		/* EM and Reaction Bonus share a line; Level always takes a line of its
 		   own (⚓ Nate) — a third of the box was too short a track to land a level */
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		/* 🎛️ each column stops at the shared slider length (app.css
+		   --instrument-slider-max, sweep 2026-10-15 §3 item 16), so the pair
+		   stays a pair on a wide tile rather than two halves of the panel */
+		grid-template-columns: repeat(2, minmax(0, var(--instrument-slider-max)));
 		gap: 0.5rem 1.5rem;
 		/* top, not stretch: the Level control is taller by its marks, and a
 		   stretched neighbour spreads that height into its own rows, dropping
@@ -880,8 +895,11 @@
 		align-items: start;
 	}
 
-	.rx-wide {
+	/* A line of its own runs under BOTH columns, so it is the pair's length,
+	   not one slider's (the app.css cap is per control) */
+	.slider-control.rx-wide {
 		grid-column: 1 / -1;
+		max-width: none;
 	}
 
 	/* The Level slider's 90 / 95 / 100 marks. Above 90 only 95 and 100 exist,

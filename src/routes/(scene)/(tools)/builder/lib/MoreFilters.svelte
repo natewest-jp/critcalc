@@ -150,9 +150,23 @@
 		display: grid;
 		gap: 0.6rem;
 		width: min(24rem, calc(100vw - 2rem));
-		max-height: min(32rem, calc(100svh - 8rem));
+		/* The cap is measured from where the popover OPENS (top ≈ 143px under
+		   band B, + its 4px frame), not a guess: at 8rem the box ran 19px past
+		   the foot of any screen shorter than ~650px (844x390, 320x568). 10rem
+		   lands the foot ~13px clear at every height. */
+		max-height: min(32rem, calc(100svh - 10rem));
 		overflow-y: auto;
 		padding: 0.6rem;
+	}
+	/* `compact` — 40rem, $lib/breakpoints.ts (the literal, because custom
+	   properties do not work in media queries). ↻ Responsive sweep §3 item 30
+	   (⚓ Nate 2026-10-15): a phone drops the 32rem ceiling and keeps only the
+	   screen's own cap, so a 390×844 phone shows the whole list (671px) where
+	   the ceiling held it to 512 with 189px free below. */
+	@media (max-width: 40rem) {
+		.mf {
+			max-height: calc(100svh - 10rem);
+		}
 	}
 	.mf-group .kicker {
 		margin-bottom: 0.45rem;

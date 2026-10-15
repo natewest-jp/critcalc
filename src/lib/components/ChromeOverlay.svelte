@@ -176,6 +176,10 @@
 
 	.overlay-body {
 		display: grid;
+		/* An explicit min-0 track, so a wide child squeezes instead of pushing
+		   the panel into a sideways scroll (the Settings overlay ran 73px wide
+		   at 320). The wide form below is display: block and unaffected. */
+		grid-template-columns: minmax(0, 1fr);
 		gap: 0.7rem;
 		font-size: var(--fs-xl);
 		line-height: var(--lh-relaxed);

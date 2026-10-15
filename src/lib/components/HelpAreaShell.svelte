@@ -272,8 +272,14 @@
 			padding: 0 0 0.5rem;
 		}
 
+		/* The tab row scrolls on its own, as it does in the overlay. Restated
+		   here because the unscoped `.is-page .area-nav { overflow: visible }`
+		   outranks the bare `.area-nav` above, and the pages panel took the
+		   overflow instead — a sideways swipe slid every page's prose off. */
 		.is-page .area-nav {
 			position: static;
+			overflow-x: auto;
+			overflow-y: hidden;
 		}
 
 		.area-chapters {

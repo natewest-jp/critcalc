@@ -183,6 +183,16 @@
 		flex-direction: column;
 		gap: var(--band-stack-gap);
 		min-width: 0;
+		/* How far the SURFACE starts below the stack's top: BAND_STACK_TO_SURFACE
+		   in this form, and the row form below adds the bench row and a second
+		   band gap. Published for a surface that has to know where it begins on
+		   screen — the planner's sticky aside (ToolColumns `asideSticky`, sweep
+		   2026-10-15 §3 item 11). Here rather than inline because the row form
+		   overrides it from a media query. ⚠ It counts band A: a tool that hides
+		   band A (the Visualizers, via bandAClass) must not read it. */
+		--stack-to-surface: calc(
+			var(--band-a-h) + var(--band-gap) + var(--band-b-h) + var(--band-stack-gap)
+		);
 	}
 
 	/* Viewport-fit tools (the Team Builder): the surface takes whatever the
@@ -249,14 +259,23 @@
 	   ⚠ Reserved in pure CSS from a CONSTANT — BENCH_ROW_H — rather than a
 	   measured height, because the upright card is one height at every width
 	   (see benchBand.svelte.ts § THE UPRIGHT CARD); nothing here has to wait
-	   for the ribbon to mount to lay the tool out correctly. */
-	@media (max-width: 54rem) {
+	   for the ribbon to mount to lay the tool out correctly.
+
+	   ↻ 2026-10-15 (responsive sweep §3 item 4): OR a SHORT screen —
+	   (max-height: 30rem), breakpoints.ts § THE HEIGHT AXIS. A landscape phone
+	   wider than toolMin (932×430) has the width for the column and not the
+	   height; the ribbon reads `narrowForm()`, the same list. */
+	@media (max-width: 54rem), (max-height: 30rem) {
 		/* ⚓ Nate 2026-10-14 (the mobile round): band B → bench → surface take
 		   the BAND gap, the one band A and B already keep, so the narrow stack
 		   reads as one tight instrument head rather than three spaced rows. */
 		.tool-stack--benched {
 			padding-left: 0;
 			gap: var(--band-gap);
+			/* bands (A · gap · B), gap, the bench row, gap. */
+			--stack-to-surface: calc(
+				var(--band-a-h) + var(--band-b-h) + 3 * var(--band-gap) + var(--bench-row-h)
+			);
 		}
 		.tool-stack--benched .bands {
 			order: 0;

@@ -12,6 +12,25 @@
 		 *  the fingerprint preview's gain hue. */
 		gain?: boolean;
 	};
+
+	/* 🎛️ The glyph column's geometry (⚓ Nate on /lab/cards, 2026-10-11),
+	   owned HERE and handed to the CSS as custom properties, because the cap
+	   below reads the same numbers. */
+	export const CC_GLYPH = 11;
+	export const CC_GAP_MIN = 5;
+	export const CC_COL_PAD = 8;
+	export const CC_NAME_H = 26;
+	const CC_COL = CC_GLYPH + 2 * CC_COL_PAD;
+
+	/** How many rows the glyph column holds on a card `width` px wide without
+	 *  growing it: the portrait (square, the width less the column) plus a
+	 *  ONE-line name strip, less the column's padding, at the tightest gap.
+	 *  ⚓ Responsive sweep 2026-10-15 item 23 (⚓ Nate): Columbina's nine
+	 *  glyphs made her card, and so her whole grid row, taller than the rest. */
+	export function glyphFit(width: number): number {
+		const avail = width - CC_COL + CC_NAME_H - 2 * CC_COL_PAD;
+		return Math.max(2, Math.floor((avail + CC_GAP_MIN) / (CC_GLYPH + CC_GAP_MIN)));
+	}
 </script>
 
 <script lang="ts">
@@ -88,8 +107,18 @@
 	const hoverable = (e: PointerEvent) => e.pointerType !== 'touch';
 
 	const color = $derived(elementPalette(entry.element).main);
+	/** The card's width, for the glyph cap. 0 before the first measure, when
+	 *  the cap assumes the narrowest card (--cg-tile-min, 108): a first frame
+	 *  may hide one glyph too many, never grow the card. */
+	let cardW = $state(0);
+	const fit = $derived(glyphFit(cardW || 108));
+	/** Past the fit, the first fit−1 glyphs and a "+K" in the last row. The
+	 *  consumer orders them (a filtered capability first), so what is hidden
+	 *  is the tail. */
+	const shown = $derived(glyphs.length > fit ? glyphs.slice(0, fit - 1) : glyphs);
+	const hidden = $derived(glyphs.length - shown.length);
 	/** Rows of the glyph column — the gap spreads them over the card's height. */
-	const rows = $derived(Math.max(1, glyphs.length));
+	const rows = $derived(Math.max(1, shown.length + (hidden > 0 ? 1 : 0)));
 	const chip = $derived(
 		ownedCon !== undefined && ownedCon > 0 && !entry.noConstellations ? ownedCon : null
 	);
@@ -107,6 +136,11 @@
 	class:cc--nudged={nudged}
 	style:--el-color={color}
 	style:--rows={rows}
+	style:--cc-glyph="{CC_GLYPH}px"
+	style:--cc-gap-min="{CC_GAP_MIN}px"
+	style:--cc-col-pad="{CC_COL_PAD}px"
+	style:--cc-name-h="{CC_NAME_H}px"
+	bind:clientWidth={cardW}
 	data-id={entry.id}
 	onpointerenter={(e) => hoverable(e) && onPreview?.(entry.id)}
 	onpointerleave={(e) => hoverable(e) && onPreview?.(null)}
@@ -142,11 +176,18 @@
 			{/if}
 		</span>
 		<span class="cc-glyphs ctx-glass">
-			{#each glyphs as g (g.facet)}
+			{#each shown as g (g.facet)}
 				<span class="cc-g" class:cc-g--dim={!g.lit} class:cc-g--gain={g.gain} title={g.title}>
 					<FingerprintGlyph facet={g.facet} />
 				</span>
 			{/each}
+			{#if hidden > 0}
+				<!-- The rest are in the character's details (the magnifier). -->
+				<span
+					class="cc-g cc-more"
+					title={`${hidden} more ${hidden === 1 ? 'capability' : 'capabilities'}`}>+{hidden}</span
+				>
+			{/if}
 		</span>
 		<span class="cc-name ctx-light">{entry.displayName}</span>
 	</button>
@@ -167,15 +208,17 @@
 	.cc {
 		/* 🎛️ The glyph column (⚓ Nate on /lab/cards, 2026-10-11 — retune once
 		   the fifteen glyphs are drawn): glyph size, and the row gap's range.
-		   Rows spread over the card's height between the two, so only a long
-		   fingerprint (Columbina's nine) tightens. */
-		--cc-glyph: 11px;
-		--cc-gap-min: 5px;
+		   Rows spread over the card's height between the two; a fingerprint
+		   longer than the card holds is capped with a "+K" (glyphFit). ↻ The
+		   glyph size, the minimum gap, the column's padding and the name
+		   strip's height are set inline from the module's CC_* constants,
+		   which the cap reads too. */
 		--cc-gap-max: 11px;
-		--cc-col-pad: 8px;
-		/* 🎛️ The art's rounded corner and the name strip's height. */
+		/* 🎛️ The art's rounded corner. */
 		--cc-corner: 22px;
-		--cc-name-h: 26px;
+		/* A wrapped name's line pitch (12px type): two lines and the strip's
+		   6px of padding make a 34px strip. */
+		--cc-name-lh: 14px;
 		/* 🎛️ The team frame's bars (Nate's 3/4). */
 		--cc-bar-top: 3px;
 		--cc-bar-bottom: 4px;
@@ -184,6 +227,10 @@
 		   (its width less the column, plus the name) and spread its rows. */
 		container-type: inline-size;
 		position: relative;
+		/* A column, so the pick button fills the cell the grid stretched this
+		   card to — see .cc-name. */
+		display: flex;
+		flex-direction: column;
 		border-radius: 6px;
 		background: var(--glass-sheer);
 		transition:
@@ -215,9 +262,10 @@
 
 	/* The whole card is the pick. */
 	.cc-main {
+		flex: 1;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) var(--cc-col);
-		grid-template-rows: auto var(--cc-name-h);
+		grid-template-rows: auto minmax(var(--cc-name-h), 1fr);
 		width: 100%;
 		padding: 0;
 		border: none;
@@ -327,6 +375,17 @@
 	.cc-g--dim {
 		color: color-mix(in srgb, var(--text) 30%, transparent);
 	}
+	/* The cap's "+K": the column's count in the column's own small type, at
+	   the dim glyphs' ink, so it reads as the column's tail, not a badge. It
+	   centres on the glyph track and may run past its 11px into the padding. */
+	.cc-more {
+		font-family: var(--font-condensed);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		line-height: 1;
+		white-space: nowrap;
+		color: color-mix(in srgb, var(--text) 60%, transparent);
+	}
 	/* Swap mode: what this character would ADD to the team — the preview's
 	   gain hue, straight (Fingerprint.svelte's .fp-gain). */
 	.cc-g--gain {
@@ -334,23 +393,35 @@
 	}
 
 	/* ── The name: a parchment strip under the portrait only ── */
+	/* ↻ Responsive sweep 2026-10-15 item 23 (⚓ Nate): a name that doesn't fit
+	   takes a SECOND LINE instead of an ellipsis — six Travelers and Kuki
+	   Shinobu were cut by up to 19px at 390 and still 7px at 1440.
+	   The strip is --cc-name-h at least and two lines at most. ⚠ Its track is
+	   `1fr` and the card fills the cell the grid stretched it to, so every
+	   strip in a ROW grows with the tallest name in it and the parchment ends
+	   on one line across the row. The cap keeps a row grown by something else
+	   (a long fingerprint) from turning every strip into a slab: past two
+	   lines the sheer ground shows below. */
 	.cc-name {
 		grid-column: 1;
 		grid-row: 2;
-		height: var(--cc-name-h);
-		/* 2px short of the strip, so the name sits 1px high and clears the
-		   frame's bottom bar when the card is picked (⚓ Nate). */
-		line-height: calc(var(--cc-name-h) - 2px);
-		padding: 0 6px;
+		align-self: stretch;
+		max-height: calc(2 * var(--cc-name-lh) + 6px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		/* 2px more at the foot than the head, so the name sits 1px high and
+		   clears the frame's bottom bar when the card is picked (⚓ Nate) — one
+		   line lands where the old 24px line box in a 26px strip put it. */
+		padding: 2px 6px 4px;
 		border-radius: 0 0 6px 6px;
 		background: var(--surface);
 		color: var(--text);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
+		line-height: var(--cc-name-lh);
 		text-align: center;
-		white-space: nowrap;
 		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 
 	/* ── The magnifier: the boss disc's, 26px with a 14px mark — the width
@@ -392,8 +463,9 @@
 	   leaving the chip its top right. */
 	@media (hover: none) {
 		.cc-mag {
-			top: auto;
-			bottom: calc(var(--cc-name-h) + 4px);
+			/* From the TOP: the portrait is square (100cqw less the glyph
+			   column), and the name strip under it may be two lines tall. */
+			top: calc(100cqw - var(--cc-col) - 26px - 4px);
 			right: calc(var(--cc-col) + 4px);
 			opacity: 1;
 		}

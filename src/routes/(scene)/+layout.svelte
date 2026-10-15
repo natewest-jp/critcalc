@@ -529,6 +529,19 @@
 		pointer-events: none;
 	}
 
+	/* A SHORT screen's page carries the footer at the END of its panel instead
+	   (the pages layout), so the fixed one steps aside there. ↻ The landing's
+	   too (responsive sweep item 6, ⚓ Nate 2026-10-15): on a landscape phone
+	   the cards and the notices ran into the legal line, and the line is still
+	   met at the end of every page (About included) on a short screen.
+	   (max-height: 30rem): breakpoints.ts § THE HEIGHT AXIS; the literal,
+	   because custom properties do not work in media queries. */
+	@media (max-height: 30rem) {
+		.scene-footer {
+			display: none;
+		}
+	}
+
 	/* Full-frame dark gradient beneath the footer (dark navy → transparent),
 	   anchored to the viewport bottom. z:1 keeps it BEHIND the pages panel (z:2)
 	   so it never darkens the panel — it backs the footer + the open scene. */

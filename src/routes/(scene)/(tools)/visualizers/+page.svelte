@@ -288,7 +288,7 @@
 								title="Reset this instrument's controls to their defaults"
 							>
 								<Mark name="reset" size={12} />
-								Defaults
+								<span class="ws-band-word">Defaults</span>
 							</button>
 						{/if}
 						{#if handles[id]?.getShareState}
@@ -299,7 +299,13 @@
 								title="Copy a link that reopens this instrument as it looks now"
 							>
 								<Mark name={copiedTile === id ? 'check' : 'share'} size={12} />
-								{failedTile === id ? 'Share failed' : copiedTile === id ? 'Copied' : 'Share'}
+								<span class="ws-band-word" class:ws-band-word--keep={failedTile === id}
+									>{failedTile === id
+										? 'Share failed'
+										: copiedTile === id
+											? 'Copied'
+											: 'Share'}</span
+								>
 							</button>
 						{/if}
 						<!-- Per TILE, because band A (the workspace's) is absent below
@@ -424,6 +430,21 @@
 		flex-shrink: 0;
 	}
 
+	/* THE FOLD, reaching band B (responsive sweep, 2026-10-15). Below
+	   BP.compact ($lib/breakpoints.ts — 40rem) Defaults and Share drop their
+	   WORDS and keep their marks, the same fold band A's DocumentActions has
+	   had since 2026-09-05. The picker shrinks first and these plates never
+	   do, so at 320 the one label saying WHICH instrument you are looking at
+	   read "DAMA…" beside two worded buttons (Damage Breakdown ellipsised by
+	   104px). The `title`s still carry the words. A FAILED share keeps its
+	   words: a check mark says "copied", but nothing but words says "it
+	   didn't work". ⚠ Literal from the table, by necessity. */
+	@media (max-width: 40rem) {
+		.ws-band-word:not(.ws-band-word--keep) {
+			display: none;
+		}
+	}
+
 	/* ⚠ The copied state overrides .btn--glass's ground on purpose and has to
 	   out-specify it: two classes there, two here, and this rule is later in the
 	   cascade only because scoped component styles load after app.css. Pinned
@@ -445,7 +466,8 @@
 	   bearing, since the same window now yields 1-, 2- or 3-up tiles. Only the
 	   generic name `instrument` exists; the per-instrument container names were
 	   declared but never queried, and retired with the slot-count round.
-	   inline-size only — size containment would collapse indefinite heights. */
+	   inline-size only — size containment would collapse indefinite heights
+	   (from 1024px, where the height is the row's, it is size; see below). */
 	.ws-tile {
 		display: flex;
 		flex-direction: column;
@@ -539,6 +561,17 @@
 			   `auto` minimum is exactly the term that was doing the damage. Same
 			   law as .ws-body's min-width note, one axis over. */
 			grid-template-rows: minmax(0, 1fr);
+		}
+		/* ↻ 2026-10-15 (responsive sweep §3 item 16): here, and only here, the
+		   tile is a SIZE container. Its height is the row's now — definite, and
+		   never its content's — so the containment the rule above warns about
+		   has nothing to collapse, and `100cqh` is the tile's height: what the
+		   capped instruments' chart column and the Crit Heatmap's stage measure
+		   their width against (app.css .instrument--capped). The name and the
+		   width queries are unchanged; layout containment already came with
+		   inline-size, so nothing positioned inside moves. */
+		.ws-tile {
+			container-type: size;
 		}
 		/* ⚓ THE TILE IS THE VIEWPORT, not the instrument. Eight instrument roots
 		   each carried their own (inert) `overflow-y: auto`; the scroll lives here

@@ -114,12 +114,16 @@
 	}
 </script>
 
-{#snippet addControl()}
+<!-- `folds`: the dropdown form's + leaves the row below `compact` and becomes
+     the menu's last row (see .doc-tabs-new). Only the plain + folds — a
+     preset menu (`newItems`) stays a menu of its own. -->
+{#snippet addControl(folds = false)}
 	{#if newItems}
 		<BandMenu compact mark="plus" ariaLabel={model.newLabel} items={newItems} />
 	{:else}
 		<button
 			class="btn btn--icon doc-tab-add"
+			class:doc-tab-add--folds={folds}
 			onclick={() => model.addNew?.()}
 			aria-label={model.newLabel}
 		>
@@ -130,16 +134,19 @@
 
 <div class="doc-tabs-host" bind:this={rootEl}>
 	<!-- The measuring copy: the strip as it would lay out, never seen or reached.
-     Same classes, so its width is the strip's width. -->
-	<div class="doc-tabs doc-tabs--measure" bind:this={measureEl} aria-hidden="true" inert>
-		{#each model.tabs as tab (tab.id)}
-			<span class="tab tab--closeable doc-tab">
-				<span class="doc-tab-label">{tab.label}</span>
-				{#if model.tabs.length > 1}<span class="tab-close"><Mark name="close" size={11} /></span
-					>{/if}
-			</span>
-		{/each}
-		<span class="btn btn--icon doc-tab-add"><Mark name="plus" /></span>
+     Same classes, so its width is the strip's width. Its box clips it to the
+     host, so its overflow never reaches an ancestor's scroll range. -->
+	<div class="doc-tabs-measure-box" aria-hidden="true" inert>
+		<div class="doc-tabs doc-tabs--measure" bind:this={measureEl}>
+			{#each model.tabs as tab (tab.id)}
+				<span class="tab tab--closeable doc-tab">
+					<span class="doc-tab-label">{tab.label}</span>
+					{#if model.tabs.length > 1}<span class="tab-close"><Mark name="close" size={11} /></span
+						>{/if}
+				</span>
+			{/each}
+			<span class="btn btn--icon doc-tab-add"><Mark name="plus" /></span>
+		</div>
 	</div>
 
 	{#if collapsed}
@@ -189,7 +196,7 @@
 					<Mark name="chevron" size={11} />
 				</button>
 			{/if}
-			{@render addControl()}
+			{@render addControl(true)}
 		</div>
 
 		{#if menuOpen}
@@ -212,7 +219,7 @@
 				style:left="{menuX}px"
 				style:top="{menuY}px"
 				style:width="{MENU_W}px"
-				role="listbox"
+				role="dialog"
 				aria-label="Open rotations"
 				tabindex="-1"
 				onkeydown={(e) => {
@@ -222,39 +229,70 @@
 					}
 				}}
 			>
-				{#each model.tabs as tab (tab.id)}
+				<!-- ↻ The LIST is the tabs alone, and the folded + is a button after
+				     it (responsive sweep 2026-10-15 item 24, a11y): inside the
+				     listbox a screen reader announced "New rotation" as one of the
+				     open rotations. A bare block, so nothing moves. -->
+				<div role="listbox" aria-label="Open rotations">
+					{#each model.tabs as tab (tab.id)}
+						<div
+							class="doc-tabs-option"
+							class:doc-tabs-option--active={tab.id === model.activeId}
+							role="option"
+							aria-selected={tab.id === model.activeId}
+							tabindex="0"
+							onclick={() => {
+								switchTab(tab.id);
+								closeMenu();
+							}}
+							onkeydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									switchTab(tab.id);
+									closeMenu();
+								}
+							}}
+						>
+							<span class="doc-tab-label">{tab.label}</span>
+							{#if model.tabs.length > 1}
+								<button
+									class="tab-close"
+									tabindex="-1"
+									aria-label="Close {tab.label}"
+									onclick={(e) => {
+										e.stopPropagation();
+										closeTab(tab.id);
+									}}><Mark name="close" size={11} /></button
+								>
+							{/if}
+						</div>
+					{/each}
+				</div>
+				{#if !newItems && model.addNew}
+					<!-- The + folded into the menu below `compact` (responsive sweep
+					     2026-10-15, §3 item 24): at 320 the trigger kept four
+					     characters of the name, and the + was 30px of it. Its own
+					     label, shown; hidden above `compact`, where the + stays. -->
 					<div
-						class="doc-tabs-option"
-						class:doc-tabs-option--active={tab.id === model.activeId}
-						role="option"
-						aria-selected={tab.id === model.activeId}
+						class="doc-tabs-option doc-tabs-new"
+						role="button"
 						tabindex="0"
 						onclick={() => {
-							switchTab(tab.id);
 							closeMenu();
+							model.addNew?.();
 						}}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault();
-								switchTab(tab.id);
 								closeMenu();
+								model.addNew?.();
 							}
 						}}
 					>
-						<span class="doc-tab-label">{tab.label}</span>
-						{#if model.tabs.length > 1}
-							<button
-								class="tab-close"
-								tabindex="-1"
-								aria-label="Close {tab.label}"
-								onclick={(e) => {
-									e.stopPropagation();
-									closeTab(tab.id);
-								}}><Mark name="close" size={11} /></button
-							>
-						{/if}
+						<Mark name="plus" size={11} />
+						<span class="doc-tab-label">{model.newLabel}</span>
 					</div>
-				{/each}
+				{/if}
 			</div>
 		{/if}
 	{:else}
@@ -369,6 +407,18 @@
 		min-width: 0;
 		display: flex;
 	}
+	/* The measuring copy's box: the host's own size, clipping. Unclipped, the
+	   copy's max-content width (675px for five tabs) widened every scroll
+	   ancestor's range — .tool-shell scrolled 371px past a 320 screen, unseen
+	   only because the shell is overflow-x: hidden. ⛔ Not overflow on
+	   .doc-tabs-host itself: that would clip the real tabs' focus rings. */
+	.doc-tabs-measure-box {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		visibility: hidden;
+		pointer-events: none;
+	}
 	/* Laid out, never painted or hit: only its width is read. */
 	.doc-tabs--measure {
 		position: absolute;
@@ -431,6 +481,21 @@
 	.doc-tabs-option--active {
 		color: var(--text);
 		box-shadow: inset 0 0 0 1px var(--sel-ring);
+	}
+	/* The folded + (see the markup). The row exists at every width and shows
+	   only where the trigger's + is gone, so the two are one switch.
+	   ⚠ Literal from $lib/breakpoints.ts: `compact`, 40rem — the narrow round's
+	   rung where a band control keeps its mark and drops its word. */
+	.doc-tabs-new {
+		display: none;
+	}
+	@media (max-width: 40rem) {
+		.doc-tabs-new {
+			display: flex;
+		}
+		.doc-tab-add--folds {
+			display: none;
+		}
 	}
 
 	/* gap: BAND_ITEM_GAP, shared with the actions zone across the row (⚓ Nate
