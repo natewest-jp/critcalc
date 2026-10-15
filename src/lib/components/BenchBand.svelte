@@ -67,7 +67,7 @@
 		ribbonFramePath,
 		ribbonFramePathRect
 	} from '$lib/benchBand.svelte';
-	import { below } from '$lib/media.svelte';
+	import { narrowForm } from '$lib/media.svelte';
 	import { constellations, loadout, ownership, type LoadoutEntry } from '$lib/stores';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -112,7 +112,10 @@
 	// no track groups to land on; so none of it applies here, and the box is
 	// simply chrome + one card row + chrome. See benchBand.svelte.ts § THE ROW
 	// for why the orientation is responsive rather than one or the other.
-	const row = $derived(below('toolMin'));
+	// ↻ 2026-10-15 (responsive sweep §3 item 4): a SHORT screen takes the row
+	// too (`narrowForm()`, breakpoints.ts § THE HEIGHT AXIS) — the column costs
+	// height a landscape phone does not have. ToolStack's @media says the same.
+	const row = $derived(narrowForm());
 
 	const boxW = $derived(row ? benchBand.dockW : RIBBON_W);
 	const boxH = $derived(

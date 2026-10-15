@@ -21,7 +21,7 @@ import {
 	type VoiceId
 } from '$lib/playback/tones';
 import { browser } from '$app/environment';
-import { belowQuery } from '$lib/breakpoints';
+import { narrowFormQuery } from '$lib/breakpoints';
 
 // ---------------------------------------------------------------------------
 // Guarded writes
@@ -547,7 +547,9 @@ export const TIMELINE_LAYER_DEFAULTS = {
  * the chart's height is the scarce thing, and the buff rows and the aura lane
  * are the two things that spend it on what an ability grants rather than when
  * it is. `toolMin` because that is where the planner already turns narrow (the
- * bench becomes a row, the aside a drawer).
+ * bench becomes a row, the aside a drawer). ↻ 2026-10-15 (responsive sweep §3
+ * item 4, ⚓ Nate): a SHORT screen too (`narrowFormQuery` — a landscape phone
+ * at 932×430 is wider than `toolMin` and had ~146px of chart at rest).
  *
  * ⚠️ A DEFAULT, NEVER A CHOICE — which is why the layers persist apart from
  * everything else (`timelineLayers`, holding only what was TOGGLED). This
@@ -566,7 +568,7 @@ type LayerKey = keyof typeof TIMELINE_LAYER_DEFAULTS;
 type ChosenLayers = Partial<Record<LayerKey, boolean>>;
 
 function layerDefaults(): Record<LayerKey, boolean> {
-	return browser && window.matchMedia(belowQuery('toolMin')).matches
+	return browser && window.matchMedia(narrowFormQuery).matches
 		? { ...TIMELINE_LAYER_DEFAULTS_NARROW }
 		: { ...TIMELINE_LAYER_DEFAULTS };
 }

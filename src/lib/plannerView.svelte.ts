@@ -32,7 +32,7 @@
 
 import type { EventLogHover, EventLogRow } from '$lib/components/EventLog.svelte';
 import type { Cue } from '$lib/playback/cues';
-import { belowQuery } from '$lib/breakpoints';
+import { narrowFormQuery } from '$lib/breakpoints';
 
 export const ZOOM_MIN = 20;
 export const ZOOM_MAX = 120;
@@ -48,9 +48,10 @@ export const ZOOM_DEFAULT = 60;
 export const ZOOM_DEFAULT_NARROW = 30;
 
 /** The resting zoom for this screen, decided ONCE at load like the layer
- *  defaults (`stores.ts`): rotating a tablet does not re-zoom the chart. */
+ *  defaults (`stores.ts`): rotating a tablet does not re-zoom the chart.
+ *  ↻ Below `toolMin` OR short (`narrowFormQuery`, responsive sweep §3 item 4). */
 export const restingZoom: number =
-	typeof window !== 'undefined' && window.matchMedia(belowQuery('toolMin')).matches
+	typeof window !== 'undefined' && window.matchMedia(narrowFormQuery).matches
 		? ZOOM_DEFAULT_NARROW
 		: ZOOM_DEFAULT;
 

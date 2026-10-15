@@ -249,8 +249,13 @@
 	   ⚠ Reserved in pure CSS from a CONSTANT — BENCH_ROW_H — rather than a
 	   measured height, because the upright card is one height at every width
 	   (see benchBand.svelte.ts § THE UPRIGHT CARD); nothing here has to wait
-	   for the ribbon to mount to lay the tool out correctly. */
-	@media (max-width: 54rem) {
+	   for the ribbon to mount to lay the tool out correctly.
+
+	   ↻ 2026-10-15 (responsive sweep §3 item 4): OR a SHORT screen —
+	   (max-height: 30rem), breakpoints.ts § THE HEIGHT AXIS. A landscape phone
+	   wider than toolMin (932×430) has the width for the column and not the
+	   height; the ribbon reads `narrowForm()`, the same list. */
+	@media (max-width: 54rem), (max-height: 30rem) {
 		/* ⚓ Nate 2026-10-14 (the mobile round): band B → bench → surface take
 		   the BAND gap, the one band A and B already keep, so the narrow stack
 		   reads as one tight instrument head rather than three spaced rows. */

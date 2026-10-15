@@ -17,7 +17,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
-	import { below } from '$lib/media.svelte';
+	import { below, narrowForm } from '$lib/media.svelte';
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -819,7 +819,9 @@
 	// ⚠ Every height reader takes `slotHeights`, so the bench metrics, the
 	// connectors and the PNG snapshot (which has always carried a per-slot
 	// `blockH`) follow the screen with no second path.
-	let fitSlotHeights = $derived(below('toolMin'));
+	// ↻ It follows the BENCH'S FORM, so a short screen's row (`narrowForm()`,
+	// responsive sweep §3 item 4) fits its slots too.
+	let fitSlotHeights = $derived(narrowForm());
 	function slotOwnH(slotIdx: number): number {
 		const rows = slotReceivedSubrowCounts[slotIdx] ?? 0;
 		const buffH = rows > 0 ? rows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
