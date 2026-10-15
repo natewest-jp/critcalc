@@ -450,14 +450,14 @@
 					<button
 						class="btn btn--sm btn--icon"
 						aria-label="Undo"
-						title="Undo ({MOD}Z)"
+						title={MOD === '⌘' ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
 						disabled={!past.length}
 						onclick={undo}><Mark name="undo" size={13} /></button
 					>
 					<button
 						class="btn btn--sm btn--icon"
 						aria-label="Redo"
-						title="Redo (⇧{MOD}Z)"
+						title={MOD === '⌘' ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
 						disabled={!future.length}
 						onclick={redo}><Mark name="redo" size={13} /></button
 					>

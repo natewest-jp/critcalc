@@ -54,6 +54,9 @@ Still in the tree (unreferenced, kept deliberately): the vortex sprite at
 `scripts/optimize-portal.js` — a revival needs only the component + transition
 wiring back.
 
+↻ 2026-10-15: `scripts/optimize-portal.js` and its npm script were deleted (⚓ Nate's call,
+pre-launch sweep §3 item 16); the sprite and its source remain.
+
 ## If revived
 
 Don't revive it for tool entry — the ascend choreography is the settled

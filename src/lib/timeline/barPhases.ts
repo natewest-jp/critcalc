@@ -8,14 +8,14 @@
  *
  * ⚓ UNIT-AGNOSTIC, and deliberately so. Every line here is addition, comparison
  * or `Math.max`, so the segments come back in whatever unit the caller's bar was
- * in: the planner passes FRAMES (gauge-round.md C1), the Team Builder's Compare
- * passes SECONDS via `barCycles`. ⛔ Do not "fix" this to one unit — one chart
- * would then have to convert around a module it shares.
+ * in: the planner passes FRAMES (gauge-round.md C1); the Team Builder's Compare
+ * (retired 2026-10-13) passed SECONDS. ⛔ Do not "fix" this to one unit — the
+ * next second consumer would have to convert around a module it shares.
  *
  * ⚠️ It was NOT agnostic until 2026-08-16: `summonActivatesAt` is authored in
  * frames and this file divided it by 60 into a bar whose other fields were
  * seconds — a genuinely mixed-unit expression. Deleting that division is what
- * made the module general; Compare never sets the field, so its term is 0 there.
+ * made the module general.
  *
  * Each consumer applies its own pixel projection (barGeom / barGeomW) and its
  * own per-role styling (DOM classes vs. canvas fills). Only the case selection
@@ -50,12 +50,6 @@ export interface BarPhaseSegment {
 	span: number;
 	/** Cooldown for the ghost-track label — present on `ghost` only. */
 	cooldown?: number;
-	/** Which repetition of the cycle this segment belongs to (0 = the first, the
-	 *  one that actually happened). Set only by `repeatCycles` for the Team
-	 *  Builder's Compare chart, where later cycles are HYPOTHETICAL and render
-	 *  weaker. The planner and the PNG exporter draw real casts off a parsed
-	 *  rotation, never a projected cadence, so they neither set nor read it. */
-	cycle?: number;
 }
 
 /** Minimal bar shape the phase math reads. `TimelineBar` (and the exporter's

@@ -132,7 +132,8 @@ JSON, or some other multi-mode pattern that the base recipe doesn't cover.
 **Automation status (2026-05-06):** Tier B is now eligible for autonomous
 drafting via Opus 4.7 with `--effort high`, driven by
 [`recipe-tier-b.md`](recipe-tier-b.md) and run via
-[`scripts/run-tier-b.sh`](../../scripts/run-tier-b.sh). The Tier A
+`scripts/run-tier-b.sh` (↻ deleted in the pre-launch sweep, 2026-10-14, with the
+rest of the May-2026 run/schedule automation; this paragraph is history). The Tier A
 "don't draft autonomously" rule is **lifted** for Tier B targets that
 match a documented pattern (stance, multi-stage skill chain, stack-gated
 CA, multi-press placement). Mechanics still flagged as BLOCK-worthy:

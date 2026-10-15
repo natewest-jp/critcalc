@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CharacterIndexEntry } from '$lib/types/character';
-import { matchesIdentity, type IdentityFilters } from './characterFilters';
+import { matchesIdentity, regionChips, type IdentityFilters } from './characterFilters';
 
 const entry = (partial: Partial<CharacterIndexEntry>): CharacterIndexEntry =>
 	({
@@ -109,5 +109,20 @@ describe('matchesIdentity', () => {
 			expect(matchesIdentity(diona, both)).toBe(true);
 			expect(matchesIdentity(ineffa, both)).toBe(false);
 		});
+	});
+});
+
+describe('regionChips', () => {
+	it('lists each region once, the nations alphabetically and "Other" last', () => {
+		const roster = ['Other', 'Snezhnaya', 'Liyue', 'Other', 'Mondstadt', 'Natlan'].map((region) =>
+			entry({ region })
+		);
+		expect(regionChips([...roster, entry({})])).toEqual([
+			'Liyue',
+			'Mondstadt',
+			'Natlan',
+			'Snezhnaya',
+			'Other'
+		]);
 	});
 });

@@ -1,22 +1,21 @@
 /**
  * src/lib/documentBar.svelte.ts
  *
- * THE DOCUMENT BAR — band A's state, shared by every tool that edits the
- * working team (toolbar round, 2026-08-07).
+ * THE DOCUMENT BAR — the Planner's band A: the flows of its document, the
+ * active rotation tab (rotationTabs.svelte.ts), which carries the team, the
+ * per-tab loadout/constellation overrides and the notation.
  *
- * Since the bench-band round there has been exactly ONE working document: the
- * active rotation tab (rotationTabs.svelte.ts), carrying the team, the
- * per-tab loadout/constellation overrides and the notation. Both the planner
- * and the Team Builder edit it. But save/load/share lived in the planner PAGE,
- * so the Team Builder could build a team and had no way to keep it — the
- * gap the round set out to close. Hoisting the flows here makes them the
- * document's, not one tool's, and band A renders identically in both.
+ * The toolbar round (2026-08-07) hoisted save/load/share out of the planner
+ * PAGE so the Team Builder, which edited the same tab then, could keep a team
+ * it built. ↻ Since the lineups round (2026-10-08) the Builder's document is
+ * the BOARD, with its own band A (boardBar.svelte.ts), which raises its
+ * make-room confirm and its notices here so one dialog serves both.
  *
  * What deliberately stays out: anything about how a tool DISPLAYS the
  * document. Band B is each tool's own business.
  */
 
-import { get } from 'svelte/store';
+import { fromStore, get } from 'svelte/store';
 import {
 	savedNotations,
 	loadout,
@@ -150,10 +149,17 @@ class DocumentBarState {
 
 	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
+	/** The bank, read reactively — `linked` must follow a Library delete. */
+	#saved = fromStore(savedNotations);
+
 	/** Whether the active document is linked to a bank entry (Save → Save changes,
-	 *  and "Save as new" appears in the overflow). */
+	 *  and "Save as new" appears in the overflow). ⚠️ The entry must still EXIST:
+	 *  nothing clears a tab's savedId when its entry goes (a Library delete,
+	 *  Settings' Clear, an import), and a dead link saves as new — so the button
+	 *  must not say "Save changes" for it (boardBar.linked's rule). */
 	get linked() {
-		return !!rt.activeTab.savedId;
+		const id = rt.activeTab.savedId;
+		return !!id && this.#saved.current.some((e) => e.id === id);
 	}
 
 	/**
@@ -349,9 +355,7 @@ class DocumentBarState {
 		// ⚠️ A link to an entry deleted since (the library sends deletes to
 		// Recently closed) saves as new: updating a missing id writes nothing,
 		// and the notice would still say "Saved".
-		const linkedLive =
-			!!activeTab.savedId && get(savedNotations).some((e) => e.id === activeTab.savedId);
-		if (linkedLive) {
+		if (this.linked) {
 			savedNotations.update(activeTab.savedId!, payload);
 		} else {
 			// ⚓ Saving what the library already holds (an arriving link to your
@@ -413,6 +417,15 @@ class DocumentBarState {
 	}
 
 	loadNewTab(entry: SavedNotation) {
+		// ⚓ An entry already open is SWITCHED TO, never opened twice (the board
+		// rule, boardBar.openSaved): two tabs linked to one entry would let the
+		// older one's Save changes silently overwrite the newer one's.
+		const open = rt.tabs.find((t) => t.savedId === entry.id);
+		if (open) {
+			rt.switchTab(open.id);
+			savedNotations.markOpened(entry.id);
+			return;
+		}
 		this.withRoom(() => {
 			rt.openTab({
 				label: entry.name,
@@ -438,6 +451,20 @@ class DocumentBarState {
 	closeTab(id: string) {
 		const closed = rt.closeTab(id);
 		if (closed && worthKeeping(closed, get(savedNotations))) recentlyClosedRotations.push(closed);
+	}
+
+	/**
+	 * Band A's "Close all rotations": every tab goes through the close rule, so
+	 * each one worth keeping lands in Recently closed — pushed right to left so
+	 * the list reads in strip order — and one fresh tab is left.
+	 */
+	closeAll() {
+		rt.flush();
+		const saved = get(savedNotations);
+		for (const t of [...rt.tabs].reverse()) {
+			if (worthKeeping(t, saved)) recentlyClosedRotations.push(t);
+		}
+		rt.resetAll();
 	}
 
 	/** Reopen a closed tab (making room first if the strip is full). */

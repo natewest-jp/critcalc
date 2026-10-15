@@ -8,7 +8,7 @@
  * only through the planner's ⇄ errand (swap mode, `setSlot`). ↻ Since the
  * lineups round (2026-10-08) the Builder's own document is the BOARD, not
  * this. The `?team=` cross-injection is retired — the planner's deep link
- * opens a tab via importTeam().
+ * opens a tab via teamDocument() and documentBar.receive().
  *
  * Layer discipline (unchanged in shape, re-routed at the bench):
  *   Layer 1 = the roster (`constellations`/`loadout` stores) — edited in the
@@ -28,16 +28,17 @@
  *
  * So the team is DERIVED, always: the first four distinct characters the
  * notation names, in segment order. Every team edit is therefore a TEXT edit —
- * a swap renames that character's segments, ✕ deletes them, adding somebody
- * appends a bare-name segment (see notationEdit.ts, which owns the rewrites).
+ * a swap renames that character's segments, `setSlot(i, null)` deletes them
+ * (the bench ✕ that did so retired 2026-10-13), adding somebody appends a
+ * bare-name segment (see notationEdit.ts, which owns the rewrites).
  * ⚠ The cost, taken knowingly: slot ORDER is notation order, so you cannot fill
  * slot 3 while 1–2 are empty. Nate traded reordering away for the tool and the
  * text agreeing, and has a separate idea for reordering.
  *
  * The gain that pays for it is undo. Because the slot is derived from the text,
  * undoing the text restores the slot by itself — there is no separate
- * slot-restore path, and ⌘Z in the notation box reaches a ✕ pressed on the
- * bench (see RotationTimeline's editor handle for the routing that makes the
+ * slot-restore path, and ⌘Z in the notation box reaches a team edit made
+ * outside the editor (see RotationTimeline's editor handle for the routing that makes the
  * store's write land as a CodeMirror transaction).
  *
  * SSR/hydration safety: the module initializes the same deterministic default
@@ -56,7 +57,7 @@ import {
 	setSlotInNotation,
 	TEAM_SIZE
 } from '$lib/utils/notationEdit';
-import type { LoadoutEntry } from '$lib/stores';
+import { safeSetItem, type LoadoutEntry } from '$lib/stores';
 import { TAB_LIMIT } from '$lib/tabSet';
 
 export type RotationTab = {
@@ -226,10 +227,7 @@ class RotationTabsState {
 				: t
 		);
 		if (!this.restored) return;
-		localStorage.setItem(
-			TABS_KEY,
-			JSON.stringify({ tabs: snapshot, activeTabId: this.activeTabId })
-		);
+		safeSetItem(TABS_KEY, JSON.stringify({ tabs: snapshot, activeTabId: this.activeTabId }));
 	}
 
 	/** Flush live working state back into the tabs array before any switch. */
@@ -322,9 +320,13 @@ class RotationTabsState {
 	 * is not spare even when blank — the link is a thing the user made.
 	 */
 	adopt(partial: Omit<RotationTab, 'id'>): boolean {
-		const spare = this.tabs.find((t) => !t.notation.trim() && !t.savedId);
+		// ⚠️ The active tab's typed text lives in `notation` until a flush, so its
+		// stored copy can read empty while it holds work. Test the LIVE text.
+		const live = (t: RotationTab) => (t.id === this.activeTabId ? this.notation : t.notation);
+		const spare = this.tabs.find((t) => !live(t).trim() && !t.savedId);
 		if (spare) {
 			this.flush();
+			this.#stampLeaving();
 			this.tabs = this.tabs.map((t) => (t.id === spare.id ? { ...partial, id: t.id } : t));
 			this.activeTabId = spare.id;
 			this.loadWorkingState({ ...partial, id: spare.id });
@@ -387,7 +389,8 @@ class RotationTabsState {
 						notation: '',
 						tabLoadout: {},
 						tabCon: {},
-						savedId: undefined
+						savedId: undefined,
+						synced: undefined
 					}
 				: t
 		);
@@ -408,13 +411,13 @@ class RotationTabsState {
 	// but each resolves to a rewrite of the notation, which is the only place a
 	// team is recorded. Writing `this.notation` is also what makes them
 	// undoable: the planner's editor mirrors the value in as a CodeMirror
-	// transaction, so ⌘Z reaches a ✕ pressed on the bench.
+	// transaction, so ⌘Z reaches a team edit made outside the editor.
 	// -------------------------------------------------------------------------
 
 	/**
 	 * Set one slot of the working team. A filled slot is RENAMED (that
 	 * character's segments keep their actions and change who performs them —
-	 * the audition commit's move); an empty one APPENDS a bare-name segment;
+	 * a swap-mode commit's move); an empty one APPENDS a bare-name segment;
 	 * `null`/'blank' DELETES the occupant's segments.
 	 *
 	 * ⚠ `index` is honoured for the outgoing character, not the incoming one:

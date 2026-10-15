@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { ASIDE_W, COLUMN_GAP } from '$lib/toolColumns';
 	import { portal } from '$lib/actions/portal';
 	import CloseMark from '$lib/components/CloseMark.svelte';
@@ -63,7 +64,7 @@
 		 * drops its filters-open flag. The drawer only reports.
 		 */
 		sheet?: boolean;
-		/** The drawer's heading — "Filters", "Notes", "Target aura". */
+		/** The drawer's heading — "Filters", "Notes", "Aura log". */
 		asideTitle?: string;
 		/** The drawer's close (scrim, ✕, Escape). */
 		onCloseAside?: () => void;
@@ -72,6 +73,15 @@
 	function onWindowKeydown(event: KeyboardEvent) {
 		if (sheet && aside && event.key === 'Escape') onCloseAside?.();
 	}
+
+	// ⚠️ Leaving the tool does not destroy this page (see closeOnLeave), and the
+	// drawer's scrim sat over the incoming tool eating clicks. Only the DRAWER,
+	// which is a modal — an open column is a panel the reader opened, and
+	// nothing resets one.
+	closeOnLeave(
+		() => !!(sheet && aside),
+		() => onCloseAside?.()
+	);
 </script>
 
 <svelte:window onkeydown={onWindowKeydown} />

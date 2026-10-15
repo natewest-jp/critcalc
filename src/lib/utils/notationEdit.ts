@@ -4,9 +4,8 @@
  * REWRITING THE NOTATION ON THE USER'S BEHALF — the write half of single truth.
  *
  * Once the notation IS the team (rotationTabs.slots is derived from it), every
- * team edit has to become a text edit: an audition commit RENAMES a character's
- * segments, the bench ✕ DELETES them, and adding somebody APPENDS a bare-name
- * segment. This module is the only place that happens, and it is pure — the
+ * team edit has to become a text edit: a swap RENAMES a character's segments,
+ * removing one DELETES them, and adding somebody APPENDS a bare-name segment. This module is the only place that happens, and it is pure — the
  * store calls it, the tools call the store.
  *
  * ⚠ NEVER A SEARCH-AND-REPLACE. That is the trap this module exists to avoid:
@@ -80,8 +79,9 @@ export function notationSegments(notation: string): NotationSegment[] {
 	return segments;
 }
 
-/** The first `TEAM_SIZE` distinct character ids the notation names, in segment
- *  order — see rotationTabs.slotsFromNotation, which pads this to four. */
+/** Every distinct character id the notation names, in segment order — callers
+ *  take the first TEAM_SIZE (see rotationTabs.slotsFromNotation, which pads to
+ *  four). */
 export function orderedCharacterIds(notation: string): string[] {
 	const seen: string[] = [];
 	for (const seg of notationSegments(notation)) {
@@ -127,8 +127,8 @@ function displayNameFor(charId: string): string {
 }
 
 /**
- * Rename every segment led by `charId` to `toCharId` — what an audition commit
- * does. The segments keep their actions verbatim; whether the new character can
+ * Rename every segment led by `charId` to `toCharId` — what a swap does (the
+ * Team Builder's swap mode, Try in Planner). The segments keep their actions verbatim; whether the new character can
  * PERFORM them is the linter's sentence to pass (notationFlags), not this
  * module's to censor.
  */
@@ -148,7 +148,7 @@ export function renameCharacterInNotation(
 }
 
 /**
- * Delete every segment led by `charId` — what the bench ✕ does.
+ * Delete every segment led by `charId` — what removing a character from the team does.
  *
  * ⚠ THE JOINS ARE THE HARD PART, not the segments. Removing a middle segment
  * has to take ONE `>` with it or the survivors collide; removing the LAST has

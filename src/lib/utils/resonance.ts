@@ -35,7 +35,7 @@ export type Resonance = {
 const ELEMENT_RESONANCE: Record<string, { label: string; effect: string; rows: ResonanceRow[] }> = {
 	pyro: {
 		label: 'Fervent Flames',
-		effect: 'ATK +25%, cryo aura duration −40%',
+		effect: 'ATK +25%, Cryo aura duration −40%',
 		rows: [
 			{ stat: 'atk%', displayValue: '+25%' },
 			{ stat: 'Cryo aura duration', displayValue: '−40%' }
@@ -43,7 +43,7 @@ const ELEMENT_RESONANCE: Record<string, { label: string; effect: string; rows: R
 	},
 	hydro: {
 		label: 'Soothing Water',
-		effect: 'Max HP +25%, pyro aura duration −40%',
+		effect: 'Max HP +25%, Pyro aura duration −40%',
 		rows: [
 			{ stat: 'hp%', displayValue: '+25%' },
 			{ stat: 'Pyro aura duration', displayValue: '−40%' }
@@ -61,23 +61,23 @@ const ELEMENT_RESONANCE: Record<string, { label: string; effect: string; rows: R
 	electro: {
 		label: 'High Voltage',
 		effect:
-			'Electro reactions generate an elemental particle (5s cooldown); hydro aura duration −40%',
+			'Electro reactions generate an elemental particle (5s cooldown); Hydro aura duration −40%',
 		rows: [
-			{ stat: 'Electro particles', displayValue: '1 per electro reaction · 5s cooldown' },
+			{ stat: 'Electro particles', displayValue: '1 per Electro reaction · 5s cooldown' },
 			{ stat: 'Hydro aura duration', displayValue: '−40%' }
 		]
 	},
 	cryo: {
 		label: 'Shattering Ice',
-		effect: 'CRIT rate +15% vs frozen or cryo-affected enemies; electro aura duration −40%',
+		effect: 'CRIT Rate +15% vs Frozen or Cryo-affected enemies; Electro aura duration −40%',
 		rows: [
-			{ stat: 'critRate', displayValue: '+15% (frozen/cryo)' },
+			{ stat: 'critRate', displayValue: '+15% (Frozen/Cryo)' },
 			{ stat: 'Electro aura duration', displayValue: '−40%' }
 		]
 	},
 	geo: {
 		label: 'Enduring Rock',
-		effect: 'Shield strength +15%; shielded: DMG +15%, −20% enemy geo RES (15s)',
+		effect: 'Shield strength +15%; shielded: DMG +15%, −20% enemy Geo RES (15s)',
 		rows: [
 			{ stat: 'Shield strength', displayValue: '+15%' },
 			{ stat: 'allDmgBonus', displayValue: '+15% (shielded)' },

@@ -134,6 +134,14 @@ export type CharacterIndexEntry = Pick<
 	 *  Absent frames, a `P` draws with `GENERIC_PLUNGE_FRAMES` and the editor
 	 *  flags it provisional — eager for the same reason as `casts`. */
 	plunge: boolean;
+	/** Whether the kit carries a MEASURED charged attack (`castTokens.hasChargeFrames`
+	 *  — a bow's `chargeHits` count). Absent frames, a `C` draws with
+	 *  `GENERIC_CHARGE_FRAMES` and the editor flags it provisional, as `plunge`. */
+	charged: boolean;
+	/** Present (and true) only when the kit carries KQM's `sC`
+	 *  (`castTokens.hasSpecialChargeFrames`, Varka alone today). Anyone else's
+	 *  `sC` is timed as a plain `C`, and the editor flags it provisional. */
+	specialCharge?: true;
 	/** Distinct reactions the kit gates on via `teamEnablesReaction`
 	 *  conditions — derived at index generation. A character with
 	 *  `stellarConduct` here carries Stellar-conditional buffs without being

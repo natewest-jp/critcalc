@@ -268,6 +268,8 @@ export function buildStub(name) {
 		weapon: char.weaponText.toLowerCase(),
 		gender: char.gender,
 		affiliation: char.affiliation,
+		// ⚠️ Often absent in genshin-db (the 7.x cast, Skirk) — characterIndex.test.ts
+		// refuses a character with no region; the skill says what to add.
 		region: char.region,
 		rarity: char.rarity,
 		// The patch it released in (genshin-db `version`) — the coverage page's

@@ -7,17 +7,30 @@
  *
  * ⚠️ Both caps below are BEHAVIOUR, not defensiveness. `MAX_EXPANDED_TOKENS`
  * truncates silently and deliberately, and `peekActionKey` SKIPS `W` rather
- * than reading it — a token the composer says does nothing has to actually do
- * nothing. ⛔ Neither is a detail to tidy while passing through.
+ * than reading it (and `{key:N}`, `/alt` and `(…)` with it) — a token the
+ * composer says does nothing has to actually do nothing. ⛔ Neither is a detail to tidy while passing through.
  */
 
 import type { ActionKey } from '$lib/types/ability';
 import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
 
+/** A token that lands nothing on the timeline, so the lookahead steps over it.
+ *  Exported for the driver, which joins a same-character `>` into one lookahead
+ *  and needs to know where a peek would stop. */
+export const isInert = (t: Token | undefined): boolean =>
+	!!t &&
+	(t.kind === 'stack-assert' ||
+		t.kind === 'or-alt' ||
+		t.kind === 'optional' ||
+		(t.kind === 'label' && t.text === 'W'));
+
 /**
  * Maps the next token after position j to the ActionKey used for cancel-window
  * selection. Returns 'swap' (full animation fallback) for end-of-segment,
- * time advances, optional groups, or anything else that isn't a direct action.
+ * time advances, or anything else that isn't a direct action. ⚠️ "End of
+ * segment" is the end of `tokens`: the driver hands in the next segment's
+ * tokens too when a same-character `>` continues the turn (run.ts, `lookahead`). Inert tokens
+ * (`W`, `{key:N}`, `/alt`, `(…)`) are stepped over, never read.
  *
  * `isBow` is threaded for ONE token: KQM's `A` is an aimed shot, which only a
  * bow can take, and which our data models as that bow's fully-charged attack
@@ -38,8 +51,13 @@ export function peekActionKey(tokens: Token[], j: number, isBow: boolean): Actio
 	// does not reset the normal-attack string in game — that is exactly what
 	// makes it worth doing — so `N1 W N2` really is an N1 followed by an N2, just
 	// without the frames the cancel would have saved.
+	//
+	// The same rule covers a stack assert (`{key:N}`), an or-alt (`/Q`) and an
+	// optional group (`(Q)`), which the parser also draws nothing for: each one
+	// used to answer 'swap' and move the cancel window of the action before it
+	// (`Yanfei N1 {seal:3} C` timed its N1 at 12f, `Yanfei N1 C` at 21f).
 	let k = j + 1;
-	while (tokens[k]?.kind === 'label' && tokens[k].text === 'W') k++;
+	while (isInert(tokens[k])) k++;
 	const next = tokens[k];
 	if (!next) return 'swap';
 	if (next.kind === 'Q') return 'Q';
@@ -49,7 +67,7 @@ export function peekActionKey(tokens: Token[], j: number, isBow: boolean): Actio
 		if (/^N\d*$/.test(t)) return 'N';
 		if (t === 'D') return 'D';
 		if (t === 'J') return 'J';
-		if (/^C\d*$/.test(t)) return 'C';
+		if (/^s?C\d*$/.test(t)) return 'C';
 		if (t === 'A' && isBow) return 'C';
 		if (/^[hl]?P$/.test(t)) return 'P';
 	}
@@ -63,7 +81,7 @@ export function peekActionKey(tokens: Token[], j: number, isBow: boolean): Actio
  * 'swap' for all of those because the SLICE question has a right answer there
  * (the animation runs out); the PAD question does not — a player who typed a
  * wait is already waiting, and nothing follows the last action at all.
- * `swapFollows` says whether a real swap comes after this segment's last token.
+ * `swapFollows` says whether a real swap comes after the last token of `tokens`.
  */
 export function peekHumanPadTarget(
 	tokens: Token[],
@@ -72,7 +90,7 @@ export function peekHumanPadTarget(
 	swapFollows: boolean
 ): ActionKey | null {
 	let k = j + 1;
-	while (tokens[k]?.kind === 'label' && tokens[k].text === 'W') k++;
+	while (isInert(tokens[k])) k++;
 	if (!tokens[k]) return swapFollows ? 'swap' : null;
 	const key = peekActionKey(tokens, j, isBow);
 	return key === 'swap' ? null : key;

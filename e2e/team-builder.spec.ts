@@ -281,7 +281,7 @@ test.describe('the board', () => {
 
 	test('a preset board opens with its teams', async ({ page }) => {
 		await openTool(page, '/builder');
-		await page.locator('.band-a .band-menu-trigger[aria-label="New board"]').click();
+		await page.locator('.band-a .band-menu-trigger[aria-label="New lineup"]').click();
 		await page.getByRole('menuitem', { name: /Stygian Onslaught/ }).click();
 		// ⚠ Not the strip's hidden MEASURING copy, which carries the same classes.
 		await expect(page.locator('.band-a .doc-tabs:not(.doc-tabs--measure) .doc-tab')).toHaveCount(2);

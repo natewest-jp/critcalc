@@ -28,7 +28,8 @@ export type TeamComposition = {
 export type CompositionFields = Pick<
 	CharacterData,
 	'region' | 'factions' | 'factionContributions' | 'enablesReactions'
->;
+> &
+	Partial<Pick<CharacterData, 'id'>>;
 
 /**
  * Reactions the party's members ENABLE (the Stellar model — one enabler
@@ -106,7 +107,13 @@ export function deriveTeamComposition(
 
 	for (let i = 0; i < chars.length; i++) {
 		const c = chars[i];
-		if (!c) continue;
+		// ⚠ An empty slot is not always null: the planner's empty slot is the id
+		// 'blank', and that id has a payload (the placeholder character), which
+		// has no faction — so it counted as a non-Moonsign MEMBER and a Moonsign
+		// pair beside two empty slots drew an Ascendant Gleam lane for nobody.
+		// Nor does a Blank written into the notation receive the grant: it has
+		// no element, and the grant's scaling is the element's.
+		if (!c || c.id === 'blank') continue;
 
 		const factions = c.factions ?? [];
 

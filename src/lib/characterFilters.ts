@@ -54,6 +54,18 @@ export type GridFilters = {
 	factionBuffs?: SvelteSet<string>;
 };
 
+/** The region of a character from outside Teyvat — every Traveler, Skirk and
+ *  Aloy (⚓ Nate, 2026-10-15). It is not a nation, so its chip goes LAST. */
+export const REGION_OTHER = 'Other';
+
+/** The roster's region chips: the nations alphabetically, then "Other". */
+export function regionChips(roster: readonly CharacterIndexEntry[]): string[] {
+	const regions = [...new Set(roster.map((c) => c.region).filter(Boolean) as string[])];
+	return regions.sort((a, b) =>
+		a === REGION_OTHER ? 1 : b === REGION_OTHER ? -1 : a.localeCompare(b)
+	);
+}
+
 /** True when the entry is Stellar-linked — enables a Stellar reaction or
  *  carries buffs gated on one being enabled. */
 export function isStellarLinked(entry: CharacterIndexEntry): boolean {

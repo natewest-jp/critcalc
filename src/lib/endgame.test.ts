@@ -116,4 +116,17 @@ describe('the Abyss', () => {
 		expect(currentAbyss(new Date('2026-10-09T12:00:00Z'))?.name.en).toBe('Cascading Moon');
 		expect(currentAbyss(new Date('2026-09-15T12:00:00Z'))).toBeUndefined();
 	});
+
+	it('shows nothing once the newest cycle has ended (the end guard)', () => {
+		const newest = [...ABYSS_CYCLES].sort((a, b) => b.start.localeCompare(a.start))[0];
+		const lastDay = new Date(`${newest.end}T00:00:00Z`);
+		lastDay.setUTCDate(lastDay.getUTCDate() - 1);
+		expect(currentAbyss(lastDay)?.start).toBe(newest.start);
+		expect(currentAbyss(new Date(`${newest.end}T00:00:00Z`))).toBeUndefined();
+		// A named successor takes over on the same day.
+		const next = { ...newest, start: newest.end, end: '2099-01-01' };
+		expect(currentAbyss(new Date(`${newest.end}T00:00:00Z`), [newest, next])?.start).toBe(
+			newest.end
+		);
+	});
 });

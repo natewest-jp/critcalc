@@ -47,7 +47,7 @@ describe('boardUrl', () => {
 		};
 		const decoded = await decodeBoard('1~' + (await deflateToBase64Url(JSON.stringify(dirty))));
 		expect(decoded).toEqual({
-			label: 'Shared board',
+			label: 'Shared lineup',
 			noRepeats: true,
 			// four slots, wrong types and over-long ids emptied, the fifth dropped
 			teams: [{ slots: ['a', null, null, null], constellations: { a: 6 } }]

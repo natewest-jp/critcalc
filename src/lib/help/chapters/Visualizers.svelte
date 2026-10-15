@@ -16,9 +16,9 @@
 <section>
 	<h2 id="workspace">The workspace</h2>
 	<p>
-		Use the dropdown above each tile to choose which instrument lives in that slot. Your layout is
-		remembered between visits; <strong>Reset layout</strong> restores the default, and each tile can be
-		reset on its own without disturbing the others.
+		Use the dropdown above each tile to choose the instrument it shows. Your layout is remembered
+		between visits; <strong>Reset layout</strong> restores the default, and a tile's
+		<strong>Defaults</strong> puts that instrument's controls back without disturbing the others.
 	</p>
 	<p>
 		<strong>Share</strong> copies a link that reopens an instrument exactly as it looks, inputs and all.
@@ -61,8 +61,7 @@
 		drag a marker to move it in time. The toolbar over the chart sets the selected application's
 		element and size. Point at the chart to read every aura at that moment, or press play to watch
 		the gauges drain, at slow motion if you like. The strip under the chart shows which aura icons
-		hang over the enemy. Single target only: Swirl spreading, Shatter, and what happens to Dendro
-		Cores after they spawn are out of scope.
+		hang over the enemy. Single target only: Swirl spreading and Shatter are out of scope.
 	</p>
 </section>
 
@@ -81,7 +80,7 @@
 	<p>
 		Standard is the default, not the only rule. The examples load real hit timings with their own
 		ICD groups — Fischl's Oz, Hu Tao's charged attacks, Chevreuse's Burst and Layla's Shooting
-		Stars. Some groups stop applying after a set number of hits until their timer runs out.
+		Stars. Some groups stop applying after a set number of applications until their timer runs out.
 	</p>
 </section>
 
@@ -90,10 +89,9 @@
 	<p>
 		How reaction payouts scale with Elemental Mastery. Each family rides a different curve:
 		amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM), Lunar and
-		Stellar 6·EM/(2000+EM), crystallize 4.44·EM/(1400+EM). <strong>All families</strong> puts those five
-		on one chart; pick a family's tab to see its reactions' damage at a given level. Drag on the chart
-		or slide to move along it, and hover or tap a row of the readout to have it read out in words below
-		the table.
+		Stellar 6·EM/(2000+EM), Crystallize 4.44·EM/(1400+EM). <strong>All families</strong> puts those five
+		on one chart; pick a family's tab to see its reactions one by one. Drag on the chart or slide to move
+		along it, and hover or tap a row of the readout to have it read out in words below the table.
 	</p>
 	<p>
 		A Reaction Bonus such as 4pc Crimson Witch adds inside the same bracket as EM, so the Reaction
@@ -116,7 +114,7 @@
 		A direct hit is shown relative to a hit from its base stat alone, because its talent multiplier
 		depends on the attack. Additive chunks, transformative damage, and Lunar and Stellar reaction
 		damage come from level and EM, so they end in a number. <strong>What the next roll buys</strong>
-		applies one average 5★ substat roll at a time to your sheet; pick ATK, HP or DEF so the rolls match
+		applies one average 5★ substat roll at a time to your sheet; pick ATK, HP, or DEF so the rolls match
 		the stat your character scales on.
 	</p>
 </section>
@@ -141,7 +139,7 @@
 		<strong>your stats</strong> — up to four substats that count as good — and every view measures
 		them. <strong>Drop</strong>: how many days of resin it takes to get the piece you want, from a
 		domain or during a Stygian Onslaught Disturbance Outbreak. <strong>Level up</strong>: what your
-		stats reach at +20 on a piece that has them, coloured by how many upgrades landed in them.
+		stats reach at +20 on a piece that has them, colored by how many upgrades landed in them.
 		<strong>Your piece</strong>: enter a real piece, line by line as the game shows it, to see how
 		it ranks, what it can still become, and what a reshape would do.
 	</p>

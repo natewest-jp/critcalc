@@ -58,6 +58,7 @@
 	import { portal } from '$lib/actions/portal';
 	import { fade } from 'svelte/transition';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 
 	/** The minimal character shape the card renders — an index entry or a loaded
 	 *  payload both satisfy it. null = empty slot. */
@@ -227,6 +228,11 @@
 		conOpen = false;
 		loadoutOpen = false;
 	}
+
+	// ⚠️ The bench is the tools LAYOUT's, so leaving the planner only hides it
+	// (`visibility`) — and these popovers are portalled out of that, so one
+	// open at the leave stayed over the next tool until it was dismissed.
+	closeOnLeave(() => conOpen || loadoutOpen, closePopovers);
 </script>
 
 <!-- The card inherits the ribbon's DARK context (it has no ground of its own).
@@ -297,7 +303,7 @@
 					{#if uncurated}
 						<span
 							class="sp-namemark"
-							title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
+							title="Frame timing not curated yet — the Rotation Planner draws this character’s actions with generic timing"
 							aria-label="Frame timing not curated yet"><Mark name="uncurated" size={12} /></span
 						>
 					{/if}

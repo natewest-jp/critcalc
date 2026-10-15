@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from './rotationTabs.svelte';
 import { documentBar as db, recentlyClosedRotations, worthKeeping } from './documentBar.svelte';
 import { closeCandidate } from './tabSet';
+import { savedNotations } from './stores';
 
 /**
  * `adopt` — where an INCOMING document goes (a shared `?r=` link, a `?team=`
@@ -76,6 +77,21 @@ describe('rotationTabs.adopt', () => {
 		expect(rt.adopt({ ...doc })).toBe(false);
 		expect(rt.tabs[4].savedId).toBe('bank-1');
 		expect(rt.tabs[4].label).toBe('My rotation');
+	});
+
+	// 🐛 planner-1 (pre-launch sweep, 2026-10-14). The active tab's typed text
+	// lives in `rt.notation` until a flush, so a tab opened empty and typed into
+	// still read '' in `tabs` and was taken as spare: a Library open or an in-app
+	// link replaced it, and the rotation was not even kept in Recently closed.
+	it('does not treat a FRESH tab that has been typed into as empty', () => {
+		seed(busy(1));
+		expect(rt.addTab()).toBe(true);
+		const typed = rt.activeTabId;
+		rt.notation = 'Furina E Q > Neuvillette C';
+		expect(rt.adopt({ ...doc })).toBe(true);
+		expect(rt.tabs).toHaveLength(3); // a new tab, not the typed one
+		rt.flush();
+		expect(rt.tabs.find((t) => t.id === typed)?.notation).toBe('Furina E Q > Neuvillette C');
 	});
 
 	it('never exceeds TAB_LIMIT', () => {
@@ -177,5 +193,38 @@ describe('worthKeeping', () => {
 				saved
 			)
 		).toBe(true);
+	});
+});
+
+describe('documentBar.closeAll — closing is never loss', () => {
+	const closed = () => get(recentlyClosedRotations).map((e) => e.tab.id);
+	beforeEach(() => recentlyClosedRotations.clear());
+
+	it('sends every tab worth keeping to Recently closed, in strip order, and leaves one empty tab', () => {
+		seed([...busy(2), { id: 'empty', label: 'Empty', notation: '' }]);
+		db.closeAll();
+		expect(closed()).toEqual(['t1', 't2']);
+		expect(rt.tabs).toHaveLength(1);
+		expect(rt.notation).toBe('');
+	});
+});
+
+describe('documentBar.loadNewTab / linked', () => {
+	const entry = { id: 'saved-x', name: 'X', notation: 'Bennett E Q', savedAt: 0 };
+	beforeEach(() => savedNotations.clear());
+
+	it('switches to a tab already linked to the entry instead of opening a second', () => {
+		seed([...busy(2), { id: 'linked', label: 'X', notation: 'Bennett E Q', savedId: entry.id }]);
+		db.loadNewTab(entry);
+		expect(rt.tabs).toHaveLength(3);
+		expect(rt.activeTabId).toBe('linked');
+	});
+
+	it('is linked only while the entry still exists', () => {
+		const id = savedNotations.save({ name: 'X', notation: 'Bennett E Q' });
+		seed([{ id: 't', label: 'X', notation: 'Bennett E Q', savedId: id }]);
+		expect(db.linked).toBe(true);
+		savedNotations.delete(id);
+		expect(db.linked).toBe(false);
 	});
 });

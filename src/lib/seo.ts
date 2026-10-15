@@ -75,18 +75,18 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/': {
 		title: 'Genshin Impact tools',
 		description:
-			'Three tools for seeing how Genshin works: a frame-accurate rotation timeline, a capability-faceted team builder, and eight graph instruments. Mechanics made visible — no tier lists, no verdicts.'
+			'Three tools for seeing how Genshin works: a frame-accurate rotation timeline, a capability-faceted team builder, and eight graph instruments.'
 	},
 
 	'/planner': {
 		title: 'Rotation Planner',
 		description:
-			'Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, energy, buff windows and who is on field when.'
+			'Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, buff windows, auras and who is on field when.'
 	},
 	'/builder': {
 		title: 'Team Builder',
 		description:
-			'Find who covers what — healing, shielding, resistance shred, buffs — at which constellation, with the ability and the caveat that comes with it.'
+			'Build lineups for Stygian Onslaught and the Spiral Abyss: see what each team brings — healing, shields, RES shred, buffs — at your constellations, and what a swap would change.'
 	},
 	'/visualizers': {
 		title: 'Visualizers',
@@ -107,7 +107,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/help/builder': {
 		title: 'Team Builder help',
 		description:
-			'How the critcalc Team Builder works: capability facets, constellation modes, comparison and team slots.'
+			'How the critcalc Team Builder works: capability filters, constellations, lineups and swapping a character.'
 	},
 	'/help/visualizers': {
 		title: 'Visualizers help',

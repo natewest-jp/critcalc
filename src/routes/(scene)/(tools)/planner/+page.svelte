@@ -56,7 +56,7 @@
 	// <DocumentActions>, and the flows behind them live in $lib/documentBar —
 	// because they act on the shared working DOCUMENT, which the Team Builder
 	// edits too. What is left here is the planner-only part: importing a `?r=`
-	// link, and the character Source.
+	// link.
 
 	/** Apply a decoded shared rotation: cons + loadout → the tab (Layer 2), build+notation → a tab. */
 	function importShared(shared: SharedRotation) {
@@ -138,7 +138,7 @@
 		});
 	});
 
-	// Import a rotation carried in `?r=` — or a Team Builder hand-off in `?team=`
+	// Import a rotation carried in `?r=` — or a team deep link in `?team=`
 	// (`?r=` wins when both are present) — and strip the params. Lives in
 	// afterNavigate, NOT onMount: on chained SPA navigation the component mounts
 	// before the router updates location, so onMount would read the previous
@@ -295,15 +295,15 @@
 	/** The aura's standing modelling limits — see the `auraLimits` snippet below
 	 *  for the sourcing rule that governs every line. */
 	const AURA_NOTES = [
-		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mitachurl, and no auras you did not put there.',
-		'Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.',
-		'A pip with a yellow ring means we are using a default gauge strength of 1U for that hit rather than a measured one.',
+		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mitachurl, and no auras you didn’t put there.',
+		'Hits land on their listed timing, and Shatter is not modeled.',
+		'A pip with a yellow ring has no measured gauge strength, so the Rotation Planner uses 1U for that hit.',
 		// ⚠️ The one thing the gadget strip could be misread as. A Prism bar says
 		// WHEN the field exists; nothing on the chart says where it is, and the
 		// house rule (docs/library/game/stellar-reactions.md) is that a field is
 		// assumed entered — the same assumption every character's dropped field
 		// already gets.
-		'A Starlight Prism bar says when the Polestar Field is up, not where — we assume you are standing in it.'
+		'A Starlight Prism bar says when the Polestar Field is up, not where — the Rotation Planner assumes you are standing in it.'
 	];
 
 	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════
@@ -782,7 +782,7 @@
 				{main}
 				aside={showAside ? asideColumn : undefined}
 				sheet={below('toolMin')}
-				asideTitle={pv.showLog ? 'Target aura' : 'Notes'}
+				asideTitle={pv.showLog ? 'Aura log' : 'Notes'}
 				onCloseAside={() => (pv.aside = null)}
 			/>
 		{/snippet}
@@ -823,7 +823,7 @@
 		<!-- The always-on bonuses strip, rendered between the chart's last lane
 		     and the notation field. -->
 		{#snippet underChart()}
-			<TeamBonusesBlock {slots} />
+			<TeamBonusesBlock {slots} conLevels={effectiveCon} />
 		{/snippet}
 	</RotationTimeline>
 {/snippet}
@@ -838,7 +838,7 @@
 		     column is one continuous reading and a 22px sticky bar over a
 		     several-hundred-row transcript costs more than it explains. -->
 		<div class="rp-log-panel">
-			<div class="rp-log-head">Target aura</div>
+			<div class="rp-log-head">Aura log</div>
 			<!-- ⚓ THE TWO CHANNELS ARE SCALARS IN SECONDS, both brokered by
 			     plannerView — see its note. `hover` lights the rows the chart's
 			     cursor stands on; `onHover` drives the chart's own crosshair from
@@ -881,7 +881,6 @@
        nothing back       — no path applies an aura the enemy owns
        no Shatter         — `sim/reactionBridge.ts` leaves it unemitted
        nominal schedule   — `application[]`'s contract C4 (types/ability.ts)
-       one hit per swing  — the hit stream's documented approximation
        1U default         — `DEFAULT_UNITS` in `sim/aura.ts`, and what the
                             ring-footed pips mark -->
 {#snippet auraLimits()}

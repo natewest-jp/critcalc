@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { parseNotation, evalCondition } from './notationParser';
-import type { TimelineEvent, ReactionEvent, ShieldEndEvent } from './notationParser';
+import type {
+	TimelineEvent,
+	ReactionEvent,
+	ShieldEndEvent,
+	ParsedRotation
+} from './notationParser';
+import { repeatNotation } from '$lib/playback/repeat';
 
 // P4: the parser no longer returns the legacy `reactionEvents` /
 // `shieldEndEvents` arrays — these are filtered projections of `events`.
@@ -475,12 +481,21 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 
 	it('stack state resets between segments (per-character)', () => {
 		// Segment 1: assert 4 stacks, fire loaded.
-		// Segment 2 (same character, after a swap-out): no assertion, should resolve base.
-		const result = parseNotation('Stub {declension:4} E > Stub E', lookup, 8);
+		// Segment 3 (same character, after a swap-out): no assertion, should resolve base.
+		// ⚠️ A REAL swap, through a second character: `Stub … > Stub E` is one stay
+		// on field written in two segments, which carries the pool (run.ts, `carry`).
+		const other = { ...stub, id: 'otherstub', name: 'OStub', displayName: 'OStub' };
+		const lookupBoth = (n: string): CharacterData | null => (n === 'OStub' ? other : lookup(n));
+		const result = parseNotation('Stub {declension:4} E > OStub > Stub E', lookupBoth, 8);
 		const track1 = result.tracks[0];
-		const track2 = result.tracks[1];
+		const track2 = result.tracks[2];
 		expect(track1.eBars[0].cooldown).toBe(framesOf(20));
 		expect(track2.eBars[0].cooldown).toBe(framesOf(5));
+	});
+
+	it('a same-character `>` carries the asserted count', () => {
+		const result = parseNotation('Stub {declension:4} E > Stub ~20s E', lookup, 8);
+		expect(result.tracks[1].eBars[0].cooldown).toBe(framesOf(20));
 	});
 
 	it('the assertion token does not advance the cursor or emit a block', () => {
@@ -606,10 +621,29 @@ describe('parseNotation — variant-driven stance + opensState', () => {
 		// After hE opens the bike-NS, swap to another character and back. The
 		// re-entered VStub should NOT have nightsoulBlessing active — pressing N1
 		// resolves to the base normal again.
-		const result = parseNotation('VStub hE > VStub N1', lookup, 8);
-		const track2 = result.tracks[1];
+		// ⚠️ A REAL swap, through a second character: `VStub hE > VStub N1` is one
+		// stay on field written in two segments, which ends nothing (run.ts,
+		// `swapFollows`).
+		const other = { ...stub, id: 'otherstub', name: 'OStub', displayName: 'OStub' };
+		const lookupBoth = (n: string): CharacterData | null => (n === 'OStub' ? other : lookup(n));
+		const result = parseNotation('VStub hE > OStub N1 > VStub N1', lookupBoth, 8);
+		const track2 = result.tracks[2];
+		expect(track2.characterId).toBe('variantstub');
 		const nBlock = track2.inputBlocks.find((b) => b.parts[0] === 'N1');
 		expect(nBlock?.kind).toBe('normal');
+	});
+
+	// 🐛 engine-1 (pre-launch sweep, 2026-10-14). The swap-out closes tested
+	// "not the last segment" rather than `swapFollows`, so a same-character `>`
+	// ended the stance like a real swap. Laps reach it without anyone typing it:
+	// `repeatNotation` joins laps with ' > ', so a rotation ending on its opener
+	// crossed one every lap.
+	it('a same-character `>` is NOT a swap: the stance survives into the second segment', () => {
+		const result = parseNotation('VStub hE > VStub N1', lookup, 8);
+		const track2 = result.tracks[1];
+		expect(track2.characterId).toBe('variantstub');
+		const nBlock = track2.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock?.kind).toBe('elemental-normal');
 	});
 });
 
@@ -1278,12 +1312,17 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 	});
 
 	it('stack state resets across segments (per-character per-segment scope)', () => {
-		// Segment 1: 2 E casts → 12 stacks. Segment 2 (same char after swap-out):
-		// stackState clears, first E grants only 6.
-		const result = parseNotation('GainStub E E > GainStub E', lookup, 8, { gainstub: 1 });
-		expect(result.tracks).toHaveLength(2);
+		// Segment 1: 2 E casts → 12 stacks. Segment 3 (same char after swap-out):
+		// stackState clears, first E grants only 6. ⚠️ Swapped through a second
+		// character — a same-character `>` is no swap-out (run.ts, `carry`).
+		const other = { ...stub, id: 'otherstub', name: 'OStub', displayName: 'OStub' };
+		const lookupBoth = (n: string): CharacterData | null => (n === 'OStub' ? other : lookup(n));
+		const result = parseNotation('GainStub E E > OStub > GainStub E', lookupBoth, 8, {
+			gainstub: 1
+		});
+		expect(result.tracks).toHaveLength(3);
 		const seg1 = result.tracks[0];
-		const seg2 = result.tracks[1];
+		const seg2 = result.tracks[2];
 		expect(seg1.eBars[1].stackContext?.get('fieldCatalog')).toBe(12);
 		expect(seg2.eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
 	});
@@ -1870,12 +1909,15 @@ describe('parseNotation — gainStacks per-stack lifetime (E3 v2.x)', () => {
 	});
 
 	it('lifetime stack instances reset between segments (per-segment scope)', () => {
-		// Segment 1: E at t=0 (+6). Segment 2 (same char after swap): instances
-		// reset, fresh +6 from gainStacks.
-		const result = parseNotation('LifeStub E > LifeStub E', lookup, 8);
-		expect(result.tracks).toHaveLength(2);
+		// Segment 1: E at t=0 (+6). Segment 3 (same char after swap): instances
+		// reset, fresh +6 from gainStacks. ⚠️ Swapped through a second character —
+		// a same-character `>` is no swap (run.ts, `carry`).
+		const other = { ...lifetimeStub, id: 'otherstub', name: 'OStub', displayName: 'OStub' };
+		const lookupBoth = (n: string): CharacterData | null => (n === 'OStub' ? other : lookup(n));
+		const result = parseNotation('LifeStub E > OStub > LifeStub E', lookupBoth, 8);
+		expect(result.tracks).toHaveLength(3);
 		expect(result.tracks[0].eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
-		expect(result.tracks[1].eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
+		expect(result.tracks[2].eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
 	});
 });
 
@@ -4281,5 +4323,95 @@ describe('parseNotation — infuse effects grant a timed elemental infusion', ()
 			.events.filter((e) => e.kind === 'reaction')
 			.map((e) => (e.kind === 'reaction' ? [e.characterId, e.reaction, e.castKind] : null));
 		expect(rs).toContainEqual(['xingqiu', 'vaporize', 'normal']);
+	});
+});
+
+describe('parseNotation — a same-character `>` times as one segment (join round, 2026-10-15)', () => {
+	// ⚓ `Xilonen E N2 > Xilonen N2` is one stay on field written in two segments.
+	// a8af205d kept her stance across it; this pins the TIMING half — the action
+	// before the join takes the next action's cancel, not the end-of-segment swap
+	// slice, and the string carries on (N3, N4) instead of restarting. Measured
+	// before: 93f against 129f. Laps reaches it whenever a rotation ends on its
+	// opener (`repeatNotation` joins laps with ' > ').
+	const xilonen = xilonenJson as unknown as CharacterData;
+	const bennett = bennettJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null =>
+		name === 'Xilonen' ? xilonen : name === 'Bennett' ? bennett : null;
+	const PAD = { padFrames: 10, fullAnimations: false };
+	const ANIM = { padFrames: 10, fullAnimations: true };
+	const parse = (n: string, ht?: typeof PAD) =>
+		parseNotation(n, lookup, 8, undefined, undefined, undefined, ht);
+	/** Everything the chart draws from, minus ids and source offsets (the two
+	 *  notations are different text). ⚠️ Windows are COALESCED where one abuts
+	 *  the next of the same kind for the same receiver: an `active` buff is sliced
+	 *  per TRACK, and the joined notation keeps a track per segment (the lap
+	 *  marks count them), so it draws `[123,143] [143,944]` where one segment
+	 *  draws `[123,944]` — the same span, seamed. */
+	const shape = (r: ParsedRotation) => {
+		const spans = r.windows
+			.map((w) => {
+				const x = w as { characterId?: string; receiverId?: string };
+				return {
+					key: `${w.kind}:${x.characterId ?? ''}:${x.receiverId ?? ''}`,
+					start: w.start,
+					end: w.end
+				};
+			})
+			.sort((a, b) => a.key.localeCompare(b.key) || a.start - b.start || a.end - b.end);
+		const windows: string[] = [];
+		let open: (typeof spans)[number] | null = null;
+		for (const s of spans) {
+			if (open && open.key === s.key && open.end === s.start) open.end = s.end;
+			else {
+				if (open) windows.push(`${open.key}@${open.start}-${open.end}`);
+				open = { ...s };
+			}
+		}
+		if (open) windows.push(`${open.key}@${open.start}-${open.end}`);
+		return {
+			total: r.totalDuration,
+			events: r.events.map((e) => {
+				const x = e as { label?: string; comboIndex?: number; element?: string };
+				return `${e.kind}@${e.time}:${x.label ?? ''}:${x.comboIndex ?? ''}:${x.element ?? ''}`;
+			}),
+			windows,
+			applications: r.applications.map((a) => `${a.time}:${a.element}`)
+		};
+	};
+	const comboOf = (r: ParsedRotation) =>
+		r.events.flatMap((e) => (e.kind === 'action' && e.action === 'normal' ? [e.comboIndex] : []));
+
+	it.each([
+		['Xilonen E N2 > Xilonen N2', 'Xilonen E N2 N2'],
+		['Bennett E > Bennett Q', 'Bennett E Q'],
+		[
+			'Xilonen E N2 > Bennett Q > Xilonen N1 > Xilonen N2',
+			'Xilonen E N2 > Bennett Q > Xilonen N1 N2'
+		],
+		// A segment of only inert tokens is read THROUGH, to the next one.
+		['Xilonen E N2 > Xilonen (Q) > Xilonen N2', 'Xilonen E N2 (Q) N2'],
+		// A bare name continued is nothing at all — no half-second stub.
+		['Xilonen > Xilonen E N2', 'Xilonen E N2']
+	])('%s ≡ %s, frame-perfect and under both human-timing modes', (joined, one) => {
+		for (const ht of [undefined, PAD, ANIM])
+			expect(shape(parse(joined, ht))).toEqual(shape(parse(one, ht)));
+	});
+
+	it('the string carries across the join', () => {
+		expect(comboOf(parse('Xilonen E N2 > Xilonen N2'))).toEqual([0, 1, 2, 3]);
+	});
+
+	it('a Laps join onto the opener times as the laps written out', () => {
+		// The lap ends on a bare `Xilonen`, so the stream's join is
+		// `… > Xilonen > Xilonen N2 …`: one stay, with no half-second stub between
+		// the swap back and the next lap's swing. ⚠️ No cooldowns in it on
+		// purpose — a cast waiting on its clock would absorb the stub and hide it.
+		const doc = 'Xilonen N2 > Bennett N1 > Xilonen';
+		const written = 'Xilonen N2 > Bennett N1 > Xilonen N2 > Bennett N1 > Xilonen';
+		expect(shape(parse(repeatNotation(doc, 2)))).toEqual(shape(parse(written)));
+	});
+
+	it('an unknown name between two segments is still a swap', () => {
+		expect(comboOf(parse('Xilonen E N2 > Nobody N1 > Xilonen N2'))).toEqual([0, 1, 0, 1]);
 	});
 });

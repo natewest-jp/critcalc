@@ -7,7 +7,7 @@
  * a cast the character cannot perform draws a generic bar, and a fifth
  * character has no slot to be drawn in. All three are SILENT, and silence is
  * what the single-truth round removes: once the notation IS the team, and once
- * the tool REWRITES it for you (an audition commit renames a character's
+ * the tool REWRITES it for you (a swap renames a character's
  * segments), a drop the user cannot see is a drop they cannot fix.
  *
  * ══ TWO REGISTERS, AND THE LINE BETWEEN THEM ═════════════════════════════════
@@ -83,24 +83,37 @@ function approximateCastMessage(name: string, token: string, casts: readonly str
 	if (HOLD_TOKEN_RE.test(token)) {
 		return `${name} has no ${token} (hold) variant — timed as a plain E.`;
 	}
+	// The parser finds no special skill and casts the BASE skill's frames, so
+	// "generic timing" would be untrue here.
+	if (token === 'sE' && casts.includes('E')) {
+		return `${name} has no sE variant — timed as a plain E.`;
+	}
 	if (token === 'sQ') {
 		return `${name} has no short-burst variant — timed as a full Q.`;
 	}
 	return `${name} can't perform ${token} — this cast is drawn with generic timing.`;
 }
 
-/** Tokens the linter has an opinion about: the E/Q casts, plus the two `label`
- *  tokens the planner may not be able to draw (`A`, `W`). */
+/** Tokens the linter has an opinion about: the E/Q casts, the two `label`
+ *  tokens the planner may not be able to draw (`A`, `W`), and the plunge and
+ *  charged classes it may draw with a stand-in. */
 function isLintable(tok: Token): boolean {
 	return (
 		tok.kind === 'E' ||
 		tok.kind === 'Q' ||
-		(tok.kind === 'label' && (/^[AW]$/.test(tok.text) || PLUNGE_TOKEN_RE.test(tok.text)))
+		(tok.kind === 'label' &&
+			(/^[AW]$/.test(tok.text) ||
+				PLUNGE_TOKEN_RE.test(tok.text) ||
+				CHARGED_TOKEN_RE.test(tok.text)))
 	);
 }
 
 /** `P`, `hP`, `lP` — the tokenizer's plunge class. */
 const PLUNGE_TOKEN_RE = /^[lh]?P$/;
+
+/** `C`, `C1`…`C9`, `sC` — the parser's charged class (run.ts reads the same
+ *  pattern). A bow's `A` joins it there; here it has its own branch. */
+const CHARGED_TOKEN_RE = /^s?C\d*$/;
 
 /** The lintable tokens inside one segment, including the ones hiding inside a
  *  bracket repeat group. Optional `(...)` groups and `/Q` alternatives are
@@ -212,6 +225,39 @@ export function flagNotation(notation: string): NotationFlag[] {
 					reason: 'approximate-cast',
 					message: `${entry.displayName}'s plunge isn't measured yet — drawn with generic timing.`
 				});
+				continue;
+			}
+			// A charged attack on a character with no MEASURED one is drawn with
+			// the generic profile (⚓ Nate 2026-10-15: the plunge's rule, so its
+			// sentence's shape) — about fifteen framed claymores (Diluc, Eula,
+			// Navia…) whose spin nobody has measured. `sC` on anyone without the
+			// special form is timed as their plain `C`, and says so — unless the
+			// plain C is itself the stand-in, which is the truer sentence.
+			// ⚠ A BOW is exempt: its `C` and `A` read `chargeHits`, every bow in
+			// the corpus carries them, and one without would draw NOTHING (the
+			// parser has no generic aimed shot), so "generic timing" would be
+			// untrue. ⚠ Like `plunge`, the fact is per KIT — a stance sibling with
+			// no `chargeFrames` of its own still draws the generic profile, and
+			// the linter cannot see the stance (no parse runs here).
+			if (CHARGED_TOKEN_RE.test(tok.text)) {
+				if (entry.weapon === 'bow') continue;
+				if (!entry.charged) {
+					flags.push({
+						from: tok.from,
+						to: tok.to,
+						text: tok.text,
+						reason: 'approximate-cast',
+						message: `${entry.displayName}'s charged attack isn't measured yet — drawn with generic timing.`
+					});
+				} else if (tok.text.startsWith('s') && !entry.specialCharge) {
+					flags.push({
+						from: tok.from,
+						to: tok.to,
+						text: tok.text,
+						reason: 'approximate-cast',
+						message: `${entry.displayName} has no special charged attack — timed as a plain C.`
+					});
+				}
 				continue;
 			}
 			if (entry.casts.includes(tok.text)) continue;

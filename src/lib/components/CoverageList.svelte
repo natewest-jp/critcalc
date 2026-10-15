@@ -96,7 +96,16 @@
 	 *  where the URL is whatever tool the overlay floats over. */
 	const onRoute = () => location.pathname.replace(/\/$/, '').endsWith('/coverage');
 
+	/** The avatar's outfit and Traveler wait for mount: the prerendered HTML
+	 *  carries the defaults, and hydration does not reconcile an `<img src>`,
+	 *  so a stored Lumine would otherwise show as Aether until the setting
+	 *  changed (the Builder's gate). */
+	let mounted = $state(false);
+	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
+	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
+
 	onMount(async () => {
+		mounted = true;
 		// The overlay link's focus first (openCoverage), else the route's ?c=.
 		const named =
 			takeCoverageFocus() ??
@@ -293,12 +302,7 @@
 							{#if hasAvatar(id)}
 								<img
 									class="avatar"
-									src={getAvatar(
-										id,
-										$siteSettings.useNewOutfits,
-										'circle',
-										$siteSettings.travelerVariant
-									)}
+									src={getAvatar(id, preferNewfit, 'circle', traveler)}
 									alt=""
 									width="32"
 									height="32"

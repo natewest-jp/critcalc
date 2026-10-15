@@ -41,7 +41,13 @@ describe('parseBackup', () => {
 			travelerVariant: 'lumine',
 			swapPing: 100
 		});
-		expect(res.counts).toEqual({ characters: 2, owned: 1, loadouts: 1, rotations: 1 });
+		expect(res.counts).toEqual({
+			characters: 2,
+			owned: 1,
+			loadouts: 1,
+			rotations: 1,
+			lineups: 0
+		});
 	});
 
 	it('rejects invalid JSON', () => {
@@ -139,5 +145,116 @@ describe('parseBackup', () => {
 		if (!res.ok) return;
 		const notes = res.data['critcalc:savedNotations'] as unknown[];
 		expect(notes).toHaveLength(1);
+	});
+
+	it('counts a names-only team entry as a team, not a rotation', () => {
+		const res = parseBackup(
+			envelope({
+				'critcalc:savedNotations': [
+					{ id: 't', name: '', notation: 'Bennett Xiangling Xingqiu Sucrose' },
+					{ id: 'r', name: 'Nat', notation: 'Bennett E Q' }
+				]
+			})
+		);
+		expect(res.ok).toBe(true);
+		if (!res.ok) return;
+		expect(res.counts.rotations).toBe(1);
+		expect(res.data['critcalc:savedNotations']).toHaveLength(2);
+	});
+
+	it('keeps a saved rotation’s synced flag and opened time', () => {
+		const res = parseBackup(
+			envelope({
+				'critcalc:savedNotations': [
+					{ id: 'a', name: 'ok', notation: 'E', savedAt: 1, synced: true, openedAt: 5 },
+					{ id: 'b', name: 'ok', notation: 'E', savedAt: 1, synced: 'yes', openedAt: NaN }
+				]
+			})
+		);
+		expect(res.ok).toBe(true);
+		if (!res.ok) return;
+		const [a, b] = res.data['critcalc:savedNotations'] as Record<string, unknown>[];
+		expect(a.synced).toBe(true);
+		expect(a.openedAt).toBe(5);
+		expect(b).not.toHaveProperty('synced');
+		expect(b).not.toHaveProperty('openedAt');
+	});
+
+	it('round-trips saved lineups and sanitizes their teams', () => {
+		const res = parseBackup(
+			envelope({
+				'critcalc:savedBoards': [
+					{
+						id: 'b1',
+						name: 'Spiral',
+						preset: 'stygian',
+						season: '7.1',
+						noRepeats: true,
+						savedAt: 10,
+						openedAt: 20,
+						teams: [
+							{
+								id: 't1',
+								slots: ['bennett', null, 3, 'xingqiu', 'extra'],
+								con: { bennett: 9, xingqiu: 'x' },
+								pinnedRotationId: 'r1'
+							},
+							{ slots: ['furina'] }
+						]
+					},
+					{ id: 'b2', name: 'Bad preset', preset: 'theatre', teams: [] },
+					{ id: 'b3', name: 'Loose', preset: 'custom', season: 'soon', teams: 'none' }
+				]
+			}),
+			99
+		);
+		expect(res.ok).toBe(true);
+		if (!res.ok) return;
+		expect(res.data['critcalc:savedBoards']).toEqual([
+			{
+				id: 'b1',
+				name: 'Spiral',
+				preset: 'stygian',
+				season: '7.1',
+				noRepeats: true,
+				savedAt: 10,
+				openedAt: 20,
+				teams: [
+					{
+						id: 't1',
+						slots: ['bennett', null, null, 'xingqiu'],
+						con: { bennett: 6 },
+						pinnedRotationId: 'r1'
+					}
+				]
+			},
+			{ id: 'b3', name: 'Loose', preset: 'custom', noRepeats: false, savedAt: 99, teams: [] }
+		]);
+		expect(res.counts.lineups).toBe(2);
+	});
+
+	it('carries the coverage strips, chosen layers and playback sound, and drops bad values', () => {
+		const res = parseBackup(
+			envelope({
+				'critcalc:siteSettings': {
+					showCoverageStrips: true,
+					showAuraLane: false,
+					timelineLayers: { showAuraLane: false, showTimelineBuffs: 'no' },
+					playbackSound: false,
+					playbackSoundMode: 'metronome',
+					playbackVoice: 'kazoo',
+					playbackVolume: 4
+				}
+			})
+		);
+		expect(res.ok).toBe(true);
+		if (!res.ok) return;
+		expect(res.data['critcalc:siteSettings']).toEqual({
+			showCoverageStrips: true,
+			timelineLayers: { showAuraLane: false },
+			playbackSound: false,
+			playbackSoundMode: 'metronome',
+			playbackVolume: 1
+		});
 	});
 });

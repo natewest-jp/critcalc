@@ -6,6 +6,7 @@
 	import { chromeModal, closeChromeModal, type ChromeModalState } from './chromeModal.svelte';
 	import AreaTabs from './AreaTabs.svelte';
 	import { AREAS } from '$lib/help/areas';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 
 	// Host for whatever the chrome's meta glyphs have open. Each layout renders
 	// exactly one of these, as a SIBLING of the chrome — see chromeModal.svelte.ts
@@ -17,6 +18,12 @@
 	}: { onScene?: boolean } = $props();
 
 	const state = $derived(chromeModal.current);
+
+	// A swipe-back or a link out of the overlay is a LEAVE, and the overlay
+	// belongs to the place it was opened over (pre-launch sweep §7, ⚓ Nate
+	// 2026-10-15). Not the Library — it is the tools layout's own and stays.
+	// Both hosts can register; a second close is a no-op.
+	closeOnLeave(() => chromeModal.current !== null, closeChromeModal);
 
 	// ⚠ The area branch keeps rendering through ChromeOverlay's fade-OUT, after
 	// close has already nulled `state` — so its body reads the last OPEN area,

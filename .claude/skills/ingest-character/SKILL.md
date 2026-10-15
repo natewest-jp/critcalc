@@ -88,6 +88,12 @@ utility, but a `passive3` no longer is. Heed any `_curatorNotes` the generator e
 labels etc.). The script refuses to overwrite existing files without
 `--force` — never `--force` a curated character.
 
+⚠️ **genshin-db often has NO `region`** (Skirk, Nicole, most of the 7.x cast;
+Aloy's is `""`), and the stub then carries none — `characterIndex.test.ts`
+fails until you add one with `jsonc-parser` `modify` (a character with none is
+hidden by every Region chip). Ask Nate for the nation; someone from outside
+Teyvat is `"Other"`.
+
 A stub is already shippable: tools report it honestly as "not yet curated"
 (Team Builder buckets it; planner shows no frames). Add the character to
 `FRAMELESS_EXEMPT` in `src/lib/utils/characterLint.test.ts` — the coverage
@@ -206,10 +212,10 @@ carry the reasoning.
 - **`CharacterData.enablesReactions`** — the Stellar enabler model. ONE enabler
   in the party converts the base reaction party-wide. ⚠️ Per-reaction: a Swirl
   enabler does nothing for Conduct. `docs/library/game/stellar-reactions.md`.
-- **`manual` triggers reach NO surface** (one code occurrence, its own type
-  declaration). Authoring one is authoring an inert effect — legitimate as a
-  record, but ⛔ never write a caveat that says "add it manually", and don't
-  count it as modelled. `node scripts/audit-manual-triggers.mjs` lists them.
+- **`manual` is RETIRED (2026-09-21)** — the member is gone from `Trigger` and
+  lint B.18 refuses one. Name the in-game source instead (one effect per in-game
+  source; `docs/manual-trigger-retirement-round.md`), and ⛔ never write a
+  caveat that says "add it manually".
 
 ⚠️ **A field with no consumer FAILS the gate** (`orphanedSchema.test.ts`) — the
 project's most productive bug class. On failure: wire it, retire it, or add it

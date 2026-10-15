@@ -34,7 +34,7 @@ export {
 export type { ConMode, Badge } from '$lib/capabilities/facets';
 
 // Identity filtering lives in the shared `$lib/characterFilters` module (reused
-// by the planner's character Source overlay + the CharacterGrid component).
+// by the CharacterGrid component).
 // Re-exported here so existing builder imports keep working.
 export { matchesIdentity };
 export type { IdentityFilters };

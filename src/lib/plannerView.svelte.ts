@@ -106,7 +106,7 @@ class PlannerViewState {
 		if (this.aside === panel) this.aside = null;
 	}
 
-	/** Published by the timeline for band B's readout + the notes gate. */
+	/** Published by the planner page for band B's readout + the notes gate. */
 	hasCaveats = $state(false);
 	/** The rotation put something on the target, so there is a transcript to
 	 *  read. ⚠ Independent of the aura LAYER: the log is a second reading of the

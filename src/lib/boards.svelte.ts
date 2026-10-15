@@ -37,7 +37,7 @@ import { browser } from '$app/environment';
 import { TEAM_SIZE, notationHasActions, teamKey, teamKeyOfNotation } from './utils/notationEdit';
 import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
-import type { SavedBoardTeam, SavedNotation } from './stores';
+import { safeSetItem, type SavedBoardTeam, type SavedNotation } from './stores';
 
 export type TeamSlot = string | null;
 
@@ -223,7 +223,7 @@ class BoardsState {
 	 *  its most useful, the mode most players come for. No `season` is stored, so
 	 *  the board FOLLOWS the season (the Team Builder reads an unset season as
 	 *  the current one) until its first edit pins it (§11.6 item 4). */
-	boards = $state<Board[]>([makeBoard('Board 1', 'stygian')]);
+	boards = $state<Board[]>([makeBoard('Lineup 1', 'stygian')]);
 	activeBoardId = $state<string>(this.boards[0].id);
 	restored = $state(false);
 
@@ -251,7 +251,7 @@ class BoardsState {
 	persist(): void {
 		const snapshot = { boards: this.boards, activeBoardId: this.activeBoardId };
 		if (!this.restored) return;
-		localStorage.setItem(BOARDS_KEY, JSON.stringify(snapshot));
+		safeSetItem(BOARDS_KEY, JSON.stringify(snapshot));
 	}
 
 	// ── Board tabs ──────────────────────────────────────────────────────────
@@ -282,7 +282,7 @@ class BoardsState {
 
 	addBoard(preset: BoardPreset = 'custom', season?: string): boolean {
 		return this.openBoard({
-			...makeBoard(`Board ${this.boards.length + 1}`, preset),
+			...makeBoard(`Lineup ${this.boards.length + 1}`, preset),
 			...(season && { season })
 		});
 	}

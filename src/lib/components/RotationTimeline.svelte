@@ -23,7 +23,7 @@
 	import { resolve } from '$app/paths';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
-	import { onDestroy, tick, untrack } from 'svelte';
+	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { notationTints } from '$lib/timeline/notationTints';
 	import { tokenizeNotation } from '$lib/utils/tokenizer';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
@@ -351,8 +351,9 @@
 	};
 
 	// castFill (the cast-pill / summon vertical top-light) now lives in
-	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
-	// finish. Its Safari-revert history travelled with it.
+	// $lib/utils/elementColors so the PNG export shares the exact finish (the
+	// Team Builder's Compare bars did too, until 2026-10-13). Its Safari-revert
+	// history travelled with it.
 
 	/** The thinnest a scaling buff's material gets, as a fraction of --glass-bar's
 	 *  own density. 🎛️ ⚠ IT IS NOT THE OLD 0.2. When the envelope mixed an
@@ -839,9 +840,13 @@
 	// snapshot. The team-buff lane keeps its own long-standing rule (present at
 	// full height even with no rows — the empty lane is the "no team buffs here"
 	// signal); the layer toggle is a different question and removes it outright.
+	// The Gleam lane appears only when someone RECEIVES the grant — an
+	// all-Moonsign team (or Moonsign pair beside empty slots) has nobody to draw.
 	let showTeamBuffsLane = $derived(showBuffs);
 	let showNbLane = $derived(showBuffs && teamComp.natlanCount >= 1);
-	let showMoonsignLane = $derived(showBuffs && teamComp.hasAscendantGleam);
+	let showMoonsignLane = $derived(
+		showBuffs && teamComp.hasAscendantGleam && teamComp.nonMoonsignSlots.length > 0
+	);
 
 	let teamBuffsH = $derived(showTeamBuffsLane ? auxLaneH(teamBuffRows.length) : 0);
 	// NB events all stack onto a single sub-row; the lane is always 1-row tall.
@@ -1420,7 +1425,7 @@
 	// ⛔ `majorTicks` is gone (2026-08-11): it existed only to draw gridlines for
 	// the 5s marks, and every tick draws one now.
 	// ⚠ `rulerTicks` walks SECONDS (its 1s/2s/5s step ladder and `t % 5` major
-	// rule are seconds rules, and Compare shares it) — so the axis converts here.
+	// rule are seconds rules) — so the axis converts here.
 	let ticks = $derived(rulerTicks(totalDuration / FPS, scale));
 
 	// ---------------------------------------------------------------------------
@@ -1429,15 +1434,15 @@
 
 	/** Thin reactive wrappers over the pure projection in
 	 *  $lib/timeline/barGeometry — they close over this component's live `scale`
-	 *  so every existing call site stays unchanged. The pure module is shared
-	 *  with the Team Builder's Compare bars so the two renderers can never
-	 *  drift.
+	 *  so every existing call site stays unchanged. (The Team Builder's Compare
+	 *  bars shared the pure module until they retired, 2026-10-13.)
 	 *
 	 *  ⚓⚓ THESE TWO FUNCTIONS ARE THE FRAMES→SECONDS SEAM, and they are the
 	 *  reason the ~20 `barGeom(...)` call sites in the template below did not
 	 *  change when the IR went frames-native (gauge-round.md C1). Everything on
 	 *  the parser side of this line is frames; `scale` is px per SECOND, because
-	 *  `barGeometry` is shared with Compare, whose data has no frame in it.
+	 *  `barGeometry` was shared with the Team Builder's Compare (retired
+	 *  2026-10-13), whose data had no frame in it.
 	 *  ⛔ Don't push the division outward into the call sites — one seam that is
 	 *  named is worth twenty that are not. */
 	/** FRAMES → the "12.5s" readout. ⚓ The surface is the ONE place the frames
@@ -1760,9 +1765,13 @@
 			const t = annotatedTracks[i];
 			const prev = annotatedTracks[i - 1];
 			const next = annotatedTracks[i + 1];
+			// ⚠️ OR'd into a key already set: a bare name a same-character `>`
+			// continues is a ZERO-width track sharing its start with the next one
+			// (run.ts, the stay's min width), and the swap arrives at the first.
+			const prior = map.get(t.activeStart);
 			map.set(t.activeStart, {
-				hasArrival: prev != null && prev.slotIdx !== t.slotIdx,
-				hasDeparture: next != null && next.slotIdx !== t.slotIdx
+				hasArrival: (prior?.hasArrival ?? false) || (prev != null && prev.slotIdx !== t.slotIdx),
+				hasDeparture: (prior?.hasDeparture ?? false) || (next != null && next.slotIdx !== t.slotIdx)
 			});
 		}
 		return map;
@@ -1794,8 +1803,8 @@
 	 * ⚠ `historyTick` is what makes `canUndo`/`canRedo` REACTIVE. CodeMirror's
 	 * undo depth is its own state, invisible to Svelte, so the two deriveds
 	 * below read this counter to know when to ask again. It is bumped on BOTH
-	 * sync directions on purpose: a programmatic write (a bench ✕, an audition
-	 * commit) runs through the action's update() with the change callback
+	 * sync directions on purpose: a programmatic write (a bench or Builder edit,
+	 * a swap) runs through the action's update() with the change callback
 	 * suppressed, so counting only typed changes would leave the Undo button
 	 * greyed out immediately after the one edit most likely to want it.
 	 */
@@ -1825,6 +1834,12 @@
 	 *  There the open dock carries extra bottom padding the pill can cover
 	 *  instead — breathing room when the pill stays down. */
 	const iosChrome = typeof navigator !== 'undefined' && /CriOS/.test(navigator.userAgent);
+	/** The history buttons' shortcut hint. CodeMirror's keymap is `Mod-z`,
+	 *  which is Ctrl off Apple platforms. Mac on the first paint, read at mount. */
+	let isMac = $state(true);
+	onMount(() => {
+		isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
+	});
 	/** px a finger may travel and still count as a tap (dock collapse, key row). */
 	const TAP_SLOP = 10;
 	let composerEl = $state<HTMLElement | null>(null);
@@ -1879,6 +1894,10 @@
 		if (!nav.to?.url.pathname.startsWith(resolve('/planner'))) {
 			dockOpen = false;
 			dockPlace?.(false);
+			// The transport's clock and scheduler are not effects either, so the
+			// pause does not reach them: without this the count-in and the press
+			// tones play on over the next tool until the page is destroyed.
+			playback.stop();
 		}
 	});
 	afterNavigate((nav) => {
@@ -2211,7 +2230,8 @@
 
 	// Leaving the tool stops the transport: a cursor keeping time on a chart
 	// nobody can see is a timer nobody asked for. ⚠ An effect cleanup, not
-	// onDestroy, for the tool-page revival (A→B→A) — see plannerView.
+	// onDestroy, for the tool-page revival (A→B→A) — see plannerView. It runs
+	// only at a real destroy; the navigation itself is `beforeNavigate` above.
 	$effect(() => () => playback.stop());
 
 	// ⛔ `pv.hasAura = showAuraLane` RETIRED (2026-08-17). It was the notes panel's
@@ -2618,7 +2638,7 @@
 						     IR since P4 and drawn NOWHERE — the player saw the buff
 						     bars a reaction caused but never the reaction itself. -->
 							<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
-								<span class="rp-lane-name">TARGET AURA</span>
+								<span class="rp-lane-name">Target aura</span>
 								{#each auraLane.markers as marker (marker.time)}
 									<!-- ⚓ A RUN IS ONE MARKER. A ticking reaction (Electro-Charged,
 									     Lunar-Charged, Burning) collapses into a single marker whose
@@ -3390,7 +3410,7 @@
 						{#if showTeamBuffsLane}
 							<div class="rp-team-buffs" style:height="{teamBuffsH}px">
 								{#if teamBuffRows.length > 0}
-									<span class="rp-lane-name">TEAM BUFFS</span>
+									<span class="rp-lane-name">Team buffs</span>
 									<div class="rp-team-buff-rows">
 										{#each teamBuffRows as subrow (subrow.key)}
 											<div class="rp-team-buff-subrow">
@@ -3460,7 +3480,7 @@
 						<!-- NB (Nightsoul Burst) lane -->
 						{#if showNbLane}
 							<div class="rp-nb-lane" style:height="{nbLaneH}px">
-								<span class="rp-lane-name">NIGHTSOUL BURSTS</span>
+								<span class="rp-lane-name">Nightsoul bursts</span>
 								<div class="rp-nb-rows">
 									<div class="rp-nb-subrow">
 										{#each nbBars as ev, i (i)}
@@ -3480,7 +3500,7 @@
 						<!-- Moonsign lane -->
 						{#if showMoonsignLane}
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
-								<span class="rp-lane-name">ASCENDANT GLEAM</span>
+								<span class="rp-lane-name">Ascendant Gleam</span>
 								<div class="rp-moonsign-rows">
 									{#each moonsignRows as row (row.slotIdx)}
 										{@const msChar = slotCharacters[row.slotIdx]}
@@ -3559,7 +3579,8 @@
 		     the LOWEST EMPTY SLOT, while the Team Builder's audition targets the
 		     slot you clicked and pins its incumbent to compare against. ⇄ on a
 		     bench card goes there now (?swap=N), so the planner has no grid of
-		     its own to cover its own instrument with. -->
+		     its own to cover its own instrument with. ↻ 2026-10-13: the audition
+		     retired into the Builder's swap mode; ?swap=N lands there. -->
 	</div>
 	<!-- /rp-frame -->
 
@@ -3660,8 +3681,8 @@
 		     ⚓ NATE asked for undo/redo buttons on one side of the notation box.
 		     They are a thin wrapper over CodeMirror's own history commands, which
 		     ⌘Z/⌘⇧Z have always reached — what changed is that the box is no longer
-		     the only thing that writes here. A swap on the bench renames a
-		     character's segments and ✕ deletes them, and those land as editor
+		     the only thing that writes here. A swap renames a character's
+		     segments and a removal deletes them, and those land as editor
 		     transactions precisely so this pair can walk them back. A keystroke is
 		     not a discoverable way to undo something you did with a mouse two
 		     panels away.
@@ -3676,7 +3697,7 @@
 				class="btn btn--sm"
 				type="button"
 				aria-label="Undo the last notation change"
-				title="Undo (⌘Z)"
+				title={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
 				disabled={!canUndo}
 				onclick={() => {
 					editorApi?.undo();
@@ -3687,7 +3708,7 @@
 				class="btn btn--sm"
 				type="button"
 				aria-label="Redo the last undone notation change"
-				title="Redo (⌘⇧Z)"
+				title={isMac ? 'Redo (⌘⇧Z)' : 'Redo (Ctrl+Shift+Z)'}
 				disabled={!canRedo}
 				onclick={() => {
 					editorApi?.redo();

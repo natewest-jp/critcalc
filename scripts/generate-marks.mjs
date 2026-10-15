@@ -237,30 +237,6 @@ const MARKS = {
 	forward: 'ArrowRight',
 	back: 'ArrowLeft',
 
-	/**
-	 * Add a character to the comparison set.
-	 *
-	 * ⚓ NATE 2026-08-11: "the compare arrow doesn't make sense anymore." It was
-	 * `forward` — right when Compare was a right-hand DOCK and the card was
-	 * genuinely being sent sideways into it. Compare is a tab in the nav now, so
-	 * the arrow points at nothing.
-	 *
-	 * There are only two ideas available here, and this is the second.
-	 *   1. Name the DESTINATION — `Columns3`, because Compare is literally a set
-	 *      of aligned columns sharing one ruler. ⚓ Shipped and rejected by Nate.
-	 *      It is also the closest mark in this map to `layout` (LayoutGrid), and
-	 *      at 14px a filled rect with two interior bars reads as a table cell.
-	 *   2. Name the ACT — weighing candidates against each other. `Scale`.
-	 * An up-arrow (toward the tab) was a third and was rejected for making a
-	 * spatial claim that stops being true the moment you scroll.
-	 *
-	 * ⚠ `Scale` is 5 nodes and the busiest mark in this map — the same shape of
-	 * risk that sent `share` from Share2 to Share ("silts up at 14px"). Its two
-	 * pans are open arcs rather than enclosed counters, which is what makes it
-	 * survivable, but it is rendered at 16 in the card's hover bar rather than
-	 * the default 14 so it has room to resolve. If it has to shrink, it fails.
-	 */
-	compare: 'Scale',
 	/** The planner's Human timing plate (2026-09-14): a person's hand on the
 	 *  button. Chosen over `Pointer` (sparser ink), `PersonStanding` (reads as
 	 *  an accessibility affordance in a row of chart controls), and the pace

@@ -632,7 +632,10 @@
 			level,
 			selected,
 			reshape: reshapeFloor,
-			lines: lines.map((l) => [l.id, l.raw])
+			lines: lines.map((l) => [l.id, l.raw]),
+			// added 2026-10-15 — older v1 links lack both and open on the defaults
+			reading: resolutionPick,
+			ref: [refLevel, refPiece]
 		};
 	}
 
@@ -685,6 +688,17 @@
 		if (Array.isArray(s.selected)) selected = [...new Set(s.selected.filter(isSub))].slice(0, 2);
 		fixLines();
 		resetRefs();
+		// after the lines: the reading indexes their resolutions
+		resolutionPick = int(s.reading, 0, Math.max(0, resolutions.length - 1)) ?? 0;
+		if (Array.isArray(s.ref)) {
+			// a dragged value to beat, at the 0.1 the drag rounds to
+			const ref = (v: unknown) =>
+				typeof v === 'number' && Number.isFinite(v)
+					? Math.round(Math.min(100, Math.max(0, v)) * 10) / 10
+					: null;
+			refLevel = ref(s.ref[0]);
+			refPiece = ref(s.ref[1]);
+		}
 		if (typeof s.view === 'string' && VIEWS.some((v) => v.id === s.view)) view = s.view as View;
 	}
 </script>
@@ -1028,11 +1042,11 @@
 					Where your stats on this piece would end up at +20. Drag the chart to set a value to beat.
 				{:else if canReshape}
 					Gold shows your piece after a {RESHAPES.find((r) => r.floor === reshapeFloor)?.label} reshape.
-					Grey shows every +20 {slotWord} with these four substats — yours beats {Math.round(
+					Gray shows every +20 {slotWord} with these four substats — yours beats {Math.round(
 						percentile * 100
 					)}% of them.
 				{:else}
-					Grey shows every +20 {slotWord} with these four substats — yours beats {Math.round(
+					Gray shows every +20 {slotWord} with these four substats — yours beats {Math.round(
 						percentile * 100
 					)}% of them. Select two substats on your piece to see a reshape.
 				{/if}

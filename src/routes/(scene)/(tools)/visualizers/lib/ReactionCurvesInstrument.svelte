@@ -319,6 +319,30 @@
 		rbPct = 0;
 	}
 
+	// ── Workspace handle (share) ───────────────────────────────────────────────
+	// The row being read follows the pointer, so it is not shared: a link opens
+	// on the family's first row, as picking the family does.
+	export function getShareState() {
+		return { v: 1, family: familyId, em, level, rb: rbPct };
+	}
+
+	export function applyShareState(state: unknown) {
+		if (typeof state !== 'object' || state === null) return;
+		const s = state as Record<string, unknown>;
+		if (s.v !== 1) return;
+		// clamped to the slider's range and snapped to its step
+		const num = (v: unknown, hi: number, step: number) =>
+			typeof v === 'number' && Number.isFinite(v)
+				? Math.round(Math.min(hi, Math.max(0, v)) / step) * step
+				: undefined;
+		reset();
+		const f = FAMILIES.find((x) => x.id === s.family);
+		if (f) pickFamily(f.id);
+		em = num(s.em, EM_MAX, 5) ?? em;
+		if (typeof s.level === 'number' && Number.isFinite(s.level)) level = snapLevel(s.level);
+		rbPct = num(s.rb, RB_MAX, 5) ?? rbPct;
+	}
+
 	// ── Geometry ───────────────────────────────────────────────────────────────
 	let graphW = $state(720);
 	let graphH = $state(0);

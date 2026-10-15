@@ -18,7 +18,12 @@ import { artifactShredSources, characterShredSources } from '$lib/capabilities/s
 import { shredSources } from './shredSources.generated';
 import { decodeCoverage, deriveCoverage, encodeCoverage } from '$lib/coverage/deriveCoverage';
 import { isCurated } from '$lib/utils/characterLint';
-import { declaredCastTokens, hasPlungeFrames } from '$lib/utils/castTokens';
+import {
+	declaredCastTokens,
+	hasChargeFrames,
+	hasPlungeFrames,
+	hasSpecialChargeFrames
+} from '$lib/utils/castTokens';
 
 const INDEX_FIELDS = [
 	'id',
@@ -49,6 +54,8 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 	entry.curated = isCurated(source);
 	entry.casts = declaredCastTokens(source);
 	entry.plunge = hasPlungeFrames(source);
+	entry.charged = hasChargeFrames(source);
+	if (hasSpecialChargeFrames(source)) entry.specialCharge = true;
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
 	entry.coverage = encodeCoverage(deriveCoverage(source));
 	const gated = collectGatedReactions(source);
@@ -79,6 +86,28 @@ describe('generated character index', () => {
 		for (const source of sources) {
 			if (source.id === 'blank') continue;
 			expect(source.release, source.id).toMatch(/^\d+\.\d+$/);
+		}
+	});
+
+	// The same kind of corpus fact: a character with no region is hidden by every
+	// Region chip (seven were, until the pre-launch sweep). ⚓ Nate, 2026-10-15:
+	// the Travelers, Skirk and Aloy come from outside Teyvat and read "Other". A
+	// new nation is a deliberate edit to this list, and so is a misspelt one.
+	it('every character names one of the known regions', () => {
+		const REGIONS = [
+			'Fontaine',
+			'Inazuma',
+			'Liyue',
+			'Mondstadt',
+			'Natlan',
+			'Nod-Krai',
+			'Other',
+			'Snezhnaya',
+			'Sumeru'
+		];
+		for (const source of sources) {
+			if (source.id === 'blank') continue;
+			expect(REGIONS, source.id).toContain(source.region);
 		}
 	});
 

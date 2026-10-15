@@ -85,7 +85,7 @@ export function createNotationEditor(
 		/**
 		 * ⚠ THIS IS THE UNDO PATH, not just a mirror. Since single truth every
 		 * team edit is a notation rewrite (rotationTabs writes the string, Svelte
-		 * hands it down, this replays it) — so a swap or a bench ✕ becomes a
+		 * hands it down, this replays it) — so a swap or a cleared slot becomes a
 		 * CodeMirror TRANSACTION here, which is the only reason ⌘Z can reach it.
 		 * A plain `dispatch` goes into the history by default; do NOT add
 		 * `addToHistory.of(false)`.

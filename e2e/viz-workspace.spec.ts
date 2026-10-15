@@ -50,8 +50,8 @@ test.describe('lineup and slots', () => {
 
 		await expect(page.locator('.ip-menu .ip-option'), 'all eight instruments').toHaveCount(8);
 		await expect(
-			page.locator('.ip-menu .ip-option', { hasText: 'Slot 2' }),
-			'the other slot’s instrument carries a swap badge'
+			page.locator('.ip-menu .ip-option', { hasText: 'Tile 2' }),
+			'the other tile’s instrument carries a swap badge'
 		).toContainText('Gauge');
 
 		await page.locator('.ip-menu .ip-option', { hasText: 'Gauge Explorer' }).click();

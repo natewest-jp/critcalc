@@ -946,6 +946,23 @@ describe('onFieldDelay — a buff that waits for the receiver to stay', () => {
 		expect(kaeyaSlice[1]).toBeLessThan(20);
 	});
 
+	it('a same-character `>` is one stay — the wait does not restart at the join', async () => {
+		// `Kaeya N5 > Kaeya N5` never leaves the field (run.ts, `carry`), so the
+		// receiver qualifies 3s after the FIRST segment opened, as written in one —
+		// and stays qualified across the join instead of waiting 3s again. One slice
+		// per track, abutting, covering what the one-segment notation covers.
+		const [nicole, kaeya] = await Promise.all([load('nicole'), load('kaeya')]);
+		const [whole] = guidance(run('Nicole E > Kaeya N5 N5', [nicole, kaeya]).rotation, 'kaeya');
+		const joined = guidance(
+			run('Nicole E > Kaeya N5 > Kaeya N5', [nicole, kaeya]).rotation,
+			'kaeya'
+		);
+		expect(joined).toHaveLength(2);
+		expect(joined[0][0]).toBe(whole[0]);
+		expect(joined[1][0]).toBe(joined[0][1]);
+		expect(joined[1][1]).toBe(whole[1]);
+	});
+
 	it('⚓ C6 waives the wait for everyone — the same field, composed', async () => {
 		const [nicole, kaeya] = await Promise.all([load('nicole'), load('kaeya')]);
 		const c0 = run('Nicole E > Kaeya N5 N5', [nicole, kaeya]).rotation;

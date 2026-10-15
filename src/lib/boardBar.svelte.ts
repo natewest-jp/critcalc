@@ -11,7 +11,7 @@
  * library, opened from the Builder.
  */
 
-import { get } from 'svelte/store';
+import { fromStore, get } from 'svelte/store';
 import { constellations, savedBoards, savedNotations, type SavedBoard } from './stores';
 import { documentBar } from './documentBar.svelte';
 import {
@@ -70,10 +70,13 @@ class BoardBarState {
 		});
 	}
 
+	/** The saved lineups, read reactively — `linked` must follow a delete. */
+	#saved = fromStore(savedBoards);
+
 	/** Is the active board linked to a saved entry that still exists? */
 	get linked(): boolean {
 		const id = boards.activeBoard.savedId;
-		return !!id && get(savedBoards).some((b) => b.id === id);
+		return !!id && this.#saved.current.some((b) => b.id === id);
 	}
 
 	/** Save the active board: over its saved entry when linked, else a new
@@ -144,13 +147,13 @@ class BoardBarState {
 		const active = boards.activeBoard;
 		if (!boardWorthKeeping(active) && !active.savedId) {
 			boards.boards = boards.boards.map((b) => (b.id === active.id ? { ...doc, id: b.id } : b));
-			documentBar.showNotice('Loaded shared board');
+			documentBar.showNotice('Loaded shared lineup');
 			return;
 		}
 		this.withRoom(
 			() => {
 				boards.openBoard(doc);
-				documentBar.showNotice('Loaded shared board');
+				documentBar.showNotice('Loaded shared lineup');
 			},
 			() => recentlyClosedBoards.push({ ...makeBoard(doc.label), ...doc })
 		);
@@ -166,8 +169,12 @@ class BoardBarState {
 		const slots: TeamSlot[] = ids.slice(0, 4);
 		const empty = board.teams.find((t) => t.slots.every((s) => s === null));
 		if (empty) boards.setTeam(board.id, empty.id, slots);
-		else if (!boards.addTeam(board.id, slots)) return;
-		documentBar.showNotice('Team added to the board');
+		// A battlefield board's teams are the game's — only Custom grows.
+		else if (board.preset !== 'custom' || !boards.addTeam(board.id, slots)) {
+			documentBar.showNotice('The lineup is full');
+			return;
+		}
+		documentBar.showNotice('Team added to the lineup');
 	}
 
 	/** Copy a `?b=` link to the active board. Teams and levels travel, pins
@@ -198,7 +205,7 @@ export const boardTabStrip: TabStripModel = {
 	get activeId() {
 		return boards.activeBoardId;
 	},
-	newLabel: 'New board',
+	newLabel: 'New lineup',
 	switchTo: (id) => boards.switchBoard(id),
 	close: (id) => boardBar.closeBoard(id),
 	rename: (id, label) => {

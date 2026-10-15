@@ -131,6 +131,16 @@ translation to match.
 (`Overload ×2.75`). ⚠️ Seven character JSONs say "Overload" in prose — `caveat`s are not
 rewritten (R1), so they are left.
 
+### ⚓ Shatter — the game's name, locked (⚓ Nate, 2026-10-15)
+
+The reaction is **Shatter**, ⛔ never "Shattered" in user-facing text. The Frozen and
+Overloaded ruling above does not carry over by pattern: the game's name here is the bare
+noun. Every user-facing site already said Shatter when it was ruled (the Reaction Curves
+list and its hit line, the breakdown, the aura displays, the aura log's limits, the
+Planner and Visualizers help); the game-knowledge library's "Shattered" was corrected the
+same day. ⚠️ "shattered" in kit text (a Rain Sword is shattered, Shattered Darkrock) is
+the game's own prose or a name, not the reaction, and stays.
+
 ---
 
 ## 2a. ⚠️⚠️ `Interruption Res` is NOT the frozen `RES` — and my earlier fix was wrong

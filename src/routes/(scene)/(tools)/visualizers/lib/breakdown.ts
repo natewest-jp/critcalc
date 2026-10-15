@@ -92,6 +92,9 @@ export type ReactionDef = {
 	/** The multiplier one character sees — `mult` × the top-contributor share for
 	 *  Lunar/Stellar, `mult` itself everywhere else */
 	shown: number;
+	/** The reaction as a sentence names it, when the picker label (a comma
+	 *  list) doesn't read as one — "Stellar Swirl blast after 3+ swirls" */
+	phrase?: string;
 };
 
 const r = (id: string, name: string, mult: number): ReactionDef => ({
@@ -100,11 +103,12 @@ const r = (id: string, name: string, mult: number): ReactionDef => ({
 	mult,
 	shown: mult
 });
-const lunarR = (id: string, name: string, mult: number): ReactionDef => ({
+const lunarR = (id: string, name: string, mult: number, phrase?: string): ReactionDef => ({
 	id,
 	name,
 	mult,
-	shown: Math.round(mult * TOP_CONTRIBUTOR_SHARE * 100) / 100
+	shown: Math.round(mult * TOP_CONTRIBUTOR_SHARE * 100) / 100,
+	phrase
 });
 
 export const REACTIONS: Record<FamilyId, ReactionDef[]> = {
@@ -131,8 +135,13 @@ export const REACTIONS: Record<FamilyId, ReactionDef[]> = {
 		lunarR('lc', 'Lunar-Charged', 3),
 		lunarR('lcrys', 'Lunar-Crystallize', 1.6),
 		lunarR('ssw', 'Stellar Swirl', 0.75),
-		lunarR('sswBlast12', 'Stellar Swirl blast, 1–2 swirls', 2),
-		lunarR('sswBlast3', 'Stellar Swirl blast, 3+ swirls', 3)
+		lunarR(
+			'sswBlast12',
+			'Stellar Swirl blast, 1–2 swirls',
+			2,
+			'Stellar Swirl blast after 1–2 swirls'
+		),
+		lunarR('sswBlast3', 'Stellar Swirl blast, 3+ swirls', 3, 'Stellar Swirl blast after 3+ swirls')
 	]
 };
 

@@ -1328,14 +1328,14 @@ export type Summon = {
 	/** Effects emitted by the summon while active. Damage effects with
 	 *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
 	 *  during the summon's lifetime; the timeline renders one marker per tick
-	 *  on the summon bar. Other trigger types (onHit, onReaction, etc.) are
-	 *  reserved for future P3 extensions and currently unused. */
+	 *  on the summon bar. onHit, onReaction and whileNormalAttacking summon
+	 *  effects are dispatched too (the procs registry). */
 	effects?: Effect[];
 	/** Dynamic event-triggered duration extensions for this summon. Each entry
 	 *  describes an event that adds `delta` seconds to the summon's lifetime
 	 *  while it's active (e.g. Collei's Cuilein-Anbar zone +1s per dendro
-	 *  reaction). Parser dispatch is currently `onCast`-only; other triggers
-	 *  are schema-accepted but not yet wired. */
+	 *  reaction). onCast and onReaction dispatch (extensions.ts); other
+	 *  triggers are schema-accepted, lint-warned and inert. */
 	durationExtensions?: DurationExtension[];
 	/**
 	 * ⚓ A NAMED STATE THAT LIVES EXACTLY AS LONG AS THIS SUMMON (gcsim sync,
@@ -3196,11 +3196,6 @@ export type AbilityVariant = {
 // shape), else fall back to the legacy `behavior: "persistent"` fields. New
 // curation should populate `summons[]`; old curation continues to work.
 
-/** First summon owned by this ability, if any. */
-export function getPrimarySummon(a: CastAbility): Summon | undefined {
-	return a.summons?.[0];
-}
-
 /** Active-window duration in seconds. Reads `summons[0].duration` when present,
  *  else the legacy persistent/stance `duration`. 0 when no active window exists.
  *  ⚠ A STANCE reads its OWN `duration`, never its summon's (2026-09-22): the
@@ -3272,24 +3267,12 @@ export function getDurationExtensions(a: CastAbility): DurationExtension[] | und
 	return a.behavior === 'stance' ? a.durationExtensions : undefined;
 }
 
-/** True when the ability's stance window closes on swap. */
-export function getTerminatesOnSwap(a: CastAbility): boolean {
-	return a.behavior === 'stance' ? a.terminatesOnSwap === true : false;
-}
-
 /** True when the ability's cooldown clock starts at the STANCE END rather than
  *  at the cast — so `readyAt` is `stanceEnd + cooldown`, and an early exit
  *  brings the recast forward. Base-ability only: no variant overrides it,
  *  because the two holders open their stance from the base cast. */
 export function getCooldownStartsAtStanceEnd(a: CastAbility): boolean {
 	return a.behavior === 'stance' ? a.cooldownStartsAtStanceEnd === true : false;
-}
-
-/** True when the given ability is a stance burst/skill. */
-export function isStanceAbility(a: Ability | undefined): boolean {
-	if (!a) return false;
-	if (a.abilityType !== 'skill' && a.abilityType !== 'burst') return false;
-	return a.behavior === 'stance';
 }
 
 // ---------------------------------------------------------------------------

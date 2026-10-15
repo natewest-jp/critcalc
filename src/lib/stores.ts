@@ -24,11 +24,38 @@ import { browser } from '$app/environment';
 import { belowQuery } from '$lib/breakpoints';
 
 // ---------------------------------------------------------------------------
+// Guarded writes
+// ---------------------------------------------------------------------------
+//
+// Every read below sits in a try/catch; these are the writes' half. A browser
+// that blocks site data throws from the localStorage accessor itself, and a
+// full quota throws from setItem — and a persist runs INSIDE store.update's
+// updater, so an unguarded throw aborts the update and leaves a dead control.
+// Without storage the site still works; it just forgets at the end of the
+// session (the Visualizers' workspace.ts made the same call first).
+
+export function safeSetItem(key: string, value: string): void {
+	try {
+		localStorage.setItem(key, value);
+	} catch {
+		/* storage blocked or full — this session just won't persist */
+	}
+}
+
+export function safeRemoveItem(key: string): void {
+	try {
+		localStorage.removeItem(key);
+	} catch {
+		/* storage blocked — nothing was persisted to remove */
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Saved notations (save bank)
 // ---------------------------------------------------------------------------
 //
 // A persistent bank of named rotations the user has explicitly saved.
-// Shared across tools — eventually the Team Builder may load from here too.
+// Shared across tools — the Library lists it, and the Builder pins rotations from it.
 
 const SAVED_NOTATIONS_KEY = 'critcalc:savedNotations';
 
@@ -83,7 +110,7 @@ function createSavedNotationsStore() {
 	const store = writable<SavedNotation[]>(loadSavedNotations());
 
 	function persist(items: SavedNotation[]): SavedNotation[] {
-		if (browser) localStorage.setItem(SAVED_NOTATIONS_KEY, JSON.stringify(items));
+		if (browser) safeSetItem(SAVED_NOTATIONS_KEY, JSON.stringify(items));
 		return items;
 	}
 
@@ -125,7 +152,7 @@ function createSavedNotationsStore() {
 
 		clear() {
 			store.set([]);
-			if (browser) localStorage.removeItem(SAVED_NOTATIONS_KEY);
+			if (browser) safeRemoveItem(SAVED_NOTATIONS_KEY);
 		}
 	};
 }
@@ -174,7 +201,7 @@ function createSavedBoardsStore() {
 	}
 	const store = writable<SavedBoard[]>(load());
 	const persist = (items: SavedBoard[]) => {
-		if (browser) localStorage.setItem(SAVED_BOARDS_KEY, JSON.stringify(items));
+		if (browser) safeSetItem(SAVED_BOARDS_KEY, JSON.stringify(items));
 		return items;
 	};
 	return {
@@ -202,6 +229,10 @@ function createSavedBoardsStore() {
 		},
 		delete(id: string) {
 			store.update((items) => persist(items.filter((e) => e.id !== id)));
+		},
+		clear() {
+			store.set([]);
+			if (browser) safeRemoveItem(SAVED_BOARDS_KEY);
 		}
 	};
 }
@@ -234,7 +265,7 @@ function createConstellationStore() {
 		setLevel(characterId: string, level: number) {
 			store.update((prev) => {
 				const next = { ...prev, [characterId]: level };
-				if (browser) localStorage.setItem(CONSTELLATION_KEY, JSON.stringify(next));
+				if (browser) safeSetItem(CONSTELLATION_KEY, JSON.stringify(next));
 				return next;
 			});
 		},
@@ -242,11 +273,11 @@ function createConstellationStore() {
 		 *  its undo, which would otherwise persist once per character. */
 		replaceAll(next: Record<string, number>) {
 			store.set({ ...next });
-			if (browser) localStorage.setItem(CONSTELLATION_KEY, JSON.stringify(next));
+			if (browser) safeSetItem(CONSTELLATION_KEY, JSON.stringify(next));
 		},
 		clear() {
 			store.set({});
-			if (browser) localStorage.removeItem(CONSTELLATION_KEY);
+			if (browser) safeRemoveItem(CONSTELLATION_KEY);
 		}
 	};
 }
@@ -296,7 +327,7 @@ function loadOwnership(): Record<string, OwnershipMark> {
 	// explicit un-mark isn't re-seeded on every reload.
 	const seeded = deriveInitialOwnership(loadConstellations());
 	if (Object.keys(seeded).length > 0) {
-		localStorage.setItem(OWNERSHIP_KEY, JSON.stringify(seeded));
+		safeSetItem(OWNERSHIP_KEY, JSON.stringify(seeded));
 	}
 	return seeded;
 }
@@ -305,7 +336,7 @@ function createOwnershipStore() {
 	const store = writable<Record<string, OwnershipMark>>(loadOwnership());
 
 	function persist(next: Record<string, OwnershipMark>) {
-		if (browser) localStorage.setItem(OWNERSHIP_KEY, JSON.stringify(next));
+		if (browser) safeSetItem(OWNERSHIP_KEY, JSON.stringify(next));
 		return next;
 	}
 
@@ -326,7 +357,7 @@ function createOwnershipStore() {
 		},
 		clear() {
 			store.set({});
-			if (browser) localStorage.removeItem(OWNERSHIP_KEY);
+			if (browser) safeRemoveItem(OWNERSHIP_KEY);
 		}
 	};
 }
@@ -368,7 +399,7 @@ function createLoadoutStore() {
 	const store = writable<Record<string, LoadoutEntry>>(loadLoadout());
 
 	function persist(next: Record<string, LoadoutEntry>) {
-		if (browser) localStorage.setItem(LOADOUT_KEY, JSON.stringify(next));
+		if (browser) safeSetItem(LOADOUT_KEY, JSON.stringify(next));
 		return next;
 	}
 
@@ -391,7 +422,7 @@ function createLoadoutStore() {
 		},
 		clear() {
 			store.set({});
-			if (browser) localStorage.removeItem(LOADOUT_KEY);
+			if (browser) safeRemoveItem(LOADOUT_KEY);
 		}
 	};
 }
@@ -673,10 +704,7 @@ function createSiteSettingsStore() {
 	function persist(next: SiteSettings) {
 		if (browser) {
 			const { showAuraLane: _a, showTimelineBuffs: _b, ...rest } = next;
-			localStorage.setItem(
-				SITE_SETTINGS_KEY,
-				JSON.stringify({ ...rest, timelineLayers: chosenLayers })
-			);
+			safeSetItem(SITE_SETTINGS_KEY, JSON.stringify({ ...rest, timelineLayers: chosenLayers }));
 		}
 		return next;
 	}

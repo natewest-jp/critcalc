@@ -6,6 +6,7 @@
 	"weapon": "sword",
 	"gender": "Female",
 	"affiliation": "Liyue Harbor",
+	"region": "Liyue",
 	"rarity": 5,
 	"enablesReactions": ["lunarCrystallize"],
 	"factions": ["moonsign"],

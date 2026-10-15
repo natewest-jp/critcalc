@@ -17,8 +17,7 @@
 	<ul>
 		<li>
 			<strong>Team Builder</strong> — find characters by what they actually provide (healing, shields,
-			off-field damage, RES shred, buffs), each traced to the ability and constellation that grants it,
-			and compare their timings side by side.
+			off-field damage, RES shred, buffs), each traced to the ability and constellation that grants it.
 		</li>
 		<li>
 			<strong>Rotation Planner</strong> — write a rotation in KQM-style notation and watch it render as
@@ -43,7 +42,7 @@
 	</p>
 	<p>
 		The same principle governs the data. Timing is only ever taken from gcsim or in-game kit text,
-		never invented, and a kit that hasn't been curated yet is labelled as such rather than filled in
+		never invented, and a kit that hasn't been curated yet is labeled as such rather than filled in
 		with plausible guesses.
 	</p>
 </section>
@@ -91,8 +90,7 @@
 <section>
 	<h2 id="fan-project">A fan project</h2>
 	<p>
-		critcalc is an independent, non-commercial fan project. It is not affiliated with, endorsed by,
-		or sponsored by HoYoverse. Genshin Impact and all related trademarks and assets belong to
-		HoYoverse.
+		critcalc is an unofficial fan project. It is not affiliated with, endorsed by, or sponsored by
+		HoYoverse. Genshin Impact and all related trademarks and assets belong to HoYoverse.
 	</p>
 </section>

@@ -3,6 +3,7 @@
 	import { portal } from '$lib/actions/portal';
 	import Mark from '$lib/components/Mark.svelte';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { INSTRUMENTS, type InstrumentId } from './workspace';
 
 	// Per-tile instrument switcher: the chip row didn't scale past five
@@ -45,6 +46,12 @@
 	$effect(() => {
 		if (slot === -1) open = false;
 	});
+	// …and for the same reason, leaving the tool: the page is kept, paused, for
+	// the pan, and the popover would ride over the incoming tool.
+	closeOnLeave(
+		() => open,
+		() => close(false)
+	);
 
 	function openMenu() {
 		if (!triggerEl) return;
@@ -157,7 +164,7 @@
 				{#if at !== -1 && at !== slot}
 					<!-- Picking this one SWAPS the two tiles — the same exchange the
 					     bench slots make, so it wears the same mark. -->
-					<span class="ip-badge">Slot {at + 1} <Mark name="swap" size={12} /></span>
+					<span class="ip-badge">Tile {at + 1} <Mark name="swap" size={12} /></span>
 				{:else if inst.id === current}
 					<span class="ip-badge ip-badge-here"><Mark name="check" size={12} /></span>
 				{/if}

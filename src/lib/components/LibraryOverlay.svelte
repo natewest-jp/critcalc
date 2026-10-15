@@ -195,13 +195,13 @@
 				? 'Open in a new tab'
 				: library.builderHere
 					? `Pin to ${library.builderHere}`
-					: 'Add to the board, pinned',
+					: 'Add to the lineup, pinned',
 		team:
 			library.from === 'planner'
 				? 'New tab with these four'
 				: library.builderHere
 					? `Put on ${library.builderHere}`
-					: 'Add to the board',
+					: 'Add to the lineup',
 		board: library.from === 'builder' ? 'Open as a tab' : 'Open in the Team Builder',
 		closedBoard: library.from === 'builder' ? 'Reopen' : 'Reopen in the Team Builder',
 		closedRotation: library.from === 'planner' ? 'Reopen' : 'Reopen in the Planner'
@@ -247,7 +247,7 @@
 		},
 		{ label: 'Copy share link', run: () => library.shareRotation(r) },
 		{
-			label: library.from === 'builder' ? 'Open in the Planner' : 'Put on a board',
+			label: library.from === 'builder' ? 'Open in the Planner' : 'Put on a lineup',
 			run: () => library.openRotationElsewhere(r)
 		},
 		{
@@ -268,7 +268,7 @@
 			run: () => startEdit(`t:${t.key}`, t.nickname ?? '', (v) => library.setNickname(t, v))
 		},
 		...(library.from !== 'builder'
-			? [{ label: 'Put on a board', run: () => library.putTeamOnBoard(t) }]
+			? [{ label: 'Put on a lineup', run: () => library.putTeamOnBoard(t) }]
 			: []),
 		{
 			label: 'Delete team',
@@ -278,10 +278,10 @@
 					title: 'Delete this team?',
 					body:
 						t.rotations.length === 0
-							? 'Boards that use it keep their four characters.'
+							? 'Lineups that use it keep their four characters.'
 							: t.rotations.length === 1
-								? 'Its rotation goes to Recently closed. Boards that use the team keep their four characters.'
-								: `Its ${t.rotations.length} rotations go to Recently closed. Boards that use the team keep their four characters.`,
+								? 'Its rotation goes to Recently closed. Lineups that use the team keep their four characters.'
+								: `Its ${t.rotations.length} rotations go to Recently closed. Lineups that use the team keep their four characters.`,
 					action: 'Delete team',
 					run: () => library.deleteTeam(t)
 				})
@@ -603,7 +603,7 @@
 			<span class="lib-closed-name">{c.name}</span>
 			<span class="lib-end lib-end--rot">
 				<span class="lib-meta lib-date"
-					>{c.kind === 'board' ? 'Board' : 'Rotation'} · closed {ago(c.when)}</span
+					>{c.kind === 'board' ? 'Lineup' : 'Rotation'} · closed {ago(c.when)}</span
 				>
 				<span class="lib-hint">{c.kind === 'board' ? hint.closedBoard : hint.closedRotation}</span>
 			</span>
@@ -759,10 +759,10 @@
 						</button>
 					{/if}
 				{/if}
-				<p class="kicker">Boards</p>
+				<p class="kicker">Lineups</p>
 				{#each shownBoards as b (b.id)}{@render boardCard(b)}{:else}
 					<p class="lib-empty">
-						{boardsList.length ? 'No board matches.' : 'No saved boards yet.'}
+						{boardsList.length ? 'No lineup matches.' : 'No saved lineups yet.'}
 					</p>
 				{/each}
 			</div>

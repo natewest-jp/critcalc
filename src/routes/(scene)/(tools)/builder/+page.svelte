@@ -357,16 +357,19 @@
 			get selectedLabel() {
 				if (!chosenTeamId) return null;
 				const i = board.teams.findIndex((t) => t.id === chosenTeamId);
-				return i >= 0 ? `Team ${i + 1}` : null;
+				return i >= 0 ? teamLabel(board, i) : null;
 			},
 			place(slots, pinnedRotationId) {
+				// The Planner's swap hides the board: a pick ends it, as a tab click
+				// does, so the team lands where it can be seen.
+				if (errandOpen) leaveErrand();
 				const target =
 					board.teams.find((t) => t.id === chosenTeamId) ??
 					board.teams.find((t) => t.slots.every((s) => s === null)) ??
 					// A battlefield board's teams are the game's — only Custom grows.
 					(board.preset === 'custom' ? boards.addTeam(board.id) : undefined);
 				if (!target) {
-					documentBar.showNotice('The board is full');
+					documentBar.showNotice('The lineup is full');
 					return;
 				}
 				boards.setTeam(board.id, target.id, slots);
@@ -406,7 +409,8 @@
 	// A FILLED portrait in the SELECTED row puts its slot in swap mode: the
 	// Characters grid regroups by what the swap would do to the TEAM, the
 	// hovered card previews it on the board, and a pick swaps and leaves.
-	// Escape, the strip's ✕ or the portrait again leaves without a swap.
+	// Escape, the strip's ✕ or the portrait again leaves without a swap — and
+	// on the Planner's row, ends the errand (`stopSwap`).
 	// ⚓ Compare and Audition retired into this — the question was never "how
 	// do these kits compare" but "what happens to my team".
 	// ---------------------------------------------------------------------------
@@ -420,10 +424,7 @@
 	/** The portrait again leaves swap mode; another filled one moves it (on
 	 *  the Planner's row, an empty one too). */
 	function toggleSwap(teamId: string, slot: number): void {
-		if (swapping?.teamId === teamId && swapping.slot === slot) {
-			swapping = null;
-			return;
-		}
+		if (swapping?.teamId === teamId && swapping.slot === slot) return stopSwap();
 		const incumbent = teamById(teamId)?.slots[slot];
 		if (incumbent === undefined || (incumbent === null && teamId !== ERRAND_ID)) return;
 		swapping = { teamId, slot, incumbent };
@@ -443,6 +444,16 @@
 		)
 			swapping = null;
 	});
+
+	/** Out of swap mode WITHOUT a swap: Escape, the strip's ✕, the portrait
+	 *  again. ⚓ One meaning — cancel (Nate 2026-10-15, sweep item 7) — so on
+	 *  the Planner's row it ends the whole errand, as its Cancel does: the
+	 *  row can only change by swapping, and leaving the slot alone left a
+	 *  team nothing could be picked into, under a strip that said so falsely. */
+	function stopSwap(): void {
+		if (swapping?.teamId === ERRAND_ID) return cancelErrand();
+		swapping = null;
+	}
 
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
 
@@ -726,7 +737,7 @@
 		{
 			key: 'mine',
 			label: 'My constellations',
-			hint: 'Uses your saved constellations (set them in a character’s details)'
+			hint: 'Uses the constellations in your Roster'
 		}
 	];
 
@@ -736,8 +747,7 @@
 
 	// ---------------------------------------------------------------------------
 	// Detail card — a focused single-character modal (the tool's one deliberate
-	// modal: an isolated read where focus is a feature, unlike the in-frame
-	// Compare workspace that reasons against the roster/team around it).
+	// modal: an isolated read where focus is a feature).
 	// ---------------------------------------------------------------------------
 
 	let selectedId = $state<string | null>(null);
@@ -842,7 +852,7 @@
 		keeps: 'Keeps everything',
 		trades: 'Trades',
 		reactions: 'Changes the reactions',
-		uncurated: 'Not curated yet'
+		uncurated: 'Not yet curated'
 	};
 	/** ⚓ Nate 2026-10-14: ADDING to a free slot loses nothing by construction,
 	 *  so its first tier says what it does — "Adds", not "Keeps everything". */
@@ -933,7 +943,7 @@
 	/** Escape leaves swap mode — unless a modal or a menu took it first. */
 	function onKeydown(e: KeyboardEvent): void {
 		if (e.key !== 'Escape' || !swapping || selectedId || e.defaultPrevented) return;
-		swapping = null;
+		stopSwap();
 	}
 
 	/** The destination strip over the grid: where a pick goes. */
@@ -972,8 +982,8 @@
 		<section class="tb-stubs">
 			<p class="kicker">Not yet curated</p>
 			<p class="note tb-note">
-				These kits have no capability data yet — they may well do what you’re filtering for. Absence
-				of a badge here means “unknown”, not “no”.
+				These kits have no capability data yet — they may well do what you’re filtering for. A card
+				with no capabilities here means “unknown”, not “no”.
 				<a
 					class="link tb-stubs-link"
 					href="{resolve('/coverage')}?c={split.uncurated.map((e) => e.id).join(',')}"
@@ -1055,11 +1065,9 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
-     both (toolbar round). Band A is the DOCUMENT — the same tabs and the same
-     save/load/share the planner shows, because since the bench-band round both
-     tools edit ONE working team. Band B is this tool's VIEW: which source you
-     are browsing, and at which constellations you are reading it. -->
+<!-- The tool stack: bands + surface (toolbar round). Band A is this tool's
+     DOCUMENT — its lineup tabs and Save/Library/Share. Band B is its VIEW: the
+     panes, the filters, and the constellations you are reading at. -->
 <!-- The con lens's options — one list, rendered by the lens's own menu at
      desk width and by band B's fold below BP.compact. -->
 <!-- THE PANE SWITCH below the dock (§11.6, Nate's pick): ONE plate naming
@@ -1139,7 +1147,7 @@
 				onclick={() => boardBar.save()}
 				title={boardBar.linked
 					? `Save changes to “${board.label}”`
-					: 'Save this board to your library'}
+					: 'Save this lineup to your library'}
 			>
 				<Mark name="save" />
 				<span class="tb-band-label">{boardLinked ? 'Save changes' : 'Save'}</span>
@@ -1155,7 +1163,7 @@
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
 				onclick={() => boardBar.shareLink()}
-				title="Copy a link to this board"
+				title="Copy a link to this lineup"
 			>
 				<Mark name="share" />
 				<span class="tb-band-label">Share</span>
@@ -1364,7 +1372,7 @@
 				{@render destCount()}
 				<button
 					class="btn btn--icon tb-dest-close"
-					onclick={() => (swapping = null)}
+					onclick={stopSwap}
 					aria-label={swapping.incumbent
 						? `Stop replacing ${nameOf(swapping.incumbent)}`
 						: `Stop adding to ${selectedLabel}`}
@@ -1408,7 +1416,7 @@
 		id={selectedId}
 		{conMode}
 		onClose={() => (selectedId = null)}
-		teamState={teamStateOf(selectedId)}
+		teamState={swapping ? undefined : teamStateOf(selectedId)}
 		onToggleTeam={toggleTeam}
 	/>
 {/if}
@@ -1422,7 +1430,7 @@
 	   Below the dock (`wide`, 71rem — $lib/breakpoints.ts) the panes are TABS:
 	   each takes the whole width and the board slides in over the roster on a
 	   transform. ⚠ Both panes always lay out, so neither loses its scroll or
-	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/split.ts). */
+	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/dock.ts). */
 	/* 🎛️ THE BOARD'S WIDTH, read by the dock AND band B's cells (one rule, so
 	   the two rows cannot drift). FIXED within a range, so the board's layout
 	   stays stable; it steps up where the screen has room to give (⚓ Nate

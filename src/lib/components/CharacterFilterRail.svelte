@@ -5,7 +5,7 @@
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
 	import type { SvelteSet } from 'svelte/reactivity';
-	import type { GridFilters } from '$lib/characterFilters';
+	import { regionChips, type GridFilters } from '$lib/characterFilters';
 	import Mark from './Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 
@@ -63,9 +63,7 @@
 	const WEAPONS: WeaponType[] = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
 	const RARITIES = [4, 5] as const;
 
-	const allRegions = $derived(
-		[...new Set(roster.map((c) => c.region).filter(Boolean) as string[])].sort()
-	);
+	const allRegions = $derived(regionChips(roster));
 
 	const anyActive = $derived(
 		filters.elements.size > 0 ||

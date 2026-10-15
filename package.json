@@ -11,7 +11,6 @@
 		"preview": "vite preview",
 		"optimize-bg": "node scripts/optimize-bg.js",
 		"audit-scene-plate": "node scripts/audit-scene-plate.mjs",
-		"optimize-portal": "node scripts/optimize-portal.js",
 		"build-logo": "node scripts/build-logo.mjs",
 		"build-app-icons": "node scripts/build-app-icons.mjs",
 		"generate-newfit": "node scripts/generate-newfit.js",
@@ -70,8 +69,6 @@
 		"@fontsource-variable/bitter": "^5.2.10",
 		"@fontsource-variable/ibm-plex-sans": "^5.3.0",
 		"@fontsource/ibm-plex-mono": "^5.2.7",
-		"@fontsource/ibm-plex-sans": "^5.2.8",
-		"@fontsource/ibm-plex-sans-condensed": "^5.2.8",
-		"bits-ui": "^2.16.0"
+		"@fontsource/ibm-plex-sans-condensed": "^5.2.8"
 	}
 }

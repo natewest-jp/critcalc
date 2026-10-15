@@ -36,12 +36,13 @@
 		formatResShredDisplayValue,
 		resShredDisplayStat
 	} from '$lib/timeline/buffDisplay';
-	import { constellations } from '$lib/stores';
 	import BuffTooltip, { type BuffTooltipData } from '$lib/components/BuffTooltip.svelte';
 	import { computeTeamFactionCounts, computeHolderElementCounts } from '$lib/utils/teamComposition';
 	import { DEFAULT_ASCENSION, evalCondition, type ConditionContext } from '$lib/sim/conditions';
 
-	let { slots }: { slots: string[] } = $props();
+	// `conLevels` is the TAB's effective map (roster under the tab's Layer-2
+	// overrides), the one the timeline simulates and the bench shows.
+	let { slots, conLevels }: { slots: string[]; conLevels: Record<string, number> } = $props();
 
 	// Payloads for the slotted set are loaded by the planner page's $effect;
 	// this derived re-runs as each one lands in the reactive cache.
@@ -118,7 +119,7 @@
 
 	let permanentByChar = $derived(
 		chars.map((c) => {
-			const conLevel = c ? ($constellations[c.id] ?? 0) : 0;
+			const conLevel = c ? (conLevels[c.id] ?? 0) : 0;
 			return [...permanentPassives(c, conLevel), ...permanentConstellations(c, conLevel)];
 		})
 	);
@@ -133,7 +134,7 @@
 	 *  ones the slotted party does not rule out. */
 	function chipEffects(holder: CharacterData, bonus: Ability): MergedEffectDisplay[] {
 		const out: MergedEffectDisplay[] = [];
-		for (const fx of liveEffects(holder, bonus, $constellations[holder.id] ?? 0)) {
+		for (const fx of liveEffects(holder, bonus, conLevels[holder.id] ?? 0)) {
 			if (fx.type === 'buff') {
 				out.push({
 					stat: fx.stat,

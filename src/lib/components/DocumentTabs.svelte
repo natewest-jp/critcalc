@@ -6,6 +6,7 @@
 	import { fade } from 'svelte/transition';
 	import { portal } from '$lib/actions/portal';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 
 	// ---------------------------------------------------------------------------
 	// THE DOCUMENT TABS — band A's left zone (toolbar round, 2026-08-07).
@@ -100,6 +101,11 @@
 		menuOpen = false;
 		if (refocus) triggerEl?.focus();
 	}
+	// Portalled, like BandMenu's, so it would outlive its page's leave.
+	closeOnLeave(
+		() => menuOpen,
+		() => closeMenu(false)
+	);
 
 	/** Svelte action: focus + select the input on mount. */
 	function focusInput(node: HTMLInputElement) {

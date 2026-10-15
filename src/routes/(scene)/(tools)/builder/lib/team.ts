@@ -25,8 +25,7 @@ export type TeamSlot = string | null;
 // ---------------------------------------------------------------------------
 
 /** Parses `?team=a,b,c,d` into four slots — unknown ids and duplicates are
- *  dropped, extras beyond four ignored. Order is preserved (slot order is
- *  meaningful when this URL round-trips with the planner later). */
+ *  dropped, extras beyond four ignored. Order is preserved. */
 export function parseTeamParam(
 	param: string | null,
 	isValidId: (id: string) => boolean
@@ -43,11 +42,6 @@ export function parseTeamParam(
 		slots[i++] = id;
 	}
 	return slots;
-}
-
-/** Compact form for the URL — filled slots only, comma-joined. */
-export function serializeTeamParam(slots: readonly TeamSlot[]): string {
-	return slots.filter((s): s is string => s !== null).join(',');
 }
 
 // ---------------------------------------------------------------------------
@@ -301,7 +295,7 @@ export function teamLabel(board: Pick<Board, 'preset' | 'season'>, index: number
 		const season = SEASONS.find((s) => s.version === board.season) ?? liveSeasons()[0];
 		if (season?.battlefields[index]) return `Battlefield ${index + 1}`;
 	}
-	if (board.preset === 'abyss' && index < 2) return index === 0 ? 'First Half' : 'Second Half';
+	if (board.preset === 'abyss' && index < 2) return index === 0 ? 'First half' : 'Second half';
 	return `Team ${index + 1}`;
 }
 

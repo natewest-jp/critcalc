@@ -170,13 +170,21 @@ export const monsterImage = (icon: string) => `/assets/endgame/monsters/${icon}.
 
 export const ABYSS_CYCLES = abyssData.cycles as AbyssCycle[];
 
-/** The Abyss cycle running on `today`, else the most recent live one. */
+/** The Abyss cycle running on `today`, else nothing.
+ *
+ *  ⚓ THE END GUARD (Nate 2026-10-15): once the newest cycle's `end` has
+ *  passed and `season-dates.json` names no successor, the board drops to its
+ *  no-banner form rather than pass an old blessing, its Floor 12 halves and
+ *  its opponents off as current — the banner carries no dates to say
+ *  otherwise. ⛔ Not the Stygian's shape: a Stygian board PINS a season and
+ *  its picker prints every season's dates, so `currentSeason` keeps falling
+ *  back to the most recent one. */
 export function currentAbyss(
 	today: Date = new Date(),
 	cycles: readonly AbyssCycle[] = ABYSS_CYCLES
 ): AbyssCycle | undefined {
 	const day = isoDay(today);
-	return cycles.filter((c) => c.start <= day).sort((a, b) => b.start.localeCompare(a.start))[0];
+	return cycles.find((c) => c.start <= day && day < c.end);
 }
 
 export const blessingImage = (icon: string) => `/assets/endgame/abyss/${icon}-v2.webp`;

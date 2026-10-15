@@ -10,8 +10,8 @@
  * ability gets a generic 15s-cooldown bar; an `hE` on a character with no hold
  * variant silently uses the tap timing. That tolerance is right — a half-typed
  * rotation should still draw — but it is silent, and silence became a problem
- * the moment the notation started being REWRITTEN for the user (the audition
- * commit renames a character's segments, so tokens written for Bennett arrive
+ * the moment the notation started being REWRITTEN for the user (a swap
+ * renames a character's segments, so tokens written for Bennett arrive
  * on Nahida). A rename that invents timings without saying so is the one thing
  * single-truth must not do.
  *
@@ -77,5 +77,27 @@ export function hasPlungeFrames(c: Pick<CharacterData, 'abilities'>): boolean {
 		(a) =>
 			a.abilityType === 'normal' &&
 			(a.plungeFrames !== undefined || (a.plungeVariants?.length ?? 0) > 0)
+	);
+}
+
+/** Whether `c` carries a MEASURED charged attack — `chargeFrames`, or a bow's
+ *  `chargeHits` (its aimed shot, which `A` also reads), on any normal ability.
+ *  Absent, the parser draws `C` with `GENERIC_CHARGE_FRAMES` and the editor
+ *  flags it provisional (2026-10-15) — the plunge's rule, and its index fact's
+ *  twin (`CharacterIndexEntry.charged`). */
+export function hasChargeFrames(c: Pick<CharacterData, 'abilities'>): boolean {
+	return (c.abilities ?? []).some(
+		(a) =>
+			a.abilityType === 'normal' &&
+			(a.chargeFrames !== undefined || (a.chargeHits?.length ?? 0) > 0)
+	);
+}
+
+/** Whether `c` carries KQM's `sC` — a `specialChargeFrames` on any normal
+ *  ability (Varka's Azure Devour). Absent, `sC` falls back to the ordinary
+ *  charge, which the editor says (`CharacterIndexEntry.specialCharge`). */
+export function hasSpecialChargeFrames(c: Pick<CharacterData, 'abilities'>): boolean {
+	return (c.abilities ?? []).some(
+		(a) => a.abilityType === 'normal' && a.specialChargeFrames !== undefined
 	);
 }
