@@ -736,3 +736,16 @@ passed on WebKit.
     design (they reach level 2). (ii) not reported on.
 21. **Nate wants to rework the landing announcement banner anyway** — queued.
 22. **`scratch/runtime-smoke/` removed.**
+
+### The follow-up calls (2026-10-15, Nate)
+
+- The detail card's "· Other" for the Travelers, Skirk and Aloy stays.
+- The site chrome's Settings, Help and Navigate overlays now close as you
+  leave the page they opened over (`f12cedf5`); the Library, the tools
+  layout's own overlay, stays open across tools.
+- The stance charged attacks and Chasca's Nightsoul `C`, the seam at a
+  same-character join, and a link carrying inputs rather than the selection
+  are all accepted as they stand; the first two are post-launch data work.
+- Nate checked on screen: the menus fade out as part of a swipe-back, the
+  Gleam lane waits for a non-Moonsign receiver, and the Laps join is clean.
+- Item 2 done by Nate: both LaunchAgents and `.curation-logs/` are gone.
