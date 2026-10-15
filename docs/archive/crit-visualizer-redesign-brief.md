@@ -42,7 +42,7 @@
 
 ## Context to load first (memory + code)
 
-**Design memory** (`/Users/producer/.claude/projects/-Users-producer-Code-critcalc/memory/`):
+**Design memory** (`~/.claude/projects/<project>/memory/`):
 
 - `project_tool_constitutions.md` — **the guardrail for the feature brainstorm.** Crit Visualizer
   scope: "graph + slider shape," visualization-not-calculation, what it will never be.

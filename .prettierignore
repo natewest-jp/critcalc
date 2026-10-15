@@ -44,3 +44,7 @@ docs/curation/gcsim-frames-diff.md
 # code it inventories.
 docs/text/ledger/inventory/
 src/lib/fingerprintGlyphs.generated.ts
+
+# License texts — reproduced verbatim; never reflow them.
+LICENSE
+LICENSE-DATA
