@@ -409,7 +409,8 @@
 	// A FILLED portrait in the SELECTED row puts its slot in swap mode: the
 	// Characters grid regroups by what the swap would do to the TEAM, the
 	// hovered card previews it on the board, and a pick swaps and leaves.
-	// Escape, the strip's ✕ or the portrait again leaves without a swap.
+	// Escape, the strip's ✕ or the portrait again leaves without a swap — and
+	// on the Planner's row, ends the errand (`stopSwap`).
 	// ⚓ Compare and Audition retired into this — the question was never "how
 	// do these kits compare" but "what happens to my team".
 	// ---------------------------------------------------------------------------
@@ -423,10 +424,7 @@
 	/** The portrait again leaves swap mode; another filled one moves it (on
 	 *  the Planner's row, an empty one too). */
 	function toggleSwap(teamId: string, slot: number): void {
-		if (swapping?.teamId === teamId && swapping.slot === slot) {
-			swapping = null;
-			return;
-		}
+		if (swapping?.teamId === teamId && swapping.slot === slot) return stopSwap();
 		const incumbent = teamById(teamId)?.slots[slot];
 		if (incumbent === undefined || (incumbent === null && teamId !== ERRAND_ID)) return;
 		swapping = { teamId, slot, incumbent };
@@ -446,6 +444,16 @@
 		)
 			swapping = null;
 	});
+
+	/** Out of swap mode WITHOUT a swap: Escape, the strip's ✕, the portrait
+	 *  again. ⚓ One meaning — cancel (Nate 2026-10-15, sweep item 7) — so on
+	 *  the Planner's row it ends the whole errand, as its Cancel does: the
+	 *  row can only change by swapping, and leaving the slot alone left a
+	 *  team nothing could be picked into, under a strip that said so falsely. */
+	function stopSwap(): void {
+		if (swapping?.teamId === ERRAND_ID) return cancelErrand();
+		swapping = null;
+	}
 
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
 
@@ -935,7 +943,7 @@
 	/** Escape leaves swap mode — unless a modal or a menu took it first. */
 	function onKeydown(e: KeyboardEvent): void {
 		if (e.key !== 'Escape' || !swapping || selectedId || e.defaultPrevented) return;
-		swapping = null;
+		stopSwap();
 	}
 
 	/** The destination strip over the grid: where a pick goes. */
@@ -1364,7 +1372,7 @@
 				{@render destCount()}
 				<button
 					class="btn btn--icon tb-dest-close"
-					onclick={() => (swapping = null)}
+					onclick={stopSwap}
 					aria-label={swapping.incumbent
 						? `Stop replacing ${nameOf(swapping.incumbent)}`
 						: `Stop adding to ${selectedLabel}`}

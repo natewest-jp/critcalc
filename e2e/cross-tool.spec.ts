@@ -97,3 +97,30 @@ test('Cancel returns unchanged; a pick renames in the planner and returns', asyn
 	expect(names, 'Furina replaces Bennett in slot 1').toContain('Furina');
 	expect(names).not.toContain('Bennett');
 });
+
+// ⚓ Escape means cancel (Nate 2026-10-15, pre-launch sweep item 7): every way
+// out of the Planner's swap that is not a pick ends the whole errand, as its
+// Cancel does. Leaving only the SLOT stranded a row nothing could be picked
+// into, under a strip that read "the Planner’s team is full".
+test('Escape, the ✕ or the portrait again ends the swap and returns unchanged', async ({
+	page,
+	seed
+}) => {
+	await seed({ team: { slots: TEAM } });
+	await openTool(page, '/planner');
+
+	const exits: [string, () => Promise<void>][] = [
+		['Escape', () => page.keyboard.press('Escape')],
+		['the ✕', () => page.locator('.tb-dest-close').click()],
+		['the portrait again', () => page.locator(`${ERRAND} .bv-slot--swap`).click()]
+	];
+	for (const [how, leave] of exits) {
+		await page.locator(SWAP).first().click();
+		await page.locator(ERRAND).waitFor({ timeout: 10_000 });
+		await expect(page.locator('.tb-dest')).toHaveText(/Replacing Bennett/);
+		await leave();
+		await page.waitForURL(/planner/, { timeout: 10_000 });
+		await page.waitForTimeout(1400); // the pan + band travel
+		expect(await benchNames(page), `${how} changes nothing`).toEqual(NAMES);
+	}
+});
