@@ -64,7 +64,7 @@
 		 * drops its filters-open flag. The drawer only reports.
 		 */
 		sheet?: boolean;
-		/** The drawer's heading — "Filters", "Notes", "Target aura". */
+		/** The drawer's heading — "Filters", "Notes", "Aura log". */
 		asideTitle?: string;
 		/** The drawer's close (scrim, ✕, Escape). */
 		onCloseAside?: () => void;

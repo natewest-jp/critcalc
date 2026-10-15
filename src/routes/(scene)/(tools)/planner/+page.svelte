@@ -782,7 +782,7 @@
 				{main}
 				aside={showAside ? asideColumn : undefined}
 				sheet={below('toolMin')}
-				asideTitle={pv.showLog ? 'Target aura' : 'Notes'}
+				asideTitle={pv.showLog ? 'Aura log' : 'Notes'}
 				onCloseAside={() => (pv.aside = null)}
 			/>
 		{/snippet}
@@ -838,7 +838,7 @@
 		     column is one continuous reading and a 22px sticky bar over a
 		     several-hundred-row transcript costs more than it explains. -->
 		<div class="rp-log-panel">
-			<div class="rp-log-head">Target aura</div>
+			<div class="rp-log-head">Aura log</div>
 			<!-- ⚓ THE TWO CHANNELS ARE SCALARS IN SECONDS, both brokered by
 			     plannerView — see its note. `hover` lights the rows the chart's
 			     cursor stands on; `onHover` drives the chart's own crosshair from
