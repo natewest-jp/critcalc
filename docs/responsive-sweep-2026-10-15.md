@@ -452,3 +452,334 @@ the screenshot. The contact sheet has all of them with their before/after.
 - **Housekeeping:** the probe scripts in `scratch/rp-sweep/` and
   `scratch/verify-pages/` are still there, because the permission system denied
   their deletion. They are gitignored; delete them by hand.
+
+## 6. Nate's answers (2026-10-15)
+
+Nate answered §3 in groups. Per item:
+
+- **Items 1 and 2 (touch), and the short-screen items:** approved, with a 44px
+  target.
+- **Items 12–25:** approved on my leans, except:
+  - **12 is declined.** Wide screens keep the resting zoom: the spare track is
+    more room for the rotation, and Laps reads as a benefit there.
+  - 13 is left, 17 is accepted, and 20 is left for the Builder's phone pass.
+  - **22:** the source has no higher-resolution avatars, so the slight
+    softness of the side portraits on a 2× display is accepted.
+- **Item 8** is Nate's check on his iPhone: open a long rotation's dock with
+  the keyboard up.
+- **Items 26–31:** approved, except **26**, which Nate wanted reverted.
+
+The work ran as five fixers on `sweep/responsive`: 18 commits, `b2d4cf42` to
+`67018dc7`. Then `48671180` merged `main` (the feedback form, the license and
+README) in without conflicts. ⚠️ **Nothing is pushed or merged to `main`.**
+
+**Gates on `48671180`:**
+
+- `npx vitest run`: `Test Files 84 passed (84)`, `Tests 2373 passed (2373)`.
+- `npm run check`: `725 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS`.
+- `npm run lint`: prettier and eslint clean.
+- `npm run build`: exit 0.
+- **e2e, Chrome:** `75 passed (5.8m)`. It exited 1 from the upstream
+  worker-teardown hang, with no failed test.
+- **e2e, WebKit:** `75 passed (1.9m)`, exit 0, no flaky test.
+
+The numbers below come from headless Chrome on private previews restarted
+after every build. WebKit spot checks agreed wherever they ran. ⚠️ None of it
+has been checked in real Safari or on a real phone.
+
+### What landed
+
+**1. Coarse-pointer tap areas: done, `b2d4cf42`.**
+
+- **How it works:** one `@media (pointer: coarse)` block in `app.css`. An
+  empty, absolutely placed `::before` grows each control's tap area toward 44px
+  on each axis, and the paint does not change.
+- **The neighbour rule:** a side takes at most half the gap to the next
+  target. A side held short gives its share to the opposite side when that side
+  has room.
+- **The Coverage search** is an `<input>`, which can't have a `::before`, so it
+  is wrapped in a bare `<label class="cov-search-hit">`.
+- **Paint:** screenshots of 10 states at 320 and 390 under coarse are
+  pixel-identical before and after on every tool surface.
+- **Tap area, before → after, at 390:**
+  - Navigate/Settings 34×34 → 40×44.
+  - The overlay ✕ 30×30 → 44×44.
+  - The Coverage search 25 → 34 tall.
+  - The tab menu's ✕ and the Builder's tab ✕ 16×16 → 30×30.
+  - The constellation chip 20×14 → 21×24.
+  - The dock's Undo 30×20 → 44×29, and the dock keys 40×36 → 44×44.
+  - Band A's Save/Library 36×26 → 39–40×37, and More 26×22 → 30×33.
+  - The Planner's band B 24–30×36 → 28–34×42.
+  - The Builder's and the Visualizers' band B 36×36 → 40×44.
+  - The fingerprint's find glyphs 14×18 → 19×44.
+  - RES & DEF's shred rows 18 → 28 tall, each the full width of its row.
+- **Held short by a neighbour:**
+  - Band A, about 37 tall.
+  - The Planner's band B (42), because the bench row is right under it.
+  - Undo/Redo, 29–32 tall, stacked 2px apart.
+  - The fingerprint glyphs, 19 wide, 6px apart.
+  - The shred rows, which abut.
+  - The Coverage search, with the chip row 8px below it.
+- **Not grown at all:** the document tabs and their +, because the
+  `.doc-tabs` strip clips them.
+
+**2. The Gauge Explorer's pills: done, `c242e53b`.** Each pill's hit target
+is cut at the midpoint to its nearest neighbour, so the browser's own hit test
+picks the nearer centre.
+
+| Width | Preset       | Wrong-pill taps, before | After |
+| ----- | ------------ | ----------------------- | ----- |
+| 320   | Pyro refresh | 21/54                   | 0/54  |
+| 320   | Burning      | 35/90                   | 0/90  |
+| 320   | Quicken      | 31/81                   | 0/81  |
+| 320   | Crystallize  | 22/78                   | 0/78  |
+| 390   | Pyro refresh | 15/42                   | 0/42  |
+| 390   | Burning      | 20/60                   | 0/60  |
+| 390   | Quicken      | 12/54                   | 0/54  |
+
+**3. A height axis: done, `9c04cc24`.**
+
+- `$lib/breakpoints.ts` gains `HEIGHT.short = '30rem'`, its content fact
+  (landscape phones, 320–430 tall), `SHORT_QUERY` and `narrowFormQuery` (below
+  toolMin OR short).
+- `media.svelte.ts` gains `short()` and `narrowForm()`.
+- `breakpoints.test.ts` now also fails on any height `@media` literal other
+  than 30rem.
+
+**4. Landscape Planner: done, `17601e2f`.** On a short screen the narrow form
+applies: the bench row, fitted slot heights, and layers off with zoom 30 at
+load. The drawer and band B's folds stay on width alone.
+
+| Size    | Chart visible, before | After                                  |
+| ------- | --------------------- | -------------------------------------- |
+| 932×430 | 146px (desk form)     | 181px (bench row, layers off, zoom 30) |
+| 896×414 | 130px                 | 165px                                  |
+| 932×480 | 196px                 | 231px                                  |
+| 932×481 | desk form             | unchanged                              |
+
+**5. The Builder's filter strip on short screens: done, `ac06d4bb`.** The
+strip, the empty-roster hint and the destination banner scroll inside
+`.cg-scroll` with the cards.
+
+| Size    | Grid height at rest, before | After |
+| ------- | --------------------------- | ----- |
+| 844×390 | 83px                        | 217px |
+| 667×375 | 68px                        | 202px |
+| 568×320 | 13px                        | 147px |
+| 932×430 | 161px                       | 257px |
+
+**6. The landing on short screens: approved, but not landed.** The approved
+`clamp(min(17rem, B), 46vh, 30rem)` comes out at 46vh at any height under
+591px, so the budget B never applies. Built and measured at 844×390:
+
+- **Fixed:** the first card sits 40px below the wordmark instead of 7px above
+  it.
+- **Not fixed:** the footer overlap only fell from 74 to 50px.
+- **Made worse:** the notice band wrapped to three lines, and the "Rotation
+  Planner" kicker to two.
+
+The 282px between the wordmark and the footer text can't hold the cards, the
+captions and the notices, which need about 292px. Reverted, nothing committed.
+Shots: `scratch/responsive-shots/landing/pages-7-tried.png` and
+`pages-7-tried-568x320.png`.
+
+**7. The legal footer ends the page panel on short screens: done,
+`5dddd143`.** The fixed footer is hidden on pages and stays on the landing.
+The in-panel copy fades in its paint, not through element opacity.
+
+| Size    | /about reading height, before | After |
+| ------- | ----------------------------- | ----- |
+| 667×375 | 225px                         | 289px |
+| 844×390 | 240px                         | 304px |
+| 568×320 | 170px                         | 234px |
+| 932×430 | 280px                         | 344px |
+
+**8. The open dock with a keyboard up:** Nate's check on the iPhone.
+
+**9. The legal line on narrow phones: done, `b0b3d075`.** Below compact it
+steps from `--fs-md` to `--fs-sm` (12 → 11px), and the rule's bottom margin
+from 0.55rem to 0.3rem.
+
+- At 320×568 the footer block goes from 86px (11px over each edge,
+  "HoYoverse." cut) to 61px, 2px clear.
+- At 360–430 it goes from 69 to 61px.
+
+**10. The Planner's composer pins to the foot of the screen above toolMin:
+done, `796ffb5d`.**
+
+- It uses `position: sticky; bottom: 8px`. Scroll ranges are unchanged, and
+  the bench stays aligned with the tracks.
+- A solid slate plate (`--surface-raised`) shows only while the composer is
+  pinned. Glass was tried first, and the bars showed through the notation.
+- **Field top, before → after:**
+  - 1366×768: y=997 → 719 (a long rotation: 594).
+  - 1280×800: 997 → 751.
+  - 1440×900: 997 → 851.
+- At 1920×1080 and 2560×1440 a 4-character rotation doesn't scroll, so nothing
+  pins.
+
+**11. The aside column stays beside the chart: done, `ad6d2ef2`.** The new
+`ToolColumns` prop `asideSticky` (the Planner only) sticks the column where
+the chart area begins, and `--stack-to-surface` places it. Aside box height,
+before → after:
+
+- 1137×900, long rotation: 1138 → 727. It stays at y=149 while the page
+  scrolls, and the log's scroller now ends at 867 instead of 378px below the
+  fold.
+- 1366×768: 1055 → 595.
+- 932×430: 740 → 185.
+
+**12. Declined.** Wide screens keep the resting zoom.
+
+**13. Left.**
+
+**14. The notation wraps at 140 characters: done, `75bd580d`.** The cap is
+`max-width: calc(140 * 0.6 * 13px + 2 * 12px)` (1116px), with no media query.
+It applies only above about 1500px wide.
+
+- **Characters per line:** 196 → 140 at 1920, 278 → 140 at 2560, and 391 → 140
+  at 3440.
+- **Below 1440:** unchanged.
+- **Cost:** a long notation wraps to more lines (4 → 6 at 1920).
+
+**15. The Builder's search and banner on wide screens: done, `78b3b4db`.**
+
+- **Search:** capped at 28rem, 448px wide at 1920–3440 (was 2078 at 3440).
+- **Banner:** the count starts 20px after its message (was 2560px apart at
+  3440). In swap mode the ✕ still ends the band.
+
+**16. One Visualizers slot on a wide display: done, `8f662ef4`.**
+
+- **How it works:** from 1024 the tile is a size container.
+- **Caps:**
+  - Wish Odds, Reaction Curves, Artifact Odds and RES & DEF cap their
+    chart-and-controls column at `--instrument-main-aspect` (1.65) × the
+    tile's height.
+  - The Crit Heatmap's wide column caps at `HEATMAP_MAX_ASPECT`, which moved
+    into `crit.ts`.
+  - Sliders stop at `--instrument-slider-max` (41rem).
+- **At 3440×1440 one-up, before → after:**
+  - Wish's chart: 2960×896 → 2091×896.
+  - Wish's pity slider: 2722 → 656px.
+  - The Crit stage: x=720 → x=32, with its Readout 16px away.
+  - Gauge and ICD: keep the full width.
+- **Unchanged:** a diff of 145 layouts showed every default (Auto) lineup
+  identical, from 320 to 3440.
+
+**17. Accepted.**
+
+**18. The Lineup tab keeps the board at its docked width: done, `3f7509e6`.**
+
+- **Board width:** at 641–1135 it went from 609–1089px to 580px. At 1135 the
+  Planner button's right edge moved from x=1102 to x=593.
+- **Abyss art:** now shown at 580px against its 640px source, so nothing below
+  1500 is upscaled at 1×.
+- **Comment:** the stale BoardView comment is rewritten.
+
+**19. The Library stays one column until wide: done, `ca594f17`.**
+
+- **One column at 863–1135:** a long notation shows 369–537px of text before
+  its ellipsis (about 70px at 865 before).
+- **At 1137, two columns:** "Stygian 7.1 clear" is still 8px short.
+
+**20. Left** for the Builder's phone pass.
+
+**21. "Pin a rotation" on the 580 board: approved, but the fix does nothing.**
+The side column's width isn't set by the slots' gap. The fingerprint (299px)
+sets that column, so the side column stays 114px at any gap from 18 to 6px.
+
+- **The label:** needs 147px, and shows 62 of its 95px.
+- **Other sources, measured:** the body gap from 20 to 12px gives 16px; that
+  plus a stack gap from 12 to 8px gives 21px. Both leave the label 12px short.
+- **Wider reach since item 18:** a Stygian board now shows "PIN A RO…" from
+  641 to 1499.
+
+Nothing was committed.
+
+**22. Accepted.** The Abyss half was fixed by item 18.
+
+**23. Roster card names take a second line: done, `64440611`.**
+
+- **The strip:** 26px for one line, 34px at most for two, and every strip in a
+  row matches the tallest.
+- **Clipped names**, across the full roster at 390/865/1137/1440/1501/1920
+  plus a "Traveler" search at 320–1920: 7 at 390/865 and 2 at 1137/1440 before,
+  0 after.
+- **Columbina's row:** her art now meets her strip, but the whole row's strips
+  are 34px.
+
+**24. + New rotation folds into the tabs menu below compact: done,
+`9dee4d2d`.**
+
+- **The trigger label:** at 320 it went from 32px shown ("Raid…") to 62px
+  ("Raiden …"). At 360 with three tabs it shows the whole name (96px, was 72).
+- **The Builder's +** opens a presets menu, so it keeps its place.
+- **One mismatch:** the menu is marked up as a list of tabs, so a screen
+  reader announces "New rotation" as one of the tabs.
+
+**25. The Settings page on desktop: done, `67018dc7`.** On the route only,
+`.sp` stops at 40rem, left-aligned. The gap between a label and its toggle went
+from 723 to 290px at 1280–3440. The overlay is unchanged.
+
+**26. Not reverted.** Restoring the word on the Characters cell's switch
+("Lineup", 89px) was built and measured:
+
+- **At rest:** it fits at every width.
+- **With a count on More:** "More · N" is 113px instead of 93, and 320 then
+  spills 19px. That happens with any More filter set.
+- **Where it fits:** in every state from about 338px. Its twin on the Lineup
+  cell ("Characters") fits from about 335 on a Custom board.
+
+The trial was reverted, so `4b5ef69e` still stands.
+
+**27. Defaults and Share:** their tap area went from 28×36 to 32×44, in
+`b2d4cf42`.
+
+**28, 29 and 31. OK as shipped.**
+
+**30. The More filters popover drops its ceiling below compact: done,
+`28fa0068`.** At 390×844 it went from 512px with a scroll to 671px, the whole
+list, 30px clear of the screen's foot. At 320×568 it is unchanged at 408px.
+
+### Still open for Nate
+
+1. **Item 6:** a new form for short landing screens. The options:
+   - re-centre smaller cards and their captions between the wordmark and the
+     footer;
+   - let the landing's fixed footer step aside on short screens too;
+   - accept the overlap.
+2. **Item 21:** where 33px comes from. The options:
+   - tighter fingerprint and boss-row gaps on the 580 board;
+   - a smaller boss disc;
+   - a shorter label (a wording change).
+3. **Item 26:** pick one of these:
+   - the word from about 340 up, which would be a new content stop in
+     `breakpoints.ts`;
+   - a lower search floor (6rem today);
+   - accept the 19px spill at 320;
+   - keep `4b5ef69e`.
+4. **Item 1's exceptions:**
+   - Should the constellation chip take some of the portrait? 2px of the disc
+     cost 7% of a 38px phone portrait.
+   - The tab ✕ now takes about 7px of the end of its label.
+   - Should the document tab strip stop clipping its tabs so they can grow?
+5. **Item 10, long rotations:**
+   - A pinned composer with 44 segments is 166px tall at 1366×768 and 186px of
+     430 at 932×430.
+   - While pinned it covers the chart's horizontal scrollbar.
+   - The options: a permanent editor cap, no pinning on short screens, or
+     leave it.
+6. **Item 16, by eye:**
+   - The capped instruments and the Crit group now sit on the left. Centring
+     them is one word.
+   - Should a 16:9 one-up tile be capped too? It would take a lower
+     `--instrument-main-aspect`.
+   - Both knobs are new proposals.
+7. **Item 18:** band B's lineup cell still spans the whole tab, so No repeats
+   sits past the 580px board.
+8. **Real Safari and real phones:**
+   - item 8;
+   - the 932×430 landscape Planner (item 4);
+   - the in-panel footer fade (item 7);
+   - the size container and `cqh` (item 16);
+   - every tap area (item 1).
