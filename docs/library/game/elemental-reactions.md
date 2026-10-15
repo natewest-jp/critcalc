@@ -200,7 +200,7 @@ Transformative = ReactionMultiplier × LevelMultiplier
                  × (1 + (16 × EM) / (2000 + EM) + ReactionBonus)
                  × EnemyResistanceMultiplier
 
-ReactionMultiplier = 3        Burgeon, Hyperbloom, Shattered
+ReactionMultiplier = 3        Burgeon, Hyperbloom, Shatter
                      2.75     Overloaded
                      2 × ECTriggers   Electro-Charged
                      2        Bloom
@@ -233,7 +233,7 @@ generated (see [`snapshotting.md`](snapshotting.md)).
 | Frozen             | When Unfrozen   | 30           | 2               |
 | Overloaded         | AoE (5m radius) | 90           | 5               |
 | Superconduct       | AoE (5m radius) | 30           | Heavy, 240, 300 |
-| Shattered          | Direct Damage   | 30           | 3               |
+| Shatter            | Direct Damage   | 30           | 3               |
 | Swirl              | Direct Damage   | 130          | 1               |
 | Swirl              | AoE (6m radius) | 30           | 1               |
 
@@ -278,7 +278,7 @@ Hydro on Electro (or vice-versa), dealing **Electro** DMG. (Gauge behavior in §
 
 ### 3.5 Frozen
 
-Cryo on Hydro (or vice-versa). If the Frozen aura expires or is Shattered, any underlying
+Cryo on Hydro (or vice-versa). If the Frozen aura expires or is removed by Shatter, any underlying
 Hydro/Cryo persists. (Aura coexistence in §1.4.)
 
 - **Gauge interaction:** 2U Hydro → 1U Cryo ⇒ Frozen **and** Hydro; but 1U Cryo → 2U Hydro ⇒
@@ -321,7 +321,7 @@ Freeze Duration   = 2√(5 × Gauge_Freeze Aura × (1 − Freeze Resistance_Targ
 Some enemies have Freeze RES (reduces duration only; it does **not** affect the Freeze reaction
 gauge itself).
 
-### 3.6 Shattered
+### 3.6 Shatter
 
 A second-stage reaction from **Blunt Attacks** on a Frozen enemy, dealing **Physical** DMG.
 **ICD: 2 damage instances per 0.5 s** on the same enemy.
