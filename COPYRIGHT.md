@@ -79,6 +79,5 @@ These files are not critcalc's work, and their sources keep their rights:
 - `docs/library/wiki/capability-categories.json` — category membership from the [Genshin Impact Fandom wiki](https://genshin-impact.fandom.com), whose text is CC BY-SA 3.0
 - `docs/library/game/genshin-character-roles.csv` — Genshin's Imaginarium Theater role table, plus critcalc's documented amendments
 - `src/lib/data/endgame/stygian.json`, `stygian-bosses.json`, `abyss.json` — Stygian Onslaught and Spiral Abyss data fetched from [lunaris.moe](https://lunaris.moe), which serves the game's own data. Only `season-dates.json`, written by hand, is critcalc's.
-- `docs/Main Stat and Sub Stat Artifact Values.xlsx` — a community reference table of artifact stat values
 
 Code from third parties (bundled libraries, fonts, the icon set, and the logic ported from gcsim) is listed with its license text in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
