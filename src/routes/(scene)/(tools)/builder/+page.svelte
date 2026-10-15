@@ -1892,23 +1892,15 @@
 		font-size: var(--fs-md);
 	}
 
-	/* The Atlas rows' and the stubs bucket's grid (the roster's own is
-	   CharacterGrid's, tuned through the --cg-* knobs on .tb-roster). Same
-	   scale, so tiles read identically wherever they appear. */
+	/* The stubs bucket's grid (the roster's own is CharacterGrid's). It READS
+	   the roster's --cg-* knobs on .tb-roster rather than restating them, so
+	   tiles read identically beside the roster at every width — ↻ the copied
+	   118px literal outlived the roster's 108 retune and drew the stub tile up
+	   to 54% wider (390: 168 vs 109). The 1500/1900 steps ride the knobs too. */
 	.tb-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-		gap: 0.6rem;
-	}
-	@media (min-width: 1500px) {
-		.tb-grid {
-			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		}
-	}
-	@media (min-width: 1900px) {
-		.tb-grid {
-			grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-		}
+		grid-template-columns: repeat(auto-fill, minmax(var(--cg-tile-min, 108px), 1fr));
+		gap: var(--cg-gap, 0.6rem);
 	}
 
 	.tb-stubs {
