@@ -2336,6 +2336,19 @@ img {
 	line-height: var(--lh-normal);
 }
 
+/* THE MEASURE the static pages were ruled to have (⚓ Nate 2026-09-23: "prose
+   keeps its own 56ch measure, so the extra width is margin, never longer
+   lines" — the pages layout and the About/Help overlay both say so). Nothing
+   set it: the narrower panel of the time was doing the bounding, and at the
+   72rem panel paragraphs ran ~125 characters a line from 1280 up. 56ch is
+   .note's number (W1, docs/responsive-survey-2026-09-01.md), derived from
+   this column's own 49.2ch / 53.3ch. Every .prose block is text-align: start,
+   so the leftover width is right-hand margin. */
+.prose p,
+.prose li {
+	max-width: 56ch;
+}
+
 /* Links carry a RESTING underline, and the reason generalises past the family
    that prompted it. Headings and links were both chrome-coloured, and no colour
    change could separate them: every candidate that made a link more distinct
