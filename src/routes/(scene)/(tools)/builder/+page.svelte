@@ -1076,12 +1076,13 @@
 {#snippet paneSwitch()}
 	<button
 		class="btn btn--glass tb-pane-switch"
+		aria-label={tab === 'characters' ? 'Lineup' : 'Characters'}
 		onclick={() => (tab = tab === 'characters' ? 'lineup' : 'characters')}
 	>
 		{#if tab === 'characters'}
-			<Mark name="panelRight" /> Lineup
+			<Mark name="panelRight" /> <span class="tb-band-label">Lineup</span>
 		{:else}
-			<Mark name="panelLeft" /> Characters
+			<Mark name="panelLeft" /> <span class="tb-band-label">Characters</span>
 		{/if}
 	</button>
 {/snippet}
@@ -1256,8 +1257,11 @@
 					{:else if board.preset === 'custom' && board.teams.length < BOARD_TEAM_LIMIT}
 						<!-- A battlefield is the game's, not yours to add — teams come and go
 						     on a Custom board only (with ✕, §11.6 item 13). -->
-						<button class="btn btn--glass" onclick={() => boards.addTeam(board.id)}
-							><Mark name="plus" /> Add team</button
+						<button
+							class="btn btn--glass"
+							aria-label="Add team"
+							onclick={() => boards.addTeam(board.id)}
+							><Mark name="plus" /> <span class="tb-band-label">Add team</span></button
 						>
 					{/if}
 					{#if !errandOpen}
@@ -1692,7 +1696,10 @@
 		gap: 0.45rem;
 	}
 	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
-	   their mark and fold their word — one rule for every band control. */
+	   their mark and fold their word — one rule for every band control. ↻ The
+	   lineup cell of band B too (pane switch + Add team): on a Custom board
+	   below ~407px its flex:none children pushed No repeats off the screen
+	   (87px spill at 320), and the fold returns ~160px. */
 	@media (max-width: 40rem) {
 		.tb-band-label {
 			display: none;
