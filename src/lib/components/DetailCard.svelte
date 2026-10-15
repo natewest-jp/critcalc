@@ -10,6 +10,8 @@
 	import CloseMark from '$lib/components/CloseMark.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { fade } from 'svelte/transition';
+	import { portal } from '$lib/actions/portal';
+	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import {
@@ -107,6 +109,35 @@
 		}
 	}
 
+	// Portalled to <body>: a tool page's .tool-main is a stacking context
+	// (z-index 1) under the site chrome's mount (z-index 10), so a z-1000
+	// scrim left inside it still painted BELOW the chrome — the name and ✕
+	// sat under the bar on any screen shorter than ~908px, and the chrome's
+	// buttons stayed live over the card. Mounted only while open, so it
+	// closes on every leave (the page is paused, not destroyed, then).
+	closeOnLeave(
+		() => true,
+		() => onClose()
+	);
+
+	/**
+	 * "See coverage" opens the About overlay, and the card CLOSES behind it, as
+	 * it does for "Edit in Roster". Portalled to <body>, the card stacks above
+	 * the whole scene content — the overlay included — so it can no longer
+	 * wait underneath it. Closed only when the overlay actually opened (a
+	 * ⌘-click is left to open its new tab).
+	 *
+	 * ⚠ Bound as onclickCAPTURE: out of the app root, a delegated onclick runs
+	 * only at `document`, AFTER SvelteKit's router has taken the click at
+	 * <html> and navigated to /coverage. A capture handler sits on the anchor
+	 * itself, so openCoverage's preventDefault lands first.
+	 */
+	function seeCoverage(e: MouseEvent) {
+		if (!entry) return;
+		openCoverage(e, [entry.id]);
+		if (e.defaultPrevented) onClose();
+	}
+
 	function handleBackdropClick(e: MouseEvent) {
 		if ((e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
 	}
@@ -129,6 +160,7 @@
      treatment. Both on T_QUICK now. -->
 <div
 	class="dc-backdrop"
+	use:portal
 	transition:fade={{ duration: motion(T_QUICK) }}
 	onintrostart={introLive}
 	onoutrostart={outroInert}
@@ -188,6 +220,7 @@
 		</header>
 
 		{#if entry && !entry.curated}
+			<!-- ⚠ onclickCAPTURE, not onclick — see seeCoverage. -->
 			{#if entry.caps.length === 0}
 				<p class="dc-stub-note">
 					Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”,
@@ -195,7 +228,7 @@
 					<a
 						class="link dc-stub-link"
 						href="{resolve('/coverage')}?c={entry.id}"
-						onclick={(e) => entry && openCoverage(e, [entry.id])}>See coverage</a
+						onclickcapture={seeCoverage}>See coverage</a
 					>
 				</p>
 			{:else}
@@ -205,7 +238,7 @@
 					<a
 						class="link dc-stub-link"
 						href="{resolve('/coverage')}?c={entry.id}"
-						onclick={(e) => entry && openCoverage(e, [entry.id])}>See coverage</a
+						onclickcapture={seeCoverage}>See coverage</a
 					>
 				</p>
 			{/if}
