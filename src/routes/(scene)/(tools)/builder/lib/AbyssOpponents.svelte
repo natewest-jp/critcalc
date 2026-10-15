@@ -110,7 +110,10 @@
 		margin: 0;
 		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+		/* auto-FIT: a lone enemy spans the row instead of taking half of it
+		   beside an empty track (long boss names wrapped at 1440 with ~300px
+		   of dialog spare); two still split it, three keep 2 + 1. */
+		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 		gap: 6px;
 	}
 	.op-row {
