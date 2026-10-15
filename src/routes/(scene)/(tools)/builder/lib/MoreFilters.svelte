@@ -158,6 +158,16 @@
 		overflow-y: auto;
 		padding: 0.6rem;
 	}
+	/* `compact` — 40rem, $lib/breakpoints.ts (the literal, because custom
+	   properties do not work in media queries). ↻ Responsive sweep §3 item 30
+	   (⚓ Nate 2026-10-15): a phone drops the 32rem ceiling and keeps only the
+	   screen's own cap, so a 390×844 phone shows the whole list (671px) where
+	   the ceiling held it to 512 with 189px free below. */
+	@media (max-width: 40rem) {
+		.mf {
+			max-height: calc(100svh - 10rem);
+		}
+	}
 	.mf-group .kicker {
 		margin-bottom: 0.45rem;
 	}
