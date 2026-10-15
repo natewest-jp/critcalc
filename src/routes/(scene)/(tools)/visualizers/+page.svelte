@@ -14,6 +14,8 @@
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import Mark from '$lib/components/Mark.svelte';
+	import BandMenu from '$lib/components/BandMenu.svelte';
+	import ReportLink from '$lib/components/ReportLink.svelte';
 	import {
 		DEFAULT_ASSIGNMENT,
 		INSTRUMENTS,
@@ -165,10 +167,16 @@
 	// ── Per-tile share ─────────────────────────────────────────────────────
 	let copiedTile = $state<InstrumentId | null>(null);
 	let failedTile = $state<InstrumentId | null>(null);
+	/** The `?i=` link that reopens a tile as it looks now — what Share copies,
+	 *  and what a problem report carries ($lib/feedback.ts). An instrument with
+	 *  no share state still gets a link that opens it. */
+	async function tileUrl(id: InstrumentId): Promise<string> {
+		const param = await encodeInstrumentParam(id, handles[id]?.getShareState?.());
+		return `${location.origin}/visualizers?i=${param}`;
+	}
 	async function shareTile(id: InstrumentId) {
 		try {
-			const param = await encodeInstrumentParam(id, handles[id]?.getShareState?.());
-			await navigator.clipboard.writeText(`${location.origin}/visualizers?i=${param}`);
+			await navigator.clipboard.writeText(await tileUrl(id));
 		} catch {
 			// a denied clipboard (or a lost user activation after the await) —
 			// say so on the button, as the planner's Share does
@@ -300,6 +308,22 @@
 								>
 							</button>
 						{/if}
+						<!-- Per TILE, because band A (the workspace's) is absent below
+						     1360px, and so the report carries this instrument's link. -->
+						<BandMenu compact glass size="sm" mark="more" ariaLabel="More instrument actions">
+							{#snippet items(close)}
+								<ReportLink
+									class="band-menu-item"
+									role="menuitem"
+									prefill={{ category: 'broken', tool: 'visualizers', includeTech: true }}
+									shareUrl={() => tileUrl(id)}
+									onclick={close}
+								>
+									<Mark name="report" />
+									Report a problem
+								</ReportLink>
+							{/snippet}
+						</BandMenu>
 					</span>
 				</div>
 			{/each}

@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { feedbackToolForPath } from '$lib/feedback';
+	import ReportLink from '$lib/components/ReportLink.svelte';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
@@ -371,6 +374,21 @@
 				</table>
 			</section>
 		{/if}
+
+		<!-- The feedback form, opened on its character section: the name as this
+		     card titles it and the constellation the card reads at. -->
+		<p class="dc-report">
+			<ReportLink
+				class="link"
+				prefill={{
+					category: 'character',
+					tool: feedbackToolForPath(page.url.pathname),
+					character: entry?.displayName ?? id,
+					constellation: entry?.noConstellations ? undefined : viewCon,
+					includeTech: true
+				}}>Something’s not right with this character</ReportLink
+			>
+		</p>
 	</div>
 </div>
 
@@ -502,6 +520,11 @@
 		background: none;
 		color: var(--text);
 		cursor: pointer;
+	}
+	.dc-report {
+		margin: 0;
+		font-size: var(--fs-sm);
+		color: var(--muted);
 	}
 	.dc-stub-link {
 		white-space: nowrap;

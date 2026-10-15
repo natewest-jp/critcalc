@@ -28,6 +28,8 @@
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { boards } from '$lib/boards.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
+	import ReportLink from '$lib/components/ReportLink.svelte';
+	import { feedbackToolForPath } from '$lib/feedback';
 	import { savedNotations } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
 	import { benchBand } from '$lib/benchBand.svelte';
@@ -807,6 +809,17 @@
 	$effect(() => {
 		if (library.open && !page.state.library) library.open = false;
 	});
+
+	/** The share link a crash report carries: the document's, where the tool
+	 *  keeps one in a store that outlives its page (the boundary only sees the
+	 *  page fail, so the Visualizers' tile state is out of reach — its URL it
+	 *  is). The Builder's bar loads on demand, as the layout never needs it. */
+	async function crashShareUrl(): Promise<string | null> {
+		const tool = feedbackToolForPath(page.url.pathname);
+		if (tool === 'planner') return documentBar.shareUrl();
+		if (tool === 'builder') return (await import('$lib/boardBar.svelte')).boardBar.shareUrl();
+		return location.href;
+	}
 </script>
 
 <div
@@ -847,7 +860,17 @@
 							</p>
 							<div class="tool-crash__actions">
 								<button class="btn btn--primary" onclick={reset}>Try again</button>
-								<a class="btn" href={resolve('/contribute')}>Report this</a>
+								<!-- The feedback form, with the error and — where the tool can
+								     still make one — the document's share link. -->
+								<ReportLink
+									class="btn"
+									prefill={{
+										category: 'broken',
+										tool: feedbackToolForPath(page.url.pathname),
+										error
+									}}
+									shareUrl={crashShareUrl}>Report this</ReportLink
+								>
 							</div>
 							{#if dev}
 								<pre>{error instanceof Error ? (error.stack ?? error.message) : String(error)}</pre>

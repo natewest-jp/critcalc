@@ -152,7 +152,7 @@ When any of these lands, migrate the affected characters in the same PR (aggress
 
 ## Process for a single Tier C character
 
-1. **Open the gcsim source**: `/Users/producer/Code/gcsim/internal/characters/<id>/`. Read `attack.go`, `skill.go`, `burst.go`, optionally `charge.go` / `plunge.go`.
+1. **Open the gcsim source**: `~/Code/gcsim/internal/characters/<id>/`. Read `attack.go`, `skill.go`, `burst.go`, optionally `charge.go` / `plunge.go`.
 2. **Match a pattern from the map above.** If multiple apply (e.g. Mavuika is Nightsoul + multi-mode + skill-toggle), pick the dominant one and flag the rest.
 3. **Find a reference character.** For each pattern, the closest already-curated char is the structural template:
    - Stance: hu_tao, cyno, furina, raiden_shogun

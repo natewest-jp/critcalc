@@ -5,6 +5,8 @@
 	import VeilGround from '$lib/components/VeilGround.svelte';
 	import HRule from '$lib/components/HRule.svelte';
 	import { TOOLS } from '$lib/tools';
+	import ReportLink from '$lib/components/ReportLink.svelte';
+	import { feedbackToolForPath } from '$lib/feedback';
 
 	// ⚠️ THIS PAGE RENDERS OUTSIDE THE SCENE, AND THAT IS DELIBERATE.
 	//
@@ -65,8 +67,22 @@
 				problems get found.
 			</p>
 			<!-- The one action that is not a way OUT, so it keeps its button. -->
+			<!-- ↻ 2026-10-15: a server-side failure (≥ 500) reports straight to
+			     the feedback form, carrying the status and the build; any other
+			     status keeps Contribute, which links the form too. -->
 			<div class="actions">
-				<a class="btn btn--glass ctx-glass" href={resolve('/contribute')}>Report a problem</a>
+				{#if page.status >= 500}
+					<ReportLink
+						class="btn btn--glass ctx-glass"
+						prefill={{
+							category: 'broken',
+							tool: feedbackToolForPath(page.url.pathname),
+							error: `${page.status} ${page.error?.message ?? ''}`
+						}}>Report a problem</ReportLink
+					>
+				{:else}
+					<a class="btn btn--glass ctx-glass" href={resolve('/contribute')}>Report a problem</a>
+				{/if}
 			</div>
 		{/if}
 

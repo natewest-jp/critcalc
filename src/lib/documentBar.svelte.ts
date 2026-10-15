@@ -521,6 +521,20 @@ class DocumentBarState {
 	 */
 	async shareLink() {
 		if (!this.hasContent) return;
+		try {
+			const url = await this.shareUrl();
+			if (!url) return;
+			await navigator.clipboard.writeText(url);
+			this.showNotice('Link copied');
+		} catch {
+			this.showNotice('Share failed');
+		}
+	}
+
+	/** The `?r=` link to the active document — what Copy link copies, and what
+	 *  a problem report carries ($lib/feedback.ts). `null` with nothing to share. */
+	async shareUrl(): Promise<string | null> {
+		if (!this.hasContent) return null;
 		const rosterLoadout = get(loadout);
 		const rosterCons = get(constellations);
 		// Scope the build snapshot to the resolved team (this handles inferred
@@ -547,13 +561,8 @@ class DocumentBarState {
 			constellations: cons,
 			loadout: lo
 		};
-		try {
-			const param = await encodeRotation(shared);
-			await navigator.clipboard.writeText(`${location.origin}/planner?r=${param}`);
-			this.showNotice('Link copied');
-		} catch {
-			this.showNotice('Share failed');
-		}
+		const param = await encodeRotation(shared);
+		return `${location.origin}/planner?r=${param}`;
 	}
 
 	async shareKqm() {

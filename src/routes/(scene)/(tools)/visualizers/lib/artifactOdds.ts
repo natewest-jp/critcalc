@@ -2,8 +2,8 @@
 // convolution throughout, no Monte Carlo.
 //
 // Sources (re-verified 2026-10-06, Fandom wiki via its API):
-// - Substat tier values: docs/Main Stat and Sub Stat Artifact Values.xlsx
-//   (Dimbreath datamine via OJ of Steel)
+// - Substat tier values: Dimbreath's datamine, via OJ of Steel's community
+//   table "Main Stat and Sub Stat Artifact Values" (not redistributed here)
 // - Weights, main-stat odds, tier & line-pick uniformity: wiki Artifact/Distribution
 // - Initial line counts, sets, slots, 5★ per run: wiki Loot System/Artifact Drop
 //   Distribution (domains 80% 3-line / 20% 4-line; bosses & strongboxes 66/34;

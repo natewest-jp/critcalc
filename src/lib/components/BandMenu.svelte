@@ -227,6 +227,11 @@
 		text-align: left;
 		white-space: nowrap;
 		cursor: pointer;
+		/* An item may be an <a> (Report a problem, 2026-10-15, opens the
+		   feedback form in a new tab): no underline, and the padding inside
+		   the 100% width as a button's is. */
+		box-sizing: border-box;
+		text-decoration: none;
 	}
 
 	.band-menu :global(.band-menu-item:hover:not(:disabled)),

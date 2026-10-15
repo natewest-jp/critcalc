@@ -93,6 +93,13 @@ const MARKS = {
 	link: 'Link',
 	copy: 'Copy',
 	image: 'Image',
+	/** "Report a problem" (feedback form, 2026-10-15): a speech bubble with a
+	 *  warning in it — saying something about a problem, which is what the
+	 *  link does. ⛔ Not `Bug`: a reader reporting a wrong value is not filing
+	 *  a software defect, and an insect at 14px silts into a blot. ⛔ Not
+	 *  `warn` again — that mark is the menu's ARMED destructive state, two
+	 *  items away. */
+	report: 'MessageSquareWarning',
 
 	// ── Deleting an entry ───────────────────────────────────────────────────
 	// ↻ 2026-10-09: `rename` (Pencil) retired with SavedNotationsOverlay — the

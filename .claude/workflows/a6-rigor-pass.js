@@ -193,7 +193,7 @@ log(`A6 rigor pass: fanning out ${IDS.length} per-character verification agents`
 
 const reports = await pipeline(IDS, (id) =>
 	agent(
-		`You are a data-VERIFICATION agent for critcalc (Genshin Impact tooling), repo /Users/producer/Code/critcalc. Your ONE character: "${id}" (src/lib/data/characters/${id}.json).
+		`You are a data-VERIFICATION agent for critcalc (Genshin Impact tooling), repo ~/Code/critcalc. Your ONE character: "${id}" (src/lib/data/characters/${id}.json).
 
 TASK — A6 rigor pass: the corpus's talent-scaled values were swept 2026-07-12 (talent-level-10 normalization), but hand-authored FIXED constants have never been verified. Verify every one of them in your character's JSON, fix what is provably wrong, flag what you cannot verify. This is verification, not re-authoring.
 

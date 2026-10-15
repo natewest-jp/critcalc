@@ -15,7 +15,7 @@ read that first when upgrading a stub._
 Load the character's gcsim directory first:
 
 ```
-/Users/producer/Code/gcsim/internal/characters/<character_name>/
+~/Code/gcsim/internal/characters/<character_name>/
 ```
 
 ---
