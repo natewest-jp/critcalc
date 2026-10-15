@@ -805,13 +805,20 @@
 
 	/** A card's own fingerprint: the facets the character has or can unlock,
 	 *  in the fingerprint's one order — lit at the lens, dim from a higher
-	 *  constellation (⚓ Nate 2026-10-11; ⛔ never the full fifteen). */
+	 *  constellation (⚓ Nate 2026-10-11; ⛔ never the full fifteen). ↻ A
+	 *  capability you are FILTERING by leads (responsive sweep 2026-10-15 item
+	 *  23, ⚓ Nate): a card caps its column at what its height holds (glyphFit),
+	 *  and the one you filtered for must never be the one behind its "+K". */
 	const FINGERPRINT_ORDER = FINGERPRINT.flatMap((c) => c.facets);
 	const FACET_LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
 	function glyphsFor(entry: CharacterIndexEntry): CardGlyph[] {
 		const cap = conCapFor(conMode, mounted ? $constellations[entry.id] : undefined);
 		return facetBadges(entry.caps)
-			.sort((a, b) => FINGERPRINT_ORDER.indexOf(a.facet) - FINGERPRINT_ORDER.indexOf(b.facet))
+			.sort(
+				(a, b) =>
+					Number(activeFacets.has(b.facet)) - Number(activeFacets.has(a.facet)) ||
+					FINGERPRINT_ORDER.indexOf(a.facet) - FINGERPRINT_ORDER.indexOf(b.facet)
+			)
 			.map((b) => {
 				const label = FACET_LABEL[b.facet] ?? b.facet;
 				const lit = b.minCon <= cap;
@@ -1205,7 +1212,6 @@
 		<div class="tb-band" class:tb-band--tabbed={tabbed}>
 			{#if showing !== 'lineup'}
 				<div class="tb-band-cell" bind:clientWidth={charCellW}>
-					{#if tabbed}{@render paneSwitch()}{/if}
 					{#if !foldShow}
 						<div class="segment tb-show" role="radiogroup" aria-label="Show">
 							{#each OWNERSHIP_VIEWS as v (v.key)}
@@ -1237,24 +1243,27 @@
 					</div>
 					<!-- More hangs from its END and opens leftward, so it stays over the
 						     roster column — never over the board you are filtering for. -->
-					<BandMenu
-						glass
-						role="dialog"
-						mark="filter"
-						label={moreCount > 0 ? `More · ${moreCount}` : 'More'}
-						ariaLabel="More filters"
-					>
-						{#snippet items(close)}
-							<MoreFilters
-								{roster}
-								{filters}
-								bind:ownershipView
-								showOwnership={foldShow}
-								lens={foldLens ? conModeItems : undefined}
-								{close}
-							/>
-						{/snippet}
-					</BandMenu>
+					<span class="tb-more">
+						<BandMenu
+							glass
+							role="dialog"
+							mark="filter"
+							label="More"
+							count={moreCount}
+							ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+						>
+							{#snippet items(close)}
+								<MoreFilters
+									{roster}
+									{filters}
+									bind:ownershipView
+									showOwnership={foldShow}
+									lens={foldLens ? conModeItems : undefined}
+									{close}
+								/>
+							{/snippet}
+						</BandMenu>
+					</span>
 					{#if !foldLens}
 						<!-- The constellation LENS — what the grid's capabilities are read at.
 							     A menu states the reading in one plate and gives each option room
@@ -1265,10 +1274,14 @@
 							{/snippet}
 						</BandMenu>
 					{/if}
+					<!-- TRIAL (responsive sweep 2026-10-15 item 26, D2): "Lineup" ends
+					     the band, beside the edge its pane docks on (panelRight);
+					     "Characters" still leads the Lineup cell, on the left. -->
+					{#if tabbed}{@render paneSwitch()}{/if}
 				</div>
 			{/if}
 			{#if showing !== 'characters'}
-				<div class="tb-band-cell">
+				<div class="tb-band-cell tb-band-cell--lineup">
 					{#if tabbed}{@render paneSwitch()}{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
@@ -1749,6 +1762,31 @@
 	.tb-pane-switch {
 		gap: 0.45rem;
 	}
+	/* TRIAL (item 26, D2): the Characters cell's switch is its LAST child,
+	   pushed to the band's right end past the capped search. */
+	.tb-band-cell > .tb-pane-switch:last-child {
+		margin-left: auto;
+	}
+	/* More's box, only so the fold below can reach its word without reaching
+	   the lens's (both are BandMenus); it lays out nothing itself. */
+	.tb-more {
+		display: contents;
+	}
+	/* ↻ Responsive sweep 2026-10-15 item 18 follow-up (⚓ Nate): in the
+	   Lineup TAB the cell stops where the board does (the board keeps its
+	   docked --tb-board-w there, above), so No repeats ends at the board's
+	   right edge, not a pane's width past it. Not the phone form: below
+	   BP.compact (40rem) the board is the whole screen, and so is the cell. */
+	@media (max-width: 71rem) {
+		.tb-band--tabbed .tb-band-cell--lineup {
+			max-width: var(--tb-board-w);
+		}
+	}
+	@media (max-width: 40rem) {
+		.tb-band--tabbed .tb-band-cell--lineup {
+			max-width: none;
+		}
+	}
 	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
 	   their mark and fold their word — one rule for every band control. ↻ The
 	   lineup cell of band B too (pane switch + Add team): on a Custom board
@@ -1756,6 +1794,14 @@
 	   (87px spill at 320), and the fold returns ~160px. */
 	@media (max-width: 40rem) {
 		.tb-band-label {
+			display: none;
+		}
+		/* ↻ More too (responsive sweep 2026-10-15 item 26, ⚓ Nate): its word and
+		   the separator fold, and the filter mark, the count and the chevron
+		   stay — so a filter you set and closed is still announced, in the
+		   band's own 13px type. The aria-label keeps "More filters". */
+		.tb-more :global(.band-menu-word),
+		.tb-more :global(.band-menu-sep) {
 			display: none;
 		}
 	}

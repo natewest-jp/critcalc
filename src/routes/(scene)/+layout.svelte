@@ -302,7 +302,6 @@
 			></div>
 			<div
 				class="scene-footer"
-				class:scene-footer--page={pathname !== '/'}
 				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 				out:fade={{ duration: FADE_OUT_MS }}
 			>
@@ -531,11 +530,14 @@
 	}
 
 	/* A SHORT screen's page carries the footer at the END of its panel instead
-	   (the pages layout), so the fixed one steps aside there — the landing
-	   keeps it. (max-height: 30rem): breakpoints.ts § THE HEIGHT AXIS; the
-	   literal, because custom properties do not work in media queries. */
+	   (the pages layout), so the fixed one steps aside there. ↻ The landing's
+	   too (responsive sweep item 6, ⚓ Nate 2026-10-15): on a landscape phone
+	   the cards and the notices ran into the legal line, and the line is still
+	   met at the end of every page (About included) on a short screen.
+	   (max-height: 30rem): breakpoints.ts § THE HEIGHT AXIS; the literal,
+	   because custom properties do not work in media queries. */
 	@media (max-height: 30rem) {
-		.scene-footer--page {
+		.scene-footer {
 			display: none;
 		}
 	}

@@ -219,7 +219,7 @@
 				style:left="{menuX}px"
 				style:top="{menuY}px"
 				style:width="{MENU_W}px"
-				role="listbox"
+				role="dialog"
 				aria-label="Open rotations"
 				tabindex="-1"
 				onkeydown={(e) => {
@@ -229,39 +229,45 @@
 					}
 				}}
 			>
-				{#each model.tabs as tab (tab.id)}
-					<div
-						class="doc-tabs-option"
-						class:doc-tabs-option--active={tab.id === model.activeId}
-						role="option"
-						aria-selected={tab.id === model.activeId}
-						tabindex="0"
-						onclick={() => {
-							switchTab(tab.id);
-							closeMenu();
-						}}
-						onkeydown={(e) => {
-							if (e.key === 'Enter' || e.key === ' ') {
-								e.preventDefault();
+				<!-- ↻ The LIST is the tabs alone, and the folded + is a button after
+				     it (responsive sweep 2026-10-15 item 24, a11y): inside the
+				     listbox a screen reader announced "New rotation" as one of the
+				     open rotations. A bare block, so nothing moves. -->
+				<div role="listbox" aria-label="Open rotations">
+					{#each model.tabs as tab (tab.id)}
+						<div
+							class="doc-tabs-option"
+							class:doc-tabs-option--active={tab.id === model.activeId}
+							role="option"
+							aria-selected={tab.id === model.activeId}
+							tabindex="0"
+							onclick={() => {
 								switchTab(tab.id);
 								closeMenu();
-							}
-						}}
-					>
-						<span class="doc-tab-label">{tab.label}</span>
-						{#if model.tabs.length > 1}
-							<button
-								class="tab-close"
-								tabindex="-1"
-								aria-label="Close {tab.label}"
-								onclick={(e) => {
-									e.stopPropagation();
-									closeTab(tab.id);
-								}}><Mark name="close" size={11} /></button
-							>
-						{/if}
-					</div>
-				{/each}
+							}}
+							onkeydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									switchTab(tab.id);
+									closeMenu();
+								}
+							}}
+						>
+							<span class="doc-tab-label">{tab.label}</span>
+							{#if model.tabs.length > 1}
+								<button
+									class="tab-close"
+									tabindex="-1"
+									aria-label="Close {tab.label}"
+									onclick={(e) => {
+										e.stopPropagation();
+										closeTab(tab.id);
+									}}><Mark name="close" size={11} /></button
+								>
+							{/if}
+						</div>
+					{/each}
+				</div>
 				{#if !newItems && model.addNew}
 					<!-- The + folded into the menu below `compact` (responsive sweep
 					     2026-10-15, §3 item 24): at 320 the trigger kept four
@@ -269,8 +275,7 @@
 					     label, shown; hidden above `compact`, where the + stays. -->
 					<div
 						class="doc-tabs-option doc-tabs-new"
-						role="option"
-						aria-selected="false"
+						role="button"
 						tabindex="0"
 						onclick={() => {
 							closeMenu();

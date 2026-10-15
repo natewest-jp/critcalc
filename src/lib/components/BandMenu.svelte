@@ -33,6 +33,7 @@
 		size,
 		glass = false,
 		face,
+		count = 0,
 		items
 	}: {
 		/** Button text. Omit for an icon-only trigger (pass ariaLabel instead). */
@@ -60,6 +61,11 @@
 		 *  more than a word — the Team Builder's phone filter plates show what
 		 *  they hold (2026-10-15). Pass `ariaLabel` with it. */
 		face?: Snippet;
+		/** How many choices are set inside the menu (the Team Builder's More
+		 *  filters): drawn after the label as "· N", in a box of its own so a
+		 *  host that folds the WORD (.band-menu-word) keeps the number. 0 draws
+		 *  nothing. */
+		count?: number;
 		/** Menu contents. Called with a `close` the items invoke when chosen. */
 		items: Snippet<[() => void]>;
 	} = $props();
@@ -137,7 +143,11 @@
 	{#if mark}<Mark name={mark} />{/if}
 	<!-- The label in its own box so a host can fold it away at narrow widths
 	     (DocumentActions does, below BP.compact) while the mark stays. -->
-	{#if face}{@render face()}{:else if label}<span class="band-menu-label">{label}</span>{/if}
+	{#if face}{@render face()}{:else if label}<span class="band-menu-label"
+			><span class="band-menu-word">{label}</span>{#if count > 0}<span class="band-menu-sep"
+					>&nbsp;·&nbsp;</span
+				><span class="band-menu-count">{count}</span>{/if}</span
+		>{/if}
 	{#if !compact}<Mark name="chevron" size={11} />{/if}
 </button>
 

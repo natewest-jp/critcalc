@@ -988,6 +988,9 @@
 		   containers), so nothing is lost. */
 		overflow-x: hidden;
 		overflow-y: auto;
+		/* Named, so a sticky box deep inside can ride this scroll (ToolColumns
+		   `asideSticky`'s rise) without guessing which ancestor scrolls. */
+		scroll-timeline: --tool-scroll block;
 		/* TRANSPARENT — the tools float over the live scene (tools-over-scene
 		   experiment, Nate 2026-08-05: no shell ground, no dim overlay; the
 		   PANELS are what's opaque). The occlusion handshake retired with the

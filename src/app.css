@@ -3131,6 +3131,14 @@ img {
    shell's inset reached every .scroll-fade INSIDE it and masked the top 64px
    of the Team Builder's grid (Nate, the same day). Each scroller's inset is
    its own. */
+/* How far the Planner's sticky aside has risen toward the chrome (ToolColumns
+   `asideSticky`, a scroll-driven animation): registered so it interpolates as
+   a length. */
+@property --aside-rise {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
 @property --scroll-fade-inset {
 	syntax: '<length>';
 	inherits: false;
@@ -3909,7 +3917,8 @@ img {
    Enemy RES & DEF cap their chart-and-controls column at
    --instrument-main-aspect × the tile's height, and the Readout follows the
    column instead of holding the tile's right edge; the spare width is bare
-   night on the right. The Gauge Explorer and the ICD Timeline keep the full
+   night split either side (↻ centred, ⚓ Nate 2026-10-15, sweep item 16 —
+   it sat on the left at first). The Gauge Explorer and the ICD Timeline keep the full
    width: their x axis is time, and more width is more time to read.
    ⚠ Against the TILE's height, never the chart's: the chart's height is what
    the controls leave, and the controls wrap with the width, so a cap on the
@@ -3925,7 +3934,7 @@ img {
 			grid-template-columns:
 				minmax(0, calc(100cqh * var(--instrument-main-aspect)))
 				var(--instrument-side);
-			justify-content: start;
+			justify-content: center;
 		}
 	}
 }
