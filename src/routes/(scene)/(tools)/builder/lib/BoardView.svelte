@@ -900,8 +900,10 @@
 	   screen ── The wide row puts the boss BESIDE a stack whose lineup (four
 	   56px portraits, 306px with its frame) and fingerprint (~308px) can't fit
 	   next to it on a phone. Here the boss shares a line with the checks, and the
-	   lineup and the fingerprint take the full width beneath. The split pane
-	   never gets this narrow (472px at 1000), so the wide form is untouched. */
+	   lineup and the fingerprint take the full width beneath. Above compact the
+	   board is 580px or wider (the page's --tb-board-w: docked from `wide`,
+	   and capped at the same width in the Lineup tab below it), so the wide
+	   form is untouched. */
 	@media (max-width: 40rem) {
 		.bv-lineup {
 			flex-wrap: wrap;

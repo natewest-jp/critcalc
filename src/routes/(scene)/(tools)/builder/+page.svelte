@@ -1520,6 +1520,24 @@
 		.tb-dock--lineup .tb-pane--board {
 			transform: none;
 		}
+		/* ↻ Responsive sweep 2026-10-15 item 18 (⚓ Nate): in the Lineup TAB the
+		   board keeps the width it docks at, start-aligned, instead of
+		   stretching to the pane. Stretched, a team ran 1089px wide at 1135
+		   while its content ended at 440, so Planner →, the pin and the chips
+		   stood ~520px from the lineup they belong to, and the 640px Abyss art
+		   was drawn at up to 1089px. ⚠ --tb-board-w is 580 throughout this
+		   range (it steps at `broad`), so this is the docked board exactly. */
+		.tb-pane--board > :global(.bv) {
+			max-width: var(--tb-board-w);
+		}
+	}
+	/* …but not the phone form (below BP.compact, 40rem — $lib/breakpoints.ts):
+	   there the board is the whole screen (BoardView's own narrow form), and
+	   431–640 is left to the Builder's phone pass (sweep item 20). */
+	@media (max-width: 40rem) {
+		.tb-pane--board > :global(.bv) {
+			max-width: none;
+		}
 	}
 
 	/* Band A's end zone: the board's notice and Share. */
