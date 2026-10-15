@@ -1237,24 +1237,27 @@
 					</div>
 					<!-- More hangs from its END and opens leftward, so it stays over the
 						     roster column — never over the board you are filtering for. -->
-					<BandMenu
-						glass
-						role="dialog"
-						mark="filter"
-						label={moreCount > 0 ? `More · ${moreCount}` : 'More'}
-						ariaLabel="More filters"
-					>
-						{#snippet items(close)}
-							<MoreFilters
-								{roster}
-								{filters}
-								bind:ownershipView
-								showOwnership={foldShow}
-								lens={foldLens ? conModeItems : undefined}
-								{close}
-							/>
-						{/snippet}
-					</BandMenu>
+					<span class="tb-more">
+						<BandMenu
+							glass
+							role="dialog"
+							mark="filter"
+							label="More"
+							count={moreCount}
+							ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+						>
+							{#snippet items(close)}
+								<MoreFilters
+									{roster}
+									{filters}
+									bind:ownershipView
+									showOwnership={foldShow}
+									lens={foldLens ? conModeItems : undefined}
+									{close}
+								/>
+							{/snippet}
+						</BandMenu>
+					</span>
 					{#if !foldLens}
 						<!-- The constellation LENS — what the grid's capabilities are read at.
 							     A menu states the reading in one plate and gives each option room
@@ -1749,6 +1752,11 @@
 	.tb-pane-switch {
 		gap: 0.45rem;
 	}
+	/* More's box, only so the fold below can reach its word without reaching
+	   the lens's (both are BandMenus); it lays out nothing itself. */
+	.tb-more {
+		display: contents;
+	}
 	/* ↻ Responsive sweep 2026-10-15 item 18 follow-up (⚓ Nate): in the
 	   Lineup TAB the cell stops where the board does (the board keeps its
 	   docked --tb-board-w there, above), so No repeats ends at the board's
@@ -1771,6 +1779,14 @@
 	   (87px spill at 320), and the fold returns ~160px. */
 	@media (max-width: 40rem) {
 		.tb-band-label {
+			display: none;
+		}
+		/* ↻ More too (responsive sweep 2026-10-15 item 26, ⚓ Nate): its word and
+		   the separator fold, and the filter mark, the count and the chevron
+		   stay — so a filter you set and closed is still announced, in the
+		   band's own 13px type. The aria-label keeps "More filters". */
+		.tb-more :global(.band-menu-word),
+		.tb-more :global(.band-menu-sep) {
 			display: none;
 		}
 	}
