@@ -34,7 +34,12 @@ import {
 } from '../src/lib/capabilities/shredSources.ts';
 import { deriveCoverage, encodeCoverage } from '../src/lib/coverage/deriveCoverage.ts';
 import { isCurated } from '../src/lib/utils/characterLint.ts';
-import { declaredCastTokens, hasPlungeFrames } from '../src/lib/utils/castTokens.ts';
+import {
+	declaredCastTokens,
+	hasChargeFrames,
+	hasPlungeFrames,
+	hasSpecialChargeFrames
+} from '../src/lib/utils/castTokens.ts';
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CHARACTERS_DIR = join(PROJECT_ROOT, 'src/lib/data/characters');
@@ -80,6 +85,9 @@ for (const file of files) {
 	// payload — the same reason element/weapon are eager for the token tinting.
 	entry.casts = declaredCastTokens(data);
 	entry.plunge = hasPlungeFrames(data);
+	entry.charged = hasChargeFrames(data);
+	// Only its one holder carries the key, as `gatedReactions` below.
+	if (hasSpecialChargeFrames(data)) entry.specialCharge = true;
 	const capabilities = deriveCharacterCapabilities(data).capabilities;
 	entry.caps = summarizeCapabilities(capabilities);
 	shredRows.push(...characterShredSources(data.id, data.displayName ?? data.name, capabilities));

@@ -18,7 +18,12 @@ import { artifactShredSources, characterShredSources } from '$lib/capabilities/s
 import { shredSources } from './shredSources.generated';
 import { decodeCoverage, deriveCoverage, encodeCoverage } from '$lib/coverage/deriveCoverage';
 import { isCurated } from '$lib/utils/characterLint';
-import { declaredCastTokens, hasPlungeFrames } from '$lib/utils/castTokens';
+import {
+	declaredCastTokens,
+	hasChargeFrames,
+	hasPlungeFrames,
+	hasSpecialChargeFrames
+} from '$lib/utils/castTokens';
 
 const INDEX_FIELDS = [
 	'id',
@@ -49,6 +54,8 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 	entry.curated = isCurated(source);
 	entry.casts = declaredCastTokens(source);
 	entry.plunge = hasPlungeFrames(source);
+	entry.charged = hasChargeFrames(source);
+	if (hasSpecialChargeFrames(source)) entry.specialCharge = true;
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
 	entry.coverage = encodeCoverage(deriveCoverage(source));
 	const gated = collectGatedReactions(source);
