@@ -632,6 +632,19 @@ describe('parseNotation — variant-driven stance + opensState', () => {
 		const nBlock = track2.inputBlocks.find((b) => b.parts[0] === 'N1');
 		expect(nBlock?.kind).toBe('normal');
 	});
+
+	// 🐛 engine-1 (pre-launch sweep, 2026-10-14). The swap-out closes tested
+	// "not the last segment" rather than `swapFollows`, so a same-character `>`
+	// ended the stance like a real swap. Laps reach it without anyone typing it:
+	// `repeatNotation` joins laps with ' > ', so a rotation ending on its opener
+	// crossed one every lap.
+	it('a same-character `>` is NOT a swap: the stance survives into the second segment', () => {
+		const result = parseNotation('VStub hE > VStub N1', lookup, 8);
+		const track2 = result.tracks[1];
+		expect(track2.characterId).toBe('variantstub');
+		const nBlock = track2.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock?.kind).toBe('elemental-normal');
+	});
 });
 
 describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {

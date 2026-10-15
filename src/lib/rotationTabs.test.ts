@@ -79,6 +79,21 @@ describe('rotationTabs.adopt', () => {
 		expect(rt.tabs[4].label).toBe('My rotation');
 	});
 
+	// 🐛 planner-1 (pre-launch sweep, 2026-10-14). The active tab's typed text
+	// lives in `rt.notation` until a flush, so a tab opened empty and typed into
+	// still read '' in `tabs` and was taken as spare: a Library open or an in-app
+	// link replaced it, and the rotation was not even kept in Recently closed.
+	it('does not treat a FRESH tab that has been typed into as empty', () => {
+		seed(busy(1));
+		expect(rt.addTab()).toBe(true);
+		const typed = rt.activeTabId;
+		rt.notation = 'Furina E Q > Neuvillette C';
+		expect(rt.adopt({ ...doc })).toBe(true);
+		expect(rt.tabs).toHaveLength(3); // a new tab, not the typed one
+		rt.flush();
+		expect(rt.tabs.find((t) => t.id === typed)?.notation).toBe('Furina E Q > Neuvillette C');
+	});
+
 	it('never exceeds TAB_LIMIT', () => {
 		seed(busy(TAB_LIMIT - 1));
 		expect(rt.adopt({ ...doc })).toBe(true);
