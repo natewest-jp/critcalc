@@ -1135,6 +1135,13 @@ only; Noelle/Thoma absent too).
         whatever board was open: the Lineup shows only the Planner's team, band
         A shows no active tab, Save/Share disable and No repeats hides; a tab
         click or a new board ends it in place.
+        ↻ 2026-10-15 (⚓ Nate, pre-launch sweep item 7): **Escape means cancel.**
+        On the Planner's row, Escape, the ✕ and the portrait again end the
+        whole state and return to the Planner unchanged, as its Cancel does.
+        Before, they ended only the slot. The row can change only by a swap, so
+        that left a team nothing could be picked into, under a false "the
+        Planner's team is full" strip. On a board they still end swap mode
+        where you are, because there the swap is the whole interaction.
       - ⚓ **A swap reads from the top:** entering swap mode (or moving it) scrolls
         the grid to the top; leaving it restores the roster's scroll.
       - ⚓ **The board row's frame:** the heavy right END is the team's hue at
