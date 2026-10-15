@@ -1737,6 +1737,23 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	/** Once-per-character guard for the summon-tick active-target pass — the
 	 *  received-surface twin of `firstTrackOfChar` in the team-surface loop. */
 	const tickActiveDispatched = new Set<string>();
+	/** When each track's character ARRIVED: its own start, or — across a
+	 *  same-character `>`, which is one stay on field written in two segments
+	 *  (run.ts, `carry`) — the start of the stay. Read by `onFieldDelay`, the one
+	 *  question here that is about how long somebody has been on field.
+	 *  ⚠️ Contiguity as well as the id: an unknown name between two segments of
+	 *  one character still counts as a swap, and leaves the swap's gap (at any
+	 *  swap delay above zero). */
+	const arrivedAt: number[] = [];
+	for (let ti = 0; ti < tracks.length; ti++) {
+		const prev = tracks[ti - 1];
+		const t = tracks[ti];
+		arrivedAt.push(
+			prev && prev.characterId === t.characterId && prev.activeEnd === t.activeStart
+				? arrivedAt[ti - 1]
+				: t.activeStart
+		);
+	}
 	for (let sti = 0; sti < tracks.length; sti++) {
 		const sourceTrack = tracks[sti];
 		const char = getCharacter(sourceTrack.characterId);
@@ -1880,7 +1897,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 									receiverWeapon: getCharacter(receiverTrack.characterId)?.weapon
 								}) === true;
 							const delayF = delaySpec && !waived ? framesOf(delaySpec.seconds) : 0;
-							const segStart = Math.max(buffStart, receiverTrack.activeStart + delayF);
+							const segStart = Math.max(
+								buffStart,
+								receiverTrack.activeStart,
+								arrivedAt[rti] + delayF
+							);
 							const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
 							if (segEnd <= segStart) continue;
 							segments.push({
