@@ -1,6 +1,6 @@
 # Copyright and licensing
 
-critcalc is copyright © 2026 the critcalc authors.
+critcalc is copyright © 2026 Nate West.
 
 Everything in this repository falls under one of the rows below, and the sections after the table say which paths go where. Where a path fits two entries, the more specific one wins.
 
@@ -38,7 +38,7 @@ To credit the data, write:
 
 If you share an adapted version, it must carry CC BY-SA 4.0 too.
 
-This license covers the critcalc authors' own work: how the data is chosen and arranged, the effects, conditions, frames and caveats we wrote, and the writing in the docs. It does not license the game content inside the data (see below). Character data is seeded from genshin-db (MIT), and frame data is measured against gcsim. Both notices are in `THIRD_PARTY_NOTICES.md`.
+This license covers critcalc's own work: how the data is chosen and arranged, the effects, conditions, frames and caveats we wrote, and the writing in the docs. It does not license the game content inside the data (see below). Character data is seeded from genshin-db (MIT), and frame data is measured against gcsim. Both notices are in `THIRD_PARTY_NOTICES.md`.
 
 ## critcalc's own artwork — all rights reserved
 
@@ -50,11 +50,11 @@ Drawn or rendered for critcalc. It is not covered by either license above: you m
 - **The scene plates** (the rendered sky and floor): `static/assets/landing/sky-*`, `static/assets/landing/floor-*`
 - **The landing card artwork**: the path data in `src/lib/landing/heroArt.ts`
 - **The site chrome glyphs** (About, Help, Settings): the inline SVG artwork in `src/lib/components/SiteChrome.svelte`
+- **The capability glyphs drawn for critcalc**: `static/assets/effects/Icon_Attribute_Cleanse.svg`, `Icon_Attribute_Taunt.svg`, `Icon_Attribute_DMG_Buff.svg` (DMG%), `Icon_Attribute_RES_Shred.svg`, `Icon_Attribute_Grouping.svg`, `Icon_Attribute_Infusion.svg` and `Icon_Attribute_Interruption_Res.svg`, and their paths in `src/lib/fingerprintGlyphs.generated.ts`
 - **The constellation marks**: `static/assets/constellations/` and `src/lib/constellationMarks.generated.ts`. The glyphs are cut from IBM Plex Sans (SIL OFL 1.1; see `THIRD_PARTY_NOTICES.md`).
+- **The vortex plate** from the retired portal transition: `static/assets/transitions/`
 
 The code around the embedded artwork is still AGPL-3.0. Only the artwork itself is reserved.
-
-`static/assets/transitions/` (the vortex plate, from the retired portal transition) is not licensed under either license.
 
 ## Genshin Impact content — © HoYoverse
 
@@ -66,7 +66,7 @@ critcalc's licenses do not cover HoYoverse's material. It is used here as fan co
 - `static/assets/characters/` — character portraits
 - `static/assets/weapons/`, `static/assets/artifacts/`, `static/assets/weapon-types/` — item and weapon-type art
 - `static/assets/elements/` — element icons, including the `tinted/` set generated from them, and the `lunar`, `omni` and `stellar` icons traced from art the game uses
-- `static/assets/effects/` — attribute icons. The `.webp` files are the game's own icons. The `.svg` files (and `src/lib/fingerprintGlyphs.generated.ts`, generated from them) are traced from the game's icons where the game has one.
+- `static/assets/effects/` — attribute icons. The `.webp` files are the game's own icons. The other `.svg` files (and their paths in `src/lib/fingerprintGlyphs.generated.ts`) are traced from the game's own icons; the seven drawn for critcalc are listed above.
 - `static/assets/roles/` — the Imaginarium Theater role icons
 - `static/assets/endgame/` — Spiral Abyss and Stygian Onslaught boss art, sprites and blessing art
 
