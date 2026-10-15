@@ -155,9 +155,10 @@
 	<p>
 		<strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro
 		from a Blazing Axe Mitachurl, and no auras you did not put there. Hits land on their listed timing,
-		and Shatter is not modeled. Where we do not have a measured gauge strength for a hit we use 1U and
-		mark that tick yellow. Everything else — the ×0.8 aura tax, decay rates, unit multipliers, the crystallize
-		cooldown, dendro cores and their spawn delay — follows the same model the Gauge Explorer teaches.
+		and Shatter is not modeled. Where a hit has no measured gauge strength, the Rotation Planner uses
+		1U and marks that tick yellow. Everything else — the ×0.8 aura tax, decay rates, unit multipliers,
+		the crystallize cooldown, dendro cores and their spawn delay — follows the same model the Gauge Explorer
+		teaches.
 	</p>
 </section>
 
@@ -169,7 +170,7 @@
 		by writing just their name, and you remove someone by deleting their part of the notation. On a wide
 		screen, click a bench portrait to swap that character in the Team Builder, which groups the candidates
 		by what the swap does to the team; an empty slot adds someone instead. Undo (beside the composer,
-		or ⌘Z) takes any of it back.
+		or ⌘Z / Ctrl+Z) takes any of it back.
 	</p>
 	<p>
 		The magnifier on a portrait opens that character's details. The constellation sits on the
