@@ -3128,7 +3128,8 @@ img {
 
    --scroll-fade-inset (0 by default) moves the TOP edge down: everything above
    it is masked out, and the roll-off starts there. The tool shell sets it to
-   the site chrome's height, so content fades under the strip (2026-10-14).
+   the chrome glyphs' midline and its own --scroll-fade-length, so content
+   fades UP under the strip (2026-10-14; the hybrid, 2026-10-15).
    ⚠️ REGISTERED NON-INHERITING: a plain custom property inherits, so the
    shell's inset reached every .scroll-fade INSIDE it and masked the top 64px
    of the Team Builder's grid (Nate, the same day). Each scroller's inset is
