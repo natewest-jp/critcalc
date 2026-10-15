@@ -45,6 +45,11 @@
 		Some pages link out to community resources such as gcsim and Keqing Mains. Those sites have
 		their own privacy practices, which this policy doesn't cover.
 	</p>
+	<p>
+		The feedback form is a Google Form. A <strong>Report a problem</strong> link carries a share link
+		and your browser's version in its address, so Google receives them when the form opens; they become
+		part of a report only if you submit it.
+	</p>
 </section>
 
 <section>

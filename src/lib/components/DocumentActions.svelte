@@ -5,6 +5,7 @@
 	import { library } from '$lib/library.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import Mark from './Mark.svelte';
+	import ReportLink from './ReportLink.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Band A's END zone — what you can do to the working document AS A WHOLE
@@ -192,6 +193,19 @@
 					{armed === 'closeAll' ? 'Close all rotations?' : 'Close all rotations'}
 				</button>
 			{/if}
+			<!-- The feedback form, carrying this rotation's share link (the same
+			     one Copy link makes) so the report reproduces itself. -->
+			<div class="band-menu-rule"></div>
+			<ReportLink
+				class="band-menu-item"
+				role="menuitem"
+				prefill={{ category: 'broken', tool: 'planner', includeTech: true }}
+				shareUrl={() => db.shareUrl()}
+				onclick={close}
+			>
+				<Mark name="report" />
+				Report a problem
+			</ReportLink>
 		{/snippet}
 	</BandMenu>
 </div>
