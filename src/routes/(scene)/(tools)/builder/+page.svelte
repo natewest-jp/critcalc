@@ -1268,7 +1268,7 @@
 				</div>
 			{/if}
 			{#if showing !== 'characters'}
-				<div class="tb-band-cell">
+				<div class="tb-band-cell tb-band-cell--lineup">
 					{#if tabbed}{@render paneSwitch()}{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
@@ -1748,6 +1748,21 @@
 	}
 	.tb-pane-switch {
 		gap: 0.45rem;
+	}
+	/* ↻ Responsive sweep 2026-10-15 item 18 follow-up (⚓ Nate): in the
+	   Lineup TAB the cell stops where the board does (the board keeps its
+	   docked --tb-board-w there, above), so No repeats ends at the board's
+	   right edge, not a pane's width past it. Not the phone form: below
+	   BP.compact (40rem) the board is the whole screen, and so is the cell. */
+	@media (max-width: 71rem) {
+		.tb-band--tabbed .tb-band-cell--lineup {
+			max-width: var(--tb-board-w);
+		}
+	}
+	@media (max-width: 40rem) {
+		.tb-band--tabbed .tb-band-cell--lineup {
+			max-width: none;
+		}
 	}
 	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
 	   their mark and fold their word — one rule for every band control. ↻ The
