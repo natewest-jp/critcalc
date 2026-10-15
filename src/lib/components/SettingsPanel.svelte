@@ -704,4 +704,40 @@
 		display: flex;
 		gap: 0.5rem;
 	}
+
+	/* Phone: a segment or a slider does not fit BESIDE its label. The segment
+	   doesn't shrink, so the label was squeezed to nothing (0px wide at 320 —
+	   one word per line, the segment painted over it) and the whole panel ran
+	   59px wide. Those rows take the stacked form the sound rows already use;
+	   toggle and button rows stay side by side, where they fit. The segments
+	   then share the row in equal columns (auto columns, so the two-option
+	   Traveler fills it too). */
+	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
+		.sp-row:has(> .segment),
+		.sp-row:has(> .sp-slider-ctl) {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.6rem;
+		}
+		/* ⚠ Not the grid3/grid4 pickers: column flow would line their 3 + 2
+		   voices up as five columns in one row. */
+		.sp-row > .sp-segment:not(.sp-segment--grid3, .sp-segment--grid4) {
+			display: grid;
+			grid-auto-flow: column;
+			grid-auto-columns: minmax(0, 1fr);
+		}
+		/* ⚠ `display: grid`, not the inline-grid above: as an inline-grid flex
+		   item it kept its 313px max-content width. */
+		.sp-sound-ctl .sp-segment--mode {
+			display: grid;
+			flex: 1 1 100%;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+		/* 'Animations' and 'Metronome' are 65px of text in a 74px third at
+		   320, and 'Lantern' 44px in a 55px quarter — the default 0.65rem
+		   padding clipped them. */
+		.sp-segment > .btn {
+			padding-inline: 0.25rem;
+		}
+	}
 </style>
