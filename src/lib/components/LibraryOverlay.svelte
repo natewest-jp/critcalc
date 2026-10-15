@@ -1440,9 +1440,13 @@
 		gap: 0.5rem;
 	}
 
-	/* ── One column below toolMin (54rem — $lib/breakpoints.ts): under it the
-	   side column squeezes Teams past what a heading needs (measured at 800). */
-	@media (max-width: 54rem) {
+	/* ── One column below wide (71rem — $lib/breakpoints.ts). ↻ Responsive
+	   sweep 2026-10-15 item 19 (⚓ Nate): the switch was toolMin (54rem),
+	   where the side column squeezes Teams past what a heading needs (measured
+	   at 800) — but just above it both columns were still too narrow: at 865 a
+	   notation showed ~70px of its text and "Stygian 7.1 clear" was cut by
+	   12px, while at 863, one column, everything read. */
+	@media (max-width: 71rem) {
 		.lib-body {
 			display: block;
 			overflow-y: auto;
