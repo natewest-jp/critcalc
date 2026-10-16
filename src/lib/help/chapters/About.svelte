@@ -12,23 +12,24 @@
 <h1>About critcalc</h1>
 
 <p class="lede">
-	critcalc.app is three tools for Genshin Impact theorycrafting. They draw how the game’s mechanics
-	play out — when a buff is up, which hit applies its element, how likely a roll is — and leave the
-	decision about what to build, run or pull with you.
+	critcalc.app is three tools for Genshin Impact theorycrafting. Genshin is full of such a rich variety 
+	of mechanics that can be difficult to picture mentally. All of critcalc's tools were created by a 
+	Genshin player who wanted to see these come to life in easy-to-grasp visualizations.
 </p>
 
 <section>
 	<h2 id="tools">The tools</h2>
 	<p>
 		<strong>The Team Builder</strong> is a party setup screen for Stygian Onslaught, the Spiral
-		Abyss and your own lineups. Each team shows what it can provide — healing, shields, RES shred,
-		buffs and more — read from the kits at the constellations you own, and what a swap would cost or
-		gain.
+		Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred,
+		buffs, ...), sourced from the kits at the constellations you own, and what switching out a 
+		team member would cost or gain.
 		<a href={resolve('/help/builder')}>How it works</a>
 	</p>
 	<p>
-		<strong>The Rotation Planner</strong> turns a rotation written in KQM notation into a timeline:
-		every cast and swap, cooldowns, buff windows, the enemy’s aura, timed frame by frame.
+		<strong>The Rotation Planner</strong> turns a rotation written in KQM notation into a timeline
+		of casts and swaps, cooldowns, buff windows, the enemy’s aura, timed frame by frame. You can 
+		also practice your rotations with realtime playback and audio cues.
 		<a href={resolve('/help/planner')}>How it works</a>
 	</p>
 	<p>
@@ -41,26 +42,24 @@
 <section>
 	<h2 id="data">Where the data comes from</h2>
 	<p>
-		Each character starts from genshin-db’s datamined kit and is then curated by hand: the effects,
+		Each character starts from genshin-db’s datamined kit and is then curated by hand. The effects,
 		their conditions and their constellation gates are written from the kit text, and every frame
-		count is measured against gcsim. Kits newer than genshin-db’s text are read from the Fandom
-		wiki’s tooltips.
+		count is measured against gcsim.
 	</p>
 	<p>
 		Curation is uneven, because some kits are much harder to model than others. Where a character
 		isn’t finished, the tools say so rather than guess, and the
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> lists, for every
-		character, what the Rotation Planner draws and what it leaves out.
+		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> what the 
+		Rotation Planner draws and what it leaves out.
 	</p>
 </section>
 
 <section>
 	<h2 id="who">Who makes it</h2>
 	<p>
-		critcalc is Nate West’s project, built with Claude, Anthropic’s AI model, which wrote most of
-		the code. It is one person’s work rather than a team’s, and it leans heavily on what the
-		community has measured. Corrections are welcome — the
-		<a href={resolve('/contribute')}>Contribute</a> page says how to send one.
+		critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans 
+		heavily on what the	community has measured. Corrections are welcome — the
+		<a href={resolve('/contribute')}>Contribute</a> page shares about how to help.
 	</p>
 </section>
 
