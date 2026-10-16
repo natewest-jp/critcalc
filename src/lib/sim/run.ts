@@ -923,6 +923,11 @@ export function runRotation(
 				// not pick up a stance-end clock it has no stance for.
 				const cdStartsAtStanceEnd =
 					stance.behavior === 'stance' && getCooldownStartsAtStanceEnd(active);
+				// Frames from the cast to the cooldown clock's start — the variant's
+				// own when it states one (Alyosha's Hold), else the base's. ONE value
+				// for all three readers below (readyAt, the startsOnCooldown chain,
+				// the cd-reset instant), so they cannot disagree on a hold.
+				const cdStartDelay = variant?.cooldownStartDelay ?? active.cooldownStartDelay ?? 0;
 				// P4 IR — one `cast` event per resolved cast (the unified single
 				// site). Post-P4 #3: this event IS the per-cast record — the E/Q
 				// bar is projected from it at finalize, so every geometric field
@@ -944,9 +949,7 @@ export function runRotation(
 					castTime,
 					uptime: dur,
 					cooldown: cd,
-					readyAt: cdStartsAtStanceEnd
-						? castStart + dur + cd
-						: castStart + (active.cooldownStartDelay ?? 0) + cd,
+					readyAt: cdStartsAtStanceEnd ? castStart + dur + cd : castStart + cdStartDelay + cd,
 					summonActivatesAt: spawn,
 					fieldStart: castStart + (spawn ?? 0),
 					stackContext: stacks
@@ -1163,7 +1166,7 @@ export function runRotation(
 					// ⚠️ Only reachable with the reduction that closes the loop —
 					// see the field's doc and the round's §0.
 					if (kind === 'skill') {
-						const clockStart = castStart + (active.cooldownStartDelay ?? 0);
+						const clockStart = castStart + cdStartDelay;
 						for (const sib of char.abilities) {
 							if (sib.abilityType !== 'skill' || sib.startsOnCooldown !== true) continue;
 							if (sib.id === active.id) continue;
@@ -1247,7 +1250,7 @@ export function runRotation(
 							stackState,
 							variantCtx
 						),
-						castStart + (active.cooldownStartDelay ?? 0)
+						castStart + cdStartDelay
 					);
 				}
 				// Variant consumes a transient state (gcsim DeleteStatus on cast):

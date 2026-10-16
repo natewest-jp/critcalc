@@ -1010,6 +1010,24 @@ export type Trigger =
 			 */
 			sharesCastCounter?: true;
 			/**
+			 * ⚓ A NAMED COUNTER SHARED WITH ANOTHER SERIES (2026-10-16, Alyosha).
+			 * gcsim keys ICD by `(character, tag, group)`, so two summons attacking
+			 * on one tag and group spend ONE counter — Alyosha's Fulgurite Hunting
+			 * Field and Tugarin are both `ICDTagElementalBurst` on
+			 * `ICDGroupAlyoshaBurst` (96f, first only), the Field ticks first and
+			 * Tugarin mauls 39f later, inside the window it opened: measured, he
+			 * applies 0 of 7. A series' own clock is private (keyed by its label and
+			 * index), so without this he applied all seven.
+			 *
+			 * Every series carrying the same name spends one clock — the SAME
+			 * namespace as an ability's `icdCounter`, since both are gcsim's
+			 * per-character counter. ⚠️ The series must agree on `icdGate` (one
+			 * clock runs one window) and a lone name shares nothing; lint D.27i
+			 * refuses both. ⛔ Opt-in, never inferred from two series coinciding —
+			 * read it off the frames audit's applied counts AND the Go's tags.
+			 */
+			icdCounter?: string;
+			/**
 			 * ⚓ HOW MANY TICKS THE SERIES FIRES, when the count is not
 			 * `duration ÷ interval` (tick-cap round, 2026-08-18).
 			 *
@@ -3110,6 +3128,12 @@ export type AbilityVariant = {
 	input?: Input[];
 	frames?: FrameMap;
 	cooldown?: number;
+	/** The variant's own `cooldownStartDelay` (FRAMES), REPLACING the base's —
+	 *  a hold whose cooldown clock starts at its own, later hitmark. Alyosha's
+	 *  Hold starts 111f after the press where her tap starts at 16f
+	 *  (`SetCDWithDelay` in both gcsim branches, 2026-10-16); read off the base
+	 *  alone, the hold's ghost tail ended 95f early. Absent = the base's. */
+	cooldownStartDelay?: number;
 	cooldownModifiers?: CooldownModifier[];
 	/** Overrides the base ability's behavior (e.g. Zhongli hE: instant skill → persistent shield). */
 	behavior?: 'instant' | 'persistent' | 'stance';

@@ -24,7 +24,8 @@ import type {
 	IcdWindow,
 	NormalAbility,
 	SkillAbility,
-	BurstAbility
+	BurstAbility,
+	Summon
 } from '$lib/types/ability';
 
 // ---------------------------------------------------------------------------
@@ -515,6 +516,51 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		);
 	if (!hasSkillOrBurst)
 		push('warn', 'missing-cast-ability', 'character has no skill or burst ability');
+
+	// (D.27i) `summonTick.icdCounter` — two SERIES on one named counter
+	// (Alyosha's Field + Tugarin, 2026-10-16). One clock runs one window, so the
+	// sharers must state the same `icdGate`; a lone name shares nothing; and
+	// `'none'` touches no clock at all. Judged over the whole character because
+	// the sharers are, by construction, on different summons.
+	{
+		const byName = new Map<string, { gate: string; where: string }[]>();
+		for (const a of c.abilities)
+			for (const s of (a as { summons?: Summon[] }).summons ?? [])
+				for (const eff of s.effects ?? []) {
+					if (eff.trigger.type !== 'summonTick' || eff.trigger.icdCounter === undefined) continue;
+					const name = eff.trigger.icdCounter;
+					const where = `${a.id} / ${s.label}`;
+					if (typeof name !== 'string' || !name || eff.trigger.icdGate === 'none') {
+						push(
+							'strict',
+							'summon-tick-icd-counter',
+							`${where}: icdCounter must be a non-empty name on a gated series (not icdGate 'none')`,
+							a.id
+						);
+						continue;
+					}
+					byName.set(name, [
+						...(byName.get(name) ?? []),
+						{ gate: JSON.stringify(eff.trigger.icdGate ?? null), where }
+					]);
+				}
+		for (const [name, holders] of byName) {
+			if (holders.length < 2)
+				push(
+					'strict',
+					'summon-tick-icd-counter',
+					`icdCounter "${name}" is on one series only (${holders[0].where}) — it shares nothing; drop it`,
+					c.id
+				);
+			else if (new Set(holders.map((h) => h.gate)).size > 1)
+				push(
+					'strict',
+					'summon-tick-icd-counter',
+					`icdCounter "${name}" is shared by series with different icdGates (${holders.map((h) => `${h.where} ${h.gate}`).join(' · ')}) — one clock runs one window`,
+					c.id
+				);
+		}
+	}
 
 	// (D.27h) `icdCounter` — a NAMED counter shared across abilities (ICD cap
 	// round follow-up, 2026-10-04). A name only one ability carries shares
@@ -2118,7 +2164,10 @@ function lintCastAbility(
 	// encoded as the second because a delay equal to the duration happens to
 	// compute the same first cast; ⛔ don't go back.
 	if (a.behavior === 'stance' && a.cooldownStartsAtStanceEnd === true) {
-		if (a.cooldownStartDelay !== undefined) {
+		if (
+			a.cooldownStartDelay !== undefined ||
+			a.variants?.some((v) => v.cooldownStartDelay !== undefined)
+		) {
 			push(
 				'strict',
 				'cd-stance-end-with-delay',
