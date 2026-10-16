@@ -143,8 +143,7 @@ async function exists(p) {
  * language, and its icon.
  */
 async function abyss(table) {
-	const version = (await get(API_VERSION_URL))?.version ?? 'latest';
-	const list = (await get(TOWER_LIST_URL(version))) ?? {};
+	const { version, list } = await towerList();
 	const cycles = [];
 	const starts = Object.keys(table).sort();
 	await mkdir(ABYSS_ICON_DIR, { recursive: true });
@@ -215,8 +214,48 @@ async function abyss(table) {
 		_sources: 'lunaris.moe',
 		cycles
 	};
+	await keepsEveryEntry(ABYSS_OUT, 'cycles', 'start', cycles);
 	await writeFile(ABYSS_OUT, JSON.stringify(out, null, '\t') + '\n');
 	console.log(`wrote ${ABYSS_OUT}: ${cycles.length} cycle(s)`);
+}
+
+/**
+ * The Abyss cycle list, from the newest data version that SERVES one. ⚠️ The
+ * version lunaris names as current can lack the file (2026-10-16: 7.1.53
+ * answered 404 while 7.1.52 served it), and an absent list used to read as an
+ * empty one — every cycle "not on lunaris yet", and abyss.json rewritten
+ * without them.
+ */
+async function towerList() {
+	const versions = (await get(API_VERSION_URL))?.versions ?? [];
+	for (const version of versions) {
+		const list = await get(TOWER_LIST_URL(version));
+		if (list && Object.keys(list).length) return { version, list };
+		console.warn(`  ! no Abyss cycle list at lunaris v${version}`);
+	}
+	throw new Error('no lunaris data version serves an Abyss cycle list');
+}
+
+/**
+ * ⚓ A fetch may ADD entries, never lose one. A dated entry already in the
+ * committed file and absent from this run is the SOURCE failing (a 404, a
+ * blip, an HTML shell), not the game retiring a season — so refuse to write,
+ * rather than let a bad request delete a shipped season. To retire one on
+ * purpose, delete its line from season-dates.json AND from the output file.
+ */
+async function keepsEveryEntry(path, field, key, fresh) {
+	let before;
+	try {
+		before = JSON.parse(await readFile(path, 'utf8'))[field] ?? [];
+	} catch {
+		return; // no committed file yet
+	}
+	const now = new Set(fresh.map((e) => e[key]));
+	const lost = before.map((e) => e[key]).filter((k) => !now.has(k));
+	if (lost.length)
+		throw new Error(
+			`${path}: this run lost ${lost.join(', ')} — refusing to write (the source failed, not the season)`
+		);
 }
 
 const addMonths = (iso, n) => {
@@ -312,6 +351,7 @@ async function main() {
 			sorted.map(([slug, b]) => [slug, { description: b.description, mechanics: b.mechanics }])
 		)
 	};
+	await keepsEveryEntry(OUT, 'seasons', 'version', seasons);
 	await mkdir(dirname(OUT), { recursive: true });
 	await writeFile(OUT, JSON.stringify(out, null, '\t') + '\n');
 	await writeFile(BOSS_TEXT_OUT, JSON.stringify(text, null, '\t') + '\n');
