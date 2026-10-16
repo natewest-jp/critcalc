@@ -45,7 +45,7 @@ This license covers critcalc's own work: how the data is chosen and arranged, th
 Drawn or rendered for critcalc. It is not covered by either license above: you may not reuse it, including in a fork. A fork has to replace it with its own artwork.
 
 - **The brand mark / logo**: `static/critcalc-logo-white.svg`, `src/lib/assets/favicon.svg`, and any copy of the mark inlined in source
-- **The app icons (the starfield tile)**: `static/apple-touch-icon.png`, `static/icon-192.png`, `static/icon-512.png`
+- **The app icons**: `static/apple-touch-icon-v2.png`, `static/icon-192-v2.png`, `static/icon-512-v2.png`, `static/icon-maskable-512-v2.png`
 - **The social card**: `static/assets/og/`
 - **The scene plates** (the rendered sky and floor): `static/assets/landing/sky-*`, `static/assets/landing/floor-*`
 - **The landing card artwork**: the path data in `src/lib/landing/heroArt.ts`

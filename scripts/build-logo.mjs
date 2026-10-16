@@ -300,7 +300,7 @@ writeFileSync(OUT_FAVICON, favicon);
 
 // ── the apple-touch icon: NOT this script's any more ────────────────────────
 // ↻ 2026-10-14: the home-screen icons (iOS and the web app manifest) are the
-// starfield artwork, built by scripts/build-app-icons.mjs. This script used to
+// mark on the favicon's plate (↻ 2026-10-16; the starfield before), built by scripts/build-app-icons.mjs from THIS script's outputs. This script used to
 // raster the favicon tile into static/apple-touch-icon.png; it would now
 // silently overwrite that icon, so it no longer writes it.
 
