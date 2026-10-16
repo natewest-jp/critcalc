@@ -2701,7 +2701,13 @@ export function runRotation(
 						);
 					}
 					clock.advance(clock.now + duration);
-					humanPad(t === 'D' ? 'dash' : 'jump', j);
+					// ⚓ A cancel dash pays NO human pad: the player pressed and held
+					// the next `C` BEFORE tapping the dash, so the game executes it the
+					// moment the dash allows — a buffered input, like N → N. Verified by
+					// Nate in game for CDC (one held C, D tapped mid-hold) and frame by
+					// frame on Prydwen's FDC demo (C held, then D), 2026-10-16. gcsim's
+					// own name for the resume's windup skip is `buffered`.
+					if (!cancel) humanPad(t === 'D' ? 'dash' : 'jump', j);
 				}
 			}
 		}

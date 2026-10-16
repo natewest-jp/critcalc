@@ -292,3 +292,19 @@ Tap E then Q first (from a cold start her Q has only 10 points), then Prydwen's
   - spin hits during a dash's cooldown wait (the caveat says to add `C`s);
   - multi-target spin geometry;
   - the finisher forced by her Nightsoul running out mid-spin.
+
+### §7 Human timing: the cancel dash's next `C` is held (Nate, 2026-10-16)
+
+- **How the CDC is played** (Nate, in game): press `C` and hold it, tap `D` while
+  holding, then release. There is ONE press: the `C` after the dash is the same
+  hold resuming. For FDC, Nate stepped through Prydwen's demo frame by frame: `C`
+  is held BEFORE `D` is tapped. gcsim agrees — the resume's windup skip is its
+  `buffered` parameter.
+- **So a cancel dash pays no human pad.** The tap itself is still a timed press,
+  so the transition into the dash keeps its pad.
+- **In Nate's Overloaded rotation**
+  (`Mavuika E > Ororon E Q > Chevreuse hE > Iansan E N Q > Mavuika Q CDCDCCF DCDCCF DCDCC FDC`),
+  the last DC now stays on the bike up to 10f of padding (last `C` at 1006,
+  Blessing ends at 1032). Before the fix it needed 7f.
+- ⚓ The 10f default stays: KQM's sourced "starting point", which our model
+  already applies only where the game does not buffer.

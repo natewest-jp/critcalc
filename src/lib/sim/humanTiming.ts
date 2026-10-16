@@ -30,6 +30,11 @@
  *   - "Any action after swapping to a character also can't be buffered, meaning
  *     you have to wait until the new character appears." A REACTION, not a
  *     timing — the largest single human site.
+ *   - ↻ 2026-10-16: a CANCEL dash into a spinning Charged Attack (Mavuika's
+ *     `CDC` / `FDC`) is followed by a HELD input — the next `C` is pressed and
+ *     held before the dash is tapped (Nate, in game and on Prydwen's demo) — so
+ *     the dash → C transition is free. Decided at the dash's call site in
+ *     `run.ts`, which is the only place that knows the dash is a cancel.
  *   - During a Skill or Burst, inputs are "buffered or ignored" and the page does
  *     not say which. ⚠️ An UNKNOWN, resolved conservatively: KQM's +10 is "every
  *     attack", so a cast pads like everything else that is not a stored input.

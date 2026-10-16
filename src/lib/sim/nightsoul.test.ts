@@ -166,3 +166,24 @@ describe('The dash cooldown (universal; gcsim ApplyDashCD)', () => {
 		expect(dashes).toEqual([0, 21, 111]);
 	});
 });
+
+describe('Human timing and the cancel dash (Nate, in game, 2026-10-16)', () => {
+	it('the C after a cancel dash is HELD before the dash — it pays no pad; the dash itself does', () => {
+		const run = (pad: number | null) =>
+			parseNotation(
+				'Mavuika E Q CDC',
+				lookup,
+				8,
+				undefined,
+				undefined,
+				undefined,
+				pad === null ? null : { padFrames: pad, fullAnimations: false }
+			).events.flatMap((e) =>
+				e.kind === 'action' && e.characterId === MAV ? [{ label: e.label, time: e.time }] : []
+			);
+		const human = run(10);
+		const [c1, d, c2] = human.filter((x) => x.label === 'C' || x.label === 'D');
+		expect(c2.time - d.time).toBe(6); // no pad between the dash and the held C
+		expect(d.time - c1.time).toBe(20 + 10); // the tap is a timed press
+	});
+});
