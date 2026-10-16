@@ -37,6 +37,8 @@ import kleeForLanding from '$lib/data/characters/klee.json';
 import iansanJson from '$lib/data/characters/iansan.json';
 import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
+import tartagliaJson from '$lib/data/characters/tartaglia.json';
+import chascaJson from '$lib/data/characters/chasca.json';
 import yanfeiJson from '$lib/data/characters/yanfei.json';
 import nahidaJson from '$lib/data/characters/nahida.json';
 import xiaoJson from '$lib/data/characters/xiao.json';
@@ -2274,6 +2276,48 @@ describe('parseNotation — Mizuki: Dreamdrifter holds the field (2026-10-16)', 
 		expect(exit).toBeDefined();
 		expect(ws[0].end).toBe(exit.time);
 		expect(turn(r).activeEnd).toBe(exit.time + 30); // the press's own swap cancel
+	});
+});
+
+describe('parseNotation — stance exits: an E re-press ends the stance (2026-10-16)', () => {
+	const lookup = (n: string): CharacterData | null =>
+		n === 'Tartaglia'
+			? (tartagliaJson as unknown as CharacterData)
+			: n === 'Chasca'
+				? (chascaJson as unknown as CharacterData)
+				: n === 'Bennett'
+					? (bennettJson as unknown as CharacterData)
+					: null;
+	const stances = (r: ReturnType<typeof parseNotation>, id: string) =>
+		r.windows.filter((w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === id);
+	type Cast = Extract<ReturnType<typeof parseNotation>['events'][number], { kind: 'cast' }>;
+	const castOf = (r: ReturnType<typeof parseNotation>, abilityId: string) =>
+		r.events.find((e): e is Cast => e.kind === 'cast' && e.abilityId === abilityId);
+
+	it('Tartaglia: the recast leaves Melee Stance, so the next Normal is his bow again', () => {
+		const r = parseNotation('Tartaglia E N2 E N2', lookup, 8);
+		const exit = castOf(r, 'tartaglia__skill__foul_legacy_recast')!;
+		const [w] = stances(r, 'tartaglia');
+		expect(w.end).toBe(exit.time);
+		const after = r.events.filter((e) => e.kind === 'action' && e.time > exit.time);
+		expect(after.length).toBeGreaterThan(0);
+		for (const e of after) expect((e as { element?: string }).element).toBeUndefined();
+	});
+
+	it('Chasca: E again ends Nightsoul, and the 6.5s cooldown starts THERE', () => {
+		const r = parseNotation('Chasca E N1 E', lookup, 8);
+		const exit = castOf(r, 'chasca__skill__end_nightsoul')!;
+		const [w] = stances(r, 'chasca');
+		expect(w.end).toBe(exit.time);
+		const open = castOf(r, 'chasca__skill__spirit_reins_shadow_hunt')!;
+		expect(open.readyAt).toBe(exit.time + framesOf(6.5));
+	});
+
+	it('Chasca: airborne, she cannot be swapped out — the swap waits for her Nightsoul', () => {
+		const r = parseNotation('Chasca E > Bennett E', lookup, 8);
+		const [w] = stances(r, 'chasca');
+		expect(w.end - w.start).toBe(framesOf(10));
+		expect(r.tracks.find((t) => t.characterId === 'chasca')!.activeEnd).toBe(w.end);
 	});
 });
 
