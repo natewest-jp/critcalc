@@ -111,6 +111,27 @@
 			"terminatesOnSwap": true,
 			"duration": 30,
 			"cooldown": 6,
+			"cooldownStartsAtStanceEnd": true,
+			"cooldownByStanceTime": {
+				"bands": [
+					{ "below": 2, "cooldown": 7 },
+					{ "below": 4, "cooldown": 8 },
+					{ "below": 5, "cooldown": 9 },
+					{ "below": 8, "cooldown": 5, "plusTime": true },
+					{ "below": 30, "cooldown": 6, "plusTime": true }
+				],
+				"atExpiry": 45,
+				"exitDelay": 11,
+				"resetIfBurstInStance": { "type": "constellation", "level": 6 }
+			},
+			"cooldownModifiers": [
+				{
+					"source": "C1: Foul Legacy: Tide Withholder",
+					"type": "percent",
+					"value": -20,
+					"conditions": { "type": "constellation", "level": 1 }
+				}
+			],
 			"frames": { "anim": 39, "N": 19, "Q": 19, "D": 19, "J": 21 },
 			"tags": [],
 			"effects": [],
@@ -133,7 +154,8 @@
 				"cooldown: 6 retained from genshin-db (in-game text). gcsim's effective skill CD is parametric on time-in-melee, computed in onExitMeleeStance: <2s→7s, 2-4s→8s, 4-5s→9s, 5-8s→(5+t)s, 8-30s→(6+t)s, ≥30s→45s. C1 multiplies by 0.8. The schema has no representation for parametric CD; reviewer to decide. Initial cast also calls SetCDWithDelay(skill, 60f, cdDelay) — a 1s placeholder CD that allows the in-stance recast.",
 				"cooldownStartDelay on the entry cast: 14f from-standing, 0f from walk/dash (gcsim skill.go cdDelay branch). Recorded value omitted; reviewer can author once the variant-state model lands.",
 				"Particles: 1 Hydro particle on E hit, gated by a 3s ICD (particleICDKey). Not authored (no particle-effect schema field); flagged for completeness.",
-				"Riptide application + slash/burst/flash callbacks not authored — Riptide is a debuff economy with multiple sub-effects (Slash 1.5s ICD, Flash 0.7s ICD, Burst on-defeat) the schema cannot express cleanly. Reviewer to decide representation."
+				"Riptide application + slash/burst/flash callbacks not authored — Riptide is a debuff economy with multiple sub-effects (Slash 1.5s ICD, Flash 0.7s ICD, Burst on-defeat) the schema cannot express cleanly. Reviewer to decide representation.",
+				"↻ 2026-10-16 (stance-exits round): the cooldown is gcsim's at last. `cooldownStartsAtStanceEnd` + `cooldownByStanceTime` — gcsim `onExitMeleeStance` (skill.go:194-228), reached by the E recast (sibling, `endsStance`), a swap (`terminatesOnSwap`) and the 30s expiry, reads t = time since the E cast: <2s → 7s, 2–4s → 8s, 4–5s → 9s, 5–8s → 5s + t, 8–30s → 6s + t, ≥30s → 45s. `exitDelay: 11` is SetCDWithDelay's from-standing delay on the recast (0 from walk/dash — not modelled; a swap and the expiry start it at once, as gcsim's swap handler passes 0). C1 ×0.8 is an ordinary `cooldownModifiers` entry (−20%), applied to the table's result as gcsim does. C6: a burst cast in Melee Stance sets `mlBurstUsed` and the exit RESETS the skill instead (`resetIfBurstInStance`). `cooldown: 6` stays as the authored kit value and is not read while the table is present. ⚠️ gcsim floors the C1 product to whole frames."
 			],
 			"application": [{ "frame": 16, "element": "hydro", "units": 2 }]
 		},
@@ -144,13 +166,16 @@
 			"abilityType": "skill",
 			"conditions": { "type": "state", "state": "inStance" },
 			"behavior": "instant",
-			"cooldown": 7,
+			"cooldown": 0,
 			"frames": { "anim": 18, "N": 17, "D": 17, "J": 17, "swap": 16 },
+			"endsStance": { "at": 0 },
 			"_curatorNotes": [
 				"In-stance skill recast — exits Melee Stance early and returns to Ranged. Frames sourced from gcsim's skillMeleeFrames: InitAbilSlice(18) with Attack=17, Burst=18, Dash=17, Jump=17, Swap=16.",
-				"cooldown: 7 is the minimum value of the parametric exit CD (timeInMelee < 2s → 7s). See base-skill _curatorNotes for the full table. C1 reduces by 20%. C6 + Q-in-melee triggers ResetActionCooldown instead — flag separately; not authored.",
+				"⛔ SUPERSEDED 2026-10-16 — kept as history: cooldown: 7 is the minimum value of the parametric exit CD (timeInMelee < 2s → 7s). See base-skill _curatorNotes for the full table. C1 reduces by 20%. C6 + Q-in-melee triggers ResetActionCooldown instead — flag separately; not authored.",
 				"Walk/Dash-state variants exist with much earlier cancel windows (skillMeleeWalkFrames anim 24 with Attack=5, Burst=5, Dash=6, Jump=3; skillMeleeDashFrames anim 23 with Attack=13, Burst=16, Dash=22, Jump=3). The schema has one frames slot — recorded the standing variant. Reviewer can promote to variants[] if needed.",
-				"No stanceExtension — the recast does not extend the stance, it terminates it. (Contrast with Cyno's Mortuary Rite which does extend.)"
+				"No stanceExtension — the recast does not extend the stance, it terminates it. (Contrast with Cyno's Mortuary Rite which does extend.)",
+				"↻ 2026-10-16 (stance-exits round): `endsStance { at: 0 }` — the recast now ENDS Melee Stance. gcsim `skill.go` Skill(): with `meleeKey` active it calls onExitMeleeStance(cdDelay) at the press, which deletes the status; without this field the stance ran its full 30s and every Normal after the recast stayed a Hydro melee swing (measured: `Tartaglia E N2 E N2`, window 0–1800, the second N2 Hydro). The pill now ends at the press too (`clampStance`). ⏭ The cooldown is still wrong: gcsim starts the base skill's CD at this exit with a length set by time-in-melee (base-skill notes; docs/mizuki-holds-field-round-2026-10-16.md F3), while this sibling carries its own flat 7s clock and the base's 6s clock started at the entry cast.",
+				"↻ 2026-10-16: `cooldown: 0` — the recast has no clock of its own; the CD it starts is the BASE skill's, set by `cooldownByStanceTime` there (+ `exitDelay` 11f). The 7s that stood here was the table's minimum on the wrong ability."
 			],
 			"nothingToModel": true
 		},
@@ -227,7 +252,7 @@
 			"constellationLevel": 1,
 			"description": "Decreases the CD of Foul Legacy: Raging Tide by 20%.",
 			"_curatorNotes": [
-				"No effect authored. gcsim multiplies the parametric exit CD by 0.8 in onExitMeleeStance. The schema has no parametric-CD or CD-multiplier representation; reviewer to decide."
+				"⛔ SUPERSEDED 2026-10-16 — authored as a −20% `cooldownModifiers` entry on the skill, applied to the stance-time table. Kept as history: No effect authored. gcsim multiplies the parametric exit CD by 0.8 in onExitMeleeStance. The schema has no parametric-CD or CD-multiplier representation; reviewer to decide."
 			]
 		},
 		{

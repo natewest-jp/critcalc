@@ -2748,6 +2748,33 @@ export type ElementalApplication = {
  * other named states and transient windows are left alone (`consumesState`
  * closes one of those). A cast with no open stance does nothing.
  */
+/**
+ * ⚓ A COOLDOWN WHOSE LENGTH IS SET BY THE STANCE'S OWN LENGTH (Tartaglia, stance-
+ * exits round, 2026-10-16). gcsim's `onExitMeleeStance` reads the time since the
+ * E cast when Melee Stance ends — by E, a swap or the 30s expiry — and sets the
+ * skill CD from a table: under 2s → 7s, 2–4s → 8s, 4–5s → 9s, 5–8s → 5s + t,
+ * 8–30s → 6s + t, and 45s once the stance ran its full length.
+ *
+ * - `bands` — ascending by `below` (SECONDS of stance time, exclusive). The first
+ *   band the stance's length is under gives `cooldown` seconds, plus that length
+ *   when `plusTime`. A length at or past the last `below` takes `atExpiry`.
+ * - `exitDelay` — FRAMES from an `endsStance` cast to the clock's start (gcsim's
+ *   `SetCDWithDelay(…, 11)` on the E recast). A swap or the expiry starts it at once.
+ * - `resetIfBurstInStance` — when this holds AND the character cast a burst during
+ *   the stance, the end RESETS the cooldown instead (Tartaglia C6, gcsim
+ *   `mlBurstUsed`). Read at the end, because that is where the clock is set — a
+ *   reset at the burst itself would be overwritten by it.
+ *
+ * The result goes through the ability's `cooldownModifiers` like any cooldown
+ * (his C1 ×0.8). ⚠️ One author: a general "f(stance time)" was not built.
+ */
+export type StanceTimeCooldown = {
+	bands: { below: number; cooldown: number; plusTime?: true }[];
+	atExpiry: number;
+	exitDelay?: number;
+	resetIfBurstInStance?: Condition;
+};
+
 export type EndsStance = {
 	at: number | 'castEnd';
 	conditions?: Condition;
@@ -2966,6 +2993,10 @@ export type SkillAbility =
 			 *  stance end that moves LATER after the fact would leave a stale
 			 *  placement (lint D.22). Early exit moves it EARLIER and is handled. */
 			cooldownStartsAtStanceEnd?: boolean;
+			/** The cooldown's LENGTH is set by how long the stance ran — see
+			 *  {@link StanceTimeCooldown}. Only beside `cooldownStartsAtStanceEnd`
+			 *  (lint D.49). */
+			cooldownByStanceTime?: StanceTimeCooldown;
 			/** Additional named state opened when this stance is active, alongside the
 			 *  default "inStance". Closes with the stance window. Used for Natlan
 			 *  Nightsoul characters where the stance is semantically a Nightsoul Blessing
@@ -3327,6 +3358,13 @@ export function getDurationExtensions(a: CastAbility): DurationExtension[] | und
  *  because the two holders open their stance from the base cast. */
 export function getCooldownStartsAtStanceEnd(a: CastAbility): boolean {
 	return a.behavior === 'stance' ? a.cooldownStartsAtStanceEnd === true : false;
+}
+
+/** The stance-time cooldown table, on a skill stance only. */
+export function getCooldownByStanceTime(a: CastAbility): StanceTimeCooldown | undefined {
+	return a.behavior === 'stance' && 'cooldownByStanceTime' in a
+		? a.cooldownByStanceTime
+		: undefined;
 }
 
 // ---------------------------------------------------------------------------

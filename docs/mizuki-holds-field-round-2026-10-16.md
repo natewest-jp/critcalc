@@ -81,11 +81,14 @@ too, and the corpus passed it unchanged.
   the Ring's rate (0.5 per 0.1s, against 0.9 on the bike), the Ring keeps attacking,
   and a Tap after swapping back re-mounts the bike on a 1s recast CD. A fix needs
   the Blessing's off-field length, i.e. a drain model, which is not built.
-- **F2 — Chasca's cooldown starts at the cast; gcsim starts it at Nightsoul exit**
+  ⚓ Nate 2026-10-16: **simulate her Nightsoul points and Fighting Spirit for real**
+  (option A — she is one of the most important characters meta-wise), ⛔ not the
+  stopgap of letting the Blessing run its authored length.
+- ✅ **F2 — DONE same day (`fix/stance-exits`)**, with §5. Chasca's cooldown starts at the cast; gcsim starts it at Nightsoul exit
   (`chasca/skill.go:105`, `SetCD` inside `exitNightsoul()`).
   `cooldownStartsAtStanceEnd` is the existing field for it, and her curator note
   ("modelled via duration + cooldown") predates that field.
-- **F3 — Tartaglia's cooldown is a flat 6s; in game it depends on time in melee**
+- ✅ **F3 — DONE same day (`fix/stance-exits`, §5).** Tartaglia's cooldown was a flat 6s; in game it depends on time in melee
   (7s up to 45s, ×0.8 at C1, reset if Q was used in melee; gcsim
   `onExitMeleeStance`). It is already documented as a gap in his notes. A cut
   stance now makes the error visible sooner.
@@ -94,3 +97,51 @@ too, and the corpus passed it unchanged.
 - **F5 — the exit press is uncovered by the frames audit** ("no gcsim analogue").
   Its frames are the base skill's slice, which gcsim also returns for the cancel.
   A `drivers.json` row for the in-state press would cover it.
+
+## 5. Stance exits (2026-10-16, `fix/stance-exits`)
+
+The first follow-up branch found two more Mizuki-shaped defects while doing F2.
+
+- **Tartaglia's E recast did not leave Melee Stance.** He already had an
+  `Exit Melee` sibling, but it carried no `endsStance`. So the stance ran its
+  full 30s, and every Normal after the recast stayed a Hydro melee swing. It now
+  has `endsStance {at: 0}` (gcsim's `onExitMeleeStance` runs inside the press).
+  His cooldown is still F3.
+- **Chasca (F2 and more):**
+  - `cooldownStartsAtStanceEnd` on her skill.
+  - A new sibling, `End Nightsoul`, on `E`, with gcsim's `skillCancelFrames` and
+    `endsStance {at: 0}`.
+  - `holdsField`: she is airborne in Nightsoul and cannot be swapped out (gcsim's
+    E→Swap is 586 + 37f, "wait for nightsoul to run out"). Our `swap: 37` let
+    `Chasca E … > Bennett` cut her at 37f. A trailing `~Xs` and an E exit cost the
+    same 37f to the swap.
+
+Found and recorded, not done:
+
+- **F6 — Chasca's `C` in Nightsoul takes no time.** Her Multitarget Fire has no
+  charge frames, and its hold form, the core of her damage, is unmodelled. Her
+  curator notes record it as an accepted gap (A7: team-element-resolved bullets).
+  For a meta character it deserves its own round.
+- **F7 — Wanderer and Jahoda may want `holdsField` too.** gcsim refuses
+  Wanderer's swap during Windfavored (`SwapCD = MaxInt16`; he is airborne), and
+  Jahoda's frames block everything but E during Shadow Pursuit. ⚠️ Not applied:
+  Wanderer's Windfavored also ends when Kuugoryoku runs out, which our fixed 10s
+  does not model, so holding to 10s could overshoot. Check against the game first.
+
+### F3 — Tartaglia's stance-time cooldown (⚓ Nate approved the shape)
+
+- **`cooldownByStanceTime`** on a skill stance, lint D.49:
+  - `bands` give a length per band of stance time (`plusTime` adds the stance
+    time); `atExpiry` covers the full length.
+  - `exitDelay` (frames) applies after an `endsStance` exit only.
+  - `resetIfBurstInStance` is a condition read at the END, because that is where
+    gcsim sets the clock; a reset at the burst would be overwritten by the exit.
+- **Wiring:**
+  - The table is resolved at the cast, through the same `applyCooldownModifiers`
+    as any cooldown (C1 −20% is an ordinary modifier entry).
+  - The stance record carries it to `restampStanceCooldown`, now the ONE place a
+    stance-end clock is re-placed. `clampStance` calls it, and so does a burst
+    inside a reset-eligible stance, since a natural expiry is never clamped.
+- **Data:** the recast's stray 7s clock is now 0; the CD it starts is the base
+  skill's.
+- **Tests:** each band, a swap, the expiry (45s), C1 and C6.

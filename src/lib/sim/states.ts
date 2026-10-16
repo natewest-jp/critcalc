@@ -21,12 +21,12 @@
  */
 
 import type { TransientStateSpec } from '$lib/types/ability';
-import type { CastAbility } from '$lib/types/ability';
+import type { CastAbility, StanceTimeCooldown } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { getCooldownStartsAtStanceEnd, getPersistentBehavior, stateKey } from '$lib/types/ability';
 import { framesOf } from '$lib/utils/frames';
 import type { CastEvent } from '$lib/utils/rotationEvents';
-import type { CharState } from './charState';
+import type { CharState, StanceRecord } from './charState';
 import type { SimContext, StateWindowRec } from './context';
 import { DEFAULT_ASCENSION, evalCondition, type ChainIndex } from './conditions';
 import { findSummonsForBar } from './summons';
@@ -164,7 +164,10 @@ export function clampStance(
 	ctx: SimContext,
 	cs: CharState,
 	characterId: string,
-	at: number
+	at: number,
+	/** Frames from the end to a stance-end cooldown clock's start — an
+	 *  `endsStance` cast's `cooldownByStanceTime.exitDelay`; 0 for a swap. */
+	cdDelay = 0
 ): number | undefined {
 	const stance = cs.stance;
 	if (!stance) return undefined;
@@ -180,25 +183,59 @@ export function clampStance(
 	// a separate defect. `docs/mizuki-holds-field-round-2026-10-16.md` §3.
 	stance.ownerUptime = Math.min(stance.ownerUptime, stanceEnd - stance.start);
 	if (stance.companion) closeStateWindows(ctx, cs, characterId, stance.companion.name, stanceEnd);
-	if (getCooldownStartsAtStanceEnd(stance.ownerAbility)) {
-		const castRef = stance.castRef;
-		const staleReadyAt = castRef.readyAt;
-		const readyAt = stanceEnd + castRef.cooldown;
-		castRef.readyAt = readyAt;
-		// The queue is keyed by exact ability id, so this cannot reach a
-		// teammate's or a sibling's clock. Replace the entry this cast wrote —
-		// identified by its stale value — rather than q[0], which a multi-charge
-		// sort may have moved off the front.
-		const queue = ctx.eChargeQueues.get(stance.ownerAbility.id);
-		if (queue && staleReadyAt !== undefined) {
-			const idx = queue.indexOf(staleReadyAt);
-			if (idx !== -1) {
-				queue[idx] = readyAt;
-				queue.sort((a, b) => a - b);
-			}
+	if (getCooldownStartsAtStanceEnd(stance.ownerAbility))
+		restampStanceCooldown(ctx, stance, cdDelay);
+	return stanceEnd;
+}
+
+/**
+ * Re-place a stance-end cooldown clock from the stance's CURRENT end — the
+ * `readyAt` the chart's ghost tail reads and the charge-queue entry the cast
+ * wrote, or the two disagree. Called by `clampStance` and, for Tartaglia's C6
+ * reset, by a burst cast inside the stance (a natural expiry is never clamped).
+ *
+ * The length is the cast's `cooldown`, unless the ability states a
+ * `cooldownByStanceTime` table — then it is read off the stance's length (and
+ * `castRef.cooldown`, the tail's label, follows), or zero after a burst when
+ * its reset condition holds.
+ */
+export function restampStanceCooldown(ctx: SimContext, stance: StanceRecord, cdDelay = 0): void {
+	const castRef = stance.castRef;
+	const staleReadyAt = castRef.readyAt;
+	let readyAt: number;
+	if (stance.cdTable) {
+		if (stance.cdTable.resets && stance.burstInStance) {
+			readyAt = stance.end;
+		} else {
+			const cd = stance.cdTable.lengthFor(stance.end - stance.start);
+			castRef.cooldown = cd;
+			readyAt = stance.end + cdDelay + cd;
+		}
+	} else {
+		readyAt = stance.end + castRef.cooldown;
+	}
+	castRef.readyAt = readyAt;
+	// The queue is keyed by exact ability id, so this cannot reach a
+	// teammate's or a sibling's clock. Replace the entry this cast wrote —
+	// identified by its stale value — rather than q[0], which a multi-charge
+	// sort may have moved off the front.
+	const queue = ctx.eChargeQueues.get(stance.ownerAbility.id);
+	if (queue && staleReadyAt !== undefined) {
+		const idx = queue.indexOf(staleReadyAt);
+		if (idx !== -1) {
+			queue[idx] = readyAt;
+			queue.sort((a, b) => a - b);
 		}
 	}
-	return stanceEnd;
+}
+
+/** The raw table length in FRAMES for a stance that ran `ranF` frames — before
+ *  `cooldownModifiers`. A length at or past the last band takes `atExpiry`. */
+export function stanceTimeCooldownFrames(spec: StanceTimeCooldown, ranF: number): number {
+	for (const band of spec.bands) {
+		if (ranF < framesOf(band.below)) return framesOf(band.cooldown) + (band.plusTime ? ranF : 0);
+	}
+	return framesOf(spec.atExpiry);
 }
 
 /**

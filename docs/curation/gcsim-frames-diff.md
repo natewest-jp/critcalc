@@ -8,8 +8,8 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **128** authored · **120** with a gcsim source
-- FrameMaps: **1169** authored · **1050** matching gcsim exactly · **38** disagreeing · **81** uncovered
-- skill/burst application schedules observed: **304** · unobserved: **18**
+- FrameMaps: **1170** authored · **1050** matching gcsim exactly · **38** disagreeing · **82** uncovered
+- skill/burst application schedules observed: **304** · unobserved: **19**
 - summon tick streams cross-checked: **61**
 - hits carrying a measured gcsim ICD cadence: **3392** of **3395**
 
@@ -84,14 +84,14 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | anim 95→97 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95, anim 138→97 |
 
-## 3. Uncovered maps (81)
+## 3. Uncovered maps (82)
 
 ⚠️ Uncovered is **not** the same as matching. A map here has no gcsim reading at
 all; the migration leaves it alone and it keeps `anim = swap`.
 
-**no gcsim analogue** (33)
+**no gcsim analogue** (34)
 
-> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · freminet `freminet__skill__pressurized_floe.variants[E]` · freminet `freminet__skill__pressurized_floe.variants[E]` · furina `furina__skill__salon_solitaire.variants[E]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[0]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[1]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[2]` · iansan `iansan__normal__weighted_spike_swift_stormflight.chargeFrames` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Press E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__normal__loop_shot.hits[0]` · kinich `kinich__normal__loop_shot.hits[1]` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · lisa `lisa__skill__violet_arc.variants[E]` · sigewinne `sigewinne__burst__super_saturated_syringing.variants[Q]` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__normal__fiery_passion_strikes.plungeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[0]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[1]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[2]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[3]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[4]` · varka `varka__normal__favonius_bladework_sturm_und_drang.chargeFrames` · varka `varka__skill__four_winds_ascension.frames` · yumemizuki_mizuki `yumemizuki_mizuki__skill__end_dreamdrifter.frames`
+> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · chasca `chasca__skill__end_nightsoul.frames` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · freminet `freminet__skill__pressurized_floe.variants[E]` · freminet `freminet__skill__pressurized_floe.variants[E]` · furina `furina__skill__salon_solitaire.variants[E]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[0]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[1]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[2]` · iansan `iansan__normal__weighted_spike_swift_stormflight.chargeFrames` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Press E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__normal__loop_shot.hits[0]` · kinich `kinich__normal__loop_shot.hits[1]` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · lisa `lisa__skill__violet_arc.variants[E]` · sigewinne `sigewinne__burst__super_saturated_syringing.variants[Q]` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__normal__fiery_passion_strikes.plungeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[0]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[1]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[2]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[3]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[4]` · varka `varka__normal__favonius_bladework_sturm_und_drang.chargeFrames` · varka `varka__skill__four_winds_ascension.frames` · yumemizuki_mizuki `yumemizuki_mizuki__skill__end_dreamdrifter.frames`
 
 **no gcsim source** (21)
 
@@ -573,11 +573,12 @@ row needs `icdCounter` on every ability sharing it. ⛔ Opt-in, never a default.
 | nilou | `hE@state-inStance+stacks-danceStep-2` | Water Wheel +43 applied | 3 | ✅ `icdCounter` |
 | nilou | `h2E@state-inStance+stacks-danceStep-2` | Water Wheel +43 applied | 3 | ✅ `icdCounter` |
 
-### No observed schedule (18)
+### No observed schedule (19)
 
 ⚓ These land in the provisional register: absent is not empty, and a bar drawn
 from an absent list carries `--ui-provisional` (L6).
 
+- chasca `chasca__skill__end_nightsoul` — no gcsl spelling for this variant / no driver row for its state
 - chiori `chiori__burst__hiyoku_twin_blades · Q` — no gcsl spelling for this variant / no driver row for its state
 - emilie `emilie__burst__aromatic_explication · Q` — no gcsl spelling for this variant / no driver row for its state
 - flins `flins__burst__ancient_ritual_cometh_the_night · sQ` — no gcsl spelling for this variant / no driver row for its state

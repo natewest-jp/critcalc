@@ -229,6 +229,41 @@ export function resolveStanceFields(
 	return { behavior, opensState, terminatesOnSwap };
 }
 
+/**
+ * A cooldown length in FRAMES through the ability's modifiers — the team's
+ * skill modifiers first (Anemo Resonance), then its own. ONE assembly for the
+ * authored cooldown and for a `cooldownByStanceTime` length (Tartaglia's C1
+ * ×0.8 reaches his table through here), so the two cannot drift.
+ */
+export function applyCooldownModifiers(
+	rawFrames: number,
+	ability: CastAbility,
+	variant: AbilityVariant | undefined,
+	resolvedStates: ReadonlySet<string>,
+	constellationLevel: number,
+	chainIndex: ChainIndex,
+	stacks: ReadonlyMap<string, number> | undefined,
+	context: ConditionContext | undefined,
+	teamSkillCooldownModifiers: readonly CooldownModifier[] = []
+): number {
+	const ownCdMods = variant?.cooldownModifiers ?? ability.cooldownModifiers;
+	const cdMods =
+		ability.abilityType === 'skill' && teamSkillCooldownModifiers.length > 0
+			? [...teamSkillCooldownModifiers, ...(ownCdMods ?? [])]
+			: ownCdMods;
+	return applyModifiers(
+		rawFrames,
+		cdMods,
+		DEFAULT_ASCENSION,
+		resolvedStates,
+		constellationLevel,
+		chainIndex,
+		stacks,
+		FPS, // a `flat` cooldown modifier is authored in seconds
+		context
+	);
+}
+
 export function resolveAbilityTiming(
 	ability: CastAbility,
 	variant: AbilityVariant | undefined,
@@ -245,21 +280,16 @@ export function resolveAbilityTiming(
 	 *  resonance-reduced value, as in game. Ignored for a burst. */
 	teamSkillCooldownModifiers: readonly CooldownModifier[] = []
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
-	const ownCdMods = variant?.cooldownModifiers ?? ability.cooldownModifiers;
-	const cdMods =
-		ability.abilityType === 'skill' && teamSkillCooldownModifiers.length > 0
-			? [...teamSkillCooldownModifiers, ...(ownCdMods ?? [])]
-			: ownCdMods;
-	const cooldown = applyModifiers(
+	const cooldown = applyCooldownModifiers(
 		framesOf(variant?.cooldown ?? ability.cooldown),
-		cdMods,
-		DEFAULT_ASCENSION,
+		ability,
+		variant,
 		resolvedStates,
 		constellationLevel,
 		chainIndex,
 		stacks,
-		FPS, // a `flat` cooldown modifier is authored in seconds
-		context
+		context,
+		teamSkillCooldownModifiers
 	);
 	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
 	const duration = applyModifiers(

@@ -42,6 +42,13 @@ export type StanceRecord = {
 	/** The holder stays on field until the window ends (`holdsField`): the
 	 *  turn-ending swap waits for it. Read where the turn ends. */
 	holdsField: boolean;
+	/** `cooldownByStanceTime` resolved at the cast (Tartaglia): the cooldown
+	 *  LENGTH in frames for a stance that ran so long, modifiers applied, and
+	 *  whether a burst inside the stance resets it instead (his C6). Read by
+	 *  `restampStanceCooldown`. */
+	cdTable?: { lengthFor: (ranF: number) => number; resets: boolean };
+	/** A burst was cast while this stance was up — read with `cdTable.resets`. */
+	burstInStance?: boolean;
 	/** Ability that opened the window; read for its durationExtensions[]. */
 	ownerAbility: CastAbility;
 	/** The cast event that opened the window (post-P4 #3: bars are projections
