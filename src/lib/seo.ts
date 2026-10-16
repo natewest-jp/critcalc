@@ -49,10 +49,10 @@ export const SITE_URL = 'https://critcalc.app';
  * delta is invisible at the ~400px it renders at, while the WhatsApp failure is
  * total. (Verified 2026-08-16.)
  */
-export const OG_IMAGE = '/assets/og/critcalc-og-v1.jpg';
+export const OG_IMAGE = '/assets/og/critcalc-og-v2.jpg';
 export const OG_IMAGE_W = 1200;
 export const OG_IMAGE_H = 630;
-export const OG_IMAGE_ALT = 'critcalc — Genshin Impact tools for visualizing mechanics';
+export const OG_IMAGE_ALT = 'critcalc.app — tools for Genshin Impact';
 
 /** Shown for any route with no entry below. */
 export const DEFAULT_DESCRIPTION = 'Genshin Impact tools for planning and theorycrafting.';
