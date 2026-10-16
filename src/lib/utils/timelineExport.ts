@@ -19,7 +19,7 @@
  * take a screenshot. Three of the four things it offers — uniform framing, the
  * watermark, straight-to-clipboard — a screenshot roughly matches.
  *
- * THE FOURTH IS WHY IT STAYS: it paints `labelW + totalWidth`, the WHOLE
+ * THE FOURTH IS WHY IT STAYS: it paints `totalWidth`, the WHOLE
  * timeline, not the viewport. A minute-long rotation at working zoom is several
  * screens wide, and sharing that as one image is the thing a user cannot do for
  * themselves without scrolling and stitching.
@@ -76,6 +76,17 @@ import {
 } from '$lib/timeline/auraPlot';
 import type { GadgetRow } from '$lib/timeline/gadgetRows';
 import type { AuraKey } from '$lib/utils/gauge';
+import type { NotationTint } from '$lib/timeline/notationTints';
+import { paintSceneBackdrop } from '$lib/utils/exportScene';
+import {
+	benchImageSources,
+	paintBench,
+	resolveRoles,
+	RIBBON_W,
+	type ExportBenchCard
+} from '$lib/utils/exportBench';
+import { RIBBON_CHROME, RIBBON_TAIL_H } from '$lib/benchBand.svelte';
+export type { ExportBenchCard };
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
@@ -154,17 +165,6 @@ const BAR_LABEL = '#fff';
 // provenance statement, not an error — and the two on-screen rules this mirrors
 // moved with it. ⚠ The :root rung, not the ctx-light one: the chart is dark.
 const UI_PROVISIONAL = '#f6d365';
-// The circular backing behind a (transparent-background) avatar in the label
-// column. ↻ 2026-08-05 (archetype consistency pass): was the LIGHT context's
-// #f2f2ec, mirroring the `ctx-light` class SlotPortrait used to carry. That
-// class is gone — the bench card renders in the ribbon's DARK context, and the
-// export's own label column has always been painted CHART_BG, so a paper disc
-// was drift in both directions.
-// ↻ 2026-08-11: --sp-avatar-fill was re-cut onto ONE ground and that ground is
-// --surface-well, so the flat disc follows it down a rung. The export never
-// carried the element gradient (a PNG label column has no element context to
-// tint with), so it mirrors the gradient's TOP stop, as it always has.
-const PORTRAIT_BG = '#1f2635'; // --surface-well (ctx-dark) → --slate-900
 
 // ── Aura-lane mod colours (gauge round L6) ──────────────────────────────────
 // ⚠ The five elemental mods go through `elementPalette`, which is itself the
@@ -218,7 +218,6 @@ export const PALETTE_MIRROR = {
 	MUTED,
 	INK,
 	BAR_FILL,
-	PORTRAIT_BG,
 	RX_FROZEN,
 	RX_QUICKEN,
 	RX_BURNING,
@@ -270,12 +269,10 @@ function mix(a: string, b: string, pctA: number): string {
 export type ExportBar = TimelineBar & { hasSummon: boolean };
 
 export type ExportSlot = {
-	displayName: string | null; // null = blank slot
 	element: string | undefined;
 	/** No-frame-map character (uncurated stub, not Blank): its N/C/P tokens get
 	 *  the dire gradient + dire text, mirroring the on-screen treatment. */
 	isApprox: boolean;
-	consLevel: number;
 	blockH: number;
 	qRowTop: number;
 	activeRowTop: number;
@@ -292,17 +289,24 @@ export type ExportSlot = {
 	summonRows: SummonSubrow[];
 	procRows: WeaponProcSubrow[];
 	receivedRows: CharReceivedBuffSubrow[];
-	/** Equipped artifact/weapon icon paths — drawn under the name so shared
-	 *  images show who caused which buffs. */
-	equipIcons: string[];
+	/** The slot's bench card — a copy of the live one (exportBench.ts). */
+	bench: ExportBenchCard;
 };
 
 export type TimelineSnapshot = {
-	title: string;
+	/** The tab's name when the reader gave it one (null for "Tab 3" and the
+	 *  like) — the header's right side. */
+	tabLabel: string | null;
 	/** The raw notation string — rendered as the export's header. */
 	notation: string;
+	/** What the composer tints each token with (`notationTints`). */
+	notationTints: NotationTint[];
+	/** How the reader is timing the rotation — the footer says it in words, so
+	 *  a padded rotation is never taken for a frame-perfect one. */
+	timingNote: string;
+	/** The rotation's length in FRAMES — where the export cuts (and fades). */
+	endFrame: number;
 	scale: number;
-	labelW: number;
 	rulerH: number;
 	totalWidth: number;
 	contentH: number;
@@ -366,8 +370,6 @@ export type TimelineSnapshot = {
 	gadgetFillAlpha: number;
 	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
-	avatarFor: (slotIdx: number) => string | null;
-	elementGlyphFor: (element: string | undefined) => string | null;
 };
 
 // ── Image preload ────────────────────────────────────────────────────────────
@@ -381,42 +383,62 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 	});
 }
 
-/** Greedy word-wrap against the current ctx font. */
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
-	if (!text) return [];
-	const words = text.split(' ');
-	const lines: string[] = [];
-	let cur = '';
-	for (const word of words) {
-		const trial = cur ? `${cur} ${word}` : word;
-		if (ctx.measureText(trial).width > maxW && cur) {
+/** Word-wrap keeping each word's offset into the source string, so a
+ *  wrapped line can still be tinted by source ranges (`notationTints`). */
+function wrapWords(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	offset: number,
+	maxW: number
+): Array<Array<{ text: string; start: number }>> {
+	const lines: Array<Array<{ text: string; start: number }>> = [];
+	let cur: Array<{ text: string; start: number }> = [];
+	let curW = 0;
+	const spaceW = ctx.measureText(' ').width;
+	for (const m of text.matchAll(/\S+/g)) {
+		const word = { text: m[0], start: offset + (m.index ?? 0) };
+		const ww = ctx.measureText(word.text).width;
+		if (cur.length && curW + spaceW + ww > maxW) {
 			lines.push(cur);
-			cur = word;
-		} else {
-			cur = trial;
+			cur = [];
+			curW = 0;
 		}
+		curW += (cur.length ? spaceW : 0) + ww;
+		cur.push(word);
 	}
-	if (cur) lines.push(cur);
+	if (cur.length) lines.push(cur);
 	return lines;
 }
 
 // ── The painter ──────────────────────────────────────────────────────────────
 
 const DPR = 2; // fixed 2× raster for crisp Discord/KQM embeds
-const PAD = 16; // canvas padding around the chart
-const FOOTER_H = 22; // watermark strip
+// ── The frame around the chart (2026-10-16 redesign) ──
+const PAD = 24; // the scene's margin around everything
+const BENCH_GAP = 16; // the ribbon to the plot's gutter
+/** Room left of 0s for the aura lane's unit labels ("1U", "2U"). */
+const UNIT_GUTTER = 22;
+/** The brand row: the chrome's own lockup, at the chrome's own size. */
+const BRAND_SIZE = 24; // --fs-4xl, the wordmark
+const BRAND_MARK = 1.5714; // the mark's height ÷ the wordmark's (SiteChrome)
+const BRAND_GAP = 6; // 0.35rem
+const BRAND_H = Math.round(BRAND_SIZE * BRAND_MARK);
+const NOTATION_PX = 12;
+const NOTATION_LINE_H = 18;
+const HEADER_GAP = 14; // brand → notation → chart
+const FOOTER_H = 28;
+/** ⚓ THE CUT (Nate 2026-10-16, "let's see it in action"): the image ends this
+ *  far past the rotation's last frame, and its last END_FADE px fade out, so a
+ *  cooldown tail still running reads as running on rather than chopped. */
+const END_PAD = 64;
+const END_FADE = 52;
+const LOGO_SRC = '/critcalc-logo-white.svg';
 
 export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	await document.fonts.ready;
 
-	// Preload every image the chart needs (portraits, glyphs, stat icons).
-	const imageSrcs = new Set<string>();
-	snap.slots.forEach((s, i) => {
-		const a = snap.avatarFor(i);
-		if (a) imageSrcs.add(a);
-		const g = snap.elementGlyphFor(s.element);
-		if (g) imageSrcs.add(g);
-	});
+	// Preload every image: stat icons, the bench's art and icons, the logo.
+	const imageSrcs = new Set<string>([LOGO_SRC]);
 	for (const row of snap.teamBuffRows) {
 		const icon = snap.statIconFor(row.primaryStat);
 		if (icon) imageSrcs.add(icon);
@@ -427,9 +449,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			if (icon) imageSrcs.add(icon);
 		}
 	}
-	for (const slot of snap.slots) {
-		for (const src of slot.equipIcons) imageSrcs.add(src);
-	}
+	for (const src of benchImageSources(snap.slots.map((s) => s.bench))) imageSrcs.add(src);
 	// The moonsign lane's one constant glyph — mirrors LUNAR_ICON on screen
 	const lunarIconSrc = snap.moonsignRows.length ? snap.statIconFor('lunarDmgBonus') : undefined;
 	if (lunarIconSrc) imageSrcs.add(lunarIconSrc);
@@ -441,49 +461,53 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		})
 	);
 
-	const w = snap.labelW + snap.totalWidth + PAD * 2;
+	// ── Geometry ──
+	// `ox` is 0s; the ribbon and the unit gutter stand to its left.
+	const benchX = PAD;
+	const ox = PAD + RIBBON_W + BENCH_GAP + UNIT_GUTTER;
+	const endX = ox + Math.round((snap.endFrame / FPS) * snap.scale);
+	const chartW = Math.min(snap.totalWidth, endX - ox + END_PAD);
+	const w = ox + chartW + PAD;
 
-	const canvas = document.createElement('canvas');
-	const ctx = canvas.getContext('2d');
-	if (!ctx) throw new Error('canvas 2d context unavailable');
+	// The notation, wrapped to the width right of the ribbon's edge (it reads
+	// under the brand, across the page).
+	const measure = document.createElement('canvas').getContext('2d')!;
+	measure.font = `${NOTATION_PX}px ${MONO}`;
+	const lead = snap.notation.length - snap.notation.trimStart().length;
+	const notationLines = wrapWords(measure, snap.notation.trim(), lead, w - PAD * 2);
+	const notationH = notationLines.length * NOTATION_LINE_H;
+	const headerH = BRAND_H + HEADER_GAP + notationH + (notationH ? HEADER_GAP : 0);
 
-	// Header: the notation itself, wrapped to the canvas width. Measured
-	// before the canvas is sized (resizing resets ctx state anyway).
-	const HEADER_LINE_H = 17;
-	ctx.font = `11px ${MONO}`;
-	const notationLines = wrapText(ctx, snap.notation.trim(), w - PAD * 2);
-	const headerH = notationLines.length > 0 ? notationLines.length * HEADER_LINE_H + 14 : 0;
-
-	const h = headerH + snap.contentH + PAD * 2 + FOOTER_H;
-	canvas.width = w * DPR;
-	canvas.height = h * DPR;
-	ctx.scale(DPR, DPR);
-
-	// Ground
-	ctx.fillStyle = CHART_BG;
-	ctx.fillRect(0, 0, w, h);
-
-	// Notation header
-	ctx.font = `11px ${MONO}`;
-	ctx.fillStyle = 'rgba(230, 237, 248, 0.85)';
-	ctx.textAlign = 'left';
-	ctx.textBaseline = 'alphabetic';
-	notationLines.forEach((line, i) => {
-		ctx.fillText(line, PAD, PAD + 8 + i * HEADER_LINE_H);
-	});
-
-	// Chart origin (tracks area starts right of the label column, below the
-	// notation header). The ruler rides the TOP edge (DAW convention, mirrors the
-	// live component); track lanes start below it at oy + rulerH.
-	//
-	// ⚠ `oy` IS THE RULER'S TOP, NOT THE CHART COLUMN'S (2026-08-17). The aura
-	// lane sits above the axis now, so the column opens `auraHeaderH` earlier.
-	// Defining the origin this way is deliberate: every `oy + snap.rulerH + …`
-	// below is a track offset and stays exactly as it was, so the lane's move is
-	// a change to TWO expressions here rather than to forty downstream.
-	const ox = PAD + snap.labelW;
 	const chartTop = PAD + headerH;
 	const oy = chartTop + snap.auraHeaderH;
+	// The ribbon opens with the chart column and its head carries the first
+	// card down to the first track group, as the live strip's does.
+	const ribbonTop = chartTop;
+	const slotsBottom =
+		snap.slotTops[snap.slots.length - 1] + snap.slots[snap.slots.length - 1].blockH;
+	const ribbonHead = oy + snap.rulerH - ribbonTop - RIBBON_CHROME;
+	const ribbonBottom = oy + snap.rulerH + slotsBottom + RIBBON_TAIL_H;
+	const bodyBottom = Math.max(chartTop + snap.contentH, ribbonBottom);
+	const h = bodyBottom + 10 + FOOTER_H + PAD;
+
+	// ── Layers ──
+	// The scene first, in device pixels; then everything at DPR.
+	const canvas = document.createElement('canvas');
+	canvas.width = Math.round(w * DPR);
+	canvas.height = Math.round(h * DPR);
+	const base = canvas.getContext('2d');
+	if (!base) throw new Error('canvas 2d context unavailable');
+	base.drawImage(await paintSceneBackdrop(w, h, DPR), 0, 0);
+	base.scale(DPR, DPR);
+
+	// The chart paints on a layer of its own, so its right edge can fade out
+	// at the cut without fading the scene under it.
+	const layer = document.createElement('canvas');
+	layer.width = canvas.width;
+	layer.height = canvas.height;
+	const ctx = layer.getContext('2d');
+	if (!ctx) throw new Error('canvas 2d context unavailable');
+	ctx.scale(DPR, DPR);
 
 	// ⚓ The export's own frames→px seam, mirroring the two wrappers in
 	// RotationTimeline: the snapshot carries FRAMES (gauge-round.md C1) while
@@ -522,11 +546,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.fillText(`${tick.t}s`, ox + tick.x, oy + snap.rulerH - 11);
 		}
 	}
-	ctx.strokeStyle = LANE_LINE;
-	ctx.beginPath();
-	ctx.moveTo(ox, oy + snap.rulerH + 0.5);
-	ctx.lineTo(ox + snap.totalWidth, oy + snap.rulerH + 0.5);
-	ctx.stroke();
+	// ↻ 2026-10-16: no ruler seam — the export stands on the scene now, as the
+	// screen does, and the screen dropped it.
 
 	// Rounded-rect helper (uniform radius)
 	function rr(px: number, py: number, pw: number, ph: number, r: number) {
@@ -1053,37 +1074,33 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.restore();
 	}
 
-	// ── Lane separators (horizontal) — drawn BEFORE bars/connectors so the
-	//    connectors span slot boundaries uninterrupted (matches on-screen
-	//    stacking, where positioned bars paint above the container borders) ──
-	ctx.strokeStyle = LANE_LINE;
-	const hline = (yy: number) => {
-		ctx.beginPath();
-		ctx.moveTo(PAD, yy + 0.5);
-		ctx.lineTo(ox + snap.totalWidth, yy + 0.5);
-		ctx.stroke();
-	};
-	snap.slots.forEach((slot, si) => {
-		hline(oy + snap.rulerH + snap.slotTops[si] + slot.blockH);
-	});
-	// Lane separators are top-only (mirrors the live border-top scheme): a
-	// lane's closing line is drawn ONLY when another lane follows, so the
-	// bottom-most lane leaves no line before the ruler gap.
-	// ↻ 2026-08-17: the aura lane LEFT this test when it moved above the ruler.
-	// It is no longer something that "comes after" — moonsign is the bottom-most
-	// lane again, and closes only when nothing follows it, which is never.
-	const laneFollows = (after: 'teamBuffs' | 'nb') => {
-		const later = [after === 'teamBuffs' ? snap.nbTop : null, snap.moonsignTop];
-		return later.some((t) => t !== null);
-	};
-	if (laneFollows('teamBuffs')) {
-		hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
-	}
-	if (snap.nbTop !== null && laneFollows('nb')) {
-		hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
-	}
-	// ⛔ No closing line under moonsign: it is bottom-most now, and the rule is
-	// "a lane closes only when something comes after it".
+	// ↻ 2026-10-16: no lane separators. They were the paper version's — a flat
+	// chart needed them to stop reading as soup — and the export stands on the
+	// scene now, where the screen dropped them.
+
+	// ── Lane names, at the plot's left edge and UNDER the bars, as the screen
+	//    sets them (.rp-lane-name, z-index 0): a bar that starts at 0s covers it ──
+	ctx.fillStyle = MUTED;
+	ctx.font = `600 9px ${SANS}`;
+	ctx.textAlign = 'left';
+	const laneLabelX = ox + 2;
+	// Header hides when the lane is empty (mirrors the on-screen behavior) — the
+	// lane's reserved height stays, so lanes below it don't shift.
+	if (snap.teamBuffRows.length > 0)
+		ctx.fillText(
+			'TEAM BUFFS',
+			laneLabelX,
+			oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
+		);
+	if (snap.nbTop !== null)
+		ctx.fillText('NIGHTSOUL BURSTS', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
+	if (snap.moonsignTop !== null)
+		ctx.fillText(
+			'ASCENDANT GLEAM',
+			laneLabelX,
+			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
+		);
+	if (snap.auraHeaderH > 0) ctx.fillText('TARGET AURA', laneLabelX, chartTop + 9);
 
 	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
 	// desaturate/mix pairing mirrors the DOM's ghost rules exactly)
@@ -1219,7 +1236,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				const next = row.windows[wi + 1];
 				const visW = next ? Math.min(ww, x(next.start) - wx) : ww;
 				if (visW <= 24) return;
-				const name = snap.slots[row.slotIdx]?.displayName ?? '';
+				const name = snap.slots[row.slotIdx]?.bench.displayName ?? '';
 				ctx!.save();
 				ctx!.beginPath();
 				ctx!.rect(wx, rowTop, visW - 2, snap.buffRowH);
@@ -1458,123 +1475,94 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			gadgetY += rowH + snap.gadgetRowGap;
 		}
 	}
-	// ── Label column ──
-	// Opaque backing (below the notation header) so long ghost bars never
-	// bleed under the labels
-	ctx.fillStyle = CHART_BG;
-	ctx.fillRect(0, oy, PAD + snap.labelW, h - oy);
+	// ── The cut: the chart layer fades out over its last END_FADE px ──
+	const cutX = ox + chartW;
+	ctx.save();
+	ctx.globalCompositeOperation = 'destination-in';
+	const fade = ctx.createLinearGradient(cutX - END_FADE, 0, cutX, 0);
+	fade.addColorStop(0, '#000');
+	fade.addColorStop(1, 'rgba(0,0,0,0)');
+	ctx.fillStyle = fade;
+	ctx.fillRect(0, 0, w, h);
+	ctx.restore();
+	base.drawImage(layer, 0, 0, w, h);
 
-	snap.slots.forEach((slot, si) => {
-		const top = oy + snap.rulerH + snap.slotTops[si];
-		const p = elementPalette(slot.element);
-		const cx = PAD + 8;
+	// ── The bench: the live ribbon, its cards beside their track groups ──
+	paintBench(
+		base,
+		benchX,
+		ribbonTop,
+		ribbonHead,
+		snap.slots.map((s) => s.blockH),
+		snap.slots.map((s) => s.bench),
+		images,
+		resolveRoles()
+	);
 
-		// Portrait: circle clip + neutral backing + element ring
-		const size = 54;
-		const px = PAD + (snap.labelW - size) / 2 - 8;
-		const py = top + Math.max((slot.blockH - size) / 2 - 16, 8);
-		ctx.save();
-		ctx.beginPath();
-		ctx.arc(px + size / 2, py + size / 2, size / 2, 0, Math.PI * 2);
-		ctx.clip();
-		ctx.fillStyle = PORTRAIT_BG;
-		ctx.fill();
-		const avatarSrc = snap.avatarFor(si);
-		const avatar = avatarSrc ? images.get(avatarSrc) : undefined;
-		if (avatar) {
-			// mirror .rp-avatar-img: scale(1.333) translateY(-14%)
-			const s = size * 1.333;
-			ctx.drawImage(avatar, px + (size - s) / 2, py + (size - s) / 2 - size * 0.14, s, s);
-		}
-		ctx.restore();
-		// ⚠ `main`, and it stays `main`: this is a RING, not a fill with ink on
-		// it, and the bar rung must not creep into the element's identity uses
-		// (see the ⛔ at --el-* in app.css). Same for the C-level readout below.
-		ctx.strokeStyle = p.main;
-		ctx.lineWidth = 1.5;
-		ctx.beginPath();
-		ctx.arc(px + size / 2, py + size / 2, size / 2 - 0.75, 0, Math.PI * 2);
-		ctx.stroke();
-
-		// Glyph + name + Cn under the portrait
-		const nameY = py + size + 16;
-		const glyphSrc = snap.elementGlyphFor(slot.element);
-		const glyph = glyphSrc ? images.get(glyphSrc) : undefined;
-		let tx = cx;
-		if (glyph) {
-			ctx.drawImage(glyph, tx, nameY - 10, 13, 13);
-			tx += 16;
-		}
-		ctx.fillStyle = slot.displayName ? TEXT : MUTED;
-		ctx.font = `600 11px ${SANS}`;
-		ctx.textAlign = 'left';
-		ctx.fillText(slot.displayName ?? 'Empty', tx, nameY, snap.labelW - 44);
-		if (slot.displayName) {
-			ctx.fillStyle = slot.consLevel > 0 ? p.main : MUTED;
-			ctx.font = `700 9px ${SANS}`;
-			ctx.textAlign = 'right';
-			ctx.fillText(`C${slot.consLevel}`, PAD + snap.labelW - 10, nameY);
-		}
-
-		// Equipped artifact/weapon icons — who caused which buffs
-		slot.equipIcons.forEach((src, ei) => {
-			const icon = images.get(src);
-			if (icon) ctx.drawImage(icon, cx + ei * 24, nameY + 8, 20, 20);
-		});
-	});
-
-	// Lane labels
-	ctx.fillStyle = MUTED;
-	ctx.font = `600 9px ${SANS}`;
-	ctx.textAlign = 'right';
-	const laneLabelX = PAD + snap.labelW - 10;
-	// Header hides when the lane is empty (mirrors the on-screen behavior) — the
-	// lane's reserved height stays, so lanes below it don't shift.
-	if (snap.teamBuffRows.length > 0)
-		ctx.fillText(
-			'TEAM BUFFS',
-			laneLabelX,
-			oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
-		);
-	if (snap.nbTop !== null)
-		ctx.fillText('NIGHTSOUL BURSTS', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
-	if (snap.moonsignTop !== null)
-		ctx.fillText(
-			'ASCENDANT GLEAM',
-			laneLabelX,
-			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
-		);
-	if (snap.auraHeaderH > 0) {
-		// ⚓ THE ONE PLACE THE EXPORT IS BETTER THAN THE SCREEN, and it costs
-		// nothing: the PNG kept its label column when the live chart gave it up
-		// (abutting round), so the mod names can sit OUTSIDE the plot here
-		// instead of over their own bars. Same names, more room.
-		ctx.fillText('TARGET AURA', laneLabelX, chartTop + 9);
-		const plotTop = chartTop + snap.auraMarkerH + snap.auraTickH + 2;
-		// ⚓ THE LEGEND AND THE CEILING ARE EXPORT-ONLY, and they are the clearest
-		// case yet for this file being a DOCUMENT rather than a screenshot (see the
-		// header). On screen a reader hovers the plot for a full readout and each
-		// aura names itself where it appears; a shared PNG has neither, so the
-		// column the live chart gave up earns its keep by carrying both the y
-		// ceiling and every mod in the plot.
-		ctx.font = `600 8px ${SANS}`;
-		ctx.fillStyle = MUTED;
-		ctx.fillText(`${snap.auraLane.uMax}U`, laneLabelX, plotTop + 7);
-		snap.auraLane.series.forEach((series, si) => {
-			ctx!.fillStyle = AURA_MOD_COLOR[series.mod];
-			ctx!.fillText(series.label.toUpperCase(), laneLabelX, plotTop + 19 + si * 10);
-		});
+	// ── The header: the chrome's lockup, the tab's name, the notation ──
+	const logo = images.get(LOGO_SRC);
+	let bx = PAD;
+	const brandMid = PAD + BRAND_H / 2;
+	if (logo) {
+		const lw = (logo.naturalWidth / logo.naturalHeight) * BRAND_H;
+		base.save();
+		base.globalAlpha = 0.85; // the chrome's resting alpha
+		base.drawImage(logo, bx, PAD + BRAND_SIZE * -0.18 + 2, lw, BRAND_H);
+		base.restore();
+		bx += lw + BRAND_GAP;
+	}
+	base.font = `500 ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
+	base.fillStyle = 'rgba(255, 255, 255, 0.85)';
+	base.textAlign = 'left';
+	base.textBaseline = 'middle';
+	base.fillText('critcalc.app', bx, brandMid);
+	if (snap.tabLabel) {
+		base.font = `600 16px ${SANS}`;
+		base.fillStyle = TEXT;
+		base.textAlign = 'right';
+		base.fillText(snap.tabLabel, w - PAD, brandMid, w / 2);
 	}
 
-	// ── Footer: title left, watermark right ──
-	const fy = h - PAD / 2 - 4;
-	ctx.fillStyle = MUTED;
-	ctx.font = `600 10px ${SANS}`;
-	ctx.textAlign = 'left';
-	ctx.fillText(snap.title, PAD, fy);
-	ctx.fillStyle = 'rgba(158, 172, 200, 0.55)';
-	ctx.textAlign = 'right';
-	ctx.fillText('critcalc.app', w - PAD, fy);
+	// The notation, each token in the colour the composer gives it.
+	const tintAt = (i: number) => snap.notationTints.find((t) => i >= t.from && i < t.to);
+	base.font = `${NOTATION_PX}px ${MONO}`;
+	base.textAlign = 'left';
+	base.textBaseline = 'alphabetic';
+	const spaceW = base.measureText(' ').width;
+	notationLines.forEach((line, li) => {
+		let tx = PAD;
+		const ty = PAD + BRAND_H + HEADER_GAP + li * NOTATION_LINE_H + NOTATION_PX;
+		for (const word of line) {
+			// One run per colour change inside the word.
+			let i = 0;
+			while (i < word.text.length) {
+				const at = word.start + i;
+				const tint = tintAt(at);
+				let j = i + 1;
+				while (j < word.text.length && tintAt(word.start + j) === tint) j++;
+				const run = word.text.slice(i, j);
+				base.fillStyle = tint?.element
+					? elementPalette(tint.element).main
+					: run === '>'
+						? MUTED
+						: TEXT;
+				base.fillText(run, tx, ty);
+				tx += base.measureText(run).width;
+				i = j;
+			}
+			tx += spaceW;
+		}
+	});
+
+	// ── The footer: how the rotation is timed, and how long it runs ──
+	const fy = h - PAD - FOOTER_H / 2 + 4;
+	base.font = `500 11px ${SANS}`;
+	base.fillStyle = MUTED;
+	base.textBaseline = 'middle';
+	base.textAlign = 'left';
+	base.fillText(snap.timingNote, benchX, fy);
+	base.textAlign = 'right';
+	base.fillText(`${secondsLabel(snap.endFrame)}s`, w - PAD, fy);
 
 	return new Promise<Blob>((resolve, reject) => {
 		canvas.toBlob((blob) => {

@@ -135,12 +135,8 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		expect(PALETTE_MIRROR.TEXT).toBe(resolve(ctxToken('.ctx-dark', '--text'), '.ctx-dark'));
 		expect(PALETTE_MIRROR.MUTED).toBe(resolve(ctxToken('.ctx-dark', '--muted'), '.ctx-dark'));
 		expect(PALETTE_MIRROR.INK).toBe(resolve(cssToken('--bright-ink')));
-		// ↻ 2026-08-05: the bench card renders in the ribbon's DARK context (the
-		// `ctx-light` class it used to carry painted no ground of its own — see
-		// SlotPortrait), so the avatar disc mirrors that block's surface.
-		// ↻ 2026-08-11: and that surface is the WELL rung now — --sp-avatar-fill
-		// is one ground with the element travelling down it, and this is its top.
-		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(resolve(ctxToken('.ctx-dark', '--surface-well')));
+		// ↻ 2026-10-16: PORTRAIT_BG retired with the export's label column; the
+		// bench it became resolves its roles off the page (exportBench.ts).
 		// The aura lane's four non-elemental mods (gauge round L6). The five
 		// elemental ones need no entry — they go through `elementPalette`, which
 		// this file already guards below.
