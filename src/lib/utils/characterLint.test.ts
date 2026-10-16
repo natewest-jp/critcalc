@@ -2173,7 +2173,6 @@ const FRAMELESS_EXEMPT = new Set([
 	// this list 2026-09-15 — gcsim main shipped both, #2749 / #2712. The Cryo
 	// Traveler left 2026-09-20: #2742 merged with real E/Q slices in place of the
 	// draft's "Placeholder using DMC frames".)
-	'alyosha',
 	// 7.1, ingested 2026-09-22 (the patch went live the next day). Stubs only:
 	// gcsim has nothing for either yet — check open PRs before assuming.
 	'vesna',

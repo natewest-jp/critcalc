@@ -1136,7 +1136,15 @@ export function scheduleSummonTicks(
 			// `ICDTagEmilieLumidouce` and `ICDTagElementalBurst`. The window is the
 			// only thing our data knows about a series' gcsim group, so it joins the
 			// key: same label AND same window is one counter, anything else is two.
-			const icdKey = `${char.id}:summon:${summon.label}:${series.index}:${params ? `${params.timer}/${params.hits}` : 'none'}`;
+			// ⚓ …unless the series NAMES a counter (`summonTick.icdCounter`), which
+			// is two summons on one gcsim tag and group: Alyosha's Field opens the
+			// window Tugarin's maul lands in 39f later. Lint D.27i holds the
+			// sharers to one window, so the label/window key is not needed there.
+			const named =
+				series.effect.trigger.type === 'summonTick' ? series.effect.trigger.icdCounter : undefined;
+			const icdKey = named
+				? namedIcdKey(char.id, named)
+				: `${char.id}:summon:${summon.label}:${series.index}:${params ? `${params.timer}/${params.hits}` : 'none'}`;
 
 			// ⚓ THE SECOND READER of the tick cap, and it MUST agree with
 			// `collectSummonTicks` — that walk draws the markers a reader counts on
