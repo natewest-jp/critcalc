@@ -39,6 +39,9 @@ export type StanceRecord = {
 	 *  later swap in a segment that never re-opened doesn't re-clamp (mirrors the
 	 *  old `stanceTerminatesOnSwap.delete`). */
 	terminatesOnSwap: boolean;
+	/** The holder stays on field until the window ends (`holdsField`): the
+	 *  turn-ending swap waits for it. Read where the turn ends. */
+	holdsField: boolean;
 	/** Ability that opened the window; read for its durationExtensions[]. */
 	ownerAbility: CastAbility;
 	/** The cast event that opened the window (post-P4 #3: bars are projections

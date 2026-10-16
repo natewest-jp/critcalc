@@ -2214,6 +2214,66 @@ describe('parseNotation — Mizuki A1 stance extension (E3 v1.5)', () => {
 	});
 });
 
+describe('parseNotation — Mizuki: Dreamdrifter holds the field (2026-10-16)', () => {
+	const mizuki = yumemizukiJson as unknown as CharacterData;
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null =>
+		n === 'Yumemizuki Mizuki' ? mizuki : n === 'Diluc' ? diluc : null;
+	const MZ = 'yumemizuki_mizuki';
+	const stances = (r: ReturnType<typeof parseNotation>) =>
+		r.windows.filter((w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === MZ);
+	const turn = (r: ReturnType<typeof parseNotation>) => r.tracks.find((t) => t.characterId === MZ)!;
+	// Cloud landings only — the activation (frame 2) and the burst's ticks excluded.
+	const clouds = (r: ReturnType<typeof parseNotation>, castAt: number) =>
+		r.applications
+			.filter((a) => a.characterId === MZ && a.castKind === 'skill' && a.time > castAt + 2)
+			.map((a) => a.time - castAt);
+
+	it('a swap waits for the stance: no aura, the base 5s', () => {
+		const r = parseNotation('Yumemizuki Mizuki E > Diluc E', lookup, 8);
+		const [w] = stances(r);
+		expect(w.end - w.start).toBe(framesOf(5));
+		expect(turn(r).activeEnd).toBe(w.end);
+	});
+
+	it('the wait runs to the LIVE end: A1 Swirls during it extend her to 10s, and the cloud keeps landing', () => {
+		const r = parseNotation('Diluc E > Yumemizuki Mizuki E > Diluc E', lookup, 8);
+		const [w] = stances(r);
+		expect(w.end - w.start).toBe(framesOf(10));
+		expect(turn(r).activeEnd).toBe(w.end);
+		// The last applying cloud of a 10s stance is gcsim's launch at 558 → lands 588.
+		expect(Math.max(...clouds(r, w.start))).toBe(588);
+	});
+
+	it('a trailing ~Xs is the swap: the stance ends there, and no cloud launches after it', () => {
+		const r = parseNotation('Diluc E > Yumemizuki Mizuki E ~2s > Diluc E', lookup, 8);
+		const [w] = stances(r);
+		const swap = turn(r).activeEnd;
+		expect(w.end).toBe(swap);
+		expect(swap - w.start).toBe(30 + framesOf(2)); // E → swap cancel, then the wait
+		for (const f of clouds(r, w.start)) expect(w.start + f - 30).toBeLessThan(w.end);
+	});
+
+	it('a wait that is NOT last still holds: E ~1s Q', () => {
+		const r = parseNotation('Diluc E > Yumemizuki Mizuki E ~1s Q > Diluc E', lookup, 8);
+		const [w] = stances(r);
+		expect(w.end - w.start).toBe(framesOf(10));
+		expect(turn(r).activeEnd).toBe(w.end);
+	});
+
+	it('E again ends it at the press, with no cooldown spent and no second stance', () => {
+		const r = parseNotation('Diluc E > Yumemizuki Mizuki E Q E > Diluc E', lookup, 8);
+		const ws = stances(r);
+		expect(ws).toHaveLength(1);
+		const exit = r.events.find(
+			(e) => e.kind === 'cast' && e.abilityId === 'yumemizuki_mizuki__skill__end_dreamdrifter'
+		)!;
+		expect(exit).toBeDefined();
+		expect(ws[0].end).toBe(exit.time);
+		expect(turn(r).activeEnd).toBe(exit.time + 30); // the press's own swap cancel
+	});
+});
+
 describe('parseNotation — Collei A4 summon extension (E3 v1.5)', () => {
 	const collei = colleiJson as unknown as CharacterData;
 	const diluc = dilucJson as unknown as CharacterData;

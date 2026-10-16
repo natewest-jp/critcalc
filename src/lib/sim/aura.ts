@@ -60,6 +60,7 @@ import type { ReactionEvent } from '$lib/utils/rotationEvents';
 import { createGauge, type ElementId, type Gauge, type SeriesInterval } from '$lib/utils/gauge';
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
+import type { StanceRecord } from './charState';
 import { Band, type Clock } from './clock';
 import {
 	DEFAULT_ASCENSION,
@@ -616,7 +617,13 @@ export function resolveCastApplications(
 	 *  ability's hits land before the next sharer's (Nilou's do: each step's hit
 	 *  precedes the next press). */
 	shared?: { clock: IcdClock; castTime: number }
-): { frame: number; element: Element; units: number; provisionalUnits: boolean }[] {
+): {
+	frame: number;
+	element: Element;
+	units: number;
+	provisionalUnits: boolean;
+	whileStance?: { travel: number };
+}[] {
 	if (!application) {
 		// Absent → the pre-L4d model, provisionally. See the amendment note below.
 		return char.element
@@ -632,7 +639,8 @@ export function resolveCastApplications(
 				element,
 				units: a.units ?? DEFAULT_UNITS,
 				provisionalUnits: a.units === undefined,
-				noICD: a.noICD === true
+				noICD: a.noICD === true,
+				...(a.whileStance ? { whileStance: a.whileStance } : {})
 			});
 	}
 	const params = resolveActionIcd(castKind, char.weapon, abilityNoICD, abilityIcdGate);
@@ -697,7 +705,10 @@ export function emitReactionsAtCast(
 	/** Team scope, for an `ElementRef` in `application[]`. */
 	context?: ConditionContext,
 	/** `CastAbility.icdCounter` — the named counter this cast shares. */
-	icdCounter?: string
+	icdCounter?: string,
+	/** The stance this cast opened, read LIVE at each `whileStance` hit's launch
+	 *  (its `end` moves with extensions, a swap and `endsStance`). */
+	stance?: StanceRecord
 ): void {
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
 	for (const app of resolveCastApplications(
@@ -711,6 +722,12 @@ export function emitReactionsAtCast(
 	)) {
 		const at = castTime + app.frame;
 		clock.schedule(at, Band.LAND, () => {
+			// ⚓ A stance-bound hit lands only if its stance was still up when it
+			// LAUNCHED (Mizuki round, 2026-10-16) — checked here, at the landing,
+			// because by now every extension, swap and exit before the launch has
+			// settled. Strict: a stance that ended AT the launch frame launched
+			// nothing (gcsim's status is inactive at its own expiry frame).
+			if (app.whileStance && stance && stance.end <= at - app.whileStance.travel) return;
 			offerApplication(ctx, clock, {
 				time: at,
 				characterId: char.id,
