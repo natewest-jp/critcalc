@@ -316,8 +316,19 @@ const PAIR_TOLERANCE_F = 6;
  * counter models. ⛔ A shared counter across casts or characters is not seen here.
  */
 function replayCast(char, ability, node, cast, all) {
-	const app = node.application ?? ability.application;
-	if (!app) return null;
+	const authored = node.application ?? ability.application;
+	if (!authored) return null;
+	// ⚓ A `whileStance` hit is authored to the stance's LONGEST life (Mizuki
+	// round, 2026-10-16); the capture is one cast in an empty core, where nothing
+	// extends the stance, so it lands only the hits launched inside the BASE
+	// duration. Replay the planner's own gate at that length — ⛔ never read the
+	// extra entries as a list mismatch.
+	const duration = node.duration ?? ability.duration;
+	const baseEnd =
+		(node.behavior ?? ability.behavior) === 'stance' && typeof duration === 'number'
+			? Math.round(duration * 60)
+			: Infinity;
+	const app = authored.filter((e) => !e.whileStance || e.frame - e.whileStance.travel < baseEnd);
 	const refs = app.filter((e) => e.element && typeof e.element !== 'string').length;
 	const nominal = app.filter((e) => typeof e.element === 'string');
 	const ours = resolveCastApplications(

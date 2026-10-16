@@ -2708,6 +2708,20 @@ export type ElementalApplication = {
 	 * ⛔ Redundant beside the ability's own `noICD` (lint D.27c).
 	 */
 	noICD?: true;
+	/**
+	 * ⚓ THIS HIT EXISTS ONLY WHILE THE STANCE ITS CAST OPENED IS STILL UP
+	 * (Mizuki round, 2026-10-16). A stance that attacks on its own (Dreamdrifter's
+	 * cloud) keeps launching for as long as it lives — so the list is authored to
+	 * the stance's LONGEST life, and an entry whose stance has ended by its
+	 * launch instant never lands. `travel` is the frames from launch to `frame`
+	 * (gcsim queues each cloud on a live-status check, then lands it 30f later),
+	 * so a cloud launched just before a swap still lands after it.
+	 *
+	 * ⚠️ The ICD counter still runs over every entry at the cast: the dropped
+	 * ones all come AFTER the kept ones, so they cannot change a kept outcome.
+	 * Only on a cast that opens a stance (lint D.48).
+	 */
+	whileStance?: { travel: number };
 };
 
 /** Fields shared by all skill behavior variants. */
@@ -2917,6 +2931,22 @@ export type SkillAbility =
 			durationExtensions?: DurationExtension[];
 			/** Stance window closes when this character swaps off-field. */
 			terminatesOnSwap?: boolean;
+			/**
+			 * ⚓ THE STANCE HOLDS THE FIELD (Mizuki round, 2026-10-16). Its holder
+			 * stays on field until it ends, so the swap that ends her turn WAITS for
+			 * the stance rather than cutting it. Yumemizuki Mizuki's Dreamdrifter is
+			 * the case: it attacks on its own and takes no Normal Attack, so there is
+			 * nothing to type between `E` and the swap, and without this the swap
+			 * cut a 5–10s stance at 30f.
+			 *
+			 * The wait runs to the stance's LIVE end, extensions included (A1's
+			 * Swirls land during the wait and push it further). Two ways out, both
+			 * the player's: a TRAILING `~Xs` in the turn means "swap here", and a
+			 * sibling skill carrying `endsStance` closes it (her E re-press).
+			 * ⚠️ Only beside `terminatesOnSwap` — a stance a swap does not end
+			 * needs no one to stay (lint D.48).
+			 */
+			holdsField?: true;
 			/** The cooldown CLOCK starts when the stance window ENDS, not at the
 			 *  cast — so the ability comes back at `stanceEnd + cooldown` and an
 			 *  early exit brings it back sooner. Natlan Nightsoul skills whose CD

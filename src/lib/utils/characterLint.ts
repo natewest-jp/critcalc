@@ -1312,6 +1312,7 @@ function lintAbility(
 			lintCastAbility(a, push);
 			lintSummonEffects(c, a, push);
 			lintEndsStance(c, a, push);
+			lintHoldsField(a, push);
 			break;
 		case 'passive':
 		case 'constellation':
@@ -1889,6 +1890,56 @@ function lintEndsStance(
 				`${where} ends a stance, but ${c.id} has no stance-behavior skill or burst — the field would be inert`,
 				a.id
 			);
+		}
+	}
+}
+
+// (D.48) A stance that HOLDS THE FIELD, and a hit bound to its stance (Mizuki
+// round, 2026-10-16). `holdsField` only means something beside
+// `terminatesOnSwap` — a stance a swap does not end needs nobody to stay — and
+// `whileStance` only on a cast that opens a stance, or no stance ever gates it.
+function lintHoldsField(
+	a: SkillAbility | BurstAbility,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	const stance = a.behavior === 'stance' ? a : undefined;
+	if (stance && 'holdsField' in stance && stance.holdsField && stance.terminatesOnSwap !== true) {
+		push(
+			'strict',
+			'holds-field-invalid',
+			`${a.id} holdsField without terminatesOnSwap — a stance a swap does not end needs no hold`,
+			a.id
+		);
+	}
+	const hosts = [
+		{ where: a.id, opens: a.behavior === 'stance', app: a.application },
+		...(a.variants ?? []).map((v) => ({
+			where: `${a.id} · ${v.label}`,
+			opens: (v.behavior ?? a.behavior) === 'stance',
+			app: v.application ?? a.application
+		}))
+	];
+	for (const { where, opens, app } of hosts) {
+		const bound = (app ?? []).filter((e) => e.whileStance !== undefined);
+		if (!bound.length) continue;
+		if (!opens) {
+			push(
+				'strict',
+				'while-stance-invalid',
+				`${where} has whileStance hits but does not open a stance — nothing would gate them`,
+				a.id
+			);
+		}
+		for (const e of bound) {
+			const t = e.whileStance!.travel;
+			if (!(Number.isInteger(t) && t >= 0 && t <= e.frame)) {
+				push(
+					'strict',
+					'while-stance-invalid',
+					`${where} whileStance.travel must be a frame count between 0 and the hit's frame (${e.frame}), got ${JSON.stringify(t)}`,
+					a.id
+				);
+			}
 		}
 	}
 }

@@ -16,9 +16,9 @@
  *     test-side so parser-authored spans stay covered after the renderer
  *     stopped reconstructing them.
  *   - Every stance owner bar's `start + uptime` equals its stance window's end
- *     (the finalize uptime stamp agrees with the window record); for cross-
- *     character rotations a swap-clamped stance may end earlier, so the relaxed
- *     bound `end <= start + uptime` is asserted there. (The summon spawn offset
+ *     (the finalize uptime stamp agrees with the window record) — in cross-
+ *     character rotations too since 2026-10-16, when a swap began clamping the
+ *     pill with the window. (The summon spawn offset
  *     shifts only the bar's rendered active-overlay, not the state window.)
  */
 
@@ -358,7 +358,7 @@ function assertBlocksProjectFromEvents(result: ParsedRotation): void {
 	}
 }
 
-function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean }): void {
+function assertCore(result: ParsedRotation): void {
 	const { events, windows } = result;
 
 	// events time-sorted + finite.
@@ -564,12 +564,9 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 			expect(w.end, `transient inStance @${w.start} runs forward`).toBeGreaterThan(w.start);
 			continue;
 		}
-		const geomEnd = owner.start + owner.uptime;
-		if (opts.strictStanceGeom) {
-			expect(geomEnd).toBe(w.end);
-		} else {
-			expect(w.end).toBeLessThanOrEqual(geomEnd + EPS);
-		}
+		// ↻ 2026-10-16: strict everywhere — a swap-ended stance's pill ends at the
+		// swap now (`clampStance`), so the cross-character bound needs no slack.
+		expect(owner.start + owner.uptime).toBe(w.end);
 	}
 	// Conversely: only inStance state windows carry `source`.
 	for (const w of windows) {
@@ -601,7 +598,7 @@ describe('parser IR invariants — roster sweep', () => {
 		it(`${c.id}: IR is consistent for its declared inputs`, () => {
 			const notation = rosterNotation(c);
 			const result = parseNotation(notation, rosterLookup, 8);
-			assertCore(result, { strictStanceGeom: true });
+			assertCore(result);
 			assertEventsPointAtTheirTokens(notation, result);
 			assertSummonWindowsMatchGeometry(result);
 			assertBlocksProjectFromEvents(result);
@@ -621,7 +618,7 @@ describe('parser IR invariants — multi-character rotations', () => {
 	for (const r of rotations) {
 		it(`${r.id}: IR consistent across swaps`, () => {
 			const result = parseNotation(r.notation, rosterLookup, 8, r.cons);
-			assertCore(result, { strictStanceGeom: false });
+			assertCore(result);
 			assertEventsPointAtTheirTokens(r.notation, result);
 			assertSummonWindowsMatchGeometry(result);
 			assertBlocksProjectFromEvents(result);

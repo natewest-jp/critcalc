@@ -1122,6 +1122,8 @@ export function runRotation(
 					cs.stance = {
 						end: endTime,
 						terminatesOnSwap: stance.terminatesOnSwap,
+						holdsField:
+							active.behavior === 'stance' && 'holdsField' in active && active.holdsField === true,
 						ownerAbility: active,
 						castRef: castEvent, // ref for the finalize uptime stamp
 						characterId: char.id,
@@ -1284,18 +1286,10 @@ export function runRotation(
 								variantCtx
 							) === true)
 					) {
-						const end = clampStance(
-							ctx,
-							cs,
-							char.id,
-							ends.at === 'castEnd' ? castEnd : castStart + ends.at
-						);
-						// ⚓ Unlike a swap, a closing cast ends the stance for real, so the
-						// OWNER BAR ends with it: the bar is the stance, and the IR's
-						// strict stance geometry (bar end === window end) holds. A swap
-						// keeps the full width — see `StanceRecord.ownerUptime`.
-						if (end !== undefined)
-							cs.stance.ownerUptime = Math.min(cs.stance.ownerUptime, end - cs.stance.start);
+						// The OWNER BAR ends with it, inside `clampStance`: the bar is the
+						// stance, and the IR's strict stance geometry (bar end === window
+						// end) holds — for a swap too since 2026-10-16.
+						clampStance(ctx, cs, char.id, ends.at === 'castEnd' ? castEnd : castStart + ends.at);
 					}
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
@@ -1391,7 +1385,11 @@ export function runRotation(
 					variantCtx,
 					// A NAMED counter shared with the character's other abilities
 					// (Nilou; ICD cap round follow-up, 2026-10-04).
-					active.icdCounter
+					active.icdCounter,
+					// The stance THIS cast opened, for its `whileStance` hits (Mizuki
+					// round, 2026-10-16) — identified by its cast id, so a cast that
+					// opens none never gates against an older stance.
+					cs.stance?.sourceCastId === castId ? cs.stance : undefined
 				);
 				// ⚓ Summon ticks apply their element too (gauge round L5e-b). Queued
 				// after the summonExt registration above so the chain reads the
@@ -2373,6 +2371,28 @@ export function runRotation(
 		// first action. ⚠️ Its track can then be zero-width; it is still pushed,
 		// since a lap is a fixed stride of tracks (RotationTimeline `lapStarts`).
 		const continues = i < segments.length - 1 && !swapFollows;
+
+		// ⚓ A STANCE THAT HOLDS THE FIELD (`holdsField`, Mizuki round, 2026-10-16):
+		// the turn does not end until the stance does. Dreamdrifter attacks on its
+		// own, so `Mizuki E > Xingqiu …` has nothing between the cast and the swap
+		// and used to cut a 5–10s stance at 30f. A LOOP, not one advance: A1's
+		// Swirls land DURING the wait and push the end further, so each advance
+		// re-reads it (bounded — every extension has a `maxExtensions`).
+		// ⚓ The player's two ways out: a TRAILING `~Xs` is "swap here" (the
+		// Sacrificial double-E opens her stance for ~2s), and her E re-press ends
+		// the stance at the press (`endsStance`), after which there is nothing to
+		// wait for. ⚠️ Only the LAST token counts — `E ~1s Q` still holds.
+		if (!continues && cs.stance?.holdsField) {
+			const SKIP = new Set(['optional', 'or-alt', 'stack-assert', 'separator']);
+			let last = expandedTokens.length - 1;
+			while (last >= 0 && SKIP.has(expandedTokens[last].kind)) last--;
+			const endsOnWait = last >= 0 && expandedTokens[last].kind === 'time';
+			if (!endsOnWait) {
+				const stance = cs.stance;
+				while (stance.end > clock.now) clock.advance(stance.end);
+			}
+		}
+
 		const stayStart: number = carried?.start ?? turnStart;
 		if (!continues && clock.now <= stayStart) clock.advance(stayStart + MIN_ACTIVE_F);
 
@@ -2442,10 +2462,8 @@ export function runRotation(
 				// earlier end), so a later swap never restarts its cooldown.
 				clampStance(ctx, cs, char.id, clock.now);
 				cs.stance.terminatesOnSwap = false;
-				// barRef is intentionally retained (P4): the finalize pass stamps
-				// the owner bar's uptime from `ownerUptime`, which the swap does NOT
-				// clamp — a swap-terminated stance keeps its full owner-bar width
-				// while `end` clamps to the swap-out time.
+				// ↻ 2026-10-16: the owner bar is clamped too (`ownerUptime`, inside
+				// `clampStance`) — a swap-ended stance used to keep its full width.
 				for (const [state, endTime] of cs.states) {
 					if (endTime > clock.now) cs.states.set(state, clock.now);
 				}

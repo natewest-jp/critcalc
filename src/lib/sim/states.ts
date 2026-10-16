@@ -171,6 +171,14 @@ export function clampStance(
 	const stanceEnd = Math.min(stance.end, at);
 	if (stanceEnd === stance.end) return stanceEnd;
 	stance.end = stanceEnd;
+	// ⚓ The PILL ends with the stance (2026-10-16, ⚓ Nate). For a long time a
+	// swap left it at full width — a P4 carry-over nobody chose (the old swap
+	// path simply detached the bar), parked 2026-08-15. Audited before changing:
+	// in 29 of the 31 `terminatesOnSwap` stances the swap ends the state for good
+	// (gcsim's swap handlers / the kit text); Mavuika's two end the bike and the
+	// Crucible too, and it is her Nightsoul's Blessing that outlives the swap —
+	// a separate defect. `docs/mizuki-holds-field-round-2026-10-16.md` §3.
+	stance.ownerUptime = Math.min(stance.ownerUptime, stanceEnd - stance.start);
 	if (stance.companion) closeStateWindows(ctx, cs, characterId, stance.companion.name, stanceEnd);
 	if (getCooldownStartsAtStanceEnd(stance.ownerAbility)) {
 		const castRef = stance.castRef;

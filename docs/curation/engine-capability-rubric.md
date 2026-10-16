@@ -380,7 +380,8 @@ Every line here is a place the OLD rubric is now WRONG. These drive most verdict
 **P16.** `terminatesOnSwap` on a stance
 
 - ✅ works for: the GATING half — the `inStance` window, its `opensState` companions and every buff conditioned on them clamp at the swap-out
-- ❌ does NOT work for: the VISIBLE half — the E/Q pill still draws the stance's full authored duration. Measured example in the source comment: a swap-terminated stance keeps its full owner-bar width while `end` clamps. Knowingly out of scope (⚓ Nate 2026-08-15).
+- ✅ ↻ 2026-10-16: the VISIBLE half too — `clampStance` clamps the pill (`ownerUptime`) with the window, after an audit found 29 of 31 such stances end for good on a swap (`docs/mizuki-holds-field-round-2026-10-16.md` §3). ⚠️ Mavuika's Nightsoul's Blessing companion is clamped too and should not be (F1 there).
+- ~~❌ does NOT work for: the VISIBLE half — the E/Q pill still draws the stance's full authored duration. Knowingly out of scope (⚓ Nate 2026-08-15).~~
 - _evidence:_ src/lib/sim/run.ts:1420-1428 (clamp) and :1466-1468 ("barRef is intentionally retained … a swap-terminated stance keeps its full owner-bar width while `end` clamps to the swap-out time")
 
 **P17.** `summonTick.tickCap` / `tickCapScaling`
