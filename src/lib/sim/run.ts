@@ -98,7 +98,13 @@ import {
 	materialiseStateChains,
 	settleOwnerStates
 } from './states';
-import { nightsoulOnCast, nightsoulOnSwapOut, nightsoulSpend, ownsState } from './nightsoul';
+import {
+	nightsoulCharging,
+	nightsoulOnCast,
+	nightsoulOnSwapOut,
+	nightsoulSpend,
+	ownsState
+} from './nightsoul';
 import { findSummonsForBar } from './summons';
 import {
 	applyDrain,
@@ -144,6 +150,10 @@ import { armCastProcs } from './procs';
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
+/** The dash cooldown (gcsim `ApplyDashCD`): a dash inside this window of the
+ *  last one starts a lockout of `DASH_LOCKOUT_F`, in which a dash waits. */
+const DASH_WINDOW_F = 48;
+const DASH_LOCKOUT_F = 90;
 /** Fallback cast time when no E/Q frame data is present on the ability (FRAMES).
  *  Sourced from the data-derived generic profile (genericProfile.ts) so a
  *  frameless skill/burst gets a realistic cast length, not a magic constant. */
@@ -1705,6 +1715,34 @@ export function runRotation(
 			}
 		};
 
+		// ⚓ A SPINNING CHARGED ATTACK under way (`NormalAbility.chargeSpin`,
+		// Mavuika's Flamestrider; bike Charged Attack round, 2026-10-16). It lives
+		// only across consecutive spin tokens — a `C` after anything but a `C`
+		// starts a new spin — and is read by the dash that cancels it.
+		let spin: { start: number; skip: number; lastHit: number | null } | null = null;
+		/** The action token before / after `j`, skipping what draws nothing. */
+		const actionTextAt = (from: number, step: 1 | -1): string | null => {
+			let k = from + step;
+			while (k >= 0 && k < lookahead.length && isInert(lookahead[k])) k += step;
+			const tk = lookahead[k];
+			if (!tk) return null;
+			return tk.kind === 'Q' || tk.kind === 'E' ? tk.kind : tk.text;
+		};
+		/** The active normal ability, if its Charged Attack spins. */
+		const spinAbility = (): NormalAbility | undefined => {
+			if (!char.abilities.some((a) => a.abilityType === 'normal' && a.chargeSpin)) return undefined;
+			const ab = resolveActiveAbility(
+				char,
+				'normal',
+				computeCurrentStates(clock.now),
+				charConstellationLevel,
+				undefined,
+				undefined,
+				variantCtx
+			);
+			return ab?.chargeSpin ? ab : undefined;
+		};
+
 		for (let j = 0; j < expandedTokens.length; j++) {
 			const tok = expandedTokens[j];
 			curSrc = { from: tok.from, to: tok.to };
@@ -1955,6 +1993,128 @@ export function runRotation(
 						for (let n = 0; n < nLate; n++) landNormal(clock.now);
 					}
 					humanPad('normal', j);
+				} else if ((/^C\d*$/.test(t) || t === 'F') && spinAbility()) {
+					// ⚓⚓ THE SPIN (`chargeSpin`): each `C` is ONE spin hit, `F` the
+					// finisher; gcsim `charge.go`, timings measured with its CLI
+					// (docs/mavuika-nightsoul-round-2026-10-16.md §7). The finisher is
+					// automatic only where the game forces it — a Normal Attack next,
+					// or the spin's maximum; before a dash, jump, skill, burst or swap
+					// a missing `F` means none (⚓ Nate, gcsim-faithful).
+					normalCounter = 0;
+					settleOwnerStates(ctx, cs, char.id, clock.now);
+					const ab = spinAbility()!;
+					const sp = ab.chargeSpin!;
+					const spinStates = computeCurrentStates(clock.now);
+					const element = resolveElementRef(ab.infusion, variantCtx) ?? char.element;
+					const prev = actionTextAt(j, -1);
+					const next = actionTextAt(j, 1);
+					if (!prev || !/^C\d*$/.test(prev)) spin = null;
+					const nextKey = peekActionKey(lookahead, j, isBow);
+					let blockId: number | undefined;
+					const land = (at: number, ev: ActionEvent): void =>
+						clock.schedule(at, Band.LAND, () => {
+							const live = liveSegment === turn;
+							emitReactionsAtSwing(
+								ctx,
+								clock,
+								char,
+								'charged',
+								element,
+								ab.noICD,
+								at,
+								spinStates,
+								charConstellationLevel,
+								stackState,
+								undefined,
+								undefined,
+								ab.icdCounter
+							);
+							dispatchHit(
+								{
+									characterId: char.id,
+									time: at,
+									abilityType: 'charged',
+									element,
+									damageTag: 'charged',
+									abilityName: ab.name,
+									...(live ? {} : { offField: true as const }),
+									sourceEventId: ev.id
+								},
+								true,
+								live
+							);
+						});
+					const startSpin = (): NonNullable<typeof spin> => {
+						// A press straight out of a dash, a Normal Attack or a burst
+						// skips the windup (gcsim `GetSkippedWindupFrames`).
+						const buffered = prev !== null && (prev === 'D' || prev === 'Q' || /^N\d*$/.test(prev));
+						const s0 = { start: clock.now, skip: buffered ? sp.bufferedSkip : 0, lastHit: null };
+						nightsoulCharging(ctx, clock, char, clock.now, true);
+						return s0;
+					};
+					const finisher = (key: ActionKey): void => {
+						let delay: number;
+						if (spin) {
+							const f = (clock.now - spin.start + spin.skip) % sp.spinFrames;
+							const { from, to } = sp.releaseWindow;
+							delay =
+								f >= from && f < to
+									? 0
+									: (((from - f) % sp.spinFrames) + sp.spinFrames) % sp.spinFrames;
+						} else {
+							spin = startSpin();
+							delay = sp.finisher.minSpin;
+						}
+						const hitAt = clock.now + delay + sp.finisher.hit;
+						const duration = delay + frameAt(sp.finisher.frames, key);
+						const ev = emitAction({
+							action: 'charged',
+							label: t,
+							time: clock.now,
+							duration,
+							element,
+							...(blockId !== undefined ? { blockId } : {})
+						});
+						land(hitAt, ev);
+						nightsoulCharging(ctx, clock, char, hitAt, false);
+						clock.advance(clock.now + duration);
+						spin = null;
+					};
+					if (t === 'F') {
+						finisher(nextKey);
+					} else {
+						const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
+						for (let k = 0; k < count; k++) {
+							if (!spin) spin = startSpin();
+							const hitAt =
+								spin.lastHit === null
+									? spin.start + sp.firstHit - spin.skip
+									: spin.lastHit + sp.hitInterval;
+							// The spin's maximum forces the finisher.
+							if (hitAt - spin.start + spin.skip > sp.maxFrames) {
+								finisher(nextKey);
+								break;
+							}
+							const ev = emitAction({
+								action: 'charged',
+								label: t,
+								time: clock.now,
+								duration: hitAt - clock.now,
+								element,
+								...(blockId !== undefined ? { blockId } : {})
+							});
+							blockId ??= ev.id;
+							land(hitAt, ev);
+							clock.advance(hitAt);
+							spin.lastHit = hitAt;
+						}
+						// What follows decides the finisher: a Normal Attack forces it; a
+						// `C` or `F` continues the spin; anything else cancels it.
+						if (spin && next !== null && /^N\d*$/.test(next)) finisher('N');
+						else if (spin && next !== 'F' && !(next !== null && /^C\d*$/.test(next)))
+							nightsoulCharging(ctx, clock, char, clock.now, false);
+					}
+					humanPad('charged', j);
 				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
@@ -2463,29 +2623,91 @@ export function runRotation(
 					// Dash/jump: emit a block, then advance cursor.
 					// The preceding token already selected frames.D/J via peekActionKey.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
+					// ⚓ THE DASH COOLDOWN (universal, ⚓ Nate 2026-10-16; gcsim
+					// `ApplyDashCD`): a dash inside 0.8s of the previous one starts a
+					// 1.5s lockout, and a dash in the lockout WAITS — the way a skill
+					// waits for its cooldown. Per character (gcsim keeps it across a
+					// swap). ⛔ A jump is not a dash.
+					if (t === 'D') {
+						if (cs.dashLockout && clock.now < cs.dashCdUntil) clock.advance(cs.dashCdUntil);
+						if (clock.now < cs.dashCdUntil) {
+							cs.dashLockout = true;
+							cs.dashCdUntil = clock.now + DASH_LOCKOUT_F;
+						} else {
+							cs.dashLockout = false;
+							cs.dashCdUntil = clock.now + DASH_WINDOW_F;
+						}
+					}
 					const blockStart = clock.now;
+					// ⚓ A dash between two spin `C`s, or after a finisher into one, is
+					// the CANCEL (`CDC` / `FDC`; gcsim `charge_cancel`): cut at its travel
+					// frame, and the next spin skips its windup. Any spin ends here.
+					const prevAct = actionTextAt(j, -1);
+					const nextAct = actionTextAt(j, 1);
+					const dashForm =
+						t === 'D' && char.nightsoulPool
+							? resolveActiveAbility(
+									char,
+									'normal',
+									computeCurrentStates(clock.now),
+									charConstellationLevel,
+									undefined,
+									undefined,
+									variantCtx
+								)
+							: undefined;
+					const cancel =
+						dashForm?.chargeSpin !== undefined &&
+						prevAct !== null &&
+						(/^C\d*$/.test(prevAct) || prevAct === 'F') &&
+						nextAct !== null &&
+						/^C\d*$/.test(nextAct);
+					if (spin) nightsoulCharging(ctx, clock, char, blockStart, false);
+					spin = null;
 					// ⚓ A form's dash spends Nightsoul at its start (Mavuika's
 					// Flamestrider Sprint, 10 — gcsim `dash.go`). Only a pool holder asks.
-					if (t === 'D' && char.nightsoulPool) {
-						const dashCost = resolveActiveAbility(
-							char,
-							'normal',
-							computeCurrentStates(clock.now),
-							charConstellationLevel,
-							undefined,
-							undefined,
-							variantCtx
-						)?.nightsoulCost?.perDash;
-						if (dashCost) nightsoulSpend(ctx, clock, char, blockStart, dashCost);
-					}
+					const dashCost = dashForm?.nightsoulCost?.perDash;
+					if (dashCost) nightsoulSpend(ctx, clock, char, blockStart, dashCost);
+					const duration = cancel ? dashForm!.chargeSpin!.cancelDashTravel : DASH_FRAMES;
 					emitAction({
 						action: t === 'D' ? 'dash' : 'jump',
 						label: t,
 						time: blockStart,
-						duration: DASH_FRAMES
+						duration
 					});
-					clock.advance(clock.now + DASH_FRAMES);
-					humanPad(t === 'D' ? 'dash' : 'jump', j);
+					// The form's dash HIT (Flamestrider Sprint: Pyro 1U at its travel
+					// frame, on the form's counter). gcsim tags it no attack class, so
+					// it lands an application and no hit record.
+					if (dashForm?.dashHit) {
+						const at = blockStart + dashForm.dashHit.frame;
+						const dElement = resolveElementRef(dashForm.infusion, variantCtx) ?? char.element;
+						const dStates = computeCurrentStates(blockStart);
+						clock.schedule(at, Band.LAND, () =>
+							emitReactionsAtSwing(
+								ctx,
+								clock,
+								char,
+								'normal',
+								dElement,
+								dashForm.noICD,
+								at,
+								dStates,
+								charConstellationLevel,
+								stackState,
+								undefined,
+								undefined,
+								dashForm.icdCounter
+							)
+						);
+					}
+					clock.advance(clock.now + duration);
+					// ⚓ A cancel dash pays NO human pad: the player pressed and held
+					// the next `C` BEFORE tapping the dash, so the game executes it the
+					// moment the dash allows — a buffered input, like N → N. Verified by
+					// Nate in game for CDC (one held C, D tapped mid-hold) and frame by
+					// frame on Prydwen's FDC demo (C held, then D), 2026-10-16. gcsim's
+					// own name for the resume's windup skip is `buffered`.
+					if (!cancel) humanPad(t === 'D' ? 'dash' : 'jump', j);
 				}
 			}
 		}

@@ -2360,6 +2360,12 @@ export type NormalAbility = AbilityCommon & {
 	 *  (Mavuika's Flamestrider: 1 per Normal Attack swing at its landing, 10 per
 	 *  dash at its start — gcsim `attack.go` / `dash.go`). */
 	nightsoulCost?: { perSwing?: number; perDash?: number };
+	/** The SPINNING Charged Attack and its finisher — see `ChargeSpin`. */
+	chargeSpin?: ChargeSpin;
+	/** A dash in this form lands a hit (Mavuika's Flamestrider Sprint: Pyro 1U
+	 *  at its travel frame, gcsim `dash.go`). Applies the ability's element on
+	 *  its `icdCounter`. */
+	dashHit?: { frame: number };
 	/** Charged-attack frames for sword/claymore/polearm. Mutually exclusive with chargeHits. */
 	chargeFrames?: FrameMap;
 	/** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
@@ -2772,6 +2778,41 @@ export type ElementalApplication = {
  * closes one of those). A cast with no open stance does nothing.
  */
 /**
+ * ⚓ A CHARGED ATTACK THAT SPINS (Mavuika's Flamestrider, bike Charged Attack
+ * round, 2026-10-16; gcsim `charge.go`, timings measured with its CLI —
+ * `docs/mavuika-nightsoul-round-2026-10-16.md` §7). Notation, after Prydwen and
+ * KQM: each `C` is ONE spin hit (`C3` three); `F` is the finisher leap; a `D`
+ * between two `C`s (or after an `F`) is the dash cancel (`CDC`, `FDC`).
+ *
+ * - `firstHit` — frames from a fresh press to the first spin hit; a press
+ *   straight after a dash, a Normal Attack or a burst skips `bufferedSkip`
+ *   of windup.
+ * - `hitInterval` — frames between spin hits on one target.
+ * - `spinFrames` / `releaseWindow` — one revolution, and the part of it in
+ *   which a release goes straight into the finisher; anywhere else the bike
+ *   turns on to the window first (gcsim `GetCAFDelay`).
+ * - `maxFrames` — the longest spin; past it the finisher is forced.
+ * - `finisher` — its hitmark from the release, its frames to the next action,
+ *   and the spin a BARE `F` needs first.
+ * - `cancelDashTravel` — a dash out of the spin or the finisher into a new
+ *   spin is cut at this frame (gcsim `charge_cancel`).
+ *
+ * ⚓ The finisher is AUTOMATIC only where the game forces it — a Normal
+ * Attack next, or the spin's maximum. Before a dash, jump, skill, burst or
+ * swap a missing `F` means none (gcsim cancels it; ⚓ Nate, gcsim-faithful).
+ */
+export type ChargeSpin = {
+	firstHit: number;
+	bufferedSkip: number;
+	hitInterval: number;
+	spinFrames: number;
+	releaseWindow: { from: number; to: number };
+	maxFrames: number;
+	finisher: { hit: number; frames: FrameMap; minSpin: number };
+	cancelDashTravel: number;
+};
+
+/**
  * ⚓ WHAT A CAST DOES TO ITS CASTER'S NIGHTSOUL POOL (Nightsoul round,
  * 2026-10-16; `CharacterData.nightsoulPool`). gcsim's
  * `enterNightsoulOrRegenerate(p)`: outside the Blessing it ENTERS with exactly
@@ -2813,7 +2854,14 @@ export type NightsoulPoolSpec = {
 	maxModifiers?: ModifierBase[];
 	/** Points drained every 6 frames in any form. */
 	drainPerTick: number;
-	forms: { state: State; extraDrainPerTick?: number; swapTurnsInto?: State }[];
+	forms: {
+		state: State;
+		extraDrainPerTick?: number;
+		/** Added while a spinning Charged Attack is under way in this form
+		 *  (gcsim: +0.2 in `ChargeAttackState` on the bike). */
+		chargingExtraPerTick?: number;
+		swapTurnsInto?: State;
+	}[];
 };
 
 /**

@@ -26,9 +26,9 @@
  * `closeStateWindows`-style clamps from elsewhere — the swap loop in `run.ts`
  * skips them on purpose (`ownsState`).
  *
- * ⚠️ Not modelled: the bike Charged Attack's extra 0.2 per tick (our
- * Flamestrider kit authors no Charged Attack), and the recast E that switches
- * form inside the Blessing (⚓ Nate: later).
+ * ⚠️ Not modelled: the recast E that switches form inside the Blessing
+ * (⚓ Nate: later). ↻ The bike Charged Attack's +0.2 per tick IS, since the
+ * bike Charged Attack round (`nightsoulCharging`).
  */
 
 import type { NightsoulCastSpec, NightsoulPoolSpec, State } from '$lib/types/ability';
@@ -70,6 +70,8 @@ export type NightsoulPool = {
 	/** A form a cast entered before the Blessing opened (her burst outside it). */
 	pendingForm: Omit<Form, 'rec'> | null;
 	pause: { from: number; to: number } | null;
+	/** A spinning Charged Attack is under way — the form's `chargingExtraPerTick`. */
+	charging: boolean;
 	/** Bumped at every re-prediction; a stale exit task does nothing. */
 	gen: number;
 };
@@ -93,6 +95,7 @@ export function poolOf(ctx: SimContext, char: CharacterData): NightsoulPool | un
 			form: null,
 			pendingForm: null,
 			pause: null,
+			charging: false,
 			gen: 0
 		};
 		ctx.nightsoulPools.set(char.id, pool);
@@ -113,7 +116,11 @@ const paused = (pool: NightsoulPool, t: number): boolean =>
 function rateAt(pool: NightsoulPool, t: number): number {
 	if (paused(pool, t)) return 0;
 	const form = pool.form ? pool.spec.forms.find((f) => f.state === pool.form!.state) : undefined;
-	return pool.spec.drainPerTick + (form?.extraDrainPerTick ?? 0);
+	return (
+		pool.spec.drainPerTick +
+		(form?.extraDrainPerTick ?? 0) +
+		(pool.charging ? (form?.chargingExtraPerTick ?? 0) : 0)
+	);
 }
 
 function setEnd(ctx: SimContext, cs: CharState, rec: StateWindowRec, end: number): void {
@@ -324,4 +331,22 @@ export function nightsoulOnSwapOut(
 		ctx.swapSpawns.set(from.ownerCastId, at);
 		from.spawnAtSwap(at);
 	}
+}
+
+/** A spinning Charged Attack starts or stops at `at` (gcsim's +0.2 per tick in
+ *  `ChargeAttackState` on the bike). Settled first, so the ticks before `at`
+ *  drain at the old rate. */
+export function nightsoulCharging(
+	ctx: SimContext,
+	clock: Clock,
+	char: CharacterData,
+	at: number,
+	on: boolean
+): void {
+	const pool = ctx.nightsoulPools.get(char.id);
+	if (!pool || pool.charging === on) return;
+	const cs = ctx.getCharState(char.id);
+	settle(ctx, cs, pool, at);
+	pool.charging = on;
+	refresh(ctx, clock, cs, pool);
 }

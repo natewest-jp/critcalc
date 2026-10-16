@@ -144,6 +144,10 @@ export type CharacterIndexEntry = Pick<
 	 *  (`castTokens.hasSpecialChargeFrames`, Varka alone today). Anyone else's
 	 *  `sC` is timed as a plain `C`, and the editor flags it provisional. */
 	specialCharge?: true;
+	/** Present (and true) only when a normal ability's Charged Attack SPINS
+	 *  (`chargeSpin`, Mavuika alone) — the one kit where `F`, the finisher,
+	 *  means something. The editor flags `F` anywhere else. */
+	chargeSpin?: true;
 	/** Distinct reactions the kit gates on via `teamEnablesReaction`
 	 *  conditions — derived at index generation. A character with
 	 *  `stellarConduct` here carries Stellar-conditional buffs without being

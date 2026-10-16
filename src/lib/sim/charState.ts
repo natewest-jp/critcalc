@@ -110,6 +110,11 @@ export type CharState = {
 	/** Per-character burst cooldown clock (absolute time). `-Infinity` = never
 	 *  cast (treated as "no gate" via the isFinite check at the Q handler top). */
 	qReadyAt: number;
+	/** ⚓ The dash cooldown (universal, ⚓ Nate 2026-10-16; gcsim `ApplyDashCD`):
+	 *  a dash inside 0.8s of the last one starts a 1.5s lockout, during which a
+	 *  dash WAITS. Per character — gcsim saves it across a swap. */
+	dashCdUntil: number;
+	dashLockout: boolean;
 	/** Weapon cdReset (Sacrificial series) proc-ready clock: when the proc ICD
 	 *  expires and it can fire again. 0 = ready. */
 	sacProcReadyAt: number;
@@ -214,6 +219,8 @@ export type CharState = {
 export function createCharState(): CharState {
 	return {
 		qReadyAt: -Infinity,
+		dashCdUntil: -Infinity,
+		dashLockout: false,
 		sacProcReadyAt: 0,
 		states: new Map(),
 		statesTerminatingOnSwap: new Set(),
