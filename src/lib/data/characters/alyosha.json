@@ -96,15 +96,63 @@
 				"⚠️ THE GATE IS `min: 2`, NOT `min: 1`, AND THAT IS DELIBERATE. Both dispatch pipelines run gains → stack snapshot → consumes (sim/run.ts handleCast, sim/run.ts dispatchHit), so THIS application is already counted when the buff reads the snapshot. \"A mark already existed\" is therefore \"the count reached 2\". Verified in source before authoring; ⛔ do not 'fix' it to 1 — that would grant the buff on the very first mark, which the game does not.",
 				"↻ THERE ARE THREE ACTIVATION SITES, not two: this swing, the skill cast, and — since 2026-08-31 — every maul from Tugarin (see the burst's notes). All three read the same `huntersMark` resource, which is `scope: 'rotation'` and therefore survives a swap; the burst's gate differs from these two because C2 applies a mark on the same maul that activates one.",
 				"lifetime 15 = the Hunter's Mark Duration row of the skill's scaling table (15.0s at every talent level). max 2 with amount 1 means a third application cannot accrue — unreachable anyway, since the second consumes the pool. Per-grant expiry (not drain) is the right decay shape: a lone unconsumed mark simply times out.",
-				"filter.hitIndex 3 = the 4th swing, which is the only one that marks (\"applies the Hunter's Mark to the opponent hit by the final strike\"). Alyosha is frameless, so the swing counter is the raw normal counter and N4 lands on index 3."
-			]
+				"filter.hitIndex 3 = the 4th swing, which is the only one that marks (\"applies the Hunter's Mark to the opponent hit by the final strike\"). ↻ 2026-10-16 (gcsim #3207): she has frames now and N3 lands TWICE (17/32f, `lands: [17, 32]`), but `hitIndex` counts SWINGS, not landings — measured: `Alyosha N3 E` grants nothing, `Alyosha N4 E` grants Hunter's Precision. gcsim marks from the same swing (`NormalCounter == normalHitNum-1`)."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 34,
+						"hit": 13,
+						"N": 18,
+						"C": 24
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 38,
+						"hit": 14,
+						"N": 23,
+						"C": 26
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 65,
+						"hit": 32,
+						"lands": [17, 32],
+						"N": 53,
+						"C": 54
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 62,
+						"hit": 17,
+						"N": 56
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 63,
+				"lands": 24,
+				"E": 62,
+				"Q": 62,
+				"D": 24,
+				"J": 24,
+				"swap": 61
+			}
 		},
 		{
 			"id": "alyosha__skill__thunderbolt_strike",
 			"name": "Thunderbolt Strike",
-			"input": ["E"],
+			"input": ["E", "pE", "tE"],
 			"abilityType": "skill",
 			"cooldown": 15,
+			"cooldownStartDelay": 16,
 			"tags": [],
 			"effects": [
 				{
@@ -155,12 +203,49 @@
 			"description": "Follows his hunter's instincts. Tap or hold to produce different effects as well as apply the **Hunter's Mark** effect to the hit opponents.\n\nTapping\nFires at opponents in front of him, dealing AoE Electro DMG.\n\nHolding\nEnters aiming mode, then targets opponents within a certain area in front of him. Alyosha's Interruption RES is enhanced when in this mode.\nAt the end of the button hold, he deals Electro DMG to the targeted opponents.",
 			"behavior": "instant",
 			"_curatorNotes": [
-				"The skill's half of the Hunter's Mark model — read the normal ability's notes first; they carry the mechanic and the `min: 2` reasoning. Both the tap and the hold apply the mark (\"Tap or hold to produce different effects as well as apply the Hunter's Mark effect to the hit opponents\"), so one unconditioned onCast grant covers both and no hold variant is authored: the tap/hold difference is damage scaling and interruption RES, neither of which is an effect.",
+				"The skill's half of the Hunter's Mark model — read the normal ability's notes first; they carry the mechanic and the `min: 2` reasoning. Both the tap and the hold apply the mark (\"Tap or hold to produce different effects as well as apply the Hunter's Mark effect to the hit opponents\"), so one unconditioned onCast grant on the base covers both — a variant with no `effects` inherits them. ↻ 2026-10-16 (gcsim #3207): the Hold IS authored now, as a frames-only variant (`hE`: anim 142, hitmark 113 vs the tap's 31 / 18) — the two forms are a fifth of a second and two and a third seconds long, which the timeline cannot draw as one.",
 				"Hunter's Precision: 21.2% ATK at talent level 10 (skill scaling row \"Hunter's Precision ATK Bonus\"), 15s (\"Hunter's Precision Duration\"). target 'active' because the tooltip grants it to \"all nearby party members\" but the ATK increase applies to them \"when they are on the field\" — which is exactly what a per-receiver active slice expresses. The wiki's own Into the Fray wording says the same thing the other way round: \"all currently active party members\".",
 				"The ability-level `duration: 15` the generator wrote was the Hunter's Mark Duration row, not an active window. Removed — this is an instant cast with no window, and a stray duration on an instant ability is dead data that a future accessor could resurrect as a bar nobody authored.",
 				"Particle generation is 5 per cast with a 12s internal cooldown (Fandom Gameplay Notes). No consumer today; recorded here rather than authored.",
 				"⚠️⚠️ THE MARK IS ENEMY-SIDE AND SO IS ITS CONTAINER, since 2026-08-31: both gainStacks effects for `huntersMark` declare `scope: 'rotation'`, which stores the resource on the holder's CharState instead of the per-segment pool and mirrors it back into that pool at every settle point. Before it, `Alyosha N4 > Fischl E > Alyosha E` drew NO bar where the game gives one — and so did `Alyosha N4 > Alyosha E`, two segments of the same character — which is what the skill's caveat used to say. ⚠️ Declare the scope on EVERY grant of the key, not just the first: lint D.39 (gainstacks-scope-disagreement) checks that they agree, and an omission is invisible.",
-				"⛔ THE SCOPE IS NOT `trigger.source`. That field says who may FIRE the effect; `scope` says where the stacks LIVE, and Hunter's Mark is `source: 'self'` and rotation-scoped at the same time. It is also what makes Tugarin's maul reachable at all — a summon tick fires while its owner may be off field, i.e. inside another character's segment, where a segment-scoped pool does not exist. See the burst's notes."
+				"⛔ THE SCOPE IS NOT `trigger.source`. That field says who may FIRE the effect; `scope` says where the stacks LIVE, and Hunter's Mark is `source: 'self'` and rotation-scoped at the same time. It is also what makes Tugarin's maul reachable at all — a summon tick fires while its owner may be off field, i.e. inside another character's segment, where a segment-scoped pool does not exist. See the burst's notes.",
+				"⚠️ 2026-10-16, a SCHEMA GAP, not a data choice: gcsim starts the Hold's cooldown 111f after the press (`SetCDWithDelay(…, 111)`) and the tap's 16f after, but `cooldownStartDelay` is read off the BASE ability only — an `AbilityVariant` has no such field. So an `hE` draws its ghost tail ending 95f (~1.6s) early (probe: ready at 916f, gcsim 1011f). Fix is a variant-level `cooldownStartDelay` with its reader in `sim/run.ts`; not widened in the frames round.",
+				"Hunter's Mark lands 6f AFTER the hitmark in gcsim (`Tasks.Add(…, 6)` in `triggerSkillMarkCB`), and the buff runs 902f, not 900. Both are below what the chart can show at default zoom and are left at the kit's 15s on the hit/cast. The skill's grant is `onCast`, so Hunter's Precision opens at the CAST, 18f (tap) / 113f (hold) before gcsim's — the hold's gap is the one a reader could see."
+			],
+			"frames": {
+				"anim": 31,
+				"N": 30,
+				"Q": 30,
+				"D": 30,
+				"swap": 29
+			},
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"frames": {
+						"anim": 142,
+						"N": 138,
+						"Q": 138,
+						"D": 138,
+						"J": 138,
+						"swap": 137
+					},
+					"application": [
+						{
+							"frame": 113,
+							"element": "electro",
+							"units": 1
+						}
+					]
+				}
+			],
+			"application": [
+				{
+					"frame": 18,
+					"element": "electro",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -169,6 +254,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 18,
+			"cooldownStartDelay": 1,
 			"energyCost": 70,
 			"tags": ["summon", "taunt", "heal"],
 			"effects": [
@@ -319,7 +405,7 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 2
+								"interval": 1.967
 							},
 							"scaling": 90.4,
 							"stat": "atk",
@@ -330,7 +416,7 @@
 							"target": "active",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 2
+								"interval": 1.967
 							},
 							"conditions": {
 								"type": "ascension",
@@ -347,7 +433,7 @@
 							"target": "team",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 2
+								"interval": 1.967
 							},
 							"conditions": {
 								"type": "constellation",
@@ -371,7 +457,11 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 2
+								"interval": 1.967,
+								"firstTickDelay": 1.317,
+								"icdGate": {
+									"timer": 96
+								}
 							},
 							"scaling": 134.93,
 							"stat": "atk",
@@ -393,13 +483,20 @@
 			],
 			"_curatorNotes": [
 				"TWO summons from one cast, both resolved since 2026-08-14. The Fulgurite Hunting Field is the stationary taunt zone (\"Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field\", 134.93% ATK at T10); Tugarin is the companion that closes on a target (\"maul them every 2s\", 90.4% ATK at T10). Both run the burst's 14s and both take C2's +6s.",
-				"⚓⚓ TUGARIN'S MAUL ACTIVATES THE HUNTER'S MARK, wired 2026-08-31 (docs/summon-tick-stacks-round.md §10). The burst carries the activation half as a `consumeStacks` + a Hunter's Precision `buff`, both on `trigger: onHit / abilityType: burst` with `filter.abilityName: 'Tugarin'` — the filter is load-bearing twice over: it keeps the burst's OWN cast hit from activating (its abilityName is \"Hunter's Advance\"), and it names the summon the kit text names. ⚠️ The Fulgurite Hunting Field is deliberately NOT an activator: the clause sits inside Tugarin's own bullet list. No pixel turns on it either way — both summons tick on the same 2s cadence from the same spawn, so the two readings land on identical instants.",
+				"⚓⚓ TUGARIN'S MAUL ACTIVATES THE HUNTER'S MARK, wired 2026-08-31 (docs/summon-tick-stacks-round.md §10). The burst carries the activation half as a `consumeStacks` + a Hunter's Precision `buff`, both on `trigger: onHit / abilityType: burst` with `filter.abilityName: 'Tugarin'` — the filter is load-bearing twice over: it keeps the burst's OWN cast hit from activating (its abilityName is \"Hunter's Advance\"), and it names the summon the kit text names. ⚠️ The Fulgurite Hunting Field is deliberately NOT an activator: the clause sits inside Tugarin's own bullet list. gcsim agrees (#3207): only Tugarin's attack carries `triggerSkillMarkCB`; the Field's callback is C2's alone. ⚠️ The two series no longer coincide — the Field ticks 39f before each maul — so this choice IS visible now, and it is gcsim's.",
 				"⚠️⚠️ THE ACTIVATION GATE IS `min: 1` BELOW C2 AND `min: 2` AT C2, as two mutually-exclusive pairs (the Odette idiom), and that is the C2 non-activation clause modelled rather than approximated. Both dispatch pipelines run gains → stack snapshot → consumes, so C2's own per-maul application is ALREADY counted when the buff reads the snapshot: at C2 \"a mark existed before this maul\" is \"the count reached 2\", exactly as it is for the skill and N4. Measured: `Alyosha Q` at C0 activates nothing (no mark), at C2 nothing on the first maul and every maul after. ⛔ A single `min: 1` gate would have activated on that first maul, which is the double-fire the round's spec warned about.",
 				"⚠️ The consume is `amount: 1`, NOT `'all'` — the opposite of the skill's and N4's. Activation removes the one mark it activated; at C2 the same maul has just applied a fresh one, and `'all'` would wipe that too and halve the cadence to every other maul.",
-				"firstTickDelay is left at the default (= interval) on all three series: the kit says \"every 2s\" and nothing states an offset from the cast. ⛔ Never faked. Likewise no icdGate anywhere here — gcsim has no Alyosha, so nothing has been measured and a bare series correctly means 'standard'.",
+				"↻ 2026-10-16, CADENCE FROM gcsim #3207 (`burst.go`): ONE ticker — the Field at 79f then every 118f (`fieldFirstTick`, `fieldInterval`), Tugarin 39f after each Field tick — so 1.317s / 1.967s and 1.967s / 1.967s, seven of each over 14s (we had 2s × 6). Both heal series ride Tugarin's tick and moved with it. The ticker re-checks the 14s status at each Field tick, so the count derives from the lifetime with no `tickCap`. ICD: both share `ICDTagElementalBurst` on `ICDGroupAlyoshaBurst` (96f, list {1, 0} — first only), authored on the Field as `{ timer: 96 }`; every Field tick applies (118 > 96, 7/7 measured). ⚠️ OPEN: Tugarin lands 39f inside the window the Field just opened, so in gcsim he applies NOTHING (0/7) — two summon series sharing a counter has no schema (`sharesCastCounter` is cast → series only), so his series is still the default and over-applies.",
 				"C2's second half — \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks\" — is authored on the C2 entry as a per-maul `gainStacks` on the same Tugarin-filtered trigger, gated by the entry itself. It is what makes Hunter's Precision continuous at C2 and a single 15s window at C0.",
 				"SUMMON ORDER: Tugarin is first because summons[0] takes its lifetime from the BAR - he is what the kit text leads with, he carries the damage and both heals, and his length is what a player tracks. ↻ 2026-09-19 (summon-conditions round): a secondary summon now reads its OWN durationModifiers (summonEndAt), so C2's +6s is authored on both and the Fulgurite Hunting Field runs to 20s at C2 beside him. Until then only summons[0]'s were ever applied, the Field stayed at 14s, and the C2 entry carried a caveat for it."
-			]
+			],
+			"frames": {
+				"anim": 55,
+				"N": 54,
+				"E": 53,
+				"swap": 52
+			},
+			"application": []
 		}
 	],
 	"passives": [

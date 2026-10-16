@@ -63,10 +63,14 @@ function parseAt(notation: string, cLevel: number): ParsedRotation {
 }
 
 /** Every instant a summon of `char` ticked, as the parse published them. */
-function tickInstants(r: ParsedRotation, charId: string): Set<number> {
+/** ⚠️ Name the summon when a cast spawns two: Alyosha's Field and Tugarin
+ *  ticked on one 120f grid until gcsim (2026-10-16) put the Field 39f ahead,
+ *  and an unfiltered set then hands a test the Field's tick as "the maul". */
+function tickInstants(r: ParsedRotation, charId: string, label?: string): Set<number> {
 	const out = new Set<number>();
 	for (const w of r.windows)
-		if (w.kind === 'summon' && w.characterId === charId) for (const t of w.ticks ?? []) out.add(t);
+		if (w.kind === 'summon' && w.characterId === charId && (!label || w.label === label))
+			for (const t of w.ticks ?? []) out.add(t);
 	return out;
 }
 
@@ -189,7 +193,7 @@ describe("Tugarin's maul activates the Hunter's Mark", () => {
 		// ⚓ Exactly one. At C0 the burst applies no mark of its own, so Tugarin
 		// consumes the mark the skill left and the remaining mauls find nothing.
 		expect(windows.length).toBe(1);
-		const ticks = [...tickInstants(r, 'alyosha')].sort((a, b) => a - b);
+		const ticks = [...tickInstants(r, 'alyosha', 'Tugarin')].sort((a, b) => a - b);
 		expect(windows[0].start).toBe(ticks[0]);
 		// Hunter's Precision runs its own 15s from that maul.
 		expect(windows[0].end - windows[0].start).toBe(15 * 60);
@@ -211,7 +215,7 @@ describe("Tugarin's maul activates the Hunter's Mark", () => {
 		// `min: 1` below it. Both dispatch pipelines run gains → snapshot →
 		// consumes, so C2's own application is already counted in the snapshot.
 		const r = parseAt('Alyosha Q', 2);
-		const ticks = [...tickInstants(r, 'alyosha')].sort((a, b) => a - b);
+		const ticks = [...tickInstants(r, 'alyosha', 'Tugarin')].sort((a, b) => a - b);
 		const starts = new Set(
 			tickAnchored(r, 'alyosha')
 				.filter(ATK_BUFFS)
