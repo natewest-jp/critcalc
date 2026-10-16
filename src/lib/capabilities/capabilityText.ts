@@ -75,7 +75,7 @@ const STATE_PHRASE: Record<State, string> = {
 	shielded: 'while shielded',
 	onField: 'while on field',
 	offField: 'while off-field',
-	duringSummon: 'while the summon is out',
+	duringSummon: 'while the summon is present',
 	nightsoulBlessing: "during Nightsoul's Blessing",
 	inStance: 'during the stance',
 	symphonyWindow: 'while Thunderous Symphony is ready',
@@ -84,8 +84,8 @@ const STATE_PHRASE: Record<State, string> = {
 	whiteForm: 'during Confirmation of Purity',
 	darkForm: 'during Denial of Darkness',
 	codaWindow: "while Adagio: Coda at Dawn's Tolling is ready",
-	soloDanceDouble: 'while the Solo Dance Double is out',
-	searingRing: 'while the Ring of Searing Radiance is out',
+	soloDanceDouble: 'while the Solo Dance Double is present',
+	searingRing: 'while the Ring of Searing Radiance is present',
 	pneuma: 'in Pneuma alignment',
 	spiritEnvoy: 'during Spirit Envoy Metamorphosis',
 	envoyCooldown: 'while Spirit Envoy is on cooldown',
@@ -100,7 +100,7 @@ const NOT_STATE_PHRASE: Partial<Record<State, string>> = {
 	inStance: 'outside the stance',
 	nightsoulBlessing: "outside Nightsoul's Blessing",
 	codaWindow: "while Adagio: Coda at Dawn's Tolling is not ready",
-	soloDanceDouble: 'while no Solo Dance Double is out'
+	soloDanceDouble: 'while no Solo Dance Double is present'
 };
 
 export function caveatText(caveat: string): string {
