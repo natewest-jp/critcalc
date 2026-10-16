@@ -142,3 +142,41 @@ four in-game runs (C0, combat log; screenshots in
 - **Not modelled:**
   - The bike Charged Attack's +0.2 drain (no bike Charged Attack is authored).
   - The in-Blessing recast (decision 3).
+
+## 5. Queued after Phase 2 (⚓ Nate, 2026-10-16): the bike Charged Attack and its finisher
+
+The gcsim-faithful version (⚓ Nate).
+
+- **`C` on the bike** is one spin hit, so `C3` is three. gcsim's `charge` count
+  mode: the first hit can land at 35f, one revolution takes 45f, and same-target
+  hits are at least 42f apart. Today a bike `C` draws her on-foot Charged Attack.
+- **`F` is the finisher token** (KQM `C3F`). It always performs the finisher.
+- **It is added automatically when the game forces it:**
+  - the next token is a Normal Attack;
+  - the spin reaches its 375f maximum;
+  - her Nightsoul runs out mid-spin.
+- **Before a dash, jump, E, Q or swap, a missing `F` means NO finisher**: gcsim
+  cancels it (`bikeChargeFrames[next] = 0`, and `OnRemoved` resets the CA state).
+- **Finisher timing:** a release delay of 0–20f by spin angle (`GetCAFDelay`), then
+  a 45f hitmark. After it, a Normal Attack at 74f; dash, jump, E, Q and swap at
+  45f. A bare `F` needs at least 50f of spin first.
+- **While charging**, her drain rises to 1.1 per tick (the +0.2 Phase 1 left out).
+- **Frames to measure with the dumper** rather than compute: `C1`…`Cn` and `CnF`.
+
+## 6. Candidate after §5: the dash-cancelled Charged Attack ("CDC")
+
+Raised by Nate on 2026-10-16. It is the main tech players use today: tap a dash
+while still holding the Charged Attack, and she hops on her front tyre instead of
+spinning. gcsim implements it (PR #2669):
+
+- **The cancel.** `dash[charge_cancel=1]`, made during the bike Charged Attack
+  (cyclic or the finisher), is cut at its `travel` frame: 6f by default (6–24), or
+  2f with `collision=0`. The next `charge` starts there instead of at the dash's
+  normal 20f.
+- **The windup skip.** That `charge` skips the 15f windup (`buffered`, 0–15).
+- **The lockout.** The cancel is refused 79–87f into the spin and in the same
+  window of every revolution after it (`cdcLockoutStatus`).
+- **The cost.** Each dash still costs 10 Nightsoul points.
+- **Variance.** Our Human timing setting is where a player's variance lives; gcsim
+  exposes it as `travel` / `buffered` / `collision`, with frame-perfect defaults.
+- ⏭ **Notation:** check a real KQM Mavuika rotation before choosing a token shape.
