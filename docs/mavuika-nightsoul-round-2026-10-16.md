@@ -180,3 +180,34 @@ spinning. gcsim implements it (PR #2669):
 - **Variance.** Our Human timing setting is where a player's variance lives; gcsim
   exposes it as `travel` / `buffered` / `collision`, with frame-perfect defaults.
 - ⏭ **Notation:** check a real KQM Mavuika rotation before choosing a token shape.
+
+### §6 notation, from Prydwen (Nate, 2026-10-16)
+
+KQM's guide does not cover the CDC combos, so Nate sourced them from Prydwen.gg:
+
+- `Q CDCDCCF DCDCCF DCDCC FDC`
+- `Q CDC (tap) CDCDCCF DCDCCF DCDCC`
+- `Mav hE CDCDCC FDCDC Q`
+
+⚓ Uppercase only: lowercase stays reserved for variants (`hE`, `sC`). Prydwen
+writes the strings in lowercase.
+
+| Prydwen                      | Meaning                                                   | gcsim                                             |
+| ---------------------------- | --------------------------------------------------------- | ------------------------------------------------- |
+| `C` after anything but a `C` | Start a spin. No windup after a dash, an attack or her Q. | `charge` (`buffered`)                             |
+| `CC`                         | The spin continues for another hit.                       | Another `charge` inside the same CA.              |
+| `F`                          | The finisher.                                             | `charge[final=1]`                                 |
+| `CDC`                        | A dash cuts the spin; the next spin has no windup.        | `dash[charge_cancel=1]`                           |
+| `FDC`                        | The same cancel, after the finisher has landed.           | As above.                                         |
+| `(tap)`                      | Keep spinning until the dash is ready again.              | Needs no parameter: it is the dash-cooldown WAIT. |
+
+- **The tokenizer** already splits compact runs into `C` and `D`. `F` is unknown
+  today, so `FDC` is unknown as a whole.
+- **⚠️ The dash cooldown** (gcsim `ApplyDashCD`): a dash within 0.8s of the
+  previous one starts a 1.5s lockout. This is why Prydwen says only two quick
+  dashes work. It is NOT modelled for anyone today. Modelled, a `D` that is too
+  early WAITS like a skill on cooldown, and the spin continues meanwhile — which
+  is the double-tap tech.
+- ⏭ **Decision for Nate:** the dash cooldown for everyone (gcsim does this;
+  recommended, after measuring which saved rotations it moves) or for Mavuika
+  only.
