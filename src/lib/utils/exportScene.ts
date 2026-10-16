@@ -39,17 +39,26 @@ const PLATE_TIER = 3200;
  *  so a star fades whole rather than being cut (the screen's rule). */
 export type KeepOutRect = { x: number; y: number; w: number; h: number };
 
-/** 🎛️ The keep-out's soft edge, CSS px: stars ramp back in across it. */
-const KEEPOUT_FEATHER = 16;
+/** 🎛️ The keep-out's soft edge, CSS px. ⚓ Nate 2026-10-16: fade more
+ *  gradually, and slightly UNDER the content's edges — so the clear box is
+ *  inset by KEEPOUT_INSET and the stars ramp back over KEEPOUT_FEATHER,
+ *  half of it inside the content's edge and half outside. */
+const KEEPOUT_INSET = 24;
+const KEEPOUT_FEATHER = 64;
 
 /** How much of a star survives at (x, y) CSS px: 0 inside a box, 1 beyond
  *  its feather. */
 function keepOutStrength(x: number, y: number, boxes: KeepOutRect[]): number {
 	let k = 1;
 	for (const b of boxes) {
-		const dx = Math.max(b.x - x, 0, x - (b.x + b.w));
-		const dy = Math.max(b.y - y, 0, y - (b.y + b.h));
-		k = Math.min(k, Math.min(1, Math.hypot(dx, dy) / KEEPOUT_FEATHER));
+		const x0 = b.x + KEEPOUT_INSET;
+		const y0 = b.y + KEEPOUT_INSET;
+		const x1 = b.x + b.w - KEEPOUT_INSET;
+		const y1 = b.y + b.h - KEEPOUT_INSET;
+		const dx = Math.max(x0 - x, 0, x - x1);
+		const dy = Math.max(y0 - y, 0, y - y1);
+		const t = Math.min(1, Math.hypot(dx, dy) / KEEPOUT_FEATHER);
+		k = Math.min(k, t * t * (3 - 2 * t)); // smoothstep, the site's roll-off shape
 	}
 	return k;
 }

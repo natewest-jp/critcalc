@@ -1549,15 +1549,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		}
 	});
 
-	// ── The footer: how the rotation is timed, and how long it runs ──
+	// ── The footer: how long the rotation runs, and how it is timed ──
 	const fy = h - PAD - FOOTER_H / 2 + 4;
 	base.font = `500 11px ${SANS}`;
 	base.fillStyle = MUTED;
 	base.textBaseline = 'middle';
 	base.textAlign = 'left';
-	base.fillText(snap.timingNote, benchX, fy);
-	base.textAlign = 'right';
-	base.fillText(`${secondsLabel(snap.endFrame)}s`, w - PAD, fy);
+	// ⚓ Nate 2026-10-16: the length LEADS the line, at the left — the trailing
+	// bars make the right end the part a reader crops off.
+	base.fillText(`${secondsLabel(snap.endFrame)}s · ${snap.timingNote}`, benchX, fy);
 
 	return new Promise<Blob>((resolve, reject) => {
 		canvas.toBlob((blob) => {
