@@ -100,6 +100,9 @@ const FOLLOW_STATE = '\u0000followState';
  *  resolution primitive). Swap-out is keyed by characterId, matching the
  *  parser; over the corpus + multi-segment fixtures characterId ↔ slotIdx is a
  *  bijection so this equals the renderer's former slotIdx-keyed computation. */
+/** The label prefix of a pool-driven allowance in `reconstructSummonWindows`. */
+const POOL_DRIVEN = '<pool-driven>';
+
 function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 	const out: SummonTuple[] = [];
 	const lastByKey = new Map<string, SummonTuple>();
@@ -158,6 +161,20 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 				castAbility !== undefined && 'behavior' in castAbility && castAbility.behavior === 'stance';
 			findCastSummons(char, kind, bar.label, bar.abilityId, bar.variantLabel ?? null).forEach(
 				(summon, i) => {
+					// ⚓ A POOL-DRIVEN summon (Nightsoul round, 2026-10-16) cannot be
+					// reconstructed from geometry either: it spawns at a swap off a
+					// form and ends with a state whose end is the holder's POINTS. The
+					// invariant this oracle can reach is containment — see the assert.
+					if (summon.endsWithState !== undefined || summon.spawnsAtSwapOutFrom !== undefined) {
+						out.push({
+							characterId: track.characterId,
+							label: `${POOL_DRIVEN}${summon.label}|${summon.endsWithState ?? ''}`,
+							start: 0,
+							end: 0,
+							source: kind
+						});
+						return;
+					}
 					const spawnAt =
 						bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
 					const ownLifetime = i !== 0 || ownerIsStance;
@@ -257,9 +274,36 @@ function assertSummonWindowsMatchGeometry(result: ParsedRotation): void {
 		}
 	}
 
+	// Pool-driven summons: every one the parser drew lies inside a window of the
+	// state it ends with, and is not empty.
+	const poolKinds = new Set(
+		expected
+			.filter((t) => t.label.startsWith(POOL_DRIVEN))
+			.map((t) => `${t.characterId}#${t.label}`)
+	);
+	for (const k of poolKinds) {
+		const [characterId, rest] = k.split('#');
+		const [label, state] = rest.slice(POOL_DRIVEN.length).split('|');
+		for (const t of [...remaining]) {
+			if (t.characterId !== characterId || t.label !== label) continue;
+			remaining.delete(t);
+			expect(t.end, `${label} @${t.start} is not empty`).toBeGreaterThan(t.start);
+			if (!state) continue;
+			const inside = result.windows.some(
+				(w) =>
+					w.kind === 'state' &&
+					w.name === state &&
+					w.characterId === characterId &&
+					w.start <= t.start &&
+					t.end <= w.end
+			);
+			expect(inside, `${label} @${t.start}–${t.end} lies inside a ${state} window`).toBe(true);
+		}
+	}
+
 	expect([...remaining].map(tupleKey).sort()).toEqual(
 		expected
-			.filter((t) => t.label !== FOLLOW_STATE)
+			.filter((t) => t.label !== FOLLOW_STATE && !t.label.startsWith(POOL_DRIVEN))
 			.map(tupleKey)
 			.sort()
 	);

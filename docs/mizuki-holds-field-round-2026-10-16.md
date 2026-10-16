@@ -84,6 +84,24 @@ too, and the corpus passed it unchanged.
   ⚓ Nate 2026-10-16: **simulate her Nightsoul points and Fighting Spirit for real**
   (option A — she is one of the most important characters meta-wise), ⛔ not the
   stopgap of letting the Blessing run its authored length.
+  **In-game check (Nate, C0, 2026-10-16; screenshots `assets-src/ingame-logs/2026-10-16/`
+  IMG_0125–0127).** It matches gcsim once each Ring hit's 3-point cost is counted
+  (5/s drain in Ring form + 3 per hit; 9/s on the bike):
+  - **Bike ~3s, then swap (×3):** the activation hit at 0.51–0.57, the swap at
+    3.06 / 3.36 / 3.33, then off-field Ring hits at ≈5.2 / 7.2 / 9.1 / 11.1s and NO
+    5th (two of the logs ran past where it would land). gcsim: ~55 points at the
+    swap, empty at ~11.7s.
+  - **Bike only:** ~8.9s by eye (80 ÷ 9), no Ring after.
+  - **Ring only:** ~12s by eye (the 12.4s our Ring is authored with).
+  - **E → Q → swap (log `mavuika-hold-e-q-swap.PNG`):** E hit 0.509, burst hit
+    2.609 (Q pressed ≈0.84, hitmark 106f), swap 2.85, then Ring hits at 4.98 / 6.93 /
+    8.88 / 10.89 / 12.84 and no 6th by 15.0. gcsim: Q adds 10 points at +87f and the
+    Crucible pauses the drain from +105f to the swap, which leaves ≈67 at the swap.
+    That is 5 hits, empty ≈13.2s. ✅ Matches; the ~14.2s by eye was the visual fade.
+  - Screenshots renamed by Nate: `mavuika-hold-e-swap1–3.PNG`, `mavuika-hold-e-q-swap.PNG`.
+  - **Bonus:** the 4th Ring hit is lower (9,819 against 11,273) in every run, which
+    fits A1's +30% ATK expiring 10s after the Nightsoul Burst at the E.
+  - ⚓ The other party members (Yaoyao, Nilou, Dahlia) do not affect any of this.
 - ✅ **F2 — DONE same day (`fix/stance-exits`)**, with §5. Chasca's cooldown starts at the cast; gcsim starts it at Nightsoul exit
   (`chasca/skill.go:105`, `SetCD` inside `exitNightsoul()`).
   `cooldownStartsAtStanceEnd` is the existing field for it, and her curator note

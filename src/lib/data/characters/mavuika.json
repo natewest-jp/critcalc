@@ -98,7 +98,14 @@
 			"name": "Flamestrider Strikes",
 			"input": ["N1", "N2", "N3", "N4", "N5", "P"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "nightsoulBlessing" },
+			"conditions": {
+				"type": "state",
+				"state": "flamestrider"
+			},
+			"nightsoulCost": {
+				"perSwing": 1,
+				"perDash": 10
+			},
 			"infusion": "pyro",
 			"tags": [],
 			"hits": [
@@ -147,6 +154,10 @@
 			"frames": { "anim": 28, "N": 18, "C": 19, "E": 19, "Q": 18, "swap": 24 },
 			"cooldown": 15,
 			"cooldownStartDelay": 18,
+			"nightsoul": {
+				"points": "max",
+				"entersForm": "searingRing"
+			},
 			"tags": ["summon"],
 			"summons": [
 				{
@@ -180,40 +191,94 @@
 							"element": "pyro"
 						}
 					],
-					"terminatesOn": "burst",
-					"opensState": "searingRing",
+					"terminatesOn": "recast",
+					"endsWithState": "searingRing",
+					"nightsoulCostPerTick": 3,
 					"_curatorNotes": [
-						"`terminatesOn: 'burst'` (summon-ends-on-cast round, 2026-09-19): gcsim's `Burst()` calls `enterBike()` and `skillRingTask` returns the moment the armament is not the ring, so the Ring is gone the instant Q is pressed. Measured before: `Mavuika E Q` applied Pyro at 4 / 8 / 12s from an entity the game deleted at 0.3s."
+						"⛔ SUPERSEDED 2026-10-16 (Nightsoul round) — kept as history: `terminatesOn: 'burst'` (summon-ends-on-cast round, 2026-09-19): gcsim's `Burst()` calls `enterBike()` and `skillRingTask` returns the moment the armament is not the ring, so the Ring is gone the instant Q is pressed. Measured before: `Mavuika E Q` applied Pyro at 4 / 8 / 12s from an entity the game deleted at 0.3s.",
+						"↻ 2026-10-16: `endsWithState: 'searingRing'` replaces `terminatesOn: 'burst'` + `opensState` — the Ring lives exactly as long as her Ring FORM, which her pool owns: a burst or Hold E (bike) ends it, so does her points running out. `duration` (12.4, +6.2 at C1) stays as the upper bound: 80 points at 5/s plus 3 per hit, which is also its natural life. `nightsoulCostPerTick: 3` (gcsim `reduceNightsoulPoints(3)` after `QueueAttack`). `terminatesOn: 'recast'`: a new Ring (Tap, or a swap off the bike) supersedes the old one on the same key."
 					]
 				}
 			],
 			"variants": [
 				{
 					"label": "Hold (Flamestrider)",
+					"nightsoul": {
+						"points": "max",
+						"entersForm": "flamestrider"
+					},
 					"input": ["hE"],
 					"frames": { "anim": 43, "D": 42, "J": 42, "swap": 34 },
 					"behavior": "stance",
 					"duration": 9,
+					"durationModifiers": [
+						{
+							"source": "C1: The Night-Lord's Explication (Nightsoul max 80 → 120)",
+							"type": "flat",
+							"value": 4.4,
+							"conditions": {
+								"type": "constellation",
+								"level": 1
+							}
+						}
+					],
 					"terminatesOnSwap": true,
-					"opensState": "nightsoulBlessing",
-					"summons": [],
+					"summons": [
+						{
+							"label": "Rings of Searing Radiance",
+							"duration": 12.4,
+							"spawnsAt": 0,
+							"durationModifiers": [
+								{
+									"source": "C1: The Night-Lord's Explication (Nightsoul max 80 → 120)",
+									"type": "flat",
+									"value": 6.2,
+									"conditions": {
+										"type": "constellation",
+										"level": 1
+									}
+								}
+							],
+							"mobility": "follows",
+							"effects": [
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": {
+										"type": "summonTick",
+										"interval": 2,
+										"firstTickDelay": 2,
+										"icdGate": "none"
+									},
+									"scaling": 230.4,
+									"stat": "atk",
+									"element": "pyro"
+								}
+							],
+							"terminatesOn": "recast",
+							"endsWithState": "searingRing",
+							"spawnsAtSwapOutFrom": "flamestrider",
+							"nightsoulCostPerTick": 3
+						}
+					],
 					"application": [{ "frame": 16, "element": "pyro", "units": 1 }]
 				}
 			],
 			"effects": [],
-			"caveat": "C1 lengthens the Hold window to ~13s, not shown, and a second press is read as a new Tap.",
+			"caveat": "Pressing E again during Nightsoul's Blessing waits for the cooldown here; in game it switches between the Flamestrider and the Ring.",
 			"_curatorNotes": [
-				"Hold-E migrated to a true variant-driven bike-NS opener (2026-05-08): variant overrides behavior → \"stance\", opensState → \"nightsoulBlessing\", terminatesOnSwap → true, duration → 9. Now possible since the parser is variant-aware for stance fields. The Tap form remains instant (no NS — ring-mode NS rendering would need full P1 multi-state to distinguish ring from bike inside NS).",
+				"⛔ SUPERSEDED 2026-10-16 (Nightsoul round) — kept as history: Hold-E migrated to a true variant-driven bike-NS opener (2026-05-08): variant overrides behavior → \"stance\", opensState → \"nightsoulBlessing\", terminatesOnSwap → true, duration → 9. Now possible since the parser is variant-aware for stance fields. The Tap form remains instant (no NS — ring-mode NS rendering would need full P1 multi-state to distinguish ring from bike inside NS).",
 				"Tap behavior: \"instant\" — gcsim skillFrames AnimationLength 28, ActionSwap 24. Hold uses skillFramesHold (AnimationLength 43, ActionSwap 34).",
 				"cooldown: 15 + cooldownStartDelay: 18 — gcsim SetCDWithDelay(skill, 15*60, 18) for both Tap and Hold; recast is skillRecastCD=60f and gated separately.",
-				"summon tag + the Ring (↻ 2026-09-15, essential-characters T0): the Tap exits bike → ring and gcsim exitBike starts skillRingTask, a 2*60 re-queue firing 'Rings of Searing Radiance' — Pyro, Durability 25, ICDTagNone, skillRing 230.4% ATK at TL10 — while armamentState == ring and Nightsoul Blessing holds. Authored as a real summon (interval 2, firstTickDelay 2, icdGate none). Its six ticks had been smuggled into this skill's application[] at 120…720f, where the CAST's shared ICD counter ate three of them and no bar or marker explained the Pyro. Lifetime is DERIVED from gcsim, not stated by the kit: the Tap enters Nightsoul at MaxPoints (80), nightsoulPointReduceTask drains 0.5 per 6f (5/s) in ring form and each ring tick spends 3 more, so the pool empties at ~12.4s after the sixth tick (12.0s) — duration 12.4. C1 raises MaxPoints to 120 (cons.go), which by the same arithmetic empties at ~18.6s after nine ticks: the +6.2 durationModifier. ⚠️ The Burst calls enterBike and skillRingTask returns once armamentState != ring, so in game Q ENDS the Ring; `terminatesOn` is swap|recast only (essential-characters §1.M), so the bar runs on — named in the caveat. The Hold variant carries `summons: []` because a variant's summons REPLACE the base's and Hold enters bike, not ring.",
+				"⛔ SUPERSEDED 2026-10-16 (Nightsoul round) — kept as history: summon tag + the Ring (↻ 2026-09-15, essential-characters T0): the Tap exits bike → ring and gcsim exitBike starts skillRingTask, a 2*60 re-queue firing 'Rings of Searing Radiance' — Pyro, Durability 25, ICDTagNone, skillRing 230.4% ATK at TL10 — while armamentState == ring and Nightsoul Blessing holds. Authored as a real summon (interval 2, firstTickDelay 2, icdGate none). Its six ticks had been smuggled into this skill's application[] at 120…720f, where the CAST's shared ICD counter ate three of them and no bar or marker explained the Pyro. Lifetime is DERIVED from gcsim, not stated by the kit: the Tap enters Nightsoul at MaxPoints (80), nightsoulPointReduceTask drains 0.5 per 6f (5/s) in ring form and each ring tick spends 3 more, so the pool empties at ~12.4s after the sixth tick (12.0s) — duration 12.4. C1 raises MaxPoints to 120 (cons.go), which by the same arithmetic empties at ~18.6s after nine ticks: the +6.2 durationModifier. ⚠️ The Burst calls enterBike and skillRingTask returns once armamentState != ring, so in game Q ENDS the Ring; `terminatesOn` is swap|recast only (essential-characters §1.M), so the bar runs on — named in the caveat. The Hold variant carries `summons: []` because a variant's summons REPLACE the base's and Hold enters bike, not ring.",
 				"Recast (skillRecast) toggles armament state inside NS without consuming the 15s skill CD: 1s recast CD instead. Authoring recast as a 3rd skill entry would require either a state condition or a dedicated input token; both have downsides (resolveActiveAbility doesn't filter by token; state distinction would require a new bike state). Skipped — flagged in caveat.",
 				"Hold variant frames default keys (N/C/E/Q at 43 = AnimationLength) encoded for accuracy; D/J at 42 are gcsim-explicit overrides.",
 				"skillBikeRefreshFrames (E pressed inside bike+NS via Sac proc or burst CD reset): swap=24, N=27, C=27, E=39 (default), Q=27, D=25, J=27. Not modelled — treats this rare path as the same Tap variant. Acceptable approximation.",
 				"skillRecastFramesToBike (recast Ring → Bike): swap=24, N=13, C=13, E=13, Q=13, D=12, J=13. skillRecastFramesToRing (recast Bike → Ring): swap=24, N=27, C=28, E=28, Q=28, D=37. Both not authored — see caveat.",
 				"[A7] The shown 9s Hold window equals the C0 Nightsoul drain rate (~9 pts/sec at 80 max points); C1 raises max Nightsoul to 120 (~13s effective).",
 				"[A7] Skill recast to toggle Ring/Flamestrider mode is unauthored — there is no apexDrive-like state to gate the recast frames, so a re-press falls back to the standard Tap variant.",
-				"↻ 2026-09-15: caveat rewritten to lead with the Ring's post-Q ticks (the canonical E→Q opener shows them); the C1 Hold-window and recast halves are kept in shorter words."
+				"↻ 2026-09-15: caveat rewritten to lead with the Ring's post-Q ticks (the canonical E→Q opener shows them); the C1 Hold-window and recast halves are kept in shorter words.",
+				"↻ 2026-10-16 (Nightsoul round, `docs/mavuika-nightsoul-round-2026-10-16.md`): her Nightsoul points are SIMULATED (`nightsoulPool` on the character, `sim/nightsoul.ts`), ⚓ Nate's ruling, and verified against his four in-game runs. Tap E enters (or refills) at the maximum in Ring form; Hold E does the same on the Flamestrider. The Blessing (`nightsoulBlessing`), the bike (`flamestrider`) and the Ring form (`searingRing`) are POOL-OWNED windows ending where the points run out: drain 0.5 per 6f, +0.4 on the bike; a Ring hit costs 3 after landing, a bike swing 1, a bike dash 10. The Hold variant is still a stance — its pill is the bike, an upper bound of 9s (C1 +4.4 = gcsim's 134 ticks) cut at a swap, a Tap, her burst or empty points. A swap off the bike turns it into the Ring (gcsim `exitBike` on `OnCharacterSwap`), so the Hold variant and the burst each carry the Ring as a `spawnsAtSwapOutFrom` summon. ⚠️ Not modelled: the in-Blessing recast that toggles form (the caveat), and the bike Charged Attack's +0.2 drain (no bike Charged Attack is authored)."
 			],
 			"description": "Calling upon her authority over \"conflict,\" Mavuika summons the All-Fire Armaments passed down through the line of human Archons, dealing Nightsoul-aligned Pyro DMG.\nAfter using this, Mavuika's Nightsoul points are restored to max value, and she enters the Nightsoul's Blessing state.\n\nAll-Fire Armaments\nHas different forms when Tapped or Held.\n\nTap\n\"Divine Name Unleashed\": The All-Fire Armaments manifest as a Ring of Searing Radiance. The Ring follows the current active character and attacks nearby opponents at intervals, dealing Nightsoul-aligned Pyro DMG.\n\nHold\n\"Ancient Name Unbound\": The All-Fire Armaments manifest as a Flamestrider. In this state, Mavuika can ride the Flamestrider at high speed, or activate its hidden backup propulsion module to temporarily cross various terrain types and glide in mid-air. Mavuika's Normal, Charged, and Plunging Attacks will also be converted to deal Nightsoul-aligned Pyro DMG which cannot be overridden. When sprinting, she also deals Nightsoul-aligned Pyro DMG to opponents along her path.\n\nWhile in the Nightsoul's Blessing state, Tapping the Elemental Skill can switch the All-Fire Armaments' form. The Armaments will disappear once Mavuika's Nightsoul's Blessing state ends.",
 			"application": [
@@ -235,7 +300,53 @@
 			"duration": 7,
 			"energyCost": 100,
 			"terminatesOnSwap": true,
-			"opensState": "nightsoulBlessing",
+			"nightsoul": {
+				"points": 10,
+				"pointsAt": 87,
+				"entersForm": "flamestrider",
+				"pause": {
+					"at": 105,
+					"frames": 420
+				}
+			},
+			"summons": [
+				{
+					"label": "Rings of Searing Radiance",
+					"duration": 12.4,
+					"spawnsAt": 0,
+					"durationModifiers": [
+						{
+							"source": "C1: The Night-Lord's Explication (Nightsoul max 80 → 120)",
+							"type": "flat",
+							"value": 6.2,
+							"conditions": {
+								"type": "constellation",
+								"level": 1
+							}
+						}
+					],
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2,
+								"icdGate": "none"
+							},
+							"scaling": 230.4,
+							"stat": "atk",
+							"element": "pyro"
+						}
+					],
+					"terminatesOn": "recast",
+					"endsWithState": "searingRing",
+					"spawnsAtSwapOutFrom": "flamestrider",
+					"nightsoulCostPerTick": 3
+				}
+			],
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
@@ -248,7 +359,8 @@
 				"C2 +200 baseAtk during NS Blessing modelled on the C2 constellation entry. C2 in-bike FlatDmg additions (NA/CA/Q at 60%/90%/120% ATK respectively) also modelled there.",
 				"[A7] Caveat trimmed to the Fighting-Spirit-not-Energy divergence plus the ~1s-longer real window. Already in curator notes: energyCost 100 = 50% of the 200 Fighting Spirit threshold, C1's 250 cap (~60% threshold), and the 7s = Crucible / ~8s-total residual drain (frozen Nightsoul drain during Crucible, then the 10 points granted at burst hitmark drain at ~9 pts/sec).",
 				"[A7] To preserve: Mavuika has no in-game Energy bar (gcsim EnergyMax=0), and her skill's particle generation (5 Pyro, 0.5s ICD) does not fuel her own burst readiness — it feeds teammates' Energy.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The surviving half names the Q bar's own width: the burst stance draws 7s where the real bike/Nightsoul time is ~8s, so the swap point a reader takes off the bar is a second early. The dropped half names a pixel that does not exist on the surface this caveat reaches — the planner prints energy cost NOWHERE (it is drawn only on the Team Builder's detail card and Compare lane, which have no caveat channel), and the planner gates no burst on energy at all, so her Q behaves exactly like everyone else's and nothing in the timeline looks wrong. Category: visible-divergence."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The surviving half names the Q bar's own width: the burst stance draws 7s where the real bike/Nightsoul time is ~8s, so the swap point a reader takes off the bar is a second early. The dropped half names a pixel that does not exist on the surface this caveat reaches — the planner prints energy cost NOWHERE (it is drawn only on the Team Builder's detail card and Compare lane, which have no caveat channel), and the planner gates no burst on energy at all, so her Q behaves exactly like everyone else's and nothing in the timeline looks wrong. Category: visible-divergence.",
+				"↻ 2026-10-16 (Nightsoul round): `nightsoul { points: 10, pointsAt: 87, entersForm: 'flamestrider', pause: { at: 105, frames: 420 } }` — gcsim `Burst()`: `enterBike()` at 0, `enterNightsoulOrRegenerate(10)` at 87, the Crucible (`burstKey`) at hitmark − 1 for 420f, which multiplies every Nightsoul cost by 0 (`nightsoulConsumptionMul`) until it ends or she swaps out. `opensState: nightsoulBlessing` is gone: the Blessing is the pool's and outlives both the Crucible and a swap. The stance (7s, `terminatesOnSwap`) is still the Crucible pill; ⚠️ it starts at the cast, the Crucible at +105f. The Ring after a swap off the bike is this cast's `spawnsAtSwapOutFrom` summon."
 			],
 			"description": "Let the people's inner voices reach the divine throne in the heavens.\nMavuika's Elemental Burst is not reliant on Energy, but instead, on \"Fighting Spirit.\"\n\nFighting Spirit\nWhen Mavuika has at least 50% Fighting Spirit, she can consume it all to unleash her Elemental Burst.\nMavuika can obtain Fighting Spirit via the following methods:\n· When in combat, Nightsoul points consumed by nearby party members are converted to Fighting Spirit.\n· When nearby party members' Normal Attacks hit opponents, Mavuika gains 1.5 Fighting Spirit. This can trigger once every 0.1s.\n\nAfter using this, Mavuika gains 10 Nightsoul points and enters the Nightsoul's Blessing state. Riding her Flamestrider high in the air, she uses a powerful Sunfell Slice against opponents on the ground, dealing Nightsoul-aligned AoE Pyro DMG and entering the \"Crucible of Death and Life\" state.\n\nCrucible of Death and Life\nDuring this time, Mavuika's various actions will no longer consume Nightsoul points, and her interruption resistance is increased. Also, the DMG dealt by Sunfell Slice and \"Ancient Name Unbound\"'s Normal and Charged Attacks is increased based on the amount of Fighting Spirit she has when using the Elemental Burst.\nCrucible of Death and Life will be canceled when Mavuika leaves the field.",
 			"application": [{ "frame": 106, "element": "pyro", "units": 1 }]
@@ -347,7 +459,7 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{ "type": "state", "state": "flamestrider" }
 						]
 					},
 					"source": "character",
@@ -363,7 +475,7 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{ "type": "state", "state": "flamestrider" }
 						]
 					},
 					"source": "character",
@@ -481,6 +593,32 @@
 			"description": "The All-Fire Armaments from the Elemental Skill The Named Moment receive all-round improvements:\n· Ring of Searing Radiance: When the Ring's attacks hit opponents, a Flamestrider will crash into the struck opponent, dealing 200% of ATK as Nightsoul-aligned AoE Pyro DMG.\n· Flamestrider: When Mavuika is riding the Flamestrider, she will also summon a Scorching Ring of Searing Radiance to follow her, which will decrease nearby opponents' DEF by 20% and deal 500% of ATK as Nightsoul-aligned AoE Pyro DMG to nearby opponents once every 3s. Mavuika's terrain-crossing abilities will also be further improved.\n\nAdditionally, when Mavuika is riding her Flamestrider and is not in combat, when her Nightsoul points drop to 5, she will gain 80 Nightsoul points. This effect can trigger once every 15s."
 		}
 	],
+	"nightsoulPool": {
+		"state": "nightsoulBlessing",
+		"max": 80,
+		"maxModifiers": [
+			{
+				"source": "C1: The Night-Lord's Explication",
+				"type": "flat",
+				"value": 40,
+				"conditions": {
+					"type": "constellation",
+					"level": 1
+				}
+			}
+		],
+		"drainPerTick": 0.5,
+		"forms": [
+			{
+				"state": "flamestrider",
+				"extraDrainPerTick": 0.4,
+				"swapTurnsInto": "searingRing"
+			},
+			{
+				"state": "searingRing"
+			}
+		]
+	},
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.711Z",

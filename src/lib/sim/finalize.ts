@@ -320,6 +320,16 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				break;
 			}
 		}
+		/** ⚓ `Summon.endsWithState`: the end of the holder's window of that name
+		 *  containing the spawn — FINAL here, the same answer the live chain read
+		 *  as it went. No such window ends the summon at its spawn. */
+		const stateEndContaining = (charId: string, name: string | undefined, at: number): number => {
+			if (name === undefined) return Infinity;
+			for (const rec of ctx.stateWindowRecs)
+				if (rec.characterId === charId && rec.name === name && rec.start <= at && at < rec.end)
+					return rec.end;
+			return at;
+		};
 		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			// ⚓ A cast of this kind ENDS the owner's summons that say so
 			// (`terminatesOn: 'skill' | 'burst'`) — at the cast's START, the instant
@@ -366,7 +376,15 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						// ⚠️ A REPLACEMENT SPAWNS WHERE THE FLIP WAS, with no delay of its own
 						// — gcsim passes 0 rather than the summon's `spawnsAt`, because the
 						// spawn delay belongs to a cast animation and there is no second cast.
-						const spawnAt = span.from ?? summonSpawnAt(bar.start, bar.summonActivatesAt, summon, i);
+						// ⚓ A swap-out spawn (`spawnsAtSwapOutFrom`) is where the pool
+						// recorded it, or nowhere — the live chain read the same map.
+						let deferredAt: number | undefined;
+						if (summon.spawnsAtSwapOutFrom !== undefined) {
+							deferredAt = ctx.swapSpawns.get(ctx.castIdByBar.get(bar) ?? -1);
+							if (deferredAt === undefined) return;
+						}
+						const spawnAt =
+							deferredAt ?? span.from ?? summonSpawnAt(bar.start, bar.summonActivatesAt, summon, i);
 						// The ONE gate a secondary's `durationModifiers` resolve under — the
 						// tick walk's own (see `summonEndAt`).
 						const endArgs = {
@@ -385,7 +403,11 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						// fresh lifetime — so its end is the SHARED end, not its own `duration`.
 						// And every occupant is cut short by the flip that replaced it.
 						const nextFlip = spans[si + 1]?.from ?? Infinity;
-						const endAt = Math.min(span.from === null ? naturalEnd : sharedEnd, nextFlip);
+						const endAt = Math.min(
+							span.from === null ? naturalEnd : sharedEnd,
+							nextFlip,
+							stateEndContaining(track.characterId, summon.endsWithState, spawnAt)
+						);
 						if (endAt <= spawnAt) return;
 						const key = `${track.characterId}::${summon.label}`;
 						// Recast truncation: shorten the still-open prior window on this key.

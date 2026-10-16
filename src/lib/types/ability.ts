@@ -1163,7 +1163,12 @@ export type State =
 	/** Illuga's Haunted Night's Oriole-Song (event-ended buffs round,
 	 *  2026-09-21) — the burst's 20s effect, which ALSO ends the moment her
 	 *  Nightingale's Song pool is spent (`consumeStacks.closesStateWhenEmpty`). */
-	| 'orioleSong';
+	| 'orioleSong'
+	/** Mavuika on her Flamestrider (Nightsoul round, 2026-10-16) — a FORM of
+	 *  her Nightsoul pool (`CharacterData.nightsoulPool`), opened by Hold E and
+	 *  her burst, closed by a swap (which turns it into the Ring), a Tap E, or
+	 *  her points running out. Her bike attacks gate on it. */
+	| 'flamestrider';
 
 /**
  * Post-action transient state — a short named gating window opened by an
@@ -1343,6 +1348,20 @@ export type Summon = {
 	 *  nothing of the terminating cast has to exist yet. Naming the host
 	 *  ability's OWN kind is `recast` and lint says so (D.22b). */
 	terminatesOn?: 'swap' | 'recast' | 'skill' | 'burst';
+	/** The summon lives only while its holder is in this state — its window and
+	 *  its ticks end where the holder's window of this name that contains the
+	 *  spawn ends (Nightsoul round, 2026-10-16: Mavuika's Ring and her Ring form,
+	 *  which her pool closes at a bike entry or when her points run out).
+	 *  `duration` stays the upper bound. */
+	endsWithState?: State;
+	/** The summon spawns at its owner's SWAP-OUT, not at the cast — and only if
+	 *  the owner is still in this form then and the cast is the one that put her
+	 *  in it (Mavuika: a swap off the Flamestrider leaves the Ring, gcsim
+	 *  `exitBike` on `OnCharacterSwap`). Its first tick counts from the swap. */
+	spawnsAtSwapOutFrom?: State;
+	/** Nightsoul points each tick spends from the owner's pool, AFTER the hit
+	 *  (Mavuika's Ring, 3 — gcsim `reduceNightsoulPoints(3)` after `QueueAttack`). */
+	nightsoulCostPerTick?: number;
 	/** Effects emitted by the summon while active. Damage effects with
 	 *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
 	 *  during the summon's lifetime; the timeline renders one marker per tick
@@ -2337,6 +2356,10 @@ export type NormalAbility = AbilityCommon & {
 	input: Input[];
 	/** Per-hit timing for the normal-attack combo. Required. */
 	hits: NormalHit[];
+	/** Nightsoul points this form's actions spend from the owner's pool
+	 *  (Mavuika's Flamestrider: 1 per Normal Attack swing at its landing, 10 per
+	 *  dash at its start — gcsim `attack.go` / `dash.go`). */
+	nightsoulCost?: { perSwing?: number; perDash?: number };
 	/** Charged-attack frames for sword/claymore/polearm. Mutually exclusive with chargeHits. */
 	chargeFrames?: FrameMap;
 	/** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
@@ -2749,6 +2772,51 @@ export type ElementalApplication = {
  * closes one of those). A cast with no open stance does nothing.
  */
 /**
+ * ⚓ WHAT A CAST DOES TO ITS CASTER'S NIGHTSOUL POOL (Nightsoul round,
+ * 2026-10-16; `CharacterData.nightsoulPool`). gcsim's
+ * `enterNightsoulOrRegenerate(p)`: outside the Blessing it ENTERS with exactly
+ * `p` points (the drain's 0.1s phase starts there); inside, it ADDS `p`, capped
+ * at the maximum, and the phase is kept.
+ *
+ * - `points` / `pointsAt` — how many (`'max'` = the pool's maximum) and the
+ *   frame from the cast's start (Mavuika's burst: 10 at 87f).
+ * - `entersForm` — the pool form the cast puts her in, at its start (Tap E: the
+ *   Ring; Hold E and the burst: the Flamestrider).
+ * - `pause` — the drain and every point cost are multiplied by 0 from `at` for
+ *   `frames`, or until the caster swaps out (her Crucible, gcsim
+ *   `nightsoulConsumptionMul`; a swap deletes `burstKey`).
+ */
+export type NightsoulCastSpec = {
+	points?: number | 'max';
+	pointsAt?: number;
+	entersForm?: State;
+	pause?: { at: number; frames: number };
+};
+
+/**
+ * ⚓ A NIGHTSOUL POOL, SIMULATED (Nightsoul round, 2026-10-16 — ⚓ Nate: Mavuika
+ * is simulated for real, not drawn at a fixed length). Points drain every 6
+ * frames from the entry (`drainPerTick`, plus the current FORM's extra); casts
+ * enter or refill (`NightsoulCastSpec`); summon ticks and form actions spend.
+ * The pool OWNS its state windows: `state` (the Blessing) runs to the instant
+ * the points run out, re-predicted at every change, and each form's state runs
+ * while she is in that form. A swap out of a form with `swapTurnsInto` moves
+ * her into that form instead of ending anything.
+ *
+ * Verified in game against all four of Nate's runs (C0, 2026-10-16) once each
+ * Ring hit's 3-point cost is counted — `docs/mavuika-nightsoul-round-2026-10-16.md`.
+ */
+export type NightsoulPoolSpec = {
+	/** The Blessing state the pool holds open while it has points. */
+	state: State;
+	max: number;
+	maxModifiers?: ModifierBase[];
+	/** Points drained every 6 frames in any form. */
+	drainPerTick: number;
+	forms: { state: State; extraDrainPerTick?: number; swapTurnsInto?: State }[];
+};
+
+/**
  * ⚓ A COOLDOWN WHOSE LENGTH IS SET BY THE STANCE'S OWN LENGTH (Tartaglia, stance-
  * exits round, 2026-10-16). gcsim's `onExitMeleeStance` reads the time since the
  * E cast when Melee Stance ends — by E, a swap or the 30s expiry — and sets the
@@ -2793,6 +2861,8 @@ type SkillCommonFields = AbilityCommon & {
 	cooldownModifiers?: CooldownModifier[];
 	/** Casting this ends the caster's stance — see `EndsStance`. */
 	endsStance?: EndsStance;
+	/** What this cast does to the caster's Nightsoul pool — see `NightsoulCastSpec`. */
+	nightsoul?: NightsoulCastSpec;
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
 	/** Every charge begins RECHARGING the moment the ability becomes available,
@@ -3015,6 +3085,8 @@ type BurstCommonFields = AbilityCommon & {
 	cooldownModifiers?: CooldownModifier[];
 	/** Casting this ends the caster's stance — see `EndsStance`. */
 	endsStance?: EndsStance;
+	/** What this cast does to the caster's Nightsoul pool — see `NightsoulCastSpec`. */
+	nightsoul?: NightsoulCastSpec;
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	/** Whether this ability's own damage snapshots the caster's stats at cast
@@ -3186,6 +3258,8 @@ export type Ability =
  */
 export type AbilityVariant = {
 	label: string;
+	/** REPLACES the base's `nightsoul` — see `NightsoulCastSpec`. */
+	nightsoul?: NightsoulCastSpec;
 	input?: Input[];
 	frames?: FrameMap;
 	cooldown?: number;

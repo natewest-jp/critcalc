@@ -61,6 +61,7 @@ import { createGauge, type ElementId, type Gauge, type SeriesInterval } from '$l
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
 import type { StanceRecord } from './charState';
+import { nightsoulSpend } from './nightsoul';
 import { Band, type Clock } from './clock';
 import {
 	DEFAULT_ASCENSION,
@@ -1004,7 +1005,11 @@ export function scheduleSummonTicks(
 	/** The cast's own `application[]` (variant's replacing the base's), for a
 	 *  series that `sharesCastCounter`. ⚠️ Absent at the lineup hand-off: a
 	 *  hand-off lands no cast hit. */
-	castApplication?: readonly ElementalApplication[]
+	castApplication?: readonly ElementalApplication[],
+	/** ⚓ The SWAP-OUT spawn (`Summon.spawnsAtSwapOutFrom`, Nightsoul round): set,
+	 *  this call schedules ONLY such summons, spawned here; absent, the cast's
+	 *  own call skips them — the pool calls back at the swap. */
+	deferredSpawnAt?: number
 ): void {
 	const cLevel = ctx.constellationLevels?.[char.id] ?? 0;
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
@@ -1018,7 +1023,8 @@ export function scheduleSummonTicks(
 		.sort((a, b) => a - b);
 
 	findSummonsForBar(char, kind, label, abilityId, variantLabel ?? null).forEach((summon, index) => {
-		const spawnAt = summonSpawnAt(castTime, summonActivatesAt, summon, index);
+		if ((summon.spawnsAtSwapOutFrom !== undefined) !== (deferredSpawnAt !== undefined)) return;
+		const spawnAt = deferredSpawnAt ?? summonSpawnAt(castTime, summonActivatesAt, summon, index);
 		const key = `${char.id}::${summon.label}`;
 		// ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize's
 		// truncation exactly: one without the flag spawning twice leaves both
@@ -1040,7 +1046,17 @@ export function scheduleSummonTicks(
 		}
 
 		/** The summon's end AS OF NOW — recomputed at every fire, never cached. */
-		const endNow = (): number =>
+		const holderCs = ctx.getCharState(char.id);
+		const endNow = (): number => Math.min(ownEndNow(), stateEndNow());
+		/** ⚓ `endsWithState`: the holder's window of that name, LIVE — the
+		 *  Nightsoul pool rewrites its end at every change. A window that has not
+		 *  opened by the spawn ends the summon there. */
+		const stateEndNow = (): number => {
+			if (summon.endsWithState === undefined) return Infinity;
+			const end = holderCs.states.get(summon.endsWithState);
+			return end !== undefined && end > spawnAt ? end : spawnAt;
+		};
+		const ownEndNow = (): number =>
 			summonEndAt({
 				spawnAt,
 				// ⚓ LIVE. `durationExtensions` accumulate into the extension
@@ -1307,6 +1323,11 @@ export function scheduleSummonTicks(
 					if (snapshot) ctx.tickStacks.set(`${char.id}::${summon.label}::${at}`, snapshot);
 				}
 				notifyDamage(ctx, clock, tickHit);
+				// ⚓ The tick's cost to its owner's Nightsoul pool, AFTER the hit
+				// (gcsim `QueueAttack` then `reduceNightsoulPoints(3)`). It may end
+				// the Blessing — and with it this summon, whose `endNow` reads it.
+				if (summon.nightsoulCostPerTick)
+					nightsoulSpend(ctx, clock, char, at, summon.nightsoulCostPerTick);
 				// ⚠️ Scheduled whether or not the tick APPLIED: an ICD-suppressed
 				// hit still happened, still spent its counter slot, and the series
 				// must not stop because of it.

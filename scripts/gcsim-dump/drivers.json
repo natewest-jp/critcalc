@@ -106,9 +106,9 @@
 		"aim": { "A": "Prop Arrow", "hA": "Fully-Charged Aimed Shot" }
 	},
 	"mavuika": {
-		"note": "Flamestrider. ⚠️ Her BURST scores the same 5/5 — it also opens the ring — but hold-E is the cast the corpus models, so that is the row.",
+		"note": "Flamestrider (the `flamestrider` state since the Nightsoul round, 2026-10-16; it was `nightsoulBlessing`). ⚠️ Her BURST scores the same 5/5 — it also opens the ring — but hold-E is the cast the corpus models, so that is the row.",
 		"_scored": "hold-skill 5/5 (base 0/4)",
-		"states": { "nightsoulBlessing": [{ "action": "skill", "params": { "hold": 1 } }] }
+		"states": { "flamestrider": [{ "action": "skill", "params": { "hold": 1 } }] }
 	},
 	"mualani": {
 		"note": "Sharky's Bite. ⚓ Its 215f swap looked like a mis-authored full sequence and is not — gcsim reproduces it exactly once the skill has run.",

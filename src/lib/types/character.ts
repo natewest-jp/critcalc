@@ -4,7 +4,7 @@
  * Character type definitions for the rotation planner schema and transformer output.
  */
 
-import type { Ability, Effect, Element, Reaction } from './ability';
+import type { Ability, Effect, Element, NightsoulPoolSpec, Reaction } from './ability';
 import type { WeaponType } from './weapon';
 import type { CapabilitySummary } from '../capabilities/deriveCapabilities';
 import type { FramesSource } from '../coverage/deriveCoverage';
@@ -92,6 +92,8 @@ export type CharacterData = {
 	 *  Distinct from passives because the trigger is team-conditional, not character-intrinsic.
 	 *  Empty/absent on characters with no faction membership or no contributing effects. */
 	factionBonuses?: FactionBonus[];
+	/** A simulated Nightsoul pool — see `NightsoulPoolSpec` (Mavuika). */
+	nightsoulPool?: NightsoulPoolSpec;
 
 	meta?: CharacterMeta;
 };

@@ -10,7 +10,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 - characters: **128** authored · **120** with a gcsim source
 - FrameMaps: **1170** authored · **1050** matching gcsim exactly · **38** disagreeing · **82** uncovered
 - skill/burst application schedules observed: **304** · unobserved: **19**
-- summon tick streams cross-checked: **61**
+- summon tick streams cross-checked: **62**
 - hits carrying a measured gcsim ICD cadence: **3392** of **3395**
 
 ⛔ **No gcsim source (8)** — cannot be oracled at all, and nothing here may be written to them:
@@ -657,6 +657,7 @@ which the pair alone cannot state.
 | lisa | `lightning_rose` | Lightning Rose 119f / 30f × 30 · `standard` | Lightning Rose (Tick) 119f / 30f × 30 · 12/30 `standard` | 150f / every 3 · 8 max |
 | lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f × 11 · `standard` | Bogglecat Box 136f / 59f × 11 · shares the cast's counter ✅ · 4/11 `standard` | 150f / every 3 · 8 max |
 | mavuika | `the_named_moment` | Rings of Searing Radiance 120f / 120f × 6 · `none` | Rings of Searing Radiance 120f / 120f × 6 · 6/6 `none` | `none` |
+| mavuika | `hour_of_burning_skies` | Rings of Searing Radiance 120f / 120f × 6 · `none` | — | — |
 | mona | `mirror_reflection_of_doom` | Phantom 86f / 59f × 4 `cap` · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 · 8 max | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 · 8 max |
 | nilou | `whirling_steps_3` | — | Tranquility Aura 41f / 30f × 25 · 7/25 `other` | 114f / every 4 · 3 max |
