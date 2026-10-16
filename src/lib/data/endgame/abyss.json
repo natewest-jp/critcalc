@@ -153,6 +153,122 @@
 					]
 				}
 			]
+		},
+		{
+			"start": "2026-10-16",
+			"end": "2026-11-16",
+			"icon": "UI_TowerBlessing_107",
+			"name": {
+				"en": "Stardread Moon",
+				"zh": "骇星之月"
+			},
+			"text": {
+				"en": "When a character triggers a Superconduct, Stellar-Conduct, Cryo Swirl, Stellar Swirl, Frozen, or Shatter reaction on an opponent, or deals Stellar-Conduct or Stellar Swirl DMG to an opponent, **a shockwave will be unleashed** at the opponent's position, dealing True DMG. This effect can be triggered once every 2s.",
+				"zh": "角色对敌人触发超导、星超导、冰扩散、星扩散、冻结与碎冰反应，以及对敌人造成星超导、星扩散反应伤害时，将在敌人的位置**释放冲击波**，造成真实伤害，该效果每2秒至多触发一次。"
+			},
+			"halves": [
+				{
+					"en": "Characters' Stellar Glimmer DMG increased by 75%.",
+					"zh": "角色的星烁反应造成的伤害提升75%。"
+				},
+				{
+					"en": "All party members gain a 75% Cryo DMG Bonus.",
+					"zh": "队伍中所有角色获得75%冰元素伤害加成。"
+				}
+			],
+			"chambers": [
+				{
+					"level": 95,
+					"halves": [
+						[
+							{
+								"icon": "UI_MonsterIcon_Volkodlak_Greyhound_Furiosa",
+								"hp": 1165335,
+								"name": {
+									"en": "Battle-Hardened Chimeric Volkodlak Archer",
+									"zh": "历经百战的嵌合兽怪箭士"
+								}
+							}
+						],
+						[
+							{
+								"icon": "UI_MonsterIcon_Invoker_Archdeacon",
+								"hp": 454286,
+								"name": {
+									"en": "Iniquitous Baptist - Caller of Flood, Flame, and Fulmination",
+									"zh": "深罪浸礼者·水火雷驱役者"
+								}
+							},
+							{
+								"icon": "UI_MonsterIcon_ForlornVessel_Strong_Warbanner_Fire",
+								"hp": 227143,
+								"name": {
+									"en": "Shadowy Husk: Standard Bearer",
+									"zh": "黯色空壳·旗令"
+								}
+							},
+							{
+								"icon": "UI_MonsterIcon_ForlornVessel_Strong_Chargebow_Ice",
+								"hp": 181714,
+								"name": {
+									"en": "Shadowy Husk: Defender",
+									"zh": "黯色空壳·近卫"
+								}
+							}
+						]
+					]
+				},
+				{
+					"level": 98,
+					"halves": [
+						[
+							{
+								"icon": "UI_MonsterIcon_Magbeast_Pergesa",
+								"hp": 824009,
+								"name": {
+									"en": "Radiant Moonfly",
+									"zh": "蕴光月幻蝶"
+								}
+							}
+						],
+						[
+							{
+								"icon": "UI_MonsterIcon_Thoarder_Elder_Standard_Hildegard_01",
+								"hp": 1365795,
+								"name": {
+									"en": "Battle-Hardened Elite Treasure Hoarder",
+									"zh": "历经百战的盗宝团精锐"
+								}
+							}
+						]
+					]
+				},
+				{
+					"level": 100,
+					"halves": [
+						[
+							{
+								"icon": "UI_MonsterIcon_Chimera_Manticore",
+								"hp": 1430082,
+								"name": {
+									"en": "Chimeric Winged Lion",
+									"zh": "嵌合翼骏狮"
+								}
+							}
+						],
+						[
+							{
+								"icon": "UI_MonsterIcon_DragonCollar",
+								"hp": 1370390,
+								"name": {
+									"en": "Secret Source Automaton: Overseer Device",
+									"zh": "秘源机兵·统御械"
+								}
+							}
+						]
+					]
+				}
+			]
 		}
 	]
 }
