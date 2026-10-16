@@ -67,8 +67,8 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 	<!-- iOS ignores the SVG and composites its own tile onto white, so it needs
-	     a raster of the same opaque plate. Both come out of build-logo.mjs. -->
-	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+	     a raster of the same opaque plate. Built by build-app-icons.mjs from the favicon's mark and plate. -->
+	<link rel="apple-touch-icon" href="/apple-touch-icon-v2.png" />
 	<!-- ⚓ THE WEB APP (2026-10-14): added to a home screen, the site opens
 	     full-screen with no browser bars — the one way to give a phone back the
 	     strip Safari and Chrome spend above the keyboard. Icons and manifest
