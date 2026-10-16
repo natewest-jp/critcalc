@@ -123,6 +123,22 @@ four in-game runs (C0, combat log; screenshots in
 
 ## 4. Open (later phases)
 
+⚓ **Phase 2 is DEFERRED until after launch** (Nate, 2026-10-16). Fighting Spirit
+is mostly a damage multiplier.
+
+- Its one timing effect is the Q gate: the burst needs 100. It starts at 200, so
+  the first Q is always ready, and in her real teams it refills well inside her
+  18s cooldown. Until then her Q is gated by its cooldown alone.
+- ⚠️ When it is built, the gate must count teammates' Nightsoul spending. In
+  gcsim, ten others feed it (Chasca, Citlali, Iansan, Ifa, Kinich, Mualani,
+  Ororon, the Pyro Traveler, Varesa, Xilonen) — her core teammates among them.
+  Counted from her own spending alone, the gate would wait too long in exactly
+  her best teams.
+- C1's +40% ATK on every gain is effectively permanent, and A4 is shown at the
+  full-200 value (40%).
+
+The bike Charged Attack round (§5–§6) moves up: it is NEXT after Phase 1.
+
 - **Phase 2:**
   - Fighting Spirit: +1 per Nightsoul point spent by anyone; +1.5 per party Normal
     Attack hit on a 6f ICD; ×1.25 at C1; capped at 200; starts at 200.
