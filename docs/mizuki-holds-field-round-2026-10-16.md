@@ -88,7 +88,7 @@ too, and the corpus passed it unchanged.
   (`chasca/skill.go:105`, `SetCD` inside `exitNightsoul()`).
   `cooldownStartsAtStanceEnd` is the existing field for it, and her curator note
   ("modelled via duration + cooldown") predates that field.
-- **F3 — Tartaglia's cooldown is a flat 6s; in game it depends on time in melee**
+- ✅ **F3 — DONE same day (`fix/stance-exits`, §5).** Tartaglia's cooldown was a flat 6s; in game it depends on time in melee
   (7s up to 45s, ×0.8 at C1, reset if Q was used in melee; gcsim
   `onExitMeleeStance`). It is already documented as a gap in his notes. A cut
   stance now makes the error visible sooner.
@@ -127,3 +127,21 @@ Found and recorded, not done:
   Jahoda's frames block everything but E during Shadow Pursuit. ⚠️ Not applied:
   Wanderer's Windfavored also ends when Kuugoryoku runs out, which our fixed 10s
   does not model, so holding to 10s could overshoot. Check against the game first.
+
+### F3 — Tartaglia's stance-time cooldown (⚓ Nate approved the shape)
+
+- **`cooldownByStanceTime`** on a skill stance, lint D.49:
+  - `bands` give a length per band of stance time (`plusTime` adds the stance
+    time); `atExpiry` covers the full length.
+  - `exitDelay` (frames) applies after an `endsStance` exit only.
+  - `resetIfBurstInStance` is a condition read at the END, because that is where
+    gcsim sets the clock; a reset at the burst would be overwritten by the exit.
+- **Wiring:**
+  - The table is resolved at the cast, through the same `applyCooldownModifiers`
+    as any cooldown (C1 −20% is an ordinary modifier entry).
+  - The stance record carries it to `restampStanceCooldown`, now the ONE place a
+    stance-end clock is re-placed. `clampStance` calls it, and so does a burst
+    inside a reset-eligible stance, since a natural expiry is never clamped.
+- **Data:** the recast's stray 7s clock is now 0; the CD it starts is the base
+  skill's.
+- **Tests:** each band, a swap, the expiry (45s), C1 and C6.

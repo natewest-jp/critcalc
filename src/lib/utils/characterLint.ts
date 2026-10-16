@@ -1313,6 +1313,7 @@ function lintAbility(
 			lintSummonEffects(c, a, push);
 			lintEndsStance(c, a, push);
 			lintHoldsField(a, push);
+			lintStanceTimeCooldown(a, push);
 			break;
 		case 'passive':
 		case 'constellation':
@@ -1942,6 +1943,42 @@ function lintHoldsField(
 			}
 		}
 	}
+}
+
+// (D.49) `cooldownByStanceTime` (Tartaglia, stance-exits round, 2026-10-16):
+// only beside `cooldownStartsAtStanceEnd`, whose clock it sets the length of;
+// bands strictly ascending by a positive `below`, the last no later than the
+// stance's own duration (past it, `atExpiry` answers); non-negative lengths.
+function lintStanceTimeCooldown(
+	a: SkillAbility | BurstAbility,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	if (a.behavior !== 'stance' || !('cooldownByStanceTime' in a) || !a.cooldownByStanceTime) return;
+	const spec = a.cooldownByStanceTime;
+	const bad = (msg: string) =>
+		push('strict', 'stance-time-cooldown-invalid', `${a.id} ${msg}`, a.id);
+	if (a.cooldownStartsAtStanceEnd !== true)
+		bad(
+			'cooldownByStanceTime without cooldownStartsAtStanceEnd — the table sets the length of a stance-end clock'
+		);
+	let prev = 0;
+	for (const b of spec.bands) {
+		if (!(b.below > prev))
+			bad(
+				`cooldownByStanceTime bands must ascend by a positive below (got ${b.below} after ${prev})`
+			);
+		if (!(b.cooldown >= 0))
+			bad(`cooldownByStanceTime band below ${b.below} has a negative cooldown`);
+		prev = b.below;
+	}
+	if (prev > a.duration)
+		bad(
+			`cooldownByStanceTime's last band (${prev}s) is past the stance's duration (${a.duration}s)`
+		);
+	if (!(spec.atExpiry >= 0))
+		bad('cooldownByStanceTime.atExpiry must be a non-negative number of seconds');
+	if (spec.exitDelay !== undefined && !(Number.isInteger(spec.exitDelay) && spec.exitDelay >= 0))
+		bad('cooldownByStanceTime.exitDelay must be a non-negative frame count');
 }
 
 function lintCastAbility(

@@ -2304,6 +2304,48 @@ describe('parseNotation — stance exits: an E re-press ends the stance (2026-10
 		for (const e of after) expect((e as { element?: string }).element).toBeUndefined();
 	});
 
+	describe('Tartaglia: the cooldown is set by how long Melee Stance ran (gcsim onExitMeleeStance)', () => {
+		const TART = 'tartaglia__skill__foul_legacy_raging_tide';
+		const RECAST = 'tartaglia__skill__foul_legacy_recast';
+		const run = (n: string, con = 0) => {
+			const r = parseNotation(n, lookup, 8, { tartaglia: con });
+			const open = castOf(r, TART)!;
+			const exit = castOf(r, RECAST);
+			return { open, exit, ran: (exit?.time ?? 0) - open.time };
+		};
+		it('under 2s → 7s, from the recast + 11f', () => {
+			const { open, exit, ran } = run('Tartaglia E N1 E');
+			expect(ran).toBeLessThan(framesOf(2));
+			expect(open.readyAt).toBe(exit!.time + 11 + framesOf(7));
+		});
+		it('5–8s → 5s + time in melee', () => {
+			const { open, exit, ran } = run('Tartaglia E ~6s E');
+			expect(ran).toBeGreaterThanOrEqual(framesOf(5));
+			expect(ran).toBeLessThan(framesOf(8));
+			expect(open.readyAt).toBe(exit!.time + 11 + framesOf(5) + ran);
+		});
+		it('the full 30s → 45s, from the expiry', () => {
+			const { open } = run('Tartaglia E');
+			expect(open.readyAt).toBe(open.time + framesOf(30) + framesOf(45));
+		});
+		it('a swap ends it too, with no exit delay', () => {
+			const r = parseNotation('Tartaglia E ~3s > Bennett E', lookup, 8);
+			const open = castOf(r, TART)!;
+			const [w] = stances(r, 'tartaglia');
+			expect(open.readyAt).toBe(w.end + framesOf(8)); // 2–4s band
+		});
+		it('C1 is ×0.8 of the table', () => {
+			const { open, exit } = run('Tartaglia E N1 E', 1);
+			expect(open.readyAt).toBe(exit!.time + 11 + Math.round(framesOf(7) * 0.8));
+		});
+		it('C6: a burst in Melee Stance makes the exit reset the skill', () => {
+			const { open, exit } = run('Tartaglia E N1 Q E', 6);
+			expect(open.readyAt).toBe(exit!.time);
+			const c0 = run('Tartaglia E N1 Q E', 5);
+			expect(c0.open.readyAt).toBeGreaterThan(c0.exit!.time);
+		});
+	});
+
 	it('Chasca: E again ends Nightsoul, and the 6.5s cooldown starts THERE', () => {
 		const r = parseNotation('Chasca E N1 E', lookup, 8);
 		const exit = castOf(r, 'chasca__skill__end_nightsoul')!;

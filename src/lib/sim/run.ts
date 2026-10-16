@@ -47,6 +47,7 @@ import type {
 } from '$lib/types/ability';
 import {
 	getCooldownStartsAtStanceEnd,
+	getCooldownByStanceTime,
 	castIsNonHitting,
 	getDefaultDamageTag,
 	getNormalHitDamageTag
@@ -75,6 +76,7 @@ import {
 } from './conditions';
 import {
 	resolveAbilityTiming,
+	applyCooldownModifiers,
 	resolveActiveAbility,
 	resolveChargeCastTime,
 	resolveChargeFrameMap,
@@ -87,6 +89,8 @@ import { cancelKeyFor, padFramesAfter, type HumanPadAfter } from './humanTiming'
 import {
 	castKinds,
 	clampStance,
+	restampStanceCooldown,
+	stanceTimeCooldownFrames,
 	closeStateWindows,
 	holderStatesAt,
 	inferredStates,
@@ -928,6 +932,42 @@ export function runRotation(
 				// for all three readers below (readyAt, the startsOnCooldown chain,
 				// the cd-reset instant), so they cannot disagree on a hold.
 				const cdStartDelay = variant?.cooldownStartDelay ?? active.cooldownStartDelay ?? 0;
+				// ⚓ A cooldown whose LENGTH is the stance's (`cooldownByStanceTime`,
+				// Tartaglia, 2026-10-16): resolved here, against this cast's modifiers
+				// and states, and handed to the stance record for `clampStance`. The
+				// cast's own `cooldown` / `readyAt` are the natural-expiry answer — the
+				// stance running its full length — which is what nothing else moving
+				// means.
+				const cdSpec = cdStartsAtStanceEnd ? getCooldownByStanceTime(active) : undefined;
+				const teamCtx = { teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) };
+				const cdTable = cdSpec
+					? {
+							lengthFor: (ranF: number) =>
+								applyCooldownModifiers(
+									stanceTimeCooldownFrames(cdSpec, ranF),
+									active,
+									variant,
+									states,
+									charConstellationLevel,
+									chainIdx,
+									stackState,
+									teamCtx,
+									ctx.team.skillCooldownModifiers
+								),
+							resets:
+								cdSpec.resetIfBurstInStance !== undefined &&
+								evalCondition(
+									cdSpec.resetIfBurstInStance,
+									DEFAULT_ASCENSION,
+									states,
+									charConstellationLevel,
+									chainIdx,
+									stackState,
+									teamCtx
+								) === true
+						}
+					: undefined;
+				const castCd = cdTable ? cdTable.lengthFor(dur) : cd;
 				// P4 IR — one `cast` event per resolved cast (the unified single
 				// site). Post-P4 #3: this event IS the per-cast record — the E/Q
 				// bar is projected from it at finalize, so every geometric field
@@ -948,8 +988,8 @@ export function runRotation(
 					time: castStart,
 					castTime,
 					uptime: dur,
-					cooldown: cd,
-					readyAt: cdStartsAtStanceEnd ? castStart + dur + cd : castStart + cdStartDelay + cd,
+					cooldown: castCd,
+					readyAt: cdStartsAtStanceEnd ? castStart + dur + castCd : castStart + cdStartDelay + cd,
 					summonActivatesAt: spawn,
 					fieldStart: castStart + (spawn ?? 0),
 					stackContext: stacks
@@ -1112,6 +1152,15 @@ export function runRotation(
 					);
 				}
 
+				// A burst inside a still-open stance (Tartaglia's C6: the exit then
+				// RESETS his skill instead). Marked before any stance this cast opens
+				// replaces the record; a natural expiry is never clamped, so a reset
+				// re-stamps the clock here as well as at an early end.
+				if (isBurst && cs.stance && cs.stance.end > castStart) {
+					cs.stance.burstInStance = true;
+					if (cs.stance.cdTable?.resets) restampStanceCooldown(ctx, cs.stance);
+				}
+
 				// Open a stance window when the resolved variant has stance
 				// behavior. Fresh record replaces any prior stance (resets
 				// per-window extension counts). Hu Tao / Xilonen open via base E;
@@ -1124,6 +1173,7 @@ export function runRotation(
 						terminatesOnSwap: stance.terminatesOnSwap,
 						holdsField:
 							active.behavior === 'stance' && 'holdsField' in active && active.holdsField === true,
+						...(cdTable ? { cdTable } : {}),
 						ownerAbility: active,
 						castRef: castEvent, // ref for the finalize uptime stamp
 						characterId: char.id,
@@ -1289,7 +1339,14 @@ export function runRotation(
 						// The OWNER BAR ends with it, inside `clampStance`: the bar is the
 						// stance, and the IR's strict stance geometry (bar end === window
 						// end) holds — for a swap too since 2026-10-16.
-						clampStance(ctx, cs, char.id, ends.at === 'castEnd' ? castEnd : castStart + ends.at);
+						clampStance(
+							ctx,
+							cs,
+							char.id,
+							ends.at === 'castEnd' ? castEnd : castStart + ends.at,
+							// gcsim starts Tartaglia's clock 11f after the recast (`exitDelay`).
+							getCooldownByStanceTime(cs.stance.ownerAbility)?.exitDelay ?? 0
+						);
 					}
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
