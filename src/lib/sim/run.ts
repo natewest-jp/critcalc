@@ -651,11 +651,19 @@ export function runRotation(
 			swingF: number | null,
 			fm: FrameMap | null | undefined,
 			land: (at: number, live: boolean) => void,
-			travel = 0
+			travel = 0,
+			landsAfterCancel = false
 		): number => {
 			const frames = fm ? landingsOf(fm) : [];
 			const queue = (at: number): void =>
 				clock.schedule(at, Band.LAND, () => land(at, liveSegment === turn));
+			// ⚓ Landings queued at the PRESS (`chargeLandsAfterCancel`): each lands
+			// on its own frame whatever cancels the swing, a projectile's rule
+			// without the release clamp or the travel.
+			if (landsAfterCancel && swingF !== null && frames.length > 0) {
+				for (const f of frames) queue(start + f + travel);
+				return 0;
+			}
 			if (travel > 0 && swingF !== null) {
 				for (const f of frames.length > 0 ? frames : [swingF])
 					queue(start + Math.min(f, swingF) + travel);
@@ -2273,16 +2281,24 @@ export function runRotation(
 					// on a missing element), and no hit record below. Read off the
 					// RESOLVED ability, so the Prayer sibling's `C` hits as it should.
 					const cNonHitting = activeNormal?.nonHitting?.charged === true;
+					// ⚓ A form that states its charged attack's element (Moondew
+					// Cleanse) overrides the weapon rule; `applies: false` keeps the
+					// element on the block and the hit records and gives the gauge
+					// nothing (`cGaugeElement`).
+					const cOwnElement = activeNormal?.chargeElement;
 					const cElement = cNonHitting
 						? undefined
-						: resolveActionElement(
-								'charged',
-								t,
-								char.weapon,
-								char.element,
-								resolveElementRef(activeNormal?.infusion, variantCtx) ??
-									infusionAt(ctx, char, blockStart)
-							);
+						: cOwnElement
+							? cOwnElement.element
+							: resolveActionElement(
+									'charged',
+									t,
+									char.weapon,
+									char.element,
+									resolveElementRef(activeNormal?.infusion, variantCtx) ??
+										infusionAt(ctx, char, blockStart)
+								);
+					const cGaugeElement = cOwnElement?.applies === false ? undefined : cElement;
 					const chargedEv = emitAction({
 						action: 'charged',
 						label: t,
@@ -2330,7 +2346,7 @@ export function runRotation(
 							clock,
 							char,
 							'charged',
-							cElement,
+							cGaugeElement,
 							activeNormal?.noICD,
 							at,
 							computeCurrentStates(at),
@@ -2405,7 +2421,8 @@ export function runRotation(
 								)
 							: null,
 						landCharged,
-						projectileTravelOf(char.weapon, activeNormal, 'charged')
+						projectileTravelOf(char.weapon, activeNormal, 'charged'),
+						activeNormal?.chargeLandsAfterCancel === true
 					);
 					if (castS !== null) clock.advance(clock.now + castS);
 					humanPad('charged', j);

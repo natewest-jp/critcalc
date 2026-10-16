@@ -69,12 +69,77 @@
 				"hit": 57,
 				"N": 94
 			},
-			"caveat": "Shown as the base Hydro Charged Attack. With at least 1 Verdant Dew it becomes a stamina-free 3-hit AoE Dendro (Lunar-Bloom) attack; not modeled, since Verdant Dew comes from team Lunar-Bloom reactions.",
 			"_curatorNotes": [
 				"Frames 2026-07-14 from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged). Normals: attack.go attackHitmarks=[23,20,41], animations [36,37,76]; per-hit ActionAttack/ActionCharge overrides — N1 24/24, N2 20/33, N3 74/71 (InitNormalCancelSlice). swap = hitmark. Windup (state-dependent +2 on N1) is not part of the canonical FrameMap.",
 				"Charge: charge.go chargeFrames = InitAbilSlice(101), ActionAttack=94, Skill/Burst/Dash/Jump/Swap=chargeHitmark(57); catalyst uses chargeFrames. Only N=94 differs from swap=57.",
 				"Plunge omitted: no plunge.go in gcsim source (only jump.go) and plunge is not rotation-relevant for a catalyst support. Sidecar has standard plunge scaling rows but no FrameMap source exists.",
-				"Moondew Cleanse (chargeLB, Lunar-Bloom, 2.72% Max HP ×3 @T10; chargeHitmarkBloom [50,58,80], anim 124) not modeled as a variant — gated on external Verdant Dew resource the planner cannot track. Kit-flavor 'Moonlit Tides' summon on the normal is not a persistent entity; genshin-db stub 'summon' tag removed (Ayaka-Hyouka precedent)."
+				"↻ 2026-10-16: Moondew Cleanse is now its own sibling form, columbina__normal__moondew_cleanse (see its notes) — this base form is the Hydro Charged Attack a team with no Dendro teammate always gets. Its caveat moved there: without Dendro there is no Lunar-Bloom, so no Verdant Dew, and this form is right as drawn. Kit-flavor 'Moonlit Tides' summon on the normal is not a persistent entity; genshin-db stub 'summon' tag removed (Ayaka-Hyouka precedent)."
+			]
+		},
+		{
+			"id": "columbina__normal__moondew_cleanse",
+			"name": "Moondew Cleanse",
+			"input": ["N"],
+			"abilityType": "normal",
+			"conditions": {
+				"type": "teamElementCount",
+				"elements": ["dendro"],
+				"comparison": ">=",
+				"value": 1
+			},
+			"tags": [],
+			"description": "If you have at least 1 Verdant Dew, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 36,
+						"hit": 23,
+						"N": 24,
+						"C": 24
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 37,
+						"hit": 20,
+						"N": 20,
+						"C": 33
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 76,
+						"hit": 41,
+						"N": 74,
+						"C": 71
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 124,
+				"lands": [50, 58, 80],
+				"N": 82,
+				"C": 80,
+				"E": 43,
+				"Q": 43,
+				"D": 43,
+				"J": 43,
+				"swap": 43
+			},
+			"chargeElement": {
+				"element": "dendro",
+				"applies": false
+			},
+			"chargeLandsAfterCancel": true,
+			"caveat": "With a Dendro teammate, every Charged Attack is drawn as Moondew Cleanse, as if Verdant Dew never runs out (in game it holds at most 3). A full Lunar-Bloom team may use it repeatedly; a Hyperbloom or other hybrid team may only get 1–2 in a row.",
+			"_curatorNotes": [
+				"Added 2026-10-16 (⚓ Nate): the PROXY for Verdant Dew. A Dendro teammate is the whole requirement for Lunar-Bloom here (Columbina enables lunarBloom herself), so the gate is teamElementCount dendro >= 1 and every C in such a team takes this form. ⏭ When the party Dew pool is simulated (gcsim player/verdantdew.go: generation stays open 149f after each Lunar-Bloom, +1 Dew per 146f, cap 3; her A4 adds Moonridge Dew in her Q, 1 per Lunar-Bloom, 3 per 18s; Lauma's Hold E and Nefer's Phantasm Performance spend the same pool) only this condition changes.",
+				"Frames from gcsim internal/characters/columbina/charge.go (merged main): chargeHitmarkBloom [50, 58, 80] → lands; chargeLBFrames InitAbilSlice(124), ActionAttack 82, ActionCharge 80, Skill/Burst/Dash/Jump/Swap = verdantDewFrame 43. Windup (12 base, 3 after a CA, -5 after a NA) is not part of the canonical FrameMap, as on the Hydro form. C→C is 80 and not gcsim's 89 (next CA not a Cleanse) because under the proxy the next C always is one.",
+				"chargeElement dendro, applies false: ChargeAttackBloom's AttackInfo is AttackTagDirectLunarBloom, Element Dendro, and states no Durability (0) — so it applies nothing, where the Hydro form applies 1U Hydro. chargeLandsAfterCancel: the three hits are QueueAttack'd at the press and the Dew is consumed at 43, the earliest cancel, so C > swap still lands all three.",
+				"⚠️ Simplification: our hit records call these hits a Charged Attack (abilityType charged); gcsim tags them direct Lunar-Bloom DMG, not AttackTagExtra, so a 'charged-attack hit' proc could differ in game. Hits (N1–N3) copied verbatim from the base form — a sibling form replaces the whole normal ability."
 			]
 		},
 		{
