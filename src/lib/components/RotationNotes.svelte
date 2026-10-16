@@ -3,6 +3,7 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import type { SlotCaveatEntry } from '$lib/timeline/slotCaveats';
+	import type { PlannerSample } from '$lib/data/plannerSamples';
 
 	// ---------------------------------------------------------------------------
 	// THE NOTES COLUMN — the caveats of the kits in the four slots: what the
@@ -36,10 +37,36 @@
 	// character's notes end in a link to their row on /coverage, and the panel
 	// ends in one for the whole team — the only way to reach a slot whose kit
 	// carries no caveat, since such a character has no entry here at all.
-	let { entries, teamIds = [] }: { entries: SlotCaveatEntry[]; teamIds?: string[] } = $props();
+	// ⚓ A first-visit sample is credited at the head (2026-10-17, Nate): the
+	// notes are what the screen cannot say about the rotation in front of you,
+	// and where it came from is one of those things.
+	let {
+		entries,
+		teamIds = [],
+		sample = null
+	}: { entries: SlotCaveatEntry[]; teamIds?: string[]; sample?: PlannerSample | null } = $props();
 </script>
 
 <div class="rp-caveat-panel">
+	{#if sample}
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- the source's own site -->
+		<p class="rp-sample-credit">
+			{#if !sample.source}
+				A sample rotation, written for critcalc.
+			{:else if sample.adapted}
+				A sample rotation, adapted from
+				<a class="link" href={sample.source.url} target="_blank" rel="noopener noreferrer"
+					>{sample.source.name}</a
+				>.
+			{:else}
+				A sample rotation, from
+				<a class="link" href={sample.source.url} target="_blank" rel="noopener noreferrer"
+					>{sample.source.name}</a
+				>.
+			{/if}
+		</p>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
+	{/if}
 	{#each entries as entry (entry.id)}
 		<div class="rp-caveat-char">
 			<div class="rp-caveat-char-name" style:color={elementPalette(entry.element).main}>
@@ -126,6 +153,14 @@
 		padding-top: 10px;
 		border-top: 1px solid var(--border);
 		font-size: var(--fs-sm);
+	}
+	/* The sample's credit: the panel's own small type, a step quieter than a
+	   caveat, set apart from the first character's notes below it. */
+	.rp-sample-credit {
+		margin: 0 0 0.9rem;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
+		color: var(--muted);
 	}
 	.rp-caveat-text {
 		margin: 0;
