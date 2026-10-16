@@ -12,8 +12,9 @@
  */
 
 import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
-import type { Stat } from '$lib/types/ability';
+import type { Reaction, Stat, State } from '$lib/types/ability';
 import { BUFF_STAT_LABEL } from '$lib/timeline/buffStatMaps';
+import { REACTION_LABEL } from '$lib/utils/auraDisplay';
 
 export const KIND_LABEL: Record<CapabilityKind, string> = {
 	heal: 'Heal',
@@ -62,11 +63,57 @@ export function capDetailText(kind: CapabilityKind, detail: string): string {
 	return detail;
 }
 
+/** A state condition as the card says it. ⛔ A raw id must never reach the
+ *  page — "during duringSummon" did, on Columbina's C6, until 2026-10-16.
+ *  Keyed by the whole `State` union so a new member fails the type check
+ *  rather than leaking. Each entry is a whole phrase (style guide §3.1). */
+const STATE_PHRASE: Record<State, string> = {
+	afterNormalAttack: 'after a Normal Attack',
+	afterSkill: 'after an Elemental Skill',
+	afterBurst: 'after an Elemental Burst',
+	afterDurationEnds: 'after the effect ends',
+	shielded: 'while shielded',
+	onField: 'while on field',
+	offField: 'while off-field',
+	duringSummon: 'while the summon is present',
+	nightsoulBlessing: "during Nightsoul's Blessing",
+	inStance: 'during the stance',
+	symphonyWindow: 'while Thunderous Symphony is ready',
+	apexDrive: 'during Apex Drive',
+	transmuting: 'during Essential Transmutation',
+	whiteForm: 'during Confirmation of Purity',
+	darkForm: 'during Denial of Darkness',
+	codaWindow: "while Adagio: Coda at Dawn's Tolling is ready",
+	soloDanceDouble: 'while the Solo Dance Double is present',
+	searingRing: 'while the Ring of Searing Radiance is present',
+	pneuma: 'in Pneuma alignment',
+	spiritEnvoy: 'during Spirit Envoy Metamorphosis',
+	envoyCooldown: 'while Spirit Envoy is on cooldown',
+	followUpStrike: 'during Follow-Up Strike',
+	orioleSong: "during Haunted Night's Oriole-Song"
+};
+
+/** The negated forms the data actually authors (`not` around a state). A
+ *  state with no entry falls back to a phrase that is vague but never wrong —
+ *  ⛔ never the positive phrase, which says the opposite. */
+const NOT_STATE_PHRASE: Partial<Record<State, string>> = {
+	inStance: 'outside the stance',
+	nightsoulBlessing: "outside Nightsoul's Blessing",
+	codaWindow: "while Adagio: Coda at Dawn's Tolling is not ready",
+	soloDanceDouble: 'while no Solo Dance Double is present'
+};
+
 export function caveatText(caveat: string): string {
 	const [key, arg] = caveat.split(':');
 	switch (key) {
 		case 'state':
-			return `during ${arg}`;
+			return STATE_PHRASE[arg as State] ?? 'depends on a character state';
+		case 'notState':
+			return NOT_STATE_PHRASE[arg as State] ?? 'depends on a character state';
+		case 'needsEnabler':
+			return `needs a ${REACTION_LABEL[arg as Reaction] ?? arg} enabler`;
+		case 'needsField':
+			return 'inside the Polestar Field';
 		case 'stacks':
 			return `needs ${arg} stacks`;
 		case 'teamFaction':
@@ -88,6 +135,6 @@ export function caveatText(caveat: string): string {
 		case 'weaponType':
 			return 'weapon-type dependent';
 		default:
-			return caveat;
+			return 'depends on the situation';
 	}
 }
