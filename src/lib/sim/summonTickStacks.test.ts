@@ -209,11 +209,11 @@ describe("Tugarin's maul activates the Hunter's Mark", () => {
 		expect(r.windows.filter((w) => w.kind === 'buff')).toEqual([]);
 	});
 
-	it('C2: the first maul APPLIES without activating; every maul after activates', () => {
-		// ⚓ "This effect does not activate existing Hunter's Marks" — C2's own
-		// clause, and the reason the activation gate is `min: 2` at C2 and
-		// `min: 1` below it. Both dispatch pipelines run gains → snapshot →
-		// consumes, so C2's own application is already counted in the snapshot.
+	it('C2: the FIELD marks and EVERY maul activates, the first included', () => {
+		// ↻ 2026-10-16 (⚓ Nate: follow gcsim). The kit text has Tugarin apply
+		// C2's mark; gcsim's `c2MakeBurstCB` puts it on the Field's tick instead,
+		// "contrary to the description, in game testing shows". The Field ticks
+		// 39f before each maul, so every maul — the first too — finds a mark.
 		const r = parseAt('Alyosha Q', 2);
 		const ticks = [...tickInstants(r, 'alyosha', 'Tugarin')].sort((a, b) => a - b);
 		const starts = new Set(
@@ -221,8 +221,27 @@ describe("Tugarin's maul activates the Hunter's Mark", () => {
 				.filter(ATK_BUFFS)
 				.map((w) => w.start)
 		);
-		expect(starts.has(ticks[0])).toBe(false);
-		expect(starts.has(ticks[1])).toBe(true);
+		for (const t of ticks) expect(starts.has(t), `maul at ${t}f`).toBe(true);
+	});
+
+	it("Tugarin's maul applies NOTHING — it lands inside the window the Field opened", () => {
+		// ⚓ `summonTick.icdCounter` (2026-10-16): one gcsim counter
+		// (ICDTagElementalBurst / ICDGroupAlyoshaBurst, 96f, first only) for both
+		// series. Measured in gcsim: Field 7/7, Tugarin 0/7. On private clocks
+		// Tugarin applied all seven.
+		const r = parseAt('Alyosha Q', 0);
+		const mauls = tickInstants(r, 'alyosha', 'Tugarin');
+		const field = tickInstants(r, 'alyosha', 'Fulgurite Hunting Field');
+		const applied = r.applications.map((a) => a.time);
+		expect(applied.filter((t) => mauls.has(t))).toEqual([]);
+		expect(applied.filter((t) => field.has(t)).length).toBe(field.size);
+	});
+
+	it('C0: the Field marks nothing, so a bare burst still activates nothing', () => {
+		// The C2 grant is gated by its constellation entry — this is the guard
+		// that it did not leak to C0 when it moved onto the Field's trigger.
+		const r = parseAt('Alyosha Q', 0);
+		expect(tickAnchored(r, 'alyosha').filter(ATK_BUFFS)).toEqual([]);
 	});
 });
 

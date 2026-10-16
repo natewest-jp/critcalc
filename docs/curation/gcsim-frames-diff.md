@@ -624,7 +624,7 @@ which the pair alone cannot state.
 | character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) | gcsim cadence |
 | --- | --- | --- | --- | --- |
 | aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 133f / 90f × 10 · `standard`<br>Cool Your Jets Ducky 133f / 42f × 21 `cap` · 108f / first only | Cool Your Jets Ducky 133f / 90f × 10 · 5/10 `standard` | 150f / every 3 · 8 max |
-| alyosha | `hunters_advance` | Tugarin 118f / 118f × 7 · `standard`<br>Fulgurite Hunting Field 79f / 118f × 7 · 96f / first only | Fulgurite Hunting Field 79f / 118f × 7 · 7/7 `none`<br>Tugarin 118f / 118f × 7 · 0/7 `other` | 96f / first only<br>96f / first only |
+| alyosha | `hunters_advance` | Tugarin 118f / 118f × 7 · 96f / first only<br>Fulgurite Hunting Field 79f / 118f × 7 · 96f / first only | Fulgurite Hunting Field 79f / 118f × 7 · 7/7 `none`<br>Tugarin 118f / 118f × 7 · 0/7 `other` | 96f / first only<br>96f / first only |
 | amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` | `none` |
 | amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 · 8 max | Fiery Rain 84f / 12f × 18 · 7/18 `other` ⚠️ **count 9→18** | 60f / every 3 · 8 max |
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |

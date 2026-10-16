@@ -209,7 +209,7 @@
 				"Particle generation is 5 per cast with a 12s internal cooldown (Fandom Gameplay Notes). No consumer today; recorded here rather than authored.",
 				"⚠️⚠️ THE MARK IS ENEMY-SIDE AND SO IS ITS CONTAINER, since 2026-08-31: both gainStacks effects for `huntersMark` declare `scope: 'rotation'`, which stores the resource on the holder's CharState instead of the per-segment pool and mirrors it back into that pool at every settle point. Before it, `Alyosha N4 > Fischl E > Alyosha E` drew NO bar where the game gives one — and so did `Alyosha N4 > Alyosha E`, two segments of the same character — which is what the skill's caveat used to say. ⚠️ Declare the scope on EVERY grant of the key, not just the first: lint D.39 (gainstacks-scope-disagreement) checks that they agree, and an omission is invisible.",
 				"⛔ THE SCOPE IS NOT `trigger.source`. That field says who may FIRE the effect; `scope` says where the stacks LIVE, and Hunter's Mark is `source: 'self'` and rotation-scoped at the same time. It is also what makes Tugarin's maul reachable at all — a summon tick fires while its owner may be off field, i.e. inside another character's segment, where a segment-scoped pool does not exist. See the burst's notes.",
-				"⚠️ 2026-10-16, a SCHEMA GAP, not a data choice: gcsim starts the Hold's cooldown 111f after the press (`SetCDWithDelay(…, 111)`) and the tap's 16f after, but `cooldownStartDelay` is read off the BASE ability only — an `AbilityVariant` has no such field. So an `hE` draws its ghost tail ending 95f (~1.6s) early (probe: ready at 916f, gcsim 1011f). Fix is a variant-level `cooldownStartDelay` with its reader in `sim/run.ts`; not widened in the frames round.",
+				"↻ 2026-10-16: gcsim starts the Hold's cooldown 111f after the press (`SetCDWithDelay(…, 111)`) and the tap's 16f after. A variant could not say so — `cooldownStartDelay` was read off the BASE only, and an `hE` ghost tail ended 95f early — so `AbilityVariant.cooldownStartDelay` was added the same day (⚓ Nate), resolved once per cast in `sim/run.ts`. Measured: `hE` ready at 1011f, the tap at 916f, both gcsim's.",
 				"Hunter's Mark lands 6f AFTER the hitmark in gcsim (`Tasks.Add(…, 6)` in `triggerSkillMarkCB`), and the buff runs 902f, not 900. Both are below what the chart can show at default zoom and are left at the kit's 15s on the hit/cast. The skill's grant is `onCast`, so Hunter's Precision opens at the CAST, 18f (tap) / 113f (hold) before gcsim's — the hold's gap is the one a reader could see."
 			],
 			"frames": {
@@ -231,6 +231,7 @@
 						"J": 138,
 						"swap": 137
 					},
+					"cooldownStartDelay": 111,
 					"application": [
 						{
 							"frame": 113,
@@ -271,21 +272,9 @@
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "huntersMark",
-								"min": 1
-							},
-							{
-								"type": "not",
-								"condition": {
-									"type": "constellation",
-									"level": 2
-								}
-							}
-						]
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 1
 					},
 					"source": "character",
 					"stat": "atk%",
@@ -303,82 +292,12 @@
 						}
 					},
 					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "huntersMark",
-								"min": 1
-							},
-							{
-								"type": "not",
-								"condition": {
-									"type": "constellation",
-									"level": 2
-								}
-							}
-						]
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 1
 					},
 					"key": "huntersMark",
-					"amount": 1
-				},
-				{
-					"type": "buff",
-					"target": "active",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst",
-						"filter": {
-							"abilityName": "Tugarin"
-						}
-					},
-					"duration": 15,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "huntersMark",
-								"min": 2
-							},
-							{
-								"type": "constellation",
-								"level": 2
-							}
-						]
-					},
-					"source": "character",
-					"stat": "atk%",
-					"value": 21.2,
-					"snapshottable": false
-				},
-				{
-					"type": "consumeStacks",
-					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst",
-						"filter": {
-							"abilityName": "Tugarin"
-						}
-					},
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "huntersMark",
-								"min": 2
-							},
-							{
-								"type": "constellation",
-								"level": 2
-							}
-						]
-					},
-					"key": "huntersMark",
-					"amount": 1
+					"amount": "all"
 				}
 			],
 			"description": "Summons his trusted companion Tugarin to fight alongside him on the field. This also turns an area in front of him into a Fulgurite Hunting Field for a short time.\n\nFulgurite Hunting Field\n· Continuously taunts nearby opponents to incite them to attack.\n· Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field.\n\nTugarin\n· If there are any opponents nearby, Tugarin will quickly move close to an opponent and maul them every 2s, dealing Electro DMG.\n· If an opponent affected by the Hunter's Mark effect is hit, the Hunter's Mark will also be activated.\n· Where there are multiple opponents, Tugarin will attack those affected by the Hunter's Mark effect first.",
@@ -405,7 +324,11 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 1.967
+								"interval": 1.967,
+								"icdGate": {
+									"timer": 96
+								},
+								"icdCounter": "alyoshaBurst"
 							},
 							"scaling": 90.4,
 							"stat": "atk",
@@ -461,7 +384,8 @@
 								"firstTickDelay": 1.317,
 								"icdGate": {
 									"timer": 96
-								}
+								},
+								"icdCounter": "alyoshaBurst"
 							},
 							"scaling": 134.93,
 							"stat": "atk",
@@ -484,10 +408,10 @@
 			"_curatorNotes": [
 				"TWO summons from one cast, both resolved since 2026-08-14. The Fulgurite Hunting Field is the stationary taunt zone (\"Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field\", 134.93% ATK at T10); Tugarin is the companion that closes on a target (\"maul them every 2s\", 90.4% ATK at T10). Both run the burst's 14s and both take C2's +6s.",
 				"⚓⚓ TUGARIN'S MAUL ACTIVATES THE HUNTER'S MARK, wired 2026-08-31 (docs/summon-tick-stacks-round.md §10). The burst carries the activation half as a `consumeStacks` + a Hunter's Precision `buff`, both on `trigger: onHit / abilityType: burst` with `filter.abilityName: 'Tugarin'` — the filter is load-bearing twice over: it keeps the burst's OWN cast hit from activating (its abilityName is \"Hunter's Advance\"), and it names the summon the kit text names. ⚠️ The Fulgurite Hunting Field is deliberately NOT an activator: the clause sits inside Tugarin's own bullet list. gcsim agrees (#3207): only Tugarin's attack carries `triggerSkillMarkCB`; the Field's callback is C2's alone. ⚠️ The two series no longer coincide — the Field ticks 39f before each maul — so this choice IS visible now, and it is gcsim's.",
-				"⚠️⚠️ THE ACTIVATION GATE IS `min: 1` BELOW C2 AND `min: 2` AT C2, as two mutually-exclusive pairs (the Odette idiom), and that is the C2 non-activation clause modelled rather than approximated. Both dispatch pipelines run gains → stack snapshot → consumes, so C2's own per-maul application is ALREADY counted when the buff reads the snapshot: at C2 \"a mark existed before this maul\" is \"the count reached 2\", exactly as it is for the skill and N4. Measured: `Alyosha Q` at C0 activates nothing (no mark), at C2 nothing on the first maul and every maul after. ⛔ A single `min: 1` gate would have activated on that first maul, which is the double-fire the round's spec warned about.",
-				"⚠️ The consume is `amount: 1`, NOT `'all'` — the opposite of the skill's and N4's. Activation removes the one mark it activated; at C2 the same maul has just applied a fresh one, and `'all'` would wipe that too and halve the cadence to every other maul.",
-				"↻ 2026-10-16, CADENCE FROM gcsim #3207 (`burst.go`): ONE ticker — the Field at 79f then every 118f (`fieldFirstTick`, `fieldInterval`), Tugarin 39f after each Field tick — so 1.317s / 1.967s and 1.967s / 1.967s, seven of each over 14s (we had 2s × 6). Both heal series ride Tugarin's tick and moved with it. The ticker re-checks the 14s status at each Field tick, so the count derives from the lifetime with no `tickCap`. ICD: both share `ICDTagElementalBurst` on `ICDGroupAlyoshaBurst` (96f, list {1, 0} — first only), authored on the Field as `{ timer: 96 }`; every Field tick applies (118 > 96, 7/7 measured). ⚠️ OPEN: Tugarin lands 39f inside the window the Field just opened, so in gcsim he applies NOTHING (0/7) — two summon series sharing a counter has no schema (`sharesCastCounter` is cast → series only), so his series is still the default and over-applies.",
-				"C2's second half — \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks\" — is authored on the C2 entry as a per-maul `gainStacks` on the same Tugarin-filtered trigger, gated by the entry itself. It is what makes Hunter's Precision continuous at C2 and a single 15s window at C0.",
+				"↻ 2026-10-16, C2 FOLLOWS gcsim (⚓ Nate): the activation gate is `min: 1` at EVERY constellation, one pair. The kit text has Tugarin apply C2's mark and refuse to activate it; gcsim's `c2MakeBurstCB` applies it on the FIELD's tick instead — \"Contrary to the description, in game testing shows that C2 applies on the burst field tick and not on Tugarin's attacks\" — and Nate trusts that testing over the text. The Field ticks 39f before each maul, so every maul finds a mark and activates it, the first included (measured: C2 Precision opens on all ten mauls). ⛔ The retired shape was two pairs split on `constellation: 2` with `min: 2` at C2 — the C2 non-activation clause, modelled faithfully to text gcsim measured as wrong.",
+				"The consume is `amount: 'all'` like the skill's and N4's — the mark is ONE status on the opponent (gcsim `DeleteStatus`), and Tugarin no longer applies one on the maul that activates, so nothing survives the consume that should. (It was `amount: 1` while C2's mark landed on that same maul.)",
+				"↻ 2026-10-16, CADENCE FROM gcsim #3207 (`burst.go`): ONE ticker — the Field at 79f then every 118f (`fieldFirstTick`, `fieldInterval`), Tugarin 39f after each Field tick — so 1.317s / 1.967s and 1.967s / 1.967s, seven of each over 14s (we had 2s × 6). Both heal series ride Tugarin's tick and moved with it. The ticker re-checks the 14s status at each Field tick, so the count derives from the lifetime with no `tickCap`. ICD: both share `ICDTagElementalBurst` on `ICDGroupAlyoshaBurst` (96f, list {1, 0} — first only), authored on BOTH as `{ timer: 96 }` on the named counter `icdCounter: 'alyoshaBurst'` (⚓ Nate: add the shared timer). Every Field tick applies (118 > 96) and opens the window Tugarin's maul lands in 39f later, so he applies NOTHING — measured in gcsim 7/7 and 0/7, and the planner now agrees (it applied 7/7 on a private clock). Two series sharing a counter is `summonTick.icdCounter`, new for this; lint D.27i.",
+				"C2's second half (\"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark\") is authored on the C2 entry as a `gainStacks` on the FIELD's tick (`filter.abilityName: 'Fulgurite Hunting Field'`), not Tugarin's — gcsim's in-game reading, see above. `max: 1`: the Field refreshes the one mark rather than counting a second (gcsim `AddStatus`). It is what makes Hunter's Precision continuous at C2 and a single 15s window at C0.",
 				"SUMMON ORDER: Tugarin is first because summons[0] takes its lifetime from the BAR - he is what the kit text leads with, he carries the damage and both heals, and his length is what a player tracks. ↻ 2026-09-19 (summon-conditions round): a secondary summon now reads its OWN durationModifiers (summonEndAt), so C2's +6s is authored on both and the Fulgurite Hunting Field runs to 20s at C2 beside him. Until then only summons[0]'s were ever applied, the Field stayed at 14s, and the C2 entry carried a caveat for it."
 			],
 			"frames": {
@@ -672,72 +596,9 @@
 								]
 							},
 							{
-								"type": "all",
-								"conditions": [
-									{
-										"type": "stacks",
-										"key": "huntersMark",
-										"min": 1
-									},
-									{
-										"type": "not",
-										"condition": {
-											"type": "constellation",
-											"level": 2
-										}
-									}
-								]
-							}
-						]
-					},
-					"source": "character",
-					"stat": "stellarConductReactionBonus",
-					"value": 20,
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "active",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst",
-						"filter": {
-							"abilityName": "Tugarin"
-						}
-					},
-					"duration": 15,
-					"durationType": "refresh",
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "all",
-								"conditions": [
-									{
-										"type": "teamEnablesReaction",
-										"reaction": "stellarConduct"
-									},
-									{
-										"type": "teamElementCount",
-										"elements": ["cryo"],
-										"comparison": ">=",
-										"value": 1
-									}
-								]
-							},
-							{
-								"type": "all",
-								"conditions": [
-									{
-										"type": "stacks",
-										"key": "huntersMark",
-										"min": 2
-									},
-									{
-										"type": "constellation",
-										"level": 2
-									}
-								]
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 1
 							}
 						]
 					},
@@ -805,12 +666,12 @@
 						"type": "onHit",
 						"abilityType": "burst",
 						"filter": {
-							"abilityName": "Tugarin"
+							"abilityName": "Fulgurite Hunting Field"
 						}
 					},
 					"key": "huntersMark",
 					"amount": 1,
-					"max": 2,
+					"max": 1,
 					"scope": "rotation",
 					"lifetime": 15
 				}
@@ -818,7 +679,7 @@
 			"description": "The duration of the Elemental Burst Hunter's Advance is extended by 6s.\nAdditionally, each time **Tugarin** attacks the opponent, he will also apply the **Hunter's Mark** to a target. This effect does not activate existing Hunter's Marks.",
 			"_curatorNotes": [
 				"The +6s half IS modelled, as a flat durationModifier on BOTH of the burst's summons (source \"C2: Howl From Afar\"), mirroring Kuki's C2 ring extension. It is authored on the summons rather than here because a durationModifier belongs to the window it lengthens; it carries its own constellation condition, since an entry-level gate does not reach an ability-hosted modifier.",
-				"✓ The mark half is AUTHORED here (2026-08-31): a `gainStacks` on `onHit / burst / filter.abilityName: 'Tugarin'`, amount 1, max 2, lifetime 15, `scope: 'rotation'`. No explicit constellation condition — the entry IS the gate. ⚠️ The non-activation clause is honoured by the burst's `min: 2` branch, not here: this effect only APPLIES, and the burst decides what activates. See the burst's notes for why min:2 is the same claim as the skill's."
+				"↻ 2026-10-16: the mark half is a `gainStacks` on `onHit / burst / filter.abilityName: 'Fulgurite Hunting Field'`, amount 1, `max: 1`, lifetime 15, `scope: 'rotation'` — on the FIELD's tick per gcsim's in-game testing, against the text (⚓ Nate: follow gcsim). Every Tugarin maul then activates, the first included. The burst's notes carry the full reasoning. (2026-08-31 to 2026-10-16 it sat on Tugarin's maul with a `min: 2` activation gate at C2.)"
 			]
 		},
 		{
@@ -837,7 +698,7 @@
 			"effects": [],
 			"description": "When **Tugarin** attacks, he will also restore 60% of Alyosha's ATK as HP to the nearby party member with the lowest HP by percentage.",
 			"_curatorNotes": [
-				"AUTHORED on Tugarin (burst summons[1]) rather than here — a summonTick trigger is only legal inside summons[].effects[] — with its own `constellation: 4` gate. ⚠️ Its target and why it over-claims are documented at the effect."
+				"AUTHORED on Tugarin (burst summons[0]) rather than here — a summonTick trigger is only legal inside summons[].effects[] — with its own `constellation: 4` gate. ⚠️ Its target and why it over-claims are documented at the effect."
 			]
 		},
 		{
@@ -908,18 +769,9 @@
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
-						"type": "all",
-						"conditions": [
-							{
-								"type": "stacks",
-								"key": "huntersMark",
-								"min": 2
-							},
-							{
-								"type": "constellation",
-								"level": 2
-							}
-						]
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 1
 					},
 					"source": "character",
 					"stat": "em",
