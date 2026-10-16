@@ -171,8 +171,35 @@
 		overflow-y: auto;
 		scroll-snap-type: y mandatory;
 		scrollbar-width: none;
-		/* Fade the reel edges */
-		mask-image: linear-gradient(to bottom, transparent, black 22%, black 78%, transparent);
+		/* Fade the reel edges — the site's eased ramp (app.css § THE EASED RAMP:
+		   smootherstep sampled at k/9), at the reel's own fixed length. It is
+		   always on, so it is not a .scroll-fade, which fades by scroll position. */
+		--vw-fade: 22%;
+		--vw-mask: linear-gradient(
+			to bottom,
+			transparent 0%,
+			rgb(0 0 0 / 0.012) calc(var(--vw-fade) * 0.1111),
+			rgb(0 0 0 / 0.076) calc(var(--vw-fade) * 0.2222),
+			rgb(0 0 0 / 0.21) calc(var(--vw-fade) * 0.3333),
+			rgb(0 0 0 / 0.397) calc(var(--vw-fade) * 0.4444),
+			rgb(0 0 0 / 0.603) calc(var(--vw-fade) * 0.5556),
+			rgb(0 0 0 / 0.79) calc(var(--vw-fade) * 0.6667),
+			rgb(0 0 0 / 0.924) calc(var(--vw-fade) * 0.7778),
+			rgb(0 0 0 / 0.988) calc(var(--vw-fade) * 0.8889),
+			#000 var(--vw-fade),
+			#000 calc(100% - var(--vw-fade)),
+			rgb(0 0 0 / 0.988) calc(100% - var(--vw-fade) * 0.8889),
+			rgb(0 0 0 / 0.924) calc(100% - var(--vw-fade) * 0.7778),
+			rgb(0 0 0 / 0.79) calc(100% - var(--vw-fade) * 0.6667),
+			rgb(0 0 0 / 0.603) calc(100% - var(--vw-fade) * 0.5556),
+			rgb(0 0 0 / 0.397) calc(100% - var(--vw-fade) * 0.4444),
+			rgb(0 0 0 / 0.21) calc(100% - var(--vw-fade) * 0.3333),
+			rgb(0 0 0 / 0.076) calc(100% - var(--vw-fade) * 0.2222),
+			rgb(0 0 0 / 0.012) calc(100% - var(--vw-fade) * 0.1111),
+			transparent 100%
+		);
+		-webkit-mask-image: var(--vw-mask);
+		mask-image: var(--vw-mask);
 	}
 
 	.vw-list::-webkit-scrollbar {
