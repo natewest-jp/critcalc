@@ -856,7 +856,7 @@
 							<h2>This tool ran into a problem.</h2>
 							<p>
 								The rest of the site is fine — you can switch tools above, or try again. Your saved
-								rotations are untouched.
+								rotations and lineups are untouched.
 							</p>
 							<div class="tool-crash__actions">
 								<button class="btn btn--primary" onclick={reset}>Try again</button>

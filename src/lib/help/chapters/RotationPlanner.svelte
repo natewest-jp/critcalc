@@ -1,198 +1,303 @@
 <!-- Help chapter — see $lib/help/areas.ts. Every <h2> carries an id; the area
-	 shell reads them for the sidebar's table of contents. -->
+	 shell reads them for the sidebar's table of contents.
+
+	 Rewritten 2026-10-16 for launch (the static-pages round), from a fact
+	 sweep of the shipped tool. Glossary names: the composer, the bench / bench
+	 card / slot, the timeline (never "chart"), a tab holding a rotation (never
+	 "plan"), the aura lane = the gauge lines + the reaction spawns, the aura
+	 log, the view bar / document bar. ⚓ A limit is the TOOL's ("The Rotation
+	 Planner doesn't…"); "we" only for a choice that isn't a limit. -->
+<script lang="ts">
+	import { resolve } from '$app/paths';
+	import { openCoverage } from '$lib/coverage/openCoverage';
+</script>
 
 <h1>Rotation Planner</h1>
 
+<p class="flavor">
+	A ledger of where every star will stand, frame by frame. Its compiler held that the heavens keep
+	perfect time, and that the only error worth recording was the hand that turned the page.
+</p>
+
 <p class="lede">
-	Write your rotation in KQM-style notation and the timeline renders its choreography — ability
-	uptimes, cooldowns, swap connectors, and team buff windows, frame-accurate.
+	Write a rotation in KQM notation and the Rotation Planner draws it as a timeline: who is on field,
+	every cast and its cooldown, the buffs it grants, and what it does to the enemy’s aura, timed from
+	measured frame data.
 </p>
 
 <section>
-	<h2 id="notation">Writing the notation</h2>
+	<h2 id="notation">Writing a rotation</h2>
 	<p>
-		Type into the composer along the bottom edge — the timeline above redraws as you write, and
-		autocomplete suggests each character's action tokens as you go.
-	</p>
-	<p>
-		The notation follows the
+		The composer under the timeline takes
 		<a href="https://compendium.keqingmains.com/" target="_blank" rel="noopener noreferrer"
-			>KQM standard</a
-		>: <code>E</code> and <code>Q</code> for skill and burst, <code>N</code> for normal attacks (<code
-			>N2</code
-		>
-		is two hits), <code>C</code> charged, <code>A</code> a bow's aimed shot, <code>D</code> dash,
-		<code>J</code>
-		jump, and <code>&gt;</code> to separate swaps. Hold variants are recognized where a kit has
-		them, as are the <strong>special forms</strong> a stance substitutes —
-		<code>sQ</code>
-		for a short burst, <code>sE</code> for a special skill and <code>sC</code> for a special charged
-		attack. <code>~2s</code> waits where you want a deliberate pause.
+			>KQM notation</a
+		>. A rotation is segments separated by <code>&gt;</code>, each starting with a character’s name
+		and followed by what they do:
+	</p>
+	<ul>
+		<li>
+			<code>N</code> to <code>N9</code> are normal attacks — <code>N3</code> is three swings, and
+			<code>N2 N3</code> carries on the same string. <code>C</code> is a charged attack,
+			<code>P</code>
+			a plunge (<code>lP</code> a low one), <code>D</code> a dash and <code>J</code> a jump.
+		</li>
+		<li>
+			<code>E</code> and <code>Q</code> are skill and burst, with <code>hE</code> for a hold where
+			the kit has one. <code>A</code> is a bow’s fully charged aimed shot.
+		</li>
+		<li>
+			Stances add special forms: <code>sE</code> a special skill, <code>sQ</code> a short burst,
+			<code>sC</code> a special charged attack, and <code>F</code> the finisher of a spinning charged
+			attack like Mavuika’s.
+		</li>
+		<li>
+			<code>~2s</code> waits. <code>[N2 D]x3</code> repeats, <code>(E)</code> marks an optional
+			action that isn’t drawn, and <code>E/Q</code> draws the first of two alternatives.
+		</li>
+	</ul>
+	<p>
+		Names are the game’s display names — Kazuha, Raiden, Tartaglia — and the composer suggests them
+		as you type. Actions can be run together (<code>QEN2</code>), and pasted rotations are cleaned
+		up: footnote marks dropped, line breaks joined.
 	</p>
 	<p>
-		The composer underlines anything the timeline can't draw exactly as written, and there are two
-		kinds. An <strong>amber</strong> underline means the text can't be taken: a name that matches no
-		character (the whole segment is skipped), or a token the Rotation Planner doesn't simulate. A
-		<strong>yellow</strong> one means the Rotation Planner took it and what you see stands in for it —
-		an action the character doesn't have, or a fifth character, who parses but has no slot to be drawn
-		in. Hover any underlined token for the reason.
+		Undo and redo sit at the end of the composer, alongside ⌘Z and ⌘⇧Z (Ctrl on other systems). They
+		reach edits made from the bench and the Team Builder too. Each tab keeps its own history until
+		the page reloads.
 	</p>
 	<p>
-		<strong>Walk-cancels aren't simulated.</strong> KQM's <code>W</code> is recognized and then
-		ignored — it changes nothing about the timing. That is deliberate rather than pending: a
-		walk-cancel's whole value is ending an animation early while keeping the attack string, which is
-		the timing every frame-perfect trick is built on, and modeling it badly would be worse than not
-		modeling it. gcsim, our frame-data source, doesn't simulate it either. Use <code>~2s</code> when you
+		A skill or burst written before it’s ready waits for its cooldown, and everything after it waits
+		too. Charges come back one at a time, as in the game.
+	</p>
+	<p>
+		The composer underlines what it can’t draw exactly as written, in two colors. An
+		<strong>orange</strong> underline means it couldn’t take the text: a name that matches no
+		character (that segment is skipped), an aimed shot on a character without a bow, a token it
+		doesn’t know. A
+		<strong>yellow</strong> one means it took the text and drew a stand-in: a hold the kit doesn’t have,
+		timed as a tap; a plunge with no measured frames; a fifth character, who has no slot. Hover the token
+		for the reason.
+	</p>
+	<p>
+		<strong>Walk-cancels aren’t simulated.</strong> <code>W</code> is recognized and skipped, so
+		<code>N1 W N2</code> times exactly like <code>N1 N2</code>. A walk-cancel is worth doing because
+		it ends an animation early while keeping the attack string going, and the frame data for that is
+		exactly the hard part; drawing it approximately would be worse than not drawing it. gcsim, where
+		the frame data comes from, doesn’t simulate it either. Use <code>~0.5s</code> or similar when you
 		want time to pass.
 	</p>
 </section>
 
 <section>
+	<h2 id="team">The team</h2>
+	<p>
+		The team is whoever the notation names: the first four characters, in the order they first
+		appear. To add someone, type their name, even with no actions after it; to remove someone,
+		delete their segments.
+	</p>
+	<p>
+		Each slot on the bench beside the timeline has a bench card. On a wide screen, clicking the
+		portrait opens the Team Builder’s swap mode for that slot, and picking someone there renames
+		them throughout the notation; an empty slot adds someone instead. The magnifier in the corner
+		opens the character’s details.
+	</p>
+	<p>
+		The chip on the portrait sets the character’s constellation for this tab, and the pill beside it
+		sets their weapon and artifact set. Neither touches your roster: a tab keeps its own levels and
+		loadouts, so one rotation can be written at C6 while your roster says C0. When the tab asks for
+		more than you own, the chip is drawn hollow.
+	</p>
+	<p>
+		A character without curated frame data carries a mark beside their name, and their actions are
+		drawn with generic timing. The
+		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what is covered
+		for each character.
+	</p>
+</section>
+
+<section>
 	<h2 id="timeline">Reading the timeline</h2>
-	<ul>
-		<li>
-			Each character gets rows for their skill and burst, plus an active row showing when they are
-			on field. Connectors mark the swaps between them.
-		</li>
-		<li>
-			Buff rows show who is buffing whom, and for how long — including windows that a later action
-			refreshes or cuts short.
-		</li>
-		<li>
-			Cooldowns render as a distinct edge treatment rather than a separate bar, so an ability's
-			window and its wait read as one object.
-		</li>
-		<li>Zoom and scroll the ruler to work at the scale the rotation actually needs.</li>
-	</ul>
 	<p>
-		Where a kit's frame data hasn't been curated yet, the planner says so and falls back to generic
-		cast timings rather than inventing numbers.
+		Each character gets a group of rows: their skill, then any summons and shields, then their
+		burst, then the active row, which shows when they’re on field and what they’re doing. Received
+		buffs and weapon procs follow underneath, and connectors mark each swap.
 	</p>
 	<p>
-		<strong>Human timing.</strong> With it off, the chart is frame-perfect: every cancel lands on
-		the first frame the game allows, the way a macro plays. That is what the game permits, but it is
-		not how most rotations go, and a buff that runs out on the chart before it does in your hands is
-		the usual symptom. <em>Human timing</em> in the view bar times the rotation the way a person does.
-		It adds a few frames before every input the game does not buffer — a skill after a normal attack,
-		an aimed shot, the first press after a swap — and can let each animation finish instead of canceling
-		it. A normal-attack string costs nothing extra, because the game queues the next swing for you. The
-		padding draws as a faint hatch on the active row so you can see where the time went; how many frames,
-		and which of the two adjustments apply, are set in Settings, where KQM's starting point of ten frames
-		is the default. It is your preference, not part of the rotation: a link you share opens with whatever
-		setting the person following it has.
+		A skill or burst bar is followed by a faded tail labeled with the cooldown, ending where the
+		ability can be used again. A stance that lasts longer than its own cooldown is drawn dimmer past
+		the point where the cooldown ran out.
 	</p>
 	<p>
-		<strong>Play.</strong> <em>Play</em> in the view bar runs a cursor along the timeline at game speed,
-		with four beats to count you in (the last one higher) and a note at every press. Every start counts
-		in, a resume after a pause included, and the button before Play takes you back to the start — or,
-		while playing, goes again from the top. The speed plate after Play slows the rotation to 0.75× or
-		0.5× for learning it; the count-in keeps its pace. Outside the composer, Space plays and pauses and
-		Home goes back to the start. Each note rings for as long as its input holds the field, so a burst
-		is a long note and a normal attack a short one; a swap is a soft hum, the one sound that is not struck.
-		The voice, which note each input gets, and the volume are set in Settings, where the sound can also
-		be turned off. The notes keep time with the tab hidden, so you can play the rotation with the game
-		in front of you and the chart behind it.
+		Below the characters are the team-wide lanes — team buffs, Nightsoul bursts and Moonsign’s
+		Ascendant Gleam when the team has them — and above the composer a strip lists the always-on
+		bonuses: resonances, faction bonuses and permanent passives.
 	</p>
 	<p>
-		<strong>Laps.</strong> <em>Laps</em> carries the rotation on past its end: the notation runs again
-		from its last action, joined by a swap back to your opener, and the laps that follow are simulated
-		rather than copied. A skill still on cooldown waits where it really waits, and everything after it
-		moves; a buff or an aura from one lap is still there in the next if it really is. Energy is not modeled,
-		so a burst is drawn as ready whenever its cooldown is — the most common reason a real rotation does
-		not come round cleanly is the one thing the chart cannot show you.
+		Energy isn’t modeled: a burst is ready whenever its cooldown is. Characters without curated
+		frames fall back to a 12s skill and a 15s burst cooldown alongside the generic timings.
+	</p>
+	<p>
+		<strong>Zoom</strong> in the view bar opens a slider and <strong>Reset</strong>; the mouse wheel
+		over the ruler scrolls sideways. <strong>Total</strong> is the rotation’s length.
+	</p>
+	<p>
+		<strong>Buffs</strong> and <strong>Auras</strong> in the view bar are layers. Buffs hides every bar
+		that says what a cast grants — buff rows, weapon procs, the team lanes and the always-on strip — and
+		Auras hides the aura lane. Skills, bursts, summons and shields stay, since they say when an ability
+		is happening. With both off, the timeline is ability timings and nothing else. Your choice is remembered;
+		on a small screen both start off.
 	</p>
 </section>
 
 <section>
-	<h2 id="aura">The target's aura</h2>
+	<h2 id="human-timing">Timing like a person</h2>
 	<p>
-		The lane above the time axis is the enemy. It draws a gauge line for each element currently
-		stuck to them, and the height of each line is how much gauge is left — so you can see an aura
-		land, decay, get topped up, and get eaten by a reaction. The gaps are the point: they are where
-		the next trigger has nothing to react with. Hover anywhere on it to read every aura at that
-		instant.
+		<strong>Human timing</strong> is on by default. It adds a few frames of reaction time before each
+		input the game doesn’t buffer for you: after a skill, burst, plunge, dash or jump, from a normal attack
+		into anything but another normal or a charged attack, and on the first input after a swap. Normal
+		into normal and normal into charged are free, because the game queues those. A bow’s charged shot
+		always pays.
 	</p>
 	<p>
-		Above the gauge lines, a fine tick marks every hit that applied an element, and a labeled dot
-		marks every reaction it caused. Compound states get their own lines — Frozen, Quicken, Burning
-		and the dendro fuel that feeds it are different objects from the auras that made them, with
-		different decay, so they are drawn separately.
+		Settings decides what it changes. <strong>Padding</strong> (the default) adds the reaction time,
+		10 frames to start with, the KQM starting point; <strong>Animations</strong> lets each action
+		play out in full instead of canceling; <strong>Both</strong> does both. The padding shows as
+		hatched slivers on the active row, which <strong>Show padding</strong> turns off. Turn Human timing
+		off in the view bar for the frame-perfect rotation.
 	</p>
 	<p>
-		<strong>The reaction spawns: what a reaction leaves behind.</strong> Some reactions leave a thing
-		standing in the world rather than an aura on the enemy, and those get their own rows below the baseline:
-		a Dendro Core from a Bloom, a Starlight Prism from a Stellar-Conduct, a Thundercloud from a Lunar-Charged,
-		Moondrifts from a Lunar-Crystallize. Each row is a dot where something appeared over a shape showing
-		how many are standing — so a step down is one expiring, or one being spent. Hover the shape to read
-		the count, or a dot to read what appeared there. The reaction spawns only appear when your rotation
-		makes one of these.
+		Swaps take time either way: your ping plus about 90 ms, set under <strong>Swap ping</strong> in
+		Settings. Writing the same character on both sides of a <code>&gt;</code> costs nothing, because they
+		never left the field.
 	</p>
 	<p>
-		<strong>What each one does.</strong> A Dendro Core arrives half a second after its Bloom and lasts
-		6s, and a Hyperbloom or Burgeon consumes the oldest one standing — you can watch the count drop as
-		you spend them. A Starlight Prism lasts 7s and any further Stellar-Conduct refreshes it. A Thundercloud
-		lasts 5.5s, and there is only ever one: another Lunar-Charged restarts its clock rather than adding
-		a second. A Lunar-Crystallize tops the field up to three Moondrifts at once, each lasting 9s, and
-		keeps refreshing them while you keep reacting. We draw these because they are things you can see and
-		time; what they hit for is not modeled.
+		A swap ends a stance only where the game does: Hu Tao’s Paramita ends when she leaves, while
+		Ifa’s flight and Mavuika’s Nightsoul Blessing carry on. A few stances hold the field — Mizuki’s
+		Dreamdrifter keeps her on field until it ends, unless the segment ends with a wait or a second
+		press of her skill.
 	</p>
 	<p>
-		<strong>The Polestar Field.</strong> A Starlight Prism sustains a Polestar Field around it, and the
-		field's buffs are their own row in the team buffs — not one enabler's, because any party member's
-		Stellar-Conduct raises the same field. Its Cryo and Electro bonus is not a flat number: the field
-		records the Cryo and Electro hits that applied an element, resets the count every 4s, and pays out
-		on what it counted — 20% with nothing recorded, then 29% at one hit up to 40% at twelve. That is why
-		the row's value changes from one 4s block to the next. The Rotation Planner assumes you are standing
-		in the field and doesn't model walking out of it.
-	</p>
-	<p>
-		<strong>Turning it off.</strong> <em>Auras</em> in the view bar hides the whole aura lane,
-		reaction spawns included. Its neighbor, <em>Buffs</em>, hides the buff bars, weapon procs,
-		Nightsoul bursts and Ascendant Gleam — turn both off for a chart of ability timings and nothing
-		else. Summons and shields stay either way: they are things standing in the world, not effects
-		granted to your team.
-	</p>
-	<p>
-		<strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro
-		from a Blazing Axe Mitachurl, and no auras you did not put there. Hits land on their listed timing,
-		and Shatter is not modeled. Where a hit has no measured gauge strength, the Rotation Planner uses
-		1U and marks that tick yellow. Everything else — the ×0.8 aura tax, decay rates, unit multipliers,
-		the crystallize cooldown, dendro cores and their spawn delay — follows the same model the Gauge Explorer
-		teaches.
+		Because Human timing is your preference, it isn’t stored in a share link. Someone opening your
+		rotation sees it at their own setting.
 	</p>
 </section>
 
 <section>
-	<h2 id="team">Team, weapons and constellations</h2>
+	<h2 id="playback">Playing it back</h2>
 	<p>
-		<strong>The notation is the team.</strong> Whoever your rotation names, in the order it names them,
-		fills the bench — so typing a character adds them, and you can add somebody with nothing to do yet
-		by writing just their name, and you remove someone by deleting their part of the notation. On a wide
-		screen, click a bench portrait to swap that character in the Team Builder, which groups the candidates
-		by what the swap does to the team; an empty slot adds someone instead. Undo (beside the composer,
-		or ⌘Z / Ctrl+Z) takes any of it back.
+		<strong>Play</strong> (or Space) runs a cursor along the timeline at game speed, and the plate
+		beside it slows it to 0.75× or 0.5×. With sound on, each start counts in four beats and every
+		action plays a note; Settings has the sounds and the volume. <strong>Back to the start</strong>
+		(Home) rewinds.
 	</p>
 	<p>
-		The magnifier on a portrait opens that character's details. The constellation sits on the
-		portrait, and the pill beside it holds their weapon and artifact set — set them there and the
-		timeline accounts for what they change.
-	</p>
-	<p>
-		Constellations and loadouts set on the bench apply to the rotation in that tab, and each tab is
-		its own team. Your roster stays as it is unless you change it in the Library's
-		<strong>Roster</strong> tab.
+		<strong>Laps</strong> simulates the rotation five times over, as one run. A skill still on cooldown
+		waits and pushes the rest back, and buffs, stacks and auras carry from one lap into the next, so a
+		rotation that doesn’t loop cleanly shows it. Gold marks on the ruler show where each lap begins. Laps
+		isn’t saved, shared or exported.
 	</p>
 </section>
 
 <section>
-	<h2 id="notes">Notes and caveats</h2>
+	<h2 id="aura">The enemy’s aura</h2>
 	<p>
-		Open <strong>Notes</strong> (in the view bar above the timeline) for the caveats behind the buffs
-		and mechanics your rotation relies on — the conditions a buff assumes, what a summon's ticks are modeled
-		from, and anything the tool deliberately does not simulate.
+		The aura lane above the ruler is the enemy. The gauge lines draw each element stuck to them, and
+		a line’s height is how much gauge is left, so you can see an aura land, decay, get topped up and
+		get eaten by a reaction. The gaps are where the next trigger has nothing to react with. Hover
+		anywhere on it to read every aura at that instant.
 	</p>
 	<p>
-		Copy your rotation as KQM text, or export the timeline as a PNG, from <strong>Share</strong> in the
-		document bar at the top.
+		Above the lines, a pill in the element’s color marks each hit that applied an element, and a
+		labeled marker above that names each reaction it caused; a run of a ticking reaction such as
+		Electro-Charged is one marker with a count. Frozen, Quicken, Burning and Burning’s Dendro fuel
+		are separate objects from the auras that made them, with their own decay, so they get their own
+		lines. A yellow ring on a pill means the hit has no measured gauge strength, and 1U is assumed.
+	</p>
+	<p>
+		<strong>The reaction spawns</strong>, below the baseline, are what some reactions leave behind:
+		a Dendro Core from Bloom, a Starlight Prism from Stellar-Conduct, a Thundercloud from
+		Lunar-Charged, Moondrifts from Lunar-Crystallize. A dot marks each one appearing, and a stepped
+		shape shows how many there are, so a step down is one expiring or being spent. A Dendro Core
+		arrives half a second after its Bloom, lasts 6s, and Hyperbloom or Burgeon takes the oldest;
+		there can be five. A Starlight Prism lasts 7s and a further Stellar-Conduct refreshes it. There
+		is only ever one Thundercloud, lasting 5.5s, and another Lunar-Charged restarts its clock.
+		Lunar-Crystallize keeps three Moondrifts topped up, 9s each, drawn as one row. What these deal
+		isn’t modeled; when they exist is.
+	</p>
+	<p>
+		<strong>The Polestar Field.</strong> A Starlight Prism holds a Polestar Field around it, and the field’s
+		buffs sit in the team buffs, because any party member’s Stellar-Conduct raises the same field. Its
+		Cryo and Electro bonus moves: the field counts the Cryo and Electro hits that applied an element,
+		resets every 4s, and pays out on the count — 20% with none, 29% at one, up to 40% at twelve. The Rotation
+		Planner assumes you stand in the field throughout.
+	</p>
+	<p>
+		<strong>Log</strong> in the view bar opens the aura log beside the timeline: every application and
+		reaction in words, in order. Hovering a row marks that moment on the timeline, clicking one scrolls
+		there, and clicking a pill or marker on the timeline opens the log at its row. The log works with
+		the Auras layer off.
+	</p>
+	<p>
+		The model behind it is the Gauge Explorer’s: the ×0.8 aura tax, decay rates, how much each
+		reaction consumes, the Crystallize cooldown. It assumes one enemy that applies nothing back to
+		you — no Pyro from a Blazing Axe Mitachurl — and hits landing on their listed timing. Shatter
+		isn’t modeled. The aura log repeats these limits at its head.
+	</p>
+</section>
+
+<section>
+	<h2 id="notes">Notes and coverage</h2>
+	<p>
+		<strong>Notes</strong> opens the notes panel: the caveats on each character’s kit, where the timeline
+		knowingly differs from the game, with constellation notes shown from the level the tab uses. Each
+		character ends with a link to their coverage. The button is disabled when the team’s kits have nothing
+		to note, and the notes panel and the aura log share one place, so opening one closes the other.
+	</p>
+	<p>
+		<strong>Coverage strips</strong>, in Settings, draws each character’s coverage under the
+		composer and dims the parts of the kit this rotation doesn’t use.
+	</p>
+</section>
+
+<section>
+	<h2 id="tabs">Tabs, saving and sharing</h2>
+	<p>
+		Each tab holds one rotation with its own team, constellations and loadouts. Up to twelve stay
+		open; double-click one to rename it, drag to reorder. A closed tab with anything in it goes to
+		<strong>Recently closed</strong> in the Library, and so does anything deleted from it.
+	</p>
+	<p>
+		<strong>Save</strong> puts the rotation in the Library and links the tab to it, after which the
+		button reads <strong>Save changes</strong>; <strong>Save as new</strong> in the
+		<strong>⋯</strong> menu forks a copy. A saved rotation keeps the constellations it was saved
+		with. Once you’ve marked characters as owned, <strong>Sync</strong> in the Library makes a rotation
+		follow your roster instead, until you set a level on its bench.
+	</p>
+	<p>
+		The Library groups saved rotations by team. Its search turns a character, element or reaction
+		into a tag, and tags combine. Its <strong>Roster</strong> tab is where you mark who you own, which
+		the Team Builder shares.
+	</p>
+	<p>
+		<strong>Share</strong> copies a link, the KQM notation, or an image of the timeline. The link opens
+		the rotation with its constellations and loadouts in a new tab for whoever follows it, without touching
+		their roster. The KQM copy drops what only the Rotation Planner reads — waits, optional marks, stack
+		counts — and keeps the rest as you wrote it. The image is the whole timeline, not only the part on
+		screen, with the notation written above it.
+	</p>
+</section>
+
+<section>
+	<h2 id="phone">On a phone</h2>
+	<p>
+		On a phone the composer docks to the bottom of the screen. Collapsed it shows the last line of
+		the rotation; tap it to open it with the keyboard, and tap anywhere else to close it. A row of
+		keys above the keyboard offers what fits where the cursor is — the team’s names at the start of
+		a segment, that character’s actions inside one.
+	</p>
+	<p>
+		The bench becomes a row above the timeline, which <strong>Bench</strong> hides. A portrait there
+		opens the character’s details; swapping needs a wider screen. The layers start off and the zoom
+		starts wider, and the view bar folds its less-used controls into <strong>⋯</strong>.
 	</p>
 </section>

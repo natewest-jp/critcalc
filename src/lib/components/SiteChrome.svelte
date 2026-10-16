@@ -48,15 +48,14 @@
 		     behind it, so a rough edge reads as "unreliable" rather than "one
 		     person's project, still moving" — the tag re-frames that jolt. It is
 		     a LINK, because a bare tag lowers expectations without giving anyone
-		     anywhere to go; the "what beta means here" note it should reach is
-		     not written yet (it belongs to the text pass), so it lands on
-		     Contribute, the page that already says how to report a problem.
+		     anywhere to go. ↻ 2026-10-16: it lands on /beta, the "what beta means
+		     here" note (it pointed at Contribute until that page existed).
 		     ⚠ It points at the SURFACE, never the data — the curation is the
 		     most rigorous part of the project and the linked note must say so.
 		     🎛️ Gold, by Nate's ask 2026-09-16 (trying the accent first; a darker
 		     gold is the fallback) — ⚠ this overrides §8's "chrome-toned pill"
 		     and the block-not-word rule for this one mark, on his call. -->
-		<a class="chrome-beta" href={resolve('/contribute')} title="What beta means here">BETA</a>
+		<a class="chrome-beta" href={resolve('/beta')} title="What beta means here">BETA</a>
 	</div>
 
 	<div class="chrome-center">{@render center?.()}</div>

@@ -73,7 +73,7 @@ export const HELP_AREA: Area = {
 	]
 };
 
-// About's three are top-level peers rather than nested under /about: /privacy
+// About's chapters are top-level peers rather than nested under /about: /privacy
 // is the conventional URL for a privacy policy and /contribute is worth
 // sharing on its own. Help's chapters nest because they genuinely are
 // subordinate to "help".
@@ -92,6 +92,12 @@ export const ABOUT_AREA: Area = {
 			title: 'Contribute',
 			path: resolve('/contribute'),
 			load: () => import('./chapters/Contribute.svelte')
+		},
+		{
+			id: 'beta',
+			title: 'Beta',
+			path: resolve('/beta'),
+			load: () => import('./chapters/Beta.svelte')
 		},
 		{
 			id: 'privacy',

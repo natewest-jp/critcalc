@@ -2463,6 +2463,16 @@ img {
 	color: var(--muted);
 }
 
+/* FLAVOR TEXT (2026-10-16, ⚓ Nate): the item-description line in the manner
+   of the game's artifacts and mementos — italic, quiet, under the heading and
+   above the lede. Sprinkled sparingly: the three tools' Help chapters, Beta and
+   the error page. */
+.prose .flavor {
+	margin: -0.4rem 0 1.2rem;
+	font-style: italic;
+	color: var(--muted);
+}
+
 .prose code {
 	font-family: var(--font-mono);
 	font-size: 0.9em;

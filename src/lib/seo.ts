@@ -124,21 +124,27 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/about': {
 		title: 'About',
 		description:
-			'What critcalc is: a set of Genshin Impact theorycrafting tools that visualize mechanics rather than reduce them to a score.'
+			'What critcalc is: three Genshin Impact theorycrafting tools, where their data comes from, and who makes them.'
 	},
 	'/contribute': {
 		title: 'Contribute',
 		description:
-			'critcalc is built on community data. How to support gcsim and Keqing Mains, and how to report something wrong.'
+			'How to report a problem with critcalc, and the community projects its data is built on.'
+	},
+	'/beta': {
+		title: 'Beta',
+		description:
+			'What the beta tag on critcalc means: the tools are still changing; the character data is curated against gcsim.'
 	},
 	'/privacy': {
 		title: 'Privacy',
 		description:
-			'critcalc keeps nothing on a server: no accounts, no tracking, no cookies. Your data lives only in your browser.'
+			'What critcalc keeps in your browser, and what leaves it: share links, reports, and visit counts. No accounts, no cookies.'
 	},
 	'/settings': {
 		title: 'Settings',
-		description: 'Your roster, display preferences and saved data — all stored in this browser.'
+		description:
+			'Display, Human timing and playback sound, and your saved data — all stored in this browser.'
 	}
 };
 
