@@ -90,7 +90,8 @@ const STATE_PHRASE: Record<State, string> = {
 	spiritEnvoy: 'during Spirit Envoy Metamorphosis',
 	envoyCooldown: 'while Spirit Envoy is on cooldown',
 	followUpStrike: 'during Follow-Up Strike',
-	orioleSong: "during Haunted Night's Oriole-Song"
+	orioleSong: "during Haunted Night's Oriole-Song",
+	flamestrider: 'while on the Flamestrider'
 };
 
 /** The negated forms the data actually authors (`not` around a state). A

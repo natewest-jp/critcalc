@@ -255,7 +255,9 @@ const STATES = new Set([
 	// Varesa's Follow-Up Strike (T1 tranche, 2026-09-17).
 	'followUpStrike',
 	// Illuga's Haunted Night's Oriole-Song (event-ended buffs round, 2026-09-21).
-	'orioleSong'
+	'orioleSong',
+	// Mavuika's Flamestrider form (Nightsoul round, 2026-10-16).
+	'flamestrider'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
@@ -758,6 +760,10 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 			const o = node as Record<string, unknown>;
 			if (o.behavior === 'stance') openable.add('inStance');
 			if (typeof o.opensState === 'string') openable.add(o.opensState);
+			// A Nightsoul pool opens its Blessing and every form's state.
+			if (o.drainPerTick !== undefined && Array.isArray(o.forms)) specStates(o);
+			if (o.drainPerTick !== undefined && Array.isArray(o.forms))
+				for (const f of o.forms) specStates(f);
 			if (o.opensTransientState) specStates(o.opensTransientState);
 			if (o.actionOpensState && typeof o.actionOpensState === 'object')
 				for (const spec of Object.values(o.actionOpensState)) specStates(spec);
@@ -770,7 +776,8 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 			abilities: c.abilities,
 			passives: c.passives,
 			constellations: c.constellations,
-			factionBonuses: c.factionBonuses
+			factionBonuses: c.factionBonuses,
+			nightsoulPool: c.nightsoulPool
 		});
 		for (const { node, field } of bound) {
 			const state = node[field];

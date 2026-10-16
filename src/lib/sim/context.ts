@@ -387,6 +387,12 @@ export type SimContext = {
 	 * projection does not guess.
 	 */
 	lineupChanges: Map<number, { at: number; variantLabel: string | null }[]>;
+	/** Simulated Nightsoul pools, by character (`sim/nightsoul.ts`; Mavuika). */
+	nightsoulPools: Map<string, import('./nightsoul').NightsoulPool>;
+	/** A cast's `spawnsAtSwapOutFrom` summons spawned at this frame — written by
+	 *  the pool at the swap-out, read by finalize so the window and the live
+	 *  chain agree. Absent = that cast's owner never swapped out of the form. */
+	swapSpawns: Map<number, number>;
 	/**
 	 * The live `summonsFollowState` cast each character is currently holding open,
 	 * carrying everything the flip site needs to end one chain and start another.
@@ -525,6 +531,8 @@ export function createSimContext(input: SimContextInput): SimContext {
 		summonChainSupersededAt: new Map(),
 		castTerminatedSummons: new Map(),
 		lineupChanges: new Map(),
+		nightsoulPools: new Map(),
+		swapSpawns: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],
 		infusionProcAt: new Map(),

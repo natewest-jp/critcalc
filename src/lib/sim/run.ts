@@ -98,6 +98,8 @@ import {
 	materialiseStateChains,
 	settleOwnerStates
 } from './states';
+import { nightsoulOnCast, nightsoulOnSwapOut, nightsoulSpend, ownsState } from './nightsoul';
+import { findSummonsForBar } from './summons';
 import {
 	applyDrain,
 	applyLifetimeExpiry,
@@ -1152,6 +1154,55 @@ export function runRotation(
 					);
 				}
 
+				// ⚓ The cast's effect on a Nightsoul pool (Mavuika): enter or refill,
+				// change form, pause. BEFORE this cast opens its own stance (a Hold-E
+				// bike stance it supersedes is clamped there) and before it schedules
+				// its summons (a Tap's Ring reads the Ring form this opens). A summon
+				// that spawns at the swap-out off this cast's form is handed over as a
+				// closure — the cast's own arguments, called back at the swap.
+				if (char.nightsoulPool) {
+					const deferred = findSummonsForBar(
+						char,
+						kind,
+						tok.text,
+						active.id,
+						variant?.label ?? null
+					).some((sm) => sm.spawnsAtSwapOutFrom !== undefined);
+					const castStates = states;
+					const castStacks = new Map(stackState);
+					nightsoulOnCast(
+						ctx,
+						clock,
+						char,
+						cs,
+						variant?.nightsoul ?? active.nightsoul,
+						castStart,
+						castId,
+						deferred
+							? (at: number) =>
+									scheduleSummonTicks(
+										ctx,
+										clock,
+										char,
+										kind,
+										tok.text,
+										active.id,
+										variant?.label,
+										castStart,
+										spawn,
+										castEvent,
+										undefined,
+										castStates,
+										charConstellationLevel,
+										chainIdx,
+										castStacks,
+										castApps,
+										at
+									)
+							: undefined
+					);
+				}
+
 				// A burst inside a still-open stance (Tartaglia's C6: the exit then
 				// RESETS his skill instead). Marked before any stance this cast opens
 				// replaces the record; a natural expiry is never clamped, so a reset
@@ -1799,6 +1850,10 @@ export function runRotation(
 						// all five.
 						const coN = resolveElementRef(activeNormal?.coInfusion, variantCtx);
 						const landNormal = (at: number, live = true): void => {
+							// ⚓ A form's swing spends Nightsoul at its landing (Mavuika's
+							// Flamestrider, 1 — gcsim `attack.go`, after `QueueAttack`).
+							if (activeNormal?.nightsoulCost?.perSwing)
+								nightsoulSpend(ctx, clock, char, at, activeNormal.nightsoulCost.perSwing);
 							emitReactionsAtSwing(
 								ctx,
 								clock,
@@ -2409,6 +2464,20 @@ export function runRotation(
 					// The preceding token already selected frames.D/J via peekActionKey.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					const blockStart = clock.now;
+					// ⚓ A form's dash spends Nightsoul at its start (Mavuika's
+					// Flamestrider Sprint, 10 — gcsim `dash.go`). Only a pool holder asks.
+					if (t === 'D' && char.nightsoulPool) {
+						const dashCost = resolveActiveAbility(
+							char,
+							'normal',
+							computeCurrentStates(clock.now),
+							charConstellationLevel,
+							undefined,
+							undefined,
+							variantCtx
+						)?.nightsoulCost?.perDash;
+						if (dashCost) nightsoulSpend(ctx, clock, char, blockStart, dashCost);
+					}
 					emitAction({
 						action: t === 'D' ? 'dash' : 'jump',
 						label: t,
@@ -2521,15 +2590,24 @@ export function runRotation(
 				cs.stance.terminatesOnSwap = false;
 				// ↻ 2026-10-16: the owner bar is clamped too (`ownerUptime`, inside
 				// `clampStance`) — a swap-ended stance used to keep its full width.
+				// ⚠️ Except the states a Nightsoul pool OWNS: its Blessing outlives a
+				// swap (Mavuika's Ring keeps drawing on it off-field) and the pool
+				// re-writes those ends itself, just below.
 				for (const [state, endTime] of cs.states) {
+					if (ownsState(ctx, char.id, state)) continue;
 					if (endTime > clock.now) cs.states.set(state, clock.now);
 				}
 				// Mirror the clamp onto the IR state-window records for this char.
 				for (const rec of ctx.stateWindowRecs) {
+					if (ownsState(ctx, char.id, rec.name)) continue;
 					if (rec.characterId === char.id && rec.end > clock.now) rec.end = clock.now;
 				}
 			}
 		}
+
+		// The Nightsoul pool's swap-out: the Crucible ends, the Flamestrider turns
+		// into the Ring and the Blessing carries on (Mavuika; `sim/nightsoul.ts`).
+		if (swapFollows && char.nightsoulPool) nightsoulOnSwapOut(ctx, clock, char, clock.now);
 
 		// Swap time before the next character enters. ⚠️ The last turn adds
 		// nothing: the rotation ends when its final action does, not a swap later.
