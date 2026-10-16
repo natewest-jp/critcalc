@@ -11,6 +11,7 @@
 	import RotationNotes from '$lib/components/RotationNotes.svelte';
 	import EventLog from '$lib/components/EventLog.svelte';
 	import { collectSlotCaveats } from '$lib/timeline/slotCaveats';
+	import { sampleById } from '$lib/data/plannerSamples';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
@@ -276,7 +277,14 @@
 	 *  aura LOG now, so this reason left with it, and keeping the second gate
 	 *  would open an EMPTY notes panel. `plannerView.hasAura` retired in the same
 	 *  breath: it existed for this expression and had no other reader. */
-	let hasNotes = $derived(slotCaveats.length > 0);
+	/** ⚓ The first-visit sample's credit (2026-10-17): shown at the head of the
+	 *  notes for as long as the notation is still the sample's own — once it is
+	 *  edited, the rotation is the reader's. */
+	let sampleCredit = $derived.by(() => {
+		const sample = sampleById(rt.activeTab.sample);
+		return sample && sample.notation === rt.notation ? sample : null;
+	});
+	let hasNotes = $derived(slotCaveats.length > 0 || sampleCredit !== null);
 
 	$effect(() => {
 		pv.hasCaveats = hasNotes;
@@ -890,6 +898,7 @@
 		</div>
 	{:else}
 		<RotationNotes
+			sample={sampleCredit}
 			entries={slotCaveats}
 			teamIds={slots.filter((id, i) => id && slots.indexOf(id) === i)}
 		/>
