@@ -43,8 +43,8 @@ export type KeepOutRect = { x: number; y: number; w: number; h: number };
  *  gradually, and slightly UNDER the content's edges — so the clear box is
  *  inset by KEEPOUT_INSET and the stars ramp back over KEEPOUT_FEATHER,
  *  half of it inside the content's edge and half outside. */
-const KEEPOUT_INSET = 24;
-const KEEPOUT_FEATHER = 64;
+const KEEPOUT_INSET = 56;
+const KEEPOUT_FEATHER = 160;
 
 /** How much of a star survives at (x, y) CSS px: 0 inside a box, 1 beyond
  *  its feather. */

@@ -412,7 +412,19 @@ function wrapWords(
 
 // ── The painter ──────────────────────────────────────────────────────────────
 
-const DPR = 2; // fixed 2× raster for crisp Discord/KQM embeds
+/** 2× raster for crisp Discord/KQM embeds — the ceiling, not a constant. */
+const DPR_MAX = 2;
+/** ⚠ BROWSERS CAP A CANVAS, and a long rotation reaches the caps: Chrome
+ *  refuses a side past ~32,767 device px, iOS Safari an area past ~16.7M px,
+ *  and either way `toBlob` returns null ("Export failed"). So the raster
+ *  drops below 2× only when it must, to stay under both — a long rotation
+ *  still exports, just less crisp. ⚠ The export holds THREE canvases this
+ *  size at once (scene, chart layer, page), so the area cap is kept well
+ *  under Safari's. */
+const MAX_SIDE_PX = 16384;
+const MAX_AREA_PX = 16_000_000;
+const exportDpr = (w: number, h: number) =>
+	Math.min(DPR_MAX, MAX_SIDE_PX / w, MAX_SIDE_PX / h, Math.sqrt(MAX_AREA_PX / (w * h)));
 // ── The frame around the chart (2026-10-16 redesign) ──
 const PAD = 24; // the scene's margin around everything
 const BENCH_GAP = 16; // the ribbon to the plot's gutter
@@ -425,6 +437,8 @@ const BRAND_GAP = 6; // 0.35rem
 const BRAND_H = Math.round(BRAND_SIZE * BRAND_MARK);
 const NOTATION_PX = 12;
 const NOTATION_LINE_H = 18;
+const TITLE_PX = 15;
+const TITLE_LINE_H = 22;
 const HEADER_GAP = 14; // brand → notation → chart
 const FOOTER_H = 28;
 const LOGO_SRC = '/critcalc-logo-white.svg';
@@ -465,14 +479,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	const chartW = snap.totalWidth;
 	const w = ox + chartW + PAD;
 
-	// The notation, wrapped to the width right of the ribbon's edge (it reads
-	// under the brand, across the page).
+	// ⚓ Nate 2026-10-16: the notation sits BESIDE the lockup, starting at the
+	// chart's left edge (0s), so the page's left column is the brand and the
+	// bench, and everything to the right of it is the rotation.
 	const measure = document.createElement('canvas').getContext('2d')!;
 	measure.font = `${NOTATION_PX}px ${MONO}`;
 	const lead = snap.notation.length - snap.notation.trimStart().length;
-	const notationLines = wrapWords(measure, snap.notation.trim(), lead, w - PAD * 2);
+	const notationLines = wrapWords(measure, snap.notation.trim(), lead, w - PAD - ox);
 	const notationH = notationLines.length * NOTATION_LINE_H;
-	const headerH = BRAND_H + HEADER_GAP + notationH + (notationH ? HEADER_GAP : 0);
+	// The tab's name, when it has one, titles the notation (same left edge).
+	const titleH = snap.tabLabel ? TITLE_LINE_H : 0;
+	const blockH = titleH + notationH;
+	const headerH = Math.max(BRAND_H, blockH) + HEADER_GAP;
 
 	const chartTop = PAD + headerH;
 	const oy = chartTop + snap.auraHeaderH;
@@ -489,6 +507,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// ── Layers ──
 	// The scene first, in device pixels; then everything at DPR.
 	const canvas = document.createElement('canvas');
+	const DPR = exportDpr(w, h);
 	canvas.width = Math.round(w * DPR);
 	canvas.height = Math.round(h * DPR);
 	const base = canvas.getContext('2d');
@@ -1511,11 +1530,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	base.textAlign = 'left';
 	base.textBaseline = 'middle';
 	base.fillText('critcalc.app', bx, brandMid);
+	// The title + notation block: centred on the lockup when it fits beside
+	// it, otherwise running down from the lockup's top.
+	const blockTop = blockH <= BRAND_H ? brandMid - blockH / 2 : PAD;
 	if (snap.tabLabel) {
-		base.font = `600 16px ${SANS}`;
+		base.font = `600 ${TITLE_PX}px ${SANS}`;
 		base.fillStyle = TEXT;
-		base.textAlign = 'right';
-		base.fillText(snap.tabLabel, w - PAD, brandMid, w / 2);
+		base.textAlign = 'left';
+		base.textBaseline = 'middle';
+		base.fillText(snap.tabLabel, ox, blockTop + TITLE_LINE_H / 2, w - PAD - ox);
 	}
 
 	// The notation, each token in the colour the composer gives it.
@@ -1525,8 +1548,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	base.textBaseline = 'alphabetic';
 	const spaceW = base.measureText(' ').width;
 	notationLines.forEach((line, li) => {
-		let tx = PAD;
-		const ty = PAD + BRAND_H + HEADER_GAP + li * NOTATION_LINE_H + NOTATION_PX;
+		let tx = ox;
+		const ty =
+			blockTop +
+			titleH +
+			li * NOTATION_LINE_H +
+			NOTATION_PX +
+			(NOTATION_LINE_H - NOTATION_PX) / 2 -
+			1;
 		for (const word of line) {
 			// One run per colour change inside the word.
 			let i = 0;
@@ -1557,7 +1586,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	base.textAlign = 'left';
 	// ⚓ Nate 2026-10-16: the length LEADS the line, at the left — the trailing
 	// bars make the right end the part a reader crops off.
-	base.fillText(`${secondsLabel(snap.endFrame)}s · ${snap.timingNote}`, benchX, fy);
+	base.fillText(`${secondsLabel(snap.endFrame)}s · ${snap.timingNote}`, ox, fy);
 
 	return new Promise<Blob>((resolve, reject) => {
 		canvas.toBlob((blob) => {
