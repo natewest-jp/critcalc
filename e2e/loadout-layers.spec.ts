@@ -44,7 +44,11 @@ async function setBenchCon(page: Page, slot: number, pip: number) {
 	await page.locator('.sp-popover .sp-pip').nth(pip).click();
 }
 
-test('the planner con chip writes the plan, never the roster', async ({ page }) => {
+test('the planner con chip writes the plan, never the roster', async ({ page, seed }) => {
+	// ↻ 2026-10-17: a FIRST visit now opens on a sample rotation (with its own
+	// tab-level constellations), so "a fresh tab" has to be seeded as one —
+	// an empty tab, nothing on the roster.
+	await seed({ team: { slots: [] } });
 	await openTool(page, '/planner');
 	await page.locator('.cm-content').first().click();
 	await page.keyboard.type('Furina E Q > Bennett E Q');
