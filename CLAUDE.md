@@ -145,7 +145,7 @@ All three tools are built and merged to `main`; launch is a **readiness decision
 - ✅ **Cast binding** (2026-09-19) — casts resolve by `CastEvent.abilityId` + `variantLabel` — `docs/cast-binding-round.md`.
 - ✅ **`gainStacks … onSwapIn`** (2026-09-19) — writes the key's HOME, a repeat refreshes — `docs/cast-binding-round.md` §6.
 - ✅ **Swing hitmark §1.K** (2026-09-20) — `FrameMap.lands`, `landsAt()`; ⚠️⚠️ data writers go through `scripts/lib/json-edit.mjs` `surgicalRewrite` — `docs/swing-hitmark-round.md`.
-- ⏳ **Summon tick gaps** (2026-09-20, merged `7848f970`) — Faruzan C6 shipped; ⛔ Linnea's cadence waits on Nate's in-game counts; Nilou's aura applies and deals no damage — `docs/summon-tick-gaps-round.md`.
+- ⏳ **Summon tick gaps** (2026-09-20, merged `7848f970`) — Faruzan C6 shipped; ✅ Linnea's in-game counts are in (2026-10-14, doc §1.5; ⚓ Nate 2026-10-17: confirmed); Nilou's aura applies and deals no damage — `docs/summon-tick-gaps-round.md`.
 - ✅ **Cast hit record, Phase A** (2026-09-21) — `CastEvent.firstHitAt`, `HitEvent.offField`, Raiden's Eye `spawnsAt: 66` — `docs/cast-hit-record-round.md`.
 - ✅ **Every landing is a hit, Phase B** (2026-09-21) — `lands: number | number[]`, `landingsOf()`, `CastEvent.hitsAt` — `docs/multi-hit-swings-round.md` §7.
 - ✅ **Projectile travel** (2026-09-21) — `PROJECTILE_TRAVEL_F`, `projectileTravelOf()`, `NormalAbility.projectile` (exceptions only, lint A.4d) — `docs/projectile-travel-round.md` §6.
