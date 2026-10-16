@@ -208,6 +208,6 @@ writes the strings in lowercase.
   dashes work. It is NOT modelled for anyone today. Modelled, a `D` that is too
   early WAITS like a skill on cooldown, and the spin continues meanwhile — which
   is the double-tap tech.
-- ⏭ **Decision for Nate:** the dash cooldown for everyone (gcsim does this;
-  recommended, after measuring which saved rotations it moves) or for Mavuika
-  only.
+- ✅ **Decided (⚓ Nate, 2026-10-16): the dash cooldown is UNIVERSAL** — it is the
+  game's rule, and gcsim applies it to every character. Measure which saved
+  rotations it moves before landing it.
