@@ -2251,6 +2251,9 @@ describe('parseNotation — Mizuki: Dreamdrifter holds the field (2026-10-16)', 
 		const swap = turn(r).activeEnd;
 		expect(w.end).toBe(swap);
 		expect(swap - w.start).toBe(30 + framesOf(2)); // E → swap cancel, then the wait
+		// The PILL ends there too — it is the stance, and the stance is over.
+		const pill = turn(r).eBars[0];
+		expect(pill.start + pill.uptime).toBe(swap);
 		for (const f of clouds(r, w.start)) expect(w.start + f - 30).toBeLessThan(w.end);
 	});
 

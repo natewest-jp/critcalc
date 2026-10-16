@@ -58,11 +58,11 @@ export type StanceRecord = {
 	/** Event id of the `cast` that opened the window (IR provenance). */
 	sourceCastId: number;
 	/** Accumulated owner-bar uptime: initial duration + fired extension deltas.
-	 *  The finalize pass stamps `barRef.uptime = ownerUptime`. Distinct from
-	 *  `end`, which is the (swap-clamped) gating end — a swap-terminated stance
-	 *  keeps its full owner-bar width while `end` clamps to the swap-out time.
-	 *  ⚓ A cast that `endsStance` clamps THIS too (2026-10-04): the stance ended
-	 *  for real, so the bar ends with it. */
+	 *  The finalize pass stamps `barRef.uptime = ownerUptime`. ↻ 2026-10-16:
+	 *  every early end (`clampStance` — a swap or an `endsStance` cast) clamps
+	 *  THIS with `end`, because the stance ended for real and the pill is the
+	 *  stance; a swap used to leave the pill at full width. Kept as its own
+	 *  field because extensions accumulate here during the parse. */
 	ownerUptime: number;
 	/** Per-durationExtensions[]-index fire counts (reset each window open). */
 	extCounts: Map<number, number>;

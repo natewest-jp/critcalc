@@ -1286,18 +1286,10 @@ export function runRotation(
 								variantCtx
 							) === true)
 					) {
-						const end = clampStance(
-							ctx,
-							cs,
-							char.id,
-							ends.at === 'castEnd' ? castEnd : castStart + ends.at
-						);
-						// ⚓ Unlike a swap, a closing cast ends the stance for real, so the
-						// OWNER BAR ends with it: the bar is the stance, and the IR's
-						// strict stance geometry (bar end === window end) holds. A swap
-						// keeps the full width — see `StanceRecord.ownerUptime`.
-						if (end !== undefined)
-							cs.stance.ownerUptime = Math.min(cs.stance.ownerUptime, end - cs.stance.start);
+						// The OWNER BAR ends with it, inside `clampStance`: the bar is the
+						// stance, and the IR's strict stance geometry (bar end === window
+						// end) holds — for a swap too since 2026-10-16.
+						clampStance(ctx, cs, char.id, ends.at === 'castEnd' ? castEnd : castStart + ends.at);
 					}
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
@@ -2470,10 +2462,8 @@ export function runRotation(
 				// earlier end), so a later swap never restarts its cooldown.
 				clampStance(ctx, cs, char.id, clock.now);
 				cs.stance.terminatesOnSwap = false;
-				// barRef is intentionally retained (P4): the finalize pass stamps
-				// the owner bar's uptime from `ownerUptime`, which the swap does NOT
-				// clamp — a swap-terminated stance keeps its full owner-bar width
-				// while `end` clamps to the swap-out time.
+				// ↻ 2026-10-16: the owner bar is clamped too (`ownerUptime`, inside
+				// `clampStance`) — a swap-ended stance used to keep its full width.
 				for (const [state, endTime] of cs.states) {
 					if (endTime > clock.now) cs.states.set(state, clock.now);
 				}
