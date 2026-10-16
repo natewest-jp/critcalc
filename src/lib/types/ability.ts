@@ -2473,6 +2473,32 @@ export type NormalAbility = AbilityCommon & {
 	 */
 	nonHitting?: { normal?: true; charged?: true; plunge?: true };
 	/**
+	 * The element this ability's CHARGED ATTACK deals, where the weapon rule gets
+	 * it wrong — and whether it applies that element (Columbina's Moondew
+	 * Cleanse, 2026-10-16: three Dendro hits from a Hydro catalyst, direct
+	 * Lunar-Bloom DMG at Durability 0 — gcsim `charge.go` `ChargeAttackBloom`,
+	 * whose `AttackInfo` states no `Durability`).
+	 *
+	 * `applies: false` keeps the element on the block's tint and on every hit
+	 * record (an `onHit` sees a Dendro hit) and offers NOTHING to the gauge —
+	 * the swing-side twin of a cast's Durability-0 `application[]` entry.
+	 * Per-ABILITY, like `infusion`, so a sibling form decides for itself; and
+	 * like `nonHitting`, ⛔ not folded into `resolveActionElement` (the editor
+	 * cannot know which form a `C` resolved to). ⚠️ Loses to `nonHitting`.
+	 */
+	chargeElement?: { element: Element; applies: boolean };
+	/**
+	 * The charged attack's landings are QUEUED AT THE PRESS and land on their own
+	 * frames even when the attack is cancelled first — gcsim `QueueAttack` with
+	 * a delay, nothing gating it on the animation. Absent, a cancelled swing
+	 * lands at the cancel (the rule every melee swing keeps). Columbina's Moondew
+	 * Cleanse spends its Verdant Dew at 43f, which is also its earliest
+	 * E/Q/dash/jump/swap cancel, and lands at 50/58/80: without this, `C > swap`
+	 * piles all three hits onto the cancel. A landing past the turn's end is an
+	 * `offField` hit, as a projectile's is.
+	 */
+	chargeLandsAfterCancel?: true;
+	/**
 	 * Whether a swing of this class is a PROJECTILE — released at its `hit` /
 	 * `lands` frame and landing `PROJECTILE_TRAVEL_F` later (projectile-travel
 	 * round, 2026-09-21). Read through `projectileTravelOf()`.
