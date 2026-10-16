@@ -158,7 +158,12 @@ function classifyWord(text: string): TokenKind {
 		/^[lh]?P$/.test(text) || // plunge: P, hP, lP
 		text === 'D' || // dash
 		text === 'J' || // jump
-		text === 'W' // walk
+		text === 'W' || // walk
+		// ⚓ A Charged Attack's FINISHER (Mavuika round, 2026-10-16): KQM/Prydwen
+		// write `C3F` / `FDC` for her Flamestrider leap. Only a normal ability
+		// with a `chargeSpin` gives it meaning; elsewhere the parser ignores it
+		// and the editor flags it.
+		text === 'F'
 	)
 		return 'label';
 	return 'unknown';
@@ -193,7 +198,7 @@ function classifySubToken(text: string): TokenKind {
  * Words starting with any other character (e.g. character names mis-placed
  * inside a segment) are kept as a single 'unknown' to reduce noise.
  */
-const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpsNCADJWP');
+const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpsNCADJWPF');
 
 /**
  * Greedy longest-match regex for splitting a concatenated action-token run.
@@ -204,7 +209,7 @@ const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpsNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|sE|hP|lP|sQ|sC[1-9]?|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|sE|hP|lP|sQ|sC[1-9]?|N[1-9]?|C[1-9]?|[QEADJWPF]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.

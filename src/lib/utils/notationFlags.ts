@@ -102,7 +102,7 @@ function isLintable(tok: Token): boolean {
 		tok.kind === 'E' ||
 		tok.kind === 'Q' ||
 		(tok.kind === 'label' &&
-			(/^[AW]$/.test(tok.text) ||
+			(/^[AWF]$/.test(tok.text) ||
 				PLUNGE_TOKEN_RE.test(tok.text) ||
 				CHARGED_TOKEN_RE.test(tok.text)))
 	);
@@ -195,6 +195,19 @@ export function flagNotation(notation: string): NotationFlag[] {
 					text: tok.text,
 					reason: 'unsupported-token',
 					message: 'Walk-cancels aren’t simulated. Use ~2s for a deliberate pause.'
+				});
+				continue;
+			}
+			if (tok.text === 'F') {
+				// `F` is the finisher of a SPINNING Charged Attack (Mavuika's
+				// Flamestrider); on any other kit the parser draws nothing for it.
+				if (entry.chargeSpin) continue;
+				flags.push({
+					from: tok.from,
+					to: tok.to,
+					text: tok.text,
+					reason: 'unsupported-token',
+					message: `F is the finisher of a spinning Charged Attack — ${entry.displayName}'s doesn't spin.`
 				});
 				continue;
 			}

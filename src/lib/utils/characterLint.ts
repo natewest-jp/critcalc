@@ -587,8 +587,19 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 				);
 			holders.set(name, [...(holders.get(name) ?? []), a.id]);
 		}
+		// ⚓ One holder is enough when it spends the counter from SEVERAL action
+		// classes — a spinning Charged Attack or a dash hit beside its Normal
+		// Attacks (Mavuika's Flamestrider: gcsim's one `ICDTagMavuikaFlamestrider`
+		// across NA, spin, finisher and Sprint), which would otherwise land on
+		// separate normal and charged counters.
+		const multiClass = (id: string): boolean => {
+			const a = c.abilities.find((x) => x.id === id) as
+				| { chargeSpin?: unknown; dashHit?: unknown }
+				| undefined;
+			return a?.chargeSpin !== undefined || a?.dashHit !== undefined;
+		};
 		for (const [name, ids] of holders)
-			if (ids.length < 2)
+			if (ids.length < 2 && !multiClass(ids[0]))
 				push(
 					'strict',
 					'icd-counter-invalid',

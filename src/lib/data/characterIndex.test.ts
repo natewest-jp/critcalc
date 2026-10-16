@@ -56,6 +56,8 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 	entry.plunge = hasPlungeFrames(source);
 	entry.charged = hasChargeFrames(source);
 	if (hasSpecialChargeFrames(source)) entry.specialCharge = true;
+	if (source.abilities.some((a) => a.abilityType === 'normal' && a.chargeSpin))
+		entry.chargeSpin = true;
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
 	entry.coverage = encodeCoverage(deriveCoverage(source));
 	const gated = collectGatedReactions(source);

@@ -88,6 +88,9 @@ for (const file of files) {
 	entry.charged = hasChargeFrames(data);
 	// Only its one holder carries the key, as `gatedReactions` below.
 	if (hasSpecialChargeFrames(data)) entry.specialCharge = true;
+	// Likewise only on the one kit whose Charged Attack spins (`F` is its finisher).
+	if (data.abilities.some((a) => a.abilityType === 'normal' && a.chargeSpin))
+		entry.chargeSpin = true;
 	const capabilities = deriveCharacterCapabilities(data).capabilities;
 	entry.caps = summarizeCapabilities(capabilities);
 	shredRows.push(...characterShredSources(data.id, data.displayName ?? data.name, capabilities));

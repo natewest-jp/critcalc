@@ -108,3 +108,61 @@ describe('Mavuika — the pool’s rules (gcsim)', () => {
 		expect(states('flamestrider')[0].start).toBe(blessings[1].start);
 	});
 });
+
+describe('Mavuika — the bike Charged Attack (gcsim, measured with its CLI)', () => {
+	const acts = (notation: string) =>
+		parseNotation(notation, lookup, 8).events.flatMap((e) =>
+			(e.kind === 'action' || e.kind === 'cast') && e.characterId === MAV
+				? [{ label: e.label, time: e.time, duration: 'duration' in e ? e.duration : undefined }]
+				: []
+		);
+
+	it('after her burst a spin hit lands +20 (windup skipped), then every 42f; F lands its finisher 45f later and N follows at 74', () => {
+		const a = acts('Mavuika Q C3F N1');
+		const c = a.filter((x) => x.label === 'C3');
+		expect(c.map((x) => x.time)).toEqual([116, 136, 178]);
+		expect(c.map((x) => x.duration)).toEqual([20, 42, 42]);
+		const f = a.find((x) => x.label === 'F')!;
+		expect(f.time).toBe(220);
+		expect(a.find((x) => x.label === 'N1')!.time).toBe(220 + 74);
+	});
+
+	it('a Normal Attack after the spin forces the finisher; a dash after it cancels the finisher', () => {
+		const forced = acts('Mavuika Q C3 N1').filter((x) => x.label === 'C3');
+		expect(forced).toHaveLength(4); // three spin hits + the finisher
+		const cancelled = acts('Mavuika Q C3 D').filter((x) => x.label === 'C3');
+		expect(cancelled).toHaveLength(3);
+	});
+
+	it('CDC: the dash lands at the spin hit, is cut at 6f, and the next spin skips its windup', () => {
+		const a = acts('Mavuika E Q CDC');
+		const [c1, d, c2] = a.filter((x) => x.label === 'C' || x.label === 'D');
+		expect(d.time).toBe(c1.time + 20);
+		expect(d.duration).toBe(6);
+		expect(c2.time).toBe(d.time + 6);
+		expect(c2.duration).toBe(20);
+	});
+
+	it('Prydwen’s CDCDCCF DCDCCF DCDCC FDC reproduces gcsim’s trace (less its finisher hitlag)', () => {
+		const a = acts('Mavuika E Q CDCDCCF DCDCCF DCDCC FDC');
+		// gcsim (frame 1 = our 0): C 135, D 155, C 161, D 181, C 187, C 207, F 249.
+		expect(a.slice(2, 9).map((x) => x.time)).toEqual([134, 154, 160, 180, 186, 206, 248]);
+	});
+});
+
+describe('The dash cooldown (universal; gcsim ApplyDashCD)', () => {
+	it('a third dash inside the 0.8s window waits out the 1.5s lockout', () => {
+		const dashes = parseNotation('Mavuika hE D D D D', lookup, 8).events.flatMap((e) =>
+			e.kind === 'action' && e.label === 'D' ? [e.time] : []
+		);
+		expect(dashes[2] - dashes[1]).toBe(90);
+		expect(dashes[1] - dashes[0]).toBe(21);
+	});
+
+	it('it applies to everyone, not just Mavuika', () => {
+		const dashes = parseNotation('Bennett D D D', lookup, 8).events.flatMap((e) =>
+			e.kind === 'action' && e.label === 'D' ? [e.time] : []
+		);
+		expect(dashes).toEqual([0, 21, 111]);
+	});
+});

@@ -253,3 +253,42 @@ Tap E then Q first (from a cold start her Q has only 10 points), then Prydwen's
   the same tag her bike Normal Attacks use.
 - ⚠️ A cold `Q` + these combos runs her Blessing dry ("nightsoul blessing expired
   before Mavuika could perform charge cancel"). Real rotations press E first.
+
+### §7 built (2026-10-16)
+
+- **`NormalAbility.chargeSpin` (`ChargeSpin`) and its own parser branch** in
+  `run.ts`, ahead of the generic Charged Attack:
+  - each `C` is one spin hit, and `F` is the finisher;
+  - the finisher is added automatically only before a Normal Attack or at the
+    375f maximum;
+  - before anything else a missing `F` means none.
+- **The finisher's release delay** is gcsim's `GetCAFDelay`. A bare `F` spins 50f
+  first. The auto finisher joins the last `C`'s block (it carries no token of its
+  own).
+- **The dash branch:**
+  - a `D` between two spin `C`s, or after an `F` into one, is the cancel, cut at
+    6f, and the next spin skips its windup;
+  - `dashHit` lands the Sprint's Pyro;
+  - any spin ends at a dash.
+- **⚓ The dash cooldown is universal** (`CharState.dashCdUntil` / `dashLockout`;
+  48f window, 90f lockout, a waiting dash waits). No test or fixture rotation
+  moved.
+- **The pool's charging drain** (`chargingExtraPerTick` 0.2, `nightsoulCharging`)
+  runs from the first spin press to the finisher's hit, or to the cancel.
+- **`icdCounter: 'flamestrider'`** puts her bike Normal Attacks, spin, finisher
+  and Sprint on gcsim's one tag. The lint allows a lone holder that spends the
+  counter from several action classes.
+- **Tokenizer:** `F` is a label, splits inside compact runs (`CCF`, `FDC`), and
+  `peekActionKey` reads it as a Charged Attack. Names starting with F are
+  unaffected.
+- **Editor:** `F` is flagged on any kit without a spinning Charged Attack (index
+  fact `chargeSpin`).
+- **Tests (`sim/nightsoul.test.ts`, +6):** the measured timings, the
+  forced/cancelled finisher, CDC, Prydwen's combo against gcsim's trace, and the
+  dash cooldown (Mavuika and Bennett).
+- ⚠️ **Not modelled:**
+  - hitlag (gcsim's +3f after a finisher);
+  - the CDC lockout (never reached at a spin hit against one target);
+  - spin hits during a dash's cooldown wait (the caveat says to add `C`s);
+  - multi-target spin geometry;
+  - the finisher forced by her Nightsoul running out mid-spin.

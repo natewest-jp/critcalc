@@ -68,6 +68,8 @@ export function peekActionKey(tokens: Token[], j: number, isBow: boolean): Actio
 		if (t === 'D') return 'D';
 		if (t === 'J') return 'J';
 		if (/^s?C\d*$/.test(t)) return 'C';
+		// A spinning Charged Attack's finisher is part of the Charged Attack.
+		if (t === 'F') return 'C';
 		if (t === 'A' && isBow) return 'C';
 		if (/^[hl]?P$/.test(t)) return 'P';
 	}
