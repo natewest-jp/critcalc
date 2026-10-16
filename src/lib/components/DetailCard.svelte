@@ -341,7 +341,9 @@
 								{/if}
 							</span>
 							{#if cap.caveats.length > 0}
-								<span class="dc-cap-caveats">{cap.caveats.map(caveatText).join(' · ')}</span>
+								<span class="dc-cap-caveats"
+									>{[...new Set(cap.caveats.map(caveatText))].join(' · ')}</span
+								>
 							{/if}
 						</li>
 					{/each}

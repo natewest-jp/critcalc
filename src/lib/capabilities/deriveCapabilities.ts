@@ -286,7 +286,10 @@ function collectCaveats(cond: Condition | undefined, con: number, out: Set<strin
 		case 'ascension':
 			return;
 		case 'not':
-			collectCaveats(cond.condition, con, out);
+			// A negated state is its own label — the positive one read "during
+			// inStance" for a buff that only works OUTSIDE the stance.
+			if (cond.condition.type === 'state') out.add(`notState:${cond.condition.state}`);
+			else collectCaveats(cond.condition, con, out);
 			return;
 		case 'all':
 			for (const c of cond.conditions) {
