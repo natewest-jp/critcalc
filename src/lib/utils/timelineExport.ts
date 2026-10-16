@@ -304,7 +304,7 @@ export type TimelineSnapshot = {
 	/** How the reader is timing the rotation — the footer says it in words, so
 	 *  a padded rotation is never taken for a frame-perfect one. */
 	timingNote: string;
-	/** The rotation's length in FRAMES — where the export cuts (and fades). */
+	/** The rotation's length in FRAMES — the footer's reading. */
 	endFrame: number;
 	scale: number;
 	rulerH: number;
@@ -427,11 +427,6 @@ const NOTATION_PX = 12;
 const NOTATION_LINE_H = 18;
 const HEADER_GAP = 14; // brand → notation → chart
 const FOOTER_H = 28;
-/** ⚓ THE CUT (Nate 2026-10-16, "let's see it in action"): the image ends this
- *  far past the rotation's last frame, and its last END_FADE px fade out, so a
- *  cooldown tail still running reads as running on rather than chopped. */
-const END_PAD = 64;
-const END_FADE = 52;
 const LOGO_SRC = '/critcalc-logo-white.svg';
 
 export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
@@ -465,8 +460,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// `ox` is 0s; the ribbon and the unit gutter stand to its left.
 	const benchX = PAD;
 	const ox = PAD + RIBBON_W + BENCH_GAP + UNIT_GUTTER;
-	const endX = ox + Math.round((snap.endFrame / FPS) * snap.scale);
-	const chartW = Math.min(snap.totalWidth, endX - ox + END_PAD);
+	// ↻ ⚓ Nate 2026-10-16: the WHOLE width, trailing bars included — a cut at
+	// the rotation's end with a fade was tried the same day and taken out.
+	const chartW = snap.totalWidth;
 	const w = ox + chartW + PAD;
 
 	// The notation, wrapped to the width right of the ribbon's edge (it reads
@@ -497,11 +493,17 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	canvas.height = Math.round(h * DPR);
 	const base = canvas.getContext('2d');
 	if (!base) throw new Error('canvas 2d context unavailable');
-	base.drawImage(await paintSceneBackdrop(w, h, DPR), 0, 0);
+	// ⚓ The stars stay out from behind the chart and the lockup — the brand
+	// keep-out's rule on screen (starPass STAR_KEEPOUT_*), widened to the
+	// whole plot, because a still image shows every halo the twinkle hides.
+	const keepOut = [
+		{ x: ox - UNIT_GUTTER, y: chartTop, w: chartW + UNIT_GUTTER, h: bodyBottom - chartTop },
+		{ x: PAD, y: PAD, w: BRAND_H * 4 + 160, h: BRAND_H }
+	];
+	base.drawImage(await paintSceneBackdrop(w, h, DPR, keepOut), 0, 0);
 	base.scale(DPR, DPR);
 
-	// The chart paints on a layer of its own, so its right edge can fade out
-	// at the cut without fading the scene under it.
+	// The chart paints on a layer of its own, composited over the scene.
 	const layer = document.createElement('canvas');
 	layer.width = canvas.width;
 	layer.height = canvas.height;
@@ -1144,8 +1146,11 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	ctx.fillStyle = ACTIVE;
 	for (const c of snap.connectors) {
 		const cx = ox + c.x;
-		const yT = oy + c.yTop;
-		const yB = oy + c.yBottom;
+		// ⚠ Track offsets start BELOW the ruler (`oy + rulerH`): connectorGeom's
+		// numbers are relative to the track area, which on screen carries no
+		// ruler offset because the ruler is its own strip.
+		const yT = oy + snap.rulerH + c.yTop;
+		const yB = oy + snap.rulerH + c.yBottom;
 		const r = Math.min(c.w, yB - yT);
 		ctx.beginPath();
 		if (c.downward) {
@@ -1475,16 +1480,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			gadgetY += rowH + snap.gadgetRowGap;
 		}
 	}
-	// ── The cut: the chart layer fades out over its last END_FADE px ──
-	const cutX = ox + chartW;
-	ctx.save();
-	ctx.globalCompositeOperation = 'destination-in';
-	const fade = ctx.createLinearGradient(cutX - END_FADE, 0, cutX, 0);
-	fade.addColorStop(0, '#000');
-	fade.addColorStop(1, 'rgba(0,0,0,0)');
-	ctx.fillStyle = fade;
-	ctx.fillRect(0, 0, w, h);
-	ctx.restore();
 	base.drawImage(layer, 0, 0, w, h);
 
 	// ── The bench: the live ribbon, its cards beside their track groups ──

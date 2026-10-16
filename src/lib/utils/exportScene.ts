@@ -35,6 +35,25 @@ const CREST_TOP_SRC = 66;
  *  rotation without upscaling the sky much, small enough to decode quickly. */
 const PLATE_TIER = 3200;
 
+/** A box the stars stay out of, in CSS px — measured from each star's CENTRE,
+ *  so a star fades whole rather than being cut (the screen's rule). */
+export type KeepOutRect = { x: number; y: number; w: number; h: number };
+
+/** 🎛️ The keep-out's soft edge, CSS px: stars ramp back in across it. */
+const KEEPOUT_FEATHER = 16;
+
+/** How much of a star survives at (x, y) CSS px: 0 inside a box, 1 beyond
+ *  its feather. */
+function keepOutStrength(x: number, y: number, boxes: KeepOutRect[]): number {
+	let k = 1;
+	for (const b of boxes) {
+		const dx = Math.max(b.x - x, 0, x - (b.x + b.w));
+		const dy = Math.max(b.y - y, 0, y - (b.y + b.h));
+		k = Math.min(k, Math.min(1, Math.hypot(dx, dy) / KEEPOUT_FEATHER));
+	}
+	return k;
+}
+
 /** 🎛️ How large a star is drawn, relative to its screen size in CSS px. The
  *  export sits at roughly the scale of the tool on screen, so 1. */
 const STAR_SCALE = 1;
@@ -56,7 +75,8 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 export async function paintSceneBackdrop(
 	w: number,
 	h: number,
-	dpr: number
+	dpr: number,
+	keepOut: KeepOutRect[] = []
 ): Promise<HTMLCanvasElement> {
 	const W = Math.round(w * dpr);
 	const H = Math.round(h * dpr);
@@ -98,8 +118,10 @@ export async function paintSceneBackdrop(
 		const y = toY((s.y / 100) * SKY_H_SRC);
 		const r = Math.max(0.6, (s.size / 2) * STAR_SCALE * dpr);
 		if (x < -r * 4 || y < -r * 4 || x > W + r * 4 || y > H + r * 4) continue;
+		const keep = keepOutStrength(x / dpr, y / dpr, keepOut);
+		if (keep <= 0) continue;
 		const [cr, cg, cb] = STAR_TINTS[s.color].map((c) => Math.round(c * 255));
-		const a = STAR_STATIC_ALPHA * Math.max(s.base, 0.5);
+		const a = STAR_STATIC_ALPHA * Math.max(s.base, 0.5) * keep;
 		const glowR = s.halo || s.hero ? r * 3.4 : r * 1.6;
 		const g = ctx.createRadialGradient(x, y, 0, x, y, glowR);
 		g.addColorStop(0, `rgba(${cr},${cg},${cb},${a})`);
