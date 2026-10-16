@@ -227,3 +227,29 @@ writes the strings in lowercase.
 - ✅ **Decided (⚓ Nate, 2026-10-16): the dash cooldown is UNIVERSAL** — it is the
   game's rule, and gcsim applies it to every character. Measure which saved
   rotations it moves before landing it.
+
+## 7. The bike Charged Attack round — gcsim's measured timings (2026-10-16)
+
+Branch `feat/mavuika-bike-ca`. Measured with gcsim's own CLI (built into
+`scratch/`, the checkout at `4eda9fc5f`). The setup: one target 2.5m in front,
+Tap E then Q first (from a cold start her Q has only 10 points), then Prydwen's
+`Q CDCDCCF DCDCCF DCDCC FDC` translated action for action.
+
+| Step                                                                       | Frames (from the press)                                                   |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `C` after a dash, a Normal Attack or her Q (windup skipped, `buffered` 15) | first spin hit +20                                                        |
+| `C` fresh (after E, or from idle)                                          | first spin hit +35                                                        |
+| each further `C` in the same spin                                          | +42 (`bikeChargeAttackICD`, one target)                                   |
+| `D` in a CDC (`charge_cancel`)                                             | pressed at the spin hit; Sprint hit +6; next `C` +6                       |
+| `F`                                                                        | finisher hit +45, plus the spin-angle delay (`GetCAFDelay`: 0 and 3 here) |
+| `F` → `D`                                                                  | +48                                                                       |
+| `F` → `N`                                                                  | +77 (74 + 3)                                                              |
+| her Q → `C`                                                                | 116                                                                       |
+
+- **The dash cooldown never blocked** Prydwen's strings. The dashes at 155 and 181
+  start the 1.5s lockout (ending 271); the next dash is at 297. Each `CCF` is long
+  enough, so the combos are built around it.
+- **Every spin hit, finisher and Sprint is Pyro 1U on `ICDTagMavuikaFlamestrider`,**
+  the same tag her bike Normal Attacks use.
+- ⚠️ A cold `Q` + these combos runs her Blessing dry ("nightsoul blessing expired
+  before Mavuika could perform charge cancel"). Real rotations press E first.
