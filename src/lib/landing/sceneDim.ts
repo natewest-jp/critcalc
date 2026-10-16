@@ -112,3 +112,37 @@ export function dimPixel(
 		return 255 * ((v / 255) * (1 - level) + dimmed * level);
 	}) as [number, number, number];
 }
+
+/**
+ * The same dim over a whole RGBA buffer, in place, at a tool's rest (level
+ * 1), with the renderer's final-pass dither (σ = SCENE_DIM_DITHER) added
+ * before the 8-bit rounding, as the shader does. For the PNG export's scene
+ * backdrop (2026-10-16), where calling `dimPixel` would allocate three arrays
+ * for each of millions of pixels.
+ *
+ * ⚠ It is `dimPixel`'s formula at level 1 with the tone curve read from a
+ * 256-entry table — nothing else differs. ⛔ Change one, change both (and the
+ * shader).
+ */
+export function dimImageData(data: Uint8ClampedArray): void {
+	const wash = SCENE_DIM_TINT_RGB;
+	const curve = new Float32Array(256);
+	for (let v = 0; v < 256; v++) curve[v] = (v / 255) ** SCENE_DIM.gamma;
+	const b0 = wash[0] * SCENE_DIM.wash;
+	const b1 = wash[1] * SCENE_DIM.wash;
+	const b2 = wash[2] * SCENE_DIM.wash;
+	const sat = SCENE_DIM.saturation;
+	const gain = SCENE_DIM.gain;
+	// A uniform ±½-level dither has σ ≈ 0.29; scale it to SCENE_DIM_DITHER.
+	const amp = SCENE_DIM_DITHER / 0.29;
+	const clamp = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+	for (let i = 0; i < data.length; i += 4) {
+		const s0 = curve[data[i]];
+		const s1 = curve[data[i + 1]];
+		const s2 = curve[data[i + 2]];
+		const l = LUMA[0] * s0 + LUMA[1] * s1 + LUMA[2] * s2;
+		data[i] = 255 * (b0 + clamp(l + (s0 - l) * sat) * gain) + (Math.random() - 0.5) * amp;
+		data[i + 1] = 255 * (b1 + clamp(l + (s1 - l) * sat) * gain) + (Math.random() - 0.5) * amp;
+		data[i + 2] = 255 * (b2 + clamp(l + (s2 - l) * sat) * gain) + (Math.random() - 0.5) * amp;
+	}
+}

@@ -1,22 +1,23 @@
 <script lang="ts">
-	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
 	import type { NotationEditor } from '$lib/utils/notationEditor';
 	import RotationCoverage from './RotationCoverage.svelte';
-	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+	import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar } from '$lib/utils/getAvatar';
-	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
+	import { constellations, ownership, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
-	import { artifactImagePath } from '$lib/data/artifactLookup';
+	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
+	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
+	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip, { type TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
-	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
+	import { benchBand, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { below, narrowForm } from '$lib/media.svelte';
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
@@ -84,6 +85,7 @@
 		renderTimelinePng,
 		deliverPng,
 		type TimelineSnapshot,
+		type ExportBenchCard,
 		type ExportBar
 	} from '$lib/utils/timelineExport';
 	import type { TimelineBar } from '$lib/utils/notationParser';
@@ -184,20 +186,6 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	/** The CONVERGED SLOT-CARD width — the thing the two tools actually share,
-	 *  and the width the ribbon is built around (RIBBON_W = this + chrome).
-	 *
-	 *  The planner reads it for ONE thing now: the PNG export, which draws its
-	 *  own label column with no strip standing over it. The on-screen gutter
-	 *  retired with the abutting round — the frame starts at the ribbon's right
-	 *  edge, so the tracks begin at the frame's own padding box.
-	 *
-	 *  ↻ 2026-08-12: this was a hand-copied `160` kept in step with
-	 *  BENCH_CARD_W by a comment saying "move together". It imports the constant
-	 *  now — the bench-card round moved that number and one of the two literals
-	 *  would silently have stayed behind, taking the PNG's whole left column
-	 *  with it. */
-	const LABEL_W = BENCH_CARD_W;
 	/** The chart frame's horizontal padding — JS-side because .rp-frame reads it
 	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
@@ -1589,6 +1577,40 @@
 	// the fallback.
 	// ---------------------------------------------------------------------------
 
+	/** One slot's bench card for the export — what SlotPortrait shows, read
+	 *  from the same layer-resolved con and loadout the bench reads. */
+	function benchCard(
+		char: (typeof slotCharacters)[number],
+		slotId: string,
+		ownedConOf: (id: string) => number | null | undefined
+	): ExportBenchCard {
+		const con = char ? effectiveConLevel(char.id) : 0;
+		const owned = char ? ownedConOf(char.id) : undefined;
+		const entry: LoadoutEntry = char ? effectiveLoadoutEntry(char.id) : {};
+		const artifactSet = !!entry.artifactSetId && !!getArtifactSetById(entry.artifactSetId);
+		const real = char != null && char.id !== 'blank';
+		return {
+			displayName: real ? slotLabel(char) : null,
+			element: char?.element,
+			sideArt: getAvatar(
+				real ? slotId : 'blank',
+				$siteSettings.useNewOutfits,
+				'side',
+				$siteSettings.travelerVariant
+			),
+			conLevel: con,
+			conShort: real && owned !== undefined && (owned === null || owned < con),
+			uncurated: real && getCharacterIndexEntry(char.id)?.curated === false,
+			artifactIcon: artifactSet ? artifactImagePath(entry.artifactSetId!) : GENERIC_ARTIFACT_ICON,
+			artifactSet,
+			weaponIcon: entry.weaponId
+				? weaponImagePath(entry.weaponId)
+				: weaponTypeIcon(real ? getCharacterIndexEntry(char.id)?.weapon : undefined),
+			weaponSet: !!entry.weaponId,
+			refinement: entry.weaponRefinement ?? 1
+		};
+	}
+
 	function buildSnapshot(): TimelineSnapshot {
 		const laneStride = AUX_LANE_BAR_STRIDE;
 		// Lanes open directly under the 4th track group (the ribbon-clearance
@@ -1597,10 +1619,30 @@
 		const slotsBottom = slotTopOffsets[3] + slotHeights[3];
 		const nbVisible = showNbLane;
 		const moonVisible = showMoonsignLane;
-		const teamNames = slotCharacters
-			.filter((c): c is NonNullable<typeof c> => c != null)
-			.map((c) => c.displayName);
-		const total = secondsLabel(rotation.totalDuration);
+		// ⚓ The footer says how the reader is timing it, in words (Nate 2026-10-16:
+		// the export is what the reader has set, no checkboxes) — so a padded
+		// rotation is never taken for a frame-perfect one.
+		const ping = `${$siteSettings.swapPing} ms swap ping`;
+		const pad = `${$siteSettings.humanTimingPadFrames}-frame padding`;
+		const timingNote = !$siteSettings.humanTiming
+			? `Frame-perfect · ${ping}`
+			: $siteSettings.humanTimingMode === 'animations'
+				? `Human timing · full animations · ${ping}`
+				: $siteSettings.humanTimingMode === 'both'
+					? `Human timing · full animations and ${pad} · ${ping}`
+					: `Human timing · ${pad} · ${ping}`;
+		// The tab's own name, unless it is still a default one.
+		const label = rotationTabs.tabs.find((t) => t.id === tabId)?.label ?? '';
+		const tabLabel = /^(Tab \d+|Shared rotation|Imported team)$/.test(label) ? null : label || null;
+		// The bench card's roster comparison (BenchBand's `ownedConOf`): unknown
+		// while nothing is marked owned, null when this character isn't.
+		const rosterHasContent = Object.values($ownership).includes('owned');
+		const ownedConOf = (id: string): number | null | undefined =>
+			!rosterHasContent || id === 'blank'
+				? undefined
+				: $ownership[id] === 'owned'
+					? ($constellations[id] ?? 0)
+					: null;
 		const withSummon = (
 			char: (typeof slotCharacters)[number],
 			source: 'skill' | 'burst',
@@ -1613,10 +1655,12 @@
 			}));
 
 		return {
-			title: teamNames.length > 0 ? `${teamNames.join(' · ')}  —  ${total}s` : 'critcalc rotation',
+			tabLabel,
 			notation,
+			notationTints: notationTints(rotation),
+			timingNote,
+			endFrame: rotation.totalDuration,
 			scale,
-			labelW: LABEL_W,
 			rulerH: RULER_H,
 			totalWidth,
 			contentH,
@@ -1624,13 +1668,9 @@
 			slots: characterSlots.map((slotId, i) => {
 				const char = slotCharacters[i];
 				return {
-					// slotLabel: the export's label column mirrors the on-screen
-					// portrait area (travelers read "Traveler")
-					displayName: char ? slotLabel(char) : null,
 					element: char?.element,
 					// No-frame-map (uncurated, non-Blank) → dire N/C/P treatment in export.
 					isApprox: char != null && !isCurated(char) && char.id !== 'blank',
-					consLevel: char ? effectiveConLevel(char.id) : 0,
 					blockH: slotHeights[i],
 					qRowTop: qRowTopForSlot(i),
 					activeRowTop: activeRowOffsetForSlot(i),
@@ -1647,15 +1687,7 @@
 					summonRows: summonSubrows.filter((r) => r.slotIdx === i),
 					procRows: weaponProcRows.filter((r) => r.characterId === char?.id),
 					receivedRows: charReceivedBuffRows.filter((r) => r.characterId === char?.id),
-					equipIcons: char
-						? (() => {
-								const entry = effectiveLoadoutEntry(char.id);
-								const icons: string[] = [];
-								if (entry.artifactSetId) icons.push(artifactImagePath(entry.artifactSetId));
-								if (entry.weaponId) icons.push(weaponImagePath(entry.weaponId));
-								return icons;
-							})()
-						: []
+					bench: benchCard(char, characterSlots[i], ownedConOf)
 				};
 			}),
 			slotTops: slotTopOffsets,
@@ -1700,15 +1732,7 @@
 			auraLabelMinSpan: AURA_LABEL_MIN_SPAN,
 			auraLabelMinGap: AURA_LABEL_MIN_GAP,
 			auraLabelMinRow: AURA_LABEL_MIN_ROW,
-			statIconFor: (stat) => BUFF_STAT_ICON[stat as Stat],
-			avatarFor: (i) =>
-				getAvatar(
-					characterSlots[i],
-					$siteSettings.useNewOutfits,
-					'side',
-					$siteSettings.travelerVariant
-				),
-			elementGlyphFor: (el) => elementIcon(el)
+			statIconFor: (stat) => BUFF_STAT_ICON[stat as Stat]
 		};
 	}
 
