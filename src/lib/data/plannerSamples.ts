@@ -139,6 +139,34 @@ export const PLANNER_SAMPLES: readonly PlannerSample[] = [
 		source: KQM('q/nahida-quickguide/')
 	},
 	{
+		id: 'sukokomon',
+		name: 'Sukokomon',
+		notation:
+			'Fischl E > Kokomi E > Xiangling ED > Sucrose N1 E > Xiangling Q > Kokomi Q N3C N3D N3C > Fischl Q > Xiangling ED > Sucrose N1 E N2 Q N3',
+		cons: { fischl: 6, xiangling: 6, sucrose: 6 },
+		loadout: { sucrose: { artifactSetId: 'viridescent_venerer' } },
+		source: KQM('q/kokomi-quickguide/')
+	},
+	{
+		id: 'kinich-burning',
+		name: 'Kinich Burning',
+		notation:
+			'Emilie E > Bennett Q E > Xiangling Q E > Kinich E Q 3[N2E] N1E > Bennett E > Xiangling N2',
+		cons: { bennett: 6, xiangling: 6 },
+		loadout: { bennett: { artifactSetId: 'noblesse_oblige' } },
+		// ⚓ Nate 2026-10-17: KQM's `shE N2E Q E 3[N2E]` loses its last cannon
+		// to Human timing (the stance ends first); this one fits either way.
+		source: KQM('q/kinich-quickguide/'),
+		adapted: true
+	},
+	{
+		id: 'cyno-aggravate',
+		name: 'Cyno Aggravate',
+		notation: 'Fischl E > Nahida E Q > Baizhu EQ > Fischl Q > Cyno E N1 Q N2E 3[N5 N2E]',
+		cons: { fischl: 6 },
+		source: KQM('q/cyno-quickguide/')
+	},
+	{
 		id: 'hu-tao-double-hydro',
 		name: 'Hu Tao Double Hydro',
 		notation: 'Xingqiu Q E > Yelan E Q > Zhongli hE > Hu Tao E 7[N2CJ] Q',
