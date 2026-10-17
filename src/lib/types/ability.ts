@@ -2408,6 +2408,8 @@ export type NormalAbility = AbilityCommon & {
 	nightsoulCost?: { perSwing?: number; perDash?: number };
 	/** The SPINNING Charged Attack and its finisher — see `ChargeSpin`. */
 	chargeSpin?: ChargeSpin;
+	/** The CHANNELLED Charged Attack and its charge-up — see `ChargeChannel`. */
+	chargeChannel?: ChargeChannel;
 	/** A dash in this form lands a hit (Mavuika's Flamestrider Sprint: Pyro 1U
 	 *  at its travel frame, gcsim `dash.go`). Applies the ability's element on
 	 *  its `icdCounter`. */
@@ -2850,6 +2852,45 @@ export type ElementalApplication = {
  * closes one of those). A cast with no open stance does nothing.
  */
 /**
+ * ⚓ A CHARGED ATTACK THAT CHANNELS (Neuvillette's Equitable Judgment, 2026-10-17;
+ * gcsim `neuvillette/charge.go`). A `C` is ONE full channel: a windup, a
+ * charge-up shortened by the Sourcewater Droplets absorbed at its start, then a
+ * beam of hits, then the lag into the next action.
+ *
+ * ⚓ THE DROPLETS ARE A COUNT, NOT A FIELD (⚓ Nate, 2026-10-17). gcsim places
+ * them as gadgets and picks up the ones in range at random; we keep how many
+ * stand — each cast's `spawnsDroplets` adds them, each lives `dropletLife`
+ * frames — and a channel takes up to three, the oldest first. Position is
+ * dropped, as everywhere else. In the loop the kit is played in (E, Q, then
+ * beams) gcsim measures three absorbed every time, and the count says so; a
+ * beam with none left charges up in full.
+ *
+ * - `windup` — frames before the charge starts out of a dash, a jump, a swap or
+ *   a wait; after a cast, a Normal Attack or another Charged Attack it is
+ *   rolled into that action (gcsim's `CurrentState` test).
+ * - `absorbAt` — frames after the windup when the droplets are taken.
+ * - `chargeUp` — the charge-up, indexed by droplets absorbed (0–3).
+ * - `hits` — each hit's frame from the beam's start; the LAST is the beam's
+ *   end (the closing wave).
+ * - `endLag` — frames from the beam's end to the next action.
+ * - `dropletLife` — how long a droplet stands, frames.
+ *
+ * The beam's hits run on the standard ICD (gcsim `ICDTagExtraAttack`) — ⚠️ not
+ * the catalyst Charged Attack rule, which is gcsim's short attack.
+ */
+export type ChargeChannel = {
+	windup: number;
+	absorbAt: number;
+	chargeUp: [number, number, number, number];
+	hits: number[];
+	endLag: FrameMap;
+	dropletLife: number;
+};
+
+/** Droplets a cast drops: `count` of them, `at` frames from its start. */
+export type DropletSpawn = { at: number; count: number };
+
+/**
  * ⚓ A CHARGED ATTACK THAT SPINS (Mavuika's Flamestrider, bike Charged Attack
  * round, 2026-10-16; gcsim `charge.go`, timings measured with its CLI —
  * `docs/mavuika-nightsoul-round-2026-10-16.md` §7). Notation, after Prydwen and
@@ -2983,6 +3024,9 @@ type SkillCommonFields = AbilityCommon & {
 	endsStance?: EndsStance;
 	/** What this cast does to the caster's Nightsoul pool — see `NightsoulCastSpec`. */
 	nightsoul?: NightsoulCastSpec;
+	/** Sourcewater Droplets this cast drops, for its caster's channelled
+	 *  Charged Attack to absorb — see `ChargeChannel`. */
+	spawnsDroplets?: DropletSpawn[];
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
 	/** Every charge begins RECHARGING the moment the ability becomes available,
@@ -3207,6 +3251,9 @@ type BurstCommonFields = AbilityCommon & {
 	endsStance?: EndsStance;
 	/** What this cast does to the caster's Nightsoul pool — see `NightsoulCastSpec`. */
 	nightsoul?: NightsoulCastSpec;
+	/** Sourcewater Droplets this cast drops, for its caster's channelled
+	 *  Charged Attack to absorb — see `ChargeChannel`. */
+	spawnsDroplets?: DropletSpawn[];
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	/** Whether this ability's own damage snapshots the caster's stats at cast
