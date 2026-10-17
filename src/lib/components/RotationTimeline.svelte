@@ -33,6 +33,7 @@
 		shiftHue,
 		castFill,
 		desaturate,
+		tickInk,
 		type ElementPalette
 	} from '$lib/utils/elementColors';
 	import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
@@ -3243,8 +3244,8 @@
 														class="rp-summon-tick"
 														style:left="{tg.left}px"
 														style:background={tick.absorbed && marks.absorbed
-															? pal(marks.absorbed.element).hi
-															: p.hi}
+															? tickInk(marks.absorbed.element)
+															: tickInk(char?.element)}
 														aria-hidden="true"
 													></div>
 												{/each}
@@ -5314,7 +5315,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		width: 6px;
+		/* LUNAR_GLEAM_W — whole-pixel placement, so the odd width puts the core
+		   ½px right of the instant (sub-pixel law). */
+		width: 7px;
 		margin-left: -3px;
 		-webkit-mask-image: linear-gradient(#000, transparent);
 		mask-image: linear-gradient(#000, transparent);

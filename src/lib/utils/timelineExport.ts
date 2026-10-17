@@ -55,7 +55,7 @@ import {
 	LUNAR_GLEAM_W,
 	summonMarks
 } from '$lib/timeline/summonMarks';
-import { elementPalette, shiftHue, desaturate } from '$lib/utils/elementColors';
+import { elementPalette, shiftHue, desaturate, tickInk } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
 import {
 	UPTIME_DIM_MIX,
@@ -973,9 +973,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// Bottom-anchored tick stubs — mirror .rp-summon-tick (7px, opaque
 					// since 2026-09-18): one per frame, the element's hi past the fade.
 					const th = 7;
-					const absorbedHi = marks.absorbed ? elementPalette(marks.absorbed.element).hi : p.hi;
+					const ownInk = tickInk(slot.element);
+					const absorbedInk = marks.absorbed ? tickInk(marks.absorbed.element) : ownInk;
 					for (const tick of marks.ticks) {
-						ctx!.fillStyle = tick.absorbed ? absorbedHi : p.hi;
+						ctx!.fillStyle = tick.absorbed ? absorbedInk : ownInk;
 						ctx!.fillRect(x(tick.time), rowTop + snap.summonRowH - th, 1, th);
 					}
 					// Threshold fires — mirror .rp-summon-fire: the falling moonbeam
@@ -983,7 +984,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// at the foot. Canvas has no mask, so the fall is drawn as thin
 					// rows at a falling alpha.
 					for (const fire of sbar.fires ?? []) {
-						const gx = x(fire.time) - LUNAR_GLEAM_W / 2;
+						const gx = x(fire.time) - Math.floor(LUNAR_GLEAM_W / 2);
 						const across = ctx!.createLinearGradient(gx, 0, gx + LUNAR_GLEAM_W, 0);
 						for (const [at, c] of LUNAR_GLEAM_STOPS) across.addColorStop(at, c);
 						ctx!.fillStyle = across;
