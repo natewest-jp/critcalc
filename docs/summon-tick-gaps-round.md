@@ -1,6 +1,6 @@
 # Summon tick gaps — Linnea, Faruzan, and the rest of the class
 
-**Status: IN PROGRESS. ⚓ Nate's calls are in §6; Faruzan F1 is built (§7) and so is Lumi (§9, 2026-10-17); Nilou is not.**
+**Status: IN PROGRESS. ⚓ Nate's calls are in §6; Faruzan F1 is built (§7), and so are Lumi (§9) and Nilou's aura (§10), 2026-10-17.**
 
 The question: now that hits and auras are simulated, a summon with no tick series
 contributes nothing to the gauge, the hit stream or the reaction markers — it is a
@@ -546,3 +546,17 @@ Linnea's off-field damage (fixture updated). The coverage page reads her E as li
    round (§6.8).
 5. C1/C2/C4's Moondrift Harmony triggers and C2's Heavy-triggered Harmony stay
    unauthored — Lumi's Lunar-Crystallizes now exist for them to hear.
+
+## 10. ✅ Built: Nilou's Tranquility Aura (2026-10-17, small-fix batch)
+
+E1b as `summonTick.appliesOnly` (⚠️ not `nonHitting` — that key is taken, and the
+orphaned-schema guard matches by name): a `damage` tick with `scaling: 0` that
+the live chain OFFERS to the gauge and nothing else reads — no hit record, no
+`onHit` stream, no stack dispatch, no marker, no Team Builder off-field-damage
+claim, exempt from the outlier audit's zero-scaling row. Lint D.53.
+
+Data: a 0.5s series from the aura's spawn + 1f, `icdGate {timer: 114}` (gcsim
+`ICDGroupNilou`, first hit only) → one application every 120f; `tickCap` 25 /
+37 at C1. ⚠️ The cap is the LIVE game's: Nate's log has ten applications over
+18s at C1, the last at the boundary, where gcsim's chain stops at nine. C0's
+seven is the same rule, unmeasured. Test: `summonTicks.test.ts`.

@@ -405,11 +405,16 @@ export function summonTickSeries(
 	return out;
 }
 
+/** A tick that applies its element and lands no hit (`summonTick.appliesOnly`). */
+export const appliesOnly = (effect: Effect): boolean =>
+	effect.trigger.type === 'summonTick' && effect.trigger.appliesOnly === true;
+
 /** ⚓ A tick the summon lane MARKS: one that hits or heals. A tick that only
  *  moves a stack count (stepped stacks round, 2026-09-27 — Odette's A1 ticker)
  *  is a clock, not an event on the target, and a marker every second would
  *  bury the dance moves the lane exists to show. */
 export function isMarkedTickEffect(effect: Effect): boolean {
+	if (appliesOnly(effect)) return false;
 	return effect.type === 'damage' || effect.type === 'heal';
 }
 
@@ -453,7 +458,7 @@ export function computeSummonDamageTicks(
 		spawnAt,
 		endAt,
 		cLevel,
-		(eff) => eff.type === 'damage',
+		(eff) => eff.type === 'damage' && !appliesOnly(eff),
 		context,
 		undefined,
 		fieldOpenAt

@@ -1081,6 +1081,17 @@ export type Trigger =
 			 * already reads.
 			 */
 			tickCapScaling?: { conditions: Condition; ticks: number };
+			/**
+			 * ⚓ THE TICK APPLIES ITS ELEMENT AND IS NOT A HIT (2026-10-17, the
+			 * round doc's E1b) — Nilou's Tranquility Aura: Hydro every 0.5s behind
+			 * its own window, and gcsim's `AttackTagNone` with no multiplier; Nate's
+			 * combat log shows the Blooms it causes and NO damage line. Offered to
+			 * the gauge; ⛔ no hit record, no `onHit` stream, no marker (a marker
+			 * means a hit or a heal) and no off-field-damage claim in the Team
+			 * Builder. The effect stays `damage` with `scaling: 0` — a KNOWN zero.
+			 * ⚠️ The key is unique on purpose (`nonHitting` is taken).
+			 */
+			appliesOnly?: true;
 	  }
 	/**
 	 * ⚓⚓ ONE STRIKE OF A SEQUENCED SUMMON (Lumi round, 2026-10-17) — a summon

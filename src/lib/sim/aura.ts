@@ -1232,6 +1232,9 @@ export function scheduleSummonTicks(
 					? [...castHitTimes]
 					: [];
 			const asksField = mentionsPolestarField(series.effect.conditions);
+			/** `summonTick.appliesOnly` — offered to the gauge, never a hit. */
+			const appliesOnlyTick =
+				series.effect.trigger.type === 'summonTick' && series.effect.trigger.appliesOnly === true;
 
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
@@ -1300,6 +1303,14 @@ export function scheduleSummonTicks(
 						// difference between Fischl's A4 in game and in gcsim.
 						viaEntity: true
 					});
+				}
+				// ⚓ …unless it only APPLIES (Nilou's aura): no hit record, no `onHit`
+				// stream, no stack dispatch — and the chain runs on regardless.
+				if (appliesOnlyTick) {
+					const next = at + series.interval;
+					if (!capReached() && next < liveUntil())
+						clock.schedule(next, Band.TICK, () => fire(next));
+					return;
 				}
 				// ⚓ THE TICK IS DAMAGE, whether or not it applied. An ICD-suppressed
 				// tick still HIT, and a damage proc listens for the hit — this is the

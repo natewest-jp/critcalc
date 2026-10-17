@@ -385,3 +385,38 @@ describe("Lumi's strike sequence (Lumi round, 2026-10-17)", () => {
 		expect(lumi[0].end).toBeGreaterThan(lumi[0].start);
 	});
 });
+
+describe("Nilou's Tranquility Aura — applies, never hits (2026-10-17)", () => {
+	// ⚓ Nate's live log (C1, a Dendro aura): Hydro every 2.0s from the Water
+	// Wheel, TEN applications over 18s, and no damage line. gcsim: a 30f attempt
+	// behind a 114f first-only window.
+	const run = (c: number) => {
+		const r = parseNotation(
+			'Nahida E > Nilou E E E E ~20s',
+			lookup,
+			8,
+			{ nilou: c },
+			{},
+			undefined
+		);
+		const ww = r.events.find(
+			(e) =>
+				e.kind === 'cast' &&
+				(e as { abilityId?: string }).abilityId === 'nilou__skill__whirling_steps_3'
+		)!;
+		const aura = r.windows.find((w) => w.kind === 'summon' && w.label === 'Tranquility Aura')!;
+		const apps = r.applications
+			.filter((a) => a.characterId === 'nilou' && a.time >= ww.time + 41 && a.time !== ww.time + 43)
+			.map((a) => a.time - ww.time);
+		return { apps, aura };
+	};
+
+	it('every 120f from the aura, ten at C1 and seven at C0', () => {
+		expect(run(1).apps).toEqual(Array.from({ length: 10 }, (_, k) => 41 + 120 * k));
+		expect(run(0).apps).toEqual(Array.from({ length: 7 }, (_, k) => 41 + 120 * k));
+	});
+
+	it('draws no markers — it lands no hit', () => {
+		expect((run(1).aura as { ticks?: number[] }).ticks).toBeUndefined();
+	});
+});

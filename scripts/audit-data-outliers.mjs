@@ -169,7 +169,8 @@ for (const file of files) {
 			const s = typeof eff.scaling === 'number' ? eff.scaling : null;
 			if (s !== null) {
 				const hasFlat = typeof eff.flat === 'number' || eff.flatScaling;
-				if (s === 0 && !hasFlat)
+				// A tick that only applies (`summonTick.appliesOnly`) is a KNOWN zero.
+				if (s === 0 && !hasFlat && !eff.trigger?.appliesOnly)
 					add(
 						cid,
 						'MEDIUM',
