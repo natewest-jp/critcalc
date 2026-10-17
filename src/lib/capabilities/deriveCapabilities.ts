@@ -625,7 +625,8 @@ export function summaryInTeam(
 function normalizeTarget(t: EffectTarget | EffectTarget[]): NormalizedTarget {
 	const arr = Array.isArray(t) ? t : [t];
 	if (arr.includes('team') || arr.includes('teamExcludingSelf')) return 'team';
-	if (arr.includes('active') || arr.includes('next')) return 'active';
+	// A reaction's TRIGGERER is, in practice, the character on field.
+	if (arr.includes('active') || arr.includes('next') || arr.includes('reactor')) return 'active';
 	if (arr.includes('self')) return 'self';
 	return 'enemy';
 }

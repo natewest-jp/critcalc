@@ -686,7 +686,11 @@ export type Trigger =
 			 *  after an Oz application. The sim tags an entity-delivered
 			 *  application so this source can refuse it. See
 			 *  docs/mark-triggered-damage-round.md §1. */
-			source?: 'self' | 'team' | 'active';
+			/** ⚓ `'others'` — any party member's reaction BUT the holder's own
+			 *  (Prune's Secret Rite: only a character carrying Tolling Rally counts,
+			 *  and Tolling Rally never goes to her). Read by the buff passes only —
+			 *  lint holds it to buff and RES-shred effects. */
+			source?: 'self' | 'team' | 'active' | 'others';
 			/**
 			 * ⚓ Elemental-application gating for THIS proc's own hits — the same
 			 * key, the same vocabulary and the same default as `summonTick.icdGate`
@@ -1454,7 +1458,18 @@ export type Summon = {
 // ---------------------------------------------------------------------------
 
 /** Who an effect applies to. Array form expresses compound targets (e.g. ["self", "active"]). */
-export type EffectTarget = 'self' | 'team' | 'teamExcludingSelf' | 'active' | 'next' | 'enemy';
+/** `'reactor'` — the character whose hit TRIGGERED the reaction (Prune's
+ *  Secret Rite: "the triggering character's ATK"), valid only on an
+ *  `onReaction` trigger (lint). Not `'active'`: that follows the field and is
+ *  cut at every swap, where this stays on the one who reacted. */
+export type EffectTarget =
+	| 'self'
+	| 'team'
+	| 'teamExcludingSelf'
+	| 'active'
+	| 'next'
+	| 'enemy'
+	| 'reactor';
 
 /** Base effect payload shared by all effect kinds. */
 export type EffectBase = {
