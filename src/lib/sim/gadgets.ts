@@ -114,13 +114,31 @@ const HARMONY_ICD_F = 37;
  * gcsim moves the construct's `expiry` rather than replacing the construct.
  */
 function deriveMoondrifts(events: readonly ReactionEvent[]): GadgetWindow[] {
-	const out: GadgetWindow[] = [];
-	let live: GadgetWindow[] = [];
+	return moondriftLives(
+		reactionsOf(events, 'lunarCrystallize')
+			.map((e) => e.time)
+			.sort((a, b) => a - b)
+	).map(
+		(l): GadgetWindow => ({
+			kind: 'gadget',
+			gadget: 'moondrift',
+			label: 'Moondrift',
+			start: l.start,
+			end: l.end
+		})
+	);
+}
+
+/** The construct lives a field of Moondrifts went through, over Lunar-Crystallize
+ *  instants in ASCENDING order — the rule `deriveMoondrifts` draws and
+ *  `moondriftStandsAt` asks, ⛔ never a second copy of it. */
+function moondriftLives(times: readonly number[]): { start: number; end: number }[] {
+	const out: { start: number; end: number }[] = [];
+	let live: { start: number; end: number }[] = [];
 	let count = 0;
 	let harmonyReadyAt = -Infinity;
 
-	for (const ev of reactionsOf(events, 'lunarCrystallize').sort((a, b) => a.time - b.time)) {
-		const t = ev.time;
+	for (const t of times) {
 		live = live.filter((w) => w.end > t);
 		// ⚠️ The counter increments BEFORE the top-up test, as in gcsim — so the
 		// first reaction is already counted when the spawn branch runs.
@@ -128,13 +146,7 @@ function deriveMoondrifts(events: readonly ReactionEvent[]): GadgetWindow[] {
 
 		if (live.length < MOONDRIFT_MAX) {
 			for (let i = live.length; i < MOONDRIFT_MAX; i++) {
-				const w: GadgetWindow = {
-					kind: 'gadget',
-					gadget: 'moondrift',
-					label: 'Moondrift',
-					start: t,
-					end: t + MOONDRIFT_LIFETIME_F
-				};
+				const w = { start: t, end: t + MOONDRIFT_LIFETIME_F };
 				out.push(w);
 				live.push(w);
 			}
@@ -145,6 +157,23 @@ function deriveMoondrifts(events: readonly ReactionEvent[]): GadgetWindow[] {
 		}
 	}
 	return out;
+}
+
+/**
+ * ⚓ DOES A MOONDRIFT STAND AT `time`? — asked mid-parse by Lumi's strike
+ * sequence (Lumi round, 2026-10-17), over `ctx.lunarCrystallizeTimes` as the
+ * reactions have fired so far.
+ *
+ * ⚓ INCLUSIVE of a reaction AT `time`, and that is the mechanic, not a
+ * tolerance: Lumi's opening Pound crystallizes, its own Moondrifts stand by the
+ * time she picks her next strike, and the Heavy follows (the live game's
+ * Geo-first rule). ⚓ The answer at `time` can never be changed by a LATER
+ * reaction — a refresh only moves the end of a drift live at the later
+ * instant — so the live chain and the finished stream agree by construction.
+ */
+export function moondriftStandsAt(lcrTimes: readonly number[], time: number): boolean {
+	const upTo = lcrTimes.filter((t) => t <= time);
+	return moondriftLives(upTo).some((l) => l.start <= time && time < l.end);
 }
 
 /**

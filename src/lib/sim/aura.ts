@@ -34,7 +34,8 @@ import type {
 	Element,
 	ElementalApplication,
 	IcdWindow,
-	Reaction
+	Reaction,
+	Summon
 } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { IcdClock, IcdParams } from '$lib/utils/icd';
@@ -73,6 +74,7 @@ import {
 	type ConditionContext
 } from './conditions';
 import { polestarFieldOpenAt } from './fields';
+import { moondriftStandsAt } from './gadgets';
 import { dispatchOnReactionExtensions } from './extensions';
 import {
 	applyRotationLifetimeExpiry,
@@ -318,10 +320,12 @@ function emitReaction(
 	reaction: Reaction,
 	time: number
 ): void {
-	if (reaction === 'stellarConduct') {
+	if (reaction === 'stellarConduct' || reaction === 'lunarCrystallize') {
 		// Ascending by construction (feed order is time order); the guard keeps
-		// `polestarFieldOpenAt`'s binary search honest if that ever slips.
-		const times = ctx.stellarConductTimes;
+		// `polestarFieldOpenAt`'s binary search honest if that ever slips, and
+		// `moondriftStandsAt` reads its list as ascending too.
+		const times =
+			reaction === 'stellarConduct' ? ctx.stellarConductTimes : ctx.lunarCrystallizeTimes;
 		if (times.length === 0 || times[times.length - 1] <= time) times.push(time);
 		else
 			times.splice(
@@ -1342,6 +1346,15 @@ export function scheduleSummonTicks(
 			if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
 		}
 
+		if (summon.strikeSequence) {
+			scheduleStrikeSequence(ctx, clock, char, kind, summon, spawnAt, liveAt, endNow, {
+				preStates,
+				constellation,
+				chainIdx,
+				stacks
+			});
+		}
+
 		// ⚓ STACK-MOVING TICKS (stepped stacks round, 2026-09-27) — a summon whose
 		// tick moves a count rather than dealing damage (Odette's Dance Double
 		// hands Marvelous Splendor to the party once a second). One chain per
@@ -1385,6 +1398,153 @@ export function scheduleSummonTicks(
 			const first = spawnAt + firstDelay;
 			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first));
 		}
+	});
+}
+
+type StrikeStep = Extract<Effect, { type: 'damage' }> & {
+	trigger: Extract<Effect['trigger'], { type: 'summonStrike' }>;
+};
+
+/**
+ * ⚓⚓ A SEQUENCED SUMMON'S STRIKES, decided one at a time on the live clock and
+ * PUBLISHED (Lumi round, 2026-10-17; `docs/summon-tick-gaps-round.md` §1.5, §6.6).
+ *
+ * Each strike lands, THEN picks the next step and its gap — so the decision sees
+ * the strike's own first landing (a Geo-first Pound's Moondrifts summon the Heavy
+ * after it). The step after is refused when it needs a Moondrift and none
+ * stands; the fallback strikes instead, on `fallbackGap`. The ENTRY is decided at
+ * the spawn under the same rule, the way gcsim's summon task does.
+ *
+ * ⚓ It shares the fixed series' liveness pair (`liveAt` / `endNow`), so a
+ * recast, a Q re-summon or a swap-out ends it through the one `summonEndAt` and
+ * the generation stamp — ⛔ nothing cancels a task.
+ *
+ * ⚓ ONE standard-ICD counter per summon LABEL across every landing of every
+ * step (the live combat log: both hits of every Pound, 8 of 11 pairs applying
+ * at the bare 144f gap), so a Q-summoned Lumi carries the E one's counter.
+ * ⚠️ The Pound's second hit is its own landing and its own hit record — the one
+ * thing `summonTick`'s one-hit-per-tick could not say.
+ */
+function scheduleStrikeSequence(
+	ctx: SimContext,
+	clock: Clock,
+	char: CharacterData,
+	kind: 'skill' | 'burst',
+	summon: Summon,
+	spawnAt: number,
+	liveAt: (at: number) => boolean,
+	endNow: () => number,
+	offerCtx: Pick<Offer, 'preStates' | 'constellation' | 'chainIdx' | 'stacks'>
+): void {
+	const seq = summon.strikeSequence;
+	const steps = (summon.effects ?? []).filter(
+		(e): e is StrikeStep => e.type === 'damage' && e.trigger.type === 'summonStrike'
+	);
+	if (!seq || steps.length === 0) return;
+	const tickKey = `${char.id}::${summon.label}::${kind}::${spawnAt}`;
+	const icdKey = `${char.id}:summon:${summon.label}:strikes`;
+	const refused = (step: number, at: number): boolean =>
+		steps[step].trigger.onlyWithMoondrift === true &&
+		!moondriftStandsAt(ctx.lunarCrystallizeTimes, at);
+
+	/** One landing: the gauge (when it applies and the counter lets it), then the
+	 *  hit — stacks, procs — exactly as a fixed series' tick does. */
+	const land = (at: number, element: Element | undefined, applies: boolean): void => {
+		if (applies && element !== undefined) {
+			let icd = ctx.icdClocks.get(icdKey);
+			if (!icd) {
+				icd = createIcdClock();
+				ctx.icdClocks.set(icdKey, icd);
+			}
+			if (icdApplies(icd, at, STANDARD_ICD_FRAMES).applies) {
+				offerApplication(ctx, clock, {
+					time: at,
+					characterId: char.id,
+					element,
+					units: DEFAULT_UNITS,
+					provisionalUnits: false,
+					castKind: kind,
+					...offerCtx,
+					viaEntity: true
+				});
+			}
+		}
+		const hit: HitEvent = {
+			characterId: char.id,
+			time: at,
+			abilityType: kind,
+			element,
+			damageTag: kind,
+			abilityName: summon.label,
+			viaEntity: true,
+			sourceEventId: -1
+		};
+		if (ctx.team.teamHasOnHitStackEffects) {
+			const snapshot = dispatchEntityHitStacks(ctx, clock, char, hit);
+			if (snapshot) ctx.tickStacks.set(`${char.id}::${summon.label}::${at}`, snapshot);
+		}
+		notifyDamage(ctx, clock, hit);
+		const list = ctx.strikeLandings.get(tickKey);
+		if (list) list.push({ time: at, element });
+		else ctx.strikeLandings.set(tickKey, [{ time: at, element }]);
+	};
+
+	const strike = (at: number, step: number): void => {
+		if (!liveAt(at) || at >= endNow()) return;
+		const marks = ctx.stateGatedTicks.get(tickKey);
+		if (marks) marks.push(at);
+		else ctx.stateGatedTicks.set(tickKey, [at]);
+
+		const eff = steps[step];
+		// Absent `application` = one landing in the effect's element, the way a
+		// fixed tick lands; `[]` = one hit that applies nothing.
+		const landings =
+			eff.application === undefined
+				? [{ frame: 0, element: eff.element, applies: true }]
+				: eff.application.length === 0
+					? [{ frame: 0, element: eff.element, applies: false }]
+					: eff.application.map((a) => ({
+							frame: a.frame,
+							element: resolveElementRef(a.element, tickConditionCtx(ctx, char.id)),
+							applies: true
+						}));
+		for (const l of landings) {
+			if (l.frame === 0) land(at, l.element, l.applies);
+			else {
+				const t = at + l.frame;
+				clock.schedule(t, Band.LAND, () => {
+					// gcsim's second Pound hit checks the summon is still the same one.
+					if (liveAt(t) && t < endNow()) land(t, l.element, l.applies);
+				});
+			}
+		}
+
+		// ⚓⚓ THE NEXT STEP IS PICKED AFTER THE STRIKE'S LAST LANDING, its gap still
+		// counted from the strike. The live log decides it: the Pound at 17.353s
+		// (E run) is followed by a Heavy, and the only Moondrifts standing then are
+		// the ones its SECOND hit's Lunar-Crystallize dropped at 17.684 — the field
+		// refreshed at 7.363 had lapsed at 16.363. Queued after the landings at the
+		// same frame and band, so it sees what they caused.
+		const decideAt = at + Math.max(...landings.map((l) => l.frame));
+		const decide = (): void => {
+			const following = (step + 1) % steps.length;
+			const [nextStep, gap] = refused(following, decideAt)
+				? [seq.fallbackStep, seq.fallbackGap]
+				: [following, eff.trigger.framesToNext];
+			const next = at + gap;
+			if (liveAt(next) && next < endNow())
+				clock.schedule(next, Band.TICK, () => strike(next, nextStep));
+		};
+		if (decideAt === at) decide();
+		else clock.schedule(decideAt, Band.LAND, decide);
+	};
+
+	// ⚓ The entry is decided AT THE SPAWN, not at the cast that queued it — a
+	// teammate's Lunar-Crystallize in between counts.
+	clock.schedule(spawnAt, Band.TICK, () => {
+		const entry = refused(0, spawnAt) ? seq.fallbackStep : 0;
+		const first = spawnAt + seq.firstStrikeAt;
+		if (first < endNow()) clock.schedule(first, Band.TICK, () => strike(first, entry));
 	});
 }
 
