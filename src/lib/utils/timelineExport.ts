@@ -57,12 +57,7 @@ import {
 } from '$lib/timeline/summonMarks';
 import { elementPalette, shiftHue, desaturate, tickInk } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
-import {
-	UPTIME_DIM_MIX,
-	GHOST_FILL_MIX,
-	GHOST_EDGE_MIX,
-	GHOST_CHROMA_KEEP
-} from '$lib/timeline/barMix';
+import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
 import { stepCeiling, stepDensity } from '$lib/timeline/barSteps';
 import type {
@@ -156,14 +151,15 @@ const BAR_FILL = '#293245';
 //     .3 × (255 255 255) + .7 × (41 50 69) = (105 111 125)
 const BAR_EDGE = '#696f7d';
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
-// (⚓ Nate, "all labels back to white"). The one label deliberately left at
-// partial strength is the ghost track's CD readout — it is a duration on a
-// recessive track, not a label, and it sits on an opaque bar.
+// (⚓ Nate, "all labels back to white") — and, once the buff bars became glass
+// the same day, these went to HALF-STRENGTH white at medium weight (.65 / 500,
+// `.rp-buff-label`). ↻ 2026-10-17 (⚓ Nate spotted the PNG's still-loud labels):
+// the export follows at last; it had kept full white at 600.
 // ⛔ The buff / debuff / proc trio of fills and labels collapsed into this ONE
 // pair on 2026-08-11. They had been three names for what was becoming the same
 // value anyway (procs borrowed debuff's, debuff was pinned to buff's weight);
 // the unification made that explicit rather than incidental.
-const BAR_LABEL = '#fff';
+const BAR_LABEL = 'rgba(255, 255, 255, 0.65)';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
 // color (the marks left dire 2026-08-05).
 // ↻ 2026-08-12: they ride --ui-provisional, not --ui-danger. The state family
@@ -577,7 +573,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// screen does, and the screen dropped it.
 
 	// Rounded-rect helper (uniform radius)
-	function rr(px: number, py: number, pw: number, ph: number, r: number) {
+	function rr(px: number, py: number, pw: number, ph: number, r: number | number[]) {
 		ctx!.beginPath();
 		ctx!.roundRect(px, py, pw, ph, r);
 	}
@@ -590,9 +586,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// 2026-08-11 (the top-light was depth against a raised frame that no longer
 	// exists). Colour is one of the things the export does still track; see the
 	// decoupling note at the top of this file for what it doesn't.
-	function paintCastFill(px: number, py: number, pw: number, ph: number, bar: string) {
+	function paintCastFill(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		bar: string,
+		r: number | number[] = 1
+	) {
 		ctx!.fillStyle = bar;
-		rr(px, py, pw, ph, 1);
+		rr(px, py, pw, ph, r);
 		ctx!.fill();
 	}
 
@@ -772,14 +775,22 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		badge: string,
 		solids: Array<() => void>
 	) {
-		// Full row height (the 1px inset died with the bottom-shading look);
-		// ghost CD tracks are 14px — the summon/buff row height
+		// Full row height (the 1px inset died with the bottom-shading look).
+		// ↻ 2026-10-17: the ghost CD track is 1px proud of nothing — inset 1px
+		// top and bottom, mirroring .rp-bar-cd--ghost (⚓ Nate's 2026-08-11 12px
+		// pass, which the export had missed: it was still inset 3px and outlined).
 		const py = rowTop;
 		const ph = rowH;
-		const ghostY = rowTop + 3;
-		const ghostH = rowH - 6;
+		const ghostY = rowTop + 1;
+		const ghostH = rowH - 2;
 
-		const drawSolid = (start: number, span: number, dim: boolean) => {
+		// Corner radii per role, mirroring the DOM: a pill rounds all four, the
+		// flush pill (a ghost or overflow follows) only its left, and the
+		// segments that flow out of a pill only their right.
+		const radii = (role: string): number | number[] =>
+			role === 'uptimeFlush' ? [1, 0, 0, 1] : role === 'overflow' ? [0, 1, 1, 0] : 1;
+		const drawSolid = (start: number, span: number, role: string) => {
+			const dim = role === 'uptimeDim' || role === 'overflow';
 			solids.push(() => {
 				const px = x(start);
 				const pw = barGeomW(start, span);
@@ -787,13 +798,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx!.textAlign = 'left';
 				if (dim) {
 					ctx!.fillStyle = mix(barColor, CHART_BG, UPTIME_DIM_MIX);
-					rr(px, py, pw, ph, 1);
+					rr(px, py, pw, ph, radii(role));
 					ctx!.fill();
+					// The overflow continuation carries no badge on screen.
+					if (role === 'overflow') return;
 					// Dim continuation keeps the white+halo treatment.
 					ctx!.fillStyle = '#fff';
 					haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(barColor));
 				} else {
-					paintCastFill(px, py, pw, ph, barColor);
+					paintCastFill(px, py, pw, ph, barColor, radii(role));
 					// ↻ 2026-08-14: WHITE + HALO, same as the dim branch above.
 					// 🐛 This was still painting dark INK "mirrors .rp-bar-row-badge
 					// (bright-chip idiom, 2026-08-01)" — but that idiom was retired
@@ -825,8 +838,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			if (seg.role === 'ghost') {
 				pushGhost(seg.start, seg.span, seg.cooldown ?? 0);
 			} else {
-				const dim = seg.role === 'uptimeDim' || seg.role === 'overflow';
-				drawSolid(seg.start, seg.span, dim);
+				drawSolid(seg.start, seg.span, seg.role);
 			}
 		}
 	}
@@ -1121,7 +1133,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.rect(px, py, Math.max(0, Math.min(px + pw, nextPx ?? Infinity) - px - 2), ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `600 9px ${SANS}`;
+		ctx!.font = `500 9px ${SANS}`;
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
@@ -1155,28 +1167,22 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		);
 	if (snap.auraHeaderH > 0) ctx.fillText('TARGET AURA', laneLabelX, chartTop + 9);
 
-	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
-	// desaturate/mix pairing mirrors the DOM's ghost rules exactly)
+	// z:0 — ghosts, mirroring .rp-bar-cd--ghost: the chroma-dropped element at
+	// GHOST_FILL_MIX% ALPHA over whatever is beneath — the scene backdrop since
+	// the 2026-10-16 redesign, as on screen. ↻ 2026-10-17 (⚓ Nate spotted it):
+	// the export still drew the pre-2026-08-11 ghost — an opaque mix with
+	// CHART_BG, inset 3px, outlined top/right/bottom, a .4 label with a halo. No
+	// outline, right corners only, and the .5 label with no halo now.
 	for (const g of ghosts) {
-		ctx.fillStyle = mix(desaturate(g.barColor, GHOST_CHROMA_KEEP), CHART_BG, GHOST_FILL_MIX);
-		rr(g.px, g.py, g.pw, g.ph, 1);
+		const [gr, gg, gb] = hexToRgb(desaturate(g.barColor, GHOST_CHROMA_KEEP));
+		ctx.fillStyle = `rgba(${gr}, ${gg}, ${gb}, ${GHOST_FILL_MIX / 100})`;
+		rr(g.px, g.py, g.pw, g.ph, [0, 1, 1, 0]);
 		ctx.fill();
-		// 1px outline on top/right/bottom (left stays open — the track flows out
-		// of the cast pill); the right edge still marks the exact ready moment.
-		ctx.fillStyle = mix(desaturate(g.barColor, GHOST_CHROMA_KEEP), CHART_BG, GHOST_EDGE_MIX);
-		ctx.fillRect(g.px, g.py, g.pw, 1); // top
-		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph); // right
-		ctx.fillRect(g.px, g.py + g.ph - 1, g.pw, 1); // bottom
 		if (g.pw > 32) {
-			ctx.fillStyle = 'rgba(255,255,255,0.4)';
+			ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
 			ctx.font = `600 9px ${SANS}`;
 			ctx.textAlign = 'center';
-			haloText(
-				`${secondsLabel(g.cd)}s`,
-				g.px + g.pw / 2,
-				g.py + g.ph / 2 + 3,
-				...elementHalo(g.barColor)
-			);
+			ctx.fillText(`${secondsLabel(g.cd)}s`, g.px + g.pw / 2, g.py + g.ph / 2 + 3);
 		}
 	}
 
