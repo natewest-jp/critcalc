@@ -417,7 +417,7 @@ export type SimContext = {
 	absorbLocks: Map<string, import('./absorb').AbsorbLock>;
 	/** Absorbed ticks the live chain fired, keyed like `stateGatedTicks`, each
 	 *  with the element it landed in — finalize stamps them on the summon window
-	 *  (`absorbedTicks`), one stub per frame AND element (⚓ Nate, 2026-10-17). */
+	 *  (`absorbedTicks`), drawn by `$lib/timeline/summonMarks.ts`. */
 	absorbedMarks: Map<string, { time: number; element: Element }[]>;
 	/** A cast's `spawnsAtSwapOutFrom` summons spawned at this frame — written by
 	 *  the pool at the swap-out, read by finalize so the window and the live

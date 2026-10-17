@@ -249,9 +249,7 @@ draws sit one frame before their own hit — gcsim reads the aura first.
 3. Lynette's last shot within 15f of the box's end is dropped (the window bounds
    the landing). A4 on lock not modelled.
 4. Kazuha's plunge add-on, Lan Yan, Wanderer A1, Sucrose C6, Jahoda — later (§8).
-5. The absorbed stubs' colour on the bar — Nate's eye. ⏳ A `/lab` board of candidate
-   marks (bead, lock band, notch; shared with Columbina's Lunar hits) is up on
-   `experiment/foreign-marks`, 2026-10-17.
+5. ✅ The absorbed stubs' colour on the bar — settled as a FILL, not a mark (§11).
 
 ## 10. ✅ Sayu's held Windwheel (2026-10-17, `feat/sayu-hold`)
 
@@ -294,3 +292,31 @@ is ONE cast whose length the player sets:
   ticks, and the kick at 67.
 - **C2** (the kick's +3.3% per 0.5s rolled) is unchanged.
 
+## 11. ✅ The bar becomes the element (2026-10-17, `feat/absorbed-fill`)
+
+The first build drew each absorbed hit as a stub in its element, 1px beside the
+Anemo stub. ⚓ Nate: hard to find, and Cryo on Anemo read as white.
+
+A `/lab` board (`experiment/foreign-marks`) ran three rounds:
+
+1. Marks: a bead, a lock band, a notch. Practical but clunky — a foreign colour
+   stamped on a plain bar.
+2. Nate's wave split (Anemo above, the element below, an airy seam). Closer, but
+   Cryo still vanished on Anemo.
+3. **Varka's rule: the bar BECOMES the element.** ✅ Candidate D, chosen as built.
+   A soft-note variant (E, NB-style `hi` patches) barely showed and was dropped.
+
+**Built:**
+
+- From the first absorbed hit the summon bar fades into the absorbed element over
+  `ABSORB_FADE_PX` (24 screen px), then stays that element to its end, under its
+  label.
+- **Ticks merge to ONE stub per FRAME.** A twin collapses into the Anemo tick it
+  shares a frame with; a stream on its own cadence (Venti, every 24f) keeps its
+  stubs. A stub past the fade takes the element's `hi`.
+- ⚓ This retires §8's "one mark per frame AND element". The aura lane is where an
+  absorbed hit's element is read (⚓ Nate).
+- `$lib/timeline/summonMarks.ts` is the one rule; the timeline
+  (`.rp-summon-absorbed`, a single gradient, not the tiled fill the Safari veto
+  forbids) and the PNG export both read it.
+- Tests in `sim/absorb.test.ts`.

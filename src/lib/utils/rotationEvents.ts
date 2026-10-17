@@ -482,8 +482,9 @@ export type TimelineWindow =
 			fires?: { time: number; element: Element }[];
 			/** Ticks in the summon's ABSORBED element (`summonTick.absorbed`,
 			 *  absorption round 2026-10-17), published by the live chain with the
-			 *  element each landed in — drawn as their own stubs in that element's
-			 *  colour, one per frame AND element (⚓ Nate). */
+			 *  element each landed in. The first turns the bar into that element and
+			 *  the rest merge into the summon's stubs, one per frame
+			 *  (`$lib/timeline/summonMarks.ts`, ⚓ Nate). */
 			absorbedTicks?: { time: number; element: Element }[];
 			/**
 			 * Where this summon WOULD have ended on its own — spawn + lifetime,
