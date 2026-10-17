@@ -49,8 +49,13 @@
  */
 
 import { FPS } from '$lib/utils/frames';
-import { ABSORB_FADE_PX, summonMarks } from '$lib/timeline/summonMarks';
-import { elementPalette, shiftHue, desaturate } from '$lib/utils/elementColors';
+import {
+	ABSORB_FADE_PX,
+	LUNAR_GLEAM_STOPS,
+	LUNAR_GLEAM_W,
+	summonMarks
+} from '$lib/timeline/summonMarks';
+import { elementPalette, shiftHue, desaturate, tickInk } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
 import {
 	UPTIME_DIM_MIX,
@@ -968,16 +973,28 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// Bottom-anchored tick stubs — mirror .rp-summon-tick (7px, opaque
 					// since 2026-09-18): one per frame, the element's hi past the fade.
 					const th = 7;
-					const absorbedHi = marks.absorbed ? elementPalette(marks.absorbed.element).hi : p.hi;
+					const ownInk = tickInk(slot.element);
+					const absorbedInk = marks.absorbed ? tickInk(marks.absorbed.element) : ownInk;
 					for (const tick of marks.ticks) {
-						ctx!.fillStyle = tick.absorbed ? absorbedHi : p.hi;
+						ctx!.fillStyle = tick.absorbed ? absorbedInk : ownInk;
 						ctx!.fillRect(x(tick.time), rowTop + snap.summonRowH - th, 1, th);
 					}
-					// Threshold fires — mirror .rp-summon-fire: full height, 2px,
-					// centred, in the hit's element.
+					// Threshold fires — mirror .rp-summon-fire: the falling moonbeam
+					// gleam, the lilac across and faded from the top edge to nothing
+					// at the foot. Canvas has no mask, so the fall is drawn as thin
+					// rows at a falling alpha.
 					for (const fire of sbar.fires ?? []) {
-						ctx!.fillStyle = elementPalette(fire.element).hi;
-						ctx!.fillRect(x(fire.time) - 1, rowTop, 2, snap.summonRowH);
+						const gx = x(fire.time) - Math.floor(LUNAR_GLEAM_W / 2);
+						const across = ctx!.createLinearGradient(gx, 0, gx + LUNAR_GLEAM_W, 0);
+						for (const [at, c] of LUNAR_GLEAM_STOPS) across.addColorStop(at, c);
+						ctx!.fillStyle = across;
+						const rows = snap.summonRowH * 4;
+						const step = snap.summonRowH / rows;
+						for (let r = 0; r < rows; r++) {
+							ctx!.globalAlpha = 1 - (r + 0.5) / rows;
+							ctx!.fillRect(gx, rowTop + r * step, LUNAR_GLEAM_W, step);
+						}
+						ctx!.globalAlpha = 1;
 					}
 				}
 			});
