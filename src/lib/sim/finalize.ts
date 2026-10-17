@@ -638,9 +638,10 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		// untouched; a marker says "the summon acted here", not how many effects.
 		const marks = ticks.filter((t, i) => i === 0 || t !== ticks[i - 1]);
 		if (marks.length > 0) win.ticks = marks;
-		// ⚓ ABSORBED marks keep their ELEMENT (absorption round, ⚓ Nate 2026-10-17:
-		// one mark per frame AND element) — a twin lands on its Anemo tick's frame
-		// and must not be deduped into it. Bounded by the final span like the rest.
+		// ⚓ ABSORBED marks keep their ELEMENT and their own list — the first one is
+		// where the bar turns into that element, so a twin on its Anemo tick's frame
+		// must not be deduped into it here; the DRAW merges the two per frame
+		// (`$lib/timeline/summonMarks.ts`). Bounded by the final span like the rest.
 		const absorbed = (
 			ctx.absorbedMarks.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ?? []
 		).filter((m) => m.time >= win.start && m.time < win.end);

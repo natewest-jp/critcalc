@@ -55,6 +55,7 @@
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
+	import { ABSORB_FADE_PX, summonMarks } from '$lib/timeline/summonMarks';
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
 	import {
 		computeGadgetRows,
@@ -3205,6 +3206,7 @@
 										>
 											{#each srow.bars as sbar, sbi (sbi)}
 												{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
+												{@const marks = summonMarks(sbar)}
 												<!-- Full-strength castFill — same finish as the E/Q pills
 											     (Nate 2026-07-18). Opaque, so swap connectors passing
 											     behind this lane can't show through. -->
@@ -3214,26 +3216,34 @@
 													style:width="{g.width}px"
 													style:background={castFill(p.bar)}
 												>
+													<!-- ⚓ An absorbing summon BECOMES its element (⚓ Nate,
+													     2026-10-17): a fade from its first absorbed hit, then that
+													     element to the bar's end. One layer, one gradient — not the
+													     tiled multi-layer fill the Safari veto forbids. -->
+													{#if marks.absorbed}
+														{@const fx = barGeom(marks.absorbed.time, 0).left - g.left}
+														{@const el = pal(marks.absorbed.element).bar}
+														<div
+															class="rp-summon-absorbed"
+															style:left="{fx}px"
+															style:background="linear-gradient(90deg, {el}00 0, {el}
+															{ABSORB_FADE_PX}px)"
+															aria-hidden="true"
+														></div>
+													{/if}
 													<span class="rp-summon-label">{srow.label}</span>
 												</div>
-												{#each sbar.ticks as tickT, tIdx (tIdx)}
-													{@const tg = barGeom(tickT, 0)}
+												<!-- One stub per FRAME (`summonMarks`): an absorbed twin shares its
+												     Anemo tick's; a stream keeps its own cadence. Past the fade, a
+												     stub takes the element's hi. -->
+												{#each marks.ticks as tick, tIdx (tIdx)}
+													{@const tg = barGeom(tick.time, 0)}
 													<div
 														class="rp-summon-tick"
 														style:left="{tg.left}px"
-														style:background={p.hi}
-														aria-hidden="true"
-													></div>
-												{/each}
-												<!-- An ABSORBED tick (absorption round, 2026-10-17): the same stub
-												     in the element the summon locked, 1px beside the Anemo stub it
-												     shares a frame with — one mark per frame AND element (⚓ Nate). -->
-												{#each sbar.absorbedTicks ?? [] as ab, aIdx (aIdx)}
-													{@const ag = barGeom(ab.time, 0)}
-													<div
-														class="rp-summon-tick"
-														style:left="{ag.left + 1}px"
-														style:background={pal(ab.element).hi}
+														style:background={tick.absorbed && marks.absorbed
+															? pal(marks.absorbed.element).hi
+															: p.hi}
 														aria-hidden="true"
 													></div>
 												{/each}
@@ -5250,7 +5260,17 @@
 		padding: 0 3px;
 		overflow: hidden;
 	}
+	/* The absorbed element's fill (see the markup): inside the bar, under its
+	   label, to the bar's end — the bar's own overflow clips it. */
+	.rp-summon-absorbed {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+	}
 	.rp-summon-label {
+		position: relative;
 		font-size: var(--fs-xs);
 		/* ↻ 2026-08-11: bold → medium (⚓ Nate) — a genuine two-rung drop now
 		   that the body face is variable. See the --fw-* block in app.css. */

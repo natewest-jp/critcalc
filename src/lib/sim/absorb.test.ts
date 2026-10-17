@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseNotation } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
+import { summonMarks } from '$lib/timeline/summonMarks';
 
 const all = Object.values(import.meta.glob('../data/characters/*.json', { eager: true })).map(
 	(m) => (m as { default: CharacterData }).default
@@ -80,5 +81,34 @@ describe('elemental absorption', () => {
 		expect(apps.length).toBeGreaterThan(0);
 		expect(apps.every(([el]) => el === 'cryo' || el === 'hydro')).toBe(true);
 		expect(apps[0][0]).not.toBe('hydro');
+	});
+});
+
+describe('absorbed marks — the bar becomes the element, one stub per frame', () => {
+	const bar = (notation: string, team: string[], label: string) => {
+		const r = parseNotation(notation, lookup, 8, {}, {}, team.map(lookup));
+		const w = r.windows.find((x) => x.kind === 'summon' && x.label === label) as {
+			ticks?: number[];
+			absorbedTicks?: { time: number; element: string }[];
+		};
+		return summonMarks({ ticks: w.ticks ?? [], absorbedTicks: w.absorbedTicks });
+	};
+
+	it("Kazuha's twins collapse into his five Anemo ticks; the bar turns Pyro at the first", () => {
+		const m = bar('Bennett E > Kazuha E Q ~9s', ['Bennett', 'Kazuha'], 'Autumn Whirlwind');
+		expect(m.absorbed?.element).toBe('pyro');
+		expect(m.ticks).toHaveLength(5);
+		expect(m.ticks.every((t) => t.absorbed)).toBe(true);
+	});
+
+	it("Venti's stream keeps its own cadence when it locks off the Stormeye's rhythm", () => {
+		// Whether the stream shares the ticks' frames depends on the lock's phase:
+		// on Bennett's Pyro it lands on them and merges, on Ganyu's Cryo it falls
+		// between them and adds its own stubs.
+		const m = bar('Ganyu E > Venti Q ~9s', ['Ganyu', 'Venti'], 'Stormeye');
+		const own = bar('Venti Q ~9s', ['Venti'], 'Stormeye');
+		expect(own.absorbed).toBeUndefined();
+		expect(m.ticks.length).toBeGreaterThan(own.ticks.length);
+		expect(m.ticks.filter((t) => !t.absorbed).every((t) => t.time < m.absorbed!.time)).toBe(true);
 	});
 });

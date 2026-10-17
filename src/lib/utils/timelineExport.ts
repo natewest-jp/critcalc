@@ -49,6 +49,7 @@
  */
 
 import { FPS } from '$lib/utils/frames';
+import { ABSORB_FADE_PX, summonMarks } from '$lib/timeline/summonMarks';
 import { elementPalette, shiftHue, desaturate } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
 import {
@@ -941,6 +942,19 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// the E/Q badge above — the mirror test reads colour tokens, not
 					// ink choice or font weight.
 					paintCastFill(px, rowTop, pw, snap.summonRowH, p.bar);
+					// An absorbing summon becomes its element — mirror
+					// .rp-summon-absorbed: a fade from its first absorbed hit, then
+					// that element to the bar's end, under the label.
+					const marks = summonMarks(sbar);
+					if (marks.absorbed) {
+						const fx = x(marks.absorbed.time);
+						const el = elementPalette(marks.absorbed.element).bar;
+						const fade = ctx!.createLinearGradient(fx, 0, fx + ABSORB_FADE_PX, 0);
+						fade.addColorStop(0, `${el}00`);
+						fade.addColorStop(1, el);
+						ctx!.fillStyle = fade;
+						ctx!.fillRect(fx, rowTop, px + pw - fx, snap.summonRowH);
+					}
 					ctx!.fillStyle = '#fff';
 					ctx!.font = `500 9px ${SANS}`;
 					ctx!.textAlign = 'left';
@@ -952,17 +966,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						Math.max(pw - 6, 8)
 					);
 					// Bottom-anchored tick stubs — mirror .rp-summon-tick (7px, opaque
-					// since 2026-09-18)
-					ctx!.fillStyle = p.hi;
+					// since 2026-09-18): one per frame, the element's hi past the fade.
 					const th = 7;
-					for (const tickT of sbar.ticks) {
-						ctx!.fillRect(x(tickT), rowTop + snap.summonRowH - th, 1, th);
-					}
-					// Absorbed ticks — mirror the absorbed .rp-summon-tick: the same
-					// stub in its own element, 1px right of the Anemo one.
-					for (const ab of sbar.absorbedTicks ?? []) {
-						ctx!.fillStyle = elementPalette(ab.element).hi;
-						ctx!.fillRect(x(ab.time) + 1, rowTop + snap.summonRowH - th, 1, th);
+					const absorbedHi = marks.absorbed ? elementPalette(marks.absorbed.element).hi : p.hi;
+					for (const tick of marks.ticks) {
+						ctx!.fillStyle = tick.absorbed ? absorbedHi : p.hi;
+						ctx!.fillRect(x(tick.time), rowTop + snap.summonRowH - th, 1, th);
 					}
 					// Threshold fires — mirror .rp-summon-fire: full height, 2px,
 					// centred, in the hit's element.
