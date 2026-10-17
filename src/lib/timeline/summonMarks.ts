@@ -25,14 +25,14 @@ export const ABSORB_FADE_PX = 24;
 /**
  * ⚓ A LUNAR HIT IS A MOONBEAM (⚓ Nate, 2026-10-17 — the /lab board's 3e).
  * Columbina's Gravity Interference strikes are moon-power lilac in game, not the
- * reaction's element, so a threshold fire draws as a falling GLEAM: 7px wide
- * (↻ 6 → 7, ⚓ Nate same day; placed on whole pixels, its core ½px right),
+ * reaction's element, so a threshold fire draws as a falling GLEAM: 10px wide
+ * (↻ 6 → 7 → 10, ⚓ Nate same day: the only thing that marks these hits),
  * white at the core through a light lilac to nothing at its sides, brightest at
  * the bar's top edge and gone by its foot — where the ticks rise from, so the
  * two never share pixels. The lilac is the Moonsign lane's (`#b0a9ff`) 40% of the
  * way to white. ⛔ The hit's element is not drawn; it is kept on the data.
  */
-export const LUNAR_GLEAM_W = 7;
+export const LUNAR_GLEAM_W = 10;
 export const LUNAR_GLEAM_STOPS: readonly [number, string][] = [
 	[0, '#d0cbff00'],
 	[0.35, '#d0cbffcc'],

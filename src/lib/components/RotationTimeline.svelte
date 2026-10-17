@@ -5315,10 +5315,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		/* LUNAR_GLEAM_W — whole-pixel placement, so the odd width puts the core
-		   ½px right of the instant (sub-pixel law). */
-		width: 7px;
-		margin-left: -3px;
+		/* LUNAR_GLEAM_W, centred on the instant on whole pixels. */
+		width: 10px;
+		margin-left: -5px;
 		-webkit-mask-image: linear-gradient(#000, transparent);
 		mask-image: linear-gradient(#000, transparent);
 		z-index: 4;

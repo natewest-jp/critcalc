@@ -328,7 +328,7 @@ been drawn as a 2px full-height slab in the reaction's element. ⚓ Nate: in gam
 those strikes are moon-power lilac, not the element. Tried: the slab fading to
 Hydro either side, lilac ticks at three strengths, and a moonlight gleam.
 
-**Chosen (3e):** a FALLING gleam, 7px wide (6 on the board; ⚓ Nate widened it a pixel), white at its core through a light
+**Chosen (3e):** a FALLING gleam, 10px wide (6 on the board; ⚓ Nate went to 7, then 10 — it is the only thing that marks these hits), white at its core through a light
 lilac (the Moonsign `#b0a9ff`, 40% of the way to white) to nothing at its sides.
 It is brightest at the bar's top edge and gone by its foot, where the ticks rise
 from, so the two never share pixels. The constants live in
