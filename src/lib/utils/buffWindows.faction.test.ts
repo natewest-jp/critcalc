@@ -133,3 +133,44 @@ describe('faction bonuses reach the planner', () => {
 		}
 	});
 });
+
+describe("Prune's Secret Rite — the reactor and the others (2026-10-17)", () => {
+	// ⚓ The +30% goes to the character who TRIGGERED the Swirl and stays on them;
+	// neither half fires off Prune's own reactions (Tolling Rally never reaches
+	// her). The `'active'` stand-in hopped the bar across the field.
+	const byId = new Map(ALL.map((c) => [c.displayName, c]));
+	const lookup = (n: string) => byId.get(n) ?? null;
+	const team = ['Prune', 'Bennett', 'Xiangling', 'Varka'].map(lookup);
+	const r = parseNotation(
+		'Prune E Q > Bennett Q E > Xiangling Q E > Varka E N5 N5 sC N2 sE N2 sC > Prune E > Varka N5 sC',
+		lookup,
+		8,
+		{},
+		{},
+		team
+	);
+	const rite = (r.windows as Extract<(typeof r.windows)[number], { kind: 'buff' }>[]).filter(
+		(w) =>
+			w.kind === 'buff' &&
+			w.characterId === 'prune' &&
+			w.effects.some((e) => e.type === 'buff' && e.stat === 'atk%')
+	);
+	const bonus = (w: (typeof rite)[number]) =>
+		w.effects.find((e) => e.type === 'buff' && e.stat === 'atk%')!;
+
+	it('the +30% lands on the Swirl triggerer (Varka) only, whole', () => {
+		const thirty = rite.filter((w) => (bonus(w) as { value: unknown }).value === 30);
+		expect(thirty.length).toBeGreaterThan(0);
+		for (const w of thirty) {
+			expect(w.receiverId).toBe('varka');
+			expect(w.end - w.start).toBe(framesOf(5));
+		}
+	});
+
+	it("nothing fires off Prune's own bell Swirls", () => {
+		const varkaFirst = r.events.find(
+			(e) => e.kind === 'reaction' && e.characterId === 'varka'
+		)!.time;
+		for (const w of rite) expect(w.start).toBeGreaterThanOrEqual(varkaFirst);
+	});
+});

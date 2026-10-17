@@ -219,7 +219,15 @@ const STATS = new Set([
 
 const SCALING_STATS = new Set(['atk', 'baseAtk', 'em', 'hp', 'def', 'healingBonus']);
 
-const TARGETS = new Set(['self', 'team', 'teamExcludingSelf', 'active', 'next', 'enemy']);
+const TARGETS = new Set([
+	'self',
+	'team',
+	'teamExcludingSelf',
+	'active',
+	'next',
+	'enemy',
+	'reactor'
+]);
 
 const STATES = new Set([
 	'afterNormalAttack',
@@ -2955,6 +2963,29 @@ function lintEffect(
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void,
 	ctx: { isPassiveOrConstellation: boolean; isSummon?: boolean; isFactionBonus?: boolean }
 ): void {
+	// (D.52) The reactor and the others (Prune round, 2026-10-17): a `'reactor'`
+	// target names who triggered a REACTION, so only an `onReaction` buff has
+	// one; `source: 'others'` is read by the buff passes alone.
+	{
+		const targets = Array.isArray(eff.target) ? eff.target : [eff.target];
+		if (targets.includes('reactor') && (eff.type !== 'buff' || eff.trigger.type !== 'onReaction'))
+			push(
+				'strict',
+				'reactor-target-invalid',
+				`${location}: target 'reactor' is only read on an onReaction buff`
+			);
+		if (
+			eff.trigger.type === 'onReaction' &&
+			eff.trigger.source === 'others' &&
+			eff.type !== 'buff' &&
+			eff.type !== 'resShred'
+		)
+			push(
+				'strict',
+				'reaction-others-unread',
+				`${location}: onReaction source 'others' is only read on buffs and RES shreds`
+			);
+	}
 	// (B.8) effects on passive/constellation with onCast/afterDuration must set trigger.ability
 	// (B.20) `whileStacks` — a buff that IS its count (stepped stacks round,
 	// 2026-09-27). Only a rotation-scoped key has a time-ordered history, and a
@@ -3326,11 +3357,17 @@ function lintEffect(
 			}
 		}
 		const src = eff.trigger.source;
-		if (src !== undefined && src !== 'self' && src !== 'team' && src !== 'active') {
+		if (
+			src !== undefined &&
+			src !== 'self' &&
+			src !== 'team' &&
+			src !== 'active' &&
+			src !== 'others'
+		) {
 			push(
 				'strict',
 				'invalid-reaction-source',
-				`onReaction trigger source must be 'self', 'team' or 'active' (got ${JSON.stringify(src)})`,
+				`onReaction trigger source must be 'self', 'team', 'active' or 'others' (got ${JSON.stringify(src)})`,
 				location
 			);
 		}
