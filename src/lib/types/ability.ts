@@ -2410,6 +2410,9 @@ export type NormalAbility = AbilityCommon & {
 	chargeSpin?: ChargeSpin;
 	/** The CHANNELLED Charged Attack and its charge-up — see `ChargeChannel`. */
 	chargeChannel?: ChargeChannel;
+	/** What this form's plunge does to a timed Blessing — see
+	 *  `TimedBlessingSpec`. */
+	plungeBlessing?: PlungeBlessing;
 	/** A dash in this form lands a hit (Mavuika's Flamestrider Sprint: Pyro 1U
 	 *  at its travel frame, gcsim `dash.go`). Applies the ability's element on
 	 *  its `icdCounter`. */
@@ -2891,6 +2894,40 @@ export type ChargeChannel = {
 export type DropletSpawn = { at: number; count: number };
 
 /**
+ * ⚓ A NIGHTSOUL BLESSING ON A TIMER, FED BY POINTS THAT BUILD OUTSIDE IT
+ * (Varesa's Fiery Passion, 2026-10-17; gcsim `varesa/`). Unlike a draining pool
+ * (`NightsoulPoolSpec`, Mavuika) the points live OUTSIDE the Blessing and do
+ * not drain: casts and plunges add them, and only a gain that says `enters`
+ * opens the Blessing when it tops the pool (her E's +20 never does — gcsim's
+ * `GeneratePoints` against `generatePlungeNightsoul`). Open, it runs `duration`
+ * SECONDS, and a plunge made inside it spends every point and ends it at her
+ * NEXT action, unless that is a burst (gcsim `clearNightsoulCB`, which a
+ * `BurstState` skips — so Volcano Kablam rides it).
+ *
+ * - `freeSkillOnEntry` — entering grants ONE skill that spends no charge and
+ *   starts no cooldown (gcsim `freeSkill`, "an additional Tap charge"); it is
+ *   lost when the Blessing ends.
+ *
+ * ⚓ The pool OWNS the Blessing's state window (opened at the entry, ended by
+ * its timer or the exit), as a draining pool does. Points persist past a timed
+ * end, as in gcsim — so a later plunge that tops them re-enters at once.
+ */
+export type TimedBlessingSpec = {
+	state: State;
+	max: number;
+	duration: number;
+	freeSkillOnEntry?: true;
+};
+
+/** A cast's gain: `points` (`'max'` fills the pool) `at` frames from its start;
+ *  `enters` — a gain that tops the pool opens the Blessing. */
+export type BlessingPoints = { points: number | 'max'; at: number; enters?: true };
+
+/** A plunge's effect: `points` at its landing (`enters` as above), or
+ *  `spendsAll` — every point gone and the Blessing ends at the next action. */
+export type PlungeBlessing = { points?: number; enters?: true; spendsAll?: true };
+
+/**
  * ⚓ A CHARGED ATTACK THAT SPINS (Mavuika's Flamestrider, bike Charged Attack
  * round, 2026-10-16; gcsim `charge.go`, timings measured with its CLI —
  * `docs/mavuika-nightsoul-round-2026-10-16.md` §7). Notation, after Prydwen and
@@ -3027,6 +3064,13 @@ type SkillCommonFields = AbilityCommon & {
 	/** Sourcewater Droplets this cast drops, for its caster's channelled
 	 *  Charged Attack to absorb — see `ChargeChannel`. */
 	spawnsDroplets?: DropletSpawn[];
+	/** Points this cast adds to its caster's timed Blessing — see
+	 *  `TimedBlessingSpec`. */
+	blessingPoints?: BlessingPoints;
+	/** The sibling skill whose charge pool this one spends — one in-game skill
+	 *  in two forms (Varesa's Rush and Fiery Passion Rush; gcsim has ONE
+	 *  `ActionSkill`). Without it each form keeps its own charges. */
+	sharesChargesWith?: string;
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
 	/** Every charge begins RECHARGING the moment the ability becomes available,
@@ -3254,6 +3298,9 @@ type BurstCommonFields = AbilityCommon & {
 	/** Sourcewater Droplets this cast drops, for its caster's channelled
 	 *  Charged Attack to absorb — see `ChargeChannel`. */
 	spawnsDroplets?: DropletSpawn[];
+	/** Points this cast adds to its caster's timed Blessing — see
+	 *  `TimedBlessingSpec`. */
+	blessingPoints?: BlessingPoints;
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	/** Whether this ability's own damage snapshots the caster's stats at cast
@@ -3427,6 +3474,10 @@ export type AbilityVariant = {
 	label: string;
 	/** REPLACES the base's `nightsoul` — see `NightsoulCastSpec`. */
 	nightsoul?: NightsoulCastSpec;
+	/** Points this variant adds to a timed Blessing. ⚠️ A resolved variant
+	 *  speaks for itself: absent here means NONE, not the base's (Volcano
+	 *  Kablam adds nothing where the burst it rides fills the pool). */
+	blessingPoints?: BlessingPoints;
 	input?: Input[];
 	frames?: FrameMap;
 	cooldown?: number;

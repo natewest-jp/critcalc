@@ -569,6 +569,43 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		}
 	}
 
+	// (D.51) A TIMED BLESSING and what feeds it (Varesa's Fiery Passion,
+	// 2026-10-17): points only on a kit with the Blessing (nothing else reads
+	// them), a plunge either adds or spends, and a shared charge pool names a
+	// real sibling skill that keeps its own.
+	{
+		const tb = c.timedBlessing;
+		const bad = (msg: string, id?: string) => push('strict', 'timed-blessing-shape', msg, id);
+		if (tb && (!(tb.max > 0) || !(tb.duration > 0)))
+			bad('timedBlessing max and duration (seconds) must be positive');
+		for (const a of c.abilities) {
+			const pts =
+				a.abilityType === 'skill' || a.abilityType === 'burst'
+					? [a.blessingPoints, ...(a.variants ?? []).map((v) => v.blessingPoints)]
+					: [];
+			const pl = a.abilityType === 'normal' ? a.plungeBlessing : undefined;
+			if (!tb && (pts.some((x) => x !== undefined) || pl))
+				bad(`${a.id} feeds a timed Blessing the character does not have`, a.id);
+			if (pl && (pl.spendsAll === true) === (pl.points !== undefined))
+				bad(
+					`${a.id} plungeBlessing must either add points or spend all, not both or neither`,
+					a.id
+				);
+			if (a.abilityType === 'skill' && a.sharesChargesWith !== undefined) {
+				const sib = c.abilities.find((x) => x.id === a.sharesChargesWith);
+				if (
+					!sib ||
+					sib.abilityType !== 'skill' ||
+					sib.id === a.id ||
+					sib.sharesChargesWith !== undefined
+				)
+					bad(`${a.id} sharesChargesWith must name another skill that keeps its own pool`, a.id);
+				else if ((sib.charges ?? 1) !== (a.charges ?? 1) || sib.cooldown !== a.cooldown)
+					bad(`${a.id} shares ${sib.id}'s charges but states different charges or cooldown`, a.id);
+			}
+		}
+	}
+
 	// (D.27i) `summonTick.icdCounter` — two SERIES on one named counter
 	// (Alyosha's Field + Tugarin, 2026-10-16). One clock runs one window, so the
 	// sharers must state the same `icdGate`; a lone name shares nothing; and

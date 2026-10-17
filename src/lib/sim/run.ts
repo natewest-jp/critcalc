@@ -55,6 +55,13 @@ import {
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
 import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } from '$lib/utils/icd';
+import {
+	hasFreeSkill,
+	takeFreeSkill,
+	timedBlessingOnAction,
+	timedBlessingOnCast,
+	timedBlessingOnPlunge
+} from './timedBlessing';
 import { FPS, frameAt, framesOf, landingsOf, projectileTravelOf } from '$lib/utils/frames';
 import {
 	GENERIC_NORMAL_HITS,
@@ -789,7 +796,10 @@ export function runRotation(
 							) ?? (ability as SkillAbility); // !isBurst branch: `ability` is the skill
 						// Initialize this ability's charge queue on first sight:
 						// all charges ready at t=0.
-						if (!ctx.eChargeQueues.has(scanE.id)) {
+						// ⚓ A skill that SHARES its sibling's charges reads that pool
+						// (`sharesChargesWith`, Varesa's two Rushes: gcsim has one skill).
+						const scanKey = scanE.sharesChargesWith ?? scanE.id;
+						if (!ctx.eChargeQueues.has(scanKey)) {
 							const scanVariant = matchVariant(
 								scanE,
 								tok.text,
@@ -800,14 +810,16 @@ export function runRotation(
 								variantCtx
 							);
 							ctx.eChargeQueues.set(
-								scanE.id,
+								scanKey,
 								new Array(resolveEffectiveCharges(scanE, scanVariant, charConstellationLevel)).fill(
 									0
 								)
 							);
 						}
+						// A free skill (a timed Blessing's entry) needs no charge.
+						if (hasFreeSkill(ctx, char, clock.now)) break;
 						// queue[0] is the earliest-ready charge (kept sorted ascending).
-						const readyAt = ctx.eChargeQueues.get(scanE.id)![0];
+						const readyAt = ctx.eChargeQueues.get(scanKey)![0];
 						if (readyAt <= clock.now) break; // castable now
 						const boundary = nextOwnWindowEnd(clock.now);
 						// Advance to the next event: either a charge returns, or a
@@ -887,10 +899,11 @@ export function runRotation(
 						variant,
 						charConstellationLevel
 					);
-					if (!ctx.eChargeQueues.has(active.id)) {
-						ctx.eChargeQueues.set(active.id, new Array(maxCharges).fill(0));
+					const chargeKey = (active as SkillAbility).sharesChargesWith ?? active.id;
+					if (!ctx.eChargeQueues.has(chargeKey)) {
+						ctx.eChargeQueues.set(chargeKey, new Array(maxCharges).fill(0));
 					}
-					queue = ctx.eChargeQueues.get(active.id)!;
+					queue = ctx.eChargeQueues.get(chargeKey)!;
 				}
 
 				const castTime = resolveEQCastTime(
@@ -1073,6 +1086,12 @@ export function runRotation(
 					// still renders on the bar, but neither gates nor writes the
 					// clock (gcsim: Symphony sets no CD).
 					if (variant?.bypassesCooldown !== true) cs.qReadyAt = castEvent.readyAt;
+				} else if (takeFreeSkill(ctx, char, castStart)) {
+					// ⚓ A FREE SKILL (`TimedBlessingSpec.freeSkillOnEntry`, Varesa): no
+					// charge spent, no cooldown started — the next E is as ready as the
+					// earliest charge already was (gcsim `freeSkill` skips SetCD).
+					castEvent.cooldown = 0;
+					castEvent.readyAt = Math.max(castStart, queue![0]);
 				} else {
 					// Ready-at for the slot we just consumed. Sac Bow proc may
 					// override this with hitmark time (skill instantly available
@@ -1182,6 +1201,17 @@ export function runRotation(
 				// ⚓ Sourcewater Droplets (`ChargeChannel`): recorded with their FUTURE
 				// spawn instant, which a channel's absorb reads — the clock is
 				// monotonic, so nothing earlier can count one that has not landed.
+				// A timed Blessing's points — the RESOLVED form's own: a variant
+				// speaks for itself (Volcano Kablam adds none).
+				if (char.timedBlessing)
+					timedBlessingOnCast(
+						ctx,
+						clock,
+						char,
+						variant ? variant.blessingPoints : active.blessingPoints,
+						castStart,
+						castId
+					);
 				for (const d of active.spawnsDroplets ?? []) {
 					const life = char.abilities.find(
 						(a): a is NormalAbility => a.abilityType === 'normal' && a.chargeChannel !== undefined
@@ -1783,6 +1813,13 @@ export function runRotation(
 		for (let j = 0; j < expandedTokens.length; j++) {
 			const tok = expandedTokens[j];
 			curSrc = { from: tok.from, to: tok.to };
+			// ⚓ A timed Blessing armed to end by an in-Blessing plunge ends HERE, at
+			// her next action — unless it is a burst (Varesa; `timedBlessing.ts`).
+			if (
+				char.timedBlessing &&
+				(tok.kind === 'E' || tok.kind === 'Q' || (tok.kind === 'label' && tok.text !== 'W'))
+			)
+				timedBlessingOnAction(ctx, char, clock.now, tok.kind === 'Q');
 
 			if (tok.kind === 'Q') {
 				handleCast('burst', tok, j);
@@ -2693,6 +2730,15 @@ export function runRotation(
 								{ sourceActionId: plungeEv.id }
 							);
 						}
+						if (char.timedBlessing)
+							timedBlessingOnPlunge(
+								ctx,
+								clock,
+								char,
+								activeNormal?.plungeBlessing,
+								blockStart,
+								blockStart + (landingsOf(plungeFrames)[0] ?? castS)
+							);
 						// The plunge's landing — see `landSwing`: the offers and the hit
 						// record at one instant.
 						const landPlunge = (at: number, live = true): void => {
@@ -2971,6 +3017,8 @@ export function runRotation(
 		// The Nightsoul pool's swap-out: the Crucible ends, the Flamestrider turns
 		// into the Ring and the Blessing carries on (Mavuika; `sim/nightsoul.ts`).
 		if (swapFollows && char.nightsoulPool) nightsoulOnSwapOut(ctx, clock, char, clock.now);
+		// A swap ends a timed Blessing armed to end (gcsim's `OnRemoved` fires on it).
+		if (swapFollows && char.timedBlessing) timedBlessingOnAction(ctx, char, clock.now, false);
 
 		// Swap time before the next character enters. ⚠️ The last turn adds
 		// nothing: the rotation ends when its final action does, not a swap later.

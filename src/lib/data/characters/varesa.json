@@ -79,7 +79,8 @@
 				"Charged Attack: 'headbutt then leap' that consumes stamina; in-FP variant (Fiery Passion strikes) costs 0 stamina (gcsim ActionStam returns 0 during skillStatus). chargeFrames transcribe gcsim chargeFrames: InitAbilSlice(143) with Attack 142, Charge 141, Skill 142, Swap 139, and `P` 77 (ActionHighPlunge — the `C P` leap, her core loop, which fell back to ~139f until 2026-09-17).",
 				"Plunge frames sourced from highPlungeFrames (gcsim TODO: low_plunge — not measured). Plunging Attack standalone P input requires being airborne; in this character's rotation flow the typical entry is Charged Attack → leap → Plunge (gcsim highPlungeCA path), which the parser handles as `C P`.",
 				"↻ FRAMES RE-TRANSCRIBED 2026-09-17 (T1 tranche) from gcsim `varesa/attack.go`, plunge.go, charge.go: every map had carried `anim = swap = hitmark`, the pre-L4b stand-in, so a normal → E/Q/swap was timed at the hitmark and a normal → normal/charge/plunge ran short of the animation. ⚠️ N1 carries gcsim's 6-frame WINDUP subtracted (`windup = 6` whenever the normal counter is 0 — every N1 except one after a Volcano Kablam, which is 4), matching what the frames dump captures: {anim 49−6, hit 23−6, N 33−6, C 23−6}. The plunge map is the `highPlungeCA` slice (anim 72); the dump's 77 reaches the Xianyun path.",
-				"Plunge generates 25 Nightsoul points (gcsim generatePlungeNightsoul). At max 40 points and not already in NS, automatically enters Fiery Passion for 15s. This NS-resource path isn't modelled — the only NS entry the schema renders is via Burst."
+				"Plunge generates 25 Nightsoul points (gcsim generatePlungeNightsoul). At max 40 points and not already in NS, automatically enters Fiery Passion for 15s. This NS-resource path isn't modelled — the only NS entry the schema renders is via Burst.",
+				"↻ 2026-10-17 (Varesa's Fiery Passion round): `plungeBlessing` — out of Fiery Passion a plunge adds 25 Nightsoul points at its landing, and topping the pool (40) ENTERS Fiery Passion with a free E (gcsim plunge.go → generatePlungeNightsoul at the hitmark; varesa.go:84-92)."
 			],
 			"sections": [
 				{
@@ -98,7 +99,11 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing Nightsoul-aligned AoE Electro DMG upon impact. If Varesa is in a combat state upon landing, or if the shockwave from her plunging attack hits an opponent, she will gain 25 Nightsoul points. She enters the Fiery Passion state upon reaching maximum Nightsoul points through this method."
 				}
 			],
-			"description": "Normal Attack\nGotta try... to do battle like the greatest champion luchadors do! Varesa launches up to 3 strikes, dealing Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to headbutt opponents in front, dealing Nightsoul-aligned Electro DMG and using the momentum to leap into the air.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing Nightsoul-aligned AoE Electro DMG upon impact. If Varesa is in a combat state upon landing, or if the shockwave from her plunging attack hits an opponent, she will gain 25 Nightsoul points."
+			"description": "Normal Attack\nGotta try... to do battle like the greatest champion luchadors do! Varesa launches up to 3 strikes, dealing Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to headbutt opponents in front, dealing Nightsoul-aligned Electro DMG and using the momentum to leap into the air.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing Nightsoul-aligned AoE Electro DMG upon impact. If Varesa is in a combat state upon landing, or if the shockwave from her plunging attack hits an opponent, she will gain 25 Nightsoul points.",
+			"plungeBlessing": {
+				"points": 25,
+				"enters": true
+			}
 		},
 		{
 			"id": "varesa__normal__fiery_passion_strikes",
@@ -168,8 +173,12 @@
 				"↻ FRAMES RE-TRANSCRIBED 2026-09-17 (T1 tranche) from gcsim `fieryAttackFrames` / `fieryChargeFrames` / `fieryHighPlungeFrames` — every map had carried `anim = swap = hitmark`. ⚠️ N1 carries the 6-frame windup `fieryAttack()` subtracts when the previous action was not a normal attack (the common entry): {anim 39−6, hit 17−6, N 29−6, C 31−6}. ⛔ The frames dumper cannot reach this ability (drivers.json: her skill leaves her airborne), so nothing here is oracle-checked — transcribed by hand.",
 				"Fiery Passion charged attack costs 0 stamina (gcsim ActionStam during skillStatus / nightsoulBlessing). chargeFrames sourced from gcsim fieryChargeFrames init: InitAbilSlice(143), swap 138, N/E/Q/D explicit, `P` 81 (ActionHighPlunge).",
 				"Fiery Passion plunge sourced from gcsim fieryHighPlungeFrames. Each plunge consumes all NS points (gcsim ClearPoints) and exits Nightsoul (exitNS=true). The schema doesn't gate this 'state-ending action' — pressing P inside FP correctly fires the upgraded plunge but the timeline keeps the 15s window open until the natural duration ends, which is incorrect by ~the remaining NS time. ↻ 2026-08-18: \"Surfaced via parent burst caveat\" was FALSE and is struck — the burst's caveat is the sQ/Apex Drive instruction and says nothing about this; it is also the ONLY caveat in this file, so the divergence currently reaches no reader at all. The primitive it needs is a stance CANCEL — an action that TERMINATES a state rather than opening one — which the parser still lacks (`TokenKind` in utils/tokenizer.ts is a closed union with no terminator; a stance ends only at its authored duration or, when `terminatesOnSwap`, at a swap). Same gap as Ifa's landing, docs/stance-cooldown-round.md. ⚠️ There is no per-VARIANT or per-ACTION caveat channel either (`AbilityVariant` has no `caveat` field and slotCaveats walks ability-shaped hosts only), so the only place this could ever be disclosed is the burst ability's own `caveat`.",
-				"Apex Drive entry WIRED (post-P4 transient-state primitive, 2026-07-17; field renamed plungeOpensState → actionOpensState.plunge in the post-P4 #2 generalization): opens the `apexDrive` state for 2.33s (gcsim apexDuration=140f) at the plunge's START (↻ 2026-09-20, ⚓ Nate — gcsim's `getApexDrive` adds the status in the plunge action itself, so (start, 140f) is one measurement; it used to open at the plunge's end and ran 38-40f past gcsim's window). Authored on BOTH normals: this FP kit unconditionally (it only resolves during nightsoulBlessing), and on By the Horns gated {constellation:2} (gcsim getApexDrive: blessing OR C2+). During the window `sQ` resolves the Volcano Kablam burst variant. gcsim does not delete apexState on swap → no terminatesOnSwap."
-			]
+				"Apex Drive entry WIRED (post-P4 transient-state primitive, 2026-07-17; field renamed plungeOpensState → actionOpensState.plunge in the post-P4 #2 generalization): opens the `apexDrive` state for 2.33s (gcsim apexDuration=140f) at the plunge's START (↻ 2026-09-20, ⚓ Nate — gcsim's `getApexDrive` adds the status in the plunge action itself, so (start, 140f) is one measurement; it used to open at the plunge's end and ran 38-40f past gcsim's window). Authored on BOTH normals: this FP kit unconditionally (it only resolves during nightsoulBlessing), and on By the Horns gated {constellation:2} (gcsim getApexDrive: blessing OR C2+). During the window `sQ` resolves the Volcano Kablam burst variant. gcsim does not delete apexState on swap → no terminatesOnSwap.",
+				"↻ 2026-10-17 (Varesa's Fiery Passion round): the 'state-ending action' the note above asks for EXISTS now — `plungeBlessing.spendsAll`: the plunge spends every point and Fiery Passion ends at her NEXT action unless that is a burst (gcsim exitNS + clearNightsoulCB, which skips BurstState — so Kablam rides it), or at her swap-out. `sim/timedBlessing.ts`."
+			],
+			"plungeBlessing": {
+				"spendsAll": true
+			}
 		},
 		{
 			"id": "varesa__skill__riding_the_nightrainbow",
@@ -212,6 +221,10 @@
 				"state": "followUpStrike",
 				"duration": 5,
 				"consumes": ["apexDrive"]
+			},
+			"blessingPoints": {
+				"points": 20,
+				"at": 5
 			}
 		},
 		{
@@ -240,7 +253,8 @@
 			"_curatorNotes": [
 				"In-Nightsoul skill variant — same input ['E'] gated on state nightsoulBlessing. Hitmark 2 (vs base 5), uses fierySkillFrames (slightly different cancel ladder: AnimationLength 52 vs 43). Same 9s CD and 2 charges as base. `anim` 52 (was the swap value, 21, until 2026-09-17). `application` at fierySkillHitmark 2, Durability 25 — absent, it landed at frame 0 flagged provisional.",
 				"DMG scaling is increased per the description ('and its DMG will be increased') — gcsim uses fieryRush[talent] mults. Multipliers aren't authored (ScalingStat ATK or similar isn't carried on skill abilities; damage flows through cast-time visualization only).",
-				"Free skill: when entering NS via plunge, gcsim sets c.freeSkill=true allowing one cooldown-free press of this in-NS variant. Not modelled — same rationale as base entry."
+				"Free skill: when entering NS via plunge, gcsim sets c.freeSkill=true allowing one cooldown-free press of this in-NS variant. Not modelled — same rationale as base entry.",
+				"↻ 2026-10-17 (Varesa's Fiery Passion round): ONE charge pool with the base Rush (`sharesChargesWith`) — gcsim has one ActionSkill with 2 charges, and the two forms each keeping their own made a 4th E in a sample wait 3.2s. Both add 20 points at +5f (skill.go:84), which never enters Fiery Passion on its own."
 			],
 			"description": "While in Fiery Passion (Nightsoul Blessing), pressing E fires a faster Electro rush variant (hitmark 2 vs 5, slightly extended animation). Same 9s cooldown and 2-charge pool as the base skill.",
 			"opensTransientState": {
@@ -254,14 +268,19 @@
 					"element": "electro",
 					"units": 1
 				}
-			]
+			],
+			"blessingPoints": {
+				"points": 20,
+				"at": 5
+			},
+			"sharesChargesWith": "varesa__skill__riding_the_nightrainbow"
 		},
 		{
 			"id": "varesa__burst__guardian_vent",
 			"name": "Guardian Vent!",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"behavior": "stance",
+			"behavior": "instant",
 			"frames": {
 				"anim": 122,
 				"N": 93,
@@ -270,10 +289,7 @@
 				"swap": 90
 			},
 			"cooldown": 18,
-			"duration": 15,
 			"energyCost": 70,
-			"terminatesOnSwap": false,
-			"opensState": "nightsoulBlessing",
 			"variants": [
 				{
 					"label": "Volcano Kablam",
@@ -352,7 +368,8 @@
 				"Volcano Kablam variant WIRED via the KQM `sQ` token (2026-07-17): gated on the `apexDrive` transient state a plunge opens (see the normals' actionOpensState.plunge); consumesState closes the window at cast (gcsim DeleteStatus at kablamHitmark — modelled at cast start). ↻ CD SEMANTICS FLIPPED 2026-09-17 (T1 tranche) — `bypassesCooldown: true`, the Flins Thunderous Symphony shape. The kit is explicit: \"While affected by Apex Drive, Varesa can ignore her Elemental Burst CD\". The earlier reading copied gcsim's `varesa.go` ActionReady, which gates Kablam on `AvailableCDCharge` — but gcsim's own rotations enter Fiery Passion by PLUNGE, so the burst charge is never spent and the gate never bites. Measured before: `Varesa E Q C P sQ` at C0 waited out the 18s clock, by which time Apex Drive had lapsed, and resolved the BASE burst (a fresh 15s Fiery Passion) instead of Kablam. After: Kablam at 4.53s. ⚠️ gcsim's `SetCD(burst, 1*60)` would also overwrite the base burst's 18s clock with 1s; with the bypass the base clock is left alone, which is what \"ignore\" means. `application` at kablamHitmark 42 (Durability 25) — absent, it inherited the base burst's frame 88 and landed after the Kablam's own block had ended. behavior: instant + duration: 0 override the base stance so sQ neither re-opens nightsoulBlessing nor renders a 15s window. Frames: volcanicFrames=InitAbilSlice(47) → `anim` 47, ActionAttack=46 ActionSkill=45 ActionDash=43 ActionSwap=42. kablamHitmark=42, mult kablam[lvl], AttackTagPlunge (damageTag: plunge), ConsumeEnergyPartial(0, 30). C6 placeholder-buff removal note retained: CR/CD per-ability scoping isn't expressible; the +30 energy effect stays on C6.",
 				"C4 Diligent Refinement: when burst is cast OUTSIDE FP and OUTSIDE Apex Drive, Varesa gains a 15s plunge-flat-DMG buff: +500% ATK as flat damage (capped at 20,000). gcsim c4Burst() adds the status; c4FlatBonus() returns min(TotalAtk*5, 20000). Modelled with constellationScaling primitive's cap field (Xianyun-shape). The 'cancel on plunge ground impact' and the 'in-FP/Apex variant: +100% Q DMG' branch are partially modelled — the +100% Q DMG is on the C4 constellation entry as burstDmgBonus +100 gated on (constellation 4) AND (state nightsoulBlessing).",
 				"C2 Apex Drive on every plunge: removes the in-FP gate. With C2, plunges always trigger Apex Drive, enabling Volcano Kablam outside FP. ↻ 2026-08-18: this IS modelled, and the \"Not modelled (Apex Drive itself isn't modelled)\" that used to close the line contradicted the Volcano Kablam note four entries above it in this same array. By the Horns carries `actionOpensState.plunge` = apexDrive / 2.33s gated {constellation: 2}; Fiery Passion Strikes carries the same entry unconditioned; `sQ` resolves the Volcano Kablam variant off that state either way (gcsim getApexDrive: `Cons < 2 && !HasBlessing → return`). Apex Drive has been a real transient state since the post-P4 primitive landed 2026-07-17.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Nothing on screen is wrong, approximate or missing — Apex Drive is a real transient state, `sQ` resolves the Volcano Kablam variant correctly at C0 and C2, and the variant draws its own instant bar with its own cooldown and energy cost. This is notation documentation (how to type a token) plus a kit recap, and the KQM notation reference is where that belongs. ⚠ Varesa DOES have a real unstated divergence — the 15s Fiery Passion pill runs its authored span because Nightsoul points are not tracked — but the caveat does not say that, and I am not authoring new prose this round. Category: kit-explanation."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Nothing on screen is wrong, approximate or missing — Apex Drive is a real transient state, `sQ` resolves the Volcano Kablam variant correctly at C0 and C2, and the variant draws its own instant bar with its own cooldown and energy cost. This is notation documentation (how to type a token) plus a kit recap, and the KQM notation reference is where that belongs. ⚠ Varesa DOES have a real unstated divergence — the 15s Fiery Passion pill runs its authored span because Nightsoul points are not tracked — but the caveat does not say that, and I am not authoring new prose this round. Category: kit-explanation.",
+				"↻ 2026-10-17 (Varesa's Fiery Passion round): NOT A STANCE any more. Fiery Passion is owned by `timedBlessing` (`sim/timedBlessing.ts`): the burst fills the pool at +3f and enters it if she is outside (gcsim burst.go: GeneratePoints(max) then generatePlungeNightsoul; inside, the 15s timer is NOT reset); a plunge that tops the pool enters it too; it runs 15s (EnterTimedBlessing(…, 15*60)) and ends early at the action after an in-Fiery-Passion plunge. Entry grants one free E. Supersedes the 'points aren't tracked' note above. Volcano Kablam (`sQ`) states no `blessingPoints` and so adds none."
 			],
 			"description": "Leaps into the air before using the momentum of the drop to unleash a powerful flying kick, dealing Nightsoul-aligned AoE Electro DMG to opponents — just like those heroes of justice in woven scrolls for kids!\nAfter using this Skill, Varesa's Nightsoul points will be restored to maximum and she will enter the Fiery Passion state.\n\nIn the Fiery Passion state, Varesa's Elemental Burst will deal a greater amount of Nightsoul-aligned AoE Electro DMG.\n\nAdditionally, she will briefly activate Apex Drive after using a Plunging Attack while in her Fiery Passion state.\n\nApex Drive\nIncreases Varesa's interruption resistance. While affected by Apex Drive, Varesa can ignore her Elemental Burst CD and consume less Energy to use her special Elemental Burst, \"Guardian Vent: Volcano Kablam\": This causes her to use the especially powerful Plunging Attack, the \"Thunderous Tornado Eruption,\" which deals Nightsoul-aligned AoE Electro DMG upon landing before causing her to exit Apex Drive. This DMG is considered Plunging Attack DMG.\nVaresa will exit Apex Drive after using her Elemental Skill.",
 			"application": [
@@ -361,7 +378,12 @@
 					"element": "electro",
 					"units": 1
 				}
-			]
+			],
+			"blessingPoints": {
+				"points": "max",
+				"at": 3,
+				"enters": true
+			}
 		}
 	],
 	"passives": [
@@ -608,5 +630,11 @@
 		"generatedAt": "2026-04-06T11:45:40.724Z",
 		"curatedAt": "2026-05-07"
 	},
-	"release": "5.5"
+	"release": "5.5",
+	"timedBlessing": {
+		"state": "nightsoulBlessing",
+		"max": 40,
+		"duration": 15,
+		"freeSkillOnEntry": true
+	}
 }
