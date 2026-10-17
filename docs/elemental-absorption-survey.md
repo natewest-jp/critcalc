@@ -243,12 +243,54 @@ draws sit one frame before their own hit — gcsim reads the aura first.
 
 **Not in this cut / open:**
 
-1. **Sayu** — our hold E is gcsim's `hold=1`, which NEVER polls (`maxcount = 0`).
-   Absorbing needs the variant re-authored as gcsim's short hold (kick at 48, one
-   poll) or the full 10s hold. ⏭ Nate's call.
+1. ✅ **Sayu** — built 2026-10-17 as a held cast (§10).
 2. Venti's stream is CUT at the Stormeye's end; gcsim lets all 15 outlive it.
    Believed to be the game's behaviour, unverified (a Venti log would settle it).
 3. Lynette's last shot within 15f of the box's end is dropped (the window bounds
    the landing). A4 on lock not modelled.
 4. Kazuha's plunge add-on, Lan Yan, Wanderer A1, Sucrose C6, Jahoda — later (§8).
-5. The absorbed stubs' colour on the bar — Nate's eye.
+5. The absorbed stubs' colour on the bar — Nate's eye. ⏳ A `/lab` board of candidate
+   marks (bead, lock band, notch; shared with Columbina's Lunar hits) is up on
+   `experiment/foreign-marks`, 2026-10-17.
+
+## 10. ✅ Sayu's held Windwheel (2026-10-17, `feat/sayu-hold`)
+
+⚓ Nate: Sayu mains roll for most of the skill, so `hE` is the FULL hold and a time
+token shortens it — the Mizuki behaviour. But Mizuki's stance machinery is the wrong
+host. Mizuki acts during Dreamdrifter; Sayu can do nothing but end the roll, and
+everything after it moves with its length (gcsim `skillHold(duration)`). So the hold
+is ONE cast whose length the player sets:
+
+- **`AbilityVariant.held {max, from, cooldownPerSecond}`** (`HeldCast`, lint D.55).
+  `D` is a `~Xs` written right after the cast, clamped to `max` (600f); any excess
+  stays a wait. With no time token she rolls the full 600f.
+- **Everything after the release moves by `D`:** every `frames` entry,
+  `cooldownStartDelay`, and each `application[]` entry marked `held: 'after'`
+  (the kick). Entries marked `held: 'during'` (the roll ticks, authored to the
+  longest hold) land only while `frame − from ≤ D`. One resolver,
+  `heldApplications`, feeds every reader of the cast's list.
+- **The cooldown** is 6s + D/2, through the ability's cooldown modifiers.
+- **Absorption** polls only while she rolls (gcsim's `duration/12` checks), from 30f
+  every 12f, Pyro > Hydro > Electro > Cryo.
+- **The data, from gcsim:**
+  - Roll ticks at 18 + 30k, each with an absorbed twin on standard ICD per element.
+    gcsim lands the twin 1f after its tick; ours is authored on the same frame, after
+    the Anemo entry, so the boundary tick at 30k = D keeps its twin.
+  - The kick at 67 + D (no ICD), and its absorbed hit 1f later.
+  - Frames N/Q 109, D/J 108, swap 106, each + D.
+  - CD start at 50 + D.
+- **gcsim's ShortHold is retired** (kick 48, swap 87, 6.2s); tap and hold cover how
+  she is played.
+- Tests in `sim/heldCast.test.ts`.
+
+**Not done / known:**
+
+- **The E re-press** ("use the skill again to end it early") has no token. A `~Xs`
+  says the same thing.
+- **The frames audit compares gcsim's dumper hold (`hold=1`)** with our D = 0
+  nominal list: off by one frame, and 22 hits against 2. This is an oracle
+  artefact, ⛔ never migrate (CLAUDE.md's artefact list).
+- **Static readers** (Team Builder, coverage) see the nominal list: all 21 roll
+  ticks, and the kick at 67.
+- **C2** (the kick's +3.3% per 0.5s rolled) is unchanged.
+

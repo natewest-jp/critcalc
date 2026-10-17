@@ -86,6 +86,7 @@ import {
 import {
 	resolveAbilityTiming,
 	applyCooldownModifiers,
+	heldApplications,
 	resolveActiveAbility,
 	resolveChargeCastTime,
 	resolveChargeFrameMap,
@@ -710,6 +711,9 @@ export function runRotation(
 		}
 		const lookaheadSwapFollows =
 			lookaheadEnd < segments.length - 1 && !continuesInto(lookaheadEnd, char.id);
+		// ⚓ A `~Xs` a HELD cast took as its length (`HeldCast`, Sayu): token index
+		// → the frames it spent, so the wait branch advances only the rest.
+		const heldTaken = new Map<number, number>();
 
 		// Unified E/Q cast pipeline. One sequence with small kind-branches; the
 		// shared step order is the Q handler's (the reference the 2026-07-05 bug
@@ -891,6 +895,29 @@ export function runRotation(
 					variantCtx
 				);
 
+				// ⚓ A HELD CAST (`HeldCast`, Sayu's Windwheel, 2026-10-17): its length
+				// `D` is a `~Xs` written right after it — taken here, clamped to the
+				// longest hold, the excess left to wait — or the longest hold when none
+				// is written (⚓ Nate). Everything after the release moves by `D`, and
+				// the cancel slice is read against what follows the taken wait.
+				const held = variant?.held;
+				let heldFor = 0;
+				let castNextKey = nextKey;
+				let padAt = j;
+				if (held) {
+					heldFor = held.max;
+					let k = j + 1;
+					while (k < expandedTokens.length && isInert(expandedTokens[k])) k++;
+					const m =
+						expandedTokens[k]?.kind === 'time' && expandedTokens[k].text.match(/^~([\d.]+)s/);
+					if (m && isFinite(parseFloat(m[1]))) {
+						heldFor = Math.min(framesOf(parseFloat(m[1])), held.max);
+						heldTaken.set(k, heldFor);
+						castNextKey = peekActionKey(lookahead, k, isBow);
+						padAt = k;
+					}
+				}
+
 				// E only: ensure the resolved variant's charge queue exists (the
 				// scan may have re-resolved to a different variant).
 				let queue: number[] | undefined;
@@ -908,13 +935,14 @@ export function runRotation(
 					queue = ctx.eChargeQueues.get(chargeKey)!;
 				}
 
-				const castTime = resolveEQCastTime(
-					active,
-					variant,
-					cancelKeyFor(ctx.humanTiming, kind, nextKey, isBow)
-				);
+				const castTime =
+					resolveEQCastTime(
+						active,
+						variant,
+						cancelKeyFor(ctx.humanTiming, kind, castNextKey, isBow)
+					) + heldFor;
 				const {
-					cooldown: cd,
+					cooldown: timedCd,
 					duration: dur,
 					summonActivatesAt: spawn
 				} = resolveAbilityTiming(
@@ -929,6 +957,22 @@ export function runRotation(
 					{ teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) },
 					ctx.team.skillCooldownModifiers
 				);
+				// A held cast's cooldown grows with the hold (gcsim `6*60 + duration*0.5`),
+				// through the same modifiers as the authored length.
+				const cd =
+					held?.cooldownPerSecond !== undefined
+						? applyCooldownModifiers(
+								framesOf(variant?.cooldown ?? active.cooldown) + heldFor * held.cooldownPerSecond,
+								active,
+								variant,
+								states,
+								charConstellationLevel,
+								chainIdx,
+								stackState,
+								{ teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) },
+								ctx.team.skillCooldownModifiers
+							)
+						: timedCd;
 
 				// Apply gainStacks matching this cast BEFORE the snapshot, so the
 				// cast's stackContext reflects post-grant state (symmetric with
@@ -967,7 +1011,8 @@ export function runRotation(
 				// own when it states one (Alyosha's Hold), else the base's. ONE value
 				// for all three readers below (readyAt, the startsOnCooldown chain,
 				// the cd-reset instant), so they cannot disagree on a hold.
-				const cdStartDelay = variant?.cooldownStartDelay ?? active.cooldownStartDelay ?? 0;
+				const cdStartDelay =
+					(variant?.cooldownStartDelay ?? active.cooldownStartDelay ?? 0) + heldFor;
 				// ⚓ A cooldown whose LENGTH is the stance's (`cooldownByStanceTime`,
 				// Tartaglia, 2026-10-16): resolved here, against this cast's modifiers
 				// and states, and handed to the stance record for `clampStance`. The
@@ -1035,7 +1080,12 @@ export function runRotation(
 				// right-hand claymore. Resolved from the same `application[]` the
 				// gauge is fed (variant's replaces the base's, the array rule), so the
 				// pill and the aura lane's first pip cannot disagree.
-				const castApps = variant?.application ?? active.application;
+				// ⚠️ A held cast's list is resolved to ITS hold here — the roll's hits
+				// past the release dropped, the kick moved — and every reader below
+				// takes this one list.
+				const castApps = held
+					? heldApplications(variant?.application ?? active.application, held, heldFor)
+					: (variant?.application ?? active.application);
 				{
 					const first = resolveElementRef(castApps?.[0]?.element, variantCtx);
 					if (first !== undefined && first !== char.element) castEvent.element = first;
@@ -1543,7 +1593,7 @@ export function runRotation(
 					castStart,
 					// ⚠️ A variant's `application[]` REPLACES the base's, like every other
 					// variant array — a hold that lands different hits states all of them.
-					variant?.application ?? active.application,
+					castApps,
 					// ⚠️ `noICD` on a skill/burst was declared and inert until L4d; this is
 					// its first reader (Mualani's Sharky's Bite is the normal-side holder).
 					// ⛔ Not variant-overridable — `AbilityVariant` has no `noICD`, and
@@ -1575,14 +1625,17 @@ export function runRotation(
 					const absorbs = variant?.absorbs ?? active.absorbs;
 					if (absorbs) {
 						const key = `cast#${castId}`;
-						schedulePolls(ctx, clock, key, absorbs, castStart, () => true);
+						// A held cast polls only while it is held (gcsim's `duration/12`).
+						schedulePolls(ctx, clock, key, absorbs, castStart, (at) =>
+							held ? at - castStart - held.from <= heldFor : true
+						);
 						emitAbsorbedAtCast(
 							ctx,
 							clock,
 							char,
 							kind,
 							castStart,
-							variant?.application ?? active.application,
+							castApps,
 							key,
 							states,
 							charConstellationLevel,
@@ -1740,7 +1793,7 @@ export function runRotation(
 				// the gauge in the order they happen. ⛔ Nothing that reads the cast's
 				// own decisions may be added below this line.
 				clock.advance(castEnd);
-				humanPad(kind, j);
+				humanPad(kind, padAt);
 			} else if (isBurst) {
 				// No-ability fallback (Q): generic 15s CD.
 				// No resolved variant — key the abilityId by the bare charId.
@@ -1862,8 +1915,12 @@ export function runRotation(
 					// isFinite alone let `~99999999s` through — see MAX_TIME_ADVANCE_F.
 					// ⚠️ `~0.017s` is legal input and rounds to a single frame; that is the
 					// honest answer, not a floor worth guarding.
+					// A held cast took up to its longest hold of this wait as its length.
 					if (isFinite(delta))
-						clock.advance(clock.now + Math.min(framesOf(delta), MAX_TIME_ADVANCE_F));
+						clock.advance(
+							clock.now +
+								Math.max(0, Math.min(framesOf(delta), MAX_TIME_ADVANCE_F) - (heldTaken.get(j) ?? 0))
+						);
 				}
 			} else if (tok.kind === 'unset-time') {
 				emitAction({ action: 'unset', label: '~?', time: clock.now, duration: MIN_ACTIVE_F });
