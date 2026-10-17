@@ -5081,10 +5081,10 @@
 
 	   ⚠ THE INLINE `style:border-color` WENT WITH IT at both markup sites — a
 	   border-colour on a border-less element is a value that resolves, paints
-	   nothing, and quietly outlives the reason it existed. GHOST_EDGE_MIX is no
-	   longer imported here; the EXPORT still uses it (its ghosts keep their
-	   outlines — flat paper, no scene, same reasoning as the separators it
-	   kept), so the knob itself stays live in barMix.ts.
+	   nothing, and quietly outlives the reason it existed.
+	   ↻ 2026-10-17: the PNG export kept an outlined, 3px-inset ghost ("flat
+	   paper, no scene") until Nate spotted it — that reasoning died with the
+	   scene-backdrop redesign. It mirrors this rule now; GHOST_EDGE_MIX is gone.
 
 	   🎛️ The 1px inset is the knob: it is the whole of the recession now. */
 	.rp-bar-cd--ghost {

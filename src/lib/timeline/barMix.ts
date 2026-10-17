@@ -28,17 +28,11 @@ export const UPTIME_DIM_MIX = 65;
  *  day, once the transparent version was on screen.
  *
  *  ⚠ ONE NUMBER, TWO MEANINGS, AND THEY ARE THE SAME MEANING. On screen this is
- *  now an ALPHA — the element at 50% over whatever is behind. In the export it
- *  is still a MIX PERCENTAGE into CHART_BG. Those are arithmetically identical:
- *  compositing a colour at 50% alpha over a ground IS mixing 50% of it into
- *  that ground. So the export needed no change at all beyond the number, and
- *  the two renderers cannot drift on this the way they could on a hand-picked
- *  literal. */
+ *  now an ALPHA — the element at 50% over whatever is behind. ↻ 2026-10-17:
+ *  the export composites it as an alpha too, over its scene backdrop; while it
+ *  mixed into CHART_BG instead, its ghosts came out lighter than the screen's,
+ *  because the dimmed night is darker than that ground. */
 export const GHOST_FILL_MIX = 50;
-
-/** Ghost CD-track outline: % main into chart ground. (↻ 25 → 40, with the
- *  fill lift.) */
-export const GHOST_EDGE_MIX = 40;
 
 /** % of the element's saturation the ghost track keeps before mixing (100 =
  *  no drop). ↻ 2026-08-01 (Nate): 40 → 75 — the full drop desaturated the
