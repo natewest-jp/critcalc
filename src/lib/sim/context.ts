@@ -406,6 +406,8 @@ export type SimContext = {
 	lineupChanges: Map<number, { at: number; variantLabel: string | null }[]>;
 	/** Simulated Nightsoul pools, by character (`sim/nightsoul.ts`; Mavuika). */
 	nightsoulPools: Map<string, import('./nightsoul').NightsoulPool>;
+	/** Timed Blessings (`TimedBlessingSpec`, Varesa) — see `timedBlessing.ts`. */
+	timedBlessings: Map<string, import('./timedBlessing').TimedBlessing>;
 	/** A cast's `spawnsAtSwapOutFrom` summons spawned at this frame — written by
 	 *  the pool at the swap-out, read by finalize so the window and the live
 	 *  chain agree. Absent = that cast's owner never swapped out of the form. */
@@ -552,6 +554,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		castTerminatedSummons: new Map(),
 		lineupChanges: new Map(),
 		nightsoulPools: new Map(),
+		timedBlessings: new Map(),
 		swapSpawns: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],

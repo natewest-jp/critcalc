@@ -4,7 +4,14 @@
  * Character type definitions for the rotation planner schema and transformer output.
  */
 
-import type { Ability, Effect, Element, NightsoulPoolSpec, Reaction } from './ability';
+import type {
+	Ability,
+	Effect,
+	Element,
+	NightsoulPoolSpec,
+	TimedBlessingSpec,
+	Reaction
+} from './ability';
 import type { WeaponType } from './weapon';
 import type { CapabilitySummary } from '../capabilities/deriveCapabilities';
 import type { FramesSource } from '../coverage/deriveCoverage';
@@ -94,6 +101,9 @@ export type CharacterData = {
 	factionBonuses?: FactionBonus[];
 	/** A simulated Nightsoul pool — see `NightsoulPoolSpec` (Mavuika). */
 	nightsoulPool?: NightsoulPoolSpec;
+	/** A Nightsoul Blessing on a timer, fed by points that build outside it —
+	 *  see `TimedBlessingSpec` (Varesa). */
+	timedBlessing?: TimedBlessingSpec;
 
 	meta?: CharacterMeta;
 };
