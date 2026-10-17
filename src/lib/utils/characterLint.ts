@@ -519,6 +519,56 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 	if (!hasSkillOrBurst)
 		push('warn', 'missing-cast-ability', 'character has no skill or burst ability');
 
+	// (D.50) A CHANNELLED Charged Attack and the droplets it absorbs
+	// (`ChargeChannel`, Neuvillette's Equitable Judgment, 2026-10-17): every
+	// number a non-negative integer of FRAMES, the charge-up shrinking with each
+	// droplet, the hits ascending (the last is the beam's end), and droplets only
+	// on a kit whose channel can absorb them — nothing else reads them.
+	{
+		const isFrames = (n: unknown, min = 0) =>
+			typeof n === 'number' && Number.isInteger(n) && n >= min;
+		let hasChannel = false;
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'normal' || a.chargeChannel === undefined) continue;
+			hasChannel = true;
+			const ch = a.chargeChannel;
+			const bad = (msg: string) => push('strict', 'charge-channel-shape', msg, a.id);
+			if (!isFrames(ch.windup) || !isFrames(ch.absorbAt) || !isFrames(ch.dropletLife, 1))
+				bad('chargeChannel windup / absorbAt / dropletLife must be integers of FRAMES');
+			if (
+				ch.chargeUp?.length !== 4 ||
+				!ch.chargeUp.every((n, i) => isFrames(n) && (i === 0 || n <= ch.chargeUp[i - 1]))
+			)
+				bad(
+					'chargeChannel chargeUp must be four FRAMES values, one per droplet count 0–3, never growing'
+				);
+			if (
+				!ch.hits?.length ||
+				!ch.hits.every((n, i) => isFrames(n, 1) && (i === 0 || n > ch.hits[i - 1]))
+			)
+				bad('chargeChannel hits must be ascending positive FRAMES (the last is the beam end)');
+			if (!Object.values(ch.endLag ?? {}).every((n) => isFrames(n)))
+				bad('chargeChannel endLag values must be integers of FRAMES');
+		}
+		for (const a of c.abilities) {
+			if ((a.abilityType !== 'skill' && a.abilityType !== 'burst') || !a.spawnsDroplets) continue;
+			if (!hasChannel)
+				push(
+					'strict',
+					'droplets-unread',
+					`${a.id} drops droplets, but no Charged Attack channels to absorb them`,
+					a.id
+				);
+			if (!a.spawnsDroplets.every((d) => isFrames(d.at) && isFrames(d.count, 1)))
+				push(
+					'strict',
+					'droplets-shape',
+					`${a.id} spawnsDroplets entries need integer FRAMES \`at\` and a positive \`count\``,
+					a.id
+				);
+		}
+	}
+
 	// (D.27i) `summonTick.icdCounter` — two SERIES on one named counter
 	// (Alyosha's Field + Tugarin, 2026-10-16). One clock runs one window, so the
 	// sharers must state the same `icdGate`; a lone name shares nothing; and

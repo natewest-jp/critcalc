@@ -342,6 +342,10 @@ export type SimContext = {
 	 *  `moondriftStandsAt` reads mid-parse for Lumi's strike sequence. Appended
 	 *  by `emitReaction`, like `stellarConductTimes`. */
 	lunarCrystallizeTimes: number[];
+	/** Sourcewater Droplets standing, per character: each one's spawn and
+	 *  expiry, frames (`ChargeChannel`). A channel takes up to three, oldest
+	 *  first, by removing them. */
+	droplets: Map<string, { spawn: number; end: number }[]>;
 	/**
 	 * Every landing a sequenced summon struck (`summonStrike`, Lumi round), keyed
 	 * like `stateGatedTicks` — `characterId::label::source::spawnAt` — with the
@@ -541,6 +545,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		lastSwapOutAt: new Map(),
 		stellarConductTimes: [],
 		lunarCrystallizeTimes: [],
+		droplets: new Map(),
 		strikeLandings: new Map(),
 		summonChainGen: new Map(),
 		summonChainSupersededAt: new Map(),

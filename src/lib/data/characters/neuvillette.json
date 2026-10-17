@@ -52,7 +52,7 @@
 				"J": 26,
 				"swap": 58
 			},
-			"caveat": "Typing 'C' shows the short Charged Attack; in game, holding to charge enters Equitable Judgment, the long channeled attack, which is not modeled.",
+			"caveat": "Sourcewater Droplets are counted, not placed: each Charged Attack absorbs up to 3 of those his skill and burst dropped. With none left, the charge-up runs its full 3.5s.",
 			"_curatorNotes": [
 				"Droplet-absorption self-heal (16% MaxHP per Droplet consumed, gcsim charge.go:301-312 consumeDroplet) named in the caveat 2026-07-28 (capability sweep). Not authorable: absorption count is player-dependent field state inside the unmodeled EJ system; a bare heal effect would fake its trigger cadence. The wiki's C4 'heal' credit is this same base mechanic — C4 only spawns a Droplet (cons.go:46-79, 4s ICD), stub-with-caveat stands.",
 				"Normals: 3-hit catalyst chain. attackHitmarks=[19,16,32], attackFrames built via InitNormalCancelSlice(hitmark, animLen). N1 explicit overrides ActionAttack=29 ActionCharge=20; N2 ActionAttack=31 ActionCharge=22; N3 ActionWalk=61 ActionCharge=51. N3 final-hit C key omitted per convention.",
@@ -61,7 +61,8 @@
 				"Plunge frames not authored — Neuvillette has no custom plunge.go in gcsim source; not a meaningful rotation action.",
 				"[A7] Equitable Judgment is Neuvillette's main-DPS mode.",
 				"[A7] EJ is a multi-tick channeled action; unmodeled because there is no primitive for Sourcewater Droplet pickups (field collectibles) and the multi-tick channel does not fit a single FrameMap.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Typing 'C' shows the short Charged Attack; holding to charge enters Equitable Judgment, the empowered channeled attack — not modeled, since it feeds on Sourcewater Droplets picked up from the field. Each Droplet he absorbs also restores 16% of his Max HP.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Typing 'C' shows the short Charged Attack; holding to charge enters Equitable Judgment, the empowered channeled attack — not modeled, since it feeds on Sourcewater Droplets picked up from the field. Each Droplet he absorbs also restores 16% of his Max HP.\"",
+				"↻ 2026-10-17 (Equitable Judgment round): `C` IS EQUITABLE JUDGMENT now — `chargeChannel`, authored from gcsim charge.go (4eda9fc5f): windup 14f out of a dash/jump/swap/wait (0 after a cast, Normal, Charged or plunge — gcsim's CurrentState test), droplets absorbed at windup + 3, charge-up 209 − {0, 57, 111, 209} for 0–3 droplets, the beam's hits at S+6, 28, 53, 78, 103, 128, 153 and the closing wave at S+173 (getChargeJudgementHitmarkDelay: 6, +22, then +25 until past 173), Hydro 1U each on the standard group (ICDTagExtraAttack — NOT the catalyst rule, which is the short CA's ICDTagNone), end lag 51 / C 30 / swap 27 / E Q D J 0 (walk 36 has no key). ⚓ Droplets are a COUNT (⚓ Nate, 2026-10-17): E drops 3 at its hit, Q 3/2/1 at its three, each lives 878f (sourcewaterdroplet.go), a C takes up to 3 oldest-first; gcsim picks the ones in range at random, and in the E → Q → C loop measures 3 every time. The short Charged Attack (`chargeFrames` above) has no token now — gcsim's `short` param; nobody plays it. Not drawn (⚓ Nate): the HP drain, the droplet heals, C4's heal droplet, C6's +60f per droplet."
 			],
 			"sections": [
 				{
@@ -80,7 +81,23 @@
 					"description": "Gathering the might of Hydro, Neuvillette plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Hydro DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nWith light flourishes, Neuvillette commands the tides to unleash a maximum of 3 attacks, dealing Hydro DMG.\n\nCharged Attack Empowerment: Legal Evaluation\nWhile charging up, Neuvillette will gather the power of water, forming it into a Seal of Arbitration. In this state, Neuvillette can move and change facing, and also absorb any Sourcewater Droplets in a certain AoE.\nEvery Droplet he absorbs will increase the formation speed of the Seal, and will heal Neuvillette.\nWhen the charging is stopped, if the Symbol has yet to be formed, then a Charged Attack will be unleashed. If it has been formed, then a Charged Attack: Equitable Judgment will be unleashed.\n\nCharged Attack\nConsumes a fixed amount of Stamina to attack opponents with a rupturing blast of water, dealing AoE Hydro DMG.\n\nCharged Attack: Equitable Judgment\nUnleashes surging torrents, dealing continuous AoE Hydro DMG to all opponents in a straight-line area in front of him.\nEquitable Judgment will not consume any Stamina and lasts 3s.\nIf Neuvillette's HP is above 50%, he will continuously lose HP while using this attack.\n\nPlunging Attack\nGathering the might of Hydro, Neuvillette plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Hydro DMG upon impact with the ground."
+			"description": "Normal Attack\nWith light flourishes, Neuvillette commands the tides to unleash a maximum of 3 attacks, dealing Hydro DMG.\n\nCharged Attack Empowerment: Legal Evaluation\nWhile charging up, Neuvillette will gather the power of water, forming it into a Seal of Arbitration. In this state, Neuvillette can move and change facing, and also absorb any Sourcewater Droplets in a certain AoE.\nEvery Droplet he absorbs will increase the formation speed of the Seal, and will heal Neuvillette.\nWhen the charging is stopped, if the Symbol has yet to be formed, then a Charged Attack will be unleashed. If it has been formed, then a Charged Attack: Equitable Judgment will be unleashed.\n\nCharged Attack\nConsumes a fixed amount of Stamina to attack opponents with a rupturing blast of water, dealing AoE Hydro DMG.\n\nCharged Attack: Equitable Judgment\nUnleashes surging torrents, dealing continuous AoE Hydro DMG to all opponents in a straight-line area in front of him.\nEquitable Judgment will not consume any Stamina and lasts 3s.\nIf Neuvillette's HP is above 50%, he will continuously lose HP while using this attack.\n\nPlunging Attack\nGathering the might of Hydro, Neuvillette plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Hydro DMG upon impact with the ground.",
+			"chargeChannel": {
+				"windup": 14,
+				"absorbAt": 3,
+				"chargeUp": [209, 152, 98, 0],
+				"hits": [6, 28, 53, 78, 103, 128, 153, 173],
+				"endLag": {
+					"anim": 51,
+					"C": 30,
+					"E": 0,
+					"Q": 0,
+					"D": 0,
+					"J": 0,
+					"swap": 27
+				},
+				"dropletLife": 878
+			}
 		},
 		{
 			"id": "neuvillette__skill__o_tears_i_shall_repay",
@@ -105,7 +122,8 @@
 				"Main waterfall hit: skillHitmark=23f, FlatDmg=skill[lvl=10]×MaxHP=23.16% MaxHP Hydro, AttackTagElementalArt, ICDTagNone. 4 Hydro particles per cast (0.3s ICD).",
 				"Spawns 3 Sourcewater Droplets near hit target (gadgets the user picks up to fuel Equitable Judgment) — not modelled.",
 				"Spiritbreath Thorn (Pneuma Arkhe): hitmark=60f (=23+37), 37.44% ATK Hydro, AttackTagElementalArt, 10s ICD per skillAlignedICDKey. Pneuma-aligned; schema has no Arkhe field — flagged. ↻ 2026-09-17 (T1.5): it is `Durability: 0` in gcsim skill.go, so it applies nothing — its +60 entry is gone from `application`, where only the per-cast ICD counter had hidden it.",
-				"Cooldown: SetCDWithDelay(skill, 12*60, 20) → cooldown 12s, cooldownStartDelay 20f."
+				"Cooldown: SetCDWithDelay(skill, 12*60, 20) → cooldown 12s, cooldownStartDelay 20f.",
+				"↻ 2026-10-17 (Equitable Judgment round): the 3 droplets ARE modelled now, as a count — `spawnsDroplets` at the hit (gcsim makeDropletCB fires on the 23f hit), absorbed by the `chargeChannel` on the normal ability. Supersedes the \"not modelled\" notes above."
 			],
 			"description": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG.",
 			"application": [
@@ -117,7 +135,13 @@
 			],
 			"notModeled": {
 				"reason": "The Rotation Planner doesn't model pickups, so the Sourcewater Droplets this creates aren't drawn."
-			}
+			},
+			"spawnsDroplets": [
+				{
+					"at": 23,
+					"count": 3
+				}
+			]
 		},
 		{
 			"id": "neuvillette__burst__o_tides_i_have_returned",
@@ -139,7 +163,8 @@
 			"effects": [],
 			"_curatorNotes": [
 				"3-tick burst at burstHitmarks=[95, 135, 154]. Initial wave: 40.06% MaxHP Hydro (FlatDmg). Two waterfalls: 16.39% MaxHP Hydro each. Spawns 3+2+1=6 droplets across the 3 ticks (gadgets, not modelled). All 3 hits AttackTagElementalBurst, behavior:instant since the entire damage event resolves within 154f (no persistent on-field entity).",
-				"ConsumeEnergy(4) on cast — drains 4 energy from each non-active party member; not modelled."
+				"ConsumeEnergy(4) on cast — drains 4 energy from each non-active party member; not modelled.",
+				"↻ 2026-10-17 (Equitable Judgment round): 3 / 2 / 1 droplets at the three hits (gcsim burst.go spawns them in the same task as each hit, 95 / 135 / 154f) — `spawnsDroplets`, absorbed by the `chargeChannel` on the normal ability. Supersedes any \"not modelled\" note above."
 			],
 			"description": "Unleashes waves that will deal AoE Hydro DMG based on Neuvillette's Max HP. After a short interval, 2 waterfalls will descend and deal Hydro DMG in a somewhat smaller AoE, and will generate 6 Sourcewater Droplets within an area in front.",
 			"application": [
@@ -159,7 +184,21 @@
 			],
 			"notModeled": {
 				"reason": "The Rotation Planner doesn't model pickups, so the Sourcewater Droplets this creates aren't drawn."
-			}
+			},
+			"spawnsDroplets": [
+				{
+					"at": 95,
+					"count": 3
+				},
+				{
+					"at": 135,
+					"count": 2
+				},
+				{
+					"at": 154,
+					"count": 1
+				}
+			]
 		}
 	],
 	"passives": [

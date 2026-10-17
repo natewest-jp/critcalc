@@ -54,6 +54,7 @@ import {
 } from '$lib/types/ability';
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
+import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } from '$lib/utils/icd';
 import { FPS, frameAt, framesOf, landingsOf, projectileTravelOf } from '$lib/utils/frames';
 import {
 	GENERIC_NORMAL_HITS,
@@ -1178,6 +1179,19 @@ export function runRotation(
 				// its summons (a Tap's Ring reads the Ring form this opens). A summon
 				// that spawns at the swap-out off this cast's form is handed over as a
 				// closure — the cast's own arguments, called back at the swap.
+				// ⚓ Sourcewater Droplets (`ChargeChannel`): recorded with their FUTURE
+				// spawn instant, which a channel's absorb reads — the clock is
+				// monotonic, so nothing earlier can count one that has not landed.
+				for (const d of active.spawnsDroplets ?? []) {
+					const life = char.abilities.find(
+						(a): a is NormalAbility => a.abilityType === 'normal' && a.chargeChannel !== undefined
+					)?.chargeChannel?.dropletLife;
+					if (life === undefined) continue;
+					const list = ctx.droplets.get(char.id) ?? [];
+					for (let n = 0; n < d.count; n++)
+						list.push({ spawn: castStart + d.at, end: castStart + d.at + life });
+					ctx.droplets.set(char.id, list);
+				}
 				if (char.nightsoulPool) {
 					const deferred = findSummonsForBar(
 						char,
@@ -1736,6 +1750,21 @@ export function runRotation(
 			if (!tk) return null;
 			return tk.kind === 'Q' || tk.kind === 'E' ? tk.kind : tk.text;
 		};
+		/** The active normal ability, if its Charged Attack channels. */
+		const channelAbility = (): NormalAbility | undefined => {
+			if (!char.abilities.some((a) => a.abilityType === 'normal' && a.chargeChannel))
+				return undefined;
+			const ab = resolveActiveAbility(
+				char,
+				'normal',
+				computeCurrentStates(clock.now),
+				charConstellationLevel,
+				undefined,
+				undefined,
+				variantCtx
+			);
+			return ab?.chargeChannel ? ab : undefined;
+		};
 		/** The active normal ability, if its Charged Attack spins. */
 		const spinAbility = (): NormalAbility | undefined => {
 			if (!char.abilities.some((a) => a.abilityType === 'normal' && a.chargeSpin)) return undefined;
@@ -2122,6 +2151,101 @@ export function runRotation(
 						else if (spin && next !== 'F' && !(next !== null && /^C\d*$/.test(next)))
 							nightsoulCharging(ctx, clock, char, clock.now, false);
 					}
+					humanPad('charged', j);
+				} else if (/^C\d*$/.test(t) && channelAbility()) {
+					// ⚓⚓ THE CHANNEL (`chargeChannel`, Neuvillette's Equitable Judgment,
+					// 2026-10-17; gcsim `charge.go`): windup, absorb up to three droplets,
+					// a charge-up their count shortens, the beam's hits, the end lag.
+					normalCounter = 0;
+					settleOwnerStates(ctx, cs, char.id, clock.now);
+					const ab = channelAbility()!;
+					const ch = ab.chargeChannel!;
+					const start = clock.now;
+					const element = resolveActionElement(
+						'charged',
+						t,
+						char.weapon,
+						char.element,
+						resolveElementRef(ab.infusion, variantCtx) ?? infusionAt(ctx, char, start)
+					);
+					// gcsim rolls the windup into a preceding cast, Normal, Charged or
+					// plunge; out of a dash, a jump, a swap or a wait it is paid.
+					const prev = actionTextAt(j, -1);
+					const rolled = prev !== null && /^(E|Q|N\d*|s?C\d*|[hl]?P|A)$/.test(prev);
+					const absorbAt = start + (rolled ? 0 : ch.windup) + ch.absorbAt;
+					// Oldest first; one that expired before the absorb never counts.
+					const pool = (ctx.droplets.get(char.id) ?? []).filter((d) => d.end > absorbAt);
+					const taken = pool
+						.filter((d) => d.spawn <= absorbAt)
+						.sort((a, b) => a.spawn - b.spawn)
+						.slice(0, 3);
+					ctx.droplets.set(
+						char.id,
+						pool.filter((d) => !taken.includes(d))
+					);
+					const beamStart = absorbAt + ch.chargeUp[taken.length];
+					const beamEnd = beamStart + ch.hits[ch.hits.length - 1];
+					const lag = frameAt(
+						ch.endLag,
+						cancelKeyFor(
+							ctx.humanTiming,
+							'charged',
+							peekActionKey(lookahead, j, isBow),
+							isBow,
+							chargedBuffers
+						)
+					);
+					const ev = emitAction({
+						action: 'charged',
+						label: t,
+						time: start,
+						duration: beamEnd + lag - start,
+						abilityId: ab.id,
+						element
+					});
+					for (const h of ch.hits) {
+						const at = beamStart + h;
+						clock.schedule(at, Band.LAND, () => {
+							const live = liveSegment === turn;
+							// ⚠️ The beam is gcsim's `ICDTagExtraAttack` on the standard
+							// group, NOT the catalyst Charged Attack rule (that is the short
+							// attack's `ICDTagNone`) — so it is gated HERE on a counter of
+							// its own and offered ungated.
+							let icd = ctx.icdClocks.get(`${char.id}:channel`);
+							if (!icd) {
+								icd = createIcdClock();
+								ctx.icdClocks.set(`${char.id}:channel`, icd);
+							}
+							if (icdApplies(icd, at, STANDARD_ICD_FRAMES).applies)
+								emitReactionsAtSwing(
+									ctx,
+									clock,
+									char,
+									'charged',
+									element,
+									true,
+									at,
+									computeCurrentStates(at),
+									charConstellationLevel,
+									stackState
+								);
+							dispatchHit(
+								{
+									characterId: char.id,
+									time: at,
+									abilityType: 'charged',
+									element,
+									damageTag: 'charged',
+									abilityName: ab.name,
+									...(live ? {} : { offField: true as const }),
+									sourceEventId: ev.id
+								},
+								true,
+								live
+							);
+						});
+					}
+					clock.advance(beamEnd + lag);
 					humanPad('charged', j);
 				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
