@@ -56,6 +56,7 @@
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
+	import { decayDensities, rampDensities } from '$lib/timeline/buffEnvelope';
 	import { ABSORB_FADE_PX, LUNAR_GLEAM_STOPS, summonMarks } from '$lib/timeline/summonMarks';
 	const LUNAR_GLEAM_BG = `linear-gradient(90deg, ${LUNAR_GLEAM_STOPS.map(([at, c]) => `${c} ${at * 100}%`).join(', ')})`;
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
@@ -346,16 +347,6 @@
 	// Team Builder's Compare bars did too, until 2026-10-13). Its Safari-revert
 	// history travelled with it.
 
-	/** The thinnest a scaling buff's material gets, as a fraction of --glass-bar's
-	 *  own density. 🎛️ ⚠ IT IS NOT THE OLD 0.2. When the envelope mixed an
-	 *  OPAQUE fill toward the chart ground, 0.2 still produced a solid colour
-	 *  near that ground — thin meant "close to the background", and the bar was
-	 *  always there. Scaling a translucent material by 0.2 gives alpha .116,
-	 *  which is SHEER, and sheer is retired ("opaque or obviously translucent —
-	 *  the middle is not a place"). 0.5 keeps the thin end at alpha .29: still
-	 *  unmistakably a bar, still obviously less than full. */
-	const ENVELOPE_MIN = 0.5;
-
 	/** One gradient stop for the time-scaling buff envelope (Yelan Q, Mavuika Q
 	 *  — a buff whose value ramps or decays over its own window).
 	 *
@@ -376,33 +367,15 @@
 		return `color-mix(in srgb, var(--glass-bar) ${(density * 100).toFixed(1)}%, transparent)`;
 	}
 
-	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
-	// to full opacity (ramp cap). Accounts for segment offset so mid-ramp segments start brighter.
+	// The ramp / decay envelope as a CSS gradient — the densities come from
+	// `$lib/timeline/buffEnvelope.ts`, shared with the PNG export.
 	function rampingBackground(bar: CharReceivedBuffBar): string | undefined {
-		const ramp = bar.rampParams;
-		if (!ramp || bar.buffStart == null) return undefined;
-		const rampDur =
-			ramp.cap != null
-				? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval
-				: 10 * FPS;
-		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
-		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
-		const o0 = ENVELOPE_MIN + p0 * (1 - ENVELOPE_MIN);
-		const o1 = ENVELOPE_MIN + p1 * (1 - ENVELOPE_MIN);
-		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
+		const d = rampDensities(bar);
+		return d && `linear-gradient(to right, ${buffStop(d[0])}, ${buffStop(d[1])})`;
 	}
-
-	// Returns a linear-gradient CSS string for decaying buff bars, fading from full
-	// opacity (decay start) to dim (decay end). Mirrors rampingBackground in reverse.
-	// Decay duration equals the host effect's buff duration.
 	function decayingBackground(bar: CharReceivedBuffBar): string | undefined {
-		const decay = bar.decayParams;
-		if (!decay || bar.buffStart == null || decay.duration <= 0) return undefined;
-		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / decay.duration));
-		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / decay.duration));
-		const o0 = 1.0 - p0 * (1 - ENVELOPE_MIN);
-		const o1 = 1.0 - p1 * (1 - ENVELOPE_MIN);
-		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
+		const d = decayDensities(bar);
+		return d && `linear-gradient(to right, ${buffStop(d[0])}, ${buffStop(d[1])})`;
 	}
 
 	/**
