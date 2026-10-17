@@ -12,36 +12,27 @@
  * Geometry comes from the caller's xForTime-derived snapshot, so the export
  * can never drift horizontally from the on-screen chart.
  *
- * ══ THIS IS A PRINT RENDERING, NOT A MIRROR OF THE SCREEN ═══════════════════
- * ⚓ NATE 2026-08-11 asked whether this file earns its keep at all: it needs
- * constant maintenance, it can never look as good as the real chart because it
- * cannot have the night scene behind it, and every Genshin player can already
- * take a screenshot. Three of the four things it offers — uniform framing, the
- * watermark, straight-to-clipboard — a screenshot roughly matches.
+ * ══ THE CHART IS A COPY OF THE SCREEN (⚓ NATE, 2026-10-17) ══════════════════
+ * "Everything about the current live timeline should be copied by the PNG
+ * export, visually." That reverses the 2026-08-11 stance this header used to
+ * hold — a "print rendering" on flat paper that kept its own separators,
+ * outlines and type — and the reason it could: since the 2026-10-16 redesign
+ * the export stands on the scene backdrop like the screen, so every argument
+ * from "paper" is gone. What it still ADDS is framing, not a different chart:
+ * the bench ribbon, the notation and tab name, the footer, and the WHOLE
+ * timeline in one image (`totalWidth`, not the viewport) — the reason the
+ * file exists at all.
  *
- * THE FOURTH IS WHY IT STAYS: it paints `totalWidth`, the WHOLE
- * timeline, not the viewport. A minute-long rotation at working zoom is several
- * screens wide, and sharing that as one image is the thing a user cannot do for
- * themselves without scrolling and stitching.
- *
- * ⚠ SO THE MAINTENANCE BURDEN WAS NEVER INHERENT — IT CAME FROM THE MIRROR
- * CLAIM, AND THE CLAIM WAS ALREADY FALSE. This painter draws a portrait label
- * column the on-screen chart has not had since the tall-bench round, and it
- * draws the notation itself as a header, which lives in the composer on screen.
- * It is not a screenshot substitute; it is a DOCUMENT — notation, labelled
- * timeline, watermark. That divergence went unremarked for weeks.
- *
- * WHAT THIS MEANS IN PRACTICE, and it is the whole point of writing it down:
- *   · COLOUR still tracks. Both sides read the same tokens, the mirror test is
- *     cheap, and a bar in the wrong hue is a factual error either way.
- *   · SHAPE, GEOMETRY AND CHROME DO NOT have to track. The screen may drop a
- *     ground, a border or a separator because it has a live scene behind it;
- *     this canvas has flat paper behind it and may keep whatever a diagram on
- *     paper needs. A polish round is NOT obliged to drag this file along.
- *   · Round two is the first exercise of that: the on-screen chart lost its
- *     slot separators, its ruler seam and its lane rules; the export KEEPS all
- *     of them, because without a scene those lines are what stop a flat chart
- *     reading as soup.
+ * WHAT THIS MEANS IN PRACTICE:
+ *   · Colour, material, geometry and type all track. Glass is real alpha over
+ *     the backdrop (never a composite against CHART_BG), and every chart label
+ *     goes through `type()` with the size, weight and letter-spacing the screen
+ *     COMPUTES (read off the live page, not off the token names).
+ *   · A polish round on the timeline IS obliged to bring this file along. The
+ *     2026-10-17 sweep found the cooldown ghosts, corner radii, buff labels,
+ *     the ramp/decay envelope and every label's type had been left behind.
+ *   · The mirror test pins colours and materials; type and shape have no test
+ *     — compare a live/PNG pair by eye after touching either.
  *
  * ⚠ Colors here MIRROR the CSS in RotationTimeline.svelte (the same
  * keep-in-lockstep convention as elementColors.ts ↔ app.css). If a bar/lane
@@ -49,6 +40,7 @@
  */
 
 import { FPS } from '$lib/utils/frames';
+import { envelopeDensities } from '$lib/timeline/buffEnvelope';
 import {
 	ABSORB_FADE_PX,
 	LUNAR_GLEAM_STOPS,
@@ -126,30 +118,30 @@ const TEXT = '#ece5d8'; // --text (ctx-dark) → --parchment-100
 // ↻ 2026-08-09: the dark context's --muted stopped being an invented blend and
 // became what Genshin actually does — the ink laid on the ground at .72.
 const MUTED = '#b7b4ae'; // --muted (ctx-dark) = mix(parchment-100 72%, slate-800)
+// The chart's quietest ink — lane names, aura markers, unit labels. ⚠ Declared
+// at :root, so it mixes :ROOT's --muted, not the dark context's.
+const CHART_DIM = '#7f8185'; // --chart-dim = mix(--muted 62%, --frame-bg) at :root
 const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // THE ANNOTATION REGISTER — one bar material for buffs, debuffs and procs
 // alike (⚓ Nate 2026-08-11: "there's really no need to colour-split the
 // buff/debuff bars"). app.css holds the reasoning.
 //
-// ⚠ ON SCREEN IT IS GLASS; HERE IT IS THE COMPOSITE. --glass-bar is
-// rgb(44 53 73 / .8) laid on the night scene, and a PNG has no scene — so this
-// is that material resolved against the only ground the export has, CHART_BG:
-//     .8 × (44 53 73) + .2 × (31 38 53) = (41 50 69)
-// That is the decoupling declared at the top of this file doing its job. The
-// screen gets a material; paper gets what the material looks like on paper.
-// ⚠ If --glass-bar's alpha or rung moves, RECOMPUTE — the mirror test does this
-// arithmetic and will fail rather than let the two drift. It has already caught
-// three moves in one day: slate-700 @ .58 → slate-600 @ .8 → an off-ramp blue,
-// twice.
-// (Ramping/decaying received buffs paint flat here — the on-screen density
-// envelope isn't reproduced; the flat fill matches their full end.)
-const BAR_FILL = '#293245';
-// ↻ 2026-08-11: the 2px left edge returns to the buff/proc bars alone (⚓ Nate —
-// "the main purpose is to separate stacking buff bars"). On screen it is
-// rgb(255 255 255 / .3); here it is that composited over BAR_FILL, because a
-// canvas has no scene for the alpha to resolve against:
-//     .3 × (255 255 255) + .7 × (41 50 69) = (105 111 125)
-const BAR_EDGE = '#696f7d';
+// ↻ 2026-10-17 — IT IS GLASS HERE TOO (⚓ Nate: "everything about the current
+// live timeline should be copied by the PNG export, visually"). The export
+// used to paint the material COMPOSITED against CHART_BG, because a PNG had no
+// scene; since the 2026-10-16 redesign it stands on the scene backdrop, and the
+// composite came out lighter than the screen's glass over the dimmed night. So
+// this is --glass-bar itself — rgb and alpha — and the mirror test checks both.
+// A density (the ramp/decay envelope, a stepped bar) scales the ALPHA and keeps
+// the rgb, which is what `buffStop`'s mix toward transparent does on screen.
+const GLASS_BAR_RGB = [44, 53, 73] as const;
+const GLASS_BAR_ALPHA = 0.8;
+const glassAt = (density = 1) =>
+	`rgba(${GLASS_BAR_RGB.join(', ')}, ${+(GLASS_BAR_ALPHA * density).toFixed(4)})`;
+const BAR_FILL = glassAt();
+// The 2px left edge (⚓ Nate 2026-08-11 — "the main purpose is to separate
+// stacking buff bars"): rgb(255 255 255 / .3) laid over the glass, as on screen.
+const BAR_EDGE = 'rgba(255, 255, 255, 0.3)';
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
 // (⚓ Nate, "all labels back to white") — and, once the buff bars became glass
 // the same day, these went to HALF-STRENGTH white at medium weight (.65 / 500,
@@ -218,8 +210,10 @@ export const PALETTE_MIRROR = {
 	ACTIVE,
 	TEXT,
 	MUTED,
+	CHART_DIM,
 	INK,
-	BAR_FILL,
+	GLASS_BAR_RGB,
+	GLASS_BAR_ALPHA,
 	RX_FROZEN,
 	RX_QUICKEN,
 	RX_BURNING,
@@ -238,6 +232,16 @@ const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // dropped every exported label onto a system sans — a failure that renders
 // perfectly and is only visible by comparing a PNG to the screen.
 const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
+
+/** Set a chart label's type as the screen sets it: weight, size in px and
+ *  letter-spacing in px (the computed `--ls-*`), read off the live page
+ *  2026-10-17. Every chart label goes through here so none can keep a stale
+ *  spacing from the label before it. Canvas `letterSpacing` is newer than the
+ *  rest of the API; where it is missing the text is merely unspaced. */
+function type(c: CanvasRenderingContext2D, weight: number, px: number, ls = 0) {
+	c.font = `${weight} ${px}px ${SANS}`;
+	if ('letterSpacing' in c) c.letterSpacing = `${ls}px`;
+}
 
 // ── Color math (stand-ins for CSS color-mix in srgb) ────────────────────────
 
@@ -564,7 +568,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillRect(ox + tick.x, oy + snap.rulerH - th, 1, th);
 		if (tick.major && tick.t > 0) {
 			ctx.fillStyle = MUTED;
-			ctx.font = `10px ${SANS}`;
+			type(ctx, 400, 11);
 			ctx.textAlign = 'center';
 			ctx.fillText(`${tick.t}s`, ox + tick.x, oy + snap.rulerH - 11);
 		}
@@ -720,13 +724,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// ⚠ TWO THINGS DIFFER FROM THE BUFF BARS' EDGE AND BOTH MATTER.
 		// (1) It is painted INSIDE the clip and AFTER the tiles: this fill is a
 		//     stack of tiled layers, not one colour, so drawing it first buries it.
-		// (2) It uses REAL ALPHA, not BAR_EDGE. That literal is white .3
-		//     composited against BAR_FILL — the glass bar's ground — and this
-		//     lane's ground is a bright phlogiston orange, so the literal would
-		//     paint a grey-blue smear here. Over an already-painted canvas the
-		//     alpha resolves correctly on its own; the literal only exists for
-		//     bars whose ground the exporter has to model rather than draw.
-		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		// (2) Real alpha over the painted tiles — ↻ 2026-10-17 BAR_EDGE is that
+		//     same white .3 now (it was a composite against the old opaque buff
+		//     fill), so the two edges are one value.
+		ctx!.fillStyle = BAR_EDGE;
 		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
@@ -753,9 +754,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			[0.8, alpha('#ef8e91', 0.2)],
 			[1, alpha('#ef8e91', 0)]
 		]);
-		// The 2px left edge — real alpha over the painted tiles; see paintNbBar
-		// for why this is not BAR_EDGE.
-		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		// The 2px left edge — real alpha over the painted tiles, as on screen.
+		ctx!.fillStyle = BAR_EDGE;
 		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
@@ -794,7 +794,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			solids.push(() => {
 				const px = x(start);
 				const pw = barGeomW(start, span);
-				ctx!.font = `700 9px ${SANS}`;
+				type(ctx!, 700, 10, 0.2);
 				ctx!.textAlign = 'left';
 				if (dim) {
 					ctx!.fillStyle = mix(barColor, CHART_BG, UPTIME_DIM_MIX);
@@ -936,7 +936,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// label — provisional tinted on no-frame-map N/C/P tokens (mirrors
 					// .rp-active-text--danger)
 					ctx!.fillStyle = approxToken ? UI_PROVISIONAL : '#fff';
-					ctx!.font = `600 10px ${SANS}`;
+					type(ctx!, 600, 11);
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
 				});
@@ -973,7 +973,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillRect(fx, rowTop, px + pw - fx, snap.summonRowH);
 					}
 					ctx!.fillStyle = '#fff';
-					ctx!.font = `500 9px ${SANS}`;
+					type(ctx!, 500, 10, 0.2);
 					ctx!.textAlign = 'left';
 					haloText(
 						srow.label,
@@ -1049,7 +1049,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						bar.sourceLabel,
 						icon ? images.get(icon) : undefined,
 						next ? x(next.start) : undefined,
-						stepRects(bar.steps, bar.stepMax)
+						stepRects(bar.steps, bar.stepMax),
+						envelopeDensities(bar)
 					);
 					drawSeams(bar.seams, rowTop, snap.buffRowH);
 				});
@@ -1100,24 +1101,30 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		label: string,
 		icon: HTMLImageElement | undefined,
 		nextPx?: number,
-		steps?: { px0: number; px1: number; density: number }[]
+		steps?: { px0: number; px1: number; density: number }[],
+		envelope?: [number, number]
 	) {
-		ctx!.fillStyle = fill;
-		rr(px, py, pw, ph, 1);
-		ctx!.fill();
-		// ⚓ A STEPPED BAR (stepped stacks round) — each step is the material at
-		// its density, resolved on the export's one ground. Compositing is linear
-		// in alpha, so that is CHART_BG moved toward BAR_FILL by the density —
-		// ⛔ no new literal, and it tracks BAR_FILL when the mirror test moves it.
+		// The glass, as the screen draws it: a ramp/decay ENVELOPE thins it
+		// across the bar, a STEPPED bar (stepped stacks round) is the glass at
+		// each step's density — each in place of the flat fill, never over it.
 		if (steps && steps.length > 0) {
 			ctx!.save();
 			rr(px, py, pw, ph, 1);
 			ctx!.clip();
 			for (const st of steps) {
-				ctx!.fillStyle = mix(fill, CHART_BG, st.density * 100);
+				ctx!.fillStyle = glassAt(st.density);
 				ctx!.fillRect(st.px0, py, st.px1 - st.px0, ph);
 			}
 			ctx!.restore();
+		} else {
+			if (envelope) {
+				const g = ctx!.createLinearGradient(px, 0, px + pw, 0);
+				g.addColorStop(0, glassAt(envelope[0]));
+				g.addColorStop(1, glassAt(envelope[1]));
+				ctx!.fillStyle = g;
+			} else ctx!.fillStyle = fill;
+			rr(px, py, pw, ph, 1);
+			ctx!.fill();
 		}
 		// The 2px left edge — the one bar edge that survives the flattening pass,
 		// because these bars can overlap and glass gives no seam of its own.
@@ -1133,7 +1140,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.rect(px, py, Math.max(0, Math.min(px + pw, nextPx ?? Infinity) - px - 2), ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `500 9px ${SANS}`;
+		type(ctx!, 500, 10, 0.4);
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
@@ -1145,8 +1152,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 	// ── Lane names, at the plot's left edge and UNDER the bars, as the screen
 	//    sets them (.rp-lane-name, z-index 0): a bar that starts at 0s covers it ──
-	ctx.fillStyle = MUTED;
-	ctx.font = `600 9px ${SANS}`;
+	ctx.fillStyle = CHART_DIM;
+	type(ctx, 600, 10, 1.4);
 	ctx.textAlign = 'left';
 	const laneLabelX = ox + 2;
 	// Header hides when the lane is empty (mirrors the on-screen behavior) — the
@@ -1180,7 +1187,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fill();
 		if (g.pw > 32) {
 			ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-			ctx.font = `600 9px ${SANS}`;
+			type(ctx, 600, 10);
 			ctx.textAlign = 'center';
 			ctx.fillText(`${secondsLabel(g.cd)}s`, g.px + g.pw / 2, g.py + g.ph / 2 + 3);
 		}
@@ -1266,11 +1273,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			const pw = barGeomW(ev.start, ev.cooldown);
 			paintNbBar(px, laneTop, pw, snap.buffRowH);
 			ctx.fillStyle = '#fff';
-			ctx.font = `600 9px ${SANS}`;
+			type(ctx, 600, 10, 0.2);
 			ctx.textAlign = 'left';
 			haloText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3, NB_HALO_TIGHT, NB_HALO_WIDE);
 			if (pw > 40) {
 				ctx.fillStyle = '#fff';
+				type(ctx, 600, 10);
 				ctx.textAlign = 'center';
 				haloText(
 					`${secondsLabel(ev.cooldown)}s`,
@@ -1304,7 +1312,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx!.rect(wx, rowTop, visW - 2, snap.buffRowH);
 				ctx!.clip();
 				ctx!.fillStyle = '#fff';
-				ctx!.font = `600 9px ${SANS}`;
+				type(ctx!, 500, 10, 0.4);
 				ctx!.textAlign = 'left';
 				let tx = wx + 5;
 				const lunar = lunarIconSrc ? images.get(lunarIconSrc) : undefined;
@@ -1351,14 +1359,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		// Reaction markers — pip + family name, in the ruler's neutral ink. ⚠ A
 		// reaction is not an element and must not borrow one.
-		ctx.fillStyle = MUTED;
-		ctx.font = `600 9px ${SANS}`;
+		ctx.fillStyle = CHART_DIM;
+		type(ctx, 600, 10, 0.4);
 		ctx.textAlign = 'left';
 		// ⚓ WHICH LABELS SURVIVE IS DECIDED BY THE SAME FUNCTION THE SCREEN USES,
 		// with the canvas supplying its own metrics (2026-08-17). That is the whole
 		// point of `auraMarkerLabels` taking a `measure`: a mirror that re-derives
-		// the rule is not a mirror, and this one is 9px where the screen is 10, so
-		// a shared THRESHOLD would have been wrong in one of the two.
+		// the rule is not a mirror. (It was 9px where the screen is 10 until
+		// 2026-10-17; the canvas metrics keep it honest either way.)
 		const markerShown = auraMarkerLabels(
 			snap.auraLane.markers,
 			x,
@@ -1409,7 +1417,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		// The one datum, under everything: whole units below the ceiling.
 		ctx.strokeStyle = GRID;
-		ctx.font = `600 8px ${SANS}`;
+		type(ctx, 600, 8, 0.32);
 		ctx.textAlign = 'left';
 		for (const u of auraUnitLines(snap.auraLane.uMax)) {
 			const gy = Math.round(yOf(u)) + 0.5;
@@ -1423,7 +1431,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			// gutter the screen had to borrow from the frame's padding. ⚠ Not a
 			// duplicate of the ceiling reading below it: the column says how high the
 			// plot goes, these say where each unit is.
-			ctx.fillStyle = MUTED;
+			ctx.fillStyle = CHART_DIM;
 			ctx.textAlign = 'right';
 			ctx.fillText(`${u}U`, ox - 4, gy + 3);
 			ctx.textAlign = 'left';
@@ -1473,7 +1481,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		}
 
 		// Series names, where each aura first appears.
-		ctx.font = `600 8px ${SANS}`;
+		type(ctx, 600, 10, 1);
 		ctx.textAlign = 'left';
 		for (const entry of auraSpanLabels(
 			snap.auraLane.series,
@@ -1483,13 +1491,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			snap.auraLabelMinGap,
 			snap.auraLabelMinRow
 		)) {
+			// .rp-aura-series-name sits at opacity .8 — here, alpha in the paint.
 			ctx.fillStyle = AURA_MOD_COLOR[entry.mod];
+			ctx.globalAlpha = 0.8;
 			ctx.fillText(
 				entry.label.toUpperCase(),
 				x(entry.span.start) + 4,
 				Math.max(plotTop + 7, yOf(entry.span.openingU) - 3)
 			);
 		}
+		ctx.globalAlpha = 1;
 
 		// ── The gadget strip, under the baseline ──
 		// ⚓ Below the plot because a core and a Prism are ENTITIES, not gauge —

@@ -171,24 +171,15 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 	});
 
 	// ↻ 2026-08-11: the bar fill became a MATERIAL (--glass-bar), and one for
-	// buffs, debuffs and procs alike. A PNG has no scene to lay glass on, so the
-	// export paints the material COMPOSITED against the only ground it has.
-	//
-	// This is a stronger check than the literal comparison it replaces: it does
-	// the compositing arithmetic here, so the export cannot drift if EITHER the
-	// glass alpha, the glass rung, or the chart ground moves. Two of those three
-	// have moved unannounced before — see the GRID/LANE_LINE notes.
-	it('the bar material composites to the export literal (--glass-bar over the chart ground)', () => {
+	// buffs, debuffs and procs alike. ↻ 2026-10-17: the export stands on the
+	// scene now, so it paints the material ITSELF — rgb and alpha — over its
+	// backdrop, as the screen does (it composited against CHART_BG before, and
+	// came out lighter). Both halves are checked: the rung and the alpha.
+	it('the bar material is --glass-bar itself (rgb and alpha)', () => {
 		const m = /rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\/\s*([\d.]+)\s*\)/.exec(cssToken('--glass-bar'));
 		expect(m, '--glass-bar must stay an rgb() literal — see the nesting law').not.toBeNull();
-		const [r, g, b] = [+m![1], +m![2], +m![3]];
-		const a = +m![4];
-		const ground = hexToRgb(resolve(cssToken('--rp-chart-bg', timelineSvelte)));
-		const over = (c: number, i: number) =>
-			Math.round(c * a + ground[i] * (1 - a))
-				.toString(16)
-				.padStart(2, '0');
-		expect(PALETTE_MIRROR.BAR_FILL).toBe(`#${over(r, 0)}${over(g, 1)}${over(b, 2)}`);
+		expect([...PALETTE_MIRROR.GLASS_BAR_RGB]).toEqual([+m![1], +m![2], +m![3]]);
+		expect(PALETTE_MIRROR.GLASS_BAR_ALPHA).toBe(+m![4]);
 	});
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {
@@ -210,6 +201,14 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		);
 		expect(rpGrid).not.toBeNull();
 		expect(PALETTE_MIRROR.GRID).toBe(mix(border, chartBg, +rpGrid![1]));
+	});
+
+	it('CHART_DIM is --chart-dim resolved at :root (lane names, aura markers)', () => {
+		const m = /var\(--muted\) (\d+)%, var\(--frame-bg\)/.exec(cssToken('--chart-dim'));
+		expect(m).not.toBeNull();
+		expect(PALETTE_MIRROR.CHART_DIM).toBe(
+			mix(resolve(cssToken('--muted')), resolve(cssToken('--frame-bg')), +m![1])
+		);
 	});
 
 	it('ACTIVE matches the planner-local --rp-active', () => {
