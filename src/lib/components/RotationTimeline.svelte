@@ -55,7 +55,8 @@
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
-	import { ABSORB_FADE_PX, summonMarks } from '$lib/timeline/summonMarks';
+	import { ABSORB_FADE_PX, LUNAR_GLEAM_STOPS, summonMarks } from '$lib/timeline/summonMarks';
+	const LUNAR_GLEAM_BG = `linear-gradient(90deg, ${LUNAR_GLEAM_STOPS.map(([at, c]) => `${c} ${at * 100}%`).join(', ')})`;
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
 	import {
 		computeGadgetRows,
@@ -3248,17 +3249,17 @@
 													></div>
 												{/each}
 												<!-- A stack-threshold FIRE on this lane (Columbina's Gravity
-												     Interference): full height in the HIT's element, because it
-												     is a different object from a tick — the summon's own hits are
-												     stubs in the owner's hue, this is one hit the accrual paid
-												     for, and it applied nothing to the gauge (Durability 0), so
-												     it draws here and nowhere in the aura lane. -->
+												     Interference): a different object from a tick — one hit the
+												     accrual paid for, applying nothing to the gauge (Durability 0),
+												     so it draws here and nowhere in the aura lane. ⚓ A falling
+												     moonbeam GLEAM, not the hit's element (Nate, 2026-10-17;
+												     `LUNAR_GLEAM_STOPS`). -->
 												{#each sbar.fires ?? [] as fire, fIdx (fIdx)}
 													{@const fg = barGeom(fire.time, 0)}
 													<div
 														class="rp-summon-fire"
 														style:left="{fg.left}px"
-														style:background={pal(fire.element).hi}
+														style:background={LUNAR_GLEAM_BG}
 														aria-hidden="true"
 													></div>
 												{/each}
@@ -5304,15 +5305,19 @@
 	}
 
 	/* A threshold fire's mark on a summon lane (stack-threshold round,
-	   2026-09-18). Full bar height and 2px wide so it reads as an EVENT against
-	   the 5px tick stubs; opaque, in the hit's element. Centered on its instant
-	   — unlike a tick, a fire never coincides with the bar's start. */
+	   2026-09-18): ↻ 2026-10-17 a falling moonbeam gleam (⚓ Nate) — the lilac
+	   across (inline, `LUNAR_GLEAM_STOPS`), and a mask that fades it from the
+	   bar's top edge to nothing at its foot, where the ticks rise. Centered on
+	   its instant — unlike a tick, a fire never coincides with the bar's start.
+	   Alpha in the paint and the mask, never element opacity. */
 	.rp-summon-fire {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		width: 2px;
-		margin-left: -1px;
+		width: 6px;
+		margin-left: -3px;
+		-webkit-mask-image: linear-gradient(#000, transparent);
+		mask-image: linear-gradient(#000, transparent);
 		z-index: 4;
 		pointer-events: none;
 	}

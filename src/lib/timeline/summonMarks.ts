@@ -22,6 +22,24 @@ import type { Element } from '$lib/types/ability';
  *  length at every zoom, like a border. */
 export const ABSORB_FADE_PX = 24;
 
+/**
+ * ⚓ A LUNAR HIT IS A MOONBEAM (⚓ Nate, 2026-10-17 — the /lab board's 3e).
+ * Columbina's Gravity Interference strikes are moon-power lilac in game, not the
+ * reaction's element, so a threshold fire draws as a falling GLEAM: 6px wide,
+ * white at the core through a light lilac to nothing at its sides, brightest at
+ * the bar's top edge and gone by its foot — where the ticks rise from, so the
+ * two never share pixels. The lilac is the Moonsign lane's (`#b0a9ff`) 40% of the
+ * way to white. ⛔ The hit's element is not drawn; it is kept on the data.
+ */
+export const LUNAR_GLEAM_W = 6;
+export const LUNAR_GLEAM_STOPS: readonly [number, string][] = [
+	[0, '#d0cbff00'],
+	[0.35, '#d0cbffcc'],
+	[0.5, '#ffffff'],
+	[0.65, '#d0cbffcc'],
+	[1, '#d0cbff00']
+];
+
 type MarkedBar = {
 	ticks: number[];
 	absorbedTicks?: { time: number; element: string }[];

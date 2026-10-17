@@ -320,3 +320,17 @@ A `/lab` board (`experiment/foreign-marks`) ran three rounds:
   (`.rp-summon-absorbed`, a single gradient, not the tiled fill the Safari veto
   forbids) and the PNG export both read it.
 - Tests in `sim/absorb.test.ts`.
+
+### 11.1 Columbina's Lunar hits are moonbeams (same day, `feat/lunar-gleam`)
+
+The same board took Columbina's threshold fires (Gravity Interference), which had
+been drawn as a 2px full-height slab in the reaction's element. ⚓ Nate: in game
+those strikes are moon-power lilac, not the element. Tried: the slab fading to
+Hydro either side, lilac ticks at three strengths, and a moonlight gleam.
+
+**Chosen (3e):** a FALLING gleam, 6px wide, white at its core through a light
+lilac (the Moonsign `#b0a9ff`, 40% of the way to white) to nothing at its sides.
+It is brightest at the bar's top edge and gone by its foot, where the ticks rise
+from, so the two never share pixels. The constants live in
+`timeline/summonMarks.ts` (`LUNAR_GLEAM_*`). The timeline uses a mask; the PNG
+export draws rows at a falling alpha. The hit's element is no longer drawn.
