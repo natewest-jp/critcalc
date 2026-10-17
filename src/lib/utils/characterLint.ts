@@ -615,6 +615,39 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		}
 	}
 
+	// (D.55) A HELD CAST (Sayu, 2026-10-17): the hold is a SKILL VARIANT's, in
+	// integer FRAMES; an entry marked `held` stands only on a form that holds,
+	// and a `'during'` entry cannot land before the held phase begins.
+	{
+		const bad = (msg: string, id?: string) => push('strict', 'held-cast', msg, id);
+		const whole = (n: unknown, min: number) =>
+			typeof n === 'number' && Number.isInteger(n) && n >= min;
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+			if ((a as { held?: unknown }).held !== undefined)
+				bad(`${a.id}: \`held\` belongs on a variant, never the cast itself`, a.id);
+			if ((a.application ?? []).some((e) => e.held !== undefined))
+				bad(`${a.id}: a \`held\` application entry needs a variant with \`held\``, a.id);
+			for (const v of a.variants ?? []) {
+				const where = `${a.id} variant "${v.label}"`;
+				const h = v.held;
+				if (h) {
+					if (a.abilityType !== 'skill') bad(`${where}: only a skill holds`, a.id);
+					if (!whole(h.max, 1) || !whole(h.from, 0))
+						bad(`${where}: held.max/from must be integer FRAMES`, a.id);
+					if (h.cooldownPerSecond !== undefined && !(h.cooldownPerSecond > 0))
+						bad(`${where}: held.cooldownPerSecond must be positive`, a.id);
+				}
+				for (const e of v.application ?? []) {
+					if (e.held === undefined) continue;
+					if (!h) bad(`${where}: a \`held\` application entry needs \`held\``, a.id);
+					else if (e.held === 'during' && e.frame < h.from)
+						bad(`${where}: a 'during' entry at ${e.frame} lands before held.from`, a.id);
+				}
+			}
+		}
+	}
+
 	// (D.54) ELEMENTAL ABSORPTION (absorption round, 2026-10-17): a lock is a
 	// priority over the four absorbable elements in integer FRAMES; an absorbed
 	// tick or entry names no element of its own and needs a lock on its host.
@@ -2264,8 +2297,10 @@ function lintCastAbility(
 			}
 			// ⚠️ SORTED, and it matters: the sim schedules these in order and the report
 			// reads them as a timeline. An out-of-order entry is an authoring slip that
-			// nothing downstream would notice.
-			if (e.frame < last) {
+			// nothing downstream would notice. ⚠️ A held cast's `'after'` entry is
+			// written for a zero-length hold and lands after every `'during'` one, so
+			// it stands at the END of the list and outside this check (D.55).
+			if (e.held !== 'after' && e.frame < last) {
 				push(
 					'strict',
 					'application-invalid',
@@ -2273,7 +2308,7 @@ function lintCastAbility(
 					a.id
 				);
 			}
-			last = e.frame;
+			if (e.held !== 'after') last = e.frame;
 			const elIssue =
 				e.element === undefined ? null : elementRefIssue(e.element, CHARACTER_ELEMENTS);
 			if (elIssue) {

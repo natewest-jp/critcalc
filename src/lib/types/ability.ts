@@ -2892,6 +2892,15 @@ export type ElementalApplication = {
 	 * Only on a cast that opens a stance (lint D.48).
 	 */
 	whileStance?: { travel: number };
+	/**
+	 * ⚓ THIS HIT BELONGS TO A HELD CAST'S PHASES (`HeldCast`, Sayu, 2026-10-17).
+	 * `'during'` — a hit of the held phase itself, authored to the LONGEST hold:
+	 * it lands only when `frame − held.from ≤ D`, the hold the player chose.
+	 * `'after'` — a hit that follows the release (her kick): its `frame` is
+	 * written as for a zero-length hold and lands `D` frames later.
+	 * Only on a cast whose resolved form carries `held` (lint D.55).
+	 */
+	held?: 'during' | 'after';
 };
 
 /** Fields shared by all skill behavior variants. */
@@ -3540,8 +3549,37 @@ export type Ability =
  * If a variant omits a modifier array, the base's array applies; if the variant
  * has one, the base's is fully overridden.
  */
+/**
+ * ⚓ A HOLD WHOSE LENGTH THE PLAYER SETS (Sayu's Fuufuu Windwheel, 2026-10-17;
+ * gcsim `skillHold(duration)`, `hold=N`). Nothing can be done while she rolls
+ * except end it, so the hold is ONE cast whose length `D` (frames) is the
+ * player's: a `~Xs` written right after the cast sets it (clamped to `max`; any
+ * excess stays a wait), and without one she rolls the full `max` (⚓ Nate). It
+ * is the Mizuki shape seen from the cast's side: the time token shortens it.
+ *
+ * Everything after the release moves by `D` — every `frames` entry, the
+ * `cooldownStartDelay`, and each `application[]` entry marked `held: 'after'`.
+ * Entries marked `held: 'during'` land only within the hold. An `absorbs` on
+ * the cast polls only while the hold lasts (gcsim's `duration/12` checks).
+ *
+ * - `max` — the longest hold in frames (600), and the length when unnamed.
+ * - `from` — the frame, from the press, the held phase is counted from (18:
+ *   her first roll tick is the hold's `i = 0`).
+ * - `cooldownPerSecond` — seconds of cooldown added per second held (gcsim
+ *   `6*60 + duration*0.5`).
+ *
+ * ⛔ Variant-only: the hold is a form of a cast, never the cast itself.
+ */
+export type HeldCast = {
+	max: number;
+	from: number;
+	cooldownPerSecond?: number;
+};
+
 export type AbilityVariant = {
 	label: string;
+	/** This form is a hold of the player's length — see `HeldCast`. */
+	held?: HeldCast;
 	/** REPLACES the base's `nightsoul` — see `NightsoulCastSpec`. */
 	nightsoul?: NightsoulCastSpec;
 	/** Points this variant adds to a timed Blessing. ⚠️ A resolved variant
