@@ -408,6 +408,10 @@ export type SimContext = {
 	nightsoulPools: Map<string, import('./nightsoul').NightsoulPool>;
 	/** Timed Blessings (`TimedBlessingSpec`, Varesa) — see `timedBlessing.ts`. */
 	timedBlessings: Map<string, import('./timedBlessing').TimedBlessing>;
+	/** A non-stance cast's pill cut short by the form it opened (Mavuika's Tap E
+	 *  Ring), cast id → instant; `finalize` applies it LAST, after the summon
+	 *  windows have read the uncut length. See `closeForm` in `nightsoul.ts`. */
+	pillCuts: Map<number, number>;
 	/** A cast's `spawnsAtSwapOutFrom` summons spawned at this frame — written by
 	 *  the pool at the swap-out, read by finalize so the window and the live
 	 *  chain agree. Absent = that cast's owner never swapped out of the form. */
@@ -555,6 +559,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		lineupChanges: new Map(),
 		nightsoulPools: new Map(),
 		timedBlessings: new Map(),
+		pillCuts: new Map(),
 		swapSpawns: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],

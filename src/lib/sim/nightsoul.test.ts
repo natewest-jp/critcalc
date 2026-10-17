@@ -187,3 +187,39 @@ describe('Human timing and the cancel dash (Nate, in game, 2026-10-16)', () => {
 		expect(d.time - c1.time).toBe(20 + 10); // the tap is a timed press
 	});
 });
+
+describe('Mavuika — Phase 3 (2026-10-17)', () => {
+	const debuffs = (r: ReturnType<typeof run>['r']) =>
+		r.windows
+			.filter(
+				(w) => w.kind === 'buff' && w.characterId === MAV && (w as { debuff?: boolean }).debuff
+			)
+			.map((w) => [w.start, w.end]);
+
+	it('C2 shreds for every Ring — the one a swap spawns off the bike too', () => {
+		const { r, states } = run('Mavuika Q N4 > Bennett E', 2);
+		const ring = states('searingRing');
+		expect(ring.length).toBeGreaterThan(0);
+		expect(debuffs(r)).toEqual(ring.map((w) => [w.start, w.end]));
+	});
+
+	it('C6 shreds for the whole ride as well as the Ring', () => {
+		const { r, states } = run('Mavuika hE N3 > Bennett E', 6);
+		const spans = [...states('flamestrider'), ...states('searingRing')]
+			.map((w) => [w.start, w.end])
+			.sort((a, b) => a[0] - b[0]);
+		expect(debuffs(r)).toEqual(spans);
+	});
+
+	it("the Tap's pill ends where a burst ends its Ring", () => {
+		const { r } = run('Mavuika E ~4s Q');
+		const [tap, burst] = r.events.filter((e) => e.kind === 'cast');
+		expect((tap as { uptime: number }).uptime).toBe(burst.time - tap.time);
+	});
+
+	it('the burst stance ends with the Crucible: 105f + 420f', () => {
+		const { states } = run('Mavuika Q ~10s');
+		const [stance] = states('inStance');
+		expect(stance.end - stance.start).toBe(105 + 420);
+	});
+});
