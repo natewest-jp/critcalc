@@ -3225,6 +3225,18 @@
 														aria-hidden="true"
 													></div>
 												{/each}
+												<!-- An ABSORBED tick (absorption round, 2026-10-17): the same stub
+												     in the element the summon locked, 1px beside the Anemo stub it
+												     shares a frame with — one mark per frame AND element (⚓ Nate). -->
+												{#each sbar.absorbedTicks ?? [] as ab, aIdx (aIdx)}
+													{@const ag = barGeom(ab.time, 0)}
+													<div
+														class="rp-summon-tick"
+														style:left="{ag.left + 1}px"
+														style:background={pal(ab.element).hi}
+														aria-hidden="true"
+													></div>
+												{/each}
 												<!-- A stack-threshold FIRE on this lane (Columbina's Gravity
 												     Interference): full height in the HIT's element, because it
 												     is a different object from a tick — the summon's own hits are

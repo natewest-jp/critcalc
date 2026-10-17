@@ -226,6 +226,22 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
+								"absorbed": "twin",
+								"interval": 1.95,
+								"firstTickDelay": 0.967,
+								"icdGate": "none"
+							},
+							"scaling": 64.8,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Absorbed element (absorption round, 2026-10-17; gcsim 4eda9fc5f kazuha/burst.go:31-126): polls from 81f (hitmark − 1, a frame before the field spawns) every 18f, 17 polls, P > H > E > C; a TWIN on each of the 5 DoT ticks once locked, 1U, ICDTagNone. 64.8% at talent 10. ⚠️ Authored FIRST in effects[]: gcsim lands the twin before its Anemo tick on the shared frame (burst.go:92 before :94), and same-frame ticks fire in authored order."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
 								"interval": 1.95,
 								"firstTickDelay": 0.967,
 								"icdGate": "none"
@@ -243,7 +259,13 @@
 								"duration 8.78 (2026-09-17, T1.5): gcsim adds burstStatus at burstHitmark − 1 = 81f for (burstFirstTick − 81) + 117 × 4 = 527f, so the field ends on the fifth tick's frame (608). At 8.00 the tickCap widening drew the fifth marker outside its own bar."
 							]
 						}
-					]
+					],
+					"absorbs": {
+						"order": ["pyro", "hydro", "electro", "cryo"],
+						"from": 81,
+						"every": 18,
+						"polls": 17
+					}
 				}
 			],
 			"description": "The signature technique of Kazuha's self-styled bladework — a single slash that strikes with the force of the first winds of autumn, dealing AoE Anemo DMG.\nThe blade's passage will leave behind a field named \"Autumn Whirlwind\" that periodically deals AoE Anemo DMG to opponents within its range.\n\nElemental Absorption\nIf Autumn Whirlwind comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",

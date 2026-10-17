@@ -1092,6 +1092,20 @@ export type Trigger =
 			 * ⚠️ The key is unique on purpose (`nonHitting` is taken).
 			 */
 			appliesOnly?: true;
+			/**
+			 * ⚓ THE TICK IS IN THE ABSORBED ELEMENT (absorption round, 2026-10-17) —
+			 * the summon's `absorbs` lock decides it; the effect states no
+			 * `element`. `'twin'`: the series keeps its own cadence from the spawn
+			 * and a tick before the lock is refused (Kazuha's, Sucrose's, the
+			 * Traveler's twins on their Anemo ticks). `'stream'`: the series STARTS
+			 * at the lock — first tick at lock + `firstTickDelay`, `tickCap`
+			 * counted from it (Venti's 15 hits, Lynette's Vivid Shots). Its marks
+			 * and hits are PUBLISHED by the live chain, ⛔ never walked.
+			 */
+			absorbed?: 'twin' | 'stream';
+			/** Gauge units per tick when not 1 — the Anemo Traveler's absorbed
+			 *  burst twin is 2U (gcsim Durability 50). */
+			units?: number;
 	  }
 	/**
 	 * ⚓⚓ ONE STRIKE OF A SEQUENCED SUMMON (Lumi round, 2026-10-17) — a summon
@@ -1454,6 +1468,9 @@ export type Summon = {
 	 * closes the state at that cast (Mavuika's Ring, `searingRing`).
 	 */
 	opensState?: State;
+	/** This summon's absorption lock — see `AbsorbSpec`; its `absorbed` tick
+	 *  series read it. */
+	absorbs?: AbsorbSpec;
 	/** ⚓ The positive statement that this summon deals and applies NOTHING of
 	 *  its own (coverage round, docs/coverage-round.md §5.2) — a taunt, a
 	 *  shield gadget, a heal-only field. Read by the coverage page only: a
@@ -2798,7 +2815,28 @@ export type ElementRef =
 			 *  in-stance right hand; his BURST instead falls back to Anemo, and
 			 *  that asymmetry is gcsim's, not a slip. */
 			fallback?: Element;
-	  };
+	  }
+	/** ⚓ The element the cast's ABSORBER locked (`absorbs`, absorption round
+	 *  2026-10-17) — read at the entry's landing; nothing locked by then means
+	 *  the entry applies nothing and is not a hit (Heizou's Iris, Ifa's Mark).
+	 *  Valid only on a cast's `application[]` beside an `absorbs` (lint). */
+	| { type: 'absorbed' };
+
+/**
+ * ⚓ AN ANEMO ABSORBER'S LOCK (absorption round, 2026-10-17;
+ * `docs/elemental-absorption-survey.md`). Poll the enemy's aura from `from`
+ * FRAMES after the CAST, every `every` frames (absent = ONE draw at `from`), at
+ * most `polls` times (absent = while the host lives), and keep the first element
+ * of `order` the target holds — Frozen counting as Cryo, Burning as Pyro.
+ * `order` IS the mechanic: Pyro > Hydro > Electro > Cryo for most, Cryo first
+ * for the Anemo Traveler and Lynette.
+ */
+export type AbsorbSpec = {
+	order: ('pyro' | 'hydro' | 'electro' | 'cryo')[];
+	from: number;
+	every?: number;
+	polls?: number;
+};
 
 export type ElementalApplication = {
 	/** Frames (60fps) from cast start to the hitmark. */
@@ -3093,6 +3131,9 @@ type SkillCommonFields = AbilityCommon & {
 	/** Points this cast adds to its caster's timed Blessing — see
 	 *  `TimedBlessingSpec`. */
 	blessingPoints?: BlessingPoints;
+	/** This cast's absorption lock — see `AbsorbSpec`; its `application[]`
+	 *  entries in `{type: 'absorbed'}` read it. */
+	absorbs?: AbsorbSpec;
 	/** The sibling skill whose charge pool this one spends — one in-game skill
 	 *  in two forms (Varesa's Rush and Fiery Passion Rush; gcsim has ONE
 	 *  `ActionSkill`). Without it each form keeps its own charges. */
@@ -3327,6 +3368,9 @@ type BurstCommonFields = AbilityCommon & {
 	/** Points this cast adds to its caster's timed Blessing — see
 	 *  `TimedBlessingSpec`. */
 	blessingPoints?: BlessingPoints;
+	/** This cast's absorption lock — see `AbsorbSpec`; its `application[]`
+	 *  entries in `{type: 'absorbed'}` read it. */
+	absorbs?: AbsorbSpec;
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	/** Whether this ability's own damage snapshots the caster's stats at cast
@@ -3504,6 +3548,9 @@ export type AbilityVariant = {
 	 *  speaks for itself: absent here means NONE, not the base's (Volcano
 	 *  Kablam adds nothing where the burst it rides fills the pool). */
 	blessingPoints?: BlessingPoints;
+	/** REPLACES the base's `absorbs` (a hold form that absorbs where the tap
+	 *  does not). */
+	absorbs?: AbsorbSpec;
 	input?: Input[];
 	frames?: FrameMap;
 	cooldown?: number;

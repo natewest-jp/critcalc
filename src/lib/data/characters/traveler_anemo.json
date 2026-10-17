@@ -125,11 +125,27 @@
 						},
 						{
 							"frame": 46,
-							"element": "anemo"
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 46,
+							"element": {
+								"type": "absorbed"
+							},
+							"units": 1
 						},
 						{
 							"frame": 66,
-							"element": "anemo"
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 66,
+							"element": {
+								"type": "absorbed"
+							},
+							"units": 1
 						},
 						{
 							"frame": 81,
@@ -137,19 +153,55 @@
 							"units": 1
 						},
 						{
+							"frame": 81,
+							"element": {
+								"type": "absorbed"
+							},
+							"units": 1
+						},
+						{
 							"frame": 96,
-							"element": "anemo"
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 96,
+							"element": {
+								"type": "absorbed"
+							},
+							"units": 1
 						},
 						{
 							"frame": 111,
-							"element": "anemo"
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 111,
+							"element": {
+								"type": "absorbed"
+							},
+							"units": 1
 						},
 						{
 							"frame": 116,
 							"element": "anemo",
 							"units": 1
+						},
+						{
+							"frame": 116,
+							"element": {
+								"type": "absorbed"
+							},
+							"units": 1
 						}
-					]
+					],
+					"absorbs": {
+						"order": ["cryo", "pyro", "hydro", "electro"],
+						"from": 32,
+						"every": 18,
+						"polls": 6
+					}
 				}
 			],
 			"effects": [],
@@ -160,7 +212,8 @@
 				"Tap-E frames (Male): skillPressFrames[0]=InitAbilSlice(74), ActionBurst=76 ActionDash=30 ActionJump=31 ActionSwap=66.",
 				"Anemo absorption: during Hold-E (and burst Gust Surge), Traveler scans for nearby auras to absorb. Once absorbed, subsequent ticks deal absorbed-element DMG instead of Anemo. Same multi-element-absorption gap as Wanderer/Kazuha; not modeled.",
 				"[A7] Hold variant per-tick damage and its 6-tick continuous-cutting + final-Storm sequence (first tick ~31f, +15f intervals, +5f Initial→Max transition) are not modeled as separate hits; the variant's timing is approximate. Frame breakdown already in _curatorNotes.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Absorption half: the Hold's seven authored application entries all read anemo, so every aura-lane pip and every swirl marker during a hold-E is Anemo where the game would show Pyro/Hydro/Cryo/Electro — rubric N13 says these stay fully true. Timing half: the variant's own frames are stamped 'approximated' in the curator notes, so the hold-E bar's WIDTH and where the next token lands are a guess — a bar length the player reads directly. Dropped clause: 'individual cutting ticks aren't shown' — no cast on any character shows sub-hits, and it is already stated tool-level in AURA_NOTES. Category: visible-divergence."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Absorption half: the Hold's seven authored application entries all read anemo, so every aura-lane pip and every swirl marker during a hold-E is Anemo where the game would show Pyro/Hydro/Cryo/Electro — rubric N13 says these stay fully true. Timing half: the variant's own frames are stamped 'approximated' in the curator notes, so the hold-E bar's WIDTH and where the next token lands are a guess — a bar length the player reads directly. Dropped clause: 'individual cutting ticks aren't shown' — no cast on any character shows sub-hits, and it is already stated tool-level in AURA_NOTES. Category: visible-divergence.",
+				"↻ 2026-10-17 (absorption round): the hold absorbs — polls from 32f (first tick + 1) every 18f, 6 polls, C > P > H > E (gcsim 4eda9fc5f traveler/common/anemo/skill.go:143-294); a TWIN beside every cutting tick after the lock and the storm, same frame, 1U, all on ONE ICDTagElementalArt<El> counter (separate from the Anemo hits) — so the storm twin is NOT noICD and with a lock at 32 only the twins at 46 and 96 apply. Tick 31 never has a twin. The Anemo entries at 46/66/96/111 gain units 1 (gcsim 25 on all)."
 			],
 			"description": "Aether/Lumine summons a vortex of wind, drawing enemies and objects in toward herself.\n\nTap\nUnleashes a small wind vortex that deals Anemo DMG to opponents in front of her.\n\nHold\nThe whirlwind continuously sucks in surrounding objects and opponents, dealing continuous Anemo DMG. After releasing, the whirlwind strikes again, causing AoE Anemo DMG and launching opponents.",
 			"application": [
@@ -206,8 +259,31 @@
 							"scaling": 67.68,
 							"stat": "atk",
 							"element": "anemo"
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "twin",
+								"interval": 0.5,
+								"firstTickDelay": 0,
+								"icdGate": "none",
+								"units": 2
+							},
+							"scaling": 33.84,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Absorbed element (absorption round, 2026-10-17; gcsim 4eda9fc5f traveler/common/anemo/burst.go:42-124): polls from 39f every 18f, 18 polls, C > P > H > E; a TWIN per tick once locked, 2U (Durability 50). ⚠️ ICDTagNone — gcsim computes a per-element qICDTag and never writes it into aiAbs (a likely upstream bug; the survey's 'per-element tag' row was wrong), and we follow the code. 33.84% at talent 10."
+							]
 						}
-					]
+					],
+					"absorbs": {
+						"order": ["cryo", "pyro", "hydro", "electro"],
+						"from": 39,
+						"every": 18,
+						"polls": 18
+					}
 				}
 			],
 			"effects": [],

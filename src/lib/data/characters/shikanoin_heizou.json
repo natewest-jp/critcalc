@@ -188,18 +188,28 @@
 				"Burst frames: ActionDash not explicitly set in gcsim burstFrames (InitAbilSlice default = AnimationLength=72) — D omitted per recipe. ActionAttack=71, ActionSkill=71, ActionJump=70, ActionSwap=69.",
 				"burstHitmark = 34 (initial Vacuum Slugger). Windmuster Iris explosions follow at delay 40 frames after the auraCheck callback for each tagged enemy. Max 4 opponents tagged per cast.",
 				"Windmuster Iris is a per-enemy delayed elemental DMG instance keyed off the enemy's existing aura (Pyro/Hydro/Electro/Cryo priority). Not modeled as a summon (no spawned entity). Element absorption-style mechanic — flag for reviewer; this is similar in flavor to recipe.md § 3.5 Elemental Absorption but applies per-enemy on burst hit rather than at cast.",
-				"energyCost=40 from data_gen.textproto (burst_energy_cost). gcsim burst.go also calls c.ConsumeEnergy(3) — likely an unrelated/secondary internal hook; not modeled."
+				"energyCost=40 from data_gen.textproto (burst_energy_cost). gcsim burst.go also calls c.ConsumeEnergy(3) — likely an unrelated/secondary internal hook; not modeled.",
+				"↻ 2026-10-17 (absorption round): the Windmuster Iris — ONE draw (gcsim does one per tagged enemy, up to 4; we model one), P > H > E > C, and the Iris explodes 40f later in that element, 1U, ICDTagNone; NO aura means NO Iris (gcsim 4eda9fc5f heizou/burst.go:23-129). ⚠️ The draw is authored at 33f, one frame before the burst's hit: gcsim reads the aura BEFORE its own same-frame Anemo hit lands (:58 before :73), and our polls run after a frame's hits. The element-less entry at 34 that waited for this round was gcsim's 0-durability aura-check attack — retired; the Iris replaces it."
 			],
 			"application": [
-				{
-					"frame": 34
-				},
 				{
 					"frame": 34,
 					"element": "anemo",
 					"units": 1
+				},
+				{
+					"frame": 74,
+					"element": {
+						"type": "absorbed"
+					},
+					"units": 1,
+					"noICD": true
 				}
-			]
+			],
+			"absorbs": {
+				"order": ["pyro", "hydro", "electro", "cryo"],
+				"from": 33
+			}
 		}
 	],
 	"passives": [

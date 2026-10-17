@@ -206,7 +206,8 @@ export function computeSummonSubrows(
 			// A threshold fire's mark rides the same lane, read not derived
 			// (stack-threshold round, 2026-09-18). Spread conditionally so a lane
 			// with none is byte-identical to before.
-			...(w.fires ? { fires: w.fires } : {})
+			...(w.fires ? { fires: w.fires } : {}),
+			...(w.absorbedTicks ? { absorbedTicks: w.absorbedTicks } : {})
 		});
 	}
 

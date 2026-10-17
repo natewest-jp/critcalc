@@ -225,8 +225,37 @@
 								"tickCap 3 / 4 at C2 (tick-cap round, 2026-08-18): gcsim burst.go `for i := 137; i <= duration+5; i += 113` with `duration := 360` (480 at C2) gives three ticks base and four at C2. Our duration-derived 4 was one long at C0 and correct at C2, so the C2 override exists to keep the constellation case from being clamped by the base cap.",
 								"⚠️ The cap reaches the PLANNER and the GAUGE only. `tickCapOf` (src/lib/sim/summons.ts:203) is read by `collectSummonTicks` and by aura.ts's tick chain — the summon-lane markers, the PNG and the applications. It is NOT published to the Team Builder: `DerivedCapability.summon` carries `tickInterval`/`firstTickDelay` and no count (src/lib/capabilities/deriveCapabilities.ts `summonHost`), and Compare re-derives its own marks from interval-until-uptime (team-builder/lib/compare.ts `tickOffsets`, :201-205). So Compare still draws FOUR marks for this summon at C0 where the timeline draws three. Known TB lag, same class as `cooldownStartsAtStanceEnd` and `chargeModifiers`; ⛔ don't reconcile it by removing the cap."
 							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "twin",
+								"interval": 1.883,
+								"firstTickDelay": 0,
+								"icdGate": "none",
+								"tickCap": 3,
+								"tickCapScaling": {
+									"conditions": {
+										"type": "constellation",
+										"level": 2
+									},
+									"ticks": 4
+								}
+							},
+							"scaling": 79.2,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Absorbed element (absorption round, 2026-10-17; gcsim 4eda9fc5f sucrose/burst.go:34-112): polls from 136f (a frame before the spirit spawns) every 18f while it lives, P > H > E > C; a TWIN per tick (137, 250, 363, +476 at C2) once locked, 1U, ICDTagNone, after its Anemo tick on the shared frame. 79.2% at talent 10. Capped like the Anemo series. Acceptance: Nate's 2026-10-14 Sucrose Q logs (the absorbed 866 on every tick). Not modelled: C6's element bonus on the lock (a bounty)."
+							]
 						}
-					]
+					],
+					"absorbs": {
+						"order": ["pyro", "hydro", "electro", "cryo"],
+						"from": 136,
+						"every": 18
+					}
 				}
 			],
 			"caveat": "The Hexerei DMG bonus is shown for the whole team; in game only Hexerei party members receive it.",

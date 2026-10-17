@@ -14,6 +14,7 @@
 
 import type { CharacterData } from '$lib/types/character';
 import type {
+	AbsorbSpec,
 	Ability,
 	FrameMap,
 	AbilityVariant,
@@ -610,6 +611,62 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 					bad(`${a.id} sharesChargesWith must name another skill that keeps its own pool`, a.id);
 				else if ((sib.charges ?? 1) !== (a.charges ?? 1) || sib.cooldown !== a.cooldown)
 					bad(`${a.id} shares ${sib.id}'s charges but states different charges or cooldown`, a.id);
+			}
+		}
+	}
+
+	// (D.54) ELEMENTAL ABSORPTION (absorption round, 2026-10-17): a lock is a
+	// priority over the four absorbable elements in integer FRAMES; an absorbed
+	// tick or entry names no element of its own and needs a lock on its host.
+	{
+		const ABSORBABLE = new Set(['pyro', 'hydro', 'electro', 'cryo']);
+		const bad = (msg: string, id?: string) => push('strict', 'absorb-shape', msg, id);
+		const frames = (n: unknown, min: number) =>
+			typeof n === 'number' && Number.isInteger(n) && n >= min;
+		const checkSpec = (spec: AbsorbSpec | undefined, where: string, id: string) => {
+			if (!spec) return;
+			if (!spec.order?.length || !spec.order.every((e) => ABSORBABLE.has(e)))
+				bad(`${where}: absorbs.order must list pyro/hydro/electro/cryo`, id);
+			if (!frames(spec.from, 0)) bad(`${where}: absorbs.from must be integer FRAMES`, id);
+			if (spec.every !== undefined && !frames(spec.every, 1))
+				bad(`${where}: absorbs.every must be positive integer FRAMES`, id);
+			if (spec.polls !== undefined && (!frames(spec.polls, 1) || spec.every === undefined))
+				bad(`${where}: absorbs.polls needs \`every\` and a positive count`, id);
+		};
+		const isAbsorbedRef = (el: unknown) =>
+			typeof el === 'object' && el !== null && (el as { type?: string }).type === 'absorbed';
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+			const forms: { absorbs?: AbsorbSpec; application?: ElementalApplication[]; label: string }[] =
+				[
+					{ absorbs: a.absorbs, application: a.application, label: a.id },
+					...(a.variants ?? []).map((v) => ({
+						absorbs: v.absorbs ?? a.absorbs,
+						application: v.application ?? a.application,
+						label: `${a.id} variant "${v.label}"`
+					}))
+				];
+			for (const f of forms) {
+				checkSpec(f.absorbs, f.label, a.id);
+				if ((f.application ?? []).some((e) => isAbsorbedRef(e.element)) && !f.absorbs)
+					bad(`${f.label}: an absorbed application entry needs an \`absorbs\` lock`, a.id);
+			}
+			for (const sm of a.summons ?? []) {
+				checkSpec(sm.absorbs, `${a.id} summon "${sm.label}"`, a.id);
+				for (const e of sm.effects ?? []) {
+					if (e.trigger.type !== 'summonTick') continue;
+					const t = e.trigger;
+					if (t.units !== undefined && !(t.units > 0))
+						bad(`summon "${sm.label}": units must be positive`, a.id);
+					if (t.absorbed === undefined) continue;
+					if (!sm.absorbs)
+						bad(`summon "${sm.label}": an absorbed series needs the summon's \`absorbs\``, a.id);
+					if (e.type !== 'damage' || e.element !== undefined)
+						bad(
+							`summon "${sm.label}": an absorbed series is a damage tick that names no element`,
+							a.id
+						);
+				}
 			}
 		}
 	}
@@ -1965,7 +2022,10 @@ function lintNormal(
  */
 function elementRefIssue(ref: ElementRef, allowed: ReadonlySet<string>): string | null {
 	if (typeof ref === 'string') return allowed.has(ref) ? null : `"${ref}" is not a valid Element`;
-	if (ref.type !== 'teamElementPriority') return `unknown ElementRef type "${String(ref.type)}"`;
+	// An absorbed element is sound in shape; D.54 says where it may stand.
+	if (ref.type === 'absorbed') return null;
+	if (ref.type !== 'teamElementPriority')
+		return `unknown ElementRef type "${String((ref as { type: unknown }).type)}"`;
 	if (!Array.isArray(ref.order) || ref.order.length === 0)
 		return 'teamElementPriority needs a non-empty `order`';
 	for (const e of ref.order)

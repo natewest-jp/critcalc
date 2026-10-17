@@ -958,6 +958,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					for (const tickT of sbar.ticks) {
 						ctx!.fillRect(x(tickT), rowTop + snap.summonRowH - th, 1, th);
 					}
+					// Absorbed ticks — mirror the absorbed .rp-summon-tick: the same
+					// stub in its own element, 1px right of the Anemo one.
+					for (const ab of sbar.absorbedTicks ?? []) {
+						ctx!.fillStyle = elementPalette(ab.element).hi;
+						ctx!.fillRect(x(ab.time) + 1, rowTop + snap.summonRowH - th, 1, th);
+					}
 					// Threshold fires — mirror .rp-summon-fire: full height, 2px,
 					// centred, in the hit's element.
 					for (const fire of sbar.fires ?? []) {

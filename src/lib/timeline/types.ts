@@ -134,6 +134,10 @@ export type SummonBar = {
 	 *  a different mark from a tick: full-height, in the hit's element, and it
 	 *  applied nothing. Read off the window's `fires`, never derived. */
 	fires?: { time: number; element: string }[];
+	/** Ticks in the summon's ABSORBED element (absorption round, 2026-10-17) —
+	 *  stubs like `ticks`, in each one's own element, drawn 1px beside the
+	 *  Anemo stub they share a frame with. Read off the window, never derived. */
+	absorbedTicks?: { time: number; element: string }[];
 };
 export type SummonSubrow = {
 	slotIdx: number;

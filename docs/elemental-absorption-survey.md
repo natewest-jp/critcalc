@@ -199,3 +199,56 @@ to absorb — which is the honest answer for a rotation that casts Venti first.
   `_curatorNotes` (shape C).
 - Jahoda's robots and flask (`docs/summon-tick-gaps-round.md`).
 - Lan Yan's and Heizou's element-less `application[]` entries.
+
+## 8. ⚓ Nate's answers (2026-10-17) — the round is GO, pre-launch
+
+1. **Scope:** Shapes A + B first (Venti Q, Kazuha Q, Sucrose Q, Sayu hold E, the
+   Anemo Traveler's E and Q, Lynette's Box), then the cast-entry half of C
+   (Heizou's Iris, Ifa's Sedation Mark). Kazuha's plunge, Lan Yan, Wanderer A1,
+   Sucrose C6 and Jahoda follow later.
+2. **Lynette:** the aura door only, no caveat.
+3. ✅ Answered in game (above): Frozen counts as Cryo.
+4. Sucrose C6's length stays a bounty (Nate has no C6) — it is not in this cut.
+5. **Markers:** one mark per frame AND element — an absorbed twin draws a second
+   stub in its own colour; same-element duplicates still collapse.
+6. **Oracle:** Nate's 2026-10-14 Sucrose Q logs + gcsim source are the acceptance
+   test; a Kazuha Q log is queued in the in-game batch. No two-character driver.
+
+## 9. ✅ Built (2026-10-17, `feat/elemental-absorption`)
+
+- **The lock** — `AbsorbSpec` (`absorbs` on a `Summon`, a cast, or a variant) and
+  `sim/absorb.ts`: polls on the live clock (`Band.LAND`, after the frame's hits),
+  first element of `order` held — Frozen counting as Cryo, Burning as Pyro
+  (gcsim `AuraContains`).
+- **Summon consumers** — `summonTick.absorbed: 'twin' | 'stream'` (an effect with
+  no `element`), plus `summonTick.units` for the Traveler's 2U twin. A twin before
+  the lock is refused and keeps its cadence; a stream starts at the lock. Marks
+  and hits are PUBLISHED by the live chain (`ctx.absorbedMarks` →
+  `TimelineWindow.absorbedTicks`; `ctx.strikeLandings` → hit records); the walks
+  skip absorbed series. ⚓ Markers: one per frame AND element — a twin draws its
+  own stub in its element, 1px beside the Anemo stub (timeline + PNG export).
+- **Cast consumers** — `application[].element: {type: 'absorbed'}`, decided at
+  the entry's landing (`emitAbsorbedAtCast`), on its own per-cast counter unless
+  `noICD`; nothing locked → no application and no hit (left out of `hitsAt`).
+- Lint D.54. Tests `sim/absorb.test.ts` (Frozen → Cryo from Nate's logs).
+
+**Authored** (gcsim 4eda9fc5f, each in the character's notes): Venti Q (own stream,
+15 × 24f), Lynette Q (Vivid Shots every 134f + 15f travel; C2's second shot on a
+named shared counter), Kazuha Q (twin, authored BEFORE its Anemo series — gcsim
+lands it first), Sucrose Q (twin, capped like its Anemo series), Anemo Traveler Q
+(2U twin, ICDTagNone — gcsim never writes its per-element tag) and hold E (six
+twins on one counter), Heizou Q (the Iris; the old element-less entry was gcsim's
+0-durability aura check, retired), Ifa Q (the Sedation Mark). Heizou's and Ifa's
+draws sit one frame before their own hit — gcsim reads the aura first.
+
+**Not in this cut / open:**
+
+1. **Sayu** — our hold E is gcsim's `hold=1`, which NEVER polls (`maxcount = 0`).
+   Absorbing needs the variant re-authored as gcsim's short hold (kick at 48, one
+   poll) or the full 10s hold. ⏭ Nate's call.
+2. Venti's stream is CUT at the Stormeye's end; gcsim lets all 15 outlive it.
+   Believed to be the game's behaviour, unverified (a Venti log would settle it).
+3. Lynette's last shot within 15f of the box's end is dropped (the window bounds
+   the landing). A4 on lock not modelled.
+4. Kazuha's plunge add-on, Lan Yan, Wanderer A1, Sucrose C6, Jahoda — later (§8).
+5. The absorbed stubs' colour on the bar — Nate's eye.
