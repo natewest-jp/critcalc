@@ -149,12 +149,18 @@ The bike Charged Attack round (§5–§6) moves up: it is NEXT after Phase 1.
   - The Q pill shows the Fighting Spirit spent.
 - **Phase 3:**
   - The Crucible's Normal/Charged/burst damage bonuses.
-  - C2's DEF shred still triggers on the skill cast, so it misses the swap-spawned
-    Ring. Move it onto the Ring form's span.
-  - C6's Hold-E shred still has a fixed 9s.
-  - The Tap E pill still draws the Ring's 12.4s even when a burst cuts the Ring
-    sooner. This is not new; it was true before this round.
-  - The Crucible pill starts at the cast; the Crucible itself starts at +105f.
+  - ✅ 2026-10-17: C2's DEF shred is the Ring form's span (`onState:
+searingRing` — the `onState` reader now co-extends a RES shred with its
+    state), so a swap-spawned Ring shreds too.
+  - ✅ 2026-10-17: C6's shreds (burst 7s, Hold E 9s) are ONE `onState:
+flamestrider` shred — the whole ride, wherever the pool ends it.
+  - ✅ 2026-10-17: the Tap E's `uptime` ends where its Ring ends (`ctx.pillCuts`,
+    applied LAST in finalize so the Ring's `naturalEnd` still says it was cut).
+    A summon cast's pill is single-phase, so what the uncut 12.4s drew was the
+    timeline's EXTENT (the ruler ran past everything) and a Sacrificial-proc
+    bar's span.
+  - ✅ 2026-10-17: the burst stance is 8.75s — it ends with the Crucible
+    (105 + 420f). The pill still starts at the cast, like every stance pill.
 - **Not modelled:**
   - The bike Charged Attack's +0.2 drain (no bike Charged Attack is authored).
   - The in-Blessing recast (decision 3).

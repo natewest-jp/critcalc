@@ -19,7 +19,8 @@
 				"chargeFrames: no chargeFrames slice in attack.go and no charge.go in gcsim character dir. Reviewer to source charge attack frame data.",
 				"Normal C (ActionCharge) cancel frames are not explicitly assigned after InitNormalCancelSlice — defaults to AnimationLength (N1:44, N2:45, N3:56, N4:81) and omitted per recipe.",
 				"highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=54, E=53, Q=54, D=41, J=83) but not represented — using lowPlungeFrames only per recipe.",
-				"plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun."
+				"plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun.",
+				"↻ 2026-10-17 (small-fix batch): the 'verify plunge availability' question is CLOSED — every character can plunge in game (off a ledge or a glide); gcsim's AirborneXianyun-only gate is a simulator limit, not a kit fact. With no `plungeFrames` a `P` draws the provisional stand-in (small-fix bundle 2026-09-17, ⚓ Nate). Nothing to verify in game."
 			],
 			"hits": [
 				{ "name": "N1", "frames": { "anim": 44, "hit": 27, "N": 35 } },

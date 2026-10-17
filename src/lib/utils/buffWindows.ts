@@ -1269,17 +1269,38 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						seenStatsState.add(effect.stat);
 						return true;
 					});
-					if (qualifiedState.length === 0) continue;
-					for (const span of spans) {
-						emit({
-							characterId: track.characterId,
-							start: span.start,
-							end: span.end,
-							effects: qualifiedState,
-							poolFirstEffect: qualifiedState[0],
-							sourceCastId: span.sourceCastId,
-							source: { type: 'character', trigger: 'state' }
-						});
+					// ⚓ …and a DEBUFF co-extensive with the state (Mavuika round, 2026-10-17):
+					// her C2/C6 DEF shred lasts exactly as long as the Ring follows her /
+					// she rides — however the form was entered, a swap included, which a
+					// cast-anchored window cannot see.
+					const shredState = stateGroup.effects.filter(
+						(effect): effect is ResShredEffect =>
+							effect.type === 'resShred' &&
+							targetsEnemy(effect.target) &&
+							evalCondition(
+								effect.conditions,
+								4,
+								new Set(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) !== false
+					);
+					for (const group of [qualifiedState, shredState]) {
+						if (group.length === 0) continue;
+						for (const span of spans) {
+							emit({
+								characterId: track.characterId,
+								start: span.start,
+								end: span.end,
+								effects: group,
+								poolFirstEffect: group[0],
+								sourceCastId: span.sourceCastId,
+								...(group === shredState ? { debuff: true } : {}),
+								source: { type: 'character', trigger: 'state' }
+							});
+						}
 					}
 				}
 			}

@@ -735,25 +735,17 @@
 			"name": "Rite of Resurrection",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "heal",
-					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"scaling": 50,
-					"stat": "hp"
-				}
-			],
 			"_curatorNotes": [
 				"Migrated to onCast burst 2026-05-09 (F1). 50% MaxHP team heal authored. The revival mechanic (dead → alive) is outside the current schema; the 15min ICD is not modeled (gcsim doesn't enforce it either). Heal portion only.",
 				"STELLAR ROUND 2026-07-29 — nothing authored. Enhanced (buff-field) text, Fandom 'Rite of Resurrection': after the burst Qiqi gains 4 stacks of Glimpse of Mystery (12s, refreshed by re-casting the burst); when the current active character OTHER than Qiqi deals Stellar-Conduct DMG, 1 stack is consumed and that DMG is increased by 600% of Qiqi's ATK. Fandom utility tag: 'Stellar-Conduct Additive Base DMG Bonus' — the additive-base-DMG term of the Stellar formula, i.e. damage magnitude, not a stat buff, so no effect (constitution). The stack ledger (per-hit consumption keyed to another character's Stellar-Conduct DMG) is also unmodelable. No 'Radiance:' prefix, but it names Stellar-Conduct and cannot fire without an enabler in the party.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it is an additive base-DMG term, i.e. damage magnitude, which this tool never renders for anyone (constitution + the FROZEN list). The stack ledger it describes buffs nothing we draw, so no bar is short, wrong or missing; a reader at C6 sees the authored 50% Max HP team heal and a burst bar that are both correct. Category: invisible-omission.",
-				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): the Glimpse of Mystery clause now names \"Stellar-Conduct or Stellar Swirl DMG\". Still damage magnitude — nothing authored, no caveat."
+				"↻ 2026-09-27 (gcsim sync — gcsim #3046 \"Add Qiqi Revelation\", and Fandom's current text read through the MediaWiki API): the Glimpse of Mystery clause now names \"Stellar-Conduct or Stellar Swirl DMG\". Still damage magnitude — nothing authored, no caveat.",
+				"↻ 2026-10-17 (small-fix batch): the 50% team heal REMOVED — it heals only the party members it REVIVES, and an inert `target: 'team'` heal handed the Team Builder a party-heal claim no caveat could reach (docs/curation/caveat-open-items.md §3). The Nicole C2 / Kirara C2 house shape: description kept, `notModeled`, no effects."
 			],
-			"description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins."
+			"description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins.",
+			"notModeled": {
+				"reason": "The Rotation Planner doesn't model fallen characters, and this only revives and heals party members who have fallen."
+			}
 		}
 	],
 	"meta": {

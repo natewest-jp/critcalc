@@ -325,7 +325,7 @@
 			"behavior": "stance",
 			"frames": { "anim": 141, "N": 116, "C": 116, "E": 116, "D": 116, "J": 116, "swap": 116 },
 			"cooldown": 18,
-			"duration": 7,
+			"duration": 8.75,
 			"energyCost": 100,
 			"terminatesOnSwap": true,
 			"nightsoul": {
@@ -388,7 +388,8 @@
 				"[A7] Caveat trimmed to the Fighting-Spirit-not-Energy divergence plus the ~1s-longer real window. Already in curator notes: energyCost 100 = 50% of the 200 Fighting Spirit threshold, C1's 250 cap (~60% threshold), and the 7s = Crucible / ~8s-total residual drain (frozen Nightsoul drain during Crucible, then the 10 points granted at burst hitmark drain at ~9 pts/sec).",
 				"[A7] To preserve: Mavuika has no in-game Energy bar (gcsim EnergyMax=0), and her skill's particle generation (5 Pyro, 0.5s ICD) does not fuel her own burst readiness — it feeds teammates' Energy.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The surviving half names the Q bar's own width: the burst stance draws 7s where the real bike/Nightsoul time is ~8s, so the swap point a reader takes off the bar is a second early. The dropped half names a pixel that does not exist on the surface this caveat reaches — the planner prints energy cost NOWHERE (it is drawn only on the Team Builder's detail card and Compare lane, which have no caveat channel), and the planner gates no burst on energy at all, so her Q behaves exactly like everyone else's and nothing in the timeline looks wrong. Category: visible-divergence.",
-				"↻ 2026-10-16 (Nightsoul round): `nightsoul { points: 10, pointsAt: 87, entersForm: 'flamestrider', pause: { at: 105, frames: 420 } }` — gcsim `Burst()`: `enterBike()` at 0, `enterNightsoulOrRegenerate(10)` at 87, the Crucible (`burstKey`) at hitmark − 1 for 420f, which multiplies every Nightsoul cost by 0 (`nightsoulConsumptionMul`) until it ends or she swaps out. `opensState: nightsoulBlessing` is gone: the Blessing is the pool's and outlives both the Crucible and a swap. The stance (7s, `terminatesOnSwap`) is still the Crucible pill; ⚠️ it starts at the cast, the Crucible at +105f. The Ring after a swap off the bike is this cast's `spawnsAtSwapOutFrom` summon."
+				"↻ 2026-10-16 (Nightsoul round): `nightsoul { points: 10, pointsAt: 87, entersForm: 'flamestrider', pause: { at: 105, frames: 420 } }` — gcsim `Burst()`: `enterBike()` at 0, `enterNightsoulOrRegenerate(10)` at 87, the Crucible (`burstKey`) at hitmark − 1 for 420f, which multiplies every Nightsoul cost by 0 (`nightsoulConsumptionMul`) until it ends or she swaps out. `opensState: nightsoulBlessing` is gone: the Blessing is the pool's and outlives both the Crucible and a swap. The stance (7s, `terminatesOnSwap`) is still the Crucible pill; ⚠️ it starts at the cast, the Crucible at +105f. The Ring after a swap off the bike is this cast's `spawnsAtSwapOutFrom` summon.",
+				"↻ 2026-10-17 (Mavuika Phase 3, small-fix batch): duration 7 → 8.75 — the stance ENDS where the Crucible ends. gcsim adds `burstKey` at hitmark − 1 (105f) for 420f, so the Crucible runs 105–525f; a 7s stance from the cast ended it 105f early. The pill still starts at the cast, like every stance pill (the cast animation is part of it). A swap still ends it (gcsim deletes burstKey on swap)."
 			],
 			"description": "Let the people's inner voices reach the divine throne in the heavens.\nMavuika's Elemental Burst is not reliant on Energy, but instead, on \"Fighting Spirit.\"\n\nFighting Spirit\nWhen Mavuika has at least 50% Fighting Spirit, she can consume it all to unleash her Elemental Burst.\nMavuika can obtain Fighting Spirit via the following methods:\n· When in combat, Nightsoul points consumed by nearby party members are converted to Fighting Spirit.\n· When nearby party members' Normal Attacks hit opponents, Mavuika gains 1.5 Fighting Spirit. This can trigger once every 0.1s.\n\nAfter using this, Mavuika gains 10 Nightsoul points and enters the Nightsoul's Blessing state. Riding her Flamestrider high in the air, she uses a powerful Sunfell Slice against opponents on the ground, dealing Nightsoul-aligned AoE Pyro DMG and entering the \"Crucible of Death and Life\" state.\n\nCrucible of Death and Life\nDuring this time, Mavuika's various actions will no longer consume Nightsoul points, and her interruption resistance is increased. Also, the DMG dealt by Sunfell Slice and \"Ancient Name Unbound\"'s Normal and Charged Attacks is increased based on the amount of Fighting Spirit she has when using the Elemental Burst.\nCrucible of Death and Life will be canceled when Mavuika leaves the field.",
 			"application": [{ "frame": 106, "element": "pyro", "units": 1 }]
@@ -532,17 +533,13 @@
 					"shredStat": "def",
 					"target": "enemy",
 					"trigger": {
-						"type": "onCast",
-						"ability": "skill",
-						"input": ["E"]
+						"type": "onState",
+						"state": "searingRing"
 					},
 					"conditions": {
 						"type": "constellation",
 						"level": 2
 					},
-					"duration": 18.6,
-					"durationType": "fixed",
-					"whileState": "searingRing",
 					"value": -20,
 					"mod": "searingRadiance"
 				}
@@ -552,7 +549,8 @@
 				"Removed prior placeholder damage effect (scaling 120 ATK with manual trigger) — the 120% is a burstFlatDmg buff value scaled on Sunfell, not a one-shot damage event.",
 				"Ring's -20% DEF debuff (gcsim internal/characters/mavuika/cons.go:63-82 c2Ring: DefMod -0.2, 0.5s modifier re-queued every 18f, only while isRingFollowing — below C6 that means armamentState == ring per cons.go:129-134): the shredStat:'def' primitive exists now, but our model has no Ring-form state (Tap E stays instant, no NS window) and nightsoulBlessing represents the Flamestrider/bike only — where this C2 slice does NOT apply below C6. Authoring it would draw the debuff exactly in the form where it is inactive; caveated instead. Capability sweep 2026-07-28. (The C6 slice, where the ring follows the bike, IS authored — see the C6 entry.)",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A 20% DEF-shred debuff bar — the exact bar we DO draw for her at C6 — is missing after a Tap E at C2. Tap E is modelled as an instant with no Nightsoul window at all, so the reader gets no stance bar and no debuff row where the game gives both. The asymmetry is what makes it confusing: the same shred appears on the timeline at C6 and vanishes at C2, which reads as a bug rather than a form distinction. Category: expected-but-absent.",
-				"↻ AUTHORED 2026-10-06 (DEF & RES instrument pass, ⚓ Nate) — supersedes the 2026-07-28 note above. Its reason (\"no Ring-form state\") went with the essential-characters T0 round (2026-09-15), which made the Ring a real summon on the Tap: it lives 12.4s (18.6s from C1, which C2 implies), and `terminatesOn: 'burst'` ends it exactly where gcsim's `enterBike` stops `c2Ring`. ⚓ The Ring now OPENS `searingRing` for its own life (`Summon.opensState`, Odette's Double is the precedent), and this effect is cast at the Skill and CLIPPED to that state (`whileState`): the bar spans the Ring exactly, Tap to Burst. `input: ['E']` keeps the Hold (Flamestrider) out — the bar pools honour `input` since the same day; before that the Hold drew this, and C6's Hold-only shred drew after a Tap. `duration` 18.6 is the Ring's C1+ life (the tooltip's length; the clip makes the real end). ⛔ Superseded first cut (same day): an `onHit` on the Ring's ticks refreshed for 2s, which started 2s late and ran up to 2s long. ⚠️ Unmodelled: re-casting the Skill mid-Blessing to switch forms (gcsim `skillRecast`) — the planner has no form switch, so a Ring outlives a mid-Blessing Hold. `mod: 'searingRadiance'` is the C6 effects' — gcsim's DefMod key is `mavuika-c2` for both, so they never stack; at C6 both draw, the same debuff seen from two hosts."
+				"↻ AUTHORED 2026-10-06 (DEF & RES instrument pass, ⚓ Nate) — supersedes the 2026-07-28 note above. Its reason (\"no Ring-form state\") went with the essential-characters T0 round (2026-09-15), which made the Ring a real summon on the Tap: it lives 12.4s (18.6s from C1, which C2 implies), and `terminatesOn: 'burst'` ends it exactly where gcsim's `enterBike` stops `c2Ring`. ⚓ The Ring now OPENS `searingRing` for its own life (`Summon.opensState`, Odette's Double is the precedent), and this effect is cast at the Skill and CLIPPED to that state (`whileState`): the bar spans the Ring exactly, Tap to Burst. `input: ['E']` keeps the Hold (Flamestrider) out — the bar pools honour `input` since the same day; before that the Hold drew this, and C6's Hold-only shred drew after a Tap. `duration` 18.6 is the Ring's C1+ life (the tooltip's length; the clip makes the real end). ⛔ Superseded first cut (same day): an `onHit` on the Ring's ticks refreshed for 2s, which started 2s late and ran up to 2s long. ⚠️ Unmodelled: re-casting the Skill mid-Blessing to switch forms (gcsim `skillRecast`) — the planner has no form switch, so a Ring outlives a mid-Blessing Hold. `mod: 'searingRadiance'` is the C6 effects' — gcsim's DefMod key is `mavuika-c2` for both, so they never stack; at C6 both draw, the same debuff seen from two hosts.",
+				"↻ 2026-10-17 (Mavuika Phase 3, small-fix batch): the DEF shred IS the Ring form's span — `onState: searingRing` (the reader co-extends a debuff with its state since this round). The cast-anchored version (onCast E, 18.6s, clipped to `searingRing`) missed every Ring a SWAP spawned off the Flamestrider, because no cast fires there. gcsim `c2Ring` re-applies a 30f mod every 18f while the Ring follows her, so the real shred lingers ≤30f past the Ring — not drawn."
 			],
 			"description": "When in the Nightsoul's Blessing State, Mavuika's Base ATK is increased by 200, and she obtains the following effects based on All-Fire Armaments' form:\n· Ring of Searing Radiance: Nearby opponents' DEF is decreased by 20%.\n· Flamestrider: Mavuika's Normal Attacks, Charged Attacks, and her Sunfell Slice from the Elemental Burst Hour of Burning Skies deal 60%, 90%, and 120% of her ATK as increased DMG respectively."
 		},
@@ -591,21 +589,14 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "constellation", "level": 6 },
-					"duration": 7,
-					"durationType": "fixed",
-					"value": -20,
-					"mod": "searingRadiance"
-				},
-				{
-					"type": "resShred",
-					"shredStat": "def",
-					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
-					"conditions": { "type": "constellation", "level": 6 },
-					"duration": 9,
-					"durationType": "fixed",
+					"trigger": {
+						"type": "onState",
+						"state": "flamestrider"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"value": -20,
 					"mod": "searingRadiance"
 				}
@@ -616,7 +607,8 @@
 				"Both (1) and (2) become authorable when the Ring is added as a summon (P3). For now, damage stays description-only.",
 				"C6 Scorching Ring DEF shred authored (capability sweep 2026-07-28): gcsim internal/characters/mavuika/cons.go:129-134 — at Cons >= 6 isRingFollowing() returns true unconditionally, so the c2Ring DefMod -0.2 (cons.go:76-79, 0.5s modifier re-queued every 18f = continuous) applies while riding the Flamestrider. Two onCast resShred shredStat:'def' effects whose durations mirror our modeled Nightsoul windows (burst 7s, hE 9s) — gcsim has no fixed per-application duration, the shred rides the whole NS window. Deviation from the sweep proposal: the passive+state shape would derive but never render (resShred windows require onCast/onHit/afterDuration + duration), so the Durin-C6 onCast fallback is used; the state condition is dropped because the triggering casts are exactly the NS openers (constellation:6 alone gates it).",
 				"buffWindows does not apply the onCast input filter to resShred pools, so the skill-hosted window also renders on Tap E — acceptable: at C6 (which implies C2) the Ring form's own DEF shred applies after Tap E in game too (Tap E also enters NS Blessing there).",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the Ring-form crash attacks and the following ring's 500% ATK Pyro pulses.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the Ring-form crash attacks and the following ring's 500% ATK Pyro pulses.\"",
+				"↻ 2026-10-17 (Mavuika Phase 3, small-fix batch): ONE shred, the Flamestrider form's span — `onState: flamestrider` (\"When Mavuika is riding the Flamestrider, she will also summon a Scorching Ring … which will decrease nearby opponents' DEF by 20%\"). Replaces the two cast-anchored ones (burst 7s, Hold E 9s), which were fixed lengths standing in for the ride; the pool now ends the ride where her points run out or she swaps. Same `mod` as C2's — the Ring and the Scorching Ring never overlap (one form at a time)."
 			],
 			"description": "The All-Fire Armaments from the Elemental Skill The Named Moment receive all-round improvements:\n· Ring of Searing Radiance: When the Ring's attacks hit opponents, a Flamestrider will crash into the struck opponent, dealing 200% of ATK as Nightsoul-aligned AoE Pyro DMG.\n· Flamestrider: When Mavuika is riding the Flamestrider, she will also summon a Scorching Ring of Searing Radiance to follow her, which will decrease nearby opponents' DEF by 20% and deal 500% of ATK as Nightsoul-aligned AoE Pyro DMG to nearby opponents once every 3s. Mavuika's terrain-crossing abilities will also be further improved.\n\nAdditionally, when Mavuika is riding her Flamestrider and is not in combat, when her Nightsoul points drop to 5, she will gain 80 Nightsoul points. This effect can trigger once every 15s."
 		}

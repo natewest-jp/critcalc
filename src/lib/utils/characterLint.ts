@@ -3732,6 +3732,23 @@ function lintEffect(
 			push('strict', 'invalid-stat', `unknown buff stat "${eff.stat}"`, location);
 		}
 	} else if (eff.type === 'damage' || eff.type === 'heal' || eff.type === 'shield') {
+		// (D.53) An applies-only tick (`summonTick.appliesOnly`, Nilou's aura) is a
+		// damage effect with no damage: it must name the element it applies and
+		// state the known zero.
+		if (eff.trigger.type === 'summonTick' && eff.trigger.appliesOnly !== undefined) {
+			if (
+				eff.type !== 'damage' ||
+				eff.trigger.appliesOnly !== true ||
+				!eff.element ||
+				eff.scaling !== 0
+			)
+				push(
+					'strict',
+					'applies-only-shape',
+					`appliesOnly must be true, on a damage tick with an element and scaling 0`,
+					location
+				);
+		}
 		if (!SCALING_STATS.has(eff.stat)) {
 			push(
 				'strict',

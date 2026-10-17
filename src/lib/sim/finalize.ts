@@ -820,6 +820,14 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		}
 	}
 
+	// ⚓ Pills a form cut short (`ctx.pillCuts`) — LAST, after every summon
+	// window has read the uncut length as its `naturalEnd`.
+	for (const ev of ctx.events) {
+		if (ev.kind !== 'cast') continue;
+		const cut = ctx.pillCuts.get(ev.id);
+		if (cut !== undefined && ev.time + ev.uptime > cut) ev.uptime = Math.max(0, cut - ev.time);
+	}
+
 	return {
 		tracks: ctx.tracks,
 		totalDuration,

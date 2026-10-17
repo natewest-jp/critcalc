@@ -153,7 +153,7 @@
 			"summons": [
 				{
 					"label": "Cuilein-Anbar",
-					"duration": 6,
+					"duration": 6.3,
 					"spawnsAt": 25,
 					"mobility": "stationary",
 					"durationExtensions": [
@@ -175,7 +175,8 @@
 						}
 					],
 					"_curatorNotes": [
-						"A4 passive (The Languid Wood) extends zone duration by +1s per dendro reaction triggered within the zone, up to 3 times (max +3s → up to 9s total). gcsim: c.AddStatus(burstKey, 378, false) fires at explosionHitmark (25 frames); A4 calls c.ExtendStatus(burstKey, 60) capped at burstExtendCount < 3. Authored 2026-05-10 (E3 v1.5) as durationExtensions[] on this summon. Parser cast-only emission fires dendro reactions only on Collei's own E/Q casts — teammates' reactions in the zone are not modeled, so extensions under-fire in real rotations. Practical: a `Collei E Q` after some aura applicator fires up to 2 extensions (+2s); the third in-game extension (from teammate reactions) is not captured. Acceptable approximation; future P4 expansion (per-hit + team event emission) would close the gap."
+						"A4 passive (The Languid Wood) extends zone duration by +1s per dendro reaction triggered within the zone, up to 3 times (max +3s → up to 9s total). gcsim: c.AddStatus(burstKey, 378, false) fires at explosionHitmark (25 frames); A4 calls c.ExtendStatus(burstKey, 60) capped at burstExtendCount < 3. Authored 2026-05-10 (E3 v1.5) as durationExtensions[] on this summon. Parser cast-only emission fires dendro reactions only on Collei's own E/Q casts — teammates' reactions in the zone are not modeled, so extensions under-fire in real rotations. Practical: a `Collei E Q` after some aura applicator fires up to 2 extensions (+2s); the third in-game extension (from teammate reactions) is not captured. Acceptable approximation; future P4 expansion (per-hit + team event emission) would close the gap.",
+						"↻ 2026-10-17 (small-fix batch): duration 6 → 6.3. Nate's live combat log (2026-10-14, in-game test batch) counts TWELVE leaps, 0.5s apart, the first 0.75s after the explosion — gcsim's 378f burstKey status (from the 25f explosion), not the kit's '6s'. A4's +1s extensions ride the same status in gcsim (ExtendStatus 60), so they stack on 6.3 as they do here. Closes the 'one-tick shortfall' notes on the leap series."
 					],
 					"effects": [
 						{

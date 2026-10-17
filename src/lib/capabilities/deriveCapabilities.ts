@@ -801,7 +801,9 @@ function coordinatedWindow(host: {
 	activeDuration?: number;
 }): { duration: number; summonLabel?: string } | undefined {
 	for (const summon of host.summons ?? []) {
-		const deals = (summon.effects ?? []).some((e) => e.type === 'damage');
+		const deals = (summon.effects ?? []).some(
+			(e) => e.type === 'damage' && !(e.trigger?.type === 'summonTick' && e.trigger.appliesOnly)
+		);
 		if (deals && typeof summon.duration === 'number' && summon.duration > 0) {
 			return { duration: summon.duration, summonLabel: summon.label };
 		}
@@ -887,7 +889,8 @@ function pushSummonCapabilities(
 		const tickingDamage = (summon.effects ?? []).find(
 			(e) =>
 				e.type === 'damage' &&
-				(e.trigger?.type === 'summonTick' || e.trigger?.type === 'summonStrike')
+				((e.trigger?.type === 'summonTick' && !e.trigger.appliesOnly) ||
+					e.trigger?.type === 'summonStrike')
 		);
 		const summonDuration =
 			typeof summon.duration === 'number' && summon.duration > 0 ? summon.duration : undefined;

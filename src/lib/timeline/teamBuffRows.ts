@@ -120,9 +120,12 @@ export function projectTeamBuffRows(
 				// stat so one character gating two stats on one state draws two
 				// rows rather than pooling one of the numbers away (the Prune
 				// lesson from the faction round).
-				rowKey = `${w.characterId}::char::onState::${effects[0].stat}`;
-				const attribution = (w.poolFirstEffect as BuffEffect | undefined)?.attribution;
+				rowKey = `${w.characterId}::char::onState::${effects[0].stat}${w.debuff ? '::resShred' : ''}`;
+				const attribution = w.debuff
+					? undefined
+					: (w.poolFirstEffect as BuffEffect | undefined)?.attribution;
 				sourceLabel = attribution ? `${displayName} ${attribution}` : displayName;
+				if (w.debuff) explicitKind = 'debuff';
 			} else {
 				// 'reaction' — one row per effect, keyed by its display stat.
 				rowKey = `${w.characterId}::char::onReaction::${effects[0].stat}`;

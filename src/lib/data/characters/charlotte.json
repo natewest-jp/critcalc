@@ -225,7 +225,7 @@
 					]
 				}
 			],
-			"tags": [],
+			"tags": ["heal"],
 			"effects": [],
 			"frames": { "anim": 49, "N": 42, "E": 48, "Q": 42, "D": 42, "J": 42, "swap": 41 },
 			"behavior": "instant",
