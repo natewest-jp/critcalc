@@ -304,3 +304,84 @@ describe('a conditional cadence — the faster-tick class', () => {
 		);
 	});
 });
+
+describe("Lumi's strike sequence (Lumi round, 2026-10-17)", () => {
+	// ⚓ Each case replays one of Nate's live combat logs (2026-10-14,
+	// `assets-src/ingame-logs/2026-10-14/linnea-*.PNG`; docs/summon-tick-gaps-round.md
+	// §1.5) — the strike instants and the Geo applications, held to the log's
+	// run-to-run jitter (±0.06s per gap, so 0.1s) once the log's clock is aligned
+	// to the cast. The two E logs open 0.136s apart (1.753 / 1.889s), so the
+	// alignment may move up to 0.15s.
+	// ⚠️ A strike's TYPE is not public IR, but the gaps say it: a Heavy is the
+	// strike 108f after a Pound and applies nothing.
+	const fromCast = (notation: string, kind: 'skill' | 'burst') => {
+		const r = parse(notation);
+		const cast = r.events.find(
+			(e) => e.kind === 'cast' && e.characterId === 'linnea' && e.ability === kind
+		)!;
+		const s = (t: number) => (t - cast.time) / 60;
+		return {
+			strikes: r.windows
+				.filter((w) => w.kind === 'summon' && w.label === 'Lumi')
+				.flatMap((w) => (w as { ticks?: number[] }).ticks ?? [])
+				.map(s),
+			apps: r.applications.filter((a) => a.characterId === 'linnea').map((a) => s(a.time))
+		};
+	};
+	const matchLog = (
+		got: { strikes: number[]; apps: number[] },
+		log: { strikes: number[]; apps: number[] }
+	) => {
+		expect(got.strikes).toHaveLength(log.strikes.length);
+		expect(got.apps).toHaveLength(log.apps.length);
+		// The log's clock starts at an unknown instant near the cast, so the
+		// offset is FITTED (the mean residual over the strikes) and bounded by the
+		// spread of the runs; every instant must then sit within the jitter.
+		const offset =
+			got.strikes.reduce((sum, t, i) => sum + t - log.strikes[i], 0) / got.strikes.length;
+		expect(Math.abs(offset)).toBeLessThan(0.15);
+		for (const k of ['strikes', 'apps'] as const)
+			got[k].forEach((t, i) => expect(Math.abs(t - offset - log[k][i])).toBeLessThan(0.1));
+	};
+
+	it('on a Hydro aura: opens on a Pound, then Heavy · Pound · Pound (the E log)', () => {
+		// Furina's Salon keeps Hydro on the target, as the log's dummy aura did.
+		matchLog(fromCast('Furina E > Linnea E ~25s', 'skill'), {
+			strikes: [
+				1.753, 3.613, 4.663, 7.033, 8.864, 9.914, 12.223, 13.963, 15.013, 17.353, 19.093, 20.144,
+				22.543, 24.313, 25.363
+			],
+			// Every one a Lunar-Crystallize in the log. ⚠️ 17.684 is the Pound's SECOND
+			// hit, and its Moondrifts are what let the Heavy at 19.093 strike.
+			apps: [1.753, 4.663, 7.363, 10.183, 15.013, 17.684, 20.504, 25.363]
+		});
+	});
+
+	it('with no aura: Pounds only, 144f apart, both hits on one standard counter', () => {
+		matchLog(fromCast('Linnea E ~25s', 'skill'), {
+			// The log's eleventh Pound (25.829s) lands past the 25s Lumi drawn here.
+			strikes: [1.889, 4.35, 6.69, 9.089, 11.46, 13.86, 16.289, 18.629, 20.999, 23.37],
+			// Pairs 3, 6 and 9 apply nothing; 2, 5 and 8 apply on their second hit.
+			apps: [1.889, 4.649, 9.089, 11.822, 16.289, 19.019, 23.37]
+		});
+	});
+
+	it('from a burst with Lumi absent: first strike 214f after the cast (the Q log)', () => {
+		// The screenshot ends at 19.559s; the rest of the run is off the page.
+		const got = fromCast('Furina E > Linnea Q ~25s', 'burst');
+		matchLog(
+			{ strikes: got.strikes.slice(0, 10), apps: got.apps.slice(0, 6) },
+			{
+				strikes: [3.569, 5.4, 6.42, 8.82, 10.65, 11.64, 13.979, 15.839, 16.859, 19.169],
+				apps: [3.569, 6.42, 9.18, 11.969, 16.859, 19.559]
+			}
+		);
+	});
+
+	it("a burst before the skill's Lumi spawns replaces her — no window ends before it starts", () => {
+		// The Q lands 20f after the E; the E's Lumi would have appeared at 36f.
+		const lumi = summonWindows('Linnea E Q').filter((w) => w.label === 'Lumi');
+		expect(lumi).toHaveLength(1);
+		expect(lumi[0].end).toBeGreaterThan(lumi[0].start);
+	});
+});

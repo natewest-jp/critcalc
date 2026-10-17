@@ -1453,6 +1453,15 @@ function lintAbility(
 				a.id
 			);
 		}
+		// (E.32) …and so is a sequenced summon's strike.
+		if (eff.trigger.type === 'summonStrike') {
+			push(
+				'strict',
+				'summon-strike-misplaced',
+				`summonStrike trigger only valid inside summons[].effects[]; found on ability/passive/constellation effect`,
+				a.id
+			);
+		}
 	}
 
 	// Variant effects + per-variant damageTag override
@@ -2476,6 +2485,50 @@ function lintIcdGate(
 	}
 }
 
+/** (E.32) A sequenced summon (Lumi round, 2026-10-17): its `summonStrike`
+ *  steps and its `strikeSequence` come together, every gap is a positive
+ *  integer of FRAMES, and the fallback names a step that exists. A step is a
+ *  `damage` effect with no `conditions` — the sequence has no reader for a
+ *  gate, so one would be silently ignored. */
+function lintStrikeSequence(
+	s: Summon,
+	abilityId: string,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	const steps = (s.effects ?? []).filter((e) => e.trigger.type === 'summonStrike');
+	const seq = s.strikeSequence;
+	if (steps.length === 0 && seq === undefined) return;
+	const bad = (msg: string) =>
+		push('strict', 'strike-sequence-shape', `summon "${s.label}" ${msg}`, abilityId);
+	const frames = (n: unknown) => typeof n === 'number' && Number.isInteger(n) && n > 0;
+	if (seq === undefined) return bad('has summonStrike steps but no strikeSequence');
+	if (steps.length === 0) return bad('has a strikeSequence but no summonStrike steps');
+	if (!frames(seq.firstStrikeAt) || !frames(seq.fallbackGap))
+		bad('strikeSequence firstStrikeAt / fallbackGap must be positive integers of FRAMES');
+	if (
+		!Number.isInteger(seq.fallbackStep) ||
+		seq.fallbackStep < 0 ||
+		seq.fallbackStep >= steps.length
+	)
+		bad(`strikeSequence fallbackStep ${seq.fallbackStep} names no step (${steps.length} steps)`);
+	else if (
+		steps[seq.fallbackStep].trigger.type === 'summonStrike' &&
+		(steps[seq.fallbackStep].trigger as { onlyWithMoondrift?: true }).onlyWithMoondrift
+	)
+		bad('strikeSequence fallbackStep is itself a gated step — a refusal would repeat forever');
+	steps.forEach((e, i) => {
+		if (e.trigger.type !== 'summonStrike') return;
+		if (e.type !== 'damage') bad(`step ${i} must be a damage effect (got ${e.type})`);
+		if (e.conditions !== undefined) bad(`step ${i} carries conditions, which no strike reads`);
+		if (!frames(e.trigger.framesToNext))
+			bad(
+				`step ${i} framesToNext must be a positive integer of FRAMES (got ${e.trigger.framesToNext})`
+			);
+		if (e.trigger.onlyWithMoondrift !== undefined && e.trigger.onlyWithMoondrift !== true)
+			bad(`step ${i} onlyWithMoondrift must be true`);
+	});
+}
+
 /** Lint summon effects (P3 — Summon.effects[]). Walks each summon owned by a
  *  cast ability and validates its effects with the same rules as ability
  *  effects, plus summonTick-specific checks. */
@@ -2503,6 +2556,7 @@ function lintSummonEffects(
 					a.id
 				);
 		}
+		lintStrikeSequence(s, a.id, push);
 		for (const eff of s.effects ?? []) {
 			const location = `${a.id} summon "${s.label}"`;
 			lintEffect(c, location, eff, push, { isPassiveOrConstellation: false, isSummon: true });
@@ -3379,7 +3433,11 @@ function lintEffect(
 				`a damage effect on an onStack trigger applies nothing (the fire is a mark, not an application) — author application: [] or drop it`,
 				location
 			);
-		} else if (!emptyOnStack && !(PROC_TRIGGERS as readonly string[]).includes(eff.trigger.type)) {
+		} else if (
+			!emptyOnStack &&
+			eff.trigger.type !== 'summonStrike' &&
+			!(PROC_TRIGGERS as readonly string[]).includes(eff.trigger.type)
+		) {
 			push(
 				'strict',
 				'effect-application-unread',

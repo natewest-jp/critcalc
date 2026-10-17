@@ -414,6 +414,16 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						if (summon.terminatesOn === 'recast') {
 							const prev = lastSummonWindowByKey.get(key);
 							if (prev && prev.end > spawnAt) prev.end = spawnAt;
+							// ⚓ SUPERSEDED BEFORE IT SPAWNED, it never existed (Lumi round,
+							// 2026-10-17): `Linnea E Q` — the burst's Lumi takes over at the
+							// cast, 16f before the skill's would have appeared 36f in. The live
+							// chain already agrees (`liveAt` refuses every instant past the
+							// superseding spawn); the window must not survive as `end < start`.
+							if (prev && prev.end <= prev.start) {
+								windows.splice(windows.indexOf(prev), 1);
+								primarySummonWindows.delete(prev);
+								summonByWindow.delete(prev);
+							}
 						}
 						// ⚓ MARKERS THE PARSE MEASURED, for the series the projection cannot
 						// walk (coordinated-attack round, 2026-08-18): a `whileNormalAttacking`
@@ -651,14 +661,24 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		const summon = summonByWindow.get(win);
 		if (!summon) continue;
 		const cLevel = ctx.constellationLevels?.[win.characterId] ?? 0;
-		for (const tick of computeSummonDamageTicks(
-			summon,
-			win.start,
-			win.end,
-			cLevel,
-			tickCtx(win.characterId),
-			fieldOpenAt
-		)) {
+		// ⚓ A SEQUENCED summon's landings are the ones its live chain STRUCK
+		// (`summonStrike`, Lumi round) — the sequence cannot be re-walked here, and
+		// `computeSummonDamageTicks` refuses its steps by type, so the two never
+		// count one hit twice. Bounded by the final span like the markers.
+		const struck = (
+			ctx.strikeLandings.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ?? []
+		).filter((l) => l.time >= win.start && l.time < win.end);
+		for (const tick of [
+			...computeSummonDamageTicks(
+				summon,
+				win.start,
+				win.end,
+				cLevel,
+				tickCtx(win.characterId),
+				fieldOpenAt
+			),
+			...struck
+		]) {
 			ctx.hitRecords.push({
 				characterId: win.characterId,
 				time: tick.time,

@@ -1077,6 +1077,38 @@ export type Trigger =
 			 * already reads.
 			 */
 			tickCapScaling?: { conditions: Condition; ticks: number };
+	  }
+	/**
+	 * ⚓⚓ ONE STRIKE OF A SEQUENCED SUMMON (Lumi round, 2026-10-17) — a summon
+	 * whose next attack, and the TIME of it, depend on the world at the attack
+	 * before. Linnea's Lumi is the one holder: Heavy · Pound · Pound, and the
+	 * Heavy only while a Moondrift stands — refused, she Pounds instead on a
+	 * different gap. ⛔ Not a `summonTick`: one constant interval cannot say a
+	 * cycle, and two gated series on independent phases collide at the switch
+	 * (`docs/summon-tick-gaps-round.md` §1.3).
+	 *
+	 * The summon's strike effects ARE its steps, in authored order; the
+	 * summon's `strikeSequence` says where the chain starts and what a refused
+	 * step becomes. ⚓ The LIVE chain decides each strike and PUBLISHES it
+	 * (`ctx.stateGatedTicks` → `TimelineWindow.ticks`), ⛔ never replayed at
+	 * finalize: a replayed sequence is wrong about every later strike, because
+	 * each decision moves the next one's TIME (⚓ Nate, 2026-09-20).
+	 *
+	 * ⚠️ The effect's `application[]` is READ here — each entry is one landing
+	 * of the strike (a Pound is two hits, 21f apart), all on ONE standard-ICD
+	 * counter per summon label; `[]` is a strike that hits and applies nothing
+	 * (the Heavy — Lunar-Crystallize reaction damage, gauge 0).
+	 *
+	 * - `framesToNext` — FRAMES from this strike to the next step's. ⚠️ Frames,
+	 *   unlike `summonTick.interval`: these are combat-log gaps, not kit seconds.
+	 * - `onlyWithMoondrift` — the step strikes only if a Moondrift stands when
+	 *   the strike BEFORE it decides, which is after that strike's LAST landing
+	 *   (`moondriftStandsAt`; the live log's Pound at 17.353s).
+	 */
+	| {
+			type: 'summonStrike';
+			framesToNext: number;
+			onlyWithMoondrift?: true;
 	  };
 
 /** Known gameplay state keys used in conditions and triggers. */
@@ -1362,6 +1394,20 @@ export type Summon = {
 	/** Nightsoul points each tick spends from the owner's pool, AFTER the hit
 	 *  (Mavuika's Ring, 3 — gcsim `reduceNightsoulPoints(3)` after `QueueAttack`). */
 	nightsoulCostPerTick?: number;
+	/**
+	 * ⚓ WHERE A SEQUENCED SUMMON'S STRIKES START, and what a refused step
+	 * becomes (Lumi round, 2026-10-17) — present exactly when the summon's
+	 * `effects` carry `summonStrike` steps (lint E.31). All FRAMES.
+	 *
+	 * - `firstStrikeAt` — from the spawn to the first strike.
+	 * - `fallbackStep` — the step (0-based, among the strike effects) struck in
+	 *   place of a refused one. ⚠️ The ENTRY is step 0 under the same rule: a
+	 *   refused step 0 at the spawn opens on the fallback (Lumi deployed with
+	 *   no Moondrift standing opens on a Pound).
+	 * - `fallbackGap` — the gap to the fallback strike when the step after a
+	 *   strike is refused (Lumi with no Moondrift: Pound → Pound, 144f).
+	 */
+	strikeSequence?: { firstStrikeAt: number; fallbackStep: number; fallbackGap: number };
 	/** Effects emitted by the summon while active. Damage effects with
 	 *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
 	 *  during the summon's lifetime; the timeline renders one marker per tick

@@ -274,6 +274,12 @@ export const EXPECTED = [
 	{ id: 'yae_miko', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'albedo', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
 	{
+		id: 'linnea',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		note: "ADDED 2026-10-17 (Lumi round): Lumi's Pounds and Heavy Overdrive Hammer — derived since her strikes are authored; the skill's and the burst's Lumi both carry them"
+	},
+	{
 		id: 'emilie',
 		kind: 'offFieldDamage',
 		minCon: 0,

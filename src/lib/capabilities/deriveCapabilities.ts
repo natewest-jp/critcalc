@@ -880,8 +880,13 @@ function pushSummonCapabilities(
 	out: DerivedCapability[]
 ): void {
 	for (const summon of summons ?? []) {
+		// ⚓ A sequenced summon's strikes (`summonStrike`, Lumi) are off-field
+		// damage too — with no fixed rhythm to report, so `summonHost` gives the
+		// label alone.
 		const tickingDamage = (summon.effects ?? []).find(
-			(e) => e.type === 'damage' && e.trigger?.type === 'summonTick'
+			(e) =>
+				e.type === 'damage' &&
+				(e.trigger?.type === 'summonTick' || e.trigger?.type === 'summonStrike')
 		);
 		const summonDuration =
 			typeof summon.duration === 'number' && summon.duration > 0 ? summon.duration : undefined;

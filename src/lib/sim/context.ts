@@ -338,6 +338,19 @@ export type SimContext = {
 	/** Every Stellar-Conduct instant so far, ascending — what
 	 *  `polestarFieldOpenAt` reads mid-parse. Appended by `emitReaction`. */
 	stellarConductTimes: number[];
+	/** Every Lunar-Crystallize instant so far, ascending — what
+	 *  `moondriftStandsAt` reads mid-parse for Lumi's strike sequence. Appended
+	 *  by `emitReaction`, like `stellarConductTimes`. */
+	lunarCrystallizeTimes: number[];
+	/**
+	 * Every landing a sequenced summon struck (`summonStrike`, Lumi round), keyed
+	 * like `stateGatedTicks` — `characterId::label::source::spawnAt` — with the
+	 * element it struck in (absent = physical, the hit convention). ⚓ Finalize
+	 * turns these into the hit records `deriveBuffWindows` reads, the way it
+	 * synthesizes a fixed series' from `computeSummonDamageTicks`: the sequence
+	 * cannot be re-walked there, so the chain that struck says what it struck.
+	 */
+	strikeLandings: Map<string, { time: number; element?: Element }[]>;
 	/** Generation per `${characterId}::${summonLabel}` — bumped when a summon
 	 *  that declares `terminatesOn: 'recast'` respawns (gauge round L5e-b). A
 	 *  running tick chain compares its captured generation on every fire and
@@ -527,6 +540,8 @@ export function createSimContext(input: SimContextInput): SimContext {
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
 		stellarConductTimes: [],
+		lunarCrystallizeTimes: [],
+		strikeLandings: new Map(),
 		summonChainGen: new Map(),
 		summonChainSupersededAt: new Map(),
 		castTerminatedSummons: new Map(),
