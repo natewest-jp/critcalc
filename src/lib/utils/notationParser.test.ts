@@ -2369,11 +2369,13 @@ describe('parseNotation — Collei A4 summon extension (E3 v1.5)', () => {
 	const lookup = (n: string): CharacterData | null =>
 		n === 'Collei' ? collei : n === 'Diluc' ? diluc : null;
 
-	it('cold-start Collei Q: no dendro reaction, zone at base 6s', () => {
+	// ↻ 6.3s since 2026-10-17: gcsim's 378f status, which Nate's in-game count of
+	// twelve leaps confirms (the kit text says 6s).
+	it('cold-start Collei Q: no dendro reaction, zone at base 6.3s', () => {
 		const result = parseNotation('Collei Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'collei')!;
 		expect(track.qBars).toHaveLength(1);
-		expect(track.qBars[0].uptime).toBe(framesOf(6));
+		expect(track.qBars[0].uptime).toBe(framesOf(6.3));
 	});
 
 	it('after Pyro applicator, Collei Q triggers burning and the zone extends to its cap', () => {
@@ -2394,7 +2396,7 @@ describe('parseNotation — Collei A4 summon extension (E3 v1.5)', () => {
 		// second-order effect of the ICD window, not a fix for it.
 		const result = parseNotation('Diluc E > Collei Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'collei')!;
-		expect(track.qBars[0].uptime).toBe(framesOf(6 + 3));
+		expect(track.qBars[0].uptime).toBe(framesOf(6.3 + 3));
 	});
 });
 

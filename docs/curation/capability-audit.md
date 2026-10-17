@@ -43,11 +43,10 @@ Informational: facet works, but no target/scaling data for the detail card.
 
 - **clorinde** — clorinde__skill__hunters_vigil tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 
-## Effect without tag (2)
+## Effect without tag (1)
 
 Add the tag for consistency.
 
-- **charlotte** — charlotte__skill__framing_freezing_point_composition has a heal effect but lacks the 'heal' tag
 - **gorou** — gorou__burst__juuga_forward_unto_victory has a heal effect but lacks the 'heal' tag
 
 ## Capabilities hiding in _todo stubs (0)

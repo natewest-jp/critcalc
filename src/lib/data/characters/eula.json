@@ -69,7 +69,8 @@
 				"N3 lands two damage instances (attackHitmarks[2] = [25, 42]); one hits[] entry per recipe convention, cancel frames sourced from last hitmark (42). Same pattern for N5 (attackHitmarks[4] = [29, 56]; last hitmark 56).",
 				"plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — Eula cannot plunge without a Xianyun launch. Reviewer to verify in-game plunge availability.",
 				"plungeFrames: highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=53, E=54, Q=52, D=41) but is not represented — using lowPlungeFrames only per recipe.",
-				"plungeFrames: J (ActionJump) is not explicitly assigned in lowPlungeFrames (InitAbilSlice(80) default = 80 = AnimationLength) — omitted per recipe."
+				"plungeFrames: J (ActionJump) is not explicitly assigned in lowPlungeFrames (InitAbilSlice(80) default = 80 = AnimationLength) — omitted per recipe.",
+				"↻ 2026-10-17 (small-fix batch): the 'verify plunge availability' question is CLOSED — every character can plunge in game (off a ledge or a glide); gcsim's AirborneXianyun-only gate is a simulator limit, not a kit fact. With no `plungeFrames` a `P` draws the provisional stand-in (small-fix bundle 2026-09-17, ⚓ Nate). Nothing to verify in game."
 			],
 			"lowPlungeFrames": {
 				"anim": 80,
