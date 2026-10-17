@@ -55,6 +55,7 @@ import {
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
 import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } from '$lib/utils/icd';
+import { schedulePolls } from './absorb';
 import {
 	hasFreeSkill,
 	takeFreeSkill,
@@ -147,6 +148,7 @@ import {
 } from './cooldownReduce';
 import {
 	emitReactionsAtCast,
+	emitAbsorbedAtCast,
 	emitReactionsAtSwing,
 	handOffLineup,
 	notifyDamage,
@@ -1045,9 +1047,14 @@ export function runRotation(
 				// cast's first hit. ↻ EVERY one is a hit since the every-landing round
 				// (same day): `application[]` IS the per-landing list a swing's `lands`
 				// has to author. Stable sort — entries on one frame keep list order.
+				// ⚠️ An ABSORBED entry is left out: whether it lands at all is known
+				// only at its frame (the lock), so counting it would claim a hit that
+				// may not exist — a small under-count when it does.
 				const landings =
 					castApps && castApps.length > 0 && !castIsNonHitting(active, variant)
-						? [...castApps].sort((a, b) => a.frame - b.frame)
+						? [...castApps]
+								.filter((a) => !(typeof a.element === 'object' && a.element.type === 'absorbed'))
+								.sort((a, b) => a.frame - b.frame)
 						: [];
 				if (landings.length > 0) {
 					castEvent.firstHitAt = castStart + landings[0].frame;
@@ -1561,6 +1568,29 @@ export function runRotation(
 					// opens none never gates against an older stance.
 					cs.stance?.sourceCastId === castId ? cs.stance : undefined
 				);
+				// ⚓ A cast that ABSORBS (absorption round, 2026-10-17): its lock is
+				// polled from the cast, and its `{type: 'absorbed'}` entries land in
+				// the locked element — or not at all (Heizou's Iris, Ifa's Mark).
+				{
+					const absorbs = variant?.absorbs ?? active.absorbs;
+					if (absorbs) {
+						const key = `cast#${castId}`;
+						schedulePolls(ctx, clock, key, absorbs, castStart, () => true);
+						emitAbsorbedAtCast(
+							ctx,
+							clock,
+							char,
+							kind,
+							castStart,
+							variant?.application ?? active.application,
+							key,
+							states,
+							charConstellationLevel,
+							chainIdx,
+							stackState
+						);
+					}
+				}
 				// ⚓ Summon ticks apply their element too (gauge round L5e-b). Queued
 				// after the summonExt registration above so the chain reads the
 				// extension record LIVE rather than a copy.

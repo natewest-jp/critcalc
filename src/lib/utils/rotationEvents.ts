@@ -480,6 +480,11 @@ export type TimelineWindow =
 			 * `finalize` off the `stackThreshold` events, like `ticks`.
 			 */
 			fires?: { time: number; element: Element }[];
+			/** Ticks in the summon's ABSORBED element (`summonTick.absorbed`,
+			 *  absorption round 2026-10-17), published by the live chain with the
+			 *  element each landed in — drawn as their own stubs in that element's
+			 *  colour, one per frame AND element (⚓ Nate). */
+			absorbedTicks?: { time: number; element: Element }[];
 			/**
 			 * Where this summon WOULD have ended on its own — spawn + lifetime,
 			 * extensions applied, no swap, recast or flip truncation (small-fix

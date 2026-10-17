@@ -234,8 +234,50 @@
 								"Cadence from burst.go consts: burstTickInterval = 59f -> 0.983s; burstFirstTick = 136f and burstSpawn = 14f, both cast-relative, so firstTickDelay = (136 - 14)/60 = 2.033s from spawn.",
 								"Scaling from zz_lynette.dm.go `bogglecat` array index 9 (talent lvl 10) = 0.9216 -> 92.16. Sidecar docs/curation/talents/lynette.json burst row 'Bogglecat Box DMG' 10th value = 92.2% (genshin-db rounds to 1dp); gcsim's exact value preferred."
 							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"interval": 2.233,
+								"firstTickDelay": 2.483,
+								"icdCounter": "vividShot"
+							},
+							"scaling": 82.08,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Absorbed element (absorption round, 2026-10-17; gcsim 4eda9fc5f lynette/bogglecatbox.go:72-145): the box polls on its think — first at 32f (gadget added at 14), every 18f, to its end (41 polls), C > P > H > E. On the lock, Vivid Shots every 134f from the lock, each landing 15f after its volley (first at lock + 149f), 1U, ICDTagElementalBurstAnemo / Default — its OWN counter (the box's ticks are ICDTagElementalBurst). 82.08% at talent 10. ⚓ Nate: the aura door only — a teammate hitting the box is not modelled, no caveat. Not modelled: A4 (fired on lock). ⚠️ A shot landing within 15f of the box's end is dropped here (the window bounds the landing; gcsim bounds the volley)."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"interval": 2.233,
+								"firstTickDelay": 2.483,
+								"icdCounter": "vividShot"
+							},
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							},
+							"scaling": 82.08,
+							"stat": "atk",
+							"_curatorNotes": [
+								"C2's second Vivid Shot per volley (gcsim 4eda9fc5f lynette/cons.go:18 vividCount = 2) — the same volley, on the SAME counter (icdCounter 'vividShot'), so the pair spends one standard window."
+							]
 						}
-					]
+					],
+					"absorbs": {
+						"order": ["cryo", "pyro", "hydro", "electro"],
+						"from": 32,
+						"every": 18,
+						"polls": 41
+					}
 				}
 			],
 			"_curatorNotes": [

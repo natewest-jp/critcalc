@@ -412,6 +412,13 @@ export type SimContext = {
 	 *  Ring), cast id → instant; `finalize` applies it LAST, after the summon
 	 *  windows have read the uncut length. See `closeForm` in `nightsoul.ts`. */
 	pillCuts: Map<number, number>;
+	/** Absorption locks (`absorbs`), keyed by the absorber — a summon's
+	 *  `characterId::label::source::spawnAt`, a cast's `cast#id`. See `absorb.ts`. */
+	absorbLocks: Map<string, import('./absorb').AbsorbLock>;
+	/** Absorbed ticks the live chain fired, keyed like `stateGatedTicks`, each
+	 *  with the element it landed in — finalize stamps them on the summon window
+	 *  (`absorbedTicks`), one stub per frame AND element (⚓ Nate, 2026-10-17). */
+	absorbedMarks: Map<string, { time: number; element: Element }[]>;
 	/** A cast's `spawnsAtSwapOutFrom` summons spawned at this frame — written by
 	 *  the pool at the swap-out, read by finalize so the window and the live
 	 *  chain agree. Absent = that cast's owner never swapped out of the form. */
@@ -560,6 +567,8 @@ export function createSimContext(input: SimContextInput): SimContext {
 		nightsoulPools: new Map(),
 		timedBlessings: new Map(),
 		pillCuts: new Map(),
+		absorbLocks: new Map(),
+		absorbedMarks: new Map(),
 		swapSpawns: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],

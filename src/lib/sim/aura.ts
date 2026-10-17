@@ -75,6 +75,7 @@ import {
 } from './conditions';
 import { polestarFieldOpenAt } from './fields';
 import { moondriftStandsAt } from './gadgets';
+import { lockedAt, lockOf, schedulePolls } from './absorb';
 import { dispatchOnReactionExtensions } from './extensions';
 import {
 	applyRotationLifetimeExpiry,
@@ -752,6 +753,57 @@ export function emitReactionsAtCast(
 	// the resolved ability/variant context this closure doesn't see).
 }
 
+/**
+ * ⚓ A cast's ABSORBED entries (`application[].element: {type: 'absorbed'}`,
+ * absorption round 2026-10-17) — each decided at ITS landing: the cast's lock
+ * by then gives its element, and nothing locked means it applies nothing.
+ * `resolveCastApplications` drops them as element-less (static readers — the
+ * frames audit — see no element), so this is their one landing path.
+ *
+ * ⚓ ONE per-cast counter of their own, standard unless `noICD`: gcsim gives
+ * the twins per-ELEMENT tags (Sayu's `ICDTagElementalArt<El>`), separate from
+ * the Anemo hits' counter, and one cast locks one element.
+ */
+export function emitAbsorbedAtCast(
+	ctx: SimContext,
+	clock: Clock,
+	char: CharacterData,
+	castKind: 'skill' | 'burst',
+	castTime: number,
+	application: ElementalApplication[] | undefined,
+	lockKey: string,
+	preStates: ReadonlySet<string>,
+	constellation: number,
+	chainIdx: ChainIndex,
+	stackState: Map<string, number>
+): void {
+	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
+	const icd = createIcdClock();
+	for (const a of application ?? []) {
+		if (!(typeof a.element === 'object' && a.element.type === 'absorbed')) continue;
+		const at = castTime + a.frame;
+		const units = a.units ?? DEFAULT_UNITS;
+		const noICD = a.noICD === true;
+		clock.schedule(at, Band.LAND, () => {
+			const element = lockedAt(ctx, lockKey, at);
+			if (element === undefined) return;
+			if (!noICD && !icdApplies(icd, at, STANDARD_ICD_FRAMES).applies) return;
+			offerApplication(ctx, clock, {
+				time: at,
+				characterId: char.id,
+				element,
+				units,
+				provisionalUnits: false,
+				castKind,
+				preStates,
+				constellation,
+				chainIdx,
+				stacks
+			});
+		});
+	}
+}
+
 /** One N/C/P swing offered to the aura, behind its ICD clock (ICD round,
  *  2026-08-15). Called at the swing's LANDING — its hitmark, fired from a
  *  `Band.LAND` task (§1.K, 2026-09-20), or the post-advance cursor when the map
@@ -1130,6 +1182,19 @@ export function scheduleSummonTicks(
 			tickKey: `${char.id}::${summon.label}::${kind}::${spawnAt}`
 		});
 
+		// ⚓ The summon's absorption lock (`absorbs`) — polled while it lives,
+		// keyed like its published marks.
+		const absorbKey = `${char.id}::${summon.label}::${kind}::${spawnAt}`;
+		if (summon.absorbs)
+			schedulePolls(
+				ctx,
+				clock,
+				absorbKey,
+				summon.absorbs,
+				castTime,
+				(at) => liveAt(at) && at < endNow()
+			);
+
 		// ⚓⚓ THE SAME CONDITION CONTEXT `finalize` WALKS WITH. A team-gated series
 		// (Aino's Ascendant Gleam cadence) resolves to `null` without it, and ⚠️
 		// `summonTickSeries` drops only a DEFINITIVE false — so an unresolvable
@@ -1142,7 +1207,13 @@ export function scheduleSummonTicks(
 			(e) => e.type === 'damage',
 			tickConditionCtx(ctx, char.id)
 		)) {
-			const element = (series.effect as Extract<Effect, { type: 'damage' }>).element;
+			const staticElement = (series.effect as Extract<Effect, { type: 'damage' }>).element;
+			/** `summonTick.absorbed` — the tick lands in the summon's LOCKED element. */
+			const absorbedMode =
+				series.effect.trigger.type === 'summonTick' ? series.effect.trigger.absorbed : undefined;
+			const tickUnits =
+				(series.effect.trigger.type === 'summonTick' ? series.effect.trigger.units : undefined) ??
+				DEFAULT_UNITS;
 			// ⛔ A physical (element-less) tick applies nothing and must not reach an
 			// ICD clock — the same rule a physical swing follows. ↻ It DOES still
 			// reach the clock, since the coordinated-attack round: a physical tick
@@ -1267,6 +1338,14 @@ export function scheduleSummonTicks(
 					if (skipTo < liveUntil()) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
 					return;
 				}
+				// ⚓ An ABSORBED tick lands in the lock's element; a twin before the
+				// lock is refused and keeps its cadence, as a field-gated one does.
+				const element = absorbedMode ? lockedAt(ctx, absorbKey, at) : staticElement;
+				if (absorbedMode && element === undefined) {
+					const skipTo = at + series.interval;
+					if (skipTo < liveUntil()) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
+					return;
+				}
 				fired += 1;
 
 				let applies = element !== undefined;
@@ -1290,7 +1369,9 @@ export function scheduleSummonTicks(
 						// the RULE for a tick, ⛔ not a stand-in, and it is not flagged.
 						// ⚓ Nate 2026-08-17: an exception would be recorded in the wikis
 						// and in gcsim, and none is.
-						units: DEFAULT_UNITS,
+						// ↻ …and the one exception IS recorded in gcsim: the Anemo
+						// Traveler's absorbed burst twin is Durability 50 (`units`).
+						units: tickUnits,
 						provisionalUnits: false,
 						castKind: kind,
 						preStates,
@@ -1338,6 +1419,17 @@ export function scheduleSummonTicks(
 					if (snapshot) ctx.tickStacks.set(`${char.id}::${summon.label}::${at}`, snapshot);
 				}
 				notifyDamage(ctx, clock, tickHit);
+				// ⚓ An absorbed tick's mark and hit are PUBLISHED — no walk can know
+				// the lock (the Lumi ruling). Marks keep their element: a twin draws
+				// its own stub beside the Anemo one (⚓ Nate, 2026-10-17).
+				if (absorbedMode && element !== undefined) {
+					const marks = ctx.absorbedMarks.get(absorbKey);
+					if (marks) marks.push({ time: at, element });
+					else ctx.absorbedMarks.set(absorbKey, [{ time: at, element }]);
+					const landings = ctx.strikeLandings.get(absorbKey);
+					if (landings) landings.push({ time: at, element });
+					else ctx.strikeLandings.set(absorbKey, [{ time: at, element }]);
+				}
 				// ⚓ The tick's cost to its owner's Nightsoul pool, AFTER the hit
 				// (gcsim `QueueAttack` then `reduceNightsoulPoints(3)`). It may end
 				// the Blessing — and with it this summon, whose `endNow` reads it.
@@ -1353,8 +1445,17 @@ export function scheduleSummonTicks(
 				if (!capReached() && next < liveUntil()) clock.schedule(next, Band.TICK, () => fire(next));
 			};
 
-			const first = spawnAt + series.firstDelay;
-			if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
+			// ⚓ A STREAM starts at the lock, phased from it; everything else at the
+			// spawn.
+			if (absorbedMode === 'stream') {
+				lockOf(ctx, absorbKey).onLock.push((_el, lockAt) => {
+					const first = lockAt + series.firstDelay;
+					if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
+				});
+			} else {
+				const first = spawnAt + series.firstDelay;
+				if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
+			}
 		}
 
 		if (summon.strikeSequence) {

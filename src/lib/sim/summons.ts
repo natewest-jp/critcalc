@@ -409,12 +409,18 @@ export function summonTickSeries(
 export const appliesOnly = (effect: Effect): boolean =>
 	effect.trigger.type === 'summonTick' && effect.trigger.appliesOnly === true;
 
+/** A tick in the absorbed element (`summonTick.absorbed`) — its marks and hits
+ *  are PUBLISHED by the live chain (`absorbedMarks`, `strikeLandings`); ⛔ no
+ *  walk can know the lock. */
+export const isAbsorbedTick = (effect: Effect): boolean =>
+	effect.trigger.type === 'summonTick' && effect.trigger.absorbed !== undefined;
+
 /** ⚓ A tick the summon lane MARKS: one that hits or heals. A tick that only
  *  moves a stack count (stepped stacks round, 2026-09-27 — Odette's A1 ticker)
  *  is a clock, not an event on the target, and a marker every second would
  *  bury the dance moves the lane exists to show. */
 export function isMarkedTickEffect(effect: Effect): boolean {
-	if (appliesOnly(effect)) return false;
+	if (appliesOnly(effect) || isAbsorbedTick(effect)) return false;
 	return effect.type === 'damage' || effect.type === 'heal';
 }
 
@@ -458,7 +464,7 @@ export function computeSummonDamageTicks(
 		spawnAt,
 		endAt,
 		cLevel,
-		(eff) => eff.type === 'damage' && !appliesOnly(eff),
+		(eff) => eff.type === 'damage' && !appliesOnly(eff) && !isAbsorbedTick(eff),
 		context,
 		undefined,
 		fieldOpenAt
