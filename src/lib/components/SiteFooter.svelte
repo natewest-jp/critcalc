@@ -57,7 +57,7 @@
 		margin: 0 auto 0.55rem;
 		--rule-tint: var(--muted);
 		--rule-opacity: 0.35;
-		--rule-weight: 1px;
+		--rule-size: 5px;
 	}
 
 	.ftr__legal {

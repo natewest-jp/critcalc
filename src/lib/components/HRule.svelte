@@ -29,11 +29,13 @@
 	// Styling, from any ancestor:
 	//   --rule-tint      color of caps + line + mark (default: currentColor)
 	//   --rule-opacity   group fade (default: 1)
-	//   --rule-weight    the LINE's thickness (default: 2px). ⚓ Nate 2026-10-18:
-	//                    1px on the landing cards and the footer. A 1px line's
-	//                    centre falls mid-row (y 4.5–5.5), which is two whole
-	//                    device px at 2× and above and a soft two rows at 1×;
-	//                    the ornament is artwork and keeps its own weight.
+	//   --rule-size      the rule's HEIGHT, and with it everything (default:
+	//                    10px — the artwork's own scale). The line is a fifth
+	//                    of it and the caps/mark keep their proportions, so the
+	//                    rule scales as one drawing. ⚓ Nate 2026-10-18: 5px on
+	//                    the landing cards and the footer. ⚠️ Keep it a whole
+	//                    multiple of 5px: at 5px the 1px line lands on whole
+	//                    rows (y 2–3), crisp even at 1×.
 	// Width comes from the parent; the line takes up the slack.
 
 	let { variant = 'capped' }: { variant?: 'capped' | 'center' } = $props();
@@ -83,12 +85,12 @@
 	.hrule-cap,
 	.hrule-mark {
 		flex: none;
-		height: 10px;
+		height: var(--rule-size, 10px);
 		fill: currentColor;
 	}
 
 	.hrule-cap {
-		width: 19px;
+		width: calc(var(--rule-size, 10px) * 1.9);
 	}
 
 	/* Point-symmetric artwork — rotate, never flip. */
@@ -97,24 +99,24 @@
 	}
 
 	.hrule-mark {
-		width: 28px;
+		width: calc(var(--rule-size, 10px) * 2.8);
 		/* The mark comes to a POINT at each side rather than a flat edge, so the
 		   lines run INTO it: the wedge is thinner than 2px for the first ~1.5px
 		   past each tip, and a line that merely butted up would leave a visible
 		   pinch there. Pulling the neighbors 2px in covers that stretch with the
 		   line's own 2px, and the wedge takes over once it is thicker. */
-		margin-inline: -2px;
+		margin-inline: calc(var(--rule-size, 10px) * -0.2);
 	}
 
 	.hrule-line {
 		flex: 1;
-		height: var(--rule-weight, 2px);
+		height: calc(var(--rule-size, 10px) / 5);
 		background: currentColor;
 	}
 
 	/* Caps get 1px, not 2: their join IS a flat 2px edge, so this only has to
 	   defeat sub-pixel rounding, and it lands on the solid strand rect. */
 	.hrule.is-capped .hrule-line {
-		margin-inline: -1px;
+		margin-inline: calc(var(--rule-size, 10px) * -0.1);
 	}
 </style>

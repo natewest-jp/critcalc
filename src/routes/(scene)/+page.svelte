@@ -588,8 +588,8 @@
 		display: block;
 		width: 52%;
 		--rule-tint: var(--hero-rule);
-		/* ⚓ Nate 2026-10-18: a 1px line (HRule § --rule-weight). */
-		--rule-weight: 1px;
+		/* ⚓ Nate 2026-10-18: the rule at half size (HRule § --rule-size). */
+		--rule-size: 5px;
 	}
 
 	.hero__name {
