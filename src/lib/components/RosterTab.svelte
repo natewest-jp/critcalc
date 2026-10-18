@@ -30,9 +30,11 @@
 	 * loadout, the 70+ flag and bulk wishlisting are deferred or declined.
 	 */
 	import { onMount, tick } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { get } from 'svelte/store';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { browser } from '$app/environment';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from './Mark.svelte';
 	import CharacterFilterRail from './CharacterFilterRail.svelte';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
@@ -401,7 +403,13 @@
 						}}><Mark name="more" size={13} /></button
 					>
 					{#if bulkOpen}
-						<div class="ros-menu ctx-dark" role="menu">
+						<div
+							class="ros-menu ctx-dark"
+							role="menu"
+							transition:fade={{ duration: motion(T_QUICK) }}
+							onintrostart={introLive}
+							onoutrostart={outroInert}
+						>
 							{#if unownedShown.length}
 								<button class="ros-menu-item" role="menuitem" onclick={markAllOwned}
 									><Mark name="check" size={12} />
@@ -444,7 +452,11 @@
 					>
 				{/if}
 			{/if}
-			{#if editing && notice}<span class="ros-notice" role="status">{notice}</span>{/if}
+			{#if editing && notice}<span
+					class="ros-notice"
+					role="status"
+					transition:fade={{ duration: motion(T_QUICK) }}>{notice}</span
+				>{/if}
 			<span class="ros-end">
 				{#if editing}
 					<button
@@ -759,27 +771,12 @@
 		color: var(--muted);
 		font-size: var(--fs-sm);
 	}
-	/* A locked tile was clicked: the lock says where the key is. */
-	@keyframes ros-nudge {
-		0%,
-		100% {
-			transform: translateX(0);
-		}
-		25% {
-			transform: translateX(-3px);
-		}
-		75% {
-			transform: translateX(3px);
-		}
-	}
+	/* A locked tile was clicked: the lock says where the key is. The shared
+	   nudge (app.css), which guards reduced motion itself — and still ends, so
+	   `onanimationend` clears the ring under the preference too. */
 	.ros-lock.is-nudged {
-		animation: ros-nudge 240ms ease-in-out 2;
+		animation: nudge 120ms 2;
 		box-shadow: inset 0 0 0 1px var(--accent);
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.ros-lock.is-nudged {
-			animation: none;
-		}
 	}
 	/* The flash on arrival: an inset ring that fades (a paint, not an opacity). */
 	@keyframes ros-flash {
@@ -793,6 +790,11 @@
 	}
 	.is-flash {
 		animation: ros-flash 1.4s ease-out;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.is-flash {
+			animation: none;
+		}
 	}
 
 	/* ── Tiles ── */
@@ -810,6 +812,7 @@
 		padding: 8px 4px 7px;
 		border-radius: var(--r-md);
 		outline: none;
+		transition: background-color var(--t-snap);
 	}
 	.til-card:hover {
 		background: var(--surface-hover);
@@ -887,20 +890,34 @@
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 	}
+	/* The star APPEARS on the --t-snap clock (SlotPortrait's .sp-mag recipe):
+	   at rest its disc and its ink are transparent PAINT (alpha in the paint,
+	   never element opacity — the sub-pixel laws), and `visibility` rides the
+	   same transition, so it fades out before it stops taking clicks and is
+	   there at once on the way in. */
 	.til-wish {
-		color: var(--muted);
+		background-color: transparent;
+		color: transparent;
 		cursor: pointer;
 		visibility: hidden;
+		transition:
+			background-color var(--t-snap),
+			color var(--t-snap),
+			visibility var(--t-snap);
 	}
 	.til-card:not(.is-locked):hover .til-wish,
 	.til-wish.is-active {
 		visibility: visible;
+		background-color: var(--surface);
 	}
-	.til-card:not(.is-locked) .til-wish:hover {
-		color: var(--text);
+	.til-card:not(.is-locked):hover .til-wish:not(.is-active) {
+		color: var(--muted);
 	}
 	.til-wish.is-active {
 		color: var(--accent);
+	}
+	.til-card:not(.is-locked):hover .til-wish:hover {
+		color: var(--text);
 	}
 	.is-locked .til-wish {
 		cursor: default;
@@ -929,6 +946,7 @@
 		background: none;
 		color: var(--line-soft);
 		cursor: pointer;
+		transition: color var(--t-snap);
 	}
 	.til-pip:hover {
 		color: var(--text);
@@ -976,6 +994,8 @@
 		font-size: var(--fs-sm);
 		text-align: left;
 		cursor: pointer;
+		/* A menu row is a CONTROL (NavPanel's .np-row). */
+		transition: background-color var(--t-snap);
 	}
 	.ros-menu-item:hover {
 		background: var(--fill-hover);
@@ -991,6 +1011,10 @@
 		   always shows, quietly. */
 		.til-card:not(.is-locked) .til-wish {
 			visibility: visible;
+			background-color: var(--surface);
+		}
+		.til-card:not(.is-locked) .til-wish:not(.is-active) {
+			color: var(--muted);
 		}
 	}
 	/* A thumb is not a cursor: the astroids keep their paint (13px, six to a

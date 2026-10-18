@@ -13,6 +13,8 @@
 	 * (`**x**`) are set as <strong>.
 	 */
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from '$lib/components/Mark.svelte';
 	import { portal } from '$lib/actions/portal';
 	import { closeOnLeave } from '$lib/closeOnLeave';
@@ -83,9 +85,27 @@
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && onClose()} />
 
+<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
+     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="bd-scrim" use:portal onclick={onClose}></div>
-<div class="bd ctx-dark" use:portal role="dialog" aria-modal="true" aria-label={fullName}>
+<div
+	class="bd-scrim"
+	use:portal
+	onclick={onClose}
+	transition:fade={{ duration: motion(T_QUICK) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
+></div>
+<div
+	class="bd ctx-dark"
+	use:portal
+	role="dialog"
+	aria-modal="true"
+	aria-label={fullName}
+	transition:fade={{ duration: motion(T_QUICK) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
+>
 	<button class="btn btn--icon bd-close" bind:this={closeBtn} aria-label="Close" onclick={onClose}
 		><Mark name="close" size={16} /></button
 	>

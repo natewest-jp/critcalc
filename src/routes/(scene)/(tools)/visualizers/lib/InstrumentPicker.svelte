@@ -275,6 +275,10 @@
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		cursor: pointer;
+		/* A menu row is a CONTROL (NavPanel's .np-row). */
+		transition:
+			background-color var(--t-snap),
+			color var(--t-snap);
 	}
 
 	.ip-option.ip-active {

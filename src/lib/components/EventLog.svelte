@@ -88,6 +88,7 @@
 
 <script lang="ts">
 	import { tick, untrack, type Snippet } from 'svelte';
+	import { scrollBehavior } from '$lib/motion';
 
 	let {
 		rows,
@@ -206,7 +207,7 @@
 			const eb = el.getBoundingClientRect();
 			list.scrollTo({
 				top: list.scrollTop + (eb.top - lb.top) - (lb.height - eb.height) / 2,
-				behavior: 'smooth'
+				behavior: scrollBehavior()
 			});
 		});
 		untrack(() => {
@@ -223,10 +224,26 @@
 	 * other option and it is one listener per row on a list this long.
 	 */
 	function onListOver(e: Event) {
+		hoverRow(e.target as HTMLElement | null);
+	}
+	function hoverRow(target: HTMLElement | null) {
 		if (!onHover) return;
-		const el = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-el-at]');
+		const el = target?.closest<HTMLElement>('[data-el-at]');
 		const at = el?.dataset.elAt;
 		onHover(at === undefined ? null : Number(at));
+	}
+
+	/**
+	 * A wheel scroll slides rows under a STILL pointer, and the browser sends no
+	 * `mouseover` for that until the scroll pauses — so the lit row would stick
+	 * and then jump. Re-read the row under the last pointer position on every
+	 * scroll, so a scroll leaves the same trail a scrub does (⚓ Nate,
+	 * 2026-10-18).
+	 */
+	let pointer: { x: number; y: number } | null = null;
+	function onListScroll() {
+		if (!pointer) return;
+		hoverRow(document.elementFromPoint(pointer.x, pointer.y) as HTMLElement | null);
 	}
 </script>
 
@@ -245,7 +262,12 @@
 	bind:this={listEl}
 	class="el-log"
 	onmouseover={onListOver}
-	onmouseleave={() => onHover?.(null)}
+	onpointermove={(e) => (pointer = { x: e.clientX, y: e.clientY })}
+	onscroll={onListScroll}
+	onmouseleave={() => {
+		pointer = null;
+		onHover?.(null);
+	}}
 	onfocusin={onListOver}
 	onfocusout={() => onHover?.(null)}
 	role="presentation"
@@ -378,8 +400,13 @@
 		margin-inline: -4px;
 	}
 
+	/* The hover eases in AND out on --t-snap (a row is a CONTROL).
+	   `.el-row--active` below turns the transition off, so the chart cursor's
+	   echo LIGHTS instantly — but a row the cursor leaves fades out on this
+	   rule, a 120ms trail behind a scrub. (Trial for Nate, 2026-10-18.) */
 	.el-row--seekable {
 		cursor: pointer;
+		transition: background-color var(--t-snap);
 	}
 	.el-row--seekable:hover {
 		background: var(--fill-hover);
@@ -396,6 +423,7 @@
 	   of where the pointer is, and it leaves the moment the pointer does. */
 	.el-row--active {
 		background: var(--fill-hover);
+		transition: none;
 	}
 
 	/* ⚠ Tabular figures, or the column is right-aligned and still ragged: the

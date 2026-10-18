@@ -24,6 +24,8 @@
 	 * leftover text searches names.
 	 */
 	import { onMount, tick } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from './Mark.svelte';
 	import SidePortrait from './SidePortrait.svelte';
 	import CompositionChips from './CompositionChips.svelte';
@@ -381,7 +383,13 @@
 			onclick={(e) => openMenu(e, id, items)}><Mark name="more" size={14} /></button
 		>
 		{#if menu?.id === id}
-			<span class="lib-menu" role="menu">
+			<span
+				class="lib-menu"
+				role="menu"
+				transition:fade={{ duration: motion(T_QUICK) }}
+				onintrostart={introLive}
+				onoutrostart={outroInert}
+			>
 				{#each menu.items as item (item.label)}
 					<button
 						role="menuitem"
@@ -612,9 +620,27 @@
 	</div>
 {/snippet}
 
+<!-- The library fades on --t-quick — a SURFACE (a scrim over the whole
+     viewport). The layout's `{#if library.open}` is this component's block, so
+     the local transitions run on open and close. `outroInert` is the
+     outro-eats-your-click fix ($lib/motion); ⛔ don't drop it. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="lib-scrim" onclick={() => library.close()}></div>
-<div class="lib ctx-dark" role="dialog" aria-modal="true" aria-label="Library">
+<div
+	class="lib-scrim"
+	onclick={() => library.close()}
+	transition:fade={{ duration: motion(T_QUICK) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
+></div>
+<div
+	class="lib ctx-dark"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Library"
+	transition:fade={{ duration: motion(T_QUICK) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
+>
 	<header class="lib-top">
 		<div class="lib-head-start">
 			<h2 class="lib-title">Library</h2>
@@ -769,14 +795,34 @@
 		</div>
 	{/if}
 
-	{#if library.toast}<div class="lib-toast" role="status">{library.toast}</div>{/if}
+	{#if library.toast}<div
+			class="lib-toast"
+			role="status"
+			transition:fade={{ duration: motion(T_QUICK) }}
+		>
+			{library.toast}
+		</div>{/if}
 </div>
 
 {#if confirm}
 	{@const c = confirm}
 	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div class="lib-confirm-scrim" onclick={() => (confirm = null)}></div>
-	<div class="lib-confirm ctx-dark" role="alertdialog" aria-modal="true" aria-label={c.title}>
+	<div
+		class="lib-confirm-scrim"
+		onclick={() => (confirm = null)}
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	></div>
+	<div
+		class="lib-confirm ctx-dark"
+		role="alertdialog"
+		aria-modal="true"
+		aria-label={c.title}
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	>
 		<p class="lib-confirm-title">{c.title}</p>
 		<p class="lib-confirm-body">{c.body}</p>
 		<div class="lib-confirm-actions">
@@ -851,6 +897,9 @@
 		color: inherit;
 		font: inherit;
 		cursor: pointer;
+		transition:
+			background-color var(--t-snap),
+			box-shadow var(--t-snap);
 	}
 	.lib-tally-btn:hover {
 		background: var(--fill-hover);
@@ -933,6 +982,9 @@
 		background: none;
 		color: var(--muted);
 		cursor: pointer;
+		transition:
+			background-color var(--t-snap),
+			color var(--t-snap);
 	}
 	.lib-tag-x:hover {
 		color: var(--text);
@@ -1259,6 +1311,11 @@
 		font-size: var(--fs-sm);
 		text-align: left;
 		cursor: pointer;
+		/* A menu row is a CONTROL (NavPanel's .np-row); `color` for the danger
+		   variant's hover. */
+		transition:
+			background-color var(--t-snap),
+			color var(--t-snap);
 	}
 	.lib-menu-item:hover {
 		background: var(--surface-well);
@@ -1388,17 +1445,22 @@
 		font: inherit;
 		font-size: var(--fs-xs);
 		cursor: pointer;
+		transition: color var(--t-snap);
 	}
 	.lib-closed-toggle:hover {
 		color: var(--text);
 	}
 
 	/* ── demo feedback ── */
+	/* Centred by auto margins, ⛔ never a translate: it FADES on element
+	   opacity, and a transform-placed subtree under opacity is rasterized at
+	   rounded coordinates in WebKit and shifts (/styleguide § Laws). */
 	.lib-toast {
 		position: absolute;
-		left: 50%;
+		inset-inline: 0;
 		bottom: 1.25rem;
-		transform: translateX(-50%);
+		width: fit-content;
+		margin-inline: auto;
 		padding: 0.5rem 0.9rem;
 		border-radius: var(--r-sm, 3px);
 		background: var(--surface-raised);
@@ -1415,9 +1477,11 @@
 	.lib-confirm {
 		position: fixed;
 		z-index: 211;
-		left: 50%;
-		top: 40%;
-		transform: translate(-50%, -50%);
+		/* Centred at 40% by auto margins in a box that ends 20% short of the
+		   foot (centre = 80% / 2), ⛔ never a translate — see .lib-toast. */
+		inset: 0 0 20%;
+		margin: auto;
+		height: fit-content;
 		width: min(26rem, calc(100vw - 2rem));
 		padding: 1.1rem 1.25rem 1rem;
 		border-radius: var(--r-lg, 6px);

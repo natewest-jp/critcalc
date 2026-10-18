@@ -25,6 +25,7 @@
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
+	import { scrollBehavior } from '$lib/motion';
 	import { notationTints } from '$lib/timeline/notationTints';
 	import { tokenizeNotation } from '$lib/utils/tokenizer';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
@@ -2541,15 +2542,16 @@
 		if (!trackScrollEl) return;
 		const el = trackScrollEl;
 		const target = projectX(seconds, scale) + trackPad - el.clientWidth / 2;
-		// ⚠ THE NATIVE OPTION, deliberately: it is one line, the UA already honours
-		// `prefers-reduced-motion` for it, and the scroller clamps the target
-		// itself. A hand-rolled rAF tween lived here for an hour on the strength of
-		// a measurement that turned out to be an ARTEFACT — `behavior: 'smooth'`
+		// ⚠ THE NATIVE OPTION, deliberately: it is one line and the scroller
+		// clamps the target itself. ↻ 2026-10-18: the UA does NOT honour
+		// `prefers-reduced-motion` for it (Chrome animates regardless), so the
+		// behaviour asks $lib/motion's `scrollBehavior()`. A hand-rolled rAF
+		// tween lived here for an hour on the strength of a measurement that turned out to be an ARTEFACT — `behavior: 'smooth'`
 		// looked like a silent no-op on this element, and the real cause was that a
 		// BACKGROUNDED TAB freezes requestAnimationFrame, which is what smooth
 		// scrolling runs on. ⚠ Anything rAF-driven measures as broken when the tab
 		// under test is not the front one; check that before blaming the code.
-		el.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+		el.scrollTo({ left: Math.max(0, target), behavior: scrollBehavior() });
 	}
 	$effect(() => {
 		// ⚠ An effect with a cleanup, not onMount — see plannerView.scrollToSeconds

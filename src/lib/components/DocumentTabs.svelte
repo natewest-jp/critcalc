@@ -471,6 +471,10 @@
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		cursor: pointer;
+		/* A menu row is a CONTROL (NavPanel's .np-row). */
+		transition:
+			background-color var(--t-snap),
+			color var(--t-snap);
 	}
 	.doc-tabs-option:hover,
 	.doc-tabs-option:focus-visible {
@@ -568,6 +572,8 @@
 		width: 92px;
 		outline: none;
 		flex-shrink: 0;
+		/* The focus ring eases like `.field`'s. */
+		transition: box-shadow var(--t-snap);
 	}
 	/* ↻ 2026-08-10: the active tab stopped being a beige plate and went opaque
 	   slate, so the ink-on-beige flip this used to need is gone with it. The

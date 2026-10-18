@@ -235,7 +235,7 @@
 		background: var(--glass-sheer);
 		transition:
 			background-color var(--t-snap),
-			transform 100ms ease;
+			transform var(--t-snap);
 	}
 	/* HOVER IS DENSITY (the house rule): the sheer ground firms to the panel
 	   stop, so no ring competes with the team frames. */
@@ -243,21 +243,9 @@
 		background: var(--glass-panel);
 		transform: translateY(-1px);
 	}
+	/* The shared nudge (app.css) — it guards reduced motion itself. */
 	.cc--nudged {
-		animation: cc-nudge 120ms 2;
-	}
-	@keyframes cc-nudge {
-		25% {
-			transform: translateX(-3px);
-		}
-		75% {
-			transform: translateX(3px);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.cc--nudged {
-			animation: none;
-		}
+		animation: nudge 120ms 2;
 	}
 
 	/* The whole card is the pick. */
