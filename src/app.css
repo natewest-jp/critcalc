@@ -2486,6 +2486,23 @@ img {
 	background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
+/* The composer's two lint squiggles, demonstrated in the Rotation Planner's
+   Help (2026-10-18, Nate: show readers what to look for). ⚠️ A COPY of
+   `.rp-tok-unknown` / `.rp-flag-approx` in notationEditorExtension.ts — change
+   one, change both. The warning tints the token's ink too; the provisional one
+   is the underline alone, because in the composer the ink is the caster's
+   element tint. */
+.prose code.flag-warning {
+	color: var(--ui-warning);
+	text-decoration: underline wavy var(--ui-warning);
+	text-underline-offset: 3px;
+}
+
+.prose code.flag-approx {
+	text-decoration: underline wavy var(--ui-provisional);
+	text-underline-offset: 3px;
+}
+
 /* (A reduced-motion block for `.prose a` stood here. Retired with the motion
    round — the rule spends --t-snap (a link is a CONTROL), and the band is
    zeroed at :root.) */

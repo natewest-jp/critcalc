@@ -15,8 +15,8 @@
 <h1>Rotation Planner</h1>
 
 <p class="flavor">
-	A ledger of where every star will stand, frame by frame. Its compiler held that the heavens keep
-	perfect time, and that the only error worth recording was the hand that turned the page.
+	A ledger of where every star will be, frame by frame. Its compiler held that the heavens keep
+	perfect time and can be charted in intricate detail.
 </p>
 
 <p class="lede">
@@ -29,21 +29,24 @@
 	<h2 id="notation">Writing a rotation</h2>
 	<p>
 		The composer under the timeline takes
-		<a href="https://compendium.keqingmains.com/" target="_blank" rel="noopener noreferrer"
-			>KQM notation</a
+		<a
+			href="https://library.keqingmains.com/theorycrafting#combat-notation"
+			target="_blank"
+			rel="noopener noreferrer">KQM notation</a
 		>. A rotation is segments separated by <code>&gt;</code>, each starting with a character’s name
 		and followed by what they do:
 	</p>
 	<ul>
 		<li>
 			<code>N</code> to <code>N9</code> are normal attacks — <code>N3</code> is three swings, and
-			<code>N2 N3</code> carries on the same string. <code>C</code> is a charged attack,
+			<code>N2 N3</code> continues the same string. <code>C</code> is a charged attack,
 			<code>P</code>
-			a plunge (<code>lP</code> a low one), <code>D</code> a dash and <code>J</code> a jump.
+			a plunge (<code>lP</code> a low one), <code>D</code> a dash, and <code>J</code> a jump.
+			<code>A</code> is a bow’s fully charged aimed shot.
 		</li>
 		<li>
-			<code>E</code> and <code>Q</code> are skill and burst, with <code>hE</code> for a hold where
-			the kit has one. <code>A</code> is a bow’s fully charged aimed shot.
+			<code>E</code> and <code>Q</code> are skill and burst, with <code>hE</code> for a hold where the
+			kit has one.
 		</li>
 		<li>
 			Stances add special forms: <code>sE</code> a special skill, <code>sQ</code> a short burst,
@@ -51,19 +54,26 @@
 			attack like Mavuika’s.
 		</li>
 		<li>
-			<code>~2s</code> waits. <code>[N2 D]x3</code> repeats, <code>(E)</code> marks an optional
-			action that isn’t drawn, and <code>E/Q</code> draws the first of two alternatives.
+			<code>[N2 D]x3</code> repeats, <code>(E)</code> marks an optional action that isn’t drawn on
+			the timeline, and <code>E/Q</code> draws the first of two alternatives.
+		</li>
+		<li>
+			critcalc adds a time token of its own, written <code>~Xs</code>. <code>~1.5s</code> adds 1.5
+			seconds of waiting on the active character’s row. It can also end an action early:
+			<code>Mizuki E</code> draws her Dreamdrifter state for its full ten seconds, while
+			<code>Mizuki E ~2s</code> ends it after two, so you can place her <code>Q</code> or a swap at that
+			moment.
 		</li>
 	</ul>
 	<p>
 		Names are the game’s display names — Kazuha, Raiden, Tartaglia — and the composer suggests them
 		as you type. Actions can be run together (<code>QEN2</code>), and pasted rotations are cleaned
-		up: footnote marks dropped, line breaks joined.
+		up for you: footnote marks dropped, line breaks joined.
 	</p>
 	<p>
-		Undo and redo sit at the end of the composer, alongside ⌘Z and ⌘⇧Z (Ctrl on other systems). They
-		reach edits made from the bench and the Team Builder too. Each tab keeps its own history until
-		the page reloads.
+		Undo and redo sit at the end of the composer, alongside Ctrl+Z and Ctrl+Shift+Z (⌘Z and ⌘⇧Z on a
+		Mac). They work for edits made from the bench and the Team Builder too. Each tab keeps its own
+		edit history until the page reloads.
 	</p>
 	<p>
 		A skill or burst written before it’s ready waits for its cooldown, and everything after it waits
@@ -72,11 +82,11 @@
 	<p>
 		The composer underlines what it can’t draw exactly as written, in two colors. An
 		<strong>orange</strong> underline means it couldn’t take the text: a name that matches no
-		character (that segment is skipped), an aimed shot on a character without a bow, a token it
-		doesn’t know. A
-		<strong>yellow</strong> one means it took the text and drew a stand-in: a hold the kit doesn’t have,
-		timed as a tap; a plunge with no measured frames; a fifth character, who has no slot. Hover the token
-		for the reason.
+		character, like <code class="flag-warning">Kazuah</code> (that segment is skipped), an aimed
+		shot on a character without a bow, or a token it doesn’t know. A <strong>yellow</strong> one
+		means it took the text and drew a stand-in: a hold version the kit doesn’t have, like
+		<code class="flag-approx">hE</code>, timed as a tap instead; a plunge with no measured frames; a
+		fifth character, who has no slot. Hover the token for the reason.
 	</p>
 	<p>
 		<strong>Walk-cancels aren’t simulated.</strong> <code>W</code> is recognized and skipped, so
