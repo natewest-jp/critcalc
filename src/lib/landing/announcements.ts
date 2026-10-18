@@ -14,9 +14,11 @@
 import { characterIndex, inTheWorks } from '$lib/data/characterIndex.generated';
 import { currentAbyss, currentSeason } from '$lib/endgame';
 
-/** One quieter line under the headline — its fine print, optionally a link. */
+/** One quieter line under the headline — its fine print, optionally a link.
+ *  `parts` are joined by " · " on a wide screen; on a phone each takes its own
+ *  line, so a name never breaks mid-phrase (⚓ Nate, 2026-10-18). */
 export interface AnnouncementLine {
-	text: string;
+	parts: string[];
 	href?: '/coverage' | '/builder';
 }
 
@@ -64,7 +66,7 @@ function endgameLine(now: Date): AnnouncementLine | undefined {
 		abyss && `Spiral Abyss: ${abyss.name.en}`,
 		season && `Stygian Onslaught ${season.version}`
 	].filter(Boolean);
-	return parts.length ? { text: parts.join(' · '), href: '/builder' } : undefined;
+	return parts.length ? { parts: parts as string[], href: '/builder' } : undefined;
 }
 
 /** "117 characters modeled · 4 in progress". ⚠ The Traveler counts ONCE, as
@@ -78,10 +80,9 @@ function countLine(): AnnouncementLine {
 	// character (⚓ Nate, 2026-10-18).
 	const total = characterIndex.filter((c) => c.id !== 'blank' && !isTraveler(c.id)).length + 1;
 	const modeled = total - inTheWorks.length;
-	const text = inTheWorks.length
-		? `${modeled} characters modeled · ${inTheWorks.length} in progress`
-		: `${modeled} characters modeled`;
-	return { text, href: '/coverage' };
+	const parts = [`${modeled} characters modeled`];
+	if (inTheWorks.length) parts.push(`${inTheWorks.length} in progress`);
+	return { parts, href: '/coverage' };
 }
 
 /** The entries still live at `now` — an expiry is exclusive of its own day. */

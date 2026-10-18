@@ -131,21 +131,28 @@
 				{#each announcements as a (a.id)}
 					<li class="notice">
 						<span class="notice__text">{a.text}</span>
-						{#each a.lines as line (line.text)}
+						{#each a.lines as line (line.parts.join())}
+							{#snippet parts()}
+								{#each line.parts as part, i (part)}
+									{#if i > 0}<span class="notice__sep" aria-hidden="true"> · </span>{/if}<span
+										class="notice__part">{part}</span
+									>
+								{/each}
+							{/snippet}
 							{#if line.href === '/coverage'}
 								<a
 									class="notice__detail link link--quiet"
 									href={resolve('/coverage')}
-									onclick={(e) => openCoverage(e)}>{line.text}</a
+									onclick={(e) => openCoverage(e)}>{@render parts()}</a
 								>
 							{:else if line.href === '/builder'}
 								<a
 									class="notice__detail link link--quiet"
 									href={resolve('/builder')}
-									onclick={(e) => navigateToTool(e, '/builder')}>{line.text}</a
+									onclick={(e) => navigateToTool(e, '/builder')}>{@render parts()}</a
 								>
 							{:else}
-								<span class="notice__detail">{line.text}</span>
+								<span class="notice__detail">{@render parts()}</span>
 							{/if}
 						{/each}
 					</li>
@@ -237,6 +244,9 @@
 		--group-w: calc(3 * var(--card-w) + 2 * var(--gap));
 		/* The air between the doors and the band that captions them. */
 		--caption-gap: 1.5rem;
+		/* 🎛️ Where the card group's CENTRE sits, top to bottom — the cards and
+		   the band under them both read it (see .heroes for the 46%). */
+		--group-y: 46%;
 
 		position: absolute;
 		top: 0;
@@ -273,7 +283,7 @@
 		   horizon at ~63%, so the cards still stand on the ground. ↻ 50% was
 		   right with the band ABOVE (⚓ Nate moved it below, 2026-09-16); the
 		   portrait composition is a separate item. */
-		top: 46%;
+		top: var(--group-y);
 		transform: translateY(-50%);
 		left: 0;
 		right: 0;
@@ -493,6 +503,24 @@
 		}
 	}
 
+	/* `compact` — 40rem. ⚓ Nate 2026-10-18: on a phone the cards are bound by
+	   WIDTH, so give them all of it — the 10px gaps the card's aspect was
+	   derived from (see --plate-w above), not the 16px floor of --gap. */
+	@media (max-width: 40rem) {
+		.composition {
+			--gap: 0.625rem;
+		}
+	}
+	/* 🎛️ A TALL phone (taller than 5:3 portrait — iPhone 16 is ~2.2:1) has more
+	   sky and floor than the group uses, and at 46% the group sat low with the
+	   floor empty under its band. Lifted to centre the group between the chrome
+	   and the footer — a starting value for Nate's eye (2026-10-18). */
+	@media (max-width: 40rem) and (max-aspect-ratio: 3/5) {
+		.composition {
+			--group-y: 42%;
+		}
+	}
+
 	/* The label's rule: the site's centre-mark HRule (⚓ Nate 2026-09-30) —
 	   decorative ink like the rings, so like them it never answers hover.
 	   ⚠ OPAQUE — `--hero-rule` (app.css) says why.
@@ -531,7 +559,7 @@
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: calc(46% + var(--card-h) / 2 + var(--caption-gap));
+		top: calc(var(--group-y) + var(--card-h) / 2 + var(--caption-gap));
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -583,6 +611,18 @@
 		.notice {
 			font-size: var(--fs-lg);
 		}
+		/* A line's parts stack instead of wrapping mid-name ("Spiral Abyss:
+		   Stardread / Moon" at 390, ⚓ Nate 2026-10-18). */
+		.notice__sep {
+			display: none;
+		}
+		.notice__part {
+			display: block;
+		}
+	}
+	/* Wide: a part never breaks inside itself; the line wraps between parts. */
+	.notice__part {
+		white-space: nowrap;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
