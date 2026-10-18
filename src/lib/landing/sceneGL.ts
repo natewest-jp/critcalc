@@ -53,6 +53,7 @@ import {
 } from '$lib/landing/starPass';
 import { SCENE_DIM, SCENE_DIM_DITHER, SCENE_DIM_TINT_RGB } from '$lib/landing/sceneDim';
 import { veilKnobs } from '$lib/landing/starVeil';
+import { BP } from '$lib/breakpoints';
 
 // --- Geometry constants -----------------------------------------------------
 // Mirror the --*-src vars on .scene-stack in (scene)/+layout.svelte AND the
@@ -94,6 +95,23 @@ export const PAN_DVH = ((MASTER_H_SRC - 2 * BLEED_V_SRC - VIEWPORT_H_SRC) / VIEW
  *  transition module re-exports it as TRANSITION_MS). */
 export const PAN_MS = 2400;
 const SIDE_LEAN_DEG = 16;
+
+/**
+ * 🎛️ THE NARROW-SCREEN COMPOSITION SHIFT — Nate's to tune (2026-10-18). The
+ * plate is centred, and a phone shows only a narrow middle slice of it (at
+ * 390×844 the plate is ~2460px wide), so the galaxy band — a DIAGONAL — sat
+ * too far left of the screen. Below `compact` the whole world (plates and the
+ * stars locked to them) moves RIGHT by this fraction of the viewport width.
+ * Clamped to 90% of the frame's side bleed, so the plate's edge never enters
+ * frame, even with a tool's crane leaning on top of it. Live from the console:
+ * `__scene.shift(0.3)`, no argument prints it.
+ */
+// ↻ tune(nate) 2026-10-18: 0.25 → 0.21, set by eye with __scene.shift() across
+// several phone widths.
+const SCENE_NARROW_SHIFT = 0.21;
+const NARROW_BELOW_PX = parseFloat(BP.compact) * 16;
+/** The shift as READ — seeded from the constant, moved only by the console. */
+let narrowShift = SCENE_NARROW_SHIFT;
 const TILT_BEZ = [0.58, 0, 0.42, 1] as const;
 
 /**
@@ -607,7 +625,9 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		const px = (vh * VIEWPORT_ASPECT) / FRAME_W_SRC;
 		const sceneH = MASTER_H_SRC * px;
 		const plateW = PLATE_W_SRC * px;
-		const plateX = (vw - plateW) / 2;
+		const bleedX = ((PLATE_W_SRC - FRAME_W_SRC) / 2) * px;
+		const shiftX = vw < NARROW_BELOW_PX ? Math.min(narrowShift * vw, 0.9 * bleedX) : 0;
+		const plateX = (vw - plateW) / 2 + shiftX;
 		const horizonY = (FLOOR_H_SRC - BLEED_V_SRC) * px;
 		const skyH = (SKY_H_SRC + SKY_OVERLAP_SRC) * px;
 		const skyTop = vh - horizonY + SKY_OVERLAP_SRC * px - skyH;
@@ -1020,6 +1040,14 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		// Tuning surface (⚓ Nate, 2026-10-18): set any star-veil knob and redraw,
 		// e.g. __scene.veil({ floor: 0.35, inset: 100 }); no argument prints the
 		// current set. Live only — a picked value lands in starVeil.ts.
+		shift: (frac?: number) => {
+			if (frac !== undefined) {
+				narrowShift = frac;
+				buildQuads();
+				requestDraw();
+			}
+			return narrowShift;
+		},
 		veil: (k?: Partial<typeof veilKnobs>) => {
 			if (k) Object.assign(veilKnobs, k);
 			requestDraw();
