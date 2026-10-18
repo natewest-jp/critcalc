@@ -111,7 +111,10 @@ export async function paintSceneBackdrop(
 		const r = Math.max(0.6, (s.size / 2) * STAR_SCALE * dpr);
 		if (x < -r * 4 || y < -r * 4 || x > W + r * 4 || y > H + r * 4) continue;
 		// The PNG is not a phone screen, so its sides always feather.
-		const keep = starVeil(x / dpr, y / dpr, keepOut, { sides: true });
+		const keep = starVeil(x / dpr, y / dpr, keepOut, {
+			sides: true,
+			view: { w: W / dpr, h: H / dpr }
+		});
 		if (keep <= 0) continue;
 		const [cr, cg, cb] = STAR_TINTS[s.color].map((c) => Math.round(c * 255));
 		const a = STAR_STATIC_ALPHA * Math.max(s.base, 0.5) * keep;

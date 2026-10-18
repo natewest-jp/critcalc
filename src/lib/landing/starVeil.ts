@@ -2,9 +2,18 @@
  * THE STAR VEIL (2026-10-18, ⚓ Nate) — how strongly the stars show behind a
  * tool, as a function of where they sit relative to the tool's CONTENT.
  *
- *   inside the content            → STAR_VEIL_FLOOR   (almost gone, but there)
- *   out from its edge, over        → a smootherstep ramp, STAR_VEIL_FEATHER px long
- *   beyond the feather             → STAR_VEIL_CEILING (a little brighter than before)
+ *   inside the content (less STAR_VEIL_INSET) → STAR_VEIL_FLOOR (almost gone, but there)
+ *   out across each side's MARGIN              → a smootherstep ramp
+ *   at the edge of the screen (or the PNG)     → STAR_VEIL_CEILING (a little brighter than before)
+ *
+ * ↻ 2026-10-18, the same day (⚓ Nate, "shape C"): the feather was a fixed
+ * 320px and NO side of the Planner has that much room (measured at 1728×997:
+ * top 149, left 258, right 32, bottom 24), so every star in the margins sat at
+ * 0.12–0.3 and the stars vanished. The ramp is now NORMALISED per side: it
+ * runs from the floor's edge to the screen's edge, however wide that margin
+ * is, so the slope always fills the chrome, the bands, the bench and the foot.
+ * The INSET starts it a little inside the content so the thin right and
+ * bottom margins still get a slope.
  *
  * The floor protects ONLY the content: the feather is meant to run under the
  * site chrome, the bands, the sides and the foot of the page. With several
@@ -36,23 +45,26 @@
  *  export px in the PNG). */
 export type VeilBox = { x: number; y: number; w: number; h: number };
 
-/** 🎛️ Star strength INSIDE the content — Nate's to tune (start 0.12; his
- *  brief: ~0.10–0.15, "almost invisible, but present"). */
-export const STAR_VEIL_FLOOR = 0.12;
+/** 🎛️ Star strength INSIDE the content — Nate's to tune. ⚠ The dim SQUARES
+ *  the scene (sceneDim.ts), so what you SEE goes as the strength squared:
+ *  0.12 showed a star at ~1.4% and read as none at all; 0.3 is ~9%. ↻ 0.12 →
+ *  0.3 (⚓ Nate, 2026-10-18: "I can't see any stars with the current floor"). */
+export const STAR_VEIL_FLOOR = 0.3;
 
 /** 🎛️ Star strength beyond the feather — Nate's to tune (start 1.2: "a little
  *  higher than the export's current edge strength"). */
 export const STAR_VEIL_CEILING = 1.2;
 
-/** 🎛️ The feather's length, CSS px from the content's (inset) edge to the
- *  ceiling — Nate's to tune (brief: long and gradual, ~280–360). */
-export const STAR_VEIL_FEATHER = 320;
+/** 🎛️ How much of each side's margin the ramp spans before it reaches the
+ *  ceiling, as a fraction — Nate's to tune. 1 = the ceiling lands exactly at
+ *  the screen's edge (the longest slope the margin allows); below 1 it arrives
+ *  earlier and holds. */
+export const STAR_VEIL_FEATHER = 1;
 
-/** 🎛️ How far INSIDE each box's edge the floor stops and the feather begins,
- *  CSS px — Nate's to tune. 0 = the floor is exactly the content. (The PNG's
- *  old keep-out used 56, so its clear box sat under the content's edges; the
- *  veil starts at the edge, per the brief, and leaves this for his eye.) */
-export const STAR_VEIL_INSET = 0;
+/** 🎛️ How far INSIDE each box's edge the floor stops and the ramp begins,
+ *  CSS px — Nate's to tune (⚓ "the small inset", start 40). It is what gives
+ *  the Planner's 24–32px right and bottom margins a slope at all. */
+export const STAR_VEIL_INSET = 40;
 
 /**
  * 🎛️ THE PHONE RULE — Nate's to tune. Below this breakpoint (a key of
@@ -69,7 +81,18 @@ export const STAR_VEIL_SIDES_BELOW = 'toolMin' as const;
 export type StarVeilOpts = {
 	/** Does horizontal distance count? false = the phone rule (top/bottom only). */
 	sides: boolean;
+	/** The space the margins run to, in the same px as the boxes — the
+	 *  viewport live, the canvas in the PNG. */
+	view: { w: number; h: number };
 };
+
+/** How far out across ONE side's margin a coordinate sits, 0 at the floor's
+ *  edge to 1 at the view's edge (scaled by STAR_VEIL_FEATHER). */
+function across(p: number, lo: number, hi: number, extent: number): number {
+	if (p < lo) return (lo - p) / (Math.max(lo, 1) * STAR_VEIL_FEATHER);
+	if (p > hi) return (p - hi) / (Math.max(extent - hi, 1) * STAR_VEIL_FEATHER);
+	return 0;
+}
 
 /** Smootherstep — the site's eased roll-off shape (6t⁵ − 15t⁴ + 10t³). */
 export function smootherstep(t: number): number {
@@ -79,29 +102,27 @@ export function smootherstep(t: number): number {
 
 /**
  * How much of a star survives at (x, y): STAR_VEIL_FLOOR inside the nearest
- * box, rising over STAR_VEIL_FEATHER to STAR_VEIL_CEILING. No boxes = no veil
- * (1, the star exactly as it was — the landing's case).
+ * box (less the inset), rising across each side's margin to STAR_VEIL_CEILING
+ * at the view's edge. A corner combines its two sides as a vector length, so
+ * it rounds rather than mitres. No boxes = no veil (1, the star exactly as it
+ * was — the landing's case).
  * ⛔ The shader twin is STAR_VEIL_GLSL below; change both or neither.
  */
 export function starVeil(
 	x: number,
 	y: number,
 	boxes: readonly VeilBox[],
-	opts: StarVeilOpts = { sides: true }
+	opts: StarVeilOpts
 ): number {
 	if (boxes.length === 0) return 1;
 	const ax = opts.sides ? 1 : 0;
 	let d = Infinity;
 	for (const b of boxes) {
-		const x0 = b.x + STAR_VEIL_INSET;
-		const y0 = b.y + STAR_VEIL_INSET;
-		const x1 = b.x + b.w - STAR_VEIL_INSET;
-		const y1 = b.y + b.h - STAR_VEIL_INSET;
-		const dx = Math.max(x0 - x, x - x1, 0) * ax;
-		const dy = Math.max(y0 - y, y - y1, 0);
-		d = Math.min(d, Math.hypot(dx, dy));
+		const tx = across(x, b.x + STAR_VEIL_INSET, b.x + b.w - STAR_VEIL_INSET, opts.view.w) * ax;
+		const ty = across(y, b.y + STAR_VEIL_INSET, b.y + b.h - STAR_VEIL_INSET, opts.view.h);
+		d = Math.min(d, Math.hypot(tx, ty));
 	}
-	const t = smootherstep(d / STAR_VEIL_FEATHER);
+	const t = smootherstep(d);
 	return STAR_VEIL_FLOOR + (STAR_VEIL_CEILING - STAR_VEIL_FLOOR) * t;
 }
 
@@ -117,8 +138,9 @@ export function glslFloat(n: number): string {
 /**
  * The shader half: `starVeil()` in GLSL ES 1.0, for the star pass's vertex
  * shader. `starVeilSet(boxes, n, axes, p)` takes one set of up to
- * STAR_VEIL_MAX_BOXES boxes (`vec4(x, y, w, h)`), how many are live, and
- * `axes` = vec2(sides ? 1 : 0, 1). Same constants, interpolated from above.
+ * STAR_VEIL_MAX_BOXES boxes (`vec4(x, y, w, h)`), how many are live,
+ * `axes` = vec2(sides ? 1 : 0, 1) and `view` = the viewport's CSS size. Same
+ * constants, interpolated from above.
  */
 export const STAR_VEIL_GLSL = `
 const float STAR_VEIL_FLOOR = ${glslFloat(STAR_VEIL_FLOOR)};
@@ -131,7 +153,7 @@ float starVeilSmoother(float t) {
 	return u * u * u * (u * (u * 6.0 - 15.0) + 10.0);
 }
 
-float starVeilSet(vec4 boxes[${STAR_VEIL_MAX_BOXES}], float n, vec2 axes, vec2 p) {
+float starVeilSet(vec4 boxes[${STAR_VEIL_MAX_BOXES}], float n, vec2 axes, vec2 view, vec2 p) {
 	if (n < 0.5) return 1.0;
 	float d = 1e9;
 	for (int i = 0; i < ${STAR_VEIL_MAX_BOXES}; i++) {
@@ -139,11 +161,12 @@ float starVeilSet(vec4 boxes[${STAR_VEIL_MAX_BOXES}], float n, vec2 axes, vec2 p
 			vec4 b = boxes[i];
 			vec2 lo = b.xy + STAR_VEIL_INSET;
 			vec2 hi = b.xy + b.zw - STAR_VEIL_INSET;
-			vec2 q = max(max(lo - p, p - hi), 0.0) * axes;
-			d = min(d, length(q));
+			vec2 below = max(lo - p, 0.0) / (max(lo, 1.0) * STAR_VEIL_FEATHER);
+			vec2 above = max(p - hi, 0.0) / (max(view - hi, 1.0) * STAR_VEIL_FEATHER);
+			d = min(d, length((below + above) * axes));
 		}
 	}
-	float t = starVeilSmoother(d / STAR_VEIL_FEATHER);
+	float t = starVeilSmoother(d);
 	return STAR_VEIL_FLOOR + (STAR_VEIL_CEILING - STAR_VEIL_FLOOR) * t;
 }
 `;

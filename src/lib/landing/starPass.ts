@@ -281,8 +281,8 @@ void main() {
 	// The star veil — the same maths as starVeil() in TS, from the same
 	// constants. Per star CENTRE, so a star fades whole (the keep-out's rule).
 	if (u_veilMix.y > 0.0) {
-		float va = starVeilSet(u_veilA, u_veilN.x, u_veilAxes.xy, world);
-		float vb = starVeilSet(u_veilB, u_veilN.y, u_veilAxes.zw, world);
+		float va = starVeilSet(u_veilA, u_veilN.x, u_veilAxes.xy, u_view, world);
+		float vb = starVeilSet(u_veilB, u_veilN.y, u_veilAxes.zw, u_view, world);
 		alpha *= mix(1.0, mix(va, vb, u_veilMix.x), u_veilMix.y);
 	}
 
