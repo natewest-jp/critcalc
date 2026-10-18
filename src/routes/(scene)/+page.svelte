@@ -19,6 +19,8 @@
 		PLATE_LINE_TALL,
 		PLATE_VIEWBOX,
 		PLATE_VIEWBOX_TALL,
+		HORIZON_CROSS,
+		HORIZON_CROSS_TALL,
 		TALL_ART_DROP,
 		TALL_EXTRA
 	} from '$lib/landing/heroArt';
@@ -32,8 +34,10 @@
 		`--plate-h-tall: ${PLATE_H_TALL}`,
 		`--label-top-tall: ${(((LABEL_TOP + TALL_EXTRA) / PLATE_H_TALL) * 100).toFixed(3)}%`,
 		`--label-h-tall: ${((LABEL_H / PLATE_H_TALL) * 100).toFixed(3)}%`,
-		`--label-top: ${((LABEL_TOP / PLATE_H) * 100).toFixed(3)}%`,
-		`--label-h: ${((LABEL_H / PLATE_H) * 100).toFixed(3)}%`
+		`--label-top-base: ${((LABEL_TOP / PLATE_H) * 100).toFixed(3)}%`,
+		`--label-h-base: ${((LABEL_H / PLATE_H) * 100).toFixed(3)}%`,
+		`--horizon-cross-base: ${HORIZON_CROSS.toFixed(4)}`,
+		`--horizon-cross-tall: ${HORIZON_CROSS_TALL.toFixed(4)}`
 	].join('; ');
 	import { currentAnnouncements } from '$lib/landing/announcements';
 	import { openCoverage } from '$lib/coverage/openCoverage';
@@ -290,6 +294,13 @@
 		/* 🎛️ Where the card group's CENTRE sits, top to bottom — the cards and
 		   the band under them both read it (see .heroes for the 46%). */
 		--group-y: 46%;
+		/* ⚠️ The inline style on .composition carries only -base / -tall
+		   NAMES: an inline declaration beats every stylesheet rule, so if it set
+		   --label-top itself the tall-phone query below could never override it
+		   (it couldn't, until 2026-10-18). These are the overridable ones. */
+		--label-top: var(--label-top-base);
+		--label-h: var(--label-h-base);
+		--horizon-cross: var(--horizon-cross-base);
 
 		position: absolute;
 		top: 0;
@@ -567,9 +578,22 @@
 	.hero__plate--tall {
 		display: none;
 	}
+	/* ⚓ ON A PHONE THE CARDS HANG FROM THE HORIZON (Nate 2026-10-18). A
+	   percentage drifted against the world as phones got taller, because the
+	   cards are width-bound and the horizon is not; now the group's centre is
+	   solved so the horizon crosses each card's bottom point at
+	   --horizon-cross of the plate (heroArt.ts § HORIZON_POINT_DEPTH). The
+	   band below hangs off the cards, so it follows. --horizon-y is the scene
+	   layout's own (its distance from the BOTTOM — the same plate maths the
+	   renderer runs), so this is exact from the first paint, with no script. */
+	@media (max-width: 40rem) {
+		.composition {
+			--group-y: calc(100% - var(--horizon-y) - (var(--horizon-cross) - 0.5) * var(--card-h));
+		}
+	}
 	@media (max-width: 40rem) and (max-aspect-ratio: 3/5) {
 		.composition {
-			--group-y: 42%;
+			--horizon-cross: var(--horizon-cross-tall);
 			/* The TALL card (demo): the plate's proportion and its label band
 			   switch to the stretched plate's, and the base SVG gives way. */
 			--plate-h: var(--plate-h-tall);

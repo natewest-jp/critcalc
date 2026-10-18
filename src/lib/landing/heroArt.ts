@@ -60,6 +60,20 @@ export const TALL_ART_DROP = 70;
 export const PLATE_H_TALL = PLATE_H + TALL_EXTRA;
 export const PLATE_VIEWBOX_TALL = `0 0 ${PLATE_W} ${PLATE_H_TALL}`;
 
+/**
+ * 🎛️ WHERE THE HORIZON CROSSES THE CARD (⚓ Nate 2026-10-18), phones only:
+ * the share of the bottom POINT that hangs below the horizon. The point runs
+ * from the shoulder where the straight sides end (y 763; 903 on the tall
+ * plate) to the tip (919; 1059) — 156 units on both — so 0.8 puts the horizon
+ * a fifth of the way down from the shoulder: "almost down to the widest area
+ * of the point".
+ */
+export const HORIZON_POINT_DEPTH = 0.8;
+const POINT_H = 156;
+/** The plate y the horizon crosses, as a fraction of the plate's height. */
+export const HORIZON_CROSS = (PLATE_H - HORIZON_POINT_DEPTH * POINT_H) / PLATE_H;
+export const HORIZON_CROSS_TALL = (PLATE_H_TALL - HORIZON_POINT_DEPTH * POINT_H) / PLATE_H_TALL;
+
 /** Every (x, y) pair in an absolute path whose y is below `cut` moves down by
  *  `dy`. The plate paths use only absolute M / C / L / Z, so pairs are simply
  *  every two numbers. */
