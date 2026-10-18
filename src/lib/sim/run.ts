@@ -165,6 +165,10 @@ const DASH_FRAMES = 21;
  *  last one starts a lockout of `DASH_LOCKOUT_F`, in which a dash waits. */
 const DASH_WINDOW_F = 48;
 const DASH_LOCKOUT_F = 90;
+/** A walk (`W`) — gcsim's bare `walk`, whose `f` defaults to ONE frame
+ *  (`internal/template/character/stam.go`, `Walk`). The action before it already
+ *  ran to its animation's end (`peekActionKey` answers 'W'); this is the walk. */
+const WALK_F = 1;
 /** Fallback cast time when no E/Q frame data is present on the ability (FRAMES).
  *  Sourced from the data-derived generic profile (genericProfile.ts) so a
  *  frameless skill/burst gets a realistic cast length, not a magic constant. */
@@ -2982,6 +2986,17 @@ export function runRotation(
 					// frame on Prydwen's FDC demo (C held, then D), 2026-10-16. gcsim's
 					// own name for the resume's windup skip is `buffered`.
 					if (!cancel) humanPad(t === 'D' ? 'dash' : 'jump', j);
+				} else if (t === 'W') {
+					// ⚓ A WALK (2026-10-18): it resets the string and lasts one frame,
+					// and it DRAWS NOTHING — no block, no action event. The action before
+					// it already ended at its walk point (its slice for 'W', which is
+					// `anim` until the data states an override) and, with Human timing
+					// on, already paid the pad for the input after the walk
+					// (`peekHumanPadTarget`), so nothing pads here. A spin ended at the
+					// `C` before (the walk is not a `C`).
+					normalCounter = 0; // any non-normal action resets the NA string (gcsim `exec.go`)
+					spin = null;
+					clock.advance(clock.now + WALK_F);
 				}
 			}
 		}

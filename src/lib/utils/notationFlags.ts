@@ -24,11 +24,13 @@
  *                    UI-state round naming exactly this consumer ("the planner's
  *                    generic-timing text").
  *
- * ⚓ NATE 2026-08-13 put `W` on the warning side rather than the provisional one,
- * and the reasoning generalises: a token we will never simulate is not a
- * coverage gap that might close later. Walk-cancels enable timing-breaking
- * gameplay (machine-gun Gorou), gcsim does not model them either, and saying so
- * plainly beats implying we are getting round to it.
+ * ↻ `W` CROSSED THE LINE (2026-10-18). It sat on the warning side from
+ * 2026-08-13, as a token the parser stepped over; it is simulated now (it resets
+ * the attack string and the action before it runs to its walk point — tokens.ts
+ * `peekActionKey`), so it is TAKEN. What stands in is the walk point itself:
+ * gcsim's default (the full animation), because the per-character overrides
+ * gcsim carries are not in our data yet. That is a provisional, by the line
+ * above — and it goes away with the follow-up data round.
  *
  * ⚠ NO PARSE RUNS HERE. The linter is fed by the eager character index
  * (`casts`, published by castTokens.ts) so it can run per KEYSTROKE inside the
@@ -46,9 +48,12 @@ import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 export type NotationFlagReason =
 	/** The leading name of a segment resolves to nobody — the segment is skipped. */
 	| 'unknown-character'
-	/** A valid KQM token the planner draws nothing for: `W`, or `A` on a
-	 *  character who cannot take an aimed shot. */
+	/** A valid KQM token the planner draws nothing for: `A` on a character who
+	 *  cannot take an aimed shot, or an `F` on a kit whose charge doesn't spin. */
 	| 'unsupported-token'
+	/** A walk (`W`): simulated, but the attack before it ends at its full
+	 *  animation, gcsim's default, rather than the character's own walk point. */
+	| 'approximate-walk'
 	/** A cast token the segment's character cannot perform — timed by a stand-in. */
 	| 'approximate-cast'
 	/** A fifth (or later) distinct character: parsed, but with no slot to draw in. */
@@ -94,9 +99,9 @@ function approximateCastMessage(name: string, token: string, casts: readonly str
 	return `${name} can't perform ${token} — this cast is drawn with generic timing.`;
 }
 
-/** Tokens the linter has an opinion about: the E/Q casts, the two `label`
- *  tokens the planner may not be able to draw (`A`, `W`), and the plunge and
- *  charged classes it may draw with a stand-in. */
+/** Tokens the linter has an opinion about: the E/Q casts, the `label` tokens
+ *  the planner may not be able to draw (`A`, `F`), the walk it times with a
+ *  stand-in (`W`), and the plunge and charged classes it may draw with one. */
 function isLintable(tok: Token): boolean {
 	return (
 		tok.kind === 'E' ||
@@ -186,18 +191,20 @@ export function flagNotation(notation: string): NotationFlag[] {
 		}
 
 		for (const tok of castTokensIn(body)) {
-			// ⛔ NOTHING IS DRAWN for these two, so they take the warning register
-			// rather than the provisional one — see the header for the line.
+			// A walk is TAKEN, and its timing is a stand-in — see the header.
 			if (tok.text === 'W') {
 				flags.push({
 					from: tok.from,
 					to: tok.to,
 					text: tok.text,
-					reason: 'unsupported-token',
-					message: 'Walk-cancels aren’t simulated. Use ~2s for a deliberate pause.'
+					reason: 'approximate-walk',
+					message:
+						'A walk restarts the attack string. The action before it runs to the end of its animation — some characters can walk out sooner, which the Rotation Planner doesn’t capture yet.'
 				});
 				continue;
 			}
+			// ⛔ NOTHING IS DRAWN for these two, so they take the warning register
+			// rather than the provisional one — see the header for the line.
 			if (tok.text === 'F') {
 				// `F` is the finisher of a SPINNING Charged Attack (Mavuika's
 				// Flamestrider); on any other kit the parser draws nothing for it.

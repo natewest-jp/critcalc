@@ -92,8 +92,8 @@ describe('notationFlags', () => {
 	});
 });
 
-// ── A and W (⚓ Nate 2026-08-13) ───────────────────────────────────────────────
-describe('the two tokens the planner may not be able to draw', () => {
+// ── A and W (⚓ Nate 2026-08-13; W simulated since 2026-10-18) ─────────────────
+describe('A, which the planner may not be able to draw, and W, which it times with a stand-in', () => {
 	it('says nothing about A on a bow — it IS that bow’s charged shot', () => {
 		expect(flagNotation('Ganyu A N1 A')).toEqual([]);
 	});
@@ -106,16 +106,17 @@ describe('the two tokens the planner may not be able to draw', () => {
 		expect(flags[0].message).toMatch(/Only a bow can take an aimed shot/);
 	});
 
-	it('flags W for everyone, and points at the token that does work', () => {
+	it('flags W for everyone in the PROVISIONAL register — taken, its walk point a stand-in', () => {
 		const flags = flagNotation('Ganyu A W N1');
 		expect(flags).toHaveLength(1);
 		expect(flags[0].text).toBe('W');
-		expect(flagSeverity(flags[0].reason)).toBe('warning');
-		expect(flags[0].message).toMatch(/~2s/);
+		expect(flags[0].reason).toBe('approximate-walk');
+		expect(flagSeverity(flags[0].reason)).toBe('provisional');
+		expect(flags[0].message).toMatch(/restarts the attack string/);
 	});
 
 	it('finds both inside a bracket repeat group', () => {
-		expect(reasons('Bennett 2[A W]')).toEqual(['unsupported-token', 'unsupported-token']);
+		expect(reasons('Bennett 2[A W]')).toEqual(['unsupported-token', 'approximate-walk']);
 	});
 });
 
