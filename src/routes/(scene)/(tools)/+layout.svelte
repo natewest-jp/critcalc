@@ -567,8 +567,22 @@
 		if (set) setStarVeil(set, sceneTransitionWindow());
 	}
 
+	// ⚠ The observer only SCHEDULES a measurement, one frame out. Measuring in
+	// its callback re-observes any box that just appeared (an aside opening),
+	// and observing inside the callback queues a notification the same frame
+	// cannot deliver — WebKit reports it as a page error ("ResizeObserver loop
+	// completed with undelivered notifications"); e2e caught it, 2026-10-18.
+	let veilRaf = 0;
+	function scheduleVeil() {
+		if (veilRaf) return;
+		veilRaf = requestAnimationFrame(() => {
+			veilRaf = 0;
+			publishVeil();
+		});
+	}
+
 	onMount(() => {
-		if (typeof ResizeObserver !== 'undefined') veilRO = new ResizeObserver(publishVeil);
+		if (typeof ResizeObserver !== 'undefined') veilRO = new ResizeObserver(scheduleVeil);
 		publishVeil();
 		const opts = { capture: true, passive: true } as const;
 		document.addEventListener('scroll', publishVeil, opts);
@@ -578,6 +592,8 @@
 			veilRO?.disconnect();
 			veilRO = undefined;
 			veilObserved = [];
+			cancelAnimationFrame(veilRaf);
+			veilRaf = 0;
 			document.removeEventListener('scroll', publishVeil, opts);
 			window.removeEventListener('resize', publishVeil);
 		};
