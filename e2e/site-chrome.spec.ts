@@ -76,9 +76,21 @@ test.describe('one chrome, every surface', () => {
  * tool underneath to remount, and no overlay host for the Library. It has its
  * own block below rather than an exception inside this loop.
  */
+/**
+ * ↻ 2026-10-18 (⚓ Nate): OFF A TOOL, ABOUT AND HELP ARE PAGES. On the landing
+ * and the static pages there is no tool underneath to remount, and About/Help
+ * are things you go and read, so their glyphs are links (About → /about, Help
+ * → /help, its index). So the loop below keeps every META case on a TOOL and
+ * only Settings on the landing — Settings stays a modal everywhere (a control
+ * you reach for mid-task). The landing's About/Help have their own block.
+ */
 test.describe('meta overlays never navigate', () => {
-	for (const surface of ['/', '/builder']) {
-		for (const { label, title } of META) {
+	const CASES: [string, typeof META][] = [
+		['/', META.filter((m) => m.label === 'Settings')],
+		['/builder', META]
+	];
+	for (const [surface, metas] of CASES) {
+		for (const { label, title } of metas) {
 			test(`${surface} — "${title}" opens and closes without moving the URL`, async ({ page }) => {
 				await page.goto(surface, { waitUntil: 'networkidle' });
 				const before = page.url();
@@ -94,6 +106,30 @@ test.describe('meta overlays never navigate', () => {
 			});
 		}
 	}
+});
+
+test.describe('off a tool, About and Help are pages', () => {
+	test('landing → Help goes to /help by the pages, not an overlay', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await metaBtn(page, 'Help').click();
+		await page.waitForURL('**/help');
+		await expect(page.locator('.area-body h1').first()).toHaveText('Help & FAQ');
+		await expect(page.locator('[role="dialog"]'), 'no overlay opened').toHaveCount(0);
+		await expect(metaBtn(page, 'Help')).toHaveAttribute('aria-current', 'page');
+	});
+
+	test('on /about, About is the page already showing and does nothing', async ({ page }) => {
+		await page.goto('/about', { waitUntil: 'networkidle' });
+		const about = metaBtn(page, 'About');
+		await expect(about).toHaveAttribute('aria-current', 'page');
+		// A navigation would remount the {#key pathname} page body; mark it.
+		await page.locator('.area-body').evaluate((el) => el.setAttribute('data-e2e-mark', '1'));
+		await about.click();
+		await page.waitForTimeout(500);
+		expect(new URL(page.url()).pathname).toBe('/about');
+		await expect(page.locator('.area-body[data-e2e-mark="1"]'), 'not re-rendered').toHaveCount(1);
+		await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+	});
 });
 
 test.describe('the /library page', () => {
@@ -172,7 +208,10 @@ test.describe('overlay containing blocks', () => {
 
 	async function overlayTransforms(page: Page, url: string) {
 		await page.goto(url, { waitUntil: 'networkidle' });
-		await metaBtn(page, 'Help').click();
+		// ↻ 2026-10-18: Settings, not Help — off a tool Help is a link to /help
+		// now, and Settings is the overlay every surface still has (same
+		// ChromeOverlay panel and backdrop).
+		await metaBtn(page, 'Settings').click();
 		await page.locator('.overlay-panel').waitFor();
 		await page.mouse.move(200, 200);
 		await page.mouse.move(1400, 800);

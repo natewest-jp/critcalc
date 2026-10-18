@@ -3,11 +3,15 @@
 	import type { Snippet } from 'svelte';
 	import {
 		closeChromeModal,
+		isAboutPage,
+		isHelpPage,
+		onTool,
 		openArea,
 		openNav,
 		openSettings,
 		roster,
-		rosterHref
+		rosterHref,
+		stayHere
 	} from './chromeModal.svelte';
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 	import { page } from '$app/state';
@@ -127,32 +131,71 @@
 				/></svg
 			>
 		</button>
-		<button
-			class="chrome-btn"
-			aria-label="About"
-			title="About"
-			onclick={() => openArea('about', defaultChapter('about'))}
-		>
+		{#snippet aboutGlyph()}
 			<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
 				><path
 					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m2.07 13.38q0-.54-.5-1.13-.51-.6-1.19-.6l-.31-.04h-.4a2 2 0 0 0-1.34.54q-.62.55-.62 1.36v.36l.02.1q0 .63.57 1.13.55.48 1.31.48h.39q.77 0 1.4-.53.66-.57.65-1.16l.02-.15zm-1.5 3.93q-1.84 0-3.34.5-.8.3-.78.88-.02.58.81.99.63.29.75.7.14.45.13 3.04 0 2.6-.16 3.2-.15.6-.72 1.16-.7.7-.68 1.2.01.58.47.7.34.1 2.02.1h1.17q2.23 0 2.9-.22a1 1 0 0 0 .31-.18l.04-.05.03-.05.02-.06v-.21l-.08-.26q-.15-.26-.66-.8a3 3 0 0 1-.81-1.29q-.16-.65-.16-4.4a63 63 0 0 0-.07-4.19 1 1 0 0 0-.33-.57 1 1 0 0 0-.68-.19z"
 					transform="translate(-211.3 -84.63)scale(.9588)"
 				/></svg
 			>
-		</button>
-		<button
-			class="chrome-btn"
-			aria-label="Help"
-			title="Help"
-			onclick={() => openArea('help', helpChapter)}
-		>
+		{/snippet}
+		{#snippet helpGlyph()}
 			<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
 				><path
 					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m-2.73 28.11q0 .8.6 1.4t1.51.6h.07l.33-.04q.66 0 1.25-.6.6-.59.6-1.35v-.14q0-.88-.64-1.45-.63-.56-1.4-.56h-.29l-.12.03q-.79 0-1.35.66t-.56 1.33zm-2.22-13.3q.01.8.4 1.12.26.24.71.24 1.01 0 1.75-1 .6-.86 1.45-.86t1.4.45q.52.45.52 1.26 0 .86-.37 1.52a10 10 0 0 1-1.28 1.67q-.92 1.03-1.1 1.33a3.3 3.3 0 0 0-.54 1.8q0 .96.34 1.68.38.81.96.8c.94 0 1.38-.35 1.38-.96q0-1.2.49-1.94.23-.35 1.72-1.72 2.06-1.92 2.06-4t-1.54-3.34a5.8 5.8 0 0 0-3.83-1.25q-2.31 0-3.68 1.07-.83.64-.84 1.9z"
 					transform="translate(-211.3 -84.63)scale(.9588)"
 				/></svg
 			>
-		</button>
+		{/snippet}
+		<!-- ⚓ ABOUT AND HELP SPLIT LIKE ROSTER (Nate 2026-10-18; onTool() in
+		     chromeModal.svelte.ts is the one test). On a tool they open the
+		     overlay, and "?" opens that tool's chapter. Anywhere else they are
+		     LINKS to their pages by the pages' crossfade — Help to its index, as
+		     there is no tool chapter to guess. The page already showing is marked
+		     aria-current and its click does nothing (stayHere): the switcher's
+		     "you are here", kept focusable so a reader can still hear where they
+		     are. -->
+		{#if onTool()}
+			<button
+				class="chrome-btn"
+				aria-label="About"
+				title="About"
+				onclick={() => openArea('about', defaultChapter('about'))}
+			>
+				{@render aboutGlyph()}
+			</button>
+			<button
+				class="chrome-btn"
+				aria-label="Help"
+				title="Help"
+				onclick={() => openArea('help', helpChapter)}
+			>
+				{@render helpGlyph()}
+			</button>
+		{:else}
+			{@const aboutHere = isAboutPage(page.url.pathname)}
+			{@const helpHere = isHelpPage(page.url.pathname)}
+			<a
+				class="chrome-btn"
+				aria-label="About"
+				title="About"
+				href={resolve('/about')}
+				aria-current={aboutHere ? 'page' : undefined}
+				onclick={(e) => (aboutHere ? stayHere(e) : closeChromeModal())}
+			>
+				{@render aboutGlyph()}
+			</a>
+			<a
+				class="chrome-btn"
+				aria-label="Help"
+				title="Help"
+				href={resolve('/help')}
+				aria-current={helpHere ? 'page' : undefined}
+				onclick={(e) => (helpHere ? stayHere(e) : closeChromeModal())}
+			>
+				{@render helpGlyph()}
+			</a>
+		{/if}
 		{#snippet rosterGlyph()}
 			<!-- THE ROSTER (lineups design §11.6 item 1): the Library on its Roster
 			     tab. Beside the cog because the roster belongs to the account, like
@@ -595,8 +638,14 @@
 	}
 
 	.chrome-btn:hover .chrome-glyph,
-	.chrome-btn:focus-visible .chrome-glyph {
+	.chrome-btn:focus-visible .chrome-glyph,
+	.chrome-btn[aria-current='page'] .chrome-glyph {
 		fill-opacity: 1;
+	}
+	/* The page already showing (off a tool, About/Help link to their pages):
+	   lit like the switcher's current link, and its click does nothing. */
+	.chrome-btn[aria-current='page'] {
+		cursor: default;
 	}
 
 	/* ⚠⚠ THE COMPASS'S SECOND TONE NEEDS NO CSS, AND THAT IS THE POINT.
