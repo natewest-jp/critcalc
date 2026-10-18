@@ -89,12 +89,10 @@
 		fifth character, who has no slot. Hover the token for the reason.
 	</p>
 	<p>
-		<strong>Walk-cancels aren’t simulated.</strong> <code>W</code> is recognized and skipped, so
-		<code>N1 W N2</code> times exactly like <code>N1 N2</code>. A walk-cancel is worth doing because
-		it ends an animation early while keeping the attack string going, and the frame data for that is
-		exactly the hard part; drawing it approximately would be worse than not drawing it. gcsim, where
-		the frame data comes from, doesn’t simulate it either. Use <code>~0.5s</code> or similar when you
-		want time to pass.
+		<strong>Walk-cancels.</strong> <code>W</code> ends the attack string the way walking does in
+		game: <code>N1 W N1</code> is two first hits. A walk can start only once the attack’s animation has
+		ended, so it saves no frames over waiting. What it buys is the reset, without the stamina a dash would
+		cost.
 	</p>
 </section>
 
@@ -103,19 +101,19 @@
 	<p>
 		The team is whoever the notation names: the first four characters, in the order they first
 		appear. To add someone, type their name, even with no actions after it; to remove someone,
-		delete their segments.
+		delete their notation.
 	</p>
 	<p>
 		Each slot on the bench beside the timeline has a bench card. On a wide screen, clicking the
-		portrait opens the Team Builder’s swap mode for that slot, and picking someone there renames
-		them throughout the notation; an empty slot adds someone instead. The magnifier in the corner
-		opens the character’s details.
+		portrait opens the Team Builder’s swap mode for that slot, and picking someone there takes you
+		back to the Planner with the notation renamed throughout. An empty slot adds someone instead.
+		The magnifier in the corner opens the character’s details.
 	</p>
 	<p>
 		The chip on the portrait sets the character’s constellation for this tab, and the pill beside it
 		sets their weapon and artifact set. Neither touches your roster: a tab keeps its own levels and
-		loadouts, so one rotation can be written at C6 while your roster says C0. When the tab asks for
-		more than you own, the chip is drawn hollow.
+		loadouts, so one rotation can be written at C6 while your roster says C0. When the tab uses a
+		constellation you don't own the chip is drawn hollow.
 	</p>
 	<p>
 		A character without curated frame data carries a mark beside their name, and their actions are
@@ -139,8 +137,8 @@
 	</p>
 	<p>
 		Below the characters are the team-wide lanes — team buffs, Nightsoul bursts and Moonsign’s
-		Ascendant Gleam when the team has them — and above the composer a strip lists the always-on
-		bonuses: resonances, faction bonuses and permanent passives.
+		Ascendant Gleam bonuses when the team has them — and above the composer a strip lists the
+		always-on bonuses: resonances, faction bonuses, and permanent passives.
 	</p>
 	<p>
 		Energy isn’t modeled: a burst is ready whenever its cooldown is. Characters without curated
