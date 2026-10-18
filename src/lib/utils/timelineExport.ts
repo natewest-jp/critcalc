@@ -442,8 +442,9 @@ const BRAND_SIZE = 24; // --fs-4xl, the wordmark
  *  draws 500 (--fw-medium) with `-webkit-font-smoothing: antialiased`, which a
  *  canvas cannot ask for, so the same 500 reads HEAVIER here. Bitter is a
  *  variable font, so any weight between its stops renders. ↻ 500 → 450
- *  (⚓ Nate, 2026-10-18: "450 or even 400"). */
-const BRAND_WEIGHT_PNG = 450;
+ *  (⚓ Nate, 2026-10-18: "450 or even 400"), ↻ 450 → 400 the same day: 450
+ *  still read heavier. */
+const BRAND_WEIGHT_PNG = 400;
 const BRAND_MARK = 1.5714; // the mark's height ÷ the wordmark's (SiteChrome)
 const BRAND_GAP = 6; // 0.35rem
 const BRAND_H = Math.round(BRAND_SIZE * BRAND_MARK);
