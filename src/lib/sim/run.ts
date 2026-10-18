@@ -54,6 +54,15 @@ import {
 } from '$lib/types/ability';
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
+import { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } from '$lib/utils/icd';
+import { schedulePolls } from './absorb';
+import {
+	hasFreeSkill,
+	takeFreeSkill,
+	timedBlessingOnAction,
+	timedBlessingOnCast,
+	timedBlessingOnPlunge
+} from './timedBlessing';
 import { FPS, frameAt, framesOf, landingsOf, projectileTravelOf } from '$lib/utils/frames';
 import {
 	GENERIC_NORMAL_HITS,
@@ -77,6 +86,7 @@ import {
 import {
 	resolveAbilityTiming,
 	applyCooldownModifiers,
+	heldApplications,
 	resolveActiveAbility,
 	resolveChargeCastTime,
 	resolveChargeFrameMap,
@@ -139,6 +149,7 @@ import {
 } from './cooldownReduce';
 import {
 	emitReactionsAtCast,
+	emitAbsorbedAtCast,
 	emitReactionsAtSwing,
 	handOffLineup,
 	notifyDamage,
@@ -700,6 +711,9 @@ export function runRotation(
 		}
 		const lookaheadSwapFollows =
 			lookaheadEnd < segments.length - 1 && !continuesInto(lookaheadEnd, char.id);
+		// ⚓ A `~Xs` a HELD cast took as its length (`HeldCast`, Sayu): token index
+		// → the frames it spent, so the wait branch advances only the rest.
+		const heldTaken = new Map<number, number>();
 
 		// Unified E/Q cast pipeline. One sequence with small kind-branches; the
 		// shared step order is the Q handler's (the reference the 2026-07-05 bug
@@ -788,7 +802,10 @@ export function runRotation(
 							) ?? (ability as SkillAbility); // !isBurst branch: `ability` is the skill
 						// Initialize this ability's charge queue on first sight:
 						// all charges ready at t=0.
-						if (!ctx.eChargeQueues.has(scanE.id)) {
+						// ⚓ A skill that SHARES its sibling's charges reads that pool
+						// (`sharesChargesWith`, Varesa's two Rushes: gcsim has one skill).
+						const scanKey = scanE.sharesChargesWith ?? scanE.id;
+						if (!ctx.eChargeQueues.has(scanKey)) {
 							const scanVariant = matchVariant(
 								scanE,
 								tok.text,
@@ -799,14 +816,16 @@ export function runRotation(
 								variantCtx
 							);
 							ctx.eChargeQueues.set(
-								scanE.id,
+								scanKey,
 								new Array(resolveEffectiveCharges(scanE, scanVariant, charConstellationLevel)).fill(
 									0
 								)
 							);
 						}
+						// A free skill (a timed Blessing's entry) needs no charge.
+						if (hasFreeSkill(ctx, char, clock.now)) break;
 						// queue[0] is the earliest-ready charge (kept sorted ascending).
-						const readyAt = ctx.eChargeQueues.get(scanE.id)![0];
+						const readyAt = ctx.eChargeQueues.get(scanKey)![0];
 						if (readyAt <= clock.now) break; // castable now
 						const boundary = nextOwnWindowEnd(clock.now);
 						// Advance to the next event: either a charge returns, or a
@@ -876,6 +895,29 @@ export function runRotation(
 					variantCtx
 				);
 
+				// ⚓ A HELD CAST (`HeldCast`, Sayu's Windwheel, 2026-10-17): its length
+				// `D` is a `~Xs` written right after it — taken here, clamped to the
+				// longest hold, the excess left to wait — or the longest hold when none
+				// is written (⚓ Nate). Everything after the release moves by `D`, and
+				// the cancel slice is read against what follows the taken wait.
+				const held = variant?.held;
+				let heldFor = 0;
+				let castNextKey = nextKey;
+				let padAt = j;
+				if (held) {
+					heldFor = held.max;
+					let k = j + 1;
+					while (k < expandedTokens.length && isInert(expandedTokens[k])) k++;
+					const m =
+						expandedTokens[k]?.kind === 'time' && expandedTokens[k].text.match(/^~([\d.]+)s/);
+					if (m && isFinite(parseFloat(m[1]))) {
+						heldFor = Math.min(framesOf(parseFloat(m[1])), held.max);
+						heldTaken.set(k, heldFor);
+						castNextKey = peekActionKey(lookahead, k, isBow);
+						padAt = k;
+					}
+				}
+
 				// E only: ensure the resolved variant's charge queue exists (the
 				// scan may have re-resolved to a different variant).
 				let queue: number[] | undefined;
@@ -886,19 +928,21 @@ export function runRotation(
 						variant,
 						charConstellationLevel
 					);
-					if (!ctx.eChargeQueues.has(active.id)) {
-						ctx.eChargeQueues.set(active.id, new Array(maxCharges).fill(0));
+					const chargeKey = (active as SkillAbility).sharesChargesWith ?? active.id;
+					if (!ctx.eChargeQueues.has(chargeKey)) {
+						ctx.eChargeQueues.set(chargeKey, new Array(maxCharges).fill(0));
 					}
-					queue = ctx.eChargeQueues.get(active.id)!;
+					queue = ctx.eChargeQueues.get(chargeKey)!;
 				}
 
-				const castTime = resolveEQCastTime(
-					active,
-					variant,
-					cancelKeyFor(ctx.humanTiming, kind, nextKey, isBow)
-				);
+				const castTime =
+					resolveEQCastTime(
+						active,
+						variant,
+						cancelKeyFor(ctx.humanTiming, kind, castNextKey, isBow)
+					) + heldFor;
 				const {
-					cooldown: cd,
+					cooldown: timedCd,
 					duration: dur,
 					summonActivatesAt: spawn
 				} = resolveAbilityTiming(
@@ -913,6 +957,22 @@ export function runRotation(
 					{ teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) },
 					ctx.team.skillCooldownModifiers
 				);
+				// A held cast's cooldown grows with the hold (gcsim `6*60 + duration*0.5`),
+				// through the same modifiers as the authored length.
+				const cd =
+					held?.cooldownPerSecond !== undefined
+						? applyCooldownModifiers(
+								framesOf(variant?.cooldown ?? active.cooldown) + heldFor * held.cooldownPerSecond,
+								active,
+								variant,
+								states,
+								charConstellationLevel,
+								chainIdx,
+								stackState,
+								{ teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) },
+								ctx.team.skillCooldownModifiers
+							)
+						: timedCd;
 
 				// Apply gainStacks matching this cast BEFORE the snapshot, so the
 				// cast's stackContext reflects post-grant state (symmetric with
@@ -951,7 +1011,8 @@ export function runRotation(
 				// own when it states one (Alyosha's Hold), else the base's. ONE value
 				// for all three readers below (readyAt, the startsOnCooldown chain,
 				// the cd-reset instant), so they cannot disagree on a hold.
-				const cdStartDelay = variant?.cooldownStartDelay ?? active.cooldownStartDelay ?? 0;
+				const cdStartDelay =
+					(variant?.cooldownStartDelay ?? active.cooldownStartDelay ?? 0) + heldFor;
 				// ⚓ A cooldown whose LENGTH is the stance's (`cooldownByStanceTime`,
 				// Tartaglia, 2026-10-16): resolved here, against this cast's modifiers
 				// and states, and handed to the stance record for `clampStance`. The
@@ -1019,7 +1080,12 @@ export function runRotation(
 				// right-hand claymore. Resolved from the same `application[]` the
 				// gauge is fed (variant's replaces the base's, the array rule), so the
 				// pill and the aura lane's first pip cannot disagree.
-				const castApps = variant?.application ?? active.application;
+				// ⚠️ A held cast's list is resolved to ITS hold here — the roll's hits
+				// past the release dropped, the kick moved — and every reader below
+				// takes this one list.
+				const castApps = held
+					? heldApplications(variant?.application ?? active.application, held, heldFor)
+					: (variant?.application ?? active.application);
 				{
 					const first = resolveElementRef(castApps?.[0]?.element, variantCtx);
 					if (first !== undefined && first !== char.element) castEvent.element = first;
@@ -1031,9 +1097,14 @@ export function runRotation(
 				// cast's first hit. ↻ EVERY one is a hit since the every-landing round
 				// (same day): `application[]` IS the per-landing list a swing's `lands`
 				// has to author. Stable sort — entries on one frame keep list order.
+				// ⚠️ An ABSORBED entry is left out: whether it lands at all is known
+				// only at its frame (the lock), so counting it would claim a hit that
+				// may not exist — a small under-count when it does.
 				const landings =
 					castApps && castApps.length > 0 && !castIsNonHitting(active, variant)
-						? [...castApps].sort((a, b) => a.frame - b.frame)
+						? [...castApps]
+								.filter((a) => !(typeof a.element === 'object' && a.element.type === 'absorbed'))
+								.sort((a, b) => a.frame - b.frame)
 						: [];
 				if (landings.length > 0) {
 					castEvent.firstHitAt = castStart + landings[0].frame;
@@ -1072,6 +1143,12 @@ export function runRotation(
 					// still renders on the bar, but neither gates nor writes the
 					// clock (gcsim: Symphony sets no CD).
 					if (variant?.bypassesCooldown !== true) cs.qReadyAt = castEvent.readyAt;
+				} else if (takeFreeSkill(ctx, char, castStart)) {
+					// ⚓ A FREE SKILL (`TimedBlessingSpec.freeSkillOnEntry`, Varesa): no
+					// charge spent, no cooldown started — the next E is as ready as the
+					// earliest charge already was (gcsim `freeSkill` skips SetCD).
+					castEvent.cooldown = 0;
+					castEvent.readyAt = Math.max(castStart, queue![0]);
 				} else {
 					// Ready-at for the slot we just consumed. Sac Bow proc may
 					// override this with hitmark time (skill instantly available
@@ -1178,6 +1255,30 @@ export function runRotation(
 				// its summons (a Tap's Ring reads the Ring form this opens). A summon
 				// that spawns at the swap-out off this cast's form is handed over as a
 				// closure — the cast's own arguments, called back at the swap.
+				// ⚓ Sourcewater Droplets (`ChargeChannel`): recorded with their FUTURE
+				// spawn instant, which a channel's absorb reads — the clock is
+				// monotonic, so nothing earlier can count one that has not landed.
+				// A timed Blessing's points — the RESOLVED form's own: a variant
+				// speaks for itself (Volcano Kablam adds none).
+				if (char.timedBlessing)
+					timedBlessingOnCast(
+						ctx,
+						clock,
+						char,
+						variant ? variant.blessingPoints : active.blessingPoints,
+						castStart,
+						castId
+					);
+				for (const d of active.spawnsDroplets ?? []) {
+					const life = char.abilities.find(
+						(a): a is NormalAbility => a.abilityType === 'normal' && a.chargeChannel !== undefined
+					)?.chargeChannel?.dropletLife;
+					if (life === undefined) continue;
+					const list = ctx.droplets.get(char.id) ?? [];
+					for (let n = 0; n < d.count; n++)
+						list.push({ spawn: castStart + d.at, end: castStart + d.at + life });
+					ctx.droplets.set(char.id, list);
+				}
 				if (char.nightsoulPool) {
 					const deferred = findSummonsForBar(
 						char,
@@ -1492,7 +1593,7 @@ export function runRotation(
 					castStart,
 					// ⚠️ A variant's `application[]` REPLACES the base's, like every other
 					// variant array — a hold that lands different hits states all of them.
-					variant?.application ?? active.application,
+					castApps,
 					// ⚠️ `noICD` on a skill/burst was declared and inert until L4d; this is
 					// its first reader (Mualani's Sharky's Bite is the normal-side holder).
 					// ⛔ Not variant-overridable — `AbilityVariant` has no `noICD`, and
@@ -1517,6 +1618,32 @@ export function runRotation(
 					// opens none never gates against an older stance.
 					cs.stance?.sourceCastId === castId ? cs.stance : undefined
 				);
+				// ⚓ A cast that ABSORBS (absorption round, 2026-10-17): its lock is
+				// polled from the cast, and its `{type: 'absorbed'}` entries land in
+				// the locked element — or not at all (Heizou's Iris, Ifa's Mark).
+				{
+					const absorbs = variant?.absorbs ?? active.absorbs;
+					if (absorbs) {
+						const key = `cast#${castId}`;
+						// A held cast polls only while it is held (gcsim's `duration/12`).
+						schedulePolls(ctx, clock, key, absorbs, castStart, (at) =>
+							held ? at - castStart - held.from <= heldFor : true
+						);
+						emitAbsorbedAtCast(
+							ctx,
+							clock,
+							char,
+							kind,
+							castStart,
+							castApps,
+							key,
+							states,
+							charConstellationLevel,
+							chainIdx,
+							stackState
+						);
+					}
+				}
 				// ⚓ Summon ticks apply their element too (gauge round L5e-b). Queued
 				// after the summonExt registration above so the chain reads the
 				// extension record LIVE rather than a copy.
@@ -1666,7 +1793,7 @@ export function runRotation(
 				// the gauge in the order they happen. ⛔ Nothing that reads the cast's
 				// own decisions may be added below this line.
 				clock.advance(castEnd);
-				humanPad(kind, j);
+				humanPad(kind, padAt);
 			} else if (isBurst) {
 				// No-ability fallback (Q): generic 15s CD.
 				// No resolved variant — key the abilityId by the bare charId.
@@ -1736,6 +1863,21 @@ export function runRotation(
 			if (!tk) return null;
 			return tk.kind === 'Q' || tk.kind === 'E' ? tk.kind : tk.text;
 		};
+		/** The active normal ability, if its Charged Attack channels. */
+		const channelAbility = (): NormalAbility | undefined => {
+			if (!char.abilities.some((a) => a.abilityType === 'normal' && a.chargeChannel))
+				return undefined;
+			const ab = resolveActiveAbility(
+				char,
+				'normal',
+				computeCurrentStates(clock.now),
+				charConstellationLevel,
+				undefined,
+				undefined,
+				variantCtx
+			);
+			return ab?.chargeChannel ? ab : undefined;
+		};
 		/** The active normal ability, if its Charged Attack spins. */
 		const spinAbility = (): NormalAbility | undefined => {
 			if (!char.abilities.some((a) => a.abilityType === 'normal' && a.chargeSpin)) return undefined;
@@ -1754,6 +1896,13 @@ export function runRotation(
 		for (let j = 0; j < expandedTokens.length; j++) {
 			const tok = expandedTokens[j];
 			curSrc = { from: tok.from, to: tok.to };
+			// ⚓ A timed Blessing armed to end by an in-Blessing plunge ends HERE, at
+			// her next action — unless it is a burst (Varesa; `timedBlessing.ts`).
+			if (
+				char.timedBlessing &&
+				(tok.kind === 'E' || tok.kind === 'Q' || (tok.kind === 'label' && tok.text !== 'W'))
+			)
+				timedBlessingOnAction(ctx, char, clock.now, tok.kind === 'Q');
 
 			if (tok.kind === 'Q') {
 				handleCast('burst', tok, j);
@@ -1766,8 +1915,12 @@ export function runRotation(
 					// isFinite alone let `~99999999s` through — see MAX_TIME_ADVANCE_F.
 					// ⚠️ `~0.017s` is legal input and rounds to a single frame; that is the
 					// honest answer, not a floor worth guarding.
+					// A held cast took up to its longest hold of this wait as its length.
 					if (isFinite(delta))
-						clock.advance(clock.now + Math.min(framesOf(delta), MAX_TIME_ADVANCE_F));
+						clock.advance(
+							clock.now +
+								Math.max(0, Math.min(framesOf(delta), MAX_TIME_ADVANCE_F) - (heldTaken.get(j) ?? 0))
+						);
 				}
 			} else if (tok.kind === 'unset-time') {
 				emitAction({ action: 'unset', label: '~?', time: clock.now, duration: MIN_ACTIVE_F });
@@ -2122,6 +2275,101 @@ export function runRotation(
 						else if (spin && next !== 'F' && !(next !== null && /^C\d*$/.test(next)))
 							nightsoulCharging(ctx, clock, char, clock.now, false);
 					}
+					humanPad('charged', j);
+				} else if (/^C\d*$/.test(t) && channelAbility()) {
+					// ⚓⚓ THE CHANNEL (`chargeChannel`, Neuvillette's Equitable Judgment,
+					// 2026-10-17; gcsim `charge.go`): windup, absorb up to three droplets,
+					// a charge-up their count shortens, the beam's hits, the end lag.
+					normalCounter = 0;
+					settleOwnerStates(ctx, cs, char.id, clock.now);
+					const ab = channelAbility()!;
+					const ch = ab.chargeChannel!;
+					const start = clock.now;
+					const element = resolveActionElement(
+						'charged',
+						t,
+						char.weapon,
+						char.element,
+						resolveElementRef(ab.infusion, variantCtx) ?? infusionAt(ctx, char, start)
+					);
+					// gcsim rolls the windup into a preceding cast, Normal, Charged or
+					// plunge; out of a dash, a jump, a swap or a wait it is paid.
+					const prev = actionTextAt(j, -1);
+					const rolled = prev !== null && /^(E|Q|N\d*|s?C\d*|[hl]?P|A)$/.test(prev);
+					const absorbAt = start + (rolled ? 0 : ch.windup) + ch.absorbAt;
+					// Oldest first; one that expired before the absorb never counts.
+					const pool = (ctx.droplets.get(char.id) ?? []).filter((d) => d.end > absorbAt);
+					const taken = pool
+						.filter((d) => d.spawn <= absorbAt)
+						.sort((a, b) => a.spawn - b.spawn)
+						.slice(0, 3);
+					ctx.droplets.set(
+						char.id,
+						pool.filter((d) => !taken.includes(d))
+					);
+					const beamStart = absorbAt + ch.chargeUp[taken.length];
+					const beamEnd = beamStart + ch.hits[ch.hits.length - 1];
+					const lag = frameAt(
+						ch.endLag,
+						cancelKeyFor(
+							ctx.humanTiming,
+							'charged',
+							peekActionKey(lookahead, j, isBow),
+							isBow,
+							chargedBuffers
+						)
+					);
+					const ev = emitAction({
+						action: 'charged',
+						label: t,
+						time: start,
+						duration: beamEnd + lag - start,
+						abilityId: ab.id,
+						element
+					});
+					for (const h of ch.hits) {
+						const at = beamStart + h;
+						clock.schedule(at, Band.LAND, () => {
+							const live = liveSegment === turn;
+							// ⚠️ The beam is gcsim's `ICDTagExtraAttack` on the standard
+							// group, NOT the catalyst Charged Attack rule (that is the short
+							// attack's `ICDTagNone`) — so it is gated HERE on a counter of
+							// its own and offered ungated.
+							let icd = ctx.icdClocks.get(`${char.id}:channel`);
+							if (!icd) {
+								icd = createIcdClock();
+								ctx.icdClocks.set(`${char.id}:channel`, icd);
+							}
+							if (icdApplies(icd, at, STANDARD_ICD_FRAMES).applies)
+								emitReactionsAtSwing(
+									ctx,
+									clock,
+									char,
+									'charged',
+									element,
+									true,
+									at,
+									computeCurrentStates(at),
+									charConstellationLevel,
+									stackState
+								);
+							dispatchHit(
+								{
+									characterId: char.id,
+									time: at,
+									abilityType: 'charged',
+									element,
+									damageTag: 'charged',
+									abilityName: ab.name,
+									...(live ? {} : { offField: true as const }),
+									sourceEventId: ev.id
+								},
+								true,
+								live
+							);
+						});
+					}
+					clock.advance(beamEnd + lag);
 					humanPad('charged', j);
 				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
@@ -2569,6 +2817,15 @@ export function runRotation(
 								{ sourceActionId: plungeEv.id }
 							);
 						}
+						if (char.timedBlessing)
+							timedBlessingOnPlunge(
+								ctx,
+								clock,
+								char,
+								activeNormal?.plungeBlessing,
+								blockStart,
+								blockStart + (landingsOf(plungeFrames)[0] ?? castS)
+							);
 						// The plunge's landing — see `landSwing`: the offers and the hit
 						// record at one instant.
 						const landPlunge = (at: number, live = true): void => {
@@ -2847,6 +3104,8 @@ export function runRotation(
 		// The Nightsoul pool's swap-out: the Crucible ends, the Flamestrider turns
 		// into the Ring and the Blessing carries on (Mavuika; `sim/nightsoul.ts`).
 		if (swapFollows && char.nightsoulPool) nightsoulOnSwapOut(ctx, clock, char, clock.now);
+		// A swap ends a timed Blessing armed to end (gcsim's `OnRemoved` fires on it).
+		if (swapFollows && char.timedBlessing) timedBlessingOnAction(ctx, char, clock.now, false);
 
 		// Swap time before the next character enters. ⚠️ The last turn adds
 		// nothing: the rotation ends when its final action does, not a swap later.

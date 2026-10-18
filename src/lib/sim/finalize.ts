@@ -414,6 +414,16 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						if (summon.terminatesOn === 'recast') {
 							const prev = lastSummonWindowByKey.get(key);
 							if (prev && prev.end > spawnAt) prev.end = spawnAt;
+							// ⚓ SUPERSEDED BEFORE IT SPAWNED, it never existed (Lumi round,
+							// 2026-10-17): `Linnea E Q` — the burst's Lumi takes over at the
+							// cast, 16f before the skill's would have appeared 36f in. The live
+							// chain already agrees (`liveAt` refuses every instant past the
+							// superseding spawn); the window must not survive as `end < start`.
+							if (prev && prev.end <= prev.start) {
+								windows.splice(windows.indexOf(prev), 1);
+								primarySummonWindows.delete(prev);
+								summonByWindow.delete(prev);
+							}
 						}
 						// ⚓ MARKERS THE PARSE MEASURED, for the series the projection cannot
 						// walk (coordinated-attack round, 2026-08-18): a `whileNormalAttacking`
@@ -628,6 +638,14 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		// untouched; a marker says "the summon acted here", not how many effects.
 		const marks = ticks.filter((t, i) => i === 0 || t !== ticks[i - 1]);
 		if (marks.length > 0) win.ticks = marks;
+		// ⚓ ABSORBED marks keep their ELEMENT and their own list — the first one is
+		// where the bar turns into that element, so a twin on its Anemo tick's frame
+		// must not be deduped into it here; the DRAW merges the two per frame
+		// (`$lib/timeline/summonMarks.ts`). Bounded by the final span like the rest.
+		const absorbed = (
+			ctx.absorbedMarks.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ?? []
+		).filter((m) => m.time >= win.start && m.time < win.end);
+		if (absorbed.length > 0) win.absorbedTicks = absorbed;
 	}
 	// ⚓ THE FIRES, the same way (stack-threshold round, 2026-09-18): a
 	// threshold's `damage` effect recorded its mark at the settle point that
@@ -651,14 +669,24 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		const summon = summonByWindow.get(win);
 		if (!summon) continue;
 		const cLevel = ctx.constellationLevels?.[win.characterId] ?? 0;
-		for (const tick of computeSummonDamageTicks(
-			summon,
-			win.start,
-			win.end,
-			cLevel,
-			tickCtx(win.characterId),
-			fieldOpenAt
-		)) {
+		// ⚓ A SEQUENCED summon's landings are the ones its live chain STRUCK
+		// (`summonStrike`, Lumi round) — the sequence cannot be re-walked here, and
+		// `computeSummonDamageTicks` refuses its steps by type, so the two never
+		// count one hit twice. Bounded by the final span like the markers.
+		const struck = (
+			ctx.strikeLandings.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ?? []
+		).filter((l) => l.time >= win.start && l.time < win.end);
+		for (const tick of [
+			...computeSummonDamageTicks(
+				summon,
+				win.start,
+				win.end,
+				cLevel,
+				tickCtx(win.characterId),
+				fieldOpenAt
+			),
+			...struck
+		]) {
 			ctx.hitRecords.push({
 				characterId: win.characterId,
 				time: tick.time,
@@ -798,6 +826,14 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		if (fields.gadgets.length > 0 || otherGadgets.length > 0 || ctx.gadgetRecs.length > 0) {
 			windows.sort((a, b) => a.start - b.start || a.end - b.end);
 		}
+	}
+
+	// ⚓ Pills a form cut short (`ctx.pillCuts`) — LAST, after every summon
+	// window has read the uncut length as its `naturalEnd`.
+	for (const ev of ctx.events) {
+		if (ev.kind !== 'cast') continue;
+		const cut = ctx.pillCuts.get(ev.id);
+		if (cut !== undefined && ev.time + ev.uptime > cut) ev.uptime = Math.max(0, cut - ev.time);
 	}
 
 	return {

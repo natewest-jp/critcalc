@@ -338,6 +338,23 @@ export type SimContext = {
 	/** Every Stellar-Conduct instant so far, ascending — what
 	 *  `polestarFieldOpenAt` reads mid-parse. Appended by `emitReaction`. */
 	stellarConductTimes: number[];
+	/** Every Lunar-Crystallize instant so far, ascending — what
+	 *  `moondriftStandsAt` reads mid-parse for Lumi's strike sequence. Appended
+	 *  by `emitReaction`, like `stellarConductTimes`. */
+	lunarCrystallizeTimes: number[];
+	/** Sourcewater Droplets standing, per character: each one's spawn and
+	 *  expiry, frames (`ChargeChannel`). A channel takes up to three, oldest
+	 *  first, by removing them. */
+	droplets: Map<string, { spawn: number; end: number }[]>;
+	/**
+	 * Every landing a sequenced summon struck (`summonStrike`, Lumi round), keyed
+	 * like `stateGatedTicks` — `characterId::label::source::spawnAt` — with the
+	 * element it struck in (absent = physical, the hit convention). ⚓ Finalize
+	 * turns these into the hit records `deriveBuffWindows` reads, the way it
+	 * synthesizes a fixed series' from `computeSummonDamageTicks`: the sequence
+	 * cannot be re-walked there, so the chain that struck says what it struck.
+	 */
+	strikeLandings: Map<string, { time: number; element?: Element }[]>;
 	/** Generation per `${characterId}::${summonLabel}` — bumped when a summon
 	 *  that declares `terminatesOn: 'recast'` respawns (gauge round L5e-b). A
 	 *  running tick chain compares its captured generation on every fire and
@@ -389,6 +406,19 @@ export type SimContext = {
 	lineupChanges: Map<number, { at: number; variantLabel: string | null }[]>;
 	/** Simulated Nightsoul pools, by character (`sim/nightsoul.ts`; Mavuika). */
 	nightsoulPools: Map<string, import('./nightsoul').NightsoulPool>;
+	/** Timed Blessings (`TimedBlessingSpec`, Varesa) — see `timedBlessing.ts`. */
+	timedBlessings: Map<string, import('./timedBlessing').TimedBlessing>;
+	/** A non-stance cast's pill cut short by the form it opened (Mavuika's Tap E
+	 *  Ring), cast id → instant; `finalize` applies it LAST, after the summon
+	 *  windows have read the uncut length. See `closeForm` in `nightsoul.ts`. */
+	pillCuts: Map<number, number>;
+	/** Absorption locks (`absorbs`), keyed by the absorber — a summon's
+	 *  `characterId::label::source::spawnAt`, a cast's `cast#id`. See `absorb.ts`. */
+	absorbLocks: Map<string, import('./absorb').AbsorbLock>;
+	/** Absorbed ticks the live chain fired, keyed like `stateGatedTicks`, each
+	 *  with the element it landed in — finalize stamps them on the summon window
+	 *  (`absorbedTicks`), drawn by `$lib/timeline/summonMarks.ts`. */
+	absorbedMarks: Map<string, { time: number; element: Element }[]>;
 	/** A cast's `spawnsAtSwapOutFrom` summons spawned at this frame — written by
 	 *  the pool at the swap-out, read by finalize so the window and the live
 	 *  chain agree. Absent = that cast's owner never swapped out of the form. */
@@ -527,11 +557,18 @@ export function createSimContext(input: SimContextInput): SimContext {
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
 		stellarConductTimes: [],
+		lunarCrystallizeTimes: [],
+		droplets: new Map(),
+		strikeLandings: new Map(),
 		summonChainGen: new Map(),
 		summonChainSupersededAt: new Map(),
 		castTerminatedSummons: new Map(),
 		lineupChanges: new Map(),
 		nightsoulPools: new Map(),
+		timedBlessings: new Map(),
+		pillCuts: new Map(),
+		absorbLocks: new Map(),
+		absorbedMarks: new Map(),
 		swapSpawns: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],

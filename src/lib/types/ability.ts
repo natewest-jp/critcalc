@@ -686,7 +686,11 @@ export type Trigger =
 			 *  after an Oz application. The sim tags an entity-delivered
 			 *  application so this source can refuse it. See
 			 *  docs/mark-triggered-damage-round.md §1. */
-			source?: 'self' | 'team' | 'active';
+			/** ⚓ `'others'` — any party member's reaction BUT the holder's own
+			 *  (Prune's Secret Rite: only a character carrying Tolling Rally counts,
+			 *  and Tolling Rally never goes to her). Read by the buff passes only —
+			 *  lint holds it to buff and RES-shred effects. */
+			source?: 'self' | 'team' | 'active' | 'others';
 			/**
 			 * ⚓ Elemental-application gating for THIS proc's own hits — the same
 			 * key, the same vocabulary and the same default as `summonTick.icdGate`
@@ -1077,6 +1081,63 @@ export type Trigger =
 			 * already reads.
 			 */
 			tickCapScaling?: { conditions: Condition; ticks: number };
+			/**
+			 * ⚓ THE TICK APPLIES ITS ELEMENT AND IS NOT A HIT (2026-10-17, the
+			 * round doc's E1b) — Nilou's Tranquility Aura: Hydro every 0.5s behind
+			 * its own window, and gcsim's `AttackTagNone` with no multiplier; Nate's
+			 * combat log shows the Blooms it causes and NO damage line. Offered to
+			 * the gauge; ⛔ no hit record, no `onHit` stream, no marker (a marker
+			 * means a hit or a heal) and no off-field-damage claim in the Team
+			 * Builder. The effect stays `damage` with `scaling: 0` — a KNOWN zero.
+			 * ⚠️ The key is unique on purpose (`nonHitting` is taken).
+			 */
+			appliesOnly?: true;
+			/**
+			 * ⚓ THE TICK IS IN THE ABSORBED ELEMENT (absorption round, 2026-10-17) —
+			 * the summon's `absorbs` lock decides it; the effect states no
+			 * `element`. `'twin'`: the series keeps its own cadence from the spawn
+			 * and a tick before the lock is refused (Kazuha's, Sucrose's, the
+			 * Traveler's twins on their Anemo ticks). `'stream'`: the series STARTS
+			 * at the lock — first tick at lock + `firstTickDelay`, `tickCap`
+			 * counted from it (Venti's 15 hits, Lynette's Vivid Shots). Its marks
+			 * and hits are PUBLISHED by the live chain, ⛔ never walked.
+			 */
+			absorbed?: 'twin' | 'stream';
+			/** Gauge units per tick when not 1 — the Anemo Traveler's absorbed
+			 *  burst twin is 2U (gcsim Durability 50). */
+			units?: number;
+	  }
+	/**
+	 * ⚓⚓ ONE STRIKE OF A SEQUENCED SUMMON (Lumi round, 2026-10-17) — a summon
+	 * whose next attack, and the TIME of it, depend on the world at the attack
+	 * before. Linnea's Lumi is the one holder: Heavy · Pound · Pound, and the
+	 * Heavy only while a Moondrift stands — refused, she Pounds instead on a
+	 * different gap. ⛔ Not a `summonTick`: one constant interval cannot say a
+	 * cycle, and two gated series on independent phases collide at the switch
+	 * (`docs/summon-tick-gaps-round.md` §1.3).
+	 *
+	 * The summon's strike effects ARE its steps, in authored order; the
+	 * summon's `strikeSequence` says where the chain starts and what a refused
+	 * step becomes. ⚓ The LIVE chain decides each strike and PUBLISHES it
+	 * (`ctx.stateGatedTicks` → `TimelineWindow.ticks`), ⛔ never replayed at
+	 * finalize: a replayed sequence is wrong about every later strike, because
+	 * each decision moves the next one's TIME (⚓ Nate, 2026-09-20).
+	 *
+	 * ⚠️ The effect's `application[]` is READ here — each entry is one landing
+	 * of the strike (a Pound is two hits, 21f apart), all on ONE standard-ICD
+	 * counter per summon label; `[]` is a strike that hits and applies nothing
+	 * (the Heavy — Lunar-Crystallize reaction damage, gauge 0).
+	 *
+	 * - `framesToNext` — FRAMES from this strike to the next step's. ⚠️ Frames,
+	 *   unlike `summonTick.interval`: these are combat-log gaps, not kit seconds.
+	 * - `onlyWithMoondrift` — the step strikes only if a Moondrift stands when
+	 *   the strike BEFORE it decides, which is after that strike's LAST landing
+	 *   (`moondriftStandsAt`; the live log's Pound at 17.353s).
+	 */
+	| {
+			type: 'summonStrike';
+			framesToNext: number;
+			onlyWithMoondrift?: true;
 	  };
 
 /** Known gameplay state keys used in conditions and triggers. */
@@ -1362,6 +1423,20 @@ export type Summon = {
 	/** Nightsoul points each tick spends from the owner's pool, AFTER the hit
 	 *  (Mavuika's Ring, 3 — gcsim `reduceNightsoulPoints(3)` after `QueueAttack`). */
 	nightsoulCostPerTick?: number;
+	/**
+	 * ⚓ WHERE A SEQUENCED SUMMON'S STRIKES START, and what a refused step
+	 * becomes (Lumi round, 2026-10-17) — present exactly when the summon's
+	 * `effects` carry `summonStrike` steps (lint E.31). All FRAMES.
+	 *
+	 * - `firstStrikeAt` — from the spawn to the first strike.
+	 * - `fallbackStep` — the step (0-based, among the strike effects) struck in
+	 *   place of a refused one. ⚠️ The ENTRY is step 0 under the same rule: a
+	 *   refused step 0 at the spawn opens on the fallback (Lumi deployed with
+	 *   no Moondrift standing opens on a Pound).
+	 * - `fallbackGap` — the gap to the fallback strike when the step after a
+	 *   strike is refused (Lumi with no Moondrift: Pound → Pound, 144f).
+	 */
+	strikeSequence?: { firstStrikeAt: number; fallbackStep: number; fallbackGap: number };
 	/** Effects emitted by the summon while active. Damage effects with
 	 *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
 	 *  during the summon's lifetime; the timeline renders one marker per tick
@@ -1393,6 +1468,9 @@ export type Summon = {
 	 * closes the state at that cast (Mavuika's Ring, `searingRing`).
 	 */
 	opensState?: State;
+	/** This summon's absorption lock — see `AbsorbSpec`; its `absorbed` tick
+	 *  series read it. */
+	absorbs?: AbsorbSpec;
 	/** ⚓ The positive statement that this summon deals and applies NOTHING of
 	 *  its own (coverage round, docs/coverage-round.md §5.2) — a taunt, a
 	 *  shield gadget, a heal-only field. Read by the coverage page only: a
@@ -1408,7 +1486,18 @@ export type Summon = {
 // ---------------------------------------------------------------------------
 
 /** Who an effect applies to. Array form expresses compound targets (e.g. ["self", "active"]). */
-export type EffectTarget = 'self' | 'team' | 'teamExcludingSelf' | 'active' | 'next' | 'enemy';
+/** `'reactor'` — the character whose hit TRIGGERED the reaction (Prune's
+ *  Secret Rite: "the triggering character's ATK"), valid only on an
+ *  `onReaction` trigger (lint). Not `'active'`: that follows the field and is
+ *  cut at every swap, where this stays on the one who reacted. */
+export type EffectTarget =
+	| 'self'
+	| 'team'
+	| 'teamExcludingSelf'
+	| 'active'
+	| 'next'
+	| 'enemy'
+	| 'reactor';
 
 /** Base effect payload shared by all effect kinds. */
 export type EffectBase = {
@@ -2362,6 +2451,11 @@ export type NormalAbility = AbilityCommon & {
 	nightsoulCost?: { perSwing?: number; perDash?: number };
 	/** The SPINNING Charged Attack and its finisher — see `ChargeSpin`. */
 	chargeSpin?: ChargeSpin;
+	/** The CHANNELLED Charged Attack and its charge-up — see `ChargeChannel`. */
+	chargeChannel?: ChargeChannel;
+	/** What this form's plunge does to a timed Blessing — see
+	 *  `TimedBlessingSpec`. */
+	plungeBlessing?: PlungeBlessing;
 	/** A dash in this form lands a hit (Mavuika's Flamestrider Sprint: Pyro 1U
 	 *  at its travel frame, gcsim `dash.go`). Applies the ability's element on
 	 *  its `icdCounter`. */
@@ -2721,7 +2815,28 @@ export type ElementRef =
 			 *  in-stance right hand; his BURST instead falls back to Anemo, and
 			 *  that asymmetry is gcsim's, not a slip. */
 			fallback?: Element;
-	  };
+	  }
+	/** ⚓ The element the cast's ABSORBER locked (`absorbs`, absorption round
+	 *  2026-10-17) — read at the entry's landing; nothing locked by then means
+	 *  the entry applies nothing and is not a hit (Heizou's Iris, Ifa's Mark).
+	 *  Valid only on a cast's `application[]` beside an `absorbs` (lint). */
+	| { type: 'absorbed' };
+
+/**
+ * ⚓ AN ANEMO ABSORBER'S LOCK (absorption round, 2026-10-17;
+ * `docs/elemental-absorption-survey.md`). Poll the enemy's aura from `from`
+ * FRAMES after the CAST, every `every` frames (absent = ONE draw at `from`), at
+ * most `polls` times (absent = while the host lives), and keep the first element
+ * of `order` the target holds — Frozen counting as Cryo, Burning as Pyro.
+ * `order` IS the mechanic: Pyro > Hydro > Electro > Cryo for most, Cryo first
+ * for the Anemo Traveler and Lynette.
+ */
+export type AbsorbSpec = {
+	order: ('pyro' | 'hydro' | 'electro' | 'cryo')[];
+	from: number;
+	every?: number;
+	polls?: number;
+};
 
 export type ElementalApplication = {
 	/** Frames (60fps) from cast start to the hitmark. */
@@ -2777,6 +2892,15 @@ export type ElementalApplication = {
 	 * Only on a cast that opens a stance (lint D.48).
 	 */
 	whileStance?: { travel: number };
+	/**
+	 * ⚓ THIS HIT BELONGS TO A HELD CAST'S PHASES (`HeldCast`, Sayu, 2026-10-17).
+	 * `'during'` — a hit of the held phase itself, authored to the LONGEST hold:
+	 * it lands only when `frame − held.from ≤ D`, the hold the player chose.
+	 * `'after'` — a hit that follows the release (her kick): its `frame` is
+	 * written as for a zero-length hold and lands `D` frames later.
+	 * Only on a cast whose resolved form carries `held` (lint D.55).
+	 */
+	held?: 'during' | 'after';
 };
 
 /** Fields shared by all skill behavior variants. */
@@ -2803,6 +2927,79 @@ export type ElementalApplication = {
  * other named states and transient windows are left alone (`consumesState`
  * closes one of those). A cast with no open stance does nothing.
  */
+/**
+ * ⚓ A CHARGED ATTACK THAT CHANNELS (Neuvillette's Equitable Judgment, 2026-10-17;
+ * gcsim `neuvillette/charge.go`). A `C` is ONE full channel: a windup, a
+ * charge-up shortened by the Sourcewater Droplets absorbed at its start, then a
+ * beam of hits, then the lag into the next action.
+ *
+ * ⚓ THE DROPLETS ARE A COUNT, NOT A FIELD (⚓ Nate, 2026-10-17). gcsim places
+ * them as gadgets and picks up the ones in range at random; we keep how many
+ * stand — each cast's `spawnsDroplets` adds them, each lives `dropletLife`
+ * frames — and a channel takes up to three, the oldest first. Position is
+ * dropped, as everywhere else. In the loop the kit is played in (E, Q, then
+ * beams) gcsim measures three absorbed every time, and the count says so; a
+ * beam with none left charges up in full.
+ *
+ * - `windup` — frames before the charge starts out of a dash, a jump, a swap or
+ *   a wait; after a cast, a Normal Attack or another Charged Attack it is
+ *   rolled into that action (gcsim's `CurrentState` test).
+ * - `absorbAt` — frames after the windup when the droplets are taken.
+ * - `chargeUp` — the charge-up, indexed by droplets absorbed (0–3).
+ * - `hits` — each hit's frame from the beam's start; the LAST is the beam's
+ *   end (the closing wave).
+ * - `endLag` — frames from the beam's end to the next action.
+ * - `dropletLife` — how long a droplet stands, frames.
+ *
+ * The beam's hits run on the standard ICD (gcsim `ICDTagExtraAttack`) — ⚠️ not
+ * the catalyst Charged Attack rule, which is gcsim's short attack.
+ */
+export type ChargeChannel = {
+	windup: number;
+	absorbAt: number;
+	chargeUp: [number, number, number, number];
+	hits: number[];
+	endLag: FrameMap;
+	dropletLife: number;
+};
+
+/** Droplets a cast drops: `count` of them, `at` frames from its start. */
+export type DropletSpawn = { at: number; count: number };
+
+/**
+ * ⚓ A NIGHTSOUL BLESSING ON A TIMER, FED BY POINTS THAT BUILD OUTSIDE IT
+ * (Varesa's Fiery Passion, 2026-10-17; gcsim `varesa/`). Unlike a draining pool
+ * (`NightsoulPoolSpec`, Mavuika) the points live OUTSIDE the Blessing and do
+ * not drain: casts and plunges add them, and only a gain that says `enters`
+ * opens the Blessing when it tops the pool (her E's +20 never does — gcsim's
+ * `GeneratePoints` against `generatePlungeNightsoul`). Open, it runs `duration`
+ * SECONDS, and a plunge made inside it spends every point and ends it at her
+ * NEXT action, unless that is a burst (gcsim `clearNightsoulCB`, which a
+ * `BurstState` skips — so Volcano Kablam rides it).
+ *
+ * - `freeSkillOnEntry` — entering grants ONE skill that spends no charge and
+ *   starts no cooldown (gcsim `freeSkill`, "an additional Tap charge"); it is
+ *   lost when the Blessing ends.
+ *
+ * ⚓ The pool OWNS the Blessing's state window (opened at the entry, ended by
+ * its timer or the exit), as a draining pool does. Points persist past a timed
+ * end, as in gcsim — so a later plunge that tops them re-enters at once.
+ */
+export type TimedBlessingSpec = {
+	state: State;
+	max: number;
+	duration: number;
+	freeSkillOnEntry?: true;
+};
+
+/** A cast's gain: `points` (`'max'` fills the pool) `at` frames from its start;
+ *  `enters` — a gain that tops the pool opens the Blessing. */
+export type BlessingPoints = { points: number | 'max'; at: number; enters?: true };
+
+/** A plunge's effect: `points` at its landing (`enters` as above), or
+ *  `spendsAll` — every point gone and the Blessing ends at the next action. */
+export type PlungeBlessing = { points?: number; enters?: true; spendsAll?: true };
+
 /**
  * ⚓ A CHARGED ATTACK THAT SPINS (Mavuika's Flamestrider, bike Charged Attack
  * round, 2026-10-16; gcsim `charge.go`, timings measured with its CLI —
@@ -2937,6 +3134,19 @@ type SkillCommonFields = AbilityCommon & {
 	endsStance?: EndsStance;
 	/** What this cast does to the caster's Nightsoul pool — see `NightsoulCastSpec`. */
 	nightsoul?: NightsoulCastSpec;
+	/** Sourcewater Droplets this cast drops, for its caster's channelled
+	 *  Charged Attack to absorb — see `ChargeChannel`. */
+	spawnsDroplets?: DropletSpawn[];
+	/** Points this cast adds to its caster's timed Blessing — see
+	 *  `TimedBlessingSpec`. */
+	blessingPoints?: BlessingPoints;
+	/** This cast's absorption lock — see `AbsorbSpec`; its `application[]`
+	 *  entries in `{type: 'absorbed'}` read it. */
+	absorbs?: AbsorbSpec;
+	/** The sibling skill whose charge pool this one spends — one in-game skill
+	 *  in two forms (Varesa's Rush and Fiery Passion Rush; gcsim has ONE
+	 *  `ActionSkill`). Without it each form keeps its own charges. */
+	sharesChargesWith?: string;
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
 	/** Every charge begins RECHARGING the moment the ability becomes available,
@@ -3161,6 +3371,15 @@ type BurstCommonFields = AbilityCommon & {
 	endsStance?: EndsStance;
 	/** What this cast does to the caster's Nightsoul pool — see `NightsoulCastSpec`. */
 	nightsoul?: NightsoulCastSpec;
+	/** Sourcewater Droplets this cast drops, for its caster's channelled
+	 *  Charged Attack to absorb — see `ChargeChannel`. */
+	spawnsDroplets?: DropletSpawn[];
+	/** Points this cast adds to its caster's timed Blessing — see
+	 *  `TimedBlessingSpec`. */
+	blessingPoints?: BlessingPoints;
+	/** This cast's absorption lock — see `AbsorbSpec`; its `application[]`
+	 *  entries in `{type: 'absorbed'}` read it. */
+	absorbs?: AbsorbSpec;
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	/** Whether this ability's own damage snapshots the caster's stats at cast
@@ -3330,10 +3549,46 @@ export type Ability =
  * If a variant omits a modifier array, the base's array applies; if the variant
  * has one, the base's is fully overridden.
  */
+/**
+ * ⚓ A HOLD WHOSE LENGTH THE PLAYER SETS (Sayu's Fuufuu Windwheel, 2026-10-17;
+ * gcsim `skillHold(duration)`, `hold=N`). Nothing can be done while she rolls
+ * except end it, so the hold is ONE cast whose length `D` (frames) is the
+ * player's: a `~Xs` written right after the cast sets it (clamped to `max`; any
+ * excess stays a wait), and without one she rolls the full `max` (⚓ Nate). It
+ * is the Mizuki shape seen from the cast's side: the time token shortens it.
+ *
+ * Everything after the release moves by `D` — every `frames` entry, the
+ * `cooldownStartDelay`, and each `application[]` entry marked `held: 'after'`.
+ * Entries marked `held: 'during'` land only within the hold. An `absorbs` on
+ * the cast polls only while the hold lasts (gcsim's `duration/12` checks).
+ *
+ * - `max` — the longest hold in frames (600), and the length when unnamed.
+ * - `from` — the frame, from the press, the held phase is counted from (18:
+ *   her first roll tick is the hold's `i = 0`).
+ * - `cooldownPerSecond` — seconds of cooldown added per second held (gcsim
+ *   `6*60 + duration*0.5`).
+ *
+ * ⛔ Variant-only: the hold is a form of a cast, never the cast itself.
+ */
+export type HeldCast = {
+	max: number;
+	from: number;
+	cooldownPerSecond?: number;
+};
+
 export type AbilityVariant = {
 	label: string;
+	/** This form is a hold of the player's length — see `HeldCast`. */
+	held?: HeldCast;
 	/** REPLACES the base's `nightsoul` — see `NightsoulCastSpec`. */
 	nightsoul?: NightsoulCastSpec;
+	/** Points this variant adds to a timed Blessing. ⚠️ A resolved variant
+	 *  speaks for itself: absent here means NONE, not the base's (Volcano
+	 *  Kablam adds nothing where the burst it rides fills the pool). */
+	blessingPoints?: BlessingPoints;
+	/** REPLACES the base's `absorbs` (a hold form that absorbs where the tap
+	 *  does not). */
+	absorbs?: AbsorbSpec;
 	input?: Input[];
 	frames?: FrameMap;
 	cooldown?: number;

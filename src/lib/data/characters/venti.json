@@ -211,8 +211,35 @@
 								"icdGate authored 2026-08-17 (ICD-group round b), closing the schema gap this note recorded: ICDGroupVenti's table entry (pkg/core/attacks/icd_groups.dm.go) is a 60f reset window with every 3rd hit applying. Measured 7 of 20 ticks applied against standard ICD's 8. ⚓ The period is standard's own; it is the 1s TIMER under a 24f interval that binds — the counter is reset constantly, so the window's first-hit slot does most of the work.",
 								"NOT authored: the Elemental Absorption series (burstAbsorbDot index 9 = 0.3384 → 33.84%, 15 ticks at 24f, burstAbsorbedTicks()). Its element is whichever of Pyro/Hydro/Cryo/Electro the Stormeye contacts — a runtime condition we cannot express — and it only fires when an absorb check succeeds."
 							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"absorbed": "stream",
+								"interval": 0.4,
+								"firstTickDelay": 0,
+								"tickCap": 15,
+								"icdGate": {
+									"timer": 60,
+									"every": 3,
+									"cap": 8
+								}
+							},
+							"scaling": 33.84,
+							"stat": "atk",
+							"_curatorNotes": [
+								"Absorbed element (absorption round, 2026-10-17; gcsim 4eda9fc5f venti/burst.go:59-114): polls from 178f (the 4th Anemo tick) every 18f, 21 polls, P > H > E > C; on the lock an OWN stream of 15 hits × 24f STARTS AT the lock frame, 1U, ICDTagElementalBurst<El> on ICDGroupVenti (60f / every 3, cap 8) — its own counter, a different tag from the Anemo series. 33.84% at talent 10. ⚠️ gcsim queues all 15 at the lock and lets them outlive the Stormeye (a lock after 238f overruns cast+574); here the stream is cut at the Stormeye's end, which is believed to be the game's behaviour but is UNVERIFIED."
+							]
 						}
-					]
+					],
+					"absorbs": {
+						"order": ["pyro", "hydro", "electro", "cryo"],
+						"from": 178,
+						"every": 18,
+						"polls": 21
+					}
 				}
 			],
 			"effects": [],

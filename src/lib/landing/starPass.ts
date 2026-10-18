@@ -99,7 +99,7 @@ function mixWhite(whitePct: number, hex: string): [number, number, number] {
 
 /** White-biased per Nate; chromas kept low so tints read as subtle hue
  *  suggestions rather than colored dots. */
-const TINTS: Record<StarColor, [number, number, number]> = {
+export const STAR_TINTS: Record<StarColor, [number, number, number]> = {
 	white: mixWhite(100, '#ffffff'),
 	warm: mixWhite(92, '#ffd8a8'),
 	cool: mixWhite(92, '#c0d8ff'),
@@ -372,7 +372,7 @@ function buildVertexData(): Float32Array {
 	const data = new Float32Array(stars.length * FLOATS_PER_STAR);
 	let o = 0;
 	for (const s of stars) {
-		const [r, g, b] = TINTS[s.color];
+		const [r, g, b] = STAR_TINTS[s.color];
 		data[o++] = s.x;
 		data[o++] = s.y;
 		data[o++] = s.size;

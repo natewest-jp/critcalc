@@ -181,6 +181,17 @@ function exit(ctx: SimContext, cs: CharState, pool: NightsoulPool, at: number): 
 function closeForm(ctx: SimContext, cs: CharState, pool: NightsoulPool, at: number): void {
 	if (!pool.form) return;
 	setEnd(ctx, cs, pool.form.rec, Math.max(pool.form.rec.start, at));
+	// ⚓ A cast that opened the form WITHOUT a stance (Tap E's Ring) draws the
+	// form as its pill, so a form cut short cuts the pill (Phase 3, 2026-10-17):
+	// it drew the Ring's full 12.4s past a burst that ended the Ring. A stance
+	// owner is clamped by `clampStance` below and stamped at finalize — ⛔ not
+	// here. ⚠️ Recorded, and applied at the END of finalize (`pillCuts`): the
+	// cast's `uptime` is also its primary summon's bar length, and cut now it
+	// would erase the summon window's `naturalEnd` — the one fact that says the
+	// window was CUT (no boundary tick).
+	const opener = ctx.events.find((e) => e.kind === 'cast' && e.id === pool.form!.ownerCastId);
+	if (opener && opener.kind === 'cast' && !ctx.stanceWindowRecs.some((r) => r.castRef === opener))
+		ctx.pillCuts.set(opener.id, Math.min(ctx.pillCuts.get(opener.id) ?? Infinity, at));
 	if (cs.stance && cs.stance.source === 'skill' && cs.stance.end > at)
 		clampStance(ctx, cs, pool.charId, at);
 	pool.form = null;

@@ -1,22 +1,23 @@
 <script lang="ts">
-	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
 	import type { NotationEditor } from '$lib/utils/notationEditor';
 	import RotationCoverage from './RotationCoverage.svelte';
-	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+	import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar } from '$lib/utils/getAvatar';
-	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
+	import { constellations, ownership, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
-	import { artifactImagePath } from '$lib/data/artifactLookup';
+	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
+	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
+	import { rotationTabs } from '$lib/rotationTabs.svelte';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip, { type TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
-	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
+	import { benchBand, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { below, narrowForm } from '$lib/media.svelte';
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
@@ -32,6 +33,7 @@
 		shiftHue,
 		castFill,
 		desaturate,
+		tickInk,
 		type ElementPalette
 	} from '$lib/utils/elementColors';
 	import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
@@ -54,6 +56,9 @@
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
+	import { decayDensities, rampDensities } from '$lib/timeline/buffEnvelope';
+	import { ABSORB_FADE_PX, LUNAR_GLEAM_STOPS, summonMarks } from '$lib/timeline/summonMarks';
+	const LUNAR_GLEAM_BG = `linear-gradient(90deg, ${LUNAR_GLEAM_STOPS.map(([at, c]) => `${c} ${at * 100}%`).join(', ')})`;
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
 	import {
 		computeGadgetRows,
@@ -84,6 +89,7 @@
 		renderTimelinePng,
 		deliverPng,
 		type TimelineSnapshot,
+		type ExportBenchCard,
 		type ExportBar
 	} from '$lib/utils/timelineExport';
 	import type { TimelineBar } from '$lib/utils/notationParser';
@@ -184,20 +190,6 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	/** The CONVERGED SLOT-CARD width — the thing the two tools actually share,
-	 *  and the width the ribbon is built around (RIBBON_W = this + chrome).
-	 *
-	 *  The planner reads it for ONE thing now: the PNG export, which draws its
-	 *  own label column with no strip standing over it. The on-screen gutter
-	 *  retired with the abutting round — the frame starts at the ribbon's right
-	 *  edge, so the tracks begin at the frame's own padding box.
-	 *
-	 *  ↻ 2026-08-12: this was a hand-copied `160` kept in step with
-	 *  BENCH_CARD_W by a comment saying "move together". It imports the constant
-	 *  now — the bench-card round moved that number and one of the two literals
-	 *  would silently have stayed behind, taking the PNG's whole left column
-	 *  with it. */
-	const LABEL_W = BENCH_CARD_W;
 	/** The chart frame's horizontal padding — JS-side because .rp-frame reads it
 	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
@@ -355,16 +347,6 @@
 	// Team Builder's Compare bars did too, until 2026-10-13). Its Safari-revert
 	// history travelled with it.
 
-	/** The thinnest a scaling buff's material gets, as a fraction of --glass-bar's
-	 *  own density. 🎛️ ⚠ IT IS NOT THE OLD 0.2. When the envelope mixed an
-	 *  OPAQUE fill toward the chart ground, 0.2 still produced a solid colour
-	 *  near that ground — thin meant "close to the background", and the bar was
-	 *  always there. Scaling a translucent material by 0.2 gives alpha .116,
-	 *  which is SHEER, and sheer is retired ("opaque or obviously translucent —
-	 *  the middle is not a place"). 0.5 keeps the thin end at alpha .29: still
-	 *  unmistakably a bar, still obviously less than full. */
-	const ENVELOPE_MIN = 0.5;
-
 	/** One gradient stop for the time-scaling buff envelope (Yelan Q, Mavuika Q
 	 *  — a buff whose value ramps or decays over its own window).
 	 *
@@ -385,33 +367,15 @@
 		return `color-mix(in srgb, var(--glass-bar) ${(density * 100).toFixed(1)}%, transparent)`;
 	}
 
-	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
-	// to full opacity (ramp cap). Accounts for segment offset so mid-ramp segments start brighter.
+	// The ramp / decay envelope as a CSS gradient — the densities come from
+	// `$lib/timeline/buffEnvelope.ts`, shared with the PNG export.
 	function rampingBackground(bar: CharReceivedBuffBar): string | undefined {
-		const ramp = bar.rampParams;
-		if (!ramp || bar.buffStart == null) return undefined;
-		const rampDur =
-			ramp.cap != null
-				? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval
-				: 10 * FPS;
-		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
-		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
-		const o0 = ENVELOPE_MIN + p0 * (1 - ENVELOPE_MIN);
-		const o1 = ENVELOPE_MIN + p1 * (1 - ENVELOPE_MIN);
-		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
+		const d = rampDensities(bar);
+		return d && `linear-gradient(to right, ${buffStop(d[0])}, ${buffStop(d[1])})`;
 	}
-
-	// Returns a linear-gradient CSS string for decaying buff bars, fading from full
-	// opacity (decay start) to dim (decay end). Mirrors rampingBackground in reverse.
-	// Decay duration equals the host effect's buff duration.
 	function decayingBackground(bar: CharReceivedBuffBar): string | undefined {
-		const decay = bar.decayParams;
-		if (!decay || bar.buffStart == null || decay.duration <= 0) return undefined;
-		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / decay.duration));
-		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / decay.duration));
-		const o0 = 1.0 - p0 * (1 - ENVELOPE_MIN);
-		const o1 = 1.0 - p1 * (1 - ENVELOPE_MIN);
-		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
+		const d = decayDensities(bar);
+		return d && `linear-gradient(to right, ${buffStop(d[0])}, ${buffStop(d[1])})`;
 	}
 
 	/**
@@ -1589,6 +1553,40 @@
 	// the fallback.
 	// ---------------------------------------------------------------------------
 
+	/** One slot's bench card for the export — what SlotPortrait shows, read
+	 *  from the same layer-resolved con and loadout the bench reads. */
+	function benchCard(
+		char: (typeof slotCharacters)[number],
+		slotId: string,
+		ownedConOf: (id: string) => number | null | undefined
+	): ExportBenchCard {
+		const con = char ? effectiveConLevel(char.id) : 0;
+		const owned = char ? ownedConOf(char.id) : undefined;
+		const entry: LoadoutEntry = char ? effectiveLoadoutEntry(char.id) : {};
+		const artifactSet = !!entry.artifactSetId && !!getArtifactSetById(entry.artifactSetId);
+		const real = char != null && char.id !== 'blank';
+		return {
+			displayName: real ? slotLabel(char) : null,
+			element: char?.element,
+			sideArt: getAvatar(
+				real ? slotId : 'blank',
+				$siteSettings.useNewOutfits,
+				'side',
+				$siteSettings.travelerVariant
+			),
+			conLevel: con,
+			conShort: real && owned !== undefined && (owned === null || owned < con),
+			uncurated: real && getCharacterIndexEntry(char.id)?.curated === false,
+			artifactIcon: artifactSet ? artifactImagePath(entry.artifactSetId!) : GENERIC_ARTIFACT_ICON,
+			artifactSet,
+			weaponIcon: entry.weaponId
+				? weaponImagePath(entry.weaponId)
+				: weaponTypeIcon(real ? getCharacterIndexEntry(char.id)?.weapon : undefined),
+			weaponSet: !!entry.weaponId,
+			refinement: entry.weaponRefinement ?? 1
+		};
+	}
+
 	function buildSnapshot(): TimelineSnapshot {
 		const laneStride = AUX_LANE_BAR_STRIDE;
 		// Lanes open directly under the 4th track group (the ribbon-clearance
@@ -1597,10 +1595,30 @@
 		const slotsBottom = slotTopOffsets[3] + slotHeights[3];
 		const nbVisible = showNbLane;
 		const moonVisible = showMoonsignLane;
-		const teamNames = slotCharacters
-			.filter((c): c is NonNullable<typeof c> => c != null)
-			.map((c) => c.displayName);
-		const total = secondsLabel(rotation.totalDuration);
+		// ⚓ The footer says how the reader is timing it, in words (Nate 2026-10-16:
+		// the export is what the reader has set, no checkboxes) — so a padded
+		// rotation is never taken for a frame-perfect one.
+		const ping = `${$siteSettings.swapPing} ms swap ping`;
+		const pad = `${$siteSettings.humanTimingPadFrames}-frame padding`;
+		const timingNote = !$siteSettings.humanTiming
+			? `Frame-perfect · ${ping}`
+			: $siteSettings.humanTimingMode === 'animations'
+				? `Human timing · full animations · ${ping}`
+				: $siteSettings.humanTimingMode === 'both'
+					? `Human timing · full animations and ${pad} · ${ping}`
+					: `Human timing · ${pad} · ${ping}`;
+		// The tab's own name, unless it is still a default one.
+		const label = rotationTabs.tabs.find((t) => t.id === tabId)?.label ?? '';
+		const tabLabel = /^(Tab \d+|Shared rotation|Imported team)$/.test(label) ? null : label || null;
+		// The bench card's roster comparison (BenchBand's `ownedConOf`): unknown
+		// while nothing is marked owned, null when this character isn't.
+		const rosterHasContent = Object.values($ownership).includes('owned');
+		const ownedConOf = (id: string): number | null | undefined =>
+			!rosterHasContent || id === 'blank'
+				? undefined
+				: $ownership[id] === 'owned'
+					? ($constellations[id] ?? 0)
+					: null;
 		const withSummon = (
 			char: (typeof slotCharacters)[number],
 			source: 'skill' | 'burst',
@@ -1613,10 +1631,12 @@
 			}));
 
 		return {
-			title: teamNames.length > 0 ? `${teamNames.join(' · ')}  —  ${total}s` : 'critcalc rotation',
+			tabLabel,
 			notation,
+			notationTints: notationTints(rotation),
+			timingNote,
+			endFrame: rotation.totalDuration,
 			scale,
-			labelW: LABEL_W,
 			rulerH: RULER_H,
 			totalWidth,
 			contentH,
@@ -1624,13 +1644,9 @@
 			slots: characterSlots.map((slotId, i) => {
 				const char = slotCharacters[i];
 				return {
-					// slotLabel: the export's label column mirrors the on-screen
-					// portrait area (travelers read "Traveler")
-					displayName: char ? slotLabel(char) : null,
 					element: char?.element,
 					// No-frame-map (uncurated, non-Blank) → dire N/C/P treatment in export.
 					isApprox: char != null && !isCurated(char) && char.id !== 'blank',
-					consLevel: char ? effectiveConLevel(char.id) : 0,
 					blockH: slotHeights[i],
 					qRowTop: qRowTopForSlot(i),
 					activeRowTop: activeRowOffsetForSlot(i),
@@ -1647,15 +1663,7 @@
 					summonRows: summonSubrows.filter((r) => r.slotIdx === i),
 					procRows: weaponProcRows.filter((r) => r.characterId === char?.id),
 					receivedRows: charReceivedBuffRows.filter((r) => r.characterId === char?.id),
-					equipIcons: char
-						? (() => {
-								const entry = effectiveLoadoutEntry(char.id);
-								const icons: string[] = [];
-								if (entry.artifactSetId) icons.push(artifactImagePath(entry.artifactSetId));
-								if (entry.weaponId) icons.push(weaponImagePath(entry.weaponId));
-								return icons;
-							})()
-						: []
+					bench: benchCard(char, characterSlots[i], ownedConOf)
 				};
 			}),
 			slotTops: slotTopOffsets,
@@ -1700,15 +1708,7 @@
 			auraLabelMinSpan: AURA_LABEL_MIN_SPAN,
 			auraLabelMinGap: AURA_LABEL_MIN_GAP,
 			auraLabelMinRow: AURA_LABEL_MIN_ROW,
-			statIconFor: (stat) => BUFF_STAT_ICON[stat as Stat],
-			avatarFor: (i) =>
-				getAvatar(
-					characterSlots[i],
-					$siteSettings.useNewOutfits,
-					'side',
-					$siteSettings.travelerVariant
-				),
-			elementGlyphFor: (el) => elementIcon(el)
+			statIconFor: (stat) => BUFF_STAT_ICON[stat as Stat]
 		};
 	}
 
@@ -3181,6 +3181,7 @@
 										>
 											{#each srow.bars as sbar, sbi (sbi)}
 												{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
+												{@const marks = summonMarks(sbar)}
 												<!-- Full-strength castFill — same finish as the E/Q pills
 											     (Nate 2026-07-18). Opaque, so swap connectors passing
 											     behind this lane can't show through. -->
@@ -3190,29 +3191,49 @@
 													style:width="{g.width}px"
 													style:background={castFill(p.bar)}
 												>
+													<!-- ⚓ An absorbing summon BECOMES its element (⚓ Nate,
+													     2026-10-17): a fade from its first absorbed hit, then that
+													     element to the bar's end. One layer, one gradient — not the
+													     tiled multi-layer fill the Safari veto forbids. -->
+													{#if marks.absorbed}
+														{@const fx = barGeom(marks.absorbed.time, 0).left - g.left}
+														{@const el = pal(marks.absorbed.element).bar}
+														<div
+															class="rp-summon-absorbed"
+															style:left="{fx}px"
+															style:background="linear-gradient(90deg, {el}00 0, {el}
+															{ABSORB_FADE_PX}px)"
+															aria-hidden="true"
+														></div>
+													{/if}
 													<span class="rp-summon-label">{srow.label}</span>
 												</div>
-												{#each sbar.ticks as tickT, tIdx (tIdx)}
-													{@const tg = barGeom(tickT, 0)}
+												<!-- One stub per FRAME (`summonMarks`): an absorbed twin shares its
+												     Anemo tick's; a stream keeps its own cadence. Past the fade, a
+												     stub takes the element's hi. -->
+												{#each marks.ticks as tick, tIdx (tIdx)}
+													{@const tg = barGeom(tick.time, 0)}
 													<div
 														class="rp-summon-tick"
 														style:left="{tg.left}px"
-														style:background={p.hi}
+														style:background={tick.absorbed && marks.absorbed
+															? tickInk(marks.absorbed.element)
+															: tickInk(char?.element)}
 														aria-hidden="true"
 													></div>
 												{/each}
 												<!-- A stack-threshold FIRE on this lane (Columbina's Gravity
-												     Interference): full height in the HIT's element, because it
-												     is a different object from a tick — the summon's own hits are
-												     stubs in the owner's hue, this is one hit the accrual paid
-												     for, and it applied nothing to the gauge (Durability 0), so
-												     it draws here and nowhere in the aura lane. -->
+												     Interference): a different object from a tick — one hit the
+												     accrual paid for, applying nothing to the gauge (Durability 0),
+												     so it draws here and nowhere in the aura lane. ⚓ A falling
+												     moonbeam GLEAM, not the hit's element (Nate, 2026-10-17;
+												     `LUNAR_GLEAM_STOPS`). -->
 												{#each sbar.fires ?? [] as fire, fIdx (fIdx)}
 													{@const fg = barGeom(fire.time, 0)}
 													<div
 														class="rp-summon-fire"
 														style:left="{fg.left}px"
-														style:background={pal(fire.element).hi}
+														style:background={LUNAR_GLEAM_BG}
 														aria-hidden="true"
 													></div>
 												{/each}
@@ -5033,10 +5054,10 @@
 
 	   ⚠ THE INLINE `style:border-color` WENT WITH IT at both markup sites — a
 	   border-colour on a border-less element is a value that resolves, paints
-	   nothing, and quietly outlives the reason it existed. GHOST_EDGE_MIX is no
-	   longer imported here; the EXPORT still uses it (its ghosts keep their
-	   outlines — flat paper, no scene, same reasoning as the separators it
-	   kept), so the knob itself stays live in barMix.ts.
+	   nothing, and quietly outlives the reason it existed.
+	   ↻ 2026-10-17: the PNG export kept an outlined, 3px-inset ghost ("flat
+	   paper, no scene") until Nate spotted it — that reasoning died with the
+	   scene-backdrop redesign. It mirrors this rule now; GHOST_EDGE_MIX is gone.
 
 	   🎛️ The 1px inset is the knob: it is the whole of the recession now. */
 	.rp-bar-cd--ghost {
@@ -5214,7 +5235,17 @@
 		padding: 0 3px;
 		overflow: hidden;
 	}
+	/* The absorbed element's fill (see the markup): inside the bar, under its
+	   label, to the bar's end — the bar's own overflow clips it. */
+	.rp-summon-absorbed {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+	}
 	.rp-summon-label {
+		position: relative;
 		font-size: var(--fs-xs);
 		/* ↻ 2026-08-11: bold → medium (⚓ Nate) — a genuine two-rung drop now
 		   that the body face is variable. See the --fw-* block in app.css. */
@@ -5248,15 +5279,20 @@
 	}
 
 	/* A threshold fire's mark on a summon lane (stack-threshold round,
-	   2026-09-18). Full bar height and 2px wide so it reads as an EVENT against
-	   the 5px tick stubs; opaque, in the hit's element. Centered on its instant
-	   — unlike a tick, a fire never coincides with the bar's start. */
+	   2026-09-18): ↻ 2026-10-17 a falling moonbeam gleam (⚓ Nate) — the lilac
+	   across (inline, `LUNAR_GLEAM_STOPS`), and a mask that fades it from the
+	   bar's top edge to nothing at its foot, where the ticks rise. Centered on
+	   its instant — unlike a tick, a fire never coincides with the bar's start.
+	   Alpha in the paint and the mask, never element opacity. */
 	.rp-summon-fire {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		width: 2px;
-		margin-left: -1px;
+		/* LUNAR_GLEAM_W, centred on the instant on whole pixels. */
+		width: 10px;
+		margin-left: -5px;
+		-webkit-mask-image: linear-gradient(#000, transparent);
+		mask-image: linear-gradient(#000, transparent);
 		z-index: 4;
 		pointer-events: none;
 	}

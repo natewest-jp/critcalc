@@ -164,7 +164,8 @@
 				"Cooldown: burst.go SetCD(ActionBurst, 15*60) = 15s (sidecar CD 15.0s). Energy cost 60 (sidecar; EnergyMax=60). No SetCDWithDelay -> no cooldownStartDelay. burstHitmark=41, sedationMarkHitmark=38.",
 				"tag 'grouping': the burst's Therapeutic Sedative explodes into a restraining wind current that pulls nearby objects/opponents in (KQM quickguide). Base wind-current duration NOT authored as a summon — gcsim burst.go models only the single burst hit + Sedation Mark callback, no ticking field, and the game gives no explicit base duration (C4 extends the current 'to 3s'); per 'never fake timing' the pull window is left unmodeled and surfaced only via the grouping tag.",
 				"Damage NOT authored (support; on-field, not decision-relevant for planner/Team-Builder capabilities): main hit burst_dmg TL10 = 915.3% ATK Anemo (sidecar 'Skill DMG' col 10 = 915.3%); Sedation Mark burst_mark TL10 = 196.1% ATK (sidecar 'Sedation Mark DMG' col 10) dealt in the ABSORBED aura element (Pyro>Hydro>Electro>Cryo priority, burst.go targetElement) when the sedative hits an enemy affected by Hydro/Pyro/Cryo/Electro, applying a Sedation Mark (max ~4). The variable-element reaction-enabling hit is not cleanly authorable (element depends on enemy aura).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The blank under the Q. The burst is tagged `grouping` and authors no summon, so it draws one instant cast bar and nothing else — where every other grouping field a player has seen in this tool (Venti's Stormeye, Sucrose, Kazuha) gets a bar in the summon lane with a length they can plan around. ⚠️ THE WEAKEST KEEP IN THIS BATCH and the one genuine coin-flip: no drawn thing is wrong, the missing quantity is one the game itself never states, and a player therefore has no specific expectation to violate. Flagging rather than deciding — if Nate wants the column tighter, delete this one first. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The blank under the Q. The burst is tagged `grouping` and authors no summon, so it draws one instant cast bar and nothing else — where every other grouping field a player has seen in this tool (Venti's Stormeye, Sucrose, Kazuha) gets a bar in the summon lane with a length they can plan around. ⚠️ THE WEAKEST KEEP IN THIS BATCH and the one genuine coin-flip: no drawn thing is wrong, the missing quantity is one the game itself never states, and a player therefore has no specific expectation to violate. Flagging rather than deciding — if Nate wants the column tighter, delete this one first. Category: expected-but-absent.",
+				"↻ 2026-10-17 (absorption round): the Sedation Mark — ONE draw, P > H > E > C, a hit 38f after the burst's in that element, 1U; NO aura means NO Mark (gcsim 4eda9fc5f ifa/burst.go:19-140). Its own group (ICDGroupIfaSedationMark, 120f, first only) applies every Mark at one enemy and a 15s CD, so noICD. ⚠️ Authored at 40f, a frame before the burst hit: gcsim reads the aura before its own same-frame hit (:59 before :65)."
 			],
 			"description": "Fires a Therapeutic Sedative at a (temporarily aggressive) opponent. The sedative will explode on impact, creating a restraining wind current that pulls nearby objects and opponents in while dealing Nightsoul-aligned AoE Anemo DMG.\nWhen the Therapeutic Sedative hits an opponent affected by Hydro/Pyro/Cryo/Electro, it will apply a **Sedation Mark** to them.",
 			"application": [
@@ -172,8 +173,20 @@
 					"frame": 41,
 					"element": "anemo",
 					"units": 1
+				},
+				{
+					"frame": 79,
+					"element": {
+						"type": "absorbed"
+					},
+					"units": 1,
+					"noICD": true
 				}
-			]
+			],
+			"absorbs": {
+				"order": ["pyro", "hydro", "electro", "cryo"],
+				"from": 40
+			}
 		}
 	],
 	"passives": [

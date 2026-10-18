@@ -122,6 +122,29 @@ export function desaturate(hex: string, keepPct: number): string {
 	return `#${to(rgb[0])}${to(rgb[1])}${to(rgb[2])}`;
 }
 
+/**
+ * ⚓ A SUMMON'S TICK INK (⚓ Nate, 2026-10-17): every element's tick stub reads
+ * at ONE strength. The stub was the element's `hi` on its `bar`, and measured in
+ * OKLab lightness above the bar that ran Anemo +.168 · Geo +.152 · Electro +.133
+ * · Dendro +.116 · Cryo +.104 · Pyro +.091 · Hydro +.058 — Nate's three classes
+ * exactly. ⛔ `hi` is the transcribed palette and is never re-tuned, so the
+ * tick takes its own ink: `hi` lifted in OKLab L until it clears the bar by
+ * Electro's +.1326 (the trio's floor), chroma eased only as far as gamut needs.
+ * Anemo, Geo and Electro already clear it and keep `hi`. Resolved literals —
+ * `tickInk.test.ts` re-derives them.
+ */
+export const TICK_INK: Partial<Record<ElementKey, string>> = {
+	pyro: '#feafae',
+	hydro: '#b0d7ff',
+	cryo: '#d0fffe',
+	dendro: '#b1ffa4'
+};
+
+/** The stub colour for a tick in `element` — see `TICK_INK`. */
+export function tickInk(element: string | undefined): string {
+	return TICK_INK[(element ?? 'none') as ElementKey] ?? elementPalette(element).hi;
+}
+
 export function elementPalette(element: string | undefined): ElementPalette {
 	const key = (element ?? 'none') as ElementKey;
 	const entry = elementColors[key] ?? elementColors.none;

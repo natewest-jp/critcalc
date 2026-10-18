@@ -412,7 +412,7 @@
 					"trigger": {
 						"type": "onReaction",
 						"reaction": "any",
-						"source": "team"
+						"source": "others"
 					},
 					"conditions": {
 						"type": "teamFaction",
@@ -427,7 +427,8 @@
 					"snapshottable": false,
 					"attribution": "Witch's Eve Rite: Witchseeker's Vow",
 					"_curatorNotes": [
-						"Hexerei Secret Rite (Witchseeker's Vow, Luna VII). Wiki talent text: \"After a Hexerei character in the party affected by the Tolling Rally effect triggers an Elemental Reaction on an opponent, Prune's ATK is increased by 60% for 5s.\" Source: Fandom 'Witchseeker's Vow' (pageid 457454), fetched 2026-07-29; no gcsim source exists for Prune. Two runtime gates are not expressible as Condition leaves and are NOT modeled: the triggering party member must themselves be Hexerei, and must be carrying Tolling Rally (A4). Trigger authored onReaction any/team; the count gate rides the teamFaction condition."
+						"Hexerei Secret Rite (Witchseeker's Vow, Luna VII). Wiki talent text: \"After a Hexerei character in the party affected by the Tolling Rally effect triggers an Elemental Reaction on an opponent, Prune's ATK is increased by 60% for 5s.\" Source: Fandom 'Witchseeker's Vow' (pageid 457454), fetched 2026-07-29; no gcsim source exists for Prune. Two runtime gates are not expressible as Condition leaves and are NOT modeled: the triggering party member must themselves be Hexerei, and must be carrying Tolling Rally (A4). Trigger authored onReaction any/team; the count gate rides the teamFaction condition.",
+						"↻ 2026-10-17 (Prune round): `source: 'others'` — Tolling Rally (A4) is `teamExcludingSelf`, so Prune never carries it and her OWN reactions never trigger the Rite; they used to. Still not modelled: the triggerer must be Hexerei and carry Tolling Rally."
 					]
 				},
 				{
@@ -436,7 +437,7 @@
 					"trigger": {
 						"type": "onReaction",
 						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"],
-						"source": "team"
+						"source": "others"
 					},
 					"conditions": {
 						"type": "teamFaction",
@@ -445,13 +446,14 @@
 					},
 					"duration": 5,
 					"durationType": "refresh",
-					"target": "active",
+					"target": "reactor",
 					"stat": "atk%",
 					"value": 30,
 					"snapshottable": false,
 					"attribution": "Witch's Eve Rite: Witchseeker's Vow",
 					"_curatorNotes": [
-						"Second half of the same rite: \"If the Elemental Reaction triggered is a Swirl Reaction, the triggering character's ATK will additionally be increased by 30% for 5s.\" (Fandom pageid 457454, fetched 2026-07-29). This is additive on top of the +60% self buff, which fires on any reaction. Target authored as 'active' — there is no 'triggering character' target in the schema; the swirl trigger is nearly always the on-field character, so 'active' is the honest approximation. Same unmodeled gates as the self buff (triggerer must be Hexerei and carry Tolling Rally). Swirl authored as the four element-specific swirl reactions per the retired-'swirl'-key convention."
+						"Second half of the same rite: \"If the Elemental Reaction triggered is a Swirl Reaction, the triggering character's ATK will additionally be increased by 30% for 5s.\" (Fandom pageid 457454, fetched 2026-07-29). This is additive on top of the +60% self buff, which fires on any reaction. Target authored as 'active' — there is no 'triggering character' target in the schema; the swirl trigger is nearly always the on-field character, so 'active' is the honest approximation. Same unmodeled gates as the self buff (triggerer must be Hexerei and carry Tolling Rally). Swirl authored as the four element-specific swirl reactions per the retired-'swirl'-key convention.",
+						"↻ 2026-10-17 (Prune round): `target: 'reactor'` — the triggering character, which the schema has now. The 'active' stand-in sliced the bar across the field, so it hopped Bennett → Xiangling → Varka and was cut at every swap (Nate saw it in a Varka team). `source: 'others'` as on the +60% half."
 					]
 				}
 			]

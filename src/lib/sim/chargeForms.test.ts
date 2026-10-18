@@ -65,3 +65,36 @@ describe('Moondew Cleanse', () => {
 		expect(apps.map((a) => [a.time - c.time, a.element])).toEqual([[57, 'hydro']]);
 	});
 });
+
+describe("Neuvillette's Equitable Judgment (2026-10-17)", () => {
+	// gcsim `neuvillette/charge.go`: a beam's frames are windup + 3 + charge-up
+	// (209 − {0, 57, 111, 209} for 0–3 droplets) + 173 + end lag (C 30, swap 27);
+	// its four applications land at beam start + 6, 78, 153 and 173.
+	const beams = (notation: string) => {
+		const r = parse(notation);
+		return {
+			blocks: r.events
+				.filter(
+					(e) => e.kind === 'action' && e.characterId === 'neuvillette' && e.action === 'charged'
+				)
+				.map((e) => ({ time: e.time, duration: (e as { duration: number }).duration })),
+			apps: r.applications.filter((a) => a.characterId === 'neuvillette').map((a) => a.time)
+		};
+	};
+
+	it('E Q C C C: three droplets each, so no charge-up — 206f apart (gcsim measured)', () => {
+		const { blocks, apps } = beams('Neuvillette E Q C C C');
+		expect(blocks.map((b) => b.duration)).toEqual([3 + 173 + 30, 3 + 173 + 30, 3 + 173 + 27]);
+		const s = blocks[0].time + 3;
+		expect(apps.filter((t) => t >= s && t <= s + 173)).toEqual([s + 6, s + 78, s + 153, s + 173]);
+	});
+
+	it('E C C: the skill drops three, so the second beam charges up in full', () => {
+		const { blocks } = beams('Neuvillette E C C');
+		expect(blocks.map((b) => b.duration)).toEqual([3 + 173 + 30, 3 + 209 + 173 + 27]);
+	});
+
+	it('a C out of nothing pays the windup and the whole charge-up', () => {
+		expect(beams('Neuvillette C').blocks[0].duration).toBe(14 + 3 + 209 + 173 + 27);
+	});
+});

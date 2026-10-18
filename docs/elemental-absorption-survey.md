@@ -199,3 +199,138 @@ to absorb — which is the honest answer for a rotation that casts Venti first.
   `_curatorNotes` (shape C).
 - Jahoda's robots and flask (`docs/summon-tick-gaps-round.md`).
 - Lan Yan's and Heizou's element-less `application[]` entries.
+
+## 8. ⚓ Nate's answers (2026-10-17) — the round is GO, pre-launch
+
+1. **Scope:** Shapes A + B first (Venti Q, Kazuha Q, Sucrose Q, Sayu hold E, the
+   Anemo Traveler's E and Q, Lynette's Box), then the cast-entry half of C
+   (Heizou's Iris, Ifa's Sedation Mark). Kazuha's plunge, Lan Yan, Wanderer A1,
+   Sucrose C6 and Jahoda follow later.
+2. **Lynette:** the aura door only, no caveat.
+3. ✅ Answered in game (above): Frozen counts as Cryo.
+4. Sucrose C6's length stays a bounty (Nate has no C6) — it is not in this cut.
+5. **Markers:** one mark per frame AND element — an absorbed twin draws a second
+   stub in its own colour; same-element duplicates still collapse.
+6. **Oracle:** Nate's 2026-10-14 Sucrose Q logs + gcsim source are the acceptance
+   test; a Kazuha Q log is queued in the in-game batch. No two-character driver.
+
+## 9. ✅ Built (2026-10-17, `feat/elemental-absorption`)
+
+- **The lock** — `AbsorbSpec` (`absorbs` on a `Summon`, a cast, or a variant) and
+  `sim/absorb.ts`: polls on the live clock (`Band.LAND`, after the frame's hits),
+  first element of `order` held — Frozen counting as Cryo, Burning as Pyro
+  (gcsim `AuraContains`).
+- **Summon consumers** — `summonTick.absorbed: 'twin' | 'stream'` (an effect with
+  no `element`), plus `summonTick.units` for the Traveler's 2U twin. A twin before
+  the lock is refused and keeps its cadence; a stream starts at the lock. Marks
+  and hits are PUBLISHED by the live chain (`ctx.absorbedMarks` →
+  `TimelineWindow.absorbedTicks`; `ctx.strikeLandings` → hit records); the walks
+  skip absorbed series. ⚓ Markers: one per frame AND element — a twin draws its
+  own stub in its element, 1px beside the Anemo stub (timeline + PNG export).
+- **Cast consumers** — `application[].element: {type: 'absorbed'}`, decided at
+  the entry's landing (`emitAbsorbedAtCast`), on its own per-cast counter unless
+  `noICD`; nothing locked → no application and no hit (left out of `hitsAt`).
+- Lint D.54. Tests `sim/absorb.test.ts` (Frozen → Cryo from Nate's logs).
+
+**Authored** (gcsim 4eda9fc5f, each in the character's notes): Venti Q (own stream,
+15 × 24f), Lynette Q (Vivid Shots every 134f + 15f travel; C2's second shot on a
+named shared counter), Kazuha Q (twin, authored BEFORE its Anemo series — gcsim
+lands it first), Sucrose Q (twin, capped like its Anemo series), Anemo Traveler Q
+(2U twin, ICDTagNone — gcsim never writes its per-element tag) and hold E (six
+twins on one counter), Heizou Q (the Iris; the old element-less entry was gcsim's
+0-durability aura check, retired), Ifa Q (the Sedation Mark). Heizou's and Ifa's
+draws sit one frame before their own hit — gcsim reads the aura first.
+
+**Not in this cut / open:**
+
+1. ✅ **Sayu** — built 2026-10-17 as a held cast (§10).
+2. Venti's stream is CUT at the Stormeye's end; gcsim lets all 15 outlive it.
+   Believed to be the game's behaviour, unverified (a Venti log would settle it).
+3. Lynette's last shot within 15f of the box's end is dropped (the window bounds
+   the landing). A4 on lock not modelled.
+4. Kazuha's plunge add-on, Lan Yan, Wanderer A1, Sucrose C6, Jahoda — later (§8).
+5. ✅ The absorbed stubs' colour on the bar — settled as a FILL, not a mark (§11).
+
+## 10. ✅ Sayu's held Windwheel (2026-10-17, `feat/sayu-hold`)
+
+⚓ Nate: Sayu mains roll for most of the skill, so `hE` is the FULL hold and a time
+token shortens it — the Mizuki behaviour. But Mizuki's stance machinery is the wrong
+host. Mizuki acts during Dreamdrifter; Sayu can do nothing but end the roll, and
+everything after it moves with its length (gcsim `skillHold(duration)`). So the hold
+is ONE cast whose length the player sets:
+
+- **`AbilityVariant.held {max, from, cooldownPerSecond}`** (`HeldCast`, lint D.55).
+  `D` is a `~Xs` written right after the cast, clamped to `max` (600f); any excess
+  stays a wait. With no time token she rolls the full 600f.
+- **Everything after the release moves by `D`:** every `frames` entry,
+  `cooldownStartDelay`, and each `application[]` entry marked `held: 'after'`
+  (the kick). Entries marked `held: 'during'` (the roll ticks, authored to the
+  longest hold) land only while `frame − from ≤ D`. One resolver,
+  `heldApplications`, feeds every reader of the cast's list.
+- **The cooldown** is 6s + D/2, through the ability's cooldown modifiers.
+- **Absorption** polls only while she rolls (gcsim's `duration/12` checks), from 30f
+  every 12f, Pyro > Hydro > Electro > Cryo.
+- **The data, from gcsim:**
+  - Roll ticks at 18 + 30k, each with an absorbed twin on standard ICD per element.
+    gcsim lands the twin 1f after its tick; ours is authored on the same frame, after
+    the Anemo entry, so the boundary tick at 30k = D keeps its twin.
+  - The kick at 67 + D (no ICD), and its absorbed hit 1f later.
+  - Frames N/Q 109, D/J 108, swap 106, each + D.
+  - CD start at 50 + D.
+- **gcsim's ShortHold is retired** (kick 48, swap 87, 6.2s); tap and hold cover how
+  she is played.
+- Tests in `sim/heldCast.test.ts`.
+
+**Not done / known:**
+
+- **The E re-press** ("use the skill again to end it early") has no token. A `~Xs`
+  says the same thing.
+- **The frames audit compares gcsim's dumper hold (`hold=1`)** with our D = 0
+  nominal list: off by one frame, and 22 hits against 2. This is an oracle
+  artefact, ⛔ never migrate (CLAUDE.md's artefact list).
+- **Static readers** (Team Builder, coverage) see the nominal list: all 21 roll
+  ticks, and the kick at 67.
+- **C2** (the kick's +3.3% per 0.5s rolled) is unchanged.
+
+## 11. ✅ The bar becomes the element (2026-10-17, `feat/absorbed-fill`)
+
+The first build drew each absorbed hit as a stub in its element, 1px beside the
+Anemo stub. ⚓ Nate: hard to find, and Cryo on Anemo read as white.
+
+A `/lab` board (`experiment/foreign-marks`) ran three rounds:
+
+1. Marks: a bead, a lock band, a notch. Practical but clunky — a foreign colour
+   stamped on a plain bar.
+2. Nate's wave split (Anemo above, the element below, an airy seam). Closer, but
+   Cryo still vanished on Anemo.
+3. **Varka's rule: the bar BECOMES the element.** ✅ Candidate D, chosen as built.
+   A soft-note variant (E, NB-style `hi` patches) barely showed and was dropped.
+
+**Built:**
+
+- From the first absorbed hit the summon bar fades into the absorbed element over
+  `ABSORB_FADE_PX` (24 screen px), then stays that element to its end, under its
+  label.
+- **Ticks merge to ONE stub per FRAME.** A twin collapses into the Anemo tick it
+  shares a frame with; a stream on its own cadence (Venti, every 24f) keeps its
+  stubs. A stub past the fade takes the element's `hi`.
+- ⚓ This retires §8's "one mark per frame AND element". The aura lane is where an
+  absorbed hit's element is read (⚓ Nate).
+- `$lib/timeline/summonMarks.ts` is the one rule; the timeline
+  (`.rp-summon-absorbed`, a single gradient, not the tiled fill the Safari veto
+  forbids) and the PNG export both read it.
+- Tests in `sim/absorb.test.ts`.
+
+### 11.1 Columbina's Lunar hits are moonbeams (same day, `feat/lunar-gleam`)
+
+The same board took Columbina's threshold fires (Gravity Interference), which had
+been drawn as a 2px full-height slab in the reaction's element. ⚓ Nate: in game
+those strikes are moon-power lilac, not the element. Tried: the slab fading to
+Hydro either side, lilac ticks at three strengths, and a moonlight gleam.
+
+**Chosen (3e):** a FALLING gleam, 10px wide (6 on the board; ⚓ Nate went to 7, then 10 — it is the only thing that marks these hits), white at its core through a light
+lilac (the Moonsign `#b0a9ff`, 40% of the way to white) to nothing at its sides.
+It is brightest at the bar's top edge and gone by its foot, where the ticks rise
+from, so the two never share pixels. The constants live in
+`timeline/summonMarks.ts` (`LUNAR_GLEAM_*`). The timeline uses a mask; the PNG
+export draws rows at a falling alpha. The hit's element is no longer drawn.

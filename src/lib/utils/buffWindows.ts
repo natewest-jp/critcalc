@@ -410,19 +410,29 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	 * an Elemental Reaction") drew for nobody but Qiqi.
 	 */
 	const reactionEventsFor = (
-		source: 'self' | 'team' | 'active' | undefined,
+		source: 'self' | 'team' | 'active' | 'others' | undefined,
 		own: readonly ReactionEvent[]
 	): readonly ReactionEvent[] =>
 		source === 'team'
 			? reactionEvents
 			: source === 'active'
 				? reactionEvents.filter((ev) => ev.viaEntity !== true)
-				: own;
+				: source === 'others'
+					? reactionEvents.filter((ev) => !own.includes(ev))
+					: own;
 
 	const reactionEventIndex = new Map<ReactionEvent, number>(
 		reactionEvents.map((ev, i) => [ev, i] as const)
 	);
-	type ReactionPool = { start: number; end: number; debuff: boolean; effects: Effect[] };
+	/** `reactorId` — who triggered the pool's reaction (one event per pool: the
+	 *  key leads with the event's index), for a `'reactor'`-target buff. */
+	type ReactionPool = {
+		start: number;
+		end: number;
+		debuff: boolean;
+		effects: Effect[];
+		reactorId: string;
+	};
 	/** Collects (effect × reaction-event) pairs into per-application pools,
 	 *  preserving first-seen order so window ids stay deterministic. */
 	const makeReactionPooler = () => {
@@ -443,7 +453,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const key = `${reactionEventIndex.get(ev)}::${end}::${debuff}::${src}`;
 				let pool = byKey.get(key);
 				if (!pool) {
-					pool = { start, end, debuff, effects: [] };
+					pool = { start, end, debuff, effects: [], reactorId: ev.characterId };
 					byKey.set(key, pool);
 					order.push(pool);
 				}
@@ -487,7 +497,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		for (const effect of qualified) {
 			const trig = effect.trigger as {
 				reaction: Reaction | Reaction[] | 'any';
-				source?: 'self' | 'team' | 'active';
+				source?: 'self' | 'team' | 'active' | 'others';
 			};
 			const trigReaction = trig.reaction;
 			const matches = (r: Reaction): boolean =>
@@ -1259,17 +1269,38 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						seenStatsState.add(effect.stat);
 						return true;
 					});
-					if (qualifiedState.length === 0) continue;
-					for (const span of spans) {
-						emit({
-							characterId: track.characterId,
-							start: span.start,
-							end: span.end,
-							effects: qualifiedState,
-							poolFirstEffect: qualifiedState[0],
-							sourceCastId: span.sourceCastId,
-							source: { type: 'character', trigger: 'state' }
-						});
+					// ⚓ …and a DEBUFF co-extensive with the state (Mavuika round, 2026-10-17):
+					// her C2/C6 DEF shred lasts exactly as long as the Ring follows her /
+					// she rides — however the form was entered, a swap included, which a
+					// cast-anchored window cannot see.
+					const shredState = stateGroup.effects.filter(
+						(effect): effect is ResShredEffect =>
+							effect.type === 'resShred' &&
+							targetsEnemy(effect.target) &&
+							evalCondition(
+								effect.conditions,
+								4,
+								new Set(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) !== false
+					);
+					for (const group of [qualifiedState, shredState]) {
+						if (group.length === 0) continue;
+						for (const span of spans) {
+							emit({
+								characterId: track.characterId,
+								start: span.start,
+								end: span.end,
+								effects: group,
+								poolFirstEffect: group[0],
+								sourceCastId: span.sourceCastId,
+								...(group === shredState ? { debuff: true } : {}),
+								source: { type: 'character', trigger: 'state' }
+							});
+						}
 					}
 				}
 			}
@@ -1588,7 +1619,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			for (const effect of qualified) {
 				const trig = effect.trigger as {
 					reaction: Reaction | Reaction[] | 'any';
-					source?: 'self' | 'team' | 'active';
+					source?: 'self' | 'team' | 'active' | 'others';
 				};
 				const trigReaction = trig.reaction;
 				const matches = (r: Reaction): boolean =>
@@ -2730,6 +2761,32 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				emit({
 					characterId: sourceTrack.characterId,
 					receiverId: sourceTrack.characterId,
+					start: pool.start,
+					end: pool.end,
+					effects: pool.effects,
+					duration: pool.end - pool.start,
+					source: { type: 'character', trigger: 'reaction' }
+				});
+			}
+		}
+
+		// ── onReaction reactor-target (received surface) ──
+		//
+		// ⚓ The one who REACTED receives it (`target: 'reactor'`, Prune round,
+		// 2026-10-17) — one window per application on that character's row, ⛔ not
+		// sliced across the field: an `'active'` stand-in hopped Prune's +30% from
+		// Bennett to Xiangling to Varka and cut it at every swap.
+		if (firstTrackOfChar) {
+			for (const pool of reactionPoolsFor(
+				char,
+				sourceTrack.characterId,
+				cLevel,
+				receivedCtxOf(char.id),
+				(e) => e.type === 'buff' && e.target === 'reactor'
+			)) {
+				emit({
+					characterId: sourceTrack.characterId,
+					receiverId: pool.reactorId,
 					start: pool.start,
 					end: pool.end,
 					effects: pool.effects,

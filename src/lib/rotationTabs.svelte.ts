@@ -59,6 +59,7 @@ import {
 } from '$lib/utils/notationEdit';
 import { safeSetItem, type LoadoutEntry } from '$lib/stores';
 import { TAB_LIMIT } from '$lib/tabSet';
+import { pickSample } from '$lib/data/plannerSamples';
 
 export type RotationTab = {
 	id: string;
@@ -74,6 +75,9 @@ export type RotationTab = {
 	 *  one viewed longest ago (`tabSet.closeCandidate`); absent on tabs that
 	 *  predate the field, which count as the oldest. */
 	viewedAt?: number;
+	/** The first-visit sample this tab opened on (`plannerSamples.ts`), whose
+	 *  source the Notes panel credits while the notation is still its own. */
+	sample?: string;
 };
 
 /**
@@ -151,6 +155,15 @@ function migrateTab(tab: RotationTab & LegacyTeam): RotationTab {
 	return { ...rest, notation: foldTeamIntoNotation(rest.notation ?? '', manualSlots) };
 }
 
+/** A link that brings its own document — a shared rotation, a team, the
+ *  Team Builder's swap errand — lands in the empty first tab, so a first visit
+ *  through one gets no sample. */
+function arrivingWithDocument(): boolean {
+	if (!browser) return false;
+	const q = new URLSearchParams(location.search);
+	return q.has('r') || q.has('team') || q.has('swap');
+}
+
 function loadFromStorage(): { tabs: RotationTab[]; activeTabId: string } | null {
 	if (!browser) return null;
 	try {
@@ -208,6 +221,24 @@ class RotationTabsState {
 			this.notation = active.notation;
 			this.tabLoadout = active.tabLoadout ?? {};
 			this.tabCon = active.tabCon ?? {};
+		} else if (!arrivingWithDocument()) {
+			// ⚓ THE FIRST VISIT (Nate 2026-10-17): no tabs were ever made in this
+			// browser, so the first one opens on a sample rather than empty —
+			// unless a share link is arriving, which must land in the empty tab.
+			const sample = pickSample();
+			const tab: RotationTab = {
+				...this.tabs[0],
+				label: `Sample: ${sample.name}`,
+				notation: sample.notation,
+				tabCon: sample.cons ?? {},
+				tabLoadout: sample.loadout ?? {},
+				sample: sample.id
+			};
+			this.tabs = [tab];
+			this.activeTabId = tab.id;
+			this.notation = tab.notation;
+			this.tabCon = tab.tabCon ?? {};
+			this.tabLoadout = tab.tabLoadout ?? {};
 		}
 		this.restored = true;
 	}
@@ -390,7 +421,8 @@ class RotationTabsState {
 						tabLoadout: {},
 						tabCon: {},
 						savedId: undefined,
-						synced: undefined
+						synced: undefined,
+						sample: undefined
 					}
 				: t
 		);

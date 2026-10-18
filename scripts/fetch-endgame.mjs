@@ -141,6 +141,11 @@ async function exists(p) {
  * Chinese only — so the NAME is ours and lunaris supplies the rest: the
  * newest record whose English name matches gives the blessing's text in every
  * language, and its icon.
+ *
+ * ↻ 2026-10-16: lunaris can carry a live cycle with its English NAME still
+ * blank (Stardread Moon: Chinese name filled, English text filled, English
+ * name empty). A line may then be `{ "en": "...", "zh": "..." }` — matched on
+ * the Chinese name, with OUR English name written where lunaris has none.
  */
 async function abyss(table) {
 	const { version, list } = await towerList();
@@ -148,9 +153,11 @@ async function abyss(table) {
 	const starts = Object.keys(table).sort();
 	await mkdir(ABYSS_ICON_DIR, { recursive: true });
 	for (const [i, start] of starts.entries()) {
-		const name = table[start];
+		const line = table[start];
+		const name = typeof line === 'string' ? line : line.en;
+		const zh = typeof line === 'string' ? undefined : line.zh;
 		const id = Object.entries(list)
-			.filter(([, c]) => c.enBuffName === name)
+			.filter(([, c]) => c.enBuffName === name || (zh && c.chsBuffName === zh))
 			.map(([k]) => Number(k))
 			.sort((a, b) => b - a)[0];
 		if (!id) {
@@ -168,8 +175,9 @@ async function abyss(table) {
 		let icon;
 		for (const [ours, theirs] of Object.entries(LOCALES)) {
 			const c = await get(TOWER_URL(version, theirs, id));
-			if (!c?.buffName?.trim()) continue;
-			blessing.name[ours] = clean(c.buffName);
+			const own = c?.buffName?.trim() || (ours === 'en' ? name : '');
+			if (!own) continue;
+			blessing.name[ours] = clean(own);
 			blessing.text[ours] = clean(c.monthlyBuff?.description ?? '');
 			icon ??= c.icon;
 			const floor = (c.floors ?? []).find((f) => f.floorIndex === 12);

@@ -12,36 +12,27 @@
  * Geometry comes from the caller's xForTime-derived snapshot, so the export
  * can never drift horizontally from the on-screen chart.
  *
- * ══ THIS IS A PRINT RENDERING, NOT A MIRROR OF THE SCREEN ═══════════════════
- * ⚓ NATE 2026-08-11 asked whether this file earns its keep at all: it needs
- * constant maintenance, it can never look as good as the real chart because it
- * cannot have the night scene behind it, and every Genshin player can already
- * take a screenshot. Three of the four things it offers — uniform framing, the
- * watermark, straight-to-clipboard — a screenshot roughly matches.
+ * ══ THE CHART IS A COPY OF THE SCREEN (⚓ NATE, 2026-10-17) ══════════════════
+ * "Everything about the current live timeline should be copied by the PNG
+ * export, visually." That reverses the 2026-08-11 stance this header used to
+ * hold — a "print rendering" on flat paper that kept its own separators,
+ * outlines and type — and the reason it could: since the 2026-10-16 redesign
+ * the export stands on the scene backdrop like the screen, so every argument
+ * from "paper" is gone. What it still ADDS is framing, not a different chart:
+ * the bench ribbon, the notation and tab name, the footer, and the WHOLE
+ * timeline in one image (`totalWidth`, not the viewport) — the reason the
+ * file exists at all.
  *
- * THE FOURTH IS WHY IT STAYS: it paints `labelW + totalWidth`, the WHOLE
- * timeline, not the viewport. A minute-long rotation at working zoom is several
- * screens wide, and sharing that as one image is the thing a user cannot do for
- * themselves without scrolling and stitching.
- *
- * ⚠ SO THE MAINTENANCE BURDEN WAS NEVER INHERENT — IT CAME FROM THE MIRROR
- * CLAIM, AND THE CLAIM WAS ALREADY FALSE. This painter draws a portrait label
- * column the on-screen chart has not had since the tall-bench round, and it
- * draws the notation itself as a header, which lives in the composer on screen.
- * It is not a screenshot substitute; it is a DOCUMENT — notation, labelled
- * timeline, watermark. That divergence went unremarked for weeks.
- *
- * WHAT THIS MEANS IN PRACTICE, and it is the whole point of writing it down:
- *   · COLOUR still tracks. Both sides read the same tokens, the mirror test is
- *     cheap, and a bar in the wrong hue is a factual error either way.
- *   · SHAPE, GEOMETRY AND CHROME DO NOT have to track. The screen may drop a
- *     ground, a border or a separator because it has a live scene behind it;
- *     this canvas has flat paper behind it and may keep whatever a diagram on
- *     paper needs. A polish round is NOT obliged to drag this file along.
- *   · Round two is the first exercise of that: the on-screen chart lost its
- *     slot separators, its ruler seam and its lane rules; the export KEEPS all
- *     of them, because without a scene those lines are what stop a flat chart
- *     reading as soup.
+ * WHAT THIS MEANS IN PRACTICE:
+ *   · Colour, material, geometry and type all track. Glass is real alpha over
+ *     the backdrop (never a composite against CHART_BG), and every chart label
+ *     goes through `type()` with the size, weight and letter-spacing the screen
+ *     COMPUTES (read off the live page, not off the token names).
+ *   · A polish round on the timeline IS obliged to bring this file along. The
+ *     2026-10-17 sweep found the cooldown ghosts, corner radii, buff labels,
+ *     the ramp/decay envelope and every label's type had been left behind.
+ *   · The mirror test pins colours and materials; type and shape have no test
+ *     — compare a live/PNG pair by eye after touching either.
  *
  * ⚠ Colors here MIRROR the CSS in RotationTimeline.svelte (the same
  * keep-in-lockstep convention as elementColors.ts ↔ app.css). If a bar/lane
@@ -49,14 +40,16 @@
  */
 
 import { FPS } from '$lib/utils/frames';
-import { elementPalette, shiftHue, desaturate } from '$lib/utils/elementColors';
-import { barPhases } from '$lib/timeline/barPhases';
+import { envelopeDensities } from '$lib/timeline/buffEnvelope';
 import {
-	UPTIME_DIM_MIX,
-	GHOST_FILL_MIX,
-	GHOST_EDGE_MIX,
-	GHOST_CHROMA_KEEP
-} from '$lib/timeline/barMix';
+	ABSORB_FADE_PX,
+	LUNAR_GLEAM_STOPS,
+	LUNAR_GLEAM_W,
+	summonMarks
+} from '$lib/timeline/summonMarks';
+import { elementPalette, shiftHue, desaturate, tickInk } from '$lib/utils/elementColors';
+import { barPhases } from '$lib/timeline/barPhases';
+import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
 import { stepCeiling, stepDensity } from '$lib/timeline/barSteps';
 import type {
@@ -76,6 +69,17 @@ import {
 } from '$lib/timeline/auraPlot';
 import type { GadgetRow } from '$lib/timeline/gadgetRows';
 import type { AuraKey } from '$lib/utils/gauge';
+import type { NotationTint } from '$lib/timeline/notationTints';
+import { paintSceneBackdrop } from '$lib/utils/exportScene';
+import {
+	benchImageSources,
+	paintBench,
+	resolveRoles,
+	RIBBON_W,
+	type ExportBenchCard
+} from '$lib/utils/exportBench';
+import { RIBBON_CHROME, RIBBON_TAIL_H } from '$lib/benchBand.svelte';
+export type { ExportBenchCard };
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
@@ -114,39 +118,40 @@ const TEXT = '#ece5d8'; // --text (ctx-dark) → --parchment-100
 // ↻ 2026-08-09: the dark context's --muted stopped being an invented blend and
 // became what Genshin actually does — the ink laid on the ground at .72.
 const MUTED = '#b7b4ae'; // --muted (ctx-dark) = mix(parchment-100 72%, slate-800)
+// The chart's quietest ink — lane names, aura markers, unit labels. ⚠ Declared
+// at :root, so it mixes :ROOT's --muted, not the dark context's.
+const CHART_DIM = '#7f8185'; // --chart-dim = mix(--muted 62%, --frame-bg) at :root
 const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // THE ANNOTATION REGISTER — one bar material for buffs, debuffs and procs
 // alike (⚓ Nate 2026-08-11: "there's really no need to colour-split the
 // buff/debuff bars"). app.css holds the reasoning.
 //
-// ⚠ ON SCREEN IT IS GLASS; HERE IT IS THE COMPOSITE. --glass-bar is
-// rgb(44 53 73 / .8) laid on the night scene, and a PNG has no scene — so this
-// is that material resolved against the only ground the export has, CHART_BG:
-//     .8 × (44 53 73) + .2 × (31 38 53) = (41 50 69)
-// That is the decoupling declared at the top of this file doing its job. The
-// screen gets a material; paper gets what the material looks like on paper.
-// ⚠ If --glass-bar's alpha or rung moves, RECOMPUTE — the mirror test does this
-// arithmetic and will fail rather than let the two drift. It has already caught
-// three moves in one day: slate-700 @ .58 → slate-600 @ .8 → an off-ramp blue,
-// twice.
-// (Ramping/decaying received buffs paint flat here — the on-screen density
-// envelope isn't reproduced; the flat fill matches their full end.)
-const BAR_FILL = '#293245';
-// ↻ 2026-08-11: the 2px left edge returns to the buff/proc bars alone (⚓ Nate —
-// "the main purpose is to separate stacking buff bars"). On screen it is
-// rgb(255 255 255 / .3); here it is that composited over BAR_FILL, because a
-// canvas has no scene for the alpha to resolve against:
-//     .3 × (255 255 255) + .7 × (41 50 69) = (105 111 125)
-const BAR_EDGE = '#696f7d';
+// ↻ 2026-10-17 — IT IS GLASS HERE TOO (⚓ Nate: "everything about the current
+// live timeline should be copied by the PNG export, visually"). The export
+// used to paint the material COMPOSITED against CHART_BG, because a PNG had no
+// scene; since the 2026-10-16 redesign it stands on the scene backdrop, and the
+// composite came out lighter than the screen's glass over the dimmed night. So
+// this is --glass-bar itself — rgb and alpha — and the mirror test checks both.
+// A density (the ramp/decay envelope, a stepped bar) scales the ALPHA and keeps
+// the rgb, which is what `buffStop`'s mix toward transparent does on screen.
+const GLASS_BAR_RGB = [44, 53, 73] as const;
+const GLASS_BAR_ALPHA = 0.8;
+const glassAt = (density = 1) =>
+	`rgba(${GLASS_BAR_RGB.join(', ')}, ${+(GLASS_BAR_ALPHA * density).toFixed(4)})`;
+const BAR_FILL = glassAt();
+// The 2px left edge (⚓ Nate 2026-08-11 — "the main purpose is to separate
+// stacking buff bars"): rgb(255 255 255 / .3) laid over the glass, as on screen.
+const BAR_EDGE = 'rgba(255, 255, 255, 0.3)';
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
-// (⚓ Nate, "all labels back to white"). The one label deliberately left at
-// partial strength is the ghost track's CD readout — it is a duration on a
-// recessive track, not a label, and it sits on an opaque bar.
+// (⚓ Nate, "all labels back to white") — and, once the buff bars became glass
+// the same day, these went to HALF-STRENGTH white at medium weight (.65 / 500,
+// `.rp-buff-label`). ↻ 2026-10-17 (⚓ Nate spotted the PNG's still-loud labels):
+// the export follows at last; it had kept full white at 600.
 // ⛔ The buff / debuff / proc trio of fills and labels collapsed into this ONE
 // pair on 2026-08-11. They had been three names for what was becoming the same
 // value anyway (procs borrowed debuff's, debuff was pinned to buff's weight);
 // the unification made that explicit rather than incidental.
-const BAR_LABEL = '#fff';
+const BAR_LABEL = 'rgba(255, 255, 255, 0.65)';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
 // color (the marks left dire 2026-08-05).
 // ↻ 2026-08-12: they ride --ui-provisional, not --ui-danger. The state family
@@ -154,17 +159,6 @@ const BAR_LABEL = '#fff';
 // provenance statement, not an error — and the two on-screen rules this mirrors
 // moved with it. ⚠ The :root rung, not the ctx-light one: the chart is dark.
 const UI_PROVISIONAL = '#f6d365';
-// The circular backing behind a (transparent-background) avatar in the label
-// column. ↻ 2026-08-05 (archetype consistency pass): was the LIGHT context's
-// #f2f2ec, mirroring the `ctx-light` class SlotPortrait used to carry. That
-// class is gone — the bench card renders in the ribbon's DARK context, and the
-// export's own label column has always been painted CHART_BG, so a paper disc
-// was drift in both directions.
-// ↻ 2026-08-11: --sp-avatar-fill was re-cut onto ONE ground and that ground is
-// --surface-well, so the flat disc follows it down a rung. The export never
-// carried the element gradient (a PNG label column has no element context to
-// tint with), so it mirrors the gradient's TOP stop, as it always has.
-const PORTRAIT_BG = '#1f2635'; // --surface-well (ctx-dark) → --slate-900
 
 // ── Aura-lane mod colours (gauge round L6) ──────────────────────────────────
 // ⚠ The five elemental mods go through `elementPalette`, which is itself the
@@ -216,9 +210,10 @@ export const PALETTE_MIRROR = {
 	ACTIVE,
 	TEXT,
 	MUTED,
+	CHART_DIM,
 	INK,
-	BAR_FILL,
-	PORTRAIT_BG,
+	GLASS_BAR_RGB,
+	GLASS_BAR_ALPHA,
 	RX_FROZEN,
 	RX_QUICKEN,
 	RX_BURNING,
@@ -237,6 +232,16 @@ const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // dropped every exported label onto a system sans — a failure that renders
 // perfectly and is only visible by comparing a PNG to the screen.
 const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
+
+/** Set a chart label's type as the screen sets it: weight, size in px and
+ *  letter-spacing in px (the computed `--ls-*`), read off the live page
+ *  2026-10-17. Every chart label goes through here so none can keep a stale
+ *  spacing from the label before it. Canvas `letterSpacing` is newer than the
+ *  rest of the API; where it is missing the text is merely unspaced. */
+function type(c: CanvasRenderingContext2D, weight: number, px: number, ls = 0) {
+	c.font = `${weight} ${px}px ${SANS}`;
+	if ('letterSpacing' in c) c.letterSpacing = `${ls}px`;
+}
 
 // ── Color math (stand-ins for CSS color-mix in srgb) ────────────────────────
 
@@ -270,12 +275,10 @@ function mix(a: string, b: string, pctA: number): string {
 export type ExportBar = TimelineBar & { hasSummon: boolean };
 
 export type ExportSlot = {
-	displayName: string | null; // null = blank slot
 	element: string | undefined;
 	/** No-frame-map character (uncurated stub, not Blank): its N/C/P tokens get
 	 *  the dire gradient + dire text, mirroring the on-screen treatment. */
 	isApprox: boolean;
-	consLevel: number;
 	blockH: number;
 	qRowTop: number;
 	activeRowTop: number;
@@ -292,17 +295,24 @@ export type ExportSlot = {
 	summonRows: SummonSubrow[];
 	procRows: WeaponProcSubrow[];
 	receivedRows: CharReceivedBuffSubrow[];
-	/** Equipped artifact/weapon icon paths — drawn under the name so shared
-	 *  images show who caused which buffs. */
-	equipIcons: string[];
+	/** The slot's bench card — a copy of the live one (exportBench.ts). */
+	bench: ExportBenchCard;
 };
 
 export type TimelineSnapshot = {
-	title: string;
+	/** The tab's name when the reader gave it one (null for "Tab 3" and the
+	 *  like) — the header's right side. */
+	tabLabel: string | null;
 	/** The raw notation string — rendered as the export's header. */
 	notation: string;
+	/** What the composer tints each token with (`notationTints`). */
+	notationTints: NotationTint[];
+	/** How the reader is timing the rotation — the footer says it in words, so
+	 *  a padded rotation is never taken for a frame-perfect one. */
+	timingNote: string;
+	/** The rotation's length in FRAMES — the footer's reading. */
+	endFrame: number;
 	scale: number;
-	labelW: number;
 	rulerH: number;
 	totalWidth: number;
 	contentH: number;
@@ -366,8 +376,6 @@ export type TimelineSnapshot = {
 	gadgetFillAlpha: number;
 	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
-	avatarFor: (slotIdx: number) => string | null;
-	elementGlyphFor: (element: string | undefined) => string | null;
 };
 
 // ── Image preload ────────────────────────────────────────────────────────────
@@ -381,42 +389,71 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 	});
 }
 
-/** Greedy word-wrap against the current ctx font. */
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
-	if (!text) return [];
-	const words = text.split(' ');
-	const lines: string[] = [];
-	let cur = '';
-	for (const word of words) {
-		const trial = cur ? `${cur} ${word}` : word;
-		if (ctx.measureText(trial).width > maxW && cur) {
+/** Word-wrap keeping each word's offset into the source string, so a
+ *  wrapped line can still be tinted by source ranges (`notationTints`). */
+function wrapWords(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	offset: number,
+	maxW: number
+): Array<Array<{ text: string; start: number }>> {
+	const lines: Array<Array<{ text: string; start: number }>> = [];
+	let cur: Array<{ text: string; start: number }> = [];
+	let curW = 0;
+	const spaceW = ctx.measureText(' ').width;
+	for (const m of text.matchAll(/\S+/g)) {
+		const word = { text: m[0], start: offset + (m.index ?? 0) };
+		const ww = ctx.measureText(word.text).width;
+		if (cur.length && curW + spaceW + ww > maxW) {
 			lines.push(cur);
-			cur = word;
-		} else {
-			cur = trial;
+			cur = [];
+			curW = 0;
 		}
+		curW += (cur.length ? spaceW : 0) + ww;
+		cur.push(word);
 	}
-	if (cur) lines.push(cur);
+	if (cur.length) lines.push(cur);
 	return lines;
 }
 
 // ── The painter ──────────────────────────────────────────────────────────────
 
-const DPR = 2; // fixed 2× raster for crisp Discord/KQM embeds
-const PAD = 16; // canvas padding around the chart
-const FOOTER_H = 22; // watermark strip
+/** 2× raster for crisp Discord/KQM embeds — the ceiling, not a constant. */
+const DPR_MAX = 2;
+/** ⚠ BROWSERS CAP A CANVAS, and a long rotation reaches the caps: Chrome
+ *  refuses a side past ~32,767 device px, iOS Safari an area past ~16.7M px,
+ *  and either way `toBlob` returns null ("Export failed"). So the raster
+ *  drops below 2× only when it must, to stay under both — a long rotation
+ *  still exports, just less crisp. ⚠ The export holds THREE canvases this
+ *  size at once (scene, chart layer, page), so the area cap is kept well
+ *  under Safari's. */
+const MAX_SIDE_PX = 16384;
+const MAX_AREA_PX = 16_000_000;
+const exportDpr = (w: number, h: number) =>
+	Math.min(DPR_MAX, MAX_SIDE_PX / w, MAX_SIDE_PX / h, Math.sqrt(MAX_AREA_PX / (w * h)));
+// ── The frame around the chart (2026-10-16 redesign) ──
+const PAD = 24; // the scene's margin around everything
+const BENCH_GAP = 16; // the ribbon to the plot's gutter
+/** Room left of 0s for the aura lane's unit labels ("1U", "2U"). */
+const UNIT_GUTTER = 22;
+/** The brand row: the chrome's own lockup, at the chrome's own size. */
+const BRAND_SIZE = 24; // --fs-4xl, the wordmark
+const BRAND_MARK = 1.5714; // the mark's height ÷ the wordmark's (SiteChrome)
+const BRAND_GAP = 6; // 0.35rem
+const BRAND_H = Math.round(BRAND_SIZE * BRAND_MARK);
+const NOTATION_PX = 12;
+const NOTATION_LINE_H = 18;
+const TITLE_PX = 15;
+const TITLE_LINE_H = 22;
+const HEADER_GAP = 14; // brand → notation → chart
+const FOOTER_H = 28;
+const LOGO_SRC = '/critcalc-logo-white.svg';
 
 export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	await document.fonts.ready;
 
-	// Preload every image the chart needs (portraits, glyphs, stat icons).
-	const imageSrcs = new Set<string>();
-	snap.slots.forEach((s, i) => {
-		const a = snap.avatarFor(i);
-		if (a) imageSrcs.add(a);
-		const g = snap.elementGlyphFor(s.element);
-		if (g) imageSrcs.add(g);
-	});
+	// Preload every image: stat icons, the bench's art and icons, the logo.
+	const imageSrcs = new Set<string>([LOGO_SRC]);
 	for (const row of snap.teamBuffRows) {
 		const icon = snap.statIconFor(row.primaryStat);
 		if (icon) imageSrcs.add(icon);
@@ -427,9 +464,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			if (icon) imageSrcs.add(icon);
 		}
 	}
-	for (const slot of snap.slots) {
-		for (const src of slot.equipIcons) imageSrcs.add(src);
-	}
+	for (const src of benchImageSources(snap.slots.map((s) => s.bench))) imageSrcs.add(src);
 	// The moonsign lane's one constant glyph — mirrors LUNAR_ICON on screen
 	const lunarIconSrc = snap.moonsignRows.length ? snap.statIconFor('lunarDmgBonus') : undefined;
 	if (lunarIconSrc) imageSrcs.add(lunarIconSrc);
@@ -441,49 +476,65 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		})
 	);
 
-	const w = snap.labelW + snap.totalWidth + PAD * 2;
+	// ── Geometry ──
+	// `ox` is 0s; the ribbon and the unit gutter stand to its left.
+	const benchX = PAD;
+	const ox = PAD + RIBBON_W + BENCH_GAP + UNIT_GUTTER;
+	// ↻ ⚓ Nate 2026-10-16: the WHOLE width, trailing bars included — a cut at
+	// the rotation's end with a fade was tried the same day and taken out.
+	const chartW = snap.totalWidth;
+	const w = ox + chartW + PAD;
 
-	const canvas = document.createElement('canvas');
-	const ctx = canvas.getContext('2d');
-	if (!ctx) throw new Error('canvas 2d context unavailable');
+	// ⚓ Nate 2026-10-16: the notation sits BESIDE the lockup, starting at the
+	// chart's left edge (0s), so the page's left column is the brand and the
+	// bench, and everything to the right of it is the rotation.
+	const measure = document.createElement('canvas').getContext('2d')!;
+	measure.font = `${NOTATION_PX}px ${MONO}`;
+	const lead = snap.notation.length - snap.notation.trimStart().length;
+	const notationLines = wrapWords(measure, snap.notation.trim(), lead, w - PAD - ox);
+	const notationH = notationLines.length * NOTATION_LINE_H;
+	// The tab's name, when it has one, titles the notation (same left edge).
+	const titleH = snap.tabLabel ? TITLE_LINE_H : 0;
+	const blockH = titleH + notationH;
+	const headerH = Math.max(BRAND_H, blockH) + HEADER_GAP;
 
-	// Header: the notation itself, wrapped to the canvas width. Measured
-	// before the canvas is sized (resizing resets ctx state anyway).
-	const HEADER_LINE_H = 17;
-	ctx.font = `11px ${MONO}`;
-	const notationLines = wrapText(ctx, snap.notation.trim(), w - PAD * 2);
-	const headerH = notationLines.length > 0 ? notationLines.length * HEADER_LINE_H + 14 : 0;
-
-	const h = headerH + snap.contentH + PAD * 2 + FOOTER_H;
-	canvas.width = w * DPR;
-	canvas.height = h * DPR;
-	ctx.scale(DPR, DPR);
-
-	// Ground
-	ctx.fillStyle = CHART_BG;
-	ctx.fillRect(0, 0, w, h);
-
-	// Notation header
-	ctx.font = `11px ${MONO}`;
-	ctx.fillStyle = 'rgba(230, 237, 248, 0.85)';
-	ctx.textAlign = 'left';
-	ctx.textBaseline = 'alphabetic';
-	notationLines.forEach((line, i) => {
-		ctx.fillText(line, PAD, PAD + 8 + i * HEADER_LINE_H);
-	});
-
-	// Chart origin (tracks area starts right of the label column, below the
-	// notation header). The ruler rides the TOP edge (DAW convention, mirrors the
-	// live component); track lanes start below it at oy + rulerH.
-	//
-	// ⚠ `oy` IS THE RULER'S TOP, NOT THE CHART COLUMN'S (2026-08-17). The aura
-	// lane sits above the axis now, so the column opens `auraHeaderH` earlier.
-	// Defining the origin this way is deliberate: every `oy + snap.rulerH + …`
-	// below is a track offset and stays exactly as it was, so the lane's move is
-	// a change to TWO expressions here rather than to forty downstream.
-	const ox = PAD + snap.labelW;
 	const chartTop = PAD + headerH;
 	const oy = chartTop + snap.auraHeaderH;
+	// The ribbon opens with the chart column and its head carries the first
+	// card down to the first track group, as the live strip's does.
+	const ribbonTop = chartTop;
+	const slotsBottom =
+		snap.slotTops[snap.slots.length - 1] + snap.slots[snap.slots.length - 1].blockH;
+	const ribbonHead = oy + snap.rulerH - ribbonTop - RIBBON_CHROME;
+	const ribbonBottom = oy + snap.rulerH + slotsBottom + RIBBON_TAIL_H;
+	const bodyBottom = Math.max(chartTop + snap.contentH, ribbonBottom);
+	const h = bodyBottom + 10 + FOOTER_H + PAD;
+
+	// ── Layers ──
+	// The scene first, in device pixels; then everything at DPR.
+	const canvas = document.createElement('canvas');
+	const DPR = exportDpr(w, h);
+	canvas.width = Math.round(w * DPR);
+	canvas.height = Math.round(h * DPR);
+	const base = canvas.getContext('2d');
+	if (!base) throw new Error('canvas 2d context unavailable');
+	// ⚓ The stars stay out from behind the chart and the lockup — the brand
+	// keep-out's rule on screen (starPass STAR_KEEPOUT_*), widened to the
+	// whole plot, because a still image shows every halo the twinkle hides.
+	const keepOut = [
+		{ x: ox - UNIT_GUTTER, y: chartTop, w: chartW + UNIT_GUTTER, h: bodyBottom - chartTop },
+		{ x: PAD, y: PAD, w: BRAND_H * 4 + 160, h: BRAND_H }
+	];
+	base.drawImage(await paintSceneBackdrop(w, h, DPR, keepOut), 0, 0);
+	base.scale(DPR, DPR);
+
+	// The chart paints on a layer of its own, composited over the scene.
+	const layer = document.createElement('canvas');
+	layer.width = canvas.width;
+	layer.height = canvas.height;
+	const ctx = layer.getContext('2d');
+	if (!ctx) throw new Error('canvas 2d context unavailable');
+	ctx.scale(DPR, DPR);
 
 	// ⚓ The export's own frames→px seam, mirroring the two wrappers in
 	// RotationTimeline: the snapshot carries FRAMES (gauge-round.md C1) while
@@ -517,19 +568,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillRect(ox + tick.x, oy + snap.rulerH - th, 1, th);
 		if (tick.major && tick.t > 0) {
 			ctx.fillStyle = MUTED;
-			ctx.font = `10px ${SANS}`;
+			type(ctx, 400, 11);
 			ctx.textAlign = 'center';
 			ctx.fillText(`${tick.t}s`, ox + tick.x, oy + snap.rulerH - 11);
 		}
 	}
-	ctx.strokeStyle = LANE_LINE;
-	ctx.beginPath();
-	ctx.moveTo(ox, oy + snap.rulerH + 0.5);
-	ctx.lineTo(ox + snap.totalWidth, oy + snap.rulerH + 0.5);
-	ctx.stroke();
+	// ↻ 2026-10-16: no ruler seam — the export stands on the scene now, as the
+	// screen does, and the screen dropped it.
 
 	// Rounded-rect helper (uniform radius)
-	function rr(px: number, py: number, pw: number, ph: number, r: number) {
+	function rr(px: number, py: number, pw: number, ph: number, r: number | number[]) {
 		ctx!.beginPath();
 		ctx!.roundRect(px, py, pw, ph, r);
 	}
@@ -542,9 +590,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// 2026-08-11 (the top-light was depth against a raised frame that no longer
 	// exists). Colour is one of the things the export does still track; see the
 	// decoupling note at the top of this file for what it doesn't.
-	function paintCastFill(px: number, py: number, pw: number, ph: number, bar: string) {
+	function paintCastFill(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		bar: string,
+		r: number | number[] = 1
+	) {
 		ctx!.fillStyle = bar;
-		rr(px, py, pw, ph, 1);
+		rr(px, py, pw, ph, r);
 		ctx!.fill();
 	}
 
@@ -669,13 +724,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// ⚠ TWO THINGS DIFFER FROM THE BUFF BARS' EDGE AND BOTH MATTER.
 		// (1) It is painted INSIDE the clip and AFTER the tiles: this fill is a
 		//     stack of tiled layers, not one colour, so drawing it first buries it.
-		// (2) It uses REAL ALPHA, not BAR_EDGE. That literal is white .3
-		//     composited against BAR_FILL — the glass bar's ground — and this
-		//     lane's ground is a bright phlogiston orange, so the literal would
-		//     paint a grey-blue smear here. Over an already-painted canvas the
-		//     alpha resolves correctly on its own; the literal only exists for
-		//     bars whose ground the exporter has to model rather than draw.
-		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		// (2) Real alpha over the painted tiles — ↻ 2026-10-17 BAR_EDGE is that
+		//     same white .3 now (it was a composite against the old opaque buff
+		//     fill), so the two edges are one value.
+		ctx!.fillStyle = BAR_EDGE;
 		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
@@ -702,9 +754,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			[0.8, alpha('#ef8e91', 0.2)],
 			[1, alpha('#ef8e91', 0)]
 		]);
-		// The 2px left edge — real alpha over the painted tiles; see paintNbBar
-		// for why this is not BAR_EDGE.
-		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		// The 2px left edge — real alpha over the painted tiles, as on screen.
+		ctx!.fillStyle = BAR_EDGE;
 		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
@@ -724,28 +775,38 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		badge: string,
 		solids: Array<() => void>
 	) {
-		// Full row height (the 1px inset died with the bottom-shading look);
-		// ghost CD tracks are 14px — the summon/buff row height
+		// Full row height (the 1px inset died with the bottom-shading look).
+		// ↻ 2026-10-17: the ghost CD track is 1px proud of nothing — inset 1px
+		// top and bottom, mirroring .rp-bar-cd--ghost (⚓ Nate's 2026-08-11 12px
+		// pass, which the export had missed: it was still inset 3px and outlined).
 		const py = rowTop;
 		const ph = rowH;
-		const ghostY = rowTop + 3;
-		const ghostH = rowH - 6;
+		const ghostY = rowTop + 1;
+		const ghostH = rowH - 2;
 
-		const drawSolid = (start: number, span: number, dim: boolean) => {
+		// Corner radii per role, mirroring the DOM: a pill rounds all four, the
+		// flush pill (a ghost or overflow follows) only its left, and the
+		// segments that flow out of a pill only their right.
+		const radii = (role: string): number | number[] =>
+			role === 'uptimeFlush' ? [1, 0, 0, 1] : role === 'overflow' ? [0, 1, 1, 0] : 1;
+		const drawSolid = (start: number, span: number, role: string) => {
+			const dim = role === 'uptimeDim' || role === 'overflow';
 			solids.push(() => {
 				const px = x(start);
 				const pw = barGeomW(start, span);
-				ctx!.font = `700 9px ${SANS}`;
+				type(ctx!, 700, 10, 0.2);
 				ctx!.textAlign = 'left';
 				if (dim) {
 					ctx!.fillStyle = mix(barColor, CHART_BG, UPTIME_DIM_MIX);
-					rr(px, py, pw, ph, 1);
+					rr(px, py, pw, ph, radii(role));
 					ctx!.fill();
+					// The overflow continuation carries no badge on screen.
+					if (role === 'overflow') return;
 					// Dim continuation keeps the white+halo treatment.
 					ctx!.fillStyle = '#fff';
 					haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(barColor));
 				} else {
-					paintCastFill(px, py, pw, ph, barColor);
+					paintCastFill(px, py, pw, ph, barColor, radii(role));
 					// ↻ 2026-08-14: WHITE + HALO, same as the dim branch above.
 					// 🐛 This was still painting dark INK "mirrors .rp-bar-row-badge
 					// (bright-chip idiom, 2026-08-01)" — but that idiom was retired
@@ -777,8 +838,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			if (seg.role === 'ghost') {
 				pushGhost(seg.start, seg.span, seg.cooldown ?? 0);
 			} else {
-				const dim = seg.role === 'uptimeDim' || seg.role === 'overflow';
-				drawSolid(seg.start, seg.span, dim);
+				drawSolid(seg.start, seg.span, seg.role);
 			}
 		}
 	}
@@ -876,7 +936,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// label — provisional tinted on no-frame-map N/C/P tokens (mirrors
 					// .rp-active-text--danger)
 					ctx!.fillStyle = approxToken ? UI_PROVISIONAL : '#fff';
-					ctx!.font = `600 10px ${SANS}`;
+					type(ctx!, 600, 11);
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
 				});
@@ -899,8 +959,21 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// the E/Q badge above — the mirror test reads colour tokens, not
 					// ink choice or font weight.
 					paintCastFill(px, rowTop, pw, snap.summonRowH, p.bar);
+					// An absorbing summon becomes its element — mirror
+					// .rp-summon-absorbed: a fade from its first absorbed hit, then
+					// that element to the bar's end, under the label.
+					const marks = summonMarks(sbar);
+					if (marks.absorbed) {
+						const fx = x(marks.absorbed.time);
+						const el = elementPalette(marks.absorbed.element).bar;
+						const fade = ctx!.createLinearGradient(fx, 0, fx + ABSORB_FADE_PX, 0);
+						fade.addColorStop(0, `${el}00`);
+						fade.addColorStop(1, el);
+						ctx!.fillStyle = fade;
+						ctx!.fillRect(fx, rowTop, px + pw - fx, snap.summonRowH);
+					}
 					ctx!.fillStyle = '#fff';
-					ctx!.font = `500 9px ${SANS}`;
+					type(ctx!, 500, 10, 0.2);
 					ctx!.textAlign = 'left';
 					haloText(
 						srow.label,
@@ -910,17 +983,30 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						Math.max(pw - 6, 8)
 					);
 					// Bottom-anchored tick stubs — mirror .rp-summon-tick (7px, opaque
-					// since 2026-09-18)
-					ctx!.fillStyle = p.hi;
+					// since 2026-09-18): one per frame, the element's hi past the fade.
 					const th = 7;
-					for (const tickT of sbar.ticks) {
-						ctx!.fillRect(x(tickT), rowTop + snap.summonRowH - th, 1, th);
+					const ownInk = tickInk(slot.element);
+					const absorbedInk = marks.absorbed ? tickInk(marks.absorbed.element) : ownInk;
+					for (const tick of marks.ticks) {
+						ctx!.fillStyle = tick.absorbed ? absorbedInk : ownInk;
+						ctx!.fillRect(x(tick.time), rowTop + snap.summonRowH - th, 1, th);
 					}
-					// Threshold fires — mirror .rp-summon-fire: full height, 2px,
-					// centred, in the hit's element.
+					// Threshold fires — mirror .rp-summon-fire: the falling moonbeam
+					// gleam, the lilac across and faded from the top edge to nothing
+					// at the foot. Canvas has no mask, so the fall is drawn as thin
+					// rows at a falling alpha.
 					for (const fire of sbar.fires ?? []) {
-						ctx!.fillStyle = elementPalette(fire.element).hi;
-						ctx!.fillRect(x(fire.time) - 1, rowTop, 2, snap.summonRowH);
+						const gx = x(fire.time) - Math.floor(LUNAR_GLEAM_W / 2);
+						const across = ctx!.createLinearGradient(gx, 0, gx + LUNAR_GLEAM_W, 0);
+						for (const [at, c] of LUNAR_GLEAM_STOPS) across.addColorStop(at, c);
+						ctx!.fillStyle = across;
+						const rows = snap.summonRowH * 4;
+						const step = snap.summonRowH / rows;
+						for (let r = 0; r < rows; r++) {
+							ctx!.globalAlpha = 1 - (r + 0.5) / rows;
+							ctx!.fillRect(gx, rowTop + r * step, LUNAR_GLEAM_W, step);
+						}
+						ctx!.globalAlpha = 1;
 					}
 				}
 			});
@@ -963,7 +1049,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						bar.sourceLabel,
 						icon ? images.get(icon) : undefined,
 						next ? x(next.start) : undefined,
-						stepRects(bar.steps, bar.stepMax)
+						stepRects(bar.steps, bar.stepMax),
+						envelopeDensities(bar)
 					);
 					drawSeams(bar.seams, rowTop, snap.buffRowH);
 				});
@@ -1014,24 +1101,30 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		label: string,
 		icon: HTMLImageElement | undefined,
 		nextPx?: number,
-		steps?: { px0: number; px1: number; density: number }[]
+		steps?: { px0: number; px1: number; density: number }[],
+		envelope?: [number, number]
 	) {
-		ctx!.fillStyle = fill;
-		rr(px, py, pw, ph, 1);
-		ctx!.fill();
-		// ⚓ A STEPPED BAR (stepped stacks round) — each step is the material at
-		// its density, resolved on the export's one ground. Compositing is linear
-		// in alpha, so that is CHART_BG moved toward BAR_FILL by the density —
-		// ⛔ no new literal, and it tracks BAR_FILL when the mirror test moves it.
+		// The glass, as the screen draws it: a ramp/decay ENVELOPE thins it
+		// across the bar, a STEPPED bar (stepped stacks round) is the glass at
+		// each step's density — each in place of the flat fill, never over it.
 		if (steps && steps.length > 0) {
 			ctx!.save();
 			rr(px, py, pw, ph, 1);
 			ctx!.clip();
 			for (const st of steps) {
-				ctx!.fillStyle = mix(fill, CHART_BG, st.density * 100);
+				ctx!.fillStyle = glassAt(st.density);
 				ctx!.fillRect(st.px0, py, st.px1 - st.px0, ph);
 			}
 			ctx!.restore();
+		} else {
+			if (envelope) {
+				const g = ctx!.createLinearGradient(px, 0, px + pw, 0);
+				g.addColorStop(0, glassAt(envelope[0]));
+				g.addColorStop(1, glassAt(envelope[1]));
+				ctx!.fillStyle = g;
+			} else ctx!.fillStyle = fill;
+			rr(px, py, pw, ph, 1);
+			ctx!.fill();
 		}
 		// The 2px left edge — the one bar edge that survives the flattening pass,
 		// because these bars can overlap and glass gives no seam of its own.
@@ -1047,66 +1140,56 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.rect(px, py, Math.max(0, Math.min(px + pw, nextPx ?? Infinity) - px - 2), ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `600 9px ${SANS}`;
+		type(ctx!, 500, 10, 0.4);
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
 	}
 
-	// ── Lane separators (horizontal) — drawn BEFORE bars/connectors so the
-	//    connectors span slot boundaries uninterrupted (matches on-screen
-	//    stacking, where positioned bars paint above the container borders) ──
-	ctx.strokeStyle = LANE_LINE;
-	const hline = (yy: number) => {
-		ctx.beginPath();
-		ctx.moveTo(PAD, yy + 0.5);
-		ctx.lineTo(ox + snap.totalWidth, yy + 0.5);
-		ctx.stroke();
-	};
-	snap.slots.forEach((slot, si) => {
-		hline(oy + snap.rulerH + snap.slotTops[si] + slot.blockH);
-	});
-	// Lane separators are top-only (mirrors the live border-top scheme): a
-	// lane's closing line is drawn ONLY when another lane follows, so the
-	// bottom-most lane leaves no line before the ruler gap.
-	// ↻ 2026-08-17: the aura lane LEFT this test when it moved above the ruler.
-	// It is no longer something that "comes after" — moonsign is the bottom-most
-	// lane again, and closes only when nothing follows it, which is never.
-	const laneFollows = (after: 'teamBuffs' | 'nb') => {
-		const later = [after === 'teamBuffs' ? snap.nbTop : null, snap.moonsignTop];
-		return later.some((t) => t !== null);
-	};
-	if (laneFollows('teamBuffs')) {
-		hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
-	}
-	if (snap.nbTop !== null && laneFollows('nb')) {
-		hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
-	}
-	// ⛔ No closing line under moonsign: it is bottom-most now, and the rule is
-	// "a lane closes only when something comes after it".
+	// ↻ 2026-10-16: no lane separators. They were the paper version's — a flat
+	// chart needed them to stop reading as soup — and the export stands on the
+	// scene now, where the screen dropped them.
 
-	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
-	// desaturate/mix pairing mirrors the DOM's ghost rules exactly)
+	// ── Lane names, at the plot's left edge and UNDER the bars, as the screen
+	//    sets them (.rp-lane-name, z-index 0): a bar that starts at 0s covers it ──
+	ctx.fillStyle = CHART_DIM;
+	type(ctx, 600, 10, 1.4);
+	ctx.textAlign = 'left';
+	const laneLabelX = ox + 2;
+	// Header hides when the lane is empty (mirrors the on-screen behavior) — the
+	// lane's reserved height stays, so lanes below it don't shift.
+	if (snap.teamBuffRows.length > 0)
+		ctx.fillText(
+			'TEAM BUFFS',
+			laneLabelX,
+			oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
+		);
+	if (snap.nbTop !== null)
+		ctx.fillText('NIGHTSOUL BURSTS', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
+	if (snap.moonsignTop !== null)
+		ctx.fillText(
+			'ASCENDANT GLEAM',
+			laneLabelX,
+			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
+		);
+	if (snap.auraHeaderH > 0) ctx.fillText('TARGET AURA', laneLabelX, chartTop + 9);
+
+	// z:0 — ghosts, mirroring .rp-bar-cd--ghost: the chroma-dropped element at
+	// GHOST_FILL_MIX% ALPHA over whatever is beneath — the scene backdrop since
+	// the 2026-10-16 redesign, as on screen. ↻ 2026-10-17 (⚓ Nate spotted it):
+	// the export still drew the pre-2026-08-11 ghost — an opaque mix with
+	// CHART_BG, inset 3px, outlined top/right/bottom, a .4 label with a halo. No
+	// outline, right corners only, and the .5 label with no halo now.
 	for (const g of ghosts) {
-		ctx.fillStyle = mix(desaturate(g.barColor, GHOST_CHROMA_KEEP), CHART_BG, GHOST_FILL_MIX);
-		rr(g.px, g.py, g.pw, g.ph, 1);
+		const [gr, gg, gb] = hexToRgb(desaturate(g.barColor, GHOST_CHROMA_KEEP));
+		ctx.fillStyle = `rgba(${gr}, ${gg}, ${gb}, ${GHOST_FILL_MIX / 100})`;
+		rr(g.px, g.py, g.pw, g.ph, [0, 1, 1, 0]);
 		ctx.fill();
-		// 1px outline on top/right/bottom (left stays open — the track flows out
-		// of the cast pill); the right edge still marks the exact ready moment.
-		ctx.fillStyle = mix(desaturate(g.barColor, GHOST_CHROMA_KEEP), CHART_BG, GHOST_EDGE_MIX);
-		ctx.fillRect(g.px, g.py, g.pw, 1); // top
-		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph); // right
-		ctx.fillRect(g.px, g.py + g.ph - 1, g.pw, 1); // bottom
 		if (g.pw > 32) {
-			ctx.fillStyle = 'rgba(255,255,255,0.4)';
-			ctx.font = `600 9px ${SANS}`;
+			ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+			type(ctx, 600, 10);
 			ctx.textAlign = 'center';
-			haloText(
-				`${secondsLabel(g.cd)}s`,
-				g.px + g.pw / 2,
-				g.py + g.ph / 2 + 3,
-				...elementHalo(g.barColor)
-			);
+			ctx.fillText(`${secondsLabel(g.cd)}s`, g.px + g.pw / 2, g.py + g.ph / 2 + 3);
 		}
 	}
 
@@ -1127,8 +1210,11 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	ctx.fillStyle = ACTIVE;
 	for (const c of snap.connectors) {
 		const cx = ox + c.x;
-		const yT = oy + c.yTop;
-		const yB = oy + c.yBottom;
+		// ⚠ Track offsets start BELOW the ruler (`oy + rulerH`): connectorGeom's
+		// numbers are relative to the track area, which on screen carries no
+		// ruler offset because the ruler is its own strip.
+		const yT = oy + snap.rulerH + c.yTop;
+		const yB = oy + snap.rulerH + c.yBottom;
 		const r = Math.min(c.w, yB - yT);
 		ctx.beginPath();
 		if (c.downward) {
@@ -1187,11 +1273,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			const pw = barGeomW(ev.start, ev.cooldown);
 			paintNbBar(px, laneTop, pw, snap.buffRowH);
 			ctx.fillStyle = '#fff';
-			ctx.font = `600 9px ${SANS}`;
+			type(ctx, 600, 10, 0.2);
 			ctx.textAlign = 'left';
 			haloText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3, NB_HALO_TIGHT, NB_HALO_WIDE);
 			if (pw > 40) {
 				ctx.fillStyle = '#fff';
+				type(ctx, 600, 10);
 				ctx.textAlign = 'center';
 				haloText(
 					`${secondsLabel(ev.cooldown)}s`,
@@ -1219,13 +1306,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				const next = row.windows[wi + 1];
 				const visW = next ? Math.min(ww, x(next.start) - wx) : ww;
 				if (visW <= 24) return;
-				const name = snap.slots[row.slotIdx]?.displayName ?? '';
+				const name = snap.slots[row.slotIdx]?.bench.displayName ?? '';
 				ctx!.save();
 				ctx!.beginPath();
 				ctx!.rect(wx, rowTop, visW - 2, snap.buffRowH);
 				ctx!.clip();
 				ctx!.fillStyle = '#fff';
-				ctx!.font = `600 9px ${SANS}`;
+				type(ctx!, 500, 10, 0.4);
 				ctx!.textAlign = 'left';
 				let tx = wx + 5;
 				const lunar = lunarIconSrc ? images.get(lunarIconSrc) : undefined;
@@ -1272,14 +1359,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		// Reaction markers — pip + family name, in the ruler's neutral ink. ⚠ A
 		// reaction is not an element and must not borrow one.
-		ctx.fillStyle = MUTED;
-		ctx.font = `600 9px ${SANS}`;
+		ctx.fillStyle = CHART_DIM;
+		type(ctx, 600, 10, 0.4);
 		ctx.textAlign = 'left';
 		// ⚓ WHICH LABELS SURVIVE IS DECIDED BY THE SAME FUNCTION THE SCREEN USES,
 		// with the canvas supplying its own metrics (2026-08-17). That is the whole
 		// point of `auraMarkerLabels` taking a `measure`: a mirror that re-derives
-		// the rule is not a mirror, and this one is 9px where the screen is 10, so
-		// a shared THRESHOLD would have been wrong in one of the two.
+		// the rule is not a mirror. (It was 9px where the screen is 10 until
+		// 2026-10-17; the canvas metrics keep it honest either way.)
 		const markerShown = auraMarkerLabels(
 			snap.auraLane.markers,
 			x,
@@ -1330,7 +1417,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		// The one datum, under everything: whole units below the ceiling.
 		ctx.strokeStyle = GRID;
-		ctx.font = `600 8px ${SANS}`;
+		type(ctx, 600, 8, 0.32);
 		ctx.textAlign = 'left';
 		for (const u of auraUnitLines(snap.auraLane.uMax)) {
 			const gy = Math.round(yOf(u)) + 0.5;
@@ -1344,7 +1431,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			// gutter the screen had to borrow from the frame's padding. ⚠ Not a
 			// duplicate of the ceiling reading below it: the column says how high the
 			// plot goes, these say where each unit is.
-			ctx.fillStyle = MUTED;
+			ctx.fillStyle = CHART_DIM;
 			ctx.textAlign = 'right';
 			ctx.fillText(`${u}U`, ox - 4, gy + 3);
 			ctx.textAlign = 'left';
@@ -1394,7 +1481,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		}
 
 		// Series names, where each aura first appears.
-		ctx.font = `600 8px ${SANS}`;
+		type(ctx, 600, 10, 1);
 		ctx.textAlign = 'left';
 		for (const entry of auraSpanLabels(
 			snap.auraLane.series,
@@ -1404,13 +1491,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			snap.auraLabelMinGap,
 			snap.auraLabelMinRow
 		)) {
+			// .rp-aura-series-name sits at opacity .8 — here, alpha in the paint.
 			ctx.fillStyle = AURA_MOD_COLOR[entry.mod];
+			ctx.globalAlpha = 0.8;
 			ctx.fillText(
 				entry.label.toUpperCase(),
 				x(entry.span.start) + 4,
 				Math.max(plotTop + 7, yOf(entry.span.openingU) - 3)
 			);
 		}
+		ctx.globalAlpha = 1;
 
 		// ── The gadget strip, under the baseline ──
 		// ⚓ Below the plot because a core and a Prism are ENTITIES, not gauge —
@@ -1458,123 +1548,94 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			gadgetY += rowH + snap.gadgetRowGap;
 		}
 	}
-	// ── Label column ──
-	// Opaque backing (below the notation header) so long ghost bars never
-	// bleed under the labels
-	ctx.fillStyle = CHART_BG;
-	ctx.fillRect(0, oy, PAD + snap.labelW, h - oy);
+	base.drawImage(layer, 0, 0, w, h);
 
-	snap.slots.forEach((slot, si) => {
-		const top = oy + snap.rulerH + snap.slotTops[si];
-		const p = elementPalette(slot.element);
-		const cx = PAD + 8;
+	// ── The bench: the live ribbon, its cards beside their track groups ──
+	paintBench(
+		base,
+		benchX,
+		ribbonTop,
+		ribbonHead,
+		snap.slots.map((s) => s.blockH),
+		snap.slots.map((s) => s.bench),
+		images,
+		resolveRoles()
+	);
 
-		// Portrait: circle clip + neutral backing + element ring
-		const size = 54;
-		const px = PAD + (snap.labelW - size) / 2 - 8;
-		const py = top + Math.max((slot.blockH - size) / 2 - 16, 8);
-		ctx.save();
-		ctx.beginPath();
-		ctx.arc(px + size / 2, py + size / 2, size / 2, 0, Math.PI * 2);
-		ctx.clip();
-		ctx.fillStyle = PORTRAIT_BG;
-		ctx.fill();
-		const avatarSrc = snap.avatarFor(si);
-		const avatar = avatarSrc ? images.get(avatarSrc) : undefined;
-		if (avatar) {
-			// mirror .rp-avatar-img: scale(1.333) translateY(-14%)
-			const s = size * 1.333;
-			ctx.drawImage(avatar, px + (size - s) / 2, py + (size - s) / 2 - size * 0.14, s, s);
-		}
-		ctx.restore();
-		// ⚠ `main`, and it stays `main`: this is a RING, not a fill with ink on
-		// it, and the bar rung must not creep into the element's identity uses
-		// (see the ⛔ at --el-* in app.css). Same for the C-level readout below.
-		ctx.strokeStyle = p.main;
-		ctx.lineWidth = 1.5;
-		ctx.beginPath();
-		ctx.arc(px + size / 2, py + size / 2, size / 2 - 0.75, 0, Math.PI * 2);
-		ctx.stroke();
-
-		// Glyph + name + Cn under the portrait
-		const nameY = py + size + 16;
-		const glyphSrc = snap.elementGlyphFor(slot.element);
-		const glyph = glyphSrc ? images.get(glyphSrc) : undefined;
-		let tx = cx;
-		if (glyph) {
-			ctx.drawImage(glyph, tx, nameY - 10, 13, 13);
-			tx += 16;
-		}
-		ctx.fillStyle = slot.displayName ? TEXT : MUTED;
-		ctx.font = `600 11px ${SANS}`;
-		ctx.textAlign = 'left';
-		ctx.fillText(slot.displayName ?? 'Empty', tx, nameY, snap.labelW - 44);
-		if (slot.displayName) {
-			ctx.fillStyle = slot.consLevel > 0 ? p.main : MUTED;
-			ctx.font = `700 9px ${SANS}`;
-			ctx.textAlign = 'right';
-			ctx.fillText(`C${slot.consLevel}`, PAD + snap.labelW - 10, nameY);
-		}
-
-		// Equipped artifact/weapon icons — who caused which buffs
-		slot.equipIcons.forEach((src, ei) => {
-			const icon = images.get(src);
-			if (icon) ctx.drawImage(icon, cx + ei * 24, nameY + 8, 20, 20);
-		});
-	});
-
-	// Lane labels
-	ctx.fillStyle = MUTED;
-	ctx.font = `600 9px ${SANS}`;
-	ctx.textAlign = 'right';
-	const laneLabelX = PAD + snap.labelW - 10;
-	// Header hides when the lane is empty (mirrors the on-screen behavior) — the
-	// lane's reserved height stays, so lanes below it don't shift.
-	if (snap.teamBuffRows.length > 0)
-		ctx.fillText(
-			'TEAM BUFFS',
-			laneLabelX,
-			oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
-		);
-	if (snap.nbTop !== null)
-		ctx.fillText('NIGHTSOUL BURSTS', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
-	if (snap.moonsignTop !== null)
-		ctx.fillText(
-			'ASCENDANT GLEAM',
-			laneLabelX,
-			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
-		);
-	if (snap.auraHeaderH > 0) {
-		// ⚓ THE ONE PLACE THE EXPORT IS BETTER THAN THE SCREEN, and it costs
-		// nothing: the PNG kept its label column when the live chart gave it up
-		// (abutting round), so the mod names can sit OUTSIDE the plot here
-		// instead of over their own bars. Same names, more room.
-		ctx.fillText('TARGET AURA', laneLabelX, chartTop + 9);
-		const plotTop = chartTop + snap.auraMarkerH + snap.auraTickH + 2;
-		// ⚓ THE LEGEND AND THE CEILING ARE EXPORT-ONLY, and they are the clearest
-		// case yet for this file being a DOCUMENT rather than a screenshot (see the
-		// header). On screen a reader hovers the plot for a full readout and each
-		// aura names itself where it appears; a shared PNG has neither, so the
-		// column the live chart gave up earns its keep by carrying both the y
-		// ceiling and every mod in the plot.
-		ctx.font = `600 8px ${SANS}`;
-		ctx.fillStyle = MUTED;
-		ctx.fillText(`${snap.auraLane.uMax}U`, laneLabelX, plotTop + 7);
-		snap.auraLane.series.forEach((series, si) => {
-			ctx!.fillStyle = AURA_MOD_COLOR[series.mod];
-			ctx!.fillText(series.label.toUpperCase(), laneLabelX, plotTop + 19 + si * 10);
-		});
+	// ── The header: the chrome's lockup, the tab's name, the notation ──
+	const logo = images.get(LOGO_SRC);
+	let bx = PAD;
+	const brandMid = PAD + BRAND_H / 2;
+	if (logo) {
+		const lw = (logo.naturalWidth / logo.naturalHeight) * BRAND_H;
+		base.save();
+		base.globalAlpha = 0.85; // the chrome's resting alpha
+		base.drawImage(logo, bx, PAD + BRAND_SIZE * -0.18 + 2, lw, BRAND_H);
+		base.restore();
+		bx += lw + BRAND_GAP;
+	}
+	base.font = `500 ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
+	base.fillStyle = 'rgba(255, 255, 255, 0.85)';
+	base.textAlign = 'left';
+	base.textBaseline = 'middle';
+	base.fillText('critcalc.app', bx, brandMid);
+	// The title + notation block: centred on the lockup when it fits beside
+	// it, otherwise running down from the lockup's top.
+	const blockTop = blockH <= BRAND_H ? brandMid - blockH / 2 : PAD;
+	if (snap.tabLabel) {
+		base.font = `600 ${TITLE_PX}px ${SANS}`;
+		base.fillStyle = TEXT;
+		base.textAlign = 'left';
+		base.textBaseline = 'middle';
+		base.fillText(snap.tabLabel, ox, blockTop + TITLE_LINE_H / 2, w - PAD - ox);
 	}
 
-	// ── Footer: title left, watermark right ──
-	const fy = h - PAD / 2 - 4;
-	ctx.fillStyle = MUTED;
-	ctx.font = `600 10px ${SANS}`;
-	ctx.textAlign = 'left';
-	ctx.fillText(snap.title, PAD, fy);
-	ctx.fillStyle = 'rgba(158, 172, 200, 0.55)';
-	ctx.textAlign = 'right';
-	ctx.fillText('critcalc.app', w - PAD, fy);
+	// The notation, each token in the colour the composer gives it.
+	const tintAt = (i: number) => snap.notationTints.find((t) => i >= t.from && i < t.to);
+	base.font = `${NOTATION_PX}px ${MONO}`;
+	base.textAlign = 'left';
+	base.textBaseline = 'alphabetic';
+	const spaceW = base.measureText(' ').width;
+	notationLines.forEach((line, li) => {
+		let tx = ox;
+		const ty =
+			blockTop +
+			titleH +
+			li * NOTATION_LINE_H +
+			NOTATION_PX +
+			(NOTATION_LINE_H - NOTATION_PX) / 2 -
+			1;
+		for (const word of line) {
+			// One run per colour change inside the word.
+			let i = 0;
+			while (i < word.text.length) {
+				const at = word.start + i;
+				const tint = tintAt(at);
+				let j = i + 1;
+				while (j < word.text.length && tintAt(word.start + j) === tint) j++;
+				const run = word.text.slice(i, j);
+				base.fillStyle = tint?.element
+					? elementPalette(tint.element).main
+					: run === '>'
+						? MUTED
+						: TEXT;
+				base.fillText(run, tx, ty);
+				tx += base.measureText(run).width;
+				i = j;
+			}
+			tx += spaceW;
+		}
+	});
+
+	// ── The footer: how long the rotation runs, and how it is timed ──
+	const fy = h - PAD - FOOTER_H / 2 + 4;
+	base.font = `500 11px ${SANS}`;
+	base.fillStyle = MUTED;
+	base.textBaseline = 'middle';
+	base.textAlign = 'left';
+	// ⚓ Nate 2026-10-16: the length LEADS the line, at the left — the trailing
+	// bars make the right end the part a reader crops off.
+	base.fillText(`${secondsLabel(snap.endFrame)}s · ${snap.timingNote}`, ox, fy);
 
 	return new Promise<Blob>((resolve, reject) => {
 		canvas.toBlob((blob) => {

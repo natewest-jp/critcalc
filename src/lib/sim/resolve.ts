@@ -20,7 +20,9 @@ import type {
 	FrameMap,
 	NormalAbility,
 	NormalHit,
-	CooldownModifier
+	CooldownModifier,
+	ElementalApplication,
+	HeldCast
 } from '$lib/types/ability';
 import {
 	getActiveDuration,
@@ -65,6 +67,26 @@ export function resolveEQCastTime(
 	// carried a `swap` key at all (qiqi skill, Mika hE); with an animation length
 	// required on every map, that guard has nothing left to guard.
 	return frameAt(frameMap, nextKey);
+}
+
+/**
+ * A held cast's `application[]` at a hold of `heldFor` frames (`HeldCast`,
+ * Sayu): `'during'` entries past the release are dropped, `'after'` entries
+ * move by the hold. gcsim lands a roll tick at `from + i` for every `i ≤ D`.
+ */
+export function heldApplications(
+	apps: readonly ElementalApplication[] | undefined,
+	held: HeldCast,
+	heldFor: number
+): ElementalApplication[] | undefined {
+	if (!apps) return apps;
+	const out: ElementalApplication[] = [];
+	for (const a of apps) {
+		if (a.held === 'during' && a.frame - held.from > heldFor) continue;
+		out.push(a.held === 'after' ? { ...a, frame: a.frame + heldFor } : a);
+	}
+	// The sim reads the list as a timeline; the moved entries stay sorted.
+	return out.sort((x, y) => x.frame - y.frame);
 }
 
 /**

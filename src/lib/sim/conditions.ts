@@ -164,6 +164,9 @@ export function resolveElementRef(
 ): Element | undefined {
 	if (ref === undefined) return undefined;
 	if (typeof ref === 'string') return ref;
+	// ⚓ An absorbed element is the cast's LOCK, known only at the entry's
+	// landing (`absorb.ts`); statically it is nothing — the entry applies nothing.
+	if (ref.type === 'absorbed') return undefined;
 	const counts = context?.teamElementCounts;
 	if (counts) {
 		for (const e of ref.order) if ((counts.get(e) ?? 0) > 0) return e;

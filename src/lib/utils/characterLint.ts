@@ -14,6 +14,7 @@
 
 import type { CharacterData } from '$lib/types/character';
 import type {
+	AbsorbSpec,
 	Ability,
 	FrameMap,
 	AbilityVariant,
@@ -219,7 +220,15 @@ const STATS = new Set([
 
 const SCALING_STATS = new Set(['atk', 'baseAtk', 'em', 'hp', 'def', 'healingBonus']);
 
-const TARGETS = new Set(['self', 'team', 'teamExcludingSelf', 'active', 'next', 'enemy']);
+const TARGETS = new Set([
+	'self',
+	'team',
+	'teamExcludingSelf',
+	'active',
+	'next',
+	'enemy',
+	'reactor'
+]);
 
 const STATES = new Set([
 	'afterNormalAttack',
@@ -518,6 +527,182 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		);
 	if (!hasSkillOrBurst)
 		push('warn', 'missing-cast-ability', 'character has no skill or burst ability');
+
+	// (D.50) A CHANNELLED Charged Attack and the droplets it absorbs
+	// (`ChargeChannel`, Neuvillette's Equitable Judgment, 2026-10-17): every
+	// number a non-negative integer of FRAMES, the charge-up shrinking with each
+	// droplet, the hits ascending (the last is the beam's end), and droplets only
+	// on a kit whose channel can absorb them — nothing else reads them.
+	{
+		const isFrames = (n: unknown, min = 0) =>
+			typeof n === 'number' && Number.isInteger(n) && n >= min;
+		let hasChannel = false;
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'normal' || a.chargeChannel === undefined) continue;
+			hasChannel = true;
+			const ch = a.chargeChannel;
+			const bad = (msg: string) => push('strict', 'charge-channel-shape', msg, a.id);
+			if (!isFrames(ch.windup) || !isFrames(ch.absorbAt) || !isFrames(ch.dropletLife, 1))
+				bad('chargeChannel windup / absorbAt / dropletLife must be integers of FRAMES');
+			if (
+				ch.chargeUp?.length !== 4 ||
+				!ch.chargeUp.every((n, i) => isFrames(n) && (i === 0 || n <= ch.chargeUp[i - 1]))
+			)
+				bad(
+					'chargeChannel chargeUp must be four FRAMES values, one per droplet count 0–3, never growing'
+				);
+			if (
+				!ch.hits?.length ||
+				!ch.hits.every((n, i) => isFrames(n, 1) && (i === 0 || n > ch.hits[i - 1]))
+			)
+				bad('chargeChannel hits must be ascending positive FRAMES (the last is the beam end)');
+			if (!Object.values(ch.endLag ?? {}).every((n) => isFrames(n)))
+				bad('chargeChannel endLag values must be integers of FRAMES');
+		}
+		for (const a of c.abilities) {
+			if ((a.abilityType !== 'skill' && a.abilityType !== 'burst') || !a.spawnsDroplets) continue;
+			if (!hasChannel)
+				push(
+					'strict',
+					'droplets-unread',
+					`${a.id} drops droplets, but no Charged Attack channels to absorb them`,
+					a.id
+				);
+			if (!a.spawnsDroplets.every((d) => isFrames(d.at) && isFrames(d.count, 1)))
+				push(
+					'strict',
+					'droplets-shape',
+					`${a.id} spawnsDroplets entries need integer FRAMES \`at\` and a positive \`count\``,
+					a.id
+				);
+		}
+	}
+
+	// (D.51) A TIMED BLESSING and what feeds it (Varesa's Fiery Passion,
+	// 2026-10-17): points only on a kit with the Blessing (nothing else reads
+	// them), a plunge either adds or spends, and a shared charge pool names a
+	// real sibling skill that keeps its own.
+	{
+		const tb = c.timedBlessing;
+		const bad = (msg: string, id?: string) => push('strict', 'timed-blessing-shape', msg, id);
+		if (tb && (!(tb.max > 0) || !(tb.duration > 0)))
+			bad('timedBlessing max and duration (seconds) must be positive');
+		for (const a of c.abilities) {
+			const pts =
+				a.abilityType === 'skill' || a.abilityType === 'burst'
+					? [a.blessingPoints, ...(a.variants ?? []).map((v) => v.blessingPoints)]
+					: [];
+			const pl = a.abilityType === 'normal' ? a.plungeBlessing : undefined;
+			if (!tb && (pts.some((x) => x !== undefined) || pl))
+				bad(`${a.id} feeds a timed Blessing the character does not have`, a.id);
+			if (pl && (pl.spendsAll === true) === (pl.points !== undefined))
+				bad(
+					`${a.id} plungeBlessing must either add points or spend all, not both or neither`,
+					a.id
+				);
+			if (a.abilityType === 'skill' && a.sharesChargesWith !== undefined) {
+				const sib = c.abilities.find((x) => x.id === a.sharesChargesWith);
+				if (
+					!sib ||
+					sib.abilityType !== 'skill' ||
+					sib.id === a.id ||
+					sib.sharesChargesWith !== undefined
+				)
+					bad(`${a.id} sharesChargesWith must name another skill that keeps its own pool`, a.id);
+				else if ((sib.charges ?? 1) !== (a.charges ?? 1) || sib.cooldown !== a.cooldown)
+					bad(`${a.id} shares ${sib.id}'s charges but states different charges or cooldown`, a.id);
+			}
+		}
+	}
+
+	// (D.55) A HELD CAST (Sayu, 2026-10-17): the hold is a SKILL VARIANT's, in
+	// integer FRAMES; an entry marked `held` stands only on a form that holds,
+	// and a `'during'` entry cannot land before the held phase begins.
+	{
+		const bad = (msg: string, id?: string) => push('strict', 'held-cast', msg, id);
+		const whole = (n: unknown, min: number) =>
+			typeof n === 'number' && Number.isInteger(n) && n >= min;
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+			if ((a as { held?: unknown }).held !== undefined)
+				bad(`${a.id}: \`held\` belongs on a variant, never the cast itself`, a.id);
+			if ((a.application ?? []).some((e) => e.held !== undefined))
+				bad(`${a.id}: a \`held\` application entry needs a variant with \`held\``, a.id);
+			for (const v of a.variants ?? []) {
+				const where = `${a.id} variant "${v.label}"`;
+				const h = v.held;
+				if (h) {
+					if (a.abilityType !== 'skill') bad(`${where}: only a skill holds`, a.id);
+					if (!whole(h.max, 1) || !whole(h.from, 0))
+						bad(`${where}: held.max/from must be integer FRAMES`, a.id);
+					if (h.cooldownPerSecond !== undefined && !(h.cooldownPerSecond > 0))
+						bad(`${where}: held.cooldownPerSecond must be positive`, a.id);
+				}
+				for (const e of v.application ?? []) {
+					if (e.held === undefined) continue;
+					if (!h) bad(`${where}: a \`held\` application entry needs \`held\``, a.id);
+					else if (e.held === 'during' && e.frame < h.from)
+						bad(`${where}: a 'during' entry at ${e.frame} lands before held.from`, a.id);
+				}
+			}
+		}
+	}
+
+	// (D.54) ELEMENTAL ABSORPTION (absorption round, 2026-10-17): a lock is a
+	// priority over the four absorbable elements in integer FRAMES; an absorbed
+	// tick or entry names no element of its own and needs a lock on its host.
+	{
+		const ABSORBABLE = new Set(['pyro', 'hydro', 'electro', 'cryo']);
+		const bad = (msg: string, id?: string) => push('strict', 'absorb-shape', msg, id);
+		const frames = (n: unknown, min: number) =>
+			typeof n === 'number' && Number.isInteger(n) && n >= min;
+		const checkSpec = (spec: AbsorbSpec | undefined, where: string, id: string) => {
+			if (!spec) return;
+			if (!spec.order?.length || !spec.order.every((e) => ABSORBABLE.has(e)))
+				bad(`${where}: absorbs.order must list pyro/hydro/electro/cryo`, id);
+			if (!frames(spec.from, 0)) bad(`${where}: absorbs.from must be integer FRAMES`, id);
+			if (spec.every !== undefined && !frames(spec.every, 1))
+				bad(`${where}: absorbs.every must be positive integer FRAMES`, id);
+			if (spec.polls !== undefined && (!frames(spec.polls, 1) || spec.every === undefined))
+				bad(`${where}: absorbs.polls needs \`every\` and a positive count`, id);
+		};
+		const isAbsorbedRef = (el: unknown) =>
+			typeof el === 'object' && el !== null && (el as { type?: string }).type === 'absorbed';
+		for (const a of c.abilities) {
+			if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+			const forms: { absorbs?: AbsorbSpec; application?: ElementalApplication[]; label: string }[] =
+				[
+					{ absorbs: a.absorbs, application: a.application, label: a.id },
+					...(a.variants ?? []).map((v) => ({
+						absorbs: v.absorbs ?? a.absorbs,
+						application: v.application ?? a.application,
+						label: `${a.id} variant "${v.label}"`
+					}))
+				];
+			for (const f of forms) {
+				checkSpec(f.absorbs, f.label, a.id);
+				if ((f.application ?? []).some((e) => isAbsorbedRef(e.element)) && !f.absorbs)
+					bad(`${f.label}: an absorbed application entry needs an \`absorbs\` lock`, a.id);
+			}
+			for (const sm of a.summons ?? []) {
+				checkSpec(sm.absorbs, `${a.id} summon "${sm.label}"`, a.id);
+				for (const e of sm.effects ?? []) {
+					if (e.trigger.type !== 'summonTick') continue;
+					const t = e.trigger;
+					if (t.units !== undefined && !(t.units > 0))
+						bad(`summon "${sm.label}": units must be positive`, a.id);
+					if (t.absorbed === undefined) continue;
+					if (!sm.absorbs)
+						bad(`summon "${sm.label}": an absorbed series needs the summon's \`absorbs\``, a.id);
+					if (e.type !== 'damage' || e.element !== undefined)
+						bad(
+							`summon "${sm.label}": an absorbed series is a damage tick that names no element`,
+							a.id
+						);
+				}
+			}
+		}
+	}
 
 	// (D.27i) `summonTick.icdCounter` — two SERIES on one named counter
 	// (Alyosha's Field + Tugarin, 2026-10-16). One clock runs one window, so the
@@ -1453,6 +1638,15 @@ function lintAbility(
 				a.id
 			);
 		}
+		// (E.32) …and so is a sequenced summon's strike.
+		if (eff.trigger.type === 'summonStrike') {
+			push(
+				'strict',
+				'summon-strike-misplaced',
+				`summonStrike trigger only valid inside summons[].effects[]; found on ability/passive/constellation effect`,
+				a.id
+			);
+		}
 	}
 
 	// Variant effects + per-variant damageTag override
@@ -1861,7 +2055,10 @@ function lintNormal(
  */
 function elementRefIssue(ref: ElementRef, allowed: ReadonlySet<string>): string | null {
 	if (typeof ref === 'string') return allowed.has(ref) ? null : `"${ref}" is not a valid Element`;
-	if (ref.type !== 'teamElementPriority') return `unknown ElementRef type "${String(ref.type)}"`;
+	// An absorbed element is sound in shape; D.54 says where it may stand.
+	if (ref.type === 'absorbed') return null;
+	if (ref.type !== 'teamElementPriority')
+		return `unknown ElementRef type "${String((ref as { type: unknown }).type)}"`;
 	if (!Array.isArray(ref.order) || ref.order.length === 0)
 		return 'teamElementPriority needs a non-empty `order`';
 	for (const e of ref.order)
@@ -2100,8 +2297,10 @@ function lintCastAbility(
 			}
 			// ⚠️ SORTED, and it matters: the sim schedules these in order and the report
 			// reads them as a timeline. An out-of-order entry is an authoring slip that
-			// nothing downstream would notice.
-			if (e.frame < last) {
+			// nothing downstream would notice. ⚠️ A held cast's `'after'` entry is
+			// written for a zero-length hold and lands after every `'during'` one, so
+			// it stands at the END of the list and outside this check (D.55).
+			if (e.held !== 'after' && e.frame < last) {
 				push(
 					'strict',
 					'application-invalid',
@@ -2109,7 +2308,7 @@ function lintCastAbility(
 					a.id
 				);
 			}
-			last = e.frame;
+			if (e.held !== 'after') last = e.frame;
 			const elIssue =
 				e.element === undefined ? null : elementRefIssue(e.element, CHARACTER_ELEMENTS);
 			if (elIssue) {
@@ -2476,6 +2675,50 @@ function lintIcdGate(
 	}
 }
 
+/** (E.32) A sequenced summon (Lumi round, 2026-10-17): its `summonStrike`
+ *  steps and its `strikeSequence` come together, every gap is a positive
+ *  integer of FRAMES, and the fallback names a step that exists. A step is a
+ *  `damage` effect with no `conditions` — the sequence has no reader for a
+ *  gate, so one would be silently ignored. */
+function lintStrikeSequence(
+	s: Summon,
+	abilityId: string,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	const steps = (s.effects ?? []).filter((e) => e.trigger.type === 'summonStrike');
+	const seq = s.strikeSequence;
+	if (steps.length === 0 && seq === undefined) return;
+	const bad = (msg: string) =>
+		push('strict', 'strike-sequence-shape', `summon "${s.label}" ${msg}`, abilityId);
+	const frames = (n: unknown) => typeof n === 'number' && Number.isInteger(n) && n > 0;
+	if (seq === undefined) return bad('has summonStrike steps but no strikeSequence');
+	if (steps.length === 0) return bad('has a strikeSequence but no summonStrike steps');
+	if (!frames(seq.firstStrikeAt) || !frames(seq.fallbackGap))
+		bad('strikeSequence firstStrikeAt / fallbackGap must be positive integers of FRAMES');
+	if (
+		!Number.isInteger(seq.fallbackStep) ||
+		seq.fallbackStep < 0 ||
+		seq.fallbackStep >= steps.length
+	)
+		bad(`strikeSequence fallbackStep ${seq.fallbackStep} names no step (${steps.length} steps)`);
+	else if (
+		steps[seq.fallbackStep].trigger.type === 'summonStrike' &&
+		(steps[seq.fallbackStep].trigger as { onlyWithMoondrift?: true }).onlyWithMoondrift
+	)
+		bad('strikeSequence fallbackStep is itself a gated step — a refusal would repeat forever');
+	steps.forEach((e, i) => {
+		if (e.trigger.type !== 'summonStrike') return;
+		if (e.type !== 'damage') bad(`step ${i} must be a damage effect (got ${e.type})`);
+		if (e.conditions !== undefined) bad(`step ${i} carries conditions, which no strike reads`);
+		if (!frames(e.trigger.framesToNext))
+			bad(
+				`step ${i} framesToNext must be a positive integer of FRAMES (got ${e.trigger.framesToNext})`
+			);
+		if (e.trigger.onlyWithMoondrift !== undefined && e.trigger.onlyWithMoondrift !== true)
+			bad(`step ${i} onlyWithMoondrift must be true`);
+	});
+}
+
 /** Lint summon effects (P3 — Summon.effects[]). Walks each summon owned by a
  *  cast ability and validates its effects with the same rules as ability
  *  effects, plus summonTick-specific checks. */
@@ -2503,6 +2746,7 @@ function lintSummonEffects(
 					a.id
 				);
 		}
+		lintStrikeSequence(s, a.id, push);
 		for (const eff of s.effects ?? []) {
 			const location = `${a.id} summon "${s.label}"`;
 			lintEffect(c, location, eff, push, { isPassiveOrConstellation: false, isSummon: true });
@@ -2814,6 +3058,29 @@ function lintEffect(
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void,
 	ctx: { isPassiveOrConstellation: boolean; isSummon?: boolean; isFactionBonus?: boolean }
 ): void {
+	// (D.52) The reactor and the others (Prune round, 2026-10-17): a `'reactor'`
+	// target names who triggered a REACTION, so only an `onReaction` buff has
+	// one; `source: 'others'` is read by the buff passes alone.
+	{
+		const targets = Array.isArray(eff.target) ? eff.target : [eff.target];
+		if (targets.includes('reactor') && (eff.type !== 'buff' || eff.trigger.type !== 'onReaction'))
+			push(
+				'strict',
+				'reactor-target-invalid',
+				`${location}: target 'reactor' is only read on an onReaction buff`
+			);
+		if (
+			eff.trigger.type === 'onReaction' &&
+			eff.trigger.source === 'others' &&
+			eff.type !== 'buff' &&
+			eff.type !== 'resShred'
+		)
+			push(
+				'strict',
+				'reaction-others-unread',
+				`${location}: onReaction source 'others' is only read on buffs and RES shreds`
+			);
+	}
 	// (B.8) effects on passive/constellation with onCast/afterDuration must set trigger.ability
 	// (B.20) `whileStacks` — a buff that IS its count (stepped stacks round,
 	// 2026-09-27). Only a rotation-scoped key has a time-ordered history, and a
@@ -3185,11 +3452,17 @@ function lintEffect(
 			}
 		}
 		const src = eff.trigger.source;
-		if (src !== undefined && src !== 'self' && src !== 'team' && src !== 'active') {
+		if (
+			src !== undefined &&
+			src !== 'self' &&
+			src !== 'team' &&
+			src !== 'active' &&
+			src !== 'others'
+		) {
 			push(
 				'strict',
 				'invalid-reaction-source',
-				`onReaction trigger source must be 'self', 'team' or 'active' (got ${JSON.stringify(src)})`,
+				`onReaction trigger source must be 'self', 'team', 'active' or 'others' (got ${JSON.stringify(src)})`,
 				location
 			);
 		}
@@ -3379,7 +3652,11 @@ function lintEffect(
 				`a damage effect on an onStack trigger applies nothing (the fire is a mark, not an application) — author application: [] or drop it`,
 				location
 			);
-		} else if (!emptyOnStack && !(PROC_TRIGGERS as readonly string[]).includes(eff.trigger.type)) {
+		} else if (
+			!emptyOnStack &&
+			eff.trigger.type !== 'summonStrike' &&
+			!(PROC_TRIGGERS as readonly string[]).includes(eff.trigger.type)
+		) {
 			push(
 				'strict',
 				'effect-application-unread',
@@ -3550,6 +3827,23 @@ function lintEffect(
 			push('strict', 'invalid-stat', `unknown buff stat "${eff.stat}"`, location);
 		}
 	} else if (eff.type === 'damage' || eff.type === 'heal' || eff.type === 'shield') {
+		// (D.53) An applies-only tick (`summonTick.appliesOnly`, Nilou's aura) is a
+		// damage effect with no damage: it must name the element it applies and
+		// state the known zero.
+		if (eff.trigger.type === 'summonTick' && eff.trigger.appliesOnly !== undefined) {
+			if (
+				eff.type !== 'damage' ||
+				eff.trigger.appliesOnly !== true ||
+				!eff.element ||
+				eff.scaling !== 0
+			)
+				push(
+					'strict',
+					'applies-only-shape',
+					`appliesOnly must be true, on a damage tick with an element and scaling 0`,
+					location
+				);
+		}
 		if (!SCALING_STATS.has(eff.stat)) {
 			push(
 				'strict',

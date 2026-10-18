@@ -43,11 +43,10 @@ Informational: facet works, but no target/scaling data for the detail card.
 
 - **clorinde** — clorinde__skill__hunters_vigil tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 
-## Effect without tag (2)
+## Effect without tag (1)
 
 Add the tag for consistency.
 
-- **charlotte** — charlotte__skill__framing_freezing_point_composition has a heal effect but lacks the 'heal' tag
 - **gorou** — gorou__burst__juuga_forward_unto_victory has a heal effect but lacks the 'heal' tag
 
 ## Capabilities hiding in _todo stubs (0)
@@ -63,11 +62,10 @@ Verify these kits genuinely offer nothing team-facing.
 - **chasca** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (5)
+## Uncurated stubs (4)
 
 Excluded from capability trust; shown honestly in the UI.
 
-- **alyosha** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **vesna** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"

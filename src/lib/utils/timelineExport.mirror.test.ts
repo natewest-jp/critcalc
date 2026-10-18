@@ -135,12 +135,8 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		expect(PALETTE_MIRROR.TEXT).toBe(resolve(ctxToken('.ctx-dark', '--text'), '.ctx-dark'));
 		expect(PALETTE_MIRROR.MUTED).toBe(resolve(ctxToken('.ctx-dark', '--muted'), '.ctx-dark'));
 		expect(PALETTE_MIRROR.INK).toBe(resolve(cssToken('--bright-ink')));
-		// ↻ 2026-08-05: the bench card renders in the ribbon's DARK context (the
-		// `ctx-light` class it used to carry painted no ground of its own — see
-		// SlotPortrait), so the avatar disc mirrors that block's surface.
-		// ↻ 2026-08-11: and that surface is the WELL rung now — --sp-avatar-fill
-		// is one ground with the element travelling down it, and this is its top.
-		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(resolve(ctxToken('.ctx-dark', '--surface-well')));
+		// ↻ 2026-10-16: PORTRAIT_BG retired with the export's label column; the
+		// bench it became resolves its roles off the page (exportBench.ts).
 		// The aura lane's four non-elemental mods (gauge round L6). The five
 		// elemental ones need no entry — they go through `elementPalette`, which
 		// this file already guards below.
@@ -175,24 +171,15 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 	});
 
 	// ↻ 2026-08-11: the bar fill became a MATERIAL (--glass-bar), and one for
-	// buffs, debuffs and procs alike. A PNG has no scene to lay glass on, so the
-	// export paints the material COMPOSITED against the only ground it has.
-	//
-	// This is a stronger check than the literal comparison it replaces: it does
-	// the compositing arithmetic here, so the export cannot drift if EITHER the
-	// glass alpha, the glass rung, or the chart ground moves. Two of those three
-	// have moved unannounced before — see the GRID/LANE_LINE notes.
-	it('the bar material composites to the export literal (--glass-bar over the chart ground)', () => {
+	// buffs, debuffs and procs alike. ↻ 2026-10-17: the export stands on the
+	// scene now, so it paints the material ITSELF — rgb and alpha — over its
+	// backdrop, as the screen does (it composited against CHART_BG before, and
+	// came out lighter). Both halves are checked: the rung and the alpha.
+	it('the bar material is --glass-bar itself (rgb and alpha)', () => {
 		const m = /rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\/\s*([\d.]+)\s*\)/.exec(cssToken('--glass-bar'));
 		expect(m, '--glass-bar must stay an rgb() literal — see the nesting law').not.toBeNull();
-		const [r, g, b] = [+m![1], +m![2], +m![3]];
-		const a = +m![4];
-		const ground = hexToRgb(resolve(cssToken('--rp-chart-bg', timelineSvelte)));
-		const over = (c: number, i: number) =>
-			Math.round(c * a + ground[i] * (1 - a))
-				.toString(16)
-				.padStart(2, '0');
-		expect(PALETTE_MIRROR.BAR_FILL).toBe(`#${over(r, 0)}${over(g, 1)}${over(b, 2)}`);
+		expect([...PALETTE_MIRROR.GLASS_BAR_RGB]).toEqual([+m![1], +m![2], +m![3]]);
+		expect(PALETTE_MIRROR.GLASS_BAR_ALPHA).toBe(+m![4]);
 	});
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {
@@ -214,6 +201,14 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		);
 		expect(rpGrid).not.toBeNull();
 		expect(PALETTE_MIRROR.GRID).toBe(mix(border, chartBg, +rpGrid![1]));
+	});
+
+	it('CHART_DIM is --chart-dim resolved at :root (lane names, aura markers)', () => {
+		const m = /var\(--muted\) (\d+)%, var\(--frame-bg\)/.exec(cssToken('--chart-dim'));
+		expect(m).not.toBeNull();
+		expect(PALETTE_MIRROR.CHART_DIM).toBe(
+			mix(resolve(cssToken('--muted')), resolve(cssToken('--frame-bg')), +m![1])
+		);
 	});
 
 	it('ACTIVE matches the planner-local --rp-active', () => {

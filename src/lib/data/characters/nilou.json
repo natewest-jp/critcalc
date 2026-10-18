@@ -378,6 +378,36 @@
 								"level": 1
 							}
 						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"element": "hydro",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.5,
+								"firstTickDelay": 0.017,
+								"icdGate": {
+									"timer": 114
+								},
+								"tickCap": 25,
+								"tickCapScaling": {
+									"conditions": {
+										"type": "constellation",
+										"level": 1
+									},
+									"ticks": 37
+								},
+								"appliesOnly": true
+							},
+							"scaling": 0,
+							"stat": "hp",
+							"_curatorNotes": [
+								"Tranquility Aura's Hydro, authored 2026-10-17 (small-fix batch; docs/summon-tick-gaps-round.md §3 E1b). gcsim skill.go TranquilityAura: an attack every 30f from the aura's start (AddStatus then the first call at once, landing 1f later), AttackTagNone, Durability 25, NO Mult, ICDGroupNilou = a 114f window, first hit only → one application every 120f. Nate's live combat logs (2026-10-14, C1, a Dendro aura): one Hydro application every 2.0s (119.6f mean), the first on the Water Wheel's own hit, TEN applications spanning 17.94s, and NO damage line — so `appliesOnly` (offered to the gauge, never a hit) and `scaling: 0` is a known zero, not a placeholder.",
+								"⚠️ tickCap 25 / 37 (C1): the live game's tenth application lands at the 18s boundary, which gcsim's own chain does NOT reach (its status check at 1080f fails: nine applications). The Kaeya boundary-tick shape — a cap widens the walk by one interval. The C0 count (seven, the 12s boundary included) is the same rule, unmeasured."
+							]
+						}
 					]
 				}
 			],

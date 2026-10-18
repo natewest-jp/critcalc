@@ -1,6 +1,6 @@
 # Summon tick gaps — Linnea, Faruzan, and the rest of the class
 
-**Status: IN PROGRESS (2026-09-20). ⚓ Nate's calls are in §6; Faruzan F1 is built (§2), the rest is not.**
+**Status: IN PROGRESS. ⚓ Nate's calls are in §6; Faruzan F1 is built (§7), and so are Lumi (§9) and Nilou's aura (§10), 2026-10-17.**
 
 The question: now that hits and auras are simulated, a summon with no tick series
 contributes nothing to the gauge, the hit stream or the reaction markers — it is a
@@ -488,3 +488,75 @@ sites anchor `onHit skill|burst` on the CAST EVENT, and a cast with no landing
 frame keeps the synchronous path. ⚠️ It touches the same ground as
 `docs/multi-hit-swings-round.md` (every hit a swing lands) — a cast's 2nd..Nth
 landings are that round's cast-side twin. ⛔ One at a time.
+
+## 9. ✅ Built: Lumi strikes (2026-10-17, `feat/lumi-strikes`)
+
+**The shape** — a SEQUENCED summon, decided live and published (⚓ §6.6):
+
+- `Trigger` member **`summonStrike`** `{ framesToNext, onlyWithMoondrift? }` — one
+  per step, in authored order, on `damage` effects whose `application[]` IS read
+  (each entry a landing; `[]` hits and applies nothing). `summonTickSeries`
+  refuses it by type, so the fixed-cadence walk and its hit synthesis never see it.
+- **`Summon.strikeSequence`** `{ firstStrikeAt, fallbackStep, fallbackGap }`, all
+  FRAMES. Lint E.32 holds the pair together.
+- `aura.ts` `scheduleStrikeSequence`: the entry is decided AT THE SPAWN (step 0,
+  refused → the fallback); each strike lands, then picks the next step. One
+  standard-ICD counter per summon LABEL over every landing. Marks go to
+  `ctx.stateGatedTicks` (→ `TimelineWindow.ticks`), landings to
+  `ctx.strikeLandings` (→ finalize's hit records, stacks via `ctx.tickStacks`).
+- `gadgets.ts` `moondriftStandsAt` — the Moondrift rule `deriveMoondrifts`
+  draws, read mid-parse over `ctx.lunarCrystallizeTimes` (appended by
+  `emitReaction` beside `stellarConductTimes`). One function, two readers.
+
+**Lumi's data** (the §1.5 log column): Heavy (`onlyWithMoondrift`, `[]`, 180% DEF)
+→62f→ Pound →141f→ Pound →108f→ Heavy; fallback = the pre-Heavy Pound on 144f;
+Pounds are two Geo hits 21f apart, 172.8% DEF each. E: spawn 36 + first strike 73
+(log 105–113f). Q: Lumi is `summons[1]` (Memo Heal Aura stays `[0]`), spawn 0 +
+214, same label, both `terminatesOn: 'recast'` — so a Q restarts her.
+
+**⚓ Found on the way — the next step is picked AFTER THE STRIKE'S LAST LANDING**,
+its gap still counted from the strike. Deciding at the first hit reproduced the E
+log until 17.353s, where the log has a Heavy and the model fell back: the drifts
+Harmony refreshed at 7.363 had lapsed at 16.363, and the only Moondrifts standing
+were the ones the Pound's SECOND hit dropped at 17.684. Fits every other row.
+
+**Measured** (`summonTicks.test.ts`, a fitted clock offset ≤ 0.15s, every instant
+≤ 0.1s): the E log's 15 strikes and 8 applications, the no-aura log's 10 strikes
+and 7 applications (pairs 3/6/9 apply nothing), the Q log's first 10 strikes and
+6 applications — all reproduced. Acceptance test (§1.4): 4 Heavies in 18s with a
+Moondrift at the deploy, 3 Geo-first. Mutation-checked: deciding at the first
+hit fails the E log.
+
+**Also:** a summon superseded BEFORE it spawned is dropped (finalize) — `Linnea
+E Q` left an E-Lumi window ending before it began. The Team Builder now derives
+Linnea's off-field damage (fixture updated). The coverage page reads her E as lit.
+
+**Open:**
+
+1. ⏭ **E then Q at once** (`Linnea E Q`, the Navia sample): the model lets the Q's
+   Lumi win (first strike Q + 3.57s). gcsim lets the E's spawn task win (E +
+   36 + 122). ⚓ Nate, in game: E then Q immediately, and time the first Lumi strike
+   — ~3.9s after the E means the Q restarted her, ~1.8s means the E's deploy stood.
+2. The no-aura log has an 11th Pound at 25.829s, past the 25.6s Lumi drawn here
+   (spawn 36 + 25s) — Lumi may live a few frames longer, or the log's clock
+   starts before the press. Not authored; one strike at the very end.
+3. Continuous Tapping (Ultimate Power's Million Ton Crush, then Standard Power at
+   322f) — no notation token; the skill's caveat names it.
+4. The Heavy wears the ordinary strike mark until the direct-reaction-damage
+   round (§6.8).
+5. C1/C2/C4's Moondrift Harmony triggers and C2's Heavy-triggered Harmony stay
+   unauthored — Lumi's Lunar-Crystallizes now exist for them to hear.
+
+## 10. ✅ Built: Nilou's Tranquility Aura (2026-10-17, small-fix batch)
+
+E1b as `summonTick.appliesOnly` (⚠️ not `nonHitting` — that key is taken, and the
+orphaned-schema guard matches by name): a `damage` tick with `scaling: 0` that
+the live chain OFFERS to the gauge and nothing else reads — no hit record, no
+`onHit` stream, no stack dispatch, no marker, no Team Builder off-field-damage
+claim, exempt from the outlier audit's zero-scaling row. Lint D.53.
+
+Data: a 0.5s series from the aura's spawn + 1f, `icdGate {timer: 114}` (gcsim
+`ICDGroupNilou`, first hit only) → one application every 120f; `tickCap` 25 /
+37 at C1. ⚠️ The cap is the LIVE game's: Nate's log has ten applications over
+18s at C1, the last at the boundary, where gcsim's chain stops at nine. C0's
+seven is the same rule, unmeasured. Test: `summonTicks.test.ts`.

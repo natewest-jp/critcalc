@@ -625,7 +625,8 @@ export function summaryInTeam(
 function normalizeTarget(t: EffectTarget | EffectTarget[]): NormalizedTarget {
 	const arr = Array.isArray(t) ? t : [t];
 	if (arr.includes('team') || arr.includes('teamExcludingSelf')) return 'team';
-	if (arr.includes('active') || arr.includes('next')) return 'active';
+	// A reaction's TRIGGERER is, in practice, the character on field.
+	if (arr.includes('active') || arr.includes('next') || arr.includes('reactor')) return 'active';
 	if (arr.includes('self')) return 'self';
 	return 'enemy';
 }
@@ -800,7 +801,9 @@ function coordinatedWindow(host: {
 	activeDuration?: number;
 }): { duration: number; summonLabel?: string } | undefined {
 	for (const summon of host.summons ?? []) {
-		const deals = (summon.effects ?? []).some((e) => e.type === 'damage');
+		const deals = (summon.effects ?? []).some(
+			(e) => e.type === 'damage' && !(e.trigger?.type === 'summonTick' && e.trigger.appliesOnly)
+		);
 		if (deals && typeof summon.duration === 'number' && summon.duration > 0) {
 			return { duration: summon.duration, summonLabel: summon.label };
 		}
@@ -880,8 +883,14 @@ function pushSummonCapabilities(
 	out: DerivedCapability[]
 ): void {
 	for (const summon of summons ?? []) {
+		// ⚓ A sequenced summon's strikes (`summonStrike`, Lumi) are off-field
+		// damage too — with no fixed rhythm to report, so `summonHost` gives the
+		// label alone.
 		const tickingDamage = (summon.effects ?? []).find(
-			(e) => e.type === 'damage' && e.trigger?.type === 'summonTick'
+			(e) =>
+				e.type === 'damage' &&
+				((e.trigger?.type === 'summonTick' && !e.trigger.appliesOnly) ||
+					e.trigger?.type === 'summonStrike')
 		);
 		const summonDuration =
 			typeof summon.duration === 'number' && summon.duration > 0 ? summon.duration : undefined;
