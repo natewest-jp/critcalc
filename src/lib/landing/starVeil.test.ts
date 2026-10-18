@@ -14,7 +14,8 @@ import {
 	STAR_VEIL_MAX_BOXES,
 	STAR_VEIL_SIDES_BELOW,
 	smootherstep,
-	starVeil
+	starVeil,
+	veilKnobs
 } from './starVeil';
 import { STAR_VERTEX_SRC } from './starPass';
 import { BP } from '$lib/breakpoints';
@@ -94,17 +95,28 @@ describe('starVeil (the TS reader)', () => {
 });
 
 describe('the GLSL reader is fed the same formula', () => {
-	const glslConst = (name: string) => {
-		const m = new RegExp(`const float ${name} = ([0-9.eE+-]+);`).exec(STAR_VEIL_GLSL);
-		if (!m) throw new Error(`${name} not declared in STAR_VEIL_GLSL`);
-		return Number(m[1]);
-	};
+	it('reads every knob from ONE uniform that the TS reader shares', () => {
+		expect(STAR_VEIL_GLSL).toContain('uniform vec4 u_veilK;');
+		expect(STAR_VEIL_GLSL).toContain('#define STAR_VEIL_FLOOR u_veilK.x');
+		expect(STAR_VEIL_GLSL).toContain('#define STAR_VEIL_CEILING u_veilK.y');
+		expect(STAR_VEIL_GLSL).toContain('#define STAR_VEIL_FEATHER u_veilK.z');
+		expect(STAR_VEIL_GLSL).toContain('#define STAR_VEIL_INSET u_veilK.w');
+		expect(veilKnobs).toEqual({
+			floor: STAR_VEIL_FLOOR,
+			ceiling: STAR_VEIL_CEILING,
+			feather: STAR_VEIL_FEATHER,
+			inset: STAR_VEIL_INSET
+		});
+	});
 
-	it('declares every knob with the TS value', () => {
-		expect(glslConst('STAR_VEIL_FLOOR')).toBe(STAR_VEIL_FLOOR);
-		expect(glslConst('STAR_VEIL_CEILING')).toBe(STAR_VEIL_CEILING);
-		expect(glslConst('STAR_VEIL_FEATHER')).toBe(STAR_VEIL_FEATHER);
-		expect(glslConst('STAR_VEIL_INSET')).toBe(STAR_VEIL_INSET);
+	it('follows a live knob change in the TS reader (the console hook)', () => {
+		const was = { ...veilKnobs };
+		try {
+			veilKnobs.floor = 0.5;
+			expect(veil(midX, midY)).toBeCloseTo(0.5, 12);
+		} finally {
+			Object.assign(veilKnobs, was);
+		}
 	});
 
 	it('uses the same smootherstep and the same ramp', () => {

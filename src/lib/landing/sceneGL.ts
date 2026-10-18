@@ -52,6 +52,7 @@ import {
 	type StarVeilSet
 } from '$lib/landing/starPass';
 import { SCENE_DIM, SCENE_DIM_DITHER, SCENE_DIM_TINT_RGB } from '$lib/landing/sceneDim';
+import { veilKnobs } from '$lib/landing/starVeil';
 
 // --- Geometry constants -----------------------------------------------------
 // Mirror the --*-src vars on .scene-stack in (scene)/+layout.svelte AND the
@@ -996,7 +997,15 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		// phase is a pure function of it, so "the field is frozen on one frame"
 		// is exactly "this value does not move" — what probe-star-freeze
 		// asserts across a whole tool→tool leg.
-		starTime: () => starDrawnAtMs
+		starTime: () => starDrawnAtMs,
+		// Tuning surface (⚓ Nate, 2026-10-18): set any star-veil knob and redraw,
+		// e.g. __scene.veil({ floor: 0.35, inset: 100 }); no argument prints the
+		// current set. Live only — a picked value lands in starVeil.ts.
+		veil: (k?: Partial<typeof veilKnobs>) => {
+			if (k) Object.assign(veilKnobs, k);
+			requestDraw();
+			return { ...veilKnobs };
+		}
 	};
 	return handle;
 }

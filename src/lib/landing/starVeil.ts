@@ -48,8 +48,9 @@ export type VeilBox = { x: number; y: number; w: number; h: number };
 /** 🎛️ Star strength INSIDE the content — Nate's to tune. ⚠ The dim SQUARES
  *  the scene (sceneDim.ts), so what you SEE goes as the strength squared:
  *  0.12 showed a star at ~1.4% and read as none at all; 0.3 is ~9%. ↻ 0.12 →
- *  0.3 (⚓ Nate, 2026-10-18: "I can't see any stars with the current floor"). */
-export const STAR_VEIL_FLOOR = 0.3;
+ *  0.3 (⚓ Nate, 2026-10-18: "I can't see any stars with the current floor"),
+ *  ↻ 0.3 → 0.33 the same day ("bump up the floor a tiny bit"). */
+export const STAR_VEIL_FLOOR = 0.33;
 
 /** 🎛️ Star strength beyond the feather — Nate's to tune (start 1.2: "a little
  *  higher than the export's current edge strength"). */
@@ -63,8 +64,9 @@ export const STAR_VEIL_FEATHER = 1;
 
 /** 🎛️ How far INSIDE each box's edge the floor stops and the ramp begins,
  *  CSS px — Nate's to tune (⚓ "the small inset", start 40). It is what gives
- *  the Planner's 24–32px right and bottom margins a slope at all. */
-export const STAR_VEIL_INSET = 40;
+ *  the Planner's 24–32px right and bottom margins a slope at all. ↻ 40 → 80
+ *  (⚓ Nate, 2026-10-18: "lengthen the inset further"). */
+export const STAR_VEIL_INSET = 80;
 
 /**
  * 🎛️ THE PHONE RULE — Nate's to tune. Below this breakpoint (a key of
@@ -78,6 +80,21 @@ export const STAR_VEIL_INSET = 40;
  */
 export const STAR_VEIL_SIDES_BELOW = 'toolMin' as const;
 
+/**
+ * The knobs as READ — by `starVeil()` below and by the shader's `u_veilK`
+ * uniform — seeded from the named constants above, which stay the source of
+ * truth for what ships. ⚓ Mutable so Nate can tune live from the console:
+ * `window.__scene.veil({ floor: 0.35, inset: 100 })` sets any of them and
+ * redraws; `window.__scene.veil()` prints the current set. A value he picks
+ * lands back in the constants above (as `tune(nate)`) — nothing persists it.
+ */
+export const veilKnobs = {
+	floor: STAR_VEIL_FLOOR,
+	ceiling: STAR_VEIL_CEILING,
+	feather: STAR_VEIL_FEATHER,
+	inset: STAR_VEIL_INSET
+};
+
 export type StarVeilOpts = {
 	/** Does horizontal distance count? false = the phone rule (top/bottom only). */
 	sides: boolean;
@@ -89,8 +106,8 @@ export type StarVeilOpts = {
 /** How far out across ONE side's margin a coordinate sits, 0 at the floor's
  *  edge to 1 at the view's edge (scaled by STAR_VEIL_FEATHER). */
 function across(p: number, lo: number, hi: number, extent: number): number {
-	if (p < lo) return (lo - p) / (Math.max(lo, 1) * STAR_VEIL_FEATHER);
-	if (p > hi) return (p - hi) / (Math.max(extent - hi, 1) * STAR_VEIL_FEATHER);
+	if (p < lo) return (lo - p) / (Math.max(lo, 1) * veilKnobs.feather);
+	if (p > hi) return (p - hi) / (Math.max(extent - hi, 1) * veilKnobs.feather);
 	return 0;
 }
 
@@ -118,12 +135,12 @@ export function starVeil(
 	const ax = opts.sides ? 1 : 0;
 	let d = Infinity;
 	for (const b of boxes) {
-		const tx = across(x, b.x + STAR_VEIL_INSET, b.x + b.w - STAR_VEIL_INSET, opts.view.w) * ax;
-		const ty = across(y, b.y + STAR_VEIL_INSET, b.y + b.h - STAR_VEIL_INSET, opts.view.h);
+		const tx = across(x, b.x + veilKnobs.inset, b.x + b.w - veilKnobs.inset, opts.view.w) * ax;
+		const ty = across(y, b.y + veilKnobs.inset, b.y + b.h - veilKnobs.inset, opts.view.h);
 		d = Math.min(d, Math.hypot(tx, ty));
 	}
 	const t = smootherstep(d);
-	return STAR_VEIL_FLOOR + (STAR_VEIL_CEILING - STAR_VEIL_FLOOR) * t;
+	return veilKnobs.floor + (veilKnobs.ceiling - veilKnobs.floor) * t;
 }
 
 /** How many boxes one veil set carries into the shader (a uniform array). The
@@ -143,10 +160,11 @@ export function glslFloat(n: number): string {
  * constants, interpolated from above.
  */
 export const STAR_VEIL_GLSL = `
-const float STAR_VEIL_FLOOR = ${glslFloat(STAR_VEIL_FLOOR)};
-const float STAR_VEIL_CEILING = ${glslFloat(STAR_VEIL_CEILING)};
-const float STAR_VEIL_FEATHER = ${glslFloat(STAR_VEIL_FEATHER)};
-const float STAR_VEIL_INSET = ${glslFloat(STAR_VEIL_INSET)};
+uniform vec4 u_veilK; // veilKnobs: floor, ceiling, feather, inset
+#define STAR_VEIL_FLOOR u_veilK.x
+#define STAR_VEIL_CEILING u_veilK.y
+#define STAR_VEIL_FEATHER u_veilK.z
+#define STAR_VEIL_INSET u_veilK.w
 
 float starVeilSmoother(float t) {
 	float u = clamp(t, 0.0, 1.0);

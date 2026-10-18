@@ -1,5 +1,10 @@
 import { stars, type JitterVariant, type StarAnimation, type StarColor } from '$lib/stars';
-import { STAR_VEIL_GLSL, STAR_VEIL_MAX_BOXES, type VeilBox } from '$lib/landing/starVeil';
+import {
+	STAR_VEIL_GLSL,
+	STAR_VEIL_MAX_BOXES,
+	veilKnobs,
+	type VeilBox
+} from '$lib/landing/starVeil';
 
 /**
  * The twinkle starfield as a STAR PASS inside the scene renderer's canvas
@@ -467,6 +472,7 @@ export function createStarPass(gl: WebGLRenderingContext): StarPass {
 	const uVeilN = u('u_veilN');
 	const uVeilAxes = u('u_veilAxes');
 	const uVeilMix = u('u_veilMix');
+	const uVeilK = u('u_veilK');
 	const veilBuf = new Float32Array(4 * STAR_VEIL_MAX_BOXES);
 	const packVeil = (set: StarVeilSet) => {
 		veilBuf.fill(0);
@@ -502,6 +508,13 @@ export function createStarPass(gl: WebGLRenderingContext): StarPass {
 				gl.uniform2f(uVeilN, nA, nB);
 				gl.uniform4f(uVeilAxes, veil.from.sides ? 1 : 0, 1, veil.to.sides ? 1 : 0, 1);
 				gl.uniform2f(uVeilMix, veil.mix, veil.amount);
+				gl.uniform4f(
+					uVeilK,
+					veilKnobs.floor,
+					veilKnobs.ceiling,
+					veilKnobs.feather,
+					veilKnobs.inset
+				);
 			} else {
 				gl.uniform2f(uVeilMix, 0, 0);
 			}
