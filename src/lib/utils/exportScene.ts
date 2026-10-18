@@ -46,6 +46,20 @@ const PLATE_TIER = 3200;
  *  rule). The veil's own box type. */
 export type KeepOutRect = VeilBox;
 
+/**
+ * ⚓ Nate, 2026-10-18: on the PNG a hero ✦ star is drawn as the LARGEST
+ * ORDINARY halo star — its place in the sky kept, its crossed arms and its
+ * glow dropped. Heroes are ~3× a halo star's size at full brightness, so
+ * their glow covered ~9× the area and stood out on a still image (on screen
+ * the shader draws them as light and they twinkle, which is a different
+ * picture). The cap is read off the field itself, so it follows the data.
+ */
+const HALO_CAP = stars.reduce(
+	(m, s) =>
+		s.halo && !s.hero ? { size: Math.max(m.size, s.size), base: Math.max(m.base, s.base) } : m,
+	{ size: 0, base: 0 }
+);
+
 /** 🎛️ How large a star is drawn, relative to its screen size in CSS px. The
  *  export sits at roughly the scale of the tool on screen, so 1. */
 const STAR_SCALE = 1;
@@ -103,12 +117,13 @@ export async function paintSceneBackdrop(
 		ctx.drawImage(plate, srcX * k, srcY * k, srcW * k, srcH * k, 0, 0, W, H);
 	}
 
-	// The stars at rest, as soft discs; a hero star adds its two crossed arms.
+	// The stars at rest, as soft discs (a hero as the largest halo star — HALO_CAP).
 	ctx.globalCompositeOperation = 'lighter';
 	for (const s of stars) {
 		const x = toX((s.x / 100) * PLATE_W_SRC);
 		const y = toY((s.y / 100) * SKY_H_SRC);
-		const r = Math.max(0.6, (s.size / 2) * STAR_SCALE * dpr);
+		const size = s.hero ? HALO_CAP.size : s.size;
+		const r = Math.max(0.6, (size / 2) * STAR_SCALE * dpr);
 		if (x < -r * 4 || y < -r * 4 || x > W + r * 4 || y > H + r * 4) continue;
 		// The PNG is not a phone screen, so its sides always feather.
 		const keep = starVeil(x / dpr, y / dpr, keepOut, {
@@ -117,7 +132,8 @@ export async function paintSceneBackdrop(
 		});
 		if (keep <= 0) continue;
 		const [cr, cg, cb] = STAR_TINTS[s.color].map((c) => Math.round(c * 255));
-		const a = STAR_STATIC_ALPHA * Math.max(s.base, 0.5) * keep;
+		const base = s.hero ? HALO_CAP.base : s.base;
+		const a = STAR_STATIC_ALPHA * Math.max(base, 0.5) * keep;
 		const glowR = s.halo || s.hero ? r * 3.4 : r * 1.6;
 		const g = ctx.createRadialGradient(x, y, 0, x, y, glowR);
 		g.addColorStop(0, `rgba(${cr},${cg},${cb},${a})`);
@@ -127,17 +143,6 @@ export async function paintSceneBackdrop(
 		ctx.beginPath();
 		ctx.arc(x, y, glowR, 0, Math.PI * 2);
 		ctx.fill();
-		if (s.hero) {
-			const arm = s.size * 0.6 * STAR_SCALE * dpr;
-			ctx.strokeStyle = `rgba(${cr},${cg},${cb},${a * 0.3})`;
-			ctx.lineWidth = Math.max(1, dpr * 0.6);
-			ctx.beginPath();
-			ctx.moveTo(x - arm, y);
-			ctx.lineTo(x + arm, y);
-			ctx.moveTo(x, y - arm);
-			ctx.lineTo(x, y + arm);
-			ctx.stroke();
-		}
 	}
 	ctx.globalCompositeOperation = 'source-over';
 
