@@ -10,14 +10,12 @@
 		"lastRow": null
 	},
 	"github": {
-		"lastSeen": "2026-10-16T00:00:00Z"
+		"lastSeen": "2026-10-18T00:00:00Z"
 	},
 	"genshinDb": "5.2.14",
 	"endgame": {
 		"stygian": "7.1",
-		"abyss": "2026-09-16 Cascading Moon",
-		"pending": [
-			"Abyss 2026-10-16 Stardread Moon — lunaris record 20097 (骇星之月) is Chinese-only with beta dates on 2026-10-16; wait for enBuffName"
-		]
+		"abyss": "2026-10-16 Stardread Moon",
+		"pending": []
 	}
 }
