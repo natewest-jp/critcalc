@@ -246,8 +246,11 @@ draws sit one frame before their own hit — gcsim reads the aura first.
 1. ✅ **Sayu** — built 2026-10-17 as a held cast (§10).
 2. Venti's stream is CUT at the Stormeye's end; gcsim lets all 15 outlive it.
    Believed to be the game's behaviour, unverified (a Venti log would settle it).
-3. Lynette's last shot within 15f of the box's end is dropped (the window bounds
-   the landing). A4 on lock not modelled.
+3. ✅ Lynette's last shot — settled (⚓ Nate 2026-10-18: follow gcsim). The box
+   bounds the VOLLEY, not the landing (`bogglecatbox.go:125`, `t <= b.Duration`),
+   so a shot fired at or before the box's end is kept and lands up to 15f after
+   it: `summonTick.travel` (frames, absorbed series only, lint D.54) — Venti's
+   stream has none and stays cut (item 2). A4 on lock still not modelled.
 4. Kazuha's plunge add-on, Lan Yan, Wanderer A1, Sucrose C6, Jahoda — later (§8).
 5. ✅ The absorbed stubs' colour on the bar — settled as a FILL, not a mark (§11).
 

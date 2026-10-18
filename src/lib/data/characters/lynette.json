@@ -243,12 +243,13 @@
 								"absorbed": "stream",
 								"interval": 2.233,
 								"firstTickDelay": 2.483,
+								"travel": 15,
 								"icdCounter": "vividShot"
 							},
 							"scaling": 82.08,
 							"stat": "atk",
 							"_curatorNotes": [
-								"Absorbed element (absorption round, 2026-10-17; gcsim 4eda9fc5f lynette/bogglecatbox.go:72-145): the box polls on its think — first at 32f (gadget added at 14), every 18f, to its end (41 polls), C > P > H > E. On the lock, Vivid Shots every 134f from the lock, each landing 15f after its volley (first at lock + 149f), 1U, ICDTagElementalBurstAnemo / Default — its OWN counter (the box's ticks are ICDTagElementalBurst). 82.08% at talent 10. ⚓ Nate: the aura door only — a teammate hitting the box is not modelled, no caveat. Not modelled: A4 (fired on lock). ⚠️ A shot landing within 15f of the box's end is dropped here (the window bounds the landing; gcsim bounds the volley)."
+								"Absorbed element (absorption round, 2026-10-17; gcsim 4eda9fc5f lynette/bogglecatbox.go:72-145): the box polls on its think — first at 32f (gadget added at 14), every 18f, to its end (41 polls), C > P > H > E. On the lock, Vivid Shots every 134f from the lock, each landing 15f after its volley (first at lock + 149f), 1U, ICDTagElementalBurstAnemo / Default — its OWN counter (the box's ticks are ICDTagElementalBurst). 82.08% at talent 10. ⚓ Nate: the aura door only — a teammate hitting the box is not modelled, no caveat. Not modelled: A4 (fired on lock). ⚓ `travel: 15` — the box bounds the VOLLEY, not the landing (gcsim `t <= b.Duration`; ⚓ Nate 2026-10-18), so a shot fired at or before the box's end lands up to 15f after it."
 							]
 						},
 						{
@@ -259,6 +260,7 @@
 								"absorbed": "stream",
 								"interval": 2.233,
 								"firstTickDelay": 2.483,
+								"travel": 15,
 								"icdCounter": "vividShot"
 							},
 							"conditions": {

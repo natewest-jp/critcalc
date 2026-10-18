@@ -691,6 +691,18 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 					const t = e.trigger;
 					if (t.units !== undefined && !(t.units > 0))
 						bad(`summon "${sm.label}": units must be positive`, a.id);
+					// `travel` is read by the live chain alone, which publishes only an
+					// ABSORBED series' marks — anywhere else it would bound the hits
+					// and not the markers. Integer FRAMES, inside the first landing.
+					if (t.travel !== undefined) {
+						if (t.absorbed === undefined)
+							bad(`summon "${sm.label}": travel is for an absorbed series only`, a.id);
+						if (!frames(t.travel, 1) || t.travel > Math.round((t.firstTickDelay ?? 0) * 60))
+							bad(
+								`summon "${sm.label}": travel must be positive integer FRAMES within firstTickDelay`,
+								a.id
+							);
+					}
 					if (t.absorbed === undefined) continue;
 					if (!sm.absorbs)
 						bad(`summon "${sm.label}": an absorbed series needs the summon's \`absorbs\``, a.id);
