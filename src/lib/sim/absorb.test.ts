@@ -51,6 +51,51 @@ describe('elemental absorption', () => {
 		).toHaveLength(5);
 	});
 
+	// ⚓ Nate 2026-10-18: follow gcsim — the box bounds the VOLLEY (`t <= b.Duration`,
+	// bogglecatbox.go:125), and a shot travels 15f (`vividTravel`) after it.
+	it("Lynette's last Vivid Shot, fired inside the box, lands after it and is KEPT", () => {
+		// Kaeya's Cryo lands after the 68f poll, so the lock is the 86f
+		// poll and the fifth volley fires at 756f — 14f before the box ends at 770.
+		const r = parseNotation(
+			'Lynette Q > Kaeya E ~14s',
+			lookup,
+			8,
+			{},
+			{},
+			['Lynette', 'Kaeya'].map(lookup)
+		);
+		const box = r.windows.find((w) => w.kind === 'summon' && w.label === 'Bogglecat Box') as {
+			end: number;
+			absorbedTicks?: { time: number }[];
+		};
+		expect(box.end).toBe(770);
+		expect(box.absorbedTicks!.map((m) => m.time)).toEqual([235, 369, 503, 637, 771]);
+		// …and it reaches the gauge: a fresh standard window opens at 771.
+		expect(
+			r.applications
+				.filter((a) => a.characterId === 'lynette' && a.element === 'cryo')
+				.map((a) => a.time)
+		).toEqual([235, 503, 771]);
+	});
+
+	it("Venti's stream is still CUT at the Stormeye's end (ruled, unverified)", () => {
+		// A late lock (304f): gcsim would land all 15; the Stormeye's end keeps 12.
+		const r = parseNotation(
+			'Venti Q ~3s > Bennett E ~9s',
+			lookup,
+			8,
+			{},
+			{},
+			['Venti', 'Bennett'].map(lookup)
+		);
+		const eye = r.windows.find((w) => w.kind === 'summon' && w.label === 'Stormeye') as {
+			end: number;
+			absorbedTicks?: { time: number }[];
+		};
+		expect(eye.absorbedTicks).toHaveLength(12);
+		expect(eye.absorbedTicks!.every((m) => m.time < eye.end)).toBe(true);
+	});
+
 	it('nothing to absorb, nothing absorbed — and Heizou has no Iris at all', () => {
 		expect(absorbed('Venti Q ~9s', ['Venti'], 'venti')).toEqual([]);
 		expect(absorbed('Heizou Q ~2s', ['Heizou'], 'shikanoin_heizou')).toEqual([]);

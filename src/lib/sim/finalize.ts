@@ -48,6 +48,21 @@ import { deriveFieldWindows, polestarFieldOpenAt } from './fields';
 import { deriveGadgetWindows } from './gadgets';
 
 /**
+ * A published landing inside its summon's FINAL span (a recast or a swap may
+ * have cut it after the live chain fired). ⚓ A travelling tick
+ * (`summonTick.travel`) is bounded by its FIRE, inclusive — gcsim's
+ * `t <= Duration` (Lynette's Vivid Shots, ⚓ Nate 2026-10-18); every other
+ * landing by its own time, half-open (Venti's stream stays cut).
+ */
+function inFinalSpan(
+	l: { time: number; firedAt?: number },
+	win: { start: number; end: number }
+): boolean {
+	if (l.firedAt !== undefined) return l.firedAt >= win.start && l.firedAt <= win.end;
+	return l.time >= win.start && l.time < win.end;
+}
+
+/**
  * Authors the IR windows, stamps the owner uptimes, and projects the per-track
  * bars and input blocks. Runs once, after the last token.
  */
@@ -644,7 +659,9 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		// (`$lib/timeline/summonMarks.ts`). Bounded by the final span like the rest.
 		const absorbed = (
 			ctx.absorbedMarks.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ?? []
-		).filter((m) => m.time >= win.start && m.time < win.end);
+		)
+			.filter((m) => inFinalSpan(m, win))
+			.map((m) => ({ time: m.time, element: m.element }));
 		if (absorbed.length > 0) win.absorbedTicks = absorbed;
 	}
 	// ⚓ THE FIRES, the same way (stack-threshold round, 2026-09-18): a
@@ -675,7 +692,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		// count one hit twice. Bounded by the final span like the markers.
 		const struck = (
 			ctx.strikeLandings.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ?? []
-		).filter((l) => l.time >= win.start && l.time < win.end);
+		).filter((l) => inFinalSpan(l, win));
 		for (const tick of [
 			...computeSummonDamageTicks(
 				summon,
