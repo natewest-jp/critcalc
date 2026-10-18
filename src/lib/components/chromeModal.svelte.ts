@@ -15,6 +15,7 @@
  * results, not for the overlay.
  */
 
+import { resolve } from '$app/paths';
 import type { ChromeAreaId } from '$lib/help/areas';
 
 export type ChromeModalState =
@@ -77,10 +78,14 @@ export function setChapter(chapter: string): void {
  * site chrome beside the cog — but it opens the Library on its Roster tab, and
  * the Library is the tools layout's overlay. So the tools layout REGISTERS the
  * opener while it is mounted, and the chrome (and the compass, which takes the
- * button below `roomy`) shows the button exactly when there is one: on every
- * tool, and nowhere the Library cannot open. Module state, for the same reason
- * as the modal state above — the button and the overlay live in different
- * subtrees.
+ * button below `roomy`) opens the overlay exactly when there is one. Module
+ * state, for the same reason as the modal state above — the button and the
+ * overlay live in different subtrees.
+ *
+ * ↻ 2026-10-18 (⚓ Nate): the button is on EVERY surface. Where no opener is
+ * registered (the landing, the static pages) it is a link to the `/library`
+ * page on its Roster tab (`rosterHref`) — ⚠️ a real navigation, the one chrome
+ * control that moves the URL, and only where no tool is underneath to lose.
  */
 let rosterOpener = $state<(() => void) | null>(null);
 
@@ -93,6 +98,9 @@ export const roster = {
 		rosterOpener?.();
 	}
 };
+
+/** The Roster button off the tools: the `/library` page on its Roster tab. */
+export const rosterHref = `${resolve('/library')}?tab=roster`;
 
 /** The tools layout's registration; the cleanup clears it only if it is still
  *  ours (two layouts are briefly alive during a page transition). */

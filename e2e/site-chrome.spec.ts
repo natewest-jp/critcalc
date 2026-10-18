@@ -46,10 +46,14 @@ test.describe('one chrome, every surface', () => {
 		// ⚠ :visible, not a raw count. The compass is in the DOM on every surface
 		// and display:none above 47.5rem, so a plain count reads 4 at the 1600px
 		// test viewport and says nothing about what a reader can press.
-		expect(landingBtns, 'three meta glyphs on the landing').toBe(3);
-		// ↻ 2026-10-11: plus ROSTER inside a tool — it opens the Library, which is
-		// the tools layout's overlay, so it exists exactly where that can open.
-		expect(toolBtns, 'the same three plus Roster inside a tool').toBe(4);
+		// ↻ 2026-10-18 (⚓ Nate): ROSTER is on every surface. Inside a tool it
+		// opens the Library overlay; on the landing it is a link to /library.
+		expect(landingBtns, 'three meta glyphs plus Roster on the landing').toBe(4);
+		expect(toolBtns, 'the same four inside a tool').toBe(4);
+		await expect(
+			page.locator('button.chrome-btn[aria-label="Roster"]'),
+			'inside a tool Roster is a BUTTON (the overlay), never a link'
+		).toHaveCount(1);
 		await expect(metaBtn(page, 'Roster'), 'Roster sits in the tool chrome').toBeVisible();
 		await expect(
 			page.locator('.chrome-btn--nav'),
@@ -64,6 +68,14 @@ test.describe('one chrome, every surface', () => {
 	});
 });
 
+/**
+ * ⚠ ROSTER IS DELIBERATELY NOT IN `META` (2026-10-18). Inside a tool it is an
+ * overlay like the three and keeps their contract (the tool must survive —
+ * covered by team-builder.spec's Library tests); on the landing and the static
+ * pages it NAVIGATES to /library, which is new, intended behaviour: there is no
+ * tool underneath to remount, and no overlay host for the Library. It has its
+ * own block below rather than an exception inside this loop.
+ */
 test.describe('meta overlays never navigate', () => {
 	for (const surface of ['/', '/builder']) {
 		for (const { label, title } of META) {
@@ -82,6 +94,47 @@ test.describe('meta overlays never navigate', () => {
 			});
 		}
 	}
+});
+
+test.describe('the /library page', () => {
+	test('the landing’s Roster goes to /library on its Roster tab', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await metaBtn(page, 'Roster').click();
+		await page.waitForURL('**/library?tab=roster');
+		await expect(page.locator('.lib-tabs [role="tab"][aria-selected="true"]')).toHaveText('Roster');
+		await expect(page.locator('.lib--page'), 'the page, not the overlay').toHaveCount(1);
+		await expect(page.locator('.tool-shell'), 'no tool was entered').toHaveCount(0);
+	});
+
+	test('opening a rotation from the page arrives on the Planner with it', async ({
+		page,
+		seed
+	}) => {
+		await seed({
+			saved: [
+				{
+					id: 's1',
+					name: 'Library page e2e',
+					notation: 'Hu Tao E N3 Q > Xingqiu E Q > Zhongli E',
+					tabLoadout: {},
+					tabCon: {},
+					savedAt: 1754500000000
+				}
+			]
+		});
+		await page.goto('/library', { waitUntil: 'networkidle' });
+		await expect(page.locator('.lib-tabs [role="tab"][aria-selected="true"]')).toHaveText('Teams');
+		await page.locator('.lib-rot', { hasText: 'Library page e2e' }).click();
+		await page.waitForURL('**/planner');
+		await page.locator('.tool-main').waitFor({ state: 'visible' });
+		await expect(page.locator('.cm-content').first()).toHaveText(
+			'Hu Tao E N3 Q > Xingqiu E Q > Zhongli E'
+		);
+		// The tab survived the tools layout's own restore on arrival.
+		const stored = await page.evaluate(() => localStorage.getItem('critcalc:rotationTabs'));
+		const { tabs, activeTabId } = JSON.parse(stored ?? '{}');
+		expect(tabs.find((t: { id: string }) => t.id === activeTabId)?.savedId).toBe('s1');
+	});
 });
 
 test.describe('help is contextual and non-destructive', () => {

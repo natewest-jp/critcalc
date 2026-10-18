@@ -2,7 +2,13 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { TOOLS } from '$lib/tools';
-	import { openArea, openSettings, closeChromeModal, roster } from './chromeModal.svelte';
+	import {
+		openArea,
+		openSettings,
+		closeChromeModal,
+		roster,
+		rosterHref
+	} from './chromeModal.svelte';
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 
 	// What the compass opens: every destination on the site, in one panel.
@@ -64,10 +70,17 @@
 		<button class="np-row" onclick={() => openArea('help', helpChapter)}>
 			<span class="np-name">Help</span>
 		</button>
+		<!-- The chrome's Roster button, folded (SiteChrome): over a tool it opens
+		     the Library there; anywhere else it goes to the /library page. -->
 		{#if roster.available}
 			<button class="np-row" onclick={roster.open}>
 				<span class="np-name">Roster</span>
 			</button>
+		{:else}
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- rosterHref IS resolve('/library') plus a query (chromeModal.svelte.ts) -->
+			<a class="np-row" href={rosterHref} onclick={closeChromeModal}>
+				<span class="np-name">Roster</span>
+			</a>
 		{/if}
 		<button class="np-row" onclick={openSettings}>
 			<span class="np-name">Settings</span>
