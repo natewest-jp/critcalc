@@ -657,7 +657,10 @@
 	}
 
 	/* The fact is gold and a weight up; the fine print recedes. */
+	/* ⚓ The headline a rung ABOVE its lines — 18 over 16 (14 over 12 on a
+	   phone) — so the band reads as a title with fine print (Nate 2026-10-18). */
 	.notice__text {
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-medium);
 		color: var(--accent);
 		white-space: nowrap;
@@ -674,18 +677,15 @@
 		.notice {
 			font-size: var(--fs-lg);
 		}
-		/* A line's parts stack instead of wrapping mid-name ("Spiral Abyss:
-		   Stardread / Moon" at 390, ⚓ Nate 2026-10-18). */
-		/* 🎛️ The fine print a step under the headline (⚓ Nate 2026-10-18: the
-		   band's text outweighed the card names, ~13px on a phone). */
+		/* 🎛️ Headline 14 over fine print 12 — the desktop's one-rung step (⚓
+		   Nate 2026-10-18: the band's text outweighed the card names, ~13px on
+		   a phone). Each line now fits ONE row at 320 (measured 240 and 211
+		   of 256px), so the parts no longer stack. */
+		.notice__text {
+			font-size: var(--fs-lg);
+		}
 		.notice__detail {
 			font-size: var(--fs-md);
-		}
-		.notice__sep {
-			display: none;
-		}
-		.notice__part {
-			display: block;
 		}
 	}
 	/* Wide: a part never breaks inside itself; the line wraps between parts. */

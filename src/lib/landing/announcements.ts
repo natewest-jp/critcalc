@@ -57,16 +57,26 @@ function announcementsAt(now: Date): Announcement[] {
 	];
 }
 
-/** "Spiral Abyss: Stardread Moon · Stygian Onslaught 7.1" — whichever of the
- *  two is live at `now` (both, normally). */
+/** "Spiral Abyss (Oct 16) · Stygian Onslaught 7.1" — whichever of the two is
+ *  live at `now` (both, normally). ⚓ Nate 2026-10-18: each named by its OWN
+ *  cadence — the Abyss resets on the 16th, twice a version, so it carries its
+ *  reset date; Stygian runs a whole version, so it carries the version. (The
+ *  blessing's name went: it is flavour, and the line now fits one row at 320.) */
 function endgameLine(now: Date): AnnouncementLine | undefined {
 	const abyss = currentAbyss(now);
 	const season = currentSeason(now);
 	const parts = [
-		abyss && `Spiral Abyss: ${abyss.name.en}`,
+		abyss && `Spiral Abyss (${shortDate(abyss.start)})`,
 		season && `Stygian Onslaught ${season.version}`
 	].filter(Boolean);
 	return parts.length ? { parts: parts as string[], href: '/builder' } : undefined;
+}
+
+/** "Oct 16" from an ISO day, read as a LOCAL date (never through UTC, which
+ *  would show the 15th west of Greenwich). */
+function shortDate(iso: string): string {
+	const [y, m, d] = iso.split('-').map(Number);
+	return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 /** "117 characters modeled · 4 in progress". ⚠ The Traveler counts ONCE, as
