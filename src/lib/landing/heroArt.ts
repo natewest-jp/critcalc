@@ -68,7 +68,8 @@ export const PLATE_VIEWBOX_TALL = `0 0 ${PLATE_W} ${PLATE_H_TALL}`;
  * a fifth of the way down from the shoulder: "almost down to the widest area
  * of the point".
  */
-export const HORIZON_POINT_DEPTH = 0.8;
+// ↻ tune(nate) 2026-10-18: 0.8 → 0.4 — less of the point sunk below the horizon.
+export const HORIZON_POINT_DEPTH = 0.4;
 const POINT_H = 156;
 /** The plate y the horizon crosses, as a fraction of the plate's height. */
 export const HORIZON_CROSS = (PLATE_H - HORIZON_POINT_DEPTH * POINT_H) / PLATE_H;
