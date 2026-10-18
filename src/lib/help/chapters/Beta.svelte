@@ -14,8 +14,8 @@
 <h1>Beta</h1>
 
 <p class="lede">
-	critcalc may be rough around the edges for a little while. It’s a solo project, and while most
-	things have been worked through, new problems still turn up.
+	critcalc may be rough around the edges for a bit. It’s a solo project, and while most things have
+	been worked through, new problems still turn up.
 </p>
 
 <section>
@@ -25,15 +25,15 @@
 		right on yours, <a href={resolve('/contribute')}>I’d like to hear about it</a>.
 	</p>
 	<p>
-		The character data is where checking matters most. Every kit is curated by hand from the kit
+		The character data is where I could use the most help. Every kit is curated by hand from the kit
 		text and timed against gcsim’s measured frames wherever gcsim has the character, and where a kit
 		isn’t finished the tools say so instead of guessing. The
 		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows how far each
 		character has gotten.
 	</p>
 	<p>
-		That said, I don’t have all of the characters, and even for some characters I own, I may not be
-		as familiar with their kits as you are. If you see something wrong with a character,
+		That said, I don’t have all characters or constellations. Calling all mains! If you see
+		something wrong with a character you know,
 		<a href={resolve('/contribute')}>Contribute</a> says how to report it. The
 		<strong>Report a problem</strong> item in a tool’s <strong>⋯</strong> menu is the fastest way, because
 		it sends a link to exactly what you were looking at.
@@ -44,11 +44,11 @@
 <section>
 	<h2 id="what-changes">What changes and what stays the same</h2>
 	<p>
-		The interface will keep changing for a while, and more features are on the way. Unfinished kits
-		will be finished, and mistakes corrected.
+		The interface will keep changing for a while, and more features are on the way. Coverage of kits
+		will improve as reports get filed and data gaps are uncovered.
 	</p>
 	<p>
-		Your saved data won’t be lost while that happens: everything in your Library stays in your
+		While that happens, your saved data won’t be lost. Everything in your Library stays in your
 		browser through every update. It’s still worth downloading a backup now and then (<strong
 			>Export…</strong
 		> in Settings), because clearing your browser’s site data erases it.
