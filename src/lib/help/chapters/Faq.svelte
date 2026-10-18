@@ -105,8 +105,9 @@
 		Please report it through the
 		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>. Inside
 		a tool, <strong>Report a problem</strong> in the <strong>⋯</strong> menu opens the same form
-		with a link to what you’re looking at already filled in, and a character’s details card has
-		<strong>Something’s not right with this character</strong>.
+		with a link to what you’re looking at already filled in. A character’s details card has its own
+		link:
+		<strong>Something not right with this character?</strong>
 	</p>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 </section>

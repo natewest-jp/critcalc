@@ -394,7 +394,7 @@
 					character: entry?.displayName ?? id,
 					constellation: entry?.noConstellations ? undefined : viewCon,
 					includeTech: true
-				}}>Something’s not right with this character</ReportLink
+				}}>Something not right with this character?</ReportLink
 			>
 		</p>
 	</div>
