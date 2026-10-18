@@ -4161,7 +4161,7 @@ describe('parseNotation — Yanfei Scarlet Seals are auto-tracked (real JSON, ph
 // Both tokens were classified by the tokenizer and then silently dropped by the
 // parser — no block, no cursor advance, no message. The decisions differ, and
 // each leaves an invariant that is easy to lose to an unrelated tidy-up.
-describe('parseNotation — A is a bow’s aimed shot; W is inert', () => {
+describe('parseNotation — A is a bow’s aimed shot; W walks', () => {
 	const ganyu = ganyuJson as unknown as CharacterData;
 	const bennett = bennettJson as unknown as CharacterData;
 	const lookupGanyu = (n: string): CharacterData | null => (n === 'Ganyu' ? ganyu : null);
@@ -4193,15 +4193,59 @@ describe('parseNotation — A is a bow’s aimed shot; W is inert', () => {
 		expect(Number.isFinite(r.totalDuration)).toBe(true);
 	});
 
-	it('🐛 W changes NOTHING — it is not a cancel window we have, so it must not act as one', () => {
-		// The bug this caught: `W` is no FrameMap key, so peekActionKey resolved
-		// it to `swap` (the full-animation fallback) and an inserted W silently
-		// retimed the swing before it — 1.0s against 1.1s. A token the composer
-		// tells you is not simulated has to actually do nothing.
-		const withW = parseNotation('Ganyu N1 W N2', lookupGanyu, 8);
-		const without = parseNotation('Ganyu N1 N2', lookupGanyu, 8);
-		expect(drawn(withW)).toEqual(drawn(without));
-		expect(withW.totalDuration).toBe(without.totalDuration);
+	// ↻ `W` WALKS (2026-10-18). It was inert from 2026-08-13, on the belief that a
+	// walk-cancel keeps the string; gcsim resets every counter on any non-attack
+	// action (`pkg/core/player/exec.go`), and its Walk slot is the attack's full
+	// animation (`InitNormalCancelSlice`). Bennett's N1 is `{anim 33, hit 13, N 20}`,
+	// so all three numbers are distinguishable.
+	const normals = (r: ReturnType<typeof parseNotation>) =>
+		r.events.flatMap((e) =>
+			e.kind === 'action' && e.action === 'normal'
+				? [{ time: e.time, duration: e.duration, combo: e.comboIndex }]
+				: []
+		);
+
+	it('🐛 W RESETS the string — N1 W N1 is two first swings', () => {
+		// ⛔ Seeded negative: the inert W gave combo [0, 1].
+		const r = parseNotation('Bennett N1 W N1', lookupBennett, 8);
+		expect(normals(r).map((n) => n.combo)).toEqual([0, 0]);
+		expect(normals(parseNotation('Bennett N1 N1', lookupBennett, 8)).map((n) => n.combo)).toEqual([
+			0, 1
+		]);
+	});
+
+	it('🐛 the swing before a W runs to its ANIMATION, and the walk takes one frame', () => {
+		// ⛔ Seeded negative: the inert W timed this N1 at its N slot (20f).
+		const [n1, again] = normals(parseNotation('Bennett N1 W N1', lookupBennett, 8));
+		expect(n1.duration).toBe(33);
+		expect(again.time).toBe(33 + 1);
+		expect(normals(parseNotation('Bennett N1 N1', lookupBennett, 8))[0].duration).toBe(20);
+		// Two walks are two frames.
+		expect(normals(parseNotation('Bennett N1 W W N1', lookupBennett, 8))[1].time).toBe(33 + 2);
+	});
+
+	it('W draws nothing of its own and is not an unknown token', () => {
+		const r = parseNotation('Bennett N1 W N1', lookupBennett, 8);
+		expect(r.events.filter((e) => e.kind === 'action')).toHaveLength(2);
+		expect(r.tracks[0].inputBlocks.map((b) => b.kind)).not.toContain('walk');
+		expect(r.unknownTokens).toEqual([]);
+	});
+
+	it('W ends a segment sanely — last in the rotation, or before a swap', () => {
+		const last = parseNotation('Bennett N1 W', lookupBennett, 8);
+		expect(normals(last)[0].duration).toBe(33);
+		expect(Number.isFinite(last.totalDuration)).toBe(true);
+		expect(last.unknownTokens).toEqual([]);
+
+		const lookupBoth = (n: string) => lookupBennett(n) ?? lookupGanyu(n);
+		const walked = parseNotation('Bennett N1 W > Ganyu N1', lookupBoth, 8);
+		const swapped = parseNotation('Bennett N1 > Ganyu N1', lookupBoth, 8);
+		// Before a bare swap the N1 cancels at its hitmark; before W it runs out.
+		expect(normals(swapped)[0].duration).toBe(13);
+		expect(normals(walked)[0].duration).toBe(33);
+		// Ganyu's swing is a first swing either way (a swap is a new character).
+		expect(normals(walked)[1].combo).toBe(0);
+		expect(normals(walked)[1].time).toBeGreaterThan(normals(swapped)[1].time);
 	});
 });
 

@@ -6,9 +6,11 @@
  * `notationParser.ts`).
  *
  * ⚠️ Both caps below are BEHAVIOUR, not defensiveness. `MAX_EXPANDED_TOKENS`
- * truncates silently and deliberately, and `peekActionKey` SKIPS `W` rather
- * than reading it (and `{key:N}`, `/alt` and `(…)` with it) — a token the
- * composer says does nothing has to actually do nothing. ⛔ Neither is a detail to tidy while passing through.
+ * truncates silently and deliberately, and `peekActionKey` SKIPS `{key:N}`,
+ * `/alt` and `(…)` rather than reading them — a token that draws nothing has to
+ * move nothing. ⛔ Neither is a detail to tidy while passing through. ↻ `W` was
+ * on that list until 2026-10-18 and is READ now: a walk is an action (see
+ * `peekActionKey`).
  */
 
 import type { ActionKey } from '$lib/types/ability';
@@ -18,11 +20,7 @@ import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
  *  Exported for the driver, which joins a same-character `>` into one lookahead
  *  and needs to know where a peek would stop. */
 export const isInert = (t: Token | undefined): boolean =>
-	!!t &&
-	(t.kind === 'stack-assert' ||
-		t.kind === 'or-alt' ||
-		t.kind === 'optional' ||
-		(t.kind === 'label' && t.text === 'W'));
+	!!t && (t.kind === 'stack-assert' || t.kind === 'or-alt' || t.kind === 'optional');
 
 /**
  * Maps the next token after position j to the ActionKey used for cancel-window
@@ -30,7 +28,8 @@ export const isInert = (t: Token | undefined): boolean =>
  * time advances, or anything else that isn't a direct action. ⚠️ "End of
  * segment" is the end of `tokens`: the driver hands in the next segment's
  * tokens too when a same-character `>` continues the turn (run.ts, `lookahead`). Inert tokens
- * (`W`, `{key:N}`, `/alt`, `(…)`) are stepped over, never read.
+ * (`{key:N}`, `/alt`, `(…)`) are stepped over, never read; a walk (`W`) is read
+ * and answers `'W'`.
  *
  * `isBow` is threaded for ONE token: KQM's `A` is an aimed shot, which only a
  * bow can take, and which our data models as that bow's fully-charged attack
@@ -39,27 +38,37 @@ export const isInert = (t: Token | undefined): boolean =>
  * action at all, and the conservative full animation is the honest reading.
  */
 export function peekActionKey(tokens: Token[], j: number, isBow: boolean): ActionKey {
-	// ⚓ `W` IS SKIPPED, NOT READ (2026-08-13). We do not simulate walk-cancels
-	// (⚓ Nate; gcsim does not either — its `walk` has no intrinsic duration, only
-	// the frame count you hand it), and the composer says so. But an unread `W`
-	// was not free: it is not a key in any FrameMap, so it resolved to 'swap' —
-	// the full-animation fallback — and `N1 W N2` silently timed its N1
-	// differently from `N1 N2`. A token we tell the user does nothing has to
-	// actually do nothing.
+	// ⚓⚓ `W` IS AN ACTION (2026-10-18; it was skipped as inert from 2026-08-13).
+	// A walk does two things in game, and gcsim models both:
 	//
-	// Skipping is also the closer approximation of the technique: a walk-cancel
-	// does not reset the normal-attack string in game — that is exactly what
-	// makes it worth doing — so `N1 W N2` really is an N1 followed by an N2, just
-	// without the frames the cancel would have saved.
+	// 1. It RESETS the normal-attack string. gcsim resets every counter on any
+	//    action that is not an attack, walk included (`pkg/core/player/exec.go`,
+	//    `if t != action.ActionAttack { h.ResetAllNormalCounter() }`), so
+	//    `N1 W N1` is two FIRST swings. The old comment here said the opposite —
+	//    that a walk-cancel keeps the string, "which is what makes it worth doing"
+	//    — and gcsim's core says otherwise.
+	// 2. It starts only once the action before it has finished its ANIMATION.
+	//    `InitNormalCancelSlice(hitmark, animation)` (`internal/frames/frames.go`)
+	//    fills every slot with the animation and moves only Aim/Skill/Burst/Dash/
+	//    Jump/Swap to the hitmark; Walk keeps the full animation. So the answer
+	//    here is the key `'W'`, which no FrameMap carries and which is not in
+	//    `HIT_KEYS`, and `frameAt()` resolves it to `anim` — the same default
+	//    gcsim's slice holds. ⏭ gcsim OVERRIDES Walk per character in places
+	//    (normals, plunges, skills); a `W` key in the data is the follow-up round
+	//    that captures them, and `frameAt` reads it the day it lands.
 	//
-	// The same rule covers a stack assert (`{key:N}`), an or-alt (`/Q`) and an
-	// optional group (`(Q)`), which the parser also draws nothing for: each one
+	// The walk itself is gcsim's bare `walk` — one frame (`stam.go` `Walk`) — and
+	// draws nothing (run.ts).
+	//
+	// What stays SKIPPED is what performs no action at all: a stack assert
+	// (`{key:N}`), an or-alt (`/Q`) and an optional group (`(Q)`). Each one
 	// used to answer 'swap' and move the cancel window of the action before it
 	// (`Yanfei N1 {seal:3} C` timed its N1 at 12f, `Yanfei N1 C` at 21f).
 	let k = j + 1;
 	while (isInert(tokens[k])) k++;
 	const next = tokens[k];
 	if (!next) return 'swap';
+	if (next.kind === 'label' && next.text === 'W') return 'W';
 	if (next.kind === 'Q') return 'Q';
 	if (next.kind === 'E') return 'E';
 	if (next.kind === 'label' || next.kind === 'unknown') {
@@ -95,6 +104,12 @@ export function peekHumanPadTarget(
 	while (isInert(tokens[k])) k++;
 	if (!tokens[k]) return swapFollows ? 'swap' : null;
 	const key = peekActionKey(tokens, j, isBow);
+	// A walk is not an input anyone is late for — the one AFTER it is. So the
+	// pad stands in front of the walk only when something follows the walk that
+	// would take one (a trailing `W`, or `W ~1s`, pads nothing). `'W'` is then
+	// the target, and `isBufferedTransition` never buffers it: the game stores no
+	// input across a walk, which is the existing rule, not a new one.
+	if (key === 'W') return peekHumanPadTarget(tokens, k, isBow, swapFollows) === null ? null : 'W';
 	return key === 'swap' ? null : key;
 }
 

@@ -34,6 +34,11 @@ verdicts" had become a slogan.
 > walk-cancel's whole value is ending an animation early while keeping the attack string
 > […] and modelling it badly would be worse than not modelling it.
 
+↻ **The passage's CLAIM is retired (2026-10-18)**: `W` is simulated now — gcsim resets the
+attack string on a walk and starts it only at the animation's end, so the "keeping the
+attack string" reasoning was wrong (branch `fix/walk-resets-string`). The move it
+demonstrates stands.
+
 A limitation stated _with its reason_ reads as rigor. The same limitation stated bare
 reads as a gap. ⚓ **Never strip a "why" to save a line** — that sentence is the reason
 the audience trusts the tool.
