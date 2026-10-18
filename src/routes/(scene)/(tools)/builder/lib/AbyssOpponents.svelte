@@ -8,6 +8,8 @@
 	 * leaves out and a player wants. ⏭ Working copy (copy step 8).
 	 */
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from '$lib/components/Mark.svelte';
 	import { portal } from '$lib/actions/portal';
 	import { closeOnLeave } from '$lib/closeOnLeave';
@@ -27,14 +29,26 @@
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && onClose()} />
 
+<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
+     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="op-scrim" use:portal onclick={onClose}></div>
+<div
+	class="op-scrim"
+	use:portal
+	onclick={onClose}
+	transition:fade={{ duration: motion(T_QUICK) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
+></div>
 <div
 	class="op ctx-dark"
 	use:portal
 	role="dialog"
 	aria-modal="true"
 	aria-label="Opponents, {half === 0 ? 'first' : 'second'} half"
+	transition:fade={{ duration: motion(T_QUICK) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
 >
 	<header class="op-head">
 		<h2 class="op-title">{half === 0 ? 'First half' : 'Second half'} · Opponents</h2>

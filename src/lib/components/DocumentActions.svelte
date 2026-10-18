@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { T_QUICK, motion } from '$lib/motion';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
 	import { library } from '$lib/library.svelte';
@@ -50,7 +51,7 @@
 
 <div class="doc-actions">
 	{#if db.notice}
-		<span class="doc-notice" transition:fade={{ duration: 180 }}>{db.notice}</span>
+		<span class="doc-notice" transition:fade={{ duration: motion(T_QUICK) }}>{db.notice}</span>
 	{/if}
 
 	<!-- ONE button, one identity. It used to swap its mark from the floppy to a

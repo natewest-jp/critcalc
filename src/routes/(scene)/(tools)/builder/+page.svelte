@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount, tick, untrack } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -43,7 +44,7 @@
 	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
-	import { motion } from '$lib/motion';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
@@ -1149,12 +1150,23 @@
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
 			{#if documentBar.notice}
-				<span class="tb-notice" role="status">{documentBar.notice}</span>
-				{#each documentBar.noticeActions as action (action.label)}
-					<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
-						>{action.label}</button
-					>
-				{/each}
+				<!-- The notice and its actions fade as ONE surface on --t-quick
+				     (DocumentActions' .doc-notice). One wrapper, so the buttons
+				     leave with the words — and `outroInert`, so an Undo on its
+				     way out cannot take a click. -->
+				<span
+					class="tb-notice-group"
+					transition:fade={{ duration: motion(T_QUICK) }}
+					onintrostart={introLive}
+					onoutrostart={outroInert}
+				>
+					<span class="tb-notice" role="status">{documentBar.notice}</span>
+					{#each documentBar.noticeActions as action (action.label)}
+						<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
+							>{action.label}</button
+						>
+					{/each}
+				</span>
 			{/if}
 			<button
 				class="btn"
@@ -1572,6 +1584,11 @@
 
 	/* Band A's end zone: the board's notice and Share. */
 	.tb-doc-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--band-item-gap, 4px);
+	}
+	.tb-notice-group {
 		display: flex;
 		align-items: center;
 		gap: var(--band-item-gap, 4px);

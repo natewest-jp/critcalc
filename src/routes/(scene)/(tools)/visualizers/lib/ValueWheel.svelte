@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { T_QUICK, motion, introLive, outroInert, scrollBehavior } from '$lib/motion';
 
 	// Dial-style value picker: click to unlock, scroll/drag spins the values
 	// through the field (native scroll + CSS scroll-snap — momentum and touch
@@ -57,7 +59,7 @@
 		} else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
 			event.preventDefault();
 			const next = centered + (event.key === 'ArrowDown' ? 1 : -1);
-			if (listEl) listEl.scrollTo({ top: next * ITEM_H, behavior: 'smooth' });
+			if (listEl) listEl.scrollTo({ top: next * ITEM_H, behavior: scrollBehavior() });
 		} else if (event.key === 'Enter') {
 			event.preventDefault();
 			commit(centered);
@@ -84,7 +86,14 @@
 	</button>
 
 	{#if open}
-		<div class="vw-panel ctx-dark" style:--item-h="{ITEM_H}px" style:--pad-rows={PAD_ROWS}>
+		<div
+			class="vw-panel ctx-dark"
+			style:--item-h="{ITEM_H}px"
+			style:--pad-rows={PAD_ROWS}
+			transition:fade={{ duration: motion(T_QUICK) }}
+			onintrostart={introLive}
+			onoutrostart={outroInert}
+		>
 			<div class="vw-band" aria-hidden="true"></div>
 			<div class="vw-list" role="listbox" bind:this={listEl} onscroll={onScroll} tabindex="-1">
 				<div class="vw-spacer"></div>
