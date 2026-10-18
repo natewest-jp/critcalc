@@ -820,13 +820,9 @@
 	.bv-slots--sel::before {
 		border-color: var(--team-hue);
 	}
+	/* The shared nudge (app.css) — it guards reduced motion itself. */
 	.bv-slots--nudge {
 		animation: nudge 120ms 2;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.bv-slots--nudge {
-			animation: none;
-		}
 	}
 	/* The board's ring is the FAINT line (Nate 2026-10-09): on the night four
 	   strong rings read as a row of buttons, not of portraits. */

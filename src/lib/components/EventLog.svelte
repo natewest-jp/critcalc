@@ -88,6 +88,7 @@
 
 <script lang="ts">
 	import { tick, untrack, type Snippet } from 'svelte';
+	import { scrollBehavior } from '$lib/motion';
 
 	let {
 		rows,
@@ -206,7 +207,7 @@
 			const eb = el.getBoundingClientRect();
 			list.scrollTo({
 				top: list.scrollTop + (eb.top - lb.top) - (lb.height - eb.height) / 2,
-				behavior: 'smooth'
+				behavior: scrollBehavior()
 			});
 		});
 		untrack(() => {
@@ -381,8 +382,13 @@
 	.el-row--seekable {
 		cursor: pointer;
 	}
+	/* The hover eases in on --t-snap (a row is a CONTROL). ⚠ The transition
+	   lives on `:hover` ONLY, so it never reaches `.el-row--active` below: that
+	   fill is the chart cursor's echo while scrubbing and must track the
+	   pointer instantly, or the lit row lags the crosshair. */
 	.el-row--seekable:hover {
 		background: var(--fill-hover);
+		transition: background-color var(--t-snap);
 	}
 	.el-row--seekable:focus-visible {
 		outline: 2px solid var(--accent);

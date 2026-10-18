@@ -2472,7 +2472,8 @@ img {
 }
 
 /* (A reduced-motion block for `.prose a` stood here. Retired with the motion
-   round — the rule spends --t-quick, and the band is zeroed at :root.) */
+   round — the rule spends --t-snap (a link is a CONTROL), and the band is
+   zeroed at :root.) */
 
 /* ══════════════════════════════════════════════════════════════════════════════
    THE PATTERN LAYER — promoted from /styleguide 2026-07-27 (migration chunk 1).
@@ -2534,10 +2535,14 @@ img {
 	text-transform: uppercase;
 	white-space: nowrap;
 	cursor: pointer;
+	/* `opacity` too (motion sweep, 2026-10-18): `:disabled` and a local
+	   resting weight (DocumentTabs' faint +) ease like every other paint
+	   change on a control instead of snapping. */
 	transition:
 		background var(--t-snap),
 		color var(--t-snap),
-		box-shadow var(--t-snap);
+		box-shadow var(--t-snap),
+		opacity var(--t-snap);
 }
 .btn:hover {
 	background: var(--btn-face-hover);
@@ -2615,14 +2620,30 @@ img {
 }
 
 /* THE NUDGE (Nate 2026-10-09): "that didn't go in" — a pick into a full team.
-   Two pixels either way, whole pixels (the sub-pixel law), short. A keyframe,
-   so a user must honour reduced motion by hand (none at all). */
+   Two pixels either way, whole pixels (the sub-pixel law), short.
+   ⚓ THE ONE NUDGE (motion sweep, 2026-10-18): every refused action on the
+   site shakes with this, spent as `animation: nudge 120ms 2` — ⛔ never a
+   local shake. Three used to exist (this, CharacterCard's ±3px and the
+   roster lock's ±3px at 240ms) and none was tuned on purpose.
+   It rides `translate`, not `transform`, so it composes with a hover lift.
+   ⚓ It honours reduced motion ITSELF: under the preference the keyframe is
+   redefined EMPTY, so a caller needs no guard of its own — and, unlike
+   `animation: none`, an empty animation still fires `animationend`, which a
+   caller may be waiting on to clear its flag (RosterTab's lock). */
 @keyframes nudge {
 	25% {
 		translate: -2px 0;
 	}
 	75% {
 		translate: 2px 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	@keyframes nudge {
+		from,
+		to {
+			translate: none;
+		}
 	}
 }
 /* Segmented group, second pass. The first version was a 1px --border box with
