@@ -1,4 +1,4 @@
-<!-- About chapter — see $lib/help/areas.ts. Every <h2> carries an id; the area
+<!-- Privacy chapter — see $lib/help/areas.ts. Every <h2> carries an id; the area
 	 shell reads them for the sidebar's table of contents.
 
 	 Rewritten 2026-10-16 for launch, with Cloudflare Web Analytics on (enabled
@@ -16,15 +16,15 @@
 <h1>Privacy</h1>
 
 <p class="lede">
-	critcalc has no accounts and no server of its own. What you set up stays in your browser; what
-	leaves it is listed below.
+	critcalc has no accounts and no server of its own. What you set up stays in your browser. What
+	leaves your browser is listed below.
 </p>
 
 <section>
 	<h2 id="in-your-browser">What stays in your browser</h2>
 	<p>Everything you create is kept in this browser’s local storage, on this device only:</p>
 	<ul>
-		<li>Your settings: display, Human timing, playback sound, swap ping.</li>
+		<li>Your settings: display, Human timing, playback sound, and swap ping.</li>
 		<li>Your roster: which characters you own or have wishlisted, and at what constellation.</li>
 		<li>Weapon and artifact loadouts.</li>
 		<li>Saved rotations and teams, and saved lineups.</li>
@@ -34,7 +34,7 @@
 	<p>
 		critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a> carries
 		everything except the open tabs and the Visualizers’ layout. <strong>Reset saved data</strong> in
-		the same place clears your roster, loadouts, saved rotations and saved lineups, and keeps your settings.
+		the same place clears your roster, loadouts, saved rotations, and saved lineups but keeps your settings.
 		To remove everything, clear this site’s data in your browser.
 	</p>
 </section>
@@ -96,5 +96,5 @@
 <section>
 	<h2 id="changes">Changes</h2>
 	<p>If any of this changes, this page changes first.</p>
-	<p>Last updated October 16, 2026.</p>
+	<p>Last updated October 18, 2026.</p>
 </section>
