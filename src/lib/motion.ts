@@ -77,3 +77,15 @@ export function outroInert(event: { currentTarget: EventTarget & HTMLElement }):
 export function introLive(event: { currentTarget: EventTarget & HTMLElement }): void {
 	event.currentTarget.inert = false;
 }
+
+/**
+ * The `behavior` for a programmatic smooth scroll — `'smooth'`, or `'auto'`
+ * (instant) when the reader has asked for less motion.
+ *
+ * ⚠ The UA does NOT do this for us: Chrome animates `scrollTo({ behavior:
+ * 'smooth' })` and `scrollIntoView` under `prefers-reduced-motion: reduce`, so
+ * every smooth scroll asks here. Read at CALL time, like {@link motion}.
+ */
+export function scrollBehavior(): ScrollBehavior {
+	return motion(1) === 0 ? 'auto' : 'smooth';
+}

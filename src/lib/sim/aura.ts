@@ -1292,6 +1292,18 @@ export function scheduleSummonTicks(
 				return end + series.interval;
 			};
 			const capReached = (): boolean => cap !== null && fired >= cap;
+			// ⚓ A tick with TRAVEL (`summonTick.travel`, frames) is bounded by when
+			// it was FIRED, not when it lands (⚓ Nate 2026-10-18, gcsim's
+			// behaviour): Lynette's box fires a Vivid Shot while `t <= Duration`
+			// and the shot lands 15f later, so the last one may land after the box
+			// is gone — inclusive, as gcsim's `<=` is. ⛔ A series without it keeps
+			// the half-open landing bound: Venti's stream is CUT at the Stormeye's
+			// end (ruled, unverified — a Venti log would settle it).
+			const travel =
+				(series.effect.trigger.type === 'summonTick' ? series.effect.trigger.travel : undefined) ??
+				0;
+			const inLife = (at: number): boolean =>
+				travel > 0 ? at - travel <= liveUntil() : at < liveUntil();
 			// ⚓ A series on its cast's own counter (`sharesCastCounter`) is fed the
 			// cast's counted hits LAZILY — each one at or before a tick goes through
 			// the clock first, so the window the cast hit opens blocks the ticks
@@ -1310,8 +1322,8 @@ export function scheduleSummonTicks(
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
 				// chain simply ends — ⛔ nothing has to cancel a scheduled task.
-				if (!liveAt(at)) return;
-				if (at >= liveUntil()) return;
+				if (!liveAt(at - travel)) return;
+				if (!inLife(at)) return;
 				if (capReached()) return;
 				// ⚓ A series gated on the Polestar Field is asked PER TICK, at the
 				// tick's own instant (Radiance-window round) — and a refused tick
@@ -1335,7 +1347,7 @@ export function scheduleSummonTicks(
 					) === false
 				) {
 					const skipTo = at + series.interval;
-					if (skipTo < liveUntil()) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
+					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
 					return;
 				}
 				// ⚓ An ABSORBED tick lands in the lock's element; a twin before the
@@ -1343,7 +1355,7 @@ export function scheduleSummonTicks(
 				const element = absorbedMode ? lockedAt(ctx, absorbKey, at) : staticElement;
 				if (absorbedMode && element === undefined) {
 					const skipTo = at + series.interval;
-					if (skipTo < liveUntil()) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
+					if (inLife(skipTo)) clock.schedule(skipTo, Band.TICK, () => fire(skipTo));
 					return;
 				}
 				fired += 1;
@@ -1389,8 +1401,7 @@ export function scheduleSummonTicks(
 				// stream, no stack dispatch — and the chain runs on regardless.
 				if (appliesOnlyTick) {
 					const next = at + series.interval;
-					if (!capReached() && next < liveUntil())
-						clock.schedule(next, Band.TICK, () => fire(next));
+					if (!capReached() && inLife(next)) clock.schedule(next, Band.TICK, () => fire(next));
 					return;
 				}
 				// ⚓ THE TICK IS DAMAGE, whether or not it applied. An ICD-suppressed
@@ -1422,13 +1433,16 @@ export function scheduleSummonTicks(
 				// ⚓ An absorbed tick's mark and hit are PUBLISHED — no walk can know
 				// the lock (the Lumi ruling). Marks keep their element: a twin draws
 				// its own stub beside the Anemo one (⚓ Nate, 2026-10-17).
+				// A travelling tick carries its FIRE so finalize bounds it the same way.
 				if (absorbedMode && element !== undefined) {
+					const landed =
+						travel > 0 ? { time: at, element, firedAt: at - travel } : { time: at, element };
 					const marks = ctx.absorbedMarks.get(absorbKey);
-					if (marks) marks.push({ time: at, element });
-					else ctx.absorbedMarks.set(absorbKey, [{ time: at, element }]);
+					if (marks) marks.push(landed);
+					else ctx.absorbedMarks.set(absorbKey, [landed]);
 					const landings = ctx.strikeLandings.get(absorbKey);
-					if (landings) landings.push({ time: at, element });
-					else ctx.strikeLandings.set(absorbKey, [{ time: at, element }]);
+					if (landings) landings.push(landed);
+					else ctx.strikeLandings.set(absorbKey, [landed]);
 				}
 				// ⚓ The tick's cost to its owner's Nightsoul pool, AFTER the hit
 				// (gcsim `QueueAttack` then `reduceNightsoulPoints(3)`). It may end
@@ -1442,7 +1456,7 @@ export function scheduleSummonTicks(
 				// ⚠️ Stop SCHEDULING at the cap too, not only firing: a capped series
 				// whose summon outlives its ticks would otherwise queue a task per
 				// interval for the rest of the window, each one an immediate no-op.
-				if (!capReached() && next < liveUntil()) clock.schedule(next, Band.TICK, () => fire(next));
+				if (!capReached() && inLife(next)) clock.schedule(next, Band.TICK, () => fire(next));
 			};
 
 			// ⚓ A STREAM starts at the lock, phased from it; everything else at the
@@ -1450,11 +1464,11 @@ export function scheduleSummonTicks(
 			if (absorbedMode === 'stream') {
 				lockOf(ctx, absorbKey).onLock.push((_el, lockAt) => {
 					const first = lockAt + series.firstDelay;
-					if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
+					if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first));
 				});
 			} else {
 				const first = spawnAt + series.firstDelay;
-				if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
+				if (inLife(first)) clock.schedule(first, Band.TICK, () => fire(first));
 			}
 		}
 

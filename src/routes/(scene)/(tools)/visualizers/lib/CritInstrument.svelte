@@ -735,6 +735,13 @@
 			opacity: 1;
 		}
 	}
+	/* A keyframe, so reduced motion is honoured by hand (the tokens' :root
+	   zeroing cannot reach an animation's own duration). */
+	@media (prefers-reduced-motion: reduce) {
+		.cv-roll-dot {
+			animation: none;
+		}
+	}
 
 	/* ── Container-responsive layout ───────────────────────────────────────── */
 

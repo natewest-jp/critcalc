@@ -184,6 +184,19 @@ function withTeams(b: Board, slots: TeamSlot[][]): Board {
 	};
 }
 
+/** Under No repeats, the OTHER team of `board` that holds `id` — the team a
+ *  pick for `teamId` takes them off FIRST (⚓ Nate 2026-10-18, the game's two
+ *  clicks: the first frees them, the second places them). Undefined when the
+ *  board allows repeats, or no other team holds them. */
+export function heldElsewhere(
+	board: Pick<Board, 'noRepeats' | 'teams'>,
+	teamId: string,
+	id: string
+): BoardTeam | undefined {
+	if (!board.noRepeats) return undefined;
+	return board.teams.find((t) => t.id !== teamId && t.slots.includes(id));
+}
+
 export function withoutRepeats(
 	teams: readonly TeamSlot[][],
 	keepOrder: readonly number[] = []

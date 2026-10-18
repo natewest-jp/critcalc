@@ -136,6 +136,12 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'What the beta tag on critcalc means: the tools are still changing; the character data is curated against gcsim.'
 	},
+	// ⏭ Proposed copy (2026-10-18), first in line for Nate's wording pass.
+	'/library': {
+		title: 'Library',
+		description:
+			'Your saved teams, rotations and lineups, and the roster of characters you own. All of it is kept in this browser.'
+	},
 	'/privacy': {
 		title: 'Privacy',
 		description:

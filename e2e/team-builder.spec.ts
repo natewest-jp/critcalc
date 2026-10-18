@@ -279,6 +279,44 @@ test.describe('the board', () => {
 		expect(await team2(), 'the others keep their places').toEqual(['', 'Xingqiu', '', '']);
 	});
 
+	test('under No repeats, a pick of another team’s member takes two clicks', async ({
+		page,
+		seed
+	}) => {
+		// ⚓ Nate 2026-10-18, the game's model (↻ §11.6's "a pick MOVES"): the
+		// first click takes Bennett off Team 1, the second adds him here.
+		await seed({ board: { teams: [['bennett'], [null], ['jean', 'diona', 'gorou', 'xingqiu']] } });
+		await openTool(page, '/builder');
+		const team = (n: number) =>
+			page
+				.locator('.bv-team')
+				.nth(n)
+				.locator('.bv-slot')
+				.evaluateAll((els) => els.map((e) => e.getAttribute('data-name')));
+		const card = (name: string) =>
+			page.locator('.cc', { hasText: name }).first().locator('.cc-main');
+		await page.locator('.bv-team').nth(1).locator('.bv-slot').nth(0).click();
+
+		await expect(card('Bennett')).toHaveAccessibleName('Remove Bennett from Team 1');
+		await card('Bennett').click();
+		expect(await team(0), 'click 1 takes him off Team 1').toEqual(['', '', '', '']);
+		expect(await team(1), '…and adds nothing').toEqual(['', '', '', '']);
+		await expect(page.locator('.tb-notice')).toHaveText('Bennett left Team 1.');
+		await page.getByRole('button', { name: 'Undo' }).click();
+		expect(await team(0), 'Undo puts him back').toEqual(['Bennett', '', '', '']);
+
+		await card('Bennett').click();
+		await card('Bennett').click();
+		expect(await team(0)).toEqual(['', '', '', '']);
+		expect(await team(1), 'click 2 adds him').toEqual(['Bennett', '', '', '']);
+
+		// A FULL selected team still only nudges: he stays where he is.
+		await page.locator('.bv-team').nth(2).locator('.bv-slot').nth(0).click();
+		await card('Bennett').click();
+		expect(await team(1)).toEqual(['Bennett', '', '', '']);
+		expect(await team(2)).toEqual(['Jean', 'Diona', 'Gorou', 'Xingqiu']);
+	});
+
 	test('a preset board opens with its teams', async ({ page }) => {
 		await openTool(page, '/builder');
 		await page.locator('.band-a .band-menu-trigger[aria-label="New lineup"]').click();

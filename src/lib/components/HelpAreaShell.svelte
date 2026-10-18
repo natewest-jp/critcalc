@@ -2,6 +2,7 @@
 	import type { Component } from 'svelte';
 	import type { Area } from '$lib/help/areas';
 	import { findChapter } from '$lib/help/areas';
+	import { scrollBehavior } from '$lib/motion';
 	import { setChapter } from './chromeModal.svelte';
 	import AreaTabs from './AreaTabs.svelte';
 	import HRule from './HRule.svelte';
@@ -64,7 +65,7 @@
 	function jumpTo(event: MouseEvent, id: string) {
 		event.preventDefault();
 		const target = bodyEl?.querySelector<HTMLElement>(`#${CSS.escape(id)}`);
-		target?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+		target?.scrollIntoView({ block: 'start', behavior: scrollBehavior() });
 	}
 </script>
 
@@ -224,16 +225,17 @@
 		padding: 0.2rem 0.4rem;
 		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
-		color: var(--muted);
+		/* The 0.85 rest weight is ALPHA IN THE PAINT (motion sweep, 2026-10-18 —
+		   it was element `opacity`, which the colour transition never reached,
+		   so the hover's last 15% snapped). One mix over a literal role. */
+		color: color-mix(in srgb, var(--muted) 85%, transparent);
 		text-decoration: none;
-		opacity: 0.85;
 		transition: color var(--t-snap);
 	}
 
 	.area-toc a:hover,
 	.area-toc a:focus-visible {
 		color: var(--text);
-		opacity: 1;
 	}
 
 	.area-body {
@@ -307,6 +309,6 @@
 	}
 
 	/* (A reduced-motion block for .area-chapter / .area-toc a stood here.
-	   Retired with the motion round — both spend --t-quick, and the band is
+	   Retired with the motion round — both spend --t-snap, and the band is
 	   zeroed at :root under the same query. See app.css § MOTION.) */
 </style>

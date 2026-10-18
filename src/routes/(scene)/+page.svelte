@@ -9,7 +9,36 @@
 		sceneLayer,
 		startSceneTransition
 	} from '$lib/landing/transition';
-	import { HERO_ART, PLATE_BACK, PLATE_LINE, PLATE_VIEWBOX } from '$lib/landing/heroArt';
+	import {
+		HERO_ART,
+		PLATE_BACK,
+		PLATE_BACK_TALL,
+		PLATE_H,
+		PLATE_H_TALL,
+		PLATE_LINE,
+		PLATE_LINE_TALL,
+		PLATE_VIEWBOX,
+		PLATE_VIEWBOX_TALL,
+		HORIZON_CROSS,
+		HORIZON_CROSS_TALL,
+		TALL_ART_DROP,
+		TALL_EXTRA
+	} from '$lib/landing/heroArt';
+
+	// The tall card's geometry, handed to CSS once so the media query below has
+	// no number of its own: the plate's height, and the label band (533–772 of
+	// 919 on the base plate) moved down with the points.
+	const LABEL_TOP = 533;
+	const LABEL_H = 239;
+	const tallVars = [
+		`--plate-h-tall: ${PLATE_H_TALL}`,
+		`--label-top-tall: ${(((LABEL_TOP + TALL_EXTRA) / PLATE_H_TALL) * 100).toFixed(3)}%`,
+		`--label-h-tall: ${((LABEL_H / PLATE_H_TALL) * 100).toFixed(3)}%`,
+		`--label-top-base: ${((LABEL_TOP / PLATE_H) * 100).toFixed(3)}%`,
+		`--label-h-base: ${((LABEL_H / PLATE_H) * 100).toFixed(3)}%`,
+		`--horizon-cross-base: ${HORIZON_CROSS.toFixed(4)}`,
+		`--horizon-cross-tall: ${HORIZON_CROSS_TALL.toFixed(4)}`
+	].join('; ');
 	import { currentAnnouncements } from '$lib/landing/announcements';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { onMount } from 'svelte';
@@ -112,6 +141,7 @@
 	 the camera, so the fade happens on a surface moving WITH the scene. -->
 <div
 	class="composition"
+	style={tallVars}
 	use:sceneLayer={'composition'}
 	in:fade|global={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 	out:fade|global={{ duration: FADE_OUT_MS }}
@@ -131,17 +161,30 @@
 				{#each announcements as a (a.id)}
 					<li class="notice">
 						<span class="notice__text">{a.text}</span>
-						{#if a.detail}
-							{#if a.href}
+						{#each a.lines as line (line.parts.join())}
+							{#snippet parts()}
+								{#each line.parts as part, i (part)}
+									{#if i > 0}<span class="notice__sep" aria-hidden="true"> · </span>{/if}<span
+										class="notice__part">{part}</span
+									>
+								{/each}
+							{/snippet}
+							{#if line.href === '/coverage'}
 								<a
 									class="notice__detail link link--quiet"
-									href={resolve(a.href as '/coverage')}
-									onclick={(e) => openCoverage(e)}>{a.detail}</a
+									href={resolve('/coverage')}
+									onclick={(e) => openCoverage(e)}>{@render parts()}</a
+								>
+							{:else if line.href === '/builder'}
+								<a
+									class="notice__detail link link--quiet"
+									href={resolve('/builder')}
+									onclick={(e) => navigateToTool(e, '/builder')}>{@render parts()}</a
 								>
 							{:else}
-								<span class="notice__detail">{a.detail}</span>
+								<span class="notice__detail">{@render parts()}</span>
 							{/if}
-						{/if}
+						{/each}
 					</li>
 				{/each}
 			</ul>
@@ -178,6 +221,23 @@
 							<path class="art art--{layer.role}" d={layer.d} />
 						{/each}
 						<path class="plate-line" d={PLATE_LINE} />
+					</svg>
+					<!-- The tall plate (heroArt.ts § THE TALL CARD), shown instead on a
+						 tall phone by CSS alone, so the first paint is right on any
+						 screen. Same art, same coordinates: only the body is longer. -->
+					<svg
+						class="hero__plate hero__plate--tall"
+						viewBox={PLATE_VIEWBOX_TALL}
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path class="plate-fill" d={PLATE_BACK_TALL} />
+						<g transform="translate(0 {TALL_ART_DROP})">
+							{#each art as layer (layer.role)}
+								<path class="art art--{layer.role}" d={layer.d} />
+							{/each}
+						</g>
+						<path class="plate-line" d={PLATE_LINE_TALL} />
 					</svg>
 
 					<!-- Label block: the plate's 108–152 band (60%–84%), under the art.
@@ -231,6 +291,16 @@
 		--group-w: calc(3 * var(--card-w) + 2 * var(--gap));
 		/* The air between the doors and the band that captions them. */
 		--caption-gap: 1.5rem;
+		/* 🎛️ Where the card group's CENTRE sits, top to bottom — the cards and
+		   the band under them both read it (see .heroes for the 46%). */
+		--group-y: 46%;
+		/* ⚠️ The inline style on .composition carries only -base / -tall
+		   NAMES: an inline declaration beats every stylesheet rule, so if it set
+		   --label-top itself the tall-phone query below could never override it
+		   (it couldn't, until 2026-10-18). These are the overridable ones. */
+		--label-top: var(--label-top-base);
+		--label-h: var(--label-h-base);
+		--horizon-cross: var(--horizon-cross-base);
 
 		position: absolute;
 		top: 0;
@@ -267,7 +337,7 @@
 		   horizon at ~63%, so the cards still stand on the ground. ↻ 50% was
 		   right with the band ABOVE (⚓ Nate moved it below, 2026-09-16); the
 		   portrait composition is a separate item. */
-		top: 46%;
+		top: var(--group-y);
 		transform: translateY(-50%);
 		left: 0;
 		right: 0;
@@ -434,8 +504,8 @@
 		position: absolute;
 		/* The 104–151 band of the plate's 180: under the art, above the bottom
 		   point, centred on the straight-sided flank. */
-		top: 58%;
-		height: 26%;
+		top: var(--label-top);
+		height: var(--label-h);
 		left: 0;
 		right: 0;
 		display: flex;
@@ -485,6 +555,57 @@
 		.hero__kicker {
 			letter-spacing: var(--ls-wide);
 		}
+		/* ⚓ Nate 2026-10-18: three-quarter size on a phone (HRule §
+		   --rule-size) — see SiteFooter for why 7.5px is safe there. */
+		.hero__rule {
+			--rule-size: 7.5px;
+		}
+	}
+
+	/* `compact` — 40rem. ⚓ Nate 2026-10-18: on a phone the cards are bound by
+	   WIDTH, so give them all of it — the 10px gaps the card's aspect was
+	   derived from (see --plate-w above), not the 16px floor of --gap. */
+	@media (max-width: 40rem) {
+		.composition {
+			--gap: 0.625rem;
+		}
+	}
+	/* 🎛️ A TALL phone (taller than 5:3 portrait — iPhone 16 is ~2.2:1) has more
+	   sky and floor than the group uses, and at 46% the group sat low with the
+	   floor empty under its band. Lifted to centre the group between the chrome
+	   and the footer — a starting value for Nate's eye (2026-10-18). */
+	/* The tall plate is off unless the tall-phone query below turns it on. */
+	.hero__plate--tall {
+		display: none;
+	}
+	/* ⚓ ON A PHONE THE CARDS HANG FROM THE HORIZON (Nate 2026-10-18). A
+	   percentage drifted against the world as phones got taller, because the
+	   cards are width-bound and the horizon is not; now the group's centre is
+	   solved so the horizon crosses each card's bottom point at
+	   --horizon-cross of the plate (heroArt.ts § HORIZON_POINT_DEPTH). The
+	   band below hangs off the cards, so it follows. --horizon-y is the scene
+	   layout's own (its distance from the BOTTOM — the same plate maths the
+	   renderer runs), so this is exact from the first paint, with no script. */
+	@media (max-width: 40rem) {
+		.composition {
+			--group-y: calc(100% - var(--horizon-y) - (var(--horizon-cross) - 0.5) * var(--card-h));
+		}
+	}
+	@media (max-width: 40rem) and (max-aspect-ratio: 3/5) {
+		.composition {
+			--horizon-cross: var(--horizon-cross-tall);
+			/* The TALL card (demo): the plate's proportion and its label band
+			   switch to the stretched plate's, and the base SVG gives way. */
+			--plate-h: var(--plate-h-tall);
+			--label-top: var(--label-top-tall);
+			--label-h: var(--label-h-tall);
+		}
+		.hero__plate:not(.hero__plate--tall) {
+			display: none;
+		}
+		.hero__plate--tall {
+			display: block;
+		}
 	}
 
 	/* The label's rule: the site's centre-mark HRule (⚓ Nate 2026-09-30) —
@@ -525,7 +646,7 @@
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: calc(46% + var(--card-h) / 2 + var(--caption-gap));
+		top: calc(var(--group-y) + var(--card-h) / 2 + var(--caption-gap));
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -560,7 +681,10 @@
 	}
 
 	/* The fact is gold and a weight up; the fine print recedes. */
+	/* ⚓ The headline a rung ABOVE its lines — 18 over 16 (14 over 12 on a
+	   phone) — so the band reads as a title with fine print (Nate 2026-10-18). */
 	.notice__text {
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-medium);
 		color: var(--accent);
 		white-space: nowrap;
@@ -577,6 +701,20 @@
 		.notice {
 			font-size: var(--fs-lg);
 		}
+		/* 🎛️ Headline 14 over fine print 12 — the desktop's one-rung step (⚓
+		   Nate 2026-10-18: the band's text outweighed the card names, ~13px on
+		   a phone). Each line now fits ONE row at 320 (measured 240 and 211
+		   of 256px), so the parts no longer stack. */
+		.notice__text {
+			font-size: var(--fs-lg);
+		}
+		.notice__detail {
+			font-size: var(--fs-md);
+		}
+	}
+	/* Wide: a part never breaks inside itself; the line wraps between parts. */
+	.notice__part {
+		white-space: nowrap;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

@@ -40,6 +40,55 @@ export const PLATE_BACK =
 export const PLATE_LINE =
 	'M436.166,65.213C475.359,77.508 502.03,113.827 502.03,154.903L502.03,763.15C502.03,804.226 475.359,840.546 436.166,852.841L255.015,909.669L73.864,852.841C34.671,840.546 8,804.226 8,763.15L8,154.903C8,113.827 34.671,77.508 73.864,65.213L255.015,8.384L436.166,65.213ZM434.969,69.03L255.015,12.577L75.061,69.03C37.536,80.801 12,115.575 12,154.903L12,763.15C12,802.479 37.536,837.252 75.061,849.024L255.015,905.477L434.969,849.024C472.494,837.252 498.03,802.479 498.03,763.15L498.03,154.903C498.03,115.575 472.494,80.801 434.969,69.03Z';
 
+/**
+ * 🎛️ THE TALL CARD (demo, ⚓ Nate 2026-10-18): on a tall phone the three cards
+ * are width-bound and read as diminutive, so the plate can grow TALLER without
+ * new artwork. The silhouette is one shape with a straight-sided body (y 155 →
+ * 763), so extra height is INSERTED at TALL_CUT — between the art (which ends
+ * at y 496) and the label band (which starts at 533) — by moving every point
+ * below the cut down TALL_EXTRA units. No curve crosses the cut, so the points
+ * keep their exact shape, the inner line follows, and the art is untouched.
+ * The label band moves with the points (see +page.svelte's --label-*).
+ */
+export const TALL_CUT = 515;
+export const TALL_EXTRA = 140;
+/** 🎛️ How far the art (figure + rings) moves DOWN on the tall plate, so it
+ *  is not left hugging the top point while all the new height opens below it.
+ *  ⚓ Nate, 2026-10-18: ~50 by eye, then 70 — half the inserted height, so
+ *  the new space splits evenly above and below the art. */
+export const TALL_ART_DROP = 70;
+export const PLATE_H_TALL = PLATE_H + TALL_EXTRA;
+export const PLATE_VIEWBOX_TALL = `0 0 ${PLATE_W} ${PLATE_H_TALL}`;
+
+/**
+ * 🎛️ WHERE THE HORIZON CROSSES THE CARD (⚓ Nate 2026-10-18), phones only:
+ * the share of the bottom POINT that hangs below the horizon. The point runs
+ * from the shoulder where the straight sides end (y 763; 903 on the tall
+ * plate) to the tip (919; 1059) — 156 units on both — so 0.8 puts the horizon
+ * a fifth of the way down from the shoulder: "almost down to the widest area
+ * of the point".
+ */
+// ↻ tune(nate) 2026-10-18: 0.8 → 0.4 → 0.3 — less of the point sunk below the horizon.
+export const HORIZON_POINT_DEPTH = 0.3;
+const POINT_H = 156;
+/** The plate y the horizon crosses, as a fraction of the plate's height. */
+export const HORIZON_CROSS = (PLATE_H - HORIZON_POINT_DEPTH * POINT_H) / PLATE_H;
+export const HORIZON_CROSS_TALL = (PLATE_H_TALL - HORIZON_POINT_DEPTH * POINT_H) / PLATE_H_TALL;
+
+/** Every (x, y) pair in an absolute path whose y is below `cut` moves down by
+ *  `dy`. The plate paths use only absolute M / C / L / Z, so pairs are simply
+ *  every two numbers. */
+export function stretchPath(d: string, cut: number, dy: number): string {
+	let i = 0;
+	return d.replace(/-?\d*\.?\d+(?:e-?\d+)?/g, (n) => {
+		const isY = i++ % 2 === 1;
+		const v = Number(n);
+		return isY && v > cut ? String(+(v + dy).toFixed(3)) : n;
+	});
+}
+export const PLATE_BACK_TALL = stretchPath(PLATE_BACK, TALL_CUT, TALL_EXTRA);
+export const PLATE_LINE_TALL = stretchPath(PLATE_LINE, TALL_CUT, TALL_EXTRA);
+
 /** Paint roles. Each is an alpha rung in +page.svelte; 'figure' is full gold. */
 export type ArtRole = 'outer-ring' | 'middle-ring' | 'inner-ring' | 'figure';
 

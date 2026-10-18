@@ -438,6 +438,13 @@ const BENCH_GAP = 16; // the ribbon to the plot's gutter
 const UNIT_GUTTER = 22;
 /** The brand row: the chrome's own lockup, at the chrome's own size. */
 const BRAND_SIZE = 24; // --fs-4xl, the wordmark
+/** 🎛️ The wordmark's weight on the PNG — Nate's to set by eye. The chrome
+ *  draws 500 (--fw-medium) with `-webkit-font-smoothing: antialiased`, which a
+ *  canvas cannot ask for, so the same 500 reads HEAVIER here. Bitter is a
+ *  variable font, so any weight between its stops renders. ↻ 500 → 450
+ *  (⚓ Nate, 2026-10-18: "450 or even 400"), ↻ 450 → 400 the same day: 450
+ *  still read heavier. */
+const BRAND_WEIGHT_PNG = 400;
 const BRAND_MARK = 1.5714; // the mark's height ÷ the wordmark's (SiteChrome)
 const BRAND_GAP = 6; // 0.35rem
 const BRAND_H = Math.round(BRAND_SIZE * BRAND_MARK);
@@ -518,9 +525,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	canvas.height = Math.round(h * DPR);
 	const base = canvas.getContext('2d');
 	if (!base) throw new Error('canvas 2d context unavailable');
-	// ⚓ The stars stay out from behind the chart and the lockup — the brand
-	// keep-out's rule on screen (starPass STAR_KEEPOUT_*), widened to the
-	// whole plot, because a still image shows every halo the twinkle hides.
+	// ⚓ The stars sit low behind the chart and the lockup — the STAR VEIL's
+	// content boxes ($lib/landing/starVeil.ts, the live tools' rule too): a
+	// faint floor inside, a long feather out to a little above full strength.
 	const keepOut = [
 		{ x: ox - UNIT_GUTTER, y: chartTop, w: chartW + UNIT_GUTTER, h: bodyBottom - chartTop },
 		{ x: PAD, y: PAD, w: BRAND_H * 4 + 160, h: BRAND_H }
@@ -640,9 +647,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// ── NB / Moonsign layered-tile fills — mirror the on-screen CSS ──
 	// (repeat-x px tiles; angles flattened to horizontal — invisible at 14px)
 
-	/** rgba() with alpha, from a hex color */
-	const alpha = (hex: string, a: number) => {
-		const [r, g, b] = hexToRgb(hex);
+	/** rgba() with alpha, from a hex color OR an `rgb()` string (what `mix`
+	 *  returns). ⚠ It read hex only, so `alpha(mix(…), 0)` parsed nothing and
+	 *  gave rgba(0, 0, 0, 0): the NB lane's green bloom faded toward BLACK and
+	 *  drew a dark rim on every PNG with a Nightsoul team (⚓ Nate, 2026-10-18). */
+	const alpha = (color: string, a: number) => {
+		const m = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(color);
+		const [r, g, b] = m ? [+m[1], +m[2], +m[3]] : hexToRgb(color);
 		return `rgba(${r}, ${g}, ${b}, ${a})`;
 	};
 
@@ -1574,11 +1585,21 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		base.restore();
 		bx += lw + BRAND_GAP;
 	}
-	base.font = `500 ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
+	base.font = `${BRAND_WEIGHT_PNG} ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
+	// --ls-tight (0.02em), as `.chrome-wordmark` tracks it. ⚠ Set it here and
+	// not through `type()`: unset, the wordmark drew untracked (or kept a stale
+	// spacing from the label before it), which read as a HEAVIER wordmark than
+	// the chrome's (⚓ Nate, 2026-10-18).
+	// Restored after the fill: the tracking is the wordmark's alone, and the
+	// title and notation below set their fonts without touching it.
+	const hasLs = 'letterSpacing' in base;
+	const lsBefore = hasLs ? base.letterSpacing : '';
+	if (hasLs) base.letterSpacing = `${BRAND_SIZE * 0.02}px`;
 	base.fillStyle = 'rgba(255, 255, 255, 0.85)';
 	base.textAlign = 'left';
 	base.textBaseline = 'middle';
 	base.fillText('critcalc.app', bx, brandMid);
+	if (hasLs) base.letterSpacing = lsBefore;
 	// The title + notation block: centred on the lockup when it fits beside
 	// it, otherwise running down from the lockup's top.
 	const blockTop = blockH <= BRAND_H ? brandMid - blockH / 2 : PAD;

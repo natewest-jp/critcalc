@@ -253,6 +253,11 @@
 		   the 100% width as a button's is. */
 		box-sizing: border-box;
 		text-decoration: none;
+		/* A menu row is a CONTROL: it eases on --t-snap, as NavPanel's
+		   .np-row does. `color` too, for the danger variant's hover. */
+		transition:
+			background-color var(--t-snap),
+			color var(--t-snap);
 	}
 
 	.band-menu :global(.band-menu-item:hover:not(:disabled)),

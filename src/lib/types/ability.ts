@@ -1103,6 +1103,19 @@ export type Trigger =
 			 * and hits are PUBLISHED by the live chain, ⛔ never walked.
 			 */
 			absorbed?: 'twin' | 'stream';
+			/**
+			 * ⚓ THE TICK TRAVELS (2026-10-18) — integer FRAMES from a tick's FIRE
+			 * to its landing. `firstTickDelay` and `interval` still state the
+			 * LANDINGS; this says the last `travel` frames of each are flight, so
+			 * the summon's window bounds the FIRE (inclusive) and the landing may
+			 * outlive it — Lynette's Vivid Shots, fired while gcsim's
+			 * `t <= b.Duration` and landing 15f later. Absent: the window bounds
+			 * the landing, half-open — ⚓ Venti's stream is CUT at the Stormeye's
+			 * end (ruled, unverified), so ⛔ never add it to his. Absorbed series
+			 * only (lint D.54): the marker walk skips those, so the live chain is
+			 * its one reader.
+			 */
+			travel?: number;
 			/** Gauge units per tick when not 1 — the Anemo Traveler's absorbed
 			 *  burst twin is 2U (gcsim Durability 50). */
 			units?: number;

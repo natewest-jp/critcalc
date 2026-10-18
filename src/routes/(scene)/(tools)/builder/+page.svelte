@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount, tick, untrack } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -32,6 +33,7 @@
 		BOARD_TEAM_LIMIT,
 		boards,
 		effectiveCon,
+		heldElsewhere,
 		pinnedRotation,
 		teamCon,
 		type BoardPreset,
@@ -43,7 +45,7 @@
 	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
-	import { motion } from '$lib/motion';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
@@ -307,8 +309,8 @@
 
 	/** A pick lands in the selected team's EARLIEST empty slot. Returns
 	 *  whether that filled the team, or null when it was already full (the
-	 *  nudge). ⚓ Under No repeats a character on ANOTHER team MOVES here (the
-	 *  store frees their old slot) and the band says so. */
+	 *  nudge). ↻ A character on ANOTHER team never gets here while this team
+	 *  has room — that pick takes them off it first (`leavingFrom`). */
 	function placeOnBoard(id: string): boolean | null {
 		const team = selectedTeam;
 		if (!team) return null;
@@ -319,14 +321,37 @@
 			nudge = { id, at: Date.now() };
 			return null;
 		}
-		const left = boards.setSlot(board.id, team.id, i, id);
-		if (left.length) {
-			const name = getCharacterIndexEntry(id)?.displayName ?? id;
-			documentBar.showNotice(
-				`${name} moved from ${teamLabel(board, indexOfTeam(left[0]))} to ${teamLabel(board, indexOfTeam(team.id))}.`
-			);
-		}
+		boards.setSlot(board.id, team.id, i, id);
 		return team.slots.filter((s) => s === null).length === 1;
+	}
+
+	/** ⚓ The game's two clicks (Nate 2026-10-18, ↻ §11.6's "a pick MOVES"):
+	 *  under No repeats, a pick of a character on ANOTHER team, while the
+	 *  selected team has room, takes them off that team and adds nothing —
+	 *  the next pick adds them. Returns that team, or undefined when the pick
+	 *  is an ordinary one. ⚠ A FULL selected team still only nudges (the game
+	 *  does nothing there), and the Planner's row only swaps. */
+	function leavingFrom(id: string): BoardTeam | undefined {
+		const team = selectedTeam;
+		if (!team || team.id === ERRAND_ID || !team.slots.includes(null)) return undefined;
+		return heldElsewhere(board, team.id, id);
+	}
+
+	/** The team a pick of `id` would take them off, by name. */
+	function leavingLabel(id: string): string | undefined {
+		const from = leavingFrom(id);
+		return from ? teamLabel(board, indexOfTeam(from.id)) : undefined;
+	}
+
+	/** Take `id` off `from` through the ordinary removal (a pin drops as with
+	 *  any member change); band A says so, with Undo. */
+	function leaveTeam(id: string, from: BoardTeam): void {
+		const boardId = board.id;
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		boards.setSlot(boardId, from.id, from.slots.indexOf(id), null);
+		documentBar.showNotice(`${nameOf(id)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
+			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
+		]);
 	}
 
 	/** Out of the SELECTED team, leaving its slot empty — the others keep
@@ -765,8 +790,14 @@
 
 	/** A card's team action is about the SELECTED team: in it, or not, or it
 	 *  is full ('full' stays clickable — the click is what earns the nudge). */
-	const teamStateOf = (id: string): 'in' | 'out' | 'full' =>
-		selectedTeam?.slots.includes(id) ? 'in' : selectedTeam?.slots.includes(null) ? 'out' : 'full';
+	const teamStateOf = (id: string): 'in' | 'out' | 'full' | 'elsewhere' =>
+		selectedTeam?.slots.includes(id)
+			? 'in'
+			: leavingFrom(id)
+				? 'elsewhere'
+				: selectedTeam?.slots.includes(null)
+					? 'out'
+					: 'full';
 
 	/** ⚓ The game's toggle: a pick fills the selected team, the same pick again
 	 *  frees its slot. Below the dock, the pick that fills the team shows it. */
@@ -776,6 +807,8 @@
 		if (swapping) return swapIn(id);
 		previewHeld = id;
 		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
+		const from = leavingFrom(id);
+		if (from) return leaveTeam(id, from);
 		const filled = placeOnBoard(id);
 		if (filled && tabbed) tab = 'lineup';
 	}
@@ -840,6 +873,8 @@
 				: `Add ${entry.displayName} to ${selectedLabel}`;
 		const team = selectedLabel;
 		const slot = selectedTeam?.slots.indexOf(entry.id) ?? -1;
+		const from = slot < 0 ? leavingLabel(entry.id) : undefined;
+		if (from) return `Remove ${entry.displayName} from ${from}`;
 		return slot >= 0
 			? `Remove ${entry.displayName} from ${team} (slot ${slot + 1})`
 			: `Add ${entry.displayName} to ${team}`;
@@ -1149,12 +1184,23 @@
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
 			{#if documentBar.notice}
-				<span class="tb-notice" role="status">{documentBar.notice}</span>
-				{#each documentBar.noticeActions as action (action.label)}
-					<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
-						>{action.label}</button
-					>
-				{/each}
+				<!-- The notice and its actions fade as ONE surface on --t-quick
+				     (DocumentActions' .doc-notice). One wrapper, so the buttons
+				     leave with the words — and `outroInert`, so an Undo on its
+				     way out cannot take a click. -->
+				<span
+					class="tb-notice-group"
+					transition:fade={{ duration: motion(T_QUICK) }}
+					onintrostart={introLive}
+					onoutrostart={outroInert}
+				>
+					<span class="tb-notice" role="status">{documentBar.notice}</span>
+					{#each documentBar.noticeActions as action (action.label)}
+						<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
+							>{action.label}</button
+						>
+					{/each}
+				</span>
 			{/if}
 			<button
 				class="btn"
@@ -1466,6 +1512,7 @@
 		{conMode}
 		onClose={() => (selectedId = null)}
 		teamState={swapping ? undefined : teamStateOf(selectedId)}
+		elsewhereLabel={leavingLabel(selectedId)}
 		onToggleTeam={toggleTeam}
 	/>
 {/if}
@@ -1572,6 +1619,11 @@
 
 	/* Band A's end zone: the board's notice and Share. */
 	.tb-doc-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--band-item-gap, 4px);
+	}
+	.tb-notice-group {
 		display: flex;
 		align-items: center;
 		gap: var(--band-item-gap, 4px);

@@ -25,6 +25,7 @@
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
+	import { scrollBehavior } from '$lib/motion';
 	import { notationTints } from '$lib/timeline/notationTints';
 	import { tokenizeNotation } from '$lib/utils/tokenizer';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
@@ -2541,15 +2542,16 @@
 		if (!trackScrollEl) return;
 		const el = trackScrollEl;
 		const target = projectX(seconds, scale) + trackPad - el.clientWidth / 2;
-		// ⚠ THE NATIVE OPTION, deliberately: it is one line, the UA already honours
-		// `prefers-reduced-motion` for it, and the scroller clamps the target
-		// itself. A hand-rolled rAF tween lived here for an hour on the strength of
-		// a measurement that turned out to be an ARTEFACT — `behavior: 'smooth'`
+		// ⚠ THE NATIVE OPTION, deliberately: it is one line and the scroller
+		// clamps the target itself. ↻ 2026-10-18: the UA does NOT honour
+		// `prefers-reduced-motion` for it (Chrome animates regardless), so the
+		// behaviour asks $lib/motion's `scrollBehavior()`. A hand-rolled rAF
+		// tween lived here for an hour on the strength of a measurement that turned out to be an ARTEFACT — `behavior: 'smooth'`
 		// looked like a silent no-op on this element, and the real cause was that a
 		// BACKGROUNDED TAB freezes requestAnimationFrame, which is what smooth
 		// scrolling runs on. ⚠ Anything rAF-driven measures as broken when the tab
 		// under test is not the front one; check that before blaming the code.
-		el.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+		el.scrollTo({ left: Math.max(0, target), behavior: scrollBehavior() });
 	}
 	$effect(() => {
 		// ⚠ An effect with a cleanup, not onMount — see plannerView.scrollToSeconds
@@ -3744,21 +3746,31 @@
 				autocomplete="off"
 			/>
 		{/if}
-		<div class="rp-notation-wrap">
-			<div class="rp-notation" use:mountEditor={{ value: notation, key: tabId }}></div>
-			<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
+		<!-- ── THE COMPOSER'S BODY (2026-10-18, ⚓ Nate) ──────────────────────
+		     The field and its history pair as ONE footprint, so the pinned plate
+		     (.rp-composer-body::before) covers what you write in and nothing
+		     else: hung off the whole row it ran on past the field's 140-character
+		     measure to the tool's right edge, and narrowed with the main column
+		     whenever the aside opened. In the dock it is `display: contents` —
+		     the dock's wrapping row is unchanged. -->
+		<div class="rp-composer-body">
+			<div class="rp-notation-wrap">
+				<div class="rp-notation" use:mountEditor={{ value: notation, key: tabId }}></div>
+				<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
 			     characters' coverage under the box, what this rotation doesn't
 			     reach dimmed. Under the box rather than beside it, so the strips
 			     share the notation's left edge — which is the chart's. -->
-			{#if $siteSettings.showCoverageStrips}
-				<RotationCoverage
-					ids={characterSlots.filter((id, i) => id !== 'blank' && characterSlots.indexOf(id) === i)}
-					events={rotation.events}
-					constellations={effectiveCon}
-				/>
-			{/if}
-		</div>
-		<!-- ── THE HISTORY PAIR (single truth, 2026-08-13) ─────────────────────
+				{#if $siteSettings.showCoverageStrips}
+					<RotationCoverage
+						ids={characterSlots.filter(
+							(id, i) => id !== 'blank' && characterSlots.indexOf(id) === i
+						)}
+						events={rotation.events}
+						constellations={effectiveCon}
+					/>
+				{/if}
+			</div>
+			<!-- ── THE HISTORY PAIR (single truth, 2026-08-13) ─────────────────────
 		     ⚓ NATE asked for undo/redo buttons on one side of the notation box.
 		     They are a thin wrapper over CodeMirror's own history commands, which
 		     ⌘Z/⌘⇧Z have always reached — what changed is that the box is no longer
@@ -3773,29 +3785,30 @@
 		     is the only thing tying the box to the instrument above it; controls
 		     in front of the box would indent the notation away from the tracks it
 		     describes. -->
-		<div class="rp-history" role="group" aria-label="Notation history">
-			<button
-				class="btn btn--sm"
-				type="button"
-				aria-label="Undo the last notation change"
-				title={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
-				disabled={!canUndo}
-				onclick={() => {
-					editorApi?.undo();
-					historyTick++;
-				}}><Mark name="undo" /><span class="rp-history-word">Undo</span></button
-			>
-			<button
-				class="btn btn--sm"
-				type="button"
-				aria-label="Redo the last undone notation change"
-				title={isMac ? 'Redo (⌘⇧Z)' : 'Redo (Ctrl+Shift+Z)'}
-				disabled={!canRedo}
-				onclick={() => {
-					editorApi?.redo();
-					historyTick++;
-				}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
-			>
+			<div class="rp-history" role="group" aria-label="Notation history">
+				<button
+					class="btn btn--sm"
+					type="button"
+					aria-label="Undo the last notation change"
+					title={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
+					disabled={!canUndo}
+					onclick={() => {
+						editorApi?.undo();
+						historyTick++;
+					}}><Mark name="undo" /><span class="rp-history-word">Undo</span></button
+				>
+				<button
+					class="btn btn--sm"
+					type="button"
+					aria-label="Redo the last undone notation change"
+					title={isMac ? 'Redo (⌘⇧Z)' : 'Redo (Ctrl+Shift+Z)'}
+					disabled={!canRedo}
+					onclick={() => {
+						editorApi?.redo();
+						historyTick++;
+					}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
+				>
+			</div>
 		</div>
 		{#if dockOn && dockOpen && dockKeys.length}
 			<!-- The key row. pointerdown is cancelled so a press never takes focus
@@ -5479,25 +5492,45 @@
 		z-index: 7;
 	}
 	/* The plate it stands on while pinned, as a pseudo-element that reaches 8px
-	   past the box on both sides so the row keeps its size. Transparent at rest,
-	   so at the page's end it is the bare row it always was; the SURFACE band
-	   (--t-quick), alpha in the paint.
+	   past the BODY (the field + its history pair) on every side, so the row
+	   keeps its size. Transparent at rest, so at the page's end it is the bare
+	   row it always was; the SURFACE band (--t-quick), alpha in the paint.
 	   OPAQUE, the aside's own rung (--surface-raised, slate-700): the dock's
 	   glass (slate-700 at .8) was tried first, and at 1366×768 the bars under a
 	   pinned box read straight through the notation — the dock's chart is
-	   behind one collapsed line, this one is behind every line you type. */
-	.rp-composer::before {
+	   behind one collapsed line, this one is behind every line you type.
+	   ↻ 2026-10-18 (⚓ Nate): on the BODY, not the row. Hung off .rp-composer
+	   it was as wide as the main column — empty slate past the field's
+	   140-character measure (1630px of plate for 1116 of field at 1920), and
+	   its right edge jumped 278px when the aside opened. Now it is the field's
+	   own footprint: its left edge is the field's −8 at every width, and its
+	   right edge moves only where the field's does. */
+	.rp-composer-body {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		/* Shrink-wrap: as wide as the field's measure plus the pair, or the
+		   row, whichever is less (see .rp-notation-wrap's `width`). */
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+	.rp-composer-body::before {
 		content: '';
 		position: absolute;
-		inset: -8px 0;
+		inset: -8px;
 		z-index: -1;
 		border-radius: var(--r-md) var(--r-md) 0 0;
 		background-color: transparent;
 		transition: background-color var(--t-quick);
 		pointer-events: none;
 	}
-	.rp-composer--pinned::before {
+	.rp-composer--pinned .rp-composer-body::before {
 		background-color: var(--surface-raised);
+	}
+	/* The dock keeps its own one wrapping row (field · pair · key row). */
+	.rp-composer--docked .rp-composer-body {
+		display: contents;
 	}
 	/* ⛔ `.rp-composer--picking` AND `.rp-explore-link` LEFT WITH THE SOURCE
 	   (2026-08-13). The first dimmed and blanked the composer while the picker
@@ -5523,6 +5556,14 @@
 		   No media query: the field is narrower than this below ~1500px, which
 		   is above `wide` (71rem), so the bound only ever binds there. */
 		max-width: calc(140 * 0.6 * 13px + 2 * 12px);
+	}
+	/* The measure as a WIDTH too, outside the dock, so the shrink-wrapped body
+	   (.rp-composer-body) asks for the full measure rather than its text's
+	   width — the field is as wide as before, and the body ends where it
+	   does. ⛔ Not in the dock: its row WRAPS, and a 1116px hypothetical size
+	   would push the history pair onto a line of its own. */
+	.rp-composer:not(.rp-composer--docked) .rp-notation-wrap {
+		width: calc(140 * 0.6 * 13px + 2 * 12px);
 	}
 	/* The history pair. A bare flex group, not a plate — same reasoning as band
 	   B's .rp-zoom: the buttons paint themselves, and wrapping them in a second

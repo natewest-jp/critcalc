@@ -354,7 +354,7 @@ export type SimContext = {
 	 * synthesizes a fixed series' from `computeSummonDamageTicks`: the sequence
 	 * cannot be re-walked there, so the chain that struck says what it struck.
 	 */
-	strikeLandings: Map<string, { time: number; element?: Element }[]>;
+	strikeLandings: Map<string, { time: number; element?: Element; firedAt?: number }[]>;
 	/** Generation per `${characterId}::${summonLabel}` — bumped when a summon
 	 *  that declares `terminatesOn: 'recast'` respawns (gauge round L5e-b). A
 	 *  running tick chain compares its captured generation on every fire and
@@ -417,8 +417,10 @@ export type SimContext = {
 	absorbLocks: Map<string, import('./absorb').AbsorbLock>;
 	/** Absorbed ticks the live chain fired, keyed like `stateGatedTicks`, each
 	 *  with the element it landed in — finalize stamps them on the summon window
-	 *  (`absorbedTicks`), drawn by `$lib/timeline/summonMarks.ts`. */
-	absorbedMarks: Map<string, { time: number; element: Element }[]>;
+	 *  (`absorbedTicks`), drawn by `$lib/timeline/summonMarks.ts`.
+	 *  `firedAt` is set on a travelling tick (`summonTick.travel`): the span
+	 *  bounds its FIRE, so it may land after the window ends. */
+	absorbedMarks: Map<string, { time: number; element: Element; firedAt?: number }[]>;
 	/** A cast's `spawnsAtSwapOutFrom` summons spawned at this frame — written by
 	 *  the pool at the swap-out, read by finalize so the window and the live
 	 *  chain agree. Absent = that cast's owner never swapped out of the form. */
