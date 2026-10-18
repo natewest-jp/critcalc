@@ -131,17 +131,23 @@
 				{#each announcements as a (a.id)}
 					<li class="notice">
 						<span class="notice__text">{a.text}</span>
-						{#if a.detail}
-							{#if a.href}
+						{#each a.lines as line (line.text)}
+							{#if line.href === '/coverage'}
 								<a
 									class="notice__detail link link--quiet"
-									href={resolve(a.href as '/coverage')}
-									onclick={(e) => openCoverage(e)}>{a.detail}</a
+									href={resolve('/coverage')}
+									onclick={(e) => openCoverage(e)}>{line.text}</a
+								>
+							{:else if line.href === '/builder'}
+								<a
+									class="notice__detail link link--quiet"
+									href={resolve('/builder')}
+									onclick={(e) => navigateToTool(e, '/builder')}>{line.text}</a
 								>
 							{:else}
-								<span class="notice__detail">{a.detail}</span>
+								<span class="notice__detail">{line.text}</span>
 							{/if}
-						{/if}
+						{/each}
 					</li>
 				{/each}
 			</ul>
