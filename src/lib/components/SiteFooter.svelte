@@ -23,7 +23,7 @@
 		 The year is a build constant; vite.config.ts says why it cannot read the
 		 clock here. -->
 	<p class="ftr__legal">
-		© {__BUILD_YEAR__} critcalc.app — an unofficial fan project, not affiliated with or endorsed by HoYoverse.
+		© {__BUILD_YEAR__} critcalc.app, an unofficial fan project, not affiliated with or endorsed by HoYoverse.
 		Genshin Impact and all related trademarks and assets are © HoYoverse.
 	</p>
 </footer>
@@ -79,8 +79,11 @@
 		.ftr__rule {
 			margin-bottom: 0.3rem;
 		}
+		/* ↻ 2026-10-18 (⚓ Nate): --fs-sm → --fs-xs (10px), the ladder's floor
+		   for running text (--fs-2xs is a reserve rung), so the legal line
+		   stops competing with the landing's cards on a phone. */
 		.ftr__legal {
-			font-size: var(--fs-sm);
+			font-size: var(--fs-xs);
 		}
 	}
 </style>

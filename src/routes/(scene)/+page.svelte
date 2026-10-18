@@ -9,7 +9,32 @@
 		sceneLayer,
 		startSceneTransition
 	} from '$lib/landing/transition';
-	import { HERO_ART, PLATE_BACK, PLATE_LINE, PLATE_VIEWBOX } from '$lib/landing/heroArt';
+	import {
+		HERO_ART,
+		PLATE_BACK,
+		PLATE_BACK_TALL,
+		PLATE_H,
+		PLATE_H_TALL,
+		PLATE_LINE,
+		PLATE_LINE_TALL,
+		PLATE_VIEWBOX,
+		PLATE_VIEWBOX_TALL,
+		TALL_ART_DROP,
+		TALL_EXTRA
+	} from '$lib/landing/heroArt';
+
+	// The tall card's geometry, handed to CSS once so the media query below has
+	// no number of its own: the plate's height, and the label band (533–772 of
+	// 919 on the base plate) moved down with the points.
+	const LABEL_TOP = 533;
+	const LABEL_H = 239;
+	const tallVars = [
+		`--plate-h-tall: ${PLATE_H_TALL}`,
+		`--label-top-tall: ${(((LABEL_TOP + TALL_EXTRA) / PLATE_H_TALL) * 100).toFixed(3)}%`,
+		`--label-h-tall: ${((LABEL_H / PLATE_H_TALL) * 100).toFixed(3)}%`,
+		`--label-top: ${((LABEL_TOP / PLATE_H) * 100).toFixed(3)}%`,
+		`--label-h: ${((LABEL_H / PLATE_H) * 100).toFixed(3)}%`
+	].join('; ');
 	import { currentAnnouncements } from '$lib/landing/announcements';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { onMount } from 'svelte';
@@ -112,6 +137,7 @@
 	 the camera, so the fade happens on a surface moving WITH the scene. -->
 <div
 	class="composition"
+	style={tallVars}
 	use:sceneLayer={'composition'}
 	in:fade|global={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 	out:fade|global={{ duration: FADE_OUT_MS }}
@@ -191,6 +217,23 @@
 							<path class="art art--{layer.role}" d={layer.d} />
 						{/each}
 						<path class="plate-line" d={PLATE_LINE} />
+					</svg>
+					<!-- The tall plate (heroArt.ts § THE TALL CARD), shown instead on a
+						 tall phone by CSS alone, so the first paint is right on any
+						 screen. Same art, same coordinates: only the body is longer. -->
+					<svg
+						class="hero__plate hero__plate--tall"
+						viewBox={PLATE_VIEWBOX_TALL}
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path class="plate-fill" d={PLATE_BACK_TALL} />
+						<g transform="translate(0 {TALL_ART_DROP})">
+							{#each art as layer (layer.role)}
+								<path class="art art--{layer.role}" d={layer.d} />
+							{/each}
+						</g>
+						<path class="plate-line" d={PLATE_LINE_TALL} />
 					</svg>
 
 					<!-- Label block: the plate's 108–152 band (60%–84%), under the art.
@@ -450,8 +493,8 @@
 		position: absolute;
 		/* The 104–151 band of the plate's 180: under the art, above the bottom
 		   point, centred on the straight-sided flank. */
-		top: 58%;
-		height: 26%;
+		top: var(--label-top);
+		height: var(--label-h);
 		left: 0;
 		right: 0;
 		display: flex;
@@ -515,9 +558,24 @@
 	   sky and floor than the group uses, and at 46% the group sat low with the
 	   floor empty under its band. Lifted to centre the group between the chrome
 	   and the footer — a starting value for Nate's eye (2026-10-18). */
+	/* The tall plate is off unless the tall-phone query below turns it on. */
+	.hero__plate--tall {
+		display: none;
+	}
 	@media (max-width: 40rem) and (max-aspect-ratio: 3/5) {
 		.composition {
 			--group-y: 42%;
+			/* The TALL card (demo): the plate's proportion and its label band
+			   switch to the stretched plate's, and the base SVG gives way. */
+			--plate-h: var(--plate-h-tall);
+			--label-top: var(--label-top-tall);
+			--label-h: var(--label-h-tall);
+		}
+		.hero__plate:not(.hero__plate--tall) {
+			display: none;
+		}
+		.hero__plate--tall {
+			display: block;
 		}
 	}
 
@@ -613,6 +671,11 @@
 		}
 		/* A line's parts stack instead of wrapping mid-name ("Spiral Abyss:
 		   Stardread / Moon" at 390, ⚓ Nate 2026-10-18). */
+		/* 🎛️ The fine print a step under the headline (⚓ Nate 2026-10-18: the
+		   band's text outweighed the card names, ~13px on a phone). */
+		.notice__detail {
+			font-size: var(--fs-md);
+		}
 		.notice__sep {
 			display: none;
 		}
