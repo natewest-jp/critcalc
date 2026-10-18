@@ -48,6 +48,10 @@
 		z-index: 61;
 		inset: 4.25rem 1.5rem 1.5rem;
 		border-radius: var(--r-lg, 6px);
+		/* The modals' light edge (ChromeOverlay's .overlay-panel), set at the
+		   same level — outside the body's .ctx-dark — so --border resolves as
+		   theirs does (⚓ Nate, 2026-10-18: it was the one window without it). */
+		border: 1px solid var(--border);
 		overflow: hidden;
 	}
 	/* ── Narrow: the window takes the screen (roomy, 47.5rem — $lib/breakpoints.ts) ── */
@@ -55,6 +59,8 @@
 		.lib-window {
 			inset: 3.5rem 0 0;
 			border-radius: 0;
+			/* Edge to edge, a border would only outline the screen. */
+			border: 0;
 		}
 	}
 </style>
