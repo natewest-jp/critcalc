@@ -1452,11 +1452,15 @@
 	}
 
 	/* ── demo feedback ── */
+	/* Centred by auto margins, ⛔ never a translate: it FADES on element
+	   opacity, and a transform-placed subtree under opacity is rasterized at
+	   rounded coordinates in WebKit and shifts (/styleguide § Laws). */
 	.lib-toast {
 		position: absolute;
-		left: 50%;
+		inset-inline: 0;
 		bottom: 1.25rem;
-		transform: translateX(-50%);
+		width: fit-content;
+		margin-inline: auto;
 		padding: 0.5rem 0.9rem;
 		border-radius: var(--r-sm, 3px);
 		background: var(--surface-raised);
@@ -1473,9 +1477,11 @@
 	.lib-confirm {
 		position: fixed;
 		z-index: 211;
-		left: 50%;
-		top: 40%;
-		transform: translate(-50%, -50%);
+		/* Centred at 40% by auto margins in a box that ends 20% short of the
+		   foot (centre = 80% / 2), ⛔ never a translate — see .lib-toast. */
+		inset: 0 0 20%;
+		margin: auto;
+		height: fit-content;
 		width: min(26rem, calc(100vw - 2rem));
 		padding: 1.1rem 1.25rem 1rem;
 		border-radius: var(--r-lg, 6px);
