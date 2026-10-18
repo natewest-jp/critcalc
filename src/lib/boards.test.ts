@@ -8,6 +8,7 @@ import {
 	pinnedRotation,
 	teamCon,
 	effectiveCon,
+	heldElsewhere,
 	withoutRepeats,
 	toSharedBoard,
 	fromSharedBoard,
@@ -172,5 +173,22 @@ describe('No repeats — one team per character', () => {
 			[null, null, null, null],
 			['furina', 'bennett', null, null]
 		]);
+	});
+	it('names the OTHER team a pick takes them off first (the game’s two clicks)', () => {
+		const board = {
+			...makeBoard('Two clicks'),
+			noRepeats: true,
+			teams: [makeTeam(['bennett', null, null, null]), makeTeam()]
+		};
+		const [one, two] = board.teams;
+		expect(heldElsewhere(board, two.id, 'bennett')?.id).toBe(one.id);
+		expect(heldElsewhere(board, one.id, 'bennett'), 'their own team is not elsewhere').toBe(
+			undefined
+		);
+		expect(heldElsewhere(board, two.id, 'jean'), 'on no team').toBe(undefined);
+		expect(
+			heldElsewhere({ ...board, noRepeats: false }, two.id, 'bennett'),
+			'repeats allowed: an ordinary pick'
+		).toBe(undefined);
 	});
 });

@@ -34,6 +34,7 @@
 	import { constellations, ownership, savedNotations } from '$lib/stores';
 	import {
 		effectiveCon,
+		heldElsewhere,
 		pinnedRotation,
 		rotationsForTeam,
 		teamCon,
@@ -171,7 +172,9 @@
 	}
 	/** The team a pick of `previewId` would make — the pick is the game's
 	 *  toggle, so a member previews their own removal, and a full team
-	 *  previews nothing (the pick would only nudge). */
+	 *  previews nothing (the pick would only nudge). ↻ Nor does a character
+	 *  on ANOTHER team under No repeats: that pick only takes them off it
+	 *  (⚓ Nate 2026-10-18), so this team would not change. */
 	function previewIds(team: BoardTeam, facts: ReturnType<typeof teamFacts>): string[] | null {
 		if (!previewId || team.id !== selectedTeamId) return null;
 		// Swapping: the candidate takes the slot (a teammate is never offered).
@@ -181,11 +184,9 @@
 				: team.slots
 						.map((s, i) => (i === swapping.slot ? previewId : s))
 						.filter((s): s is string => !!s);
-		return facts.ids.includes(previewId)
-			? facts.ids.filter((id) => id !== previewId)
-			: team.slots.includes(null)
-				? [...facts.ids, previewId]
-				: null;
+		if (facts.ids.includes(previewId)) return facts.ids.filter((id) => id !== previewId);
+		if (heldElsewhere(board, team.id, previewId)) return null;
+		return team.slots.includes(null) ? [...facts.ids, previewId] : null;
 	}
 	const verdictsFor = (b: Battlefield, ids: string[], conOf: (id: string) => number) =>
 		ids.length
