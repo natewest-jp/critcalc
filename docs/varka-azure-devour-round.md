@@ -142,12 +142,14 @@ synthetic character), check, lint, build; e2e — see the merge commit.
 
 ## 5. Still open — three things, all Nate's
 
-- 🗒️ **The pixel for a spent charge — PARKED (⚓ Nate, 2026-09-18: "I'm not
-  feeling it"; discarded, kept as an open idea).** An `sC` that paid draws
+- ⛔ **The pixel for a spent charge — RETIRED (⚓ Nate, 2026-10-18: after a
+  month parked, "we're not going to use this concept"; first parked 2026-09-18,
+  "I'm not feeling it").** An `sC` that paid draws
   nothing but its own block; `ActionEvent.spentCharge` (ability id + chained
   `readyAt`) is still stamped, so the cost shows only as where the next `sE`
   can land, and any future surface has its data. **What was tried, three cuts
-  on branch `polish/varka-spent-ghost` (unmerged, kept as the archive), each
+  on branch `polish/varka-spent-ghost` (never merged; DELETED 2026-10-18, its
+  tip was `0bd1002b` — this list is now the only record), each
   recorded because each taught something:**
   1. _A pill-less GHOST tail_ on the E row at ghost depth (z:0, the element at
      ghost alpha, from the `sC` block's start to `readyAt`). Invisible for
