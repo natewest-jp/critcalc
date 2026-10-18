@@ -24,7 +24,9 @@
 		if (event.target === event.currentTarget) toLanding();
 	}
 	function onKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') toLanding();
+		// A page that spent the Escape on something of its own (the Library
+		// dismissing a menu or a search) marks it defaultPrevented.
+		if (event.key === 'Escape' && !event.defaultPrevented) toLanding();
 	}
 </script>
 

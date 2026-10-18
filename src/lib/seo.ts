@@ -131,6 +131,12 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'critcalc is built on community data. How to support gcsim and Keqing Mains, and how to report something wrong.'
 	},
+	// ⏭ Proposed copy (2026-10-18), first in line for Nate's wording pass.
+	'/library': {
+		title: 'Library',
+		description:
+			'Your saved teams, rotations and lineups, and the roster of characters you own. All of it is kept in this browser.'
+	},
 	'/privacy': {
 		title: 'Privacy',
 		description:

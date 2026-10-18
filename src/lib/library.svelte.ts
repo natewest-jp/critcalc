@@ -12,6 +12,9 @@
  * The Builder says where "here" is by registering a TARGET while it is mounted
  * (the exporters idiom in documentBar), so this module never imports a page.
  *
+ * ⚓ AS ITS OWN PAGE (`/library`, 2026-10-18) the same flows run with no tool
+ * mounted — `atPage()` — and every pick goes to its document's home.
+ *
  * ⚓ Back closes it (Nate 2026-10-08): opening pushes a shallow history entry
  * (`page.state.library`) and the tools layout closes the overlay when that
  * state goes away.
@@ -98,6 +101,28 @@ class LibraryState {
 		this.show(builder ? 'builder' : 'planner', 'roster');
 		this.#away = !builder && !path.startsWith(resolve('/planner'));
 		this.rosterFocus = focusId;
+	}
+
+	/** True when no tool is here to take a Planner pick (the `/library` page,
+	 *  or the overlay over the Visualizers): the pick then goes to the Planner. */
+	get away(): boolean {
+		return this.#away;
+	}
+
+	/**
+	 * THE `/library` PAGE (lineups design §10.1a: "as its own page, each goes to
+	 * its document's HOME — rotations → the Planner, boards → the Builder").
+	 * No tool is mounted there, so the flows run in their elsewhere mode: a
+	 * rotation or team acts as the Planner's and then goes to the Planner, a
+	 * board goes to the Builder. ⚠ The page must have RESTORED the documents
+	 * first (rotationTabs/boards) — a pick written into the pre-restore default
+	 * would be overwritten when the tools layout restores on arrival.
+	 */
+	atPage(tab: LibraryTab) {
+		this.open = false;
+		this.from = 'planner';
+		this.#away = true;
+		this.tab = tab;
 	}
 
 	/** A Planner pick made from neither tool: carry it out, then go there. */
