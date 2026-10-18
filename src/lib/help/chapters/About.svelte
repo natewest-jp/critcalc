@@ -115,6 +115,6 @@
 	</p>
 	<p>
 		The code is licensed under the AGPL-3.0 and the curated data under CC BY-SA 4.0. critcalc’s own
-		artwork — the logo, the icons, and the scene — is not covered by either.
+		artwork (the logo, landing silhouettes, some icons, and the scene) is not covered by either.
 	</p>
 </section>
