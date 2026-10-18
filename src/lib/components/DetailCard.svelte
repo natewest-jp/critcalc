@@ -36,6 +36,7 @@
 		conMode,
 		onClose,
 		teamState,
+		elsewhereLabel,
 		onToggleTeam,
 		defaultBuild = true
 	}: {
@@ -43,7 +44,10 @@
 		conMode: ConMode;
 		onClose: () => void;
 		/** Slot membership for the team strip; undefined hides the button. */
-		teamState?: 'in' | 'out' | 'full';
+		teamState?: 'in' | 'out' | 'full' | 'elsewhere';
+		/** 'elsewhere': the team the pick takes them off (No repeats — the
+		 *  game's first of two clicks). */
+		elsewhereLabel?: string;
 		onToggleTeam?: (id: string) => void;
 		/**
 		 * The Team Builder's "Default build" (the roster's Layer-1 loadout); false
@@ -207,12 +211,14 @@
 							onclick={() => onToggleTeam(id)}
 							title={teamState === 'full' ? 'All four team slots are filled' : undefined}
 						>
-							<Mark name={teamState === 'in' ? 'check' : 'plus'} />
+							<Mark name={teamState === 'in' || teamState === 'elsewhere' ? 'check' : 'plus'} />
 							{teamState === 'in'
 								? 'In team — remove'
-								: teamState === 'full'
-									? 'Team full'
-									: 'Add to team'}
+								: teamState === 'elsewhere'
+									? `In ${elsewhereLabel ?? 'another team'} — remove`
+									: teamState === 'full'
+										? 'Team full'
+										: 'Add to team'}
 						</button>
 					</div>
 				{/if}

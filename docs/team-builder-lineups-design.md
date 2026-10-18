@@ -944,11 +944,17 @@ only; Noelle/Thoma absent too).
     - ⚓ **The frame wears the LAST-SELECTED team** that holds the character
       (this visit's selection order). Each Lineup row carries its team's hue as
       a left edge, the key. ⏳ Four placeholder hues, `--team-hue-*`, cycling.
-    - ⚓⚓ **No repeats ENFORCES** (↻ it allowed and marked): a pick MOVES the
-      character from another team and band A says so. Turning it on keeps
-      each repeat on its last-selected team. ⛔ The warning mark is gone. ⚠ A
-      pick settles only the character it places; a repeat already on a board
-      is the toggle's to settle.
+    - ⚓⚓ **No repeats ENFORCES** (↻ it allowed and marked): ~~a pick MOVES the
+      character from another team and band A says so~~ ↻ **⚓ Nate 2026-10-18:
+      a pick TAKES TWO CLICKS, as in the game** — while the selected team has
+      room, a click on a character on ANOTHER team only takes them off it
+      (band A: "Bennett left Team 2." with Undo; the card reads "Remove
+      Bennett from Team 2" and the fingerprint previews nothing), and the
+      second click adds them. A FULL selected team still only nudges (the
+      game does nothing there), and swap mode stays one click. Turning it on
+      keeps each repeat on its last-selected team. ⛔ The warning mark is
+      gone. ⚠ A pick settles only the character it places; a repeat already
+      on a board is the toggle's to settle.
     - ⚓ **The followed team is sticky**: with no team chosen, the selection
       holds the team it is filling while it has room. A move that frees a slot
       on an earlier team no longer pulls the selection back there.
