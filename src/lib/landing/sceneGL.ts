@@ -48,9 +48,11 @@ import {
 	createStarPass,
 	STAR_KEEPOUT_PAD_PX,
 	STAR_STATIC_ALPHA,
-	type StarPass
+	type StarPass,
+	type StarVeilSet
 } from '$lib/landing/starPass';
 import { SCENE_DIM, SCENE_DIM_DITHER, SCENE_DIM_TINT_RGB } from '$lib/landing/sceneDim';
+import { veilKnobs } from '$lib/landing/starVeil';
 
 // --- Geometry constants -----------------------------------------------------
 // Mirror the --*-src vars on .scene-stack in (scene)/+layout.svelte AND the
@@ -343,10 +345,86 @@ let current: SceneGLHandle | null = null;
  */
 let brandBox: { x: number; y: number; w: number; h: number } | null = null;
 let brandBoxChanged: (() => void) | null = null;
+/** When the lockup the box was measured from FADES IN, on the clock `draw`
+ *  runs on (performance.now()). ⚓ Nate, 2026-10-18: heading back from a tool
+ *  the chrome MOUNTS at the click and fades in only at the landing's reveal,
+ *  so a keep-out that followed the dim alone carved the brand's hole into the
+ *  sky for the whole descent, before the brand itself was back. The keep-out
+ *  now comes in with the lockup — the chrome hands over its own fade window. */
+let brandReveal: { start: number; duration: number } | null = null;
 
-export function setStarKeepOut(box: { x: number; y: number; w: number; h: number } | null): void {
+export function setStarKeepOut(
+	box: { x: number; y: number; w: number; h: number } | null,
+	reveal: { start: number; duration: number } | null = null
+): void {
 	brandBox = box;
+	brandReveal = box ? reveal : null;
 	brandBoxChanged?.();
+}
+
+/** 0 → 1 across the lockup's fade-in; 1 with no reveal pending. */
+function brandRevealAt(timeMs: number): number {
+	if (!brandReveal) return 1;
+	const t = (timeMs - brandReveal.start) / Math.max(1, brandReveal.duration);
+	return t <= 0 ? 0 : t >= 1 ? 1 : t;
+}
+
+/**
+ * THE STAR VEIL's content boxes (starVeil.ts, 2026-10-18) — the tool surface's
+ * boxes in viewport px, published by the tools layout. Module state for the
+ * brand box's reason: a publish before mount or across a context rebuild
+ * holds.
+ *
+ * Two sets, so a change can EASE: `veilFrom` is what was showing, `veilTo` the
+ * newest publish, and `veilEase` the window to cross between them — the scene
+ * transition's own (start, duration) on the camera's easing, handed in by the
+ * publisher. ⛔ No clock of its own: without an ease the change lands in the
+ * next draw (resize, scroll, an aside opening). A publish that arrives while
+ * the same window is running re-targets `veilTo` and keeps `veilFrom`, so a
+ * tool that settles its layout mid-leg never restarts the crossfade.
+ *
+ * The veil applies at the DIM's level (0 on the landing and the static pages),
+ * so it rides the ascend/descend on the camera clock with no clock of its own,
+ * and a set left behind on the landing does nothing there. ⚠ Which is why the
+ * tools layout never publishes null on leaving: dropping the boxes while the
+ * descend's dim is still near 1 would pop every star to full at once.
+ */
+let veilFrom: StarVeilSet | null = null;
+let veilTo: StarVeilSet | null = null;
+let veilEase: { start: number; duration: number } | null = null;
+let veilChanged: (() => void) | null = null;
+
+const sameVeil = (a: StarVeilSet | null, b: StarVeilSet | null) =>
+	a === b ||
+	(!!a &&
+		!!b &&
+		a.sides === b.sides &&
+		a.boxes.length === b.boxes.length &&
+		a.boxes.every((r, i) => {
+			const q = b.boxes[i];
+			return r.x === q.x && r.y === q.y && r.w === q.w && r.h === q.h;
+		}));
+
+export function setStarVeil(
+	next: StarVeilSet | null,
+	ease: { start: number; duration: number } | null = null
+): void {
+	if (sameVeil(next, veilTo)) return;
+	const now = performance.now();
+	const easing = !!ease && now < ease.start + ease.duration && !!veilTo && !!next;
+	if (!easing) {
+		veilFrom = veilTo = next;
+		veilEase = null;
+	} else if (veilEase && veilEase.start === ease!.start) {
+		veilTo = next; // same leg: re-target, keep what we're crossing from
+	} else {
+		// A new leg. If an older crossfade was mid-flight, it starts from its
+		// target — at most the remainder of that fade, never a jump to a stale set.
+		veilFrom = veilTo;
+		veilTo = next;
+		veilEase = ease;
+	}
+	veilChanged?.();
 }
 
 /** The mounted renderer, for choreography and the dev probe. */
@@ -568,10 +646,24 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	let starDrawnAtMs = 0;
 	const starTime = (nowMs: number) => (starFrozenAt || nowMs) - starPausedMs;
 
+	/** The veil's crossfade position at `now` (1 = all `veilTo`), settling the
+	 *  ease when it ends. Same easing as the camera and the dim. */
+	function veilMixAt(now: number): number {
+		if (!veilEase) return 1;
+		const t = Math.min(1, Math.max(0, (now - veilEase.start) / Math.max(1, veilEase.duration)));
+		if (t >= 1) {
+			veilFrom = veilTo;
+			veilEase = null;
+			return 1;
+		}
+		return bezierEase(t);
+	}
+
 	function drawNow(timeMs: number = performance.now()) {
 		if (destroyed || lost || !quads) return;
 		const { w: vw, h: vh } = view();
 		const level = dimAt(timeMs);
+		const veilMix = veilMixAt(timeMs);
 		// Above 0 the scene renders offscreen and FS_DIM writes it out; at 0
 		// (the landing, the static pages) it draws straight to the canvas.
 		const dimTarget = level > 0 ? ensureTarget() : null;
@@ -626,14 +718,21 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			staticAlpha: reducedMq.matches ? STAR_STATIC_ALPHA : -1,
 			// ⚓ Fades OUT with the dim: a tool's dim already keeps the stars off
 			// its chrome, and the lockup the box was measured from leaves with
-			// the landing — so the keep-out goes as the tool arrives.
+			// the landing — so the keep-out goes as the tool arrives. ⚓ And comes
+			// back IN with the lockup's own fade (brandReveal), never sooner.
 			keepOut: brandBox && {
 				x: brandBox.x - STAR_KEEPOUT_PAD_PX,
 				y: brandBox.y - STAR_KEEPOUT_PAD_PX,
 				w: brandBox.w + 2 * STAR_KEEPOUT_PAD_PX,
 				h: brandBox.h + 2 * STAR_KEEPOUT_PAD_PX,
-				strength: 1 - level
-			}
+				strength: Math.min(1 - level, brandRevealAt(timeMs))
+			},
+			// ⚓ The star veil applies at the dim's level: off on the landing,
+			// eased in and out by the ascend/descend on the camera's clock.
+			veil:
+				veilTo && veilFrom && level > 0
+					? { from: veilFrom, to: veilTo, mix: veilMix, amount: level }
+					: null
 		});
 		gl.bindTexture(gl.TEXTURE_2D, floorTex);
 		bind(progPlate, quads.floor, cam.x, k.floorGrain);
@@ -684,6 +783,27 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			raf = 0;
 			drawNow();
 		});
+	}
+
+	// The veil's crossfade fills only frames nobody else draws — the camera's
+	// loop (a crane) and the dim's own loop already draw every frame and read
+	// veilMixAt() themselves. It exists for the leg where nothing else moves
+	// (an ultrawide viewport clamps the crane to 0).
+	let veilRaf = 0;
+	function onVeilChanged() {
+		if (!veilEase) {
+			requestDraw();
+			return;
+		}
+		if (veilRaf) return;
+		const step = (t: number) => {
+			veilRaf = 0;
+			if (destroyed) return;
+			const live = veilEase !== null;
+			if (!animPending && !dimAnim) drawNow(t);
+			if (live && veilEase) veilRaf = requestAnimationFrame(step);
+		};
+		veilRaf = requestAnimationFrame(step);
 	}
 
 	function onResize() {
@@ -862,6 +982,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			if (raf) cancelAnimationFrame(raf);
 			if (loopRaf) cancelAnimationFrame(loopRaf);
 			if (dimRaf) cancelAnimationFrame(dimRaf);
+			if (veilRaf) cancelAnimationFrame(veilRaf);
 			document.removeEventListener('visibilitychange', syncLoop);
 			reducedMq.removeEventListener('change', syncLoop);
 			window.removeEventListener('resize', onResize);
@@ -871,6 +992,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			gl.getExtension('WEBGL_lose_context')?.loseContext();
 			if (current === handle) current = null;
 			if (brandBoxChanged === requestDraw) brandBoxChanged = null;
+			if (veilChanged === onVeilChanged) veilChanged = null;
 		}
 	};
 
@@ -879,6 +1001,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	drawNow();
 	current = handle;
 	brandBoxChanged = requestDraw;
+	veilChanged = onVeilChanged;
 	(window as unknown as Record<string, unknown>).__scene = {
 		retune: handle.retune,
 		// Probe surface: is the twinkle loop live? (The scene-occlusion
@@ -893,7 +1016,15 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		// phase is a pure function of it, so "the field is frozen on one frame"
 		// is exactly "this value does not move" — what probe-star-freeze
 		// asserts across a whole tool→tool leg.
-		starTime: () => starDrawnAtMs
+		starTime: () => starDrawnAtMs,
+		// Tuning surface (⚓ Nate, 2026-10-18): set any star-veil knob and redraw,
+		// e.g. __scene.veil({ floor: 0.35, inset: 100 }); no argument prints the
+		// current set. Live only — a picked value lands in starVeil.ts.
+		veil: (k?: Partial<typeof veilKnobs>) => {
+			if (k) Object.assign(veilKnobs, k);
+			requestDraw();
+			return { ...veilKnobs };
+		}
 	};
 	return handle;
 }
