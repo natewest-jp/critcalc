@@ -57,7 +57,6 @@
 		margin: 0 auto 0.55rem;
 		--rule-tint: var(--muted);
 		--rule-opacity: 0.35;
-		--rule-size: 5px;
 	}
 
 	.ftr__legal {
@@ -79,6 +78,10 @@
 	@media (max-width: 40rem) {
 		.ftr__rule {
 			margin-bottom: 0.3rem;
+			/* ⚓ Nate 2026-10-18: three-quarter size on a phone (HRule §
+			   --rule-size) — a 1.5px line, whole device px at 2×, sub-device
+			   softness at 3×, and phones are never 1×. */
+			--rule-size: 7.5px;
 		}
 		/* ↻ 2026-10-18 (⚓ Nate): --fs-sm → --fs-xs (10px), the ladder's floor
 		   for running text (--fs-2xs is a reserve rung), so the legal line

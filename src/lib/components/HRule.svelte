@@ -33,9 +33,11 @@
 	//                    10px — the artwork's own scale). The line is a fifth
 	//                    of it and the caps/mark keep their proportions, so the
 	//                    rule scales as one drawing. ⚓ Nate 2026-10-18: 5px on
-	//                    the landing cards and the footer. ⚠️ Keep it a whole
-	//                    multiple of 5px: at 5px the 1px line lands on whole
-	//                    rows (y 2–3), crisp even at 1×.
+	//                    the landing cards and the footer, ↻ then 7.5px and on
+	//                    PHONES ONLY. ⚠️ Crispness: a multiple of 5px puts the
+	//                    line on whole CSS rows (crisp at 1×); 7.5px is whole
+	//                    device px at 2× and sub-device-soft at 3× — fine on a
+	//                    phone, never on a desktop that may be 1×.
 	// Width comes from the parent; the line takes up the slack.
 
 	let { variant = 'capped' }: { variant?: 'capped' | 'center' } = $props();

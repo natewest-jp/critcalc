@@ -544,6 +544,11 @@
 		.hero__kicker {
 			letter-spacing: var(--ls-wide);
 		}
+		/* ⚓ Nate 2026-10-18: three-quarter size on a phone (HRule §
+		   --rule-size) — see SiteFooter for why 7.5px is safe there. */
+		.hero__rule {
+			--rule-size: 7.5px;
+		}
 	}
 
 	/* `compact` — 40rem. ⚓ Nate 2026-10-18: on a phone the cards are bound by
@@ -588,8 +593,6 @@
 		display: block;
 		width: 52%;
 		--rule-tint: var(--hero-rule);
-		/* ⚓ Nate 2026-10-18: the rule at half size (HRule § --rule-size). */
-		--rule-size: 5px;
 	}
 
 	.hero__name {
