@@ -2310,11 +2310,16 @@ img {
 	color: var(--chrome);
 }
 
+/* The FAQ's questions (and Privacy's sub-heads) are not in the sidebar, so a
+   reader finds one by SCANNING (2026-10-18, Nate). It was body size, body
+   colour and half a line of extra space — weight and face alone at 16px. Now
+   chrome like every other heading, a step up, and spaced to bind DOWN: more
+   room above than below makes each question and its answer one block. */
 .prose h3 {
-	margin: 1.4rem 0 0.5rem;
-	font-size: var(--fs-xl);
+	margin: 1.8rem 0 0.35rem;
+	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
-	color: var(--text);
+	color: var(--chrome);
 }
 
 .prose p {

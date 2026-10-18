@@ -23,7 +23,10 @@
 	<h2 id="what-it-is">What critcalc is</h2>
 
 	<h3>Is critcalc official?</h3>
-	<p>No. It’s an unofficial fan project, not affiliated with or endorsed by HoYoverse.</p>
+	<p>
+		No. It’s an unofficial fan project, not affiliated with or endorsed by HoYoverse. It’s also not
+		created or backed by any company. This is a solo dev project.
+	</p>
 
 	<h3>What does the beta tag mean?</h3>
 	<p>
