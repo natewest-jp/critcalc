@@ -153,6 +153,16 @@ export function sceneTransitionStart(): number | null {
 	return browser && active ? active.startTime : null;
 }
 
+/**
+ * The in-flight scene transition's window — its start (performance.now()
+ * clock) and duration — or null. The star veil (sceneGL `setStarVeil`) eases a
+ * box change across it, on the camera's easing, instead of keeping a clock of
+ * its own.
+ */
+export function sceneTransitionWindow(): { start: number; duration: number } | null {
+	return browser && active ? { start: active.startTime, duration: active.duration } : null;
+}
+
 export function prefersReducedMotion(): boolean {
 	if (typeof window === 'undefined') return false;
 	return window.matchMedia('(prefers-reduced-motion: reduce)').matches;

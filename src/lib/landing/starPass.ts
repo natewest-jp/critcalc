@@ -1,4 +1,5 @@
 import { stars, type JitterVariant, type StarAnimation, type StarColor } from '$lib/stars';
+import { STAR_VEIL_GLSL, STAR_VEIL_MAX_BOXES, type VeilBox } from '$lib/landing/starVeil';
 
 /**
  * The twinkle starfield as a STAR PASS inside the scene renderer's canvas
@@ -177,7 +178,7 @@ const ANIM_INDEX: Record<StarAnimation, number> = { gentle: 0, jitter: 1, dramat
  *  - dramatic: opacity 0.15·base → 1 with scale(1 → 1.15) at peak (retired
  *              from generation, kept for decoder compatibility).
  */
-const VERTEX_SRC = `
+export const STAR_VERTEX_SRC = `
 precision highp float;
 
 attribute vec2 a_pos;      // star position, % of the sky region
@@ -194,6 +195,14 @@ uniform float u_time;   // seconds
 uniform float u_static; // >= 0: static frame at this uniform opacity; < 0: animate
 uniform vec4 u_keep;     // brand keep-out box in VIEWPORT px: x, y, w, h (pad included)
 uniform vec2 u_keepSoft; // x: feather px   y: strength 0 (off) – 1
+// The STAR VEIL (starVeil.ts): two sets of content boxes in VIEWPORT px — the
+// one being left and the one arriving — crossfaded by u_veilMix on the nav
+// clock, and applied at u_veilMix.y (the tool dim's level; 0 on the landing).
+uniform vec4 u_veilA[${STAR_VEIL_MAX_BOXES}];
+uniform vec4 u_veilB[${STAR_VEIL_MAX_BOXES}];
+uniform vec2 u_veilN;     // live box counts: x set A, y set B
+uniform vec4 u_veilAxes;  // xy set A's axes, zw set B's — (sides ? 1 : 0, 1)
+uniform vec2 u_veilMix;   // x: A → B crossfade 0–1   y: amount 0 (off) – 1
 uniform float u_jPos[${3 * STOPS_PER_VARIANT}];
 uniform float u_jK[${3 * STOPS_PER_VARIANT}];
 
@@ -207,6 +216,7 @@ const float TAU = 6.28318530718;
 const float FLICKER = ${FLICKER};
 const float HERO_FLICKER = ${HERO_FLICKER_SCALE};
 const float HALO_SCALE = ${HALO_SCALE};
+${STAR_VEIL_GLSL}
 
 float jitterK(float phase, int variant) {
 	float k = 0.0;
@@ -267,6 +277,14 @@ void main() {
 	vec2 kq = abs(world - (u_keep.xy + u_keep.zw * 0.5)) - u_keep.zw * 0.5;
 	float kd = length(max(kq, 0.0)) + min(max(kq.x, kq.y), 0.0);
 	alpha *= mix(1.0, smoothstep(0.0, max(u_keepSoft.x, 1.0), kd), u_keepSoft.y);
+
+	// The star veil — the same maths as starVeil() in TS, from the same
+	// constants. Per star CENTRE, so a star fades whole (the keep-out's rule).
+	if (u_veilMix.y > 0.0) {
+		float va = starVeilSet(u_veilA, u_veilN.x, u_veilAxes.xy, world);
+		float vb = starVeilSet(u_veilB, u_veilN.y, u_veilAxes.zw, world);
+		alpha *= mix(1.0, mix(va, vb, u_veilMix.x), u_veilMix.y);
+	}
 
 	v_color = a_color;
 	v_alpha = alpha;
@@ -349,7 +367,13 @@ export interface StarPassDrawOpts {
 	/** The brand keep-out box in viewport px (pad included), and how strongly
 	 *  it applies (0 = off). See STAR_KEEPOUT_*. */
 	keepOut?: { x: number; y: number; w: number; h: number; strength: number } | null;
+	/** The star veil (starVeil.ts): the set being left (`from`) and the set
+	 *  arriving (`to`), crossfaded by `mix`, applied at `amount` (0 = off). */
+	veil?: { from: StarVeilSet; to: StarVeilSet; mix: number; amount: number } | null;
 }
+
+/** One set of content boxes for the veil, in viewport px. */
+export type StarVeilSet = { boxes: readonly VeilBox[]; sides: boolean };
 
 export interface StarPass {
 	/** Draw the field. Leaves blend state disabled and attrib arrays 0/1
@@ -394,7 +418,7 @@ function buildVertexData(): Float32Array {
  *  compile/link failure — the scene treats that like any mount error. */
 export function createStarPass(gl: WebGLRenderingContext): StarPass {
 	const program = gl.createProgram()!;
-	gl.attachShader(program, compileShader(gl, gl.VERTEX_SHADER, VERTEX_SRC));
+	gl.attachShader(program, compileShader(gl, gl.VERTEX_SHADER, STAR_VERTEX_SRC));
 	gl.attachShader(program, compileShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SRC));
 	gl.linkProgram(program);
 	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
@@ -438,9 +462,24 @@ export function createStarPass(gl: WebGLRenderingContext): StarPass {
 	const uStatic = u('u_static');
 	const uKeep = u('u_keep');
 	const uKeepSoft = u('u_keepSoft');
+	const uVeilA = u('u_veilA');
+	const uVeilB = u('u_veilB');
+	const uVeilN = u('u_veilN');
+	const uVeilAxes = u('u_veilAxes');
+	const uVeilMix = u('u_veilMix');
+	const veilBuf = new Float32Array(4 * STAR_VEIL_MAX_BOXES);
+	const packVeil = (set: StarVeilSet) => {
+		veilBuf.fill(0);
+		const n = Math.min(set.boxes.length, STAR_VEIL_MAX_BOXES);
+		for (let i = 0; i < n; i++) {
+			const b = set.boxes[i];
+			veilBuf.set([b.x, b.y, b.w, b.h], i * 4);
+		}
+		return n;
+	};
 
 	return {
-		draw({ timeMs, view, cam, region, dpr, staticAlpha, keepOut }) {
+		draw({ timeMs, view, cam, region, dpr, staticAlpha, keepOut, veil }) {
 			gl.useProgram(program);
 			gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 			for (let i = 0; i < attribs.length; i++) {
@@ -455,6 +494,17 @@ export function createStarPass(gl: WebGLRenderingContext): StarPass {
 			gl.uniform1f(uStatic, staticAlpha);
 			gl.uniform4f(uKeep, keepOut?.x ?? 0, keepOut?.y ?? 0, keepOut?.w ?? 0, keepOut?.h ?? 0);
 			gl.uniform2f(uKeepSoft, STAR_KEEPOUT_FEATHER_PX, keepOut?.strength ?? 0);
+			if (veil && veil.amount > 0) {
+				const nA = packVeil(veil.from);
+				gl.uniform4fv(uVeilA, veilBuf);
+				const nB = packVeil(veil.to);
+				gl.uniform4fv(uVeilB, veilBuf);
+				gl.uniform2f(uVeilN, nA, nB);
+				gl.uniform4f(uVeilAxes, veil.from.sides ? 1 : 0, 1, veil.to.sides ? 1 : 0, 1);
+				gl.uniform2f(uVeilMix, veil.mix, veil.amount);
+			} else {
+				gl.uniform2f(uVeilMix, 0, 0);
+			}
 
 			// Premultiplied source-over, scoped to this pass — the plates draw
 			// opaque with blending off.

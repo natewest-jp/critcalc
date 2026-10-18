@@ -518,9 +518,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	canvas.height = Math.round(h * DPR);
 	const base = canvas.getContext('2d');
 	if (!base) throw new Error('canvas 2d context unavailable');
-	// ⚓ The stars stay out from behind the chart and the lockup — the brand
-	// keep-out's rule on screen (starPass STAR_KEEPOUT_*), widened to the
-	// whole plot, because a still image shows every halo the twinkle hides.
+	// ⚓ The stars sit low behind the chart and the lockup — the STAR VEIL's
+	// content boxes ($lib/landing/starVeil.ts, the live tools' rule too): a
+	// faint floor inside, a long feather out to a little above full strength.
 	const keepOut = [
 		{ x: ox - UNIT_GUTTER, y: chartTop, w: chartW + UNIT_GUTTER, h: bodyBottom - chartTop },
 		{ x: PAD, y: PAD, w: BRAND_H * 4 + 160, h: BRAND_H }

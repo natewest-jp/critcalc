@@ -12,6 +12,7 @@
 		TILT_EASING_CSS,
 		toolPoseShift,
 		sceneTransitionStart,
+		sceneTransitionWindow,
 		hasActiveSceneTransition,
 		revealDelayMs,
 		prefersReducedMotion
@@ -33,7 +34,10 @@
 	import { savedNotations, siteSettings } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
 	import { benchBand } from '$lib/benchBand.svelte';
-	import { attachMediaFlags, benchRowHidden } from '$lib/media.svelte';
+	import { attachMediaFlags, below, benchRowHidden } from '$lib/media.svelte';
+	import { getSceneGL, setStarVeil } from '$lib/landing/sceneGL';
+	import type { StarVeilSet } from '$lib/landing/starPass';
+	import { STAR_VEIL_SIDES_BELOW, type VeilBox } from '$lib/landing/starVeil';
 
 	let { children } = $props();
 
@@ -496,6 +500,97 @@
 			benchRO = undefined;
 			benchROTarget = undefined;
 		};
+	});
+
+	// ---------------------------------------------------------------------------
+	// THE STAR VEIL's content boxes ($lib/landing/starVeil.ts, 2026-10-18 ⚓
+	// Nate): the stars sit at a floor behind the tool's CONTENT and rise over a
+	// long feather everywhere else — under the chrome, the bands, the sides,
+	// the foot. The content is the current page's SURFACE (ToolStack's
+	// .tool-surface), split into ToolColumns' main and aside boxes where it has
+	// them; ⛔ never the bands or the bench, which the feather is meant to run
+	// under. Published in viewport px to the scene renderer, whose loop is
+	// stopped behind tools, so every change that moves a box has to say so:
+	//   · a ResizeObserver on the surface and its boxes (an aside opening
+	//     narrows .tc-main, so the observer hears that too);
+	//   · any scroll (capture phase — the planner page-scrolls, the
+	//     Visualizers' tiles scroll inside);
+	//   · the window, and the phone rule's breakpoint flipping.
+	// Clipped to the viewport and rounded, then compared by the renderer, so a
+	// scroll that moves nothing visible (a chart taller than the screen) costs
+	// a measurement and no redraw.
+	// On a navigation the change EASES across the scene transition's own
+	// window (camera clock and easing); otherwise it lands in the next draw.
+	// ⛔ Never published null on leaving: the veil rides the DIM's level, so
+	// the descend fades it out by itself (see sceneGL's note).
+	// ---------------------------------------------------------------------------
+	let veilRO: ResizeObserver | undefined;
+	let veilObserved: Element[] = [];
+
+	function measureVeil(): StarVeilSet | null {
+		if (!toolMain) return null;
+		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
+		// The latest layer stamped with this path (the bench anchor's rule).
+		const layer = pages.filter((p) => p.dataset.page === page.url.pathname).pop();
+		const surface = layer?.querySelector<HTMLElement>('.tool-surface');
+		if (!layer || !surface) return null;
+		const cols = [...surface.querySelectorAll<HTMLElement>('.tc-main, .tc-aside-box')];
+		const els: HTMLElement[] = cols.length ? cols : [surface];
+		if (veilRO) {
+			const next = [surface, ...cols];
+			if (next.length !== veilObserved.length || next.some((el, i) => el !== veilObserved[i])) {
+				veilRO.disconnect();
+				for (const el of next) veilRO.observe(el);
+				veilObserved = next;
+			}
+		}
+		// A layer mid-leg carries its world-locked drift; measure where it RESTS.
+		const cs = getComputedStyle(layer).transform;
+		const tx = cs === 'none' ? 0 : new DOMMatrixReadOnly(cs).m41;
+		const vw = window.innerWidth;
+		const vh = getSceneGL()?.viewport().h ?? window.innerHeight;
+		const boxes: VeilBox[] = [];
+		for (const el of els) {
+			const r = el.getBoundingClientRect();
+			if (r.width <= 0 || r.height <= 0) continue;
+			const x0 = Math.max(0, Math.round(r.left - tx));
+			const x1 = Math.min(vw, Math.round(r.right - tx));
+			const y0 = Math.max(0, Math.round(r.top));
+			const y1 = Math.min(vh, Math.round(r.bottom));
+			if (x1 > x0 && y1 > y0) boxes.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+		}
+		return { boxes, sides: !below(STAR_VEIL_SIDES_BELOW) };
+	}
+
+	function publishVeil() {
+		const set = measureVeil();
+		if (set) setStarVeil(set, sceneTransitionWindow());
+	}
+
+	onMount(() => {
+		if (typeof ResizeObserver !== 'undefined') veilRO = new ResizeObserver(publishVeil);
+		publishVeil();
+		const opts = { capture: true, passive: true } as const;
+		document.addEventListener('scroll', publishVeil, opts);
+		window.addEventListener('resize', publishVeil);
+		document.fonts?.ready.then(publishVeil);
+		return () => {
+			veilRO?.disconnect();
+			veilRO = undefined;
+			veilObserved = [];
+			document.removeEventListener('scroll', publishVeil, opts);
+			window.removeEventListener('resize', publishVeil);
+		};
+	});
+
+	// The phone rule's flag can flip after the window's resize has fired.
+	$effect(() => {
+		below(STAR_VEIL_SIDES_BELOW);
+		untrack(publishVeil);
+	});
+
+	afterNavigate(() => {
+		publishVeil();
 	});
 
 	// out: keeps the outgoing page in the DOM (Svelte marks it inert) under the
