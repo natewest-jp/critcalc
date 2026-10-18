@@ -11,7 +11,7 @@
  * — plus a cancel tick (D, J), a hum for the swap, and the count-in. What the
  * hand does differently is what gets a different sound; a hold, a charged
  * attack or a plunge is a LONGER note of the same role, because the note rings
- * for the input's own length. A `W` is refused by the planner and makes no
+ * for the input's own length. A `W` draws nothing (it resets the attack string) and makes no
  * sound. Two settings shape the three notes: the ORDER (which role sits low,
  * mid, high) and the NOTE SET (which two notes join A at the bottom); the cancel
  * tick is A5 and the count-in a free note of the set.
