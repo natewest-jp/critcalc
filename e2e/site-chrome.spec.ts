@@ -46,10 +46,14 @@ test.describe('one chrome, every surface', () => {
 		// ⚠ :visible, not a raw count. The compass is in the DOM on every surface
 		// and display:none above 47.5rem, so a plain count reads 4 at the 1600px
 		// test viewport and says nothing about what a reader can press.
-		expect(landingBtns, 'three meta glyphs on the landing').toBe(3);
-		// ↻ 2026-10-11: plus ROSTER inside a tool — it opens the Library, which is
-		// the tools layout's overlay, so it exists exactly where that can open.
-		expect(toolBtns, 'the same three plus Roster inside a tool').toBe(4);
+		// ↻ 2026-10-18 (⚓ Nate): ROSTER is on every surface. Inside a tool it
+		// opens the Library overlay; on the landing it is a link to /library.
+		expect(landingBtns, 'three meta glyphs plus Roster on the landing').toBe(4);
+		expect(toolBtns, 'the same four inside a tool').toBe(4);
+		await expect(
+			page.locator('button.chrome-btn[aria-label="Roster"]'),
+			'inside a tool Roster is a BUTTON (the overlay), never a link'
+		).toHaveCount(1);
 		await expect(metaBtn(page, 'Roster'), 'Roster sits in the tool chrome').toBeVisible();
 		await expect(
 			page.locator('.chrome-btn--nav'),
@@ -64,9 +68,29 @@ test.describe('one chrome, every surface', () => {
 	});
 });
 
+/**
+ * ⚠ ROSTER IS DELIBERATELY NOT IN `META` (2026-10-18). Inside a tool it is an
+ * overlay like the three and keeps their contract (the tool must survive —
+ * covered by team-builder.spec's Library tests); on the landing and the static
+ * pages it NAVIGATES to /library, which is new, intended behaviour: there is no
+ * tool underneath to remount, and no overlay host for the Library. It has its
+ * own block below rather than an exception inside this loop.
+ */
+/**
+ * ↻ 2026-10-18 (⚓ Nate): OFF A TOOL, ABOUT AND HELP ARE PAGES. On the landing
+ * and the static pages there is no tool underneath to remount, and About/Help
+ * are things you go and read, so their glyphs are links (About → /about, Help
+ * → /help, its index). So the loop below keeps every META case on a TOOL and
+ * only Settings on the landing — Settings stays a modal everywhere (a control
+ * you reach for mid-task). The landing's About/Help have their own block.
+ */
 test.describe('meta overlays never navigate', () => {
-	for (const surface of ['/', '/builder']) {
-		for (const { label, title } of META) {
+	const CASES: [string, typeof META][] = [
+		['/', META.filter((m) => m.label === 'Settings')],
+		['/builder', META]
+	];
+	for (const [surface, metas] of CASES) {
+		for (const { label, title } of metas) {
 			test(`${surface} — "${title}" opens and closes without moving the URL`, async ({ page }) => {
 				await page.goto(surface, { waitUntil: 'networkidle' });
 				const before = page.url();
@@ -82,6 +106,71 @@ test.describe('meta overlays never navigate', () => {
 			});
 		}
 	}
+});
+
+test.describe('off a tool, About and Help are pages', () => {
+	test('landing → Help goes to /help by the pages, not an overlay', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await metaBtn(page, 'Help').click();
+		await page.waitForURL('**/help');
+		await expect(page.locator('.area-body h1').first()).toHaveText('Help & FAQ');
+		await expect(page.locator('[role="dialog"]'), 'no overlay opened').toHaveCount(0);
+		await expect(metaBtn(page, 'Help')).toHaveAttribute('aria-current', 'page');
+	});
+
+	test('on /about, About is the page already showing and does nothing', async ({ page }) => {
+		await page.goto('/about', { waitUntil: 'networkidle' });
+		const about = metaBtn(page, 'About');
+		await expect(about).toHaveAttribute('aria-current', 'page');
+		// A navigation would remount the {#key pathname} page body; mark it.
+		await page.locator('.area-body').evaluate((el) => el.setAttribute('data-e2e-mark', '1'));
+		await about.click();
+		await page.waitForTimeout(500);
+		expect(new URL(page.url()).pathname).toBe('/about');
+		await expect(page.locator('.area-body[data-e2e-mark="1"]'), 'not re-rendered').toHaveCount(1);
+		await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+	});
+});
+
+test.describe('the /library page', () => {
+	test('the landing’s Roster goes to /library on its Roster tab', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+		await metaBtn(page, 'Roster').click();
+		await page.waitForURL('**/library?tab=roster');
+		await expect(page.locator('.lib-tabs [role="tab"][aria-selected="true"]')).toHaveText('Roster');
+		await expect(page.locator('.lib--page'), 'the page, not the overlay').toHaveCount(1);
+		await expect(page.locator('.tool-shell'), 'no tool was entered').toHaveCount(0);
+	});
+
+	test('opening a rotation from the page arrives on the Planner with it', async ({
+		page,
+		seed
+	}) => {
+		await seed({
+			saved: [
+				{
+					id: 's1',
+					name: 'Library page e2e',
+					notation: 'Hu Tao E N3 Q > Xingqiu E Q > Zhongli E',
+					tabLoadout: {},
+					tabCon: {},
+					savedAt: 1754500000000
+				}
+			]
+		});
+		await page.goto('/library', { waitUntil: 'networkidle' });
+		await expect(page.locator('.lib-tabs [role="tab"][aria-selected="true"]')).toHaveText('Teams');
+		await page.locator('.lib-rot', { hasText: 'Library page e2e' }).click();
+		await page.waitForURL('**/planner');
+		await page.locator('.tool-main').waitFor({ state: 'visible' });
+		await expect(page.locator('.cm-content').first()).toHaveText(
+			'Hu Tao E N3 Q > Xingqiu E Q > Zhongli E'
+		);
+		// The tab survived the tools layout's own restore on arrival.
+		const stored = await page.evaluate(() => localStorage.getItem('critcalc:rotationTabs'));
+		const { tabs, activeTabId } = JSON.parse(stored ?? '{}');
+		expect(tabs.find((t: { id: string }) => t.id === activeTabId)?.savedId).toBe('s1');
+	});
 });
 
 test.describe('help is contextual and non-destructive', () => {
@@ -119,7 +208,10 @@ test.describe('overlay containing blocks', () => {
 
 	async function overlayTransforms(page: Page, url: string) {
 		await page.goto(url, { waitUntil: 'networkidle' });
-		await metaBtn(page, 'Help').click();
+		// ↻ 2026-10-18: Settings, not Help — off a tool Help is a link to /help
+		// now, and Settings is the overlay every surface still has (same
+		// ChromeOverlay panel and backdrop).
+		await metaBtn(page, 'Settings').click();
 		await page.locator('.overlay-panel').waitFor();
 		await page.mouse.move(200, 200);
 		await page.mouse.move(1400, 800);

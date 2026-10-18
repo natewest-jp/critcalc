@@ -15,6 +15,7 @@
  * results, not for the overlay.
  */
 
+import { resolve } from '$app/paths';
 import type { ChromeAreaId } from '$lib/help/areas';
 
 export type ChromeModalState =
@@ -77,22 +78,65 @@ export function setChapter(chapter: string): void {
  * site chrome beside the cog — but it opens the Library on its Roster tab, and
  * the Library is the tools layout's overlay. So the tools layout REGISTERS the
  * opener while it is mounted, and the chrome (and the compass, which takes the
- * button below `roomy`) shows the button exactly when there is one: on every
- * tool, and nowhere the Library cannot open. Module state, for the same reason
- * as the modal state above — the button and the overlay live in different
- * subtrees.
+ * button below `roomy`) opens the overlay exactly when there is one. Module
+ * state, for the same reason as the modal state above — the button and the
+ * overlay live in different subtrees.
+ *
+ * ↻ 2026-10-18 (⚓ Nate): the button is on EVERY surface. Where no opener is
+ * registered (the landing, the static pages) it is a link to the `/library`
+ * page on its Roster tab (`rosterHref`) — ⚠️ a real navigation, and only
+ * where no tool is underneath to lose.
  */
 let rosterOpener = $state<(() => void) | null>(null);
 
+/**
+ * ⚓ THE ONE "ARE WE ON A TOOL?" the chrome asks (2026-10-18): true while the
+ * tools layout is mounted, i.e. while its registration stands. On a tool the
+ * chrome's About, Help and Roster open OVERLAYS (⛔ never leave a tool
+ * mid-task); off a tool (the landing, the static pages) they are LINKS to
+ * their pages — /about, /help, /library — because those are things you go
+ * and READ, and there is nothing underneath to lose. ⚓ Settings stays a
+ * modal everywhere (a control you reach for mid-task, the compass round).
+ * Read this, ⛔ not a second path test, so the three can never disagree.
+ */
+export function onTool(): boolean {
+	return rosterOpener !== null;
+}
+
 export const roster = {
 	get available() {
-		return rosterOpener !== null;
+		return onTool();
 	},
 	open() {
 		closeChromeModal();
 		rosterOpener?.();
 	}
 };
+
+/** The Roster button off the tools: the `/library` page on its Roster tab. */
+export const rosterHref = `${resolve('/library')}?tab=roster`;
+
+/** About and Help off the tools: their pages. Help goes to its INDEX — off a
+ *  tool there is no current tool's chapter to guess. */
+export const aboutHref = resolve('/about');
+export const helpHref = resolve('/help');
+
+/** Already on that page (the chrome marks it current and the click is a
+ *  no-op): About on /about; Help on /help or any of its chapters. */
+export function isAboutPage(pathname: string): boolean {
+	return pathname === aboutHref;
+}
+export function isHelpPage(pathname: string): boolean {
+	return pathname === helpHref || pathname.startsWith(`${helpHref}/`);
+}
+
+/** The click on a link to the page already showing: nothing (no re-navigation,
+ *  no crossfade of the same page). Modified clicks still open a new tab. */
+export function stayHere(event: MouseEvent): void {
+	if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+		return;
+	event.preventDefault();
+}
 
 /** The tools layout's registration; the cleanup clears it only if it is still
  *  ours (two layouts are briefly alive during a page transition). */

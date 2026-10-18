@@ -2,7 +2,17 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { TOOLS } from '$lib/tools';
-	import { openArea, openSettings, closeChromeModal, roster } from './chromeModal.svelte';
+	import {
+		openArea,
+		openSettings,
+		closeChromeModal,
+		roster,
+		rosterHref,
+		onTool,
+		isAboutPage,
+		isHelpPage,
+		stayHere
+	} from './chromeModal.svelte';
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 
 	// What the compass opens: every destination on the site, in one panel.
@@ -58,16 +68,58 @@
 		<!-- These three REPLACE the modal rather than stacking on it: the panel
 		     is the same overlay host, so opening an area from here is the same
 		     state write the chrome glyph would have made at a wider viewport. -->
-		<button class="np-row" onclick={() => openArea('about', defaultChapter('about'))}>
-			<span class="np-name">About</span>
-		</button>
-		<button class="np-row" onclick={() => openArea('help', helpChapter)}>
-			<span class="np-name">Help</span>
-		</button>
+		<!-- ↻ 2026-10-18: only ON A TOOL. Off one, About and Help are links to
+		     their pages like the chrome's glyphs (onTool(), chromeModal.svelte.ts),
+		     and the page already showing is marked like a current tool above —
+		     its click just closes the compass. -->
+		{#if onTool()}
+			<button class="np-row" onclick={() => openArea('about', defaultChapter('about'))}>
+				<span class="np-name">About</span>
+			</button>
+			<button class="np-row" onclick={() => openArea('help', helpChapter)}>
+				<span class="np-name">Help</span>
+			</button>
+		{:else}
+			{@const aboutHere = isAboutPage(page.url.pathname)}
+			{@const helpHere = isHelpPage(page.url.pathname)}
+			<a
+				class="np-row"
+				class:is-current={aboutHere}
+				href={resolve('/about')}
+				aria-current={aboutHere ? 'page' : undefined}
+				onclick={(e) => {
+					if (aboutHere) stayHere(e);
+					closeChromeModal();
+				}}
+			>
+				<span class="np-name">About</span>
+				{#if aboutHere}<span class="np-here">You are here</span>{/if}
+			</a>
+			<a
+				class="np-row"
+				class:is-current={helpHere}
+				href={resolve('/help')}
+				aria-current={helpHere ? 'page' : undefined}
+				onclick={(e) => {
+					if (helpHere) stayHere(e);
+					closeChromeModal();
+				}}
+			>
+				<span class="np-name">Help</span>
+				{#if helpHere}<span class="np-here">You are here</span>{/if}
+			</a>
+		{/if}
+		<!-- The chrome's Roster button, folded (SiteChrome): over a tool it opens
+		     the Library there; anywhere else it goes to the /library page. -->
 		{#if roster.available}
 			<button class="np-row" onclick={roster.open}>
 				<span class="np-name">Roster</span>
 			</button>
+		{:else}
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- rosterHref IS resolve('/library') plus a query (chromeModal.svelte.ts) -->
+			<a class="np-row" href={rosterHref} onclick={closeChromeModal}>
+				<span class="np-name">Roster</span>
+			</a>
 		{/if}
 		<button class="np-row" onclick={openSettings}>
 			<span class="np-name">Settings</span>
