@@ -223,9 +223,17 @@
 	function publishBrandBox(node: HTMLElement) {
 		const lockup = node.querySelector<HTMLElement>('.chrome-brand-group');
 		if (!lockup) return;
+		// The chrome's own fade-in window (its `in:fade` below), read at mount as
+		// that fade reads it, so the keep-out comes in WITH the lockup and not
+		// at the click (⚓ Nate, 2026-10-18). With no transition in flight (a
+		// cold load) the chrome does not fade, so neither does the keep-out.
+		const reveal =
+			timeUntilSettle() > 0
+				? { start: performance.now() + revealDelayMs(), duration: FADE_DURATION_MS }
+				: null;
 		const publish = () => {
 			const r = lockup.getBoundingClientRect();
-			setStarKeepOut({ x: r.left, y: r.top, w: r.width, h: r.height });
+			setStarKeepOut({ x: r.left, y: r.top, w: r.width, h: r.height }, reveal);
 		};
 		const ro = new ResizeObserver(publish);
 		ro.observe(lockup);

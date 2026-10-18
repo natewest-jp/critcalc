@@ -345,10 +345,28 @@ let current: SceneGLHandle | null = null;
  */
 let brandBox: { x: number; y: number; w: number; h: number } | null = null;
 let brandBoxChanged: (() => void) | null = null;
+/** When the lockup the box was measured from FADES IN, on the clock `draw`
+ *  runs on (performance.now()). ⚓ Nate, 2026-10-18: heading back from a tool
+ *  the chrome MOUNTS at the click and fades in only at the landing's reveal,
+ *  so a keep-out that followed the dim alone carved the brand's hole into the
+ *  sky for the whole descent, before the brand itself was back. The keep-out
+ *  now comes in with the lockup — the chrome hands over its own fade window. */
+let brandReveal: { start: number; duration: number } | null = null;
 
-export function setStarKeepOut(box: { x: number; y: number; w: number; h: number } | null): void {
+export function setStarKeepOut(
+	box: { x: number; y: number; w: number; h: number } | null,
+	reveal: { start: number; duration: number } | null = null
+): void {
 	brandBox = box;
+	brandReveal = box ? reveal : null;
 	brandBoxChanged?.();
+}
+
+/** 0 → 1 across the lockup's fade-in; 1 with no reveal pending. */
+function brandRevealAt(timeMs: number): number {
+	if (!brandReveal) return 1;
+	const t = (timeMs - brandReveal.start) / Math.max(1, brandReveal.duration);
+	return t <= 0 ? 0 : t >= 1 ? 1 : t;
 }
 
 /**
@@ -700,13 +718,14 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			staticAlpha: reducedMq.matches ? STAR_STATIC_ALPHA : -1,
 			// ⚓ Fades OUT with the dim: a tool's dim already keeps the stars off
 			// its chrome, and the lockup the box was measured from leaves with
-			// the landing — so the keep-out goes as the tool arrives.
+			// the landing — so the keep-out goes as the tool arrives. ⚓ And comes
+			// back IN with the lockup's own fade (brandReveal), never sooner.
 			keepOut: brandBox && {
 				x: brandBox.x - STAR_KEEPOUT_PAD_PX,
 				y: brandBox.y - STAR_KEEPOUT_PAD_PX,
 				w: brandBox.w + 2 * STAR_KEEPOUT_PAD_PX,
 				h: brandBox.h + 2 * STAR_KEEPOUT_PAD_PX,
-				strength: 1 - level
+				strength: Math.min(1 - level, brandRevealAt(timeMs))
 			},
 			// ⚓ The star veil applies at the dim's level: off on the landing,
 			// eased in and out by the ascend/descend on the camera's clock.
