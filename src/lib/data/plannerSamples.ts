@@ -27,7 +27,9 @@ export type PlannerSample = {
 	/** The team as players call it — the tab is "Sample: <name>". */
 	name: string;
 	notation: string;
-	/** Constellations the team is shown at (absent members: C0). */
+	/** Constellations the team is shown at (absent members: C0). ⚓ Every 4★
+	 *  member is declared, at C6 unless the source says otherwise — the KQM
+	 *  standard every sample follows (pinned by `plannerSamples.test.ts`). */
 	cons?: Record<string, number>;
 	loadout?: Record<string, LoadoutEntry>;
 	/** Where the rotation comes from; null = written for critcalc. */
@@ -121,6 +123,7 @@ export const PLANNER_SAMPLES: readonly PlannerSample[] = [
 		name: 'Raiden National',
 		notation:
 			'Raiden E > Xingqiu E D Q N1 > Bennett Q N1 E > Xiangling N1 Q N1 E D > Bennett E N1 > Raiden Q 3[N3C] N1C E > Bennett E',
+		cons: { xingqiu: 6, bennett: 6, xiangling: 6 },
 		source: KQM('q/raiden-quickguide/'),
 		adapted: true
 	},
@@ -129,6 +132,7 @@ export const PLANNER_SAMPLES: readonly PlannerSample[] = [
 		name: 'Double Hydro National',
 		notation:
 			'Yelan Q N1 E N1 > Xingqiu Q N1 > Bennett E N1 Q > Xiangling N1 Q N1 E > Xingqiu N2 > Bennett N1 E > Yelan N1 E N1 > Xingqiu N1 E D N2 > Bennett N1 E > Xiangling N2 > Bennett N1 E > Xiangling N2',
+		cons: { xingqiu: 6, bennett: 6, xiangling: 6 },
 		source: KQM('q/xiangling-quickguide/')
 	},
 	{
@@ -136,6 +140,7 @@ export const PLANNER_SAMPLES: readonly PlannerSample[] = [
 		name: 'Nahida Hyperbloom',
 		notation:
 			'Nahida E Q > Xingqiu Q N1 > Kuki Shinobu E N1 > Yelan E N1 Q > Nahida N3 E N3 D N3 > Xingqiu N1 E N2 > Nahida N1 E N3 D N3 > Yelan E N1 > Kuki Shinobu Q N1 > Nahida N3 D N3',
+		cons: { xingqiu: 6, kuki_shinobu: 6 },
 		source: KQM('q/nahida-quickguide/')
 	},
 	{
@@ -170,6 +175,7 @@ export const PLANNER_SAMPLES: readonly PlannerSample[] = [
 		id: 'hu-tao-double-hydro',
 		name: 'Hu Tao Double Hydro',
 		notation: 'Xingqiu Q E > Yelan E Q > Zhongli hE > Hu Tao E 7[N2CJ] Q',
+		cons: { xingqiu: 6 },
 		source: KQM('q/hu-tao-quickguide/'),
 		adapted: true
 	}
