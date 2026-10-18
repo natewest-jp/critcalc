@@ -438,6 +438,12 @@ const BENCH_GAP = 16; // the ribbon to the plot's gutter
 const UNIT_GUTTER = 22;
 /** The brand row: the chrome's own lockup, at the chrome's own size. */
 const BRAND_SIZE = 24; // --fs-4xl, the wordmark
+/** 🎛️ The wordmark's weight on the PNG — Nate's to set by eye. The chrome
+ *  draws 500 (--fw-medium) with `-webkit-font-smoothing: antialiased`, which a
+ *  canvas cannot ask for, so the same 500 reads HEAVIER here. Bitter is a
+ *  variable font, so any weight between its stops renders. ↻ 500 → 450
+ *  (⚓ Nate, 2026-10-18: "450 or even 400"). */
+const BRAND_WEIGHT_PNG = 450;
 const BRAND_MARK = 1.5714; // the mark's height ÷ the wordmark's (SiteChrome)
 const BRAND_GAP = 6; // 0.35rem
 const BRAND_H = Math.round(BRAND_SIZE * BRAND_MARK);
@@ -640,9 +646,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// ── NB / Moonsign layered-tile fills — mirror the on-screen CSS ──
 	// (repeat-x px tiles; angles flattened to horizontal — invisible at 14px)
 
-	/** rgba() with alpha, from a hex color */
-	const alpha = (hex: string, a: number) => {
-		const [r, g, b] = hexToRgb(hex);
+	/** rgba() with alpha, from a hex color OR an `rgb()` string (what `mix`
+	 *  returns). ⚠ It read hex only, so `alpha(mix(…), 0)` parsed nothing and
+	 *  gave rgba(0, 0, 0, 0): the NB lane's green bloom faded toward BLACK and
+	 *  drew a dark rim on every PNG with a Nightsoul team (⚓ Nate, 2026-10-18). */
+	const alpha = (color: string, a: number) => {
+		const m = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(color);
+		const [r, g, b] = m ? [+m[1], +m[2], +m[3]] : hexToRgb(color);
 		return `rgba(${r}, ${g}, ${b}, ${a})`;
 	};
 
@@ -1574,7 +1584,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		base.restore();
 		bx += lw + BRAND_GAP;
 	}
-	base.font = `500 ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
+	base.font = `${BRAND_WEIGHT_PNG} ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
 	// --ls-tight (0.02em), as `.chrome-wordmark` tracks it. ⚠ Set it here and
 	// not through `type()`: unset, the wordmark drew untracked (or kept a stale
 	// spacing from the label before it), which read as a HEAVIER wordmark than
