@@ -303,15 +303,8 @@
 	/** The aura's standing modelling limits — see the `auraLimits` snippet below
 	 *  for the sourcing rule that governs every line. */
 	const AURA_NOTES = [
-		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mitachurl, and no auras you didn’t put there.',
-		'Hits land on their listed timing, and Shatter is not modeled.',
-		'A pip with a yellow ring has no measured gauge strength, so the Rotation Planner uses 1U for that hit.',
-		// ⚠️ The one thing the gadget strip could be misread as. A Prism bar says
-		// WHEN the field exists; nothing on the chart says where it is, and the
-		// house rule (docs/library/game/stellar-reactions.md) is that a field is
-		// assumed entered — the same assumption every character's dropped field
-		// already gets.
-		'A Starlight Prism bar says when the Polestar Field is up, not where — the Rotation Planner assumes you are standing in it.'
+		'Target is one enemy with no permanent aura, and it never applies an element back at you.',
+		'A pip with a yellow ring has no measured gauge strength, so the Rotation Planner uses 1U for that hit.'
 	];
 
 	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════
@@ -922,10 +915,13 @@
      ⛔ Do not add a line here without a source in the code. Each of these is one:
        one enemy          — `gauge.ts` carries a single `ModState`
        nothing back       — no path applies an aura the enemy owns
-       no Shatter         — `sim/reactionBridge.ts` leaves it unemitted
-       nominal schedule   — `application[]`'s contract C4 (types/ability.ts)
        1U default         — `DEFAULT_UNITS` in `sim/aura.ts`, and what the
-                            ring-footed pips mark -->
+                            ring-footed pips mark
+     ↻ 2026-10-18 (⚓ Nate): trimmed to two lines — the head of a log stays
+     short. Cut: "Hits land on their listed timing, and Shatter is not
+     modeled" (unnecessary) and the Starlight Prism "assumes you are standing
+     in it" line (the field is wide enough that leaving it is not a concern).
+     The facts behind them stand — they are just not worth the log's head. -->
 {#snippet auraLimits()}
 	<div class="rp-log-limits">
 		{#each AURA_NOTES as note (note)}
