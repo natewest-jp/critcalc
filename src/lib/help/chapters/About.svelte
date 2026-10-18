@@ -12,9 +12,9 @@
 <h1>About critcalc</h1>
 
 <p class="lede">
-	critcalc.app is three tools for Genshin Impact theorycrafting. Genshin is full of such a rich variety 
-	of mechanics that can be difficult to picture mentally. All of critcalc's tools were created by a 
-	Genshin player who wanted to see these come to life in easy-to-grasp visualizations.
+	critcalc.app is three tools for Genshin Impact theorycrafting. Many of Genshin’s mechanics are
+	hard to picture in your head. critcalc’s tools were built by a player who wanted to see them drawn
+	out.
 </p>
 
 <section>
@@ -22,20 +22,20 @@
 	<p>
 		<strong>The Team Builder</strong> is a party setup screen for Stygian Onslaught, the Spiral
 		Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred,
-		buffs, ...), sourced from the kits at the constellations you own, and what switching out a 
+		buffs, and more), sourced from the kits at the constellations you own, and what switching out a
 		team member would cost or gain.
 		<a href={resolve('/help/builder')}>How it works</a>
 	</p>
 	<p>
 		<strong>The Rotation Planner</strong> turns a rotation written in KQM notation into a timeline
-		of casts and swaps, cooldowns, buff windows, the enemy’s aura, timed frame by frame. You can 
-		also practice your rotations with realtime playback and audio cues.
+		of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can
+		also practice a rotation by playing it back at game speed with audio cues.
 		<a href={resolve('/help/planner')}>How it works</a>
 	</p>
 	<p>
 		<strong>The Visualizers</strong> are eight small instruments, each about one mechanic: crit,
-		elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds and
-		wish odds. <a href={resolve('/help/visualizers')}>How they work</a>
+		elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds,
+		and wish odds. <a href={resolve('/help/visualizers')}>How they work</a>
 	</p>
 </section>
 
@@ -43,23 +43,23 @@
 	<h2 id="data">Where the data comes from</h2>
 	<p>
 		Each character starts from genshin-db’s datamined kit and is then curated by hand. The effects,
-		their conditions and their constellation gates are written from the kit text, and every frame
-		count is measured against gcsim.
+		their conditions, and their constellation gates are written from the kit text, and frame counts
+		are measured against gcsim wherever it has the character.
 	</p>
 	<p>
 		Curation is uneven, because some kits are much harder to model than others. Where a character
 		isn’t finished, the tools say so rather than guess, and the
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> what the 
-		Rotation Planner draws and what it leaves out.
+		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what the Rotation
+		Planner draws and what it leaves out.
 	</p>
 </section>
 
 <section>
 	<h2 id="who">Who makes it</h2>
 	<p>
-		critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans 
-		heavily on what the	community has measured. Corrections are welcome — the
-		<a href={resolve('/contribute')}>Contribute</a> page shares about how to help.
+		critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans
+		heavily on what the community has measured. Corrections are welcome — the
+		<a href={resolve('/contribute')}>Contribute</a> page says how to help.
 	</p>
 </section>
 
@@ -68,7 +68,7 @@
 	<ul>
 		<li>
 			<a href="https://gcsim.app" target="_blank" rel="noopener noreferrer">gcsim</a>, the
-			open-source combat simulator: frame data, tick cadences, ICD groups and targeting, and the
+			open-source combat simulator: frame data, tick cadences, ICD groups, targeting, and the
 			reference for the gauge model.
 		</li>
 		<li>
@@ -110,11 +110,11 @@
 	<h2 id="fan-project">A fan project</h2>
 	<p>
 		critcalc is an unofficial fan project, not affiliated with or endorsed by HoYoverse. Genshin
-		Impact, its characters and its artwork belong to HoYoverse. critcalc takes no money and shows no
-		ads.
+		Impact, its characters, and its artwork belong to HoYoverse. critcalc takes no money and shows
+		no ads.
 	</p>
 	<p>
 		The code is licensed under the AGPL-3.0 and the curated data under CC BY-SA 4.0. critcalc’s own
-		artwork — the logo, the icons and the scene — is not covered by either.
+		artwork — the logo, the icons, and the scene — is not covered by either.
 	</p>
 </section>
