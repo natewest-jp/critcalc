@@ -49,12 +49,14 @@ export type VeilBox = { x: number; y: number; w: number; h: number };
  *  the scene (sceneDim.ts), so what you SEE goes as the strength squared:
  *  0.12 showed a star at ~1.4% and read as none at all; 0.3 is ~9%. ↻ 0.12 →
  *  0.3 (⚓ Nate, 2026-10-18: "I can't see any stars with the current floor"),
- *  ↻ 0.3 → 0.33 the same day ("bump up the floor a tiny bit"). */
-export const STAR_VEIL_FLOOR = 0.33;
+ *  ↻ 0.3 → 0.33 the same day ("bump up the floor a tiny bit").
+ *  ↻ tune(nate) 2026-10-18: 0.5, set by eye with __scene.veil(). */
+export const STAR_VEIL_FLOOR = 0.5;
 
 /** 🎛️ Star strength beyond the feather — Nate's to tune (start 1.2: "a little
- *  higher than the export's current edge strength"). */
-export const STAR_VEIL_CEILING = 1.2;
+ *  higher than the export's current edge strength").
+ *  ↻ tune(nate) 2026-10-18: 0.9, set by eye with __scene.veil(). */
+export const STAR_VEIL_CEILING = 0.9;
 
 /** 🎛️ How much of each side's margin the ramp spans before it reaches the
  *  ceiling, as a fraction — Nate's to tune. 1 = the ceiling lands exactly at
@@ -65,8 +67,9 @@ export const STAR_VEIL_FEATHER = 1;
 /** 🎛️ How far INSIDE each box's edge the floor stops and the ramp begins,
  *  CSS px — Nate's to tune (⚓ "the small inset", start 40). It is what gives
  *  the Planner's 24–32px right and bottom margins a slope at all. ↻ 40 → 80
- *  (⚓ Nate, 2026-10-18: "lengthen the inset further"). */
-export const STAR_VEIL_INSET = 80;
+ *  (⚓ Nate, 2026-10-18: "lengthen the inset further").
+ *  ↻ tune(nate) 2026-10-18: 90, set by eye with __scene.veil(). */
+export const STAR_VEIL_INSET = 90;
 
 /**
  * 🎛️ THE PHONE RULE — Nate's to tune. Below this breakpoint (a key of
