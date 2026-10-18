@@ -23,8 +23,8 @@
 		 The year is a build constant; vite.config.ts says why it cannot read the
 		 clock here. -->
 	<p class="ftr__legal">
-		© {__BUILD_YEAR__} critcalc.app, an unofficial fan project, not affiliated with or endorsed by HoYoverse.
-		Genshin Impact and all related trademarks and assets are © HoYoverse.
+		© {__BUILD_YEAR__} critcalc.app, an unofficial fan project not affiliated with HoYoverse. Genshin
+		Impact and all related trademarks and assets are © HoYoverse.
 	</p>
 </footer>
 
@@ -57,6 +57,7 @@
 		margin: 0 auto 0.55rem;
 		--rule-tint: var(--muted);
 		--rule-opacity: 0.35;
+		--rule-weight: 1px;
 	}
 
 	.ftr__legal {

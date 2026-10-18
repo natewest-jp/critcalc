@@ -588,6 +588,8 @@
 		display: block;
 		width: 52%;
 		--rule-tint: var(--hero-rule);
+		/* ⚓ Nate 2026-10-18: a 1px line (HRule § --rule-weight). */
+		--rule-weight: 1px;
 	}
 
 	.hero__name {

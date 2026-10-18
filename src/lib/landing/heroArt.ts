@@ -54,9 +54,9 @@ export const TALL_CUT = 515;
 export const TALL_EXTRA = 140;
 /** 🎛️ How far the art (figure + rings) moves DOWN on the tall plate, so it
  *  is not left hugging the top point while all the new height opens below it.
- *  ⚓ Nate, 2026-10-18: ~50 units by eye. (70 would split the inserted height
- *  evenly above and below the art.) */
-export const TALL_ART_DROP = 50;
+ *  ⚓ Nate, 2026-10-18: ~50 by eye, then 70 — half the inserted height, so
+ *  the new space splits evenly above and below the art. */
+export const TALL_ART_DROP = 70;
 export const PLATE_H_TALL = PLATE_H + TALL_EXTRA;
 export const PLATE_VIEWBOX_TALL = `0 0 ${PLATE_W} ${PLATE_H_TALL}`;
 

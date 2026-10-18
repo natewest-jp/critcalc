@@ -29,6 +29,11 @@
 	// Styling, from any ancestor:
 	//   --rule-tint      color of caps + line + mark (default: currentColor)
 	//   --rule-opacity   group fade (default: 1)
+	//   --rule-weight    the LINE's thickness (default: 2px). ⚓ Nate 2026-10-18:
+	//                    1px on the landing cards and the footer. A 1px line's
+	//                    centre falls mid-row (y 4.5–5.5), which is two whole
+	//                    device px at 2× and above and a soft two rows at 1×;
+	//                    the ornament is artwork and keeps its own weight.
 	// Width comes from the parent; the line takes up the slack.
 
 	let { variant = 'capped' }: { variant?: 'capped' | 'center' } = $props();
@@ -103,7 +108,7 @@
 
 	.hrule-line {
 		flex: 1;
-		height: 2px;
+		height: var(--rule-weight, 2px);
 		background: currentColor;
 	}
 
