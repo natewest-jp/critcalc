@@ -58,7 +58,7 @@
 	<h2 id="who">Who makes it</h2>
 	<p>
 		critcalc is Nate West’s project. It is one person’s work rather than a team’s, but it leans
-		heavily on what the community has measured. Corrections are welcome — the
+		heavily on what the community has measured. Corrections are welcome! The
 		<a href={resolve('/contribute')}>Contribute</a> page says how to help.
 	</p>
 </section>
@@ -115,6 +115,6 @@
 	</p>
 	<p>
 		The code is licensed under the AGPL-3.0 and the curated data under CC BY-SA 4.0. critcalc’s own
-		artwork (the logo, landing silhouettes, some icons, and the scene) is not covered by either.
+		artwork (the logo, the landing silhouettes, some icons, and the scene) is not covered by either.
 	</p>
 </section>

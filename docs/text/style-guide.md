@@ -109,8 +109,8 @@ clause that follows it — _"and reports are how problems get found"_ — immedi
 the credit by explaining something the reader already knew (§1.3c). ⚓ One sentence, both
 moves.
 
-✅ **The "I" question is CLOSED — it is "we", and ⛔ never "I"** (⚓ Nate, 2026-09-22).
-See §1.4.
+↻ **The "I" question was re-opened and re-ruled** (⚓ Nate, 2026-10-18): "I" for what is
+personal, "we" for modelling decisions. See §1.4.
 
 ### 1.3b ⚓⚓ Humble, without apologizing (⚓ Nate, 2026-09-22)
 
@@ -203,9 +203,24 @@ on two pages, and both are prescriptive. ⚓ The underlying fact — that an ups
 reaches every community tool, not just this one — is genuinely **not** obvious and is
 worth keeping. It is the framing around it that preaches.
 
-### 1.4 ✅ Who is speaking — three speakers, each with a job (⚓ Nate, 2026-09-22)
+### 1.4 ✅ Who is speaking — four speakers, each with a job (⚓ Nate, 2026-09-22; ↻ 2026-10-18)
 
-Three speakers are in use today, sometimes within a paragraph:
+↻ **2026-10-18 — "I" joins, for what is PERSONAL** (⚓ Nate, the static-pages review). Nate
+writes in the first person where the sentence is about him: what he has tested, which
+characters he owns, what he is asking readers for (the Beta page is the first). **"We" stays
+for modelling decisions** in the Help chapters and the FAQ ("a token we don't simulate").
+The split is option (a) of two; ⛔ (b), "I" everywhere a person speaks, was not taken.
+
+| Form     | When                                                                              | Example                                                         |
+| -------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **"I"**  | the sentence is about Nate himself: his devices, his roster, his request for help | "I've only been able to test the site on the few devices I own" |
+| **"we"** | a modelling decision (below)                                                      | "a token we don't simulate"                                     |
+
+⚠️ Claude is credited in the repo, never on the site — so the reasoning in the "we, never I"
+subsection below no longer explains "we" to a READER. It stays because it explains why
+modelling decisions keep the plural.
+
+Three speakers were in use before that, sometimes within a paragraph:
 
 | Form           | Example                                                                 | Where                      |
 | -------------- | ----------------------------------------------------------------------- | -------------------------- |
@@ -224,7 +239,7 @@ a single speaker would have cost About/Privacy/Contribute the register they alre
 - **agentless passive** for _facts about the game or the data_ — "Shatter is not
   modelled." No one's opinion is involved.
 
-### ✅ ⛔ "We", never "I" — and the reason is that it is literally true (⚓ Nate, 2026-09-22)
+### ↻ "We", never "I" — the 2026-09-22 ruling, now narrowed to modelling decisions
 
 > _"I'd like to use we, not I […] first of all I don't consider it 100% solo — you've made
 > 100% of the actual wiring of the site, Claude — and from launch onwards I want to accept
@@ -512,7 +527,7 @@ gets translated. This turns an impossible research task into a tractable one.
 5. ⚠️ Any of the tells: a triad, an _X-never-Y_, a tagline-shaped aphorism, "by design"?
    (§1.3a)
 6. Is it a **whole sentence**, not a template of fragments? (§3.1)
-7. Right speaker for the claim — critcalc / we / nobody? ⛔ Never "I". (§1.4)
+7. Right speaker for the claim — critcalc / I (personal) / we (modelling decisions) / nobody? (§1.4)
 8. Any term on the glossary's banned list? (`docs/text/glossary.md`)
 9. Does it fit its container at **+30%**? (§3.6)
 10. More than one em dash? ⛔ Any capitals used as emphasis? (§3.4, §2.1)
