@@ -1575,10 +1575,20 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		bx += lw + BRAND_GAP;
 	}
 	base.font = `500 ${BRAND_SIZE}px "Bitter Variable", Bitter, serif`;
+	// --ls-tight (0.02em), as `.chrome-wordmark` tracks it. ⚠ Set it here and
+	// not through `type()`: unset, the wordmark drew untracked (or kept a stale
+	// spacing from the label before it), which read as a HEAVIER wordmark than
+	// the chrome's (⚓ Nate, 2026-10-18).
+	// Restored after the fill: the tracking is the wordmark's alone, and the
+	// title and notation below set their fonts without touching it.
+	const hasLs = 'letterSpacing' in base;
+	const lsBefore = hasLs ? base.letterSpacing : '';
+	if (hasLs) base.letterSpacing = `${BRAND_SIZE * 0.02}px`;
 	base.fillStyle = 'rgba(255, 255, 255, 0.85)';
 	base.textAlign = 'left';
 	base.textBaseline = 'middle';
 	base.fillText('critcalc.app', bx, brandMid);
+	if (hasLs) base.letterSpacing = lsBefore;
 	// The title + notation block: centred on the lockup when it fits beside
 	// it, otherwise running down from the lockup's top.
 	const blockTop = blockH <= BRAND_H ? brandMid - blockH / 2 : PAD;
