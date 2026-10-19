@@ -82,9 +82,9 @@
 		gauge system.
 	</p>
 	<p>
-		The chart draws each aura’s gauge over time and any reactions triggered above that. Point at the
-		chart to read that moment in the Readout, or play it through. The aura log below lists every
-		application and reaction with what each took off the gauge.
+		The chart draws each aura’s gauge over time, and marks each reaction above the application that
+		triggered it. Point at the chart to read that moment in the Readout, or play it through. The
+		aura log below lists every application and reaction with what each took off the gauge.
 	</p>
 	<p>
 		The model is based on KQM’s study of Genshin’s elemental gauge, checked against gcsim and
@@ -219,17 +219,17 @@
 	<p>
 		<strong>Your piece</strong> is where you can enter the values of a real artifact and assess it. The
 		controls are laid out like the game’s reshape screen. Each value wheel offers only values the game
-		can produce, and a badge shows how many upgrades a line has taken. A red pip means the current values
-		fit two possible counts and lets you pick which it is. A finished piece is ranked against every +20
-		piece with the same four lines. Select two lines to see what a reshape would do: A reshape keeps each
-		line’s starting roll and rerolls its upgrades according to the rules of the Standard, Advanced, or
-		Decreed reshape respectively.
+		can produce, and a badge shows how many upgrades a substat has taken. A red pip means the current
+		values fit two possible counts and lets you pick which it is. A finished piece is ranked against every
+		+20 piece with the same four substats. Select two substats to see what a reshape would do. A reshape
+		keeps each substat’s starting roll and rerolls its upgrades by the rules of the reshape you choose:
+		Standard, Advanced, or Decreed.
 	</p>
 	<p>
 		The reshape guarantee is read as a top-up: Upgrades land at random, and if the two selected
-		substats would receive below the guaranteed rolls, they land the final rolls to meet the
-		guarantee exactly. This is how two independent models interpret it — Genshin Optimizer and
-		SiriYu’s solver. The exact in-game method is not confirmed yet.
+		substats would end with fewer upgrades than guaranteed, the last upgrades go to them until they
+		meet it. This is how two independent models interpret it: Genshin Optimizer and SiriYu’s solver.
+		The exact in-game method is not confirmed yet.
 	</p>
 </section>
 
@@ -240,15 +240,15 @@
 		5★, a featured 4★, the charted weapon, or a 5★ and their weapon together — then set what you
 		have, what you’re aiming for (up to C6 and/or R5), your current pity, and whether you hold a
 		guarantee. The chart shows the chance of reaching each step by every pull count. Drag across it,
-		or use <strong>Pulls saved</strong>, to read your odds with what you have. Please note that
-		Starglitter you gain while pulling that can buy pulls in the shop is not counted here, as it’s
-		up to chance.
+		or use <strong>Pulls saved</strong>, to read your odds with what you have. Starglitter earned
+		while pulling isn’t counted, since how much you get depends on what you pull.
 	</p>
 	<p>
 		You win a 50/50 about 55% of the time, Capturing Radiance included (its exact rules aren’t
 		public, so every 50/50 is taken as a flat 55%). A featured 4★ comes about 22% of the time for
-		each 4★ you pull, and you can’t lose the 50/50 to a 4★ on the banner. (The rate-up 4★ characters
-		on the banner are excluded from the standard pool temporarily for that banner.)
+		each 4★ you pull, and a lost 4★ 50/50 never gives you one of the banner’s featured 4★s. (The
+		rate-up 4★ characters on the banner are excluded from the standard pool temporarily for that
+		banner.)
 	</p>
 	<p>
 		On the weapon banner, a Fate Point charts the weapon you want; without one it’s 37.5% for each
