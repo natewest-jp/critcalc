@@ -345,19 +345,30 @@
 		grid-auto-rows: var(--cc-glyph);
 		align-content: center;
 		justify-content: center;
-		row-gap: clamp(
+		--cc-row-gap: clamp(
 			var(--cc-gap-min),
 			calc((var(--avail) - var(--rows) * var(--cc-glyph)) / max(var(--rows) - 1, 1)),
 			var(--cc-gap-max)
 		);
+		row-gap: var(--cc-row-gap);
 		padding: var(--cc-col-pad);
 	}
 	.cc-g {
+		position: relative;
 		display: grid;
 		place-items: center;
 		width: var(--cc-glyph);
 		height: var(--cc-glyph);
 		color: var(--text);
+	}
+	/* The glyph's HIT AREA (for its tooltip) covers half the row gap above and
+	   below and the column's padding either side, so the column has no dead
+	   space between glyphs — crossing one hid the tooltip and restarted its
+	   delay on an 11px target. Transparent and out of flow. */
+	.cc-g::before {
+		content: '';
+		position: absolute;
+		inset: calc(var(--cc-row-gap) / -2) calc(-1 * var(--cc-col-pad));
 	}
 	/* 🎛️ DIM = painted (the sub-pixel law), never element opacity. */
 	.cc-g--dim {

@@ -150,9 +150,12 @@
 		gap: 10px;
 		flex-wrap: wrap;
 	}
+	/* --fp-slot-gap is the gap between slots; the hit area below reaches half
+	   of it, so a consumer resizes the gap through the variable. */
 	.fp-cluster {
+		--fp-slot-gap: 7px;
 		display: flex;
-		gap: 7px;
+		gap: var(--fp-slot-gap);
 	}
 	.fp-slot {
 		display: flex;
@@ -163,6 +166,15 @@
 		width: 13px;
 		/* FAINT is the resting paint; LIT is the ink. */
 		color: var(--line-strong);
+	}
+	/* The slot's HIT AREA reaches halfway into the gaps beside it, so moving
+	   from glyph to glyph never crosses dead space — crossing one hid the
+	   tooltip and restarted its delay. Transparent and out of flow; ::after is
+	   the filter rule. */
+	.fp-slot::before {
+		content: '';
+		position: absolute;
+		inset: -3px calc(var(--fp-slot-gap) / -2);
 	}
 	.fp-slot.fp-lit {
 		color: var(--text);
@@ -245,7 +257,7 @@
 			gap: 8px;
 		}
 		.fp-cluster {
-			gap: 6px;
+			--fp-slot-gap: 6px;
 		}
 	}
 </style>

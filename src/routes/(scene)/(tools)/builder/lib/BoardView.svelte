@@ -871,7 +871,7 @@
 		gap: 14px;
 	}
 	.bv--roomy :global(.fp-cluster) {
-		gap: 10px;
+		--fp-slot-gap: 10px;
 	}
 	.bv--roomy .bv-fp {
 		min-height: 25px;
