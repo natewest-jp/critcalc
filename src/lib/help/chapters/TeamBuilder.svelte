@@ -15,12 +15,12 @@
 <h1>Team Builder</h1>
 
 <p class="flavor">
-	A brass disc of nested rings, each engraved with a name. Turn four into alignment and the plate
-	shows what they would hold between them. Which four, it has never once suggested.
+	A brass disc of nested rings, each engraved with names. Turning four into alignment can answer
+	many questions, or raise new ones.
 </p>
 
 <p class="lede">
-	A party setup screen. Build a lineup of teams for Stygian Onslaught, the Spiral Abyss or anything
+	A party setup screen. Build a lineup of teams for Stygian Onslaught, the Spiral Abyss, or anything
 	else, and each team shows what it can provide at the constellations it uses.
 </p>
 
@@ -36,7 +36,7 @@
 		</li>
 		<li>
 			<strong>Spiral Abyss</strong>: two teams for Floor 12’s first and second half. While a current
-			cycle is listed, each half shows its blessing and an <strong>Opponents</strong> list.
+			cycle is live, each half shows its blessing and <strong>Opponents</strong> list.
 		</li>
 		<li>
 			<strong>Custom</strong>: one team to start, and <strong>Add team</strong> in the view bar for more,
@@ -44,17 +44,20 @@
 		</li>
 	</ul>
 	<p>
-		Each lineup is a tab: double-click to rename it, drag to reorder, and up to twelve stay open. A
-		closed lineup with anyone in it goes to <strong>Recently closed</strong> in the Library.
+		Each lineup is a tab: Double-click to rename it and drag to reorder. You can keep up to twelve
+		tabs open at a time. A closed lineup with anyone in it goes to <strong>Recently closed</strong> in
+		the Library.
 	</p>
 	<p>
 		A new Stygian lineup follows the current season until you place someone in it; from then on it
-		stays on that season. The season menu in its header reaches the earlier ones.
+		stays on that season. The season menu in its header has every earlier season.
 	</p>
 	<p>
 		<strong>No repeats</strong> keeps each character on one team, the way the game does. It is on for
 		Stygian and Abyss lineups and off for Custom ones. While it’s on, picking someone who is already on
-		another team moves them, and the notice says from where.
+		another team takes them off it, and picking them again adds them here. You can turn it on or off on
+		any lineup. You may want to turn it off if you are preparing for the Menacing or lower difficulty
+		levels of Stygian Onslaught.
 	</p>
 </section>
 
@@ -69,7 +72,7 @@
 	<p>
 		The magnifier on a card opens the character’s details: every capability with the ability that
 		grants it, its constellation and any condition it needs, plus their cooldowns and Energy cost.
-		Ownership is shown there but edited in the Roster (see <a href="#roster">below</a>).
+		Ownership is shown there but is edited in the Roster (see <a href="#roster">below</a>).
 	</p>
 	<p>
 		From the Library, a saved team or rotation can go straight onto the selected team, replacing its
@@ -81,28 +84,28 @@
 	<h2 id="characters">Finding characters</h2>
 	<p>
 		The strip over <strong>Characters</strong> filters by role, by element and by what a character
-		can provide. Roles go one at a time; elements match any of those you pick; capabilities under
+		can provide. Roles are filtered one at a time; elements match any of those you pick;
+		capabilities under
 		<strong>Can provide</strong> match only characters who provide all of them. Choosing a role also sorts
-		the grid into sections — damage roles by element, Support and Survivability by capability — so one
-		character can turn up in several.
+		the grid into sections: Damage roles are sorted by element, while Support and Survivability roles
+		are sorted by capability.
 	</p>
 	<p>
 		The view bar narrows further: <strong>Show</strong> for owned or wishlisted characters, a name
-		search, and <strong>More</strong> for weapon, rarity, region and the Moonsign, Hexerei and Stellar
-		factions.
+		search, and <strong>More</strong> for weapon, rarity, region, and factions like Hexerei or Moonsign.
 	</p>
 	<p>
 		The column of icons on a card is that character’s own capabilities. Each is lit if it’s
-		available at the constellation you’re reading at and dimmed if it needs a higher one; its
-		tooltip says which. The constellation lens in the view bar sets that level — C0 through C6, or
-		<strong>My constellations</strong>, the default, which reads your roster. It changes the
-		Characters grid only; the teams are read at their own constellations.
+		available at the constellations you’ve specified and dimmed if it needs a higher one (hover over
+		it to find out what would unlock it). The constellation lens in the view bar sets that level: C0
+		through C6, or <strong>My constellations</strong>, the default, which reads your roster. It
+		changes the Characters grid display only; the teams are read at their own constellations.
 	</p>
 	<p>
 		Some kits have no capability data yet. While you filter by capability they are listed separately
 		under “Not yet curated”, because a missing icon there means unknown rather than no. The
 		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows where each
-		one stands.
+		character currently stands.
 	</p>
 </section>
 
@@ -110,36 +113,35 @@
 	<h2 id="capabilities">What a team can provide</h2>
 	<p>
 		Each team shows fifteen capabilities in three groups: survival (healing, shields, cleanse,
-		taunt), support (the buffs, Energy, RES shred, grouping, infusion, Interruption RES) and
-		off-field damage. A lit icon means someone on the team provides it, with a dot for each
-		provider. A faint icon means nobody does; dots on a faint icon are characters who would at a
-		higher constellation, or on a different team.
+		taunt), support (buffs, energy, RES shred, grouping, infusion, interruption RES) and off-field
+		damage. A lit icon means someone on the team provides it, with a dot for each provider. A faint
+		icon means nobody does. Dots on a faint icon are characters who would provide that at a higher
+		constellation or on a different team.
 	</p>
 	<p>
 		Conditions are read against the team. A buff that needs a Pyro-affected enemy lights only if
-		someone applies Pyro, and a buff on Electro-Charged goes faint once a Lunar-Charged enabler
-		joins, because the reaction stops being Electro-Charged. Adding a character can put out a
-		teammate’s capability this way, which is easiest to see by hovering a card: with a mouse, the
-		selected team redraws as it would be with them in it.
+		someone applies Pyro, and a buff that is conditional on team composition only lights up when the
+		condition is met. Adding a character can change a teammate’s capabilities this way, which is
+		easiest to see by hovering a card with your cursor: The selected team previews how its
+		capabilities would change with the character in focus.
 	</p>
 	<p>
-		Click a faint capability to find who provides it. Characters narrows to that capability and the
-		team becomes the destination for your next pick.
+		Click a faint capability to find who provides it. The Characters grid narrows to that capability
+		and that team becomes the destination for your next pick.
 	</p>
 	<p>
 		The icons say what a team can do, not how much or how often — there are no amounts or uptimes
-		here. The Rotation Planner is where timing lives.
+		here. The Rotation Planner is where you can test this out.
 	</p>
 	<p>
-		On a Stygian battlefield, the chips beside the boss are that battlefield’s checks. A thumb up
-		marks something the battlefield favors and a thumb down something the boss resists. Once a team
+		On a Stygian battlefield, the chips beside the boss are that battlefield’s checks. A thumbs up
+		marks something the battlefield favors and a thumbs down something the boss resists. Once a team
 		is on it, a check mark means the team brings a favored thing, and a warning means it does
 		something the boss resists. A few checks can’t be read from a team (how often you plunge, for
 		instance) and are left without a verdict. The boss’s magnifier opens its HP and mechanics in the
-		game’s words. Enemy RES isn’t shown, because the published figures don’t track the fight’s
-		mechanics;
-		<a href="https://www.stygian.moe" target="_blank" rel="noopener noreferrer">Stygian.moe</a> is the
-		place for it.
+		game’s words. Enemy RES isn’t shown; you can check
+		<a href="https://www.stygian.moe" target="_blank" rel="noopener noreferrer">Stygian.moe</a> for a
+		breakdown of elemental resistances during the different phases of the battle.
 	</p>
 </section>
 
@@ -150,10 +152,10 @@
 		Furina”, and Characters regroups by what the swap would do to the team:
 	</p>
 	<ul>
-		<li><strong>Keeps everything</strong>: nothing the team provides is lost.</li>
-		<li><strong>Trades</strong>: something is lost, listed in the section header.</li>
+		<li><strong>Keeps everything</strong>: Nothing the team provides is lost.</li>
+		<li><strong>Trades</strong>: Something is lost, listed in the section header.</li>
 		<li>
-			<strong>Changes the reactions</strong>: the team’s reactions or resonance change, whatever
+			<strong>Changes the reactions</strong>: The team’s reactions or resonance change, whatever
 			else does.
 		</li>
 		<li><strong>Not yet curated</strong>: no capability data, so the swap can’t be read.</li>
@@ -169,7 +171,7 @@
 		notice then offers to open a copy in the Rotation Planner with the new name written in.
 	</p>
 	<p>
-		The Rotation Planner sends you here too: clicking a portrait on its bench opens swap mode for
+		The Rotation Planner sends you here too: Clicking a portrait on its bench opens swap mode for
 		that tab’s team. Picking someone renames them in the notation and takes you back; Cancel returns
 		without changing anything. An empty slot works the same way and adds someone instead.
 	</p>
