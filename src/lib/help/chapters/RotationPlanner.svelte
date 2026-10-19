@@ -200,9 +200,8 @@
 		<strong>Back to the start</strong> (Home) rewinds.
 	</p>
 	<p>
-		Bluetooth headphones and speakers can delay sound by a tenth of a second or more. The cursor
-		waits out the delay your browser reports, but if the notes still land after it, wired output
-		keeps them in step.
+		Bluetooth headphones and speakers delay sound by a tenth of a second or more, so the cursor
+		waits for your device’s delay and stays in step with what you hear.
 	</p>
 	<p>
 		<strong>Laps</strong> simulates the rotation five times in a row, as one run. A skill still on cooldown

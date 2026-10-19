@@ -19,7 +19,7 @@
  * still queued on the unshifted clock (`#tick`), but the cursor reads it LESS
  * the latency the context reports (`outputLatency` + `baseLatency`), so it
  * crosses a press as that press is heard. ⚠️ Reported, not measured: an engine
- * that reports nothing gets no correction (Safari unverified) — the
+ * that reports nothing gets no correction (⚓ Nate 2026-10-19: Chrome and Safari both report AirPods' delay, and the cursor follows a device switched mid-play) — the
  * `__playback` console knob adds an offset by ear, and is what a calibration
  * screen would set if one is ever needed.
  *
