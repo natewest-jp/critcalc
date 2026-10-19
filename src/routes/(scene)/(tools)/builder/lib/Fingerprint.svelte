@@ -27,7 +27,7 @@
 	 */
 	import { FACETS } from '$lib/capabilities/facets';
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { shortName } from '$lib/data/characterLookup';
 	import type { FingerprintCluster, FingerprintSlot } from '$lib/fingerprint';
 	import FingerprintGlyph from '$lib/components/FingerprintGlyph.svelte';
 
@@ -55,7 +55,6 @@
 	} = $props();
 
 	const LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
-	const first = (id: string) => (getCharacterIndexEntry(id)?.displayName ?? id).split(' ')[0];
 
 	/** Whether each facet is lit now — what the preview is compared against. */
 	const litNow = $derived(
@@ -77,7 +76,7 @@
 	 *  the verb agrees, never a run assembled from fragments). */
 	function sentence(s: FingerprintSlot, change: 'gain' | 'loss' | null): string {
 		const who = (state: string) =>
-			s.members.filter((m) => m.state === state).map((m) => first(m.id));
+			s.members.filter((m) => m.state === state).map((m) => shortName(m.id));
 		const lit = who('lit');
 		const outlined = who('outlined');
 		const locked = who('locked');
@@ -150,9 +149,12 @@
 		gap: 10px;
 		flex-wrap: wrap;
 	}
+	/* --fp-slot-gap is the gap between slots; the hit area below reaches half
+	   of it, so a consumer resizes the gap through the variable. */
 	.fp-cluster {
+		--fp-slot-gap: 7px;
 		display: flex;
-		gap: 7px;
+		gap: var(--fp-slot-gap);
 	}
 	.fp-slot {
 		display: flex;
@@ -163,6 +165,15 @@
 		width: 13px;
 		/* FAINT is the resting paint; LIT is the ink. */
 		color: var(--line-strong);
+	}
+	/* The slot's HIT AREA reaches halfway into the gaps beside it, so moving
+	   from glyph to glyph never crosses dead space — crossing one hid the
+	   tooltip and restarted its delay. Transparent and out of flow; ::after is
+	   the filter rule. */
+	.fp-slot::before {
+		content: '';
+		position: absolute;
+		inset: -3px calc(var(--fp-slot-gap) / -2);
 	}
 	.fp-slot.fp-lit {
 		color: var(--text);
@@ -245,7 +256,7 @@
 			gap: 8px;
 		}
 		.fp-cluster {
-			gap: 6px;
+			--fp-slot-gap: 6px;
 		}
 	}
 </style>

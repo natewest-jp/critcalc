@@ -20,3 +20,9 @@
 /team-builder           /builder       301
 /help/rotation-planner  /help/planner  301
 /help/team-builder      /help/builder  301
+
+# ── /faq → /help (2026-10-19) ──────────────────────────────────────────────
+# The FAQ lives inside Help. The route's own `redirect(308)` prerenders as a
+# client-side bounce (a 200 with a meta refresh) under adapter-static, so a
+# crawler never saw a redirect; Pages answers this before the file.
+/faq                    /help          301

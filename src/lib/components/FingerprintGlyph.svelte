@@ -33,7 +33,13 @@
 	}
 	/* overflow visible: a glyph NUDGEd past its box (Grouping at 120%) spills
 	   into the gap rather than losing its tips to the svg's default clip. */
+	/* ⚓ The pointer passes THROUGH the glyph (2026-10-19). Every consumer puts
+	   the tooltip (`title`) and any click on the glyph's PARENT; with the svg
+	   hit-testable, a hover over it asked the svg for a tooltip, and the title
+	   showed only over the parent's bare edges — finicky on the fingerprint,
+	   nearly never on a card's 11px glyph, while :hover still lit the slot. */
 	svg.fg {
+		pointer-events: none;
 		overflow: visible;
 		fill: currentColor;
 		fill-rule: evenodd;

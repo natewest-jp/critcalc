@@ -26,8 +26,15 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CHAR_DIR = join(REPO_ROOT, 'src/lib/data/characters');
 export const DRIVERS_PATH = join(REPO_ROOT, 'scripts/gcsim-dump/drivers.json');
 
-/** Our FrameMap's action keys. */
-export const KEYS = ['N', 'C', 'E', 'Q', 'D', 'J', 'P', 'swap'];
+/** Our FrameMap's action keys. `W` (a walk) joined 2026-10-19 — see `WALK_KEY`. */
+export const KEYS = ['N', 'C', 'E', 'Q', 'D', 'J', 'P', 'W', 'swap'];
+
+/**
+ * ⚓ The walk key (2026-10-19). Unlike `D`, an absent `W` IS a claim: the walk-overrides
+ * round wrote every override gcsim states, so a map without one says "walks at `anim`",
+ * and the audit reads gcsim disagreeing with that as a disagreement.
+ */
+export const WALK_KEY = 'W';
 
 /** ⚓ The keys `InitNormalCancelSlice` overrides with the HITMARK. Everything else
  *  in a normal's slice is the animation length — the whole C4b finding. Mirrors
@@ -458,6 +465,9 @@ export function frameMapDisagreements(fm, slice, { normalStyle }) {
 	for (const k of KEYS) {
 		if (fm[k] !== undefined && fm[k] !== slice[k]) out.push(`${k} ${fm[k]}→${slice[k]}`);
 	}
+	// ⚠️ An absent `W` is a claim (`WALK_KEY`): flag a walk override the map lacks.
+	const w = slice[WALK_KEY];
+	if (fm[WALK_KEY] === undefined && typeof w === 'number' && w !== slice.anim) out.push(`W —→${w}`);
 	if (fm.anim !== undefined && fm.anim !== slice.anim) out.push(`anim ${fm.anim}→${slice.anim}`);
 	if (normalStyle) {
 		const want = toFrameMap(slice, { normalStyle: true }).hit;

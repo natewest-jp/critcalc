@@ -2310,11 +2310,16 @@ img {
 	color: var(--chrome);
 }
 
+/* The FAQ's questions (and Privacy's sub-heads) are not in the sidebar, so a
+   reader finds one by SCANNING (2026-10-18, Nate). It was body size, body
+   colour and half a line of extra space — weight and face alone at 16px. Now
+   chrome like every other heading, a step up, and spaced to bind DOWN: more
+   room above than below makes each question and its answer one block. */
 .prose h3 {
-	margin: 1.4rem 0 0.5rem;
-	font-size: var(--fs-xl);
+	margin: 1.8rem 0 0.35rem;
+	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
-	color: var(--text);
+	color: var(--chrome);
 }
 
 .prose p {
@@ -2463,12 +2468,39 @@ img {
 	color: var(--muted);
 }
 
+/* FLAVOR TEXT (2026-10-16, ⚓ Nate): the item-description line in the manner
+   of the game's artifacts and mementos — italic, quiet, under the heading and
+   above the lede. Sprinkled sparingly: the three tools' Help chapters, Beta and
+   the error page. */
+.prose .flavor {
+	margin: -0.4rem 0 1.2rem;
+	font-style: italic;
+	color: var(--muted);
+}
+
 .prose code {
 	font-family: var(--font-mono);
 	font-size: 0.9em;
 	padding: 0.05em 0.3em;
 	border-radius: 3px;
 	background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* The composer's two lint squiggles, demonstrated in the Rotation Planner's
+   Help (2026-10-18, Nate: show readers what to look for). ⚠️ A COPY of
+   `.rp-tok-unknown` / `.rp-flag-approx` in notationEditorExtension.ts — change
+   one, change both. The warning tints the token's ink too; the provisional one
+   is the underline alone, because in the composer the ink is the caster's
+   element tint. */
+.prose code.flag-warning {
+	color: var(--ui-warning);
+	text-decoration: underline wavy var(--ui-warning);
+	text-underline-offset: 3px;
+}
+
+.prose code.flag-approx {
+	text-decoration: underline wavy var(--ui-provisional);
+	text-underline-offset: 3px;
 }
 
 /* (A reduced-motion block for `.prose a` stood here. Retired with the motion

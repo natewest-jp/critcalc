@@ -28,6 +28,13 @@
  * like any other map; a seed that ends the pass without a measured `anim` is deleted
  * again, so nothing is created that gcsim did not read. ⛔ Variants are not seeded:
  * a variant needs an `input`/`label`, which is authoring, not migration.
+ *
+ * `--walk` (2026-10-19, the walk-overrides round): writes ONLY the `W` key, from
+ * gcsim's `ActionWalk` slot, and leaves every other key alone — ⛔ a full re-migration
+ * would also rewrite the curated maps and the oracle artefacts. A map gets a `W` where
+ * gcsim's walk differs from its animation; one whose `anim` is not gcsim's is SKIPPED
+ * and reported (the override is a number about gcsim's animation, and ours describes
+ * something else), as are the holdbacks above and `WALK_HOLDBACK_PATHS`.
  */
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -43,6 +50,7 @@ import {
 	authoredMaps,
 	resolvedKeys,
 	dumperDriverEntry,
+	GCSIM_ILLEGAL_F,
 	gcsimKeyFor,
 	loadDrivers,
 	preserveFrameMap,
@@ -76,6 +84,25 @@ const HOLDBACK_PATHS = {
 	// read the RANGED (no-prereq) capture. Behind `inStance: [skill]` both maps
 	// agree with gcsim on every key but the anim, so the entries are gone.
 };
+
+/** ⛔ Maps whose walk reading is an ORACLE ARTEFACT (`--walk` only). */
+const WALK_HOLDBACK_PATHS = {
+	'ningguang__normal__sparkling_scatter.hits[0]':
+		'gcsim draws her normal TYPE at random (left 44 · right 41 · twirl 42 walk), so the capture is one sample of three — the same artefact as her `C`.'
+};
+
+/** `fm` with its walk key set (or removed, for `undefined`) — before `swap`, the
+ *  corpus's last key, so the cancels keep `KEYS` order. */
+function withWalk(fm, w) {
+	const out = {};
+	for (const [k, v] of Object.entries(fm)) {
+		if (k === 'W') continue;
+		if (k === 'swap' && w !== undefined) out.W = w;
+		out[k] = v;
+	}
+	if (w !== undefined && out.W === undefined) out.W = w;
+	return out;
+}
 
 /** Any single key moving by a second or more is not drift; the two records are of
  *  different actions. Catches Sigewinne's channelled burst (245→103), the hydro
@@ -137,6 +164,7 @@ async function main() {
 	const args = process.argv.slice(2);
 	const write = args.includes('--write');
 	const seed = args.includes('--seed');
+	const walk = args.includes('--walk');
 	const onlyIdx = args.indexOf('--char');
 	const only = onlyIdx >= 0 ? args[onlyIdx + 1] : null;
 
@@ -183,6 +211,38 @@ async function main() {
 		const cd = dump.characters[gk];
 		const byKey = new Map((cd?.abilities ?? []).map((a) => [a.key, a]));
 		const charHeld = HOLDBACK_CHARACTERS[c.data.id];
+
+		if (walk) {
+			for (const m of authoredMaps(c.data, drivers[gk], byKey)) {
+				const g = m.dumpKey ? byKey.get(m.dumpKey) : null;
+				if (!g || g.error || !g.frames || typeof g.frames.W !== 'number') continue;
+				const w = g.frames.W;
+				const want = w !== g.frames.anim && w !== GCSIM_ILLEGAL_F ? w : undefined;
+				const why =
+					charHeld ??
+					HOLDBACK_PATHS[m.path] ??
+					WALK_HOLDBACK_PATHS[m.path] ??
+					(m.frames.anim !== g.frames.anim
+						? `anim ${m.frames.anim} is not gcsim's ${g.frames.anim} — the walk ${w} is about a different animation`
+						: null);
+				if (why) {
+					if (want !== undefined) {
+						held.push({ id: c.data.id, path: m.path, why: `${m.path} — W ${w}: ${why}` });
+						stats.heldBack++;
+					}
+					continue;
+				}
+				if (m.frames.W === want) continue;
+				m.set(withWalk(m.frames, want));
+				stats.migrated++;
+			}
+			const next = await format(surgicalRewrite(c.raw, JSON.parse(c.raw), c.data), prettierOptions);
+			if (next !== c.raw) {
+				stats.files++;
+				if (write) writeFileSync(c.file, next);
+			}
+			continue;
+		}
 
 		// `--seed`: create the empty slots BEFORE the maps are enumerated, so they are
 		// migrated by the same rule as every other map in this pass.

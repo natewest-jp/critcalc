@@ -93,7 +93,8 @@ const GRAIN_TILE_PX = 128;
 export const PAN_DVH = ((MASTER_H_SRC - 2 * BLEED_V_SRC - VIEWPORT_H_SRC) / VIEWPORT_H_SRC) * 100;
 /** Duration of the tilt-up, ms — the ascend clock every fade keys off (the
  *  transition module re-exports it as TRANSITION_MS). */
-export const PAN_MS = 2400;
+// ↻ tune(nate) 2026-10-19: 2400 → 2100, a little brisker for launch (−12.5%).
+export const PAN_MS = 2100;
 const SIDE_LEAN_DEG = 16;
 
 /**

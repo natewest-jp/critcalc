@@ -105,6 +105,33 @@ describe('where a pad may land', () => {
 		// Without the wait the E pads (Q follows); the Q still does not.
 		expect(pads('Bennett E Q', PAD).map(([, , a]) => a)).toEqual(['skill']);
 	});
+	it('in front of the input after a WALK — the game stores nothing across one', () => {
+		// ↻ 2026-10-18: `W` is read. The swing before it runs to its animation
+		// (Bennett's N1, 33f), and the input after the walk is unbuffered, so ONE
+		// pad stands between them. ⛔ Seeded negative: the inert W padded nothing.
+		expect(pads('Bennett N1 W N1', PAD)).toEqual([[0, 33, 'normal']]);
+		expect(pads('Bennett N1 N1', PAD)).toEqual([]);
+		const r = parse('Bennett N1 W N1', PAD);
+		const swings = r.events.filter((e) => e.kind === 'action');
+		expect(swings[1].time).toBe(33 + 10 + 1);
+	});
+	it('not for a walk nothing follows, nor one followed by a wait', () => {
+		expect(pads('Bennett N1 W', PAD)).toEqual([]);
+		expect(pads('Bennett N1 W ~1s N1', PAD)).toEqual([]);
+	});
+	it('a walk into a swap adds no pad of its own', () => {
+		// The same two pads as without the walk (the swing's, the incoming
+		// character's); only the swing's moves, to the end of its animation.
+		const walked = pads('Bennett N1 W > Xiangling E', PAD);
+		const bare = pads('Bennett N1 > Xiangling E', PAD);
+		expect(walked.map(([t, , a]) => [t, a])).toEqual(bare.map(([t, , a]) => [t, a]));
+		expect(walked[0]).toEqual([0, 33, 'normal']);
+		expect(bare[0]).toEqual([0, 13, 'normal']);
+	});
+	it('a walk under Human timing OFF costs nothing extra', () => {
+		const off = parse('Bennett N1 W N1', { padFrames: 0, fullAnimations: false });
+		expect(JSON.stringify(off)).toBe(JSON.stringify(parse('Bennett N1 W N1', null)));
+	});
 	it('moves everything after it by exactly its length', () => {
 		const base = parse('Xiangling E N3 Q', null);
 		const padded = parse('Xiangling E N3 Q', PAD);

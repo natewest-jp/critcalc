@@ -34,7 +34,9 @@ export const TRANSITION_MS = PAN_MS;
  * crest-to-crest crane and the tools layout's world-locked drift/underline —
  * they are one motion at two depths, so the number lives here, once.
  */
-export const TOOL_NAV_MS = 2000;
+// ↻ tune(nate) 2026-10-19: 2000 → 1800, a little brisker for launch; its
+// fades (/3) land at 600 ms, the lift's old fade length.
+export const TOOL_NAV_MS = 1800;
 
 /** Fade speed multiplier vs. the transition itself. >1 means fades are
  *  faster than the pan. With strong ease-in-out the velocity peaks sharply
@@ -43,6 +45,11 @@ export const TOOL_NAV_MS = 2000;
  *  ⚓ NATE 2026-08-05: fades stay RATIO-derived from their clocks (this /4
  *  for the ascend, TOOL_NAV_MS/3 for tool legs in the tools layout) so
  *  retuning a transition duration keeps its fades locked in step. */
+// ⚠️ Why ¼ and not a round 600 ms (⚓ Nate, 2026-10-19): it is tempting to
+// match the tool legs' 600 ms fades, and 3.5 was tried — but on the trip DOWN
+// from a tool, the tool then fades out a touch too slowly and is seen sliding
+// over the landing. At ¼ it clears during the pan's slow start. With PAN_MS
+// 2100 that is 525 ms; the mismatch with the tool legs is deliberate.
 export const FADE_SPEED_MULTIPLIER = 4;
 
 /** Fade-IN duration for landing + tool elements (the "pleasing" landing fade). */

@@ -13,6 +13,16 @@
  * `createPlayhead` (rAF deltas, clamped): the two want opposite things from a
  * hidden tab, and a flag on one would be a lie about the other.
  *
+ * ⚓ THE CURSOR FOLLOWS WHAT YOU HEAR (2026-10-19, ⚓ Nate). The audio clock
+ * says when a tone is HANDED to the device; the device then holds it for its
+ * output latency — a few ms wired, often 100–300 ms over Bluetooth. Tones are
+ * still queued on the unshifted clock (`#tick`), but the cursor reads it LESS
+ * the latency the context reports (`outputLatency` + `baseLatency`), so it
+ * crosses a press as that press is heard. ⚠️ Reported, not measured: an engine
+ * that reports nothing gets no correction (⚓ Nate 2026-10-19: Chrome and Safari both report AirPods' delay, and the cursor follows a device switched mid-play) — the
+ * `__playback` console knob adds an offset by ear, and is what a calibration
+ * screen would set if one is ever needed.
+ *
  * With sound off the clock is `performance.now()` — the same absolute reading,
  * no AudioContext touched (iOS refuses one outside a gesture, and a silent
  * context is a resource for nothing).
@@ -113,9 +123,41 @@ class Playback {
 		if (wasPlaying) this.#start(counting);
 	}
 
-	/** Elapsed seconds on the rotation's axis since the anchor. */
+	/** Elapsed seconds on the rotation's axis since the anchor, as HEARD —
+	 *  never before the anchor (a start without a count-in would otherwise
+	 *  step the cursor back by the latency first). */
 	#elapsed(): number {
-		return (this.#now() - this.#anchor) * this.rate;
+		return Math.max(0, (this.#now() - this.#outputDelay() - this.#anchor) * this.rate);
+	}
+
+	/** Extra output delay, seconds — set from the console by ear (`__playback`). */
+	#extraDelay = 0;
+
+	/** How late a queued tone is HEARD: what the context reports, plus the
+	 *  console's extra. Zero on the wall clock — with sound off nothing is
+	 *  heard. Read live: the output device can change mid-play. */
+	#outputDelay(): number {
+		if (this.#clock !== 'audio' || !this.#sounder) return 0;
+		return this.#reportedDelay() + this.#extraDelay;
+	}
+
+	/** The latency the context reports, seconds (0 where it reports none). */
+	#reportedDelay(): number {
+		const ctx = this.#sounder?.ctx;
+		if (!ctx) return 0;
+		const finite = (v: number | undefined) => (typeof v === 'number' && isFinite(v) ? v : 0);
+		return finite(ctx.outputLatency) + finite(ctx.baseLatency);
+	}
+
+	/** The console knob (`__playback`): what is reported, and an extra delay
+	 *  in ms by ear. No argument prints the current reading. */
+	debugDelay(extraMs?: number): string {
+		if (typeof extraMs === 'number' && isFinite(extraMs)) this.#extraDelay = extraMs / 1000;
+		const ms = (v: number) => `${Math.round(v * 1000)} ms`;
+		const ctx = this.#sounder?.ctx;
+		return ctx
+			? `reported ${ms(this.#reportedDelay())} (output ${ctx.outputLatency === undefined ? 'not reported' : ms(ctx.outputLatency)}, base ${ms(ctx.baseLatency ?? 0)}) + extra ${ms(this.#extraDelay)}`
+			: `no audio yet — press Play with sound on; extra ${ms(this.#extraDelay)}`;
 	}
 
 	/** Nothing to play: an empty rotation, or one that parses to zero length. */
@@ -306,3 +348,10 @@ class Playback {
 }
 
 export const playback = new Playback();
+
+// The console knob, `__scene`'s pattern: `__playback.delay()` prints what the
+// browser reports; `__playback.delay(120)` adds 120 ms by ear (0 clears it).
+if (typeof window !== 'undefined')
+	(window as unknown as Record<string, unknown>).__playback = {
+		delay: (extraMs?: number) => playback.debugDelay(extraMs)
+	};

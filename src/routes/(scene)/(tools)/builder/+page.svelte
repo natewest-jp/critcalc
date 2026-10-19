@@ -34,6 +34,7 @@
 		boards,
 		effectiveCon,
 		heldElsewhere,
+		slotOfCharacter,
 		pinnedRotation,
 		teamCon,
 		type BoardPreset,
@@ -193,6 +194,13 @@
 	/** Which pane is showing — on a wide screen, both. */
 	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
 
+	/** ⚓ A notice with an Undo reports an edit to the LINEUP (a swap, a pick
+	 *  that took someone off another team), so it stands in band B's rail,
+	 *  over the lineup (Nate 2026-10-19). Band A keeps the document's notices
+	 *  (Saved, a bad share link) — and an Undo too while the lineup cell is
+	 *  not on screen (a phone showing Characters), or it would go unseen. */
+	const noticeOnLineup = $derived(documentBar.noticeActions.length > 0 && showing !== 'characters');
+
 	/** Show the lineup — a no-op beside the dock, the tab below it. */
 	function showLineup(): void {
 		tab = 'lineup';
@@ -348,8 +356,11 @@
 	function leaveTeam(id: string, from: BoardTeam): void {
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
-		boards.setSlot(boardId, from.id, from.slots.indexOf(id), null);
-		documentBar.showNotice(`${nameOf(id)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
+		// The one who LEAVES: for a Traveler, the variant that team holds.
+		const i = slotOfCharacter(from.slots, id);
+		const left = from.slots[i] ?? id;
+		boards.setSlot(boardId, from.id, i, null);
+		documentBar.showNotice(`${nameOf(left)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
 			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
 		]);
 	}
@@ -793,11 +804,22 @@
 	const teamStateOf = (id: string): 'in' | 'out' | 'full' | 'elsewhere' =>
 		selectedTeam?.slots.includes(id)
 			? 'in'
-			: leavingFrom(id)
-				? 'elsewhere'
-				: selectedTeam?.slots.includes(null)
-					? 'out'
-					: 'full';
+			: travelerSlot(id) >= 0
+				? 'out'
+				: leavingFrom(id)
+					? 'elsewhere'
+					: selectedTeam?.slots.includes(null)
+						? 'out'
+						: 'full';
+
+	/** The selected team's slot holding ANOTHER Traveler variant, or -1 — a
+	 *  pick of this one takes that slot (⚓ one Traveler per team, Nate
+	 *  2026-10-19: picking Cryo over Anemo changes the Traveler's element). */
+	function travelerSlot(id: string): number {
+		const team = selectedTeam;
+		if (!team || team.id === ERRAND_ID || team.slots.includes(id)) return -1;
+		return slotOfCharacter(team.slots, id);
+	}
 
 	/** ⚓ The game's toggle: a pick fills the selected team, the same pick again
 	 *  frees its slot. Below the dock, the pick that fills the team shows it. */
@@ -807,6 +829,8 @@
 		if (swapping) return swapIn(id);
 		previewHeld = id;
 		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
+		const j = travelerSlot(id);
+		if (selectedTeam && j >= 0) return void boards.setSlot(board.id, selectedTeam.id, j, id);
 		const from = leavingFrom(id);
 		if (from) return leaveTeam(id, from);
 		const filled = placeOnBoard(id);
@@ -1173,6 +1197,25 @@
 	{/each}
 {/snippet}
 
+<!-- The notice and its actions fade as ONE surface on --t-quick
+     (DocumentActions' .doc-notice). One wrapper, so the buttons leave with the
+     words — and `outroInert`, so an Undo on its way out cannot take a click. -->
+{#snippet notice()}
+	<span
+		class="tb-notice-group"
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	>
+		<span class="tb-notice" role="status" title={documentBar.notice}>{documentBar.notice}</span>
+		{#each documentBar.noticeActions as action (action.label)}
+			<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
+				>{action.label}</button
+			>
+		{/each}
+	</span>
+{/snippet}
+
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
      teams at once, so it cannot hold the Planner's one working team; band A is
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
@@ -1183,25 +1226,7 @@
 
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
-			{#if documentBar.notice}
-				<!-- The notice and its actions fade as ONE surface on --t-quick
-				     (DocumentActions' .doc-notice). One wrapper, so the buttons
-				     leave with the words — and `outroInert`, so an Undo on its
-				     way out cannot take a click. -->
-				<span
-					class="tb-notice-group"
-					transition:fade={{ duration: motion(T_QUICK) }}
-					onintrostart={introLive}
-					onoutrostart={outroInert}
-				>
-					<span class="tb-notice" role="status">{documentBar.notice}</span>
-					{#each documentBar.noticeActions as action (action.label)}
-						<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
-							>{action.label}</button
-						>
-					{/each}
-				</span>
-			{/if}
+			{#if documentBar.notice && !noticeOnLineup}{@render notice()}{/if}
 			<button
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
@@ -1327,12 +1352,38 @@
 				</div>
 			{/if}
 			{#if showing !== 'characters'}
-				<div class="tb-band-cell tb-band-cell--lineup">
+				<div
+					class="tb-band-cell tb-band-cell--lineup"
+					class:tb-band-cell--notice={!!documentBar.notice && noticeOnLineup}
+				>
 					{#if tabbed}{@render paneSwitch()}{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
 					     the lineup's controls standing at its end. -->
-					<span class="tb-rail" aria-hidden="true"></span>
+					<!-- A lineup notice: its words on the rail, snug against its buttons,
+					     which stand BESIDE the rail as plates of their own (⚓ Nate:
+					     glass is never stacked on glass). -->
+					<span class="tb-rail">
+						{#if documentBar.notice && noticeOnLineup}
+							<span
+								class="tb-notice"
+								role="status"
+								title={documentBar.notice}
+								transition:fade={{ duration: motion(T_QUICK) }}>{documentBar.notice}</span
+							>
+						{/if}
+					</span>
+					{#if documentBar.notice && noticeOnLineup}
+						{#each documentBar.noticeActions as action (action.label)}
+							<button
+								class="btn btn--glass"
+								transition:fade={{ duration: motion(T_QUICK) }}
+								onintrostart={introLive}
+								onoutrostart={outroInert}
+								onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
+							>
+						{/each}
+					{/if}
 					{#if errandOpen}
 						<!-- The errand edits the Planner's team, not a board: the board's
 						     own controls wait for it. -->
@@ -1804,12 +1855,31 @@
 		flex: 1;
 		min-width: 0;
 		align-self: stretch;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding: 0 0.75rem;
 		border-radius: var(--r-sm);
 		background: var(--surface);
+	}
+	/* The notice sits at the rail's END, against its buttons; when it runs
+	   long the words ellipsize (the title carries them whole). */
+	.tb-rail .tb-notice {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.tb-norepeat {
 		padding: 0 0.75rem;
 		font-size: var(--fs-md);
+	}
+	/* Below `compact` (40rem — $lib/breakpoints.ts) the rail is a sliver, so
+	   while a notice stands on it No repeats steps aside and the rail takes its
+	   room; the toggle is back when the notice goes. */
+	@media (max-width: 40rem) {
+		.tb-band-cell--notice .tb-norepeat {
+			display: none;
+		}
 	}
 	.tb-pane-switch {
 		gap: 0.45rem;

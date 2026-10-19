@@ -63,6 +63,7 @@
 				"E": 54,
 				"Q": 55,
 				"D": 41,
+				"W": 84,
 				"swap": 65
 			}
 		},
@@ -86,7 +87,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 49, "N": 48, "D": 44, "J": 44, "swap": 42 },
+			"frames": { "anim": 49, "N": 48, "D": 44, "J": 44, "W": 48, "swap": 42 },
 			"cooldown": 20,
 			"duration": 12,
 			"tags": [],

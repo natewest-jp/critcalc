@@ -13,7 +13,7 @@ import type { Board } from '$lib/boards.svelte';
 import { SEASONS, checkAlternatives, liveSeasons, type BattlefieldCheck } from '$lib/endgame';
 import { evaluateCheck, type CheckVerdict } from '$lib/endgameChecks';
 import { FINGERPRINT, teamFingerprint } from '$lib/fingerprint';
-import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { characterKey, getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { reactionPairs, type ReactionPair } from '$lib/utils/reactionPairs';
 
 export const TEAM_SIZE = 4;
@@ -255,7 +255,15 @@ export function swapSections(
 	// A plain object, not a Map: a pure fold, nothing here is state.
 	const byKey: Record<string, SwapSection> = {};
 	for (const c of candidates) {
-		if (slots.includes(c.id)) continue;
+		// A teammate is never offered — nor another Traveler variant while a
+		// Traveler sits in a DIFFERENT slot (one Traveler per team). The slot's
+		// own Traveler may swap element.
+		if (
+			slots.some(
+				(s, i) => s && characterKey(s) === characterKey(c.id) && (s === c.id || i !== slot)
+			)
+		)
+			continue;
 		const after = slots.map((s, i) => (i === slot ? c.id : s)).filter((s): s is string => !!s);
 		const d = swapDelta(before, after, conOf, checks);
 		const head = d.items.filter(

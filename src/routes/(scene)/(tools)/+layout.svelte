@@ -182,7 +182,7 @@
 	const SLIDE_MS = TOOL_NAV_MS;
 	const SLIDE_EASE = TILT_EASING_CSS;
 	// Retention budget for the outgoing layer: outlasts the transition window
-	// (camera 2400 + fade-in tail + settle pass) and doubles as the A→B→A
+	// (camera, PAN_MS 2100 at most, + fade-in tail + settle pass) and doubles as the A→B→A
 	// revival window. Only delays teardown of the (inert, invisible) old
 	// subtree — not user-visible.
 	const HOLD_MAX_MS = 4000;
@@ -967,7 +967,7 @@
 							<h2>This tool ran into a problem.</h2>
 							<p>
 								The rest of the site is fine — you can switch tools above, or try again. Your saved
-								rotations are untouched.
+								rotations and lineups are untouched.
 							</p>
 							<div class="tool-crash__actions">
 								<button class="btn btn--primary" onclick={reset}>Try again</button>

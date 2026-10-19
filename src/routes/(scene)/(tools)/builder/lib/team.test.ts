@@ -129,4 +129,14 @@ describe('swapDelta — what a swap does to the TEAM', () => {
 		const tiers = sections.map((s) => order.indexOf(s.tier));
 		expect(tiers).toEqual([...tiers].sort((x, y) => x - y));
 	});
+
+	it('⚓ one Traveler: a variant is offered only for the Traveler’s own slot', () => {
+		const team = ['traveler_anemo', 'xiangling', 'bennett', 'sucrose'];
+		const roster = getAllCharacterIndex();
+		const offered = (slot: number) =>
+			swapSections(roster, team, slot, c0).flatMap((s) => s.entries.map((e) => e.id));
+		expect(offered(3)).not.toContain('traveler_cryo');
+		expect(offered(0)).toContain('traveler_cryo');
+		expect(offered(0)).not.toContain('traveler_anemo');
+	});
 });

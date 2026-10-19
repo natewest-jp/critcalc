@@ -84,7 +84,7 @@
 			"abilityType": "skill",
 			"cooldown": 8,
 			"cooldownStartDelay": 10,
-			"frames": { "anim": 38, "N": 28, "E": 32, "Q": 28, "D": 27, "J": 27, "swap": 30 },
+			"frames": { "anim": 38, "N": 28, "E": 32, "Q": 28, "D": 27, "J": 27, "W": 25, "swap": 30 },
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [

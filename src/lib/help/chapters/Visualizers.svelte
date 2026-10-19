@@ -1,181 +1,267 @@
 <!-- Help chapter — see $lib/help/areas.ts. Every <h2> carries an id; the area
-	 shell reads them for the sidebar's table of contents.
+	 shell reads them for the sidebar’s table of contents.
 
-	 Rewritten 2026-07-26 against the shipped tool: the old copy predated the
-	 workspace layer and listed five instruments of eight. If an instrument is
-	 added or renamed, INSTRUMENTS in visualizers/lib/workspace.ts is the
-	 source of truth for the roster. -->
+	 Rewritten 2026-10-16 for launch (the static-pages round), from a fact
+	 sweep of the shipped instruments and their pass records
+	 (docs/*-pass-2026-10-0*.md). If an instrument is added or renamed,
+	 INSTRUMENTS in visualizers/lib/workspace.ts is the source of truth for the
+	 roster, and the sections follow the picker’s order. -->
 
 <h1>Visualizers</h1>
 
+<p class="flavor">
+	A dome with eight apertures, each lens ground to bring a single principle of the expanse into
+	focus.
+</p>
+
 <p class="lede">
-	A family of small graph instruments, each one taking a single mechanic and drawing it. On wide
-	screens several sit side by side.
+	Eight instruments, each taking one mechanic and drawing it, with controls to push it around and a
+	Readout that puts the result in words.
 </p>
 
 <section>
 	<h2 id="workspace">The workspace</h2>
 	<p>
-		Use the dropdown above each tile to choose the instrument it shows. Your layout is remembered
-		between visits; <strong>Reset layout</strong> restores the default, and a tile's
-		<strong>Defaults</strong> puts that instrument's controls back without disturbing the others.
+		The workspace shows as many instruments side by side as the window has room for: one, two from
+		1360px wide, three from 2200px. The menu over each tile picks its instrument; picking one
+		already showing in another tile swaps the two. <strong>Instruments shown</strong> in the
+		document bar can lower the count, and <strong>Reset layout</strong> puts back the default lineup.
+		Both are hidden when only one tile fits.
 	</p>
 	<p>
-		<strong>Share</strong> copies a link that reopens an instrument exactly as it looks, inputs and all.
-		Some instruments can also hand off to each other — the ICD Timeline can send its applying hits straight
-		to the Gauge Explorer, for instance.
+		Each tile has its own <strong>Defaults</strong>, which resets that instrument’s controls, and
+		<strong>Share</strong>, which copies a link that reopens the instrument exactly as it looks now
+		(the link always opens in the reader’s first tile). The tile’s <strong>⋯</strong> menu has
+		<strong>Report a problem</strong> for sending feedback related to that instrument.
+	</p>
+	<p>
+		The layout is remembered between visits, but the instruments’ settings are not, and start from
+		their defaults each time. Within a site visit, an instrument keeps its state while it’s out of
+		view.
 	</p>
 </section>
 
 <section>
 	<h2 id="crit-heatmap">Crit Heatmap</h2>
 	<p>
-		The average damage multiplier — 1&nbsp;+&nbsp;(CRIT Rate × CRIT DMG) — across every stat
-		combination. Drag the marker or use the sliders; cool blue is lower output, yellow through
-		red-purple higher.
+		Your average damage multiplier, 1&nbsp;+&nbsp;CRIT Rate&nbsp;×&nbsp;CRIT DMG, across every split
+		of CRIT Rate (up the side) and CRIT DMG (along the bottom). Press anywhere on the map to move
+		your build there, or use the sliders and number fields. The dashed contours join builds with the
+		same average.
 	</p>
 	<p>
-		Dashed lines mark builds with the same average damage. The solid equal-budget line traces every
-		build sharing your total crit value (2 × CRIT Rate + CRIT DMG) — drag along it to see where a
-		fixed stat budget pays out best. Pin a build to freeze a second marker and eyeball a trade
-		against it.
+		The <strong>Equal-budget line</strong> draws every build with your total crit value (CV),
+		counted as 2&nbsp;×&nbsp;CRIT Rate&nbsp;+&nbsp;CRIT DMG with the base 5% and 50% included. A
+		ring marks that budget’s best split, which sits on the 1:2 diagonal until CRIT Rate would pass
+		100% and then leaves it. <strong>Pin this build</strong> holds a second marker so you can compare
+		a trade.
 	</p>
 	<p>
-		Below the build, a bar chart shows how likely each number of crits is across one rotation of the
-		hits you set, with a line at the average. <strong>Roll</strong> plays one rotation and lights up the
-		bar it landed on. The no-crit risk overlay darkens the builds where a whole rotation can land zero
-		crits.
+		The average hides how uneven a rotation can be. The <strong>no-crit risk</strong> shading
+		darkens builds by their chance of a whole rotation without a single crit, and the chart under
+		the map shows every outcome for one rotation of however many hits you set.
+		<strong>Roll</strong> simulates one rotation’s hits.
+	</p>
+	<p>
+		I came up with the concept for the Crit Heatmap and wondered how best to present it visually,
+		and subsequently came across
+		<a href="https://www.hoyolab.com/article/622264" target="_blank" rel="noopener noreferrer"
+			>EODGamer’s spreadsheet heatmap</a
+		>. Thanks, EODGamer — your chart confirmed the shape in my mind.
 	</p>
 </section>
 
 <section>
 	<h2 id="gauge-explorer">Gauge Explorer</h2>
 	<p>
-		How elemental auras live and die. Build a sequence of applications and watch the gauge decay,
-		the ×0.8 aura tax, and how each reaction consumes aura at its own rate: ×2 for forward Vaporize
-		and Melt, ×0.5 reverse, ×0.5 for Swirl and Crystallize, 1:1 the rest, 2:1 for Bloom. Mechanics
-		follow KQM gauge theory, cross-checked against gcsim.
+		How auras attach, decay and get consumed, over up to 15s and eight applications. The band above
+		the chart is the editor: Click on the empty band above the chart to add an application, drag a
+		pill to move it, and use the toolbar to change its element and size or remove it. A focused pill
+		moves with the arrow keys, 0.1s at a time or 1s with Shift, and Delete removes it. The menu
+		contains fourteen examples that each demonstrate an interesting aspect of Genshin’s elemental
+		gauge system.
 	</p>
 	<p>
-		Click the band above the chart to add an application there — a copy of the selected one — and
-		drag a marker to move it in time. The toolbar over the chart sets the selected application's
-		element and size. Point at the chart to read every aura at that moment, or press play to watch
-		the gauges drain, at slow motion if you like. The strip under the chart shows which aura icons
-		hang over the enemy. Single target only: Swirl spreading and Shatter are out of scope.
+		The chart draws each aura’s gauge over time, and marks each reaction above the application that
+		triggered it. Point at the chart to read that moment in the Readout, or play it through. The
+		aura log below lists every application and reaction with what each took off the gauge.
+	</p>
+	<p>
+		The model is based on KQM’s study of Genshin’s elemental gauge, checked against gcsim and
+		stepped at 60 frames a second. An aura keeps 80% of what was applied and decays over 2.5s per
+		unit plus 7s. Applying the same element tops the gauge up but keeps the first application’s
+		decay rate, except Pyro since version 3.0, where a weaker hit does nothing and a stronger one
+		replaces the aura outright. Reactions consume different amounts: forward Vaporize and Melt take
+		twice the trigger, reverse half; Overloaded, Superconduct and Quicken one for one; Swirl and
+		Crystallize half, with a 1s cooldown on Crystallize. Bloom takes Dendro at half the rate of
+		Hydro. Electro-Charged leaves both auras in place and drains each by 0.4U a second. Aggravate
+		and Spread consume nothing.
+	</p>
+	<p>
+		The instrument is built assuming one target, and every application you place applies. (ICD is
+		the ICD Timeline’s job.) Swirl’s spread to other enemies and Shatter aren’t modeled. Neither are
+		Lunar-Charged, which drains both auras about half as fast as Electro-Charged, or
+		Lunar-Crystallize, which has no cooldown. The other Lunar and Stellar reactions consume the
+		gauge the same way as the reactions they replace.
 	</p>
 </section>
 
 <section>
 	<h2 id="icd-timeline">ICD Timeline</h2>
 	<p>
-		Which hits of an attack string actually apply their element. Standard ICD allows an application
-		every 2.5 seconds or every 3rd hit; the 3-hit rule does <em>not</em> reset the 2.5s timer, which is
-		why application patterns look irregular.
+		Which hits in a string actually apply their element. Each hit is a stem: tall in the element’s
+		color if it applies, a short faint tick if ICD blocks it. The digit under each hit is the hit
+		counter, ringed where the counter is what let it through, and the bands underneath are the timer
+		windows. Point at a hit to read why it did or didn’t apply.
 	</p>
 	<p>
-		Faster attack strings do not mean proportionally more elemental application — watch the
-		applications per window as you drag the hit interval, and point at a hit to see why it applies
-		or is blocked.
+		The attack string is either evenly spaced hits, with a slider for the interval, or one of four
+		real examples taken from gcsim: Fischl’s Oz, Hu Tao’s charged attacks, Chevreuse’s burst, and
+		Layla’s Shooting Stars. The available ICD rules are <strong>Standard</strong>,
+		<strong>No ICD</strong>, the example’s own, or <strong>Custom</strong>.
 	</p>
 	<p>
-		Standard is the default, not the only rule. The examples load real hit timings with their own
-		ICD groups — Fischl's Oz, Hu Tao's charged attacks, Chevreuse's Burst and Layla's Shooting
-		Stars. Some groups stop applying after a set number of applications until their timer runs out.
+		Standard ICD is a 2.5s timer and every third hit, and it stops after eight applications in one
+		window, though no real string gets that far. A hit let through by the timer restarts the timer
+		and the counter; a hit let through by the counter restarts neither. The examples show how far
+		real rules differ: Under its own rule Oz applies on its 1st, 5th and 7th ticks, not the 1st,
+		4th, 7th and 10th that Standard ICD would allow.
+	</p>
+	<p>
+		<strong>Send to Gauge Explorer</strong> hands the first eight applying hits within 15s to the Gauge
+		Explorer, at 1U each.
 	</p>
 </section>
 
 <section>
 	<h2 id="reaction-curves">Reaction Curves</h2>
 	<p>
-		How reaction payouts scale with Elemental Mastery. Each family rides a different curve:
-		amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM), Lunar and
-		Stellar 6·EM/(2000+EM), Crystallize 4.44·EM/(1400+EM). <strong>All families</strong> puts those five
-		on one chart; pick a family's tab to see its reactions one by one. Drag on the chart or slide to move
-		along it, and hover or tap a row of the readout to have it read out in words below the table.
+		How each family of reactions scales with Elemental Mastery. The tabs over the chart are the
+		families: Amplifying, Transformative, Additive, Lunar &amp; Stellar, and Crystallize, plus
+		<strong>All families</strong>, which puts them on one scale as the bonus each gets from EM. Drag
+		across the chart to set EM; the table reads each reaction at that value, with what the next 50
+		EM would add.
 	</p>
 	<p>
-		A Reaction Bonus such as 4pc Crimson Witch adds inside the same bracket as EM, so the Reaction
-		Bonus slider also says how much EM it is worth from where you are. Values are before enemy RES.
-		Transformative damage can't crit for most characters; additive flat damage joins the hit and
-		crits with it; Lunar and Stellar reaction damage crits on its own.
+		Every curve has the same shape, a bonus of k&nbsp;×&nbsp;EM&nbsp;/&nbsp;(c&nbsp;+&nbsp;EM), with
+		its own k and c per family, and Reaction Bonus adds inside it. On All families, a Reaction Bonus
+		above zero adds a column for how much EM the bonus is worth, which varies a lot: at 600 EM, +40%
+		is worth about 87 EM for a transformative reaction and over 500 for an amplifying one. Level
+		matters for the reactions that scale with it. The level slider runs to 90, then jumps to 95 and
+		100.
+	</p>
+	<p>
+		Every figure is before the enemy’s RES. Lunar and Stellar reactions show the share of the
+		character who contributes most, 60%. Stellar Swirl’s figures come from gcsim and haven’t been
+		confirmed in game.
 	</p>
 </section>
 
 <section>
 	<h2 id="damage-breakdown">Damage Breakdown</h2>
 	<p>
-		Your hit as its formula, one multiplier per row, read top to bottom. Each row shows the
-		multiplier's formula, the numbers from your sheet, and a bar. The bars share one axis whose
-		gridlines double the hit, so a ×2 is the same length wherever it sits, each bar starts where the
-		one above it ended, and a cut such as enemy DEF runs backward. Hover or tap a row to have it
-		read out in words, with its share of the boost.
+		One hit written out as its damage formula, one multiplier per row, in the formula’s order. Each
+		bar starts where the last one ended, on a scale where each gridline doubles the damage, so a ×2
+		is the same width wherever it falls. Cuts like enemy DEF run backwards. Hover or tap a row to
+		read what share of the result it accounts for.
 	</p>
 	<p>
-		A direct hit is shown relative to a hit from its base stat alone, because its talent multiplier
-		depends on the attack. Additive chunks, transformative damage, and Lunar and Stellar reaction
-		damage come from level and EM, so they end in a number. <strong>What the next roll buys</strong>
-		applies one average 5★ substat roll at a time to your sheet; pick ATK, HP, or DEF so the rolls match
-		the stat your character scales on.
+		The tabs choose the kind of hit: a direct hit (optionally Vaporized or Melted), an additive one
+		like Spread, a transformative reaction, or a Lunar or Stellar one. Only the sliders that feed
+		that formula are shown. A direct hit ends as a ratio against a hit from your scaling stat alone,
+		because the talent multiplier isn’t an input. The reaction families end in a number. Enemy RES
+		is entered after shred.
+	</p>
+	<p>
+		<strong>What the next roll buys</strong> adds one average 5★ substat roll of each kind and shows what
+		it gains. DMG Bonus isn’t there, since it can’t appear as an artifact substat. For an additive reaction
+		the gain is measured on the added damage alone, not the whole hit.
 	</p>
 </section>
 
 <section>
 	<h2 id="enemy-res-def">Enemy RES &amp; DEF</h2>
 	<p>
-		Two hidden multipliers every hit passes through, stacked one above the other. Point at either
-		chart to read it, and drag to move the enemy. Pick your hit's element and level, the enemy's RES
-		and level, and tick the shred you bring; the readout multiplies them together.
+		How much of a hit gets through the enemy’s resistance and defense. The upper chart is RES and
+		the lower is DEF. Point at either to read it, and drag to set the value — the enemy’s RES after
+		shred on the first, its level on the second.
 	</p>
 	<p>
-		Equal levels already cost you half your damage, and DEF shred and ignore win it back. Below 0%
-		RES, shred still helps at half strength; above 75%, it's weaker until RES drops back under 75%.
+		Shred works at three strengths. Between 0% and 75% RES it counts in full; below 0% it still
+		helps but at half strength; above 75% it helps but less than in full. Equal levels with the
+		enemy already halve your damage through DEF, and DEF shred and DEF ignore win it back,
+		multiplying together. Transformative, Lunar and Stellar reactions ignore DEF entirely.
+	</p>
+	<p>
+		The shred list holds every character and artifact set that shreds the element you’ve chosen,
+		with the constellation it needs and its amounts where they vary. Several shreds add up, but two
+		routes to the same in-game debuff count only once. An immune enemy takes no damage of that
+		element, regardless of the shred.
 	</p>
 </section>
 
 <section>
 	<h2 id="artifact-odds">Artifact Odds</h2>
 	<p>
-		The odds behind a 5★ artifact, from datamined weights, through a piece's life. Pick
-		<strong>your stats</strong> — up to four substats that count as good — and every view measures
-		them. <strong>Drop</strong>: how many days of resin it takes to get the piece you want, from a
-		domain or during a Stygian Onslaught Disturbance Outbreak. <strong>Level up</strong>: what your
-		stats reach at +20 on a piece that has them, colored by how many upgrades landed in them.
-		<strong>Your piece</strong>: enter a real piece, line by line as the game shows it, to see how
-		it ranks, what it can still become, and what a reshape would do.
+		A 5★ artifact’s odds over its life, in three views. Throughout, <strong>Your stats</strong> are the
+		substats you’d count as good. With only CRIT Rate and CRIT DMG chosen, results are in crit value;
+		otherwise in useful rolls, where a top roll counts 1 and the smallest 0.7.
 	</p>
 	<p>
-		Your stats are measured in crit value when they are CRIT Rate and CRIT DMG, and otherwise in
-		useful rolls: each upgrade into them counts by its size, a top roll 1 and the smallest 0.7.
+		<strong>Drop</strong> answers how long a piece takes to farm. Pick the piece type, every main stat
+		you’d accept, and how many of your stats it needs, and the chart shows the chance you’d have it after
+		each day of resin, from the domain alone and during a Stygian Onslaught Outbreak. A day is 180 resin,
+		and a run averages a little over one 5★.
 	</p>
 	<p>
-		The game doesn't say how a guarantee of at least N upgrades is met, for reshaping or for a piece
-		defined with Sanctifying Elixir. The Artifact Odds instrument assumes the upgrades land as usual
-		and any shortfall is moved into the selected lines — the reading Genshin Optimizer uses.
+		<strong>Level up</strong> shows where a fresh piece would land at +20 as a histogram stacked by how
+		many upgrades went into your stats. Drag the marker to set the value to beat. It covers pieces that
+		drop with three substats or four, and pieces made with Sanctifying Elixir, which guarantees two of
+		your chosen substats at least two upgrades.
+	</p>
+	<p>
+		<strong>Your piece</strong> is where you can enter the values of a real artifact and assess it. The
+		controls are laid out like the game’s reshape screen. Each value wheel offers only values the game
+		can produce, and a badge shows how many upgrades a substat has taken. A red pip means the current
+		values fit two possible counts and lets you pick which it is. A finished piece is ranked against every
+		+20 piece with the same four substats. Select two substats to see what a reshape would do. A reshape
+		keeps each substat’s starting roll and rerolls its upgrades by the rules of the reshape you choose:
+		Standard, Advanced, or Decreed.
+	</p>
+	<p>
+		The reshape guarantee is read as a top-up: Upgrades land at random, and if the two selected
+		substats would end with fewer upgrades than guaranteed, the last upgrades go to them until they
+		meet it. This is how two independent models interpret it: Genshin Optimizer and SiriYu’s solver.
+		The exact in-game method is not confirmed yet.
 	</p>
 </section>
 
 <section>
 	<h2 id="wish-odds">Wish Odds</h2>
 	<p>
-		How many pulls a goal takes, from your current pity and guarantee: the featured 5★ or 4★ up to
-		C6, the charted weapon up to R5, or a 5★ and their weapon together. There is one line per level
-		on the way to the goal, each showing your chance of being there by a given pull. The marker is
-		your saved pulls; drag it.
+		How many pulls a goal takes from where you are now. Pick what you’re pulling for — a featured
+		5★, a featured 4★, the charted weapon, or a 5★ and their weapon together — then set what you
+		have, what you’re aiming for (up to C6 and/or R5), your current pity, and whether you hold a
+		guarantee. The chart shows the chance of reaching each step by every pull count. Drag across it,
+		or use <strong>Pulls saved</strong>, to read your odds with what you have. Starglitter earned
+		while pulling isn’t counted, since how much you get depends on what you pull.
 	</p>
 	<p>
-		Pity model: a 5★ drops at 0.6% per pull until soft pity ramps from pull 74 (on the weapon
-		banner, 0.7% ramping from 63); a 4★ drops at 5.1%, then 56.1% on the 9th pull, and is certain on
-		the 10th. Featured odds use the official rates: 55% for a 5★ character including Capturing
-		Radiance, 37.5% for the charted weapon with one fate point, and 50% for a 4★, which is then one
-		of three featured characters, split evenly. The Radiance streak counter is not fully datamined,
-		so each 5★ is modeled as an independent 55%.
+		You win a 50/50 about 55% of the time, Capturing Radiance included (its exact rules aren’t
+		public, so every 50/50 is taken as a flat 55%). A featured 4★ comes about 22% of the time for
+		each 4★ you pull, and a lost 4★ 50/50 never gives you one of the banner’s featured 4★s. (The
+		rate-up 4★ characters on the banner are excluded from the standard pool temporarily for that
+		banner.)
 	</p>
 	<p>
-		Only pulls on a banner that features your goal count. Copies from Starglitter or events are not
-		in the curves, so set <strong>You have</strong> to what you own. A 5★ landing on the 10th pull
-		pushes that 4★ to the 11th; it is left out, and moves 4★ C6 by about one pull. The model matches
+		On the weapon banner, a Fate Point charts the weapon you want; without one it’s 37.5% for each
+		featured weapon and 25% for a standard one.
+	</p>
+	<p>
+		The pity curves are the game’s published rates with the community’s soft-pity measurements, and
+		the model is tested against
 		<a href="https://github.com/OneBST/GGanalysis" target="_blank" rel="noopener noreferrer"
 			>GGanalysis</a
-		>.
+		>: Averages agree to two decimal places, and medians agree exactly.
 	</p>
 </section>

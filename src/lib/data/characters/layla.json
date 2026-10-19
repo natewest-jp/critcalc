@@ -54,7 +54,7 @@
 			"name": "Nights of Formal Focus",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 43, "N": 41, "E": 42, "swap": 41 },
+			"frames": { "anim": 43, "N": 41, "E": 42, "W": 42, "swap": 41 },
 			"cooldown": 12,
 			"cooldownStartDelay": 19,
 			"tags": ["shield"],

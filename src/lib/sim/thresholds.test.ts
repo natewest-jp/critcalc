@@ -254,9 +254,19 @@ const VAPORIZE = 'Tester E > Xiangling E ~20s';
 // the third reaction — not at the reaction.
 const FROZEN = 'Tester E > Kaeya E ~6.5s E ~6.5s E';
 // Oz under a Lunar-Charged enabler: the reactions are sparse (Oz applies every
-// third strike) but every Lunar-Charged TICK refreshes the status, so it stays
-// live from the first reaction and 60 lands on poll 119.
+// third strike, and the test's Tide is slowed to 3s — `sparseTide`) but every
+// Lunar-Charged TICK refreshes the status, so it stays live from the first
+// reaction and 60 lands on poll 119.
 const LUNAR = 'Tester E > Fischl E ~20s';
+/** The Tester with its Tide ticking every 3s instead of 1s. */
+function sparseTide(): CharacterData {
+	const stub = tester();
+	const tide = stub.abilities.find((a) => a.id === 'tester__skill__tide') as unknown as {
+		summons: { effects: { trigger: { interval: number } }[] }[];
+	};
+	tide.summons[0].effects[0].trigger.interval = 3;
+	return stub;
+}
 
 describe('a stack threshold fires, spends the set and records the fire', () => {
 	it('Vaporize into key A: the sum reaches 60, the fire is dominant A, and the pool is spent', () => {
@@ -288,7 +298,7 @@ describe('a stack threshold fires, spends the set and records the fire', () => {
 	});
 
 	it('a Lunar-Charged tick refreshes the status the sparse reactions would let lapse', () => {
-		const r = parse(LUNAR);
+		const r = parse(LUNAR, {}, sparseTide());
 		const lc = reactions(r, 'lunarCharged');
 		expect(lc.length).toBeGreaterThanOrEqual(2);
 		// Sparse: at least one gap between reactions is longer than the 2 s window.
@@ -320,13 +330,17 @@ describe('a stack threshold fires, spends the set and records the fire', () => {
 		}
 		expect(reactionsOnly).toBeGreaterThan(0);
 		const f = fires(r).map((e) => e.time);
-		expect(f.length).toBe(1);
-		// The ticks kept the status alive past the last reaction's window while
-		// the auras coexisted, so the fire is EARLIER than reactions alone give —
-		// and later than one continuous status from the first, because the
-		// Electro-Charged aura itself lapsed once (no aura, no tick).
+		expect(f.length).toBeGreaterThanOrEqual(1);
+		// The ticks kept the status alive across the gap between reactions while
+		// the auras coexisted, so the first fire is EARLIER than reactions alone
+		// give — it is ONE continuous status from the first reaction.
+		// ↻ 2026-10-19 (Lunar-Charged on its own clock): the cloud ticks every
+		// 2s and drains half as fast as EC, so the auras no longer lapse mid-run
+		// and the fire lands exactly on the first status's 120th poll; the Tide
+		// ticks every 3s here, since at 1s every Hydro hit re-triggered and the
+		// reactions alone were no longer sparse.
 		expect(f[0]).toBeLessThan(reactionsOnly);
-		expect(f[0]).toBeGreaterThan(pollAt(lc[0], 0));
+		expect(f[0]).toBe(pollAt(lc[0], 0));
 	});
 
 	it("the mark rides the accruing summon's lane, in the fire's element, and applies nothing", () => {

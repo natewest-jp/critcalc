@@ -54,17 +54,21 @@
 		</a>
 
 		{#if isNotFound}
-			<h1>We couldn't find that page.</h1>
+			<h1>That page couldn’t be found.</h1>
+			<p class="flavor">It might very well belong to the Abyss.</p>
 			<p class="lede">
-				The address may be mistyped — or, if you followed a shared link, it may have been cut short
-				on its way here. Share links are long, and chat apps sometimes trim them.
+				The address may be mistyped, or if you followed a shared link, it may have been cut short on
+				its way here. Share links are long, and chat apps sometimes trim them.
 			</p>
 		{:else}
 			<h1>Something went wrong.</h1>
+			<p class="flavor">
+				A star slipped its course tonight. Sumeru’s star-readers logged the deviation, reset their
+				instruments, and looked again.
+			</p>
 			<p class="lede">
-				That's on us, not on you. Reloading often clears it. If it keeps happening, telling us what
-				you were doing is genuinely useful — critcalc is one person's project and reports are how
-				problems get found.
+				This was a site error, not something you did wrong. Reloading often clears it. If it keeps
+				happening, please report it and say what you were doing when it broke.
 			</p>
 			<!-- The one action that is not a way OUT, so it keeps its button. -->
 			<!-- ↻ 2026-10-15: a server-side failure (≥ 500) reports straight to
@@ -78,7 +82,7 @@
 							category: 'broken',
 							tool: feedbackToolForPath(page.url.pathname),
 							error: `${page.status} ${page.error?.message ?? ''}`
-						}}>Report a problem</ReportLink
+						}}>Report this</ReportLink
 					>
 				{:else}
 					<a class="btn btn--glass ctx-glass" href={resolve('/contribute')}>Report a problem</a>
@@ -148,6 +152,18 @@
 		line-height: var(--lh-tight);
 		color: var(--text);
 		text-wrap: balance;
+	}
+
+	/* The flavor line (2026-10-16): the content pages' .prose .flavor, which
+	   this page sits outside of — italic, quiet, between heading and lede. */
+	.flavor {
+		margin: 0 auto 0.9rem;
+		max-width: 34rem;
+		font-size: var(--fs-xl);
+		font-style: italic;
+		line-height: var(--lh-relaxed);
+		color: var(--muted);
+		text-wrap: pretty;
 	}
 
 	.lede {

@@ -164,6 +164,88 @@ describe('electro-charged', () => {
 	});
 });
 
+// ⚓ gcsim `pkg/reactable/lunarcharged.go` / `lunarcrystallize.go` (2026-10-19).
+// A Lunar enabler changes the GAUGE, not just the reaction's name — before this
+// the Planner drained a Lunar-Charged aura on EC's 1s clock and gave
+// Lunar-Crystallize Crystallize's cooldown.
+describe('lunar conversions (a team with an enabler)', () => {
+	const tickFrames = (g: ReturnType<typeof createGauge>) =>
+		g
+			.allEvents()
+			.filter((e) => e.kind === 'ecTick')
+			.map((e) => Math.round(e.time * 60));
+	const crystallizes = (g: ReturnType<typeof createGauge>) =>
+		g
+			.allEvents()
+			.flatMap((e) =>
+				e.kind === 'reaction' &&
+				(e.reaction === 'crystallize' || e.reaction === 'crystallizeBlocked')
+					? [`${e.reaction}:${e.of}`]
+					: []
+			);
+
+	it('Lunar-Charged drains every 2s from 9 frames after the trigger, where EC drains every 1s', () => {
+		const lc = createGauge({ lunarCharged: true });
+		lc.apply('hydro', 8, 0);
+		lc.apply('electro', 8, 1);
+		lc.advanceTo(300);
+		expect(tickFrames(lc)).toEqual([9, 129, 249]);
+
+		const ec = createGauge();
+		ec.apply('hydro', 8, 0);
+		ec.apply('electro', 8, 1);
+		ec.advanceTo(300);
+		expect(tickFrames(ec)).toEqual([16, 76, 136, 196, 256]);
+	});
+
+	it('the cloud ends 5.5s after the last trigger, though both auras remain', () => {
+		const g = createGauge({ lunarCharged: true });
+		g.apply('hydro', 8, 0);
+		g.apply('electro', 8, 1);
+		g.advanceTo(400);
+		expect(g.gauges().hydro).toBeGreaterThan(0);
+		expect(g.gauges().electro).toBeGreaterThan(0);
+		g.advanceTo(1200);
+		expect(tickFrames(g)).toEqual([9, 129, 249]);
+	});
+
+	it('a new trigger extends the cloud, and the 2s gap carries on (it is the enemy’s)', () => {
+		const g = createGauge({ lunarCharged: true });
+		g.apply('hydro', 8, 0);
+		g.apply('electro', 8, 1);
+		g.advanceTo(300);
+		g.apply('hydro', 1, 2); // Hydro on a live Electro aura: a trigger
+		g.advanceTo(1200);
+		expect(tickFrames(g)).toEqual([9, 129, 249, 369, 489, 609]);
+	});
+
+	it('Lunar-Crystallize ignores the 1s cooldown; a plain Crystallize is blocked by it', () => {
+		const run = (lunarCrystallize: boolean) => {
+			const g = createGauge({ lunarCrystallize });
+			g.apply('hydro', 4, 0);
+			g.advanceTo(10);
+			g.apply('geo', 1, 1);
+			g.advanceTo(30);
+			g.apply('geo', 1, 2);
+			return crystallizes(g);
+		};
+		expect(run(true)).toEqual(['crystallize:hydro', 'crystallize:hydro']);
+		expect(run(false)).toEqual(['crystallize:hydro', 'crystallizeBlocked:hydro']);
+	});
+
+	it('on an EC aura one Geo hit crystallizes Electro AND lunar-crystallizes Hydro', () => {
+		const run = (lunarCrystallize: boolean) => {
+			const g = createGauge({ lunarCrystallize });
+			g.apply('hydro', 4, 0);
+			g.apply('electro', 4, 1);
+			g.apply('geo', 8, 2);
+			return crystallizes(g);
+		};
+		expect(run(true)).toEqual(['crystallize:electro', 'crystallize:hydro']);
+		expect(run(false)).toEqual(['crystallize:electro']);
+	});
+});
+
 describe('simulation bounds', () => {
 	// ⚠️ Applications past the cap used to vanish with no trace, and a live aura
 	// at the cap was truncated with no signal — both silent, which is how a

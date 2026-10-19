@@ -182,7 +182,13 @@ export type AuraState = {
 	offers: Offer[];
 };
 
-export function createAuraState(): AuraState {
+/** `lunar`: which Lunar conversions the TEAM arms (`teamEnabledReactions`).
+ *  ⚓ They change the gauge, not only the reaction's name — Lunar-Charged
+ *  drains on its own clock and Lunar-Crystallize skips the cooldown — so the
+ *  gauge must know before the first application, not learn it at dispatch. */
+export function createAuraState(
+	lunar: { charged: boolean; crystallize: boolean } = { charged: false, crystallize: false }
+): AuraState {
 	// ⚠️ No `maxFrames`: a cap belongs to an instrument charting hand-placed
 	// applications, and a rotation must never be silently truncated mid-parse.
 	//
@@ -202,7 +208,14 @@ export function createAuraState(): AuraState {
 	// `stepFrame`, so no sample is taken for a frame nothing happens in, and
 	// continuous work stays bounded by aura lifetime rather than rotation
 	// length. Heavy fixture (311 s, 230 applications) parses in 4.8 ms.
-	return { gauge: createGauge({ sampling: true }), offers: [] };
+	return {
+		gauge: createGauge({
+			sampling: true,
+			lunarCharged: lunar.charged,
+			lunarCrystallize: lunar.crystallize
+		}),
+		offers: []
+	};
 }
 
 /**

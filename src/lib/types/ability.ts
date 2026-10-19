@@ -1317,8 +1317,9 @@ type TransientStateCommon = {
 	 * jump" ends (gcsim `chargeInit`'s `OnActionExec` hook).
 	 *
 	 * ⚓ Not D and not J (Nate, 2026-09-16): she dashes and jumps IN deer form, so
-	 * movement is not an exit. Not a wait, an unset, or a token we skip (`W`)
-	 * either — none of those is an input the game could react to. A swap is a
+	 * movement is not an exit — nor is a walk (`W`), which the kit names in so many
+	 * words ("any action but walk"). Not a wait or an unset either — neither is an
+	 * input the game could react to. A swap is a
 	 * different edge and is `terminatesOnSwap`, authored beside this.
 	 *
 	 * ⚠️ The close is settled BEFORE the closing action resolves its own ability
@@ -2287,7 +2288,14 @@ export type Effect =
  * correct cancel window. "swap" is the fallback (full animation, no cancel).
  * Hitlag and attack speed are not modelled at this level.
  */
-export type ActionKey = 'N' | 'C' | 'E' | 'Q' | 'D' | 'J' | 'P' | 'swap';
+/**
+ * The next action a slice is resolved for. `W` is a walk (2026-10-18). A map
+ * states it only where gcsim overrides its Walk slot (2026-10-19, 155 maps);
+ * absent, `frameAt()` answers `anim` — gcsim's own default for the slot
+ * (`InitNormalCancelSlice` leaves it at the animation). ⚠️ The audit reads an
+ * absent `W` as a claim (`WALK_KEY` in `scripts/lib/gcsim-map.mjs`).
+ */
+export type ActionKey = 'N' | 'C' | 'E' | 'Q' | 'D' | 'J' | 'P' | 'W' | 'swap';
 
 /**
  * Per-next-action frame durations (60fps integers) — gcsim's two slice
