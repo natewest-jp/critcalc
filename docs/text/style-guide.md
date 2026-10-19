@@ -97,13 +97,14 @@ read as a company.
 ⚓ Written out because the same tics will surface across all 17 remaining sheets, and they
 are easier to catch by shape than by feel.
 
-| Tell                                                                                | Live example                                                    |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| **The rule of three** — a triad of negations, the oldest marketing cadence there is | "no damage totals, no tier lists, no 'synergy scores'"          |
-| **Antithesis as a crutch** — _X, never Y_                                           | "Facts, never a score" · "Odds only" · "Mechanics made visible" |
-| **The aphorism** — a short clause hung on a dash, landing like a tagline            | "the bars speak for themselves" · "the judgment stays yours"    |
-| **"by design"** — turns an explanation into a defense                               | "No, by design."                                                |
-| **Abstract nouns doing the work** instead of a verb and a thing                     | "the judgment stays yours"                                      |
+| Tell                                                                                                           | Live example                                                                       |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **The rule of three** — a triad of negations, the oldest marketing cadence there is                            | "no damage totals, no tier lists, no 'synergy scores'"                             |
+| **Antithesis as a crutch** — _X, never Y_                                                                      | "Facts, never a score" · "Odds only" · "Mechanics made visible"                    |
+| **The aphorism** — a short clause hung on a dash, landing like a tagline                                       | "the bars speak for themselves" · "the judgment stays yours"                       |
+| **"by design"** — turns an explanation into a defense                                                          | "No, by design."                                                                   |
+| **Abstract nouns doing the work** instead of a verb and a thing                                                | "the judgment stays yours"                                                         |
+| **The ledger metaphor** — _buys_, _free_, _costs_, _pays_, _spends_ for what a move does (⚓ Nate, 2026-10-19) | "What it buys is the reset" → "walk cancels give you a reset of the attack string" |
 
 ⚓ **The antidote is SPECIFICITY, not warmth.** The most personal phrase on the site does
 not use "I" and is not friendly — it is **"critcalc is one person's project"** (the error
@@ -530,7 +531,8 @@ gets translated. This turns an impossible research task into a tractable one.
    Does it use the word **"never"** about the future? (§1.3)
 4. ⛔ Does it **posture** — claim authority the project does not have? (§1.3b)
    ⛔ Does it **explain something the reader could work out unaided**? (§1.3c)
-5. ⚠️ Any of the tells: a triad, an _X-never-Y_, a tagline-shaped aphorism, "by design"?
+5. ⚠️ Any of the tells: a triad, an _X-never-Y_, a tagline-shaped aphorism, "by design",
+   a ledger verb (_buys_, _free_, _costs_)?
    (§1.3a)
 6. Is it a **whole sentence**, not a template of fragments? (§3.1)
 7. Right speaker for the claim — critcalc / I (personal) / we (modelling decisions) / nobody? (§1.4)

@@ -91,9 +91,9 @@
 	</p>
 	<p>
 		<strong>Walk-cancels.</strong> <code>W</code> ends the attack string the way walking does in
-		game: <code>N1 W N1</code> is two first hits. A walk can start only once the attack’s animation has
-		ended, so it saves no frames over waiting. What it buys is the reset, without the stamina a dash would
-		cost.
+		game: <code>N1 W N1</code> is two first hits. For most attacks a walk can start only once the animation
+		has ended, though some characters can walk out a little sooner. Regardless, walk cancels give you
+		a reset of the attack string without the stamina a dash would cost.
 	</p>
 </section>
 
