@@ -149,30 +149,30 @@
 	<h2 id="swapping">Swapping a character</h2>
 	<p>
 		Click a portrait in the selected team to replace that character. The banner reads “Replacing
-		Furina”, and Characters regroups by what the swap would do to the team:
+		Furina”, and the Characters grid regroups by what the swap would do to the team:
 	</p>
 	<ul>
 		<li><strong>Keeps everything</strong>: Nothing the team provides is lost.</li>
 		<li><strong>Trades</strong>: Something is lost, listed in the section header.</li>
 		<li>
-			<strong>Changes the reactions</strong>: The team’s reactions or resonance change, whatever
-			else does.
+			<strong>Changes the reactions</strong>: The team’s reactions or resonance change.
 		</li>
 		<li><strong>Not yet curated</strong>: no capability data, so the swap can’t be read.</li>
 	</ul>
 	<p>
 		What a candidate would add shows as green icons on their card. Only characters who play the same
-		position — on field or off — are offered at first; a button at the foot of the grid shows the
+		position (on field or off) are offered at first; a button at the foot of the grid shows the
 		rest. Escape or the banner’s ✕ leaves without swapping.
 	</p>
 	<p>
-		Picking someone makes the swap, and the notice offers <strong>Undo</strong>. If the team had a
-		pinned rotation, the pin drops, because the rotation was written for the old character; the
-		notice then offers to open a copy in the Rotation Planner with the new name written in.
+		Picking someone makes the swap, and the notice above the lineup offers to <strong>Undo</strong>
+		it. If the team had a pinned rotation, the pin drops, because the rotation was written for the old
+		character; the notice then offers to open a copy in the Rotation Planner with the new character written
+		in their place.
 	</p>
 	<p>
 		The Rotation Planner sends you here too: Clicking a portrait on its bench opens swap mode for
-		that tab’s team. Picking someone renames them in the notation and takes you back; Cancel returns
+		that team. Picking someone renames them in the notation and takes you back; Cancel returns
 		without changing anything. An empty slot works the same way and adds someone instead.
 	</p>
 </section>
@@ -180,11 +180,13 @@
 <section>
 	<h2 id="rotations">Rotations</h2>
 	<p>
-		A team’s rotations are the saved rotations written for exactly those four characters, in any
-		order. Pin one from the menu under <strong>Planner</strong>, and the team reads its capabilities
-		at that rotation’s constellations. <strong>Planner</strong> opens the pinned rotation, or a new tab
-		with the team’s names if nothing is pinned. Changing the team’s members drops the pin; the rotation
-		itself stays in the Library under its original team.
+		If you have already saved a rotation to your library for exactly the four characters in a team
+		(in any order), you will see the pin under <strong>Planner</strong> become a menu, which you can
+		use to pin a specific rotation to that team. The team will then read its capabilities at that
+		rotation’s constellations.
+		<strong>Planner</strong> opens the pinned rotation, or a new tab with the team’s names if nothing
+		is pinned. Changing the team’s members drops the pin; the rotation itself stays in the Library under
+		its original team.
 	</p>
 </section>
 
@@ -194,26 +196,27 @@
 		Your roster lives in the Library’s <strong>Roster</strong> tab, also reached from
 		<strong>Edit in Roster</strong> in a character’s details. Mark who you own, who you’re wishing
 		for, and at what constellation. <strong>Show</strong>, <strong>My constellations</strong> and the
-		constellation chips all read it, and the Rotation Planner shares it.
+		constellation chips all read it, so the tools do gain increased functionality if you fill in your
+		roster.
 	</p>
 	<p>
-		The chip on a team portrait is the constellation that team uses. Filled, you own at least that
-		much; hollow, the team asks for more than you have, or for someone you don’t own.
+		The chip on a team portrait is the constellation that team uses. If it is filled, you own at
+		least that constellation. If it's hollow, the team uses a constellation higher than you have (or
+		a character you don’t own).
 	</p>
 	<p>
 		An unsaved lineup follows your roster as it changes. <strong>Save</strong> puts the lineup in
 		the Library and fixes each member’s constellation as it was, so a saved lineup stays put.
-		<strong>Share</strong> copies a link with the lineup’s teams, preset, season, No repeats and constellations;
-		pinned rotations stay with you.
+		<strong>Share</strong> copies a link with the lineup’s teams, preset, season, No repeats setting and
+		constellations. (Pinned rotations are not included.)
 	</p>
 </section>
 
 <section>
 	<h2 id="phone">On a phone</h2>
 	<p>
-		On narrower screens Characters and the Lineup are two panes with a plate to switch between them.
-		Filling a team takes you to the Lineup, and choosing a slot to fill takes you to Characters. The
-		filter strip folds into three plates — roles, elements, capabilities — and the magnifier is
-		always showing on each card. There is no hover preview on touch.
+		On narrower screens Characters and the Lineup are two panes with a button to switch between
+		them. Filling a team takes you to the Lineup, and choosing a slot to fill takes you to
+		Characters. There is no hover preview on touch.
 	</p>
 </section>
