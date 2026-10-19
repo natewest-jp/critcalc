@@ -47,7 +47,10 @@
 	     underline and the nav sprouted full-width rules. -->
 	<main class="pages-panel">
 		{#key pathname}
-			<div in:fade={{ duration: motion(T_QUICK) }}>
+			<!-- Full height, so an area page can fill the panel and scroll inside
+			     (HelpAreaShell's `.area-page`). Taller content (the Library) just
+			     overflows it, and the panel scrolls as before. -->
+			<div class="pages-page" in:fade={{ duration: motion(T_QUICK) }}>
 				{@render children()}
 			</div>
 		{/key}
@@ -95,6 +98,9 @@
 	   to read in. So the panel runs to the screen's foot, and the legal footer
 	   is the last thing IN it, met at the end of the scroll; the fixed one
 	   steps aside (the scene layout). The landing keeps its fixed footer. */
+	.pages-page {
+		height: 100%;
+	}
 	.pages-legal {
 		display: none;
 	}

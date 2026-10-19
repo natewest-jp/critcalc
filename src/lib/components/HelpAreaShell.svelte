@@ -74,69 +74,87 @@
 	 again on them here would double the base prefix. The rule cannot see that
 	 from a variable, hence the file-scoped exemption. -->
 <!-- eslint-disable svelte/no-navigation-without-resolve -->
-{#if mode === 'page'}
-	<!-- On a route the tabs head the page, as they head the overlay — one
+<!-- ↻ 2026-10-19 (⚓ Nate): ONE scroll model, whichever way you arrived. The
+     page used to hand its scroll to the pages panel, so the area tabs, their
+     rule and the chapter list scrolled away with the text; in the overlay
+     only the chapter body scrolls. Now the page fills the panel too
+     (`.area-page`, height 100%) and the nav and body scroll on their own. -->
+<div class="area-page">
+	{#if mode === 'page'}
+		<!-- On a route the tabs head the page, as they head the overlay — one
 	     place, whichever way you arrived. -->
-	<header class="area-page-head">
-		<AreaTabs current={area.id} mode="page" />
-		<HRule />
-	</header>
-{/if}
-<div class="area-shell" class:is-page={mode === 'page'}>
-	<nav class="area-nav" aria-label="{area.title} sections">
-		<ul class="area-chapters">
-			{#each area.chapters as ch (ch.id)}
-				<li>
-					<a
-						class="area-chapter"
-						class:is-current={ch.id === current.id}
-						href={ch.path}
-						aria-current={ch.id === current.id ? 'page' : undefined}
-						onclick={(event) => onChapterClick(event, ch.id)}>{ch.title}</a
-					>
+		<header class="area-page-head">
+			<AreaTabs current={area.id} mode="page" />
+			<HRule />
+		</header>
+	{/if}
+	<div class="area-shell">
+		<nav class="area-nav" aria-label="{area.title} sections">
+			<ul class="area-chapters">
+				{#each area.chapters as ch (ch.id)}
+					<li>
+						<a
+							class="area-chapter"
+							class:is-current={ch.id === current.id}
+							href={ch.path}
+							aria-current={ch.id === current.id ? 'page' : undefined}
+							onclick={(event) => onChapterClick(event, ch.id)}>{ch.title}</a
+						>
 
-					<!-- Contents of the chapter you are actually reading. Wide only. -->
-					{#if ch.id === current.id && toc.length > 1}
-						<ul class="area-toc">
-							{#each toc as entry (entry.id)}
-								<li>
-									<a href="#{entry.id}" onclick={(event) => jumpTo(event, entry.id)}>{entry.text}</a
-									>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	</nav>
+						<!-- Contents of the chapter you are actually reading. Wide only. -->
+						{#if ch.id === current.id && toc.length > 1}
+							<ul class="area-toc">
+								{#each toc as entry (entry.id)}
+									<li>
+										<a href="#{entry.id}" onclick={(event) => jumpTo(event, entry.id)}
+											>{entry.text}</a
+										>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		</nav>
 
-	<div class="area-body" bind:this={bodyEl}>
-		{#key current.id}
-			{#if chapterComponent}
-				{@const Chapter = chapterComponent}
-				{#if current.bare}
-					<div use:collectToc><Chapter /></div>
-				{:else}
-					<article class="prose" use:collectToc><Chapter /></article>
-				{/if}
-			{:else}
-				{#await current.load()}
-					<p class="area-loading">Loading…</p>
-				{:then mod}
-					{@const Chapter = mod.default}
+		<div class="area-body" bind:this={bodyEl}>
+			{#key current.id}
+				{#if chapterComponent}
+					{@const Chapter = chapterComponent}
 					{#if current.bare}
 						<div use:collectToc><Chapter /></div>
 					{:else}
 						<article class="prose" use:collectToc><Chapter /></article>
 					{/if}
-				{/await}
-			{/if}
-		{/key}
+				{:else}
+					{#await current.load()}
+						<p class="area-loading">Loading…</p>
+					{:then mod}
+						{@const Chapter = mod.default}
+						{#if current.bare}
+							<div use:collectToc><Chapter /></div>
+						{:else}
+							<article class="prose" use:collectToc><Chapter /></article>
+						{/if}
+					{/await}
+				{/if}
+			{/key}
+		</div>
 	</div>
 </div>
 
 <style>
+	.area-page {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+	.area-page > .area-shell {
+		flex: 1;
+	}
+
 	.area-shell {
 		display: grid;
 		/* ⚓ Nate 2026-09-23: 12rem — the longest chapter ("Rotation Planner")
@@ -147,23 +165,11 @@
 		min-height: 0;
 	}
 
-	/* On a route the surrounding panel does the scrolling, so the shell grows
-	   with its content and only the sidebar sticks. */
-	.area-shell.is-page {
-		height: auto;
-	}
-
 	.area-nav {
 		min-height: 0;
 		overflow-y: auto;
 		padding-right: 0.25rem;
 		border-right: 2px solid var(--border);
-	}
-
-	.is-page .area-nav {
-		position: sticky;
-		top: 0;
-		overflow: visible;
 	}
 
 	.area-chapters,
@@ -244,10 +250,6 @@
 		padding-right: 0.4rem;
 	}
 
-	.is-page .area-body {
-		overflow: visible;
-	}
-
 	.area-page-head {
 		display: grid;
 		gap: 0.6rem;
@@ -272,16 +274,6 @@
 			border-right: none;
 			border-bottom: 1px solid var(--border);
 			padding: 0 0 0.5rem;
-		}
-
-		/* The tab row scrolls on its own, as it does in the overlay. Restated
-		   here because the unscoped `.is-page .area-nav { overflow: visible }`
-		   outranks the bare `.area-nav` above, and the pages panel took the
-		   overflow instead — a sideways swipe slid every page's prose off. */
-		.is-page .area-nav {
-			position: static;
-			overflow-x: auto;
-			overflow-y: hidden;
 		}
 
 		.area-chapters {
