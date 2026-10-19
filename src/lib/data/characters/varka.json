@@ -67,6 +67,7 @@
 				"Q": 72,
 				"D": 55,
 				"J": 55,
+				"W": 63,
 				"swap": 63
 			},
 			"_curatorNotes": [
@@ -910,7 +911,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 152, "N": 137, "E": 138, "D": 138, "J": 137, "swap": 136 },
+			"frames": { "anim": 152, "N": 137, "E": 138, "D": 138, "J": 137, "W": 140, "swap": 136 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,

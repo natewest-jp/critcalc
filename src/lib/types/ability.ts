@@ -2289,10 +2289,11 @@ export type Effect =
  * Hitlag and attack speed are not modelled at this level.
  */
 /**
- * The next action a slice is resolved for. `W` is a walk (2026-10-18): no
- * FrameMap states it yet, so `frameAt()` answers `anim` — gcsim's own default
- * for its Walk slot (`InitNormalCancelSlice` leaves it at the animation). ⏭ The
- * per-character overrides are a queued data round.
+ * The next action a slice is resolved for. `W` is a walk (2026-10-18). A map
+ * states it only where gcsim overrides its Walk slot (2026-10-19, 155 maps);
+ * absent, `frameAt()` answers `anim` — gcsim's own default for the slot
+ * (`InitNormalCancelSlice` leaves it at the animation). ⚠️ The audit reads an
+ * absent `W` as a claim (`WALK_KEY` in `scripts/lib/gcsim-map.mjs`).
  */
 export type ActionKey = 'N' | 'C' | 'E' | 'Q' | 'D' | 'J' | 'P' | 'W' | 'swap';
 

@@ -67,7 +67,8 @@
 			"chargeFrames": {
 				"anim": 101,
 				"hit": 57,
-				"N": 94
+				"N": 94,
+				"W": 99
 			},
 			"_curatorNotes": [
 				"Frames 2026-07-14 from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged). Normals: attack.go attackHitmarks=[23,20,41], animations [36,37,76]; per-hit ActionAttack/ActionCharge overrides — N1 24/24, N2 20/33, N3 74/71 (InitNormalCancelSlice). swap = hitmark. Windup (state-dependent +2 on N1) is not part of the canonical FrameMap.",

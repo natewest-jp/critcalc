@@ -36,8 +36,9 @@ verdicts" had become a slogan.
 
 ↻ **The passage's CLAIM is retired (2026-10-18)**: `W` is simulated now — gcsim resets the
 attack string on a walk and starts it only at the animation's end, so the "keeping the
-attack string" reasoning was wrong (branch `fix/walk-resets-string`). The move it
-demonstrates stands.
+attack string" reasoning was wrong (branch `fix/walk-resets-string`); since 2026-10-19
+the walk starts at each character's own walk point, gcsim's per-character override where it
+has one (`fix/walk-overrides`). The move it demonstrates stands.
 
 A limitation stated _with its reason_ reads as rigor. The same limitation stated bare
 reads as a gap. ⚓ **Never strip a "why" to save a line** — that sentence is the reason

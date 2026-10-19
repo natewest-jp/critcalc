@@ -54,6 +54,7 @@
 						"Q": 7,
 						"D": 8,
 						"J": 7,
+						"W": 70,
 						"swap": 4
 					}
 				}
@@ -66,6 +67,7 @@
 				"Q": 71,
 				"D": 21,
 				"J": 21,
+				"W": 74,
 				"swap": 60
 			},
 			"plungeFrames": {
@@ -76,6 +78,7 @@
 				"E": 58,
 				"Q": 59,
 				"D": 46,
+				"W": 66,
 				"swap": 50
 			},
 			"_curatorNotes": [
@@ -110,6 +113,7 @@
 				"E": 57,
 				"Q": 56,
 				"D": 44,
+				"W": 64,
 				"swap": 48
 			}
 		},
@@ -157,7 +161,7 @@
 					"label": "Focused Impression (Hold)",
 					"input": ["hE"],
 					"cooldown": 18,
-					"frames": { "anim": 138, "N": 133, "C": 133, "E": 131, "Q": 131, "swap": 135 },
+					"frames": { "anim": 138, "N": 133, "C": 133, "E": 131, "Q": 131, "W": 137, "swap": 135 },
 					"_curatorNotes": [
 						"Hold cast (Focused Impression). input:['hE'] added 2026-07-15 — was previously the unreachable input-less 'Finisher Frame Cast' (cooldown only, no frames). gcsim skillHoldCD=1080f=18s (base Press = 720f = 12s). Frames = skillHoldFrames at min hold (hold=1): swap=134+1, N=132+1, E/Q=130+1; the hold parameter adds a variable offset, D/J stay at the InitAbilSlice 137 default (omitted per recipe). Hold cooldownStartDelay is parametric (hitmark-2) — AbilityVariant has no cooldownStartDelay field (see [[curator-notes-deferral-survey]])."
 					],
@@ -227,7 +231,7 @@
 			],
 			"tags": ["heal"],
 			"effects": [],
-			"frames": { "anim": 49, "N": 42, "E": 48, "Q": 42, "D": 42, "J": 42, "swap": 41 },
+			"frames": { "anim": 49, "N": 42, "E": 48, "Q": 42, "D": 42, "J": 42, "W": 42, "swap": 41 },
 			"behavior": "instant",
 			"_curatorNotes": [
 				"behavior changed from generator-stub 'stance' to 'instant'. Charlotte's Composition Mode (Hold) is a caster aiming state — normals/charge are NOT replaced. Not a stance per recipe table.",

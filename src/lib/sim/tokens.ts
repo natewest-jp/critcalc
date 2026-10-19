@@ -52,10 +52,10 @@ export function peekActionKey(tokens: Token[], j: number, isBow: boolean): Actio
 	//    fills every slot with the animation and moves only Aim/Skill/Burst/Dash/
 	//    Jump/Swap to the hitmark; Walk keeps the full animation. So the answer
 	//    here is the key `'W'`, which no FrameMap carries and which is not in
-	//    `HIT_KEYS`, and `frameAt()` resolves it to `anim` — the same default
-	//    gcsim's slice holds. ⏭ gcsim OVERRIDES Walk per character in places
-	//    (normals, plunges, skills); a `W` key in the data is the follow-up round
-	//    that captures them, and `frameAt` reads it the day it lands.
+	//    `HIT_KEYS`, so `frameAt()` reads a map's own `W` and otherwise resolves
+	//    it to `anim` — the same default gcsim's slice holds. gcsim OVERRIDES
+	//    Walk per character in places (normals, plunges, skills); those are the
+	//    FrameMaps' `W` keys since 2026-10-19 (`migrate-frames-shape.mjs --walk`).
 	//
 	// The walk itself is gcsim's bare `walk` — one frame (`stam.go` `Walk`) — and
 	// draws nothing (run.ts).

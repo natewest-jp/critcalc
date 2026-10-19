@@ -21,6 +21,7 @@ import type { Ability, Element } from '$lib/types/ability';
 import { GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import { framesOf, landsAt, PROJECTILE_TRAVEL_F } from '$lib/utils/frames';
 import ganyuJson from '$lib/data/characters/ganyu.json';
+import flinsJson from '$lib/data/characters/flins.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import durinJson from '$lib/data/characters/durin.json';
 import huTaoJson from '$lib/data/characters/hu_tao.json';
@@ -4246,6 +4247,18 @@ describe('parseNotation — A is a bow’s aimed shot; W walks', () => {
 		// Ganyu's swing is a first swing either way (a swap is a new character).
 		expect(normals(walked)[1].combo).toBe(0);
 		expect(normals(walked)[1].time).toBeGreaterThan(normals(swapped)[1].time);
+	});
+
+	it('🐛 a map’s own W is its walk point — gcsim’s per-character override (2026-10-19)', () => {
+		// Flins's charged attack is `{anim 60, W 52, swap 43}` (gcsim `charge.go`:
+		// `chargeFrames[action.ActionWalk] = 52`). ⛔ Seeded negative: before the
+		// walk-overrides round the map had no `W` and this read the animation, 60.
+		const flins = flinsJson as unknown as CharacterData;
+		const r = parseNotation('Flins C W', (n) => (n === 'Flins' ? flins : null), 8);
+		const charged = r.events.flatMap((e) =>
+			e.kind === 'action' && e.action === 'charged' ? [e.duration] : []
+		);
+		expect(charged).toEqual([52]);
 	});
 });
 

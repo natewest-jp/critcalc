@@ -23,7 +23,7 @@
 				{ "name": "N1", "frames": { "anim": 47, "hit": 26, "N": 32 } },
 				{ "name": "N2", "frames": { "anim": 49, "hit": 23, "N": 33 } },
 				{ "name": "N3", "frames": { "anim": 65, "hit": 31, "N": 59 } },
-				{ "name": "N4", "frames": { "anim": 86, "hit": 42 } }
+				{ "name": "N4", "frames": { "anim": 86, "hit": 42, "W": 68 } }
 			],
 			"plungeFrames": {
 				"anim": 87,

@@ -111,7 +111,8 @@
 						"E": 39,
 						"Q": 40,
 						"D": 40,
-						"J": 40
+						"J": 40,
+						"W": 39
 					}
 				}
 			],
@@ -133,7 +134,7 @@
 			"abilityType": "skill",
 			"cooldown": 6,
 			"duration": 6,
-			"frames": { "anim": 69, "N": 5, "Q": 6, "D": 15, "J": 18, "swap": 65 },
+			"frames": { "anim": 69, "N": 5, "Q": 6, "D": 15, "J": 18, "W": 19, "swap": 65 },
 			"tags": [],
 			"effects": [],
 			"description": "Combining her mastery of speed and the waves and water, Mualani can surf anytime, anywhere.\nAfter using this skill, Mualani will gain 60 Nightsoul points and enter the Nightsoul's Blessing state.\n\nNightsoul's Blessing: Mualani\nContinuously consume Nightsoul points. When they are depleted or when the skill is used again, Mualani's Nightsoul's Blessing will end. The state itself has the following traits:\n·Mualani mounts her Sharky Surfboard, increasing Mualani's Movement SPD and interruption resistance. Mualani can move on water and liquid Phlogiston while this state is active, and she will take no DMG from the latter.\n·Normal Attacks will be converted to Sharky's Bites, dealing Nightsoul-aligned Hydro DMG based on Mualani's Max HP. Sharky's Bites can be used in mid-air. DMG dealt this way is considered Normal Attack DMG.\n·When she makes contact with opponents in this state, Mualani applies \"Marked as Prey\" to them and gains 1 Wave Momentum stack. Max 3 stacks. 1 stack can be gained from the same opponent every 0.7s.\n\nWave Momentum and Marked as Prey\nWhen Mualani uses Sharky's Bite, her DMG dealt increases based on Wave Momentum stacks. When she has 3 stacks, Sharky's Bite will be converted to Sharky's Surging Bite, further increasing her DMG and removing all her stacks when hitting an opponent.\nWhen Sharky's Bite hits an opponent Marked as Prey, that mark will be removed, and she will fire Shark Missiles at up to 5 nearby opponents Marked as Prey, dealing DMG to them equal to this Sharky's Bite instance and clearing their Marks. If more than 1 opponent is the target of Sharky's Bite and Shark Missiles, the DMG dealt will decrease, decreasing at most to 72% of the original DMG when 3 opponents are targeted.",
@@ -159,7 +160,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": { "anim": 180, "N": 167, "E": 166, "D": 167, "J": 167, "swap": 108 },
+			"frames": { "anim": 180, "N": 167, "E": 166, "D": 167, "J": 167, "W": 167, "swap": 108 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],

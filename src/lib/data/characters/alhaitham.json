@@ -101,7 +101,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 87, "N": 86, "E": 80, "swap": 85 },
+					"frames": { "anim": 87, "N": 86, "E": 80, "W": 86, "swap": 85 },
 					"cooldown": 18,
 					"behavior": "instant",
 					"_curatorNotes": [
@@ -129,7 +129,7 @@
 			"name": "Particular Field: Fetters of Phenomena",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 91, "N": 88, "E": 89, "D": 89, "swap": 87 },
+			"frames": { "anim": 91, "N": 88, "E": 89, "D": 89, "W": 89, "swap": 87 },
 			"cooldown": 18,
 			"tags": [],
 			"energyCost": 70,
