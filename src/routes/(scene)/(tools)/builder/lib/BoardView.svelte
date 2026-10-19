@@ -35,6 +35,7 @@
 	import {
 		effectiveCon,
 		heldElsewhere,
+		slotOfCharacter,
 		pinnedRotation,
 		rotationsForTeam,
 		teamCon,
@@ -185,6 +186,10 @@
 						.map((s, i) => (i === swapping.slot ? previewId : s))
 						.filter((s): s is string => !!s);
 		if (facts.ids.includes(previewId)) return facts.ids.filter((id) => id !== previewId);
+		// Another Traveler variant: the pick takes that one's slot (one Traveler).
+		const j = slotOfCharacter(team.slots, previewId);
+		if (j >= 0)
+			return team.slots.map((s, i) => (i === j ? previewId : s)).filter((s): s is string => !!s);
 		if (heldElsewhere(board, team.id, previewId)) return null;
 		return team.slots.includes(null) ? [...facts.ids, previewId] : null;
 	}

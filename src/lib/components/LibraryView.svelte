@@ -35,7 +35,7 @@
 	import Mark from './Mark.svelte';
 	import SidePortrait from './SidePortrait.svelte';
 	import CompositionChips from './CompositionChips.svelte';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { getCharacterIndexEntry, shortName } from '$lib/data/characterLookup';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import {
 		constellations,
@@ -87,7 +87,6 @@
 	const teams = $derived(libraryTeams($savedNotations, $savedBoards));
 	const ids = (notation: string) => orderedCharacterIds(notation).slice(0, 4);
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
-	const first = (id: string) => nameOf(id).split(' ')[0];
 
 	const boardsList = $derived([...$savedBoards].sort((a, b) => lastTouched(b) - lastTouched(a)));
 
@@ -557,7 +556,7 @@
 							? own === null
 								? `You don't own ${nameOf(id)}`
 								: `This rotation uses C${c} · you own C${own}`
-							: ''}>{first(id)} C{c}</span
+							: ''}>{shortName(id)} C{c}</span
 					>
 				{/each}
 			</span>

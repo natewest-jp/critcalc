@@ -34,6 +34,7 @@
  */
 
 import { browser } from '$app/environment';
+import { characterKey } from './data/characterLookup';
 import { TEAM_SIZE, notationHasActions, teamKey, teamKeyOfNotation } from './utils/notationEdit';
 import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
@@ -184,6 +185,11 @@ function withTeams(b: Board, slots: TeamSlot[][]): Board {
 	};
 }
 
+/** The slot of `slots` holding the same character as `id` (any Traveler for a
+ *  Traveler), or -1. */
+export const slotOfCharacter = (slots: readonly TeamSlot[], id: string): number =>
+	slots.findIndex((s) => !!s && characterKey(s) === characterKey(id));
+
 /** Under No repeats, the OTHER team of `board` that holds `id` — the team a
  *  pick for `teamId` takes them off FIRST (⚓ Nate 2026-10-18, the game's two
  *  clicks: the first frees them, the second places them). Undefined when the
@@ -194,7 +200,7 @@ export function heldElsewhere(
 	id: string
 ): BoardTeam | undefined {
 	if (!board.noRepeats) return undefined;
-	return board.teams.find((t) => t.id !== teamId && t.slots.includes(id));
+	return board.teams.find((t) => t.id !== teamId && slotOfCharacter(t.slots, id) >= 0);
 }
 
 export function withoutRepeats(
@@ -211,8 +217,8 @@ export function withoutRepeats(
 		if (!slots) continue;
 		slots.forEach((id, i) => {
 			if (!id) return;
-			if (seen.includes(id)) slots[i] = null;
-			else seen.push(id);
+			if (seen.includes(characterKey(id))) slots[i] = null;
+			else seen.push(characterKey(id));
 		});
 	}
 	return out;
@@ -419,7 +425,7 @@ class BoardsState {
 		const board = this.boards.find((b) => b.id === boardId);
 		if (!id || !board?.noRepeats) return [];
 		return board.teams
-			.filter((t) => t.id !== exceptTeamId && t.slots.includes(id))
+			.filter((t) => t.id !== exceptTeamId && slotOfCharacter(t.slots, id) >= 0)
 			.map((t) => t.id);
 	}
 
@@ -432,7 +438,11 @@ class BoardsState {
 			return withTeams(
 				b,
 				b.teams.map((t) =>
-					t.id === keepTeamId ? t.slots : t.slots.map((s) => (s && ids.includes(s) ? null : s))
+					t.id === keepTeamId
+						? t.slots
+						: t.slots.map((s) =>
+								s && ids.some((id) => characterKey(id) === characterKey(s)) ? null : s
+							)
 				)
 			);
 		});

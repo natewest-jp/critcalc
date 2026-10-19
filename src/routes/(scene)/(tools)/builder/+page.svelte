@@ -34,6 +34,7 @@
 		boards,
 		effectiveCon,
 		heldElsewhere,
+		slotOfCharacter,
 		pinnedRotation,
 		teamCon,
 		type BoardPreset,
@@ -348,8 +349,11 @@
 	function leaveTeam(id: string, from: BoardTeam): void {
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
-		boards.setSlot(boardId, from.id, from.slots.indexOf(id), null);
-		documentBar.showNotice(`${nameOf(id)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
+		// The one who LEAVES: for a Traveler, the variant that team holds.
+		const i = slotOfCharacter(from.slots, id);
+		const left = from.slots[i] ?? id;
+		boards.setSlot(boardId, from.id, i, null);
+		documentBar.showNotice(`${nameOf(left)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
 			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
 		]);
 	}
@@ -793,11 +797,22 @@
 	const teamStateOf = (id: string): 'in' | 'out' | 'full' | 'elsewhere' =>
 		selectedTeam?.slots.includes(id)
 			? 'in'
-			: leavingFrom(id)
-				? 'elsewhere'
-				: selectedTeam?.slots.includes(null)
-					? 'out'
-					: 'full';
+			: travelerSlot(id) >= 0
+				? 'out'
+				: leavingFrom(id)
+					? 'elsewhere'
+					: selectedTeam?.slots.includes(null)
+						? 'out'
+						: 'full';
+
+	/** The selected team's slot holding ANOTHER Traveler variant, or -1 — a
+	 *  pick of this one takes that slot (⚓ one Traveler per team, Nate
+	 *  2026-10-19: picking Cryo over Anemo changes the Traveler's element). */
+	function travelerSlot(id: string): number {
+		const team = selectedTeam;
+		if (!team || team.id === ERRAND_ID || team.slots.includes(id)) return -1;
+		return slotOfCharacter(team.slots, id);
+	}
 
 	/** ⚓ The game's toggle: a pick fills the selected team, the same pick again
 	 *  frees its slot. Below the dock, the pick that fills the team shows it. */
@@ -807,6 +822,8 @@
 		if (swapping) return swapIn(id);
 		previewHeld = id;
 		if (selectedTeam?.slots.includes(id)) return removeFromBoard(id);
+		const j = travelerSlot(id);
+		if (selectedTeam && j >= 0) return void boards.setSlot(board.id, selectedTeam.id, j, id);
 		const from = leavingFrom(id);
 		if (from) return leaveTeam(id, from);
 		const filled = placeOnBoard(id);

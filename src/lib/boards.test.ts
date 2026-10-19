@@ -9,6 +9,7 @@ import {
 	teamCon,
 	effectiveCon,
 	heldElsewhere,
+	slotOfCharacter,
 	withoutRepeats,
 	toSharedBoard,
 	fromSharedBoard,
@@ -190,5 +191,25 @@ describe('No repeats — one team per character', () => {
 			heldElsewhere({ ...board, noRepeats: false }, two.id, 'bennett'),
 			'repeats allowed: an ordinary pick'
 		).toBe(undefined);
+	});
+	it('⚓ every Traveler variant is ONE character (Nate 2026-10-19)', () => {
+		expect(
+			withoutRepeats([
+				['traveler_anemo', 'bennett', null, null],
+				['traveler_cryo', 'traveler_geo', null, null]
+			])
+		).toEqual([
+			['traveler_anemo', 'bennett', null, null],
+			[null, null, null, null]
+		]);
+		const board = {
+			...makeBoard('Traveler'),
+			noRepeats: true,
+			teams: [makeTeam(['traveler_anemo', null, null, null]), makeTeam()]
+		};
+		const [one, two] = board.teams;
+		expect(heldElsewhere(board, two.id, 'traveler_cryo')?.id).toBe(one.id);
+		expect(slotOfCharacter(one.slots, 'traveler_cryo')).toBe(0);
+		expect(slotOfCharacter(one.slots, 'bennett')).toBe(-1);
 	});
 });

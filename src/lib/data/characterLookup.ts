@@ -58,3 +58,21 @@ export function searchCharacterIndex(query: string, limit = 6): CharacterIndexEn
 	}
 	return results;
 }
+
+/**
+ * ⚓ ONE TRAVELER (Nate 2026-10-19). The game has a single Traveler whose
+ * element changes, so every `traveler_*` variant is the SAME character: a team
+ * holds one of them, and under No repeats one team of a board holds any of them.
+ * Every "is this the same character" question on a board goes through here.
+ */
+export const characterKey = (id: string): string => (id.startsWith('traveler_') ? 'traveler' : id);
+
+/**
+ * The name a sentence uses for a character: the first word of the display name,
+ * except a Traveler's, whose first word is its element. "Cryo provides it"
+ * names nobody, so a Traveler keeps "Cryo Traveler".
+ */
+export function shortName(id: string): string {
+	const name = getCharacterIndexEntry(id)?.displayName ?? id;
+	return id.startsWith('traveler_') ? name : name.split(' ')[0];
+}

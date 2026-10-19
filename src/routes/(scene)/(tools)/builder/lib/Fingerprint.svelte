@@ -27,7 +27,7 @@
 	 */
 	import { FACETS } from '$lib/capabilities/facets';
 	import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { shortName } from '$lib/data/characterLookup';
 	import type { FingerprintCluster, FingerprintSlot } from '$lib/fingerprint';
 	import FingerprintGlyph from '$lib/components/FingerprintGlyph.svelte';
 
@@ -55,7 +55,6 @@
 	} = $props();
 
 	const LABEL = Object.fromEntries(FACETS.map((f) => [f.key, f.label]));
-	const first = (id: string) => (getCharacterIndexEntry(id)?.displayName ?? id).split(' ')[0];
 
 	/** Whether each facet is lit now — what the preview is compared against. */
 	const litNow = $derived(
@@ -77,7 +76,7 @@
 	 *  the verb agrees, never a run assembled from fragments). */
 	function sentence(s: FingerprintSlot, change: 'gain' | 'loss' | null): string {
 		const who = (state: string) =>
-			s.members.filter((m) => m.state === state).map((m) => first(m.id));
+			s.members.filter((m) => m.state === state).map((m) => shortName(m.id));
 		const lit = who('lit');
 		const outlined = who('outlined');
 		const locked = who('locked');
