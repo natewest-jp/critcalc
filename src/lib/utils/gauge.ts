@@ -16,6 +16,12 @@
 //   - Frozen: gauge = 2 × min(aura, trigger), decays at 0.4 U/s accelerating
 //     0.1 U/s² while frozen (ramping back down at 0.2 U/s² after)
 //   - Electro-Charged: both auras coexist; ticks every 1s drain 0.4U from each
+//   - Lunar-Charged (a team with an enabler — `GaugeOptions.lunarCharged`):
+//     the same coexistence and 0.4U, but from a thundercloud that lives 5.5s
+//     past the last trigger and drains at most once per 2s (see startLC)
+//   - Lunar-Crystallize (`GaugeOptions.lunarCrystallize`): Geo on Hydro
+//     consumes ×0.5 like Crystallize but ignores — and never sets — the 1s
+//     cooldown, so it can land beside a Crystallize on another aura
 //   - Burning: a fixed 2U non-decaying Burning aura + a fuel gauge draining at
 //     0.4 U/s; DAMAGE ticks every 0.25s, but re-applies Pyro only every ~2s
 //     (the Burning ICD group — see BURNING_ICD below)
@@ -325,6 +331,17 @@ type Sim = {
 	/** Burning's Pyro re-application counter (see BURNING_ICD). */
 	burningIcd: IcdClock;
 	crysGcdUntil: number;
+	/** The team converts these reactions (`GaugeOptions`). Both false for the
+	 *  Gauge Explorer, which models neither. */
+	lunarCharged: boolean;
+	lunarCrystallize: boolean;
+	/** The thundercloud's end frame — 5.5s past the last Lunar-Charged trigger. */
+	lcCloudUntil: number;
+	/** The enemy's 2s gap between Lunar-Charged hits. ⚠️ The ENEMY's, so it
+	 *  outlives a cloud and holds into the next one (gcsim `lcIcdKey`). */
+	lcIcdUntil: number;
+	/** Generation stamp for the cloud's scan chain, as `ecGen`. */
+	lcGen: number;
 	/** Live dendro cores, as expiry frames in spawn order. ⚠️ Pruned lazily on
 	 *  read rather than by a scheduled task — a core that nobody triggers has no
 	 *  consequence to fire, and a task whose only job is to check back later is
@@ -490,6 +507,52 @@ function ecTick(S: Sim, gen: number) {
 	schedule(S, S.frame + 60, () => ecTick(S, gen));
 }
 
+// ── Lunar-Charged ────────────────────────────────────────────────────────────
+//
+// ⚓ gcsim `pkg/reactable/lunarcharged.go`, transcribed. Every trigger (Electro
+// on Hydro or Hydro on Electro, Frozen absent) extends the cloud to 5.5s from
+// now; a cloud that was not alive starts a fresh scan 9 frames out. The scan
+// runs every 6 frames while the cloud lives, and hits when the enemy's 2s gap
+// has passed AND both auras are present — each hit draining 0.4U from both, as
+// an EC tick does. So against EC: half the drain rate at most, and nothing at
+// all once 5.5s pass without a new trigger, even with both auras still there.
+
+const LC_CLOUD_F = 330;
+const LC_FIRST_SCAN_F = 9;
+const LC_SCAN_F = 6;
+const LC_ICD_F = 120;
+
+function triggerLC(S: Sim) {
+	if (S.frame >= S.lcCloudUntil) {
+		const gen = ++S.lcGen;
+		schedule(S, S.frame + LC_FIRST_SCAN_F, () => lcScan(S, gen));
+	}
+	S.lcCloudUntil = S.frame + LC_CLOUD_F;
+}
+
+function lcScan(S: Sim, gen: number) {
+	if (gen !== S.lcGen || S.frame >= S.lcCloudUntil) return;
+	if (S.frame >= S.lcIcdUntil && S.u.electro > EPS && S.u.hydro > EPS) {
+		S.lcIcdUntil = S.frame + LC_ICD_F;
+		const e0 = S.u.electro;
+		const h0 = S.u.hydro;
+		S.u.electro -= Math.min(EC_DRAIN, S.u.electro);
+		S.u.hydro -= Math.min(EC_DRAIN, S.u.hydro);
+		// The same event as an EC tick: every reader converts it through the
+		// team (aura.ts), so under an enabler it already reads Lunar-Charged.
+		S.events.push({ kind: 'ecTick', time: S.frame / FPS, drained: EC_DRAIN });
+		expireIfDrained(S, 'electro', e0);
+		expireIfDrained(S, 'hydro', h0);
+	}
+	schedule(S, S.frame + LC_SCAN_F, () => lcScan(S, gen));
+}
+
+/** Electro-Charged forming — or, under an enabler, Lunar-Charged triggering. */
+function chargeReaction(S: Sim) {
+	if (S.lunarCharged) triggerLC(S);
+	else startEC(S);
+}
+
 // ── Burning ──────────────────────────────────────────────────────────────────
 
 function startBurning(S: Sim, fuel: number) {
@@ -621,7 +684,7 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 				}
 				reacted = true;
 				emit('electroCharged', [], 0);
-				startEC(S);
+				chargeReaction(S);
 			}
 			if (S.u.frozen > EPS && g > EPS) {
 				// frozen superconduct: cryo first, leftover into frozen, trigger spent
@@ -742,7 +805,7 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 				}
 				reacted = true;
 				emit('electroCharged', [], 0);
-				startEC(S);
+				chargeReaction(S);
 			}
 			break;
 		}
@@ -805,9 +868,23 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 				['pyro', 'pyro'],
 				['frozen', 'frozen']
 			];
+			// ⚓ gcsim tries every aura in this order. A regular Crystallize is
+			// gated by the 1s cooldown, so only the first present aura reacts (or
+			// is blocked); an armed Lunar-Crystallize on Hydro ignores the gate,
+			// never sets it, and does not end the search.
+			let regularTried = false;
 			for (const [el, key] of order) {
 				const present = MODS_OF[el].some((m) => S.u[m] > EPS);
-				if (!present) continue;
+				if (!present || g <= EPS) continue;
+				if (el === 'hydro' && S.lunarCrystallize) {
+					const r = reduce(S, el, g, 0.5);
+					g -= r.spent;
+					reacted = true;
+					emit('crystallize', r.consumed, r.spent, key);
+					continue;
+				}
+				if (regularTried) continue;
+				regularTried = true;
 				if (S.frame < S.crysGcdUntil) {
 					emit('crystallizeBlocked', [], 0, key);
 				} else {
@@ -818,7 +895,6 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 					emit('crystallize', r.consumed, r.spent, key);
 					if (el === 'pyro') burningCheck(S);
 				}
-				break; // only the first matching aura crystallizes
 			}
 			break;
 		}
@@ -953,10 +1029,23 @@ export type Gauge = {
  *  short. They stay module-private rather than widening `Gauge`. */
 type GaugeInternals = { gauge: Gauge; sim: Sim; step: () => void };
 
+/** How the gauge is built. The two Lunar flags say the TEAM converts that
+ *  reaction (an enabler is on it), which changes the gauge, not just the name:
+ *  the rotation sim sets them from `teamEnabledReactions`; the Gauge Explorer
+ *  leaves them off. */
+export type GaugeOptions = {
+	maxFrames?: number;
+	sampling?: boolean;
+	lunarCharged?: boolean;
+	lunarCrystallize?: boolean;
+};
+
 function createGaugeInternal({
 	maxFrames = Infinity,
-	sampling = false
-}: { maxFrames?: number; sampling?: boolean } = {}): GaugeInternals {
+	sampling = false,
+	lunarCharged = false,
+	lunarCrystallize = false
+}: GaugeOptions = {}): GaugeInternals {
 	const S: Sim = {
 		frame: 0,
 		maxFrames,
@@ -970,6 +1059,11 @@ function createGaugeInternal({
 		burningGen: 0,
 		burningIcd: createIcdClock(),
 		crysGcdUntil: -1,
+		lunarCharged,
+		lunarCrystallize,
+		lcCloudUntil: -1,
+		lcIcdUntil: -1,
+		lcGen: 0,
 		cores: [],
 		nextCoreId: 0,
 		dropped: 0,
@@ -1065,7 +1159,7 @@ function createGaugeInternal({
 }
 
 /** The live gauge. See {@link Gauge}. */
-export function createGauge(opts?: { maxFrames?: number; sampling?: boolean }): Gauge {
+export function createGauge(opts?: GaugeOptions): Gauge {
 	return createGaugeInternal(opts).gauge;
 }
 
