@@ -194,6 +194,13 @@
 	/** Which pane is showing — on a wide screen, both. */
 	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
 
+	/** ⚓ A notice with an Undo reports an edit to the LINEUP (a swap, a pick
+	 *  that took someone off another team), so it stands in band B's rail,
+	 *  over the lineup (Nate 2026-10-19). Band A keeps the document's notices
+	 *  (Saved, a bad share link) — and an Undo too while the lineup cell is
+	 *  not on screen (a phone showing Characters), or it would go unseen. */
+	const noticeOnLineup = $derived(documentBar.noticeActions.length > 0 && showing !== 'characters');
+
 	/** Show the lineup — a no-op beside the dock, the tab below it. */
 	function showLineup(): void {
 		tab = 'lineup';
@@ -1190,6 +1197,25 @@
 	{/each}
 {/snippet}
 
+<!-- The notice and its actions fade as ONE surface on --t-quick
+     (DocumentActions' .doc-notice). One wrapper, so the buttons leave with the
+     words — and `outroInert`, so an Undo on its way out cannot take a click. -->
+{#snippet notice()}
+	<span
+		class="tb-notice-group"
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	>
+		<span class="tb-notice" role="status" title={documentBar.notice}>{documentBar.notice}</span>
+		{#each documentBar.noticeActions as action (action.label)}
+			<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
+				>{action.label}</button
+			>
+		{/each}
+	</span>
+{/snippet}
+
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
      teams at once, so it cannot hold the Planner's one working team; band A is
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
@@ -1200,25 +1226,7 @@
 
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
-			{#if documentBar.notice}
-				<!-- The notice and its actions fade as ONE surface on --t-quick
-				     (DocumentActions' .doc-notice). One wrapper, so the buttons
-				     leave with the words — and `outroInert`, so an Undo on its
-				     way out cannot take a click. -->
-				<span
-					class="tb-notice-group"
-					transition:fade={{ duration: motion(T_QUICK) }}
-					onintrostart={introLive}
-					onoutrostart={outroInert}
-				>
-					<span class="tb-notice" role="status">{documentBar.notice}</span>
-					{#each documentBar.noticeActions as action (action.label)}
-						<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
-							>{action.label}</button
-						>
-					{/each}
-				</span>
-			{/if}
+			{#if documentBar.notice && !noticeOnLineup}{@render notice()}{/if}
 			<button
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
@@ -1344,12 +1352,17 @@
 				</div>
 			{/if}
 			{#if showing !== 'characters'}
-				<div class="tb-band-cell tb-band-cell--lineup">
+				<div
+					class="tb-band-cell tb-band-cell--lineup"
+					class:tb-band-cell--notice={!!documentBar.notice && noticeOnLineup}
+				>
 					{#if tabbed}{@render paneSwitch()}{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
 					     the lineup's controls standing at its end. -->
-					<span class="tb-rail" aria-hidden="true"></span>
+					<span class="tb-rail">
+						{#if documentBar.notice && noticeOnLineup}{@render notice()}{/if}
+					</span>
 					{#if errandOpen}
 						<!-- The errand edits the Planner's team, not a board: the board's
 						     own controls wait for it. -->
@@ -1821,12 +1834,38 @@
 		flex: 1;
 		min-width: 0;
 		align-self: stretch;
+		display: flex;
+		align-items: center;
+		padding: 0 var(--band-item-gap, 4px) 0 0.75rem;
 		border-radius: var(--r-sm);
 		background: var(--surface);
+	}
+	/* On the rail the words give way, never the Undo: the text ellipsizes
+	   (its title carries it whole) and the buttons keep their width. */
+	.tb-rail .tb-notice-group {
+		min-width: 0;
+		width: 100%;
+	}
+	.tb-rail .tb-notice {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.tb-rail .tb-notice-group .btn {
+		flex: none;
 	}
 	.tb-norepeat {
 		padding: 0 0.75rem;
 		font-size: var(--fs-md);
+	}
+	/* Below `compact` (40rem — $lib/breakpoints.ts) the rail is a sliver, so
+	   while a notice stands on it No repeats steps aside and the rail takes its
+	   room; the toggle is back when the notice goes. */
+	@media (max-width: 40rem) {
+		.tb-band-cell--notice .tb-norepeat {
+			display: none;
+		}
 	}
 	.tb-pane-switch {
 		gap: 0.45rem;
