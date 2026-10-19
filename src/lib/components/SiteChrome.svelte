@@ -44,6 +44,17 @@
 	// The "?" is contextual: inside a tool it opens that tool's chapter, and
 	// anywhere else the general FAQ.
 	const helpChapter = $derived(helpChapterForPath(page.url.pathname));
+	const betaHere = $derived(page.url.pathname === resolve('/beta'));
+
+	/** The BETA tag's click: the overlay on a tool, the page elsewhere. */
+	function openBeta(event: MouseEvent): void {
+		if (betaHere) return stayHere(event);
+		if (!onTool()) return closeChromeModal();
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
+		event.preventDefault();
+		openArea('about', 'beta');
+	}
 </script>
 
 <header class="site-chrome">
@@ -66,7 +77,17 @@
 		     🎛️ Gold, by Nate's ask 2026-09-16 (trying the accent first; a darker
 		     gold is the fallback) — ⚠ this overrides §8's "chrome-toned pill"
 		     and the block-not-word rule for this one mark, on his call. -->
-		<a class="chrome-beta" href={resolve('/beta')} title="What beta means here">BETA</a>
+		<!-- ↻ 2026-10-19 (⚓ Nate): it splits like About and Help (onTool()). On a
+		     tool a plain click opens the About overlay at its Beta chapter rather
+		     than leaving the tool; off a tool it is the link to /beta. It stays an
+		     <a> either way, so a modified click still opens the page in a tab. -->
+		<a
+			class="chrome-beta"
+			href={resolve('/beta')}
+			title="What beta means here"
+			aria-current={betaHere ? 'page' : undefined}
+			onclick={openBeta}>BETA</a
+		>
 	</div>
 
 	<div class="chrome-center">{@render center?.()}</div>
