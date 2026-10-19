@@ -259,6 +259,6 @@
 		the model is tested against
 		<a href="https://github.com/OneBST/GGanalysis" target="_blank" rel="noopener noreferrer"
 			>GGanalysis</a
-		>: averages agree to two decimal places, and medians agree exactly.
+		>: Averages agree to two decimal places, and medians agree exactly.
 	</p>
 </section>
