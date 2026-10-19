@@ -200,6 +200,11 @@
 		<strong>Back to the start</strong> (Home) rewinds.
 	</p>
 	<p>
+		Bluetooth headphones and speakers can delay sound by a tenth of a second or more. The cursor
+		waits out the delay your browser reports, but if the notes still land after it, wired output
+		keeps them in step.
+	</p>
+	<p>
 		<strong>Laps</strong> simulates the rotation five times in a row, as one run. A skill still on cooldown
 		waits and pushes the rest back, and buffs, stacks, and auras carry from one lap into the next, so
 		a rotation that doesn’t loop cleanly shows it. Gold marks on the ruler show where each lap begins.
