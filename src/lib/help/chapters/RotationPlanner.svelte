@@ -112,7 +112,7 @@
 	</p>
 	<p>
 		The chip on the portrait sets the character’s constellation for this tab, and the pill beside it
-		sets their weapon and artifact set. Neither touches your roster: a tab keeps its own levels and
+		sets their weapon and artifact set. Neither touches your roster: A tab keeps its own levels and
 		loadouts, so one rotation can be written at C6 while your roster says C0. When the tab uses a
 		constellation you don’t own the chip is drawn hollow.
 	</p>
@@ -141,7 +141,7 @@
 		Ascendant Gleam bonuses when the team has them — and above the composer a strip lists the
 		always-on bonuses: resonances, faction bonuses, and permanent passives.
 	</p>
-	<p>Energy isn’t modeled: a burst is ready whenever its cooldown is.</p>
+	<p>Energy isn’t modeled: A burst is ready whenever its cooldown is.</p>
 	<p>
 		<strong>Zoom</strong> in the view bar opens a slider and <strong>Reset</strong>; the mouse wheel
 		over the ruler scrolls sideways. <strong>Total</strong> is the rotation’s length.
@@ -162,7 +162,7 @@
 		the game doesn’t buffer for you: after a skill, burst, plunge, dash, or jump, from a normal attack
 		into anything but another normal or a charged attack, and on the first input after a swap. Normal
 		into normal and normal into charged are exempt, because the game allows queuing of those inputs. A
-		bow’s charged shot is the exception: it always takes the reaction time.
+		bow’s charged shot is the exception: It always takes the reaction time.
 	</p>
 	<p>
 		Settings decides what it changes. <strong>Padding</strong> (the default) is the reaction time.
@@ -238,7 +238,7 @@
 	<p>
 		<strong>The Polestar Field.</strong> A Starlight Prism holds a Polestar Field around it, and the field’s
 		buffs sit in the team buffs, because any party member’s Stellar-Conduct raises the same field. Its
-		Cryo and Electro bonus moves: the field counts the Cryo and Electro hits that applied an element,
+		Cryo and Electro bonus moves: The field counts the Cryo and Electro hits that applied an element,
 		resets every 4s, and boosts based on that count — 20% with none, 29% at one, up to 40% at twelve.
 	</p>
 	<p>

@@ -331,6 +331,7 @@ the Wish Odds pass.
 | **Multiplication**            | `×`, not `x` — and it goes **before** the number (`×1.234`), ruled 2026-09-23                                                     | `×2 forward vape`                                                                                                        |
 | **Quotes**                    | Curly `“ ”` in prose; straight in code                                                                                            |                                                                                                                          |
 | **Em dash**                   | A space on each side (word, space, `—`, space, word) — and ⚠️ **at most one per sentence in new writing**                         | §3.4. ⛔ Keep the dashes; cap the density. §3.4a has en dash vs hyphen                                                   |
+| **After a colon**             | AP style: a capital when a complete sentence (or a proper noun) follows; lowercase for a phrase or a list (⚓ Nate, 2026-10-19)   | §3.4b                                                                                                                    |
 | **Oxford comma**              | Yes                                                                                                                               | Already consistent                                                                                                       |
 | **Ellipsis**                  | ⛔ Avoid entirely — it reads as trailing off, which is the opposite of the voice                                                  |                                                                                                                          |
 | **Exclamation marks**         | ⛔ None                                                                                                                           |                                                                                                                          |
@@ -493,6 +494,21 @@ the character cannot be seen or told apart in source.**
 ⚠️ `&amp;` ×8 is belt-and-braces rather than required, and is harmless. ⛔ Not worth a
 sweep.
 
+### 3.4b ⚓ After a colon — AP style (⚓ Nate, 2026-10-19)
+
+A **complete sentence** after a colon starts with a capital; a **phrase or a list** starts
+lowercase (a proper noun keeps its capital either way).
+
+- "…hovering a card with your cursor: The selected team previews how its capabilities would
+  change." — a sentence, so a capital.
+- "Three modes: Stygian Onslaught, the Spiral Abyss, and Custom." — a list; _Stygian_ is a
+  proper noun, _the_ is not.
+- "Roles filter one at a time: Pick another and it replaces the first." — an imperative is
+  a complete sentence (its subject is the implied _you_), so a capital.
+
+⚠️ It was let slide as "casual" during the first page passes; it is a rule now, and the
+pages already reviewed were swept for it the same day.
+
 ### 3.5 Every string carries a context note
 
 One line: where it renders, what it does, what each variable is. Written while the
@@ -538,5 +554,6 @@ gets translated. This turns an impossible research task into a tractable one.
 7. Right speaker for the claim — critcalc / I (personal) / we (modelling decisions) / nobody? (§1.4)
 8. Any term on the glossary's banned list? (`docs/text/glossary.md`)
 9. Does it fit its container at **+30%**? (§3.6)
-10. More than one em dash? ⛔ Any capitals used as emphasis? (§3.4, §2.1)
+10. More than one em dash? ⛔ Any capitals used as emphasis? After a colon, a capital only
+    before a full sentence? (§3.4, §2.1, §3.4b)
 11. Does it have a context note? (§3.5)

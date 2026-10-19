@@ -144,7 +144,7 @@
 	</p>
 	<p>
 		If you use critcalc on your phone often, I’d suggest adding it to your home screen, which opens
-		the site without your browser’s bars. It still needs a connection: character data loads as you
+		the site without your browser’s bars. It still needs a connection: Character data loads as you
 		use it, so going offline partway through can leave a character half-loaded.
 	</p>
 	<p>
