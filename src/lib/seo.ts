@@ -75,18 +75,18 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/': {
 		title: 'Genshin Impact tools',
 		description:
-			'Three tools for seeing how Genshin works: a frame-accurate rotation timeline, a capability-faceted team builder, and eight graph instruments.'
+			'Three tools for seeing how Genshin works: a frame-accurate rotation timeline, a team builder that shows what each team can provide, and eight graph instruments.'
 	},
 
 	'/planner': {
 		title: 'Rotation Planner',
 		description:
-			'Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, buff windows, auras and who is on field when.'
+			'Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, buff windows, auras, and who is on field when.'
 	},
 	'/builder': {
 		title: 'Team Builder',
 		description:
-			'Build lineups for Stygian Onslaught and the Spiral Abyss: see what each team brings — healing, shields, RES shred, buffs — at your constellations, and what a swap would change.'
+			'Build lineups for Stygian Onslaught and the Spiral Abyss: See what each team brings (healing, shields, RES shred, buffs) at your constellations, and what a swap would change.'
 	},
 	'/visualizers': {
 		title: 'Visualizers',
@@ -102,12 +102,12 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/help/planner': {
 		title: 'Rotation Planner help',
 		description:
-			'How the critcalc Rotation Planner works: KQM-style notation, reading the timeline, team loadouts and caveats.'
+			'How the critcalc Rotation Planner works: KQM-style notation, the team, reading the timeline, playback, and the enemy’s aura.'
 	},
 	'/help/builder': {
 		title: 'Team Builder help',
 		description:
-			'How the critcalc Team Builder works: capability filters, constellations, lineups and swapping a character.'
+			'How the critcalc Team Builder works: capability filters, constellations, lineups, and swapping a character.'
 	},
 	'/help/visualizers': {
 		title: 'Visualizers help',
@@ -136,11 +136,10 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'What the beta tag on critcalc means: the tools are still changing; the character data is curated against gcsim.'
 	},
-	// ⏭ Proposed copy (2026-10-18), first in line for Nate's wording pass.
 	'/library': {
 		title: 'Library',
 		description:
-			'Your saved teams, rotations and lineups, and the roster of characters you own. All of it is kept in this browser.'
+			'Your saved teams, rotations, and lineups, and the roster of characters you own. All of it is kept in this browser.'
 	},
 	'/privacy': {
 		title: 'Privacy',
@@ -150,7 +149,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/settings': {
 		title: 'Settings',
 		description:
-			'Display, Human timing and playback sound, and your saved data — all stored in this browser.'
+			'Display, Human timing, playback sound, and your saved data. All of it is stored in this browser.'
 	}
 };
 

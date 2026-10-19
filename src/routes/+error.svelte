@@ -54,24 +54,21 @@
 		</a>
 
 		{#if isNotFound}
-			<h1>We couldn't find that page.</h1>
-			<p class="flavor">
-				A chart of a coast no traveler has walked. The coordinates are written in a careful hand;
-				the land they describe was never there.
-			</p>
+			<h1>That page couldn’t be found.</h1>
+			<p class="flavor">It might very well belong to the Abyss.</p>
 			<p class="lede">
-				The address may be mistyped — or, if you followed a shared link, it may have been cut short
-				on its way here. Share links are long, and chat apps sometimes trim them.
+				The address may be mistyped, or if you followed a shared link, it may have been cut short on
+				its way here. Share links are long, and chat apps sometimes trim them.
 			</p>
 		{:else}
 			<h1>Something went wrong.</h1>
 			<p class="flavor">
-				A star slipped its course tonight. Sumeru's star-readers logged the deviation, reset their
+				A star slipped its course tonight. Sumeru’s star-readers logged the deviation, reset their
 				instruments, and looked again.
 			</p>
 			<p class="lede">
-				That's on us, not on you. Reloading often clears it. If it keeps happening, please report
-				it, and say what you were doing when it broke.
+				This was a site error, not something you did wrong. Reloading often clears it. If it keeps
+				happening, please report it and say what you were doing when it broke.
 			</p>
 			<!-- The one action that is not a way OUT, so it keeps its button. -->
 			<!-- ↻ 2026-10-15: a server-side failure (≥ 500) reports straight to
