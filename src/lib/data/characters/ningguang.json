@@ -75,7 +75,7 @@
 			"effects": [],
 			"description": "Ningguang creates a Jade Screen out of gold, obsidian, and her great opulence, dealing AoE Geo DMG.\n\nJade Screen\n·Blocks opponents' projectiles.\n·Endurance scales based on Ningguang's Max HP.\n\nJade Screen is considered a Geo Construct and can be used to block certain attacks, but cannot be climbed. Only one Jade Screen may exist at any one time.",
 			"behavior": "instant",
-			"frames": { "anim": 62, "D": 28, "J": 29, "swap": 60 },
+			"frames": { "anim": 62, "D": 28, "J": 29, "W": 53, "swap": 60 },
 			"summons": [
 				{
 					"label": "Jade Screen",
@@ -104,7 +104,7 @@
 			"effects": [],
 			"description": "Gathering a great number of gems, Ningguang scatters them all at once, sending homing projectiles at her opponents that deal massive Geo DMG.\nIf Starshatter is cast when a Jade Screen is nearby, the Jade Screen will fire additional gem projectiles at the same time.",
 			"behavior": "instant",
-			"frames": { "anim": 127, "D": 99, "J": 100, "swap": 98 },
+			"frames": { "anim": 127, "D": 99, "J": 100, "W": 99, "swap": 98 },
 			"application": [
 				{ "frame": 62, "element": "geo", "units": 2 },
 				{ "frame": 97, "element": "geo" },

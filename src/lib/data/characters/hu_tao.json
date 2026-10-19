@@ -196,6 +196,7 @@
 				"N": 60,
 				"E": 59,
 				"Q": 59,
+				"W": 76,
 				"swap": 63
 			},
 			"description": "Hu Tao's normal-attack combo while in the Paramita Papilio stance. The 6-hit string and base frame timings match the standard combo, but all hits are converted to Pyro DMG and benefit from Paramita Papilio's flat ATK bonus.",
@@ -213,6 +214,7 @@
 				"N": 58,
 				"E": 58,
 				"Q": 58,
+				"W": 74,
 				"swap": 61
 			},
 			"chargedIcdWindow": {

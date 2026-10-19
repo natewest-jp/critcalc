@@ -8,7 +8,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **128** authored · **120** with a gcsim source
-- FrameMaps: **1170** authored · **1050** matching gcsim exactly · **38** disagreeing · **82** uncovered
+- FrameMaps: **1174** authored · **1047** matching gcsim exactly · **45** disagreeing · **82** uncovered
 - skill/burst application schedules observed: **304** · unobserved: **19**
 - summon tick streams cross-checked: **62**
 - hits carrying a measured gcsim ICD cadence: **3392** of **3395**
@@ -25,20 +25,22 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 424 / 433 | 10f |
+| E/Q → P | 425 / 434 | 10f |
 | E/Q → C | 326 / 335 | 8f |
+| E/Q → W | 321 / 329 | 9f |
 | E/Q → Q | 181 / 186 | 3f |
 | E/Q → E | 145 / 150 | 3f |
 | E/Q → N | 140 / 141 | 3f |
 | E/Q → J | 114 / 115 | 14f |
 | E/Q → D | 59 / 60 | 3f |
 | normal → P | 34 / 37 | 24f |
+| normal → W | 30 / 33 | 23f |
 | normal → C | 12 / 15 | 26f |
 | normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **429** E/Q (median 10f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **430** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (38)
+## 2. FrameMaps that disagree (45)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -50,36 +52,43 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | chasca | `chasca__normal__phantom_feather_flurry.hits[0]` | N 17→22, swap 10→15, anim 10→32, hit —→15 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[1]` | N 19→24, swap 8→13, anim 8→34, hit —→13 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[2]` | N 36→41, swap 20→25, anim 20→58, hit —→25 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[3]` | N 73→78, swap 39→44, anim 39→78, hit —→44 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[3]` | N 73→78, swap 39→44, W —→67, anim 39→78, hit —→44 |
 | chasca | `chasca__skill__spirit_reins_shadow_hunt.frames` | J 27→623, swap 37→623, anim 37→623 |
-| dahlia | `dahlia__normal__favonius_bladework_ritual.hits[3]` | anim 62→71 |
+| columbina | `columbina__normal__moondew_cleanse.chargeFrames` | N 82→94, C 80→101, E 43→57, Q 43→57, D 43→57, J 43→57, swap 43→57, W —→99, anim 124→101, hit —→57 |
+| dahlia | `dahlia__normal__favonius_bladework_ritual.hits[3]` | W —→62, anim 62→71 |
 | escoffier | `escoffier__normal__kitchen_skills.hits[0]` | anim 17→22 |
 | escoffier | `escoffier__normal__kitchen_skills.hits[1]` | anim 21→30 |
 | faruzan | `faruzan__burst__the_winds_secret_ways.frames` | C 61→71 |
 | flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | anim 91→130 |
 | ifa | `ifa__skill__airborne_disease_prevention.frames` | swap 31→631, anim 31→631 |
 | ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator.frames` | anim 127→130 |
+| kinich | `kinich__skill__canopy_hunter_riding_high.frames` | W —→41 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[0]` | anim 11→30, hit —→11 |
-| lan_yan | `lan_yan__normal__normal_attack.hits[1]` | anim 37→46, hit —→37 |
-| lan_yan | `lan_yan__normal__normal_attack.hits[2]` | anim 21→53, hit —→21 |
+| lan_yan | `lan_yan__normal__normal_attack.hits[1]` | W —→45, anim 37→46, hit —→37 |
+| lan_yan | `lan_yan__normal__normal_attack.hits[2]` | W —→47, anim 21→53, hit —→21 |
 | lan_yan | `lan_yan__normal__normal_attack.hits[3]` | anim 40→63, hit —→40 |
-| lan_yan | `lan_yan__normal__normal_attack.chargeFrames` | anim 45→70 |
+| lan_yan | `lan_yan__normal__normal_attack.chargeFrames` | W —→59, anim 45→70 |
 | lan_yan | `lan_yan__normal__normal_attack.plungeFrames` | N 56→58, E 56→59, Q 57→60, D 44→46, anim 53→67 |
 | lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance.frames` | N 33→45, E 33→49, Q 79→46, D 77→47, J 79→47, swap 80→49, anim 80→49 |
 | lan_yan | `lan_yan__burst__lustrous_moonrise.frames` | anim 75→100 |
 | lauma | `lauma__normal__spiritcall_prayer.chargeFrames` | hit 73→67 |
-| neuvillette | `neuvillette__normal__as_water_seeks_equilibrium.chargeFrames` | C 69→53, E 26→23, Q 27→23, D 25→23, J 26→23, swap 58→50, anim 87→74 |
+| neuvillette | `neuvillette__normal__as_water_seeks_equilibrium.chargeFrames` | C 69→53, E 26→23, Q 27→23, D 25→23, J 26→23, swap 58→50, W —→59, anim 87→74 |
+| ningguang | `ningguang__normal__sparkling_scatter.hits[0]` | W —→42 |
 | ningguang | `ningguang__normal__sparkling_scatter.chargeFrames` | N 68→76, C 69→76, E 72→77, Q 69→77, D 54→61, J 54→62, swap 67→76, anim 74→82 |
 | qiqi | `qiqi__skill__adeptus_art_herald_of_frost.frames` | anim 57→58 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[0]` | hit 4→2 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[1]` | hit 12→9 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[2]` | hit 28→26 |
 | sayu | `sayu__skill__yoohoo_art_fuuin_dash.frames` | anim 44→45 |
-| sigewinne | `sigewinne__normal__targeted_treatment.hits[2]` | anim 67→82 |
-| sigewinne | `sigewinne__burst__super_saturated_syringing.frames` | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103, anim 245→129 |
+| sayu | `sayu__skill__yoohoo_art_fuuin_dash.variants[hE]` | D 108→109, J 108→109, swap 106→107, anim 109→110 |
+| sigewinne | `sigewinne__normal__targeted_treatment.hits[2]` | W —→67, anim 67→82 |
+| sigewinne | `sigewinne__burst__super_saturated_syringing.frames` | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103, W —→116, anim 245→129 |
 | traveler_anemo | `traveler_anemo__skill__palm_vortex.frames` | anim 74→76 |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405, anim 90→405 |
-| varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, anim 72→77 |
+| traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405, W —→396, anim 90→405 |
+| varesa | `varesa__normal__by_the_horns.hits[1]` | W —→28 |
+| varesa | `varesa__normal__by_the_horns.chargeFrames` | W —→142 |
+| varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, W —→72, anim 72→77 |
+| varesa | `varesa__burst__guardian_vent.frames` | W —→101 |
 | yun_jin | `yun_jin__skill__opening_flourish.frames` | anim 59→62 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | anim 95→97 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95, anim 138→97 |
@@ -523,9 +532,9 @@ fixes:
 A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gauge
 (`[0U]` in §4) is not an entry. ⛔ A counter shared across casts is not seen here.
 
-**302** authored casts replayed · **279** agree hit for hit · **0** ⛔ gate · **19** ⚠️ list · **4** on a named counter (§4d)
+**302** authored casts replayed · **278** agree hit for hit · **0** ⛔ gate · **20** ⚠️ list · **4** on a named counter (§4d)
 
-<details><summary>⚠️ list rows (19)</summary>
+<details><summary>⚠️ list rows (20)</summary>
 
 | character | ability | authored entries | gcsim gauge hits | planner applies | gcsim applies |
 | --- | --- | --- | --- | --- | --- |
@@ -544,6 +553,7 @@ A gauge-carrying gcsim hit applied or was blocked by its ICD; a hit with no gaug
 | odette | `odette__skill__adagio_coda_at_dawns_tolling` | +11 +20 +28 | +11 +20 +28 +114 +223 +348 +457 +582 +691 +816 +925 +1050 +1159 | +11 | +11 +114 +223 +348 +457 +582 +691 +816 +925 +1050 +1159 |
 | qiqi | `qiqi__skill__adeptus_art_herald_of_frost` | +32 +96 +231 +291 +426 +486 +621 +681 +816 +876 | +32 +33 +96 +231 +232 +291 +426 +427 +486 +621 +622 +681 +816 +817 +876 | +32 +231 +426 +621 +816 | +32 +231 +426 +621 +816 |
 | qiqi | `qiqi__burst__adeptus_art_preserver_of_fortune` | +82 | — | +82 | — |
+| sayu | `sayu__skill__yoohoo_art_fuuin_dash · hE` | +18 +48 +67 +78 +108 +138 +168 +198 +228 +258 +288 +318 +348 +378 +408 +438 +468 +498 +528 +558 +588 +618 (+22 ref) | +18 +68 | +18 +108 +168 +258 +318 +408 +468 +558 +618 +67 | +18 +68 |
 | traveler_geo | `traveler_geo__burst__wake_of_earth` | +66 +81 +96 +111 | — | +66 +111 | — |
 | varka | `varka__burst__northwind_avatar` | +131 (+1 ref) | +112 +131 | +112 +131 | +112 +131 |
 | xilonen | `xilonen__burst__ocelotlicue_point · Q` | +96 | +96 +128 +164 | +96 | +96 |
@@ -632,7 +642,7 @@ which the pair alone cannot state.
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |
 | chiori | `fluttering_hasode` | Tamoto 60f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · shares the cast's counter ✅ · 4/5 `other` | 114f / first only |
 | citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · 90f / first only | — | — |
-| collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 11 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · shares the cast's counter ✅ · 2/12 `other` ⚠️ **count 11→12** | 180f / first only |
+| collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 12 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · shares the cast's counter ✅ · 2/12 `other` | 180f / first only |
 | columbina | `eternal_tides` | Gravity Ripple 138f / 117f × 12 · `none` | Skill (DoT) 138f / 117f × 12 · 12/12 `none` | `none` |
 | diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · shares the cast's counter ✅ · 3/6 `standard` | 150f / every 3 · 8 max |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f × 20 · 90f / first only | Dragon of White Flame 156f / 59f × 20 · 10/20 `other` | 90f / first only |
@@ -647,7 +657,7 @@ which the pair alone cannot state.
 | gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f × 5 · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` | 150f / every 3 · 8 max |
 | ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f × 10 · `none` | Birgitta 110f / 119f × 10 · 10/10 `none` | `none` |
 | ineffa | `supreme_instruction_cyclonic_exterminator` | Birgitta 153f / 120f × 10 · `none` | Birgitta 153f / 119f × 10 · 10/10 `none` | `none` |
-| kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f × 5 · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` | `none` |
+| kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f × 5 · `none`<br>Autumn Whirlwind 140f / 117f × 5 · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` | `none` |
 | kaeya | `glacial_waltz` | Glacial Waltz 53f / 40f × 13 `cap` · `standard` | Glacial Waltz 53f / 40f × 13 · 7/13 `standard` | 150f / every 3 · 8 max |
 | kinich | `hail_to_the_almighty_dragonlord` | Ajaw 253f / 147f × 6 · `standard` | — | — |
 | kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f × 8 `cap` · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · shares the cast's counter ✅ · 4/8 `standard` | 150f / every 3 · 8 max |
@@ -655,12 +665,12 @@ which the pair alone cannot state.
 | lauma | `runo_dawnless_rest_of_karsikko` | Frostgrove Sanctuary 62f / 117f × 8 · `none` | Frostgrove Sanctuary 62f / 117f × 8 · 8/8 `none` | `none` |
 | layla | `dream_of_the_starstream_shaker` | Celestial Dreamsphere 114f / 90f × 8 · `standard` | Starlight Slug 114f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | lisa | `lightning_rose` | Lightning Rose 119f / 30f × 30 · `standard` | Lightning Rose (Tick) 119f / 30f × 30 · 12/30 `standard` | 150f / every 3 · 8 max |
-| lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f × 11 · `standard` | Bogglecat Box 136f / 59f × 11 · shares the cast's counter ✅ · 4/11 `standard` | 150f / every 3 · 8 max |
+| lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f × 11 · `standard`<br>Bogglecat Box 163f / 134f × 5 · `standard` | Bogglecat Box 136f / 59f × 11 ⚠️ **shares the cast's counter** · 4/11 `standard` | 150f / every 3 · 8 max |
 | mavuika | `the_named_moment` | Rings of Searing Radiance 120f / 120f × 6 · `none` | Rings of Searing Radiance 120f / 120f × 6 · 6/6 `none` | `none` |
 | mavuika | `hour_of_burning_skies` | Rings of Searing Radiance 120f / 120f × 6 · `none` | — | — |
 | mona | `mirror_reflection_of_doom` | Phantom 86f / 59f × 4 `cap` · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 · 8 max | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 · 8 max |
-| nilou | `whirling_steps_3` | — | Tranquility Aura 41f / 30f × 25 · 7/25 `other` | 114f / every 4 · 3 max |
+| nilou | `whirling_steps_3` | Tranquility Aura 41f / 30f × 25 `cap` · 114f / first only | Tranquility Aura 41f / 30f × 25 · 7/25 `other` ⚠️ **authored disagrees** | 114f / every 4 · 3 max |
 | ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 · 1/1 `either` | `none` |
 | odette | `adagio_phantom_night_dancers` | Solo Dance Double 157f / 234f × 5 · `none`<br>Solo Dance Double 266f / 234f × 5 · `none` | "Plume" Dance Move 157f / 234f × 5 · 5/5 `either`<br>"Wing" Dance Move 266f / 234f × 5 · 5/5 `either` | `none`<br>`none` |
 | odette | `presto_bluebird_finale` | Solo Dance Double 253f / 234f × 5 · `none`<br>Solo Dance Double 362f / 234f × 4 · `none` | "Plume" Dance Move 253f / 234f × 5 · 5/5 `either`<br>"Wing" Dance Move 362f / 234f × 4 · 4/4 `either` | `none`<br>`none` |
@@ -671,13 +681,13 @@ which the pair alone cannot state.
 | sangonomiya_kokomi | `kurages_oath` | Bake-Kurage 24f / 120f × 7 · `none` | Bake-Kurage 24f / 120f × 7 · 7/7 `none` | `none` |
 | sayu | `yoohoo_art_mujina_flurry` | Muji-Muji Daruma 145f / 90f × 6 `cap` · `standard` | Muji-Muji Daruma 145f / 90f × 6 · 3/6 `standard` | 150f / every 3 · 8 max |
 | sigewinne | `rebound_hydrotherapy` | Bolstering Bubblebalm 35f / 107f × 5 `cap` · 120f / first only | Rebound Hydrotherapy 35f / 107f × 5 · 3/5 `standard` | 120f / first only |
-| sucrose | `forbidden_creation_isomer_75_type_ii` | Large Wind Spirit 137f / 113f × 3 `cap` · `none` | Forbidden Creation-Isomer 75/Type II 137f / 113f × 3 · 3/3 `none` | `none` |
-| traveler_anemo | `gust_surge` | Gust Surge 94f / 30f × 9 · `standard` | Gust Surge 94f / 30f × 9 · 4/9 `standard` | 150f / every 3 · 8 max |
+| sucrose | `forbidden_creation_isomer_75_type_ii` | Large Wind Spirit 137f / 113f × 3 `cap` · `none`<br>Large Wind Spirit 137f / 113f × 3 `cap` · `none` | Forbidden Creation-Isomer 75/Type II 137f / 113f × 3 · 3/3 `none` | `none` |
+| traveler_anemo | `gust_surge` | Gust Surge 94f / 30f × 9 · `standard`<br>Gust Surge 94f / 30f × 9 · `none` | Gust Surge 94f / 30f × 9 · 4/9 `standard` | 150f / every 3 · 8 max |
 | traveler_cryo | `ice_fog_piercer` | Frostpierce Star 187f / 176f × 4 · 150f / first only | Frostpierce Star 187f / 13f × 8 · 4/8 `standard` ⚠️ **count 4→8** | 150f / first only |
 | traveler_dendro | `surgent_manifestation` | LeaLotus Lamp 91f / 90f × 8 · `standard` | Lea Lotus Lamp 91f / 90f × 8 · 4/8 `standard` | 150f / every 3 · 8 max |
 | traveler_geo | `wake_of_earth` | — | Wake of Earth 66f / 15f × 4 · 2/4 `standard` | 150f / every 3 · 8 max |
 | traveler_hydro | `rising_waters` | Rising Waters Bubble 34f / 30f × 8 · `standard` | — | — |
-| venti | `winds_grand_ode` | Stormeye 106f / 24f × 20 · 60f / every 3 · 8 max | Wind's Grand Ode 106f / 24f × 20 · 7/20 `other` | 60f / every 3 · 8 max |
+| venti | `winds_grand_ode` | Stormeye 106f / 24f × 20 · 60f / every 3 · 8 max<br>Stormeye 94f / 24f × 15 `cap` · 60f / every 3 · 8 max | Wind's Grand Ode 106f / 24f × 20 · 7/20 `other` | 60f / every 3 · 8 max |
 | xiangling | `guoba_attack` | Guoba 126f / 100f × 4 · `none` | Guoba 126f / 100f × 4 · 4/4 `none` | `none` |
 | xiangling | `pyronado` | Pyronado 56f / 73f × 9 · `none` | Pyronado 56f / 73f × 9 · 9/9 `none` | `none` |
 | xingqiu | `guhua_sword_fatal_rainscreen` | — | Xingqiu Orbital 44f / 135f × 7 · 7/7 `none` | `none` |
@@ -717,9 +727,9 @@ Level-1 stream carries her bespoke one, so her burst is deliberately left bare.
 | fischl | `nightrider` | Oz (Skill) | 3/10 `other` | 300f / every 4 · 8 max | ✅ authored |
 | fischl | `midnight_phantasmagoria` | Oz (Burst) | 3/10 `other` | 300f / every 4 · 8 max | ✅ authored |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support | 6/17 `other` | 720f / every 3 · 8 max | ✅ authored |
-| nilou | `whirling_steps_3` | Tranquility Aura | 7/25 `other` | 114f / every 4 · 3 max | ⚠️ pair by eye (0 authored / 1 observed) — currently — |
+| nilou | `whirling_steps_3` | Tranquility Aura | 7/25 `other` | 114f / every 4 · 3 max | ⛔ 114f / first only |
 | ororon | `dark_voices_echo` | Soundwave Collision DMG | 3/9 `standard` | 180f / first only | ✅ authored |
 | sigewinne | `rebound_hydrotherapy` | Rebound Hydrotherapy | 3/5 `standard` | 120f / first only | ✅ authored |
 | traveler_cryo | `ice_fog_piercer` | Frostpierce Star | 4/8 `standard` | 150f / first only | ✅ authored |
-| venti | `winds_grand_ode` | Wind's Grand Ode | 7/20 `other` | 60f / every 3 · 8 max | ✅ authored |
+| venti | `winds_grand_ode` | Wind's Grand Ode | 7/20 `other` | 60f / every 3 · 8 max | ⚠️ pair by eye (2 authored / 1 observed) — currently — |
 | yaoyao | `raphanus_sky_cluster` | Radish (Skill) | 4/10 `standard` | 150f / first only | ✅ authored |

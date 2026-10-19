@@ -67,6 +67,10 @@ var nextKeys = []struct {
 	{"J", action.ActionJump},
 	{"P", action.ActionHighPlunge},
 	{"A", action.ActionAim},
+	// ⚓ A walk (2026-10-19). `InitNormalCancelSlice` leaves Walk at the animation and
+	// `InitAbilSlice` fills it like every slot, so most readings equal `anim` — the
+	// per-character overrides (`attackFrames[i][action.ActionWalk] = …`) are the point.
+	{"W", action.ActionWalk},
 	{"swap", action.ActionSwap},
 }
 

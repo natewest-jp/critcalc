@@ -121,7 +121,7 @@
 			"name": "Hunter's Vigil",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 33, "N": 31, "E": 32, "D": 6, "J": 25, "swap": 25 },
+			"frames": { "anim": 33, "N": 31, "E": 32, "D": 6, "J": 25, "W": 32, "swap": 25 },
 			"cooldown": 16,
 			"cooldownStartDelay": 6,
 			"duration": 7.5,

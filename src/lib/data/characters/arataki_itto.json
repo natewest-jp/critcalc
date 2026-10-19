@@ -64,6 +64,7 @@
 				"E": 51,
 				"Q": 51,
 				"D": 40,
+				"W": 85,
 				"swap": 62
 			},
 			"sections": [
@@ -164,6 +165,7 @@
 				"E": 51,
 				"Q": 51,
 				"D": 40,
+				"W": 85,
 				"swap": 62
 			},
 			"description": "Itto's normal-attack combo while in the Raging Oni King stance. The 4-hit string uses identical frame timings to the base combo, but all hits are converted to Geo DMG (cannot be overridden), gain a +10% ATK SPD buff during normals, and grant Superlative Superstrength stacks on the 1st and 3rd strikes (instead of 2nd/4th).",

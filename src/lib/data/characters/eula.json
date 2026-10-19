@@ -61,6 +61,7 @@
 				"E": 54,
 				"Q": 52,
 				"D": 41,
+				"W": 82,
 				"swap": 64
 			},
 			"_curatorNotes": [
@@ -79,6 +80,7 @@
 				"E": 51,
 				"Q": 50,
 				"D": 37,
+				"W": 79,
 				"swap": 62
 			}
 		},
@@ -95,7 +97,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 100, "N": 77, "Q": 77, "D": 75, "J": 75 },
+					"frames": { "anim": 100, "N": 77, "Q": 77, "D": 75, "J": 75, "W": 75 },
 					"cooldown": 10,
 					"cooldownStartDelay": 46,
 					"effects": [
@@ -144,7 +146,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 123, "N": 120, "D": 122, "J": 121, "swap": 120 },
+			"frames": { "anim": 123, "N": 120, "D": 122, "J": 121, "W": 117, "swap": 120 },
 			"cooldown": 20,
 			"cooldownStartDelay": 97,
 			"tags": [],

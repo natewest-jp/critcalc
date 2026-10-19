@@ -104,7 +104,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 111, "D": 57, "J": 58, "swap": 60 },
+			"frames": { "anim": 111, "D": 57, "J": 58, "W": 62, "swap": 60 },
 			"cooldown": 12,
 			"cooldownStartDelay": 56,
 			"summons": [
