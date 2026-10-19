@@ -1360,9 +1360,30 @@
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
 					     the lineup's controls standing at its end. -->
+					<!-- A lineup notice: its words on the rail, snug against its buttons,
+					     which stand BESIDE the rail as plates of their own (⚓ Nate:
+					     glass is never stacked on glass). -->
 					<span class="tb-rail">
-						{#if documentBar.notice && noticeOnLineup}{@render notice()}{/if}
+						{#if documentBar.notice && noticeOnLineup}
+							<span
+								class="tb-notice"
+								role="status"
+								title={documentBar.notice}
+								transition:fade={{ duration: motion(T_QUICK) }}>{documentBar.notice}</span
+							>
+						{/if}
 					</span>
+					{#if documentBar.notice && noticeOnLineup}
+						{#each documentBar.noticeActions as action (action.label)}
+							<button
+								class="btn btn--glass"
+								transition:fade={{ duration: motion(T_QUICK) }}
+								onintrostart={introLive}
+								onoutrostart={outroInert}
+								onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
+							>
+						{/each}
+					{/if}
 					{#if errandOpen}
 						<!-- The errand edits the Planner's team, not a board: the board's
 						     own controls wait for it. -->
@@ -1836,24 +1857,17 @@
 		align-self: stretch;
 		display: flex;
 		align-items: center;
-		padding: 0 var(--band-item-gap, 4px) 0 0.75rem;
+		justify-content: flex-end;
+		padding: 0 0.75rem;
 		border-radius: var(--r-sm);
 		background: var(--surface);
 	}
-	/* On the rail the words give way, never the Undo: the text ellipsizes
-	   (its title carries it whole) and the buttons keep their width. */
-	.tb-rail .tb-notice-group {
-		min-width: 0;
-		width: 100%;
-	}
+	/* The notice sits at the rail's END, against its buttons; when it runs
+	   long the words ellipsize (the title carries them whole). */
 	.tb-rail .tb-notice {
-		flex: 1;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
-	}
-	.tb-rail .tb-notice-group .btn {
-		flex: none;
 	}
 	.tb-norepeat {
 		padding: 0 0.75rem;
