@@ -555,7 +555,10 @@ export function createSimContext(input: SimContextInput): SimContext {
 		castKindsByChar: new Map(),
 		eChargeQueues: new Map(),
 
-		aura: createAuraState(),
+		aura: createAuraState({
+			charged: input.team.teamEnabledReactions.has('lunarCharged'),
+			crystallize: input.team.teamEnabledReactions.has('lunarCrystallize')
+		}),
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
 		stellarConductTimes: [],
