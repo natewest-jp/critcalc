@@ -99,7 +99,10 @@
 	</p>
 	<p>
 		The instrument is built assuming one target, and every application you place applies. (ICD is
-		the ICD Timeline’s job.) Swirl’s spread to other enemies and Shatter aren’t modeled.
+		the ICD Timeline’s job.) Swirl’s spread to other enemies and Shatter aren’t modeled. Neither are
+		Lunar-Charged, which drains both auras about half as fast as Electro-Charged, or
+		Lunar-Crystallize, which has no cooldown. The other Lunar and Stellar reactions consume the
+		gauge the same way as the reactions they replace.
 	</p>
 </section>
 
