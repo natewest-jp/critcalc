@@ -8,8 +8,8 @@
   the exhaustive design reference and the specimen board — and neither is a
   page a reader arrives at on purpose.
 
-  ⚠️ This file is inert until launch: `static/_headers` sends X-Robots-Tag:
-  noindex for /*, so nothing here is indexed while that rule stands.
+  ✅ Live since launch (2026-10-19), when `static/_headers` dropped its
+  X-Robots-Tag: noindex rule.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://critcalc.app/</loc><priority>1.0</priority></url>

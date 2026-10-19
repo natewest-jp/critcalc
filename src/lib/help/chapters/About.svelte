@@ -114,7 +114,10 @@
 		no ads.
 	</p>
 	<p>
-		The code is licensed under the AGPL-3.0 and the curated data under CC BY-SA 4.0. critcalc’s own
-		artwork (the logo, the landing silhouettes, some icons, and the scene) is not covered by either.
+		The code is licensed under the AGPL-3.0, and its
+		<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
+			>source is on GitHub</a
+		>. The curated data is licensed under CC BY-SA 4.0. critcalc’s own artwork (the logo, the
+		landing silhouettes, some icons, and the scene) is not covered by either.
 	</p>
 </section>

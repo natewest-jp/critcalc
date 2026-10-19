@@ -1,10 +1,9 @@
 # ============================================================
-# ⚠️  AT FULL LAUNCH: delete ONLY the
-# X-Robots-Tag rule below to re-enable search indexing.
-# The Cache-Control rules further down are permanent — keep them.
+# ✅ LAUNCHED 2026-10-19: the X-Robots-Tag: noindex rule that
+# kept the site out of search until launch is gone. The
+# Cache-Control rules further down are permanent — keep them.
 # ============================================================
 /*
-  X-Robots-Tag: noindex
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 
