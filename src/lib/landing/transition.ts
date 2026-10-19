@@ -45,10 +45,12 @@ export const TOOL_NAV_MS = 1800;
  *  ⚓ NATE 2026-08-05: fades stay RATIO-derived from their clocks (this /4
  *  for the ascend, TOOL_NAV_MS/3 for tool legs in the tools layout) so
  *  retuning a transition duration keeps its fades locked in step. */
-// ↻ tune(nate) 2026-10-19: 4 → 3.5, so the ascend's fades stay 600 ms at the
-// briskier PAN_MS 2100 — matching the tool legs' (TOOL_NAV_MS 1800 / 3) —
-// while staying ratio-derived as the ruling above asks.
-export const FADE_SPEED_MULTIPLIER = 3.5;
+// ⚠️ Why ¼ and not a round 600 ms (⚓ Nate, 2026-10-19): it is tempting to
+// match the tool legs' 600 ms fades, and 3.5 was tried — but on the trip DOWN
+// from a tool, the tool then fades out a touch too slowly and is seen sliding
+// over the landing. At ¼ it clears during the pan's slow start. With PAN_MS
+// 2100 that is 525 ms; the mismatch with the tool legs is deliberate.
+export const FADE_SPEED_MULTIPLIER = 4;
 
 /** Fade-IN duration for landing + tool elements (the "pleasing" landing fade). */
 export const FADE_DURATION_MS = Math.round(TRANSITION_MS / FADE_SPEED_MULTIPLIER);
