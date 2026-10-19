@@ -82,7 +82,7 @@
 							category: 'broken',
 							tool: feedbackToolForPath(page.url.pathname),
 							error: `${page.status} ${page.error?.message ?? ''}`
-						}}>Report a problem</ReportLink
+						}}>Report this</ReportLink
 					>
 				{:else}
 					<a class="btn btn--glass ctx-glass" href={resolve('/contribute')}>Report a problem</a>
