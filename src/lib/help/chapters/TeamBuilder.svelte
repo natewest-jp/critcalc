@@ -155,7 +155,8 @@
 		<li><strong>Keeps everything</strong>: Nothing the team provides is lost.</li>
 		<li><strong>Trades</strong>: Something is lost, listed in the section header.</li>
 		<li>
-			<strong>Changes the reactions</strong>: The team’s reactions or resonance change.
+			<strong>Changes the reactions</strong>: The team’s reactions or resonance change, whether or
+			not it also loses something.
 		</li>
 		<li><strong>Not yet curated</strong>: no capability data, so the swap can’t be read.</li>
 	</ul>
@@ -196,8 +197,7 @@
 		Your roster lives in the Library’s <strong>Roster</strong> tab, also reached from
 		<strong>Edit in Roster</strong> in a character’s details. Mark who you own, who you’re wishing
 		for, and at what constellation. <strong>Show</strong>, <strong>My constellations</strong> and the
-		constellation chips all read it, so the tools do gain increased functionality if you fill in your
-		roster.
+		constellation chips all read it, so filling in your roster makes the tools more useful.
 	</p>
 	<p>
 		The chip on a team portrait is the constellation that team uses. If it is filled, you own at
