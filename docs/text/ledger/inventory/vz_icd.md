@@ -5,149 +5,149 @@
 
 **58 messages** · `IcdInstrument.svelte`
 
-- `vz_icd_0_5s_normal_attacks` — IcdInstrument.svelte:37 label:
+- `vz_icd_0_5s_normal_attacks` — IcdInstrument.svelte:38 label:
   > ~0.5s normal attacks
   - terms: 🎮 Normal Attack
-- `vz_icd_1s_summon_ticks` — IcdInstrument.svelte:38 label:
+- `vz_icd_1s_summon_ticks` — IcdInstrument.svelte:39 label:
   > ~1s summon ticks
   - terms: 🏷 summon
-- `vz_icd_2s_slow_summon_ticks` — IcdInstrument.svelte:39 label:
+- `vz_icd_2s_slow_summon_ticks` — IcdInstrument.svelte:40 label:
   > ~2s slow summon ticks
   - terms: 🏷 summon
-- `vz_icd_n_th` — IcdInstrument.svelte:111 ordinal:
+- `vz_icd_n_th` — IcdInstrument.svelte:154 ordinal:
   > {n}th
   - vars: `n`
-- `vz_icd_x_s_255e` — IcdInstrument.svelte:112 fmtS:
+- `vz_icd_x_s_255e` — IcdInstrument.svelte:155 fmtS:
   > {+s.toFixed(2)}s
   - vars: `+s.toFixed(2)`
-- `vz_icd_every_hit_applies_its_element` — IcdInstrument.svelte:116 ruleText:
+- `vz_icd_every_hit_applies_its_element` — IcdInstrument.svelte:159 ruleText:
   > Every hit applies its element
-- `vz_icd_timer_timer` — IcdInstrument.svelte:117 parts:
+- `vz_icd_timer_timer` — IcdInstrument.svelte:160 parts:
   > {fmtS(timer)} timer
   - vars: `fmtS(timer)`
-- `vz_icd_first_hit_only` — IcdInstrument.svelte:118 ruleText:
+- `vz_icd_first_hit_only` — IcdInstrument.svelte:161 ruleText:
   > first hit only
-- `vz_icd_every_hit` — IcdInstrument.svelte:119 ruleText:
+- `vz_icd_every_hit` — IcdInstrument.svelte:162 ruleText:
   > every hit
-- `vz_icd_every_hits_hit` — IcdInstrument.svelte:120 ruleText:
+- `vz_icd_every_hits_hit` — IcdInstrument.svelte:163 ruleText:
   > every {ordinal(hits)} hit
   - vars: `ordinal(hits)`
-- `vz_icd_at_most_cap_per_window` — IcdInstrument.svelte:121 ruleText:
+- `vz_icd_at_most_cap_per_window` — IcdInstrument.svelte:164 ruleText:
   > at most {cap} per window
   - vars: `cap`
-- `vz_icd_hit_x_x_s` — IcdInstrument.svelte:239 head:
+- `vz_icd_hit_x_x_s` — IcdInstrument.svelte:302 head:
   > Hit {i + 1} · {h.time.toFixed(2)}s
   - vars: `i + 1` `h.time.toFixed(2)`
-- `vz_icd_with_no_icd_every_hit_applies` — IcdInstrument.svelte:240 why:
+- `vz_icd_with_no_icd_every_hit_applies` — IcdInstrument.svelte:303 why:
   > With no ICD, every hit applies.
   - terms: 🏷 ICD
-- `vz_icd_the_first_hit_always_applies_and_it` — IcdInstrument.svelte:249 why:
+- `vz_icd_the_first_hit_always_applies_and_it` — IcdInstrument.svelte:312 why:
   > The first hit always applies, and it starts the {fmtS(timer)} timer.
   - vars: `fmtS(timer)`
-- `vz_icd_timer_have_passed_since_the_timer` — IcdInstrument.svelte:250 why:
+- `vz_icd_timer_have_passed_since_the_timer` — IcdInstrument.svelte:313 why:
   > {fmtS(timer)} have passed since the timer started, so this hit applies, starts it again and sets the counter back to 1.
   - vars: `fmtS(timer)`
-- `vz_icd_every_hits_hit_applies_the_timer_from` — IcdInstrument.svelte:256 why: — ⚑ plural?
+- `vz_icd_every_hits_hit_applies_the_timer_from` — IcdInstrument.svelte:319 why: — ⚑ plural?
   > Every {ordinal(hits)} hit applies. The timer from hit {k + 1} keeps running, with {left} left.
   - vars: `ordinal(hits)` `k + 1` `left`
-- `vz_icd_application_is` — IcdInstrument.svelte:262 why:
+- `vz_icd_application_is` — IcdInstrument.svelte:325 why:
   > application is
-- `vz_icd_applications_are` — IcdInstrument.svelte:262 why:
+- `vz_icd_applications_are` — IcdInstrument.svelte:325 why:
   > applications are
-- `vz_icd_this_window_s_cap_x_used_up_until_the` — IcdInstrument.svelte:262 why: — ⚑ assembled plural?
+- `vz_icd_this_window_s_cap_x_used_up_until_the` — IcdInstrument.svelte:325 why: — ⚑ assembled plural?
   > This window's {cap} {cap === 1 ? 'application is' : 'applications are'} used up until the timer from hit {k + 1} runs out, in {left}.
   - vars: `cap` `cap === 1 ? 'application is' : 'applications are'` `k + 1` `left`
-- `vz_icd_only_the_first_hit_in_a_window_applies` — IcdInstrument.svelte:268 why: — ⚑ plural?
+- `vz_icd_only_the_first_hit_in_a_window_applies` — IcdInstrument.svelte:331 why: — ⚑ plural?
   > Only the first hit in a window applies. The timer from hit {k + 1} has {left} left.
   - vars: `k + 1` `left`
-- `vz_icd_the_counter_is_on_count_of_hits_and_the` — IcdInstrument.svelte:273 why: — ⚑ plural?
+- `vz_icd_the_counter_is_on_count_of_hits_and_the` — IcdInstrument.svelte:336 why: — ⚑ plural?
   > The counter is on {h.count} of {hits}, and the timer from hit {k + 1} has {left} left.
   - vars: `h.count` `hits` `k + 1` `left`
-- `vz_icd_icd_hit_timeline` — IcdInstrument.svelte:286 aria-label=
+- `vz_icd_icd_hit_timeline` — IcdInstrument.svelte:355 aria-label=
   > ICD hit timeline
   - terms: 📖 timeline · 🏷 ICD
-- `vz_icd_applies_element` — IcdInstrument.svelte:416 <li>
+- `vz_icd_applies_element` — IcdInstrument.svelte:485 <li>
   > applies element
-- `vz_icd_blocked_hit` — IcdInstrument.svelte:419 <li>
+- `vz_icd_blocked_hit` — IcdInstrument.svelte:488 <li>
   > blocked hit
-- `vz_icd_1_2_3_hit_counter` — IcdInstrument.svelte:421 <li>
+- `vz_icd_1_2_3_hit_counter` — IcdInstrument.svelte:490 <li>
   > <span>1 2 3</span>hit counter
-- `vz_icd_1_applied_by_the_counter` — IcdInstrument.svelte:425 <li>
+- `vz_icd_1_applied_by_the_counter` — IcdInstrument.svelte:494 <li>
   > <span>1</span>applied by the counter
-- `vz_icd_window_limit_reached` — IcdInstrument.svelte:429 <li>
+- `vz_icd_window_limit_reached` — IcdInstrument.svelte:498 <li>
   > <span>–</span>window limit reached
-- `vz_icd_icd_timer_window` — IcdInstrument.svelte:432 <li>
+- `vz_icd_icd_timer_window` — IcdInstrument.svelte:501 <li>
   > ICD timer window
   - terms: 🏷 ICD
-- `vz_icd_attack_string` — IcdInstrument.svelte:454 <p>
+- `vz_icd_attack_string` — IcdInstrument.svelte:523 <p>
   > Attack string
-- `vz_icd_even_spacing` — IcdInstrument.svelte:460 <button>
+- `vz_icd_even_spacing` — IcdInstrument.svelte:529 <button>
   > Even spacing
-- `vz_icd_hit_interval` — IcdInstrument.svelte:478 <span>
+- `vz_icd_hit_interval` — IcdInstrument.svelte:547 <span>
   > Hit interval
-- `vz_icd_x_s_953a` — IcdInstrument.svelte:479 <span>
+- `vz_icd_x_s_953a` — IcdInstrument.svelte:548 <span>
   > {interval.toFixed(2)}s
   - vars: `interval.toFixed(2)`
-- `vz_icd_hit_interval_in_seconds` — IcdInstrument.svelte:488 aria-label=
+- `vz_icd_hit_interval_in_seconds` — IcdInstrument.svelte:557 aria-label=
   > Hit interval in seconds
-- `vz_icd_hits` — IcdInstrument.svelte:504 <span>
+- `vz_icd_hits` — IcdInstrument.svelte:573 <span>
   > Hits
-- `vz_icd_number_of_hits` — IcdInstrument.svelte:514 aria-label=
+- `vz_icd_number_of_hits` — IcdInstrument.svelte:583 aria-label=
   > Number of hits
-- `vz_icd_icd_rule` — IcdInstrument.svelte:521 <p>
+- `vz_icd_icd_rule` — IcdInstrument.svelte:590 <p>
   > ICD rule
   - terms: 🏷 ICD
-- `vz_icd_internal_cooldown_the_hidden_rule_that` — IcdInstrument.svelte:522 <p>
+- `vz_icd_internal_cooldown_the_hidden_rule_that` — IcdInstrument.svelte:591 <p>
   > Internal Cooldown — the hidden rule that stops some hits from applying their element.
   - terms: 🎮 cooldown
-- `vz_icd_standard` — IcdInstrument.svelte:530 <button>
+- `vz_icd_standard` — IcdInstrument.svelte:599 <button>
   > Standard
-- `vz_icd_no_icd` — IcdInstrument.svelte:537 <button>
+- `vz_icd_no_icd` — IcdInstrument.svelte:606 <button>
   > No ICD
   - terms: 🏷 ICD
-- `vz_icd_its_own` — IcdInstrument.svelte:545 <button>
+- `vz_icd_its_own` — IcdInstrument.svelte:614 <button>
   > Its own
-- `vz_icd_custom` — IcdInstrument.svelte:549 <button>
+- `vz_icd_custom` — IcdInstrument.svelte:618 <button>
   > Custom
-- `vz_icd_timer` — IcdInstrument.svelte:558 <span>
+- `vz_icd_timer` — IcdInstrument.svelte:627 <span>
   > Timer
-- `vz_icd_x_s_5052` — IcdInstrument.svelte:559 <span>
+- `vz_icd_x_s_5052` — IcdInstrument.svelte:628 <span>
   > {customTimer.toFixed(1)}s
   - vars: `customTimer.toFixed(1)`
-- `vz_icd_icd_timer_in_seconds` — IcdInstrument.svelte:568 aria-label=
+- `vz_icd_icd_timer_in_seconds` — IcdInstrument.svelte:637 aria-label=
   > ICD timer in seconds
   - terms: 🏷 ICD
-- `vz_icd_hit_counter` — IcdInstrument.svelte:573 <span>
+- `vz_icd_hit_counter` — IcdInstrument.svelte:642 <span>
   > Hit counter
-- `vz_icd_off` — IcdInstrument.svelte:574 span:
+- `vz_icd_off` — IcdInstrument.svelte:643 span:
   > Off
-- `vz_icd_icd_hit_counter` — IcdInstrument.svelte:583 aria-label=
+- `vz_icd_icd_hit_counter` — IcdInstrument.svelte:652 aria-label=
   > ICD hit counter
   - terms: 🏷 ICD
-- `vz_icd_limit_per_window` — IcdInstrument.svelte:588 <span>
+- `vz_icd_limit_per_window` — IcdInstrument.svelte:657 <span>
   > Limit per window
-- `vz_icd_none` — IcdInstrument.svelte:589 span:
+- `vz_icd_none` — IcdInstrument.svelte:658 span:
   > None
-- `vz_icd_applications_allowed_per_icd_timer` — IcdInstrument.svelte:598 aria-label=
+- `vz_icd_applications_allowed_per_icd_timer` — IcdInstrument.svelte:667 aria-label=
   > Applications allowed per ICD timer window
   - terms: 🏷 ICD
-- `vz_icd_readout` — IcdInstrument.svelte:606 <p>
+- `vz_icd_readout` — IcdInstrument.svelte:675 <p>
   > Readout
-- `vz_icd_apps_of_length_x` — IcdInstrument.svelte:608 <p> — ⚑ assembled plural?
+- `vz_icd_apps_of_length_x` — IcdInstrument.svelte:677 <p> — ⚑ assembled plural?
   > {apps}<span> of {sim.length} {sim.length === 1 ? 'hit applies' : 'hits apply'}</span>
   - vars: `apps` `sim.length` `sim.length === 1 ? 'hit applies' : 'hits apply'`
-- `vz_icd_hit_applies` — IcdInstrument.svelte:610 p:
+- `vz_icd_hit_applies` — IcdInstrument.svelte:679 p:
   > hit applies
-- `vz_icd_hits_apply` — IcdInstrument.svelte:610 p:
+- `vz_icd_hits_apply` — IcdInstrument.svelte:679 p:
   > hits apply
-- `vz_icd_text_x_in_each_timer_window` — IcdInstrument.svelte:615 <p>
+- `vz_icd_text_x_in_each_timer_window` — IcdInstrument.svelte:684 <p>
   > <span>{perWindow.text}</span> {perWindow.one ? 'application' : 'applications'} in each {fmtS(params.timer)} window
   - vars: `perWindow.text` `perWindow.one ? 'application' : 'applications'` `fmtS(params.timer)`
-- `vz_icd_point_at_a_hit_to_read_why_it_applies_or` — IcdInstrument.svelte:631 <p>
+- `vz_icd_point_at_a_hit_to_read_why_it_applies_or` — IcdInstrument.svelte:700 <p>
   > Point at a hit to read why it applies or is blocked.
-- `vz_icd_sends_the_hits_that_apply_an_element` — IcdInstrument.svelte:639 title=
-  > Sends the hits that apply an element — each as 1U, since this ICD Timeline doesn't specify gauge sizes.
+- `vz_icd_sends_the_first_8_hits_within_15s_that` — IcdInstrument.svelte:708 title=
+  > Sends the first 8 hits within 15s that apply an element — each as 1U, since the ICD Timeline doesn't model gauge sizes.
   - terms: 📖 ICD Timeline · 🏷 gauge
-- `vz_icd_send_to_gauge_explorer` — IcdInstrument.svelte:646 <button>
+- `vz_icd_send_to_gauge_explorer` — IcdInstrument.svelte:715 <button>
   > Send to Gauge Explorer
   - terms: 📖 Gauge Explorer

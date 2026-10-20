@@ -72,6 +72,9 @@ const SURFACES = [
 	[null, /^routes\/styleguide\/|^routes\/\(scene\)\/lab\//], // specimen boards, not shipped copy
 	[null, /utils\/characterLint\.ts$|^lib\/types\/|^lib\/stores\.ts$/], // dev-facing lint text · schema · storage defaults
 	[null, /^lib\/landing\/(sceneGL|sceneDim|starPass|shootingStars|transition|veilReady)\.ts$/],
+	// The Google Form's own option values + the prefilled tech line: never shown on the
+	// site, and they must match the form EXACTLY (feedback.ts) — translated with the form.
+	[null, /^lib\/feedback\.ts$/],
 	['seo', /^lib\/seo\.ts$|SeoHead\.svelte$/],
 	[
 		'chrome',
@@ -81,11 +84,11 @@ const SURFACES = [
 	['errors', /\+error\.svelte$|\(tools\)\/\+layout\.svelte$|ToolColumns/],
 	[
 		'bench',
-		/BenchBand|SlotPortrait|LoadoutPanel|TeamBonusesBlock|utils\/resonance\.ts$|loadoutIcons/
+		/BenchBand|SlotPortrait|SidePortrait|LoadoutPanel|TeamBonusesBlock|utils\/resonance\.ts$|loadoutIcons/
 	],
 	[
 		'docbar',
-		/DocumentActions|DocumentTabs|documentBar|rotationTabs|SavedNotationsOverlay|TabsFullDialog/
+		/DocumentActions|DocumentTabs|documentBar|rotationTabs|SavedNotationsOverlay|TabsFullDialog|TabLimitDialog|boardBar|^lib\/boards\.svelte\.ts$|boardUrl|^lib\/library(\.svelte)?\.ts$|LibraryOverlay|LibraryView/
 	],
 	['settings', /SettingsPanel|settingsBackup|playback\/tones\.ts$|\/settings\/\+page/],
 	['coverage', /^lib\/coverage\/|CoverageList|CoverageStrip|\/coverage\/\+page/],
@@ -98,6 +101,7 @@ const SURFACES = [
 	['help_vz', /help\/chapters\/Visualizers/],
 	['about', /help\/chapters\/About|\/about\/\+page/],
 	['faq', /help\/chapters\/Faq|\/faq\//],
+	['beta', /help\/chapters\/Beta|\/beta\//],
 	['privacy', /help\/chapters\/Privacy|\/privacy\//],
 	['contribute', /help\/chapters\/Contribute|\/contribute\//],
 	['vz_crit', /Crit(Instrument|Heatmap)\.svelte$|visualizers\/lib\/(crit|critRamp)\.ts$/],
@@ -111,11 +115,11 @@ const SURFACES = [
 	['vz', /visualizers\/|utils\/instrumentUrl\.ts$/],
 	[
 		'tb',
-		/builder\/|CharacterCard|CharacterFilterRail|CharacterGrid|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons/
+		/builder\/|CharacterCard|CompositionChips|RosterTab|CharacterFilterRail|CharacterGrid|DetailCard|ConMark|^lib\/capabilities\/|characterFilters|roleIcons/
 	],
 	[
 		'planner',
-		/planner\/|RotationTimeline|RotationNotes|RotationCoverage|BuffTooltip|EventLog|^lib\/timeline\/|^lib\/sim\/|^lib\/playback\/|utils\/(notation|auraDisplay|kqmExport|timelineExport|castTokens|rotationUrl|urlCodec|tokenizer)/
+		/planner\/|plannerSamples|RotationTimeline|RotationNotes|RotationCoverage|BuffTooltip|EventLog|^lib\/timeline\/|^lib\/sim\/|^lib\/playback\/|utils\/(notation|auraDisplay|kqmExport|timelineExport|castTokens|rotationUrl|urlCodec|tokenizer)/
 	]
 ];
 
