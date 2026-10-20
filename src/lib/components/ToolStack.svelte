@@ -313,6 +313,13 @@
 		.tool-stack--bench-hidden .tool-stack-dock {
 			display: none;
 		}
+		/* ⚓ Nate 2026-10-20: the Team Builder (the one `fill` tool) snugs its
+		   surface — the battlefield banners, the character grid's filters — up
+		   to band B at the same band gap, as the planner's bench row does. */
+		.tool-stack--fill {
+			gap: var(--band-gap);
+			--stack-to-surface: calc(var(--band-a-h) + var(--band-b-h) + 2 * var(--band-gap));
+		}
 	}
 
 	/* ↻ ⚓ NATE 2026-08-09: THE BANDS NO LONGER ABUT — they are split by

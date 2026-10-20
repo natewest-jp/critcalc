@@ -49,6 +49,7 @@
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
+	import SeasonPicker from './lib/SeasonPicker.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
@@ -183,8 +184,10 @@
 	type PaneTab = 'characters' | 'lineup';
 	let tab = $state<PaneTab>('characters');
 	/** Below the dock the panes are tabs. ⚠ The literal is in the CSS too
-	 *  (`@media (max-width: 71rem)`) — custom properties can't reach a query. */
-	const tabbed = $derived(below('wide'));
+	 *  (`@media (max-width: 54rem)`) — custom properties can't reach a query.
+	 *  ⏳ DEMO 2026-10-20: the dock from `toolMin` (was `wide`), with a
+	 *  compact board between the two (see --tb-board-w). */
+	const tabbed = $derived(below('toolMin'));
 	/** ↻ Responsive sweep §3 item 5 (⚓ Nate 2026-10-15): on a SHORT screen
 	 *  (`(max-height: 30rem)`, breakpoints.ts § THE HEIGHT AXIS) the roster's
 	 *  head — filter strip, hint, destination banner — rides INSIDE the grid's
@@ -1369,6 +1372,15 @@
 					class:tb-band-cell--notice={!!documentBar.notice && noticeOnLineup}
 				>
 					{#if tabbed}{@render paneSwitch()}{/if}
+					<!-- ↻ L1 (⚓ Nate 2026-10-20): a Stygian lineup's season leads the
+					     rail, a plate of its own beside it (glass never on glass); the
+					     Lineup's own title row is gone — the tab names the mode. -->
+					{#if board.preset === 'stygian' && !errandOpen}
+						<SeasonPicker
+							version={board.season}
+							onSeason={(version) => boards.setSeason(board.id, version)}
+						/>
+					{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
 					     the lineup's controls standing at its end. -->
@@ -1420,17 +1432,23 @@
 							onclick={clearLineup}
 							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
 						>
-						<label class="toggle tb-norepeat" title="Each character joins only one team.">
-							<input
-								type="checkbox"
-								checked={board.noRepeats}
-								onchange={(e) =>
-									boards.setNoRepeats(board.id, e.currentTarget.checked, teamRecency)}
-							/>
-							<!-- The label leads and the switch ends the row (⚓ Nate). -->
-							<span class="toggle-label">No repeats</span>
-							<span class="toggle-track"><span class="toggle-thumb"></span></span>
-						</label>
+						<!-- ↻ 2026-10-20 (⚓ Nate): a PLATE whose mark is its state —
+						     repeat / repeat-off — in place of the toggle switch, which
+						     read oddly among band B's plates. Its word says the state too;
+						     below `compact` the mark stands alone, like every band control. -->
+						<button
+							class="btn btn--glass tb-norepeat"
+							aria-pressed={board.noRepeats}
+							aria-label="No repeats"
+							title={board.noRepeats
+								? 'Each character joins only one team.'
+								: 'A character can join more than one team.'}
+							onclick={() => boards.setNoRepeats(board.id, !board.noRepeats, teamRecency)}
+						>
+							<Mark name={board.noRepeats ? 'repeatOff' : 'repeat'} />
+							<span class="tb-band-label">{board.noRepeats ? 'No repeats' : 'Repeats allowed'}</span
+							>
+						</button>
 					{/if}
 				</div>
 			{/if}
@@ -1462,7 +1480,6 @@
 					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
-					onSeason={(version) => boards.setSeason(board.id, version)}
 					{previewId}
 					filteredFacets={activeFacets}
 					onFind={findFor}
@@ -1597,7 +1614,8 @@
 	   is the only thing that flexes, so the board's layout can be made stable.
 	   🎛️ --tb-board-w: ⏳ a first value, measured in step 1 against a full
 	   Stygian board (§11.6 item 3).
-	   Below the dock (`wide`, 71rem — $lib/breakpoints.ts) the panes are TABS:
+	   Below the dock (`toolMin`, 54rem — $lib/breakpoints.ts; ⏳ DEMO, was
+	   `wide`) the panes are TABS:
 	   each takes the whole width and the board slides in over the roster on a
 	   transform. ⚠ Both panes always lay out, so neither loses its scroll or
 	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/dock.ts). */
@@ -1612,7 +1630,17 @@
 	     · 720 from 1500 · 800 from 1900. */
 	.tb-dock,
 	.tb-band {
-		--tb-board-w: 580px;
+		/* ⚓ Nate 2026-10-20: THE DOCK FROM `toolMin` (54rem), the board's
+		   width FLUID between 460 and 580 — 460 (the compact board: the boss
+		   in the banner, "Planner →" over the pin) until the Characters column
+		   has its ~614px of 1136, then the BOARD takes every further pixel up
+		   to 580 (1136–1256), then the Characters column grows. So the roster
+		   never narrows as the window widens — a fixed step to 580 at 1136
+		   dropped it 105px. 630 = that column + the dock gap. A percentage
+		   here resolves at the USE site (each grid's own width), and the dock
+		   and band B are the same width. The board's FORM follows its measured
+		   width (BoardView), so the wide row arrives at ~567. */
+		--tb-board-w: clamp(460px, 100% - 630px, 580px);
 		--tb-dock-gap: 16px;
 	}
 	@media (min-width: 1500px) {
@@ -1649,7 +1677,7 @@
 	.tb-pane--board {
 		overflow-y: auto;
 	}
-	@media (max-width: 71rem) {
+	@media (max-width: 54rem) {
 		.tb-dock {
 			position: relative;
 			display: flex;
@@ -1671,24 +1699,11 @@
 		.tb-dock--lineup .tb-pane--board {
 			transform: none;
 		}
-		/* ↻ Responsive sweep 2026-10-15 item 18 (⚓ Nate): in the Lineup TAB the
-		   board keeps the width it docks at, start-aligned, instead of
-		   stretching to the pane. Stretched, a team ran 1089px wide at 1135
-		   while its content ended at 440, so Planner →, the pin and the chips
-		   stood ~520px from the lineup they belong to, and the 640px Abyss art
-		   was drawn at up to 1089px. ⚠ --tb-board-w is 580 throughout this
-		   range (it steps at `broad`), so this is the docked board exactly. */
-		.tb-pane--board > :global(.bv) {
-			max-width: var(--tb-board-w);
-		}
-	}
-	/* …but not the phone form (below BP.compact, 40rem — $lib/breakpoints.ts):
-	   there the board is the whole screen (BoardView's own narrow form), and
-	   431–640 is left to the Builder's phone pass (sweep item 20). */
-	@media (max-width: 40rem) {
-		.tb-pane--board > :global(.bv) {
-			max-width: none;
-		}
+		/* ↻ 2026-10-20 (⚓ Nate): the Lineup TAB spans its pane again. Sweep
+		   item 18 had capped it at the docked width because Planner →, the pin
+		   and the chips stood ~520px from their lineup when it stretched; they
+		   now sit IN the row's grid beside the lineup, so width only grows the
+		   row (the roomy form follows the board's measured width). */
 	}
 
 	/* Band A's end zone: the board's notice and Share. */
@@ -1856,10 +1871,9 @@
 		height: var(--band-ctrl-h);
 		padding-left: calc(0.6rem + 13px + 0.4rem);
 	}
-	/* A segment and a toggle have no plate of their own — on an unpainted band
+	/* A segment has no plate of its own — on an unpainted band
 	   they wear the glass a band A segment wears. */
-	.tb-show,
-	.tb-norepeat {
+	.tb-show {
 		flex: none;
 		height: var(--band-ctrl-h);
 		border-radius: var(--r-sm);
@@ -1881,20 +1895,21 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		padding: 0 0.75rem;
 		border-radius: var(--r-sm);
 		background: var(--surface);
 	}
 	/* The notice sits at the rail's END, against its buttons; when it runs
-	   long the words ellipsize (the title carries them whole). */
+	   long the words ellipsize (the title carries them whole). ↻ 2026-10-20:
+	   the padding is the NOTICE's, so an empty rail can shrink to nothing on
+	   a phone, where the season plate shares the band. */
 	.tb-rail .tb-notice {
+		padding: 0 0.75rem;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	.tb-norepeat {
-		padding: 0 0.75rem;
-		font-size: var(--fs-md);
+		flex: none;
 	}
 	/* Below `compact` (40rem — $lib/breakpoints.ts) the rail is a sliver, so
 	   while a notice stands on it No repeats steps aside and the rail takes its
@@ -1918,27 +1933,14 @@
 	.tb-more {
 		display: contents;
 	}
-	/* ↻ Responsive sweep 2026-10-15 item 18 follow-up (⚓ Nate): in the
-	   Lineup TAB the cell stops where the board does (the board keeps its
-	   docked --tb-board-w there, above), so No repeats ends at the board's
-	   right edge, not a pane's width past it. Not the phone form: below
-	   BP.compact (40rem) the board is the whole screen, and so is the cell. */
-	@media (max-width: 71rem) {
-		.tb-band--tabbed .tb-band-cell--lineup {
-			max-width: var(--tb-board-w);
-		}
-	}
-	@media (max-width: 40rem) {
-		.tb-band--tabbed .tb-band-cell--lineup {
-			max-width: none;
-		}
-	}
 	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
 	   their mark and fold their word — one rule for every band control. ↻ The
 	   lineup cell of band B too (pane switch + Add team): on a Custom board
 	   below ~407px its flex:none children pushed No repeats off the screen
 	   (87px spill at 320), and the fold returns ~160px. ↻ Except the pane
-	   switch's word, which folds at BP.paneWord (below). */
+	   switch's word, which never folds (↻ 2026-10-20: with No repeats a
+	   mark below `compact`, "Characters" + the season + Clear + No repeats fit
+	   at 320 in Chrome and WebKit, so BP.paneWord retired). */
 	@media (max-width: 40rem) {
 		.tb-band-label:not(.tb-pane-word) {
 			display: none;
@@ -1952,16 +1954,6 @@
 			display: none;
 		}
 	}
-	/* ↻ The pane switch keeps its word through the compact fold (responsive
-	   sweep 2026-10-15 item 26, ⚓ Nate) and folds it only below BP.paneWord
-	   ($lib/breakpoints.ts — 21.25rem), where "Characters" no longer fits
-	   beside Add team and No repeats on a Custom board. */
-	@media (max-width: 21.25rem) {
-		.tb-pane-word {
-			display: none;
-		}
-	}
-
 	/* ↻ 2026-10-08: Clear team and the Compare plate's avatar stack retired
 	   with the shared working team and the Compare tab (lineups design §6). */
 

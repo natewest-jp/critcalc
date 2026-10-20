@@ -75,9 +75,6 @@
 	 *  battlefield's name (⚓ Nate 2026-10-20) — the strip's height, not a
 	 *  line of its own. */
 	const BOSS_DISC_NARROW = 52;
-	/** How far a member's art rises above its ring — the portrait reserves it,
-	 *  and the row frame hugs the RINGS, so hair rises out over the frame as in
-	 *  the game rather than being boxed in a strip of empty headroom. */
 
 	let {
 		board,
@@ -90,7 +87,6 @@
 		onRemoveTeam,
 		onOpenInPlanner,
 		onPin,
-		onSeason,
 		previewId = null,
 		filteredFacets,
 		onFind,
@@ -99,13 +95,12 @@
 		errand = null
 	}: {
 		board: Board;
-		/** The board's wide form (⚓ Nate 2026-10-10: "too cramped and too
-		 *  diminutive"): from `broad` it is 720 wide, and its contents grow with
-		 *  it rather than leaving the width empty. */
+		/** The board's ROOMY form (⚓ Nate 2026-10-10: "too cramped and too
+		 *  diminutive") before the board is measured — the page's `broad`
+		 *  flag; after that the measured width decides (`ROOMY_ROW_MIN`). */
 		roomy?: boolean;
-		/** The PHONE form (below `compact`): the boss moves into the header strip
-		 *  beside a short name, the checks and the composition share a line, and
-		 *  the rotation sits with Planner → under the lineup (2026-10-20). */
+		/** The page's `compact` flag — the phone form before the board has been
+		 *  measured; after that the measured width decides (2026-10-20). */
 		narrow?: boolean;
 		selectedTeamId: string | null;
 		onSelectTeam: (teamId: string) => void;
@@ -117,7 +112,6 @@
 		onRemoveTeam: (teamId: string) => void;
 		onOpenInPlanner: (team: BoardTeam) => void;
 		onPin: (teamId: string, rotationId: string | null) => void;
-		onSeason: (version: string) => void;
 		/** The card the pointer rests on — the SELECTED team's fingerprint
 		 *  previews the team its pick would make (§11.2). */
 		previewId?: string | null;
@@ -137,29 +131,131 @@
 		errand?: { team: BoardTeam; label: string; onCancel: () => void } | null;
 	} = $props();
 
-	/** 🎛️ The phone's vertical Planner plate (2026-10-20, ⚓ Nate's idea):
-	 *  its width, and the gap between it and the lineup's frame. */
-	const V_PLANNER_W = 36;
-	const V_PLANNER_GAP = 8;
-	/** 🎛️ The smallest a phone's portrait may shrink to fit the plate beside
-	 *  the lineup (320 needs ~45). */
+	// ── THE ROW'S GEOMETRY (2026-10-20, ⚓ Nate) ──────────────────────────────
+	// One arrangement at every width: the lineup with the team's way into the
+	// Planner at its RIGHT, the chips under it, the fingerprint under them —
+	// and the fingerprint LOCKED to the lineup's width (first disc to last).
+	// What changes is the boss (in the banner on a phone, beside the row when
+	// it fits) and the Planner's shape (a vertical plate where the width is
+	// short, "Planner →" over the pin where it isn't). The form follows the
+	// board's MEASURED width, so the 431–640 range takes whichever fits.
+
+	/** 🎛️ The gap between portraits: 18 on the board (Nate 2026-10-09), 22
+	 *  on the roomy board, 16 on a phone — where the fingerprint at its 5px
+	 *  slot gap (263 at least) must still fit under the lineup (4 × 56 + 3g). */
+	const BOARD_GAP = 18;
+	const BOARD_GAP_ROOMY = 22;
+	const BOARD_GAP_PHONE = 16;
+	/** …and on the smallest screens, where the portraits shrink to make room
+	 *  for the vertical plate and the fingerprint spans under it instead. */
+	const BOARD_GAP_TIGHT = 12;
+	/** 🎛️ The smallest a phone's portrait may shrink (320 needs ~45). */
 	const BOARD_PORTRAIT_MIN = 40;
-	/** What the phone's lineup row spends besides its four discs: the frame's
-	 *  padding (8 + 20, the hue end inside it), three 12px gaps, the plate. */
-	const NARROW_RESERVE = 28 + 3 * 12 + V_PLANNER_GAP + V_PLANNER_W;
+	/** The lineup frame's padding beyond the discs: 8 before, 20 after (the
+	 *  team hue's end inside it). The frame starts 8px into the gutter, so a
+	 *  column spends the 20. */
+	const FRAME_END = 20;
+	/** 🎛️ The vertical Planner plate (⚓ Nate's idea): width and gap. */
+	const V_PLANNER_W = 28;
+	const V_PLANNER_GAP = 8;
+	/** 🎛️ "Planner →" over the pin: the stack's width at LEAST (what the wide
+	 *  row reserves), and the most it grows into the board's spare width —
+	 *  room for a pinned rotation's name on two lines. */
+	const STACK_W = 96;
+	const STACK_W_ROOMY = 112;
+	const STACK_MAX = 168;
+	const STACK_MAX_ROOMY = 200;
+	/** The phone body's left gutter (the frame's 8 reaches into it). */
+	const PHONE_GUTTER = 8;
+	/** The wide body: its padding (16 + 10) and the gaps either side of the
+	 *  boss's rule (1.25rem each + the 1px rule). */
+	const WIDE_BODY_SPEND = 16 + 10 + 20 + 1 + 20;
+	/** The widest board that still takes the PHONE form: the wide row needs
+	 *  the boss, the 56px lineup and the stack side by side. */
+	const WIDE_ROW_MIN =
+		WIDE_BODY_SPEND +
+		BOSS_DISC +
+		4 * BOARD_PORTRAIT +
+		3 * BOARD_GAP +
+		FRAME_END +
+		BOARD_GAP +
+		STACK_W;
+
 	let boardW = $state(0);
+	/** The phone form: measured, or the page's `compact` flag before the
+	 *  first measurement (SSR / first paint). */
+	const phone = $derived(boardW ? boardW < WIDE_ROW_MIN : narrow);
+	/** The narrowest board that takes the ROOMY form (↻ 2026-10-20: by the
+	 *  board's measured width, so the full-width Lineup tab between `compact`
+	 *  and the dock grows too — not only the docked 720/800 boards): the
+	 *  roomy boss, a 64px lineup, the roomy stack, and the roomy body's 1.5rem
+	 *  gaps either side of the rule. */
+	const ROOMY_ROW_MIN =
+		WIDE_BODY_SPEND +
+		8 +
+		BOSS_DISC_ROOMY +
+		4 * BOARD_PORTRAIT_ROOMY +
+		3 * BOARD_GAP_ROOMY +
+		FRAME_END +
+		BOARD_GAP_ROOMY +
+		STACK_W_ROOMY;
+	/** Measured, or the page's `broad` flag before the first measurement. */
+	const isRoomy = $derived(!phone && (boardW ? boardW >= ROOMY_ROW_MIN : roomy));
+	/** On a phone, room for a 56px lineup at its phone gap and the STACK? */
+	const phoneStack = $derived(
+		phone &&
+			boardW >=
+				PHONE_GUTTER +
+					4 * BOARD_PORTRAIT +
+					3 * BOARD_GAP_PHONE +
+					FRAME_END +
+					BOARD_GAP_PHONE +
+					STACK_W
+	);
+	/** …else the vertical plate: does a 56px lineup at the phone gap fit? */
+	const phoneFull = $derived(
+		boardW >=
+			PHONE_GUTTER +
+				4 * BOARD_PORTRAIT +
+				3 * BOARD_GAP_PHONE +
+				FRAME_END +
+				V_PLANNER_GAP +
+				V_PLANNER_W
+	);
+	/** The one exception: the lineup shrinks and the fingerprint spans. */
+	const tight = $derived(phone && !phoneStack && !!boardW && !phoneFull);
+	const gap = $derived(
+		tight ? BOARD_GAP_TIGHT : phone ? BOARD_GAP_PHONE : isRoomy ? BOARD_GAP_ROOMY : BOARD_GAP
+	);
 	const portrait = $derived(
-		narrow
-			? boardW
-				? Math.max(
-						BOARD_PORTRAIT_MIN,
-						Math.min(BOARD_PORTRAIT, Math.floor((boardW - NARROW_RESERVE) / 4))
+		tight
+			? Math.max(
+					BOARD_PORTRAIT_MIN,
+					Math.min(
+						BOARD_PORTRAIT,
+						Math.floor(
+							(boardW - PHONE_GUTTER - 3 * gap - FRAME_END - V_PLANNER_GAP - V_PLANNER_W) / 4
+						)
 					)
-				: BOARD_PORTRAIT
-			: roomy
+				)
+			: isRoomy
 				? BOARD_PORTRAIT_ROOMY
 				: BOARD_PORTRAIT
 	);
+	/** First disc to last; the frame adds its 8 before and its end after. */
+	const span = $derived(4 * portrait + 3 * gap);
+	/** THE FINGERPRINT'S WIDTH: the lineup's FRAME (8 + the discs + its hue
+	 *  end) — or, on the smallest screens, its whole row (the frame's edge to
+	 *  the plate's), where it cannot match the lineup. */
+	const fpW = $derived(tight ? boardW : span + 8 + FRAME_END);
+	/** 🎛️ ⚓ Nate 2026-10-20: its gaps stay NARROW and fixed — 5px between
+	 *  glyphs, 8px between its three clusters — and its GLYPHS size up to
+	 *  meet the width: 15 glyphs + 12 slot gaps + 2 cluster gaps. A fraction
+	 *  of a pixel is fine; the art is already scaled off-grid by the
+	 *  generator's balance. ~14.9 on a phone, ~15.3 on the board, ~18.3 roomy. */
+	const FP_SLOT_GAP = 5;
+	const FP_CLUSTER_GAP = 8;
+	const fpGlyph = $derived((fpW - 12 * FP_SLOT_GAP - 2 * FP_CLUSTER_GAP) / 15);
 	const OVERHANG = $derived(sideLayout(portrait).overhang);
 
 	/* The constellation chip compares the team's level with your account's,
@@ -185,13 +281,6 @@
 			: undefined
 	);
 	const abyss = $derived(board.preset === 'abyss' ? currentAbyss() : undefined);
-	const fmtDay = (iso: string) =>
-		new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			timeZone: 'UTC'
-		});
-
 	/** Everything a team row shows, from the team and the bank. */
 	function teamFacts(team: BoardTeam) {
 		const ids = team.slots.filter((s): s is string => !!s);
@@ -259,6 +348,13 @@
 	{@const afterVerdicts = after && field ? verdictsFor(field, after, facts.conOf) : undefined}
 	{@const name = isErrand ? (errand?.label ?? '') : teamLabel(board, t)}
 	{@const swapSlot = swapping?.teamId === team.id ? swapping.slot : null}
+	{@const plate = filled && !isErrand}
+	{@const planTitle = pin
+		? `Open “${pin.name}” in the Rotation Planner`
+		: 'Open this team in the Rotation Planner'}
+	{@const pinLabel = pin
+		? `Pinned rotation for ${name}: ${pin.name}`
+		: `Pin a rotation for ${name}`}
 	<!-- The row's pieces, arranged twice below: the wide row and the phone's. -->
 	{#snippet boss(size: number, zoom: number)}
 		{#if field && season}
@@ -288,111 +384,72 @@
 			</div>
 		{/if}
 	{/snippet}
-	{#snippet planner()}
-		<!-- ⚓ Nate 2026-10-12: "Planner →" — the pinned rotation (or "No saved
-			     rotation") sits beside or under it, so the word says enough. -->
-		<button
-			class="btn btn--sm bv-planner"
-			onclick={() => onOpenInPlanner(team)}
-			title="Open this team in the Rotation Planner"
-			aria-label="Open this team in the Rotation Planner"
-			>Planner <Mark name="forward" size={12} /></button
-		>
-	{/snippet}
-	{#snippet pinMenu()}
-		<!-- The team's rotation: DERIVED from the library by its set; a pin
-			     names the one you would play here (§10.2). -->
-		<div class="bv-pin">
-			{#if rotations.length === 0}
-				<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span>
-			{:else}
-				<!-- ↻ Responsive sweep 2026-10-15 item 21 (⚓ Nate): the plate
-					     says "Rotation" and the pin Mark says the verb; "Pin a
-					     rotation" was cut in the column's 62px of label room. The
-					     aria-label keeps the whole sentence. -->
-				<BandMenu
-					mark="pin"
-					size="sm"
-					align="end"
-					label={pin?.name ?? 'Rotation'}
-					ariaLabel={pin
-						? `Pinned rotation for ${name}: ${pin.name}`
-						: `Pin a rotation for ${name}`}
+	{#snippet pinItems(close: () => void)}
+		{#each [null, ...rotations] as r (r?.id ?? '')}
+			{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+			<button
+				class="band-menu-item"
+				role="menuitemradio"
+				aria-checked={current}
+				onclick={() => {
+					close();
+					onPin(team.id, r?.id ?? null);
+				}}
+			>
+				<span class="bv-menu-check"
+					>{#if current}<Mark name="check" size={12} />{/if}</span
 				>
-					{#snippet items(close)}
-						{#each [null, ...rotations] as r (r?.id ?? '')}
-							{@const current = (pin?.id ?? null) === (r?.id ?? null)}
-							<button
-								class="band-menu-item"
-								role="menuitemradio"
-								aria-checked={current}
-								onclick={() => {
-									close();
-									onPin(team.id, r?.id ?? null);
-								}}
-							>
-								<span class="bv-menu-check"
-									>{#if current}<Mark name="check" size={12} />{/if}</span
-								>
-								{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
-							</button>
-						{/each}
-					{/snippet}
-				</BandMenu>
+				{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
+			</button>
+		{/each}
+	{/snippet}
+	{#snippet act()}
+		<!-- THE TEAM'S WAY INTO THE PLANNER, at the lineup's right (⚓ Nate
+			     2026-10-20): "Planner →" over the pin, the two as tall as the
+			     lineup's frame — or the vertical plate, where the width is short
+			     (the pin then sits beside the chips). The pin appears once there
+			     is a saved rotation to pin, and is GOLD while one is pinned. -->
+		{#if phone && !phoneStack}
+			<button
+				class="btn bv-vplanner"
+				onclick={() => onOpenInPlanner(team)}
+				title={planTitle}
+				aria-label={planTitle}
+				><span class="bv-vword">Planner</span><Mark name="forwardSlim" size={12} /></button
+			>
+			{#if rotations.length > 0}
+				<span class="bv-pin bv-pin--beside" class:bv-pin--on={!!pin}>
+					<BandMenu
+						compact
+						mark="pin"
+						size="sm"
+						align="end"
+						ariaLabel={pinLabel}
+						items={pinItems}
+					/>
+				</span>
 			{/if}
-		</div>
-	{/snippet}
-	{#snippet vplanner()}
-		<!-- THE VERTICAL PLANNER PLATE (2026-10-20, ⚓ Nate's idea): the team's
-			     way into the Planner stands BESIDE the lineup as its own section,
-			     the word running bottom to top as tall as the frame. -->
-		<button
-			class="btn bv-vplanner"
-			onclick={() => onOpenInPlanner(team)}
-			title={pin
-				? `Open “${pin.name}” in the Rotation Planner`
-				: 'Open this team in the Rotation Planner'}
-			aria-label={pin
-				? `Open “${pin.name}” in the Rotation Planner`
-				: 'Open this team in the Rotation Planner'}
-			><span class="bv-vword">Planner</span><Mark name="forward" size={12} /></button
-		>
-	{/snippet}
-	{#snippet pinPlate()}
-		<!-- The pin, once there is a rotation to pin; GOLD while one is pinned
-			     (gold is where a thing is chosen), since touch has no tooltip. -->
-		{#if rotations.length > 0}
-			<span class="bv-npin" class:bv-npin--on={!!pin}>
-				<BandMenu
-					compact
-					mark="pin"
-					size="sm"
-					align="end"
-					ariaLabel={pin
-						? `Pinned rotation for ${name}: ${pin.name}`
-						: `Pin a rotation for ${name}`}
+		{:else}
+			<div class="bv-act">
+				<button
+					class="btn btn--sm bv-planner"
+					onclick={() => onOpenInPlanner(team)}
+					title={planTitle}
+					aria-label={planTitle}>Planner <Mark name="forward" size={12} /></button
 				>
-					{#snippet items(close)}
-						{#each [null, ...rotations] as r (r?.id ?? '')}
-							{@const current = (pin?.id ?? null) === (r?.id ?? null)}
-							<button
-								class="band-menu-item"
-								role="menuitemradio"
-								aria-checked={current}
-								onclick={() => {
-									close();
-									onPin(team.id, r?.id ?? null);
-								}}
-							>
-								<span class="bv-menu-check"
-									>{#if current}<Mark name="check" size={12} />{/if}</span
-								>
-								{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
-							</button>
-						{/each}
-					{/snippet}
-				</BandMenu>
-			</span>
+				{#if rotations.length > 0}
+					<span class="bv-pin" class:bv-pin--on={!!pin}>
+						<BandMenu
+							mark="pin"
+							size="sm"
+							align="end"
+							label={pin?.name ?? 'Rotation'}
+							ariaLabel={pinLabel}
+							items={pinItems}
+						/>
+					</span>
+				{/if}
+			</div>
 		{/if}
 	{/snippet}
 	{#snippet slots()}
@@ -470,10 +527,10 @@
 		     it stands on the night. A battlefield's header fuses its number with
 		     the boss's name, as the game writes "Battlefield 1: …". -->
 	<section class="bv-team" class:bv-team--errand={isErrand} aria-label={name}>
-		<header class="bv-team-head ctx-glass" class:bv-team-head--boss={narrow && !!field}>
+		<header class="bv-team-head ctx-glass" class:bv-team-head--boss={phone && !!field}>
 			<!-- ↻ 2026-10-20 (⚓ Nate): on a phone the boss stands IN the strip,
 				     beside its short name — two blocks folded into one. -->
-			{#if narrow}{@render boss(BOSS_DISC_NARROW, 20)}{/if}
+			{#if phone}{@render boss(BOSS_DISC_NARROW, 20)}{/if}
 			<div class="bv-head-text">
 				<!-- ↻ §11.6 item 13: ONE run of Bitter bold, mixed case, as the game
 					     writes "Battlefield 1: Aeonblight Drake: Skyshaker" — measured
@@ -481,10 +538,10 @@
 					     docked board (the old Plex caps ran a third wider). -->
 				<h3
 					class="bv-head-title"
-					title={field && narrow ? inLang(BOSSES[field.boss].name) : undefined}
+					title={field && phone ? inLang(BOSSES[field.boss].name) : undefined}
 				>
 					{field
-						? narrow
+						? phone
 							? bossName(field.boss, true)
 							: `Battlefield ${t + 1}: ${bossName(field.boss, false)}`
 						: half
@@ -495,7 +552,7 @@
 				</h3>
 				<!-- ↻ 2026-10-20 (⚓ Nate): on a phone the checks sit IN the banner,
 					     under the boss's name, beside its portrait. -->
-				{#if narrow && field}{@render checks(true)}{/if}
+				{#if phone && field}{@render checks(true)}{/if}
 				{#if half}<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>{/if}
 			</div>
 			<!-- ↻ §11.6: the header names the SITE and nothing else. "Open in
@@ -528,56 +585,40 @@
 			{/if}
 		</header>
 
-		{#if narrow}
-			<!-- THE PHONE ROW (2026-10-20): the lineup with the vertical Planner
-				     plate beside it, the composition under it (the pin beside that),
-				     the fingerprint across the foot. The checks went up into the
-				     banner. -->
-			<div class="bv-nbody">
-				<!-- ↻ 2026-10-20 (⚓ Nate): the lineup with the Planner plate beside
-					     it; the chips under the lineup with the pin beside them; the
-					     fingerprint LAST, across the full width, so nothing narrows it. -->
-				<div class="bv-ngrid" class:bv-ngrid--plate={filled && !isErrand}>
-					{@render slots()}
-					{#if filled && !isErrand}{@render vplanner()}{/if}
-					{#if filled}
-						<!-- What the four unlock together: resonances and factions, one
-							     to four chips (two of each is the most a team makes). -->
-						<div class="bv-nchips">
-							<CompositionChips ids={team.slots} reactions={false} />
-						</div>
-					{/if}
-					{#if filled && !isErrand}{@render pinPlate()}{/if}
-					{@render fingerprint()}
-				</div>
+		<!-- ONE GRID at every width (⚓ Nate 2026-10-20): the lineup with the
+			     team's way into the Planner at its right; the chips under the
+			     lineup; the fingerprint under them, as wide as the lineup. Wide,
+			     the boss stands at the left with its checks over the lineup, as
+			     the game's own selection screen has it; on a phone both went up
+			     into the banner. -->
+		{#snippet grid()}
+			<div
+				class="bv-grid"
+				class:bv-grid--top={!phone}
+				class:bv-grid--act={plate && (!phone || phoneStack)}
+				class:bv-grid--vert={plate && phone && !phoneStack}
+				class:bv-grid--tight={tight}
+			>
+				{#if !phone && field?.checks.length}<div class="bv-top">{@render checks()}</div>{/if}
+				{@render slots()}
+				{#if plate}{@render act()}{/if}
+				{#if filled}
+					<!-- What the four unlock together: resonances and factions, one to
+						     four chips (two of each is the most a team makes). -->
+					<div class="bv-chips"><CompositionChips ids={team.slots} reactions={false} /></div>
+				{/if}
+				{@render fingerprint()}
 			</div>
+		{/snippet}
+		{#if phone}
+			<div class="bv-nbody">{@render grid()}</div>
 		{:else}
-			<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
-				     vertical rule, then the stack — checks, the lineup, the fingerprint. -->
 			<div class="bv-body">
 				{#if field && season}
-					{@render boss(roomy ? BOSS_DISC_ROOMY : BOSS_DISC, 26)}
+					{@render boss(isRoomy ? BOSS_DISC_ROOMY : BOSS_DISC, 26)}
 					<span class="bv-vrule" aria-hidden="true"></span>
 				{/if}
-				<div class="bv-stack" class:bv-stack--top={!!field?.checks.length || filled}>
-					<!-- ⚓ Nate 2026-10-12: the checks and "Planner →" share the TOP line,
-						     which spans the stack's two columns; the pin hangs under the
-						     button in the right column (see .bv-stack). -->
-					{#if field?.checks.length || (filled && !isErrand)}
-						<div class="bv-top">
-							{@render checks()}
-							{#if filled && !isErrand}{@render planner()}{/if}
-						</div>
-					{/if}
-					{@render slots()}
-					{#if filled}
-						<div class="bv-side">
-							{#if !isErrand}{@render pinMenu()}{/if}
-							<CompositionChips ids={team.slots} reactions={false} />
-						</div>
-					{/if}
-					{@render fingerprint()}
-				</div>
+				{@render grid()}
 			</div>
 		{/if}
 	</section>
@@ -585,10 +626,20 @@
 
 <div
 	class="bv"
-	class:bv--roomy={roomy}
+	class:bv--roomy={isRoomy}
+	class:bv--phone={phone}
 	style:--portrait="{portrait}px"
+	style:--slot-gap="{gap}px"
+	style:--span="{span}px"
+	style:--fp-w="{fpW}px"
+	style:--fp-glyph="{fpGlyph}px"
+	style:--bv-fp-slot="{FP_SLOT_GAP}px"
+	style:--fp-cluster-gap="{FP_CLUSTER_GAP}px"
+	style:--frame-end="{FRAME_END}px"
 	style:--vplanner-w="{V_PLANNER_W}px"
 	style:--vplanner-gap="{V_PLANNER_GAP}px"
+	style:--stack-w="{isRoomy ? STACK_W_ROOMY : STACK_W}px"
+	style:--stack-max="{isRoomy ? STACK_MAX_ROOMY : STACK_MAX}px"
 	bind:clientWidth={boardW}
 >
 	<!-- ⚓ The Planner's ⇄ is a state of its OWN (Nate 2026-10-13): its team
@@ -596,45 +647,6 @@
 	     untouched, and comes back when the errand ends. -->
 	{#if errand}
 		{@render teamRow(errand.team, -1, true)}
-	{:else if season}
-		<header class="bv-lineup">
-			<span class="bv-lineup-mode">Stygian Onslaught</span>
-			<!-- The site's dropdown (a plate, an opaque slate menu) rather than the
-			     platform's select (Nate 2026-10-09). -->
-			<!-- ↻ 2026-10-20 (⚓ Nate): the plate stands BESIDE the title at every
-			     width; where the dates don't fit they fold and the version names
-			     the season alone (one Stygian per patch). The menu keeps them. -->
-			<BandMenu
-				ariaLabel="Season: {season.version}, {fmtDay(season.start)} – {fmtDay(season.end)}"
-				align="start"
-			>
-				{#snippet face()}<span class="bv-season-face"
-						>{season.version}<span class="bv-season-face-dates"
-							>&nbsp;· {fmtDay(season.start)} – {fmtDay(season.end)}</span
-						></span
-					>{/snippet}
-				{#snippet items(close)}
-					{#each seasons as s (s.version)}
-						{@const current = s.version === season.version}
-						<button
-							class="band-menu-item"
-							role="menuitemradio"
-							aria-checked={current}
-							onclick={() => {
-								close();
-								onSeason(s.version);
-							}}
-						>
-							<span class="bv-menu-check"
-								>{#if current}<Mark name="check" size={12} />{/if}</span
-							>
-							<span class="bv-season-version">{s.version}</span>
-							<span class="bv-season-dates">{fmtDay(s.start)} – {fmtDay(s.end)}</span>
-						</button>
-					{/each}
-				{/snippet}
-			</BandMenu>
-		</header>
 	{:else if abyss}
 		<!-- The blessing's own banner (2:1), faded into the night at its edges, its
 		     name and text laid over its foot. -->
@@ -671,47 +683,25 @@
 <style>
 	/* 🎛️ Breathing room (⚓ Nate 2026-10-10: "a little more"): the rhythm
 	   between teams, inside a team, and inside its header. */
+	/* 🎛️ THE RHYTHM (2026-10-20, tightened): between teams, banner to body
+	   (.bv-team), and between the row's lines (--row-gap). Phone and roomy
+	   below. */
 	.bv {
+		--row-gap: 0.65rem;
 		display: flex;
 		flex-direction: column;
-		gap: 1.75rem;
+		gap: 1.5rem;
 		padding: 0 0 1.5rem;
 	}
 
-	/* ── The lineup's header ── */
-	.bv-lineup {
-		display: flex;
-		align-items: center;
-		gap: 0.9rem;
-	}
-	/* The menus' rows: a check column, then the choice (a season: version +
-	   dates). */
+	/* The pin menu's rows: a check column, then the rotation. */
 	.bv-menu-check {
 		width: 12px;
 		display: grid;
 		place-items: center;
 	}
-	.bv-season-version {
-		min-width: 2.2em;
-		font-weight: var(--fw-semibold);
-		font-variant-numeric: tabular-nums;
-	}
-	.bv-season-dates,
 	.bv-menu-quiet {
 		color: var(--muted);
-	}
-	/* The season's plate: the version always, the dates while they fit. */
-	.bv-season-face {
-		white-space: nowrap;
-	}
-	/* ⚓ Measured 2026-10-20: the title (173) + gap (14) + the full plate
-	   (174) need a 361px pane, i.e. a ~393px viewport; 26rem leaves room for
-	   an engine's wider fallback metrics. ⚠ Re-measure if the title or the
-	   plate's type moves. */
-	@media (max-width: 26rem) {
-		.bv-season-face-dates {
-			display: none;
-		}
 	}
 	.bv-lineup-mode {
 		white-space: nowrap;
@@ -758,7 +748,7 @@
 	.bv-team {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 0.85rem;
 	}
 	.bv-team-head {
 		display: flex;
@@ -814,91 +804,181 @@
 		width: 1px;
 		background: var(--line-faint);
 	}
-	/* ⚓ THE STACK IS TWO COLUMNS (Nate 2026-10-12): the top line spans
-	   both (checks · Planner →); under it the LEFT column is the lineup with
-	   the fingerprint beneath, and the RIGHT column hangs the pinned rotation
-	   directly under the Planner button with the composition chips under it.
-	   The right column spans the lineup AND the fingerprint's rows, so a pin
-	   plus two lines of chips fit beside them without adding height — no line
-	   of the right column ever pushes the lineup or the fingerprint down. */
-	.bv-stack {
+
+	/* ── THE ROW'S GRID (⚓ Nate 2026-10-20) — one at every width ──
+	   Column 1 is the LINEUP's (its discs + the frame's end); the chips and
+	   the fingerprint take the width they are given (zero intrinsic width),
+	   so only the lineup sizes it. Column 2 is the team's way into the
+	   Planner. The modifiers only change the template:
+	     --top   wide: the boss's checks over the lineup
+	     --act   "Planner →" over the pin, beside the lineup
+	     --vert  the vertical plate beside the lineup, the pin beside the chips
+	     --tight the vertical plate on the smallest screens: the fingerprint
+	             spans under the plate rather than wrap */
+	.bv-grid {
 		display: grid;
-		grid-template-columns: max-content minmax(0, 1fr);
-		grid-template-areas:
-			'slots side'
-			'fp side';
+		grid-template-columns: max-content;
+		grid-template-areas: 'slots' 'chips' 'fp';
 		align-content: start;
-		gap: 0.85rem 0.75rem;
+		row-gap: var(--row-gap);
 		min-width: 0;
 		flex: 1;
 	}
-	.bv-stack--top {
-		grid-template-areas:
-			'top top'
-			'slots side'
-			'fp side';
+	.bv-grid--top {
+		grid-template-areas: 'top' 'slots' 'chips' 'fp';
 	}
+	.bv-grid--act {
+		grid-template-columns: max-content minmax(var(--stack-w), var(--stack-max));
+		grid-template-areas: 'slots act' 'chips .' 'fp .';
+		column-gap: var(--slot-gap);
+	}
+	.bv-grid--act.bv-grid--top {
+		grid-template-areas: 'top top' 'slots act' 'chips .' 'fp .';
+	}
+	/* ⚓ Nate 2026-10-20: the vertical plate and the pin HUG THE SCREEN'S
+	   EDGE, not the lineup — the plate's column takes the row's spare width
+	   and the two stand at its end. */
+	.bv-grid--vert {
+		grid-template-columns: max-content minmax(var(--vplanner-w), 1fr);
+		grid-template-areas: 'slots act' 'chips pin' 'fp .';
+		column-gap: var(--vplanner-gap);
+	}
+	.bv-grid--vert.bv-grid--tight {
+		grid-template-areas: 'slots act' 'chips pin' 'fp fp';
+	}
+	/* ⚓ Nate 2026-10-20: the checks, the chips and the fingerprint share the
+	   FRAME's left edge — 8px before the first disc — so every line of a team
+	   starts at the one visible box. */
 	.bv-top {
 		grid-area: top;
+		min-width: 0;
+		margin-left: -8px;
 	}
 	.bv-slots {
 		grid-area: slots;
 		justify-self: start;
 	}
+	.bv-chips {
+		grid-area: chips;
+		align-self: center;
+		width: 0;
+		min-width: calc(100% + 8px);
+		margin-left: -8px;
+	}
+	.bv-chips > :global(.comp) {
+		flex-wrap: wrap;
+	}
+	/* THE FINGERPRINT IS LOCKED TO THE LINEUP'S FRAME (⚓ Nate 2026-10-20):
+	   the frame's whole width — its 8px before the first disc, the discs, its
+	   end with the team's hue — so its ends sit under the frame's at every
+	   width; on the smallest screens (--tight) its whole row instead. Its
+	   gaps are fixed and narrow, and its GLYPHS size to fill (--fp-w,
+	   --fp-glyph — both set in the script). */
 	.bv-fp {
 		grid-area: fp;
+		width: var(--fp-w);
+		margin-left: -8px;
+		/* The reserved line (⚓ Nate 2026-10-12): an empty team holds the
+		   board's shape — the glyph + its 2px gap + the 3px dots, rounded. */
+		min-height: calc(var(--fp-glyph) + 8px);
 	}
-	/* The TOP line: the checks at the left, the Planner button at the right,
-	   centred on the checks' line (⚓ Nate 2026-10-12). */
-	.bv-top {
-		display: flex;
-		align-items: center;
-		gap: 6px 1rem;
+	.bv-fp :global(.fp) {
+		gap: var(--fp-cluster-gap);
+		flex-wrap: nowrap;
+		/* Absorbs sub-pixel rounding only; the sizes already fill the width. */
+		justify-content: space-between;
 	}
-	.bv-planner {
-		flex: none;
-		margin-left: auto;
+	.bv-fp :global(.fp-cluster) {
+		--fp-slot-gap: var(--bv-fp-slot);
+	}
+	.bv-fp :global(.fp-slot) {
+		width: var(--fp-glyph);
+	}
+	.bv-fp :global(.fp-glyph) {
+		width: var(--fp-glyph);
+		height: var(--fp-glyph);
+	}
+	/* ⚠ The OUTER slots' hit areas stop at the fingerprint's ends: they
+	   reach half a gap past their glyph, and at the row's edge that spilled
+	   ~3px past the board and scrolled it sideways. */
+	.bv-fp :global(.fp-cluster:first-child .fp-slot:first-child::before) {
+		left: 0;
+	}
+	.bv-fp :global(.fp-cluster:last-child .fp-slot:last-child::before) {
+		right: 0;
 	}
 	.bv-checks {
-		flex: 0 1 auto;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 6px;
 	}
-	/* The fingerprint's reserved line: one fingerprint tall (glyph 16 + gap
-	   2 + dots 3), so an empty team holds the board's shape. */
-	.bv-fp {
-		min-height: 21px;
+
+	/* THE STACK: as tall as the lineup's FRAME (the disc + its 6px padding
+	   twice), standing on the frame, not the art's overhang above it.
+	   ⚓ Nate 2026-10-20: a SLIM "Planner →" takes a third and the pin two
+	   thirds, so a pinned rotation's name has two lines. Planner → keeps its
+	   third with no pin under it. */
+	.bv-act {
+		grid-area: act;
+		align-self: end;
+		height: calc(var(--portrait) + 12px);
+		margin-bottom: -6px;
+		display: grid;
+		grid-template-rows: 1fr 2fr;
+		gap: 4px;
+		min-width: 0;
 	}
-	/* The right column: the pin flush right under the Planner button, the
-	   composition chips under it. A long rotation name truncates to the
-	   column. */
-	.bv-side {
-		grid-area: side;
-		align-self: start;
+	.bv-act > .bv-planner,
+	.bv-act > .bv-pin,
+	.bv-act > .bv-pin > :global(.band-menu-trigger) {
+		width: 100%;
+		height: auto;
+		min-height: 0;
+		min-width: 0;
+	}
+	.bv-act > .bv-planner {
+		justify-content: center;
+		padding-block: 0;
+		font-size: var(--fs-xs);
+	}
+	.bv-act > .bv-pin {
 		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 6px;
+	}
+	.bv-act :global(.band-menu-trigger) {
+		justify-content: start;
+		text-align: left;
+	}
+	/* The name: up to two lines, then an ellipsis (its tooltip and menu
+	   carry it whole). It is the player's OWN text, so it is set as they
+	   wrote it — mixed case, no tracking — as the library lists it, rather
+	   than in the plate's caps (which also ran a third wider). */
+	.bv-act :global(.band-menu-label) {
+		text-transform: none;
+		letter-spacing: normal;
+		font-weight: var(--fw-medium);
+		flex: 1;
 		min-width: 0;
-	}
-	.bv-pin {
-		display: flex;
-		justify-content: flex-end;
-		max-width: 100%;
-		min-width: 0;
-	}
-	.bv-pin :global(.band-menu-trigger) {
-		max-width: 100%;
-		min-width: 0;
-	}
-	.bv-side :global(.comp) {
-		justify-content: flex-end;
-	}
-	.bv-pin :global(.band-menu-label) {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		white-space: normal;
+		line-height: 1.2;
+		overflow-wrap: anywhere;
+	}
+	/* The pin's MARK is gold while a rotation is pinned (gold is where a thing
+	   is chosen) — touch has no tooltip to say so. */
+	.bv-pin--on :global(.band-menu-trigger > .mark:first-child) {
+		color: var(--accent);
+	}
+	.bv-pin--beside {
+		grid-area: pin;
+		align-self: center;
+		justify-self: end;
+		width: var(--vplanner-w);
+		display: flex;
+		justify-content: center;
 	}
 
 	/* The boss: a circle-cut avatar on the members' ring, the game's magnifier
@@ -964,7 +1044,7 @@
 	.bv-slots {
 		position: relative;
 		display: flex;
-		gap: 18px; /* Nate 2026-10-09 */
+		gap: var(--slot-gap); /* 18, Nate 2026-10-09 — see BOARD_GAP */
 		padding: 6px 20px 6px 8px;
 		margin: calc(-1 * var(--over)) 0 -6px -8px;
 		cursor: pointer;
@@ -1022,36 +1102,19 @@
 		cursor: pointer;
 		border-radius: var(--r-round);
 	}
-	.bv-rotations {
-		white-space: nowrap;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: var(--fs-sm);
-		color: var(--text);
-	}
 	/* ── THE ROOMY BOARD (from `broad`, 1500px — the page's --tb-board-w) ──
-	   The contents grow with the board: the portraits and the boss are set in
-	   the script; here, the gaps between them, the fingerprint's glyphs, and
-	   the chips' type step up one rung each. */
-	.bv--roomy .bv-slots {
-		gap: 22px;
+	   The contents grow with the board: the portraits, the boss, the gaps
+	   and the fingerprint's glyphs are set in the script; here, the chips'
+	   type and the rhythm step up one rung each. */
+	.bv--roomy {
+		gap: 1.75rem;
+		--row-gap: 0.8rem;
 	}
-	.bv--roomy :global(.fp) {
-		gap: 14px;
+	.bv--roomy .bv-team {
+		gap: 1rem;
 	}
-	.bv--roomy :global(.fp-cluster) {
-		--fp-slot-gap: 10px;
-	}
-	.bv--roomy .bv-fp {
-		min-height: 25px;
-	}
-	.bv--roomy :global(.fp-slot) {
-		width: 16px;
-	}
-	.bv--roomy :global(.fp-glyph) {
-		width: 16px;
-		height: 16px;
+	.bv--roomy .bv-body {
+		gap: 1.5rem;
 	}
 	.bv--roomy :global(.fp-pip) {
 		width: 15px;
@@ -1065,11 +1128,8 @@
 		height: 24px;
 		font-size: var(--fs-sm);
 	}
-	.bv--roomy .bv-rotations {
-		font-size: var(--fs-md);
-	}
 
-	/* ── THE PHONE ROW (the `narrow` prop — below `compact`, 40rem) ──
+	/* ── THE PHONE ROW (`phone` — the board narrower than the wide row) ──
 	   ↻ 2026-10-20 (⚓ Nate, L2 + the boss in the strip): the boss stands in
 	   the banner with its short name on ONE line and the checks under it; the
 	   lineup takes the width; the composition runs under it with the rotation
@@ -1105,112 +1165,59 @@
 		padding-left: 6px;
 	}
 	.bv-nbody {
-		display: flex;
-		flex-direction: column;
-		gap: 0.8rem;
 		padding: 0 0 0 8px;
 	}
-	.bv-nbody .bv-slots {
-		align-self: flex-start;
-		/* Four portraits in 288px of screen (320 less its gutters): 224 of
-		   discs, the frame's 28, three gaps of 12. */
-		gap: 12px;
+	/* The phone's rhythm: tighter between teams (the chips' spare space
+	   already sits at a team's foot) and inside one. */
+	.bv--phone {
+		gap: 1.25rem;
+		--row-gap: 0.65rem;
 	}
-	/* The lineup, the composition and the fingerprint in one grid; the
-	   plate's column beside the first two (the Planner plate as tall as the
-	   lineup's frame, the pin beside the chips); the fingerprint spans both. */
-	.bv-ngrid {
-		display: grid;
-		grid-template-columns: max-content;
-		grid-template-areas: 'slots' 'chips' 'fp';
-		gap: 0.8rem 0;
-		justify-content: start;
-	}
-	.bv-ngrid--plate {
-		grid-template-columns: max-content var(--vplanner-w);
-		grid-template-areas:
-			'slots planner'
-			'chips pin'
-			'fp fp';
-		column-gap: var(--vplanner-gap);
-	}
-	.bv-ngrid .bv-slots {
-		grid-area: slots;
-	}
-	/* The LINEUP sizes the columns; the chips and the fingerprint take the
-	   width they are given (zero intrinsic width, stretched to the track), or
-	   four chips — or the fingerprint under a shrunken 320 lineup — would
-	   widen the column and push the plate off the screen. */
-	.bv-nchips {
-		grid-area: chips;
-		align-self: center;
-		width: 0;
-		min-width: 100%;
-	}
-	.bv-nchips > :global(.comp) {
-		flex-wrap: wrap;
-	}
-	.bv-ngrid .bv-fp {
-		grid-area: fp;
-		width: 0;
-		min-width: 100%;
-	}
-	/* The plate stands on the FRAME, not the art's overhang above it: its
-	   height is the frame's (the disc + the slots' 6px padding twice). */
+	/* The vertical plate (⚓ Nate's idea): the word bottom to top, as tall as
+	   the lineup's frame. */
 	.bv-vplanner {
-		grid-area: planner;
+		grid-area: act;
 		align-self: end;
+		justify-self: end;
 		width: var(--vplanner-w);
 		height: calc(var(--portrait) + 12px);
 		margin-bottom: -6px;
-		padding: 0;
+		/* ⚓ Nate 2026-10-20: the chevron sits against the right edge (its box
+		   already carries ~3px of air around its ink) and the room goes to
+		   the word's side. */
+		padding: 0 0 0 1px;
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		gap: 3px;
+		justify-content: flex-end;
+		gap: 1px;
 		font-size: var(--fs-xs);
 	}
-	/* Bottom to top, as a spine reads: vertical-rl turned half a turn. */
-	/* ⚠ inline-block: a transform does not apply to an inline box. */
+	/* Bottom to top, as a spine reads: vertical-rl turned half a turn.
+	   ⚠ inline-block: a transform does not apply to an inline box. */
 	.bv-vword {
 		display: inline-block;
 		writing-mode: vertical-rl;
 		transform: rotate(180deg);
 		line-height: 1;
 	}
-	/* 🎛️ A pixel off each slot gap (6 → 5): it keeps the fifteen on ONE line
-	   across a 320 screen, where the row spans the lineup AND the plate. */
-	.bv-ngrid :global(.fp-cluster) {
-		--fp-slot-gap: 5px;
-	}
-	.bv-npin {
-		grid-area: pin;
-		align-self: center;
-		justify-self: center;
-	}
-	.bv-npin--on :global(.band-menu-trigger) {
-		color: var(--accent);
-	}
 	/* A coarse pointer reaches the narrow plate across half the gap. */
 	@media (pointer: coarse) {
 		.bv-vplanner {
 			position: relative;
 		}
+		/* ⚠ Leftward only: the plate hugs the screen's edge, and a hit area
+		   past it scrolled the pane sideways (Chrome's device mode). */
 		.bv-vplanner::after {
 			content: '';
 			position: absolute;
-			inset: 0 calc(-1 * var(--vplanner-gap) / 2);
+			inset: 0 0 0 calc(-1 * var(--vplanner-gap) / 2);
 		}
 	}
 
 	/* ── Below `compact` (40rem — $lib/breakpoints.ts): the board is the whole
-	   screen. The row's own form is the `narrow` prop above; these are the
-	   pieces around it. */
+	   screen. The row's form follows the board's measured width (`phone`);
+	   these are the pieces around it. */
 	@media (max-width: 40rem) {
-		/* The chip row's spare space already sits at a team's foot. */
-		.bv {
-			gap: 1.25rem;
-		}
 		.bv-word {
 			display: none;
 		}

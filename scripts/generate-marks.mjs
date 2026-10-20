@@ -105,6 +105,10 @@ const MARKS = {
 	// ↻ 2026-10-09: `rename` (Pencil) retired with SavedNotationsOverlay — the
 	// library renames inline from its ⋯ menu, by word.
 	delete: 'Trash2',
+	/** A lineup's No repeats (2026-10-20, ⚓ Nate): the plate's mark IS its
+	 *  state — repeats allowed, or not — in place of a toggle switch. */
+	repeat: 'Repeat',
+	repeatOff: 'RepeatOff',
 	/** Emptying a lineup's teams (the Builder's Clear, 2026-10-20). ⛔ Not
 	 *  `delete`: a trash can reads as "the lineup goes away", which is
 	 *  closing its tab — Clear keeps the lineup and empties it. */
@@ -247,6 +251,9 @@ const MARKS = {
 	 *  card onward, "← All roles" comes back. Both are navigation. */
 	forward: 'ArrowRight',
 	back: 'ArrowLeft',
+	/** `forward` slimmed, for the Builder's vertical Planner plate on a phone
+	 *  (2026-10-20, ⚓ Nate): the arrow's shaft cost width the lineup wanted. */
+	forwardSlim: 'ChevronRight',
 
 	/** The planner's Human timing plate (2026-09-14): a person's hand on the
 	 *  button. Chosen over `Pointer` (sparser ink), `PersonStanding` (reads as

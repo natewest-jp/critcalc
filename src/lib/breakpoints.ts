@@ -32,18 +32,6 @@
  */
 export const BP = {
 	/**
-	 * `paneWord` — 21.25rem / 340px (responsive sweep 2026-10-15 item 26, ⚓
-	 * Nate). Where the Team Builder's pane switch keeps its WORD below
-	 * `compact`. ⚓ The binding cell is the Lineup's on a Custom board, where
-	 * "Characters" shares band B with Add team and No repeats: measured in
-	 * Chrome and WebKit, it spills 15.4px at 320 and fits from 335.4. 21rem
-	 * would leave 0.6px of slack, so the rung is the next quarter up — no phone
-	 * sits between 336 and 340. Every Characters-cell state ("Lineup", More
-	 * with a count) fits at 320. ⚠ A fact about the Team Builder's band B; it
-	 * moves if Add team, No repeats or the switch's word changes.
-	 */
-	paneWord: '21.25rem',
-	/**
 	 * `compact` — 40rem / 640px. The narrow form of a surface that folds.
 	 * ChromeOverlay's padding step; the Team Builder's band-B fold (measured:
 	 * with the bench horizontal its full band B needs 120 + 4 + 229 + 4 + 110
