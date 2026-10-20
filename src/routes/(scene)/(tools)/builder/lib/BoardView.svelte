@@ -80,6 +80,7 @@
 		board,
 		roomy = false,
 		narrow = false,
+		availH = 0,
 		selectedTeamId,
 		onSelectTeam,
 		nudgeAt,
@@ -102,6 +103,9 @@
 		/** The page's `compact` flag — the phone form before the board has been
 		 *  measured; after that the measured width decides (2026-10-20). */
 		narrow?: boolean;
+		/** The board pane's visible height — the Abyss banner takes what the
+		 *  teams leave of it (2026-10-20). 0 = unmeasured. */
+		availH?: number;
 		selectedTeamId: string | null;
 		onSelectTeam: (teamId: string) => void;
 		/** Set when a pick found the selected team full — the row shakes once. */
@@ -257,6 +261,59 @@
 	const FP_CLUSTER_GAP = 8;
 	const fpGlyph = $derived((fpW - 12 * FP_SLOT_GAP - 2 * FP_CLUSTER_GAP) / 15);
 	const OVERHANG = $derived(sideLayout(portrait).overhang);
+
+	// ── THE ABYSS BANNER ADAPTS TO THE HEIGHT (⚓ Nate 2026-10-20) ────────────
+	// The blessing's art takes whatever height the board's OTHER contents
+	// leave in the pane — never more than its own 2:1 shape (≤ 320, the art's
+	// size), never so little that the text covers it — and below that floor
+	// the banner is the title and the text alone, on glass. The text is never
+	// hidden: it is the half of the banner a player needs. The loop is stable
+	// by construction: what the art may take is measured WITHOUT the banner,
+	// and the text's height depends only on the width.
+	/** 🎛️ The least art worth showing above the text (its foot fades under
+	 *  the words). */
+	const ART_PEEK = 56;
+	const ART_MAX = 320;
+	let bvH = $state(0);
+	let bannerH = $state(0);
+	let bannerTextH = $state(0);
+	let blessingH = $state(0);
+	let blessingEl = $state<HTMLElement>();
+	/** The blessing's FULL height and line height, read off the element
+	 *  (a clamped box still reports its whole content as scrollHeight). */
+	let blessingFullH = $state(0);
+	let blessingLineH = $state(0);
+	$effect(() => {
+		void boardW;
+		void blessingH;
+		if (!blessingEl) return;
+		blessingFullH = blessingEl.scrollHeight;
+		blessingLineH = parseFloat(getComputedStyle(blessingEl).lineHeight) || 0;
+	});
+	/** The banner's text less the blessing: its padding and the title. */
+	const textChrome = $derived(bannerTextH - blessingH);
+	/** The text's height UNCLAMPED — what the art must clear. */
+	const textFullH = $derived(textChrome + blessingFullH);
+	/** The height the banner may take: the pane less everything else. */
+	const bannerRoom = $derived(availH && bvH ? availH - (bvH - bannerH) : 0);
+	const artH = $derived(
+		!bannerRoom || !bannerTextH
+			? 224 // unmeasured: the old fixed 14rem
+			: bannerRoom < textFullH + ART_PEEK
+				? 0
+				: Math.min(bannerRoom, ART_MAX, Math.round(boardW / 2))
+	);
+	/** 🎛️ …and when even the words don't fit, the blessing CLAMPS to the
+	 *  lines the room allows — two at least, never hidden — with More to read
+	 *  the rest (the board then scrolls, as you asked it to). */
+	const BLESSING_MIN_LINES = 2;
+	let blessingOpen = $state(false);
+	const blessingLines = $derived.by(() => {
+		if (artH > 0 || !bannerRoom || !blessingLineH) return 0;
+		const total = Math.round(blessingFullH / blessingLineH);
+		const fit = Math.floor((bannerRoom - textChrome) / blessingLineH);
+		return fit >= total ? 0 : Math.max(BLESSING_MIN_LINES, fit);
+	});
 
 	/* The constellation chip compares the team's level with your account's,
 	   but only once the roster has something in it, or everyone reads as
@@ -641,6 +698,7 @@
 	style:--stack-w="{isRoomy ? STACK_W_ROOMY : STACK_W}px"
 	style:--stack-max="{isRoomy ? STACK_MAX_ROOMY : STACK_MAX}px"
 	bind:clientWidth={boardW}
+	bind:clientHeight={bvH}
 >
 	<!-- ⚓ The Planner's ⇄ is a state of its OWN (Nate 2026-10-13): its team
 	     alone, not a row above whatever board was open — the board waits,
@@ -648,15 +706,38 @@
 	{#if errand}
 		{@render teamRow(errand.team, -1, true)}
 	{:else if abyss}
-		<!-- The blessing's own banner (2:1), faded into the night at its edges, its
-		     name and text laid over its foot. -->
-		<!-- The blessing's own art (640×320, the game's), as a banner faded into
-		     the night at its foot, the blessing laid over it (Nate 2026-10-09). -->
-		<header class="bv-abyss">
-			<img class="bv-abyss-art" src={blessingImage(abyss.icon)} alt="" />
-			<div class="bv-abyss-text">
-				<span class="bv-lineup-mode">Spiral Abyss · {inLang(abyss.name)}</span>
-				<span class="bv-abyss-blessing">{inLang(abyss.text).replaceAll('**', '')}</span>
+		<!-- The blessing's own art (640×320, the game's), faded into the night at
+		     its foot, the blessing laid over it (Nate 2026-10-09) — as tall as
+		     the room the teams leave (artH, above); with too little room, the
+		     words alone on glass. -->
+		<header
+			class="bv-abyss"
+			class:bv-abyss--plain={artH === 0}
+			class:ctx-glass={artH === 0}
+			style:--art-h="{artH}px"
+			style:--text-h="{bannerTextH}px"
+			bind:clientHeight={bannerH}
+		>
+			{#if artH > 0}<img class="bv-abyss-art" src={blessingImage(abyss.icon)} alt="" />{/if}
+			<div class="bv-abyss-text" bind:clientHeight={bannerTextH}>
+				<div class="bv-abyss-title">
+					<span class="bv-lineup-mode">Spiral Abyss · {inLang(abyss.name)}</span>
+					{#if blessingLines > 0}
+						<button
+							class="btn btn--sm bv-abyss-more"
+							aria-expanded={blessingOpen}
+							onclick={() => (blessingOpen = !blessingOpen)}
+							>{blessingOpen ? 'Less' : 'More'}</button
+						>
+					{/if}
+				</div>
+				<span
+					class="bv-abyss-blessing"
+					class:bv-abyss-blessing--clamped={blessingLines > 0 && !blessingOpen}
+					style:--lines={blessingLines}
+					bind:this={blessingEl}
+					bind:clientHeight={blessingH}>{inLang(abyss.text).replaceAll('**', '')}</span
+				>
 			</div>
 		</header>
 	{/if}
@@ -721,11 +802,21 @@
 	.bv-abyss > * {
 		grid-area: 1 / 1;
 	}
+	/* The art fades out where the words begin, so they always stand on the
+	   night, whatever share of the banner they take. */
 	.bv-abyss-art {
 		width: 100%;
-		height: 14rem;
+		height: var(--art-h);
 		object-fit: cover;
-		mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
+		mask-image: linear-gradient(
+			to bottom,
+			#000 calc(100% - var(--text-h) - 24px),
+			transparent calc(100% - var(--text-h) + 16px)
+		);
+	}
+	/* No room for art: the title and the words on glass, as a team banner. */
+	.bv-abyss--plain {
+		background: var(--surface);
 	}
 	/* ⚠ POSITIONED: the art's mask makes it a stacking context, which paints
 	   OVER in-flow text that shares its grid cell. */
@@ -737,7 +828,25 @@
 		gap: 0.3rem;
 		padding: 1rem 1.1rem 0.6rem;
 	}
+	.bv-abyss-blessing.bv-abyss-blessing--clamped {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: var(--lines);
+		line-clamp: var(--lines);
+		overflow: hidden;
+	}
+	/* The title's line carries More, so the clamp spends no line on it. */
+	.bv-abyss-title {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+	.bv-abyss-more {
+		flex: none;
+	}
 	.bv-abyss-blessing {
+		display: block;
 		max-width: 46rem;
 		font-size: var(--fs-lg);
 		line-height: 1.45;
@@ -1229,15 +1338,12 @@
 			align-items: center;
 			padding-left: 5px;
 		}
-		/* The blessing runs to five lines at 320 and would cover the art whole:
-		   on a phone it follows the banner, overlapping only its faded foot. */
 		.bv-abyss-text {
-			grid-area: 2 / 1;
-			margin-top: -4.5rem;
 			padding-inline: 0.75rem;
 		}
-		.bv-abyss-art {
-			height: 11rem;
+		/* One size down on a phone: five lines at 320 at the desk size. */
+		.bv-abyss-blessing {
+			font-size: var(--fs-md);
 		}
 	}
 </style>

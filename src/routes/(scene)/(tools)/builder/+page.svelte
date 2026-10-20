@@ -196,6 +196,8 @@
 	const headScrolls = $derived(short());
 	/** Which pane is showing — on a wide screen, both. */
 	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
+	/** The board pane's visible height (the Abyss banner sizes to it). */
+	let boardPaneH = $state(0);
 
 	/** ⚓ A notice with an Undo reports an edit to the LINEUP (a swap, a pick
 	 *  that took someone off another team), so it stands in band B's rail,
@@ -1168,7 +1170,10 @@
 		onclick={() => (tab = tab === 'characters' ? 'lineup' : 'characters')}
 	>
 		{#if tab === 'characters'}
-			<Mark name="panelRight" /> <span class="tb-band-label tb-pane-word">Lineup</span>
+			<!-- ⚓ Nate 2026-10-20: the mark AFTER the word, on the side its pane
+			     opens from. -->
+			<span class="tb-band-label tb-pane-word">Lineup</span>
+			<Mark name="panelRight" />
 		{:else}
 			<Mark name="panelLeft" /> <span class="tb-band-label tb-pane-word">Characters</span>
 		{/if}
@@ -1466,11 +1471,13 @@
 				class="tb-pane tb-pane--board scroll-fade"
 				use:scrollFade
 				inert={showing === 'characters'}
+				bind:clientHeight={boardPaneH}
 			>
 				<BoardView
 					{board}
 					roomy={!below('broad')}
 					narrow={below('compact')}
+					availH={boardPaneH}
 					selectedTeamId={selectedTeam?.id ?? null}
 					onSelectTeam={(id) => (chosenTeamId = id)}
 					nudgeAt={nudge?.at ?? null}
@@ -1640,20 +1647,13 @@
 		   here resolves at the USE site (each grid's own width), and the dock
 		   and band B are the same width. The board's FORM follows its measured
 		   width (BoardView), so the wide row arrives at ~567. */
-		--tb-board-w: clamp(460px, 100% - 630px, 580px);
+		/* ↻ The same idea at the next step: from where the 580 board leaves
+		   the Characters column 843px (1439 = 843 + 16 + 580 of dock) the
+		   board takes every further pixel up to 800, then the column grows
+		   — so the old fixed steps (720 at `broad`, 800 at `vast`), which
+		   dropped the column ~140px, are gone. */
+		--tb-board-w: calc(clamp(460px, 100% - 630px, 580px) + clamp(0px, 100% - 1439px, 220px));
 		--tb-dock-gap: 16px;
-	}
-	@media (min-width: 1500px) {
-		.tb-dock,
-		.tb-band {
-			--tb-board-w: 720px;
-		}
-	}
-	@media (min-width: 1900px) {
-		.tb-dock,
-		.tb-band {
-			--tb-board-w: 800px;
-		}
 	}
 	.tb-dock {
 		--tb-wipe-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
