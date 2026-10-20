@@ -581,7 +581,10 @@
 			const names = sim.events
 				.filter(
 					(r): r is Extract<SimEvent, { kind: 'reaction' }> =>
-						r.kind === 'reaction' && r.appIndex === e.appIndex
+						// ⚠ A Burning tick's Burgeon names the burn's OWNER in
+						// `appIndex` but happens at the tick, seconds later — it is
+						// not this pill's. The log lists it at its own time.
+						r.kind === 'reaction' && r.appIndex === e.appIndex && !r.internal
 				)
 				.map((r) => REACTION_NAME[r.reaction]);
 			// ⚠ `appIndex` INDEXES `appRows` — that is the whole reason the list is

@@ -131,20 +131,23 @@ export type SimEvent =
 			kind: 'reaction';
 			time: number;
 			/**
-			 * Index into the (time-sorted) application list; null for an internal
-			 * trigger.
+			 * Index into the (time-sorted) application list — the caller's own
+			 * `source` token, handed back.
 			 *
-			 * ⚓ A null here is UNREACHABLE TODAY, and a consumer that needs to
-			 * attribute a reaction to a character (the rotation planner dispatches
-			 * `onReaction` effects by holder) may rely on that — but should say so
-			 * rather than assume it. The only internal applicator is the Burning
-			 * chain's Pyro, and nothing that REACTS with Pyro can coexist with a
-			 * Burning aura: Hydro, Cryo and Electro each react on contact and so
-			 * never attach while it is up. ⛔ Do not thread a "who ignited this"
-			 * token through the chain for it — that was tried in L5a and is a field
-			 * with no reachable case.
+			 * ↻ 2026-10-20: a Burning tick's BURGEON carries the BURNING's owner
+			 * here (the application that lit or last refreshed it; gcsim
+			 * `calcBurningDmg` keeps the hit's `ActorIndex`), flagged `internal`.
+			 * The Burning chain's Pyro still never reacts with the ENEMY (nothing
+			 * that reacts with Pyro coexists with a Burning aura), but the tick is
+			 * an attack and a dendro core is a target of its own — the case L5a's
+			 * "no reachable case" ruling did not see. `null` only when the igniter
+			 * carried no token (the batch always passes one).
 			 */
 			appIndex: number | null;
+			/** Set off by the gauge's own Burning tick, not by the application
+			 *  `appIndex` names — so the reaction is at the TICK's instant, and
+			 *  nobody's cast or swing delivered it. */
+			internal?: true;
 			reaction: ReactionKind;
 			trigger: ElementId;
 			/** Which aura the reaction acted on (swirl/crystallize flavor) */
@@ -330,6 +333,12 @@ type Sim = {
 	burningGen: number;
 	/** Burning's Pyro re-application counter (see BURNING_ICD). */
 	burningIcd: IcdClock;
+	/** Whose Burning this is: the `source` of the application that lit it, or
+	 *  last refreshed it (gcsim `calcBurningDmg` re-reads the hit's
+	 *  `ActorIndex` each time). Handed back on a tick's Burgeon. */
+	burningOwner: number | null;
+	/** Frame of the live chain's pending tick, or −1 while none is pending. */
+	burningNextTick: number;
 	crysGcdUntil: number;
 	/** The team converts these reactions (`GaugeOptions`). Both false for the
 	 *  Gauge Explorer, which models neither. */
@@ -347,6 +356,8 @@ type Sim = {
 	 *  consequence to fire, and a task whose only job is to check back later is
 	 *  precisely the cost the jumping clock exists to avoid. */
 	cores: { id: number; expiry: number }[];
+	/** Blooms whose core is not on the field yet (`CORE_SPAWN_DELAY`). */
+	pendingCores: number;
 	/** Next core id. Cores are a QUEUE of expiries and consumption shifts the
 	 *  oldest, so a spawn and its end can only be paired by an explicit id. */
 	nextCoreId: number;
@@ -555,7 +566,8 @@ function chargeReaction(S: Sim) {
 
 // ── Burning ──────────────────────────────────────────────────────────────────
 
-function startBurning(S: Sim, fuel: number) {
+function startBurning(S: Sim, fuel: number, owner: number | null) {
+	S.burningOwner = owner;
 	S.u.burningFuel = fuel;
 	S.rate.burningFuel = FUEL_RATE;
 	S.u.burning = BURNING_GAUGE;
@@ -564,31 +576,41 @@ function startBurning(S: Sim, fuel: number) {
 	// A fresh burn is a fresh chain AND a fresh ICD counter.
 	const gen = ++S.burningGen;
 	S.burningIcd = createIcdClock();
-	schedule(S, S.frame + BURNING_TICK_FRAMES, () => burningTick(S, gen));
+	S.burningNextTick = S.frame + BURNING_TICK_FRAMES;
+	schedule(S, S.burningNextTick, () => burningTick(S, gen));
 }
 
 function burningTick(S: Sim, gen: number) {
 	// 🐛 Same stale-chain hazard as EC: a re-ignition before a pending tick
 	// fires would otherwise leave two chains ticking.
 	if (gen !== S.burningGen) return;
+	S.burningNextTick = -1;
 	if (!S.burningActive) return;
 	if (S.u.burningFuel <= EPS || S.u.burning <= EPS) return;
 
 	// The DAMAGE tick fires every time…
 	S.events.push({ kind: 'burningTick', time: S.frame / FPS });
+	// ⚓ …and every one meets a core (2026-10-20). The tick is an ATTACK and a
+	// core is a target of its own, so the enemy's Burning ICD below never reaches
+	// it — gcsim's burning attack hits gadgets (`burning.go` `nextBurningTick`)
+	// and a core reads only the nominal Durability (`dendrocore.go`).
+	hitCore(S, 'pyro', S.burningOwner, true);
 	// …but the Pyro APPLICATION is gated by the Burning ICD group. ⚓ Reuses
 	// `icd.ts` rather than restating the rule — one model, three shapes.
 	if (icdApplies(S.burningIcd, S.frame / FPS, BURNING_ICD).applies) {
-		applyElement(S, 'pyro', 1, null);
+		applyElement(S, 'pyro', 1, null, false);
 	}
-	schedule(S, S.frame + BURNING_TICK_FRAMES, () => burningTick(S, gen));
+	S.burningNextTick = S.frame + BURNING_TICK_FRAMES;
+	schedule(S, S.burningNextTick, () => burningTick(S, gen));
 }
 
 // ── Dendro cores ─────────────────────────────────────────────────────────────
 
 /** A Bloom's core, on the field `CORE_SPAWN_DELAY` frames later. */
 function spawnCore(S: Sim) {
+	S.pendingCores += 1;
 	schedule(S, S.frame + CORE_SPAWN_DELAY, () => {
+		S.pendingCores -= 1;
 		S.cores = S.cores.filter((c) => c.expiry > S.frame);
 		// A sixth core pops the oldest rather than being refused.
 		if (S.cores.length >= MAX_CORES) {
@@ -621,6 +643,34 @@ function consumeCore(S: Sim): boolean {
 	return true;
 }
 
+/**
+ * A Pyro or Electro hit meeting a core: Burgeon or Hyperbloom. `true` when one
+ * was there to take.
+ *
+ * ⚓⚓ A CORE IS A TARGET OF ITS OWN (2026-10-20). gcsim hands every target its
+ * own COPY of an attack (`combat/attack.go`) and only the enemy's copy is zeroed
+ * by the enemy's ICD (`enemy/attack.go`); a core checks the NOMINAL Durability
+ * and nothing else (`dendrocore.go`). So a hit the enemy's ICD refused still
+ * pops a core — the aura sites offer it through `Gauge.contact` — and the hit
+ * costs nothing, which is why the same Electro hit hyperblooms AND goes on to
+ * meet the enemy's aura.
+ */
+function hitCore(S: Sim, element: ElementId, appIndex: number | null, internal = false): boolean {
+	const reaction = element === 'electro' ? 'hyperbloom' : element === 'pyro' ? 'burgeon' : null;
+	if (!reaction || !consumeCore(S)) return false;
+	S.events.push({
+		kind: 'reaction',
+		time: S.frame / FPS,
+		appIndex,
+		reaction,
+		trigger: element,
+		consumed: [],
+		spent: 0,
+		...(internal ? { internal: true as const } : {})
+	});
+	return true;
+}
+
 /** Burning aura consumed (as Pyro) while fuel remains → fuel is swept too */
 function burningCheck(S: Sim) {
 	if (S.u.burning <= EPS && S.u.burningFuel > EPS) {
@@ -633,7 +683,15 @@ function burningCheck(S: Sim) {
 
 // ── Reaction resolution (gcsim React() priority per trigger element) ─────────
 
-function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: number | null) {
+function applyElement(
+	S: Sim,
+	element: ElementId,
+	gauge: number,
+	appIndex: number | null,
+	/** `false` for the Burning chain's own Pyro, whose tick already met the
+	 *  cores (`burningTick`) — one attack, one contact. */
+	cores = true
+) {
 	const t = S.frame / FPS;
 	let g = gauge;
 	let reacted = false;
@@ -667,7 +725,7 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 			// hyperblooms the core AND goes on to meet the enemy's aura. gcsim's
 			// `React()` carries a bare `// hyperbloom` comment at exactly this
 			// position for the reaction it resolves outside the switch.
-			if (consumeCore(S)) emit('hyperbloom', [], 0);
+			if (cores) hitCore(S, 'electro', appIndex);
 			if (S.u.quicken > EPS && g > EPS) emit('aggravate', [], 0);
 			if ((S.u.pyro > EPS || S.u.burning > EPS) && g > EPS) {
 				const r = reduce(S, 'pyro', g, 1);
@@ -712,7 +770,7 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 		}
 		case 'pyro': {
 			// The Burgeon half of the same rule — see the Electro case above.
-			if (consumeCore(S)) emit('burgeon', [], 0);
+			if (cores) hitCore(S, 'pyro', appIndex);
 			if (S.u.electro > EPS && g > EPS) {
 				const r = reduce(S, 'electro', g, 1);
 				g -= r.spent;
@@ -740,8 +798,12 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 				// burning ignition consumes nothing and does NOT count as reacting,
 				// so the pyro still attaches as an aura afterwards
 				if (S.u.burningFuel <= EPS) {
-					startBurning(S, Math.max(S.u.dendro, S.u.quicken));
+					startBurning(S, Math.max(S.u.dendro, S.u.quicken), appIndex);
 					emit('burning', [], 0);
+				} else if (appIndex !== null) {
+					// gcsim recalculates the burn on every Pyro that reaches here
+					// (`TryBurning` → `calcBurningDmg`), so it becomes this hit's.
+					S.burningOwner = appIndex;
 				}
 			}
 			break;
@@ -823,11 +885,13 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 			if ((S.u.pyro > EPS || S.u.burning > EPS) && g > EPS) {
 				if (S.u.burningFuel <= EPS) {
 					const dendroDur = Math.max(S.u.dendro, AURA_TAX * g);
-					startBurning(S, Math.max(dendroDur, S.u.quicken));
+					startBurning(S, Math.max(dendroDur, S.u.quicken), appIndex);
 					emit('burning', [], 0);
 				} else {
-					// fresh dendro OVERWRITES the fuel gauge (it can shrink it)
+					// fresh dendro OVERWRITES the fuel gauge (it can shrink it), and
+					// the burn becomes this hit's (gcsim `calcBurningDmg`)
 					S.u.burningFuel = AURA_TAX * g;
+					S.burningOwner = appIndex;
 				}
 			}
 			if (S.u.hydro > EPS && g > EPS) {
@@ -1001,8 +1065,8 @@ export type Gauge = {
 	/** Every aura empty and nothing scheduled: time may be skipped freely. */
 	readonly idle: boolean;
 	/** Earliest pending internal task (a Burning or EC tick), or `null`.
-	 *  ⚓ The rotation sim schedules its own wake-up here, so a tick-borne
-	 *  reaction dispatches in true clock order instead of being noticed late. */
+	 *  ⚠️ NOT the rotation sim's wake-up: most internal instants have nothing to
+	 *  dispatch, so it wakes only at {@link nextCoreContactFrame}. */
 	nextTaskFrame(): number | null;
 	/** Run tasks + decay up to (not including) `frame`. ⛔ Never moves backwards. */
 	advanceTo(frame: number): void;
@@ -1010,6 +1074,14 @@ export type Gauge = {
 	 *  `source` is the caller's own token, handed back on every event it causes
 	 *  — including the ones a Burning chain fires later. */
 	apply(element: ElementId, gauge: number, source?: number | null): void;
+	/** Land a hit on the dendro CORES alone, at the current frame — a hit the
+	 *  enemy's ICD refused still pops one (`hitCore`). `true` when it took one;
+	 *  its Hyperbloom/Burgeon comes back through `takeEvents` like any other. */
+	contact(element: ElementId, source?: number | null): boolean;
+	/** The next Burning tick's frame while it could meet a core (one live, or a
+	 *  Bloom's still spawning), else `null`. ⚓ The rotation sim wakes there —
+	 *  the one internal instant with a consequence to dispatch. */
+	nextCoreContactFrame(): number | null;
 	/** Events since the last call. */
 	takeEvents(): SimEvent[];
 	/** Every event so far. */
@@ -1058,6 +1130,8 @@ function createGaugeInternal({
 		ecGen: 0,
 		burningGen: 0,
 		burningIcd: createIcdClock(),
+		burningOwner: null,
+		burningNextTick: -1,
 		crysGcdUntil: -1,
 		lunarCharged,
 		lunarCrystallize,
@@ -1065,6 +1139,7 @@ function createGaugeInternal({
 		lcIcdUntil: -1,
 		lcGen: 0,
 		cores: [],
+		pendingCores: 0,
 		nextCoreId: 0,
 		dropped: 0,
 		tasks: new Map(),
@@ -1131,6 +1206,14 @@ function createGaugeInternal({
 				S.appliedThisFrame = true;
 			}
 			applyElement(S, element, gauge, source);
+		},
+		contact(element, source = null) {
+			return hitCore(S, element, source);
+		},
+		nextCoreContactFrame() {
+			if (!S.burningActive || S.burningNextTick < S.frame) return null;
+			const at = S.burningNextTick;
+			return S.pendingCores > 0 || S.cores.some((c) => c.expiry > at) ? at : null;
 		},
 		takeEvents() {
 			const out = S.events.slice(taken);

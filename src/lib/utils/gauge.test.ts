@@ -354,6 +354,54 @@ describe('dendro cores — hyperbloom + burgeon (L5b)', () => {
 		);
 		expect(reactions(sim).filter((r) => r.reaction === 'hyperbloom')).toHaveLength(2);
 	});
+
+	// ⚓ 2026-10-20 — a core is a target of its own, so the enemy's ICD never
+	// reaches it (gcsim copies the attack per target; `dendrocore.go` reads only
+	// the nominal Durability).
+	it('takes a hit the enemy’s ICD refused, through contact(), and leaves the aura alone', () => {
+		const g = createGauge();
+		g.apply('dendro', 2, 0);
+		g.advanceTo(120);
+		g.apply('hydro', 1, 1); // Bloom at 2s → a core on the field at 2.5s
+		g.advanceTo(240);
+		const before = { ...g.gauges() };
+		g.takeEvents();
+		expect(g.contact('electro', 2)).toBe(true);
+		const rx = g.takeEvents().filter((e) => e.kind === 'reaction');
+		expect(rx).toMatchObject([{ reaction: 'hyperbloom', appIndex: 2 }]);
+		expect(g.gauges()).toEqual(before);
+		// spent; and only Pyro or Electro ever meets a core
+		expect(g.contact('electro', 3)).toBe(false);
+		expect(g.contact('hydro', 4)).toBe(false);
+	});
+
+	it('is burgeoned by a Burning tick, as the burn’s owner', () => {
+		// Two Blooms (cores at 1.5s and 1.7s), dendro left over; the Pyro at 2s
+		// burgeons the oldest itself and lights Burning, whose first tick takes
+		// the other.
+		const sim = simulateGauge(
+			apps([0, 'dendro', 4], [1, 'hydro', 0.5], [1.2, 'hydro', 0.5], [2, 'pyro', 1])
+		);
+		const burgeons = reactions(sim).filter((r) => r.reaction === 'burgeon');
+		expect(burgeons).toHaveLength(2);
+		expect(burgeons[0]).toMatchObject({ appIndex: 3, time: 2 });
+		expect(burgeons[0].internal).toBeUndefined();
+		expect(burgeons[1]).toMatchObject({ appIndex: 3, internal: true, time: 2.25 });
+	});
+
+	it('names the next Burning tick only while it could meet a core', () => {
+		const g = createGauge();
+		g.apply('dendro', 4, 0);
+		g.apply('hydro', 0.5, 1); // a Bloom; its core is still spawning…
+		expect(g.nextCoreContactFrame()).toBeNull(); // …but nothing is burning
+		g.apply('pyro', 1, 2); // Burning: its first tick is 15 frames out
+		expect(g.nextCoreContactFrame()).toBe(15);
+		g.advanceTo(46); // the core lands at 30 and the tick at 30 takes it
+		expect(g.takeEvents().filter((e) => e.kind === 'reaction' && e.internal)).toMatchObject([
+			{ reaction: 'burgeon', appIndex: 2, time: 0.5 }
+		]);
+		expect(g.nextCoreContactFrame()).toBeNull();
+	});
 });
 
 describe('burning', () => {
@@ -511,12 +559,14 @@ describe('the live gauge (streaming shape — L5a)', () => {
 		expect(g.nextTaskFrame()).toBe(15);
 	});
 
-	it('has no internal applicator that can react — so `appIndex` is never null', () => {
+	it('gives every reaction an owner — so `appIndex` is never null', () => {
 		// ⚓ The census behind the note on `SimEvent.appIndex`. The Burning chain is
 		// the only thing that applies an element nobody cast, and every element that
 		// would REACT with its Pyro (Hydro, Cryo, Electro) reacts on contact and so
-		// cannot be sitting there as an aura when the tick lands. A consumer that
-		// must name a character for each reaction depends on this.
+		// cannot be sitting there as an aura when the tick lands. ↻ 2026-10-20: its
+		// tick CAN Burgeon a core, and that reaction carries the burn's owner (see
+		// the dendro-core cases). A consumer that must name a character for each
+		// reaction depends on this.
 		const g = createGauge();
 		g.apply('cryo', 4, 0);
 		g.advanceTo(30);

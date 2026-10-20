@@ -28,12 +28,14 @@
  * provably cannot react — and warns that an internal applicator which CAN react
  * makes the wake-up required. That warning does not fire here: a proc is not
  * internal to the gauge. Every `kind: 'reaction'` event comes out of
- * `applyElement`, reached either from `apply()` (an EXTERNAL application, at
- * `offer.time`) or from `burningTick` (whose `appIndex` is null and is skipped);
- * EC ticks emit `ecTick`, not `reaction`. So a dispatched reaction's time is
- * always the offering task's own instant, and scheduling at `time + frame` is an
- * ordinary future task on a clock standing exactly at `time`. ⛔ Never clamp, and
- * never reach for a wake-up.
+ * `applyElement`, reached from `apply()` (an EXTERNAL application, at
+ * `offer.time`); EC ticks emit `ecTick`, not `reaction`. So a dispatched
+ * reaction's time is the offering task's own instant, and scheduling at
+ * `time + frame` is an ordinary future task on a clock standing exactly at
+ * `time`. ⛔ Never clamp. ↻ 2026-10-20, the one exception: a Burning tick's
+ * BURGEON (`hitCore`, `internal`), which reaches us through the core wake-up in
+ * `aura.ts` one frame after its tick (a gauge task at F fires as the gauge
+ * LEAVES F) — so a zero-frame proc off it is clamped by that one frame.
  *
  * ⚠️ The feedback IS real, and it now runs through two loops rather than one: a
  * proc's own application can cause a reaction that re-fires the proc, and a
