@@ -71,9 +71,10 @@
 	/** 🎛️ The boss avatar — a little larger than a member, as in the game. */
 	const BOSS_DISC = 88;
 	const BOSS_DISC_ROOMY = 104;
-	/** 🎛️ …and below `compact`, where it shares a line with the checks and
-	 *  hands the lineup the full width — still larger than a member's 56. */
-	const BOSS_DISC_NARROW = 64;
+	/** 🎛️ …and below `compact`, where it stands in the header strip beside the
+	 *  battlefield's name (⚓ Nate 2026-10-20) — the strip's height, not a
+	 *  line of its own. */
+	const BOSS_DISC_NARROW = 52;
 	/** How far a member's art rises above its ring — the portrait reserves it,
 	 *  and the row frame hugs the RINGS, so hair rises out over the frame as in
 	 *  the game rather than being boxed in a strip of empty headroom. */
@@ -81,6 +82,7 @@
 	let {
 		board,
 		roomy = false,
+		narrow = false,
 		selectedTeamId,
 		onSelectTeam,
 		nudgeAt,
@@ -101,6 +103,10 @@
 		 *  diminutive"): from `broad` it is 720 wide, and its contents grow with
 		 *  it rather than leaving the width empty. */
 		roomy?: boolean;
+		/** The PHONE form (below `compact`): the boss moves into the header strip
+		 *  beside a short name, the checks and the composition share a line, and
+		 *  the rotation sits with Planner → under the lineup (2026-10-20). */
+		narrow?: boolean;
 		selectedTeamId: string | null;
 		onSelectTeam: (teamId: string) => void;
 		/** Set when a pick found the selected team full — the row shakes once. */
@@ -131,7 +137,29 @@
 		errand?: { team: BoardTeam; label: string; onCancel: () => void } | null;
 	} = $props();
 
-	const portrait = $derived(roomy ? BOARD_PORTRAIT_ROOMY : BOARD_PORTRAIT);
+	/** 🎛️ The phone's vertical Planner plate (2026-10-20, ⚓ Nate's idea):
+	 *  its width, and the gap between it and the lineup's frame. */
+	const V_PLANNER_W = 36;
+	const V_PLANNER_GAP = 8;
+	/** 🎛️ The smallest a phone's portrait may shrink to fit the plate beside
+	 *  the lineup (320 needs ~45). */
+	const BOARD_PORTRAIT_MIN = 40;
+	/** What the phone's lineup row spends besides its four discs: the frame's
+	 *  padding (8 + 20, the hue end inside it), three 12px gaps, the plate. */
+	const NARROW_RESERVE = 28 + 3 * 12 + V_PLANNER_GAP + V_PLANNER_W;
+	let boardW = $state(0);
+	const portrait = $derived(
+		narrow
+			? boardW
+				? Math.max(
+						BOARD_PORTRAIT_MIN,
+						Math.min(BOARD_PORTRAIT, Math.floor((boardW - NARROW_RESERVE) / 4))
+					)
+				: BOARD_PORTRAIT
+			: roomy
+				? BOARD_PORTRAIT_ROOMY
+				: BOARD_PORTRAIT
+	);
 	const OVERHANG = $derived(sideLayout(portrait).overhang);
 
 	/* The constellation chip compares the team's level with your account's,
@@ -198,6 +226,14 @@
 			? b.checks.map((c) => evaluateCheck(c, ids, conOf).verdict)
 			: (undefined as CheckVerdict[] | undefined);
 
+	/** A boss's name — on a phone only what comes before its first colon
+	 *  (⚓ Nate 2026-10-20: "Gale Hewing" is the variant; the magnifier's
+	 *  details still carry the whole name). */
+	function bossName(boss: Battlefield['boss'], short: boolean): string {
+		const full = inLang(BOSSES[boss].name);
+		return short ? full.split(': ')[0] : full;
+	}
+
 	/** The Abyss half whose opponents are open. */
 	let opponents = $state<0 | 1 | null>(null);
 
@@ -223,26 +259,243 @@
 	{@const afterVerdicts = after && field ? verdictsFor(field, after, facts.conOf) : undefined}
 	{@const name = isErrand ? (errand?.label ?? '') : teamLabel(board, t)}
 	{@const swapSlot = swapping?.teamId === team.id ? swapping.slot : null}
+	<!-- The row's pieces, arranged twice below: the wide row and the phone's. -->
+	{#snippet boss(size: number, zoom: number)}
+		{#if field && season}
+			<button
+				class="bv-boss"
+				style:--boss="{size}px"
+				style:--zoom="{zoom}px"
+				aria-label="Details: {inLang(BOSSES[field.boss].name)}"
+				onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
+			>
+				<img src={bossImage(field.boss, 'icon')} alt="" />
+				<span class="bv-boss-zoom" aria-hidden="true"
+					><Mark name="search" size={zoom >= 26 ? 14 : 11} /></span
+				>
+			</button>
+		{/if}
+	{/snippet}
+	{#snippet checks(terse = false)}
+		{#if field?.checks.length}
+			<div class="bv-checks">
+				{#each field.checks as c, i (i)}<CheckChip
+						check={c}
+						verdict={afterVerdicts?.[i] ?? verdicts?.[i]}
+						shift={afterVerdicts && verdicts ? checkShift(c, verdicts[i], afterVerdicts[i]) : 0}
+						{terse}
+					/>{/each}
+			</div>
+		{/if}
+	{/snippet}
+	{#snippet planner()}
+		<!-- ⚓ Nate 2026-10-12: "Planner →" — the pinned rotation (or "No saved
+			     rotation") sits beside or under it, so the word says enough. -->
+		<button
+			class="btn btn--sm bv-planner"
+			onclick={() => onOpenInPlanner(team)}
+			title="Open this team in the Rotation Planner"
+			aria-label="Open this team in the Rotation Planner"
+			>Planner <Mark name="forward" size={12} /></button
+		>
+	{/snippet}
+	{#snippet pinMenu()}
+		<!-- The team's rotation: DERIVED from the library by its set; a pin
+			     names the one you would play here (§10.2). -->
+		<div class="bv-pin">
+			{#if rotations.length === 0}
+				<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span>
+			{:else}
+				<!-- ↻ Responsive sweep 2026-10-15 item 21 (⚓ Nate): the plate
+					     says "Rotation" and the pin Mark says the verb; "Pin a
+					     rotation" was cut in the column's 62px of label room. The
+					     aria-label keeps the whole sentence. -->
+				<BandMenu
+					mark="pin"
+					size="sm"
+					align="end"
+					label={pin?.name ?? 'Rotation'}
+					ariaLabel={pin
+						? `Pinned rotation for ${name}: ${pin.name}`
+						: `Pin a rotation for ${name}`}
+				>
+					{#snippet items(close)}
+						{#each [null, ...rotations] as r (r?.id ?? '')}
+							{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+							<button
+								class="band-menu-item"
+								role="menuitemradio"
+								aria-checked={current}
+								onclick={() => {
+									close();
+									onPin(team.id, r?.id ?? null);
+								}}
+							>
+								<span class="bv-menu-check"
+									>{#if current}<Mark name="check" size={12} />{/if}</span
+								>
+								{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
+							</button>
+						{/each}
+					{/snippet}
+				</BandMenu>
+			{/if}
+		</div>
+	{/snippet}
+	{#snippet vplanner()}
+		<!-- THE VERTICAL PLANNER PLATE (2026-10-20, ⚓ Nate's idea): the team's
+			     way into the Planner stands BESIDE the lineup as its own section,
+			     the word running bottom to top as tall as the frame. -->
+		<button
+			class="btn bv-vplanner"
+			onclick={() => onOpenInPlanner(team)}
+			title={pin
+				? `Open “${pin.name}” in the Rotation Planner`
+				: 'Open this team in the Rotation Planner'}
+			aria-label={pin
+				? `Open “${pin.name}” in the Rotation Planner`
+				: 'Open this team in the Rotation Planner'}
+			><span class="bv-vword">Planner</span><Mark name="forward" size={12} /></button
+		>
+	{/snippet}
+	{#snippet pinPlate()}
+		<!-- The pin, once there is a rotation to pin; GOLD while one is pinned
+			     (gold is where a thing is chosen), since touch has no tooltip. -->
+		{#if rotations.length > 0}
+			<span class="bv-npin" class:bv-npin--on={!!pin}>
+				<BandMenu
+					compact
+					mark="pin"
+					size="sm"
+					align="end"
+					ariaLabel={pin
+						? `Pinned rotation for ${name}: ${pin.name}`
+						: `Pin a rotation for ${name}`}
+				>
+					{#snippet items(close)}
+						{#each [null, ...rotations] as r (r?.id ?? '')}
+							{@const current = (pin?.id ?? null) === (r?.id ?? null)}
+							<button
+								class="band-menu-item"
+								role="menuitemradio"
+								aria-checked={current}
+								onclick={() => {
+									close();
+									onPin(team.id, r?.id ?? null);
+								}}
+							>
+								<span class="bv-menu-check"
+									>{#if current}<Mark name="check" size={12} />{/if}</span
+								>
+								{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
+							</button>
+						{/each}
+					{/snippet}
+				</BandMenu>
+			</span>
+		{/if}
+	{/snippet}
+	{#snippet slots()}
+		<!-- The whole strip is the row's hit area (the slots are its
+			     keyboard path), framed when selected. -->
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+		<div
+			class="bv-slots"
+			style:--over="{OVERHANG}px"
+			style:--team-hue={isErrand ? 'var(--accent)' : teamHue(t)}
+			class:bv-slots--sel={sel}
+			class:bv-slots--nudge={sel && shaking}
+			onclick={() => onSelectTeam(team.id)}
+		>
+			{#each team.slots as id, i (i)}
+				{@const entry = id ? getCharacterIndexEntry(id) : undefined}
+				<div class="bv-slot-wrap">
+					<!-- ⚓ §11.6 item 8: on an UNSELECTED row a portrait selects
+						     the row and nothing else; a FILLED portrait in the
+						     SELECTED row swaps its slot, and again leaves swap mode.
+						     On the Planner's row an EMPTY one does too — it adds. -->
+					<button
+						class="bv-slot"
+						class:bv-slot--swap={swapSlot === i}
+						data-name={entry?.displayName ?? ''}
+						aria-pressed={sel}
+						aria-label={entry
+							? sel
+								? swapSlot === i
+									? `Stop replacing ${entry.displayName}`
+									: `Replace ${entry.displayName}, ${name} slot ${i + 1}`
+								: `${entry.displayName}, ${name} slot ${i + 1}`
+							: sel && isErrand
+								? swapSlot === i
+									? `Stop adding to ${name}`
+									: `Add to ${name}, slot ${i + 1}`
+								: `Empty, ${name} slot ${i + 1}`}
+						onclick={(e) => {
+							e.stopPropagation();
+							if (sel && (id || isErrand) && onSwap) return onSwap(team.id, i);
+							onSelectTeam(team.id);
+							if (!id) onEmptySlot?.(team.id);
+						}}
+					>
+						<SidePortrait
+							{id}
+							size={portrait}
+							con={id ? facts.conOf(id) : undefined}
+							ownedCon={id ? ownedConOf(id) : undefined}
+						/>
+					</button>
+				</div>
+			{/each}
+		</div>
+	{/snippet}
+	{#snippet fingerprint()}
+		<!-- The fingerprint's line is RESERVED (⚓ Nate 2026-10-12): an empty
+			     team keeps its height, so the board doesn't move when a team
+			     fills, empties or previews. -->
+		<div class="bv-fp">
+			{#if facts.fingerprint || preview}
+				<Fingerprint
+					clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
+					{preview}
+					previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
+					filtered={sel ? filteredFacets : undefined}
+					onFind={!isErrand && onFind ? (facet) => onFind(team.id, facet) : undefined}
+				/>
+			{/if}
+		</div>
+	{/snippet}
+
 	<!-- ⚓ Nate 2026-10-09, after the game's own Party Setup: only the HEADER
 		     is glass (the site — a battlefield, an Abyss half); everything under
 		     it stands on the night. A battlefield's header fuses its number with
 		     the boss's name, as the game writes "Battlefield 1: …". -->
 	<section class="bv-team" class:bv-team--errand={isErrand} aria-label={name}>
-		<header class="bv-team-head ctx-glass">
+		<header class="bv-team-head ctx-glass" class:bv-team-head--boss={narrow && !!field}>
+			<!-- ↻ 2026-10-20 (⚓ Nate): on a phone the boss stands IN the strip,
+				     beside its short name — two blocks folded into one. -->
+			{#if narrow}{@render boss(BOSS_DISC_NARROW, 20)}{/if}
 			<div class="bv-head-text">
 				<!-- ↻ §11.6 item 13: ONE run of Bitter bold, mixed case, as the game
 					     writes "Battlefield 1: Aeonblight Drake: Skyshaker" — measured
 					     over all 28 bosses, every English name fits one line of the
 					     docked board (the old Plex caps ran a third wider). -->
-				<h3 class="bv-head-title">
+				<h3
+					class="bv-head-title"
+					title={field && narrow ? inLang(BOSSES[field.boss].name) : undefined}
+				>
 					{field
-						? `Battlefield ${t + 1}: ${inLang(BOSSES[field.boss].name)}`
+						? narrow
+							? bossName(field.boss, true)
+							: `Battlefield ${t + 1}: ${bossName(field.boss, false)}`
 						: half
 							? t === 0
 								? 'First half'
 								: 'Second half'
 							: name}
 				</h3>
+				<!-- ↻ 2026-10-20 (⚓ Nate): on a phone the checks sit IN the banner,
+					     under the boss's name, beside its portrait. -->
+				{#if narrow && field}{@render checks(true)}{/if}
 				{#if half}<p class="bv-half">{inLang(half).replaceAll('**', '')}</p>{/if}
 			</div>
 			<!-- ↻ §11.6: the header names the SITE and nothing else. "Open in
@@ -275,175 +528,69 @@
 			{/if}
 		</header>
 
-		<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
-			     vertical rule, then the stack — checks, the lineup, the fingerprint. -->
-		<div class="bv-body">
-			{#if field && season}
-				<button
-					class="bv-boss"
-					style:--boss="{roomy ? BOSS_DISC_ROOMY : BOSS_DISC}px"
-					style:--boss-narrow="{BOSS_DISC_NARROW}px"
-					aria-label="Details: {inLang(BOSSES[field.boss].name)}"
-					onclick={() => (detail = { battlefield: field, season, index: t, verdicts })}
-				>
-					<img src={bossImage(field.boss, 'icon')} alt="" />
-					<span class="bv-boss-zoom" aria-hidden="true"><Mark name="search" size={14} /></span>
-				</button>
-				<span class="bv-vrule" aria-hidden="true"></span>
-			{/if}
-			<div class="bv-stack" class:bv-stack--top={!!field?.checks.length || filled}>
-				<!-- ⚓ Nate 2026-10-12: the checks and "Planner →" share the TOP line,
-					     which spans the stack's two columns; the pin hangs under the
-					     button in the right column (see .bv-stack). -->
-				{#if field?.checks.length || (filled && !isErrand)}
-					<div class="bv-top">
-						{#if field?.checks.length}
-							<div class="bv-checks">
-								{#each field.checks as c, i (i)}<CheckChip
-										check={c}
-										verdict={afterVerdicts?.[i] ?? verdicts?.[i]}
-										shift={afterVerdicts && verdicts
-											? checkShift(c, verdicts[i], afterVerdicts[i])
-											: 0}
-									/>{/each}
-							</div>
-						{/if}
-						{#if filled && !isErrand}
-							<!-- ⚓ Nate 2026-10-12: "Planner →" — the pinned rotation (or "No
-								     saved rotation") sits right under it, so the word says
-								     enough. Centred on the checks' line; the pin hangs under it
-								     inside the LINEUP row, so it never pushes the lineup down. -->
-							<button
-								class="btn btn--sm bv-planner"
-								onclick={() => onOpenInPlanner(team)}
-								title="Open this team in the Rotation Planner"
-								aria-label="Open this team in the Rotation Planner"
-								>Planner <Mark name="forward" size={12} /></button
-							>
-						{/if}
-					</div>
-				{/if}
-				<div class="bv-lineup-row">
-					<!-- The whole strip is the row's hit area (the slots are its
-						     keyboard path), framed when selected. -->
-					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-					<div
-						class="bv-slots"
-						style:--over="{OVERHANG}px"
-						style:--team-hue={isErrand ? 'var(--accent)' : teamHue(t)}
-						class:bv-slots--sel={sel}
-						class:bv-slots--nudge={sel && shaking}
-						onclick={() => onSelectTeam(team.id)}
-					>
-						{#each team.slots as id, i (i)}
-							{@const entry = id ? getCharacterIndexEntry(id) : undefined}
-							<div class="bv-slot-wrap">
-								<!-- ⚓ §11.6 item 8: on an UNSELECTED row a portrait selects
-									     the row and nothing else; a FILLED portrait in the
-									     SELECTED row swaps its slot, and again leaves swap mode.
-									     On the Planner's row an EMPTY one does too — it adds. -->
-								<button
-									class="bv-slot"
-									class:bv-slot--swap={swapSlot === i}
-									data-name={entry?.displayName ?? ''}
-									aria-pressed={sel}
-									aria-label={entry
-										? sel
-											? swapSlot === i
-												? `Stop replacing ${entry.displayName}`
-												: `Replace ${entry.displayName}, ${name} slot ${i + 1}`
-											: `${entry.displayName}, ${name} slot ${i + 1}`
-										: sel && isErrand
-											? swapSlot === i
-												? `Stop adding to ${name}`
-												: `Add to ${name}, slot ${i + 1}`
-											: `Empty, ${name} slot ${i + 1}`}
-									onclick={(e) => {
-										e.stopPropagation();
-										if (sel && (id || isErrand) && onSwap) return onSwap(team.id, i);
-										onSelectTeam(team.id);
-										if (!id) onEmptySlot?.(team.id);
-									}}
-								>
-									<SidePortrait
-										{id}
-										size={portrait}
-										con={id ? facts.conOf(id) : undefined}
-										ownedCon={id ? ownedConOf(id) : undefined}
-									/>
-								</button>
-							</div>
-						{/each}
-					</div>
+		{#if narrow}
+			<!-- THE PHONE ROW (2026-10-20): the lineup with the vertical Planner
+				     plate beside it, the composition under it (the pin beside that),
+				     the fingerprint across the foot. The checks went up into the
+				     banner. -->
+			<div class="bv-nbody">
+				<!-- ↻ 2026-10-20 (⚓ Nate): the lineup with the Planner plate beside
+					     it; the chips under the lineup with the pin beside them; the
+					     fingerprint LAST, across the full width, so nothing narrows it. -->
+				<div class="bv-ngrid" class:bv-ngrid--plate={filled && !isErrand}>
+					{@render slots()}
+					{#if filled && !isErrand}{@render vplanner()}{/if}
 					{#if filled}
-						<div class="bv-side">
-							<!-- The team's rotation: DERIVED from the library by its set; a pin
-								     names the one you would play here (§10.2). It sits under the
-								     Planner button above — its subject (§11.6 item 13). -->
-							{#if !isErrand}<div class="bv-pin">
-									{#if rotations.length === 0}
-										<span class="bv-rotations"><Mark name="pin" size={12} /> No saved rotation</span
-										>
-									{:else}
-										<!-- ↻ Responsive sweep 2026-10-15 item 21 (⚓ Nate): the plate
-										     says "Rotation" and the pin Mark says the verb; "Pin a
-										     rotation" was cut in the column's 62px of label room. The
-										     aria-label keeps the whole sentence. -->
-										<BandMenu
-											mark="pin"
-											size="sm"
-											align="end"
-											label={pin?.name ?? 'Rotation'}
-											ariaLabel={pin
-												? `Pinned rotation for ${name}: ${pin.name}`
-												: `Pin a rotation for ${name}`}
-										>
-											{#snippet items(close)}
-												{#each [null, ...rotations] as r (r?.id ?? '')}
-													{@const current = (pin?.id ?? null) === (r?.id ?? null)}
-													<button
-														class="band-menu-item"
-														role="menuitemradio"
-														aria-checked={current}
-														onclick={() => {
-															close();
-															onPin(team.id, r?.id ?? null);
-														}}
-													>
-														<span class="bv-menu-check"
-															>{#if current}<Mark name="check" size={12} />{/if}</span
-														>
-														{#if r}{r.name}{:else}<span class="bv-menu-quiet">No pin</span>{/if}
-													</button>
-												{/each}
-											{/snippet}
-										</BandMenu>
-									{/if}
-								</div>{/if}
+						<!-- What the four unlock together: resonances and factions, one
+							     to four chips (two of each is the most a team makes). -->
+						<div class="bv-nchips">
 							<CompositionChips ids={team.slots} reactions={false} />
 						</div>
 					{/if}
-				</div>
-				<!-- The fingerprint's line is RESERVED (⚓ Nate 2026-10-12): an empty
-					     team keeps its height, so the board doesn't move when a team
-					     fills, empties or previews. -->
-				<div class="bv-fp">
-					{#if facts.fingerprint || preview}
-						<Fingerprint
-							clusters={facts.fingerprint ?? teamFingerprint([], facts.conOf)}
-							{preview}
-							previewId={facts.ids.includes(previewId ?? '') ? null : previewId}
-							filtered={sel ? filteredFacets : undefined}
-							onFind={!isErrand && onFind ? (facet) => onFind(team.id, facet) : undefined}
-						/>
-					{/if}
+					{#if filled && !isErrand}{@render pinPlate()}{/if}
+					{@render fingerprint()}
 				</div>
 			</div>
-		</div>
+		{:else}
+			<!-- Stygian's own shape (Nate 2026-10-09): the boss at the left, a
+				     vertical rule, then the stack — checks, the lineup, the fingerprint. -->
+			<div class="bv-body">
+				{#if field && season}
+					{@render boss(roomy ? BOSS_DISC_ROOMY : BOSS_DISC, 26)}
+					<span class="bv-vrule" aria-hidden="true"></span>
+				{/if}
+				<div class="bv-stack" class:bv-stack--top={!!field?.checks.length || filled}>
+					<!-- ⚓ Nate 2026-10-12: the checks and "Planner →" share the TOP line,
+						     which spans the stack's two columns; the pin hangs under the
+						     button in the right column (see .bv-stack). -->
+					{#if field?.checks.length || (filled && !isErrand)}
+						<div class="bv-top">
+							{@render checks()}
+							{#if filled && !isErrand}{@render planner()}{/if}
+						</div>
+					{/if}
+					{@render slots()}
+					{#if filled}
+						<div class="bv-side">
+							{#if !isErrand}{@render pinMenu()}{/if}
+							<CompositionChips ids={team.slots} reactions={false} />
+						</div>
+					{/if}
+					{@render fingerprint()}
+				</div>
+			</div>
+		{/if}
 	</section>
 {/snippet}
 
-<div class="bv" class:bv--roomy={roomy} style:--portrait="{portrait}px">
+<div
+	class="bv"
+	class:bv--roomy={roomy}
+	style:--portrait="{portrait}px"
+	style:--vplanner-w="{V_PLANNER_W}px"
+	style:--vplanner-gap="{V_PLANNER_GAP}px"
+	bind:clientWidth={boardW}
+>
 	<!-- ⚓ The Planner's ⇄ is a state of its OWN (Nate 2026-10-13): its team
 	     alone, not a row above whatever board was open — the board waits,
 	     untouched, and comes back when the errand ends. -->
@@ -454,11 +601,18 @@
 			<span class="bv-lineup-mode">Stygian Onslaught</span>
 			<!-- The site's dropdown (a plate, an opaque slate menu) rather than the
 			     platform's select (Nate 2026-10-09). -->
+			<!-- ↻ 2026-10-20 (⚓ Nate): the plate stands BESIDE the title at every
+			     width; where the dates don't fit they fold and the version names
+			     the season alone (one Stygian per patch). The menu keeps them. -->
 			<BandMenu
-				label="{season.version} · {fmtDay(season.start)} – {fmtDay(season.end)}"
-				ariaLabel="Season"
+				ariaLabel="Season: {season.version}, {fmtDay(season.start)} – {fmtDay(season.end)}"
 				align="start"
 			>
+				{#snippet face()}<span class="bv-season-face"
+						>{season.version}<span class="bv-season-face-dates"
+							>&nbsp;· {fmtDay(season.start)} – {fmtDay(season.end)}</span
+						></span
+					>{/snippet}
 				{#snippet items(close)}
 					{#each seasons as s (s.version)}
 						{@const current = s.version === season.version}
@@ -546,7 +700,21 @@
 	.bv-menu-quiet {
 		color: var(--muted);
 	}
+	/* The season's plate: the version always, the dates while they fit. */
+	.bv-season-face {
+		white-space: nowrap;
+	}
+	/* ⚓ Measured 2026-10-20: the title (173) + gap (14) + the full plate
+	   (174) need a 361px pane, i.e. a ~393px viewport; 26rem leaves room for
+	   an engine's wider fallback metrics. ⚠ Re-measure if the title or the
+	   plate's type moves. */
+	@media (max-width: 26rem) {
+		.bv-season-face-dates {
+			display: none;
+		}
+	}
 	.bv-lineup-mode {
+		white-space: nowrap;
 		font-family: var(--font-display);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-3xl);
@@ -673,9 +841,6 @@
 	.bv-top {
 		grid-area: top;
 	}
-	.bv-lineup-row {
-		display: contents;
-	}
 	.bv-slots {
 		grid-area: slots;
 		justify-self: start;
@@ -766,14 +931,14 @@
 		position: absolute;
 		top: 3px;
 		right: -2px;
-		width: 26px;
-		height: 26px;
+		width: var(--zoom, 26px);
+		height: var(--zoom, 26px);
 		display: grid;
 		place-items: center;
 		border-radius: var(--r-round);
 		background-color: var(--btn-face, var(--surface-raised));
 		/* The gold layer, transparent at rest (see the hover). */
-		box-shadow: inset 0 0 0 13px transparent;
+		box-shadow: inset 0 0 0 calc(var(--zoom, 26px) / 2) transparent;
 		color: var(--text);
 		transition:
 			background-color var(--t-snap),
@@ -788,7 +953,7 @@
 	   with the backing, so the two move as one. */
 	.bv-boss:hover .bv-boss-zoom {
 		background-color: var(--surface-well);
-		box-shadow: inset 0 0 0 13px var(--sel-ring);
+		box-shadow: inset 0 0 0 calc(var(--zoom, 26px) / 2) var(--sel-ring);
 	}
 
 	/* ── The lineup ── */
@@ -904,18 +1069,147 @@
 		font-size: var(--fs-md);
 	}
 
+	/* ── THE PHONE ROW (the `narrow` prop — below `compact`, 40rem) ──
+	   ↻ 2026-10-20 (⚓ Nate, L2 + the boss in the strip): the boss stands in
+	   the banner with its short name on ONE line and the checks under it; the
+	   lineup takes the width; the composition runs under it with the rotation
+	   and Planner → at its end. Measured before: 339px a team at 390, three
+	   lone lines (Planner →, the pin, the chips) and the boss on its own. */
+	.bv-team-head--boss {
+		gap: 0.65rem;
+		padding: 5px 0.75rem 5px 5px;
+	}
+	.bv-team-head--boss .bv-boss {
+		border-color: var(--line-soft);
+	}
+	.bv-team-head--boss .bv-head-text {
+		gap: 4px;
+	}
+	/* ONE line: the longest names ellipsize (the title and the magnifier's
+	   details carry them whole). */
+	.bv-team-head--boss .bv-head-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	/* The checks on the banner's GLASS lose their pill ground — glass on glass
+	   stacks its alpha — and keep their marks, whose colour and shape carry
+	   the standing. The preview's ring stays, so it keeps its padding. */
+	.bv-team-head--boss :global(.ck) {
+		background: none;
+		min-height: 20px;
+		padding: 0 6px 0 0;
+	}
+	.bv-team-head--boss :global(.ck--better),
+	.bv-team-head--boss :global(.ck--worse) {
+		padding-left: 6px;
+	}
+	.bv-nbody {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+		padding: 0 0 0 8px;
+	}
+	.bv-nbody .bv-slots {
+		align-self: flex-start;
+		/* Four portraits in 288px of screen (320 less its gutters): 224 of
+		   discs, the frame's 28, three gaps of 12. */
+		gap: 12px;
+	}
+	/* The lineup, the composition and the fingerprint in one grid; the
+	   plate's column beside the first two (the Planner plate as tall as the
+	   lineup's frame, the pin beside the chips); the fingerprint spans both. */
+	.bv-ngrid {
+		display: grid;
+		grid-template-columns: max-content;
+		grid-template-areas: 'slots' 'chips' 'fp';
+		gap: 0.8rem 0;
+		justify-content: start;
+	}
+	.bv-ngrid--plate {
+		grid-template-columns: max-content var(--vplanner-w);
+		grid-template-areas:
+			'slots planner'
+			'chips pin'
+			'fp fp';
+		column-gap: var(--vplanner-gap);
+	}
+	.bv-ngrid .bv-slots {
+		grid-area: slots;
+	}
+	/* The LINEUP sizes the columns; the chips and the fingerprint take the
+	   width they are given (zero intrinsic width, stretched to the track), or
+	   four chips — or the fingerprint under a shrunken 320 lineup — would
+	   widen the column and push the plate off the screen. */
+	.bv-nchips {
+		grid-area: chips;
+		align-self: center;
+		width: 0;
+		min-width: 100%;
+	}
+	.bv-nchips > :global(.comp) {
+		flex-wrap: wrap;
+	}
+	.bv-ngrid .bv-fp {
+		grid-area: fp;
+		width: 0;
+		min-width: 100%;
+	}
+	/* The plate stands on the FRAME, not the art's overhang above it: its
+	   height is the frame's (the disc + the slots' 6px padding twice). */
+	.bv-vplanner {
+		grid-area: planner;
+		align-self: end;
+		width: var(--vplanner-w);
+		height: calc(var(--portrait) + 12px);
+		margin-bottom: -6px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 3px;
+		font-size: var(--fs-xs);
+	}
+	/* Bottom to top, as a spine reads: vertical-rl turned half a turn. */
+	/* ⚠ inline-block: a transform does not apply to an inline box. */
+	.bv-vword {
+		display: inline-block;
+		writing-mode: vertical-rl;
+		transform: rotate(180deg);
+		line-height: 1;
+	}
+	/* 🎛️ A pixel off each slot gap (6 → 5): it keeps the fifteen on ONE line
+	   across a 320 screen, where the row spans the lineup AND the plate. */
+	.bv-ngrid :global(.fp-cluster) {
+		--fp-slot-gap: 5px;
+	}
+	.bv-npin {
+		grid-area: pin;
+		align-self: center;
+		justify-self: center;
+	}
+	.bv-npin--on :global(.band-menu-trigger) {
+		color: var(--accent);
+	}
+	/* A coarse pointer reaches the narrow plate across half the gap. */
+	@media (pointer: coarse) {
+		.bv-vplanner {
+			position: relative;
+		}
+		.bv-vplanner::after {
+			content: '';
+			position: absolute;
+			inset: 0 calc(-1 * var(--vplanner-gap) / 2);
+		}
+	}
+
 	/* ── Below `compact` (40rem — $lib/breakpoints.ts): the board is the whole
-	   screen ── The wide row puts the boss BESIDE a stack whose lineup (four
-	   56px portraits, 306px with its frame) and fingerprint (~308px) can't fit
-	   next to it on a phone. Here the boss shares a line with the checks, and the
-	   lineup and the fingerprint take the full width beneath. Above compact the
-	   board is 580px or wider (the page's --tb-board-w: docked from `wide`,
-	   and capped at the same width in the Lineup tab below it), so the wide
-	   form is untouched. */
+	   screen. The row's own form is the `narrow` prop above; these are the
+	   pieces around it. */
 	@media (max-width: 40rem) {
-		.bv-lineup {
-			flex-wrap: wrap;
-			gap: 0.4rem 0.9rem;
+		/* The chip row's spare space already sits at a team's foot. */
+		.bv {
+			gap: 1.25rem;
 		}
 		.bv-word {
 			display: none;
@@ -924,20 +1218,9 @@
 			align-items: start;
 			padding-left: 0.75rem;
 		}
-		.bv-body {
-			display: grid;
-			grid-template-columns: auto minmax(0, 1fr);
+		.bv-team-head--boss {
 			align-items: center;
-			gap: 0.8rem 0.9rem;
-			padding: 0 0 0 8px;
-		}
-		/* The stack dissolves into the body's grid: its checks sit beside the
-		   boss, everything else spans the row. */
-		.bv-stack {
-			display: contents;
-		}
-		.bv-vrule {
-			display: none;
+			padding-left: 5px;
 		}
 		/* The blessing runs to five lines at 320 and would cover the art whole:
 		   on a phone it follows the banner, overlapping only its faded foot. */
@@ -948,44 +1231,6 @@
 		}
 		.bv-abyss-art {
 			height: 11rem;
-		}
-		.bv-boss {
-			width: var(--boss-narrow);
-			height: var(--boss-narrow);
-		}
-		.bv-body > :global(*) {
-			grid-column: 1 / -1;
-		}
-		.bv-body > .bv-boss {
-			grid-column: 1;
-		}
-		.bv-top {
-			display: contents;
-		}
-		/* The named areas belong to the wide stack's grid; out here every
-		   piece is placed by the body's rules below. */
-		.bv-top,
-		.bv-slots,
-		.bv-side,
-		.bv-fp {
-			grid-area: auto;
-		}
-		/* The pin and chips follow the lineup, flush right. */
-		.bv-side {
-			justify-self: end;
-		}
-		.bv-stack > :global(*),
-		.bv-top > :global(*),
-		.bv-lineup-row > :global(*) {
-			grid-column: 1 / -1;
-		}
-		.bv-top > .bv-checks {
-			grid-column: 2;
-		}
-		/* Four portraits in 288px of screen (320 less its gutters): 224 of
-		   discs, the frame's 28, three gaps of 12. */
-		.bv-slots {
-			gap: 12px;
 		}
 	}
 </style>

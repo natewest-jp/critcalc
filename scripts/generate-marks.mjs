@@ -105,6 +105,10 @@ const MARKS = {
 	// ↻ 2026-10-09: `rename` (Pencil) retired with SavedNotationsOverlay — the
 	// library renames inline from its ⋯ menu, by word.
 	delete: 'Trash2',
+	/** Emptying a lineup's teams (the Builder's Clear, 2026-10-20). ⛔ Not
+	 *  `delete`: a trash can reads as "the lineup goes away", which is
+	 *  closing its tab — Clear keeps the lineup and empties it. */
+	clear: 'Eraser',
 	/** Settings' backup pair. Two identical-shaped word buttons otherwise —
 	 *  the arrow is the only thing that says which direction the data moves. */
 	download: 'Download',

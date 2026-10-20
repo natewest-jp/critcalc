@@ -17,7 +17,8 @@
 	let {
 		check,
 		verdict,
-		shift = 0
+		shift = 0,
+		terse = false
 	}: {
 		check: BattlefieldCheck;
 		/** The team's standing, when the chip sits beside a team. */
@@ -26,7 +27,18 @@
 		 *  would stand better with the boss, −1 worse. `verdict` is then the
 		 *  standing it would END at, as the fingerprint's preview draws. */
 		shift?: number;
+		/** A phone's banner (2026-10-20, ⚓ Nate): every alternative drops its
+		 *  trailing "characters" — "Melee", "Stellar Glimmer | ❄" — and "…
+		 *  reactions have an advantage" reads "… reactions". */
+		terse?: boolean;
 	} = $props();
+
+	const wordOf = (text: string) =>
+		terse
+			? text
+					.replace(/\breactions have an advantage\s*$/i, 'reactions')
+					.replace(/\s*\bcharacters\s*$/i, '')
+			: text;
 
 	const alternatives = $derived(checkAlternatives(inLang(check.text)));
 	const good = $derived(check.tag === 'favoured');
@@ -64,8 +76,8 @@
 			{#each alt as part, j (j)}
 				{#if 'sprite' in part}
 					<img class="ck-sprite" src={spriteImage(part.sprite)} alt="" />
-				{:else}
-					<span>{part.text}</span>
+				{:else if wordOf(part.text)}
+					<span>{wordOf(part.text)}</span>
 				{/if}
 			{/each}
 		</span>

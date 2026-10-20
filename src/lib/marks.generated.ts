@@ -13,7 +13,7 @@ export type MarkNode = [tag: string, attrs: Record<string, string>];
 
 /** Every mark the site can render. The union is generated, so a typo in a
  *  `<Mark name="...">` is a type error rather than an empty box. */
-export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'delete' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown';
+export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'delete' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown';
 
 /** Lucide's native grid. The wrapper's viewBox — not a knob. */
 export const MARK_VIEWBOX = 24;
@@ -33,6 +33,7 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	image: [["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2","ry":"2"}],["circle",{"cx":"9","cy":"9","r":"2"}],["path",{"d":"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"}]],
 	report: [["path",{"d":"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"}],["path",{"d":"M12 15h.01"}],["path",{"d":"M12 7v4"}]],
 	delete: [["path",{"d":"M10 11v6"}],["path",{"d":"M14 11v6"}],["path",{"d":"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"}],["path",{"d":"M3 6h18"}],["path",{"d":"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"}]],
+	clear: [["path",{"d":"M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21"}],["path",{"d":"m5.082 11.09 8.828 8.828"}]],
 	download: [["path",{"d":"M12 15V3"}],["path",{"d":"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}],["path",{"d":"m7 10 5 5 5-5"}]],
 	upload: [["path",{"d":"M12 3v12"}],["path",{"d":"m17 8-5-5-5 5"}],["path",{"d":"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}]],
 	note: [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M10 9H8"}],["path",{"d":"M16 13H8"}],["path",{"d":"M16 17H8"}]],

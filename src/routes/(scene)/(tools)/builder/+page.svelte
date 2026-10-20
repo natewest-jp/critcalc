@@ -365,6 +365,18 @@
 		]);
 	}
 
+	/** The Lineup's Clear (2026-10-20): every team emptied in one press,
+	 *  the teams themselves kept, and the rail's notice carries Undo — the
+	 *  Builder's net for a lineup edit, so no two-step confirm. */
+	function clearLineup(): void {
+		const boardId = board.id;
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		boards.clearTeams(boardId);
+		documentBar.showNotice('Lineup cleared.', [
+			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
+		]);
+	}
+
 	/** Out of the SELECTED team, leaving its slot empty — the others keep
 	 *  their places, as in the game, and the next pick fills the gap. */
 	function removeFromBoard(id: string): void {
@@ -1398,6 +1410,16 @@
 						>
 					{/if}
 					{#if !errandOpen}
+						<!-- ⚓ Nate 2026-10-20: Clear empties the whole lineup, the teams
+						     kept; its Undo lands on this rail, beside it. -->
+						<button
+							class="btn btn--glass tb-clear"
+							aria-label="Clear every team in this lineup"
+							title="Clear every team in this lineup"
+							disabled={!boardHasAnyone}
+							onclick={clearLineup}
+							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+						>
 						<label class="toggle tb-norepeat" title="Each character joins only one team.">
 							<input
 								type="checkbox"
@@ -1430,6 +1452,7 @@
 				<BoardView
 					{board}
 					roomy={!below('broad')}
+					narrow={below('compact')}
 					selectedTeamId={selectedTeam?.id ?? null}
 					onSelectTeam={(id) => (chosenTeamId = id)}
 					nudgeAt={nudge?.at ?? null}
@@ -1877,7 +1900,8 @@
 	   while a notice stands on it No repeats steps aside and the rail takes its
 	   room; the toggle is back when the notice goes. */
 	@media (max-width: 40rem) {
-		.tb-band-cell--notice .tb-norepeat {
+		.tb-band-cell--notice .tb-norepeat,
+		.tb-band-cell--notice .tb-clear {
 			display: none;
 		}
 	}
