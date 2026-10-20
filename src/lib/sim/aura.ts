@@ -169,6 +169,9 @@ type Offer = AuraApplication & {
 	 * frames after an Oz application — and the game does not work that way.
 	 */
 	viaEntity?: true;
+	/** Reached the CORES only (`offerCoreContact`) — the enemy's ICD refused
+	 *  it, so it is not one of the rotation's applications. */
+	contactOnly?: true;
 };
 
 export type AuraState = {
@@ -180,6 +183,8 @@ export type AuraState = {
 	 * character whose `onReaction` effects fire.
 	 */
 	offers: Offer[];
+	/** Clock frames with a core wake-up already queued (`armCoreWake`). */
+	wakes: Set<number>;
 };
 
 /** `lunar`: which Lunar conversions the TEAM arms (`teamEnabledReactions`).
@@ -214,7 +219,8 @@ export function createAuraState(
 			lunarCharged: lunar.charged,
 			lunarCrystallize: lunar.crystallize
 		}),
-		offers: []
+		offers: [],
+		wakes: new Set()
 	};
 }
 
@@ -261,19 +267,20 @@ function recordGadgetEvent(
  * Offer one application to the gauge at its own instant, then dispatch whatever
  * came back.
  *
- * ⚓⚓ THE GAUGE IS CAUGHT UP LAZILY AND HAS NO WAKE-UP TASK, WHICH IS A RULING
- * RATHER THAN AN OVERSIGHT. `Band.TICK` was reserved at L3 for "gauge decay
- * (L5)", and the obvious move is to schedule a clock task at the gauge's next
- * internal instant. It buys nothing: the gauge's only internal applicator is the
- * Burning chain, and a Burning tick's Pyro provably cannot react (see
- * `SimEvent.appIndex`) — so no internal instant has a consequence to DISPATCH,
- * and advancing to the next application's frame produces exactly the same state.
- * ⛔ A task whose only job is to check back later is the one way to reintroduce
- * the cost the jumping clock exists to avoid (L3 §4.2).
+ * ⚓⚓ THE GAUGE IS CAUGHT UP LAZILY, AND WAKES THE CLOCK FOR ONE CASE ONLY.
+ * `Band.TICK` was reserved at L3 for "gauge decay (L5)", and the obvious move is
+ * to schedule a clock task at every internal instant. It buys nothing for most of
+ * them: an EC tick or a decay step has no consequence to DISPATCH, and advancing
+ * to the next application's frame reaches the same state. ⛔ A task whose only
+ * job is to check back later is the one way to reintroduce the cost the jumping
+ * clock exists to avoid (L3 §4.2).
  *
- * ⚠️ If the gauge ever grows an internal event that emits a reaction, this rule
- * inverts and the wake-up becomes REQUIRED — the reaction would otherwise be
- * noticed at the next application and dispatched late.
+ * ↻ 2026-10-20: the exception the ruling foresaw arrived. A Burning tick is an
+ * attack, and it pops any dendro core on the field (a BURGEON, owned by whoever
+ * lit the burn). That reaction has holders to dispatch, so it must not wait for
+ * the next application, or for none at all. `armCoreWake` schedules a task at
+ * the next tick ONLY while a core is live or spawning (`nextCoreContactFrame`),
+ * so the cost is bounded by core lifetime, never rotation length.
  */
 function offerApplication(ctx: SimContext, clock: Clock, offer: Offer): void {
 	const { gauge, offers } = ctx.aura;
@@ -281,7 +288,47 @@ function offerApplication(ctx: SimContext, clock: Clock, offer: Offer): void {
 	const index = offers.length;
 	offers.push(offer);
 	gauge.apply(offer.element as ElementId, offer.units, index);
+	dispatchGaugeEvents(ctx, clock);
+}
 
+/**
+ * ⚓ A HIT THE ENEMY'S ICD REFUSED STILL REACHES THE CORES (2026-10-20). A core
+ * is a target of its own, with its own copy of the hit (`Gauge.contact`), so an
+ * Electro N3 on Standard ICD hyperblooms on every swing where the enemy took the
+ * element only once. Before this every ICD site dropped the hit before the gauge
+ * saw it, and Hyperbloom/Burgeon undercounted. Only Pyro and Electro meet a core.
+ *
+ * ⚠️ The offer joins `offers` only when it took a core, flagged `contactOnly`,
+ * so the index attribution works and `collectApplications` leaves it out.
+ */
+function offerCoreContact(ctx: SimContext, clock: Clock, offer: Offer): void {
+	if (offer.element !== 'electro' && offer.element !== 'pyro') return;
+	const { gauge, offers } = ctx.aura;
+	gauge.advanceTo(offer.time);
+	if (gauge.contact(offer.element, offers.length)) offers.push({ ...offer, contactOnly: true });
+	dispatchGaugeEvents(ctx, clock);
+}
+
+/** Queue a clock wake-up at the gauge's next Burning tick while it could pop a
+ *  core. ⚠️ `+ 1`: a gauge task at F fires when the gauge LEAVES F, and an
+ *  application at F must still land before it. */
+function armCoreWake(ctx: SimContext, clock: Clock): void {
+	const f = ctx.aura.gauge.nextCoreContactFrame();
+	if (f === null) return;
+	const at = f + 1;
+	if (ctx.aura.wakes.has(at)) return;
+	ctx.aura.wakes.add(at);
+	clock.schedule(at, Band.TICK, () => {
+		ctx.aura.wakes.delete(at);
+		ctx.aura.gauge.advanceTo(at);
+		dispatchGaugeEvents(ctx, clock);
+	});
+}
+
+/** Everything the gauge said since the last drain, dispatched; then re-arm the
+ *  core wake-up. The ONE reader of `takeEvents`. */
+function dispatchGaugeEvents(ctx: SimContext, clock: Clock): void {
+	const { gauge, offers } = ctx.aura;
 	for (const e of gauge.takeEvents()) {
 		if (e.kind === 'coreSpawn' || e.kind === 'coreEnd') {
 			recordGadgetEvent(ctx, e);
@@ -312,17 +359,21 @@ function offerApplication(ctx: SimContext, clock: Clock, offer: Offer): void {
 			continue;
 		}
 		if (e.kind !== 'reaction') continue;
-		// ⚓ Unreachable by construction — the only internal applicator is the
-		// Burning chain, and nothing that reacts with Pyro can coexist with a
-		// Burning aura (pinned in gauge.test.ts). Stated rather than assumed:
-		// such a reaction has no character to dispatch against, so guessing one
-		// would be worse than skipping it.
+		// ⚓ No owner, no dispatch — guessing a character would be worse than
+		// skipping. Unreachable from the sim: every offer carries its index.
 		if (e.appIndex === null) continue;
-		const src = offers[e.appIndex];
-		if (!src) continue;
+		const owner = offers[e.appIndex];
+		if (!owner) continue;
+		// ⚓ A Burning tick's Burgeon is the BURN's, delivered by the reaction's
+		// damage rather than by a cast or swing of the owner's — so it can never
+		// satisfy `onReaction`'s `source: 'active'`, as a summon tick cannot.
+		// ⚠️ It keeps the igniting hit's states and stacks, the nearest the burn
+		// has to a snapshot.
+		const src: Offer = e.internal ? { ...owner, viaEntity: true } : owner;
 		const time = framesOf(e.time);
 		for (const r of toReactions(e, ctx.team)) emitReaction(ctx, clock, src, r, time);
 	}
+	armCoreWake(ctx, clock);
 }
 
 /** One reaction: the three dispatch paths, then the IR event. ⚠️ Order matters —
@@ -457,7 +508,24 @@ function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number):
 			// ⚠️ Gated at the DECISION instant, not at the landing frame — the same
 			// split `takeCooldown` uses, and what keeps a multi-entry proc's own
 			// hits counting in authored order rather than in scheduling order.
-			if (!icdApplies(icd, at, params).applies) continue;
+			if (!icdApplies(icd, at, params).applies) {
+				clock.schedule(at, Band.LAND, () =>
+					offerCoreContact(ctx, clock, {
+						time: at,
+						characterId: l.holderId,
+						element,
+						units: app.units ?? DEFAULT_UNITS,
+						provisionalUnits: app.units === undefined,
+						castKind: l.castKind,
+						preStates: l.preStates,
+						constellation: l.constellation,
+						chainIdx: l.chainIdx,
+						stacks: l.stacks,
+						viaEntity: true
+					})
+				);
+				continue;
+			}
 		}
 		clock.schedule(at, Band.LAND, () => {
 			offerApplication(ctx, clock, {
@@ -635,7 +703,16 @@ export function resolveCastApplications(
 	 *  ⚠️ The entries are fed at CAST time, in order — sound while a sharing
 	 *  ability's hits land before the next sharer's (Nilou's do: each step's hit
 	 *  precedes the next press). */
-	shared?: { clock: IcdClock; castTime: number }
+	shared?: { clock: IcdClock; castTime: number },
+	/** Hears each entry the counter REFUSED — it still reaches a dendro core
+	 *  (`offerCoreContact`). The frames audit passes none. */
+	onBlocked?: (a: {
+		frame: number;
+		element: Element;
+		units: number;
+		provisionalUnits: boolean;
+		whileStance?: { travel: number };
+	}) => void
 ): {
 	frame: number;
 	element: Element;
@@ -669,7 +746,11 @@ export function resolveCastApplications(
 	// ⚓ An entry on NO counter (`ElementalApplication.noICD`) applies and spends
 	// no slot — it never reaches the clock, so the cast's other hits count as if
 	// it were not there, which is what gcsim's `ICDTagNone` on one hit means.
-	return elemental.filter((a) => a.noICD || icdApplies(clock, t0 + a.frame, params).applies);
+	return elemental.filter((a) => {
+		if (a.noICD || icdApplies(clock, t0 + a.frame, params).applies) return true;
+		onBlocked?.(a);
+		return false;
+	});
 }
 
 /**
@@ -730,15 +811,9 @@ export function emitReactionsAtCast(
 	stance?: StanceRecord
 ): void {
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
-	for (const app of resolveCastApplications(
-		char,
-		application,
-		castKind,
-		abilityNoICD,
-		abilityIcdGate,
-		context,
-		icdCounter ? { clock: namedIcdClock(ctx, char.id, icdCounter), castTime } : undefined
-	)) {
+	type Entry = ReturnType<typeof resolveCastApplications>[number];
+	const blocked: Entry[] = [];
+	const land = (app: Entry, offer: (ctx: SimContext, clock: Clock, o: Offer) => void) => {
 		const at = castTime + app.frame;
 		clock.schedule(at, Band.LAND, () => {
 			// ⚓ A stance-bound hit lands only if its stance was still up when it
@@ -747,7 +822,7 @@ export function emitReactionsAtCast(
 			// settled. Strict: a stance that ended AT the launch frame launched
 			// nothing (gcsim's status is inactive at its own expiry frame).
 			if (app.whileStance && stance && stance.end <= at - app.whileStance.travel) return;
-			offerApplication(ctx, clock, {
+			offer(ctx, clock, {
 				time: at,
 				characterId: char.id,
 				element: app.element,
@@ -760,7 +835,20 @@ export function emitReactionsAtCast(
 				stacks
 			});
 		});
-	}
+	};
+	for (const app of resolveCastApplications(
+		char,
+		application,
+		castKind,
+		abilityNoICD,
+		abilityIcdGate,
+		context,
+		icdCounter ? { clock: namedIcdClock(ctx, char.id, icdCounter), castTime } : undefined,
+		(a) => blocked.push(a)
+	))
+		land(app, offerApplication);
+	// A refused entry still meets a core, at its own landing.
+	for (const app of blocked) land(app, offerCoreContact);
 	// The cast's parser-private hit is built + dispatched by handleCast
 	// immediately after this call (onHit wiring 2026-07-17 — the hit needs
 	// the resolved ability/variant context this closure doesn't see).
@@ -800,8 +888,8 @@ export function emitAbsorbedAtCast(
 		clock.schedule(at, Band.LAND, () => {
 			const element = lockedAt(ctx, lockKey, at);
 			if (element === undefined) return;
-			if (!noICD && !icdApplies(icd, at, STANDARD_ICD_FRAMES).applies) return;
-			offerApplication(ctx, clock, {
+			const applies = noICD || icdApplies(icd, at, STANDARD_ICD_FRAMES).applies;
+			(applies ? offerApplication : offerCoreContact)(ctx, clock, {
 				time: at,
 				characterId: char.id,
 				element,
@@ -882,7 +970,21 @@ export function emitReactionsAtSwing(
 			icd = createIcdClock();
 			ctx.icdClocks.set(key, icd);
 		}
-		if (!icdApplies(icd, time, params).applies) return;
+		if (!icdApplies(icd, time, params).applies) {
+			offerCoreContact(ctx, clock, {
+				time,
+				characterId: char.id,
+				element,
+				units: DEFAULT_UNITS,
+				provisionalUnits: false,
+				castKind: kind,
+				preStates,
+				constellation,
+				chainIdx: getChainIndexMap(ctx, char.id, time),
+				stacks: stackState.size > 0 ? new Map(stackState) : undefined
+			});
+			return;
+		}
 	}
 	offerApplication(ctx, clock, {
 		time,
@@ -1384,8 +1486,9 @@ export function scheduleSummonTicks(
 						icdApplies(icd, pendingCastHits.shift()!, params);
 					applies = icdApplies(icd, at, params).applies;
 				}
-				if (applies && element !== undefined) {
-					offerApplication(ctx, clock, {
+				if (element !== undefined) {
+					// A tick the counter refused still meets a core.
+					(applies ? offerApplication : offerCoreContact)(ctx, clock, {
 						time: at,
 						characterId: char.id,
 						element,
@@ -1595,18 +1698,17 @@ function scheduleStrikeSequence(
 				icd = createIcdClock();
 				ctx.icdClocks.set(icdKey, icd);
 			}
-			if (icdApplies(icd, at, STANDARD_ICD_FRAMES).applies) {
-				offerApplication(ctx, clock, {
-					time: at,
-					characterId: char.id,
-					element,
-					units: DEFAULT_UNITS,
-					provisionalUnits: false,
-					castKind: kind,
-					...offerCtx,
-					viaEntity: true
-				});
-			}
+			const applied = icdApplies(icd, at, STANDARD_ICD_FRAMES).applies;
+			(applied ? offerApplication : offerCoreContact)(ctx, clock, {
+				time: at,
+				characterId: char.id,
+				element,
+				units: DEFAULT_UNITS,
+				provisionalUnits: false,
+				castKind: kind,
+				...offerCtx,
+				viaEntity: true
+			});
 		}
 		const hit: HitEvent = {
 			characterId: char.id,
@@ -1852,12 +1954,14 @@ export function collectApplications(ctx: SimContext): AuraApplication[] {
 	// sort has nothing left to do. ⛔ It is deliberately NOT kept "for safety":
 	// a sort here would silently absorb the defect's return, and the invariant is
 	// pinned over the whole corpus instead (`notationParser.ir.test.ts`).
-	return ctx.aura.offers.map((o) => ({
-		time: o.time,
-		characterId: o.characterId,
-		element: o.element,
-		units: o.units,
-		provisionalUnits: o.provisionalUnits,
-		castKind: o.castKind
-	}));
+	return ctx.aura.offers
+		.filter((o) => !o.contactOnly)
+		.map((o) => ({
+			time: o.time,
+			characterId: o.characterId,
+			element: o.element,
+			units: o.units,
+			provisionalUnits: o.provisionalUnits,
+			castKind: o.castKind
+		}));
 }
