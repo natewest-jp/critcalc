@@ -38,9 +38,16 @@ export function warmAvatars(): void {
 	// ⚠ WebKit reports a fetch the NAVIGATION cancels as a page error ("…due
 	// to access control checks"), past any .catch() — a reload mid-warm-up
 	// printed a burst of them (and flaked the e2e reload test, 2 in 15).
-	// Aborting our own fetches as the page hides turns each into an
-	// AbortError, which the .catch() below does swallow.
+	// Aborting our own fetches first turns each into an AbortError, which the
+	// .catch() below does swallow.
+	// ⚠️ `pagehide` alone is TOO LATE (2026-10-20): WebKit cancels in-flight
+	// fetches as the navigation STARTS, before the page hides, so the reload
+	// test still flaked 3 in 15. `beforeunload` fires at the start; measured
+	// 45/45 clean with it. `pagehide` stays as the backstop for any unload
+	// that skips `beforeunload`. A SvelteKit client
+	// navigation fires neither, so the warm-up keeps running across tools.
 	const controller = new AbortController();
+	addEventListener('beforeunload', () => controller.abort(), { once: true });
 	addEventListener('pagehide', () => controller.abort(), { once: true });
 	const BATCH = 24;
 	const pump = () => {
