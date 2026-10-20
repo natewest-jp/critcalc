@@ -11,12 +11,12 @@
 		"lastTimestamp": "20/10/2026 01:30:04"
 	},
 	"github": {
-		"lastSeen": "2026-10-18T00:00:00Z"
+		"lastSeen": "2026-10-20T00:00:00Z"
 	},
 	"genshinDb": "5.2.14",
 	"endgame": {
 		"stygian": "7.1",
 		"abyss": "2026-10-16 Stardread Moon",
-		"pending": []
+		"pending": ["Abyss: next cycle 凌振之月 (lunaris beta id 20098) — no English name yet"]
 	}
 }
