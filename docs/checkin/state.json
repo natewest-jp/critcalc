@@ -6,8 +6,9 @@
 		"tag": "v2.49.0"
 	},
 	"feedback": {
-		"sheetConnected": false,
-		"lastRow": null
+		"sheetConnected": true,
+		"lastRow": 2,
+		"lastTimestamp": "20/10/2026 01:30:04"
 	},
 	"github": {
 		"lastSeen": "2026-10-18T00:00:00Z"
