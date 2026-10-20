@@ -456,6 +456,16 @@ class BoardsState {
 		}));
 	}
 
+	/** Empty every team on the board, keeping the teams themselves (the
+	 *  Lineup's Clear; removing a team is the Custom board's ✕). A team's own
+	 *  constellations and pin go with its members. */
+	clearTeams(boardId: string): void {
+		this.#updateBoard(boardId, (b) => ({
+			...b,
+			teams: b.teams.map((t) => ({ id: t.id, slots: emptySlots() }))
+		}));
+	}
+
 	/** Put a board's teams back exactly as they were — a swap's Undo. Whole
 	 *  teams, pins included: under No repeats a swap may have moved its
 	 *  candidate off another team, and that team comes back too. */

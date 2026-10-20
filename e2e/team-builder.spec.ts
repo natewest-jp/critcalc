@@ -301,7 +301,9 @@ test.describe('the board', () => {
 		await card('Bennett').click();
 		expect(await team(0), 'click 1 takes him off Team 1').toEqual(['', '', '', '']);
 		expect(await team(1), '…and adds nothing').toEqual(['', '', '', '']);
-		await expect(page.locator('.tb-notice')).toHaveText('Bennett left Team 1.');
+		// ↻ 2026-10-20: a grid action's notice stands in the grid's
+		// destination banner, over the card that was picked.
+		await expect(page.locator('.tb-dest-notice')).toHaveText('Bennett left Team 1.');
 		await page.getByRole('button', { name: 'Undo' }).click();
 		expect(await team(0), 'Undo puts him back').toEqual(['Bennett', '', '', '']);
 

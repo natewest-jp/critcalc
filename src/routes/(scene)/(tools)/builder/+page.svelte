@@ -49,6 +49,7 @@
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
+	import SeasonPicker from './lib/SeasonPicker.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
@@ -183,8 +184,10 @@
 	type PaneTab = 'characters' | 'lineup';
 	let tab = $state<PaneTab>('characters');
 	/** Below the dock the panes are tabs. ⚠ The literal is in the CSS too
-	 *  (`@media (max-width: 71rem)`) — custom properties can't reach a query. */
-	const tabbed = $derived(below('wide'));
+	 *  (`@media (max-width: 54rem)`) — custom properties can't reach a query.
+	 *  ⏳ DEMO 2026-10-20: the dock from `toolMin` (was `wide`), with a
+	 *  compact board between the two (see --tb-board-w). */
+	const tabbed = $derived(below('toolMin'));
 	/** ↻ Responsive sweep §3 item 5 (⚓ Nate 2026-10-15): on a SHORT screen
 	 *  (`(max-height: 30rem)`, breakpoints.ts § THE HEIGHT AXIS) the roster's
 	 *  head — filter strip, hint, destination banner — rides INSIDE the grid's
@@ -193,13 +196,8 @@
 	const headScrolls = $derived(short());
 	/** Which pane is showing — on a wide screen, both. */
 	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
-
-	/** ⚓ A notice with an Undo reports an edit to the LINEUP (a swap, a pick
-	 *  that took someone off another team), so it stands in band B's rail,
-	 *  over the lineup (Nate 2026-10-19). Band A keeps the document's notices
-	 *  (Saved, a bad share link) — and an Undo too while the lineup cell is
-	 *  not on screen (a phone showing Characters), or it would go unseen. */
-	const noticeOnLineup = $derived(documentBar.noticeActions.length > 0 && showing !== 'characters');
+	/** The board pane's visible height (the Abyss banner sizes to it). */
+	let boardPaneH = $state(0);
 
 	/** Show the lineup — a no-op beside the dock, the tab below it. */
 	function showLineup(): void {
@@ -360,7 +358,21 @@
 		const i = slotOfCharacter(from.slots, id);
 		const left = from.slots[i] ?? id;
 		boards.setSlot(boardId, from.id, i, null);
+		noticeFrom = 'grid';
 		documentBar.showNotice(`${nameOf(left)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
+			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
+		]);
+	}
+
+	/** The Lineup's Clear (2026-10-20): every team emptied in one press,
+	 *  the teams themselves kept, and the rail's notice carries Undo — the
+	 *  Builder's net for a lineup edit, so no two-step confirm. */
+	function clearLineup(): void {
+		const boardId = board.id;
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		boards.clearTeams(boardId);
+		noticeFrom = 'lineup';
+		documentBar.showNotice('Lineup cleared.', [
 			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
 		]);
 	}
@@ -464,6 +476,25 @@
 	 *  fills its empty slots by picks, the game's way. */
 	let swapping = $state<{ teamId: string; slot: number; incumbent: string | null } | null>(null);
 
+	/** ⚓ A NOTICE STANDS WHERE ITS ACTION HAPPENED (Nate 2026-10-20; ↻ the
+	 *  rail held every Undo since 2026-10-19). A grid action — a pick that took
+	 *  someone off another team, a swap — reports in the grid's DESTINATION
+	 *  BANNER, right above the card you tapped; a lineup action (Clear) in band
+	 *  B's lineup rail, beside its button; the document's notices (Saved, a bad
+	 *  share link) in band A. Where the right home is not on screen (a phone's
+	 *  other tab), the lineup's rail, then band A — never unseen. ⚠ A notice
+	 *  with an Undo in band A overflowed a phone (§11.6 item 20's open point). */
+	let noticeFrom = $state<'grid' | 'lineup'>('grid');
+	const noticeHasActions = $derived(documentBar.noticeActions.length > 0);
+	const noticeOnGrid = $derived(
+		noticeHasActions &&
+			noticeFrom === 'grid' &&
+			showing !== 'lineup' &&
+			!!(swapping || selectedTeam) &&
+			!errandOpen
+	);
+	const noticeOnLineup = $derived(noticeHasActions && !noticeOnGrid && showing !== 'characters');
+
 	/** The portrait again leaves swap mode; another filled one moves it (on
 	 *  the Planner's row, an empty one too). */
 	function toggleSwap(teamId: string, slot: number): void {
@@ -554,6 +585,7 @@
 				}
 			});
 		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
+		noticeFrom = 'grid';
 		documentBar.showNotice(
 			pin
 				? `${name} replaced ${nameOf(incumbent)}${from}. “${pin.name}” is no longer pinned.`
@@ -1153,7 +1185,10 @@
 		onclick={() => (tab = tab === 'characters' ? 'lineup' : 'characters')}
 	>
 		{#if tab === 'characters'}
-			<Mark name="panelRight" /> <span class="tb-band-label tb-pane-word">Lineup</span>
+			<!-- ⚓ Nate 2026-10-20: the mark AFTER the word, on the side its pane
+			     opens from. -->
+			<span class="tb-band-label tb-pane-word">Lineup</span>
+			<Mark name="panelRight" />
 		{:else}
 			<Mark name="panelLeft" /> <span class="tb-band-label tb-pane-word">Characters</span>
 		{/if}
@@ -1226,7 +1261,7 @@
 
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
-			{#if documentBar.notice && !noticeOnLineup}{@render notice()}{/if}
+			{#if documentBar.notice && !noticeOnLineup && !noticeOnGrid}{@render notice()}{/if}
 			<button
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
@@ -1357,6 +1392,15 @@
 					class:tb-band-cell--notice={!!documentBar.notice && noticeOnLineup}
 				>
 					{#if tabbed}{@render paneSwitch()}{/if}
+					<!-- ↻ L1 (⚓ Nate 2026-10-20): a Stygian lineup's season leads the
+					     rail, a plate of its own beside it (glass never on glass); the
+					     Lineup's own title row is gone — the tab names the mode. -->
+					{#if board.preset === 'stygian' && !errandOpen}
+						<SeasonPicker
+							version={board.season}
+							onSeason={(version) => boards.setSeason(board.id, version)}
+						/>
+					{/if}
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
 					     the lineup's controls standing at its end. -->
@@ -1398,17 +1442,33 @@
 						>
 					{/if}
 					{#if !errandOpen}
-						<label class="toggle tb-norepeat" title="Each character joins only one team.">
-							<input
-								type="checkbox"
-								checked={board.noRepeats}
-								onchange={(e) =>
-									boards.setNoRepeats(board.id, e.currentTarget.checked, teamRecency)}
-							/>
-							<!-- The label leads and the switch ends the row (⚓ Nate). -->
-							<span class="toggle-label">No repeats</span>
-							<span class="toggle-track"><span class="toggle-thumb"></span></span>
-						</label>
+						<!-- ⚓ Nate 2026-10-20: Clear empties the whole lineup, the teams
+						     kept; its Undo lands on this rail, beside it. -->
+						<button
+							class="btn btn--glass tb-clear"
+							aria-label="Clear every team in this lineup"
+							title="Clear every team in this lineup"
+							disabled={!boardHasAnyone}
+							onclick={clearLineup}
+							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+						>
+						<!-- ↻ 2026-10-20 (⚓ Nate): a PLATE whose mark is its state —
+						     repeat / repeat-off — in place of the toggle switch, which
+						     read oddly among band B's plates. Its word says the state too;
+						     below `compact` the mark stands alone, like every band control. -->
+						<button
+							class="btn btn--glass tb-norepeat"
+							aria-pressed={board.noRepeats}
+							aria-label="No repeats"
+							title={board.noRepeats
+								? 'Each character joins only one team.'
+								: 'A character can join more than one team.'}
+							onclick={() => boards.setNoRepeats(board.id, !board.noRepeats, teamRecency)}
+						>
+							<Mark name={board.noRepeats ? 'repeatOff' : 'repeat'} />
+							<span class="tb-band-label">{board.noRepeats ? 'No repeats' : 'Repeats allowed'}</span
+							>
+						</button>
 					{/if}
 				</div>
 			{/if}
@@ -1426,10 +1486,13 @@
 				class="tb-pane tb-pane--board scroll-fade"
 				use:scrollFade
 				inert={showing === 'characters'}
+				bind:clientHeight={boardPaneH}
 			>
 				<BoardView
 					{board}
 					roomy={!below('broad')}
+					narrow={below('compact')}
+					availH={boardPaneH}
 					selectedTeamId={selectedTeam?.id ?? null}
 					onSelectTeam={(id) => (chosenTeamId = id)}
 					nudgeAt={nudge?.at ?? null}
@@ -1439,7 +1502,6 @@
 					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
-					onSeason={(version) => boards.setSeason(board.id, version)}
 					{previewId}
 					filteredFacets={activeFacets}
 					onFind={findFor}
@@ -1486,7 +1548,23 @@
 	{/if}
 	<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
 	     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
-	{#if swapping}
+	{#if noticeOnGrid}
+		<!-- A grid action's notice, in the banner over the grid you acted in;
+		     its buttons are bare ink on the hue, as the ✕ is. -->
+		<p class="tb-dest tb-dest--notice" role="status" style:--team-hue={selectedHue}>
+			<span class="tb-dest-notice" title={documentBar.notice}>{documentBar.notice}</span>
+			{#each documentBar.noticeActions as action (action.label)}
+				<button
+					class="btn btn--sm tb-dest-action"
+					transition:fade={{ duration: motion(T_QUICK) }}
+					onintrostart={introLive}
+					onoutrostart={outroInert}
+					onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
+				>
+			{/each}
+			{@render destCount()}
+		</p>
+	{:else if swapping}
 		{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
 		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 			{#if swapping.incumbent}
@@ -1574,7 +1652,8 @@
 	   is the only thing that flexes, so the board's layout can be made stable.
 	   🎛️ --tb-board-w: ⏳ a first value, measured in step 1 against a full
 	   Stygian board (§11.6 item 3).
-	   Below the dock (`wide`, 71rem — $lib/breakpoints.ts) the panes are TABS:
+	   Below the dock (`toolMin`, 54rem — $lib/breakpoints.ts; ⏳ DEMO, was
+	   `wide`) the panes are TABS:
 	   each takes the whole width and the board slides in over the roster on a
 	   transform. ⚠ Both panes always lay out, so neither loses its scroll or
 	   filters while hidden. 🎛️ --tb-wipe is TB_WIPE_MS (lib/dock.ts). */
@@ -1589,20 +1668,23 @@
 	     · 720 from 1500 · 800 from 1900. */
 	.tb-dock,
 	.tb-band {
-		--tb-board-w: 580px;
+		/* ⚓ Nate 2026-10-20: THE DOCK FROM `toolMin` (54rem), the board's
+		   width FLUID between 460 and 580 — 460 (the compact board: the boss
+		   in the banner, "Planner →" over the pin) until the Characters column
+		   has its ~614px of 1136, then the BOARD takes every further pixel up
+		   to 580 (1136–1256), then the Characters column grows. So the roster
+		   never narrows as the window widens — a fixed step to 580 at 1136
+		   dropped it 105px. 630 = that column + the dock gap. A percentage
+		   here resolves at the USE site (each grid's own width), and the dock
+		   and band B are the same width. The board's FORM follows its measured
+		   width (BoardView), so the wide row arrives at ~567. */
+		/* ↻ The same idea at the next step: from where the 580 board leaves
+		   the Characters column 843px (1439 = 843 + 16 + 580 of dock) the
+		   board takes every further pixel up to 800, then the column grows
+		   — so the old fixed steps (720 at `broad`, 800 at `vast`), which
+		   dropped the column ~140px, are gone. */
+		--tb-board-w: calc(clamp(460px, 100% - 630px, 580px) + clamp(0px, 100% - 1439px, 220px));
 		--tb-dock-gap: 16px;
-	}
-	@media (min-width: 1500px) {
-		.tb-dock,
-		.tb-band {
-			--tb-board-w: 720px;
-		}
-	}
-	@media (min-width: 1900px) {
-		.tb-dock,
-		.tb-band {
-			--tb-board-w: 800px;
-		}
 	}
 	.tb-dock {
 		--tb-wipe-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -1626,7 +1708,7 @@
 	.tb-pane--board {
 		overflow-y: auto;
 	}
-	@media (max-width: 71rem) {
+	@media (max-width: 54rem) {
 		.tb-dock {
 			position: relative;
 			display: flex;
@@ -1648,24 +1730,11 @@
 		.tb-dock--lineup .tb-pane--board {
 			transform: none;
 		}
-		/* ↻ Responsive sweep 2026-10-15 item 18 (⚓ Nate): in the Lineup TAB the
-		   board keeps the width it docks at, start-aligned, instead of
-		   stretching to the pane. Stretched, a team ran 1089px wide at 1135
-		   while its content ended at 440, so Planner →, the pin and the chips
-		   stood ~520px from the lineup they belong to, and the 640px Abyss art
-		   was drawn at up to 1089px. ⚠ --tb-board-w is 580 throughout this
-		   range (it steps at `broad`), so this is the docked board exactly. */
-		.tb-pane--board > :global(.bv) {
-			max-width: var(--tb-board-w);
-		}
-	}
-	/* …but not the phone form (below BP.compact, 40rem — $lib/breakpoints.ts):
-	   there the board is the whole screen (BoardView's own narrow form), and
-	   431–640 is left to the Builder's phone pass (sweep item 20). */
-	@media (max-width: 40rem) {
-		.tb-pane--board > :global(.bv) {
-			max-width: none;
-		}
+		/* ↻ 2026-10-20 (⚓ Nate): the Lineup TAB spans its pane again. Sweep
+		   item 18 had capped it at the docked width because Planner →, the pin
+		   and the chips stood ~520px from their lineup when it stretched; they
+		   now sit IN the row's grid beside the lineup, so width only grows the
+		   row (the roomy form follows the board's measured width). */
 	}
 
 	/* Band A's end zone: the board's notice and Share. */
@@ -1833,10 +1902,9 @@
 		height: var(--band-ctrl-h);
 		padding-left: calc(0.6rem + 13px + 0.4rem);
 	}
-	/* A segment and a toggle have no plate of their own — on an unpainted band
+	/* A segment has no plate of its own — on an unpainted band
 	   they wear the glass a band A segment wears. */
-	.tb-show,
-	.tb-norepeat {
+	.tb-show {
 		flex: none;
 		height: var(--band-ctrl-h);
 		border-radius: var(--r-sm);
@@ -1858,26 +1926,28 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		padding: 0 0.75rem;
 		border-radius: var(--r-sm);
 		background: var(--surface);
 	}
 	/* The notice sits at the rail's END, against its buttons; when it runs
-	   long the words ellipsize (the title carries them whole). */
+	   long the words ellipsize (the title carries them whole). ↻ 2026-10-20:
+	   the padding is the NOTICE's, so an empty rail can shrink to nothing on
+	   a phone, where the season plate shares the band. */
 	.tb-rail .tb-notice {
+		padding: 0 0.75rem;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	.tb-norepeat {
-		padding: 0 0.75rem;
-		font-size: var(--fs-md);
+		flex: none;
 	}
 	/* Below `compact` (40rem — $lib/breakpoints.ts) the rail is a sliver, so
 	   while a notice stands on it No repeats steps aside and the rail takes its
 	   room; the toggle is back when the notice goes. */
 	@media (max-width: 40rem) {
-		.tb-band-cell--notice .tb-norepeat {
+		.tb-band-cell--notice .tb-norepeat,
+		.tb-band-cell--notice .tb-clear {
 			display: none;
 		}
 	}
@@ -1894,27 +1964,14 @@
 	.tb-more {
 		display: contents;
 	}
-	/* ↻ Responsive sweep 2026-10-15 item 18 follow-up (⚓ Nate): in the
-	   Lineup TAB the cell stops where the board does (the board keeps its
-	   docked --tb-board-w there, above), so No repeats ends at the board's
-	   right edge, not a pane's width past it. Not the phone form: below
-	   BP.compact (40rem) the board is the whole screen, and so is the cell. */
-	@media (max-width: 71rem) {
-		.tb-band--tabbed .tb-band-cell--lineup {
-			max-width: var(--tb-board-w);
-		}
-	}
-	@media (max-width: 40rem) {
-		.tb-band--tabbed .tb-band-cell--lineup {
-			max-width: none;
-		}
-	}
 	/* Below BP.compact ($lib/breakpoints.ts — 40rem) band A's controls keep
 	   their mark and fold their word — one rule for every band control. ↻ The
 	   lineup cell of band B too (pane switch + Add team): on a Custom board
 	   below ~407px its flex:none children pushed No repeats off the screen
 	   (87px spill at 320), and the fold returns ~160px. ↻ Except the pane
-	   switch's word, which folds at BP.paneWord (below). */
+	   switch's word, which never folds (↻ 2026-10-20: with No repeats a
+	   mark below `compact`, "Characters" + the season + Clear + No repeats fit
+	   at 320 in Chrome and WebKit, so BP.paneWord retired). */
 	@media (max-width: 40rem) {
 		.tb-band-label:not(.tb-pane-word) {
 			display: none;
@@ -1928,16 +1985,6 @@
 			display: none;
 		}
 	}
-	/* ↻ The pane switch keeps its word through the compact fold (responsive
-	   sweep 2026-10-15 item 26, ⚓ Nate) and folds it only below BP.paneWord
-	   ($lib/breakpoints.ts — 21.25rem), where "Characters" no longer fits
-	   beside Add team and No repeats on a Custom board. */
-	@media (max-width: 21.25rem) {
-		.tb-pane-word {
-			display: none;
-		}
-	}
-
 	/* ↻ 2026-10-08: Clear team and the Compare plate's avatar stack retired
 	   with the shared working team and the Compare tab (lineups design §6). */
 
@@ -2060,6 +2107,9 @@
 		   — see CharacterCard.svelte), so 108 costs the card nothing; with
 		   auto-fill + 1fr a track sits just above its minimum, ~108–124. */
 		--cg-tile-min: 108px;
+		/* ⚓ Nate 2026-10-20: six cards to a row at most — seven (1482–1500)
+		   pushed the card too small for its name. */
+		--cg-max-cols: 6;
 		--cg-gap: 0.6rem;
 		--cg-stack-gap: 0.7rem;
 		/* Adds `display` to the shared fade. The Roster is the one view that is
@@ -2131,7 +2181,18 @@
 	   to 54% wider (390: 168 vs 109). The 1500/1900 steps ride the knobs too. */
 	.tb-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(var(--cg-tile-min, 108px), 1fr));
+		grid-template-columns: repeat(
+			auto-fill,
+			minmax(
+				max(
+					var(--cg-tile-min, 108px),
+					calc(
+						(100% - (var(--cg-max-cols, 24) - 1) * var(--cg-gap, 0.6rem)) / var(--cg-max-cols, 24)
+					)
+				),
+				1fr
+			)
+		);
 		gap: var(--cg-gap, 0.6rem);
 	}
 
@@ -2160,11 +2221,13 @@
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
-	/* The count FOLLOWS the message (↻ responsive sweep 2026-10-15 item 15,
-	   ⚓ Nate): pushed to the band's end it sat 2560px from what it counts at
-	   3440. Swapping, the ✕ still ends the band (.tb-dest-close). */
+	/* The count ends the band (↻ ⚓ Nate 2026-10-20, reversing responsive
+	   sweep 2026-10-15 item 15, where it followed the message because at
+	   3440 the band's end sat 2560px from it — the Characters column is the
+	   width the dock leaves it now, and the count reads as the grid's).
+	   Swapping, the ✕ follows it (.tb-dest-close). */
 	.tb-dest-count {
-		margin-left: 0.75rem;
+		margin-left: auto;
 		padding-right: 6px;
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -2176,10 +2239,32 @@
 		letter-spacing: var(--ls-tight);
 		font-weight: var(--fw-regular, 400);
 	}
+	/* A grid action's notice: its words ellipsize before the count does, and
+	   its buttons are outlined in the ink — bare ink on the hue, not plates. */
+	.tb-dest-notice {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	/* Below `compact` (40rem — $lib/breakpoints.ts) the notice takes the
+	   count's place for its few seconds; the count returns with the message. */
+	@media (max-width: 40rem) {
+		.tb-dest--notice .tb-dest-count {
+			display: none;
+		}
+	}
+	.tb-dest-action {
+		flex: none;
+		height: 20px;
+		padding: 0 0.5rem;
+		background: none;
+		color: inherit;
+		box-shadow: inset 0 0 0 1px currentColor;
+	}
 	/* Swapping, the banner ends in its ✕ (Escape does the same) — bare ink on
 	   the hue, not a plate. */
 	.tb-dest-close {
-		margin-left: auto;
 		width: 22px;
 		height: 22px;
 		background: none;

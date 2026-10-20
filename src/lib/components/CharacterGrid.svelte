@@ -145,7 +145,18 @@
 		flex: none;
 		min-width: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(var(--cg-tile-min, 128px), 1fr));
+		/* --cg-max-cols caps the columns (the Team Builder's six, ⚓ Nate
+		   2026-10-20): a track never narrower than the width shared six ways. */
+		grid-template-columns: repeat(
+			auto-fill,
+			minmax(
+				max(
+					var(--cg-tile-min, 128px),
+					calc((100% - (var(--cg-max-cols, 24) - 1) * var(--cg-gap, 8px)) / var(--cg-max-cols, 24))
+				),
+				1fr
+			)
+		);
 		grid-auto-rows: max-content;
 		gap: var(--cg-gap, 8px);
 		align-content: start;
