@@ -22,6 +22,30 @@
 	export const CC_NAME_H = 26;
 	const CC_COL = CC_GLYPH + 2 * CC_COL_PAD;
 
+	/* 🎛️ THE NAME NEVER WRAPS (⚓ Nate 2026-10-20; ↻ responsive sweep
+	   2026-10-15 item 23 gave it a second line, which bent a card's shape and
+	   so its whole row). A name that doesn't fit its strip SHRINKS to fit,
+	   from the strip's 12px down to a 10px floor — the CSS reads the name's
+	   width at 12px, measured once per name here. Measured 2026-10-20: the
+	   widest are the elemental Travelers (89px at 12px), which at a 390
+	   phone's ~109px card land at ~10px. */
+	export const CC_NAME_FS = 12;
+	/** Write-once per name, never read reactively — a plain record. */
+	const nameWidths: Record<string, number> = {};
+	let measureCtx: CanvasRenderingContext2D | null = null;
+	/** The name's width at CC_NAME_FS in the strip's face (cached). */
+	function nameWidth(name: string, el: HTMLElement): number {
+		const hit = nameWidths[name];
+		if (hit !== undefined) return hit;
+		measureCtx ??= document.createElement('canvas').getContext('2d');
+		if (!measureCtx) return 0;
+		const cs = getComputedStyle(el);
+		measureCtx.font = `${cs.fontWeight} ${CC_NAME_FS}px ${cs.fontFamily}`;
+		const w = Math.ceil(measureCtx.measureText(name).width);
+		nameWidths[name] = w;
+		return w;
+	}
+
 	/** How many rows the glyph column holds on a card `width` px wide without
 	 *  growing it: the portrait (square, the width less the column) plus a
 	 *  ONE-line name strip, less the column's padding, at the tightest gap.
@@ -111,6 +135,9 @@
 	 *  the cap assumes the narrowest card (--cg-tile-min, 108): a first frame
 	 *  may hide one glyph too many, never grow the card. */
 	let cardW = $state(0);
+	let nameEl = $state<HTMLElement>();
+	/** The name's width at 12px (unitless px), for the strip's fit. */
+	const nameW = $derived(nameEl ? nameWidth(entry.displayName, nameEl) : 0);
 	const fit = $derived(glyphFit(cardW || 108));
 	/** Past the fit, the first fit−1 glyphs and a "+K" in the last row. The
 	 *  consumer orders them (a filtered capability first), so what is hidden
@@ -140,6 +167,7 @@
 	style:--cc-gap-min="{CC_GAP_MIN}px"
 	style:--cc-col-pad="{CC_COL_PAD}px"
 	style:--cc-name-h="{CC_NAME_H}px"
+	style:--cc-name-fs="{CC_NAME_FS}px"
 	bind:clientWidth={cardW}
 	data-id={entry.id}
 	onpointerenter={(e) => hoverable(e) && onPreview?.(entry.id)}
@@ -189,7 +217,9 @@
 				>
 			{/if}
 		</span>
-		<span class="cc-name ctx-light">{entry.displayName}</span>
+		<span class="cc-name ctx-light" bind:this={nameEl} style:--cc-name-w={nameW || undefined}
+			>{entry.displayName}</span
+		>
 	</button>
 	<button
 		class="cc-mag"
@@ -392,35 +422,40 @@
 	}
 
 	/* ── The name: a parchment strip under the portrait only ── */
-	/* ↻ Responsive sweep 2026-10-15 item 23 (⚓ Nate): a name that doesn't fit
-	   takes a SECOND LINE instead of an ellipsis — six Travelers and Kuki
-	   Shinobu were cut by up to 19px at 390 and still 7px at 1440.
-	   The strip is --cc-name-h at least and two lines at most. ⚠ Its track is
-	   `1fr` and the card fills the cell the grid stretched it to, so every
-	   strip in a ROW grows with the tallest name in it and the parchment ends
-	   on one line across the row. The cap keeps a row grown by something else
-	   (a long fingerprint) from turning every strip into a slab: past two
-	   lines the sheer ground shows below. */
+	/* ⚓ Nate 2026-10-20: ONE line, always — a name that doesn't fit SHRINKS
+	   to fit (12px → a 10px floor; --cc-name-w is its width at 12px, set in
+	   the script), and every card in a row keeps one shape. ↻ It took a
+	   second line before (responsive sweep 2026-10-15 item 23), which grew
+	   the strip and with it the whole row. The ellipsis is a last resort the
+	   floor should never reach. */
 	.cc-name {
 		grid-column: 1;
 		grid-row: 2;
 		align-self: stretch;
-		max-height: calc(2 * var(--cc-name-lh) + 6px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		/* 2px more at the foot than the head, so the name sits 1px high and
 		   clears the frame's bottom bar when the card is picked (⚓ Nate) — one
-		   line lands where the old 24px line box in a 26px strip put it. */
-		padding: 2px 6px 4px;
+		   line lands where the old 24px line box in a 26px strip put it. 3px at
+		   the sides (was 6), so the widest name holds the floor on the 108px
+		   card ("Dendro Traveler" needs 74.2px at 10px). */
+		padding: 2px 3px 4px;
 		border-radius: 0 0 6px 6px;
 		background: var(--surface);
 		color: var(--text);
-		font-size: var(--fs-md);
+		/* The strip's text width is the card (100cqw) less the glyph column
+		   and the 6px of padding; the name's 12px width scales into it. */
+		font-size: max(
+			10px,
+			min(var(--cc-name-fs), calc((100cqw - var(--cc-col) - 6px) * 12 / var(--cc-name-w, 1)))
+		);
 		font-weight: var(--fw-semibold);
 		line-height: var(--cc-name-lh);
 		text-align: center;
+		white-space: nowrap;
 		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	/* ── The magnifier: the boss disc's, 26px with a 14px mark — the width

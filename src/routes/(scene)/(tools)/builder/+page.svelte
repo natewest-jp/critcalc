@@ -199,13 +199,6 @@
 	/** The board pane's visible height (the Abyss banner sizes to it). */
 	let boardPaneH = $state(0);
 
-	/** ⚓ A notice with an Undo reports an edit to the LINEUP (a swap, a pick
-	 *  that took someone off another team), so it stands in band B's rail,
-	 *  over the lineup (Nate 2026-10-19). Band A keeps the document's notices
-	 *  (Saved, a bad share link) — and an Undo too while the lineup cell is
-	 *  not on screen (a phone showing Characters), or it would go unseen. */
-	const noticeOnLineup = $derived(documentBar.noticeActions.length > 0 && showing !== 'characters');
-
 	/** Show the lineup — a no-op beside the dock, the tab below it. */
 	function showLineup(): void {
 		tab = 'lineup';
@@ -365,6 +358,7 @@
 		const i = slotOfCharacter(from.slots, id);
 		const left = from.slots[i] ?? id;
 		boards.setSlot(boardId, from.id, i, null);
+		noticeFrom = 'grid';
 		documentBar.showNotice(`${nameOf(left)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
 			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
 		]);
@@ -377,6 +371,7 @@
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
 		boards.clearTeams(boardId);
+		noticeFrom = 'lineup';
 		documentBar.showNotice('Lineup cleared.', [
 			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
 		]);
@@ -481,6 +476,25 @@
 	 *  fills its empty slots by picks, the game's way. */
 	let swapping = $state<{ teamId: string; slot: number; incumbent: string | null } | null>(null);
 
+	/** ⚓ A NOTICE STANDS WHERE ITS ACTION HAPPENED (Nate 2026-10-20; ↻ the
+	 *  rail held every Undo since 2026-10-19). A grid action — a pick that took
+	 *  someone off another team, a swap — reports in the grid's DESTINATION
+	 *  BANNER, right above the card you tapped; a lineup action (Clear) in band
+	 *  B's lineup rail, beside its button; the document's notices (Saved, a bad
+	 *  share link) in band A. Where the right home is not on screen (a phone's
+	 *  other tab), the lineup's rail, then band A — never unseen. ⚠ A notice
+	 *  with an Undo in band A overflowed a phone (§11.6 item 20's open point). */
+	let noticeFrom = $state<'grid' | 'lineup'>('grid');
+	const noticeHasActions = $derived(documentBar.noticeActions.length > 0);
+	const noticeOnGrid = $derived(
+		noticeHasActions &&
+			noticeFrom === 'grid' &&
+			showing !== 'lineup' &&
+			!!(swapping || selectedTeam) &&
+			!errandOpen
+	);
+	const noticeOnLineup = $derived(noticeHasActions && !noticeOnGrid && showing !== 'characters');
+
 	/** The portrait again leaves swap mode; another filled one moves it (on
 	 *  the Planner's row, an empty one too). */
 	function toggleSwap(teamId: string, slot: number): void {
@@ -571,6 +585,7 @@
 				}
 			});
 		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
+		noticeFrom = 'grid';
 		documentBar.showNotice(
 			pin
 				? `${name} replaced ${nameOf(incumbent)}${from}. “${pin.name}” is no longer pinned.`
@@ -1246,7 +1261,7 @@
 
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
-			{#if documentBar.notice && !noticeOnLineup}{@render notice()}{/if}
+			{#if documentBar.notice && !noticeOnLineup && !noticeOnGrid}{@render notice()}{/if}
 			<button
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
@@ -1533,7 +1548,23 @@
 	{/if}
 	<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
 	     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
-	{#if swapping}
+	{#if noticeOnGrid}
+		<!-- A grid action's notice, in the banner over the grid you acted in;
+		     its buttons are bare ink on the hue, as the ✕ is. -->
+		<p class="tb-dest tb-dest--notice" role="status" style:--team-hue={selectedHue}>
+			<span class="tb-dest-notice" title={documentBar.notice}>{documentBar.notice}</span>
+			{#each documentBar.noticeActions as action (action.label)}
+				<button
+					class="btn btn--sm tb-dest-action"
+					transition:fade={{ duration: motion(T_QUICK) }}
+					onintrostart={introLive}
+					onoutrostart={outroInert}
+					onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
+				>
+			{/each}
+			{@render destCount()}
+		</p>
+	{:else if swapping}
 		{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
 		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 			{#if swapping.incumbent}
@@ -2076,6 +2107,9 @@
 		   — see CharacterCard.svelte), so 108 costs the card nothing; with
 		   auto-fill + 1fr a track sits just above its minimum, ~108–124. */
 		--cg-tile-min: 108px;
+		/* ⚓ Nate 2026-10-20: six cards to a row at most — seven (1482–1500)
+		   pushed the card too small for its name. */
+		--cg-max-cols: 6;
 		--cg-gap: 0.6rem;
 		--cg-stack-gap: 0.7rem;
 		/* Adds `display` to the shared fade. The Roster is the one view that is
@@ -2147,7 +2181,18 @@
 	   to 54% wider (390: 168 vs 109). The 1500/1900 steps ride the knobs too. */
 	.tb-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(var(--cg-tile-min, 108px), 1fr));
+		grid-template-columns: repeat(
+			auto-fill,
+			minmax(
+				max(
+					var(--cg-tile-min, 108px),
+					calc(
+						(100% - (var(--cg-max-cols, 24) - 1) * var(--cg-gap, 0.6rem)) / var(--cg-max-cols, 24)
+					)
+				),
+				1fr
+			)
+		);
 		gap: var(--cg-gap, 0.6rem);
 	}
 
@@ -2176,11 +2221,13 @@
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
-	/* The count FOLLOWS the message (↻ responsive sweep 2026-10-15 item 15,
-	   ⚓ Nate): pushed to the band's end it sat 2560px from what it counts at
-	   3440. Swapping, the ✕ still ends the band (.tb-dest-close). */
+	/* The count ends the band (↻ ⚓ Nate 2026-10-20, reversing responsive
+	   sweep 2026-10-15 item 15, where it followed the message because at
+	   3440 the band's end sat 2560px from it — the Characters column is the
+	   width the dock leaves it now, and the count reads as the grid's).
+	   Swapping, the ✕ follows it (.tb-dest-close). */
 	.tb-dest-count {
-		margin-left: 0.75rem;
+		margin-left: auto;
 		padding-right: 6px;
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -2192,10 +2239,32 @@
 		letter-spacing: var(--ls-tight);
 		font-weight: var(--fw-regular, 400);
 	}
+	/* A grid action's notice: its words ellipsize before the count does, and
+	   its buttons are outlined in the ink — bare ink on the hue, not plates. */
+	.tb-dest-notice {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	/* Below `compact` (40rem — $lib/breakpoints.ts) the notice takes the
+	   count's place for its few seconds; the count returns with the message. */
+	@media (max-width: 40rem) {
+		.tb-dest--notice .tb-dest-count {
+			display: none;
+		}
+	}
+	.tb-dest-action {
+		flex: none;
+		height: 20px;
+		padding: 0 0.5rem;
+		background: none;
+		color: inherit;
+		box-shadow: inset 0 0 0 1px currentColor;
+	}
 	/* Swapping, the banner ends in its ✕ (Escape does the same) — bare ink on
 	   the hue, not a plate. */
 	.tb-dest-close {
-		margin-left: auto;
 		width: 22px;
 		height: 22px;
 		background: none;
