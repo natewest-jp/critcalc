@@ -26,7 +26,7 @@
 - `vz_defres_geo` — DefResInstrument.svelte:27 geo:
   > Geo
   - terms: 🎮 Geo
-- `vz_defres_physical` — DefResInstrument.svelte:28 physical: · DefResInstrument.svelte:298 <button>
+- `vz_defres_physical` — DefResInstrument.svelte:28 physical: · DefResInstrument.svelte:300 <button>
   > Physical
   - terms: 🎮 Physical
 - `vz_defres_res_shred` — DefResInstrument.svelte:126 label:
@@ -45,142 +45,142 @@
   > whole party
 - `vz_defres_own_hits` — DefResInstrument.svelte:160 whoOf:
   > own hits
-- `vz_defres_damage_multiplier_versus_the_enemy_s` — DefResInstrument.svelte:225 label=
+- `vz_defres_damage_multiplier_versus_the_enemy_s` — DefResInstrument.svelte:227 label=
   > Damage multiplier versus the enemy's elemental RES
   - terms: 🎮 RES
-- `vz_defres_enemy_element_res_after_shred` — DefResInstrument.svelte:230 xLabel=
+- `vz_defres_enemy_element_res_after_shred` — DefResInstrument.svelte:232 xLabel=
   > Enemy {ELEMENT_NAME[element]} RES after shred
   - vars: `ELEMENT_NAME[element]`
   - terms: 🎮 RES
-- `vz_defres_damage_kept` — DefResInstrument.svelte:233 yLabel= · DefResInstrument.svelte:265 yLabel=
+- `vz_defres_damage_kept` — DefResInstrument.svelte:235 yLabel= · DefResInstrument.svelte:266 yLabel=
   > damage kept
-- `vz_defres_below_0_shred_counts_half` — DefResInstrument.svelte:236 guides=
+- `vz_defres_below_0_shred_counts_half` — DefResInstrument.svelte:238 guides=
   > below 0%, shred counts half
-- `vz_defres_diminishing_returns` — DefResInstrument.svelte:237 guides=
+- `vz_defres_diminishing_returns` — DefResInstrument.svelte:239 guides=
   > diminishing returns
-- `vz_defres_immune_this_element_deals_no_damage` — DefResInstrument.svelte:245 message=
+- `vz_defres_immune_this_element_deals_no_damage` — DefResInstrument.svelte:247 message=
   > Immune: this element deals no damage
-- `vz_defres_most_enemies_resist_10_shred_subtracts` — DefResInstrument.svelte:249 <p>
+- `vz_defres_most_enemies_resist_10_shred_subtracts` — DefResInstrument.svelte:250 <p>
   > Most enemies resist 10%. Shred subtracts from RES, and below 0% it still helps, at half the rate.
   - terms: 🎮 RES
-- `vz_defres_enemy_def_multiplier_versus_enemy_level` — DefResInstrument.svelte:257 label=
+- `vz_defres_enemy_def_multiplier_versus_enemy_level` — DefResInstrument.svelte:258 label=
   > Enemy DEF multiplier versus enemy level
   - terms: 🎮 DEF
-- `vz_defres_enemy_level` — DefResInstrument.svelte:262 xLabel= · DefResInstrument.svelte:388 <span> · DefResInstrument.svelte:398 aria-label=
+- `vz_defres_enemy_level` — DefResInstrument.svelte:263 xLabel= · DefResInstrument.svelte:390 <span> · DefResInstrument.svelte:400 aria-label=
   > Enemy level
-- `vz_defres_your_level_9261` — DefResInstrument.svelte:268 guides=
+- `vz_defres_your_level_9261` — DefResInstrument.svelte:269 guides=
   > your level
-- `vz_defres_lv_x_x` — DefResInstrument.svelte:272 read=
+- `vz_defres_lv_x_x` — DefResInstrument.svelte:273 read=
   > Lv {x} → {fmtX(defAt(x))}
   - vars: `x` `fmtX(defAt(x))`
-- `vz_defres_transformative_lunar_and_stellar` — DefResInstrument.svelte:276 message=
+- `vz_defres_transformative_lunar_and_stellar` — DefResInstrument.svelte:277 message=
   > Transformative, Lunar and Stellar reactions ignore DEF
   - terms: 🎮 Stellar · 🎮 Lunar · 🎮 DEF
 - `vz_defres_equal_levels_already_cost_you_half_your` — DefResInstrument.svelte:280 <p>
   > Equal levels already cost you half your damage. DEF shred and DEF ignore win it back, and they multiply together.
   - terms: 🎮 DEF
-- `vz_defres_your_hit` — DefResInstrument.svelte:287 <p>
+- `vz_defres_your_hit` — DefResInstrument.svelte:289 <p>
   > Your hit
-- `vz_defres_the_hit_s_element` — DefResInstrument.svelte:288 aria-label=
+- `vz_defres_the_hit_s_element` — DefResInstrument.svelte:290 aria-label=
   > The hit's element
-- `vz_defres_your_level_0ad2` — DefResInstrument.svelte:319 <span>
+- `vz_defres_your_level_0ad2` — DefResInstrument.svelte:321 <span>
   > Your level
-- `vz_defres_character_level` — DefResInstrument.svelte:332 aria-label=
+- `vz_defres_character_level` — DefResInstrument.svelte:334 aria-label=
   > Character level
-- `vz_defres_transformative_lunar_or_stellar_reaction` — DefResInstrument.svelte:344 <span>
+- `vz_defres_transformative_lunar_or_stellar_reaction` — DefResInstrument.svelte:346 <span>
   > Transformative, Lunar or Stellar reaction (ignores DEF)
   - terms: 🎮 Stellar · 🎮 Lunar · 🎮 DEF
-- `vz_defres_enemy` — DefResInstrument.svelte:349 <p>
+- `vz_defres_enemy` — DefResInstrument.svelte:351 <p>
   > Enemy
-- `vz_defres_element_res` — DefResInstrument.svelte:352 <span>
+- `vz_defres_element_res` — DefResInstrument.svelte:354 <span>
   > {ELEMENT_NAME[element]} RES
   - vars: `ELEMENT_NAME[element]`
   - terms: 🎮 RES
-- `vz_defres_immune` — DefResInstrument.svelte:353 span: · DefResInstrument.svelte:382 <button> · DefResInstrument.svelte:412 <dd>
+- `vz_defres_immune` — DefResInstrument.svelte:355 span: · DefResInstrument.svelte:384 <button> · DefResInstrument.svelte:415 <dd>
   > Immune
-- `vz_defres_enemy_base_resistance_percent` — DefResInstrument.svelte:366 aria-label=
+- `vz_defres_enemy_base_resistance_percent` — DefResInstrument.svelte:368 aria-label=
   > Enemy base resistance percent
-- `vz_defres_common_res_values` — DefResInstrument.svelte:369 aria-label=
+- `vz_defres_common_res_values` — DefResInstrument.svelte:371 aria-label=
   > Common RES values
   - terms: 🎮 RES
-- `vz_defres_readout` — DefResInstrument.svelte:405 <p>
+- `vz_defres_readout` — DefResInstrument.svelte:408 <p>
   > Readout
-- `vz_defres_total_of_your_hit_s_damage_gets_through` — DefResInstrument.svelte:407 <p>
+- `vz_defres_total_of_your_hit_s_damage_gets_through` — DefResInstrument.svelte:410 <p>
   > {fmtX(total)}<span>of your hit's damage gets through</span>
   - vars: `fmtX(total)`
-- `vz_defres_res` — DefResInstrument.svelte:410 <dt>
+- `vz_defres_res` — DefResInstrument.svelte:413 <dt>
   > RES
   - terms: 🎮 RES
-- `vz_defres_baseres_before_shred` — DefResInstrument.svelte:417 span:
+- `vz_defres_baseres_before_shred` — DefResInstrument.svelte:420 span:
   > ({baseRes}% before shred)
   - vars: `baseRes`
-- `vz_defres_at_finalres_res_resshred_baseres_before` — DefResInstrument.svelte:417 <span> — ⚑ assembled
+- `vz_defres_at_finalres_res_resshred_baseres_before` — DefResInstrument.svelte:420 <span> — ⚑ assembled
   > at {finalRes}% RES{resShred ? ` (${baseRes}% before shred)` : ''}
   - vars: `finalRes` `resShred ? ' (${baseRes}% before shred)' : ''`
   - terms: 🎮 RES
-- `vz_defres_def` — DefResInstrument.svelte:421 <dt>
+- `vz_defres_def` — DefResInstrument.svelte:424 <dt>
   > DEF
   - terms: 🎮 DEF
-- `vz_defres_ignored_by_this_hit` — DefResInstrument.svelte:425 <span>
+- `vz_defres_ignored_by_this_hit` — DefResInstrument.svelte:428 <span>
   > ignored by this hit
-- `vz_defres_lv_charlevel_vs_lv_enemylevel_defshred` — DefResInstrument.svelte:427 <span> — ⚑ assembled plural?
+- `vz_defres_lv_charlevel_vs_lv_enemylevel_defshred` — DefResInstrument.svelte:430 <span> — ⚑ assembled plural?
   > Lv {charLevel} vs Lv {enemyLevel}{defShred ? ` · −${defShred}% DEF` : ''}{defIgnore ? ` · ${defIgnore}% ignored` : ''}
   - vars: `charLevel` `enemyLevel` `defShred ? ' · −${defShred}% DEF' : ''` `defIgnore
 								? ' · ${defIgnore}% ignored'
 								: ''`
   - terms: 🎮 DEF
-- `vz_defres_defshred_def` — DefResInstrument.svelte:428 span:
+- `vz_defres_defshred_def` — DefResInstrument.svelte:431 span:
   > · −{defShred}% DEF
   - vars: `defShred`
   - terms: 🎮 DEF
-- `vz_defres_defignore_ignored` — DefResInstrument.svelte:429 span:
+- `vz_defres_defignore_ignored` — DefResInstrument.svelte:432 span:
   > · {defIgnore}% ignored
   - vars: `defIgnore`
-- `vz_defres_your_shred_and_def_ignore_add_x_damage` — DefResInstrument.svelte:436 <p>
+- `vz_defres_your_shred_and_def_ignore_add_x_damage` — DefResInstrument.svelte:439 <p>
   > Your shred and DEF ignore add <span>{gainPct(total, totalBase).toFixed(1)}%</span> damage against this enemy
   - vars: `gainPct(total, totalBase).toFixed(1)`
   - terms: 🎮 DEF
-- `vz_defres_an_immune_enemy_takes_no_damage_of_this` — DefResInstrument.svelte:442 <p>
+- `vz_defres_an_immune_enemy_takes_no_damage_of_this` — DefResInstrument.svelte:445 <p>
   > An immune enemy takes no damage of this element, whatever the shred.
-- `vz_defres_below_0_res_shred_works_at_half_strength` — DefResInstrument.svelte:444 <p>
+- `vz_defres_below_0_res_shred_works_at_half_strength` — DefResInstrument.svelte:447 <p>
   > Below 0% RES, shred works at half strength.
   - terms: 🎮 RES
-- `vz_defres_above_75_res_shred_works_at_less_than` — DefResInstrument.svelte:446 <p>
+- `vz_defres_above_75_res_shred_works_at_less_than` — DefResInstrument.svelte:449 <p>
   > Above 75% RES, shred works at less than full strength, until RES drops back under 75%.
   - terms: 🎮 RES
-- `vz_defres_between_0_and_75_res_shred_works_at_full` — DefResInstrument.svelte:448 <p>
+- `vz_defres_between_0_and_75_res_shred_works_at_full` — DefResInstrument.svelte:451 <p>
   > Between 0% and 75% RES, shred works at full strength.
   - terms: 🎮 RES
-- `vz_defres_res_0_1_res_2_0_75_1_res_75_1_4_res_1` — DefResInstrument.svelte:453 <span> — ⚑ entity
+- `vz_defres_res_0_1_res_2_0_75_1_res_75_1_4_res_1` — DefResInstrument.svelte:456 <span> — ⚑ entity
   > res < 0: 1−res/2 · 0–75%: 1−res · ≥75%: 1/(4·res+1)
-- `vz_defres_100_yours_100_yours_100_enemy_1_shred_1` — DefResInstrument.svelte:455 <span>
+- `vz_defres_100_yours_100_yours_100_enemy_1_shred_1` — DefResInstrument.svelte:458 <span>
   > (100+yours) / ((100+yours) + (100+enemy)·(1−shred)·(1−ignore))
-- `vz_defres_shred` — DefResInstrument.svelte:461 <p>
+- `vz_defres_shred` — DefResInstrument.svelte:464 <p>
   > Shred
-- `vz_defres_c_g` — DefResInstrument.svelte:484 <span>
+- `vz_defres_c_g` — DefResInstrument.svelte:487 <span>
   > C{conOf(g)}
   - vars: `conOf(g)`
-- `vz_defres_ownername_s_amount` — DefResInstrument.svelte:488 aria-label=
+- `vz_defres_ownername_s_amount` — DefResInstrument.svelte:491 aria-label=
   > {g.ownerName}'s amount
   - vars: `g.ownerName`
-- `vz_defres_no_character_or_set_in_the_data_shreds` — DefResInstrument.svelte:507 <li>
+- `vz_defres_no_character_or_set_in_the_data_shreds` — DefResInstrument.svelte:510 <li>
   > No character or set in the data shreds {ELEMENT_NAME[element]} RES.
   - vars: `ELEMENT_NAME[element]`
   - terms: 🎮 RES
-- `vz_defres_other_sources` — DefResInstrument.svelte:514 <span>
+- `vz_defres_other_sources` — DefResInstrument.svelte:517 <span>
   > Other sources
-- `vz_defres_other_resistance_shred_percent` — DefResInstrument.svelte:527 aria-label= — ⚑ off-glossary
+- `vz_defres_other_resistance_shred_percent` — DefResInstrument.svelte:530 aria-label= — ⚑ off-glossary
   > Other resistance shred percent
   - ⚠️ off-glossary: resistance shred → RES shred
-- `vz_defres_other_defense_shred_percent` — DefResInstrument.svelte:537 aria-label=
+- `vz_defres_other_defense_shred_percent` — DefResInstrument.svelte:540 aria-label=
   > Other defense shred percent
-- `vz_defres_other_defense_ignore_percent` — DefResInstrument.svelte:547 aria-label=
+- `vz_defres_other_defense_ignore_percent` — DefResInstrument.svelte:550 aria-label=
   > Other defense ignore percent
 
 ## Rendered from data
 
 A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
 
-- `{ELEMENT_NAME[element]}` — DefResInstrument.svelte:352
-- `{r}` — DefResInstrument.svelte:379, each over `RES_RUNGS`
-- `{ELEMENT_NAME[element]}` — DefResInstrument.svelte:508
+- `{ELEMENT_NAME[element]}` — DefResInstrument.svelte:354
+- `{r}` — DefResInstrument.svelte:381, each over `RES_RUNGS`
+- `{ELEMENT_NAME[element]}` — DefResInstrument.svelte:511

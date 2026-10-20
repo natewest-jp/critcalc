@@ -18,80 +18,80 @@
   - vars: `copies`
 - `vz_wish_not_owned` — WishInstrument.svelte:42 haveName:
   > Not owned
-- `vz_wish_1_pull` — WishInstrument.svelte:194 pullsPhrase:
+- `vz_wish_1_pull` — WishInstrument.svelte:198 pullsPhrase:
   > 1 pull
-- `vz_wish_n_pulls` — WishInstrument.svelte:194 pullsPhrase: — ⚑ plural?
+- `vz_wish_n_pulls` — WishInstrument.svelte:198 pullsPhrase: — ⚑ plural?
   > {n} pulls
   - vars: `n`
-- `vz_wish_character_event` — WishInstrument.svelte:198 kicker: · WishInstrument.svelte:203 kicker:
+- `vz_wish_character_event` — WishInstrument.svelte:202 kicker: · WishInstrument.svelte:207 kicker:
   > Character Event
-- `vz_wish_pulls_since_your_last_five_star` — WishInstrument.svelte:199 pityAria:
+- `vz_wish_pulls_since_your_last_five_star` — WishInstrument.svelte:203 pityAria:
   > Pulls since your last five-star
-- `vz_wish_guarantee_held_lost_the_last_50_50` — WishInstrument.svelte:200 guarantee:
+- `vz_wish_guarantee_held_lost_the_last_50_50` — WishInstrument.svelte:204 guarantee:
   > Guarantee held (lost the last 50/50)
   - terms: 🏷 50/50
-- `vz_wish_pulls_since_your_last_four_star` — WishInstrument.svelte:204 pityAria:
+- `vz_wish_pulls_since_your_last_four_star` — WishInstrument.svelte:208 pityAria:
   > Pulls since your last four-star
-- `vz_wish_guarantee_held_last_4_wasn_t_featured` — WishInstrument.svelte:205 guarantee:
+- `vz_wish_guarantee_held_last_4_wasn_t_featured` — WishInstrument.svelte:209 guarantee:
   > Guarantee held (last 4★ wasn’t featured)
-- `vz_wish_weapon_event` — WishInstrument.svelte:208 kicker:
+- `vz_wish_weapon_event` — WishInstrument.svelte:212 kicker:
   > Weapon Event
-- `vz_wish_pulls_since_your_last_five_star_weapon` — WishInstrument.svelte:209 pityAria:
+- `vz_wish_pulls_since_your_last_five_star_weapon` — WishInstrument.svelte:213 pityAria:
   > Pulls since your last five-star weapon
-- `vz_wish_fate_point_held` — WishInstrument.svelte:210 guarantee:
+- `vz_wish_fate_point_held` — WishInstrument.svelte:214 guarantee:
   > Fate point held
   - terms: 🎮 Fate Points
-- `vz_wish_chance_of_reaching_each_level_within_a` — WishInstrument.svelte:272 aria-label=
+- `vz_wish_chance_of_reaching_each_level_within_a` — WishInstrument.svelte:281 aria-label=
   > Chance of reaching each level within a number of pulls
-- `vz_wish_pulls_from_now` — WishInstrument.svelte:298 <text>
+- `vz_wish_pulls_from_now` — WishInstrument.svelte:307 <text>
   > pulls from now
-- `vz_wish_chance_by_then` — WishInstrument.svelte:321 <text>
+- `vz_wish_chance_by_then` — WishInstrument.svelte:330 <text>
   > chance by then
-- `vz_wish_soft_pity` — WishInstrument.svelte:340 <text>
+- `vz_wish_soft_pity` — WishInstrument.svelte:349 <text>
   > soft pity
   - terms: 🏷 soft pity
-- `vz_wish_pulling_for` — WishInstrument.svelte:408 <p> · WishInstrument.svelte:409 aria-label=
+- `vz_wish_pulling_for` — WishInstrument.svelte:417 <p> · WishInstrument.svelte:418 aria-label=
   > Pulling for
-- `vz_wish_pulls_saved` — WishInstrument.svelte:423 <span>
+- `vz_wish_pulls_saved` — WishInstrument.svelte:432 <span>
   > Pulls saved
-- `vz_wish_pulls_you_have_saved` — WishInstrument.svelte:433 aria-label=
+- `vz_wish_pulls_you_have_saved` — WishInstrument.svelte:442 aria-label=
   > Pulls you have saved
-- `vz_wish_or_drag_across_the_chart` — WishInstrument.svelte:436 <p>
+- `vz_wish_or_drag_across_the_chart` — WishInstrument.svelte:445 <p>
   > Or drag across the chart.
-- `vz_wish_you_have` — WishInstrument.svelte:445 <span>
+- `vz_wish_you_have` — WishInstrument.svelte:454 <span>
   > You have
-- `vz_wish_aiming_for` — WishInstrument.svelte:458 <span>
+- `vz_wish_aiming_for` — WishInstrument.svelte:467 <span>
   > Aiming for
-- `vz_wish_current_pity` — WishInstrument.svelte:475 <span>
+- `vz_wish_current_pity` — WishInstrument.svelte:484 <span>
   > Current pity
   - terms: 🏷 pity
-- `vz_wish_without_a_guarantee_you_ll_win_the_50_50` — WishInstrument.svelte:494 <p>
+- `vz_wish_without_a_guarantee_you_ll_win_the_50_50` — WishInstrument.svelte:503 <p>
   > Without a guarantee, you’ll win the 50/50 about 55% of the time (the official rate, including Capturing Radiance). <span>Capturing Radiance’s exact rules aren’t public, so every 50/50 here is a flat 55%.</span>
   - terms: 🎮 Capturing Radiance · 🏷 50/50
-- `vz_wish_without_a_guarantee_each_4_you_pull_has` — WishInstrument.svelte:502 <p>
+- `vz_wish_without_a_guarantee_each_4_you_pull_has` — WishInstrument.svelte:511 <p>
   > Without a guarantee, each 4★ you pull has a 16.7% chance to be the featured character you want. If your last 4★ wasn’t featured, that goes up to 33.3%. Over many pulls, it averages out to about 22%. <span>Losing the 50/50 never gives you one of the three, even if they’re already on the standard banner.</span>
   - terms: 🏷 50/50
-- `vz_wish_without_a_fate_point_each_5_you_pull_has` — WishInstrument.svelte:512 <p>
+- `vz_wish_without_a_fate_point_each_5_you_pull_has` — WishInstrument.svelte:521 <p>
   > Without a fate point, each 5★ you pull has a 37.5% chance to be the weapon you charted, 37.5% to be the other featured weapon, and 25% to be a standard 5★ weapon.
   - terms: 🎮 Fate Points
-- `vz_wish_readout` — WishInstrument.svelte:522 <p>
+- `vz_wish_readout` — WishInstrument.svelte:531 <p>
   > Readout
-- `vz_wish_chance_chance_of_label_within_pulls` — WishInstrument.svelte:524 <p>
+- `vz_wish_chance_chance_of_label_within_pulls` — WishInstrument.svelte:533 <p>
   > {fmtPct(goalRow.chance)}<span>chance of {goalRow.label} within {pullsPhrase(pulls)}</span>
   - vars: `fmtPct(goalRow.chance)` `goalRow.label` `pullsPhrase(pulls)`
-- `vz_wish_level` — WishInstrument.svelte:531 <th>
+- `vz_wish_level` — WishInstrument.svelte:540 <th>
   > Level
-- `vz_wish_chance` — WishInstrument.svelte:532 <th>
+- `vz_wish_chance` — WishInstrument.svelte:541 <th>
   > Chance
-- `vz_wish_half_by` — WishInstrument.svelte:533 <th>
+- `vz_wish_half_by` — WishInstrument.svelte:542 <th>
   > Half by
-- `vz_wish_unlucky_tenth` — WishInstrument.svelte:534 <th>
+- `vz_wish_unlucky_tenth` — WishInstrument.svelte:543 <th>
   > Unlucky tenth
-- `vz_wish_on_average_label_would_take_mean_pulls` — WishInstrument.svelte:548 <p>
+- `vz_wish_on_average_label_would_take_mean_pulls` — WishInstrument.svelte:557 <p>
   > On average, {goalRow.label} would take <span>{Math.round(goalRow.stats.mean)}</span> pulls from here.
   - vars: `goalRow.label` `Math.round(goalRow.stats.mean)`
-- `vz_wish_half_by_half_of_players_get_there_within` — WishInstrument.svelte:552 <p>
+- `vz_wish_half_by_half_of_players_get_there_within` — WishInstrument.svelte:561 <p>
   > Half by: half of players get there within this many pulls. Unlucky tenth: the unluckiest 10% of players need this many or more.
-- `vz_wish_your_character_and_weapon_banners_keep` — WishInstrument.svelte:555 <p>
+- `vz_wish_your_character_and_weapon_banners_keep` — WishInstrument.svelte:564 <p>
   > Your character and weapon banners keep separate pity, so this adds the pulls for both.
   - terms: 🏷 pity

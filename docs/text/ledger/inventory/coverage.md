@@ -10,38 +10,39 @@
 - `coverage_how_much_of_each_character_s_kit_the` — CoverageList.svelte:204 <p>
   > How much of each character’s kit the Rotation Planner draws, ability by ability. Hover a segment for its details, or select a character to see all of them.
   - terms: 📖 Rotation Planner
-- `coverage_search_characters` — CoverageList.svelte:232 placeholder= · CoverageList.svelte:233 aria-label=
+- `coverage_search_characters` — CoverageList.svelte:235 placeholder= · CoverageList.svelte:236 aria-label=
   > Search characters
-- `coverage_show` — CoverageList.svelte:236 aria-label=
+- `coverage_show` — CoverageList.svelte:240 aria-label=
   > Show
-- `coverage_my_roster` — CoverageList.svelte:243 <button>
-  > My roster
-- `coverage_sort` — CoverageList.svelte:246 aria-label=
+- `coverage_my_constellations` — CoverageList.svelte:247 <button>
+  > My constellations
+  - terms: 🎮 Constellation
+- `coverage_sort` — CoverageList.svelte:250 aria-label=
   > Sort
-- `coverage_newest_first` — CoverageList.svelte:247 script
+- `coverage_newest_first` — CoverageList.svelte:251 script
   > Newest first
-- `coverage_by_name` — CoverageList.svelte:247 script
+- `coverage_by_name` — CoverageList.svelte:251 script
   > By name
-- `coverage_least_covered_first` — CoverageList.svelte:247 script
+- `coverage_least_covered_first` — CoverageList.svelte:251 script
   > Least covered first
-- `coverage_showing_1_character_from_the_rotation` — CoverageList.svelte:266 span:
+- `coverage_showing_1_character_from_the_rotation` — CoverageList.svelte:270 span:
   > Showing 1 character from the Rotation Planner.
   - terms: 📖 Rotation Planner
-- `coverage_showing_length_characters_from_the` — CoverageList.svelte:267 span: — ⚑ plural?
+- `coverage_showing_length_characters_from_the` — CoverageList.svelte:271 span: — ⚑ plural?
   > Showing {pinned.length} characters from the Rotation Planner.
   - vars: `pinned.length`
   - terms: 📖 Rotation Planner
-- `coverage_show_all_characters` — CoverageList.svelte:269 <button>
+- `coverage_show_all_characters` — CoverageList.svelte:273 <button>
   > Show all characters
-- `coverage_lit_of_of` — CoverageList.svelte:321 <span>
+- `coverage_lit_of_of` — CoverageList.svelte:320 <span>
   > {row.lit} of {row.of}
   - vars: `row.lit` `row.of`
-- `coverage_lit_of_of_parts_modeled` — CoverageList.svelte:327 label=
+- `coverage_lit_of_of_parts_modeled` — CoverageList.svelte:326 label=
   > {row.lit} of {row.of} parts modeled
   - vars: `row.lit` `row.of`
-- `coverage_loading` — CoverageList.svelte:337 <p> · CoverageList.svelte:379 <p>
+- `coverage_loading` — CoverageList.svelte:336 <p> · CoverageList.svelte:378 <p>
   > Loading…
-- `coverage_no_characters_match_these_filters` — CoverageList.svelte:368 <li>
+- `coverage_no_characters_match_these_filters` — CoverageList.svelte:367 <li>
   > No characters match these filters.
 - `coverage_timed_from_gcsim_s_frame_data` — coverageText.ts:22 frames.gcsim:
   > Timed from gcsim’s frame data.
@@ -217,5 +218,5 @@
 
 A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
 
-- `{cav}` — CoverageList.svelte:357, each over `caveatsOf(d.data, c.hosts)`
-- `{cav}` — CoverageList.svelte:395, each over `caveatsOf(d.data, c.hosts)`
+- `{cav}` — CoverageList.svelte:356, each over `caveatsOf(d.data, c.hosts)`
+- `{cav}` — CoverageList.svelte:394, each over `caveatsOf(d.data, c.hosts)`

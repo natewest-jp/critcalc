@@ -128,10 +128,13 @@ the counter does NOT restart the timer.
 ⚓ PER WINDOW, never per second (worksheet 02 → the pass): an average over the string on
 screen moved with the Hits slider. `{text}` is a number or a range (`1–2`, en dash).
 
-### `vz_icd_sends_the_hits_that_apply_an_element`
+### `vz_icd_sends_the_first_8_hits_within_15s_that`
 
-Nate's wording (worksheet 02). Every hit goes over as 1U because the instrument draws
-no gauge sizes. ⚠️ Names another instrument — move with its translated name.
+Nate's wording (worksheet 02; reworded in `8c7a9978` when the handoff began dropping hits
+past the Gauge Explorer's 15s axis). Every hit goes over as 1U because the instrument draws
+no gauge sizes. "8" and "15s" are the handoff's limits (`MAX_GAUGE_APPS`, `MAX_GAUGE_TIME` in
+`workspace.ts`), typed into the string as literals. ⚠️ Names
+another instrument — move with its translated name.
 
 ### `vz_icd_send_to_gauge_explorer`
 

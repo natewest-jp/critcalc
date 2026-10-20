@@ -115,137 +115,137 @@
 - `vz_gauge_burning_a_fixed_2u_aura_plus_a_hidden` — GaugeInstrument.svelte:251 note:
   > Burning = a fixed 2U aura plus a hidden fuel gauge that drains at 0.4U per second or faster. It deals damage every 0.25s and re-applies 1U Pyro about every 2s, until the fuel runs out. Feeding it more Dendro extends the burn.
   - terms: 🎮 Burning · 🎮 Dendro · 🏷 gauge · 🎮 Pyro · 🏷 aura
-- `vz_gauge_d_l_x_ploty1_l_x_ploty1_z` — GaugeInstrument.svelte:543 fillD:
+- `vz_gauge_d_l_x_ploty1_l_x_ploty1_z` — GaugeInstrument.svelte:550 fillD:
   > {d} L{xOf(points[points.length - 1].t).toFixed(1)},{plotY1} L{xOf(points[0].t).toFixed(1)},{plotY1} Z
   - vars: `d` `xOf(points[points.length - 1].t).toFixed(1)` `plotY1` `xOf(points[0].t).toFixed(1)`
-- `vz_gauge_x_more` — GaugeInstrument.svelte:603 labels:
+- `vz_gauge_x_more` — GaugeInstrument.svelte:610 labels:
   > +{names.length - 2} more
   - vars: `names.length - 2`
-- `vz_gauge_x_u` — GaugeInstrument.svelte:668 fmtU:
+- `vz_gauge_x_u` — GaugeInstrument.svelte:703 fmtU:
   > {u.toFixed(2).replace(/\.?0+$/, '')}U
   - vars: `u.toFixed(2).replace(/\.?0+$/, '')`
   - terms: 🏷 gauge units
-- `vz_gauge_x_s_26b1` — GaugeInstrument.svelte:669 fmtT:
+- `vz_gauge_x_s_26b1` — GaugeInstrument.svelte:704 fmtT:
   > {t.toFixed(2)}s
   - vars: `t.toFixed(2)`
-- `vz_gauge_el_auraafter_after_tax` — GaugeInstrument.svelte:700 script
+- `vz_gauge_el_auraafter_after_tax` — GaugeInstrument.svelte:735 script
   > {el} ({fmtU(e.auraAfter)} after tax)
   - vars: `el` `fmtU(e.auraAfter)`
-- `vz_gauge_el_topped_up_to_auraafter_rate_kept` — GaugeInstrument.svelte:705 script
+- `vz_gauge_el_topped_up_to_auraafter_rate_kept` — GaugeInstrument.svelte:740 script
   > {el} (topped up to {fmtU(e.auraAfter)}, rate kept)
   - vars: `el` `fmtU(e.auraAfter)`
-- `vz_gauge_el_auraafter_after_tax_refreshed_new` — GaugeInstrument.svelte:707 script
+- `vz_gauge_el_auraafter_after_tax_refreshed_new` — GaugeInstrument.svelte:742 script
   > {el} ({fmtU(e.auraAfter)} after tax, refreshed, new rate)
   - vars: `el` `fmtU(e.auraAfter)`
-- `vz_gauge_el_too_weak_to_attach` — GaugeInstrument.svelte:709 script
+- `vz_gauge_el_too_weak_to_attach` — GaugeInstrument.svelte:744 script
   > {el} (too weak to attach)
   - vars: `el`
-- `vz_gauge_crystallize_blocked_by_its_1s_cooldown` — GaugeInstrument.svelte:726 script
+- `vz_gauge_crystallize_blocked_by_its_1s_cooldown` — GaugeInstrument.svelte:761 script
   > Crystallize (blocked by its 1s cooldown)
   - terms: 🎮 Crystallize · 🎮 cooldown
-- `vz_gauge_name_no_gauge_spent` — GaugeInstrument.svelte:728 script
+- `vz_gauge_name_no_gauge_spent` — GaugeInstrument.svelte:763 script
   > {name} (no gauge spent)
   - vars: `name`
   - terms: 🏷 gauge
-- `vz_gauge_spent_trigger_trigger_trigger` — GaugeInstrument.svelte:734 push:
+- `vz_gauge_spent_trigger_trigger_trigger` — GaugeInstrument.svelte:769 push:
   > −{fmtU(e.spent)}{trigger ? ` ${elName(trigger)}` : ''} trigger
   - vars: `fmtU(e.spent)` `trigger ? ' ${elName(trigger)}' : ''`
-- `vz_gauge_electro_charged_tick_0_4u_from_both` — GaugeInstrument.svelte:761 text:
+- `vz_gauge_electro_charged_tick_0_4u_from_both` — GaugeInstrument.svelte:796 text:
   > Electro-Charged tick (−0.4U from both)
   - terms: 🎮 Electro-Charged
-- `vz_gauge_count_electro_charged_ticks_0_4u_from` — GaugeInstrument.svelte:762 text:
+- `vz_gauge_count_electro_charged_ticks_0_4u_from` — GaugeInstrument.svelte:797 text:
   > {row.count} Electro-Charged ticks (−0.4U from both each tick)
   - vars: `row.count`
   - terms: 🎮 Electro-Charged
-- `vz_gauge_label_gone` — GaugeInstrument.svelte:778 text:
+- `vz_gauge_label_gone` — GaugeInstrument.svelte:813 text:
   > {MOD_META[e.mod].label} gone
   - vars: `MOD_META[e.mod].label`
-- `vz_gauge_burning_ends_swept` — GaugeInstrument.svelte:783 text:
+- `vz_gauge_burning_ends_swept` — GaugeInstrument.svelte:818 text:
   > Burning ends{swept}
   - vars: `swept`
   - terms: 🎮 Burning
-- `vz_gauge_dendro_core` — GaugeInstrument.svelte:788 text:
+- `vz_gauge_dendro_core` — GaugeInstrument.svelte:823 text:
   > Dendro Core
   - terms: 🎮 Dendro Core
-- `vz_gauge_pause` — GaugeInstrument.svelte:915 aria-label=
+- `vz_gauge_pause` — GaugeInstrument.svelte:950 aria-label=
   > Pause
-- `vz_gauge_play` — GaugeInstrument.svelte:915 aria-label=
+- `vz_gauge_play` — GaugeInstrument.svelte:950 aria-label=
   > Play
-- `vz_gauge_x_s_domain_s` — GaugeInstrument.svelte:932 <span>
+- `vz_gauge_x_s_domain_s` — GaugeInstrument.svelte:967 <span>
   > {Math.min(playhead.t, domain).toFixed(1)}s / {domain}s
   - vars: `Math.min(playhead.t, domain).toFixed(1)` `domain`
-- `vz_gauge_element` — GaugeInstrument.svelte:938 aria-label=
+- `vz_gauge_element` — GaugeInstrument.svelte:973 aria-label=
   > Element
-- `vz_gauge_gauge_units` — GaugeInstrument.svelte:960 aria-label=
+- `vz_gauge_gauge_units` — GaugeInstrument.svelte:995 aria-label=
   > Gauge units
-- `vz_gauge_gauge_units_u_the_strength_of_an` — GaugeInstrument.svelte:961 title=
+- `vz_gauge_gauge_units_u_the_strength_of_an` — GaugeInstrument.svelte:996 title=
   > Gauge units (U): the strength of an elemental application. Most hits are 1U.
   - terms: 🏷 gauge units
-- `vz_gauge_g_u` — GaugeInstrument.svelte:974 <button>
+- `vz_gauge_g_u` — GaugeInstrument.svelte:1009 <button>
   > {g}U
   - vars: `g`
   - terms: 🏷 gauge units
-- `vz_gauge_move_earlier` — GaugeInstrument.svelte:989 aria-label=
+- `vz_gauge_move_earlier` — GaugeInstrument.svelte:1024 aria-label=
   > Move earlier
-- `vz_gauge_move_earlier_hold_shift_for_1s` — GaugeInstrument.svelte:990 title=
+- `vz_gauge_move_earlier_hold_shift_for_1s` — GaugeInstrument.svelte:1025 title=
   > Move earlier — hold Shift for 1s
-- `vz_gauge_x_s_b78a` — GaugeInstrument.svelte:996 <span>
+- `vz_gauge_x_s_b78a` — GaugeInstrument.svelte:1031 <span>
   > {selected.time.toFixed(1)}s
   - vars: `selected.time.toFixed(1)`
-- `vz_gauge_move_later` — GaugeInstrument.svelte:999 aria-label=
+- `vz_gauge_move_later` — GaugeInstrument.svelte:1034 aria-label=
   > Move later
-- `vz_gauge_move_later_hold_shift_for_1s` — GaugeInstrument.svelte:1000 title=
+- `vz_gauge_move_later_hold_shift_for_1s` — GaugeInstrument.svelte:1035 title=
   > Move later — hold Shift for 1s
-- `vz_gauge_remove_this_application` — GaugeInstrument.svelte:1009 aria-label= · GaugeInstrument.svelte:1010 title=
+- `vz_gauge_remove_this_application` — GaugeInstrument.svelte:1044 aria-label= · GaugeInstrument.svelte:1045 title=
   > Remove this application
-- `vz_gauge_add_application` — GaugeInstrument.svelte:1020 aria-label=
+- `vz_gauge_add_application` — GaugeInstrument.svelte:1055 aria-label=
   > Add application
-- `vz_gauge_max_apps_applications_is_the_most` — GaugeInstrument.svelte:1022 title= — ⚑ plural?
+- `vz_gauge_max_apps_applications_is_the_most` — GaugeInstrument.svelte:1057 title= — ⚑ plural?
   > {MAX_APPS} applications is the most
   - vars: `MAX_APPS`
-- `vz_gauge_add_a_copy_of_the_selected_application` — GaugeInstrument.svelte:1023 title=
+- `vz_gauge_add_a_copy_of_the_selected_application` — GaugeInstrument.svelte:1058 title=
   > Add a copy of the selected application
-- `vz_gauge_add` — GaugeInstrument.svelte:1028 <span>
+- `vz_gauge_add` — GaugeInstrument.svelte:1063 <span>
   > Add
-- `vz_gauge_elemental_gauge_decay_timeline` — GaugeInstrument.svelte:1039 aria-label=
+- `vz_gauge_elemental_gauge_decay_timeline` — GaugeInstrument.svelte:1079 aria-label=
   > Elemental gauge decay timeline
   - terms: 📖 timeline · 🏷 gauge
-- `vz_gauge_s_s` — GaugeInstrument.svelte:1057 <text>
+- `vz_gauge_s_s` — GaugeInstrument.svelte:1097 <text>
   > {s}s
   - vars: `s`
-- `vz_gauge_u_u` — GaugeInstrument.svelte:1078 <text>
+- `vz_gauge_u_u` — GaugeInstrument.svelte:1118 <text>
   > {u}U
   - vars: `u`
   - terms: 🏷 gauge units
-- `vz_gauge_click_to_add` — GaugeInstrument.svelte:1129 <text>
+- `vz_gauge_click_to_add` — GaugeInstrument.svelte:1169 <text>
   > Click to add
-- `vz_gauge_element_gauge_u_at_x_seconds` — GaugeInstrument.svelte:1202 aria-label=
+- `vz_gauge_element_gauge_u_at_x_seconds` — GaugeInstrument.svelte:1242 aria-label=
   > {elName(m.element)} {m.gauge}U at {m.time.toFixed(1)} seconds
   - vars: `elName(m.element)` `m.gauge` `m.time.toFixed(1)`
   - terms: 🏷 gauge units
-- `vz_gauge_example_scenarios` — GaugeInstrument.svelte:1356 <p>
+- `vz_gauge_example_scenarios` — GaugeInstrument.svelte:1397 <p>
   > Example scenarios
-- `vz_gauge_custom_sequence_edit_applications_or` — GaugeInstrument.svelte:1374 text=
+- `vz_gauge_custom_sequence_edit_applications_or` — GaugeInstrument.svelte:1415 text=
   > Custom sequence — edit applications or pick a scenario.
-- `vz_gauge_readout` — GaugeInstrument.svelte:1385 <p>
+- `vz_gauge_readout` — GaugeInstrument.svelte:1426 <p>
   > Readout
-- `vz_gauge_at_x` — GaugeInstrument.svelte:1387 <p>
+- `vz_gauge_at_x` — GaugeInstrument.svelte:1428 <p>
   > at {fmtT(readT!)}
   - vars: `fmtT(readT!)`
-- `vz_gauge_no_aura_the_next_element_applies_fresh` — GaugeInstrument.svelte:1389 <p>
+- `vz_gauge_no_aura_the_next_element_applies_fresh` — GaugeInstrument.svelte:1430 <p>
   > No aura — the next element applies fresh.
   - terms: 🏷 aura
-- `vz_gauge_point_at_the_chart_or_press_play_to_read` — GaugeInstrument.svelte:1400 <p>
+- `vz_gauge_point_at_the_chart_or_press_play_to_read` — GaugeInstrument.svelte:1441 <p>
   > Point at the chart or press play to read the enemy’s aura state at a moment in time.
   - terms: 🏷 aura
-- `vz_gauge_aura_log` — GaugeInstrument.svelte:1419 <p>
+- `vz_gauge_aura_log` — GaugeInstrument.svelte:1460 <p>
   > Aura log
   - terms: 📖 aura log
-- `vz_gauge_nothing_lands_on_the_target` — GaugeInstrument.svelte:1421 empty=
+- `vz_gauge_nothing_lands_on_the_target` — GaugeInstrument.svelte:1462 empty=
   > Nothing lands on the target.
 
 ## Rendered from data
 
 A value printed straight from data, with no string literal: a locale needs a LOOKUP here (the game's term for the id), not a message.
 
-- `{label}` — GaugeInstrument.svelte:1184, each over `m.labels`
+- `{label}` — GaugeInstrument.svelte:1224, each over `m.labels`

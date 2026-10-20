@@ -5,99 +5,99 @@
 
 **34 messages** · `CritHeatmap.svelte` · `CritInstrument.svelte`
 
-- `vz_crit_crit_rate_and_crit_damage_heatmap` — CritHeatmap.svelte:477 aria-label=
+- `vz_crit_crit_rate_and_crit_damage_heatmap` — CritHeatmap.svelte:479 aria-label=
   > Crit rate and crit damage heatmap
-- `vz_crit_cd_2_cr` — CritHeatmap.svelte:535 <text>
+- `vz_crit_cd_2_cr` — CritHeatmap.svelte:537 <text>
   > CD = 2×CR
   - terms: 🏷 CR · 🏷 CD
-- `vz_crit_x_cv` — CritHeatmap.svelte:546 <text>
+- `vz_crit_x_cv` — CritHeatmap.svelte:548 <text>
   > {Math.round(cv * 100)} CV
   - vars: `Math.round(cv * 100)`
   - terms: 🏷 CV
-- `vz_crit_best_split_of_this_budget` — CritHeatmap.svelte:562 <text>
+- `vz_crit_best_split_of_this_budget` — CritHeatmap.svelte:564 <text>
   > best split of this budget
-- `vz_crit_average_dmg` — CritHeatmap.svelte:624 <text>
+- `vz_crit_average_dmg` — CritHeatmap.svelte:626 <text>
   > Average DMG
   - terms: 🎮 DMG
-- `vz_crit_crit_dmg` — CritHeatmap.svelte:637 <text> · CritInstrument.svelte:214 <span>
+- `vz_crit_crit_dmg` — CritHeatmap.svelte:639 <text> · CritInstrument.svelte:215 <span>
   > CRIT DMG
   - terms: 🎮 CRIT DMG
-- `vz_crit_crit_rate_d37f` — CritHeatmap.svelte:649 <text> · CritInstrument.svelte:186 <span>
+- `vz_crit_crit_rate_d37f` — CritHeatmap.svelte:651 <text> · CritInstrument.svelte:187 <span>
   > CRIT Rate
   - terms: 🎮 CRIT Rate
-- `vz_crit_cr_x` — CritHeatmap.svelte:751 <text>
+- `vz_crit_cr_x` — CritHeatmap.svelte:753 <text>
   > CR {(shownCR * 100).toFixed(1)}%
   - vars: `(shownCR * 100).toFixed(1)`
   - terms: 🏷 CR
-- `vz_crit_cd_x` — CritHeatmap.svelte:754 <text>
+- `vz_crit_cd_x` — CritHeatmap.svelte:756 <text>
   > CD {(shownCD * 100).toFixed(1)}%
   - vars: `(shownCD * 100).toFixed(1)`
   - terms: 🏷 CD
-- `vz_crit_no_crit_risk_zerocritrisk` — CritHeatmap.svelte:761 <text>
+- `vz_crit_no_crit_risk_zerocritrisk` — CritHeatmap.svelte:763 <text>
   > No-crit risk {formatChance(zeroCritRisk)}
   - vars: `formatChance(zeroCritRisk)`
-- `vz_crit_hit` — CritInstrument.svelte:68 hitsWord:
+- `vz_crit_hit` — CritInstrument.svelte:69 hitsWord:
   > hit
-- `vz_crit_hits` — CritInstrument.svelte:68 hitsWord:
+- `vz_crit_hits` — CritInstrument.svelte:69 hitsWord:
   > hits
-- `vz_crit_crit_rate_percent` — CritInstrument.svelte:198 aria-label=
+- `vz_crit_crit_rate_percent` — CritInstrument.svelte:199 aria-label=
   > Crit rate percent
-- `vz_crit_crit_rate_9bbd` — CritInstrument.svelte:209 aria-label=
+- `vz_crit_crit_rate_9bbd` — CritInstrument.svelte:210 aria-label=
   > Crit rate
-- `vz_crit_crit_damage_percent` — CritInstrument.svelte:226 aria-label=
+- `vz_crit_crit_damage_percent` — CritInstrument.svelte:227 aria-label=
   > Crit damage percent
-- `vz_crit_crit_damage` — CritInstrument.svelte:237 aria-label=
+- `vz_crit_crit_damage` — CritInstrument.svelte:238 aria-label=
   > Crit damage
-- `vz_crit_equal_budget_line_cv` — CritInstrument.svelte:244 <label>
+- `vz_crit_equal_budget_line_cv` — CritInstrument.svelte:245 <label>
   > Equal-budget line (CV)
   - terms: 🏷 CV
-- `vz_crit_no_crit_risk_overlay_chance_a_whole` — CritInstrument.svelte:250 <span>
+- `vz_crit_no_crit_risk_overlay_chance_a_whole` — CritInstrument.svelte:251 <span>
   > No-crit risk overlay <span>chance a whole rotation lands zero crits</span>
   - terms: 📖 rotation
-- `vz_crit_hits_per_rotation` — CritInstrument.svelte:259 <span>
+- `vz_crit_hits_per_rotation` — CritInstrument.svelte:260 <span>
   > Hits per rotation
   - terms: 📖 rotation
-- `vz_crit_current_build` — CritInstrument.svelte:278 <p>
+- `vz_crit_current_build` — CritInstrument.svelte:279 <p>
   > Current build
-- `vz_crit_average_dmg_per_hit_a_hit_that_doesn_t` — CritInstrument.svelte:280 <p>
+- `vz_crit_average_dmg_per_hit_a_hit_that_doesn_t` — CritInstrument.svelte:281 <p>
   > Average DMG per hit. A hit that doesn't crit is ×1.
   - terms: 🎮 DMG
-- `vz_crit_ratio_cd_cr` — CritInstrument.svelte:283 <dt>
+- `vz_crit_ratio_cd_cr` — CritInstrument.svelte:284 <dt>
   > Ratio (CD:CR)
   - terms: 🏷 CR · 🏷 CD
-- `vz_crit_total_crit_value_cv` — CritInstrument.svelte:285 <dt>
+- `vz_crit_total_crit_value_cv` — CritInstrument.svelte:286 <dt>
   > Total crit value (CV)
   - terms: 🏷 crit value · 🏷 CV
-- `vz_crit_2_crit_rate_crit_dmg_base_crit_stats` — CritInstrument.svelte:287 <dd>
+- `vz_crit_2_crit_rate_crit_dmg_base_crit_stats` — CritInstrument.svelte:288 <dd>
   > 2 × CRIT Rate + CRIT DMG, base crit stats included
   - terms: 🎮 CRIT Rate · 🎮 CRIT DMG
-- `vz_crit_no_crit_risk_hitsperrotation` — CritInstrument.svelte:288 <dt>
+- `vz_crit_no_crit_risk_hitsperrotation` — CritInstrument.svelte:289 <dt>
   > No-crit risk ({hitsPerRotation} {hitsWord(hitsPerRotation)})
   - vars: `hitsPerRotation` `hitsWord(hitsPerRotation)`
-- `vz_crit_pinned` — CritInstrument.svelte:296 <dt>
+- `vz_crit_pinned` — CritInstrument.svelte:297 <dt>
   > Pinned
-- `vz_crit_pinneddelta_average_dmg_vs_pinned` — CritInstrument.svelte:304 <p>
+- `vz_crit_pinneddelta_average_dmg_vs_pinned` — CritInstrument.svelte:305 <p>
   > <span>{deltaFormat.format(pinnedDelta)}</span> average DMG vs pinned
   - vars: `deltaFormat.format(pinnedDelta)`
   - terms: 🎮 DMG
-- `vz_crit_clear_pin` — CritInstrument.svelte:306 <button>
+- `vz_crit_clear_pin` — CritInstrument.svelte:307 <button>
   > Clear pin
-- `vz_crit_pin_this_build` — CritInstrument.svelte:313 <button>
+- `vz_crit_pin_this_build` — CritInstrument.svelte:314 <button>
   > Pin this build
-- `vz_crit_crits_in_one_rotation_of_hitsperrotation` — CritInstrument.svelte:321 <p>
+- `vz_crit_crits_in_one_rotation_of_hitsperrotation` — CritInstrument.svelte:322 <p>
   > Crits in one rotation of {hitsPerRotation} {hitsWord(hitsPerRotation)}
   - vars: `hitsPerRotation` `hitsWord(hitsPerRotation)`
   - terms: 📖 rotation
-- `vz_crit_hoveredcount_of_hitsperrotation` — CritInstrument.svelte:350 <p>
+- `vz_crit_hoveredcount_of_hitsperrotation` — CritInstrument.svelte:351 <p>
   > {hoveredCount} of {hitsPerRotation} {hitsWord(hitsPerRotation)} crit — <span>{formatMultiplier(rotationMultiplier(hoveredCount, hitsPerRotation, myCD))}</span>, in {formatChance(distribution[hoveredCount])} of rotations
   - vars: `hoveredCount` `hitsPerRotation` `hitsWord(hitsPerRotation)` `formatMultiplier(rotationMultiplier(hoveredCount, hitsPerRotation, myCD))` `formatChance(distribution[hoveredCount])`
   - terms: 📖 rotation
-- `vz_crit_rollcrits_of_length_length_crit` — CritInstrument.svelte:356 <p>
+- `vz_crit_rollcrits_of_length_length_crit` — CritInstrument.svelte:357 <p>
   > {rollCrits} of {rollResult.length} {hitsWord(rollResult.length)} crit — <span>{formatMultiplier(rollMultiplier)}</span> this time
   - vars: `rollCrits` `rollResult.length` `hitsWord(rollResult.length)` `formatMultiplier(rollMultiplier)`
-- `vz_crit_on_average_x_of_hitsperrotation` — CritInstrument.svelte:360 <p>
+- `vz_crit_on_average_x_of_hitsperrotation` — CritInstrument.svelte:361 <p>
   > On average {averageCrits.toFixed(1)} of {hitsPerRotation} {hitsWord(hitsPerRotation)} crit — <span>{formatMultiplier(myMultiplier)}</span>
   - vars: `averageCrits.toFixed(1)` `hitsPerRotation` `hitsWord(hitsPerRotation)` `formatMultiplier(myMultiplier)`
-- `vz_crit_roll_hitsperrotation_hitsperrotation` — CritInstrument.svelte:368 <button>
+- `vz_crit_roll_hitsperrotation_hitsperrotation` — CritInstrument.svelte:369 <button>
   > Roll {hitsPerRotation} {hitsWord(hitsPerRotation)}
   - vars: `hitsPerRotation` `hitsWord(hitsPerRotation)`
