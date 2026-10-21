@@ -32,6 +32,7 @@
 		<li>Open tabs in the Rotation Planner and the Team Builder, and their recently closed tabs.</li>
 		<li>The Visualizers’ layout.</li>
 		<li>When you last downloaded a backup, so Settings can tell you.</li>
+		<li>Whether critcalc has already asked your browser to keep its data.</li>
 	</ul>
 	<p>
 		critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a> carries

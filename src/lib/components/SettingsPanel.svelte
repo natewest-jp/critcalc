@@ -33,6 +33,7 @@
 		type BackupCounts
 	} from '$lib/utils/settingsBackup';
 	import {
+		isSafari,
 		readLastBackup,
 		requestPersistentStorage,
 		storagePersisted
@@ -42,9 +43,11 @@
 	// either, so the first paint carries neither (`undefined` = not yet asked).
 	let persisted = $state<boolean | null | undefined>(undefined);
 	let persistDeclined = $state(false);
+	let safari = $state(false);
 	let lastBackup = $state<number | null>(null);
 	onMount(() => {
 		lastBackup = readLastBackup();
+		safari = isSafari();
 		storagePersisted().then((p) => (persisted = p));
 	});
 
@@ -484,6 +487,9 @@
 						{:else if persisted === null}
 							This browser doesn’t say whether it will keep your data. A backup keeps a copy either
 							way.
+						{:else if safari}
+							Safari may clear your data after a while without a visit. Add critcalc to your Home
+							Screen to keep it, or download a backup.
 						{:else if persistDeclined}
 							This browser declined, so it may still clear your data on its own. A backup keeps a
 							copy.
@@ -493,7 +499,7 @@
 						{/if}
 					</span>
 				</span>
-				{#if persisted === false && !persistDeclined}
+				{#if persisted === false && !persistDeclined && !safari}
 					<button class="btn" onclick={askToKeep}>Keep my data</button>
 				{/if}
 			</div>
