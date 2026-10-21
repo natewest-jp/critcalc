@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import {
 		constellations,
 		loadout,
@@ -31,6 +32,46 @@
 		applyBackup,
 		type BackupCounts
 	} from '$lib/utils/settingsBackup';
+	import {
+		readLastBackup,
+		requestPersistentStorage,
+		storagePersisted
+	} from '$lib/utils/storageDurability';
+
+	// Storage durability. Both are read after mount: the server can't know
+	// either, so the first paint carries neither (`undefined` = not yet asked).
+	let persisted = $state<boolean | null | undefined>(undefined);
+	let persistDeclined = $state(false);
+	let lastBackup = $state<number | null>(null);
+	onMount(() => {
+		lastBackup = readLastBackup();
+		storagePersisted().then((p) => (persisted = p));
+	});
+
+	async function askToKeep() {
+		persisted = await requestPersistentStorage();
+		persistDeclined = !persisted;
+	}
+
+	function exportBackup() {
+		const at = Date.now();
+		downloadBackup(at);
+		lastBackup = at;
+	}
+
+	/** Saved rotations and lineups changed since the last backup. */
+	let savedSince = $derived(
+		lastBackup === null
+			? 0
+			: [...$savedNotations, ...$savedBoards].filter((e) => e.savedAt > lastBackup!).length
+	);
+
+	function daysAgo(at: number): string {
+		const days = Math.floor((Date.now() - at) / 86_400_000);
+		if (days <= 0) return 'today';
+		if (days === 1) return 'yesterday';
+		return `${days} days ago`;
+	}
 
 	// Two-click confirm shared across the reset buttons: a button is "armed" on
 	// first click, fires on the second, and disarms on blur or when another arms.
@@ -433,16 +474,48 @@
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Your data</h2>
 
+		{#if persisted !== undefined}
+			<div class="sp-row">
+				<span class="sp-label">
+					<span class="sp-name">Storage</span>
+					<span class="sp-desc">
+						{#if persisted}
+							This browser will keep your data until you clear this site’s data yourself.
+						{:else if persisted === null}
+							This browser doesn’t say whether it will keep your data. A backup keeps a copy either
+							way.
+						{:else if persistDeclined}
+							This browser declined, so it may still clear your data on its own. A backup keeps a
+							copy.
+						{:else}
+							This browser may clear your data on its own, for example after a while without a
+							visit. Ask it to keep your data, or download a backup.
+						{/if}
+					</span>
+				</span>
+				{#if persisted === false && !persistDeclined}
+					<button class="btn" onclick={askToKeep}>Keep my data</button>
+				{/if}
+			</div>
+		{/if}
+
 		<div class="sp-row">
 			<span class="sp-label">
 				<span class="sp-name">Backup</span>
 				<span class="sp-desc">
-					critcalc keeps nothing on a server — your roster, loadouts, saved rotations, and saved
-					lineups live in this browser. Download a file to back them up or move them to another
-					device.
+					critcalc has no server, so everything you set up lives in this browser. Download a file to
+					back it up or move it to another device.
+				</span>
+				<span class="sp-desc">
+					{#if lastBackup === null}
+						Last backup: never.
+					{:else}
+						Last backup: {daysAgo(lastBackup)}.{#if savedSince > 0}
+							{savedSince} saved {savedSince === 1 ? 'item has' : 'items have'} changed since.{/if}
+					{/if}
 				</span>
 			</span>
-			<button class="btn btn--primary" onclick={() => downloadBackup()}>
+			<button class="btn btn--primary" onclick={exportBackup}>
 				<Mark name="download" /> Export…
 			</button>
 		</div>
@@ -451,8 +524,8 @@
 			<span class="sp-label">
 				<span class="sp-name">Restore</span>
 				<span class="sp-desc">
-					Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups, and
-					settings on this device.
+					Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups,
+					open tabs, and settings on this device.
 				</span>
 			</span>
 			<button class="btn btn--primary" onclick={() => fileInput?.click()}>
@@ -480,8 +553,9 @@
 						This backup holds
 						<strong>{pending.counts.owned}</strong> owned characters,
 						<strong>{pending.counts.loadouts}</strong> loadouts,
-						<strong>{pending.counts.rotations}</strong> saved rotations, and
-						<strong>{pending.counts.lineups}</strong> saved lineups. Replace your current data?
+						<strong>{pending.counts.rotations}</strong> saved rotations,
+						<strong>{pending.counts.lineups}</strong> saved lineups, and
+						<strong>{pending.counts.openTabs}</strong> open tabs. Replace your current data?
 					</p>
 					<div class="sp-import-actions">
 						<button class="btn btn--danger is-confirming" onclick={confirmImport}>

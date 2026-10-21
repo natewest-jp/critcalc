@@ -42,7 +42,8 @@
 	<p>
 		No. Everything you set up (your roster, loadouts, saved rotations and lineups, and settings) is
 		stored in this browser and nowhere else. <a href={resolve('/privacy')}>Privacy</a> lists exactly what
-		is kept in your browser and what leaves it.
+		is kept in your browser and what leaves it. Because nothing is kept anywhere else, clearing this site’s
+		data in your browser erases it, so it’s worth downloading a backup now and then.
 	</p>
 
 	<h3>How do I move my data to another device?</h3>
@@ -50,8 +51,8 @@
 		In <a href={resolve('/settings')}>Settings</a> under <strong>Backup</strong>, click
 		<strong>Export…</strong> to download all your data as one file. Move that file to the other
 		device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
-		file’s data. The file carries your settings, roster, constellations, loadouts, saved rotations, and
-		saved lineups.
+		file’s data. The file carries your settings, roster, constellations, loadouts, saved rotations and
+		lineups, open tabs, and the Visualizers’ layout.
 	</p>
 
 	<h3>What does a share link carry?</h3>
@@ -144,7 +145,8 @@
 	</p>
 	<p>
 		If you use critcalc on your phone often, I’d suggest adding it to your home screen, which opens
-		the site without your browser’s bars. It still needs a connection: Character data loads as you
+		the site without your browser’s bars. On an iPhone, it also stops Safari from clearing your data
+		when you haven’t visited in a while. It still needs a connection: Character data loads as you
 		use it, so going offline partway through can leave a character half-loaded.
 	</p>
 	<p>

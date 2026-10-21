@@ -4,7 +4,8 @@
 	 Rewritten 2026-10-16 for launch, with Cloudflare Web Analytics on (enabled
 	 in the Pages dashboard 2026-10-15; auto-injected, no code in the repo).
 	 ⚠️ Every claim here is checked against the code: the key list is
-	 stores.ts + boards + rotationTabs + documentBar + visualizers/workspace;
+	 stores.ts + boards + rotationTabs + documentBar + visualizers/workspace +
+	 storageDurability (the last-backup stamp, and the persist ask on save);
 	 Backup is settingsBackup.ts BACKUP_KEYS; Reset is SettingsPanel's
 	 clearEverything. What Cloudflare collects is stated AS CLOUDFLARE STATES
 	 IT (its Web Analytics FAQ) — we have not measured the beacon. Update
@@ -30,12 +31,19 @@
 		<li>Saved rotations and teams, and saved lineups.</li>
 		<li>Open tabs in the Rotation Planner and the Team Builder, and their recently closed tabs.</li>
 		<li>The Visualizers’ layout.</li>
+		<li>When you last downloaded a backup, so Settings can tell you.</li>
 	</ul>
 	<p>
 		critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a> carries
-		everything except the open tabs and the Visualizers’ layout. <strong>Reset saved data</strong> in
-		the same place clears your roster, loadouts, saved rotations, and saved lineups but keeps your settings.
-		To remove everything, clear this site’s data in your browser.
+		all of it. <strong>Reset saved data</strong> in the same place clears your roster, loadouts, saved
+		rotations, and saved lineups but keeps your settings. To remove everything, clear this site’s data
+		in your browser.
+	</p>
+	<p>
+		Browsers can clear a site’s storage on their own, for example after a while without a visit. The
+		first time you save a rotation or lineup, critcalc asks your browser to keep this site’s data
+		instead. Firefox shows you a prompt for this; other browsers decide by themselves. Settings
+		shows what your browser answered.
 	</p>
 </section>
 
@@ -96,5 +104,5 @@
 <section>
 	<h2 id="changes">Changes</h2>
 	<p>If any of this changes, this page changes first.</p>
-	<p>Last updated October 18, 2026.</p>
+	<p>Last updated October 21, 2026.</p>
 </section>
