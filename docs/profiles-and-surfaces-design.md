@@ -1,6 +1,6 @@
 # Profiles and surfaces — a design for the site's next shape
 
-**Status: DRAFT 2, 2026-10-21. Not ready for implementation.** Draft 2 settles the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
+**Status: DRAFT 3, 2026-10-21. Not ready for implementation.** Draft 2 settled the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4); draft 3 settles the profile cap, names, per-profile tabs and default labels (§2.3, §4.2, §6.1, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
 
 ---
 
@@ -56,7 +56,7 @@ Site settings (display, playback, Human timing, swap ping, the Visualizers' layo
 
 - Created by the user: a **name**, a **profile picture** and a **colour**.
 - ⚓ **The profile picture follows Genshin's own precedent** (Nate, 2026-10-21): the circle avatar of **any character you own** (in that profile's roster), or one of the game's **art profile pictures** — the silhouette-style pictures of moments from the Genshin journey. Nate supplies the art set. ⏭ A profile with an empty roster can still pick from the art set.
-- ⚓ **Each profile has a colour, and colours are exclusive**: the **seven element colours** for real profiles, and a **gray/white** that only Theorycraft can have — it reads as "nobody's account". Exclusive means no two profiles share one, so ⏭ a browser holds at most seven real profiles (§12).
+- ⚓ **Each profile has a colour, and colours are exclusive**: the **seven element colours** for real profiles, and a **gray/white** that only Theorycraft can have — it reads as "nobody's account". Exclusive means no two profiles share one, so ⚓ **a browser holds at most seven real profiles** (Nate: nobody actively plays eight accounts, and a cap with a visible reason beats an arbitrary one). At the limit, **Create profile** stays visible but disabled with a one-line reason; deleting a profile frees its colour.
 - More than one is normal (several accounts). Switching is **loud** (§9.4): the picture, name and colour change in the title bar, and every list, tab and roster-dependent view changes with it.
 - ⚓ **The profile sits in the title bar opposite the logo** (§5.1). Clicking it opens the full-screen state at **You** (§6), which holds the profile switcher.
 
@@ -109,8 +109,12 @@ The Library's "team entry" (a names-only `savedNotations` row) and team headings
 
 - A tab is just **an open document**. Closing a tab closes it; the document stays in the Library. **Recently closed retires**: the Library's recency order already holds it.
 - Deleting is a separate, deliberate act in the Library.
-- ⏭ The 12-tab limit (⚓ §9.3) stays as an _open_ limit, not a storage limit.
-- ⏭ Unnamed documents need a default name (e.g. from the team or the first characters) — §12.
+- ⚓ **Open tabs belong to a profile.** Each profile keeps its own open tabs per tool, its active tab and its last tool, and returns to them when you switch back (as Chrome profiles restore their windows). Theorycraft's tabs persist like any profile's. ⛔ One shared tab strip tagged per profile was rejected: switching profiles would change the values inside tabs still on screen.
+- The 12-tab limit (⚓ §9.3) stays, **per profile**, as an _open_ limit, not a storage limit.
+- ⚓ **An unnamed document stores no name; it shows a label derived from its contents**, styled as a placeholder (not yet named). Naming it is an ordinary edit.
+  - **Rotation:** the matching saved team's name, else the characters' names ("Neuvillette · Furina · Kazuha · Baizhu"), shortened to fit. Derived, so it stays right when the team changes.
+  - **Lineup:** its mode and season ("Stygian 7.1", "Abyss", "Custom lineup") — what the existing "the tab names the mode" intent asked for and the default "Lineup 1" ignores.
+  - ⛔ Rejected: numbers ("Rotation 3": meaningless, and they shift), dates (the list already shows when), "Untitled" (every unnamed row looks the same). Duplicate labels are fine: rows also show portraits and last-touched time.
 
 ### 4.3 Accumulation and pruning
 
@@ -196,19 +200,20 @@ Band A and band B as concepts (`ToolStack`'s two-band rule, `BAND_A_H`, the docu
 - **The title bar stays** in both states, so the profile, the brand and the doors never move. Only what is below the title bar flips.
 - **A sidebar of sections** (macOS System Settings, Discord's settings, Steam's library):
 
-| Group        | Sections                                                    | Door               |
-| ------------ | ----------------------------------------------------------- | ------------------ |
-| **You**      | Roster · Teams                                              | the profile avatar |
-| **Library**  | Rotations · Lineups                                         | Library            |
-| **Help**     | Getting started · each tool · FAQ · Keyboard shortcuts      | `?`                |
-| **About**    | About · What's new · Contribute · Beta · Privacy · Coverage | `?`                |
-| **Settings** | Display · Playback · Human timing · Your data               | ⚙                  |
+| Group              | Sections                                                    | Door                |
+| ------------------ | ----------------------------------------------------------- | ------------------- |
+| **(profile name)** | Roster · Teams                                              | the profile picture |
+| **Library**        | Rotations · Lineups                                         | Library             |
+| **Help**           | Getting started · each tool · FAQ · Keyboard shortcuts      | `?`                 |
+| **About**          | About · What's new · Contribute · Beta · Privacy · Coverage | `?`                 |
+| **Settings**       | Display · Playback · Human timing · Your data               | ⚙                   |
 
 - **Every section has its own address**, so Back works, links work, and the old split between "overlay" and "page" (`/library`, `/settings`, `/help/...`) becomes one thing.
 - **Leaving:** a clear return to the tool, Escape, and the browser's Back.
 - ⏭ Reading surfaces (Help, About) on slate, or paper cards on slate per "paper answers" (§12).
 - ⏭ The flip needs its own transition; the scene and nav clocks are Nate-tuned and are not borrowed. The WebGL scene can stop rendering while covered.
-- ⏭ A name for the state (§12).
+- ⚓ **Names.** The state needs no user-facing name (users only ever see its sections, as Genshin never names its menus); internally it is **the menu state** — the game's world-and-menus split. ⛔ "Archive" (in Genshin, lore and collections) and "Dashboard" (data at a glance) rejected. In help copy the bars are **"the top bar"** and **"the toolbar"**; internally, title bar and toolbar.
+- ⚓ **The You group is titled with the active profile's own name** (e.g. "Main" above Roster and Teams), so the heading answers "whose is this?". ⛔ "Account" (promises a login) and "Profile" (reads like a settings page) rejected; "You" is the fallback.
 
 ### 6.2 You: Roster and Teams (real profiles only)
 
@@ -269,7 +274,7 @@ This design doesn't redesign the tools' interiors; the structure survey's per-to
 
 ### 9.4 Switching profiles
 
-- One action from the profile picture. Open tabs, the roster, Teams and the Library all swap. ⏭ Whether each profile keeps its own open tabs (likely yes).
+- One action from the profile picture. Open tabs, the roster, Teams and the Library all swap, and you land where you last were in that profile (§4.2).
 - ⚓ **The switch cue** (Nate, 2026-10-21): the new profile's colour **washes softly over the UI and fades out over ~2 seconds** — e.g. a gradient falling from the title bar, or a soft frame around the tool; ⏭ the shape is a design question for `/lab`. Precedents: Chrome's per-profile window colour, Firefox's container colours, Slack's workspace colours, the red banner teams put on production.
 - **A permanent cue as well**: the profile picture carries its colour at all times, and ⏭ possibly a thin line of it along the title bar's bottom edge. The flash marks the moment of switching; the permanent cue answers "where am I?" any time after. Colour is never the only signal — the name and picture say it too.
 - **Motion:** one soft fade, well clear of the three-flashes-a-second accessibility limit. Under `prefers-reduced-motion` it appears in its end state with no fade (the motion tokens zero, per the motion round); the permanent cue carries the meaning. ⛔ The scene and nav clocks are not borrowed.
@@ -316,12 +321,12 @@ So nothing below reads as still in force once this design is adopted:
 2. Team identity is the set of four; is the member **order** stored and shown?
 3. Do teams carry **notes**?
 4. Which **settings** are per profile, if any (Human timing and swap ping feel personal to the player, not the account)?
-5. ~~Avatar~~ — ✅ settled (§2.3). **Still open:** the cap of seven real profiles that exclusive element colours imply — fine, or let colours repeat past seven with the picture telling them apart?
+5. ~~Avatar, colour cap~~ — ✅ settled (§2.3): seven real profiles.
 
 **Saving**
 
-6. **Default names** for unnamed rotations and lineups.
-7. The **open-tab limit** under autosave: keep 12?
+6. ~~Default names~~ — ✅ derived labels (§4.2).
+7. ~~Open-tab limit~~ — ✅ 12, per profile (§4.2).
 8. **Moving vs copying** a Theorycraft document into a profile; and between two real profiles.
 9. The Theorycraft **pruning window** for untouched link documents.
 10. ~~Storage engine~~ — ✅ IndexedDB, sync-ready records (§4.4).
@@ -330,12 +335,12 @@ So nothing below reads as still in force once this design is adopted:
 **Journeys**
 
 12. ~~Link while a profile is active~~ — ✅ switch automatically, loudly (§9.3). **Still open:** the shape of the colour wash, and whether the permanent cue includes a title-bar line.
-13. Does each profile keep its **own open tabs**?
+13. ~~Own open tabs~~ — ✅ yes (§4.2).
 14. What a first visit's **invitation** looks like, and where it lives.
 
 **Surfaces**
 
-15. The full-screen state's **name**, and the names for the title bar and toolbar in user-facing copy (working names here).
+15. ~~Names~~ — ✅ the menu state; the top bar / the toolbar; the You group titled by the profile's name (§6.1).
 16. Help and About **on slate, or paper cards on slate**.
 17. The **flip transition**.
 18. The **inspector's** home in the Builder, and on a phone.
