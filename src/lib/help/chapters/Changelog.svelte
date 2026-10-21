@@ -37,17 +37,6 @@
 	<div class="timeline">
 		<article class="entry">
 			<header class="entry-head">
-				<h3>A page for what’s new</h3>
-				<time class="entry-date" datetime="2026-10-21">October 21</time>
-			</header>
-			<p>
-				Noticeable changes are listed here as they ship. <a href="#known-gaps">Known gaps</a>, at
-				the bottom, lists what the tools don’t model yet.
-			</p>
-		</article>
-
-		<article class="entry">
-			<header class="entry-head">
 				<h3>critcalc launches</h3>
 				<time class="entry-date" datetime="2026-10-19">October 19</time>
 			</header>
