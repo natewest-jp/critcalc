@@ -2,7 +2,9 @@
 	 carries an id; the area shell reads them for the sidebar's table of
 	 contents, so a MONTH is an <h2> and an entry is an <h3> under it. The
 	 entries of a month sit on a TIMELINE (⚓ Nate 2026-10-21): a rule down the
-	 left with a dot at each date; the month heading interrupts it.
+	 left with a pip at each title, the date after the title in small type; the
+	 rule runs the month's whole height and a little above its first pip, and
+	 the month heading interrupts it.
 
 	 Added 2026-10-21 (⚓ Nate). The noticeable changes, newest first — ⛔ not
 	 every commit: a change goes here when a player would notice it. Character
@@ -34,8 +36,10 @@
 
 	<div class="timeline">
 		<article class="entry">
-			<p class="entry-date"><time datetime="2026-10-21">October 21</time></p>
-			<h3>A page for what’s new</h3>
+			<header class="entry-head">
+				<h3>A page for what’s new</h3>
+				<time class="entry-date" datetime="2026-10-21">October 21</time>
+			</header>
 			<p>
 				Noticeable changes are listed here as they ship. <a href="#known-gaps">Known gaps</a>, at
 				the bottom, lists what the tools don’t model yet.
@@ -43,11 +47,13 @@
 		</article>
 
 		<article class="entry">
-			<p class="entry-date"><time datetime="2026-10-19">October 19</time></p>
-			<h3>critcalc launches</h3>
+			<header class="entry-head">
+				<h3>critcalc launches</h3>
+				<time class="entry-date" datetime="2026-10-19">October 19</time>
+			</header>
 			<p>
-				critcalc.app is public, with the Team Builder, the Rotation Planner, and eight Visualizers.
-				The source code is on
+				critcalc.app goes live with a Team Builder, Rotation Planner, and eight Visualizers. Source
+				code is on
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external -->
 				<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
 					>GitHub</a
@@ -93,17 +99,28 @@
 </section>
 
 <style>
-	/* THE TIMELINE. The gutter holds a rule and a dot per entry; the rule is
-	   drawn per entry, from its own dot down to the next one, so it starts at
-	   the first dot and stops at the last instead of running past either. It
-	   is the entry's ::before so the dot (the date's ::before, a child) paints
-	   over it. */
+	/* THE TIMELINE. One rule per month, the .timeline's own ::before: it runs
+	   the month's full height and starts a little ABOVE the first pip, so the
+	   line reads as continuing into the month rather than starting at it
+	   (⚓ Nate). Each pip sits on its title's first line, centred on it. */
 	.timeline {
 		--tl-gutter: 1.6rem;
 		--tl-x: 0.45rem; /* the rule's centre, from the gutter's left edge */
 		--tl-dot: 9px;
-		--tl-date-lh: 1.4rem;
+		--tl-head-lh: 1.6rem;
+		--tl-lead: 0.6rem; /* how far the rule rises above the first pip */
+		position: relative;
 		margin: 0 0 0.9rem;
+	}
+
+	.timeline::before {
+		content: '';
+		position: absolute;
+		left: calc(var(--tl-x) - 1px);
+		top: calc(var(--tl-head-lh) / 2 - var(--tl-lead));
+		bottom: 0;
+		width: 2px;
+		background: var(--line-soft);
 	}
 
 	.entry {
@@ -115,38 +132,35 @@
 		padding-bottom: 0;
 	}
 
-	.entry:not(:last-child)::before {
-		content: '';
-		position: absolute;
-		left: calc(var(--tl-x) - 1px);
-		top: calc(var(--tl-date-lh) / 2);
-		bottom: calc(var(--tl-date-lh) / -2);
-		width: 2px;
-		background: var(--line-soft);
-	}
-
-	.entry-date {
+	/* The title and its date share a line, on the title's baseline; a long
+	   title lets the date wrap under it rather than squeeze. */
+	.entry-head {
 		position: relative;
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: var(--tl-date-lh);
-		color: var(--muted);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 0.6rem;
+		margin: 0 0 0.35rem;
 	}
 
-	.entry-date::before {
+	.entry-head::before {
 		content: '';
 		position: absolute;
 		left: calc(var(--tl-x) - var(--tl-gutter) - var(--tl-dot) / 2);
-		top: calc(var(--tl-date-lh) / 2 - var(--tl-dot) / 2);
+		top: calc(var(--tl-head-lh) / 2 - var(--tl-dot) / 2);
 		width: var(--tl-dot);
 		height: var(--tl-dot);
 		border-radius: 50%;
 		background: var(--accent);
 	}
 
-	/* The title binds to its date above and its text below; .prose h3's own
-	   1.8rem top is for a heading that opens a block, which the date does here. */
-	.entry h3 {
-		margin: 0.1rem 0 0.35rem;
+	.entry-head h3 {
+		margin: 0;
+		line-height: var(--tl-head-lh);
+	}
+
+	.entry-date {
+		font-size: var(--fs-md);
+		color: var(--muted);
 	}
 </style>
