@@ -9,9 +9,14 @@
  * ⚓ Nate 2026-10-21: ask on the first SAVE — a click that means "keep this",
  * so Firefox's prompt has a reason the user can see, and early enough that a
  * Firefox user does not lose work without knowing the browser could clear it.
- * Every save asks, and that costs nothing once granted (`persisted()` answers
- * first); Chrome may grant later as engagement grows. Someone who only edits
- * the roster never saves, so Settings carries the same ask as a button.
+ * ONLY the first save asks (`askOnFirstSave`): Firefox prompts again every
+ * time it is asked after a decline (Nate tested it, 2026-10-21), so asking on
+ * every save would nag a decliner on every save. Someone who only edits the
+ * roster never saves, and someone who declined may change their mind, so
+ * Settings carries the same ask as a button, which always asks.
+ * Safari declines in an ordinary tab (Nate tested it; WebKit names the
+ * home-screen web app as its example of a grant), so Settings points Safari
+ * at Add to Home Screen instead of a button that cannot succeed.
  *
  * The last-backup stamp lives in its OWN key, outside BACKUP_KEYS, so
  * restoring an old file never rewinds it.
@@ -31,6 +36,28 @@ export async function requestPersistentStorage(): Promise<boolean> {
 	} catch {
 		return false;
 	}
+}
+
+export const PERSIST_ASKED_KEY = 'critcalc:persistAsked';
+
+/** The save-time ask: once per browser, never again after that. */
+export function askOnFirstSave(): void {
+	if (!browser) return;
+	try {
+		if (localStorage.getItem(PERSIST_ASKED_KEY)) return;
+		localStorage.setItem(PERSIST_ASKED_KEY, '1');
+	} catch {
+		return; // storage blocked: there is nothing to keep
+	}
+	void requestPersistentStorage();
+}
+
+/** Safari proper (not Chrome, Edge or Firefox on iOS, which all say "Safari"
+ *  in their user agent too). Only steers which advice Settings gives. */
+export function isSafari(): boolean {
+	if (!browser) return false;
+	const ua = navigator.userAgent;
+	return /safari/i.test(ua) && !/chrome|chromium|crios|fxios|edgios|android/i.test(ua);
 }
 
 /** Whether storage is persistent: `null` when the browser can't say. */
