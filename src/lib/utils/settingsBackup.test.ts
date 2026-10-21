@@ -46,7 +46,8 @@ describe('parseBackup', () => {
 			owned: 1,
 			loadouts: 1,
 			rotations: 1,
-			lineups: 0
+			lineups: 0,
+			openTabs: 0
 		});
 	});
 
@@ -259,5 +260,87 @@ describe('parseBackup', () => {
 			playbackSoundMode: 'metronome',
 			playbackVolume: 1
 		});
+	});
+	it('round-trips the open documents (v2) and sanitizes them', () => {
+		const tab = {
+			id: 't1',
+			label: 'Tab 1',
+			notation: 'bennett E Q',
+			tabCon: { bennett: 9 },
+			viewedAt: 5,
+			junk: true
+		};
+		const board = {
+			id: 'b1',
+			label: 'Lineup 1',
+			preset: 'stygian',
+			teams: [{ id: 'x', slots: ['bennett', 7] }],
+			noRepeats: true,
+			season: '7.1'
+		};
+		const res = parseBackup(
+			envelope({
+				'critcalc:rotationTabs': {
+					tabs: [tab, { id: 't2', label: 'Bad', notation: 42 }],
+					activeTabId: 'gone'
+				},
+				'critcalc:recentlyClosedRotations': [
+					{ tab, closedAt: 9 },
+					{ tab: null, closedAt: 1 }
+				],
+				'critcalc:boards': { boards: [board], activeBoardId: 'b1' },
+				'critcalc:recentlyClosedBoards': [{ tab: board }],
+				'critcalc:vizWorkspace': { v: 1, assignment: ['crit', 3, 'icd'], slots: 2 }
+			}),
+			100
+		);
+		expect(res.ok).toBe(true);
+		if (!res.ok) return;
+		const tabs = res.data['critcalc:rotationTabs'] as { tabs: unknown[]; activeTabId: string };
+		expect(tabs.tabs).toEqual([
+			{ id: 't1', label: 'Tab 1', notation: 'bennett E Q', tabCon: { bennett: 6 }, viewedAt: 5 }
+		]);
+		// An active id that names no surviving tab falls back to the first.
+		expect(tabs.activeTabId).toBe('t1');
+		expect(res.data['critcalc:recentlyClosedRotations']).toHaveLength(1);
+		const boards = res.data['critcalc:boards'] as { boards: { teams: unknown[] }[] };
+		expect(boards.boards[0].teams).toEqual([{ id: 'x', slots: ['bennett', null, null, null] }]);
+		// A missing closedAt is stamped with `now`.
+		expect(res.data['critcalc:recentlyClosedBoards']).toEqual([
+			{ tab: expect.objectContaining({ id: 'b1' }), closedAt: 100 }
+		]);
+		expect(res.data['critcalc:vizWorkspace']).toEqual({
+			v: 1,
+			assignment: ['crit', 'icd'],
+			slots: 2
+		});
+		expect(res.counts.openTabs).toBe(2);
+	});
+
+	it('loads a v1 file, which has no open documents, and touches none of them', () => {
+		const res = parseBackup(
+			JSON.stringify({
+				app: 'critcalc',
+				version: 1,
+				exportedAt: 1,
+				data: { 'critcalc:constellations': { bennett: 1 } }
+			})
+		);
+		expect(res.ok).toBe(true);
+		if (!res.ok) return;
+		expect(Object.keys(res.data)).toEqual(['critcalc:constellations']);
+		expect(res.counts.openTabs).toBe(0);
+	});
+
+	it('drops an open tab whose notation is over the length cap', () => {
+		const res = parseBackup(
+			envelope({
+				'critcalc:rotationTabs': {
+					tabs: [{ id: 't1', label: 'Huge', notation: 'E '.repeat(10_000) }],
+					activeTabId: 't1'
+				}
+			})
+		);
+		expect(res.ok).toBe(false);
 	});
 });

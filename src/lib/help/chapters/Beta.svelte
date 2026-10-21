@@ -51,6 +51,7 @@
 		While that happens, your saved data won’t be lost. Everything in your Library stays in your
 		browser through every update. It’s still worth downloading a backup now and then (<strong
 			>Export…</strong
-		> in Settings), because clearing your browser’s site data erases it.
+		> in Settings), because clearing your browser’s site data erases it. Settings shows when you last
+		did.
 	</p>
 </section>

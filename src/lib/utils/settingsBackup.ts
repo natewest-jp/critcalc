@@ -16,7 +16,10 @@ import { browser } from '$app/environment';
 import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 import { NOTE_SET_IDS, ORDER_IDS, SOUND_MODES, SWAP_STYLES, VOICE_IDS } from '$lib/playback/tones';
 import { notationHasActions } from '$lib/utils/notationEdit';
+import { MAX_NOTATION_CHARS } from '$lib/utils/tokenizer';
+import { RECENTLY_CLOSED_CAP, TAB_LIMIT } from '$lib/tabSet';
 import type { LoadoutEntry } from '$lib/stores';
+import { recordBackup } from '$lib/utils/storageDurability';
 
 // Must stay in sync with the private key constants in stores.ts.
 export const BACKUP_KEYS = [
@@ -25,12 +28,22 @@ export const BACKUP_KEYS = [
 	'critcalc:ownership',
 	'critcalc:loadout',
 	'critcalc:savedNotations',
-	'critcalc:savedBoards'
+	'critcalc:savedBoards',
+	// v2 (2026-10-21): the open documents too — a tab is unsaved work, the
+	// thing a cleared browser loses with no other copy anywhere.
+	'critcalc:rotationTabs',
+	'critcalc:recentlyClosedRotations',
+	'critcalc:boards',
+	'critcalc:recentlyClosedBoards',
+	'critcalc:vizWorkspace'
 ] as const;
 
 export type BackupKey = (typeof BACKUP_KEYS)[number];
 
-export const BACKUP_VERSION = 1;
+/** v2 added the open documents (tabs, boards, Recently closed, the
+ *  Visualizers' layout). A v1 file still loads: it just has none of them, and
+ *  keys a file lacks are left as they are. */
+export const BACKUP_VERSION = 2;
 
 export type BackupData = Partial<Record<BackupKey, unknown>>;
 
@@ -47,6 +60,8 @@ export type BackupCounts = {
 	loadouts: number;
 	rotations: number;
 	lineups: number;
+	/** Open Planner tabs plus open Team Builder lineups. */
+	openTabs: number;
 };
 
 export type ParseResult =
@@ -170,6 +185,34 @@ function sanitizeLoadout(v: unknown): Record<string, LoadoutEntry> | undefined {
 	return out;
 }
 
+function isNotation(v: unknown): v is string {
+	return typeof v === 'string' && v.length <= MAX_NOTATION_CHARS;
+}
+
+function finiteOr<T>(v: unknown, fallback: T): number | T {
+	return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+/** A lineup's teams — shared by a saved lineup and an open one. */
+function sanitizeTeams(v: unknown): Record<string, unknown>[] {
+	const teams: Record<string, unknown>[] = [];
+	for (const team of Array.isArray(v) ? v : []) {
+		if (!isObject(team) || typeof team.id !== 'string') continue;
+		const raw = Array.isArray(team.slots) ? team.slots : [];
+		const clean: Record<string, unknown> = {
+			id: team.id,
+			slots: Array.from({ length: 4 }, (_, i) => (typeof raw[i] === 'string' ? raw[i] : null))
+		};
+		if (isObject(team.con)) {
+			const con = sanitizeConstellations(team.con);
+			if (con) clean.con = con;
+		}
+		if (typeof team.pinnedRotationId === 'string') clean.pinnedRotationId = team.pinnedRotationId;
+		teams.push(clean);
+	}
+	return teams;
+}
+
 function sanitizeSavedNotations(v: unknown, now: number): Record<string, unknown>[] | undefined {
 	if (!Array.isArray(v)) return undefined;
 	const out: Record<string, unknown>[] = [];
@@ -178,7 +221,7 @@ function sanitizeSavedNotations(v: unknown, now: number): Record<string, unknown
 		if (
 			typeof entry.id !== 'string' ||
 			typeof entry.name !== 'string' ||
-			typeof entry.notation !== 'string'
+			!isNotation(entry.notation)
 		) {
 			continue;
 		}
@@ -219,26 +262,11 @@ function sanitizeSavedBoards(v: unknown, now: number): Record<string, unknown>[]
 		) {
 			continue;
 		}
-		const teams: Record<string, unknown>[] = [];
-		for (const team of Array.isArray(entry.teams) ? entry.teams : []) {
-			if (!isObject(team) || typeof team.id !== 'string') continue;
-			const raw = Array.isArray(team.slots) ? team.slots : [];
-			const clean: Record<string, unknown> = {
-				id: team.id,
-				slots: Array.from({ length: 4 }, (_, i) => (typeof raw[i] === 'string' ? raw[i] : null))
-			};
-			if (isObject(team.con)) {
-				const con = sanitizeConstellations(team.con);
-				if (con) clean.con = con;
-			}
-			if (typeof team.pinnedRotationId === 'string') clean.pinnedRotationId = team.pinnedRotationId;
-			teams.push(clean);
-		}
 		const clean: Record<string, unknown> = {
 			id: entry.id,
 			name: entry.name,
 			preset: entry.preset,
-			teams,
+			teams: sanitizeTeams(entry.teams),
 			noRepeats: entry.noRepeats === true,
 			savedAt:
 				typeof entry.savedAt === 'number' && Number.isFinite(entry.savedAt) ? entry.savedAt : now
@@ -252,6 +280,90 @@ function sanitizeSavedBoards(v: unknown, now: number): Record<string, unknown>[]
 		out.push(clean);
 	}
 	return out;
+}
+
+// ── Open documents (v2) ─────────────────────────────────────────────────────
+// Shapes as `RotationTab` / `Board` and the tools' own loaders read them; the
+// loaders still migrate at restore (a tab's retired `manualSlots`, a board's
+// slot normalization), so these only refuse what would break a loader.
+
+function sanitizeRotationTab(v: unknown): Record<string, unknown> | null {
+	if (!isObject(v) || typeof v.id !== 'string' || typeof v.label !== 'string') return null;
+	if (!isNotation(v.notation)) return null;
+	const clean: Record<string, unknown> = { id: v.id, label: v.label, notation: v.notation };
+	const loadout = sanitizeLoadout(v.tabLoadout);
+	if (loadout) clean.tabLoadout = loadout;
+	const con = sanitizeConstellations(v.tabCon);
+	if (con) clean.tabCon = con;
+	if (typeof v.savedId === 'string') clean.savedId = v.savedId;
+	if (v.synced === true) clean.synced = true;
+	if (typeof v.sample === 'string') clean.sample = v.sample;
+	const viewedAt = finiteOr(v.viewedAt, null);
+	if (viewedAt !== null) clean.viewedAt = viewedAt;
+	// ⛔ RETIRED, still READ — `migrateTab` folds it into the notation.
+	if (Array.isArray(v.manualSlots)) clean.manualSlots = v.manualSlots;
+	return clean;
+}
+
+function sanitizeBoard(v: unknown): Record<string, unknown> | null {
+	if (!isObject(v) || typeof v.id !== 'string' || typeof v.label !== 'string') return null;
+	if (v.preset !== 'stygian' && v.preset !== 'abyss' && v.preset !== 'custom') return null;
+	const clean: Record<string, unknown> = {
+		id: v.id,
+		label: v.label,
+		preset: v.preset,
+		teams: sanitizeTeams(v.teams),
+		noRepeats: v.noRepeats === true
+	};
+	if (typeof v.season === 'string' && /^\d+\.\d+$/.test(v.season)) clean.season = v.season;
+	if (typeof v.savedId === 'string') clean.savedId = v.savedId;
+	const viewedAt = finiteOr(v.viewedAt, null);
+	if (viewedAt !== null) clean.viewedAt = viewedAt;
+	return clean;
+}
+
+/** `{ <listKey>: T[], <activeKey>: id }`, the shape both tab states persist. */
+function sanitizeTabState(
+	v: unknown,
+	listKey: string,
+	activeKey: string,
+	one: (v: unknown) => Record<string, unknown> | null
+): Record<string, unknown> | undefined {
+	if (!isObject(v) || !Array.isArray(v[listKey])) return undefined;
+	const list = v[listKey]
+		.map(one)
+		.filter((t): t is Record<string, unknown> => t !== null)
+		.slice(0, TAB_LIMIT);
+	if (list.length === 0) return undefined;
+	const active = list.some((t) => t.id === v[activeKey]) ? v[activeKey] : list[0].id;
+	return { [listKey]: list, [activeKey]: active };
+}
+
+function sanitizeRecentlyClosed(
+	v: unknown,
+	one: (v: unknown) => Record<string, unknown> | null,
+	now: number
+): Record<string, unknown>[] | undefined {
+	if (!Array.isArray(v)) return undefined;
+	const out: Record<string, unknown>[] = [];
+	for (const entry of v) {
+		if (!isObject(entry)) continue;
+		const tab = one(entry.tab);
+		if (tab) out.push({ tab, closedAt: finiteOr(entry.closedAt, now) });
+	}
+	return out.slice(0, RECENTLY_CLOSED_CAP);
+}
+
+/** The Visualizers' `loadWorkspace` repairs the assignment against the current
+ *  instrument roster on read, so this keeps only the envelope it accepts. */
+function sanitizeVizWorkspace(v: unknown): Record<string, unknown> | undefined {
+	if (!isObject(v) || v.v !== 1 || !Array.isArray(v.assignment)) return undefined;
+	const clean: Record<string, unknown> = {
+		v: 1,
+		assignment: v.assignment.filter((id) => typeof id === 'string')
+	};
+	if (typeof v.slots === 'number' || v.slots === 'auto') clean.slots = v.slots;
+	return clean;
 }
 
 // ---------------------------------------------------------------------------
@@ -290,6 +402,34 @@ export function parseBackup(text: string, now = Date.now()): ParseResult {
 	if (notes) data['critcalc:savedNotations'] = notes;
 	const boards = sanitizeSavedBoards(src['critcalc:savedBoards'], now);
 	if (boards) data['critcalc:savedBoards'] = boards;
+	const tabs = sanitizeTabState(
+		src['critcalc:rotationTabs'],
+		'tabs',
+		'activeTabId',
+		sanitizeRotationTab
+	);
+	if (tabs) data['critcalc:rotationTabs'] = tabs;
+	const closedTabs = sanitizeRecentlyClosed(
+		src['critcalc:recentlyClosedRotations'],
+		sanitizeRotationTab,
+		now
+	);
+	if (closedTabs) data['critcalc:recentlyClosedRotations'] = closedTabs;
+	const openBoards = sanitizeTabState(
+		src['critcalc:boards'],
+		'boards',
+		'activeBoardId',
+		sanitizeBoard
+	);
+	if (openBoards) data['critcalc:boards'] = openBoards;
+	const closedBoards = sanitizeRecentlyClosed(
+		src['critcalc:recentlyClosedBoards'],
+		sanitizeBoard,
+		now
+	);
+	if (closedBoards) data['critcalc:recentlyClosedBoards'] = closedBoards;
+	const viz = sanitizeVizWorkspace(src['critcalc:vizWorkspace']);
+	if (viz) data['critcalc:vizWorkspace'] = viz;
 
 	if (Object.keys(data).length === 0) {
 		return { ok: false, error: 'The backup had no recognizable critcalc data.' };
@@ -301,7 +441,9 @@ export function parseBackup(text: string, now = Date.now()): ParseResult {
 		loadouts: Object.keys(load ?? {}).length,
 		// A names-only entry is a TEAM (library.isTeamEntry), not a rotation.
 		rotations: (notes ?? []).filter((e) => notationHasActions(e.notation as string)).length,
-		lineups: (boards ?? []).length
+		lineups: (boards ?? []).length,
+		openTabs:
+			((tabs?.tabs as unknown[]) ?? []).length + ((openBoards?.boards as unknown[]) ?? []).length
 	};
 
 	return { ok: true, data, counts };
@@ -342,6 +484,7 @@ export function downloadBackup(exportedAt = Date.now()): void {
 	a.click();
 	a.remove();
 	URL.revokeObjectURL(url);
+	recordBackup(exportedAt);
 }
 
 /**

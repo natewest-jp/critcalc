@@ -22,6 +22,7 @@ import {
 } from '$lib/playback/tones';
 import { browser } from '$app/environment';
 import { narrowFormQuery } from '$lib/breakpoints';
+import { requestPersistentStorage } from '$lib/utils/storageDurability';
 
 // ---------------------------------------------------------------------------
 // Guarded writes
@@ -121,6 +122,7 @@ function createSavedNotationsStore() {
 		save(entry: Omit<SavedNotation, 'id' | 'savedAt'>): string {
 			const id = Math.random().toString(36).slice(2, 10);
 			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
+			void requestPersistentStorage();
 			return id;
 		},
 
@@ -209,6 +211,7 @@ function createSavedBoardsStore() {
 		save(entry: Omit<SavedBoard, 'id' | 'savedAt'>): string {
 			const id = Math.random().toString(36).slice(2, 10);
 			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
+			void requestPersistentStorage();
 			return id;
 		},
 		update(
