@@ -1,6 +1,8 @@
 <!-- What's new chapter (/changelog) — see $lib/help/areas.ts. Every <h2>
 	 carries an id; the area shell reads them for the sidebar's table of
-	 contents, so a MONTH is an <h2> and an entry is an <h3> under it.
+	 contents, so a MONTH is an <h2> and an entry is an <h3> under it. The
+	 entries of a month sit on a TIMELINE (⚓ Nate 2026-10-21): a rule down the
+	 left with a dot at each date; the month heading interrupts it.
 
 	 Added 2026-10-21 (⚓ Nate). The noticeable changes, newest first — ⛔ not
 	 every commit: a change goes here when a player would notice it. Character
@@ -10,9 +12,10 @@
 	 the exception, for long-term limits only, written as what the tools don't
 	 do YET (style guide §1.3: ⛔ never "never" about the future).
 
-	 To add an entry: one <article> at the top of its month, newest first; a new
-	 month is a new <section> with an <h2 id="YYYY-MM">. The daily check-in
-	 proposes an entry when a user-visible to-do item is removed. -->
+	 To add an entry: one <article> at the top of its month's .timeline, newest
+	 first; a new month is a new <section> with an <h2 id="YYYY-MM"> and its own
+	 .timeline. The daily check-in proposes an entry when a user-visible to-do
+	 item is removed. -->
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
@@ -21,35 +24,37 @@
 <h1>What’s new</h1>
 
 <p class="lede">
-	The changes you’re most likely to notice, newest first. For how far each character’s kit has
-	gotten, see the
+	<a href="#known-gaps">Known gaps</a> are at the bottom of the page. For how far each character’s
+	kit has gotten, see the
 	<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>.
 </p>
 
 <section>
 	<h2 id="2026-10">October 2026</h2>
 
-	<article class="entry">
-		<h3>A page for what’s new</h3>
-		<p class="entry-date"><time datetime="2026-10-21">October 21</time></p>
-		<p>
-			Noticeable changes are listed here as they ship. <a href="#known-gaps">Known gaps</a>, at the
-			bottom, lists what the tools don’t model yet.
-		</p>
-	</article>
+	<div class="timeline">
+		<article class="entry">
+			<p class="entry-date"><time datetime="2026-10-21">October 21</time></p>
+			<h3>A page for what’s new</h3>
+			<p>
+				Noticeable changes are listed here as they ship. <a href="#known-gaps">Known gaps</a>, at
+				the bottom, lists what the tools don’t model yet.
+			</p>
+		</article>
 
-	<article class="entry">
-		<h3>critcalc launches</h3>
-		<p class="entry-date"><time datetime="2026-10-19">October 19</time></p>
-		<p>
-			critcalc.app is public, with the Team Builder, the Rotation Planner, and eight Visualizers.
-			The source code is on
-			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external -->
-			<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
-				>GitHub</a
-			>.
-		</p>
-	</article>
+		<article class="entry">
+			<p class="entry-date"><time datetime="2026-10-19">October 19</time></p>
+			<h3>critcalc launches</h3>
+			<p>
+				critcalc.app is public, with the Team Builder, the Rotation Planner, and eight Visualizers.
+				The source code is on
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external -->
+				<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
+					>GitHub</a
+				>.
+			</p>
+		</article>
+	</div>
 </section>
 
 <section>
@@ -88,11 +93,60 @@
 </section>
 
 <style>
-	/* The date binds UP to its title: h3 already spaces itself to bind down,
-	   so the date pulls in under it and the body follows at the normal gap. */
+	/* THE TIMELINE. The gutter holds a rule and a dot per entry; the rule is
+	   drawn per entry, from its own dot down to the next one, so it starts at
+	   the first dot and stops at the last instead of running past either. It
+	   is the entry's ::before so the dot (the date's ::before, a child) paints
+	   over it. */
+	.timeline {
+		--tl-gutter: 1.6rem;
+		--tl-x: 0.45rem; /* the rule's centre, from the gutter's left edge */
+		--tl-dot: 9px;
+		--tl-date-lh: 1.4rem;
+		margin: 0 0 0.9rem;
+	}
+
+	.entry {
+		position: relative;
+		padding: 0 0 1.6rem var(--tl-gutter);
+	}
+
+	.entry:last-child {
+		padding-bottom: 0;
+	}
+
+	.entry:not(:last-child)::before {
+		content: '';
+		position: absolute;
+		left: calc(var(--tl-x) - 1px);
+		top: calc(var(--tl-date-lh) / 2);
+		bottom: calc(var(--tl-date-lh) / -2);
+		width: 2px;
+		background: var(--line-soft);
+	}
+
 	.entry-date {
-		margin: -0.1rem 0 0.6rem;
+		position: relative;
+		margin: 0;
 		font-size: var(--fs-md);
+		line-height: var(--tl-date-lh);
 		color: var(--muted);
+	}
+
+	.entry-date::before {
+		content: '';
+		position: absolute;
+		left: calc(var(--tl-x) - var(--tl-gutter) - var(--tl-dot) / 2);
+		top: calc(var(--tl-date-lh) / 2 - var(--tl-dot) / 2);
+		width: var(--tl-dot);
+		height: var(--tl-dot);
+		border-radius: 50%;
+		background: var(--accent);
+	}
+
+	/* The title binds to its date above and its text below; .prose h3's own
+	   1.8rem top is for a heading that opens a block, which the date does here. */
+	.entry h3 {
+		margin: 0.1rem 0 0.35rem;
 	}
 </style>
