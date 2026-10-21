@@ -18,5 +18,8 @@
 		"stygian": "7.1",
 		"abyss": "2026-10-16 Stardread Moon",
 		"pending": ["Abyss: next cycle 凌振之月 (lunaris beta id 20098) — no English name yet"]
+	},
+	"todo": {
+		"lastSwept": "fbfb6c69"
 	}
 }
