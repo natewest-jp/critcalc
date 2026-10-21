@@ -1,6 +1,6 @@
 # Profiles and surfaces — a design for the site's next shape
 
-**Status: DRAFT 1, 2026-10-21. Not ready for implementation.** Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
+**Status: DRAFT 2, 2026-10-21. Not ready for implementation.** Draft 2 settles the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
 
 ---
 
@@ -54,8 +54,10 @@ Site settings (display, playback, Human timing, swap ping, the Visualizers' layo
 
 ### 2.3 Real profiles
 
-- Created by the user: a name, and ⏭ an avatar (a character portrait, the way Genshin's profile picture works, is the obvious candidate).
-- More than one is normal (several accounts). Switching is **loud**: the avatar and name change in the title bar, and every list, tab and roster-dependent view changes with it.
+- Created by the user: a **name**, a **profile picture** and a **colour**.
+- ⚓ **The profile picture follows Genshin's own precedent** (Nate, 2026-10-21): the circle avatar of **any character you own** (in that profile's roster), or one of the game's **art profile pictures** — the silhouette-style pictures of moments from the Genshin journey. Nate supplies the art set. ⏭ A profile with an empty roster can still pick from the art set.
+- ⚓ **Each profile has a colour, and colours are exclusive**: the **seven element colours** for real profiles, and a **gray/white** that only Theorycraft can have — it reads as "nobody's account". Exclusive means no two profiles share one, so ⏭ a browser holds at most seven real profiles (§12).
+- More than one is normal (several accounts). Switching is **loud** (§9.4): the picture, name and colour change in the title bar, and every list, tab and roster-dependent view changes with it.
 - ⚓ **The profile sits in the title bar opposite the logo** (§5.1). Clicking it opens the full-screen state at **You** (§6), which holds the profile switcher.
 
 ### 2.4 How a document finds its values
@@ -64,10 +66,12 @@ This replaces today's two layers and the `synced` flag (lineups design §9.5, §
 
 - **In a real profile:** a character you **own** reads the profile's roster, live. A character you **don't own** has no roster value, so the document keeps its own value for that character, marked as not owned (today's mark).
 - **In Theorycraft:** every value is the document's own.
-- ⏭ **The open question is overrides in a real profile:** may a rotation in your Main profile say "my Furina, but at C2"? Two options, §12 Q1:
-  - **Strict:** no. Hypotheticals live in Theorycraft (copy there to try). The profile always means "my account as it is".
-  - **Marked overrides:** yes, with a visible mark on the bench and in the Library ("2 characters differ from your roster"), and one action to return to the roster.
-  - Loadouts raise the same question more sharply: a weapon plan for a team you don't run yet is common.
+- ⚓ **Loadouts are a document's own choice everywhere.** Every weapon on offer is one every player has (Nate, 2026-10-21), so a weapon is not an ownership fact: the roster's loadout is a **default**, and a document may differ from it freely. ⏭ Revisit if weapons that need curating like the roster are ever added.
+- ⚓ **Constellations: a profile always shows your account as it is, and a what-if is a LENS, not an edit** (Nate, 2026-10-21; "what would this look like with this four-star at C6?" is a real want):
+  - In a real profile you can try a level you don't have. It is a **temporary view**: the character's constellation pip turns `--ui-provisional` (its existing meaning — _a stand-in_), and the bench or toolbar says so in one line with a **Clear** (working copy: "Trying Xiangling at C6 · not saved · Clear").
+  - **The rotation keeps saving everything else** — notation, loadouts, all of it. Only the hypothetical level is unsaved, which is the point of a what-if.
+  - **Keep as a Theorycraft copy** keeps a scenario that turns out to matter: the rotation is copied into Theorycraft with the what-if levels. So nothing is lost by accident, and nothing in a profile stops matching the account.
+  - ⏭ Whether the lens survives a reload or a tab switch (§12).
 
 ### 2.5 What retires
 
@@ -116,9 +120,24 @@ The Library's "team entry" (a names-only `savedNotations` row) and team headings
 
 ### 4.4 ⚠️ Storage
 
-Autosaving everything, across several profiles, into `localStorage` will meet its ~5 MB per-origin quota (a notation may be up to 16 KiB). ⏭ **IndexedDB** is the likely home for documents, with `localStorage` kept for small settings. That is a real engineering decision with its own migration, and it should be made before the build order (§12).
+Autosaving everything, across several profiles, into `localStorage` would meet its ~5 MB per-origin quota (a notation may be up to 16 KiB).
+
+- ⚓ **Documents and profiles move to IndexedDB** — the browser's built-in database: far more room (typically hundreds of MB or more), built for many records, and it never freezes the page while reading or writing. It is still local: "clear site data" erases it and `navigator.storage.persist()` covers it, exactly as for `localStorage`. Small settings can stay in `localStorage`.
+- ⚓ **Records are shaped for sync from the start**, so optional accounts (§4.5) stay cheap to add: every record carries a **stable id**, a **last-changed time**, and a **deletion marker** (a tombstone) instead of disappearing.
+- The move is part of the migration (§10).
 
 ---
+
+### 4.5 Accounts: parked, and designed for
+
+⚓ **No accounts for now** (Nate, 2026-10-21, after weighing "account required to save a profile"). The reasons, kept so the question isn't re-argued from scratch:
+
+- IndexedDB solves **capacity** without a server; only durability and cross-device use need one.
+- Requiring an account at **Create profile** would put a sign-up wall at the moment a player is most engaged (curating their roster), and the profile design only works if people create profiles.
+- Mandatory accounts make every cost unavoidable: two-device merges, a privacy rewrite, a minimum age and consent rules (many players are under 16), security and breach handling, "I lost my login" support.
+- Optional accounts are additive later; mandatory ones are hard to reverse.
+
+**The path if it returns:** optional, per profile — **Sync this profile** — on the sync-ready records above. Triggers worth watching: players asking for cross-device use, or reports of lost data despite the backup reminder. (The to-do list's On hold entry carries the earlier cost breakdown.)
 
 ## 5. The two bars
 
@@ -244,13 +263,16 @@ This design doesn't redesign the tools' interiors; the structure survey's per-to
 
 ### 9.3 Opening a shared link
 
-1. A link (`?r=`, `?b=`, `?team=`) always opens in **Theorycraft**, carrying the sender's values. If another profile was active, the switch is visible (⏭ automatic, or asked — §12).
+1. ⚓ A link (`?r=`, `?b=`, `?team=`) always opens in **Theorycraft**, carrying the sender's values. **If another profile was active, the site switches automatically and makes it very obvious** (Nate, 2026-10-21): the switch cue (§9.4) plus a short notice — working copy: "Opened in Theorycraft · your profiles are untouched" — with **Move to a profile** beside it.
 2. The document is marked **from a link**.
 3. **Move to a profile** brings it into Main: owned characters start reading Main's roster.
 
 ### 9.4 Switching profiles
 
-- One action from the profile avatar. Open tabs, the roster, Teams and the Library all swap. ⏭ Whether each profile keeps its own open tabs (likely yes).
+- One action from the profile picture. Open tabs, the roster, Teams and the Library all swap. ⏭ Whether each profile keeps its own open tabs (likely yes).
+- ⚓ **The switch cue** (Nate, 2026-10-21): the new profile's colour **washes softly over the UI and fades out over ~2 seconds** — e.g. a gradient falling from the title bar, or a soft frame around the tool; ⏭ the shape is a design question for `/lab`. Precedents: Chrome's per-profile window colour, Firefox's container colours, Slack's workspace colours, the red banner teams put on production.
+- **A permanent cue as well**: the profile picture carries its colour at all times, and ⏭ possibly a thin line of it along the title bar's bottom edge. The flash marks the moment of switching; the permanent cue answers "where am I?" any time after. Colour is never the only signal — the name and picture say it too.
+- **Motion:** one soft fade, well clear of the three-flashes-a-second accessibility limit. Under `prefers-reduced-motion` it appears in its end state with no fade (the motion tokens zero, per the motion round); the permanent cue carries the meaning. ⛔ The scene and nav clocks are not borrowed.
 
 ### 9.5 Starting from the Planner
 
@@ -290,11 +312,11 @@ So nothing below reads as still in force once this design is adopted:
 
 **Model**
 
-1. **Overrides in a real profile** (§2.4): strict, or marked overrides? Separately for constellations and for loadouts?
+1. ~~Overrides in a real profile~~ — ✅ settled in draft 2 (§2.4): loadouts free, constellation what-ifs as a lens. **Still open:** does a what-if lens survive a reload, or a tab switch?
 2. Team identity is the set of four; is the member **order** stored and shown?
 3. Do teams carry **notes**?
 4. Which **settings** are per profile, if any (Human timing and swap ping feel personal to the player, not the account)?
-5. Does a profile have an **avatar**, and is it a character portrait?
+5. ~~Avatar~~ — ✅ settled (§2.3). **Still open:** the cap of seven real profiles that exclusive element colours imply — fine, or let colours repeat past seven with the picture telling them apart?
 
 **Saving**
 
@@ -302,12 +324,12 @@ So nothing below reads as still in force once this design is adopted:
 7. The **open-tab limit** under autosave: keep 12?
 8. **Moving vs copying** a Theorycraft document into a profile; and between two real profiles.
 9. The Theorycraft **pruning window** for untouched link documents.
-10. **Storage engine**: IndexedDB for documents? (Decide before any build order.)
+10. ~~Storage engine~~ — ✅ IndexedDB, sync-ready records (§4.4).
 11. Backup v3: all profiles, or per profile?
 
 **Journeys**
 
-12. A shared link while a real profile is active: **switch to Theorycraft automatically**, or ask?
+12. ~~Link while a profile is active~~ — ✅ switch automatically, loudly (§9.3). **Still open:** the shape of the colour wash, and whether the permanent cue includes a title-bar line.
 13. Does each profile keep its **own open tabs**?
 14. What a first visit's **invitation** looks like, and where it lives.
 
