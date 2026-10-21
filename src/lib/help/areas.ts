@@ -88,6 +88,13 @@ export const ABOUT_AREA: Area = {
 			load: () => import('./chapters/About.svelte')
 		},
 		{
+			// ⚓ Nate 2026-10-21: the noticeable changes, newest first.
+			id: 'changelog',
+			title: 'What’s new',
+			path: resolve('/changelog'),
+			load: () => import('./chapters/Changelog.svelte')
+		},
+		{
 			id: 'contribute',
 			title: 'Contribute',
 			path: resolve('/contribute'),

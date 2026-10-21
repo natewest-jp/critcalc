@@ -190,6 +190,13 @@ holds the history), move items between sections, add new ones where he puts
 them. Keep the file's own rules (Now is his order; On hold says why). If he
 picks nothing, the list stays as it is.
 
+When a removed item is something a player would notice, propose a **What's
+new** entry for it (`src/lib/help/chapters/Changelog.svelte`, `/changelog`):
+a title and one or two sentences, drafted for Nate to rule on like any copy
+(style guide first). Character-kit changes belong on the coverage page; an
+entry names a character only when the change is worth announcing. Keep its
+Known gaps section in step too: a shipped gap comes off it.
+
 Then act only on Nate's picks. Each is a branch (`data/…`, `fix/…`) and goes through
 the normal gates. Endgame data updates are the exception that can ride the
 check-in's own commit: they are data the fetcher wrote, behind its own guard.
