@@ -26,6 +26,7 @@
   <url><loc>https://critcalc.app/coverage</loc><priority>0.6</priority></url>
 
   <url><loc>https://critcalc.app/about</loc><priority>0.5</priority></url>
+  <url><loc>https://critcalc.app/changelog</loc><priority>0.5</priority></url>
   <url><loc>https://critcalc.app/contribute</loc><priority>0.5</priority></url>
   <url><loc>https://critcalc.app/beta</loc><priority>0.3</priority></url>
   <url><loc>https://critcalc.app/library</loc><priority>0.3</priority></url>

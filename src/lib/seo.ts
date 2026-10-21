@@ -126,6 +126,11 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'What critcalc is: three Genshin Impact theorycrafting tools, where their data comes from, and who makes them.'
 	},
+	'/changelog': {
+		title: 'What’s new',
+		description:
+			'The noticeable changes to critcalc’s Genshin Impact tools, newest first, and the known gaps the tools don’t model yet.'
+	},
 	'/contribute': {
 		title: 'Contribute',
 		description:

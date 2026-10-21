@@ -240,6 +240,7 @@ test.describe('every chapter is also a real route', () => {
 		['/help/planner', 'Rotation Planner'],
 		['/help/visualizers', 'Visualizers'],
 		['/about', 'About critcalc'],
+		['/changelog', 'What’s new'],
 		['/contribute', 'Contribute'],
 		['/privacy', 'Privacy']
 	];
