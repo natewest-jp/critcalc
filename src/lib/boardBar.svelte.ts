@@ -28,6 +28,8 @@ import {
 } from './boards.svelte';
 import { closeCandidate, TAB_LIMIT, type TabStripModel } from './tabSet';
 import { encodeBoard, type SharedBoard } from './utils/boardUrl';
+import { nextLayout } from './nextLayout';
+import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
 
 /** A closing board is worth keeping when any of its teams holds anyone. */
 export function boardWorthKeeping(board: Board): boolean {
@@ -144,6 +146,20 @@ class BoardBarState {
 	 *  a new tab; cancelling the confirm keeps it in Recently closed. */
 	receive(shared: SharedBoard, isValidId: (id: string) => boolean) {
 		const doc = fromSharedBoard(shared, isValidId);
+		// ⚓ Under the switch (2d): a new document in THEORYCRAFT (§9.3).
+		if (get(nextLayout)) {
+			void documentsReady.then(async (viaStore) => {
+				if (!viaStore) return this.#receiveLocal(doc);
+				const { storageSession } = await import('./storage/session.svelte');
+				const switched = await storageSession.receiveLineup({ ...makeBoard(doc.label), ...doc });
+				documentBar.showNotice(switched ? OPENED_IN_THEORYCRAFT : 'Loaded shared lineup');
+			});
+			return;
+		}
+		this.#receiveLocal(doc);
+	}
+
+	#receiveLocal(doc: ReturnType<typeof fromSharedBoard>) {
 		const active = boards.activeBoard;
 		if (!boardWorthKeeping(active) && !active.savedId) {
 			boards.boards = boards.boards.map((b) => (b.id === active.id ? { ...doc, id: b.id } : b));
@@ -165,6 +181,23 @@ class BoardBarState {
 	 * the active board", taken.)
 	 */
 	receiveTeam(ids: string[]) {
+		// ⚓ Under the switch (2d): onto THEORYCRAFT's lineup (§9.3).
+		if (get(nextLayout)) {
+			void documentsReady.then(async (viaStore) => {
+				let switched = false;
+				if (viaStore) {
+					const { storageSession } = await import('./storage/session.svelte');
+					switched = await storageSession.toTheorycraft();
+				}
+				this.#placeTeam(ids);
+				if (switched) documentBar.showNotice(OPENED_IN_THEORYCRAFT);
+			});
+			return;
+		}
+		this.#placeTeam(ids);
+	}
+
+	#placeTeam(ids: string[]) {
 		const board = boards.activeBoard;
 		const slots: TeamSlot[] = ids.slice(0, 4);
 		const empty = board.teams.find((t) => t.slots.every((s) => s === null));

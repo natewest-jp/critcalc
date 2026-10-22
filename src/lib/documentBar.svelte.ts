@@ -42,6 +42,8 @@ import {
 	type Seats
 } from './utils/notationEdit';
 import { isTeamEntry, teamNotation } from './library';
+import { nextLayout } from './nextLayout';
+import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
 
 /**
  * The planner's timeline registers its two chart-bound exporters here on
@@ -335,6 +337,21 @@ class DocumentBarState {
 	 * the document in Recently closed, so the link is never lost.
 	 */
 	receive(doc: Omit<RotationTab, 'id'>, notice: string) {
+		// ⚓ Under the switch (build plan §13, 2d) an arriving document opens in
+		// THEORYCRAFT as its own new document (§9.3), once the session is up.
+		if (get(nextLayout)) {
+			void documentsReady.then(async (viaStore) => {
+				if (!viaStore) return this.#adoptOrMakeRoom(doc, notice);
+				const { storageSession } = await import('./storage/session.svelte');
+				const switched = await storageSession.receiveRotation(doc);
+				this.showNotice(switched ? OPENED_IN_THEORYCRAFT : notice);
+			});
+			return;
+		}
+		this.#adoptOrMakeRoom(doc, notice);
+	}
+
+	#adoptOrMakeRoom(doc: Omit<RotationTab, 'id'>, notice: string) {
 		if (rt.adopt(doc)) {
 			this.showNotice(notice);
 			return;

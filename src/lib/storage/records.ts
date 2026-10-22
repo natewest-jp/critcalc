@@ -116,6 +116,9 @@ type DocumentCommon = SyncFields & {
 	/** Heads the Library above Recent (§6.3): a recency list reorders itself
 	 *  on every switch, and pinning is the cure. */
 	pinned?: true;
+	/** Arrived by a shared link (§9.3): the Library marks it, and ⏭ an
+	 *  untouched one is pruned from Theorycraft after a while (§4.3). */
+	fromLink?: true;
 };
 
 export type RotationDocument = DocumentCommon & { type: 'rotation'; body: RotationBody };

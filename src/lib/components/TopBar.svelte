@@ -23,9 +23,9 @@
 	import { helpChapterForPath } from '$lib/help/areas';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
-	import { pictureOf, type Picture, type ProfileColour } from '$lib/storage/records';
-	import { PROFILE_PICTURES, THEORYCRAFT_PICTURE } from '$lib/profilePictures.generated';
-	import { getAvatar } from '$lib/utils/getAvatar';
+	import { pictureOf, type ProfileRecord } from '$lib/storage/records';
+	import { colourValue, pictureUrl as pictureUrlOf } from '$lib/profileLook';
+	import { motion } from '$lib/motion';
 	import { siteSettings } from '$lib/stores';
 	import Mark from './Mark.svelte';
 	import ReportLink from './ReportLink.svelte';
@@ -42,7 +42,7 @@
 	/** How long ✓ Saved stays before the status clears (§5.1: brief). 🎛️ */
 	const SAVED_SHOWN_MS = 1600;
 
-	type Menu = 'share' | 'help' | null;
+	type Menu = 'share' | 'help' | 'profile' | null;
 	let menu = $state<Menu>(null);
 
 	const tool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(resolve(t.path))));
@@ -74,24 +74,31 @@
 		return () => clearTimeout(t);
 	});
 
-	const COLOUR: Record<ProfileColour, string> = {
-		pyro: 'var(--el-pyro-main)',
-		hydro: 'var(--el-hydro-main)',
-		anemo: 'var(--el-anemo-main)',
-		electro: 'var(--el-electro-main)',
-		dendro: 'var(--el-dendro-main)',
-		cryo: 'var(--el-cryo-main)',
-		geo: 'var(--el-geo-main)',
-		theorycraft: 'var(--profile-theorycraft)'
-	};
+	const pictureUrl = (p: ProfileRecord) =>
+		pictureUrlOf(pictureOf(p), $siteSettings.useNewOutfits, p.twin);
 
-	function pictureUrl(p: Picture): string | null {
-		if (p.kind === 'character') {
-			return getAvatar(p.id, $siteSettings.useNewOutfits, 'circle', profile?.twin ?? 'aether');
-		}
-		if (p.name === THEORYCRAFT_PICTURE.id) return THEORYCRAFT_PICTURE.url;
-		return PROFILE_PICTURES.find((x) => x.id === p.name)?.url ?? null;
-	}
+	// ── The switch cue (design §9.4; ⚓ Nate 2026-10-22: a wash from the bar) ──
+	// The new profile's colour falls from the top bar and fades; its name rides
+	// below the picture and folds away with it. 🎛️ Knobs, for Nate's pass.
+	/** How long the wash takes to fade out (ms). */
+	const WASH_MS = 2000;
+	/** How far down the screen it reaches. */
+	const WASH_REACH = '38vh';
+	/** Its strongest alpha, at the bar's edge (percent). */
+	const WASH_PEAK = 32;
+
+	let cue = $state<{ key: number; colour: string; name: string } | null>(null);
+	$effect(() => {
+		const at = storageSession.switchedAt;
+		const p = storageSession.profile;
+		if (!at || !p) return;
+		// Reduced motion: no fade, so no flash; the ring carries the meaning.
+		const ms = motion(WASH_MS);
+		if (!ms) return;
+		cue = { key: at, colour: colourValue(p.colour), name: p.name };
+		const t = setTimeout(() => (cue = null), ms);
+		return () => clearTimeout(t);
+	});
 
 	/** ⚓ The current tool's button TOGGLES its Library place (§6.1): from the
 	 *  tool into it, and from anywhere in the menu state back onto the tool.
@@ -356,21 +363,112 @@
 		</div>
 
 		{#if profile}
-			{@const url = pictureUrl(pictureOf(profile))}
-			<button
-				class="tb-profile"
-				aria-label="Profile: {profile.name}"
-				title={profile.name}
-				onclick={() => menuState.toggle('roster')}
-			>
-				<span class="pp" style:--pp-color={COLOUR[profile.colour]}>
-					{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback">{profile.name[0]}</span
-						>{/if}
-				</span>
-			</button>
+			{@const url = pictureUrl(profile)}
+			<!-- ⚓ §12 Q14: Theorycraft invites an account beside its picture
+			     (hidden on a phone, where the bar has no room). -->
+			{#if profile.kind === 'theorycraft' && storageSession.canAddProfile}
+				<button class="tb-invite" onclick={() => menuState.show('profile/new')}
+					>Add your account</button
+				>
+			{/if}
+			<div class="tb-menu-wrap">
+				<button
+					class="tb-profile"
+					class:is-open={menu === 'profile'}
+					aria-label="Profile: {profile.name}"
+					aria-haspopup="menu"
+					title={profile.name}
+					onclick={(e) => toggle('profile', e)}
+				>
+					<span class="pp" style:--pp-color={colourValue(profile.colour)}>
+						{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback"
+								>{profile.name[0]}</span
+							>{/if}
+					</span>
+				</button>
+				{#if cue}
+					{#key cue.key}
+						<span class="tb-cue-name" style:--cue-ms="{motion(WASH_MS)}ms">{cue.name}</span>
+					{/key}
+				{/if}
+				{#if menu === 'profile'}
+					<!-- The profile menu (§2.3): the switcher, Add an account, and the
+					     profile's own places. -->
+					<div class="tb-menu tb-menu--profile ctx-dark" role="menu">
+						<div class="pm-head">
+							<span class="pm-name">{profile.name}</span>
+							<span class="pm-sub"
+								>{profile.kind === 'theorycraft'
+									? 'Shared links open here'
+									: 'Your account, in this browser'}</span
+							>
+						</div>
+						{#each storageSession.profiles.filter((p) => p.id !== profile.id) as p (p.id)}
+							{@const purl = pictureUrl(p)}
+							<button
+								class="mi"
+								role="menuitem"
+								onclick={() => {
+									menu = null;
+									void storageSession.switchTo(p.id);
+								}}
+							>
+								<span class="pp pp--sm" style:--pp-color={colourValue(p.colour)}>
+									{#if purl}<img src={purl} alt="" />{/if}
+								</span>
+								{p.name}
+							</button>
+						{/each}
+						<button
+							class="mi"
+							role="menuitem"
+							disabled={!storageSession.canAddProfile}
+							title={storageSession.canAddProfile
+								? undefined
+								: 'Seven accounts, one per element colour, is the most a browser holds'}
+							onclick={() => {
+								menu = null;
+								menuState.show('profile/new');
+							}}><Mark name="plus" /> Add your account</button
+						>
+						<span class="pm-rule" aria-hidden="true"></span>
+						{#if profile.kind === 'real'}
+							<button
+								class="mi"
+								role="menuitem"
+								onclick={() => {
+									menu = null;
+									menuState.show('profile');
+								}}><Mark name="edit" /> Profile</button
+							>
+						{/if}
+						<button
+							class="mi"
+							role="menuitem"
+							onclick={() => {
+								menu = null;
+								menuState.show('roster');
+							}}><Mark name="constellation" /> Roster</button
+						>
+					</div>
+				{/if}
+			</div>
 		{/if}
 	</div>
 </header>
+
+{#if cue}
+	{#key cue.key}
+		<div
+			class="tb-wash"
+			aria-hidden="true"
+			style:--wash={cue.colour}
+			style:--wash-ms="{motion(WASH_MS)}ms"
+			style:--wash-reach={WASH_REACH}
+			style:--wash-peak="{WASH_PEAK}%"
+		></div>
+	{/key}
+{/if}
 
 <style>
 	.tb {
@@ -683,9 +781,96 @@
 		height: 100%;
 		object-fit: cover;
 	}
+	.pp--sm {
+		width: 1.6rem;
+		height: 1.6rem;
+		box-shadow: 0 0 0 1.5px var(--pp-color);
+	}
 	.pp-fallback {
 		font-weight: var(--fw-semibold);
 		color: var(--pp-color);
+	}
+
+	/* ── The profile menu ── */
+	.tb-menu--profile {
+		min-width: 15rem;
+	}
+	.pm-head {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		padding: 0.45rem 0.55rem 0.55rem;
+	}
+	.pm-name {
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+	.pm-sub {
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	.pm-rule {
+		height: 1px;
+		margin: 0.3rem 0.55rem;
+		background: var(--line-faint);
+	}
+	.tb-menu :global(.mi:disabled) {
+		opacity: 0.45;
+		cursor: default;
+	}
+
+	/* Theorycraft's invitation (§12 Q14), quiet: a word, not a plate. */
+	.tb-invite {
+		padding: 0 0.2rem;
+		border: none;
+		background: none;
+		color: color-mix(in srgb, var(--chrome) 70%, transparent);
+		font: inherit;
+		font-size: var(--ui-ctl-fs);
+		white-space: nowrap;
+		cursor: pointer;
+		transition: color var(--t-snap);
+	}
+	.tb-invite:hover {
+		color: var(--chrome);
+	}
+
+	/* ── The switch cue ── */
+	.tb-wash {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: var(--wash-reach);
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			to bottom,
+			color-mix(in srgb, var(--wash) var(--wash-peak), transparent),
+			transparent
+		);
+		animation: wash-out var(--wash-ms) ease-out both;
+	}
+	@keyframes wash-out {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
+	.tb-cue-name {
+		position: absolute;
+		top: calc(100% + 4px);
+		right: 0;
+		white-space: nowrap;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		color: var(--chrome);
+		text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+		pointer-events: none;
+		animation: wash-out var(--cue-ms) ease-in both;
 	}
 
 	/* ── Phone form (design §5.2) ── */
@@ -708,7 +893,8 @@
 			padding: 0 0.75rem;
 		}
 		.tb-nav,
-		.tb-help {
+		.tb-help,
+		.tb-invite {
 			display: none;
 		}
 		.tb-glyph--menu {
