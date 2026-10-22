@@ -180,6 +180,24 @@
 					{/each}
 				</div>
 			</div>
+
+			<!-- ⚓ Design §5.5: tool-to-tool transitions can be turned off; the
+			     rise from the landing is not one of them. -->
+			<label class="sp-row">
+				<span class="sp-label">
+					<span class="sp-name">Tool transitions</span>
+					<span class="sp-desc">Fade between tools. Off, a tool changes at once.</span>
+				</span>
+				<span class="toggle">
+					<input
+						type="checkbox"
+						checked={$siteSettings.toolTransitions}
+						onchange={() => siteSettings.setToolTransitions(!$siteSettings.toolTransitions)}
+					/>
+					<span class="toggle-track"><span class="toggle-thumb"></span></span>
+					<span class="toggle-label">{$siteSettings.toolTransitions ? 'On' : 'Off'}</span>
+				</span>
+			</label>
 		{/if}
 
 		<label class="sp-row">
