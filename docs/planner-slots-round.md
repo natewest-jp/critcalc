@@ -8,10 +8,13 @@ A streamer opened a team from the Library to start a rotation. It arrived as bar
 
 ## The rule (⚓ Nate 2026-10-22)
 
+> **Characters you put on the team stay until you remove them; characters you type come and go with the text.** (↻ refined the same day, before the push: a seat remembers whether it was PLACED — a team, a lineup, a link, a swap, the Builder — or TYPED. Nate found the first cut leaving a typo resting: on a fresh tab, Xiangling typed then deleted stayed in slot 1, and the next name went to slot 2.)
+
 A rotation stores **four slots** (the party keys 1–4) and the notation **fills** them.
 
-- A seated character the notation does not name **rests**: the card keeps its slot (art dimmed), the lane draws nothing, and the character still counts for the party (resonance, faction counts), as in the game.
-- **Slots hold until something needs them**: a newly named character takes the first **empty** slot, else the first **resting** one, lowest first. Nothing else moves.
+- A **typed** seat whose character leaves the notation **empties** (as before slots existed); a typo fix returns the character to the slot they just left (`vacated`).
+- A **placed** character the notation does not name **rests**: the card keeps its slot (art dimmed), the lane draws nothing, and the character still counts for the party (resonance, faction counts), as in the game.
+- A newly named character takes the slot it just left by text, else the first **empty** slot, else the first **resting** (placed) one, lowest first, and is typed there. Nothing else moves.
 - Only an explicit write empties or reassigns a seat: a swap (keeps the slot, renames the segments), Clear, and `setSlot(i, null)`.
 - A team document (Library team, `?team=`, a Builder board team) opens with the four **seated in an empty notation**, and the editor's hint names slot 1.
 
@@ -22,12 +25,14 @@ A rotation stores **four slots** (the party keys 1–4) and the notation **fills
 | The rule: `seatSlots` (idempotent; from empty seats it IS the old derivation, which is how everything saved before migrates), `seatsOfSaved`, `seatsFromLegacy`                                                                                 | `src/lib/utils/notationEdit.ts`                                                                       |
 | The store: `seats` ((string\|null)[], `null` = empty, so a seated Blank is finally distinct); `notation` is an accessor that runs the rule on an outside write; `setDocument` writes both without it; `rt.slots` keeps its consumers' old shape | `src/lib/rotationTabs.svelte.ts`                                                                      |
 | ⌘Z: the seats are a CodeMirror field; a transaction extender seats typed changes, inverted effects give the history the old seats                                                                                                               | `src/lib/utils/notationSeats.ts` (+ `notationEditor.ts`, `RotationTimeline.svelte`)                   |
-| Persistence: tabs, saved entries, the backup and the `?r=` codec carry `slots`; the codec is **format 3** and still decodes format 2 (the retention rule)                                                                                       | `rotationUrl.ts`, `stores.ts`, `settingsBackup.ts`                                                    |
+| Persistence: tabs, saved entries, the backup and the `?r=` codec carry `slots` and `placed`; the codec is **format 3** and still decodes format 2 (the retention rule)                                                                          | `rotationUrl.ts`, `stores.ts`, `settingsBackup.ts`                                                    |
 | Readers moved to stored slots: the bench, the Library's grouping, board pins, shares, the linter's "no slot"                                                                                                                                    | `BenchBand`, `library.ts`, `LibraryView`, `boards.svelte.ts`, `library.svelte.ts`, `notationFlags.ts` |
 
 ## Why the seats live in the editor
 
 Under derivation, undo was free: undoing the text restored the team because the team WAS the text. The seat rule depends on history (who rests, who took whose seat), so re-running it over undone text does not give seats back: type Kazuha into a full party with Bennett resting and he takes Bennett's seat; undo, and the rule leaves Kazuha resting and Bennett gone. Keeping the seats in the `EditorState` puts them in the same history as the text, so ⌘Z and Redo restore both in one step, and a store-side write (a swap) dispatches text and seats as one transaction.
+
+⚠ CodeMirror's `placeholder()` CLONES the element it is given, so a hint updated in place never reached the screen (a new tab named the last tab's team). The hint is a decoration computed from the seats field (`seatHint`).
 
 ## Open
 

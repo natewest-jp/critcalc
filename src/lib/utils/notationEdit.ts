@@ -142,48 +142,100 @@ export function seatsFromLegacy(
 }
 
 /**
- * ⚓ SLOTS HOLD UNTIL SOMETHING NEEDS THEM (design §8.1, Nate 2026-10-22).
- *
- * The notation FILLS the slots; it no longer IS them. A seated character the
- * notation does not name is RESTING — still in the party, drawing no bars —
- * and a name the notation adds takes the first EMPTY slot, else the first
- * RESTING one, lowest number first. Nothing else ever moves: a character keeps
- * their key whatever order the text names them in, and only an explicit write
- * (✕, a swap, Clear) empties or reassigns a seat.
- *
- * ⚠ IDEMPOTENT by construction — every name already seated is skipped, so
- * running it twice over the same text is the same as once. The store's
- * notation setter and the editor's transaction both call it, and that is what
- * lets them run in either order without fighting.
- *
- * Starting from empty seats it reproduces the old derivation exactly (the
- * first four names, in order), which is how every document saved before slots
- * existed migrates.
+ * A party's slots with what each seat REMEMBERS (design §8.1, ⚓ Nate
+ * 2026-10-22).
+ *  - `seats`: who sits where (keys 1–4; `null` empty).
+ *  - `placed`: the seat was filled ON PURPOSE — by a team, a lineup, a link, a
+ *    swap, the Builder. A placed character the notation does not name RESTS.
+ *    A TYPED one (placed false) comes and goes with the text: when their last
+ *    mention leaves, the seat empties, as it always did before slots.
+ *  - `vacated`: who last left each empty seat BY TEXT, so a typo fix
+ *    ("Xiangling" → "Xianglin" → "Xiangling") returns them to the same slot
+ *    rather than the lowest empty one. Not persisted — an edit's memory.
  */
-export function seatSlots(seats: readonly (string | null)[], notation: string): Seats {
-	const out = normalizeSeats(seats);
-	const names = orderedCharacterIds(notation);
-	for (const id of names) {
-		if (out.includes(id)) continue;
-		let i = out.indexOf(null);
-		if (i < 0) i = out.findIndex((x) => x !== null && !names.includes(x));
-		if (i < 0) continue; // all four awake: a fifth name has nowhere to sit
-		out[i] = id;
-	}
-	return out;
+export type Seating = { seats: Seats; placed: boolean[]; vacated: (string | null)[] };
+
+const falses = (): boolean[] => Array<boolean>(TEAM_SIZE).fill(false);
+export const emptySeating = (): Seating => ({
+	seats: emptySeats(),
+	placed: falses(),
+	vacated: emptySeats()
+});
+
+/** Seats plus their flags, normalized; a flag on an empty seat is dropped. */
+export function makeSeating(
+	seats: readonly (string | null | undefined)[] | null | undefined,
+	placed?: readonly (boolean | null | undefined)[] | null
+): Seating {
+	const ids = normalizeSeats(seats);
+	return {
+		seats: ids,
+		placed: ids.map((id, i) => !!id && placed?.[i] === true),
+		vacated: emptySeats()
+	};
 }
 
-/** A SAVED entry's seats: its stored slots; else a legacy `manualSlots` in its
- *  own order with the notation seated into it; else the notation's old
- *  derivation (the seat rule from empty seats). */
-export function seatsOfSaved(e: {
+/** Every seated character placed on purpose — a team document, a swap. */
+export const placedSeating = (seats: readonly (string | null | undefined)[]): Seating =>
+	makeSeating(seats, [true, true, true, true]);
+
+/**
+ * ⚓ THE RULE: characters you put on the team stay until you remove them;
+ * characters you type come and go with the text.
+ *
+ * 1. A TYPED seat whose character the notation no longer names EMPTIES.
+ * 2. A newly named character takes, in order: the slot it just left by text
+ *    (`vacated`), the first EMPTY slot, the first RESTING (placed, unnamed)
+ *    one. It is typed in the seat it takes.
+ * Nothing else moves: a character keeps their key whatever order the text
+ * names them in, and only an explicit write (✕, a swap, Clear, a load) sets a
+ * seat otherwise.
+ *
+ * ⚠ IDEMPOTENT by construction (every typed seat is named, every name is
+ * seated), which is what lets the store's notation setter and the editor's
+ * transaction both run it, in either order. From an empty seating it
+ * reproduces the old derivation exactly (the first four names, in order).
+ */
+export function seatTeam(prev: Seating, notation: string): Seating {
+	const names = orderedCharacterIds(notation);
+	const seats = normalizeSeats(prev.seats);
+	const placed = seats.map((id, i) => !!id && prev.placed[i] === true);
+	const vacated = seats.map((_, i) => prev.vacated[i] ?? null);
+	seats.forEach((id, i) => {
+		if (id && !placed[i] && !names.includes(id)) {
+			vacated[i] = id;
+			seats[i] = null;
+		}
+	});
+	for (const id of names) {
+		if (seats.includes(id)) continue;
+		let i = seats.findIndex((x, k) => x === null && vacated[k] === id);
+		if (i < 0) i = seats.indexOf(null);
+		if (i < 0) i = seats.findIndex((x, k) => x !== null && placed[k] && !names.includes(x));
+		if (i < 0) continue; // all four named: a fifth has nowhere to sit
+		seats[i] = id;
+		placed[i] = false;
+		vacated[i] = null;
+	}
+	return { seats, placed, vacated };
+}
+
+/** A SAVED entry's seating: its stored slots and flags; else a legacy
+ *  `manualSlots` (placed on purpose, in its own order) with the notation
+ *  seated into it; else the notation's old derivation. */
+export function seatingOfSaved(e: {
 	notation: string;
 	slots?: readonly (string | null)[] | null;
+	placed?: readonly boolean[] | null;
 	manualSlots?: readonly (string | null)[] | null;
-}): Seats {
-	if (e.slots) return normalizeSeats(e.slots);
-	return seatSlots(seatsFromLegacy(e.manualSlots ?? []), e.notation ?? '');
+}): Seating {
+	if (e.slots) return makeSeating(e.slots, e.placed);
+	return seatTeam(placedSeating(seatsFromLegacy(e.manualSlots ?? [])), e.notation ?? '');
 }
+
+/** A saved entry's seats alone (the Library, board pins, shares). */
+export const seatsOfSaved = (e: Parameters<typeof seatingOfSaved>[0]): Seats =>
+	seatingOfSaved(e).seats;
 
 /** The seated characters the notation names (the rest are resting). */
 export function awakeIds(seats: readonly (string | null)[], notation: string): string[] {

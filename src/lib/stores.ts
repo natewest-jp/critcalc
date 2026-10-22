@@ -71,6 +71,8 @@ export type SavedNotation = {
 	/** ⚓ The party's slots (design §8.1; `null` = empty). Absent on an entry
 	 *  saved before 2026-10-22, whose team is derived (`seatsOfSaved`). */
 	slots?: (string | null)[];
+	/** Per slot: placed on purpose (rests) rather than typed (empties). */
+	placed?: boolean[];
 	tabLoadout?: Record<string, LoadoutEntry>;
 	/**
 	 * Per-tab constellation overrides (Layer 2), snapshot alongside the notation.
@@ -133,7 +135,10 @@ function createSavedNotationsStore() {
 		update(
 			id: string,
 			fields: Partial<
-				Pick<SavedNotation, 'name' | 'notation' | 'slots' | 'tabLoadout' | 'tabCon' | 'synced'>
+				Pick<
+					SavedNotation,
+					'name' | 'notation' | 'slots' | 'placed' | 'tabLoadout' | 'tabCon' | 'synced'
+				>
 			>
 		) {
 			store.update((items) =>

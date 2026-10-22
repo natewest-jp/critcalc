@@ -239,6 +239,8 @@ function sanitizeSavedNotations(v: unknown, now: number): Record<string, unknown
 		};
 		const slots = sanitizeSlots(entry.slots);
 		if (slots) clean.slots = slots;
+		const placed = sanitizePlaced(entry.placed);
+		if (placed) clean.placed = placed;
 		if (isObject(entry.tabLoadout)) clean.tabLoadout = entry.tabLoadout;
 		if (isObject(entry.tabCon)) clean.tabCon = entry.tabCon;
 		// A synced rotation follows the roster (lineups §10.4); `openedAt` is
@@ -296,12 +298,20 @@ function sanitizeSlots(v: unknown): (string | null)[] | undefined {
 	return v.slice(0, 4).map((id) => (typeof id === 'string' ? id : null));
 }
 
+/** Per slot, placed on purpose (§8.1): four booleans. */
+function sanitizePlaced(v: unknown): boolean[] | undefined {
+	if (!Array.isArray(v)) return undefined;
+	return v.slice(0, 4).map((x) => x === true);
+}
+
 function sanitizeRotationTab(v: unknown): Record<string, unknown> | null {
 	if (!isObject(v) || typeof v.id !== 'string' || typeof v.label !== 'string') return null;
 	if (!isNotation(v.notation)) return null;
 	const clean: Record<string, unknown> = { id: v.id, label: v.label, notation: v.notation };
 	const slots = sanitizeSlots(v.slots);
 	if (slots) clean.slots = slots;
+	const placed = sanitizePlaced(v.placed);
+	if (placed) clean.placed = placed;
 	const loadout = sanitizeLoadout(v.tabLoadout);
 	if (loadout) clean.tabLoadout = loadout;
 	const con = sanitizeConstellations(v.tabCon);

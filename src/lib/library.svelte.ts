@@ -36,7 +36,7 @@ import { documentBar, recentlyClosedRotations } from './documentBar.svelte';
 import { boardBar } from './boardBar.svelte';
 import { fromSavedTeams, makeBoard, recentlyClosedBoards, type Board } from './boards.svelte';
 import { newTabId, rotationTabs as rt, type RotationTab } from './rotationTabs.svelte';
-import { seatsOfSaved } from './utils/notationEdit';
+import { seatingOfSaved, seatsOfSaved } from './utils/notationEdit';
 import { encodeRotation } from './utils/rotationUrl';
 import { encodeBoard } from './utils/boardUrl';
 import { teamNotation, type LibraryTeam } from './library';
@@ -305,12 +305,13 @@ class LibraryState {
 	async shareRotation(e: SavedNotation) {
 		const roster = get(constellations);
 		const levels: Record<string, number> = {};
-		const slots = seatsOfSaved(e);
+		const { seats: slots, placed } = seatingOfSaved(e);
 		for (const id of slots) if (id) levels[id] = e.tabCon?.[id] ?? roster[id] ?? 0;
 		try {
 			const param = await encodeRotation({
 				notation: e.notation,
 				slots,
+				placed,
 				constellations: levels,
 				loadout: e.tabLoadout ?? {}
 			});
@@ -347,7 +348,8 @@ function closedFromEntry(e: SavedNotation): RotationTab {
 		id: newTabId(),
 		label: e.name,
 		notation: e.notation,
-		slots: seatsOfSaved(e),
+		slots: seatingOfSaved(e).seats,
+		placed: seatingOfSaved(e).placed,
 		tabCon: e.tabCon ?? {},
 		tabLoadout: e.tabLoadout ?? {}
 	};

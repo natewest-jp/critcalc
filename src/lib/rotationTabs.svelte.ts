@@ -25,7 +25,8 @@
  * it does not name RESTS (keeps the slot, draws no bars) — the streamer
  * cleared a bare-names stub to start writing and the team vanished. A newly
  * named character takes the first empty seat, else the first resting one
- * (`seatSlots`). Undo still reaches every seat change: the seats ride the
+ * (`seatTeam`). ⚓ A seat PLACED on purpose (a team, a swap) rests; a TYPED
+ * one empties when its character leaves the text. Undo still reaches every seat change: the seats ride the
  * editor's history beside the text (`notationSeats.ts`), so the "undo came
  * free" argument below is replaced, not lost. Slot ORDER is the slot's key
  * again, and `setSlot` honours its index.
@@ -66,14 +67,17 @@
 import { browser } from '$app/environment';
 import {
 	deleteCharacterFromNotation,
+	emptySeating,
 	emptySeats,
-	normalizeSeats,
+	makeSeating,
 	orderedCharacterIds,
+	placedSeating,
 	renameCharacterInNotation,
-	seatSlots,
+	seatTeam,
 	seatsFromLegacy,
 	seatsOfSaved,
 	TEAM_SIZE,
+	type Seating,
 	type Seats
 } from '$lib/utils/notationEdit';
 import { safeSetItem, type LoadoutEntry } from '$lib/stores';
@@ -89,6 +93,9 @@ export type RotationTab = {
 	 *  Absent on a tab saved before slots existed: derived once from its
 	 *  notation (`seatsOf`), which reproduces the team it always had. */
 	slots?: (string | null)[];
+	/** Per slot: filled ON PURPOSE (rests when unnamed) rather than typed
+	 *  (empties). Absent = all typed. See `Seating`. */
+	placed?: boolean[];
 	tabLoadout?: Record<string, LoadoutEntry>;
 	/** Per-tab constellation overrides (Layer 2), parallel to tabLoadout. */
 	tabCon?: Record<string, number>;
@@ -177,12 +184,18 @@ function makeTab(label: string): RotationTab {
 	return { id: genId(), label, notation: '', viewedAt: Date.now() };
 }
 
-/** A tab's seats: its stored slots, or — saved before slots existed — the
- *  team its notation always implied (the seat rule from empty seats IS the old
- *  derivation). */
-export function seatsOf(tab: Pick<RotationTab, 'notation' | 'slots'>): Seats {
-	return tab.slots ? normalizeSeats(tab.slots) : seatSlots(emptySeats(), tab.notation ?? '');
+/** A tab's seating: its stored slots and flags, or — saved before slots
+ *  existed — the team its notation always implied (the seat rule from an
+ *  empty seating IS the old derivation). */
+export function seatingOf(tab: Pick<RotationTab, 'notation' | 'slots' | 'placed'>): Seating {
+	return tab.slots
+		? makeSeating(tab.slots, tab.placed)
+		: seatTeam(emptySeating(), tab.notation ?? '');
 }
+
+/** A tab's seats alone. */
+export const seatsOf = (tab: Pick<RotationTab, 'notation' | 'slots' | 'placed'>): Seats =>
+	seatingOf(tab).seats;
 
 /** Strip a restored tab of its retired field. ↻ 2026-10-22: a legacy
  *  `manualSlots` becomes the tab's SLOTS, in its own order, rather than being
@@ -191,7 +204,9 @@ export function seatsOf(tab: Pick<RotationTab, 'notation' | 'slots'>): Seats {
 function migrateTab(tab: RotationTab & LegacyTeam): RotationTab {
 	const { manualSlots, ...rest } = tab;
 	if (!manualSlots) return rest;
-	return { ...rest, slots: seatSlots(seatsFromLegacy(manualSlots), rest.notation ?? '') };
+	// A manual team was a deliberate one: its seats are PLACED, so they rest.
+	const seating = seatTeam(placedSeating(seatsFromLegacy(manualSlots)), rest.notation ?? '');
+	return { ...rest, slots: seating.seats, placed: seating.placed };
 }
 
 /** A link that brings its own document — a shared rotation, a team, the
@@ -227,28 +242,33 @@ class RotationTabsState {
 	// Live working state — kept separate from the tabs array so bind:notation
 	// on RotationTimeline works cleanly without circular reactivity.
 	#notation = $state<string>('');
-	/** ⚓ The party's slots (§8.1): stored, not derived. `null` = empty. */
-	seats = $state<Seats>(emptySeats());
+	/** ⚓ The party's slots and what each remembers (§8.1): stored, not derived. */
+	seating = $state<Seating>(emptySeating());
+	/** Who sits where (`null` = empty). */
+	get seats(): Seats {
+		return this.seating.seats;
+	}
 
 	/**
 	 * The working notation. ⚠ An ACCESSOR: a write from anywhere but the editor
 	 * (a bench edit, a load) runs the seat rule, so a newly named character
-	 * takes a seat. The editor computes the same rule inside its own
-	 * transaction (it must, for ⌘Z to restore seats) and writes `seats` FIRST,
-	 * which makes this setter's call a no-op — `seatSlots` is idempotent.
+	 * takes a seat and a typed one who left the text gives theirs up. The
+	 * editor computes the same rule inside its own transaction (it must, for ⌘Z
+	 * to restore seats) and writes `seating` FIRST, which makes this setter's
+	 * call a no-op — `seatTeam` is idempotent.
 	 */
 	get notation(): string {
 		return this.#notation;
 	}
 	set notation(value: string) {
-		this.seats = seatSlots(this.seats, value);
+		this.seating = seatTeam(this.seating, value);
 		this.#notation = value;
 	}
 
-	/** Write text and seats together, with no rule run: a swap, ✕, Clear and
+	/** Write text and seating together, with no rule run: a swap, ✕, Clear and
 	 *  every load decide the seats themselves. */
-	setDocument(notation: string, seats: readonly (string | null)[]): void {
-		this.seats = normalizeSeats(seats);
+	setDocument(notation: string, seating: Seating): void {
+		this.seating = makeSeating(seating.seats, seating.placed);
 		this.#notation = notation;
 	}
 
@@ -284,7 +304,7 @@ class RotationTabsState {
 			const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
 			this.tabs = tabs;
 			this.activeTabId = activeId;
-			this.setDocument(active.notation, seatsOf(active));
+			this.setDocument(active.notation, seatingOf(active));
 			this.tabLoadout = active.tabLoadout ?? {};
 			this.tabCon = active.tabCon ?? {};
 		} else if (!arrivingWithDocument()) {
@@ -302,7 +322,7 @@ class RotationTabsState {
 			};
 			this.tabs = [tab];
 			this.activeTabId = tab.id;
-			this.setDocument(tab.notation, seatsOf(tab));
+			this.setDocument(tab.notation, seatingOf(tab));
 			this.tabCon = tab.tabCon ?? {};
 			this.tabLoadout = tab.tabLoadout ?? {};
 		}
@@ -319,6 +339,7 @@ class RotationTabsState {
 						...t,
 						notation: this.notation,
 						slots: [...this.seats],
+						placed: [...this.seating.placed],
 						tabLoadout: this.tabLoadout,
 						tabCon: this.tabCon
 					}
@@ -336,6 +357,7 @@ class RotationTabsState {
 						...t,
 						notation: this.notation,
 						slots: [...this.seats],
+						placed: [...this.seating.placed],
 						tabLoadout: this.tabLoadout,
 						tabCon: this.tabCon
 					}
@@ -351,7 +373,7 @@ class RotationTabsState {
 	}
 
 	private loadWorkingState(tab: RotationTab): void {
-		this.setDocument(tab.notation, seatsOf(tab));
+		this.setDocument(tab.notation, seatingOf(tab));
 		this.tabLoadout = tab.tabLoadout ?? {};
 		this.tabCon = tab.tabCon ?? {};
 	}
@@ -481,7 +503,7 @@ class RotationTabsState {
 	}
 
 	resetActiveTab(): void {
-		this.setDocument('', emptySeats());
+		this.setDocument('', emptySeating());
 		this.tabLoadout = {};
 		this.tabCon = {};
 		this.tabs = this.tabs.map((t, i) =>
@@ -491,6 +513,7 @@ class RotationTabsState {
 						label: `Tab ${i + 1}`,
 						notation: '',
 						slots: emptySeats(),
+						placed: undefined,
 						tabLoadout: {},
 						tabCon: {},
 						savedId: undefined,
@@ -534,14 +557,17 @@ class RotationTabsState {
 		if (outgoing === want) return;
 		if (want && this.seats.includes(want)) return;
 		const seats = [...this.seats];
+		const placed = [...this.seating.placed];
 		seats[index] = want;
+		// A seat filled from the bench or the Builder is a choice: it rests.
+		placed[index] = !!want;
 		let text = this.notation;
 		if (outgoing) {
 			text = want
 				? renameCharacterInNotation(text, outgoing, want)
 				: deleteCharacterFromNotation(text, outgoing);
 		}
-		this.setDocument(text, seats);
+		this.setDocument(text, makeSeating(seats, placed));
 	}
 
 	// -------------------------------------------------------------------------
@@ -587,7 +613,8 @@ class RotationTabsState {
 	 * `documentBar.receive`, which places it like any arriving document.
 	 */
 	teamDocument(ids: readonly (string | null)[], label = 'Imported team'): Omit<RotationTab, 'id'> {
-		return { label, notation: '', slots: seatsFromLegacy(ids) };
+		const seating = placedSeating(seatsFromLegacy(ids));
+		return { label, notation: '', slots: seating.seats, placed: seating.placed };
 	}
 }
 

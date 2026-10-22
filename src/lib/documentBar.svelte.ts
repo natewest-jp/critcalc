@@ -27,8 +27,7 @@ import {
 import {
 	rotationTabs as rt,
 	newTabId,
-	seatsOf,
-	seatsOfSaved,
+	seatingOf,
 	TAB_LIMIT,
 	type RotationTab
 } from './rotationTabs.svelte';
@@ -37,6 +36,7 @@ import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
 import {
 	notationHasActions,
 	renameCharacterInNotation,
+	seatingOfSaved,
 	teamKey,
 	teamKeyOfNotation,
 	type Seats
@@ -255,6 +255,7 @@ class DocumentBarState {
 			name,
 			notation: rt.notation,
 			slots: [...rt.seats],
+			placed: [...rt.seating.placed],
 			tabLoadout: dense.tabLoadout,
 			tabCon: dense.tabCon,
 			synced
@@ -279,6 +280,8 @@ class DocumentBarState {
 				name: '',
 				notation: teamNotation(ids),
 				slots: [...seats],
+				// A team entry is a deliberate team: placed, so it rests (§8.1).
+				placed: seats.map((id) => !!id),
 				tabLoadout: {},
 				tabCon: {}
 			});
@@ -294,29 +297,30 @@ class DocumentBarState {
 	/** Save a Recently closed tab to the bank (its "promotion"). */
 	saveClosed(tab: RotationTab) {
 		if (!notationHasActions(tab.notation)) {
-			this.#saveTeamOnly(seatsOf(tab));
+			this.#saveTeamOnly(seatingOf(tab).seats);
 			recentlyClosedRotations.remove(tab.id);
 			return;
 		}
 		const dense = {
 			...this.#densifiedSnapshot(
-				seatsOf(tab).map((id) => id ?? 'blank'),
+				seatingOf(tab).seats.map((id) => id ?? 'blank'),
 				tab.tabCon ?? {},
 				tab.tabLoadout ?? {},
 				!!tab.synced
 			),
 			synced: !!tab.synced
 		};
-		const slots = seatsOf(tab);
+		const { seats: slots, placed } = seatingOf(tab);
 		if (tab.savedId && get(savedNotations).some((e) => e.id === tab.savedId)) {
 			savedNotations.update(tab.savedId, {
 				name: tab.label,
 				notation: tab.notation,
 				slots,
+				placed,
 				...dense
 			});
 		} else {
-			savedNotations.save({ name: tab.label, notation: tab.notation, slots, ...dense });
+			savedNotations.save({ name: tab.label, notation: tab.notation, slots, placed, ...dense });
 		}
 		this.#ensureTeamEntry(slots);
 		recentlyClosedRotations.remove(tab.id);
@@ -420,11 +424,12 @@ class DocumentBarState {
 		this.withRoom(() => {
 			// The swap keeps the SLOT: the incoming character takes the outgoing
 			// one's seat and segments (§8.1).
-			const seats = seatsOfSaved(entry).map((id) => (id === fromId ? toId : id));
+			const seating = seatingOfSaved(entry);
 			rt.openTab({
 				label,
 				notation: renameCharacterInNotation(entry.notation, fromId, toId),
-				slots: seats,
+				slots: seating.seats.map((id) => (id === fromId ? toId : id)),
+				placed: seating.placed,
 				tabLoadout: entry.tabLoadout ?? {},
 				tabCon: entry.tabCon ?? {}
 			});
@@ -445,7 +450,8 @@ class DocumentBarState {
 			rt.openTab({
 				label: entry.name,
 				notation: entry.notation,
-				slots: seatsOfSaved(entry),
+				slots: seatingOfSaved(entry).seats,
+				placed: seatingOfSaved(entry).placed,
 				tabLoadout: entry.tabLoadout ?? {},
 				tabCon: entry.tabCon ?? {},
 				savedId: entry.id,
@@ -575,6 +581,7 @@ class DocumentBarState {
 		const shared: SharedRotation = {
 			notation: rt.notation,
 			slots: [...rt.seats],
+			placed: [...rt.seating.placed],
 			constellations: cons,
 			loadout: lo
 		};

@@ -98,7 +98,11 @@ describe('rotationUrl codec', () => {
 	});
 
 	it('carries the party slots (format 3), empty slots included', async () => {
-		const withSlots: SharedRotation = { ...SAMPLE, slots: ['hu_tao', null, 'zhongli', 'yelan'] };
+		const withSlots: SharedRotation = {
+			...SAMPLE,
+			slots: ['hu_tao', null, 'zhongli', 'yelan'],
+			placed: [true, false, false, true]
+		};
 		expect(await decodeRotation(await encodeRotation(withSlots))).toEqual(withSlots);
 	});
 

@@ -18,18 +18,17 @@ import { EditorState } from '@codemirror/state';
 import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
 import { buildNotationExtensions, setResolvedTints } from './notationEditorExtension';
 import { sameSeats, seatsExtension, seatsField, setSeats } from './notationSeats';
-import { normalizeSeats, type Seats } from './notationEdit';
-import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { emptySeating, makeSeating, type Seating } from './notationEdit';
 import type { NotationTint } from '$lib/timeline/notationTints';
 
 export interface NotationEditor {
 	/** Replace the document — text, and the party's seats when given (no-op
 	 *  when both already match). Lands as ONE minimal, UNDOABLE transaction —
 	 *  see setValue's note. */
-	setValue(value: string, seats?: readonly (string | null)[]): void;
+	setValue(value: string, seating?: Seating): void;
 	getValue(): string;
 	/** Show another DOCUMENT (a planner tab) — see showDocument's note. */
-	showDocument(key: string, value: string, seats?: readonly (string | null)[]): void;
+	showDocument(key: string, value: string, seating?: Seating): void;
 	/** Run the editor's own history commands. Exposed so the composer can put
 	 *  buttons beside the box for the same thing ⌘Z already does. */
 	undo(): void;
@@ -51,14 +50,14 @@ export function createNotationEditor(
 	initialValue: string,
 	/** The text, and the seats it now fills (§8.1), after a change the USER
 	 *  made — typing, ⌘Z, Redo. Not called for setValue/showDocument. */
-	onChange: (value: string, seats: Seats) => void,
+	onChange: (value: string, seating: Seating) => void,
 	/** Which document `initialValue` is — the planner's active tab id. */
 	initialKey: string,
 	/** Where the caret is, on every move or edit — the dock's key row reads
 	 *  the segment it sits in. */
 	onCursor?: (pos: number) => void,
-	/** The party's seats for `initialValue`. */
-	initialSeats: readonly (string | null)[] = []
+	/** The party's seating for `initialValue`. */
+	initialSeats: Seating = emptySeating()
 ): NotationEditor {
 	// Guard flag: true while an external value change is being dispatched into
 	// CodeMirror so the updateListener's onChange doesn't fire re-entrantly
@@ -66,33 +65,21 @@ export function createNotationEditor(
 	// leave the timeline frozen until the next unrelated state change).
 	let externalUpdate = false;
 
-	// ⚓ The empty-state hint names who is seated (§8.1): Plan a rotation opens
-	// an EMPTY notation with the team resting, and the hint says where to start.
-	const hint = document.createElement('span');
-	const setHint = (seats: readonly (string | null)[]) => {
-		const first = seats.find((id): id is string => !!id);
-		const name = first ? getCharacterIndexEntry(first)?.displayName : undefined;
-		hint.textContent = name
-			? `Start with a name: ${name} E > …`
-			: 'Type a rotation in KQM notation';
-	};
-	setHint(initialSeats);
-
 	const extensions = [
 		// The text reaches the caller through the listener below, WITH its seats.
-		...buildNotationExtensions(() => {}, hint),
+		// The empty-state hint comes from the seats (notationSeats.seatHint).
+		...buildNotationExtensions(() => {}, null),
 		EditorView.updateListener.of((u) => {
 			if (onCursor && (u.selectionSet || u.docChanged)) onCursor(u.state.selection.main.head);
 			const seats = u.state.field(seatsField);
-			if (seats !== u.startState.field(seatsField)) setHint(seats);
 			if (externalUpdate) return;
 			if (u.docChanged || seats !== u.startState.field(seatsField))
 				onChange(u.state.doc.toString(), seats);
 		})
 	];
 	/** ⚓ One document's state: its text and ITS seats, both in its history. */
-	const stateFor = (doc: string, seats: readonly (string | null)[]) =>
-		EditorState.create({ doc, extensions: [extensions, seatsExtension(seats)] });
+	const stateFor = (doc: string, seating: Seating) =>
+		EditorState.create({ doc, extensions: [extensions, seatsExtension(seating)] });
 	const view = new EditorView({ state: stateFor(initialValue, initialSeats), parent });
 
 	// ⚓ ONE HISTORY PER DOCUMENT (2026-09-30). The editor is shared by every
@@ -120,12 +107,12 @@ export function createNotationEditor(
 		 * dumped at the end of a brand-new document, and undo restores the text
 		 * without also restoring a stale selection.
 		 */
-		setValue(value: string, seats?: readonly (string | null)[]) {
+		setValue(value: string, seats?: Seating) {
 			const current = view.state.doc.toString();
 			// ⚓ Text and seats in ONE transaction, so one ⌘Z undoes a swap or a ✕
 			// whole. Seats given = the caller decided them (the extender stands
 			// aside); absent = the rule seats whatever the new text names.
-			const nextSeats: Seats | null = seats ? normalizeSeats(seats) : null;
+			const nextSeats: Seating | null = seats ? makeSeating(seats.seats, seats.placed) : null;
 			const seatsMove = !!nextSeats && !sameSeats(nextSeats, view.state.field(seatsField));
 			if (value === current) {
 				if (!seatsMove) return;
@@ -166,7 +153,7 @@ export function createNotationEditor(
 		 * reconciled through setValue — a real edit to that document, so it IS
 		 * undoable there.
 		 */
-		showDocument(key: string, value: string, seats?: readonly (string | null)[]) {
+		showDocument(key: string, value: string, seats?: Seating) {
 			if (key === currentKey) {
 				this.setValue(value, seats);
 				return;
@@ -175,8 +162,7 @@ export function createNotationEditor(
 			currentKey = key;
 			const next = parked.get(key);
 			parked.delete(key);
-			view.setState(next ?? stateFor(value, seats ?? []));
-			setHint(view.state.field(seatsField));
+			view.setState(next ?? stateFor(value, seats ?? emptySeating()));
 			this.setValue(value, seats);
 		},
 		undo() {

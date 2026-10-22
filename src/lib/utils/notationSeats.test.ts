@@ -9,13 +9,17 @@
 
 import { describe, it, expect } from 'vitest';
 import { EditorState, type Transaction } from '@codemirror/state';
-import { history, undo, redo } from '@codemirror/commands';
+import { history, isolateHistory, undo, redo } from '@codemirror/commands';
 import { seatsExtension, seatsField, setSeats } from './notationSeats';
+import { makeSeating, placedSeating } from './notationEdit';
 
 const TEAM = ['xiangling', 'bennett', 'chevreuse', 'kaedehara_kazuha'];
 
 function editor(doc: string, seats: (string | null)[]) {
-	let state = EditorState.create({ doc, extensions: [history(), seatsExtension(seats)] });
+	let state = EditorState.create({
+		doc,
+		extensions: [history(), seatsExtension(placedSeating(seats))]
+	});
 	const dispatch = (tr: Transaction) => (state = tr.state);
 	return {
 		get state() {
@@ -28,12 +32,18 @@ function editor(doc: string, seats: (string | null)[]) {
 		write(text: string, seats: (string | null)[]) {
 			state = state.update({
 				changes: { from: 0, to: state.doc.length, insert: text },
-				effects: setSeats.of(seats)
+				effects: setSeats.of(makeSeating(seats, [true, true, true, true]))
+			}).state;
+		},
+		erase() {
+			state = state.update({
+				changes: { from: 0, to: state.doc.length },
+				annotations: isolateHistory.of('full')
 			}).state;
 		},
 		undo: () => undo({ state, dispatch }),
 		redo: () => redo({ state, dispatch }),
-		seats: () => state.field(seatsField)
+		seats: () => state.field(seatsField).seats
 	};
 }
 
@@ -63,6 +73,20 @@ describe('seats in the editor history', () => {
 		ed.undo();
 		expect(ed.state.doc.toString()).toBe('Bennett E Q');
 		expect(ed.seats()).toEqual(TEAM);
+	});
+
+	it('⌘Z restores a TYPED seat that emptied, and redo empties it again', () => {
+		const ed = editor('', [null, null, null, null]);
+		ed.type(0, 'Xiangling E');
+		expect(ed.seats()[0]).toBe('xiangling');
+		// Deleted as its OWN history step (adjacent edits would join one event),
+		// and through the rule — no explicit seats — so the typed seat empties.
+		ed.erase();
+		expect(ed.seats()[0]).toBeNull();
+		ed.undo();
+		expect(ed.seats()[0]).toBe('xiangling');
+		ed.redo();
+		expect(ed.seats()[0]).toBeNull();
 	});
 
 	it('a seats-only write (✕ on a resting character) is undoable too', () => {

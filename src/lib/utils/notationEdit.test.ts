@@ -18,9 +18,13 @@ import {
 	notationSegments,
 	orderedCharacterIds,
 	renameCharacterInNotation,
-	seatSlots,
+	seatTeam,
 	seatsFromLegacy,
-	awakeIds
+	awakeIds,
+	emptySeating,
+	makeSeating,
+	placedSeating,
+	type Seating
 } from './notationEdit';
 
 const FOUR = 'Bennett E Q > Xingqiu E Q > Zhongli E > Hu Tao E N2C';
@@ -177,14 +181,18 @@ describe('foldTeamIntoNotation (the manualSlots migration)', () => {
 });
 
 /**
- * ⚓ SLOTS HOLD UNTIL SOMETHING NEEDS THEM (design §8.1). The streamer's case
- * is the first test: a team planned from Teams, notation cleared, stays.
+ * ⚓ CHARACTERS YOU PUT ON THE TEAM STAY UNTIL YOU REMOVE THEM; CHARACTERS
+ * YOU TYPE COME AND GO WITH THE TEXT (design §8.1, Nate 2026-10-22). The
+ * streamer's case and each of Nate's are named tests below.
  */
-describe('seatSlots', () => {
+describe('seatTeam', () => {
 	const TEAM = ['xiangling', 'bennett', 'chevreuse', 'kaedehara_kazuha'];
+	/** Type `steps` one after another from `start`, as the editor would. */
+	const typeInto = (start: Seating, ...steps: string[]) =>
+		steps.reduce((s, text) => seatTeam(s, text), start);
 
-	it('from empty seats, reproduces the old derivation (first four, in order)', () => {
-		expect(seatSlots([null, null, null, null], FOUR)).toEqual([
+	it('from an empty seating, reproduces the old derivation (first four, in order)', () => {
+		expect(seatTeam(emptySeating(), FOUR).seats).toEqual([
 			'bennett',
 			'xingqiu',
 			'zhongli',
@@ -192,51 +200,78 @@ describe('seatSlots', () => {
 		]);
 	});
 
-	it('keeps a seated team through an EMPTY notation (they rest)', () => {
-		expect(seatSlots(TEAM, '')).toEqual(TEAM);
-		expect(awakeIds(TEAM, '')).toEqual([]);
+	it('the streamer: a PLACED team rests through an empty notation', () => {
+		const s = seatTeam(placedSeating(TEAM), '');
+		expect(s.seats).toEqual(TEAM);
+		expect(awakeIds(s.seats, '')).toEqual([]);
 	});
 
-	it('wakes characters in their OWN slots, whatever order the text names them in', () => {
+	it('wakes placed characters in their OWN slots, whatever order the text names them in', () => {
 		const text = 'Bennett E Q > Xiangling E Q';
-		expect(seatSlots(TEAM, text)).toEqual(TEAM);
+		expect(seatTeam(placedSeating(TEAM), text).seats).toEqual(TEAM);
 		expect(awakeIds(TEAM, text)).toEqual(['xiangling', 'bennett']);
 	});
 
-	it('seats a newcomer in the first EMPTY slot before any resting one', () => {
-		expect(seatSlots(['xiangling', null, 'chevreuse', null], 'Furina E')).toEqual([
+	it('Nate: a fresh tab, Xiangling typed then deleted — her slot EMPTIES, Kazuha takes it', () => {
+		const s = typeInto(emptySeating(), 'Xiangling', '', 'Kazuha');
+		expect(s.seats).toEqual(['kaedehara_kazuha', null, null, null]);
+	});
+
+	it('Nate: Xiangling E Q > Xingqiu, Xingqiu deleted, Yelan typed — Yelan takes slot 2', () => {
+		const s = typeInto(
+			emptySeating(),
+			'Xiangling E Q > Xingqiu',
+			'Xiangling E Q > ',
+			'Xiangling E Q > Yelan'
+		);
+		expect(s.seats).toEqual(['xiangling', 'yelan', null, null]);
+	});
+
+	it('Nate: a full bench, ✕ empties slot 2 — typing fills slot 2', () => {
+		const afterX = makeSeating(
+			['xiangling', null, 'chevreuse', 'kaedehara_kazuha'],
+			[true, false, true, true]
+		);
+		expect(seatTeam(afterX, 'Furina E').seats).toEqual([
 			'xiangling',
 			'furina',
 			'chevreuse',
-			null
-		]);
-	});
-
-	it('else in the first RESTING slot, lowest number first', () => {
-		// Xiangling and Bennett awake; Chevreuse (3) and Kazuha (4) rest.
-		expect(seatSlots(TEAM, 'Bennett E Q > Xiangling E Q > Furina E')).toEqual([
-			'xiangling',
-			'bennett',
-			'furina',
 			'kaedehara_kazuha'
 		]);
 	});
 
-	it('a changed mind never gets stuck: a deleted name rests, the next takes its seat', () => {
-		const typed = seatSlots(['xiangling', 'bennett', 'chevreuse', null], 'Xiangling E > Furina E');
-		expect(typed).toEqual(['xiangling', 'bennett', 'chevreuse', 'furina']);
-		// Furina deleted, Kazuha typed: no empty slot, so Bennett's (2) is the first resting.
-		expect(seatSlots(typed, 'Xiangling E > Kazuha E')).toEqual([
+	it('Nate: a lineup sends three — they rest, and typing fills the EMPTY slot first', () => {
+		const three = placedSeating(['xiangling', 'bennett', 'chevreuse', null]);
+		expect(seatTeam(three, 'Furina E').seats).toEqual([
 			'xiangling',
-			'kaedehara_kazuha',
+			'bennett',
 			'chevreuse',
 			'furina'
 		]);
 	});
 
-	it('a fifth AWAKE name has nowhere to sit, and nobody moves for it', () => {
+	it('with no empty slot, a newcomer takes the first RESTING placed seat', () => {
+		const s = seatTeam(placedSeating(TEAM), 'Bennett E Q > Xiangling E Q > Furina E');
+		expect(s.seats).toEqual(['xiangling', 'bennett', 'furina', 'kaedehara_kazuha']);
+		// …and is TYPED there: deleting Furina now empties the seat.
+		expect(seatTeam(s, 'Bennett E Q > Xiangling E Q').seats).toEqual([
+			'xiangling',
+			'bennett',
+			null,
+			'kaedehara_kazuha'
+		]);
+	});
+
+	it('a typo fix returns a character to the slot they just left, not the lowest empty one', () => {
+		// Slot 1 is empty (a ✕), Xiangling typed into slot 3.
+		const start = makeSeating([null, 'bennett', 'xiangling', null], [false, true, false, false]);
+		const s = typeInto(start, 'Bennett E > Xianglin', 'Bennett E > Xiangling');
+		expect(s.seats).toEqual([null, 'bennett', 'xiangling', null]);
+	});
+
+	it('a fifth name with four AWAKE has nowhere to sit, and nobody moves for it', () => {
 		const text = 'Bennett E > Xingqiu E > Zhongli E > Hu Tao E > Furina E';
-		expect(seatSlots([null, null, null, null], text)).toEqual([
+		expect(seatTeam(emptySeating(), text).seats).toEqual([
 			'bennett',
 			'xingqiu',
 			'zhongli',
@@ -245,12 +280,17 @@ describe('seatSlots', () => {
 	});
 
 	it('is idempotent', () => {
-		const once = seatSlots(TEAM, 'Furina E > Bennett Q');
-		expect(seatSlots(once, 'Furina E > Bennett Q')).toEqual(once);
+		const once = seatTeam(placedSeating(TEAM), 'Furina E > Bennett Q');
+		expect(seatTeam(once, 'Furina E > Bennett Q')).toEqual(once);
 	});
 
-	it('keeps the Blank character seated; only a LEGACY list reads blank as empty', () => {
-		expect(seatSlots(['blank', null, null, null], '')).toEqual(['blank', null, null, null]);
+	it('keeps a placed Blank seated; only a LEGACY list reads blank as empty', () => {
+		expect(seatTeam(placedSeating(['blank', null, null, null]), '').seats).toEqual([
+			'blank',
+			null,
+			null,
+			null
+		]);
 		expect(seatsFromLegacy(['bennett', 'blank', 'blank', 'blank'])).toEqual([
 			'bennett',
 			null,

@@ -222,7 +222,7 @@ const notationHighlight = ViewPlugin.fromClass(
 			// own without a scan. A bracket-inner flag (`2[hE]`) has no top-level
 			// token to attach to and is emitted as its own nested mark below.
 			const flags = new Map<string, NotationFlag>();
-			for (const flag of flagNotation(doc, view.state.field(seatsField, false) ?? undefined)) {
+			for (const flag of flagNotation(doc, view.state.field(seatsField, false)?.seats)) {
 				if (flag.reason === 'unknown-character' && caretInside(view, flag.from, flag.to)) continue;
 				flags.set(`${flag.from}:${flag.to}`, flag);
 			}
@@ -563,9 +563,9 @@ const notationTheme = EditorView.theme({
  */
 export function buildNotationExtensions(
 	onChange: (value: string) => void,
-	/** The empty-state hint. An ELEMENT so its text can follow the seated team
-	 *  without rebuilding the extension (notationEditor owns it). */
-	hint: string | HTMLElement = 'Type a rotation in KQM notation'
+	/** The empty-state hint; `null` when the caller draws its own (the
+	 *  planner's names the seated team — notationSeats.seatHint). */
+	hint: string | null = 'Type a rotation in KQM notation'
 ): Extension[] {
 	return [
 		history(),
@@ -583,7 +583,7 @@ export function buildNotationExtensions(
 		// client-only — document is safe here.)
 		tooltips({ position: 'fixed', parent: document.body }),
 		// Empty-state invitation: shows what to type and models the syntax.
-		placeholder(hint),
+		...(hint === null ? [] : [placeholder(hint)]),
 		notationTheme,
 		// Hard ceiling on document length. Highlighting, linting and parsing all
 		// run synchronously per keystroke, and a few hundred bytes of legal-but-

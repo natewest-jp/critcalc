@@ -39,6 +39,9 @@ export type SharedRotation = {
 	 *  Absent on a v2 link, whose team is derived from the notation as it was
 	 *  when the link was made (the first four names, in order). */
 	slots?: (string | null)[];
+	/** Per slot, placed on purpose (rests when the notation does not name it)
+	 *  rather than typed (empties) — §8.1. Absent = all typed. */
+	placed?: boolean[];
 	/** charId → constellation level (0–6) for every team member. ↻ 2026-10-08:
 	 *  an explicit 0 travels too — older links omit it, and a missing member
 	 *  then falls back to the recipient's roster as it always did. */
@@ -81,6 +84,7 @@ export async function encodeRotation(r: SharedRotation): Promise<string> {
 		v: 3,
 		notation: r.notation,
 		...(r.slots ? { slots: r.slots } : {}),
+		...(r.placed ? { placed: r.placed } : {}),
 		constellations: r.constellations,
 		loadout: r.loadout
 	};
@@ -112,9 +116,14 @@ export async function decodeRotation(
 		// the planner's existing "Invalid share link" notice, which is honest.
 		if (data.notation.length > MAX_NOTATION_CHARS) return null;
 		const slots = version === 3 ? sanitizeSlots(data.slots) : undefined;
+		const placed =
+			slots && Array.isArray(data.placed)
+				? data.placed.slice(0, 4).map((x: unknown) => x === true)
+				: undefined;
 		return {
 			notation: data.notation,
 			...(slots ? { slots } : {}),
+			...(placed ? { placed } : {}),
 			constellations: isRecord(data.constellations) ? sanitizeCons(data.constellations) : {},
 			loadout: isRecord(data.loadout) ? sanitizeLoadout(data.loadout) : {}
 		};
