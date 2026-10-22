@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { onMount, untrack } from 'svelte';
+	import { get } from 'svelte/store';
 	import { resolve } from '$app/paths';
 	import { dev } from '$app/environment';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
@@ -24,6 +25,9 @@
 	import { library } from '$lib/library.svelte';
 	import { registerRosterOpener } from '$lib/components/chromeModal.svelte';
 	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
+	import HeldElsewhere from '$lib/components/HeldElsewhere.svelte';
+	import { nextLayout } from '$lib/nextLayout';
+	import type { storageSession as StorageSessionT } from '$lib/storage/session.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
@@ -50,10 +54,22 @@
 	// paint stay deterministic.
 	// ---------------------------------------------------------------------------
 
+	// ⚓ Under the switch (build plan §13, phase 2a) the documents come from the
+	// new store instead: the profile's current rotation and lineup, autosaved.
+	// Loaded on demand, so with the switch off none of it is downloaded.
+	let session = $state<typeof StorageSessionT | null>(null);
+
 	onMount(() => {
-		rotationTabs.restore();
-		// After the tabs: a board team's link is checked against them.
-		boards.restore();
+		if (get(nextLayout)) {
+			void import('$lib/storage/session.svelte').then(async ({ storageSession }) => {
+				await storageSession.start();
+				session = storageSession;
+			});
+		} else {
+			rotationTabs.restore();
+			// After the tabs: a board team's link is checked against them.
+			boards.restore();
+		}
 
 		// The breakpoint flags (responsive round, 2026-09-05) — what the bench
 		// ribbon reads to pick its orientation and the Team Builder reads to
@@ -1086,6 +1102,19 @@
 			onCancel={() => documentBar.cancelRoom()}
 		/>
 	{/key}
+{/if}
+
+<!-- The two-tab rule (§13.3): the document on screen is held by another tab. -->
+{#if session}
+	{@const shown =
+		tool?.path === '/builder'
+			? boards.activeBoardId
+			: tool?.path === '/planner'
+				? rotationTabs.activeTabId
+				: null}
+	{#if shown && session.readOnly.includes(shown)}
+		<HeldElsewhere onEditHere={() => session?.editHere(shown)} />
+	{/if}
 {/if}
 
 <!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing

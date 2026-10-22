@@ -38,14 +38,19 @@ function createSwitch() {
 		else safeRemoveItem(KEY);
 		store.set(on);
 	};
+	const fromUrl = (url: URL) => {
+		if (!url.searchParams.has('next')) return;
+		set(url.searchParams.get('next') !== '0');
+	};
+	// ⚠ Read the address at MODULE INIT, not in a layout's onMount: a child
+	// layout mounts before its parent, so the tools layout would otherwise
+	// decide on the switch before the root layout had read `?next`.
+	if (browser) fromUrl(new URL(location.href));
 	return {
 		subscribe: store.subscribe,
 		set,
 		/** Read `?next` / `?next=0` off an address; anything else leaves it. */
-		fromUrl(url: URL) {
-			if (!url.searchParams.has('next')) return;
-			set(url.searchParams.get('next') !== '0');
-		}
+		fromUrl
 	};
 }
 

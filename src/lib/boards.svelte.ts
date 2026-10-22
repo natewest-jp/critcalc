@@ -250,7 +250,13 @@ class BoardsState {
 
 	/** Restore from localStorage. Idempotent; call once, pre-paint. */
 	restore(): void {
-		const stored = loadFromStorage();
+		this.restoreFrom(loadFromStorage());
+	}
+
+	/** Take a stored board set (`null` keeps the cold start) and mark the state
+	 *  restored — localStorage's, or under the switch the profile's current
+	 *  lineup (build plan §13). */
+	restoreFrom(stored: { boards: Board[]; activeBoardId: string } | null): void {
 		if (stored) {
 			this.boards = stored.boards.map((b) => ({
 				...b,
@@ -268,8 +274,16 @@ class BoardsState {
 	persist(): void {
 		const snapshot = { boards: this.boards, activeBoardId: this.activeBoardId };
 		if (!this.restored) return;
+		if (this.persistSink) {
+			this.persistSink(snapshot.boards, snapshot.activeBoardId);
+			return;
+		}
 		safeSetItem(BOARDS_KEY, JSON.stringify(snapshot));
 	}
+
+	/** Under the switch, persist to the new store instead (see
+	 *  `rotationTabs.persistSink`, the same rule). */
+	persistSink: ((boards: Board[], activeBoardId: string) => void) | null = null;
 
 	// ── Board tabs ──────────────────────────────────────────────────────────
 

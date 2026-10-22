@@ -316,6 +316,7 @@ export function migrate(data: BackupData, { now, newId }: MigrationOptions): Mig
 			name: MIGRATED_PROFILE_NAME,
 			// ⚓ Nate 2026-10-22: the Traveler in the player's twin, Anemo ring.
 			colour: 'anemo',
+			picture: { kind: 'character', id: 'traveler_anemo' },
 			twin,
 			roster,
 			current: {},
