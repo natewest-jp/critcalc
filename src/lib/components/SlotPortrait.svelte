@@ -503,10 +503,13 @@
 		flex-direction: column;
 		align-items: stretch;
 		/* ⚓ Nate 2026-10-13: 6px of breathing room inside the ribbon's frame on
-		   each side, on top of its own RIBBON_PAD (the 2026-08-12 trim removed a
-		   doubling when the rail stood at the edge; the portrait wants air).
+		   each side, on top of its own RIBBON_PAD. ↻ 2026-10-22: NONE on the
+		   left now the rail stands there (⚓ Nate) — the ribbon's pad is the
+		   rail's air, as in the 2026-08-12 trim, and the 6px went to the name
+		   column (Kuki Shinobu fits on one line again; a longer name is a
+		   font-size or condensed-face question, not a padding one).
 		   Vertical padding holds the band off the slot's top edge. */
-		padding: 8px 6px 10px;
+		padding: 8px 6px 10px 0;
 
 		/* The gap between the name and the controls. 🎛️ ⚓ Nate 2026-10-14:
 		   1 (4 → 0 → 1) — the line box's own leading does most of the work. */
@@ -531,14 +534,15 @@
 		   The width is set by the MARK clearing the circle's arc at its worst
 		   corner (lower-right of the top mark):
 		     R  = band/2                     = 30    (circle radius)
-		     t  = (band − gap)/2             = 28    (tile height)
-		     dy = R − (t + mark)/2           = 9
-		     arc left at dy = R − √(R²−dy²)  = 1.43
-		     W  ≥ inset + mark − 1.43        = 3 + 14 − 1.43 = 15.6
+		     t  = (band − gap)/2             = 29    (tile height)
+		     dy = R − (t + mark)/2           = 8.5
+		     arc left at dy = R − √(R²−dy²)  = 1.23
+		     W  ≥ inset + mark − 1.23        = 3 + 14 − 1.23 = 15.8
 		   ⚠ RE-SOLVE IF CARD_PORTRAIT, THE GAP OR MARK_SIZE MOVE — the failure
 		   is a glyph with its corner shaved off by the portrait. */
 		--sp-rail-w: 16px;
-		--sp-rail-gap: 4px;
+		/* 🎛️ ⚓ Nate 2026-10-22: 2 (the old rail's was 4). */
+		--sp-rail-gap: 2px;
 		--sp-rail-mark-inset: 3px;
 		--sp-rail-underlap: calc(var(--sp-band) / 2);
 

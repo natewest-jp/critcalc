@@ -431,8 +431,10 @@
 	   Lifted from the pre-2026-10-13 rail (bench-buttons round, ⚓ Nate
 	   2026-10-22): VALUE CONTROLS ARE WELLS, COMMAND BUTTONS ARE RAISED, and
 	   squares where the value controls are capsules. New this round: QUIET AT
-	   REST, brighter while the card is pointed at, so four rails down the strip
-	   do not read as a column of chrome.
+	   REST, and they stay quiet until a tile ITSELF is pointed at. ⚓ Nate
+	   2026-10-22: a first cut raised the whole rail on card hover, and moving
+	   the cursor over the strip lit things up all over the place; the dimmed
+	   mark is legible enough on its own.
 
 	   The box is the card's (.sp-rail stretches them to split the band). The
 	   mark is ranged LEFT: the tile's right half runs on under the opaque disc
@@ -475,12 +477,6 @@
 		background: var(--bb-act-fill);
 		border-radius: 0 var(--r-sm) var(--r-sm) 0;
 		pointer-events: none;
-	}
-	/* The card is pointed at: the rail comes up to the raised rung. */
-	:global(.sp-card:hover) .bb-act,
-	:global(.sp-card:focus-within) .bb-act {
-		--bb-act-fill: var(--surface-raised);
-		color: var(--sp-unset-ink-hover);
 	}
 	/* A tile itself: one rung up (7% white is where slate-700 meets 600, the
 	   step a role may carry), ink to full. */

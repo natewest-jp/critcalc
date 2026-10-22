@@ -108,10 +108,12 @@
 		slot.
 	</p>
 	<p>
-		Each slot on the bench beside the timeline has a bench card. On a wide screen, clicking the
-		portrait opens the Team Builder’s swap mode for that slot, and picking someone there takes you
-		back to the Planner with the notation renamed throughout. An empty slot adds someone instead.
-		The magnifier in the corner opens the character’s details.
+		Each slot on the bench beside the timeline has a bench card. Clicking the portrait opens the
+		character’s details. On a wide screen, the two buttons at the card’s left change the slot: The
+		top one opens the Team Builder’s swap mode for that slot, and picking someone there takes you
+		back to the Planner with the notation renamed throughout. The bottom one removes the character
+		from the team and deletes their notation. Clicking an empty slot’s portrait adds someone
+		instead. On a phone, the remove button is in the character’s details.
 	</p>
 	<p>
 		The chip on the portrait sets the character’s constellation for this tab, and the pill beside it
