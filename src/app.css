@@ -2235,6 +2235,12 @@
 	height: var(--band-ctrl-h);
 	min-width: var(--band-ctrl-h);
 }
+/* ⚓ ONE CONTROL SIZE (phase 2e): under the switch the toolbar's type is the
+   interface size's, as the top bar's is. */
+:root[data-next] .band-b .tab,
+:root[data-next] .band-b .btn {
+	font-size: var(--ui-ctl-fs);
+}
 
 /* THE SELECTED DOCUMENT TAB moved UP into the shared selected-glass rule (see
    "SELECTED GLASS" above) on 2026-08-10 — it is not a special case any more.

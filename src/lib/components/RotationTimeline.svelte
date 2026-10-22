@@ -14,6 +14,7 @@
 	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
+	import { nextLayout } from '$lib/nextLayout';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip, { type TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -3828,6 +3829,22 @@
 						historyTick++;
 					}}><Mark name="redo" /><span class="rp-history-word">Redo</span></button
 				>
+				<!-- ⚓ Phase 2e (Nate 2026-10-22): Clear beside its own undo, so a
+				     mistaken clear is one click back. Under the switch only; band
+				     A's ⋯ still carries Reset with it off. -->
+				{#if $nextLayout}
+					<button
+						class="btn btn--sm"
+						type="button"
+						aria-label="Clear this rotation"
+						title="Clear this rotation (Undo brings it back)"
+						disabled={!rotationTabs.notation.trim() && rotationTabs.seats.every((s) => !s)}
+						onclick={() => {
+							rotationTabs.clearDocument();
+							historyTick++;
+						}}><Mark name="clear" /><span class="rp-history-word">Clear</span></button
+					>
+				{/if}
 			</div>
 		</div>
 		{#if dockOn && dockOpen && dockKeys.length}

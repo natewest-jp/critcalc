@@ -10,7 +10,13 @@
 		BAND_RADIUS,
 		BAND_STACK_GAP
 	} from '$lib/toolBands';
-	import { BENCH_ROW_H, RIBBON_OVERHANG_Y, RIBBON_W, TOOL_INSET } from '$lib/benchBand.svelte';
+	import {
+		BENCH_ROW_H,
+		RIBBON_OVERHANG_Y,
+		RIBBON_W,
+		TOOL_INSET,
+		benchBand
+	} from '$lib/benchBand.svelte';
 
 	// ---------------------------------------------------------------------------
 	// THE TOOL STACK (toolbar round, ⚓ NATE 2026-08-07) — one component owning
@@ -101,6 +107,15 @@
 		bandBFull?: Snippet;
 		surface: Snippet;
 	} = $props();
+
+	// ⚓ ONE CONTROL SIZE FOR BOTH BARS (phase 2e, §12 Q21; ⚓ Nate 2026-10-22):
+	// under the switch (band A gone, `noBandA`) the toolbar's row and controls
+	// are the interface size's (`--ui-ctl-h`, app.css), so the bench ribbon,
+	// whose head counts the stack, reads the height as rendered.
+	let bandBH = $state(0);
+	$effect(() => {
+		if (noBandA && bandBH > 0) benchBand.bandBH = bandBH;
+	});
 </script>
 
 <div
@@ -109,8 +124,8 @@
 	class:tool-stack--benched={benched}
 	class:tool-stack--bench-hidden={benched && benchHidden}
 	style:--band-a-h="{BAND_A_H}px"
-	style:--band-b-h="{BAND_B_H}px"
-	style:--band-ctrl-h="{BAND_CTRL_H}px"
+	style:--band-b-h={noBandA ? 'var(--ui-ctl-h)' : `${BAND_B_H}px`}
+	style:--band-ctrl-h={noBandA ? 'var(--ui-ctl-h)' : `${BAND_CTRL_H}px`}
 	style:--band-item-gap="{BAND_ITEM_GAP}px"
 	style:--band-pad-x="{BAND_PAD_X}px"
 	style:--band-radius="{BAND_RADIUS}px"
@@ -153,6 +168,7 @@
 		{/if}
 		<div
 			class="band band-b ctx-glass"
+			bind:clientHeight={bandBH}
 			class:band--3up={!!bandBCenter}
 			class:band--full={!!bandBFull}
 		>
