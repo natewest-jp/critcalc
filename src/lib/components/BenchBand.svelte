@@ -43,6 +43,7 @@
 	 *   for why neither could stay a CSS box.
 	 */
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import {
 		benchBand,
@@ -167,24 +168,20 @@
 	const host = $derived(benchBand.hostFor(mode));
 
 	/**
-	 * ⚓ THE BUILDER CARD'S GRAMMAR (Nate 2026-10-13): on the desk the portrait
-	 * ACTS — Swap, filled or empty (an empty slot or a typed Blank ADDS) — and
-	 * the magnifier READS. On the phone there is no Swap (swap mode needs the
-	 * lineup beside the grid, which a phone cannot show; the notation is the
-	 * phone's control), so the portrait READS and an empty one does nothing.
+	 * ⚓ THE PORTRAIT READS, THE RAIL ACTS (bench-buttons round, Nate
+	 * 2026-10-22): a filled portrait opens the character's details on the desk
+	 * as on the phone, and ⇄ / ✕ stand in the rail beside it. With nobody to
+	 * read, an empty portrait (or a typed Blank's) still ADDS through the
+	 * Builder on the desk. On the phone there is no Swap (swap mode needs the
+	 * lineup beside the grid, which a phone cannot show), so an empty portrait
+	 * does nothing and Remove lives in the details card.
 	 */
 	function portraitClickFor(char: { id: string; displayName: string } | null, i: number) {
 		if (!host) return undefined;
 		const h = host;
 		const filled = char && char.id !== 'blank' ? char.id : null;
-		if (row) return filled ? () => h.onOpenDetail(filled) : undefined;
-		return () => h.onSwap(i, char?.id ?? null);
-	}
-	function detailsFor(char: { id: string } | null) {
-		if (!host || row || !char || char.id === 'blank') return undefined;
-		const h = host;
-		const id = char.id;
-		return () => h.onOpenDetail(id);
+		if (filled) return () => h.onOpenDetail(filled);
+		return row ? undefined : () => h.onSwap(i, char?.id ?? null);
 	}
 </script>
 
@@ -264,17 +261,43 @@
 						char && rt.setTabLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
 					onSetRefinement={(r) => char && rt.setTabLoadout(char.id, { weaponRefinement: r })}
 					onPortraitClick={portraitClickFor(char, i)}
-					portraitLabel={row
-						? char && char.id !== 'blank'
-							? `${char.displayName}'s details`
-							: 'Empty slot'
-						: char && char.id !== 'blank'
-							? `Swap ${char.displayName}`
+					portraitLabel={char && char.id !== 'blank'
+						? `${char.displayName}'s details`
+						: row
+							? 'Empty slot'
 							: 'Choose a character for this slot'}
-					onDetails={detailsFor(char)}
 					emptyLabel=""
 					resting={mode === 'rp' && !!char && !awake.includes(char.id)}
-				/>
+				>
+					{#snippet actions()}
+						<!-- ⇄ hands the slot to the Builder's swap mode; ✕ empties it and
+						     deletes the character's notation (the one way to take a
+						     PLACED character off). An empty slot keeps the boxes and
+						     hides them; a typed Blank's are live, since a placeholder is
+						     exactly what you swap a real character into. -->
+						{@const live = !!char}
+						<button
+							class="bb-act"
+							disabled={!live}
+							onclick={() => char && host?.onSwap(i, char.id)}
+							title={live && char ? `Swap ${char.displayName}` : undefined}
+							aria-label={live && char ? `Swap ${char.displayName}` : 'Swap (empty slot)'}
+						>
+							<Mark name="swap" />
+						</button>
+						<button
+							class="bb-act bb-act--remove"
+							disabled={!live}
+							onclick={() => rt.setSlot(i, null)}
+							title={live && char ? `Remove ${char.displayName} from team` : undefined}
+							aria-label={live && char
+								? `Remove ${char.displayName} from team`
+								: 'Remove (empty slot)'}
+						>
+							<Mark name="close" />
+						</button>
+					{/snippet}
+				</SlotPortrait>
 			</div>
 		{/each}
 	</div>
@@ -403,4 +426,78 @@
 	   their slot height." The cards' own spacing separates them now.
 	   ⚠ If a separator ever comes back it must still take NO height: card k's
 	   top has to stay on the cumulative sum the planner's track groups use. */
+
+	/* ── Slot commands (⇄ · ✕) — THE RAISED REGISTER ─────────────────────────
+	   Lifted from the pre-2026-10-13 rail (bench-buttons round, ⚓ Nate
+	   2026-10-22): VALUE CONTROLS ARE WELLS, COMMAND BUTTONS ARE RAISED, and
+	   squares where the value controls are capsules. New this round: QUIET AT
+	   REST, brighter while the card is pointed at, so four rails down the strip
+	   do not read as a column of chrome.
+
+	   The box is the card's (.sp-rail stretches them to split the band). The
+	   mark is ranged LEFT: the tile's right half runs on under the opaque disc
+	   as ::before, so a centred glyph would be centred in a box mostly hidden.
+
+	   🐛 THE CUSTOM PROPERTY IS WHAT ANIMATES: pseudo-elements do not inherit
+	   their element's transitions, so easing two backgrounds showed a seam
+	   down the tile mid-hover. One registered value, re-resolved by both boxes
+	   (inherits: true, or ::before reads the initial value). */
+	@property --bb-act-fill {
+		syntax: '<color>';
+		inherits: true;
+		initial-value: transparent;
+	}
+	.bb-act {
+		position: relative;
+		box-sizing: border-box;
+		display: grid;
+		place-items: center start;
+		padding: 0 0 0 var(--sp-rail-mark-inset);
+		border: none;
+		border-radius: var(--r-sm) 0 0 var(--r-sm);
+		/* At rest, halfway from the card's ground to the raised rung: there,
+		   but not asking. An opaque mix, so the alpha stays in the paint. */
+		--bb-act-fill: color-mix(in srgb, var(--surface-raised) 45%, var(--surface));
+		background: var(--bb-act-fill);
+		color: var(--sp-unset-ink);
+		cursor: pointer;
+		transition:
+			color var(--t-snap),
+			--bb-act-fill var(--t-snap);
+	}
+	.bb-act::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 100%;
+		width: var(--sp-rail-underlap);
+		background: var(--bb-act-fill);
+		border-radius: 0 var(--r-sm) var(--r-sm) 0;
+		pointer-events: none;
+	}
+	/* The card is pointed at: the rail comes up to the raised rung. */
+	:global(.sp-card:hover) .bb-act,
+	:global(.sp-card:focus-within) .bb-act {
+		--bb-act-fill: var(--surface-raised);
+		color: var(--sp-unset-ink-hover);
+	}
+	/* A tile itself: one rung up (7% white is where slate-700 meets 600, the
+	   step a role may carry), ink to full. */
+	.bb-act:hover:not(:disabled),
+	.bb-act:focus-visible {
+		--bb-act-fill: color-mix(in srgb, white 7%, var(--surface-raised));
+		color: var(--text);
+	}
+	/* ✕ announces itself with a surface: the destructive one goes red. */
+	.bb-act--remove:hover:not(:disabled),
+	.bb-act--remove:focus-visible {
+		--bb-act-fill: color-mix(in srgb, var(--ui-danger) 22%, var(--surface-raised));
+		color: color-mix(in srgb, var(--ui-danger) 45%, white);
+	}
+	/* An empty slot: the boxes stay (the portraits do not step sideways) and
+	   paint nothing. ⛔ Not element opacity — the ribbon is transform-placed. */
+	.bb-act:disabled {
+		visibility: hidden;
+	}
 </style>

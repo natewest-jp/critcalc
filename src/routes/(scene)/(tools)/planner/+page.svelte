@@ -841,11 +841,19 @@
      sessions never open. One frame's delay on first open, and the character
      payload it renders is a lazy chunk regardless. -->
 {#if detailId && DetailCardComp}
+	<!-- ⚓ On the phone the bench has no rail, so Remove from team lives here
+	     (bench-buttons round, Nate 2026-10-22); on the desk the rail's ✕ is it. -->
+	{@const seat = rt.seats.indexOf(detailId)}
 	<DetailCardComp
 		id={detailId}
 		conMode="mine"
 		onClose={() => (detailId = null)}
 		defaultBuild={false}
+		teamState={narrowForm() && seat >= 0 ? 'in' : undefined}
+		onToggleTeam={() => {
+			rt.setSlot(seat, null);
+			detailId = null;
+		}}
 	/>
 {/if}
 

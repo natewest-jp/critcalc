@@ -41,19 +41,17 @@ test('the bench leaves on the way to the Builder and comes back with the team', 
  */
 
 const ERRAND = '.bv-team--errand';
-/** The portrait of a FILLED card — on the desk it IS Swap (2026-10-13, the
- *  Builder card's grammar: the portrait acts, the magnifier reads). */
-const SWAP = '.bench-band-mount .sp-side-hit[aria-label^="Swap "]';
+/** ⇄ in a FILLED card's rail (↻ bench-buttons round 2026-10-22: the rail is
+ *  back and the portrait reads). */
+const SWAP = '.bench-band-mount .bb-act[aria-label^="Swap "]';
 
 test("the planner's ⇄ opens swap mode on its own team", async ({ page, seed }) => {
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/planner');
 
-	// ↻ 2026-10-13: the MAGNIFIER reads the character (shown on hover), and
-	// the portrait itself is Swap.
-	await page.locator('.bench-band-mount .sp-avatar-chip').first().hover();
-	await page.locator('.bench-band-mount .sp-mag').first().click();
-	await expect(page.locator('.dc-backdrop'), 'the magnifier reads the character').toHaveCount(1);
+	// ↻ 2026-10-22: the portrait reads the character, and ⇄ in the rail swaps.
+	await page.locator('.bench-band-mount .sp-side-hit').first().click();
+	await expect(page.locator('.dc-backdrop'), 'the portrait reads the character').toHaveCount(1);
 	await page.keyboard.press('Escape');
 	await expect(page.locator('.dc-backdrop')).toHaveCount(0);
 
