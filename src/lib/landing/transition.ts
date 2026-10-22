@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { get, writable } from 'svelte/store';
+import { nextLayout } from '$lib/nextLayout';
 import { getSceneGL, crestPose, PAN_MS } from '$lib/landing/sceneGL';
 import { SCENE_DIM } from '$lib/landing/sceneDim';
 
@@ -103,6 +104,11 @@ export const TILT_EASING_CSS = 'cubic-bezier(0.58, 0, 0.42, 1)';
  * magnitude/clamp math lives in sceneGL's crestPose.
  */
 function sideSign(path: string): -1 | 0 | 1 {
+	// ⚓ ONE PLACE FOR EVERY TOOL (design §5.5, Nate 2026-10-22): under the
+	// switch every tool sits at the Planner's pose, so the rise from the
+	// landing goes one way whichever card you pick, and a tool changes in
+	// place. The crane below is the switch-off site's until the release.
+	if (get(nextLayout)) return 0;
 	if (path === '/builder') return 1;
 	if (path === '/visualizers') return -1;
 	return 0;

@@ -521,6 +521,10 @@ type SiteSettings = {
 	 *  window width (app.css § THE INTERFACE SIZE); a pin is a desktop choice,
 	 *  and the phone is Small whatever is pinned. Per person, not per profile. */
 	uiSize: UiSize;
+	/** ⚓ Tool-to-tool transitions (design §5.5, Nate 2026-10-22): the streamer
+	 *  found them pretty but "fluff", so they can be turned off; the
+	 *  landing ↔ tool rise is not one of them. Per person. */
+	toolTransitions: boolean;
 	/** Which traveler renders wherever a traveler_* character appears. */
 	travelerVariant: 'aether' | 'lumine';
 	/**
@@ -717,6 +721,7 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	showCoverageStrips: false,
 	uiSize: 'auto',
+	toolTransitions: true,
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
@@ -842,6 +847,9 @@ function createSiteSettingsStore() {
 		},
 		setUiSize(value: UiSize) {
 			store.update((prev) => persist({ ...prev, uiSize: value }));
+		},
+		setToolTransitions(value: boolean) {
+			store.update((prev) => persist({ ...prev, toolTransitions: value }));
 		},
 
 		setShowCoverageStrips(value: boolean) {

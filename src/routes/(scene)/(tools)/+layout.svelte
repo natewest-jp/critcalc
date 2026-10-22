@@ -27,6 +27,7 @@
 	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
 	import HeldElsewhere from '$lib/components/HeldElsewhere.svelte';
 	import { nextLayout } from '$lib/nextLayout';
+	import { T_QUICK } from '$lib/motion';
 	import type { storageSession as StorageSessionT } from '$lib/storage/session.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
 	import { TOOLS } from './lib/toolChrome';
@@ -197,13 +198,29 @@
 	// fade disparity is accepted, and dropping TOOL_NAV_MS to 1800 would
 	// restore parity if it ever grates). Plus a 150ms beat of pure world
 	// between the outgoing clearing and the incoming's entrance.
-	const TOOL_FADE_OUT_MS = Math.round(TOOL_NAV_MS / 3);
-	const TOOL_FADE_IN_MS = Math.round(TOOL_NAV_MS / 3);
-	const TOOL_FADE_IN_DELAY_MS = TOOL_FADE_OUT_MS + 150;
+	//
+	// ↻ UNDER THE SWITCH (phase 2f, design §5.5; ⚓ Nate 2026-10-22): every tool
+	// sits at the Planner's pose, so a tool-to-tool leg has no camera move and
+	// no drift — a tool CHANGES IN PLACE, on a short fade of its own (the
+	// crane-era values above stay the switch-off site's). 🎛️ Knobs for Nate:
+	// out on the SURFACE band (--t-quick), in a touch slower so the new tool
+	// settles rather than pops, no beat between them.
+	const INPLACE_FADE_OUT_MS = T_QUICK;
+	const INPLACE_FADE_IN_MS = 200;
+	const TOOL_FADE_OUT_MS = nextOn ? INPLACE_FADE_OUT_MS : Math.round(TOOL_NAV_MS / 3);
+	const TOOL_FADE_IN_MS = nextOn ? INPLACE_FADE_IN_MS : Math.round(TOOL_NAV_MS / 3);
+	const TOOL_FADE_IN_DELAY_MS = nextOn ? TOOL_FADE_OUT_MS : TOOL_FADE_OUT_MS + 150;
 	// The world clock for tool↔tool legs (TOOL_NAV_MS in transition.ts — it
 	// drives the camera's crane on these legs too; retune it there and the
-	// camera, drift, underline and dependent timers all move together).
-	const SLIDE_MS = TOOL_NAV_MS;
+	// camera, drift, underline and dependent timers all move together). Under
+	// the switch there is no crane, so the leg is just its two fades.
+	const SLIDE_MS = nextOn ? TOOL_FADE_OUT_MS + TOOL_FADE_IN_MS : TOOL_NAV_MS;
+
+	/** No tool-to-tool motion: the reader asked for less motion, or (under the
+	 *  switch) turned tool transitions off in Settings (§5.5). The landing ↔
+	 *  tool rise is not a tool-to-tool leg and keeps its own rule. */
+	const toolMotionOff = (): boolean =>
+		prefersReducedMotion() || (nextOn && !get(siteSettings).toolTransitions);
 	const SLIDE_EASE = TILT_EASING_CSS;
 	// Retention budget for the outgoing layer: outlasts the transition window
 	// (camera, PAN_MS 2100 at most, + fade-in tail + settle pass) and doubles as the A→B→A
@@ -637,7 +654,7 @@
 	// incoming one, and revivable if the user navigates straight back. Opacity is
 	// driven by the afterNavigate orchestration — this emits no styles of its own.
 	function holdPage(_node: Element) {
-		return { duration: prefersReducedMotion() ? 0 : HOLD_MAX_MS };
+		return { duration: toolMotionOff() ? 0 : HOLD_MAX_MS };
 	}
 
 	// use: stamps the page layer with the pathname it was created for. Actions run
@@ -773,7 +790,7 @@
 		// page layer means nothing to cross-fade (e.g. landing→tool, where the old
 		// DOM lives outside this layout). Whenever the pan orchestration doesn't
 		// run, the bench band just snaps to the new page's dock post-render.
-		if (nav.type === 'enter' || prefersReducedMotion() || !toolMain) {
+		if (nav.type === 'enter' || toolMotionOff() || !toolMain) {
 			requestAnimationFrame(snapBench);
 			return;
 		}
