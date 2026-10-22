@@ -122,9 +122,10 @@ describe('documentBar.receive — the make-room confirm', () => {
 		db.receive(rt.teamDocument(['bennett', 'xiangling']), 'Team loaded');
 		expect(db.room).toBeNull();
 		expect(rt.tabs).toHaveLength(3);
-		// The team IS the notation since single truth — names in segment order.
-		expect(rt.tabs[2].notation).toContain('Bennett');
-		expect(rt.tabs[2].notation).toContain('Xiangling');
+		// ⚓ §8.1: a team arrives SEATED, resting, in an empty notation — ⛔ the
+		// old run of bare names the streamer cleared and lost the team with.
+		expect(rt.tabs[2].notation).toBe('');
+		expect(rt.seats).toEqual(['bennett', 'xiangling', null, null]);
 	});
 
 	it('at the limit, ASKS — and changes nothing until answered', () => {

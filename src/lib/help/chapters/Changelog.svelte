@@ -37,6 +37,20 @@
 	<div class="timeline">
 		<article class="entry">
 			<header class="entry-head">
+				<h3>A team you open stays on the bench</h3>
+				<time class="entry-date" datetime="2026-10-22">October 22</time>
+			</header>
+			<p>
+				On the Rotation Planner: A team opened from the Library, a lineup, or a team link now
+				arrives with an empty notation box and its four characters already in their slots. Each one
+				keeps their slot until you write their actions. Until their name is typed, they’re shown
+				resting (dimmed). Before this, clearing the notation box to start writing removed
+				characters.
+			</p>
+		</article>
+
+		<article class="entry">
+			<header class="entry-head">
 				<h3>critcalc launches</h3>
 				<time class="entry-date" datetime="2026-10-19">October 19</time>
 			</header>

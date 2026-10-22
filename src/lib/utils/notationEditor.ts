@@ -17,15 +17,18 @@ import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
 import { buildNotationExtensions, setResolvedTints } from './notationEditorExtension';
+import { sameSeats, seatsExtension, seatsField, setSeats } from './notationSeats';
+import { emptySeating, makeSeating, type Seating } from './notationEdit';
 import type { NotationTint } from '$lib/timeline/notationTints';
 
 export interface NotationEditor {
-	/** Replace the document (no-op when the value already matches). Lands as a
-	 *  minimal, UNDOABLE transaction — see setValue's note. */
-	setValue(value: string): void;
+	/** Replace the document — text, and the party's seats when given (no-op
+	 *  when both already match). Lands as ONE minimal, UNDOABLE transaction —
+	 *  see setValue's note. */
+	setValue(value: string, seating?: Seating): void;
 	getValue(): string;
 	/** Show another DOCUMENT (a planner tab) — see showDocument's note. */
-	showDocument(key: string, value: string): void;
+	showDocument(key: string, value: string, seating?: Seating): void;
 	/** Run the editor's own history commands. Exposed so the composer can put
 	 *  buttons beside the box for the same thing ⌘Z already does. */
 	undo(): void;
@@ -45,12 +48,16 @@ export interface NotationEditor {
 export function createNotationEditor(
 	parent: HTMLElement,
 	initialValue: string,
-	onChange: (value: string) => void,
+	/** The text, and the seats it now fills (§8.1), after a change the USER
+	 *  made — typing, ⌘Z, Redo. Not called for setValue/showDocument. */
+	onChange: (value: string, seating: Seating) => void,
 	/** Which document `initialValue` is — the planner's active tab id. */
 	initialKey: string,
 	/** Where the caret is, on every move or edit — the dock's key row reads
 	 *  the segment it sits in. */
-	onCursor?: (pos: number) => void
+	onCursor?: (pos: number) => void,
+	/** The party's seating for `initialValue`. */
+	initialSeats: Seating = emptySeating()
 ): NotationEditor {
 	// Guard flag: true while an external value change is being dispatched into
 	// CodeMirror so the updateListener's onChange doesn't fire re-entrantly
@@ -59,17 +66,21 @@ export function createNotationEditor(
 	let externalUpdate = false;
 
 	const extensions = [
-		...buildNotationExtensions((v) => {
-			if (!externalUpdate) onChange(v);
-		}),
+		// The text reaches the caller through the listener below, WITH its seats.
+		// The empty-state hint comes from the seats (notationSeats.seatHint).
+		...buildNotationExtensions(() => {}, null),
 		EditorView.updateListener.of((u) => {
 			if (onCursor && (u.selectionSet || u.docChanged)) onCursor(u.state.selection.main.head);
+			const seats = u.state.field(seatsField);
+			if (externalUpdate) return;
+			if (u.docChanged || seats !== u.startState.field(seatsField))
+				onChange(u.state.doc.toString(), seats);
 		})
 	];
-	const view = new EditorView({
-		state: EditorState.create({ doc: initialValue, extensions }),
-		parent
-	});
+	/** ⚓ One document's state: its text and ITS seats, both in its history. */
+	const stateFor = (doc: string, seating: Seating) =>
+		EditorState.create({ doc, extensions: [extensions, seatsExtension(seating)] });
+	const view = new EditorView({ state: stateFor(initialValue, initialSeats), parent });
 
 	// ⚓ ONE HISTORY PER DOCUMENT (2026-09-30). The editor is shared by every
 	// planner tab, and an EditorState is what owns the undo stack — so each tab
@@ -96,9 +107,23 @@ export function createNotationEditor(
 		 * dumped at the end of a brand-new document, and undo restores the text
 		 * without also restoring a stale selection.
 		 */
-		setValue(value: string) {
+		setValue(value: string, seats?: Seating) {
 			const current = view.state.doc.toString();
-			if (value === current) return;
+			// ⚓ Text and seats in ONE transaction, so one ⌘Z undoes a swap or a ✕
+			// whole. Seats given = the caller decided them (the extender stands
+			// aside); absent = the rule seats whatever the new text names.
+			const nextSeats: Seating | null = seats ? makeSeating(seats.seats, seats.placed) : null;
+			const seatsMove = !!nextSeats && !sameSeats(nextSeats, view.state.field(seatsField));
+			if (value === current) {
+				if (!seatsMove) return;
+				externalUpdate = true;
+				try {
+					view.dispatch({ effects: setSeats.of(nextSeats!) });
+				} finally {
+					externalUpdate = false;
+				}
+				return;
+			}
 			let from = 0;
 			while (from < current.length && from < value.length && current[from] === value[from]) from++;
 			let end = current.length;
@@ -109,7 +134,10 @@ export function createNotationEditor(
 			}
 			externalUpdate = true;
 			try {
-				view.dispatch({ changes: { from, to: end, insert: value.slice(from, newEnd) } });
+				view.dispatch({
+					changes: { from, to: end, insert: value.slice(from, newEnd) },
+					...(nextSeats ? { effects: setSeats.of(nextSeats) } : {})
+				});
 			} finally {
 				externalUpdate = false;
 			}
@@ -125,17 +153,17 @@ export function createNotationEditor(
 		 * reconciled through setValue — a real edit to that document, so it IS
 		 * undoable there.
 		 */
-		showDocument(key: string, value: string) {
+		showDocument(key: string, value: string, seats?: Seating) {
 			if (key === currentKey) {
-				this.setValue(value);
+				this.setValue(value, seats);
 				return;
 			}
 			parked.set(currentKey, view.state);
 			currentKey = key;
 			const next = parked.get(key);
 			parked.delete(key);
-			view.setState(next ?? EditorState.create({ doc: value, extensions }));
-			this.setValue(value);
+			view.setState(next ?? stateFor(value, seats ?? emptySeating()));
+			this.setValue(value, seats);
 		},
 		undo() {
 			undo(view);

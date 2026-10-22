@@ -3,6 +3,7 @@
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
 	import type { NotationEditor } from '$lib/utils/notationEditor';
+	import { emptySeating, type Seating } from '$lib/utils/notationEdit';
 	import RotationCoverage from './RotationCoverage.svelte';
 	import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { getLoadedCharacter } from '$lib/data/characterData';
@@ -106,6 +107,7 @@
 	let {
 		characterSlots = ['blank', 'blank', 'blank', 'blank'],
 		notation = $bindable(''),
+		seating = $bindable<Seating>(emptySeating()),
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		tabCon = {} as Record<string, number>,
 		tabId = '',
@@ -113,6 +115,10 @@
 	}: {
 		characterSlots?: string[];
 		notation?: string;
+		/** ⚓ The party's slots and their flags (§8.1), round-tripped through the
+		 *  editor so its history can restore them: ⌘Z after a newcomer took a
+		 *  resting seat gives the seat back. */
+		seating?: Seating;
 		/** Which document `notation` is — the planner's active tab. The editor
 		 *  keeps one undo history per id (see `showDocument`). */
 		tabId?: string;
@@ -2161,7 +2167,7 @@
 		untrack(() => api.setTints(doc, tints));
 	});
 
-	function mountEditor(node: HTMLElement, doc: { value: string; key: string }) {
+	function mountEditor(node: HTMLElement, doc: { value: string; key: string; seats: Seating }) {
 		let editor: NotationEditor | null = null;
 		let destroyed = false;
 		// The latest external value, replayed into the editor when it arrives
@@ -2169,6 +2175,7 @@
 		// imports can update notation while the chunk is still loading).
 		let pendingValue = doc.value;
 		let pendingKey = doc.key;
+		let pendingSeats = doc.seats;
 
 		const placeholder = document.createElement('div');
 		placeholder.className = 'rp-notation-placeholder';
@@ -2181,12 +2188,16 @@
 			editor = createNotationEditor(
 				node,
 				pendingValue,
-				(v) => {
+				(v, s) => {
+					// Seats FIRST: the store's notation setter then finds them settled
+					// (the seat rule is idempotent), so the two writes cannot disagree.
+					seating = s;
 					notation = v;
 					historyTick++;
 				},
 				pendingKey,
-				(pos) => (cursorPos = pos)
+				(pos) => (cursorPos = pos),
+				pendingSeats
 			);
 			editorApi = editor;
 			historyTick++;
@@ -2198,12 +2209,13 @@
 			// A string parameter hid that (an equal value skips the call); this
 			// object is new on every run, so a tracked body loops until Svelte
 			// throws `effect_update_depth_exceeded`.
-			update(next: { value: string; key: string }) {
+			update(next: { value: string; key: string; seats: Seating }) {
 				untrack(() => {
 					pendingValue = next.value;
 					pendingKey = next.key;
+					pendingSeats = next.seats;
 					if (editor) {
-						editor.showDocument(next.key, next.value);
+						editor.showDocument(next.key, next.value, next.seats);
 						historyTick++;
 					} else placeholder.textContent = next.value;
 				});
@@ -3755,7 +3767,10 @@
 		     the dock's wrapping row is unchanged. -->
 		<div class="rp-composer-body">
 			<div class="rp-notation-wrap">
-				<div class="rp-notation" use:mountEditor={{ value: notation, key: tabId }}></div>
+				<div
+					class="rp-notation"
+					use:mountEditor={{ value: notation, key: tabId, seats: seating }}
+				></div>
 				<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
 			     characters' coverage under the box, what this rotation doesn't
 			     reach dimmed. Under the box rather than beside it, so the strips

@@ -3,6 +3,11 @@
  *
  * REWRITING THE NOTATION ON THE USER'S BEHALF — the write half of single truth.
  *
+ * ↻ 2026-10-22 (design §8.1): the team is STORED again as four seats the
+ * notation fills — `seatSlots` below is the rule, and the "notation IS the
+ * team" premise of the paragraph that follows holds for the text's own
+ * rewrites (rename, delete) but no longer for who is seated.
+ *
  * Once the notation IS the team (rotationTabs.slots is derived from it), every
  * team edit has to become a text edit: a swap RENAMES a character's segments,
  * removing one DELETES them, and adding somebody APPENDS a bare-name segment. This module is the only place that happens, and it is pure — the
@@ -105,6 +110,137 @@ export function teamKey(ids: readonly (string | null | undefined)[]): string {
 /** The team key of a notation — the first four distinct names it holds. */
 export function teamKeyOfNotation(notation: string): string {
 	return teamKey(orderedCharacterIds(notation));
+}
+
+/** A rotation's four party slots (keys 1–4). `null` is an EMPTY slot; the
+ *  string `'blank'` is the Blank character, seated — the two were one value
+ *  while the team was derived, and only `benchBand.blankUsed` told them apart. */
+export type Seats = (string | null)[];
+
+export const emptySeats = (): Seats => Array<string | null>(TEAM_SIZE).fill(null);
+
+/** Stored seats as exactly TEAM_SIZE entries: missing become empty, a
+ *  duplicate keeps its first seat. `'blank'` is kept — here it is the Blank
+ *  character (see `seatsFromLegacy` for lists where it meant empty). */
+export function normalizeSeats(
+	raw: readonly (string | null | undefined)[] | null | undefined
+): Seats {
+	const out = emptySeats();
+	(raw ?? []).slice(0, TEAM_SIZE).forEach((id, i) => {
+		// Only a character we know: seats arrive from links and backups too.
+		if (id && !out.includes(id) && getCharacterIndexEntry(id)) out[i] = id;
+	});
+	return out;
+}
+
+/** A LEGACY slot list (`manualSlots`, a board's team row, `rt.slots`'s own
+ *  shape), where `'blank'` meant an empty slot. */
+export function seatsFromLegacy(
+	raw: readonly (string | null | undefined)[] | null | undefined
+): Seats {
+	return normalizeSeats((raw ?? []).map((id) => (id === 'blank' ? null : id)));
+}
+
+/**
+ * A party's slots with what each seat REMEMBERS (design §8.1, ⚓ Nate
+ * 2026-10-22).
+ *  - `seats`: who sits where (keys 1–4; `null` empty).
+ *  - `placed`: the seat was filled ON PURPOSE — by a team, a lineup, a link, a
+ *    swap, the Builder. A placed character the notation does not name RESTS.
+ *    A TYPED one (placed false) comes and goes with the text: when their last
+ *    mention leaves, the seat empties, as it always did before slots.
+ *  - `vacated`: who last left each empty seat BY TEXT, so a typo fix
+ *    ("Xiangling" → "Xianglin" → "Xiangling") returns them to the same slot
+ *    rather than the lowest empty one. Not persisted — an edit's memory.
+ */
+export type Seating = { seats: Seats; placed: boolean[]; vacated: (string | null)[] };
+
+const falses = (): boolean[] => Array<boolean>(TEAM_SIZE).fill(false);
+export const emptySeating = (): Seating => ({
+	seats: emptySeats(),
+	placed: falses(),
+	vacated: emptySeats()
+});
+
+/** Seats plus their flags, normalized; a flag on an empty seat is dropped. */
+export function makeSeating(
+	seats: readonly (string | null | undefined)[] | null | undefined,
+	placed?: readonly (boolean | null | undefined)[] | null
+): Seating {
+	const ids = normalizeSeats(seats);
+	return {
+		seats: ids,
+		placed: ids.map((id, i) => !!id && placed?.[i] === true),
+		vacated: emptySeats()
+	};
+}
+
+/** Every seated character placed on purpose — a team document, a swap. */
+export const placedSeating = (seats: readonly (string | null | undefined)[]): Seating =>
+	makeSeating(seats, [true, true, true, true]);
+
+/**
+ * ⚓ THE RULE: characters you put on the team stay until you remove them;
+ * characters you type come and go with the text.
+ *
+ * 1. A TYPED seat whose character the notation no longer names EMPTIES.
+ * 2. A newly named character takes, in order: the slot it just left by text
+ *    (`vacated`), the first EMPTY slot, the first RESTING (placed, unnamed)
+ *    one. It is typed in the seat it takes.
+ * Nothing else moves: a character keeps their key whatever order the text
+ * names them in, and only an explicit write (✕, a swap, Clear, a load) sets a
+ * seat otherwise.
+ *
+ * ⚠ IDEMPOTENT by construction (every typed seat is named, every name is
+ * seated), which is what lets the store's notation setter and the editor's
+ * transaction both run it, in either order. From an empty seating it
+ * reproduces the old derivation exactly (the first four names, in order).
+ */
+export function seatTeam(prev: Seating, notation: string): Seating {
+	const names = orderedCharacterIds(notation);
+	const seats = normalizeSeats(prev.seats);
+	const placed = seats.map((id, i) => !!id && prev.placed[i] === true);
+	const vacated = seats.map((_, i) => prev.vacated[i] ?? null);
+	seats.forEach((id, i) => {
+		if (id && !placed[i] && !names.includes(id)) {
+			vacated[i] = id;
+			seats[i] = null;
+		}
+	});
+	for (const id of names) {
+		if (seats.includes(id)) continue;
+		let i = seats.findIndex((x, k) => x === null && vacated[k] === id);
+		if (i < 0) i = seats.indexOf(null);
+		if (i < 0) i = seats.findIndex((x, k) => x !== null && placed[k] && !names.includes(x));
+		if (i < 0) continue; // all four named: a fifth has nowhere to sit
+		seats[i] = id;
+		placed[i] = false;
+		vacated[i] = null;
+	}
+	return { seats, placed, vacated };
+}
+
+/** A SAVED entry's seating: its stored slots and flags; else a legacy
+ *  `manualSlots` (placed on purpose, in its own order) with the notation
+ *  seated into it; else the notation's old derivation. */
+export function seatingOfSaved(e: {
+	notation: string;
+	slots?: readonly (string | null)[] | null;
+	placed?: readonly boolean[] | null;
+	manualSlots?: readonly (string | null)[] | null;
+}): Seating {
+	if (e.slots) return makeSeating(e.slots, e.placed);
+	return seatTeam(placedSeating(seatsFromLegacy(e.manualSlots ?? [])), e.notation ?? '');
+}
+
+/** A saved entry's seats alone (the Library, board pins, shares). */
+export const seatsOfSaved = (e: Parameters<typeof seatingOfSaved>[0]): Seats =>
+	seatingOfSaved(e).seats;
+
+/** The seated characters the notation names (the rest are resting). */
+export function awakeIds(seats: readonly (string | null)[], notation: string): string[] {
+	const names = orderedCharacterIds(notation);
+	return seats.filter((x): x is string => !!x && names.includes(x));
 }
 
 /**

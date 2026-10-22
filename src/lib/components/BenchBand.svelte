@@ -71,6 +71,7 @@
 	import { constellations, loadout, ownership, type LoadoutEntry } from '$lib/stores';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { awakeIds } from '$lib/utils/notationEdit';
 
 	let {
 		mode
@@ -136,16 +137,12 @@
 	// shape and are available eagerly (no payload wait). A 'blank' slot shows
 	// the generic Blank card only where the notation actually casts it
 	// (planner metrics say so); everywhere else it's an empty add-slot.
-	const chars = $derived(
-		rt.slots.map((id, i) => {
-			if (id === 'blank') {
-				return mode === 'rp' && benchBand.blankUsed[i]
-					? (getCharacterIndexEntry('blank') ?? null)
-					: null;
-			}
-			return getCharacterIndexEntry(id) ?? null;
-		})
-	);
+	// ↻ 2026-10-22 (§8.1): read off the stored SEATS, where an empty slot is
+	// null and a seated Blank is 'blank' — the distinction `blankUsed` used to
+	// reconstruct from the parse.
+	const chars = $derived(rt.seats.map((id) => (id ? (getCharacterIndexEntry(id) ?? null) : null)));
+	/** Seated characters the notation does not name yet: they REST (§8.1). */
+	const awake = $derived(awakeIds(rt.seats, rt.notation));
 
 	// Effective (Layer-2 ⇒ Layer-1) display values — the planner column's rule,
 	// now the bench's rule everywhere.
@@ -276,6 +273,7 @@
 							: 'Choose a character for this slot'}
 					onDetails={detailsFor(char)}
 					emptyLabel=""
+					resting={mode === 'rp' && !!char && !awake.includes(char.id)}
 				/>
 			</div>
 		{/each}

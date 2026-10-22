@@ -36,7 +36,7 @@ import { documentBar, recentlyClosedRotations } from './documentBar.svelte';
 import { boardBar } from './boardBar.svelte';
 import { fromSavedTeams, makeBoard, recentlyClosedBoards, type Board } from './boards.svelte';
 import { newTabId, rotationTabs as rt, type RotationTab } from './rotationTabs.svelte';
-import { foldTeamIntoNotation, orderedCharacterIds } from './utils/notationEdit';
+import { seatingOfSaved, seatsOfSaved } from './utils/notationEdit';
 import { encodeRotation } from './utils/rotationUrl';
 import { encodeBoard } from './utils/boardUrl';
 import { teamNotation, type LibraryTeam } from './library';
@@ -154,7 +154,7 @@ class LibraryState {
 
 	openRotation(e: SavedNotation) {
 		if (this.from === 'builder' && this.#target) {
-			this.#target.place(slotsFromNotationIds(e.notation), e.id);
+			this.#target.place(seatedIds(e), e.id);
 			this.close();
 			return;
 		}
@@ -209,7 +209,7 @@ class LibraryState {
 			void goto(resolve('/planner'));
 		} else {
 			this.close(true);
-			boardBar.receiveTeam(slotsFromNotationIds(e.notation));
+			boardBar.receiveTeam(seatedIds(e));
 			void goto(resolve('/builder'));
 		}
 	}
@@ -305,11 +305,13 @@ class LibraryState {
 	async shareRotation(e: SavedNotation) {
 		const roster = get(constellations);
 		const levels: Record<string, number> = {};
-		for (const id of orderedCharacterIds(e.notation).slice(0, 4))
-			levels[id] = e.tabCon?.[id] ?? roster[id] ?? 0;
+		const { seats: slots, placed } = seatingOfSaved(e);
+		for (const id of slots) if (id) levels[id] = e.tabCon?.[id] ?? roster[id] ?? 0;
 		try {
 			const param = await encodeRotation({
-				notation: foldTeamIntoNotation(e.notation, e.manualSlots),
+				notation: e.notation,
+				slots,
+				placed,
 				constellations: levels,
 				loadout: e.tabLoadout ?? {}
 			});
@@ -335,9 +337,9 @@ class LibraryState {
 	}
 }
 
-/** The first four distinct ids a notation names. */
-function slotsFromNotationIds(notation: string): string[] {
-	return orderedCharacterIds(notation).slice(0, 4);
+/** A saved entry's seated team, in slot order (§8.1). */
+function seatedIds(e: SavedNotation): string[] {
+	return seatsOfSaved(e).filter((id): id is string => !!id);
 }
 
 /** A deleted entry, as a Recently closed tab (no longer linked to anything). */
@@ -345,7 +347,9 @@ function closedFromEntry(e: SavedNotation): RotationTab {
 	return {
 		id: newTabId(),
 		label: e.name,
-		notation: foldTeamIntoNotation(e.notation, e.manualSlots),
+		notation: e.notation,
+		slots: seatingOfSaved(e).seats,
+		placed: seatingOfSaved(e).placed,
 		tabCon: e.tabCon ?? {},
 		tabLoadout: e.tabLoadout ?? {}
 	};

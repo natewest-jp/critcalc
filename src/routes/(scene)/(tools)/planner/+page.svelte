@@ -69,6 +69,9 @@
 		const doc = {
 			label,
 			notation: shared.notation,
+			// Format 3 carries the party's slots; a v2 link has none, and the tab
+			// derives them from the notation as the link was made (§8.1).
+			...(shared.slots ? { slots: shared.slots, placed: shared.placed } : {}),
 			tabLoadout: shared.loadout,
 			tabCon: importedCon
 		};
@@ -850,6 +853,7 @@
 {#snippet main()}
 	<RotationTimeline
 		bind:notation={rt.notation}
+		bind:seating={rt.seating}
 		tabId={rt.activeTabId}
 		characterSlots={slots}
 		tabLoadout={rt.tabLoadout}
