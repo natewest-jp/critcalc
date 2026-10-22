@@ -100,9 +100,12 @@
 <section>
 	<h2 id="team">The team</h2>
 	<p>
-		The team is whoever the notation names: the first four characters, in the order they first
-		appear. To add someone, type their name, even with no actions after it; to remove someone,
-		delete their notation.
+		The bench holds four slots. Typing a character’s name puts them in the first empty slot, even
+		with no actions after it, and deleting all of their notation frees the slot again. A team opened
+		from the Library, a lineup, or a team link is placed in its slots and stays there while you
+		write. When a placed character isn’t written into the notation yet, they’re shown resting
+		(dimmed). When no slot is empty, any other name you type takes the first resting character’s
+		slot.
 	</p>
 	<p>
 		Each slot on the bench beside the timeline has a bench card. On a wide screen, clicking the
