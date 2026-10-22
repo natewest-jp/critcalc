@@ -365,6 +365,15 @@
 		gap: 1.1rem;
 		padding: 0 clamp(1rem, 2vw, 2rem);
 		color: var(--chrome);
+		/* ⚠ The strip passes clicks through and its three children catch their
+		   own (SiteChrome's contract): both hosts mount it in a click-transparent
+		   wrapper, so without the `auto` below NOTHING in the bar is clickable. */
+		pointer-events: none;
+	}
+	.tb-brand,
+	.tb-nav,
+	.tb-right {
+		pointer-events: auto;
 	}
 
 	/* ── Brand ── */
