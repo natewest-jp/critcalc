@@ -6,9 +6,23 @@
 	import { FADE_DURATION_MS, FADE_OUT_MS, revealDelayMs } from '$lib/landing/transition';
 	import { motion, T_QUICK } from '$lib/motion';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
+	import { get } from 'svelte/store';
+	import { nextLayout } from '$lib/nextLayout';
+	import { menu, sectionForPath } from '$lib/menuState.svelte';
 
 	let { children } = $props();
 	const pathname = $derived(page.url.pathname);
+
+	// ⚓ Under the switch (build plan §13, 2c) every page here is a SECTION of
+	// the menu state, which the scene layout renders: the address names it,
+	// and the floating panel is not drawn (nor the page's component mounted —
+	// the old /library page would restore and persist the old tab models).
+	const nextOn = get(nextLayout);
+	$effect(() => {
+		if (!nextOn) return;
+		menu.routed = sectionForPath(pathname) ?? 'index';
+		return () => (menu.routed = null);
+	});
 
 	// Content pages behave like a modal on the live scene: a fixed panel between
 	// the chrome and footer (its content scrolls INSIDE it, so the frame stays
@@ -26,39 +40,41 @@
 	function onKeydown(event: KeyboardEvent) {
 		// A page that spent the Escape on something of its own (the Library
 		// dismissing a menu or a search) marks it defaultPrevented.
-		if (event.key === 'Escape' && !event.defaultPrevented) toLanding();
+		if (event.key === 'Escape' && !event.defaultPrevented && !nextOn) toLanding();
 	}
 </script>
 
 <svelte:window onkeydown={onKeydown} />
 
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div
-	class="pages-shell"
-	onclick={onBackdropClick}
-	in:fade|global={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
-	out:fade|global={{ duration: FADE_OUT_MS }}
->
-	<!-- NOT .prose. Every route in this group renders either HelpAreaShell —
+{#if !nextOn}
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<div
+		class="pages-shell"
+		onclick={onBackdropClick}
+		in:fade|global={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
+		out:fade|global={{ duration: FADE_OUT_MS }}
+	>
+		<!-- NOT .prose. Every route in this group renders either HelpAreaShell —
 	     which wraps its chapter in its own <article class="prose"> — or
 	     SettingsPanel, which is not prose at all. The outer class was redundant
 	     in both cases and leaked prose typography onto the chapter NAV and the
 	     settings rows; it only became visible when links gained a resting
 	     underline and the nav sprouted full-width rules. -->
-	<main class="pages-panel">
-		{#key pathname}
-			<!-- Full height, so an area page can fill the panel and scroll inside
+		<main class="pages-panel">
+			{#key pathname}
+				<!-- Full height, so an area page can fill the panel and scroll inside
 			     (HelpAreaShell's `.area-page`). Taller content (the Library) just
 			     overflows it, and the panel scrolls as before. -->
-			<div class="pages-page" in:fade={{ duration: motion(T_QUICK) }}>
-				{@render children()}
-			</div>
-		{/key}
-		<!-- The legal footer's SHORT-screen place: the end of the reading (see
+				<div class="pages-page" in:fade={{ duration: motion(T_QUICK) }}>
+					{@render children()}
+				</div>
+			{/key}
+			<!-- The legal footer's SHORT-screen place: the end of the reading (see
 		     the style). Shown only there, where the fixed one steps aside. -->
-		<div class="pages-legal"><SiteFooter inPanel /></div>
-	</main>
-</div>
+			<div class="pages-legal"><SiteFooter inPanel /></div>
+		</main>
+	</div>
+{/if}
 
 <style>
 	/* Full-viewport backdrop: catches "click outside the panel" → landing. */

@@ -7,6 +7,8 @@
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
+	import type MenuStateT from '$lib/components/MenuState.svelte';
+	import { menu } from '$lib/menuState.svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import { get } from 'svelte/store';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
@@ -87,9 +89,15 @@
 	/** The top bar, loaded only while the switch is on. */
 	const nextOn = get(nextLayout);
 	let TopBarC = $state<typeof TopBarT | null>(null);
+	/** The menu state (phase 2c): ONE host for every surface — the landing, a
+	 *  section's own route, and over a tool, which it covers without
+	 *  unmounting (its sections are shallow history entries). */
+	let MenuStateC = $state<typeof MenuStateT | null>(null);
 
 	onMount(() => {
-		if (nextOn) void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
+		if (!nextOn) return;
+		void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
+		void import('$lib/components/MenuState.svelte').then((m) => (MenuStateC = m.default));
 	});
 
 	onMount(() => {
@@ -338,6 +346,9 @@
 				 over-the-starfield panel styling. -->
 			<ChromeModals onScene />
 		{/if}
+
+		<!-- Above the pages and the tools, below both top-bar hosts (z 10). -->
+		{#if MenuStateC && menu.open}<MenuStateC />{/if}
 	</div>
 
 	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather
@@ -532,6 +543,11 @@
 		left: 0;
 		right: 0;
 		z-index: 3;
+	}
+	/* Under the switch (2c): above the menu state (z 9), which the top bar sits
+	   on. Scoped, so nothing moves with the switch off. */
+	:global(:root[data-next]) .scene-chrome {
+		z-index: 10;
 	}
 
 	/* Footer pinned to the bottom edge, centered within its reserved height.

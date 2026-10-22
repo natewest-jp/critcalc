@@ -16,6 +16,12 @@ declare global {
 			/** The library overlay is open (lib/library.svelte.ts) — a shallow
 			 *  history entry, so Back closes it. */
 			library?: boolean;
+			/** The menu state's section (lib/menuState.svelte.ts) — a shallow
+			 *  entry at the section's own address, so the tool stays mounted. */
+			menu?: import('$lib/menuState.svelte').Section;
+			/** How many section entries this visit pushed, so leaving goes
+			 *  back over all of them at once. */
+			menuDepth?: number;
 		}
 		// interface Platform {}
 	}

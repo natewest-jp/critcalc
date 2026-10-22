@@ -146,6 +146,21 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'Your saved teams, rotations, and lineups, and the roster of characters you own. All of it is kept in this browser.'
 	},
+	// ⏭ The menu state's addresses (build plan §13.4), dormant behind the
+	// switch. Not in the sitemap yet: they show a profile's own data, and which
+	// addresses are indexable is decided at the release (§13.4).
+	'/library/rotations': {
+		title: 'Rotations',
+		description: 'Your saved rotations. All of them are kept in this browser.'
+	},
+	'/library/lineups': {
+		title: 'Lineups',
+		description: 'Your saved lineups. All of them are kept in this browser.'
+	},
+	'/roster': {
+		title: 'Roster',
+		description: 'The characters you own and their constellations, kept in this browser.'
+	},
 	'/privacy': {
 		title: 'Privacy',
 		description:

@@ -40,6 +40,8 @@ import { seatingOfSaved, seatsOfSaved } from './utils/notationEdit';
 import { encodeRotation } from './utils/rotationUrl';
 import { encodeBoard } from './utils/boardUrl';
 import { teamNotation, type LibraryTeam } from './library';
+import { nextLayout } from './nextLayout';
+import { menu } from './menuState.svelte';
 
 export type LibraryFrom = 'planner' | 'builder';
 /** ⚓ The Library's two tabs (lineups design §11.6 items 1, 7, 17): the saved
@@ -84,6 +86,12 @@ class LibraryState {
 	}
 
 	show(from: LibraryFrom, tab: LibraryTab = 'teams') {
+		// ⚓ Under the switch (build plan §13, 2c) the Library is the menu
+		// state's: Rotations, Lineups and the Roster are sections of it.
+		if (get(nextLayout)) {
+			menu.show(tab === 'roster' ? 'roster' : from === 'builder' ? 'lineups' : 'rotations');
+			return;
+		}
 		this.from = from;
 		this.tab = tab;
 		this.#away = false;
@@ -96,6 +104,11 @@ class LibraryState {
 	 *  Roster tab, from whichever page we are on, optionally arriving on one
 	 *  character. Already open, it just switches tab. */
 	openRoster(focusId: string | null = null) {
+		if (get(nextLayout)) {
+			this.rosterFocus = focusId;
+			menu.show('roster');
+			return;
+		}
 		const path = page.url.pathname;
 		const builder = path.startsWith(resolve('/builder'));
 		this.show(builder ? 'builder' : 'planner', 'roster');
