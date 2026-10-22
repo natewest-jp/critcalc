@@ -80,7 +80,16 @@ export const BP = {
 	/** `broad` — the Team Builder's tile-density step-up (existing, 2 uses). */
 	broad: '1500px',
 	/** `vast` — the Team Builder's second tile-density step-up (existing, 2 uses). */
-	vast: '1900px'
+	vast: '1900px',
+	/**
+	 * `huge` — 2200px. ⚓ Where the LARGE interface size comes on by itself
+	 * (Nate 2026-10-22: Small for the phone, Medium the default, Large for very
+	 * wide screens). Above `vast` on purpose, so a 1920 monitor, the most common
+	 * desktop, stays Medium, while 2560 monitors and ultrawides get Large. ⚠ A
+	 * judgment, not a measured content stop: re-judge it once Nate has seen
+	 * Large on a big screen.
+	 */
+	huge: '2200px'
 } as const;
 
 export type Breakpoint = keyof typeof BP;
