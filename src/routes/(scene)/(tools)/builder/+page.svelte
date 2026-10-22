@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { nextLayout } from '$lib/nextLayout';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount, tick, untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -1255,7 +1256,7 @@
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
      teams at once, so it cannot hold the Planner's one working team; band A is
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
-<ToolStack fill>
+<ToolStack fill noBandA={$nextLayout}>
 	{#snippet bandALeft()}
 		<DocumentTabs model={tabStrip} newItems={presetItems} />
 	{/snippet}

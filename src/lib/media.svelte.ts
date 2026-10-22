@@ -25,7 +25,8 @@ const flags = $state<Record<Breakpoint, boolean>>({
 	toolMin: false,
 	wide: false,
 	broad: false,
-	vast: false
+	vast: false,
+	huge: false
 });
 
 /** The height axis's one condition (breakpoints.ts § THE HEIGHT AXIS). */

@@ -101,6 +101,19 @@ class StorageSession {
 		this.active = true;
 	}
 
+	/** The active profile alone, for a surface with no document (the landing,
+	 *  the content pages): the top bar's picture. Idempotent. */
+	async peekProfile(): Promise<void> {
+		if (this.profile) return;
+		const db = await ensureStorage();
+		if (!db) return;
+		const meta = await getMeta(db);
+		const profile =
+			(meta.activeProfileId && (await get(db, 'profiles', meta.activeProfileId))) ||
+			(await get(db, 'profiles', THEORYCRAFT_ID));
+		if (profile && !profile.deleted && !this.profile) this.profile = profile;
+	}
+
 	/** "Edit here": take the document from whichever tab holds it, pick up its
 	 *  latest saved state, and resume saving it. */
 	async editHere(id: string): Promise<void> {
@@ -110,6 +123,15 @@ class StorageSession {
 		await this.#reload(id);
 		this.readOnly = this.readOnly.filter((x) => x !== id);
 	}
+
+	/** A document's stored name — `null` for an unnamed one (its label is
+	 *  derived) or one not yet saved. Reactive: it reads `names`. */
+	nameOf(id: string): string | null {
+		return this.names[id] ?? null;
+	}
+
+	/** Stored names by document id, mirrored for the top bar to read. */
+	names = $state<Record<string, string | null>>({});
 
 	/** Write everything pending now (⌘S, the tab hiding). */
 	flush(): Promise<void> {
@@ -157,6 +179,7 @@ class StorageSession {
 
 	#remember(doc: DocumentRecord, label: string): void {
 		this.#records.set(doc.id, doc);
+		this.names[doc.id] = doc.name;
 		if (!doc.name) this.#derived.set(doc.id, label);
 		this.#written.set(doc.id, JSON.stringify({ name: doc.name, body: doc.body }));
 	}
@@ -255,7 +278,9 @@ class StorageSession {
 				current.planner !== profile.current.planner ||
 				current.builder !== profile.current.builder
 			) {
-				const next = { ...profile, current, updatedAt: now };
+				// ⚠ A plain copy: `profile` is $state, and IndexedDB cannot clone
+				// a reactive proxy (DataCloneError).
+				const next = $state.snapshot({ ...profile, current, updatedAt: now }) as ProfileRecord;
 				await put(db, 'profiles', next);
 				this.profile = next;
 				this.#channel?.post({ kind: 'saved', store: 'profiles', id: next.id });
@@ -286,8 +311,10 @@ class StorageSession {
 			body,
 			updatedAt: now
 		} as DocumentRecord;
-		await put(db, 'documents', rec);
+		// ⚠ The tab snapshot holds $state proxies, which IndexedDB cannot clone.
+		await put(db, 'documents', $state.snapshot(rec) as DocumentRecord);
 		this.#records.set(id, rec);
+		this.names[id] = rec.name;
 		this.#written.set(id, key);
 		this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: rec.profileId });
 		return true;

@@ -12,6 +12,7 @@
 
 import type { LoadoutEntry } from '$lib/stores';
 import type { BoardPreset } from '$lib/boards.svelte';
+import { THEORYCRAFT_PICTURE } from '$lib/profilePictures.generated';
 
 export type SyncFields = {
 	/** Stable across devices: minted once, never reused. */
@@ -45,9 +46,8 @@ export type Roster = {
 	loadout: Record<string, LoadoutEntry>;
 };
 
-/** ⚓ A profile is shown as a picture (draft 5): one of Nate's art set by its
- *  name, or a character's circle avatar. ⏭ How the art set ships (it is
- *  gitignored source today) is decided with the profiles step. */
+/** ⚓ A profile is shown as a picture (draft 5): one of the art set by its id
+ *  (`profilePictures.generated.ts`), or a character's circle avatar. */
 export type Picture = { kind: 'art'; name: string } | { kind: 'character'; id: string };
 
 export type ProfileRecord = SyncFields & {
@@ -127,15 +127,12 @@ export const THEORYCRAFT_ID = 'theorycraft';
 
 export const emptyRoster = (): Roster => ({ constellations: {}, ownership: {}, loadout: {} });
 
-/** A profile's picture, with the defaults a record may predate: Theorycraft
- *  its own art, a real profile the Traveler (⚓ Nate 2026-10-22). */
+/** A profile's picture. ⚓ Theorycraft's is RESERVED and cannot be changed
+ *  (Nate 2026-10-22), so it is answered here whatever a record holds; a real
+ *  profile migrated before pictures existed gets the Traveler. */
 export function pictureOf(p: Pick<ProfileRecord, 'kind' | 'picture'>): Picture {
-	return (
-		p.picture ??
-		(p.kind === 'theorycraft'
-			? { kind: 'art', name: 'Theorycraft' }
-			: { kind: 'character', id: 'traveler_anemo' })
-	);
+	if (p.kind === 'theorycraft') return { kind: 'art', name: THEORYCRAFT_PICTURE.id };
+	return p.picture ?? { kind: 'character', id: 'traveler_anemo' };
 }
 
 export function makeTheorycraft(now: number, twin: Twin = 'aether'): ProfileRecord {
@@ -145,7 +142,7 @@ export function makeTheorycraft(now: number, twin: Twin = 'aether'): ProfileReco
 		kind: 'theorycraft',
 		name: 'Theorycraft',
 		colour: 'theorycraft',
-		picture: { kind: 'art', name: 'Theorycraft' },
+		picture: { kind: 'art', name: THEORYCRAFT_PICTURE.id },
 		twin,
 		roster: emptyRoster(),
 		current: {},

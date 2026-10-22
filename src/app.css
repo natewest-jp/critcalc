@@ -1523,6 +1523,61 @@
 	}
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   THE INTERFACE SIZE — the top bar's and the toolbar's ONE control size
+   (profiles and surfaces design §5.1, §12 Q21; ⚓ Nate 2026-10-22).
+
+   Three sizes, one set of roles: --ui-ctl-h (a control's height), --ui-ctl-fs
+   (its type) and --ui-bar-h (the top bar). The control grows a little faster
+   than its type, so the larger sizes are not cramped.
+     Small   11px · 28 · 48 — the phone, always
+     Medium  12px · 32 · 56 — the default (demo 1's values)
+     Large   13px · 36 · 64 — very wide screens (64 is today's chrome height)
+   AUTO is no attribute: Small below `compact`, Large from `huge`, else Medium
+   (breakpoints.ts). Settings can pin one on desktop (`html[data-ui-size]`);
+   below `compact` Small wins whatever is pinned, so the phone has no choice
+   to make. 🎛️ Nate's to tune by eye. */
+:root {
+	--ui-ctl-h: 32px;
+	--ui-ctl-fs: 0.75rem;
+	--ui-bar-h: 56px;
+	/* ⚓ Theorycraft's WHITE (design §2.3): the one profile colour no real
+	   profile can wear, so a guest can never be mistaken for anyone's own. */
+	--profile-theorycraft: #dfe3ea;
+}
+/* breakpoints.ts `huge` */
+@media (min-width: 2200px) {
+	:root:not([data-ui-size]) {
+		--ui-ctl-h: 36px;
+		--ui-ctl-fs: 0.8125rem;
+		--ui-bar-h: 64px;
+	}
+}
+:root[data-ui-size='small'] {
+	--ui-ctl-h: 28px;
+	--ui-ctl-fs: 0.6875rem;
+	--ui-bar-h: 48px;
+}
+:root[data-ui-size='large'] {
+	--ui-ctl-h: 36px;
+	--ui-ctl-fs: 0.8125rem;
+	--ui-bar-h: 64px;
+}
+/* ⚓ THE NEW LAYOUT (build plan §13): under the switch the top bar is
+   --ui-bar-h tall, and everything that reserves the bar reads --chrome-h. */
+:root[data-next] {
+	--chrome-h: var(--ui-bar-h);
+}
+/* breakpoints.ts `compact` — after the pins, so it wins on a phone. */
+@media (max-width: 40rem) {
+	:root,
+	:root[data-ui-size] {
+		--ui-ctl-h: 28px;
+		--ui-ctl-fs: 0.6875rem;
+		--ui-bar-h: 48px;
+	}
+}
+
 /* The tool zone — the other half of the accent zoning declared in :root.
    .tool-shell is the tools layout's own wrapper (a plain class name, so this
    global sheet can target it); [data-zone='tool'] catches nodes that

@@ -25,7 +25,7 @@
 // ⚠ Extensions are load-bearing on these two — see toolGutter.ts. This file is
 // a geometry module in the same family, and Node's native type stripping (what
 // scripts/probe-*.mjs run under) does no extension inference.
-import { BAND_STACK_TO_SURFACE } from './toolBands.ts';
+import { BAND_A_H, BAND_GAP, BAND_STACK_TO_SURFACE } from './toolBands.ts';
 import { RIBBON_GAP } from './toolGutter.ts';
 
 /**
@@ -368,8 +368,11 @@ export const RIBBON_FRAME_TOP_INSET = 28;
  * ↻ 2026-08-17: A FUNCTION OF THE PUBLISHED TRACK TOP, not a constant. Called
  * with `benchBand.trackTop`, which the planner's timeline publishes.
  */
-export function ribbonHead(trackTop: number): number {
-	return BAND_STACK_TO_SURFACE + trackTop + RIBBON_OVERHANG_Y - RIBBON_CHROME;
+export function ribbonHead(trackTop: number, noBandA = false): number {
+	// Under the switch the top bar carries the document and band A is gone
+	// (ToolStack `noBandA`), so the surface starts that much higher.
+	const stack = BAND_STACK_TO_SURFACE - (noBandA ? BAND_A_H + BAND_GAP : 0);
+	return stack + trackTop + RIBBON_OVERHANG_Y - RIBBON_CHROME;
 }
 
 /** The head at rest — no timeline mounted, so no published track top. */
@@ -729,6 +732,10 @@ class BenchBandState {
 	 * to measure it.
 	 */
 	trackTop = $state<number>(RIBBON_FRAME_TOP_INSET);
+
+	/** Band A is absent (the new layout, build plan §13): the tools layout
+	 *  sets it with the switch, and the head reads it (`ribbonHead`). */
+	noBandA = $state(false);
 
 	/**
 	 * The dock's measured WIDTH (px) — meaningful only in the row form (the

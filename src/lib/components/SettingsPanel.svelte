@@ -160,6 +160,28 @@
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Display</h2>
 
+		<!-- ⚓ The interface size (§12 Q21): desktop only, since the phone is
+		     always Small; with the new layout only, the one that reads it. -->
+		{#if $nextLayout}
+			<div class="sp-row sp-desktop">
+				<span class="sp-label">
+					<span class="sp-name">Interface size</span>
+					<span class="sp-desc">Auto picks one for your window’s width.</span>
+				</span>
+				<div class="segment sp-segment" role="radiogroup" aria-label="Interface size">
+					{#each [['auto', 'Auto'], ['small', 'Small'], ['medium', 'Medium'], ['large', 'Large']] as const as [value, label] (value)}
+						<button
+							type="button"
+							role="radio"
+							class:is-active={$siteSettings.uiSize === value}
+							aria-checked={$siteSettings.uiSize === value}
+							onclick={() => siteSettings.setUiSize(value)}>{label}</button
+						>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		<label class="sp-row">
 			<span class="sp-label">
 				<span class="sp-name">Updated outfits</span>
@@ -696,6 +718,12 @@
 	}
 	.sp-segment {
 		flex-shrink: 0;
+	}
+	/* A desktop-only choice: the phone is always Small (breakpoints.ts `compact`). */
+	@media (max-width: 40rem) {
+		.sp-desktop {
+			display: none;
+		}
 	}
 
 	.sp-row {

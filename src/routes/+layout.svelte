@@ -48,14 +48,26 @@
 	import { dev } from '$app/environment';
 	import { onMount } from 'svelte';
 	import { nextLayout } from '$lib/nextLayout';
+	import { siteSettings } from '$lib/stores';
 
 	let { children } = $props();
+
+	// The interface size (app.css § THE INTERFACE SIZE): a pin is an attribute
+	// on <html>; Auto is its absence, which hands the choice to the media queries.
+	$effect(() => {
+		const size = $siteSettings.uiSize;
+		if (size === 'auto') delete document.documentElement.dataset.uiSize;
+		else document.documentElement.dataset.uiSize = size;
+	});
 
 	// The switch (build plan §13.1; `?next` / `?next=0`, read by the module).
 	// While it is on, the new storage opens and migrates (copy-only). Loaded on
 	// demand, so a visitor with the switch off downloads none of it.
 	onMount(() => {
 		return nextLayout.subscribe((on) => {
+			// The new layout's own geometry keys off this (app.css § THE NEW LAYOUT).
+			if (on) document.documentElement.dataset.next = '';
+			else delete document.documentElement.dataset.next;
 			if (on) void import('$lib/storage/boot').then((m) => m.ensureStorage());
 		});
 	});

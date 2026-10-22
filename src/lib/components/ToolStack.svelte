@@ -44,6 +44,7 @@
 		bandALeft,
 		bandARight,
 		bandAClass = '',
+		noBandA = false,
 		bandBLeft,
 		bandBCenter,
 		bandBRight,
@@ -78,6 +79,12 @@
 		 * --band-gap in any height it computes from them.
 		 */
 		bandAClass?: string;
+		/**
+		 * No band A at all: under the switch the TOP BAR carries the document
+		 * (profiles and surfaces design §5.1, §5.4). Its reserve goes with it
+		 * (`--band-a-reserve`), so every height computed below starts at band B.
+		 */
+		noBandA?: boolean;
 		bandBLeft?: Snippet;
 		/**
 		 * A middle RAIL for band B. Opting in splits the band into three separate
@@ -109,6 +116,7 @@
 	style:--band-radius="{BAND_RADIUS}px"
 	style:--band-gap="{BAND_GAP}px"
 	style:--band-stack-gap="{BAND_STACK_GAP}px"
+	style:--band-a-reserve={noBandA ? '0px' : `${BAND_A_H + BAND_GAP}px`}
 	style:--stack-inset="{benched ? TOOL_INSET : 0}px"
 	style:--bench-row-h="{BENCH_ROW_H}px"
 	style:--dock-overhang="{RIBBON_OVERHANG_Y}px"
@@ -137,10 +145,12 @@
 	     others. See the CSS for why the ctx-glass class stays on rows that no
 	     longer paint. -->
 	<div class="bands">
-		<div class="band band-a ctx-glass {bandAClass}">
-			<div class="band-zone">{@render bandALeft?.()}</div>
-			<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
-		</div>
+		{#if !noBandA}
+			<div class="band band-a ctx-glass {bandAClass}">
+				<div class="band-zone">{@render bandALeft?.()}</div>
+				<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
+			</div>
+		{/if}
 		<div
 			class="band band-b ctx-glass"
 			class:band--3up={!!bandBCenter}
@@ -202,9 +212,7 @@
 		   2026-10-15 §3 item 11). Here rather than inline because the row form
 		   overrides it from a media query. ⚠ It counts band A: a tool that hides
 		   band A (the Visualizers, via bandAClass) must not read it. */
-		--stack-to-surface: calc(
-			var(--band-a-h) + var(--band-gap) + var(--band-b-h) + var(--band-stack-gap)
-		);
+		--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-stack-gap));
 	}
 
 	/* Viewport-fit tools (the Team Builder): the surface takes whatever the
@@ -286,7 +294,7 @@
 			gap: var(--band-gap);
 			/* bands (A · gap · B), gap, the bench row, gap. */
 			--stack-to-surface: calc(
-				var(--band-a-h) + var(--band-b-h) + 3 * var(--band-gap) + var(--bench-row-h)
+				var(--band-a-reserve) + var(--band-b-h) + 2 * var(--band-gap) + var(--bench-row-h)
 			);
 		}
 		.tool-stack--benched .bands {
@@ -308,7 +316,7 @@
 		   surface snugs up to band B at the band gap. The ribbon measures a
 		   0×0 dock and the layout hides it on the same condition. */
 		.tool-stack--bench-hidden {
-			--stack-to-surface: calc(var(--band-a-h) + var(--band-b-h) + 2 * var(--band-gap));
+			--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-gap));
 		}
 		.tool-stack--bench-hidden .tool-stack-dock {
 			display: none;
@@ -318,7 +326,7 @@
 		   to band B at the same band gap, as the planner's bench row does. */
 		.tool-stack--fill {
 			gap: var(--band-gap);
-			--stack-to-surface: calc(var(--band-a-h) + var(--band-b-h) + 2 * var(--band-gap));
+			--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-gap));
 		}
 	}
 
