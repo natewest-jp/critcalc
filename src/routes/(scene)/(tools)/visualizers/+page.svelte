@@ -34,6 +34,7 @@
 	import { TOOL_GUTTER } from '$lib/toolGutter';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
+	import { nextLayout } from '$lib/nextLayout';
 
 	/**
 	 * 🎛️ Bare scene BETWEEN two instruments — the widest gap inside this tool.
@@ -220,48 +221,54 @@
      per-tile picker bar predates the round and is the shape the other two
      tools were rebuilt toward. It subdivides by the tile grid instead of
      splitting left/right, which is what bandBFull is for. -->
-<ToolStack bandAClass="ws-lineup-band">
+{#snippet layoutControls()}
+	<!-- Lineup size. Options wider than the window DISABLE rather than
+	     silently clamping — a control that accepts a press and does nothing
+	     reads as broken. "Auto" is the resting state and the pre-control
+	     behavior. -->
+	<div class="segment ws-slots" role="radiogroup" aria-label="Instruments shown">
+		{#each SLOT_OPTIONS as opt (opt)}
+			{@const tooWide = opt !== 'auto' && opt > capacity}
+			<button
+				class="btn"
+				class:is-active={slotPref === opt}
+				role="radio"
+				aria-checked={slotPref === opt}
+				disabled={tooWide}
+				title={tooWide
+					? `The window is too narrow for ${opt} instruments side by side`
+					: opt === 'auto'
+						? 'Show as many instruments as the window fits'
+						: `Show ${opt} instrument${opt === 1 ? '' : 's'} at a time`}
+				onclick={() => (slotPref = opt)}
+			>
+				{opt === 'auto' ? 'Auto' : opt}
+			</button>
+		{/each}
+	</div>
+	<!-- "Reset workspace" and the per-tile "Reset" were two buttons, one word,
+	     two levels — you could not tell from the label which one you were
+	     about to press. This one resets the LAYOUT (which instruments, how
+	     many); the tile's resets that instrument's CONTROLS. The rename fixed
+	     the words; the marks finish the job — a GRID for the layout, the
+	     rotate-back for a tile's own defaults. -->
+	<button class="btn ws-reset" onclick={resetWorkspace}>
+		<Mark name="layout" />
+		Reset layout
+	</button>
+{/snippet}
+
+<!-- ↻ Under the switch (phase 2e, design §5.3) band A retires here too: the
+     layout becomes ONE control at the toolbar's right end, and each tile's
+     Defaults moves into its ⋯. -->
+<ToolStack bandAClass="ws-lineup-band" noBandA={$nextLayout}>
 	{#snippet bandALeft()}
 		<span class="kicker ws-title">Workspace</span>
 	{/snippet}
 
 	{#snippet bandARight()}
-		<!-- Lineup size. Options wider than the window DISABLE rather than
-		     silently clamping — a control that accepts a press and does nothing
-		     reads as broken. "Auto" is the resting state and the pre-control
-		     behavior. -->
-		<div class="segment ws-slots" role="radiogroup" aria-label="Instruments shown">
-			{#each SLOT_OPTIONS as opt (opt)}
-				{@const tooWide = opt !== 'auto' && opt > capacity}
-				<button
-					class="btn"
-					class:is-active={slotPref === opt}
-					role="radio"
-					aria-checked={slotPref === opt}
-					disabled={tooWide}
-					title={tooWide
-						? `The window is too narrow for ${opt} instruments side by side`
-						: opt === 'auto'
-							? 'Show as many instruments as the window fits'
-							: `Show ${opt} instrument${opt === 1 ? '' : 's'} at a time`}
-					onclick={() => (slotPref = opt)}
-				>
-					{opt === 'auto' ? 'Auto' : opt}
-				</button>
-			{/each}
-		</div>
-		<!-- "Reset workspace" and the per-tile "Reset" were two buttons, one word,
-		     two levels — you could not tell from the label which one you were
-		     about to press. This one resets the LAYOUT (which instruments, how
-		     many); the tile's resets that instrument's CONTROLS. The rename fixed
-		     the words; the marks finish the job — a GRID for the layout, the
-		     rotate-back for a tile's own defaults. -->
-		<button class="btn ws-reset" onclick={resetWorkspace}>
-			<Mark name="layout" />
-			Reset layout
-		</button>
+		{@render layoutControls()}
 	{/snippet}
-
 	{#snippet bandBFull()}
 		<!-- One row of cells on the tile grid's own columns, so each picker sits
 		     over the instrument it switches — and, since 2026-08-13, so does the
@@ -281,7 +288,7 @@
 						onPick={(next) => pick(slot, next)}
 					/>
 					<span class="ws-band-actions">
-						{#if handles[id]?.reset}
+						{#if handles[id]?.reset && !$nextLayout}
 							<button
 								class="btn btn--sm btn--glass"
 								onclick={() => handles[id]?.reset?.()}
@@ -298,13 +305,20 @@
 								onclick={() => shareTile(id)}
 								title="Copy a link that reopens this instrument as it looks now"
 							>
-								<Mark name={copiedTile === id ? 'check' : 'share'} size={12} />
+								<Mark
+									name={copiedTile === id ? 'check' : $nextLayout ? 'link' : 'share'}
+									size={12}
+								/>
+								<!-- ⚓ Under the switch "Share" means the top bar's one menu
+								     site-wide (§5.3), so the tile's says what it does. -->
 								<span class="ws-band-word" class:ws-band-word--keep={failedTile === id}
 									>{failedTile === id
-										? 'Share failed'
+										? 'Copy failed'
 										: copiedTile === id
 											? 'Copied'
-											: 'Share'}</span
+											: $nextLayout
+												? 'Copy link'
+												: 'Share'}</span
 								>
 							</button>
 						{/if}
@@ -312,6 +326,16 @@
 						     1360px, and so the report carries this instrument's link. -->
 						<BandMenu compact glass size="sm" mark="more" ariaLabel="More instrument actions">
 							{#snippet items(close)}
+								{#if $nextLayout && handles[id]?.reset}
+									<button
+										class="band-menu-item"
+										role="menuitem"
+										onclick={() => {
+											close();
+											handles[id]?.reset?.();
+										}}><Mark name="reset" /> Defaults</button
+									>
+								{/if}
 								<ReportLink
 									class="band-menu-item"
 									role="menuitem"
@@ -324,6 +348,15 @@
 								</ReportLink>
 							{/snippet}
 						</BandMenu>
+						{#if $nextLayout && slot === slotCount - 1}
+							<!-- The workspace's own control (§5.3): how many instruments,
+							     and Reset layout, as one plate at the toolbar's right. -->
+							<BandMenu glass size="sm" mark="layout" label="Layout" role="dialog" align="end">
+								{#snippet items()}
+									<div class="ws-layout">{@render layoutControls()}</div>
+								{/snippet}
+							</BandMenu>
+						{/if}
 					</span>
 				</div>
 			{/each}
@@ -423,6 +456,13 @@
 		min-width: 0;
 	}
 
+	.ws-layout {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+		padding: 0.4rem;
+	}
 	.ws-band-actions {
 		display: flex;
 		align-items: center;
@@ -523,7 +563,9 @@
 
 	@media (min-width: 1360px) {
 		.ws {
-			--ws-band-a: calc(var(--band-a-h) + var(--band-gap));
+			/* ToolStack's own reserve: band A's height and gap, or 0 under the
+			   switch, where band A retires (phase 2e). */
+			--ws-band-a: var(--band-a-reserve);
 		}
 
 		:global(.bands > .band-a.ws-lineup-band) {

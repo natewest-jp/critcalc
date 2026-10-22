@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { nextLayout } from '$lib/nextLayout';
+	import { openSettings } from '$lib/components/chromeModal.svelte';
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { below, benchRowHidden, narrowForm } from '$lib/media.svelte';
@@ -559,16 +560,30 @@
 		{#snippet bandBCenter()}
 			<!-- What the chart is showing: how long the rotation runs. A readout,
 			     not a control — it leads band B the way the tabs lead band A. -->
-			{#if pv.totalDuration > 0}
-				<span class="rp-total">
-					<span class="rp-total-key">Total</span>
-					{Math.round(pv.totalDuration * 10) / 10}s
-				</span>
-			{/if}
+			<!-- One group, so the rail's spacing keeps the tag beside the Total. -->
+			<span class="rp-total-group">
+				{#if pv.totalDuration > 0}
+					<span class="rp-total">
+						<span class="rp-total-key">Total</span>
+						{Math.round(pv.totalDuration * 10) / 10}s
+					</span>
+				{/if}
+				<!-- ⚓ Phase 2e (§5.3, §12 Q20; Nate 2026-10-22): Human timing left the
+			     toolbar for Settings. While it is ON a tag stands beside the Total,
+			     which it lengthens, and opens its Settings; off, nothing. -->
+				{#if $nextLayout && $siteSettings.humanTiming}
+					<button
+						class="rp-human-tag"
+						type="button"
+						title="The Total includes Human timing. Change it in Settings."
+						onclick={openSettings}><Mark name="hand" size={12} /> Human timing</button
+					>
+				{/if}
+			</span>
 		{/snippet}
 
 		{#snippet bandBRight()}
-			{#if !bandFolded}
+			{#if !bandFolded && !$nextLayout}
 				<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
 			     Its own group, NOT a third layer plate: the layers change what the
 			     chart DRAWS, this changes what time the parse KEEPS. ⚓ Nate, over
@@ -716,6 +731,7 @@
 						<button
 							class="band-menu-item"
 							role="menuitemcheckbox"
+							hidden={$nextLayout}
 							aria-checked={$siteSettings.humanTiming}
 							onclick={() => {
 								siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming });
@@ -964,6 +980,32 @@
 	   them; on the band they sit on an opaque ground and need none of that.
 	   The controls are the shared .btn/.slider — only the pieces the global
 	   classes can't know are local. */
+
+	.rp-total-group {
+		display: inline-flex;
+		align-items: center;
+	}
+	/* The Human timing tag (phase 2e): a quiet word on the rail beside the
+	   Total it lengthens, not a plate. */
+	.rp-human-tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		margin-left: 0.6rem;
+		padding: 0 0.3rem;
+		border: none;
+		border-radius: var(--r-sm);
+		background: none;
+		color: var(--muted);
+		font: inherit;
+		font-size: var(--ui-ctl-fs);
+		white-space: nowrap;
+		cursor: pointer;
+		transition: color var(--t-snap);
+	}
+	.rp-human-tag:hover {
+		color: var(--text);
+	}
 
 	/* Total-length readout: the LED-style key/value pair that led the old view
 	   cluster, minus its chip backing — band B is its own surface now, and a

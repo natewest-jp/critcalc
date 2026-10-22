@@ -104,7 +104,7 @@
 	// ↻ 2026-08-17: the head is a FUNCTION of the planner's published track top,
 	// which grows when a lane rides above the time axis — see
 	// `benchBand.trackTop`.
-	const head = $derived(ribbonHead(benchBand.trackTop, benchBand.noBandA));
+	const head = $derived(ribbonHead(benchBand.trackTop, benchBand.noBandA, benchBand.bandBH));
 
 	// ══ THE ROW FORM (responsive round, 2026-09-05) ═══════════════════════════
 	// Below BP.toolMin the strip is HORIZONTAL: four cards in a row above the

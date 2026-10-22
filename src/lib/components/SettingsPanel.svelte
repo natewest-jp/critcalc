@@ -264,10 +264,32 @@
 		<h2 class="kicker sp-section-title">Human timing</h2>
 		<p class="sp-lede">
 			Without Human timing, the Rotation Planner is frame-perfect: every cancel lands on the first
-			frame the game allows, the way a macro plays. <strong>Human timing</strong>, on by default in
-			its view bar, times a rotation the way a person plays it. These settings say what that
-			changes.
+			frame the game allows, the way a macro plays. <strong>Human timing</strong>, on by default{#if !$nextLayout}
+				in its view bar{/if}, times a rotation the way a person plays it. These settings say what
+			that changes.
 		</p>
+
+		{#if $nextLayout}
+			<!-- ⚓ Phase 2e (§5.3): Human timing leaves the toolbar, so it is
+			     turned on and off here; the Planner shows a tag beside the Total
+			     while it is on. -->
+			<label class="sp-row">
+				<span class="sp-label">
+					<span class="sp-name">Human timing</span>
+					<span class="sp-desc">Time rotations the way a person plays them.</span>
+				</span>
+				<span class="toggle">
+					<input
+						type="checkbox"
+						checked={$siteSettings.humanTiming}
+						onchange={() =>
+							siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
+					/>
+					<span class="toggle-track"><span class="toggle-thumb"></span></span>
+					<span class="toggle-label">{$siteSettings.humanTiming ? 'On' : 'Off'}</span>
+				</span>
+			</label>
+		{/if}
 
 		<div class="sp-row">
 			<span class="sp-label">

@@ -543,6 +543,19 @@ class RotationTabsState {
 		);
 	}
 
+	/**
+	 * Empty the working rotation — notation, team, its own levels and loadouts
+	 * — and KEEP its name (phase 2e: the composer's Clear; a document's name is
+	 * the player's, and New in the Library is how you start another one). The
+	 * write replays as an editor transaction, so Undo brings it all back.
+	 */
+	clearDocument(): void {
+		this.setDocument('', emptySeating());
+		this.tabLoadout = {};
+		this.tabCon = {};
+		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, sample: undefined } : t));
+	}
+
 	resetAll(): void {
 		const first = makeTab('Tab 1');
 		this.tabs = [first];
