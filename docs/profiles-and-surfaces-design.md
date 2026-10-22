@@ -1,6 +1,13 @@
 # Profiles and surfaces — a design for the site's next shape
 
-**Status: DRAFT 3, 2026-10-21. Not ready for implementation.** Draft 2 settled the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4); draft 3 settles the profile cap, names, per-profile tabs and default labels (§2.3, §4.2, §6.1, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
+**Status: DRAFT 4, 2026-10-22. Not ready for implementation.** Draft 4 (one conversation with Nate, the morning after demo 1) **retires tabs**: each tool holds one document, the Library is where you change it, and the Planner compares instead of switching (§4.2, §4.6, §5.1, §6.3). Draft 2 settled the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4); draft 3 settles the profile cap, names, per-profile tabs and default labels (§2.3, §4.2, §6.1, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
+
+**The shape in four sentences** (draft 4). Every rule below should be checkable against these; a rule that can't be said in one sentence to a player is a smell.
+
+1. **Your account is yours** — a profile shows your account as it is.
+2. **Anything that isn't your account is white and lives in Theorycraft.**
+3. **Each tool holds one document.**
+4. **The Library is where you change it.**
 
 ---
 
@@ -67,11 +74,11 @@ This replaces today's two layers and the `synced` flag (lineups design §9.5, §
 - **In a real profile:** a character you **own** reads the profile's roster, live. A character you **don't own** has no roster value, so the document keeps its own value for that character, marked as not owned (today's mark).
 - **In Theorycraft:** every value is the document's own.
 - ⚓ **Loadouts are a document's own choice everywhere.** Every weapon on offer is one every player has (Nate, 2026-10-21), so a weapon is not an ownership fact: the roster's loadout is a **default**, and a document may differ from it freely. ⏭ Revisit if weapons that need curating like the roster are ever added.
-- ⚓ **Constellations: a profile always shows your account as it is, and a what-if is a LENS, not an edit** (Nate, 2026-10-21; "what would this look like with this four-star at C6?" is a real want):
-  - In a real profile you can try a level you don't have. It is a **temporary view**: the character's constellation pip turns `--ui-provisional` (its existing meaning — _a stand-in_), and the bench or toolbar says so in one line with a **Clear** (working copy: "Trying Xiangling at C6 · not saved · Clear").
-  - **The rotation keeps saving everything else** — notation, loadouts, all of it. Only the hypothetical level is unsaved, which is the point of a what-if.
-  - **Keep as a Theorycraft copy** keeps a scenario that turns out to matter: the rotation is copied into Theorycraft with the what-if levels. So nothing is lost by accident, and nothing in a profile stops matching the account.
-  - ⏭ Whether the lens survives a reload or a tab switch (§12).
+- ⚓ **Constellations: a profile always shows your account as it is** (Nate, 2026-10-21; "what would this look like with this four-star at C6?" is a real want).
+  - ↻ **Draft 4: a what-if is a COMPARISON, not a lens** (⚓ Nate, 2026-10-22). Choosing a level for an **owned** character that differs from the roster (in either direction) never edits the rotation: it opens a **copy beside it, in Theorycraft**, and the two are compared (§4.6). One sentence: _changing an owned character's constellation never edits your rotation; it opens a copy beside it, in Theorycraft, and ⇅ flips between them._
+  - ⛔ Draft 2's lens (a temporary `--ui-provisional` view, "Trying Xiangling at C6 · not saved · Clear", "Keep as a Theorycraft copy") is retired: the comparison IS the kept copy, so nothing is ever "not saved".
+  - ⛔ **A LINKED what-if was considered and cut** (Nate, 2026-10-22): one notation shared by both sides, only the levels differing, the copy's notation locked until you unlock it into an independent copy. Cut because a constellation often changes how you play (C6 Xiangling, C2 Raiden, C1 Neuvillette want their own rotation), so the first act on a linked copy would usually be to unlock it; and because it needed extra rules (what a second character's change does) that a player couldn't hold. If people turn out to edit A and wish B followed, the lock design is the way back.
+  - **Unowned characters never open a comparison**: there is no account level to differ from, so their level is the document's own value (above).
 
 ### 2.5 What retires
 
@@ -105,12 +112,15 @@ The Library's "team entry" (a names-only `savedNotations` row) and team headings
 - **⌘S** is caught and confirms the work is already saved (Figma and Google Docs do the same), instead of opening the browser's "Save page as".
 - "Saved" means _in this browser_. The status can carry a quiet warning when storage isn't persistent and there is no recent backup (storage durability round, 2026-10-21).
 
-### 4.2 Tabs under autosave
+### 4.2 ⚓ One document per tool (draft 4: tabs retire)
 
-- A tab is just **an open document**. Closing a tab closes it; the document stays in the Library. **Recently closed retires**: the Library's recency order already holds it.
-- Deleting is a separate, deliberate act in the Library.
-- ⚓ **Open tabs belong to a profile.** Each profile keeps its own open tabs per tool, its active tab and its last tool, and returns to them when you switch back (as Chrome profiles restore their windows). Theorycraft's tabs persist like any profile's. ⛔ One shared tab strip tagged per profile was rejected: switching profiles would change the values inside tabs still on screen.
-- The 12-tab limit (⚓ §9.3) stays, **per profile**, as an _open_ limit, not a storage limit.
+- ⚓ **Each tool holds ONE current document per profile** (Nate, 2026-10-22). The Planner one rotation, the Builder one lineup; the Visualizers none. The model is Google Docs' and Blender's (one document per window, a home screen or Open Recent to change it), not a browser's.
+- **Why:** under autosave, with the tabs behind a menu (demo 1's form 5), "open" became a state nobody could see and few would ever close, and the 12-tab limit would arrive with no visible cause. The tools' rhythms agree: endgame modes go live on different schedules, so a Builder user thinks about Stygian for a week or two and Abyss for a few days, one lineup at a time; the **Planner is the only surface that wants quick switching**, and what it switches between is nearly always a comparison (§4.6).
+- **Changing the document is the Library's job** (§6.3): the active tool's button in the title bar opens it. Opening a row puts that document in the tool and returns to it.
+- **Fast switching without tabs:** the browser's **Back** returns to the last document (every document has an address); a **previous-document key** does the same within a tool; **⇅** flips a comparison (§4.6); **pinned** documents head the Library, because a recency list reorders itself on every switch (form 1's hunting objection in another shape).
+- ⚓ **The current document belongs to a profile** (draft 3's rule, carried over): each profile keeps its current document per tool and its last tool, and returns to them when you switch back. ⏭ Whether it is also per BROWSER TAB (§12).
+- ⛔ **What retires with tabs:** the tab strip and the documents menu (`rotationTabs.svelte.ts`, `DocumentTabs`), open/closed, Close, the **12-tab limit**, Recently closed, the Library's "open" mark (now "current").
+- **Deleting** is a separate, deliberate act in the Library.
 - ⚓ **An unnamed document stores no name; it shows a label derived from its contents**, styled as a placeholder (not yet named). Naming it is an ordinary edit.
   - **Rotation:** the matching saved team's name, else the characters' names ("Neuvillette · Furina · Kazuha · Baizhu"), shortened to fit. Derived, so it stays right when the team changes.
   - **Lineup:** its mode and season ("Stygian 7.1", "Abyss", "Custom lineup") — what the existing "the tab names the mode" intent asked for and the default "Lineup 1" ignores.
@@ -121,6 +131,23 @@ The Library's "team entry" (a names-only `savedNotations` row) and team headings
 - **In a real profile**, nothing is pruned: it is your work. The Library's views and filters carry the load (§6.2).
 - ⚓ **In Theorycraft:** a document opened from a link that you **never changed** drops off after a while (the link still exists if you want it again). **Anything you changed stays** until you delete it. ⏭ The window (§12).
 - **Moving out of Theorycraft:** any Theorycraft document can be **moved (or copied) to a profile**. Arriving in a real profile, its owned characters start reading the roster — this is what "Sync" used to do, now a consequence of where the document lives. ⏭ Move or copy (§12).
+  - **The Move confirmation lists what changes** before you commit (working copy: "In Main: Raiden reads C0 (this rotation: C2) · Furina is not owned, keeps C2"), because moving silently changes every owned character whose level differs. If the rotation exists _because_ of those levels, the list tells you to leave it in Theorycraft.
+- ⚓ **The routing rule** (draft 4, Nate's "guest star"): **a document lives in the profile when it fits the account; if it doesn't fit, it lives in Theorycraft.** _Fits_ = every OWNED character at its roster level (unowned characters are free, §2.4).
+  - **A document never stops fitting after the fact** (proposal): a profile document reads the roster live, so it fits by construction. Only a level CHOSEN against the roster makes a Theorycraft copy (§4.6). Lowering a constellation in the roster, or marking a character unowned, moves nothing.
+
+### 4.6 ⚓ Compare, and the guest star (draft 4)
+
+- ⚓ **Compare replaces tab switching** in the Planner (Nate, 2026-10-22). A rotation can be paired with ONE other; **⇅ flips which one the tool shows**, and a key does the same. ⚓ **No overlay and no ghost**: quick flipping is the whole feature, so the second rotation is never drawn at the same time as the first.
+- **Compare is a pair, not a mode.** The pair is stored on the documents, so reopening either one from the Library brings its partner back; ✕ ends the pair (both documents stay).
+- **Two ways in:**
+  - **A what-if** (§2.4): choose a level an owned character doesn't have and the copy opens on its own, already paired.
+  - **Compare** in the toolbar: **Duplicate and compare** (copy the current rotation, keep the original as the other side, edit the copy) or **Compare with…** (the Library in **pick mode**, §6.3).
+- **Where a copy is saved follows the routing rule** (§4.3): a copy that fits stays in the profile; a copy that doesn't goes to Theorycraft. ⚓ Weapons and artifacts never open a comparison and never route a copy — a loadout is a document's own choice (§2.4).
+- ⚓ **The guest star** (Nate, 2026-10-22): a Theorycraft document shown inside a real profile is marked with **Theorycraft's white**, which no real profile can wear (§2.3), so it can't be mistaken for any profile's own. While it's on screen the save status reads **Saved · Theorycraft**, and the white always comes with the word (colour is never the only signal). The FIRST time a copy is routed, a one-time notice teaches the rule (working copy: "Saved to Theorycraft · it doesn't match Main's roster"); afterwards the white and the status carry it.
+- **A guest can be changed further without asking**: it is a Theorycraft document, so every value in it is its own (§2.2). A second character's what-if on the white side just edits the copy — which is why the cut linked form's "two characters" rule is unnecessary here.
+- **Precedent:** Firefox's container tabs (one window, one tab marked with another context's colour).
+- **From inside Theorycraft** (proposal): guests are ordinary Theorycraft documents with a small **from Main** mark; their pair with the real-profile document is not shown, because Theorycraft never reads a real profile.
+- ⏭ **The roster catches up**: when you pull the constellation a guest assumed, the guest is redundant. Say so on it ("Your roster now matches this what-if")? (§12)
 
 ### 4.4 ⚠️ Storage
 
@@ -149,13 +176,19 @@ Autosaving everything, across several profiles, into `localStorage` would meet i
 
 Same shape on every surface and in both states:
 
-`[logo] critcalc.app · Builder Planner Visualizers · [document ▾] [save status] ··· [Share ▾] [Library] [?] [⚙] [profile]`
+↻ **Draft 4** (demo 1's form 5, ⚓ Nate 2026-10-21, with tabs retired):
+
+`[logo] critcalc.app ·· Builder [PLANNER / document] Visualizers ·· [Share ▾] [?] [⚙] [profile]`
 
 - **Brand left, profile right** (⚓ the profile opposite the logo).
-- **The tool switcher moves left beside the brand** — a breadcrumb: site › tool › document.
-- **The document area**: the open documents (tabs) and the active one's save status. The Visualizers have no document, so it stays empty there.
+- ⚓ **Three equal tool buttons, centred**; the current one shows its document's name, the tool's name a faint line above it. The others are words on the night. No tool moves on a switch.
+- ⚓ **The current tool's button is the Library's door** (draft 4): clicking it opens the full-screen state at Rotations or Lineups (whichever the tool makes), current document on top. There is no documents menu.
+  - ⛔ **The Library glyph retires**: it would do the same thing as the button that names your rotation.
+  - The Visualizers have no document: their button, current, does nothing.
+  - **A guest** (§4.6) rings the button in Theorycraft's white, and the faint line reads _Planner · Theorycraft_.
+- **The save status is brief** (⚓ 2026-10-21): _Saving…_ → _✓ Saved_, then it clears. "Not backed up" is the browser's storage, not the document's, so it is a badge on the profile picture.
+- **Document verbs** leave the bar: Rename and Delete on the Library row, New at the top of the Library (and Teams' Plan a rotation), Clear on the tool's own controls. ⏭ Whether a small ⋯ verbs menu survives beside the name.
 - **Share** stays visible (never behind an interaction); the Planner's menu keeps its link / KQM / image entries.
-- **Library** opens the full-screen state at Rotations or Lineups (whichever the current tool makes).
 - **`?`** merges About and Help, and carries **Report a problem** — the visible feedback door the beta lacks.
 - **⚙ Settings** stays visible (⚓ Settings is reached mid-task).
 - **The old Roster icon goes**: the roster now belongs to the profile.
@@ -167,7 +200,7 @@ Same shape on every surface and in both states:
 
 `[logo] [document ▾] ··· [Share] [☰] [⚙] [profile]`
 
-- **document ▾** switches open documents and opens the Library.
+- ↻ **document** (no ▾ since draft 4) opens the Library, as on desktop.
 - **☰** opens the full-screen state's index (tools at the top), replacing today's compass.
 - Band A's separate row disappears; every tool gains ~33px of height.
 - ⏭ Width check at 320px with the profile avatar added (§12).
@@ -176,11 +209,11 @@ Same shape on every surface and in both states:
 
 One row, controls zoned over what they act on.
 
-| Tool            | Left                                                                                         | Middle | Right                                        |
-| --------------- | -------------------------------------------------------------------------------------------- | ------ | -------------------------------------------- |
-| **Planner**     | ⏮ ▶ speed · Laps · Zoom (with Fit and the current %)                                        | Total  | Buffs · Auras · Log · Notes                  |
-| **Builder**     | over the roster: Search · filters · the roster lens (⏭ §12 Q on Owned vs My constellations) | —      | over the board: ⏭ possibly nothing          |
-| **Visualizers** | each tile's instrument picker, over its tile                                                 | —      | Layout (lineup count + Reset as one control) |
+| Tool            | Left                                                                                         | Middle                 | Right                                        |
+| --------------- | -------------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------- |
+| **Planner**     | ⏮ ▶ speed · Laps · Zoom (with Fit and the current %)                                        | Total · Compare (§4.6) | Buffs · Auras · Log · Notes                  |
+| **Builder**     | over the roster: Search · filters · the roster lens (⏭ §12 Q on Owned vs My constellations) | —                      | over the board: ⏭ possibly nothing          |
+| **Visualizers** | each tile's instrument picker, over its tile                                                 | —                      | Layout (lineup count + Reset as one control) |
 
 - ⚓ **Human timing leaves the toolbar** (Nate, 2026-10-21) — to an indicator and its Settings entry; ⏭ exact form.
 - **The Builder's season, No repeats and Add team move onto the board's own header** (a lineup's properties, as the game prints them on Party Setup). **Clear** moves into the document menu.
@@ -225,9 +258,13 @@ Band A and band B as concepts (`ToolStack`'s two-band rule, `BAND_A_H`, the docu
 
 ⚓ Two dedicated places, each displayed for what it holds:
 
-- **Rotations as rows** — they carry long notation: team portraits, name, a notation excerpt, last touched, and marks for _open_ and _from a link_.
+- ⚓ **Draft 4: the Library is also the SWITCHER** (Nate, 2026-10-22: the form 5 dropdown already took two clicks to reach other work, and a full-screen list that is free of distraction and recognisable at a glance is a strictly better version of it). Opened from the current tool's button (§5.1); opening a row returns to the tool with that document; Escape or Back returns unchanged. ⚠️ It is now the main way to switch, so the flip must be FAST (the `--t-quick` band, ⛔ never the scene clocks), and the tool stays paused underneath.
+- **Rotations as rows** — they carry long notation: team portraits, name, a **mini timeline strip** (recognisable faster than a notation excerpt), last touched, and marks for _current_ and _from a link_. **New rotation** heads the list.
+- **Pinned** rows head the list, above Recent: a recency list reorders itself on every switch, and pinning is the cure.
+- **Guests** (§4.6) show NESTED under the row they were copied from, framed in Theorycraft's white, never as rows of their own, so a burst of what-ifs can't clutter the list.
+- **Pick mode**: the same surface, opened by the Planner's **Compare with…**, choosing a partner instead of opening a document.
 - **Lineups as a grid of cards**, each card showing the teams inside as small portrait rows, so a lineup is recognised by its contents.
-- **Order:** most recently touched first. Filters: by team (the link from a team card lands here), and ⏭ open / from a link.
+- **Order:** most recently touched first. Filters: by team (the link from a team card lands here), and ⏭ from a link.
 - ⚓ **In Theorycraft:** the same two places, one recency list each, with a small **from a link** mark on documents that arrived by link (Nate considered a separate shared section; one list was chosen because people search by _when_, and an edited link is half theirs anyway). Pruning per §4.3.
 
 ---
@@ -268,7 +305,7 @@ This design doesn't redesign the tools' interiors; the structure survey's per-to
 
 ### 9.3 Opening a shared link
 
-1. ⚓ A link (`?r=`, `?b=`, `?team=`) always opens in **Theorycraft**, carrying the sender's values. **If another profile was active, the site switches automatically and makes it very obvious** (Nate, 2026-10-21): the switch cue (§9.4) plus a short notice — working copy: "Opened in Theorycraft · your profiles are untouched" — with **Move to a profile** beside it.
+1. ⚓ A link (`?r=`, `?b=`, `?team=`) always opens in **Theorycraft** (↻ draft 4: it becomes Theorycraft's current document for that tool; whatever was there is in the Library, and Back returns to it), carrying the sender's values. **If another profile was active, the site switches automatically and makes it very obvious** (Nate, 2026-10-21): the switch cue (§9.4) plus a short notice — working copy: "Opened in Theorycraft · your profiles are untouched" — with **Move to a profile** beside it.
 2. The document is marked **from a link**.
 3. **Move to a profile** brings it into Main: owned characters start reading Main's roster.
 
@@ -292,9 +329,9 @@ The site is early and its audience small (⚓ Nate: "now's the time"), but anyon
 - **On first load after the change**, if the browser holds any roster or saved document:
   - Create one **real profile** (⏭ default name, then invite a rename) holding the roster (`ownership`, `constellations`, `loadout`).
   - **Team entries** (names-only `savedNotations` rows, with their nicknames) become **Teams**.
-  - **Saved rotations** become **Rotations**; **saved boards** become **Lineups**; open tabs and boards stay open.
+  - **Saved rotations** become **Rotations**; **saved boards** become **Lineups**. ↻ Draft 4: open tabs become ordinary Library documents, and each tool's ACTIVE tab becomes its current document.
   - **Recently closed** entries become ordinary Library documents (⏭ or are dropped).
-  - **Stored constellations that disagree with the roster** for owned characters: under the strict rule (§2.4) they would silently change. ⏭ Either keep them as marked overrides, or copy those documents into Theorycraft. §12 Q1 decides.
+  - **Stored constellations that disagree with the roster** for owned characters: under the strict rule (§2.4) they would silently change. ↻ Draft 4 proposal — the routing rule (§4.3) answers it: the rotation stays in the profile (reading the roster), and a **Theorycraft guest with the stored levels is created and paired with it** (§4.6). Nothing is lost and nothing changes silently: ⇅ shows both.
 - **If the browser holds nothing**, start in Theorycraft.
 - **Backups:** a v1/v2 file imports through the same migration. ⏭ Backup v3's shape: all profiles, or one profile at a time (an exportable account is a nice consequence).
 - ⚠️ If documents move to IndexedDB (§4.4), the migration also moves storage engines.
@@ -310,6 +347,7 @@ So nothing below reads as still in force once this design is adopted:
 - **Site chrome** (compass round): the chrome's contents, its centre-collapsible priority order, and the compass overlay. ⚓ Settings stays visible (kept).
 - **Bench ribbon** geometry tied to band A's top (⚓ 2026-08-17).
 - The **Library overlay** as a modal-like layer.
+- ↻ Draft 4: **rotation and lineup TABS** (`rotationTabs.svelte.ts`, `DocumentTabs`, the 12-tab limit, Recently closed) · this design's own draft-3 §4.2 (per-profile open tabs) and draft-2 what-if LENS (§2.4) · demo 1's form 5 documents MENU.
 
 ---
 
@@ -317,7 +355,7 @@ So nothing below reads as still in force once this design is adopted:
 
 **Model**
 
-1. ~~Overrides in a real profile~~ — ✅ settled in draft 2 (§2.4): loadouts free, constellation what-ifs as a lens. **Still open:** does a what-if lens survive a reload, or a tab switch?
+1. ~~Overrides in a real profile~~ — ✅ settled: loadouts free (draft 2); ↻ a constellation what-if is a Theorycraft copy, compared (draft 4, §2.4, §4.6). The lens's persistence question is gone with the lens.
 2. Team identity is the set of four; is the member **order** stored and shown?
 3. Do teams carry **notes**?
 4. Which **settings** are per profile, if any (Human timing and swap ping feel personal to the player, not the account)?
@@ -326,7 +364,7 @@ So nothing below reads as still in force once this design is adopted:
 **Saving**
 
 6. ~~Default names~~ — ✅ derived labels (§4.2).
-7. ~~Open-tab limit~~ — ✅ 12, per profile (§4.2).
+7. ~~Open-tab limit~~ — ↻ gone with tabs (draft 4, §4.2).
 8. **Moving vs copying** a Theorycraft document into a profile; and between two real profiles.
 9. The Theorycraft **pruning window** for untouched link documents.
 10. ~~Storage engine~~ — ✅ IndexedDB, sync-ready records (§4.4).
@@ -335,7 +373,7 @@ So nothing below reads as still in force once this design is adopted:
 **Journeys**
 
 12. ~~Link while a profile is active~~ — ✅ switch automatically, loudly (§9.3). **Still open:** the shape of the colour wash, and whether the permanent cue includes a title-bar line.
-13. ~~Own open tabs~~ — ✅ yes (§4.2).
+13. ~~Own open tabs~~ — ↻ a profile owns its CURRENT documents (draft 4, §4.2).
 14. What a first visit's **invitation** looks like, and where it lives.
 
 **Surfaces**
@@ -348,6 +386,16 @@ So nothing below reads as still in force once this design is adopted:
 20. Human timing's **new form** off the toolbar.
 21. **One control size** for both bars, and the title bar's height.
 22. The phone title bar at **320px** with the profile added.
+
+**Draft 4 (tabless)**
+
+25. ⚠️ **Two browser tabs on one profile.** Without our tabs, the browser IS the tab system for anyone who wants two rotations side by side, so concurrent autosave stops being an edge case: two windows writing one profile, last write wins, work lost. Is the current document **per browser tab** (session-scoped, falling back to the profile's last)? Writes need a BroadcastChannel or a lock. Must be decided before the build.
+26. The **previous-document key** (and whether it is the same key as ⇅ when a comparison exists).
+27. **Swap mode** (⇄ on a Planner card → the Builder) names the Builder's current LINEUP in the title bar while you are really auditioning for a ROTATION: the title bar needs a mode form for it.
+28. **The roster catches up** with a guest (§4.6): say so on the guest, offer to delete it, or nothing?
+29. A small **⋯ verbs menu** beside the document name, or nothing in the bar at all (§5.1)?
+30. Whether opening another document from the Library while a comparison is showing ENDS the pair or leaves it stored (proposal: stored — the pair belongs to the documents, ✕ ends it).
+31. **Share from a real profile** must write the roster's levels into the link at the moment of sharing (a profile document no longer stores them).
 
 **Process**
 
