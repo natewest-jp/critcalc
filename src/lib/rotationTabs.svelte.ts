@@ -17,6 +17,19 @@
  *             bench band. The bench is the plan's team editor; it never marks
  *             ownership.
  *
+ * ══ ↻ 2026-10-22: SLOTS ARE STORED AGAIN — design §8.1 (⚓ Nate) ═══════════
+ *
+ * The section below is the 2026-08-13 ruling, kept as history. It is PARTLY
+ * REVERSED: the notation stays the truth for what HAPPENS, but the TEAM is
+ * now four stored seats (`seats`) that the notation fills. A seated character
+ * it does not name RESTS (keeps the slot, draws no bars) — the streamer
+ * cleared a bare-names stub to start writing and the team vanished. A newly
+ * named character takes the first empty seat, else the first resting one
+ * (`seatSlots`). Undo still reaches every seat change: the seats ride the
+ * editor's history beside the text (`notationSeats.ts`), so the "undo came
+ * free" argument below is replaced, not lost. Slot ORDER is the slot's key
+ * again, and `setSlot` honours its index.
+ *
  * ══ THE NOTATION IS THE SINGLE SOURCE OF TRUTH (⚓ NATE 2026-08-13) ═══════════
  *
  * `manualSlots` is RETIRED. The team was `manualSlots ?? autoSlots` — two
@@ -59,6 +72,7 @@ import {
 	renameCharacterInNotation,
 	seatSlots,
 	seatsFromLegacy,
+	seatsOfSaved,
 	TEAM_SIZE,
 	type Seats
 } from '$lib/utils/notationEdit';
@@ -106,7 +120,7 @@ export const TABS_KEY = 'critcalc:rotationTabs';
 
 /** Re-exported so a consumer reading the team from this module does not have to
  *  know the notation layer defines it. ONE definition, in notationEdit. */
-export { TEAM_SIZE };
+export { TEAM_SIZE, seatsOfSaved };
 
 /**
  * Notation → the four slot ids it implies: the first four distinct character
@@ -168,18 +182,6 @@ function makeTab(label: string): RotationTab {
  *  derivation). */
 export function seatsOf(tab: Pick<RotationTab, 'notation' | 'slots'>): Seats {
 	return tab.slots ? normalizeSeats(tab.slots) : seatSlots(emptySeats(), tab.notation ?? '');
-}
-
-/** A SAVED entry's seats: its stored slots; else a legacy `manualSlots` in its
- *  own order with the notation seated into it; else the notation's old
- *  derivation. */
-export function seatsOfSaved(e: {
-	notation: string;
-	slots?: (string | null)[] | null;
-	manualSlots?: (string | null)[] | null;
-}): Seats {
-	if (e.slots) return normalizeSeats(e.slots);
-	return seatSlots(seatsFromLegacy(e.manualSlots ?? []), e.notation ?? '');
 }
 
 /** Strip a restored tab of its retired field. ↻ 2026-10-22: a legacy

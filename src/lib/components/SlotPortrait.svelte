@@ -79,7 +79,8 @@
 		onPortraitClick,
 		portraitLabel = 'Open character selector',
 		onDetails,
-		emptyLabel = 'Empty'
+		emptyLabel = 'Empty',
+		resting = false
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -106,6 +107,9 @@
 		 *  phone's details. Omit for a static portrait. */
 		onPortraitClick?: () => void;
 		portraitLabel?: string;
+		/** ⚓ Seated, with nothing in the notation yet (design §8.1): the card
+		 *  stays in its slot, dimmed — never gone. */
+		resting?: boolean;
 		/** The magnifier: a corner button that opens the character's details,
 		 *  shown on hover (always, with no hover). Omit and there is none. */
 		onDetails?: () => void;
@@ -262,6 +266,8 @@
 <div
 	class="sp-card"
 	class:sp-card--compact={compact}
+	class:sp-card--resting={resting && !!char}
+	title={resting && char ? `${char.displayName} is resting: not in the rotation yet` : undefined}
 	style:--el={p.main}
 	style:--sp-band="{compact ? compactDisc : CARD_PORTRAIT}px"
 >
@@ -726,6 +732,19 @@
 		bottom: 0;
 		display: block;
 		pointer-events: none;
+	}
+	/* RESTING (§8.1): seated, nothing written yet. The ART dims — its own
+	   pixels, through the portrait's masks, so the overhang never shows a box
+	   (a wash over the art's box painted a dark rectangle behind every disc).
+	   ⚠ A filter on the bench's gliding cards is unverified in real Safari:
+	   the sub-pixel laws ban element OPACITY there because WebKit rasterizes
+	   it at rounded coordinates; a filter on one image is likely safe, and is
+	   exactly what Nate's Safari pass must confirm. */
+	.sp-card--resting :global(.spt-art) {
+		filter: brightness(0.5) saturate(0.6);
+	}
+	.sp-card--resting .sp-char-name {
+		color: var(--muted);
 	}
 	/* The constellation on the disc — the Builder chip's place and shape, but a
 	   BUTTON (it is the editor). Filled = covered (or no roster); HOLLOW =

@@ -20,7 +20,7 @@
 
 import type { SavedBoard, SavedNotation } from './stores';
 import { lastTouched } from './stores';
-import { notationHasActions, orderedCharacterIds, teamKey } from './utils/notationEdit';
+import { notationHasActions, seatsOfSaved, teamKey } from './utils/notationEdit';
 import { getCharacterIndexEntry } from './data/characterLookup';
 import { REACTION_INGREDIENTS, teamReactions } from './capabilities/deriveCapabilities';
 import { REACTION_FAMILY, REACTION_LABEL } from './utils/auraDisplay';
@@ -48,7 +48,9 @@ export function isTeamEntry(e: Pick<SavedNotation, 'notation'>): boolean {
 	return !notationHasActions(e.notation);
 }
 
-const slotsOf = (notation: string) => orderedCharacterIds(notation).slice(0, 4);
+/** An entry's team, in slot order: its stored seats (§8.1), else derived. */
+const slotsOf = (e: Pick<SavedNotation, 'notation' | 'slots' | 'manualSlots'>) =>
+	seatsOfSaved(e).filter((id): id is string => !!id);
 
 /** Group the bank into teams, newest first. */
 export function libraryTeams(
@@ -58,7 +60,7 @@ export function libraryTeams(
 	// A plain record, not a Map: a pure fold, nothing here is state.
 	const byKey: Record<string, LibraryTeam> = {};
 	const ensure = (e: SavedNotation) => {
-		const slots = slotsOf(e.notation);
+		const slots = slotsOf(e);
 		const key = teamKey(slots);
 		if (!key) return undefined;
 		return (byKey[key] ??= { key, slots, rotations: [], touched: 0, boards: [] });
@@ -72,11 +74,11 @@ export function libraryTeams(
 				t.entry = e;
 				if (e.name.trim()) t.nickname = e.name.trim();
 			}
-			if (t.rotations.length === 0 && t.touched === 0) t.slots = slotsOf(e.notation);
+			if (t.rotations.length === 0 && t.touched === 0) t.slots = slotsOf(e);
 		} else {
 			// Portrait order = the newest ROTATION's (a team entry only orders a
 			// team that has none).
-			if (t.rotations.length === 0) t.slots = slotsOf(e.notation);
+			if (t.rotations.length === 0) t.slots = slotsOf(e);
 			t.rotations.push(e);
 		}
 		t.touched = Math.max(t.touched, lastTouched(e));

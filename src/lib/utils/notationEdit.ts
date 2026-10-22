@@ -3,6 +3,11 @@
  *
  * REWRITING THE NOTATION ON THE USER'S BEHALF — the write half of single truth.
  *
+ * ↻ 2026-10-22 (design §8.1): the team is STORED again as four seats the
+ * notation fills — `seatSlots` below is the rule, and the "notation IS the
+ * team" premise of the paragraph that follows holds for the text's own
+ * rewrites (rename, delete) but no longer for who is seated.
+ *
  * Once the notation IS the team (rotationTabs.slots is derived from it), every
  * team edit has to become a text edit: a swap RENAMES a character's segments,
  * removing one DELETES them, and adding somebody APPENDS a bare-name segment. This module is the only place that happens, and it is pure — the
@@ -166,6 +171,18 @@ export function seatSlots(seats: readonly (string | null)[], notation: string): 
 		out[i] = id;
 	}
 	return out;
+}
+
+/** A SAVED entry's seats: its stored slots; else a legacy `manualSlots` in its
+ *  own order with the notation seated into it; else the notation's old
+ *  derivation (the seat rule from empty seats). */
+export function seatsOfSaved(e: {
+	notation: string;
+	slots?: readonly (string | null)[] | null;
+	manualSlots?: readonly (string | null)[] | null;
+}): Seats {
+	if (e.slots) return normalizeSeats(e.slots);
+	return seatSlots(seatsFromLegacy(e.manualSlots ?? []), e.notation ?? '');
 }
 
 /** The seated characters the notation names (the rest are resting). */

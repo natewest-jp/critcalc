@@ -385,15 +385,16 @@
 		if (team && i >= 0 && team.id !== ERRAND_ID) boards.setSlot(board.id, team.id, i, null);
 	}
 
-	/** Open a team in the Planner: its pinned rotation, else its bare names
-	 *  (§10.2). Either opens in a NEW tab, so nothing open is replaced. */
+	/** Open a team in the Planner: its pinned rotation, else the team itself,
+	 *  seated and resting (§10.2; design §8.1). Either opens in a NEW tab, so
+	 *  nothing open is replaced. */
 	function openInPlanner(team: BoardTeam): void {
 		const pinned = pinnedRotation(team, $savedNotations);
 		if (pinned) documentBar.loadNewTab(pinned);
 		else {
-			const ids = team.slots.filter((s): s is string => s !== null);
+			// The board's own slot positions, gaps included: slots are keys now.
 			documentBar.receive(
-				{ ...rt.teamDocument(ids, board.label), tabCon: { ...(team.con ?? {}) } },
+				{ ...rt.teamDocument(team.slots, board.label), tabCon: { ...(team.con ?? {}) } },
 				'Team opened'
 			);
 		}

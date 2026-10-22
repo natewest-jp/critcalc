@@ -145,7 +145,13 @@ function castTokensIn(tokens: readonly Token[]): Token[] {
  * Lint a notation string. Returns flags in source order; an empty array means
  * the timeline draws exactly what the text says.
  */
-export function flagNotation(notation: string): NotationFlag[] {
+export function flagNotation(
+	notation: string,
+	/** The party's seats AFTER the seat rule (§8.1). Given, a name is flagged
+	 *  only if it found no seat (all four awake); absent, the old count — the
+	 *  fifth distinct name. */
+	seats?: readonly (string | null)[]
+): NotationFlag[] {
 	const flags: NotationFlag[] = [];
 	const tokens = tokenizeNotation(notation);
 
@@ -175,7 +181,7 @@ export function flagNotation(notation: string): NotationFlag[] {
 
 		if (!distinct.includes(entry.id)) {
 			distinct.push(entry.id);
-			if (distinct.length > TEAM_SIZE) {
+			if (seats ? !seats.includes(entry.id) : distinct.length > TEAM_SIZE) {
 				flags.push({
 					from: head.from,
 					to: head.to,

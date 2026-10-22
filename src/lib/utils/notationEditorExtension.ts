@@ -35,6 +35,7 @@ import {
 } from '@codemirror/autocomplete';
 import { tokenizeNotation, MAX_NOTATION_CHARS, type Token, type TokenKind } from './tokenizer';
 import { flagNotation, flagSeverity, type NotationFlag } from './notationFlags';
+import { seatsField } from './notationSeats';
 import { searchCharacterIndex, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 import { elementPalette } from './elementColors';
 import { resolveActionElement, type NormalActionKind } from './actionElement';
@@ -207,6 +208,8 @@ const notationHighlight = ViewPlugin.fromClass(
 			if (
 				update.docChanged ||
 				update.selectionSet ||
+				// ✕ or Clear can free a seat without touching the text (§8.1).
+				update.startState.field(seatsField, false) !== update.state.field(seatsField, false) ||
 				update.startState.field(resolvedTints).tints !== update.state.field(resolvedTints).tints
 			)
 				this.decorations = this.build(update.view);
@@ -219,7 +222,7 @@ const notationHighlight = ViewPlugin.fromClass(
 			// own without a scan. A bracket-inner flag (`2[hE]`) has no top-level
 			// token to attach to and is emitted as its own nested mark below.
 			const flags = new Map<string, NotationFlag>();
-			for (const flag of flagNotation(doc)) {
+			for (const flag of flagNotation(doc, view.state.field(seatsField, false) ?? undefined)) {
 				if (flag.reason === 'unknown-character' && caretInside(view, flag.from, flag.to)) continue;
 				flags.set(`${flag.from}:${flag.to}`, flag);
 			}
@@ -558,7 +561,12 @@ const notationTheme = EditorView.theme({
  *
  * @param onChange  Called with the new doc string on every content change.
  */
-export function buildNotationExtensions(onChange: (value: string) => void): Extension[] {
+export function buildNotationExtensions(
+	onChange: (value: string) => void,
+	/** The empty-state hint. An ELEMENT so its text can follow the seated team
+	 *  without rebuilding the extension (notationEditor owns it). */
+	hint: string | HTMLElement = 'Type a rotation in KQM notation'
+): Extension[] {
 	return [
 		history(),
 		keymap.of([...defaultKeymap, ...historyKeymap, ...completionKeymap]),
@@ -575,7 +583,7 @@ export function buildNotationExtensions(onChange: (value: string) => void): Exte
 		// client-only — document is safe here.)
 		tooltips({ position: 'fixed', parent: document.body }),
 		// Empty-state invitation: shows what to type and models the syntax.
-		placeholder('Type a rotation in KQM notation'),
+		placeholder(hint),
 		notationTheme,
 		// Hard ceiling on document length. Highlighting, linting and parsing all
 		// run synchronously per keystroke, and a few hundred bytes of legal-but-

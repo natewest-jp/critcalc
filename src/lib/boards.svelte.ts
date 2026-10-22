@@ -35,7 +35,7 @@
 
 import { browser } from '$app/environment';
 import { characterKey } from './data/characterLookup';
-import { TEAM_SIZE, notationHasActions, teamKey, teamKeyOfNotation } from './utils/notationEdit';
+import { TEAM_SIZE, notationHasActions, seatsOfSaved, teamKey } from './utils/notationEdit';
 import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
 import { safeSetItem, type SavedBoardTeam, type SavedNotation } from './stores';
@@ -131,9 +131,7 @@ export function rotationsForTeam(
 	if (!key) return [];
 	// A names-only entry is the TEAM itself (the library's heading), never one
 	// of its rotations.
-	return saved.filter(
-		(e) => notationHasActions(e.notation) && teamKeyOfNotation(e.notation) === key
-	);
+	return saved.filter((e) => notationHasActions(e.notation) && teamKey(seatsOfSaved(e)) === key);
 }
 
 /** The pinned rotation, if it still exists AND is still this team's. */
@@ -143,7 +141,7 @@ export function pinnedRotation(
 ): SavedNotation | undefined {
 	if (!team.pinnedRotationId) return undefined;
 	const entry = saved.find((e) => e.id === team.pinnedRotationId);
-	return entry && teamKeyOfNotation(entry.notation) === teamKey(team.slots) ? entry : undefined;
+	return entry && teamKey(seatsOfSaved(entry)) === teamKey(team.slots) ? entry : undefined;
 }
 
 /** The team's own constellation values (Layer 2): the pinned rotation's while

@@ -49,7 +49,7 @@
 	import { recentlyClosedRotations } from '$lib/documentBar.svelte';
 	import { recentlyClosedBoards, type Board } from '$lib/boards.svelte';
 	import type { RotationTab } from '$lib/rotationTabs.svelte';
-	import { orderedCharacterIds, teamKey } from '$lib/utils/notationEdit';
+	import { seatsOfSaved, teamKey } from '$lib/utils/notationEdit';
 	import { sideLayout } from '$lib/sidePortrait';
 	import {
 		libraryTeams,
@@ -85,7 +85,10 @@
 
 	// ── The bank, grouped ────────────────────────────────────────────────────
 	const teams = $derived(libraryTeams($savedNotations, $savedBoards));
-	const ids = (notation: string) => orderedCharacterIds(notation).slice(0, 4);
+	/** A document's seated team, in slot order (§8.1): its stored slots, else
+	 *  derived from the notation as it always was. */
+	const ids = (e: { notation: string; slots?: (string | null)[] | null }) =>
+		seatsOfSaved(e).filter((id): id is string => !!id);
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
 
 	const boardsList = $derived([...$savedBoards].sort((a, b) => lastTouched(b) - lastTouched(a)));
@@ -107,7 +110,7 @@
 					kind: 'rotation',
 					id: `r:${e.tab.id}`,
 					name: e.tab.label,
-					slots: ids(e.tab.notation),
+					slots: ids(e.tab),
 					when: e.closedAt,
 					tab: e.tab
 				})
@@ -388,7 +391,7 @@
 		id ? $savedNotations.find((e) => e.id === id)?.name : undefined;
 	const pinHolds = (slots: (string | null)[], id?: string) => {
 		const e = id ? $savedNotations.find((x) => x.id === id) : undefined;
-		return !!e && teamKey(ids(e.notation)) === teamKey(slots);
+		return !!e && teamKey(ids(e)) === teamKey(slots);
 	};
 
 	// The overlay takes the keyboard on open; a page does not grab focus (on a
@@ -520,7 +523,7 @@
 {#snippet rotationRow(r: SavedNotation)}
 	{@const run = () => library.openRotation(r)}
 	{@const isEditing = editing?.id === `r:${r.id}`}
-	{@const raised = ids(r.notation)
+	{@const raised = ids(r)
 		.map((id) => [id, levelOf(r, id)] as const)
 		.filter(([id, c]) => {
 			const own = ownedCon(id);
