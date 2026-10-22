@@ -23,6 +23,8 @@ import { ABOUT_AREA, HELP_AREA, type ChromeAreaId } from '$lib/help/areas';
 
 export type Section =
 	| 'index'
+	| 'profile'
+	| 'profile/new'
 	| 'roster'
 	| 'rotations'
 	| 'lineups'
@@ -43,14 +45,19 @@ const chapterItems = (area: typeof HELP_AREA): SectionItem[] =>
 
 /**
  * The sidebar (§6.1's table). The profile's group is titled with the profile's
- * own name by the shell. ⏭ Teams joins Roster in phase 3; Getting started and
- * Keyboard shortcuts join Help when they are written.
+ * own name by the shell, which also shows `profile` to a real profile and
+ * `profile/new` to Theorycraft (`profileItems`). ⏭ Teams joins Roster in
+ * phase 3; Getting started and Keyboard shortcuts join Help when written.
  */
 export const SECTION_GROUPS: SectionGroup[] = [
 	{
 		id: 'profile',
 		title: null,
-		items: [{ id: 'roster', label: 'Roster', path: resolve('/roster') }]
+		items: [
+			{ id: 'profile', label: 'Profile', path: resolve('/profile') },
+			{ id: 'profile/new', label: 'Add your account', path: resolve('/profile/new') },
+			{ id: 'roster', label: 'Roster', path: resolve('/roster') }
+		]
 	},
 	{ id: 'library', title: 'Library', items: LIBRARY_ITEMS },
 	{ id: 'help', title: 'Help', items: chapterItems(HELP_AREA) },
@@ -63,6 +70,11 @@ export const SECTION_GROUPS: SectionGroup[] = [
 ];
 
 const ITEMS = SECTION_GROUPS.flatMap((g) => g.items);
+
+/** The profile group's items for a profile of this kind: a real profile
+ *  edits itself; Theorycraft can't be edited and invites an account instead. */
+export const profileItems = (kind: 'real' | 'theorycraft'): SectionItem[] =>
+	SECTION_GROUPS[0].items.filter((i) => i.id !== (kind === 'real' ? 'profile/new' : 'profile'));
 
 export const itemOf = (id: Section): SectionItem | undefined => ITEMS.find((i) => i.id === id);
 

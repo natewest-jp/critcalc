@@ -21,6 +21,7 @@
 		SECTION_GROUPS,
 		itemOf,
 		menu,
+		profileItems,
 		sectionForPath,
 		type Section,
 		type SectionItem
@@ -32,6 +33,7 @@
 	import { sceneOccluded } from '$lib/landing/transition';
 	import LibraryPlace from './LibraryPlace.svelte';
 	import RosterTab from './RosterTab.svelte';
+	import ProfileForm from './ProfileForm.svelte';
 	import SettingsPanel from './SettingsPanel.svelte';
 
 	const section = $derived(menu.section);
@@ -39,6 +41,10 @@
 	const group = $derived(SECTION_GROUPS.find((g) => g.items.some((i) => i.id === section)));
 	const profileName = $derived(storageSession.profile?.name ?? 'You');
 	const groupTitle = (g: (typeof SECTION_GROUPS)[number]) => g.title ?? profileName;
+	const isTheorycraft = $derived(storageSession.profile?.kind !== 'real');
+	/** A real profile edits itself; Theorycraft invites an account (§2.2). */
+	const itemsOf = (g: (typeof SECTION_GROUPS)[number]) =>
+		g.id === 'profile' ? profileItems(isTheorycraft ? 'theorycraft' : 'real') : g.items;
 
 	/** The tool underneath, if any (its button toggles back onto it). */
 	const tool = $derived(
@@ -138,7 +144,7 @@
 		</div>
 		{#each SECTION_GROUPS as g (g.id)}
 			<p class="side-group">{groupTitle(g)}</p>
-			{#each g.items as it (it.id)}
+			{#each itemsOf(g) as it (it.id)}
 				<!-- Section paths come resolved from menuState (SECTION_GROUPS). -->
 				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a
@@ -181,6 +187,22 @@
 				<LibraryPlace place="planner" />
 			{:else if section === 'lineups'}
 				<LibraryPlace place="builder" />
+			{:else if section === 'profile'}
+				<ProfileForm mode="edit" />
+			{:else if section === 'profile/new'}
+				<ProfileForm mode="new" />
+			{:else if section === 'roster' && isTheorycraft}
+				<!-- §9.1: Theorycraft has no roster; the invitation stands in it. -->
+				<div class="invite ctx-light">
+					<h3>Add your account</h3>
+					<p>
+						Theorycraft has every character at every level, so it has no roster. Add your account to
+						mark what you own and set your constellations.
+					</p>
+					<button class="btn btn--primary" onclick={() => menu.show('profile/new')}
+						>Add your account</button
+					>
+				</div>
 			{:else if section === 'roster'}
 				<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
 			{:else if section === 'settings'}
@@ -322,6 +344,25 @@
 	}
 	.settings {
 		max-width: 40rem;
+	}
+	/* Paper as a patch (§6.4): the invitation is the one card on this page. */
+	.invite {
+		max-width: 30rem;
+		padding: 1.1rem 1.25rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+		color: var(--text);
+	}
+	.invite h3 {
+		margin: 0 0 0.4rem;
+		font-family: var(--font-display);
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-semibold);
+	}
+	.invite p {
+		margin: 0 0 0.9rem;
+		font-size: var(--fs-md);
+		line-height: 1.5;
 	}
 
 	/* ── Phone (roomy, 47.5rem — $lib/breakpoints.ts): the sidebar is the

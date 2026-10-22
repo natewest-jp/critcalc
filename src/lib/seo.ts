@@ -157,6 +157,14 @@ export const PAGE_META: Record<string, PageMeta> = {
 		title: 'Lineups',
 		description: 'Your saved lineups. All of them are kept in this browser.'
 	},
+	'/profile': {
+		title: 'Profile',
+		description: 'Your profile in this browser: its name, picture, and colour.'
+	},
+	'/profile/new': {
+		title: 'Add your account',
+		description: 'Add a profile for your Genshin account, kept in this browser.'
+	},
 	'/roster': {
 		title: 'Roster',
 		description: 'The characters you own and their constellations, kept in this browser.'

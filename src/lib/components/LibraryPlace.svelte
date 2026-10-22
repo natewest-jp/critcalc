@@ -6,8 +6,7 @@
   Pinned rows head the list, because a recency list reorders itself on every
   switch. Rename and Delete live on the row (⚓ no ⋯ verbs menu in the bar).
 
-  ⏭ Not yet: the mini timeline strip (a parse per row), the from-a-link mark
-  (2d's routing), guests nested under their row and pick mode (phase 4).
+  ⏭ Not yet: the mini timeline strip (a parse per row), guests nested under their row and pick mode (phase 4).
   Strings are working copy.
 -->
 <script lang="ts">
@@ -180,6 +179,8 @@
 				{@render labelOrEdit(d)}
 				<span class="row-meta">
 					{#if isCurrent}<span class="row-now">Open now</span>{/if}
+					{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+						>{/if}
 					<span>{ago(recency(d))}</span>
 				</span>
 			</span>
@@ -231,6 +232,9 @@
 						</span>
 						<span class="row-meta">
 							{#if isCurrent}<span class="row-now">Open now</span>{/if}
+							{#if d.fromLink}<span class="row-flag"
+									><Mark name="link" size={11} /> From a link</span
+								>{/if}
 							<span>{ago(recency(d))}</span>
 						</span>
 					</button>
@@ -340,6 +344,11 @@
 		gap: 0.6rem;
 		font-size: var(--fs-sm);
 		color: var(--muted);
+	}
+	.row-flag {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
 	}
 	.row-now {
 		color: var(--accent);

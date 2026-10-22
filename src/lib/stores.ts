@@ -261,8 +261,34 @@ export const savedBoards = createSavedBoardsStore();
 
 const CONSTELLATION_KEY = 'critcalc:constellations';
 
+// ── The roster under the switch (build plan §13, phase 2d) ─────────────────
+// ⚓ Each PROFILE has its own roster (design §2.1), held in its IndexedDB
+// record. Under the switch the three roster stores start EMPTY and the storage
+// session fills them from the active profile (`bindRoster`); their writes go
+// to its sink, ⚓ never to localStorage, which stays as the migration found it
+// (copy-only, §13.1). Read straight off the switch's own key: importing
+// `nextLayout` here would be circular (it imports this module).
+
+export type RosterPart = 'constellations' | 'ownership' | 'loadout';
+let rosterSink: ((part: RosterPart, value: object) => void) | null = null;
+const underSwitch = (): boolean => {
+	if (!browser) return false;
+	try {
+		return localStorage.getItem('critcalc:nextLayout') === '1';
+	} catch {
+		return false;
+	}
+};
+
+/** Write a roster part to the active profile, or (switch off) localStorage. */
+function persistRoster(part: RosterPart, key: string, value: object): void {
+	if (!browser) return;
+	if (rosterSink) rosterSink(part, value);
+	else if (!underSwitch()) safeSetItem(key, JSON.stringify(value));
+}
+
 function loadConstellations(): Record<string, number> {
-	if (!browser) return {};
+	if (!browser || underSwitch()) return {};
 	try {
 		return JSON.parse(localStorage.getItem(CONSTELLATION_KEY) ?? '{}');
 	} catch {
@@ -278,7 +304,7 @@ function createConstellationStore() {
 		setLevel(characterId: string, level: number) {
 			store.update((prev) => {
 				const next = { ...prev, [characterId]: level };
-				if (browser) safeSetItem(CONSTELLATION_KEY, JSON.stringify(next));
+				persistRoster('constellations', CONSTELLATION_KEY, next);
 				return next;
 			});
 		},
@@ -286,11 +312,16 @@ function createConstellationStore() {
 		 *  its undo, which would otherwise persist once per character. */
 		replaceAll(next: Record<string, number>) {
 			store.set({ ...next });
-			if (browser) safeSetItem(CONSTELLATION_KEY, JSON.stringify(next));
+			persistRoster('constellations', CONSTELLATION_KEY, next);
 		},
 		clear() {
 			store.set({});
-			if (browser) safeRemoveItem(CONSTELLATION_KEY);
+			if (rosterSink) rosterSink('constellations', {});
+			else if (browser && !underSwitch()) safeRemoveItem(CONSTELLATION_KEY);
+		},
+		/** The active profile's levels, set without writing anything back. */
+		load(next: Record<string, number>) {
+			store.set({ ...next });
 		}
 	};
 }
@@ -325,7 +356,7 @@ export function deriveInitialOwnership(
 }
 
 function loadOwnership(): Record<string, OwnershipMark> {
-	if (!browser) return {};
+	if (!browser || underSwitch()) return {};
 	try {
 		const raw = localStorage.getItem(OWNERSHIP_KEY);
 		if (raw) {
@@ -349,7 +380,7 @@ function createOwnershipStore() {
 	const store = writable<Record<string, OwnershipMark>>(loadOwnership());
 
 	function persist(next: Record<string, OwnershipMark>) {
-		if (browser) safeSetItem(OWNERSHIP_KEY, JSON.stringify(next));
+		persistRoster('ownership', OWNERSHIP_KEY, next);
 		return next;
 	}
 
@@ -370,7 +401,11 @@ function createOwnershipStore() {
 		},
 		clear() {
 			store.set({});
-			if (browser) safeRemoveItem(OWNERSHIP_KEY);
+			if (rosterSink) rosterSink('ownership', {});
+			else if (browser && !underSwitch()) safeRemoveItem(OWNERSHIP_KEY);
+		},
+		load(next: Record<string, OwnershipMark>) {
+			store.set({ ...next });
 		}
 	};
 }
@@ -394,7 +429,7 @@ export type LoadoutEntry = {
 };
 
 function loadLoadout(): Record<string, LoadoutEntry> {
-	if (!browser) return {};
+	if (!browser || underSwitch()) return {};
 	try {
 		const raw = localStorage.getItem(LOADOUT_KEY);
 		if (!raw) return {};
@@ -412,7 +447,7 @@ function createLoadoutStore() {
 	const store = writable<Record<string, LoadoutEntry>>(loadLoadout());
 
 	function persist(next: Record<string, LoadoutEntry>) {
-		if (browser) safeSetItem(LOADOUT_KEY, JSON.stringify(next));
+		persistRoster('loadout', LOADOUT_KEY, next);
 		return next;
 	}
 
@@ -435,12 +470,35 @@ function createLoadoutStore() {
 		},
 		clear() {
 			store.set({});
-			if (browser) safeRemoveItem(LOADOUT_KEY);
+			if (rosterSink) rosterSink('loadout', {});
+			else if (browser && !underSwitch()) safeRemoveItem(LOADOUT_KEY);
+		},
+		load(next: Record<string, LoadoutEntry>) {
+			store.set({ ...next });
 		}
 	};
 }
 
 export const loadout = createLoadoutStore();
+
+/**
+ * Show a profile's roster in the three stores and route their writes to
+ * `sink` (the storage session's). `null` unbinds.
+ */
+export function bindRoster(
+	roster: {
+		constellations: Record<string, number>;
+		ownership: Record<string, OwnershipMark>;
+		loadout: Record<string, LoadoutEntry>;
+	},
+	sink: ((part: RosterPart, value: object) => void) | null
+): void {
+	rosterSink = null;
+	constellations.load(roster.constellations);
+	ownership.load(roster.ownership);
+	loadout.load(roster.loadout);
+	rosterSink = sink;
+}
 
 // ---------------------------------------------------------------------------
 // Site settings

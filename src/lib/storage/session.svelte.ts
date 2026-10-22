@@ -29,10 +29,17 @@ import {
 	rotationToTab,
 	tabToRotationBody
 } from './convert';
-import { get, getAll, getMeta, put, tombstone } from './db';
+import { get, getAll, getMeta, put, setMeta, tombstone } from './db';
+import { settleDocuments } from './arrivals';
 import { holdDocument, openStorageChannel, type DocumentLock } from './docLock';
+import { bindRoster, siteSettings, type RosterPart } from '$lib/stores';
+import { get as storeGet } from 'svelte/store';
 import {
 	THEORYCRAFT_ID,
+	newId,
+	type Picture,
+	type ProfileColour,
+	type Roster,
 	type DocumentRecord,
 	type LineupDocument,
 	type ProfileRecord,
@@ -89,29 +96,38 @@ class StorageSession {
 		if (!db || !profile || profile.deleted) {
 			rotationTabs.restore();
 			boards.restore();
+			settleDocuments(false);
 			return;
 		}
 		this.#db = db;
-		this.profile = profile;
+		this.#attach();
+		this.#useProfile(profile);
+		await this.#loadProfiles();
 
 		await this.#loadPlanner(profile);
 		await this.#loadBuilder(profile);
-
-		// ⚠ Once per page: the tools layout mounts again after a visit to the
-		// landing, and a second listener would save and broadcast everything twice.
-		if (!this.#channel) {
-			this.#channel = openStorageChannel();
-			this.#channel.listen((msg) => {
-				if (msg.store === 'documents') {
-					this.version++;
-					if (this.readOnly.includes(msg.id)) void this.#reload(msg.id);
-				}
-				if (msg.store === 'profiles' && msg.id === this.profile?.id) void this.#reloadProfile();
-			});
-			addEventListener('keydown', this.#onKey);
-			document.addEventListener('visibilitychange', this.#onVisibility);
-		}
 		this.active = true;
+		settleDocuments(true);
+	}
+
+	/** The channel and page listeners. ⚠ Once per page: the tools layout
+	 *  mounts again after a visit to the landing, and a second listener would
+	 *  save and broadcast everything twice. */
+	#attach(): void {
+		if (this.#channel) return;
+		this.#channel = openStorageChannel();
+		this.#channel.listen((msg) => {
+			if (msg.store === 'documents') {
+				this.version++;
+				if (this.readOnly.includes(msg.id)) void this.#reload(msg.id);
+			}
+			if (msg.store === 'profiles') {
+				void this.#loadProfiles();
+				if (msg.id === this.profile?.id) void this.#reloadProfile();
+			}
+		});
+		addEventListener('keydown', this.#onKey);
+		document.addEventListener('visibilitychange', this.#onVisibility);
 	}
 
 	/** The active profile alone, for a surface with no document (the landing,
@@ -124,7 +140,12 @@ class StorageSession {
 		const profile =
 			(meta.activeProfileId && (await get(db, 'profiles', meta.activeProfileId))) ||
 			(await get(db, 'profiles', THEORYCRAFT_ID));
-		if (profile && !profile.deleted && !this.profile) this.profile = profile;
+		if (profile && !profile.deleted && !this.profile) {
+			this.#db ??= db;
+			this.#attach();
+			this.#useProfile(profile);
+			await this.#loadProfiles();
+		}
 	}
 
 	/** "Edit here": take the document from whichever tab holds it, pick up its
@@ -293,13 +314,9 @@ class StorageSession {
 	}
 
 	async #setCurrent(db: IDBDatabase, tool: DocTool, id: string | null): Promise<void> {
-		const p = this.profile ?? (await get(db, 'profiles', THEORYCRAFT_ID));
-		if (!p) return;
-		const current = { ...p.current, [tool]: id };
-		const next = $state.snapshot({ ...p, current, updatedAt: Date.now() }) as ProfileRecord;
-		await put(db, 'profiles', next);
-		this.profile = next;
-		this.#channel?.post({ kind: 'saved', store: 'profiles', id: next.id });
+		this.#db ??= db;
+		const pid = this.profile?.id ?? THEORYCRAFT_ID;
+		await this.#putProfile(pid, (p) => ({ ...p, current: { ...p.current, [tool]: id } }));
 	}
 
 	/** Let go of the document a tool is leaving, so another tab may edit it. */
@@ -351,8 +368,11 @@ class StorageSession {
 		} else {
 			// No current rotation: Theorycraft's first visit opens on a sample
 			// (§9.1), a real profile on an empty one. It becomes a document on
-			// its first save.
-			rotationTabs.restoreFrom(null, profile.kind === 'theorycraft');
+			// its first save. ⚠ A fresh blank FIRST, always: `restoreFrom(null)`
+			// keeps whatever tab is there, which after a profile switch is the
+			// OTHER profile's document (and the sample would write over its id).
+			this.#showBlank('planner');
+			if (profile.kind === 'theorycraft') rotationTabs.restoreFrom(null, true);
 		}
 	}
 
@@ -367,7 +387,8 @@ class StorageSession {
 			await this.#hold(doc.id);
 			boards.restoreFrom({ boards: [board], activeBoardId: board.id });
 		} else {
-			boards.restoreFrom(null);
+			// ⚠ Never `restoreFrom(null)`: it keeps the other profile's lineup.
+			this.#showBlank('builder');
 		}
 	}
 
@@ -427,7 +448,10 @@ class StorageSession {
 
 	async #reloadProfile(): Promise<void> {
 		const p = this.#db && this.profile ? await get(this.#db, 'profiles', this.profile.id) : null;
-		if (p && !p.deleted) this.profile = p;
+		if (!p) return;
+		// Deleted in another tab: this one goes to Theorycraft too.
+		if (p.deleted) return void this.switchTo(THEORYCRAFT_ID);
+		this.#useProfile(p);
 	}
 
 	// ── Saving ──────────────────────────────────────────────────────────────
@@ -478,12 +502,11 @@ class StorageSession {
 				current.planner !== profile.current.planner ||
 				current.builder !== profile.current.builder
 			) {
-				// ⚠ A plain copy: `profile` is $state, and IndexedDB cannot clone
-				// a reactive proxy (DataCloneError).
-				const next = $state.snapshot({ ...profile, current, updatedAt: now }) as ProfileRecord;
-				await put(db, 'profiles', next);
-				this.profile = next;
-				this.#channel?.post({ kind: 'saved', store: 'profiles', id: next.id });
+				const { planner: cp, builder: cb } = current;
+				await this.#putProfile(profile.id, (p) => ({
+					...p,
+					current: { ...p.current, planner: cp, builder: cb }
+				}));
 			}
 			if (wrote) this.savedAt = now;
 		} finally {
@@ -505,7 +528,12 @@ class StorageSession {
 		if (!(await this.#hold(id))) return false;
 		const prev = this.#records.get(id);
 		const rec = {
-			...(prev ?? { id, profileId: this.profile!.id, createdAt: now }),
+			...(prev ?? {
+				id,
+				profileId: this.profile!.id,
+				createdAt: now,
+				...(this.#fromLink.has(id) ? { fromLink: true } : {})
+			}),
 			type,
 			name,
 			body,
@@ -521,6 +549,201 @@ class StorageSession {
 		return true;
 	}
 
+	// ── Profiles (phase 2d, design §2) ──────────────────────────────────────
+
+	/** Every live profile, Theorycraft first, then in the order made. */
+	profiles = $state<ProfileRecord[]>([]);
+	/** When the active profile last CHANGED (ms): the switch cue reads it. */
+	switchedAt = $state<number | null>(null);
+
+	/** ⚓ Seven real profiles at most: one per element colour (§2.3). */
+	static readonly MAX_REAL = 7;
+
+	get canAddProfile(): boolean {
+		return this.profiles.filter((p) => p.kind === 'real').length < StorageSession.MAX_REAL;
+	}
+
+	/** Colours taken, by whom (a colour is exclusive, §2.3). */
+	colourOwner(colour: ProfileColour): ProfileRecord | undefined {
+		return this.profiles.find((p) => p.colour === colour);
+	}
+
+	async createProfile(fields: { name: string; colour: ProfileColour; picture?: Picture }) {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db || !this.canAddProfile || this.colourOwner(fields.colour)) return;
+		const now = Date.now();
+		const rec: ProfileRecord = {
+			id: newId(),
+			updatedAt: now,
+			kind: 'real',
+			name: fields.name.trim() || 'My account',
+			colour: fields.colour,
+			...(fields.picture ? { picture: fields.picture } : {}),
+			// ⚓ An account fact (§13.5); the site's current choice to start.
+			twin: storeGet(siteSettings).travelerVariant === 'lumine' ? 'lumine' : 'aether',
+			roster: { constellations: {}, ownership: {}, loadout: {} },
+			current: {},
+			createdAt: now
+		};
+		await put(db, 'profiles', $state.snapshot(rec) as ProfileRecord);
+		this.#channel?.post({ kind: 'saved', store: 'profiles', id: rec.id });
+		await this.#loadProfiles();
+		await this.switchTo(rec.id);
+	}
+
+	async updateProfile(
+		id: string,
+		patch: Partial<Pick<ProfileRecord, 'name' | 'colour' | 'picture'>>
+	): Promise<void> {
+		if (id === THEORYCRAFT_ID) return;
+		if (patch.colour && this.colourOwner(patch.colour)?.id !== id && this.colourOwner(patch.colour))
+			return;
+		await this.#putProfile(id, (p) => ({ ...p, ...patch }));
+		await this.#loadProfiles();
+	}
+
+	/** ⚓ A TOMBSTONE, with every document in it. Theorycraft can't go. */
+	async deleteProfile(id: string): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db || id === THEORYCRAFT_ID) return;
+		if (this.profile?.id === id) await this.switchTo(THEORYCRAFT_ID);
+		const now = Date.now();
+		for (const d of await getAll(db, 'documents', id)) {
+			this.#tombstoned.add(d.id);
+			await tombstone(db, 'documents', d.id, now);
+		}
+		for (const t of await getAll(db, 'teams', id)) await tombstone(db, 'teams', t.id, now);
+		await tombstone(db, 'profiles', id, now);
+		this.#channel?.post({ kind: 'deleted', store: 'profiles', id });
+		this.version++;
+		await this.#loadProfiles();
+	}
+
+	/**
+	 * Make another profile the active one (§9.4): its roster, its current
+	 * documents, and the switch cue. The documents on screen are written
+	 * first and let go, so another tab may take them.
+	 */
+	async switchTo(id: string): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db || id === this.profile?.id) return;
+		const next = await get(db, 'profiles', id);
+		if (!next || next.deleted) return;
+		if (this.active) {
+			await this.flush();
+			this.#release('planner');
+			this.#release('builder');
+		}
+		await this.#flushRoster();
+		await setMeta(db, { activeProfileId: id });
+		this.#useProfile(next);
+		if (this.active) {
+			await this.#loadPlanner(next);
+			await this.#loadBuilder(next);
+		}
+		this.version++;
+		this.switchedAt = Date.now();
+	}
+
+	/** ⚓ Links open in Theorycraft (§9.3). `true` if that meant leaving a
+	 *  real profile, which the arrival says out loud. */
+	async toTheorycraft(): Promise<boolean> {
+		if (!this.profile || this.profile.id === THEORYCRAFT_ID) return false;
+		await this.switchTo(THEORYCRAFT_ID);
+		return true;
+	}
+
+	/** An arriving rotation: Theorycraft's new current document, marked as
+	 *  from a link. Whatever was there before is in the Library. */
+	async receiveRotation(doc: Omit<RotationTab, 'id'>): Promise<boolean> {
+		const switched = await this.toTheorycraft();
+		await this.flush();
+		this.#release('planner');
+		const tab: RotationTab = { ...doc, id: newTabId(), viewedAt: Date.now() };
+		this.#fromLink.add(tab.id);
+		// ⚓ Unnamed (§4.2): "Shared rotation" is the planner's word for an
+		// arrival, not the sender's name for it, so the label stays derived.
+		this.#derived.set(tab.id, tab.label);
+		rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+		return switched;
+	}
+
+	async receiveLineup(board: Board): Promise<boolean> {
+		const switched = await this.toTheorycraft();
+		await this.flush();
+		this.#release('builder');
+		const b: Board = { ...board, id: newTabId(), viewedAt: Date.now() };
+		this.#fromLink.add(b.id);
+		boards.restoreFrom({ boards: [b], activeBoardId: b.id });
+		return switched;
+	}
+
+	/** Documents that arrived by link, marked on their first save. */
+	#fromLink = new Set<string>();
+
+	#useProfile(p: ProfileRecord): void {
+		this.profile = p;
+		bindRoster(
+			{
+				constellations: p.roster.constellations,
+				ownership: p.roster.ownership,
+				loadout: p.roster.loadout
+			},
+			(part, value) => this.#queueRoster(part, value)
+		);
+	}
+
+	async #loadProfiles(): Promise<void> {
+		const db = this.#db;
+		if (!db) return;
+		const all = await getAll(db, 'profiles');
+		this.profiles = all.sort(
+			(a, b) =>
+				Number(b.kind === 'theorycraft') - Number(a.kind === 'theorycraft') ||
+				a.createdAt - b.createdAt
+		);
+	}
+
+	// ── The roster, written to the active profile ───────────────────────────
+
+	#rosterPending: Partial<Roster> = {};
+	#rosterTimer: ReturnType<typeof setTimeout> | undefined;
+
+	#queueRoster(part: RosterPart, value: object): void {
+		const key = part === 'ownership' ? 'ownership' : part;
+		this.#rosterPending = { ...this.#rosterPending, [key]: value };
+		clearTimeout(this.#rosterTimer);
+		this.#rosterTimer = setTimeout(() => void this.#flushRoster(), SAVE_DELAY_MS);
+	}
+
+	async #flushRoster(): Promise<void> {
+		clearTimeout(this.#rosterTimer);
+		const pending = this.#rosterPending;
+		this.#rosterPending = {};
+		if (!this.profile || !Object.keys(pending).length) return;
+		await this.#putProfile(this.profile.id, (p) => ({ ...p, roster: { ...p.roster, ...pending } }));
+	}
+
+	/**
+	 * Every profile write goes through here, in order: it re-reads the stored
+	 * record and applies one change, so a roster edit and a current-document
+	 * move can never write over each other.
+	 */
+	#putProfile(id: string, change: (p: ProfileRecord) => ProfileRecord): Promise<void> {
+		this.#profileQueue = this.#profileQueue.then(async () => {
+			const db = this.#db ?? (await ensureStorage());
+			const stored = db ? await get(db, 'profiles', id) : undefined;
+			if (!db || !stored || stored.deleted) return;
+			// ⚠ A plain copy: IndexedDB cannot clone a reactive proxy (DataCloneError).
+			const next = $state.snapshot({ ...change(stored), updatedAt: Date.now() }) as ProfileRecord;
+			await put(db, 'profiles', next);
+			if (this.profile?.id === id) this.profile = next;
+			this.#channel?.post({ kind: 'saved', store: 'profiles', id });
+		});
+		return this.#profileQueue;
+	}
+	#profileQueue: Promise<void> = Promise.resolve();
+
 	// ── Page events ─────────────────────────────────────────────────────────
 
 	/** ⚓ ⌘S is caught and confirms the work is already saved (§4.1) — never
@@ -533,7 +756,10 @@ class StorageSession {
 	};
 
 	#onVisibility = () => {
-		if (document.visibilityState === 'hidden') void this.flush();
+		if (document.visibilityState === 'hidden') {
+			void this.flush();
+			void this.#flushRoster();
+		}
 	};
 }
 
