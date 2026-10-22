@@ -23,7 +23,7 @@ describe('rotationUrl codec', () => {
 
 	it('produces a URLSearchParams-safe blob (base64url only, no + / =)', async () => {
 		const encoded = await encodeRotation(SAMPLE);
-		expect(encoded).toMatch(/^2~[A-Za-z0-9_-]+$/);
+		expect(encoded).toMatch(/^3~[A-Za-z0-9_-]+$/);
 		expect(encoded).not.toMatch(/[+/=]/);
 	});
 
@@ -95,6 +95,28 @@ describe('rotationUrl codec', () => {
 		expect(decoded!.constellations).toEqual({ a: 6, b: 0, c: 0, d: 5 });
 		// invalid refinement dropped, empty loadout entry dropped
 		expect(decoded!.loadout).toEqual({ a: { weaponId: 'w', artifactSetId: 'art' } });
+	});
+
+	it('carries the party slots (format 3), empty slots included', async () => {
+		const withSlots: SharedRotation = { ...SAMPLE, slots: ['hu_tao', null, 'zhongli', 'yelan'] };
+		expect(await decodeRotation(await encodeRotation(withSlots))).toEqual(withSlots);
+	});
+
+	it('⚓ still decodes a format-2 link (no slots: the receiver derives them)', async () => {
+		const v2 = { v: 2, notation: SAMPLE.notation, constellations: {}, loadout: {} };
+		const cs = new CompressionStream('deflate-raw');
+		const w = cs.writable.getWriter();
+		w.write(new TextEncoder().encode(JSON.stringify(v2)));
+		w.close();
+		const bytes = new Uint8Array(await new Response(cs.readable).arrayBuffer());
+		const b64url = Buffer.from(bytes)
+			.toString('base64')
+			.replace(/\+/g, '-')
+			.replace(/\//g, '_')
+			.replace(/=+$/, '');
+		const decoded = await decodeRotation(`2~${b64url}`);
+		expect(decoded?.notation).toBe(SAMPLE.notation);
+		expect(decoded?.slots).toBeUndefined();
 	});
 
 	it('rejects a JSON payload with the wrong version', async () => {

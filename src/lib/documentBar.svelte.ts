@@ -27,19 +27,19 @@ import {
 import {
 	rotationTabs as rt,
 	newTabId,
-	slotsFromNotation,
+	seatsOf,
+	seatsOfSaved,
 	TAB_LIMIT,
 	type RotationTab
 } from './rotationTabs.svelte';
 import { closeCandidate, createRecentlyClosed, type TabStripModel } from './tabSet';
 import { encodeRotation, type SharedRotation } from './utils/rotationUrl';
 import {
-	foldTeamIntoNotation,
 	notationHasActions,
-	orderedCharacterIds,
 	renameCharacterInNotation,
 	teamKey,
-	teamKeyOfNotation
+	teamKeyOfNotation,
+	type Seats
 } from './utils/notationEdit';
 import { isTeamEntry, teamNotation } from './library';
 
@@ -174,7 +174,9 @@ class DocumentBarState {
 	 * the same string now, as four bare-name segments.
 	 */
 	get hasContent() {
-		return !!rt.notation.trim();
+		// ↻ 2026-10-22 (§8.1): the two tests are two again — a SEATED team with
+		// no notation yet (Plan a rotation) is content: a team the user chose.
+		return !!rt.notation.trim() || rt.seats.some((id) => id !== null);
 	}
 
 	showNotice(msg: string, actions: NoticeAction[] = []) {
@@ -252,6 +254,7 @@ class DocumentBarState {
 		return {
 			name,
 			notation: rt.notation,
+			slots: [...rt.seats],
 			tabLoadout: dense.tabLoadout,
 			tabCon: dense.tabCon,
 			synced
@@ -264,46 +267,58 @@ class DocumentBarState {
 	 * so the team outlives its last rotation. Its name is the team's nickname,
 	 * '' until the player gives it one. Returns whether it already existed.
 	 */
-	#ensureTeamEntry(notation: string): boolean {
-		const ids = orderedCharacterIds(notation).slice(0, 4);
+	#ensureTeamEntry(seats: Seats): boolean {
+		const ids = seats.filter((id): id is string => !!id);
 		const key = teamKey(ids);
 		if (!key) return true;
 		const exists = get(savedNotations).some(
 			(e) => isTeamEntry(e) && teamKeyOfNotation(e.notation) === key
 		);
 		if (!exists) {
-			savedNotations.save({ name: '', notation: teamNotation(ids), tabLoadout: {}, tabCon: {} });
+			savedNotations.save({
+				name: '',
+				notation: teamNotation(ids),
+				slots: [...seats],
+				tabLoadout: {},
+				tabCon: {}
+			});
 		}
 		return exists;
 	}
 
 	/** Saving a document with no actions saves its TEAM, never a rotation. */
-	#saveTeamOnly(notation: string) {
-		this.showNotice(this.#ensureTeamEntry(notation) ? 'Already in your library' : 'Team saved');
+	#saveTeamOnly(seats: Seats) {
+		this.showNotice(this.#ensureTeamEntry(seats) ? 'Already in your library' : 'Team saved');
 	}
 
 	/** Save a Recently closed tab to the bank (its "promotion"). */
 	saveClosed(tab: RotationTab) {
 		if (!notationHasActions(tab.notation)) {
-			this.#saveTeamOnly(tab.notation);
+			this.#saveTeamOnly(seatsOf(tab));
 			recentlyClosedRotations.remove(tab.id);
 			return;
 		}
 		const dense = {
 			...this.#densifiedSnapshot(
-				slotsFromNotation(tab.notation),
+				seatsOf(tab).map((id) => id ?? 'blank'),
 				tab.tabCon ?? {},
 				tab.tabLoadout ?? {},
 				!!tab.synced
 			),
 			synced: !!tab.synced
 		};
+		const slots = seatsOf(tab);
 		if (tab.savedId && get(savedNotations).some((e) => e.id === tab.savedId)) {
-			savedNotations.update(tab.savedId, { name: tab.label, notation: tab.notation, ...dense });
+			savedNotations.update(tab.savedId, {
+				name: tab.label,
+				notation: tab.notation,
+				slots,
+				...dense
+			});
 		} else {
-			savedNotations.save({ name: tab.label, notation: tab.notation, ...dense });
+			savedNotations.save({ name: tab.label, notation: tab.notation, slots, ...dense });
 		}
-		this.#ensureTeamEntry(tab.notation);
+		this.#ensureTeamEntry(slots);
 		recentlyClosedRotations.remove(tab.id);
 		this.showNotice('Saved');
 	}
@@ -347,7 +362,7 @@ class DocumentBarState {
 	save() {
 		if (!this.hasContent) return;
 		if (!notationHasActions(rt.notation)) {
-			this.#saveTeamOnly(rt.notation);
+			this.#saveTeamOnly(rt.seats);
 			return;
 		}
 		const activeTab = rt.activeTab;
@@ -374,7 +389,7 @@ class DocumentBarState {
 			}
 			this.#link(savedNotations.save(payload), activeTab.label);
 		}
-		this.#ensureTeamEntry(payload.notation);
+		this.#ensureTeamEntry(rt.seats);
 		this.showNotice('Saved');
 	}
 
@@ -394,7 +409,7 @@ class DocumentBarState {
 			get(savedNotations).map((e) => e.name)
 		);
 		this.#link(savedNotations.save(this.#payload(name)), name);
-		this.#ensureTeamEntry(rt.notation);
+		this.#ensureTeamEntry(rt.seats);
 		this.showNotice('Saved as new');
 	}
 
@@ -403,13 +418,13 @@ class DocumentBarState {
 	 *  rotation is never rewritten; Save keeps the trial as its own. */
 	tryWithSwap(entry: SavedNotation, fromId: string, toId: string, label: string) {
 		this.withRoom(() => {
+			// The swap keeps the SLOT: the incoming character takes the outgoing
+			// one's seat and segments (§8.1).
+			const seats = seatsOfSaved(entry).map((id) => (id === fromId ? toId : id));
 			rt.openTab({
 				label,
-				notation: renameCharacterInNotation(
-					foldTeamIntoNotation(entry.notation, entry.manualSlots),
-					fromId,
-					toId
-				),
+				notation: renameCharacterInNotation(entry.notation, fromId, toId),
+				slots: seats,
 				tabLoadout: entry.tabLoadout ?? {},
 				tabCon: entry.tabCon ?? {}
 			});
@@ -429,7 +444,8 @@ class DocumentBarState {
 		this.withRoom(() => {
 			rt.openTab({
 				label: entry.name,
-				notation: foldTeamIntoNotation(entry.notation, entry.manualSlots),
+				notation: entry.notation,
+				slots: seatsOfSaved(entry),
 				tabLoadout: entry.tabLoadout ?? {},
 				tabCon: entry.tabCon ?? {},
 				savedId: entry.id,
@@ -558,6 +574,7 @@ class DocumentBarState {
 		}
 		const shared: SharedRotation = {
 			notation: rt.notation,
+			slots: [...rt.seats],
 			constellations: cons,
 			loadout: lo
 		};

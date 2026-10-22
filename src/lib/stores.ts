@@ -68,6 +68,9 @@ export type SavedNotation = {
 	 *  before the round still carry it, and documentBar.load folds it into the
 	 *  notation on the way in (rotationTabs.LegacyTeam). */
 	manualSlots?: string[] | null;
+	/** ⚓ The party's slots (design §8.1; `null` = empty). Absent on an entry
+	 *  saved before 2026-10-22, whose team is derived (`seatsOfSaved`). */
+	slots?: (string | null)[];
 	tabLoadout?: Record<string, LoadoutEntry>;
 	/**
 	 * Per-tab constellation overrides (Layer 2), snapshot alongside the notation.
@@ -129,7 +132,9 @@ function createSavedNotationsStore() {
 		/** Update an existing entry's content and/or name in-place. */
 		update(
 			id: string,
-			fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'tabLoadout' | 'tabCon' | 'synced'>>
+			fields: Partial<
+				Pick<SavedNotation, 'name' | 'notation' | 'slots' | 'tabLoadout' | 'tabCon' | 'synced'>
+			>
 		) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))

@@ -33,9 +33,12 @@ import { MAX_NOTATION_CHARS } from './tokenizer';
 
 /** The reproducible state of one shared rotation. */
 export type SharedRotation = {
-	/** Rotation notation text, verbatim — and, since single truth, the team as
-	 *  well: the slots are the first four distinct names it holds. */
+	/** Rotation notation text, verbatim. */
 	notation: string;
+	/** ⚓ The party's slots (§8.1, format 3): ids by key 1–4, `null` empty.
+	 *  Absent on a v2 link, whose team is derived from the notation as it was
+	 *  when the link was made (the first four names, in order). */
+	slots?: (string | null)[];
 	/** charId → constellation level (0–6) for every team member. ↻ 2026-10-08:
 	 *  an explicit 0 travels too — older links omit it, and a missing member
 	 *  then falls back to the recipient's roster as it always did. */
@@ -44,8 +47,10 @@ export type SharedRotation = {
 	loadout: Record<string, LoadoutEntry>;
 };
 
-const FORMAT = '2';
+const FORMAT = '3';
 const MARKER = `${FORMAT}~`;
+/** ⚓ Retained forever (the rule below): links made before slots existed. */
+const MARKER_V2 = '2~';
 
 /**
  * ⚓ DECODER RETENTION RULE (2026-08-16, public launch).
@@ -73,8 +78,9 @@ const MARKER = `${FORMAT}~`;
 /** Encode a rotation into the `?r=` value (marker + base64url deflate-raw JSON). */
 export async function encodeRotation(r: SharedRotation): Promise<string> {
 	const payload = {
-		v: 2,
+		v: 3,
 		notation: r.notation,
+		...(r.slots ? { slots: r.slots } : {}),
 		constellations: r.constellations,
 		loadout: r.loadout
 	};
@@ -91,19 +97,24 @@ export async function encodeRotation(r: SharedRotation): Promise<string> {
 export async function decodeRotation(
 	param: string | null | undefined
 ): Promise<SharedRotation | null> {
-	if (!param || !param.startsWith(MARKER)) return null;
-	const body = param.slice(MARKER.length);
+	if (!param) return null;
+	// One body shape for both formats; v3 only adds `slots`.
+	const version = param.startsWith(MARKER) ? 3 : param.startsWith(MARKER_V2) ? 2 : null;
+	if (!version) return null;
+	const body = param.slice(2);
 	if (!body) return null;
 	try {
 		const json = await inflateFromBase64Url(body);
 		const data = JSON.parse(json);
-		if (!isRecord(data) || data.v !== 2 || typeof data.notation !== 'string') return null;
+		if (!isRecord(data) || data.v !== version || typeof data.notation !== 'string') return null;
 		// Reject rather than truncate: a truncated rotation is a DIFFERENT rotation
 		// than the sender meant, applied silently. Returning null surfaces through
 		// the planner's existing "Invalid share link" notice, which is honest.
 		if (data.notation.length > MAX_NOTATION_CHARS) return null;
+		const slots = version === 3 ? sanitizeSlots(data.slots) : undefined;
 		return {
 			notation: data.notation,
+			...(slots ? { slots } : {}),
 			constellations: isRecord(data.constellations) ? sanitizeCons(data.constellations) : {},
 			loadout: isRecord(data.loadout) ? sanitizeLoadout(data.loadout) : {}
 		};
@@ -144,4 +155,13 @@ function sanitizeLoadout(raw: Record<string, unknown>): Record<string, LoadoutEn
 
 function isRecord(v: unknown): v is Record<string, unknown> {
 	return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+/** Four entries at most, each an id-shaped string or null. Whether an id is a
+ *  CHARACTER is the receiving store's call (`normalizeSeats`). */
+function sanitizeSlots(raw: unknown): (string | null)[] | undefined {
+	if (!Array.isArray(raw)) return undefined;
+	return raw
+		.slice(0, 4)
+		.map((id) => (typeof id === 'string' && /^[a-z0-9_]{1,40}$/.test(id) ? id : null));
 }

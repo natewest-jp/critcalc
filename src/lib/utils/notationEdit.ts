@@ -107,6 +107,73 @@ export function teamKeyOfNotation(notation: string): string {
 	return teamKey(orderedCharacterIds(notation));
 }
 
+/** A rotation's four party slots (keys 1–4). `null` is an EMPTY slot; the
+ *  string `'blank'` is the Blank character, seated — the two were one value
+ *  while the team was derived, and only `benchBand.blankUsed` told them apart. */
+export type Seats = (string | null)[];
+
+export const emptySeats = (): Seats => Array<string | null>(TEAM_SIZE).fill(null);
+
+/** Stored seats as exactly TEAM_SIZE entries: missing become empty, a
+ *  duplicate keeps its first seat. `'blank'` is kept — here it is the Blank
+ *  character (see `seatsFromLegacy` for lists where it meant empty). */
+export function normalizeSeats(
+	raw: readonly (string | null | undefined)[] | null | undefined
+): Seats {
+	const out = emptySeats();
+	(raw ?? []).slice(0, TEAM_SIZE).forEach((id, i) => {
+		// Only a character we know: seats arrive from links and backups too.
+		if (id && !out.includes(id) && getCharacterIndexEntry(id)) out[i] = id;
+	});
+	return out;
+}
+
+/** A LEGACY slot list (`manualSlots`, a board's team row, `rt.slots`'s own
+ *  shape), where `'blank'` meant an empty slot. */
+export function seatsFromLegacy(
+	raw: readonly (string | null | undefined)[] | null | undefined
+): Seats {
+	return normalizeSeats((raw ?? []).map((id) => (id === 'blank' ? null : id)));
+}
+
+/**
+ * ⚓ SLOTS HOLD UNTIL SOMETHING NEEDS THEM (design §8.1, Nate 2026-10-22).
+ *
+ * The notation FILLS the slots; it no longer IS them. A seated character the
+ * notation does not name is RESTING — still in the party, drawing no bars —
+ * and a name the notation adds takes the first EMPTY slot, else the first
+ * RESTING one, lowest number first. Nothing else ever moves: a character keeps
+ * their key whatever order the text names them in, and only an explicit write
+ * (✕, a swap, Clear) empties or reassigns a seat.
+ *
+ * ⚠ IDEMPOTENT by construction — every name already seated is skipped, so
+ * running it twice over the same text is the same as once. The store's
+ * notation setter and the editor's transaction both call it, and that is what
+ * lets them run in either order without fighting.
+ *
+ * Starting from empty seats it reproduces the old derivation exactly (the
+ * first four names, in order), which is how every document saved before slots
+ * existed migrates.
+ */
+export function seatSlots(seats: readonly (string | null)[], notation: string): Seats {
+	const out = normalizeSeats(seats);
+	const names = orderedCharacterIds(notation);
+	for (const id of names) {
+		if (out.includes(id)) continue;
+		let i = out.indexOf(null);
+		if (i < 0) i = out.findIndex((x) => x !== null && !names.includes(x));
+		if (i < 0) continue; // all four awake: a fifth name has nowhere to sit
+		out[i] = id;
+	}
+	return out;
+}
+
+/** The seated characters the notation names (the rest are resting). */
+export function awakeIds(seats: readonly (string | null)[], notation: string): string[] {
+	const names = orderedCharacterIds(notation);
+	return seats.filter((x): x is string => !!x && names.includes(x));
+}
+
 /**
  * True when the notation says more than who is on the team — i.e. at least one
  * segment carries an action after its name.

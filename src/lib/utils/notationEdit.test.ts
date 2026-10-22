@@ -17,7 +17,10 @@ import {
 	notationHasActions,
 	notationSegments,
 	orderedCharacterIds,
-	renameCharacterInNotation
+	renameCharacterInNotation,
+	seatSlots,
+	seatsFromLegacy,
+	awakeIds
 } from './notationEdit';
 
 const FOUR = 'Bennett E Q > Xingqiu E Q > Zhongli E > Hu Tao E N2C';
@@ -170,5 +173,89 @@ describe('foldTeamIntoNotation (the manualSlots migration)', () => {
 	it('is a no-op without a legacy team', () => {
 		expect(foldTeamIntoNotation(FOUR, null)).toBe(FOUR);
 		expect(foldTeamIntoNotation(FOUR, undefined)).toBe(FOUR);
+	});
+});
+
+/**
+ * ⚓ SLOTS HOLD UNTIL SOMETHING NEEDS THEM (design §8.1). The streamer's case
+ * is the first test: a team planned from Teams, notation cleared, stays.
+ */
+describe('seatSlots', () => {
+	const TEAM = ['xiangling', 'bennett', 'chevreuse', 'kaedehara_kazuha'];
+
+	it('from empty seats, reproduces the old derivation (first four, in order)', () => {
+		expect(seatSlots([null, null, null, null], FOUR)).toEqual([
+			'bennett',
+			'xingqiu',
+			'zhongli',
+			'hu_tao'
+		]);
+	});
+
+	it('keeps a seated team through an EMPTY notation (they rest)', () => {
+		expect(seatSlots(TEAM, '')).toEqual(TEAM);
+		expect(awakeIds(TEAM, '')).toEqual([]);
+	});
+
+	it('wakes characters in their OWN slots, whatever order the text names them in', () => {
+		const text = 'Bennett E Q > Xiangling E Q';
+		expect(seatSlots(TEAM, text)).toEqual(TEAM);
+		expect(awakeIds(TEAM, text)).toEqual(['xiangling', 'bennett']);
+	});
+
+	it('seats a newcomer in the first EMPTY slot before any resting one', () => {
+		expect(seatSlots(['xiangling', null, 'chevreuse', null], 'Furina E')).toEqual([
+			'xiangling',
+			'furina',
+			'chevreuse',
+			null
+		]);
+	});
+
+	it('else in the first RESTING slot, lowest number first', () => {
+		// Xiangling and Bennett awake; Chevreuse (3) and Kazuha (4) rest.
+		expect(seatSlots(TEAM, 'Bennett E Q > Xiangling E Q > Furina E')).toEqual([
+			'xiangling',
+			'bennett',
+			'furina',
+			'kaedehara_kazuha'
+		]);
+	});
+
+	it('a changed mind never gets stuck: a deleted name rests, the next takes its seat', () => {
+		const typed = seatSlots(['xiangling', 'bennett', 'chevreuse', null], 'Xiangling E > Furina E');
+		expect(typed).toEqual(['xiangling', 'bennett', 'chevreuse', 'furina']);
+		// Furina deleted, Kazuha typed: no empty slot, so Bennett's (2) is the first resting.
+		expect(seatSlots(typed, 'Xiangling E > Kazuha E')).toEqual([
+			'xiangling',
+			'kaedehara_kazuha',
+			'chevreuse',
+			'furina'
+		]);
+	});
+
+	it('a fifth AWAKE name has nowhere to sit, and nobody moves for it', () => {
+		const text = 'Bennett E > Xingqiu E > Zhongli E > Hu Tao E > Furina E';
+		expect(seatSlots([null, null, null, null], text)).toEqual([
+			'bennett',
+			'xingqiu',
+			'zhongli',
+			'hu_tao'
+		]);
+	});
+
+	it('is idempotent', () => {
+		const once = seatSlots(TEAM, 'Furina E > Bennett Q');
+		expect(seatSlots(once, 'Furina E > Bennett Q')).toEqual(once);
+	});
+
+	it('keeps the Blank character seated; only a LEGACY list reads blank as empty', () => {
+		expect(seatSlots(['blank', null, null, null], '')).toEqual(['blank', null, null, null]);
+		expect(seatsFromLegacy(['bennett', 'blank', 'blank', 'blank'])).toEqual([
+			'bennett',
+			null,
+			null,
+			null
+		]);
 	});
 });
