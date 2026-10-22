@@ -9,6 +9,7 @@
 		siteSettings
 	} from '$lib/stores';
 	import Mark from './Mark.svelte';
+	import { nextLayout } from '$lib/nextLayout';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 	import { playback } from '$lib/playback/playback.svelte';
@@ -139,6 +140,23 @@
 </script>
 
 <div class="sp">
+	<!-- The switch (build plan §13.1): shown ONLY while it is on, so the
+	     public never meets a half-built option; `?next` turns it on. -->
+	{#if $nextLayout}
+		<section class="sp-section">
+			<label class="sp-row">
+				<span class="sp-label">
+					<span class="sp-name">Use the new layout</span>
+				</span>
+				<span class="toggle">
+					<input type="checkbox" checked onchange={() => nextLayout.set(false)} />
+					<span class="toggle-track"><span class="toggle-thumb"></span></span>
+					<span class="toggle-label">On</span>
+				</span>
+			</label>
+		</section>
+	{/if}
+
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Display</h2>
 

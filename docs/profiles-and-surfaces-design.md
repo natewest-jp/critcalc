@@ -223,6 +223,14 @@ One row, controls zoned over what they act on.
 
 Band A and band B as concepts (`ToolStack`'s two-band rule, `BAND_A_H`, the document/view split) · the chrome's Roster and About icons · `NavPanel` (the compass) · the Builder's empty rail plate.
 
+### 5.5 ⚓ One place for every tool (Nate, 2026-10-22)
+
+- **Every tool sits where the Planner sits today**: the straight tilt-up, centred, with no lean. The side-tool crane (`sideSign` in `transition.ts`, `crestPose`'s `lean`) retires, so the rise from the landing goes in one direction whichever card you pick.
+- **Why:** the side-to-side pan said "the tools are places in a row", and this design makes them document types reached through the Library, ⇅ and Back/Forward, where a pan reads as arbitrary. The bench's glide across the pan, its best moment, already goes with the lineups reshape.
+- **A tool changes IN PLACE** (a short fade); the landing ↔ tool rise stays.
+- **A Settings option turns tool-to-tool transitions off** (the streamer: pretty but "fluff"), and `prefers-reduced-motion` turns them off on its own.
+- ⛔ **No sideways offset and no knob for one.** The plate's side bleed is not spare width: it holds ultrawide screens and the phone's composition shift (`SCENE_NARROW_SHIFT`), so ⛔ the plates are not cropped either (the bleed is ~20% of the width, ~45 KB at the largest tier).
+
 ---
 
 ## 6. The full-screen state
@@ -466,4 +474,5 @@ Phases 2 and 3 may ship as one release if Teams is ready; a profile without Team
 ### 13.5 Settings: per person or per account
 
 - **Per profile:** the roster, teams, documents, ⚓ **the Traveler twin** (an account fact).
+  - ⚓ **In the notation** (Nate, 2026-10-22): `Anemo Lumine` / `Cryo Aether` name a twin; a bare `Anemo Traveler` reads the profile's twin (in Theorycraft, a default). The other twin in a real profile is a value that doesn't fit the account, so it routes to a Theorycraft guest like a constellation what-if (§4.3, §4.6). ⏭ Needs the twin-frames data fix first: gcsim splits Aether/Lumine frames in all seven elements and we ship Aether's for both (the to-do list's Queue).
 - **Global (the person at this browser):** ⚓ **new outfits** (a display taste, Nate 2026-10-22), display, playback, Human timing, swap ping, the Visualizers' layout, the storage stamps. (§12 Q4 otherwise stays open per setting.)
