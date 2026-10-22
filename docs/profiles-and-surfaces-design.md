@@ -1,6 +1,6 @@
 # Profiles and surfaces — a design for the site's next shape
 
-**Status: DRAFT 5, 2026-10-22. Not ready for implementation.** Draft 5 (after demo 2) adds **Planner slots that hold** (§8.1), the menu state over the WHOLE screen and plain tool navigation (§6.1), the profile as a PICTURE (§5.1), paper patches for reading surfaces (§6.4), and Move (§4.3). Draft 4 (one conversation with Nate, the morning after demo 1) **retires tabs**: each tool holds one document, the Library is where you change it, and the Planner compares instead of switching (§4.2, §4.6, §5.1, §6.3). Draft 2 settled the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4); draft 3 settles the profile cap, names, per-profile tabs and default labels (§2.3, §4.2, §6.1, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
+**Status: DRAFT 5 — ⚓ LOCKED as the shape, 2026-10-22 (Nate); the build plan is §13.** Tweaks are expected; the functionality is decided. Draft 5 (after demo 2) adds **Planner slots that hold** (§8.1), the menu state over the WHOLE screen and plain tool navigation (§6.1), the profile as a PICTURE (§5.1), paper patches for reading surfaces (§6.4), and Move (§4.3). Draft 4 (one conversation with Nate, the morning after demo 1) **retires tabs**: each tool holds one document, the Library is where you change it, and the Planner compares instead of switching (§4.2, §4.6, §5.1, §6.3). Draft 2 settled the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4); draft 3 settles the profile cap, names, per-profile tabs and default labels (§2.3, §4.2, §6.1, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
 
 **The shape in four sentences** (draft 4). Every rule below should be checkable against these; a rule that can't be said in one sentence to a player is a smell.
 
@@ -422,5 +422,48 @@ So nothing below reads as still in force once this design is adopted:
 
 **Process**
 
-23. Which `/lab` demos come first: the title bar + toolbar (Planner, Builder; desktop + phone), the full-screen state (You, Library, Help, Settings), the inspector.
-24. The build order — after this draft has been through another round.
+23. ~~Which demos first~~: ✅ demo 1 (bars), 1b (tabless), 2 (menu state) built on `experiment/lab-bars-tabless`; demo 3 (the inspector) is designed during phase 1–2 of the build.
+24. ~~The build order~~: ✅ §13.
+
+---
+
+## 13. ⚓ The build plan (2026-10-22, Nate approved the approach)
+
+### 13.1 The release strategy: incremental in the code, ONE release for users
+
+- **Slots ship first, on their own** (phase 0). They fix a live bug (the streamer's vanishing team), touch only the Planner, the codec and undo, and revert cleanly.
+- **Everything else is built on `main` behind a switch**, off by default, merged piece by piece through short feature branches (⛔ no long-lived branch: data rounds keep landing on `main`). Users see nothing until it is turned on.
+- **Nate turns the switch on for himself on the live site** (Mac, iPhone, real Safari, real data) for as long as it takes. A tester can be handed the same switch as a link; ⛔ no separate preview subdomain (Nate, 2026-10-22: no testers to hand; the switch makes a stranger test free whenever one is possible).
+- **When it is right, the switch becomes the default**: one release for users, one migration, the new shape met once.
+- ⚓ **The migration only ever COPIES.** Today's `localStorage` keys are never deleted until well after the switch is the default, so a bad migration can be re-run and nothing is lost. A backup prompt comes before the first switch-over.
+- **The first weeks after release are the real test**: Report a problem must be prominent through them.
+
+### 13.2 Phases
+
+| Phase                            | What                                                                                                                                                                                                                                                                                    | Ships                                   | Retires                                                     |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
+| **0. Slots** (§8.1)              | `slots` on a rotation; the seat/rest rule; ✕ the only deliberate removal; slot changes in the editor's undo history; codec format 3 (optional slots); the stub of names joined by swaps retires (an empty notation, the team resting)                                                   | **Live, on its own**                    | team-from-notation derivation (partly); the bare-names stub |
+| **1. Foundations** (§4.4)        | IndexedDB store; profile, document and team records shaped for sync (stable id, last-changed, tombstone); the copy-only migration (§10) creating **My account** (the Traveler in the player's chosen twin, ⚓ Anemo ring; ⚓ Nate 2026-10-22) and Theorycraft; the two-tab rule (§13.3) | On `main`, dormant                      | —                                                           |
+| **2. The switch-over**           | profiles + Theorycraft + link routing (§9.3); the top bar and toolbar (§5); one document per tool + autosave (§4.1–4.2); the menu state with the Library, Help, About and Settings (§6), every section its own URL (§13.4); the compass, tabs and both bands retire                     | Behind the switch, then **the release** | §11's list                                                  |
+| **3. Teams** (§3)                | Teams in the menu state; Plan a rotation / Add to a lineup; Save as team; Move from Theorycraft with its list of what changes (§4.3)                                                                                                                                                    | Behind the switch (or after)            | the Library's team entries                                  |
+| **4. Compare and guests** (§4.6) | pairs and ⇅; the what-if copy; routing and the white guest                                                                                                                                                                                                                              | After the release                       | —                                                           |
+| **5. The inspector** (§7)        | demo 3 first, during phases 1–2                                                                                                                                                                                                                                                         | After                                   | the detail modals                                           |
+
+Phases 2 and 3 may ship as one release if Teams is ready; a profile without Teams is coherent (the Library still holds work), so 3 does not block 2.
+
+### 13.3 ⚓ Two browser tabs on one profile (§12 Q25, Nate approved)
+
+- **The problem:** each tab holds its own copy in memory and autosaves; the tab that saves last silently overwrites the other's work.
+- **A per-DOCUMENT lock** (the Web Locks API): a document open in one tab is read-only in another, with "Open in another tab · Edit here", and _Edit here_ takes the lock (WhatsApp Web's "Use here"). Different documents in different tabs stay fully editable, so the browser works as the tab system (§4.2).
+- **A broadcast for everything else** (BroadcastChannel): any save tells the other tabs, which refresh the Library, the roster and anything listing the document.
+- **Why this is the stable form:** the browser holds and releases the locks itself, so a closed or crashed tab can never leave a stale lock (the failure of hand-rolled "is it open" flags); both APIs are in every current engine, Safari included; IndexedDB writes are atomic.
+- **The current document is per browser tab** (session-scoped), falling back to the profile's last one on a fresh tab.
+
+### 13.4 Addresses (§6.1, Nate approved)
+
+`/library/rotations`, `/library/lineups`, `/roster`, `/teams`, `/help`, `/help/planner`, `/help/builder`, `/help/shortcuts`, `/about`, `/whats-new`, `/privacy`, `/settings`; the old paths redirect (`static/_redirects`), and every new route takes its two entries (`seo.ts` + `sitemap.xml`). ⏭ Which of them are indexable (Help, About, Privacy) and which are `noindex` (the profile's own data).
+
+### 13.5 Settings: per person or per account
+
+- **Per profile:** the roster, teams, documents, ⚓ **the Traveler twin** (an account fact).
+- **Global (the person at this browser):** ⚓ **new outfits** (a display taste, Nate 2026-10-22), display, playback, Human timing, swap ping, the Visualizers' layout, the storage stamps. (§12 Q4 otherwise stays open per setting.)
