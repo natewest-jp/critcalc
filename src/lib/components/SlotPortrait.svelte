@@ -13,20 +13,25 @@
 	 *   · the PORTRAIT is the Builder's overhanging side portrait (SidePortrait),
 	 *     its hair rising over the card's top edge and fading out sideways
 	 *     before the column; the ring is the soft line, gentle gold on hover;
-	 *   · it ACTS — a click is the host's swap (the Builder card's whole card
-	 *     picks) — and a MAGNIFIER in its top-right corner, shown on hover,
-	 *     READS (the character's details);
+	 *   · it READS — a click opens the character's details, on the desk as on
+	 *     the phone (↻ bench-buttons round 2026-10-22; it was the host's swap,
+	 *     with a hover magnifier for details);
 	 *   · the CONSTELLATION sits on the disc, the Builder chip's place and
 	 *     shape, and goes HOLLOW when the plan asks for more than you own;
 	 *   · the column holds the NAME (no element badge — the planner's bars wear
 	 *     the element) over the LOADOUT pill, and paints over the portrait's
 	 *     art so a ponytail slips under the pill's well.
 	 *
-	 * ⛔ The rail, ✕ and ⇄ are gone: Swap IS the portrait.
+	 * ══ THE RAIL IS BACK (bench-buttons round, ⚓ Nate 2026-10-22) ═══════════
+	 * The host's slot COMMANDS (⇄ Swap · ✕ Remove from team) stand at the card's
+	 * left again, the pre-2026-10-13 rail lifted with its geometry. It retired
+	 * then because Swap had become the portrait and the rail had no purpose
+	 * left; slots that REST gave ✕ one (a character you placed is taken off the
+	 * team only by removing them), and the portrait went back to reading.
 	 *
 	 * The COMPACT form is the phone row's UPRIGHT card: the portrait with the
-	 * loadout pill standing beside it as ONE button, no name, no magnifier and
-	 * no swap (see benchBand.svelte.ts § THE UPRIGHT CARD).
+	 * loadout pill standing beside it as ONE button, no name and no rail (see
+	 * benchBand.svelte.ts § THE UPRIGHT CARD); Remove lives in its details.
 	 *
 	 * VALUE CONTROLS ARE WELLS (⚓ Nate 2026-08-12): the constellation and the
 	 * loadout pill are places data sits, cut into the card (--surface-well).
@@ -44,6 +49,7 @@
 	 * live here (a full-screen backdrop guarantees only one is ever open, so
 	 * per-instance state is safe).
 	 */
+	import type { Snippet } from 'svelte';
 	import type { LoadoutEntry } from '$lib/stores';
 	import { BENCH_ROW_CARD_H, CARD_PORTRAIT } from '$lib/benchBand.svelte';
 	import { elementPalette } from '$lib/utils/elementColors';
@@ -78,7 +84,7 @@
 		onSetRefinement,
 		onPortraitClick,
 		portraitLabel = 'Open character selector',
-		onDetails,
+		actions,
 		emptyLabel = 'Empty',
 		resting = false
 	}: {
@@ -103,16 +109,17 @@
 		onSetArtifact: (artifactSetId: string | undefined) => void;
 		onSetWeapon: (weaponId: string | undefined, refinement: 1 | 2 | 3 | 4 | 5) => void;
 		onSetRefinement: (r: 1 | 2 | 3 | 4 | 5) => void;
-		/** The portrait as a button: the desk bench's Swap (filled AND empty), the
-		 *  phone's details. Omit for a static portrait. */
+		/** The portrait as a button: a filled slot's details; on the desk an
+		 *  empty slot ADDS through it. Omit for a static portrait. */
 		onPortraitClick?: () => void;
 		portraitLabel?: string;
 		/** ⚓ Seated, with nothing in the notation yet (design §8.1): the card
 		 *  stays in its slot, dimmed — never gone. */
 		resting?: boolean;
-		/** The magnifier: a corner button that opens the character's details,
-		 *  shown on hover (always, with no hover). Omit and there is none. */
-		onDetails?: () => void;
+		/** The RAIL: the host's slot commands (⇄ · ✕), stacked at the card's
+		 *  left and splitting the portrait's height. Desk only — the compact
+		 *  card has no room and no swap. */
+		actions?: Snippet;
 		/** Text shown in the name area for an empty (char===null) slot. The bench
 		 *  passes '' — four blank portraits ARE the empty state. */
 		emptyLabel?: string;
@@ -272,10 +279,15 @@
 	style:--sp-band="{compact ? compactDisc : CARD_PORTRAIT}px"
 >
 	<div class="sp-body">
+		{#if actions && !compact}
+			<!-- The RAIL. Rendered on every slot; the host disables its buttons on
+			     an empty one, so the portraits never step sideways. -->
+			<div class="sp-rail">{@render actions()}</div>
+		{/if}
 		<!-- The portrait. Anchored at the band's bottom, so the art's overhang
-		     rises ABOVE the card rather than growing it. The portrait, its
-		     constellation and the magnifier are SIBLING buttons — never one
-		     inside another. -->
+		     rises ABOVE the card rather than growing it. The portrait and its
+		     constellation are SIBLING buttons — never one inside another, and
+		     the rail's buttons stand beside them. -->
 		<div class="sp-avatar-chip">
 			<span class="sp-side-art">
 				<SidePortrait
@@ -306,16 +318,6 @@
 				>
 					<ConMark level={conLevel} height={7} />
 				</button>
-			{/if}
-			{#if onDetails && char && char.id !== 'blank'}
-				<!-- THE MAGNIFIER: the Builder card's grammar — the portrait ACTS,
-				     the corner button READS. -->
-				<button
-					class="sp-mag"
-					aria-label={`${char.displayName}'s details`}
-					title={`${char.displayName}'s details`}
-					onclick={onDetails}><Mark name="search" size={12} /></button
-				>
 			{/if}
 		</div>
 
@@ -501,10 +503,13 @@
 		flex-direction: column;
 		align-items: stretch;
 		/* ⚓ Nate 2026-10-13: 6px of breathing room inside the ribbon's frame on
-		   each side, on top of its own RIBBON_PAD (the 2026-08-12 trim removed a
-		   doubling when the rail stood at the edge; the portrait wants air).
+		   each side, on top of its own RIBBON_PAD. ↻ 2026-10-22: NONE on the
+		   left now the rail stands there (⚓ Nate) — the ribbon's pad is the
+		   rail's air, as in the 2026-08-12 trim, and the 6px went to the name
+		   column (Kuki Shinobu fits on one line again; a longer name is a
+		   font-size or condensed-face question, not a padding one).
 		   Vertical padding holds the band off the slot's top edge. */
-		padding: 8px 6px 10px;
+		padding: 8px 6px 10px 0;
 
 		/* The gap between the name and the controls. 🎛️ ⚓ Nate 2026-10-14:
 		   1 (4 → 0 → 1) — the line box's own leading does most of the work. */
@@ -517,6 +522,29 @@
 		--sp-name-inset: 4px;
 		/* 🎛️ Portrait → column (⚓ Nate 2026-10-13: 6, up from 4). */
 		--sp-col-inset: 6px;
+
+		/* ── THE RAIL'S GEOMETRY (lifted from the pre-2026-10-13 card) ─────────
+		   --sp-rail-w is THE VISIBLE, CLICKABLE STRIP. Each tile's fill runs on
+		   under the portrait (--sp-rail-underlap, a pseudo-element in the host
+		   that paints and cannot be clicked) to the disc's centre and stops; the
+		   opaque disc covers it from its own left edge, which sweeps left as the
+		   circle widens, so the fill's right end is never visible. The thing you
+		   can press is the thing you can see.
+
+		   The width is set by the MARK clearing the circle's arc at its worst
+		   corner (lower-right of the top mark):
+		     R  = band/2                     = 30    (circle radius)
+		     t  = (band − gap)/2             = 29    (tile height)
+		     dy = R − (t + mark)/2           = 8.5
+		     arc left at dy = R − √(R²−dy²)  = 1.23
+		     W  ≥ inset + mark − 1.23        = 3 + 14 − 1.23 = 15.8
+		   ⚠ RE-SOLVE IF CARD_PORTRAIT, THE GAP OR MARK_SIZE MOVE — the failure
+		   is a glyph with its corner shaved off by the portrait. */
+		--sp-rail-w: 16px;
+		/* 🎛️ ⚓ Nate 2026-10-22: 2 (the old rail's was 4). */
+		--sp-rail-gap: 2px;
+		--sp-rail-mark-inset: 3px;
+		--sp-rail-underlap: calc(var(--sp-band) / 2);
 
 		/* The two VALUE controls — the constellation chip and the loadout pill.
 		   Change them here, never on one alone. (The rail's COMMANDS are a
@@ -582,6 +610,25 @@
 		align-items: stretch;
 		height: var(--sp-band);
 		max-height: 100%;
+		min-height: 0;
+	}
+
+	/* ── The rail ─────────────────────────────────────────────────────────────
+	   Two tiles splitting the band's height. Behind the portrait (which is
+	   z 1) so the tiles' underlap slides beneath the disc. */
+	.sp-rail {
+		position: relative;
+		z-index: 0;
+		flex: 0 0 var(--sp-rail-w);
+		width: var(--sp-rail-w);
+		display: flex;
+		flex-direction: column;
+		gap: var(--sp-rail-gap);
+		min-height: 0;
+	}
+	.sp-rail > :global(*) {
+		flex: 1 1 0;
+		width: 100%;
 		min-height: 0;
 	}
 
@@ -805,58 +852,6 @@
 	.sp-side-hit:focus-visible {
 		outline: none;
 	}
-	/* ── The magnifier: the Builder card's, at the disc's top right. 🎛️ 22px,
-	   mark 12.
-	   ⚠ IT FADES ON THE RING'S CLOCK (⚓ Nate 2026-10-13: it snapped in while
-	   the ring eased, so one hover ran two clocks and the magnifier LED). The
-	   fade is in the PAINT — the face and the mark's ink going from transparent
-	   — never element opacity, because the ribbon is transform-placed (the
-	   sub-pixel laws). `visibility` rides the same transition: a discrete
-	   property stays VISIBLE for the whole of a transition that involves
-	   `visible`, so the face fades out before the button stops taking clicks,
-	   and appears at once on the way in. */
-	.sp-mag {
-		position: absolute;
-		top: -2px;
-		right: -2px;
-		z-index: 3;
-		width: 22px;
-		height: 22px;
-		display: grid;
-		place-items: center;
-		padding: 0;
-		border: none;
-		border-radius: var(--r-round);
-		background-color: transparent;
-		box-shadow: inset 0 0 0 11px transparent;
-		color: transparent;
-		cursor: zoom-in;
-		visibility: hidden;
-		transition:
-			background-color var(--t-snap),
-			color var(--t-snap),
-			box-shadow var(--t-snap),
-			visibility var(--t-snap);
-	}
-	.sp-avatar-chip:hover .sp-mag,
-	.sp-avatar-chip:focus-within .sp-mag {
-		visibility: visible;
-		background-color: var(--btn-face);
-		color: var(--text);
-	}
-	.sp-avatar-chip .sp-mag:hover {
-		background-color: var(--surface-well);
-		box-shadow: inset 0 0 0 11px var(--sel-ring);
-	}
-	/* No hover on touch, so the magnifier is always shown (the Builder's rule). */
-	@media (hover: none) {
-		.sp-mag {
-			visibility: visible;
-			background-color: var(--btn-face);
-			color: var(--text);
-		}
-	}
-
 	/* ── Loadout pill ─────────────────────────────────────────────────────────
 	   One shape, TWO zones (artifact · weapon), each opening the same panel led
 	   by its own section. A well, like the constellation chip beside it — value
@@ -1085,7 +1080,7 @@
 	}
 	/* ══ THE UPRIGHT CARD — the phone row (⚓ Nate 2026-10-13) ════════════════
 	   The loadout pill stands UPRIGHT (flower over weapon) beside the portrait,
-	   and the card is ONE row with no name, no magnifier and no swap:
+	   and the card is ONE row with no name and no rail:
 
 	       ⟨hair⟩
 	      (  d  )ⓒ▣       ← the pill, centred on the portrait
