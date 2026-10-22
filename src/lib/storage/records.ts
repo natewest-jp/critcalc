@@ -45,10 +45,17 @@ export type Roster = {
 	loadout: Record<string, LoadoutEntry>;
 };
 
+/** ⚓ A profile is shown as a picture (draft 5): one of Nate's art set by its
+ *  name, or a character's circle avatar. ⏭ How the art set ships (it is
+ *  gitignored source today) is decided with the profiles step. */
+export type Picture = { kind: 'art'; name: string } | { kind: 'character'; id: string };
+
 export type ProfileRecord = SyncFields & {
 	kind: 'theorycraft' | 'real';
 	name: string;
 	colour: ProfileColour;
+	/** Absent on a record migrated before 2026-10-22: read through `pictureOf`. */
+	picture?: Picture;
 	/** ⚓ An account fact (§13.5). Theorycraft's is only a default. */
 	twin: Twin;
 	/** Theorycraft's is always empty: it has no roster to fall back to (§2.2). */
@@ -120,6 +127,17 @@ export const THEORYCRAFT_ID = 'theorycraft';
 
 export const emptyRoster = (): Roster => ({ constellations: {}, ownership: {}, loadout: {} });
 
+/** A profile's picture, with the defaults a record may predate: Theorycraft
+ *  its own art, a real profile the Traveler (⚓ Nate 2026-10-22). */
+export function pictureOf(p: Pick<ProfileRecord, 'kind' | 'picture'>): Picture {
+	return (
+		p.picture ??
+		(p.kind === 'theorycraft'
+			? { kind: 'art', name: 'Theorycraft' }
+			: { kind: 'character', id: 'traveler_anemo' })
+	);
+}
+
 export function makeTheorycraft(now: number, twin: Twin = 'aether'): ProfileRecord {
 	return {
 		id: THEORYCRAFT_ID,
@@ -127,6 +145,7 @@ export function makeTheorycraft(now: number, twin: Twin = 'aether'): ProfileReco
 		kind: 'theorycraft',
 		name: 'Theorycraft',
 		colour: 'theorycraft',
+		picture: { kind: 'art', name: 'Theorycraft' },
 		twin,
 		roster: emptyRoster(),
 		current: {},

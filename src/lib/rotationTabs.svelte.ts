@@ -292,7 +292,16 @@ class RotationTabsState {
 
 	/** Restore saved tabs from localStorage. Idempotent; call once, pre-paint. */
 	restore(): void {
-		const stored = loadFromStorage();
+		this.restoreFrom(loadFromStorage());
+	}
+
+	/**
+	 * Take a stored tab set — or, given `null`, the first visit's sample (no
+	 * sample when `sample` is false or a link is arriving) — and mark the
+	 * state restored. `restore()` hands it localStorage; under the switch the
+	 * storage session hands it the profile's current document (build plan §13).
+	 */
+	restoreFrom(stored: { tabs: RotationTab[]; activeTabId: string } | null, sample = true): void {
 		if (stored) {
 			// Migrate at the boundary — every tab that still carries a retired
 			// `manualSlots` has its team folded into its notation here, once, and
@@ -307,7 +316,7 @@ class RotationTabsState {
 			this.setDocument(active.notation, seatingOf(active));
 			this.tabLoadout = active.tabLoadout ?? {};
 			this.tabCon = active.tabCon ?? {};
-		} else if (!arrivingWithDocument()) {
+		} else if (sample && !arrivingWithDocument()) {
 			// ⚓ THE FIRST VISIT (Nate 2026-10-17): no tabs were ever made in this
 			// browser, so the first one opens on a sample rather than empty —
 			// unless a share link is arriving, which must land in the empty tab.
@@ -346,8 +355,18 @@ class RotationTabsState {
 				: t
 		);
 		if (!this.restored) return;
+		if (this.persistSink) {
+			this.persistSink(snapshot, this.activeTabId);
+			return;
+		}
 		safeSetItem(TABS_KEY, JSON.stringify({ tabs: snapshot, activeTabId: this.activeTabId }));
 	}
+
+	/** Under the switch (build plan §13) the tabs persist to the new store
+	 *  instead, and ⚓ localStorage is left exactly as the migration found it
+	 *  (copy-only). A plain field, not `$state`: it is set once, before
+	 *  `restored`, and must not become a dependency of the persist effect. */
+	persistSink: ((tabs: RotationTab[], activeTabId: string) => void) | null = null;
 
 	/** Flush live working state back into the tabs array before any switch. */
 	flush(): void {

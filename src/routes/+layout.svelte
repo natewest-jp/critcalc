@@ -51,11 +51,10 @@
 
 	let { children } = $props();
 
-	// The switch (build plan §13.1): `?next` / `?next=0` set it. While it is
-	// on, the new storage opens and migrates (copy-only). Loaded on demand, so
-	// a visitor with the switch off downloads none of it.
+	// The switch (build plan §13.1; `?next` / `?next=0`, read by the module).
+	// While it is on, the new storage opens and migrates (copy-only). Loaded on
+	// demand, so a visitor with the switch off downloads none of it.
 	onMount(() => {
-		nextLayout.fromUrl(new URL(location.href));
 		return nextLayout.subscribe((on) => {
 			if (on) void import('$lib/storage/boot').then((m) => m.ensureStorage());
 		});
