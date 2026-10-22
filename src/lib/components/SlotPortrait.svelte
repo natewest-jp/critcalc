@@ -686,6 +686,10 @@
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 		line-height: var(--lh-tight);
+		/* ONE LINE EVEN WHEN EMPTY (⚓ Nate 2026-10-22): an empty slot's name
+		   collapsed to 0, the centred column lost a line, and the inert pill
+		   sat higher than a filled card's. */
+		min-height: calc(1em * var(--lh-tight));
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;

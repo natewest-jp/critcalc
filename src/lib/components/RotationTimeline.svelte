@@ -859,7 +859,12 @@
 	/** ⚠ A module-level constant, not an inline literal: a fresh object each
 	 *  time would make `auraLane` a new value on every unrelated re-run, and
 	 *  every derived below it recomputes off its identity. */
-	let showAuraLane = $derived(auraLane.series.length > 0);
+	/** ↻ 2026-10-22 (⚓ Nate): the lane is ON whenever the layer is, empty or
+	 *  not. It used to wait for the first application, so with Auras lit it
+	 *  popped in mid-keystroke and shoved the whole chart down — and a lit
+	 *  plate over an absent lane said nothing about why. Its empty plot and 1U
+	 *  rule are the "nothing on the target yet" reading. */
+	let showAuraLane = $derived(showAura);
 	// The reaction labels' band and the application ticks' strip both sit ABOVE
 	// the plot — a point stream reads as an annotation of the continuum under it,
 	// and putting the ticks between the labels and the plot keeps each closer to
@@ -2689,9 +2694,9 @@
 				     The first surface the gauge has. Three bands, top to bottom,
 				     each closer to what it describes: reaction labels, then the
 				     applications that caused them, then the auras those left
-				     behind. Rendered only when something ever landed — an
-				     all-physical rotation has no aura to draw and gets no lane,
-				     the same rule the NB and moonsign lanes follow.
+				     behind. Rendered whenever the Auras layer is on, even with
+				     nothing landed yet (↻ 2026-10-22: it waited for the first
+				     application and jumped the chart while you typed).
 
 				     ⚓ NATE: IT SITS ABOVE THE TIME AXIS. It shipped at the bottom
 				     of the track area, ~600px from the ticks it is read against;
