@@ -30,7 +30,9 @@ const CONTENT_STOPS: Record<string, string> = {
 	'1024px':
 		"Visualizers — the workspace's second column, and where `.ws` takes the viewport's height: the tile is a SIZE container from here (100cqh), which the capped instruments and the Crit Heatmap's stage measure against",
 	'1360px':
-		"Visualizers — two instruments fit side by side (viewportCapacity); below it band A's lineup controls do nothing, so the band is hidden"
+		"Visualizers — two instruments fit side by side (viewportCapacity); below it band A's lineup controls do nothing, so the band is hidden",
+	'75rem':
+		"TopBar — the wordmark and its Beta tag give way so the three tool buttons keep their room (measured 2026-10-22: at rest the full form fits from ~1160px — brand 208 + nav 660 + flanks; 75rem keeps ~40px for a notice such as 'KQM copied' in the right flank)"
 };
 
 const walk = (dir: string, out: string[] = []): string[] => {

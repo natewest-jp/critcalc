@@ -6,6 +6,9 @@
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
+	import type TopBarT from '$lib/components/TopBar.svelte';
+	import { nextLayout } from '$lib/nextLayout';
+	import { get } from 'svelte/store';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import {
@@ -81,6 +84,14 @@
 	// so it claims the veil on tool cold loads too — the tool's own claim
 	// still gates its content; the veil lifts when both have painted.
 	const releaseVeil = claimVeilReady();
+	/** The top bar, loaded only while the switch is on. */
+	const nextOn = get(nextLayout);
+	let TopBarC = $state<typeof TopBarT | null>(null);
+
+	onMount(() => {
+		if (nextOn) void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
+	});
+
 	onMount(() => {
 		let handle: SceneGLHandle | null = null;
 		let disposed = false;
@@ -221,7 +232,7 @@
 	// box only moves when the viewport or the lockup's own size does (the
 	// webfont landing, the compact wordmark).
 	function publishBrandBox(node: HTMLElement) {
-		const lockup = node.querySelector<HTMLElement>('.chrome-brand-group');
+		const lockup = node.querySelector<HTMLElement>('.chrome-brand-group, .tb-brand');
 		if (!lockup) return;
 		// The chrome's own fade-in window (its `in:fade` below), read at mount as
 		// that fade reads it, so the keep-out comes in WITH the lockup and not
@@ -294,14 +305,16 @@
 			 (revealDelayMs = 0 when there's no transition, e.g. hydration).
 			 Transitions are LOCAL on purpose — they play only when this {#if}
 			 toggles, never on the layout's initial mount. -->
-		{#if !isToolPath(pathname)}
+		{#if !isToolPath(pathname) && !(nextOn && !TopBarC)}
+			<!-- Under the switch the TOP BAR (build plan §13, 2b), once loaded:
+			     nothing until then, rather than a flash of the old bar. -->
 			<div
 				class="scene-chrome"
 				use:publishBrandBox
 				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 				out:fade={{ duration: FADE_OUT_MS }}
 			>
-				<SiteChrome />
+				{#if nextOn && TopBarC}<TopBarC />{:else}<SiteChrome />{/if}
 			</div>
 			<div
 				class="scene-footer-gradient"

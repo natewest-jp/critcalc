@@ -65,6 +65,9 @@
 	// demand, so a visitor with the switch off downloads none of it.
 	onMount(() => {
 		return nextLayout.subscribe((on) => {
+			// The new layout's own geometry keys off this (app.css § THE NEW LAYOUT).
+			if (on) document.documentElement.dataset.next = '';
+			else delete document.documentElement.dataset.next;
 			if (on) void import('$lib/storage/boot').then((m) => m.ensureStorage());
 		});
 	});

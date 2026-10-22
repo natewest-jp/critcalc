@@ -1541,6 +1541,9 @@
 	--ui-ctl-h: 32px;
 	--ui-ctl-fs: 0.75rem;
 	--ui-bar-h: 56px;
+	/* ⚓ Theorycraft's WHITE (design §2.3): the one profile colour no real
+	   profile can wear, so a guest can never be mistaken for anyone's own. */
+	--profile-theorycraft: #dfe3ea;
 }
 /* breakpoints.ts `huge` */
 @media (min-width: 2200px) {
@@ -1559,6 +1562,11 @@
 	--ui-ctl-h: 36px;
 	--ui-ctl-fs: 0.8125rem;
 	--ui-bar-h: 64px;
+}
+/* ⚓ THE NEW LAYOUT (build plan §13): under the switch the top bar is
+   --ui-bar-h tall, and everything that reserves the bar reads --chrome-h. */
+:root[data-next] {
+	--chrome-h: var(--ui-bar-h);
 }
 /* breakpoints.ts `compact` — after the pins, so it wins on a phone. */
 @media (max-width: 40rem) {

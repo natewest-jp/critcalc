@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { nextLayout } from '$lib/nextLayout';
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { below, benchRowHidden, narrowForm } from '$lib/media.svelte';
@@ -369,7 +370,7 @@
 	     band A's left zone now, and the view controls that rode the ruler's
 	     right end are band B. TeamBonusesBlock stays OUTSIDE the stack, at the
 	     content margin below the strip's bottom end. -->
-	<ToolStack benched benchHidden={benchRowHidden($siteSettings.showBenchRow)}>
+	<ToolStack benched noBandA={$nextLayout} benchHidden={benchRowHidden($siteSettings.showBenchRow)}>
 		{#snippet bandALeft()}
 			<DocumentTabs model={rotationTabStrip} />
 		{/snippet}

@@ -28,6 +28,7 @@
 	import HeldElsewhere from '$lib/components/HeldElsewhere.svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import type { storageSession as StorageSessionT } from '$lib/storage/session.svelte';
+	import type TopBarT from '$lib/components/TopBar.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
@@ -58,9 +59,16 @@
 	// new store instead: the profile's current rotation and lineup, autosaved.
 	// Loaded on demand, so with the switch off none of it is downloaded.
 	let session = $state<typeof StorageSessionT | null>(null);
+	/** The top bar (phase 2b), loaded with the session. While the switch is on
+	 *  and it has not arrived, the chrome mount shows NOTHING rather than
+	 *  flashing the old bar. */
+	let TopBarC = $state<typeof TopBarT | null>(null);
+	const nextOn = get(nextLayout);
 
 	onMount(() => {
-		if (get(nextLayout)) {
+		benchBand.noBandA = nextOn;
+		if (nextOn) {
+			void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
 			void import('$lib/storage/session.svelte').then(async ({ storageSession }) => {
 				await storageSession.start();
 				session = storageSession;
@@ -1049,36 +1057,40 @@
 	style:--tool-fade="{FADE_DURATION_MS}ms"
 	out:plainExit|global
 >
-	<SiteChrome>
-		{#snippet center()}
-			<nav
-				class="chrome-nav"
-				class:nav-measured={underline.w > 0}
-				aria-label="Tools"
-				bind:this={navEl}
-			>
-				{#each TOOLS as t (t.path)}
-					{#if t === tool}
-						<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
-					{:else}
-						<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
-					{/if}
-				{/each}
-				<!-- The shared "you are here" underline: one bar gliding between links
+	{#if nextOn}
+		{#if TopBarC}<TopBarC />{/if}
+	{:else}
+		<SiteChrome>
+			{#snippet center()}
+				<nav
+					class="chrome-nav"
+					class:nav-measured={underline.w > 0}
+					aria-label="Tools"
+					bind:this={navEl}
+				>
+					{#each TOOLS as t (t.path)}
+						{#if t === tool}
+							<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
+						{:else}
+							<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
+						{/if}
+					{/each}
+					<!-- The shared "you are here" underline: one bar gliding between links
 				     on navigation, riding the page pan's own duration + easing. The
 				     per-link ::after below is the SSR/pre-measure fallback; it hides
 				     once this bar has a measured position (nav-measured). -->
-				<span
-					class="chrome-nav-underline"
-					style:transform="translateX({underline.x}px)"
-					style:width="{underline.w}px"
-					style:transition={underlineAnimates
-						? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
-						: 'none'}
-				></span>
-			</nav>
-		{/snippet}
-	</SiteChrome>
+					<span
+						class="chrome-nav-underline"
+						style:transform="translateX({underline.x}px)"
+						style:width="{underline.w}px"
+						style:transition={underlineAnimates
+							? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
+							: 'none'}
+					></span>
+				</nav>
+			{/snippet}
+		</SiteChrome>
+	{/if}
 </div>
 
 <svelte:window onresize={snapBench} />
