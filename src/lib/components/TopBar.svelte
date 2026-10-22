@@ -4,9 +4,9 @@
   gone (⚓ Nate 2026-10-21/22): three equal tool buttons, centred; the current
   one names its document and is the LIBRARY's door. Brand left, profile right.
 
-  ⏭ Stand-ins until the steps that own them: the Library door opens today's
-  overlay (2c), the profile picture opens the Roster (2d's profile menu), ☰
-  opens today's compass (2c's index).
+  ↻ 2c: every door opens a section of the menu state — the current tool's
+  button its Library place, ☰ the phone's index, `?` Help and About, ⚙
+  Settings. ⏭ The profile picture opens the Roster until 2d's profile menu.
 
   Sizes come from the interface size (app.css § THE INTERFACE SIZE).
 -->
@@ -19,8 +19,7 @@
 	import { boards } from '$lib/boards.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { boardBar } from '$lib/boardBar.svelte';
-	import { library } from '$lib/library.svelte';
-	import { openArea, openNav, openSettings, roster } from './chromeModal.svelte';
+	import { chapterSection, menu as menuState, type Section } from '$lib/menuState.svelte';
 	import { helpChapterForPath } from '$lib/help/areas';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
@@ -94,14 +93,22 @@
 		return PROFILE_PICTURES.find((x) => x.id === p.name)?.url ?? null;
 	}
 
-	/** ⚓ The current tool's button is the Library's door (§5.1); another
-	 *  tool's is plain navigation, which the anchor already is. */
+	/** ⚓ The current tool's button TOGGLES its Library place (§6.1): from the
+	 *  tool into it, and from anywhere in the menu state back onto the tool.
+	 *  Another tool's is plain navigation, which the anchor already is. */
 	function onTool(e: MouseEvent, path: string): void {
 		menu = null;
 		if (tool?.path !== path) return;
 		e.preventDefault();
-		if (docTool) library.show(docTool);
+		if (menuState.open && menuState.section !== place) menuState.close();
+		else if (place) menuState.toggle(place);
 	}
+
+	const place = $derived<Section | null>(
+		docTool === 'planner' ? 'rotations' : docTool === 'builder' ? 'lineups' : null
+	);
+	/** Which glyph's section is showing, so it reads as open. */
+	const showing = $derived(menuState.section);
 
 	function toggle(m: Menu, e: MouseEvent): void {
 		e.stopPropagation();
@@ -200,7 +207,7 @@
 	<div class="tb-right">
 		<!-- Phone (§5.2): the document, opening the Library like the desktop button. -->
 		{#if docTool && docName}
-			<button class="tb-phonedoc" onclick={() => library.show(docTool)}>
+			<button class="tb-phonedoc" onclick={() => place && menuState.toggle(place)}>
 				<span class="nav-label" class:is-derived={docName.derived}>{docName.text}</span>
 				<Mark name="library" size={13} />
 			</button>
@@ -262,14 +269,21 @@
 			{/if}
 
 			<!-- Phone: the index (⏭ 2c's menu state; today's compass for now). -->
-			<button class="tb-glyph tb-glyph--menu" aria-label="Menu" title="Menu" onclick={openNav}>
-				<svg viewBox="0 0 24 24" aria-hidden="true"
+			<!-- Nate's compass (assets-src/tools/navigation.svg). -->
+			<button
+				class="tb-glyph tb-glyph--menu"
+				class:is-open={showing === 'index'}
+				aria-label="Menu"
+				title="Menu"
+				onclick={() => menuState.toggle('index')}
+			>
+				<svg viewBox="0 0 53 62" fill-rule="evenodd" aria-hidden="true"
 					><path
-						d="M4 6.5h16M4 12h16M4 17.5h16"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						fill="none"
+						d="M25.071,16.831L24.277,13.093C24.179,12.833 24.026,12.596 23.83,12.4C23.633,12.203 23.397,12.051 23.136,11.953L18.533,10.218L23.136,8.483C23.397,8.385 23.633,8.233 23.83,8.036C24.026,7.84 24.179,7.603 24.277,7.343L26.001,2.767C20.976,2.769 19.892,4.244 20.249,4.818C20.466,5.167 21.671,5.888 23.704,6.227L23.407,7.016C23.37,7.115 23.317,7.208 23.252,7.291C20.576,6.838 18.417,5.815 17.643,4.973C15.91,3.089 19.03,-0 26.011,0C32.992,0 36.112,3.089 34.38,4.973C33.605,5.815 31.446,6.838 28.771,7.291C28.705,7.208 28.653,7.115 28.615,7.016L28.318,6.227C30.352,5.888 31.556,5.167 31.773,4.818C32.131,4.244 31.046,2.769 26.022,2.767L27.746,7.343C27.844,7.603 27.996,7.84 28.193,8.036C28.39,8.233 28.626,8.385 28.886,8.483L33.489,10.218L28.886,11.953C28.626,12.051 28.39,12.203 28.193,12.4C27.996,12.596 27.844,12.833 27.746,13.093L26.952,16.831L28.849,21.147C26.968,22.069 24.166,23.235 21.845,24.166L25.071,16.831ZM7.706,36.077C7.829,38.517 8.431,40.831 9.418,42.928C8.078,45.404 6.523,48.214 5.152,50.671C1.916,46.335 0,40.958 0,35.137C0,23.898 7.143,14.315 17.132,10.683L22.809,12.822C22.945,12.873 23.069,12.953 23.173,13.057C23.276,13.16 23.356,13.284 23.407,13.42L24.094,16.874C14.589,17.547 7.682,25.461 7.682,35.137C7.682,34.821 7.69,34.508 7.706,34.196L15.041,30.97C14.11,33.291 12.943,36.093 12.021,37.975L7.706,36.077ZM44.34,35.137C44.34,32.302 43.748,29.618 42.67,27.223C43.995,24.778 45.522,22.019 46.87,19.602C50.106,23.938 52.023,29.315 52.023,35.137C52.023,49.493 40.367,61.148 26.011,61.148C20.19,61.148 14.813,59.231 10.477,55.996C12.934,54.625 15.744,53.07 18.219,51.729C20.317,52.717 22.631,53.318 25.071,53.442L23.173,49.127C25.054,48.204 27.857,47.038 30.177,46.107L26.952,53.442C36.32,52.968 43.842,45.445 44.317,36.077L36.982,39.303C37.913,36.982 39.079,34.18 40.001,32.298L44.317,34.196C44.333,34.508 44.34,34.821 44.34,35.137ZM34.026,18.423C32.166,17.568 30.116,17.029 27.928,16.874L28.615,13.42C28.667,13.284 28.747,13.16 28.85,13.057C28.953,12.953 29.077,12.873 29.214,12.822L34.891,10.683C37.294,11.556 39.532,12.775 41.546,14.277C39.162,15.607 36.446,17.11 34.026,18.423ZM48.831,12.317C48.831,12.317 40.978,26.18 38.445,31.254C36.589,34.973 33.633,42.759 33.633,42.759C33.633,42.759 25.848,45.714 22.128,47.571C17.055,50.104 3.191,57.956 3.191,57.956C3.191,57.956 11.044,44.093 13.577,39.019C15.434,35.3 18.389,27.514 18.389,27.514C18.389,27.514 26.175,24.559 29.894,22.703C34.968,20.17 48.831,12.317 48.831,12.317Z"
+					/><path
+						d="M12.021,37.975L7.706,36.077C7.69,35.765 7.682,35.452 7.682,35.137C7.682,34.821 7.69,34.508 7.706,34.196L15.041,30.97C14.11,33.291 12.943,36.093 12.021,37.975ZM21.845,24.166L25.071,16.831C25.382,16.815 25.696,16.807 26.011,16.807C26.327,16.807 26.64,16.815 26.952,16.831L28.849,21.147C26.968,22.069 24.166,23.235 21.845,24.166ZM40.001,32.298L44.317,34.196C44.333,34.508 44.34,34.821 44.34,35.137C44.34,35.452 44.333,35.765 44.317,36.077L36.982,39.303C37.913,36.982 39.079,34.18 40.001,32.298ZM30.177,46.107L26.952,53.442C26.64,53.458 26.327,53.466 26.011,53.466C25.696,53.466 25.382,53.458 25.071,53.442L23.173,49.127C25.054,48.204 27.857,47.038 30.177,46.107Z"
+					/><path
+						d="M34.882,26.266C34.882,26.266 31.829,31.655 30.845,33.627C30.123,35.073 28.974,38.099 28.974,38.099C28.974,38.099 25.948,39.248 24.502,39.97C22.53,40.954 17.141,44.007 17.141,44.007C17.141,44.007 20.193,38.618 21.178,36.646C21.9,35.2 23.048,32.174 23.048,32.174C23.048,32.174 26.075,31.025 27.521,30.303C29.493,29.319 34.882,26.266 34.882,26.266ZM30.999,30.149C29.899,30.752 28.854,31.314 28.191,31.645C27.117,32.181 25.197,32.947 24.208,33.333C23.822,34.322 23.056,36.242 22.52,37.316C22.189,37.979 21.627,39.024 21.024,40.124C22.124,39.521 23.169,38.959 23.832,38.628C24.906,38.092 26.825,37.326 27.814,36.94C28.201,35.951 28.966,34.031 29.503,32.957C29.834,32.294 30.396,31.249 30.999,30.149Z"
 					/></svg
 				>
 			</button>
@@ -297,7 +311,7 @@
 							role="menuitem"
 							onclick={() => {
 								menu = null;
-								openArea('help', helpChapterForPath(page.url.pathname));
+								menuState.show(chapterSection('help', helpChapterForPath(page.url.pathname)));
 							}}>Help</button
 						>
 						<button
@@ -305,7 +319,7 @@
 							role="menuitem"
 							onclick={() => {
 								menu = null;
-								openArea('about', 'about');
+								menuState.show('about/about');
 							}}>About</button
 						>
 						<ReportLink
@@ -325,7 +339,13 @@
 				{/if}
 			</div>
 
-			<button class="tb-glyph" aria-label="Settings" title="Settings" onclick={openSettings}>
+			<button
+				class="tb-glyph"
+				class:is-open={showing === 'settings'}
+				aria-label="Settings"
+				title="Settings"
+				onclick={() => menuState.toggle('settings')}
+			>
 				<svg viewBox="0 0 42 40" fill-rule="evenodd" aria-hidden="true"
 					><path
 						d="M137.6 90.83q2.52 4.32 5 8.66 1.14.6 2.22 1.29 5-.03 10-.01a32 32 0 0 1 6.6 11.44l-5 8.65q.06 1.3 0 2.57 2.52 4.32 5 8.66a32 32 0 0 1-6.6 11.44l-10-.01q-1.08.7-2.22 1.28-2.48 4.34-5 8.66a32 32 0 0 1-13.2 0q-2.52-4.31-5-8.66-1.14-.59-2.22-1.28-5 .02-10 0a32 32 0 0 1-6.6-11.43q2.5-4.35 5-8.66-.06-1.28 0-2.57l-5-8.65a32 32 0 0 1 6.6-11.44h10q1.08-.7 2.22-1.28 2.48-4.34 5-8.66a32 32 0 0 1 13.2 0m-6.6 17.23a14.1 14.1 0 1 1-.01 28.19 14.1 14.1 0 0 1 .01-28.19"
@@ -341,7 +361,7 @@
 				class="tb-profile"
 				aria-label="Profile: {profile.name}"
 				title={profile.name}
-				onclick={() => roster.open()}
+				onclick={() => menuState.toggle('roster')}
 			>
 				<span class="pp" style:--pp-color={COLOUR[profile.colour]}>
 					{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback">{profile.name[0]}</span

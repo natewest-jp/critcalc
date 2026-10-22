@@ -107,6 +107,9 @@ type DocumentCommon = SyncFields & {
 	createdAt: number;
 	/** Last opened, ms — half the Library's recency key, as before. */
 	openedAt?: number;
+	/** Heads the Library above Recent (§6.3): a recency list reorders itself
+	 *  on every switch, and pinning is the cure. */
+	pinned?: true;
 };
 
 export type RotationDocument = DocumentCommon & { type: 'rotation'; body: RotationBody };
