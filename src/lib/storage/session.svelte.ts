@@ -204,13 +204,15 @@ class StorageSession {
 	/** A new, empty document in a tool. It becomes a document on its first
 	 *  content, as a blank tab always has. */
 	async create(tool: DocTool): Promise<void> {
-		if (!this.active) {
-			this.#startBlank.add(tool);
-			return;
+		const db = this.#db ?? (await ensureStorage());
+		if (this.active) {
+			await this.flush();
+			this.#release(tool);
+			this.#showBlank(tool);
 		}
-		await this.flush();
-		this.#release(tool);
-		this.#showBlank(tool);
+		// ⚓ The blank is the profile's current document, so a reload or a new
+		// session reopens it rather than the previous one.
+		if (db) await this.#setCurrent(db, tool, null);
 	}
 
 	/** ⚓ An empty name clears it: the label goes back to being derived (§4.2). */
@@ -259,15 +261,15 @@ class StorageSession {
 		this.#locks.delete(id);
 		this.#channel?.post({ kind: 'deleted', store: 'documents', id, profileId: doc.profileId });
 		this.version++;
-		if (this.profile?.current[tool] === id) await this.#setCurrent(db, tool, undefined);
-		if (!showing || !this.active) return;
+		// Nothing left to show is a blank, never the first visit's sample.
+		if (this.profile?.current[tool] === id) await this.#setCurrent(db, tool, null);
+		if (!showing) return;
+		// Off a tool, `open` moves the pointer, so the tool arrives on it.
 		const next = (await this.documents(doc.type)).sort((a, b) => recency(b) - recency(a))[0];
 		if (next) await this.open(next.id);
-		else this.#showBlank(tool);
+		else if (this.active) this.#showBlank(tool);
 	}
 
-	/** Tools to open on a blank document when the layout next starts. */
-	#startBlank = new Set<DocTool>();
 	/** Deleted here: never saved again, whatever a stale snapshot holds. */
 	#tombstoned = new Set<string>();
 
@@ -290,12 +292,10 @@ class StorageSession {
 		return next;
 	}
 
-	async #setCurrent(db: IDBDatabase, tool: DocTool, id: string | undefined): Promise<void> {
+	async #setCurrent(db: IDBDatabase, tool: DocTool, id: string | null): Promise<void> {
 		const p = this.profile ?? (await get(db, 'profiles', THEORYCRAFT_ID));
 		if (!p) return;
-		const current = { ...p.current };
-		if (id) current[tool] = id;
-		else delete current[tool];
+		const current = { ...p.current, [tool]: id };
 		const next = $state.snapshot({ ...p, current, updatedAt: Date.now() }) as ProfileRecord;
 		await put(db, 'profiles', next);
 		this.profile = next;
@@ -341,7 +341,7 @@ class StorageSession {
 	async #loadPlanner(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'planner');
 		rotationTabs.persistSink = (tabs, activeId) => this.#queue({ planner: { tabs, activeId } });
-		if (this.#startBlank.delete('planner')) {
+		if (profile.current.planner === null) {
 			this.#showBlank('planner');
 		} else if (doc?.type === 'rotation') {
 			const tab = rotationToTab(doc);
@@ -359,7 +359,7 @@ class StorageSession {
 	async #loadBuilder(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'builder');
 		boards.persistSink = (list, activeId) => this.#queue({ builder: { boards: list, activeId } });
-		if (this.#startBlank.delete('builder')) {
+		if (profile.current.builder === null) {
 			this.#showBlank('builder');
 		} else if (doc?.type === 'lineup') {
 			const board = lineupToBoard(doc);

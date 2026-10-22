@@ -17,7 +17,7 @@ Under the switch (`?next`), everything you go to on purpose is one full-screen s
 1. **Teams is not in the sidebar** until phase 3 builds it (an empty section would be a promise).
 2. **Help and About show today's chapters**; §6.4's short strings on slate with paper patches is a copy round, and Getting started / Keyboard shortcuts join when written.
 3. **A section's own route closes to** its tool for a Library place, else the landing.
-4. **New does not move the current pointer** until the blank has content, so a reload before typing reopens the previous document (a blank was never a document).
+4. ↻ **Overruled (Nate, same day): a blank opened on purpose STAYS.** New writes the profile's current pointer as `null` (a deliberate blank), distinct from absent ("never set", which in Theorycraft opens the first visit's sample), so a reload, a closed tab or a new session reopens the blank. The pointer moves to the document once the blank has content. Deleting the last document leaves a blank the same way, never the sample.
 5. **The new addresses are not in the sitemap**: they show a profile's own data, and indexability is the release's decision (§13.4). `seo.ts` has their titles.
 6. **Delete confirms by a second click** on the same button ("Delete?", 3 s), as Settings' resets do.
 7. The menu state's sidebar and the main column are **text straight on slate**; rows and cards are `--surface-raised`. No paper yet.

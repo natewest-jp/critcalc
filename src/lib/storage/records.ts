@@ -60,8 +60,14 @@ export type ProfileRecord = SyncFields & {
 	twin: Twin;
 	/** Theorycraft's is always empty: it has no roster to fall back to (§2.2). */
 	roster: Roster;
-	/** The profile's current document per tool (§4.2); the Visualizers hold none. */
-	current: Partial<Record<'planner' | 'builder', string>>;
+	/**
+	 * The profile's current document per tool (§4.2); the Visualizers hold none.
+	 * ⚓ `null` is a BLANK opened on purpose (New), kept through reloads and
+	 * new sessions (Nate 2026-10-22); absent is "never set", which in
+	 * Theorycraft opens the first visit's sample. A blank's pointer moves to
+	 * its document once it has content.
+	 */
+	current: Partial<Record<'planner' | 'builder', string | null>>;
 	lastTool?: ToolId;
 	createdAt: number;
 };
