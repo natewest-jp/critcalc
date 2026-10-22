@@ -42,4 +42,4 @@ Under derivation, undo was free: undoing the text restored the team because the 
 
 ## Gates
 
-vitest 2527 · `npm run check` · `npm run lint` · `npm run build`; e2e `cross-tool`, `marks`, `loadout-layers` 13/13 on chrome; **full e2e 160/160 on chrome + webkit** (2026-10-22, at `a3100829`).
+vitest 2527 · `npm run check` · `npm run lint` · `npm run build`; e2e `cross-tool`, `marks`, `loadout-layers` 13/13 on chrome; **full e2e 160/160 on chrome + webkit** (2026-10-22, at `a3100829`, and again at `7a0b39e5` after the placed/typed rule).
