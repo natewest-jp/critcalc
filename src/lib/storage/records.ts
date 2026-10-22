@@ -1,0 +1,140 @@
+/**
+ * The records the new storage holds (profiles and surfaces design §4.4,
+ * build plan §13 phase 1). Pure types and constructors — no IndexedDB, no
+ * `$app` — so the migration and the tests can use them anywhere.
+ *
+ * ⚓ SHAPED FOR SYNC FROM THE START (§4.4–4.5): every record carries a stable
+ * `id`, an `updatedAt`, and a tombstone (`deleted`) instead of disappearing,
+ * so optional accounts stay an additive change. ⛔ Never hard-delete a record
+ * from a store: a sync would read the absence as "never existed" and bring it
+ * back from the other side.
+ */
+
+import type { LoadoutEntry } from '$lib/stores';
+import type { BoardPreset } from '$lib/boards.svelte';
+
+export type SyncFields = {
+	/** Stable across devices: minted once, never reused. */
+	id: string;
+	/** Last change, ms — the merge clock a sync would compare. */
+	updatedAt: number;
+	/** A tombstone: the record is gone, the fact of its going is kept. */
+	deleted?: true;
+};
+
+/** The seven element colours a real profile can wear, plus Theorycraft's
+ *  white, which only Theorycraft can (§2.3). Exclusive: no two profiles share. */
+export type ProfileColour =
+	| 'pyro'
+	| 'hydro'
+	| 'anemo'
+	| 'electro'
+	| 'dendro'
+	| 'cryo'
+	| 'geo'
+	| 'theorycraft';
+
+export type Twin = 'aether' | 'lumine';
+
+/** The tools a profile remembers being in (§4.2). */
+export type ToolId = 'planner' | 'builder' | 'visualizers';
+
+export type Roster = {
+	constellations: Record<string, number>;
+	ownership: Record<string, 'owned' | 'wishlist'>;
+	loadout: Record<string, LoadoutEntry>;
+};
+
+export type ProfileRecord = SyncFields & {
+	kind: 'theorycraft' | 'real';
+	name: string;
+	colour: ProfileColour;
+	/** ⚓ An account fact (§13.5). Theorycraft's is only a default. */
+	twin: Twin;
+	/** Theorycraft's is always empty: it has no roster to fall back to (§2.2). */
+	roster: Roster;
+	/** The profile's current document per tool (§4.2); the Visualizers hold none. */
+	current: Partial<Record<'planner' | 'builder', string>>;
+	lastTool?: ToolId;
+	createdAt: number;
+};
+
+export type RotationBody = {
+	notation: string;
+	/** ⚓ The party's slots (§8.1), exactly four, `null` empty. */
+	slots: (string | null)[];
+	/** Per slot: placed on purpose (rests) rather than typed. */
+	placed: boolean[];
+	loadout?: Record<string, LoadoutEntry>;
+	/**
+	 * Levels the document stored for itself. In a real profile an owned
+	 * character reads the roster (§2.4), so a level here that disagrees is a
+	 * what-if waiting for its Theorycraft copy — ⏭ phase 4 creates the pair
+	 * (§10); until then it is kept so nothing is lost.
+	 */
+	con?: Record<string, number>;
+	/** The first-visit sample it opened on, credited while still its own. */
+	sample?: string;
+};
+
+export type LineupTeam = {
+	id: string;
+	slots: (string | null)[];
+	con?: Record<string, number>;
+	/** A rotation DOCUMENT id pinned as this team's own. */
+	pinnedRotationId?: string;
+};
+
+export type LineupBody = {
+	preset: BoardPreset;
+	season?: string;
+	noRepeats: boolean;
+	teams: LineupTeam[];
+};
+
+type DocumentCommon = SyncFields & {
+	profileId: string;
+	/** ⚓ An unnamed document stores NO name (§4.2): its label is derived
+	 *  from its contents, so it stays right as they change. */
+	name: string | null;
+	createdAt: number;
+	/** Last opened, ms — half the Library's recency key, as before. */
+	openedAt?: number;
+};
+
+export type RotationDocument = DocumentCommon & { type: 'rotation'; body: RotationBody };
+export type LineupDocument = DocumentCommon & { type: 'lineup'; body: LineupBody };
+export type DocumentRecord = RotationDocument | LineupDocument;
+
+export type TeamRecord = SyncFields & {
+	profileId: string;
+	name: string;
+	/** In party order (§12 Q2). */
+	slots: (string | null)[];
+	createdAt: number;
+};
+
+/** ⚓ Theorycraft is built in: one per browser, at a FIXED id, so a link
+ *  routed to it on any device lands in the same profile. */
+export const THEORYCRAFT_ID = 'theorycraft';
+
+export const emptyRoster = (): Roster => ({ constellations: {}, ownership: {}, loadout: {} });
+
+export function makeTheorycraft(now: number, twin: Twin = 'aether'): ProfileRecord {
+	return {
+		id: THEORYCRAFT_ID,
+		updatedAt: now,
+		kind: 'theorycraft',
+		name: 'Theorycraft',
+		colour: 'theorycraft',
+		twin,
+		roster: emptyRoster(),
+		current: {},
+		createdAt: now
+	};
+}
+
+/** A record id. `crypto.randomUUID` is in every current engine and in Node,
+ *  and unlike the 8-character ids the localStorage stores minted, it stays
+ *  unique once records from two devices meet. */
+export const newId = (): string => crypto.randomUUID();

@@ -46,8 +46,20 @@
 	import SeoHead from '$lib/components/SeoHead.svelte';
 	import '../app.css';
 	import { dev } from '$app/environment';
+	import { onMount } from 'svelte';
+	import { nextLayout } from '$lib/nextLayout';
 
 	let { children } = $props();
+
+	// The switch (build plan §13.1): `?next` / `?next=0` set it. While it is
+	// on, the new storage opens and migrates (copy-only). Loaded on demand, so
+	// a visitor with the switch off downloads none of it.
+	onMount(() => {
+		nextLayout.fromUrl(new URL(location.href));
+		return nextLayout.subscribe((on) => {
+			if (on) void import('$lib/storage/boot').then((m) => m.ensureStorage());
+		});
+	});
 
 	// Dev-only grayscale review toggle (Cmd/Ctrl+Shift+G): hierarchy must
 	// survive grayscale — if a surface reads as mud with the toggle on, its
