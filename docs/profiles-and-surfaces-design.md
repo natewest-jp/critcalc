@@ -1,6 +1,6 @@
 # Profiles and surfaces — a design for the site's next shape
 
-**Status: DRAFT 4, 2026-10-22. Not ready for implementation.** Draft 4 (one conversation with Nate, the morning after demo 1) **retires tabs**: each tool holds one document, the Library is where you change it, and the Planner compares instead of switching (§4.2, §4.6, §5.1, §6.3). Draft 2 settled the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4); draft 3 settles the profile cap, names, per-profile tabs and default labels (§2.3, §4.2, §6.1, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
+**Status: DRAFT 5, 2026-10-22. Not ready for implementation.** Draft 5 (after demo 2) adds **Planner slots that hold** (§8.1), the menu state over the WHOLE screen and plain tool navigation (§6.1), the profile as a PICTURE (§5.1), paper patches for reading surfaces (§6.4), and Move (§4.3). Draft 4 (one conversation with Nate, the morning after demo 1) **retires tabs**: each tool holds one document, the Library is where you change it, and the Planner compares instead of switching (§4.2, §4.6, §5.1, §6.3). Draft 2 settled the what-if, storage, accounts, the link switch and profile identity (§2.3, §2.4, §4.4, §4.5, §9.3, §9.4); draft 3 settles the profile cap, names, per-profile tabs and default labels (§2.3, §4.2, §6.1, §9.4). Written from one long conversation with Nate, after a streamer's live session and the structure survey (`docs/structure-survey-2026-10-21.md`). ⚓ marks what Nate locked in that conversation; everything else is proposal. §12 collects what is still open, and there is a lot of it — this draft is meant to be hammered on before any build order is written.
 
 **The shape in four sentences** (draft 4). Every rule below should be checkable against these; a rule that can't be said in one sentence to a player is a smell.
 
@@ -65,7 +65,7 @@ Site settings (display, playback, Human timing, swap ping, the Visualizers' layo
 - ⚓ **The profile picture follows Genshin's own precedent** (Nate, 2026-10-21): the circle avatar of **any character you own** (in that profile's roster), or one of the game's **art profile pictures** — the silhouette-style pictures of moments from the Genshin journey. Nate supplies the art set. ⏭ A profile with an empty roster can still pick from the art set.
 - ⚓ **Each profile has a colour, and colours are exclusive**: the **seven element colours** for real profiles, and a **gray/white** that only Theorycraft can have — it reads as "nobody's account". Exclusive means no two profiles share one, so ⚓ **a browser holds at most seven real profiles** (Nate: nobody actively plays eight accounts, and a cap with a visible reason beats an arbitrary one). At the limit, **Create profile** stays visible but disabled with a one-line reason; deleting a profile frees its colour.
 - More than one is normal (several accounts). Switching is **loud** (§9.4): the picture, name and colour change in the title bar, and every list, tab and roster-dependent view changes with it.
-- ⚓ **The profile sits in the title bar opposite the logo** (§5.1). Clicking it opens the full-screen state at **You** (§6), which holds the profile switcher.
+- ⚓ **The profile sits in the title bar opposite the logo** (§5.1), ↻ **as its picture only** (draft 5, ⚓ Nate 2026-10-22: a long name or a UID must cost the bar nothing). The NAME shows on hover, at the head of the profile menu, as the menu state's group heading, and **rides the switch cue**: it appears beside (below) the picture with the wash and folds away with it. Clicking the picture opens the profile menu (the switcher, Add an account, Roster, Teams).
 
 ### 2.4 How a document finds its values
 
@@ -230,7 +230,10 @@ Band A and band B as concepts (`ToolStack`'s two-band rule, `BAND_A_H`, the docu
 ### 6.1 Shape
 
 - ⚓ A flip of the whole UI: **slate** (`ctx-dark`), covering the screen, no tool visible. The tool is kept, paused, exactly as a left tool page is today, so returning puts you back where you were.
-- **The title bar stays** in both states, so the profile, the brand and the doors never move. Only what is below the title bar flips.
+- **The title bar stays** in both states, so the profile, the brand and the doors never move. ↻ ⚓ **The slate covers the WHOLE screen** (draft 5, Nate): the brand lockup and the bar sit ON it; only the night scene goes.
+- ⚓ **The tool buttons stay, as plain navigation** (draft 5, Nate): another tool's button goes to that tool, out of the menu state; the CURRENT tool's button toggles its Library (from the tool into it; from anywhere in the menu state back onto the tool). ⛔ Rejected: every tool button opening its tool's saved work (an extra stop on every tool switch, and a button whose meaning depends on where you are); the sidebar names each Library place by its tool instead ("Rotations · Planner").
+- ⚓ **The Visualizers have no saved content** (draft 5, Nate). Their current button does nothing. ⏭ Saved workspace configurations are a possible later want, not planned.
+- **Switching profile inside the menu state stays at the section** (Roster stays Roster, for the new profile); only a pick ends.
 - **A sidebar of sections** (macOS System Settings, Discord's settings, Steam's library):
 
 | Group              | Sections                                                    | Door                |
@@ -267,6 +270,10 @@ Band A and band B as concepts (`ToolStack`'s two-band rule, `BAND_A_H`, the docu
 - **Order:** most recently touched first. Filters: by team (the link from a team card lands here), and ⏭ from a link.
 - ⚓ **In Theorycraft:** the same two places, one recency list each, with a small **from a link** mark on documents that arrived by link (Nate considered a separate shared section; one list was chosen because people search by _when_, and an edited link is half theirs anyway). Pruning per §4.3.
 
+### 6.4 ⚓ Reading surfaces: text on slate, paper as a PATCH (draft 5)
+
+Help and About take the full-screen state, so they must use it well (Nate, 2026-10-22): **short strings, laid out**, never a 200-word block. Text sits straight on slate; **paper is used selectively**, as a patch where separation helps: a card per tool on Getting started, an example beside the paragraph that explains it, the keyboard table, the newest What's new entry, "Stored here" on Privacy. ⛔ Not everything on paper.
+
 ---
 
 ## 7. The inspector
@@ -281,7 +288,23 @@ Band A and band B as concepts (`ToolStack`'s two-band rule, `BAND_A_H`, the docu
 
 This design doesn't redesign the tools' interiors; the structure survey's per-tool findings stand and are queued separately (Fit zoom, chart↔text linking, the Builder's card cap and board size, the Visualizers' catalog). What changes here:
 
-- **Planner:** the bench's set-once targets merge (one loadout target per card); **Save as team** on the bench; values follow §2.4.
+- **Planner:** the bench's set-once targets merge (one loadout target per card); **Save as team** on the bench; values follow §2.4; **slots** (§8.1).
+
+### 8.1 ⚓ Slots that hold (draft 5, Nate 2026-10-22)
+
+**The problem** (the streamer): Library › team › new rotation opened with the bare names joined by swap connectors; he cleared the text to start writing, and the team vanished. The cause is the 2026-08-13 ruling that DERIVES the team from the notation (first four distinct names), so deleting text deletes characters, and the stub existed only to make the team exist.
+
+**The rule:** a rotation stores **four slots** (the game's party keys 1–4), and the notation fills them.
+
+- **A seated character with nothing in the notation is RESTING**, not gone: their card stays in its slot, dimmed, and their row draws nothing. They wake as they are written.
+- **Slots hold until something needs them.** A typed name that isn't seated takes the first **empty** slot, else the first **resting** one, lowest number first. So a pure notation user starting from nothing sees today's behaviour (slots fill in typed order), and a changed mind never gets stuck: Bennett typed then deleted is resting, so Kazuha takes his slot.
+- **Only ✕ on a card empties a slot on purpose** (its segments go with it, as today). ⇄ swap renames a character's segments and keeps the slot.
+- **Plan a rotation** (Teams, a lineup, the Library) seats the four in the team's order, resting, in an **empty notation**, with a hint ("Start with a name: Neuvillette E > …"). ⛔ The stub of names joined by swaps retires.
+- A fifth name with every slot awake keeps today's `--ui-provisional` flag.
+- **Why order matters** (Nate): players are particular about which character is on which key, and the bench should match the party they know.
+
+**Costs, accepted:** ⚠️ this **partly reverses the 2026-08-13 ruling** (memory `notation_single_truth`): the notation stays the truth for what HAPPENS; the slots become the truth for WHO is on the team and in which order, and "slot order = notation order" is undone on purpose. The `?r=` codec goes to **format 3** with an optional slots field (KQM export unchanged). **Undo must reach slots**: ⌘Z after typing Kazuha puts Bennett back, so slot changes ride the editor's history (a CodeMirror state field with invertible effects), designed in, not added later. ⚠️ The demo's plain textarea does NOT do this.
+
 - **Builder:** the board's header carries the lineup's properties; a board row's team picker reads the profile's Teams; values follow §2.4.
 - **Visualizers:** no document and no profile scope (⏭ unless an instrument wants the roster later).
 
@@ -356,8 +379,8 @@ So nothing below reads as still in force once this design is adopted:
 **Model**
 
 1. ~~Overrides in a real profile~~ — ✅ settled: loadouts free (draft 2); ↻ a constellation what-if is a Theorycraft copy, compared (draft 4, §2.4, §4.6). The lens's persistence question is gone with the lens.
-2. Team identity is the set of four; is the member **order** stored and shown?
-3. Do teams carry **notes**?
+2. ~~Team order~~: ✅ stored and shown, in party order (draft 5); a rotation's slots carry it too (§8.1).
+3. ~~Team notes~~: ✅ not for now (draft 5).
 4. Which **settings** are per profile, if any (Human timing and swap ping feel personal to the player, not the account)?
 5. ~~Avatar, colour cap~~ — ✅ settled (§2.3): seven real profiles.
 
@@ -365,7 +388,7 @@ So nothing below reads as still in force once this design is adopted:
 
 6. ~~Default names~~ — ✅ derived labels (§4.2).
 7. ~~Open-tab limit~~ — ↻ gone with tabs (draft 4, §4.2).
-8. **Moving vs copying** a Theorycraft document into a profile; and between two real profiles.
+8. ~~Move vs copy~~: ✅ **Move** (draft 5), with the confirmation listing what changes (§4.3). Between two real profiles: still open.
 9. The Theorycraft **pruning window** for untouched link documents.
 10. ~~Storage engine~~ — ✅ IndexedDB, sync-ready records (§4.4).
 11. Backup v3: all profiles, or per profile?
@@ -374,12 +397,12 @@ So nothing below reads as still in force once this design is adopted:
 
 12. ~~Link while a profile is active~~ — ✅ switch automatically, loudly (§9.3). **Still open:** the shape of the colour wash, and whether the permanent cue includes a title-bar line.
 13. ~~Own open tabs~~ — ↻ a profile owns its CURRENT documents (draft 4, §4.2).
-14. What a first visit's **invitation** looks like, and where it lives.
+14. ~~The invitation~~: ✅ both places (draft 5): an **Add your account** pill beside the picture in the bar (hidden on a phone, where the bar has no room), and a paper panel where Roster and Teams would be. ⏭ What "Add your account" itself asks for (name, picture, colour) is demo 3's or later.
 
 **Surfaces**
 
 15. ~~Names~~ — ✅ the menu state; the top bar / the toolbar; the You group titled by the profile's name (§6.1).
-16. Help and About **on slate, or paper cards on slate**.
+16. ~~Slate or paper~~: ✅ text on slate, paper as a patch (§6.4).
 17. The **flip transition**.
 18. The **inspector's** home in the Builder, and on a phone.
 19. The Builder's roster lens: **Owned/Wishlist vs My constellations** (Nate: room for a clean concept; raise at that stage).
@@ -391,8 +414,8 @@ So nothing below reads as still in force once this design is adopted:
 
 25. ⚠️ **Two browser tabs on one profile.** Without our tabs, the browser IS the tab system for anyone who wants two rotations side by side, so concurrent autosave stops being an edge case: two windows writing one profile, last write wins, work lost. Is the current document **per browser tab** (session-scoped, falling back to the profile's last)? Writes need a BroadcastChannel or a lock. Must be decided before the build.
 26. The **previous-document key** (and whether it is the same key as ⇅ when a comparison exists).
-27. **Swap mode** (⇄ on a Planner card → the Builder) names the Builder's current LINEUP in the title bar while you are really auditioning for a ROTATION: the title bar needs a mode form for it.
-28. **The roster catches up** with a guest (§4.6): say so on the guest, offer to delete it, or nothing?
+27. (proposal, unvetoed: the Builder's button reads "Swapping slot 2 · _rotation_" during an audition) **Swap mode** (⇄ on a Planner card → the Builder) names the Builder's current LINEUP in the title bar while you are really auditioning for a ROTATION: the title bar needs a mode form for it.
+28. (proposal, unvetoed) **The roster catches up** with a guest (§4.6): say so on the guest, offer to delete it, or nothing?
 29. A small **⋯ verbs menu** beside the document name, or nothing in the bar at all (§5.1)?
 30. Whether opening another document from the Library while a comparison is showing ENDS the pair or leaves it stored (proposal: stored — the pair belongs to the documents, ✕ ends it).
 31. **Share from a real profile** must write the roster's levels into the link at the moment of sharing (a profile document no longer stores them).
