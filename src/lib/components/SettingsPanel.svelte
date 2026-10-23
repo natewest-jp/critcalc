@@ -112,12 +112,25 @@
 		armedReset = null;
 	}
 
+	// ⚓ Under the switch a reset clears the ACTIVE profile (Nate 2026-10-23):
+	// the roster stores already write to it, and the saved work is its
+	// documents, ⛔ never the old keys the migration copied from.
+	function clearRotations() {
+		if ($nextLayout) void session().then((s) => s.removeAll('rotation'));
+		else savedNotations.clear();
+	}
+	function clearLineups() {
+		if ($nextLayout) void session().then((s) => s.removeAll('lineup'));
+		else savedBoards.clear();
+	}
+
 	function clearEverything() {
 		constellations.clear();
 		ownership.clear();
 		loadout.clear();
-		savedNotations.clear();
-		savedBoards.clear();
+		clearRotations();
+		clearLineups();
+		if ($nextLayout) void session().then((s) => s.removeAllTeams());
 	}
 
 	// Import flow: pick file → parse+validate → show a summary → confirm → apply
@@ -742,7 +755,7 @@
 	<section class="sp-section sp-section--danger">
 		<h2 class="kicker sp-section-title">Reset saved data</h2>
 
-		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation and team saved in your library.', () => savedNotations.clear()], ['boards', 'Saved lineups', 'Deletes every lineup saved in your library.', () => savedBoards.clear()]] as const as [key, name, desc, fn] (key)}
+		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation and team saved in your library.', clearRotations], ['boards', 'Saved lineups', 'Deletes every lineup saved in your library.', clearLineups]] as const as [key, name, desc, fn] (key)}
 			<div class="sp-row">
 				<span class="sp-label">
 					<span class="sp-name">{name}</span>
