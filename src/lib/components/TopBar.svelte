@@ -416,7 +416,7 @@
 							disabled={!storageSession.canAddProfile}
 							title={storageSession.canAddProfile
 								? undefined
-								: 'Seven accounts, one per element colour, is the most a browser holds'}
+								: 'Seven accounts, one per element color, is the most a browser holds'}
 							onclick={() => {
 								menu = null;
 								menuState.show('profile/new');
