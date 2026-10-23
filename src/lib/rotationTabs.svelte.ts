@@ -81,6 +81,8 @@ import {
 	type Seats
 } from '$lib/utils/notationEdit';
 import { safeSetItem, type LoadoutEntry } from '$lib/stores';
+import { get } from 'svelte/store';
+import { nextLayout } from '$lib/nextLayout';
 import { TAB_LIMIT } from '$lib/tabSet';
 import { pickSample } from '$lib/data/plannerSamples';
 
@@ -274,6 +276,48 @@ class RotationTabsState {
 
 	tabLoadout = $state<Record<string, LoadoutEntry>>({});
 	tabCon = $state<Record<string, number>>({});
+
+	/**
+	 * ⚓ A GUEST is showing (design §4.6): a Theorycraft document inside a real
+	 * profile, set by the storage session. Every value in it is its own, so the
+	 * profile's roster is not read at all.
+	 */
+	rosterless = $state(false);
+
+	/**
+	 * ⚓ THE ONE RESOLVER for a character's constellation in this rotation
+	 * (design §2.4). Under the switch an OWNED character reads the roster, live:
+	 * a level of its own would be a what-if, and a what-if is a Theorycraft copy
+	 * (§4.6), never an edit. An unowned character keeps the document's own value.
+	 * A guest reads only its own. Off the switch, today's two layers: the tab's
+	 * value, else the roster's.
+	 */
+	levelOf(
+		id: string,
+		roster: Record<string, number>,
+		owned: Record<string, 'owned' | 'wishlist'>
+	): number {
+		if (this.rosterless) return this.tabCon[id] ?? 0;
+		if (get(nextLayout) && owned[id] === 'owned') return roster[id] ?? 0;
+		return this.tabCon[id] ?? roster[id] ?? 0;
+	}
+
+	/** Every level a reader of this rotation may ask for, resolved: the roster's
+	 *  characters (unless a guest), the document's own, and `ids`. */
+	levels(
+		roster: Record<string, number>,
+		owned: Record<string, 'owned' | 'wishlist'>,
+		ids: readonly string[] = []
+	): Record<string, number> {
+		const keys = new Set([
+			...(this.rosterless ? [] : Object.keys(roster)),
+			...Object.keys(this.tabCon),
+			...ids
+		]);
+		const out: Record<string, number> = {};
+		for (const id of keys) out[id] = this.levelOf(id, roster, owned);
+		return out;
+	}
 
 	/** Flips true once restore() has run. Gates the persist effect so the
 	 *  pre-restore default state can never clobber saved tabs. */

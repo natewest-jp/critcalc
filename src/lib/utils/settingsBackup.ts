@@ -117,6 +117,7 @@ function sanitizeSiteSettings(v: unknown): Record<string, unknown> | undefined {
 	if (typeof v.showHumanPadding === 'boolean') out.showHumanPadding = v.showHumanPadding;
 	if (typeof v.showCoverageStrips === 'boolean') out.showCoverageStrips = v.showCoverageStrips;
 	if (typeof v.toolTransitions === 'boolean') out.toolTransitions = v.toolTransitions;
+	if (typeof v.seenGuestNotice === 'boolean') out.seenGuestNotice = v.seenGuestNotice;
 	if (typeof v.uiSize === 'string' && (UI_SIZES as readonly string[]).includes(v.uiSize)) {
 		out.uiSize = v.uiSize;
 	}

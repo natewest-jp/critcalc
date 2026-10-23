@@ -630,7 +630,8 @@ class DocumentBarState {
 			// ⚓ EVERY member's level, an explicit 0 included (lineups design §9.5):
 			// a shared document never falls back to the recipient's roster, so
 			// the sender's C0 must travel or the recipient's own C6 shows instead.
-			if (slotted.has(id)) cons[id] = rt.tabCon[id] ?? rosterCons[id] ?? 0;
+			// ⚓ Under the switch an owned character's level is the roster's (§12 Q31).
+			if (slotted.has(id)) cons[id] = rt.levelOf(id, rosterCons, get(ownership));
 			// Mirror RotationTimeline's effective-loadout merge so a shared link
 			// renders identically regardless of the recipient's own defaults.
 			const entry: LoadoutEntry = { ...(rosterLoadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };

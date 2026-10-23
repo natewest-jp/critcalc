@@ -104,6 +104,10 @@ class MenuState {
 	 *  chip, and on leaving. */
 	teamFilter = $state<{ key: string; label: string } | null>(null);
 
+	/** PICK MODE (design §6.3): the Library chooses a partner for this
+	 *  rotation (Compare with…, §4.6) instead of opening a document. */
+	pickFor = $state<string | null>(null);
+
 	/** What is showing: the shallow entry's section, else the route's. */
 	get section(): Section | null {
 		return page.state.menu ?? this.routed;

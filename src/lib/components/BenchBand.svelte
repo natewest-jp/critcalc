@@ -158,7 +158,20 @@
 	// Effective (Layer-2 ⇒ Layer-1) display values — the planner column's rule,
 	// now the bench's rule everywhere.
 	function effectiveCon(id: string): number {
-		return rt.tabCon[id] ?? $constellations[id] ?? 0;
+		return rt.levelOf(id, $constellations, $ownership);
+	}
+	/**
+	 * ⚓ A level for an OWNED character never edits the rotation under the
+	 * switch (design §2.4): chosen against the roster, in either direction, it
+	 * opens a Theorycraft copy beside it (§4.6). A guest's levels are its own.
+	 */
+	function setCon(id: string, level: number): void {
+		if ($nextLayout && !rt.rosterless && $ownership[id] === 'owned') {
+			if (level === ($constellations[id] ?? 0)) return;
+			void import('$lib/storage/session.svelte').then((m) => m.storageSession.whatIf(id, level));
+			return;
+		}
+		rt.setTabCon(id, level);
 	}
 	function effectiveLoadout(id: string): LoadoutEntry {
 		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
@@ -272,7 +285,7 @@
 					conLevel={char ? effectiveCon(char.id) : 0}
 					ownedCon={char ? ownedConOf(char.id) : undefined}
 					loadoutEntry={char ? effectiveLoadout(char.id) : {}}
-					onSetCon={(level) => char && rt.setTabCon(char.id, level)}
+					onSetCon={(level) => char && setCon(char.id, level)}
 					onSetArtifact={(artId) => char && rt.setTabLoadout(char.id, { artifactSetId: artId })}
 					onSetWeapon={(wid, ref) =>
 						char && rt.setTabLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
