@@ -33,7 +33,16 @@
 
 {#snippet body(withClose: boolean)}
 	<header class="op-head">
-		<h2 class="op-title">{half === 0 ? 'First half' : 'Second half'} · Opponents</h2>
+		{#if withClose}
+			<h2 class="op-title">{half === 0 ? 'First half' : 'Second half'} · Opponents</h2>
+		{:else}
+			<!-- ⚓ The shell's header grammar (Nate 2026-10-23): the context as the
+			     kicker, the half as the title. The old shell keeps its title. -->
+			<div class="op-head-text">
+				<p class="kicker op-head-kicker">Spiral Abyss · Floor 12</p>
+				<h2 class="op-title">{half === 0 ? 'First half' : 'Second half'}</h2>
+			</div>
+		{/if}
 		{#if withClose}
 			<button class="btn btn--icon" bind:this={closeBtn} aria-label="Close" onclick={onClose}
 				><Mark name="close" size={16} /></button
@@ -103,7 +112,18 @@
 		padding: var(--im-pad-top) 3.5rem 1.1rem var(--im-pad-x);
 		border-bottom: 1px solid var(--line-faint);
 	}
+	.op-head-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		min-width: 0;
+		flex: 1;
+	}
+	.op-head-kicker {
+		font-size: var(--fs-sm);
+	}
 	.op-in .op-title {
+		margin: 0.15rem 0 0;
 		font-family: var(--font-display);
 		font-size: var(--fs-4xl);
 		line-height: 1.15;
