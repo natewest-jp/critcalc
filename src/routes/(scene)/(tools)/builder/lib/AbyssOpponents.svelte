@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { nextLayout } from '$lib/nextLayout';
+	import InspectModal from '$lib/components/InspectModal.svelte';
 	/**
 	 * One half of Floor 12's opponents (Nate 2026-10-09). The game's "Opponent
 	 * details" loops both halves together behind chamber tabs; here each HALF
@@ -27,34 +29,16 @@
 	);
 </script>
 
-<svelte:window onkeydown={(e) => e.key === 'Escape' && onClose()} />
+<svelte:window onkeydown={(e) => !$nextLayout && e.key === 'Escape' && onClose()} />
 
-<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
-     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div
-	class="op-scrim"
-	use:portal
-	onclick={onClose}
-	transition:fade={{ duration: motion(T_QUICK) }}
-	onintrostart={introLive}
-	onoutrostart={outroInert}
-></div>
-<div
-	class="op ctx-dark"
-	use:portal
-	role="dialog"
-	aria-modal="true"
-	aria-label="Opponents, {half === 0 ? 'first' : 'second'} half"
-	transition:fade={{ duration: motion(T_QUICK) }}
-	onintrostart={introLive}
-	onoutrostart={outroInert}
->
+{#snippet body(withClose: boolean)}
 	<header class="op-head">
 		<h2 class="op-title">{half === 0 ? 'First half' : 'Second half'} · Opponents</h2>
-		<button class="btn btn--icon" bind:this={closeBtn} aria-label="Close" onclick={onClose}
-			><Mark name="close" size={16} /></button
-		>
+		{#if withClose}
+			<button class="btn btn--icon" bind:this={closeBtn} aria-label="Close" onclick={onClose}
+				><Mark name="close" size={16} /></button
+			>
+		{/if}
 	</header>
 	<div class="op-body">
 		{#each cycle.chambers as ch, i (i)}
@@ -72,9 +56,52 @@
 			</section>
 		{/each}
 	</div>
-</div>
+{/snippet}
+
+{#if $nextLayout}
+	<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): the
+	     Builder's one shell, a margin that closes it. -->
+	<InspectModal label="Opponents, {half === 0 ? 'first' : 'second'} half" width="40rem" {onClose}>
+		<div class="op-in">{@render body(false)}</div>
+	</InspectModal>
+{:else}
+	<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
+	     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<div
+		class="op-scrim"
+		use:portal
+		onclick={onClose}
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	></div>
+	<div
+		class="op ctx-dark"
+		use:portal
+		role="dialog"
+		aria-modal="true"
+		aria-label="Opponents, {half === 0 ? 'first' : 'second'} half"
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	>
+		{@render body(true)}
+	</div>
+{/if}
 
 <style>
+	/* Inside the InspectModal shell (inspector round): the shell is the ground
+	   and the scroller; the content keeps its own column. */
+	.op-in {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+	/* The shell's ✕ stands at the top right; the title keeps clear of it. */
+	.op-in .op-head {
+		padding-right: 3.5rem;
+	}
 	.op-scrim {
 		position: fixed;
 		inset: 0;

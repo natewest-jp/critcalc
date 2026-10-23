@@ -11,6 +11,9 @@
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import type { ConMode } from '$lib/capabilities/facets';
+	import type { Snippet } from 'svelte';
+	import { nextLayout } from '$lib/nextLayout';
+	import InspectModal from '$lib/components/InspectModal.svelte';
 
 	// ↻ Inspector round (2026-10-23): this is the SHELL now — backdrop, header,
 	// close. The body is `CharacterDetails`, which the Planner's inspector pane
@@ -23,7 +26,8 @@
 		teamState,
 		elsewhereLabel,
 		onToggleTeam,
-		defaultBuild = true
+		defaultBuild = true,
+		lead
 	}: {
 		id: string;
 		conMode: ConMode;
@@ -43,6 +47,9 @@
 		 * this card reads it in both tools.
 		 */
 		defaultBuild?: boolean;
+		/** A line under the header, from the host (the Builder's "Adds to …",
+		 *  inspector round). Rendered under the switch only. */
+		lead?: Snippet;
 	} = $props();
 
 	const entry = $derived(getCharacterIndexEntry(id));
@@ -67,8 +74,10 @@
 	// sat under the bar on any screen shorter than ~908px, and the chrome's
 	// buttons stayed live over the card. Mounted only while open, so it
 	// closes on every leave (the page is paused, not destroyed, then).
+	// ↻ Under the switch the InspectModal shell owns leaving, Escape and the
+	// scrim (inspector round), so these stand down rather than fire twice.
 	closeOnLeave(
-		() => true,
+		() => !$nextLayout,
 		() => onClose()
 	);
 
@@ -76,7 +85,7 @@
 		if ((e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
 	}
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') onClose();
+		if (!$nextLayout && e.key === 'Escape') onClose();
 	}
 </script>
 
@@ -92,72 +101,87 @@
      ways, and ChromeOverlay has faded since it was built; the card snapping in
      was not a choice anyone made, just the one modal that never got the
      treatment. Both on T_QUICK now. -->
-<div
-	class="dc-backdrop"
-	use:portal
-	transition:fade={{ duration: motion(T_QUICK) }}
-	onintrostart={introLive}
-	onoutrostart={outroInert}
-	onclick={handleBackdropClick}
-	role="presentation"
->
-	<div
-		class="dc-panel"
-		style:--el-color={color}
-		role="dialog"
-		aria-modal="true"
-		aria-label="{entry?.displayName ?? id} details"
-	>
-		<!-- ── Header ─────────────────────────────────────────── -->
-		<header class="dc-header">
-			<div class="dc-avatar ctx-dark">
-				{#if !avatarFallback}
-					<img
-						src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
-						alt=""
-						onerror={handleAvatarError}
-					/>
-				{:else}
-					<span class="dc-avatar-initials"
-						>{(entry?.displayName ?? id).slice(0, 2).toUpperCase()}</span
+{#snippet card(withClose: boolean)}
+	<header class="dc-header">
+		<div class="dc-avatar ctx-dark">
+			{#if !avatarFallback}
+				<img
+					src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
+					alt=""
+					onerror={handleAvatarError}
+				/>
+			{:else}
+				<span class="dc-avatar-initials"
+					>{(entry?.displayName ?? id).slice(0, 2).toUpperCase()}</span
+				>
+			{/if}
+		</div>
+		<div class="dc-title">
+			<h2 class="title">{entry?.displayName ?? id}</h2>
+			<p class="subtitle">
+				<span style:color>{entry?.element ?? '?'}</span>
+				· {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region ? ` · ${entry.region}` : ''}
+			</p>
+			{#if onToggleTeam && teamState}
+				<div class="dc-actions">
+					<button
+						class="dc-team"
+						class:dc-team--in={teamState === 'in'}
+						disabled={teamState === 'full'}
+						onclick={() => onToggleTeam(id)}
+						title={teamState === 'full' ? 'All four team slots are filled' : undefined}
 					>
-				{/if}
-			</div>
-			<div class="dc-title">
-				<h2 class="title">{entry?.displayName ?? id}</h2>
-				<p class="subtitle">
-					<span style:color>{entry?.element ?? '?'}</span>
-					· {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region ? ` · ${entry.region}` : ''}
-				</p>
-				{#if onToggleTeam && teamState}
-					<div class="dc-actions">
-						<button
-							class="dc-team"
-							class:dc-team--in={teamState === 'in'}
-							disabled={teamState === 'full'}
-							onclick={() => onToggleTeam(id)}
-							title={teamState === 'full' ? 'All four team slots are filled' : undefined}
-						>
-							<Mark name={teamState === 'in' || teamState === 'elsewhere' ? 'check' : 'plus'} />
-							{teamState === 'in'
-								? 'In team — remove'
-								: teamState === 'elsewhere'
-									? `In ${elsewhereLabel ?? 'another team'} — remove`
-									: teamState === 'full'
-										? 'Team full'
-										: 'Add to team'}
-						</button>
-					</div>
-				{/if}
-			</div>
+						<Mark name={teamState === 'in' || teamState === 'elsewhere' ? 'check' : 'plus'} />
+						{teamState === 'in'
+							? 'In team — remove'
+							: teamState === 'elsewhere'
+								? `In ${elsewhereLabel ?? 'another team'} — remove`
+								: teamState === 'full'
+									? 'Team full'
+									: 'Add to team'}
+					</button>
+				</div>
+			{/if}
+		</div>
+		{#if withClose}
 			<button class="dc-close" onclick={onClose} aria-label="Close">
 				<CloseMark />
 			</button>
-		</header>
+		{/if}
+	</header>
+	{#if !withClose && lead}<div class="dc-lead">{@render lead()}</div>{/if}
 
-		<CharacterDetails {id} {conMode} {defaultBuild} onLeave={onClose} />
+	<CharacterDetails {id} {conMode} {defaultBuild} onLeave={onClose} />
+{/snippet}
+
+{#if $nextLayout}
+	<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): one
+	     shell for the Builder's three, a margin that closes it. -->
+	<InspectModal label="{entry?.displayName ?? id} details" width="38rem" accent={color} {onClose}>
+		<div class="dc-panel dc-panel--im" style:--el-color={color}>{@render card(false)}</div>
+	</InspectModal>
+{:else}
+	<div
+		class="dc-backdrop"
+		use:portal
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+		onclick={handleBackdropClick}
+		role="presentation"
+	>
+		<div
+			class="dc-panel"
+			style:--el-color={color}
+			role="dialog"
+			aria-modal="true"
+			aria-label="{entry?.displayName ?? id} details"
+		>
+			<!-- ── Header ─────────────────────────────────────────── -->
+			{@render card(true)}
+		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 	.dc-backdrop {
@@ -272,6 +296,23 @@
 	/* A bare hit target around Nate's close mark — the same treatment the meta
 	   overlays' close wears. Deliberately not .btn--icon: the mark is already a
 	   disc, and a bordered box around it reads as two shapes. */
+	/* Inside the InspectModal shell: the shell is the ground, the border and the
+	   scroller, so the panel keeps only its padding and rhythm; the header
+	   leaves room for the shell's ✕. */
+	.dc-panel--im {
+		max-width: none;
+		max-height: none;
+		overflow: visible;
+		border: none;
+		border-radius: 0;
+		background: none;
+	}
+	.dc-panel--im .dc-header {
+		padding-right: 2.5rem;
+	}
+	.dc-lead {
+		margin-top: -0.3rem;
+	}
 	.dc-close {
 		align-self: flex-start;
 		display: grid;

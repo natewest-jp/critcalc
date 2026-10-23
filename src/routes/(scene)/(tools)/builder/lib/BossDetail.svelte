@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { nextLayout } from '$lib/nextLayout';
+	import InspectModal from '$lib/components/InspectModal.svelte';
 	/**
 	 * A battlefield's boss, in full (Nate 2026-10-09) — opened from the
 	 * magnifier on the board's boss avatar. The full art (not trimmed), the
@@ -83,36 +85,12 @@
 	);
 </script>
 
-<svelte:window onkeydown={(e) => e.key === 'Escape' && onClose()} />
+<svelte:window onkeydown={(e) => !$nextLayout && e.key === 'Escape' && onClose()} />
 
-<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
-     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div
-	class="bd-scrim"
-	use:portal
-	onclick={onClose}
-	transition:fade={{ duration: motion(T_QUICK) }}
-	onintrostart={introLive}
-	onoutrostart={outroInert}
-></div>
-<div
-	class="bd ctx-dark"
-	use:portal
-	role="dialog"
-	aria-modal="true"
-	aria-label={fullName}
-	transition:fade={{ duration: motion(T_QUICK) }}
-	onintrostart={introLive}
-	onoutrostart={outroInert}
->
-	<button class="btn btn--icon bd-close" bind:this={closeBtn} aria-label="Close" onclick={onClose}
-		><Mark name="close" size={16} /></button
-	>
-
+{#snippet body()}
 	<!-- THE HERO (Nate 2026-10-09, second arrangement): the boss stands at the
-	     top right corner, fading leftward and down into the panel; the name and
-	     the battlefield's checks sit beside it. -->
+     top right corner, fading leftward and down into the panel; the name and
+     the battlefield's checks sit beside it. -->
 	<header class="bd-hero">
 		<img class="bd-art" src={bossImage(battlefield.boss, 'art')} alt="" />
 		<div class="bd-hero-text">
@@ -130,7 +108,7 @@
 		</div>
 
 		<!-- THE readout: one paper card ("paper answers") — HP at both
-		     difficulties. -->
+	     difficulties. -->
 		<div class="panel panel--paper bd-card">
 			<div class="bd-hp">
 				<span class="bd-hp-label">Fearless HP</span>
@@ -144,7 +122,7 @@
 	</header>
 
 	<!-- The body: the mechanics in the reading column, the lore and the other
-	     seasons beside them — what a player reads vs what they glance at. -->
+     seasons beside them — what a player reads vs what they glance at. -->
 	<div class="bd-body">
 		<div class="bd-mechs">
 			{#each text?.mechanics ?? [] as m, i (i)}
@@ -171,9 +149,51 @@
 			{/if}
 		</aside>
 	</div>
-</div>
+{/snippet}
+
+{#if $nextLayout}
+	<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): the
+	     Builder's one shell, a margin that closes it. -->
+	<InspectModal label={fullName} width="52rem" {onClose}>
+		<div class="bd-in">{@render body()}</div>
+	</InspectModal>
+{:else}
+	<!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
+	     outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<div
+		class="bd-scrim"
+		use:portal
+		onclick={onClose}
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	></div>
+	<div
+		class="bd ctx-dark"
+		use:portal
+		role="dialog"
+		aria-modal="true"
+		aria-label={fullName}
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+	>
+		<button class="btn btn--icon bd-close" bind:this={closeBtn} aria-label="Close" onclick={onClose}
+			><Mark name="close" size={16} /></button
+		>
+		{@render body()}
+	</div>
+{/if}
 
 <style>
+	/* Inside the InspectModal shell (inspector round): the shell is the ground
+	   and the scroller; the content keeps its own column. */
+	.bd-in {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
 	.bd-scrim {
 		position: fixed;
 		inset: 0;
