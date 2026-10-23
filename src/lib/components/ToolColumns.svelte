@@ -5,6 +5,8 @@
 	import { ASIDE_W, COLUMN_GAP } from '$lib/toolColumns';
 	import { portal } from '$lib/actions/portal';
 	import CloseMark from '$lib/components/CloseMark.svelte';
+	import Mark from '$lib/components/Mark.svelte';
+	import { nextLayout } from '$lib/nextLayout';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 
 	// ---------------------------------------------------------------------------
@@ -136,9 +138,17 @@
 		>
 			<header class="tc-sheet-head">
 				<h2 class="tc-sheet-title">{asideTitle}</h2>
-				<button class="tc-sheet-close" onclick={() => onCloseAside?.()} aria-label="Close">
-					<CloseMark />
-				</button>
+				<!-- Under the switch, the inspector modal's ✕ (Nate 2026-10-23); the
+				     drawn CloseMark stays with the old layout until step 5. -->
+				{#if $nextLayout}
+					<button class="btn btn--icon" onclick={() => onCloseAside?.()} aria-label="Close"
+						><Mark name="close" size={16} /></button
+					>
+				{:else}
+					<button class="tc-sheet-close" onclick={() => onCloseAside?.()} aria-label="Close">
+						<CloseMark />
+					</button>
+				{/if}
 			</header>
 			<div class="tc-sheet-body" class:tc-sheet-body--bare={asideBare}>
 				{@render aside()}
