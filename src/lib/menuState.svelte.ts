@@ -26,6 +26,7 @@ export type Section =
 	| 'profile'
 	| 'profile/new'
 	| 'roster'
+	| 'teams'
 	| 'rotations'
 	| 'lineups'
 	| 'settings'
@@ -46,8 +47,8 @@ const chapterItems = (area: typeof HELP_AREA): SectionItem[] =>
 /**
  * The sidebar (§6.1's table). The profile's group is titled with the profile's
  * own name by the shell, which also shows `profile` to a real profile and
- * `profile/new` to Theorycraft (`profileItems`). ⏭ Teams joins Roster in
- * phase 3; Getting started and Keyboard shortcuts join Help when written.
+ * `profile/new` to Theorycraft (`profileItems`). Getting started and
+ * Keyboard shortcuts join Help when written.
  */
 export const SECTION_GROUPS: SectionGroup[] = [
 	{
@@ -56,7 +57,8 @@ export const SECTION_GROUPS: SectionGroup[] = [
 		items: [
 			{ id: 'profile', label: 'Profile', path: resolve('/profile') },
 			{ id: 'profile/new', label: 'Add your account', path: resolve('/profile/new') },
-			{ id: 'roster', label: 'Roster', path: resolve('/roster') }
+			{ id: 'roster', label: 'Roster', path: resolve('/roster') },
+			{ id: 'teams', label: 'Teams', path: resolve('/teams') }
 		]
 	},
 	{ id: 'library', title: 'Library', items: LIBRARY_ITEMS },
@@ -96,6 +98,11 @@ class MenuState {
 	/** The section on a route of its own, set by the pages layout while the
 	 *  switch is on (a cold load of `/roster`, a link to `/about`). */
 	routed = $state<Section | null>(null);
+
+	/** The Library narrowed to one team's work (a team card's "2 rotations"
+	 *  link, design §3): its set's key and its label. Cleared by the Library's
+	 *  chip, and on leaving. */
+	teamFilter = $state<{ key: string; label: string } | null>(null);
 
 	/** What is showing: the shallow entry's section, else the route's. */
 	get section(): Section | null {

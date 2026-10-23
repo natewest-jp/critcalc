@@ -17,7 +17,15 @@
  * says the changes are not being kept.
  */
 
-import { boards, makeBoard, type Board } from '$lib/boards.svelte';
+import {
+	boardFocus,
+	boards,
+	makeBoard,
+	normalizeSlots,
+	type Board,
+	type TeamSlot
+} from '$lib/boards.svelte';
+import { teamKey } from '$lib/utils/notationEdit';
 import { newTabId, rotationTabs, type RotationTab } from '$lib/rotationTabs.svelte';
 import { ensureStorage } from './boot';
 import {
@@ -31,6 +39,7 @@ import {
 } from './convert';
 import { get, getAll, getMeta, put, setMeta, tombstone } from './db';
 import { settleDocuments } from './arrivals';
+import { levelChanges, movedBody, type LevelChange } from './move';
 import { holdDocument, openStorageChannel, type DocumentLock } from './docLock';
 import { bindRoster, siteSettings, type RosterPart } from '$lib/stores';
 import { get as storeGet } from 'svelte/store';
@@ -43,8 +52,12 @@ import {
 	type DocumentRecord,
 	type LineupDocument,
 	type ProfileRecord,
-	type RotationDocument
+	type RotationBody,
+	type RotationDocument,
+	type TeamRecord
 } from './records';
+
+export { rotationAsSaved } from './convert';
 
 /** How long typing must pause before a save (ms). Short enough that a closed
  *  tab rarely loses anything; `visibilitychange` flushes the rest. */
@@ -121,6 +134,7 @@ class StorageSession {
 				this.version++;
 				if (this.readOnly.includes(msg.id)) void this.#reload(msg.id);
 			}
+			if (msg.store === 'teams') this.teamsVersion++;
 			if (msg.store === 'profiles') {
 				void this.#loadProfiles();
 				if (msg.id === this.profile?.id) void this.#reloadProfile();
@@ -202,6 +216,13 @@ class StorageSession {
 			return this.#records.has(id) ? id : null;
 		}
 		return this.profile?.current[tool] ?? null;
+	}
+
+	/** Whether a live document of the active profile has this id. */
+	async exists(id: string): Promise<boolean> {
+		const db = this.#db ?? (await ensureStorage());
+		const doc = db ? await get(db, 'documents', id) : undefined;
+		return !!doc && !doc.deleted && doc.profileId === this.profile?.id;
 	}
 
 	/** Put a document in its tool. */
@@ -549,6 +570,223 @@ class StorageSession {
 		return true;
 	}
 
+	// ── Teams (phase 3, design §3) ──────────────────────────────────────────
+	//
+	// ⚓ One team per SET of four characters, within a profile: the set is the
+	// identity, the order is stored for display (party order, §12 Q2). Teams
+	// are curated, never filed into, and exist only in real profiles (§2.2).
+
+	/** Bumped on every team write here or in another tab. */
+	teamsVersion = $state(0);
+
+	/** The active profile's teams, in the order made. Theorycraft has none. */
+	async teams(): Promise<TeamRecord[]> {
+		await this.peekProfile();
+		const db = this.#db ?? (await ensureStorage());
+		if (!db || this.profile?.kind !== 'real') return [];
+		const all = await getAll(db, 'teams', this.profile.id);
+		return all.sort((a, b) => a.createdAt - b.createdAt);
+	}
+
+	/** The profile's team holding this set of characters, if any. */
+	async teamFor(slots: readonly (string | null)[]): Promise<TeamRecord | undefined> {
+		const key = teamKey(slots);
+		if (!key) return undefined;
+		return (await this.teams()).find((t) => teamKey(t.slots) === key);
+	}
+
+	/**
+	 * File a set as a team. ⚓ An existing set is not filed twice: the team
+	 * that holds it comes back instead (`created` false). ⚓ An empty name is
+	 * a derived label, as an unnamed document's is (§4.2).
+	 */
+	async saveTeam(
+		slots: readonly (string | null)[],
+		name = ''
+	): Promise<{ team: TeamRecord; created: boolean } | null> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db || this.profile?.kind !== 'real' || !teamKey(slots)) return null;
+		const existing = await this.teamFor(slots);
+		if (existing) return { team: existing, created: false };
+		const now = Date.now();
+		const team: TeamRecord = {
+			id: newId(),
+			updatedAt: now,
+			profileId: this.profile.id,
+			name: name.trim(),
+			slots: normalizeSlots(slots),
+			createdAt: now
+		};
+		await this.#putTeam(db, team);
+		return { team, created: true };
+	}
+
+	/** Rename a team or change its members. Refused (false) when the new set
+	 *  is another team's: one team per set. */
+	async updateTeam(
+		id: string,
+		patch: { name?: string; slots?: readonly (string | null)[] }
+	): Promise<boolean> {
+		const db = this.#db ?? (await ensureStorage());
+		const team = db ? await get(db, 'teams', id) : undefined;
+		if (!db || !team || team.deleted) return false;
+		if (patch.slots) {
+			const other = await this.teamFor(patch.slots);
+			if (other && other.id !== id) return false;
+		}
+		await this.#putTeam(db, {
+			...team,
+			...(patch.name !== undefined && { name: patch.name.trim() }),
+			...(patch.slots && { slots: normalizeSlots(patch.slots) }),
+			updatedAt: Date.now()
+		});
+		return true;
+	}
+
+	/** ⚓ A TOMBSTONE. The rotations and lineups made from it stay. */
+	async deleteTeam(id: string): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return;
+		await tombstone(db, 'teams', id, Date.now());
+		this.#channel?.post({ kind: 'deleted', store: 'teams', id, profileId: this.profile?.id });
+		this.teamsVersion++;
+	}
+
+	async #putTeam(db: IDBDatabase, team: TeamRecord): Promise<void> {
+		await put(db, 'teams', $state.snapshot(team) as TeamRecord);
+		this.#channel?.post({ kind: 'saved', store: 'teams', id: team.id, profileId: team.profileId });
+		this.teamsVersion++;
+	}
+
+	/**
+	 * Plan a rotation (§3): a NEW rotation, the four seated in the team's
+	 * order, resting, in an empty notation (§8.1). It becomes the Planner's
+	 * current document; what was there stays in the Library.
+	 */
+	async planTeam(slots: readonly (string | null)[], con?: Record<string, number>): Promise<void> {
+		const seated = rotationTabs.teamDocument(slots);
+		await this.createRotation({
+			notation: '',
+			slots: seated.slots!,
+			placed: seated.placed!,
+			...(con && Object.keys(con).length ? { con: { ...con } } : {})
+		});
+	}
+
+	/** A new rotation in the active profile, made the Planner's current
+	 *  document (Plan a rotation; the Builder's "Try it with … in the
+	 *  Planner"). What was there stays in the Library. */
+	async createRotation(body: RotationBody, name: string | null = null): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db || !this.profile) return;
+		const now = Date.now();
+		const doc: RotationDocument = {
+			id: newId(),
+			updatedAt: now,
+			profileId: this.profile.id,
+			type: 'rotation',
+			name,
+			createdAt: now,
+			openedAt: now,
+			body: $state.snapshot(body) as RotationBody
+		};
+		await put(db, 'documents', doc);
+		this.#channel?.post({
+			kind: 'saved',
+			store: 'documents',
+			id: doc.id,
+			profileId: doc.profileId
+		});
+		this.version++;
+		if (this.active) {
+			await this.flush();
+			this.#release('planner');
+			this.#show(doc);
+		}
+		await this.#setCurrent(db, 'planner', doc.id);
+	}
+
+	/**
+	 * Add to a lineup (§3): the team goes into the current lineup's first EMPTY
+	 * team, else a new one where the lineup can grow (a Custom one; an endgame
+	 * mode's teams are the game's). ⚓ Nothing is overwritten. Returns the
+	 * team's id, which the Builder selects on arrival, or null when full.
+	 * ⚠ Needs the session ACTIVE (the Builder's board in memory), so a caller
+	 * off a tool goes to the Builder and waits for `documentsReady` first.
+	 */
+	addToLineup(slots: readonly (string | null)[]): string | null {
+		if (!this.active) return null;
+		const board = boards.activeBoard;
+		const seats: TeamSlot[] = normalizeSlots(slots);
+		const target =
+			board.teams.find((t) => t.slots.every((s) => s === null)) ??
+			(board.preset === 'custom' ? boards.addTeam(board.id, seats) : undefined);
+		if (!target) return null;
+		boards.setTeam(board.id, target.id, seats);
+		boardFocus.teamId = target.id;
+		return target.id;
+	}
+
+	// ── Moving out of Theorycraft (phase 3, design §4.3) ────────────────────
+
+	/** The real profiles a Theorycraft document can move to. */
+	get moveTargets(): ProfileRecord[] {
+		return this.profiles.filter((p) => p.kind === 'real');
+	}
+
+	/** What a move would change, for its confirmation: each owned character
+	 *  whose level differs from the profile's roster. */
+	async moveChanges(id: string, profileId: string): Promise<LevelChange[] | null> {
+		const db = this.#db ?? (await ensureStorage());
+		const doc = db ? await get(db, 'documents', id) : undefined;
+		const target = db ? await get(db, 'profiles', profileId) : undefined;
+		if (!doc || doc.deleted || !target || target.deleted) return null;
+		// An arrival is not a document until its first save: write it now.
+		if (this.active) await this.flush();
+		const fresh = (db && (await get(db, 'documents', id))) || doc;
+		return levelChanges(fresh, target.roster);
+	}
+
+	/**
+	 * ⚓ MOVE, not copy (draft 5): the document leaves Theorycraft for the
+	 * profile, its owned characters reading the roster from then on. The site
+	 * switches to that profile and opens it there, so you see where it went.
+	 */
+	async moveTo(id: string, profileId: string): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return;
+		const tool: DocTool =
+			(await get(db, 'documents', id))?.type === 'lineup' ? 'builder' : 'planner';
+		if (this.active) {
+			await this.flush();
+			if (this.currentId(tool) === id) {
+				this.#release(tool);
+				this.#showBlank(tool);
+			}
+		}
+		const doc = await get(db, 'documents', id);
+		const target = await get(db, 'profiles', profileId);
+		if (!doc || doc.deleted || !target || target.deleted || target.kind !== 'real') return;
+		const from = doc.profileId;
+		const moved = {
+			...doc,
+			profileId,
+			body: movedBody(doc, target.roster),
+			updatedAt: Date.now()
+		} as DocumentRecord;
+		await put(db, 'documents', moved);
+		this.#records.delete(id);
+		this.#written.delete(id);
+		this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId });
+		// The profile it left no longer points at it.
+		await this.#putProfile(from, (p) =>
+			p.current[tool] === id ? { ...p, current: { ...p.current, [tool]: null } } : p
+		);
+		this.version++;
+		await this.switchTo(profileId);
+		await this.open(id);
+	}
+
 	// ── Profiles (phase 2d, design §2) ──────────────────────────────────────
 
 	/** Every live profile, Theorycraft first, then in the order made. */
@@ -655,7 +893,9 @@ class StorageSession {
 
 	/** An arriving rotation: Theorycraft's new current document, marked as
 	 *  from a link. Whatever was there before is in the Library. */
-	async receiveRotation(doc: Omit<RotationTab, 'id'>): Promise<boolean> {
+	async receiveRotation(
+		doc: Omit<RotationTab, 'id'>
+	): Promise<{ switched: boolean; id: string; movable: boolean }> {
 		const switched = await this.toTheorycraft();
 		await this.flush();
 		this.#release('planner');
@@ -665,17 +905,17 @@ class StorageSession {
 		// arrival, not the sender's name for it, so the label stays derived.
 		this.#derived.set(tab.id, tab.label);
 		rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
-		return switched;
+		return { switched, id: tab.id, movable: this.moveTargets.length > 0 };
 	}
 
-	async receiveLineup(board: Board): Promise<boolean> {
+	async receiveLineup(board: Board): Promise<{ switched: boolean; id: string; movable: boolean }> {
 		const switched = await this.toTheorycraft();
 		await this.flush();
 		this.#release('builder');
 		const b: Board = { ...board, id: newTabId(), viewedAt: Date.now() };
 		this.#fromLink.add(b.id);
 		boards.restoreFrom({ boards: [b], activeBoardId: b.id });
-		return switched;
+		return { switched, id: b.id, movable: this.moveTargets.length > 0 };
 	}
 
 	/** Documents that arrived by link, marked on their first save. */

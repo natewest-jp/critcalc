@@ -10,6 +10,7 @@
   Strings are working copy.
 -->
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
@@ -19,6 +20,8 @@
 	import type { DocumentRecord, LineupDocument, RotationDocument } from '$lib/storage/records';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import { siteSettings } from '$lib/stores';
+	import { teamKey } from '$lib/utils/notationEdit';
+	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
 
 	let { place }: { place: DocTool } = $props();
 
@@ -42,8 +45,22 @@
 		void storageSession.version;
 		return storageSession.currentId(place);
 	});
-	const pinned = $derived(docs.filter((d) => d.pinned));
-	const recent = $derived(docs.filter((d) => !d.pinned));
+	/** Narrowed to one team's work (a team card's link, design §3); the
+	 *  filter lasts while this place is showing. */
+	const filter = $derived(menu.teamFilter);
+	onDestroy(() => (menu.teamFilter = null));
+	const ofTeam = (d: DocumentRecord): boolean =>
+		!filter ||
+		(d.type === 'rotation'
+			? teamKey(d.body.slots) === filter.key
+			: d.body.teams.some((t) => teamKey(t.slots) === filter.key));
+	const shown = $derived(docs.filter(ofTeam));
+	/** ⚓ Theorycraft's documents can move to a real profile (§4.3). */
+	const canMove = $derived(
+		storageSession.profile?.kind === 'theorycraft' && storageSession.moveTargets.length > 0
+	);
+	const pinned = $derived(shown.filter((d) => d.pinned));
+	const recent = $derived(shown.filter((d) => !d.pinned));
 
 	/** Back onto the tool if it is underneath, else go to it. */
 	function arrive(): void {
@@ -157,6 +174,14 @@
 		<button class="row-act" aria-label="Rename" title="Rename" onclick={() => startRename(d)}
 			><Mark name="edit" size={14} /></button
 		>
+		{#if canMove}
+			<button
+				class="row-act"
+				aria-label={MOVE_TO_PROFILE}
+				title={MOVE_TO_PROFILE}
+				onclick={() => (moveRequest.id = d.id)}><Mark name="forward" size={14} /></button
+			>
+		{/if}
 		<button
 			class="row-act row-act--danger"
 			class:is-armed={armed === d.id}
@@ -194,6 +219,14 @@
 		<button class="btn" onclick={create}
 			><Mark name="plus" size={14} /> New {place === 'planner' ? 'rotation' : 'lineup'}</button
 		>
+		{#if filter}
+			<button
+				class="chip"
+				onclick={() => (menu.teamFilter = null)}
+				aria-label={`Show all, not only ${filter.label}`}
+				title="Show all">{filter.label} <Mark name="close" size={12} /></button
+			>
+		{/if}
 	</div>
 
 	{#if loaded && docs.length === 0}
@@ -201,6 +234,8 @@
 			Nothing saved yet. {place === 'planner' ? 'A rotation' : 'A lineup'} is saved here as soon as you
 			start one.
 		</p>
+	{:else if loaded && shown.length === 0}
+		<p class="empty">No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.</p>
 	{:else if place === 'planner'}
 		{#if pinned.length}
 			<p class="sec">Pinned</p>
@@ -248,8 +283,27 @@
 <style>
 	.place-acts {
 		display: flex;
+		align-items: center;
 		gap: 0.4rem;
 		margin-bottom: 1rem;
+	}
+	/* The team the list is narrowed to; ✕ shows everything again. */
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-left: 0.4rem;
+		padding: 0.25rem 0.55rem;
+		border: 1px solid var(--sel-ring);
+		border-radius: 999px;
+		background: none;
+		color: var(--text);
+		font: inherit;
+		font-size: var(--fs-sm);
+		cursor: pointer;
+	}
+	.chip:hover {
+		background: var(--surface-hover);
 	}
 	.empty {
 		max-width: 34rem;

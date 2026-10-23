@@ -73,6 +73,8 @@
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { awakeIds } from '$lib/utils/notationEdit';
+	import { nextLayout } from '$lib/nextLayout';
+	import type SaveTeamButtonT from './SaveTeamButton.svelte';
 
 	let {
 		mode
@@ -118,6 +120,14 @@
 	// too (`narrowForm()`, breakpoints.ts § THE HEIGHT AXIS) — the column costs
 	// height a landscape phone does not have. ToolStack's @media says the same.
 	const row = $derived(narrowForm());
+
+	/** Save as team (phase 3, design §3) rides the ribbon's head under the
+	 *  switch; loaded on demand, since it brings the storage session. */
+	let SaveTeamC = $state<typeof SaveTeamButtonT | null>(null);
+	$effect(() => {
+		if ($nextLayout && mode === 'rp' && !row && !SaveTeamC)
+			void import('./SaveTeamButton.svelte').then((m) => (SaveTeamC = m.default));
+	});
 
 	const boxW = $derived(row ? benchBand.dockW : RIBBON_W);
 	const boxH = $derived(
@@ -241,6 +251,13 @@
 			<path d={ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)} fill-rule="evenodd" />
 		{/if}
 	</svg>
+	{#if SaveTeamC && $nextLayout && mode === 'rp' && !row}
+		<!-- Under the last card, where the tail begins (⚓ Nate 2026-10-23: the
+		     bottom, not the head): the team's own verb (§3). -->
+		<div class="bb-foot" style:top="{boxH - RIBBON_TAIL_H}px">
+			<SaveTeamC />
+		</div>
+	{/if}
 	<!-- The card run: a column at rest, a row below BP.toolMin. In the row the
 	     cards take their solved width and the strip spreads them. -->
 	<div class="bb-cards" class:bb-cards--row={row}>
@@ -304,6 +321,18 @@
 </div>
 
 <style>
+	.bb-foot {
+		position: absolute;
+		left: var(--bb-pad);
+		right: var(--bb-pad);
+		display: flex;
+		justify-content: center;
+		padding-top: 4px;
+		pointer-events: none;
+	}
+	.bb-foot > :global(*) {
+		pointer-events: auto;
+	}
 	/* The ribbon box: its OWN surface — the dark context's ground and its
 	   radius — one identity everywhere. Width, height, padding and radius come
 	   inline from the RIBBON_* knobs so the dock math and the box always agree.

@@ -169,6 +169,11 @@ export const PAGE_META: Record<string, PageMeta> = {
 		title: 'Roster',
 		description: 'The characters you own and their constellations, kept in this browser.'
 	},
+	'/teams': {
+		title: 'Teams',
+		description:
+			'Your named teams, ready to plan a rotation or add to a lineup. Kept in this browser.'
+	},
 	'/privacy': {
 		title: 'Privacy',
 		description:

@@ -8,7 +8,9 @@
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
 	import type MenuStateT from '$lib/components/MenuState.svelte';
+	import type MoveDialogT from '$lib/components/MoveDialog.svelte';
 	import { menu } from '$lib/menuState.svelte';
+	import { moveRequest } from '$lib/moveRequest.svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import { get } from 'svelte/store';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
@@ -93,6 +95,12 @@
 	 *  section's own route, and over a tool, which it covers without
 	 *  unmounting (its sections are shallow history entries). */
 	let MenuStateC = $state<typeof MenuStateT | null>(null);
+	/** Move to a profile's confirmation (phase 3), loaded on first use. */
+	let MoveDialogC = $state<typeof MoveDialogT | null>(null);
+	$effect(() => {
+		if (moveRequest.id && !MoveDialogC)
+			void import('$lib/components/MoveDialog.svelte').then((m) => (MoveDialogC = m.default));
+	});
 
 	onMount(() => {
 		if (!nextOn) return;
@@ -349,6 +357,9 @@
 
 		<!-- Above the pages and the tools, below both top-bar hosts (z 10). -->
 		{#if MenuStateC && menu.open}<MenuStateC />{/if}
+		{#if MoveDialogC && moveRequest.id}{#key moveRequest.id}<MoveDialogC
+					id={moveRequest.id}
+				/>{/key}{/if}
 	</div>
 
 	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather

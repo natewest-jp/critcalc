@@ -10,6 +10,7 @@ import type { Board } from '$lib/boards.svelte';
 import type { RotationTab } from '$lib/rotationTabs.svelte';
 import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 import { isMintedLabel } from './migrate';
+import type { SavedNotation } from '$lib/stores';
 import type { LineupBody, LineupDocument, RotationBody, RotationDocument } from './records';
 
 /**
@@ -96,4 +97,20 @@ export function nameToStore(label: string, derivedAtLoad: string | undefined): s
 	const trimmed = label.trim();
 	if (!trimmed || trimmed === derivedAtLoad || isMintedLabel(trimmed)) return null;
 	return trimmed;
+}
+
+/** A rotation document in the old bank's shape, for the Builder's pins and
+ *  lists, which still speak it (phase 3 closes 2a's gap: under the switch a
+ *  team's pin names a DOCUMENT). */
+export function rotationAsSaved(doc: RotationDocument): SavedNotation {
+	return {
+		id: doc.id,
+		name: doc.name ?? rotationLabel(doc.body.slots),
+		notation: doc.body.notation,
+		slots: [...doc.body.slots],
+		placed: [...doc.body.placed],
+		tabLoadout: doc.body.loadout ?? {},
+		tabCon: doc.body.con ?? {},
+		savedAt: doc.updatedAt
+	};
 }

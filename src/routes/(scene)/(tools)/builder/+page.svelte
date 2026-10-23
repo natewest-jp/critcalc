@@ -12,7 +12,8 @@
 		siteSettings,
 		ownership,
 		savedBoards,
-		savedNotations
+		savedNotations,
+		type SavedNotation
 	} from '$lib/stores';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import {
@@ -32,6 +33,7 @@
 	import { documentBar, type NoticeAction } from '$lib/documentBar.svelte';
 	import {
 		BOARD_TEAM_LIMIT,
+		boardFocus,
 		boards,
 		effectiveCon,
 		heldElsewhere,
@@ -204,6 +206,38 @@
 	function showLineup(): void {
 		tab = 'lineup';
 	}
+
+	/** The saved rotations a team can pin (phase 3): under the switch, the
+	 *  profile's rotation DOCUMENTS (a pin names a document since 2a); the
+	 *  old bank otherwise. */
+	let sessionMod = $state<typeof import('$lib/storage/session.svelte') | null>(null);
+	onMount(() => {
+		if ($nextLayout) void import('$lib/storage/session.svelte').then((m) => (sessionMod = m));
+	});
+	let storeRotations = $state<SavedNotation[]>([]);
+	$effect(() => {
+		const m = sessionMod;
+		if (!m) return;
+		const s = m.storageSession;
+		void s.version;
+		void s.profile?.id;
+		void s.documents('rotation').then((list) => {
+			storeRotations = list.flatMap((d) => (d.type === 'rotation' ? [m.rotationAsSaved(d)] : []));
+		});
+	});
+	const bank = $derived($nextLayout ? storeRotations : $savedNotations);
+
+	/** A team placed from Teams' Add to a lineup (design §3) arrives selected,
+	 *  on the Lineup, so you see where it went. */
+	$effect(() => {
+		const id = boardFocus.teamId;
+		if (!id || !board.teams.some((t) => t.id === id)) return;
+		untrack(() => {
+			boardFocus.teamId = null;
+			chosenTeamId = id;
+			showLineup();
+		});
+	});
 
 	/** The cold start below the dock: a board with anyone on it opens on the
 	 *  Lineup, an empty one on the Characters it is waiting for. Runs once —
@@ -390,6 +424,18 @@
 	 *  seated and resting (§10.2; design §8.1). Either opens in a NEW tab, so
 	 *  nothing open is replaced. */
 	function openInPlanner(team: BoardTeam): void {
+		// ⚓ Under the switch (build plan §13, phase 3) the team plans in the
+		// CURRENT profile: an arriving document would open in Theorycraft.
+		if ($nextLayout) {
+			void (async () => {
+				const { storageSession } = await import('$lib/storage/session.svelte');
+				const pin = team.pinnedRotationId;
+				if (pin && (await storageSession.exists(pin))) await storageSession.open(pin);
+				else await storageSession.planTeam(team.slots, team.con);
+				void goto(resolve('/planner'));
+			})();
+			return;
+		}
 		const pinned = pinnedRotation(team, $savedNotations);
 		if (pinned) documentBar.loadNewTab(pinned);
 		else {
@@ -487,7 +533,7 @@
 	 *  other tab), the lineup's rail, then band A — never unseen. ⚠ A notice
 	 *  with an Undo in band A overflowed a phone (§11.6 item 20's open point). */
 	let noticeFrom = $state<'grid' | 'lineup'>('grid');
-	const noticeHasActions = $derived(documentBar.noticeActions.length > 0);
+	const noticeHasActions = $derived(documentBar.toolActions.length > 0);
 	const noticeOnGrid = $derived(
 		noticeHasActions &&
 			noticeFrom === 'grid' &&
@@ -573,7 +619,7 @@
 		const incumbent = s.incumbent;
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
-		const pin = pinnedRotation(team, $savedNotations);
+		const pin = pinnedRotation(team, bank);
 		const left = boards.setSlot(boardId, team.id, s.slot, id);
 		const name = nameOf(id);
 		const from = left.length ? ` (from ${teamLabel(board, indexOfTeam(left[0]))})` : '';
@@ -944,7 +990,7 @@
 	 *  above it can never disagree. */
 	const swapTeam = $derived(swapping ? teamById(swapping.teamId) : undefined);
 	const swapConOf = $derived.by(() => {
-		const own = swapTeam ? teamCon(swapTeam, $savedNotations) : {};
+		const own = swapTeam ? teamCon(swapTeam, bank) : {};
 		const roster = mounted ? $constellations : {};
 		return (id: string) => effectiveCon(own, roster, id);
 	});
@@ -1245,7 +1291,7 @@
 		onoutrostart={outroInert}
 	>
 		<span class="tb-notice" role="status" title={documentBar.notice}>{documentBar.notice}</span>
-		{#each documentBar.noticeActions as action (action.label)}
+		{#each documentBar.toolActions as action (action.label)}
 			<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
 				>{action.label}</button
 			>
@@ -1420,7 +1466,7 @@
 						{/if}
 					</span>
 					{#if documentBar.notice && noticeOnLineup}
-						{#each documentBar.noticeActions as action (action.label)}
+						{#each documentBar.toolActions as action (action.label)}
 							<button
 								class="btn btn--glass"
 								transition:fade={{ duration: motion(T_QUICK) }}
@@ -1504,6 +1550,7 @@
 					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
+					{bank}
 					{previewId}
 					filteredFacets={activeFacets}
 					onFind={findFor}
@@ -1555,7 +1602,7 @@
 		     its buttons are bare ink on the hue, as the ✕ is. -->
 		<p class="tb-dest tb-dest--notice" role="status" style:--team-hue={selectedHue}>
 			<span class="tb-dest-notice" title={documentBar.notice}>{documentBar.notice}</span>
-			{#each documentBar.noticeActions as action (action.label)}
+			{#each documentBar.toolActions as action (action.label)}
 				<button
 					class="btn btn--sm tb-dest-action"
 					transition:fade={{ duration: motion(T_QUICK) }}

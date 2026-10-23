@@ -85,6 +85,11 @@ export type Board = {
  *  number: a lineup is two or three teams, and twelve is far past any mode. */
 export const BOARD_TEAM_LIMIT = 12;
 
+/** A team the Builder should select when it next shows its board — set by
+ *  the menu state's Add to a lineup (design §3), which runs while the Builder
+ *  may not be mounted. The Builder clears it once it has taken it. */
+export const boardFocus = $state<{ teamId: string | null }>({ teamId: null });
+
 export const BOARDS_KEY = 'critcalc:boards';
 
 export const recentlyClosedBoards = createRecentlyClosed<Board>('critcalc:recentlyClosedBoards');
