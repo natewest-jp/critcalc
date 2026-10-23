@@ -61,9 +61,10 @@ const MARKS = {
 	 *  RefreshCw — the universal reload/sync glyph — which is half of why
 	 *  "Update" read as a software update. Same action, same mark. */
 	save: 'Save',
-	/** The Library button (§11.6 item 1): books on a shelf — the library's own
-	 *  "Shelf" layout. It replaced Load's FolderOpen, which said "open a file". */
-	library: 'LibraryBig',
+	/** The Library button (§11.6 item 1): books on a shelf. It replaced Load's
+	 *  FolderOpen, which said "open a file". ↻ 2026-10-23 (Nate, to judge):
+	 *  `Library` (filled spines) in place of the outline `LibraryBig`. */
+	library: 'Library',
 	/** The Team Builder's pane switch below the dock (§11.6): the button names
 	 *  the pane it opens — the board panel opening on the right, the character
 	 *  panel on the left. */
@@ -100,6 +101,10 @@ const MARKS = {
 	 *  `warn` again — that mark is the menu's ARMED destructive state, two
 	 *  items away. */
 	report: 'MessageSquareWarning',
+	/** The top bar's `?` menu gives each of its three items a mark (Nate
+	 *  2026-10-23, to judge): Help and About beside Report a problem. */
+	help: 'CircleQuestionMark',
+	about: 'Info',
 
 	// ── Deleting an entry ───────────────────────────────────────────────────
 	// ↻ 2026-10-09: `rename` (Pencil) retired with SavedNotationsOverlay — the

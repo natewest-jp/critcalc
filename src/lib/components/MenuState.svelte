@@ -17,6 +17,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import Mark from '$lib/components/Mark.svelte';
 	import {
 		SECTION_GROUPS,
 		itemOf,
@@ -104,15 +105,6 @@
 
 <svelte:window onkeydown={onKey} />
 
-{#snippet closeGlyph()}
-	<!-- Nate's hand-drawn disc (assets-src/tools/close.svg). -->
-	<svg viewBox="0 0 56 56" fill-rule="evenodd" aria-hidden="true"
-		><path
-			d="M13.773,3.631C32.373,-6.826 55.553,6.546 55.789,27.871C55.539,49.195 32.35,62.584 13.757,52.138C-4.593,41.271 -4.584,14.51 13.773,3.631ZM31.75,27.819C31.75,27.514 33.244,25.918 36.232,23.032C39.219,20.147 40.713,18.469 40.713,18C40.713,17.531 40.315,16.919 39.52,16.165C38.725,15.41 38.067,15.033 37.547,15.033C37.027,15.033 35.314,16.486 32.408,19.392C29.502,22.298 27.952,23.751 27.758,23.751C27.565,23.751 26.004,22.288 23.078,19.362C20.152,16.435 18.474,14.972 18.046,14.972C17.618,14.972 16.991,15.359 16.165,16.134C15.339,16.909 14.926,17.536 14.926,18.016C14.926,18.495 16.394,20.203 19.331,23.139C22.267,26.076 23.736,27.636 23.736,27.819C23.736,28.003 22.257,29.573 19.3,32.53C16.343,35.487 14.865,37.129 14.865,37.455L14.865,37.914C14.865,38.118 15.273,38.602 16.088,39.367C16.904,40.132 17.557,40.514 18.046,40.514C18.536,40.514 20.233,39.061 23.139,36.155C26.045,33.249 27.565,31.796 27.697,31.796C27.83,31.796 29.41,33.264 32.438,36.201C35.467,39.138 37.19,40.606 37.608,40.606C38.026,40.606 38.638,40.213 39.443,39.428C40.249,38.643 40.652,38.021 40.652,37.562C40.652,37.103 39.168,35.39 36.201,32.423C33.234,29.456 31.75,27.921 31.75,27.819Z"
-		/></svg
-	>
-{/snippet}
-
 <div
 	class="menu ctx-dark"
 	class:is-index={section === 'index'}
@@ -175,11 +167,13 @@
 				<!-- A chapter brings its own title. -->
 				{#if item && !chapter}<h2 class="head-title">{item.label}</h2>{/if}
 			</div>
+			<!-- The inspector modal's ✕ (InspectModal), one close on every slate
+			     surface (Nate 2026-10-23). -->
 			<button
-				class="head-close"
+				class="btn btn--icon head-close"
 				aria-label={tool ? `Back to the ${tool.short}` : 'Close'}
 				title={tool ? `Back to the ${tool.short} (Esc)` : 'Close (Esc)'}
-				onclick={() => menu.close()}>{@render closeGlyph()}</button
+				onclick={() => menu.close()}><Mark name="close" size={16} /></button
 			>
 		</header>
 
@@ -329,23 +323,6 @@
 	}
 	.head-close {
 		flex: none;
-		width: 2.25rem;
-		height: 2.25rem;
-		padding: 0;
-		border: none;
-		background: none;
-		color: var(--chrome);
-		opacity: 0.8;
-		cursor: pointer;
-		transition: opacity var(--t-snap);
-	}
-	.head-close:hover {
-		opacity: 1;
-	}
-	.head-close svg {
-		width: 100%;
-		height: 100%;
-		fill: currentColor;
 	}
 	.body {
 		max-width: 60rem;
