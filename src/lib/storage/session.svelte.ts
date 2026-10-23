@@ -70,7 +70,7 @@ import {
 
 export { rotationAsSaved } from './convert';
 
-/** ⏳ Working copy, proposed to Nate. */
+/** Approved by Nate 2026-10-23. */
 const MIGRATED_NOTICE = `Your roster, rotations, and lineups are now in a profile, ${MIGRATED_PROFILE_NAME}`;
 
 /** How long typing must pause before a save (ms). Short enough that a closed

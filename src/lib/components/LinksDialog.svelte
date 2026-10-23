@@ -4,7 +4,8 @@
   then: a first visitor is already in Theorycraft, and a dialog before the
   content they came for is the wrong first impression. It must be answered to
   go (MoveDialog's shape: the backdrop does not dismiss); afterwards the
-  arrival's ordinary notice carries the rule. Strings are working copy.
+  arrival's ordinary notice carries the rule. Strings approved by Nate
+  2026-10-23.
 -->
 <script lang="ts">
 	import { fade } from 'svelte/transition';
@@ -43,8 +44,8 @@
 	<div class="ld-panel ctx-dark" role="alertdialog" aria-modal="true" aria-labelledby="ld-title">
 		<h2 class="title" id="ld-title">Opened in Theorycraft</h2>
 		<p class="note">
-			Shared links open in Theorycraft, so what someone sends you never changes your profiles or
-			your roster.
+			Shared links open in Theorycraft, the place to explore things outside your profiles. Opening
+			linked content never changes your profiles or your roster.
 		</p>
 		{#if linksIntro.moveId}
 			<p class="note note--quiet">To keep it in one of your profiles, move it there.</p>
