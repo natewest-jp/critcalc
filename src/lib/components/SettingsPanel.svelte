@@ -29,10 +29,12 @@
 	} from '$lib/playback/tones';
 	import {
 		downloadBackup,
+		downloadEnvelope,
 		parseBackup,
 		applyBackup,
 		type BackupCounts
 	} from '$lib/utils/settingsBackup';
+	import type { StoreCounts, StoreParse } from '$lib/storage/backup';
 	import {
 		isSafari,
 		readLastBackup,
@@ -57,17 +59,38 @@
 		persistDeclined = !persisted;
 	}
 
-	function exportBackup() {
+	/** ⚓ Under the switch the work lives in the new storage, so a backup is
+	 *  v3: every profile (design §10, §12 Q11). The session is loaded only then. */
+	const session = () => import('$lib/storage/session.svelte').then((m) => m.storageSession);
+
+	async function exportBackup() {
 		const at = Date.now();
-		downloadBackup(at);
+		if ($nextLayout) {
+			const file = await (await session()).backup(at);
+			if (!file) {
+				importError = 'This browser isn’t letting critcalc read its data.';
+				return;
+			}
+			downloadEnvelope(file, at);
+		} else downloadBackup(at);
 		lastBackup = at;
 	}
 
 	/** Saved rotations and lineups changed since the last backup. */
+	let storeSince = $state(0);
+	$effect(() => {
+		const at = lastBackup;
+		if ($nextLayout && at !== null)
+			void session()
+				.then((s) => s.changedSince(at))
+				.then((n) => (storeSince = n));
+	});
 	let savedSince = $derived(
 		lastBackup === null
 			? 0
-			: [...$savedNotations, ...$savedBoards].filter((e) => e.savedAt > lastBackup!).length
+			: $nextLayout
+				? storeSince
+				: [...$savedNotations, ...$savedBoards].filter((e) => e.savedAt > lastBackup!).length
 	);
 
 	function daysAgo(at: number): string {
@@ -102,6 +125,8 @@
 	// clean way to re-hydrate the whole app at once).
 	let fileInput: HTMLInputElement | undefined = $state();
 	let pending = $state<{ data: ReturnType<typeof parseBackup>; counts: BackupCounts } | null>(null);
+	/** The same, under the switch: any backup file, read for the new storage. */
+	let pendingStore = $state<Extract<StoreParse, { ok: true }> | null>(null);
 	let importError = $state<string | null>(null);
 
 	async function onFileChosen(event: Event) {
@@ -111,6 +136,17 @@
 		if (!file) return;
 		importError = null;
 		pending = null;
+		pendingStore = null;
+		if ($nextLayout) {
+			const [{ parseAnyBackup }, { newId }] = await Promise.all([
+				import('$lib/storage/backup'),
+				import('$lib/storage/records')
+			]);
+			const res = parseAnyBackup(await file.text(), { newId });
+			if (!res.ok) importError = res.error;
+			else pendingStore = res;
+			return;
+		}
 		const res = parseBackup(await file.text());
 		if (!res.ok) {
 			importError = res.error;
@@ -133,10 +169,37 @@
 		location.reload();
 	}
 
+	async function confirmStoreImport() {
+		if (!pendingStore) return;
+		try {
+			await (await session()).restore(pendingStore);
+		} catch {
+			pendingStore = null;
+			importError = 'This browser isn’t letting critcalc save data.';
+			return;
+		}
+		location.reload();
+	}
+
 	function cancelImport() {
 		pending = null;
+		pendingStore = null;
 		importError = null;
 	}
+
+	/** "Main and Alt", "Main, Alt, and Spare". */
+	function listOf(names: string[]): string {
+		if (names.length <= 2) return names.join(' and ');
+		return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+	}
+	const storeSummary = (c: StoreCounts): string => {
+		const n = c.profiles.length;
+		const who = n
+			? `${n} ${n === 1 ? 'profile' : 'profiles'} (${listOf(c.profiles)})`
+			: 'no profiles of your own';
+		const plural = (k: number, one: string) => `${k} ${one}${k === 1 ? '' : 's'}`;
+		return `${who}, ${plural(c.rotations, 'rotation')}, ${plural(c.lineups, 'lineup')}, and ${plural(c.teams, 'team')}`;
+	};
 </script>
 
 <div class="sp">
@@ -610,8 +673,13 @@
 			<span class="sp-label">
 				<span class="sp-name">Restore</span>
 				<span class="sp-desc">
-					Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups,
-					open tabs, and settings on this device.
+					{#if $nextLayout}
+						Load a backup file. It replaces every profile in this browser, with its roster, teams,
+						rotations, and lineups, and your settings. An older backup loads too.
+					{:else}
+						Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups,
+						open tabs, and settings on this device.
+					{/if}
 				</span>
 			</span>
 			<button class="btn btn--primary" onclick={() => fileInput?.click()}>
@@ -629,6 +697,23 @@
 		{#if importError}
 			<div class="sp-feedback">
 				<p class="sp-import-error" role="alert">{importError}</p>
+			</div>
+		{/if}
+
+		{#if pendingStore}
+			<div class="sp-feedback">
+				<div class="sp-import-confirm">
+					<p class="sp-import-summary">
+						This backup holds {storeSummary(pendingStore.counts)}. Replace everything in this
+						browser?
+					</p>
+					<div class="sp-import-actions">
+						<button class="btn btn--danger is-confirming" onclick={confirmStoreImport}>
+							<Mark name="warn" /> Replace &amp; reload
+						</button>
+						<button class="btn" onclick={cancelImport}>Cancel</button>
+					</div>
+				</div>
 			</div>
 		{/if}
 

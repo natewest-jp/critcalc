@@ -85,7 +85,7 @@ function clamp(n: number, lo: number, hi: number): number {
 // isn't recognizable. They never throw and never trust incoming types.
 // ---------------------------------------------------------------------------
 
-function sanitizeSiteSettings(v: unknown): Record<string, unknown> | undefined {
+export function sanitizeSiteSettings(v: unknown): Record<string, unknown> | undefined {
 	if (!isObject(v)) return undefined;
 	const out: Record<string, unknown> = {};
 	if (typeof v.useNewOutfits === 'boolean') out.useNewOutfits = v.useNewOutfits;
@@ -150,7 +150,7 @@ function sanitizeSiteSettings(v: unknown): Record<string, unknown> | undefined {
 	return out;
 }
 
-function sanitizeConstellations(v: unknown): Record<string, number> | undefined {
+export function sanitizeConstellations(v: unknown): Record<string, number> | undefined {
 	if (!isObject(v)) return undefined;
 	const out: Record<string, number> = {};
 	for (const [id, level] of Object.entries(v)) {
@@ -161,7 +161,7 @@ function sanitizeConstellations(v: unknown): Record<string, number> | undefined 
 	return out;
 }
 
-function sanitizeOwnership(v: unknown): Record<string, 'owned' | 'wishlist'> | undefined {
+export function sanitizeOwnership(v: unknown): Record<string, 'owned' | 'wishlist'> | undefined {
 	if (!isObject(v)) return undefined;
 	const out: Record<string, 'owned' | 'wishlist'> = {};
 	for (const [id, mark] of Object.entries(v)) {
@@ -170,7 +170,7 @@ function sanitizeOwnership(v: unknown): Record<string, 'owned' | 'wishlist'> | u
 	return out;
 }
 
-function sanitizeLoadout(v: unknown): Record<string, LoadoutEntry> | undefined {
+export function sanitizeLoadout(v: unknown): Record<string, LoadoutEntry> | undefined {
 	if (!isObject(v)) return undefined;
 	const out: Record<string, LoadoutEntry> = {};
 	for (const [id, entry] of Object.entries(v)) {
@@ -190,7 +190,7 @@ function sanitizeLoadout(v: unknown): Record<string, LoadoutEntry> | undefined {
 	return out;
 }
 
-function isNotation(v: unknown): v is string {
+export function isNotation(v: unknown): v is string {
 	return typeof v === 'string' && v.length <= MAX_NOTATION_CHARS;
 }
 
@@ -199,7 +199,7 @@ function finiteOr<T>(v: unknown, fallback: T): number | T {
 }
 
 /** A lineup's teams — shared by a saved lineup and an open one. */
-function sanitizeTeams(v: unknown): Record<string, unknown>[] {
+export function sanitizeTeams(v: unknown): Record<string, unknown>[] {
 	const teams: Record<string, unknown>[] = [];
 	for (const team of Array.isArray(v) ? v : []) {
 		if (!isObject(team) || typeof team.id !== 'string') continue;
@@ -298,13 +298,13 @@ function sanitizeSavedBoards(v: unknown, now: number): Record<string, unknown>[]
 
 /** A rotation's party slots (design §8.1): four entries, each a string or
  *  null. Whether an id is a character is the loader's call (`normalizeSeats`). */
-function sanitizeSlots(v: unknown): (string | null)[] | undefined {
+export function sanitizeSlots(v: unknown): (string | null)[] | undefined {
 	if (!Array.isArray(v)) return undefined;
 	return v.slice(0, 4).map((id) => (typeof id === 'string' ? id : null));
 }
 
 /** Per slot, placed on purpose (§8.1): four booleans. */
-function sanitizePlaced(v: unknown): boolean[] | undefined {
+export function sanitizePlaced(v: unknown): boolean[] | undefined {
 	if (!Array.isArray(v)) return undefined;
 	return v.slice(0, 4).map((x) => x === true);
 }
@@ -382,7 +382,7 @@ function sanitizeRecentlyClosed(
 
 /** The Visualizers' `loadWorkspace` repairs the assignment against the current
  *  instrument roster on read, so this keeps only the envelope it accepts. */
-function sanitizeVizWorkspace(v: unknown): Record<string, unknown> | undefined {
+export function sanitizeVizWorkspace(v: unknown): Record<string, unknown> | undefined {
 	if (!isObject(v) || v.v !== 1 || !Array.isArray(v.assignment)) return undefined;
 	const clean: Record<string, unknown> = {
 		v: 1,
@@ -498,8 +498,14 @@ export function buildEnvelope(exportedAt = Date.now()): BackupEnvelope {
 
 /** Serialize the current state and trigger a file download. */
 export function downloadBackup(exportedAt = Date.now()): void {
+	downloadEnvelope(buildEnvelope(exportedAt), exportedAt);
+}
+
+/** Download any backup envelope (v2 here, v3 from the storage session) and
+ *  stamp it as the last backup. */
+export function downloadEnvelope(envelope: object, exportedAt: number): void {
 	if (!browser) return;
-	const json = JSON.stringify(buildEnvelope(exportedAt), null, 2);
+	const json = JSON.stringify(envelope, null, 2);
 	const blob = new Blob([json], { type: 'application/json' });
 	const url = URL.createObjectURL(blob);
 	const stamp = new Date(exportedAt).toISOString().slice(0, 10);
