@@ -9,8 +9,9 @@
 	import type TopBarT from '$lib/components/TopBar.svelte';
 	import type MenuStateT from '$lib/components/MenuState.svelte';
 	import type MoveDialogT from '$lib/components/MoveDialog.svelte';
+	import type LinksDialogT from '$lib/components/LinksDialog.svelte';
 	import { menu } from '$lib/menuState.svelte';
-	import { moveRequest } from '$lib/moveRequest.svelte';
+	import { linksIntro, moveRequest } from '$lib/moveRequest.svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import { get } from 'svelte/store';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
@@ -100,6 +101,12 @@
 	$effect(() => {
 		if (moveRequest.id && !MoveDialogC)
 			void import('$lib/components/MoveDialog.svelte').then((m) => (MoveDialogC = m.default));
+	});
+	/** The one-time "links open in Theorycraft" dialog, loaded on first use. */
+	let LinksDialogC = $state<typeof LinksDialogT | null>(null);
+	$effect(() => {
+		if (linksIntro.open && !LinksDialogC)
+			void import('$lib/components/LinksDialog.svelte').then((m) => (LinksDialogC = m.default));
 	});
 
 	onMount(() => {
@@ -360,6 +367,7 @@
 		{#if MoveDialogC && moveRequest.id}{#key moveRequest.id}<MoveDialogC
 					id={moveRequest.id}
 				/>{/key}{/if}
+		{#if LinksDialogC && linksIntro.open}<LinksDialogC />{/if}
 	</div>
 
 	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather

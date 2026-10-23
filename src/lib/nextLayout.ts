@@ -19,6 +19,9 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { safeRemoveItem, safeSetItem } from '$lib/stores';
+import { storageUsable } from '$lib/storageUsable';
+
+export { storageFailed } from '$lib/storageUsable';
 
 const KEY = 'critcalc:nextLayout';
 
@@ -32,11 +35,11 @@ function read(): boolean {
 }
 
 function createSwitch() {
-	const store = writable(read());
+	const store = writable(read() && storageUsable());
 	const set = (on: boolean) => {
 		if (on) safeSetItem(KEY, '1');
 		else safeRemoveItem(KEY);
-		store.set(on);
+		store.set(on && storageUsable());
 	};
 	const fromUrl = (url: URL) => {
 		if (!url.searchParams.has('next')) return;

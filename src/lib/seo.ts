@@ -159,7 +159,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 	},
 	'/profile': {
 		title: 'Profile',
-		description: 'Your profile in this browser: its name, picture, and colour.'
+		description: 'Your profile in this browser: its name, picture, and color.'
 	},
 	'/profile/new': {
 		title: 'Add your account',

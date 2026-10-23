@@ -118,6 +118,7 @@ export function sanitizeSiteSettings(v: unknown): Record<string, unknown> | unde
 	if (typeof v.showCoverageStrips === 'boolean') out.showCoverageStrips = v.showCoverageStrips;
 	if (typeof v.toolTransitions === 'boolean') out.toolTransitions = v.toolTransitions;
 	if (typeof v.seenGuestNotice === 'boolean') out.seenGuestNotice = v.seenGuestNotice;
+	if (typeof v.seenLinksNotice === 'boolean') out.seenLinksNotice = v.seenLinksNotice;
 	if (typeof v.uiSize === 'string' && (UI_SIZES as readonly string[]).includes(v.uiSize)) {
 		out.uiSize = v.uiSize;
 	}

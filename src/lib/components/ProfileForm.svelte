@@ -107,7 +107,7 @@
 
 {#if mode === 'new' && !storageSession.canAddProfile}
 	<p class="lede">
-		This browser holds seven accounts, one for each element colour. Delete one to add another.
+		This browser holds seven accounts, one for each element color. Delete one to add another.
 	</p>
 {:else if mode === 'edit' && !editing}
 	<p class="lede">Theorycraft is built in and can't be changed.</p>
@@ -130,8 +130,8 @@
 		</label>
 
 		<div class="pf-field">
-			<span class="pf-name">Colour</span>
-			<div class="swatches" role="radiogroup" aria-label="Colour">
+			<span class="pf-name">Color</span>
+			<div class="swatches" role="radiogroup" aria-label="Color">
 				{#each REAL_COLOURS as c (c)}
 					{@const owner = takenBy(c)}
 					<button

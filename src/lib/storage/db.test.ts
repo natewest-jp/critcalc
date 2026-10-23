@@ -44,7 +44,12 @@ describe('storage', () => {
 		expect(await getAll(db, 'documents', account.id)).toHaveLength(1);
 		expect(await getAll(db, 'teams', account.id)).toHaveLength(1);
 		expect(await getAll(db, 'documents', THEORYCRAFT_ID)).toHaveLength(0);
-		expect(await getMeta(db)).toEqual({ migratedAt: NOW, activeProfileId: account.id });
+		// The player's data moved, so the first tool visit offers a backup.
+		expect(await getMeta(db)).toEqual({
+			migratedAt: NOW,
+			activeProfileId: account.id,
+			backupOffer: true
+		});
 	});
 
 	it('a second migration writes NOTHING (two tabs opening at once)', async () => {

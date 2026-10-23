@@ -47,7 +47,7 @@
 	import '../app.css';
 	import { dev } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { nextLayout } from '$lib/nextLayout';
+	import { nextLayout, storageFailed } from '$lib/nextLayout';
 	import { siteSettings } from '$lib/stores';
 
 	let { children } = $props();
@@ -68,7 +68,10 @@
 			// The new layout's own geometry keys off this (app.css § THE NEW LAYOUT).
 			if (on) document.documentElement.dataset.next = '';
 			else delete document.documentElement.dataset.next;
-			if (on) void import('$lib/storage/boot').then((m) => m.ensureStorage());
+			if (on)
+				void import('$lib/storage/boot')
+					.then((m) => m.ensureStorage())
+					.then((db) => db || storageFailed());
 		});
 	});
 
