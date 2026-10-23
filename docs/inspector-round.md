@@ -35,11 +35,15 @@ Reference about ONE thing picked out of the work, read beside it, never edited. 
 - Clicking a summon of the cast already open CLOSES the pane (same pick, the toggle rule). Correct by the rule; worth watching whether it reads as a bug.
 - A headless click at a bar's CENTRE can land past the track's scrolled edge; click the visible part.
 
-## Open (for Nate)
+## Rulings on the open list (⚓ Nate, 2026-10-23, later)
 
-- Working copy throughout: Inspector, Team, the team page's hint, "On … · a to b", "Always on, for the whole rotation", the cast page's labels, "On the field", "Adds to / Brings to", "Nothing the fingerprint shows", the empty-team line.
-- How the bench shows the picked character (portraits are cut-out art; a ring does not fit).
-- The Builder's character modal still EDITS the default build, against ruling 4; the Roster section cannot edit loadouts yet, so removing it would leave no way to set one under the switch.
-- The pane is the aside's 262px; character pages read narrow there. A wider inspector would move the timeline when switching to the log.
+- All working copy APPROVED as written.
+- The default build LEAVES the Builder's character modal under the switch (the inspector reads). ⏭ Loadouts go into **Teams** (Nate's call, not the Roster; reasons when that work starts), queued on the to-do list, before the flip. The old path keeps it until step 5.
+- The bench shows the picked character by HOLDING the portrait ring's hover gold (`SlotPortrait` `picked`); the gold is `--sel-ring`, the site's selected colour.
+- Width: the inspector steps by screen, 300 / 340 from `broad` / 380 from `vast` (`--rp-inspector-w`, a first proposal for Nate's eye); the log keeps 262, so the column changes width between them, to be judged by eye.
+- A summon of the open cast closing the pane is fine.
+
+## Still open
+
 - Keyboard: bars, pills and chips are pointer-only doors (the aura pips' precedent).
 - A character's coverage strip on their page (the page links to Coverage today).

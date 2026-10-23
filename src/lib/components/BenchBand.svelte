@@ -74,6 +74,7 @@
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { awakeIds } from '$lib/utils/notationEdit';
 	import { nextLayout } from '$lib/nextLayout';
+	import { plannerView } from '$lib/plannerView.svelte';
 	import type SaveTeamButtonT from './SaveTeamButton.svelte';
 
 	let {
@@ -298,6 +299,10 @@
 							: 'Choose a character for this slot'}
 					emptyLabel=""
 					resting={mode === 'rp' && !!char && !awake.includes(char.id)}
+					picked={mode === 'rp' &&
+						$nextLayout &&
+						!!char &&
+						plannerView.inspectedCharacter === char.id}
 				>
 					{#snippet actions()}
 						<!-- ⇄ hands the slot to the Builder's swap mode; ✕ empties it and

@@ -40,6 +40,7 @@
 		id,
 		conMode,
 		defaultBuild = true,
+		rotationNote = !defaultBuild,
 		compact = false,
 		onLeave,
 		afterRoster
@@ -49,6 +50,9 @@
 		/** The roster's Layer-1 loadout, editable (the Team Builder) — see
 		 *  DetailCard's note on the prop's history. */
 		defaultBuild?: boolean;
+		/** The Planner's "for this rotation only" pointer to the bench. Defaults
+		 *  to the old rule (shown wherever the default build is not). */
+		rotationNote?: boolean;
 		/** A narrow column (the inspector pane): capability rows stack. */
 		compact?: boolean;
 		/** Called before a link here takes the reader elsewhere — the modal
@@ -170,7 +174,7 @@
 				}}>Edit in Roster</button
 			>
 		</p>
-		{#if !defaultBuild}
+		{#if rotationNote}
 			<p class="note dc-note">
 				To set this character’s constellation for this rotation only, use the selector on the
 				Planner rather than the Roster.

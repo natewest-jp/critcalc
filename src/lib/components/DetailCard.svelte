@@ -151,7 +151,14 @@
 	</header>
 	{#if !withClose && lead}<div class="dc-lead">{@render lead()}</div>{/if}
 
-	<CharacterDetails {id} {conMode} {defaultBuild} onLeave={onClose} />
+	<!-- ⚓ Under the switch the details are the INSPECTOR, which reads and never
+	     edits (Nate 2026-10-23), so the default build leaves the modal; it moves
+	     to Teams (⏭ queued). The old path keeps it until step 5. -->
+	{#if $nextLayout}
+		<CharacterDetails {id} {conMode} defaultBuild={false} rotationNote={false} onLeave={onClose} />
+	{:else}
+		<CharacterDetails {id} {conMode} {defaultBuild} onLeave={onClose} />
+	{/if}
 {/snippet}
 
 {#if $nextLayout}

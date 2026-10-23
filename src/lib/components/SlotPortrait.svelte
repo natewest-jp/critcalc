@@ -86,7 +86,8 @@
 		portraitLabel = 'Open character selector',
 		actions,
 		emptyLabel = 'Empty',
-		resting = false
+		resting = false,
+		picked = false
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -116,6 +117,9 @@
 		/** ⚓ Seated, with nothing in the notation yet (design §8.1): the card
 		 *  stays in its slot, dimmed — never gone. */
 		resting?: boolean;
+		/** The character the inspector is showing (inspector round): the ring
+		 *  HOLDS its hover gold, the site's selected colour (⚓ Nate). */
+		picked?: boolean;
 		/** The RAIL: the host's slot commands (⇄ · ✕), stacked at the card's
 		 *  left and splitting the portrait's height. Desk only — the compact
 		 *  card has no room and no swap. */
@@ -288,7 +292,7 @@
 		     rises ABOVE the card rather than growing it. The portrait and its
 		     constellation are SIBLING buttons — never one inside another, and
 		     the rail's buttons stand beside them. -->
-		<div class="sp-avatar-chip">
+		<div class="sp-avatar-chip" class:sp-avatar-chip--picked={picked}>
 			<span class="sp-side-art">
 				<SidePortrait
 					id={char ? slotId : null}
@@ -839,7 +843,8 @@
 		border-color: var(--line-soft);
 	}
 	.sp-avatar-chip:has(.sp-side-hit:hover) :global(.spt-disc),
-	.sp-avatar-chip:has(.sp-side-hit:focus-visible) :global(.spt-disc) {
+	.sp-avatar-chip:has(.sp-side-hit:focus-visible) :global(.spt-disc),
+	.sp-avatar-chip--picked :global(.spt-disc) {
 		border-color: var(--sel-ring);
 	}
 	/* The portrait's hit area: the disc (the hair above it is not a target).

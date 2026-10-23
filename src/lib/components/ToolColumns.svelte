@@ -24,6 +24,7 @@
 		asideSticky = false,
 		sheet = false,
 		asideTitle = '',
+		asideWidth,
 		onCloseAside
 	}: {
 		main: Snippet;
@@ -73,6 +74,10 @@
 		 * drops its filters-open flag. The drawer only reports.
 		 */
 		sheet?: boolean;
+		/** The aside's width as a CSS value, when its occupant wants other than
+		 *  ASIDE_W — the Planner's inspector, stepped by screen (inspector
+		 *  round). The drawer reads it too. */
+		asideWidth?: string;
 		/** The drawer's heading — "Filters", "Notes", "Aura log". */
 		asideTitle?: string;
 		/** The drawer's close (scrim, ✕, Escape). */
@@ -95,7 +100,11 @@
 
 <svelte:window onkeydown={onWindowKeydown} />
 
-<div class="tool-columns" style:--aside-w="{ASIDE_W}px" style:--column-gap="{COLUMN_GAP}px">
+<div
+	class="tool-columns"
+	style:--aside-w={asideWidth ?? `${ASIDE_W}px`}
+	style:--column-gap="{COLUMN_GAP}px"
+>
 	<div class="tc-main">{@render main()}</div>
 
 	{#if aside && sheet}

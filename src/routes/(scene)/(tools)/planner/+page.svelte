@@ -900,6 +900,7 @@
 				asideSticky
 				sheet={below('toolMin')}
 				asideTitle={pv.showLog ? 'Aura log' : pv.showInspector ? 'Inspector' : 'Notes'}
+				asideWidth={pv.showInspector ? 'var(--rp-inspector-w)' : undefined}
 				onCloseAside={() => (pv.aside = null)}
 			/>
 		{/snippet}
@@ -1042,6 +1043,25 @@
 	   double gutter under a stack with nothing after it is just a dead margin.
 	   The page is a single child again; the gap is kept for whatever lands
 	   beside the stack next. */
+	/* 🎛️ THE INSPECTOR'S WIDTH (inspector round, 2026-10-23): wider than the
+	   aside's 262, because a character page reads cramped there, and stepped
+	   by screen at the rungs the Builder's board steps at — what the timeline
+	   gives up is a smaller share of a wider screen. A first proposal for
+	   Nate's eye; the log keeps 262, so the column changes width between them.
+	   ⚠ Literals from $lib/breakpoints.ts (`broad`, `vast`). */
+	.rotation-page {
+		--rp-inspector-w: 300px;
+	}
+	@media (min-width: 1500px) {
+		.rotation-page {
+			--rp-inspector-w: 340px;
+		}
+	}
+	@media (min-width: 1900px) {
+		.rotation-page {
+			--rp-inspector-w: 380px;
+		}
+	}
 	.rotation-page {
 		display: flex;
 		flex-direction: column;
