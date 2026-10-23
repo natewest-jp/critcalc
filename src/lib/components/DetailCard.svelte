@@ -14,6 +14,7 @@
 	import type { Snippet } from 'svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import InspectModal from '$lib/components/InspectModal.svelte';
+	import { below } from '$lib/media.svelte';
 
 	// ↻ Inspector round (2026-10-23): this is the SHELL now — backdrop, header,
 	// close. The body is `CharacterDetails`, which the Planner's inspector pane
@@ -56,6 +57,18 @@
 	const color = $derived(
 		(elementColors[(entry?.element ?? 'none') as ElementKey] ?? elementColors.none).main
 	);
+
+	let heroErrored = $state(false);
+	/** The hero's art: the new outfit falls back to the base art, then to
+	 *  nothing (the header reads without it). */
+	function handleHeroError(event: Event) {
+		const img = event.target as HTMLImageElement;
+		if (img.src.includes('-newfit')) {
+			img.src = getAvatarFallback(id, 'full', $siteSettings.travelerVariant);
+		} else {
+			heroErrored = true;
+		}
+	}
 
 	let avatarErrored = $state(false);
 	const avatarFallback = $derived(avatarErrored || !hasAvatar(id));
@@ -101,7 +114,7 @@
      ways, and ChromeOverlay has faded since it was built; the card snapping in
      was not a choice anyone made, just the one modal that never got the
      treatment. Both on T_QUICK now. -->
-{#snippet card(withClose: boolean)}
+{#snippet card()}
 	<header class="dc-header">
 		<div class="dc-avatar ctx-dark">
 			{#if !avatarFallback}
@@ -143,29 +156,83 @@
 				</div>
 			{/if}
 		</div>
-		{#if withClose}
-			<button class="dc-close" onclick={onClose} aria-label="Close">
-				<CloseMark />
-			</button>
-		{/if}
+		<button class="dc-close" onclick={onClose} aria-label="Close">
+			<CloseMark />
+		</button>
 	</header>
-	{#if !withClose && lead}<div class="dc-lead">{@render lead()}</div>{/if}
 
-	<!-- ⚓ Under the switch the details are the INSPECTOR, which reads and never
-	     edits (Nate 2026-10-23), so the default build leaves the modal; it moves
-	     to Teams (⏭ queued). The old path keeps it until step 5. -->
-	{#if $nextLayout}
-		<CharacterDetails {id} {conMode} defaultBuild={false} rotationNote={false} onLeave={onClose} />
-	{:else}
-		<CharacterDetails {id} {conMode} {defaultBuild} onLeave={onClose} />
-	{/if}
+	<CharacterDetails {id} {conMode} {defaultBuild} onLeave={onClose} />
+{/snippet}
+
+<!-- ⚓ THE INSPECTOR'S CHARACTER (Nate 2026-10-23: one design language with
+     the boss and the opponents). The boss's arrangement: the art stands at the
+     top right and fades into the panel, a gold kicker gives the context (here
+     element · weapon · rarity · region), the name is set in the display face,
+     and a hairline closes the header. ⛔ No element-tinted frame, ring or
+     button: the identity lives in the art and the element's word, and the
+     team action is an ordinary button. ⚠ `full` art is 256px, so the hero
+     holds it at ≤ 9.5rem (crisp at 2×). -->
+{#snippet hero()}
+	<header class="dc-hero">
+		{#if !heroErrored}
+			<img
+				class="dc-hero-art"
+				src={getAvatar(id, $siteSettings.useNewOutfits, 'full', $siteSettings.travelerVariant)}
+				alt=""
+				onerror={handleHeroError}
+			/>
+		{/if}
+		<div class="dc-hero-text">
+			<p class="kicker dc-hero-kicker">
+				{entry?.element ?? '?'} · {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region
+					? ` · ${entry.region}`
+					: ''}
+			</p>
+			<h2 class="dc-hero-title">{entry?.displayName ?? id}</h2>
+			{#if onToggleTeam && teamState}
+				<div class="dc-actions">
+					<button
+						class="btn btn--sm"
+						class:is-active={teamState === 'in'}
+						disabled={teamState === 'full'}
+						onclick={() => onToggleTeam(id)}
+						title={teamState === 'full' ? 'All four team slots are filled' : undefined}
+					>
+						<Mark name={teamState === 'in' || teamState === 'elsewhere' ? 'check' : 'plus'} />
+						{teamState === 'in'
+							? 'In team — remove'
+							: teamState === 'elsewhere'
+								? `In ${elsewhereLabel ?? 'another team'} — remove`
+								: teamState === 'full'
+									? 'Team full'
+									: 'Add to team'}
+					</button>
+				</div>
+			{/if}
+		</div>
+		<!-- Full width, under the art's fade: a delta runs long, and squeezed
+		     beside the art it wrapped item by item. -->
+		{#if lead}<div class="dc-lead">{@render lead()}</div>{/if}
+	</header>
+	<div class="dc-im-body">
+		<!-- ⚓ The inspector reads (Nate 2026-10-23): no default build here; it
+		     moves to Teams (⏭ queued). A phone takes the narrow column's rows. -->
+		<CharacterDetails
+			{id}
+			{conMode}
+			defaultBuild={false}
+			rotationNote={false}
+			compact={below('compact')}
+			onLeave={onClose}
+		/>
+	</div>
 {/snippet}
 
 {#if $nextLayout}
 	<!-- ⚓ The inspector's modal shape (inspector round, Nate 2026-10-23): one
 	     shell for the Builder's three, a margin that closes it. -->
-	<InspectModal label="{entry?.displayName ?? id} details" width="38rem" accent={color} {onClose}>
-		<div class="dc-panel dc-panel--im" style:--el-color={color}>{@render card(false)}</div>
+	<InspectModal label="{entry?.displayName ?? id} details" width="38rem" {onClose}>
+		<div class="dc-im" style:--el-color={color}>{@render hero()}</div>
 	</InspectModal>
 {:else}
 	<div
@@ -185,7 +252,7 @@
 			aria-label="{entry?.displayName ?? id} details"
 		>
 			<!-- ── Header ─────────────────────────────────────────── -->
-			{@render card(true)}
+			{@render card()}
 		</div>
 	</div>
 {/if}
@@ -303,22 +370,70 @@
 	/* A bare hit target around Nate's close mark — the same treatment the meta
 	   overlays' close wears. Deliberately not .btn--icon: the mark is already a
 	   disc, and a bordered box around it reads as two shapes. */
-	/* Inside the InspectModal shell: the shell is the ground, the border and the
-	   scroller, so the panel keeps only its padding and rhythm; the header
-	   leaves room for the shell's ✕. */
-	.dc-panel--im {
-		max-width: none;
-		max-height: none;
-		overflow: visible;
-		border: none;
-		border-radius: 0;
-		background: none;
+	/* ── The inspector's character (the boss's header grammar) ────────── */
+	.dc-im {
+		display: flex;
+		flex-direction: column;
+		font-family: var(--font-body);
 	}
-	.dc-panel--im .dc-header {
-		padding-right: 2.5rem;
+	.dc-hero {
+		position: relative;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		padding: var(--im-pad-top) var(--im-pad-x) 1.2rem;
+		border-bottom: 1px solid var(--line-faint);
+	}
+	/* The art at the top right, fading left and down into the panel — the
+	   boss's mask at the character art's own scale. */
+	.dc-hero-art {
+		position: absolute;
+		top: 0;
+		right: 1.5rem;
+		width: 9.5rem;
+		height: auto;
+		mask-image:
+			linear-gradient(to top, transparent 4%, #000 40%),
+			linear-gradient(to right, transparent 0%, #000 30%);
+		-webkit-mask-composite: source-in; /* WebKit's spelling of intersect */
+		mask-composite: intersect;
+		pointer-events: none;
+	}
+	.dc-hero-text {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		max-width: calc(100% - 9rem);
+		min-width: 0;
+	}
+	.dc-hero-kicker {
+		font-size: var(--fs-sm);
+	}
+	.dc-hero-title {
+		margin: 0.15rem 0 0;
+		font-family: var(--font-display);
+		font-size: var(--fs-4xl);
+		line-height: 1.15;
 	}
 	.dc-lead {
-		margin-top: -0.3rem;
+		position: relative;
+		margin-top: 0.9rem;
+	}
+	.dc-im-body {
+		display: flex;
+		flex-direction: column;
+		padding: 1.2rem var(--im-pad-x) 1.5rem;
+	}
+	/* A phone: the art steps down, as the boss's does. */
+	@media (max-width: 47.5rem) /* roomy — $lib/breakpoints.ts */ {
+		.dc-hero-art {
+			width: 7rem;
+			right: 0.5rem;
+		}
+		.dc-hero-text {
+			max-width: calc(100% - 5.5rem);
+		}
 	}
 	.dc-close {
 		align-self: flex-start;

@@ -96,11 +96,22 @@
 	.op-in {
 		display: flex;
 		flex-direction: column;
-		min-height: 0;
 	}
-	/* The shell's ✕ stands at the top right; the title keeps clear of it. */
+	/* The shell's header grammar: its insets, the display title at the
+	   others' size, a hairline under it; the ✕ stands clear at the right. */
 	.op-in .op-head {
-		padding-right: 3.5rem;
+		padding: var(--im-pad-top) 3.5rem 1.1rem var(--im-pad-x);
+		border-bottom: 1px solid var(--line-faint);
+	}
+	.op-in .op-title {
+		font-family: var(--font-display);
+		font-size: var(--fs-4xl);
+		line-height: 1.15;
+	}
+	/* The shell scrolls, so the body no longer needs to. */
+	.op-in .op-body {
+		overflow: visible;
+		padding: 1.2rem var(--im-pad-x) 1.5rem;
 	}
 	.op-scrim {
 		position: fixed;

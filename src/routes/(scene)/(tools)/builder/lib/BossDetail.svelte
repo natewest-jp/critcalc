@@ -192,7 +192,13 @@
 	.bd-in {
 		display: flex;
 		flex-direction: column;
-		min-height: 0;
+	}
+	/* The shell's shared insets (one x for all three modals' text). */
+	.bd-in .bd-hero {
+		padding: var(--im-pad-top) var(--im-pad-x) 1.3rem;
+	}
+	.bd-in .bd-body {
+		padding: 1.2rem var(--im-pad-x) 1.5rem;
 	}
 	.bd-scrim {
 		position: fixed;

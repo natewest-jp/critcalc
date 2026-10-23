@@ -43,6 +43,14 @@ Reference about ONE thing picked out of the work, read beside it, never edited. 
 - Width: the inspector steps by screen, 300 / 340 from `broad` / 380 from `vast` (`--rp-inspector-w`, a first proposal for Nate's eye); the log keeps 262, so the column changes width between them, to be judged by eye.
 - A summon of the open cast closing the pane is fine.
 
+## The Builder's three modals, one language (Nate 2026-10-23, later)
+
+- ⚓ ONE FRAME: a hairline in the plain `--border`, the shell's corners; ⛔ no element-tinted frame, ring or button (the character card's identity edge was the last of it).
+- ONE header grammar: a gold `.kicker` for the context, the title in the display face at `--fs-4xl`, a hairline under the header. The character takes the boss's arrangement (its `full` art top right, fading; ≤ 9.5rem because the art is 256px), its kicker reads element · weapon · rarity · region, and "Add to team" is an ordinary `.btn`. The "Adds to" line runs full width under the header.
+- ONE inset: `--im-pad-x` / `--im-pad-top` on the shell (1.6 / 1.5rem, 1.1rem on a phone), read by all three.
+- 🐛 Fixed: the shell scrolls, so its children must not shrink — the boss hero (`overflow: hidden`) shrank below its content and clipped its family name, checks and HP card on a phone (and would on a desk for any boss taller than the max height). ⚠ The OLD boss shell has the same latent shape; it retires at step 5.
+- A phone reads the character in the narrow-column rows (`compact={below('compact')}`).
+
 ## Still open
 
 - Keyboard: bars, pills and chips are pointer-only doors (the aura pips' precedent).

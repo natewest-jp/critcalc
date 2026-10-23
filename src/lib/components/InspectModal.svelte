@@ -24,11 +24,17 @@
 	 *
 	 * ONE shell for the Builder's three: the character, the boss, a half's
 	 * opponents. They had two, with different scrims, z-orders and widths.
+	 *
+	 * ⚓ ONE FRAME (Nate 2026-10-23): a hairline in the plain border and the
+	 * shell's corners, for all three. ⛔ No element tint on the frame — the
+	 * character card's identity edge was the last of it. Inside, the three
+	 * share a header grammar (a gold `.kicker` for the context, the title in
+	 * the display face, a hairline under the header) and read their insets
+	 * from `--im-pad-x` / `--im-pad-top`, so their text starts at one x.
 	 */
 	let {
 		label,
 		width = '40rem',
-		accent,
 		onClose,
 		children
 	}: {
@@ -36,8 +42,6 @@
 		label: string;
 		/** The panel's widest, as a CSS length. */
 		width?: string;
-		/** An identity edge (a character's element), else the plain border. */
-		accent?: string;
 		onClose: () => void;
 		children: Snippet;
 	} = $props();
@@ -71,7 +75,6 @@
 	aria-modal="true"
 	aria-label={label}
 	style:--im-w={width}
-	style:--im-accent={accent}
 	transition:fade={{ duration: motion(T_QUICK) }}
 	onintrostart={introLive}
 	onoutrostart={outroInert}
@@ -87,6 +90,9 @@
 	   A first value, for Nate's eye. */
 	.im {
 		--im-margin: 2.5rem;
+		/* 🎛️ The content's insets, shared by all three occupants. */
+		--im-pad-x: 1.6rem;
+		--im-pad-top: 1.5rem;
 	}
 	.im-scrim {
 		position: fixed;
@@ -106,11 +112,18 @@
 		max-height: calc(100svh - 2 * var(--im-margin));
 		display: flex;
 		flex-direction: column;
-		border: 1px solid color-mix(in srgb, var(--im-accent, var(--border)) 35%, var(--border));
+		border: 1px solid var(--border);
 		border-radius: var(--r-lg, 6px);
 		background: var(--surface);
 		color: var(--text);
 		overflow: hidden auto;
+	}
+	/* ⚠ The shell is the SCROLLER, so its occupant must never shrink to fit
+	   it: a flex child may, and one with `overflow: hidden` (the boss hero)
+	   shrinks below its content and clips it — on a phone the boss lost its
+	   family name, checks and HP card. */
+	.im > :global(*) {
+		flex-shrink: 0;
 	}
 	.im-close {
 		position: absolute;
@@ -122,6 +135,8 @@
 	@media (max-width: 40rem) {
 		.im {
 			--im-margin: 0px;
+			--im-pad-x: 1.1rem;
+			--im-pad-top: 1.1rem;
 			width: 100vw;
 			height: 100svh;
 			max-height: none;
