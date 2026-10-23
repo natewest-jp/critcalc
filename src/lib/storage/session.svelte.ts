@@ -43,7 +43,10 @@ import {
 	rotationToTab,
 	tabToRotationBody
 } from './convert';
-import { get, getAll, getMeta, put, setMeta, tombstone } from './db';
+import { get, getAll, getMeta, put, readAll, replaceAll, setMeta, tombstone } from './db';
+import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
+import type { MigrationResult } from './migrate';
+import { applyBackup, buildEnvelope } from '$lib/utils/settingsBackup';
 import { settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
 import { holdDocument, openStorageChannel, type DocumentLock } from './docLock';
@@ -137,6 +140,13 @@ class StorageSession {
 		if (this.#channel) return;
 		this.#channel = openStorageChannel();
 		this.#channel.listen((msg) => {
+			// A backup was restored in another tab: everything here is stale,
+			// and saving it would write the old data back over the restore.
+			if (msg.kind === 'replaced') {
+				this.#frozen = true;
+				location.reload();
+				return;
+			}
 			if (msg.store === 'documents') {
 				this.version++;
 				if (this.readOnly.includes(msg.id)) void this.#reload(msg.id);
@@ -489,7 +499,11 @@ class StorageSession {
 
 	// ── Saving ──────────────────────────────────────────────────────────────
 
+	/** Set while a backup is restored: nothing is saved over it. */
+	#frozen = false;
+
 	#queue(p: Pending): void {
+		if (this.#frozen) return;
 		this.#pending = { ...this.#pending, ...p };
 		clearTimeout(this.#timer);
 		this.#timer = setTimeout(() => void this.flush(), SAVE_DELAY_MS);
@@ -580,6 +594,53 @@ class StorageSession {
 		this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: rec.profileId });
 		this.version++;
 		return true;
+	}
+
+	// ── Backup v3 (design §10, §12 Q11) ─────────────────────────────────────
+
+	/** Every profile's live records and the person's settings, as a v3 file. */
+	async backup(exportedAt: number): Promise<StoreBackup | null> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return null;
+		if (this.active) await this.flush();
+		await this.#flushRoster();
+		return buildStoreBackup(await readAll(db), buildEnvelope(exportedAt).data, exportedAt);
+	}
+
+	/** Documents changed since a time — the Settings line under "Last backup". */
+	async changedSince(at: number): Promise<number> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return 0;
+		const all = await readAll(db);
+		return all.documents.filter((d) => !d.deleted && d.updatedAt > at).length;
+	}
+
+	/**
+	 * Restore a backup: ⚓ it REPLACES every profile in this browser, as v1/v2's
+	 * Restore replaced the roster and saved work. Saving stops first, so
+	 * nothing pending can write the old data back; the other tabs are told
+	 * to reload; the caller reloads this one.
+	 */
+	async restore(parsed: Extract<StoreParse, { ok: true }>): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) throw new Error('storage unavailable');
+		this.#frozen = true;
+		clearTimeout(this.#timer);
+		clearTimeout(this.#rosterTimer);
+		this.#pending = {};
+		this.#rosterPending = {};
+		await this.#flushing;
+		await this.#profileQueue;
+		for (const lock of this.#locks.values()) lock.release();
+		this.#locks.clear();
+		await replaceAll(
+			db,
+			$state.snapshot(parsed.store) as MigrationResult,
+			Date.now(),
+			parsed.legacy
+		);
+		applyBackup(parsed.data);
+		this.#channel?.post({ kind: 'replaced' });
 	}
 
 	// ── Compare and the guest star (phase 4, design §4.6) ───────────────────
@@ -1212,6 +1273,7 @@ class StorageSession {
 	#rosterTimer: ReturnType<typeof setTimeout> | undefined;
 
 	#queueRoster(part: RosterPart, value: object): void {
+		if (this.#frozen) return;
 		const key = part === 'ownership' ? 'ownership' : part;
 		this.#rosterPending = { ...this.#rosterPending, [key]: value };
 		clearTimeout(this.#rosterTimer);

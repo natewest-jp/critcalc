@@ -166,3 +166,39 @@ export async function clearAll(db: IDBDatabase): Promise<void> {
 	for (const s of ['profiles', 'documents', 'teams', META]) tx.objectStore(s).clear();
 	await done(tx);
 }
+
+/**
+ * A backup's restore (§10, backup v3): every store emptied and the file's
+ * records written, in ONE transaction, so an interrupted import leaves either
+ * the old data or the new, never half of each. `guestsDue` leaves the
+ * what-if pass to run again (a v1/v2 file came through the migration).
+ */
+export async function replaceAll(
+	db: IDBDatabase,
+	result: MigrationResult,
+	now: number,
+	guestsDue: boolean
+): Promise<void> {
+	const tx = db.transaction(['profiles', 'documents', 'teams', META], 'readwrite');
+	for (const s of ['profiles', 'documents', 'teams', META]) tx.objectStore(s).clear();
+	for (const p of result.profiles) tx.objectStore('profiles').put(p);
+	for (const d of result.documents) tx.objectStore('documents').put(d);
+	for (const t of result.teams) tx.objectStore('teams').put(t);
+	const meta: Meta = { migratedAt: now, activeProfileId: result.activeProfileId };
+	if (!guestsDue) meta.guestsMadeAt = now;
+	tx.objectStore(META).put(meta, META_KEY);
+	await done(tx);
+}
+
+/** Every record of every store, tombstones included (a backup leaves them out). */
+export async function readAll(db: IDBDatabase): Promise<MigrationResult> {
+	const all = async <S extends StoreName>(s: S) =>
+		(await request(db.transaction(s).objectStore(s).getAll())) as Stores[S][];
+	const meta = await getMeta(db);
+	return {
+		profiles: await all('profiles'),
+		documents: await all('documents'),
+		teams: await all('teams'),
+		activeProfileId: meta.activeProfileId ?? 'theorycraft'
+	};
+}

@@ -89,7 +89,9 @@ export const CHANNEL_NAME = 'critcalc:storage';
 /** What a save tells the other tabs. Ids only: they re-read the record. */
 export type StorageMessage =
 	| { kind: 'saved'; store: StoreName; id: string; profileId?: string }
-	| { kind: 'deleted'; store: StoreName; id: string; profileId?: string };
+	| { kind: 'deleted'; store: StoreName; id: string; profileId?: string }
+	/** A backup was restored: every record changed, so the other tabs reload. */
+	| { kind: 'replaced' };
 
 export function openStorageChannel(make = (n: string) => new BroadcastChannel(n)) {
 	const channel = make(CHANNEL_NAME);
