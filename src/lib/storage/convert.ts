@@ -91,10 +91,17 @@ export function boardToLineupBody(board: Board): LineupBody {
  * The name to STORE for a tab: `null` while its label is still the one the
  * session derived for it (an unnamed document stays unnamed as its team
  * changes) or one the tools minted ("Tab 2"), the label once the player has
- * renamed it.
+ * renamed it, or the name the document already has.
  */
-export function nameToStore(label: string, derivedAtLoad: string | undefined): string | null {
+export function nameToStore(
+	label: string,
+	derivedAtLoad: string | undefined,
+	stored: string | null = null
+): string | null {
 	const trimmed = label.trim();
+	// A name already stored stays, whatever it says: a saved entry's name was
+	// typed or accepted at Save, so "Tab 2" there is the player's.
+	if (trimmed && trimmed === stored) return trimmed;
 	if (!trimmed || trimmed === derivedAtLoad || isMintedLabel(trimmed)) return null;
 	return trimmed;
 }

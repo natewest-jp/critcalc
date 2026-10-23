@@ -63,5 +63,8 @@ describe('convert', () => {
 		expect(nameToStore('Tab 3', undefined)).toBeNull();
 		expect(nameToStore('  ', undefined)).toBeNull();
 		expect(nameToStore('Vape practice', 'Bennett · Xiangling')).toBe('Vape practice');
+		// A name already stored stays, even one that looks minted (a saved
+		// entry's name was the player's, typed or accepted at Save).
+		expect(nameToStore('Tab 2', undefined, 'Tab 2')).toBe('Tab 2');
 	});
 });

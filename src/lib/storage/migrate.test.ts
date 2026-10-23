@@ -58,7 +58,22 @@ describe('migrate', () => {
 		expect(rotations(r)[0].body.slots).toEqual(['bennett', 'xiangling', null, null]);
 	});
 
-	it('a tab linked to a saved entry is ONE document: the tab’s content, the saved name', () => {
+	it('a tab linked to a saved entry and unchanged since is ONE document', () => {
+		const r = run({
+			'critcalc:savedNotations': [{ id: 's1', name: 'National', notation: ROT, savedAt: 5 }],
+			'critcalc:rotationTabs': {
+				tabs: [{ id: 't1', label: 'National', notation: ROT, savedId: 's1' }],
+				activeTabId: 't1'
+			}
+		});
+		const docs = rotations(r);
+		expect(docs).toHaveLength(1);
+		expect(docs[0].name).toBe('National');
+		const account = r.profiles.find((p) => p.kind === 'real')!;
+		expect(account.current.planner).toBe(docs[0].id);
+	});
+
+	it('an open tab that moved on keeps its working copy AND its saved version', () => {
 		const r = run({
 			'critcalc:savedNotations': [{ id: 's1', name: 'National', notation: ROT, savedAt: 5 }],
 			'critcalc:rotationTabs': {
@@ -67,11 +82,47 @@ describe('migrate', () => {
 			}
 		});
 		const docs = rotations(r);
-		expect(docs).toHaveLength(1);
-		expect(docs[0].name).toBe('National');
-		expect(docs[0].body.notation).toBe(`${ROT} > Bennett E`);
+		expect(docs.map((d) => [d.name, d.body.notation])).toEqual([
+			['National', `${ROT} > Bennett E`],
+			['National (saved)', ROT]
+		]);
+		expect(docs[1].updatedAt).toBe(5);
+		// The working copy is the one the Planner opens on.
 		const account = r.profiles.find((p) => p.kind === 'real')!;
 		expect(account.current.planner).toBe(docs[0].id);
+	});
+
+	it('a closed tab linked to a saved entry migrates as SAVED, its unsaved changes dropped', () => {
+		const r = run({
+			'critcalc:savedNotations': [{ id: 's1', name: 'National', notation: ROT, savedAt: 500 }],
+			'critcalc:recentlyClosedRotations': [
+				{
+					tab: { id: 't9', label: 'National', notation: `${ROT} > ABANDONED`, savedId: 's1' },
+					closedAt: 100
+				}
+			]
+		});
+		const docs = rotations(r);
+		expect(docs).toHaveLength(1);
+		expect(docs[0].body.notation).toBe(ROT);
+		expect(docs[0].updatedAt).toBe(500);
+	});
+
+	it('a closed and an open tab on one saved entry: the open tab is the working copy', () => {
+		const r = run({
+			'critcalc:savedNotations': [{ id: 's1', name: 'National', notation: ROT, savedAt: 5 }],
+			'critcalc:recentlyClosedRotations': [
+				{
+					tab: { id: 't9', label: 'National', notation: `${ROT} > OLD`, savedId: 's1' },
+					closedAt: 3
+				}
+			],
+			'critcalc:rotationTabs': {
+				tabs: [{ id: 't1', label: 'National', notation: `${ROT} > NEW`, savedId: 's1' }],
+				activeTabId: 't1'
+			}
+		});
+		expect(rotations(r).map((d) => d.body.notation)).toEqual([`${ROT} > NEW`, ROT]);
 	});
 
 	it('a minted label stores no name; a chosen one is kept', () => {
@@ -171,6 +222,61 @@ describe('migrate', () => {
 		expect(rotations(r)[0].body.con).toEqual({ bennett: 6 });
 	});
 
+	it('lineups follow the same two rules: closed migrates saved, an open one that moved on keeps both', () => {
+		const team = (slots: (string | null)[]) => ({ id: 'team1', slots });
+		const saved = { id: 'b1', name: 'Abyss plan', preset: 'abyss', noRepeats: true };
+		const closed = run({
+			'critcalc:savedBoards': [{ ...saved, teams: [team(['bennett', null, null, null])] }],
+			'critcalc:recentlyClosedBoards': [
+				{
+					tab: {
+						...saved,
+						id: 'ob9',
+						label: 'Abyss plan',
+						teams: [team(['diluc', null, null, null])],
+						savedId: 'b1'
+					},
+					closedAt: 1
+				}
+			]
+		});
+		expect(lineups(closed).map((d) => d.body.teams[0].slots[0])).toEqual(['bennett']);
+		const open = run({
+			'critcalc:savedBoards': [{ ...saved, teams: [team(['bennett', null, null, null])] }],
+			'critcalc:boards': {
+				boards: [
+					{
+						...saved,
+						id: 'ob1',
+						label: 'Abyss plan',
+						teams: [team(['diluc', null, null, null])],
+						savedId: 'b1'
+					}
+				],
+				activeBoardId: 'ob1'
+			}
+		});
+		expect(lineups(open).map((d) => [d.name, d.body.teams[0].slots[0]])).toEqual([
+			['Abyss plan', 'diluc'],
+			['Abyss plan (saved)', 'bennett']
+		]);
+	});
+
+	it('one team per set: a second names-only entry with the same four is not a second team', () => {
+		const r = run({
+			'critcalc:savedNotations': [
+				{ id: 's1', name: 'Vape', notation: 'Bennett > Xiangling > Xingqiu > Sucrose', savedAt: 5 },
+				{
+					id: 's2',
+					name: 'Vape again',
+					notation: 'Sucrose > Xingqiu > Xiangling > Bennett',
+					savedAt: 6
+				}
+			]
+		});
+		expect(r.teams.map((t) => t.name)).toEqual(['Vape']);
+	});
+
 	it('lineups: saved + open merge by savedId; a pin is remapped to the document', () => {
 		const team = (pin?: string) => ({
 			id: 'team1',
@@ -232,6 +338,8 @@ describe('isMintedLabel', () => {
 		expect(isMintedLabel('Tab 12')).toBe(true);
 		expect(isMintedLabel('Lineup 3')).toBe(true);
 		expect(isMintedLabel('Sample: Mavuika Melt')).toBe(true);
+		expect(isMintedLabel('Shared rotation')).toBe(true);
+		expect(isMintedLabel('Imported team')).toBe(true);
 		expect(isMintedLabel('Tab twelve')).toBe(false);
 		expect(isMintedLabel('My Tab 1')).toBe(false);
 	});
