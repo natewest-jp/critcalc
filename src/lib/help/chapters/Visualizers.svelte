@@ -7,6 +7,10 @@
 	 INSTRUMENTS in visualizers/lib/workspace.ts is the source of truth for the
 	 roster, and the sections follow the picker’s order. -->
 
+<script lang="ts">
+	import { nextLayout } from '$lib/nextLayout';
+</script>
+
 <h1>Visualizers</h1>
 
 <p class="flavor">
@@ -21,19 +25,38 @@
 
 <section>
 	<h2 id="workspace">The workspace</h2>
-	<p>
-		The workspace shows as many instruments side by side as the window has room for: one, two from
-		1360px wide, three from 2200px. The menu over each tile picks its instrument; picking one
-		already showing in another tile swaps the two. <strong>Instruments shown</strong> in the
-		document bar can lower the count, and <strong>Reset layout</strong> puts back the default lineup.
-		Both are hidden when only one tile fits.
-	</p>
-	<p>
-		Each tile has its own <strong>Defaults</strong>, which resets that instrument’s controls, and
-		<strong>Share</strong>, which copies a link that reopens the instrument exactly as it looks now
-		(the link always opens in the reader’s first tile). The tile’s <strong>⋯</strong> menu has
-		<strong>Report a problem</strong> for sending feedback related to that instrument.
-	</p>
+	{#if $nextLayout}
+		<p>
+			The workspace shows as many instruments side by side as the window has room for: one, two from
+			1360px wide, three from 2200px. The menu over each tile picks its instrument; picking one
+			already showing in another tile swaps the two. <strong>Layout</strong>, beside the last tile,
+			can lower the count, and its <strong>Reset layout</strong> puts back the default instruments.
+		</p>
+	{:else}
+		<p>
+			The workspace shows as many instruments side by side as the window has room for: one, two from
+			1360px wide, three from 2200px. The menu over each tile picks its instrument; picking one
+			already showing in another tile swaps the two. <strong>Instruments shown</strong> in the
+			document bar can lower the count, and <strong>Reset layout</strong> puts back the default lineup.
+			Both are hidden when only one tile fits.
+		</p>
+	{/if}
+	{#if $nextLayout}
+		<p>
+			Each tile has <strong>Copy link</strong>, which copies a link that reopens the instrument
+			exactly as it looks now (the link always opens in the reader’s first tile). The tile’s
+			<strong>⋯</strong> menu has <strong>Defaults</strong>, which resets that instrument’s
+			controls, and
+			<strong>Report a problem</strong> for sending feedback related to that instrument.
+		</p>
+	{:else}
+		<p>
+			Each tile has its own <strong>Defaults</strong>, which resets that instrument’s controls, and
+			<strong>Share</strong>, which copies a link that reopens the instrument exactly as it looks
+			now (the link always opens in the reader’s first tile). The tile’s <strong>⋯</strong> menu has
+			<strong>Report a problem</strong> for sending feedback related to that instrument.
+		</p>
+	{/if}
 	<p>
 		The layout is remembered between visits, but the instruments’ settings are not, and start from
 		their defaults each time. Within a site visit, an instrument keeps its state while it’s out of

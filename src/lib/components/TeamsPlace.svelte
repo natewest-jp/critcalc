@@ -293,7 +293,7 @@
 
 		{#if loaded && teams.length === 0}
 			<p class="empty">
-				No teams yet. Make one here, or save the team on the Planner's bench as a team.
+				No teams yet. Make one here, or use <strong>Save as team</strong> on the Planner’s bench.
 			</p>
 		{/if}
 

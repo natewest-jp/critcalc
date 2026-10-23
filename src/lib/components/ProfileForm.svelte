@@ -114,8 +114,8 @@
 {:else}
 	{#if mode === 'new'}
 		<p class="lede">
-			A profile is one Genshin account, kept in this browser: its roster, rotations, and lineups.
-			Shared links still open in Theorycraft, so your profiles stay as you left them.
+			A profile is one Genshin account, kept in this browser: its roster, teams, rotations, and
+			lineups. Shared links open in Theorycraft, so your profiles stay as you left them.
 		</p>
 	{/if}
 

@@ -11,6 +11,7 @@
 	 IT (its Web Analytics FAQ) — we have not measured the beacon. Update
 	 "Last updated" with any change. -->
 <script lang="ts">
+	import { nextLayout } from '$lib/nextLayout';
 	import { resolve } from '$app/paths';
 </script>
 
@@ -23,29 +24,67 @@
 
 <section>
 	<h2 id="in-your-browser">What stays in your browser</h2>
-	<p>Everything you create is kept in this browser’s local storage, on this device only:</p>
+	{#if $nextLayout}
+		<p>Everything you create is kept in this browser, on this device only:</p>
+	{:else}
+		<p>Everything you create is kept in this browser’s local storage, on this device only:</p>
+	{/if}
 	<ul>
 		<li>Your settings: display, Human timing, playback sound, and swap ping.</li>
-		<li>Your roster: which characters you own or have wishlisted, and at what constellation.</li>
-		<li>Weapon and artifact loadouts.</li>
-		<li>Saved rotations and teams, and saved lineups.</li>
-		<li>Open tabs in the Rotation Planner and the Team Builder, and their recently closed tabs.</li>
+		{#if $nextLayout}
+			<li>
+				Your profiles, each with its name, picture, and color, its roster (which characters you own
+				or have wishlisted, at what constellation, with their loadouts), its teams, rotations, and
+				lineups, and which of them is open.
+			</li>
+		{:else}
+			<li>Your roster: which characters you own or have wishlisted, and at what constellation.</li>
+		{/if}
+		{#if !$nextLayout}
+			<li>Weapon and artifact loadouts.</li>
+		{/if}
+		{#if !$nextLayout}
+			<li>Saved rotations and teams, and saved lineups.</li>
+		{/if}
+		{#if !$nextLayout}
+			<li>
+				Open tabs in the Rotation Planner and the Team Builder, and their recently closed tabs.
+			</li>
+		{/if}
 		<li>The Visualizers’ layout.</li>
 		<li>When you last downloaded a backup, so Settings can tell you.</li>
 		<li>Whether critcalc has already asked your browser to keep its data.</li>
 	</ul>
-	<p>
-		critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a> carries
-		all of it. <strong>Reset saved data</strong> in the same place clears your roster, loadouts, saved
-		rotations, and saved lineups but keeps your settings. To remove everything, clear this site’s data
-		in your browser.
-	</p>
-	<p>
-		Browsers can clear a site’s storage on their own, for example after a while without a visit. The
-		first time you save a rotation or lineup, critcalc asks your browser to keep this site’s data
-		instead. Firefox shows you a prompt for this; other browsers decide by themselves. Settings
-		shows what your browser answered.
-	</p>
+	{#if $nextLayout}
+		<p>
+			critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a>
+			carries all of it. <strong>Reset saved data</strong> in the same place clears the profile you’re
+			in: its roster, loadouts, rotations, lineups, and teams. Your settings are kept. To remove everything,
+			clear this site’s data in your browser.
+		</p>
+	{:else}
+		<p>
+			critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a>
+			carries all of it. <strong>Reset saved data</strong> in the same place clears your roster, loadouts,
+			saved rotations, and saved lineups but keeps your settings. To remove everything, clear this site’s
+			data in your browser.
+		</p>
+	{/if}
+	{#if $nextLayout}
+		<p>
+			Browsers can clear a site’s storage on their own, for example after a while without a visit.
+			The first time you change a rotation or lineup, critcalc asks your browser to keep this site’s
+			data instead. Firefox shows you a prompt for this; other browsers decide by themselves.
+			Settings shows what your browser answered.
+		</p>
+	{:else}
+		<p>
+			Browsers can clear a site’s storage on their own, for example after a while without a visit.
+			The first time you save a rotation or lineup, critcalc asks your browser to keep this site’s
+			data instead. Firefox shows you a prompt for this; other browsers decide by themselves.
+			Settings shows what your browser answered.
+		</p>
+	{/if}
 </section>
 
 <section>
