@@ -252,8 +252,9 @@
 		{/if}
 	</svg>
 	{#if SaveTeamC && $nextLayout && mode === 'rp' && !row}
-		<!-- The head, above the first card: the team's own verb (§3). -->
-		<div class="bb-head" style:top="{RIBBON_CHROME}px" style:height="{head}px">
+		<!-- Under the last card, where the tail begins (⚓ Nate 2026-10-23: the
+		     bottom, not the head): the team's own verb (§3). -->
+		<div class="bb-foot" style:top="{boxH - RIBBON_TAIL_H}px">
 			<SaveTeamC />
 		</div>
 	{/if}
@@ -320,17 +321,16 @@
 </div>
 
 <style>
-	.bb-head {
+	.bb-foot {
 		position: absolute;
 		left: var(--bb-pad);
 		right: var(--bb-pad);
 		display: flex;
-		align-items: flex-end;
 		justify-content: center;
-		padding-bottom: 6px;
+		padding-top: 4px;
 		pointer-events: none;
 	}
-	.bb-head > :global(*) {
+	.bb-foot > :global(*) {
 		pointer-events: auto;
 	}
 	/* The ribbon box: its OWN surface — the dark context's ground and its
