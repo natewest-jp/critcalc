@@ -14,6 +14,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
+	import BandMenu from './BandMenu.svelte';
+	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { recency, storageSession, type DocTool } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
@@ -111,8 +113,10 @@
 		arrive();
 	}
 
-	async function create(): Promise<void> {
-		await storageSession.create(place);
+	/** A new document; a lineup takes the shape chosen from New lineup's menu
+	 *  (Stygian, Abyss or Custom, as band A's + offered off the switch). */
+	async function create(preset?: BoardPreset): Promise<void> {
+		await storageSession.create(place, preset);
 		arrive();
 	}
 
@@ -286,10 +290,28 @@
 		{#if pickFor}
 			<p class="pick-head">Choose a rotation to compare with</p>
 			<button class="btn" onclick={() => (menu.pickFor = null)}>Cancel</button>
-		{:else}
-			<button class="btn" onclick={create}
-				><Mark name="plus" size={14} /> New {place === 'planner' ? 'rotation' : 'lineup'}</button
+		{:else if place === 'planner'}
+			<button class="btn" onclick={() => create()}
+				><Mark name="plus" size={14} /> New rotation</button
 			>
+		{:else}
+			<BandMenu label="New lineup" mark="plus" align="start">
+				{#snippet items(close)}
+					{#each BOARD_PRESETS as p (p.key)}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								close();
+								void create(p.key);
+							}}
+						>
+							<span class="preset-label">{p.label}</span>
+							<span class="preset-hint">{p.hint}</span>
+						</button>
+					{/each}
+				{/snippet}
+			</BandMenu>
 		{/if}
 		{#if filter}
 			<button
@@ -618,5 +640,15 @@
 	}
 	.card .row-acts {
 		padding-top: 0.5rem;
+	}
+	/* New lineup's menu: the shape's name, then what it starts with. */
+	.preset-label {
+		font-weight: var(--fw-semibold);
+		flex-shrink: 0;
+		min-width: 9rem;
+	}
+	.preset-hint {
+		font-size: var(--fs-sm);
+		color: var(--muted);
 	}
 </style>

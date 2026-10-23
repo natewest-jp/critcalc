@@ -15,16 +15,15 @@
   and says which team holds it. Strings are working copy.
 -->
 <script lang="ts">
-	import { tick } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
+	import BandMenu from './BandMenu.svelte';
+	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
-	import { documentsReady } from '$lib/storage/arrivals';
 	import { rotationLabel } from '$lib/storage/convert';
 	import type { DocumentRecord, TeamRecord } from '$lib/storage/records';
-	import { documentBar } from '$lib/documentBar.svelte';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { getAvatar } from '$lib/utils/getAvatar';
@@ -95,24 +94,11 @@
 		arrive(resolve('/planner'));
 	}
 
-	async function addToLineup(t: TeamRecord): Promise<void> {
-		const builder = resolve('/builder');
-		// The lineup lives in the Builder's memory: off a tool, go there first
-		// and wait for the session to load it.
-		if (!storageSession.active) {
-			menu.leaveTo(builder);
-			if (!(await documentsReady)) return;
-			await tick();
-			place(t);
-			return;
-		}
-		if (place(t)) arrive(builder);
-	}
-
-	function place(t: TeamRecord): boolean {
-		if (storageSession.addToLineup(t.slots)) return true;
-		documentBar.showNotice('The lineup is full');
-		return false;
+	/** ⚓ A NEW lineup of the chosen shape, holding this team (Nate
+	 *  2026-10-23); placing a team into an existing lineup is a later design. */
+	async function newLineup(t: TeamRecord, preset: BoardPreset): Promise<void> {
+		await storageSession.create('builder', preset, t.slots);
+		arrive(resolve('/builder'));
 	}
 
 	// ── Rename, in place ────────────────────────────────────────────────────
@@ -365,7 +351,23 @@
 					</span>
 					<span class="card-acts">
 						<button class="btn btn--primary" onclick={() => plan(t)}>Plan a rotation</button>
-						<button class="btn" onclick={() => addToLineup(t)}>Add to a lineup</button>
+						<BandMenu label="New lineup" align="start">
+							{#snippet items(close)}
+								{#each BOARD_PRESETS as p (p.key)}
+									<button
+										class="band-menu-item"
+										role="menuitem"
+										onclick={() => {
+											close();
+											void newLineup(t, p.key);
+										}}
+									>
+										<span class="preset-label">{p.label}</span>
+										<span class="preset-hint">{p.hint}</span>
+									</button>
+								{/each}
+							{/snippet}
+						</BandMenu>
 					</span>
 				</li>
 			{/each}
@@ -672,5 +674,15 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		font-size: var(--fs-sm);
+	}
+	/* New lineup's menu: the shape's name, then what it starts with. */
+	.preset-label {
+		font-weight: var(--fw-semibold);
+		flex-shrink: 0;
+		min-width: 9rem;
+	}
+	.preset-hint {
+		font-size: var(--fs-sm);
+		color: var(--muted);
 	}
 </style>

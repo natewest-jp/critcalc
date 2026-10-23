@@ -32,6 +32,7 @@
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { documentBar, type NoticeAction } from '$lib/documentBar.svelte';
 	import {
+		BOARD_PRESETS,
 		BOARD_TEAM_LIMIT,
 		boardFocus,
 		boards,
@@ -480,12 +481,6 @@
 			}
 		})
 	);
-
-	const PRESETS: { key: BoardPreset; label: string; hint: string }[] = [
-		{ key: 'stygian', label: 'Stygian Onslaught', hint: 'Three teams' },
-		{ key: 'abyss', label: 'Spiral Abyss', hint: 'Two teams' },
-		{ key: 'custom', label: 'Custom', hint: 'One team, add more as you go' }
-	];
 
 	function newBoard(preset: BoardPreset): void {
 		// ↻ §11.6: no season is stored — a new Stygian lineup FOLLOWS the season
@@ -1264,7 +1259,7 @@
 
 <!-- The + on the board tabs: a new board from a preset (§10.5). -->
 {#snippet presetItems(close: () => void)}
-	{#each PRESETS as p (p.key)}
+	{#each BOARD_PRESETS as p (p.key)}
 		<button
 			class="band-menu-item"
 			role="menuitem"

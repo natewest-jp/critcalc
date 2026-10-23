@@ -118,6 +118,14 @@ export function makeTeam(slots: TeamSlot[] = emptySlots()): BoardTeam {
 	return { id: genId(), slots: normalizeSlots(slots) };
 }
 
+/** The three shapes a new lineup can take, in menu order: band A's + off the
+ *  switch, the Library's New lineup under it. */
+export const BOARD_PRESETS: readonly { key: BoardPreset; label: string; hint: string }[] = [
+	{ key: 'stygian', label: 'Stygian Onslaught', hint: 'Three teams' },
+	{ key: 'abyss', label: 'Spiral Abyss', hint: 'Two teams' },
+	{ key: 'custom', label: 'Custom', hint: 'One team, add more as you go' }
+];
+
 export function makeBoard(label: string, preset: BoardPreset = 'custom'): Board {
 	return {
 		id: genId(),
