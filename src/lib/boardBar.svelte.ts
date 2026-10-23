@@ -235,7 +235,13 @@ class BoardBarState {
 	async shareUrl(): Promise<string | null> {
 		const board = boards.activeBoard;
 		if (!boardWorthKeeping(board)) return null;
-		const param = await encodeBoard(toSharedBoard(board, get(savedNotations), get(constellations)));
+		// ⚓ Under the switch a pin names a rotation in the NEW storage: the old
+		// bank would miss it and the link would carry the team's own levels
+		// rather than the pinned rotation's the Builder shows.
+		const saved = get(nextLayout)
+			? await (await import('./storage/session.svelte')).storageSession.savedRotations()
+			: get(savedNotations);
+		const param = await encodeBoard(toSharedBoard(board, saved, get(constellations)));
 		return `${location.origin}/builder?b=${param}`;
 	}
 }

@@ -39,6 +39,7 @@ import {
 	lineupLabel,
 	lineupToBoard,
 	nameToStore,
+	rotationAsSaved,
 	rotationLabel,
 	rotationToTab,
 	tabToRotationBody
@@ -50,8 +51,9 @@ import { applyBackup, buildEnvelope } from '$lib/utils/settingsBackup';
 import { settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
 import { holdDocument, openStorageChannel, type DocumentLock } from './docLock';
-import { bindRoster, siteSettings, type RosterPart } from '$lib/stores';
+import { bindRoster, siteSettings, type RosterPart, type SavedNotation } from '$lib/stores';
 import { get as storeGet } from 'svelte/store';
+import { askOnFirstSave } from '$lib/utils/storageDurability';
 import {
 	THEORYCRAFT_ID,
 	newId,
@@ -226,6 +228,14 @@ class StorageSession {
 		return all.filter((d) => d.type === type);
 	}
 
+	/** The active profile's rotations in the saved-entry shape a lineup's pins
+	 *  resolve against (`teamCon`): what the Builder draws and what its share
+	 *  link carries read this one list. */
+	async savedRotations(): Promise<SavedNotation[]> {
+		const docs = await this.documents('rotation');
+		return docs.flatMap((d) => (d.type === 'rotation' ? [rotationAsSaved(d)] : []));
+	}
+
 	/** The document a tool is showing, or the profile's current one off a tool.
 	 *  `null` for a blank that is not a document yet. */
 	currentId(tool: DocTool): string | null {
@@ -329,6 +339,48 @@ class StorageSession {
 		const next = (await this.documents(doc.type)).sort((a, b) => recency(b) - recency(a))[0];
 		if (next) await this.open(next.id);
 		else if (this.active) this.#showBlank(tool);
+	}
+
+	/** Settings' Reset (⚓ Nate 2026-10-23: the ACTIVE profile's, like the
+	 *  roster resets): every document of one type, tombstoned, and the tool on
+	 *  a blank. ⚠ Never the old localStorage keys, which stay as the migration
+	 *  found them (copy-only, §13.1). */
+	async removeAll(type: DocumentRecord['type']): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db || !this.profile) return;
+		const tool: DocTool = type === 'rotation' ? 'planner' : 'builder';
+		if (this.active) await this.flush();
+		const now = Date.now();
+		for (const d of await this.documents(type)) {
+			this.#tombstoned.add(d.id);
+			await tombstone(db, 'documents', d.id, now);
+			this.#records.delete(d.id);
+			this.#written.delete(d.id);
+			this.#locks.get(d.id)?.release();
+			this.#locks.delete(d.id);
+			this.#channel?.post({
+				kind: 'deleted',
+				store: 'documents',
+				id: d.id,
+				profileId: d.profileId
+			});
+		}
+		this.version++;
+		await this.#setCurrent(db, tool, null);
+		if (this.active) this.#showBlank(tool);
+	}
+
+	/** The active profile's teams, all of them (Settings' Reset everything). */
+	async removeAllTeams(): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		const pid = this.profile?.id;
+		if (!db || !pid) return;
+		const now = Date.now();
+		for (const t of await getAll(db, 'teams', pid)) {
+			await tombstone(db, 'teams', t.id, now);
+			this.#channel?.post({ kind: 'deleted', store: 'teams', id: t.id, profileId: pid });
+		}
+		this.teamsVersion++;
 	}
 
 	/** Deleted here: never saved again, whatever a stale snapshot holds. */
@@ -593,6 +645,11 @@ class StorageSession {
 		this.#written.set(id, key);
 		this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: rec.profileId });
 		this.version++;
+		// ⚓ The persist ask on the first save of work (Nate 2026-10-23), the old
+		// Save's rule moved to autosave. Only a CHANGE to a document that already
+		// exists counts: Theorycraft's sample is written on a first visit with
+		// nobody touching it, and the prompt must have a reason the user can see.
+		if (prev) askOnFirstSave();
 		return true;
 	}
 
