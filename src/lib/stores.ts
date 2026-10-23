@@ -23,6 +23,7 @@ import {
 import { browser } from '$app/environment';
 import { narrowFormQuery } from '$lib/breakpoints';
 import { askOnFirstSave } from '$lib/utils/storageDurability';
+import { storageUsable } from '$lib/storageUsable';
 
 // ---------------------------------------------------------------------------
 // Guarded writes
@@ -274,7 +275,7 @@ let rosterSink: ((part: RosterPart, value: object) => void) | null = null;
 const underSwitch = (): boolean => {
 	if (!browser) return false;
 	try {
-		return localStorage.getItem('critcalc:nextLayout') === '1';
+		return localStorage.getItem('critcalc:nextLayout') === '1' && storageUsable();
 	} catch {
 		return false;
 	}
