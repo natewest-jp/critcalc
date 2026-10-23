@@ -1,6 +1,6 @@
 # The inspector round (phase 5, 2026-10-23)
 
-Design: `docs/profiles-and-surfaces-design.md` §7. Built straight into the real tools behind `?next` (Nate: no `/lab` mock-up, real data from the start). Branch `feat/inspector`.
+Design: `docs/profiles-and-surfaces-design.md` §7. Built straight into the real tools behind `?next` (Nate: no `/lab` mock-up, real data from the start). Branch `feat/inspector`, merged `971c721d`; the opponents header followed as `646b366c`. Pushed 2026-10-23.
 
 ## What it is
 
@@ -50,6 +50,12 @@ Reference about ONE thing picked out of the work, read beside it, never edited. 
 - ONE inset: `--im-pad-x` / `--im-pad-top` on the shell (1.6 / 1.5rem, 1.1rem on a phone), read by all three.
 - 🐛 Fixed: the shell scrolls, so its children must not shrink — the boss hero (`overflow: hidden`) shrank below its content and clipped its family name, checks and HP card on a phone (and would on a desk for any boss taller than the max height). ⚠ The OLD boss shell has the same latent shape; it retires at step 5.
 - A phone reads the character in the narrow-column rows (`compact={below('compact')}`).
+
+## Last rulings (⚓ Nate 2026-10-23, before the merge)
+
+- The character art stays on the RIGHT (a left placement was built and compared, then deleted), with no fade, its flat bottom edge flush on the "Adds to" box or the hairline. ⚠ The Builder passes its lead snippet ONLY when there is a delta: an empty snippet still drew the box, and its margin held the art 1.2rem off the hairline on a full team.
+- The opponents modal: kicker "Spiral Abyss · Floor 12", title "First half" / "Second half".
+- Nate checked real Safari before the merge. Full e2e 160 (chrome + webkit) on `971c721d`.
 
 ## Still open
 
