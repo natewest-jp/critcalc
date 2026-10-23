@@ -755,7 +755,7 @@
 	<section class="sp-section sp-section--danger">
 		<h2 class="kicker sp-section-title">Reset saved data</h2>
 
-		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation and team saved in your library.', clearRotations], ['boards', 'Saved lineups', 'Deletes every lineup saved in your library.', clearLineups]] as const as [key, name, desc, fn] (key)}
+		{#each [['constellations', 'Constellation levels', $nextLayout ? "Clears this profile's constellation levels." : 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', $nextLayout ? "Clears this profile's weapons and artifact sets." : "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', $nextLayout ? 'Clears which characters this profile marks as owned or wishlisted.' : 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', $nextLayout ? 'Deletes every rotation in this profile.' : 'Deletes every rotation and team saved in your library.', clearRotations], ['boards', 'Saved lineups', $nextLayout ? 'Deletes every lineup in this profile.' : 'Deletes every lineup saved in your library.', clearLineups]] as const as [key, name, desc, fn] (key)}
 			<div class="sp-row">
 				<span class="sp-label">
 					<span class="sp-name">{name}</span>
@@ -776,7 +776,11 @@
 		<div class="sp-row">
 			<span class="sp-label">
 				<span class="sp-name">Everything</span>
-				<span class="sp-desc">Clears all of the above at once. Display settings are kept.</span>
+				<span class="sp-desc"
+					>{$nextLayout
+						? 'Clears all of the above for this profile, and its teams. Display settings are kept.'
+						: 'Clears all of the above at once. Display settings are kept.'}</span
+				>
 			</span>
 			<button
 				class="btn btn--danger"
