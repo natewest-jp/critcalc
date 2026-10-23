@@ -1714,25 +1714,29 @@
 		teamState={swapping ? undefined : teamStateOf(selectedId)}
 		elsewhereLabel={leavingLabel(selectedId)}
 		onToggleTeam={toggleTeam}
-	>
-		{#snippet lead()}
-			{#if detailDelta}
-				<div class="tb-detail-delta">
-					<span class="tb-detail-delta-key" style:color={selectedHue}
-						>{detailDelta.inTeam ? 'Brings to' : 'Adds to'} {selectedLabel}</span
-					>
-					{#if detailDelta.delta.items.length}
-						<SwapDelta items={detailDelta.delta.items} />
-					{:else if detailDelta.delta.tier === 'uncurated'}
-						<span class="tb-swap-quiet">No capability data yet, so this can’t be read.</span>
-					{:else}
-						<span class="tb-swap-quiet">Nothing the fingerprint shows</span>
-					{/if}
-				</div>
-			{/if}
-		{/snippet}
-	</DetailCard>
+		lead={detailDelta ? detailLead : undefined}
+	/>
 {/if}
+
+<!-- ⚠ Passed only when there is a delta: an empty snippet still renders the
+     card's lead box, and its margin held the art off the hairline on a full
+     team (Nate 2026-10-23). -->
+{#snippet detailLead()}
+	{#if detailDelta}
+		<div class="tb-detail-delta">
+			<span class="tb-detail-delta-key" style:color={selectedHue}
+				>{detailDelta.inTeam ? 'Brings to' : 'Adds to'} {selectedLabel}</span
+			>
+			{#if detailDelta.delta.items.length}
+				<SwapDelta items={detailDelta.delta.items} />
+			{:else if detailDelta.delta.tier === 'uncurated'}
+				<span class="tb-swap-quiet">No capability data yet, so this can’t be read.</span>
+			{:else}
+				<span class="tb-swap-quiet">Nothing the fingerprint shows</span>
+			{/if}
+		</div>
+	{/if}
+{/snippet}
 
 <style>
 	/* The details' "Adds to" line (inspector round): the selected team's own

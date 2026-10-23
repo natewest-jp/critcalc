@@ -15,7 +15,6 @@
 	import { nextLayout } from '$lib/nextLayout';
 	import InspectModal from '$lib/components/InspectModal.svelte';
 	import { below } from '$lib/media.svelte';
-	import { page } from '$app/state';
 
 	// ↻ Inspector round (2026-10-23): this is the SHELL now — backdrop, header,
 	// close. The body is `CharacterDetails`, which the Planner's inspector pane
@@ -61,10 +60,6 @@
 
 	let heroErrored = $state(false);
 
-	/** ⏳ TEMPORARY (Nate 2026-10-23, to compare): `&art=left` stands the art
-	 *  on the LEFT, pushing the name aside. Characters only — the boss keeps
-	 *  its own. Delete whichever side loses, and this with it. */
-	const artLeft = $derived(page.url.searchParams.get('art') === 'left');
 	/** The hero's art: the new outfit falls back to the base art, then to
 	 *  nothing (the header reads without it). */
 	function handleHeroError(event: Event) {
@@ -179,7 +174,7 @@
      team action is an ordinary button. ⚠ `full` art is 256px, so the hero
      holds it at ≤ 9.5rem (crisp at 2×). -->
 {#snippet hero()}
-	<header class="dc-hero" class:dc-hero--left={artLeft}>
+	<header class="dc-hero">
 		<div class="dc-hero-row">
 			<div class="dc-hero-text">
 				<p class="kicker dc-hero-kicker">
@@ -401,9 +396,6 @@
 		align-items: flex-end;
 		gap: 1.2rem;
 	}
-	.dc-hero--left .dc-hero-row {
-		flex-direction: row-reverse;
-	}
 	.dc-hero-art {
 		display: block;
 		flex: none;
@@ -414,8 +406,10 @@
 		object-position: bottom;
 		pointer-events: none;
 	}
-	/* Right: clear of the shell's ✕, which stands at the frame's corner. */
-	.dc-hero:not(.dc-hero--left) .dc-hero-art {
+	/* ⚓ On the RIGHT (Nate 2026-10-23, over a left placement he compared):
+	   the boss's side, so the three modals read as one family and the name
+	   keeps the content's left inset. Clear of the shell's ✕ at the corner. */
+	.dc-hero-art {
 		margin-right: 1.4rem;
 	}
 	.dc-hero-text {
@@ -426,10 +420,6 @@
 		gap: 0.5rem;
 		min-width: 0;
 		padding-bottom: 1.2rem;
-	}
-	/* Left: the name must clear the ✕ instead. */
-	.dc-hero--left .dc-hero-text {
-		padding-right: 2.2rem;
 	}
 	.dc-hero-kicker {
 		font-size: var(--fs-sm);
@@ -454,7 +444,7 @@
 			width: 7rem;
 			height: 7rem;
 		}
-		.dc-hero:not(.dc-hero--left) .dc-hero-art {
+		.dc-hero-art {
 			margin-right: 2rem;
 		}
 	}
