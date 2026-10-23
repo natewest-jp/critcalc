@@ -16,12 +16,13 @@
  */
 
 import { fromStore, get } from 'svelte/store';
-import { moveRequest, MOVE_TO_PROFILE } from './moveRequest.svelte';
+import { linksIntro, moveRequest, MOVE_TO_PROFILE } from './moveRequest.svelte';
 import {
 	savedNotations,
 	loadout,
 	constellations,
 	ownership,
+	siteSettings,
 	type SavedNotation,
 	type LoadoutEntry
 } from './stores';
@@ -149,6 +150,8 @@ export function moveAction(id: string, movable: boolean): NoticeAction[] {
 /** 🎛️ How long a notice stays: a plain one, and one with a button to reach. */
 const NOTICE_MS = 2200;
 const NOTICE_ACTION_MS = 8000;
+/** 🎛️ …and one that is shown once ever, with more to read. */
+export const NOTICE_ONCE_MS = 15000;
 
 class DocumentBarState {
 	/** Transient outcome message, shown in band A beside the actions. */
@@ -202,7 +205,7 @@ class DocumentBarState {
 		return this.noticeActions.filter((a) => a.bar);
 	}
 
-	showNotice(msg: string, actions: NoticeAction[] = []) {
+	showNotice(msg: string, actions: NoticeAction[] = [], ms?: number) {
 		clearTimeout(this.#noticeTimer);
 		this.notice = msg;
 		this.noticeActions = actions;
@@ -212,8 +215,20 @@ class DocumentBarState {
 				this.notice = null;
 				this.noticeActions = [];
 			},
-			actions.length ? NOTICE_ACTION_MS : NOTICE_MS
+			ms ?? (actions.length ? NOTICE_ACTION_MS : NOTICE_MS)
 		);
+	}
+
+	/** An arrival under the switch: its notice, or — the first time a link
+	 *  moves someone out of a real profile — the dialog that teaches the rule
+	 *  once. `id` is the arrived document, when there is one to move. */
+	arrived(switched: boolean, notice: string, id?: string, movable = false) {
+		if (switched && !get(siteSettings).seenLinksNotice) {
+			linksIntro.moveId = id && movable ? id : null;
+			linksIntro.open = true;
+			return;
+		}
+		this.showNotice(switched ? OPENED_IN_THEORYCRAFT : notice, id ? moveAction(id, movable) : []);
 	}
 
 	/** Run one of the notice's buttons — the notice has done its job. */
@@ -365,7 +380,7 @@ class DocumentBarState {
 				if (!viaStore) return this.#adoptOrMakeRoom(doc, notice);
 				const { storageSession } = await import('./storage/session.svelte');
 				const { switched, id, movable } = await storageSession.receiveRotation(doc);
-				this.showNotice(switched ? OPENED_IN_THEORYCRAFT : notice, moveAction(id, movable));
+				this.arrived(switched, notice, id, movable);
 			});
 			return;
 		}

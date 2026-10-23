@@ -32,7 +32,7 @@ import {
 	slotsFromNotation,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
-import { documentBar } from '$lib/documentBar.svelte';
+import { documentBar, NOTICE_ONCE_MS } from '$lib/documentBar.svelte';
 import { ensureStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -46,8 +46,8 @@ import {
 } from './convert';
 import { get, getAll, getMeta, put, readAll, replaceAll, setMeta, tombstone } from './db';
 import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
-import type { MigrationResult } from './migrate';
-import { applyBackup, buildEnvelope } from '$lib/utils/settingsBackup';
+import { MIGRATED_PROFILE_NAME, type MigrationResult } from './migrate';
+import { applyBackup, buildEnvelope, downloadEnvelope } from '$lib/utils/settingsBackup';
 import { settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
 import { holdDocument, openStorageChannel, type DocumentLock } from './docLock';
@@ -69,6 +69,9 @@ import {
 } from './records';
 
 export { rotationAsSaved } from './convert';
+
+/** ⏳ Working copy, proposed to Nate. */
+const MIGRATED_NOTICE = `Your roster, rotations, and lineups are now in a profile, ${MIGRATED_PROFILE_NAME}`;
 
 /** How long typing must pause before a save (ms). Short enough that a closed
  *  tab rarely loses anything; `visibilitychange` flushes the rest. */
@@ -133,6 +136,22 @@ class StorageSession {
 		await this.#loadBuilder(profile);
 		this.active = true;
 		settleDocuments(true);
+		if (meta.backupOffer) await this.#offerBackup(db);
+	}
+
+	/** Once, after the migration moved the player's data (§13.1). */
+	async #offerBackup(db: IDBDatabase): Promise<void> {
+		await setMeta(db, { backupOffer: false });
+		const download = async () => {
+			const at = Date.now();
+			const file = await this.backup(at);
+			if (file) downloadEnvelope(file, at);
+		};
+		documentBar.showNotice(
+			MIGRATED_NOTICE,
+			[{ label: 'Download a backup', run: () => void download(), bar: true }],
+			NOTICE_ONCE_MS
+		);
 	}
 
 	/** The channel and page listeners. ⚠ Once per page: the tools layout
@@ -844,7 +863,7 @@ class StorageSession {
 		// ⚓ The FIRST routed copy teaches the rule once; afterwards the white and
 		// the status carry it (§4.6).
 		if (!storeGet(siteSettings).seenGuestNotice) {
-			siteSettings.markGuestNoticeSeen();
+			siteSettings.markSeen('seenGuestNotice');
 			documentBar.showNotice(`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
 		}
 	}

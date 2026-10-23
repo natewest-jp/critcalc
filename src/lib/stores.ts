@@ -528,6 +528,9 @@ type SiteSettings = {
 	/** The one-time "Saved to Theorycraft" notice for the first routed
 	 *  what-if copy has been shown (design §4.6). */
 	seenGuestNotice: boolean;
+	/** The one-time "links open in Theorycraft" dialog has been dismissed
+	 *  (shown the first time a link moves someone out of a real profile). */
+	seenLinksNotice: boolean;
 	/** Which traveler renders wherever a traveler_* character appears. */
 	travelerVariant: 'aether' | 'lumine';
 	/**
@@ -726,6 +729,7 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	uiSize: 'auto',
 	toolTransitions: true,
 	seenGuestNotice: false,
+	seenLinksNotice: false,
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
@@ -855,8 +859,9 @@ function createSiteSettingsStore() {
 		setToolTransitions(value: boolean) {
 			store.update((prev) => persist({ ...prev, toolTransitions: value }));
 		},
-		markGuestNoticeSeen() {
-			store.update((prev) => persist({ ...prev, seenGuestNotice: true }));
+		/** A one-time notice has done its job: it is not shown again. */
+		markSeen(key: 'seenGuestNotice' | 'seenLinksNotice') {
+			store.update((prev) => persist({ ...prev, [key]: true }));
 		},
 
 		setShowCoverageStrips(value: boolean) {

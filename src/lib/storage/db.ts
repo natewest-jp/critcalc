@@ -34,6 +34,10 @@ export type Meta = {
 	activeProfileId?: string;
 	/** When the stored what-if levels became Theorycraft pairs (phase 4, §10). */
 	guestsMadeAt?: number;
+	/** The migration moved the player's own data: the first tool visit offers
+	 *  a backup once, then clears this (§13.1, ⚓ Nate 2026-10-23: a notice
+	 *  AFTER the copy, never a prompt blocking it). */
+	backupOffer?: boolean;
 };
 
 const META = 'meta';
@@ -154,7 +158,16 @@ export async function writeMigration(
 	for (const p of result.profiles) tx.objectStore('profiles').put(p);
 	for (const d of result.documents) tx.objectStore('documents').put(d);
 	for (const t of result.teams) tx.objectStore('teams').put(t);
-	meta.put({ ...cur, migratedAt: now, activeProfileId: result.activeProfileId }, META_KEY);
+	const backupOffer = result.profiles.some((p) => p.kind === 'real');
+	meta.put(
+		{
+			...cur,
+			migratedAt: now,
+			activeProfileId: result.activeProfileId,
+			...(backupOffer && { backupOffer })
+		},
+		META_KEY
+	);
 	await done(tx);
 	return true;
 }

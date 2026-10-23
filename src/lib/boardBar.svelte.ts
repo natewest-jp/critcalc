@@ -13,7 +13,7 @@
 
 import { fromStore, get } from 'svelte/store';
 import { constellations, savedBoards, savedNotations, type SavedBoard } from './stores';
-import { documentBar, moveAction } from './documentBar.svelte';
+import { documentBar } from './documentBar.svelte';
 import {
 	boards,
 	fromSavedTeams,
@@ -155,10 +155,7 @@ class BoardBarState {
 					...makeBoard(doc.label),
 					...doc
 				});
-				documentBar.showNotice(
-					switched ? OPENED_IN_THEORYCRAFT : 'Loaded shared lineup',
-					moveAction(id, movable)
-				);
+				documentBar.arrived(switched, 'Loaded shared lineup', id, movable);
 			});
 			return;
 		}
@@ -196,7 +193,7 @@ class BoardBarState {
 					switched = await storageSession.toTheorycraft();
 				}
 				this.#placeTeam(ids);
-				if (switched) documentBar.showNotice(OPENED_IN_THEORYCRAFT);
+				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
 			});
 			return;
 		}
