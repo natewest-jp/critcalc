@@ -13,7 +13,7 @@
 
 import { fromStore, get } from 'svelte/store';
 import { constellations, savedBoards, savedNotations, type SavedBoard } from './stores';
-import { documentBar } from './documentBar.svelte';
+import { documentBar, moveAction } from './documentBar.svelte';
 import {
 	boards,
 	fromSavedTeams,
@@ -151,8 +151,14 @@ class BoardBarState {
 			void documentsReady.then(async (viaStore) => {
 				if (!viaStore) return this.#receiveLocal(doc);
 				const { storageSession } = await import('./storage/session.svelte');
-				const switched = await storageSession.receiveLineup({ ...makeBoard(doc.label), ...doc });
-				documentBar.showNotice(switched ? OPENED_IN_THEORYCRAFT : 'Loaded shared lineup');
+				const { switched, id, movable } = await storageSession.receiveLineup({
+					...makeBoard(doc.label),
+					...doc
+				});
+				documentBar.showNotice(
+					switched ? OPENED_IN_THEORYCRAFT : 'Loaded shared lineup',
+					moveAction(id, movable)
+				);
 			});
 			return;
 		}

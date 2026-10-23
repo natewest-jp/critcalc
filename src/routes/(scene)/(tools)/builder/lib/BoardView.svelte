@@ -31,7 +31,7 @@
 	import { sideLayout } from '$lib/sidePortrait';
 	import CompositionChips from '$lib/components/CompositionChips.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { constellations, ownership, savedNotations } from '$lib/stores';
+	import { constellations, ownership, type SavedNotation } from '$lib/stores';
 	import {
 		effectiveCon,
 		heldElsewhere,
@@ -88,6 +88,7 @@
 		onRemoveTeam,
 		onOpenInPlanner,
 		onPin,
+		bank,
 		previewId = null,
 		filteredFacets,
 		onFind,
@@ -116,6 +117,9 @@
 		onRemoveTeam: (teamId: string) => void;
 		onOpenInPlanner: (team: BoardTeam) => void;
 		onPin: (teamId: string, rotationId: string | null) => void;
+		/** The saved rotations a team can pin: the profile's documents under
+		 *  the switch, the old bank otherwise. */
+		bank: readonly SavedNotation[];
 		/** The card the pointer rests on — the SELECTED team's fingerprint
 		 *  previews the team its pick would make (§11.2). */
 		previewId?: string | null;
@@ -386,7 +390,7 @@
 	/** Everything a team row shows, from the team and the bank. */
 	function teamFacts(team: BoardTeam) {
 		const ids = team.slots.filter((s): s is string => !!s);
-		const own = teamCon(team, $savedNotations);
+		const own = teamCon(team, bank);
 		const conOf = (id: string) => effectiveCon(own, $constellations, id);
 		return { ids, own, conOf, fingerprint: ids.length ? teamFingerprint(ids, conOf) : null };
 	}
@@ -442,8 +446,8 @@
 	{@const field = isErrand ? undefined : season?.battlefields[t]}
 	{@const half = !isErrand && abyss && t < 2 ? abyss.halves[t] : undefined}
 	{@const verdicts = field ? verdictsFor(field, facts.ids, facts.conOf) : undefined}
-	{@const rotations = rotationsForTeam(team, $savedNotations)}
-	{@const pin = pinnedRotation(team, $savedNotations)}
+	{@const rotations = rotationsForTeam(team, bank)}
+	{@const pin = pinnedRotation(team, bank)}
 	{@const sel = team.id === selectedTeamId}
 	{@const after = previewIds(team, facts)}
 	{@const preview = after ? teamFingerprint(after, facts.conOf) : null}

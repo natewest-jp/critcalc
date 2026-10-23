@@ -33,6 +33,7 @@
 	import { sceneOccluded } from '$lib/landing/transition';
 	import LibraryPlace from './LibraryPlace.svelte';
 	import RosterTab from './RosterTab.svelte';
+	import TeamsPlace from './TeamsPlace.svelte';
 	import ProfileForm from './ProfileForm.svelte';
 	import SettingsPanel from './SettingsPanel.svelte';
 
@@ -191,18 +192,28 @@
 				<ProfileForm mode="edit" />
 			{:else if section === 'profile/new'}
 				<ProfileForm mode="new" />
-			{:else if section === 'roster' && isTheorycraft}
-				<!-- §9.1: Theorycraft has no roster; the invitation stands in it. -->
+			{:else if (section === 'roster' || section === 'teams') && isTheorycraft}
+				<!-- §9.1: Theorycraft has no roster and no teams; the invitation
+				     stands in them. -->
 				<div class="invite ctx-light">
 					<h3>Add your account</h3>
-					<p>
-						Theorycraft has every character at every level, so it has no roster. Add your account to
-						mark what you own and set your constellations.
-					</p>
+					{#if section === 'roster'}
+						<p>
+							Theorycraft has every character at every level, so it has no roster. Add your account
+							to mark what you own and set your constellations.
+						</p>
+					{:else}
+						<p>
+							Teams belong to an account. Add yours to name the teams you play and start rotations
+							and lineups from them.
+						</p>
+					{/if}
 					<button class="btn btn--primary" onclick={() => menu.show('profile/new')}
 						>Add your account</button
 					>
 				</div>
+			{:else if section === 'teams'}
+				<TeamsPlace />
 			{:else if section === 'roster'}
 				<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
 			{:else if section === 'settings'}

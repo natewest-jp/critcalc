@@ -16,6 +16,7 @@
  */
 
 import { fromStore, get } from 'svelte/store';
+import { moveRequest, MOVE_TO_PROFILE } from './moveRequest.svelte';
 import {
 	savedNotations,
 	loadout,
@@ -132,7 +133,18 @@ export type RoomRequest = {
 };
 
 /** A button on band A's notice. */
-export type NoticeAction = { label: string; run: () => void };
+export type NoticeAction = {
+	label: string;
+	run: () => void;
+	/** Shown in the top bar (under the switch) rather than by the tool. */
+	bar?: true;
+};
+
+/** ⚓ Move to a profile rides an arrival's notice (design §9.3) whenever
+ *  there is a real profile to move it to. */
+export function moveAction(id: string, movable: boolean): NoticeAction[] {
+	return movable ? [{ label: MOVE_TO_PROFILE, run: () => (moveRequest.id = id), bar: true }] : [];
+}
 
 /** 🎛️ How long a notice stays: a plain one, and one with a button to reach. */
 const NOTICE_MS = 2200;
@@ -179,6 +191,15 @@ class DocumentBarState {
 		// ↻ 2026-10-22 (§8.1): the two tests are two again — a SEATED team with
 		// no notation yet (Plan a rotation) is content: a team the user chose.
 		return !!rt.notation.trim() || rt.seats.some((id) => id !== null);
+	}
+
+	/** The notice's buttons a tool renders beside its own notice. */
+	get toolActions(): NoticeAction[] {
+		return this.noticeActions.filter((a) => !a.bar);
+	}
+	/** The notice's buttons the top bar renders. */
+	get barActions(): NoticeAction[] {
+		return this.noticeActions.filter((a) => a.bar);
 	}
 
 	showNotice(msg: string, actions: NoticeAction[] = []) {
@@ -343,8 +364,8 @@ class DocumentBarState {
 			void documentsReady.then(async (viaStore) => {
 				if (!viaStore) return this.#adoptOrMakeRoom(doc, notice);
 				const { storageSession } = await import('./storage/session.svelte');
-				const switched = await storageSession.receiveRotation(doc);
-				this.showNotice(switched ? OPENED_IN_THEORYCRAFT : notice);
+				const { switched, id, movable } = await storageSession.receiveRotation(doc);
+				this.showNotice(switched ? OPENED_IN_THEORYCRAFT : notice, moveAction(id, movable));
 			});
 			return;
 		}
@@ -438,6 +459,26 @@ class DocumentBarState {
 	 *  the Team Builder's "Try in Planner" after a swap. ⚓ §10.2: the saved
 	 *  rotation is never rewritten; Save keeps the trial as its own. */
 	tryWithSwap(entry: SavedNotation, fromId: string, toId: string, label: string) {
+		// ⚓ Under the switch (phase 3) the try is a new rotation in the
+		// current profile; the pinned one is untouched.
+		if (get(nextLayout)) {
+			const seating = seatingOfSaved(entry);
+			void import('./storage/session.svelte').then(({ storageSession }) =>
+				storageSession.createRotation(
+					{
+						notation: renameCharacterInNotation(entry.notation, fromId, toId),
+						slots: seating.seats.map((id) => (id === fromId ? toId : id)),
+						placed: seating.placed,
+						...(entry.tabLoadout && Object.keys(entry.tabLoadout).length
+							? { loadout: entry.tabLoadout }
+							: {}),
+						...(entry.tabCon && Object.keys(entry.tabCon).length ? { con: entry.tabCon } : {})
+					},
+					label
+				)
+			);
+			return;
+		}
 		this.withRoom(() => {
 			// The swap keeps the SLOT: the incoming character takes the outgoing
 			// one's seat and segments (§8.1).

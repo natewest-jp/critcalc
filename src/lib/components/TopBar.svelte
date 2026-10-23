@@ -193,7 +193,11 @@
 			</button>
 		{/if}
 
-		{#if documentBar.notice}<span class="tb-notice" role="status">{documentBar.notice}</span>{/if}
+		{#if documentBar.notice}<span class="tb-notice" role="status">{documentBar.notice}</span
+			>{#each documentBar.barActions as action (action.label)}<button
+					class="tb-notice-act"
+					onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
+				>{/each}{/if}
 
 		<div class="tb-actions">
 			{#if docTool}
@@ -665,6 +669,25 @@
 		white-space: nowrap;
 		color: color-mix(in srgb, var(--chrome) 75%, transparent);
 	}
+	/* A notice's button (Move to a profile, §9.3): plain words on the bar,
+	   underlined so they read as a thing to press. */
+	.tb-notice-act {
+		margin-left: -0.6rem;
+		padding: 0;
+		border: none;
+		background: none;
+		color: var(--chrome);
+		font: inherit;
+		font-size: var(--ui-ctl-fs);
+		white-space: nowrap;
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--chrome) 40%, transparent);
+		text-underline-offset: 3px;
+		cursor: pointer;
+	}
+	.tb-notice-act:hover {
+		text-decoration-color: currentColor;
+	}
 	.tb-actions {
 		display: flex;
 		align-items: center;
@@ -890,7 +913,8 @@
 		.tb-actions {
 			gap: 0.1rem;
 		}
-		.tb-notice {
+		.tb-notice,
+		.tb-notice-act {
 			display: none;
 		}
 		.tb-phonedoc {
