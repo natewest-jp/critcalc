@@ -111,6 +111,38 @@ export async function put<S extends StoreName>(
 	await done(tx);
 }
 
+/**
+ * Read a record and write its change in ONE transaction. ⚓ IndexedDB runs
+ * overlapping read-write transactions one after another, across tabs too, so
+ * two tabs changing one record each see the other's change; a read and a put
+ * in two transactions let the later write erase the earlier. `change` returns
+ * `null` to write nothing. Resolves what was written, else `null`.
+ */
+export async function modify<S extends StoreName>(
+	db: IDBDatabase,
+	store: S,
+	id: string,
+	change: (stored: Stores[S] | undefined) => Stores[S] | null
+): Promise<Stores[S] | null> {
+	const tx = db.transaction(store, 'readwrite');
+	const os = tx.objectStore(store);
+	const next = change((await request(os.get(id))) as Stores[S] | undefined);
+	if (next) os.put(next);
+	await done(tx);
+	return next;
+}
+
+/** Several records in ONE transaction: all of them land, or none. */
+export async function putMany<S extends StoreName>(
+	db: IDBDatabase,
+	store: S,
+	records: Stores[S][]
+): Promise<void> {
+	const tx = db.transaction(store, 'readwrite');
+	for (const r of records) tx.objectStore(store).put(r);
+	await done(tx);
+}
+
 /** ⚓ A deletion is a TOMBSTONE, never a removal (records.ts). */
 export async function tombstone(
 	db: IDBDatabase,

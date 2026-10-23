@@ -33,7 +33,7 @@ import {
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
 import { documentBar, NOTICE_ONCE_MS } from '$lib/documentBar.svelte';
-import { ensureStorage } from './boot';
+import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
 	lineupLabel,
@@ -44,13 +44,40 @@ import {
 	rotationToTab,
 	tabToRotationBody
 } from './convert';
-import { get, getAll, getMeta, put, readAll, replaceAll, setMeta, tombstone } from './db';
+import {
+	get,
+	getAll,
+	getMeta,
+	modify,
+	put,
+	putMany,
+	readAll,
+	replaceAll,
+	setMeta,
+	tombstone,
+	type Meta
+} from './db';
 import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
 import { MIGRATED_PROFILE_NAME, type MigrationResult } from './migrate';
 import { applyBackup, buildEnvelope, downloadEnvelope } from '$lib/utils/settingsBackup';
 import { settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
-import { holdDocument, openStorageChannel, type DocumentLock } from './docLock';
+import {
+	exclusively,
+	holdDocument,
+	openStorageChannel,
+	waitForDocument,
+	type DocumentLock
+} from './docLock';
+import {
+	applyRosterChanges,
+	dropJournal,
+	replayJournals,
+	rosterChange,
+	writeJournal,
+	type JournalDoc,
+	type RosterChanges
+} from './journal';
 import { bindRoster, siteSettings, type RosterPart, type SavedNotation } from '$lib/stores';
 import { get as storeGet } from 'svelte/store';
 import { askOnFirstSave } from '$lib/utils/storageDurability';
@@ -73,9 +100,16 @@ export { rotationAsSaved } from './convert';
 /** Approved by Nate 2026-10-23. */
 const MIGRATED_NOTICE = `Your roster, rotations, and lineups are now in a profile, ${MIGRATED_PROFILE_NAME}`;
 
-/** How long typing must pause before a save (ms). Short enough that a closed
- *  tab rarely loses anything; `visibilitychange` flushes the rest. */
+/** How long typing must pause before a save (ms). `visibilitychange` flushes
+ *  early, and what an unloading page could not write waits in its journal
+ *  (journal.ts). */
 export const SAVE_DELAY_MS = 400;
+
+/** After a failed write, the next try: doubling from the first, up to the last (ms). */
+const RETRY_MS = [1000, 30_000] as const;
+
+/** Approved by Nate 2026-10-23. */
+const SAVE_FAILED_NOTICE = 'Couldn’t save your changes. Trying again…';
 
 export type DocTool = 'planner' | 'builder';
 
@@ -86,6 +120,14 @@ export const recency = (d: Pick<DocumentRecord, 'openedAt' | 'updatedAt'>): numb
 type Pending = {
 	planner?: { tabs: RotationTab[]; activeId: string };
 	builder?: { boards: Board[]; activeId: string };
+};
+
+/** One document a write would save, as `#collect` finds it. */
+type Entry = {
+	id: string;
+	type: DocumentRecord['type'];
+	name: string | null;
+	body: RotationDocument['body'] | LineupDocument['body'];
 };
 
 class StorageSession {
@@ -108,24 +150,34 @@ class StorageSession {
 	/** The label the session DERIVED for an unnamed document (see nameToStore). */
 	#derived = new Map<string, string>();
 	#pending: Pending = {};
+	/** What the running write took out of `#pending`, until it lands. */
+	#inflight: Pending = {};
 	#timer: ReturnType<typeof setTimeout> | undefined;
+	/** ⚠ Never left rejected: a rejected chain would swallow every later flush. */
 	#flushing: Promise<void> = Promise.resolve();
+	/** This page's own name, for its unload journal. */
+	#page = newId();
 
 	/** Open the store and load the active profile's current documents. Falls
-	 *  back to localStorage (today's behaviour) if the store is unavailable. */
+	 *  back to localStorage (today's behaviour) if the store is unavailable —
+	 *  or if loading throws, so the tools never wait on a session that died. */
 	async start(): Promise<void> {
-		const db = await ensureStorage();
-		const meta = db ? await getMeta(db) : {};
-		const profile =
-			db &&
-			((meta.activeProfileId && (await get(db, 'profiles', meta.activeProfileId))) ||
-				(await get(db, 'profiles', THEORYCRAFT_ID)));
-		if (!db || !profile || profile.deleted) {
-			rotationTabs.restore();
-			boards.restore();
-			settleDocuments(false);
-			return;
+		try {
+			if (await this.#start()) return;
+		} catch (err) {
+			console.warn('[critcalc] the storage session failed to start', err);
 		}
+		rotationTabs.restore();
+		boards.restore();
+		settleDocuments(false);
+	}
+
+	async #start(): Promise<boolean> {
+		const db = await ensureStorage();
+		if (!db) return false;
+		const meta = await getMeta(db);
+		const profile = await this.#activeProfile(db, meta);
+		if (!profile) return false;
 		this.#db = db;
 		this.#attach();
 		this.#useProfile(profile);
@@ -137,6 +189,18 @@ class StorageSession {
 		this.active = true;
 		settleDocuments(true);
 		if (meta.backupOffer) await this.#offerBackup(db);
+		return true;
+	}
+
+	/** The profile the site opens in: the stored choice while it is live, else
+	 *  Theorycraft (a profile deleted in another tab can leave the pointer). */
+	async #activeProfile(db: IDBDatabase, meta: Meta): Promise<ProfileRecord | undefined> {
+		const chosen = meta.activeProfileId
+			? await get(db, 'profiles', meta.activeProfileId)
+			: undefined;
+		if (chosen && !chosen.deleted) return chosen;
+		const tc = await get(db, 'profiles', THEORYCRAFT_ID);
+		return tc && !tc.deleted ? tc : undefined;
 	}
 
 	/** Once, after the migration moved the player's data (§13.1). */
@@ -164,13 +228,17 @@ class StorageSession {
 			// A backup was restored in another tab: everything here is stale,
 			// and saving it would write the old data back over the restore.
 			if (msg.kind === 'replaced') {
-				this.#frozen = true;
+				this.#freeze();
 				location.reload();
 				return;
 			}
 			if (msg.store === 'documents') {
 				this.version++;
-				if (this.readOnly.includes(msg.id)) void this.#reload(msg.id);
+				if (msg.kind === 'deleted') void this.#deletedElsewhere(msg.id);
+				else if (this.readOnly.includes(msg.id)) void this.#reload(msg.id);
+				// Renamed, pinned, moved or paired over there: take it on, or the
+				// next autosave here would write this tab's stale copy back.
+				else if (this.#records.has(msg.id)) void this.#adopt(msg.id);
 			}
 			if (msg.store === 'teams') this.teamsVersion++;
 			if (msg.store === 'profiles') {
@@ -181,6 +249,8 @@ class StorageSession {
 		addEventListener('keydown', this.#onKey);
 		addEventListener('keydown', this.#onFlipKey, true);
 		document.addEventListener('visibilitychange', this.#onVisibility);
+		addEventListener('pagehide', this.#onPageHide);
+		addEventListener('pageshow', this.#onPageShow);
 	}
 
 	/** The active profile alone, for a surface with no document (the landing,
@@ -189,11 +259,8 @@ class StorageSession {
 		if (this.profile) return;
 		const db = await ensureStorage();
 		if (!db) return;
-		const meta = await getMeta(db);
-		const profile =
-			(meta.activeProfileId && (await get(db, 'profiles', meta.activeProfileId))) ||
-			(await get(db, 'profiles', THEORYCRAFT_ID));
-		if (profile && !profile.deleted && !this.profile) {
+		const profile = await this.#activeProfile(db, await getMeta(db));
+		if (profile && !this.profile) {
 			this.#db ??= db;
 			this.#attach();
 			this.#useProfile(profile);
@@ -204,6 +271,7 @@ class StorageSession {
 	/** "Edit here": take the document from whichever tab holds it, pick up its
 	 *  latest saved state, and resume saving it. */
 	async editHere(id: string): Promise<void> {
+		this.#stopWaiting(id);
 		this.#locks.get(id)?.release();
 		const lock = await holdDocument(id, { steal: true, onLost: () => this.#lost(id) });
 		if (lock) this.#locks.set(id, lock);
@@ -220,11 +288,56 @@ class StorageSession {
 	/** Stored names by document id, mirrored for the top bar to read. */
 	names = $state<Record<string, string | null>>({});
 
-	/** Write everything pending now (⌘S, the tab hiding). */
+	/** Write everything pending now (⌘S, the tab hiding). Never rejects: a
+	 *  failed write keeps its work pending and tries again (`#writeFailed`). */
 	flush(): Promise<void> {
 		clearTimeout(this.#timer);
-		this.#flushing = this.#flushing.then(() => this.#write());
+		this.#flushing = this.#flushing
+			.then(() => this.#write())
+			.catch((err: unknown) => this.#writeFailed(err));
 		return this.#flushing;
+	}
+
+	/** A write failed and its work is pending again. Set until one lands. */
+	saveFailed = $state(false);
+	#retries = 0;
+	#retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+	/**
+	 * ⚠ Nothing here may give up quietly: before this, one failed write left
+	 * the save chain rejected and every later flush a no-op, for the rest of
+	 * the page, with nothing on screen. The work stays pending, the person is
+	 * told once, and the write is tried again — on a fresh connection, since
+	 * a lost one (WebKit, a tab left in the background) is the common cause.
+	 */
+	async #writeFailed(err: unknown): Promise<void> {
+		console.warn('[critcalc] a save failed; trying again', err);
+		if (this.#frozen) return;
+		if (!this.saveFailed) {
+			this.saveFailed = true;
+			documentBar.showNotice(SAVE_FAILED_NOTICE);
+		}
+		const old = this.#db;
+		const db = await reopenStorage().catch(() => null);
+		if (db && db !== old) {
+			this.#db = db;
+			try {
+				old?.close();
+			} catch {
+				/* already closed */
+			}
+		}
+		const wait = Math.min(RETRY_MS[0] * 2 ** this.#retries++, RETRY_MS[1]);
+		clearTimeout(this.#retryTimer);
+		this.#retryTimer = setTimeout(() => {
+			void this.flush();
+			void this.#flushRoster();
+		}, wait);
+	}
+
+	#saveLanded(): void {
+		this.#retries = 0;
+		this.saveFailed = false;
 	}
 
 	// ── The Library (phase 2c, §4.2 + §6.3) ─────────────────────────────────
@@ -318,21 +431,31 @@ class StorageSession {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db) return;
 		const next = name.trim() || null;
-		// The document on screen is renamed THROUGH its tab, or the next
-		// autosave would write the tab's old label back over it.
-		if (this.active && rotationTabs.tabs.some((t) => t.id === id)) {
-			const label = next ?? this.#derived.get(id) ?? rotationLabel(rotationTabs.seats);
-			if (!next) this.#derived.set(id, label);
+		// The document this tab is EDITING is renamed through its tab, or the
+		// next autosave would write the tab's old label back over it.
+		if (this.active && this.#locks.has(id) && this.#relabel(id, next)) return this.flush();
+		// Otherwise straight to the store — including a document shown here
+		// read-only, whose tab cannot save (its label follows).
+		const patched = await this.#patch(db, id, { name: next });
+		if (patched && this.readOnly.includes(id)) this.#relabel(id, next);
+	}
+
+	/** Put a name on the tab or board showing a document; `null` goes back to
+	 *  the derived label. False when no tool shows it. */
+	#relabel(id: string, name: string | null): boolean {
+		if (rotationTabs.tabs.some((t) => t.id === id)) {
+			const label = name ?? this.#derived.get(id) ?? rotationLabel(rotationTabs.seats);
+			if (!name) this.#derived.set(id, label);
 			rotationTabs.tabs = rotationTabs.tabs.map((t) => (t.id === id ? { ...t, label } : t));
-			return this.flush();
+			return true;
 		}
-		if (this.active && boards.boards.some((b) => b.id === id)) {
-			const label = next ?? this.#derived.get(id) ?? lineupLabel(boards.activeBoard);
-			if (!next) this.#derived.set(id, label);
+		if (boards.boards.some((b) => b.id === id)) {
+			const label = name ?? this.#derived.get(id) ?? lineupLabel(boards.activeBoard);
+			if (!name) this.#derived.set(id, label);
 			boards.boards = boards.boards.map((b) => (b.id === id ? { ...b, label } : b));
-			return this.flush();
+			return true;
 		}
-		await this.#patch(db, id, { name: next });
+		return false;
 	}
 
 	async setPinned(id: string, on: boolean): Promise<void> {
@@ -355,17 +478,52 @@ class StorageSession {
 		await tombstone(db, 'documents', id, Date.now());
 		this.#records.delete(id);
 		this.#written.delete(id);
-		this.#locks.get(id)?.release();
-		this.#locks.delete(id);
+		this.#letGo(id);
 		this.#channel?.post({ kind: 'deleted', store: 'documents', id, profileId: doc.profileId });
 		this.version++;
 		// Nothing left to show is a blank, never the first visit's sample.
 		if (this.profile?.current[tool] === id) await this.#setCurrent(db, tool, null);
-		if (!showing) return;
-		// Off a tool, `open` moves the pointer, so the tool arrives on it.
-		const next = (await this.documents(doc.type)).sort((a, b) => recency(b) - recency(a))[0];
+		if (showing) await this.#showNext(tool, doc.type);
+	}
+
+	/** A tool's document is gone: the most recent other one, else a blank.
+	 *  Off a tool, `open` moves the pointer, so the tool arrives on it. */
+	async #showNext(tool: DocTool, type: DocumentRecord['type']): Promise<void> {
+		const next = (await this.documents(type)).sort((a, b) => recency(b) - recency(a))[0];
 		if (next) await this.open(next.id);
 		else if (this.active) this.#showBlank(tool);
+	}
+
+	/** Deleted in another tab (its Library, a Reset, a deleted profile). The
+	 *  tool showing it moves on, as it would have here; nothing it holds is
+	 *  saved, or the autosave would bring the document back. */
+	async #deletedElsewhere(id: string): Promise<void> {
+		if (this.#tombstoned.has(id)) return;
+		const rec = this.#records.get(id);
+		const tool: DocTool | null = rec ? (rec.type === 'rotation' ? 'planner' : 'builder') : null;
+		const showing = !!tool && this.active && this.currentId(tool) === id;
+		this.#tombstoned.add(id);
+		this.#records.delete(id);
+		this.#written.delete(id);
+		this.#letGo(id);
+		if (tool && rec && showing) await this.#showNext(tool, rec.type);
+	}
+
+	/** Changed in another tab without its content changing (renamed, pinned,
+	 *  paired, moved): this tab's copy of the record catches up. */
+	async #adopt(id: string): Promise<void> {
+		const doc = this.#db ? await get(this.#db, 'documents', id) : undefined;
+		if (!doc || doc.deleted || !this.#records.has(id)) return;
+		const prev = this.#records.get(id)!;
+		this.#records.set(id, doc);
+		this.names[id] = doc.name;
+		if (prev.name !== doc.name) {
+			// The stored copy is what this tab now has written, so the relabel
+			// alone does not send a save back.
+			this.#written.set(id, JSON.stringify({ name: doc.name, body: doc.body }));
+			this.#relabel(id, doc.name);
+		}
+		if (doc.type === 'rotation' && rotationTabs.activeTabId === id) this.#plannerContext(doc);
 	}
 
 	/** Settings' Reset (⚓ Nate 2026-10-23: the ACTIVE profile's, like the
@@ -383,8 +541,7 @@ class StorageSession {
 			await tombstone(db, 'documents', d.id, now);
 			this.#records.delete(d.id);
 			this.#written.delete(d.id);
-			this.#locks.get(d.id)?.release();
-			this.#locks.delete(d.id);
+			this.#letGo(d.id);
 			this.#channel?.post({
 				kind: 'deleted',
 				store: 'documents',
@@ -420,11 +577,13 @@ class StorageSession {
 		id: string,
 		fields: Partial<Pick<DocumentRecord, 'name' | 'openedAt' | 'pinned'>>
 	): Promise<DocumentRecord | null> {
-		const doc = await get(db, 'documents', id);
-		if (!doc || doc.deleted) return null;
-		const next = { ...doc, ...fields, updatedAt: Date.now() } as DocumentRecord;
-		if (fields.pinned === undefined && 'pinned' in fields) delete next.pinned;
-		await put(db, 'documents', next);
+		const next = await modify(db, 'documents', id, (doc) => {
+			if (!doc || doc.deleted) return null;
+			const out = { ...doc, ...fields, updatedAt: Date.now() } as DocumentRecord;
+			if (fields.pinned === undefined && 'pinned' in fields) delete out.pinned;
+			return out;
+		});
+		if (!next) return null;
 		if (this.#records.has(id)) this.#records.set(id, next);
 		if ('name' in fields) this.names[id] = next.name;
 		this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: next.profileId });
@@ -440,10 +599,15 @@ class StorageSession {
 
 	/** Let go of the document a tool is leaving, so another tab may edit it. */
 	#release(tool: DocTool): void {
-		const id = tool === 'planner' ? rotationTabs.activeTabId : boards.activeBoardId;
+		this.#letGo(tool === 'planner' ? rotationTabs.activeTabId : boards.activeBoardId);
+	}
+
+	/** Give a document up: its lock, any wait for it, its read-only mark. */
+	#letGo(id: string): void {
 		this.#locks.get(id)?.release();
 		this.#locks.delete(id);
-		this.readOnly = this.readOnly.filter((x) => x !== id);
+		this.#stopWaiting(id);
+		if (this.readOnly.includes(id)) this.readOnly = this.readOnly.filter((x) => x !== id);
 	}
 
 	#show(doc: DocumentRecord): void {
@@ -550,12 +714,46 @@ class StorageSession {
 			return true;
 		}
 		this.readOnly = [...this.readOnly, id];
+		this.#waitFor(id);
 		return false;
 	}
 
 	#lost(id: string): void {
 		this.#locks.delete(id);
 		if (!this.readOnly.includes(id)) this.readOnly = [...this.readOnly, id];
+		this.#waitFor(id);
+	}
+
+	/** Read-only documents waiting for the tab that holds them to let go. */
+	#waiters = new Map<string, AbortController>();
+
+	/**
+	 * ⚓ A read-only document is taken back the moment the tab holding it lets
+	 * go (closes, opens another, switches profile). Before this it was tried
+	 * once: a tab could say "Open in another tab" with no tab holding it, and
+	 * everything typed there went nowhere.
+	 */
+	#waitFor(id: string): void {
+		if (this.#waiters.has(id)) return;
+		const ac = new AbortController();
+		this.#waiters.set(id, ac);
+		void waitForDocument(id, { signal: ac.signal, onLost: () => this.#lost(id) }).then(
+			async (lock) => {
+				if (this.#waiters.get(id) === ac) this.#waiters.delete(id);
+				if (!lock) return;
+				if (!this.readOnly.includes(id) || this.#locks.has(id)) return lock.release();
+				this.#locks.set(id, lock);
+				// The tab that held it may have unloaded before its last save.
+				if (this.#db) await replayJournals(this.#db);
+				await this.#reload(id);
+				this.readOnly = this.readOnly.filter((x) => x !== id);
+			}
+		);
+	}
+
+	#stopWaiting(id: string): void {
+		this.#waiters.get(id)?.abort();
+		this.#waiters.delete(id);
 	}
 
 	/** Re-read a document into whichever tool shows it. */
@@ -580,6 +778,9 @@ class StorageSession {
 	}
 
 	async #reloadProfile(): Promise<void> {
+		// This tab's own roster edits go in first, so loading the stored roster
+		// shows both tabs' changes rather than dropping this one's.
+		await this.#flushRoster();
 		const p = this.#db && this.profile ? await get(this.#db, 'profiles', this.profile.id) : null;
 		if (!p) return;
 		// Deleted in another tab: this one goes to Theorycraft too.
@@ -592,6 +793,18 @@ class StorageSession {
 	/** Set while a backup is restored: nothing is saved over it. */
 	#frozen = false;
 
+	/** Stop saving for good (a restore, here or in another tab): nothing
+	 *  pending, queued or journalled can write the old data back. */
+	#freeze(): void {
+		this.#frozen = true;
+		clearTimeout(this.#timer);
+		clearTimeout(this.#rosterTimer);
+		clearTimeout(this.#retryTimer);
+		this.#pending = {};
+		this.#rosterPending = {};
+		dropJournal(this.#page);
+	}
+
 	#queue(p: Pending): void {
 		if (this.#frozen) return;
 		this.#pending = { ...this.#pending, ...p };
@@ -599,41 +812,48 @@ class StorageSession {
 		this.#timer = setTimeout(() => void this.flush(), SAVE_DELAY_MS);
 	}
 
+	/** The documents a pending write would save. */
+	#collect({ planner, builder }: Pending): (Entry & { fresh: boolean })[] {
+		const out: (Entry & { fresh: boolean })[] = [];
+		const nameOf = (id: string, label: string) =>
+			nameToStore(label, this.#derived.get(id), this.#records.get(id)?.name ?? null);
+		for (const tab of planner?.tabs ?? []) {
+			const body = tabToRotationBody(tab);
+			const fresh = !this.#records.has(tab.id);
+			// A blank tab is not a document until something is in it.
+			if (fresh && !body.notation.trim() && body.slots.every((s) => !s)) continue;
+			out.push({ id: tab.id, type: 'rotation', name: nameOf(tab.id, tab.label), body, fresh });
+		}
+		for (const board of builder?.boards ?? []) {
+			const body = boardToLineupBody(board);
+			const fresh = !this.#records.has(board.id);
+			if (fresh && body.teams.every((t) => t.slots.every((s) => !s))) continue;
+			out.push({ id: board.id, type: 'lineup', name: nameOf(board.id, board.label), body, fresh });
+		}
+		return out;
+	}
+
 	async #write(): Promise<void> {
 		const db = this.#db;
 		const profile = this.profile;
-		const { planner, builder } = this.#pending;
+		const taken = this.#pending;
 		this.#pending = {};
-		if (!db || !profile || (!planner && !builder)) return;
+		const { planner, builder } = taken;
+		if (this.#frozen || !db || !profile || (!planner && !builder)) return;
+		this.#inflight = taken;
 		this.saving = true;
 		try {
 			const now = Date.now();
 			let wrote = false;
 			let current = profile.current;
-			if (planner) {
-				for (const tab of planner.tabs) {
-					const body = tabToRotationBody(tab);
-					const fresh = !this.#records.has(tab.id);
-					// A blank tab is not a document until something is in it.
-					if (fresh && !body.notation.trim() && body.slots.every((s) => !s)) continue;
-					const name = nameToStore(tab.label, this.#derived.get(tab.id));
-					wrote = (await this.#save(db, tab.id, 'rotation', name, body, now)) || wrote;
-				}
-				if (this.#records.has(planner.activeId)) {
-					current = { ...current, planner: planner.activeId };
-				}
+			for (const entry of this.#collect(taken)) {
+				wrote = (await this.#save(db, entry, now)) || wrote;
 			}
-			if (builder) {
-				for (const board of builder.boards) {
-					const body = boardToLineupBody(board);
-					const fresh = !this.#records.has(board.id);
-					if (fresh && body.teams.every((t) => t.slots.every((s) => !s))) continue;
-					const name = nameToStore(board.label, this.#derived.get(board.id));
-					wrote = (await this.#save(db, board.id, 'lineup', name, body, now)) || wrote;
-				}
-				if (this.#records.has(builder.activeId)) {
-					current = { ...current, builder: builder.activeId };
-				}
+			if (planner && this.#records.has(planner.activeId)) {
+				current = { ...current, planner: planner.activeId };
+			}
+			if (builder && this.#records.has(builder.activeId)) {
+				current = { ...current, builder: builder.activeId };
 			}
 			if (
 				current.planner !== profile.current.planner ||
@@ -646,41 +866,66 @@ class StorageSession {
 				}));
 			}
 			if (wrote) this.savedAt = now;
+			this.#saveLanded();
+		} catch (err) {
+			// Back in the queue for the next try, unless newer work for the
+			// same tool arrived meanwhile.
+			this.#pending = { ...taken, ...this.#pending };
+			throw err;
 		} finally {
+			this.#inflight = {};
 			this.saving = false;
 		}
 	}
 
 	/** Write one document if it changed and this tab holds it. */
-	async #save(
-		db: IDBDatabase,
-		id: string,
-		type: DocumentRecord['type'],
-		name: string | null,
-		body: RotationDocument['body'] | LineupDocument['body'],
-		now: number
-	): Promise<boolean> {
-		const key = JSON.stringify({ name, body });
-		if (this.#tombstoned.has(id) || this.#written.get(id) === key) return false;
+	async #save(db: IDBDatabase, entry: Entry, now: number): Promise<boolean> {
+		const { id, type, body } = entry;
+		let { name } = entry;
+		if (this.#tombstoned.has(id) || this.#written.get(id) === JSON.stringify({ name, body })) {
+			return false;
+		}
 		if (!(await this.#hold(id))) return false;
 		const prev = this.#records.get(id);
-		const rec = {
-			...(prev ?? {
-				id,
-				profileId: this.profile!.id,
-				createdAt: now,
-				...(this.#fromLink.has(id) ? { fromLink: true } : {})
-			}),
-			type,
-			name,
-			body,
-			updatedAt: now
-		} as DocumentRecord;
-		// ⚠ The tab snapshot holds $state proxies, which IndexedDB cannot clone.
-		await put(db, 'documents', $state.snapshot(rec) as DocumentRecord);
+		const fresh = {
+			id,
+			profileId: this.profile!.id,
+			createdAt: now,
+			...(this.#fromLink.has(id) ? { fromLink: true } : {})
+		};
+		let deleted = false;
+		let renamed = false;
+		// ⚓ Merged onto the STORED record in one transaction, never this tab's
+		// copy spread over it: another tab may have renamed, pinned, paired,
+		// moved or deleted the document since this one read it, and only the
+		// CONTENT is this tab's to write (redesign bug sweep §1.3).
+		const rec = await modify(db, 'documents', id, (stored) => {
+			if (stored?.deleted) {
+				deleted = true;
+				return null;
+			}
+			// Renamed elsewhere while this tab kept the old name: the new one stands.
+			if (stored && prev && stored.name !== prev.name && name === prev.name) {
+				name = stored.name;
+				renamed = true;
+			}
+			// ⚠ The tab snapshot holds $state proxies, which IndexedDB cannot clone.
+			return $state.snapshot({
+				...(stored ?? prev ?? fresh),
+				type,
+				name,
+				body,
+				updatedAt: now
+			}) as DocumentRecord;
+		});
+		if (deleted || !rec) {
+			void this.#deletedElsewhere(id);
+			return false;
+		}
+		if (renamed) this.#relabel(id, name);
 		this.#records.set(id, rec);
 		this.names[id] = rec.name;
-		this.#written.set(id, key);
+		this.#written.set(id, JSON.stringify({ name, body }));
 		this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: rec.profileId });
 		this.version++;
 		// ⚓ The persist ask on the first save of work (Nate 2026-10-23), the old
@@ -719,21 +964,26 @@ class StorageSession {
 	async restore(parsed: Extract<StoreParse, { ok: true }>): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db) throw new Error('storage unavailable');
-		this.#frozen = true;
-		clearTimeout(this.#timer);
-		clearTimeout(this.#rosterTimer);
-		this.#pending = {};
-		this.#rosterPending = {};
-		await this.#flushing;
+		// What is pending is written first, so a restore that fails has lost
+		// nothing; then saving stops.
+		if (this.active) await this.flush();
+		await this.#flushRoster();
+		this.#freeze();
 		await this.#profileQueue;
+		try {
+			await replaceAll(
+				db,
+				$state.snapshot(parsed.store) as MigrationResult,
+				Date.now(),
+				parsed.legacy
+			);
+		} catch (err) {
+			// Nothing was replaced (one transaction): carry on saving.
+			this.#frozen = false;
+			throw err;
+		}
 		for (const lock of this.#locks.values()) lock.release();
 		this.#locks.clear();
-		await replaceAll(
-			db,
-			$state.snapshot(parsed.store) as MigrationResult,
-			Date.now(),
-			parsed.legacy
-		);
 		applyBackup(parsed.data);
 		this.#channel?.post({ kind: 'replaced' });
 	}
@@ -811,14 +1061,16 @@ class StorageSession {
 		if (!db) return;
 		const now = Date.now();
 		const write = async (id: string, pairId: string | undefined) => {
-			const d = await get(db, 'documents', id);
-			if (!d || d.deleted) return;
-			const next = { ...d, updatedAt: now } as DocumentRecord;
-			if (pairId) next.pairId = pairId;
-			else delete next.pairId;
-			await put(db, 'documents', next);
+			const next = await modify(db, 'documents', id, (d) => {
+				if (!d || d.deleted) return null;
+				const out = { ...d, updatedAt: now } as DocumentRecord;
+				if (pairId) out.pairId = pairId;
+				else delete out.pairId;
+				return out;
+			});
+			if (!next) return;
 			if (this.#records.has(id)) this.#records.set(id, next);
-			this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: d.profileId });
+			this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: next.profileId });
 		};
 		const unpairOld = async (id: string) => {
 			const old = (await get(db, 'documents', id))?.pairId;
@@ -957,6 +1209,15 @@ class StorageSession {
 	 * they are (copy-only; under the switch an owned character reads the roster).
 	 */
 	async #makeGuests(db: IDBDatabase): Promise<void> {
+		// ⚓ Once, however many tabs open at the same moment after the migration
+		// (two made two copies of one rotation): one runs, the rest find it done.
+		await exclusively('guests', async () => {
+			if ((await getMeta(db)).guestsMadeAt) return;
+			await this.#makeGuestsNow(db);
+		});
+	}
+
+	async #makeGuestsNow(db: IDBDatabase): Promise<void> {
 		const now = Date.now();
 		for (const p of await getAll(db, 'profiles')) {
 			if (p.kind !== 'real') continue;
@@ -981,8 +1242,11 @@ class StorageSession {
 					pairId: d.id,
 					body: { ...d.body, con }
 				};
-				await put(db, 'documents', copy);
-				await put(db, 'documents', { ...d, pairId: copy.id, updatedAt: now });
+				// Both in one transaction: a tab closed mid-pass leaves no orphan
+				// copy for the next pass to duplicate. ⚓ The rotation's own
+				// `updatedAt` stays: pairing it is not an edit, and it must not
+				// jump to the top of the Library.
+				await putMany(db, 'documents', [copy, { ...d, pairId: copy.id }]);
 			}
 		}
 		await setMeta(db, { guestsMadeAt: now });
@@ -1242,10 +1506,16 @@ class StorageSession {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === THEORYCRAFT_ID) return;
 		if (this.profile?.id === id) await this.switchTo(THEORYCRAFT_ID);
+		// Another tab may have left the site's pointer on it.
+		if ((await getMeta(db)).activeProfileId === id) {
+			await setMeta(db, { activeProfileId: THEORYCRAFT_ID });
+		}
 		const now = Date.now();
 		for (const d of await getAll(db, 'documents', id)) {
 			this.#tombstoned.add(d.id);
 			await tombstone(db, 'documents', d.id, now);
+			// A tab showing one must let it go, or its autosave writes it back.
+			this.#channel?.post({ kind: 'deleted', store: 'documents', id: d.id, profileId: id });
 		}
 		for (const t of await getAll(db, 'teams', id)) await tombstone(db, 'teams', t.id, now);
 		await tombstone(db, 'profiles', id, now);
@@ -1319,7 +1589,11 @@ class StorageSession {
 	#fromLink = new Set<string>();
 
 	#useProfile(p: ProfileRecord): void {
+		// Pending roster work belongs to the profile it was made in; it is
+		// flushed before every switch, and must never land on another.
+		if (this.profile?.id !== p.id) this.#rosterPending = {};
 		this.profile = p;
+		this.#rosterBase = JSON.parse(JSON.stringify(p.roster)) as Roster;
 		bindRoster(
 			{
 				constellations: p.roster.constellations,
@@ -1345,6 +1619,21 @@ class StorageSession {
 
 	#rosterPending: Partial<Roster> = {};
 	#rosterTimer: ReturnType<typeof setTimeout> | undefined;
+	/** The roster as this tab last loaded or wrote it: what its edits are
+	 *  measured against, so only the characters it changed are written. */
+	#rosterBase: Roster = { constellations: {}, ownership: {}, loadout: {} };
+
+	#rosterChanges(pending: Partial<Roster>): RosterChanges | null {
+		const out: RosterChanges = {};
+		for (const part of Object.keys(pending) as (keyof Roster)[]) {
+			const change = rosterChange(
+				this.#rosterBase[part] as Record<string, unknown>,
+				pending[part] as Record<string, unknown>
+			);
+			if (change) out[part] = change;
+		}
+		return Object.keys(out).length ? out : null;
+	}
 
 	#queueRoster(part: RosterPart, value: object): void {
 		if (this.#frozen) return;
@@ -1356,10 +1645,28 @@ class StorageSession {
 
 	async #flushRoster(): Promise<void> {
 		clearTimeout(this.#rosterTimer);
+		if (this.#frozen) return;
 		const pending = this.#rosterPending;
 		this.#rosterPending = {};
-		if (!this.profile || !Object.keys(pending).length) return;
-		await this.#putProfile(this.profile.id, (p) => ({ ...p, roster: { ...p.roster, ...pending } }));
+		const profile = this.profile;
+		if (!profile || !Object.keys(pending).length) return;
+		const changes = this.#rosterChanges(pending);
+		if (!changes) return;
+		try {
+			// ⚓ Key by key onto what is stored: another tab editing the same
+			// profile's roster keeps its own change (it was a whole-map write).
+			await this.#putProfile(profile.id, (p) => ({
+				...p,
+				roster: applyRosterChanges(p.roster, changes)
+			}));
+			if (this.profile?.id === profile.id) Object.assign(this.#rosterBase, pending);
+			this.#saveLanded();
+		} catch (err) {
+			if (this.profile?.id === profile.id) {
+				this.#rosterPending = { ...pending, ...this.#rosterPending };
+			}
+			void this.#writeFailed(err);
+		}
 	}
 
 	/**
@@ -1368,17 +1675,24 @@ class StorageSession {
 	 * move can never write over each other.
 	 */
 	#putProfile(id: string, change: (p: ProfileRecord) => ProfileRecord): Promise<void> {
-		this.#profileQueue = this.#profileQueue.then(async () => {
+		// ⚠ The CALL can fail; the queue never stays failed, or every profile
+		// write after one failure would silently do nothing.
+		const run = this.#profileQueue.then(async () => {
 			const db = this.#db ?? (await ensureStorage());
-			const stored = db ? await get(db, 'profiles', id) : undefined;
-			if (!db || !stored || stored.deleted) return;
-			// ⚠ A plain copy: IndexedDB cannot clone a reactive proxy (DataCloneError).
-			const next = $state.snapshot({ ...change(stored), updatedAt: Date.now() }) as ProfileRecord;
-			await put(db, 'profiles', next);
+			if (!db) return;
+			// One transaction: a roster edit in another tab is never read stale.
+			const next = await modify(db, 'profiles', id, (stored) =>
+				stored && !stored.deleted
+					? // ⚠ A plain copy: IndexedDB cannot clone a reactive proxy (DataCloneError).
+						($state.snapshot({ ...change(stored), updatedAt: Date.now() }) as ProfileRecord)
+					: null
+			);
+			if (!next) return;
 			if (this.profile?.id === id) this.profile = next;
 			this.#channel?.post({ kind: 'saved', store: 'profiles', id });
 		});
-		return this.#profileQueue;
+		this.#profileQueue = run.catch(() => {});
+		return run;
 	}
 	#profileQueue: Promise<void> = Promise.resolve();
 
@@ -1389,7 +1703,9 @@ class StorageSession {
 	#onKey = (e: KeyboardEvent) => {
 		if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
 			e.preventDefault();
-			void this.flush().then(() => (this.savedAt = Date.now()));
+			void this.flush().then(() => {
+				if (!this.saveFailed) this.savedAt = Date.now();
+			});
 		}
 	};
 
@@ -1423,6 +1739,60 @@ class StorageSession {
 			void this.flush();
 			void this.#flushRoster();
 		}
+	};
+
+	/**
+	 * ⚓ The page is going (a reload, a close, a navigation away): what is not
+	 * saved yet goes into this page's journal, synchronously, because the
+	 * IndexedDB write the flush starts may never finish (journal.ts). Only
+	 * what this tab could have saved: documents it holds, and new ones.
+	 */
+	#onPageHide = () => {
+		if (this.#frozen || !this.profile) return;
+		const profileId = this.profile.id;
+		const at = Date.now();
+		const pending = { ...this.#inflight, ...this.#pending };
+		const docs: JournalDoc[] = [];
+		for (const e of this.#collect(pending)) {
+			if (this.#tombstoned.has(e.id)) continue;
+			if (this.#written.get(e.id) === JSON.stringify({ name: e.name, body: e.body })) continue;
+			const known = this.#records.get(e.id);
+			if (known ? !this.#locks.has(e.id) : this.readOnly.includes(e.id)) continue;
+			const entry = JSON.parse(JSON.stringify(e)) as JournalDoc & { fresh: unknown };
+			docs.push({
+				id: entry.id,
+				type: entry.type,
+				name: entry.name,
+				body: entry.body,
+				profileId: known?.profileId ?? profileId,
+				...(known
+					? {}
+					: { fresh: { createdAt: at, ...(this.#fromLink.has(e.id) ? { fromLink: true } : {}) } })
+			});
+		}
+		const isDoc = (id: string) => this.#records.has(id) || docs.some((d) => d.id === id);
+		const planner = pending.planner && isDoc(pending.planner.activeId);
+		const builder = pending.builder && isDoc(pending.builder.activeId);
+		const roster = this.#rosterChanges(this.#rosterPending);
+		writeJournal(this.#page, {
+			at,
+			docs,
+			...((planner || builder) && {
+				current: {
+					profileId,
+					...(planner && { planner: pending.planner!.activeId }),
+					...(builder && { builder: pending.builder!.activeId })
+				}
+			}),
+			...(roster && { roster: { profileId, changes: roster } })
+		});
+		void this.flush();
+		void this.#flushRoster();
+	};
+
+	/** Back from the back/forward cache: the page lives on and saves for itself. */
+	#onPageShow = (e: PageTransitionEvent) => {
+		if (e.persisted) dropJournal(this.#page);
 	};
 }
 

@@ -9,6 +9,7 @@
 
 import { buildEnvelope, parseBackup } from '$lib/utils/settingsBackup';
 import { getMeta, openDb, writeMigration } from './db';
+import { replayJournals } from './journal';
 import { migrate } from './migrate';
 import { newId } from './records';
 
@@ -22,9 +23,27 @@ export function ensureStorage(): Promise<IDBDatabase | null> {
 	return opening;
 }
 
+/** Open it again: the connection was lost (WebKit drops one under a tab
+ *  left in the background) or closed for a newer version elsewhere. */
+export function reopenStorage(): Promise<IDBDatabase | null> {
+	opening = undefined;
+	return ensureStorage();
+}
+
+/** One retry: an open can fail once and succeed a moment later, and a tab
+ *  that gives up drops to the old layout for the rest of its life. */
+async function openWithRetry(): Promise<IDBDatabase> {
+	try {
+		return await openDb();
+	} catch {
+		await new Promise((r) => setTimeout(r, 250));
+		return openDb();
+	}
+}
+
 async function open(): Promise<IDBDatabase | null> {
 	try {
-		const db = await openDb();
+		const db = await openWithRetry();
 		if ((await getMeta(db)).migratedAt === undefined) {
 			const now = Date.now();
 			const parsed = parseBackup(JSON.stringify(buildEnvelope(now)), now);
@@ -32,6 +51,8 @@ async function open(): Promise<IDBDatabase | null> {
 			const data = parsed.ok ? parsed.data : {};
 			await writeMigration(db, migrate(data, { now, newId }), now);
 		}
+		// What a page that unloaded mid-save had not written yet (journal.ts).
+		await replayJournals(db);
 		return db;
 	} catch (err) {
 		console.warn('[critcalc] new storage unavailable; staying on localStorage', err);

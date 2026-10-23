@@ -13,7 +13,12 @@
 
 import type { BackupData } from '$lib/utils/settingsBackup';
 import { sampleById } from '$lib/data/plannerSamples';
-import { notationHasActions, seatingOfSaved, seatsFromLegacy } from '$lib/utils/notationEdit';
+import {
+	notationHasActions,
+	seatingOfSaved,
+	seatsFromLegacy,
+	teamKey
+} from '$lib/utils/notationEdit';
 import type { LoadoutEntry } from '$lib/stores';
 import type { BoardPreset } from '$lib/boards.svelte';
 import {
@@ -93,13 +98,19 @@ const nonEmpty = (o: object) => Object.keys(o).length > 0;
 
 /**
  * A label the tools minted rather than the player chose: "Tab 3",
- * "Lineup 2", "Sample: …". ⚓ An unnamed document stores no name (§4.2), so
+ * "Lineup 2", "Shared rotation", "Sample: …". ⚓ An unnamed document stores no name (§4.2), so
  * these become `null` and the document shows a label derived from its
  * contents. A saved entry's name was always typed (or accepted) at Save, so
  * it is kept whatever it says.
  */
 export function isMintedLabel(label: string): boolean {
-	return /^(Tab|Lineup) \d+$/.test(label) || label.startsWith('Sample: ');
+	return (
+		/^(Tab|Lineup) \d+$/.test(label) ||
+		// The old planner's labels for an arrival (RotationTimeline's export reads them the same way).
+		label === 'Shared rotation' ||
+		label === 'Imported team' ||
+		label.startsWith('Sample: ')
+	);
 }
 
 function rotationBody(r: StoredRotation): RotationBody {
@@ -117,6 +128,13 @@ function rotationBody(r: StoredRotation): RotationBody {
 	if (r.sample) body.sample = r.sample;
 	return body;
 }
+
+/** Two bodies that say the same thing (both built here, so key order agrees). */
+const sameBody = (a: object, b: object) => JSON.stringify(a) === JSON.stringify(b);
+
+/** ⚓ The second document an open tab's SAVED version becomes, when the tab
+ *  had moved on from it (Nate 2026-10-23, the wording his). */
+export const savedVersionName = (name: string | null) => (name ? `${name} (saved)` : null);
 
 /** Nothing typed and nobody seated: a blank tab, not a document. */
 const isEmptyRotation = (b: RotationBody) => b.notation.trim() === '' && b.slots.every((s) => !s);
@@ -167,17 +185,44 @@ export function migrate(data: BackupData, { now, newId }: MigrationOptions): Mig
 	/** A saved entry's id → the document it became (the `savedId` merge). */
 	const docOfSaved = new Map<string, RotationDocument>();
 	const lineupOfSaved = new Map<string, LineupDocument>();
+	/** A saved entry's document as it was SAVED, before an open tab took it over. */
+	const asSaved = new Map<DocumentRecord, DocumentRecord>();
+	/** Saved versions already kept beside their working copy (once each). */
+	const keptSaved = new Set<DocumentRecord>();
+	/** The working copy wins; the saved version is kept beside it if it differs. */
+	const takeOver = <D extends DocumentRecord>(linked: D, body: D['body']) => {
+		const original = asSaved.get(linked)!;
+		if (!keptSaved.has(linked) && !sameBody(body, original.body)) {
+			keptSaved.add(linked);
+			docs.push({
+				...original,
+				id: newId(),
+				name: savedVersionName(original.name)
+			} as DocumentRecord);
+		}
+		linked.body = body;
+	};
 
 	// ── Rotations: the saved bank, then Recently closed, then the open tabs ──
-	// ⚓ A tab linked to a saved entry is ONE document: the tab is the working
-	// copy, so its content wins and the saved entry's name is kept. The saved
-	// version is still in localStorage (copy-only).
+	// ⚓ Nate 2026-10-23, both halves:
+	// - An OPEN tab linked to a saved entry is the working copy: its content
+	//   wins and keeps the saved entry's name (a reload in the old layout
+	//   brought exactly that tab back, so migrating only the saved version
+	//   would look like a rollback). When it had moved on from what was
+	//   saved, the saved version comes too, as "<name> (saved)".
+	// - A RECENTLY CLOSED tab linked to a saved entry was closed without
+	//   saving its changes: the saved version is the one that migrates.
 
+	/** One team per set (§3): the first entry holding a set wins. */
+	const teamKeys = new Set<string>();
 	for (const e of saved) {
 		if (!notationHasActions(e.notation)) {
 			// A names-only entry is a TEAM (library.isTeamEntry).
 			const seats = seatingOfSaved(e).seats;
 			if (seats.every((s) => !s)) continue;
+			const key = teamKey(seats);
+			if (teamKeys.has(key)) continue;
+			teamKeys.add(key);
 			teams.push({
 				id: newId(),
 				updatedAt: e.savedAt ?? now,
@@ -200,15 +245,17 @@ export function migrate(data: BackupData, { now, newId }: MigrationOptions): Mig
 		if (e.openedAt) doc.openedAt = e.openedAt;
 		docs.push(doc);
 		docOfSaved.set(e.id, doc);
+		asSaved.set(doc, { ...doc });
 	}
 
 	/** Tab id → document, for the active tab's `current`. */
 	const docOfTab = new Map<string, RotationDocument>();
-	const takeTab = (t: StoredRotation, at: number) => {
+	const takeTab = (t: StoredRotation, at: number, closed: boolean) => {
 		const body = rotationBody(t);
 		const linked = t.savedId ? docOfSaved.get(t.savedId) : undefined;
 		if (linked) {
-			linked.body = body;
+			if (closed) return;
+			takeOver(linked, body);
 			linked.updatedAt = Math.max(linked.updatedAt, at);
 			if (t.viewedAt) linked.openedAt = Math.max(linked.openedAt ?? 0, t.viewedAt);
 			docOfTab.set(t.id, linked);
@@ -230,8 +277,8 @@ export function migrate(data: BackupData, { now, newId }: MigrationOptions): Mig
 		docOfTab.set(t.id, doc);
 		if (isUntouchedSample(t)) toTheorycraft.add(doc.id);
 	};
-	for (const c of closedTabs) takeTab(c.tab, c.closedAt);
-	for (const t of arr<StoredRotation>(tabState.tabs)) takeTab(t, t.viewedAt ?? now);
+	for (const c of closedTabs) takeTab(c.tab, c.closedAt, true);
+	for (const t of arr<StoredRotation>(tabState.tabs)) takeTab(t, t.viewedAt ?? now, false);
 
 	// ── Lineups: the same three sources, the same merge ─────────────────────
 
@@ -265,13 +312,16 @@ export function migrate(data: BackupData, { now, newId }: MigrationOptions): Mig
 		if (b.openedAt) doc.openedAt = b.openedAt;
 		docs.push(doc);
 		lineupOfSaved.set(b.id, doc);
+		asSaved.set(doc, { ...doc });
 	}
 
 	const docOfBoard = new Map<string, LineupDocument>();
-	const takeBoard = (b: StoredBoard, at: number) => {
+	// The same two rules as the tabs'.
+	const takeBoard = (b: StoredBoard, at: number, closed: boolean) => {
 		const linked = b.savedId ? lineupOfSaved.get(b.savedId) : undefined;
 		if (linked) {
-			linked.body = lineupBody(b);
+			if (closed) return;
+			takeOver(linked, lineupBody(b));
 			linked.updatedAt = Math.max(linked.updatedAt, at);
 			if (b.viewedAt) linked.openedAt = Math.max(linked.openedAt ?? 0, b.viewedAt);
 			docOfBoard.set(b.id, linked);
@@ -292,8 +342,8 @@ export function migrate(data: BackupData, { now, newId }: MigrationOptions): Mig
 		docs.push(doc);
 		docOfBoard.set(b.id, doc);
 	};
-	for (const c of closedBoards) takeBoard(c.tab, c.closedAt);
-	for (const b of arr<StoredBoard>(boardState.boards)) takeBoard(b, b.viewedAt ?? now);
+	for (const c of closedBoards) takeBoard(c.tab, c.closedAt, true);
+	for (const b of arr<StoredBoard>(boardState.boards)) takeBoard(b, b.viewedAt ?? now, false);
 
 	// ── Profiles ────────────────────────────────────────────────────────────
 

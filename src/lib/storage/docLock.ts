@@ -16,11 +16,22 @@
  *
  * Both APIs are in every current engine, Safari included. The lock manager
  * and the channel are injectable for tests.
+ *
+ * ⚠ Web Locks exist only in a SECURE context, and arrived in Safari 15.4 (as
+ * did BroadcastChannel): an iPhone opening a dev server over LAN `http://`
+ * has neither. Without them every document is held here — one tab's
+ * behaviour, as the old layout had — rather than the tools never loading.
  */
 
 import type { StoreName } from './db';
 
 const lockName = (docId: string) => `critcalc:doc:${docId}`;
+
+/** The browser's lock manager, where it has one. */
+const browserLocks = (): LockManager | undefined => globalThis.navigator?.locks;
+
+/** What a hold is without a lock manager: always granted, nothing to release. */
+const UNLOCKED: DocumentLock = { release() {} };
 
 export type DocumentLock = {
 	/** Give the document up (closing it, opening another). */
@@ -42,8 +53,9 @@ export type HoldOptions = {
 export function holdDocument(
 	docId: string,
 	{ steal = false, onLost }: HoldOptions = {},
-	locks: LockManager = navigator.locks
+	locks: LockManager | undefined = browserLocks()
 ): Promise<DocumentLock | null> {
+	if (!locks) return Promise.resolve(UNLOCKED);
 	return new Promise((resolve) => {
 		let release!: () => void;
 		const held = new Promise<void>((r) => (release = r));
@@ -73,11 +85,63 @@ export function holdDocument(
 	});
 }
 
+/**
+ * Wait for a document another tab holds, and hold it the moment it is free
+ * (that tab closed, or moved to another document). Resolves `null` if
+ * `signal` aborts first — this tab moved on and no longer wants it.
+ */
+export function waitForDocument(
+	docId: string,
+	{ signal, onLost }: { signal: AbortSignal; onLost?: () => void },
+	locks: LockManager | undefined = browserLocks()
+): Promise<DocumentLock | null> {
+	if (!locks) return Promise.resolve(UNLOCKED);
+	return new Promise((resolve) => {
+		let release!: () => void;
+		const held = new Promise<void>((r) => (release = r));
+		let granted = false;
+		let released = false;
+		const handle: DocumentLock = {
+			release() {
+				released = true;
+				release();
+			}
+		};
+		locks
+			.request(lockName(docId), { signal }, () => {
+				granted = true;
+				resolve(handle);
+				return held;
+			})
+			.catch((err: unknown) => {
+				// Aborted while waiting: nobody wants it any more.
+				if (!granted) return resolve(null);
+				// Stolen after it was granted, as `holdDocument`'s are.
+				if (!released && (err as { name?: string })?.name === 'AbortError') onLost?.();
+			});
+	});
+}
+
+/**
+ * Run `fn` while no other tab runs the same `name` — a pass that must happen
+ * once however many tabs open at the same moment. Without a lock manager it
+ * simply runs.
+ */
+export async function exclusively<T>(
+	name: string,
+	fn: () => Promise<T>,
+	locks: LockManager | undefined = browserLocks()
+): Promise<T> {
+	if (!locks) return fn();
+	return (await locks.request(`critcalc:${name}`, fn)) as T;
+}
+
 /** Is the document held by some tab right now (this one included)? */
 export async function isHeld(
 	docId: string,
-	locks: LockManager = navigator.locks
+	locks: LockManager | undefined = browserLocks()
 ): Promise<boolean> {
+	if (!locks) return false;
 	const { held } = await locks.query();
 	return (held ?? []).some((l) => l.name === lockName(docId));
 }
@@ -93,7 +157,19 @@ export type StorageMessage =
 	/** A backup was restored: every record changed, so the other tabs reload. */
 	| { kind: 'replaced' };
 
-export function openStorageChannel(make = (n: string) => new BroadcastChannel(n)) {
+/** A channel that reaches nobody, where the browser has no BroadcastChannel. */
+const silentChannel = () =>
+	({
+		postMessage() {},
+		addEventListener() {},
+		removeEventListener() {},
+		close() {}
+	}) as unknown as BroadcastChannel;
+
+export function openStorageChannel(
+	make = (n: string) =>
+		typeof BroadcastChannel === 'undefined' ? silentChannel() : new BroadcastChannel(n)
+) {
 	const channel = make(CHANNEL_NAME);
 	return {
 		/** Tell the OTHER tabs (a BroadcastChannel never echoes to its sender). */

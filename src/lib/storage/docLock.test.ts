@@ -1,15 +1,52 @@
 import { describe, expect, it, vi } from 'vitest';
-import { holdDocument, isHeld, openStorageChannel, type StorageMessage } from './docLock';
+import {
+	exclusively,
+	holdDocument,
+	isHeld,
+	openStorageChannel,
+	waitForDocument,
+	type StorageMessage
+} from './docLock';
 
 /**
  * A minimal Web Locks stand-in (Node 22 has no `navigator.locks`): exclusive
- * locks, `ifAvailable` and `steal`, per the spec's observable behaviour —
- * a stolen holder's `request()` promise rejects with an AbortError.
+ * locks, `ifAvailable`, `steal`, and a plain request that WAITS its turn
+ * (abortable by `signal`), per the spec's observable behaviour — a stolen
+ * holder's `request()` promise rejects with an AbortError.
  */
 function fakeLocks(): LockManager {
-	const held = new Map<string, { abort: (e: Error) => void }>();
+	type Held = { abort: (e: Error) => void };
+	const held = new Map<string, Held>();
+	const queue = new Map<string, (() => void)[]>();
+	const abortError = (msg: string) => Object.assign(new Error(msg), { name: 'AbortError' });
+	const grant = (
+		name: string,
+		cb: (lock: Lock | null) => unknown,
+		resolve: (v: unknown) => void,
+		reject: (e: unknown) => void
+	) => {
+		const entry: Held = { abort: reject };
+		held.set(name, entry);
+		Promise.resolve(cb({ name, mode: 'exclusive' } as Lock)).then(
+			(v) => {
+				if (held.get(name) === entry) {
+					held.delete(name);
+					queue.get(name)?.shift()?.();
+				}
+				resolve(v);
+			},
+			(e) => reject(e)
+		);
+	};
 	const manager = {
-		request(name: string, options: LockOptions, cb: (lock: Lock | null) => unknown) {
+		request(
+			name: string,
+			optionsOrCb: LockOptions | ((lock: Lock | null) => unknown),
+			maybeCb?: (lock: Lock | null) => unknown
+		) {
+			// `request(name, callback)` is the spec's short form.
+			const options = typeof optionsOrCb === 'function' ? {} : optionsOrCb;
+			const cb = (typeof optionsOrCb === 'function' ? optionsOrCb : maybeCb)!;
 			return new Promise((resolve, reject) => {
 				const current = held.get(name);
 				if (current && options.ifAvailable) {
@@ -17,19 +54,24 @@ function fakeLocks(): LockManager {
 					return;
 				}
 				if (current && options.steal) {
-					const err = new Error('stolen');
-					err.name = 'AbortError';
-					current.abort(err);
+					current.abort(abortError('stolen'));
+					grant(name, cb, resolve, reject);
+					return;
 				}
-				const entry = { abort: reject };
-				held.set(name, entry);
-				Promise.resolve(cb({ name, mode: 'exclusive' } as Lock)).then(
-					(v) => {
-						if (held.get(name) === entry) held.delete(name);
-						resolve(v);
-					},
-					(e) => reject(e)
-				);
+				if (!current) {
+					grant(name, cb, resolve, reject);
+					return;
+				}
+				const turn = () => grant(name, cb, resolve, reject);
+				const q = queue.get(name) ?? [];
+				q.push(turn);
+				queue.set(name, q);
+				options.signal?.addEventListener('abort', () => {
+					const i = q.indexOf(turn);
+					if (i < 0) return;
+					q.splice(i, 1);
+					reject(abortError('aborted'));
+				});
 			});
 		},
 		async query() {
@@ -38,6 +80,8 @@ function fakeLocks(): LockManager {
 	};
 	return manager as unknown as LockManager;
 }
+
+const tick = () => new Promise((r) => setTimeout(r, 0));
 
 describe('document locks', () => {
 	it('a document open in one tab is read-only in another', async () => {
@@ -70,6 +114,69 @@ describe('document locks', () => {
 		expect(await isHeld('d1', locks)).toBe(false);
 		expect(await holdDocument('d1', {}, locks)).not.toBeNull();
 		expect(onLost).not.toHaveBeenCalled();
+	});
+});
+
+describe('waiting for a document', () => {
+	it('a read-only tab holds the document the moment the other tab lets go', async () => {
+		const locks = fakeLocks();
+		const a = await holdDocument('d1', {}, locks);
+		const ac = new AbortController();
+		let b: unknown = 'waiting';
+		void waitForDocument('d1', { signal: ac.signal }, locks).then((l) => (b = l));
+		await tick();
+		expect(b).toBe('waiting');
+		a!.release();
+		await tick();
+		await tick();
+		expect(b).not.toBeNull();
+		expect(b).not.toBe('waiting');
+		expect(await isHeld('d1', locks)).toBe(true);
+	});
+
+	it('a wait this tab no longer wants resolves null and takes nothing', async () => {
+		const locks = fakeLocks();
+		const a = await holdDocument('d1', {}, locks);
+		const ac = new AbortController();
+		const b = waitForDocument('d1', { signal: ac.signal }, locks);
+		ac.abort();
+		expect(await b).toBeNull();
+		a!.release();
+		await tick();
+		expect(await isHeld('d1', locks)).toBe(false);
+	});
+});
+
+describe('without Web Locks (an insecure context, Safari before 15.4)', () => {
+	it('every document is held here, as one tab would', async () => {
+		expect(await holdDocument('d1', {}, undefined)).not.toBeNull();
+		expect(await holdDocument('d1', {}, undefined)).not.toBeNull();
+		const ac = new AbortController();
+		expect(await waitForDocument('d1', { signal: ac.signal }, undefined)).not.toBeNull();
+		expect(await isHeld('d1', undefined)).toBe(false);
+	});
+
+	it('an exclusive pass simply runs', async () => {
+		expect(await exclusively('x', async () => 7, undefined)).toBe(7);
+	});
+});
+
+describe('exclusively', () => {
+	it('two tabs starting a once-only pass at the same moment run it one after the other', async () => {
+		const locks = fakeLocks();
+		const order: string[] = [];
+		const pass = (who: string) =>
+			exclusively(
+				'guests',
+				async () => {
+					order.push(`${who} in`);
+					await tick();
+					order.push(`${who} out`);
+				},
+				locks
+			);
+		await Promise.all([pass('a'), pass('b')]);
+		expect(order).toEqual(['a in', 'a out', 'b in', 'b out']);
 	});
 });
 
