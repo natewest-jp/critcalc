@@ -148,6 +148,7 @@ class StorageSession {
 			}
 		});
 		addEventListener('keydown', this.#onKey);
+		addEventListener('keydown', this.#onFlipKey, true);
 		document.addEventListener('visibilitychange', this.#onVisibility);
 	}
 
@@ -601,7 +602,7 @@ class StorageSession {
 		self: { profileId: string; createdAt: number };
 	} | null>(null);
 
-	/** The document each tool showed before its current one (⌥`, §4.2). */
+	/** The document each tool showed before its current one (⌃`, §4.2). */
 	#previous: Partial<Record<DocTool, string>> = {};
 
 	#rememberLeaving(tool: DocTool): void {
@@ -628,7 +629,7 @@ class StorageSession {
 		});
 	}
 
-	/** ⌥`: the pair's other side, else the previous document. */
+	/** ⌃`: the pair's other side, else the previous document. */
 	async other(tool: DocTool): Promise<void> {
 		if (tool === 'planner' && this.plannerPair) return this.open(this.plannerPair.id);
 		const prev = this.#previous[tool];
@@ -1254,18 +1255,31 @@ class StorageSession {
 			e.preventDefault();
 			void this.flush().then(() => (this.savedAt = Date.now()));
 		}
-		// ⚓ ⌥` — ONE key, two jobs (Nate 2026-10-23, §12 Q26): flip the pair
-		// if the rotation has one, else back to the previous document.
-		if (e.altKey && !e.metaKey && !e.ctrlKey && e.code === 'Backquote' && this.active) {
-			const tool: DocTool | null = location.pathname.includes('/planner')
-				? 'planner'
-				: location.pathname.includes('/builder')
-					? 'builder'
-					: null;
-			if (!tool || document.querySelector('[role="dialog"][aria-modal="true"]')) return;
-			e.preventDefault();
-			void this.other(tool);
-		}
+	};
+
+	/**
+	 * ⚓ ⌃` — ONE key, two jobs (Nate 2026-10-23, §12 Q26): flip the pair if the
+	 * rotation has one, else back to the previous document.
+	 *
+	 * ↻ It was ⌥` and Nate caught it typing a ` into the notation: on a Mac
+	 * ⌥` is a DEAD KEY (an accent waiting for its letter), so a focused text
+	 * field writes the mark itself, and nearly every ⌥ combination types a
+	 * character there. ⌃ types nothing on any platform (⌘` is the system's
+	 * window switcher). Caught in the CAPTURE phase, so the editor never sees
+	 * it whatever its keymap binds.
+	 */
+	#onFlipKey = (e: KeyboardEvent) => {
+		if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey || e.code !== 'Backquote') return;
+		if (!this.active) return;
+		const tool: DocTool | null = location.pathname.includes('/planner')
+			? 'planner'
+			: location.pathname.includes('/builder')
+				? 'builder'
+				: null;
+		if (!tool || document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+		e.preventDefault();
+		e.stopPropagation();
+		void this.other(tool);
 	};
 
 	#onVisibility = () => {

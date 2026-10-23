@@ -1,7 +1,7 @@
 <!--
   COMPARE, in the Planner's toolbar beside the Total (design §4.6, §5.3; build
   plan §13, phase 4). ⚓ A pair, not a mode: two rotations, ONE showing, ⇅
-  flips between them (⌥` too), ⛔ never drawn over each other. Unpaired, it
+  flips between them (⌃` too), ⛔ never drawn over each other. Unpaired, it
   offers the two ways in: Duplicate and compare (copy this rotation, keep the
   original as the other side) and Compare with… (the Library, picking).
 
@@ -53,7 +53,7 @@
 		<button
 			class="cmp-flip"
 			type="button"
-			title={`Show ${pair.label} (⌥\`)`}
+			title={`Show ${pair.label} (⌃\`)`}
 			aria-label={`Show the other rotation: ${pair.label}`}
 			onclick={flip}
 		>
