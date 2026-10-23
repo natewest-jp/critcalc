@@ -1,6 +1,6 @@
 # Switch-over words — proposals for Nate (release readiness pass, step 3)
 
-**Status:** ⏳ PROPOSED 2026-10-23, nothing applied. Answer by number: "ok", a rewrite, or "cut".
+**Status:** ✅ ALL 34 APPROVED by Nate 2026-10-23 and applied.
 
 **Scope (⚓ Nate 2026-10-23):** correct only what the new layout makes FALSE, in today's chapter form; the
 §6 Help relayout is its own round after the release. The new text renders under the switch
