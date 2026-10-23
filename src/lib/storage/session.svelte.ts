@@ -26,7 +26,13 @@ import {
 	type TeamSlot
 } from '$lib/boards.svelte';
 import { teamKey } from '$lib/utils/notationEdit';
-import { newTabId, rotationTabs, type RotationTab } from '$lib/rotationTabs.svelte';
+import {
+	newTabId,
+	rotationTabs,
+	slotsFromNotation,
+	type RotationTab
+} from '$lib/rotationTabs.svelte';
+import { documentBar } from '$lib/documentBar.svelte';
 import { ensureStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -116,6 +122,7 @@ class StorageSession {
 		this.#attach();
 		this.#useProfile(profile);
 		await this.#loadProfiles();
+		if (!meta.guestsMadeAt) await this.#makeGuests(db);
 
 		await this.#loadPlanner(profile);
 		await this.#loadBuilder(profile);
@@ -239,6 +246,7 @@ class StorageSession {
 		}
 		if (this.currentId(tool) === id) return;
 		await this.flush();
+		this.#rememberLeaving(tool);
 		this.#release(tool);
 		this.#show(opened);
 	}
@@ -354,6 +362,7 @@ class StorageSession {
 			this.#remember(doc, tab.label);
 			void this.#hold(doc.id);
 			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+			this.#plannerContext(doc);
 		} else {
 			const board = lineupToBoard(doc);
 			this.#remember(doc, board.label);
@@ -368,6 +377,7 @@ class StorageSession {
 			const tab: RotationTab = { id: newTabId(), label, notation: '', viewedAt: Date.now() };
 			this.#derived.set(tab.id, label);
 			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+			this.#plannerContext(null);
 		} else {
 			const board = makeBoard('Lineup 1', 'stygian');
 			boards.restoreFrom({ boards: [board], activeBoardId: board.id });
@@ -386,6 +396,7 @@ class StorageSession {
 			this.#remember(doc, tab.label);
 			await this.#hold(doc.id);
 			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
+			this.#plannerContext(doc);
 		} else {
 			// No current rotation: Theorycraft's first visit opens on a sample
 			// (§9.1), a real profile on an empty one. It becomes a document on
@@ -568,6 +579,256 @@ class StorageSession {
 		this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: rec.profileId });
 		this.version++;
 		return true;
+	}
+
+	// ── Compare and the guest star (phase 4, design §4.6) ───────────────────
+	//
+	// ⚓ A pair is stored on BOTH documents (`pairId`): reopening either brings
+	// the other back, and only ✕ ends it (Nate 2026-10-23, §12 Q30). A what-if
+	// pair crosses profiles: the real profile's rotation and its Theorycraft
+	// copy, which shows inside the real profile as a GUEST — every value its
+	// own, the roster not read (`rotationTabs.rosterless`).
+
+	/** The Planner's document is a guest: Theorycraft's, shown in a real profile. */
+	plannerGuest = $state(false);
+	/** The Planner's document's partner, when it has a live one. */
+	plannerPair = $state<{
+		id: string;
+		profileId: string;
+		label: string;
+		createdAt: number;
+		/** This side, for naming the two. */
+		self: { profileId: string; createdAt: number };
+	} | null>(null);
+
+	/** The document each tool showed before its current one (⌥`, §4.2). */
+	#previous: Partial<Record<DocTool, string>> = {};
+
+	#rememberLeaving(tool: DocTool): void {
+		const id = this.currentId(tool);
+		if (id) this.#previous[tool] = id;
+	}
+
+	#plannerContext(doc: DocumentRecord | null): void {
+		const guest = !!doc && !!this.profile && doc.profileId !== this.profile.id;
+		this.plannerGuest = guest;
+		rotationTabs.rosterless = guest;
+		this.plannerPair = null;
+		const pairId = doc?.pairId;
+		if (!pairId || !this.#db) return;
+		void get(this.#db, 'documents', pairId).then((p) => {
+			if (!p || p.deleted || p.pairId !== doc!.id || rotationTabs.activeTabId !== doc!.id) return;
+			this.plannerPair = {
+				id: p.id,
+				profileId: p.profileId,
+				createdAt: p.createdAt,
+				self: { profileId: doc!.profileId, createdAt: doc!.createdAt },
+				label: p.name ?? (p.type === 'rotation' ? rotationLabel(p.body.slots) : lineupLabel(p.body))
+			};
+		});
+	}
+
+	/** ⌥`: the pair's other side, else the previous document. */
+	async other(tool: DocTool): Promise<void> {
+		if (tool === 'planner' && this.plannerPair) return this.open(this.plannerPair.id);
+		const prev = this.#previous[tool];
+		if (prev && prev !== this.currentId(tool) && (await this.#alive(prev))) await this.open(prev);
+	}
+
+	async #alive(id: string): Promise<boolean> {
+		const d = this.#db ? await get(this.#db, 'documents', id) : undefined;
+		return !!d && !d.deleted;
+	}
+
+	/** The Planner's current rotation as a stored record, written first. */
+	async #currentRotation(): Promise<RotationDocument | null> {
+		if (!this.active || !this.#db) return null;
+		await this.flush();
+		const d = await get(this.#db, 'documents', rotationTabs.activeTabId);
+		return d && !d.deleted && d.type === 'rotation' ? d : null;
+	}
+
+	/** Pair two documents, ending any pair either was in. `b` null ends `a`'s. */
+	async #setPair(a: string, b: string | null): Promise<void> {
+		const db = this.#db;
+		if (!db) return;
+		const now = Date.now();
+		const write = async (id: string, pairId: string | undefined) => {
+			const d = await get(db, 'documents', id);
+			if (!d || d.deleted) return;
+			const next = { ...d, updatedAt: now } as DocumentRecord;
+			if (pairId) next.pairId = pairId;
+			else delete next.pairId;
+			await put(db, 'documents', next);
+			if (this.#records.has(id)) this.#records.set(id, next);
+			this.#channel?.post({ kind: 'saved', store: 'documents', id, profileId: d.profileId });
+		};
+		const unpairOld = async (id: string) => {
+			const old = (await get(db, 'documents', id))?.pairId;
+			if (old && old !== b && old !== a) await write(old, undefined);
+		};
+		await unpairOld(a);
+		if (b) await unpairOld(b);
+		await write(a, b ?? undefined);
+		if (b) await write(b, a);
+		this.version++;
+	}
+
+	/**
+	 * ⚓ A WHAT-IF (§2.4, §4.6): an owned character's level chosen against the
+	 * roster, in either direction, never edits the rotation. It makes a
+	 * Theorycraft copy holding every level as the rotation ran (the roster's for
+	 * owned characters) with this one changed, pairs the two and shows the
+	 * copy. A rotation already paired with a guest takes the change there: the
+	 * copy is where its what-ifs live.
+	 */
+	async whatIf(charId: string, level: number): Promise<void> {
+		const profile = this.profile;
+		if (profile?.kind !== 'real' || this.plannerGuest) return;
+		const doc = await this.#currentRotation();
+		if (!doc || !this.#db) return;
+		const partner = doc.pairId ? await get(this.#db, 'documents', doc.pairId) : undefined;
+		if (partner && !partner.deleted && partner.profileId === THEORYCRAFT_ID) {
+			await this.open(partner.id);
+			rotationTabs.setTabCon(charId, level);
+			return;
+		}
+		const { constellations: roster, ownership: owned } = profile.roster;
+		const ids = new Set<string>([
+			...doc.body.slots.filter((id): id is string => !!id),
+			...slotsFromNotation(doc.body.notation),
+			...Object.keys(doc.body.con ?? {})
+		]);
+		const con: Record<string, number> = {};
+		for (const id of ids) con[id] = rotationTabs.levelOf(id, roster, owned);
+		con[charId] = level;
+		const now = Date.now();
+		const copy: RotationDocument = {
+			id: newId(),
+			updatedAt: now,
+			profileId: THEORYCRAFT_ID,
+			type: 'rotation',
+			name: null,
+			createdAt: now,
+			openedAt: now,
+			body: { ...$state.snapshot(doc.body), con }
+		};
+		await put(this.#db, 'documents', copy);
+		this.#channel?.post({
+			kind: 'saved',
+			store: 'documents',
+			id: copy.id,
+			profileId: THEORYCRAFT_ID
+		});
+		await this.#setPair(doc.id, copy.id);
+		await this.open(copy.id);
+		// ⚓ The FIRST routed copy teaches the rule once; afterwards the white and
+		// the status carry it (§4.6).
+		if (!storeGet(siteSettings).seenGuestNotice) {
+			siteSettings.markGuestNoticeSeen();
+			documentBar.showNotice(`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
+		}
+	}
+
+	/** Compare → Duplicate and compare: a copy beside the original, where the
+	 *  original lives (a copy of a profile's rotation fits it, §4.3), shown. */
+	async duplicateAndCompare(): Promise<void> {
+		const doc = await this.#currentRotation();
+		if (!doc || !this.#db) return;
+		const now = Date.now();
+		const copy: RotationDocument = {
+			...$state.snapshot(doc),
+			id: newId(),
+			name: null,
+			createdAt: now,
+			updatedAt: now,
+			openedAt: now
+		} as RotationDocument;
+		delete copy.pinned;
+		delete copy.pairId;
+		delete copy.fromLink;
+		await put(this.#db, 'documents', copy);
+		this.#channel?.post({
+			kind: 'saved',
+			store: 'documents',
+			id: copy.id,
+			profileId: copy.profileId
+		});
+		await this.#setPair(doc.id, copy.id);
+		await this.open(copy.id);
+	}
+
+	/** Compare → Compare with…: the Library's pick pairs the current rotation
+	 *  with the one chosen; the Planner stays on the current one. */
+	async compareWith(id: string): Promise<void> {
+		const doc = await this.#currentRotation();
+		if (!doc || doc.id === id) return;
+		await this.#setPair(doc.id, id);
+		this.#plannerContext(this.#records.get(doc.id) ?? doc);
+	}
+
+	/** ✕: the pair ends; both documents stay. */
+	async endPair(): Promise<void> {
+		const id = rotationTabs.activeTabId;
+		const pair = this.plannerPair;
+		if (!pair) return;
+		await this.#setPair(id, null);
+		const self = this.#records.get(id);
+		if (self) this.#plannerContext(self);
+		else this.plannerPair = null;
+	}
+
+	/** The partner of each document that has one, for the Library's guest rows
+	 *  and marks. */
+	async partners(docs: readonly DocumentRecord[]): Promise<Record<string, DocumentRecord>> {
+		const db = this.#db ?? (await ensureStorage());
+		const out: Record<string, DocumentRecord> = {};
+		if (!db) return out;
+		for (const d of docs) {
+			if (!d.pairId) continue;
+			const p = await get(db, 'documents', d.pairId);
+			if (p && !p.deleted && p.pairId === d.id) out[d.id] = p;
+		}
+		return out;
+	}
+
+	/**
+	 * ONCE (§10): a real profile's rotation holding its own level for an OWNED
+	 * character that disagrees with the roster was a what-if waiting for this
+	 * phase. Each gets its Theorycraft copy at the stored levels, paired, so
+	 * nothing changes silently: ⇅ shows both. The stored levels are left where
+	 * they are (copy-only; under the switch an owned character reads the roster).
+	 */
+	async #makeGuests(db: IDBDatabase): Promise<void> {
+		const now = Date.now();
+		for (const p of await getAll(db, 'profiles')) {
+			if (p.kind !== 'real') continue;
+			const { constellations: roster, ownership: owned } = p.roster;
+			for (const d of await getAll(db, 'documents', p.id)) {
+				if (d.type !== 'rotation' || d.pairId || !d.body.con) continue;
+				const stored = d.body.con;
+				const differs = Object.entries(stored).some(
+					([id, lv]) => owned[id] === 'owned' && lv !== (roster[id] ?? 0)
+				);
+				if (!differs) continue;
+				const con: Record<string, number> = {};
+				for (const id of d.body.slots) if (id) con[id] = roster[id] ?? 0;
+				Object.assign(con, stored);
+				const copy: RotationDocument = {
+					id: newId(),
+					updatedAt: now,
+					profileId: THEORYCRAFT_ID,
+					type: 'rotation',
+					name: d.name,
+					createdAt: now,
+					pairId: d.id,
+					body: { ...d.body, con }
+				};
+				await put(db, 'documents', copy);
+				await put(db, 'documents', { ...d, pairId: copy.id, updatedAt: now });
+			}
+		}
+		await setMeta(db, { guestsMadeAt: now });
 	}
 
 	// ── Teams (phase 3, design §3) ──────────────────────────────────────────
@@ -992,6 +1253,18 @@ class StorageSession {
 		if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
 			e.preventDefault();
 			void this.flush().then(() => (this.savedAt = Date.now()));
+		}
+		// ⚓ ⌥` — ONE key, two jobs (Nate 2026-10-23, §12 Q26): flip the pair
+		// if the rotation has one, else back to the previous document.
+		if (e.altKey && !e.metaKey && !e.ctrlKey && e.code === 'Backquote' && this.active) {
+			const tool: DocTool | null = location.pathname.includes('/planner')
+				? 'planner'
+				: location.pathname.includes('/builder')
+					? 'builder'
+					: null;
+			if (!tool || document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+			e.preventDefault();
+			void this.other(tool);
 		}
 	};
 

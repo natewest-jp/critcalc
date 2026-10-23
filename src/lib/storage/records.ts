@@ -119,6 +119,12 @@ type DocumentCommon = SyncFields & {
 	/** Arrived by a shared link (§9.3): the Library marks it, and ⏭ an
 	 *  untouched one is pruned from Theorycraft after a while (§4.3). */
 	fromLink?: true;
+	/**
+	 * ⚓ The document it is COMPARED with (§4.6): a pair, stored on both, so
+	 * reopening either brings the other back. Only ✕ ends it. A what-if's pair
+	 * crosses profiles: the real profile's document and its Theorycraft copy.
+	 */
+	pairId?: string;
 };
 
 export type RotationDocument = DocumentCommon & { type: 'rotation'; body: RotationBody };

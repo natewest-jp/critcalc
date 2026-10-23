@@ -32,6 +32,8 @@ export type Meta = {
 	migratedAt?: number;
 	/** The profile the site opens in. */
 	activeProfileId?: string;
+	/** When the stored what-if levels became Theorycraft pairs (phase 4, §10). */
+	guestsMadeAt?: number;
 };
 
 const META = 'meta';

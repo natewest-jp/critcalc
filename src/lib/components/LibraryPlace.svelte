@@ -17,7 +17,13 @@
 	import { menu } from '$lib/menuState.svelte';
 	import { recency, storageSession, type DocTool } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
-	import type { DocumentRecord, LineupDocument, RotationDocument } from '$lib/storage/records';
+	import {
+		THEORYCRAFT_ID,
+		type DocumentRecord,
+		type LineupDocument,
+		type RotationDocument
+	} from '$lib/storage/records';
+	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import { siteSettings } from '$lib/stores';
 	import { teamKey } from '$lib/utils/notationEdit';
@@ -59,8 +65,37 @@
 	const canMove = $derived(
 		storageSession.profile?.kind === 'theorycraft' && storageSession.moveTargets.length > 0
 	);
-	const pinned = $derived(shown.filter((d) => d.pinned));
-	const recent = $derived(shown.filter((d) => !d.pinned));
+	/** PICK MODE (§6.3): choosing a partner for a rotation (Compare with…,
+	 *  §4.6). The rotation itself is not a choice. */
+	const pickFor = $derived(place === 'planner' ? menu.pickFor : null);
+	onDestroy(() => (menu.pickFor = null));
+	const listed = $derived(pickFor ? shown.filter((d) => d.id !== pickFor) : shown);
+
+	/** Each paired document's partner. ⚓ A guest (a Theorycraft copy of a
+	 *  profile's rotation) shows NESTED under the row it was copied from,
+	 *  framed in Theorycraft's white, never as a row of its own (§6.3); in
+	 *  Theorycraft, the copy carries a small "From <profile>" mark. */
+	let partners = $state<Record<string, DocumentRecord>>({});
+	$effect(() => {
+		const list = docs;
+		void storageSession.partners(list).then((p) => (partners = p));
+	});
+	const guestOf = (d: DocumentRecord): DocumentRecord | undefined => {
+		const p = partners[d.id];
+		return p && p.profileId !== d.profileId && p.profileId === THEORYCRAFT_ID ? p : undefined;
+	};
+	const fromProfile = (d: DocumentRecord): string | undefined => {
+		const p = partners[d.id];
+		if (!p || d.profileId !== THEORYCRAFT_ID || p.profileId === THEORYCRAFT_ID) return undefined;
+		return storageSession.profiles.find((x) => x.id === p.profileId)?.name;
+	};
+	const plannerCurrent = $derived.by(() => {
+		void storageSession.version;
+		return storageSession.currentId('planner');
+	});
+
+	const pinned = $derived(listed.filter((d) => d.pinned));
+	const recent = $derived(listed.filter((d) => !d.pinned));
 
 	/** Back onto the tool if it is underneath, else go to it. */
 	function arrive(): void {
@@ -69,7 +104,10 @@
 	}
 
 	async function choose(d: DocumentRecord): Promise<void> {
-		await storageSession.open(d.id);
+		if (pickFor) {
+			await storageSession.compareWith(d.id);
+			menu.pickFor = null;
+		} else await storageSession.open(d.id);
 		arrive();
 	}
 
@@ -123,6 +161,21 @@
 		const days = Math.round(h / 24);
 		return days === 1 ? 'Yesterday' : `${days} days ago`;
 	};
+
+	/** What a guest changes: its levels that differ from the rotation's own
+	 *  reading (an owned character's roster level), e.g. "Xiangling C6". */
+	function levelsLine(d: RotationDocument, g: RotationDocument): string {
+		const roster = storageSession.profile?.roster;
+		const out: string[] = [];
+		for (const [id, lv] of Object.entries(g.body.con ?? {})) {
+			const own =
+				roster?.ownership[id] === 'owned'
+					? (roster.constellations[id] ?? 0)
+					: (d.body.con?.[id] ?? 0);
+			if (lv !== own) out.push(`${getCharacterIndexEntry(id)?.displayName ?? id} C${lv}`);
+		}
+		return out.join(' · ');
+	}
 
 	const avatar = (id: string) => getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin);
 	const seated = (d: RotationDocument) => d.body.slots.filter((s): s is string => !!s);
@@ -206,19 +259,38 @@
 					{#if isCurrent}<span class="row-now">Open now</span>{/if}
 					{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
 						>{/if}
+					{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span
+						>{/if}
 					<span>{ago(recency(d))}</span>
 				</span>
 			</span>
 		</button>
-		{@render actions(d)}
+		{#if !pickFor}{@render actions(d)}{/if}
 	</li>
+	{@const guest = guestOf(d)}
+	{#if guest && !pickFor}
+		<li class="guest" class:is-current={guest.id === plannerCurrent}>
+			<button class="guest-main" onclick={() => choose(guest)}>
+				<span class="guest-tag">Theorycraft copy</span>
+				<span class="guest-levels"
+					>{levelsLine(d as RotationDocument, guest as RotationDocument)}</span
+				>
+				{#if guest.id === plannerCurrent}<span class="row-now">Open now</span>{/if}
+			</button>
+		</li>
+	{/if}
 {/snippet}
 
 <div class="place">
 	<div class="place-acts">
-		<button class="btn" onclick={create}
-			><Mark name="plus" size={14} /> New {place === 'planner' ? 'rotation' : 'lineup'}</button
-		>
+		{#if pickFor}
+			<p class="pick-head">Choose a rotation to compare with</p>
+			<button class="btn" onclick={() => (menu.pickFor = null)}>Cancel</button>
+		{:else}
+			<button class="btn" onclick={create}
+				><Mark name="plus" size={14} /> New {place === 'planner' ? 'rotation' : 'lineup'}</button
+			>
+		{/if}
 		{#if filter}
 			<button
 				class="chip"
@@ -234,7 +306,7 @@
 			Nothing saved yet. {place === 'planner' ? 'A rotation' : 'A lineup'} is saved here as soon as you
 			start one.
 		</p>
-	{:else if loaded && shown.length === 0}
+	{:else if loaded && listed.length === 0}
 		<p class="empty">No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.</p>
 	{:else if place === 'planner'}
 		{#if pinned.length}
@@ -286,6 +358,49 @@
 		align-items: center;
 		gap: 0.4rem;
 		margin-bottom: 1rem;
+	}
+	.pick-head {
+		margin: 0 0.4rem 0 0;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+	}
+	/* ⚓ A guest, nested under the row it was copied from, framed in
+	   Theorycraft's white (§4.6, §6.3), with its words. */
+	.guest {
+		margin: -2px 0 2px 2.6rem;
+		border-left: 2px solid var(--profile-theorycraft);
+		border-radius: 0 var(--r-sm) var(--r-sm) 0;
+		background: var(--surface-raised);
+	}
+	.guest.is-current {
+		box-shadow: inset 0 0 0 1px var(--profile-theorycraft);
+	}
+	.guest-main {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		width: 100%;
+		padding: 0.35rem 0.8rem;
+		border: none;
+		background: none;
+		color: var(--text);
+		font: inherit;
+		font-size: var(--fs-sm);
+		text-align: left;
+		cursor: pointer;
+	}
+	.guest-main:hover {
+		background: var(--surface-hover);
+	}
+	.guest-tag {
+		font-weight: var(--fw-semibold);
+		color: var(--profile-theorycraft);
+	}
+	.guest-levels {
+		color: var(--muted);
+	}
+	.row-flag--guest {
+		color: var(--text);
 	}
 	/* The team the list is narrowed to; ✕ shows everything again. */
 	.chip {

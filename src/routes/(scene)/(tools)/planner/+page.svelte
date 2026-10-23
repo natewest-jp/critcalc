@@ -24,10 +24,11 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
-	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
+	import { rotationTabs as rt, slotsFromNotation } from '$lib/rotationTabs.svelte';
+	import type CompareControlT from '$lib/components/CompareControl.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db, rotationTabStrip } from '$lib/documentBar.svelte';
-	import { constellations, siteSettings } from '$lib/stores';
+	import { constellations, ownership, siteSettings } from '$lib/stores';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
 		plannerView as pv,
@@ -267,7 +268,21 @@
 	 *  roster's Layer-1 default, the same resolution `RotationTimeline` feeds the
 	 *  parser. A caveat is gated by its constellation entry (2026-08-18), so the
 	 *  panel must be told which entries the reader actually has. */
-	let effectiveCon = $derived({ ...$constellations, ...rt.tabCon });
+	// ↻ Phase 4: one resolver (`rt.levelOf`, design §2.4) — under the switch an
+	// owned character reads the roster, and a guest reads only its own.
+	/** Compare (phase 4), loaded under the switch only: it brings the session. */
+	let CompareC = $state<typeof CompareControlT | null>(null);
+	onMount(() => {
+		if ($nextLayout)
+			void import('$lib/components/CompareControl.svelte').then((m) => (CompareC = m.default));
+	});
+
+	let effectiveCon = $derived(
+		rt.levels($constellations, $ownership, [
+			...rt.seats.filter((id): id is string => !!id),
+			...slotsFromNotation(rt.notation)
+		])
+	);
 
 	let slotCaveats = $derived(
 		collectSlotCaveats(
@@ -580,6 +595,8 @@
 					>
 				{/if}
 			</span>
+			<!-- ⚓ Phase 4 (§4.6, §5.3): Compare sits in the middle, beside the Total. -->
+			{#if CompareC}<span class="rp-compare"><CompareC /></span>{/if}
 		{/snippet}
 
 		{#snippet bandBRight()}
@@ -882,7 +899,7 @@
 		tabId={rt.activeTabId}
 		characterSlots={slots}
 		tabLoadout={rt.tabLoadout}
-		tabCon={rt.tabCon}
+		tabCon={effectiveCon}
 	>
 		<!-- The always-on bonuses strip, rendered between the chart's last lane
 		     and the notation field. -->
@@ -984,6 +1001,10 @@
 	.rp-total-group {
 		display: inline-flex;
 		align-items: center;
+	}
+	.rp-compare {
+		display: inline-flex;
+		margin-left: auto;
 	}
 	/* The Human timing tag (phase 2e): a quiet word on the rail beside the
 	   Total it lengthens, not a plate. */

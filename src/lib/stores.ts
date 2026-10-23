@@ -525,6 +525,9 @@ type SiteSettings = {
 	 *  found them pretty but "fluff", so they can be turned off; the
 	 *  landing ↔ tool rise is not one of them. Per person. */
 	toolTransitions: boolean;
+	/** The one-time "Saved to Theorycraft" notice for the first routed
+	 *  what-if copy has been shown (design §4.6). */
+	seenGuestNotice: boolean;
 	/** Which traveler renders wherever a traveler_* character appears. */
 	travelerVariant: 'aether' | 'lumine';
 	/**
@@ -722,6 +725,7 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	showCoverageStrips: false,
 	uiSize: 'auto',
 	toolTransitions: true,
+	seenGuestNotice: false,
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
 	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
@@ -850,6 +854,9 @@ function createSiteSettingsStore() {
 		},
 		setToolTransitions(value: boolean) {
 			store.update((prev) => persist({ ...prev, toolTransitions: value }));
+		},
+		markGuestNoticeSeen() {
+			store.update((prev) => persist({ ...prev, seenGuestNotice: true }));
 		},
 
 		setShowCoverageStrips(value: boolean) {

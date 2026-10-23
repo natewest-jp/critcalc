@@ -46,7 +46,9 @@
 		tool?.path === '/planner' ? 'planner' : tool?.path === '/builder' ? 'builder' : null
 	);
 	const profile = $derived(storageSession.profile);
-	const guest = $derived(false); // ⏭ 2d: a Theorycraft document shown in a real profile
+	/** ⚓ A guest (§4.6): a Theorycraft document shown in a real profile. The
+	 *  button wears Theorycraft's white, and the white comes with the word. */
+	const guest = $derived(docTool === 'planner' && storageSession.plannerGuest);
 
 	/** The current document's label: its stored name, else derived (§4.2). */
 	const docName = $derived.by(() => {
@@ -165,11 +167,13 @@
 			>
 				{#if withDoc && docName}
 					<span class="nav-kicker">
-						<span class="nav-tool">{t.short}</span>
+						<span class="nav-tool">{t.short}{guest ? ' · Theorycraft' : ''}</span>
 						{#if storageSession.saving}
 							<span class="nav-status"><span class="st-dot" aria-hidden="true"></span>Saving…</span>
 						{:else if justSaved}
-							<span class="nav-status"><Mark name="check" size={11} />Saved</span>
+							<span class="nav-status"
+								><Mark name="check" size={11} />Saved{guest ? ' · Theorycraft' : ''}</span
+							>
 						{/if}
 					</span>
 					<span class="nav-doc">

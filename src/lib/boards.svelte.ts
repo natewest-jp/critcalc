@@ -38,7 +38,9 @@ import { characterKey } from './data/characterLookup';
 import { TEAM_SIZE, notationHasActions, seatsOfSaved, teamKey } from './utils/notationEdit';
 import { TAB_LIMIT, createRecentlyClosed } from './tabSet';
 import type { SharedBoard } from './utils/boardUrl';
-import { safeSetItem, type SavedBoardTeam, type SavedNotation } from './stores';
+import { ownership, safeSetItem, type SavedBoardTeam, type SavedNotation } from './stores';
+import { get } from 'svelte/store';
+import { nextLayout } from './nextLayout';
 
 export type TeamSlot = string | null;
 
@@ -156,14 +158,21 @@ export function teamCon(team: BoardTeam, saved: readonly SavedNotation[]): Recor
 }
 
 /** A character's level: the team's own value, else the roster's, else C0.
- *  ONE resolution, the Planner tab's (§9.5). */
+ *  ONE resolution, the Planner tab's (§9.5). ↻ Phase 4 (design §2.4): given
+ *  `owned` (the switch is on), an OWNED character reads the roster. */
 export function effectiveCon(
 	own: Record<string, number>,
 	roster: Record<string, number>,
-	id: string
+	id: string,
+	owned?: Record<string, 'owned' | 'wishlist'>
 ): number {
+	if (owned?.[id] === 'owned') return roster[id] ?? 0;
 	return own[id] ?? roster[id] ?? 0;
 }
+
+/** The ownership `effectiveCon` reads, or none off the switch. */
+export const strictOwnership = (): Record<string, 'owned' | 'wishlist'> | undefined =>
+	get(nextLayout) ? get(ownership) : undefined;
 
 /**
  * ⚓ "No repeats" — ONE TEAM PER CHARACTER (Nate 2026-10-11; ↻ it used to
@@ -510,7 +519,8 @@ function denseCon(
 ): Record<string, number> {
 	const own = teamCon(team, saved);
 	const out: Record<string, number> = {};
-	for (const id of team.slots) if (id) out[id] = effectiveCon(own, roster, id);
+	const owned = strictOwnership();
+	for (const id of team.slots) if (id) out[id] = effectiveCon(own, roster, id, owned);
 	return out;
 }
 

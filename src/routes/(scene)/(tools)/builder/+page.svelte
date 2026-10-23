@@ -992,7 +992,8 @@
 	const swapConOf = $derived.by(() => {
 		const own = swapTeam ? teamCon(swapTeam, bank) : {};
 		const roster = mounted ? $constellations : {};
-		return (id: string) => effectiveCon(own, roster, id);
+		const owned = $nextLayout ? $ownership : undefined;
+		return (id: string) => effectiveCon(own, roster, id, owned);
 	});
 	/** The battlefield's checks, when the team stands on one. */
 	const swapChecks = $derived.by(() => {
