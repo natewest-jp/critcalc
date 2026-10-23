@@ -23,7 +23,7 @@ import {
 	makeBoard,
 	normalizeSlots,
 	type Board,
-	type TeamSlot
+	type BoardPreset
 } from '$lib/boards.svelte';
 import { teamKey } from '$lib/utils/notationEdit';
 import {
@@ -293,8 +293,16 @@ class StorageSession {
 
 	/** A new, empty document in a tool. It becomes a document on its first
 	 *  content, as a blank tab always has. */
-	async create(tool: DocTool): Promise<void> {
+	async create(
+		tool: DocTool,
+		preset?: BoardPreset,
+		team?: readonly (string | null)[]
+	): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
+		// A new lineup's shape (New lineup, in the Library or on a team in
+		// Teams) and the team it starts with, taken by the blank the Builder
+		// shows next: now, or when the tools load if they aren't yet.
+		if (preset) this.#blankSeed = { preset, team };
 		if (this.active) {
 			await this.flush();
 			this.#release(tool);
@@ -453,6 +461,10 @@ class StorageSession {
 		}
 	}
 
+	/** The shape the next blank lineup takes, and its first team; once. A
+	 *  plain blank is Stygian and empty. */
+	#blankSeed: { preset: BoardPreset; team?: readonly (string | null)[] } | null = null;
+
 	#showBlank(tool: DocTool): void {
 		if (tool === 'planner') {
 			const label = rotationLabel([]);
@@ -461,7 +473,14 @@ class StorageSession {
 			rotationTabs.restoreFrom({ tabs: [tab], activeTabId: tab.id }, false);
 			this.#plannerContext(null);
 		} else {
-			const board = makeBoard('Lineup 1', 'stygian');
+			const seed = this.#blankSeed;
+			this.#blankSeed = null;
+			const board = makeBoard('Lineup 1', seed?.preset ?? 'stygian');
+			if (seed?.team) {
+				// ⚓ A team placed from Teams arrives selected (design §3).
+				board.teams[0] = { ...board.teams[0], slots: normalizeSlots(seed.team) };
+				boardFocus.teamId = board.teams[0].id;
+			}
 			boards.restoreFrom({ boards: [board], activeBoardId: board.id });
 		}
 	}
@@ -1103,27 +1122,6 @@ class StorageSession {
 			this.#show(doc);
 		}
 		await this.#setCurrent(db, 'planner', doc.id);
-	}
-
-	/**
-	 * Add to a lineup (§3): the team goes into the current lineup's first EMPTY
-	 * team, else a new one where the lineup can grow (a Custom one; an endgame
-	 * mode's teams are the game's). ⚓ Nothing is overwritten. Returns the
-	 * team's id, which the Builder selects on arrival, or null when full.
-	 * ⚠ Needs the session ACTIVE (the Builder's board in memory), so a caller
-	 * off a tool goes to the Builder and waits for `documentsReady` first.
-	 */
-	addToLineup(slots: readonly (string | null)[]): string | null {
-		if (!this.active) return null;
-		const board = boards.activeBoard;
-		const seats: TeamSlot[] = normalizeSlots(slots);
-		const target =
-			board.teams.find((t) => t.slots.every((s) => s === null)) ??
-			(board.preset === 'custom' ? boards.addTeam(board.id, seats) : undefined);
-		if (!target) return null;
-		boards.setTeam(board.id, target.id, seats);
-		boardFocus.teamId = target.id;
-		return target.id;
 	}
 
 	// ── Moving out of Theorycraft (phase 3, design §4.3) ────────────────────

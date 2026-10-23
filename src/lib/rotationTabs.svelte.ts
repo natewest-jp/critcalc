@@ -588,15 +588,16 @@ class RotationTabsState {
 	}
 
 	/**
-	 * Empty the working rotation — notation, team, its own levels and loadouts
-	 * — and KEEP its name (phase 2e: the composer's Clear; a document's name is
-	 * the player's, and New in the Library is how you start another one). The
-	 * write replays as an editor transaction, so Undo brings it all back.
+	 * Empty the working rotation — its notation and team — and KEEP its name
+	 * (phase 2e: the composer's Clear; a document's name is the player's, and
+	 * New in the Library is how you start another one). The write replays as
+	 * an editor transaction, so Undo brings it back. ⚓ The levels and loadouts
+	 * STAY (Nate 2026-10-23): they are not in the editor's history, so wiping
+	 * them made the tooltip's "Undo brings it back" false, and kept per
+	 * character they show again only if that character returns.
 	 */
 	clearDocument(): void {
 		this.setDocument('', emptySeating());
-		this.tabLoadout = {};
-		this.tabCon = {};
 		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, sample: undefined } : t));
 	}
 
