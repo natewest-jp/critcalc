@@ -73,6 +73,7 @@
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
 	import {
 		parseTeamParam,
+		swapDelta,
 		swapSections,
 		teamHue,
 		teamLabel,
@@ -995,6 +996,33 @@
 		return season?.battlefields[indexOfTeam(swapTeam.id)]?.checks ?? [];
 	});
 
+	// ══ WHAT THEY WOULD DO TO THE SELECTED TEAM (inspector round, 2026-10-23) ══
+	// ⚓ The details are a MODAL here (Nate: a character is read on its own),
+	// and the one thing the board beside the grid told you — what this pick
+	// would light in the selected team's fingerprint — rides into it as one
+	// line, drawn by swap mode's own SwapDelta. Already on the team, the same
+	// delta reads as what they bring. A full team has no line (nothing to add
+	// to); a swap is swap mode's question and has its own grid.
+	const detailDelta = $derived.by(() => {
+		const id = selectedId;
+		const team = selectedTeam;
+		if (!$nextLayout || !id || !team || swapping) return null;
+		const ids = team.slots.filter((x): x is string => !!x);
+		const inTeam = ids.includes(id);
+		if (!inTeam && !team.slots.includes(null)) return null;
+		const own = teamCon(team, bank);
+		const roster = mounted ? $constellations : {};
+		const conOf = (c: string) => effectiveCon(own, roster, c, $ownership);
+		const season =
+			board.preset === 'stygian'
+				? (SEASONS.find((x) => x.version === board.season) ?? liveSeasons()[0])
+				: undefined;
+		const checks = season?.battlefields[indexOfTeam(team.id)]?.checks ?? [];
+		const before = inTeam ? ids.filter((x) => x !== id) : ids;
+		const after = inTeam ? ids : [...ids, id];
+		return { inTeam, delta: swapDelta(before, after, conOf, checks) };
+	});
+
 	const SWAP_TIER_LABEL: Record<SwapTier, string> = {
 		keeps: 'Keeps everything',
 		trades: 'Trades',
@@ -1686,10 +1714,49 @@
 		teamState={swapping ? undefined : teamStateOf(selectedId)}
 		elsewhereLabel={leavingLabel(selectedId)}
 		onToggleTeam={toggleTeam}
+		lead={detailDelta ? detailLead : undefined}
 	/>
 {/if}
 
+<!-- ⚠ Passed only when there is a delta: an empty snippet still renders the
+     card's lead box, and its margin held the art off the hairline on a full
+     team (Nate 2026-10-23). -->
+{#snippet detailLead()}
+	{#if detailDelta}
+		<div class="tb-detail-delta">
+			<span class="tb-detail-delta-key" style:color={selectedHue}
+				>{detailDelta.inTeam ? 'Brings to' : 'Adds to'} {selectedLabel}</span
+			>
+			{#if detailDelta.delta.items.length}
+				<SwapDelta items={detailDelta.delta.items} />
+			{:else if detailDelta.delta.tier === 'uncurated'}
+				<span class="tb-swap-quiet">No capability data yet, so this can’t be read.</span>
+			{:else}
+				<span class="tb-swap-quiet">Nothing the fingerprint shows</span>
+			{/if}
+		</div>
+	{/if}
+{/snippet}
+
 <style>
+	/* The details' "Adds to" line (inspector round): the selected team's own
+	   hue names it, as the destination strip over the grid does; the delta is
+	   swap mode's header, verbatim. */
+	.tb-detail-delta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px 12px;
+		padding: 0.5rem 0.65rem;
+		border-radius: 3px;
+		background: var(--fill-rest);
+		font-size: var(--fs-md);
+	}
+	.tb-detail-delta-key {
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-mid);
+		white-space: nowrap;
+	}
 	/* ══ THE DOCK (design doc §11.2) ═══════════════════════════════════════
 	   ⚓ The board is docked on the RIGHT at a FIXED width and the roster column
 	   is the only thing that flexes, so the board's layout can be made stable.

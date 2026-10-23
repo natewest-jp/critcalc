@@ -11,6 +11,7 @@
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import RotationNotes from '$lib/components/RotationNotes.svelte';
+	import PlannerInspector from '$lib/components/PlannerInspector.svelte';
 	import EventLog from '$lib/components/EventLog.svelte';
 	import { collectSlotCaveats } from '$lib/timeline/slotCaveats';
 	import { sampleById } from '$lib/data/plannerSamples';
@@ -114,8 +115,12 @@
 		warmAvatars();
 		return benchBand.registerHost({
 			tool: 'rp',
+			// ⚓ Under the switch the portrait opens the INSPECTOR, beside the
+			// timeline it labels (inspector round, 2026-10-23): the modal covered
+			// the very rotation you were reading the character for.
 			onOpenDetail: (id) => {
-				detailId = id;
+				if ($nextLayout) pv.inspect({ kind: 'character', id });
+				else detailId = id;
 			},
 			// ⇄ LEAVES THE TOOL (2026-08-13). The planner's own Source could only
 			// ever fill the LOWEST EMPTY SLOT — it had no way to say "replace THIS
@@ -318,7 +323,15 @@
 	/** ⚓ ONE COLUMN, TWO POSSIBLE OCCUPANTS — the aside is a slot and this is the
 	 *  single expression that decides what fills it (see ToolColumns' header, and
 	 *  `plannerView.AsidePanel` for why the exclusivity is in the state). */
-	let showAside = $derived((pv.showNotes && hasNotes) || (pv.showLog && pv.hasAuraLog));
+	let showAside = $derived(
+		(pv.showNotes && hasNotes) || (pv.showLog && pv.hasAuraLog) || pv.showInspector
+	);
+
+	/** The inspector's team page: the seated characters, each once, in slot
+	 *  order. */
+	let inspectorTeam = $derived(
+		rt.seats.filter((id, i): id is string => !!id && id !== 'blank' && rt.seats.indexOf(id) === i)
+	);
 
 	/** The aura's standing modelling limits — see the `auraLimits` snippet below
 	 *  for the sourcing rule that governs every line. */
@@ -774,18 +787,32 @@
 							<Mark name="log" />
 							<span class="rp-fold-label">Log</span>
 						</button>
-						<button
-							class="band-menu-item"
-							role="menuitem"
-							disabled={!pv.hasCaveats}
-							onclick={() => {
-								pv.togglePanel('notes');
-								close();
-							}}
-						>
-							<Mark name="note" />
-							<span class="rp-fold-label">Notes</span>
-						</button>
+						{#if $nextLayout}
+							<button
+								class="band-menu-item"
+								role="menuitem"
+								onclick={() => {
+									pv.togglePanel('inspector');
+									close();
+								}}
+							>
+								<Mark name="search" />
+								<span class="rp-fold-label">Inspector</span>
+							</button>
+						{:else}
+							<button
+								class="band-menu-item"
+								role="menuitem"
+								disabled={!pv.hasCaveats}
+								onclick={() => {
+									pv.togglePanel('notes');
+									close();
+								}}
+							>
+								<Mark name="note" />
+								<span class="rp-fold-label">Notes</span>
+							</button>
+						{/if}
 					{/snippet}
 				</BandMenu>
 			{:else}
@@ -810,17 +837,34 @@
 					<Mark name="log" />
 					<span class="rp-band-label">Log</span>
 				</button>
-				<button
-					class="btn btn--sm rp-notes-btn"
-					class:is-active={pv.showNotes}
-					type="button"
-					aria-label="Toggle notes panel"
-					disabled={!pv.hasCaveats}
-					onclick={() => pv.togglePanel('notes')}
-				>
-					<Mark name="note" />
-					<span class="rp-band-label">Notes</span>
-					<!-- ⛔ THE `!` BADGE IS RETIRED (⚓ NATE 2026-08-17), and the reason is
+				{#if $nextLayout}
+					<!-- ⚓ THE INSPECTOR (inspector round, 2026-10-23): what Notes became.
+					     ⛔ Never disabled — its team page always has the team, which is
+					     the point (⚓ Nate: Notes was dead weight until it had a caveat).
+					     The magnifier, because the Builder's details door wears it. -->
+					<button
+						class="btn btn--sm rp-notes-btn"
+						class:is-active={pv.showInspector}
+						type="button"
+						aria-pressed={pv.showInspector}
+						title="The team, and anything you click on the timeline or the bench"
+						onclick={() => pv.togglePanel('inspector')}
+					>
+						<Mark name="search" />
+						<span class="rp-band-label">Inspector</span>
+					</button>
+				{:else}
+					<button
+						class="btn btn--sm rp-notes-btn"
+						class:is-active={pv.showNotes}
+						type="button"
+						aria-label="Toggle notes panel"
+						disabled={!pv.hasCaveats}
+						onclick={() => pv.togglePanel('notes')}
+					>
+						<Mark name="note" />
+						<span class="rp-band-label">Notes</span>
+						<!-- ⛔ THE `!` BADGE IS RETIRED (⚓ NATE 2026-08-17), and the reason is
 				     that its job was taken over by its NEIGHBOURS. It existed because
 				     Notes stood alone at the end of band B and a reader might never look
 				     there; with Auras and Buffs beside it the eye goes to that cluster
@@ -833,7 +877,8 @@
 				     fills were wired to --ui-danger/--chrome rather than the SVG's baked
 				     hexes, and it carried a 6° rotation so it read as stuck on rather
 				     than typeset. -->
-				</button>
+					</button>
+				{/if}
 			{/if}
 		{/snippet}
 
@@ -854,7 +899,8 @@
 				aside={showAside ? asideColumn : undefined}
 				asideSticky
 				sheet={below('toolMin')}
-				asideTitle={pv.showLog ? 'Aura log' : 'Notes'}
+				asideTitle={pv.showLog ? 'Aura log' : pv.showInspector ? 'Inspector' : 'Notes'}
+				asideWidth={pv.showInspector ? 'var(--rp-inspector-w)' : undefined}
 				onCloseAside={() => (pv.aside = null)}
 			/>
 		{/snippet}
@@ -935,6 +981,18 @@
 				onRevealed={() => (pv.logRevealAt = null)}
 			/>
 		</div>
+	{:else if pv.showInspector}
+		<PlannerInspector
+			team={inspectorTeam}
+			entries={slotCaveats}
+			sample={sampleCredit}
+			onRemove={narrowForm()
+				? (id) => {
+						rt.setSlot(rt.seats.indexOf(id), null);
+						pv.inspectTeam();
+					}
+				: undefined}
+		/>
 	{:else}
 		<RotationNotes
 			sample={sampleCredit}
@@ -985,6 +1043,25 @@
 	   double gutter under a stack with nothing after it is just a dead margin.
 	   The page is a single child again; the gap is kept for whatever lands
 	   beside the stack next. */
+	/* 🎛️ THE INSPECTOR'S WIDTH (inspector round, 2026-10-23): wider than the
+	   aside's 262, because a character page reads cramped there, and stepped
+	   by screen at the rungs the Builder's board steps at — what the timeline
+	   gives up is a smaller share of a wider screen. A first proposal for
+	   Nate's eye; the log keeps 262, so the column changes width between them.
+	   ⚠ Literals from $lib/breakpoints.ts (`broad`, `vast`). */
+	.rotation-page {
+		--rp-inspector-w: 300px;
+	}
+	@media (min-width: 1500px) {
+		.rotation-page {
+			--rp-inspector-w: 340px;
+		}
+	}
+	@media (min-width: 1900px) {
+		.rotation-page {
+			--rp-inspector-w: 380px;
+		}
+	}
 	.rotation-page {
 		display: flex;
 		flex-direction: column;

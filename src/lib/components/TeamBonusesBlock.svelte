@@ -37,6 +37,8 @@
 		resShredDisplayStat
 	} from '$lib/timeline/buffDisplay';
 	import BuffTooltip, { type BuffTooltipData } from '$lib/components/BuffTooltip.svelte';
+	import { nextLayout } from '$lib/nextLayout';
+	import { plannerView as pv, type InspectedBonus } from '$lib/plannerView.svelte';
 	import { computeTeamFactionCounts, computeHolderElementCounts } from '$lib/utils/teamComposition';
 	import { DEFAULT_ASCENSION, evalCondition, type ConditionContext } from '$lib/sim/conditions';
 
@@ -152,6 +154,41 @@
 
 	let tooltip = $state<BuffTooltipData | null>(null);
 
+	// ══ CLICK INSPECTS (inspector round, 2026-10-23) ═══════════════════════════
+	// Under the switch a chip opens in the Planner's inspector, printing what its
+	// tooltip prints. The pick is a KEY resolved here on every change, so a chip
+	// the team no longer has drops the page back to the team.
+	const resKey = (res: Resonance) => `res:${res.key}`;
+	const chipKey = (owner: CharacterData, bonus: Ability) => `chip:${owner.id}:${bonus.name}`;
+
+	let inspectedBonus = $derived.by((): InspectedBonus | null => {
+		const t = pv.target;
+		if (!$nextLayout || t?.kind !== 'bonus') return null;
+		for (const res of resonance.active)
+			if (resKey(res) === t.key)
+				return { sourceLabel: `${res.label} — Resonance`, effects: res.rows };
+		for (const [ci, bonuses] of permanentByChar.entries()) {
+			const owner = chars[ci];
+			if (!owner) continue;
+			for (const bonus of bonuses)
+				if (chipKey(owner, bonus) === t.key)
+					return {
+						sourceLabel: `${owner.displayName} · ${bonus.name}`,
+						effects: chipEffects(owner, bonus)
+					};
+		}
+		return null;
+	});
+	$effect(() => {
+		pv.inspectedBonus = inspectedBonus;
+		if ($nextLayout && pv.target?.kind === 'bonus' && !inspectedBonus) pv.target = null;
+	});
+	function inspectChip(key: string) {
+		if (!$nextLayout) return;
+		tooltip = null;
+		pv.inspect({ kind: 'bonus', key });
+	}
+
 	function showChipTooltip(
 		e: MouseEvent,
 		holder: CharacterData,
@@ -216,12 +253,15 @@
 		<span class="tb-key">Always-on buffs</span>
 		<div class="tb-flow">
 			{#each resonance.active as res (res.key)}
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 				<span
 					class="faction-badge res-badge"
+					class:tb-inspectable={$nextLayout}
+					class:tb-inspected={pv.inspectedBonusKey === resKey(res)}
 					style={resonanceBadgeStyle(res)}
 					onmouseenter={(e) => showResonanceTooltip(e, res)}
 					onmouseleave={hideChipTooltip}
+					onclick={() => inspectChip(resKey(res))}
 				>
 					{#if res.element}
 						<img class="res-badge-icon" src={elementIcon(res.element)} alt="" />
@@ -237,12 +277,15 @@
 			{#each permanentByChar as bonuses, ci (ci)}
 				{@const owner = chars[ci]}
 				{#each bonuses as bonus, bi (bi)}
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 					<span
 						class="bonus-chip"
+						class:tb-inspectable={$nextLayout && !!owner}
+						class:tb-inspected={!!owner && pv.inspectedBonusKey === chipKey(owner, bonus)}
 						style:border-left-color={elementPalette(owner?.element).main}
 						onmouseenter={(e) => owner && showChipTooltip(e, owner, bonus, owner.displayName)}
 						onmouseleave={hideChipTooltip}
+						onclick={() => owner && inspectChip(chipKey(owner, bonus))}
 						>{#if owner?.displayName}<span class="bonus-chip-owner">{owner.displayName}:&nbsp;</span
 							>{/if}{bonus.name}</span
 					>
@@ -257,6 +300,14 @@
 {/if}
 
 <style>
+	/* The inspector's door and its pick (inspector round): the cursor, and the
+	   chart's selected ring — an inset shadow, so no chip changes size. */
+	.tb-inspectable {
+		cursor: pointer;
+	}
+	.tb-inspected {
+		box-shadow: inset 0 0 0 1.5px var(--accent);
+	}
 	/* Frameless caption row — no panel box; the strip is a footnote to the
 	   instrument above it, not a sibling surface. */
 	.team-bonuses {

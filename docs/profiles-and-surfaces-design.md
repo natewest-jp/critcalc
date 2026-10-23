@@ -286,11 +286,16 @@ Help and About take the full-screen state, so they must use it well (Nate, 2026-
 
 ## 7. The inspector
 
-- Reference opened **mid-task**, beside the work, never covering it: the **character detail card** and the **boss details** move from modals to an inspector panel.
-- The Builder survey's finding is the reason: the detail modal hides the very board you were asking about.
-- ⏭ Where it lives per tool (the planner's aside column already exists; the Builder needs one) and how it behaves on a phone (a drawer, like today's aside).
-
----
+- Reference opened **mid-task**, about ONE thing picked out of the work, read and never edited. Record: `docs/inspector-round.md`.
+- ⚓ **The inspector is the CONTENT; each tool houses it in the shape its work wants** (Nate, 2026-10-23):
+  - **Planner: a PANE** beside the timeline (the aside column), opened and folded by one button, because you read a cast against the chart.
+  - **Builder: a MODAL** with room around it, because a character or a boss is read on its own and a dimmed edge is the quickest way out. One shell (`InspectModal`) for the character, the boss and a half's opponents; full screen below `compact`. The character modal carries the board's one fact as a line: "Adds to / Brings to <team>" (swap mode's `SwapDelta`). ↻ This replaces lineups §11.2's "details as a panel in the roster column".
+  - **Visualizers: none.** Each tile's paper readout plays that part inside its instrument.
+- ⚓ **Hover peeks, click inspects.** Clicking the thing already showing closes it. The picked thing wears the gold selected ring in the work, and a cast's token wears it in the notation too.
+- ⚓ **Notes became the inspector's team page** (Nate: Notes disabled itself until a kit had a caveat, dead weight until then); the aside is Inspector | Aura log.
+- ⚓ **The inspector reads, it never edits** (Nate). The one exception is the phone's Remove from team (the bench row has no rail).
+- Planner pages: the team · a character · a buff bar · a cast (its pill, or a summon or shield it raised) · an always-on chip.
+- ⏭ Deferred (Nate): weapons, artifact sets and reactions as their own pages.
 
 ## 8. Tools — what changes inside
 
@@ -412,7 +417,7 @@ So nothing below reads as still in force once this design is adopted:
 15. ~~Names~~ — ✅ the menu state; the top bar / the toolbar; the You group titled by the profile's name (§6.1).
 16. ~~Slate or paper~~: ✅ text on slate, paper as a patch (§6.4).
 17. The **flip transition**.
-18. The **inspector's** home in the Builder, and on a phone.
+18. ~~The inspector's home~~: ✅ a modal in the Builder, a pane (a drawer on a phone) in the Planner (§7).
 19. The Builder's roster lens: **Owned/Wishlist vs My constellations** (Nate: room for a clean concept; raise at that stage).
 20. Human timing's **new form** off the toolbar.
 21. **One control size** for both bars, and the title bar's height.

@@ -162,6 +162,44 @@ const resolvedTints = StateField.define<ResolvedTints>({
 });
 
 // ---------------------------------------------------------------------------
+// The picked token — what the inspector is showing (inspector round, 2026-10-23)
+// ---------------------------------------------------------------------------
+
+/**
+ * The source range of the cast the inspector has open, so the token that made
+ * it wears the chart's selected ring too: the chart and the text point at each
+ * other. `doc` travels for the tints' reason — a range for other text is
+ * stale — and `null` clears it.
+ */
+export const setPickedRange = StateEffect.define<{
+	doc: string;
+	range: { from: number; to: number } | null;
+}>();
+
+const pickedMark = Decoration.mark({ class: 'rp-tok-picked' });
+
+/** Mapped through edits like the tints; an edit that touches it drops it
+ *  (the next parse re-resolves the pick, or the pick is gone). */
+const pickedRange = StateField.define<DecorationSet>({
+	create: () => Decoration.none,
+	update(value, tr) {
+		for (const e of tr.effects) {
+			if (!e.is(setPickedRange)) continue;
+			const r = e.value.range;
+			if (!r || e.value.doc !== tr.state.doc.toString() || r.to <= r.from) return Decoration.none;
+			return Decoration.set([pickedMark.range(r.from, r.to)]);
+		}
+		if (!tr.docChanged) return value;
+		let touched = false;
+		value.between(0, tr.startState.doc.length, (from, to) => {
+			if (tr.changes.touchesRange(from, to)) touched = true;
+		});
+		return touched ? Decoration.none : value.map(tr.changes);
+	},
+	provide: (f) => EditorView.decorations.from(f)
+});
+
+// ---------------------------------------------------------------------------
 // Syntax highlight plugin
 // ---------------------------------------------------------------------------
 
@@ -549,6 +587,13 @@ const notationTheme = EditorView.theme({
 		textDecorationStyle: 'wavy',
 		textDecorationColor: 'var(--ui-provisional)',
 		textUnderlineOffset: '3px'
+	},
+	// The inspector's pick: the chart's selected ring, around the token. Paint
+	// only (an inset shadow), so the text never reflows when a pick lands.
+	'.rp-tok-picked': {
+		borderRadius: '2px',
+		boxShadow: 'inset 0 0 0 1px var(--accent)',
+		backgroundColor: 'color-mix(in srgb, var(--accent) 14%, transparent)'
 	}
 });
 
@@ -572,6 +617,7 @@ export function buildNotationExtensions(
 		keymap.of([...defaultKeymap, ...historyKeymap, ...completionKeymap]),
 		EditorView.lineWrapping,
 		resolvedTints,
+		pickedRange,
 		notationHighlight,
 		pasteHandler,
 		autocompletion({ override: [characterCompletionSource] }),

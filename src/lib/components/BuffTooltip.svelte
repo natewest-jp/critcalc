@@ -29,8 +29,7 @@
 </script>
 
 <script lang="ts">
-	import { BUFF_STAT_ICON, BUFF_STAT_LABEL } from '$lib/timeline/buffStatMaps';
-	import type { Stat } from '$lib/types/ability';
+	import BuffDetailRows from '$lib/components/BuffDetailRows.svelte';
 
 	let { tip }: { tip: BuffTooltipData } = $props();
 
@@ -50,22 +49,8 @@
 			? Math.min(Math.max(tip.x, EDGE_GUTTER + boxW / 2), viewW - EDGE_GUTTER - boxW / 2)
 			: tip.x
 	);
-
-	// Loose-row lookups: a prose `stat` simply misses both maps and renders
-	// its own text with no icon.
-	const iconFor = (stat: string) => BUFF_STAT_ICON[stat as Stat];
-	const labelFor = (stat: string) => BUFF_STAT_LABEL[stat as Stat] ?? stat;
-
-	// Durations and ICDs arrive in FRAMES (gauge-round.md C1) — this is the
-	// display seam that turns them back into seconds, and the only place in this
-	// component that knows the unit.
-	//
-	// ↻ 2026-08-16: the 2dp snap used to be here because the values were raw
-	// float arithmetic (window end − start) carrying IEEE noise like
-	// 12.000000000000002. That noise is gone — a frame span is an exact integer.
-	// The rounding stays for a better reason: 754 frames really is 12.566…s, and
-	// nobody wants to read that. (Number() drops trailing zeros: 12, 4.5, 0.25.)
-	const fmtSecs = (frames: number) => Number((frames / 60).toFixed(2));
+	// ↻ 2026-10-23: the rows (and their frames → seconds seam) live in
+	// BuffDetailRows, shared with the inspector's bar page.
 </script>
 
 <svelte:window bind:innerWidth={viewW} />
@@ -78,43 +63,12 @@
 	style:top="{tip.y}px"
 >
 	<div class="bt-source">{tip.sourceLabel}</div>
-	{#if tip.isMutuallyExclusive}
-		<div class="bt-mutual">one of:</div>
-	{/if}
-	<!-- ⛔ KEYED BY POSITION, NOT BY `stat` (2026-08-17) — this closes a class
-	     rather than an instance. `(fx.stat)` asserts an invariant no caller can
-	     honour: `stat` is documented as possibly being free PROSE rather than a
-	     `Stat` key, so two rows naming one reaction — "Electro-Charged · Xingqiu"
-	     over "Electro-Charged · Raiden" — collide and Svelte throws
-	     `each_key_duplicate`. That was the FOURTH keyed-each crash in this area
-	     (archive_bug_lessons), whose rule is that every `(expr)` here is a crash
-	     surface and must be collision-free.
-	     ⚓ The index IS the identity here: the tooltip is rebuilt whole on every
-	     hover, and `.bt-row` carries no transition, no input and no focus, so
-	     there is nothing to preserve ACROSS renders that position does not say.
-	     ⚠ The callers were made unique-by-construction in the same pass anyway —
-	     see `auraMarkerRows` — because duplicate rows were a bad CARD as well as
-	     a bad key. Both halves are load-bearing; ⛔ don't restore the `stat` key
-	     on the grounds that the callers behave now. -->
-	{#each tip.effects as fx, i (i)}
-		<div class="bt-row">
-			{#if iconFor(fx.stat)}
-				<img src={iconFor(fx.stat)} alt="" class="bt-icon" />
-			{/if}
-			<span class="bt-stat">{labelFor(fx.stat)}</span>
-			<span class="bt-value">{fx.displayValue}</span>
-			{#if fx.note}<span class="bt-note">{fx.note}</span>{/if}
-		</div>
-	{/each}
-	{#if tip.duration != null || tip.procCooldown != null}
-		<div class="bt-footer">
-			{#if tip.duration != null}{fmtSecs(tip.duration)}s{/if}
-			{#if tip.duration != null && tip.procCooldown != null}
-				·
-			{/if}
-			{#if tip.procCooldown != null}Cooldown {fmtSecs(tip.procCooldown)}s{/if}
-		</div>
-	{/if}
+	<BuffDetailRows
+		effects={tip.effects}
+		isMutuallyExclusive={tip.isMutuallyExclusive}
+		duration={tip.duration}
+		procCooldown={tip.procCooldown}
+	/>
 </div>
 
 <style>
@@ -159,49 +113,5 @@
 		border-bottom: 1px solid var(--frame-line);
 		padding-bottom: 4px;
 		margin-bottom: 1px;
-	}
-	.bt-mutual {
-		font-size: var(--fs-xs);
-		color: var(--muted);
-		font-style: italic;
-		letter-spacing: var(--ls-mid);
-	}
-	.bt-row {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
-	.bt-icon {
-		width: 11px;
-		height: 11px;
-		flex-shrink: 0;
-		object-fit: contain;
-		opacity: 0.8;
-	}
-	.bt-stat {
-		font-size: var(--fs-sm);
-		color: var(--text);
-		flex: 1;
-	}
-	.bt-value {
-		font-size: var(--fs-sm);
-		color: #90b4d0;
-		font-weight: var(--fw-semibold);
-		white-space: nowrap;
-	}
-	/* A seamed bar's per-effect length — the footer's register (muted, small),
-	   because it is the same kind of fact the footer states for the whole bar. */
-	.bt-note {
-		font-size: var(--fs-xs);
-		color: var(--muted);
-		white-space: nowrap;
-	}
-	.bt-footer {
-		font-size: var(--fs-xs);
-		color: var(--muted);
-		letter-spacing: var(--ls-mid);
-		border-top: 1px solid var(--frame-line);
-		padding-top: 3px;
-		margin-top: 1px;
 	}
 </style>

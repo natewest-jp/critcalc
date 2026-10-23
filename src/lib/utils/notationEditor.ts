@@ -16,7 +16,11 @@
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
-import { buildNotationExtensions, setResolvedTints } from './notationEditorExtension';
+import {
+	buildNotationExtensions,
+	setPickedRange,
+	setResolvedTints
+} from './notationEditorExtension';
 import { sameSeats, seatsExtension, seatsField, setSeats } from './notationSeats';
 import { emptySeating, makeSeating, type Seating } from './notationEdit';
 import type { NotationTint } from '$lib/timeline/notationTints';
@@ -39,6 +43,9 @@ export interface NotationEditor {
 	/** Hand over what the parse resolved per token for the text `doc` — see
 	 *  `setResolvedTints`. Refused when `doc` is no longer the editor's text. */
 	setTints(doc: string, tints: NotationTint[]): void;
+	/** Mark the source range of the inspector's pick (`null` clears it) —
+	 *  see `setPickedRange`. */
+	setPicked(doc: string, range: { from: number; to: number } | null): void;
 	/** Type `text` at the caret, as a keystroke would (one undoable edit,
 	 *  caret after it). The phone dock's key row. */
 	insert(text: string): void;
@@ -182,6 +189,10 @@ export function createNotationEditor(
 		setTints(doc: string, tints: NotationTint[]) {
 			// ⚠ Not a history event: a colour is not an edit.
 			view.dispatch({ effects: setResolvedTints.of({ doc, tints }) });
+		},
+		setPicked(doc: string, range: { from: number; to: number } | null) {
+			// ⚠ Not a history event either: a pick is not an edit.
+			view.dispatch({ effects: setPickedRange.of({ doc, range }) });
 		},
 		insert(text: string) {
 			view.dispatch({
