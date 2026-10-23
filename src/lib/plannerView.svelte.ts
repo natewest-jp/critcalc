@@ -83,7 +83,15 @@ export type AsidePanel = 'notes' | 'log' | 'inspector' | null;
 export type BarLane = 'received' | 'team' | 'moonsign';
 export type InspectTarget =
 	| { kind: 'character'; id: string }
-	| { kind: 'bar'; lane: BarLane; row: string; start: number; at: number };
+	| { kind: 'bar'; lane: BarLane; row: string; start: number; at: number }
+	/** An E or Q — picked on its pill, or on a summon or shield it raised. */
+	| { kind: 'cast'; char: string; ability: 'skill' | 'burst'; start: number }
+	/** An always-on chip under the chart (a resonance or a passive) — keyed by
+	 *  `TeamBonusesBlock`, which resolves it. */
+	| { kind: 'bonus'; key: string };
+
+/** A pinned always-on chip: its tooltip's payload. */
+export type InspectedBonus = { sourceLabel: string; effects: TooltipEffectRow[] };
 
 /** A pinned bar, as the timeline resolved it — the tooltip's payload plus
  *  where the bar sits (frames) and who it lands on (`null` = the team). */
@@ -97,6 +105,35 @@ export type InspectedBar = {
 	start: number;
 	end: number;
 };
+
+/** A pinned cast, as the timeline resolved it (frames throughout). */
+export type InspectedCast = {
+	characterId: string;
+	displayName: string;
+	element: string;
+	ability: 'skill' | 'burst';
+	abilityName: string;
+	variantLabel?: string;
+	label: string;
+	time: number;
+	castTime: number;
+	uptime: number;
+	cooldown: number;
+	readyAt: number;
+	cdReduced?: number;
+	energyCost?: number;
+	charges?: number;
+	/** What the cast left on the field: summons and shields, by row label. */
+	raised: string[];
+	/** The editor's stand-in flag on this token, in its own words. */
+	standIn: string | null;
+	/** The character's frames aren't curated, so every timing here is generic. */
+	uncurated: boolean;
+};
+
+export function castKey(char: string, ability: 'skill' | 'burst', start: number): string {
+	return `${char}|${ability}|${start}`;
+}
 
 /** The bar's identity, for the selected ring — `at` is not part of it. */
 export function barKey(lane: BarLane, row: string, start: number): string {
@@ -124,6 +161,21 @@ class PlannerViewState {
 	/** The pinned bar, resolved by the timeline on every rebuild (WRITTEN by
 	 *  the timeline, READ by the page's pane — the auraLog direction). */
 	inspectedTip = $state<InspectedBar | null>(null);
+	/** The pinned always-on chip, resolved by TeamBonusesBlock. */
+	inspectedBonus = $state<InspectedBonus | null>(null);
+	get inspectedBonusKey(): string | null {
+		const t = this.target;
+		return this.aside === 'inspector' && t?.kind === 'bonus' ? t.key : null;
+	}
+	/** The pinned cast, resolved the same way. */
+	inspectedCast = $state<InspectedCast | null>(null);
+
+	get inspectedCastKey(): string | null {
+		const t = this.target;
+		return this.aside === 'inspector' && t?.kind === 'cast'
+			? castKey(t.char, t.ability, t.start)
+			: null;
+	}
 
 	/** The picked bar's key while the inspector shows it — what the chart
 	 *  rings. Null whenever the pane is closed or showing something else. */
@@ -147,7 +199,11 @@ class PlannerViewState {
 			this.target?.kind === t.kind &&
 			(t.kind === 'character'
 				? this.inspectedCharacter === t.id
-				: this.inspectedBar === barKey(t.lane, t.row, t.start));
+				: t.kind === 'cast'
+					? this.inspectedCastKey === castKey(t.char, t.ability, t.start)
+					: t.kind === 'bonus'
+						? this.inspectedBonusKey === t.key
+						: this.inspectedBar === barKey(t.lane, t.row, t.start));
 		if (same) {
 			this.aside = null;
 			this.target = null;

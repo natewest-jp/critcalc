@@ -26,6 +26,11 @@
 	 *   character   that character's details (the modal's body, `CharacterDetails`)
 	 *               with their notes after the roster line
 	 *   bar         a buff bar: what the tooltip says, pinned, plus where it runs
+	 *   bonus       an always-on chip under the chart (a resonance or a passive)
+	 *   cast        an E or Q (its pill, or a summon or shield it raised): the
+	 *               ability, its timings as drawn, what it left on the field,
+	 *               and the editor's stand-in note when it has one — the
+	 *               token that made it is marked in the notation meanwhile
 	 *
 	 * ⏭ Working copy throughout — every string here goes to Nate (style guide).
 	 */
@@ -52,6 +57,8 @@
 	const charId = $derived(pv.target?.kind === 'character' ? pv.target.id : null);
 	const charEntry = $derived(charId ? getCharacterIndexEntry(charId) : undefined);
 	const tip = $derived(pv.target?.kind === 'bar' ? pv.inspectedTip : null);
+	const cast = $derived(pv.target?.kind === 'cast' ? pv.inspectedCast : null);
+	const bonus = $derived(pv.target?.kind === 'bonus' ? pv.inspectedBonus : null);
 
 	const avatarFor = (id: string) =>
 		hasAvatar(id)
@@ -120,6 +127,73 @@
 				{/if}
 			{/snippet}
 		</CharacterDetails>
+	{:else if cast}
+		<!-- ── A CAST ─────────────────────────────────────────────────────── -->
+		<header class="pi-head">
+			{@render face(cast.characterId, 32)}
+			<div class="pi-head-text">
+				<h2 class="pi-title">
+					{cast.abilityName}{#if cast.variantLabel}<span class="pi-variant">
+							· {cast.variantLabel}</span
+						>{/if}
+				</h2>
+				<p class="pi-sub">
+					<button
+						class="pi-link"
+						type="button"
+						onclick={() => pv.inspect({ kind: 'character', id: cast.characterId })}
+						>{cast.displayName}</button
+					>
+					· <span class="pi-token">{cast.label}</span> at {fmtSecs(cast.time)}s
+				</p>
+			</div>
+		</header>
+		{#if cast.standIn}
+			<p class="pi-flag">{cast.standIn}</p>
+		{:else if cast.uncurated}
+			<p class="pi-flag">
+				This character’s frames aren’t curated yet, so these timings are generic.
+			</p>
+		{/if}
+		<dl class="pi-facts">
+			<dt>Cast animation</dt>
+			<dd>{fmtSecs(cast.castTime)}s</dd>
+			{#if cast.uptime > 0}
+				<dt>Lasts</dt>
+				<dd>{fmtSecs(cast.uptime)}s</dd>
+			{/if}
+			{#if cast.cooldown > 0}
+				<dt>Cooldown</dt>
+				<dd>
+					{fmtSecs(cast.cooldown)}s{#if cast.charges && cast.charges > 1}
+						· {cast.charges} charges{/if}
+				</dd>
+				<dt>Ready again</dt>
+				<dd>
+					{fmtSecs(cast.readyAt)}s{#if cast.cdReduced}
+						<span class="pi-quiet">({fmtSecs(cast.cdReduced)}s sooner)</span>{/if}
+				</dd>
+			{/if}
+			{#if cast.ability === 'burst' && cast.energyCost}
+				<dt>Energy</dt>
+				<dd>{cast.energyCost}</dd>
+			{/if}
+		</dl>
+		{#if cast.raised.length > 0}
+			<section class="pi-section">
+				<p class="kicker">On the field</p>
+				{#each cast.raised as label (label)}
+					<p class="pi-raised">{label}</p>
+				{/each}
+			</section>
+		{/if}
+	{:else if bonus}
+		<!-- ── AN ALWAYS-ON CHIP ──────────────────────────────────────────── -->
+		<header class="pi-head pi-head--bar">
+			<h2 class="pi-title">{bonus.sourceLabel}</h2>
+			<p class="pi-sub">Always on, for the whole rotation</p>
+		</header>
+		<div class="pi-rows"><BuffDetailRows effects={bonus.effects} /></div>
 	{:else if tip}
 		<!-- ── A BAR ──────────────────────────────────────────────────────── -->
 		<header class="pi-head pi-head--bar">
@@ -183,7 +257,9 @@
 				>
 			</div>
 		{/if}
-		<p class="pi-hint">Click a buff on the timeline, or a portrait on the bench, to see it here.</p>
+		<p class="pi-hint">
+			Click an ability or a buff on the timeline, or a portrait on the bench, to see it here.
+		</p>
 	{/if}
 </div>
 
@@ -248,6 +324,66 @@
 		margin: 2px 0 0;
 		font-size: var(--fs-sm);
 		color: var(--muted);
+	}
+	.pi-variant {
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+	/* The character's name in a cast's subtitle: a door to their page, in the
+	   subtitle's own ink until hovered. */
+	.pi-link {
+		padding: 0;
+		border: none;
+		background: none;
+		font: inherit;
+		color: var(--text);
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
+	.pi-link:hover {
+		text-decoration-color: currentColor;
+	}
+	.pi-token {
+		font-family: var(--font-mono);
+		color: var(--text);
+	}
+	/* The editor's stand-in note, in the stand-in register: the amber of the
+	   squiggle under the same token (--ui-provisional). */
+	.pi-flag {
+		margin: 0;
+		padding: 0.45rem 0.6rem;
+		border-radius: 3px;
+		border: 1px solid color-mix(in srgb, var(--ui-provisional) 40%, transparent);
+		background: var(--ui-provisional-soft);
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
+		color: var(--text);
+	}
+	.pi-facts {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 4px 12px;
+		margin: 0;
+		font-size: var(--fs-sm);
+	}
+	.pi-facts dt {
+		color: var(--muted);
+	}
+	.pi-facts dd {
+		margin: 0;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+	.pi-quiet {
+		color: var(--muted);
+	}
+	.pi-raised {
+		margin: 0;
+		font-size: var(--fs-sm);
+		color: var(--text);
 	}
 	.pi-remove {
 		align-self: flex-start;

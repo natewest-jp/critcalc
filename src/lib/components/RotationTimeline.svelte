@@ -28,9 +28,12 @@
 	import {
 		barKey,
 		plannerView as pv,
+		castKey,
 		type BarLane,
-		type InspectedBar
+		type InspectedBar,
+		type InspectedCast
 	} from '$lib/plannerView.svelte';
+	import { flagNotation } from '$lib/utils/notationFlags';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { scrollBehavior } from '$lib/motion';
 	import { notationTints } from '$lib/timeline/notationTints';
@@ -2507,6 +2510,108 @@
 		if ($nextLayout && pv.target?.kind === 'bar' && !inspectedTip) pv.target = null;
 	});
 
+	// ── Casts (stage 2) ─────────────────────────────────────────────────────
+	// An E or Q pill opens its CAST; a summon or shield bar opens the cast that
+	// raised it — "a bar that says when an ability IS" (the Layers law's half
+	// that stays) is answered by the ability. Resolved against `rotation` (what
+	// is DRAWN, laps included); the editor mark only for a token in the text.
+
+	type CastEv = Extract<(typeof rotation.events)[number], { kind: 'cast' }>;
+
+	/** The latest cast of `ability` by `char` at or before `at` — whose summon
+	 *  or shield a bar starting at `at` is. */
+	function castAtOrBefore(char: string, ability: 'skill' | 'burst', at: number): CastEv | null {
+		let best: CastEv | null = null;
+		for (const ev of rotation.events) {
+			if (ev.kind !== 'cast' || ev.characterId !== char || ev.ability !== ability) continue;
+			if (ev.time <= at && (!best || ev.time >= best.time)) best = ev;
+		}
+		return best;
+	}
+
+	let pickedCastEvent = $derived.by((): CastEv | null => {
+		const t = pv.target;
+		if (!$nextLayout || t?.kind !== 'cast') return null;
+		for (const ev of rotation.events)
+			if (
+				ev.kind === 'cast' &&
+				ev.characterId === t.char &&
+				ev.ability === t.ability &&
+				ev.time === t.start
+			)
+				return ev;
+		return null;
+	});
+
+	let inspectedCast = $derived.by((): InspectedCast | null => {
+		const ev = pickedCastEvent;
+		if (!ev) return null;
+		const char = getLoadedCharacter(ev.characterId);
+		const ability = char?.abilities.find((a) => a.id === ev.abilityId);
+		const raised = summonSubrows
+			.filter(
+				(r) =>
+					r.characterId === ev.characterId &&
+					r.bars.some((b) => castAtOrBefore(ev.characterId, b.source, b.start)?.id === ev.id)
+			)
+			.map((r) => r.label);
+		const src = ev.src;
+		const standIn =
+			src && src.to <= notation.length
+				? (flagNotation(notation, seating?.seats).find(
+						(f) => f.reason === 'approximate-cast' && f.from < src.to && f.to > src.from
+					)?.message ?? null)
+				: null;
+		return {
+			characterId: ev.characterId,
+			displayName: char?.displayName ?? ev.characterId,
+			element: char?.element ?? '',
+			ability: ev.ability,
+			abilityName:
+				ability?.name ?? (ev.ability === 'skill' ? 'Elemental Skill' : 'Elemental Burst'),
+			variantLabel: ev.variantLabel,
+			label: ev.label,
+			time: ev.time,
+			castTime: ev.castTime,
+			uptime: ev.uptime,
+			cooldown: ev.cooldown,
+			readyAt: ev.readyAt,
+			cdReduced: ev.cdReduced,
+			energyCost: ability && 'energyCost' in ability ? ability.energyCost : undefined,
+			charges: ability && 'charges' in ability ? ability.charges : undefined,
+			raised: [...new Set(raised)],
+			standIn,
+			uncurated: char != null && !isCurated(char) && char.id !== 'blank'
+		};
+	});
+
+	$effect(() => {
+		pv.inspectedCast = inspectedCast;
+		if ($nextLayout && pv.target?.kind === 'cast' && !inspectedCast) pv.target = null;
+	});
+
+	// The token that made the picked cast wears the ring in the editor too.
+	$effect(() => {
+		const api = editorApi;
+		if (!api) return;
+		const src = pickedCastEvent?.src;
+		const picked = pv.inspectedCastKey !== null && src && src.to <= notation.length ? src : null;
+		const doc = notation;
+		untrack(() => api.setPicked(doc, picked ? { from: picked.from, to: picked.to } : null));
+	});
+
+	function inspectCast(char: string | undefined, ability: 'skill' | 'burst', start: number) {
+		if (!$nextLayout || !char) return;
+		hideTooltip();
+		pv.inspect({ kind: 'cast', char, ability, start });
+	}
+
+	/** A summon or shield bar opens the cast that raised it. */
+	function inspectRaised(char: string, ability: 'skill' | 'burst', at: number) {
+		const ev = castAtOrBefore(char, ability, at);
+		if (ev) inspectCast(char, ability, ev.time);
+	}
+
 	/** The frame under the pointer on a bar — what a stepped bar reads. */
 	function frameUnder(e: MouseEvent, start: number, end: number): number {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -3243,8 +3348,13 @@
 											{#each barPhases(bar, eHasSummon) as seg, si (si)}
 												{@const g = barGeom(seg.start, seg.span)}
 												{#if seg.role === 'uptime'}
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-uptime"
+														class:rp-inspectable={$nextLayout}
+														class:rp-inspected={pv.inspectedCastKey ===
+															castKey(char?.id ?? '', 'skill', bar.start)}
+														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
 														style:--label-halo={bar.element
 															? shiftHue(bp.bar, 0, -30, 1)
 															: undefined}
@@ -3256,8 +3366,13 @@
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeFlush'}
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-uptime"
+														class:rp-inspectable={$nextLayout}
+														class:rp-inspected={pv.inspectedCastKey ===
+															castKey(char?.id ?? '', 'skill', bar.start)}
+														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
 														style:--label-halo={bar.element
 															? shiftHue(bp.bar, 0, -30, 1)
 															: undefined}
@@ -3272,8 +3387,13 @@
 											     continuation tone. Opaque mix, never alpha — connectors
 											     pass behind these bars. --dim keeps the badge white+halo:
 											     ink only sits on full-strength fills. -->
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-uptime rp-bar-uptime--dim"
+														class:rp-inspectable={$nextLayout}
+														class:rp-inspected={pv.inspectedCastKey ===
+															castKey(char?.id ?? '', 'skill', bar.start)}
+														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
 														style:--label-halo={bar.element
 															? shiftHue(bp.bar, 0, -30, 1)
 															: undefined}
@@ -3287,8 +3407,11 @@
 													</div>
 												{:else if seg.role === 'overflow'}
 													{#if g.width > 0}
+														<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 														<div
 															class="rp-bar-cd rp-bar-cd--overflow"
+															class:rp-inspectable={$nextLayout}
+															onclick={() => inspectCast(char?.id, 'skill', bar.start)}
 															style:left="{g.left}px"
 															style:width="{g.width}px"
 															style:background="color-mix(in srgb, {bp.bar}
@@ -3296,8 +3419,11 @@
 														></div>
 													{/if}
 												{:else if seg.role === 'ghost'}
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-cd rp-bar-cd--ghost"
+														class:rp-inspectable={$nextLayout}
+														onclick={() => inspectCast(char?.id, 'skill', bar.start)}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {desaturate(
@@ -3332,8 +3458,11 @@
 												<!-- Full-strength castFill — same finish as the E/Q pills
 											     (Nate 2026-07-18). Opaque, so swap connectors passing
 											     behind this lane can't show through. -->
+												<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 												<div
 													class="rp-summon-bar"
+													class:rp-inspectable={$nextLayout}
+													onclick={() => inspectRaised(srow.characterId, sbar.source, sbar.start)}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
 													style:background={castFill(p.bar)}
@@ -3415,8 +3544,13 @@
 											{#each barPhases(bar, qHasSummon) as seg, si (si)}
 												{@const g = barGeom(seg.start, seg.span)}
 												{#if seg.role === 'uptime'}
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-uptime"
+														class:rp-inspectable={$nextLayout}
+														class:rp-inspected={pv.inspectedCastKey ===
+															castKey(char?.id ?? '', 'burst', bar.start)}
+														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
 														style:--label-halo={bar.element
 															? shiftHue(bp.bar, 0, -30, 1)
 															: undefined}
@@ -3428,8 +3562,13 @@
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeFlush'}
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-uptime"
+														class:rp-inspectable={$nextLayout}
+														class:rp-inspected={pv.inspectedCastKey ===
+															castKey(char?.id ?? '', 'burst', bar.start)}
+														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
 														style:--label-halo={bar.element
 															? shiftHue(bp.bar, 0, -30, 1)
 															: undefined}
@@ -3440,8 +3579,13 @@
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeDim'}
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-uptime rp-bar-uptime--dim"
+														class:rp-inspectable={$nextLayout}
+														class:rp-inspected={pv.inspectedCastKey ===
+															castKey(char?.id ?? '', 'burst', bar.start)}
+														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
 														style:--label-halo={bar.element
 															? shiftHue(bp.bar, 0, -30, 1)
 															: undefined}
@@ -3455,8 +3599,11 @@
 													</div>
 												{:else if seg.role === 'overflow'}
 													{#if g.width > 0}
+														<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 														<div
 															class="rp-bar-cd rp-bar-cd--overflow"
+															class:rp-inspectable={$nextLayout}
+															onclick={() => inspectCast(char?.id, 'burst', bar.start)}
 															style:left="{g.left}px"
 															style:width="{g.width}px"
 															style:background="color-mix(in srgb, {bp.bar}
@@ -3464,8 +3611,11 @@
 														></div>
 													{/if}
 												{:else if seg.role === 'ghost'}
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-bar-cd rp-bar-cd--ghost"
+														class:rp-inspectable={$nextLayout}
+														onclick={() => inspectCast(char?.id, 'burst', bar.start)}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {desaturate(
