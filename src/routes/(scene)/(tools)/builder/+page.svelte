@@ -221,9 +221,7 @@
 		const s = m.storageSession;
 		void s.version;
 		void s.profile?.id;
-		void s.documents('rotation').then((list) => {
-			storeRotations = list.flatMap((d) => (d.type === 'rotation' ? [m.rotationAsSaved(d)] : []));
-		});
+		void s.savedRotations().then((list) => (storeRotations = list));
 	});
 	const bank = $derived($nextLayout ? storeRotations : $savedNotations);
 

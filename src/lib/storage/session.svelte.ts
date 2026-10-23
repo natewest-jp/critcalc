@@ -39,6 +39,7 @@ import {
 	lineupLabel,
 	lineupToBoard,
 	nameToStore,
+	rotationAsSaved,
 	rotationLabel,
 	rotationToTab,
 	tabToRotationBody
@@ -50,7 +51,7 @@ import { applyBackup, buildEnvelope } from '$lib/utils/settingsBackup';
 import { settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
 import { holdDocument, openStorageChannel, type DocumentLock } from './docLock';
-import { bindRoster, siteSettings, type RosterPart } from '$lib/stores';
+import { bindRoster, siteSettings, type RosterPart, type SavedNotation } from '$lib/stores';
 import { get as storeGet } from 'svelte/store';
 import {
 	THEORYCRAFT_ID,
@@ -224,6 +225,14 @@ class StorageSession {
 		if (!db || !this.profile) return [];
 		const all = await getAll(db, 'documents', this.profile.id);
 		return all.filter((d) => d.type === type);
+	}
+
+	/** The active profile's rotations in the saved-entry shape a lineup's pins
+	 *  resolve against (`teamCon`): what the Builder draws and what its share
+	 *  link carries read this one list. */
+	async savedRotations(): Promise<SavedNotation[]> {
+		const docs = await this.documents('rotation');
+		return docs.flatMap((d) => (d.type === 'rotation' ? [rotationAsSaved(d)] : []));
 	}
 
 	/** The document a tool is showing, or the profile's current one off a tool.
