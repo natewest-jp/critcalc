@@ -32,6 +32,7 @@
 
 import type { EventLogHover, EventLogRow } from '$lib/components/EventLog.svelte';
 import type { Cue } from '$lib/playback/cues';
+import type { TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
 import { narrowFormQuery } from '$lib/breakpoints';
 
 export const ZOOM_MIN = 20;
@@ -65,7 +66,42 @@ export const restingZoom: number =
  * booleans that must never both be true is a state a caller can get wrong, and
  * the caller here is markup in a different file.
  */
-export type AsidePanel = 'notes' | 'log' | null;
+export type AsidePanel = 'notes' | 'log' | 'inspector' | null;
+
+/**
+ * What the INSPECTOR is showing (inspector round, 2026-10-23; design §7).
+ * `null` is not "nothing": it is the TEAM page — the four kits' notes, which
+ * is what the old Notes panel was and why the Inspector button is never
+ * disabled.
+ *
+ * ⚓ A bar is held as a REFERENCE (lane · row · start frame · the frame that
+ * was clicked), never as a copy of what its tooltip said. The timeline
+ * re-resolves it on every rebuild, so an edit that changes the bar changes the
+ * page, and an edit that removes it drops the page back to the team — a pinned
+ * copy would go on showing numbers the chart no longer draws.
+ */
+export type BarLane = 'received' | 'team' | 'moonsign';
+export type InspectTarget =
+	| { kind: 'character'; id: string }
+	| { kind: 'bar'; lane: BarLane; row: string; start: number; at: number };
+
+/** A pinned bar, as the timeline resolved it — the tooltip's payload plus
+ *  where the bar sits (frames) and who it lands on (`null` = the team). */
+export type InspectedBar = {
+	sourceLabel: string;
+	effects: TooltipEffectRow[];
+	isMutuallyExclusive?: boolean;
+	duration?: number;
+	procCooldown?: number;
+	on: string | null;
+	start: number;
+	end: number;
+};
+
+/** The bar's identity, for the selected ring — `at` is not part of it. */
+export function barKey(lane: BarLane, row: string, start: number): string {
+	return `${lane}|${row}|${start}`;
+}
 
 class PlannerViewState {
 	/** px per second. */
@@ -79,10 +115,60 @@ class PlannerViewState {
 	get showLog() {
 		return this.aside === 'log';
 	}
+	get showInspector() {
+		return this.aside === 'inspector';
+	}
+
+	/** The inspector's page; see InspectTarget. */
+	target = $state<InspectTarget | null>(null);
+	/** The pinned bar, resolved by the timeline on every rebuild (WRITTEN by
+	 *  the timeline, READ by the page's pane — the auraLog direction). */
+	inspectedTip = $state<InspectedBar | null>(null);
+
+	/** The picked bar's key while the inspector shows it — what the chart
+	 *  rings. Null whenever the pane is closed or showing something else. */
+	get inspectedBar(): string | null {
+		const t = this.target;
+		return this.aside === 'inspector' && t?.kind === 'bar' ? barKey(t.lane, t.row, t.start) : null;
+	}
+	get inspectedCharacter(): string | null {
+		const t = this.target;
+		return this.aside === 'inspector' && t?.kind === 'character' ? t.id : null;
+	}
+
+	/**
+	 * Show a thing in the inspector, opening it. ⚓ Picking the thing that is
+	 * ALREADY showing closes the pane — the door that opened it shuts it, the
+	 * same as the Inspector button.
+	 */
+	inspect(t: InspectTarget) {
+		const same =
+			this.aside === 'inspector' &&
+			this.target?.kind === t.kind &&
+			(t.kind === 'character'
+				? this.inspectedCharacter === t.id
+				: this.inspectedBar === barKey(t.lane, t.row, t.start));
+		if (same) {
+			this.aside = null;
+			this.target = null;
+			return;
+		}
+		this.target = t;
+		this.aside = 'inspector';
+	}
+
+	/** Back to the team page, the pane staying open. */
+	inspectTeam() {
+		this.target = null;
+		this.aside = 'inspector';
+	}
 
 	/** Open a panel, or close it if it is already the one showing. */
 	togglePanel(panel: Exclude<AsidePanel, null>) {
 		this.aside = this.aside === panel ? null : panel;
+		// ⚓ The Inspector button opens on the TEAM page; a pick is what a
+		// click on the chart or the bench is for (inspector round).
+		if (panel === 'inspector') this.target = null;
 	}
 	/**
 	 * An instant the log should bring into view once it has rows — set by a

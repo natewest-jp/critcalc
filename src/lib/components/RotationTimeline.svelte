@@ -25,7 +25,12 @@
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { documentBar } from '$lib/documentBar.svelte';
-	import { plannerView as pv } from '$lib/plannerView.svelte';
+	import {
+		barKey,
+		plannerView as pv,
+		type BarLane,
+		type InspectedBar
+	} from '$lib/plannerView.svelte';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { scrollBehavior } from '$lib/motion';
 	import { notationTints } from '$lib/timeline/notationTints';
@@ -2392,6 +2397,128 @@
 		tooltip = null;
 	}
 
+	// ══ HOVER PEEKS, CLICK INSPECTS (inspector round, 2026-10-23; design §7) ══
+	// Under the switch a click on a buff bar opens it in the inspector pane. The
+	// pane prints what the tooltip prints — ONE payload builder per lane, read by
+	// both — plus where the bar sits and who it lands on.
+	//
+	// ⚓ The pick is a REFERENCE (`InspectTarget`), and this is where it is
+	// re-resolved: every rebuild rebuilds the page from the rows the chart is
+	// drawing NOW, and a bar an edit removed drops the page back to the team.
+
+	type ReceivedRow = (typeof charReceivedBuffRows)[number];
+	type TeamRow = (typeof teamBuffRows)[number];
+	type MoonRow = (typeof moonsignRows)[number];
+
+	/** A stepped bar's payload is the step AT a frame — the hover's rule. */
+	function stepPayload(
+		bar: { start: number; end: number; steps?: BarStep[] },
+		label: string,
+		at: number
+	): TooltipPayload | null {
+		if (!bar.steps?.length) return null;
+		const st = stepAt(bar.steps, at);
+		return {
+			sourceLabel: `${label} ×${st.count}`,
+			effects: st.effects,
+			isMutuallyExclusive: false
+		};
+	}
+
+	function receivedPayload(bar: ReceivedRow['bars'][number]): TooltipPayload {
+		return {
+			sourceLabel: bar.sourceLabel,
+			effects: bar.effects,
+			isMutuallyExclusive: bar.isMutuallyExclusive,
+			duration: bar.duration,
+			procCooldown: bar.procCooldown
+		};
+	}
+
+	function teamPayload(subrow: TeamRow, bar: TeamRow['bars'][number]): TooltipPayload {
+		return {
+			sourceLabel: subrow.sourceLabel,
+			// ⚓ THE COUNT UNDER THE VALUE. A Polestar Field bar's number is a
+			// payout, and the ledger that paid it is the thing a player recognises —
+			// Genshin shows the count on screen while you play. It rides BELOW the
+			// stats rather than replacing them.
+			// ⚠️ It is the count from the PREVIOUS 4s, which is what set this bar;
+			// the in-game counter is meanwhile filling toward the next grant. Two
+			// clocks — this is the one this bar can be checked against.
+			effects:
+				bar.stacks === undefined
+					? bar.effects
+					: [
+							...bar.effects,
+							{ stat: 'Recorded hits', displayValue: `${bar.stacks} in the previous 4s` }
+						],
+			isMutuallyExclusive: false,
+			duration: bar.end - bar.start
+		};
+	}
+
+	function moonPayload(row: MoonRow, win: MoonRow['windows'][number]): TooltipPayload {
+		const msChar = slotCharacters[row.slotIdx];
+		return {
+			sourceLabel: `Ascendant Gleam — ${msChar?.displayName ?? '?'}`,
+			effects: [moonsignScaling(msChar?.element)],
+			isMutuallyExclusive: false,
+			duration: win.duration
+		};
+	}
+
+	/** The pinned bar, resolved against the rows on screen now — or null when
+	 *  the edit that triggered this rebuild took it away. */
+	let inspectedTip = $derived.by((): InspectedBar | null => {
+		const t = pv.target;
+		if (!$nextLayout || t?.kind !== 'bar') return null;
+		if (t.lane === 'received') {
+			const row = charReceivedBuffRows.find((r) => r.key === t.row);
+			const bar = row?.bars.find((b) => b.start === t.start);
+			if (!row || !bar) return null;
+			return {
+				...(stepPayload(bar, bar.sourceLabel, t.at) ?? receivedPayload(bar)),
+				on: getLoadedCharacter(row.characterId)?.displayName ?? row.characterId,
+				start: bar.start,
+				end: bar.end
+			};
+		}
+		if (t.lane === 'team') {
+			const row = teamBuffRows.find((r) => r.key === t.row);
+			const bar = row?.bars.find((b) => b.start === t.start);
+			if (!row || !bar) return null;
+			return {
+				...(stepPayload(bar, row.sourceLabel, t.at) ?? teamPayload(row, bar)),
+				on: null,
+				start: bar.start,
+				end: bar.end
+			};
+		}
+		const row = moonsignRows.find((r) => String(r.slotIdx) === t.row);
+		const win = row?.windows.find((w) => w.start === t.start);
+		if (!row || !win) return null;
+		return { ...moonPayload(row, win), on: null, start: win.start, end: win.start + win.duration };
+	});
+
+	// Publish for the page, which renders the pane; and drop a pick whose bar is
+	// gone. ⚠ Only a BAR pick is dropped — a character pick is the bench's.
+	$effect(() => {
+		pv.inspectedTip = inspectedTip;
+		if ($nextLayout && pv.target?.kind === 'bar' && !inspectedTip) pv.target = null;
+	});
+
+	/** The frame under the pointer on a bar — what a stepped bar reads. */
+	function frameUnder(e: MouseEvent, start: number, end: number): number {
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		return start + ((e.clientX - rect.left) / Math.max(1, rect.width)) * (end - start);
+	}
+
+	function inspectBar(e: MouseEvent, lane: BarLane, row: string, start: number, end: number) {
+		if (!$nextLayout) return;
+		hideTooltip();
+		pv.inspect({ kind: 'bar', lane, row, start, at: frameUnder(e, start, end) });
+	}
+
 	// ── The aura plot's crosshair readout ────────────────────────────────────
 	//
 	// ⚓ OVERLAID SERIES CANNOT BE HOVERED INDIVIDUALLY, and the answer is better
@@ -3456,24 +3583,22 @@
 											{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
 											{@const envBg =
 												rampingBackground(bar) ?? decayingBackground(bar) ?? steppedBackground(bar)}
-											<!-- svelte-ignore a11y_no_static_element_interactions -->
+											<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 											<div
 												class="rp-team-buff-bar"
+												class:rp-inspectable={$nextLayout}
+												class:rp-inspected={pv.inspectedBar ===
+													barKey('received', recRow.key, bar.start)}
 												style:left="{g.left}px"
 												style:width="{g.width}px"
 												style:background={envBg}
 												onmouseenter={(e) =>
 													bar.steps
 														? showStepTooltip(e, bar, bar.sourceLabel)
-														: showTooltip(e, {
-																sourceLabel: bar.sourceLabel,
-																effects: bar.effects,
-																isMutuallyExclusive: bar.isMutuallyExclusive,
-																duration: bar.duration,
-																procCooldown: bar.procCooldown
-															})}
+														: showTooltip(e, receivedPayload(bar))}
 												onmousemove={(e) => bar.steps && showStepTooltip(e, bar, bar.sourceLabel)}
 												onmouseleave={hideTooltip}
+												onclick={(e) => inspectBar(e, 'received', recRow.key, bar.start, bar.end)}
 											>
 												{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
 												<span
@@ -3516,9 +3641,12 @@
 												{#each subrow.bars as bar, bi (bi)}
 													{@const g = barGeom(bar.start, bar.end - bar.start)}
 													{@const icon = subrow.icon ?? BUFF_STAT_ICON[subrow.primaryStat]}
-													<!-- svelte-ignore a11y_no_static_element_interactions -->
+													<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 													<div
 														class="rp-team-buff-bar"
+														class:rp-inspectable={$nextLayout}
+														class:rp-inspected={pv.inspectedBar ===
+															barKey('team', subrow.key, bar.start)}
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background={steppedBackground(bar)}
@@ -3527,30 +3655,8 @@
 														onmouseenter={(e) =>
 															bar.steps
 																? showStepTooltip(e, bar, subrow.sourceLabel)
-																: showTooltip(e, {
-																		sourceLabel: subrow.sourceLabel,
-																		// ⚓ THE COUNT UNDER THE VALUE. A Polestar Field bar's
-																		// number is a payout, and the ledger that paid it is
-																		// the thing a player recognises — Genshin shows the
-																		// count on screen while you play. It rides BELOW the
-																		// stats rather than replacing them.
-																		// ⚠️ It is the count from the PREVIOUS 4s, which is
-																		// what set this bar; the in-game counter is meanwhile
-																		// filling toward the next grant. Two clocks — this is
-																		// the one this bar can be checked against.
-																		effects:
-																			bar.stacks === undefined
-																				? bar.effects
-																				: [
-																						...bar.effects,
-																						{
-																							stat: 'Recorded hits',
-																							displayValue: `${bar.stacks} in the previous 4s`
-																						}
-																					],
-																		isMutuallyExclusive: false,
-																		duration: bar.end - bar.start
-																	})}
+																: showTooltip(e, teamPayload(subrow, bar))}
+														onclick={(e) => inspectBar(e, 'team', subrow.key, bar.start, bar.end)}
 														onmouseleave={hideTooltip}
 													>
 														{#if icon}
@@ -3614,19 +3720,24 @@
 											     Lunar DMG bonus. Duration lives in the tooltip, like buff bars. -->
 											{#each row.windows as win, wi (wi)}
 												{@const g = barGeom(win.start, win.duration)}
-												<!-- svelte-ignore a11y_no_static_element_interactions -->
+												<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
 												<div
 													class="rp-moonsign-bar"
+													class:rp-inspectable={$nextLayout}
+													class:rp-inspected={pv.inspectedBar ===
+														barKey('moonsign', String(row.slotIdx), win.start)}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													onmouseenter={(e) =>
-														showTooltip(e, {
-															sourceLabel: `Ascendant Gleam — ${msChar?.displayName ?? '?'}`,
-															effects: [moonsignScaling(msChar?.element)],
-															isMutuallyExclusive: false,
-															duration: win.duration
-														})}
+													onmouseenter={(e) => showTooltip(e, moonPayload(row, win))}
 													onmouseleave={hideTooltip}
+													onclick={(e) =>
+														inspectBar(
+															e,
+															'moonsign',
+															String(row.slotIdx),
+															win.start,
+															win.start + win.duration
+														)}
 												>
 													{#if LUNAR_ICON}<img src={LUNAR_ICON} alt="" class="rp-buff-icon" />{/if}
 													<span
@@ -4467,6 +4578,20 @@
 		width: 2px;
 		background: rgb(255 255 255 / 0.3);
 		pointer-events: none;
+	}
+	/* ══ PICKED (inspector round, 2026-10-23) ══════════════════════════════════
+	   Under the switch a buff bar is a door into the inspector, so it says so
+	   with the cursor; the bar the pane is showing wears the GOLD ring — the
+	   glass grammar's "selected", ⛔ never a fill change, which would read as a
+	   different buff. An INSET shadow: paint inside the bar's own box, so it
+	   moves no geometry and the bar's `overflow: hidden` cannot clip it.
+	   ⚠ DOM-only by construction: the PNG export draws from the rows, never
+	   from these classes, so a picked bar exports unringed. */
+	.rp-inspectable {
+		cursor: pointer;
+	}
+	.rp-inspected {
+		box-shadow: inset 0 0 0 1.5px var(--accent);
 	}
 	/* ⛔ THE DEBUFF VARIANT IS GONE (⚓ NATE 2026-08-11). It carried its own fill
 	   through three colour schemes — dire, then --debuff-fill, then a cool

@@ -1,35 +1,20 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
-	import { feedbackToolForPath } from '$lib/feedback';
-	import ReportLink from '$lib/components/ReportLink.svelte';
-	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
-	import { constellations, siteSettings, ownership, loadout } from '$lib/stores';
-	import { library } from '$lib/library.svelte';
-	import LoadoutPanel from '$lib/components/LoadoutPanel.svelte';
+	import { siteSettings } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import CloseMark from '$lib/components/CloseMark.svelte';
+	import CharacterDetails from '$lib/components/CharacterDetails.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { fade } from 'svelte/transition';
 	import { portal } from '$lib/actions/portal';
 	import { closeOnLeave } from '$lib/closeOnLeave';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
-	import {
-		deriveCharacterCapabilities,
-		type DerivedCapability
-	} from '$lib/capabilities/deriveCapabilities';
 	import type { ConMode } from '$lib/capabilities/facets';
-	import { conCapFor } from '$lib/capabilities/facets';
-	import {
-		KIND_LABEL,
-		KIND_ORDER,
-		TARGET_LABEL,
-		capDetailText,
-		caveatText
-	} from '$lib/capabilities/capabilityText';
+
+	// ↻ Inspector round (2026-10-23): this is the SHELL now — backdrop, header,
+	// close. The body is `CharacterDetails`, which the Planner's inspector pane
+	// reads too, so the two can never disagree about a character.
 
 	let {
 		id,
@@ -65,46 +50,6 @@
 		(elementColors[(entry?.element ?? 'none') as ElementKey] ?? elementColors.none).main
 	);
 
-	// Full payload — lazy chunk, reactive once landed.
-	$effect(() => {
-		void loadCharacter(id);
-	});
-	const data = $derived(getLoadedCharacter(id));
-
-	const myCon = $derived($constellations[id] ?? 0);
-	const myOwnership = $derived($ownership[id]);
-
-	const viewCon = $derived(conCapFor(conMode, myCon));
-
-	// Full provenance derivation, client-side from the loaded payload — the same
-	// brain as the build-time index, so badges and card can never disagree.
-	const capabilities = $derived(data ? deriveCharacterCapabilities(data).capabilities : []);
-	const sortedCaps = $derived(
-		[...capabilities].sort(
-			(a, b) =>
-				KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) ||
-				a.minConstellation - b.minConstellation
-		)
-	);
-
-	// Convention (settled 2026-05-12): the planner hides locked effects; the
-	// Team Builder shows everything with a locked badge.
-	const locked = (cap: DerivedCapability) => cap.minConstellation > viewCon;
-
-	function sectionLabel(cap: DerivedCapability): string {
-		const { section, abilityName, variant } = cap.source;
-		const name = variant ? `${abilityName} (${variant})` : abilityName;
-		if (section === 'passive') return `${name} · passive`;
-		if (section === 'factionBonus') return `${name} · team bonus`;
-		if (section === 'constellation') return name;
-		return name;
-	}
-
-	// Timing reference — skill/burst rows.
-	const castAbilities = $derived(
-		(data?.abilities ?? []).filter((a) => a.abilityType === 'skill' || a.abilityType === 'burst')
-	);
-
 	let avatarErrored = $state(false);
 	const avatarFallback = $derived(avatarErrored || !hasAvatar(id));
 	function handleAvatarError(event: Event) {
@@ -126,24 +71,6 @@
 		() => true,
 		() => onClose()
 	);
-
-	/**
-	 * "See coverage" opens the About overlay, and the card CLOSES behind it, as
-	 * it does for "Edit in Roster". Portalled to <body>, the card stacks above
-	 * the whole scene content — the overlay included — so it can no longer
-	 * wait underneath it. Closed only when the overlay actually opened (a
-	 * ⌘-click is left to open its new tab).
-	 *
-	 * ⚠ Bound as onclickCAPTURE: out of the app root, a delegated onclick runs
-	 * only at `document`, AFTER SvelteKit's router has taken the click at
-	 * <html> and navigated to /coverage. A capture handler sits on the anchor
-	 * itself, so openCoverage's preventDefault lands first.
-	 */
-	function seeCoverage(e: MouseEvent) {
-		if (!entry) return;
-		openCoverage(e, [entry.id]);
-		if (e.defaultPrevented) onClose();
-	}
 
 	function handleBackdropClick(e: MouseEvent) {
 		if ((e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
@@ -228,182 +155,11 @@
 			</button>
 		</header>
 
-		{#if entry && !entry.curated}
-			<!-- ⚠ onclickCAPTURE, not onclick — see seeCoverage. -->
-			{#if entry.caps.length === 0}
-				<p class="dc-stub-note">
-					Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”,
-					not “no”.
-					<a
-						class="link dc-stub-link"
-						href="{resolve('/coverage')}?c={entry.id}"
-						onclickcapture={seeCoverage}>See coverage</a
-					>
-				</p>
-			{:else}
-				<p class="dc-stub-note">
-					Capabilities below are complete. Frame timing isn’t curated yet, so only this character’s
-					rotation timing is approximate in the Planner.
-					<a
-						class="link dc-stub-link"
-						href="{resolve('/coverage')}?c={entry.id}"
-						onclickcapture={seeCoverage}>See coverage</a
-					>
-				</p>
-			{/if}
-		{/if}
-
-		<!-- ── Your roster ────────────────────────────────────── -->
-		<!-- ⚓ READ-ONLY (lineups design §11.6 item 2): the Library's Roster tab is
-		     the one place the roster is edited, so details in both tools say what
-		     it holds and link there, arriving on this character. -->
-		<section>
-			<p class="kicker">Your roster</p>
-			<p class="dc-roster">
-				<span class="dc-roster-state"
-					>{#if myOwnership === 'owned'}<Mark name="check" size={13} /> Owned{#if !entry?.noConstellations}{` · C${myCon}`}{/if}{:else if myOwnership === 'wishlist'}<Mark
-							name="star"
-							size={13}
-							filled
-						/> On your wishlist{:else}Not owned{/if}</span
-				>
-				<button
-					class="btn btn--sm"
-					onclick={() => {
-						// ⚠ Read the id BEFORE closing: props are live, and the host
-						// clears the one this card was opened with.
-						const target = id;
-						onClose();
-						library.openRoster(target);
-					}}>Edit in Roster</button
-				>
-			</p>
-			{#if !defaultBuild}
-				<p class="note dc-note">
-					To set this character’s constellation for this rotation only, use the selector on the
-					Planner rather than the Roster.
-				</p>
-			{/if}
-			<!-- The roster's LOADOUT (Layer 1), beside its constellation (lineups
-			     design §2.1): it was editable only through the bench, and the Team
-			     Builder has no bench any more. Same panel the bench opens; writes
-			     land in the roster, where a rotation's own picks fall back to it. -->
-			{#if defaultBuild}
-				<p class="kicker dc-build-kicker">Default build</p>
-				<LoadoutPanel
-					loadoutEntry={$loadout[id] ?? {}}
-					weaponType={entry?.weapon}
-					elementColor={color}
-					onSetArtifact={(setId) => loadout.setArtifact(id, setId)}
-					onSetWeapon={(weaponId, r) => loadout.setWeapon(id, weaponId, r)}
-					onSetRefinement={(r) => loadout.setWeapon(id, $loadout[id]?.weaponId, r)}
-				/>
-			{/if}
-		</section>
-
-		<!-- ── Capabilities ───────────────────────────────────── -->
-		<section>
-			<p class="kicker">Capabilities</p>
-			{#if !data}
-				<p class="note dc-note">Loading kit data…</p>
-			{:else if sortedCaps.length === 0}
-				<p class="note dc-note">
-					Nothing team-facing derives from this kit{entry?.curated
-						? ' — likely a selfish carry, or curation hasn’t covered its utility yet'
-						: ''}.
-				</p>
-			{:else}
-				<ul class="dc-caps">
-					{#each sortedCaps as cap, i (i)}
-						<li class="dc-cap" class:dc-cap--locked={locked(cap)}>
-							<span class="dc-cap-kind"
-								>{KIND_LABEL[cap.kind] ?? cap.kind}{(cap.kind === 'buff' ||
-									cap.kind === 'resShred' ||
-									cap.kind === 'infuse') &&
-								cap.detail
-									? `: ${capDetailText(cap.kind, cap.detail)}`
-									: ''}</span
-							>
-							<span class="dc-cap-src">
-								{sectionLabel(cap)}
-								{#if cap.target}· {TARGET_LABEL[cap.target] ?? cap.target}{/if}
-								{#if cap.via === 'tag'}
-									<span
-										class="dc-cap-tagged"
-										title="Marked on the ability, but target/scaling not yet curated">tagged</span
-									>
-								{/if}
-							</span>
-							<span class="dc-cap-gate">
-								{#if cap.minConstellation > 0}
-									<span class="dc-gate-chip" class:dc-gate-chip--locked={locked(cap)}
-										>C{cap.minConstellation}{#if locked(cap)}<Mark
-												name="gated"
-												size={11}
-											/>{/if}</span
-									>
-								{:else}
-									<span class="dc-gate-chip dc-gate-chip--base">C0</span>
-								{/if}
-							</span>
-							{#if cap.caveats.length > 0}
-								<span class="dc-cap-caveats"
-									>{[...new Set(cap.caveats.map(caveatText))].join(' · ')}</span
-								>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</section>
-
-		<!-- ── Timing reference ───────────────────────────────── -->
-		{#if data && castAbilities.length > 0}
-			<section>
-				<p class="kicker">Timing reference</p>
-				<table class="dc-timing">
-					<tbody>
-						{#each castAbilities as ability (ability.id)}
-							<tr>
-								<td class="dc-timing-slot">{ability.abilityType === 'skill' ? 'E' : 'Q'}</td>
-								<td class="dc-timing-name">{ability.name}</td>
-								<td class="dc-timing-val">
-									{#if 'cooldown' in ability && ability.cooldown}<span class="dc-timing-part"
-											>{ability.cooldown}s cooldown</span
-										>{/if}
-									{#if 'charges' in ability && ability.charges && ability.charges > 1}
-										<span class="dc-timing-part">· {ability.charges} charges</span>{/if}
-									{#if 'energyCost' in ability && ability.energyCost}
-										<span class="dc-timing-part">· {ability.energyCost} energy</span>{/if}
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</section>
-		{/if}
-
-		<!-- The feedback form, opened on its character section: the name as this
-		     card titles it and the constellation the card reads at. -->
-		<p class="dc-report">
-			<ReportLink
-				class="link"
-				prefill={{
-					category: 'character',
-					tool: feedbackToolForPath(page.url.pathname),
-					character: entry?.displayName ?? id,
-					constellation: entry?.noConstellations ? undefined : viewCon,
-					includeTech: true
-				}}>Something not right with this character?</ReportLink
-			>
-		</p>
+		<CharacterDetails {id} {conMode} {defaultBuild} onLeave={onClose} />
 	</div>
 </div>
 
 <style>
-	.dc-build-kicker {
-		margin-top: 1rem;
-	}
 	.dc-backdrop {
 		position: fixed;
 		inset: 0;
@@ -528,165 +284,5 @@
 		background: none;
 		color: var(--text);
 		cursor: pointer;
-	}
-	.dc-report {
-		margin: 0;
-		font-size: var(--fs-sm);
-		color: var(--muted);
-	}
-	.dc-stub-link {
-		white-space: nowrap;
-	}
-	.dc-stub-note {
-		margin: 0;
-		padding: 0.55rem 0.7rem;
-		border-radius: 3px;
-		/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. This note reports the SAME
-		   fact the ∅ marker does — frame timing isn't curated — and the
-		   dire-retirement round settled that as a DATA-QUALITY state rather than a
-		   domain colour. It was wearing a borrowed element token; now the note and
-		   the mark that summarises it speak with one voice.
-		   ↻ 2026-08-12: and that one voice is now --ui-provisional. The 08-11 move
-		   settled state-over-domain; this one settles WHICH state, now that the
-		   family has a value for "incomplete" that isn't "wrong". */
-		border: 1px solid color-mix(in srgb, var(--ui-provisional) 40%, transparent);
-		background: var(--ui-provisional-soft);
-		font-size: var(--fs-md);
-		line-height: var(--lh-normal);
-		color: var(--text);
-	}
-
-	/* ── Your roster (read-only) ───────────────────────────────── */
-	.dc-note {
-		margin-top: 0.5rem;
-		font-size: var(--fs-md);
-	}
-	.dc-roster {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem 1rem;
-		margin: 0;
-	}
-	.dc-roster-state {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		font-size: var(--fs-md);
-	}
-
-	/* ── Capabilities list ────────────────────────────────────── */
-	.dc-caps {
-		list-style: none;
-		margin: 0.55rem 0 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-	}
-
-	.dc-cap {
-		display: grid;
-		grid-template-columns: minmax(108px, auto) minmax(0, 1fr) auto;
-		gap: 0.15rem 0.7rem;
-		align-items: baseline;
-		padding: 0.45rem 0.6rem;
-		border-radius: 3px;
-		background: var(--fill-rest);
-		font-size: var(--fs-lg);
-	}
-	.dc-cap--locked {
-		opacity: 0.5;
-	}
-
-	.dc-cap-kind {
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-	}
-
-	.dc-cap-src {
-		color: var(--muted);
-		min-width: 0;
-	}
-
-	.dc-cap-tagged {
-		margin-left: 0.35rem;
-		padding: 0 4px;
-		border-radius: 3px;
-		background: var(--fill-rest);
-		font-size: var(--fs-xs);
-		text-transform: uppercase;
-		letter-spacing: var(--ls-wide);
-	}
-
-	.dc-cap-gate {
-		justify-self: end;
-	}
-
-	/* inline-flex, because the locked state's Mark is a block-level <svg> and a
-	   block child would break the chip's inline box. */
-	.dc-gate-chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 3px;
-		padding: 1px 6px;
-		border-radius: 3px;
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		background: color-mix(in srgb, var(--el-color) 18%, transparent);
-	}
-	.dc-gate-chip--base {
-		background: var(--fill-rest);
-		color: var(--muted);
-	}
-	.dc-gate-chip--locked {
-		background: var(--fill-rest);
-		color: var(--muted);
-	}
-
-	.dc-cap-caveats {
-		grid-column: 1 / -1;
-		font-size: var(--fs-sm);
-		font-style: italic;
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
-	}
-
-	/* ── Timing table ─────────────────────────────────────────── */
-	.dc-timing {
-		margin-top: 0.55rem;
-		width: 100%;
-		border-collapse: collapse;
-		font-size: var(--fs-lg);
-	}
-	.dc-timing td {
-		padding: 0.35rem 0.6rem 0.35rem 0;
-		border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-		vertical-align: baseline;
-	}
-	.dc-timing-slot {
-		width: 1.6rem;
-		font-weight: var(--fw-bold);
-		color: var(--el-color);
-	}
-	.dc-timing-name {
-		color: var(--text);
-	}
-	.dc-timing-val {
-		text-align: right;
-		white-space: nowrap;
-		color: var(--muted);
-	}
-	/* Each fact holds together, so a wrapped value breaks only BETWEEN them. */
-	.dc-timing-part {
-		white-space: nowrap;
-	}
-	/* On a phone the value may wrap: at 320 "15s cooldown · 60 energy" needs
-	   300px against the panel's 275 and scrolled the card 5px sideways. Only
-	   below compact — wider, the name column is the one that gives. */
-	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
-		.dc-timing-val {
-			white-space: normal;
-		}
 	}
 </style>
