@@ -15,6 +15,7 @@
 	import { nextLayout } from '$lib/nextLayout';
 	import InspectModal from '$lib/components/InspectModal.svelte';
 	import { below } from '$lib/media.svelte';
+	import { page } from '$app/state';
 
 	// ↻ Inspector round (2026-10-23): this is the SHELL now — backdrop, header,
 	// close. The body is `CharacterDetails`, which the Planner's inspector pane
@@ -59,6 +60,11 @@
 	);
 
 	let heroErrored = $state(false);
+
+	/** ⏳ TEMPORARY (Nate 2026-10-23, to compare): `&art=left` stands the art
+	 *  on the LEFT, pushing the name aside. Characters only — the boss keeps
+	 *  its own. Delete whichever side loses, and this with it. */
+	const artLeft = $derived(page.url.searchParams.get('art') === 'left');
 	/** The hero's art: the new outfit falls back to the base art, then to
 	 *  nothing (the header reads without it). */
 	function handleHeroError(event: Event) {
@@ -173,45 +179,47 @@
      team action is an ordinary button. ⚠ `full` art is 256px, so the hero
      holds it at ≤ 9.5rem (crisp at 2×). -->
 {#snippet hero()}
-	<header class="dc-hero">
-		{#if !heroErrored}
-			<img
-				class="dc-hero-art"
-				src={getAvatar(id, $siteSettings.useNewOutfits, 'full', $siteSettings.travelerVariant)}
-				alt=""
-				onerror={handleHeroError}
-			/>
-		{/if}
-		<div class="dc-hero-text">
-			<p class="kicker dc-hero-kicker">
-				{entry?.element ?? '?'} · {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region
-					? ` · ${entry.region}`
-					: ''}
-			</p>
-			<h2 class="dc-hero-title">{entry?.displayName ?? id}</h2>
-			{#if onToggleTeam && teamState}
-				<div class="dc-actions">
-					<button
-						class="btn btn--sm"
-						class:is-active={teamState === 'in'}
-						disabled={teamState === 'full'}
-						onclick={() => onToggleTeam(id)}
-						title={teamState === 'full' ? 'All four team slots are filled' : undefined}
-					>
-						<Mark name={teamState === 'in' || teamState === 'elsewhere' ? 'check' : 'plus'} />
-						{teamState === 'in'
-							? 'In team — remove'
-							: teamState === 'elsewhere'
-								? `In ${elsewhereLabel ?? 'another team'} — remove`
-								: teamState === 'full'
-									? 'Team full'
-									: 'Add to team'}
-					</button>
-				</div>
+	<header class="dc-hero" class:dc-hero--left={artLeft}>
+		<div class="dc-hero-row">
+			<div class="dc-hero-text">
+				<p class="kicker dc-hero-kicker">
+					{entry?.element ?? '?'} · {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region
+						? ` · ${entry.region}`
+						: ''}
+				</p>
+				<h2 class="dc-hero-title">{entry?.displayName ?? id}</h2>
+				{#if onToggleTeam && teamState}
+					<div class="dc-actions">
+						<button
+							class="btn btn--sm"
+							class:is-active={teamState === 'in'}
+							disabled={teamState === 'full'}
+							onclick={() => onToggleTeam(id)}
+							title={teamState === 'full' ? 'All four team slots are filled' : undefined}
+						>
+							<Mark name={teamState === 'in' || teamState === 'elsewhere' ? 'check' : 'plus'} />
+							{teamState === 'in'
+								? 'In team — remove'
+								: teamState === 'elsewhere'
+									? `In ${elsewhereLabel ?? 'another team'} — remove`
+									: teamState === 'full'
+										? 'Team full'
+										: 'Add to team'}
+						</button>
+					</div>
+				{/if}
+			</div>
+			{#if !heroErrored}
+				<img
+					class="dc-hero-art"
+					src={getAvatar(id, $siteSettings.useNewOutfits, 'full', $siteSettings.travelerVariant)}
+					alt=""
+					onerror={handleHeroError}
+				/>
 			{/if}
 		</div>
-		<!-- Full width, under the art's fade: a delta runs long, and squeezed
-		     beside the art it wrapped item by item. -->
+		<!-- Full width, and the art STANDS ON IT: a delta runs long, and
+		     squeezed beside the art it wrapped item by item. -->
 		{#if lead}<div class="dc-lead">{@render lead()}</div>{/if}
 	</header>
 	<div class="dc-im-body">
@@ -376,36 +384,52 @@
 		flex-direction: column;
 		font-family: var(--font-body);
 	}
+	/* ⚓ THE ART ENDS ON A SHARP EDGE (Nate 2026-10-23): no fade. The `full`
+	   art's own bottom edge is flat, so the art stands IN the header's top row,
+	   bottom-aligned, and that edge lands on whatever comes next — the "Adds
+	   to" box, or the header's hairline when the team has no room. Its top
+	   rises into the header's padding, to the frame. ⚠ 256px art: ≤ 9.5rem. */
 	.dc-hero {
 		position: relative;
-		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		padding: var(--im-pad-top) var(--im-pad-x) 1.2rem;
+		padding: var(--im-pad-top) var(--im-pad-x) 0;
 		border-bottom: 1px solid var(--line-faint);
 	}
-	/* The art at the top right, fading left and down into the panel — the
-	   boss's mask at the character art's own scale. */
+	.dc-hero-row {
+		display: flex;
+		align-items: flex-end;
+		gap: 1.2rem;
+	}
+	.dc-hero--left .dc-hero-row {
+		flex-direction: row-reverse;
+	}
 	.dc-hero-art {
-		position: absolute;
-		top: 0;
-		right: 1.5rem;
+		display: block;
+		flex: none;
 		width: 9.5rem;
-		height: auto;
-		mask-image:
-			linear-gradient(to top, transparent 4%, #000 40%),
-			linear-gradient(to right, transparent 0%, #000 30%);
-		-webkit-mask-composite: source-in; /* WebKit's spelling of intersect */
-		mask-composite: intersect;
+		height: 9.5rem;
+		margin-top: calc(-1 * var(--im-pad-top));
+		object-fit: contain;
+		object-position: bottom;
 		pointer-events: none;
 	}
+	/* Right: clear of the shell's ✕, which stands at the frame's corner. */
+	.dc-hero:not(.dc-hero--left) .dc-hero-art {
+		margin-right: 1.4rem;
+	}
 	.dc-hero-text {
-		position: relative;
+		flex: 1;
+		align-self: flex-start;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		max-width: calc(100% - 9rem);
 		min-width: 0;
+		padding-bottom: 1.2rem;
+	}
+	/* Left: the name must clear the ✕ instead. */
+	.dc-hero--left .dc-hero-text {
+		padding-right: 2.2rem;
 	}
 	.dc-hero-kicker {
 		font-size: var(--fs-sm);
@@ -417,8 +441,7 @@
 		line-height: 1.15;
 	}
 	.dc-lead {
-		position: relative;
-		margin-top: 0.9rem;
+		margin-bottom: 1.2rem;
 	}
 	.dc-im-body {
 		display: flex;
@@ -429,10 +452,10 @@
 	@media (max-width: 47.5rem) /* roomy — $lib/breakpoints.ts */ {
 		.dc-hero-art {
 			width: 7rem;
-			right: 0.5rem;
+			height: 7rem;
 		}
-		.dc-hero-text {
-			max-width: calc(100% - 5.5rem);
+		.dc-hero:not(.dc-hero--left) .dc-hero-art {
+			margin-right: 2rem;
 		}
 	}
 	.dc-close {
