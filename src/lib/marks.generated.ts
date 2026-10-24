@@ -3,6 +3,8 @@
 // Toolbar mark geometry, extracted from lucide@1.30.0 (ISC).
 // Copyright (c) 2026 Lucide Icons and Contributors
 // https://lucide.dev — the upstream project; icons are used unmodified.
+// Bespoke marks drawn in Lucide's idiom: handOff
+// (scripts/lib/bespoke-marks.mjs).
 //
 // Rendered by $lib/components/Mark.svelte, which owns the one <svg> wrapper
 // (viewBox, stroke weight, aria) every mark on the site shares. Add or re-point
@@ -13,7 +15,7 @@ export type MarkNode = [tag: string, attrs: Record<string, string>];
 
 /** Every mark the site can render. The union is generated, so a typo in a
  *  `<Mark name="...">` is a type error rather than an empty box. */
-export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'forwardSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown';
+export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'forwardSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown' | 'handOff';
 
 /** Lucide's native grid. The wrapper's viewBox — not a knob. */
 export const MARK_VIEWBOX = 24;
@@ -76,5 +78,6 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	bench: [["path",{"d":"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"}],["path",{"d":"M16 3.128a4 4 0 0 1 0 7.744"}],["path",{"d":"M22 21v-2a4 4 0 0 0-3-3.87"}],["circle",{"cx":"9","cy":"7","r":"4"}]],
 	pin: [["path",{"d":"M12 17v5"}],["path",{"d":"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"}]],
 	thumbsUp: [["path",{"d":"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"}],["path",{"d":"M7 10v12"}]],
-	thumbsDown: [["path",{"d":"M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"}],["path",{"d":"M17 14V2"}]]
+	thumbsDown: [["path",{"d":"M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"}],["path",{"d":"M17 14V2"}]],
+	handOff: [["path",{"d":"M1.947,2L21.947,22"}],["path",{"d":"M18,11L18,6C18,4.903 17.097,4 16,4C14.902,4 14,4.903 14,6"}],["path",{"d":"M14,8.398L14,4C14,2.903 13.097,2 12,2C10.902,2 10,2.903 10,4L10,4.398"}],["path",{"d":"M6,6.053L6,14"}],["path",{"d":"M18,8C18,6.903 18.902,6 20,6C21.097,6 22,6.903 22,8L22,14C22,14.73 21.9,15.438 21.713,16.112"}],["path",{"d":"M19.619,19.672C18.17,21.108 16.181,22 14,22L12,22C9.2,22 7.5,21.14 6.01,19.66L2.41,16.06C2.078,15.693 1.894,15.215 1.894,14.72C1.894,13.623 2.797,12.72 3.894,12.72C4.391,12.72 4.872,12.905 5.24,13.24L7,15"}]]
 };

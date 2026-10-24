@@ -2151,12 +2151,31 @@
    with a one-stop linear-gradient, to dodge the color-mix-fed-by-a-color-mix
    WebKit crash. Replacing the ground outright with a second declared stop needs
    no arithmetic at all, so the hazard simply leaves. */
-.band-a .tab:not(.active):hover,
-.band-a .btn:hover:not(:disabled),
-.band--3up > .band-zone .btn:hover:not(:disabled),
-.btn.btn--glass:hover:not(:disabled) {
+/* ↻ 2026-10-24: only where a pointer can HOVER — a tap leaves :hover stuck
+   on the last plate touched, and a stuck ring reads as a state.
+   ⚠ UNDER THE SWITCH ONLY until the flip: each half is scoped with
+   `:where(:root[data-next])` / `:where(:root:not([data-next]))`, which add
+   NO specificity, so both forms keep exactly the weights they always had.
+   Step 5 deletes the `:not` halves and unwraps the rest. */
+:where(:root:not([data-next])) .band-a .tab:not(.active):hover,
+:where(:root:not([data-next])) .band-a .btn:hover:not(:disabled),
+:where(:root:not([data-next])) .band--3up > .band-zone .btn:hover:not(:disabled),
+:where(:root:not([data-next])) .btn.btn--glass:hover:not(:disabled) {
 	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--glass-ring);
+}
+@media (hover: hover) {
+	:where(:root[data-next]) .band-a .tab:not(.active):hover,
+	:where(:root[data-next]) .band-a .btn:hover:not(:disabled),
+	:where(:root[data-next]) .band--3up > .band-zone .btn:hover:not(:disabled),
+	:where(:root[data-next]) .btn.btn--glass:hover:not(:disabled) {
+		background: var(--surface-hover);
+		box-shadow: inset 0 0 0 1px var(--glass-ring);
+	}
+	/* An ON plate keeps its gold under the hand and gains the ink ring. */
+	:where(:root[data-next]) .band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
+		box-shadow: inset 0 0 0 1px var(--glass-ring);
+	}
 }
 /* ── SELECTED GLASS: THE HOVER DENSITY + A GOLD EDGE (⚓ NATE 2026-08-10) ───
    ONE idiom for every selected pane, and the ladder reads without a legend:
@@ -2185,9 +2204,25 @@
    mirror; deleting the property deleted the obligation. */
 .band-a .tab.active,
 .band-a .btn.is-active,
-.band--3up > .band-zone .btn.is-active {
+:where(:root:not([data-next])) .band--3up > .band-zone .btn.is-active {
 	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
+	color: var(--text);
+}
+/* ── ON IS A DIM GOLD FILL, NOT A RING (toolbar refinement, ⚓ Nate
+   2026-10-24, from the bars demo) ─────────────────────────────────────────
+   A RING means "you are here" (hover, focus); a FILL means "it is on". The
+   gold ring had to share its shape with the hover ring, and on a phone the
+   last plate you TAPPED keeps its hover, so "on" and "touched" read alike.
+   The fill is `.btn.is-active`'s own recipe (accent at 20% over the face),
+   restated here because the band's glass rule above outranks it.
+   ⚠ A PROPERTY, not a custom property: the nesting law polices declared
+   tokens (a mix of a mix INHERITED by a large tree), and this is consumed
+   where it is written, as `.btn.is-active` always has been.
+   Under the switch only (see the hover rule above). */
+:where(:root[data-next]) .band--3up > .band-zone .btn.is-active,
+:where(:root[data-next]) .band--3up > .band-zone .btn.is-active:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--text);
 }
 /* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
@@ -2584,9 +2619,9 @@ img {
    (~310 occurrences) and folded its survivors — the slider set, .panels and
    .chip--sm — in below.
 
-   Chip/button VOICE — "verbs shout, nouns don't": actions and instrument
-   settings are UPPERCASE + ls-wide (.btn, .chip--control); content chips that
-   name a character, element or capability are sentence case (.chip).
+   Chip/button VOICE — ↻ 2026-10-24: every control is SENTENCE CASE under
+   the switch. The old "verbs shout, nouns don't" (UPPERCASE + ls-wide on
+   .btn and .chip--control) holds with it off until the flip.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Focus: one ring for every interactive control. Most of the current
@@ -2624,8 +2659,6 @@ img {
 	font-family: var(--font-body);
 	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
-	letter-spacing: var(--ls-wide);
-	text-transform: uppercase;
 	white-space: nowrap;
 	cursor: pointer;
 	/* `opacity` too (motion sweep, 2026-10-18): `:disabled` and a local
@@ -2636,6 +2669,15 @@ img {
 		color var(--t-snap),
 		box-shadow var(--t-snap),
 		opacity var(--t-snap);
+}
+/* ↻ 2026-10-24 (⚓ Nate): SENTENCE CASE under the switch. "Verbs shout,
+   nouns don't" was an arbitrary rule, the nouns were uppercase only to match
+   it, and the caps cost a band its width. Until the flip the old voice holds
+   with the switch OFF: `:where` adds no weight, so this is `.btn` exactly
+   where it always was. Step 5 deletes it (and its .chip--control twin). */
+:where(:root:not([data-next])) .btn {
+	letter-spacing: var(--ls-wide);
+	text-transform: uppercase;
 }
 .btn:hover {
 	background: var(--btn-face-hover);
@@ -2810,6 +2852,9 @@ img {
 .chip--control {
 	padding: 0.35rem 0.75rem;
 	font-size: var(--fs-lg);
+}
+/* The switch-off voice (see the .btn twin above). */
+:where(:root:not([data-next])) .chip--control {
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
 }

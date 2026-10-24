@@ -1,9 +1,22 @@
 <!--
-  COMPARE, in the Planner's toolbar beside the Total (design §4.6, §5.3; build
-  plan §13, phase 4). ⚓ A pair, not a mode: two rotations, ONE showing, ⇅
-  flips between them (⌃` too), ⛔ never drawn over each other. Unpaired, it
-  offers the two ways in: Duplicate and compare (copy this rotation, keep the
-  original as the other side) and Compare with… (the Library, picking).
+  COMPARE, on the Planner's BENCH (design §4.6; build plan §13, phase 4).
+  ⚓ A pair, not a mode: two rotations, ONE showing, a flip between them (⌃`
+  too), ⛔ never drawn over each other. Unpaired, it offers the two ways in:
+  Duplicate and compare (copy this rotation, keep the original as the other
+  side) and Compare with… (the Library, picking).
+
+  ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): it left the toolbar for the
+  bench. A comparison is a second VERSION OF THIS TEAM — it is usually born on
+  the bench, when a constellation you do not own opens a Theorycraft copy — so
+  it fits neither bar's question, and the bench has the room to name BOTH
+  sides: a segmented pair, the side on screen chosen, rather than a button
+  that names only the side it would switch to. Two forms, one logic:
+  - `foot`  the desktop column's foot, above Save as team (Save as team comes
+            and goes; the pair under your pointer must not move when it does)
+  - `rail`  the end of the phone bench's rail, open or folded (ToolStack
+            `benchRail`); `compact` drops the unpaired plate's word
+  ⛔ Text, never profile pictures: beside a bench of character portraits a
+  picture reads as a character, and many profile pictures ARE characters.
 
   The sides are named by their PROFILES when the pair crosses one (a what-if:
   your profile and Theorycraft's white copy), else A and B in the order made.
@@ -16,6 +29,18 @@
 	import { menu } from '$lib/menuState.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { THEORYCRAFT_ID } from '$lib/storage/records';
+
+	let {
+		form,
+		compact = false,
+		paired = $bindable(false)
+	}: {
+		form: 'foot' | 'rail';
+		/** `rail` only: the folded bench, where the unpaired plate is its mark. */
+		compact?: boolean;
+		/** Out: a pair exists (the rail gives it the team status's room). */
+		paired?: boolean;
+	} = $props();
 
 	const pair = $derived(storageSession.plannerPair);
 	const nameOfProfile = (id: string) =>
@@ -35,9 +60,23 @@
 			: [self, other].sort((a, b) => a.createdAt - b.createdAt);
 		return ordered.map((s, i) => ({
 			...s,
-			label: cross ? nameOfProfile(s.profileId) : i === 0 ? 'A' : 'B',
+			// The phone's rail has no room for two profile names: a what-if's
+			// sides say what they ARE there (⚓ Nate 2026-10-24).
+			label: cross
+				? form === 'rail'
+					? s.profileId === THEORYCRAFT_ID
+						? 'What-if'
+						: 'Original'
+					: nameOfProfile(s.profileId)
+				: i === 0
+					? 'A'
+					: 'B',
 			guest: cross && s.profileId === THEORYCRAFT_ID
 		}));
+	});
+
+	$effect(() => {
+		paired = !!sides;
 	});
 
 	const flip = () => pair && void storageSession.open(pair.id);
@@ -54,105 +93,160 @@
 	}
 </script>
 
-{#if pair && sides}
-	<span class="cmp" role="group" aria-label="Comparison">
-		<button
-			class="cmp-flip"
-			type="button"
-			title={`Show ${pair.label} (⌃\`)`}
-			aria-label={`Show the other rotation: ${pair.label}`}
-			onclick={flip}
-		>
-			<Mark name="swap" size={13} />
-			{#each sides as s, i (i)}
-				<span class="cmp-side" class:is-on={s.current} class:is-guest={s.guest}>{s.label}</span>
+{#snippet endButton()}
+	<button
+		class="btn btn--sm btn--icon cmp-end"
+		type="button"
+		title="End the comparison (both rotations stay)"
+		aria-label="End the comparison"
+		onclick={() => void storageSession.endPair()}><Mark name="close" /></button
+	>
+{/snippet}
+
+{#snippet pairControl(withEnd: boolean)}
+	<div class="cmp-pair">
+		<div class="segment cmp-seg" role="group" aria-label="Comparing">
+			{#each sides ?? [] as s, i (i)}
+				<button
+					class="btn btn--sm"
+					class:is-active={s.current}
+					class:is-guest={s.guest}
+					type="button"
+					aria-pressed={s.current}
+					title={s.current ? `${s.label}: on screen` : `Switch to ${s.label} (⌃\`)`}
+					onclick={() => !s.current && flip()}><span class="cmp-label">{s.label}</span></button
+				>
 			{/each}
-		</button>
-		<button
-			class="cmp-end"
-			type="button"
-			title="End the comparison (both rotations stay)"
-			aria-label="End the comparison"
-			onclick={() => void storageSession.endPair()}><Mark name="close" size={12} /></button
+		</div>
+		{#if withEnd}{@render endButton()}{/if}
+	</div>
+{/snippet}
+
+{#snippet ways(done: () => void)}
+	<button
+		class="band-menu-item"
+		role="menuitem"
+		disabled={blank}
+		onclick={() => {
+			done();
+			void storageSession.duplicateAndCompare();
+		}}>Duplicate and compare</button
+	>
+	<button
+		class="band-menu-item"
+		role="menuitem"
+		onclick={() => {
+			done();
+			pick();
+		}}>Compare with…</button
+	>
+{/snippet}
+
+{#if form === 'rail'}
+	{#if sides}
+		<!-- No room for the kicker: the swap mark says it, as on the plate it
+		     replaces. -->
+		<div class="cmp-rail" title="Comparing">
+			<!-- Folded, the faces need the room, and the pair with its ✕ reads
+			     as one without it. -->
+			{#if !compact}<span class="cmp-rail-mark" aria-hidden="true"><Mark name="swap" /></span>{/if}
+			{@render pairControl(true)}
+		</div>
+	{:else if storageSession.active}
+		<BandMenu
+			mark="swap"
+			label={compact ? undefined : 'Compare'}
+			ariaLabel="Compare"
+			size="sm"
+			{compact}
+			align="end"
 		>
-	</span>
+			{#snippet items(done)}{@render ways(done)}{/snippet}
+		</BandMenu>
+	{/if}
+{:else if sides}
+	<!-- The foot is narrow: ✕ heads the block so the two names get its width. -->
+	<div class="cmp-foot">
+		<div class="cmp-head">
+			<span class="cmp-kicker">Comparing</span>
+			{@render endButton()}
+		</div>
+		{@render pairControl(false)}
+	</div>
 {:else if storageSession.active}
-	<BandMenu mark="swap" label="Compare" ariaLabel="Compare" size="sm" align="end">
-		{#snippet items(close)}
-			<button
-				class="band-menu-item"
-				role="menuitem"
-				disabled={blank}
-				onclick={() => {
-					close();
-					void storageSession.duplicateAndCompare();
-				}}>Duplicate and compare</button
-			>
-			<button
-				class="band-menu-item"
-				role="menuitem"
-				onclick={() => {
-					close();
-					pick();
-				}}>Compare with…</button
-			>
-		{/snippet}
-	</BandMenu>
+	<span class="cmp-start">
+		<BandMenu mark="swap" label="Compare" ariaLabel="Compare" size="sm" align="start">
+			{#snippet items(done)}{@render ways(done)}{/snippet}
+		</BandMenu>
+	</span>
 {/if}
 
 <style>
-	.cmp {
-		display: inline-flex;
-		align-items: center;
-		gap: 2px;
+	.cmp-foot {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		width: 100%;
 	}
-	.cmp-flip {
-		display: inline-flex;
+	.cmp-head {
+		display: flex;
 		align-items: center;
-		gap: 0.4rem;
-		height: var(--ui-ctl-h, 28px);
-		padding: 0 0.6rem;
-		border: none;
-		border-radius: var(--r-sm);
+		justify-content: space-between;
+	}
+	.cmp-head .cmp-end {
 		background: none;
-		color: var(--text);
-		font: inherit;
-		font-size: var(--fs-sm);
-		cursor: pointer;
-		transition: background var(--t-snap);
 	}
-	.cmp-flip:hover {
-		background: var(--surface-hover);
+	.cmp-seg > :global(.btn) {
+		padding-inline: 0.35rem;
 	}
-	.cmp-side {
-		padding: 0.05rem 0.4rem;
-		border-radius: var(--r-sm);
-		color: var(--muted);
+	.cmp-kicker {
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
-		white-space: nowrap;
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--muted);
 	}
-	.cmp-side.is-on {
-		color: var(--text);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
+	.cmp-pair {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		min-width: 0;
 	}
-	/* ⚓ The guest's side wears Theorycraft's white (§4.6), with its word. */
-	.cmp-side.is-guest.is-on {
+	.cmp-seg {
+		display: flex;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.cmp-seg > :global(.btn) {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.cmp-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	/* ⚓ The guest's side wears Theorycraft's white (§4.6). */
+	.cmp-seg > :global(.btn.is-guest.is-active) {
 		box-shadow: inset 0 0 0 1.5px var(--profile-theorycraft);
 	}
-	.cmp-end {
-		display: grid;
-		place-items: center;
-		width: 1.6rem;
-		height: 1.6rem;
-		padding: 0;
-		border: none;
-		border-radius: var(--r-sm);
-		background: none;
-		color: var(--muted);
-		cursor: pointer;
+	.cmp-start,
+	.cmp-start > :global(.band-menu-trigger) {
+		display: flex;
+		width: 100%;
 	}
-	.cmp-end:hover {
-		background: var(--surface-hover);
-		color: var(--text);
+	/* The phone rail's end: the pair takes what the rail leaves. */
+	.cmp-rail {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.cmp-rail-mark {
+		display: inline-flex;
+		color: var(--muted);
+	}
+	.cmp-rail .cmp-pair {
+		flex: 1 1 auto;
 	}
 </style>

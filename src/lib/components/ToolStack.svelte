@@ -46,6 +46,8 @@
 	let {
 		benched = false,
 		benchHidden = false,
+		benchCollapsed = false,
+		benchRail,
 		fill = false,
 		bandALeft,
 		bandARight,
@@ -74,6 +76,19 @@
 		 * ribbon's visibility reads.
 		 */
 		benchHidden?: boolean;
+		/**
+		 * The bench row is COLLAPSED (toolbar refinement, 2026-10-24): under the
+		 * switch the row folds away and only its RAIL stays. Row form only, like
+		 * `benchHidden`, and the caller passes one or the other.
+		 */
+		benchCollapsed?: boolean;
+		/**
+		 * THE BENCH'S RAIL (row form only, ⚓ Nate 2026-10-24): one control-high
+		 * strip ABOVE the bench row, there whether the row is open or folded, so
+		 * its toggle never moves. The phone's form of the desktop bench foot: the
+		 * comparison and the team's status. Its height joins --stack-to-surface.
+		 */
+		benchRail?: Snippet;
 		/** The surface flexes to fill the stack's height (viewport-fit tools). */
 		fill?: boolean;
 		bandALeft?: Snippet;
@@ -123,6 +138,8 @@
 	class:tool-stack--fill={fill}
 	class:tool-stack--benched={benched}
 	class:tool-stack--bench-hidden={benched && benchHidden}
+	class:tool-stack--bench-collapsed={benched && benchCollapsed}
+	class:tool-stack--railed={benched && !!benchRail}
 	style:--band-a-h="{BAND_A_H}px"
 	style:--band-b-h={noBandA ? 'var(--ui-ctl-h)' : `${BAND_B_H}px`}
 	style:--band-ctrl-h={noBandA ? 'var(--ui-ctl-h)' : `${BAND_CTRL_H}px`}
@@ -150,6 +167,9 @@
 		     now — a column beside the stack, or a row above it below BP.toolMin
 		     — and an inline style cannot be overridden by the media query that
 		     picks the second one. -->
+		<!-- The rail comes first in source so it stands ABOVE the row it heads;
+		     both share the row form's `order`. -->
+		{#if benchRail}<div class="tool-stack-rail">{@render benchRail()}</div>{/if}
 		<div class="tool-stack-dock" data-bench-anchor></div>
 	{/if}
 
@@ -264,6 +284,10 @@
 
 	/* Measured by the layout, never painted. The COLUMN form: the ribbon's
 	   width, spanning the stack's height offset by the overhang. */
+	/* Row form only (the media query below). */
+	.tool-stack-rail {
+		display: none;
+	}
 	.tool-stack-dock {
 		position: absolute;
 		left: 0;
@@ -326,6 +350,30 @@
 		.tool-stack--benched .tool-surface {
 			order: 2;
 		}
+		/* The rail, one control high, JOINED to the row under it (⚓ Nate
+		   2026-10-24: one object, the bench's frame keeping the cards apart) —
+		   the negative margin takes back the flex gap between them, and then
+		   TUCKS the row up under the rail's own slack: its small controls sit
+		   ~2.7px off its bottom edge, the ribbon's ground (above the page) covers
+		   that, and what is left between the controls and the frame is the
+		   ribbon's own edge (RIBBON_EDGE) — "just a sliver" (⚓ Nate). */
+		.tool-stack--railed {
+			--rail-tuck: 2px;
+			--stack-to-surface: calc(
+				var(--band-a-reserve) + var(--band-b-h) + 2 * var(--band-gap) + var(--ui-ctl-h) +
+					var(--bench-row-h) - var(--rail-tuck)
+			);
+		}
+		.tool-stack--railed .tool-stack-rail {
+			display: block;
+			order: 1;
+			flex-shrink: 0;
+			height: var(--ui-ctl-h);
+			margin-bottom: calc(-1 * var(--band-gap) - var(--rail-tuck));
+		}
+		.tool-stack--bench-collapsed .tool-stack-rail {
+			margin-bottom: 0;
+		}
 		/* ↻ 2026-10-15: the row HIDDEN (band B's Bench plate). ⚠ The RESERVE
 		   goes, not only the paint: display:none drops the dock and its flex
 		   gap, and --stack-to-surface loses the row and one gap, so the
@@ -335,6 +383,16 @@
 			--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-gap));
 		}
 		.tool-stack--bench-hidden .tool-stack-dock {
+			display: none;
+		}
+		/* ↻ 2026-10-24: COLLAPSED, the row goes the way a hidden one does —
+		   reserve and all — and the rail above it stays. */
+		.tool-stack--bench-collapsed {
+			--stack-to-surface: calc(
+				var(--band-a-reserve) + var(--band-b-h) + 2 * var(--band-gap) + var(--ui-ctl-h)
+			);
+		}
+		.tool-stack--bench-collapsed .tool-stack-dock {
 			display: none;
 		}
 		/* ⚓ Nate 2026-10-20: the Team Builder (the one `fill` tool) snugs its
@@ -497,6 +555,17 @@
 		/* The selected plate stands PROUD of the rail (Genshin's own tab strip
 		   does this — see the Team Builder's nav), so nothing here may clip. */
 		overflow: visible;
+	}
+	/* ↻ 2026-10-24 (toolbar refinement, ⚓ Nate), under the switch: the rail
+	   RETIRES — a readout stands on the night, only a control gets glass (the
+	   bars demo's centre). The zone stays as layout: it still takes the width
+	   the flanks leave and centres what it holds. Its padding went with the
+	   ground: it held controls off a rail's ends, and there are none.
+	   `:where` adds no weight, so this outranks the rule above by order alone;
+	   step 5 folds it in. */
+	:global(:where(:root[data-next])) .band--3up > .band-zone--center {
+		padding: 0;
+		background: none;
 	}
 
 	/* ── BAND B GETS CUT BY THE TOOL'S OWN GAP (⚓ NATE 2026-08-13) ─────────

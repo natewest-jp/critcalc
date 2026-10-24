@@ -57,6 +57,7 @@
 		RIBBON_CHROME,
 		ribbonHead,
 		RIBBON_TAIL_H,
+		RIBBON_TAIL_LEAD,
 		RIBBON_W,
 		RIBBON_RADIUS,
 		BENCH_ROW_H,
@@ -78,6 +79,7 @@
 	import { nextLayout } from '$lib/nextLayout';
 	import { plannerView } from '$lib/plannerView.svelte';
 	import type SaveTeamButtonT from './SaveTeamButton.svelte';
+	import type CompareControlT from './CompareControl.svelte';
 
 	let {
 		mode
@@ -123,18 +125,34 @@
 	// too (`narrowForm()`, breakpoints.ts § THE HEIGHT AXIS) — the column costs
 	// height a landscape phone does not have. ToolStack's @media says the same.
 	const row = $derived(narrowForm());
+	/** Under the switch the planner's row wears a RAIL on its top edge (ToolStack
+	 *  `benchRail`): one object, so the row's top corners are the rail's. */
+	const railed = $derived(row && $nextLayout && mode === 'rp');
 
 	/** Save as team (phase 3, design §3) rides the ribbon's head under the
 	 *  switch; loaded on demand, since it brings the storage session. */
 	let SaveTeamC = $state<typeof SaveTeamButtonT | null>(null);
+	let CompareC = $state<typeof CompareControlT | null>(null);
 	$effect(() => {
 		if ($nextLayout && mode === 'rp' && !row && !SaveTeamC)
 			void import('./SaveTeamButton.svelte').then((m) => (SaveTeamC = m.default));
+		if ($nextLayout && mode === 'rp' && !row && !CompareC)
+			void import('./CompareControl.svelte').then((m) => (CompareC = m.default));
 	});
+
+	/** The foot's content height, measured; the box grows by whatever it needs
+	 *  past the tail's straight run (⚓ Nate: "it can push the foot down"). The
+	 *  foot is absolutely placed, so its height never depends on the box. */
+	let footH = $state(0);
+	const footGrow = $derived(
+		$nextLayout && mode === 'rp' && !row ? Math.max(0, footH - RIBBON_TAIL_LEAD) : 0
+	);
 
 	const boxW = $derived(row ? benchBand.dockW : RIBBON_W);
 	const boxH = $derived(
-		row ? BENCH_ROW_H : RIBBON_CHROME + head + heights.reduce((a, b) => a + b, 0) + RIBBON_TAIL_H
+		row
+			? BENCH_ROW_H
+			: RIBBON_CHROME + head + heights.reduce((a, b) => a + b, 0) + footGrow + RIBBON_TAIL_H
 	);
 
 	// The row's ONE form is the UPRIGHT card (portrait round, ⚓ Nate
@@ -256,8 +274,13 @@
 		? `${RIBBON_CHROME}px`
 		: `${RIBBON_CHROME + head}px ${RIBBON_CHROME}px ${RIBBON_TAIL_H}px`}
 	style:clip-path={row ? undefined : `path('${ribbonClipPath(boxH)}')`}
-	style:border-radius={row ? `${RIBBON_RADIUS}px` : undefined}
+	style:border-radius={row
+		? railed
+			? `0 0 ${RIBBON_RADIUS}px ${RIBBON_RADIUS}px`
+			: `${RIBBON_RADIUS}px`
+		: undefined}
 	style:--bb-pad="{RIBBON_PAD}px"
+	style:--bb-chrome="{RIBBON_CHROME}px"
 	style:--bb-card-gap="{BENCH_ROW_CARD_GAP}px"
 	style:--bb-card-w="{rowCardWidth(rowDisc)}px"
 >
@@ -292,10 +315,14 @@
 			<path d={ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)} fill-rule="evenodd" />
 		{/if}
 	</svg>
-	{#if SaveTeamC && $nextLayout && mode === 'rp' && !row}
+	{#if SaveTeamC && CompareC && $nextLayout && mode === 'rp' && !row}
 		<!-- Under the last card, where the tail begins (⚓ Nate 2026-10-23: the
-		     bottom, not the head): the team's own verb (§3). -->
-		<div class="bb-foot" style:top="{boxH - RIBBON_TAIL_H}px">
+		     bottom, not the head): the team's own verbs (§3). ↻ 2026-10-24
+		     (⚓ Nate): Compare joins them, FIRST — Save as team comes and goes
+		     (an empty slot hides it, a guest profile has none), and the pair
+		     under your pointer must not move when it does. The foot GROWS to hold them (`footGrow`). -->
+		<div class="bb-foot" style:top="{boxH - RIBBON_TAIL_H - footGrow}px" bind:clientHeight={footH}>
+			<CompareC form="foot" />
 			<SaveTeamC />
 		</div>
 	{/if}
@@ -377,10 +404,13 @@
 <style>
 	.bb-foot {
 		position: absolute;
-		left: var(--bb-pad);
-		right: var(--bb-pad);
+		/* Inside the frame ring, with the cards' own breathing room. */
+		left: calc(var(--bb-chrome) + 4px);
+		right: calc(var(--bb-chrome) + 4px);
 		display: flex;
-		justify-content: center;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
 		padding-top: 4px;
 		pointer-events: none;
 	}

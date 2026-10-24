@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as lucide from 'lucide';
 import { MARK_NODES, MARK_VIEWBOX, type MarkName } from './marks.generated';
+import { BESPOKE_MARKS } from '../../scripts/lib/bespoke-marks.mjs';
 
 /** The generator's own map, read back out of it so there is ONE copy of the
  *  semantic-name → icon-name pairing in the repo. Parsing beats duplicating:
@@ -53,14 +54,18 @@ describe('generated marks', () => {
 	});
 
 	it('matches a fresh extraction (no drift)', () => {
-		const fresh = Object.fromEntries(
-			Object.entries(MARKS).map(([name, icon]) => [name, icons[icon]])
-		);
+		// Lucide's marks re-extracted, plus the bespoke record verbatim.
+		const fresh = {
+			...Object.fromEntries(Object.entries(MARKS).map(([name, icon]) => [name, icons[icon]])),
+			...BESPOKE_MARKS
+		};
 		expect(MARK_NODES).toEqual(fresh);
 	});
 
 	it('covers exactly the generator map — no orphans either way', () => {
-		expect(Object.keys(MARK_NODES).sort()).toEqual(Object.keys(MARKS).sort());
+		expect(Object.keys(MARK_NODES).sort()).toEqual(
+			[...Object.keys(MARKS), ...Object.keys(BESPOKE_MARKS)].sort()
+		);
 	});
 
 	it('renders on Lucide’s own grid', () => {

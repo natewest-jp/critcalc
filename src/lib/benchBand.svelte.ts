@@ -546,6 +546,9 @@ const TAIL_ART_H = 76;
  * curves leave y = 0 with VERTICAL tangents.
  */
 const TAIL_LEAD = RIBBON_TAIL_H - TAIL_ART_H;
+/** Exported for the foot (2026-10-24): what the foot may fill before the box
+ *  has to grow — the straight run above the taper. */
+export const RIBBON_TAIL_LEAD = TAIL_LEAD;
 
 /**
  * ⚓ NATE'S ARTWORK, TRANSCRIBED — `assets-src/tools/bench-tail.svg` (2026-10-14,

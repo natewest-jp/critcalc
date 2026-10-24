@@ -1042,18 +1042,28 @@ class StorageSession {
 		const guest = !!doc && !!this.profile && doc.profileId !== this.profile.id;
 		this.plannerGuest = guest;
 		rotationTabs.rosterless = guest;
-		this.plannerPair = null;
 		const pairId = doc?.pairId;
+		const pairOf = (p: DocumentRecord | undefined) =>
+			p && !p.deleted && p.pairId === doc!.id
+				? {
+						id: p.id,
+						profileId: p.profileId,
+						createdAt: p.createdAt,
+						self: { profileId: doc!.profileId, createdAt: doc!.createdAt },
+						label:
+							p.name ?? (p.type === 'rotation' ? rotationLabel(p.body.slots) : lineupLabel(p.body))
+					}
+				: null;
+		// ⚠ Settled in the SAME tick when this session already knows the
+		// partner (a flip always does: it is the document just left). Clearing
+		// it and waiting for the store showed the unpaired form for a frame or
+		// two on every flip, and the bench's foot shrank and regrew under it.
+		this.plannerPair = pairId ? pairOf(this.#records.get(pairId)) : null;
 		if (!pairId || !this.#db) return;
+		// The store has the last word: another tab may have ended or renamed it.
 		void get(this.#db, 'documents', pairId).then((p) => {
-			if (!p || p.deleted || p.pairId !== doc!.id || rotationTabs.activeTabId !== doc!.id) return;
-			this.plannerPair = {
-				id: p.id,
-				profileId: p.profileId,
-				createdAt: p.createdAt,
-				self: { profileId: doc!.profileId, createdAt: doc!.createdAt },
-				label: p.name ?? (p.type === 'rotation' ? rotationLabel(p.body.slots) : lineupLabel(p.body))
-			};
+			if (rotationTabs.activeTabId !== doc!.id) return;
+			this.plannerPair = pairOf(p);
 		});
 	}
 

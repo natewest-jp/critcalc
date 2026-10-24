@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { nextLayout } from '$lib/nextLayout';
-	import { openSettings } from '$lib/components/chromeModal.svelte';
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import { below, benchRowHidden, narrowForm } from '$lib/media.svelte';
@@ -26,7 +25,9 @@
 	import { resolve } from '$app/paths';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { rotationTabs as rt, slotsFromNotation } from '$lib/rotationTabs.svelte';
+	import SidePortrait from '$lib/components/SidePortrait.svelte';
 	import type CompareControlT from '$lib/components/CompareControl.svelte';
+	import type SaveTeamButtonT from '$lib/components/SaveTeamButton.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db, rotationTabStrip } from '$lib/documentBar.svelte';
 	import { constellations, ownership, siteSettings } from '$lib/stores';
@@ -275,12 +276,21 @@
 	 *  panel must be told which entries the reader actually has. */
 	// ↻ Phase 4: one resolver (`rt.levelOf`, design §2.4) — under the switch an
 	// owned character reads the roster, and a guest reads only its own.
-	/** Compare (phase 4), loaded under the switch only: it brings the session. */
+	/** Compare (phase 4) and Save as team, the phone bench rail's two jobs,
+	 *  loaded under the switch only: they bring the session. */
 	let CompareC = $state<typeof CompareControlT | null>(null);
+	let SaveTeamC = $state<typeof SaveTeamButtonT | null>(null);
 	onMount(() => {
-		if ($nextLayout)
-			void import('$lib/components/CompareControl.svelte').then((m) => (CompareC = m.default));
+		if (!$nextLayout) return;
+		void import('$lib/components/CompareControl.svelte').then((m) => (CompareC = m.default));
+		void import('$lib/components/SaveTeamButton.svelte').then((m) => (SaveTeamC = m.default));
 	});
+	/** 🎛️ The folded rail's faces: the side portrait's DISC, px. */
+	const RAIL_FACE = 20;
+	const benchFolded = $derived(benchRowHidden($siteSettings.showBenchRow));
+	/** A comparison exists (reported by CompareControl, which owns the pair):
+	 *  the rail's team status gives its names the room. */
+	let comparing = $state(false);
 
 	let effectiveCon = $derived(
 		rt.levels($constellations, $ownership, [
@@ -391,6 +401,50 @@
 	}
 </script>
 
+<!-- ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): THE PHONE BENCH'S RAIL,
+	     above the row so its toggle never moves — the bench folds away
+	     beneath it and unfolds from it. It carries what the desk's bench foot
+	     does (the comparison, the team's status), and folded, the team's
+	     faces too: stacked, the leftmost at the bottom, so four fit in the
+	     width of two. -->
+{#snippet phoneRail()}
+	<div class="rp-rail ctx-dark" class:is-folded={benchFolded}>
+		<button
+			class="btn btn--sm btn--icon rp-rail-toggle"
+			class:is-folded={benchFolded}
+			type="button"
+			aria-expanded={!benchFolded}
+			aria-label={benchFolded ? 'Show the bench' : 'Fold the bench'}
+			title={benchFolded ? 'Show the bench' : 'Fold the bench'}
+			onclick={() => siteSettings.setShowBenchRow(benchFolded)}
+			><Mark name="chevron" size={12} /></button
+		>
+		{#if benchFolded}
+			<button
+				class="rp-rail-team"
+				type="button"
+				tabindex="-1"
+				aria-hidden="true"
+				onclick={() => siteSettings.setShowBenchRow(true)}
+			>
+				{#each rt.seats as id, i (i)}
+					<span class="rp-rail-face" style:z-index={i} style:--rail-face="{RAIL_FACE}px">
+						<SidePortrait id={id && id !== 'blank' ? id : null} size={RAIL_FACE} />
+					</span>
+				{/each}
+			</button>
+			{#if SaveTeamC}<SaveTeamC compact />{/if}
+		{:else if comparing}
+			{#if SaveTeamC}<SaveTeamC compact />{/if}
+		{:else}
+			<span class="rp-rail-team-status"
+				>{#if SaveTeamC}<SaveTeamC />{/if}</span
+			>
+		{/if}
+		{#if CompareC}<CompareC form="rail" compact={benchFolded} bind:paired={comparing} />{/if}
+	</div>
+{/snippet}
+
 <svelte:window onkeydown={onTransportKey} onpointerdowncapture={onPointerFocus} />
 
 <section class="rotation-page">
@@ -399,7 +453,13 @@
 	     band A's left zone now, and the view controls that rode the ruler's
 	     right end are band B. TeamBonusesBlock stays OUTSIDE the stack, at the
 	     content margin below the strip's bottom end. -->
-	<ToolStack benched noBandA={$nextLayout} benchHidden={benchRowHidden($siteSettings.showBenchRow)}>
+	<ToolStack
+		benched
+		noBandA={$nextLayout}
+		benchHidden={!$nextLayout && benchRowHidden($siteSettings.showBenchRow)}
+		benchCollapsed={$nextLayout && benchFolded}
+		benchRail={$nextLayout ? phoneRail : undefined}
+	>
 		{#snippet bandALeft()}
 			<DocumentTabs model={rotationTabStrip} />
 		{/snippet}
@@ -436,16 +496,20 @@
 				     again from the top with the count-in, which is the only way to
 				     hear the beats again after a pause. Inert at the start, the
 				     zoom steppers' rule at their limits. -->
-				<button
-					class="btn btn--sm btn--icon rp-rewind"
-					type="button"
-					aria-label="Back to the start"
-					title="Back to the start (Home)"
-					disabled={!playback.canRewind}
-					onclick={() => playback.rewind()}
-				>
-					<Mark name="rewind" size={13} filled />
-				</button>
+				<!-- ↻ 2026-10-24: below BP.compact Rewind folds into ⋯ (Home still
+				     does it), so the row keeps Play. -->
+				{#if !(bandFolded && $nextLayout)}
+					<button
+						class="btn btn--sm btn--icon rp-rewind"
+						type="button"
+						aria-label="Back to the start"
+						title="Back to the start (Home)"
+						disabled={!playback.canRewind}
+						onclick={() => playback.rewind()}
+					>
+						<Mark name="rewind" size={13} filled />
+					</button>
+				{/if}
 				<button
 					class="btn btn--sm btn--icon rp-play"
 					type="button"
@@ -458,6 +522,11 @@
 					<!-- FILLED, as the Gauge Explorer's: an outlined triangle reads as
 					     "insert" before it reads as "play". -->
 					<Mark name={playback.playing ? 'pause' : 'play'} size={13} filled />
+					<!-- Folded, the speed plate is in ⋯: a slowed chart still says so
+					     on the plate that plays it. -->
+					{#if bandFolded && $nextLayout && playback.rate !== 1}<span class="rp-play-rate"
+							>{rateLabel(playback.rate)}</span
+						>{/if}
 				</button>
 				{#if !bandFolded}
 					<!-- SPEED (2026-09-30): full, three-quarter and half, cycled — for
@@ -588,7 +657,9 @@
 		{#snippet bandBCenter()}
 			<!-- What the chart is showing: how long the rotation runs. A readout,
 			     not a control — it leads band B the way the tabs lead band A. -->
-			<!-- One group, so the rail's spacing keeps the tag beside the Total. -->
+			<!-- ↻ 2026-10-24 (toolbar refinement): Compare left for the bench
+			     (CompareControl's header says why); the centre is the Total and
+			     the hand that lengthens it. -->
 			<span class="rp-total-group">
 				{#if pv.totalDuration > 0}
 					<span class="rp-total">
@@ -597,19 +668,26 @@
 					</span>
 				{/if}
 				<!-- ⚓ Phase 2e (§5.3, §12 Q20; Nate 2026-10-22): Human timing left the
-			     toolbar for Settings. While it is ON a tag stands beside the Total,
-			     which it lengthens, and opens its Settings; off, nothing. -->
-				{#if $nextLayout && $siteSettings.humanTiming}
+			     toolbar for Settings. ↻ 2026-10-24 (⚓ Nate): the hand is back as a
+			     TOGGLE beside the Total it lengthens — what the timing IS is set in
+			     Settings; whether it applies is something an advanced player flips
+			     to see the frame-perfect length. Always shown, so off has a way
+			     back on. Gold when on. -->
+				{#if $nextLayout}
 					<button
 						class="rp-human-tag"
+						class:is-on={$siteSettings.humanTiming}
 						type="button"
-						title="The Total includes Human timing. Change it in Settings."
-						onclick={openSettings}><Mark name="hand" size={12} /> Human timing</button
+						aria-pressed={$siteSettings.humanTiming}
+						aria-label="Human timing"
+						title={$siteSettings.humanTiming
+							? 'Human timing is on: the Total includes the pauses a person takes. Turn it off for frame-perfect timing.'
+							: 'Frame-perfect timing. Turn Human timing on to include the pauses a person takes (set it up in Settings).'}
+						onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
+						><Mark name={$siteSettings.humanTiming ? 'hand' : 'handOff'} size={14} /></button
 					>
 				{/if}
 			</span>
-			<!-- ⚓ Phase 4 (§4.6, §5.3): Compare sits in the middle, beside the Total. -->
-			{#if CompareC}<span class="rp-compare"><CompareC /></span>{/if}
 		{/snippet}
 
 		{#snippet bandBRight()}
@@ -678,7 +756,9 @@
 			     ignored (`benchRowHidden`). Not rendered before hydration either:
 			     the flags attach in onMount, so first paint is the default. -->
 			<div class="rp-layers">
-				{#if narrowForm()}
+				<!-- ↻ 2026-10-24: under the switch the bench row collapses from its
+				     own handle (BenchBand), so the plate retires there. -->
+				{#if narrowForm() && !$nextLayout}
 					<button
 						class="btn btn--sm"
 						class:is-active={$siteSettings.showBenchRow}
@@ -723,8 +803,28 @@
 			{#if bandFolded}
 				<!-- THE FOLD (see `bandFolded`): the layers stay, and one ⋯ holds the
 				     two simulation switches and the two panels. -->
-				<BandMenu compact mark="more" ariaLabel="Playback, timing and panels">
+				<BandMenu
+					compact
+					mark="more"
+					ariaLabel="Playback, timing and panels"
+					dot={$nextLayout && (playback.rate !== 1 || pv.repeat || pv.showLog || pv.showInspector)}
+				>
 					{#snippet items(close)}
+						{#if $nextLayout}
+							<button
+								class="band-menu-item"
+								role="menuitem"
+								disabled={!playback.canRewind}
+								onclick={() => {
+									playback.rewind();
+									close();
+								}}
+							>
+								<Mark name="rewind" filled />
+								<span class="rp-fold-label">Back to the start</span>
+							</button>
+							<div class="band-menu-rule"></div>
+						{/if}
 						<div class="rp-fold-head" aria-hidden="true">Speed</div>
 						{#each PLAYBACK_RATES as rate (rate)}
 							<button
@@ -786,6 +886,9 @@
 						>
 							<Mark name="log" />
 							<span class="rp-fold-label">Log</span>
+							<span class="rp-fold-check"
+								>{#if pv.showLog}<Mark name="check" size={12} />{/if}</span
+							>
 						</button>
 						{#if $nextLayout}
 							<button
@@ -798,6 +901,9 @@
 							>
 								<Mark name="search" />
 								<span class="rp-fold-label">Inspector</span>
+								<span class="rp-fold-check"
+									>{#if pv.showInspector}<Mark name="check" size={12} />{/if}</span
+								>
 							</button>
 						{:else}
 							<button
@@ -1075,13 +1181,77 @@
 	   The controls are the shared .btn/.slider — only the pieces the global
 	   classes can't know are local. */
 
+	/* The phone bench's rail: one control high, on the bench's own slate and
+	   JOINED to it (⚓ Nate 2026-10-24) — the ribbon's top corners are the
+	   rail's (BenchBand `railed`), and the bench's frame is what keeps the
+	   cards apart from what the rail holds. Folded, it is the whole object. */
+	.rp-rail {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		height: 100%;
+		padding: 0 4px;
+		border-radius: 3px 3px 0 0; /* RIBBON_RADIUS */
+		background: var(--surface);
+		color: var(--muted);
+	}
+	.rp-rail.is-folded {
+		border-radius: 3px; /* RIBBON_RADIUS */
+	}
+	.rp-rail-toggle {
+		flex-shrink: 0;
+		background: none;
+	}
+	/* The chevron points the way the bench will go: up to fold, down to open. */
+	.rp-rail-toggle:not(.is-folded) :global(svg) {
+		transform: rotate(180deg);
+	}
+	/* Folded, pressing the faces opens the bench too (the toggle is the
+	   button that says so); they push the rest of the rail to its end. */
+	.rp-rail-team {
+		display: flex;
+		align-items: center;
+		flex: 0 0 auto;
+		margin-right: auto;
+		min-width: 0;
+		height: 100%;
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+	}
+	/* The bench's own side portraits, small: the disc, the art standing in
+	   front of it. Stacked — each face tucked BEHIND the next, the leftmost
+	   at the bottom (⚓ Nate) — so four fit in the width of two and a half. */
+	.rp-rail-face {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		height: 100%;
+		/* The DISC centred on the rail; the hair rises above it. */
+		padding-bottom: calc((var(--ui-ctl-h) - var(--rail-face)) / 2);
+	}
+	/* ⚓ Nate 2026-10-24: a hairline ring at this size (the bench's is 2px).
+	   Two classes deep, so it outranks SidePortrait's own rule outright. */
+	.rp-rail-team .rp-rail-face :global(.spt-disc) {
+		border: 1px solid var(--line-strong);
+	}
+	.rp-rail-face:not(:first-child) {
+		margin-left: -7px;
+	}
+	.rp-rail-team-status {
+		display: flex;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.rp-play-rate {
+		margin-left: 2px;
+		font-size: var(--fs-xs);
+		font-variant-numeric: tabular-nums;
+	}
 	.rp-total-group {
 		display: inline-flex;
 		align-items: center;
-	}
-	.rp-compare {
-		display: inline-flex;
-		margin-left: auto;
 	}
 	/* The Human timing tag (phase 2e): a quiet word on the rail beside the
 	   Total it lengthens, not a plate. */
@@ -1089,20 +1259,30 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
-		margin-left: 0.6rem;
-		padding: 0 0.3rem;
+		margin-left: 0.35rem;
+		padding: 0.2rem 0.3rem;
 		border: none;
 		border-radius: var(--r-sm);
 		background: none;
-		color: var(--muted);
+		/* On the night: --muted is illegal out here (CLAUDE.md, ctx-night).
+		   Off is the chrome ink dimmed OPAQUELY (⚓ Nate 2026-10-24): at alpha
+		   the mark's separate strokes overlap and the crossings read darker.
+		   Mixed against --frame-bg, the unpainted ground's reference; on is
+		   the gold. */
+		color: color-mix(in srgb, var(--chrome) 50%, var(--frame-bg));
 		font: inherit;
 		font-size: var(--ui-ctl-fs);
 		white-space: nowrap;
 		cursor: pointer;
 		transition: color var(--t-snap);
 	}
-	.rp-human-tag:hover {
-		color: var(--text);
+	.rp-human-tag.is-on {
+		color: var(--accent);
+	}
+	@media (hover: hover) {
+		.rp-human-tag:hover {
+			color: var(--chrome);
+		}
 	}
 
 	/* Total-length readout: the LED-style key/value pair that led the old view
@@ -1117,7 +1297,6 @@
 		display: inline-flex;
 		align-items: baseline;
 		gap: 0.45rem;
-		margin-right: auto;
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;

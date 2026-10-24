@@ -34,6 +34,7 @@
 		glass = false,
 		face,
 		count = 0,
+		dot = false,
 		items
 	}: {
 		/** Button text. Omit for an icon-only trigger (pass ariaLabel instead). */
@@ -66,6 +67,10 @@
 		 *  host that folds the WORD (.band-menu-word) keeps the number. 0 draws
 		 *  nothing. */
 		count?: number;
+		/** Something inside the menu is ON (toolbar refinement, 2026-10-24): a
+		 *  gold dot on the trigger, so a setting that changes what the chart
+		 *  says still shows that it has, once it folds into an overflow. */
+		dot?: boolean;
 		/** Menu contents. Called with a `close` the items invoke when chosen. */
 		items: Snippet<[() => void]>;
 	} = $props();
@@ -158,6 +163,7 @@
 				><span class="band-menu-count">{count}</span>{/if}</span
 		>{/if}
 	{#if !compact}<Mark name="chevron" size={11} />{/if}
+	{#if dot}<span class="band-menu-dot" aria-hidden="true"></span>{/if}
 </button>
 
 <!-- The SURFACE band (--t-quick): a menu is a region arriving, and size sets
@@ -203,7 +209,17 @@
 
 <style>
 	.band-menu-trigger {
+		position: relative;
 		gap: 0.35rem;
+	}
+	.band-menu-dot {
+		position: absolute;
+		top: 3px;
+		right: 3px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--accent);
 	}
 
 	.band-menu-backdrop {

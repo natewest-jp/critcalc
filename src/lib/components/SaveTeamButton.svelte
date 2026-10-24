@@ -17,6 +17,9 @@
 	import { loadout } from '$lib/stores';
 	import { resolveEntry } from '$lib/storage/teamLoadout';
 
+	/** The folded phone bench's rail: the mark alone, the words in its title. */
+	let { compact = false }: { compact?: boolean } = $props();
+
 	const seats = $derived(rt.seats);
 	const full = $derived(seats.every((id) => id !== null && id !== 'blank'));
 	const real = $derived(storageSession.profile?.kind === 'real');
@@ -50,46 +53,54 @@
 </script>
 
 {#if real && full && team !== undefined}
+	<!-- ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): PLATES, both of them. As
+	     bare text "In Teams" did not read as pressable, and it is the door to
+	     the team. The saved state keeps its check and recedes by INK, so the
+	     request (Save as team) still outranks the fact. -->
 	{#if team}
-		<button class="st st--in" onclick={() => menu.show('teams')} title="Open Teams">
-			<Mark name="check" size={13} />
-			<span class="st-label">In Teams{team.name ? ` · ${team.name}` : ''}</span>
+		{@const label = `In Teams${team.name ? ` · ${team.name}` : ''}`}
+		<button
+			class="btn btn--sm st st--in"
+			class:btn--icon={compact}
+			onclick={() => menu.show('teams')}
+			title={compact ? `${label} (open Teams)` : 'Open Teams'}
+			aria-label={compact ? label : undefined}
+		>
+			<Mark name="check" />
+			{#if !compact}<span class="st-label">{label}</span>{/if}
 		</button>
 	{:else}
-		<button class="st" onclick={save}>
-			<Mark name="plus" size={13} />
-			<span class="st-label">Save as team</span>
+		<button
+			class="btn btn--sm st"
+			class:btn--icon={compact}
+			onclick={save}
+			title={compact ? 'Save as team' : undefined}
+			aria-label={compact ? 'Save as team' : undefined}
+		>
+			<Mark name="plus" />
+			{#if !compact}<span class="st-label">Save as team</span>{/if}
 		</button>
 	{/if}
 {/if}
 
 <style>
 	.st {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.35rem;
-		max-width: 100%;
-		padding: 0.25rem 0.55rem;
-		border: none;
-		border-radius: var(--r-sm);
-		background: none;
+		width: 100%;
+		min-width: 0;
 		color: var(--text);
-		font: inherit;
-		font-size: var(--fs-sm);
-		cursor: pointer;
-		transition:
-			background var(--t-snap),
-			color var(--t-snap);
 	}
-	.st:hover {
-		background: var(--surface-hover);
+	.st.btn--icon {
+		width: auto;
+		flex-shrink: 0;
 	}
 	/* Already a team: quiet, a fact rather than a request. */
 	.st--in {
 		color: var(--muted);
 	}
-	.st--in:hover {
-		color: var(--text);
+	@media (hover: hover) {
+		.st--in:hover {
+			color: var(--text);
+		}
 	}
 	.st-label {
 		min-width: 0;
