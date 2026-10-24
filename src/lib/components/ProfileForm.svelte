@@ -77,9 +77,14 @@
 
 	async function create(): Promise<void> {
 		if (!colour) return;
-		await storageSession.createProfile({ name, colour, ...(picture ? { picture } : {}) });
-		// ⚓ The next step is the roster (§9.2).
-		menu.show('roster');
+		const made = await storageSession.createProfile({
+			name,
+			colour,
+			...(picture ? { picture } : {})
+		});
+		// ⚓ The next step is the roster (§9.2) — only for a profile that exists:
+		// otherwise the Roster would show Theorycraft's invitation.
+		if (made) menu.show('roster');
 	}
 
 	function commitName(e: Event): void {

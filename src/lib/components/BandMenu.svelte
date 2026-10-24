@@ -75,6 +75,10 @@
 	let menuEl = $state<HTMLDivElement | undefined>();
 	let menuX = $state(0);
 	let menuY = $state(0);
+	/** Set only when the menu would run past the screen's bottom (a long menu
+	 *  on a short screen): it then scrolls inside the room below its trigger.
+	 *  Only then, because a scroll container clips everything inside it. */
+	let menuMaxH = $state<number | null>(null);
 
 	const MENU_MIN_W = 168;
 	const GAP = 6;
@@ -96,13 +100,18 @@
 		// lands in the same frame.
 		menuX = 8;
 		menuY = r.bottom + GAP;
+		menuMaxH = null;
 		open = true;
 		// ⚠ Re-placed at its RENDERED width: an `end` menu wider than the minimum
 		// (the Team Builder's More filters, 2026-10-10) used to hang from
 		// `right − MENU_MIN_W` and grow PAST its trigger — over whatever stood
 		// beyond it.
 		void tick().then(() => {
-			if (menuEl) place(menuEl.offsetWidth);
+			if (menuEl) {
+				place(menuEl.offsetWidth);
+				const room = document.documentElement.clientHeight - menuY - 8;
+				if (menuEl.offsetHeight > room) menuMaxH = room;
+			}
 			menuEl?.focus();
 		});
 	}
@@ -176,6 +185,8 @@
 		style:left="{menuX}px"
 		style:top="{menuY}px"
 		style:min-width="{MENU_MIN_W}px"
+		style:max-height={menuMaxH === null ? null : `${menuMaxH}px`}
+		style:overflow-y={menuMaxH === null ? null : 'auto'}
 		{role}
 		tabindex="-1"
 		aria-label={ariaLabel ?? label}

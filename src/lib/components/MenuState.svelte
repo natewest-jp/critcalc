@@ -84,7 +84,7 @@
 		if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
 		const a = (e.target as Element).closest?.('a[href]') as HTMLAnchorElement | null;
 		if (!a || a.target === '_blank' || a.origin !== location.origin) return;
-		const to: Section | null = sectionForPath(a.pathname);
+		const to: Section | null = sectionForPath(a.pathname, a.search);
 		if (!to) return;
 		e.preventDefault();
 		menu.show(to);
@@ -108,6 +108,7 @@
 <div
 	class="menu ctx-dark"
 	class:is-index={section === 'index'}
+	data-menu-state
 	role="dialog"
 	aria-label={item?.label ?? 'Menu'}
 	transition:fade={{ duration: motion(T_QUICK) }}

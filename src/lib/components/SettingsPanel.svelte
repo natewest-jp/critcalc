@@ -92,6 +92,11 @@
 				? storeSince
 				: [...$savedNotations, ...$savedBoards].filter((e) => e.savedAt > lastBackup!).length
 	);
+	// One string, so the space after "ago." cannot be trimmed away at an
+	// {#if} boundary (it rendered "ago.1 saved item").
+	const changedSince = $derived(
+		`${savedSince} saved ${savedSince === 1 ? 'item has' : 'items have'} changed since.`
+	);
 
 	function daysAgo(at: number): string {
 		const days = Math.floor((Date.now() - at) / 86_400_000);
@@ -249,6 +254,7 @@
 						<button
 							type="button"
 							role="radio"
+							class="btn"
 							class:is-active={$siteSettings.uiSize === value}
 							aria-checked={$siteSettings.uiSize === value}
 							onclick={() => siteSettings.setUiSize(value)}>{label}</button
@@ -672,8 +678,7 @@
 					{#if lastBackup === null}
 						Last backup: never.
 					{:else}
-						Last backup: {daysAgo(lastBackup)}.{#if savedSince > 0}
-							{savedSince} saved {savedSince === 1 ? 'item has' : 'items have'} changed since.{/if}
+						Last backup: {daysAgo(lastBackup)}.{savedSince > 0 ? ` ${changedSince}` : ''}
 					{/if}
 				</span>
 			</span>
@@ -861,9 +866,11 @@
 	.sp-segment {
 		flex-shrink: 0;
 	}
-	/* A desktop-only choice: the phone is always Small (breakpoints.ts `compact`). */
+	/* A desktop-only choice: the phone is always Small (breakpoints.ts `compact`).
+	   ⚠ Compound, for the same reason as `.sp-row--stack`: a lone `.sp-desktop`
+	   lost to the later `.sp-row { display: flex }` and showed on the phone. */
 	@media (max-width: 40rem) {
-		.sp-desktop {
+		.sp-row.sp-desktop {
 			display: none;
 		}
 	}

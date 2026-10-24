@@ -99,3 +99,18 @@ Real Safari and real touch gestures · Restore with a second tab open · a pair 
 - **Not in this round:** §1.10 (`storageFailed`'s silent return to the old layout) goes with the flip, per the §7 ruling. "Saving…" still shows only during the write itself; with the journal the delay no longer loses work.
 
 Tests: `journal.test.ts` (new, 11), `docLock.test.ts` (+5: waiting, no locks, exclusivity), `migrate.test.ts` (+5), `convert.test.ts` (+1). `session.test.ts` (new, 14): two sessions over one fake IndexedDB, a shared lock manager and Node's BroadcastChannel; 13 of its cases fail on the code before this round (promotion approved by Nate).
+
+## 10. Small fixes (`fix/next-sweep-small`, 2026-10-24)
+
+The §4 items that were plainly wrong and that the refinement pass would not change, plus the long-queued small bug branch. Done unattended while Nate was away; nothing here changes a string, a layout or a rule.
+
+- **Interface size:** its segment buttons lacked `class="btn"` (the unstyled browser buttons), and `.sp-desktop`'s phone rule lost to the later `.sp-row { display: flex }`, so it showed on the phone. Now a compound `.sp-row.sp-desktop`, the `.sp-row--stack` precedent.
+- **"ago.1 saved item":** the space after "ago." sat at an `{#if}` boundary and was trimmed. The sentence is one derived string now. (Live site too.)
+- **`/library?tab=roster` opened Rotations:** `sectionForPath` read only the pathname; it takes the query now (the pages layout and the menu state's in-section link handler both pass it).
+- **Add your account went to Roster when nothing was created:** `createProfile` returns whether it made one, and the form moves on only then.
+- **⌃` from Help › Planner over the Builder flipped the Planner's document:** the key read the tool from the address, which names a section while the menu state is open. It does nothing while the menu state is showing (`[data-menu-state]`).
+- **Duplicate and compare on an empty blank did nothing:** an empty blank is not a document yet, so the item is disabled until the rotation has something in it (the save's own test).
+- **CritInstrument's risk slider:** `style:background` reset the coarse-pointer `background-clip: content-box`, so on a touch screen the gradient painted the whole enlarged hit box. Now `style:background-image`. (Live site too.)
+- **Popover clamps:** the bench card's constellation and loadout popovers are clamped vertically as well as horizontally (`placeAcross`; the loadout panel centred on a low card ran off the bottom). A band menu taller than the room below its trigger scrolls within that room (set only then, since a scroll container clips its contents); the old layout's DocumentTabs menu is capped the same way.
+
+**Left for a ruling:** the blank `index` section on desktop (the sidebar is already the index; what the main area shows there is a design call) and everything else in §4.

@@ -42,6 +42,12 @@
 
 	const flip = () => pair && void storageSession.open(pair.id);
 
+	/** An empty blank is not a document yet, so there is nothing to duplicate
+	 *  (the same test the session's save applies). */
+	const blank = $derived(
+		!rt.activeTab.notation.trim() && (rt.activeTab.slots ?? []).every((s) => !s)
+	);
+
 	function pick(): void {
 		menu.pickFor = rt.activeTabId;
 		menu.show('rotations');
@@ -76,6 +82,7 @@
 			<button
 				class="band-menu-item"
 				role="menuitem"
+				disabled={blank}
 				onclick={() => {
 					close();
 					void storageSession.duplicateAndCompare();

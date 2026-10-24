@@ -20,7 +20,7 @@
 	const nextOn = get(nextLayout);
 	$effect(() => {
 		if (!nextOn) return;
-		menu.routed = sectionForPath(pathname) ?? 'index';
+		menu.routed = sectionForPath(pathname, page.url.search) ?? 'index';
 		return () => (menu.routed = null);
 	});
 
