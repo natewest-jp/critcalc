@@ -58,7 +58,7 @@
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import LoadoutPanel from '$lib/components/LoadoutPanel.svelte';
-	import type { LoadoutSection } from '$lib/components/LoadoutPanel.svelte';
+	import type { LoadoutSection, LoadoutSource } from '$lib/components/LoadoutPanel.svelte';
 	// Popovers + backdrops are viewport-fixed but must clear ANY host stacking
 	// context (the ribbon is transform-placed) — see $lib/actions/portal
 	import { portal } from '$lib/actions/portal';
@@ -82,6 +82,7 @@
 		onSetArtifact,
 		onSetWeapon,
 		onSetRefinement,
+		loadoutSource,
 		onPortraitClick,
 		portraitLabel = 'Open character selector',
 		actions,
@@ -110,6 +111,8 @@
 		onSetArtifact: (artifactSetId: string | undefined) => void;
 		onSetWeapon: (weaponId: string | undefined, refinement: 1 | 2 | 3 | 4 | 5) => void;
 		onSetRefinement: (r: 1 | 2 | 3 | 4 | 5) => void;
+		/** Whose loadout this is, when the rotation is a saved team. */
+		loadoutSource?: LoadoutSource;
 		/** The portrait as a button: a filled slot's details; on the desk an
 		 *  empty slot ADDS through it. Omit for a static portrait. */
 		onPortraitClick?: () => void;
@@ -491,6 +494,7 @@
 			onSetArtifact={(id) => onSetArtifact(id)}
 			onSetWeapon={(id, r) => onSetWeapon(id, r)}
 			onSetRefinement={(r) => onSetRefinement(r)}
+			source={loadoutSource}
 		/>
 	</div>
 {/if}

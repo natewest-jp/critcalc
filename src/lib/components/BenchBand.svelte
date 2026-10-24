@@ -70,6 +70,8 @@
 	} from '$lib/benchBand.svelte';
 	import { narrowForm } from '$lib/media.svelte';
 	import { constellations, loadout, ownership, type LoadoutEntry } from '$lib/stores';
+	import { isEmptyEntry, pruneInherited } from '$lib/storage/teamLoadout';
+	import type { LoadoutSource } from './LoadoutPanel.svelte';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { awakeIds } from '$lib/utils/notationEdit';
@@ -174,8 +176,32 @@
 		}
 		rt.setTabCon(id, level);
 	}
+	/** What this rotation's own choices sit on: its team's (under the switch)
+	 *  or the roster default. */
+	const inherited = $derived(rt.inheritedLoadout($loadout));
 	function effectiveLoadout(id: string): LoadoutEntry {
-		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
+		return { ...(inherited[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
+	}
+
+	/**
+	 * A choice on the pill is the ROTATION's own (Layer 2). ⚓ Under a saved
+	 * team (storage/teamLoadout.ts) it keeps only what DIFFERS from the team,
+	 * so picking the team's value follows the team again; the weapon and its
+	 * refinement travel as one part.
+	 */
+	function setOwnLoadout(id: string, update: Partial<LoadoutEntry>): void {
+		if (!rt.team) return rt.setTabLoadout(id, update);
+		const own = pruneInherited({ ...(rt.tabLoadout[id] ?? {}), ...update }, inherited[id]);
+		rt.putTabLoadout(id, isEmptyEntry(own) ? null : own);
+	}
+	function loadoutSourceOf(id: string): LoadoutSource | undefined {
+		const team = rt.team;
+		if (!team) return undefined;
+		return {
+			team: team.label,
+			own: !isEmptyEntry(rt.tabLoadout[id]),
+			onFollow: () => rt.putTabLoadout(id, null)
+		};
 	}
 
 	/** Your account's constellation — the Builder's rule (BoardView
@@ -286,11 +312,20 @@
 					conLevel={char ? effectiveCon(char.id) : 0}
 					ownedCon={char ? ownedConOf(char.id) : undefined}
 					loadoutEntry={char ? effectiveLoadout(char.id) : {}}
+					loadoutSource={char ? loadoutSourceOf(char.id) : undefined}
 					onSetCon={(level) => char && setCon(char.id, level)}
-					onSetArtifact={(artId) => char && rt.setTabLoadout(char.id, { artifactSetId: artId })}
+					onSetArtifact={(artId) => char && setOwnLoadout(char.id, { artifactSetId: artId })}
 					onSetWeapon={(wid, ref) =>
-						char && rt.setTabLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
-					onSetRefinement={(r) => char && rt.setTabLoadout(char.id, { weaponRefinement: r })}
+						char && setOwnLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
+					onSetRefinement={(r) =>
+						char &&
+						setOwnLoadout(
+							char.id,
+							// Under a team the weapon and its refinement are one part.
+							rt.team
+								? { weaponId: effectiveLoadout(char.id).weaponId, weaponRefinement: r }
+								: { weaponRefinement: r }
+						)}
 					onPortraitClick={portraitClickFor(char, i)}
 					portraitLabel={char && char.id !== 'blank'
 						? `${char.displayName}'s details`

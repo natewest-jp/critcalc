@@ -576,11 +576,14 @@
 	// pure filter of the event stream.
 	let nbBars = $derived(showBuffs ? computeNBBars(rotation.events) : []);
 
+	// The layer under the tab's own: its team's loadout under the switch, the
+	// roster default off it (rotationTabs.inheritedLoadout).
+	let inheritedLoadout = $derived(rotationTabs.inheritedLoadout($loadout));
 	let effectiveLoadout = $derived.by(() => {
-		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
+		const allIds = new Set([...Object.keys(inheritedLoadout), ...Object.keys(tabLoadout)]);
 		const result: Record<string, LoadoutEntry> = {};
 		for (const charId of allIds) {
-			result[charId] = { ...($loadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
+			result[charId] = { ...(inheritedLoadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
 		}
 		return result;
 	});
@@ -2248,7 +2251,7 @@
 	// ---------------------------------------------------------------------------
 
 	function effectiveLoadoutEntry(charId: string): LoadoutEntry {
-		return { ...($loadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
+		return { ...(inheritedLoadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
 	}
 
 	function effectiveConLevel(charId: string): number {

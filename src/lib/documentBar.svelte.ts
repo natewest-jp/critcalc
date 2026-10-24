@@ -630,7 +630,8 @@ class DocumentBarState {
 	 *  a problem report carries ($lib/feedback.ts). `null` with nothing to share. */
 	async shareUrl(): Promise<string | null> {
 		if (!this.hasContent) return null;
-		const rosterLoadout = get(loadout);
+		// Its team's under the switch, so a link carries what the team supplies.
+		const rosterLoadout = rt.inheritedLoadout(get(loadout));
 		const rosterCons = get(constellations);
 		// Scope the build snapshot to the resolved team (this handles inferred
 		// slots too), plus any character carrying a tab-level loadout override.

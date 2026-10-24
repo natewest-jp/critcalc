@@ -231,8 +231,14 @@ function team(v: unknown, profiles: Set<string>, now: number): TeamRecord | null
 		profileId: v.profileId,
 		name: typeof v.name === 'string' ? v.name.slice(0, 80) : '',
 		slots: seats(v.slots),
+		...teamLoadoutOf(v.loadout),
 		createdAt: num(v.createdAt, now)
 	};
+}
+
+function teamLoadoutOf(v: unknown): Pick<TeamRecord, 'loadout'> {
+	const loadout = sanitizeLoadout(v);
+	return loadout && Object.keys(loadout).length ? { loadout } : {};
 }
 
 /** ⚓ Seven real profiles at most, each colour once (§2.3): extras are left

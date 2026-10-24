@@ -14,6 +14,7 @@
 	import { storageSession } from '$lib/storage/session.svelte';
 	import type { TeamRecord } from '$lib/storage/records';
 	import { menu } from '$lib/menuState.svelte';
+	import { loadout } from '$lib/stores';
 
 	const seats = $derived(rt.seats);
 	const full = $derived(seats.every((id) => id !== null && id !== 'blank'));
@@ -32,9 +33,21 @@
 		});
 	});
 
+	/** ⚓ The new team starts with the rotation's loadout (Nate 2026-10-24),
+	 *  and the rotation then inherits it rather than holding a copy, so the
+	 *  next change to the team reaches it. */
 	async function save(): Promise<void> {
-		const r = await storageSession.saveTeam(seats);
-		if (r) team = r.team;
+		const ids = seats.filter((id): id is string => !!id);
+		const lo = Object.fromEntries(
+			ids.map((id) => [
+				id,
+				{ ...(rt.inheritedLoadout($loadout)[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) }
+			])
+		);
+		const r = await storageSession.saveTeam(seats, '', lo);
+		if (!r) return;
+		team = r.team;
+		if (r.created) for (const id of ids) rt.putTabLoadout(id, null);
 	}
 </script>
 

@@ -28,6 +28,8 @@ Confidence: **confirmed** = reproduced by running · **traced** = followed in th
 
 ## 3. Loadouts: beyond the known gap
 
+↻ **2026-10-24: resolved by the team-loadouts round** (`docs/team-loadouts-round.md`): the roster default retired into teams, so the invisible migrated defaults are moved into teams and teamless rotations, and a guest no longer reads the profile's defaults (a guest has no team). The Privacy line is in that record's copy list.
+
 Known: nothing under the switch sets a roster default loadout (the Builder modal and the Planner inspector both pass `defaultBuild={false}`). What else follows:
 
 - A **migrated** profile keeps its old defaults (`migrate.ts:141`). They still drive every rotation's bench pill (`BenchBand.svelte:177`), parse (`RotationTimeline.svelte:580`), PNG (`:2251`) and `?r=` link (`documentBar.svelte.ts:633-653`), but are invisible and uneditable; Settings › Reset › Loadouts clears them all, which is the only way out.

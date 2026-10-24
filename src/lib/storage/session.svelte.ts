@@ -78,7 +78,13 @@ import {
 	type JournalDoc,
 	type RosterChanges
 } from './journal';
-import { bindRoster, siteSettings, type RosterPart, type SavedNotation } from '$lib/stores';
+import {
+	bindRoster,
+	siteSettings,
+	type LoadoutEntry,
+	type RosterPart,
+	type SavedNotation
+} from '$lib/stores';
 import { get as storeGet } from 'svelte/store';
 import { askOnFirstSave } from '$lib/utils/storageDurability';
 import {
@@ -95,6 +101,15 @@ import {
 	type TeamRecord
 } from './records';
 
+import {
+	bakeLoadout,
+	compactEntry,
+	compactLoadouts,
+	isEmptyEntry,
+	membersOnly,
+	retireRosterLoadout,
+	teamOfSlots
+} from './teamLoadout';
 export { rotationAsSaved } from './convert';
 
 /** Approved by Nate 2026-10-23. */
@@ -182,6 +197,9 @@ class StorageSession {
 		this.#attach();
 		this.#useProfile(profile);
 		await this.#loadProfiles();
+		// ⚓ Before the guests: a what-if copy made from a team's rotation
+		// takes the team's loadout with it, so the team must hold it first.
+		await this.#retireRosterLoadouts(db);
 		if (!meta.guestsMadeAt) await this.#makeGuests(db);
 
 		await this.#loadPlanner(profile);
@@ -240,7 +258,7 @@ class StorageSession {
 				// next autosave here would write this tab's stale copy back.
 				else if (this.#records.has(msg.id)) void this.#adopt(msg.id);
 			}
-			if (msg.store === 'teams') this.teamsVersion++;
+			if (msg.store === 'teams') this.#teamsChanged();
 			if (msg.store === 'profiles') {
 				void this.#loadProfiles();
 				if (msg.id === this.profile?.id) void this.#reloadProfile();
@@ -259,6 +277,10 @@ class StorageSession {
 		if (this.profile) return;
 		const db = await ensureStorage();
 		if (!db) return;
+		// ⚓ Here too, not only in `start`: a cold load of Teams or the Library
+		// peeks and never starts, and must not show a team without the
+		// loadout the roster still holds for it.
+		await this.#retireRosterLoadouts(db);
 		const profile = await this.#activeProfile(db, await getMeta(db));
 		if (profile && !this.profile) {
 			this.#db ??= db;
@@ -564,7 +586,7 @@ class StorageSession {
 			await tombstone(db, 'teams', t.id, now);
 			this.#channel?.post({ kind: 'deleted', store: 'teams', id: t.id, profileId: pid });
 		}
-		this.teamsVersion++;
+		this.#teamsChanged();
 	}
 
 	/** Deleted here: never saved again, whatever a stale snapshot holds. */
@@ -1120,7 +1142,8 @@ class StorageSession {
 			name: null,
 			createdAt: now,
 			openedAt: now,
-			body: { ...$state.snapshot(doc.body), con }
+			// The copy has no team in Theorycraft: what it inherited becomes its own.
+			body: { ...bakeLoadout($state.snapshot(doc.body), this.plannerTeam ?? undefined), con }
 		};
 		await put(this.#db, 'documents', copy);
 		this.#channel?.post({
@@ -1222,6 +1245,7 @@ class StorageSession {
 		for (const p of await getAll(db, 'profiles')) {
 			if (p.kind !== 'real') continue;
 			const { constellations: roster, ownership: owned } = p.roster;
+			const teams = (await getAll(db, 'teams', p.id)).filter((t) => !t.deleted);
 			for (const d of await getAll(db, 'documents', p.id)) {
 				if (d.type !== 'rotation' || d.pairId || !d.body.con) continue;
 				const stored = d.body.con;
@@ -1240,7 +1264,8 @@ class StorageSession {
 					name: d.name,
 					createdAt: now,
 					pairId: d.id,
-					body: { ...d.body, con }
+					// No team in Theorycraft: what it inherited becomes its own.
+					body: { ...bakeLoadout(d.body, teamOfSlots(teams, d.body.slots)), con }
 				};
 				// Both in one transaction: a tab closed mid-pass leaves no orphan
 				// copy for the next pass to duplicate. ⚓ The rotation's own
@@ -1260,6 +1285,122 @@ class StorageSession {
 
 	/** Bumped on every team write here or in another tab. */
 	teamsVersion = $state(0);
+
+	#teamLoad = 0;
+
+	/** The team the Planner's rotation IS, whose loadout it inherits. */
+	get plannerTeam(): TeamRecord | null {
+		return rotationTabs.team;
+	}
+
+	/**
+	 * ⚓ The profile's teams, handed to the Planner's rotation state, which
+	 * derives the team its rotation is and so the loadout it inherits
+	 * (teamLoadout.ts) — as `rosterless` is handed over: pushed, never an
+	 * effect. On every team write here or in another tab, and on a switch.
+	 */
+	async #reloadTeams(): Promise<void> {
+		const n = ++this.#teamLoad;
+		const list = await this.teams();
+		if (n !== this.#teamLoad) return;
+		rotationTabs.teams = list.map((t) => ({ ...t, label: t.name || rotationLabel(t.slots) }));
+	}
+
+	#teamsChanged(): void {
+		this.teamsVersion++;
+		void this.#reloadTeams();
+	}
+
+	/** One member's weapon or artifact set on a team: `update` merges into
+	 *  what the team holds, and a part set to `undefined` is cleared. */
+	async setTeamLoadout(id: string, charId: string, update: Partial<LoadoutEntry>): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return;
+		const next = await modify(db, 'teams', id, (t) => {
+			if (!t || t.deleted || !t.slots.includes(charId)) return null;
+			const all = { ...(t.loadout ?? {}) };
+			const entry = compactEntry({ ...(all[charId] ?? {}), ...update });
+			if (isEmptyEntry(entry)) delete all[charId];
+			else all[charId] = entry;
+			const out: TeamRecord = { ...t, updatedAt: Date.now() };
+			if (Object.keys(all).length) out.loadout = all;
+			else delete out.loadout;
+			return $state.snapshot(out) as TeamRecord;
+		});
+		if (!next) return;
+		this.#channel?.post({ kind: 'saved', store: 'teams', id, profileId: next.profileId });
+		this.#teamsChanged();
+	}
+
+	/** Settings' Reset › Loadouts: every team in the profile chooses none. A
+	 *  rotation's own choices are its content, and stay. */
+	async clearTeamLoadouts(): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		const pid = this.profile?.id;
+		if (!db || !pid) return;
+		const now = Date.now();
+		const changed = (await getAll(db, 'teams', pid))
+			.filter((t) => !t.deleted && t.loadout)
+			.map((t) => {
+				const out: TeamRecord = { ...t, updatedAt: now };
+				delete out.loadout;
+				return out;
+			});
+		if (!changed.length) return;
+		await putMany(db, 'teams', changed);
+		for (const t of changed)
+			this.#channel?.post({ kind: 'saved', store: 'teams', id: t.id, profileId: pid });
+		this.#teamsChanged();
+	}
+
+	/**
+	 * ⚓ THE ROSTER'S LOADOUT RETIRES INTO TEAMS (teamLoadout.ts), once per
+	 * profile that still holds one: after the migration, after a restore of a
+	 * backup made before teams carried loadouts, or for a profile made under
+	 * the switch before this. Read from the data, not a flag, so a restore
+	 * brings it back round. Under a lock, as the guests are (two tabs opening
+	 * together must not both move it).
+	 */
+	async #retireRosterLoadouts(db: IDBDatabase): Promise<void> {
+		const holding = (await getAll(db, 'profiles')).some(
+			(p) => !p.deleted && p.kind === 'real' && Object.keys(p.roster.loadout ?? {}).length
+		);
+		if (!holding) return;
+		await exclusively('loadouts', async () => {
+			for (const p of await getAll(db, 'profiles')) {
+				if (p.deleted || p.kind !== 'real' || !Object.keys(p.roster.loadout ?? {}).length) continue;
+				const teams = (await getAll(db, 'teams', p.id)).filter((t) => !t.deleted);
+				const rots = (await getAll(db, 'documents', p.id)).filter(
+					(d): d is RotationDocument => !d.deleted && d.type === 'rotation'
+				);
+				const out = retireRosterLoadout(
+					p.roster.loadout,
+					teams,
+					rots.map((d) => d.body)
+				);
+				// ⚓ Not an edit: `updatedAt` stays, or every rotation would jump to
+				// the top of the Library (the guests' precedent).
+				const teamRecs = [...out.teams].map(([i, l]) => ({ ...teams[i], loadout: l }));
+				const rotRecs = [...out.rotations].map(([i, l]) => ({
+					...rots[i],
+					body: { ...rots[i].body, loadout: l }
+				}));
+				if (teamRecs.length) await putMany(db, 'teams', teamRecs);
+				if (rotRecs.length) await putMany(db, 'documents', rotRecs);
+				await modify(db, 'profiles', p.id, (stored) =>
+					stored && !stored.deleted
+						? { ...stored, roster: { ...stored.roster, loadout: {} } }
+						: null
+				);
+			}
+		});
+		await this.#loadProfiles();
+		if (this.profile) {
+			const fresh = await get(db, 'profiles', this.profile.id);
+			if (fresh && !fresh.deleted) this.profile = fresh;
+		}
+		await this.#reloadTeams();
+	}
 
 	/** The active profile's teams, in the order made. Theorycraft has none. */
 	async teams(): Promise<TeamRecord[]> {
@@ -1284,7 +1425,8 @@ class StorageSession {
 	 */
 	async saveTeam(
 		slots: readonly (string | null)[],
-		name = ''
+		name = '',
+		teamLoadout: Record<string, LoadoutEntry> = {}
 	): Promise<{ team: TeamRecord; created: boolean } | null> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || this.profile?.kind !== 'real' || !teamKey(slots)) return null;
@@ -1299,7 +1441,15 @@ class StorageSession {
 			slots: normalizeSlots(slots),
 			createdAt: now
 		};
+		const lo = compactLoadouts(membersOnly(teamLoadout, team.slots));
+		if (Object.keys(lo).length) team.loadout = lo;
 		await this.#putTeam(db, team);
+		// At once, not on the list's reload: the bench hands its own loadout
+		// over to the team next, and must not show none in between.
+		rotationTabs.teams = [
+			...rotationTabs.teams,
+			{ ...team, label: team.name || rotationLabel(team.slots) }
+		];
 		return { team, created: true };
 	}
 
@@ -1316,12 +1466,19 @@ class StorageSession {
 			const other = await this.teamFor(patch.slots);
 			if (other && other.id !== id) return false;
 		}
-		await this.#putTeam(db, {
+		const next: TeamRecord = {
 			...team,
 			...(patch.name !== undefined && { name: patch.name.trim() }),
 			...(patch.slots && { slots: normalizeSlots(patch.slots) }),
 			updatedAt: Date.now()
-		});
+		};
+		// ⚓ Whoever left takes their loadout with them; a newcomer has none.
+		if (patch.slots && next.loadout) {
+			const kept = membersOnly(next.loadout, next.slots);
+			if (Object.keys(kept).length) next.loadout = kept;
+			else delete next.loadout;
+		}
+		await this.#putTeam(db, next);
 		return true;
 	}
 
@@ -1331,13 +1488,13 @@ class StorageSession {
 		if (!db) return;
 		await tombstone(db, 'teams', id, Date.now());
 		this.#channel?.post({ kind: 'deleted', store: 'teams', id, profileId: this.profile?.id });
-		this.teamsVersion++;
+		this.#teamsChanged();
 	}
 
 	async #putTeam(db: IDBDatabase, team: TeamRecord): Promise<void> {
 		await put(db, 'teams', $state.snapshot(team) as TeamRecord);
 		this.#channel?.post({ kind: 'saved', store: 'teams', id: team.id, profileId: team.profileId });
-		this.teamsVersion++;
+		this.#teamsChanged();
 	}
 
 	/**
@@ -1599,12 +1756,16 @@ class StorageSession {
 		// flushed before every switch, and must never land on another.
 		if (this.profile?.id !== p.id) this.#rosterPending = {};
 		this.profile = p;
+		rotationTabs.teams = [];
+		void this.#reloadTeams();
 		this.#rosterBase = JSON.parse(JSON.stringify(p.roster)) as Roster;
 		bindRoster(
 			{
 				constellations: p.roster.constellations,
 				ownership: p.roster.ownership,
-				loadout: p.roster.loadout
+				// ⚓ RETIRED (teamLoadout.ts): a rotation inherits its TEAM's
+				// loadout (`rotationTabs.inheritedLoadout`), never the roster's.
+				loadout: {}
 			},
 			(part, value) => this.#queueRoster(part, value)
 		);
@@ -1643,6 +1804,13 @@ class StorageSession {
 
 	#queueRoster(part: RosterPart, value: object): void {
 		if (this.#frozen) return;
+		// ⚓ The roster's loadout is retired: the store is the inherited layer
+		// and is never written back. Its one writer left, Settings' Reset ›
+		// Loadouts, means this profile's team loadouts.
+		if (part === 'loadout') {
+			if (!Object.keys(value).length) void this.clearTeamLoadouts();
+			return;
+		}
 		const key = part === 'ownership' ? 'ownership' : part;
 		this.#rosterPending = { ...this.#rosterPending, [key]: value };
 		clearTimeout(this.#rosterTimer);

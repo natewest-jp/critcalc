@@ -43,6 +43,8 @@ export type ToolId = 'planner' | 'builder' | 'visualizers';
 export type Roster = {
 	constellations: Record<string, number>;
 	ownership: Record<string, 'owned' | 'wishlist'>;
+	/** ↻ RETIRED into teams (2026-10-24, `teamLoadout.ts`): kept as a field so
+	 *  older records and backups still read, and emptied at the next start. */
 	loadout: Record<string, LoadoutEntry>;
 };
 
@@ -136,6 +138,10 @@ export type TeamRecord = SyncFields & {
 	name: string;
 	/** In party order (§12 Q2). */
 	slots: (string | null)[];
+	/** ⚓ Each member's weapon and artifact set (Nate 2026-10-24): a team
+	 *  decision, inherited live by the team's rotations (`teamLoadout.ts`).
+	 *  Absent or empty = none chosen. */
+	loadout?: Record<string, LoadoutEntry>;
 	createdAt: number;
 };
 
