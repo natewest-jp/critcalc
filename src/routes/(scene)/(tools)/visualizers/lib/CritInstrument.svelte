@@ -267,7 +267,7 @@
 						step="1"
 						bind:value={hitsPerRotation}
 						class="slider cv-variance-slider"
-						style:background={riskGradient(myCR)}
+						style:background-image={riskGradient(myCR)}
 					/>
 				</label>
 			</div>

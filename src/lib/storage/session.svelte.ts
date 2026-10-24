@@ -1467,9 +1467,14 @@ class StorageSession {
 		return this.profiles.find((p) => p.colour === colour);
 	}
 
-	async createProfile(fields: { name: string; colour: ProfileColour; picture?: Picture }) {
+	/** False when nothing was created (no storage, the cap, a taken colour). */
+	async createProfile(fields: {
+		name: string;
+		colour: ProfileColour;
+		picture?: Picture;
+	}): Promise<boolean> {
 		const db = this.#db ?? (await ensureStorage());
-		if (!db || !this.canAddProfile || this.colourOwner(fields.colour)) return;
+		if (!db || !this.canAddProfile || this.colourOwner(fields.colour)) return false;
 		const now = Date.now();
 		const rec: ProfileRecord = {
 			id: newId(),
@@ -1488,6 +1493,7 @@ class StorageSession {
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id: rec.id });
 		await this.#loadProfiles();
 		await this.switchTo(rec.id);
+		return true;
 	}
 
 	async updateProfile(
@@ -1723,6 +1729,10 @@ class StorageSession {
 	#onFlipKey = (e: KeyboardEvent) => {
 		if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey || e.code !== 'Backquote') return;
 		if (!this.active) return;
+		// The menu state covers the tool and its address names a SECTION, so
+		// the path is no guide: `/help/planner` over the Builder flipped the
+		// Planner's document, unseen.
+		if (document.querySelector('[data-menu-state]')) return;
 		const tool: DocTool | null = location.pathname.includes('/planner')
 			? 'planner'
 			: location.pathname.includes('/builder')

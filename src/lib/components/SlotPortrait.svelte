@@ -222,11 +222,24 @@
 		if (x + w + POPOVER_GAP > vw) x = anchor.left - POPOVER_GAP - w;
 		return Math.max(POPOVER_GAP, Math.min(x, vw - w - POPOVER_GAP));
 	}
+	// Centred on the chip (the CSS's translateY(-50%)), then CLAMPED the same
+	// way: the loadout panel is taller than a card, so centred on a low one it
+	// ran off the bottom of the screen. Taller than the screen, it is the
+	// panel's own max-height that holds it.
+	function placeAcross(anchor: Anchor, h: number): number {
+		const vh = document.documentElement.clientHeight;
+		const half = Math.min(h, vh - 2 * POPOVER_GAP) / 2;
+		return Math.max(POPOVER_GAP + half, Math.min(anchor.y, vh - POPOVER_GAP - half));
+	}
 	$effect(() => {
-		if (conEl && conAnchor) conX = placeBeside(conAnchor, conEl.offsetWidth);
+		if (!conEl || !conAnchor) return;
+		conX = placeBeside(conAnchor, conEl.offsetWidth);
+		conY = placeAcross(conAnchor, conEl.offsetHeight);
 	});
 	$effect(() => {
-		if (loadoutEl && loadoutAnchor) loadoutX = placeBeside(loadoutAnchor, loadoutEl.offsetWidth);
+		if (!loadoutEl || !loadoutAnchor) return;
+		loadoutX = placeBeside(loadoutAnchor, loadoutEl.offsetWidth);
+		loadoutY = placeAcross(loadoutAnchor, loadoutEl.offsetHeight);
 	});
 
 	function openConstellation(e: MouseEvent) {
@@ -1047,7 +1060,8 @@
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 	}
 	/* The loadout panel is taller than a pip row, so it is clamped to the
-	   viewport rather than centered on its anchor when it would overflow. */
+	   viewport rather than centered on its anchor when it would overflow
+	   (`placeAcross` moves it; this caps a panel taller than the screen). */
 	.sp-popover--panel {
 		padding: 10px 11px;
 		max-height: calc(100vh - 16px);

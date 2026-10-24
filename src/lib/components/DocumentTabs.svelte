@@ -219,6 +219,7 @@
 				style:left="{menuX}px"
 				style:top="{menuY}px"
 				style:width="{MENU_W}px"
+				style:max-height="min(60svh, 480px, calc(100svh - {menuY + 8}px))"
 				role="dialog"
 				aria-label="Open rotations"
 				tabindex="-1"
@@ -452,6 +453,8 @@
 	.doc-tabs-menu {
 		position: fixed;
 		z-index: 91;
+		/* The resting cap; the inline style also caps it at the room below its
+		   trigger, so a short screen scrolls the menu instead of cutting it off. */
 		max-height: min(60svh, 480px);
 		overflow-y: auto;
 		padding: 0.35rem;

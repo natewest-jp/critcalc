@@ -83,10 +83,10 @@ export const itemOf = (id: Section): SectionItem | undefined => ITEMS.find((i) =
 const normalize = (p: string) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p);
 
 /** The section an address names, if any (`/library` is the old Library's,
- *  read as Rotations). */
-export function sectionForPath(pathname: string): Section | null {
+ *  read as Rotations, and its `?tab=roster` as the Roster). */
+export function sectionForPath(pathname: string, search = ''): Section | null {
 	const p = normalize(pathname);
-	if (p === resolve('/library')) return 'rotations';
+	if (p === resolve('/library')) return /[?&]tab=roster(&|$)/.test(search) ? 'roster' : 'rotations';
 	return ITEMS.find((i) => i.path === p)?.id ?? null;
 }
 
