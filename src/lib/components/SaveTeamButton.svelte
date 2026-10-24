@@ -15,6 +15,7 @@
 	import type { TeamRecord } from '$lib/storage/records';
 	import { menu } from '$lib/menuState.svelte';
 	import { loadout } from '$lib/stores';
+	import { resolveEntry } from '$lib/storage/teamLoadout';
 
 	const seats = $derived(rt.seats);
 	const full = $derived(seats.every((id) => id !== null && id !== 'blank'));
@@ -39,10 +40,7 @@
 	async function save(): Promise<void> {
 		const ids = seats.filter((id): id is string => !!id);
 		const lo = Object.fromEntries(
-			ids.map((id) => [
-				id,
-				{ ...(rt.inheritedLoadout($loadout)[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) }
-			])
+			ids.map((id) => [id, resolveEntry(rt.inheritedLoadout($loadout)[id], rt.tabLoadout[id])])
 		);
 		const r = await storageSession.saveTeam(seats, '', lo);
 		if (!r) return;

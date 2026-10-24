@@ -21,6 +21,16 @@ import { teamKey } from '$lib/utils/notationEdit';
 
 export type Loadouts = Record<string, LoadoutEntry>;
 
+/**
+ * ⚓ An EXPLICIT "none" (Nate 2026-10-24: clicking None and getting no
+ * response felt wrong). Only a rotation's own choice under a team needs it:
+ * "nothing" is otherwise just an absent part, which reads as "follow the
+ * team". It is turned back into nothing by `resolveEntry`, the one place an
+ * entry is resolved, so no reader past it (the parser, the pill icons, a
+ * share link, a PNG) ever sees it.
+ */
+export const NONE = 'none';
+
 /** An entry that sets nothing. */
 export const isEmptyEntry = (e: LoadoutEntry | undefined): boolean =>
 	!e || (!e.artifactSetId && !e.weaponId && !e.weaponRefinement);
@@ -46,6 +56,12 @@ export function pruneInherited(
 	inherited: LoadoutEntry | undefined
 ): LoadoutEntry {
 	const out = compactEntry(own);
+	// "None" over a team that sets nothing says nothing.
+	if (out.artifactSetId === NONE && !inherited?.artifactSetId) delete out.artifactSetId;
+	if (out.weaponId === NONE && !inherited?.weaponId) {
+		delete out.weaponId;
+		delete out.weaponRefinement;
+	}
 	if (!inherited) return out;
 	if (out.artifactSetId && out.artifactSetId === inherited.artifactSetId) delete out.artifactSetId;
 	if (
@@ -59,11 +75,39 @@ export function pruneInherited(
 	return out;
 }
 
-/** What a character's loadout resolves to: the team's, then the rotation's own. */
-export const resolveEntry = (
+/** What a character's loadout resolves to: the team's, then the rotation's
+ *  own, with an explicit "none" made nothing. ⚓ THE ONE RESOLVER. */
+export function resolveEntry(
 	inherited: LoadoutEntry | undefined,
 	own: LoadoutEntry | undefined
-): LoadoutEntry => ({ ...(inherited ?? {}), ...(own ?? {}) });
+): LoadoutEntry {
+	const out: LoadoutEntry = { ...(inherited ?? {}), ...(own ?? {}) };
+	if (out.artifactSetId === NONE) delete out.artifactSetId;
+	if (out.weaponId === NONE) {
+		delete out.weaponId;
+		delete out.weaponRefinement;
+	}
+	return out;
+}
+
+/**
+ * A pill choice under a team, as the rotation's own entry: a part cleared to
+ * nothing where the team supplies one becomes an explicit "none" (else it
+ * would read as following the team), and only what DIFFERS is kept.
+ */
+export function ownChoice(
+	current: LoadoutEntry | undefined,
+	update: Partial<LoadoutEntry>,
+	inherited: LoadoutEntry | undefined
+): LoadoutEntry {
+	const u = { ...update };
+	if ('artifactSetId' in u && !u.artifactSetId && inherited?.artifactSetId) u.artifactSetId = NONE;
+	if ('weaponId' in u && !u.weaponId && inherited?.weaponId) {
+		u.weaponId = NONE;
+		u.weaponRefinement = undefined;
+	}
+	return pruneInherited({ ...(current ?? {}), ...u }, inherited);
+}
 
 /** A loadout map with every empty entry left out. */
 export function compactLoadouts(m: Loadouts): Loadouts {

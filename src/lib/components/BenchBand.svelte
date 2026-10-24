@@ -70,7 +70,7 @@
 	} from '$lib/benchBand.svelte';
 	import { narrowForm } from '$lib/media.svelte';
 	import { constellations, loadout, ownership, type LoadoutEntry } from '$lib/stores';
-	import { isEmptyEntry, pruneInherited } from '$lib/storage/teamLoadout';
+	import { isEmptyEntry, ownChoice, resolveEntry } from '$lib/storage/teamLoadout';
 	import type { LoadoutSource } from './LoadoutPanel.svelte';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -180,18 +180,19 @@
 	 *  or the roster default. */
 	const inherited = $derived(rt.inheritedLoadout($loadout));
 	function effectiveLoadout(id: string): LoadoutEntry {
-		return { ...(inherited[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
+		return resolveEntry(inherited[id], rt.tabLoadout[id]);
 	}
 
 	/**
 	 * A choice on the pill is the ROTATION's own (Layer 2). ⚓ Under a saved
 	 * team (storage/teamLoadout.ts) it keeps only what DIFFERS from the team,
 	 * so picking the team's value follows the team again; the weapon and its
-	 * refinement travel as one part.
+	 * refinement travel as one part, and None over the team's is kept as an
+	 * explicit none (`ownChoice`).
 	 */
 	function setOwnLoadout(id: string, update: Partial<LoadoutEntry>): void {
 		if (!rt.team) return rt.setTabLoadout(id, update);
-		const own = pruneInherited({ ...(rt.tabLoadout[id] ?? {}), ...update }, inherited[id]);
+		const own = ownChoice(rt.tabLoadout[id], update, inherited[id]);
 		rt.putTabLoadout(id, isEmptyEntry(own) ? null : own);
 	}
 	function loadoutSourceOf(id: string): LoadoutSource | undefined {

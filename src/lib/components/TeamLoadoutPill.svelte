@@ -3,8 +3,11 @@
   an artifact set are a team decision; storage/teamLoadout.ts). The bench
   card's upright pill (SlotPortrait's `--one` form: ONE button, both icons,
   the refinement as a digit on the weapon's corner) under the member's
-  portrait, opening the same LoadoutPanel. ⏭ A first look for Nate to judge:
-  whether a pill under the portrait is the right shape at all is open.
+  portrait, opening the same LoadoutPanel.
+
+  ⚓ Nate 2026-10-24: on the Teams OVERVIEW it is DISPLAY-ONLY (no `onSet`);
+  choosing a loadout belongs to team SETUP, which gets its own design session
+  and is where the editable form (with `onSet`) will live.
 
   The rotations of this team inherit what is chosen here, live.
 -->
@@ -16,7 +19,7 @@
 	import { closeOnLeave } from '$lib/closeOnLeave';
 	import type { LoadoutEntry } from '$lib/stores';
 	import { getArtifactSetById, artifactImagePath } from '$lib/data/artifactLookup';
-	import { weaponImagePath } from '$lib/data/weaponLookup';
+	import { getWeaponById, weaponImagePath } from '$lib/data/weaponLookup';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { elementPalette } from '$lib/utils/elementColors';
@@ -28,8 +31,8 @@
 	}: {
 		charId: string;
 		entry: LoadoutEntry;
-		/** A part changed; `undefined` clears it. */
-		onSet: (update: Partial<LoadoutEntry>) => void;
+		/** A part changed; `undefined` clears it. Omitted = display only. */
+		onSet?: (update: Partial<LoadoutEntry>) => void;
 	} = $props();
 
 	const char = $derived(getCharacterIndexEntry(charId));
@@ -42,6 +45,17 @@
 		entry.artifactSetId && getArtifactSetById(entry.artifactSetId)
 			? artifactImagePath(entry.artifactSetId)
 			: GENERIC_ARTIFACT_ICON
+	);
+	/** What a display-only pill says to a screen reader and on hover. */
+	const summary = $derived(
+		[
+			`${char?.displayName ?? charId}:`,
+			(entry.artifactSetId && getArtifactSetById(entry.artifactSetId)?.name) || 'no artifact set',
+			'·',
+			entry.weaponId
+				? `${getWeaponById(entry.weaponId)?.name ?? entry.weaponId} R${ref}`
+				: 'no weapon'
+		].join(' ')
 	);
 	const weaponIcon = $derived(
 		entry.weaponId ? weaponImagePath(entry.weaponId) : weaponTypeIcon(char?.weapon)
@@ -87,14 +101,7 @@
 	closeOnLeave(() => open, close);
 </script>
 
-<button
-	class="tlp"
-	style:--el={p.main}
-	onclick={toggle}
-	title={hasWeapon ? `Artifact set and weapon · refinement ${ref}` : 'Artifact set and weapon'}
-	aria-label={`${char?.displayName ?? charId}: choose artifact set and weapon`}
-	aria-expanded={open}
->
+{#snippet zones()}
 	<span class="tlp-zone" class:is-unset={!entry.artifactSetId}>
 		<img src={artifactIcon} alt="" />
 	</span>
@@ -102,9 +109,24 @@
 		<img src={weaponIcon} alt="" />
 		{#if hasWeapon}<span class="tlp-ref" aria-hidden="true">{ref}</span>{/if}
 	</span>
-</button>
+{/snippet}
 
-{#if open}
+{#if onSet}
+	<button
+		class="tlp"
+		style:--el={p.main}
+		onclick={toggle}
+		title={hasWeapon ? `Artifact set and weapon · refinement ${ref}` : 'Artifact set and weapon'}
+		aria-label={`${char?.displayName ?? charId}: choose artifact set and weapon`}
+		aria-expanded={open}>{@render zones()}</button
+	>
+{:else}
+	<span class="tlp tlp--static" style:--el={p.main} title={summary} role="img" aria-label={summary}
+		>{@render zones()}</span
+	>
+{/if}
+
+{#if open && onSet}
 	<div
 		class="tlp-backdrop"
 		role="button"
@@ -181,13 +203,17 @@
 		background: color-mix(in srgb, var(--surface-well) 15%, transparent);
 		pointer-events: none;
 	}
-	.tlp:hover .tlp-zone::after {
+	.tlp:not(.tlp--static):hover .tlp-zone::after {
 		background: transparent;
+	}
+	/* Display only: no hover, no pointer — it shows the team, it isn't a control. */
+	.tlp--static {
+		cursor: default;
 	}
 	.tlp-zone.is-unset::after {
 		background: color-mix(in srgb, var(--surface-well) 60%, transparent);
 	}
-	.tlp:hover .tlp-zone.is-unset::after {
+	.tlp:not(.tlp--static):hover .tlp-zone.is-unset::after {
 		background: color-mix(in srgb, var(--surface-well) 35%, transparent);
 	}
 	.tlp-ref {
@@ -204,7 +230,7 @@
 			0 0 3px var(--surface-well),
 			0 1px 2px var(--surface-well);
 	}
-	.tlp:hover .tlp-ref {
+	.tlp:not(.tlp--static):hover .tlp-ref {
 		color: var(--text);
 	}
 

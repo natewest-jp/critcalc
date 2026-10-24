@@ -341,16 +341,14 @@
 					</div>
 					{@render slotsOf(t, false)}
 					<!-- ⚓ Each member's weapon and artifact set (Nate 2026-10-24),
-					     under the portrait: inherited by the team's rotations. -->
+					     under the portrait: what the team's rotations inherit. -->
 					<span class="slots slots--loadout">
 						{#each t.slots as id, i (i)}
 							<span class="slot-lo">
 								{#if id}
-									<TeamLoadoutPill
-										charId={id}
-										entry={t.loadout?.[id] ?? {}}
-										onSet={(update) => void storageSession.setTeamLoadout(t.id, id, update)}
-									/>
+									<!-- ⚓ Display only here (Nate 2026-10-24): choosing belongs to
+									     team setup, ⏭ its own design session. -->
+									<TeamLoadoutPill charId={id} entry={t.loadout?.[id] ?? {}} />
 								{/if}
 							</span>
 						{/each}

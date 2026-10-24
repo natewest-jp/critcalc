@@ -15,7 +15,8 @@ A weapon and an artifact set are a team decision more than a character's: Cryo T
 5. **A team whose members change:** whoever left takes their loadout with them; a newcomer starts with none. Rotations of the old four stop inheriting (already true of their counts).
 6. **Save as team** starts the new team with the rotation's loadout.
 7. **No display anywhere else** this round (not the Planner inspector, not the Builder's modal).
-8. ⏭ **The pill under each portrait on a Teams card is a first look** for Nate to judge. Whether it is the right shape at all is open.
+8. ↻ **The Teams OVERVIEW shows each member's loadout DISPLAY-ONLY** (Nate, same day). Choosing one belongs to team SETUP (the member-picker screen), which Nate wants built up into "setting up everything about the team" in its own focused design session; the loadout controls move there then. ⚠ Until that session, a team's loadout can be set only by the migration and by **Save as team**. `TeamLoadoutPill` keeps its editable form (`onSet`), and `storageSession.setTeamLoadout` waits for it.
+9. **An explicit "None"** (Nate, same day: clicking None and getting no response felt wrong): under a team, None over the team's value is kept as an explicit none and resolves to nothing.
 
 ## How it works
 
@@ -24,6 +25,7 @@ A weapon and an artifact set are a team decision more than a character's: Cryo T
 - **The team is derived, not set:** the session pushes the profile's teams into `rotationTabs.teams` (as it hands over `rosterless`) on every team write, a message from another tab, and a profile switch, and `rotationTabs.team` is `$derived` from them and the seats. ⛔ Not an `$effect.root` in the session: the first cut was one, and it never runs under vitest, which resolves Svelte's server build. Nothing else in `src/lib` uses one.
 - **A guest is never a team's rotation** (`rosterless` → no team): its values are all its own. This also closes the sweep's §3 item where a guest read the real profile's defaults.
 - **Leaving the profile bakes:** a what-if's Theorycraft copy, and the migration's guest copies, take what they inherited as their own (`bakeLoadout`). Move only goes INTO a profile, where the team's values sit under the document's own.
+- **An explicit none** (`NONE`, `ownChoice`): a part cleared to nothing where the team supplies one is stored as `'none'`, since an absent part means "follow the team". It exists ONLY in a rotation's own entry and is turned back into nothing by `resolveEntry`, the one resolver every merge site now calls (bench, timeline, PNG, share link, Save as team, the bake), so no reader past it ever sees it. None where the team sets nothing is dropped.
 - **The bench prunes:** under a team a pill choice keeps only what DIFFERS from the team, so choosing the team's value follows the team again. The weapon and its refinement are one part: an R5 of the team's weapon is kept whole and does not pick up the team's next weapon.
 - **The retirement** (`#retireRosterLoadouts`, at start, before the guests pass, under the `loadouts` lock): each real profile still holding a roster loadout has it moved into each team that contains the character (only where the team sets nothing) and into each **teamless** rotation's own (the same way), then cleared. A team's rotation needs nothing, since it inherits the same values. `updatedAt` stays (not an edit). It reads the DATA, not a flag, so it runs again after restoring an older backup. ⚠️ It runs on the PEEK path too (`peekProfile`): a cold load of Teams or the Library never calls `start`, and the first browser check found the team there without the loadout the roster still held for it.
 - **The roster store's loadout part is no longer written** under the switch. Its one writer left, Settings' Reset › Loadouts, now clears the profile's team loadouts (a rotation's own choices are its content and stay).
@@ -31,8 +33,7 @@ A weapon and an artifact set are a team decision more than a character's: Cryo T
 
 ## Known limits
 
-- **Under a team, "None" can't be chosen where the team has a value.** Choosing it reads as "follow the team", because an entry cannot say "explicitly none". ⏭ Nate to say whether it needs to (it would take a sentinel the parser and the share codec understand).
-- The pill on the Teams card copies the bench pill's look rather than sharing its markup. If the shape stays, the two should become one component.
+- The pill on the Teams card copies the bench pill's look rather than sharing its markup. When team setup is designed, the two should become one component.
 
 ## Copy (working; proposed for Nate)
 

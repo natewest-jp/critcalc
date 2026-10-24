@@ -14,6 +14,7 @@
 	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
+	import { resolveEntry } from '$lib/storage/teamLoadout';
 	import { nextLayout } from '$lib/nextLayout';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip, { type TooltipEffectRow } from '$lib/components/BuffTooltip.svelte';
@@ -583,7 +584,7 @@
 		const allIds = new Set([...Object.keys(inheritedLoadout), ...Object.keys(tabLoadout)]);
 		const result: Record<string, LoadoutEntry> = {};
 		for (const charId of allIds) {
-			result[charId] = { ...(inheritedLoadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
+			result[charId] = resolveEntry(inheritedLoadout[charId], tabLoadout[charId]);
 		}
 		return result;
 	});
@@ -2251,7 +2252,7 @@
 	// ---------------------------------------------------------------------------
 
 	function effectiveLoadoutEntry(charId: string): LoadoutEntry {
-		return { ...(inheritedLoadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
+		return resolveEntry(inheritedLoadout[charId], tabLoadout[charId]);
 	}
 
 	function effectiveConLevel(charId: string): number {

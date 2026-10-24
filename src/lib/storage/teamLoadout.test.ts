@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+	NONE,
 	bakeLoadout,
 	membersOnly,
+	ownChoice,
+	resolveEntry,
 	pruneInherited,
 	retireRosterLoadout,
 	teamOfSlots
@@ -86,5 +89,25 @@ describe('retireRosterLoadout', () => {
 		expect(out.teams.get(0)).toEqual({ a: { artifactSetId: 'r', weaponId: 'w' } });
 		expect([...out.rotations.keys()]).toEqual([1]);
 		expect(out.rotations.get(1)).toEqual({ a: { artifactSetId: 'r' } });
+	});
+});
+
+describe('an explicit None under a team', () => {
+	const t = { artifactSetId: 'x', weaponId: 'w', weaponRefinement: 1 as const };
+	it("None over the team's value is kept, and resolves to nothing", () => {
+		const own = ownChoice(undefined, { artifactSetId: undefined }, t);
+		expect(own).toEqual({ artifactSetId: NONE });
+		expect(resolveEntry(t, own)).toEqual({ weaponId: 'w', weaponRefinement: 1 });
+	});
+	it('a weapon None drops the refinement with it', () => {
+		const own = ownChoice(undefined, { weaponId: undefined, weaponRefinement: 3 }, t);
+		expect(own).toEqual({ weaponId: NONE });
+		expect(resolveEntry(t, own)).toEqual({ artifactSetId: 'x' });
+	});
+	it('None where the team sets nothing says nothing', () => {
+		expect(ownChoice({ artifactSetId: 'y' }, { artifactSetId: undefined }, {})).toEqual({});
+	});
+	it("choosing the team's value again follows the team", () => {
+		expect(ownChoice({ artifactSetId: NONE }, { artifactSetId: 'x' }, t)).toEqual({});
 	});
 });
