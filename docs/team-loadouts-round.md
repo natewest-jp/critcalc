@@ -44,4 +44,4 @@ A weapon and an artifact set are a team decision more than a character's: Cryo T
 
 ## Tests
 
-`teamLoadout.test.ts` (7) and three cases in `session.test.ts`: the retirement (team, teamless rotation, team rotation untouched, `updatedAt` kept, roster emptied), live inheritance (a team edit reaches the rotation; a teamless one inherits nothing, never the roster), and a what-if copy carrying the team's loadout into Theorycraft.
+`teamLoadout.test.ts` (11, four of them the explicit None) and three cases in `session.test.ts`: the retirement (team, teamless rotation, team rotation untouched, `updatedAt` kept, roster emptied), live inheritance (a team edit reaches the rotation; a teamless one inherits nothing, never the roster), and a what-if copy carrying the team's loadout into Theorycraft.
