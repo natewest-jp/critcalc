@@ -19,6 +19,7 @@
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
+	import TeamLoadoutPill from './TeamLoadoutPill.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
@@ -339,6 +340,19 @@
 						</span>
 					</div>
 					{@render slotsOf(t, false)}
+					<!-- ⚓ Each member's weapon and artifact set (Nate 2026-10-24),
+					     under the portrait: what the team's rotations inherit. -->
+					<span class="slots slots--loadout">
+						{#each t.slots as id, i (i)}
+							<span class="slot-lo">
+								{#if id}
+									<!-- ⚓ Display only here (Nate 2026-10-24): choosing belongs to
+									     team setup, ⏭ its own design session. -->
+									<TeamLoadoutPill charId={id} entry={t.loadout?.[id] ?? {}} />
+								{/if}
+							</span>
+						{/each}
+					</span>
 					<span class="card-work">
 						{#if c?.rotations}<button class="work" onclick={() => showWork(t, 'rotations')}
 								>{plural(c.rotations, 'rotation', 'rotations')}</button
@@ -485,6 +499,15 @@
 	.slots {
 		display: flex;
 		gap: 0.5rem;
+	}
+	/* Each pill centred under its portrait: a column of the portrait's width. */
+	.slots--loadout {
+		margin-top: -0.35rem;
+	}
+	.slot-lo {
+		display: flex;
+		justify-content: center;
+		width: 3.75rem;
 	}
 	.slot {
 		position: relative;

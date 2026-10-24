@@ -23,6 +23,9 @@
 	 *  keys its open/close toggle on it: clicking the zone you are already in
 	 *  closes the panel, clicking the other one re-points it. */
 	export type LoadoutSection = 'artifact' | 'weapon' | 'refinement';
+	/** Where the shown values come from, for a rotation that is a saved TEAM
+	 *  (storage/teamLoadout.ts): the team's, or this rotation's own. */
+	export type LoadoutSource = { team: string; own: boolean; onFollow: () => void };
 
 	let {
 		loadoutEntry,
@@ -30,7 +33,8 @@
 		elementColor,
 		onSetArtifact,
 		onSetWeapon,
-		onSetRefinement
+		onSetRefinement,
+		source
 	}: {
 		loadoutEntry: LoadoutEntry;
 		/** The slot character's weapon type. 'blank' (the generic placeholder) has
@@ -40,6 +44,8 @@
 		onSetArtifact: (artifactSetId: string | undefined) => void;
 		onSetWeapon: (weaponId: string | undefined, refinement: 1 | 2 | 3 | 4 | 5) => void;
 		onSetRefinement: (r: 1 | 2 | 3 | 4 | 5) => void;
+		/** Omitted where there is no team to inherit from. */
+		source?: LoadoutSource;
 	} = $props();
 
 	const artifactSets = getAllArtifactSets();
@@ -158,9 +164,40 @@
 			{/each}
 		</div>
 	</section>
+
+	<!-- ⚓ A team's rotation INHERITS its loadout (Nate 2026-10-24): say whose
+	     values these are, and give the way back to the team's. Working copy. -->
+	{#if source}
+		<p class="lp-source">
+			{#if source.own}
+				This rotation's own choice.
+				<button class="lp-follow" onclick={source.onFollow}>Use the team's</button>
+			{:else}
+				From the team {source.team}.
+			{/if}
+		</p>
+	{/if}
 </div>
 
 <style>
+	.lp-source {
+		margin: 0;
+		padding-top: 8px;
+		border-top: 1px solid var(--line-faint);
+		font-size: var(--fs-xs);
+		line-height: var(--lh-tight);
+		color: var(--muted);
+	}
+	.lp-follow {
+		padding: 0;
+		border: none;
+		background: none;
+		color: var(--text);
+		font: inherit;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
 	/* One panel, three stacked sections. Sized by its content: at 6 artifact
 	   sets + a none tile the grid is 4 across and two rows deep, and no section
 	   ever needs to scroll. */

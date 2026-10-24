@@ -81,6 +81,8 @@ import {
 	type Seats
 } from '$lib/utils/notationEdit';
 import { safeSetItem, type LoadoutEntry } from '$lib/stores';
+import type { TeamRecord } from '$lib/storage/records';
+import { teamOfSlots } from '$lib/storage/teamLoadout';
 import { get } from 'svelte/store';
 import { nextLayout } from '$lib/nextLayout';
 import { TAB_LIMIT } from '$lib/tabSet';
@@ -283,6 +285,28 @@ class RotationTabsState {
 	 * profile's roster is not read at all.
 	 */
 	rosterless = $state(false);
+
+	/** The profile's teams, handed over by the storage session (empty in
+	 *  Theorycraft and off the switch), each with its display label. */
+	teams = $state<(TeamRecord & { label: string })[]>([]);
+
+	/**
+	 * ⚓ The saved TEAM this rotation is (its set of four): its loadout is the
+	 * layer this rotation inherits (storage/teamLoadout.ts). `null` with no
+	 * team, and for a guest, whose values are all its own.
+	 */
+	team = $derived(this.rosterless ? null : (teamOfSlots(this.teams, this.seats) ?? null));
+
+	/**
+	 * ⚓ THE ONE RESOLVER for the layer a rotation's own loadout sits on. Under
+	 * the switch it is the rotation's TEAM's (the roster's default retired
+	 * into teams, Nate 2026-10-24) and nothing without one; off it, today's
+	 * roster default.
+	 */
+	inheritedLoadout(roster: Record<string, LoadoutEntry>): Record<string, LoadoutEntry> {
+		if (!get(nextLayout)) return roster;
+		return this.team?.loadout ?? {};
+	}
 
 	/**
 	 * ⚓ THE ONE RESOLVER for a character's constellation in this rotation
@@ -676,6 +700,16 @@ class RotationTabsState {
 			...this.tabLoadout,
 			[charId]: { ...(this.tabLoadout[charId] ?? {}), ...update }
 		};
+	}
+
+	/** Replace a character's own entry whole (`null` = none, so the inherited
+	 *  layer shows through): the bench's writes under a team, already pruned
+	 *  of what the team supplies. */
+	putTabLoadout(charId: string, entry: LoadoutEntry | null): void {
+		const next = { ...this.tabLoadout };
+		if (entry) next[charId] = entry;
+		else delete next[charId];
+		this.tabLoadout = next;
 	}
 
 	// -------------------------------------------------------------------------

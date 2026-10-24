@@ -412,3 +412,87 @@ describe('two tabs, one store', () => {
 		expect(A.s.profile?.id).toBe('theorycraft');
 	});
 });
+
+/**
+ * ⚓ Loadouts belong to teams (teamLoadout.ts, Nate 2026-10-24): the roster's
+ * default retires into the teams and the teamless rotations, and a team's
+ * rotation inherits the team's loadout through the `loadout` store.
+ */
+describe('team loadouts', () => {
+	const FOUR = ['bennett', 'xiangling', 'xingqiu', 'sucrose'];
+	async function seedTeam(rosterLoadout: ProfileRecord['roster']['loadout']) {
+		const p = (await get(db, 'profiles', 'p1'))!;
+		await put(db, 'profiles', { ...p, roster: { ...p.roster, loadout: rosterLoadout } });
+		await put(db, 'teams', {
+			id: 't1',
+			updatedAt: T,
+			profileId: 'p1',
+			name: 'National',
+			slots: [...FOUR],
+			loadout: { xingqiu: { weaponId: 'sacrificial_sword', weaponRefinement: 5 } },
+			createdAt: T
+		});
+		const d1 = (await get(db, 'documents', 'd1')) as RotationDocument;
+		await put(db, 'documents', {
+			...d1,
+			id: 'd3',
+			body: {
+				...d1.body,
+				notation: 'Bennett Q',
+				slots: [...FOUR],
+				placed: [true, true, true, true]
+			}
+		});
+	}
+
+	it('the roster default retires into the team and the teamless rotations', async () => {
+		await seedTeam({
+			bennett: { artifactSetId: 'noblesse_oblige' },
+			xingqiu: { weaponId: 'favonius_sword', weaponRefinement: 1, artifactSetId: 'emblem' }
+		});
+		await tab();
+		const team = await get(db, 'teams', 't1');
+		// The team's own choice stands; the default fills only what it left unset.
+		expect(team?.loadout).toEqual({
+			bennett: { artifactSetId: 'noblesse_oblige' },
+			xingqiu: { weaponId: 'sacrificial_sword', weaponRefinement: 5, artifactSetId: 'emblem' }
+		});
+		const d1 = (await get(db, 'documents', 'd1')) as RotationDocument;
+		expect(d1.body.loadout).toEqual({ bennett: { artifactSetId: 'noblesse_oblige' } });
+		expect(d1.updatedAt).toBe(T);
+		// The team's rotation inherits instead of holding a copy.
+		expect(((await get(db, 'documents', 'd3')) as RotationDocument).body.loadout).toBeUndefined();
+		expect((await get(db, 'profiles', 'p1'))?.roster.loadout).toEqual({});
+	});
+
+	it("a team's rotation reads the team's loadout, live", async () => {
+		await seedTeam({});
+		const A = await tab();
+		await A.s.open('d3');
+		await wait(50);
+		const inherited = () => A.rt.inheritedLoadout({ bennett: { artifactSetId: 'ROSTER' } });
+		expect(inherited().xingqiu?.weaponId).toBe('sacrificial_sword');
+		expect(A.rt.team?.id).toBe('t1');
+		await A.s.setTeamLoadout('t1', 'bennett', { artifactSetId: 'noblesse_oblige' });
+		await wait(50);
+		expect(inherited().bennett?.artifactSetId).toBe('noblesse_oblige');
+		// A rotation with no team inherits nothing, never the roster.
+		await A.s.open('d1');
+		await wait(50);
+		expect(inherited()).toEqual({});
+		expect(A.rt.team).toBeNull();
+	});
+
+	it("a what-if copy takes the team's loadout into Theorycraft", async () => {
+		await seedTeam({});
+		const A = await tab();
+		await A.s.open('d3');
+		await wait(50);
+		await A.s.whatIf('bennett', 1);
+		const copy = (await getAll(db, 'documents', 'theorycraft')).find((d) => !d.deleted);
+		expect((copy as RotationDocument).body.loadout?.xingqiu).toEqual({
+			weaponId: 'sacrificial_sword',
+			weaponRefinement: 5
+		});
+	});
+});

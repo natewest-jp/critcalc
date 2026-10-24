@@ -46,6 +46,7 @@ import {
 import { isTeamEntry, teamNotation } from './library';
 import { nextLayout } from './nextLayout';
 import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
+import { resolveEntry } from './storage/teamLoadout';
 
 /**
  * The planner's timeline registers its two chart-bound exporters here on
@@ -272,7 +273,7 @@ class DocumentBarState {
 		const denseCon: Record<string, number> = { ...tabCon };
 		for (const id of slots) {
 			if (!id || id === 'blank') continue;
-			const merged: LoadoutEntry = { ...(rosterLoadout[id] ?? {}), ...(tabLoadout[id] ?? {}) };
+			const merged: LoadoutEntry = resolveEntry(rosterLoadout[id], tabLoadout[id]);
 			if (merged.weaponId || merged.artifactSetId || merged.weaponRefinement) {
 				denseLoadout[id] = merged;
 			}
@@ -630,7 +631,8 @@ class DocumentBarState {
 	 *  a problem report carries ($lib/feedback.ts). `null` with nothing to share. */
 	async shareUrl(): Promise<string | null> {
 		if (!this.hasContent) return null;
-		const rosterLoadout = get(loadout);
+		// Its team's under the switch, so a link carries what the team supplies.
+		const rosterLoadout = rt.inheritedLoadout(get(loadout));
 		const rosterCons = get(constellations);
 		// Scope the build snapshot to the resolved team (this handles inferred
 		// slots too), plus any character carrying a tab-level loadout override.
@@ -649,7 +651,7 @@ class DocumentBarState {
 			if (slotted.has(id)) cons[id] = rt.levelOf(id, rosterCons, get(ownership));
 			// Mirror RotationTimeline's effective-loadout merge so a shared link
 			// renders identically regardless of the recipient's own defaults.
-			const entry: LoadoutEntry = { ...(rosterLoadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
+			const entry: LoadoutEntry = resolveEntry(rosterLoadout[id], rt.tabLoadout[id]);
 			if (entry.weaponId || entry.artifactSetId || entry.weaponRefinement) lo[id] = entry;
 		}
 		const shared: SharedRotation = {
