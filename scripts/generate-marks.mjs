@@ -302,7 +302,22 @@ const MARKS = {
 	/** A battlefield's checks (lineups design §2.6): the game marks each one
 	 *  favoured or disfavoured with a thumb. */
 	thumbsUp: 'ThumbsUp',
-	thumbsDown: 'ThumbsDown'
+	thumbsDown: 'ThumbsDown',
+	// ── The full-screen surface's sidebar (2026-10-25) ──────────────────────
+	// Line marks, the list register: the top bar's filled discs are Nate's
+	// art for doors on the night, and at sidebar size beside text they would
+	// outweigh the words.
+	profile: 'CircleUserRound',
+	/** Teams: two figures, the same idea as the top bar's Teams door. */
+	teams: 'UsersRound',
+	/** Rotations: a Gantt chart, which is what the Planner draws. */
+	rotations: 'ChartGantt',
+	/** Lineups: teams of characters on one board, a grid of portraits (Nate
+	 *  2026-10-25; it arrived in lucide 1.61, which the generator moved to). */
+	lineups: 'LayoutGridCircles',
+	settings: 'Settings',
+	/** The account switcher's affordance (it opens a list, not a section). */
+	switcher: 'ChevronsUpDown'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

@@ -14,6 +14,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
+	import SidePortrait from './SidePortrait.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
@@ -26,8 +27,6 @@
 		type RotationDocument
 	} from '$lib/storage/records';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { getAvatar } from '$lib/utils/getAvatar';
-	import { siteSettings } from '$lib/stores';
 	import { teamKey } from '$lib/utils/notationEdit';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
 
@@ -35,7 +34,6 @@
 
 	const type = $derived(place === 'planner' ? 'rotation' : 'lineup');
 	const toolPath = $derived(resolve(place === 'planner' ? '/planner' : '/builder'));
-	const twin = $derived(storageSession.profile?.twin ?? 'aether');
 
 	let docs = $state<DocumentRecord[]>([]);
 	let loaded = $state(false);
@@ -96,8 +94,37 @@
 		return storageSession.currentId('planner');
 	});
 
-	const pinned = $derived(listed.filter((d) => d.pinned));
-	const recent = $derived(listed.filter((d) => !d.pinned));
+	/** ⚓ A COMPARE PAIR is one entry (2026-10-25): A (the older side, as
+	 *  the Planner's compare control names it) is the row, B rides under it.
+	 *  A cross-profile pair is a guest instead (above). */
+	const pairedB = (d: DocumentRecord): DocumentRecord | undefined => {
+		const p = partners[d.id];
+		return p && p.profileId === d.profileId && p.createdAt > d.createdAt ? p : undefined;
+	};
+	/** B shows under A, unless A is not in the list (a team filter, or pick
+	 *  mode choosing a partner for A), when B stands on its own. */
+	const nested = $derived.by((): Record<string, true> => {
+		const ids = listed.map((d) => d.id);
+		const out: Record<string, true> = {};
+		for (const d of listed) {
+			const b = pairedB(d);
+			if (b && ids.includes(b.id)) out[b.id] = true;
+		}
+		return out;
+	});
+	/** An entry is as recent, and as pinned, as either of its sides. */
+	const entries = $derived(
+		listed
+			.filter((d) => !nested[d.id])
+			.map((d) => {
+				const b = pairedB(d);
+				const sideB = b && nested[b.id] ? b : undefined;
+				return { d, b: sideB, at: Math.max(recency(d), sideB ? recency(sideB) : 0) };
+			})
+			.sort((x, y) => y.at - x.at)
+	);
+	const pinned = $derived(entries.filter((e) => e.d.pinned || e.b?.pinned));
+	const recent = $derived(entries.filter((e) => !(e.d.pinned || e.b?.pinned)));
 
 	/** Back onto the tool if it is underneath, else go to it. */
 	function arrive(): void {
@@ -181,14 +208,18 @@
 		return out.join(' · ');
 	}
 
-	const avatar = (id: string) => getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin);
-	const seated = (d: RotationDocument) => d.body.slots.filter((s): s is string => !!s);
+	/** The notation's opening, on one line: what tells two rotations of the
+	 *  same four apart at a glance (no parse, so it costs nothing per card). */
+	const notationHead = (d: RotationDocument): string => d.body.notation.replace(/\s+/g, ' ').trim();
 </script>
 
+<!-- The SIDE portraits, as the bench and the Builder wear them (Nate
+     2026-10-25); an empty slot is the game's blank side portrait. Always four,
+     so a three-character rotation reads as three and a seat. -->
 {#snippet portraits(ids: readonly (string | null)[], size: number)}
-	<span class="portraits" style:--p="{size}px">
-		{#each ids as id, i (i)}
-			{#if id}<img src={avatar(id)} alt="" />{:else}<span class="p-empty"></span>{/if}
+	<span class="portraits">
+		{#each { length: 4 } as _, i (i)}
+			<SidePortrait id={ids[i] ?? null} {size} />
 		{/each}
 	</span>
 {/snippet}
@@ -219,6 +250,9 @@
 {/snippet}
 
 {#snippet actions(d: DocumentRecord)}
+	<!-- With a pointer that hovers, the verbs appear over the card's corner on
+	     hover or focus; on touch (no hover, whatever the width) they live in a
+	     ⋯ menu, so the card's words keep their room. -->
 	<span class="row-acts">
 		<button
 			class="row-act"
@@ -250,15 +284,65 @@
 				>{/if}</button
 		>
 	</span>
+	<span class="row-more">
+		<BandMenu mark="more" compact size="sm" ariaLabel="More for {label(d)}">
+			{#snippet items(close)}
+				<button
+					class="band-menu-item"
+					role="menuitem"
+					onclick={() => {
+						close();
+						void storageSession.setPinned(d.id, !d.pinned);
+					}}><Mark name="pin" size={14} /> {d.pinned ? 'Unpin' : 'Pin'}</button
+				>
+				<button
+					class="band-menu-item"
+					role="menuitem"
+					onclick={() => {
+						close();
+						startRename(d);
+					}}><Mark name="edit" size={14} /> Rename</button
+				>
+				{#if canMove}
+					<button
+						class="band-menu-item"
+						role="menuitem"
+						onclick={() => {
+							close();
+							moveRequest.id = d.id;
+						}}><Mark name="forward" size={14} /> {MOVE_TO_PROFILE}</button
+					>
+				{/if}
+				<!-- The first tap arms, the second deletes (the inline button's
+				     rule), so the menu stays open between them. -->
+				<button
+					class="band-menu-item row-menu-danger"
+					role="menuitem"
+					onclick={() => {
+						if (armed === d.id) close();
+						del(d);
+					}}
+					><Mark name={armed === d.id ? 'warn' : 'delete'} size={14} />
+					{armed === d.id ? 'Tap again to delete' : 'Delete'}</button
+				>
+			{/snippet}
+		</BandMenu>
+	</span>
 {/snippet}
 
-{#snippet row(d: DocumentRecord)}
+{#snippet line(d: DocumentRecord, tag: 'A' | 'B' | null)}
 	{@const isCurrent = d.id === currentId}
-	<li class="row" class:is-current={isCurrent}>
+	{@const rot = d as RotationDocument}
+	<div class="row-line" class:is-current={isCurrent} class:row-line--b={tag === 'B'}>
 		<button class="row-main" onclick={() => choose(d)} disabled={renaming === d.id}>
-			{@render portraits(seated(d as RotationDocument), 30)}
+			{#if tag}<span class="pair-tag" title="Compared as {tag}">{tag}</span>{/if}
+			{@render portraits(rot.body.slots, 28)}
 			<span class="row-text">
-				{@render labelOrEdit(d)}
+				<span class="card-head">
+					{@render labelOrEdit(d)}
+					{#if d.pinned}<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span
+						>{/if}
+				</span>
 				<span class="row-meta">
 					{#if isCurrent}<span class="row-now">Open now</span>{/if}
 					{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
@@ -268,21 +352,82 @@
 					<span>{ago(recency(d))}</span>
 				</span>
 			</span>
+			<!-- The notation's opening, in the row's middle: what tells two
+			     rotations of the same four apart. -->
+			{#if notationHead(rot)}<span class="row-notation">{notationHead(rot)}</span>{/if}
 		</button>
 		{#if !pickFor}{@render actions(d)}{/if}
-	</li>
+	</div>
+{/snippet}
+
+<!-- A pinned rotation on the shelf: the card form, larger than a row. A
+     pair's B and a Theorycraft copy ride its foot. -->
+{#snippet shelfCard(d: DocumentRecord, b?: DocumentRecord)}
+	{@const isCurrent = d.id === currentId}
+	{@const rot = d as RotationDocument}
 	{@const guest = guestOf(d)}
-	{#if guest && !pickFor}
-		<li class="guest" class:is-current={guest.id === plannerCurrent}>
-			<button class="guest-main" onclick={() => choose(guest)}>
+	<li class="card" class:is-current={isCurrent}>
+		<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
+			<span class="card-top">
+				{#if b}<span class="pair-tag" title="Compared as A">A</span>{/if}
+				{@render portraits(rot.body.slots, 34)}
+			</span>
+			<span class="card-head">
+				{@render labelOrEdit(d)}
+				<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span>
+			</span>
+			{#if notationHead(rot)}<span class="card-notation">{notationHead(rot)}</span>{/if}
+			<span class="row-meta">
+				{#if isCurrent}<span class="row-now">Open now</span>{/if}
+				{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+					>{/if}
+				{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span>{/if}
+				<span>{ago(recency(d))}</span>
+			</span>
+		</button>
+		{#if !pickFor}{@render actions(d)}{/if}
+		{#if b}
+			<button class="card-foot" class:is-current={b.id === currentId} onclick={() => choose(b)}>
+				<span class="pair-tag" title="Compared as B">B</span>
+				<span class="row-label" class:is-derived={!b.name}>{label(b)}</span>
+				{#if b.id === currentId}<span class="row-now">Open now</span>{/if}
+			</button>
+		{/if}
+		{#if guest && !pickFor}
+			<button
+				class="guest-main"
+				class:is-current={guest.id === plannerCurrent}
+				onclick={() => choose(guest)}
+			>
+				<span class="guest-tag">Theorycraft copy</span>
+				<span class="guest-levels">{levelsLine(rot, guest as RotationDocument)}</span>
+				{#if guest.id === plannerCurrent}<span class="row-now">Open now</span>{/if}
+			</button>
+		{/if}
+	</li>
+{/snippet}
+
+{#snippet row(d: DocumentRecord, b?: DocumentRecord)}
+	{@const guest = guestOf(d)}
+	<li class="row" class:is-pair={!!b}>
+		{@render line(d, b ? 'A' : null)}
+		{#if b}{@render line(b, 'B')}{/if}
+		{#if guest && !pickFor}
+			<!-- ⚓ A guest rides its row's foot, framed in Theorycraft's white
+			     (§4.6, §6.3), with its words. -->
+			<button
+				class="guest-main"
+				class:is-current={guest.id === plannerCurrent}
+				onclick={() => choose(guest)}
+			>
 				<span class="guest-tag">Theorycraft copy</span>
 				<span class="guest-levels"
 					>{levelsLine(d as RotationDocument, guest as RotationDocument)}</span
 				>
 				{#if guest.id === plannerCurrent}<span class="row-now">Open now</span>{/if}
 			</button>
-		</li>
-	{/if}
+		{/if}
+	</li>
 {/snippet}
 
 <div class="place">
@@ -331,21 +476,27 @@
 	{:else if loaded && listed.length === 0}
 		<p class="empty">No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.</p>
 	{:else if place === 'planner'}
+		<!-- ⚓ THE SHELF (Nate 2026-10-25): pins are the rotations you reach for
+		     most, so they stand FIRST and LARGER — a row of cards across the
+		     top — and Recent runs beneath as full-width rows. (Tried first: a
+		     column aside, which put the most-used ones out of the way.) -->
 		{#if pinned.length}
 			<p class="sec">Pinned</p>
-			<ul class="rows">
-				{#each pinned as d (d.id)}{@render row(d)}{/each}
+			<ul class="cards shelf">
+				{#each pinned as e (e.d.id)}{@render shelfCard(e.d, e.b)}{/each}
 			</ul>
 		{/if}
 		{#if recent.length}
-			{#if pinned.length}<p class="sec">Recent</p>{/if}
-			<ul class="rows">
-				{#each recent as d (d.id)}{@render row(d)}{/each}
-			</ul>
+			<section class="lib-recent" aria-label="Recent">
+				{#if pinned.length}<p class="sec">Recent</p>{/if}
+				<ul class="rows">
+					{#each recent as e (e.d.id)}{@render row(e.d, e.b)}{/each}
+				</ul>
+			</section>
 		{/if}
 	{:else}
 		<ul class="cards">
-			{#each [...pinned, ...recent] as d (d.id)}
+			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
 				{@const isCurrent = d.id === currentId}
 				{@const lineup = d as LineupDocument}
 				<li class="card" class:is-current={isCurrent}>
@@ -375,6 +526,61 @@
 </div>
 
 <style>
+	.place {
+		container: place / inline-size;
+	}
+	/* Recent is its own width question: the notation reads off it. */
+	.lib-recent {
+		container: library / inline-size;
+		min-width: 0;
+	}
+	/* The shelf's cards are a touch wider than a lineup's: a rotation card
+	   carries two lines of notation. */
+	.shelf {
+		grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+	}
+	.card-notation {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		max-width: 100%;
+		overflow: hidden;
+		overflow-wrap: anywhere;
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	/* A pair's B, or a Theorycraft copy, at the card's foot. */
+	.card-foot {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		width: 100%;
+		padding: 0.4rem 0.8rem;
+		border: none;
+		border-top: 1px solid var(--line-faint);
+		border-radius: 0 0 var(--r-sm) var(--r-sm);
+		background: none;
+		color: var(--text);
+		font: inherit;
+		font-size: var(--fs-sm);
+		text-align: left;
+		cursor: pointer;
+	}
+	.card-foot:hover {
+		background: var(--surface-hover);
+	}
+	.card-foot .row-label {
+		min-width: 0;
+		font-size: var(--fs-md);
+	}
+	.card-foot .row-now {
+		flex: none;
+		margin-left: auto;
+		white-space: nowrap;
+	}
 	.place-acts {
 		display: flex;
 		align-items: center;
@@ -386,24 +592,19 @@
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 	}
-	/* ⚓ A guest, nested under the row it was copied from, framed in
-	   Theorycraft's white (§4.6, §6.3), with its words. */
-	.guest {
-		margin: -2px 0 2px 2.6rem;
-		border-left: 2px solid var(--profile-theorycraft);
-		border-radius: 0 var(--r-sm) var(--r-sm) 0;
-		background: var(--surface-raised);
-	}
-	.guest.is-current {
-		box-shadow: inset 0 0 0 1px var(--profile-theorycraft);
-	}
+	/* ⚓ A guest, at its card's foot, framed in Theorycraft's white (§4.6,
+	   §6.3), with its words. */
 	.guest-main {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.7rem;
+		gap: 0.2rem 0.7rem;
 		width: 100%;
-		padding: 0.35rem 0.8rem;
+		padding: 0.4rem 0.8rem;
 		border: none;
+		border-top: 1px solid var(--line-faint);
+		box-shadow: inset 2px 0 0 var(--profile-theorycraft);
+		border-radius: 0 0 var(--r-sm) var(--r-sm);
 		background: none;
 		color: var(--text);
 		font: inherit;
@@ -413,6 +614,11 @@
 	}
 	.guest-main:hover {
 		background: var(--surface-hover);
+	}
+	.guest-main.is-current {
+		box-shadow:
+			inset 2px 0 0 var(--profile-theorycraft),
+			inset 0 0 0 1px var(--profile-theorycraft);
 	}
 	.guest-tag {
 		font-weight: var(--fw-semibold);
@@ -455,44 +661,104 @@
 		text-transform: uppercase;
 		color: var(--muted);
 	}
-	.rows,
+	/* ── THE GRID (2026-10-25, the full-screen round) ──────────────────────
+	   Rotations and lineups are both cards in one grid that fills the width:
+	   reopening one means recognising it, and its portraits and name already
+	   say who it is (⚓ Nate: no preview pane). */
 	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+		gap: 0.6rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
-	.rows {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	/* ── A rotation row ── */
-	.row,
 	.card {
 		position: relative;
 		display: flex;
-		align-items: center;
+		flex-direction: column;
 		border-radius: var(--r-sm);
 		background: var(--surface-raised);
 		transition: background var(--t-snap);
 	}
-	.row:hover,
 	.card:hover {
 		background: var(--surface-hover);
 	}
-	.row.is-current,
-	.card.is-current {
+	/* ⚓ The current ring is drawn ABOVE everything in the box (Nate
+	   2026-10-25): as an inset shadow it sat under the floating verbs'
+	   ground, which cut it. A pseudo-element after the box's children paints
+	   over them and takes no clicks. */
+	.card.is-current::after,
+	.row-line.is-current::after,
+	.card-foot.is-current::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		border-radius: inherit;
 		box-shadow: inset 0 0 0 1px var(--sel-ring);
+		pointer-events: none;
 	}
-	.row-main,
-	.card-main {
+	.card-top {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+	/* ── A rotation ROW (↻ 2026-10-25: rows again, Nate) ── */
+	.rows {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.row {
+		display: flex;
+		flex-direction: column;
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+		transition: background var(--t-snap);
+	}
+	/* The hover and the current ring belong to a LINE, so a pair's two sides
+	   answer separately. */
+	.row-line {
+		position: relative;
+		display: flex;
+		align-items: center;
+		border-radius: var(--r-sm);
+		transition: background var(--t-snap);
+	}
+	.row-line:hover {
+		background: var(--surface-hover);
+	}
+	/* B rides under A: one rule between them, the pair one object. */
+	.row-line--b {
+		border-top: 1px solid var(--line-faint);
+		border-radius: 0 0 var(--r-sm) var(--r-sm);
+	}
+	.is-pair > .row-line:first-child {
+		border-radius: var(--r-sm) var(--r-sm) 0 0;
+	}
+	.pair-tag {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 1.3rem;
+		height: 1.3rem;
+		border-radius: var(--r-sm);
+		box-shadow: inset 0 0 0 1px var(--line-strong);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+	.row-main {
 		flex: 1;
 		min-width: 0;
 		display: flex;
 		align-items: center;
 		gap: 1rem;
-		padding: 0.6rem 0.8rem;
+		padding: 0.55rem 0.8rem;
 		border: none;
 		background: none;
 		color: inherit;
@@ -501,10 +767,96 @@
 		cursor: pointer;
 	}
 	.row-text {
+		flex: 0 1 auto;
 		display: flex;
 		flex-direction: column;
 		gap: 0.15rem;
 		min-width: 0;
+		width: 18rem;
+	}
+	/* The notation's opening, filling the row's middle: the part that differs
+	   between rotations of the same four. Gone where the row is too narrow to
+	   give it room worth reading. */
+	.row-notation {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	@container library (max-width: 40rem) {
+		.row-notation {
+			display: none;
+		}
+	}
+	/* A row's verbs sit in the row, not over it. */
+	.row .row-acts {
+		position: static;
+		margin-right: 0.5rem;
+		background: none;
+	}
+	.row .row-more {
+		position: static;
+		margin-right: 0.35rem;
+	}
+	.row-line:hover .row-acts,
+	.row-line:has(:focus-visible) .row-acts {
+		opacity: 1;
+	}
+	/* In a narrow column the verbs FLOAT over the row's end on the hovered
+	   ground, as they did on the cards, instead of holding ~100px of the
+	   name's room while invisible. */
+	@container library (max-width: 30rem) {
+		.row .row-acts {
+			/* The FULL height of the line, and a soft leading edge: the name
+			   fades out under the verbs rather than peeking above or beside
+			   them (Nate: a box of the buttons' own height let the name show
+			   over it). Plain stops, no color-mix (the WebKit nesting law). */
+			position: absolute;
+			inset-block: 0;
+			right: 0;
+			align-items: center;
+			margin: 0;
+			padding: 0 0.4rem 0 1.5rem;
+			border-radius: 0 var(--r-sm) var(--r-sm) 0;
+			background: linear-gradient(to right, transparent, var(--surface-hover) 1.25rem);
+		}
+	}
+
+	.card-main {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.45rem;
+		padding: 0.7rem 0.8rem;
+		border: none;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.card-head {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		min-width: 0;
+		max-width: 100%;
+	}
+	.card-pin {
+		flex: none;
+		display: inline-flex;
+		color: var(--accent);
+	}
+	.card-teams {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
 	}
 	.row-label {
 		overflow: hidden;
@@ -532,6 +884,7 @@
 	}
 	.row-meta {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.6rem;
 		font-size: var(--fs-sm);
 		color: var(--muted);
@@ -546,29 +899,36 @@
 		font-weight: var(--fw-semibold);
 	}
 
+	/* Side portraits stand a little apart: their art overhangs the disc
+	   sideways (a ponytail), so they never overlap the way discs could. */
 	.portraits {
 		display: inline-flex;
 		flex: none;
-	}
-	.portraits img,
-	.p-empty {
-		width: var(--p);
-		height: var(--p);
-		border-radius: 50%;
-		background: var(--surface-well);
-	}
-	.portraits > :not(:first-child) {
-		margin-left: calc(var(--p) * -0.18);
-	}
-	.p-empty {
-		box-shadow: inset 0 0 0 1px var(--line-faint);
+		gap: 2px;
 	}
 
-	/* ── The row's verbs: quiet at rest, brighter on the row's hover ── */
+	/* ── The card's verbs: over its top-right corner on hover or focus ── */
 	.row-acts {
+		position: absolute;
+		top: 0.4rem;
+		right: 0.4rem;
 		display: flex;
 		gap: 2px;
-		padding-right: 0.5rem;
+		border-radius: var(--r-sm);
+		/* The hovered card's own ground, so a long name runs UNDER the verbs
+		   rather than through them. */
+		background: var(--surface-hover);
+		opacity: 0;
+		transition: opacity var(--t-snap);
+	}
+	/* 🐛 KEYBOARD focus keeps them, ⛔ not any focus (Nate 2026-10-25): with
+	   `:focus-within`, a clicked Pin kept its focus and held the verbs up
+	   after the cursor left, until a click elsewhere. Rotations only escaped
+	   it because pinning MOVES the row, and the remount dropped the focus. */
+	.card:hover .row-acts,
+	.card:has(:focus-visible) .row-acts,
+	.row-acts:has(.is-armed) {
+		opacity: 1;
 	}
 	.row-act {
 		display: inline-flex;
@@ -581,22 +941,13 @@
 		color: var(--muted);
 		font: inherit;
 		font-size: var(--fs-sm);
-		opacity: 0.55;
 		cursor: pointer;
 		transition:
-			opacity var(--t-snap),
 			background var(--t-snap),
 			color var(--t-snap);
 	}
-	.row:hover .row-act,
-	.card:hover .row-act,
-	.row-act:focus-visible,
-	.row-act.is-on,
-	.row-act.is-armed {
-		opacity: 1;
-	}
 	.row-act:hover {
-		background: var(--surface-hover);
+		background: var(--surface-raised);
 		color: var(--text);
 	}
 	.row-act.is-on {
@@ -606,40 +957,26 @@
 	.row-act.is-armed {
 		color: var(--ui-danger);
 	}
-
-	/* ── Lineups as cards: the teams inside, so a lineup is recognised by
-	      its contents (§6.3) ── */
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-		gap: 0.6rem;
+	.row-more {
+		display: none;
 	}
-	.card {
-		align-items: flex-start;
+	/* Touch: no hover to reveal them, so the verbs are a ⋯ in the corner. */
+	@media (hover: none) {
+		.row-acts {
+			display: none;
+		}
+		.row-more {
+			display: block;
+			position: absolute;
+			top: 0.35rem;
+			right: 0.35rem;
+		}
+		.card-main {
+			padding-right: 2.6rem;
+		}
 	}
-	.card-main {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.55rem;
-	}
-	.card-head {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		min-width: 0;
-		max-width: 100%;
-	}
-	.card-pin {
-		display: inline-flex;
-		color: var(--accent);
-	}
-	.card-teams {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-	.card .row-acts {
-		padding-top: 0.5rem;
+	.row-menu-danger {
+		color: var(--ui-danger);
 	}
 	/* New lineup's menu: the shape's name, then what it starts with. */
 	.preset-label {
