@@ -131,6 +131,14 @@
 	// ── Reordering: drag a member onto another slot to trade places ─────────
 	let dragFrom = $state<number | null>(null);
 	let dragOver = $state<number | null>(null);
+
+	// ── The two halves point at each other: a member hovered in the party
+	// lights their tile in the grid, and an added tile hovered lights their
+	// slot. Whichever was hovered last wins. ─────────────────────────────────
+	let litSlot = $state<number | null>(null);
+	let litId = $state<string | null>(null);
+	const slotLit = (i: number) => litSlot === i || (!!litId && slots[i] === litId);
+	const tileLit = (id: string) => litId === id || (litSlot !== null && slots[litSlot] === id);
 	function drop(i: number): void {
 		const from = dragFrom;
 		dragFrom = dragOver = null;
@@ -285,6 +293,14 @@
 				<li
 					class="td-member"
 					class:is-over={dragOver === i && dragFrom !== i}
+					class:is-lit={!!id && slotLit(i)}
+					onpointerenter={() => {
+						litId = null;
+						litSlot = id ? i : null;
+					}}
+					onpointerleave={() => {
+						if (litSlot === i) litSlot = null;
+					}}
 					ondragover={(e) => {
 						if (dragFrom === null) return;
 						e.preventDefault();
@@ -432,7 +448,15 @@
 						<button
 							class="til-card"
 							class:is-in={inAt >= 0}
+							class:is-lit={inAt >= 0 && tileLit(c.id)}
 							class:is-owned={owned(c.id)}
+							onpointerenter={() => {
+								litSlot = null;
+								litId = inAt >= 0 ? c.id : null;
+							}}
+							onpointerleave={() => {
+								if (litId === c.id) litId = null;
+							}}
 							aria-pressed={inAt >= 0}
 							title={inAt >= 0 ? 'Take off the team' : undefined}
 							onclick={() => pick(c.id)}
@@ -443,6 +467,9 @@
 								>
 								{#if c.element}
 									<span class="til-corner"><img src={elementIcon(c.element)} alt="" /></span>
+								{/if}
+								{#if inAt >= 0}
+									<span class="til-slot" aria-label="Slot {inAt + 1}">{inAt + 1}</span>
 								{/if}
 							</span>
 							<span class="til-name">{c.displayName}</span>
@@ -617,14 +644,16 @@
 		border-radius: var(--r-md);
 		transition: background-color var(--t-snap);
 	}
-	.td-member.is-over {
+	.td-member.is-over,
+	.td-member.is-lit {
 		background: var(--surface-raised);
 	}
 	.td-seat {
 		position: relative;
 		--pip-ground: var(--surface);
 	}
-	.td-member.is-over .td-seat {
+	.td-member.is-over .td-seat,
+	.td-member.is-lit .td-seat {
 		--pip-ground: var(--surface-raised);
 	}
 	.td-slot {
@@ -838,9 +867,40 @@
 	.is-owned .til-face > img {
 		filter: none;
 	}
-	/* On the team: the selection's gold, whoever owns them. */
+	/* ⚓ On the team (Nate 2026-10-25): a gold ring with a soft gold glow,
+	   whoever owns them, so the four stand out of a grid of element rings.
+	   ⚠ The glow mixes from --accent, never --sel-ring: that is a color-mix
+	   already, and a color-mix fed by a color-mix crashes WebKit. */
 	.is-in .til-face {
-		box-shadow: 0 0 0 2px var(--sel-ring);
+		box-shadow:
+			0 0 0 2px var(--accent),
+			0 0 14px 3px color-mix(in srgb, var(--accent) 35%, transparent);
+	}
+	/* Their slot lit from the party strip: the tile's own hover ground. */
+	.til-card.is-lit {
+		background: var(--surface-hover);
+	}
+	/* Which slot they are in: the pips' cutout disc, at the bottom right. */
+	.til-slot {
+		position: absolute;
+		right: -2px;
+		bottom: -2px;
+		display: grid;
+		place-items: center;
+		width: 22px;
+		height: 22px;
+		border-radius: var(--r-round);
+		background: var(--surface);
+		color: var(--accent);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		font-variant-numeric: tabular-nums;
+		line-height: var(--lh-none);
+		transition: background-color var(--t-snap);
+	}
+	.til-card:hover .til-slot,
+	.til-card.is-lit .til-slot {
+		background: var(--surface-hover);
 	}
 	.til-corner {
 		position: absolute;

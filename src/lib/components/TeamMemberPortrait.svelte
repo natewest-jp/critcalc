@@ -70,7 +70,9 @@
 	// The first sits where the Roster's corner discs do (the box's corner, a
 	// pixel out), and each next one turns up the circle by its own width and a
 	// hairline, so they touch the ring the same way at every size.
-	const pip = $derived(size >= 80 ? 22 : 18);
+	// 🎛️ Nate 2026-10-25: larger than the Roster's 18, so a set or a weapon
+	// reads at a glance.
+	const pip = $derived(size >= 80 ? 26 : 22);
 	const GAP = 2;
 	const place = $derived.by(() => {
 		const r = size / 2;
@@ -162,9 +164,11 @@
 		background: var(--pip-ground, var(--surface));
 		transition: background-color var(--t-snap);
 	}
+	/* The icon fills its disc (Nate 2026-10-25): the art carries its own
+	   margin, so a full-size box still clears the disc's edge. */
 	.tmp-pip > img {
-		width: calc(var(--pip) - 2px);
-		height: calc(var(--pip) - 2px);
+		width: var(--pip);
+		height: var(--pip);
 		object-fit: contain;
 	}
 	/* The bench pill's refinement digit (TeamLoadoutPlates .tlp-ref). */

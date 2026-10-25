@@ -69,6 +69,11 @@
 	const profileName = $derived(storageSession.profile?.name ?? 'You');
 	const groupTitle = (g: (typeof SECTION_GROUPS)[number]) => g.title ?? profileName;
 	const isTheorycraft = $derived(storageSession.profile?.kind !== 'real');
+	/** A section that FILLS the screen (2026-10-25): its own controls stay put
+	 *  and only its grid scrolls — the Roster, and a team's details. */
+	const fills = $derived(
+		!isTheorycraft && (section === 'roster' || (section === 'teams' && !!menu.teamDetail))
+	);
 	/** A real profile edits itself; Theorycraft invites an account (§2.2). */
 	const itemsOf = (g: (typeof SECTION_GROUPS)[number]) =>
 		g.id === 'profile' ? profileItems(isTheorycraft ? 'theorycraft' : 'real') : g.items;
@@ -349,7 +354,7 @@
 	<!-- The click handler only re-routes links inside it (keyboard activation
 	     of a link is a click too). -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
-	<main class="main" bind:this={mainEl} onclick={onMainClick}>
+	<main class="main" class:is-fill={fills} bind:this={mainEl} onclick={onMainClick}>
 		<header class="head">
 			<div class="head-text">
 				<button class="head-back" onclick={() => menu.show('index')}
@@ -715,6 +720,23 @@
 	.body {
 		min-width: 0;
 	}
+	/* ⚓ A filling section gets the content area's HEIGHT, not just its width
+	   (2026-10-25): the area scrolled as one block, so the Roster's bar and a
+	   team's party strip scrolled away with the grid that was meant to scroll
+	   under them. Here the area stops scrolling and hands its height down;
+	   the section's own scroller takes over and ends at the screen's foot. */
+	.main.is-fill {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		padding-bottom: 0;
+	}
+	.main.is-fill .body {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+	}
 	/* 🎛️ The measure: 68ch of the prose face, about 75 characters a line,
 	   inside the usual 45–75 (it was 56ch, ~62). The site-wide cap on
 	   `.prose p, li` (app.css) is lifted here so the column sets it once.
@@ -823,6 +845,9 @@
 		}
 		.main {
 			padding: 1rem var(--site-pad-x) 3rem;
+		}
+		.main.is-fill {
+			padding-bottom: 0;
 		}
 	}
 </style>

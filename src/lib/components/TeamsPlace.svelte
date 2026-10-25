@@ -235,6 +235,13 @@
 {/if}
 
 <style>
+	/* Scrolls on its own only when the content area hands it a height (a
+	   details entry whose team is gone, MenuState's .is-fill). */
+	.place {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+	}
 	.place-acts {
 		display: flex;
 		gap: 0.4rem;
