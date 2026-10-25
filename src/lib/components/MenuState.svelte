@@ -71,6 +71,10 @@
 	const isTheorycraft = $derived(storageSession.profile?.kind !== 'real');
 	/** A section that FILLS the screen (2026-10-25): its own controls stay put
 	 *  and only its grid scrolls — the Roster, and a team's details. */
+	/** ⚓ A team's details carry no page head and no ✕ (Nate 2026-10-25): the
+	 *  team's name is the title, and its Done is the one way out — two closes
+	 *  on one screen were mistaken for each other. Escape still leaves. */
+	const headless = $derived(!isTheorycraft && section === 'teams' && !!menu.teamDetail);
 	const fills = $derived(
 		!isTheorycraft && (section === 'roster' || (section === 'teams' && !!menu.teamDetail))
 	);
@@ -355,24 +359,26 @@
 	     of a link is a click too). -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
 	<main class="main" class:is-fill={fills} bind:this={mainEl} onclick={onMainClick}>
-		<header class="head">
-			<div class="head-text">
-				<button class="head-back" onclick={() => menu.show('index')}
-					><span aria-hidden="true">‹</span> Menu</button
+		{#if !headless}
+			<header class="head">
+				<div class="head-text">
+					<button class="head-back" onclick={() => menu.show('index')}
+						><span aria-hidden="true">‹</span> Menu</button
+					>
+					{#if group}<p class="kicker">{groupTitle(group)}</p>{/if}
+					<!-- A chapter brings its own title. -->
+					{#if item && !chapter}<h2 class="head-title">{item.label}</h2>{/if}
+				</div>
+				<!-- The inspector modal's ✕ (InspectModal), one close on every slate
+				     surface (Nate 2026-10-23). -->
+				<button
+					class="btn btn--icon head-close"
+					aria-label={tool ? `Back to the ${tool.short}` : 'Close'}
+					title={tool ? `Back to the ${tool.short} (Esc)` : 'Close (Esc)'}
+					onclick={() => menu.close()}><Mark name="close" size={16} /></button
 				>
-				{#if group}<p class="kicker">{groupTitle(group)}</p>{/if}
-				<!-- A chapter brings its own title. -->
-				{#if item && !chapter}<h2 class="head-title">{item.label}</h2>{/if}
-			</div>
-			<!-- The inspector modal's ✕ (InspectModal), one close on every slate
-			     surface (Nate 2026-10-23). -->
-			<button
-				class="btn btn--icon head-close"
-				aria-label={tool ? `Back to the ${tool.short}` : 'Close'}
-				title={tool ? `Back to the ${tool.short} (Esc)` : 'Close (Esc)'}
-				onclick={() => menu.close()}><Mark name="close" size={16} /></button
-			>
-		</header>
+			</header>
+		{/if}
 
 		<div class="body">
 			{#if section === 'rotations'}

@@ -257,16 +257,86 @@
 
 <div class="td">
 	<div class="td-main">
-		<div class="td-head">
-			<input
-				class="td-name"
-				bind:value={name}
-				placeholder={full ? rotationLabel(slots) : 'New team'}
-				aria-label="Team name"
-				onkeydown={(e) => {
-					if (e.key === 'Enter' && canSave) void save();
-				}}
-			/>
+		<!-- ↻ The TOP BAR (Nate 2026-10-25): the details carry no page head and
+		     no ✕ — the team's name is the title, and Done (or Save / Cancel) is
+		     the way out, so there is one close on the screen, not two. Each zone
+		     names its own grid column. -->
+		<div class="td-top">
+			<span class="td-title">
+				<input
+					class="td-name"
+					bind:value={name}
+					placeholder={full ? rotationLabel(slots) : 'New team'}
+					aria-label="Team name"
+					size={Math.max(8, (name || (full ? rotationLabel(slots) : 'New team')).length + 1)}
+					onkeydown={(e) => {
+						if (e.key === 'Enter' && canSave) void save();
+					}}
+				/>
+				{#if resonances.length || comp.hasAscendantGleam || comp.hasSecretRite}
+					<span class="td-bonuses" aria-label="Team bonuses">
+						{#each resonances as res (res.key)}
+							<span class="td-res" style:--pill-color={pillColor(res.element)} title={res.effect}>
+								{#if res.element}<img src={elementIcon(res.element)} alt="" />{/if}
+								{res.label}
+							</span>
+						{/each}
+						{#if comp.hasAscendantGleam}
+							<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
+						{/if}
+						{#if comp.hasSecretRite}
+							<span class="td-res td-res--faction">Hexerei: Secret Rite</span>
+						{/if}
+					</span>
+				{/if}
+			</span>
+			<span class="td-mid">
+				<span class="td-work">
+					{#if start && work?.rotations}<button
+							class="td-link"
+							onclick={() => onShowWork(start, 'rotations')}
+							>{plural(work.rotations, 'rotation', 'rotations')}</button
+						>{/if}
+					{#if start && work?.rotations && work?.lineups}<span aria-hidden="true">·</span>{/if}
+					{#if start && work?.lineups}<button
+							class="td-link"
+							onclick={() => onShowWork(start, 'lineups')}
+							>{plural(work.lineups, 'lineup', 'lineups')}</button
+						>{/if}
+				</span>
+				<span class="td-go">
+					<button class="btn btn--sm" disabled={!full || !!clash} onclick={() => then(onPlan)}
+						>Plan a rotation</button
+					>
+					<BandMenu label="New lineup" align="end" size="sm" disabled={!full || !!clash}>
+						{#snippet items(close)}
+							{#each BOARD_PRESETS as p (p.key)}
+								<button
+									class="band-menu-item"
+									role="menuitem"
+									onclick={() => {
+										close();
+										void then((t) => onNewLineup(t, p.key));
+									}}
+								>
+									<span class="preset-label">{p.label}</span>
+									<span class="preset-hint">{p.hint}</span>
+								</button>
+							{/each}
+						{/snippet}
+					</BandMenu>
+					{#if start}
+						<button
+							class="btn btn--sm td-del"
+							class:is-armed={armed}
+							onclick={del}
+							title={armed ? 'Click again to delete' : undefined}
+							><Mark name={armed ? 'warn' : 'delete'} size={13} />
+							{armed ? 'Delete?' : 'Delete team'}</button
+						>
+					{/if}
+				</span>
+			</span>
 			<span class="td-acts">
 				{#if dirty}
 					<button class="btn" onclick={leave}>Cancel</button>
@@ -359,71 +429,6 @@
 			{/each}
 		</ol>
 
-		<!-- ── What the four make, and what to do with them ── -->
-		<div class="td-foot">
-			{#if resonances.length || comp.hasAscendantGleam || comp.hasSecretRite}
-				<span class="td-bonuses" aria-label="Team bonuses">
-					{#each resonances as res (res.key)}
-						<span class="td-res" style:--pill-color={pillColor(res.element)} title={res.effect}>
-							{#if res.element}<img src={elementIcon(res.element)} alt="" />{/if}
-							{res.label}
-						</span>
-					{/each}
-					{#if comp.hasAscendantGleam}
-						<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
-					{/if}
-					{#if comp.hasSecretRite}
-						<span class="td-res td-res--faction">Hexerei: Secret Rite</span>
-					{/if}
-				</span>
-			{/if}
-			<span class="td-work">
-				{#if start && work?.rotations}<button
-						class="td-link"
-						onclick={() => onShowWork(start, 'rotations')}
-						>{plural(work.rotations, 'rotation', 'rotations')}</button
-					>{/if}
-				{#if start && work?.rotations && work?.lineups}<span aria-hidden="true">·</span>{/if}
-				{#if start && work?.lineups}<button
-						class="td-link"
-						onclick={() => onShowWork(start, 'lineups')}
-						>{plural(work.lineups, 'lineup', 'lineups')}</button
-					>{/if}
-			</span>
-			<span class="td-go">
-				<button class="btn btn--sm" disabled={!full || !!clash} onclick={() => then(onPlan)}
-					>Plan a rotation</button
-				>
-				<BandMenu label="New lineup" align="end" size="sm" disabled={!full || !!clash}>
-					{#snippet items(close)}
-						{#each BOARD_PRESETS as p (p.key)}
-							<button
-								class="band-menu-item"
-								role="menuitem"
-								onclick={() => {
-									close();
-									void then((t) => onNewLineup(t, p.key));
-								}}
-							>
-								<span class="preset-label">{p.label}</span>
-								<span class="preset-hint">{p.hint}</span>
-							</button>
-						{/each}
-					{/snippet}
-				</BandMenu>
-				{#if start}
-					<button
-						class="btn btn--sm td-del"
-						class:is-armed={armed}
-						onclick={del}
-						title={armed ? 'Click again to delete' : undefined}
-						><Mark name={armed ? 'warn' : 'delete'} size={13} />
-						{armed ? 'Delete?' : 'Delete team'}</button
-					>
-				{/if}
-			</span>
-		</div>
-
 		<div class="td-bar">
 			<p class="td-hint">
 				{#if at < 0}
@@ -467,9 +472,6 @@
 								>
 								{#if c.element}
 									<span class="til-corner"><img src={elementIcon(c.element)} alt="" /></span>
-								{/if}
-								{#if inAt >= 0}
-									<span class="til-slot" aria-label="Slot {inAt + 1}">{inAt + 1}</span>
 								{/if}
 							</span>
 							<span class="til-name">{c.displayName}</span>
@@ -558,23 +560,41 @@
 		display: none;
 	}
 
-	/* ── Head: the name, and keeping or dropping the draft ── */
-	.td-head {
+	/* ── The top bar: the name and its bonuses · the work and the verbs ·
+	   the way out. Wraps when the column can't hold all three. ── */
+	.td-top {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.8rem;
+		justify-content: space-between;
+		gap: 0.6rem 1.5rem;
 	}
-	.td-name {
-		flex: 1;
+	.td-title {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem 0.8rem;
 		min-width: 0;
-		max-width: 28rem;
-		padding: 0.3rem 0.5rem;
+	}
+	.td-mid {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem 1rem;
+	}
+	/* The name is the screen's title, in the title's face. */
+	.td-name {
+		min-width: 0;
+		max-width: 100%;
+		margin-left: -0.5rem;
+		padding: 0.15rem 0.5rem;
 		border: 1px solid transparent;
 		border-radius: var(--r-sm);
 		background: none;
 		color: var(--text);
 		font: inherit;
-		font-size: var(--fs-xl);
+		font-family: var(--font-display);
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
 		transition:
 			border-color var(--t-snap),
@@ -595,7 +615,6 @@
 	.td-acts {
 		display: flex;
 		gap: 0.4rem;
-		margin-left: auto;
 	}
 	.td-clash {
 		display: flex;
@@ -722,14 +741,6 @@
 		font-weight: var(--fw-normal);
 	}
 
-	/* ── Foot: bonuses, the work made from it, starting more ── */
-	.td-foot {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.6rem 1rem;
-		max-width: 46rem;
-	}
 	.td-bonuses {
 		display: flex;
 		flex-wrap: wrap;
@@ -772,7 +783,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.4rem;
-		margin-left: auto;
 	}
 	.td-del.is-armed,
 	.td-del:hover {
@@ -789,13 +799,16 @@
 	}
 
 	/* ── The grid ── */
+	/* The hint sits ABOVE the rule, so the grid's roll-off fades right up
+	   to it (Nate 2026-10-25). */
 	.td-bar {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		margin-top: 0.3rem;
-		padding-top: 0.8rem;
-		border-top: 1px solid var(--line-faint);
+		margin-top: 0.2rem;
+		margin-bottom: -0.9rem;
+		padding-bottom: 0.6rem;
+		border-bottom: 1px solid var(--line-faint);
 	}
 	.td-hint {
 		margin: 0;
@@ -807,7 +820,7 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: 4px 6px 1.25rem 4px;
+		padding: 0.9rem 6px 1.25rem 4px;
 	}
 	/* The Roster's tiles (RosterTab .til), as buttons. */
 	.til {
@@ -867,39 +880,17 @@
 	.is-owned .til-face > img {
 		filter: none;
 	}
-	/* ⚓ On the team (Nate 2026-10-25): a gold ring with a soft gold glow,
-	   whoever owns them, so the four stand out of a grid of element rings.
-	   ⚠ The glow mixes from --accent, never --sel-ring: that is a color-mix
-	   already, and a color-mix fed by a color-mix crashes WebKit. */
-	.is-in .til-face {
-		box-shadow:
-			0 0 0 2px var(--accent),
-			0 0 14px 3px color-mix(in srgb, var(--accent) 35%, transparent);
+	/* ⚓ On the team (Nate 2026-10-25): the house SELECTED state, on the
+	   tile — a ground that stays, and a gold ring round the tile's box
+	   (hover is the same ground with no ring; /styleguide: density separates
+	   resting from engaged, hue separates the two engaged states). The
+	   portrait keeps its own ring. Lit from the party strip: one rung up. */
+	.til-card.is-in {
+		background: var(--surface-raised);
+		box-shadow: inset 0 0 0 1.5px var(--sel-ring);
 	}
-	/* Their slot lit from the party strip: the tile's own hover ground. */
+	.til-card.is-in:hover,
 	.til-card.is-lit {
-		background: var(--surface-hover);
-	}
-	/* Which slot they are in: the pips' cutout disc, at the bottom right. */
-	.til-slot {
-		position: absolute;
-		right: -2px;
-		bottom: -2px;
-		display: grid;
-		place-items: center;
-		width: 22px;
-		height: 22px;
-		border-radius: var(--r-round);
-		background: var(--surface);
-		color: var(--accent);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-bold);
-		font-variant-numeric: tabular-nums;
-		line-height: var(--lh-none);
-		transition: background-color var(--t-snap);
-	}
-	.til-card:hover .til-slot,
-	.til-card.is-lit .til-slot {
 		background: var(--surface-hover);
 	}
 	.til-corner {
