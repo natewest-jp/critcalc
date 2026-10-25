@@ -32,7 +32,9 @@ const CONTENT_STOPS: Record<string, string> = {
 	'1360px':
 		"Visualizers — two instruments fit side by side (viewportCapacity); below it band A's lineup controls do nothing, so the band is hidden",
 	'75rem':
-		"TopBar — the wordmark and its Beta tag give way so the three tool buttons keep their room (measured 2026-10-22: at rest the full form fits from ~1160px — brand 208 + nav 660 + flanks; 75rem keeps ~40px for a notice such as 'KQM copied' in the right flank)"
+		"TopBar — the wordmark and its Beta tag give way so the three tool buttons keep their room (measured 2026-10-22: at rest the full form fits from ~1160px — brand 208 + nav 660 + flanks; 75rem keeps ~40px for a notice such as 'KQM copied' in the right flank)",
+	'22.5rem':
+		"TopBar — the phone's document button drops its Library mark so the saved name gets ~17px more (a TRIAL, ⚓ Nate 2026-10-25: covers 320 and the 360 Androids, leaves 375 its mark; measured at 320 the name went 38 → 57px)"
 };
 
 const walk = (dir: string, out: string[] = []): string[] => {

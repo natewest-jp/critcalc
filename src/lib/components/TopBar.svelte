@@ -45,6 +45,7 @@
 	const docTool = $derived(
 		tool?.path === '/planner' ? 'planner' : tool?.path === '/builder' ? 'builder' : null
 	);
+	const landing = $derived(page.url.pathname === resolve('/'));
 	const profile = $derived(storageSession.profile);
 	/** ⚓ A guest (§4.6): a Theorycraft document shown in a real profile. The
 	 *  button wears Theorycraft's white, and the white comes with the word. */
@@ -151,7 +152,9 @@
 	</div>
 
 	<!-- ── Three equal tool buttons, centred (form 5) ─────────────────── -->
-	<nav class="tb-nav" aria-label="Tools">
+	<!-- ↻ 2026-10-25 (⚓ Nate): not on the landing — its cards ARE the tool
+	     nav (the old bar's rule: only a tool passed the switcher). -->
+	<nav class="tb-nav" class:is-landing={landing} aria-label="Tools">
 		{#each TOOLS as t (t.path)}
 			{@const current = tool?.path === t.path}
 			{@const withDoc = current && !!docName}
@@ -193,7 +196,7 @@
 		{#if docTool && docName}
 			<button class="tb-phonedoc" onclick={() => place && menuState.toggle(place)}>
 				<span class="nav-label" class:is-derived={docName.derived}>{docName.text}</span>
-				<Mark name="library" size={13} />
+				<span class="tb-phonedoc-door"><Mark name="library" size={13} /></span>
 			</button>
 		{/if}
 
@@ -203,80 +206,126 @@
 					onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
 				>{/each}{/if}
 
+		<!-- ⚓ §12 Q14: Theorycraft invites an account. ↻ 2026-10-25 (⚓ Nate): it
+		     stands LEFT of the picture, so on a wide bar it grows toward the
+		     centre and pushes none of the doors (hidden on a phone). -->
+		{#if profile?.kind === 'theorycraft' && storageSession.canAddProfile}
+			<button class="tb-invite" onclick={() => menuState.show('profile/new')}
+				>Add your account</button
+			>
+		{/if}
 		<div class="tb-actions">
-			{#if docTool}
+			{#if profile}
+				{@const url = pictureUrl(profile)}
 				<div class="tb-menu-wrap">
 					<button
-						class="tb-glyph"
-						class:is-open={menu === 'share'}
-						aria-label="Share"
-						title="Share"
-						disabled={!canShare}
-						onclick={(e) => toggle('share', e)}
-						><svg viewBox="0 0 56 56" fill-rule="evenodd" aria-hidden="true"
-							><path
-								d="M13.773,3.631C32.373,-6.826 55.553,6.546 55.789,27.871C55.539,49.195 32.35,62.584 13.757,52.138C-4.593,41.271 -4.584,14.51 13.773,3.631ZM25.603,19.878L25.603,31.093C25.603,33.946 30.076,33.946 30.076,31.093L30.076,19.878L31.37,21.172C33.387,23.19 36.55,20.027 34.533,18.009L29.421,12.897C28.619,12.096 27.059,12.096 26.258,12.897L21.145,18.009C19.128,20.027 22.291,23.19 24.308,21.172L25.603,19.878ZM19.851,27.259C19.851,24.758 15.534,24.446 15.378,27.259C15.189,30.662 15.284,34.077 15.378,37.484C15.378,40.113 17.542,42.276 20.171,42.276L35.507,42.276C38.137,42.276 40.3,40.113 40.3,37.484L40.3,27.259C40.3,27.006 40.3,25.023 38.064,25.023C35.827,25.023 35.827,27.006 35.827,27.259L35.827,37.484C35.827,37.659 35.683,37.803 35.507,37.803L20.171,37.803C19.996,37.803 19.851,37.659 19.851,37.484L19.851,27.259Z"
-							/></svg
-						></button
+						class="tb-profile"
+						class:is-open={menu === 'profile'}
+						aria-label="Profile: {profile.name}"
+						aria-haspopup="menu"
+						title={profile.name}
+						onclick={(e) => toggle('profile', e)}
 					>
-					{#if menu === 'share'}
-						<div class="tb-menu ctx-dark" role="menu">
+						<span class="pp" style:--pp-color={colourValue(profile.colour)}>
+							{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback"
+									>{profile.name[0]}</span
+								>{/if}
+						</span>
+					</button>
+					{#if cue}
+						{#key cue.key}
+							<span class="tb-cue-name" style:--cue-ms="{motion(WASH_MS)}ms">{cue.name}</span>
+						{/key}
+					{/if}
+					{#if menu === 'profile'}
+						<!-- The profile menu (§2.3): the switcher, Add an account, and the
+						     profile's own places. -->
+						<div class="tb-menu tb-menu--profile ctx-dark" role="menu">
+							<div class="pm-head">
+								<span class="pm-name">{profile.name}</span>
+								<span class="pm-sub"
+									>{profile.kind === 'theorycraft'
+										? 'Shared links open here'
+										: 'Your account, in this browser'}</span
+								>
+							</div>
+							{#each storageSession.profiles.filter((p) => p.id !== profile.id) as p (p.id)}
+								{@const purl = pictureUrl(p)}
+								<button
+									class="mi"
+									role="menuitem"
+									onclick={() => {
+										menu = null;
+										void storageSession.switchTo(p.id);
+									}}
+								>
+									<span class="pp pp--sm" style:--pp-color={colourValue(p.colour)}>
+										{#if purl}<img src={purl} alt="" />{/if}
+									</span>
+									{p.name}
+								</button>
+							{/each}
+							<button
+								class="mi"
+								role="menuitem"
+								disabled={!storageSession.canAddProfile}
+								title={storageSession.canAddProfile
+									? undefined
+									: 'Seven accounts, one per element color, is the most a browser holds'}
+								onclick={() => {
+									menu = null;
+									menuState.show('profile/new');
+								}}><Mark name="plus" /> Add your account</button
+							>
+							<span class="pm-rule" aria-hidden="true"></span>
+							{#if profile.kind === 'real'}
+								<button
+									class="mi"
+									role="menuitem"
+									onclick={() => {
+										menu = null;
+										menuState.show('profile');
+									}}><Mark name="edit" /> Profile</button
+								>
+							{/if}
 							<button
 								class="mi"
 								role="menuitem"
 								onclick={() => {
 									menu = null;
-									if (docTool === 'planner') documentBar.shareLink();
-									else boardBar.shareLink();
-								}}><Mark name="link" /> Copy link</button
+									menuState.show('roster');
+								}}><Mark name="constellation" /> Roster</button
 							>
-							{#if canExportChart}
-								<button
-									class="mi"
-									role="menuitem"
-									onclick={() => {
-										menu = null;
-										documentBar.shareKqm();
-									}}><Mark name="copy" /> Copy KQM notation</button
-								>
-								<button
-									class="mi"
-									role="menuitem"
-									onclick={() => {
-										menu = null;
-										documentBar.sharePng('copy');
-									}}><Mark name="image" /> Copy timeline image</button
-								>
-								<button
-									class="mi"
-									role="menuitem"
-									onclick={() => {
-										menu = null;
-										documentBar.sharePng('download');
-									}}><Mark name="image" /> Download timeline image</button
-								>
-							{/if}
 						</div>
 					{/if}
 				</div>
 			{/if}
-
-			<!-- Phone: the index (⏭ 2c's menu state; today's compass for now). -->
-			<!-- Nate's compass (assets-src/tools/navigation.svg). -->
+			<!-- ⚓ TEAMS, one click from anywhere (Nate 2026-10-25): a team is where
+			     work STARTS (Plan a rotation, Add to a lineup), as Party Setup is in
+			     the game; the roster is set up once and sits behind the picture. In
+			     Theorycraft the section is the invitation to make a profile. Nate's
+			     art (assets-src/tools/teams.svg): the back figure is the front's white
+			     under a black WASH, so it needs fill="#000" inlined (the compass's
+			     fill-opacity trap). -->
 			<button
-				class="tb-glyph tb-glyph--menu"
-				class:is-open={showing === 'index'}
-				aria-label="Menu"
-				title="Menu"
-				onclick={() => menuState.toggle('index')}
+				class="tb-glyph tb-glyph--teams"
+				class:is-open={showing === 'teams'}
+				aria-label="Teams"
+				title="Teams"
+				onclick={() => {
+					menu = null;
+					menuState.toggle('teams');
+				}}
 			>
-				<svg viewBox="0 0 53 62" fill-rule="evenodd" aria-hidden="true"
+				<svg viewBox="0 0 47 58" fill-rule="evenodd" aria-hidden="true"
 					><path
-						d="M25.071,16.831L24.277,13.093C24.179,12.833 24.026,12.596 23.83,12.4C23.633,12.203 23.397,12.051 23.136,11.953L18.533,10.218L23.136,8.483C23.397,8.385 23.633,8.233 23.83,8.036C24.026,7.84 24.179,7.603 24.277,7.343L26.001,2.767C20.976,2.769 19.892,4.244 20.249,4.818C20.466,5.167 21.671,5.888 23.704,6.227L23.407,7.016C23.37,7.115 23.317,7.208 23.252,7.291C20.576,6.838 18.417,5.815 17.643,4.973C15.91,3.089 19.03,-0 26.011,0C32.992,0 36.112,3.089 34.38,4.973C33.605,5.815 31.446,6.838 28.771,7.291C28.705,7.208 28.653,7.115 28.615,7.016L28.318,6.227C30.352,5.888 31.556,5.167 31.773,4.818C32.131,4.244 31.046,2.769 26.022,2.767L27.746,7.343C27.844,7.603 27.996,7.84 28.193,8.036C28.39,8.233 28.626,8.385 28.886,8.483L33.489,10.218L28.886,11.953C28.626,12.051 28.39,12.203 28.193,12.4C27.996,12.596 27.844,12.833 27.746,13.093L26.952,16.831L28.849,21.147C26.968,22.069 24.166,23.235 21.845,24.166L25.071,16.831ZM7.706,36.077C7.829,38.517 8.431,40.831 9.418,42.928C8.078,45.404 6.523,48.214 5.152,50.671C1.916,46.335 0,40.958 0,35.137C0,23.898 7.143,14.315 17.132,10.683L22.809,12.822C22.945,12.873 23.069,12.953 23.173,13.057C23.276,13.16 23.356,13.284 23.407,13.42L24.094,16.874C14.589,17.547 7.682,25.461 7.682,35.137C7.682,34.821 7.69,34.508 7.706,34.196L15.041,30.97C14.11,33.291 12.943,36.093 12.021,37.975L7.706,36.077ZM44.34,35.137C44.34,32.302 43.748,29.618 42.67,27.223C43.995,24.778 45.522,22.019 46.87,19.602C50.106,23.938 52.023,29.315 52.023,35.137C52.023,49.493 40.367,61.148 26.011,61.148C20.19,61.148 14.813,59.231 10.477,55.996C12.934,54.625 15.744,53.07 18.219,51.729C20.317,52.717 22.631,53.318 25.071,53.442L23.173,49.127C25.054,48.204 27.857,47.038 30.177,46.107L26.952,53.442C36.32,52.968 43.842,45.445 44.317,36.077L36.982,39.303C37.913,36.982 39.079,34.18 40.001,32.298L44.317,34.196C44.333,34.508 44.34,34.821 44.34,35.137ZM34.026,18.423C32.166,17.568 30.116,17.029 27.928,16.874L28.615,13.42C28.667,13.284 28.747,13.16 28.85,13.057C28.953,12.953 29.077,12.873 29.214,12.822L34.891,10.683C37.294,11.556 39.532,12.775 41.546,14.277C39.162,15.607 36.446,17.11 34.026,18.423ZM48.831,12.317C48.831,12.317 40.978,26.18 38.445,31.254C36.589,34.973 33.633,42.759 33.633,42.759C33.633,42.759 25.848,45.714 22.128,47.571C17.055,50.104 3.191,57.956 3.191,57.956C3.191,57.956 11.044,44.093 13.577,39.019C15.434,35.3 18.389,27.514 18.389,27.514C18.389,27.514 26.175,24.559 29.894,22.703C34.968,20.17 48.831,12.317 48.831,12.317Z"
+						d="M27.734,4.795C28.876,4.019 30.254,3.564 31.737,3.564C35.672,3.564 38.867,6.759 38.867,10.694C38.867,14.628 35.672,17.823 31.737,17.823C29.41,17.823 27.342,16.705 26.04,14.978C27.444,13.101 28.275,10.772 28.275,8.25C28.275,7.045 28.085,5.884 27.734,4.795ZM30.665,19.752C31.069,19.693 31.43,19.662 31.737,19.662C35.362,19.662 46.449,24.031 46.449,25.926C46.449,26.705 44.222,28.155 42.026,29.592C40.666,37.331 34.886,53.602 31.737,53.602C30.45,53.602 28.722,50.882 27.037,47.137C29.025,41.941 30.767,36.16 31.64,31.923C33.606,30.603 35.392,29.287 36.122,28.357L36.8,27.192L37.05,25.877L36.932,24.961L36.508,23.942C36.15,23.328 35.459,22.57 34.414,21.831C33.476,21.168 32.164,20.453 30.665,19.752Z"
 					/><path
-						d="M12.021,37.975L7.706,36.077C7.69,35.765 7.682,35.452 7.682,35.137C7.682,34.821 7.69,34.508 7.706,34.196L15.041,30.97C14.11,33.291 12.943,36.093 12.021,37.975ZM21.845,24.166L25.071,16.831C25.382,16.815 25.696,16.807 26.011,16.807C26.327,16.807 26.64,16.815 26.952,16.831L28.849,21.147C26.968,22.069 24.166,23.235 21.845,24.166ZM40.001,32.298L44.317,34.196C44.333,34.508 44.34,34.821 44.34,35.137C44.34,35.452 44.333,35.765 44.317,36.077L36.982,39.303C37.913,36.982 39.079,34.18 40.001,32.298ZM30.177,46.107L26.952,53.442C26.64,53.458 26.327,53.466 26.011,53.466C25.696,53.466 25.382,53.458 25.071,53.442L23.173,49.127C25.054,48.204 27.857,47.038 30.177,46.107Z"
+						d="M27.734,4.795C28.876,4.019 30.254,3.564 31.737,3.564C35.672,3.564 38.867,6.759 38.867,10.694C38.867,14.628 35.672,17.823 31.737,17.823C29.41,17.823 27.342,16.705 26.04,14.978C27.444,13.101 28.275,10.772 28.275,8.25C28.275,7.045 28.085,5.884 27.734,4.795ZM30.665,19.752C31.069,19.693 31.43,19.662 31.737,19.662C35.362,19.662 46.449,24.031 46.449,25.926C46.449,26.705 44.222,28.155 42.026,29.592C40.666,37.331 34.886,53.602 31.737,53.602C30.45,53.602 28.722,50.882 27.037,47.137C29.025,41.941 30.767,36.16 31.64,31.923C33.606,30.603 35.392,29.287 36.122,28.357L36.8,27.192L37.05,25.877L36.932,24.961L36.508,23.942C36.15,23.328 35.459,22.57 34.414,21.831C33.476,21.168 32.164,20.453 30.665,19.752Z"
+						fill="#000"
+						fill-opacity="0.4"
 					/><path
-						d="M34.882,26.266C34.882,26.266 31.829,31.655 30.845,33.627C30.123,35.073 28.974,38.099 28.974,38.099C28.974,38.099 25.948,39.248 24.502,39.97C22.53,40.954 17.141,44.007 17.141,44.007C17.141,44.007 20.193,38.618 21.178,36.646C21.9,35.2 23.048,32.174 23.048,32.174C23.048,32.174 26.075,31.025 27.521,30.303C29.493,29.319 34.882,26.266 34.882,26.266ZM30.999,30.149C29.899,30.752 28.854,31.314 28.191,31.645C27.117,32.181 25.197,32.947 24.208,33.333C23.822,34.322 23.056,36.242 22.52,37.316C22.189,37.979 21.627,39.024 21.024,40.124C22.124,39.521 23.169,38.959 23.832,38.628C24.906,38.092 26.825,37.326 27.814,36.94C28.201,35.951 28.966,34.031 29.503,32.957C29.834,32.294 30.396,31.249 30.999,30.149Z"
+						d="M5.119,30.119C2.578,28.457 -0,26.779 0,25.877C-0,23.684 12.831,18.628 17.025,18.628C21.22,18.628 34.05,23.684 34.05,25.877C34.05,26.779 31.473,28.457 28.932,30.119C27.358,39.075 20.669,57.904 17.025,57.904C13.381,57.904 6.692,39.075 5.119,30.119ZM17.025,0C21.579,0 25.275,3.697 25.275,8.25C25.275,12.803 21.579,16.5 17.025,16.5C12.472,16.5 8.775,12.803 8.775,8.25C8.775,3.697 12.472,0 17.025,0Z"
 					/></svg
 				>
 			</button>
@@ -331,6 +380,89 @@
 					</div>
 				{/if}
 			</div>
+			{#if docTool}
+				<div class="tb-menu-wrap tb-share">
+					<button
+						class="tb-glyph"
+						class:is-open={menu === 'share'}
+						aria-label="Share"
+						title="Share"
+						disabled={!canShare}
+						onclick={(e) => toggle('share', e)}
+						><svg viewBox="0 0 56 56" fill-rule="evenodd" aria-hidden="true"
+							><path
+								d="M13.773,3.631C32.373,-6.826 55.553,6.546 55.789,27.871C55.539,49.195 32.35,62.584 13.757,52.138C-4.593,41.271 -4.584,14.51 13.773,3.631ZM19.138,26.581C19.138,24.285 15.185,24.039 15.061,26.581C14.886,30.201 14.974,33.83 15.061,37.453C15.061,40.062 17.208,42.209 19.818,42.209L36.126,42.209C38.735,42.209 40.882,40.062 40.882,37.453L40.882,26.581C40.882,24.179 36.805,24.179 36.805,26.581L36.805,37.453C36.805,37.826 36.498,38.132 36.126,38.132L19.818,38.132C19.445,38.132 19.138,37.826 19.138,37.453L19.138,26.581ZM25.933,17.912L25.933,30.658C25.933,32.696 27.741,32.696 27.972,32.696C28.202,32.696 30.01,32.696 30.01,30.658L30.01,17.912L31.966,19.868C32.129,20.031 33.408,21.31 34.849,19.868C36.291,18.427 35.012,17.148 34.849,16.985L29.413,11.55C29.25,11.386 27.972,10.108 26.53,11.55L21.094,16.985C19.653,18.427 20.931,19.705 21.094,19.868C21.257,20.031 22.536,21.31 23.977,19.868L25.933,17.912Z"
+							/></svg
+						></button
+					>
+					{#if menu === 'share'}
+						<div class="tb-menu ctx-dark" role="menu">
+							<button
+								class="mi"
+								role="menuitem"
+								onclick={() => {
+									menu = null;
+									if (docTool === 'planner') documentBar.shareLink();
+									else boardBar.shareLink();
+								}}><Mark name="link" /> Copy link</button
+							>
+							{#if canExportChart}
+								<button
+									class="mi"
+									role="menuitem"
+									onclick={() => {
+										menu = null;
+										documentBar.shareKqm();
+									}}><Mark name="copy" /> Copy KQM notation</button
+								>
+								<button
+									class="mi"
+									role="menuitem"
+									onclick={() => {
+										menu = null;
+										documentBar.sharePng('copy');
+									}}><Mark name="image" /> Copy timeline image</button
+								>
+								<button
+									class="mi"
+									role="menuitem"
+									onclick={() => {
+										menu = null;
+										documentBar.sharePng('download');
+									}}><Mark name="image" /> Download timeline image</button
+								>
+							{/if}
+						</div>
+					{/if}
+				</div>
+			{/if}
+
+			<!-- Phone: the index. ↻ 2026-10-25 (⚓ Nate): it takes SHARE's place, and
+			     Share folds into the index under the tools — if the tools fold behind
+			     one tap, sharing can too. Tried first between the logo and the
+			     document, then between the document and the picture. -->
+			<!-- Nate's compass (assets-src/tools/navigation.svg). -->
+			<button
+				class="tb-glyph tb-glyph--menu"
+				class:is-open={showing === 'index'}
+				aria-label="Menu"
+				title="Menu"
+				onclick={() => menuState.toggle('index')}
+			>
+				<svg viewBox="0 0 53 62" fill-rule="evenodd" aria-hidden="true"
+					><path
+						d="M25.071,16.831L24.277,13.093C24.179,12.833 24.026,12.596 23.83,12.4C23.633,12.203 23.397,12.051 23.136,11.953L18.533,10.218L23.136,8.483C23.397,8.385 23.633,8.233 23.83,8.036C24.026,7.84 24.179,7.603 24.277,7.343L26.001,2.767C20.976,2.769 19.892,4.244 20.249,4.818C20.466,5.167 21.671,5.888 23.704,6.227L23.407,7.016C23.37,7.115 23.317,7.208 23.252,7.291C20.576,6.838 18.417,5.815 17.643,4.973C15.91,3.089 19.03,-0 26.011,0C32.992,0 36.112,3.089 34.38,4.973C33.605,5.815 31.446,6.838 28.771,7.291C28.705,7.208 28.653,7.115 28.615,7.016L28.318,6.227C30.352,5.888 31.556,5.167 31.773,4.818C32.131,4.244 31.046,2.769 26.022,2.767L27.746,7.343C27.844,7.603 27.996,7.84 28.193,8.036C28.39,8.233 28.626,8.385 28.886,8.483L33.489,10.218L28.886,11.953C28.626,12.051 28.39,12.203 28.193,12.4C27.996,12.596 27.844,12.833 27.746,13.093L26.952,16.831L28.849,21.147C26.968,22.069 24.166,23.235 21.845,24.166L25.071,16.831ZM7.706,36.077C7.829,38.517 8.431,40.831 9.418,42.928C8.078,45.404 6.523,48.214 5.152,50.671C1.916,46.335 0,40.958 0,35.137C0,23.898 7.143,14.315 17.132,10.683L22.809,12.822C22.945,12.873 23.069,12.953 23.173,13.057C23.276,13.16 23.356,13.284 23.407,13.42L24.094,16.874C14.589,17.547 7.682,25.461 7.682,35.137C7.682,34.821 7.69,34.508 7.706,34.196L15.041,30.97C14.11,33.291 12.943,36.093 12.021,37.975L7.706,36.077ZM44.34,35.137C44.34,32.302 43.748,29.618 42.67,27.223C43.995,24.778 45.522,22.019 46.87,19.602C50.106,23.938 52.023,29.315 52.023,35.137C52.023,49.493 40.367,61.148 26.011,61.148C20.19,61.148 14.813,59.231 10.477,55.996C12.934,54.625 15.744,53.07 18.219,51.729C20.317,52.717 22.631,53.318 25.071,53.442L23.173,49.127C25.054,48.204 27.857,47.038 30.177,46.107L26.952,53.442C36.32,52.968 43.842,45.445 44.317,36.077L36.982,39.303C37.913,36.982 39.079,34.18 40.001,32.298L44.317,34.196C44.333,34.508 44.34,34.821 44.34,35.137ZM34.026,18.423C32.166,17.568 30.116,17.029 27.928,16.874L28.615,13.42C28.667,13.284 28.747,13.16 28.85,13.057C28.953,12.953 29.077,12.873 29.214,12.822L34.891,10.683C37.294,11.556 39.532,12.775 41.546,14.277C39.162,15.607 36.446,17.11 34.026,18.423ZM48.831,12.317C48.831,12.317 40.978,26.18 38.445,31.254C36.589,34.973 33.633,42.759 33.633,42.759C33.633,42.759 25.848,45.714 22.128,47.571C17.055,50.104 3.191,57.956 3.191,57.956C3.191,57.956 11.044,44.093 13.577,39.019C15.434,35.3 18.389,27.514 18.389,27.514C18.389,27.514 26.175,24.559 29.894,22.703C34.968,20.17 48.831,12.317 48.831,12.317Z"
+					/><path
+						d="M12.021,37.975L7.706,36.077C7.69,35.765 7.682,35.452 7.682,35.137C7.682,34.821 7.69,34.508 7.706,34.196L15.041,30.97C14.11,33.291 12.943,36.093 12.021,37.975ZM21.845,24.166L25.071,16.831C25.382,16.815 25.696,16.807 26.011,16.807C26.327,16.807 26.64,16.815 26.952,16.831L28.849,21.147C26.968,22.069 24.166,23.235 21.845,24.166ZM40.001,32.298L44.317,34.196C44.333,34.508 44.34,34.821 44.34,35.137C44.34,35.452 44.333,35.765 44.317,36.077L36.982,39.303C37.913,36.982 39.079,34.18 40.001,32.298ZM30.177,46.107L26.952,53.442C26.64,53.458 26.327,53.466 26.011,53.466C25.696,53.466 25.382,53.458 25.071,53.442L23.173,49.127C25.054,48.204 27.857,47.038 30.177,46.107Z"
+						fill="#000"
+						fill-opacity="0.31"
+					/><path
+						d="M34.882,26.266C34.882,26.266 31.829,31.655 30.845,33.627C30.123,35.073 28.974,38.099 28.974,38.099C28.974,38.099 25.948,39.248 24.502,39.97C22.53,40.954 17.141,44.007 17.141,44.007C17.141,44.007 20.193,38.618 21.178,36.646C21.9,35.2 23.048,32.174 23.048,32.174C23.048,32.174 26.075,31.025 27.521,30.303C29.493,29.319 34.882,26.266 34.882,26.266ZM30.999,30.149C29.899,30.752 28.854,31.314 28.191,31.645C27.117,32.181 25.197,32.947 24.208,33.333C23.822,34.322 23.056,36.242 22.52,37.316C22.189,37.979 21.627,39.024 21.024,40.124C22.124,39.521 23.169,38.959 23.832,38.628C24.906,38.092 26.825,37.326 27.814,36.94C28.201,35.951 28.966,34.031 29.503,32.957C29.834,32.294 30.396,31.249 30.999,30.149Z"
+						fill="#000"
+						fill-opacity="0.3"
+					/></svg
+				>
+			</button>
 
 			<button
 				class="tb-glyph"
@@ -339,112 +471,17 @@
 				title="Settings"
 				onclick={() => menuState.toggle('settings')}
 			>
-				<svg viewBox="0 0 42 40" fill-rule="evenodd" aria-hidden="true"
+				<svg viewBox="0 0 59 56" fill-rule="evenodd" aria-hidden="true"
 					><path
-						d="M137.6 90.83q2.52 4.32 5 8.66 1.14.6 2.22 1.29 5-.03 10-.01a32 32 0 0 1 6.6 11.44l-5 8.65q.06 1.3 0 2.57 2.52 4.32 5 8.66a32 32 0 0 1-6.6 11.44l-10-.01q-1.08.7-2.22 1.28-2.48 4.34-5 8.66a32 32 0 0 1-13.2 0q-2.52-4.31-5-8.66-1.14-.59-2.22-1.28-5 .02-10 0a32 32 0 0 1-6.6-11.43q2.5-4.35 5-8.66-.06-1.28 0-2.57l-5-8.65a32 32 0 0 1 6.6-11.44h10q1.08-.7 2.22-1.28 2.48-4.34 5-8.66a32 32 0 0 1 13.2 0m-6.6 17.23a14.1 14.1 0 1 1-.01 28.19 14.1 14.1 0 0 1 .01-28.19"
-						transform="rotate(30 165.68 -71.11)scale(.65574)"
+						d="M38.504,0C42.389,1.269 45.966,3.334 49.007,6.064C49.016,9.123 49.013,12.181 49,15.24C49.427,15.901 49.821,16.583 50.18,17.284C52.835,18.802 55.486,20.329 58.13,21.865C58.974,25.864 58.974,29.994 58.13,33.993C55.486,35.53 52.835,37.057 50.18,38.575C49.821,39.275 49.427,39.958 49,40.619C49.013,43.677 49.016,46.736 49.007,49.794C45.966,52.524 42.389,54.589 38.504,55.858C35.851,54.336 33.204,52.805 30.562,51.264C29.775,51.304 28.988,51.304 28.201,51.264C25.559,52.805 22.912,54.336 20.258,55.858C16.374,54.589 12.797,52.524 9.755,49.794C9.747,46.736 9.75,43.677 9.763,40.619C9.335,39.958 8.942,39.275 8.583,38.575C5.927,37.057 3.277,35.53 0.633,33.993C-0.211,29.994 -0.211,25.864 0.633,21.865C3.277,20.329 5.927,18.802 8.583,17.284C8.942,16.583 9.335,15.901 9.763,15.24C9.75,12.181 9.747,9.123 9.755,6.064C12.797,3.334 16.374,1.269 20.258,0C22.912,1.522 25.559,3.054 28.201,4.594C28.988,4.555 29.775,4.555 30.562,4.594C33.204,3.054 35.851,1.522 38.504,0ZM35.847,16.731C42.027,20.299 44.148,28.214 40.58,34.395C37.011,40.575 29.097,42.696 22.916,39.127C16.736,35.559 14.615,27.644 18.183,21.464C21.751,15.283 29.666,13.163 35.847,16.731Z"
 					/><path
-						d="M257.06 109.7a12.46 12.46 0 1 1-.01 24.91 12.46 12.46 0 0 1 .01-24.92m0 1.43a11.02 11.02 0 1 0 .01 22.05 11.02 11.02 0 0 0 0-22.05"
+						d="M29.381,9.711C39.436,9.711 47.6,17.874 47.6,27.929C47.6,37.984 39.436,46.147 29.381,46.147C19.326,46.147 11.163,37.984 11.163,27.929C11.163,17.874 19.326,9.711 29.381,9.711ZM29.381,11.811C20.486,11.811 13.263,19.033 13.263,27.929C13.263,36.825 20.486,44.047 29.381,44.047C38.277,44.047 45.5,36.825 45.5,27.929C45.5,19.033 38.277,11.811 29.381,11.811Z"
 						fill="#000"
 						fill-opacity=".15"
-						transform="translate(-247.6 -107.67)scale(1.04482)"
 					/></svg
 				>
 			</button>
 		</div>
-
-		{#if profile}
-			{@const url = pictureUrl(profile)}
-			<!-- ⚓ §12 Q14: Theorycraft invites an account beside its picture
-			     (hidden on a phone, where the bar has no room). -->
-			{#if profile.kind === 'theorycraft' && storageSession.canAddProfile}
-				<button class="tb-invite" onclick={() => menuState.show('profile/new')}
-					>Add your account</button
-				>
-			{/if}
-			<div class="tb-menu-wrap">
-				<button
-					class="tb-profile"
-					class:is-open={menu === 'profile'}
-					aria-label="Profile: {profile.name}"
-					aria-haspopup="menu"
-					title={profile.name}
-					onclick={(e) => toggle('profile', e)}
-				>
-					<span class="pp" style:--pp-color={colourValue(profile.colour)}>
-						{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback"
-								>{profile.name[0]}</span
-							>{/if}
-					</span>
-				</button>
-				{#if cue}
-					{#key cue.key}
-						<span class="tb-cue-name" style:--cue-ms="{motion(WASH_MS)}ms">{cue.name}</span>
-					{/key}
-				{/if}
-				{#if menu === 'profile'}
-					<!-- The profile menu (§2.3): the switcher, Add an account, and the
-					     profile's own places. -->
-					<div class="tb-menu tb-menu--profile ctx-dark" role="menu">
-						<div class="pm-head">
-							<span class="pm-name">{profile.name}</span>
-							<span class="pm-sub"
-								>{profile.kind === 'theorycraft'
-									? 'Shared links open here'
-									: 'Your account, in this browser'}</span
-							>
-						</div>
-						{#each storageSession.profiles.filter((p) => p.id !== profile.id) as p (p.id)}
-							{@const purl = pictureUrl(p)}
-							<button
-								class="mi"
-								role="menuitem"
-								onclick={() => {
-									menu = null;
-									void storageSession.switchTo(p.id);
-								}}
-							>
-								<span class="pp pp--sm" style:--pp-color={colourValue(p.colour)}>
-									{#if purl}<img src={purl} alt="" />{/if}
-								</span>
-								{p.name}
-							</button>
-						{/each}
-						<button
-							class="mi"
-							role="menuitem"
-							disabled={!storageSession.canAddProfile}
-							title={storageSession.canAddProfile
-								? undefined
-								: 'Seven accounts, one per element color, is the most a browser holds'}
-							onclick={() => {
-								menu = null;
-								menuState.show('profile/new');
-							}}><Mark name="plus" /> Add your account</button
-						>
-						<span class="pm-rule" aria-hidden="true"></span>
-						{#if profile.kind === 'real'}
-							<button
-								class="mi"
-								role="menuitem"
-								onclick={() => {
-									menu = null;
-									menuState.show('profile');
-								}}><Mark name="edit" /> Profile</button
-							>
-						{/if}
-						<button
-							class="mi"
-							role="menuitem"
-							onclick={() => {
-								menu = null;
-								menuState.show('roster');
-							}}><Mark name="constellation" /> Roster</button
-						>
-					</div>
-				{/if}
-			</div>
-		{/if}
 	</div>
 </header>
 
@@ -513,9 +550,15 @@
 		letter-spacing: var(--ls-tight);
 		opacity: 0.85;
 	}
+	/* ↻ 2026-10-25: the tag is anchored to the WORDMARK, as the old bar had it
+	   — centred with the brand, then lifted. It hung from the bar's top
+	   (`--ui-bar-h / 2 − 1.05rem`) while the wordmark is centred in its
+	   group, so it sat 7.2 / 11.2 / 15.1px below the word's top at Small /
+	   Medium / Large and moved with the interface size. 🎛️ ⚓ NATE 2026-09-16:
+	   −0.5em, his superscript lift from SiteChrome, carried over. */
 	.tb-beta {
-		align-self: flex-start;
-		margin-top: calc(var(--ui-bar-h) / 2 - 1.05rem);
+		position: relative;
+		top: -0.5em;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
@@ -526,6 +569,9 @@
 	}
 
 	/* ── The tools ── */
+	.tb-nav.is-landing {
+		visibility: hidden;
+	}
 	.tb-nav {
 		grid-column: 2;
 		display: flex;
@@ -553,7 +599,9 @@
 			background var(--t-snap),
 			box-shadow var(--t-snap);
 	}
-	/* Inactive tools on the night: words, no plate (⚓ 2026-10-21). */
+	/* Inactive tools on the night: words, no plate (⚓ 2026-10-21). ↻ 2026-10-25
+	   (⚓ Nate): uppercase Plex was tried here and the Bitter word kept; the
+	   CURRENT tool's kicker became Bitter instead, so the face never swaps. */
 	.nav-name {
 		font-family: var(--font-display);
 		font-size: var(--fs-xl);
@@ -566,16 +614,21 @@
 	.nav-btn.is-current .nav-name {
 		color: var(--chrome);
 	}
+	/* ↻ 2026-10-25 (⚓ Nate): the current tool is its FILL alone — on is a
+	   fill, never a ring — and keeps the glass rather than the gold tint. */
 	.nav-btn.is-current {
 		background: var(--glass-hover);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
 	}
 	.nav-btn.has-doc {
 		align-items: stretch;
 	}
-	.nav-btn.has-doc:hover {
-		background: var(--glass-hover);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
+	/* The ring is the hand's, in the toolbar's parchment ink (--line-edge,
+	   the glass ring's value — --line-strong at .30 read fainter), on the one button that does
+	   something when current (it opens the Library). */
+	@media (hover: hover) {
+		.nav-btn.has-doc:hover {
+			box-shadow: inset 0 0 0 1px var(--line-edge);
+		}
 	}
 	/* The guest (§4.6): Theorycraft's white, which no real profile can wear. */
 	.nav-btn.is-guest {
@@ -589,11 +642,13 @@
 		min-width: 0;
 		line-height: 1.2;
 	}
+	/* ↻ 2026-10-25 (⚓ Nate): the tool's name in small Bitter, the resting
+	   word's own face (was uppercase Plex at --fs-xs). */
 	.nav-tool {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
+		font-family: var(--font-display);
+		font-size: var(--fs-md);
+		font-weight: var(--fw-bold); /* ⚓ Nate 2026-10-25 */
+		letter-spacing: var(--ls-tight);
 		white-space: nowrap;
 		color: color-mix(in srgb, var(--chrome) 50%, transparent);
 	}
@@ -692,14 +747,47 @@
 	.tb-notice-act:hover {
 		text-decoration-color: currentColor;
 	}
+	/* The picture and the doors are ONE run at one gap (⚓ Nate 2026-10-25:
+	   tools · picture · Teams · Share · Help · Settings). */
 	.tb-actions {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.375rem;
 	}
 	.tb-menu-wrap {
 		position: relative;
 		display: flex;
+	}
+	/* ══ THE DOORS ARE SIZED BY INK, NOT BOX (2026-10-25) ═════════════════
+	   The old bar's rule, which this one lost in the conversion: the DISCS
+	   and the cog share one height (--tb-glyph-h), and a sparse PORTRAIT mark
+	   stands just under ink parity with the cog — the compass at Nate's 33
+	   beside a 30 cog (⚓ 2026-09-04), the roster mark at 34. Measured as
+	   luminous ink per height² (assets-src/tools, rasterised at 400px): help
+	   0.71 · share 0.67 · cog 0.56 · compass 0.43 · teams 0.35. Cog parity is
+	   ×1.14 for the compass and ×1.27 for teams; each takes the share of it
+	   the compass took (×1.10 is 96% of 1.14), so teams is ×1.22. The ratios
+	   are knobs on the button (--ink), so every interface size keeps them. */
+	.tb-right {
+		--tb-glyph-h: calc(var(--ui-ctl-h) - 6px);
+		/* 🎛️ ↻ 2026-10-25 (⚓ Nate): the discs, the cog and the compass read a
+		   step under the picture and Teams, so they take a step up together;
+		   Teams and the picture stay where they were. */
+		--disc: 1.12;
+	}
+	.tb-glyph--menu {
+		--ink: calc(1.1 * var(--disc)); /* 🎛️ ⚓ NATE 2026-09-04: 33 beside a 30 cog */
+	}
+	/* 🎛️ OPTICAL LIFT, ⚓ NATE 2026-09-04 → 2026-10-25: 1px up, the old bar's
+	   value. The hanging loop puts ink at the top the disc doesn't balance
+	   below, so a box-centred compass sits low. `position: relative` moves
+	   paint by a whole pixel (SiteChrome's reasoning). */
+	.tb-glyph--menu svg {
+		position: relative;
+		top: -1px;
+	}
+	.tb-glyph--teams {
+		--ink: 1.22; /* 🎛️ */
 	}
 	.tb-glyph {
 		display: grid;
@@ -712,12 +800,17 @@
 		color: var(--chrome);
 		cursor: pointer;
 	}
+	/* ⚠ Dimmed in the PAINT, never element opacity: the bar rides the cursor
+	   parallax at fractional x, and WebKit rasterises an opacity subtree at
+	   rounded coordinates (the ⓘ jitter, SiteChrome; /styleguide § Laws). */
 	.tb-glyph:disabled {
 		cursor: default;
-		opacity: 0.4;
+	}
+	.tb-glyph:disabled svg {
+		fill-opacity: 0.35;
 	}
 	.tb-glyph svg {
-		height: calc(var(--ui-ctl-h) - 6px);
+		height: calc(var(--tb-glyph-h) * var(--ink, var(--disc)));
 		width: auto;
 		fill: currentColor;
 		fill-opacity: 0.85;
@@ -729,9 +822,6 @@
 	}
 	.tb-glyph--menu {
 		display: none;
-	}
-	.tb-glyph--menu svg {
-		height: calc(var(--ui-ctl-h) - 8px);
 	}
 
 	.tb-menu {
@@ -774,15 +864,16 @@
 		background: none;
 		cursor: pointer;
 	}
+	/* 🎛️ The picture is a disc among discs: 2px over their height, so with
+	   its colour ring it stands a ring's width proud of them (it was 6px over,
+	   and outweighed every door). */
 	.pp {
 		display: grid;
 		place-items: center;
-		width: calc(var(--ui-ctl-h) - 2px);
-		height: calc(var(--ui-ctl-h) - 2px);
+		width: calc(var(--tb-glyph-h) + 2px);
+		height: calc(var(--tb-glyph-h) + 2px);
 		border-radius: 50%;
-		box-shadow:
-			0 0 0 2px var(--pp-color),
-			0 0 0 3.5px rgb(0 0 0 / 0.35);
+		box-shadow: 0 0 0 2px var(--pp-color); /* ↻ ⚓ Nate 2026-10-25: no dark outer ring */
 		background: var(--surface);
 		overflow: hidden;
 	}
@@ -895,6 +986,18 @@
 			display: none;
 		}
 	}
+	.tb-phonedoc-door {
+		display: flex;
+	}
+	/* TRIAL (⚓ Nate 2026-10-25): on the smallest phones the document's
+	   Library mark goes, so the saved name gets its ~17px. ⚠ 22.5rem (360px)
+	   is a named content stop (breakpoints.test.ts CONTENT_STOPS), not a
+	   table value — promote it or drop it on Nate's call. */
+	@media (max-width: 22.5rem) {
+		.tb-phonedoc-door {
+			display: none;
+		}
+	}
 	/* breakpoints.ts `roomy` */
 	@media (max-width: 47.5rem) {
 		.tb {
@@ -904,6 +1007,7 @@
 		}
 		.tb-nav,
 		.tb-help,
+		.tb-share,
 		.tb-invite {
 			display: none;
 		}
@@ -914,7 +1018,10 @@
 			flex: 1;
 			gap: 0.4rem;
 		}
+		/* Pinned to the right edge with or without a document: on the landing
+		   there is no document button to take the slack (↻ 2026-10-25). */
 		.tb-actions {
+			margin-left: auto;
 			gap: 0.1rem;
 		}
 		.tb-notice,
