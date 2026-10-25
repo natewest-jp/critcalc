@@ -460,7 +460,9 @@
 	.side {
 		display: flex;
 		flex-direction: column;
-		padding: 1rem 0.75rem 1rem;
+		/* ⚓ THE SITE GUTTER (Nate 2026-10-25): the items' boxes start on the
+		   logo's line and the tools' left edge, as a toolbar's plates do. */
+		padding: 1rem 0.75rem 1rem var(--site-pad-x);
 		overflow-y: auto;
 		border-right: 1px solid var(--line-faint);
 	}
@@ -666,7 +668,9 @@
 	.main {
 		min-height: 0;
 		overflow-y: auto;
-		padding: 1.5rem clamp(1rem, 3vw, 3rem) 4rem;
+		/* The far edge is the site gutter, so the content ends where a tool's
+		   does; the near side is the gap off the sidebar's rule. */
+		padding: 1.5rem var(--site-pad-x) 4rem clamp(1rem, 3vw, 3rem);
 	}
 	.head {
 		display: flex;
@@ -702,7 +706,7 @@
 	.head-close {
 		position: absolute;
 		top: calc(var(--chrome-h) + 1.25rem);
-		right: clamp(1rem, 3vw, 3rem);
+		right: var(--site-pad-x);
 		z-index: 1;
 	}
 	/* No cap on the body: a COLLECTION fills the width (2026-10-25), and each
