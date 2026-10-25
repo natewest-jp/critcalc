@@ -360,6 +360,53 @@
 	</div>
 {/snippet}
 
+<!-- A pinned rotation on the shelf: the card form, larger than a row. A
+     pair's B and a Theorycraft copy ride its foot. -->
+{#snippet shelfCard(d: DocumentRecord, b?: DocumentRecord)}
+	{@const isCurrent = d.id === currentId}
+	{@const rot = d as RotationDocument}
+	{@const guest = guestOf(d)}
+	<li class="card" class:is-current={isCurrent}>
+		<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
+			<span class="card-top">
+				{#if b}<span class="pair-tag" title="Compared as A">A</span>{/if}
+				{@render portraits(rot.body.slots, 34)}
+			</span>
+			<span class="card-head">
+				{@render labelOrEdit(d)}
+				<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span>
+			</span>
+			{#if notationHead(rot)}<span class="card-notation">{notationHead(rot)}</span>{/if}
+			<span class="row-meta">
+				{#if isCurrent}<span class="row-now">Open now</span>{/if}
+				{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+					>{/if}
+				{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span>{/if}
+				<span>{ago(recency(d))}</span>
+			</span>
+		</button>
+		{#if !pickFor}{@render actions(d)}{/if}
+		{#if b}
+			<button class="card-foot" class:is-current={b.id === currentId} onclick={() => choose(b)}>
+				<span class="pair-tag" title="Compared as B">B</span>
+				<span class="row-label" class:is-derived={!b.name}>{label(b)}</span>
+				{#if b.id === currentId}<span class="row-now">Open now</span>{/if}
+			</button>
+		{/if}
+		{#if guest && !pickFor}
+			<button
+				class="guest-main"
+				class:is-current={guest.id === plannerCurrent}
+				onclick={() => choose(guest)}
+			>
+				<span class="guest-tag">Theorycraft copy</span>
+				<span class="guest-levels">{levelsLine(rot, guest as RotationDocument)}</span>
+				{#if guest.id === plannerCurrent}<span class="row-now">Open now</span>{/if}
+			</button>
+		{/if}
+	</li>
+{/snippet}
+
 {#snippet row(d: DocumentRecord, b?: DocumentRecord)}
 	{@const guest = guestOf(d)}
 	<li class="row" class:is-pair={!!b}>
@@ -429,28 +476,24 @@
 	{:else if loaded && listed.length === 0}
 		<p class="empty">No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.</p>
 	{:else if place === 'planner'}
-		<!-- ⚓ PINNED STANDS ASIDE (Nate 2026-10-25): with room, the pins are a
-		     column of their own beside Recent, held in view while Recent
-		     scrolls; without it, they head the list as before. Pinned comes
-		     first in the source so the narrow order needs no reordering. -->
-		<div class="lib-cols" class:has-pins={pinned.length > 0}>
-			{#if pinned.length}
-				<section class="lib-col lib-col--pinned" aria-label="Pinned">
-					<p class="sec">Pinned</p>
-					<ul class="rows">
-						{#each pinned as e (e.d.id)}{@render row(e.d, e.b)}{/each}
-					</ul>
-				</section>
-			{/if}
-			{#if recent.length}
-				<section class="lib-col lib-col--recent" aria-label="Recent">
-					{#if pinned.length}<p class="sec">Recent</p>{/if}
-					<ul class="rows">
-						{#each recent as e (e.d.id)}{@render row(e.d, e.b)}{/each}
-					</ul>
-				</section>
-			{/if}
-		</div>
+		<!-- ⚓ THE SHELF (Nate 2026-10-25): pins are the rotations you reach for
+		     most, so they stand FIRST and LARGER — a row of cards across the
+		     top — and Recent runs beneath as full-width rows. (Tried first: a
+		     column aside, which put the most-used ones out of the way.) -->
+		{#if pinned.length}
+			<p class="sec">Pinned</p>
+			<ul class="cards shelf">
+				{#each pinned as e (e.d.id)}{@render shelfCard(e.d, e.b)}{/each}
+			</ul>
+		{/if}
+		{#if recent.length}
+			<section class="lib-recent" aria-label="Recent">
+				{#if pinned.length}<p class="sec">Recent</p>{/if}
+				<ul class="rows">
+					{#each recent as e (e.d.id)}{@render row(e.d, e.b)}{/each}
+				</ul>
+			</section>
+		{/if}
 	{:else}
 		<ul class="cards">
 			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
@@ -486,42 +529,57 @@
 	.place {
 		container: place / inline-size;
 	}
-	/* Each column is its own width question: the notation reads off the
-	   COLUMN, so the narrow pinned aside drops it while Recent keeps it. */
-	.lib-col {
+	/* Recent is its own width question: the notation reads off it. */
+	.lib-recent {
 		container: library / inline-size;
 		min-width: 0;
 	}
-	.lib-col--pinned .sec:first-child,
-	.lib-col--recent .sec:first-child {
-		margin-top: 0;
+	/* The shelf's cards are a touch wider than a lineup's: a rotation card
+	   carries two lines of notation. */
+	.shelf {
+		grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
 	}
-	.lib-cols {
+	.card-notation {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		max-width: 100%;
+		overflow: hidden;
+		overflow-wrap: anywhere;
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	/* A pair's B, or a Theorycraft copy, at the card's foot. */
+	.card-foot {
+		position: relative;
 		display: flex;
-		flex-direction: column;
-		gap: 1.2rem;
+		align-items: center;
+		gap: 0.55rem;
+		width: 100%;
+		padding: 0.4rem 0.8rem;
+		border: none;
+		border-top: 1px solid var(--line-faint);
+		border-radius: 0 0 var(--r-sm) var(--r-sm);
+		background: none;
+		color: var(--text);
+		font: inherit;
+		font-size: var(--fs-sm);
+		text-align: left;
+		cursor: pointer;
 	}
-	/* 🎛️ Room for both: Recent keeps ~36rem of rows (portraits, name and a
-	   readable run of notation), the aside 18–24rem. */
-	@container place (min-width: 58rem) {
-		.lib-cols.has-pins {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
-			column-gap: 1.5rem;
-			align-items: start;
-		}
-		.lib-col--pinned {
-			grid-column: 2;
-			grid-row: 1;
-			/* Held in view while Recent scrolls: the menu state's .main is the
-			   scroller, so this sticks to its top. */
-			position: sticky;
-			top: 0;
-		}
-		.lib-col--recent {
-			grid-column: 1;
-			grid-row: 1;
-		}
+	.card-foot:hover {
+		background: var(--surface-hover);
+	}
+	.card-foot .row-label {
+		min-width: 0;
+		font-size: var(--fs-md);
+	}
+	.card-foot .row-now {
+		flex: none;
+		margin-left: auto;
+		white-space: nowrap;
 	}
 	.place-acts {
 		display: flex;
@@ -626,8 +684,25 @@
 	.card:hover {
 		background: var(--surface-hover);
 	}
-	.card.is-current {
+	/* ⚓ The current ring is drawn ABOVE everything in the box (Nate
+	   2026-10-25): as an inset shadow it sat under the floating verbs'
+	   ground, which cut it. A pseudo-element after the box's children paints
+	   over them and takes no clicks. */
+	.card.is-current::after,
+	.row-line.is-current::after,
+	.card-foot.is-current::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		border-radius: inherit;
 		box-shadow: inset 0 0 0 1px var(--sel-ring);
+		pointer-events: none;
+	}
+	.card-top {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
 	}
 	/* ── A rotation ROW (↻ 2026-10-25: rows again, Nate) ── */
 	.rows {
@@ -656,9 +731,6 @@
 	}
 	.row-line:hover {
 		background: var(--surface-hover);
-	}
-	.row-line.is-current {
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
 	}
 	/* B rides under A: one rule between them, the pair one object. */
 	.row-line--b {
