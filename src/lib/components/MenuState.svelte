@@ -292,18 +292,23 @@
 			{#if FOLDED[g.id]}
 				{@const first = g.items[0]}
 				{@const inside = g.items.some((i) => i.id === section)}
+				<!-- ⚓ The group's first chapter IS its heading's page (Nate
+				     2026-10-25): Help opens Help & FAQ and stays selected there,
+				     About opens About; only the chapters after it list below. -->
 				<a
 					class="side-item side-fold"
 					class:is-in={inside}
+					class:is-on={section === first.id}
 					href={first.path}
 					aria-expanded={inside}
+					aria-current={section === first.id ? 'page' : undefined}
 					onclick={(e) => go(e, first)}
 				>
 					<span class="side-label"><Mark name={FOLDED[g.id]} size={16} /> {g.title}</span>
 				</a>
 				{#if inside}
 					<div class="side-sub">
-						{#each g.items as it (it.id)}
+						{#each g.items.slice(1) as it (it.id)}
 							<a
 								class="side-item side-subitem"
 								class:is-on={section === it.id}
@@ -606,8 +611,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.35rem;
-		padding: 0.7rem 0.4rem 0.6rem;
+		gap: 0.3rem;
+		padding: 0.45rem 0.3rem 0.5rem;
 		border-radius: var(--r-sm);
 		background: var(--surface-raised);
 		color: var(--text);
@@ -622,7 +627,7 @@
 	}
 	.tool-tile-art {
 		width: 100%;
-		max-width: 5.5rem;
+		max-width: 7rem;
 		aspect-ratio: 457 / 466;
 		fill-rule: evenodd;
 	}
@@ -640,7 +645,7 @@
 	}
 	.tool-tile-name {
 		font-family: var(--font-display);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 	}
 
