@@ -1,6 +1,7 @@
 # Teams surface round (2026-10-25 → 26)
 
-Branch `polish/teams-surface`, behind `?next`. The full-screen surface's
+Branch `polish/teams-surface`, behind `?next`; MERGED `23e89b90` and pushed
+(2026-10-26). The full-screen surface's
 per-surface pass for **Teams**: its cards, and the team's DETAILS screen,
 which is also the "team setup" session the loadouts round queued
 (`docs/team-loadouts-round.md`). Worked hands-on with Nate, one look per
