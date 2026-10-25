@@ -263,32 +263,21 @@
 		     names its own grid column. -->
 		<div class="td-top">
 			<span class="td-title">
-				<input
-					class="td-name"
-					bind:value={name}
-					placeholder={full ? rotationLabel(slots) : 'New team'}
-					aria-label="Team name"
-					size={Math.max(8, (name || (full ? rotationLabel(slots) : 'New team')).length + 1)}
-					onkeydown={(e) => {
-						if (e.key === 'Enter' && canSave) void save();
-					}}
-				/>
-				{#if resonances.length || comp.hasAscendantGleam || comp.hasSecretRite}
-					<span class="td-bonuses" aria-label="Team bonuses">
-						{#each resonances as res (res.key)}
-							<span class="td-res" style:--pill-color={pillColor(res.element)} title={res.effect}>
-								{#if res.element}<img src={elementIcon(res.element)} alt="" />{/if}
-								{res.label}
-							</span>
-						{/each}
-						{#if comp.hasAscendantGleam}
-							<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
-						{/if}
-						{#if comp.hasSecretRite}
-							<span class="td-res td-res--faction">Hexerei: Secret Rite</span>
-						{/if}
-					</span>
-				{/if}
+				<!-- A label, so the pencil is part of the field: a click on it edits
+				     too. -->
+				<label class="td-name-wrap">
+					<input
+						class="td-name"
+						bind:value={name}
+						placeholder={full ? rotationLabel(slots) : 'New team'}
+						aria-label="Team name"
+						size={Math.max(8, (name || (full ? rotationLabel(slots) : 'New team')).length + 1)}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' && canSave) void save();
+						}}
+					/>
+					<Mark name="edit" size={15} />
+				</label>
 			</span>
 			<span class="td-mid">
 				<span class="td-work">
@@ -439,6 +428,22 @@
 					Choose a character for slot {at + 1}.
 				{/if}
 			</p>
+			{#if resonances.length || comp.hasAscendantGleam || comp.hasSecretRite}
+				<span class="td-bonuses" aria-label="Team bonuses">
+					{#each resonances as res (res.key)}
+						<span class="td-res" style:--pill-color={pillColor(res.element)} title={res.effect}>
+							{#if res.element}<img src={elementIcon(res.element)} alt="" />{/if}
+							{res.label}
+						</span>
+					{/each}
+					{#if comp.hasAscendantGleam}
+						<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
+					{/if}
+					{#if comp.hasSecretRite}
+						<span class="td-res td-res--faction">Hexerei: Secret Rite</span>
+					{/if}
+				</span>
+			{/if}
 			<button class="btn btn--sm td-filters-btn" onclick={() => (filtersOpen = true)}
 				><Mark name="filter" size={13} /> Filters</button
 			>
@@ -560,31 +565,54 @@
 		display: none;
 	}
 
-	/* ── The top bar: the name and its bonuses · the work and the verbs ·
-	   the way out. Wraps when the column can't hold all three. ── */
+	/* ── The top bar: the name · the work and the verbs, CENTRED · the way
+	   out. ⚠ Each zone names its own grid column (the SiteChrome lesson: an
+	   auto-placed zone lands in the wrong track the moment one is empty). ── */
 	.td-top {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.6rem 1.5rem;
+		gap: 1.5rem;
 	}
 	.td-title {
+		grid-column: 1;
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.4rem 0.8rem;
 		min-width: 0;
 	}
 	.td-mid {
+		grid-column: 2;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
+		justify-content: center;
 		gap: 0.4rem 1rem;
 	}
-	/* The name is the screen's title, in the title's face. */
-	.td-name {
+	.td-acts {
+		grid-column: 3;
+		justify-self: end;
+	}
+	/* The pencil says the name is a field you can click into. */
+	.td-name-wrap {
+		display: flex;
+		align-items: center;
+		gap: 0.15rem;
 		min-width: 0;
+		color: var(--muted);
+		cursor: text;
+		transition: color var(--t-snap);
+	}
+	.td-name-wrap:hover,
+	.td-name-wrap:focus-within {
+		color: var(--text);
+	}
+	/* The name is the screen's title, in the title's face. */
+	/* The field fits its text, so the pencil sits beside the name
+	   (`field-sizing`); where that isn't supported, `size` stands in and
+	   leaves a little air. */
+	.td-name {
+		field-sizing: content;
+		min-width: 4ch;
 		max-width: 100%;
 		margin-left: -0.5rem;
 		padding: 0.15rem 0.5rem;
@@ -616,6 +644,16 @@
 		display: flex;
 		gap: 0.4rem;
 	}
+	/* Once the column can't hold three zones in a row (below toolMin the
+	   column is the screen), they wrap as a flow instead. */
+	@media (max-width: 54rem) {
+		.td-top {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			gap: 0.6rem 1rem;
+		}
+	}
 	.td-clash {
 		display: flex;
 		flex-wrap: wrap;
@@ -645,11 +683,14 @@
 	}
 
 	/* ── The party strip ── */
+	/* Centred over the grid (Nate 2026-10-25). */
 	.td-party {
 		display: flex;
+		justify-content: center;
 		gap: 12px;
+		width: 100%;
 		max-width: 46rem;
-		margin: 0;
+		margin: 0 auto;
 		padding: 4px 0 0;
 		list-style: none;
 	}
@@ -742,6 +783,7 @@
 	}
 
 	.td-bonuses {
+		margin-left: auto;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.35rem;
@@ -966,7 +1008,9 @@
 		}
 		.td-filters-btn {
 			display: inline-flex;
-			margin-left: auto;
+		}
+		.td-hint {
+			margin-right: auto;
 		}
 		.td-side {
 			display: none;
