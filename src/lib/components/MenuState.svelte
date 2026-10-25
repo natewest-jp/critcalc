@@ -692,8 +692,11 @@
 		right: clamp(1rem, 3vw, 3rem);
 		z-index: 1;
 	}
+	/* No cap on the body: a COLLECTION fills the width (2026-10-25), and each
+	   reading or form surface carries its own measure (.chapter, .settings,
+	   .invite, ProfileForm's). */
 	.body {
-		max-width: 60rem;
+		min-width: 0;
 	}
 	.chapter {
 		max-width: 56ch;
