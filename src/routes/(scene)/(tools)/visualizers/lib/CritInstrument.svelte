@@ -478,6 +478,29 @@
 		align-content: start;
 	}
 
+	/* 🐛 THE READOUT GETS THE SCROLLER'S FOOT (⚓ Nate 2026-10-25, the edges
+	   round). Where the tile is a size container (1024px up) and the chart
+	   stacks over its strip (under 60rem), the readout sits below the fold —
+	   and with the root at a fixed `height: 100%` it OVERFLOWED the root
+	   rather than growing it. A scroller adds its end padding after in-flow
+	   content only, so the card ran to the screen's foot while every other
+	   instrument stopped --room-bottom above it. Here the stage's cap reads
+	   the tile's height directly (100cqh — what 100% resolved to), so nothing
+	   needs a definite parent and the root can grow with what it holds.
+	   ⚠ Not at the wide tier, whose side column scrolls INSIDE a root of the
+	   tile's height; not under 1024px, where cqh has no size container. */
+	@media (min-width: 1024px) {
+		@container instrument (width < 60rem) {
+			.cv-instrument,
+			.cv-layout {
+				height: auto;
+			}
+			.cv-stage {
+				max-height: 100cqh;
+			}
+		}
+	}
+
 	/* Phones: the strip's columns stack. */
 	@container instrument (max-width: 30rem) {
 		.cv-controls {

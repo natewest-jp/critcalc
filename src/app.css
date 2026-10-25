@@ -752,6 +752,16 @@
 	   their content rolls off under it — the strip's own content ends at 53. */
 	--chrome-h: 64px;
 	--site-footer-h: 64px;
+	/* THE SITE GUTTER: the screen's side margin, ONE number for the bar and
+	   the tools so the wordmark and the toolbar start on the same line (⚓ the
+	   edges round, 2026-10-25 — the phone bar sat at 12 over tools at 16).
+	   16 to 800px, 2vw between, 32 from 1600. ROUNDED to whole pixels: the
+	   bench ribbon docks by measuring inside it, and a fractional x sets every
+	   label in the ribbon a different sub-pixel off in Safari (the full note
+	   is at --tool-pad-x in the tools layout). The first declaration is the
+	   fallback for engines without round(). */
+	--site-pad-x: clamp(1rem, 2vw, 2rem);
+	--site-pad-x: clamp(1rem, round(2vw, 1px), 2rem);
 	/* ══ COLOR ARCHITECTURE (Genshin-UI archetype, Nate 2026-08-05) ═════════════
 	   The palette's primary axis is CONTEXT — dark areas and light areas, each
 	   a ground plus its own text and border rules (the .ctx-dark / .ctx-light
@@ -3402,6 +3412,30 @@ img {
 	inherits: false;
 	initial-value: 0px;
 }
+/* ── THE FADE ENDS AT THE NEIGHBOUR (⚓ Nate 2026-10-25, the edges round) ──
+   A roll-off painted inside a scroller's own box puts the point where content
+   DISAPPEARS inside the line its neighbours align to: the content is already
+   dimming before it reaches the column's edge. So a scroller REACHES into the
+   bare scene around it (a negative margin) and PADS BACK by the same amount:
+   at rest its content sits exactly where it did, and once scrolled the fade
+   runs out across the gap and is transparent AT the neighbour (the bands, the
+   bench, an aside, the screen's edge). The planner's phone timeline was the
+   first (2026-10-15); this makes it the rule.
+   · THE GAP IS PUBLISHED, never guessed: ToolStack's .tool-surface sets
+     --room-top / -bottom / -left / -right, and ToolColumns narrows the side
+     facing an aside. A consumer adds its own inset (a frame pad) and reads.
+   · The fade's LENGTH is unchanged (each consumer's --scroll-fade). Where the
+     gap is at least that long, content is whole right up to its own line;
+     where it is shorter (4px between bands), the fade still ENDS at the
+     neighbour and begins a little inside.
+   ⚠ EVERY CLIPPING ANCESTOR MUST REACH TOO. A scroller clips, and so does a
+     mask, so a nested scroller can reach only as far as its parent's border
+     box: the Team Builder's .tb-source carries the same reach as the grid
+     inside it, and the dock below toolMin clips with a clip-path inset that
+     extends past its box rather than with overflow.
+   ⚠ JS that measures a scroller's viewport reads clientWidth/clientHeight,
+     which INCLUDE the padding: subtract it (the planner's `trackPad`, the
+     board's availH). */
 .scroll-fade {
 	--scroll-fade: 32px;
 	--scroll-fade-length: calc(var(--scroll-fade) * var(--scroll-fade-scale, 1));

@@ -203,6 +203,16 @@
 	const showing = $derived<'both' | PaneTab>(tabbed ? tab : 'both');
 	/** The board pane's visible height (the Abyss banner sizes to it). */
 	let boardPaneH = $state(0);
+	let boardPaneEl = $state<HTMLElement>();
+	/** The board pane's block padding — its reach into the scene above and
+	 *  below (app.css § THE FADE ENDS AT THE NEIGHBOUR). clientHeight includes
+	 *  it, and the board fits its rows to the CONTENT box. */
+	const boardPadY = $derived.by(() => {
+		void boardPaneH;
+		if (!boardPaneEl) return 0;
+		const cs = getComputedStyle(boardPaneEl);
+		return (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+	});
 
 	/** Show the lineup — a no-op beside the dock, the tab below it. */
 	function showLineup(): void {
@@ -1645,12 +1655,13 @@
 				use:scrollFade
 				inert={showing === 'characters'}
 				bind:clientHeight={boardPaneH}
+				bind:this={boardPaneEl}
 			>
 				<BoardView
 					{board}
 					roomy={!below('broad')}
 					narrow={below('compact')}
-					availH={boardPaneH}
+					availH={Math.max(0, boardPaneH - boardPadY)}
 					selectedTeamId={selectedTeam?.id ?? null}
 					onSelectTeam={(id) => (chosenTeamId = id)}
 					nudgeAt={nudge?.at ?? null}
@@ -1903,15 +1914,27 @@
 	.tb-pane--roster {
 		display: flex;
 	}
+	/* The board REACHES into the scene above and below it, so its roll-off
+	   ends at band B and at the screen's foot (app.css § THE FADE ENDS AT THE
+	   NEIGHBOUR). Margins work in both forms: a stretched grid item grows by
+	   them, and so does the absolutely positioned pane below toolMin. */
 	.tb-pane--board {
 		overflow-y: auto;
+		margin-block: calc(var(--room-top) * -1) calc(var(--room-bottom) * -1);
+		padding-block: var(--room-top) var(--room-bottom);
 	}
 	@media (max-width: 54rem) {
+		/* ⚠ The dock clips the pane that is wiped OFF, which only ever moves
+		   sideways, so it clips the x axis alone: the panes' reach above and
+		   below must not be cut. The clip margin is the grid's reach, so a card
+		   on the outer edge keeps its focus ring (Safari ignores the margin;
+		   on a phone there is no hover and rarely a ring). */
 		.tb-dock {
 			position: relative;
 			display: flex;
 			gap: 0;
-			overflow: hidden;
+			overflow-x: clip;
+			overflow-clip-margin: var(--tb-reach-x);
 		}
 		.tb-pane {
 			flex: 0 0 100%;
@@ -2018,7 +2041,9 @@
 	   No horizontal padding either. That padding existed to hold content off a
 	   frame's edge; with no frame there is no edge, and zeroing it lines the
 	   cards and banners up with the band stack above rather than insetting them
-	   14px from it for no reason anyone could see. */
+	   14px from it for no reason anyone could see. ↻ 2026-10-25: it has
+	   padding again, but only as THE REACH's pad-back (below), which keeps the
+	   content on that same line. */
 	/* The Source BOX: an optional pinned head plus the scroller under it. It
 	   exists so the Atlas head can sit outside the mask (see the markup note) and
 	   still be spaced by the Atlas's own row rhythm rather than the surface's
@@ -2036,14 +2061,36 @@
 		min-width: 0;
 		min-height: 0;
 	}
+	/* THE REACH (app.css § THE FADE ENDS AT THE NEIGHBOUR). The source and
+	   the grid inside it reach out by the SAME amounts — each is a scroller,
+	   and a scroller clips, so the inner one can only get as far as the outer
+	   one's border box:
+	   · up to whatever stands above (the banner, at the stack's section gap;
+	     band B, at the surface's room, when nothing does);
+	   · down to the screen's foot (the surface's room);
+	   · sideways by the grid's gutter alone, so the CARDS land on the column's
+	     line, the banner's and the toolbar's, with the hover rise and the
+	     focus ring out in the gap (⚓ Nate 2026-10-25: they had sat 6px in). */
+	.tb-stack {
+		--tb-reach-t: var(--tb-section-gap);
+		--tb-reach-x: 6px;
+		--tb-reach-b: var(--room-bottom);
+	}
+	.tb-stack > .tb-sourcebox:first-child {
+		--tb-reach-t: var(--room-top);
+	}
 	.tb-source {
+		--cg-reach-t: var(--tb-reach-t);
+		--cg-reach-x: var(--tb-reach-x);
+		--cg-reach-b: var(--tb-reach-b);
+		margin: calc(var(--tb-reach-t) * -1) calc(var(--tb-reach-x) * -1) calc(var(--tb-reach-b) * -1);
+		padding: var(--tb-reach-t) var(--tb-reach-x) var(--tb-reach-b);
 		min-width: 0;
 		min-height: 0;
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 0.8rem;
-		padding: 0;
 	}
 	/* Roster + Compare + the Atlas cards. The Roster's .cg-scroll resolves its
 	   bounds through this flex:1 — see the note at the markup, and the

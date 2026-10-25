@@ -625,7 +625,16 @@
 		   ⚠ In the media query with the height, deliberately: below 1024px `.ws`
 		   has no definite height, so this would be a scroller that can never
 		   scroll — and the narrow layout page-scrolling is correct. */
+		/* ↻ 2026-10-25 (the edges round): the scroller REACHES into the scene
+		   above and below its tile and pads back, so its roll-off ends at band
+		   B and at the screen's foot rather than inside the instrument (app.css
+		   § THE FADE ENDS AT THE NEIGHBOUR). The tile does not clip (a size
+		   container contains layout, not paint), and the instrument's
+		   `min-height: 100%` is of the content box, which the pair leaves the
+		   size it was. */
 		.ws-body {
+			margin-block: calc(var(--room-top) * -1) calc(var(--room-bottom) * -1);
+			padding-block: var(--room-top) var(--room-bottom);
 			overflow-y: auto;
 			/* A fling inside a tile must not chain to the shell once the tile is
 			   at its end — the shell is the surface this round just stopped using. */

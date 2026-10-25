@@ -405,7 +405,7 @@
 		align-items: center;
 		gap: 0.9rem;
 		height: var(--chrome-h);
-		padding: 0 clamp(1rem, 2vw, 2rem);
+		padding: 0 var(--site-pad-x);
 		/* The strip passes clicks through; its children catch their own. Listed
 		   per class rather than as `> *` because the center's CONTENTS belong to
 		   another component's style scope — `> *` would not reach them, but the
