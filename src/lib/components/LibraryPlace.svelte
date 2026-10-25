@@ -803,7 +803,7 @@
 		margin-right: 0.35rem;
 	}
 	.row-line:hover .row-acts,
-	.row-line:focus-within .row-acts {
+	.row-line:has(:focus-visible) .row-acts {
 		opacity: 1;
 	}
 	/* In a narrow column the verbs FLOAT over the row's end on the hovered
@@ -921,8 +921,12 @@
 		opacity: 0;
 		transition: opacity var(--t-snap);
 	}
+	/* 🐛 KEYBOARD focus keeps them, ⛔ not any focus (Nate 2026-10-25): with
+	   `:focus-within`, a clicked Pin kept its focus and held the verbs up
+	   after the cursor left, until a click elsewhere. Rotations only escaped
+	   it because pinning MOVES the row, and the remount dropped the focus. */
 	.card:hover .row-acts,
-	.card:focus-within .row-acts,
+	.card:has(:focus-visible) .row-acts,
 	.row-acts:has(.is-armed) {
 		opacity: 1;
 	}

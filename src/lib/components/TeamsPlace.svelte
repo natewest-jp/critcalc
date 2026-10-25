@@ -338,6 +338,32 @@
 								/>{#if armed === t.id}<span>Delete?</span>{/if}</button
 							>
 						</span>
+						<!-- Touch: no hover to reveal the verbs, so they are a ⋯ (the
+						     Library's rule). -->
+						<span class="card-more">
+							<BandMenu mark="more" compact size="sm" ariaLabel="More for {label(t)}">
+								{#snippet items(close)}
+									<button
+										class="band-menu-item"
+										role="menuitem"
+										onclick={() => {
+											close();
+											startRename(t);
+										}}><Mark name="edit" size={14} /> Rename</button
+									>
+									<button
+										class="band-menu-item card-menu-danger"
+										role="menuitem"
+										onclick={() => {
+											if (armed === t.id) close();
+											del(t);
+										}}
+										><Mark name={armed === t.id ? 'warn' : 'delete'} size={14} />
+										{armed === t.id ? 'Tap again to delete' : 'Delete'}</button
+									>
+								{/snippet}
+							</BandMenu>
+						</span>
 					</div>
 					{@render slotsOf(t, false)}
 					<!-- ⚓ Each member's weapon and artifact set (Nate 2026-10-24),
@@ -458,10 +484,34 @@
 		font-size: var(--fs-lg);
 	}
 
-	/* The verbs: quiet at rest, brighter on the card's hover (the Library's). */
+	/* ⚓ The verbs follow the Library's cards (2026-10-25): hidden at rest,
+	   shown on the card's hover or a KEYBOARD focus inside it (⛔ not any
+	   focus: a clicked verb would hold them up after the cursor left), and a
+	   ⋯ on touch. */
 	.card-verbs {
 		display: flex;
 		gap: 2px;
+		opacity: 0;
+		transition: opacity var(--t-snap);
+	}
+	.card:hover .card-verbs,
+	.card:has(:focus-visible) .card-verbs,
+	.card-verbs:has(.is-armed) {
+		opacity: 1;
+	}
+	.card-more {
+		display: none;
+	}
+	@media (hover: none) {
+		.card-verbs {
+			display: none;
+		}
+		.card-more {
+			display: block;
+		}
+	}
+	.card-menu-danger {
+		color: var(--ui-danger);
 	}
 	.verb {
 		display: inline-flex;
@@ -474,20 +524,15 @@
 		color: var(--muted);
 		font: inherit;
 		font-size: var(--fs-sm);
-		opacity: 0.55;
 		cursor: pointer;
 		transition:
-			opacity var(--t-snap),
 			background var(--t-snap),
 			color var(--t-snap);
 	}
-	.card:hover .verb,
-	.verb:focus-visible,
-	.verb.is-armed {
-		opacity: 1;
-	}
+	/* One rung DOWN: the card is already at --surface-hover when its verbs
+	   show, so the same rung would be no change at all. */
 	.verb:hover {
-		background: var(--surface-hover);
+		background: var(--surface-raised);
 		color: var(--text);
 	}
 	.verb--danger:hover,
