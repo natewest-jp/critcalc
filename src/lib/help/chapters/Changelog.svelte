@@ -41,7 +41,7 @@
 				<time class="entry-date" datetime="2026-10-22">October 22</time>
 			</header>
 			<p>
-				On the Rotation Planner: A team opened from the Library, a lineup, or a team link now
+				On the rotation planner: A team opened from the Library, a lineup, or a team link now
 				arrives with an empty notation box and its four characters already in their slots. Each one
 				keeps their slot until you write their actions. Until their name is typed, they’re shown
 				resting (dimmed). Before this, clearing the notation box to start writing removed
@@ -55,7 +55,7 @@
 				<time class="entry-date" datetime="2026-10-19">October 19</time>
 			</header>
 			<p>
-				critcalc.app goes live with a Team Builder, Rotation Planner, and eight Visualizers. Source
+				critcalc.app goes live with a team builder, rotation planner, and eight visualizers. Source
 				code is on
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external -->
 				<a href="https://github.com/natewest-jp/critcalc" target="_blank" rel="noopener noreferrer"
@@ -74,10 +74,10 @@
 	</p>
 	<ul>
 		<li>
-			<strong>Energy.</strong> The Rotation Planner treats a burst as ready whenever its cooldown is.
+			<strong>Energy.</strong> The rotation planner treats a burst as ready whenever its cooldown is.
 		</li>
 		<li>
-			<strong>More than one enemy.</strong> The Rotation Planner and the Gauge Explorer assume a single
+			<strong>More than one enemy.</strong> The rotation planner and the gauge explorer assume a single
 			target, so Swirl’s spread to other enemies isn’t drawn.
 		</li>
 		<li>
@@ -90,8 +90,8 @@
 			and Moondrifts are drawn while they exist, but the damage they deal isn’t.
 		</li>
 		<li>
-			<strong>Lunar-Charged and Lunar-Crystallize in the Gauge Explorer.</strong> The Rotation Planner
-			models both; the Gauge Explorer doesn’t yet.
+			<strong>Lunar-Charged and Lunar-Crystallize in the gauge explorer.</strong> The rotation planner
+			models both; the gauge explorer doesn’t yet.
 		</li>
 		<li>
 			<strong>Co-op shields.</strong> Shields that only reach other players’ characters in co-op, such

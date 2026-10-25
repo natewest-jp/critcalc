@@ -48,10 +48,10 @@
 		{/if}
 		{#if !$nextLayout}
 			<li>
-				Open tabs in the Rotation Planner and the Team Builder, and their recently closed tabs.
+				Open tabs in the rotation planner and the team builder, and their recently closed tabs.
 			</li>
 		{/if}
-		<li>The Visualizers’ layout.</li>
+		<li>The visualizers’ layout.</li>
 		<li>When you last downloaded a backup, so Settings can tell you.</li>
 		<li>Whether critcalc has already asked your browser to keep its data.</li>
 	</ul>

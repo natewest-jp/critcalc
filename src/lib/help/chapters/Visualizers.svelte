@@ -65,7 +65,7 @@
 </section>
 
 <section>
-	<h2 id="crit-heatmap">Crit Heatmap</h2>
+	<h2 id="crit-heatmap">Crit heatmap</h2>
 	<p>
 		Your average damage multiplier, 1&nbsp;+&nbsp;CRIT Rate&nbsp;×&nbsp;CRIT DMG, across every split
 		of CRIT Rate (up the side) and CRIT DMG (along the bottom). Press anywhere on the map to move
@@ -86,7 +86,7 @@
 		<strong>Roll</strong> simulates one rotation’s hits.
 	</p>
 	<p>
-		I came up with the concept for the Crit Heatmap and wondered how best to present it visually,
+		I came up with the concept for the crit heatmap and wondered how best to present it visually,
 		and subsequently came across
 		<a href="https://www.hoyolab.com/article/622264" target="_blank" rel="noopener noreferrer"
 			>EODGamer’s spreadsheet heatmap</a
@@ -95,7 +95,7 @@
 </section>
 
 <section>
-	<h2 id="gauge-explorer">Gauge Explorer</h2>
+	<h2 id="gauge-explorer">Gauge explorer</h2>
 	<p>
 		How auras attach, decay and get consumed, over up to 15s and eight applications. The band above
 		the chart is the editor: Click on the empty band above the chart to add an application, drag a
@@ -122,7 +122,7 @@
 	</p>
 	<p>
 		The instrument is built assuming one target, and every application you place applies. (ICD is
-		the ICD Timeline’s job.) Swirl’s spread to other enemies and Shatter aren’t modeled. Neither are
+		the ICD timeline’s job.) Swirl’s spread to other enemies and Shatter aren’t modeled. Neither are
 		Lunar-Charged, which drains both auras about half as fast as Electro-Charged, or
 		Lunar-Crystallize, which has no cooldown. The other Lunar and Stellar reactions consume the
 		gauge the same way as the reactions they replace.
@@ -130,7 +130,7 @@
 </section>
 
 <section>
-	<h2 id="icd-timeline">ICD Timeline</h2>
+	<h2 id="icd-timeline">ICD timeline</h2>
 	<p>
 		Which hits in a string actually apply their element. Each hit is a stem: tall in the element’s
 		color if it applies, a short faint tick if ICD blocks it. The digit under each hit is the hit
@@ -151,13 +151,13 @@
 		4th, 7th and 10th that Standard ICD would allow.
 	</p>
 	<p>
-		<strong>Send to Gauge Explorer</strong> hands the first eight applying hits within 15s to the Gauge
-		Explorer, at 1U each.
+		<strong>Send to gauge explorer</strong> hands the first eight applying hits within 15s to the gauge
+		explorer, at 1U each.
 	</p>
 </section>
 
 <section>
-	<h2 id="reaction-curves">Reaction Curves</h2>
+	<h2 id="reaction-curves">Reaction curves</h2>
 	<p>
 		How each family of reactions scales with Elemental Mastery. The tabs over the chart are the
 		families: Amplifying, Transformative, Additive, Lunar &amp; Stellar, and Crystallize, plus
@@ -181,7 +181,7 @@
 </section>
 
 <section>
-	<h2 id="damage-breakdown">Damage Breakdown</h2>
+	<h2 id="damage-breakdown">Damage breakdown</h2>
 	<p>
 		One hit written out as its damage formula, one multiplier per row, in the formula’s order. Each
 		bar starts where the last one ended, on a scale where each gridline doubles the damage, so a ×2
@@ -224,7 +224,7 @@
 </section>
 
 <section>
-	<h2 id="artifact-odds">Artifact Odds</h2>
+	<h2 id="artifact-odds">Artifact odds</h2>
 	<p>
 		A 5★ artifact’s odds over its life, in three views. Throughout, <strong>Your stats</strong> are the
 		substats you’d count as good. With only CRIT Rate and CRIT DMG chosen, results are in crit value;
@@ -260,7 +260,7 @@
 </section>
 
 <section>
-	<h2 id="wish-odds">Wish Odds</h2>
+	<h2 id="wish-odds">Wish odds</h2>
 	<p>
 		How many pulls a goal takes from where you are now. Pick what you’re pulling for — a featured
 		5★, a featured 4★, the charted weapon, or a 5★ and their weapon together — then set what you

@@ -352,7 +352,7 @@
 					{#if uncurated}
 						<span
 							class="sp-namemark"
-							title="Frame timing not curated yet — the Rotation Planner draws this character’s actions with generic timing"
+							title="Frame timing not curated yet — the rotation planner draws this character’s actions with generic timing"
 							aria-label="Frame timing not curated yet"><Mark name="uncurated" size={12} /></span
 						>
 					{/if}

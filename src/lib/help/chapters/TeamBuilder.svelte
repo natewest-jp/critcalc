@@ -13,7 +13,7 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 </script>
 
-<h1>Team Builder</h1>
+<h1>Team builder</h1>
 
 <p class="flavor">
 	A brass disc of nested rings, each engraved with names. Turning four into alignment can answer
@@ -61,7 +61,7 @@
 	{#if $nextLayout}
 		<p>
 			<strong>New lineup</strong> on a team in <strong>Teams</strong> does the same, and the lineup
-			starts with that team. The Builder shows one lineup at a time and saves it as you work. The
+			starts with that team. The builder shows one lineup at a time and saves it as you work. The
 			lineup’s name in the top bar opens <strong>Lineups</strong>, where each one can be pinned,
 			renamed, or deleted.
 		</p>
@@ -176,7 +176,7 @@
 	</p>
 	<p>
 		The icons say what a team can do, not how much or how often — there are no amounts or uptimes
-		here. The Rotation Planner is where you can test this out.
+		here. The rotation planner is where you can test this out.
 	</p>
 	<p>
 		On a Stygian battlefield, the chips beside the boss are that battlefield’s checks. A thumbs up
@@ -213,11 +213,11 @@
 	<p>
 		Picking someone makes the swap, and the notice above the lineup offers to <strong>Undo</strong>
 		it. If the team had a pinned rotation, the pin drops, because the rotation was written for the old
-		character; the notice then offers to open a copy in the Rotation Planner with the new character written
+		character; the notice then offers to open a copy in the rotation planner with the new character written
 		in their place.
 	</p>
 	<p>
-		The Rotation Planner sends you here too: Clicking a portrait on its bench opens swap mode for
+		The rotation planner sends you here too: Clicking a portrait on its bench opens swap mode for
 		that team. Picking someone renames them in the notation and takes you back; Cancel returns
 		without changing anything. An empty slot works the same way and adds someone instead.
 	</p>

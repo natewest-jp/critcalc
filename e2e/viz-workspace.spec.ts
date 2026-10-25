@@ -35,7 +35,7 @@ const expectLineup = (page: Page, names: string[]) =>
 test.describe('lineup and slots', () => {
 	test('first load shows the default two-slot lineup', async ({ page }) => {
 		await openTool(page, '/visualizers');
-		await expectLineup(page, ['Crit Heatmap', 'Gauge Explorer']);
+		await expectLineup(page, ['Crit heatmap', 'Gauge explorer']);
 
 		const actions = page.locator('.ws-band-actions .btn');
 		await expect(actions.filter({ hasText: 'Share' }), 'share on both cells').toHaveCount(2);
@@ -54,21 +54,21 @@ test.describe('lineup and slots', () => {
 			'the other tile’s instrument carries a swap badge'
 		).toContainText('Gauge');
 
-		await page.locator('.ip-menu .ip-option', { hasText: 'Gauge Explorer' }).click();
-		await expectLineup(page, ['Gauge Explorer', 'Crit Heatmap']);
+		await page.locator('.ip-menu .ip-option', { hasText: 'Gauge explorer' }).click();
+		await expectLineup(page, ['Gauge explorer', 'Crit heatmap']);
 		await expect(page.locator('.ip-menu')).toHaveCount(0);
 	});
 
 	test('the layout survives a reload and resets on demand', async ({ page }) => {
 		await openTool(page, '/visualizers');
 		await page.locator('.ws-band-cell').first().locator('.ip-trigger').click();
-		await page.locator('.ip-menu .ip-option', { hasText: 'Gauge Explorer' }).click();
+		await page.locator('.ip-menu .ip-option', { hasText: 'Gauge explorer' }).click();
 
 		await page.reload({ waitUntil: 'networkidle' });
-		await expectLineup(page, ['Gauge Explorer', 'Crit Heatmap']); // the swap persisted
+		await expectLineup(page, ['Gauge explorer', 'Crit heatmap']); // the swap persisted
 
 		await page.locator('.ws-reset').click();
-		await expectLineup(page, ['Crit Heatmap', 'Gauge Explorer']);
+		await expectLineup(page, ['Crit heatmap', 'Gauge explorer']);
 		const stored = await page.evaluate(
 			(k) => JSON.parse(localStorage.getItem(k) ?? 'null'),
 			WORKSPACE_KEY
@@ -81,7 +81,7 @@ test.describe('lineup and slots', () => {
 test.describe('deep links', () => {
 	test('a bare ?i= slots its instrument first and strips the param', async ({ page }) => {
 		await openTool(page, '/visualizers?i=artifact');
-		await expect(triggers(page).first()).toHaveText(/Artifact Odds/);
+		await expect(triggers(page).first()).toHaveText(/Artifact odds/);
 		expect(page.url(), 'the param is consumed, not left in the URL').not.toContain('i=');
 	});
 
@@ -104,7 +104,7 @@ test.describe('deep links', () => {
 		});
 
 		await openTool(page, `/visualizers?i=${encodeURIComponent(param)}`);
-		await expect(triggers(page).first()).toHaveText(/Crit Heatmap/);
+		await expect(triggers(page).first()).toHaveText(/Crit heatmap/);
 		await expect(page.locator('.cv-value-input').first(), 'shared CR applied').toHaveValue('90');
 
 		// Per-instrument "Defaults" restores that tile's own controls.
@@ -121,13 +121,13 @@ test.describe('deep links', () => {
 
 test('the ICD timeline hands its hits off to a Gauge tile beside it', async ({ page }) => {
 	await openTool(page, '/visualizers?i=icd');
-	await expect(triggers(page).first()).toHaveText(/ICD Timeline/);
+	await expect(triggers(page).first()).toHaveText(/ICD timeline/);
 
 	const applying = parseInt(await page.locator('.icd-big').first().innerText(), 10);
 	await page.locator('.icd-send').click();
 
 	// The gauge opens BESIDE the source, not over it.
-	await expectLineup(page, ['ICD Timeline', 'Gauge Explorer']);
+	await expectLineup(page, ['ICD timeline', 'Gauge explorer']);
 	// The handoff caps at eight applications.
 	// ↻ 2026-08-17: counted on the CHART, not in the panel. `.gx-app` was one
 	// editor block per application and the panel is a single inspector now — so

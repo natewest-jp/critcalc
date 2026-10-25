@@ -179,15 +179,15 @@ test.describe('help is contextual and non-destructive', () => {
 		await metaBtn(page, 'Help').click();
 		await page.locator('.area-chapter.is-current').waitFor();
 
-		await expect(page.locator('.area-chapter.is-current')).toHaveText('Rotation Planner');
+		await expect(page.locator('.area-chapter.is-current')).toHaveText('Rotation planner');
 		await expect(page.locator('.area-body h1'), 'the chapter body rendered').toHaveText(
-			'Rotation Planner'
+			'Rotation planner'
 		);
 
 		// Switching chapters inside the overlay must not navigate either.
 		const before = page.url();
-		await page.locator('.area-chapter', { hasText: 'Team Builder' }).click();
-		await expect(page.locator('.area-body h1')).toHaveText('Team Builder');
+		await page.locator('.area-chapter', { hasText: 'Team builder' }).click();
+		await expect(page.locator('.area-body h1')).toHaveText('Team builder');
 		expect(page.url(), 'switching chapters does not navigate').toBe(before);
 
 		await page.keyboard.press('Escape');
@@ -236,8 +236,8 @@ test.describe('overlay containing blocks', () => {
 test.describe('every chapter is also a real route', () => {
 	const ROUTES: [string, string][] = [
 		['/help', 'Help & FAQ'],
-		['/help/builder', 'Team Builder'],
-		['/help/planner', 'Rotation Planner'],
+		['/help/builder', 'Team builder'],
+		['/help/planner', 'Rotation planner'],
 		['/help/visualizers', 'Visualizers'],
 		['/about', 'About critcalc'],
 		['/changelog', 'What’s new'],

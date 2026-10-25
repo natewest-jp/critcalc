@@ -54,13 +54,13 @@ export const HELP_AREA: Area = {
 		},
 		{
 			id: 'builder',
-			title: 'Team Builder',
+			title: 'Team builder',
 			path: resolve('/help/builder'),
 			load: () => import('./chapters/TeamBuilder.svelte')
 		},
 		{
 			id: 'planner',
-			title: 'Rotation Planner',
+			title: 'Rotation planner',
 			path: resolve('/help/planner'),
 			load: () => import('./chapters/RotationPlanner.svelte')
 		},

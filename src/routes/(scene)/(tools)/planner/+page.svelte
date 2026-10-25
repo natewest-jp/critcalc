@@ -347,7 +347,7 @@
 	 *  for the sourcing rule that governs every line. */
 	const AURA_NOTES = [
 		'Target is one enemy with no permanent aura, and it never applies an element back at you.',
-		'A pip with a yellow ring has no measured gauge strength, so the Rotation Planner uses 1U for that hit.'
+		'A pip with a yellow ring has no measured gauge strength, so the rotation planner uses 1U for that hit.'
 	];
 
 	// ══ THE PHONE FOLD (2026-09-30) ═══════════════════════════════════════════

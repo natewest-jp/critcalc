@@ -31,8 +31,8 @@ export type FeedbackCategory = keyof typeof FEEDBACK_CATEGORY;
 
 /** "Where?" */
 export const FEEDBACK_TOOL = {
-	planner: 'Rotation Planner',
-	builder: 'Team Builder',
+	planner: 'Rotation planner',
+	builder: 'Team builder',
 	visualizers: 'Visualizers',
 	site: 'The rest of the site'
 } as const;

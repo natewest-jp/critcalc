@@ -321,7 +321,7 @@
 				<span class="sp-name">Swap ping</span>
 				<span class="sp-desc">
 					Your network latency — the ms value Genshin shows top-right. A swap takes your ping plus
-					about 90 ms, so the Rotation Planner delays every character swap by that much.
+					about 90 ms, so the rotation planner delays every character swap by that much.
 				</span>
 			</span>
 			<div class="sp-slider-ctl">
@@ -344,7 +344,7 @@
 			<span class="sp-label">
 				<span class="sp-name">Coverage strips</span>
 				<span class="sp-desc">
-					Show each slotted character’s coverage strip under the Rotation Planner’s notation, with
+					Show each slotted character’s coverage strip under the rotation planner’s notation, with
 					the parts your rotation doesn’t reach dimmed.
 				</span>
 			</span>
@@ -363,7 +363,7 @@
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Human timing</h2>
 		<p class="sp-lede">
-			Without Human timing, the Rotation Planner is frame-perfect: every cancel lands on the first
+			Without Human timing, the rotation planner is frame-perfect: every cancel lands on the first
 			frame the game allows, the way a macro plays. <strong>Human timing</strong>, on by default{#if !$nextLayout}
 				in its view bar{/if}, times a rotation the way a person plays it. These settings say what
 			that changes.
@@ -475,7 +475,7 @@
 	<section class="sp-section">
 		<h2 class="kicker sp-section-title">Playback sound</h2>
 		<p class="sp-lede">
-			<strong>Play</strong> in the Rotation Planner's view bar counts you in, then plays a note at every
+			<strong>Play</strong> in the rotation planner's view bar counts you in, then plays a note at every
 			press, so you can follow a rotation with your eyes on the game.
 		</p>
 

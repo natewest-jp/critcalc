@@ -26,7 +26,7 @@ describe('feedbackUrl', () => {
 		expect(fields(url)).toEqual({
 			usp: 'pp_url',
 			'entry.1492565433': "Something's broken",
-			'entry.581506306': 'Rotation Planner'
+			'entry.581506306': 'Rotation planner'
 		});
 		expect(fields(feedbackUrl({ category: 'character' }))['entry.1492565433']).toBe(
 			"A character isn't right"
@@ -57,7 +57,7 @@ describe('feedbackUrl', () => {
 		const url = feedbackUrl({ category: 'broken', tool: 'planner', shareLink: long });
 		expect(url.length).toBeLessThanOrEqual(MAX_FEEDBACK_URL);
 		expect(fields(url)).not.toHaveProperty('entry.543945332');
-		expect(fields(url)['entry.581506306']).toBe('Rotation Planner');
+		expect(fields(url)['entry.581506306']).toBe('Rotation planner');
 	});
 
 	it('carries the site version, a capped browser string and an error', () => {

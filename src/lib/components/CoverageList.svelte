@@ -202,7 +202,7 @@
 	<header class="cov-head">
 		<h1>Coverage</h1>
 		<p class="cov-intro">
-			How much of each character’s kit the Rotation Planner draws, ability by ability. Hover a
+			How much of each character’s kit the rotation planner draws, ability by ability. Hover a
 			segment for its details, or select a character to see all of them.
 		</p>
 
@@ -267,8 +267,8 @@
 		<p class="cov-pinned">
 			<span
 				>{pinned.length === 1
-					? 'Showing 1 character from the Rotation Planner.'
-					: `Showing ${pinned.length} characters from the Rotation Planner.`}</span
+					? 'Showing 1 character from the rotation planner.'
+					: `Showing ${pinned.length} characters from the rotation planner.`}</span
 			>
 			<button type="button" class="btn" onclick={showAll}>Show all characters</button>
 		</p>

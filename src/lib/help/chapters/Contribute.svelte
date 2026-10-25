@@ -40,7 +40,7 @@
 	<p>
 		Before reporting a missing mechanic, check the
 		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a>. A part of a
-		kit the Rotation Planner leaves out on purpose is listed there with the reason.
+		kit the rotation planner leaves out on purpose is listed there with the reason.
 	</p>
 </section>
 
@@ -53,7 +53,7 @@
 	<ul>
 		<li>
 			<a href="https://gcsim.app" target="_blank" rel="noopener noreferrer">gcsim</a>, whose frame
-			data and tick cadences the Rotation Planner is timed from. A character implementation or a bug
+			data and tick cadences the rotation planner is timed from. A character implementation or a bug
 			report there helps directly.
 		</li>
 		<li>
