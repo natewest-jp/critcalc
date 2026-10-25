@@ -1613,6 +1613,20 @@
 							<span class="tb-band-label">{board.noRepeats ? 'No repeats' : 'Repeats allowed'}</span
 							>
 						</button>
+						{#if $nextLayout}
+							<!-- ⚓ SHARE, at the toolbar's end over the lineup it shares (Nate
+							     2026-10-25): a DOCUMENT verb, so it left the top bar. One action
+							     here (the link), so a plate, not a menu; the mark alone below
+							     `compact`, like every band control. -->
+							<button
+								class="btn btn--glass tb-share"
+								aria-label="Share this lineup"
+								title="Copy a link to this lineup"
+								disabled={!boardHasAnyone}
+								onclick={() => boardBar.shareLink()}
+								><Mark name="share" /> <span class="tb-band-label">Share</span></button
+							>
+						{/if}
 					{/if}
 				</div>
 			{/if}

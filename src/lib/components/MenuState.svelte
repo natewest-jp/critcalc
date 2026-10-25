@@ -31,8 +31,6 @@
 	import { TOOLS } from '$lib/tools';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { library } from '$lib/library.svelte';
-	import { documentBar } from '$lib/documentBar.svelte';
-	import { boardBar } from '$lib/boardBar.svelte';
 	import { sceneOccluded } from '$lib/landing/transition';
 	import LibraryPlace from './LibraryPlace.svelte';
 	import RosterTab from './RosterTab.svelte';
@@ -54,20 +52,6 @@
 	const tool = $derived(
 		menu.routed ? undefined : TOOLS.find((t) => page.url.pathname.startsWith(resolve(t.path)))
 	);
-
-	// ── Share, on a phone (⚓ Nate 2026-10-25) ─────────────────────────────
-	// The top bar's Share gave its place to the index, so the index carries
-	// it, first under the tools. The same actions as the bar's menu.
-	const docTool = $derived(
-		tool?.path === '/planner' ? 'planner' : tool?.path === '/builder' ? 'builder' : null
-	);
-	const canShare = $derived(docTool === 'planner' ? documentBar.hasContent : docTool === 'builder');
-	const canExportChart = $derived(docTool === 'planner' && !!documentBar.exporters);
-	/** Back onto the tool first: the result (a toast, a copied link) shows there. */
-	function share(act: () => void): void {
-		menu.close();
-		act();
-	}
 
 	// ── A chapter section: Help's and About's existing chapters ─────────────
 	const chapter = $derived.by(() => {
@@ -152,29 +136,6 @@
 				>
 			{/each}
 		</div>
-		{#if docTool}
-			<div class="side-share">
-				<p class="side-group">Share</p>
-				<button
-					class="side-item"
-					disabled={!canShare}
-					onclick={() =>
-						share(() => (docTool === 'planner' ? documentBar.shareLink() : boardBar.shareLink()))}
-					><Mark name="link" /> Copy link</button
-				>
-				{#if canExportChart}
-					<button class="side-item" onclick={() => share(() => documentBar.shareKqm())}
-						><Mark name="copy" /> Copy KQM notation</button
-					>
-					<button class="side-item" onclick={() => share(() => documentBar.sharePng('copy'))}
-						><Mark name="image" /> Copy timeline image</button
-					>
-					<button class="side-item" onclick={() => share(() => documentBar.sharePng('download'))}
-						><Mark name="image" /> Download timeline image</button
-					>
-				{/if}
-			</div>
-		{/if}
 		{#each SECTION_GROUPS as g (g.id)}
 			<p class="side-group">{groupTitle(g)}</p>
 			{#each itemsOf(g) as it (it.id)}
@@ -286,25 +247,8 @@
 		overflow-y: auto;
 		border-right: 1px solid var(--line-faint);
 	}
-	.side-tools,
-	.side-share {
+	.side-tools {
 		display: none;
-	}
-	/* Share's rows are buttons among links: the link's look, the button's reset. */
-	button.side-item {
-		align-items: center;
-		justify-content: flex-start;
-		width: 100%;
-		border: none;
-		background: none;
-		font: inherit;
-		font-size: var(--fs-lg);
-		text-align: left;
-		cursor: pointer;
-	}
-	button.side-item:disabled {
-		opacity: 0.45;
-		cursor: default;
 	}
 	.side-group {
 		margin: 1.1rem 0.6rem 0.3rem;
@@ -428,14 +372,6 @@
 			display: none;
 		}
 		.side-tools {
-			display: flex;
-			flex-direction: column;
-			gap: 1px;
-			margin-bottom: 0.5rem;
-			padding-bottom: 0.5rem;
-			border-bottom: 1px solid var(--line-faint);
-		}
-		.side-share {
 			display: flex;
 			flex-direction: column;
 			gap: 1px;

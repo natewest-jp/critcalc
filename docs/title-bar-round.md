@@ -44,6 +44,11 @@ The top bar holds the places you START work from and the things you reach for MI
 - **Linear, at `--t-quick` (150ms)**, the full-screen state's own speed. An eased pair (ease-out in, ease-in out) was tried: it holds the light where both tools put glass in one place (~94% against linear's 75% at the midpoint), and Nate kept the fade law (2026-05-30: an eased fade's visible time is not its duration). Knobs: `INPLACE_CROSSFADE`, `XFADE_MS` in `(tools)/+layout.svelte`.
 - **The Tool transitions setting RETIRED**: at this speed there is nothing to opt out of. ⚠ Its off path is the `prefers-reduced-motion` path, where Nate saw the Planner not load or unload properly: to reproduce there.
 
+## Share moves to the toolbars (same day)
+
+- **Share LEFT the top bar** (⚓ Nate): it acts on the DOCUMENT, not the site, and it already vanished on the Visualizers and the landing. It is the last plate of each tool's toolbar, over the document it shares: the Planner's as a menu (link, KQM, two image actions; one `shareItems` snippet), the Builder's on the lineup side as one plate (the link). On a phone the Planner's sits in the ⋯ as a "Share" section, and the Builder's is a mark-only plate (fits at 320, 0 overflow). The index's Share block retired with it.
+- ⚠ This reverses design §5.1's "Share stays visible (never behind an interaction)" for the phone Planner, which had already folded it behind the compass.
+
 ## Verification
 
 vitest · check · lint · build · the full e2e run, Chrome + WebKit. Measured in resized same-origin iframes: no overflow at 320 / 360 / 375, the icons flush right on the landing at 320 and 1456, BETA at the same offset across the three sizes.

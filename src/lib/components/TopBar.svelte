@@ -38,7 +38,7 @@
 	/** How long ✓ Saved stays before the status clears (§5.1: brief). 🎛️ */
 	const SAVED_SHOWN_MS = 1600;
 
-	type Menu = 'share' | 'help' | 'profile' | null;
+	type Menu = 'help' | 'profile' | null;
 	let menu = $state<Menu>(null);
 
 	const tool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(resolve(t.path))));
@@ -121,15 +121,12 @@
 		menu = menu === m ? null : m;
 	}
 
-	const canShare = $derived(docTool === 'planner' ? documentBar.hasContent : docTool === 'builder');
 	/** A report carries the document's share link, as band A's ⋯ did. */
 	function reportShareUrl(): Promise<string | null> {
 		if (docTool === 'planner') return documentBar.shareUrl();
 		if (docTool === 'builder') return boardBar.shareUrl();
 		return Promise.resolve(location.href);
 	}
-
-	const canExportChart = $derived(docTool === 'planner' && !!documentBar.exporters);
 </script>
 
 <svelte:window
@@ -380,67 +377,11 @@
 					</div>
 				{/if}
 			</div>
-			{#if docTool}
-				<div class="tb-menu-wrap tb-share">
-					<button
-						class="tb-glyph"
-						class:is-open={menu === 'share'}
-						aria-label="Share"
-						title="Share"
-						disabled={!canShare}
-						onclick={(e) => toggle('share', e)}
-						><svg viewBox="0 0 56 56" fill-rule="evenodd" aria-hidden="true"
-							><path
-								d="M13.773,3.631C32.373,-6.826 55.553,6.546 55.789,27.871C55.539,49.195 32.35,62.584 13.757,52.138C-4.593,41.271 -4.584,14.51 13.773,3.631ZM19.138,26.581C19.138,24.285 15.185,24.039 15.061,26.581C14.886,30.201 14.974,33.83 15.061,37.453C15.061,40.062 17.208,42.209 19.818,42.209L36.126,42.209C38.735,42.209 40.882,40.062 40.882,37.453L40.882,26.581C40.882,24.179 36.805,24.179 36.805,26.581L36.805,37.453C36.805,37.826 36.498,38.132 36.126,38.132L19.818,38.132C19.445,38.132 19.138,37.826 19.138,37.453L19.138,26.581ZM25.933,17.912L25.933,30.658C25.933,32.696 27.741,32.696 27.972,32.696C28.202,32.696 30.01,32.696 30.01,30.658L30.01,17.912L31.966,19.868C32.129,20.031 33.408,21.31 34.849,19.868C36.291,18.427 35.012,17.148 34.849,16.985L29.413,11.55C29.25,11.386 27.972,10.108 26.53,11.55L21.094,16.985C19.653,18.427 20.931,19.705 21.094,19.868C21.257,20.031 22.536,21.31 23.977,19.868L25.933,17.912Z"
-							/></svg
-						></button
-					>
-					{#if menu === 'share'}
-						<div class="tb-menu ctx-dark" role="menu">
-							<button
-								class="mi"
-								role="menuitem"
-								onclick={() => {
-									menu = null;
-									if (docTool === 'planner') documentBar.shareLink();
-									else boardBar.shareLink();
-								}}><Mark name="link" /> Copy link</button
-							>
-							{#if canExportChart}
-								<button
-									class="mi"
-									role="menuitem"
-									onclick={() => {
-										menu = null;
-										documentBar.shareKqm();
-									}}><Mark name="copy" /> Copy KQM notation</button
-								>
-								<button
-									class="mi"
-									role="menuitem"
-									onclick={() => {
-										menu = null;
-										documentBar.sharePng('copy');
-									}}><Mark name="image" /> Copy timeline image</button
-								>
-								<button
-									class="mi"
-									role="menuitem"
-									onclick={() => {
-										menu = null;
-										documentBar.sharePng('download');
-									}}><Mark name="image" /> Download timeline image</button
-								>
-							{/if}
-						</div>
-					{/if}
-				</div>
-			{/if}
 
-			<!-- Phone: the index. ↻ 2026-10-25 (⚓ Nate): it takes SHARE's place, and
-			     Share folds into the index under the tools — if the tools fold behind
-			     one tap, sharing can too. Tried first between the logo and the
-			     document, then between the document and the picture. -->
+			<!-- Phone: the index. ↻ 2026-10-25 (⚓ Nate): beside Settings, where Share
+			     stood (tried first between the logo and the document, then between
+			     the document and the picture). ↻ Same day: Share LEFT the top bar for
+			     each tool's toolbar — a document verb, on the bar over the document. -->
 			<!-- Nate's compass (assets-src/tools/navigation.svg). -->
 			<button
 				class="tb-glyph tb-glyph--menu"
@@ -1007,7 +948,6 @@
 		}
 		.tb-nav,
 		.tb-help,
-		.tb-share,
 		.tb-invite {
 			display: none;
 		}
