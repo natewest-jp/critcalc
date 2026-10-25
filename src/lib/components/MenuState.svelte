@@ -21,7 +21,7 @@
 	import type { MarkName } from '$lib/marks.generated';
 	import { siteSettings } from '$lib/stores';
 	import { pictureOf, type ProfileRecord } from '$lib/storage/records';
-	import { COLOUR_NAME, colourValue, pictureUrl as pictureUrlOf } from '$lib/profileLook';
+	import { colourValue, pictureUrl as pictureUrlOf } from '$lib/profileLook';
 	import { HERO_ART } from '$lib/landing/heroArt';
 	import {
 		SECTION_GROUPS,
@@ -58,6 +58,7 @@
 		mq.addEventListener('change', on);
 		return () => mq.removeEventListener('change', on);
 	});
+	const dev = import.meta.env.DEV;
 	const section = $derived.by((): Section | null => {
 		const s = menu.section;
 		if (s !== 'index' || narrow) return s;
@@ -238,12 +239,8 @@
 				<span class="pp" style:--pp-color={colourValue(p.colour)}>
 					{#if url}<img src={url} alt="" />{:else}<span class="pp-fallback">{p.name[0]}</span>{/if}
 				</span>
-				<span class="side-switch-text">
-					<span class="side-switch-name">{p.name}</span>
-					<!-- The colour it wears, named: the ring says it, this reads it. -->
-					<span class="side-switch-sub">{COLOUR_NAME[p.colour]}</span>
-				</span>
-				<Mark name="switcher" size={14} />
+				<span class="side-switch-name">{p.name}</span>
+				<Mark name="switcher" size={16} />
 			</button>
 			{#if switching}
 				<div class="side-switch-list">
@@ -274,7 +271,7 @@
 							switching = false;
 							menu.show('profile/new');
 						}}
-						><span class="side-label"><Mark name="plus" size={16} /> Add your account</span></button
+						><span class="side-label"><Mark name="plus" size={18} /> Add your account</span></button
 					>
 				</div>
 			{/if}
@@ -304,7 +301,7 @@
 					aria-current={section === first.id ? 'page' : undefined}
 					onclick={(e) => go(e, first)}
 				>
-					<span class="side-label"><Mark name={FOLDED[g.id]} size={16} /> {g.title}</span>
+					<span class="side-label"><Mark name={FOLDED[g.id]} size={18} /> {g.title}</span>
 				</a>
 				{#if inside}
 					<div class="side-sub">
@@ -342,7 +339,7 @@
 			onclick={(e) => go(e, it)}
 		>
 			<span class="side-label">
-				{#if ICON[it.id]}<Mark name={ICON[it.id]!} size={16} />{/if}
+				{#if ICON[it.id]}<Mark name={ICON[it.id]!} size={18} />{/if}
 				{it.label}
 			</span>
 			{#if counts[it.id] !== undefined}<span class="side-count">{counts[it.id]}</span>{/if}
@@ -411,7 +408,27 @@
 				{#if chapter.bare}
 					<ChapterC />
 				{:else}
-					<article class="prose chapter"><ChapterC /></article>
+					<!-- THE READING LAYOUT (2026-10-25): a text column and a MARGIN
+					     beside it, for what sits level with a paragraph — Help's
+					     screenshots, About's notes (Nate). -->
+					<div class="reading-host">
+						<div class="reading">
+							<article class="prose chapter"><ChapterC /></article>
+							{#if dev}
+								<!-- ⏳ DEV-ONLY MOCK: slate blocks standing in for the margin's
+							     figures so the proportions can be judged before any exist.
+							     Stripped from a build by `import.meta.env.DEV`. -->
+								<aside class="margin" aria-hidden="true">
+									{#each [{ top: 9, h: 11, cap: 'The composer, mid-edit' }, { top: 16, h: 8, cap: 'A buff row, hovered' }, { top: 20, h: 14, cap: 'The aura lane' }] as m (m.cap)}
+										<figure class="margin-fig" style:margin-top="{m.top}rem">
+											<div class="margin-shot" style:height="{m.h}rem"></div>
+											<figcaption>{m.cap}</figcaption>
+										</figure>
+									{/each}
+								</aside>
+							{/if}
+						</div>
+					</div>
 				{/if}
 			{/if}
 		</div>
@@ -426,7 +443,9 @@
 		inset: 0;
 		z-index: 9;
 		display: grid;
-		grid-template-columns: 15rem minmax(0, 1fr);
+		/* 🎛️ 17rem: the larger list (2026-10-25) at 16px type wants the room,
+		   and at 1366 it still leaves the content ~1060px. */
+		grid-template-columns: 17rem minmax(0, 1fr);
 		padding-top: var(--chrome-h);
 		background: var(--surface);
 		color: var(--text);
@@ -449,8 +468,8 @@
 		display: none;
 	}
 	.side-group {
-		margin: 1.4rem 0.6rem 0.35rem;
-		font-size: var(--fs-xs);
+		margin: 1.5rem 0.7rem 0.4rem;
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
@@ -472,14 +491,16 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.5rem;
-		min-height: 2.1rem;
-		padding: 0.3rem 0.6rem;
+		min-height: 2.5rem;
+		padding: 0.35rem 0.7rem;
 		border: none;
 		border-radius: var(--r-sm);
 		background: none;
 		color: var(--text);
 		font: inherit;
-		font-size: var(--fs-md);
+		/* ⚓ Base UI type (2026-10-25, Nate: the list was "smaller than it needs
+		   to be"), as a full-screen surface's main navigation is set. */
+		font-size: var(--fs-xl);
 		text-align: left;
 		text-decoration: none;
 		cursor: pointer;
@@ -499,7 +520,7 @@
 	.side-label {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
+		gap: 0.7rem;
 		min-width: 0;
 	}
 	.side-label :global(svg) {
@@ -511,7 +532,7 @@
 		color: var(--text);
 	}
 	.side-count {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-variant-numeric: tabular-nums;
 		color: var(--muted);
 	}
@@ -520,9 +541,9 @@
 		margin: 1px 0 0.25rem;
 	}
 	.side-subitem {
-		padding-left: calc(0.6rem + 16px + 0.6rem);
-		min-height: 1.9rem;
-		font-size: var(--fs-sm);
+		padding-left: calc(0.7rem + 18px + 0.7rem);
+		min-height: 2.2rem;
+		font-size: var(--fs-lg);
 		color: var(--muted);
 	}
 	.side-subitem.is-on {
@@ -558,21 +579,13 @@
 		margin-left: auto;
 		color: var(--muted);
 	}
-	.side-switch-text {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
-	}
 	.side-switch-name {
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		font-size: var(--fs-md);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
-	}
-	.side-switch-sub {
-		font-size: var(--fs-xs);
-		color: var(--muted);
 	}
 	.side-switch-list {
 		margin: -0.25rem 0 0.6rem;
@@ -583,8 +596,8 @@
 		flex: none;
 		display: grid;
 		place-items: center;
-		width: 2rem;
-		height: 2rem;
+		width: 2.25rem;
+		height: 2.25rem;
 		border-radius: 50%;
 		box-shadow: 0 0 0 2px var(--pp-color);
 		background: var(--surface-raised);
@@ -596,8 +609,8 @@
 		object-fit: cover;
 	}
 	.pp--sm {
-		width: 1.4rem;
-		height: 1.4rem;
+		width: 1.6rem;
+		height: 1.6rem;
 		box-shadow: 0 0 0 1.5px var(--pp-color);
 	}
 	.pp-fallback {
@@ -698,8 +711,56 @@
 	.body {
 		min-width: 0;
 	}
+	/* 🎛️ The measure: 68ch of the prose face, about 75 characters a line,
+	   inside the usual 45–75 (it was 56ch, ~62). The site-wide cap on
+	   `.prose p, li` (app.css) is lifted here so the column sets it once.
+	   The MARGIN takes what is left up to 28rem: a screenshot of the UI has
+	   to be big enough to read, so it gets the room, not the text. */
+	.reading {
+		display: grid;
+		grid-template-columns: minmax(0, 68ch) minmax(16rem, 28rem);
+		column-gap: 3rem;
+		align-items: start;
+	}
 	.chapter {
-		max-width: 56ch;
+		min-width: 0;
+	}
+	.chapter :global(p),
+	.chapter :global(li) {
+		max-width: none;
+	}
+	.margin {
+		display: flex;
+		flex-direction: column;
+	}
+	.margin-fig {
+		margin: 0;
+	}
+	.margin-shot {
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+		box-shadow: inset 0 0 0 1px var(--line-faint);
+	}
+	.margin-fig figcaption {
+		margin-top: 0.4rem;
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+	/* Too narrow for both — the text's 68ch, the gap and the margin's 16rem
+	   floor, ~56rem of CONTENT width — and the text takes the width, the
+	   margin's figures folding in under their paragraphs (the mock just goes).
+	   A container query, because the question is the content area's width,
+	   which the sidebar and its padding take from the window's. */
+	.reading-host {
+		container-type: inline-size;
+	}
+	@container (max-width: 56rem) {
+		.reading {
+			grid-template-columns: minmax(0, 68ch);
+		}
+		.margin {
+			display: none;
+		}
 	}
 	.settings {
 		max-width: 40rem;

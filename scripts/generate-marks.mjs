@@ -312,8 +312,9 @@ const MARKS = {
 	teams: 'UsersRound',
 	/** Rotations: a Gantt chart, which is what the Planner draws. */
 	rotations: 'ChartGantt',
-	/** Lineups: rows of teams on one board. */
-	lineups: 'Rows3',
+	/** Lineups: teams of characters on one board, a grid of portraits (Nate
+	 *  2026-10-25; it arrived in lucide 1.61, which the generator moved to). */
+	lineups: 'LayoutGridCircles',
 	settings: 'Settings',
 	/** The account switcher's affordance (it opens a list, not a section). */
 	switcher: 'ChevronsUpDown'

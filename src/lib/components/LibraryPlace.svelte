@@ -14,6 +14,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
+	import SidePortrait from './SidePortrait.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
@@ -26,8 +27,6 @@
 		type RotationDocument
 	} from '$lib/storage/records';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { getAvatar } from '$lib/utils/getAvatar';
-	import { siteSettings } from '$lib/stores';
 	import { teamKey } from '$lib/utils/notationEdit';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
 
@@ -35,7 +34,6 @@
 
 	const type = $derived(place === 'planner' ? 'rotation' : 'lineup');
 	const toolPath = $derived(resolve(place === 'planner' ? '/planner' : '/builder'));
-	const twin = $derived(storageSession.profile?.twin ?? 'aether');
 
 	let docs = $state<DocumentRecord[]>([]);
 	let loaded = $state(false);
@@ -184,15 +182,15 @@
 	/** The notation's opening, on one line: what tells two rotations of the
 	 *  same four apart at a glance (no parse, so it costs nothing per card). */
 	const notationHead = (d: RotationDocument): string => d.body.notation.replace(/\s+/g, ' ').trim();
-
-	const avatar = (id: string) => getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin);
-	const seated = (d: RotationDocument) => d.body.slots.filter((s): s is string => !!s);
 </script>
 
+<!-- The SIDE portraits, as the bench and the Builder wear them (Nate
+     2026-10-25); an empty slot is the game's blank side portrait. Always four,
+     so a three-character rotation reads as three and a seat. -->
 {#snippet portraits(ids: readonly (string | null)[], size: number)}
-	<span class="portraits" style:--p="{size}px">
-		{#each ids as id, i (i)}
-			{#if id}<img src={avatar(id)} alt="" />{:else}<span class="p-empty"></span>{/if}
+	<span class="portraits">
+		{#each { length: 4 } as _, i (i)}
+			<SidePortrait id={ids[i] ?? null} {size} />
 		{/each}
 	</span>
 {/snippet}
@@ -307,26 +305,33 @@
 	{@const isCurrent = d.id === currentId}
 	{@const rot = d as RotationDocument}
 	{@const guest = guestOf(d)}
-	<li class="card" class:is-current={isCurrent}>
-		<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
-			{@render portraits(seated(rot), 34)}
-			<span class="card-head">
-				{@render labelOrEdit(d)}
-				{#if d.pinned}<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span
-					>{/if}
-			</span>
-			{#if notationHead(rot)}<span class="card-notation">{notationHead(rot)}</span>{/if}
-			<span class="row-meta">
-				{#if isCurrent}<span class="row-now">Open now</span>{/if}
-				{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
-					>{/if}
-				{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span>{/if}
-				<span>{ago(recency(d))}</span>
-			</span>
-		</button>
-		{#if !pickFor}{@render actions(d)}{/if}
+	<li class="row" class:is-current={isCurrent}>
+		<div class="row-line">
+			<button class="row-main" onclick={() => choose(d)} disabled={renaming === d.id}>
+				{@render portraits(rot.body.slots, 28)}
+				<span class="row-text">
+					<span class="card-head">
+						{@render labelOrEdit(d)}
+						{#if d.pinned}<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span
+							>{/if}
+					</span>
+					<span class="row-meta">
+						{#if isCurrent}<span class="row-now">Open now</span>{/if}
+						{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+							>{/if}
+						{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span
+							>{/if}
+						<span>{ago(recency(d))}</span>
+					</span>
+				</span>
+				<!-- The notation's opening, in the row's middle: what tells two
+				     rotations of the same four apart. -->
+				{#if notationHead(rot)}<span class="row-notation">{notationHead(rot)}</span>{/if}
+			</button>
+			{#if !pickFor}{@render actions(d)}{/if}
+		</div>
 		{#if guest && !pickFor}
-			<!-- ⚓ A guest rides its card's foot, framed in Theorycraft's white
+			<!-- ⚓ A guest rides its row's foot, framed in Theorycraft's white
 			     (§4.6, §6.3), with its words. -->
 			<button
 				class="guest-main"
@@ -389,13 +394,13 @@
 	{:else if place === 'planner'}
 		{#if pinned.length}
 			<p class="sec">Pinned</p>
-			<ul class="cards">
+			<ul class="rows">
 				{#each pinned as d (d.id)}{@render row(d)}{/each}
 			</ul>
 		{/if}
 		{#if recent.length}
 			{#if pinned.length}<p class="sec">Recent</p>{/if}
-			<ul class="cards">
+			<ul class="rows">
 				{#each recent as d (d.id)}{@render row(d)}{/each}
 			</ul>
 		{/if}
@@ -431,6 +436,9 @@
 </div>
 
 <style>
+	.place {
+		container: library / inline-size;
+	}
 	.place-acts {
 		display: flex;
 		align-items: center;
@@ -537,6 +545,88 @@
 	.card.is-current {
 		box-shadow: inset 0 0 0 1px var(--sel-ring);
 	}
+	/* ── A rotation ROW (↻ 2026-10-25: rows again, Nate) ── */
+	.rows {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.row {
+		display: flex;
+		flex-direction: column;
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+		transition: background var(--t-snap);
+	}
+	.row:hover {
+		background: var(--surface-hover);
+	}
+	.row.is-current {
+		box-shadow: inset 0 0 0 1px var(--sel-ring);
+	}
+	.row-line {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+	.row-main {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.55rem 0.8rem;
+		border: none;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.row-text {
+		flex: 0 1 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		min-width: 0;
+		width: 18rem;
+	}
+	/* The notation's opening, filling the row's middle: the part that differs
+	   between rotations of the same four. Gone where the row is too narrow to
+	   give it room worth reading. */
+	.row-notation {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	@container library (max-width: 40rem) {
+		.row-notation {
+			display: none;
+		}
+	}
+	/* A row's verbs sit in the row, not over it. */
+	.row .row-acts {
+		position: static;
+		margin-right: 0.5rem;
+		background: none;
+	}
+	.row .row-more {
+		position: static;
+		margin-right: 0.35rem;
+	}
+	.row:hover .row-acts,
+	.row:focus-within .row-acts {
+		opacity: 1;
+	}
+
 	.card-main {
 		flex: 1;
 		min-width: 0;
@@ -563,21 +653,6 @@
 		flex: none;
 		display: inline-flex;
 		color: var(--accent);
-	}
-	/* The notation's opening, the part that differs between two rotations of
-	   the same four. TWO lines: one showed only the shared opener in a real
-	   library (six rotations of one team began identically). */
-	.card-notation {
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		max-width: 100%;
-		overflow: hidden;
-		overflow-wrap: anywhere;
-		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
-		color: var(--muted);
 	}
 	.card-teams {
 		display: flex;
@@ -625,25 +700,12 @@
 		font-weight: var(--fw-semibold);
 	}
 
+	/* Side portraits stand a little apart: their art overhangs the disc
+	   sideways (a ponytail), so they never overlap the way discs could. */
 	.portraits {
 		display: inline-flex;
 		flex: none;
-	}
-	.portraits img,
-	.p-empty {
-		width: var(--p);
-		height: var(--p);
-		border-radius: 50%;
-		background: var(--surface-well);
-	}
-	.portraits > :not(:first-child) {
-		margin-left: calc(var(--p) * -0.18);
-	}
-	/* An empty slot is a faint RING, not a dark disc: a disc read as a
-	   portrait still loading, and a half-built lineup should read as one. */
-	.p-empty {
-		background: none;
-		box-shadow: inset 0 0 0 1.5px var(--line-soft);
+		gap: 2px;
 	}
 
 	/* ── The card's verbs: over its top-right corner on hover or focus ── */
