@@ -82,14 +82,14 @@
 		{
 			id: 'builder',
 			title: 'Astrolabe',
-			tool: 'Team Builder',
+			tool: 'Team builder',
 			path: '/builder',
 			art: 'astrolabe'
 		},
 		{
 			id: 'planner',
 			title: 'Ephemeris',
-			tool: 'Rotation Planner',
+			tool: 'Rotation planner',
 			path: '/planner',
 			art: 'ephemeris'
 		},

@@ -705,7 +705,7 @@
 			<button
 				class="btn btn--primary icd-send"
 				disabled={apps === 0}
-				title="Sends the first 8 hits within 15s that apply an element — each as 1U, since the ICD Timeline doesn't model gauge sizes."
+				title="Sends the first 8 hits within 15s that apply an element — each as 1U, since the ICD timeline doesn't model gauge sizes."
 				onclick={() =>
 					onHandoff({
 						target: 'gauge',
@@ -713,7 +713,7 @@
 						payload: icdHitsToGaugeApps(sim, element)
 					})}
 			>
-				Send to Gauge Explorer <Mark name="forward" size={12} />
+				Send to gauge explorer <Mark name="forward" size={12} />
 			</button>
 		{/if}
 	</div>

@@ -20,20 +20,20 @@
 <section>
 	<h2 id="tools">The tools</h2>
 	<p>
-		<strong>The Team Builder</strong> is a party setup screen for Stygian Onslaught, the Spiral
+		<strong>The team builder</strong> is a party setup screen for Stygian Onslaught, the Spiral
 		Abyss, and your own lineups. Each team shows what it can provide (healing, shields, RES shred,
 		buffs, and more), sourced from the kits at the constellations you own, and what switching out a
 		team member would cost or gain.
 		<a href={resolve('/help/builder')}>How it works</a>
 	</p>
 	<p>
-		<strong>The Rotation Planner</strong> turns a rotation written in KQM notation into a timeline
+		<strong>The rotation planner</strong> turns a rotation written in KQM notation into a timeline
 		of casts and swaps, cooldowns, buff windows, and the enemy’s aura, timed frame by frame. You can
 		also practice a rotation by playing it back at game speed with audio cues.
 		<a href={resolve('/help/planner')}>How it works</a>
 	</p>
 	<p>
-		<strong>The Visualizers</strong> are eight small instruments, each about one mechanic: crit,
+		<strong>The visualizers</strong> are eight small instruments, each about one mechanic: crit,
 		elemental gauge, ICD, reaction scaling, the damage formula, enemy RES and DEF, artifact odds,
 		and wish odds. <a href={resolve('/help/visualizers')}>How they work</a>
 	</p>
@@ -49,8 +49,8 @@
 	<p>
 		Curation is uneven, because some kits are much harder to model than others. Where a character
 		isn’t finished, the tools say so rather than guess, and the
-		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what the Rotation
-		Planner draws and what it leaves out.
+		<a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> shows what the rotation
+		planner draws and what it leaves out.
 	</p>
 </section>
 
@@ -73,7 +73,7 @@
 		</li>
 		<li>
 			<a href="https://keqingmains.com" target="_blank" rel="noopener noreferrer">Keqing Mains</a>:
-			the notation the Rotation Planner reads, and the theorycrafting conventions the tools follow.
+			the notation the rotation planner reads, and the theorycrafting conventions the tools follow.
 		</li>
 		<li>
 			<a href="https://github.com/theBowja/genshin-db" target="_blank" rel="noopener noreferrer"
@@ -94,13 +94,13 @@
 		<li>
 			<a href="https://github.com/OneBST/GGanalysis" target="_blank" rel="noopener noreferrer"
 				>GGanalysis</a
-			>, which Wish Odds is tested against; and Genshin Optimizer and SiriYu’s reshape solver, the
-			two models behind Artifact Odds’ reading of a reshape.
+			>, which the wish odds visualizer is tested against; and Genshin Optimizer and SiriYu’s
+			reshape solver, the two models behind the artifact odds visualizer’s reading of a reshape.
 		</li>
 		<li>
 			<a href="https://www.hoyolab.com/article/622264" target="_blank" rel="noopener noreferrer"
 				>EODGamer’s crit heatmap</a
-			>, the spreadsheet the Crit Heatmap grew out of.
+			>, the spreadsheet the crit heatmap grew out of.
 		</li>
 		<li>Type is IBM Plex and Bitter; the interface icons are Lucide’s. Both are open-licensed.</li>
 	</ul>

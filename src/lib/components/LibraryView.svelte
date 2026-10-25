@@ -236,8 +236,8 @@
 				: library.builderHere
 					? `Put on ${library.builderHere}`
 					: 'Add to the lineup',
-		board: library.from === 'builder' ? 'Open as a tab' : 'Open in the Team Builder',
-		closedBoard: library.from === 'builder' ? 'Reopen' : 'Reopen in the Team Builder',
+		board: library.from === 'builder' ? 'Open as a tab' : 'Open in the team builder',
+		closedBoard: library.from === 'builder' ? 'Reopen' : 'Reopen in the team builder',
 		closedRotation: library.from === 'planner' && !library.away ? 'Reopen' : 'Reopen in the Planner'
 	});
 

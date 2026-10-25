@@ -14,7 +14,7 @@
 	import { FEEDBACK_FORM_URL } from '$lib/feedback';
 </script>
 
-<h1>Rotation Planner</h1>
+<h1>Rotation planner</h1>
 
 <p class="flavor">
 	A ledger of where every star will be, frame by frame. Its compiler held that the heavens keep
@@ -22,7 +22,7 @@
 </p>
 
 <p class="lede">
-	Write a rotation in KQM notation and the Rotation Planner draws it as a timeline: who is on field,
+	Write a rotation in KQM notation and the rotation planner draws it as a timeline: who is on field,
 	every cast and its cooldown, the buffs it grants, and what it does to the enemy’s aura, timed from
 	measured frame data.
 </p>
@@ -75,13 +75,13 @@
 	{#if $nextLayout}
 		<p>
 			Undo and redo sit at the end of the composer, alongside Ctrl+Z and Ctrl+Shift+Z (⌘Z and ⌘⇧Z on
-			a Mac). They work for edits made from the bench and the Team Builder too. Each rotation keeps
+			a Mac). They work for edits made from the bench and the team builder too. Each rotation keeps
 			its own edit history until the page reloads.
 		</p>
 	{:else}
 		<p>
 			Undo and redo sit at the end of the composer, alongside Ctrl+Z and Ctrl+Shift+Z (⌘Z and ⌘⇧Z on
-			a Mac). They work for edits made from the bench and the Team Builder too. Each tab keeps its
+			a Mac). They work for edits made from the bench and the team builder too. Each tab keeps its
 			own edit history until the page reloads.
 		</p>
 	{/if}
@@ -119,8 +119,8 @@
 	<p>
 		Each slot on the bench beside the timeline has a bench card. Clicking the portrait opens the
 		character’s details. On a wide screen, the two buttons at the card’s left change the slot: The
-		top one opens the Team Builder’s swap mode for that slot, and picking someone there takes you
-		back to the Planner with the notation renamed throughout. The bottom one removes the character
+		top one opens the team builder’s swap mode for that slot, and picking someone there takes you
+		back to the planner with the notation renamed throughout. The bottom one removes the character
 		from the team and deletes their notation. Clicking an empty slot’s portrait adds someone
 		instead. On a phone, the remove button is in the character’s details.
 	</p>
@@ -314,7 +314,7 @@
 		</p>
 	{/if}
 	<p>
-		The model behind it is the Gauge Explorer’s: the ×0.8 aura tax, decay rates, how much each
+		The model behind it is the gauge explorer’s: the ×0.8 aura tax, decay rates, how much each
 		reaction consumes, and the Crystallize cooldown. It assumes one enemy without a permanent aura
 		that applies nothing back to you, and Shatter isn’t modeled. (If you would like to see permanent
 		auras as a feature, please send a request through the
@@ -354,7 +354,7 @@
 	{/if}
 	{#if $nextLayout}
 		<p>
-			The Planner shows one rotation at a time and saves it as you work, in the profile you’re in.
+			The planner shows one rotation at a time and saves it as you work, in the profile you’re in.
 			The rotation’s name in the top bar opens <strong>Rotations</strong> in the Library, where
 			<strong>New rotation</strong> starts another and each one can be pinned, renamed, or deleted.
 		</p>
@@ -391,7 +391,7 @@
 		<p>
 			The Library groups saved rotations by team. Its search turns a character, element, or reaction
 			into a tag, and tags combine. Its <strong>Roster</strong> tab is where you mark who you own, which
-			the Team Builder shares.
+			the team builder shares.
 		</p>
 	{/if}
 	{#if $nextLayout}

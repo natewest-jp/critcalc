@@ -66,7 +66,7 @@
 			<strong>Export…</strong> to download all your data as one file. Move that file to the other
 			device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
 			file’s data. The file carries every profile in this browser, each with its roster, teams, rotations,
-			and lineups, plus your settings and the Visualizers’ layout.
+			and lineups, plus your settings and the visualizers’ layout.
 		</p>
 	{:else}
 		<p>
@@ -74,15 +74,15 @@
 			<strong>Export…</strong> to download all your data as one file. Move that file to the other
 			device, then look for <strong>Restore</strong> and the <strong>Import…</strong> button to load that
 			file’s data. The file carries your settings, roster, constellations, loadouts, saved rotations and
-			lineups, open tabs, and the Visualizers’ layout.
+			lineups, open tabs, and the visualizers’ layout.
 		</p>
 	{/if}
 
 	<h3>What does a share link carry?</h3>
 	<p>
-		Only the thing you’re sharing, written into the link itself. A Rotation Planner link holds the
-		notation and each character’s constellation and loadout; a Team Builder link holds the lineup’s
-		teams and their constellations, but not their pinned rotations; a Visualizers link holds that
+		Only the thing you’re sharing, written into the link itself. A rotation planner link holds the
+		notation and each character’s constellation and loadout; a team builder link holds the lineup’s
+		teams and their constellations, but not their pinned rotations; a visualizers link holds that
 		one instrument’s settings.
 	</p>
 	<p>
@@ -106,7 +106,7 @@
 	<h3>Is my character fully in?</h3>
 	<p>
 		The <a href={resolve('/coverage')} onclick={(e) => openCoverage(e)}>coverage page</a> answers that
-		for every character, ability by ability, and gives the reason for anything the Rotation Planner leaves
+		for every character, ability by ability, and gives the reason for anything the rotation planner leaves
 		out. A character without curated frames still appears everywhere, marked “Not yet curated”, with generic
 		frame timings as a stand-in.
 	</p>
@@ -141,7 +141,7 @@
 			Check <strong>Human timing</strong> (it’s on by default). This pads every input the game
 			doesn’t buffer with a few frames of reaction time — 10 to start with, which is the KQM
 			starting point. Normal attack into normal attack is queued up by the game, so no padding is
-			added there. Turn it off in the Rotation Planner’s view bar to see the frame-perfect rotation,
+			added there. Turn it off in the rotation planner’s view bar to see the frame-perfect rotation,
 			or tune it in
 			<a href={resolve('/settings')}>Settings</a>.
 		</p>
@@ -173,8 +173,8 @@
 
 	<h3>Does it work on a phone?</h3>
 	<p>
-		Yes, down to 320px wide, though the Rotation Planner and Team Builder are easier with more room.
-		On a phone the Rotation Planner starts with the Buffs and Auras layers off, and you can hide the
+		Yes, down to 320px wide, though the rotation planner and team builder are easier with more room.
+		On a phone the rotation planner starts with the Buffs and Auras layers off, and you can hide the
 		bench.
 	</p>
 	<p>

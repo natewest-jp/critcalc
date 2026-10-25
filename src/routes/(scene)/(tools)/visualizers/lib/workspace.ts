@@ -17,14 +17,14 @@ export const INSTRUMENTS = [
 	// ⚓ Nate 2026-10-02: the picker's order is CONCEPTUAL — the two defaults
 	// first, then the mechanics (ICD, reactions), the damage maths, and the
 	// two dice (artifacts, wishes) last.
-	{ id: 'crit', name: 'Crit Heatmap' },
-	{ id: 'gauge', name: 'Gauge Explorer' },
-	{ id: 'icd', name: 'ICD Timeline' },
-	{ id: 'curves', name: 'Reaction Curves' },
-	{ id: 'breakdown', name: 'Damage Breakdown' },
+	{ id: 'crit', name: 'Crit heatmap' },
+	{ id: 'gauge', name: 'Gauge explorer' },
+	{ id: 'icd', name: 'ICD timeline' },
+	{ id: 'curves', name: 'Reaction curves' },
+	{ id: 'breakdown', name: 'Damage breakdown' },
 	{ id: 'defres', name: 'Enemy RES & DEF' },
-	{ id: 'artifact', name: 'Artifact Odds' },
-	{ id: 'wish', name: 'Wish Odds' }
+	{ id: 'artifact', name: 'Artifact odds' },
+	{ id: 'wish', name: 'Wish odds' }
 ] as const;
 
 export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];

@@ -79,12 +79,12 @@ export const PAGE_META: Record<string, PageMeta> = {
 	},
 
 	'/planner': {
-		title: 'Rotation Planner',
+		title: 'Rotation planner',
 		description:
 			'Write a rotation in KQM notation and watch it become a frame-accurate timeline: cooldowns, buff windows, auras, and who is on field when.'
 	},
 	'/builder': {
-		title: 'Team Builder',
+		title: 'Team builder',
 		description:
 			'Build lineups for Stygian Onslaught and the Spiral Abyss: See what each team brings (healing, shields, RES shred, buffs) at your constellations, and what a swap would change.'
 	},
@@ -100,25 +100,25 @@ export const PAGE_META: Record<string, PageMeta> = {
 			"How to use critcalc's tools, plus answers to common questions about the site and its data."
 	},
 	'/help/planner': {
-		title: 'Rotation Planner help',
+		title: 'Rotation planner help',
 		description:
-			'How the critcalc Rotation Planner works: KQM-style notation, the team, reading the timeline, playback, and the enemy’s aura.'
+			'How the critcalc rotation planner works: KQM-style notation, the team, reading the timeline, playback, and the enemy’s aura.'
 	},
 	'/help/builder': {
-		title: 'Team Builder help',
+		title: 'Team builder help',
 		description:
-			'How the critcalc Team Builder works: capability filters, constellations, lineups, and swapping a character.'
+			'How the critcalc team builder works: capability filters, constellations, lineups, and swapping a character.'
 	},
 	'/help/visualizers': {
 		title: 'Visualizers help',
 		description:
-			'The critcalc Visualizers: the workspace, and what each of the eight graph instruments shows.'
+			'The critcalc visualizers: the workspace, and what each of the eight graph instruments shows.'
 	},
 
 	'/coverage': {
 		title: 'Character coverage',
 		description:
-			'Which parts of each Genshin character’s kit the critcalc Rotation Planner draws, ability by ability, and what is missing or left out.'
+			'Which parts of each Genshin character’s kit the critcalc rotation planner draws, ability by ability, and what is missing or left out.'
 	},
 
 	'/about': {

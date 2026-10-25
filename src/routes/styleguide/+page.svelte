@@ -1345,8 +1345,10 @@
 			<span class="sg-badge sg-badge--trial">on trial</span>
 		</h2>
 		<p class="sg-note">
-			One base, two variants, two sizes. <strong>Buttons are verbs, so they shout:</strong> uppercase
-			+ wide tracking throughout.
+			One base, two variants, two sizes. ↻ 2026-10-24 (⚓ Nate, under the switch until the flip):
+			<strong>every control is sentence case</strong>, shown exactly as written. "Verbs shout, nouns
+			don't" was arbitrary, and the capitals cost a toolbar its width. Kickers stay uppercase: they
+			are labels, not controls.
 		</p>
 		<p class="sg-note">
 			↻ 2026-08-07 — <strong>the base button is OPAQUE.</strong> It used to be a transparent ghost
@@ -1371,7 +1373,7 @@
 				</div>
 				{@render spec(
 					'.btn · --primary · .is-active · :disabled',
-					'3px · 0.32/0.65rem · fs-sm · UPPER · ls-wide · opaque --btn-face at rest, --btn-face-hover on hover. .is-active mixes --sel-fill INTO the face rather than replacing it — a selected button that swapped its plate for a translucent accent came out quieter than its neighbours'
+					'3px · 0.32/0.65rem · fs-sm · sentence case · opaque --btn-face at rest, --btn-face-hover on hover. .is-active mixes the accent at 20% INTO the face rather than replacing it — a selected button that swapped its plate for a translucent accent came out quieter than its neighbours'
 				)}
 			</div>
 
@@ -1386,7 +1388,7 @@
 				</div>
 				{@render spec(
 					'the two surviving ghosts',
-					'--danger stays text-only until hover: a destructive action must not sit on screen looking pressable. ↻ 2026-08-07: the ARMED half wears the warning mark — the one place a mark buys safety rather than decoration. .segment > .btn stays transparent because the recessed track behind it IS the affordance — opaque plates would fill the track in and leave three buttons in a row with no group'
+					'--danger stays text-only until hover: a destructive action must not sit on screen looking pressable. ↻ 2026-08-07: the ARMED half wears the warning mark — the one place a mark buys safety rather than decoration. .segment > .btn stays transparent because the recessed track behind it IS the affordance — opaque plates would fill the track in and leave three buttons in a row with no group. ↻ 2026-10-25: the CHOSEN side is the .is-active plate (accent 20% over the face), with no ring'
 				)}
 			</div>
 
@@ -1421,10 +1423,17 @@
 	<section id="chips">
 		<h2>Chips & tabs <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
-			The selected state was already converged across four independent files — accent 20% fill + 55%
-			inset ring — so it becomes <code>--sel-fill</code> / <code>--sel-ring</code> and every control
-			shares it. What varies is <strong>voice</strong>: a chip that names a game concept or a
-			character is sentence case; a chip that is an instrument setting shouts like a button.
+			↻ 2026-10-25 (⚓ Nate, under the switch until the flip): <strong
+				>ON and CHOSEN are a FILL; a RING is the hand.</strong
+			>
+			A chosen chip, segment or filter, and a plate that is on, takes the accent at 20% over the button
+			face (<code>.btn.is-active</code>'s recipe); an element chip fills in its own hue. The gold
+			ring it replaces shared its shape with the hover ring, and on a phone the last control tapped
+			keeps its hover, so "on" and "touched" read alike. Hover rings show only where a pointer can
+			hover. A ring that means <em>you are here</em> (the top bar's current tool, keyboard focus)
+			stays a ring. Voice: a content chip keeps
+			<code>capitalize</code>, because its label is often a raw id ("sword"); an instrument chip is
+			shown exactly as written, in sentence case.
 		</p>
 
 		<div class="sg-specimens">
@@ -1453,7 +1462,7 @@
 				</div>
 				{@render spec(
 					'.chip--control · .chip-sub',
-					'INSTRUMENT voice — uppercase, ls-wide, fs-md. Instrument settings and modes'
+					'INSTRUMENT voice — fs-md, shown as written (sentence case). Instrument settings and modes'
 				)}
 			</div>
 
@@ -2117,8 +2126,9 @@
 						section heads). Both come from the context, never from a literal.
 					</li>
 					<li>
-						<strong>Verbs shout, nouns don't.</strong> Buttons and instrument controls are uppercase +
-						ls-wide; content chips are sentence case.
+						<strong>Controls are sentence case</strong> (↻ 2026-10-24, ⚓ Nate — it retired "verbs shout,
+						nouns don't"). Buttons, chips, menus and pickers show their words as written; only kickers
+						and chart axis titles are set in capitals.
 					</li>
 					<li>Never re-declare a font stack locally.</li>
 					<li>
@@ -2173,6 +2183,13 @@
 						<em>promoted</em>, not <em>lonely</em>. The only ghosts left are
 						<code>.btn--danger</code> and <code>.segment > .btn</code>, and each is documented at
 						its rule.
+					</li>
+					<li>
+						<strong>On is a fill; a ring is the hand</strong> (↻ 2026-10-25, ⚓ Nate). A plate that
+						is on and a chip, segment or filter that is chosen fill with the accent at 20% over the
+						face (an element in its own hue). Rings are for hover (only where a pointer can hover),
+						focus, and "you are here". Behind the switch until the flip:
+						<code>:where(:root[data-next])</code> in app.css.
 					</li>
 				</ul>
 			</div>
