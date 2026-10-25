@@ -94,8 +94,37 @@
 		return storageSession.currentId('planner');
 	});
 
-	const pinned = $derived(listed.filter((d) => d.pinned));
-	const recent = $derived(listed.filter((d) => !d.pinned));
+	/** ⚓ A COMPARE PAIR is one entry (2026-10-25): A (the older side, as
+	 *  the Planner's compare control names it) is the row, B rides under it.
+	 *  A cross-profile pair is a guest instead (above). */
+	const pairedB = (d: DocumentRecord): DocumentRecord | undefined => {
+		const p = partners[d.id];
+		return p && p.profileId === d.profileId && p.createdAt > d.createdAt ? p : undefined;
+	};
+	/** B shows under A, unless A is not in the list (a team filter, or pick
+	 *  mode choosing a partner for A), when B stands on its own. */
+	const nested = $derived.by((): Record<string, true> => {
+		const ids = listed.map((d) => d.id);
+		const out: Record<string, true> = {};
+		for (const d of listed) {
+			const b = pairedB(d);
+			if (b && ids.includes(b.id)) out[b.id] = true;
+		}
+		return out;
+	});
+	/** An entry is as recent, and as pinned, as either of its sides. */
+	const entries = $derived(
+		listed
+			.filter((d) => !nested[d.id])
+			.map((d) => {
+				const b = pairedB(d);
+				const sideB = b && nested[b.id] ? b : undefined;
+				return { d, b: sideB, at: Math.max(recency(d), sideB ? recency(sideB) : 0) };
+			})
+			.sort((x, y) => y.at - x.at)
+	);
+	const pinned = $derived(entries.filter((e) => e.d.pinned || e.b?.pinned));
+	const recent = $derived(entries.filter((e) => !(e.d.pinned || e.b?.pinned)));
 
 	/** Back onto the tool if it is underneath, else go to it. */
 	function arrive(): void {
@@ -301,35 +330,41 @@
 	</span>
 {/snippet}
 
-{#snippet row(d: DocumentRecord)}
+{#snippet line(d: DocumentRecord, tag: 'A' | 'B' | null)}
 	{@const isCurrent = d.id === currentId}
 	{@const rot = d as RotationDocument}
-	{@const guest = guestOf(d)}
-	<li class="row" class:is-current={isCurrent}>
-		<div class="row-line">
-			<button class="row-main" onclick={() => choose(d)} disabled={renaming === d.id}>
-				{@render portraits(rot.body.slots, 28)}
-				<span class="row-text">
-					<span class="card-head">
-						{@render labelOrEdit(d)}
-						{#if d.pinned}<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span
-							>{/if}
-					</span>
-					<span class="row-meta">
-						{#if isCurrent}<span class="row-now">Open now</span>{/if}
-						{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
-							>{/if}
-						{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span
-							>{/if}
-						<span>{ago(recency(d))}</span>
-					</span>
+	<div class="row-line" class:is-current={isCurrent} class:row-line--b={tag === 'B'}>
+		<button class="row-main" onclick={() => choose(d)} disabled={renaming === d.id}>
+			{#if tag}<span class="pair-tag" title="Compared as {tag}">{tag}</span>{/if}
+			{@render portraits(rot.body.slots, 28)}
+			<span class="row-text">
+				<span class="card-head">
+					{@render labelOrEdit(d)}
+					{#if d.pinned}<span class="card-pin" title="Pinned"><Mark name="pin" size={12} /></span
+						>{/if}
 				</span>
-				<!-- The notation's opening, in the row's middle: what tells two
-				     rotations of the same four apart. -->
-				{#if notationHead(rot)}<span class="row-notation">{notationHead(rot)}</span>{/if}
-			</button>
-			{#if !pickFor}{@render actions(d)}{/if}
-		</div>
+				<span class="row-meta">
+					{#if isCurrent}<span class="row-now">Open now</span>{/if}
+					{#if d.fromLink}<span class="row-flag"><Mark name="link" size={11} /> From a link</span
+						>{/if}
+					{#if fromProfile(d)}<span class="row-flag row-flag--guest">From {fromProfile(d)}</span
+						>{/if}
+					<span>{ago(recency(d))}</span>
+				</span>
+			</span>
+			<!-- The notation's opening, in the row's middle: what tells two
+			     rotations of the same four apart. -->
+			{#if notationHead(rot)}<span class="row-notation">{notationHead(rot)}</span>{/if}
+		</button>
+		{#if !pickFor}{@render actions(d)}{/if}
+	</div>
+{/snippet}
+
+{#snippet row(d: DocumentRecord, b?: DocumentRecord)}
+	{@const guest = guestOf(d)}
+	<li class="row" class:is-pair={!!b}>
+		{@render line(d, b ? 'A' : null)}
+		{#if b}{@render line(b, 'B')}{/if}
 		{#if guest && !pickFor}
 			<!-- ⚓ A guest rides its row's foot, framed in Theorycraft's white
 			     (§4.6, §6.3), with its words. -->
@@ -339,7 +374,9 @@
 				onclick={() => choose(guest)}
 			>
 				<span class="guest-tag">Theorycraft copy</span>
-				<span class="guest-levels">{levelsLine(rot, guest as RotationDocument)}</span>
+				<span class="guest-levels"
+					>{levelsLine(d as RotationDocument, guest as RotationDocument)}</span
+				>
 				{#if guest.id === plannerCurrent}<span class="row-now">Open now</span>{/if}
 			</button>
 		{/if}
@@ -401,7 +438,7 @@
 				<section class="lib-col lib-col--pinned" aria-label="Pinned">
 					<p class="sec">Pinned</p>
 					<ul class="rows">
-						{#each pinned as d (d.id)}{@render row(d)}{/each}
+						{#each pinned as e (e.d.id)}{@render row(e.d, e.b)}{/each}
 					</ul>
 				</section>
 			{/if}
@@ -409,14 +446,14 @@
 				<section class="lib-col lib-col--recent" aria-label="Recent">
 					{#if pinned.length}<p class="sec">Recent</p>{/if}
 					<ul class="rows">
-						{#each recent as d (d.id)}{@render row(d)}{/each}
+						{#each recent as e (e.d.id)}{@render row(e.d, e.b)}{/each}
 					</ul>
 				</section>
 			{/if}
 		</div>
 	{:else}
 		<ul class="cards">
-			{#each [...pinned, ...recent] as d (d.id)}
+			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
 				{@const isCurrent = d.id === currentId}
 				{@const lineup = d as LineupDocument}
 				<li class="card" class:is-current={isCurrent}>
@@ -608,16 +645,40 @@
 		background: var(--surface-raised);
 		transition: background var(--t-snap);
 	}
-	.row:hover {
-		background: var(--surface-hover);
-	}
-	.row.is-current {
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
-	}
+	/* The hover and the current ring belong to a LINE, so a pair's two sides
+	   answer separately. */
 	.row-line {
 		position: relative;
 		display: flex;
 		align-items: center;
+		border-radius: var(--r-sm);
+		transition: background var(--t-snap);
+	}
+	.row-line:hover {
+		background: var(--surface-hover);
+	}
+	.row-line.is-current {
+		box-shadow: inset 0 0 0 1px var(--sel-ring);
+	}
+	/* B rides under A: one rule between them, the pair one object. */
+	.row-line--b {
+		border-top: 1px solid var(--line-faint);
+		border-radius: 0 0 var(--r-sm) var(--r-sm);
+	}
+	.is-pair > .row-line:first-child {
+		border-radius: var(--r-sm) var(--r-sm) 0 0;
+	}
+	.pair-tag {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 1.3rem;
+		height: 1.3rem;
+		border-radius: var(--r-sm);
+		box-shadow: inset 0 0 0 1px var(--line-strong);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
 	}
 	.row-main {
 		flex: 1;
@@ -669,8 +730,8 @@
 		position: static;
 		margin-right: 0.35rem;
 	}
-	.row:hover .row-acts,
-	.row:focus-within .row-acts {
+	.row-line:hover .row-acts,
+	.row-line:focus-within .row-acts {
 		opacity: 1;
 	}
 	/* In a narrow column the verbs FLOAT over the row's end on the hovered
@@ -678,15 +739,18 @@
 	   name's room while invisible. */
 	@container library (max-width: 30rem) {
 		.row .row-acts {
+			/* The FULL height of the line, and a soft leading edge: the name
+			   fades out under the verbs rather than peeking above or beside
+			   them (Nate: a box of the buttons' own height let the name show
+			   over it). Plain stops, no color-mix (the WebKit nesting law). */
 			position: absolute;
 			inset-block: 0;
-			right: 0.4rem;
-			height: max-content;
-			/* Centred by auto margins, ⛔ not a transform: the verbs fade by
-			   opacity, and WebKit dances an opacity subtree placed by a
-			   transform (the sub-pixel laws). */
-			margin: auto 0;
-			background: var(--surface-hover);
+			right: 0;
+			align-items: center;
+			margin: 0;
+			padding: 0 0.4rem 0 1.5rem;
+			border-radius: 0 var(--r-sm) var(--r-sm) 0;
+			background: linear-gradient(to right, transparent, var(--surface-hover) 1.25rem);
 		}
 	}
 
