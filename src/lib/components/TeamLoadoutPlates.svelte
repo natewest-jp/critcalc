@@ -27,12 +27,16 @@
 	let {
 		charId,
 		entry,
-		onSet
+		onSet,
+		iconsOnly = false
 	}: {
 		charId: string;
 		entry: LoadoutEntry;
 		/** A part changed; `undefined` clears it. */
 		onSet: (update: Partial<LoadoutEntry>) => void;
+		/** A column too narrow for the names: the plates keep their icons (and
+		 *  the weapon its refinement), and the names live in the titles. */
+		iconsOnly?: boolean;
 	} = $props();
 
 	const char = $derived(getCharacterIndexEntry(charId));
@@ -87,10 +91,11 @@
 	closeOnLeave(() => open, close);
 </script>
 
-<div class="tlp" bind:this={platesEl} style:--el={p.main}>
+<div class="tlp" class:is-icons={iconsOnly} bind:this={platesEl} style:--el={p.main}>
 	<button
 		class="tlp-plate"
 		class:is-unset={!artifact}
+		title={artifact?.name ?? 'Artifact set'}
 		aria-expanded={open}
 		aria-label="{char?.displayName ?? charId}: artifact set, {artifact?.name ?? 'none'}"
 		onclick={toggle}
@@ -106,6 +111,7 @@
 	<button
 		class="tlp-plate"
 		class:is-unset={!weapon}
+		title={weapon ? `${weapon.name} R${ref}` : 'Weapon'}
 		aria-expanded={open}
 		aria-label="{char?.displayName ?? charId}: weapon, {weapon ? `${weapon.name} R${ref}` : 'none'}"
 		onclick={toggle}
@@ -174,7 +180,7 @@
 		padding: 0 0.45rem 0 0.2rem;
 		border: none;
 		border-radius: var(--r-sm);
-		background: var(--surface-raised);
+		background: var(--plate-ground, var(--surface-raised));
 		color: var(--text);
 		font: inherit;
 		font-size: var(--fs-sm);
@@ -185,7 +191,7 @@
 			color var(--t-snap);
 	}
 	.tlp-plate:hover {
-		background: var(--surface-hover);
+		background: var(--plate-hover, var(--surface-hover));
 	}
 	.tlp-plate img {
 		flex-shrink: 0;
@@ -214,6 +220,16 @@
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* Too narrow for the names (the caller measures its column): a name cut
+	   to a stub says nothing, so the icons stand alone. */
+	.is-icons .tlp-plate {
+		justify-content: center;
+		padding: 0 0.2rem;
+	}
+	.is-icons .tlp-name {
+		display: none;
 	}
 
 	.tlp-backdrop {

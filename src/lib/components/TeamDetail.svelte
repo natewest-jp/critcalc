@@ -5,10 +5,13 @@
   card (any click on it) or New team, as a history entry over Teams
   (`menu.openTeam`), so Back returns to the cards.
 
-  The Roster's grid and filter column choose the members; the party strip
-  above it holds the four in party order, each with its loadout plates. A
-  pick fills the selected slot and moves on to the next empty one; picking
-  someone already on the team takes them off, leaving the slot to fill.
+  The Roster's tiles under the Builder's filter strip choose the members;
+  the party strip above them holds the four in party order, each with its
+  loadout plates, and the team's resonance and faction under it. A pick
+  fills the selected slot and moves on to the next empty one; picking
+  someone already on the team takes them off, leaving the slot to fill; a
+  pick with no slot chosen nudges the party. The page carries no head and no
+  ✕ (MenuState `headless`): the name is the title, Done the way out.
 
   ⚓ One team per SET of four (§3, kept 2026-10-25): a set that is already a
   team is said at once, naming it, and Save waits. Everything is a draft until
@@ -199,7 +202,9 @@
 			return;
 		}
 		const t = e.target as HTMLElement | null;
-		if (t?.closest('input, textarea, [contenteditable]')) return;
+		// A field, or an open popover (More, the loadout panel, New lineup's
+		// menu), keeps its own digits.
+		if (t?.closest('input, textarea, [contenteditable], [role="dialog"], [role="menu"]')) return;
 		if (/^[1-4]$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
 			e.preventDefault();
 			at = Number(e.key) - 1;
@@ -209,6 +214,9 @@
 	// ── The party strip's size: four columns of what the strip is given ─────
 	let partyW = $state(0);
 	const GAP_PX = 12;
+	/** 🎛️ Below this column width a plate's name cuts to a stub ("De…"), so
+	 *  the plates go icon-only: 24px icon + ~70px of name + the plate's inset. */
+	const PLATE_NAMES_MIN = 112;
 	const colW = $derived(Math.min(176, (partyW - 3 * GAP_PX) / 4));
 	const portrait = $derived(Math.round(Math.max(52, Math.min(96, colW * 0.62))));
 
@@ -362,9 +370,9 @@
 							class="btn btn--sm td-del"
 							class:is-armed={armed}
 							onclick={del}
-							title={armed ? 'Click again to delete' : undefined}
+							title={armed ? 'Click again to delete' : 'Delete team'}
 							><Mark name={armed ? 'warn' : 'delete'} size={13} />
-							{armed ? 'Delete?' : 'Delete team'}</button
+							<span class="td-del-word">{armed ? 'Delete?' : 'Delete team'}</span></button
 						>
 					{/if}
 				</span>
@@ -464,6 +472,7 @@
 							charId={id}
 							entry={loadout[id] ?? {}}
 							onSet={(u) => setLoadout(id, u)}
+							iconsOnly={colW < PLATE_NAMES_MIN}
 						/>
 					{/if}
 				</li>
@@ -618,11 +627,14 @@
 		align-items: start;
 		gap: 1.5rem;
 	}
+	/* The name, and beside it the work made from it (Nate 2026-10-26: under
+	   it, the line cost a row on a phone, where the verbs already wrap below). */
 	.td-title {
 		grid-column: 1;
-		display: grid;
-		justify-items: start;
-		gap: 0.1rem;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 0.9rem;
 		min-width: 0;
 	}
 	.td-end {
@@ -662,6 +674,7 @@
 		background: none;
 		color: var(--text);
 		font: inherit;
+		text-overflow: ellipsis;
 		font-family: var(--font-display);
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
@@ -685,16 +698,39 @@
 		display: flex;
 		gap: 0.4rem;
 	}
-	/* Below toolMin the right-hand group wraps under the name. */
+	/* Below toolMin the right-hand group comes apart: Done stays on the
+	   name's row, the verbs take the row beneath, so the bar is two rows and
+	   never three. The name gives way (an ellipsis) before Done does. */
 	@media (max-width: 54rem) {
 		.td-top {
 			display: flex;
 			flex-wrap: wrap;
-			justify-content: space-between;
+			align-items: center;
 			gap: 0.6rem 1rem;
 		}
+		.td-title {
+			flex: 1 1 0;
+		}
 		.td-end {
-			padding-top: 0;
+			display: contents;
+		}
+		.td-acts {
+			order: 2;
+		}
+		.td-go {
+			order: 3;
+			flex-basis: 100%;
+		}
+	}
+	/* Below compact every control keeps its MARK and drops its WORD
+	   (the narrow round's rule): Delete team and More. */
+	@media (max-width: 40rem) {
+		.td-del-word {
+			display: none;
+		}
+		.td-filters :global(.band-menu-word),
+		.td-filters :global(.band-menu-sep) {
+			display: none;
 		}
 	}
 	.td-clash {
@@ -754,6 +790,13 @@
 	.td-seat {
 		position: relative;
 		--pip-ground: var(--surface);
+	}
+	/* Its plates move up a rung with it, or they vanish into the ground
+	   (and a plate hovered there goes one rung DOWN, the card-verb rule). */
+	.td-member.is-over,
+	.td-member.is-lit {
+		--plate-ground: var(--surface-hover);
+		--plate-hover: var(--surface-raised);
 	}
 	.td-member.is-over .td-seat,
 	.td-member.is-lit .td-seat {
@@ -859,7 +902,6 @@
 		box-shadow: none;
 		cursor: default;
 	}
-	/* Directly under the name, on the name's own left edge. */
 	.td-work {
 		display: flex;
 		align-items: center;
@@ -896,9 +938,13 @@
 	   (Nate 2026-10-25): its 30px bars, and the strip's small type rather
 	   than the band's --fs-xl. The mark is painted over the field, which
 	   keeps its own stroke and ring. */
+	/* ⚠ A wrapping line breaks on the flex BASIS before anything shrinks, so
+	   the basis is small and the field GROWS into what the line has left:
+	   at 12rem fixed, More wrapped alone at 760 and at 1024. */
 	.td-search {
 		position: relative;
-		flex: 0 1 12rem;
+		flex: 1 1 8rem;
+		max-width: 13rem;
 		min-width: 7rem;
 		display: flex;
 		align-items: center;

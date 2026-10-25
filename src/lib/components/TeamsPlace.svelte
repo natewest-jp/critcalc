@@ -19,6 +19,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { replaceState } from '$app/navigation';
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import TeamMemberPortrait from './TeamMemberPortrait.svelte';
@@ -126,6 +127,12 @@
 	);
 	/** Details for a team that is gone (deleted in another tab) show the cards. */
 	const inDetail = $derived(loaded && (detailId === 'new' || !!detailTeam));
+	// …and the entry stops claiming to be details, or the menu state keeps
+	// treating it as one (no page head, no ✕) over the cards.
+	$effect(() => {
+		if (loaded && detailId && !inDetail)
+			replaceState('', { ...page.state, teamDetail: undefined, teamSlot: undefined });
+	});
 
 	const hasOwned = $derived(Object.values($ownership).includes('owned'));
 	const owned = (id: string) => !hasOwned || $ownership[id] === 'owned';
@@ -256,7 +263,8 @@
 	/* ── The Party Setup grid ── */
 	.cards {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+		/* `min()`, so one card still fits a 320 screen (288px of content). */
+		grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr));
 		gap: 0.6rem;
 		margin: 0;
 		padding: 0;
@@ -409,6 +417,16 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.4rem;
+	}
+	/* Below compact (40rem — $lib/breakpoints.ts): four portraits in a 320
+	   screen's card, so the gaps and the card's own inset give way. */
+	@media (max-width: 40rem) {
+		.card {
+			padding-inline: 0.7rem;
+		}
+		.members {
+			gap: 0.35rem;
+		}
 	}
 	/* New lineup's menu: the shape's name, then what it starts with. */
 	.preset-label {

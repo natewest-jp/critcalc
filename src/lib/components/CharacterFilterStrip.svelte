@@ -406,6 +406,11 @@
 		.rfs-inline {
 			display: none;
 		}
+		/* Teams' row also carries Show and More: at the Builder's 1rem the
+		   mark-only More wrapped alone at 320 by ~10px. */
+		.rfs--slate {
+			column-gap: 0.5rem;
+		}
 		.rfs-plates {
 			display: flex;
 			gap: 6px;
