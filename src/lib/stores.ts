@@ -522,10 +522,6 @@ type SiteSettings = {
 	 *  window width (app.css § THE INTERFACE SIZE); a pin is a desktop choice,
 	 *  and the phone is Small whatever is pinned. Per person, not per profile. */
 	uiSize: UiSize;
-	/** ⚓ Tool-to-tool transitions (design §5.5, Nate 2026-10-22): the streamer
-	 *  found them pretty but "fluff", so they can be turned off; the
-	 *  landing ↔ tool rise is not one of them. Per person. */
-	toolTransitions: boolean;
 	/** The one-time "Saved to Theorycraft" notice for the first routed
 	 *  what-if copy has been shown (design §4.6). */
 	seenGuestNotice: boolean;
@@ -728,7 +724,6 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	showCoverageStrips: false,
 	uiSize: 'auto',
-	toolTransitions: true,
 	seenGuestNotice: false,
 	seenLinksNotice: false,
 	travelerVariant: 'aether',
@@ -856,9 +851,6 @@ function createSiteSettingsStore() {
 		},
 		setUiSize(value: UiSize) {
 			store.update((prev) => persist({ ...prev, uiSize: value }));
-		},
-		setToolTransitions(value: boolean) {
-			store.update((prev) => persist({ ...prev, toolTransitions: value }));
 		},
 		/** A one-time notice has done its job: it is not shown again. */
 		markSeen(key: 'seenGuestNotice' | 'seenLinksNotice') {

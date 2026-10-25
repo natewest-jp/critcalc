@@ -6,7 +6,7 @@ Under the switch (`?next`), every tool sits where the Planner sits, a tool chang
 
 - **One pose** (`transition.ts` `sideSign` → 0 under the switch). It is the one place a side pose is decided, so the camera, the landing composition's world lock, a cold load's pose and `toolPoseShift` all follow: the rise from the landing goes straight up whichever card you pick, and a tool-to-tool leg has no camera move and no drift. Measured: the camera's x is 0 on all three tools.
 - **A tool changes in place** (the tools layout): under the switch the tool-leg clocks are new in-place knobs. 🎛️ For Nate's pass: `INPLACE_FADE_OUT_MS` = `T_QUICK` (150, the SURFACE band), `INPLACE_FADE_IN_MS` = 200, no beat between them; the incoming layer is still paint-gated. Measured on the production build: the old tool gone by ~215 ms after the click, the new one in by ~480 ms (the crane leg was ~1.8 s). ⛔ The crane-era values (`TOOL_NAV_MS`, its /3 fades, the 150 ms beat) are untouched; they still run with the switch off.
-- **Settings → Display → Tool transitions** (`siteSettings.toolTransitions`, per person, in the backup): off, a tool changes at once, through the same path `prefers-reduced-motion` takes (`toolMotionOff`). The landing ↔ tool rise is not a tool-to-tool leg and keeps its own rule.
+- ⛔ ~~**Settings → Display → Tool transitions**~~ — RETIRED 2026-10-25 (⚓ Nate): the tool switch became a 150ms linear CROSSFADE (the full-screen state's speed, no dip to the night), too short to be worth an opt-out, and the off path was misbehaving. `prefers-reduced-motion` still changes a tool at once (`toolMotionOff`). Record: `docs/title-bar-round.md` § Tool switch.
 
 ## Strings (working copy)
 

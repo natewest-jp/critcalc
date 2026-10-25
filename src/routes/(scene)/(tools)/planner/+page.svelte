@@ -401,6 +401,45 @@
 	}
 </script>
 
+<!-- The Share actions, ONE list for the desktop plate and the phone ⋯. -->
+{#snippet shareItems(close: () => void)}
+	<button
+		class="band-menu-item"
+		role="menuitem"
+		disabled={!db.hasContent}
+		onclick={() => {
+			close();
+			db.shareLink();
+		}}><Mark name="link" /><span class="rp-fold-label">Copy link</span></button
+	>
+	{#if db.exporters}
+		<button
+			class="band-menu-item"
+			role="menuitem"
+			onclick={() => {
+				close();
+				db.shareKqm();
+			}}><Mark name="copy" /><span class="rp-fold-label">Copy KQM notation</span></button
+		>
+		<button
+			class="band-menu-item"
+			role="menuitem"
+			onclick={() => {
+				close();
+				db.sharePng('copy');
+			}}><Mark name="image" /><span class="rp-fold-label">Copy timeline image</span></button
+		>
+		<button
+			class="band-menu-item"
+			role="menuitem"
+			onclick={() => {
+				close();
+				db.sharePng('download');
+			}}><Mark name="image" /><span class="rp-fold-label">Download timeline image</span></button
+		>
+	{/if}
+{/snippet}
+
 <!-- ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): THE PHONE BENCH'S RAIL,
 	     above the row so its toggle never moves — the bench folds away
 	     beneath it and unfolds from it. It carries what the desk's bench foot
@@ -919,6 +958,11 @@
 								<span class="rp-fold-label">Notes</span>
 							</button>
 						{/if}
+						{#if $nextLayout}
+							<div class="band-menu-rule"></div>
+							<div class="rp-fold-head" aria-hidden="true">Share</div>
+							{@render shareItems(close)}
+						{/if}
 					{/snippet}
 				</BandMenu>
 			{:else}
@@ -985,6 +1029,22 @@
 				     than typeset. -->
 					</button>
 				{/if}
+			{/if}
+			{#if $nextLayout && !bandFolded}
+				<!-- ⚓ SHARE, at the toolbar's end (Nate 2026-10-25): it acts on the
+				     DOCUMENT, not on the site, so it left the top bar for the bar over
+				     the rotation it shares. On a phone it is a section of the ⋯. -->
+				<BandMenu
+					size="sm"
+					mark="share"
+					label="Share"
+					ariaLabel="Share this rotation"
+					disabled={!db.hasContent}
+				>
+					{#snippet items(close)}
+						{@render shareItems(close)}
+					{/snippet}
+				</BandMenu>
 			{/if}
 		{/snippet}
 
