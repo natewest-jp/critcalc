@@ -17,7 +17,7 @@ import type { CharacterIndexEntry } from '$lib/types/character';
 import type { FacetKey } from '$lib/capabilities/deriveCapabilities';
 import { buffFamilyOf, capMatchesFacet } from '$lib/capabilities/deriveCapabilities';
 import { isCapabilityUnknown, matchesFacets } from '$lib/capabilities/facets';
-import { matchesIdentity, type IdentityFilters } from '$lib/characterFilters';
+import { matchesIdentity, type IdentityFilters, type OwnershipView } from '$lib/characterFilters';
 import { matchesRoleFilter, roleFilterActive, type RoleFilter } from '$lib/capabilities/roles';
 
 export { buffFamilyOf, capMatchesFacet };
@@ -43,16 +43,9 @@ export type { IdentityFilters };
 // Roster filtering
 // ---------------------------------------------------------------------------
 
-/** Roster-ledger view: everyone, only owned, or only wishlisted. */
-export type OwnershipView = 'all' | 'owned' | 'wishlist';
-
-/** The Show segment's choices — band B's character cell, or More when the
- *  cell folds it. */
-export const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
-	{ key: 'all', label: 'All', hint: 'Every character' },
-	{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
-	{ key: 'wishlist', label: 'Wishlist', hint: 'Only characters you’ve wishlisted' }
-];
+// The Show choices moved to $lib/characterFilters with the filter strip
+// (2026-10-25: Teams' details share it).
+export { OWNERSHIP_VIEWS, type OwnershipView } from '$lib/characterFilters';
 
 export type RosterSplit = {
 	/** Characters passing every active filter (judged on their capability data). */

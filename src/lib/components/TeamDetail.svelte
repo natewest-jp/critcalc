@@ -20,7 +20,8 @@
 	import BandMenu from './BandMenu.svelte';
 	import TeamMemberPortrait from './TeamMemberPortrait.svelte';
 	import TeamLoadoutPlates from './TeamLoadoutPlates.svelte';
-	import CharacterFilterRail from './CharacterFilterRail.svelte';
+	import CharacterFilterStrip from './CharacterFilterStrip.svelte';
+	import MoreFilters from './MoreFilters.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
@@ -35,9 +36,8 @@
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import { matchesIdentity, type GridFilters } from '$lib/characterFilters';
-	import { ROLE_CATEGORIES, inCategory, type RoleCategory } from '$lib/capabilities/roles';
-	import { positionIcon, functionIcon } from '$lib/utils/roleIcons';
+	import { matchesIdentity, type GridFilters, type OwnershipView } from '$lib/characterFilters';
+	import { inCategory, type RoleCategory } from '$lib/capabilities/roles';
 	import { elementColors, elementPalette, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveResonances } from '$lib/utils/resonance';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
@@ -217,7 +217,10 @@
 	const comp = $derived(deriveTeamComposition(members));
 	const pillColor = (el?: string) => (el ? elementPalette(el).main : 'var(--accent)');
 
-	// ── The grid: the Roster's, with its filter column ──────────────────────
+	// ── The grid: the Roster's tiles, under the Builder's filter strip ─────
+	// ↻ 2026-10-25 (Nate): the Roster's filter COLUMN stood beside the party
+	// strip, a screen away from the grid it filters; the strip sits on the
+	// grid, and hands the party and the grid the width the column took.
 	const ALL = getAllCharacterIndex().filter((c) => c.id !== 'blank');
 	const marks = $derived($ownership);
 	const hasOwned = $derived(Object.values(marks).includes('owned'));
@@ -230,17 +233,18 @@
 		weapons: new SvelteSet<string>(),
 		rarities: new SvelteSet<number>(),
 		region: '',
-		search: ''
+		search: '',
+		factionBuffs: new SvelteSet<string>()
 	});
-	type Show = 'all' | 'owned' | 'wishlist' | 'unowned';
-	// svelte-ignore state_referenced_locally
-	let show = $state<Show>(hasOwned ? 'owned' : 'all');
+	/** Who the grid offers: your owned characters first, once the roster
+	 *  says who they are. */
+	const defaultShow = (): OwnershipView => (hasOwned ? 'owned' : 'all');
+	let show = $state<OwnershipView>(defaultShow());
 	let role = $state<RoleCategory | null>(null);
 	const passesShow = (id: string) =>
 		show === 'all' ||
 		(show === 'owned' && marks[id] === 'owned') ||
-		(show === 'wishlist' && marks[id] === 'wishlist') ||
-		(show === 'unowned' && marks[id] !== 'owned');
+		(show === 'wishlist' && marks[id] === 'wishlist');
 	const shown = $derived(
 		ALL.filter(
 			(c) =>
@@ -249,8 +253,35 @@
 				(!role || inCategory(characterRoles[c.id], role))
 		).sort((a, b) => a.displayName.localeCompare(b.displayName))
 	);
-	const extraActive = $derived(show !== (hasOwned ? 'owned' : 'all') || role !== null);
-	let filtersOpen = $state(false);
+
+	/** The Builder's Show toggles: Owned and Wishlist, both off is everyone. */
+	const OWN_TOGGLES = [
+		{ key: 'owned', mark: 'check', label: 'Owned' },
+		{ key: 'wishlist', mark: 'star', label: 'Wishlist' }
+	] as const;
+	const moreCount = $derived(
+		filters.weapons.size +
+			filters.rarities.size +
+			(filters.region ? 1 : 0) +
+			(filters.factionBuffs?.size ?? 0)
+	);
+	const anyActive = $derived(
+		moreCount > 0 ||
+			filters.elements.size > 0 ||
+			!!filters.search.trim() ||
+			role !== null ||
+			show !== defaultShow()
+	);
+	function clearAll(): void {
+		filters.elements.clear();
+		filters.weapons.clear();
+		filters.rarities.clear();
+		filters.factionBuffs?.clear();
+		filters.region = '';
+		filters.search = '';
+		role = null;
+		show = defaultShow();
+	}
 </script>
 
 <svelte:document onkeydown={onKey} />
@@ -444,9 +475,65 @@
 					{/if}
 				</span>
 			{/if}
-			<button class="btn btn--sm td-filters-btn" onclick={() => (filtersOpen = true)}
-				><Mark name="filter" size={13} /> Filters</button
+		</div>
+
+		<!-- The filters sit ON the grid, and the rule under them is where the
+		     grid's roll-off ends. -->
+		<div class="td-filters">
+			<CharacterFilterStrip
+				slate
+				{filters}
+				activeRole={role?.key ?? null}
+				onRole={(cat) => (role = role?.key === cat.key ? null : cat)}
+				{anyActive}
+				onClear={clearAll}
 			>
+				{#snippet start()}
+					<span class="td-search">
+						<Mark name="search" size={13} />
+						<input
+							class="field td-search-field"
+							type="text"
+							placeholder="Search…"
+							aria-label="Search characters"
+							bind:value={filters.search}
+							autocomplete="off"
+							autocorrect="off"
+							spellcheck={false}
+						/>
+					</span>
+				{/snippet}
+				{#snippet end()}
+					{#if hasOwned}
+						<span class="segment td-own" role="group" aria-label="Your roster">
+							{#each OWN_TOGGLES as t (t.key)}
+								{@const on = show === t.key}
+								<button
+									class="btn btn--icon"
+									class:is-active={on}
+									aria-pressed={on}
+									aria-label={t.label}
+									title={on ? 'Show everyone' : t.label}
+									onclick={() => (show = on ? 'all' : t.key)}
+									><Mark name={t.mark} size={14} /></button
+								>
+							{/each}
+						</span>
+					{/if}
+					<BandMenu
+						size="sm"
+						role="dialog"
+						mark="filter"
+						label="More"
+						count={moreCount}
+						ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+					>
+						{#snippet items(close)}
+							<MoreFilters roster={ALL} {filters} ownershipView={show} {close} />
+						{/snippet}
+					</BandMenu>
+				{/snippet}
+			</CharacterFilterStrip>
 		</div>
 
 		<div class="td-scroll scroll-fade" use:scrollFade>
@@ -487,84 +574,24 @@
 			{#if !shown.length}<p class="td-hint">No character matches.</p>{/if}
 		</div>
 	</div>
-
-	<div class="td-side" class:is-open={filtersOpen}>
-		<div class="td-sheet-head">
-			<p class="td-count">{shown.length} of {ALL.length} characters</p>
-			<button class="btn btn--sm" onclick={() => (filtersOpen = false)}>Done</button>
-		</div>
-		<CharacterFilterRail
-			roster={ALL}
-			{filters}
-			extraFiltersActive={extraActive}
-			onClearExtras={() => {
-				show = hasOwned ? 'owned' : 'all';
-				role = null;
-			}}
-			searchPlaceholder="Search characters"
-		>
-			{#snippet railStart()}
-				{#if hasOwned}
-					<div class="side-sec">
-						<p class="kicker">Show</p>
-						<div class="segment side-seg">
-							{#each [['owned', 'Owned'], ['all', 'All'], ['wishlist', 'Wishlist'], ['unowned', 'Not owned']] as const as [k, text] (k)}
-								<button class="btn btn--sm" class:is-active={show === k} onclick={() => (show = k)}
-									>{text}</button
-								>
-							{/each}
-						</div>
-					</div>
-				{/if}
-				<div class="side-sec">
-					<p class="kicker">Role</p>
-					<div class="chips">
-						{#each ROLE_CATEGORIES as cat (cat.key)}
-							<button
-								class="chip side-role"
-								class:active={role?.key === cat.key}
-								aria-pressed={role?.key === cat.key}
-								onclick={() => (role = role?.key === cat.key ? null : cat)}
-							>
-								{#if cat.position}<img src={positionIcon(cat.position, 'color')} alt="" />{/if}
-								<img src={functionIcon(cat.function, 'color')} alt="" />
-								{cat.label}
-							</button>
-						{/each}
-					</div>
-				</div>
-			{/snippet}
-		</CharacterFilterRail>
-	</div>
 </div>
 
 <style>
-	/* The Roster's two columns (RosterTab .ros): the work, and the filters. */
+	/* ONE column since the filter strip (2026-10-25): the party and the grid
+	   take the width the Roster's filter column took. */
 	.td {
-		position: relative;
 		flex: 1;
 		min-height: 0;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 18rem;
-		gap: 1.5rem;
+		display: flex;
+		flex-direction: column;
 	}
 	.td-main {
+		flex: 1;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
 		gap: 0.9rem;
 	}
-	.td-side {
-		min-height: 0;
-		display: flex;
-		flex-direction: column;
-		padding-bottom: 1rem;
-	}
-	.td-sheet-head,
-	.td-filters-btn {
-		display: none;
-	}
-
 	/* ── The top bar: the name · the work and the verbs, CENTRED · the way
 	   out. ⚠ Each zone names its own grid column (the SiteChrome lesson: an
 	   auto-placed zone lands in the wrong track the moment one is empty). ── */
@@ -841,16 +868,44 @@
 	}
 
 	/* ── The grid ── */
-	/* The hint sits ABOVE the rule, so the grid's roll-off fades right up
-	   to it (Nate 2026-10-25). */
+	/* The hint's row: what to do, and the team's bonuses opposite it. */
 	.td-bar {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
 		margin-top: 0.2rem;
+	}
+	/* The strip ON the grid, and under it the rule where the grid's roll-off
+	   ends (Nate 2026-10-25). */
+	.td-filters {
 		margin-bottom: -0.9rem;
-		padding-bottom: 0.6rem;
+		padding-bottom: 0.7rem;
 		border-bottom: 1px solid var(--line-faint);
+	}
+	/* The Builder's search field (builder .tb-search), at the strip's 26px:
+	   the mark painted over the field, which keeps its own stroke and ring. */
+	.td-search {
+		position: relative;
+		flex: 0 1 14rem;
+		min-width: 8rem;
+		display: flex;
+		align-items: center;
+	}
+	.td-search :global(.mark) {
+		position: absolute;
+		left: 0.55rem;
+		color: var(--muted);
+		pointer-events: none;
+	}
+	.td-search-field {
+		width: 100%;
+		height: 30px;
+		padding-left: calc(0.55rem + 13px + 0.4rem);
+	}
+	/* Owned and Wishlist: the Builder's two icon toggles. */
+	.td-own > .btn {
+		height: 26px;
+		min-width: 28px;
 	}
 	.td-hint {
 		margin: 0;
@@ -963,73 +1018,6 @@
 		color: var(--text);
 	}
 
-	/* The Roster's rail sections (RosterTab .side-*). */
-	.side-sec {
-		display: grid;
-		gap: 0.4rem;
-	}
-	.side-sec .kicker {
-		margin: 0;
-	}
-	.side-seg {
-		display: flex;
-	}
-	.side-seg > .btn {
-		flex: 1;
-		height: 26px;
-		padding: 0 0.4rem;
-	}
-	.side-role {
-		display: inline-flex;
-		align-items: center;
-		gap: 3px;
-		text-transform: none;
-	}
-	.side-role img {
-		width: 14px;
-		height: 14px;
-		object-fit: contain;
-	}
-	.td-count {
-		margin: 0;
-		color: var(--muted);
-		font-size: var(--fs-sm);
-	}
-
-	/* ── Below toolMin (54rem — $lib/breakpoints.ts): the filters are a SHEET
-	   over the grid, as the Roster's are. ── */
-	@media (max-width: 54rem) {
-		.td {
-			display: flex;
-			flex-direction: column;
-		}
-		.td-main {
-			flex: 1;
-		}
-		.td-filters-btn {
-			display: inline-flex;
-		}
-		.td-hint {
-			margin-right: auto;
-		}
-		.td-side {
-			display: none;
-		}
-		.td-side.is-open {
-			position: absolute;
-			inset: 0;
-			z-index: 4;
-			display: flex;
-			padding-bottom: 0.75rem;
-			background: var(--surface);
-		}
-		.td-sheet-head {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 0 6px 8px;
-		}
-	}
 	/* ── Below compact (40rem): three tiles at 320, as the Roster's. ── */
 	@media (max-width: 40rem) {
 		.td-member {

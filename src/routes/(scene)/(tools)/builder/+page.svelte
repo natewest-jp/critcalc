@@ -65,8 +65,8 @@
 	import DetailCard from '$lib/components/DetailCard.svelte';
 	import SwapDelta from './lib/SwapDelta.svelte';
 	import BoardView from './lib/BoardView.svelte';
-	import RosterFilterStrip from './lib/RosterFilterStrip.svelte';
-	import MoreFilters from './lib/MoreFilters.svelte';
+	import CharacterFilterStrip from '$lib/components/CharacterFilterStrip.svelte';
+	import MoreFilters from '$lib/components/MoreFilters.svelte';
 	import { buildRoleSections, categoryOf } from './lib/atlas';
 	import type { RoleCategory, RoleFilter } from '$lib/capabilities/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
@@ -1697,7 +1697,7 @@
 {#snippet rosterHead()}
 	<!-- ↻ §11.2: the filters live IN the roster column, as a bar — never over
 	     the board you are filtering for. -->
-	<RosterFilterStrip
+	<CharacterFilterStrip
 		{filters}
 		{activeFacets}
 		activeRole={activeCategory?.key ?? null}
