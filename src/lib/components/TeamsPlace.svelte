@@ -4,35 +4,38 @@
   order. ⚓ Teams are curated, never filed into: Teams is where you build
   presets and START new work from them.
 
-  ⚓ Nate 2026-10-23: New team adds a card with four empty slots, and a slot
-  opens the character grid HERE, in the menu state. Plan a rotation always
-  opens a new rotation (the four resting, an empty notation, §8.1); Add to a
-  lineup puts the team in the current lineup's first empty team, never over
-  one. A card links to its work without containing it ("2 rotations ·
-  1 lineup"), each a link into the Library narrowed to that team.
+  ↻ 2026-10-25 (⚓ Nate): a card is a door to the team's DETAILS
+  (TeamDetail), where members, name and loadouts are chosen — any click on
+  it opens them, a portrait opening on its slot. The card shows each member
+  as the Roster draws them, with what they equip as pips on the portrait
+  (TeamMemberPortrait); only Delete stays on the card. Plan a rotation always
+  opens a new rotation (the four resting, an empty notation, §8.1). A card
+  links to its work without containing it ("2 rotations · 1 lineup"), each a
+  link into the Library narrowed to that team.
 
-  ⚓ One team per SET of four (§3): a set that is already a team is refused,
-  and says which team holds it. Strings are working copy.
+  ⚓ One team per SET of four (§3; kept 2026-10-25): the details say which
+  team already holds a set. Strings are working copy.
 -->
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
-	import TeamLoadoutPill from './TeamLoadoutPill.svelte';
+	import TeamMemberPortrait from './TeamMemberPortrait.svelte';
+	import TeamDetail from './TeamDetail.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
 	import type { DocumentRecord, TeamRecord } from '$lib/storage/records';
-	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import { getAvatar } from '$lib/utils/getAvatar';
-	import { teamKey, TEAM_SIZE } from '$lib/utils/notationEdit';
+	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
+	import { teamKey } from '$lib/utils/notationEdit';
 	import { ownership, siteSettings } from '$lib/stores';
 
 	const twin = $derived(storageSession.profile?.twin ?? 'aether');
-	const avatar = (id: string) => getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin);
+	const avatar = (id: string) =>
+		hasAvatar(id) ? getAvatar(id, $siteSettings.useNewOutfits, 'circle', twin) : null;
 	const nameOf = (id: string) => getCharacterIndexEntry(id)?.displayName ?? id;
 	/** ⚓ An unnamed team shows its members, as an unnamed document does (§4.2). */
 	const label = (t: Pick<TeamRecord, 'name' | 'slots'>) => t.name || rotationLabel(t.slots);
@@ -102,23 +105,6 @@
 		arrive(resolve('/builder'));
 	}
 
-	// ── Rename, in place ────────────────────────────────────────────────────
-	let renaming = $state<string | null>(null);
-	let draftName = $state('');
-	function startRename(t: TeamRecord): void {
-		renaming = t.id;
-		draftName = t.name;
-	}
-	async function commitRename(): Promise<void> {
-		const id = renaming;
-		renaming = null;
-		if (id) await storageSession.updateTeam(id, { name: draftName });
-	}
-	function focusSelect(node: HTMLInputElement): void {
-		node.focus();
-		node.select();
-	}
-
 	// ── Delete, confirmed by a second click ─────────────────────────────────
 	let armed = $state<string | null>(null);
 	let armTimer: ReturnType<typeof setTimeout> | undefined;
@@ -133,163 +119,37 @@
 		void storageSession.deleteTeam(t.id);
 	}
 
-	// ── Choosing members: the character grid, here ──────────────────────────
-	//
-	// One team is edited at a time — a new one (`id` null) or an existing one.
-	// A pick fills the chosen slot and moves on to the next empty one; picking
-	// someone already on the team takes them off, leaving the slot to fill.
+	// ── Details: a history entry of their own (menu.openTeam) ───────────────
+	const detailId = $derived(menu.teamDetail);
+	const detailTeam = $derived(
+		detailId && detailId !== 'new' ? teams.find((t) => t.id === detailId) : undefined
+	);
+	/** Details for a team that is gone (deleted in another tab) show the cards. */
+	const inDetail = $derived(loaded && (detailId === 'new' || !!detailTeam));
 
-	type Edit = { id: string | null; slots: (string | null)[]; at: number };
-	let edit = $state<Edit | null>(null);
-	/** Why the edit cannot be kept yet (a set that is another team's). */
-	let clash = $state<string | null>(null);
-
-	function startNew(): void {
-		edit = { id: null, slots: Array(TEAM_SIZE).fill(null), at: 0 };
-		clash = null;
-	}
-	function startEdit(t: TeamRecord, at: number): void {
-		edit = { id: t.id, slots: [...t.slots], at };
-		clash = null;
-	}
-
-	function pick(id: string): void {
-		if (!edit) return;
-		clash = null;
-		const held = edit.slots.indexOf(id);
-		if (held >= 0) {
-			edit.slots[held] = null;
-			edit.at = held;
-			return;
-		}
-		edit.slots[edit.at] = id;
-		const next = edit.slots.findIndex((s, i) => s === null && i !== edit!.at);
-		if (next >= 0) edit.at = next;
-	}
-
-	const full = $derived(!!edit && edit.slots.every((s) => s !== null));
-
-	async function keep(): Promise<void> {
-		if (!edit || !full) return;
-		const { id, slots } = edit;
-		const other = teams.find((t) => t.id !== id && teamKey(t.slots) === teamKey(slots));
-		if (other) {
-			clash = `Already a team: ${label(other)}`;
-			return;
-		}
-		if (id) await storageSession.updateTeam(id, { slots });
-		else await storageSession.saveTeam(slots);
-		edit = null;
-	}
-
-	// The grid: search, element, and Owned (once the roster says who is).
-	const ALL = getAllCharacterIndex().filter((c) => c.id !== 'blank');
-	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'dendro', 'cryo', 'geo'] as const;
-	let query = $state('');
-	let element = $state<string | null>(null);
 	const hasOwned = $derived(Object.values($ownership).includes('owned'));
-	let ownedOnly = $state(true);
-	const shown = $derived.by(() => {
-		const q = query.trim().toLowerCase();
-		return ALL.filter(
-			(c) =>
-				(!q || c.displayName.toLowerCase().includes(q)) &&
-				(!element || c.element === element) &&
-				(!hasOwned || !ownedOnly || $ownership[c.id] === 'owned')
-		).sort((a, b) => a.displayName.localeCompare(b.displayName));
-	});
-
-	function onPickerKey(e: KeyboardEvent): void {
-		if (e.key !== 'Escape') return;
-		// Spent here: the menu state does not close under an open picker.
-		e.preventDefault();
-		edit = null;
-	}
+	const owned = (id: string) => !hasOwned || $ownership[id] === 'owned';
 </script>
 
-{#snippet slotsOf(t: { id: string | null; slots: readonly (string | null)[] }, editing: boolean)}
-	<span class="slots">
-		{#each t.slots as id, i (i)}
-			<button
-				class="slot"
-				class:is-at={editing && edit?.at === i}
-				aria-label={id ? `Slot ${i + 1}: ${nameOf(id)}` : `Slot ${i + 1}: empty`}
-				title={id ? nameOf(id) : 'Choose a character'}
-				onclick={() => {
-					if (editing && edit) {
-						edit.at = i;
-					} else {
-						const team = teams.find((x) => x.id === t.id);
-						if (team) startEdit(team, i);
-					}
-				}}
-			>
-				{#if id}<img src={avatar(id)} alt="" />{:else}<Mark name="plus" size={16} />{/if}
-				<span class="slot-key" aria-hidden="true">{i + 1}</span>
-			</button>
-		{/each}
-	</span>
-{/snippet}
-
-{#if edit}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="picker" onkeydown={onPickerKey}>
-		<div class="picker-team">
-			{@render slotsOf(edit, true)}
-			<div class="picker-acts">
-				{#if clash}<span class="clash" role="status">{clash}</span>{/if}
-				<button class="btn" onclick={() => (edit = null)}>Cancel</button>
-				<button class="btn btn--primary" disabled={!full} onclick={keep}
-					>{edit.id ? 'Save team' : 'Add team'}</button
-				>
-			</div>
-		</div>
-		<div class="picker-filters">
-			<input
-				class="search"
-				type="search"
-				placeholder="Search characters"
-				aria-label="Search characters"
-				bind:value={query}
-			/>
-			<span class="elements" role="group" aria-label="Element">
-				{#each ELEMENTS as el (el)}
-					{@const icon = elementIcon(el)}
-					<button
-						class="el"
-						class:is-on={element === el}
-						aria-pressed={element === el}
-						aria-label={el}
-						title={el[0].toUpperCase() + el.slice(1)}
-						onclick={() => (element = element === el ? null : el)}
-						>{#if icon}<img src={icon} alt="" />{/if}</button
-					>
-				{/each}
-			</span>
-			{#if hasOwned}
-				<label class="check"
-					><input type="checkbox" bind:checked={ownedOnly} /> <span>Owned</span></label
-				>
-			{/if}
-		</div>
-		<ul class="grid">
-			{#each shown as c (c.id)}
-				{@const at = edit.slots.indexOf(c.id)}
-				<li>
-					<button class="tile" class:is-in={at >= 0} onclick={() => pick(c.id)}>
-						<img src={avatar(c.id)} alt="" />
-						{#if at >= 0}<span class="tile-key">{at + 1}</span>{/if}
-						<span class="tile-name">{c.displayName}</span>
-					</button>
-				</li>
-			{/each}
-		</ul>
-		{#if shown.length === 0}<p class="empty">No characters match.</p>{/if}
-	</div>
+{#if inDetail}
+	{#key detailId}
+		<TeamDetail
+			team={detailTeam ?? null}
+			{teams}
+			slot={menu.teamSlot}
+			{avatar}
+			work={detailTeam ? counts[teamKey(detailTeam.slots)] : undefined}
+			onPlan={plan}
+			onNewLineup={newLineup}
+			onShowWork={showWork}
+		/>
+	{/key}
 {:else}
 	<div class="place">
 		<div class="place-acts">
-			<button class="btn" onclick={startNew}><Mark name="plus" size={14} /> New team</button>
+			<button class="btn" onclick={() => menu.openTeam('new')}
+				><Mark name="plus" size={14} /> New team</button
+			>
 		</div>
 
 		{#if loaded && teams.length === 0}
@@ -303,80 +163,39 @@
 				{@const c = counts[teamKey(t.slots)]}
 				<li class="card">
 					<div class="card-head">
-						{#if renaming === t.id}
-							<input
-								class="rename"
-								bind:value={draftName}
-								placeholder={rotationLabel(t.slots)}
-								aria-label="Team name"
-								use:focusSelect
-								onblur={commitRename}
-								onkeydown={(e) => {
-									if (e.key === 'Enter') commitRename();
-									if (e.key === 'Escape') {
-										e.preventDefault();
-										renaming = null;
-									}
-								}}
-							/>
-						{:else}
-							<span class="card-label" class:is-derived={!t.name}>{label(t)}</span>
-						{/if}
-						<span class="card-verbs">
-							<button class="verb" aria-label="Rename" title="Rename" onclick={() => startRename(t)}
-								><Mark name="edit" size={14} /></button
-							>
-							<button
-								class="verb verb--danger"
-								class:is-armed={armed === t.id}
-								aria-label={armed === t.id ? 'Delete: click again to confirm' : 'Delete'}
-								title={armed === t.id ? 'Click again to delete' : 'Delete'}
-								onclick={() => del(t)}
-								><Mark
-									name={armed === t.id ? 'warn' : 'delete'}
-									size={14}
-								/>{#if armed === t.id}<span>Delete?</span>{/if}</button
-							>
-						</span>
-						<!-- Touch: no hover to reveal the verbs, so they are a ⋯ (the
-						     Library's rule). -->
-						<span class="card-more">
-							<BandMenu mark="more" compact size="sm" ariaLabel="More for {label(t)}">
-								{#snippet items(close)}
-									<button
-										class="band-menu-item"
-										role="menuitem"
-										onclick={() => {
-											close();
-											startRename(t);
-										}}><Mark name="edit" size={14} /> Rename</button
-									>
-									<button
-										class="band-menu-item card-menu-danger"
-										role="menuitem"
-										onclick={() => {
-											if (armed === t.id) close();
-											del(t);
-										}}
-										><Mark name={armed === t.id ? 'warn' : 'delete'} size={14} />
-										{armed === t.id ? 'Tap again to delete' : 'Delete'}</button
-									>
-								{/snippet}
-							</BandMenu>
-						</span>
+						<!-- The card's door: its name, stretched over the whole card, so
+						     any click opens the details and the keyboard has one stop.
+						     What else the card holds sits above it. -->
+						<button class="card-open" class:is-derived={!t.name} onclick={() => menu.openTeam(t.id)}
+							>{label(t)}</button
+						>
+						<button
+							class="verb verb--danger"
+							class:is-armed={armed === t.id}
+							aria-label={armed === t.id ? 'Delete: click again to confirm' : `Delete ${label(t)}`}
+							title={armed === t.id ? 'Click again to delete' : 'Delete'}
+							onclick={() => del(t)}
+							><Mark name={armed === t.id ? 'warn' : 'delete'} size={14} />{#if armed === t.id}<span
+									>Delete?</span
+								>{/if}</button
+						>
 					</div>
-					{@render slotsOf(t, false)}
-					<!-- ⚓ Each member's weapon and artifact set (Nate 2026-10-24),
-					     under the portrait: what the team's rotations inherit. -->
-					<span class="slots slots--loadout">
+					<span class="members">
 						{#each t.slots as id, i (i)}
-							<span class="slot-lo">
-								{#if id}
-									<!-- ⚓ Display only here (Nate 2026-10-24): choosing belongs to
-									     team setup, ⏭ its own design session. -->
-									<TeamLoadoutPill charId={id} entry={t.loadout?.[id] ?? {}} />
-								{/if}
-							</span>
+							<button
+								class="member"
+								tabindex="-1"
+								title={id ? nameOf(id) : undefined}
+								aria-label={id ? `${nameOf(id)}: open the team on slot ${i + 1}` : `Slot ${i + 1}`}
+								onclick={() => menu.openTeam(t.id, i)}
+							>
+								<TeamMemberPortrait
+									src={id ? avatar(id) : null}
+									charId={id}
+									entry={id ? t.loadout?.[id] : undefined}
+									faded={!!id && !owned(id)}
+								/>
+							</button>
 						{/each}
 					</span>
 					<span class="card-work">
@@ -428,28 +247,33 @@
 	}
 
 	/* ── The Party Setup grid ── */
-	.cards,
-	.grid {
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
 		gap: 0.6rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
+	/* `--pip-ground` follows the card's own ground, so a member's loadout pips
+	   stay cut out of it at rest and on hover. */
 	.card {
+		--card-ground: var(--surface-raised);
+		--pip-ground: var(--card-ground);
+		position: relative;
 		display: flex;
 		flex-direction: column;
-		gap: 0.7rem;
+		gap: 0.8rem;
 		padding: 0.8rem 0.9rem 0.9rem;
 		border-radius: var(--r-sm);
-		background: var(--surface-raised);
-		transition: background var(--t-snap);
+		background: var(--card-ground);
+		transition: background-color var(--t-snap);
 	}
 	.card:hover {
-		background: var(--surface-hover);
+		--card-ground: var(--surface-hover);
+	}
+	.card:has(.card-open:focus-visible) {
+		box-shadow: inset 0 0 0 1px var(--sel-ring);
 	}
 	.card-head {
 		display: flex;
@@ -457,62 +281,50 @@
 		gap: 0.4rem;
 		min-width: 0;
 	}
-	.card-label {
+	.card-open {
 		flex: 1;
 		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-	}
-	/* A derived label is a placeholder: the name is not set (§4.2). */
-	.card-label.is-derived {
-		font-weight: var(--fw-medium);
-		color: var(--muted);
-	}
-	.rename {
-		flex: 1;
-		min-width: 0;
-		padding: 0.15rem 0.4rem;
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm);
-		background: var(--surface-well);
+		padding: 0;
+		border: none;
+		background: none;
 		color: var(--text);
 		font: inherit;
 		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		text-align: left;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		cursor: pointer;
+		outline: none;
+	}
+	.card-open::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+	}
+	/* A derived label is a placeholder: the name is not set (§4.2). */
+	.card-open.is-derived {
+		font-weight: var(--fw-medium);
+		color: var(--muted);
+	}
+	/* Everything the card holds besides its door sits over the stretched hit
+	   area and keeps its own click. */
+	/* ⚠ The controls themselves, never their rows: a row spans the card, and
+	   raising it would take the card's empty space with it. */
+	.verb,
+	.member,
+	.work,
+	.card-acts > :global(*) {
+		position: relative;
+		z-index: 1;
 	}
 
-	/* ⚓ The verbs follow the Library's cards (2026-10-25): hidden at rest,
-	   shown on the card's hover or a KEYBOARD focus inside it (⛔ not any
-	   focus: a clicked verb would hold them up after the cursor left), and a
-	   ⋯ on touch. */
-	.card-verbs {
-		display: flex;
-		gap: 2px;
-		opacity: 0;
-		transition: opacity var(--t-snap);
-	}
-	.card:hover .card-verbs,
-	.card:has(:focus-visible) .card-verbs,
-	.card-verbs:has(.is-armed) {
-		opacity: 1;
-	}
-	.card-more {
-		display: none;
-	}
-	@media (hover: none) {
-		.card-verbs {
-			display: none;
-		}
-		.card-more {
-			display: block;
-		}
-	}
-	.card-menu-danger {
-		color: var(--ui-danger);
-	}
+	/* ⚓ Delete follows the Library's verbs (2026-10-25): hidden at rest, shown
+	   on the card's hover or a KEYBOARD focus inside it (⛔ not any focus: a
+	   clicked verb would hold it up after the cursor left); always there on
+	   touch, where it is the card's only verb. */
 	.verb {
 		display: inline-flex;
 		align-items: center;
@@ -524,76 +336,45 @@
 		color: var(--muted);
 		font: inherit;
 		font-size: var(--fs-sm);
+		opacity: 0;
 		cursor: pointer;
 		transition:
-			background var(--t-snap),
+			opacity var(--t-snap),
+			background-color var(--t-snap),
 			color var(--t-snap);
+	}
+	.card:hover .verb,
+	.card:has(:focus-visible) .verb,
+	.verb.is-armed {
+		opacity: 1;
+	}
+	@media (hover: none) {
+		.verb {
+			opacity: 1;
+		}
 	}
 	/* One rung DOWN: the card is already at --surface-hover when its verbs
 	   show, so the same rung would be no change at all. */
 	.verb:hover {
 		background: var(--surface-raised);
-		color: var(--text);
 	}
 	.verb--danger:hover,
 	.verb.is-armed {
 		color: var(--ui-danger);
 	}
 
-	/* ── Four slots in party order, the key each sits on ── */
-	.slots {
+	/* ── Four members in party order ── */
+	.members {
 		display: flex;
-		gap: 0.5rem;
+		gap: 0.6rem;
 	}
-	/* Each pill centred under its portrait: a column of the portrait's width. */
-	.slots--loadout {
-		margin-top: -0.35rem;
-	}
-	.slot-lo {
-		display: flex;
-		justify-content: center;
-		width: 3.75rem;
-	}
-	.slot {
-		position: relative;
-		display: grid;
-		place-items: center;
-		width: 3.75rem;
-		height: 3.75rem;
+	.member {
+		display: block;
 		padding: 0;
 		border: none;
-		border-radius: 50%;
-		background: var(--surface-well);
-		box-shadow: inset 0 0 0 1px var(--line-faint);
-		color: var(--muted);
+		border-radius: var(--r-round);
+		background: none;
 		cursor: pointer;
-		transition: box-shadow var(--t-snap);
-	}
-	.slot img {
-		width: 100%;
-		height: 100%;
-		border-radius: 50%;
-	}
-	.slot:hover {
-		box-shadow: inset 0 0 0 1px var(--border);
-	}
-	.slot.is-at {
-		box-shadow: 0 0 0 2px var(--sel-ring);
-	}
-	.slot-key {
-		position: absolute;
-		right: -2px;
-		bottom: -2px;
-		display: grid;
-		place-items: center;
-		width: 1.1rem;
-		height: 1.1rem;
-		border-radius: 50%;
-		background: var(--surface);
-		color: var(--muted);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		font-variant-numeric: tabular-nums;
 	}
 
 	.card-work {
@@ -621,127 +402,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.4rem;
-	}
-
-	/* ── The picker ── */
-	.picker {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-	.picker-team {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.8rem;
-	}
-	.picker-acts {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-	.clash {
-		font-size: var(--fs-sm);
-		color: var(--ui-warning);
-	}
-	.picker-filters {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.8rem;
-	}
-	.search {
-		width: min(16rem, 100%);
-		padding: 0.3rem 0.5rem;
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm);
-		background: var(--surface-well);
-		color: var(--text);
-		font: inherit;
-	}
-	.elements {
-		display: flex;
-		gap: 2px;
-	}
-	.el {
-		display: grid;
-		place-items: center;
-		width: 1.9rem;
-		height: 1.9rem;
-		padding: 0;
-		border: none;
-		border-radius: var(--r-sm);
-		background: none;
-		opacity: 0.5;
-		cursor: pointer;
-		transition:
-			opacity var(--t-snap),
-			background var(--t-snap);
-	}
-	.el img {
-		width: 1.2rem;
-		height: 1.2rem;
-	}
-	.el:hover,
-	.el.is-on {
-		opacity: 1;
-	}
-	.el.is-on {
-		background: var(--surface-hover);
-	}
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
-		gap: 0.4rem;
-	}
-	.tile {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.3rem;
-		width: 100%;
-		padding: 0.45rem 0.2rem;
-		border: none;
-		border-radius: var(--r-sm);
-		background: none;
-		color: var(--text);
-		font: inherit;
-		cursor: pointer;
-		transition: background var(--t-snap);
-	}
-	.tile:hover {
-		background: var(--surface-hover);
-	}
-	.tile img {
-		width: 3.25rem;
-		height: 3.25rem;
-		border-radius: 50%;
-		background: var(--surface-well);
-	}
-	.tile.is-in img {
-		box-shadow: 0 0 0 2px var(--sel-ring);
-	}
-	.tile-key {
-		position: absolute;
-		top: 0.3rem;
-		right: calc(50% - 1.9rem);
-		display: grid;
-		place-items: center;
-		width: 1.1rem;
-		height: 1.1rem;
-		border-radius: 50%;
-		background: var(--surface);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-	}
-	.tile-name {
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: var(--fs-sm);
 	}
 	/* New lineup's menu: the shape's name, then what it starts with. */
 	.preset-label {

@@ -846,7 +846,7 @@
 		height: 100%;
 		border-radius: var(--r-round);
 		object-fit: cover;
-		filter: grayscale(0.85) brightness(0.6);
+		filter: var(--portrait-unowned);
 	}
 	.is-owned .til-face {
 		box-shadow: 0 0 0 2px var(--el);

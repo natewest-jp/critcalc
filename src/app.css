@@ -1554,6 +1554,10 @@
 	/* ⚓ Theorycraft's WHITE (design §2.3): the one profile colour no real
 	   profile can wear, so a guest can never be mistaken for anyone's own. */
 	--profile-theorycraft: #dfe3ea;
+	/* A character you don't own (the Roster, Teams): faded, keeping some of
+	   its colour (Nate 2026-10-25), so a team built round one doesn't read as
+	   a punishment. Was grayscale(0.85) brightness(0.6). First value. */
+	--portrait-unowned: saturate(0.45) brightness(0.72);
 }
 /* breakpoints.ts `huge` */
 @media (min-width: 2200px) {
