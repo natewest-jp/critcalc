@@ -38,6 +38,12 @@ The top bar holds the places you START work from and the things you reach for MI
 - Phone tap targets (30px boxes, ~2px apart at 320): test on a real phone first.
 - A conversation about notices: the phone shows no save status.
 
+## Tool switch (same day, `polish/tool-crossfade`)
+
+- **A CROSSFADE, not a dip to the night** (⚓ Nate): with every tool at one pose there is no drift to shear, so the two tools overlap. The old tool HOLDS, lit, until the new one passes its paint gate (a slow mount shows the old tool, not the night), then both fade on one start.
+- **Linear, at `--t-quick` (150ms)**, the full-screen state's own speed. An eased pair (ease-out in, ease-in out) was tried: it holds the light where both tools put glass in one place (~94% against linear's 75% at the midpoint), and Nate kept the fade law (2026-05-30: an eased fade's visible time is not its duration). Knobs: `INPLACE_CROSSFADE`, `XFADE_MS` in `(tools)/+layout.svelte`.
+- **The Tool transitions setting RETIRED**: at this speed there is nothing to opt out of. ⚠ Its off path is the `prefers-reduced-motion` path, where Nate saw the Planner not load or unload properly: to reproduce there.
+
 ## Verification
 
 vitest · check · lint · build · the full e2e run, Chrome + WebKit. Measured in resized same-origin iframes: no overflow at 320 / 360 / 375, the icons flush right on the landing at 320 and 1456, BETA at the same offset across the three sizes.

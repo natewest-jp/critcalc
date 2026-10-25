@@ -205,22 +205,49 @@
 	// crane-era values above stay the switch-off site's). 🎛️ Knobs for Nate:
 	// out on the SURFACE band (--t-quick), in a touch slower so the new tool
 	// settles rather than pops, no beat between them.
+	//
+	// ↻ 2026-10-25 (⚓ Nate): a CROSSFADE. The sequenced fades dipped to the
+	// night between the two tools, and at this speed the dip read as a flicker.
+	// With no drift there is nothing to shear, so the tools overlap. The OLD
+	// tool HOLDS, fully lit, until the new one passes its paint gate (a slow
+	// mount shows the old tool, not the night), then both fade on ONE start.
+	// The fades stay LINEAR — the fade law (2026-05-30, ⚓ Nate: an eased fade's
+	// visible time is not its duration; an ease-out in reads ~40% shorter
+	// than a linear out). ↻ An eased pair (ease-out in, ease-in out) was tried
+	// the same day: it holds the light where both tools put glass in one
+	// place (in + (1 − in)·out — two linear fades dip to 75% at the midpoint,
+	// the pair ~94%), and Nate kept linear, at the full-screen state's speed
+	// (--t-quick), where a dip that short barely reads.
+	// 🎛️ Knobs: CROSSFADE false restores the sequenced fades below.
+	const INPLACE_CROSSFADE = true;
+	const XFADE_MS = T_QUICK;
 	const INPLACE_FADE_OUT_MS = T_QUICK;
 	const INPLACE_FADE_IN_MS = 200;
-	const TOOL_FADE_OUT_MS = nextOn ? INPLACE_FADE_OUT_MS : Math.round(TOOL_NAV_MS / 3);
-	const TOOL_FADE_IN_MS = nextOn ? INPLACE_FADE_IN_MS : Math.round(TOOL_NAV_MS / 3);
-	const TOOL_FADE_IN_DELAY_MS = nextOn ? TOOL_FADE_OUT_MS : TOOL_FADE_OUT_MS + 150;
+	/** This leg crossfades (under the switch): both fades share one start. */
+	const crossfade = nextOn && INPLACE_CROSSFADE;
+	const TOOL_FADE_OUT_MS = crossfade
+		? XFADE_MS
+		: nextOn
+			? INPLACE_FADE_OUT_MS
+			: Math.round(TOOL_NAV_MS / 3);
+	const TOOL_FADE_IN_MS = crossfade
+		? XFADE_MS
+		: nextOn
+			? INPLACE_FADE_IN_MS
+			: Math.round(TOOL_NAV_MS / 3);
+	const TOOL_FADE_IN_DELAY_MS = crossfade ? 0 : nextOn ? TOOL_FADE_OUT_MS : TOOL_FADE_OUT_MS + 150;
 	// The world clock for tool↔tool legs (TOOL_NAV_MS in transition.ts — it
 	// drives the camera's crane on these legs too; retune it there and the
 	// camera, drift, underline and dependent timers all move together). Under
 	// the switch there is no crane, so the leg is just its two fades.
-	const SLIDE_MS = nextOn ? TOOL_FADE_OUT_MS + TOOL_FADE_IN_MS : TOOL_NAV_MS;
+	const SLIDE_MS = crossfade ? XFADE_MS : nextOn ? TOOL_FADE_OUT_MS + TOOL_FADE_IN_MS : TOOL_NAV_MS;
 
-	/** No tool-to-tool motion: the reader asked for less motion, or (under the
-	 *  switch) turned tool transitions off in Settings (§5.5). The landing ↔
-	 *  tool rise is not a tool-to-tool leg and keeps its own rule. */
-	const toolMotionOff = (): boolean =>
-		prefersReducedMotion() || (nextOn && !get(siteSettings).toolTransitions);
+	/** No tool-to-tool motion: the reader asked for less motion. The landing ↔
+	 *  tool rise is not a tool-to-tool leg and keeps its own rule. ↻ 2026-10-25
+	 *  (⚓ Nate): the Settings switch for tool transitions RETIRED — at the
+	 *  full-screen state's speed the crossfade is no longer "fluff" worth an
+	 *  opt-out, and the off path was misbehaving. */
+	const toolMotionOff = (): boolean => prefersReducedMotion();
 	const SLIDE_EASE = TILT_EASING_CSS;
 	// Retention budget for the outgoing layer: outlasts the transition window
 	// (camera, PAN_MS 2100 at most, + fade-in tail + settle pass) and doubles as the A→B→A
@@ -249,6 +276,17 @@
 
 	/** Cancel this layout's WAAPI animations on a layer, optionally baking the
 	 *  current values into inline style first (transition.ts's pattern). */
+	/** A departing layer's fade-out, from whatever opacity it holds now (a
+	 *  one-keyframe animation), starting at `startTime` on the shared clock. */
+	function fadeOut(el: HTMLElement, startTime: number) {
+		const fade = el.animate([{ opacity: 0 }], {
+			duration: TOOL_FADE_OUT_MS,
+			fill: 'forwards',
+			id: TOOL_NAV_ANIM
+		});
+		fade.startTime = startTime;
+	}
+
 	function cancelToolNavAnims(el: HTMLElement, commit = false) {
 		for (const a of el.getAnimations()) {
 			if (a.id !== TOOL_NAV_ANIM) continue;
@@ -293,6 +331,9 @@
 	// fade shares the page's paint gate — a slow planner mount delays both
 	// together instead of the ribbon appearing before its tool.
 	let benchGatedFadeIn: ((startTime: number) => void) | null = null;
+	/** A crossfade's docked→dockless leg: the ribbon holds with its tool and
+	 *  leaves on the incoming's gated start (startFadeIn calls it). */
+	let benchGatedFadeOut: ((startTime: number) => void) | null = null;
 
 	/** The current anchor rect for `path`, in .tool-main coordinates,
 	 *  compensating the page layer's own pan transform (a parked or mid-slide
@@ -407,6 +448,7 @@
 		const mount = benchMount;
 		clearTimeout(benchTravelTimer);
 		benchGatedFadeIn = null;
+		benchGatedFadeOut = null;
 		const target = measureBenchAnchor(toPath);
 		const shift = toolPoseShift(fromPath, toPath);
 		// Interrupts: bake whatever the previous leg left mid-flight, then
@@ -480,25 +522,32 @@
 				id: TOOL_NAV_ANIM
 			});
 			drift.startTime = clock;
-			const fade = mount.animate([{ opacity: 0 }], {
-				duration: TOOL_FADE_OUT_MS,
-				fill: 'forwards',
-				id: TOOL_NAV_ANIM
-			});
-			fade.startTime = clock;
-			benchTravelTimer = setTimeout(
-				() => {
-					if (!measureBenchAnchor(page.url.pathname)) {
-						benchVisible = false;
-						cancelToolNavAnims(mount, false);
-						mount.style.opacity = '';
-					} else {
-						// A newer nav re-docked us before this fired — defensive.
-						snapBench();
-					}
-				},
-				Math.max(0, clock + TOOL_FADE_OUT_MS - performance.now()) + 100
-			);
+			// The fade rides the departing tool's: at once when sequenced, on
+			// the incoming's gated start when crossfading (it holds till then).
+			const leave = (startTime: number) => {
+				const fade = mount.animate([{ opacity: 0 }], {
+					duration: TOOL_FADE_OUT_MS,
+					fill: 'forwards',
+					id: TOOL_NAV_ANIM
+				});
+				fade.startTime = startTime;
+				clearTimeout(benchTravelTimer);
+				benchTravelTimer = setTimeout(
+					() => {
+						if (!measureBenchAnchor(page.url.pathname)) {
+							benchVisible = false;
+							cancelToolNavAnims(mount, false);
+							mount.style.opacity = '';
+						} else {
+							// A newer nav re-docked us before this fired — defensive.
+							snapBench();
+						}
+					},
+					Math.max(0, startTime + TOOL_FADE_OUT_MS - performance.now()) + 100
+				);
+			};
+			if (crossfade) benchGatedFadeOut = leave;
+			else leave(clock);
 		}
 	}
 
@@ -861,13 +910,9 @@
 			}
 			// One-keyframe fade: the implicit start is the layer's underlying
 			// value, so a stale layer resumes from whatever it was baked at
-			// rather than flashing back to full.
-			const fade = o.animate([{ opacity: 0 }], {
-				duration: TOOL_FADE_OUT_MS,
-				fill: 'forwards',
-				id: TOOL_NAV_ANIM
-			});
-			fade.startTime = clock;
+			// rather than flashing back to full. A crossfade HOLDS it here and
+			// fades it from startFadeIn, on the incoming's own start.
+			if (!crossfade) fadeOut(o, clock);
 		}
 
 		// ── Incoming: world-locked from the start (it drifts −shift → 0 on the
@@ -913,12 +958,20 @@
 			// here. A future startTime simply waits.
 			const fadeStart = Math.max(performance.now(), clock + TOOL_FADE_IN_DELAY_MS);
 			fade.startTime = fadeStart;
+			// A crossfade's outgoing leaves on the SAME start (it held, lit,
+			// through the gate).
+			if (crossfade) for (const o of outgoing) if (o.isConnected) fadeOut(o, fadeStart);
 			// The ribbon's entrance fade (dockless→docked legs) shares this exact
-			// startTime — the band and its tool clear the paint gate together.
+			// startTime — the band and its tool clear the paint gate together;
+			// so does its exit fade on a crossfade (docked→dockless).
 			benchGatedFadeIn?.(fadeStart);
 			benchGatedFadeIn = null;
+			benchGatedFadeOut?.(fadeStart);
+			benchGatedFadeOut = null;
 			const settleAt =
-				Math.max(clock + SLIDE_MS, fadeStart + TOOL_FADE_IN_MS) - performance.now() + 100;
+				Math.max(clock + SLIDE_MS, fadeStart + Math.max(TOOL_FADE_IN_MS, TOOL_FADE_OUT_MS)) -
+				performance.now() +
+				100;
 			// Settle: bake + release. The incoming rests at natural layout; the
 			// outgoing stays baked invisible through its retention window.
 			setTimeout(() => {
