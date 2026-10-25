@@ -108,6 +108,8 @@
 	);
 	const canSave = $derived(full && dirty && !clash);
 
+	/** A pick with no slot chosen is refused, and the party says so. */
+	let nudge = $state(false);
 	function pick(id: string): void {
 		const held = slots.indexOf(id);
 		if (held >= 0) {
@@ -115,7 +117,11 @@
 			at = held;
 			return;
 		}
-		if (at < 0) return;
+		if (at < 0) {
+			nudge = false;
+			requestAnimationFrame(() => (nudge = true));
+			return;
+		}
 		slots[at] = id;
 		const next = slots.findIndex((s, i) => s === null && i !== at);
 		if (next >= 0) at = next;
@@ -309,21 +315,27 @@
 					/>
 					<Mark name="edit" size={15} />
 				</label>
+				{#if start}
+					<span class="td-work">
+						{#if start && work?.rotations}<button
+								class="td-link"
+								onclick={() => onShowWork(start, 'rotations')}
+								>{plural(work.rotations, 'rotation', 'rotations')}</button
+							>{/if}
+						{#if start && work?.rotations && work?.lineups}<span aria-hidden="true">·</span>{/if}
+						{#if start && work?.lineups}<button
+								class="td-link"
+								onclick={() => onShowWork(start, 'lineups')}
+								>{plural(work.lineups, 'lineup', 'lineups')}</button
+							>{/if}
+						{#if start && !work?.rotations && !work?.lineups}<span>No rotations or lineups yet</span
+							>{/if}
+					</span>
+				{/if}
 			</span>
-			<span class="td-mid">
-				<span class="td-work">
-					{#if start && work?.rotations}<button
-							class="td-link"
-							onclick={() => onShowWork(start, 'rotations')}
-							>{plural(work.rotations, 'rotation', 'rotations')}</button
-						>{/if}
-					{#if start && work?.rotations && work?.lineups}<span aria-hidden="true">·</span>{/if}
-					{#if start && work?.lineups}<button
-							class="td-link"
-							onclick={() => onShowWork(start, 'lineups')}
-							>{plural(work.lineups, 'lineup', 'lineups')}</button
-						>{/if}
-				</span>
+			<!-- ↻ One right-hand group (Nate 2026-10-25): the team's verbs, then
+			     the way out. -->
+			<span class="td-end">
 				<span class="td-go">
 					<button class="btn btn--sm" disabled={!full || !!clash} onclick={() => then(onPlan)}
 						>Plan a rotation</button
@@ -356,16 +368,16 @@
 						>
 					{/if}
 				</span>
-			</span>
-			<span class="td-acts">
-				{#if dirty}
-					<button class="btn" onclick={leave}>Cancel</button>
-					<button class="btn btn--primary" disabled={!canSave} onclick={save}
-						>{start ? 'Save team' : 'Add team'}</button
-					>
-				{:else}
-					<button class="btn" onclick={leave}>Done</button>
-				{/if}
+				<span class="td-acts">
+					{#if dirty}
+						<button class="btn" onclick={leave}>Cancel</button>
+						<button class="btn btn--primary" disabled={!canSave} onclick={save}
+							>{start ? 'Save team' : 'Add team'}</button
+						>
+					{:else}
+						<button class="btn" onclick={leave}>Done</button>
+					{/if}
+				</span>
 			</span>
 		</div>
 
@@ -378,7 +390,13 @@
 		{/if}
 
 		<!-- ── The party, in order ── -->
-		<ol class="td-party" bind:clientWidth={partyW} style:--col="{colW}px">
+		<ol
+			class="td-party"
+			class:is-nudged={nudge}
+			onanimationend={() => (nudge = false)}
+			bind:clientWidth={partyW}
+			style:--col="{colW}px"
+		>
 			{#each slots as id, i (i)}
 				<li
 					class="td-member"
@@ -435,8 +453,11 @@
 							>
 						{/if}
 					</span>
+					<!-- ↻ The hint line retired (Nate 2026-10-25): the selected empty
+					     seat says what to do, and a pick with no seat chosen nudges
+					     the party. -->
 					<span class="td-member-name" class:is-empty={!id}
-						>{id ? nameOf(id) : `Slot ${i + 1}`}</span
+						>{id ? nameOf(id) : at === i ? 'Choose a character' : `Slot ${i + 1}`}</span
 					>
 					{#if id}
 						<TeamLoadoutPlates
@@ -449,33 +470,23 @@
 			{/each}
 		</ol>
 
-		<div class="td-bar">
-			<p class="td-hint">
-				{#if at < 0}
-					Choose a slot to change, then a character.
-				{:else if slots[at]}
-					Choose who takes {nameOf(slots[at]!)}’s place in slot {at + 1}.
-				{:else}
-					Choose a character for slot {at + 1}.
+		<!-- What the four make: under the four (Nate 2026-10-25). -->
+		{#if resonances.length || comp.hasAscendantGleam || comp.hasSecretRite}
+			<span class="td-bonuses" aria-label="Team bonuses">
+				{#each resonances as res (res.key)}
+					<span class="td-res" style:--pill-color={pillColor(res.element)} title={res.effect}>
+						{#if res.element}<img src={elementIcon(res.element)} alt="" />{/if}
+						{res.label}
+					</span>
+				{/each}
+				{#if comp.hasAscendantGleam}
+					<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
 				{/if}
-			</p>
-			{#if resonances.length || comp.hasAscendantGleam || comp.hasSecretRite}
-				<span class="td-bonuses" aria-label="Team bonuses">
-					{#each resonances as res (res.key)}
-						<span class="td-res" style:--pill-color={pillColor(res.element)} title={res.effect}>
-							{#if res.element}<img src={elementIcon(res.element)} alt="" />{/if}
-							{res.label}
-						</span>
-					{/each}
-					{#if comp.hasAscendantGleam}
-						<span class="td-res td-res--faction">Moonsign: Ascendant Gleam</span>
-					{/if}
-					{#if comp.hasSecretRite}
-						<span class="td-res td-res--faction">Hexerei: Secret Rite</span>
-					{/if}
-				</span>
-			{/if}
-		</div>
+				{#if comp.hasSecretRite}
+					<span class="td-res td-res--faction">Hexerei: Secret Rite</span>
+				{/if}
+			</span>
+		{/if}
 
 		<!-- The filters sit ON the grid, and the rule under them is where the
 		     grid's roll-off ends. -->
@@ -490,7 +501,7 @@
 			>
 				{#snippet start()}
 					<span class="td-search">
-						<Mark name="search" size={13} />
+						<Mark name="search" size={12} />
 						<input
 							class="field td-search-field"
 							type="text"
@@ -555,7 +566,13 @@
 								if (litId === c.id) litId = null;
 							}}
 							aria-pressed={inAt >= 0}
-							title={inAt >= 0 ? 'Take off the team' : undefined}
+							title={inAt >= 0
+								? 'Take off the team'
+								: at < 0
+									? 'Choose a slot first'
+									: slots[at]
+										? `Put in slot ${at + 1}, in ${nameOf(slots[at]!)}’s place`
+										: `Put in slot ${at + 1}`}
 							onclick={() => pick(c.id)}
 						>
 							<span class="til-head" style:--el={elColor(c.element)}>
@@ -592,32 +609,30 @@
 		flex-direction: column;
 		gap: 0.9rem;
 	}
-	/* ── The top bar: the name · the work and the verbs, CENTRED · the way
-	   out. ⚠ Each zone names its own grid column (the SiteChrome lesson: an
-	   auto-placed zone lands in the wrong track the moment one is empty). ── */
+	/* ── The top bar: the name with the work made from it · the team's verbs
+	   and the way out, as ONE right-hand group (Nate 2026-10-25). ⚠ Each zone
+	   names its own grid column (the SiteChrome lesson). ── */
 	.td-top {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
-		align-items: center;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: start;
 		gap: 1.5rem;
 	}
 	.td-title {
 		grid-column: 1;
-		display: flex;
-		align-items: center;
+		display: grid;
+		justify-items: start;
+		gap: 0.1rem;
 		min-width: 0;
 	}
-	.td-mid {
+	.td-end {
 		grid-column: 2;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-end;
 		gap: 0.4rem 1rem;
-	}
-	.td-acts {
-		grid-column: 3;
-		justify-self: end;
+		padding-top: 0.3rem;
 	}
 	/* The pencil says the name is a field you can click into. */
 	.td-name-wrap {
@@ -633,8 +648,7 @@
 	.td-name-wrap:focus-within {
 		color: var(--text);
 	}
-	/* The name is the screen's title, in the title's face. */
-	/* The field fits its text, so the pencil sits beside the name
+	/* The name is the screen's title, in the title's face. The field fits its text, so the pencil sits beside the name
 	   (`field-sizing`); where that isn't supported, `size` stands in and
 	   leaves a little air. */
 	.td-name {
@@ -671,14 +685,16 @@
 		display: flex;
 		gap: 0.4rem;
 	}
-	/* Once the column can't hold three zones in a row (below toolMin the
-	   column is the screen), they wrap as a flow instead. */
+	/* Below toolMin the right-hand group wraps under the name. */
 	@media (max-width: 54rem) {
 		.td-top {
 			display: flex;
 			flex-wrap: wrap;
 			justify-content: space-between;
 			gap: 0.6rem 1rem;
+		}
+		.td-end {
+			padding-top: 0;
 		}
 	}
 	.td-clash {
@@ -809,11 +825,13 @@
 		font-weight: var(--fw-normal);
 	}
 
+	/* Under the four, centred with them. */
 	.td-bonuses {
-		margin-left: auto;
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.35rem;
+		margin-top: -0.3rem;
 	}
 	/* The planner's resonance chip (TeamBonusesBlock .res-badge). */
 	.td-res {
@@ -841,6 +859,7 @@
 		box-shadow: none;
 		cursor: default;
 	}
+	/* Directly under the name, on the name's own left edge. */
 	.td-work {
 		display: flex;
 		align-items: center;
@@ -868,26 +887,19 @@
 	}
 
 	/* ── The grid ── */
-	/* The hint's row: what to do, and the team's bonuses opposite it. */
-	.td-bar {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		margin-top: 0.2rem;
-	}
-	/* The strip ON the grid, and under it the rule where the grid's roll-off
-	   ends (Nate 2026-10-25). */
+	/* The strip ON the grid; no rule under it (Nate 2026-10-25): the strip
+	   is edge enough, and the grid's roll-off ends at it. */
 	.td-filters {
 		margin-bottom: -0.9rem;
-		padding-bottom: 0.7rem;
-		border-bottom: 1px solid var(--line-faint);
 	}
-	/* The Builder's search field (builder .tb-search), at the strip's 26px:
-	   the mark painted over the field, which keeps its own stroke and ring. */
+	/* The Builder's search field (builder .tb-search), sized to the strip
+	   (Nate 2026-10-25): its 30px bars, and the strip's small type rather
+	   than the band's --fs-xl. The mark is painted over the field, which
+	   keeps its own stroke and ring. */
 	.td-search {
 		position: relative;
-		flex: 0 1 14rem;
-		min-width: 8rem;
+		flex: 0 1 12rem;
+		min-width: 7rem;
 		display: flex;
 		align-items: center;
 	}
@@ -900,12 +912,18 @@
 	.td-search-field {
 		width: 100%;
 		height: 30px;
-		padding-left: calc(0.55rem + 13px + 0.4rem);
+		padding-block: 0;
+		padding-left: calc(0.55rem + 12px + 0.35rem);
+		font-size: var(--fs-sm);
 	}
 	/* Owned and Wishlist: the Builder's two icon toggles. */
 	.td-own > .btn {
 		height: 26px;
 		min-width: 28px;
+	}
+	/* A pick with no seat chosen (the shared refusal, app.css). */
+	.td-party.is-nudged {
+		animation: nudge 120ms 2;
 	}
 	.td-hint {
 		margin: 0;
