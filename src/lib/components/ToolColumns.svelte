@@ -107,7 +107,7 @@
 	style:--aside-w={asideWidth ?? `${ASIDE_W}px`}
 	style:--column-gap="{COLUMN_GAP}px"
 >
-	<div class="tc-main">{@render main()}</div>
+	<div class="tc-main" class:tc-main--beside={!!aside && !sheet}>{@render main()}</div>
 
 	{#if aside && sheet}
 		<!-- THE DRAWER. Portalled: the tool page layers carry transforms across
@@ -198,9 +198,16 @@
 		flex-direction: column;
 	}
 
+	/* The room ToolStack publishes, narrowed to the column gap on the two
+	   faces that meet (app.css § THE FADE ENDS AT THE NEIGHBOUR). */
+	.tc-main--beside {
+		--room-right: var(--column-gap);
+	}
+
 	.tc-aside {
 		flex: 0 0 var(--aside-w);
 		position: relative;
+		--room-left: var(--column-gap);
 	}
 
 	.tc-aside-box {

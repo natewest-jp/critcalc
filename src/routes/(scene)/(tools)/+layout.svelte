@@ -1258,7 +1258,8 @@
 		   the content's top edge are now the same line. Still the knob. */
 		--tool-pad-top: 0px;
 		--tool-pad-bottom: 1.5rem;
-		/* ROUNDED to whole pixels, deliberately. This pad is the tool frames'
+		/* The site gutter (app.css --site-pad-x, which the top bar reads too).
+		   ROUNDED to whole pixels, deliberately. This pad is the tool frames'
 		   left edge, and the bench ribbon docks by measuring an anchor inside
 		   that frame — so a fractional pad puts the whole strip at a fractional
 		   x, and WebKit snaps glyphs to whole pixels while boxes keep sub-pixel
@@ -1266,14 +1267,12 @@
 		   its own control in Safari, and by a DIFFERENT amount at every window
 		   width (measured: 2vw gave 27.313 @1366, 28.797 @1440, 30.234 @1512 —
 		   a full pixel of glyph range across one pixel of dock offset; see
-		   scripts/probe-ink-centering.mjs). Rounding HERE rather than at the
+		   scripts/probe-ink-centering.mjs). Rounding the token rather than the
 		   ribbon's transform is what makes it free: the dock stays exactly
 		   co-located with the frame it measures, so nothing in the tool-
 		   transition machinery changes and no probe moves. Only widths under
-		   1600 were ever affected — above that the clamp pins it at 2rem.
-		   First declaration is the fallback for engines without round(). */
-		--tool-pad-x: clamp(1rem, 2vw, 2rem);
-		--tool-pad-x: clamp(1rem, round(2vw, 1px), 2rem);
+		   1600 were ever affected — above that the clamp pins it at 2rem. */
+		--tool-pad-x: var(--site-pad-x);
 		/* Suppressed through the ascend: laid out (editors measure correctly)
 		   but visibility:hidden → UNPAINTED, off the raster pipeline, so the
 		   shell's one-time raster never competes with the camera pan. .revealed

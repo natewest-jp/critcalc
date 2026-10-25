@@ -12,6 +12,7 @@
 	} from '$lib/toolBands';
 	import {
 		BENCH_ROW_H,
+		RIBBON_GAP,
 		RIBBON_OVERHANG_Y,
 		RIBBON_W,
 		TOOL_INSET,
@@ -153,6 +154,7 @@
 	style:--bench-row-h="{BENCH_ROW_H}px"
 	style:--dock-overhang="{RIBBON_OVERHANG_Y}px"
 	style:--ribbon-w="{RIBBON_W}px"
+	style:--ribbon-gap="{RIBBON_GAP}px"
 >
 	{#if benched}
 		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the (tools)
@@ -239,7 +241,10 @@
 		padding-left: var(--stack-inset);
 		display: flex;
 		flex-direction: column;
-		gap: var(--band-stack-gap);
+		/* A property, not just a `gap`, so the surface can publish it as its
+		   --room-top (see .tool-surface); the narrow forms move THIS. */
+		--stack-gap: var(--band-stack-gap);
+		gap: var(--stack-gap);
 		min-width: 0;
 		/* How far the SURFACE starts below the stack's top: BAND_STACK_TO_SURFACE
 		   in this form, and the row form below adds the bench row and a second
@@ -280,6 +285,23 @@
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
+	}
+
+	/* THE ROOM AROUND THE SURFACE (⚓ Nate 2026-10-25, the edges round): how
+	   much bare scene lies between each edge of the surface and its neighbour —
+	   the bands above, the bench beside, the screen's edge. A scroller inside
+	   reaches into it so its roll-off ENDS at the neighbour rather than inside
+	   its own column (app.css § THE FADE ENDS AT THE NEIGHBOUR). ToolColumns
+	   narrows the side facing an aside; a consumer only ever reads these. */
+	.tool-surface {
+		min-width: 0;
+		--room-top: var(--stack-gap);
+		--room-bottom: var(--tool-pad-bottom, 1.5rem);
+		--room-left: var(--tool-pad-x, 1rem);
+		--room-right: var(--tool-pad-x, 1rem);
+	}
+	.tool-stack--benched .tool-surface {
+		--room-left: var(--ribbon-gap);
 	}
 
 	/* Measured by the layout, never painted. The COLUMN form: the ribbon's
@@ -331,7 +353,7 @@
 		   reads as one tight instrument head rather than three spaced rows. */
 		.tool-stack--benched {
 			padding-left: 0;
-			gap: var(--band-gap);
+			--stack-gap: var(--band-gap);
 			/* bands (A · gap · B), gap, the bench row, gap. */
 			--stack-to-surface: calc(
 				var(--band-a-reserve) + var(--band-b-h) + 2 * var(--band-gap) + var(--bench-row-h)
@@ -349,6 +371,8 @@
 		}
 		.tool-stack--benched .tool-surface {
 			order: 2;
+			/* The bench is a ROW up here, so nothing stands beside the surface. */
+			--room-left: var(--tool-pad-x, 1rem);
 		}
 		/* The rail, one control high, JOINED to the row under it (⚓ Nate
 		   2026-10-24: one object, the bench's frame keeping the cards apart) —
@@ -399,7 +423,7 @@
 		   surface — the battlefield banners, the character grid's filters — up
 		   to band B at the same band gap, as the planner's bench row does. */
 		.tool-stack--fill {
-			gap: var(--band-gap);
+			--stack-gap: var(--band-gap);
 			--stack-to-surface: calc(var(--band-a-reserve) + var(--band-b-h) + var(--band-gap));
 		}
 	}
@@ -601,10 +625,6 @@
 
 	.band-full {
 		flex: 1;
-		min-width: 0;
-	}
-
-	.tool-surface {
 		min-width: 0;
 	}
 </style>

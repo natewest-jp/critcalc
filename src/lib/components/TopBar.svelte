@@ -450,7 +450,7 @@
 		grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content, 1fr);
 		align-items: center;
 		gap: 1.1rem;
-		padding: 0 clamp(1rem, 2vw, 2rem);
+		padding: 0 var(--site-pad-x);
 		color: var(--chrome);
 		/* ⚠ The strip passes clicks through and its three children catch their
 		   own (SiteChrome's contract): both hosts mount it in a click-transparent
@@ -944,7 +944,9 @@
 		.tb {
 			display: flex;
 			gap: 0.4rem;
-			padding: 0 0.75rem;
+			/* ↻ The edges round (2026-10-25): the site gutter, not 0.75rem, so
+			   the logo starts on the tools' line. At 320 the document button
+			   is the flex that gives the 8px up. */
 		}
 		.tb-nav,
 		.tb-help,

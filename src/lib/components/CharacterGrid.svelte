@@ -127,11 +127,21 @@
 		   The rail runs shorter; its groups are smaller objects. */
 		--scroll-fade: 36px;
 
+		/* THE REACH (app.css § THE FADE ENDS AT THE NEIGHBOUR): a consumer can
+		   push the box out into the scene around it and pad back, so the cards
+		   sit on its line while the gutter and the roll-off live OUTSIDE it.
+		   The padding never drops under the gutter, so the hover rise and the
+		   focus ring keep their room whatever the reach. All 0 by default:
+		   with no consumer setting them, this is the old inset box. */
+		margin: calc(var(--cg-reach-t, 0px) * -1) calc(var(--cg-reach-x, 0px) * -1)
+			calc(var(--cg-reach-b, 0px) * -1);
+		padding: max(var(--cg-gutter), var(--cg-reach-t, 0px))
+			max(var(--cg-gutter), var(--cg-reach-x, 0px)) max(var(--cg-gutter), var(--cg-reach-b, 0px));
+
 		flex: 1;
 		min-width: 0;
 		min-height: 0;
 		overflow-y: auto;
-		padding: var(--cg-gutter);
 		display: flex;
 		flex-direction: column;
 		gap: var(--cg-stack-gap, 8px);
