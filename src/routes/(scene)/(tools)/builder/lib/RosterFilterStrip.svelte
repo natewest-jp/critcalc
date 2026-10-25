@@ -49,7 +49,8 @@
 		countNote?: string;
 		/** Anything narrowing the roster, band B's filters included. */
 		anyActive: boolean;
-		onClear: () => void;
+		/** Unset when the band holds Clear instead (under the switch). */
+		onClear?: () => void;
 	} = $props();
 
 	const ELEMENTS: Element[] = ['anemo', 'cryo', 'dendro', 'electro', 'geo', 'hydro', 'pyro'];
@@ -237,7 +238,7 @@
 					>{/if}
 			</p>
 		{/if}
-		{#if anyActive}
+		{#if anyActive && onClear}
 			<button class="btn btn--sm btn--glass" onclick={onClear}>Clear</button>
 		{/if}
 	</span>
@@ -269,13 +270,26 @@
 		border-radius: var(--r-xs);
 		background: transparent;
 	}
-	.rfs-bar > .btn:hover:not(:disabled) {
+	:global(:where(:root:not([data-next]))) .rfs-bar > .btn:hover:not(:disabled) {
 		background: var(--surface-hover);
 		box-shadow: inset 0 0 0 1px var(--glass-ring);
 	}
-	.rfs-bar > .btn.is-active {
+	:global(:where(:root:not([data-next]))) .rfs-bar > .btn.is-active {
 		background: var(--surface-hover);
 		box-shadow: inset 0 0 0 1px var(--sel-ring);
+		color: var(--text);
+	}
+	/* ↻ 2026-10-25 (Builder toolbar round), under the switch: a filter that
+	   is ON is a dim gold FILL, the toolbar's "on" (app.css, ON IS A DIM GOLD
+	   FILL); the ring is left to the hand, and only where a hand can hover. */
+	@media (hover: hover) {
+		:global(:where(:root[data-next])) .rfs-bar > .btn:hover:not(:disabled) {
+			background: var(--surface-hover);
+			box-shadow: inset 0 0 0 1px var(--glass-ring);
+		}
+	}
+	:global(:where(:root[data-next])) .rfs-bar > .btn.is-active {
+		background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 		color: var(--text);
 	}
 	.rfs-role,
@@ -318,8 +332,12 @@
 		object-fit: contain;
 	}
 	/* An element is chosen in its own hue — the element chip's grammar. */
-	.rfs-bar > .rfs-el.is-active {
+	:global(:where(:root:not([data-next]))) .rfs-bar > .rfs-el.is-active {
 		box-shadow: inset 0 0 0 1px var(--el);
+	}
+	/* Under the switch the element's hue FILLS, as gold does for the rest. */
+	:global(:where(:root[data-next])) .rfs-bar > .rfs-el.is-active {
+		background: color-mix(in srgb, var(--el) 24%, var(--btn-face));
 	}
 	.rfs-end {
 		margin-left: auto;

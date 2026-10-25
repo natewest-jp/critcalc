@@ -227,6 +227,14 @@
 	});
 	const bank = $derived($nextLayout ? storeRotations : $savedNotations);
 
+	/** The Theorycraft profile has NO roster (↻ 2026-10-25): nothing is owned,
+	 *  wishlisted or levelled there, so the controls that read a roster go —
+	 *  Owned/Wishlist, the "My constellations" lens and the empty-roster hint.
+	 *  Undecided (false) until the lazy session has loaded. */
+	const theorycraft = $derived(
+		$nextLayout && sessionMod?.storageSession.profile?.kind === 'theorycraft'
+	);
+
 	/** A team placed from Teams' Add to a lineup (design §3) arrives selected,
 	 *  on the Lineup, so you see where it went. */
 	$effect(() => {
@@ -255,6 +263,20 @@
 	let charCellW = $state(0);
 	const foldShow = $derived(charCellW < FOLD_SHOW_W);
 	const foldLens = $derived(charCellW < FOLD_LENS_W);
+	/** Where Owned/Wishlist live. Under the switch: the filter strip's first
+	 *  group at width, More below `compact` (where the strip is plates), and
+	 *  nowhere in Theorycraft. The old layout: band B's Show segment until the
+	 *  cell folds it into More. */
+	const ownershipInMore = $derived($nextLayout ? below('compact') && !theorycraft : foldShow);
+	/** ↻ 2026-10-25 demo: first tried as the filter strip's first group, which
+	 *  wrapped the strip to two rows at a 1456px window (the column is ~715px
+	 *  and the strip was already full). Now a two-mark pair in the band, after
+	 *  Search. */
+	const ownershipInBand = $derived($nextLayout && !below('compact') && !theorycraft);
+	const OWN_TOGGLES = [
+		{ key: 'owned', mark: 'check', label: 'Owned' },
+		{ key: 'wishlist', mark: 'star', label: 'Wishlist' }
+	] as const;
 
 	// ── The board ─────────────────────────────────────────────────────────────
 
@@ -783,7 +805,9 @@
 	 *  variable part, and it only helps while capability facets are on. */
 	const rosterEmptyMessage = $derived(
 		conMode === 'c0' && activeFacets.size > 0
-			? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My constellations” or “C6”.'
+			? theorycraft
+				? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “C6”.'
+				: 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My constellations” or “C6”.'
 			: 'No curated character matches.'
 	);
 
@@ -806,7 +830,7 @@
 			filters.rarities.size +
 			(filters.region ? 1 : 0) +
 			(filters.factionBuffs?.size ?? 0) +
-			(foldShow && ownershipView !== 'all' ? 1 : 0)
+			(ownershipInMore && ownershipView !== 'all' ? 1 : 0)
 	);
 
 	/** Anything narrowing the roster — lights the strip's Clear. */
@@ -861,6 +885,27 @@
 	/** The lens's current reading — band B's menu states it on the trigger, so
 	 *  the setting stays visible now that its eight segments are gone. */
 	const activeConMode = $derived(CON_MODES.find((m) => m.key === conMode) ?? CON_MODES[0]);
+	/** The lens's choices on THIS profile: Theorycraft has no constellations
+	 *  of its own to read. */
+	const conModes = $derived(theorycraft ? CON_MODES.filter((m) => m.key !== 'mine') : CON_MODES);
+	/** Arriving in Theorycraft, the roster's readings fall back to what any
+	 *  copy can do: C0, and everyone shown. Leaving it, they come back as the
+	 *  roster had them, whatever the lens was set to in between. */
+	let rosterReadings: { conMode: ConMode; ownershipView: OwnershipView } | null = null;
+	$effect(() => {
+		const tc = theorycraft;
+		untrack(() => {
+			if (tc) {
+				rosterReadings ??= { conMode, ownershipView };
+				if (conMode === 'mine') conMode = 'c0';
+				ownershipView = 'all';
+			} else if (rosterReadings) {
+				conMode = rosterReadings.conMode;
+				ownershipView = rosterReadings.ownershipView;
+				rosterReadings = null;
+			}
+		});
+	});
 
 	// ---------------------------------------------------------------------------
 	// Detail card — a focused single-character modal (the tool's one deliberate
@@ -1266,7 +1311,7 @@
 {/snippet}
 
 {#snippet conModeItems(close: () => void)}
-	{#each CON_MODES as m (m.key)}
+	{#each conModes as m (m.key)}
 		<button
 			class="band-menu-item"
 			role="menuitemradio"
@@ -1388,7 +1433,7 @@
 		<div class="tb-band" class:tb-band--tabbed={tabbed}>
 			{#if showing !== 'lineup'}
 				<div class="tb-band-cell" bind:clientWidth={charCellW}>
-					{#if !foldShow}
+					{#if !foldShow && !$nextLayout}
 						<div class="segment tb-show" role="radiogroup" aria-label="Show">
 							{#each OWNERSHIP_VIEWS as v (v.key)}
 								<button
@@ -1417,6 +1462,22 @@
 							spellcheck={false}
 						/>
 					</div>
+					{#if ownershipInBand}
+						<div class="segment tb-show tb-own" role="group" aria-label="Your roster">
+							{#each OWN_TOGGLES as t (t.key)}
+								{@const on = ownershipView === t.key}
+								<button
+									class="btn btn--icon"
+									class:is-active={on}
+									aria-pressed={on}
+									aria-label={t.label}
+									title={on ? 'Show everyone again' : t.label}
+									onclick={() => (ownershipView = on ? 'all' : t.key)}
+									><Mark name={t.mark} size={15} /></button
+								>
+							{/each}
+						</div>
+					{/if}
 					<!-- More hangs from its END and opens leftward, so it stays over the
 						     roster column — never over the board you are filtering for. -->
 					<span class="tb-more">
@@ -1433,7 +1494,7 @@
 									{roster}
 									{filters}
 									bind:ownershipView
-									showOwnership={foldShow}
+									showOwnership={ownershipInMore}
 									lens={foldLens ? conModeItems : undefined}
 									{close}
 								/>
@@ -1449,6 +1510,19 @@
 								{@render conModeItems(close)}
 							{/snippet}
 						</BandMenu>
+					{/if}
+					{#if $nextLayout}
+						<!-- ↻ 2026-10-25: Clear stands in the band, always, as the
+						     lineup's does — at the strip's end it came and went, and
+						     took a row of its own when it came. -->
+						<button
+							class="btn btn--glass tb-clear"
+							aria-label="Clear every filter"
+							title="Clear every filter"
+							disabled={!anyFilterActive}
+							onclick={clearAllFilters}
+							><Mark name="clear" /> <span class="tb-band-label">Clear</span></button
+						>
 					{/if}
 					<!-- TRIAL (responsive sweep 2026-10-15 item 26, D2): "Lineup" ends
 					     the band, beside the edge its pane docks on (panelRight);
@@ -1606,12 +1680,12 @@
 		count={swapping || selectedTeam ? undefined : split.matches.length}
 		{countNote}
 		anyActive={anyFilterActive}
-		onClear={clearAllFilters}
+		onClear={$nextLayout ? undefined : clearAllFilters}
 	/>
 	<!-- ⚓ The empty-roster hint (lineups design §11.6 item 12): the Owned
 	     filter and the "My constellations" lens read the roster, and do
 	     nothing until it has something in it. -->
-	{#if mounted && !ownsAny}
+	{#if mounted && !ownsAny && !theorycraft}
 		<p class="tb-roster-hint">
 			The Owned filter and “My constellations” read your roster, which is empty.
 			<button class="link" onclick={() => library.openRoster()}>Open the Roster</button>
@@ -2027,6 +2101,9 @@
 	.tb-show > .btn {
 		height: calc(var(--band-ctrl-h) - 4px);
 	}
+	.tb-own > .btn {
+		min-width: calc(var(--band-ctrl-h) - 4px);
+	}
 	/* The lineup's rail: an empty plate that spans what its controls leave,
 	   the shape of the Planner's band B middle. */
 	.tb-rail {
@@ -2037,6 +2114,13 @@
 		align-items: center;
 		justify-content: flex-end;
 		border-radius: var(--r-sm);
+	}
+	/* ↻ 2026-10-25 (Builder toolbar round), under the switch: the rail
+	   RETIRES, as the Planner's middle did the day before — a readout (the
+	   notice) stands on the night, only a control gets glass. The span stays
+	   as layout: it still takes what the controls leave and pushes them to
+	   the pane's end. Step 5 deletes the `:not` half. */
+	:global(:where(:root:not([data-next]))) .tb-rail {
 		background: var(--surface);
 	}
 	/* The notice sits at the rail's END, against its buttons; when it runs
@@ -2063,6 +2147,12 @@
 	}
 	.tb-pane-switch {
 		gap: 0.45rem;
+	}
+	/* Clear closes the cell at the pane's edge, past the capped search, so it
+	   lines up with the strip's end (⚓ Nate 2026-10-25). With the pane switch
+	   ending the band it stays beside the lens instead. */
+	:global(:where(:root[data-next])) .tb-band-cell > .tb-clear:last-child {
+		margin-left: auto;
 	}
 	/* TRIAL (item 26, D2): the Characters cell's switch is its LAST child,
 	   pushed to the band's right end past the capped search. */
