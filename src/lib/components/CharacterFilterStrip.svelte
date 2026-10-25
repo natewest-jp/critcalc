@@ -1,6 +1,8 @@
 <script lang="ts">
 	/**
-	 * THE ROSTER'S FILTER STRIP (Party Setup shape, design doc §11.2 / §11.6).
+	 * THE CHARACTER FILTER STRIP (Party Setup shape, design doc §11.2 / §11.6)
+	 * — the Builder's roster, and since 2026-10-25 Teams' details, where it
+	 * moved to `$lib` from the Builder's own folder (it was RosterFilterStrip).
 	 *
 	 * The four roles as icons, the seven elements, the fingerprint's glyphs
 	 * ("Can provide" — step 4: the fingerprint IS the filter vocabulary, so
@@ -12,6 +14,10 @@
 	 * in band B's character cell (`MoreFilters` is that popover's contents).
 	 * It owns no state: every set is the page's, the same objects the grid
 	 * filters against.
+	 *
+	 * Teams' details pass no `activeFacets` (the capability glyphs are parked
+	 * there, Nate 2026-10-25), bring their own search and Show/More through
+	 * `start` / `end`, and stand on SLATE (`slate`), not the night.
 	 */
 	import type { Snippet } from 'svelte';
 	import type { SvelteSet } from 'svelte/reactivity';
@@ -30,6 +36,9 @@
 	let {
 		filters,
 		activeFacets,
+		slate = false,
+		start,
+		end,
 		activeRole,
 		onRole,
 		count,
@@ -38,8 +47,16 @@
 		onClear
 	}: {
 		filters: GridFilters;
-		/** "Can provide" — the capability facets a character must ALL offer. */
-		activeFacets: SvelteSet<FacetKey>;
+		/** "Can provide" — the capability facets a character must ALL offer.
+		 *  Omitted, the glyph group is not drawn. */
+		activeFacets?: SvelteSet<FacetKey>;
+		/** On the full-screen surface's slate rather than the night: the bars
+		 *  take the slate's raised rung instead of glass. */
+		slate?: boolean;
+		/** Controls before the groups (Teams: search) and after them, before
+		 *  the count and Clear (Teams: Show, More). */
+		start?: Snippet;
+		end?: Snippet;
 		/** The role the filter currently is, if it is exactly one. */
 		activeRole: string | null;
 		onRole: (cat: RoleCategory) => void;
@@ -61,6 +78,7 @@
 	}
 	const FACET = Object.fromEntries(FACETS.map((f) => [f.key, f]));
 	function toggleFacet(facet: FacetKey): void {
+		if (!activeFacets) return;
 		if (activeFacets.has(facet)) activeFacets.delete(facet);
 		else activeFacets.add(facet);
 	}
@@ -72,7 +90,7 @@
 	 *  order a plate shows them in. */
 	const chosenElements = $derived(ELEMENTS.filter((el) => filters.elements.has(el)));
 	const chosenFacets = $derived(
-		FINGERPRINT.flatMap((c) => c.facets).filter((f) => activeFacets.has(f))
+		FINGERPRINT.flatMap((c) => c.facets).filter((f) => !!activeFacets?.has(f))
 	);
 	const plateLabel = (word: string, n: number) => (n === 0 ? word : `${word}: ${n} selected`);
 </script>
@@ -127,7 +145,7 @@
 		{#each FINGERPRINT as c (c.cluster)}
 			<span class="rfs-bar">
 				{#each c.facets as facet (facet)}
-					{@const on = activeFacets.has(facet)}
+					{@const on = !!activeFacets?.has(facet)}
 					{@const f = FACET[facet]}
 					<button
 						class="btn btn--icon rfs-glyph"
@@ -183,18 +201,25 @@
 
 <!-- ctx-glass: the plates stand on the night, so their tokens are glass ones —
      under the page's ctx-dark a btn--glass rested and HOVERED in slate. -->
-<div class="rfs ctx-glass" role="group" aria-label="Role and element">
+<div
+	class="rfs"
+	class:ctx-glass={!slate}
+	class:rfs--slate={slate}
+	role="group"
+	aria-label={slate ? 'Filters' : 'Role and element'}
+>
+	{@render start?.()}
 	<div class="rfs-inline">
 		{@render roleBar()}
 		{@render elementBar()}
-		{@render glyphRow()}
+		{#if activeFacets}{@render glyphRow()}{/if}
 	</div>
 	<!-- BELOW `compact` THE THREE ROWS ARE THREE PLATES (2026-10-15, ⚓ Nate):
 	     on a phone they wrapped to four rows over the grid. Each plate opens
 	     its row in a popover — BandMenu's, portalled, as More is. -->
 	<div class="rfs-plates">
 		<BandMenu
-			glass
+			glass={!slate}
 			size="sm"
 			role="dialog"
 			align="start"
@@ -206,7 +231,7 @@
 			{/snippet}
 		</BandMenu>
 		<BandMenu
-			glass
+			glass={!slate}
 			size="sm"
 			role="dialog"
 			align="start"
@@ -217,19 +242,22 @@
 				<div class="rfs-pop ctx-glass">{@render elementBar()}</div>
 			{/snippet}
 		</BandMenu>
-		<BandMenu
-			glass
-			size="sm"
-			role="dialog"
-			align="start"
-			ariaLabel={plateLabel('Capabilities', chosenFacets.length)}
-			face={capabilityFace}
-		>
-			{#snippet items()}
-				<div class="rfs-pop ctx-glass">{@render glyphRow()}</div>
-			{/snippet}
-		</BandMenu>
+		{#if activeFacets}
+			<BandMenu
+				glass={!slate}
+				size="sm"
+				role="dialog"
+				align="start"
+				ariaLabel={plateLabel('Capabilities', chosenFacets.length)}
+				face={capabilityFace}
+			>
+				{#snippet items()}
+					<div class="rfs-pop ctx-glass">{@render glyphRow()}</div>
+				{/snippet}
+			</BandMenu>
+		{/if}
 	</div>
+	{@render end?.()}
 	<span class="rfs-end">
 		{#if count !== undefined}
 			<p class="rfs-count" role="status">
@@ -239,7 +267,7 @@
 			</p>
 		{/if}
 		{#if anyActive && onClear}
-			<button class="btn btn--sm btn--glass" onclick={onClear}>Clear</button>
+			<button class="btn btn--sm" class:btn--glass={!slate} onclick={onClear}>Clear</button>
 		{/if}
 	</span>
 </div>
@@ -265,6 +293,10 @@
 		padding: 2px;
 		border-radius: var(--r-sm);
 		background: var(--surface); /* = --glass-panel, via .ctx-glass */
+	}
+	/* On slate there is no glass: the track is the slate's raised rung. */
+	.rfs--slate .rfs-bar {
+		background: var(--surface-raised);
 	}
 	.rfs-bar > .btn {
 		border-radius: var(--r-xs);
@@ -373,6 +405,11 @@
 	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
 		.rfs-inline {
 			display: none;
+		}
+		/* Teams' row also carries Show and More: at the Builder's 1rem the
+		   mark-only More wrapped alone at 320 by ~10px. */
+		.rfs--slate {
+			column-gap: 0.5rem;
 		}
 		.rfs-plates {
 			display: flex;

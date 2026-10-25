@@ -1463,11 +1463,16 @@ class StorageSession {
 		return { team, created: true };
 	}
 
-	/** Rename a team or change its members. Refused (false) when the new set
-	 *  is another team's: one team per set. */
+	/** Rename a team, change its members, or replace its loadout (Teams'
+	 *  details save all three at once). Refused (false) when the new set is
+	 *  another team's: one team per set. */
 	async updateTeam(
 		id: string,
-		patch: { name?: string; slots?: readonly (string | null)[] }
+		patch: {
+			name?: string;
+			slots?: readonly (string | null)[];
+			loadout?: Record<string, LoadoutEntry>;
+		}
 	): Promise<boolean> {
 		const db = this.#db ?? (await ensureStorage());
 		const team = db ? await get(db, 'teams', id) : undefined;
@@ -1482,6 +1487,11 @@ class StorageSession {
 			...(patch.slots && { slots: normalizeSlots(patch.slots) }),
 			updatedAt: Date.now()
 		};
+		if (patch.loadout) {
+			const lo = compactLoadouts(patch.loadout);
+			if (Object.keys(lo).length) next.loadout = lo;
+			else delete next.loadout;
+		}
 		// ⚓ Whoever left takes their loadout with them; a newcomer has none.
 		if (patch.slots && next.loadout) {
 			const kept = membersOnly(next.loadout, next.slots);

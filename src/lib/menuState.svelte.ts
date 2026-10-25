@@ -119,11 +119,39 @@ class MenuState {
 
 	/** Show a section: a new history entry, so Back returns to the last one. */
 	show(section: Section): void {
-		if (section === this.section) return;
+		// Teams from inside a team's details goes back to the cards.
+		if (section === this.section && !page.state.teamDetail) return;
 		const depth = (page.state.menuDepth ?? 0) + 1;
 		const path = itemOf(section)?.path ?? '';
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- section paths are resolved in SECTION_GROUPS
-		pushState(path, { ...page.state, menu: section, menuDepth: depth });
+		pushState(path, {
+			...page.state,
+			menu: section,
+			menuDepth: depth,
+			teamDetail: undefined,
+			teamSlot: undefined
+		});
+	}
+
+	/** Teams' details for a team, or `'new'` for one being made: an entry of
+	 *  its own over Teams, so Back (or leaving it) returns to the cards. */
+	openTeam(id: string, slot?: number): void {
+		const depth = (page.state.menuDepth ?? 0) + 1;
+		pushState('', {
+			...page.state,
+			menu: 'teams',
+			menuDepth: depth,
+			teamDetail: id,
+			teamSlot: slot
+		});
+	}
+
+	get teamSlot(): number | null {
+		return page.state.teamSlot ?? null;
+	}
+
+	get teamDetail(): string | null {
+		return this.section === 'teams' ? (page.state.teamDetail ?? null) : null;
 	}
 
 	/** The current tool's button and its library place: in, or back out. */

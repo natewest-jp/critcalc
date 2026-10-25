@@ -22,6 +22,11 @@ declare global {
 			/** How many section entries this visit pushed, so leaving goes
 			 *  back over all of them at once. */
 			menuDepth?: number;
+			/** Teams' details for one team (its id), or `'new'` for a team
+			 *  being made — an entry over Teams, so Back returns to the cards. */
+			teamDetail?: string;
+			/** The slot the details open on (a portrait clicked on a card). */
+			teamSlot?: number;
 		}
 		// interface Platform {}
 	}

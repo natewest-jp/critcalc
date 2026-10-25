@@ -42,6 +42,17 @@ export type IdentityFilters = {
  * round (2026-08-08) the two are SIBLINGS in a ToolColumns surface — the object
  * is the only thing they share, so it belongs to neither.
  */
+/** Roster-ledger view: everyone, only owned, or only wishlisted. */
+export type OwnershipView = 'all' | 'owned' | 'wishlist';
+
+/** The Show segment's choices — the Builder's band B character cell, or
+ *  More when the cell folds it. */
+export const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
+	{ key: 'all', label: 'All', hint: 'Every character' },
+	{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
+	{ key: 'wishlist', label: 'Wishlist', hint: 'Only characters you’ve wishlisted' }
+];
+
 export type GridFilters = {
 	elements: SvelteSet<string>;
 	weapons: SvelteSet<string>;
