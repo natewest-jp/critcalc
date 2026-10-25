@@ -1707,6 +1707,12 @@
 	--surface: var(--slate-800);
 	--surface-raised: var(--slate-700); /* ΔL .035 over the ground */
 	--surface-well: var(--slate-900); /* ΔL .035 under it — the chart, a field */
+	/* 🐛 HOVER, one rung above raised (2026-10-25, the full-screen round). It was
+	   defined only in .ctx-glass, so on slate `var(--surface-hover)` painted
+	   NOTHING: a hovered card dropped to the ground it stands on, and the
+	   full-screen sidebar's current item had no fill (Nate). One rung up reads
+	   as the thing coming toward you, on the ground and on a raised card alike. */
+	--surface-hover: var(--slate-600);
 	/* ⚠ NO SIZE AXIS ON DARK. --surface-broad is a PAPER distinction (see
 	   .ctx-light): Genshin splits its parchment grounds by extent, and does not
 	   split its dark ones. Aliased to --surface so the role resolves everywhere

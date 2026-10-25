@@ -15,7 +15,7 @@ export type MarkNode = [tag: string, attrs: Record<string, string>];
 
 /** Every mark the site can render. The union is generated, so a typo in a
  *  `<Mark name="...">` is a type error rather than an empty box. */
-export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'forwardSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown' | 'handOff';
+export type MarkName = 'save' | 'library' | 'panelRight' | 'panelLeft' | 'share' | 'more' | 'reset' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'report' | 'help' | 'about' | 'delete' | 'repeat' | 'repeatOff' | 'clear' | 'download' | 'upload' | 'note' | 'edit' | 'filter' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'mainStat' | 'constellation' | 'locked' | 'unlocked' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'forwardSlim' | 'hand' | 'zoomIn' | 'zoomOut' | 'laps' | 'rewind' | 'bench' | 'pin' | 'thumbsUp' | 'thumbsDown' | 'profile' | 'teams' | 'rotations' | 'lineups' | 'settings' | 'switcher' | 'handOff';
 
 /** Lucide's native grid. The wrapper's viewBox — not a knob. */
 export const MARK_VIEWBOX = 24;
@@ -79,5 +79,11 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	pin: [["path",{"d":"M12 17v5"}],["path",{"d":"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"}]],
 	thumbsUp: [["path",{"d":"M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"}],["path",{"d":"M7 10v12"}]],
 	thumbsDown: [["path",{"d":"M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"}],["path",{"d":"M17 14V2"}]],
+	profile: [["path",{"d":"M17.925 20.056a6 6 0 0 0-11.851.001"}],["circle",{"cx":"12","cy":"11","r":"4"}],["circle",{"cx":"12","cy":"12","r":"10"}]],
+	teams: [["path",{"d":"M18 21a8 8 0 0 0-16 0"}],["circle",{"cx":"10","cy":"8","r":"5"}],["path",{"d":"M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"}]],
+	rotations: [["path",{"d":"M10 6h8"}],["path",{"d":"M12 16h6"}],["path",{"d":"M3 3v16a2 2 0 0 0 2 2h16"}],["path",{"d":"M8 11h7"}]],
+	lineups: [["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}],["path",{"d":"M21 9H3"}],["path",{"d":"M21 15H3"}]],
+	settings: [["path",{"d":"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"}],["circle",{"cx":"12","cy":"12","r":"3"}]],
+	switcher: [["path",{"d":"m7 15 5 5 5-5"}],["path",{"d":"m7 9 5-5 5 5"}]],
 	handOff: [["path",{"d":"M1.947,2L21.947,22"}],["path",{"d":"M18,11L18,6C18,4.903 17.097,4 16,4C14.902,4 14,4.903 14,6"}],["path",{"d":"M14,8.398L14,4C14,2.903 13.097,2 12,2C10.902,2 10,2.903 10,4L10,4.398"}],["path",{"d":"M6,6.053L6,14"}],["path",{"d":"M18,8C18,6.903 18.902,6 20,6C21.097,6 22,6.903 22,8L22,14C22,14.73 21.9,15.438 21.713,16.112"}],["path",{"d":"M19.619,19.672C18.17,21.108 16.181,22 14,22L12,22C9.2,22 7.5,21.14 6.01,19.66L2.41,16.06C2.078,15.693 1.894,15.215 1.894,14.72C1.894,13.623 2.797,12.72 3.894,12.72C4.391,12.72 4.872,12.905 5.24,13.24L7,15"}]]
 };
