@@ -392,18 +392,28 @@
 	{:else if loaded && listed.length === 0}
 		<p class="empty">No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.</p>
 	{:else if place === 'planner'}
-		{#if pinned.length}
-			<p class="sec">Pinned</p>
-			<ul class="rows">
-				{#each pinned as d (d.id)}{@render row(d)}{/each}
-			</ul>
-		{/if}
-		{#if recent.length}
-			{#if pinned.length}<p class="sec">Recent</p>{/if}
-			<ul class="rows">
-				{#each recent as d (d.id)}{@render row(d)}{/each}
-			</ul>
-		{/if}
+		<!-- ⚓ PINNED STANDS ASIDE (Nate 2026-10-25): with room, the pins are a
+		     column of their own beside Recent, held in view while Recent
+		     scrolls; without it, they head the list as before. Pinned comes
+		     first in the source so the narrow order needs no reordering. -->
+		<div class="lib-cols" class:has-pins={pinned.length > 0}>
+			{#if pinned.length}
+				<section class="lib-col lib-col--pinned" aria-label="Pinned">
+					<p class="sec">Pinned</p>
+					<ul class="rows">
+						{#each pinned as d (d.id)}{@render row(d)}{/each}
+					</ul>
+				</section>
+			{/if}
+			{#if recent.length}
+				<section class="lib-col lib-col--recent" aria-label="Recent">
+					{#if pinned.length}<p class="sec">Recent</p>{/if}
+					<ul class="rows">
+						{#each recent as d (d.id)}{@render row(d)}{/each}
+					</ul>
+				</section>
+			{/if}
+		</div>
 	{:else}
 		<ul class="cards">
 			{#each [...pinned, ...recent] as d (d.id)}
@@ -437,7 +447,44 @@
 
 <style>
 	.place {
+		container: place / inline-size;
+	}
+	/* Each column is its own width question: the notation reads off the
+	   COLUMN, so the narrow pinned aside drops it while Recent keeps it. */
+	.lib-col {
 		container: library / inline-size;
+		min-width: 0;
+	}
+	.lib-col--pinned .sec:first-child,
+	.lib-col--recent .sec:first-child {
+		margin-top: 0;
+	}
+	.lib-cols {
+		display: flex;
+		flex-direction: column;
+		gap: 1.2rem;
+	}
+	/* 🎛️ Room for both: Recent keeps ~36rem of rows (portraits, name and a
+	   readable run of notation), the aside 18–24rem. */
+	@container place (min-width: 58rem) {
+		.lib-cols.has-pins {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+			column-gap: 1.5rem;
+			align-items: start;
+		}
+		.lib-col--pinned {
+			grid-column: 2;
+			grid-row: 1;
+			/* Held in view while Recent scrolls: the menu state's .main is the
+			   scroller, so this sticks to its top. */
+			position: sticky;
+			top: 0;
+		}
+		.lib-col--recent {
+			grid-column: 1;
+			grid-row: 1;
+		}
 	}
 	.place-acts {
 		display: flex;
@@ -625,6 +672,22 @@
 	.row:hover .row-acts,
 	.row:focus-within .row-acts {
 		opacity: 1;
+	}
+	/* In a narrow column the verbs FLOAT over the row's end on the hovered
+	   ground, as they did on the cards, instead of holding ~100px of the
+	   name's room while invisible. */
+	@container library (max-width: 30rem) {
+		.row .row-acts {
+			position: absolute;
+			inset-block: 0;
+			right: 0.4rem;
+			height: max-content;
+			/* Centred by auto margins, ⛔ not a transform: the verbs fade by
+			   opacity, and WebKit dances an opacity subtree placed by a
+			   transform (the sub-pixel laws). */
+			margin: auto 0;
+			background: var(--surface-hover);
+		}
 	}
 
 	.card-main {
