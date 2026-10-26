@@ -60,11 +60,11 @@ hands-on with Nate, one look per step.
 
 ## Found on the way
 
-- The grid's scroller tucked UNDER the strip by a -0.9rem margin (Teams'
-  details' layout). Later in the DOM, it swallowed the strip's lower half
-  (every control's bottom took no clicks); stacked beneath the strip (the
-  first fix), scrolled tiles showed through behind it (Nate). Both surfaces
-  now start the scroller at the strip's edge, so the roll-off begins there,
-  and the top padding went 0.9rem → 0.5rem (it had been clearing the
-  overlap). Teams was fixed by geometry, not re-measured (its details need
-  a profile).
+- The Roster's grid scroller tucked UNDER the strip by a -0.9rem margin
+  copied from Teams' details. Later in the DOM, it swallowed the strip's
+  lower half (every control's bottom took no clicks); stacked beneath the
+  strip (the first fix), scrolled tiles showed through behind it (Nate). The
+  Roster now starts its scroller at the strip's edge (top padding 0.5rem).
+  ↻ Teams' details NEVER had the bug: there the margin cancels the flex
+  column's 0.9rem gap. Removing it there opened a gap (Nate saw the grid fade
+  farther from the strip), and the cleanups round restored it.
