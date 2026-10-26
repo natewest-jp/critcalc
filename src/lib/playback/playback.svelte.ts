@@ -43,7 +43,7 @@
 import { get } from 'svelte/store';
 import { siteSettings } from '$lib/stores';
 import { plannerView as pv } from '$lib/plannerView.svelte';
-import { COUNT_IN_S, countInCues, type Cue } from './cues';
+import { COUNT_IN_S, countInCues, type Cue, type CueKind } from './cues';
 import { dueBetween, positionAt } from './transport';
 import { createSounder, type SoundChoice, type Sounder } from './tones';
 
@@ -186,8 +186,8 @@ class Playback {
 
 	/** The Settings preview phrase — the way a set or an assignment is chosen.
 	 *  Either argument defaults to the stored setting. */
-	preview(over: Partial<SoundChoice> = {}) {
-		this.#ensureSounder()?.preview({ ...this.#choice(), ...over });
+	preview(over: Partial<SoundChoice> = {}, kinds?: readonly CueKind[]) {
+		this.#ensureSounder()?.preview({ ...this.#choice(), ...over }, kinds);
 	}
 
 	#choice(): SoundChoice {

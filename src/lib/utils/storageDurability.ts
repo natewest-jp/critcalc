@@ -91,3 +91,44 @@ export function recordBackup(at: number): void {
 		/* storage blocked — the reminder just won't know */
 	}
 }
+
+/** 🎛️ How old a backup may get, with work changed since, before Settings
+ *  shows it in the warning ink and the site reminds once (⚓ Nate 2026-10-26). */
+export const BACKUP_STALE_DAYS = 30;
+const DAY_MS = 86_400_000;
+
+/** Never backed up with saved work, or a backup older than the window with
+ *  changes since: the case worth a warning. */
+export function backupIsStale(lastBackup: number | null, changedSince: number, now = Date.now()) {
+	if (changedSince <= 0) return false;
+	return lastBackup === null || now - lastBackup > BACKUP_STALE_DAYS * DAY_MS;
+}
+
+export const BACKUP_REMINDED_KEY = 'critcalc:backupReminded';
+
+/** When the backup reminder last showed (ms), or null. */
+export function readBackupReminded(): number | null {
+	if (!browser) return null;
+	try {
+		const n = Number(localStorage.getItem(BACKUP_REMINDED_KEY));
+		return Number.isFinite(n) && n > 0 ? n : null;
+	} catch {
+		return null;
+	}
+}
+
+export function recordBackupReminded(at: number): void {
+	try {
+		localStorage.setItem(BACKUP_REMINDED_KEY, String(at));
+	} catch {
+		/* storage blocked: it may remind again next visit */
+	}
+}
+
+/** The reminder is due: a whole window has passed since the later of the last
+ *  backup (else the first visit) and the last reminder. Whether anything
+ *  changed is the caller's half — it needs the documents. */
+export function backupReminderDue(firstVisit: number | undefined, now = Date.now()): boolean {
+	const since = Math.max(readLastBackup() ?? firstVisit ?? now, readBackupReminded() ?? 0);
+	return now - since > BACKUP_STALE_DAYS * DAY_MS;
+}

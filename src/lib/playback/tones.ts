@@ -483,6 +483,10 @@ export function paletteFor(choice: SoundChoice): Record<CueKind, Layer[]> {
 /** The Settings preview: a phrase that shows the set — two normals, a skill, a
  *  burst, a swap — at offsets in seconds, each with a plausible length so a
  *  voice is heard ringing. */
+/** The phrase without its swap: what the voice and note pickers preview
+ *  (⚓ Nate 2026-10-26: a picker plays what it changes, and the swap picker
+ *  plays the swap alone). */
+export const PREVIEW_NOTES: readonly CueKind[] = ['normal', 'skill', 'burst'];
 export const PREVIEW_PHRASE: readonly { kind: CueKind; at: number; dur: number }[] = [
 	{ kind: 'normal', at: 0, dur: 0.26 },
 	{ kind: 'normal', at: 0.26, dur: 0.26 },
@@ -510,8 +514,9 @@ export type Sounder = {
 	/** Queue one cue at an absolute AudioContext time; `dur` is the input's
 	 *  length in seconds (0 = unknown). */
 	play(kind: CueKind, at: number, choice: SoundChoice, dur?: number): void;
-	/** Play the preview phrase now. */
-	preview(choice: SoundChoice): void;
+	/** Play the preview phrase now — or only its cues of `kinds`, from the
+	 *  first of them, so a picker plays just what it changes. */
+	preview(choice: SoundChoice, kinds?: readonly CueKind[]): void;
 	/** Master volume, 0–1. */
 	setVolume(v: number): void;
 	/** Silence every layer not yet heard — pause, seek, stop. */
@@ -635,9 +640,11 @@ export function createSounder(ctx: AudioContext, volume = 1): Sounder {
 			const trim = SET_TRIM[choice.set] * (1 - Math.random() * HUMAN_GAIN);
 			for (const l of paletteFor(choice)[kind]) layer(l, at, trim, dur, detune);
 		},
-		preview(choice) {
-			const at0 = ctx.currentTime + 0.05;
-			for (const step of PREVIEW_PHRASE) this.play(step.kind, at0 + step.at, choice, step.dur);
+		preview(choice, kinds) {
+			const steps = kinds ? PREVIEW_PHRASE.filter((x) => kinds.includes(x.kind)) : PREVIEW_PHRASE;
+			if (!steps.length) return;
+			const at0 = ctx.currentTime + 0.05 - steps[0].at;
+			for (const step of steps) this.play(step.kind, at0 + step.at, choice, step.dur);
 		},
 		setVolume(v) {
 			master.gain.setTargetAtTime(MASTER_GAIN * Math.max(0, Math.min(1, v)), ctx.currentTime, 0.01);

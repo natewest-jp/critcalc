@@ -34,6 +34,7 @@
 		ORDER_IDS,
 		ORDER_LABELS,
 		orderHint,
+		PREVIEW_NOTES,
 		SOUND_MODES,
 		SOUND_MODE_LABELS,
 		SWAP_STYLES,
@@ -53,6 +54,7 @@
 	import {
 		isSafari,
 		readLastBackup,
+		backupIsStale,
 		requestPersistentStorage,
 		storagePersisted
 	} from '$lib/utils/storageDurability';
@@ -133,27 +135,24 @@
 		lastBackup = at;
 	}
 
-	/** Saved rotations and lineups changed since the last backup. */
+	/** Saved rotations and lineups changed since the last backup, or ever
+	 *  when there has been none (that is what makes "never" a warning). */
 	let storeSince = $state(0);
 	$effect(() => {
-		const at = lastBackup;
-		if ($nextLayout && at !== null)
+		const at = lastBackup ?? 0;
+		if ($nextLayout)
 			void session()
 				.then((s) => s.changedSince(at))
 				.then((n) => (storeSince = n));
 	});
 	let savedSince = $derived(
-		lastBackup === null
-			? 0
-			: $nextLayout
-				? storeSince
-				: [...$savedNotations, ...$savedBoards].filter((e) => e.savedAt > lastBackup!).length
+		$nextLayout
+			? storeSince
+			: [...$savedNotations, ...$savedBoards].filter((e) => e.savedAt > (lastBackup ?? 0)).length
 	);
-	// One string, so the space after "ago." cannot be trimmed away at an
-	// {#if} boundary (it rendered "ago.1 saved item").
-	const changedSince = $derived(
-		`${savedSince} saved ${savedSince === 1 ? 'item has' : 'items have'} changed since.`
-	);
+	/** ⚓ Colour only when it is a problem (Nate 2026-10-26), so it keeps
+	 *  meaning something: never, or older than the window, with work since. */
+	const stale = $derived(backupIsStale(lastBackup, savedSince));
 
 	function daysAgo(at: number): string {
 		const days = Math.floor((Date.now() - at) / 86_400_000);
@@ -456,7 +455,7 @@
 			</div>
 
 			<label class="sp-row">
-				<span class="sp-name">Show padding</span>
+				<span class="sp-name">Mark padding</span>
 				<span class="sp-ctl">
 					<span class="toggle">
 						<input
@@ -597,7 +596,7 @@
 									aria-checked={$siteSettings.playbackVoice === value}
 									onclick={() => {
 										siteSettings.setPlaybackSound({ playbackVoice: value });
-										playback.preview({ set: value });
+										playback.preview({ set: value }, PREVIEW_NOTES);
 									}}>{VOICE_LABELS[value]}</button
 								>
 							{/each}
@@ -622,7 +621,7 @@
 									title={orderHint(value)}
 									onclick={() => {
 										siteSettings.setPlaybackSound({ playbackOrder: value });
-										playback.preview({ order: value });
+										playback.preview({ order: value }, PREVIEW_NOTES);
 									}}>{ORDER_LABELS[value]}</button
 								>
 							{/each}
@@ -641,7 +640,7 @@
 									title={noteSetNotes(value)}
 									onclick={() => {
 										siteSettings.setPlaybackSound({ playbackNotes: value });
-										playback.preview({ notes: value });
+										playback.preview({ notes: value }, PREVIEW_NOTES);
 									}}>{NOTE_SET_LABELS[value]}</button
 								>
 							{/each}
@@ -649,6 +648,9 @@
 					</span>
 					<span class="sp-note">
 						The top row picks which input gets which note, the bottom row which three notes.
+						<!-- ⚓ The chosen order spelled out, VISIBLE (Nate 2026-10-26): its
+						     title is hover-only, and a touch screen never sees one. -->
+						<span class="sp-reading">{orderHint($siteSettings.playbackOrder)}</span>
 					</span>
 				</div>
 			{/if}
@@ -669,7 +671,7 @@
 								aria-checked={$siteSettings.playbackSwap === value}
 								onclick={() => {
 									siteSettings.setPlaybackSound({ playbackSwap: value });
-									playback.preview({ swap: value });
+									playback.preview({ swap: value }, ['swap']);
 								}}>{SWAP_STYLE_LABELS[value]}</button
 							>
 						{/each}
@@ -704,42 +706,74 @@
 	<section class="sp-section" id="settings-data">
 		<h2 class="kicker sp-section-title">Your data</h2>
 
-		<!-- Storage joined Backup (2026-10-26): both answer "is my work safe?",
-		     so the browser's answer is the backup's note, and its one action
-		     (Keep my data) stands beside Export when there is one to take. -->
+		<!-- ⚓ The VALUE is bold, never the sentence or its label (Nate
+		     2026-10-26): "never" / "3 days ago" and the count are the reading. -->
 		<div class="sp-row">
 			<span class="sp-name">Backup</span>
-			<span class="sp-ctl sp-ctl--buttons">
+			<span class="sp-ctl">
 				<button class="btn btn--primary" onclick={exportBackup}>
 					<Mark name="download" /> Export…
 				</button>
-				{#if persisted === false && !persistDeclined && !safari}
-					<button class="btn" onclick={askToKeep}>Keep my data</button>
-				{/if}
 			</span>
 			<span class="sp-note">
 				critcalc has no server, so everything you set up lives in this browser. Export a file to
 				keep a copy or move to another device.
 				{#if lastBackup === null}
-					Last backup: never.
+					Last backup: <strong class="sp-value" class:is-stale={stale}>never</strong>.
 				{:else}
-					Last backup: {daysAgo(lastBackup)}.{savedSince > 0 ? ` ${changedSince}` : ''}
-				{/if}
-				{#if persisted}
-					This browser will keep your data until you clear this site’s data yourself.
-				{:else if persisted === null}
-					This browser doesn’t say whether it will keep your data. A backup keeps a copy either way.
-				{:else if persisted === false && safari}
-					Safari may clear your data after a while without a visit. Add critcalc to your Home Screen
-					to keep it, or download a backup.
-				{:else if persisted === false && persistDeclined}
-					This browser declined, so it may still clear your data on its own. A backup keeps a copy.
-				{:else if persisted === false}
-					This browser may clear your data on its own, for example after a while without a visit.
-					Ask it to keep your data, or download a backup.
+					Last backup: <strong class="sp-value" class:is-stale={stale}>{daysAgo(lastBackup)}</strong
+					>.
+					<!-- The space before the block is OUTSIDE it: Svelte trims a
+					     block's own edges (it once rendered "ago.1 saved item"). -->
+					{#if savedSince > 0}
+						<strong class="sp-value"
+							>{savedSince} saved {savedSince === 1 ? 'item' : 'items'}</strong
+						>
+						{savedSince === 1 ? 'has' : 'have'} changed since.
+					{/if}
 				{/if}
 			</span>
 		</div>
+
+		<!-- ⚓ Its own row again (Nate 2026-10-26): the CONTROL column states
+		     the browser's answer, or holds the one action there is. The site
+		     asks on the first save anyway; this is for a decliner, or a
+		     browser that said no silently and may say yes later. -->
+		{#if persisted !== undefined}
+			<div class="sp-row">
+				<span class="sp-name">Storage</span>
+				<span class="sp-ctl">
+					{#if persisted}
+						<span class="sp-status"><Mark name="check" size={14} /> Kept</span>
+					{:else if persisted === null}
+						<span class="sp-status">Unknown</span>
+					{:else if safari}
+						<span class="sp-status">Not kept</span>
+					{:else if persistDeclined}
+						<span class="sp-status">Declined</span>
+					{:else}
+						<button class="btn" onclick={askToKeep}>Keep my data</button>
+					{/if}
+				</span>
+				<span class="sp-note">
+					{#if persisted}
+						This browser will keep your data until you clear this site’s data yourself.
+					{:else if persisted === null}
+						This browser doesn’t say whether it will keep your data. A backup keeps a copy either
+						way.
+					{:else if persisted === false && safari}
+						Safari may clear your data after a while without a visit. Add critcalc to your Home
+						Screen to keep it, or download a backup.
+					{:else if persisted === false && persistDeclined}
+						This browser declined, so it may still clear your data on its own. A backup keeps a
+						copy.
+					{:else if persisted === false}
+						This browser may clear your data on its own, for example after a while without a visit.
+						Ask it to keep your data, or download a backup.
+					{/if}
+				</span>
+			</div>
+		{/if}
 
 		<div class="sp-row">
 			<span class="sp-name">Restore</span>
@@ -945,6 +979,30 @@
 		font-size: var(--fs-md);
 		color: var(--muted);
 		line-height: var(--lh-snug);
+	}
+	/* The note's reading: a value inside the prose is in the ink, so it is
+	   found before the sentence is read; the warning ink only when it is a
+	   problem. */
+	.sp-value {
+		color: var(--text);
+	}
+	.sp-value.is-stale {
+		color: var(--ui-warning);
+	}
+	/* A reading on its own line under a note (the chosen note order). */
+	.sp-reading {
+		display: block;
+		margin-top: 0.3rem;
+		color: var(--text);
+	}
+	/* A state in the control column, where a button would otherwise be. */
+	.sp-status {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
 	}
 	/* An action that belongs to the group, not to one setting. */
 	.sp-row--action {
