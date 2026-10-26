@@ -268,14 +268,16 @@ const CONSTELLATION_KEY = 'critcalc:constellations';
 // session fills them from the active profile (`bindRoster`); their writes go
 // to its sink, ⚓ never to localStorage, which stays as the migration found it
 // (copy-only, §13.1). Read straight off the switch's own key: importing
-// `nextLayout` here would be circular (it imports this module).
+// `nextLayout` here would be circular (it imports this module). ⚠ Since the
+// flip (2026-10-27) the switch is ON unless the key holds '0' — the same test
+// as `nextLayout.ts` `read()`, and the two must change together.
 
 export type RosterPart = 'constellations' | 'ownership' | 'loadout';
 let rosterSink: ((part: RosterPart, value: object) => void) | null = null;
 const underSwitch = (): boolean => {
 	if (!browser) return false;
 	try {
-		return localStorage.getItem('critcalc:nextLayout') === '1' && storageUsable();
+		return localStorage.getItem('critcalc:nextLayout') !== '0' && storageUsable();
 	} catch {
 		return false;
 	}
