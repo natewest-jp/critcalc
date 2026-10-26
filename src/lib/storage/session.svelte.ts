@@ -33,7 +33,7 @@ import {
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
 import { notices, heldKey, announceAfterReload, type NoticeKind } from '$lib/notices.svelte';
-import { colourValue } from '$lib/profileLook';
+import { REAL_COLOURS, colourValue } from '$lib/profileLook';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -63,6 +63,7 @@ import { MIGRATED_PROFILE_NAME, type MigrationResult } from './migrate';
 import { applyBackup, buildEnvelope, downloadEnvelope } from '$lib/utils/settingsBackup';
 import { settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
+import { cleared, expired, inTrash, takenWith, trashRuns, type TrashRun } from './trash';
 import {
 	exclusively,
 	holdDocument,
@@ -204,6 +205,7 @@ class StorageSession {
 		// takes the team's loadout with it, so the team must hold it first.
 		await this.#retireRosterLoadouts(db);
 		if (!meta.guestsMadeAt) await this.#makeGuests(db);
+		await this.#clearExpired(db);
 
 		await this.#loadPlanner(profile);
 		await this.#loadBuilder(profile);
@@ -255,6 +257,8 @@ class StorageSession {
 				location.reload();
 				return;
 			}
+			// Restored from the Trash over there: this tab may save it again.
+			if (msg.kind === 'saved') this.#tombstoned.delete(msg.id);
 			if (msg.store === 'documents') {
 				this.version++;
 				if (msg.kind === 'deleted') void this.#deletedElsewhere(msg.id);
@@ -526,6 +530,18 @@ class StorageSession {
 		// Nothing left to show is a blank, never the first visit's sample.
 		if (this.profile?.current[tool] === id) await this.#setCurrent(db, tool, null);
 		if (showing) await this.#showNext(tool, doc.type);
+		notices.toast('success', 'Moved to Trash', {
+			actions: [
+				{
+					label: 'Undo',
+					run: () =>
+						void this.untrash('documents', id, false).then(async (ok) => {
+							// Back on screen if it was, while its profile still is.
+							if (ok && showing && this.profile?.id === doc.profileId) await this.open(id);
+						})
+				}
+			]
+		});
 	}
 
 	/** A tool's document is gone: the most recent other one, else a blank.
@@ -1548,6 +1564,10 @@ class StorageSession {
 		await tombstone(db, 'teams', id, Date.now());
 		this.#channel?.post({ kind: 'deleted', store: 'teams', id, profileId: this.profile?.id });
 		this.#teamsChanged();
+		this.version++;
+		notices.toast('success', 'Moved to Trash', {
+			actions: [{ label: 'Undo', run: () => void this.untrash('teams', id, false) }]
+		});
 	}
 
 	async #putTeam(db: IDBDatabase, team: TeamRecord): Promise<void> {
@@ -1723,16 +1743,18 @@ class StorageSession {
 		await this.#loadProfiles();
 	}
 
-	/** ⚓ A TOMBSTONE, with every document in it. Theorycraft can't go. */
+	/** ⚓ A TOMBSTONE, with every document in it, all at ONE time: that time
+	 *  is how the Trash knows what the profile took with it (`takenWith`).
+	 *  Theorycraft can't go. */
 	async deleteProfile(id: string): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === THEORYCRAFT_ID) return;
-		const gone = this.profiles.find((p) => p.id === id)?.name ?? 'The account';
-		if (this.profile?.id === id)
-			await this.switchTo(THEORYCRAFT_ID, () => ({
-				kind: 'success',
-				text: `Deleted ${gone}. You’re in Theorycraft now.`
-			}));
+		// The store's copy, not the list's: another tab may have changed it.
+		const gone = await get(db, 'profiles', id);
+		if (!gone || gone.deleted) return;
+		const name = gone.name;
+		const wasActive = this.profile?.id === id;
+		if (wasActive) await this.switchTo(THEORYCRAFT_ID, null);
 		// Another tab may have left the site's pointer on it.
 		if ((await getMeta(db)).activeProfileId === id) {
 			await setMeta(db, { activeProfileId: THEORYCRAFT_ID });
@@ -1749,6 +1771,151 @@ class StorageSession {
 		this.#channel?.post({ kind: 'deleted', store: 'profiles', id });
 		this.version++;
 		await this.#loadProfiles();
+		notices.toast(
+			'success',
+			wasActive ? `Moved ${name} to Trash. You’re in Theorycraft now.` : `Moved ${name} to Trash`,
+			{
+				swatch: colourValue(gone.colour),
+				actions: [
+					{
+						label: 'Undo',
+						run: () =>
+							void this.untrash('profiles', id, false).then(async (ok) => {
+								if (ok && wasActive && this.profile?.id === THEORYCRAFT_ID)
+									await this.switchTo(id, null);
+							})
+					}
+				]
+			}
+		);
+	}
+
+	// ── The Trash (notices design §5; trash.ts) ─────────────────────────────
+
+	/** The Trash, newest first, in runs of one profile. */
+	async trash(): Promise<TrashRun[]> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return [];
+		await this.#clearExpired(db);
+		return trashRuns(await readAll(db), Date.now());
+	}
+
+	/** Clear what has been in the Trash for its days. On every start, and
+	 *  whenever the Trash is read. */
+	async #clearExpired(db: IDBDatabase): Promise<void> {
+		const now = Date.now();
+		const all = await readAll(db);
+		for (const store of ['profiles', 'documents', 'teams'] as const) {
+			const due = (all[store] as (typeof all)[typeof store]).filter((r) => expired(r, now));
+			if (due.length)
+				await putMany(
+					db,
+					store,
+					due.map((r) => cleared(r, now))
+				);
+		}
+	}
+
+	/**
+	 * Put a record back where it came from: the Trash's Restore, and a
+	 * delete's Undo. A rotation or team whose profile is in the Trash brings
+	 * the profile back with it (its Restore says so). `say` toasts where it
+	 * went; an Undo needs no words, the thing is back where it was.
+	 * False when nothing came back (gone already, or no room for a profile).
+	 */
+	async untrash(
+		store: 'profiles' | 'documents' | 'teams',
+		id: string,
+		say = true
+	): Promise<boolean> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return false;
+		const now = Date.now();
+		if (store === 'profiles') return this.#untrashProfile(db, id, now, say);
+
+		const rec = await get(db, store, id);
+		if (!rec || !inTrash(rec, now)) return false;
+		const owner = await get(db, 'profiles', rec.profileId);
+		if (!owner) return false;
+		if (owner.deleted) {
+			// The profile first: if it can't come back, neither can this.
+			if (!(await this.#untrashProfile(db, owner.id, now, false))) return false;
+		}
+		const back = await this.#revive(db, store, id, now);
+		if (!back) return false;
+		if (say) {
+			const p = this.profiles.find((x) => x.id === rec.profileId);
+			if (p) notices.toast('success', `Restored to ${p.name}`, { swatch: colourValue(p.colour) });
+		}
+		return true;
+	}
+
+	/** One record out of the Trash, told to every tab. */
+	async #revive(
+		db: IDBDatabase,
+		store: 'documents' | 'teams',
+		id: string,
+		now: number
+	): Promise<boolean> {
+		const next = await modify(db, store, id, (r) => {
+			if (!r || !r.deleted || r.purged) return null;
+			const { deleted: _, ...live } = r;
+			return { ...live, updatedAt: now } as typeof r;
+		});
+		if (!next) return false;
+		this.#tombstoned.delete(id);
+		this.#channel?.post({ kind: 'saved', store, id, profileId: next.profileId });
+		if (store === 'teams') this.#teamsChanged();
+		this.version++;
+		return true;
+	}
+
+	/** A profile out of the Trash, with what it took with it. Refused at the
+	 *  cap; a colour taken since is swapped for the first free one. */
+	async #untrashProfile(db: IDBDatabase, id: string, now: number, say: boolean): Promise<boolean> {
+		const p = await get(db, 'profiles', id);
+		if (!p || !inTrash(p, now)) return false;
+		if (!this.canAddProfile) {
+			notices.toast(
+				'warning',
+				`${p.name} can’t come back while seven accounts are here. Delete one to make room.`
+			);
+			return false;
+		}
+		const taken = this.colourOwner(p.colour);
+		const colour = taken ? (REAL_COLOURS.find((c) => !this.colourOwner(c)) ?? p.colour) : p.colour;
+		const all = await readAll(db);
+		// Its work first, the profile last: a restore cut short leaves
+		// records in the Trash, never a profile missing half its work.
+		for (const d of takenWith(p, all.documents)) await this.#revive(db, 'documents', d.id, now);
+		for (const t of takenWith(p, all.teams)) await this.#revive(db, 'teams', t.id, now);
+		const { deleted: _, ...live } = p;
+		await put(db, 'profiles', { ...live, colour, updatedAt: now });
+		this.#channel?.post({ kind: 'saved', store: 'profiles', id });
+		await this.#loadProfiles();
+		this.version++;
+		// ⚓ A colour taken since is swapped quietly (Nate 2026-10-26): the
+		// colour is the avatar's frame, not a fact anyone needs told about.
+		if (say) notices.toast('success', `Restored ${p.name}`, { swatch: colourValue(colour) });
+		return true;
+	}
+
+	/** Clear the Trash now (its Empty Trash, asked first by the screen). */
+	async emptyTrash(): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) return;
+		const now = Date.now();
+		const all = await readAll(db);
+		for (const store of ['profiles', 'documents', 'teams'] as const) {
+			const due = (all[store] as (typeof all)[typeof store]).filter((r) => inTrash(r, now));
+			if (due.length)
+				await putMany(
+					db,
+					store,
+					due.map((r) => cleared(r, now))
+				);
+		}
+		this.version++;
 	}
 
 	/**

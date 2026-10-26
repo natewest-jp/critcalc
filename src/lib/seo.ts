@@ -179,6 +179,11 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'What critcalc keeps in your browser, and what leaves it: share links, reports, and visit counts. No accounts, no cookies.'
 	},
+	'/trash': {
+		title: 'Trash',
+		description:
+			'Deleted rotations, lineups, teams, and accounts, kept for 30 days in this browser.'
+	},
 	'/settings': {
 		title: 'Settings',
 		description:
