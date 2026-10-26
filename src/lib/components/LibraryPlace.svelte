@@ -590,7 +590,7 @@
 							{#if more > 0}<span class="lu-more">+{more} more {more === 1 ? 'team' : 'teams'}</span
 								>{/if}
 						</span>
-						<span class="row-meta">
+						<span class="row-meta lu-meta">
 							<!-- The mode only under a name of your own: an unnamed lineup's
 							     label already IS its mode. -->
 							{#if d.name && end.mode}<span>{end.mode}</span>{/if}
@@ -1015,6 +1015,12 @@
 		white-space: nowrap;
 		color: var(--text);
 		font-size: var(--fs-md);
+	}
+	/* The card's foot (when it was saved, whether it is open) hugs the
+	   bottom edge, so it sits on one line across a row of equal-height
+	   cards (Nate 2026-10-26). */
+	.lu-meta {
+		margin-top: auto;
 	}
 	/* Under the portraits, not the lead column. */
 	.lu-more {
