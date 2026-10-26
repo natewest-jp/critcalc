@@ -1898,7 +1898,15 @@ class StorageSession {
 		if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 's') {
 			e.preventDefault();
 			void this.flush().then(() => {
-				if (!this.saveFailed) this.savedAt = Date.now();
+				// A failing save says so again, rather than nothing at all; a
+				// document another tab holds is not being saved here, so it
+				// earns no ✓ (its pill already says why).
+				if (this.saveFailed) return documentBar.showNotice(SAVE_FAILED_NOTICE);
+				const held = (['planner', 'builder'] as const).some((t) => {
+					const id = this.currentId(t);
+					return !!id && this.readOnly.includes(id);
+				});
+				if (!held) this.savedAt = Date.now();
 			});
 		}
 	};

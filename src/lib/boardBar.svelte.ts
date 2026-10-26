@@ -192,25 +192,31 @@ class BoardBarState {
 					const { storageSession } = await import('./storage/session.svelte');
 					switched = await storageSession.toTheorycraft();
 				}
-				this.#placeTeam(ids);
+				// One slot: the arrival's notice would replace a refusal said a
+				// moment before, so a team that didn't fit is said LAST.
+				const added = this.#placeTeam(ids, switched);
 				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
+				if (!added && switched) documentBar.showNotice('The lineup is full');
 			});
 			return;
 		}
 		this.#placeTeam(ids);
 	}
 
-	#placeTeam(ids: string[]) {
+	/** False when the lineup had no room. `quiet` leaves the notices to the
+	 *  caller, which has an arrival to say as well. */
+	#placeTeam(ids: string[], quiet = false): boolean {
 		const board = boards.activeBoard;
 		const slots: TeamSlot[] = ids.slice(0, 4);
 		const empty = board.teams.find((t) => t.slots.every((s) => s === null));
 		if (empty) boards.setTeam(board.id, empty.id, slots);
 		// A battlefield board's teams are the game's — only Custom grows.
 		else if (board.preset !== 'custom' || !boards.addTeam(board.id, slots)) {
-			documentBar.showNotice('The lineup is full');
-			return;
+			if (!quiet) documentBar.showNotice('The lineup is full');
+			return false;
 		}
-		documentBar.showNotice('Team added to the lineup');
+		if (!quiet) documentBar.showNotice('Team added to the lineup');
+		return true;
 	}
 
 	/** Copy a `?b=` link to the active board. Teams and levels travel, pins

@@ -47,11 +47,21 @@
 		pictureUrl(pictureOf(p), $siteSettings.useNewOutfits, p.twin);
 
 	let busy = $state(false);
+	/** A move that threw: the dialog stays, says so, and Move works again. */
+	let failed = $state(false);
 	async function confirm(): Promise<void> {
 		if (!target || busy) return;
 		busy = true;
-		await storageSession.moveTo(id, target.id);
-		moveRequest.id = null;
+		failed = false;
+		try {
+			await storageSession.moveTo(id, target.id);
+			moveRequest.id = null;
+		} catch (err) {
+			console.error('[critcalc] move failed', err);
+			failed = true;
+		} finally {
+			busy = false;
+		}
 	}
 	const cancel = () => (moveRequest.id = null);
 
@@ -118,6 +128,10 @@
 			<p class="note note--quiet">
 				If this {kind} depends on those levels, keep it in Theorycraft.
 			</p>
+		{/if}
+
+		{#if failed}
+			<p class="note note--failed" role="alert">Couldn’t move it. Try again.</p>
 		{/if}
 
 		<div class="actions">
@@ -196,6 +210,9 @@
 	}
 	.note--quiet {
 		color: var(--muted);
+	}
+	.note--failed {
+		color: var(--ui-danger);
 	}
 	.changes {
 		margin: 0 0 0.8rem;

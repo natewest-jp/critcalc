@@ -66,10 +66,15 @@
 
 	// The brief status (⚓ 2026-10-21): Saving… → ✓ Saved, then it clears.
 	let justSaved = $state(false);
+	// ⚠ The top bar is mounted twice (off the tools and on them), and both
+	// stamps outlive it on the session: a mount reads only what time is LEFT,
+	// or every tool switch replays a save, and a switch, that already passed.
+	const left = (at: number, ms: number) => at + ms - Date.now();
 	$effect(() => {
-		if (!storageSession.savedAt) return;
+		const at = storageSession.savedAt;
+		if (!at || left(at, SAVED_SHOWN_MS) <= 0) return;
 		justSaved = true;
-		const t = setTimeout(() => (justSaved = false), SAVED_SHOWN_MS);
+		const t = setTimeout(() => (justSaved = false), left(at, SAVED_SHOWN_MS));
 		return () => clearTimeout(t);
 	});
 
@@ -93,9 +98,9 @@
 		if (!at || !p) return;
 		// Reduced motion: no fade, so no flash; the ring carries the meaning.
 		const ms = motion(WASH_MS);
-		if (!ms) return;
+		if (!ms || left(at, ms) <= 0) return;
 		cue = { key: at, colour: colourValue(p.colour), name: p.name };
-		const t = setTimeout(() => (cue = null), ms);
+		const t = setTimeout(() => (cue = null), left(at, ms));
 		return () => clearTimeout(t);
 	});
 
