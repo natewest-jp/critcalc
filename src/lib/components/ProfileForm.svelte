@@ -396,7 +396,7 @@
 					</span>
 					<button class="btn" onclick={() => (picking = true)}>Change…</button>
 				</span>
-				<span class="sp-note">Any character or quest avatar</span>
+				<span class="sp-note">Any character or quest avatar.</span>
 			</div>
 
 			<div class="sp-row">
