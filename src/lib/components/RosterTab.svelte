@@ -306,7 +306,7 @@
 		{ keys: ['←', '→', '↑', '↓'], does: 'move' },
 		{ keys: ['O'], does: 'owned' },
 		{ keys: ['X'], does: 'not owned' },
-		{ keys: ['Space'], does: 'switch' },
+		{ keys: ['Space'], does: 'owned or not' },
 		{ keys: ['W'], does: 'wishlist' },
 		{ keys: ['0', '–', '6'], does: 'constellation' },
 		{ keys: [MOD, 'Z'], does: 'undo' }
@@ -608,7 +608,9 @@
 		<div class="ros-scroll scroll-fade" bind:this={listEl} use:scrollFade>
 			{#if editing && ownedCount === 0}
 				<p class="ros-hint">
-					Mark the characters you own: click a portrait, or select one and use the keys above.
+					Mark the characters you own by <span class="ros-by-pointer">clicking</span><span
+						class="ros-by-touch">tapping</span
+					> their portraits.
 				</p>
 			{/if}
 
@@ -659,7 +661,11 @@
 									class:is-active={m === 'wishlist'}
 									aria-pressed={m === 'wishlist'}
 									aria-label="Wishlist"
-									title={editing ? 'Wishlist (W)' : undefined}
+									title={editing
+										? m === 'wishlist'
+											? 'Remove from wishlist (W)'
+											: 'Add to wishlist (W)'
+										: undefined}
 									tabindex="-1"
 									onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
 									><Mark name="wish" size={12} filled={m === 'wishlist' && 'solid'} /></button
@@ -723,7 +729,7 @@
 		overflow-y: auto;
 		padding: 0.5rem 6px 1.25rem 4px;
 		/* A tile the arrows bring into view stops clear of the keys bar. */
-		scroll-padding-block-end: 4rem;
+		scroll-padding-block-end: 5.5rem;
 	}
 	/* The filters sit ON the grid (Teams' details), and the scroller starts at
 	   their edge, never under it (TeamDetail .td-filters, 2026-10-26). */
@@ -791,21 +797,29 @@
 	   pointer passes through it. The fade is linear (the fade law) on the
 	   surface clock. */
 	.ros-keys {
+		/* Centred by auto margins between two zero insets, ⛔ never a
+		   translate: it fades, and an opacity fade on a transform-placed box
+		   dances in WebKit (the sub-pixel laws). Lifted off the bottom edge so
+		   it sits in the eye line (⚓ Nate), but low, never mid-grid: there it
+		   would cover the tiles you are arrowing through. */
 		position: absolute;
 		z-index: 2;
-		left: 4px;
-		bottom: 0.75rem;
+		left: 0;
+		right: 0;
+		bottom: 2rem;
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.4rem 1.25rem;
+		justify-content: center;
+		gap: 0.5rem 1.5rem;
+		width: max-content;
 		max-width: calc(100% - 8px);
-		margin: 0;
-		padding: 8px 14px;
+		margin: 0 auto;
+		padding: 10px 18px;
 		border-radius: var(--r-sm);
 		background: var(--surface-raised);
 		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
 		color: var(--muted);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		pointer-events: none;
 		opacity: 0;
 		visibility: hidden;
@@ -824,16 +838,16 @@
 		gap: 4px;
 	}
 	.ros-key kbd {
-		min-width: 22px;
-		padding: 0 6px;
+		min-width: 26px;
+		padding: 0 7px;
 		border-radius: var(--r-xs);
 		background: var(--surface-hover);
 		color: var(--text);
 		/* Body, not mono: in the mono face a capital O and a zero are twins. */
 		font-family: var(--font-body);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		line-height: 22px;
+		line-height: 26px;
 		text-align: center;
 	}
 	.ros-key-dash {
@@ -1036,9 +1050,18 @@
 
 	/* No keyboard to speak of on a touch screen: the legend would be noise.
 	   (A different AXIS from the width table — see responsive survey.) */
+	.ros-by-touch {
+		display: none;
+	}
 	@media (hover: none) {
 		.ros-keys {
 			display: none;
+		}
+		.ros-by-pointer {
+			display: none;
+		}
+		.ros-by-touch {
+			display: inline;
 		}
 		/* No hover, so the wishlist star would never appear: while editing it
 		   always shows, quietly. */

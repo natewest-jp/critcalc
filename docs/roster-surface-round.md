@@ -48,7 +48,15 @@ hands-on with Nate, one look per step.
    its word below compact, the band rule); the strip's count is hidden below
    compact (it spent a row alone, Teams' details show none). 0 overflow.
    At 320 the strip is three rows, as on Teams.
-8. Copy, as a numbered list.
+8. ✅ Copy (⚓ Nate, all proposals accepted): the empty-roster hint is "Mark
+   the characters you own by clicking their portraits." ("tapping" on touch);
+   Space is "owned or not"; the wish mark's tooltip follows its state ("Add
+   to / Remove from wishlist (W)"); the rest kept.
+9. ✅ The keys bar, again (⚓ Nate: too easy to overlook at the bottom
+   corner): CENTRED on the grid by auto margins (⛔ never a translate: it
+   fades, the sub-pixel laws), lifted 2rem off the bottom edge, and one more
+   size up. Kept LOW, not mid-grid: there it would cover the tiles being
+   arrowed through.
 
 ## Found on the way
 
