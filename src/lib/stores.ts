@@ -509,19 +509,12 @@ export function bindRoster(
 
 const SITE_SETTINGS_KEY = 'critcalc:siteSettings';
 
-export const UI_SIZES = ['auto', 'small', 'medium', 'large'] as const;
-export type UiSize = (typeof UI_SIZES)[number];
-
 type SiteSettings = {
 	useNewOutfits: boolean;
 	/** The planner's opt-in coverage strips under the notation box (⚓ Nate
 	 *  2026-09-23): OFF by default — they make the tool taller and busier, so
 	 *  they are a Settings choice, ⛔ never a toolbar button. */
 	showCoverageStrips: boolean;
-	/** ⚓ The interface size (design §12 Q21, Nate 2026-10-22): `auto` picks by
-	 *  window width (app.css § THE INTERFACE SIZE); a pin is a desktop choice,
-	 *  and the phone is Small whatever is pinned. Per person, not per profile. */
-	uiSize: UiSize;
 	/** The one-time "Saved to Theorycraft" notice for the first routed
 	 *  what-if copy has been shown (design §4.6). */
 	seenGuestNotice: boolean;
@@ -705,6 +698,9 @@ export const PLAYBACK_SOUND_DEFAULTS = {
 	playbackVolume: 0.7
 } as const;
 
+/** A typical "decent connection"; 9 swap-delay frames (60 + 90 ms). */
+export const SWAP_PING_DEFAULT = 60;
+
 export type HumanTimingMode = 'padding' | 'animations' | 'both';
 
 export const HUMAN_TIMING_DEFAULTS = {
@@ -723,12 +719,11 @@ export const HUMAN_TIMING_DEFAULTS = {
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	showCoverageStrips: false,
-	uiSize: 'auto',
 	seenGuestNotice: false,
 	seenLinksNotice: false,
 	travelerVariant: 'aether',
 	...HUMAN_TIMING_DEFAULTS,
-	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
+	swapPing: SWAP_PING_DEFAULT,
 	...TIMELINE_LAYER_DEFAULTS,
 	showBenchRow: BENCH_ROW_DEFAULT,
 	...PLAYBACK_SOUND_DEFAULTS
@@ -848,9 +843,6 @@ function createSiteSettingsStore() {
 		subscribe: store.subscribe,
 		setUseNewOutfits(value: boolean) {
 			store.update((prev) => persist({ ...prev, useNewOutfits: value }));
-		},
-		setUiSize(value: UiSize) {
-			store.update((prev) => persist({ ...prev, uiSize: value }));
 		},
 		/** A one-time notice has done its job: it is not shown again. */
 		markSeen(key: 'seenGuestNotice' | 'seenLinksNotice') {

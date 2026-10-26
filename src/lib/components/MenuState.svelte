@@ -16,7 +16,7 @@
 	import { fade } from 'svelte/transition';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { T_QUICK, motion, introLive, outroInert, scrollBehavior } from '$lib/motion';
 	import Mark from '$lib/components/Mark.svelte';
 	import type { MarkName } from '$lib/marks.generated';
 	import { siteSettings } from '$lib/stores';
@@ -43,7 +43,7 @@
 	import RosterTab from './RosterTab.svelte';
 	import TeamsPlace from './TeamsPlace.svelte';
 	import ProfileForm from './ProfileForm.svelte';
-	import SettingsPanel from './SettingsPanel.svelte';
+	import SettingsPanel, { SETTINGS_GROUPS } from './SettingsPanel.svelte';
 	import TrashPlace from './TrashPlace.svelte';
 	import { trashCount } from '$lib/storage/trash';
 
@@ -175,9 +175,42 @@
 		if (mainEl) mainEl.scrollTop = 0;
 	});
 
+	// ── Settings' groups (2026-10-26): listed under Settings while you are
+	// in it, as Help's chapters are, but they are places on ONE page, so an
+	// item scrolls there and the current one follows the scroll. As with
+	// Help, the heading IS the first group (Settings lights at the top of the
+	// page) and only the groups after it list below.
+	type SettingsGroupId = (typeof SETTINGS_GROUPS)[number]['id'];
+	let settingsAt = $state<SettingsGroupId>(SETTINGS_GROUPS[0].id);
+	const groupEl = (id: string) => mainEl?.querySelector<HTMLElement>(`#settings-${id}`);
+	function toSettingsGroup(id: SettingsGroupId): void {
+		groupEl(id)?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+	}
+	function spySettings(): void {
+		if (!mainEl) return;
+		const top = mainEl.getBoundingClientRect().top;
+		let at: SettingsGroupId = SETTINGS_GROUPS[0].id;
+		for (const g of SETTINGS_GROUPS) {
+			const el = groupEl(g.id);
+			if (el && el.getBoundingClientRect().top - top <= mainEl.clientHeight / 3) at = g.id;
+		}
+		// The last group may never reach the line on a tall screen: at the
+		// foot of the page, the foot's group is the one you are reading.
+		if (mainEl.scrollTop + mainEl.clientHeight >= mainEl.scrollHeight - 2)
+			at = SETTINGS_GROUPS[SETTINGS_GROUPS.length - 1].id;
+		settingsAt = at;
+	}
+	$effect(() => {
+		if (section === 'settings') settingsAt = SETTINGS_GROUPS[0].id;
+	});
+
 	function go(e: MouseEvent, it: SectionItem): void {
 		if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 		e.preventDefault();
+		if (it.id === 'settings' && section === 'settings') {
+			toSettingsGroup(SETTINGS_GROUPS[0].id);
+			return;
+		}
 		menu.show(it.id);
 	}
 
@@ -349,14 +382,29 @@
 
 		<!-- Settings stands apart at the foot, as it does in most apps. -->
 		<div class="side-foot">
-			{#each footItems as it (it.id)}{@render sideItem(it)}{/each}
+			{#each footItems as it (it.id)}
+				{@render sideItem(it)}
+				{#if it.id === 'settings' && section === 'settings'}
+					<div class="side-sub">
+						{#each SETTINGS_GROUPS.slice(1) as g (g.id)}
+							<button
+								class="side-item side-subitem"
+								class:is-on={settingsAt === g.id}
+								onclick={() => toSettingsGroup(g.id)}>{g.label}</button
+							>
+						{/each}
+					</div>
+				{/if}
+			{/each}
 		</div>
 	</nav>
 
 	{#snippet sideItem(it: SectionItem)}
+		{@const on =
+			section === it.id && (it.id !== 'settings' || settingsAt === SETTINGS_GROUPS[0].id)}
 		<a
 			class="side-item"
-			class:is-on={section === it.id}
+			class:is-on={on}
 			href={it.path}
 			aria-current={section === it.id ? 'page' : undefined}
 			onclick={(e) => go(e, it)}
@@ -372,7 +420,13 @@
 	<!-- The click handler only re-routes links inside it (keyboard activation
 	     of a link is a click too). -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
-	<main class="main" class:is-fill={fills} bind:this={mainEl} onclick={onMainClick}>
+	<main
+		class="main"
+		class:is-fill={fills}
+		bind:this={mainEl}
+		onclick={onMainClick}
+		onscroll={section === 'settings' ? spySettings : undefined}
+	>
 		<!-- Conditions (notices §3.3), at the top of the content. -->
 		<NoticeBanners class="menu-banners" />
 		{#if !headless}
@@ -434,7 +488,7 @@
 					<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
 				{/key}
 			{:else if section === 'settings'}
-				<div class="settings"><SettingsPanel /></div>
+				<SettingsPanel />
 			{:else if section === 'trash'}
 				<TrashPlace />
 			{:else if chapter && ChapterC}
@@ -822,9 +876,6 @@
 		.margin {
 			display: none;
 		}
-	}
-	.settings {
-		max-width: 40rem;
 	}
 	/* Paper as a patch (§6.4): the invitation is the one card on this page. */
 	.invite {

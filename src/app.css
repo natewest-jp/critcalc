@@ -1543,10 +1543,10 @@
      Small   11px · 28 · 48 — the phone, always
      Medium  12px · 32 · 56 — the default (demo 1's values)
      Large   13px · 36 · 64 — very wide screens (64 is today's chrome height)
-   AUTO is no attribute: Small below `compact`, Large from `huge`, else Medium
-   (breakpoints.ts). Settings can pin one on desktop (`html[data-ui-size]`);
-   below `compact` Small wins whatever is pinned, so the phone has no choice
-   to make. 🎛️ Nate's to tune by eye. */
+   Picked by width alone: Small below `compact`, Large from `huge`, else
+   Medium (breakpoints.ts). ↻ The Settings pin RETIRED 2026-10-26 (⚓ Nate):
+   it sized only these two bars, a weaker browser zoom, and zoom already
+   moves the width these queries read. 🎛️ Nate's to tune by eye. */
 :root {
 	--ui-ctl-h: 32px;
 	--ui-ctl-fs: 0.75rem;
@@ -1561,31 +1561,20 @@
 }
 /* breakpoints.ts `huge` */
 @media (min-width: 2200px) {
-	:root:not([data-ui-size]) {
+	:root {
 		--ui-ctl-h: 36px;
 		--ui-ctl-fs: 0.8125rem;
 		--ui-bar-h: 64px;
 	}
-}
-:root[data-ui-size='small'] {
-	--ui-ctl-h: 28px;
-	--ui-ctl-fs: 0.6875rem;
-	--ui-bar-h: 48px;
-}
-:root[data-ui-size='large'] {
-	--ui-ctl-h: 36px;
-	--ui-ctl-fs: 0.8125rem;
-	--ui-bar-h: 64px;
 }
 /* ⚓ THE NEW LAYOUT (build plan §13): under the switch the top bar is
    --ui-bar-h tall, and everything that reserves the bar reads --chrome-h. */
 :root[data-next] {
 	--chrome-h: var(--ui-bar-h);
 }
-/* breakpoints.ts `compact` — after the pins, so it wins on a phone. */
+/* breakpoints.ts `compact` */
 @media (max-width: 40rem) {
-	:root,
-	:root[data-ui-size] {
+	:root {
 		--ui-ctl-h: 28px;
 		--ui-ctl-fs: 0.6875rem;
 		--ui-bar-h: 48px;

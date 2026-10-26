@@ -18,7 +18,7 @@ import { NOTE_SET_IDS, ORDER_IDS, SOUND_MODES, SWAP_STYLES, VOICE_IDS } from '$l
 import { notationHasActions } from '$lib/utils/notationEdit';
 import { MAX_NOTATION_CHARS } from '$lib/utils/tokenizer';
 import { RECENTLY_CLOSED_CAP, TAB_LIMIT } from '$lib/tabSet';
-import { UI_SIZES, type LoadoutEntry } from '$lib/stores';
+import type { LoadoutEntry } from '$lib/stores';
 import { recordBackup } from '$lib/utils/storageDurability';
 
 // Must stay in sync with the private key constants in stores.ts.
@@ -118,9 +118,6 @@ export function sanitizeSiteSettings(v: unknown): Record<string, unknown> | unde
 	if (typeof v.showCoverageStrips === 'boolean') out.showCoverageStrips = v.showCoverageStrips;
 	if (typeof v.seenGuestNotice === 'boolean') out.seenGuestNotice = v.seenGuestNotice;
 	if (typeof v.seenLinksNotice === 'boolean') out.seenLinksNotice = v.seenLinksNotice;
-	if (typeof v.uiSize === 'string' && (UI_SIZES as readonly string[]).includes(v.uiSize)) {
-		out.uiSize = v.uiSize;
-	}
 	// The layers persist only what was TOGGLED (2026-10-14), the rule of
 	// stores.readChosenLayers. Top-level showAuraLane/showTimelineBuffs keys
 	// were written by every save before then, chosen or not, and say nothing.
