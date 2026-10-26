@@ -229,10 +229,20 @@ Not notices, the same problem: lint messages, disabled-button reasons
 verdicts and ellipsized text explain themselves only in a `title`, which
 touch never shows and nobody finds.
 
-## 9. Open for Nate
+## 9. Rulings so far (Nate, 2026-10-26, after the lab)
 
-1. The toast home: bottom centre on every surface?
-2. Toast times (4 / 6 / 8 s) and the stack of three.
-3. Paper for error toasts and for all banners; glass for the rest.
-4. Can a warning banner be dismissed for the session?
-5. The what-if fork toasting on every fork rather than once ever.
+- ✅ Glass for routine toasts, paper for errors and all banners: "parchment
+  is really noticeable".
+- ✅ The countdown is kept, and pausing on hover.
+- ✅ Banners at the top, toasts at the bottom: the placement logic holds on
+  both surfaces at every width.
+- ✅ Corners at `--r-md` (6px).
+- ✅ The paper UI colour set, with the red-shifted warning (`#c85d02`),
+  landed in app.css `.ctx-light`.
+- ⏳ The timer: **Ring** (an arc round the ✕) or **Edge** (the severity
+  rule draining). Kept open while the rest settles; the build carries both
+  behind one knob.
+
+## 10. Still open
+
+See the list put to Nate on 2026-10-26 (the session log); answers land here.
