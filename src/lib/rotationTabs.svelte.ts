@@ -276,6 +276,17 @@ class RotationTabsState {
 		this.#notation = notation;
 	}
 
+	/**
+	 * ⚓ May the person change the document on screen? False while another
+	 * tab holds it (notices round, 2026-10-26): every edit the planner offers
+	 * asks here first, and a refusal calls the "Open in another tab" banner
+	 * back. Set by the storage session; a plain field, not state.
+	 */
+	canEdit: () => boolean = () => true;
+	/** The document on screen is held by another tab: its Edit here, for the
+	 *  editor's own locked line. Set by the tools layout. */
+	held = $state<{ editHere: () => void } | null>(null);
+
 	tabLoadout = $state<Record<string, LoadoutEntry>>({});
 	tabCon = $state<Record<string, number>>({});
 
@@ -590,6 +601,7 @@ class RotationTabsState {
 	}
 
 	resetActiveTab(): void {
+		if (!this.canEdit()) return;
 		this.setDocument('', emptySeating());
 		this.tabLoadout = {};
 		this.tabCon = {};
@@ -621,6 +633,7 @@ class RotationTabsState {
 	 * character they show again only if that character returns.
 	 */
 	clearDocument(): void {
+		if (!this.canEdit()) return;
 		this.setDocument('', emptySeating());
 		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, sample: undefined } : t));
 	}
@@ -653,6 +666,7 @@ class RotationTabsState {
 	 * A character already seated elsewhere is a no-op, as before.
 	 */
 	setSlot(index: number, id: string | null): void {
+		if (!this.canEdit()) return;
 		const want = id === 'blank' ? null : id;
 		const outgoing = this.seats[index] ?? null;
 		if (outgoing === want) return;
@@ -676,6 +690,7 @@ class RotationTabsState {
 	// -------------------------------------------------------------------------
 
 	setTabCon(charId: string, level: number): void {
+		if (!this.canEdit()) return;
 		this.tabCon = { ...this.tabCon, [charId]: level };
 		// ⚓ A level set by hand ends a sync — the badge reads itself (§10.4).
 		if (this.activeTab.synced) {
@@ -696,6 +711,7 @@ class RotationTabsState {
 	}
 
 	setTabLoadout(charId: string, update: Partial<LoadoutEntry>): void {
+		if (!this.canEdit()) return;
 		this.tabLoadout = {
 			...this.tabLoadout,
 			[charId]: { ...(this.tabLoadout[charId] ?? {}), ...update }
@@ -706,6 +722,7 @@ class RotationTabsState {
 	 *  layer shows through): the bench's writes under a team, already pruned
 	 *  of what the team supplies. */
 	putTabLoadout(charId: string, entry: LoadoutEntry | null): void {
+		if (!this.canEdit()) return;
 		const next = { ...this.tabLoadout };
 		if (entry) next[charId] = entry;
 		else delete next[charId];

@@ -32,7 +32,7 @@ import {
 	slotsFromNotation,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
-import { notices } from '$lib/notices.svelte';
+import { notices, heldKey } from '$lib/notices.svelte';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -694,6 +694,7 @@ class StorageSession {
 	async #loadPlanner(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'planner');
 		rotationTabs.persistSink = (tabs, activeId) => this.#queue({ planner: { tabs, activeId } });
+		rotationTabs.canEdit = () => this.#mayEdit(this.currentId('planner'));
 		if (profile.current.planner === null) {
 			this.#showBlank('planner');
 		} else if (doc?.type === 'rotation') {
@@ -716,6 +717,7 @@ class StorageSession {
 	async #loadBuilder(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'builder');
 		boards.persistSink = (list, activeId) => this.#queue({ builder: { boards: list, activeId } });
+		boards.canEdit = (id) => this.#mayEdit(id);
 		if (profile.current.builder === null) {
 			this.#showBlank('builder');
 		} else if (doc?.type === 'lineup') {
@@ -745,6 +747,14 @@ class StorageSession {
 	// ── The locks ───────────────────────────────────────────────────────────
 
 	/** Hold a document if no other tab does; else show it without saving. */
+	/** A document another tab holds is READ-ONLY here (notices round): an
+	 *  edit is refused, and the banner comes back to say why. */
+	#mayEdit(id: string | null): boolean {
+		if (!id || !this.readOnly.includes(id)) return true;
+		notices.recall(heldKey(id));
+		return false;
+	}
+
 	async #hold(id: string): Promise<boolean> {
 		if (this.#locks.has(id)) return true;
 		if (this.readOnly.includes(id)) return false;

@@ -25,7 +25,7 @@
 	import { library } from '$lib/library.svelte';
 	import { registerRosterOpener } from '$lib/components/chromeModal.svelte';
 	import TabLimitDialog from '$lib/components/TabLimitDialog.svelte';
-	import HeldElsewhere from '$lib/components/HeldElsewhere.svelte';
+	import { notices, heldKey } from '$lib/notices.svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import { T_QUICK } from '$lib/motion';
 	import type { storageSession as StorageSessionT } from '$lib/storage/session.svelte';
@@ -60,6 +60,36 @@
 	// new store instead: the profile's current rotation and lineup, autosaved.
 	// Loaded on demand, so with the switch off none of it is downloaded.
 	let session = $state<typeof StorageSessionT | null>(null);
+
+	// ⚓ THE TWO-TAB RULE (§13.3), as a BANNER (notices §3.3): the document on
+	// screen is held by another tab, so this one is read-only. The warning can
+	// be put away for the session (two tabs side by side on a stream); an edit
+	// calls it back (`rotationTabs.canEdit`). A new hold shows it again.
+	$effect(() => {
+		const s = session;
+		const id =
+			tool?.path === '/builder'
+				? boards.activeBoardId
+				: tool?.path === '/planner'
+					? rotationTabs.activeTabId
+					: null;
+		if (!s || !id || !s.readOnly.includes(id)) return;
+		const key = heldKey(id);
+		const editHere = () => s.editHere(id);
+		notices.banner({
+			key,
+			kind: 'warning',
+			lead: 'Open in another tab.',
+			body: 'This tab can look but not change it.',
+			actions: [{ label: 'Edit here', run: editHere }],
+			dismissable: true
+		});
+		if (tool?.path === '/planner') rotationTabs.held = { editHere };
+		return () => {
+			notices.clearBanner(key);
+			rotationTabs.held = null;
+		};
+	});
 	/** The top bar (phase 2b), loaded with the session. While the switch is on
 	 *  and it has not arrived, the chrome mount shows NOTHING rather than
 	 *  flashing the old bar. */
@@ -1184,19 +1214,6 @@
 			onCancel={() => documentBar.cancelRoom()}
 		/>
 	{/key}
-{/if}
-
-<!-- The two-tab rule (§13.3): the document on screen is held by another tab. -->
-{#if session}
-	{@const shown =
-		tool?.path === '/builder'
-			? boards.activeBoardId
-			: tool?.path === '/planner'
-				? rotationTabs.activeTabId
-				: null}
-	{#if shown && session.readOnly.includes(shown)}
-		<HeldElsewhere onEditHere={() => session?.editHere(shown)} />
-	{/if}
 {/if}
 
 <!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing

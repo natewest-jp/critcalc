@@ -4061,6 +4061,17 @@
 		use:pinWatch
 		use:dockable={dockOn}
 	>
+		{#if rotationTabs.held}
+			<!-- Held by another tab: said HERE too, where the typing is refused
+			     (notices round) — the banner is up at the toolbar, far from a
+			     phone's dock. -->
+			{@const held = rotationTabs.held}
+			<div class="rp-held" role="status">
+				<Mark name="locked" size={14} />
+				<span class="rp-held-text">Open in another tab, so this tab can’t change it.</span>
+				<button class="btn btn--sm btn--primary" onclick={held.editHere}>Edit here</button>
+			</div>
+		{/if}
 		{#if dockOn && !dockOpen}
 			<button class="rp-dock-strip" type="button" aria-label="Edit the notation" onclick={openDock}>
 				<span class="rp-dock-tail" class:rp-dock-tail--empty={!tailSpans.length}>
@@ -5831,6 +5842,23 @@
 		padding-left: calc(var(--rp-frame-pad-x) + var(--rp-lane-name-inset));
 	}
 
+	/* Its own line across the composer, above the editor. */
+	.rp-composer:has(.rp-held) {
+		flex-wrap: wrap;
+	}
+	.rp-held {
+		flex-basis: 100%;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.35rem 0.5rem 0.5rem;
+		font-size: var(--fs-lg);
+		color: var(--ui-warning);
+	}
+	.rp-held-text {
+		flex: 1;
+		color: var(--text);
+	}
 	.rp-composer {
 		display: flex;
 		align-items: center;

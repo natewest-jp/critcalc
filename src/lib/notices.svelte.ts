@@ -15,6 +15,7 @@
  * erase "Couldn't save"): toasts queue, banners stack. ⚓ Text is body size.
  */
 
+import { untrack } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
 
 export type NoticeKind = 'success' | 'info' | 'warning' | 'error';
@@ -113,6 +114,12 @@ class Notices {
 			paused: false
 		};
 		if (opts.onGone) this.#onGone.set(t.id, opts.onGone);
+		untrack(() => this.#push(t));
+		if (ms !== null) this.#arm(t.id, ms);
+		return t.id;
+	}
+
+	#push(t: Toast): void {
 		let list = [...this.toasts, t];
 		while (list.length > MAX_TOASTS) {
 			const drop = list.find((x) => x.ms !== null) ?? list[0];
@@ -120,8 +127,6 @@ class Notices {
 			list = list.filter((x) => x !== drop);
 		}
 		this.toasts = list;
-		if (ms !== null) this.#arm(t.id, ms);
-		return t.id;
 	}
 
 	dismiss(id: number): void {
@@ -179,15 +184,21 @@ class Notices {
 
 	/** Raise (or update) the banner for a condition that is now true. */
 	banner(b: Banner): void {
-		const i = this.#banners.findIndex((x) => x.key === b.key);
-		if (i < 0) this.#banners = [...this.#banners, b];
-		else this.#banners[i] = b;
+		// ⚠ A command never subscribes its caller: an effect that raises a
+		// banner must not re-run because the list changed (it looped).
+		untrack(() => {
+			const i = this.#banners.findIndex((x) => x.key === b.key);
+			if (i < 0) this.#banners = [...this.#banners, b];
+			else this.#banners[i] = b;
+		});
 	}
 
 	/** The condition is over: the banner goes, and so does its dismissal. */
 	clearBanner(key: string): void {
-		this.#banners = this.#banners.filter((x) => x.key !== key);
-		this.#dismissed.delete(key);
+		untrack(() => {
+			this.#banners = this.#banners.filter((x) => x.key !== key);
+			this.#dismissed.delete(key);
+		});
 	}
 
 	/** Put a warning away for the session. */
@@ -199,8 +210,10 @@ class Notices {
 	/** Something tried to do what the condition forbids: the banner comes
 	 *  back if it was put away, and nudges. */
 	recall(key: string): void {
-		this.#dismissed.delete(key);
-		this.nudges[key] = (this.nudges[key] ?? 0) + 1;
+		untrack(() => {
+			this.#dismissed.delete(key);
+			this.nudges[key] = (this.nudges[key] ?? 0) + 1;
+		});
 	}
 
 	has(key: string): boolean {
@@ -225,3 +238,6 @@ class Notices {
 }
 
 export const notices = new Notices();
+
+/** The "Open in another tab" banner's key, per document. */
+export const heldKey = (id: string): string => `held:${id}`;

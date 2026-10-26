@@ -264,6 +264,9 @@ class BoardsState {
 	 *  the current one) until its first edit pins it (§11.6 item 4). */
 	boards = $state<Board[]>([makeBoard('Lineup 1', 'stygian')]);
 	activeBoardId = $state<string>(this.boards[0].id);
+	/** ⚓ May this board be changed? False while another tab holds it
+	 *  (rotationTabs.canEdit's rule). Set by the storage session. */
+	canEdit: (id: string) => boolean = () => true;
 	restored = $state(false);
 
 	get activeBoard(): Board {
@@ -401,6 +404,7 @@ class BoardsState {
 	// ── Teams ───────────────────────────────────────────────────────────────
 
 	#updateBoard(id: string, fn: (b: Board) => Board): void {
+		if (!this.canEdit(id)) return;
 		this.boards = this.boards.map((b) => (b.id === id ? fn(b) : b));
 	}
 
