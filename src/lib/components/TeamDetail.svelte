@@ -15,10 +15,14 @@
 
   ⚓ One team per SET of four (§3, kept 2026-10-25): a set that is already a
   team is said at once, naming it, and Save waits. Everything is a draft until
-  Save: Cancel and Escape drop it. Strings are working copy.
+  Save: Cancel and Escape drop it. Back asks first (a guard entry, below).
+  Strings are working copy.
 -->
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { page } from '$app/state';
+	import { pushState } from '$app/navigation';
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import TeamMemberPortrait from './TeamMemberPortrait.svelte';
@@ -157,7 +161,41 @@
 	}
 
 	// ── Leaving ─────────────────────────────────────────────────────────────
-	const leave = () => history.back();
+	/** Back over the guard entry too, when there is one. */
+	const leave = () => history.go(page.state.teamGuard ? -2 : -1);
+
+	// ── Back with unsaved changes ───────────────────────────────────────────
+	// The details are a SHALLOW entry, and SvelteKit runs no beforeNavigate
+	// for a shallow pop, so nothing could stop Back from dropping the draft.
+	// Once there is something to lose, a guard entry goes on top: Back pops
+	// the guard instead of the details, and the details ask. An untouched new
+	// team has nothing to lose, though `dirty` (which arms Add team) is true.
+	const unsaved = $derived(start ? dirty : !!name.trim() || slots.some((s) => s !== null));
+	let asking = $state(false);
+	let guardUp = false;
+	function pushGuard(): void {
+		pushState('', {
+			...page.state,
+			teamGuard: true,
+			menuDepth: (page.state.menuDepth ?? 0) + 1
+		});
+	}
+	$effect(() => {
+		if (page.state.teamGuard) {
+			guardUp = true;
+			return;
+		}
+		if (!guardUp) {
+			if (unsaved) pushGuard();
+			return;
+		}
+		// The guard was popped: Back.
+		guardUp = false;
+		if (untrack(() => unsaved)) {
+			asking = true;
+			pushGuard();
+		} else history.back();
+	});
 
 	/** The draft kept: the saved team, or null if it could not be. */
 	async function commit(): Promise<TeamRecord | null> {
@@ -198,7 +236,8 @@
 		if (e.defaultPrevented) return;
 		if (e.key === 'Escape') {
 			e.preventDefault();
-			leave();
+			if (asking) asking = false;
+			else leave();
 			return;
 		}
 		const t = e.target as HTMLElement | null;
@@ -377,7 +416,11 @@
 					{/if}
 				</span>
 				<span class="td-acts">
-					{#if dirty}
+					{#if asking}
+						<span class="td-ask" role="status">Discard your changes?</span>
+						<button class="btn" onclick={() => (asking = false)}>Keep editing</button>
+						<button class="btn td-discard" onclick={leave}>Discard</button>
+					{:else if dirty}
 						<button class="btn" onclick={leave}>Cancel</button>
 						<button class="btn btn--primary" disabled={!canSave} onclick={save}
 							>{start ? 'Save team' : 'Add team'}</button
@@ -696,7 +739,15 @@
 	}
 	.td-acts {
 		display: flex;
+		align-items: center;
 		gap: 0.4rem;
+	}
+	.td-ask {
+		margin-right: 0.2rem;
+		font-size: var(--fs-sm);
+	}
+	.td-discard {
+		color: var(--ui-danger);
 	}
 	/* Below toolMin the right-hand group comes apart: Done stays on the
 	   name's row, the verbs take the row beneath, so the bar is two rows and

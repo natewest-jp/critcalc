@@ -131,7 +131,12 @@
 	// treating it as one (no page head, no ✕) over the cards.
 	$effect(() => {
 		if (loaded && detailId && !inDetail)
-			replaceState('', { ...page.state, teamDetail: undefined, teamSlot: undefined });
+			replaceState('', {
+				...page.state,
+				teamDetail: undefined,
+				teamSlot: undefined,
+				teamGuard: undefined
+			});
 	});
 
 	const hasOwned = $derived(Object.values($ownership).includes('owned'));

@@ -129,7 +129,8 @@ class MenuState {
 			menu: section,
 			menuDepth: depth,
 			teamDetail: undefined,
-			teamSlot: undefined
+			teamSlot: undefined,
+			teamGuard: undefined
 		});
 	}
 
@@ -142,7 +143,8 @@ class MenuState {
 			menu: 'teams',
 			menuDepth: depth,
 			teamDetail: id,
-			teamSlot: slot
+			teamSlot: slot,
+			teamGuard: undefined
 		});
 	}
 

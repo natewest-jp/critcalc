@@ -27,6 +27,9 @@ declare global {
 			teamDetail?: string;
 			/** The slot the details open on (a portrait clicked on a card). */
 			teamSlot?: number;
+			/** A guard entry over a team's details with unsaved changes:
+			 *  Back pops it and the details ask before dropping the draft. */
+			teamGuard?: boolean;
 		}
 		// interface Platform {}
 	}
