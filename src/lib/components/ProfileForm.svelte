@@ -339,7 +339,7 @@
      so Profile reads like the page beside it (2026-10-26). -->
 {#if mode === 'edit' && !editing}
 	<div class="sp">
-		<p class="lede">Theorycraft is built in, so only its Traveler can be changed.</p>
+		<p class="lede">Theorycraft is the built-in profile, and has fewer settings.</p>
 		<section class="sp-section">{@render twinRow()}</section>
 		<section class="sp-section">
 			<h2 class="kicker sp-section-title">Data</h2>
