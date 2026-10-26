@@ -158,7 +158,7 @@
 		<p class="dc-roster">
 			<span class="dc-roster-state"
 				>{#if myOwnership === 'owned'}<Mark name="check" size={13} /> Owned{#if !entry?.noConstellations}{` · C${myCon}`}{/if}{:else if myOwnership === 'wishlist'}<Mark
-						name="star"
+						name="wish"
 						size={13}
 						filled
 					/> On your wishlist{:else}Not owned{/if}</span

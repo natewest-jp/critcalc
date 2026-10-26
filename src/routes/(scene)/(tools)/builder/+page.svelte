@@ -288,7 +288,7 @@
 	const ownershipInBand = $derived($nextLayout && !below('compact') && !theorycraft);
 	const OWN_TOGGLES = [
 		{ key: 'owned', mark: 'check', label: 'Owned' },
-		{ key: 'wishlist', mark: 'star', label: 'Wishlist' }
+		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
 	] as const;
 
 	// ── The board ─────────────────────────────────────────────────────────────

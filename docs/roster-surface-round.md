@@ -22,7 +22,7 @@ hands-on with Nate, one look per step.
 
 1. ✅ The strip replaces the filter column (search · roles · elements · Show
    ✓ ✕ ☆ · More · Sort · count · Clear); the phone sheet is gone.
-2. Wishlist: Sparkles, unowned tiles only (the Roster and the details card).
+2. ✅ Wishlist: Sparkles, unowned tiles only (the Roster and the details card).
 3. Tidy the page's TOP: the lock now stands alone on a row above the strip,
    and "Click 'Edit roster' to begin editing." reads as the search field's
    help. Candidates: the lock, undo/redo and a "Mark shown…" menu up in the

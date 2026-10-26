@@ -141,7 +141,11 @@
 		record();
 		ownership.setMark(id, owned ? 'owned' : null);
 	}
+	/** ⚓ A wish is for a character you DON'T own (Nate 2026-10-26): the mark
+	 *  is one value, so wishing an owned character un-owned it — the
+	 *  streamer's "favourite" click faded every character he tried it on. */
 	function toggleWish(id: string): void {
+		if (marks[id] === 'owned') return;
 		record();
 		ownership.setMark(id, marks[id] === 'wishlist' ? null : 'wishlist');
 	}
@@ -182,7 +186,7 @@
 	const SHOW_TOGGLES = [
 		{ key: 'owned', mark: 'check', label: 'Owned' },
 		{ key: 'unowned', mark: 'close', label: 'Not owned' },
-		{ key: 'wishlist', mark: 'star', label: 'Wishlist' }
+		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
 	] as const;
 
 	const releaseKey = (c: CharacterIndexEntry) => {
@@ -339,7 +343,8 @@
 			toggleOwned(c.id);
 		} else if (k === 'w') {
 			e.preventDefault();
-			toggleWish(c.id);
+			if (marks[c.id] === 'owned') nudgeTile(c.id);
+			else toggleWish(c.id);
 		} else if (/^[0-6]$/.test(k) && !c.noConstellations) {
 			e.preventDefault();
 			setCon(c.id, Number(k));
@@ -366,6 +371,12 @@
 
 	// ── Arriving on a character (a details card's link) ──────────────────────
 	let flashId = $state<string | null>(null);
+	/** A refused key on one tile (W on a character you own) NUDGES it. */
+	let nudgeId = $state<string | null>(null);
+	function nudgeTile(id: string): void {
+		nudgeId = null;
+		requestAnimationFrame(() => (nudgeId = id));
+	}
 	async function arrive(id: string): Promise<void> {
 		const c = ALL.find((e) => e.id === id);
 		if (!c) return;
@@ -621,6 +632,10 @@
 						class:is-owned={m === 'owned'}
 						class:is-wish={m === 'wishlist'}
 						class:is-flash={flashId === c.id}
+						class:is-nudged={nudgeId === c.id}
+						onanimationend={(e) => {
+							if (e.animationName.endsWith('nudge') && nudgeId === c.id) nudgeId = null;
+						}}
 						role="listitem"
 						tabindex={focusId === c.id || (!focusId && c === shown[0]) ? 0 : -1}
 						data-id={c.id}
@@ -647,16 +662,16 @@
 									><img src={elementIcon(c.element)} alt="" /></span
 								>
 							{/if}
-							<button
-								class="til-corner til-corner--end til-wish"
-								class:is-active={m === 'wishlist'}
-								aria-pressed={m === 'wishlist'}
-								aria-label="Wishlist"
-								title={editing ? 'Wishlist (W)' : undefined}
-								tabindex="-1"
-								onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
-								><Mark name="star" size={12} filled={m === 'wishlist'} /></button
-							>
+							{#if m !== 'owned'}<button
+									class="til-corner til-corner--end til-wish"
+									class:is-active={m === 'wishlist'}
+									aria-pressed={m === 'wishlist'}
+									aria-label="Wishlist"
+									title={editing ? 'Wishlist (W)' : undefined}
+									tabindex="-1"
+									onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
+									><Mark name="wish" size={12} filled={m === 'wishlist'} /></button
+								>{/if}
 							{#if !editing && m === 'owned' && con > 0 && !c.noConstellations}
 								<span class="til-con">C{con}</span>
 							{/if}
@@ -842,6 +857,10 @@
 	}
 	.is-flash {
 		animation: ros-flash 1.4s ease-out;
+	}
+	/* A refused key (the shared nudge, app.css, which guards reduced motion). */
+	.til-card.is-nudged {
+		animation: nudge 120ms 2;
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.is-flash {

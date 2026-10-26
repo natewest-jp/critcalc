@@ -383,7 +383,7 @@
 	/** The Builder's Show toggles: Owned and Wishlist, both off is everyone. */
 	const OWN_TOGGLES = [
 		{ key: 'owned', mark: 'check', label: 'Owned' },
-		{ key: 'wishlist', mark: 'star', label: 'Wishlist' }
+		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
 	] as const;
 	const moreCount = $derived(
 		filters.weapons.size +
