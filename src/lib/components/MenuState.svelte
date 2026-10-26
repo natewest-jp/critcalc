@@ -288,10 +288,6 @@
 					{/each}
 					<button
 						class="side-item"
-						disabled={!storageSession.canAddProfile}
-						title={storageSession.canAddProfile
-							? undefined
-							: 'Seven accounts, one per element color, is the most a browser holds'}
 						onclick={() => {
 							switching = false;
 							menu.show('profile/new');

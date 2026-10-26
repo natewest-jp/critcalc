@@ -227,7 +227,7 @@
 		<!-- ⚓ §12 Q14: Theorycraft invites an account. ↻ 2026-10-25 (⚓ Nate): it
 		     stands LEFT of the picture, so on a wide bar it grows toward the
 		     centre and pushes none of the doors (hidden on a phone). -->
-		{#if profile?.kind === 'theorycraft' && storageSession.canAddProfile}
+		{#if profile?.kind === 'theorycraft'}
 			<button class="tb-invite" onclick={() => menuState.show('profile/new')}
 				>Add your account</button
 			>
@@ -286,10 +286,6 @@
 							<button
 								class="mi"
 								role="menuitem"
-								disabled={!storageSession.canAddProfile}
-								title={storageSession.canAddProfile
-									? undefined
-									: 'Seven accounts, one per element color, is the most a browser holds'}
 								onclick={() => {
 									menu = null;
 									menuState.show('profile/new');

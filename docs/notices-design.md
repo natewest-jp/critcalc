@@ -157,7 +157,9 @@ its own shape. What sets it apart, so it never borrows another's:
 - A delete is already a tombstone in storage, so the Trash is a screen,
   Restore and the clearing.
 - Two cases to solve: restoring a profile when seven exist (the cap), and a
-  deleted profile's colour taken since.
+  deleted profile's colour taken since. ↻ Both dissolved 2026-10-26: the cap
+  is gone and colours repeat (design §2.3), so a profile always comes back,
+  in its own colour.
 - Built after the notice system, so its toasts and confirms are born in the
   new shapes.
 

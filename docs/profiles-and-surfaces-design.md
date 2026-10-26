@@ -64,6 +64,7 @@ Site settings (display, playback, Human timing, swap ping, the Visualizers' layo
 - Created by the user: a **name**, a **profile picture** and a **colour**.
 - ⚓ **The profile picture follows Genshin's own precedent** (Nate, 2026-10-21): the circle avatar of **any character you own** (in that profile's roster), or one of the game's **art profile pictures** — the silhouette-style pictures of moments from the Genshin journey. Nate supplies the art set. ⏭ A profile with an empty roster can still pick from the art set.
 - ⚓ **Each profile has a colour, and colours are exclusive**: the **seven element colours** for real profiles, and a **gray/white** that only Theorycraft can have — it reads as "nobody's account". Exclusive means no two profiles share one, so ⚓ **a browser holds at most seven real profiles** (Nate: nobody actively plays eight accounts, and a cap with a visible reason beats an arbitrary one). At the limit, **Create profile** stays visible but disabled with a one-line reason; deleting a profile frees its colour.
+  - ↻ **2026-10-26 (⚓ Nate): NOT exclusive, and NO cap.** A colour is the picture's FRAME (Genshin's frames are designs, not elements), so two profiles may share one; a new profile starts on the least worn (`nextColour`). Seven was the number of colours, never of accounts, and a browser-local tool has nothing a cap protects, so any number of profiles. A picture may be ANY character, not only an owned one (a new profile has no roster; a loved character you don't own is a fine picture). Only Theorycraft's NAME is reserved (`isReservedName`), since a lookalike would pass for the built-in profile. ⚠ Backup import had dropped a repeated colour and everything past seven, and no longer does.
 - More than one is normal (several accounts). Switching is **loud** (§9.4): the picture, name and colour change in the title bar, and every list, tab and roster-dependent view changes with it.
 - ⚓ **The profile sits in the title bar opposite the logo** (§5.1), ↻ **as its picture only** (draft 5, ⚓ Nate 2026-10-22: a long name or a UID must cost the bar nothing). The NAME shows on hover, at the head of the profile menu, as the menu state's group heading, and **rides the switch cue**: it appears beside (below) the picture with the wash and folds away with it. Clicking the picture opens the profile menu (the switcher, Add an account, Roster, Teams).
 
@@ -396,7 +397,7 @@ So nothing below reads as still in force once this design is adopted:
 2. ~~Team order~~: ✅ stored and shown, in party order (draft 5); a rotation's slots carry it too (§8.1).
 3. ~~Team notes~~: ✅ not for now (draft 5).
 4. Which **settings** are per profile, if any (Human timing and swap ping feel personal to the player, not the account)?
-5. ~~Avatar, colour cap~~ — ✅ settled (§2.3): seven real profiles.
+5. ~~Avatar, colour cap~~ — ✅ settled (§2.3): seven real profiles. ↻ 2026-10-26: no cap, colours repeat (§2.3).
 
 **Saving**
 

@@ -33,7 +33,7 @@ import {
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
 import { notices, heldKey, announceAfterReload, type NoticeKind } from '$lib/notices.svelte';
-import { REAL_COLOURS, colourValue } from '$lib/profileLook';
+import { colourValue, isReservedName } from '$lib/profileLook';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -1691,26 +1691,20 @@ class StorageSession {
 	/** When the active profile last CHANGED (ms): the switch cue reads it. */
 	switchedAt = $state<number | null>(null);
 
-	/** ⚓ Seven real profiles at most: one per element colour (§2.3). */
-	static readonly MAX_REAL = 7;
+	// ↻ NO CAP, NO EXCLUSIVE COLOUR (Nate 2026-10-26). Seven was the number
+	// of colours, never of accounts, and a colour is the avatar's FRAME: two
+	// profiles may share one, and a new profile starts on the least worn
+	// (`nextColour`). Everything is keyed by id, so nothing in storage cared;
+	// a profile made identical to another on purpose is the person's call.
 
-	get canAddProfile(): boolean {
-		return this.profiles.filter((p) => p.kind === 'real').length < StorageSession.MAX_REAL;
-	}
-
-	/** Colours taken, by whom (a colour is exclusive, §2.3). */
-	colourOwner(colour: ProfileColour): ProfileRecord | undefined {
-		return this.profiles.find((p) => p.colour === colour);
-	}
-
-	/** False when nothing was created (no storage, the cap, a taken colour). */
+	/** False when nothing was created (no storage, the reserved name). */
 	async createProfile(fields: {
 		name: string;
 		colour: ProfileColour;
 		picture?: Picture;
 	}): Promise<boolean> {
 		const db = this.#db ?? (await ensureStorage());
-		if (!db || !this.canAddProfile || this.colourOwner(fields.colour)) return false;
+		if (!db || isReservedName(fields.name)) return false;
 		const now = Date.now();
 		const rec: ProfileRecord = {
 			id: newId(),
@@ -1737,8 +1731,7 @@ class StorageSession {
 		patch: Partial<Pick<ProfileRecord, 'name' | 'colour' | 'picture'>>
 	): Promise<void> {
 		if (id === THEORYCRAFT_ID) return;
-		if (patch.colour && this.colourOwner(patch.colour)?.id !== id && this.colourOwner(patch.colour))
-			return;
+		if (patch.name !== undefined && isReservedName(patch.name)) return;
 		await this.#putProfile(id, (p) => ({ ...p, ...patch }));
 		await this.#loadProfiles();
 	}
@@ -1870,33 +1863,22 @@ class StorageSession {
 		return true;
 	}
 
-	/** A profile out of the Trash, with what it took with it. Refused at the
-	 *  cap; a colour taken since is swapped for the first free one. */
+	/** A profile out of the Trash, with what it took with it, in its own
+	 *  colour: colours are not exclusive. */
 	async #untrashProfile(db: IDBDatabase, id: string, now: number, say: boolean): Promise<boolean> {
 		const p = await get(db, 'profiles', id);
 		if (!p || !inTrash(p, now)) return false;
-		if (!this.canAddProfile) {
-			notices.toast(
-				'warning',
-				`${p.name} can’t come back while seven accounts are here. Delete one to make room.`
-			);
-			return false;
-		}
-		const taken = this.colourOwner(p.colour);
-		const colour = taken ? (REAL_COLOURS.find((c) => !this.colourOwner(c)) ?? p.colour) : p.colour;
 		const all = await readAll(db);
 		// Its work first, the profile last: a restore cut short leaves
 		// records in the Trash, never a profile missing half its work.
 		for (const d of takenWith(p, all.documents)) await this.#revive(db, 'documents', d.id, now);
 		for (const t of takenWith(p, all.teams)) await this.#revive(db, 'teams', t.id, now);
 		const { deleted: _, ...live } = p;
-		await put(db, 'profiles', { ...live, colour, updatedAt: now });
+		await put(db, 'profiles', { ...live, updatedAt: now });
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id });
 		await this.#loadProfiles();
 		this.version++;
-		// ⚓ A colour taken since is swapped quietly (Nate 2026-10-26): the
-		// colour is the avatar's frame, not a fact anyone needs told about.
-		if (say) notices.toast('success', `Restored ${p.name}`, { swatch: colourValue(colour) });
+		if (say) notices.toast('success', `Restored ${p.name}`, { swatch: colourValue(p.colour) });
 		return true;
 	}
 

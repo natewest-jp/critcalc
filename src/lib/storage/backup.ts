@@ -241,17 +241,15 @@ function teamLoadoutOf(v: unknown): Pick<TeamRecord, 'loadout'> {
 	return loadout && Object.keys(loadout).length ? { loadout } : {};
 }
 
-/** ⚓ Seven real profiles at most, each colour once (§2.3): extras are left
- *  out rather than refused, so a hand-edited file still loads its first seven. */
+/** ↻ Any number of profiles, colours repeating (Nate 2026-10-26). ⚠ This
+ *  used to drop a repeated colour and everything past seven, which would
+ *  silently lose a profile now that both are allowed. */
 function sanitizeStore(v: unknown, now: number): MigrationResult | null {
 	if (!isObj(v) || !Array.isArray(v.profiles)) return null;
 	const profiles: ProfileRecord[] = [];
-	const colours = new Set<ProfileColour>();
 	for (const raw of v.profiles) {
 		const p = profile(raw, now);
 		if (!p || profiles.some((x) => x.id === p.id)) continue;
-		if (p.kind === 'real' && (colours.has(p.colour) || colours.size >= 7)) continue;
-		colours.add(p.colour);
 		profiles.push(p);
 	}
 	// Theorycraft is built in: a file without it gets a fresh one.

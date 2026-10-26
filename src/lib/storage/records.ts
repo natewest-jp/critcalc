@@ -26,8 +26,9 @@ export type SyncFields = {
 	purged?: true;
 };
 
-/** The seven element colours a real profile can wear, plus Theorycraft's
- *  white, which only Theorycraft can (§2.3). Exclusive: no two profiles share. */
+/** The seven element colours a real profile's frame can wear, plus
+ *  Theorycraft's white, which only Theorycraft can (§2.3). ↻ Not exclusive
+ *  since 2026-10-26: two profiles may share one (Nate). */
 export type ProfileColour =
 	| 'pyro'
 	| 'hydro'
