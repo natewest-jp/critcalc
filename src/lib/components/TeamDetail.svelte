@@ -109,10 +109,18 @@
 					loadout: compactLoadouts(start.loadout ?? {})
 				})
 	);
+	/** A clash Save found that the list hadn't yet (filed in another tab a
+	 *  moment before), held while these four are still the four. */
+	let lateClash = $state<TeamRecord | null>(null);
 	/** The team these four already are, if it is another one. */
 	const clash = $derived(
-		full ? teams.find((t) => t.id !== start?.id && teamKey(t.slots) === teamKey(slots)) : undefined
+		full
+			? (teams.find((t) => t.id !== start?.id && teamKey(t.slots) === teamKey(slots)) ??
+					(lateClash && teamKey(lateClash.slots) === teamKey(slots) ? lateClash : undefined))
+			: undefined
 	);
+	/** A save that didn't land, said where Save is. */
+	let saveFailed = $state(false);
 	const canSave = $derived(full && dirty && !clash);
 
 	/** A pick with no slot chosen is refused, and the party says so. */
@@ -235,16 +243,31 @@
 	async function commit(): Promise<TeamRecord | null> {
 		if (!full || clash) return null;
 		if (!dirty && start) return start;
-		let saved: TeamRecord | null;
-		if (start) {
-			const ok = await storageSession.updateTeam(start.id, draft);
-			saved = ok ? { ...start, ...draft } : null;
-		} else {
-			const r = await storageSession.saveTeam(draft.slots, draft.name, draft.loadout);
-			saved = r?.team ?? null;
+		let saved: TeamRecord | null = null;
+		saveFailed = false;
+		try {
+			if (start) {
+				const ok = await storageSession.updateTeam(start.id, draft);
+				saved = ok ? { ...start, ...draft } : null;
+			} else {
+				const r = await storageSession.saveTeam(draft.slots, draft.name, draft.loadout);
+				// The set was filed meanwhile: that is a clash, never this draft
+				// saved (it would leave with the other team's name and loadouts).
+				if (r && !r.created) {
+					lateClash = r.team;
+					return null;
+				}
+				saved = r?.team ?? null;
+			}
+		} catch (err) {
+			console.error('[critcalc] team save failed', err);
+		}
+		if (!saved) {
+			saveFailed = true;
+			return null;
 		}
 		// Kept, so the way on (Plan a rotation, New lineup) has nothing to ask.
-		if (saved) committed = true;
+		committed = true;
 		return saved;
 	}
 	async function save(): Promise<void> {
@@ -471,6 +494,12 @@
 			</span>
 		</div>
 
+		{#if saveFailed && !clash}
+			<p class="td-clash" role="alert">
+				<Mark name="warn" size={14} />
+				<span>Couldn’t save the team. Try again.</span>
+			</p>
+		{/if}
 		{#if clash}
 			<p class="td-clash" role="status">
 				<Mark name="warn" size={14} />

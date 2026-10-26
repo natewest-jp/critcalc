@@ -1768,12 +1768,14 @@
 			}
 			const blob = await renderTimelinePng(snapshot);
 			const result = await deliverPng(blob, 'critcalc-rotation.png', mode);
+			// A refused clipboard (Safari) falls back to a download, which must
+			// not read as the copy having worked.
 			documentBar.showNotice(
 				result === 'copied'
 					? 'Image copied'
-					: result === 'downloaded'
-						? 'Image saved'
-						: 'Export failed'
+					: mode === 'copy'
+						? 'Couldn’t copy the image, so it was downloaded instead'
+						: 'Image saved'
 			);
 		} catch (e) {
 			console.error('PNG export failed:', e);

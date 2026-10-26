@@ -412,7 +412,11 @@
 			{:else if section === 'teams'}
 				<TeamsPlace />
 			{:else if section === 'roster'}
-				<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
+				<!-- Keyed on the profile: its undo history belongs to one roster, and
+				     replayed into another it would overwrite that one. -->
+				{#key storageSession.profile?.id}
+					<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
+				{/key}
 			{:else if section === 'settings'}
 				<div class="settings"><SettingsPanel /></div>
 			{:else if chapter && ChapterC}
