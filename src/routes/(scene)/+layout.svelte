@@ -4,6 +4,8 @@
 	import { beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
+	import NoticeRegion from '$lib/components/NoticeRegion.svelte';
+	import { sayAfterReload } from '$lib/notices.svelte';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
@@ -109,6 +111,8 @@
 			void import('$lib/components/LinksDialog.svelte').then((m) => (LinksDialogC = m.default));
 	});
 
+	// A restore says so once the page is back (notices round).
+	onMount(sayAfterReload);
 	onMount(() => {
 		if (!nextOn) return;
 		void import('$lib/components/TopBar.svelte').then((m) => (TopBarC = m.default));
@@ -368,6 +372,8 @@
 					id={moveRequest.id}
 				/>{/key}{/if}
 		{#if LinksDialogC && linksIntro.open}<LinksDialogC />{/if}
+		<!-- Toasts and dialogs (notices §3.2, §3.4): one home on every surface. -->
+		<NoticeRegion />
 	</div>
 
 	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather

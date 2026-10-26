@@ -87,6 +87,8 @@ import { get } from 'svelte/store';
 import { nextLayout } from '$lib/nextLayout';
 import { TAB_LIMIT } from '$lib/tabSet';
 import { pickSample } from '$lib/data/plannerSamples';
+import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { notices } from '$lib/notices.svelte';
 
 export type RotationTab = {
 	id: string;
@@ -275,6 +277,17 @@ class RotationTabsState {
 		this.seating = makeSeating(seating.seats, seating.placed);
 		this.#notation = notation;
 	}
+
+	/**
+	 * ⚓ May the person change the document on screen? False while another
+	 * tab holds it (notices round, 2026-10-26): every edit the planner offers
+	 * asks here first, and a refusal calls the "Open in another tab" banner
+	 * back. Set by the storage session; a plain field, not state.
+	 */
+	canEdit: () => boolean = () => true;
+	/** The document on screen is held by another tab: its Edit here, for the
+	 *  editor's own locked line. Set by the tools layout. */
+	held = $state<{ editHere: () => void } | null>(null);
 
 	tabLoadout = $state<Record<string, LoadoutEntry>>({});
 	tabCon = $state<Record<string, number>>({});
@@ -590,6 +603,7 @@ class RotationTabsState {
 	}
 
 	resetActiveTab(): void {
+		if (!this.canEdit()) return;
 		this.setDocument('', emptySeating());
 		this.tabLoadout = {};
 		this.tabCon = {};
@@ -621,6 +635,7 @@ class RotationTabsState {
 	 * character they show again only if that character returns.
 	 */
 	clearDocument(): void {
+		if (!this.canEdit()) return;
 		this.setDocument('', emptySeating());
 		this.tabs = this.tabs.map((t) => (t.id === this.activeTabId ? { ...t, sample: undefined } : t));
 	}
@@ -653,6 +668,7 @@ class RotationTabsState {
 	 * A character already seated elsewhere is a no-op, as before.
 	 */
 	setSlot(index: number, id: string | null): void {
+		if (!this.canEdit()) return;
 		const want = id === 'blank' ? null : id;
 		const outgoing = this.seats[index] ?? null;
 		if (outgoing === want) return;
@@ -671,11 +687,44 @@ class RotationTabsState {
 		this.setDocument(text, makeSeating(seats, placed));
 	}
 
+	/** The text and seats as they are now, to put back (an Undo toast). */
+	#snapshot(): () => void {
+		const text = this.notation;
+		const seats = [...this.seats];
+		const placed = [...this.seating.placed];
+		return () => {
+			if (this.canEdit()) this.setDocument(text, makeSeating(seats, placed));
+		};
+	}
+
+	/** Take someone off the team (the bench's ✕, Remove): at once, with Undo
+	 *  in a toast (notices §5: a smaller destructive action takes Undo, not a
+	 *  confirm). ⌘Z in the composer still reaches it too. */
+	takeOff(index: number): void {
+		const id = this.seats[index];
+		if (!id || !this.canEdit()) return;
+		const undo = this.#snapshot();
+		this.setSlot(index, null);
+		const name = getCharacterIndexEntry(id)?.displayName ?? id;
+		notices.toast('success', `${name} is off the team`, {
+			actions: [{ label: 'Undo', run: undo }]
+		});
+	}
+
+	/** The composer's Clear, said with Undo. */
+	clearWithUndo(): void {
+		if (!this.canEdit()) return;
+		const undo = this.#snapshot();
+		this.clearDocument();
+		notices.toast('success', 'Rotation cleared', { actions: [{ label: 'Undo', run: undo }] });
+	}
+
 	// -------------------------------------------------------------------------
 	// Layer-2 writes (the bench band)
 	// -------------------------------------------------------------------------
 
 	setTabCon(charId: string, level: number): void {
+		if (!this.canEdit()) return;
 		this.tabCon = { ...this.tabCon, [charId]: level };
 		// ⚓ A level set by hand ends a sync — the badge reads itself (§10.4).
 		if (this.activeTab.synced) {
@@ -696,6 +745,7 @@ class RotationTabsState {
 	}
 
 	setTabLoadout(charId: string, update: Partial<LoadoutEntry>): void {
+		if (!this.canEdit()) return;
 		this.tabLoadout = {
 			...this.tabLoadout,
 			[charId]: { ...(this.tabLoadout[charId] ?? {}), ...update }
@@ -706,6 +756,7 @@ class RotationTabsState {
 	 *  layer shows through): the bench's writes under a team, already pruned
 	 *  of what the team supplies. */
 	putTabLoadout(charId: string, entry: LoadoutEntry | null): void {
+		if (!this.canEdit()) return;
 		const next = { ...this.tabLoadout };
 		if (entry) next[charId] = entry;
 		else delete next[charId];

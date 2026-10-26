@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import NoticeBanners from './NoticeBanners.svelte';
 	import {
 		BAND_A_H,
 		BAND_B_H,
@@ -225,6 +226,9 @@
 				{#if bandBRight}<div class="band-zone band-zone--end">{@render bandBRight()}</div>{/if}
 			{/if}
 		</div>
+		<!-- Conditions (notices §3.3) float just under the toolbar, over the
+		     surface: in flow they would move the tools' measured geometry. -->
+		<NoticeBanners class="tool-banners" />
 	</div>
 
 	<div class="tool-surface">{@render surface()}</div>
@@ -434,6 +438,14 @@
 	   border-radius, no overflow:hidden, each band rounding its own four
 	   corners. (The clip had a second job — keeping the two tiers inside one
 	   outer radius — which simply stops existing.) */
+	.bands :global(.tool-banners) {
+		position: absolute;
+		top: calc(100% + var(--band-gap));
+		left: 0;
+		right: 0;
+		max-width: 52rem;
+		margin: 0 auto;
+	}
 	.bands {
 		display: flex;
 		flex-direction: column;

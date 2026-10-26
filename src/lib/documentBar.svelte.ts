@@ -15,6 +15,8 @@
  * document. Band B is each tool's own business.
  */
 
+import { notices, type NoticeAction } from './notices.svelte';
+import type { Outcome } from './controlAnswer.svelte';
 import { fromStore, get } from 'svelte/store';
 import { linksIntro, moveRequest, MOVE_TO_PROFILE } from './moveRequest.svelte';
 import {
@@ -59,8 +61,15 @@ import { resolveEntry } from './storage/teamLoadout';
  */
 export type DocumentExporters = {
 	kqm: () => Promise<boolean>;
-	png: (mode: 'copy' | 'download') => Promise<void>;
+	png: (mode: 'copy' | 'download') => Promise<Outcome>;
 };
+
+/** A copy that didn't happen, in both forms (controlAnswer.ts). */
+const COPY_FAILED = (what: string): Outcome => ({
+	ok: false,
+	short: 'Couldn’t copy',
+	long: `Couldn’t copy ${what}. The browser may have blocked the clipboard.`
+});
 
 /**
  * The name a fork takes: "Vape Hu Tao" → "Vape Hu Tao copy" → "… copy 2".
@@ -134,38 +143,18 @@ export type RoomRequest = {
 	onCancel?: () => void;
 };
 
-/** A button on band A's notice. */
-export type NoticeAction = {
-	label: string;
-	run: () => void;
-	/** Shown in the top bar (under the switch) rather than by the tool. */
-	bar?: true;
-};
-
 /** ⚓ Move to a profile rides an arrival's notice (design §9.3) whenever
  *  there is a real profile to move it to. */
 export function moveAction(id: string, movable: boolean): NoticeAction[] {
-	return movable ? [{ label: MOVE_TO_PROFILE, run: () => (moveRequest.id = id), bar: true }] : [];
+	return movable ? [{ label: MOVE_TO_PROFILE, run: () => (moveRequest.id = id) }] : [];
 }
 
-/** 🎛️ How long a notice stays: a plain one, and one with a button to reach. */
-const NOTICE_MS = 2200;
-const NOTICE_ACTION_MS = 8000;
-/** 🎛️ …and one that is shown once ever, with more to read. */
-export const NOTICE_ONCE_MS = 15000;
-
 class DocumentBarState {
-	/** Transient outcome message, shown in band A beside the actions. */
-	notice = $state<string | null>(null);
-	/** Buttons riding the notice — a swap's "Undo" and "Try in Planner". */
-	noticeActions = $state<NoticeAction[]>([]);
 	exporters = $state<DocumentExporters | null>(null);
 
 	/** The open make-room confirm, if any — for rotation tabs, or for board
 	 *  tabs (`boardBar` raises it here too, so ONE dialog serves both). */
 	room = $state<RoomRequest | null>(null);
-
-	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
 	/** The bank, read reactively — `linked` must follow a Library delete. */
 	#saved = fromStore(savedNotations);
@@ -197,29 +186,6 @@ class DocumentBarState {
 		return !!rt.notation.trim() || rt.seats.some((id) => id !== null);
 	}
 
-	/** The notice's buttons a tool renders beside its own notice. */
-	get toolActions(): NoticeAction[] {
-		return this.noticeActions.filter((a) => !a.bar);
-	}
-	/** The notice's buttons the top bar renders. */
-	get barActions(): NoticeAction[] {
-		return this.noticeActions.filter((a) => a.bar);
-	}
-
-	showNotice(msg: string, actions: NoticeAction[] = [], ms?: number) {
-		clearTimeout(this.#noticeTimer);
-		this.notice = msg;
-		this.noticeActions = actions;
-		// A notice with a button stays long enough to reach it.
-		this.#noticeTimer = setTimeout(
-			() => {
-				this.notice = null;
-				this.noticeActions = [];
-			},
-			ms ?? (actions.length ? NOTICE_ACTION_MS : NOTICE_MS)
-		);
-	}
-
 	/** An arrival under the switch: its notice, or — the first time a link
 	 *  moves someone out of a real profile — the dialog that teaches the rule
 	 *  once. `id` is the arrived document, when there is one to move. */
@@ -229,15 +195,9 @@ class DocumentBarState {
 			linksIntro.open = true;
 			return;
 		}
-		this.showNotice(switched ? OPENED_IN_THEORYCRAFT : notice, id ? moveAction(id, movable) : []);
-	}
-
-	/** Run one of the notice's buttons — the notice has done its job. */
-	runNoticeAction(action: NoticeAction) {
-		clearTimeout(this.#noticeTimer);
-		this.notice = null;
-		this.noticeActions = [];
-		action.run();
+		notices.toast('info', switched ? OPENED_IN_THEORYCRAFT : notice, {
+			actions: id ? moveAction(id, movable) : []
+		});
 	}
 
 	registerExporters(ex: DocumentExporters) {
@@ -330,7 +290,8 @@ class DocumentBarState {
 
 	/** Saving a document with no actions saves its TEAM, never a rotation. */
 	#saveTeamOnly(seats: Seats) {
-		this.showNotice(this.#ensureTeamEntry(seats) ? 'Already in your library' : 'Team saved');
+		if (this.#ensureTeamEntry(seats)) notices.toast('info', 'Already in your library');
+		else notices.toast('success', 'Team saved');
 	}
 
 	/** Save a Recently closed tab to the bank (its "promotion"). */
@@ -363,7 +324,7 @@ class DocumentBarState {
 		}
 		this.#ensureTeamEntry(slots);
 		recentlyClosedRotations.remove(tab.id);
-		this.showNotice('Saved');
+		notices.toast('success', 'Saved');
 	}
 
 	/**
@@ -390,13 +351,13 @@ class DocumentBarState {
 
 	#adoptOrMakeRoom(doc: Omit<RotationTab, 'id'>, notice: string) {
 		if (rt.adopt(doc)) {
-			this.showNotice(notice);
+			notices.toast('info', notice);
 			return;
 		}
 		this.withRoom(
 			() => {
 				rt.adopt(doc);
-				this.showNotice(notice);
+				notices.toast('info', notice);
 			},
 			() => recentlyClosedRotations.push({ ...doc, id: newTabId() })
 		);
@@ -442,13 +403,13 @@ class DocumentBarState {
 			);
 			if (twin) {
 				this.#link(twin.id, twin.name);
-				this.showNotice(`Already saved as “${twin.name}”`);
+				notices.toast('info', `Already saved as “${twin.name}”`);
 				return;
 			}
 			this.#link(savedNotations.save(payload), activeTab.label);
 		}
 		this.#ensureTeamEntry(rt.seats);
-		this.showNotice('Saved');
+		notices.toast('success', 'Saved');
 	}
 
 	/**
@@ -468,7 +429,7 @@ class DocumentBarState {
 		);
 		this.#link(savedNotations.save(this.#payload(name)), name);
 		this.#ensureTeamEntry(rt.seats);
-		this.showNotice('Saved as new');
+		notices.toast('success', 'Saved as new');
 	}
 
 	/** A saved rotation with one character renamed, in a NEW unsaved tab —
@@ -615,15 +576,15 @@ class DocumentBarState {
 	 * that can render all of it (the Team Builder reads the same document, so a
 	 * recipient is one click from it either way).
 	 */
-	async shareLink() {
-		if (!this.hasContent) return;
+	async shareLink(): Promise<Outcome | null> {
+		if (!this.hasContent) return null;
 		try {
 			const url = await this.shareUrl();
-			if (!url) return;
+			if (!url) return null;
 			await navigator.clipboard.writeText(url);
-			this.showNotice('Link copied');
+			return { ok: true, short: 'Copied', long: 'Link copied' };
 		} catch {
-			this.showNotice('Share failed');
+			return COPY_FAILED('the link');
 		}
 	}
 
@@ -665,14 +626,16 @@ class DocumentBarState {
 		return `${location.origin}/planner?r=${param}`;
 	}
 
-	async shareKqm() {
+	async shareKqm(): Promise<Outcome | null> {
 		const ex = this.exporters;
-		if (!ex) return;
-		this.showNotice((await ex.kqm()) ? 'KQM copied' : 'Copy failed');
+		if (!ex) return null;
+		return (await ex.kqm())
+			? { ok: true, short: 'Copied', long: 'KQM notation copied' }
+			: COPY_FAILED('the notation');
 	}
 
-	async sharePng(mode: 'copy' | 'download') {
-		await this.exporters?.png(mode);
+	async sharePng(mode: 'copy' | 'download'): Promise<Outcome | null> {
+		return (await this.exporters?.png(mode)) ?? null;
 	}
 }
 

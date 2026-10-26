@@ -386,7 +386,7 @@
 						<button
 							class="bb-act bb-act--remove"
 							disabled={!live}
-							onclick={() => rt.setSlot(i, null)}
+							onclick={() => rt.takeOff(i)}
 							title={live && char ? `Remove ${char.displayName} from team` : undefined}
 							aria-label={live && char
 								? `Remove ${char.displayName} from team`

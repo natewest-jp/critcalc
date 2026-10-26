@@ -301,10 +301,11 @@ test.describe('the board', () => {
 		await card('Bennett').click();
 		expect(await team(0), 'click 1 takes him off Team 1').toEqual(['', '', '', '']);
 		expect(await team(1), '…and adds nothing').toEqual(['', '', '', '']);
-		// ↻ 2026-10-20: a grid action's notice stands in the grid's
-		// destination banner, over the card that was picked.
-		await expect(page.locator('.tb-dest-notice')).toHaveText('Bennett left Team 1.');
-		await page.getByRole('button', { name: 'Undo' }).click();
+		// ↻ 2026-10-26 (the notices round): a toast in the one toast home, with
+		// Undo (it stood in the grid's destination banner from 2026-10-20).
+		const toast = page.locator('.nt', { hasText: 'Bennett left Team 1' });
+		await expect(toast).toBeVisible();
+		await toast.getByRole('button', { name: 'Undo' }).click();
 		expect(await team(0), 'Undo puts him back').toEqual(['Bennett', '', '', '']);
 
 		await card('Bennett').click();

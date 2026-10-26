@@ -15,6 +15,7 @@
  *   const extensions = buildNotationExtensions(onChange);
  */
 
+import { notices } from '$lib/notices.svelte';
 import {
 	EditorView,
 	ViewPlugin,
@@ -640,7 +641,12 @@ export function buildNotationExtensions(
 		// deliberate choice: a silently shortened paste is a DIFFERENT rotation
 		// than the one the user pasted. Nothing legitimate comes close to the cap,
 		// so the case this fires on is always a paste of something else.
-		EditorState.changeFilter.of((tr) => tr.newDoc.length <= MAX_NOTATION_CHARS),
+		// ↻ Said, not silent (notices round): a refused paste did nothing at all.
+		EditorState.changeFilter.of((tr) => {
+			if (tr.newDoc.length <= MAX_NOTATION_CHARS) return true;
+			notices.toast('warning', 'That’s longer than a rotation can be, so it wasn’t added.');
+			return false;
+		}),
 		EditorView.updateListener.of((update) => {
 			if (update.docChanged) onChange(update.state.doc.toString());
 		})

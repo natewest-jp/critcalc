@@ -2,7 +2,6 @@
 	import { nextLayout } from '$lib/nextLayout';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount, tick, untrack } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -30,7 +29,10 @@
 	import { resolve } from '$app/paths';
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
-	import { documentBar, type NoticeAction } from '$lib/documentBar.svelte';
+	import { documentBar } from '$lib/documentBar.svelte';
+	import { notices, type NoticeAction } from '$lib/notices.svelte';
+	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
+	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
 	import {
 		BOARD_PRESETS,
 		BOARD_TEAM_LIMIT,
@@ -44,13 +46,13 @@
 		type BoardPreset,
 		type BoardTeam
 	} from '$lib/boards.svelte';
-	import { boardBar, boardTabStrip } from '$lib/boardBar.svelte';
+	import { boardBar, boardTabStrip, LINEUP_FULL } from '$lib/boardBar.svelte';
 	import type { TabStripModel } from '$lib/tabSet';
 	import { library } from '$lib/library.svelte';
 	import { SEASONS, currentSeason, liveSeasons } from '$lib/endgame';
 	import { decodeBoard } from '$lib/utils/boardUrl';
 	import { FOLD_LENS_W, FOLD_SHOW_W, TB_WIPE_MS } from './lib/dock';
-	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
+	import { motion } from '$lib/motion';
 	import { below, short } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import SeasonPicker from './lib/SeasonPicker.svelte';
@@ -148,14 +150,14 @@
 			if (ids.length > 0) {
 				boardBar.receiveTeam(ids);
 				showLineup();
-			}
+			} else notices.toast('warning', NO_TEAM_IN_LINK);
 		}
 		if (boardParam) {
 			// A shared lineup (`?b=`). Async decode; an empty active board takes it,
 			// else a new tab (with the make-room confirm at the limit).
 			void decodeBoard(boardParam).then((shared) => {
 				if (!shared) {
-					documentBar.showNotice('Invalid share link');
+					notices.toast('error', INVALID_SHARE_LINK);
 					return;
 				}
 				boardBar.receive(shared, (id) => rosterIds.has(id));
@@ -169,7 +171,7 @@
 			if (Number.isInteger(n) && n >= 0 && n < 4) {
 				pendingSwapSlot = n;
 				tab = 'characters';
-			}
+			} else notices.toast('warning', 'That link asks for a team slot that doesn’t exist.');
 		}
 	});
 
@@ -425,10 +427,9 @@
 		const i = slotOfCharacter(from.slots, id);
 		const left = from.slots[i] ?? id;
 		boards.setSlot(boardId, from.id, i, null);
-		noticeFrom = 'grid';
-		documentBar.showNotice(`${nameOf(left)} left ${teamLabel(board, indexOfTeam(from.id))}.`, [
-			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
-		]);
+		notices.toast('success', `${nameOf(left)} left ${teamLabel(board, indexOfTeam(from.id))}`, {
+			actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+		});
 	}
 
 	/** The Lineup's Clear (2026-10-20): every team emptied in one press,
@@ -438,10 +439,55 @@
 		const boardId = board.id;
 		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
 		boards.clearTeams(boardId);
-		noticeFrom = 'lineup';
-		documentBar.showNotice('Lineup cleared.', [
-			{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }
-		]);
+		notices.toast('success', 'Lineup cleared', {
+			actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+		});
+	}
+
+	/** A team off a Custom lineup: done at once, with Undo (notices §5: a
+	 *  smaller destructive action takes Undo, not a confirm). An empty team
+	 *  goes quietly, as there is nothing to bring back. */
+	function removeTeam(teamId: string): void {
+		const boardId = board.id;
+		const i = indexOfTeam(teamId);
+		const team = board.teams[i];
+		if (!team) return;
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		const label = teamLabel(board, i);
+		boards.removeTeam(boardId, teamId);
+		if (team.slots.some((x) => x !== null))
+			notices.toast('success', `Removed ${label}`, {
+				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+			});
+	}
+
+	/** No repeats ON settles repeats at once, taking a character off every
+	 *  team but one: said, with Undo, whenever anyone actually left. */
+	function toggleNoRepeats(): void {
+		const boardId = board.id;
+		if (board.noRepeats) return boards.setNoRepeats(boardId, false);
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		const count = (ts: readonly BoardTeam[]) =>
+			ts.reduce((n, t) => n + t.slots.filter((x) => x !== null).length, 0);
+		const before = count(snapshot);
+		boards.setNoRepeats(boardId, true, teamRecency);
+		const left = before - count(board.teams);
+		if (left > 0)
+			notices.toast(
+				'success',
+				`No repeats: ${left === 1 ? 'a repeated character' : `${left} repeated characters`} left their other team`,
+				{
+					actions: [
+						{
+							label: 'Undo',
+							run: () => {
+								boards.restoreTeams(boardId, snapshot);
+								boards.setNoRepeats(boardId, false);
+							}
+						}
+					]
+				}
+			);
 	}
 
 	/** Out of the SELECTED team, leaving its slot empty — the others keep
@@ -504,7 +550,7 @@
 					// A battlefield board's teams are the game's — only Custom grows.
 					(board.preset === 'custom' ? boards.addTeam(board.id) : undefined);
 				if (!target) {
-					documentBar.showNotice('The lineup is full');
+					notices.toast('warning', LINEUP_FULL);
 					return;
 				}
 				boards.setTeam(board.id, target.id, slots);
@@ -549,25 +595,6 @@
 	 *  by what each candidate brings. Only the errand adds this way; a board
 	 *  fills its empty slots by picks, the game's way. */
 	let swapping = $state<{ teamId: string; slot: number; incumbent: string | null } | null>(null);
-
-	/** ⚓ A NOTICE STANDS WHERE ITS ACTION HAPPENED (Nate 2026-10-20; ↻ the
-	 *  rail held every Undo since 2026-10-19). A grid action — a pick that took
-	 *  someone off another team, a swap — reports in the grid's DESTINATION
-	 *  BANNER, right above the card you tapped; a lineup action (Clear) in band
-	 *  B's lineup rail, beside its button; the document's notices (Saved, a bad
-	 *  share link) in band A. Where the right home is not on screen (a phone's
-	 *  other tab), the lineup's rail, then band A — never unseen. ⚠ A notice
-	 *  with an Undo in band A overflowed a phone (§11.6 item 20's open point). */
-	let noticeFrom = $state<'grid' | 'lineup'>('grid');
-	const noticeHasActions = $derived(documentBar.toolActions.length > 0);
-	const noticeOnGrid = $derived(
-		noticeHasActions &&
-			noticeFrom === 'grid' &&
-			showing !== 'lineup' &&
-			!!(swapping || selectedTeam) &&
-			!errandOpen
-	);
-	const noticeOnLineup = $derived(noticeHasActions && !noticeOnGrid && showing !== 'characters');
 
 	/** The portrait again leaves swap mode; another filled one moves it (on
 	 *  the Planner's row, an empty one too). */
@@ -659,12 +686,12 @@
 				}
 			});
 		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
-		noticeFrom = 'grid';
-		documentBar.showNotice(
+		notices.toast(
+			'success',
 			pin
 				? `${name} replaced ${nameOf(incumbent)}${from}. “${pin.name}” is no longer pinned.`
-				: `${name} replaced ${nameOf(incumbent)}${from}.`,
-			actions
+				: `${name} replaced ${nameOf(incumbent)}${from}`,
+			{ actions }
 		);
 		if (tabbed) tab = 'lineup';
 	}
@@ -1178,6 +1205,9 @@
 
 	/** The destination strip over the grid: where a pick goes. */
 	const destFilled = $derived(selectedTeam?.slots.filter((s) => s !== null).length ?? 0);
+
+	/** Share answers for itself (notices §3.1). */
+	const shareAnswer = new ControlAnswer();
 </script>
 
 <!-- One grid tile: the roster grid and the "not yet curated" bucket. -->
@@ -1357,25 +1387,6 @@
 	{/each}
 {/snippet}
 
-<!-- The notice and its actions fade as ONE surface on --t-quick
-     (DocumentActions' .doc-notice). One wrapper, so the buttons leave with the
-     words — and `outroInert`, so an Undo on its way out cannot take a click. -->
-{#snippet notice()}
-	<span
-		class="tb-notice-group"
-		transition:fade={{ duration: motion(T_QUICK) }}
-		onintrostart={introLive}
-		onoutrostart={outroInert}
-	>
-		<span class="tb-notice" role="status" title={documentBar.notice}>{documentBar.notice}</span>
-		{#each documentBar.toolActions as action (action.label)}
-			<button class="btn btn--sm" onclick={() => documentBar.runNoticeAction(action)}
-				>{action.label}</button
-			>
-		{/each}
-	</span>
-{/snippet}
-
 <!-- ↻ 2026-10-08 (lineups design §2.1): NO BENCH. The Builder builds several
      teams at once, so it cannot hold the Planner's one working team; band A is
      the BOARD's now — its tabs, in the rotation tabs' own grammar. -->
@@ -1386,7 +1397,6 @@
 
 	{#snippet bandARight()}
 		<div class="tb-doc-actions">
-			{#if documentBar.notice && !noticeOnLineup && !noticeOnGrid}{@render notice()}{/if}
 			<button
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
@@ -1408,7 +1418,7 @@
 			<button
 				class="btn"
 				disabled={!boardHasAnyone || errandOpen}
-				onclick={() => boardBar.shareLink()}
+				onclick={() => void boardBar.shareLink().then((o) => sayOutcome(o, null))}
 				title="Copy a link to this lineup"
 			>
 				<Mark name="share" />
@@ -1541,10 +1551,7 @@
 				</div>
 			{/if}
 			{#if showing !== 'characters'}
-				<div
-					class="tb-band-cell tb-band-cell--lineup"
-					class:tb-band-cell--notice={!!documentBar.notice && noticeOnLineup}
-				>
+				<div class="tb-band-cell tb-band-cell--lineup">
 					{#if tabbed}{@render paneSwitch()}{/if}
 					<!-- ↻ L1 (⚓ Nate 2026-10-20): a Stygian lineup's season leads the
 					     rail, a plate of its own beside it (glass never on glass); the
@@ -1558,30 +1565,7 @@
 					<!-- THE LINEUP'S RAIL (⚓ Nate): the cell always spans its pane, as the
 					     Planner's band B rail spans its middle — an empty plate today,
 					     the lineup's controls standing at its end. -->
-					<!-- A lineup notice: its words on the rail, snug against its buttons,
-					     which stand BESIDE the rail as plates of their own (⚓ Nate:
-					     glass is never stacked on glass). -->
-					<span class="tb-rail">
-						{#if documentBar.notice && noticeOnLineup}
-							<span
-								class="tb-notice"
-								role="status"
-								title={documentBar.notice}
-								transition:fade={{ duration: motion(T_QUICK) }}>{documentBar.notice}</span
-							>
-						{/if}
-					</span>
-					{#if documentBar.notice && noticeOnLineup}
-						{#each documentBar.toolActions as action (action.label)}
-							<button
-								class="btn btn--glass"
-								transition:fade={{ duration: motion(T_QUICK) }}
-								onintrostart={introLive}
-								onoutrostart={outroInert}
-								onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
-							>
-						{/each}
-					{/if}
+					<span class="tb-rail"></span>
 					{#if errandOpen}
 						<!-- The errand edits the Planner's team, not a board: the board's
 						     own controls wait for it. -->
@@ -1617,7 +1601,7 @@
 							title={board.noRepeats
 								? 'Each character joins only one team.'
 								: 'A character can join more than one team.'}
-							onclick={() => boards.setNoRepeats(board.id, !board.noRepeats, teamRecency)}
+							onclick={toggleNoRepeats}
 						>
 							<Mark name={board.noRepeats ? 'repeatOff' : 'repeat'} />
 							<span class="tb-band-label">{board.noRepeats ? 'No repeats' : 'Repeats allowed'}</span
@@ -1633,8 +1617,9 @@
 								aria-label="Share this lineup"
 								title="Copy a link to this lineup"
 								disabled={!boardHasAnyone}
-								onclick={() => boardBar.shareLink()}
-								><Mark name="share" /> <span class="tb-band-label">Share</span></button
+								onclick={() => void boardBar.shareLink().then((o) => sayOutcome(o, shareAnswer))}
+								><Mark name={shareAnswer.now ? (shareAnswer.now.ok ? 'check' : 'warn') : 'share'} />
+								<span class="tb-band-label">{shareAnswer.now?.short ?? 'Share'}</span></button
 							>
 						{/if}
 					{/if}
@@ -1668,7 +1653,7 @@
 					onEmptySlot={() => {
 						if (tabbed) tab = 'characters';
 					}}
-					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
+					onRemoveTeam={removeTeam}
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
 					{bank}
@@ -1718,23 +1703,7 @@
 	{/if}
 	<!-- THE DESTINATION STRIP (§11.2): where a pick goes, keyed by the
 	     team's hue — or, swapping, who the pick replaces (§11.6 item 20). -->
-	{#if noticeOnGrid}
-		<!-- A grid action's notice, in the banner over the grid you acted in;
-		     its buttons are bare ink on the hue, as the ✕ is. -->
-		<p class="tb-dest tb-dest--notice" role="status" style:--team-hue={selectedHue}>
-			<span class="tb-dest-notice" title={documentBar.notice}>{documentBar.notice}</span>
-			{#each documentBar.toolActions as action (action.label)}
-				<button
-					class="btn btn--sm tb-dest-action"
-					transition:fade={{ duration: motion(T_QUICK) }}
-					onintrostart={introLive}
-					onoutrostart={outroInert}
-					onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
-				>
-			{/each}
-			{@render destCount()}
-		</p>
-	{:else if swapping}
+	{#if swapping}
 		{@const verb = swapping.incumbent ? 'replacing' : 'adding'}
 		<p class="tb-dest" role="status" style:--team-hue={selectedHue}>
 			{#if swapping.incumbent}
@@ -1958,21 +1927,11 @@
 		   row (the roomy form follows the board's measured width). */
 	}
 
-	/* Band A's end zone: the board's notice and Share. */
+	/* Band A's end zone: Save, Library and Share. */
 	.tb-doc-actions {
 		display: flex;
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
-	}
-	.tb-notice-group {
-		display: flex;
-		align-items: center;
-		gap: var(--band-item-gap, 4px);
-	}
-	.tb-notice {
-		font-size: var(--fs-sm);
-		color: var(--muted);
-		white-space: nowrap;
 	}
 
 	/* ONE frame holding every zone, inside a ToolStack that supplies the
@@ -2184,27 +2143,8 @@
 	:global(:where(:root:not([data-next]))) .tb-rail {
 		background: var(--surface);
 	}
-	/* The notice sits at the rail's END, against its buttons; when it runs
-	   long the words ellipsize (the title carries them whole). ↻ 2026-10-20:
-	   the padding is the NOTICE's, so an empty rail can shrink to nothing on
-	   a phone, where the season plate shares the band. */
-	.tb-rail .tb-notice {
-		padding: 0 0.75rem;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
 	.tb-norepeat {
 		flex: none;
-	}
-	/* Below `compact` (40rem — $lib/breakpoints.ts) the rail is a sliver, so
-	   while a notice stands on it No repeats steps aside and the rail takes its
-	   room; the toggle is back when the notice goes. */
-	@media (max-width: 40rem) {
-		.tb-band-cell--notice .tb-norepeat,
-		.tb-band-cell--notice .tb-clear {
-			display: none;
-		}
 	}
 	.tb-pane-switch {
 		gap: 0.45rem;
@@ -2499,29 +2439,6 @@
 		text-transform: none;
 		letter-spacing: var(--ls-tight);
 		font-weight: var(--fw-regular, 400);
-	}
-	/* A grid action's notice: its words ellipsize before the count does, and
-	   its buttons are outlined in the ink — bare ink on the hue, not plates. */
-	.tb-dest-notice {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	/* Below `compact` (40rem — $lib/breakpoints.ts) the notice takes the
-	   count's place for its few seconds; the count returns with the message. */
-	@media (max-width: 40rem) {
-		.tb-dest--notice .tb-dest-count {
-			display: none;
-		}
-	}
-	.tb-dest-action {
-		flex: none;
-		height: 20px;
-		padding: 0 0.5rem;
-		background: none;
-		color: inherit;
-		box-shadow: inset 0 0 0 1px currentColor;
 	}
 	/* Swapping, the banner ends in its ✕ (Escape does the same) — bare ink on
 	   the hue, not a plate. */

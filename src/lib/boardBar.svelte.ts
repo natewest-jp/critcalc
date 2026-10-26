@@ -11,6 +11,8 @@
  * library, opened from the Builder.
  */
 
+import { notices } from './notices.svelte';
+import type { Outcome } from './controlAnswer.svelte';
 import { fromStore, get } from 'svelte/store';
 import { constellations, savedBoards, savedNotations, type SavedBoard } from './stores';
 import { documentBar } from './documentBar.svelte';
@@ -31,6 +33,9 @@ import { encodeBoard, type SharedBoard } from './utils/boardUrl';
 import { nextLayout } from './nextLayout';
 import { documentsReady, OPENED_IN_THEORYCRAFT } from './storage/arrivals';
 
+/** A team that found no room: what to do about it, too. */
+export const LINEUP_FULL =
+	'The lineup is full, so the team wasn’t added. Choose a team to replace, or use a Custom lineup.';
 /** A closing board is worth keeping when any of its teams holds anyone. */
 export function boardWorthKeeping(board: Board): boolean {
 	return board.teams.some((t) => t.slots.some((s) => s !== null));
@@ -99,7 +104,7 @@ class BoardBarState {
 			const id = savedBoards.save(payload);
 			boards.boards = boards.boards.map((b) => (b.id === board.id ? { ...b, savedId: id } : b));
 		}
-		documentBar.showNotice('Saved');
+		notices.toast('success', 'Saved');
 	}
 
 	/** Open a saved board as a tab (or switch to the tab already showing it). */
@@ -166,13 +171,13 @@ class BoardBarState {
 		const active = boards.activeBoard;
 		if (!boardWorthKeeping(active) && !active.savedId) {
 			boards.boards = boards.boards.map((b) => (b.id === active.id ? { ...doc, id: b.id } : b));
-			documentBar.showNotice('Loaded shared lineup');
+			notices.toast('info', 'Loaded shared lineup');
 			return;
 		}
 		this.withRoom(
 			() => {
 				boards.openBoard(doc);
-				documentBar.showNotice('Loaded shared lineup');
+				notices.toast('info', 'Loaded shared lineup');
 			},
 			() => recentlyClosedBoards.push({ ...makeBoard(doc.label), ...doc })
 		);
@@ -196,7 +201,7 @@ class BoardBarState {
 				// moment before, so a team that didn't fit is said LAST.
 				const added = this.#placeTeam(ids, switched);
 				if (switched) documentBar.arrived(true, OPENED_IN_THEORYCRAFT);
-				if (!added && switched) documentBar.showNotice('The lineup is full');
+				if (!added && switched) notices.toast('warning', LINEUP_FULL);
 			});
 			return;
 		}
@@ -212,24 +217,28 @@ class BoardBarState {
 		if (empty) boards.setTeam(board.id, empty.id, slots);
 		// A battlefield board's teams are the game's — only Custom grows.
 		else if (board.preset !== 'custom' || !boards.addTeam(board.id, slots)) {
-			if (!quiet) documentBar.showNotice('The lineup is full');
+			if (!quiet) notices.toast('warning', LINEUP_FULL);
 			return false;
 		}
-		if (!quiet) documentBar.showNotice('Team added to the lineup');
+		if (!quiet) notices.toast('success', 'Team added to the lineup');
 		return true;
 	}
 
 	/** Copy a `?b=` link to the active board. Teams and levels travel, pins
 	 *  never (§9.4). */
-	async shareLink() {
-		if (!boardWorthKeeping(boards.activeBoard)) return;
+	async shareLink(): Promise<Outcome | null> {
+		if (!boardWorthKeeping(boards.activeBoard)) return null;
 		try {
 			const url = await this.shareUrl();
-			if (!url) return;
+			if (!url) return null;
 			await navigator.clipboard.writeText(url);
-			documentBar.showNotice('Link copied');
+			return { ok: true, short: 'Copied', long: 'Link copied' };
 		} catch {
-			documentBar.showNotice('Share failed');
+			return {
+				ok: false,
+				short: 'Couldn’t copy',
+				long: 'Couldn’t copy the link. The browser may have blocked the clipboard.'
+			};
 		}
 	}
 

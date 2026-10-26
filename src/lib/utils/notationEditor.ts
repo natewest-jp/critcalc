@@ -15,6 +15,7 @@
 
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
+import { rotationTabs } from '$lib/rotationTabs.svelte';
 import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
 import {
 	buildNotationExtensions,
@@ -76,6 +77,15 @@ export function createNotationEditor(
 		// The text reaches the caller through the listener below, WITH its seats.
 		// The empty-state hint comes from the seats (notationSeats.seatHint).
 		...buildNotationExtensions(() => {}, null),
+		// ⚓ A document another tab holds is read-only (notices round): what the
+		// PERSON does (typing, a paste, a drop, ⌘Z) is refused, and the store's
+		// own writes (a load, a bench edit replayed) are not user events.
+		EditorState.changeFilter.of(
+			(tr) =>
+				!tr.docChanged ||
+				!['input', 'delete', 'undo', 'redo', 'move'].some((e) => tr.isUserEvent(e)) ||
+				rotationTabs.canEdit()
+		),
 		EditorView.updateListener.of((u) => {
 			if (onCursor && (u.selectionSet || u.docChanged)) onCursor(u.state.selection.main.head);
 			const seats = u.state.field(seatsField);

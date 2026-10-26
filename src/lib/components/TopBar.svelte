@@ -173,7 +173,11 @@
 				{#if withDoc && docName}
 					<span class="nav-kicker">
 						<span class="nav-tool">{t.short}{guest ? ' · Theorycraft' : ''}</span>
-						{#if storageSession.saving}
+						{#if storageSession.saveFailed}
+							<!-- Failure stays in the status, and the banner says why (notices §3.5). -->
+							<span class="nav-status nav-status--bad"><Mark name="warn" size={11} />Not saved</span
+							>
+						{:else if storageSession.saving}
 							<span class="nav-status"><span class="st-dot" aria-hidden="true"></span>Saving…</span>
 						{:else if justSaved}
 							<span class="nav-status"
@@ -198,15 +202,27 @@
 		{#if docTool && docName}
 			<button class="tb-phonedoc" onclick={() => place && menuState.toggle(place)}>
 				<span class="nav-label" class:is-derived={docName.derived}>{docName.text}</span>
+				<!-- The phone's save status (notices §3.5: it had none): a mark in
+				     the pill, its words in its label. -->
+				{#if storageSession.saveFailed}
+					<span
+						class="tb-phonedoc-status is-bad"
+						role="img"
+						aria-label="Not saved"
+						title="Not saved"><Mark name="warn" size={12} /></span
+					>
+				{:else if storageSession.saving}
+					<span class="tb-phonedoc-status" role="img" aria-label="Saving…" title="Saving…"
+						><span class="st-dot" aria-hidden="true"></span></span
+					>
+				{:else if justSaved}
+					<span class="tb-phonedoc-status" role="img" aria-label="Saved" title="Saved"
+						><Mark name="check" size={12} /></span
+					>
+				{/if}
 				<span class="tb-phonedoc-door"><Mark name="library" size={13} /></span>
 			</button>
 		{/if}
-
-		{#if documentBar.notice}<span class="tb-notice" role="status">{documentBar.notice}</span
-			>{#each documentBar.barActions as action (action.label)}<button
-					class="tb-notice-act"
-					onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
-				>{/each}{/if}
 
 		<!-- ⚓ §12 Q14: Theorycraft invites an account. ↻ 2026-10-25 (⚓ Nate): it
 		     stands LEFT of the picture, so on a wide bar it grows toward the
@@ -598,6 +614,19 @@
 		white-space: nowrap;
 		color: color-mix(in srgb, var(--chrome) 50%, transparent);
 	}
+	.nav-status--bad {
+		color: var(--ui-danger);
+		font-weight: var(--fw-semibold);
+	}
+	.tb-phonedoc-status {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		color: color-mix(in srgb, var(--chrome) 60%, transparent);
+	}
+	.tb-phonedoc-status.is-bad {
+		color: var(--ui-danger);
+	}
 	.nav-status {
 		display: inline-flex;
 		align-items: center;
@@ -668,30 +697,6 @@
 		align-items: center;
 		gap: 1.1rem;
 		min-width: 0;
-	}
-	.tb-notice {
-		font-size: var(--ui-ctl-fs);
-		white-space: nowrap;
-		color: color-mix(in srgb, var(--chrome) 75%, transparent);
-	}
-	/* A notice's button (Move to a profile, §9.3): plain words on the bar,
-	   underlined so they read as a thing to press. */
-	.tb-notice-act {
-		margin-left: -0.6rem;
-		padding: 0;
-		border: none;
-		background: none;
-		color: var(--chrome);
-		font: inherit;
-		font-size: var(--ui-ctl-fs);
-		white-space: nowrap;
-		text-decoration: underline;
-		text-decoration-color: color-mix(in srgb, var(--chrome) 40%, transparent);
-		text-underline-offset: 3px;
-		cursor: pointer;
-	}
-	.tb-notice-act:hover {
-		text-decoration-color: currentColor;
 	}
 	/* The picture and the doors are ONE run at one gap (⚓ Nate 2026-10-25:
 	   tools · picture · Teams · Share · Help · Settings). */
@@ -970,10 +975,6 @@
 		.tb-actions {
 			margin-left: auto;
 			gap: 0.1rem;
-		}
-		.tb-notice,
-		.tb-notice-act {
-			display: none;
 		}
 		.tb-phonedoc {
 			display: flex;

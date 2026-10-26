@@ -32,7 +32,8 @@ import {
 	slotsFromNotation,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
-import { documentBar, NOTICE_ONCE_MS } from '$lib/documentBar.svelte';
+import { notices, heldKey, announceAfterReload, type NoticeKind } from '$lib/notices.svelte';
+import { colourValue } from '$lib/profileLook';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -124,7 +125,9 @@ export const SAVE_DELAY_MS = 400;
 const RETRY_MS = [1000, 30_000] as const;
 
 /** Approved by Nate 2026-10-23. */
-const SAVE_FAILED_NOTICE = 'Couldn’t save your changes. Trying again…';
+/** The save-failure banner's key (notices §3.3). */
+const SAVE_FAILED_KEY = 'save-failed';
+const SAVE_FAILED_NOTICE = 'Couldn’t save your changes.';
 
 export type DocTool = 'planner' | 'builder';
 
@@ -223,17 +226,18 @@ class StorageSession {
 
 	/** Once, after the migration moved the player's data (§13.1). */
 	async #offerBackup(db: IDBDatabase): Promise<void> {
-		await setMeta(db, { backupOffer: false });
 		const download = async () => {
 			const at = Date.now();
 			const file = await this.backup(at);
 			if (file) downloadEnvelope(file, at);
 		};
-		documentBar.showNotice(
-			MIGRATED_NOTICE,
-			[{ label: 'Download a backup', run: () => void download(), bar: true }],
-			NOTICE_ONCE_MS
-		);
+		// Once ever, with a button that matters: it stays until dismissed, and
+		// is marked seen only once it has gone (notices §3.2).
+		notices.toast('info', MIGRATED_NOTICE, {
+			actions: [{ label: 'Download a backup', run: () => void download() }],
+			ms: null,
+			onGone: () => void setMeta(db, { backupOffer: false })
+		});
 	}
 
 	/** The channel and page listeners. ⚠ Once per page: the tools layout
@@ -247,6 +251,7 @@ class StorageSession {
 			// and saving it would write the old data back over the restore.
 			if (msg.kind === 'replaced') {
 				this.#freeze();
+				announceAfterReload('A backup was restored in another tab, so this tab reloaded');
 				location.reload();
 				return;
 			}
@@ -337,7 +342,14 @@ class StorageSession {
 		if (this.#frozen) return;
 		if (!this.saveFailed) {
 			this.saveFailed = true;
-			documentBar.showNotice(SAVE_FAILED_NOTICE);
+			// A CONDITION, not an event: it stays until a write lands.
+			notices.banner({
+				key: SAVE_FAILED_KEY,
+				kind: 'error',
+				lead: SAVE_FAILED_NOTICE,
+				body: 'Trying again… Your work stays in this tab until it saves.',
+				actions: [{ label: 'Download a backup', run: () => void this.#downloadBackup() }]
+			});
 		}
 		const old = this.#db;
 		const db = await reopenStorage().catch(() => null);
@@ -360,6 +372,14 @@ class StorageSession {
 	#saveLanded(): void {
 		this.#retries = 0;
 		this.saveFailed = false;
+		notices.clearBanner(SAVE_FAILED_KEY);
+	}
+
+	async #downloadBackup(): Promise<void> {
+		const at = Date.now();
+		const file = await this.backup(at).catch(() => null);
+		if (file) downloadEnvelope(file, at);
+		else notices.toast('error', 'Couldn’t make a backup file from this browser’s data.');
 	}
 
 	// ── The Library (phase 2c, §4.2 + §6.3) ─────────────────────────────────
@@ -528,7 +548,15 @@ class StorageSession {
 		this.#records.delete(id);
 		this.#written.delete(id);
 		this.#letGo(id);
-		if (tool && rec && showing) await this.#showNext(tool, rec.type);
+		if (tool && rec && showing) {
+			await this.#showNext(tool, rec.type);
+			// The thing on screen changed under the person: say so (notices).
+			const name = rec.name ?? this.#derived.get(id);
+			notices.toast(
+				'info',
+				`${name ? `“${name}”` : `This ${rec.type}`} was deleted in another tab, so this tab moved on`
+			);
+		}
 	}
 
 	/** Changed in another tab without its content changing (renamed, pinned,
@@ -676,6 +704,7 @@ class StorageSession {
 	async #loadPlanner(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'planner');
 		rotationTabs.persistSink = (tabs, activeId) => this.#queue({ planner: { tabs, activeId } });
+		rotationTabs.canEdit = () => this.#mayEdit(this.currentId('planner'));
 		if (profile.current.planner === null) {
 			this.#showBlank('planner');
 		} else if (doc?.type === 'rotation') {
@@ -698,6 +727,7 @@ class StorageSession {
 	async #loadBuilder(profile: ProfileRecord): Promise<void> {
 		const doc = await this.#current(profile, 'builder');
 		boards.persistSink = (list, activeId) => this.#queue({ builder: { boards: list, activeId } });
+		boards.canEdit = (id) => this.#mayEdit(id);
 		if (profile.current.builder === null) {
 			this.#showBlank('builder');
 		} else if (doc?.type === 'lineup') {
@@ -727,6 +757,14 @@ class StorageSession {
 	// ── The locks ───────────────────────────────────────────────────────────
 
 	/** Hold a document if no other tab does; else show it without saving. */
+	/** A document another tab holds is READ-ONLY here (notices round): an
+	 *  edit is refused, and the banner comes back to say why. */
+	#mayEdit(id: string | null): boolean {
+		if (!id || !this.readOnly.includes(id)) return true;
+		notices.recall(heldKey(id));
+		return false;
+	}
+
 	async #hold(id: string): Promise<boolean> {
 		if (this.#locks.has(id)) return true;
 		if (this.readOnly.includes(id)) return false;
@@ -806,7 +844,11 @@ class StorageSession {
 		const p = this.#db && this.profile ? await get(this.#db, 'profiles', this.profile.id) : null;
 		if (!p) return;
 		// Deleted in another tab: this one goes to Theorycraft too.
-		if (p.deleted) return void this.switchTo(THEORYCRAFT_ID);
+		if (p.deleted)
+			return void this.switchTo(THEORYCRAFT_ID, () => ({
+				kind: 'warning',
+				text: `${p.name} was deleted in another tab, so this tab is in Theorycraft now`
+			}));
 		this.#useProfile(p);
 	}
 
@@ -1164,12 +1206,9 @@ class StorageSession {
 		});
 		await this.#setPair(doc.id, copy.id);
 		await this.open(copy.id);
-		// ⚓ The FIRST routed copy teaches the rule once; afterwards the white and
-		// the status carry it (§4.6).
-		if (!storeGet(siteSettings).seenGuestNotice) {
-			siteSettings.markSeen('seenGuestNotice');
-			documentBar.showNotice(`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
-		}
+		// ↻ EVERY routed copy says so (notices round, 2026-10-26; was the first
+		// only): each one puts a different document in front of the person.
+		notices.toast('info', `Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
 	}
 
 	/** Compare → Duplicate and compare: a copy beside the original, where the
@@ -1621,7 +1660,7 @@ class StorageSession {
 			p.current[tool] === id ? { ...p, current: { ...p.current, [tool]: null } } : p
 		);
 		this.version++;
-		await this.switchTo(profileId);
+		await this.switchTo(profileId, (p) => ({ kind: 'success', text: `Moved to ${p.name}` }));
 		await this.open(id);
 	}
 
@@ -1669,7 +1708,7 @@ class StorageSession {
 		await put(db, 'profiles', $state.snapshot(rec) as ProfileRecord);
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id: rec.id });
 		await this.#loadProfiles();
-		await this.switchTo(rec.id);
+		await this.switchTo(rec.id, (p) => ({ kind: 'success', text: `Added ${p.name}` }));
 		return true;
 	}
 
@@ -1688,7 +1727,12 @@ class StorageSession {
 	async deleteProfile(id: string): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === THEORYCRAFT_ID) return;
-		if (this.profile?.id === id) await this.switchTo(THEORYCRAFT_ID);
+		const gone = this.profiles.find((p) => p.id === id)?.name ?? 'The account';
+		if (this.profile?.id === id)
+			await this.switchTo(THEORYCRAFT_ID, () => ({
+				kind: 'success',
+				text: `Deleted ${gone}. You’re in Theorycraft now.`
+			}));
 		// Another tab may have left the site's pointer on it.
 		if ((await getMeta(db)).activeProfileId === id) {
 			await setMeta(db, { activeProfileId: THEORYCRAFT_ID });
@@ -1712,7 +1756,17 @@ class StorageSession {
 	 * documents, and the switch cue. The documents on screen are written
 	 * first and let go, so another tab may take them.
 	 */
-	async switchTo(id: string): Promise<void> {
+	/**
+	 * ⚓ A switch is SAID in words (notices round, 2026-10-26): the wash is
+	 * motion only, gone in 2s and absent under reduced motion. `say` is the
+	 * toast: by default "Switched to X" with the profile's colour; a caller
+	 * with its own reason passes its words, and `null` when something else
+	 * already says it (a link's arrival).
+	 */
+	async switchTo(
+		id: string,
+		say?: ((p: ProfileRecord) => { kind: NoticeKind; text: string }) | null
+	): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === this.profile?.id) return;
 		const next = await get(db, 'profiles', id);
@@ -1731,13 +1785,17 @@ class StorageSession {
 		}
 		this.version++;
 		this.switchedAt = Date.now();
+		if (say !== null) {
+			const { kind, text } = say?.(next) ?? { kind: 'info', text: `Switched to ${next.name}` };
+			notices.toast(kind, text, { swatch: colourValue(next.colour) });
+		}
 	}
 
 	/** ⚓ Links open in Theorycraft (§9.3). `true` if that meant leaving a
 	 *  real profile, which the arrival says out loud. */
 	async toTheorycraft(): Promise<boolean> {
 		if (!this.profile || this.profile.id === THEORYCRAFT_ID) return false;
-		await this.switchTo(THEORYCRAFT_ID);
+		await this.switchTo(THEORYCRAFT_ID, null);
 		return true;
 	}
 
@@ -1901,7 +1959,7 @@ class StorageSession {
 				// A failing save says so again, rather than nothing at all; a
 				// document another tab holds is not being saved here, so it
 				// earns no ✓ (its pill already says why).
-				if (this.saveFailed) return documentBar.showNotice(SAVE_FAILED_NOTICE);
+				if (this.saveFailed) return notices.recall(SAVE_FAILED_KEY);
 				const held = (['planner', 'builder'] as const).some((t) => {
 					const id = this.currentId(t);
 					return !!id && this.readOnly.includes(id);

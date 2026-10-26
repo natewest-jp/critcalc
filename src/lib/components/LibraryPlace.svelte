@@ -474,7 +474,15 @@
 			start one.
 		</p>
 	{:else if loaded && listed.length === 0}
-		<p class="empty">No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.</p>
+		<!-- The reason it is empty, not a guess: pick mode hides the rotation
+		     being compared, so a lone rotation has no partner. -->
+		<p class="empty">
+			{#if menu.pickFor && !menu.teamFilter}
+				There’s no other rotation to compare with yet. Make a second one first.
+			{:else}
+				No {place === 'planner' ? 'rotations' : 'lineups'} for this team yet.
+			{/if}
+		</p>
 	{:else if place === 'planner'}
 		<!-- ⚓ THE SHELF (Nate 2026-10-25): pins are the rotations you reach for
 		     most, so they stand FIRST and LARGER — a row of cards across the
