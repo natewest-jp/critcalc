@@ -89,7 +89,14 @@ import {
 	type SavedNotation
 } from '$lib/stores';
 import { get as storeGet } from 'svelte/store';
-import { askOnFirstSave } from '$lib/utils/storageDurability';
+import {
+	askOnFirstSave,
+	backupReminderDue,
+	readLastBackup,
+	recordBackupReminded
+} from '$lib/utils/storageDurability';
+import { menu } from '$lib/menuState.svelte';
+import { scrollBehavior } from '$lib/motion';
 import {
 	THEORYCRAFT_ID,
 	newId,
@@ -213,6 +220,7 @@ class StorageSession {
 		this.active = true;
 		settleDocuments(true);
 		if (meta.backupOffer) await this.#offerBackup(db);
+		else await this.#remindBackup(db, meta);
 		return true;
 	}
 
@@ -227,13 +235,51 @@ class StorageSession {
 		return tc && !tc.deleted ? tc : undefined;
 	}
 
+	/**
+	 * ⚓ The backup reminder (Nate 2026-10-26): once a window
+	 * (`BACKUP_STALE_DAYS`) has passed since the last backup, or since the
+	 * first visit when there has never been one, and a REAL profile's work
+	 * changed since — Theorycraft's is scratch, and a reminder about it would
+	 * nag the visitor who only follows links. Shown once, then quiet for
+	 * another window whether it was acted on or not.
+	 */
+	async #remindBackup(db: IDBDatabase, meta: Meta): Promise<void> {
+		if (!backupReminderDue(meta.migratedAt)) return;
+		if (!(await this.changedSince(readLastBackup() ?? 0))) return;
+		notices.toast(
+			'info',
+			readLastBackup()
+				? 'It’s been a while since your last backup'
+				: 'You haven’t backed up your work yet',
+			{
+				actions: [
+					{ label: 'Download a backup', run: () => void this.#downloadBackup() },
+					{
+						label: 'Settings',
+						run: () => {
+							menu.show('settings');
+							// ⚠ Once the section has SETTLED, not just rendered: its
+							// storage and profile rows arrive a beat later, below
+							// the target, and a scroll begun before them is clamped
+							// to the shorter page (measured: 562 of 630).
+							setTimeout(
+								() =>
+									document
+										.getElementById('settings-data')
+										?.scrollIntoView({ block: 'start', behavior: scrollBehavior() }),
+								250
+							);
+						}
+					}
+				],
+				onGone: () => recordBackupReminded(Date.now())
+			}
+		);
+	}
+
 	/** Once, after the migration moved the player's data (§13.1). */
 	async #offerBackup(db: IDBDatabase): Promise<void> {
-		const download = async () => {
-			const at = Date.now();
-			const file = await this.backup(at);
-			if (file) downloadEnvelope(file, at);
-		};
+		const download = () => this.#downloadBackup();
 		// Once ever, with a button that matters: it stays until dismissed, and
 		// is marked seen only once it has gone (notices §3.2).
 		notices.toast('info', MIGRATED_NOTICE, {
@@ -1037,7 +1083,11 @@ class StorageSession {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db) return 0;
 		const all = await readAll(db);
-		return all.documents.filter((d) => !d.deleted && d.updatedAt > at).length;
+		// ⚓ A real profile's work only: Theorycraft's is scratch (and where a
+		// first visit's samples live), so it never makes a backup look stale.
+		return all.documents.filter(
+			(d) => !d.deleted && d.profileId !== THEORYCRAFT_ID && d.updatedAt > at
+		).length;
 	}
 
 	/**

@@ -50,3 +50,29 @@ for Settings, from the streamer's session: they could not scan it quickly.
 
 - On the Profile page, Clear data sits below ~140 character pictures. That is
   the Profile surface's own pass (collapse "Everyone else" behind the search).
+
+## Follow-ups (same day, ⚓ Nate)
+
+- **Storage is its own row again**: the control column states the browser's
+  answer (Kept · Unknown · Not kept · Declined) or holds Keep my data. ⛔ No
+  prompt for it: the site already asks on the first save, and only Safari's
+  clearing is a real risk, which the request can't fix there. A BACKUP is what
+  is worth prompting for.
+- **The backup's VALUE is bold** ("never", "3 days ago", the count), ⛔ never
+  the sentence or its label; `--ui-warning` only when it is a problem
+  (`backupIsStale`: never with saved work, or > `BACKUP_STALE_DAYS` (30) with
+  changes since). ⛔ No gold (gold names a block).
+- **The backup reminder** (`#remindBackup`): a toast once a window has passed
+  since the later of the last backup (else the first visit) and the last
+  reminder, if a REAL profile's work changed since. Shown once, then quiet for
+  a window whether acted on or not. Its Settings action scrolls to Your data
+  after a 250ms settle (a scroll begun before the storage/profile rows render
+  is clamped to the shorter page). ⏭ The row highlight is not built.
+- **Theorycraft's documents never count** toward "changed since": they are
+  scratch, and a first visit's samples live there.
+- **Show padding → Mark padding** (it read as the switch for padding itself).
+- **Note sets keep their names** (Nate's keyboard choices, picked by ear); the
+  chosen ORDER is spelled out under the note, since its `title` is hover-only.
+- **A picker previews what it changes**: the swap picker plays the swap alone;
+  Voice and the Notes rows play the phrase without its swap
+  (`PREVIEW_NOTES`). Sound mode, Preview and Volume keep the whole phrase.

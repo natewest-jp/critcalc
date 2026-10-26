@@ -213,7 +213,7 @@
 			<strong>Animations</strong> lets each action play out in full instead of canceling.
 			<strong>Both</strong> enables both. The padding shows as hatched slivers on the active row,
 			which
-			<strong>Show padding</strong> hides. Turn Human timing off in Settings to see the
+			<strong>Mark padding</strong> turns off. Turn Human timing off in Settings to see the
 			frame-perfect rotation. While it’s on, a <strong>Human timing</strong> tag beside
 			<strong>Total</strong> says so and opens Settings.
 		</p>
@@ -224,8 +224,8 @@
 			<strong>Animations</strong> lets each action play out in full instead of canceling.
 			<strong>Both</strong>
 			enables both. The padding shows as hatched slivers on the active row, which
-			<strong>Show padding</strong>
-			hides. Turn Human timing off in the view bar to see the frame-perfect rotation.
+			<strong>Mark padding</strong>
+			turns off. Turn Human timing off in the view bar to see the frame-perfect rotation.
 		</p>
 	{/if}
 	<p>
