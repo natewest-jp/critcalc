@@ -1,6 +1,6 @@
 # Roster surface round (2026-10-26)
 
-Branch `polish/roster-surface`, behind `?next`. The full-screen surface's
+Branch `polish/roster-surface`, behind `?next`; MERGED `07b723d1` and pushed (2026-10-26). The full-screen surface's
 per-surface pass for the **Roster**, after Teams, Settings and Profile. Worked
 hands-on with Nate, one look per step.
 
