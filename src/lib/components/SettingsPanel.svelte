@@ -1,13 +1,27 @@
+<script module lang="ts">
+	/** The page's groups, in order: the menu state's sidebar lists them under
+	 *  Settings and scrolls to `#settings-<id>`. */
+	export const SETTINGS_GROUPS = [
+		{ id: 'appearance', label: 'Appearance' },
+		{ id: 'planner', label: 'Planner' },
+		{ id: 'sound', label: 'Playback sound' },
+		{ id: 'data', label: 'Your data' }
+	] as const;
+</script>
+
 <script lang="ts">
 	import { notices, announceAfterReload } from '$lib/notices.svelte';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 	import {
 		constellations,
+		HUMAN_TIMING_DEFAULTS,
 		loadout,
 		ownership,
 		savedBoards,
 		savedNotations,
-		siteSettings
+		siteSettings,
+		SWAP_PING_DEFAULT
 	} from '$lib/stores';
 	import Mark from './Mark.svelte';
 	import { nextLayout } from '$lib/nextLayout';
@@ -64,6 +78,48 @@
 	 *  v3: every profile (design §10, §12 Q11). The session is loaded only then. */
 	const session = () => import('$lib/storage/session.svelte').then((m) => m.storageSession);
 
+	/** The session itself, once loaded (the new layout only): the Profile
+	 *  link names the active profile. */
+	let store = $state<Awaited<ReturnType<typeof session>> | null>(null);
+	$effect(() => {
+		if ($nextLayout) void session().then((s) => (store = s));
+	});
+	const realProfile = $derived(store?.profile?.kind === 'real' ? store.profile : null);
+	const anySeen = $derived($siteSettings.seenGuestNotice || $siteSettings.seenLinksNotice);
+
+	function showNoticesAgain() {
+		siteSettings.resetSeen();
+		notices.toast('success', 'Tips and notices will show again');
+	}
+
+	/** ⚓ The opposite of Restore (2026-10-26): it empties the browser, as a
+	 *  first visit finds it. A DIALOG, because it takes every profile at once
+	 *  and skips the Trash; it says when the last backup was, since Export is
+	 *  one row above and this cannot be undone. */
+	async function deleteEverything() {
+		const s = await session();
+		const ok = await notices.ask({
+			title: 'Delete everything in this browser?',
+			body: `Every profile, with its roster, teams, rotations, and lineups, the Trash, and your settings are deleted, and the page reloads. This can’t be undone. ${
+				lastBackup === null
+					? 'You haven’t downloaded a backup yet.'
+					: `Your last backup was ${daysAgo(lastBackup)}.`
+			}`,
+			confirm: 'Delete everything',
+			cancel: 'Keep it',
+			danger: true
+		});
+		if (!ok) return;
+		try {
+			await s.wipe();
+		} catch {
+			notices.toast('error', 'This browser isn’t letting critcalc change its data.');
+			return;
+		}
+		announceAfterReload('Everything in this browser was deleted');
+		location.reload();
+	}
+
 	async function exportBackup() {
 		const at = Date.now();
 		if ($nextLayout) {
@@ -118,25 +174,14 @@
 		armedReset = null;
 	}
 
-	// ⚓ Under the switch a reset clears the ACTIVE profile (Nate 2026-10-23):
-	// the roster stores already write to it, and the saved work is its
-	// documents, ⛔ never the old keys the migration copied from.
-	function clearRotations() {
-		if ($nextLayout) void session().then((s) => s.removeAll('rotation'));
-		else savedNotations.clear();
-	}
-	function clearLineups() {
-		if ($nextLayout) void session().then((s) => s.removeAll('lineup'));
-		else savedBoards.clear();
-	}
-
+	// The old layout's resets (it has no Profile page). ↻ Under the switch
+	// they moved to the profile's own page, its Clear data (2026-10-26).
 	function clearEverything() {
 		constellations.clear();
 		ownership.clear();
 		loadout.clear();
-		clearRotations();
-		clearLineups();
-		if ($nextLayout) void session().then((s) => s.removeAllTeams());
+		savedNotations.clear();
+		savedBoards.clear();
 	}
 
 	// Import flow: pick file → parse+validate → show a summary → confirm → apply
@@ -233,95 +278,206 @@
 		const plural = (k: number, one: string) => `${k} ${one}${k === 1 ? '' : 's'}`;
 		return `${who}, ${plural(c.rotations, 'rotation')}, ${plural(c.lineups, 'lineup')}, and ${plural(c.teams, 'team')}`;
 	};
+
+	// ── Human timing: ONE control (2026-10-26) ──────────────────────────────
+	// The switch and "what it adjusts" were two rows; Off is now the control's
+	// first choice, so it reads as one question. The stored shape is unchanged
+	// (`humanTiming` + `humanTimingMode`), so a mode chosen before survives an
+	// Off and comes back with On.
+	const HUMAN_CHOICES = [
+		['off', 'Off'],
+		['padding', 'Padding'],
+		['animations', 'Animations'],
+		['both', 'Both']
+	] as const;
+	const humanChoice = $derived($siteSettings.humanTiming ? $siteSettings.humanTimingMode : 'off');
+	const padding = $derived(humanChoice === 'padding' || humanChoice === 'both');
+	function chooseHuman(v: (typeof HUMAN_CHOICES)[number][0]) {
+		if (v === 'off') siteSettings.setHumanTiming({ humanTiming: false });
+		else siteSettings.setHumanTiming({ humanTiming: true, humanTimingMode: v });
+	}
+
+	// ── The Planner group's defaults ────────────────────────────────────────
+	// Values people fiddle with and want back (the Reset zoom reasoning), so
+	// the reset is one click with an Undo, not a confirm.
+	type PlannerValues = typeof HUMAN_TIMING_DEFAULTS & {
+		swapPing: number;
+		showCoverageStrips: boolean;
+	};
+	const PLANNER_DEFAULTS: PlannerValues = {
+		...HUMAN_TIMING_DEFAULTS,
+		swapPing: SWAP_PING_DEFAULT,
+		showCoverageStrips: false
+	};
+	const plannerValues = $derived<PlannerValues>({
+		humanTiming: $siteSettings.humanTiming,
+		humanTimingMode: $siteSettings.humanTimingMode,
+		humanTimingPadFrames: $siteSettings.humanTimingPadFrames,
+		showHumanPadding: $siteSettings.showHumanPadding,
+		swapPing: $siteSettings.swapPing,
+		showCoverageStrips: $siteSettings.showCoverageStrips
+	});
+	const plannerAtDefaults = $derived(
+		(Object.keys(PLANNER_DEFAULTS) as (keyof PlannerValues)[]).every(
+			(k) => plannerValues[k] === PLANNER_DEFAULTS[k]
+		)
+	);
+	function setPlanner(v: PlannerValues) {
+		const { swapPing, showCoverageStrips, ...human } = v;
+		siteSettings.setHumanTiming(human);
+		siteSettings.setSwapPing(swapPing);
+		siteSettings.setShowCoverageStrips(showCoverageStrips);
+	}
+	function resetPlanner() {
+		const before = plannerValues;
+		setPlanner(PLANNER_DEFAULTS);
+		notices.toast('success', 'Planner settings reset', {
+			actions: [{ label: 'Undo', run: () => setPlanner(before) }]
+		});
+	}
 </script>
 
+<!-- ⚓ THE ROW (settings surface round, 2026-10-26): a NAME, its CONTROL, and
+     a NOTE — three columns, so the names make one column to scan and the
+     controls one straight edge to read values down; what a setting means
+     sits in the margin, level with its row (the reading layout's idea).
+     Narrower, the note folds under the name; narrower still, the control
+     too. The questions the streamer couldn't find answers to are the GROUP
+     names, so a group is a question (Appearance, Planner…), never a kind of
+     control. -->
 <div class="sp">
 	<!-- The switch (build plan §13.1): shown ONLY while it is on, so the
 	     public never meets a half-built option; `?next` turns it on. -->
 	{#if $nextLayout}
 		<section class="sp-section">
 			<label class="sp-row">
-				<span class="sp-label">
-					<span class="sp-name">Use the new layout</span>
-				</span>
-				<span class="toggle">
-					<input type="checkbox" checked onchange={() => nextLayout.set(false)} />
-					<span class="toggle-track"><span class="toggle-thumb"></span></span>
-					<span class="toggle-label">On</span>
+				<span class="sp-name">Use the new layout</span>
+				<span class="sp-ctl">
+					<span class="toggle">
+						<input type="checkbox" checked onchange={() => nextLayout.set(false)} />
+						<span class="toggle-track"><span class="toggle-thumb"></span></span>
+						<span class="toggle-label">On</span>
+					</span>
 				</span>
 			</label>
 		</section>
 	{/if}
 
-	<section class="sp-section">
-		<h2 class="kicker sp-section-title">Display</h2>
-
-		<!-- ⚓ The interface size (§12 Q21): desktop only, since the phone is
-		     always Small; with the new layout only, the one that reads it. -->
-		{#if $nextLayout}
-			<div class="sp-row sp-desktop">
-				<span class="sp-label">
-					<span class="sp-name">Interface size</span>
-					<span class="sp-desc">Auto picks one for your window’s width.</span>
-				</span>
-				<div class="segment sp-segment" role="radiogroup" aria-label="Interface size">
-					{#each [['auto', 'Auto'], ['small', 'Small'], ['medium', 'Medium'], ['large', 'Large']] as const as [value, label] (value)}
-						<button
-							type="button"
-							role="radio"
-							class="btn"
-							class:is-active={$siteSettings.uiSize === value}
-							aria-checked={$siteSettings.uiSize === value}
-							onclick={() => siteSettings.setUiSize(value)}>{label}</button
-						>
-					{/each}
-				</div>
-			</div>
-		{/if}
+	<section class="sp-section" id="settings-appearance">
+		<h2 class="kicker sp-section-title">Appearance</h2>
 
 		<label class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Updated outfits</span>
-				<span class="sp-desc">Prefer characters’ newest outfit art where one exists.</span>
+			<span class="sp-name">Updated outfits</span>
+			<span class="sp-ctl">
+				<span class="toggle">
+					<input
+						type="checkbox"
+						checked={$siteSettings.useNewOutfits}
+						onchange={() => siteSettings.setUseNewOutfits(!$siteSettings.useNewOutfits)}
+					/>
+					<span class="toggle-track"><span class="toggle-thumb"></span></span>
+					<span class="toggle-label">{$siteSettings.useNewOutfits ? 'On' : 'Off'}</span>
+				</span>
 			</span>
-			<span class="toggle">
-				<input
-					type="checkbox"
-					checked={$siteSettings.useNewOutfits}
-					onchange={() => siteSettings.setUseNewOutfits(!$siteSettings.useNewOutfits)}
-				/>
-				<span class="toggle-track"><span class="toggle-thumb"></span></span>
-				<span class="toggle-label">{$siteSettings.useNewOutfits ? 'On' : 'Off'}</span>
-			</span>
+			<span class="sp-note">Show characters in their newest outfit if they have one.</span>
 		</label>
 
 		<div class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Traveler</span>
-				<span class="sp-desc">Which twin appears wherever a Traveler is shown.</span>
-			</span>
-			<div class="segment sp-segment" role="radiogroup" aria-label="Traveler variant">
-				{#each [['aether', 'Aether'], ['lumine', 'Lumine']] as const as [value, label] (value)}
-					<button
-						class="btn"
-						class:is-active={$siteSettings.travelerVariant === value}
-						role="radio"
-						aria-checked={$siteSettings.travelerVariant === value}
-						onclick={() => siteSettings.setTravelerVariant(value)}>{label}</button
-					>
-				{/each}
-			</div>
-		</div>
-
-		<div class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Swap ping</span>
-				<span class="sp-desc">
-					Your network latency — the ms value Genshin shows top-right. A swap takes your ping plus
-					about 90 ms, so the rotation planner delays every character swap by that much.
+			<span class="sp-name">Traveler</span>
+			<span class="sp-ctl">
+				<span class="segment sp-segment" role="radiogroup" aria-label="Traveler variant">
+					{#each [['aether', 'Aether'], ['lumine', 'Lumine']] as const as [value, label] (value)}
+						<button
+							class="btn"
+							class:is-active={$siteSettings.travelerVariant === value}
+							role="radio"
+							aria-checked={$siteSettings.travelerVariant === value}
+							onclick={() => siteSettings.setTravelerVariant(value)}>{label}</button
+						>
+					{/each}
 				</span>
 			</span>
-			<div class="sp-slider-ctl">
+			<span class="sp-note">Which twin takes the role of Traveler on the site.</span>
+		</div>
+	</section>
+
+	<section class="sp-section" id="settings-planner">
+		<h2 class="kicker sp-section-title">Planner</h2>
+
+		<div class="sp-row">
+			<span class="sp-name">Human timing</span>
+			<span class="sp-ctl">
+				<span class="segment sp-segment" role="radiogroup" aria-label="Human timing">
+					{#each HUMAN_CHOICES as [value, label] (value)}
+						<button
+							class="btn"
+							class:is-active={humanChoice === value}
+							role="radio"
+							aria-checked={humanChoice === value}
+							onclick={() => chooseHuman(value)}>{label}</button
+						>
+					{/each}
+				</span>
+			</span>
+			<span class="sp-note">
+				<strong>Off</strong> times a rotation frame-perfectly, the way a macro plays it.
+				<strong>Padding</strong>
+				adds a short pause before each input the game doesn't buffer, like a skill after a normal attack
+				or the first press after a swap. <strong>Animations</strong> lets every action play out instead
+				of canceling it.
+			</span>
+		</div>
+
+		{#if padding}
+			<div class="sp-row">
+				<span class="sp-name">Input padding</span>
+				<span class="sp-ctl sp-slider-ctl">
+					<input
+						class="slider sp-slider"
+						type="range"
+						min={HUMAN_PAD_MIN_F}
+						max={HUMAN_PAD_MAX_F}
+						step="1"
+						value={$siteSettings.humanTimingPadFrames}
+						oninput={(e) =>
+							siteSettings.setHumanTiming({ humanTimingPadFrames: Number(e.currentTarget.value) })}
+						aria-label="Input padding in frames"
+					/>
+					<span class="sp-slider-value"
+						>{$siteSettings.humanTimingPadFrames}f · {(
+							$siteSettings.humanTimingPadFrames / FPS
+						).toFixed(2)}s</span
+					>
+				</span>
+				<span class="sp-note">
+					How long that pause is. KQM suggests 10 frames for most players; go lower if you play
+					tight.
+				</span>
+			</div>
+
+			<label class="sp-row">
+				<span class="sp-name">Show padding</span>
+				<span class="sp-ctl">
+					<span class="toggle">
+						<input
+							type="checkbox"
+							checked={$siteSettings.showHumanPadding}
+							onchange={() =>
+								siteSettings.setHumanTiming({ showHumanPadding: !$siteSettings.showHumanPadding })}
+						/>
+						<span class="toggle-track"><span class="toggle-thumb"></span></span>
+						<span class="toggle-label">{$siteSettings.showHumanPadding ? 'On' : 'Off'}</span>
+					</span>
+				</span>
+				<span class="sp-note">
+					Draws each pause as a hatched sliver on the timeline, so you can see where the time went.
+				</span>
+			</label>
+		{/if}
+
+		<div class="sp-row">
+			<span class="sp-name">Swap ping</span>
+			<span class="sp-ctl sp-slider-ctl">
 				<input
 					class="slider sp-slider"
 					type="range"
@@ -335,128 +491,39 @@
 				<span class="sp-slider-value"
 					>{$siteSettings.swapPing}ms · {swapFramesForPing($siteSettings.swapPing)}f</span
 				>
-			</div>
+			</span>
+			<span class="sp-note">
+				The ping Genshin shows in the top right. Each swap in the Planner takes your ping plus about
+				90 ms.
+			</span>
 		</div>
+
 		<label class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Coverage strips</span>
-				<span class="sp-desc">
-					Show each slotted character’s coverage strip under the rotation planner’s notation, with
-					the parts your rotation doesn’t reach dimmed.
-				</span>
-			</span>
-			<span class="toggle">
-				<input
-					type="checkbox"
-					checked={$siteSettings.showCoverageStrips}
-					onchange={() => siteSettings.setShowCoverageStrips(!$siteSettings.showCoverageStrips)}
-				/>
-				<span class="toggle-track"><span class="toggle-thumb"></span></span>
-				<span class="toggle-label">{$siteSettings.showCoverageStrips ? 'On' : 'Off'}</span>
-			</span>
-		</label>
-	</section>
-
-	<section class="sp-section">
-		<h2 class="kicker sp-section-title">Human timing</h2>
-		<p class="sp-lede">
-			Without Human timing, the rotation planner is frame-perfect: every cancel lands on the first
-			frame the game allows, the way a macro plays. <strong>Human timing</strong>, on by default{#if !$nextLayout}
-				in its view bar{/if}, times a rotation the way a person plays it. These settings say what
-			that changes.
-		</p>
-
-		{#if $nextLayout}
-			<!-- ⚓ Phase 2e (§5.3): Human timing leaves the toolbar, so it is
-			     turned on and off here; the Planner shows a tag beside the Total
-			     while it is on. -->
-			<label class="sp-row">
-				<span class="sp-label">
-					<span class="sp-name">Human timing</span>
-					<span class="sp-desc">Time rotations the way a person plays them.</span>
-				</span>
+			<span class="sp-name">Coverage strips</span>
+			<span class="sp-ctl">
 				<span class="toggle">
 					<input
 						type="checkbox"
-						checked={$siteSettings.humanTiming}
-						onchange={() =>
-							siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
+						checked={$siteSettings.showCoverageStrips}
+						onchange={() => siteSettings.setShowCoverageStrips(!$siteSettings.showCoverageStrips)}
 					/>
 					<span class="toggle-track"><span class="toggle-thumb"></span></span>
-					<span class="toggle-label">{$siteSettings.humanTiming ? 'On' : 'Off'}</span>
-				</span>
-			</label>
-		{/if}
-
-		<div class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">What it adjusts</span>
-				<span class="sp-desc">
-					<strong>Padding</strong> adds a few frames before every input the game does not buffer — a
-					skill after a normal attack, an aimed shot, the first press after a swap.
-					<strong>Animations</strong> lets each action finish instead of canceling it.
+					<span class="toggle-label">{$siteSettings.showCoverageStrips ? 'On' : 'Off'}</span>
 				</span>
 			</span>
-			<div class="segment sp-segment" role="radiogroup" aria-label="What human timing adjusts">
-				{#each [['padding', 'Padding'], ['animations', 'Animations'], ['both', 'Both']] as const as [value, label] (value)}
-					<button
-						class="btn"
-						class:is-active={$siteSettings.humanTimingMode === value}
-						role="radio"
-						aria-checked={$siteSettings.humanTimingMode === value}
-						onclick={() => siteSettings.setHumanTiming({ humanTimingMode: value })}>{label}</button
-					>
-				{/each}
-			</div>
-		</div>
-
-		<div class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Input padding</span>
-				<span class="sp-desc">
-					Frames added before each unbuffered input. KQM's starting point for a human player is 10;
-					lower it if you play tight, raise it if you don't.
-				</span>
-			</span>
-			<div class="sp-slider-ctl">
-				<input
-					class="slider sp-slider"
-					type="range"
-					min={HUMAN_PAD_MIN_F}
-					max={HUMAN_PAD_MAX_F}
-					step="1"
-					value={$siteSettings.humanTimingPadFrames}
-					oninput={(e) =>
-						siteSettings.setHumanTiming({ humanTimingPadFrames: Number(e.currentTarget.value) })}
-					aria-label="Input padding in frames"
-				/>
-				<span class="sp-slider-value"
-					>{$siteSettings.humanTimingPadFrames}f · {(
-						$siteSettings.humanTimingPadFrames / FPS
-					).toFixed(2)}s</span
-				>
-			</div>
-		</div>
-
-		<label class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Show padding</span>
-				<span class="sp-desc">
-					Draw the padding as a hatched sliver on the active row, so you can see where the time
-					went.
-				</span>
-			</span>
-			<span class="toggle">
-				<input
-					type="checkbox"
-					checked={$siteSettings.showHumanPadding}
-					onchange={() =>
-						siteSettings.setHumanTiming({ showHumanPadding: !$siteSettings.showHumanPadding })}
-				/>
-				<span class="toggle-track"><span class="toggle-thumb"></span></span>
-				<span class="toggle-label">{$siteSettings.showHumanPadding ? 'On' : 'Off'}</span>
+			<span class="sp-note">
+				Shows each character's coverage strip under the rotation planner's notation, with the parts
+				your rotation doesn't use yet dimmed.
 			</span>
 		</label>
+
+		<div class="sp-row sp-row--action">
+			<span class="sp-ctl">
+				<button class="btn btn--sm" disabled={plannerAtDefaults} onclick={resetPlanner}>
+					<Mark name="reset" size={12} /> Reset to defaults
+				</button>
+			</span>
+		</div>
 	</section>
 
 	<!-- ══ PLAYBACK SOUND (playback round, 2026-09-29; ↻ tidied 2026-09-30) ═══
@@ -469,22 +536,13 @@
 	     only when it can be heard — nothing under Off, no voice or notes under
 	     the metronome (one pitch) — and Order + Notes are ONE row, "which note
 	     each input gets", with the long per-option prose moved to `title`s. -->
-	<section class="sp-section">
+	<section class="sp-section" id="settings-sound">
 		<h2 class="kicker sp-section-title">Playback sound</h2>
-		<p class="sp-lede">
-			<strong>Play</strong> in the rotation planner's view bar counts you in, then plays a note at every
-			press, so you can follow a rotation with your eyes on the game.
-		</p>
 
-		<div class="sp-row sp-row--stack">
-			<span class="sp-label">
-				<span class="sp-name">Sound</span>
-				<span class="sp-desc">
-					The metronome is one pitch. Melodic gives attacks, skills and bursts their own notes.
-				</span>
-			</span>
-			<div class="sp-sound-ctl">
-				<div class="segment sp-segment sp-segment--mode" role="radiogroup" aria-label="Sound">
+		<div class="sp-row">
+			<span class="sp-name">Sound</span>
+			<span class="sp-ctl sp-sound-ctl">
+				<span class="segment sp-segment sp-segment--mode" role="radiogroup" aria-label="Sound">
 					<button
 						class="btn"
 						class:is-active={!$siteSettings.playbackSound}
@@ -506,7 +564,7 @@
 							}}>{SOUND_MODE_LABELS[value]}</button
 						>
 					{/each}
-				</div>
+				</span>
 				<button
 					class="btn btn--sm"
 					type="button"
@@ -517,102 +575,112 @@
 					<Mark name="play" size={12} filled />
 					Preview
 				</button>
-			</div>
+			</span>
+			<span class="sp-note">
+				<strong>Play</strong> in the {$nextLayout ? 'Planner’s toolbar' : 'Planner’s view bar'} counts
+				you in and plays a note at each press, so you can follow along with your eyes on the game. Metronome
+				uses one pitch; Melodic gives attacks, skills, and bursts their own notes.
+			</span>
 		</div>
 
 		{#if $siteSettings.playbackSound}
 			{#if $siteSettings.playbackSoundMode === 'melodic'}
-				<div class="sp-row sp-row--stack">
-					<span class="sp-label">
-						<span class="sp-name">Voice</span>
-					</span>
-					<div class="segment sp-segment sp-segment--grid3" role="radiogroup" aria-label="Voice">
-						{#each VOICE_IDS as value (value)}
-							<button
-								class="btn"
-								class:is-active={$siteSettings.playbackVoice === value}
-								role="radio"
-								aria-checked={$siteSettings.playbackVoice === value}
-								onclick={() => {
-									siteSettings.setPlaybackSound({ playbackVoice: value });
-									playback.preview({ set: value });
-								}}>{VOICE_LABELS[value]}</button
-							>
-						{/each}
-					</div>
-				</div>
-
-				<div class="sp-row sp-row--stack">
-					<span class="sp-label">
-						<span class="sp-name">Notes</span>
-						<span class="sp-desc">
-							Which note each input gets, then which three notes. Every set comes from one
-							pentatonic scale, so overlapping notes never clash.
+				<div class="sp-row">
+					<span class="sp-name">Voice</span>
+					<span class="sp-ctl">
+						<span class="segment sp-segment sp-segment--grid3" role="radiogroup" aria-label="Voice">
+							{#each VOICE_IDS as value (value)}
+								<button
+									class="btn"
+									class:is-active={$siteSettings.playbackVoice === value}
+									role="radio"
+									aria-checked={$siteSettings.playbackVoice === value}
+									onclick={() => {
+										siteSettings.setPlaybackSound({ playbackVoice: value });
+										playback.preview({ set: value });
+									}}>{VOICE_LABELS[value]}</button
+								>
+							{/each}
 						</span>
 					</span>
-					<div
-						class="segment sp-segment sp-segment--grid3"
-						role="radiogroup"
-						aria-label="Note order"
-					>
-						{#each ORDER_IDS as value (value)}
-							<button
-								class="btn"
-								class:is-active={$siteSettings.playbackOrder === value}
-								role="radio"
-								aria-checked={$siteSettings.playbackOrder === value}
-								title={orderHint(value)}
-								onclick={() => {
-									siteSettings.setPlaybackSound({ playbackOrder: value });
-									playback.preview({ order: value });
-								}}>{ORDER_LABELS[value]}</button
-							>
-						{/each}
-					</div>
-					<div class="segment sp-segment sp-segment--grid4" role="radiogroup" aria-label="Note set">
-						{#each NOTE_SET_IDS as value (value)}
-							<button
-								class="btn"
-								class:is-active={$siteSettings.playbackNotes === value}
-								role="radio"
-								aria-checked={$siteSettings.playbackNotes === value}
-								title={noteSetNotes(value)}
-								onclick={() => {
-									siteSettings.setPlaybackSound({ playbackNotes: value });
-									playback.preview({ notes: value });
-								}}>{NOTE_SET_LABELS[value]}</button
-							>
-						{/each}
-					</div>
+				</div>
+
+				<div class="sp-row">
+					<span class="sp-name">Notes</span>
+					<span class="sp-ctl sp-ctl--stack">
+						<span
+							class="segment sp-segment sp-segment--grid3"
+							role="radiogroup"
+							aria-label="Note order"
+						>
+							{#each ORDER_IDS as value (value)}
+								<button
+									class="btn"
+									class:is-active={$siteSettings.playbackOrder === value}
+									role="radio"
+									aria-checked={$siteSettings.playbackOrder === value}
+									title={orderHint(value)}
+									onclick={() => {
+										siteSettings.setPlaybackSound({ playbackOrder: value });
+										playback.preview({ order: value });
+									}}>{ORDER_LABELS[value]}</button
+								>
+							{/each}
+						</span>
+						<span
+							class="segment sp-segment sp-segment--grid4"
+							role="radiogroup"
+							aria-label="Note set"
+						>
+							{#each NOTE_SET_IDS as value (value)}
+								<button
+									class="btn"
+									class:is-active={$siteSettings.playbackNotes === value}
+									role="radio"
+									aria-checked={$siteSettings.playbackNotes === value}
+									title={noteSetNotes(value)}
+									onclick={() => {
+										siteSettings.setPlaybackSound({ playbackNotes: value });
+										playback.preview({ notes: value });
+									}}>{NOTE_SET_LABELS[value]}</button
+								>
+							{/each}
+						</span>
+					</span>
+					<span class="sp-note">
+						The top row picks which input gets which note, the bottom row which three notes.
+					</span>
 				</div>
 			{/if}
 
-			<div class="sp-row sp-row--stack">
-				<span class="sp-label">
-					<span class="sp-name">Swap</span>
-					<span class="sp-desc">A soft hum while the next character comes in.</span>
+			<div class="sp-row">
+				<span class="sp-name">Swap</span>
+				<span class="sp-ctl">
+					<span
+						class="segment sp-segment sp-segment--grid4"
+						role="radiogroup"
+						aria-label="Swap sound"
+					>
+						{#each SWAP_STYLES as value (value)}
+							<button
+								class="btn"
+								class:is-active={$siteSettings.playbackSwap === value}
+								role="radio"
+								aria-checked={$siteSettings.playbackSwap === value}
+								onclick={() => {
+									siteSettings.setPlaybackSound({ playbackSwap: value });
+									playback.preview({ swap: value });
+								}}>{SWAP_STYLE_LABELS[value]}</button
+							>
+						{/each}
+					</span>
 				</span>
-				<div class="segment sp-segment sp-segment--grid4" role="radiogroup" aria-label="Swap sound">
-					{#each SWAP_STYLES as value (value)}
-						<button
-							class="btn"
-							class:is-active={$siteSettings.playbackSwap === value}
-							role="radio"
-							aria-checked={$siteSettings.playbackSwap === value}
-							onclick={() => {
-								siteSettings.setPlaybackSound({ playbackSwap: value });
-								playback.preview({ swap: value });
-							}}>{SWAP_STYLE_LABELS[value]}</button
-						>
-					{/each}
-				</div>
+				<span class="sp-note">A soft hum while the next character comes in.</span>
 			</div>
 
 			<div class="sp-row">
-				<span class="sp-label">
-					<span class="sp-name">Volume</span>
-				</span>
-				<div class="sp-slider-ctl">
+				<span class="sp-name">Volume</span>
+				<span class="sp-ctl sp-slider-ctl">
 					<input
 						class="slider sp-slider"
 						type="range"
@@ -628,85 +696,74 @@
 						aria-label="Playback volume"
 					/>
 					<span class="sp-slider-value">{Math.round($siteSettings.playbackVolume * 100)}%</span>
-				</div>
+				</span>
 			</div>
 		{/if}
 	</section>
 
-	<section class="sp-section">
+	<section class="sp-section" id="settings-data">
 		<h2 class="kicker sp-section-title">Your data</h2>
 
-		{#if persisted !== undefined}
-			<div class="sp-row">
-				<span class="sp-label">
-					<span class="sp-name">Storage</span>
-					<span class="sp-desc">
-						{#if persisted}
-							This browser will keep your data until you clear this site’s data yourself.
-						{:else if persisted === null}
-							This browser doesn’t say whether it will keep your data. A backup keeps a copy either
-							way.
-						{:else if safari}
-							Safari may clear your data after a while without a visit. Add critcalc to your Home
-							Screen to keep it, or download a backup.
-						{:else if persistDeclined}
-							This browser declined, so it may still clear your data on its own. A backup keeps a
-							copy.
-						{:else}
-							This browser may clear your data on its own, for example after a while without a
-							visit. Ask it to keep your data, or download a backup.
-						{/if}
-					</span>
-				</span>
+		<!-- Storage joined Backup (2026-10-26): both answer "is my work safe?",
+		     so the browser's answer is the backup's note, and its one action
+		     (Keep my data) stands beside Export when there is one to take. -->
+		<div class="sp-row">
+			<span class="sp-name">Backup</span>
+			<span class="sp-ctl sp-ctl--buttons">
+				<button class="btn btn--primary" onclick={exportBackup}>
+					<Mark name="download" /> Export…
+				</button>
 				{#if persisted === false && !persistDeclined && !safari}
 					<button class="btn" onclick={askToKeep}>Keep my data</button>
 				{/if}
-			</div>
-		{/if}
-
-		<div class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Backup</span>
-				<span class="sp-desc">
-					critcalc has no server, so everything you set up lives in this browser. Download a file to
-					back it up or move it to another device.
-				</span>
-				<span class="sp-desc">
-					{#if lastBackup === null}
-						Last backup: never.
-					{:else}
-						Last backup: {daysAgo(lastBackup)}.{savedSince > 0 ? ` ${changedSince}` : ''}
-					{/if}
-				</span>
 			</span>
-			<button class="btn btn--primary" onclick={exportBackup}>
-				<Mark name="download" /> Export…
-			</button>
+			<span class="sp-note">
+				critcalc has no server, so everything you set up lives in this browser. Export a file to
+				keep a copy or move to another device.
+				{#if lastBackup === null}
+					Last backup: never.
+				{:else}
+					Last backup: {daysAgo(lastBackup)}.{savedSince > 0 ? ` ${changedSince}` : ''}
+				{/if}
+				{#if persisted}
+					This browser will keep your data until you clear this site’s data yourself.
+				{:else if persisted === null}
+					This browser doesn’t say whether it will keep your data. A backup keeps a copy either way.
+				{:else if persisted === false && safari}
+					Safari may clear your data after a while without a visit. Add critcalc to your Home Screen
+					to keep it, or download a backup.
+				{:else if persisted === false && persistDeclined}
+					This browser declined, so it may still clear your data on its own. A backup keeps a copy.
+				{:else if persisted === false}
+					This browser may clear your data on its own, for example after a while without a visit.
+					Ask it to keep your data, or download a backup.
+				{/if}
+			</span>
 		</div>
 
 		<div class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Restore</span>
-				<span class="sp-desc">
-					{#if $nextLayout}
-						Load a backup file. It replaces every profile in this browser, with its roster, teams,
-						rotations, and lineups, and your settings. An older backup loads too.
-					{:else}
-						Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups,
-						open tabs, and settings on this device.
-					{/if}
-				</span>
+			<span class="sp-name">Restore</span>
+			<span class="sp-ctl">
+				<button class="btn btn--primary" onclick={() => fileInput?.click()}>
+					<Mark name="upload" /> Import…
+				</button>
+				<input
+					bind:this={fileInput}
+					type="file"
+					accept="application/json,.json"
+					class="sp-file-input"
+					onchange={onFileChosen}
+				/>
 			</span>
-			<button class="btn btn--primary" onclick={() => fileInput?.click()}>
-				<Mark name="upload" /> Import…
-			</button>
-			<input
-				bind:this={fileInput}
-				type="file"
-				accept="application/json,.json"
-				class="sp-file-input"
-				onchange={onFileChosen}
-			/>
+			<span class="sp-note">
+				{#if $nextLayout}
+					Replaces every profile in this browser, and your settings, with the ones in a backup file.
+					Older backups work too.
+				{:else}
+					Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups,
+					open tabs, and settings on this device.
+				{/if}
+			</span>
 		</div>
 
 		{#if importError}
@@ -735,209 +792,220 @@
 				</div>
 			</div>
 		{/if}
-	</section>
 
-	<section class="sp-section sp-section--danger">
-		<h2 class="kicker sp-section-title">Reset saved data</h2>
-
-		{#each [['constellations', 'Constellation levels', $nextLayout ? "Clears this profile's constellation levels." : 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', $nextLayout ? "Clears this profile's weapons and artifact sets." : "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', $nextLayout ? 'Clears which characters this profile marks as owned or wishlisted.' : 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', $nextLayout ? 'Moves every rotation in this profile to the Trash.' : 'Deletes every rotation and team saved in your library.', clearRotations], ['boards', 'Saved lineups', $nextLayout ? 'Moves every lineup in this profile to the Trash.' : 'Deletes every lineup saved in your library.', clearLineups]] as const as [key, name, desc, fn] (key)}
+		{#if realProfile}
+			<!-- ⚓ A LINK, not a second copy (2026-10-26): clearing acts on one
+			     profile, so its control lives on that profile's page; Settings
+			     is where people look for it, so this row points there. -->
 			<div class="sp-row">
-				<span class="sp-label">
-					<span class="sp-name">{name}</span>
-					<span class="sp-desc">{desc}</span>
+				<span class="sp-name">Clear profile data</span>
+				<span class="sp-ctl">
+					<a class="btn" href={resolve('/profile')}>Open Profile</a>
 				</span>
-				<button
-					class="btn btn--danger"
-					class:is-confirming={armedReset === key}
-					onclick={() => reset(key, fn)}
-					onblur={() => armedReset === key && (armedReset = null)}
-				>
-					{#if armedReset === key}<Mark name="warn" />{/if}
-					{armedReset === key ? 'Confirm' : 'Clear'}
-				</button>
+				<span class="sp-note">
+					Clear a profile’s roster, rotations, lineups, or teams from its own page.
+				</span>
 			</div>
-		{/each}
+		{/if}
 
 		<div class="sp-row">
-			<span class="sp-label">
-				<span class="sp-name">Everything</span>
-				<span class="sp-desc"
-					>{$nextLayout
-						? 'Clears all of the above for this profile, and moves its teams to the Trash. Display settings are kept.'
-						: 'Clears all of the above at once. Display settings are kept.'}</span
-				>
+			<span class="sp-name">Tips and notices</span>
+			<span class="sp-ctl">
+				<button class="btn" disabled={!anySeen} onclick={showNoticesAgain}>Show again</button>
 			</span>
-			<button
-				class="btn btn--danger"
-				class:is-confirming={armedReset === 'all'}
-				onclick={() => reset('all', clearEverything)}
-				onblur={() => armedReset === 'all' && (armedReset = null)}
-			>
-				{#if armedReset === 'all'}<Mark name="warn" />{/if}
-				{armedReset === 'all' ? 'Confirm clear all' : 'Clear all'}
-			</button>
+			<span class="sp-note">Brings back the one-time notices you’ve dismissed.</span>
 		</div>
+
+		{#if $nextLayout}
+			<div class="sp-row">
+				<span class="sp-name">Delete everything</span>
+				<span class="sp-ctl">
+					<button class="btn btn--danger" onclick={() => void deleteEverything()}>
+						<Mark name="delete" /> Delete everything…
+					</button>
+				</span>
+				<span class="sp-note">
+					Removes every profile, the Trash, and your settings, as if you were visiting for the first
+					time.
+				</span>
+			</div>
+		{/if}
 	</section>
+
+	<!-- The old layout keeps its resets here: it has no Profile page. -->
+	{#if !$nextLayout}
+		<section class="sp-section sp-section--danger" id="settings-reset">
+			<h2 class="kicker sp-section-title">Reset saved data</h2>
+
+			{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation and team saved in your library.', () => savedNotations.clear()], ['boards', 'Saved lineups', 'Deletes every lineup saved in your library.', () => savedBoards.clear()]] as const as [key, name, desc, fn] (key)}
+				<div class="sp-row">
+					<span class="sp-name">{name}</span>
+					<span class="sp-ctl">
+						<button
+							class="btn btn--danger"
+							class:is-confirming={armedReset === key}
+							onclick={() => reset(key, fn)}
+							onblur={() => armedReset === key && (armedReset = null)}
+						>
+							{#if armedReset === key}<Mark name="warn" />{/if}
+							{armedReset === key ? 'Confirm' : 'Clear'}
+						</button>
+					</span>
+					<span class="sp-note">{desc}</span>
+				</div>
+			{/each}
+
+			<div class="sp-row">
+				<span class="sp-name">Everything</span>
+				<span class="sp-ctl">
+					<button
+						class="btn btn--danger"
+						class:is-confirming={armedReset === 'all'}
+						onclick={() => reset('all', clearEverything)}
+						onblur={() => armedReset === 'all' && (armedReset = null)}
+					>
+						{#if armedReset === 'all'}<Mark name="warn" />{/if}
+						{armedReset === 'all' ? 'Confirm clear all' : 'Clear all'}
+					</button>
+				</span>
+				<span class="sp-note">Clears all of the above at once. Display settings are kept.</span>
+			</div>
+		</section>
+	{/if}
 </div>
 
 <style>
+	/* The panel answers to its OWN width (a container), not the window's: it
+	   renders in the menu state's content area, the old gear modal (~491px)
+	   and the old /settings page, and each wants the form that fits it. */
 	.sp {
+		container-type: inline-size;
+		/* The rows' own width (12 + 22 + 28rem and two gaps), so a kicker's
+		   rule ends where its rows do. */
+		max-width: 67rem;
 		display: flex;
 		flex-direction: column;
-		gap: 1.4rem;
+		gap: 1.75rem;
 	}
 
-	/* ONE layer. The sections used to be --surface-raised cards inside a
-	   --surface modal — two elevations for content that is really just a list
-	   with headings. The modal is --surface-raised now and a section is nothing
-	   but its kicker plus its rows; the kicker's own rule does the separating. */
+	/* ONE layer: a section is its kicker plus its rows; the kicker's own rule
+	   does the separating. */
 	.sp-section {
 		display: flex;
 		flex-direction: column;
+		/* The sidebar's scroll-to lands the kicker clear of the area's top. */
+		scroll-margin-top: 1rem;
 	}
-
-	/* Plain .kicker now — the old panel-header framing (padding + a full-width
-	   border) belonged to the card that no longer exists. */
 	.sp-section-title {
-		margin-bottom: 0.2rem;
+		margin-bottom: 0.35rem;
 	}
-
 	.sp-section--danger .sp-section-title {
 		color: var(--ui-danger);
 	}
 
-	/* Third segmented control in the product — the global .segment track now.
-	   Only its flex behaviour in the row is local. */
-	/* The sound rows STACK: their choices do not fit beside a label, so the
-	   label runs full width and the picker sits under it. A first cut kept the
-	   side-by-side row and the segment folded into a 125px column six buttons
-	   tall. */
-	/* ⚠ Compound: `.sp-row` is declared LATER in this sheet and a lone
-	   modifier ties with it and loses on source order — the rows centred their
-	   label and pickers (the `.panel--paper` trap). */
-	.sp-row.sp-row--stack {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 0.6rem;
-	}
-	/* The mode picker with its Preview beside it. */
-	.sp-sound-ctl {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-	.sp-sound-ctl .sp-segment--mode {
-		display: inline-grid;
-		grid-template-columns: repeat(3, minmax(5.5rem, 1fr));
-	}
-	/* The stacked pickers are equal-width grids on one recessed track, so a
-	   long label never widens its neighbours: the voices and the orders in
-	   threes (the five voices are 3 + 2), the note sets and the swaps in
-	   fours. */
-	.sp-segment--grid3,
-	.sp-segment--grid4 {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
-	.sp-segment--grid4 {
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-	}
-	.sp-segment {
-		flex-shrink: 0;
-	}
-	/* A desktop-only choice: the phone is always Small (breakpoints.ts `compact`).
-	   ⚠ Compound, for the same reason as `.sp-row--stack`: a lone `.sp-desktop`
-	   lost to the later `.sp-row { display: flex }` and showed on the phone. */
-	@media (max-width: 40rem) {
-		.sp-row.sp-desktop {
-			display: none;
-		}
-	}
-
+	/* ── The row: NAME · CONTROL · NOTE ──
+	   🎛️ 12rem holds the longest name ("Use the new layout") on one line;
+	   22rem holds the widest control (Sound's three choices + Preview). The
+	   note takes what is left up to the reading margin's 28rem. The columns
+	   are FIXED, not content-sized, so every row's control starts on the
+	   same line: that one edge is what makes the values scannable. */
 	.sp-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1.2rem;
-		padding: 0.8rem 0.1rem;
+		display: grid;
+		grid-template-columns: 12rem 22rem minmax(14rem, 28rem);
+		column-gap: 2.5rem;
+		align-items: start;
+		padding: 0.55rem 0;
 	}
 	/* ⛔ No rule between rows (⚓ Nate, 2026-10-01): the section kicker's rule
 	   is the only separator, and the rows' padding carries the rhythm. */
 
-	/* Full-width block below the Restore row for the import error / confirm UI. */
-	.sp-feedback {
-		padding: 0.8rem 0.1rem;
-	}
-
-	.sp-label {
+	/* Name and control share a line box as tall as a control, so a one-line
+	   name sits level with a toggle, a segment or a slider alike. */
+	.sp-name,
+	.sp-ctl {
+		min-height: 2.1rem;
 		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-		min-width: 0;
+		align-items: center;
 	}
-
 	.sp-name {
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-lg);
 		color: var(--text);
 	}
-
-	.sp-desc {
+	.sp-ctl {
+		grid-column: 2;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+	/* The margin: muted, the row description's old voice, its first line
+	   level with the name. */
+	.sp-note {
+		grid-column: 3;
+		padding-top: 0.45rem;
 		font-size: var(--fs-md);
 		color: var(--muted);
 		line-height: var(--lh-snug);
 	}
-
-	/* A section-level lede (Human timing): one paragraph before the rows, in
-	   the row description's voice — it introduces the plate the rows serve. */
-	.sp-lede {
-		margin: 0 0 0.75rem;
-		font-size: var(--fs-md);
-		color: var(--muted);
-		line-height: var(--lh-snug);
+	/* An action that belongs to the group, not to one setting. */
+	.sp-row--action {
+		padding-top: 0.25rem;
 	}
 
-	/* Slider */
-	.sp-slider-ctl {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
+	.sp-segment {
 		flex-shrink: 0;
+	}
+	/* Sound's mode with its Preview beside it. */
+	.sp-sound-ctl {
+		flex-wrap: wrap;
+	}
+	.sp-sound-ctl .sp-segment--mode {
+		display: inline-grid;
+		grid-template-columns: repeat(3, minmax(4.5rem, 1fr));
+	}
+	/* Notes' two pickers, one above the other. */
+	.sp-ctl.sp-ctl--stack {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	/* The stacked pickers are equal-width grids on one recessed track, so a
+	   long label never widens its neighbours: the voices and the orders in
+	   threes (the five voices are 3 + 2), the note sets and the swaps in
+	   fours. They fill the control column. */
+	.sp-segment--grid3,
+	.sp-segment--grid4 {
+		display: grid;
+		flex: 1;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	.sp-segment--grid4 {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
 	.sp-slider {
-		width: 8rem;
+		width: 10rem;
 	}
-
 	.sp-slider-value {
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		min-width: 3.4rem;
-		text-align: right;
 		white-space: nowrap;
-	}
-
-	/* Export / Import are .btn--primary, not the plain ghost: they are the row's
-	   only action, and a ghost button needs a cluster around it to read as a
-	   control at all — standing alone in a settings row it reads as inert text.
-	   (Nate/verification finding, chunk 3.) Cancel and the reset buttons keep
-	   the quiet register. Only the flex behaviour here is local. */
-	.sp-row > .btn {
-		flex-shrink: 0;
 	}
 
 	.sp-file-input {
 		display: none;
 	}
 
+	/* Full width under the Restore row: the import error / confirm UI. */
+	.sp-feedback {
+		padding: 0.55rem 0;
+		max-width: 36.5rem;
+	}
 	.sp-import-error {
 		margin: 0;
 		font-size: var(--fs-md);
 		color: var(--ui-danger);
 	}
-
 	.sp-import-confirm {
 		display: flex;
 		flex-direction: column;
@@ -947,48 +1015,102 @@
 		border-radius: var(--r-md);
 		background: color-mix(in srgb, var(--ui-danger) 8%, transparent);
 	}
-
 	.sp-import-summary {
 		margin: 0;
 		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 		color: var(--text);
 	}
-
 	.sp-import-actions {
 		display: flex;
 		gap: 0.5rem;
 	}
 
-	/* Phone: a segment or a slider does not fit BESIDE its label. The segment
-	   doesn't shrink, so the label was squeezed to nothing (0px wide at 320 —
-	   one word per line, the segment painted over it) and the whole panel ran
-	   59px wide. Those rows take the stacked form the sound rows already use;
-	   toggle and button rows stay side by side, where they fit. The segments
-	   then share the row in equal columns (auto columns, so the two-option
-	   Traveler fills it too). */
-	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
-		.sp-row:has(> .segment),
-		.sp-row:has(> .sp-slider-ctl) {
-			flex-direction: column;
-			align-items: stretch;
-			gap: 0.6rem;
+	/* ── Folded: no room for the margin ──
+	   12 + 22 + 14rem and the gaps. The note goes UNDER the name and the
+	   control keeps its own column at the row's end. */
+	@container (max-width: 53rem) {
+		.sp-row {
+			grid-template-columns: minmax(0, 1fr) auto;
+			column-gap: 1.5rem;
 		}
-		/* ⚠ Not the grid3/grid4 pickers: column flow would line their 3 + 2
-		   voices up as five columns in one row. */
-		.sp-row > .sp-segment:not(.sp-segment--grid3, .sp-segment--grid4) {
+		.sp-name {
+			grid-column: 1;
+			grid-row: 1;
+		}
+		.sp-ctl {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+			align-self: start;
+		}
+		.sp-note {
+			grid-column: 1;
+			grid-row: 2;
+			padding-top: 0.1rem;
+		}
+		.sp-row--action .sp-ctl {
+			grid-column: 1 / -1;
+		}
+		.sp-segment--grid3,
+		.sp-segment--grid4,
+		.sp-ctl.sp-ctl--stack {
+			width: 22rem;
+		}
+	}
+
+	/* ── Narrow (the phone, the old gear modal): the control too goes under
+	   its name, full width, and the segments share it in equal columns. ── */
+	@container (max-width: 34rem) {
+		.sp-row {
+			grid-template-columns: minmax(0, 1fr);
+			row-gap: 0.4rem;
+		}
+		.sp-name,
+		.sp-ctl,
+		.sp-note {
+			grid-column: 1;
+			grid-row: auto;
+		}
+		/* A toggle or a lone button still fits beside its name. */
+		.sp-row:has(.toggle) {
+			grid-template-columns: minmax(0, 1fr) auto;
+		}
+		.sp-row:has(.toggle) .sp-ctl {
+			grid-column: 2;
+			grid-row: 1;
+		}
+		.sp-name {
+			min-height: 0;
+		}
+		/* …and its name keeps the toggle's line box, so the note follows the
+		   name rather than the toggle's taller box. */
+		.sp-row:has(.toggle) {
+			row-gap: 0;
+		}
+		.sp-row:has(.toggle) .sp-name {
+			min-height: 2.1rem;
+		}
+		.sp-segment--grid3,
+		.sp-segment--grid4,
+		.sp-ctl.sp-ctl--stack {
+			width: auto;
+		}
+		.sp-ctl > .sp-segment:not(.sp-segment--grid3, .sp-segment--grid4, .sp-segment--mode) {
 			display: grid;
+			flex: 1;
 			grid-auto-flow: column;
 			grid-auto-columns: minmax(0, 1fr);
 		}
-		/* ⚠ `display: grid`, not the inline-grid above: as an inline-grid flex
-		   item it kept its 313px max-content width. */
 		.sp-sound-ctl .sp-segment--mode {
 			display: grid;
 			flex: 1 1 100%;
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
-		/* 'Animations' and 'Metronome' are 65px of text in a 74px third at
+		.sp-slider {
+			flex: 1;
+			width: auto;
+		}
+		/* 'Animations' and 'Metronome' are 65px of text in a 74px share at
 		   320, and 'Lantern' 44px in a 55px quarter — the default 0.65rem
 		   padding clipped them. */
 		.sp-segment > .btn {

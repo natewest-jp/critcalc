@@ -46,6 +46,7 @@ import {
 	tabToRotationBody
 } from './convert';
 import {
+	clearAll,
 	get,
 	getAll,
 	getMeta,
@@ -253,7 +254,11 @@ class StorageSession {
 			// and saving it would write the old data back over the restore.
 			if (msg.kind === 'replaced') {
 				this.#freeze();
-				announceAfterReload('A backup was restored in another tab, so this tab reloaded');
+				announceAfterReload(
+					msg.wiped
+						? 'Everything was deleted in another tab, so this tab reloaded'
+						: 'A backup was restored in another tab, so this tab reloaded'
+				);
 				location.reload();
 				return;
 			}
@@ -592,8 +597,8 @@ class StorageSession {
 		if (doc.type === 'rotation' && rotationTabs.activeTabId === id) this.#plannerContext(doc);
 	}
 
-	/** Settings' Reset (⚓ Nate 2026-10-23: the ACTIVE profile's, like the
-	 *  roster resets): every document of one type, tombstoned, and the tool on
+	/** The Profile page's Clear data (⚓ Nate 2026-10-23: the ACTIVE profile's,
+	 *  like the roster resets; it was Settings' Reset until 2026-10-26): every document of one type, tombstoned, and the tool on
 	 *  a blank. ⚠ Never the old localStorage keys, which stay as the migration
 	 *  found them (copy-only, §13.1). */
 	async removeAll(type: DocumentRecord['type']): Promise<void> {
@@ -620,7 +625,7 @@ class StorageSession {
 		if (this.active) this.#showBlank(tool);
 	}
 
-	/** The active profile's teams, all of them (Settings' Reset everything). */
+	/** The active profile's teams, all of them (the Profile page's Clear data). */
 	async removeAllTeams(): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		const pid = this.profile?.id;
@@ -1066,6 +1071,39 @@ class StorageSession {
 		this.#locks.clear();
 		applyBackup(parsed.data);
 		this.#channel?.post({ kind: 'replaced' });
+	}
+
+	/**
+	 * Delete everything in this browser (Settings › Your data, 2026-10-26):
+	 * every profile, the Trash, and the settings. ⚓ It ends as a FIRST VISIT
+	 * does: the stores are emptied and critcalc's `localStorage` cleared, so
+	 * the reload migrates nothing and opens on Theorycraft alone — the boot
+	 * path, ⛔ not a second way of building an empty site. Pending work is
+	 * DROPPED, not written. The switch's own key stays (a tester's, not the
+	 * player's data). ⚠ The stores go first: if that fails nothing is lost,
+	 * where clearing `localStorage` first would lose the settings and keep
+	 * the work. The caller reloads.
+	 */
+	async wipe(): Promise<void> {
+		const db = this.#db ?? (await ensureStorage());
+		if (!db) throw new Error('storage unavailable');
+		this.#freeze();
+		await this.#profileQueue;
+		try {
+			await clearAll(db);
+		} catch (err) {
+			this.#frozen = false;
+			throw err;
+		}
+		for (const lock of this.#locks.values()) lock.release();
+		this.#locks.clear();
+		try {
+			for (const k of Object.keys(localStorage))
+				if (k.startsWith('critcalc:') && k !== 'critcalc:nextLayout') localStorage.removeItem(k);
+		} catch {
+			/* storage blocked: the stores are already empty */
+		}
+		this.#channel?.post({ kind: 'replaced', wiped: true });
 	}
 
 	// ── Compare and the guest star (phase 4, design §4.6) ───────────────────

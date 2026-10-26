@@ -7,7 +7,8 @@
 	 stores.ts + boards + rotationTabs + documentBar + visualizers/workspace +
 	 storageDurability (the last-backup stamp, and the persist ask on save);
 	 Backup is settingsBackup.ts BACKUP_KEYS; Reset is SettingsPanel's
-	 clearEverything. What Cloudflare collects is stated AS CLOUDFLARE STATES
+	 clearEverything (old layout), Clear data is ProfileForm's clearData and
+	 Delete everything is storageSession.wipe (new layout). What Cloudflare collects is stated AS CLOUDFLARE STATES
 	 IT (its Web Analytics FAQ) — we have not measured the beacon. Update
 	 "Last updated" with any change. -->
 <script lang="ts">
@@ -58,9 +59,9 @@
 	{#if $nextLayout}
 		<p>
 			critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a>
-			carries all of it. <strong>Reset saved data</strong> in the same place clears the profile you’re
-			in: its roster, loadouts, rotations, lineups, and teams. Your settings are kept. To remove everything,
-			clear this site’s data in your browser.
+			carries all of it. <strong>Clear data</strong> on a profile’s own page clears what it holds:
+			its roster, loadouts, rotations, lineups, and teams. <strong>Delete everything</strong> in Settings
+			removes every profile, the Trash, and your settings from this browser.
 		</p>
 	{:else}
 		<p>
@@ -144,5 +145,5 @@
 <section>
 	<h2 id="changes">Changes</h2>
 	<p>If any of this changes, this page changes first.</p>
-	<p>Last updated October 21, 2026.</p>
+	<p>Last updated October 26, 2026.</p>
 </section>
