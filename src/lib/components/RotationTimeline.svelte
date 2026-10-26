@@ -4164,7 +4164,7 @@
 						title="Clear this rotation (Undo brings it back)"
 						disabled={!rotationTabs.notation.trim() && rotationTabs.seats.every((s) => !s)}
 						onclick={() => {
-							rotationTabs.clearDocument();
+							rotationTabs.clearWithUndo();
 							historyTick++;
 						}}><Mark name="clear" /><span class="rp-history-word">Clear</span></button
 					>

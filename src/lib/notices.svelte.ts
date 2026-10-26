@@ -239,5 +239,27 @@ class Notices {
 
 export const notices = new Notices();
 
+/** A success that happens just before a reload (a restore) is said once the
+ *  page is back: kept in sessionStorage across the reload. */
+const AFTER_RELOAD = 'critcalc:notice-after-reload';
+export function announceAfterReload(text: string): void {
+	try {
+		sessionStorage.setItem(AFTER_RELOAD, text);
+	} catch {
+		/* storage blocked: nothing to say it with */
+	}
+}
+/** Called once the page is up (the scene layout's mount). */
+export function sayAfterReload(): void {
+	try {
+		const text = sessionStorage.getItem(AFTER_RELOAD);
+		if (!text) return;
+		sessionStorage.removeItem(AFTER_RELOAD);
+		notices.toast('success', text);
+	} catch {
+		/* storage blocked */
+	}
+}
+
 /** The "Open in another tab" banner's key, per document. */
 export const heldKey = (id: string): string => `held:${id}`;

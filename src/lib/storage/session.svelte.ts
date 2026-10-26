@@ -32,7 +32,8 @@ import {
 	slotsFromNotation,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
-import { notices, heldKey } from '$lib/notices.svelte';
+import { notices, heldKey, announceAfterReload, type NoticeKind } from '$lib/notices.svelte';
+import { colourValue } from '$lib/profileLook';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -250,6 +251,7 @@ class StorageSession {
 			// and saving it would write the old data back over the restore.
 			if (msg.kind === 'replaced') {
 				this.#freeze();
+				announceAfterReload('A backup was restored in another tab, so this tab reloaded');
 				location.reload();
 				return;
 			}
@@ -834,7 +836,11 @@ class StorageSession {
 		const p = this.#db && this.profile ? await get(this.#db, 'profiles', this.profile.id) : null;
 		if (!p) return;
 		// Deleted in another tab: this one goes to Theorycraft too.
-		if (p.deleted) return void this.switchTo(THEORYCRAFT_ID);
+		if (p.deleted)
+			return void this.switchTo(THEORYCRAFT_ID, () => ({
+				kind: 'warning',
+				text: `${p.name} was deleted in another tab, so this tab is in Theorycraft now`
+			}));
 		this.#useProfile(p);
 	}
 
@@ -1646,7 +1652,7 @@ class StorageSession {
 			p.current[tool] === id ? { ...p, current: { ...p.current, [tool]: null } } : p
 		);
 		this.version++;
-		await this.switchTo(profileId);
+		await this.switchTo(profileId, (p) => ({ kind: 'success', text: `Moved to ${p.name}` }));
 		await this.open(id);
 	}
 
@@ -1694,7 +1700,7 @@ class StorageSession {
 		await put(db, 'profiles', $state.snapshot(rec) as ProfileRecord);
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id: rec.id });
 		await this.#loadProfiles();
-		await this.switchTo(rec.id);
+		await this.switchTo(rec.id, (p) => ({ kind: 'success', text: `Added ${p.name}` }));
 		return true;
 	}
 
@@ -1713,7 +1719,12 @@ class StorageSession {
 	async deleteProfile(id: string): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === THEORYCRAFT_ID) return;
-		if (this.profile?.id === id) await this.switchTo(THEORYCRAFT_ID);
+		const gone = this.profiles.find((p) => p.id === id)?.name ?? 'The account';
+		if (this.profile?.id === id)
+			await this.switchTo(THEORYCRAFT_ID, () => ({
+				kind: 'success',
+				text: `Deleted ${gone}. You’re in Theorycraft now.`
+			}));
 		// Another tab may have left the site's pointer on it.
 		if ((await getMeta(db)).activeProfileId === id) {
 			await setMeta(db, { activeProfileId: THEORYCRAFT_ID });
@@ -1737,7 +1748,17 @@ class StorageSession {
 	 * documents, and the switch cue. The documents on screen are written
 	 * first and let go, so another tab may take them.
 	 */
-	async switchTo(id: string): Promise<void> {
+	/**
+	 * ⚓ A switch is SAID in words (notices round, 2026-10-26): the wash is
+	 * motion only, gone in 2s and absent under reduced motion. `say` is the
+	 * toast: by default "Switched to X" with the profile's colour; a caller
+	 * with its own reason passes its words, and `null` when something else
+	 * already says it (a link's arrival).
+	 */
+	async switchTo(
+		id: string,
+		say?: ((p: ProfileRecord) => { kind: NoticeKind; text: string }) | null
+	): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === this.profile?.id) return;
 		const next = await get(db, 'profiles', id);
@@ -1756,13 +1777,17 @@ class StorageSession {
 		}
 		this.version++;
 		this.switchedAt = Date.now();
+		if (say !== null) {
+			const { kind, text } = say?.(next) ?? { kind: 'info', text: `Switched to ${next.name}` };
+			notices.toast(kind, text, { swatch: colourValue(next.colour) });
+		}
 	}
 
 	/** ⚓ Links open in Theorycraft (§9.3). `true` if that meant leaving a
 	 *  real profile, which the arrival says out loud. */
 	async toTheorycraft(): Promise<boolean> {
 		if (!this.profile || this.profile.id === THEORYCRAFT_ID) return false;
-		await this.switchTo(THEORYCRAFT_ID);
+		await this.switchTo(THEORYCRAFT_ID, null);
 		return true;
 	}
 

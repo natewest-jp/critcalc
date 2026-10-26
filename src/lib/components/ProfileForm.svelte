@@ -11,6 +11,7 @@
 <script lang="ts">
 	import Mark from './Mark.svelte';
 	import { menu } from '$lib/menuState.svelte';
+	import { notices } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { pictureOf, type Picture, type ProfileColour } from '$lib/storage/records';
 	import { PROFILE_PICTURES } from '$lib/profilePictures.generated';
@@ -93,19 +94,36 @@
 		if (v && v !== editing.name) void storageSession.updateProfile(editing.id, { name: v });
 	}
 
-	// ── Delete, confirmed by a second click ─────────────────────────────────
-	let armed = $state(false);
-	let armTimer: ReturnType<typeof setTimeout> | undefined;
-	function del(): void {
-		if (!editing) return;
-		if (!armed) {
-			armed = true;
-			clearTimeout(armTimer);
-			armTimer = setTimeout(() => (armed = false), 4000);
-			return;
-		}
-		armed = false;
-		void storageSession.deleteProfile(editing.id);
+	// ── Delete, asked as a DIALOG (notices §3.4) ────────────────────────────
+	// The one delete that isn't a click-again: its consequence is a LIST
+	// (everything in the account goes with it) and it offers a backup first,
+	// which a button's label cannot hold (Nate, 2026-10-26).
+	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+	async function del(): Promise<void> {
+		const target = editing;
+		if (!target) return;
+		const live = (xs: { deleted?: unknown }[]) => xs.filter((x) => !x.deleted).length;
+		const [rot, lin, tms] = await Promise.all([
+			storageSession.documents('rotation').then(live),
+			storageSession.documents('lineup').then(live),
+			storageSession.teams().then(live)
+		]);
+		const what = [
+			plural(rot, 'rotation', 'rotations'),
+			plural(lin, 'lineup', 'lineups'),
+			plural(tms, 'team', 'teams')
+		].join(', ');
+		const ok = await notices.ask({
+			title: `Delete ${target.name}?`,
+			body:
+				`Its roster and ${what} go with it, and this can’t be undone.\n` +
+				'Download a backup first if you might want them back (Settings › Backup).',
+			confirm: 'Delete account',
+			cancel: 'Keep it',
+			danger: true
+		});
+		if (!ok) return;
+		await storageSession.deleteProfile(target.id);
 		menu.show('profile/new');
 	}
 </script>
@@ -202,9 +220,8 @@
 
 		<div class="acts">
 			{#if editing}
-				<button class="btn btn--danger" class:is-confirming={armed} onclick={del}
-					><Mark name={armed ? 'warn' : 'delete'} />
-					{armed ? 'Delete it and everything in it?' : 'Delete profile'}</button
+				<button class="btn btn--danger" onclick={() => void del()}
+					><Mark name="delete" /> Delete profile</button
 				>
 			{:else}
 				<button class="btn btn--primary" disabled={!colour} onclick={create}

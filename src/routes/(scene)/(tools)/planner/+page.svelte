@@ -1105,7 +1105,7 @@
 		defaultBuild={false}
 		teamState={narrowForm() && seat >= 0 ? 'in' : undefined}
 		onToggleTeam={() => {
-			rt.setSlot(seat, null);
+			rt.takeOff(seat);
 			detailId = null;
 		}}
 	/>
@@ -1162,7 +1162,7 @@
 			sample={sampleCredit}
 			onRemove={narrowForm()
 				? (id) => {
-						rt.setSlot(rt.seats.indexOf(id), null);
+						rt.takeOff(rt.seats.indexOf(id));
 						pv.inspectTeam();
 					}
 				: undefined}

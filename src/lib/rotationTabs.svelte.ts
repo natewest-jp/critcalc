@@ -87,6 +87,8 @@ import { get } from 'svelte/store';
 import { nextLayout } from '$lib/nextLayout';
 import { TAB_LIMIT } from '$lib/tabSet';
 import { pickSample } from '$lib/data/plannerSamples';
+import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+import { notices } from '$lib/notices.svelte';
 
 export type RotationTab = {
 	id: string;
@@ -683,6 +685,38 @@ class RotationTabsState {
 				: deleteCharacterFromNotation(text, outgoing);
 		}
 		this.setDocument(text, makeSeating(seats, placed));
+	}
+
+	/** The text and seats as they are now, to put back (an Undo toast). */
+	#snapshot(): () => void {
+		const text = this.notation;
+		const seats = [...this.seats];
+		const placed = [...this.seating.placed];
+		return () => {
+			if (this.canEdit()) this.setDocument(text, makeSeating(seats, placed));
+		};
+	}
+
+	/** Take someone off the team (the bench's ✕, Remove): at once, with Undo
+	 *  in a toast (notices §5: a smaller destructive action takes Undo, not a
+	 *  confirm). ⌘Z in the composer still reaches it too. */
+	takeOff(index: number): void {
+		const id = this.seats[index];
+		if (!id || !this.canEdit()) return;
+		const undo = this.#snapshot();
+		this.setSlot(index, null);
+		const name = getCharacterIndexEntry(id)?.displayName ?? id;
+		notices.toast('success', `${name} is off the team`, {
+			actions: [{ label: 'Undo', run: undo }]
+		});
+	}
+
+	/** The composer's Clear, said with Undo. */
+	clearWithUndo(): void {
+		if (!this.canEdit()) return;
+		const undo = this.#snapshot();
+		this.clearDocument();
+		notices.toast('success', 'Rotation cleared', { actions: [{ label: 'Undo', run: undo }] });
 	}
 
 	// -------------------------------------------------------------------------

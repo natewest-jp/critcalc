@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { notices, announceAfterReload } from '$lib/notices.svelte';
 	import { onMount } from 'svelte';
 	import {
 		constellations,
@@ -161,8 +162,20 @@
 				import('$lib/storage/records')
 			]);
 			const res = parseAnyBackup(await file.text(), { newId });
-			if (!res.ok) importError = res.error;
-			else pendingStore = res;
+			if (!res.ok) {
+				importError = res.error;
+				return;
+			}
+			// ↻ A DIALOG (notices §3.4): it replaces everything in the browser.
+			const ok = await notices.ask({
+				title: 'Replace everything with this backup?',
+				body: `It holds ${storeSummary(res.counts)}. Everything in this browser is replaced with it, and the page reloads.`,
+				confirm: 'Replace and reload',
+				danger: true
+			});
+			if (!ok) return;
+			pendingStore = res;
+			await confirmStoreImport();
 			return;
 		}
 		const res = parseBackup(await file.text());
@@ -196,6 +209,8 @@
 			importError = 'This browser isn’t letting critcalc save data.';
 			return;
 		}
+		// Said after the reload (`announceAfterReload`): nothing else would.
+		announceAfterReload('Restored from your backup');
 		location.reload();
 	}
 
@@ -697,23 +712,6 @@
 		{#if importError}
 			<div class="sp-feedback">
 				<p class="sp-import-error" role="alert">{importError}</p>
-			</div>
-		{/if}
-
-		{#if pendingStore}
-			<div class="sp-feedback">
-				<div class="sp-import-confirm">
-					<p class="sp-import-summary">
-						This backup holds {storeSummary(pendingStore.counts)}. Replace everything in this
-						browser?
-					</p>
-					<div class="sp-import-actions">
-						<button class="btn btn--danger is-confirming" onclick={confirmStoreImport}>
-							<Mark name="warn" /> Replace &amp; reload
-						</button>
-						<button class="btn" onclick={cancelImport}>Cancel</button>
-					</div>
-				</div>
 			</div>
 		{/if}
 

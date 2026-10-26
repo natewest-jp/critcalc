@@ -31,6 +31,7 @@
 	import MoreFilters from './MoreFilters.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
+	import { notices } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { rotationLabel } from '$lib/storage/convert';
 	import type { TeamRecord } from '$lib/storage/records';
@@ -184,20 +185,30 @@
 	const unsaved = $derived(
 		!committed && (start ? dirty : !!name.trim() || slots.some((s) => s !== null))
 	);
-	/** The question on the bar, and the way out it holds. */
-	let asking = $state<{ question: string; go: () => void } | null>(null);
 	/** Said to discard: the exit it held runs, and nothing asks again. */
 	let released = false;
+	/**
+	 * Hold an exit while there is something to lose: true means it is held,
+	 * and runs once the person says Discard. ↻ A DIALOG (notices §3.4, Nate
+	 * 2026-10-26): the question first stood inline at the top right, far
+	 * from a click on the sidebar, in the place Cancel and Save had been.
+	 */
 	function hold(go: () => void, question = 'Discard your changes?'): boolean {
 		if (released || !unsaved) return false;
-		asking = { question, go };
+		void notices
+			.ask({
+				title: question,
+				body: `Your changes to ${label({ name: name.trim(), slots })} haven’t been saved.`,
+				confirm: 'Discard',
+				cancel: 'Keep editing',
+				danger: true
+			})
+			.then((ok) => {
+				if (!ok) return;
+				released = true;
+				go();
+			});
 		return true;
-	}
-	function discard(): void {
-		const go = asking?.go;
-		asking = null;
-		released = true;
-		go?.();
 	}
 
 	// The menu state's exits: a section, Teams, another team, a profile.
@@ -298,8 +309,8 @@
 		if (e.defaultPrevented) return;
 		if (e.key === 'Escape') {
 			e.preventDefault();
-			if (asking) asking = null;
-			else leave();
+			// ↻ Escape is an exit like any other: it asks (Nate, 2026-10-26).
+			if (!hold(leave)) leave();
 			return;
 		}
 		const t = e.target as HTMLElement | null;
@@ -478,11 +489,7 @@
 					{/if}
 				</span>
 				<span class="td-acts">
-					{#if asking}
-						<span class="td-ask" role="status">{asking.question}</span>
-						<button class="btn" onclick={() => (asking = null)}>Keep editing</button>
-						<button class="btn td-discard" onclick={discard}>Discard</button>
-					{:else if dirty}
+					{#if dirty}
 						<button class="btn" onclick={leave}>Cancel</button>
 						<button class="btn btn--primary" disabled={!canSave} onclick={save}
 							>{start ? 'Save team' : 'Add team'}</button
@@ -809,13 +816,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-	}
-	.td-ask {
-		margin-right: 0.2rem;
-		font-size: var(--fs-sm);
-	}
-	.td-discard {
-		color: var(--ui-danger);
 	}
 	/* Below toolMin the right-hand group comes apart: Done stays on the
 	   name's row, the verbs take the row beneath, so the bar is two rows and

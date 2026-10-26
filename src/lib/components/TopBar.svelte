@@ -173,7 +173,11 @@
 				{#if withDoc && docName}
 					<span class="nav-kicker">
 						<span class="nav-tool">{t.short}{guest ? ' · Theorycraft' : ''}</span>
-						{#if storageSession.saving}
+						{#if storageSession.saveFailed}
+							<!-- Failure stays in the status, and the banner says why (notices §3.5). -->
+							<span class="nav-status nav-status--bad"><Mark name="warn" size={11} />Not saved</span
+							>
+						{:else if storageSession.saving}
 							<span class="nav-status"><span class="st-dot" aria-hidden="true"></span>Saving…</span>
 						{:else if justSaved}
 							<span class="nav-status"
@@ -198,6 +202,24 @@
 		{#if docTool && docName}
 			<button class="tb-phonedoc" onclick={() => place && menuState.toggle(place)}>
 				<span class="nav-label" class:is-derived={docName.derived}>{docName.text}</span>
+				<!-- The phone's save status (notices §3.5: it had none): a mark in
+				     the pill, its words in its label. -->
+				{#if storageSession.saveFailed}
+					<span
+						class="tb-phonedoc-status is-bad"
+						role="img"
+						aria-label="Not saved"
+						title="Not saved"><Mark name="warn" size={12} /></span
+					>
+				{:else if storageSession.saving}
+					<span class="tb-phonedoc-status" role="img" aria-label="Saving…" title="Saving…"
+						><span class="st-dot" aria-hidden="true"></span></span
+					>
+				{:else if justSaved}
+					<span class="tb-phonedoc-status" role="img" aria-label="Saved" title="Saved"
+						><Mark name="check" size={12} /></span
+					>
+				{/if}
 				<span class="tb-phonedoc-door"><Mark name="library" size={13} /></span>
 			</button>
 		{/if}
@@ -591,6 +613,19 @@
 		letter-spacing: var(--ls-tight);
 		white-space: nowrap;
 		color: color-mix(in srgb, var(--chrome) 50%, transparent);
+	}
+	.nav-status--bad {
+		color: var(--ui-danger);
+		font-weight: var(--fw-semibold);
+	}
+	.tb-phonedoc-status {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		color: color-mix(in srgb, var(--chrome) 60%, transparent);
+	}
+	.tb-phonedoc-status.is-bad {
+		color: var(--ui-danger);
 	}
 	.nav-status {
 		display: inline-flex;

@@ -444,6 +444,52 @@
 		});
 	}
 
+	/** A team off a Custom lineup: done at once, with Undo (notices §5: a
+	 *  smaller destructive action takes Undo, not a confirm). An empty team
+	 *  goes quietly, as there is nothing to bring back. */
+	function removeTeam(teamId: string): void {
+		const boardId = board.id;
+		const i = indexOfTeam(teamId);
+		const team = board.teams[i];
+		if (!team) return;
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		const label = teamLabel(board, i);
+		boards.removeTeam(boardId, teamId);
+		if (team.slots.some((x) => x !== null))
+			notices.toast('success', `Removed ${label}`, {
+				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+			});
+	}
+
+	/** No repeats ON settles repeats at once, taking a character off every
+	 *  team but one: said, with Undo, whenever anyone actually left. */
+	function toggleNoRepeats(): void {
+		const boardId = board.id;
+		if (board.noRepeats) return boards.setNoRepeats(boardId, false);
+		const snapshot = board.teams.map((t) => ({ ...t, slots: [...t.slots] }));
+		const count = (ts: readonly BoardTeam[]) =>
+			ts.reduce((n, t) => n + t.slots.filter((x) => x !== null).length, 0);
+		const before = count(snapshot);
+		boards.setNoRepeats(boardId, true, teamRecency);
+		const left = before - count(board.teams);
+		if (left > 0)
+			notices.toast(
+				'success',
+				`No repeats: ${left === 1 ? 'a repeated character' : `${left} repeated characters`} left their other team`,
+				{
+					actions: [
+						{
+							label: 'Undo',
+							run: () => {
+								boards.restoreTeams(boardId, snapshot);
+								boards.setNoRepeats(boardId, false);
+							}
+						}
+					]
+				}
+			);
+	}
+
 	/** Out of the SELECTED team, leaving its slot empty — the others keep
 	 *  their places, as in the game, and the next pick fills the gap. */
 	function removeFromBoard(id: string): void {
@@ -1555,7 +1601,7 @@
 							title={board.noRepeats
 								? 'Each character joins only one team.'
 								: 'A character can join more than one team.'}
-							onclick={() => boards.setNoRepeats(board.id, !board.noRepeats, teamRecency)}
+							onclick={toggleNoRepeats}
 						>
 							<Mark name={board.noRepeats ? 'repeatOff' : 'repeat'} />
 							<span class="tb-band-label">{board.noRepeats ? 'No repeats' : 'Repeats allowed'}</span
@@ -1607,7 +1653,7 @@
 					onEmptySlot={() => {
 						if (tabbed) tab = 'characters';
 					}}
-					onRemoveTeam={(teamId) => boards.removeTeam(board.id, teamId)}
+					onRemoveTeam={removeTeam}
 					onOpenInPlanner={openInPlanner}
 					onPin={(teamId, rotationId) => boards.pin(board.id, teamId, rotationId)}
 					{bank}
