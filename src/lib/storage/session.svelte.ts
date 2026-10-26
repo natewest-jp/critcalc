@@ -1920,6 +1920,13 @@ class StorageSession {
 			if (!(await this.#untrashProfile(db, owner.id, now, false))) return false;
 		}
 		const back = await this.#revive(db, store, id, now);
+		if (typeof back === 'object') {
+			// Said even for an Undo: a silent one reads as a broken button.
+			// TODO(copy): PLACEHOLDER wording, awaiting Nate.
+			const twin = back.clash.name || rotationLabel(back.clash.slots);
+			notices.toast('warning', `Already a team as “${twin}”, so this one stayed in the Trash`);
+			return false;
+		}
 		if (!back) return false;
 		if (say) {
 			const p = this.profiles.find((x) => x.id === rec.profileId);
@@ -1928,13 +1935,29 @@ class StorageSession {
 		return true;
 	}
 
-	/** One record out of the Trash, told to every tab. */
+	/**
+	 * One record out of the Trash, told to every tab. ⚓ One team per set
+	 * (`saveTeam`, `updateTeam`): a team whose four are already another live
+	 * team of its profile stays in the Trash and names that team (`clash`).
+	 * Refused rather than merged, so neither team's name or loadout is lost;
+	 * deleting the live one lets it back.
+	 */
 	async #revive(
 		db: IDBDatabase,
 		store: 'documents' | 'teams',
 		id: string,
 		now: number
-	): Promise<boolean> {
+	): Promise<boolean | { clash: TeamRecord }> {
+		if (store === 'teams') {
+			const t = await get(db, 'teams', id);
+			const key = t && teamKey(t.slots);
+			const clash =
+				key &&
+				(await getAll(db, 'teams', t.profileId)).find(
+					(o) => o.id !== id && teamKey(o.slots) === key
+				);
+			if (clash) return { clash };
+		}
 		const next = await modify(db, store, id, (r) => {
 			if (!r || !r.deleted || r.purged) return null;
 			const { deleted: _, ...live } = r;
