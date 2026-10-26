@@ -2,9 +2,13 @@
   A PROFILE's own section of the menu state (design §2.3; build plan §13,
   phase 2d; ⚓ Nate 2026-10-22: a section, not a dialog). `new` adds an
   account; `edit` changes the active one in place, as everything else saves
-  itself. A name, one of the seven element colours (exclusive: one profile
-  each, so seven at most), and a picture: the art set, or a character the
-  profile owns.
+  itself. A name, one of the seven element colours for the picture's frame,
+  and a picture: the art set, or any character.
+  ↻ Nate 2026-10-26: colours and pictures are no longer exclusive or tied to
+  the roster. A loved character you don't own is a fine picture, and a new
+  profile has no roster yet. A new profile still starts on the least worn
+  colour, and a name matching another account is pointed out, never refused.
+  Only Theorycraft's name is reserved.
 
   Strings are working copy.
 -->
@@ -15,9 +19,22 @@
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { pictureOf, type Picture, type ProfileColour } from '$lib/storage/records';
 	import { PROFILE_PICTURES } from '$lib/profilePictures.generated';
-	import { COLOUR_NAME, REAL_COLOURS, colourValue, pictureUrl } from '$lib/profileLook';
-	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import {
+		COLOUR_NAME,
+		REAL_COLOURS,
+		colourValue,
+		isReservedName,
+		nextColour,
+		pictureUrl
+	} from '$lib/profileLook';
+	import {
+		characterKey,
+		getAllCharacterIndex,
+		getCharacterIndexEntry,
+		searchCharacterIndex
+	} from '$lib/data/characterLookup';
 	import { siteSettings } from '$lib/stores';
+	import { hasAvatar } from '$lib/utils/getAvatar';
 
 	let { mode }: { mode: 'new' | 'edit' } = $props();
 
@@ -33,20 +50,35 @@
 	const shownColour = $derived(editing ? editing.colour : colour);
 	const shownPicture = $derived(editing ? pictureOf(editing) : picture);
 
-	// A new profile starts on the first colour nobody wears.
+	// A new profile starts on the least worn colour.
 	$effect(() => {
 		if (mode === 'new' && !colour) {
-			colour = REAL_COLOURS.find((c) => !storageSession.colourOwner(c)) ?? null;
+			colour = nextColour(
+				storageSession.profiles.filter((p) => p.kind === 'real').map((p) => p.colour)
+			);
 		}
 	});
 
-	const takenBy = (c: ProfileColour) => {
-		const owner = storageSession.colourOwner(c);
-		return owner && owner.id !== editing?.id ? owner : undefined;
-	};
+	// ── The name: what is being typed, checked as it is ─────────────────────
+	let typed = $state<string | null>(null);
+	$effect(() => {
+		void editing?.id;
+		typed = null;
+	});
+	const nameNow = $derived((editing ? (typed ?? editing.name) : name).trim());
+	const reserved = $derived(isReservedName(nameNow));
+	const twinNamed = $derived(
+		nameNow
+			? storageSession.profiles.find(
+					(p) =>
+						p.kind === 'real' &&
+						p.id !== editing?.id &&
+						p.name.toLowerCase() === nameNow.toLowerCase()
+				)
+			: undefined
+	);
 
 	function pickColour(c: ProfileColour): void {
-		if (takenBy(c)) return;
 		if (editing) void storageSession.updateProfile(editing.id, { colour: c });
 		else colour = c;
 	}
@@ -61,23 +93,45 @@
 		a.kind === b.kind &&
 		(a.kind === 'art' ? a.name : a.id) === (b.kind === 'art' ? b.name : b.id);
 
-	/** ⚓ The circle avatar of any character the profile OWNS (§2.3). */
-	const ownedCharacters = $derived(
+	// ── Character pictures: any character, the profile's own first ─────────
+	/** ⚓ ONE Traveler (characterLookup): the variants share a portrait. */
+	const pictureName = (id: string) =>
+		id.startsWith('traveler_') ? 'Traveler' : (getCharacterIndexEntry(id)?.displayName ?? id);
+	/** ⚓ `blank` is the notation's empty seat, not a character. */
+	const oneEach = (ids: string[]): string[] => {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local to one call, never read reactively
+		const seen = new Set<string>();
+		return ids
+			.filter((id) => {
+				if (id === 'blank') return false;
+				const k = characterKey(id);
+				return !seen.has(k) && !!seen.add(k);
+			})
+			.sort((a, b) => pictureName(a).localeCompare(pictureName(b)));
+	};
+	// A character with no circle art yet would 404.
+	const allCharacters = oneEach(getAllCharacterIndex().map((e) => e.id)).filter(hasAvatar);
+
+	let query = $state('');
+	const owned = $derived(
 		editing
-			? Object.entries(editing.roster.ownership)
-					.filter(([, m]) => m === 'owned')
-					.map(([id]) => id)
-					.filter((id) => getCharacterIndexEntry(id))
-					.sort((a, b) =>
-						(getCharacterIndexEntry(a)?.displayName ?? a).localeCompare(
-							getCharacterIndexEntry(b)?.displayName ?? b
-						)
-					)
+			? oneEach(
+					Object.entries(editing.roster.ownership)
+						.filter(([, m]) => m === 'owned')
+						.map(([id]) => id)
+						.filter((id) => getCharacterIndexEntry(id))
+				)
 			: []
+	);
+	const ownedKeys = $derived(new Set(owned.map(characterKey)));
+	const found = $derived(
+		query.trim()
+			? oneEach(searchCharacterIndex(query.trim(), Infinity).map((e) => e.id)).filter(hasAvatar)
+			: allCharacters.filter((id) => !ownedKeys.has(characterKey(id)))
 	);
 
 	async function create(): Promise<void> {
-		if (!colour) return;
+		if (!colour || reserved) return;
 		const made = await storageSession.createProfile({
 			name,
 			colour,
@@ -91,7 +145,8 @@
 	function commitName(e: Event): void {
 		if (!editing) return;
 		const v = (e.currentTarget as HTMLInputElement).value.trim();
-		if (v && v !== editing.name) void storageSession.updateProfile(editing.id, { name: v });
+		if (v && v !== editing.name && !isReservedName(v))
+			void storageSession.updateProfile(editing.id, { name: v });
 	}
 
 	// ── Delete, asked as a DIALOG (notices §3.4) ────────────────────────────
@@ -127,11 +182,23 @@
 	}
 </script>
 
-{#if mode === 'new' && !storageSession.canAddProfile}
-	<p class="lede">
-		This browser holds seven accounts, one for each element color. Delete one to add another.
-	</p>
-{:else if mode === 'edit' && !editing}
+{#snippet character(id: string)}
+	{@const p: Picture = { kind: 'character', id }}
+	{@const url = pictureUrl(p, $siteSettings.useNewOutfits, twin)}
+	<button
+		class="pic"
+		class:is-on={samePicture(shownPicture, p)}
+		title={pictureName(id)}
+		aria-label={pictureName(id)}
+		aria-pressed={samePicture(shownPicture, p)}
+		style:--sw={shownColour ? colourValue(shownColour) : 'var(--accent)'}
+		onclick={() => pickPicture(p)}
+	>
+		{#if url}<img src={url} alt="" loading="lazy" />{/if}
+	</button>
+{/snippet}
+
+{#if mode === 'edit' && !editing}
 	<p class="lede">Theorycraft is built in and can't be changed.</p>
 {:else}
 	{#if mode === 'new'}
@@ -145,9 +212,27 @@
 		<label class="pf-field">
 			<span class="pf-name">Name</span>
 			{#if editing}
-				<input class="text" value={editing.name} onchange={commitName} maxlength="40" />
+				<input
+					class="text"
+					value={editing.name}
+					oninput={(e) => (typed = e.currentTarget.value)}
+					onchange={commitName}
+					maxlength="40"
+					aria-invalid={reserved}
+				/>
 			{:else}
-				<input class="text" bind:value={name} placeholder="My account" maxlength="40" />
+				<input
+					class="text"
+					bind:value={name}
+					placeholder="My account"
+					maxlength="40"
+					aria-invalid={reserved}
+				/>
+			{/if}
+			{#if reserved}
+				<span class="pf-hint pf-hint--warn">Theorycraft is the built-in profile’s name.</span>
+			{:else if twinNamed}
+				<span class="pf-hint">Another account is called {twinNamed.name}.</span>
 			{/if}
 		</label>
 
@@ -155,15 +240,13 @@
 			<span class="pf-name">Color</span>
 			<div class="swatches" role="radiogroup" aria-label="Color">
 				{#each REAL_COLOURS as c (c)}
-					{@const owner = takenBy(c)}
 					<button
 						class="swatch"
 						class:is-on={shownColour === c}
 						role="radio"
 						aria-checked={shownColour === c}
 						aria-label={COLOUR_NAME[c]}
-						title={owner ? `${COLOUR_NAME[c]} · ${owner.name}` : COLOUR_NAME[c]}
-						disabled={!!owner}
+						title={COLOUR_NAME[c]}
 						style:--sw={colourValue(c)}
 						onclick={() => pickColour(c)}
 					></button>
@@ -189,32 +272,26 @@
 					</button>
 				{/each}
 			</div>
-			{#if editing}
-				<span class="pf-sub"
-					>{ownedCharacters.length
-						? 'Characters you own'
-						: 'Characters you own appear here once you mark them in the Roster.'}</span
-				>
-				{#if ownedCharacters.length}
+			<div class="pf-chars">
+				<input
+					class="text pf-search"
+					type="search"
+					bind:value={query}
+					placeholder="Search characters"
+					aria-label="Search characters"
+				/>
+				{#if owned.length && !query.trim()}
+					<span class="pf-sub">Characters you own</span>
 					<div class="pictures">
-						{#each ownedCharacters as id (id)}
-							{@const p: Picture = { kind: 'character', id }}
-							{@const url = pictureUrl(p, $siteSettings.useNewOutfits, twin)}
-							<button
-								class="pic"
-								class:is-on={samePicture(shownPicture, p)}
-								title={getCharacterIndexEntry(id)?.displayName ?? id}
-								aria-label={getCharacterIndexEntry(id)?.displayName ?? id}
-								aria-pressed={samePicture(shownPicture, p)}
-								style:--sw={colourValue(editing.colour)}
-								onclick={() => pickPicture(p)}
-							>
-								{#if url}<img src={url} alt="" loading="lazy" />{/if}
-							</button>
-						{/each}
+						{#each owned as id (id)}{@render character(id)}{/each}
 					</div>
+					<span class="pf-sub">Everyone else</span>
 				{/if}
-			{/if}
+				<div class="pictures">
+					{#each found as id (id)}{@render character(id)}{/each}
+				</div>
+				{#if !found.length}<span class="pf-sub">No character matches “{query.trim()}”.</span>{/if}
+			</div>
 		</div>
 
 		<div class="acts">
@@ -223,7 +300,7 @@
 					><Mark name="delete" /> Delete profile</button
 				>
 			{:else}
-				<button class="btn btn--primary" disabled={!colour} onclick={create}
+				<button class="btn btn--primary" disabled={!colour || reserved} onclick={create}
 					><Mark name="plus" /> Add account</button
 				>
 			{/if}
@@ -262,6 +339,23 @@
 		font-size: var(--fs-md);
 		color: var(--muted);
 	}
+	.pf-hint {
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+	.pf-hint--warn {
+		color: var(--ui-warning);
+	}
+	.pf-chars {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-top: 0.75rem;
+	}
+	.text.pf-search {
+		width: min(16rem, 100%);
+		font-size: var(--fs-md);
+	}
 	.text {
 		width: min(22rem, 100%);
 		padding: 0.4rem 0.6rem;
@@ -294,11 +388,6 @@
 		box-shadow:
 			0 0 0 2px var(--surface),
 			0 0 0 4px var(--text);
-	}
-	/* Taken by another profile: a colour is exclusive (§2.3). */
-	.swatch:disabled {
-		cursor: not-allowed;
-		background: color-mix(in srgb, var(--sw) 25%, transparent);
 	}
 
 	.pictures {

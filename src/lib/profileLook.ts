@@ -30,6 +30,24 @@ export const COLOUR_NAME: Record<ProfileColour, string> = {
 	theorycraft: 'Theorycraft'
 };
 
+export type RealColour = (typeof REAL_COLOURS)[number];
+
+/**
+ * The colour a new profile starts on: the least worn, first in the game's
+ * order on a tie (↻ Nate 2026-10-26: colours repeat now, but a new profile
+ * still keeps them apart while it can). Theorycraft's white is never one.
+ */
+export function nextColour(worn: readonly ProfileColour[]): RealColour {
+	const count = (c: RealColour) => worn.filter((w) => w === c).length;
+	return REAL_COLOURS.reduce((best, c) => (count(c) < count(best) ? c : best));
+}
+
+/** ⚓ Theorycraft's name is its own: a real profile called that would pass
+ *  for the built-in one, which behaves differently (no roster, links open
+ *  there). Any case, any spacing. */
+export const isReservedName = (name: string): boolean =>
+	name.trim().replace(/\s+/g, ' ').toLowerCase() === 'theorycraft';
+
 export const colourValue = (c: ProfileColour): string =>
 	c === 'theorycraft' ? 'var(--profile-theorycraft)' : `var(--el-${c}-main)`;
 

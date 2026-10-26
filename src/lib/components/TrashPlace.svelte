@@ -72,9 +72,6 @@
 	const pictureOfProfile = (p: ProfileRecord) =>
 		pictureUrl(pictureOf(p), $siteSettings.useNewOutfits, p.twin);
 
-	/** A deleted profile at the cap can't come back, nor anything of it. */
-	const blocked = (r: TrashRun) => r.gone && !storageSession.canAddProfile;
-
 	async function emptyTrash(): Promise<void> {
 		const ok = await notices.ask({
 			title: 'Empty Trash?',
@@ -118,11 +115,7 @@
 					{/if}
 				</span>
 			</header>
-			{#if blocked(r)}
-				<p class="group-note group-note--warn">
-					Seven accounts are here, so {p.name} can’t come back until you delete one.
-				</p>
-			{:else if r.gone && r.entries.some((e) => e.store !== 'profiles')}
+			{#if r.gone && r.entries.some((e) => e.store !== 'profiles')}
 				<p class="group-note">Restoring anything of {p.name}’s brings the account back too.</p>
 			{/if}
 
@@ -150,7 +143,6 @@
 						</span>
 						<button
 							class="btn row-restore"
-							disabled={blocked(r)}
 							onclick={() => storageSession.untrash(e.store, e.record.id)}
 							><Mark name="undo" size={14} /> Restore</button
 						>
@@ -240,9 +232,6 @@
 		margin: 0;
 		font-size: var(--fs-sm);
 		color: var(--muted);
-	}
-	.group-note--warn {
-		color: var(--ui-warning);
 	}
 
 	/* ── A row: the Library's row, with the profile's colour down its edge ── */
