@@ -63,7 +63,7 @@ export const SECTION_GROUPS: SectionGroup[] = [
 		title: null,
 		items: [
 			{ id: 'profile', label: 'Profile', path: resolve('/profile') },
-			{ id: 'profile/new', label: 'Add your account', path: resolve('/profile/new') },
+			{ id: 'profile/new', label: 'Add a profile', path: resolve('/profile/new') },
 			{ id: 'roster', label: 'Roster', path: resolve('/roster') },
 			{ id: 'teams', label: 'Teams', path: resolve('/teams') }
 		]

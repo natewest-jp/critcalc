@@ -191,6 +191,18 @@
 		['teams', 'Teams']
 	] as const;
 	type Clearable = (typeof CLEARABLE)[number][0];
+	/** ⚓ Theorycraft keeps only rotations and lineups (no roster, no teams),
+	 *  and gathers them from every shared link, so it clears those two
+	 *  (Nate 2026-10-26). It is never deleted. */
+	const theorycraft = $derived(mode === 'edit' && profile?.kind === 'theorycraft');
+	const clearable = $derived(
+		theorycraft ? CLEARABLE.filter(([k]) => k === 'rotations' || k === 'lineups') : CLEARABLE
+	);
+	const trashNote = $derived(
+		theorycraft
+			? 'Rotations and lineups go to the Trash for 30 days.'
+			: 'Rotations, lineups, and teams go to the Trash for 30 days.'
+	);
 	let toClear = $state<Record<Clearable, boolean>>({
 		constellations: false,
 		loadouts: false,
@@ -201,13 +213,13 @@
 	});
 	const anyToClear = $derived(Object.values(toClear).some(Boolean));
 	async function clearData(): Promise<void> {
-		const target = editing;
+		const target = editing ?? (theorycraft ? profile : null);
 		if (!target || !anyToClear) return;
 		const c = toClear;
 		const trashed = c.rotations || c.lineups || c.teams;
 		const gone = c.constellations || c.loadouts || c.ownership;
 		const body = [
-			trashed && 'Rotations, lineups, and teams go to the Trash for 30 days.',
+			trashed && trashNote,
 			gone && 'Constellation levels, loadouts, and owned marks can’t be brought back.'
 		]
 			.filter(Boolean)
@@ -253,7 +265,7 @@
 		const ok = await notices.ask({
 			title: `Delete ${target.name}?`,
 			body: `Its roster and ${what} go with it. You can restore it from the Trash for 30 days.`,
-			confirm: 'Delete account',
+			confirm: 'Delete profile',
 			cancel: 'Keep it',
 			danger: true
 		});
@@ -299,12 +311,40 @@
 	</div>
 {/snippet}
 
+{#snippet clearRow()}
+	<div class="sp-row">
+		<span class="sp-name">Clear data</span>
+		<span class="sp-ctl sp-ctl--clear">
+			<span class="pf-clear" class:pf-clear--one={theorycraft}>
+				{#each clearable as [key, label] (key)}
+					<label class="check">
+						<input type="checkbox" bind:checked={toClear[key]} />
+						<span class="check-box"></span>
+						{label}
+					</label>
+				{/each}
+			</span>
+			<button class="btn btn--danger" disabled={!anyToClear} onclick={() => void clearData()}
+				><Mark name="clear" /> Clear…</button
+			>
+		</span>
+		<span class="sp-note">
+			{trashNote}
+			{#if !theorycraft}Constellation levels, loadouts, and owned marks can’t be brought back.{/if}
+		</span>
+	</div>
+{/snippet}
+
 <!-- ⚓ The Settings row (NAME · CONTROL · NOTE, app.css § THE SETTING ROW),
      so Profile reads like the page beside it (2026-10-26). -->
 {#if mode === 'edit' && !editing}
 	<div class="sp">
 		<p class="lede">Theorycraft is built in, so only its Traveler can be changed.</p>
 		<section class="sp-section">{@render twinRow()}</section>
+		<section class="sp-section">
+			<h2 class="kicker sp-section-title">Data</h2>
+			{@render clearRow()}
+		</section>
 	</div>
 {:else}
 	{#if mode === 'new'}
@@ -332,7 +372,7 @@
 						<input
 							class="text"
 							bind:value={name}
-							placeholder="My account"
+							placeholder="My profile"
 							maxlength="40"
 							aria-invalid={reserved}
 						/>
@@ -341,7 +381,7 @@
 				{#if reserved}
 					<span class="sp-note pf-warn">Theorycraft is the built-in profile’s name.</span>
 				{:else if twinNamed}
-					<span class="sp-note">Another account is called {twinNamed.name}.</span>
+					<span class="sp-note">Another profile is called {twinNamed.name}.</span>
 				{/if}
 			</label>
 
@@ -356,7 +396,7 @@
 					</span>
 					<button class="btn" onclick={() => (picking = true)}>Change…</button>
 				</span>
-				<span class="sp-note">Any character, or one of the art pictures.</span>
+				<span class="sp-note">Any character or quest avatar</span>
 			</div>
 
 			<div class="sp-row">
@@ -386,7 +426,7 @@
 				<div class="sp-row sp-row--action">
 					<span class="sp-ctl">
 						<button class="btn btn--primary" disabled={!colour || reserved} onclick={create}
-							><Mark name="plus" /> Add account</button
+							><Mark name="plus" /> Add profile</button
 						>
 					</span>
 				</div>
@@ -396,27 +436,7 @@
 		{#if editing}
 			<section class="sp-section">
 				<h2 class="kicker sp-section-title">Data</h2>
-				<div class="sp-row">
-					<span class="sp-name">Clear data</span>
-					<span class="sp-ctl sp-ctl--clear">
-						<span class="pf-clear">
-							{#each CLEARABLE as [key, label] (key)}
-								<label class="check">
-									<input type="checkbox" bind:checked={toClear[key]} />
-									<span class="check-box"></span>
-									{label}
-								</label>
-							{/each}
-						</span>
-						<button class="btn btn--danger" disabled={!anyToClear} onclick={() => void clearData()}
-							><Mark name="clear" /> Clear…</button
-						>
-					</span>
-					<span class="sp-note">
-						Rotations, lineups, and teams go to the Trash for 30 days. Constellation levels,
-						loadouts, and owned marks can’t be brought back.
-					</span>
-				</div>
+				{@render clearRow()}
 				<div class="sp-row">
 					<span class="sp-name">Delete profile</span>
 					<span class="sp-ctl">
@@ -557,6 +577,12 @@
 		grid-template-rows: repeat(3, auto);
 		grid-template-columns: repeat(2, max-content);
 		gap: 0.55rem 2rem;
+	}
+	/* Theorycraft's two: one column, no fill-down. */
+	.pf-clear.pf-clear--one {
+		grid-auto-flow: row;
+		grid-template-rows: none;
+		grid-template-columns: max-content;
 	}
 	@container (max-width: 34rem) {
 		.pf-clear {

@@ -1793,7 +1793,7 @@ class StorageSession {
 			id: newId(),
 			updatedAt: now,
 			kind: 'real',
-			name: fields.name.trim() || 'My account',
+			name: fields.name.trim() || MIGRATED_PROFILE_NAME,
 			colour: fields.colour,
 			...(fields.picture ? { picture: fields.picture } : {}),
 			// ⚓ An account fact (§13.5), chosen on the new profile's form.

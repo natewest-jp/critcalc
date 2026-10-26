@@ -47,7 +47,7 @@ export type MigrationResult = {
 export type MigrationOptions = { now: number; newId: () => string };
 
 /** The migrated real profile's name (⚓ Nate 2026-10-22). */
-export const MIGRATED_PROFILE_NAME = 'My account';
+export const MIGRATED_PROFILE_NAME = 'My profile';
 
 // ── The stored shapes, as the sanitizers leave them ─────────────────────────
 

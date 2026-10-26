@@ -25,8 +25,17 @@ for Profile, after the Settings round moved Clear data onto it.
 - `InspectModal` takes Escape in the CAPTURE phase and spends it: over the
   menu state, the menu's own listener ran first and closed the whole menu.
 
-## Open
+- **Theorycraft has a Data section** (⚓ Nate): Clear data for its rotations
+  and lineups only (it has no roster or teams, and gathers documents from
+  every shared link), and no Delete.
+- ⚓ **"Profile" in the UI, "account" only for the player's GENSHIN account**
+  (Nate: "account" makes it sound like a server keeps the data). Add a
+  profile · Delete profile · Your current profile · default name "My profile"
+  (`MIGRATED_PROFILE_NAME`; stored names are not renamed). The Privacy page's
+  and FAQ's "no accounts" keep the word: they mean server accounts.
 
-- The new layout's top bar has no twin-aware glyph (the old chrome's roster
-  mark followed the twin); not a regression of this round.
-- Wording: the new notes, the Theorycraft lede, and profile vs account.
+## Notes
+
+- The old chrome's roster mark followed the twin; the new top bar's Teams
+  door is generic art and doesn't. If a twin-aware figure ever returns, it
+  reads `travelerTwin`.

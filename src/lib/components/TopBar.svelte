@@ -228,9 +228,7 @@
 		     stands LEFT of the picture, so on a wide bar it grows toward the
 		     centre and pushes none of the doors (hidden on a phone). -->
 		{#if profile?.kind === 'theorycraft'}
-			<button class="tb-invite" onclick={() => menuState.show('profile/new')}
-				>Add your account</button
-			>
+			<button class="tb-invite" onclick={() => menuState.show('profile/new')}>Add a profile</button>
 		{/if}
 		<div class="tb-actions">
 			{#if profile}
@@ -264,7 +262,7 @@
 								<span class="pm-sub"
 									>{profile.kind === 'theorycraft'
 										? 'Shared links open here'
-										: 'Your account, in this browser'}</span
+										: 'Your profile, in this browser'}</span
 								>
 							</div>
 							{#each storageSession.profiles.filter((p) => p.id !== profile.id) as p (p.id)}
@@ -289,7 +287,7 @@
 								onclick={() => {
 									menu = null;
 									menuState.show('profile/new');
-								}}><Mark name="plus" /> Add your account</button
+								}}><Mark name="plus" /> Add a profile</button
 							>
 							<span class="pm-rule" aria-hidden="true"></span>
 							{#if profile.kind === 'real'}
