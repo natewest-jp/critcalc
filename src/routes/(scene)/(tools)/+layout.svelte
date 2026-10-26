@@ -80,7 +80,7 @@
 			key,
 			kind: 'warning',
 			lead: 'Open in another tab.',
-			body: 'This tab can look but not change it.',
+			body: 'This tab can view but not change anything.',
 			actions: [{ label: 'Edit here', run: editHere }],
 			dismissable: true
 		});

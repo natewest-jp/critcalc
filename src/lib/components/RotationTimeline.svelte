@@ -4068,7 +4068,7 @@
 			{@const held = rotationTabs.held}
 			<div class="rp-held" role="status">
 				<Mark name="locked" size={14} />
-				<span class="rp-held-text">Open in another tab, so this tab can’t change it.</span>
+				<span class="rp-held-text">Open in another tab, so this tab’s contents are locked</span>
 				<button class="btn btn--sm btn--primary" onclick={held.editHere}>Edit here</button>
 			</div>
 		{/if}
