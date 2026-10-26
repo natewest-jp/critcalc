@@ -160,7 +160,7 @@
 {:else}
 	<div class="place">
 		<div class="place-acts">
-			<button class="btn" onclick={() => menu.openTeam('new')}
+			<button class="btn place-new" onclick={() => menu.openTeam('new')}
 				><Mark name="plus" size={14} /> New team</button
 			>
 		</div>
@@ -259,6 +259,11 @@
 		display: flex;
 		gap: 0.4rem;
 		margin-bottom: 1rem;
+	}
+	/* The place's one verb, a size up (Nate 2026-10-26), as in the Library. */
+	.place-new {
+		gap: 0.4rem;
+		font-size: var(--fs-lg);
 	}
 	.empty {
 		max-width: 34rem;

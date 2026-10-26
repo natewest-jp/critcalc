@@ -24,3 +24,22 @@ full-screen surface after the Roster round (Nate's list).
   Roster round had removed the strip's -0.9rem margin there, believing it an
   overlap like the Roster's; in Teams it cancels the flex column's 0.9rem gap.
   Restored, so both surfaces start the grid 0.5rem under the strip.
+
+## Then (Nate, same day)
+
+- **The New… buttons** (New team, New rotation, New lineup) are a size up,
+  `--fs-lg`.
+- **Lineup cards got a treatment.** Each team row LEADS with what it faces:
+  a Stygian battlefield's boss (the lineup's pinned season, as the Builder
+  reads it), an Abyss half ("1st", "2nd"), or a custom team's number, so
+  every card's rows share one column. ⛔ No Abyss art: a lineup does not
+  record its cycle, and the current blessing on an old lineup would pass a
+  stale cycle off as live. Three rows, then "+N more teams" under the
+  portraits.
+- **The rows FILL the card** (Nate: at 24–30px they left half of it empty,
+  even at 320). Every lineup card is one grid track wide, so one measured
+  width sizes them all: a lead and four portraits across it, 30–64px
+  (49px on a 320 phone, ~51 on desktop).
+- ⚠ **Rows align on the BOTTOM.** A side portrait's box is its disc plus
+  the hair rising above it, so centring put every disc below the boss
+  beside it.

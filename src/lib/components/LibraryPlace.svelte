@@ -18,6 +18,7 @@
 	import BandMenu from './BandMenu.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
+	import { BOSSES, SEASONS, bossImage, currentSeason, inLang } from '$lib/endgame';
 	import { recency, storageSession, type DocTool } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
 	import {
@@ -211,6 +212,49 @@
 	/** The notation's opening, on one line: what tells two rotations of the
 	 *  same four apart at a glance (no parse, so it costs nothing per card). */
 	const notationHead = (d: RotationDocument): string => d.body.notation.replace(/\s+/g, ' ').trim();
+
+	// ── A lineup card's endgame (2026-10-26) ────────────────────────────────
+	/** Team rows a lineup card draws; past it, a "+N more" line says so. */
+	const LINEUP_ROWS = 3;
+	/** 🎛️ A row's lead column to its four portraits, and between portraits
+	 *  (the `.portraits` gap), px. */
+	const LU_GAP = 10;
+	const LU_PORTRAIT_GAP = 2;
+	/** 🎛️ The faces' bounds, px: never below the old 24-made-30, never so big
+	 *  a wide card turns into a poster. */
+	const LU_FACE_MIN = 30;
+	const LU_FACE_MAX = 64;
+	/** ⚓ The rows FILL the card (Nate 2026-10-26: at 30px they left half of
+	 *  it empty, even at 320). Every lineup card is one grid track wide, so
+	 *  one width sizes them all: a lead and four portraits across it. */
+	let lineupW = $state(0);
+	const luFace = $derived(
+		lineupW
+			? Math.max(
+					LU_FACE_MIN,
+					Math.min(LU_FACE_MAX, Math.floor((lineupW - LU_GAP - 3 * LU_PORTRAIT_GAP) / 5))
+				)
+			: LU_FACE_MIN
+	);
+	/** What each team row leads with: its Stygian battlefield's boss (the
+	 *  lineup's pinned season, as the Builder reads it), its Abyss half, or
+	 *  (custom) its number, so every card's rows share one column.
+	 *  ⛔ No Abyss art: a lineup does not record its cycle, and the current
+	 *  blessing on an old lineup would pass a stale cycle off as live. */
+	function lineupLead(body: LineupDocument['body']) {
+		const season =
+			body.preset === 'stygian'
+				? (SEASONS.find((x) => x.version === body.season) ?? currentSeason())
+				: undefined;
+		const lead = (i: number) => {
+			const boss = season?.battlefields[i]?.boss;
+			if (boss) return { boss, name: inLang(BOSSES[boss]?.name ?? { en: boss }) };
+			if (body.preset === 'abyss' && i < 2) return { tag: i === 0 ? '1st' : '2nd' };
+			return { tag: String(i + 1) };
+		};
+		const mode = BOARD_PRESETS.find((p) => p.key === body.preset)?.label ?? '';
+		return { lead, mode: season ? `${mode} ${season.version}` : mode };
+	}
 </script>
 
 <!-- The SIDE portraits, as the bench and the Builder wear them (Nate
@@ -436,27 +480,29 @@
 			<p class="pick-head">Choose a rotation to compare with</p>
 			<button class="btn" onclick={() => (menu.pickFor = null)}>Cancel</button>
 		{:else if place === 'planner'}
-			<button class="btn" onclick={() => create()}
+			<button class="btn place-new" onclick={() => create()}
 				><Mark name="plus" size={14} /> New rotation</button
 			>
 		{:else}
-			<BandMenu label="New lineup" mark="plus" align="start">
-				{#snippet items(close)}
-					{#each BOARD_PRESETS as p (p.key)}
-						<button
-							class="band-menu-item"
-							role="menuitem"
-							onclick={() => {
-								close();
-								void create(p.key);
-							}}
-						>
-							<span class="preset-label">{p.label}</span>
-							<span class="preset-hint">{p.hint}</span>
-						</button>
-					{/each}
-				{/snippet}
-			</BandMenu>
+			<span class="place-new-menu"
+				><BandMenu label="New lineup" mark="plus" align="start">
+					{#snippet items(close)}
+						{#each BOARD_PRESETS as p (p.key)}
+							<button
+								class="band-menu-item"
+								role="menuitem"
+								onclick={() => {
+									close();
+									void create(p.key);
+								}}
+							>
+								<span class="preset-label">{p.label}</span>
+								<span class="preset-hint">{p.hint}</span>
+							</button>
+						{/each}
+					{/snippet}
+				</BandMenu></span
+			>
 		{/if}
 		{#if filter}
 			<button
@@ -507,18 +553,41 @@
 			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
 				{@const isCurrent = d.id === currentId}
 				{@const lineup = d as LineupDocument}
+				{@const end = lineupLead(lineup.body)}
+				{@const more = lineup.body.teams.length - LINEUP_ROWS}
 				<li class="card" class:is-current={isCurrent}>
 					<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
 						<span class="card-head">
 							{@render labelOrEdit(d)}
 							{#if d.pinned}<span class="card-pin"><Mark name="pin" size={12} /></span>{/if}
 						</span>
-						<span class="card-teams">
-							{#each lineup.body.teams.slice(0, 4) as team (team.id)}
-								{@render portraits(team.slots, 24)}
+						<span
+							class="card-teams lu-teams"
+							style:--lu-face="{luFace}px"
+							style:--lu-gap="{LU_GAP}px"
+							bind:clientWidth={lineupW}
+						>
+							{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
+								{@const lead = end.lead(i)}
+								<span class="lu-row">
+									{#if lead.boss}
+										<img
+											class="lu-lead lu-boss"
+											src={bossImage(lead.boss, 'icon')}
+											alt=""
+											title={lead.name}
+										/>
+									{:else}
+										<span class="lu-lead lu-tag">{lead.tag}</span>
+									{/if}
+									{@render portraits(team.slots, luFace)}
+								</span>
 							{/each}
+							{#if more > 0}<span class="lu-more">+{more} more {more === 1 ? 'team' : 'teams'}</span
+								>{/if}
 						</span>
 						<span class="row-meta">
+							{#if end.mode}<span>{end.mode}</span>{/if}
 							{#if isCurrent}<span class="row-now">Open now</span>{/if}
 							{#if d.fromLink}<span class="row-flag"
 									><Mark name="link" size={11} /> From a link</span
@@ -594,6 +663,17 @@
 		align-items: center;
 		gap: 0.4rem;
 		margin-bottom: 1rem;
+	}
+	/* The place's one verb, a size up (Nate 2026-10-26): New rotation, and New
+	   lineup's trigger (a BandMenu, reached through its wrapper). Teams'
+	   New team matches. */
+	.place-new,
+	.place-new-menu :global(.band-menu-trigger) {
+		gap: 0.4rem;
+		font-size: var(--fs-lg);
+	}
+	.place-new-menu {
+		display: contents;
 	}
 	.pick-head {
 		margin: 0 0.4rem 0 0;
@@ -865,6 +945,44 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+	}
+	/* The rows span the card (their width sizes the faces). */
+	.lu-teams {
+		align-self: stretch;
+		gap: 6px;
+	}
+	/* A team row: what it faces, then who faces it. ⚠ Aligned on the
+	   BOTTOM: a side portrait's box is its disc PLUS the hair rising above
+	   it, so centring put every disc below the lead beside it. The lead is
+	   one disc tall, so bottoms meeting is discs meeting. */
+	.lu-row {
+		display: flex;
+		align-items: flex-end;
+		gap: var(--lu-gap);
+	}
+	.lu-lead {
+		flex: none;
+		width: var(--lu-face);
+		height: var(--lu-face);
+	}
+	.lu-boss {
+		border-radius: var(--r-round);
+		background: var(--surface-well);
+		object-fit: cover;
+	}
+	/* An Abyss half or a custom team's number, centred on the disc's line. */
+	.lu-tag {
+		display: grid;
+		place-items: center;
+		color: var(--muted);
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+	}
+	/* Under the portraits, not the lead column. */
+	.lu-more {
+		padding-left: calc(var(--lu-face) + var(--lu-gap));
+		color: var(--muted);
+		font-size: var(--fs-sm);
 	}
 	.row-label {
 		overflow: hidden;
