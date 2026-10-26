@@ -43,7 +43,11 @@ hands-on with Nate, one look per step.
    tried (two threes, then three pairs for C2/C4/C6) and DECLINED (⚓ Nate):
    at a gap this small even spacing reads better, and a wider gap would cost
    the astroids size, which they cannot spare.
-7. Phone pass.
+7. ✅ Phone pass (headless, a throwaway profile, 390 and 320): the head's
+   group is ONE row on the "‹ Menu" line (the lock keeps its mark and drops
+   its word below compact, the band rule); the strip's count is hidden below
+   compact (it spent a row alone, Teams' details show none). 0 overflow.
+   At 320 the strip is three rows, as on Teams.
 8. Copy, as a numbered list.
 
 ## Found on the way

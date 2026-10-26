@@ -500,11 +500,13 @@
 		class:is-active={editing}
 		class:is-nudged={nudge}
 		aria-pressed={editing}
+		aria-label={editing ? 'Lock roster' : 'Edit roster'}
 		onanimationend={() => (nudge = false)}
 		title={editing ? 'Lock the roster against stray clicks' : 'Unlock the roster to edit it'}
 		onclick={toggleLock}
-		><Mark name={editing ? 'unlocked' : 'locked'} size={13} />
-		{editing ? 'Lock roster' : 'Edit roster'}</button
+		><Mark name={editing ? 'unlocked' : 'locked'} size={13} /><span class="ros-lock-word"
+			>{editing ? 'Lock roster' : 'Edit roster'}</span
+		></button
 	>
 {/snippet}
 
@@ -1067,6 +1069,21 @@
 		   no mark, so its word stays. */
 		.ros-more :global(.band-menu-word),
 		.ros-more :global(.band-menu-sep) {
+			display: none;
+		}
+		/* The lock too, so the head's group holds one row beside the title. */
+		.ros-lock-word {
+			display: none;
+		}
+		/* Mark only: the .btn--icon box, so it matches undo and redo. */
+		.ros-lock {
+			padding: 0.25rem;
+			min-width: 1.6rem;
+			justify-content: center;
+		}
+		/* The count spent a row of its own; Teams' details show none here, and
+		   the Owned toggle answers "how many". */
+		.ros-filters :global(.rfs-count) {
 			display: none;
 		}
 		.til {

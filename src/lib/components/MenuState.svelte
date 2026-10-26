@@ -948,6 +948,7 @@
 			display: none;
 		}
 		.head-actions {
+			flex-wrap: nowrap;
 			margin-right: 0;
 		}
 		.main {
