@@ -32,7 +32,7 @@
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { notices, type NoticeAction } from '$lib/notices.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
-	import { INVALID_SHARE_LINK } from '$lib/storage/arrivals';
+	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
 	import {
 		BOARD_PRESETS,
 		BOARD_TEAM_LIMIT,
@@ -150,7 +150,7 @@
 			if (ids.length > 0) {
 				boardBar.receiveTeam(ids);
 				showLineup();
-			}
+			} else notices.toast('warning', NO_TEAM_IN_LINK);
 		}
 		if (boardParam) {
 			// A shared lineup (`?b=`). Async decode; an empty active board takes it,
@@ -171,7 +171,7 @@
 			if (Number.isInteger(n) && n >= 0 && n < 4) {
 				pendingSwapSlot = n;
 				tab = 'characters';
-			}
+			} else notices.toast('warning', 'That link asks for a team slot that doesn’t exist.');
 		}
 	});
 

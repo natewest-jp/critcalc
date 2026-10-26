@@ -39,6 +39,7 @@
 	import { sceneOccluded } from '$lib/landing/transition';
 	import LibraryPlace from './LibraryPlace.svelte';
 	import NoticeBanners from './NoticeBanners.svelte';
+	import { notices } from '$lib/notices.svelte';
 	import RosterTab from './RosterTab.svelte';
 	import TeamsPlace from './TeamsPlace.svelte';
 	import ProfileForm from './ProfileForm.svelte';
@@ -150,7 +151,14 @@
 	$effect(() => {
 		const c = chapter;
 		ChapterC = null;
-		if (c) void c.load().then((m) => chapter === c && (ChapterC = m.default));
+		if (c)
+			void c
+				.load()
+				.then((m) => chapter === c && (ChapterC = m.default))
+				// A chunk that won't load left a blank page under the title.
+				.catch(() =>
+					notices.toast('error', 'This page couldn’t load. Check your connection and try again.')
+				);
 	});
 
 	let mainEl = $state<HTMLElement>();

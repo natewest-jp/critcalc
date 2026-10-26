@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { notices } from '$lib/notices.svelte';
 	import { onMount, tick } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -155,7 +156,13 @@
 		if (!param) return;
 		stripDeepLinkParams(url);
 		const decoded = await decodeInstrumentParam(param);
-		if (!decoded || !INSTRUMENTS.some((i) => i.id === decoded.id)) return;
+		if (!decoded || !INSTRUMENTS.some((i) => i.id === decoded.id)) {
+			notices.toast(
+				'error',
+				'That instrument link couldn’t be read. It may have been cut short when it was copied.'
+			);
+			return;
+		}
 		const id = decoded.id as InstrumentId;
 		// The link's instrument becomes slot 0 of the (restored) layout — the
 		// onMount restore has already run on cold load, so this layers on top

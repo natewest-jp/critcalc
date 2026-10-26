@@ -548,7 +548,15 @@ class StorageSession {
 		this.#records.delete(id);
 		this.#written.delete(id);
 		this.#letGo(id);
-		if (tool && rec && showing) await this.#showNext(tool, rec.type);
+		if (tool && rec && showing) {
+			await this.#showNext(tool, rec.type);
+			// The thing on screen changed under the person: say so (notices).
+			const name = rec.name ?? this.#derived.get(id);
+			notices.toast(
+				'info',
+				`${name ? `“${name}”` : `This ${rec.type}`} was deleted in another tab, so this tab moved on`
+			);
+		}
 	}
 
 	/** Changed in another tab without its content changing (renamed, pinned,

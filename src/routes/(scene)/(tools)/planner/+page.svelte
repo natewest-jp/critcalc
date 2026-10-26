@@ -32,7 +32,7 @@
 	import { documentBar as db, rotationTabStrip } from '$lib/documentBar.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
-	import { INVALID_SHARE_LINK } from '$lib/storage/arrivals';
+	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
 	import { constellations, ownership, siteSettings } from '$lib/stores';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
@@ -196,7 +196,7 @@
 			// identical clobber-the-active-tab bug, and two answers to "where does
 			// an incoming document go" is how they drift.
 			db.receive(rt.teamDocument(ids), 'Team loaded');
-		}
+		} else notices.toast('warning', NO_TEAM_IN_LINK);
 	});
 
 	// ---------------------------------------------------------------------------
