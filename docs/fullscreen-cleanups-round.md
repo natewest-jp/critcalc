@@ -48,6 +48,13 @@ full-screen surface after the Roster round (Nate's list).
   truncate). Cards keep their own height (a two-team Abyss card no longer
   stretches to a twelve-team one's). The meta line names the mode only
   under a name of your own: an unnamed lineup's label already is its mode.
+- **Third pass (Nate):** cards take the row's TALLEST height again; faces
+  34 → 40px (at the narrowest card a row left ~125px empty; at 40 it is
+  ~235px and still fits a 320 phone's 262); a hairline RULE between the
+  lead column and the teams, from the first disc to the last, on every
+  kind of card; the rows lift by 0.3 × the face into the title's air (the
+  first row's hair room was mostly empty, and his "Tall avatars" lineup
+  still clears the title).
 - ⚠ **Rows align on the disc's line** (grid `align-items: end`): a side
   portrait's box is its disc plus the hair above it, so centring dropped
   every disc below the lead beside it.

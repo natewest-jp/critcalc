@@ -218,11 +218,12 @@
 	// ── A lineup card's endgame (2026-10-26) ────────────────────────────────
 	/** Team rows a lineup card draws; past it, a "+N more" line says so. */
 	const LINEUP_ROWS = 3;
-	/** A team row's faces, px: the shelf CARD's size (a rotation row is 28),
-	 *  since a lineup card is a card on the same surface. ⛔ Not sized to fill
-	 *  the card: the width goes to WORDS (the team's name), never to bigger
-	 *  faces. ⚠ `.lu-teams` repeats it as --lu-face for the lead and name. */
-	const LU_FACE = 34;
+	/** 🎛️ A team row's faces, px: a touch over the shelf card's 34 (Nate
+	 *  2026-10-26: at its narrowest the card still had ~125px spare), fixed,
+	 *  ⛔ not sized to fill the card (that read as posters). At 40 a row is
+	 *  ~235px and fits the 262 a 320 phone's card holds. ⚠ `.lu-teams`
+	 *  repeats it as --lu-face for the lead, the rule and the name. */
+	const LU_FACE = 40;
 	/** The profile's teams, so a lineup's row can say which team it is. */
 	let savedTeams = $state<TeamRecord[]>([]);
 	$effect(() => {
@@ -549,7 +550,7 @@
 			</section>
 		{/if}
 	{:else}
-		<ul class="cards cards--lineups">
+		<ul class="cards">
 			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
 				{@const isCurrent = d.id === currentId}
 				{@const lineup = d as LineupDocument}
@@ -562,10 +563,16 @@
 							{#if d.pinned}<span class="card-pin"><Mark name="pin" size={12} /></span>{/if}
 						</span>
 						<span class="lu-teams">
+							<!-- The rule between what the teams face and the teams, from
+							     the first disc to the last. -->
+							<span
+								class="lu-rule"
+								style:grid-row="1 / span {Math.min(lineup.body.teams.length, LINEUP_ROWS)}"
+							></span>
 							{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
 								{@const lead = end.lead(i)}
 								{@const name = teamName(team.slots)}
-								<span class="lu-row">
+								<span class="lu-row" style:grid-row={i + 1}>
 									{#if lead.boss}
 										<img
 											class="lu-lead lu-boss"
@@ -940,22 +947,24 @@
 		display: inline-flex;
 		color: var(--accent);
 	}
-	/* Lineups keep their own height: a two-team Abyss card beside a twelve-
-	   team custom one would otherwise stretch to its height and stand empty. */
-	.cards--lineups {
-		align-items: start;
-	}
-	/* THE TEAM ROWS (2026-10-26, second pass): one grid for every card, a
-	   LEAD column (boss, Abyss half, custom number), the four portraits, and
-	   the team's name filling the rest. The shelf card's scale (34px); the
-	   width goes to words. */
+	/* THE TEAM ROWS (2026-10-26, third pass): one grid for every card, a
+	   LEAD column (boss, Abyss half, custom number), a hairline RULE, the
+	   four portraits, and the team's name filling the rest. ↻ Cards take
+	   the row's tallest height again (Nate: equal heights). */
 	.lu-teams {
-		--lu-face: 34px; /* = LU_FACE */
+		--lu-face: 40px; /* = LU_FACE */
+		/* A side portrait rises this far above its disc (measured: 15px of a
+		   49px box at 34, so 0.44 of the disc). */
+		--lu-hair: calc(var(--lu-face) * 0.44);
 		align-self: stretch;
 		display: grid;
-		grid-template-columns: var(--lu-face) auto minmax(0, 1fr);
-		column-gap: 0.6rem;
+		grid-template-columns: var(--lu-face) 1px auto minmax(0, 1fr);
+		column-gap: 0.75rem;
 		row-gap: 4px;
+		/* 🎛️ Up into the title's air (Nate: the rows sat low). Most of the
+		   first row's hair room was empty space, and the tallest art still
+		   clears the title (his "Tall avatars" lineup). */
+		margin-top: calc(var(--lu-face) * -0.3);
 	}
 	/* ⚠ Each row's items sit on the DISC's line, the bottom of the cell: a
 	   side portrait's box is its disc PLUS the hair above it, so centring
@@ -965,6 +974,21 @@
 		grid-column: 1 / -1;
 		grid-template-columns: subgrid;
 		align-items: end;
+	}
+	.lu-row > .lu-lead {
+		grid-column: 1;
+	}
+	.lu-row > :global(.portraits) {
+		grid-column: 3;
+	}
+	.lu-row > .lu-name {
+		grid-column: 4;
+	}
+	/* From the first disc's top to the last disc's foot: not the hair. */
+	.lu-rule {
+		grid-column: 2;
+		margin-top: var(--lu-hair);
+		background: var(--line-soft);
 	}
 	.lu-lead {
 		width: var(--lu-face);
@@ -979,7 +1003,7 @@
 		display: grid;
 		place-items: center;
 		color: var(--muted);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 	}
 	/* One line, centred on the disc. */
@@ -994,7 +1018,7 @@
 	}
 	/* Under the portraits, not the lead column. */
 	.lu-more {
-		grid-column: 2 / -1;
+		grid-column: 3 / -1;
 		color: var(--muted);
 		font-size: var(--fs-sm);
 	}
