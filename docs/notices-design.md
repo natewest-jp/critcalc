@@ -243,6 +243,30 @@ touch never shows and nobody finds.
   rule draining). Kept open while the rest settles; the build carries both
   behind one knob.
 
-## 10. Still open
+## 10. More rulings (Nate, 2026-10-26, before the build)
 
-See the list put to Nate on 2026-10-26 (the session log); answers land here.
+- ✅ All seven recommendations: times as drafted (tune by eye once live);
+  a phone save status in the document pill; the what-if fork toasts every
+  time; deleting a profile is a DIALOG (its consequence is a list);
+  smaller destructive actions take Undo, not a confirm; Escape on the team
+  screen asks.
+- ✅ "Open in another tab" can be dismissed for the session, and the
+  document is then READ-ONLY in fact: an edit is refused and calls the
+  banner back, both at the toolbar and in the composer.
+- ✅ The timer is the RING (Nate). The ✕'s hover is the ring's own circle,
+  never a rounded rectangle behind it.
+
+## 11. Built (branch `polish/notices`)
+
+- `$lib/notices.svelte.ts` (the channel), `NoticeRegion.svelte` (toasts +
+  dialog, mounted once by the scene layout), `NoticeBanners.svelte` (in
+  ToolStack under the toolbar, and at the top of the full-screen content),
+  `$lib/controlAnswer.svelte.ts` (the Share plates answer for themselves).
+- The old slot is gone: `documentBar.notice`, the top bar's notice, the
+  Builder's three local renderers, `HeldElsewhere`.
+- ⚠ Notice commands are `untrack`ed: an effect that raises a banner must
+  not subscribe to the list it writes (it looped).
+- The toast home sits above the Planner's composer (`--notice-floor`).
+- Not this round: the Trash (deletes in the Library stay as they are until
+  it lands); hover-only explanations; hints; a generic failure surface for
+  every `void` storage write (MoveDialog and team saves are covered).
