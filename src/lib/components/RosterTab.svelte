@@ -704,6 +704,7 @@
 	/* The bar sits ABOVE the scroller, so the roll-off fades the tiles and
 	   never the controls. */
 	.ros-main {
+		position: relative;
 		flex: 1;
 		min-height: 0;
 		display: flex;
@@ -715,6 +716,8 @@
 		min-height: 0;
 		overflow-y: auto;
 		padding: 0.5rem 6px 1.25rem 4px;
+		/* A tile the arrows bring into view stops clear of the keys bar. */
+		scroll-padding-block-end: 3.5rem;
 	}
 	/* The filters sit ON the grid (Teams' details), and the scroller starts at
 	   their edge, never under it (TeamDetail .td-filters, 2026-10-26). */
@@ -775,15 +778,39 @@
 	.ros-lock {
 		gap: 5px;
 	}
+	/* THE KEYS (⚓ Nate: "I want people to know the keys available to them"),
+	   shown to the people using them: while a tile has KEYBOARD focus. A row
+	   that came and went would shove the grid down the moment you pressed an
+	   arrow, so it floats over the grid's bottom roll-off instead, and a
+	   pointer passes through it. The fade is linear (the fade law) on the
+	   surface clock. */
 	.ros-keys {
-		flex: none;
+		position: absolute;
+		z-index: 2;
+		left: 4px;
+		bottom: 0.75rem;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.3rem 1rem;
+		max-width: calc(100% - 8px);
 		margin: 0;
-		padding: 0 6px 8px 4px;
+		padding: 6px 10px;
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
 		color: var(--muted);
 		font-size: var(--fs-xs);
+		pointer-events: none;
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity var(--t-quick),
+			visibility var(--t-quick);
+		transition-timing-function: linear;
+	}
+	.ros-main:has(.til-card:focus-visible) .ros-keys {
+		opacity: 1;
+		visibility: visible;
 	}
 	.ros-key {
 		display: inline-flex;
@@ -794,7 +821,7 @@
 		min-width: 18px;
 		padding: 0 4px;
 		border-radius: var(--r-xs);
-		background: var(--surface-raised);
+		background: var(--surface-hover);
 		color: var(--text);
 		/* Body, not mono: in the mono face a capital O and a zero are twins. */
 		font-family: var(--font-body);

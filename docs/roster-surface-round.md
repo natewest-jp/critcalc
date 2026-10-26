@@ -31,7 +31,10 @@ hands-on with Nate, one look per step.
 4. The bar: ✅ one "Mark all / Mark shown" menu (`BandMenu`: Owned, Owned at
    C6, Not owned); ✅ bulk feedback is a toast whose Undo takes back THAT
    action's characters only (a later edit to anyone else survives, and ⌘Z
-   can redo it). ⏭ The keys legend on keyboard focus only.
+   can redo it). ✅ The keys legend shows only while a tile has KEYBOARD
+   focus, FLOATING over the grid's bottom roll-off (a row that came and went
+   would shove the grid down at the first arrow); `scroll-padding` keeps a
+   focused tile clear of it.
 5. Counts, if wanted (bar, sidebar item, or neither).
 6. Tiles and astroids: a visual pass on the layout.
 7. Phone pass.
