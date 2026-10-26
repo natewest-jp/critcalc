@@ -1887,12 +1887,17 @@
 	   state wearing the actionable colour is the exact confusion the TB card round
 	   fixed on the coverage chip; do not re-create it here.
 
-	   ⚠ The other three are NOT zoned, and that is a decision rather than an
-	   oversight: danger is the only one of them that works on paper at all
-	   (3.33:1, against warning's 1.65 and positive's 1.66), and the other two have
-	   no paper consumers. If one ever gains a paper consumer it needs a rung here,
-	   not a nudge at :root. */
+	   ↻ 2026-10-26 (the notices round): warning and positive gained a paper
+	   consumer (paper banners and toasts) and so a rung here. ⚓ The set is
+	   matched at DANGER'S contrast, which already works on paper and stays
+	   unzoned (#e63946, 3.33:1): each hue carried down in OKLCH to 3.33:1 on
+	   parchment-100 at the most chroma sRGB allows, so they keep their richness
+	   rather than going bronze (Nate). Warning's hue is nudged 58° → 50°
+	   (toward red-orange): at its own hue the gamut edge is browner. Both are
+	   MARKS on paper, like provisional, never prose ink. */
 	--ui-provisional: #998136;
+	--ui-warning: #c85d02; /* oklch .600 .158 50 · 3.34:1 (night: #f4a261, 1.65) */
+	--ui-positive: #018d65; /* oklch .571 .121 164 · 3.35:1 (night: #5be0ac, 1.32) */
 	--knob: var(--muted);
 	/* The promoted control ink flips to the DARKEST thing this context owns —
 	   see --ink-active at :root for why it can't stay --text here. */

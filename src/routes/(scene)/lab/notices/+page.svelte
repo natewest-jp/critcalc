@@ -92,6 +92,14 @@
 
 	// ── The stage ───────────────────────────────────────────────────────────
 	let surface = $state<'tool' | 'menu'>('tool');
+	/** The time-left candidates (Nate: "what else could count down?"). */
+	const TIMERS = [
+		{ key: 'line', label: 'Line' },
+		{ key: 'ring', label: 'Ring' },
+		{ key: 'edge', label: 'Edge' },
+		{ key: 'fill', label: 'Fill' }
+	] as const;
+	let timer = $state<(typeof TIMERS)[number]['key']>('line');
 	let width = $state<'desktop' | 'phone'>('desktop');
 	const phone = $derived(width === 'phone');
 
@@ -211,6 +219,35 @@
 	];
 
 	const doc = 'Raiden National';
+
+	/** The paper set (app.css .ctx-light) and the one alternative to judge. */
+	const PAPER_SWATCHES = [
+		{
+			label: 'Danger (unchanged)',
+			value: 'var(--ui-danger)',
+			code: '#e63946 · 3.33',
+			mark: 'warn'
+		},
+		{
+			label: 'Warning',
+			value: 'var(--ui-warning)',
+			code: '#c85d02 · 3.34 · hue 50°',
+			mark: 'warn'
+		},
+		{
+			label: 'Warning, night hue',
+			value: '#bc6500',
+			code: '#bc6500 · 3.35 · hue 58°',
+			mark: 'warn'
+		},
+		{ label: 'Positive', value: 'var(--ui-positive)', code: '#018d65 · 3.35', mark: 'check' },
+		{
+			label: 'Provisional (existing)',
+			value: 'var(--ui-provisional)',
+			code: '#998136 · 3.02',
+			mark: 'about'
+		}
+	] as const;
 </script>
 
 <div class="nl-scroll">
@@ -248,6 +285,17 @@
 					class:is-on={width === 'phone'}
 					onclick={() => (width = 'phone')}>Phone</button
 				>
+			</div>
+
+			<div class="nl-seg" role="group" aria-label="Timer">
+				<span class="nl-glabel">Timer</span>
+				{#each TIMERS as tm (tm.key)}
+					<button
+						class="btn btn--sm"
+						class:is-on={timer === tm.key}
+						onclick={() => (timer = tm.key)}>{tm.label}</button
+					>
+				{/each}
 			</div>
 
 			{#each FIRE as g (g.group)}
@@ -526,6 +574,23 @@
 				{@render bannerView('warning')}
 				{@render bannerView('error')}
 			</div>
+
+			<h2 class="nl-h2">The UI colours on paper</h2>
+			<p class="nl-note">
+				Matched at danger's contrast (3.33:1 on parchment), each at the most saturation the screen
+				can show. The second warning keeps the night hue; the first is nudged toward red-orange,
+				which is less bronze.
+			</p>
+			<div class="pc ctx-light">
+				{#each PAPER_SWATCHES as sw (sw.label)}
+					<div class="pc-row" style:--sw={sw.value}>
+						<span class="pc-mark"><Mark name={sw.mark} size={18} /></span>
+						<span class="pc-chip"></span>
+						<span class="pc-label">{sw.label}</span>
+						<code class="pc-code">{sw.code}</code>
+					</div>
+				{/each}
+			</div>
 		</section>
 	</div>
 </div>
@@ -560,11 +625,34 @@
 				{/each}
 			</span>
 		{/if}
-		<button class="nt-x" aria-label="Dismiss" title="Dismiss" onclick={() => live && dismiss(t.id)}
-			><Mark name="close" size={14} /></button
+		<button
+			class="nt-x"
+			class:has-ring={timer === 'ring' && t.ms !== null}
+			aria-label="Dismiss"
+			title="Dismiss"
+			onclick={() => live && dismiss(t.id)}
 		>
-		{#if t.ms !== null}
-			<span class="nt-time" class:is-paused={t.paused} style:--ms="{t.ms}ms" aria-hidden="true"
+			{#if timer === 'ring' && t.ms !== null}
+				<svg class="nt-ring" viewBox="0 0 28 28" aria-hidden="true">
+					<circle class="nt-ring-track" cx="14" cy="14" r="12" />
+					<circle
+						class="nt-ring-arc"
+						class:is-paused={t.paused}
+						style:--ms="{t.ms}ms"
+						cx="14"
+						cy="14"
+						r="12"
+					/>
+				</svg>
+			{/if}
+			<Mark name="close" size={14} />
+		</button>
+		{#if t.ms !== null && timer !== 'ring'}
+			<span
+				class="nt-time nt-time--{timer}"
+				class:is-paused={t.paused}
+				style:--ms="{t.ms}ms"
+				aria-hidden="true"
 			></span>
 		{/if}
 	</div>
@@ -649,6 +737,7 @@
 	}
 	.nl-seg {
 		display: inline-flex;
+		align-items: center;
 		gap: 2px;
 	}
 	.nl-seg .is-on {
@@ -955,7 +1044,7 @@
 		max-width: 34rem;
 		min-height: 3rem;
 		padding: 0.6rem 0.6rem 0.6rem 0.9rem;
-		border-radius: 12px;
+		border-radius: var(--r-md);
 		overflow: hidden;
 		font-size: var(--fs-xl);
 		line-height: 1.35;
@@ -1038,23 +1127,103 @@
 		opacity: 1;
 		background: rgb(127 127 127 / 0.18);
 	}
+	/* ── The time left: four candidates (the lab's Timer switch). Each one is
+	   a linear drain that pauses with the toast. */
+	.nt {
+		isolation: isolate;
+	}
+	.nt--success {
+		--tone: var(--ui-positive);
+	}
+	.nt--info {
+		--tone: var(--text);
+	}
+	.nt--warning {
+		--tone: var(--ui-warning);
+	}
 	.nt-time {
 		position: absolute;
+		pointer-events: none;
+	}
+	.nt-time.is-paused,
+	.nt-ring-arc.is-paused {
+		animation-play-state: paused;
+	}
+	/* A. Line: a hairline along the bottom, shrinking to the left. */
+	.nt-time--line {
 		left: 0;
 		bottom: 0;
 		height: 2px;
 		width: 100%;
-		background: currentColor;
-		opacity: 0.35;
+		background: rgb(255 255 255 / 0.35);
 		transform-origin: left;
-		animation: time var(--ms) linear forwards;
+		animation: drain-x var(--ms) linear forwards;
 	}
-	.nt-time.is-paused {
-		animation-play-state: paused;
+	/* B. Ring: an arc round the ✕, the thing that will happen. */
+	.nt-x.has-ring {
+		position: relative;
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		justify-content: center;
+		align-items: center;
+		opacity: 1;
 	}
-	@keyframes time {
+	.nt-ring {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		transform: rotate(-90deg);
+	}
+	.nt-ring circle {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+	}
+	.nt-ring-track {
+		stroke-opacity: 0.14;
+	}
+	.nt-ring-arc {
+		stroke-opacity: 0.75;
+		stroke-dasharray: 75.4;
+		animation: drain-ring var(--ms) linear forwards;
+	}
+	@keyframes drain-ring {
+		to {
+			stroke-dashoffset: 75.4;
+		}
+	}
+	/* C. Edge: the severity rule down the left side (paper's rule, on glass),
+	   draining downward. */
+	.nt-time--edge {
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 4px;
+		background: var(--tone);
+		transform-origin: bottom;
+		animation: drain-y var(--ms) linear forwards;
+	}
+	.nt:has(.nt-time--edge) {
+		padding-left: 1.1rem;
+	}
+	/* D. Fill: a faint ground behind the words, emptying to the left. */
+	.nt-time--fill {
+		inset: 0;
+		z-index: -1;
+		background: rgb(255 255 255 / 0.07);
+		transform-origin: left;
+		animation: drain-x var(--ms) linear forwards;
+	}
+	@keyframes drain-x {
 		to {
 			transform: scaleX(0);
+		}
+	}
+	@keyframes drain-y {
+		to {
+			transform: scaleY(0);
 		}
 	}
 
@@ -1066,7 +1235,7 @@
 		align-items: center;
 		gap: 0.6rem 0.9rem;
 		padding: 0.7rem 0.8rem 0.7rem 1.1rem;
-		border-radius: 10px;
+		border-radius: var(--r-md);
 		background: var(--surface);
 		color: var(--text);
 		font-size: var(--fs-xl);
@@ -1075,10 +1244,9 @@
 			0 6px 20px rgb(0 0 0 / 0.35),
 			inset 4px 0 0 var(--nb-ink);
 	}
-	/* ⚠ --ui-warning fails on paper (1.65:1, app.css .ctx-light); a candidate
-	   paper rung for it. */
+	/* Paper's own warning rung (app.css .ctx-light, 2026-10-26). */
 	.nb--warning {
-		--nb-ink: #a35a12;
+		--nb-ink: var(--ui-warning);
 	}
 	.nb strong {
 		color: var(--muted);
@@ -1104,7 +1272,7 @@
 	.st-dialog {
 		width: min(28rem, 100%);
 		padding: 1.5rem 1.5rem 1.25rem;
-		border-radius: 14px;
+		border-radius: var(--r-md);
 		background: var(--surface-broad);
 		color: var(--text);
 		box-shadow: 0 20px 60px rgb(0 0 0 / 0.55);
@@ -1127,6 +1295,40 @@
 	}
 	.st-dlg-discard {
 		color: var(--ui-danger);
+	}
+
+	/* ── paper colours ── */
+	.pc {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		max-width: 34rem;
+		padding: 1rem 1.25rem;
+		border-radius: var(--r-md);
+		background: var(--surface);
+		color: var(--text);
+	}
+	.pc-row {
+		display: grid;
+		grid-template-columns: 20px 3rem 1fr auto;
+		align-items: center;
+		gap: 0.75rem;
+	}
+	.pc-mark {
+		display: inline-flex;
+		color: var(--sw);
+	}
+	.pc-chip {
+		height: 1.1rem;
+		border-radius: var(--r-sm);
+		background: var(--sw);
+	}
+	.pc-label {
+		font-size: var(--fs-lg);
+		color: var(--muted);
+	}
+	.pc-code {
+		font-size: var(--fs-md);
 	}
 
 	/* ── specimens ── */
