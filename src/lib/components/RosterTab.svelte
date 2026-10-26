@@ -464,7 +464,7 @@
 							onclick={() => {
 								close();
 								markAllC6();
-							}}><Mark name="constellation" size={13} filled /> Owned at C6</button
+							}}><Mark name="constellation" size={13} filled="solid" /> Owned at C6</button
 						>
 					{/if}
 					{#if ownedShown.length}
@@ -660,7 +660,7 @@
 									title={editing ? 'Wishlist (W)' : undefined}
 									tabindex="-1"
 									onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
-									><Mark name="wish" size={12} filled={m === 'wishlist'} /></button
+									><Mark name="wish" size={12} filled={m === 'wishlist' && 'solid'} /></button
 								>{/if}
 							{#if !editing && m === 'owned' && con > 0 && !c.noConstellations}
 								<span class="til-con">C{con}</span>
@@ -678,7 +678,11 @@
 										title="C{n} ({n})"
 										tabindex="-1"
 										onclick={() => clickPip(c.id, n)}
-										><Mark name="constellation" size={ASTROID_SIZE} filled={on} /></button
+										><Mark
+											name="constellation"
+											size={ASTROID_SIZE}
+											filled={on && 'solid'}
+										/></button
 									>
 								{/each}
 							</div>
@@ -717,7 +721,7 @@
 		overflow-y: auto;
 		padding: 0.5rem 6px 1.25rem 4px;
 		/* A tile the arrows bring into view stops clear of the keys bar. */
-		scroll-padding-block-end: 3.5rem;
+		scroll-padding-block-end: 4rem;
 	}
 	/* The filters sit ON the grid (Teams' details), and the scroller starts at
 	   their edge, never under it (TeamDetail .td-filters, 2026-10-26). */
@@ -791,15 +795,15 @@
 		bottom: 0.75rem;
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.3rem 1rem;
+		gap: 0.4rem 1.25rem;
 		max-width: calc(100% - 8px);
 		margin: 0;
-		padding: 6px 10px;
+		padding: 8px 14px;
 		border-radius: var(--r-sm);
 		background: var(--surface-raised);
 		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
 		color: var(--muted);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		pointer-events: none;
 		opacity: 0;
 		visibility: hidden;
@@ -815,19 +819,19 @@
 	.ros-key {
 		display: inline-flex;
 		align-items: center;
-		gap: 3px;
+		gap: 4px;
 	}
 	.ros-key kbd {
-		min-width: 18px;
-		padding: 0 4px;
+		min-width: 22px;
+		padding: 0 6px;
 		border-radius: var(--r-xs);
 		background: var(--surface-hover);
 		color: var(--text);
 		/* Body, not mono: in the mono face a capital O and a zero are twins. */
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
-		line-height: 18px;
+		line-height: 22px;
 		text-align: center;
 	}
 	.ros-key-dash {

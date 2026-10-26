@@ -36,7 +36,13 @@ hands-on with Nate, one look per step.
    would shove the grid down at the first arrow); `scroll-padding` keeps a
    focused tile clear of it.
 5. Counts, if wanted (bar, sidebar item, or neither).
-6. Tiles and astroids: a visual pass on the layout.
+6. Tiles and astroids: ✅ a star with POINTS fills with no stroke
+   (`Mark filled="solid"`: the stroke's round joins blunted every tip; lines
+   and circles keep their stroke) for the wish mark and the lit astroids. ✅
+   The keys bar is a size larger throughout. ⛔ Grouping the astroids was
+   tried (two threes, then three pairs for C2/C4/C6) and DECLINED (⚓ Nate):
+   at a gap this small even spacing reads better, and a wider gap would cost
+   the astroids size, which they cannot spare.
 7. Phone pass.
 8. Copy, as a numbered list.
 
