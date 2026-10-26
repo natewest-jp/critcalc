@@ -27,7 +27,9 @@
 	// is <CharacterFilterRail>, its own box in the surface's aside column, which
 	// both tools place beside this grid — see $lib/toolColumns.ts. This component
 	// APPLIES the filters; the column edits them. They meet on the consumer's
-	// `filters` object and nowhere else.
+	// `filters` object and nowhere else. ↻ 2026-10-26: the column is retired
+	// (its last user, the Roster, moved to <CharacterFilterStrip>); the strip
+	// meets this grid the same way.
 	// ---------------------------------------------------------------------------
 
 	let {

@@ -33,8 +33,8 @@ export type IdentityFilters = {
 };
 
 /**
- * The MUTABLE form of the above: what a tool holds as $state, the filter column
- * (<CharacterFilterRail>) edits in place, and <CharacterGrid> reads through
+ * The MUTABLE form of the above: what a tool holds as $state, the filter strip
+ * (<CharacterFilterStrip>) edits in place, and <CharacterGrid> reads through
  * `matchesIdentity`. The sets are SvelteSets so a toggle is reactive without
  * reassigning the object.
  *
