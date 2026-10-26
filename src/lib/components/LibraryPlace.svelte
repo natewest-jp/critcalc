@@ -25,8 +25,10 @@
 		THEORYCRAFT_ID,
 		type DocumentRecord,
 		type LineupDocument,
-		type RotationDocument
+		type RotationDocument,
+		type TeamRecord
 	} from '$lib/storage/records';
+	import { teamOfSlots } from '$lib/storage/teamLoadout';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { teamKey } from '$lib/utils/notationEdit';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
@@ -216,26 +218,24 @@
 	// ── A lineup card's endgame (2026-10-26) ────────────────────────────────
 	/** Team rows a lineup card draws; past it, a "+N more" line says so. */
 	const LINEUP_ROWS = 3;
-	/** 🎛️ A row's lead column to its four portraits, and between portraits
-	 *  (the `.portraits` gap), px. */
-	const LU_GAP = 10;
-	const LU_PORTRAIT_GAP = 2;
-	/** 🎛️ The faces' bounds, px: never below the old 24-made-30, never so big
-	 *  a wide card turns into a poster. */
-	const LU_FACE_MIN = 30;
-	const LU_FACE_MAX = 64;
-	/** ⚓ The rows FILL the card (Nate 2026-10-26: at 30px they left half of
-	 *  it empty, even at 320). Every lineup card is one grid track wide, so
-	 *  one width sizes them all: a lead and four portraits across it. */
-	let lineupW = $state(0);
-	const luFace = $derived(
-		lineupW
-			? Math.max(
-					LU_FACE_MIN,
-					Math.min(LU_FACE_MAX, Math.floor((lineupW - LU_GAP - 3 * LU_PORTRAIT_GAP) / 5))
-				)
-			: LU_FACE_MIN
-	);
+	/** A team row's faces, px: the shelf CARD's size (a rotation row is 28),
+	 *  since a lineup card is a card on the same surface. ⛔ Not sized to fill
+	 *  the card: the width goes to WORDS (the team's name), never to bigger
+	 *  faces. ⚠ `.lu-teams` repeats it as --lu-face for the lead and name. */
+	const LU_FACE = 34;
+	/** The profile's teams, so a lineup's row can say which team it is. */
+	let savedTeams = $state<TeamRecord[]>([]);
+	$effect(() => {
+		if (place !== 'builder') return;
+		void storageSession.teamsVersion;
+		void storageSession.profile?.id;
+		void storageSession.teams().then((list) => (savedTeams = list));
+	});
+	/** A row's words: the saved team's NAME when its four are one (what the
+	 *  width is for, as the notation is on a rotation card). ⛔ Never the
+	 *  members' names: they repeat the portraits beside them and truncate. */
+	const teamName = (slots: readonly (string | null)[]): string | undefined =>
+		teamOfSlots(savedTeams, slots)?.name;
 	/** What each team row leads with: its Stygian battlefield's boss (the
 	 *  lineup's pinned season, as the Builder reads it), its Abyss half, or
 	 *  (custom) its number, so every card's rows share one column.
@@ -549,7 +549,7 @@
 			</section>
 		{/if}
 	{:else}
-		<ul class="cards">
+		<ul class="cards cards--lineups">
 			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
 				{@const isCurrent = d.id === currentId}
 				{@const lineup = d as LineupDocument}
@@ -561,14 +561,10 @@
 							{@render labelOrEdit(d)}
 							{#if d.pinned}<span class="card-pin"><Mark name="pin" size={12} /></span>{/if}
 						</span>
-						<span
-							class="card-teams lu-teams"
-							style:--lu-face="{luFace}px"
-							style:--lu-gap="{LU_GAP}px"
-							bind:clientWidth={lineupW}
-						>
+						<span class="lu-teams">
 							{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
 								{@const lead = end.lead(i)}
+								{@const name = teamName(team.slots)}
 								<span class="lu-row">
 									{#if lead.boss}
 										<img
@@ -580,14 +576,17 @@
 									{:else}
 										<span class="lu-lead lu-tag">{lead.tag}</span>
 									{/if}
-									{@render portraits(team.slots, luFace)}
+									{@render portraits(team.slots, LU_FACE)}
+									{#if name}<span class="lu-name">{name}</span>{/if}
 								</span>
 							{/each}
 							{#if more > 0}<span class="lu-more">+{more} more {more === 1 ? 'team' : 'teams'}</span
 								>{/if}
 						</span>
 						<span class="row-meta">
-							{#if end.mode}<span>{end.mode}</span>{/if}
+							<!-- The mode only under a name of your own: an unnamed lineup's
+							     label already IS its mode. -->
+							{#if d.name && end.mode}<span>{end.mode}</span>{/if}
 							{#if isCurrent}<span class="row-now">Open now</span>{/if}
 							{#if d.fromLink}<span class="row-flag"
 									><Mark name="link" size={11} /> From a link</span
@@ -941,27 +940,33 @@
 		display: inline-flex;
 		color: var(--accent);
 	}
-	.card-teams {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
+	/* Lineups keep their own height: a two-team Abyss card beside a twelve-
+	   team custom one would otherwise stretch to its height and stand empty. */
+	.cards--lineups {
+		align-items: start;
 	}
-	/* The rows span the card (their width sizes the faces). */
+	/* THE TEAM ROWS (2026-10-26, second pass): one grid for every card, a
+	   LEAD column (boss, Abyss half, custom number), the four portraits, and
+	   the team's name filling the rest. The shelf card's scale (34px); the
+	   width goes to words. */
 	.lu-teams {
+		--lu-face: 34px; /* = LU_FACE */
 		align-self: stretch;
-		gap: 6px;
+		display: grid;
+		grid-template-columns: var(--lu-face) auto minmax(0, 1fr);
+		column-gap: 0.6rem;
+		row-gap: 4px;
 	}
-	/* A team row: what it faces, then who faces it. ⚠ Aligned on the
-	   BOTTOM: a side portrait's box is its disc PLUS the hair rising above
-	   it, so centring put every disc below the lead beside it. The lead is
-	   one disc tall, so bottoms meeting is discs meeting. */
+	/* ⚠ Each row's items sit on the DISC's line, the bottom of the cell: a
+	   side portrait's box is its disc PLUS the hair above it, so centring
+	   would drop the disc below the lead and the name beside it. */
 	.lu-row {
-		display: flex;
-		align-items: flex-end;
-		gap: var(--lu-gap);
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
+		align-items: end;
 	}
 	.lu-lead {
-		flex: none;
 		width: var(--lu-face);
 		height: var(--lu-face);
 	}
@@ -970,17 +975,26 @@
 		background: var(--surface-well);
 		object-fit: cover;
 	}
-	/* An Abyss half or a custom team's number, centred on the disc's line. */
 	.lu-tag {
 		display: grid;
 		place-items: center;
 		color: var(--muted);
-		font-size: var(--fs-md);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
+	}
+	/* One line, centred on the disc. */
+	.lu-name {
+		height: var(--lu-face);
+		line-height: var(--lu-face);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--text);
+		font-size: var(--fs-md);
 	}
 	/* Under the portraits, not the lead column. */
 	.lu-more {
-		padding-left: calc(var(--lu-face) + var(--lu-gap));
+		grid-column: 2 / -1;
 		color: var(--muted);
 		font-size: var(--fs-sm);
 	}

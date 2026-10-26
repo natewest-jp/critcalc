@@ -36,10 +36,18 @@ full-screen surface after the Roster round (Nate's list).
   record its cycle, and the current blessing on an old lineup would pass a
   stale cycle off as live. Three rows, then "+N more teams" under the
   portraits.
-- **The rows FILL the card** (Nate: at 24–30px they left half of it empty,
-  even at 320). Every lineup card is one grid track wide, so one measured
-  width sizes them all: a lead and four portraits across it, 30–64px
-  (49px on a 320 phone, ~51 on desktop).
-- ⚠ **Rows align on the BOTTOM.** A side portrait's box is its disc plus
-  the hair rising above it, so centring put every disc below the boss
-  beside it.
+- ⛔ **A first cut sized the faces to FILL the card** (measured width,
+  30-64px: 49 on a 320 phone, ~51 on desktop). Beside the rotation cards it
+  read as posters (Nate: "sloppy"), with row gaps grown by each portrait's
+  hair overhang. The lesson: "use the space" meant intentional layout, not
+  bigger faces, and the yardstick was the sibling card on the same surface.
+- **Second pass, at the shelf card's scale.** 34px faces (a pinned rotation
+  card's; a rotation ROW is 28), one grid for every card: a lead column,
+  the four portraits, and the saved TEAM'S NAME when the four are one of
+  your teams (⛔ never the members' names: they repeat the portraits and
+  truncate). Cards keep their own height (a two-team Abyss card no longer
+  stretches to a twelve-team one's). The meta line names the mode only
+  under a name of your own: an unnamed lineup's label already is its mode.
+- ⚠ **Rows align on the disc's line** (grid `align-items: end`): a side
+  portrait's box is its disc plus the hair above it, so centring dropped
+  every disc below the lead beside it.
