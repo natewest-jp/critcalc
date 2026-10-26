@@ -36,6 +36,7 @@ export type Section =
 	| 'rotations'
 	| 'lineups'
 	| 'settings'
+	| 'trash'
 	| `help/${string}`
 	| `about/${string}`;
 
@@ -73,7 +74,11 @@ export const SECTION_GROUPS: SectionGroup[] = [
 	{
 		id: 'settings',
 		title: 'Settings',
-		items: [{ id: 'settings', label: 'Settings', path: resolve('/settings') }]
+		items: [
+			{ id: 'settings', label: 'Settings', path: resolve('/settings') },
+			// ⚓ Outside every profile, as Settings is (notices design §5).
+			{ id: 'trash', label: 'Trash', path: resolve('/trash') }
+		]
 	}
 ];
 

@@ -44,6 +44,8 @@
 	import TeamsPlace from './TeamsPlace.svelte';
 	import ProfileForm from './ProfileForm.svelte';
 	import SettingsPanel from './SettingsPanel.svelte';
+	import TrashPlace from './TrashPlace.svelte';
+	import { trashCount } from '$lib/storage/trash';
 
 	// ⚓ THE INDEX NEVER SHOWS ON DESKTOP (Nate 2026-10-25). On a phone the
 	// index is the sidebar on its own; beside a sidebar it has nothing to say,
@@ -93,14 +95,15 @@
 		teams: 'teams',
 		rotations: 'rotations',
 		lineups: 'lineups',
-		settings: 'settings'
+		settings: 'settings',
+		trash: 'delete'
 	};
 	/** Help and About FOLD to one item each and expand in place (Nate
 	 *  2026-10-25): the item opens the first chapter, and the chapters show
 	 *  under it while you are in that group. */
 	const FOLDED: Record<string, MarkName> = { help: 'help', about: 'about' };
 	const bodyGroups = SECTION_GROUPS.filter((g) => g.id !== 'profile' && g.id !== 'settings');
-	const settingsItem = SECTION_GROUPS.find((g) => g.id === 'settings')!.items[0];
+	const footItems = SECTION_GROUPS.find((g) => g.id === 'settings')!.items;
 	const profileGroup = SECTION_GROUPS[0];
 
 	/** How many documents each Library place holds (Nate: a count nudges a
@@ -111,8 +114,12 @@
 		void storageSession.profile?.id;
 		void Promise.all([
 			storageSession.documents('rotation'),
-			storageSession.documents('lineup')
-		]).then(([r, l]) => (counts = { rotations: r.length, lineups: l.length }));
+			storageSession.documents('lineup'),
+			storageSession.trash()
+		]).then(
+			([r, l, t]) =>
+				(counts = { rotations: r.length, lineups: l.length, trash: trashCount(t) || undefined })
+		);
 	});
 
 	// The account switcher: the sidebar's first row. It expands IN PLACE, as
@@ -345,7 +352,9 @@
 		{/each}
 
 		<!-- Settings stands apart at the foot, as it does in most apps. -->
-		<div class="side-foot">{@render sideItem(settingsItem)}</div>
+		<div class="side-foot">
+			{#each footItems as it (it.id)}{@render sideItem(it)}{/each}
+		</div>
 	</nav>
 
 	{#snippet sideItem(it: SectionItem)}
@@ -430,6 +439,8 @@
 				{/key}
 			{:else if section === 'settings'}
 				<div class="settings"><SettingsPanel /></div>
+			{:else if section === 'trash'}
+				<TrashPlace />
 			{:else if chapter && ChapterC}
 				{#if chapter.bare}
 					<ChapterC />

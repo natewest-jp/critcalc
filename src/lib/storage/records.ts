@@ -21,6 +21,9 @@ export type SyncFields = {
 	updatedAt: number;
 	/** A tombstone: the record is gone, the fact of its going is kept. */
 	deleted?: true;
+	/** Cleared from the Trash (`trash.ts`): a tombstone holding nothing of
+	 *  the work. Only ever beside `deleted`. */
+	purged?: true;
 };
 
 /** The seven element colours a real profile can wear, plus Theorycraft's

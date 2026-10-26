@@ -96,8 +96,9 @@
 
 	// ── Delete, asked as a DIALOG (notices §3.4) ────────────────────────────
 	// The one delete that isn't a click-again: its consequence is a LIST
-	// (everything in the account goes with it) and it offers a backup first,
-	// which a button's label cannot hold (Nate, 2026-10-26).
+	// (everything in the account goes with it), which a button's label cannot
+	// hold (Nate, 2026-10-26). ↻ Since the Trash it no longer offers a backup:
+	// the whole account can come back from there for 30 days (§5).
 	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 	async function del(): Promise<void> {
 		const target = editing;
@@ -115,9 +116,7 @@
 		].join(', ');
 		const ok = await notices.ask({
 			title: `Delete ${target.name}?`,
-			body:
-				`Its roster and ${what} go with it, and this can’t be undone.\n` +
-				'Download a backup first if you might want them back (Settings › Backup).',
+			body: `Its roster and ${what} go with it. You can restore it from the Trash for 30 days.`,
 			confirm: 'Delete account',
 			cancel: 'Keep it',
 			danger: true
