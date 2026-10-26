@@ -379,7 +379,7 @@
 					<span class="toggle-label">{$siteSettings.useNewOutfits ? 'On' : 'Off'}</span>
 				</span>
 			</span>
-			<span class="sp-note">Prefer characters’ newest outfit art where one exists.</span>
+			<span class="sp-note">Show characters in their newest outfit if they have one.</span>
 		</label>
 
 		<div class="sp-row">
@@ -397,7 +397,7 @@
 					{/each}
 				</span>
 			</span>
-			<span class="sp-note">Which twin appears wherever a Traveler is shown.</span>
+			<span class="sp-note">Which twin takes the role of Traveler on the site.</span>
 		</div>
 	</section>
 
@@ -420,11 +420,11 @@
 				</span>
 			</span>
 			<span class="sp-note">
-				Without Human timing, the rotation planner is frame-perfect: every cancel lands on the first
-				frame the game allows, the way a macro plays. <strong>Padding</strong> adds a few frames
-				before every input the game does not buffer — a skill after a normal attack, an aimed shot,
-				the first press after a swap. <strong>Animations</strong> lets each action finish instead of canceling
-				it.
+				<strong>Off</strong> times a rotation frame-perfectly, the way a macro plays it.
+				<strong>Padding</strong>
+				adds a short pause before each input the game doesn't buffer, like a skill after a normal attack
+				or the first press after a swap. <strong>Animations</strong> lets every action play out instead
+				of canceling it.
 			</span>
 		</div>
 
@@ -450,8 +450,8 @@
 					>
 				</span>
 				<span class="sp-note">
-					Frames added before each unbuffered input. KQM's starting point for a human player is 10;
-					lower it if you play tight, raise it if you don't.
+					How long that pause is. KQM suggests 10 frames for most players; go lower if you play
+					tight.
 				</span>
 			</div>
 
@@ -470,8 +470,7 @@
 					</span>
 				</span>
 				<span class="sp-note">
-					Draw the padding as a hatched sliver on the active row, so you can see where the time
-					went.
+					Draws each pause as a hatched sliver on the timeline, so you can see where the time went.
 				</span>
 			</label>
 		{/if}
@@ -494,8 +493,8 @@
 				>
 			</span>
 			<span class="sp-note">
-				Your network latency — the ms value Genshin shows top-right. A swap takes your ping plus
-				about 90 ms, so the rotation planner delays every character swap by that much.
+				The ping Genshin shows in the top right. Each swap in the Planner takes your ping plus about
+				90 ms.
 			</span>
 		</div>
 
@@ -513,8 +512,8 @@
 				</span>
 			</span>
 			<span class="sp-note">
-				Show each slotted character’s coverage strip under the rotation planner’s notation, with the
-				parts your rotation doesn’t reach dimmed.
+				Shows each character's coverage strip under the rotation planner's notation, with the parts
+				your rotation doesn't use yet dimmed.
 			</span>
 		</label>
 
@@ -578,9 +577,9 @@
 				</button>
 			</span>
 			<span class="sp-note">
-				<strong>Play</strong> in the rotation planner's {$nextLayout ? 'toolbar' : 'view bar'} counts
-				you in, then plays a note at every press, so you can follow a rotation with your eyes on the game.
-				The metronome is one pitch. Melodic gives attacks, skills and bursts their own notes.
+				<strong>Play</strong> in the {$nextLayout ? 'Planner’s toolbar' : 'Planner’s view bar'} counts
+				you in and plays a note at each press, so you can follow along with your eyes on the game. Metronome
+				uses one pitch; Melodic gives attacks, skills, and bursts their own notes.
 			</span>
 		</div>
 
@@ -649,8 +648,7 @@
 						</span>
 					</span>
 					<span class="sp-note">
-						Which note each input gets, then which three notes. Every set comes from one pentatonic
-						scale, so overlapping notes never clash.
+						The top row picks which input gets which note, the bottom row which three notes.
 					</span>
 				</div>
 			{/if}
@@ -720,8 +718,8 @@
 				{/if}
 			</span>
 			<span class="sp-note">
-				critcalc has no server, so everything you set up lives in this browser. Download a file to
-				back it up or move it to another device.
+				critcalc has no server, so everything you set up lives in this browser. Export a file to
+				keep a copy or move to another device.
 				{#if lastBackup === null}
 					Last backup: never.
 				{:else}
@@ -759,8 +757,8 @@
 			</span>
 			<span class="sp-note">
 				{#if $nextLayout}
-					Load a backup file. It replaces every profile in this browser, with its roster, teams,
-					rotations, and lineups, and your settings. An older backup loads too.
+					Replaces every profile in this browser, and your settings, with the ones in a backup file.
+					Older backups work too.
 				{:else}
 					Load a backup file. It replaces your roster, loadouts, saved rotations, saved lineups,
 					open tabs, and settings on this device.
@@ -802,11 +800,10 @@
 			<div class="sp-row">
 				<span class="sp-name">Clear profile data</span>
 				<span class="sp-ctl">
-					<a class="btn" href={resolve('/profile')}>Go to {realProfile.name}’s profile</a>
+					<a class="btn" href={resolve('/profile')}>Open Profile</a>
 				</span>
 				<span class="sp-note">
-					Constellations, loadouts, rotations, lineups, and teams are cleared from the profile’s own
-					page.
+					Clear a profile’s roster, rotations, lineups, or teams from its own page.
 				</span>
 			</div>
 		{/if}
@@ -816,7 +813,7 @@
 			<span class="sp-ctl">
 				<button class="btn" disabled={!anySeen} onclick={showNoticesAgain}>Show again</button>
 			</span>
-			<span class="sp-note">Show again the one-time notices you’ve already seen.</span>
+			<span class="sp-note">Brings back the one-time notices you’ve dismissed.</span>
 		</div>
 
 		{#if $nextLayout}
@@ -828,7 +825,8 @@
 					</button>
 				</span>
 				<span class="sp-note">
-					Every profile, the Trash, and your settings, as if you were visiting for the first time.
+					Removes every profile, the Trash, and your settings, as if you were visiting for the first
+					time.
 				</span>
 			</div>
 		{/if}
