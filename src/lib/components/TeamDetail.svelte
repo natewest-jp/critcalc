@@ -15,10 +15,14 @@
 
   ⚓ One team per SET of four (§3, kept 2026-10-25): a set that is already a
   team is said at once, naming it, and Save waits. Everything is a draft until
-  Save: Cancel and Escape drop it. Strings are working copy.
+  Save: Cancel and Escape drop it, and every other way out asks first
+  (below). Strings are working copy.
 -->
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { page } from '$app/state';
+	import { beforeNavigate, goto, pushState } from '$app/navigation';
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import TeamMemberPortrait from './TeamMemberPortrait.svelte';
@@ -157,18 +161,91 @@
 	}
 
 	// ── Leaving ─────────────────────────────────────────────────────────────
-	const leave = () => history.back();
+	/** "Open it": the question names where the discard leads. */
+	function openOther(t: TeamRecord): void {
+		const go = () => menu.openTeam(t.id);
+		if (!hold(go, `Discard your changes and open ${label(t)}?`)) go();
+	}
+	/** Back over the guard entry too, when there is one. */
+	const leave = () => history.go(page.state.teamGuard ? -2 : -1);
+
+	// ── Leaving with unsaved changes ────────────────────────────────────────
+	// Every way out asks before it drops the draft. An untouched new team has
+	// nothing to lose, though `dirty` (which arms Add team) is true.
+	let committed = $state(false);
+	const unsaved = $derived(
+		!committed && (start ? dirty : !!name.trim() || slots.some((s) => s !== null))
+	);
+	/** The question on the bar, and the way out it holds. */
+	let asking = $state<{ question: string; go: () => void } | null>(null);
+	/** Said to discard: the exit it held runs, and nothing asks again. */
+	let released = false;
+	function hold(go: () => void, question = 'Discard your changes?'): boolean {
+		if (released || !unsaved) return false;
+		asking = { question, go };
+		return true;
+	}
+	function discard(): void {
+		const go = asking?.go;
+		asking = null;
+		released = true;
+		go?.();
+	}
+
+	// The menu state's exits: a section, Teams, another team, a profile.
+	$effect(() => menu.guardLeaving((go) => hold(go)));
+
+	// A real navigation (a tool door, the wordmark, a link). A tab closing
+	// is left to the browser.
+	beforeNavigate((nav) => {
+		const to = nav.to?.url;
+		if (nav.willUnload || !to) return;
+		// eslint-disable-next-line svelte/no-navigation-without-resolve -- the address SvelteKit was already going to
+		if (hold(() => void goto(to))) nav.cancel();
+	});
+
+	// Back. The details are a SHALLOW entry and SvelteKit runs no
+	// beforeNavigate for a shallow pop, so once there is something to lose a
+	// guard entry goes on top: Back pops the guard instead of the details,
+	// and the details ask, raising the guard again so a second Back cannot
+	// slip through.
+	let guardUp = false;
+	function pushGuard(): void {
+		pushState('', {
+			...page.state,
+			teamGuard: true,
+			menuDepth: (page.state.menuDepth ?? 0) + 1
+		});
+	}
+	$effect(() => {
+		if (page.state.teamGuard) {
+			guardUp = true;
+			return;
+		}
+		if (!guardUp) {
+			if (unsaved) pushGuard();
+			return;
+		}
+		guardUp = false;
+		if (untrack(() => hold(leave))) pushGuard();
+		else history.back();
+	});
 
 	/** The draft kept: the saved team, or null if it could not be. */
 	async function commit(): Promise<TeamRecord | null> {
 		if (!full || clash) return null;
 		if (!dirty && start) return start;
+		let saved: TeamRecord | null;
 		if (start) {
 			const ok = await storageSession.updateTeam(start.id, draft);
-			return ok ? { ...start, ...draft } : null;
+			saved = ok ? { ...start, ...draft } : null;
+		} else {
+			const r = await storageSession.saveTeam(draft.slots, draft.name, draft.loadout);
+			saved = r?.team ?? null;
 		}
-		const r = await storageSession.saveTeam(draft.slots, draft.name, draft.loadout);
-		return r?.team ?? null;
+		// Kept, so the way on (Plan a rotation, New lineup) has nothing to ask.
+		if (saved) committed = true;
+		return saved;
 	}
 	async function save(): Promise<void> {
 		if (await commit()) leave();
@@ -198,7 +275,8 @@
 		if (e.defaultPrevented) return;
 		if (e.key === 'Escape') {
 			e.preventDefault();
-			leave();
+			if (asking) asking = null;
+			else leave();
 			return;
 		}
 		const t = e.target as HTMLElement | null;
@@ -377,7 +455,11 @@
 					{/if}
 				</span>
 				<span class="td-acts">
-					{#if dirty}
+					{#if asking}
+						<span class="td-ask" role="status">{asking.question}</span>
+						<button class="btn" onclick={() => (asking = null)}>Keep editing</button>
+						<button class="btn td-discard" onclick={discard}>Discard</button>
+					{:else if dirty}
 						<button class="btn" onclick={leave}>Cancel</button>
 						<button class="btn btn--primary" disabled={!canSave} onclick={save}
 							>{start ? 'Save team' : 'Add team'}</button
@@ -393,7 +475,7 @@
 			<p class="td-clash" role="status">
 				<Mark name="warn" size={14} />
 				<span>These four are already a team: <strong>{label(clash)}</strong>.</span>
-				<button class="td-link" onclick={() => menu.openTeam(clash.id)}>Open it</button>
+				<button class="td-link" onclick={() => openOther(clash)}>Open it</button>
 			</p>
 		{/if}
 
@@ -696,7 +778,15 @@
 	}
 	.td-acts {
 		display: flex;
+		align-items: center;
 		gap: 0.4rem;
+	}
+	.td-ask {
+		margin-right: 0.2rem;
+		font-size: var(--fs-sm);
+	}
+	.td-discard {
+		color: var(--ui-danger);
 	}
 	/* Below toolMin the right-hand group comes apart: Done stays on the
 	   name's row, the verbs take the row beneath, so the bar is two rows and

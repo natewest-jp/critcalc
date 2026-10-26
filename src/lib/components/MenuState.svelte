@@ -259,7 +259,7 @@
 							class="side-item"
 							onclick={() => {
 								switching = false;
-								void storageSession.switchTo(o.id);
+								menu.attempt(() => void storageSession.switchTo(o.id));
 							}}
 						>
 							<span class="side-label">
