@@ -225,8 +225,9 @@ const MARKS = {
 	 *
 	 * Astroid is a four-cusped star: ONE path, no enclosed counters, no slash.
 	 * It's a constellation node — the game's own vocabulary — and its concave
-	 * points separate cleanly from `star`'s five straight ones at every size,
-	 * which is why wishlist did not have to move.
+	 * points separated cleanly from the wishlist's old five-pointed `star`.
+	 * ↻ The wishlist is `wish` (Sparkles) now, whose big star is near this
+	 * one; they never light on one tile (see `wish`).
 	 */
 	gated: 'Astroid',
 	/** The main stat on Artifact Odds' piece card, where the game draws a ✦
@@ -243,7 +244,12 @@ const MARKS = {
 	 *  this time — unlike `gated`, the user holds the key. */
 	locked: 'Lock',
 	unlocked: 'LockOpen',
-	star: 'Star',
+	/** The wishlist (roster surface round, ⚓ Nate 2026-10-26): Sparkles, the
+	 *  picture Genshin draws for its wish screen. ↻ It was `Star`, which a
+	 *  player took for a FAVOURITE and clicked on characters he owned. Its big
+	 *  star sits near the constellation's Astroid, but a wish exists only on a
+	 *  character you DON'T own, so the two are never lit on one tile. */
+	wish: 'Sparkles',
 	/** A character whose frame timing isn't curated yet (⚓ NATE: CircleSlash2,
 	 *  which matches the ∅ it replaces). */
 	uncurated: 'CircleSlash2',

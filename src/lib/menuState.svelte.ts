@@ -22,6 +22,7 @@
  * place the exits meet.
  */
 
+import type { Snippet } from 'svelte';
 import { goto, pushState } from '$app/navigation';
 import { page } from '$app/state';
 import { resolve } from '$app/paths';
@@ -118,6 +119,11 @@ class MenuState {
 	/** PICK MODE (design §6.3): the Library chooses a partner for this
 	 *  rotation (Compare with…, §4.6) instead of opening a document. */
 	pickFor = $state<string | null>(null);
+
+	/** A section's own controls in the page head's row, left of the ✕ (the
+	 *  Roster's edits and lock, 2026-10-26): the section sets it while it is
+	 *  mounted and clears it on leaving. */
+	headActions = $state<Snippet | null>(null);
 
 	/** Asked with the way out: true means it took the exit, and carries it
 	 *  out itself once the user has said to. One holder at a time. */

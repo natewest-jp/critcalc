@@ -2350,8 +2350,9 @@
 						<code>$lib/toolColumns</code>); the bands above span both. The aside is always the DARK
 						column and holds ONE occupant at a time, which each tool decides in a single expression
 						— the planner's notes, or its Source's filters covering them; the Team Builder's filters
-						on the Roster only. The filter column itself is <code>CharacterFilterRail</code> and the
-						tiles are <code>CharacterGrid</code>: two siblings that meet on the consumer's
+						on the Roster only. The filters are <code>CharacterFilterStrip</code> (the column,
+						<code>CharacterFilterRail</code>, retired 2026-10-26) and the tiles are
+						<code>CharacterGrid</code>: siblings that meet on the consumer's
 						<code>filters</code> object, not one component with a private layout. Per-tool sizing
 						rides the <code>--cg-*</code> knobs; don't fork either.
 					</li>

@@ -94,9 +94,29 @@
 		 * the same path grows the shape by half a stroke on every side with a
 		 * softened corner — which is what keeps a 12px filled triangle from
 		 * looking like a shard.
+		 *
+		 * `'solid'` (roster surface round, ⚓ Nate 2026-10-26) is the other
+		 * answer, for a STAR whose points are the picture: the areas fill with
+		 * NO stroke, and an open line part keeps its stroke (Sparkles' little
+		 * plus). The stroke's round joins blunted every tip by ~0.6px, and on a
+		 * 12px wish mark the points went stubby. ⚠ Lucide's geometry still
+		 * rounds each tip by one grid unit (0.5px at 12px), so a point gets
+		 * SHARPER, not sharp; the solid shape also sits half a stroke inside
+		 * its outline.
 		 */
-		filled?: boolean;
+		filled?: boolean | 'solid';
 	} = $props();
+
+	/** Under `'solid'`, per part: a shape with POINTS fills with no stroke; a
+	 *  circle (no points to sharpen) fills and KEEPS its stroke, or Sparkles'
+	 *  dot shrinks to a speck; a line (a path of straight open segments,
+	 *  M/L/H/V only) keeps its stroke and no fill. */
+	function solidPart(tag: string, attrs: Record<string, string>): Record<string, string> {
+		if (tag === 'circle' || tag === 'ellipse') return { fill: 'currentColor' };
+		const area =
+			tag === 'path' ? /[aAcCqQsStTzZ]/.test(attrs.d ?? '') : tag !== 'line' && tag !== 'polyline';
+		return area ? { fill: 'currentColor', stroke: 'none' } : { fill: 'none' };
+	}
 </script>
 
 <svg
@@ -104,7 +124,7 @@
 	width={size}
 	height={size}
 	viewBox="0 0 {MARK_VIEWBOX} {MARK_VIEWBOX}"
-	fill={filled ? 'currentColor' : 'none'}
+	fill={filled === true ? 'currentColor' : 'none'}
 	stroke="currentColor"
 	stroke-width={strokeWidth}
 	stroke-linecap="round"
@@ -113,7 +133,7 @@
 	focusable="false"
 >
 	{#each MARK_NODES[name] as [tag, attrs], i (i)}
-		<svelte:element this={tag} {...attrs} />
+		<svelte:element this={tag} {...attrs} {...filled === 'solid' ? solidPart(tag, attrs) : {}} />
 	{/each}
 </svg>
 

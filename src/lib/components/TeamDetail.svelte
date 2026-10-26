@@ -383,7 +383,7 @@
 	/** The Builder's Show toggles: Owned and Wishlist, both off is everyone. */
 	const OWN_TOGGLES = [
 		{ key: 'owned', mark: 'check', label: 'Owned' },
-		{ key: 'wishlist', mark: 'star', label: 'Wishlist' }
+		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
 	] as const;
 	const moreCount = $derived(
 		filters.weapons.size +
@@ -1050,8 +1050,12 @@
 	/* ── The grid ── */
 	/* The strip ON the grid; no rule under it (Nate 2026-10-25): the strip
 	   is edge enough, and the grid's roll-off ends at it. */
+	/* ↻ 2026-10-26: the scroller no longer tucks UNDER the strip (it had a
+	   -0.9rem margin): coming later in the DOM it swallowed the strip's lower
+	   half, and stacked beneath it scrolled tiles showed through. It starts at
+	   the strip's edge, so the roll-off begins there. */
 	.td-filters {
-		margin-bottom: -0.9rem;
+		flex: none;
 	}
 	/* The Builder's search field (builder .tb-search), sized to the strip
 	   (Nate 2026-10-25): its 30px bars, and the strip's small type rather
@@ -1100,7 +1104,7 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: 0.9rem 6px 1.25rem 4px;
+		padding: 0.5rem 6px 1.25rem 4px;
 	}
 	/* The Roster's tiles (RosterTab .til), as buttons. */
 	.til {

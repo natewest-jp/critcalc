@@ -26,32 +26,37 @@
 	 * a Filters button, the bulk actions fold into ⋯, and touch gets an
 	 * always-visible wishlist star and taller astroid tap areas — see the CSS.
 	 *
-	 * Filters mirror the Builder's vocabulary in a right sidebar. Blank is left
-	 * out: it is the Planner's generic stand-in, no one's to own. Default
-	 * loadout, the 70+ flag and bulk wishlisting are deferred or declined.
+	 * ↻ THE FILTERS ARE THE STRIP (roster surface round, 2026-10-26, ⚓ Nate):
+	 * the Builder's and Teams' strip on the grid, not a column beside it — the
+	 * bulk actions act on what is SHOWN, so what decides that sits with them,
+	 * and the grid takes the width. Blank is left out: it is the Planner's
+	 * generic stand-in, no one's to own. Default loadout, the 70+ flag and bulk
+	 * wishlisting are deferred or declined.
 	 */
 	import { onMount, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import { get } from 'svelte/store';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { browser } from '$app/environment';
-	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from './Mark.svelte';
-	import CharacterFilterRail from './CharacterFilterRail.svelte';
+	import BandMenu from './BandMenu.svelte';
+	import CharacterFilterStrip from './CharacterFilterStrip.svelte';
+	import MoreFilters from './MoreFilters.svelte';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { matchesIdentity, type GridFilters } from '$lib/characterFilters';
 	import { constellations, ownership, siteSettings, type OwnershipMark } from '$lib/stores';
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
-	import { positionIcon, functionIcon } from '$lib/utils/roleIcons';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { scrollFade } from '$lib/actions/scrollFade';
-	import { ROLE_CATEGORIES, inCategory, type RoleCategory } from '$lib/capabilities/roles';
+	import { inCategory, type RoleCategory } from '$lib/capabilities/roles';
 	import { rosterView, type RosterShow } from '$lib/rosterView.svelte';
+	import { menu } from '$lib/menuState.svelte';
+	import { notices } from '$lib/notices.svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 
 	let {
+		inMenu = false,
 		focus = null,
 		onFocused
 	}: {
@@ -59,6 +64,9 @@
 		focus?: string | null;
 		/** Called once the arrival has been made, so the caller can clear it. */
 		onFocused?: () => void;
+		/** Hosted by the menu state: the bar's controls go up into its page
+		 *  head's row (`menu.headActions`) instead of a row of their own. */
+		inMenu?: boolean;
 	} = $props();
 
 	/** ⚓ Blank stays in the Planner (a generic stand-in to test a rotation
@@ -100,7 +108,6 @@
 		future = [...future, snap()];
 		past = past.slice(0, -1);
 		restore(prev);
-		notice = '';
 	}
 	function redo(): void {
 		const next = future.at(-1);
@@ -108,15 +115,6 @@
 		past = [...past, snap()];
 		future = future.slice(0, -1);
 		restore(next);
-		notice = '';
-	}
-	/** What the last bulk action did, said beside Undo for a few seconds. */
-	let notice = $state('');
-	let noticeTimer: ReturnType<typeof setTimeout> | undefined;
-	function announce(text: string): void {
-		notice = text;
-		clearTimeout(noticeTimer);
-		noticeTimer = setTimeout(() => (notice = ''), 6000);
 	}
 	function onWindowKey(e: KeyboardEvent): void {
 		if (!editing || !(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return;
@@ -137,7 +135,11 @@
 		record();
 		ownership.setMark(id, owned ? 'owned' : null);
 	}
+	/** ⚓ A wish is for a character you DON'T own (Nate 2026-10-26): the mark
+	 *  is one value, so wishing an owned character un-owned it — the
+	 *  streamer's "favourite" click faded every character he tried it on. */
 	function toggleWish(id: string): void {
+		if (marks[id] === 'owned') return;
 		record();
 		ownership.setMark(id, marks[id] === 'wishlist' ? null : 'wishlist');
 	}
@@ -152,24 +154,30 @@
 		setCon(id, marks[id] === 'owned' && (cons[id] ?? 0) === n ? n - 1 : n);
 	}
 
-	// ── Phone (below toolMin / compact) ─────────────────────────────────────
-	/** Below toolMin the filters are a SHEET over the grid, opened by the
-	 *  Filters button — stacked under it they took half a phone's screen. */
-	let filtersOpen = $state(false);
-	/** Below compact the three bulk actions fold into one ⋯ menu. */
-	let bulkOpen = $state(false);
-
 	// ── Filters ──────────────────────────────────────────────────────────────
 	const filters: GridFilters = $state({
 		elements: new SvelteSet<string>(),
 		weapons: new SvelteSet<string>(),
 		rarities: new SvelteSet<number>(),
 		region: '',
-		search: ''
+		search: '',
+		factionBuffs: new SvelteSet<string>()
 	});
 	let role = $state<RoleCategory | null>(null);
 	type Sort = 'newest' | 'name' | 'element';
 	let sort = $state<Sort>('newest');
+	const SORTS: { key: Sort; label: string }[] = [
+		{ key: 'newest', label: 'Newest' },
+		{ key: 'name', label: 'Name' },
+		{ key: 'element', label: 'Element' }
+	];
+	/** Teams' Show toggles plus the Roster's own third, Not owned (its X is the
+	 *  roster's word for it: the key and the bulk action). None on is everyone. */
+	const SHOW_TOGGLES = [
+		{ key: 'owned', mark: 'check', label: 'Owned' },
+		{ key: 'unowned', mark: 'close', label: 'Not owned' },
+		{ key: 'wishlist', mark: 'wish', label: 'Wishlist' }
+	] as const;
 
 	const releaseKey = (c: CharacterIndexEntry) => {
 		const [a, b] = (c.release ?? '0.0').split('.').map(Number);
@@ -202,8 +210,33 @@
 				matchesIdentity(c, filters) && passesShow(c.id, rosterView.show) && passesRole(c.id, role)
 		)
 	);
-	const extraActive = $derived(rosterView.show !== 'all' || role !== null);
+	const moreCount = $derived(
+		filters.weapons.size +
+			filters.rarities.size +
+			(filters.region ? 1 : 0) +
+			(filters.factionBuffs?.size ?? 0)
+	);
+	const anyActive = $derived(
+		moreCount > 0 ||
+			filters.elements.size > 0 ||
+			!!filters.search.trim() ||
+			role !== null ||
+			rosterView.show !== 'all'
+	);
 	const filtered = $derived(shown.length < ALL.length);
+	function clearIdentity(): void {
+		filters.elements.clear();
+		filters.weapons.clear();
+		filters.rarities.clear();
+		filters.factionBuffs?.clear();
+		filters.region = '';
+		filters.search = '';
+	}
+	function clearAll(): void {
+		clearIdentity();
+		role = null;
+		rosterView.show = 'all';
+	}
 
 	// ── Bulk actions ─────────────────────────────────────────────────────────
 	const unownedShown = $derived(shown.filter((c) => marks[c.id] !== 'owned'));
@@ -212,8 +245,12 @@
 		shown.filter((c) => marks[c.id] !== 'owned' || (!c.noConstellations && cons[c.id] !== 6))
 	);
 	const plural = (n: number) => `${n} character${n === 1 ? '' : 's'}`;
-	function bulk(list: CharacterIndexEntry[], c6: boolean, owned: boolean): void {
+	/** A bulk edit, and a toast whose Undo takes back ITS characters only: a
+	 *  later edit to anyone else survives it (a whole-roster restore lost
+	 *  them). The take-back is itself an edit, so ⌘Z can redo the bulk. */
+	function bulk(list: CharacterIndexEntry[], c6: boolean, owned: boolean, text: string): void {
 		record();
+		const before = past.at(-1)!;
 		const m = { ...get(ownership) };
 		const k = { ...get(constellations) };
 		for (const c of list) {
@@ -223,22 +260,45 @@
 		}
 		ownership.replaceAll(m);
 		if (c6) constellations.replaceAll(k);
+		notices.toast('success', text, {
+			actions: [{ label: 'Undo', run: () => takeBack(list, before) }]
+		});
+	}
+	function takeBack(list: CharacterIndexEntry[], before: Snapshot): void {
+		record();
+		const m = { ...get(ownership) };
+		const k = { ...get(constellations) };
+		for (const { id } of list) {
+			if (before.marks[id]) m[id] = before.marks[id];
+			else delete m[id];
+			if (id in before.cons) k[id] = before.cons[id];
+			else delete k[id];
+		}
+		ownership.replaceAll(m);
+		constellations.replaceAll(k);
 	}
 	function markAllOwned(): void {
 		const n = unownedShown.length;
-		bulk(unownedShown, false, true);
-		announce(`Marked ${plural(n)} owned.`);
+		bulk(unownedShown, false, true, `Marked ${plural(n)} owned`);
 	}
 	function markAllC6(): void {
 		const n = belowC6Shown.length;
-		bulk(belowC6Shown, true, true);
-		announce(`Marked ${plural(n)} owned at C6.`);
+		bulk(belowC6Shown, true, true, `Marked ${plural(n)} owned at C6`);
 	}
 	function markAllNotOwned(): void {
 		const n = ownedShown.length;
-		bulk(ownedShown, false, false);
-		announce(`Marked ${plural(n)} not owned.`);
+		bulk(ownedShown, false, false, `Marked ${plural(n)} not owned`);
 	}
+	const anyBulk = $derived(!!(unownedShown.length || belowC6Shown.length || ownedShown.length));
+
+	// ── The head (the menu state's page head, when hosted there) ────────────
+	$effect(() => {
+		if (!inMenu) return;
+		menu.headActions = barActions;
+		return () => {
+			if (menu.headActions === barActions) menu.headActions = null;
+		};
+	});
 
 	// ── The keys (⚓ Nate: "I want people to know the keys available to them")
 	const MOD = browser && /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘' : 'Ctrl';
@@ -246,7 +306,7 @@
 		{ keys: ['←', '→', '↑', '↓'], does: 'move' },
 		{ keys: ['O'], does: 'owned' },
 		{ keys: ['X'], does: 'not owned' },
-		{ keys: ['Space'], does: 'switch' },
+		{ keys: ['Space'], does: 'owned or not' },
 		{ keys: ['W'], does: 'wishlist' },
 		{ keys: ['0', '–', '6'], does: 'constellation' },
 		{ keys: [MOD, 'Z'], does: 'undo' }
@@ -300,7 +360,8 @@
 			toggleOwned(c.id);
 		} else if (k === 'w') {
 			e.preventDefault();
-			toggleWish(c.id);
+			if (marks[c.id] === 'owned') nudgeTile(c.id);
+			else toggleWish(c.id);
 		} else if (/^[0-6]$/.test(k) && !c.noConstellations) {
 			e.preventDefault();
 			setCon(c.id, Number(k));
@@ -327,17 +388,17 @@
 
 	// ── Arriving on a character (a details card's link) ──────────────────────
 	let flashId = $state<string | null>(null);
+	/** A refused key on one tile (W on a character you own) NUDGES it. */
+	let nudgeId = $state<string | null>(null);
+	function nudgeTile(id: string): void {
+		nudgeId = null;
+		requestAnimationFrame(() => (nudgeId = id));
+	}
 	async function arrive(id: string): Promise<void> {
 		const c = ALL.find((e) => e.id === id);
 		if (!c) return;
 		// Clear ONLY what hides them.
-		if (!matchesIdentity(c, filters)) {
-			filters.elements.clear();
-			filters.weapons.clear();
-			filters.rarities.clear();
-			filters.region = '';
-			filters.search = '';
-		}
+		if (!matchesIdentity(c, filters)) clearIdentity();
 		if (!passesShow(id, rosterView.show)) rosterView.show = 'all';
 		if (!passesRole(id, role)) role = null;
 		await tick();
@@ -373,119 +434,85 @@
 	const ASTROID_SIZE = 13;
 </script>
 
-<svelte:window onkeydown={onWindowKey} onclick={() => (bulkOpen = false)} />
+<svelte:window onkeydown={onWindowKey} />
+
+<!-- The bar's controls: in the menu state's page head (inMenu), else a row
+     of their own. ONE group: mark, undo and redo while editing, the lock. -->
+{#snippet barActions()}
+	{#if editing}
+		{#if anyBulk}
+			<BandMenu
+				size="sm"
+				label={filtered ? 'Mark shown' : 'Mark all'}
+				ariaLabel={filtered ? 'Mark every character shown' : 'Mark every character'}
+			>
+				{#snippet items(close)}
+					{#if unownedShown.length}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								close();
+								markAllOwned();
+							}}><Mark name="check" size={13} /> Owned</button
+						>
+					{/if}
+					{#if belowC6Shown.length}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								close();
+								markAllC6();
+							}}><Mark name="constellation" size={13} filled="solid" /> Owned at C6</button
+						>
+					{/if}
+					{#if ownedShown.length}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								close();
+								markAllNotOwned();
+							}}><Mark name="close" size={13} /> Not owned</button
+						>
+					{/if}
+				{/snippet}
+			</BandMenu>
+		{/if}
+		<button
+			class="btn btn--sm btn--icon"
+			aria-label="Undo"
+			title={MOD === '⌘' ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
+			disabled={!past.length}
+			onclick={undo}><Mark name="undo" size={13} /></button
+		>
+		<button
+			class="btn btn--sm btn--icon"
+			aria-label="Redo"
+			title={MOD === '⌘' ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
+			disabled={!future.length}
+			onclick={redo}><Mark name="redo" size={13} /></button
+		>
+	{/if}
+	<button
+		class="btn btn--sm ros-lock"
+		class:is-active={editing}
+		class:is-nudged={nudge}
+		aria-pressed={editing}
+		aria-label={editing ? 'Lock roster' : 'Edit roster'}
+		onanimationend={() => (nudge = false)}
+		title={editing ? 'Lock the roster against stray clicks' : 'Unlock the roster to edit it'}
+		onclick={toggleLock}
+		><Mark name={editing ? 'unlocked' : 'locked'} size={13} /><span class="ros-lock-word"
+			>{editing ? 'Lock roster' : 'Edit roster'}</span
+		></button
+	>
+{/snippet}
 
 <div class="ros">
 	<div class="ros-main">
-		<div class="ros-bar">
-			<p class="ros-count">{shown.length} of {ALL.length} characters</p>
-			<!-- Below toolMin: the sidebar becomes a sheet behind this button. Its
-			     word goes below compact (the band rule: keep the MARK). -->
-			<button
-				class="btn btn--sm ros-filters-btn"
-				class:is-active={filtered}
-				aria-expanded={filtersOpen}
-				aria-label="Filters"
-				onclick={() => (filtersOpen = true)}
-				><Mark name="filter" size={13} /><span class="ros-filters-word">Filters</span></button
-			>
-			{#if editing && (unownedShown.length || belowC6Shown.length || ownedShown.length)}
-				<!-- Below compact the bulk actions fold into one ⋯. -->
-				<span class="ros-bulk-fold">
-					<button
-						class="btn btn--sm btn--icon"
-						aria-label="Mark all…"
-						aria-expanded={bulkOpen}
-						onclick={(e) => {
-							e.stopPropagation();
-							bulkOpen = !bulkOpen;
-						}}><Mark name="more" size={13} /></button
-					>
-					{#if bulkOpen}
-						<div
-							class="ros-menu ctx-dark"
-							role="menu"
-							transition:fade={{ duration: motion(T_QUICK) }}
-							onintrostart={introLive}
-							onoutrostart={outroInert}
-						>
-							{#if unownedShown.length}
-								<button class="ros-menu-item" role="menuitem" onclick={markAllOwned}
-									><Mark name="check" size={12} />
-									{filtered ? 'Mark all shown owned' : 'Mark all owned'}</button
-								>
-							{/if}
-							{#if belowC6Shown.length}
-								<button class="ros-menu-item" role="menuitem" onclick={markAllC6}
-									><Mark name="constellation" size={12} filled />
-									{filtered ? 'Mark all shown C6' : 'Mark all C6'}</button
-								>
-							{/if}
-							{#if ownedShown.length}
-								<button class="ros-menu-item" role="menuitem" onclick={markAllNotOwned}
-									><Mark name="close" size={12} />
-									{filtered ? 'Mark all shown not owned' : 'Mark all not owned'}</button
-								>
-							{/if}
-						</div>
-					{/if}
-				</span>
-			{/if}
-			{#if editing}
-				{#if unownedShown.length}
-					<button class="btn btn--sm ros-bulk" onclick={markAllOwned}
-						><Mark name="check" size={12} />
-						{filtered ? 'Mark all shown owned' : 'Mark all owned'}</button
-					>
-				{/if}
-				{#if belowC6Shown.length}
-					<button class="btn btn--sm ros-bulk" onclick={markAllC6}
-						><Mark name="constellation" size={12} filled />
-						{filtered ? 'Mark all shown C6' : 'Mark all C6'}</button
-					>
-				{/if}
-				{#if ownedShown.length}
-					<button class="btn btn--sm ros-bulk" onclick={markAllNotOwned}
-						><Mark name="close" size={12} />
-						{filtered ? 'Mark all shown not owned' : 'Mark all not owned'}</button
-					>
-				{/if}
-			{/if}
-			{#if editing && notice}<span
-					class="ros-notice"
-					role="status"
-					transition:fade={{ duration: motion(T_QUICK) }}>{notice}</span
-				>{/if}
-			<span class="ros-end">
-				{#if editing}
-					<button
-						class="btn btn--sm btn--icon"
-						aria-label="Undo"
-						title={MOD === '⌘' ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
-						disabled={!past.length}
-						onclick={undo}><Mark name="undo" size={13} /></button
-					>
-					<button
-						class="btn btn--sm btn--icon"
-						aria-label="Redo"
-						title={MOD === '⌘' ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
-						disabled={!future.length}
-						onclick={redo}><Mark name="redo" size={13} /></button
-					>
-				{/if}
-				<button
-					class="btn btn--sm ros-lock"
-					class:is-active={editing}
-					class:is-nudged={nudge}
-					aria-pressed={editing}
-					onanimationend={() => (nudge = false)}
-					title={editing ? 'Lock the roster against stray clicks' : 'Unlock the roster to edit it'}
-					onclick={toggleLock}
-					><Mark name={editing ? 'unlocked' : 'locked'} size={13} />
-					{editing ? 'Lock roster' : 'Edit roster'}</button
-				>
-			</span>
-		</div>
+		{#if !inMenu}<div class="ros-bar">{@render barActions()}</div>{/if}
 		{#if editing}
 			<p class="ros-keys" aria-label="Keyboard shortcuts">
 				{#each KEYS as k (k.does)}
@@ -497,12 +524,93 @@
 				{/each}
 			</p>
 		{/if}
+		<!-- The filters sit ON the grid (Teams' details), and the grid's
+		     roll-off ends at them. -->
+		<div class="ros-filters">
+			<CharacterFilterStrip
+				slate
+				{filters}
+				activeRole={role?.key ?? null}
+				onRole={(cat) => (role = role?.key === cat.key ? null : cat)}
+				count={shown.length}
+				{anyActive}
+				onClear={clearAll}
+			>
+				{#snippet start()}
+					<span class="ros-search">
+						<Mark name="search" size={12} />
+						<input
+							class="field ros-search-field"
+							type="text"
+							placeholder="Search…"
+							aria-label="Search characters"
+							bind:value={filters.search}
+							autocomplete="off"
+							autocorrect="off"
+							spellcheck={false}
+						/>
+					</span>
+				{/snippet}
+				{#snippet end()}
+					<span class="segment ros-show" role="group" aria-label="Show">
+						{#each SHOW_TOGGLES as t (t.key)}
+							{@const on = rosterView.show === t.key}
+							<button
+								class="btn btn--icon"
+								class:is-active={on}
+								aria-pressed={on}
+								aria-label={t.label}
+								title={on ? 'Show everyone' : t.label}
+								onclick={() => (rosterView.show = on ? 'all' : t.key)}
+								><Mark name={t.mark} size={14} /></button
+							>
+						{/each}
+					</span>
+					<span class="ros-more"
+						><BandMenu
+							size="sm"
+							role="dialog"
+							mark="filter"
+							label="More"
+							count={moreCount}
+							ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+						>
+							{#snippet items(close)}
+								<MoreFilters roster={ALL} {filters} ownershipView="all" {close} />
+							{/snippet}
+						</BandMenu></span
+					>
+					<BandMenu
+						size="sm"
+						label={SORTS.find((o) => o.key === sort)?.label}
+						ariaLabel="Sort: {SORTS.find((o) => o.key === sort)?.label}"
+					>
+						{#snippet items(close)}
+							{#each SORTS as o (o.key)}
+								<button
+									class="band-menu-item ros-sort-item"
+									role="menuitemradio"
+									aria-checked={sort === o.key}
+									onclick={() => {
+										sort = o.key;
+										close();
+									}}
+									><span class="ros-sort-check"
+										>{#if sort === o.key}<Mark name="check" size={13} />{/if}</span
+									>{o.label}</button
+								>
+							{/each}
+						{/snippet}
+					</BandMenu>
+				{/snippet}
+			</CharacterFilterStrip>
+		</div>
 		<div class="ros-scroll scroll-fade" bind:this={listEl} use:scrollFade>
-			{#if !editing}
-				<p class="ros-hint">Click “Edit roster” to begin editing.</p>
-			{:else if ownedCount === 0}
+			{#if editing && ownedCount === 0}
 				<p class="ros-hint">
-					Mark the characters you own: click a portrait, or select one and use the keys above.
+					Mark the characters you own by <span class="ros-by-pointer">clicking</span><span
+						class="ros-by-touch">tapping</span
+					> their portraits.
 				</p>
 			{/if}
 
@@ -518,6 +626,10 @@
 						class:is-owned={m === 'owned'}
 						class:is-wish={m === 'wishlist'}
 						class:is-flash={flashId === c.id}
+						class:is-nudged={nudgeId === c.id}
+						onanimationend={(e) => {
+							if (e.animationName.endsWith('nudge') && nudgeId === c.id) nudgeId = null;
+						}}
 						role="listitem"
 						tabindex={focusId === c.id || (!focusId && c === shown[0]) ? 0 : -1}
 						data-id={c.id}
@@ -544,16 +656,20 @@
 									><img src={elementIcon(c.element)} alt="" /></span
 								>
 							{/if}
-							<button
-								class="til-corner til-corner--end til-wish"
-								class:is-active={m === 'wishlist'}
-								aria-pressed={m === 'wishlist'}
-								aria-label="Wishlist"
-								title={editing ? 'Wishlist (W)' : undefined}
-								tabindex="-1"
-								onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
-								><Mark name="star" size={12} filled={m === 'wishlist'} /></button
-							>
+							{#if m !== 'owned'}<button
+									class="til-corner til-corner--end til-wish"
+									class:is-active={m === 'wishlist'}
+									aria-pressed={m === 'wishlist'}
+									aria-label="Wishlist"
+									title={editing
+										? m === 'wishlist'
+											? 'Remove from wishlist (W)'
+											: 'Add to wishlist (W)'
+										: undefined}
+									tabindex="-1"
+									onclick={() => (editing ? toggleWish(c.id) : nudgeLock())}
+									><Mark name="wish" size={12} filled={m === 'wishlist' && 'solid'} /></button
+								>{/if}
 							{#if !editing && m === 'owned' && con > 0 && !c.noConstellations}
 								<span class="til-con">C{con}</span>
 							{/if}
@@ -570,7 +686,11 @@
 										title="C{n} ({n})"
 										tabindex="-1"
 										onclick={() => clickPip(c.id, n)}
-										><Mark name="constellation" size={ASTROID_SIZE} filled={on} /></button
+										><Mark
+											name="constellation"
+											size={ASTROID_SIZE}
+											filled={on && 'solid'}
+										/></button
 									>
 								{/each}
 							</div>
@@ -583,66 +703,6 @@
 			{/if}
 		</div>
 	</div>
-
-	<div class="ros-side" class:is-open={filtersOpen}>
-		<!-- The sheet's own head, shown only when the sidebar is a sheet. -->
-		<div class="ros-sheet-head">
-			<p class="ros-count">{shown.length} of {ALL.length} characters</p>
-			<button class="btn btn--sm" onclick={() => (filtersOpen = false)}>Done</button>
-		</div>
-		<CharacterFilterRail
-			roster={ALL}
-			{filters}
-			extraFiltersActive={extraActive}
-			onClearExtras={() => {
-				rosterView.show = 'all';
-				role = null;
-			}}
-			searchPlaceholder="Search characters"
-		>
-			{#snippet railStart()}
-				<div class="side-sec">
-					<p class="kicker">Show</p>
-					<div class="segment side-seg">
-						{#each [['all', 'All'], ['owned', 'Owned'], ['wishlist', 'Wishlist'], ['unowned', 'Not owned']] as const as [k, label] (k)}
-							<button
-								class="btn btn--sm"
-								class:is-active={rosterView.show === k}
-								onclick={() => (rosterView.show = k)}>{label}</button
-							>
-						{/each}
-					</div>
-				</div>
-				<div class="side-sec">
-					<p class="kicker">Sort</p>
-					<div class="segment side-seg">
-						{#each [['newest', 'Newest'], ['name', 'Name'], ['element', 'Element']] as const as [k, label] (k)}
-							<button class="btn btn--sm" class:is-active={sort === k} onclick={() => (sort = k)}
-								>{label}</button
-							>
-						{/each}
-					</div>
-				</div>
-				<div class="side-sec">
-					<p class="kicker">Role</p>
-					<div class="chips">
-						{#each ROLE_CATEGORIES as cat (cat.key)}
-							<button
-								class="chip side-role"
-								class:active={role?.key === cat.key}
-								aria-pressed={role?.key === cat.key}
-								onclick={() => (role = role?.key === cat.key ? null : cat)}
-							>
-								{#if cat.position}<img src={positionIcon(cat.position, 'color')} alt="" />{/if}
-								<img src={functionIcon(cat.function, 'color')} alt="" />
-								{cat.label}
-							</button>
-						{/each}
-					</div>
-				</div>
-			{/snippet}
-		</CharacterFilterRail>
-	</div>
 </div>
 
 <style>
@@ -650,13 +710,14 @@
 		position: relative;
 		flex: 1;
 		min-height: 0;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 18rem;
-		gap: 1.5rem;
+		display: flex;
+		flex-direction: column;
 	}
 	/* The bar sits ABOVE the scroller, so the roll-off fades the tiles and
 	   never the controls. */
 	.ros-main {
+		position: relative;
+		flex: 1;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
@@ -666,41 +727,53 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: 4px 6px 1.25rem 4px;
+		padding: 0.5rem 6px 1.25rem 4px;
+		/* A tile the arrows bring into view stops clear of the keys bar. */
+		scroll-padding-block-end: 5.5rem;
 	}
-	.ros-side {
-		min-height: 0;
+	/* The filters sit ON the grid (Teams' details), and the scroller starts at
+	   their edge, never under it (TeamDetail .td-filters, 2026-10-26). */
+	.ros-filters {
+		flex: none;
+		padding: 0 6px 0 4px;
+	}
+	/* The search field and the Show toggles, as Teams' details size them
+	   (TeamDetail .td-search / .td-own). ⚠ A wrapping line breaks on the flex
+	   BASIS before anything shrinks: a small basis that GROWS. */
+	.ros-search {
+		position: relative;
+		flex: 1 1 8rem;
+		max-width: 13rem;
+		min-width: 7rem;
 		display: flex;
-		flex-direction: column;
-		padding-bottom: 1rem;
-	}
-	.side-sec {
-		display: grid;
-		gap: 0.4rem;
-	}
-	.side-sec .kicker {
-		margin: 0;
-	}
-	.side-seg {
-		display: flex;
-	}
-	.side-seg > .btn {
-		flex: 1;
-		height: 26px;
-		padding: 0 0.4rem;
-	}
-	.side-role {
-		display: inline-flex;
 		align-items: center;
-		gap: 3px;
-		text-transform: none;
 	}
-	.side-role img {
-		width: 14px;
-		height: 14px;
-		object-fit: contain;
+	.ros-search :global(.mark) {
+		position: absolute;
+		left: 0.55rem;
+		color: var(--muted);
+		pointer-events: none;
 	}
-
+	.ros-search-field {
+		width: 100%;
+		height: 30px;
+		padding-block: 0;
+		padding-left: calc(0.55rem + 12px + 0.35rem);
+		font-size: var(--fs-sm);
+	}
+	.ros-more {
+		display: contents;
+	}
+	.ros-show > .btn {
+		height: 26px;
+		min-width: 28px;
+	}
+	/* The chosen sort's check sits in a fixed column, so the words align. */
+	.ros-sort-check {
+		display: inline-grid;
+		place-items: center;
+		width: 13px;
+	}
 	.ros-bar {
 		flex: none;
 		display: flex;
@@ -709,57 +782,72 @@
 		gap: 0.5rem;
 		padding: 0 6px 8px 4px;
 	}
-	.ros-bar .btn {
+	/* The old layout's bar: the head's group, at the right. */
+	.ros-bar {
+		justify-content: flex-end;
+	}
+	/* Its own gap, wherever it is rendered (the head or the bar). */
+	.ros-lock {
 		gap: 5px;
 	}
-	.ros-end {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-	/* The notice sits just before the end cluster; on a phone it takes its own
-	   row (below). */
-	.ros-notice + .ros-end {
-		margin-left: 0;
-	}
-	.ros-count {
-		margin: 0;
-		color: var(--muted);
-		font-size: var(--fs-xs);
-	}
-	.ros-notice {
-		margin-left: auto;
-		margin-right: 0.25rem;
-		color: var(--muted);
-		font-size: var(--fs-xs);
-	}
+	/* THE KEYS (⚓ Nate: "I want people to know the keys available to them"),
+	   shown to the people using them: while a tile has KEYBOARD focus. A row
+	   that came and went would shove the grid down the moment you pressed an
+	   arrow, so it floats over the grid's bottom roll-off instead, and a
+	   pointer passes through it. The fade is linear (the fade law) on the
+	   surface clock. */
 	.ros-keys {
-		flex: none;
+		/* Centred by auto margins between two zero insets, ⛔ never a
+		   translate: it fades, and an opacity fade on a transform-placed box
+		   dances in WebKit (the sub-pixel laws). Lifted off the bottom edge so
+		   it sits in the eye line (⚓ Nate), but low, never mid-grid: there it
+		   would cover the tiles you are arrowing through. */
+		position: absolute;
+		z-index: 2;
+		left: 0;
+		right: 0;
+		bottom: 2rem;
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.3rem 1rem;
-		margin: 0;
-		padding: 0 6px 8px 4px;
+		justify-content: center;
+		gap: 0.5rem 1.5rem;
+		width: max-content;
+		max-width: calc(100% - 8px);
+		margin: 0 auto;
+		padding: 10px 18px;
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
 		color: var(--muted);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-md);
+		pointer-events: none;
+		opacity: 0;
+		visibility: hidden;
+		transition:
+			opacity var(--t-quick),
+			visibility var(--t-quick);
+		transition-timing-function: linear;
+	}
+	.ros-main:has(.til-card:focus-visible) .ros-keys {
+		opacity: 1;
+		visibility: visible;
 	}
 	.ros-key {
 		display: inline-flex;
 		align-items: center;
-		gap: 3px;
+		gap: 4px;
 	}
 	.ros-key kbd {
-		min-width: 18px;
-		padding: 0 4px;
+		min-width: 26px;
+		padding: 0 7px;
 		border-radius: var(--r-xs);
-		background: var(--surface-raised);
+		background: var(--surface-hover);
 		color: var(--text);
 		/* Body, not mono: in the mono face a capital O and a zero are twins. */
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		line-height: 18px;
+		line-height: 26px;
 		text-align: center;
 	}
 	.ros-key-dash {
@@ -789,6 +877,10 @@
 	}
 	.is-flash {
 		animation: ros-flash 1.4s ease-out;
+	}
+	/* A refused key (the shared nudge, app.css, which guards reduced motion). */
+	.til-card.is-nudged {
+		animation: nudge 120ms 2;
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.is-flash {
@@ -955,56 +1047,21 @@
 	}
 
 	/* ── Phone controls: hidden on wide ── */
-	.ros-filters-btn,
-	.ros-bulk-fold,
-	.ros-sheet-head {
-		display: none;
-	}
-	.ros-filters-btn {
-		gap: 5px;
-	}
-	.ros-bulk-fold {
-		position: relative;
-	}
-	.ros-menu {
-		position: absolute;
-		z-index: 3;
-		top: calc(100% + 4px);
-		left: 0;
-		display: flex;
-		flex-direction: column;
-		min-width: 14rem;
-		padding: 4px;
-		border-radius: var(--r-sm);
-		background: var(--surface-raised);
-		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
-	}
-	.ros-menu-item {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		min-height: 40px;
-		padding: 0 10px;
-		border: none;
-		border-radius: var(--r-xs);
-		background: none;
-		color: var(--text);
-		font: inherit;
-		font-size: var(--fs-sm);
-		text-align: left;
-		cursor: pointer;
-		/* A menu row is a CONTROL (NavPanel's .np-row). */
-		transition: background-color var(--t-snap);
-	}
-	.ros-menu-item:hover {
-		background: var(--fill-hover);
-	}
 
 	/* No keyboard to speak of on a touch screen: the legend would be noise.
 	   (A different AXIS from the width table — see responsive survey.) */
+	.ros-by-touch {
+		display: none;
+	}
 	@media (hover: none) {
 		.ros-keys {
 			display: none;
+		}
+		.ros-by-pointer {
+			display: none;
+		}
+		.ros-by-touch {
+			display: inline;
 		}
 		/* No hover, so the wishlist star would never appear: while editing it
 		   always shows, quietly. */
@@ -1027,68 +1084,30 @@
 		}
 	}
 
-	/* ── Below toolMin (54rem — $lib/breakpoints.ts): the sidebar is a SHEET
-	   over the grid, opened by the Filters button; the grid gets the screen. */
-	@media (max-width: 54rem) {
-		.ros {
-			display: flex;
-			flex-direction: column;
-		}
-		.ros-main {
-			flex: 1;
-		}
-		.ros-filters-btn {
-			display: inline-flex;
-		}
-		.ros-bar .ros-count {
-			display: none;
-		}
-		.ros-side {
-			display: none;
-		}
-		.ros-side.is-open {
-			position: absolute;
-			inset: 0;
-			z-index: 4;
-			display: flex;
-			padding-bottom: 0.75rem;
-			background: var(--surface);
-		}
-		.ros-sheet-head {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 0 6px 8px;
-		}
-	}
-
-	/* ── Below compact (40rem — $lib/breakpoints.ts): one row of controls.
-	   The bulk actions fold into ⋯, the Filters button keeps its mark, the
-	   notice takes its own row, and three tiles fit at 320 (88px: 3 × 88 + gaps
-	   in the 278px a 320 screen leaves; the portrait is 76, the astroids 78). */
+	/* ── Below compact (40rem — $lib/breakpoints.ts): three tiles fit at 320
+	   (88px: 3 × 88 + gaps in the 278px a 320 screen leaves; the portrait is
+	   76, the astroids 78). */
 	@media (max-width: 40rem) {
-		.ros-bulk {
+		/* More keeps its MARK and drops its WORD (Teams' details); Sort has
+		   no mark, so its word stays. */
+		.ros-more :global(.band-menu-word),
+		.ros-more :global(.band-menu-sep) {
 			display: none;
 		}
-		.ros-bulk-fold {
-			display: inline-flex;
-		}
-		.ros-filters-word {
+		/* The lock too, so the head's group holds one row beside the title. */
+		.ros-lock-word {
 			display: none;
 		}
-		/* Mark only: the .btn--icon box, so it matches ⋯ and undo beside it. */
-		.ros-filters-btn {
+		/* Mark only: the .btn--icon box, so it matches undo and redo. */
+		.ros-lock {
 			padding: 0.25rem;
 			min-width: 1.6rem;
 			justify-content: center;
 		}
-		.ros-notice {
-			order: 99;
-			flex-basis: 100%;
-			margin: 0;
-		}
-		.ros-notice + .ros-end {
-			margin-left: auto;
+		/* The count spent a row of its own; Teams' details show none here, and
+		   the Owned toggle answers "how many". */
+		.ros-filters :global(.rfs-count) {
+			display: none;
 		}
 		.til {
 			grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
