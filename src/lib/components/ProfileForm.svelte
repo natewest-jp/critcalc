@@ -14,10 +14,13 @@
 -->
 <script lang="ts">
 	import Mark from './Mark.svelte';
+	import InspectModal from './InspectModal.svelte';
+	import { get } from 'svelte/store';
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
-	import { pictureOf, type Picture, type ProfileColour } from '$lib/storage/records';
+	import { pictureOf, type Picture, type ProfileColour, type Twin } from '$lib/storage/records';
 	import { PROFILE_PICTURES } from '$lib/profilePictures.generated';
 	import {
 		COLOUR_NAME,
@@ -40,7 +43,21 @@
 
 	const profile = $derived(storageSession.profile);
 	const editing = $derived(mode === 'edit' && profile?.kind === 'real' ? profile : null);
-	const twin = $derived(editing?.twin ?? 'aether');
+	/** ⚓ The twin is an ACCOUNT fact (design §13.5, Nate 2026-10-26): edited
+	 *  here for a real profile AND for Theorycraft, whose only changeable
+	 *  thing it is. A new profile starts on the one the site shows now. */
+	let twinDraft = $state<Twin>(get(travelerTwin));
+	const twin = $derived<Twin>(mode === 'new' ? twinDraft : (profile?.twin ?? 'aether'));
+	function pickTwin(t: Twin): void {
+		if (mode === 'new') twinDraft = t;
+		else if (profile) void storageSession.updateProfile(profile.id, { twin: t });
+	}
+
+	// ── The picture, chosen in a DIALOG (2026-10-26) ────────────────────────
+	// ⚓ Nate: ~140 circles inline buried everything under them. A picture is
+	// something you choose and close (Genshin's own picker is a pop-up), so
+	// the page shows the current one and Change… opens the choice.
+	let picking = $state(false);
 
 	// ── The new profile's draft (an edit writes straight through) ───────────
 	let name = $state('');
@@ -49,6 +66,15 @@
 
 	const shownColour = $derived(editing ? editing.colour : colour);
 	const shownPicture = $derived(editing ? pictureOf(editing) : picture);
+	/** What the profile will wear: a new one with no pick yet gets the
+	 *  Traveler, as `pictureOf` gives any real profile without one. */
+	const currentUrl = $derived(
+		pictureUrl(
+			pictureOf({ kind: 'real', picture: shownPicture ?? undefined }),
+			$siteSettings.useNewOutfits,
+			twin
+		)
+	);
 
 	// A new profile starts on the least worn colour.
 	$effect(() => {
@@ -86,6 +112,8 @@
 	function pickPicture(p: Picture): void {
 		if (editing) void storageSession.updateProfile(editing.id, { picture: p });
 		else picture = p;
+		picking = false;
+		query = '';
 	}
 
 	const samePicture = (a: Picture | null, b: Picture) =>
@@ -135,6 +163,7 @@
 		const made = await storageSession.createProfile({
 			name,
 			colour,
+			twin: twinDraft,
 			...(picture ? { picture } : {})
 		});
 		// ⚓ The next step is the roster (§9.2) — only for a profile that exists:
@@ -162,6 +191,18 @@
 		['teams', 'Teams']
 	] as const;
 	type Clearable = (typeof CLEARABLE)[number][0];
+	/** ⚓ Theorycraft keeps only rotations and lineups (no roster, no teams),
+	 *  and gathers them from every shared link, so it clears those two
+	 *  (Nate 2026-10-26). It is never deleted. */
+	const theorycraft = $derived(mode === 'edit' && profile?.kind === 'theorycraft');
+	const clearable = $derived(
+		theorycraft ? CLEARABLE.filter(([k]) => k === 'rotations' || k === 'lineups') : CLEARABLE
+	);
+	const trashNote = $derived(
+		theorycraft
+			? 'Rotations and lineups go to the Trash for 30 days.'
+			: 'Rotations, lineups, and teams go to the Trash for 30 days.'
+	);
 	let toClear = $state<Record<Clearable, boolean>>({
 		constellations: false,
 		loadouts: false,
@@ -172,13 +213,13 @@
 	});
 	const anyToClear = $derived(Object.values(toClear).some(Boolean));
 	async function clearData(): Promise<void> {
-		const target = editing;
+		const target = editing ?? (theorycraft ? profile : null);
 		if (!target || !anyToClear) return;
 		const c = toClear;
 		const trashed = c.rotations || c.lineups || c.teams;
 		const gone = c.constellations || c.loadouts || c.ownership;
 		const body = [
-			trashed && 'Rotations, lineups, and teams go to the Trash for 30 days.',
+			trashed && trashNote,
 			gone && 'Constellation levels, loadouts, and owned marks can’t be brought back.'
 		]
 			.filter(Boolean)
@@ -224,7 +265,7 @@
 		const ok = await notices.ask({
 			title: `Delete ${target.name}?`,
 			body: `Its roster and ${what} go with it. You can restore it from the Trash for 30 days.`,
-			confirm: 'Delete account',
+			confirm: 'Delete profile',
 			cancel: 'Keep it',
 			danger: true
 		});
@@ -250,8 +291,61 @@
 	</button>
 {/snippet}
 
+{#snippet twinRow()}
+	<div class="sp-row">
+		<span class="sp-name">Traveler</span>
+		<span class="sp-ctl">
+			<span class="segment" role="radiogroup" aria-label="Traveler">
+				{#each [['aether', 'Aether'], ['lumine', 'Lumine']] as const as [value, label] (value)}
+					<button
+						class="btn"
+						class:is-active={twin === value}
+						role="radio"
+						aria-checked={twin === value}
+						onclick={() => pickTwin(value)}>{label}</button
+					>
+				{/each}
+			</span>
+		</span>
+		<span class="sp-note">Which twin takes the role of Traveler in this account.</span>
+	</div>
+{/snippet}
+
+{#snippet clearRow()}
+	<div class="sp-row">
+		<span class="sp-name">Clear data</span>
+		<span class="sp-ctl sp-ctl--clear">
+			<span class="pf-clear" class:pf-clear--one={theorycraft}>
+				{#each clearable as [key, label] (key)}
+					<label class="check">
+						<input type="checkbox" bind:checked={toClear[key]} />
+						<span class="check-box"></span>
+						{label}
+					</label>
+				{/each}
+			</span>
+			<button class="btn btn--danger" disabled={!anyToClear} onclick={() => void clearData()}
+				><Mark name="clear" /> Clear…</button
+			>
+		</span>
+		<span class="sp-note">
+			{trashNote}
+			{#if !theorycraft}Constellation levels, loadouts, and owned marks can’t be brought back.{/if}
+		</span>
+	</div>
+{/snippet}
+
+<!-- ⚓ The Settings row (NAME · CONTROL · NOTE, app.css § THE SETTING ROW),
+     so Profile reads like the page beside it (2026-10-26). -->
 {#if mode === 'edit' && !editing}
-	<p class="lede">Theorycraft is built in and can't be changed.</p>
+	<div class="sp">
+		<p class="lede">Theorycraft is the built-in profile, and has fewer settings.</p>
+		<section class="sp-section">{@render twinRow()}</section>
+		<section class="sp-section">
+			<h2 class="kicker sp-section-title">Data</h2>
+			{@render clearRow()}
+		</section>
+	</div>
 {:else}
 	{#if mode === 'new'}
 		<p class="lede">
@@ -260,54 +354,107 @@
 		</p>
 	{/if}
 
-	<div class="form">
-		<label class="pf-field">
-			<span class="pf-name">Name</span>
-			{#if editing}
-				<input
-					class="text"
-					value={editing.name}
-					oninput={(e) => (typed = e.currentTarget.value)}
-					onchange={commitName}
-					maxlength="40"
-					aria-invalid={reserved}
-				/>
-			{:else}
-				<input
-					class="text"
-					bind:value={name}
-					placeholder="My account"
-					maxlength="40"
-					aria-invalid={reserved}
-				/>
-			{/if}
-			{#if reserved}
-				<span class="pf-hint pf-hint--warn">Theorycraft is the built-in profile’s name.</span>
-			{:else if twinNamed}
-				<span class="pf-hint">Another account is called {twinNamed.name}.</span>
-			{/if}
-		</label>
+	<div class="sp">
+		<section class="sp-section">
+			<label class="sp-row">
+				<span class="sp-name">Name</span>
+				<span class="sp-ctl">
+					{#if editing}
+						<input
+							class="text"
+							value={editing.name}
+							oninput={(e) => (typed = e.currentTarget.value)}
+							onchange={commitName}
+							maxlength="40"
+							aria-invalid={reserved}
+						/>
+					{:else}
+						<input
+							class="text"
+							bind:value={name}
+							placeholder="My profile"
+							maxlength="40"
+							aria-invalid={reserved}
+						/>
+					{/if}
+				</span>
+				{#if reserved}
+					<span class="sp-note pf-warn">Theorycraft is the built-in profile’s name.</span>
+				{:else if twinNamed}
+					<span class="sp-note">Another profile is called {twinNamed.name}.</span>
+				{/if}
+			</label>
 
-		<div class="pf-field">
-			<span class="pf-name">Color</span>
-			<div class="swatches" role="radiogroup" aria-label="Color">
-				{#each REAL_COLOURS as c (c)}
-					<button
-						class="swatch"
-						class:is-on={shownColour === c}
-						role="radio"
-						aria-checked={shownColour === c}
-						aria-label={COLOUR_NAME[c]}
-						title={COLOUR_NAME[c]}
-						style:--sw={colourValue(c)}
-						onclick={() => pickColour(c)}
-					></button>
-				{/each}
+			<div class="sp-row">
+				<span class="sp-name">Picture</span>
+				<span class="sp-ctl">
+					<span
+						class="pf-current"
+						style:--sw={shownColour ? colourValue(shownColour) : 'var(--accent)'}
+					>
+						{#if currentUrl}<img src={currentUrl} alt="" />{/if}
+					</span>
+					<button class="btn" onclick={() => (picking = true)}>Change…</button>
+				</span>
+				<span class="sp-note">Any character or quest avatar.</span>
 			</div>
-		</div>
 
-		<div class="pf-field">
-			<span class="pf-name">Picture</span>
+			<div class="sp-row">
+				<span class="sp-name">Color</span>
+				<span class="sp-ctl">
+					<span class="swatches" role="radiogroup" aria-label="Color">
+						{#each REAL_COLOURS as c (c)}
+							<button
+								class="swatch"
+								class:is-on={shownColour === c}
+								role="radio"
+								aria-checked={shownColour === c}
+								aria-label={COLOUR_NAME[c]}
+								title={COLOUR_NAME[c]}
+								style:--sw={colourValue(c)}
+								onclick={() => pickColour(c)}
+							></button>
+						{/each}
+					</span>
+				</span>
+				<span class="sp-note">The frame around the picture.</span>
+			</div>
+
+			{@render twinRow()}
+
+			{#if !editing}
+				<div class="sp-row sp-row--action">
+					<span class="sp-ctl">
+						<button class="btn btn--primary" disabled={!colour || reserved} onclick={create}
+							><Mark name="plus" /> Add profile</button
+						>
+					</span>
+				</div>
+			{/if}
+		</section>
+
+		{#if editing}
+			<section class="sp-section">
+				<h2 class="kicker sp-section-title">Data</h2>
+				{@render clearRow()}
+				<div class="sp-row">
+					<span class="sp-name">Delete profile</span>
+					<span class="sp-ctl">
+						<button class="btn btn--danger" onclick={() => void del()}
+							><Mark name="delete" /> Delete profile…</button
+						>
+					</span>
+					<span class="sp-note">Its roster and everything in it go to the Trash for 30 days.</span>
+				</div>
+			</section>
+		{/if}
+	</div>
+{/if}
+
+{#if picking}
+	<InspectModal label="Choose a picture" width="44rem" onClose={() => (picking = false)}>
+		<div class="pf-picker">
+			<p class="kicker">Profile picture</p>
 			<div class="pictures">
 				{#each PROFILE_PICTURES as art (art.id)}
 					{@const p: Picture = { kind: 'art', name: art.id }}
@@ -324,60 +471,26 @@
 					</button>
 				{/each}
 			</div>
-			<div class="pf-chars">
-				<input
-					class="text pf-search"
-					type="search"
-					bind:value={query}
-					placeholder="Search characters"
-					aria-label="Search characters"
-				/>
-				{#if owned.length && !query.trim()}
-					<span class="pf-sub">Characters you own</span>
-					<div class="pictures">
-						{#each owned as id (id)}{@render character(id)}{/each}
-					</div>
-					<span class="pf-sub">Everyone else</span>
-				{/if}
+			<input
+				class="text pf-search"
+				type="search"
+				bind:value={query}
+				placeholder="Search characters"
+				aria-label="Search characters"
+			/>
+			{#if owned.length && !query.trim()}
+				<span class="pf-sub">Characters you own</span>
 				<div class="pictures">
-					{#each found as id (id)}{@render character(id)}{/each}
+					{#each owned as id (id)}{@render character(id)}{/each}
 				</div>
-				{#if !found.length}<span class="pf-sub">No character matches “{query.trim()}”.</span>{/if}
-			</div>
-		</div>
-
-		{#if editing}
-			<div class="pf-field">
-				<span class="pf-name">Clear data</span>
-				<div class="pf-clear">
-					{#each CLEARABLE as [key, label] (key)}
-						<label class="check">
-							<input type="checkbox" bind:checked={toClear[key]} />
-							<span class="check-box"></span>
-							{label}
-						</label>
-					{/each}
-				</div>
-				<div>
-					<button class="btn btn--danger" disabled={!anyToClear} onclick={() => void clearData()}
-						><Mark name="clear" /> Clear…</button
-					>
-				</div>
-			</div>
-		{/if}
-
-		<div class="acts">
-			{#if editing}
-				<button class="btn btn--danger" onclick={() => void del()}
-					><Mark name="delete" /> Delete profile</button
-				>
-			{:else}
-				<button class="btn btn--primary" disabled={!colour || reserved} onclick={create}
-					><Mark name="plus" /> Add account</button
-				>
+				<span class="pf-sub">Everyone else</span>
 			{/if}
+			<div class="pictures">
+				{#each found as id (id)}{@render character(id)}{/each}
+			</div>
+			{#if !found.length}<span class="pf-sub">No character matches “{query.trim()}”.</span>{/if}
 		</div>
-	</div>
+	</InspectModal>
 {/if}
 
 <style>
@@ -388,48 +501,11 @@
 		line-height: 1.5;
 		color: var(--text);
 	}
-	.form {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-		max-width: 44rem;
-	}
-	.pf-field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-	.pf-name {
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	.pf-sub {
-		margin-top: 0.5rem;
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-	.pf-hint {
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-	.pf-hint--warn {
+	.pf-warn {
 		color: var(--ui-warning);
 	}
-	.pf-chars {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin-top: 0.75rem;
-	}
-	.text.pf-search {
-		width: min(16rem, 100%);
-		font-size: var(--fs-md);
-	}
 	.text {
-		width: min(22rem, 100%);
+		width: 100%;
 		padding: 0.4rem 0.6rem;
 		border: 1px solid var(--border);
 		border-radius: var(--r-sm);
@@ -439,13 +515,37 @@
 		font-size: var(--fs-lg);
 	}
 
+	/* The current picture in its colour's frame, as the top bar shows it. */
+	.pf-current {
+		flex: none;
+		width: 3.5rem;
+		height: 3.5rem;
+		border-radius: 50%;
+		background: var(--surface-well);
+		box-shadow:
+			0 0 0 2px var(--surface),
+			0 0 0 4px var(--sw);
+		overflow: hidden;
+	}
+	.pf-current img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.sp-ctl:has(.pf-current) {
+		gap: 1rem;
+		/* The ring sits outside the 3.5rem picture: room for it. */
+		padding: 0.25rem;
+	}
+
 	.swatches {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.6rem;
 	}
 	.swatch {
-		width: 2rem;
-		height: 2rem;
+		width: 1.75rem;
+		height: 1.75rem;
 		padding: 0;
 		border: none;
 		border-radius: 50%;
@@ -462,6 +562,57 @@
 			0 0 0 4px var(--text);
 	}
 
+	/* Clear data: the choices, then the button under them. Two columns
+	   filled DOWN: the roster's three, then the saved work's three
+	   (CLEARABLE's order), so each column is one kind of thing. */
+	.sp-ctl.sp-ctl--clear {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.9rem;
+		padding-top: 0.45rem;
+	}
+	.pf-clear {
+		display: grid;
+		grid-auto-flow: column;
+		grid-template-rows: repeat(3, auto);
+		grid-template-columns: repeat(2, max-content);
+		gap: 0.55rem 2rem;
+	}
+	/* Theorycraft's two: one column, no fill-down. */
+	.pf-clear.pf-clear--one {
+		grid-auto-flow: row;
+		grid-template-rows: none;
+		grid-template-columns: max-content;
+	}
+	@container (max-width: 34rem) {
+		.pf-clear {
+			grid-auto-flow: row;
+			grid-template-rows: none;
+			grid-template-columns: max-content;
+		}
+	}
+
+	/* ── The picker dialog ── */
+	.pf-picker {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: var(--im-pad-top) var(--im-pad-x) 1.5rem;
+	}
+	/* The kicker's rule stops short of the shell's ✕. */
+	.pf-picker > .kicker {
+		margin-right: 2rem;
+	}
+	.pf-sub {
+		margin-top: 0.5rem;
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+	.text.pf-search {
+		width: min(16rem, 100%);
+		margin-top: 0.75rem;
+		font-size: var(--fs-md);
+	}
 	.pictures {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(3.5rem, 1fr));
@@ -490,25 +641,5 @@
 		box-shadow:
 			0 0 0 2px var(--surface),
 			0 0 0 4px var(--sw);
-	}
-	/* Two columns, filled DOWN: the roster's three, then the saved work's
-	   three (CLEARABLE's order), so each column is one kind of thing. */
-	.pf-clear {
-		display: grid;
-		grid-auto-flow: column;
-		grid-template-rows: repeat(3, auto);
-		grid-template-columns: repeat(2, max-content);
-		gap: 0.55rem 2.5rem;
-	}
-	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
-		.pf-clear {
-			grid-auto-flow: row;
-			grid-template-rows: none;
-			grid-template-columns: max-content;
-		}
-	}
-	.acts {
-		display: flex;
-		gap: 0.5rem;
 	}
 </style>

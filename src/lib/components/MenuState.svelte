@@ -324,8 +324,7 @@
 						onclick={() => {
 							switching = false;
 							menu.show('profile/new');
-						}}
-						><span class="side-label"><Mark name="plus" size={18} /> Add your account</span></button
+						}}><span class="side-label"><Mark name="plus" size={18} /> Add a profile</span></button
 					>
 				</div>
 			{/if}
@@ -463,20 +462,20 @@
 				<!-- §9.1: Theorycraft has no roster and no teams; the invitation
 				     stands in them. -->
 				<div class="invite ctx-light">
-					<h3>Add your account</h3>
+					<h3>Add a profile</h3>
 					{#if section === 'roster'}
 						<p>
-							Theorycraft has every character at every level, so it has no roster. Add your account
-							to mark what you own and set your constellations.
+							Theorycraft has every character at every level, so it has no roster. Add a profile to
+							mark what you own and set your constellations.
 						</p>
 					{:else}
 						<p>
-							Teams belong to an account. Add yours to name the teams you play and start rotations
-							and lineups from them.
+							Teams belong to a profile. Add one to name the teams you play and start rotations and
+							lineups from them.
 						</p>
 					{/if}
 					<button class="btn btn--primary" onclick={() => menu.show('profile/new')}
-						>Add your account</button
+						>Add a profile</button
 					>
 				</div>
 			{:else if section === 'teams'}

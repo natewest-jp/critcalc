@@ -146,7 +146,7 @@ function profile(v: unknown, now: number): ProfileRecord | null {
 		id: v.id,
 		updatedAt: num(v.updatedAt, now),
 		kind: v.kind,
-		name: str(v.name) ? v.name.slice(0, 40) : v.kind === 'real' ? 'My account' : 'Theorycraft',
+		name: str(v.name) ? v.name.slice(0, 40) : v.kind === 'real' ? 'My profile' : 'Theorycraft',
 		colour,
 		twin: v.twin === 'lumine' ? 'lumine' : 'aether',
 		roster: {

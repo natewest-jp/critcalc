@@ -35,7 +35,7 @@
 		rotation: 'Rotation',
 		lineup: 'Lineup',
 		team: 'Team',
-		profile: 'Account'
+		profile: 'Profile'
 	};
 	const kindOf = (e: TrashEntry): string =>
 		e.store === 'teams' ? 'team' : e.store === 'profiles' ? 'profile' : e.record.type;
@@ -109,14 +109,14 @@
 				<span class="group-text">
 					<span class="group-name">{p.name}</span>
 					{#if r.gone}
-						<span class="group-meta">Deleted account</span>
+						<span class="group-meta">Deleted profile</span>
 					{:else if p.id === storageSession.profile?.id}
-						<span class="group-meta">Your current account</span>
+						<span class="group-meta">Your current profile</span>
 					{/if}
 				</span>
 			</header>
 			{#if r.gone && r.entries.some((e) => e.store !== 'profiles')}
-				<p class="group-note">Restoring anything of {p.name}’s brings the account back too.</p>
+				<p class="group-note">Restoring anything of {p.name}’s brings the profile back too.</p>
 			{/if}
 
 			<ul class="rows">

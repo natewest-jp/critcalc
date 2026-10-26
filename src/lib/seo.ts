@@ -162,7 +162,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description: 'Your profile in this browser: its name, picture, and color.'
 	},
 	'/profile/new': {
-		title: 'Add your account',
+		title: 'Add a profile',
 		description: 'Add a profile for your Genshin account, kept in this browser.'
 	},
 	'/roster': {
@@ -182,7 +182,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 	'/trash': {
 		title: 'Trash',
 		description:
-			'Deleted rotations, lineups, teams, and accounts, kept for 30 days in this browser.'
+			'Deleted rotations, lineups, teams, and profiles, kept for 30 days in this browser.'
 	},
 	'/settings': {
 		title: 'Settings',

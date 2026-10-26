@@ -26,7 +26,7 @@ describe('migrate', () => {
 		expect(r.documents).toEqual([]);
 	});
 
-	it('a roster alone makes My account, in the player’s twin and the Anemo ring', () => {
+	it('a roster alone makes My profile, in the player’s twin and the Anemo ring', () => {
 		const r = run({
 			'critcalc:constellations': { bennett: 6 },
 			'critcalc:siteSettings': { travelerVariant: 'lumine' }

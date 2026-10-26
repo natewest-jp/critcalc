@@ -186,8 +186,8 @@
 				{
 					label: 'Opened in Theorycraft',
 					run: () =>
-						toast('info', 'Opened in Theorycraft. Your accounts are untouched.', [
-							{ label: 'Move to an account' }
+						toast('info', 'Opened in Theorycraft. Your profiles are untouched.', [
+							{ label: 'Move to a profile' }
 						])
 				},
 				{
@@ -213,8 +213,8 @@
 			]
 		},
 		{
-			group: 'Account',
-			items: [{ label: 'Switch account', run: switchProfile }]
+			group: 'Profile',
+			items: [{ label: 'Switch profile', run: switchProfile }]
 		}
 	];
 
@@ -360,8 +360,8 @@
 							class="st-pp"
 							style:--pp={PROFILES[profile].colour}
 							onclick={switchProfile}
-							title="Switch account"
-							aria-label="Switch account"
+							title="Switch profile"
+							aria-label="Switch profile"
 						></button>
 					</span>
 				</div>
@@ -522,8 +522,8 @@
 					{
 						id: -2,
 						kind: 'info',
-						text: 'Opened in Theorycraft. Your accounts are untouched.',
-						actions: [{ label: 'Move to an account' }],
+						text: 'Opened in Theorycraft. Your profiles are untouched.',
+						actions: [{ label: 'Move to a profile' }],
 						ms: 8000,
 						paused: true
 					},

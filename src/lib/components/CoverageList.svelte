@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	/**
 	 * The /coverage page's body (docs/coverage-round.md §7): every character, a
 	 * coverage strip beside each name, hover for a segment's details, select a
@@ -102,7 +103,7 @@
 	 *  changed (the Builder's gate). */
 	let mounted = $state(false);
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
-	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
+	const traveler = $derived(mounted ? $travelerTwin : 'aether');
 
 	onMount(async () => {
 		mounted = true;

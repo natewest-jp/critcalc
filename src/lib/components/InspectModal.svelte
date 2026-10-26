@@ -23,7 +23,7 @@
 	 * leaving the tool (the page is paused, not destroyed, then).
 	 *
 	 * ONE shell for the Builder's three: the character, the boss, a half's
-	 * opponents. They had two, with different scrims, z-orders and widths.
+	 * opponents — and, since 2026-10-26, the Profile page's picture picker. They had two, with different scrims, z-orders and widths.
 	 *
 	 * ⚓ ONE FRAME (Nate 2026-10-23): a hairline in the plain border and the
 	 * shell's corners, for all three. ⛔ No element tint on the frame — the
@@ -55,7 +55,16 @@
 	);
 </script>
 
-<svelte:window onkeydown={(e) => e.key === 'Escape' && onClose()} />
+<!-- CAPTURE, and the Escape is spent: over the menu state (the Profile
+     page's picture picker) the menu's own Escape listener would otherwise
+     run first and close the whole menu. It honours `defaultPrevented`. -->
+<svelte:window
+	onkeydowncapture={(e) => {
+		if (e.key !== 'Escape') return;
+		e.preventDefault();
+		onClose();
+	}}
+/>
 
 <!-- Fades on --t-quick — a SURFACE over a scrim; `outroInert` is the
      outro-eats-your-click fix ($lib/motion). ⛔ don't drop it. -->

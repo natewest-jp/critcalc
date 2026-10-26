@@ -81,14 +81,7 @@ import {
 	type JournalDoc,
 	type RosterChanges
 } from './journal';
-import {
-	bindRoster,
-	siteSettings,
-	type LoadoutEntry,
-	type RosterPart,
-	type SavedNotation
-} from '$lib/stores';
-import { get as storeGet } from 'svelte/store';
+import { bindRoster, type LoadoutEntry, type RosterPart, type SavedNotation } from '$lib/stores';
 import {
 	askOnFirstSave,
 	backupReminderDue,
@@ -103,6 +96,7 @@ import {
 	type Picture,
 	type ProfileColour,
 	type Roster,
+	type Twin,
 	type DocumentRecord,
 	type LineupDocument,
 	type ProfileRecord,
@@ -1790,6 +1784,7 @@ class StorageSession {
 		name: string;
 		colour: ProfileColour;
 		picture?: Picture;
+		twin: Twin;
 	}): Promise<boolean> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || isReservedName(fields.name)) return false;
@@ -1798,11 +1793,11 @@ class StorageSession {
 			id: newId(),
 			updatedAt: now,
 			kind: 'real',
-			name: fields.name.trim() || 'My account',
+			name: fields.name.trim() || MIGRATED_PROFILE_NAME,
 			colour: fields.colour,
 			...(fields.picture ? { picture: fields.picture } : {}),
-			// ⚓ An account fact (§13.5); the site's current choice to start.
-			twin: storeGet(siteSettings).travelerVariant === 'lumine' ? 'lumine' : 'aether',
+			// ⚓ An account fact (§13.5), chosen on the new profile's form.
+			twin: fields.twin,
 			roster: { constellations: {}, ownership: {}, loadout: {} },
 			current: {},
 			createdAt: now
@@ -1816,9 +1811,11 @@ class StorageSession {
 
 	async updateProfile(
 		id: string,
-		patch: Partial<Pick<ProfileRecord, 'name' | 'colour' | 'picture'>>
+		patch: Partial<Pick<ProfileRecord, 'name' | 'colour' | 'picture' | 'twin'>>
 	): Promise<void> {
-		if (id === THEORYCRAFT_ID) return;
+		// ⚓ Theorycraft's name, colour and picture are reserved; its Traveler
+		// twin is the one thing it may change (Nate 2026-10-26).
+		if (id === THEORYCRAFT_ID && Object.keys(patch).some((k) => k !== 'twin')) return;
 		if (patch.name !== undefined && isReservedName(patch.name)) return;
 		await this.#putProfile(id, (p) => ({ ...p, ...patch }));
 		await this.#loadProfiles();
