@@ -26,9 +26,12 @@
 	 * a Filters button, the bulk actions fold into ⋯, and touch gets an
 	 * always-visible wishlist star and taller astroid tap areas — see the CSS.
 	 *
-	 * Filters mirror the Builder's vocabulary in a right sidebar. Blank is left
-	 * out: it is the Planner's generic stand-in, no one's to own. Default
-	 * loadout, the 70+ flag and bulk wishlisting are deferred or declined.
+	 * ↻ THE FILTERS ARE THE STRIP (roster surface round, 2026-10-26, ⚓ Nate):
+	 * the Builder's and Teams' strip on the grid, not a column beside it — the
+	 * bulk actions act on what is SHOWN, so what decides that sits with them,
+	 * and the grid takes the width. Blank is left out: it is the Planner's
+	 * generic stand-in, no one's to own. Default loadout, the 70+ flag and bulk
+	 * wishlisting are deferred or declined.
 	 */
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -37,17 +40,18 @@
 	import { browser } from '$app/environment';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from './Mark.svelte';
-	import CharacterFilterRail from './CharacterFilterRail.svelte';
+	import BandMenu from './BandMenu.svelte';
+	import CharacterFilterStrip from './CharacterFilterStrip.svelte';
+	import MoreFilters from './MoreFilters.svelte';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { matchesIdentity, type GridFilters } from '$lib/characterFilters';
 	import { constellations, ownership, siteSettings, type OwnershipMark } from '$lib/stores';
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
-	import { positionIcon, functionIcon } from '$lib/utils/roleIcons';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { scrollFade } from '$lib/actions/scrollFade';
-	import { ROLE_CATEGORIES, inCategory, type RoleCategory } from '$lib/capabilities/roles';
+	import { inCategory, type RoleCategory } from '$lib/capabilities/roles';
 	import { rosterView, type RosterShow } from '$lib/rosterView.svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 
@@ -152,10 +156,7 @@
 		setCon(id, marks[id] === 'owned' && (cons[id] ?? 0) === n ? n - 1 : n);
 	}
 
-	// ── Phone (below toolMin / compact) ─────────────────────────────────────
-	/** Below toolMin the filters are a SHEET over the grid, opened by the
-	 *  Filters button — stacked under it they took half a phone's screen. */
-	let filtersOpen = $state(false);
+	// ── Phone (below compact) ───────────────────────────────────────────────
 	/** Below compact the three bulk actions fold into one ⋯ menu. */
 	let bulkOpen = $state(false);
 
@@ -165,11 +166,24 @@
 		weapons: new SvelteSet<string>(),
 		rarities: new SvelteSet<number>(),
 		region: '',
-		search: ''
+		search: '',
+		factionBuffs: new SvelteSet<string>()
 	});
 	let role = $state<RoleCategory | null>(null);
 	type Sort = 'newest' | 'name' | 'element';
 	let sort = $state<Sort>('newest');
+	const SORTS: { key: Sort; label: string }[] = [
+		{ key: 'newest', label: 'Newest' },
+		{ key: 'name', label: 'Name' },
+		{ key: 'element', label: 'Element' }
+	];
+	/** Teams' Show toggles plus the Roster's own third, Not owned (its X is the
+	 *  roster's word for it: the key and the bulk action). None on is everyone. */
+	const SHOW_TOGGLES = [
+		{ key: 'owned', mark: 'check', label: 'Owned' },
+		{ key: 'unowned', mark: 'close', label: 'Not owned' },
+		{ key: 'wishlist', mark: 'star', label: 'Wishlist' }
+	] as const;
 
 	const releaseKey = (c: CharacterIndexEntry) => {
 		const [a, b] = (c.release ?? '0.0').split('.').map(Number);
@@ -202,8 +216,33 @@
 				matchesIdentity(c, filters) && passesShow(c.id, rosterView.show) && passesRole(c.id, role)
 		)
 	);
-	const extraActive = $derived(rosterView.show !== 'all' || role !== null);
+	const moreCount = $derived(
+		filters.weapons.size +
+			filters.rarities.size +
+			(filters.region ? 1 : 0) +
+			(filters.factionBuffs?.size ?? 0)
+	);
+	const anyActive = $derived(
+		moreCount > 0 ||
+			filters.elements.size > 0 ||
+			!!filters.search.trim() ||
+			role !== null ||
+			rosterView.show !== 'all'
+	);
 	const filtered = $derived(shown.length < ALL.length);
+	function clearIdentity(): void {
+		filters.elements.clear();
+		filters.weapons.clear();
+		filters.rarities.clear();
+		filters.factionBuffs?.clear();
+		filters.region = '';
+		filters.search = '';
+	}
+	function clearAll(): void {
+		clearIdentity();
+		role = null;
+		rosterView.show = 'all';
+	}
 
 	// ── Bulk actions ─────────────────────────────────────────────────────────
 	const unownedShown = $derived(shown.filter((c) => marks[c.id] !== 'owned'));
@@ -331,13 +370,7 @@
 		const c = ALL.find((e) => e.id === id);
 		if (!c) return;
 		// Clear ONLY what hides them.
-		if (!matchesIdentity(c, filters)) {
-			filters.elements.clear();
-			filters.weapons.clear();
-			filters.rarities.clear();
-			filters.region = '';
-			filters.search = '';
-		}
+		if (!matchesIdentity(c, filters)) clearIdentity();
 		if (!passesShow(id, rosterView.show)) rosterView.show = 'all';
 		if (!passesRole(id, role)) role = null;
 		await tick();
@@ -378,17 +411,6 @@
 <div class="ros">
 	<div class="ros-main">
 		<div class="ros-bar">
-			<p class="ros-count">{shown.length} of {ALL.length} characters</p>
-			<!-- Below toolMin: the sidebar becomes a sheet behind this button. Its
-			     word goes below compact (the band rule: keep the MARK). -->
-			<button
-				class="btn btn--sm ros-filters-btn"
-				class:is-active={filtered}
-				aria-expanded={filtersOpen}
-				aria-label="Filters"
-				onclick={() => (filtersOpen = true)}
-				><Mark name="filter" size={13} /><span class="ros-filters-word">Filters</span></button
-			>
 			{#if editing && (unownedShown.length || belowC6Shown.length || ownedShown.length)}
 				<!-- Below compact the bulk actions fold into one ⋯. -->
 				<span class="ros-bulk-fold">
@@ -497,6 +519,87 @@
 				{/each}
 			</p>
 		{/if}
+		<!-- The filters sit ON the grid (Teams' details), and the grid's
+		     roll-off ends at them. -->
+		<div class="ros-filters">
+			<CharacterFilterStrip
+				slate
+				{filters}
+				activeRole={role?.key ?? null}
+				onRole={(cat) => (role = role?.key === cat.key ? null : cat)}
+				count={shown.length}
+				{anyActive}
+				onClear={clearAll}
+			>
+				{#snippet start()}
+					<span class="ros-search">
+						<Mark name="search" size={12} />
+						<input
+							class="field ros-search-field"
+							type="text"
+							placeholder="Search…"
+							aria-label="Search characters"
+							bind:value={filters.search}
+							autocomplete="off"
+							autocorrect="off"
+							spellcheck={false}
+						/>
+					</span>
+				{/snippet}
+				{#snippet end()}
+					<span class="segment ros-show" role="group" aria-label="Show">
+						{#each SHOW_TOGGLES as t (t.key)}
+							{@const on = rosterView.show === t.key}
+							<button
+								class="btn btn--icon"
+								class:is-active={on}
+								aria-pressed={on}
+								aria-label={t.label}
+								title={on ? 'Show everyone' : t.label}
+								onclick={() => (rosterView.show = on ? 'all' : t.key)}
+								><Mark name={t.mark} size={14} /></button
+							>
+						{/each}
+					</span>
+					<span class="ros-more"
+						><BandMenu
+							size="sm"
+							role="dialog"
+							mark="filter"
+							label="More"
+							count={moreCount}
+							ariaLabel={moreCount > 0 ? `More filters, ${moreCount} set` : 'More filters'}
+						>
+							{#snippet items(close)}
+								<MoreFilters roster={ALL} {filters} ownershipView="all" {close} />
+							{/snippet}
+						</BandMenu></span
+					>
+					<BandMenu
+						size="sm"
+						label={SORTS.find((o) => o.key === sort)?.label}
+						ariaLabel="Sort: {SORTS.find((o) => o.key === sort)?.label}"
+					>
+						{#snippet items(close)}
+							{#each SORTS as o (o.key)}
+								<button
+									class="band-menu-item ros-sort-item"
+									role="menuitemradio"
+									aria-checked={sort === o.key}
+									onclick={() => {
+										sort = o.key;
+										close();
+									}}
+									><span class="ros-sort-check"
+										>{#if sort === o.key}<Mark name="check" size={13} />{/if}</span
+									>{o.label}</button
+								>
+							{/each}
+						{/snippet}
+					</BandMenu>
+				{/snippet}
+			</CharacterFilterStrip>
+		</div>
 		<div class="ros-scroll scroll-fade" bind:this={listEl} use:scrollFade>
 			{#if !editing}
 				<p class="ros-hint">Click “Edit roster” to begin editing.</p>
@@ -583,66 +686,6 @@
 			{/if}
 		</div>
 	</div>
-
-	<div class="ros-side" class:is-open={filtersOpen}>
-		<!-- The sheet's own head, shown only when the sidebar is a sheet. -->
-		<div class="ros-sheet-head">
-			<p class="ros-count">{shown.length} of {ALL.length} characters</p>
-			<button class="btn btn--sm" onclick={() => (filtersOpen = false)}>Done</button>
-		</div>
-		<CharacterFilterRail
-			roster={ALL}
-			{filters}
-			extraFiltersActive={extraActive}
-			onClearExtras={() => {
-				rosterView.show = 'all';
-				role = null;
-			}}
-			searchPlaceholder="Search characters"
-		>
-			{#snippet railStart()}
-				<div class="side-sec">
-					<p class="kicker">Show</p>
-					<div class="segment side-seg">
-						{#each [['all', 'All'], ['owned', 'Owned'], ['wishlist', 'Wishlist'], ['unowned', 'Not owned']] as const as [k, label] (k)}
-							<button
-								class="btn btn--sm"
-								class:is-active={rosterView.show === k}
-								onclick={() => (rosterView.show = k)}>{label}</button
-							>
-						{/each}
-					</div>
-				</div>
-				<div class="side-sec">
-					<p class="kicker">Sort</p>
-					<div class="segment side-seg">
-						{#each [['newest', 'Newest'], ['name', 'Name'], ['element', 'Element']] as const as [k, label] (k)}
-							<button class="btn btn--sm" class:is-active={sort === k} onclick={() => (sort = k)}
-								>{label}</button
-							>
-						{/each}
-					</div>
-				</div>
-				<div class="side-sec">
-					<p class="kicker">Role</p>
-					<div class="chips">
-						{#each ROLE_CATEGORIES as cat (cat.key)}
-							<button
-								class="chip side-role"
-								class:active={role?.key === cat.key}
-								aria-pressed={role?.key === cat.key}
-								onclick={() => (role = role?.key === cat.key ? null : cat)}
-							>
-								{#if cat.position}<img src={positionIcon(cat.position, 'color')} alt="" />{/if}
-								<img src={functionIcon(cat.function, 'color')} alt="" />
-								{cat.label}
-							</button>
-						{/each}
-					</div>
-				</div>
-			{/snippet}
-		</CharacterFilterRail>
-	</div>
 </div>
 
 <style>
@@ -650,13 +693,13 @@
 		position: relative;
 		flex: 1;
 		min-height: 0;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 18rem;
-		gap: 1.5rem;
+		display: flex;
+		flex-direction: column;
 	}
 	/* The bar sits ABOVE the scroller, so the roll-off fades the tiles and
 	   never the controls. */
 	.ros-main {
+		flex: 1;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
@@ -666,41 +709,56 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: 4px 6px 1.25rem 4px;
+		padding: 0.9rem 6px 1.25rem 4px;
 	}
-	.ros-side {
-		min-height: 0;
+	/* Teams' details (TeamDetail .td-filters): the scroller tucks under the
+	   strip by its own top padding, so the roll-off ends at the strip. */
+	.ros-filters {
+		/* ⚠ Stacked ABOVE the scroller that tucks under it, or the scroller
+		   swallows the strip's lower half (TeamDetail .td-filters). */
+		position: relative;
+		z-index: 1;
+		flex: none;
+		margin-bottom: -0.9rem;
+		padding: 0 6px 0 4px;
+	}
+	/* The search field and the Show toggles, as Teams' details size them
+	   (TeamDetail .td-search / .td-own). ⚠ A wrapping line breaks on the flex
+	   BASIS before anything shrinks: a small basis that GROWS. */
+	.ros-search {
+		position: relative;
+		flex: 1 1 8rem;
+		max-width: 13rem;
+		min-width: 7rem;
 		display: flex;
-		flex-direction: column;
-		padding-bottom: 1rem;
-	}
-	.side-sec {
-		display: grid;
-		gap: 0.4rem;
-	}
-	.side-sec .kicker {
-		margin: 0;
-	}
-	.side-seg {
-		display: flex;
-	}
-	.side-seg > .btn {
-		flex: 1;
-		height: 26px;
-		padding: 0 0.4rem;
-	}
-	.side-role {
-		display: inline-flex;
 		align-items: center;
-		gap: 3px;
-		text-transform: none;
 	}
-	.side-role img {
-		width: 14px;
-		height: 14px;
-		object-fit: contain;
+	.ros-search :global(.mark) {
+		position: absolute;
+		left: 0.55rem;
+		color: var(--muted);
+		pointer-events: none;
 	}
-
+	.ros-search-field {
+		width: 100%;
+		height: 30px;
+		padding-block: 0;
+		padding-left: calc(0.55rem + 12px + 0.35rem);
+		font-size: var(--fs-sm);
+	}
+	.ros-more {
+		display: contents;
+	}
+	.ros-show > .btn {
+		height: 26px;
+		min-width: 28px;
+	}
+	/* The chosen sort's check sits in a fixed column, so the words align. */
+	.ros-sort-check {
+		display: inline-grid;
+		place-items: center;
+		width: 13px;
+	}
 	.ros-bar {
 		flex: none;
 		display: flex;
@@ -722,11 +780,6 @@
 	   row (below). */
 	.ros-notice + .ros-end {
 		margin-left: 0;
-	}
-	.ros-count {
-		margin: 0;
-		color: var(--muted);
-		font-size: var(--fs-xs);
 	}
 	.ros-notice {
 		margin-left: auto;
@@ -955,13 +1008,8 @@
 	}
 
 	/* ── Phone controls: hidden on wide ── */
-	.ros-filters-btn,
-	.ros-bulk-fold,
-	.ros-sheet-head {
+	.ros-bulk-fold {
 		display: none;
-	}
-	.ros-filters-btn {
-		gap: 5px;
 	}
 	.ros-bulk-fold {
 		position: relative;
@@ -1027,44 +1075,8 @@
 		}
 	}
 
-	/* ── Below toolMin (54rem — $lib/breakpoints.ts): the sidebar is a SHEET
-	   over the grid, opened by the Filters button; the grid gets the screen. */
-	@media (max-width: 54rem) {
-		.ros {
-			display: flex;
-			flex-direction: column;
-		}
-		.ros-main {
-			flex: 1;
-		}
-		.ros-filters-btn {
-			display: inline-flex;
-		}
-		.ros-bar .ros-count {
-			display: none;
-		}
-		.ros-side {
-			display: none;
-		}
-		.ros-side.is-open {
-			position: absolute;
-			inset: 0;
-			z-index: 4;
-			display: flex;
-			padding-bottom: 0.75rem;
-			background: var(--surface);
-		}
-		.ros-sheet-head {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 0 6px 8px;
-		}
-	}
-
 	/* ── Below compact (40rem — $lib/breakpoints.ts): one row of controls.
-	   The bulk actions fold into ⋯, the Filters button keeps its mark, the
-	   notice takes its own row, and three tiles fit at 320 (88px: 3 × 88 + gaps
+	   The bulk actions fold into ⋯, the notice takes its own row, and three tiles fit at 320 (88px: 3 × 88 + gaps
 	   in the 278px a 320 screen leaves; the portrait is 76, the astroids 78). */
 	@media (max-width: 40rem) {
 		.ros-bulk {
@@ -1073,14 +1085,11 @@
 		.ros-bulk-fold {
 			display: inline-flex;
 		}
-		.ros-filters-word {
+		/* More keeps its MARK and drops its WORD (Teams' details); Sort has
+		   no mark, so its word stays. */
+		.ros-more :global(.band-menu-word),
+		.ros-more :global(.band-menu-sep) {
 			display: none;
-		}
-		/* Mark only: the .btn--icon box, so it matches ⋯ and undo beside it. */
-		.ros-filters-btn {
-			padding: 0.25rem;
-			min-width: 1.6rem;
-			justify-content: center;
 		}
 		.ros-notice {
 			order: 99;

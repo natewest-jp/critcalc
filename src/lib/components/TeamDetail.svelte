@@ -1050,7 +1050,12 @@
 	/* ── The grid ── */
 	/* The strip ON the grid; no rule under it (Nate 2026-10-25): the strip
 	   is edge enough, and the grid's roll-off ends at it. */
+	/* ⚠ The scroller tucks UNDER the strip (the negative margin), so the strip
+	   must STACK above it: it came later in the DOM and swallowed the lower
+	   half of every control in the strip (2026-10-26). */
 	.td-filters {
+		position: relative;
+		z-index: 1;
 		margin-bottom: -0.9rem;
 	}
 	/* The Builder's search field (builder .tb-search), sized to the strip
