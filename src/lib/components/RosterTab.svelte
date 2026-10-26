@@ -53,6 +53,7 @@
 	import { rosterView, type RosterShow } from '$lib/rosterView.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { notices } from '$lib/notices.svelte';
+	import { storageSession } from '$lib/storage/session.svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 
 	let {
@@ -247,10 +248,14 @@
 	const plural = (n: number) => `${n} character${n === 1 ? '' : 's'}`;
 	/** A bulk edit, and a toast whose Undo takes back ITS characters only: a
 	 *  later edit to anyone else survives it (a whole-roster restore lost
-	 *  them). The take-back is itself an edit, so ⌘Z can redo the bulk. */
+	 *  them). The take-back is itself an edit, so ⌘Z can redo the bulk.
+	 *  ⚠️ The toast outlives the profile it was made in, and the roster stores
+	 *  are whichever profile is in front, so its Undo does nothing once the
+	 *  profile has changed (it would write this profile's marks into that one). */
 	function bulk(list: CharacterIndexEntry[], c6: boolean, owned: boolean, text: string): void {
 		record();
 		const before = past.at(-1)!;
+		const profileId = storageSession.profile?.id;
 		const m = { ...get(ownership) };
 		const k = { ...get(constellations) };
 		for (const c of list) {
@@ -261,7 +266,14 @@
 		ownership.replaceAll(m);
 		if (c6) constellations.replaceAll(k);
 		notices.toast('success', text, {
-			actions: [{ label: 'Undo', run: () => takeBack(list, before) }]
+			actions: [
+				{
+					label: 'Undo',
+					run: () => {
+						if (storageSession.profile?.id === profileId) takeBack(list, before);
+					}
+				}
+			]
 		});
 	}
 	function takeBack(list: CharacterIndexEntry[], before: Snapshot): void {
