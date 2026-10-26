@@ -4,6 +4,7 @@ import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from './rotationTabs.
 import { documentBar as db, recentlyClosedRotations, worthKeeping } from './documentBar.svelte';
 import { closeCandidate } from './tabSet';
 import { savedNotations } from './stores';
+import { notices } from './notices.svelte';
 
 /**
  * `adopt` — where an INCOMING document goes (a shared `?r=` link, a `?team=`
@@ -227,5 +228,50 @@ describe('documentBar.loadNewTab / linked', () => {
 		expect(db.linked).toBe(true);
 		savedNotations.delete(id);
 		expect(db.linked).toBe(false);
+	});
+});
+
+/**
+ * An Undo toast outlives the tab it was made for (flip-readiness §1.2): the
+ * take-back writes the ACTIVE tab, so pressed after a switch it put one
+ * rotation's text and seats over another and left the cleared one cleared.
+ */
+describe('rotationTabs — Undo belongs to the tab it was made in', () => {
+	const lastUndo = () => {
+		const t = notices.toasts.at(-1)!;
+		return () => notices.act(t.id, t.actions.find((a) => a.label === 'Undo')!);
+	};
+	const textOf = (id: string) => rt.tabs.find((t) => t.id === id)?.notation;
+
+	it('does nothing once another tab is in front, and works again back on its own', () => {
+		seed(busy(2));
+		rt.clearWithUndo();
+		const undo = lastUndo();
+		rt.switchTab('t2');
+		undo();
+		expect(rt.notation).toBe(busy(2)[1].notation); // B is untouched
+		rt.switchTab('t1');
+		expect(rt.notation).toBe(''); // A is still cleared, not half-restored
+	});
+
+	it('takeOff: Undo pressed in another tab leaves both tabs as they are', () => {
+		seed(busy(2));
+		const before = rt.seats.filter(Boolean).length;
+		expect(before).toBeGreaterThan(0);
+		rt.takeOff(0);
+		const undo = lastUndo();
+		rt.switchTab('t2');
+		undo();
+		expect(rt.notation).toBe(busy(2)[1].notation);
+		rt.switchTab('t1');
+		expect(rt.seats.filter(Boolean).length).toBe(before - 1);
+		expect(textOf('t2')).toBe(busy(2)[1].notation);
+	});
+
+	it('still puts the tab back when it is pressed where it was made', () => {
+		seed(busy(2));
+		rt.clearWithUndo();
+		lastUndo()();
+		expect(rt.notation).toBe(busy(2)[0].notation);
 	});
 });
