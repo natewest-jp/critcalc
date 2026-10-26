@@ -14,6 +14,12 @@
  *
  * ⚓ Leaving goes back over every section entry this visit pushed (`depth`),
  * so one Escape returns to the tool, not to the previous section.
+ *
+ * ⚓ A section with work that leaving would lose (a team's unsaved draft)
+ * HOLDS every way out (`guardLeaving`): `show`, `close` and `openTeam` ask it
+ * first, and anything else that leaves (a profile switch) goes through
+ * `attempt`. A shallow entry gets no `beforeNavigate`, so this is the only
+ * place the exits meet.
  */
 
 import { goto, pushState } from '$app/navigation';
@@ -108,6 +114,23 @@ class MenuState {
 	 *  rotation (Compare with…, §4.6) instead of opening a document. */
 	pickFor = $state<string | null>(null);
 
+	/** Asked with the way out: true means it took the exit, and carries it
+	 *  out itself once the user has said to. One holder at a time. */
+	#leaveGuard: ((go: () => void) => boolean) | null = null;
+
+	/** Hold every way out while there is work to lose; returns the release. */
+	guardLeaving(guard: (go: () => void) => boolean): () => void {
+		this.#leaveGuard = guard;
+		return () => {
+			if (this.#leaveGuard === guard) this.#leaveGuard = null;
+		};
+	}
+
+	/** Leave by `go`, unless a guard holds the exit. */
+	attempt(go: () => void): void {
+		if (!this.#leaveGuard?.(go)) go();
+	}
+
 	/** What is showing: the shallow entry's section, else the route's. */
 	get section(): Section | null {
 		return page.state.menu ?? this.routed;
@@ -121,6 +144,10 @@ class MenuState {
 	show(section: Section): void {
 		// Teams from inside a team's details goes back to the cards.
 		if (section === this.section && !page.state.teamDetail) return;
+		this.attempt(() => this.#push(section));
+	}
+
+	#push(section: Section): void {
 		const depth = (page.state.menuDepth ?? 0) + 1;
 		const path = itemOf(section)?.path ?? '';
 		// eslint-disable-next-line svelte/no-navigation-without-resolve -- section paths are resolved in SECTION_GROUPS
@@ -137,6 +164,10 @@ class MenuState {
 	/** Teams' details for a team, or `'new'` for one being made: an entry of
 	 *  its own over Teams, so Back (or leaving it) returns to the cards. */
 	openTeam(id: string, slot?: number): void {
+		this.attempt(() => this.#pushTeam(id, slot));
+	}
+
+	#pushTeam(id: string, slot?: number): void {
 		const depth = (page.state.menuDepth ?? 0) + 1;
 		pushState('', {
 			...page.state,
@@ -168,6 +199,10 @@ class MenuState {
 	 * to the landing (as a static page's Escape always has).
 	 */
 	close(): void {
+		this.attempt(() => this.#close());
+	}
+
+	#close(): void {
 		const depth = page.state.menuDepth ?? 0;
 		if (this.routed) {
 			// A Library place's way out is its own tool; anything else, home.

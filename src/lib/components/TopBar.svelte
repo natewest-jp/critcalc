@@ -253,7 +253,7 @@
 									role="menuitem"
 									onclick={() => {
 										menu = null;
-										void storageSession.switchTo(p.id);
+										menuState.attempt(() => void storageSession.switchTo(p.id));
 									}}
 								>
 									<span class="pp pp--sm" style:--pp-color={colourValue(p.colour)}>

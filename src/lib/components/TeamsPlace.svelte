@@ -144,7 +144,8 @@
 </script>
 
 {#if inDetail}
-	{#key detailId}
+	<!-- A profile switch is a fresh draft too (a new team's stays mounted). -->
+	{#key `${storageSession.profile?.id}:${detailId}`}
 		<TeamDetail
 			team={detailTeam ?? null}
 			{teams}
