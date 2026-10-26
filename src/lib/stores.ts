@@ -848,6 +848,10 @@ function createSiteSettingsStore() {
 		markSeen(key: 'seenGuestNotice' | 'seenLinksNotice') {
 			store.update((prev) => persist({ ...prev, [key]: true }));
 		},
+		/** Settings' Show again: every one-time notice may show once more. */
+		resetSeen() {
+			store.update((prev) => persist({ ...prev, seenGuestNotice: false, seenLinksNotice: false }));
+		},
 
 		setShowCoverageStrips(value: boolean) {
 			store.update((prev) => persist({ ...prev, showCoverageStrips: value }));

@@ -154,8 +154,9 @@ export const CHANNEL_NAME = 'critcalc:storage';
 export type StorageMessage =
 	| { kind: 'saved'; store: StoreName; id: string; profileId?: string }
 	| { kind: 'deleted'; store: StoreName; id: string; profileId?: string }
-	/** A backup was restored: every record changed, so the other tabs reload. */
-	| { kind: 'replaced' };
+	/** A backup was restored, or everything deleted (`wiped`): every record
+	 *  changed, so the other tabs reload. */
+	| { kind: 'replaced'; wiped?: boolean };
 
 /** A channel that reaches nobody, where the browser has no BroadcastChannel. */
 const silentChannel = () =>

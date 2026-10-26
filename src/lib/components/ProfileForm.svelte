@@ -33,7 +33,7 @@
 		getCharacterIndexEntry,
 		searchCharacterIndex
 	} from '$lib/data/characterLookup';
-	import { siteSettings } from '$lib/stores';
+	import { constellations, loadout, ownership, siteSettings } from '$lib/stores';
 	import { hasAvatar } from '$lib/utils/getAvatar';
 
 	let { mode }: { mode: 'new' | 'edit' } = $props();
@@ -147,6 +147,58 @@
 		const v = (e.currentTarget as HTMLInputElement).value.trim();
 		if (v && v !== editing.name && !isReservedName(v))
 			void storageSession.updateProfile(editing.id, { name: v });
+	}
+
+	// ── Clear data (2026-10-26, from Settings' old Reset saved data) ────────
+	// ⚓ It lives HERE because it acts on THIS profile: Settings sits outside
+	// every profile, and a reset there aimed at "whoever is active". Pick what
+	// to clear, then one dialog says what goes and what can come back.
+	const CLEARABLE = [
+		['constellations', 'Constellation levels'],
+		['loadouts', 'Loadouts'],
+		['ownership', 'Owned and wishlisted'],
+		['rotations', 'Rotations'],
+		['lineups', 'Lineups'],
+		['teams', 'Teams']
+	] as const;
+	type Clearable = (typeof CLEARABLE)[number][0];
+	let toClear = $state<Record<Clearable, boolean>>({
+		constellations: false,
+		loadouts: false,
+		ownership: false,
+		rotations: false,
+		lineups: false,
+		teams: false
+	});
+	const anyToClear = $derived(Object.values(toClear).some(Boolean));
+	async function clearData(): Promise<void> {
+		const target = editing;
+		if (!target || !anyToClear) return;
+		const c = toClear;
+		const trashed = c.rotations || c.lineups || c.teams;
+		const gone = c.constellations || c.loadouts || c.ownership;
+		const body = [
+			trashed && 'Rotations, lineups, and teams go to the Trash for 30 days.',
+			gone && 'Constellation levels, loadouts, and owned marks can’t be brought back.'
+		]
+			.filter(Boolean)
+			.join(' ');
+		const ok = await notices.ask({
+			title: `Clear ${target.name}’s data?`,
+			body,
+			confirm: 'Clear',
+			cancel: 'Keep it',
+			danger: true
+		});
+		if (!ok) return;
+		if (c.constellations) constellations.clear();
+		if (c.loadouts) loadout.clear();
+		if (c.ownership) ownership.clear();
+		if (c.rotations) await storageSession.removeAll('rotation');
+		if (c.lineups) await storageSession.removeAll('lineup');
+		if (c.teams) await storageSession.removeAllTeams();
+		for (const k of Object.keys(toClear) as Clearable[]) toClear[k] = false;
+		notices.toast('success', `Cleared ${target.name}’s data`);
 	}
 
 	// ── Delete, asked as a DIALOG (notices §3.4) ────────────────────────────
@@ -294,6 +346,26 @@
 			</div>
 		</div>
 
+		{#if editing}
+			<div class="pf-field">
+				<span class="pf-name">Clear data</span>
+				<div class="pf-clear">
+					{#each CLEARABLE as [key, label] (key)}
+						<label class="check">
+							<input type="checkbox" bind:checked={toClear[key]} />
+							<span class="check-box"></span>
+							{label}
+						</label>
+					{/each}
+				</div>
+				<div>
+					<button class="btn btn--danger" disabled={!anyToClear} onclick={() => void clearData()}
+						><Mark name="clear" /> Clear…</button
+					>
+				</div>
+			</div>
+		{/if}
+
 		<div class="acts">
 			{#if editing}
 				<button class="btn btn--danger" onclick={() => void del()}
@@ -418,6 +490,22 @@
 		box-shadow:
 			0 0 0 2px var(--surface),
 			0 0 0 4px var(--sw);
+	}
+	/* Two columns, filled DOWN: the roster's three, then the saved work's
+	   three (CLEARABLE's order), so each column is one kind of thing. */
+	.pf-clear {
+		display: grid;
+		grid-auto-flow: column;
+		grid-template-rows: repeat(3, auto);
+		grid-template-columns: repeat(2, max-content);
+		gap: 0.55rem 2.5rem;
+	}
+	@media (max-width: 40rem) /* compact — $lib/breakpoints.ts */ {
+		.pf-clear {
+			grid-auto-flow: row;
+			grid-template-rows: none;
+			grid-template-columns: max-content;
+		}
 	}
 	.acts {
 		display: flex;

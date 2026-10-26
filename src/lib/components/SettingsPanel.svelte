@@ -5,14 +5,14 @@
 		{ id: 'appearance', label: 'Appearance' },
 		{ id: 'planner', label: 'Planner' },
 		{ id: 'sound', label: 'Playback sound' },
-		{ id: 'data', label: 'Your data' },
-		{ id: 'reset', label: 'Reset saved data' }
+		{ id: 'data', label: 'Your data' }
 	] as const;
 </script>
 
 <script lang="ts">
 	import { notices, announceAfterReload } from '$lib/notices.svelte';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 	import {
 		constellations,
 		HUMAN_TIMING_DEFAULTS,
@@ -78,6 +78,48 @@
 	 *  v3: every profile (design §10, §12 Q11). The session is loaded only then. */
 	const session = () => import('$lib/storage/session.svelte').then((m) => m.storageSession);
 
+	/** The session itself, once loaded (the new layout only): the Profile
+	 *  link names the active profile. */
+	let store = $state<Awaited<ReturnType<typeof session>> | null>(null);
+	$effect(() => {
+		if ($nextLayout) void session().then((s) => (store = s));
+	});
+	const realProfile = $derived(store?.profile?.kind === 'real' ? store.profile : null);
+	const anySeen = $derived($siteSettings.seenGuestNotice || $siteSettings.seenLinksNotice);
+
+	function showNoticesAgain() {
+		siteSettings.resetSeen();
+		notices.toast('success', 'Tips and notices will show again');
+	}
+
+	/** ⚓ The opposite of Restore (2026-10-26): it empties the browser, as a
+	 *  first visit finds it. A DIALOG, because it takes every profile at once
+	 *  and skips the Trash; it says when the last backup was, since Export is
+	 *  one row above and this cannot be undone. */
+	async function deleteEverything() {
+		const s = await session();
+		const ok = await notices.ask({
+			title: 'Delete everything in this browser?',
+			body: `Every profile, with its roster, teams, rotations, and lineups, the Trash, and your settings are deleted, and the page reloads. This can’t be undone. ${
+				lastBackup === null
+					? 'You haven’t downloaded a backup yet.'
+					: `Your last backup was ${daysAgo(lastBackup)}.`
+			}`,
+			confirm: 'Delete everything',
+			cancel: 'Keep it',
+			danger: true
+		});
+		if (!ok) return;
+		try {
+			await s.wipe();
+		} catch {
+			notices.toast('error', 'This browser isn’t letting critcalc change its data.');
+			return;
+		}
+		announceAfterReload('Everything in this browser was deleted');
+		location.reload();
+	}
+
 	async function exportBackup() {
 		const at = Date.now();
 		if ($nextLayout) {
@@ -132,25 +174,14 @@
 		armedReset = null;
 	}
 
-	// ⚓ Under the switch a reset clears the ACTIVE profile (Nate 2026-10-23):
-	// the roster stores already write to it, and the saved work is its
-	// documents, ⛔ never the old keys the migration copied from.
-	function clearRotations() {
-		if ($nextLayout) void session().then((s) => s.removeAll('rotation'));
-		else savedNotations.clear();
-	}
-	function clearLineups() {
-		if ($nextLayout) void session().then((s) => s.removeAll('lineup'));
-		else savedBoards.clear();
-	}
-
+	// The old layout's resets (it has no Profile page). ↻ Under the switch
+	// they moved to the profile's own page, its Clear data (2026-10-26).
 	function clearEverything() {
 		constellations.clear();
 		ownership.clear();
 		loadout.clear();
-		clearRotations();
-		clearLineups();
-		if ($nextLayout) void session().then((s) => s.removeAllTeams());
+		savedNotations.clear();
+		savedBoards.clear();
 	}
 
 	// Import flow: pick file → parse+validate → show a summary → confirm → apply
@@ -763,49 +794,86 @@
 				</div>
 			</div>
 		{/if}
+
+		{#if realProfile}
+			<!-- ⚓ A LINK, not a second copy (2026-10-26): clearing acts on one
+			     profile, so its control lives on that profile's page; Settings
+			     is where people look for it, so this row points there. -->
+			<div class="sp-row">
+				<span class="sp-name">Clear profile data</span>
+				<span class="sp-ctl">
+					<a class="btn" href={resolve('/profile')}>Go to {realProfile.name}’s profile</a>
+				</span>
+				<span class="sp-note">
+					Constellations, loadouts, rotations, lineups, and teams are cleared from the profile’s own
+					page.
+				</span>
+			</div>
+		{/if}
+
+		<div class="sp-row">
+			<span class="sp-name">Tips and notices</span>
+			<span class="sp-ctl">
+				<button class="btn" disabled={!anySeen} onclick={showNoticesAgain}>Show again</button>
+			</span>
+			<span class="sp-note">Show again the one-time notices you’ve already seen.</span>
+		</div>
+
+		{#if $nextLayout}
+			<div class="sp-row">
+				<span class="sp-name">Delete everything</span>
+				<span class="sp-ctl">
+					<button class="btn btn--danger" onclick={() => void deleteEverything()}>
+						<Mark name="delete" /> Delete everything…
+					</button>
+				</span>
+				<span class="sp-note">
+					Every profile, the Trash, and your settings, as if you were visiting for the first time.
+				</span>
+			</div>
+		{/if}
 	</section>
 
-	<section class="sp-section sp-section--danger" id="settings-reset">
-		<h2 class="kicker sp-section-title">Reset saved data</h2>
+	<!-- The old layout keeps its resets here: it has no Profile page. -->
+	{#if !$nextLayout}
+		<section class="sp-section sp-section--danger" id="settings-reset">
+			<h2 class="kicker sp-section-title">Reset saved data</h2>
 
-		{#each [['constellations', 'Constellation levels', $nextLayout ? "Clears this profile's constellation levels." : 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', $nextLayout ? "Clears this profile's weapons and artifact sets." : "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', $nextLayout ? 'Clears which characters this profile marks as owned or wishlisted.' : 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', $nextLayout ? 'Moves every rotation in this profile to the Trash.' : 'Deletes every rotation and team saved in your library.', clearRotations], ['boards', 'Saved lineups', $nextLayout ? 'Moves every lineup in this profile to the Trash.' : 'Deletes every lineup saved in your library.', clearLineups]] as const as [key, name, desc, fn] (key)}
+			{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadouts', "Clears every character's saved weapon and artifact set.", () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation and team saved in your library.', () => savedNotations.clear()], ['boards', 'Saved lineups', 'Deletes every lineup saved in your library.', () => savedBoards.clear()]] as const as [key, name, desc, fn] (key)}
+				<div class="sp-row">
+					<span class="sp-name">{name}</span>
+					<span class="sp-ctl">
+						<button
+							class="btn btn--danger"
+							class:is-confirming={armedReset === key}
+							onclick={() => reset(key, fn)}
+							onblur={() => armedReset === key && (armedReset = null)}
+						>
+							{#if armedReset === key}<Mark name="warn" />{/if}
+							{armedReset === key ? 'Confirm' : 'Clear'}
+						</button>
+					</span>
+					<span class="sp-note">{desc}</span>
+				</div>
+			{/each}
+
 			<div class="sp-row">
-				<span class="sp-name">{name}</span>
+				<span class="sp-name">Everything</span>
 				<span class="sp-ctl">
 					<button
 						class="btn btn--danger"
-						class:is-confirming={armedReset === key}
-						onclick={() => reset(key, fn)}
-						onblur={() => armedReset === key && (armedReset = null)}
+						class:is-confirming={armedReset === 'all'}
+						onclick={() => reset('all', clearEverything)}
+						onblur={() => armedReset === 'all' && (armedReset = null)}
 					>
-						{#if armedReset === key}<Mark name="warn" />{/if}
-						{armedReset === key ? 'Confirm' : 'Clear'}
+						{#if armedReset === 'all'}<Mark name="warn" />{/if}
+						{armedReset === 'all' ? 'Confirm clear all' : 'Clear all'}
 					</button>
 				</span>
-				<span class="sp-note">{desc}</span>
+				<span class="sp-note">Clears all of the above at once. Display settings are kept.</span>
 			</div>
-		{/each}
-
-		<div class="sp-row">
-			<span class="sp-name">Everything</span>
-			<span class="sp-ctl">
-				<button
-					class="btn btn--danger"
-					class:is-confirming={armedReset === 'all'}
-					onclick={() => reset('all', clearEverything)}
-					onblur={() => armedReset === 'all' && (armedReset = null)}
-				>
-					{#if armedReset === 'all'}<Mark name="warn" />{/if}
-					{armedReset === 'all' ? 'Confirm clear all' : 'Clear all'}
-				</button>
-			</span>
-			<span class="sp-note"
-				>{$nextLayout
-					? 'Clears all of the above for this profile, and moves its teams to the Trash. Display settings are kept.'
-					: 'Clears all of the above at once. Display settings are kept.'}</span
-			>
-		</div>
-	</section>
+		</section>
+	{/if}
 </div>
 
 <style>
