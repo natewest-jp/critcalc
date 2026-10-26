@@ -18,14 +18,17 @@
 	import BandMenu from './BandMenu.svelte';
 	import { BOARD_PRESETS, type BoardPreset } from '$lib/boards.svelte';
 	import { menu } from '$lib/menuState.svelte';
+	import { BOSSES, SEASONS, bossImage, currentSeason, inLang } from '$lib/endgame';
 	import { recency, storageSession, type DocTool } from '$lib/storage/session.svelte';
 	import { lineupLabel, rotationLabel } from '$lib/storage/convert';
 	import {
 		THEORYCRAFT_ID,
 		type DocumentRecord,
 		type LineupDocument,
-		type RotationDocument
+		type RotationDocument,
+		type TeamRecord
 	} from '$lib/storage/records';
+	import { teamOfSlots } from '$lib/storage/teamLoadout';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { teamKey } from '$lib/utils/notationEdit';
 	import { moveRequest, MOVE_TO_PROFILE } from '$lib/moveRequest.svelte';
@@ -211,6 +214,48 @@
 	/** The notation's opening, on one line: what tells two rotations of the
 	 *  same four apart at a glance (no parse, so it costs nothing per card). */
 	const notationHead = (d: RotationDocument): string => d.body.notation.replace(/\s+/g, ' ').trim();
+
+	// ── A lineup card's endgame (2026-10-26) ────────────────────────────────
+	/** Team rows a lineup card draws; past it, a "+N more" line says so. */
+	const LINEUP_ROWS = 3;
+	/** 🎛️ A team row's faces, px: a touch over the shelf card's 34 (Nate
+	 *  2026-10-26: at its narrowest the card still had ~125px spare), fixed,
+	 *  ⛔ not sized to fill the card (that read as posters). At 40 a row is
+	 *  ~235px and fits the 262 a 320 phone's card holds. ⚠ `.lu-teams`
+	 *  repeats it as --lu-face for the lead, the rule and the name. */
+	const LU_FACE = 40;
+	/** The profile's teams, so a lineup's row can say which team it is. */
+	let savedTeams = $state<TeamRecord[]>([]);
+	$effect(() => {
+		if (place !== 'builder') return;
+		void storageSession.teamsVersion;
+		void storageSession.profile?.id;
+		void storageSession.teams().then((list) => (savedTeams = list));
+	});
+	/** A row's words: the saved team's NAME when its four are one (what the
+	 *  width is for, as the notation is on a rotation card). ⛔ Never the
+	 *  members' names: they repeat the portraits beside them and truncate. */
+	const teamName = (slots: readonly (string | null)[]): string | undefined =>
+		teamOfSlots(savedTeams, slots)?.name;
+	/** What each team row leads with: its Stygian battlefield's boss (the
+	 *  lineup's pinned season, as the Builder reads it), its Abyss half, or
+	 *  (custom) its number, so every card's rows share one column.
+	 *  ⛔ No Abyss art: a lineup does not record its cycle, and the current
+	 *  blessing on an old lineup would pass a stale cycle off as live. */
+	function lineupLead(body: LineupDocument['body']) {
+		const season =
+			body.preset === 'stygian'
+				? (SEASONS.find((x) => x.version === body.season) ?? currentSeason())
+				: undefined;
+		const lead = (i: number) => {
+			const boss = season?.battlefields[i]?.boss;
+			if (boss) return { boss, name: inLang(BOSSES[boss]?.name ?? { en: boss }) };
+			if (body.preset === 'abyss' && i < 2) return { tag: i === 0 ? '1st' : '2nd' };
+			return { tag: String(i + 1) };
+		};
+		const mode = BOARD_PRESETS.find((p) => p.key === body.preset)?.label ?? '';
+		return { lead, mode: season ? `${mode} ${season.version}` : mode };
+	}
 </script>
 
 <!-- The SIDE portraits, as the bench and the Builder wear them (Nate
@@ -436,27 +481,29 @@
 			<p class="pick-head">Choose a rotation to compare with</p>
 			<button class="btn" onclick={() => (menu.pickFor = null)}>Cancel</button>
 		{:else if place === 'planner'}
-			<button class="btn" onclick={() => create()}
+			<button class="btn place-new" onclick={() => create()}
 				><Mark name="plus" size={14} /> New rotation</button
 			>
 		{:else}
-			<BandMenu label="New lineup" mark="plus" align="start">
-				{#snippet items(close)}
-					{#each BOARD_PRESETS as p (p.key)}
-						<button
-							class="band-menu-item"
-							role="menuitem"
-							onclick={() => {
-								close();
-								void create(p.key);
-							}}
-						>
-							<span class="preset-label">{p.label}</span>
-							<span class="preset-hint">{p.hint}</span>
-						</button>
-					{/each}
-				{/snippet}
-			</BandMenu>
+			<span class="place-new-menu"
+				><BandMenu label="New lineup" mark="plus" align="start">
+					{#snippet items(close)}
+						{#each BOARD_PRESETS as p (p.key)}
+							<button
+								class="band-menu-item"
+								role="menuitem"
+								onclick={() => {
+									close();
+									void create(p.key);
+								}}
+							>
+								<span class="preset-label">{p.label}</span>
+								<span class="preset-hint">{p.hint}</span>
+							</button>
+						{/each}
+					{/snippet}
+				</BandMenu></span
+			>
 		{/if}
 		{#if filter}
 			<button
@@ -507,18 +554,46 @@
 			{#each [...pinned, ...recent].map((e) => e.d) as d (d.id)}
 				{@const isCurrent = d.id === currentId}
 				{@const lineup = d as LineupDocument}
+				{@const end = lineupLead(lineup.body)}
+				{@const more = lineup.body.teams.length - LINEUP_ROWS}
 				<li class="card" class:is-current={isCurrent}>
 					<button class="card-main" onclick={() => choose(d)} disabled={renaming === d.id}>
 						<span class="card-head">
 							{@render labelOrEdit(d)}
 							{#if d.pinned}<span class="card-pin"><Mark name="pin" size={12} /></span>{/if}
 						</span>
-						<span class="card-teams">
-							{#each lineup.body.teams.slice(0, 4) as team (team.id)}
-								{@render portraits(team.slots, 24)}
+						<span class="lu-teams">
+							<!-- The rule between what the teams face and the teams, from
+							     the first disc to the last. -->
+							<span
+								class="lu-rule"
+								style:grid-row="1 / span {Math.min(lineup.body.teams.length, LINEUP_ROWS)}"
+							></span>
+							{#each lineup.body.teams.slice(0, LINEUP_ROWS) as team, i (team.id)}
+								{@const lead = end.lead(i)}
+								{@const name = teamName(team.slots)}
+								<span class="lu-row" style:grid-row={i + 1}>
+									{#if lead.boss}
+										<img
+											class="lu-lead lu-boss"
+											src={bossImage(lead.boss, 'icon')}
+											alt=""
+											title={lead.name}
+										/>
+									{:else}
+										<span class="lu-lead lu-tag">{lead.tag}</span>
+									{/if}
+									{@render portraits(team.slots, LU_FACE)}
+									{#if name}<span class="lu-name">{name}</span>{/if}
+								</span>
 							{/each}
+							{#if more > 0}<span class="lu-more">+{more} more {more === 1 ? 'team' : 'teams'}</span
+								>{/if}
 						</span>
-						<span class="row-meta">
+						<span class="row-meta lu-meta">
+							<!-- The mode only under a name of your own: an unnamed lineup's
+							     label already IS its mode. -->
+							{#if d.name && end.mode}<span>{end.mode}</span>{/if}
 							{#if isCurrent}<span class="row-now">Open now</span>{/if}
 							{#if d.fromLink}<span class="row-flag"
 									><Mark name="link" size={11} /> From a link</span
@@ -594,6 +669,17 @@
 		align-items: center;
 		gap: 0.4rem;
 		margin-bottom: 1rem;
+	}
+	/* The place's one verb, a size up (Nate 2026-10-26): New rotation, and New
+	   lineup's trigger (a BandMenu, reached through its wrapper). Teams'
+	   New team matches. */
+	.place-new,
+	.place-new-menu :global(.band-menu-trigger) {
+		gap: 0.4rem;
+		font-size: var(--fs-lg);
+	}
+	.place-new-menu {
+		display: contents;
 	}
 	.pick-head {
 		margin: 0 0.4rem 0 0;
@@ -861,10 +947,86 @@
 		display: inline-flex;
 		color: var(--accent);
 	}
-	.card-teams {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
+	/* THE TEAM ROWS (2026-10-26, third pass): one grid for every card, a
+	   LEAD column (boss, Abyss half, custom number), a hairline RULE, the
+	   four portraits, and the team's name filling the rest. ↻ Cards take
+	   the row's tallest height again (Nate: equal heights). */
+	.lu-teams {
+		--lu-face: 40px; /* = LU_FACE */
+		/* A side portrait rises this far above its disc (measured: 15px of a
+		   49px box at 34, so 0.44 of the disc). */
+		--lu-hair: calc(var(--lu-face) * 0.44);
+		align-self: stretch;
+		display: grid;
+		grid-template-columns: var(--lu-face) 1px auto minmax(0, 1fr);
+		column-gap: 0.75rem;
+		row-gap: 4px;
+		/* 🎛️ Up into the title's air (Nate: the rows sat low). Most of the
+		   first row's hair room was empty space, and the tallest art still
+		   clears the title (his "Tall avatars" lineup). */
+		margin-top: calc(var(--lu-face) * -0.3);
+	}
+	/* ⚠ Each row's items sit on the DISC's line, the bottom of the cell: a
+	   side portrait's box is its disc PLUS the hair above it, so centring
+	   would drop the disc below the lead and the name beside it. */
+	.lu-row {
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
+		align-items: end;
+	}
+	.lu-row > .lu-lead {
+		grid-column: 1;
+	}
+	.lu-row > :global(.portraits) {
+		grid-column: 3;
+	}
+	.lu-row > .lu-name {
+		grid-column: 4;
+	}
+	/* From the first disc's top to the last disc's foot: not the hair. */
+	.lu-rule {
+		grid-column: 2;
+		margin-top: var(--lu-hair);
+		background: var(--line-soft);
+	}
+	.lu-lead {
+		width: var(--lu-face);
+		height: var(--lu-face);
+	}
+	.lu-boss {
+		border-radius: var(--r-round);
+		background: var(--surface-well);
+		object-fit: cover;
+	}
+	.lu-tag {
+		display: grid;
+		place-items: center;
+		color: var(--muted);
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+	}
+	/* One line, centred on the disc. */
+	.lu-name {
+		height: var(--lu-face);
+		line-height: var(--lu-face);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--text);
+		font-size: var(--fs-md);
+	}
+	/* The card's foot (when it was saved, whether it is open) hugs the
+	   bottom edge, so it sits on one line across a row of equal-height
+	   cards (Nate 2026-10-26). */
+	.lu-meta {
+		margin-top: auto;
+	}
+	/* Under the portraits, not the lead column. */
+	.lu-more {
+		grid-column: 3 / -1;
+		color: var(--muted);
+		font-size: var(--fs-sm);
 	}
 	.row-label {
 		overflow: hidden;

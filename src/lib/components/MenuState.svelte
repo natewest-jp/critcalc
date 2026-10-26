@@ -45,7 +45,6 @@
 	import ProfileForm from './ProfileForm.svelte';
 	import SettingsPanel, { SETTINGS_GROUPS } from './SettingsPanel.svelte';
 	import TrashPlace from './TrashPlace.svelte';
-	import { trashCount } from '$lib/storage/trash';
 
 	// ⚓ THE INDEX NEVER SHOWS ON DESKTOP (Nate 2026-10-25). On a phone the
 	// index is the sidebar on its own; beside a sidebar it has nothing to say,
@@ -69,7 +68,6 @@
 		return tool?.path === '/builder' ? 'lineups' : 'rotations';
 	});
 	const item = $derived(section ? itemOf(section) : undefined);
-	const group = $derived(SECTION_GROUPS.find((g) => g.items.some((i) => i.id === section)));
 	const profileName = $derived(storageSession.profile?.name ?? 'You');
 	const groupTitle = (g: (typeof SECTION_GROUPS)[number]) => g.title ?? profileName;
 	const isTheorycraft = $derived(storageSession.profile?.kind !== 'real');
@@ -105,21 +103,25 @@
 	const bodyGroups = SECTION_GROUPS.filter((g) => g.id !== 'profile' && g.id !== 'settings');
 	const footItems = SECTION_GROUPS.find((g) => g.id === 'settings')!.items;
 	const profileGroup = SECTION_GROUPS[0];
+	/** The PROFILE'S places (↻ Nate 2026-10-26): selected, they carry the
+	 *  profile's own colour on their edge; Help, About, Settings and Trash,
+	 *  which belong to no profile, keep the gold one. */
+	const MINE = new Set<Section>([
+		...profileGroup.items.map((i) => i.id),
+		...SECTION_GROUPS.find((g) => g.id === 'library')!.items.map((i) => i.id)
+	]);
 
 	/** How many documents each Library place holds (Nate: a count nudges a
-	 *  busy library toward a tidy). */
+	 *  busy library toward a tidy). ⛔ Not Trash (↻ Nate 2026-10-26): a count
+	 *  there nudges people to micromanage what is already on its way out. */
 	let counts = $state<Partial<Record<Section, number>>>({});
 	$effect(() => {
 		void storageSession.version;
 		void storageSession.profile?.id;
 		void Promise.all([
 			storageSession.documents('rotation'),
-			storageSession.documents('lineup'),
-			storageSession.trash()
-		]).then(
-			([r, l, t]) =>
-				(counts = { rotations: r.length, lineups: l.length, trash: trashCount(t) || undefined })
-		);
+			storageSession.documents('lineup')
+		]).then(([r, l]) => (counts = { rotations: r.length, lineups: l.length }));
 	});
 
 	// The account switcher: the sidebar's first row. It expands IN PLACE, as
@@ -255,7 +257,11 @@
 		outroInert(e);
 	}}
 >
-	<nav class="side" aria-label="Sections">
+	<nav
+		class="side"
+		aria-label="Sections"
+		style:--side-mine={storageSession.profile ? colourValue(storageSession.profile.colour) : null}
+	>
 		<!-- Phone: the tools head the index (§5.2) as three large tiles wearing
 		     the landing's figures (Nate 2026-10-25: the index's first job on a
 		     phone is fast access to the tools). -->
@@ -404,6 +410,7 @@
 		<a
 			class="side-item"
 			class:is-on={on}
+			class:is-mine={MINE.has(it.id)}
 			href={it.path}
 			aria-current={section === it.id ? 'page' : undefined}
 			onclick={(e) => go(e, it)}
@@ -434,7 +441,9 @@
 					<button class="head-back" onclick={() => menu.show('index')}
 						><span aria-hidden="true">‹</span> Menu</button
 					>
-					{#if group}<p class="kicker">{groupTitle(group)}</p>{/if}
+					<!-- ⛔ No group kicker over the title (↻ Nate 2026-10-26): it said
+					     the profile's name, "Library" or "Settings" again, and over
+					     Trash it was wrong. The sidebar says where you are. -->
 					<!-- A chapter brings its own title. -->
 					{#if item && !chapter}<h2 class="head-title">{item.label}</h2>{/if}
 				</div>
@@ -609,6 +618,9 @@
 	.side-item.is-on {
 		background: var(--surface-hover);
 		box-shadow: inset 2px 0 0 var(--accent);
+	}
+	.side-item.is-on.is-mine {
+		box-shadow: inset 2px 0 0 var(--side-mine, var(--accent));
 	}
 	.side-label {
 		display: flex;

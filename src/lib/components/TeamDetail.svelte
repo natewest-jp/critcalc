@@ -362,10 +362,10 @@
 		search: '',
 		factionBuffs: new SvelteSet<string>()
 	});
-	/** Who the grid offers: your owned characters first, once the roster
-	 *  says who they are. */
-	const defaultShow = (): OwnershipView => (hasOwned ? 'owned' : 'all');
-	let show = $state<OwnershipView>(defaultShow());
+	/** Who the grid offers: EVERYONE (↻ ⚓ Nate 2026-10-26; it opened on
+	 *  Owned once the roster had any). Of two toggles with one already lit,
+	 *  the pair read as a switch with no off, not as two filters. */
+	let show = $state<OwnershipView>('all');
 	let role = $state<RoleCategory | null>(null);
 	const passesShow = (id: string) =>
 		show === 'all' ||
@@ -396,7 +396,7 @@
 			filters.elements.size > 0 ||
 			!!filters.search.trim() ||
 			role !== null ||
-			show !== defaultShow()
+			show !== 'all'
 	);
 	function clearAll(): void {
 		filters.elements.clear();
@@ -406,7 +406,7 @@
 		filters.region = '';
 		filters.search = '';
 		role = null;
-		show = defaultShow();
+		show = 'all';
 	}
 </script>
 
@@ -1050,12 +1050,13 @@
 	/* ── The grid ── */
 	/* The strip ON the grid; no rule under it (Nate 2026-10-25): the strip
 	   is edge enough, and the grid's roll-off ends at it. */
-	/* ↻ 2026-10-26: the scroller no longer tucks UNDER the strip (it had a
-	   -0.9rem margin): coming later in the DOM it swallowed the strip's lower
-	   half, and stacked beneath it scrolled tiles showed through. It starts at
-	   the strip's edge, so the roll-off begins there. */
+	/* The margin CANCELS .td-main's 0.9rem gap, so the scroller starts at the
+	   strip's edge and the roll-off begins there. ⚠ Not an overlap: the
+	   Roster's copy of this (no gap to cancel) was one, and this one was
+	   wrongly removed with it on 2026-10-26, which opened the gap. */
 	.td-filters {
 		flex: none;
+		margin-bottom: -0.9rem;
 	}
 	/* The Builder's search field (builder .tb-search), sized to the strip
 	   (Nate 2026-10-25): its 30px bars, and the strip's small type rather
