@@ -1,6 +1,6 @@
 # Full-screen cleanups round (2026-10-26)
 
-Branch `polish/fullscreen-cleanups`, behind `?next`. Small fixes on the
+Branch `polish/fullscreen-cleanups`, behind `?next`; MERGED `6604ea4d` (2026-10-26; e2e chrome 80 + webkit 80). Small fixes on the
 full-screen surface after the Roster round (Nate's list).
 
 ## Rulings
@@ -55,6 +55,9 @@ full-screen surface after the Roster round (Nate's list).
   kind of card; the rows lift by 0.3 × the face into the title's air (the
   first row's hair room was mostly empty, and his "Tall avatars" lineup
   still clears the title).
+- **The card's foot** (when it was saved, Open now) takes the bottom edge
+  (`margin-top: auto`), so it sits on one line across a row of
+  equal-height cards.
 - ⚠ **Rows align on the disc's line** (grid `align-items: end`): a side
   portrait's box is its disc plus the hair above it, so centring dropped
   every disc below the lead beside it.
