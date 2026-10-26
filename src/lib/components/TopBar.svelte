@@ -202,12 +202,6 @@
 			</button>
 		{/if}
 
-		{#if documentBar.notice}<span class="tb-notice" role="status">{documentBar.notice}</span
-			>{#each documentBar.barActions as action (action.label)}<button
-					class="tb-notice-act"
-					onclick={() => documentBar.runNoticeAction(action)}>{action.label}</button
-				>{/each}{/if}
-
 		<!-- ⚓ §12 Q14: Theorycraft invites an account. ↻ 2026-10-25 (⚓ Nate): it
 		     stands LEFT of the picture, so on a wide bar it grows toward the
 		     centre and pushes none of the doors (hidden on a phone). -->
@@ -669,30 +663,6 @@
 		gap: 1.1rem;
 		min-width: 0;
 	}
-	.tb-notice {
-		font-size: var(--ui-ctl-fs);
-		white-space: nowrap;
-		color: color-mix(in srgb, var(--chrome) 75%, transparent);
-	}
-	/* A notice's button (Move to a profile, §9.3): plain words on the bar,
-	   underlined so they read as a thing to press. */
-	.tb-notice-act {
-		margin-left: -0.6rem;
-		padding: 0;
-		border: none;
-		background: none;
-		color: var(--chrome);
-		font: inherit;
-		font-size: var(--ui-ctl-fs);
-		white-space: nowrap;
-		text-decoration: underline;
-		text-decoration-color: color-mix(in srgb, var(--chrome) 40%, transparent);
-		text-underline-offset: 3px;
-		cursor: pointer;
-	}
-	.tb-notice-act:hover {
-		text-decoration-color: currentColor;
-	}
 	/* The picture and the doors are ONE run at one gap (⚓ Nate 2026-10-25:
 	   tools · picture · Teams · Share · Help · Settings). */
 	.tb-actions {
@@ -970,10 +940,6 @@
 		.tb-actions {
 			margin-left: auto;
 			gap: 0.1rem;
-		}
-		.tb-notice,
-		.tb-notice-act {
-			display: none;
 		}
 		.tb-phonedoc {
 			display: flex;

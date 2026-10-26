@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
-	import { T_QUICK, motion } from '$lib/motion';
+	import { sayOutcome } from '$lib/controlAnswer.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
 	import { library } from '$lib/library.svelte';
@@ -50,10 +49,6 @@
 </script>
 
 <div class="doc-actions">
-	{#if db.notice}
-		<span class="doc-notice" transition:fade={{ duration: motion(T_QUICK) }}>{db.notice}</span>
-	{/if}
-
 	<!-- ONE button, one identity. It used to swap its mark from the floppy to a
 	     circular-arrows glyph the moment the document linked, which made it look
 	     like a different control — and paired with "Update" it read as a software
@@ -92,7 +87,7 @@
 				role="menuitem"
 				onclick={() => {
 					close();
-					db.shareLink();
+					void db.shareLink().then((o) => sayOutcome(o, null));
 				}}
 			>
 				<Mark name="link" />
@@ -105,7 +100,7 @@
 					role="menuitem"
 					onclick={() => {
 						close();
-						db.shareKqm();
+						void db.shareKqm().then((o) => sayOutcome(o, null));
 					}}
 				>
 					<Mark name="copy" />
@@ -116,7 +111,7 @@
 					role="menuitem"
 					onclick={() => {
 						close();
-						db.sharePng('copy');
+						void db.sharePng('copy').then((o) => sayOutcome(o, null));
 					}}
 				>
 					<Mark name="image" />
@@ -127,7 +122,7 @@
 					role="menuitem"
 					onclick={() => {
 						close();
-						db.sharePng('download');
+						void db.sharePng('download').then((o) => sayOutcome(o, null));
 					}}
 				>
 					<Mark name="image" />
@@ -218,14 +213,6 @@
 		display: flex;
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
-	}
-
-	.doc-notice {
-		font-size: var(--fs-sm);
-		letter-spacing: var(--ls-wide);
-		color: var(--accent);
-		padding: 0 0.4rem;
-		white-space: nowrap;
 	}
 
 	/* The document is linked to a bank entry — the "Save changes" variant reads

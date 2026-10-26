@@ -4,6 +4,7 @@
 	import { beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
+	import NoticeRegion from '$lib/components/NoticeRegion.svelte';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import type TopBarT from '$lib/components/TopBar.svelte';
@@ -368,6 +369,8 @@
 					id={moveRequest.id}
 				/>{/key}{/if}
 		{#if LinksDialogC && linksIntro.open}<LinksDialogC />{/if}
+		<!-- Toasts and dialogs (notices §3.2, §3.4): one home on every surface. -->
+		<NoticeRegion />
 	</div>
 
 	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather

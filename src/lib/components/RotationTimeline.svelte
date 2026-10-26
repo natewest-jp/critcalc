@@ -26,6 +26,8 @@
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { documentBar } from '$lib/documentBar.svelte';
+	import { notices } from '$lib/notices.svelte';
+	import type { Outcome } from '$lib/controlAnswer.svelte';
 	import {
 		barKey,
 		plannerView as pv,
@@ -1749,8 +1751,10 @@
 	// planner is mounted to serve them.
 	let pngBusy = false;
 
-	async function runPng(mode: 'copy' | 'download') {
-		if (pngBusy) return;
+	async function runPng(mode: 'copy' | 'download'): Promise<Outcome> {
+		// A second click while one renders: said, rather than swallowed.
+		if (pngBusy)
+			return { ok: false, short: 'Still working', long: 'The image is still being made' };
 		pngBusy = true;
 		try {
 			// ⚓ THE EXPORT IS THE DOCUMENT (plan §3.3), never the Repeat stream.
@@ -1768,20 +1772,24 @@
 			}
 			const blob = await renderTimelinePng(snapshot);
 			const result = await deliverPng(blob, 'critcalc-rotation.png', mode);
+			pngBusy = false;
+			if (result === 'copied') return { ok: true, short: 'Copied', long: 'Image copied' };
 			// A refused clipboard (Safari) falls back to a download, which must
-			// not read as the copy having worked.
-			documentBar.showNotice(
-				result === 'copied'
-					? 'Image copied'
-					: mode === 'copy'
-						? 'Couldn’t copy the image, so it was downloaded instead'
-						: 'Image saved'
-			);
+			// not read as the copy having worked: a warning that stays to be read.
+			if (mode === 'copy') {
+				notices.toast('warning', 'Couldn’t copy the image, so it was downloaded instead');
+				return { ok: false, short: 'Downloaded', long: '' };
+			}
+			return { ok: true, short: 'Downloaded', long: 'Image downloaded' };
 		} catch (e) {
 			console.error('PNG export failed:', e);
-			documentBar.showNotice('Export failed');
+			pngBusy = false;
+			notices.toast(
+				'error',
+				'Couldn’t make the image. Try again, or report this if it keeps happening.'
+			);
+			return { ok: false, short: 'Failed', long: '' };
 		}
-		pngBusy = false;
 	}
 
 	async function copyKqm() {
@@ -1886,6 +1894,35 @@
 	/** px a finger may travel and still count as a tap (dock collapse, key row). */
 	const TAP_SLOP = 10;
 	let composerEl = $state<HTMLElement | null>(null);
+
+	// The toast home sits ABOVE the composer (notices §3.2): it is the thing
+	// at the bottom of the planner on every width (the phone's dock, the
+	// desk's editor), and a toast over it would cover what is being typed.
+	// Published as --notice-floor; read by NoticeRegion.
+	$effect(() => {
+		const el = composerEl;
+		if (!el) return;
+		const root = document.documentElement;
+		const set = () => {
+			const top = el.getBoundingClientRect().top;
+			const floor = innerHeight - top;
+			// Only while it really is at the bottom (not scrolled up mid-page).
+			if (floor > 0 && floor < innerHeight / 2)
+				root.style.setProperty('--notice-floor', `${floor + 12}px`);
+			else root.style.removeProperty('--notice-floor');
+		};
+		const ro = new ResizeObserver(set);
+		ro.observe(el);
+		set();
+		addEventListener('resize', set);
+		addEventListener('scroll', set, true);
+		return () => {
+			ro.disconnect();
+			removeEventListener('resize', set);
+			removeEventListener('scroll', set, true);
+			root.style.removeProperty('--notice-floor');
+		};
+	});
 
 	// ── THE PINNED COMPOSER (responsive sweep 2026-10-15, §3 item 10) ─────────
 	// Above `toolMin` the composer is `position: sticky; bottom` (see the CSS),

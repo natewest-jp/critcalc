@@ -32,7 +32,7 @@ import {
 	slotsFromNotation,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
-import { documentBar, NOTICE_ONCE_MS } from '$lib/documentBar.svelte';
+import { notices } from '$lib/notices.svelte';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -124,7 +124,9 @@ export const SAVE_DELAY_MS = 400;
 const RETRY_MS = [1000, 30_000] as const;
 
 /** Approved by Nate 2026-10-23. */
-const SAVE_FAILED_NOTICE = 'Couldn’t save your changes. Trying again…';
+/** The save-failure banner's key (notices §3.3). */
+const SAVE_FAILED_KEY = 'save-failed';
+const SAVE_FAILED_NOTICE = 'Couldn’t save your changes.';
 
 export type DocTool = 'planner' | 'builder';
 
@@ -223,17 +225,18 @@ class StorageSession {
 
 	/** Once, after the migration moved the player's data (§13.1). */
 	async #offerBackup(db: IDBDatabase): Promise<void> {
-		await setMeta(db, { backupOffer: false });
 		const download = async () => {
 			const at = Date.now();
 			const file = await this.backup(at);
 			if (file) downloadEnvelope(file, at);
 		};
-		documentBar.showNotice(
-			MIGRATED_NOTICE,
-			[{ label: 'Download a backup', run: () => void download(), bar: true }],
-			NOTICE_ONCE_MS
-		);
+		// Once ever, with a button that matters: it stays until dismissed, and
+		// is marked seen only once it has gone (notices §3.2).
+		notices.toast('info', MIGRATED_NOTICE, {
+			actions: [{ label: 'Download a backup', run: () => void download() }],
+			ms: null,
+			onGone: () => void setMeta(db, { backupOffer: false })
+		});
 	}
 
 	/** The channel and page listeners. ⚠ Once per page: the tools layout
@@ -337,7 +340,14 @@ class StorageSession {
 		if (this.#frozen) return;
 		if (!this.saveFailed) {
 			this.saveFailed = true;
-			documentBar.showNotice(SAVE_FAILED_NOTICE);
+			// A CONDITION, not an event: it stays until a write lands.
+			notices.banner({
+				key: SAVE_FAILED_KEY,
+				kind: 'error',
+				lead: SAVE_FAILED_NOTICE,
+				body: 'Trying again… Your work stays in this tab until it saves.',
+				actions: [{ label: 'Download a backup', run: () => void this.#downloadBackup() }]
+			});
 		}
 		const old = this.#db;
 		const db = await reopenStorage().catch(() => null);
@@ -360,6 +370,14 @@ class StorageSession {
 	#saveLanded(): void {
 		this.#retries = 0;
 		this.saveFailed = false;
+		notices.clearBanner(SAVE_FAILED_KEY);
+	}
+
+	async #downloadBackup(): Promise<void> {
+		const at = Date.now();
+		const file = await this.backup(at).catch(() => null);
+		if (file) downloadEnvelope(file, at);
+		else notices.toast('error', 'Couldn’t make a backup file from this browser’s data.');
 	}
 
 	// ── The Library (phase 2c, §4.2 + §6.3) ─────────────────────────────────
@@ -1164,12 +1182,9 @@ class StorageSession {
 		});
 		await this.#setPair(doc.id, copy.id);
 		await this.open(copy.id);
-		// ⚓ The FIRST routed copy teaches the rule once; afterwards the white and
-		// the status carry it (§4.6).
-		if (!storeGet(siteSettings).seenGuestNotice) {
-			siteSettings.markSeen('seenGuestNotice');
-			documentBar.showNotice(`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
-		}
+		// ↻ EVERY routed copy says so (notices round, 2026-10-26; was the first
+		// only): each one puts a different document in front of the person.
+		notices.toast('info', `Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
 	}
 
 	/** Compare → Duplicate and compare: a copy beside the original, where the
@@ -1901,7 +1916,7 @@ class StorageSession {
 				// A failing save says so again, rather than nothing at all; a
 				// document another tab holds is not being saved here, so it
 				// earns no ✓ (its pill already says why).
-				if (this.saveFailed) return documentBar.showNotice(SAVE_FAILED_NOTICE);
+				if (this.saveFailed) return notices.recall(SAVE_FAILED_KEY);
 				const held = (['planner', 'builder'] as const).some((t) => {
 					const id = this.currentId(t);
 					return !!id && this.readOnly.includes(id);

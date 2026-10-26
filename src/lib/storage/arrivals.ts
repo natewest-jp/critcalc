@@ -20,3 +20,7 @@ export const settleDocuments = (viaStore: boolean): void => settle(viaStore);
 
 /** The notice an arrival shows when it had to leave a real profile. */
 export const OPENED_IN_THEORYCRAFT = 'Opened in Theorycraft · your profiles are untouched';
+
+/** A `?r=` / `?b=` that didn't decode: the likely reason and what to do. */
+export const INVALID_SHARE_LINK =
+	'That share link couldn’t be read. It may have been cut short when it was copied, so ask for the full link.';

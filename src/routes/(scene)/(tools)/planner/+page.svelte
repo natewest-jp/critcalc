@@ -30,6 +30,9 @@
 	import type SaveTeamButtonT from '$lib/components/SaveTeamButton.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db, rotationTabStrip } from '$lib/documentBar.svelte';
+	import { notices } from '$lib/notices.svelte';
+	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
+	import { INVALID_SHARE_LINK } from '$lib/storage/arrivals';
 	import { constellations, ownership, siteSettings } from '$lib/stores';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
@@ -174,7 +177,7 @@
 		if (param) {
 			const shared = await decodeRotation(param);
 			if (!shared) {
-				db.showNotice('Invalid share link');
+				notices.toast('error', INVALID_SHARE_LINK);
 				return;
 			}
 			importShared(shared);
@@ -399,17 +402,20 @@
 			playback.rewind();
 		}
 	}
+
+	/** Share's plate answers for what its menu did (notices §3.1). */
+	const shareAnswer = new ControlAnswer();
 </script>
 
 <!-- The Share actions, ONE list for the desktop plate and the phone ⋯. -->
-{#snippet shareItems(close: () => void)}
+{#snippet shareItems(close: () => void, on: ControlAnswer | null)}
 	<button
 		class="band-menu-item"
 		role="menuitem"
 		disabled={!db.hasContent}
 		onclick={() => {
 			close();
-			db.shareLink();
+			void db.shareLink().then((o) => sayOutcome(o, on));
 		}}><Mark name="link" /><span class="rp-fold-label">Copy link</span></button
 	>
 	{#if db.exporters}
@@ -418,7 +424,7 @@
 			role="menuitem"
 			onclick={() => {
 				close();
-				db.shareKqm();
+				void db.shareKqm().then((o) => sayOutcome(o, on));
 			}}><Mark name="copy" /><span class="rp-fold-label">Copy KQM notation</span></button
 		>
 		<button
@@ -426,7 +432,7 @@
 			role="menuitem"
 			onclick={() => {
 				close();
-				db.sharePng('copy');
+				void db.sharePng('copy').then((o) => sayOutcome(o, on));
 			}}><Mark name="image" /><span class="rp-fold-label">Copy timeline image</span></button
 		>
 		<button
@@ -434,7 +440,7 @@
 			role="menuitem"
 			onclick={() => {
 				close();
-				db.sharePng('download');
+				void db.sharePng('download').then((o) => sayOutcome(o, on));
 			}}><Mark name="image" /><span class="rp-fold-label">Download timeline image</span></button
 		>
 	{/if}
@@ -961,7 +967,7 @@
 						{#if $nextLayout}
 							<div class="band-menu-rule"></div>
 							<div class="rp-fold-head" aria-hidden="true">Share</div>
-							{@render shareItems(close)}
+							{@render shareItems(close, null)}
 						{/if}
 					{/snippet}
 				</BandMenu>
@@ -1034,15 +1040,17 @@
 				<!-- ⚓ SHARE, at the toolbar's end (Nate 2026-10-25): it acts on the
 				     DOCUMENT, not on the site, so it left the top bar for the bar over
 				     the rotation it shares. On a phone it is a section of the ⋯. -->
+				<!-- The plate answers for its items (notices §3.1): "✓ Copied" where
+				     the eye already is. -->
 				<BandMenu
 					size="sm"
-					mark="share"
-					label="Share"
+					mark={shareAnswer.now ? (shareAnswer.now.ok ? 'check' : 'warn') : 'share'}
+					label={shareAnswer.now?.short ?? 'Share'}
 					ariaLabel="Share this rotation"
 					disabled={!db.hasContent}
 				>
 					{#snippet items(close)}
-						{@render shareItems(close)}
+						{@render shareItems(close, shareAnswer)}
 					{/snippet}
 				</BandMenu>
 			{/if}

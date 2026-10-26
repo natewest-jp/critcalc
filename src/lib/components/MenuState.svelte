@@ -38,6 +38,7 @@
 	import { library } from '$lib/library.svelte';
 	import { sceneOccluded } from '$lib/landing/transition';
 	import LibraryPlace from './LibraryPlace.svelte';
+	import NoticeBanners from './NoticeBanners.svelte';
 	import RosterTab from './RosterTab.svelte';
 	import TeamsPlace from './TeamsPlace.svelte';
 	import ProfileForm from './ProfileForm.svelte';
@@ -359,6 +360,8 @@
 	     of a link is a click too). -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
 	<main class="main" class:is-fill={fills} bind:this={mainEl} onclick={onMainClick}>
+		<!-- Conditions (notices §3.3), at the top of the content. -->
+		<NoticeBanners class="menu-banners" />
 		{#if !headless}
 			<header class="head">
 				<div class="head-text">
@@ -735,6 +738,13 @@
 	   team's party strip scrolled away with the grid that was meant to scroll
 	   under them. Here the area stops scrolling and hands its height down;
 	   the section's own scroller takes over and ends at the screen's foot. */
+	.main :global(.menu-banners) {
+		position: sticky;
+		top: 0;
+		z-index: 3;
+		flex-shrink: 0;
+		margin-bottom: 1rem;
+	}
 	.main.is-fill {
 		display: flex;
 		flex-direction: column;
