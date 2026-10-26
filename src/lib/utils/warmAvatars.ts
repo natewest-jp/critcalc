@@ -1,5 +1,6 @@
 import { get } from 'svelte/store';
 import { siteSettings } from '$lib/stores';
+import { travelerTwin } from '$lib/travelerTwin.svelte';
 import { getAllCharacterIndex } from '$lib/data/characterLookup';
 import { getAvatar, hasAvatar } from './getAvatar';
 
@@ -17,7 +18,8 @@ export function warmAvatars(): void {
 	if (conn?.saveData) return;
 	warmed = true;
 
-	const { useNewOutfits, travelerVariant } = get(siteSettings);
+	const { useNewOutfits } = get(siteSettings);
+	const travelerVariant = get(travelerTwin);
 	// Set: the six traveler_* ids collapse to one aether/lumine URL.
 	const queue = [
 		...new Set(

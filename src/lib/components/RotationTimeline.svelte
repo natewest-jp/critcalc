@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
@@ -1602,7 +1603,7 @@
 				real ? slotId : 'blank',
 				$siteSettings.useNewOutfits,
 				'side',
-				$siteSettings.travelerVariant
+				$travelerTwin
 			),
 			conLevel: con,
 			conShort: real && owned !== undefined && (owned === null || owned < con),

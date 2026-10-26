@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { siteSettings } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
@@ -65,7 +66,7 @@
 	function handleHeroError(event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(id, 'full', $siteSettings.travelerVariant);
+			img.src = getAvatarFallback(id, 'full', $travelerTwin);
 		} else {
 			heroErrored = true;
 		}
@@ -76,7 +77,7 @@
 	function handleAvatarError(event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(id, 'side', $siteSettings.travelerVariant);
+			img.src = getAvatarFallback(id, 'side', $travelerTwin);
 		} else {
 			avatarErrored = true;
 		}
@@ -120,7 +121,7 @@
 		<div class="dc-avatar ctx-dark">
 			{#if !avatarFallback}
 				<img
-					src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
+					src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $travelerTwin)}
 					alt=""
 					onerror={handleAvatarError}
 				/>
@@ -207,7 +208,7 @@
 			{#if !heroErrored}
 				<img
 					class="dc-hero-art"
-					src={getAvatar(id, $siteSettings.useNewOutfits, 'full', $siteSettings.travelerVariant)}
+					src={getAvatar(id, $siteSettings.useNewOutfits, 'full', $travelerTwin)}
 					alt=""
 					onerror={handleHeroError}
 				/>

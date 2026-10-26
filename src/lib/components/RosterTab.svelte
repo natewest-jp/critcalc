@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	/**
 	 * THE ROSTER — the Library's second tab (lineups design §11.6 items 1, 2, 7,
 	 * 17), and the ONE place the roster is edited: details in both tools only
@@ -365,9 +366,7 @@
 	const elColor = (el?: string) =>
 		(elementColors[(el ?? 'none') as ElementKey] ?? elementColors.none).main;
 	const avatar = (id: string) =>
-		hasAvatar(id)
-			? getAvatar(id, $siteSettings.useNewOutfits, 'circle', $siteSettings.travelerVariant)
-			: null;
+		hasAvatar(id) ? getAvatar(id, $siteSettings.useNewOutfits, 'circle', $travelerTwin) : null;
 	/** The tile's six constellations: C0 is the lit portrait with none filled. */
 	const CON_PIPS = [1, 2, 3, 4, 5, 6];
 	/** 🎛️ ⚓ Nate 2026-10-11. The line is Mark's held 1.15px at every size. */

@@ -4312,3 +4312,171 @@ img {
 		animation: none;
 	}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   THE SETTING ROW (settings surface round, 2026-10-26; shared with the
+   Profile page the same day) — NAME · CONTROL · NOTE in fixed columns, the
+   note in a margin level with its row. `.sp` is the container: each host
+   (the menu state, the old gear modal, the old /settings page) gets the form
+   that fits ITS width. Moved here from SettingsPanel so the two pages cannot
+   drift; a page's own pickers stay scoped in it. */
+/* The panel answers to its OWN width (a container), not the window's: it
+   renders in the menu state's content area, the old gear modal (~491px)
+   and the old /settings page, and each wants the form that fits it. */
+.sp {
+	container-type: inline-size;
+	/* The rows' own width (12 + 22 + 28rem and two gaps), so a kicker's
+	   rule ends where its rows do. */
+	max-width: 67rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.75rem;
+}
+
+/* ONE layer: a section is its kicker plus its rows; the kicker's own rule
+   does the separating. */
+.sp-section {
+	display: flex;
+	flex-direction: column;
+	/* The sidebar's scroll-to lands the kicker clear of the area's top. */
+	scroll-margin-top: 1rem;
+}
+.sp-section-title {
+	margin-bottom: 0.35rem;
+}
+.sp-section--danger .sp-section-title {
+	color: var(--ui-danger);
+}
+
+/* ── The row: NAME · CONTROL · NOTE ──
+   🎛️ 12rem holds the longest name ("Use the new layout") on one line;
+   22rem holds the widest control (Sound's three choices + Preview). The
+   note takes what is left up to the reading margin's 28rem. The columns
+   are FIXED, not content-sized, so every row's control starts on the
+   same line: that one edge is what makes the values scannable. */
+.sp-row {
+	display: grid;
+	grid-template-columns: 12rem 22rem minmax(14rem, 28rem);
+	column-gap: 2.5rem;
+	align-items: start;
+	padding: 0.55rem 0;
+}
+/* ⛔ No rule between rows (⚓ Nate, 2026-10-01): the section kicker's rule
+   is the only separator, and the rows' padding carries the rhythm. */
+
+/* Name and control share a line box as tall as a control, so a one-line
+   name sits level with a toggle, a segment or a slider alike. */
+.sp-name,
+.sp-ctl {
+	min-height: 2.1rem;
+	display: flex;
+	align-items: center;
+}
+.sp-name {
+	font-weight: var(--fw-semibold);
+	font-size: var(--fs-lg);
+	color: var(--text);
+}
+.sp-ctl {
+	grid-column: 2;
+	gap: 0.5rem;
+	min-width: 0;
+}
+/* The margin: muted, the row description's old voice, its first line
+   level with the name. */
+.sp-note {
+	grid-column: 3;
+	padding-top: 0.45rem;
+	font-size: var(--fs-md);
+	color: var(--muted);
+	line-height: var(--lh-snug);
+}
+/* The note's reading: a value inside the prose is in the ink, so it is
+   found before the sentence is read; the warning ink only when it is a
+   problem. */
+.sp-value {
+	color: var(--text);
+}
+.sp-value.is-stale {
+	color: var(--ui-warning);
+}
+/* A reading on its own line under a note (the chosen note order). */
+.sp-reading {
+	display: block;
+	margin-top: 0.3rem;
+	color: var(--text);
+}
+/* A state in the control column, where a button would otherwise be. */
+.sp-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: var(--fs-md);
+	font-weight: var(--fw-semibold);
+	color: var(--text);
+}
+/* An action that belongs to the group, not to one setting. */
+.sp-row--action {
+	padding-top: 0.25rem;
+}
+
+/* ── Folded: no room for the margin ──
+   12 + 22 + 14rem and the gaps. The note goes UNDER the name and the
+   control keeps its own column at the row's end. */
+@container (max-width: 53rem) {
+	.sp-row {
+		grid-template-columns: minmax(0, 1fr) auto;
+		column-gap: 1.5rem;
+	}
+	.sp-name {
+		grid-column: 1;
+		grid-row: 1;
+	}
+	.sp-ctl {
+		grid-column: 2;
+		grid-row: 1 / span 2;
+		align-self: start;
+	}
+	.sp-note {
+		grid-column: 1;
+		grid-row: 2;
+		padding-top: 0.1rem;
+	}
+	.sp-row--action .sp-ctl {
+		grid-column: 1 / -1;
+	}
+}
+
+/* ── Narrow (the phone, the old gear modal): the control too goes under
+   its name, full width. ── */
+@container (max-width: 34rem) {
+	.sp-row {
+		grid-template-columns: minmax(0, 1fr);
+		row-gap: 0.4rem;
+	}
+	.sp-name,
+	.sp-ctl,
+	.sp-note {
+		grid-column: 1;
+		grid-row: auto;
+	}
+	/* A toggle or a lone button still fits beside its name. */
+	.sp-row:has(.toggle) {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+	.sp-row:has(.toggle) .sp-ctl {
+		grid-column: 2;
+		grid-row: 1;
+	}
+	.sp-name {
+		min-height: 0;
+	}
+	/* …and its name keeps the toggle's line box, so the note follows the
+	   name rather than the toggle's taller box. */
+	.sp-row:has(.toggle) {
+		row-gap: 0;
+	}
+	.sp-row:has(.toggle) .sp-name {
+		min-height: 2.1rem;
+	}
+}

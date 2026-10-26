@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	/**
 	 * SidePortrait — the overhanging side portrait (lineups design §9.5a), the
 	 * Stygian Onslaught party screen's shape: a PLAIN ring on a dark disc, the
@@ -80,7 +81,7 @@
 		const img = e.currentTarget as HTMLImageElement;
 		if (id && !img.dataset.triedFallback) {
 			img.dataset.triedFallback = '1';
-			img.src = getAvatarFallback(id, 'side', $siteSettings.travelerVariant);
+			img.src = getAvatarFallback(id, 'side', $travelerTwin);
 		} else {
 			img.style.display = 'none';
 		}
@@ -109,7 +110,7 @@
 			class="spt-art"
 			class:spt-art--clip={geometry.clipBelow}
 			class:spt-art--fade={fadeRight !== undefined && !geometry.clipBelow}
-			src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
+			src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $travelerTwin)}
 			alt={name}
 			onerror={handleError}
 		/>

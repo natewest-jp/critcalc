@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { resolve } from '$app/paths';
 	import CharacterDetails from '$lib/components/CharacterDetails.svelte';
 	import BuffDetailRows from '$lib/components/BuffDetailRows.svelte';
@@ -61,9 +62,7 @@
 	const bonus = $derived(pv.target?.kind === 'bonus' ? pv.inspectedBonus : null);
 
 	const avatarFor = (id: string) =>
-		hasAvatar(id)
-			? getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)
-			: null;
+		hasAvatar(id) ? getAvatar(id, $siteSettings.useNewOutfits, 'side', $travelerTwin) : null;
 	const colorFor = (id: string) => elementPalette(getCharacterIndexEntry(id)?.element).main;
 </script>
 

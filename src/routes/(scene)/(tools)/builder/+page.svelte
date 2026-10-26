@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount, tick, untrack } from 'svelte';
@@ -757,7 +758,7 @@
 	}
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
-	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
+	const traveler = $derived(mounted ? $travelerTwin : 'aether');
 
 	// ---------------------------------------------------------------------------
 	// Filters

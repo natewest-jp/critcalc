@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { resolve } from '$app/paths';
 	import type { Snippet } from 'svelte';
 	import {
@@ -15,7 +16,6 @@
 	} from './chromeModal.svelte';
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 	import { page } from '$app/state';
-	import { siteSettings } from '$lib/stores';
 
 	/** Per-instance prefix for the Roster mark's gradient ids (see its markup). */
 	const uid = $props.id();
@@ -236,9 +236,9 @@
 			     inside a display:none copy, which Chrome does not paint.
 			     ⚠ fill-opacity="1" on the shading: .chrome-glyph's 0.85 inherits,
 			     and the stops' alpha is the artwork's, not the hover state's.
-			     The mark follows siteSettings.travelerVariant, like every Traveler
+			     The mark follows the travelerTwin store, like every Traveler
 			     portrait on the site. -->
-			{#if $siteSettings.travelerVariant === 'lumine'}
+			{#if $travelerTwin === 'lumine'}
 				<!-- Lumine, from assets-src/tools/character-lumine.svg (51:58): the silhouette and ONE hair-shading gradient. -->
 				<svg
 					class="chrome-glyph is-roster is-roster--lumine"
