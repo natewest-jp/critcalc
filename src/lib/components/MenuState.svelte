@@ -438,6 +438,7 @@
 					<!-- A chapter brings its own title. -->
 					{#if item && !chapter}<h2 class="head-title">{item.label}</h2>{/if}
 				</div>
+				{#if menu.headActions}<div class="head-actions">{@render menu.headActions()}</div>{/if}
 				<!-- The inspector modal's ✕ (InspectModal), one close on every slate
 				     surface (Nate 2026-10-23). -->
 				<button
@@ -484,7 +485,11 @@
 				<!-- Keyed on the profile: its undo history belongs to one roster, and
 				     replayed into another it would overwrite that one. -->
 				{#key storageSession.profile?.id}
-					<RosterTab focus={library.rosterFocus} onFocused={() => (library.rosterFocus = null)} />
+					<RosterTab
+						inMenu
+						focus={library.rosterFocus}
+						onFocused={() => (library.rosterFocus = null)}
+					/>
 				{/key}
 			{:else if section === 'settings'}
 				<SettingsPanel />
@@ -795,6 +800,20 @@
 		right: var(--site-pad-x);
 		z-index: 1;
 	}
+	/* A section's controls (menu.headActions), on the ✕'s line and left of
+	   it, so the two read as one group at the top right. */
+	.head-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 0.4rem;
+		margin-left: auto;
+		margin-right: 2.5rem;
+		/* On the ✕'s line: it is pinned 1.25rem down, the head starts at
+		   .main's 1.5rem padding. */
+		margin-top: calc(1.25rem - 1.5rem);
+	}
 	/* No cap on the body: a COLLECTION fills the width (2026-10-25), and each
 	   reading or form surface carries its own measure (.chapter, .settings,
 	   .invite, ProfileForm's). */
@@ -927,6 +946,9 @@
 		   returns to the tool. Two exits for one screen was one too many. */
 		.head-close {
 			display: none;
+		}
+		.head-actions {
+			margin-right: 0;
 		}
 		.main {
 			padding: 1rem var(--site-pad-x) 3rem;

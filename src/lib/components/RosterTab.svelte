@@ -34,11 +34,9 @@
 	 * wishlisting are deferred or declined.
 	 */
 	import { onMount, tick } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import { get } from 'svelte/store';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { browser } from '$app/environment';
-	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
 	import CharacterFilterStrip from './CharacterFilterStrip.svelte';
@@ -53,9 +51,12 @@
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { inCategory, type RoleCategory } from '$lib/capabilities/roles';
 	import { rosterView, type RosterShow } from '$lib/rosterView.svelte';
+	import { menu } from '$lib/menuState.svelte';
+	import { notices } from '$lib/notices.svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 
 	let {
+		inMenu = false,
 		focus = null,
 		onFocused
 	}: {
@@ -63,6 +64,9 @@
 		focus?: string | null;
 		/** Called once the arrival has been made, so the caller can clear it. */
 		onFocused?: () => void;
+		/** Hosted by the menu state: the bar's controls go up into its page
+		 *  head's row (`menu.headActions`) instead of a row of their own. */
+		inMenu?: boolean;
 	} = $props();
 
 	/** ⚓ Blank stays in the Planner (a generic stand-in to test a rotation
@@ -104,7 +108,6 @@
 		future = [...future, snap()];
 		past = past.slice(0, -1);
 		restore(prev);
-		notice = '';
 	}
 	function redo(): void {
 		const next = future.at(-1);
@@ -112,15 +115,6 @@
 		past = [...past, snap()];
 		future = future.slice(0, -1);
 		restore(next);
-		notice = '';
-	}
-	/** What the last bulk action did, said beside Undo for a few seconds. */
-	let notice = $state('');
-	let noticeTimer: ReturnType<typeof setTimeout> | undefined;
-	function announce(text: string): void {
-		notice = text;
-		clearTimeout(noticeTimer);
-		noticeTimer = setTimeout(() => (notice = ''), 6000);
 	}
 	function onWindowKey(e: KeyboardEvent): void {
 		if (!editing || !(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return;
@@ -159,10 +153,6 @@
 	function clickPip(id: string, n: number): void {
 		setCon(id, marks[id] === 'owned' && (cons[id] ?? 0) === n ? n - 1 : n);
 	}
-
-	// ── Phone (below compact) ───────────────────────────────────────────────
-	/** Below compact the three bulk actions fold into one ⋯ menu. */
-	let bulkOpen = $state(false);
 
 	// ── Filters ──────────────────────────────────────────────────────────────
 	const filters: GridFilters = $state({
@@ -255,8 +245,12 @@
 		shown.filter((c) => marks[c.id] !== 'owned' || (!c.noConstellations && cons[c.id] !== 6))
 	);
 	const plural = (n: number) => `${n} character${n === 1 ? '' : 's'}`;
-	function bulk(list: CharacterIndexEntry[], c6: boolean, owned: boolean): void {
+	/** A bulk edit, and a toast whose Undo takes back ITS characters only: a
+	 *  later edit to anyone else survives it (a whole-roster restore lost
+	 *  them). The take-back is itself an edit, so ⌘Z can redo the bulk. */
+	function bulk(list: CharacterIndexEntry[], c6: boolean, owned: boolean, text: string): void {
 		record();
+		const before = past.at(-1)!;
 		const m = { ...get(ownership) };
 		const k = { ...get(constellations) };
 		for (const c of list) {
@@ -266,22 +260,45 @@
 		}
 		ownership.replaceAll(m);
 		if (c6) constellations.replaceAll(k);
+		notices.toast('success', text, {
+			actions: [{ label: 'Undo', run: () => takeBack(list, before) }]
+		});
+	}
+	function takeBack(list: CharacterIndexEntry[], before: Snapshot): void {
+		record();
+		const m = { ...get(ownership) };
+		const k = { ...get(constellations) };
+		for (const { id } of list) {
+			if (before.marks[id]) m[id] = before.marks[id];
+			else delete m[id];
+			if (id in before.cons) k[id] = before.cons[id];
+			else delete k[id];
+		}
+		ownership.replaceAll(m);
+		constellations.replaceAll(k);
 	}
 	function markAllOwned(): void {
 		const n = unownedShown.length;
-		bulk(unownedShown, false, true);
-		announce(`Marked ${plural(n)} owned.`);
+		bulk(unownedShown, false, true, `Marked ${plural(n)} owned`);
 	}
 	function markAllC6(): void {
 		const n = belowC6Shown.length;
-		bulk(belowC6Shown, true, true);
-		announce(`Marked ${plural(n)} owned at C6.`);
+		bulk(belowC6Shown, true, true, `Marked ${plural(n)} owned at C6`);
 	}
 	function markAllNotOwned(): void {
 		const n = ownedShown.length;
-		bulk(ownedShown, false, false);
-		announce(`Marked ${plural(n)} not owned.`);
+		bulk(ownedShown, false, false, `Marked ${plural(n)} not owned`);
 	}
+	const anyBulk = $derived(!!(unownedShown.length || belowC6Shown.length || ownedShown.length));
+
+	// ── The head (the menu state's page head, when hosted there) ────────────
+	$effect(() => {
+		if (!inMenu) return;
+		menu.headActions = barActions;
+		return () => {
+			if (menu.headActions === barActions) menu.headActions = null;
+		};
+	});
 
 	// ── The keys (⚓ Nate: "I want people to know the keys available to them")
 	const MOD = browser && /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘' : 'Ctrl';
@@ -417,108 +434,83 @@
 	const ASTROID_SIZE = 13;
 </script>
 
-<svelte:window onkeydown={onWindowKey} onclick={() => (bulkOpen = false)} />
+<svelte:window onkeydown={onWindowKey} />
+
+<!-- The bar's controls: in the menu state's page head (inMenu), else a row
+     of their own. ONE group: mark, undo and redo while editing, the lock. -->
+{#snippet barActions()}
+	{#if editing}
+		{#if anyBulk}
+			<BandMenu
+				size="sm"
+				label={filtered ? 'Mark shown' : 'Mark all'}
+				ariaLabel={filtered ? 'Mark every character shown' : 'Mark every character'}
+			>
+				{#snippet items(close)}
+					{#if unownedShown.length}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								close();
+								markAllOwned();
+							}}><Mark name="check" size={13} /> Owned</button
+						>
+					{/if}
+					{#if belowC6Shown.length}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								close();
+								markAllC6();
+							}}><Mark name="constellation" size={13} filled /> Owned at C6</button
+						>
+					{/if}
+					{#if ownedShown.length}
+						<button
+							class="band-menu-item"
+							role="menuitem"
+							onclick={() => {
+								close();
+								markAllNotOwned();
+							}}><Mark name="close" size={13} /> Not owned</button
+						>
+					{/if}
+				{/snippet}
+			</BandMenu>
+		{/if}
+		<button
+			class="btn btn--sm btn--icon"
+			aria-label="Undo"
+			title={MOD === '⌘' ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
+			disabled={!past.length}
+			onclick={undo}><Mark name="undo" size={13} /></button
+		>
+		<button
+			class="btn btn--sm btn--icon"
+			aria-label="Redo"
+			title={MOD === '⌘' ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
+			disabled={!future.length}
+			onclick={redo}><Mark name="redo" size={13} /></button
+		>
+	{/if}
+	<button
+		class="btn btn--sm ros-lock"
+		class:is-active={editing}
+		class:is-nudged={nudge}
+		aria-pressed={editing}
+		onanimationend={() => (nudge = false)}
+		title={editing ? 'Lock the roster against stray clicks' : 'Unlock the roster to edit it'}
+		onclick={toggleLock}
+		><Mark name={editing ? 'unlocked' : 'locked'} size={13} />
+		{editing ? 'Lock roster' : 'Edit roster'}</button
+	>
+{/snippet}
 
 <div class="ros">
 	<div class="ros-main">
-		<div class="ros-bar">
-			{#if editing && (unownedShown.length || belowC6Shown.length || ownedShown.length)}
-				<!-- Below compact the bulk actions fold into one ⋯. -->
-				<span class="ros-bulk-fold">
-					<button
-						class="btn btn--sm btn--icon"
-						aria-label="Mark all…"
-						aria-expanded={bulkOpen}
-						onclick={(e) => {
-							e.stopPropagation();
-							bulkOpen = !bulkOpen;
-						}}><Mark name="more" size={13} /></button
-					>
-					{#if bulkOpen}
-						<div
-							class="ros-menu ctx-dark"
-							role="menu"
-							transition:fade={{ duration: motion(T_QUICK) }}
-							onintrostart={introLive}
-							onoutrostart={outroInert}
-						>
-							{#if unownedShown.length}
-								<button class="ros-menu-item" role="menuitem" onclick={markAllOwned}
-									><Mark name="check" size={12} />
-									{filtered ? 'Mark all shown owned' : 'Mark all owned'}</button
-								>
-							{/if}
-							{#if belowC6Shown.length}
-								<button class="ros-menu-item" role="menuitem" onclick={markAllC6}
-									><Mark name="constellation" size={12} filled />
-									{filtered ? 'Mark all shown C6' : 'Mark all C6'}</button
-								>
-							{/if}
-							{#if ownedShown.length}
-								<button class="ros-menu-item" role="menuitem" onclick={markAllNotOwned}
-									><Mark name="close" size={12} />
-									{filtered ? 'Mark all shown not owned' : 'Mark all not owned'}</button
-								>
-							{/if}
-						</div>
-					{/if}
-				</span>
-			{/if}
-			{#if editing}
-				{#if unownedShown.length}
-					<button class="btn btn--sm ros-bulk" onclick={markAllOwned}
-						><Mark name="check" size={12} />
-						{filtered ? 'Mark all shown owned' : 'Mark all owned'}</button
-					>
-				{/if}
-				{#if belowC6Shown.length}
-					<button class="btn btn--sm ros-bulk" onclick={markAllC6}
-						><Mark name="constellation" size={12} filled />
-						{filtered ? 'Mark all shown C6' : 'Mark all C6'}</button
-					>
-				{/if}
-				{#if ownedShown.length}
-					<button class="btn btn--sm ros-bulk" onclick={markAllNotOwned}
-						><Mark name="close" size={12} />
-						{filtered ? 'Mark all shown not owned' : 'Mark all not owned'}</button
-					>
-				{/if}
-			{/if}
-			{#if editing && notice}<span
-					class="ros-notice"
-					role="status"
-					transition:fade={{ duration: motion(T_QUICK) }}>{notice}</span
-				>{/if}
-			<span class="ros-end">
-				{#if editing}
-					<button
-						class="btn btn--sm btn--icon"
-						aria-label="Undo"
-						title={MOD === '⌘' ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
-						disabled={!past.length}
-						onclick={undo}><Mark name="undo" size={13} /></button
-					>
-					<button
-						class="btn btn--sm btn--icon"
-						aria-label="Redo"
-						title={MOD === '⌘' ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
-						disabled={!future.length}
-						onclick={redo}><Mark name="redo" size={13} /></button
-					>
-				{/if}
-				<button
-					class="btn btn--sm ros-lock"
-					class:is-active={editing}
-					class:is-nudged={nudge}
-					aria-pressed={editing}
-					onanimationend={() => (nudge = false)}
-					title={editing ? 'Lock the roster against stray clicks' : 'Unlock the roster to edit it'}
-					onclick={toggleLock}
-					><Mark name={editing ? 'unlocked' : 'locked'} size={13} />
-					{editing ? 'Lock roster' : 'Edit roster'}</button
-				>
-			</span>
-		</div>
+		{#if !inMenu}<div class="ros-bar">{@render barActions()}</div>{/if}
 		{#if editing}
 			<p class="ros-keys" aria-label="Keyboard shortcuts">
 				{#each KEYS as k (k.does)}
@@ -612,9 +604,7 @@
 			</CharacterFilterStrip>
 		</div>
 		<div class="ros-scroll scroll-fade" bind:this={listEl} use:scrollFade>
-			{#if !editing}
-				<p class="ros-hint">Click “Edit roster” to begin editing.</p>
-			{:else if ownedCount === 0}
+			{#if editing && ownedCount === 0}
 				<p class="ros-hint">
 					Mark the characters you own: click a portrait, or select one and use the keys above.
 				</p>
@@ -724,17 +714,12 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: 0.9rem 6px 1.25rem 4px;
+		padding: 0.5rem 6px 1.25rem 4px;
 	}
-	/* Teams' details (TeamDetail .td-filters): the scroller tucks under the
-	   strip by its own top padding, so the roll-off ends at the strip. */
+	/* The filters sit ON the grid (Teams' details), and the scroller starts at
+	   their edge, never under it (TeamDetail .td-filters, 2026-10-26). */
 	.ros-filters {
-		/* ⚠ Stacked ABOVE the scroller that tucks under it, or the scroller
-		   swallows the strip's lower half (TeamDetail .td-filters). */
-		position: relative;
-		z-index: 1;
 		flex: none;
-		margin-bottom: -0.9rem;
 		padding: 0 6px 0 4px;
 	}
 	/* The search field and the Show toggles, as Teams' details size them
@@ -782,25 +767,13 @@
 		gap: 0.5rem;
 		padding: 0 6px 8px 4px;
 	}
-	.ros-bar .btn {
+	/* The old layout's bar: the head's group, at the right. */
+	.ros-bar {
+		justify-content: flex-end;
+	}
+	/* Its own gap, wherever it is rendered (the head or the bar). */
+	.ros-lock {
 		gap: 5px;
-	}
-	.ros-end {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-	/* The notice sits just before the end cluster; on a phone it takes its own
-	   row (below). */
-	.ros-notice + .ros-end {
-		margin-left: 0;
-	}
-	.ros-notice {
-		margin-left: auto;
-		margin-right: 0.25rem;
-		color: var(--muted);
-		font-size: var(--fs-xs);
 	}
 	.ros-keys {
 		flex: none;
@@ -1027,45 +1000,6 @@
 	}
 
 	/* ── Phone controls: hidden on wide ── */
-	.ros-bulk-fold {
-		display: none;
-	}
-	.ros-bulk-fold {
-		position: relative;
-	}
-	.ros-menu {
-		position: absolute;
-		z-index: 3;
-		top: calc(100% + 4px);
-		left: 0;
-		display: flex;
-		flex-direction: column;
-		min-width: 14rem;
-		padding: 4px;
-		border-radius: var(--r-sm);
-		background: var(--surface-raised);
-		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
-	}
-	.ros-menu-item {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		min-height: 40px;
-		padding: 0 10px;
-		border: none;
-		border-radius: var(--r-xs);
-		background: none;
-		color: var(--text);
-		font: inherit;
-		font-size: var(--fs-sm);
-		text-align: left;
-		cursor: pointer;
-		/* A menu row is a CONTROL (NavPanel's .np-row). */
-		transition: background-color var(--t-snap);
-	}
-	.ros-menu-item:hover {
-		background: var(--fill-hover);
-	}
 
 	/* No keyboard to speak of on a touch screen: the legend would be noise.
 	   (A different AXIS from the width table — see responsive survey.) */
@@ -1094,29 +1028,15 @@
 		}
 	}
 
-	/* ── Below compact (40rem — $lib/breakpoints.ts): one row of controls.
-	   The bulk actions fold into ⋯, the notice takes its own row, and three tiles fit at 320 (88px: 3 × 88 + gaps
-	   in the 278px a 320 screen leaves; the portrait is 76, the astroids 78). */
+	/* ── Below compact (40rem — $lib/breakpoints.ts): three tiles fit at 320
+	   (88px: 3 × 88 + gaps in the 278px a 320 screen leaves; the portrait is
+	   76, the astroids 78). */
 	@media (max-width: 40rem) {
-		.ros-bulk {
-			display: none;
-		}
-		.ros-bulk-fold {
-			display: inline-flex;
-		}
 		/* More keeps its MARK and drops its WORD (Teams' details); Sort has
 		   no mark, so its word stays. */
 		.ros-more :global(.band-menu-word),
 		.ros-more :global(.band-menu-sep) {
 			display: none;
-		}
-		.ros-notice {
-			order: 99;
-			flex-basis: 100%;
-			margin: 0;
-		}
-		.ros-notice + .ros-end {
-			margin-left: auto;
 		}
 		.til {
 			grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));

@@ -23,12 +23,15 @@ hands-on with Nate, one look per step.
 1. ✅ The strip replaces the filter column (search · roles · elements · Show
    ✓ ✕ ☆ · More · Sort · count · Clear); the phone sheet is gone.
 2. ✅ Wishlist: Sparkles, unowned tiles only (the Roster and the details card).
-3. Tidy the page's TOP: the lock now stands alone on a row above the strip,
-   and "Click 'Edit roster' to begin editing." reads as the search field's
-   help. Candidates: the lock, undo/redo and a "Mark shown…" menu up in the
-   page head's row.
-4. The bar: one "Mark shown…" menu (`BandMenu`), bulk feedback through the
-   shared notices with an Undo button, the keys legend on keyboard focus only.
+3. ✅ The page's TOP: the bar's controls are ONE group in the menu state's
+   page head, on the ✕'s line (`menu.headActions`, a snippet slot a section
+   fills while mounted; the old layout renders the same group in its own
+   row). The locked hint ("Click 'Edit roster'…") is gone: a locked tile
+   nudges the lock, which now sits where the eye starts.
+4. The bar: ✅ one "Mark all / Mark shown" menu (`BandMenu`: Owned, Owned at
+   C6, Not owned); ✅ bulk feedback is a toast whose Undo takes back THAT
+   action's characters only (a later edit to anyone else survives, and ⌘Z
+   can redo it). ⏭ The keys legend on keyboard focus only.
 5. Counts, if wanted (bar, sidebar item, or neither).
 6. Tiles and astroids: a visual pass on the layout.
 7. Phone pass.
@@ -36,8 +39,11 @@ hands-on with Nate, one look per step.
 
 ## Found on the way
 
-- The strip's scroller tucks under it by a negative margin, and coming later
-  in the DOM it swallowed the strip's lower 0.9rem: the bottom half of every
-  control was dead. Teams' details share the layout and got the same fix
-  (the strip stacks above, `position: relative; z-index: 1`); Teams was fixed
-  by geometry, not re-measured (its details need a profile).
+- The grid's scroller tucked UNDER the strip by a -0.9rem margin (Teams'
+  details' layout). Later in the DOM, it swallowed the strip's lower half
+  (every control's bottom took no clicks); stacked beneath the strip (the
+  first fix), scrolled tiles showed through behind it (Nate). Both surfaces
+  now start the scroller at the strip's edge, so the roll-off begins there,
+  and the top padding went 0.9rem → 0.5rem (it had been clearing the
+  overlap). Teams was fixed by geometry, not re-measured (its details need
+  a profile).
