@@ -1520,7 +1520,13 @@
    variable, and which is why $lib/motion.ts exists and why its helpers return 0
    under the same query. Keyframe `animation`s are the third gap and cannot be
    closed this way at all: a duration token has nothing to say to `@keyframes`.
-   (`pulse-confirm` is the only one, and it still declares its own reduce path.)
+   So each keyframe declares its own reduce path: here, `pulse-confirm` and
+   the shared `nudge` (which empties its frames rather than going `none`); in
+   components, TopBar's `st-pulse`, RosterTab's `ros-flash` and CritInstrument's
+   `cv-dot-in`. The rest need none of their own: TopBar's `brief-in` runs on
+   --t-quick, its `wash-out` on a duration from $lib/motion.ts, ToolColumns'
+   `tc-aside-rise` on scroll rather than time, and NoticeRegion's `nt-drain`
+   is the toast's timer ring, which is left running.
 
    ↻ 2026-08-12: the site chrome's private 200ms folded in (⚓ Nate), taking
    three more blocks with it. Nothing outside the three exceptions above is
