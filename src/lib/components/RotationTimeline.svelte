@@ -26,6 +26,7 @@
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { menu } from '$lib/menuState.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { notices } from '$lib/notices.svelte';
 	import type { Outcome } from '$lib/controlAnswer.svelte';
@@ -1878,7 +1879,11 @@
 	// rather than hanging over the next tool.
 	let docked = $derived(below('compact'));
 	let onPlanner = $derived(page.url.pathname.startsWith(resolve('/planner')));
-	let dockOn = $derived(docked && onPlanner);
+	// ⚓ And never over the menu state (2026-10-27): the dock lives on <body>
+	// at z 15, so a full-screen section (z 9) opened from the planner had the
+	// collapsed strip floating over it. The menu is a shallow entry, so the
+	// route still says planner; it is a state of its own to ask about.
+	let dockOn = $derived(docked && onPlanner && !menu.open);
 	let dockOpen = $state(false);
 	/** ⚠️ Chrome on iOS can widen its address pill over the page AFTER the
 	 *  keyboard lands and never tell the page (Nate's phone: the late
@@ -1902,7 +1907,8 @@
 	// Published as --notice-floor; read by NoticeRegion.
 	$effect(() => {
 		const el = composerEl;
-		if (!el) return;
+		// Under the menu state the composer is not the bottom of anything.
+		if (!el || menu.open) return;
 		const root = document.documentElement;
 		const set = () => {
 			const top = el.getBoundingClientRect().top;
@@ -2026,7 +2032,11 @@
 		}
 	});
 	afterNavigate((nav) => {
-		if (nav.to?.url.pathname.startsWith(resolve('/planner'))) dockPlace?.(docked);
+		if (nav.to?.url.pathname.startsWith(resolve('/planner'))) dockPlace?.(docked && !menu.open);
+	});
+	// Opening a section folds the dock, so it comes back collapsed.
+	$effect(() => {
+		if (menu.open) dockOpen = false;
 	});
 
 	function dockable(node: HTMLElement, on: boolean) {
@@ -4017,6 +4027,22 @@
 		<div class="rp-underchart">{@render underChart()}</div>
 	{/if}
 
+	<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
+	     characters' coverage, what this rotation doesn't reach dimmed.
+	     ↻ 2026-10-27: under the chart's last row, no longer under the notation
+	     box — the composer stands pinned at the screen's foot now, and the
+	     strips would have ridden in its plate. Outside the Buffs layer: they say
+	     what the planner draws of a kit, not what an ability grants. -->
+	{#if $siteSettings.showCoverageStrips}
+		<div class="rp-coverage-row">
+			<RotationCoverage
+				ids={characterSlots.filter((id, i) => id !== 'blank' && characterSlots.indexOf(id) === i)}
+				events={rotation.events}
+				constellations={effectiveCon}
+			/>
+		</div>
+	{/if}
+
 	<!-- ── Composer ─────────────────────────────────────────────
 	     The notation input: you write the rotation here, the timeline renders
 	     it above.
@@ -4102,19 +4128,6 @@
 					class="rp-notation"
 					use:mountEditor={{ value: notation, key: tabId, seats: seating }}
 				></div>
-				<!-- ⚓ Opt-in (Settings → Coverage strips, OFF by default): the slotted
-			     characters' coverage under the box, what this rotation doesn't
-			     reach dimmed. Under the box rather than beside it, so the strips
-			     share the notation's left edge — which is the chart's. -->
-				{#if $siteSettings.showCoverageStrips}
-					<RotationCoverage
-						ids={characterSlots.filter(
-							(id, i) => id !== 'blank' && characterSlots.indexOf(id) === i
-						)}
-						events={rotation.events}
-						constellations={effectiveCon}
-					/>
-				{/if}
 			</div>
 			<!-- ── THE HISTORY PAIR (single truth, 2026-08-13) ─────────────────────
 		     ⚓ NATE asked for undo/redo buttons on one side of the notation box.
@@ -4131,7 +4144,12 @@
 		     is the only thing tying the box to the instrument above it; controls
 		     in front of the box would indent the notation away from the tracks it
 		     describes. -->
-			<div class="rp-history" role="group" aria-label="Notation history">
+			<div
+				class="rp-history"
+				class:rp-history--clear={$nextLayout}
+				role="group"
+				aria-label="Notation history"
+			>
 				<button
 					class="btn btn--sm"
 					type="button"
@@ -4290,6 +4308,10 @@
 		   the composer became a sibling panel in the breathing-room round and
 		   this is now a seam the reader actually looks at. */
 		gap: var(--tool-gutter);
+		/* Its column's full height when the page sets a floor (ToolStack
+		   `floor`), so the composer can stand at the foot; its own height
+		   otherwise (a block parent ignores it). */
+		flex: 1 0 auto;
 	}
 
 	/* ── Chart area (formerly the chart FRAME) ───────────────── */
@@ -5843,6 +5865,11 @@
 		padding-left: calc(var(--rp-frame-pad-x) + var(--rp-lane-name-inset));
 	}
 
+	/* The notation box's old left edge, which is the chart's. */
+	.rp-coverage-row {
+		padding: 0 var(--rp-frame-pad-x);
+	}
+
 	/* Its own line across the composer, above the editor. */
 	.rp-composer:has(.rp-held) {
 		flex-wrap: wrap;
@@ -5874,15 +5901,26 @@
 	   as before, the bench's metrics and its alignment to the track groups are
 	   untouched, and where the page does not scroll (1080p and up, a short
 	   rotation) nothing sticks and nothing changes.
-	   · 8px off the foot, so the field never sits on the screen's edge; the
-	     plate below covers that gap.
+	   · Off the foot by the shell's bottom pad (8px until 2026-10-27), so the
+	     field never sits on the screen's edge; the plate below covers that gap.
 	   · z 7: over the chart it now floats across (the playhead tops out at 6).
 	   ⛔ No padding here and no size change while pinned — see pinWatch.
 	   Released below `toolMin` (the block at the end of this sheet). */
 	.rp-composer {
 		position: sticky;
-		bottom: 8px;
+		/* ↻ 2026-10-27: the shell's bottom pad (was 8px), so pinned is where the
+		   floor leaves it at rest and the field never moves between the two. */
+		bottom: var(--tool-pad-bottom, 1.5rem);
 		z-index: 7;
+	}
+	/* ── AT THE FOOT, WHATEVER THE ROTATION (⚓ Nate 2026-10-27) ─────────────
+	   Pushed to the end of .rp-root, which the page's floor (ToolStack `floor`)
+	   stretches to the screen's foot: a short rotation no longer leaves the
+	   field halfway up the screen, and a long one pins it as above, so the
+	   box is in one place to reach for. The cost, accepted: bare scene between
+	   a short chart and the field on a tall screen. */
+	.rp-composer:not(.rp-composer--docked) {
+		margin-top: auto;
 	}
 	/* The plate it stands on while pinned, as a pseudo-element that reaches 8px
 	   past the BODY (the field + its history pair) on every side, so the row
@@ -5912,6 +5950,8 @@
 		content: '';
 		position: absolute;
 		inset: -8px;
+		/* Down to the screen's foot, so nothing scrolls by under a pinned box. */
+		bottom: calc(-1 * var(--tool-pad-bottom, 1.5rem));
 		z-index: -1;
 		border-radius: var(--r-md) var(--r-md) 0 0;
 		background-color: transparent;
@@ -5975,6 +6015,17 @@
 		align-self: start;
 		gap: 2px;
 		height: calc(13px * 1.6 + 20px);
+	}
+	/* ↻ 2026-10-27 (⚓ Nate): with Clear, three stacked in one line's height
+	   were ~13px each. Undo and Redo side by side, Clear spanning both under
+	   them: two rows again, at the pair's old row height. */
+	.rp-history--clear {
+		grid-template-columns: auto auto;
+		column-gap: 2px;
+	}
+	.rp-history--clear .btn:last-child {
+		grid-column: 1 / -1;
+		justify-content: center;
 	}
 	.rp-history .btn {
 		justify-content: flex-start;

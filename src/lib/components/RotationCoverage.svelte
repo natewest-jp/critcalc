@@ -75,7 +75,6 @@
 		grid-template-columns: 7.5rem minmax(0, 1fr);
 		align-items: center;
 		gap: 3px 0.75rem;
-		margin-top: 8px;
 		font-size: var(--fs-sm);
 	}
 	.rp-cov-head {

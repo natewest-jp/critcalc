@@ -12,7 +12,8 @@
 	import type MenuStateT from '$lib/components/MenuState.svelte';
 	import type MoveDialogT from '$lib/components/MoveDialog.svelte';
 	import type LinksDialogT from '$lib/components/LinksDialog.svelte';
-	import { menu } from '$lib/menuState.svelte';
+	import { menu, rememberSurface } from '$lib/menuState.svelte';
+	import { resolve } from '$app/paths';
 	import { linksIntro, moveRequest } from '$lib/moveRequest.svelte';
 	import { nextLayout } from '$lib/nextLayout';
 	import { get } from 'svelte/store';
@@ -44,6 +45,11 @@
 	// the tool routes (they carry their own chrome). Reactive so they appear/clear
 	// as you navigate.
 	const pathname = $derived(page.url.pathname);
+
+	// The landing or a tool, as the menu state's way back from a reload.
+	$effect(() => {
+		if (pathname === resolve('/') || isToolPath(pathname)) rememberSurface(pathname);
+	});
 
 	// Set the baseline path once so cold loads on a tool URL snap layers to
 	// tool rest state on mount (no entry animation from landing → tool).

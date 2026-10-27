@@ -774,6 +774,14 @@
 		/* The far edge is the site gutter, so the content ends where a tool's
 		   does; the near side is the gap off the sidebar's rule. */
 		padding: 1.5rem var(--site-pad-x) 4rem clamp(1rem, 3vw, 3rem);
+		/* WHERE A SECTION'S STICKY HEADER STANDS (2026-10-27, the Coverage
+		   table's column labels): just under the pinned ✕ (its 1.25rem drop,
+		   16px mark and 0.25rem padding a side, then a 0.5rem gap), measured
+		   from the content edge, since a sticky inset does not count this
+		   box's padding. A sticky header fills the REACH above itself once it
+		   sticks, or the rows show through between it and the top bar. */
+		--menu-sticky-top: calc(1.25rem + 16px + 0.5rem + 0.5rem - 1.5rem);
+		--menu-sticky-reach: calc(1.5rem + var(--menu-sticky-top));
 	}
 	.head {
 		display: flex;
@@ -810,7 +818,8 @@
 		position: absolute;
 		top: calc(var(--chrome-h) + 1.25rem);
 		right: var(--site-pad-x);
-		z-index: 1;
+		/* Over a section's sticky header and the band it fills (z 1). */
+		z-index: 2;
 	}
 	/* A section's controls (menu.headActions), on the ✕'s line and left of
 	   it, so the two read as one group at the top right. */
@@ -973,6 +982,9 @@
 		}
 		.main {
 			padding: 1rem var(--site-pad-x) 3rem;
+			/* No ✕ here: a sticky header stands flush at the top. */
+			--menu-sticky-top: -1rem;
+			--menu-sticky-reach: 0px;
 		}
 		.main.is-fill {
 			padding-bottom: 0;
