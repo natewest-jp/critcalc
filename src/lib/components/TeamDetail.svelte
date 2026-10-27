@@ -424,7 +424,7 @@
 				     too. -->
 				<label class="td-name-wrap">
 					<input
-						class="td-name"
+						class="field td-name"
 						bind:value={name}
 						placeholder={full ? rotationLabel(slots) : 'New team'}
 						aria-label="Team name"
@@ -778,39 +778,25 @@
 	.td-name-wrap:focus-within {
 		color: var(--text);
 	}
-	/* The name is the screen's title, in the title's face. The field fits its text, so the pencil sits beside the name
-	   (`field-sizing`); where that isn't supported, `size` stands in and
-	   leaves a little air. */
+	/* The box is the global .field's. Local: the field fits its text, so the
+	   pencil sits beside the name (`field-sizing`, hence `width: auto` over the
+	   field's 100%; where that isn't supported, `size` stands in and leaves a
+	   little air), the tighter padding of a field set in a heading, and the
+	   name's TYPE, since it is the screen's title in the title's face. */
 	.td-name {
 		field-sizing: content;
+		width: auto;
 		min-width: 4ch;
 		max-width: 100%;
 		margin-left: -0.5rem;
 		padding: 0.15rem 0.5rem;
-		border: 1px solid transparent;
-		border-radius: var(--r-sm);
-		background: none;
-		color: var(--text);
-		font: inherit;
 		text-overflow: ellipsis;
 		font-family: var(--font-display);
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
-		transition:
-			border-color var(--t-snap),
-			background-color var(--t-snap);
 	}
 	.td-name::placeholder {
-		color: var(--muted);
 		font-weight: var(--fw-medium);
-	}
-	.td-name:hover {
-		border-color: var(--border);
-	}
-	.td-name:focus {
-		border-color: var(--border);
-		background: var(--surface-well);
-		outline: none;
 	}
 	.td-acts {
 		display: flex;
