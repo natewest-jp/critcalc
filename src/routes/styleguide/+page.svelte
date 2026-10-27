@@ -1768,7 +1768,7 @@
 				</div>
 				{@render spec(
 					'.kicker · .title · .subtitle · .note',
-					'kicker = GOLD (--accent, since 2026-08-10) UPPER fs-lg ls-widest + a gold rule at 22%, and BODY FACE — a section heading, not a main header. Gold names a block, never a word · title = --text, Bitter, fs-3xl (⚓ Nate 2026-08-09) · note = --muted fs-lg, 56ch max, it is data-adjacent'
+					'kicker = GOLD (--accent, since 2026-08-10) UPPER fs-lg ls-widest + a gold rule at 22%, and BODY FACE — a section heading, not a main header. Gold names a block; elsewhere it is rationed, not forbidden (⚓ Nate 2026-10-27) · title = --text, Bitter, fs-3xl (⚓ Nate 2026-08-09) · note = --muted fs-lg, 56ch max, it is data-adjacent'
 				)}
 			</div>
 
@@ -2797,9 +2797,12 @@
 				<h3>Safari / WebKit</h3>
 				<ul>
 					<li>
-						<strong>No filters.</strong> Dimming is <code>fill-opacity</code> on the glyph, never
-						<code>opacity</code> on the element — element opacity creates a WebKit transparency layer,
-						which shows as 1px jitter under parallax.
+						<strong>No filters on what moves.</strong> Dimming a glyph is <code>fill-opacity</code>,
+						never <code>opacity</code> on the element — element opacity creates a WebKit
+						transparency layer, which shows as 1px jitter under parallax. ↻ A static
+						<code>filter</code>
+						on something that stays put is fine: the unowned portraits’
+						<code>--portrait-unowned</code> scrolls the full Roster smoothly in real Safari (⚓ Nate 2026-10-27).
 					</li>
 					<li>
 						<strong>Alpha lives in the PAINT.</strong> The rule above is not about glyphs, it is
@@ -2826,8 +2829,11 @@
 						Hover raises the toplight, never the fill's opacity.
 					</li>
 					<li>
-						No per-item <code>&lt;img&gt;</code> on roster-scale grids until ~Safari 27 — use
-						<code>background-image</code>.
+						Prefer <code>background-image</code> to a per-item <code>&lt;img&gt;</code> on
+						roster-scale grids that mount during a transition: <code>CharacterCard</code> measured
+						222ms → 2ms. ↻ A grid that mounts at rest is fine with <code>&lt;img&gt;</code> (the Roster
+						and team details, checked in real Safari, ⚓ Nate 2026-10-27), so convert one only if it shows
+						a cost.
 					</li>
 				</ul>
 			</div>
@@ -3084,7 +3090,9 @@
 						<a href="#families">closed</a> — it is gold.) Picking the colour was a value change;
 						deciding which affordances earn it is not. Right now every
 						<code>--accent</code>-derived selection ring, hover wash and link in the app turned gold
-						at once, which is more gold than Genshin spends on a screen. Ration is the open half.
+						at once, which is more gold than Genshin spends on a screen. ↻ ⚓ Nate 2026-10-27: gold
+						can be used, just not overused. It names a block, marks what is chosen or pinned, and
+						may mark an occasional word (the Library's “Open now”). Ration it per screen.
 					</li>
 					<li>
 						⛔ <strong>CLOSED: the shaped scrim.</strong> Built (ellipse, then a soft rounded box
