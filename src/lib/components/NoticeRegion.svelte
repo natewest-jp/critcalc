@@ -66,7 +66,14 @@
 				onfocusout={() => notices.resume(t.id)}
 			>
 				{#if t.swatch}
-					<span class="nt-swatch" class:has-picture={!!t.picture} style:--pp={t.swatch}
+					<!-- A picture sits on slate (`ctx-dark`), as in the top bar: a
+					     character avatar has no backing of its own, and on paper it
+					     showed the parchment through (⚓ Nate 2026-10-27). -->
+					<span
+						class="nt-swatch"
+						class:has-picture={!!t.picture}
+						class:ctx-dark={!!t.picture}
+						style:--pp={t.swatch}
 						>{#if t.picture}<img src={t.picture} alt="" />{/if}</span
 					>
 				{:else}
@@ -212,7 +219,8 @@
 		background: color-mix(in srgb, var(--pp) 35%, var(--surface));
 	}
 	/* ⚓ With the profile's picture (Nate 2026-10-27): larger, the colour as a
-	   2px ring outside it, as the top bar wears it. */
+	   2px ring outside it, as the top bar wears it, on slate (the disc claims
+	   .ctx-dark, so --surface below is the slate ground). */
 	.nt-swatch.has-picture {
 		display: grid;
 		place-items: center;
