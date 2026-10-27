@@ -70,6 +70,19 @@
 		{ key: 'chosen', hex: '#3682bb', note: '--blue-700 now (⚓ Nate) · L .59 · 3.31:1' },
 		{ key: 'family', hex: '#3483b7', note: 'at --ui-info’s hue, family lightness · L .59 · ~3.3:1' }
 	] as const;
+	/** The dark rung, now vs richer (⚓ Nate asked to see it, 2026-10-27): the
+	 *  richer one lifts chroma by the same proportion the paper rung gained when
+	 *  it became the stand-in (.080 → .097), same lightness. ⚓ Nate chose it
+	 *  ("subtle, but nice"); kept as the record. Page-local. */
+	const DARK_BLUES = [
+		{ key: 'was', hex: '#83b5df', note: 'was · C .080 · 5.65:1 on slate' },
+		{ key: 'chosen', hex: '#79b6e9', note: '--blue-400 now (⚓ Nate) · C .097 · 5.67:1 on slate' }
+	] as const;
+	const DARK_GROUNDS = [
+		{ key: 'night', cls: '' },
+		{ key: 'glass', cls: 'ctx-glass' },
+		{ key: 'slate', cls: 'ctx-dark' }
+	] as const;
 	const PAPER_FAMILY = [
 		{ kind: 'success', mark: 'check', text: 'Team saved', color: 'var(--ui-positive)' },
 		{ kind: 'warning', mark: 'warn', text: 'The lineup is full', color: 'var(--ui-warning)' },
@@ -85,19 +98,19 @@
 	 *  rungs (on paper the axis is SIZE: broad panels are parchment-50, cards
 	 *  and controls on them parchment-100). */
 	const INFO_GROUNDS = [
-		{ key: 'night', cls: '', label: 'ctx-night', note: '--blue-400 · #83b5df', broad: false },
+		{ key: 'night', cls: '', label: 'ctx-night', note: '--blue-400 · #79b6e9', broad: false },
 		{
 			key: 'glass',
 			cls: 'ctx-glass',
 			label: 'ctx-glass',
-			note: '--blue-400 · #83b5df',
+			note: '--blue-400 · #79b6e9',
 			broad: false
 		},
 		{
 			key: 'dark',
 			cls: 'ctx-dark',
 			label: 'ctx-dark — slate',
-			note: '--blue-400 · 5.65:1',
+			note: '--blue-400 · 5.67:1',
 			broad: false
 		},
 		{
@@ -235,6 +248,29 @@
 						<span class="info-mark"><Mark name="buff" /></span>
 					</div>
 					<div class="spec-note">{g.note}</div>
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════ 2a · the dark blue, now vs richer ══ -->
+	<section>
+		<h2 class="lab-h">The dark blue · was vs chosen</h2>
+		<div class="db-grid">
+			{#each DARK_GROUNDS as g (g.key)}
+				<div class="spec {g.cls}" class:spec--bare={g.key === 'night'}>
+					<div class="spec-tag">{g.key}</div>
+					{#each DARK_BLUES as b (b.key)}
+						<div class="db-row" style:--db={b.hex}>
+							<span class="db-key">{b.key}</span>
+							<span class="info-stat">ATK</span>
+							<span class="db-value">+20%</span>
+							<span class="info-stat">Elemental Mastery</span>
+							<span class="db-value">+120</span>
+							<span class="db-mark"><Mark name="about" /></span>
+						</div>
+					{/each}
+					<div class="spec-note">{DARK_BLUES.map((b) => b.note).join(' · ')}</div>
 				</div>
 			{/each}
 		</div>
@@ -500,6 +536,35 @@
 	.spec-line {
 		height: 2px;
 	}
+	/* ── the dark blue, now vs richer ── */
+	.db-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+		gap: 1.5rem;
+	}
+	.db-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.35rem 0;
+		font-size: var(--fs-lg);
+	}
+	.db-key {
+		width: 3.6rem;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	.db-value {
+		color: var(--db);
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+	}
+	.db-mark {
+		display: inline-flex;
+		margin-left: auto;
+		color: var(--db);
+	}
+
 	/* ── the paper-blue comparison: the real toast's paper look, static ── */
 	.pb-grid {
 		display: grid;

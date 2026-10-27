@@ -120,11 +120,12 @@
 	   BuffDetailRows (#90b4d0, oklch .753 .056 242), and ⚓ Nate asked for a
 	   little more saturation (2026-10-27, chroma .056 → .080), and ↻ the same day
 	   picked the toast lab's paper blue, so both rungs now sit at ITS hue (244°;
-	   the move from 242° is invisible). Still a quiet blue, about half of
+	   the move from 242° is invisible), and the dark rung took the same chroma
+	   lift the paper one had (.080 → .097, "subtle, but nice"). Still a quiet blue, about half of
 	   hydro's chroma (.153), so it stays clear of the element (see --ui-info).
 	   700 is the same hue carried down for paper, the way --gold-700 carries
 	   the accent. */
-	--blue-400: #83b5df; /* --ui-info on night, slate and glass — oklch .754 .080 244 */
+	--blue-400: #79b6e9; /* --ui-info on night, slate and glass — oklch .754 .097 244 */
 	--blue-700: #3682bb; /* --ui-info on paper — oklch .585 .115 244 */
 
 	/* ══ L1 · COMPOSITING ══════════════════════════════════════════════════════
@@ -918,7 +919,7 @@
 	   no consequence attached, the value in a buff tooltip. ↻ This reopens the
 	   "WE HAVE NO FREE BLUE" ruling above for one rung, by chroma rather than
 	   hue: --blue-400 is C .080, about half of hydro's (.153), so it reads as a
-	   quiet blue beside the elements rather than as one. 5.65 to 1 on slate. */
+	   quiet blue beside the elements rather than as one. 5.67 to 1 on slate. */
 	--ui-info: var(--blue-400);
 	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
 	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);

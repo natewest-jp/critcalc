@@ -1109,7 +1109,7 @@
 			<br />↻ <strong>2026-10-27: <code>--ui-info</code>, neutral information</strong> (⚓ Nate): a
 			fact stated with no consequence attached, the values in a buff tooltip. It is the one blue,
 			and it gets away with it by chroma: a quiet blue (<code>--blue-400</code>,
-			<code>#83b5df</code>, C .080, about half of hydro's) reads as a blue beside the elements
+			<code>#79b6e9</code>, C .097, well under hydro's .153) reads as a blue beside the elements
 			rather than as one. On paper it is a mark like the others (<code>--blue-700</code>,
 			<code>#3682bb</code>, 3.31:1 on <code>--surface</code>), at the family's lightness, so an info
 			toast's stripe sits beside its siblings (↻ ⚓ Nate 2026-10-27: it was first a darker,
