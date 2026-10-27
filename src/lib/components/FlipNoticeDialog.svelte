@@ -29,6 +29,7 @@
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
 	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { belowQuery, SHORT_QUERY } from '$lib/breakpoints';
@@ -72,14 +73,17 @@
 	/** The furthest page reached: its clip and the next one's may load. */
 	let reached = $state(0);
 
-	/** Decided at mount and held: the dialog is short-lived, and a form that
-	 *  swapped under a resize would lose the reader's page. SSR and the first
-	 *  paint take the desktop form (the dialog is client-raised anyway). */
-	let phone = $state(false);
+	/** Decided once and held: the dialog is short-lived, and a form that
+	 *  swapped under a resize would lose the reader's page. ⚠ Decided at
+	 *  INIT, not in onMount: the dialog is client-raised, and a first render
+	 *  in the desktop form had a phone fetch two clips and four stills it
+	 *  never shows (~640 KB). */
+	let phone = $state(
+		browser &&
+			(window.matchMedia(belowQuery('compact')).matches || window.matchMedia(SHORT_QUERY).matches)
+	);
 	let still = $state(false);
 	onMount(() => {
-		phone =
-			window.matchMedia(belowQuery('compact')).matches || window.matchMedia(SHORT_QUERY).matches;
 		still = motion(1) === 0;
 	});
 
