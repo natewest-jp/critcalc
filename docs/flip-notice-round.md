@@ -36,12 +36,12 @@ ffmpeg -i assets-src/whats-new/<name>.mov -vf "select=eq(n\,<frame>)" -frames:v 
   -c:v libwebp -quality 85 static/assets/whats-new/<name>.webp
 ```
 
-| Clip | Length | MP4 | SSIM to master | Still |
-| --- | --- | --- | --- | --- |
-| `flip-save-v1` | 6.0s | 160 KB | 0.9961 | frame 110, "Saved" |
-| `flip-notabs-v1` | 7.0s | 336 KB | 0.9956 | frame 69, the Library under the Planner door |
-| `flip-teams-v1` | 8.0s | 425 KB | 0.9953 | frame 140, the Teams grid |
-| `flip-theorycraft-v1` | 6.0s | 219 KB | 0.9951 | frame 105, the profile menu |
+| Clip                  | Length | MP4    | SSIM to master | Still                                        |
+| --------------------- | ------ | ------ | -------------- | -------------------------------------------- |
+| `flip-save-v1`        | 6.0s   | 160 KB | 0.9961         | frame 110, "Saved"                           |
+| `flip-notabs-v1`      | 7.0s   | 336 KB | 0.9956         | frame 69, the Library under the Planner door |
+| `flip-teams-v1`       | 8.0s   | 425 KB | 0.9953         | frame 140, the Teams grid                    |
+| `flip-theorycraft-v1` | 6.0s   | 219 KB | 0.9951         | frame 105, the profile menu                  |
 
 Checks per master: `ffprobe` (size, tags, frame count), `blackdetect`, first vs last frame for the loop, a 3×3 contact sheet to pick the still.
 
