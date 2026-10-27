@@ -1042,11 +1042,14 @@
 		color: var(--muted);
 	}
 	/* The global .field's look; local is only what fits it into the row: its
-	   width, and a tighter padding so a row does not grow while you rename. */
+	   width, a tighter padding so a row does not grow while you rename, and
+	   the label's own size (--fs-lg, ⚓ Nate 2026-10-27: the field's --fs-xl
+	   read too large in place of the name it edits). */
 	.rename {
 		min-width: 0;
 		width: min(24rem, 100%);
 		padding: 0.15rem 0.4rem;
+		font-size: var(--fs-lg);
 	}
 	.row-meta {
 		display: flex;
