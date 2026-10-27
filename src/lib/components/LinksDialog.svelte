@@ -86,7 +86,7 @@
 	.note {
 		margin: 0 0 0.6rem;
 		font-size: var(--fs-md);
-		line-height: 1.5;
+		line-height: var(--lh-normal);
 	}
 	.note--quiet {
 		color: var(--muted);
