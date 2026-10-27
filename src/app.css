@@ -4397,7 +4397,7 @@ img {
 }
 
 /* ── The row: NAME · CONTROL · NOTE ──
-   🎛️ 12rem holds the longest name ("Use the new layout") on one line;
+   🎛️ 12rem holds the longest name ("Clear profile data") on one line;
    22rem holds the widest control (Sound's three choices + Preview). The
    note takes what is left up to the reading margin's 28rem. The columns
    are FIXED, not content-sized, so every row's control starts on the

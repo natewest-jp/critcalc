@@ -345,23 +345,6 @@
      names, so a group is a question (Appearance, Planner…), never a kind of
      control. -->
 <div class="sp">
-	<!-- The switch (build plan §13.1): shown ONLY while it is on, so the
-	     public never meets a half-built option; `?next` turns it on. -->
-	{#if $nextLayout}
-		<section class="sp-section">
-			<label class="sp-row">
-				<span class="sp-name">Use the new layout</span>
-				<span class="sp-ctl">
-					<span class="toggle">
-						<input type="checkbox" checked onchange={() => nextLayout.set(false)} />
-						<span class="toggle-track"><span class="toggle-thumb"></span></span>
-						<span class="toggle-label">On</span>
-					</span>
-				</span>
-			</label>
-		</section>
-	{/if}
-
 	<section class="sp-section" id="settings-appearance">
 		<h2 class="kicker sp-section-title">Appearance</h2>
 

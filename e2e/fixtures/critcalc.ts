@@ -92,10 +92,41 @@ type Fixtures = {
 	consoleErrors: string[];
 	/** Set true in a test that intentionally provokes an error. */
 	allowConsoleErrors: boolean;
+	/** Holds every test on the OLD layout (see the fixture). */
+	oldLayout: void;
 };
+
+/** The switch's key (`src/lib/nextLayout.ts`): absent is the new layout. */
+const NEXT_LAYOUT_KEY = 'critcalc:nextLayout';
 
 export const test = base.extend<Fixtures>({
 	allowConsoleErrors: [false, { option: true }],
+
+	/**
+	 * ⚓ THE FLIP (2026-10-27) made the new layout the default, and every spec
+	 * here was written against the old one. Storing `'0'` keeps the suite on
+	 * the old layout, where it still guards the code the two share; the new
+	 * layout is covered by vitest until a smoke spec is approved.
+	 *
+	 * ⚠ `auto: true` so it applies to every test, seeded or not. ⚠ Same rule
+	 * as `seed`: fill the key only when it is ABSENT, never overwrite. The
+	 * script re-runs on every navigation, so a test that clears storage gets
+	 * the old layout back on its next load instead of a silent switch.
+	 */
+	oldLayout: [
+		async ({ page }, use) => {
+			await page.addInitScript((key: string) => {
+				// try: the teardown's `about:blank` has no storage to touch.
+				try {
+					if (localStorage.getItem(key) === null) localStorage.setItem(key, '0');
+				} catch {
+					/* no storage on this document */
+				}
+			}, NEXT_LAYOUT_KEY);
+			await use();
+		},
+		{ auto: true }
+	],
 
 	seed: async ({ page }, use) => {
 		await use(async (state: SeedState) => {

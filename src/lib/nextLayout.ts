@@ -1,23 +1,26 @@
 /**
  * The switch (build plan §13.1): everything the profiles-and-surfaces design
- * builds lands on `main` behind it, OFF by default, so users see nothing
- * until it becomes the default in one release.
+ * built landed on `main` behind it, and since the flip (2026-10-27) it is ON
+ * by default. The old layout survives only as the switch's OFF state.
  *
- * - `?next` turns it on for this browser and `?next=0` turns it off, so a
- *   tester can be handed it as a link. It persists until turned off.
- * - Settings shows a "Use the new layout" toggle ONLY while it is on, so the
- *   public never meets a half-built option, and whoever turned it on can turn
- *   it off without editing a URL.
+ * - The default is the absence of the key, so a visitor carries nothing.
+ *   Only a stored `'0'` turns it off. Nothing in the UI writes one: it is
+ *   kept for the e2e suite (`e2e/fixtures/critcalc.ts` seeds it) and for
+ *   `?next=0` in dev.
+ * - `?next` / `?next=0` are read in DEV ONLY. A link must not be able to
+ *   hand the public the old layout.
  *
  * ⚠ Its own key, deliberately not in `siteSettings`: it is a tester's switch,
  * not the player's data, so a backup must not carry it to another browser.
+ * ⚠ `stores.ts` `underSwitch()` reads the same key raw (an import here would
+ * be circular), so the two tests must change together.
  *
- * Phase 1: on, the site migrates its storage into IndexedDB (copy-only) and
- * changes nothing else.
+ * On, the site migrates its storage into IndexedDB (copy-only) and renders
+ * the new layout; without usable IndexedDB the switch reads as off.
  */
 
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { browser, dev } from '$app/environment';
 import { safeRemoveItem, safeSetItem } from '$lib/stores';
 import { storageUsable } from '$lib/storageUsable';
 
@@ -28,7 +31,7 @@ const KEY = 'critcalc:nextLayout';
 function read(): boolean {
 	if (!browser) return false;
 	try {
-		return localStorage.getItem(KEY) === '1';
+		return localStorage.getItem(KEY) !== '0';
 	} catch {
 		return false;
 	}
@@ -37,11 +40,12 @@ function read(): boolean {
 function createSwitch() {
 	const store = writable(read() && storageUsable());
 	const set = (on: boolean) => {
-		if (on) safeSetItem(KEY, '1');
-		else safeRemoveItem(KEY);
+		if (on) safeRemoveItem(KEY);
+		else safeSetItem(KEY, '0');
 		store.set(on && storageUsable());
 	};
 	const fromUrl = (url: URL) => {
+		if (!dev) return;
 		if (!url.searchParams.has('next')) return;
 		set(url.searchParams.get('next') !== '0');
 	};
@@ -52,7 +56,7 @@ function createSwitch() {
 	return {
 		subscribe: store.subscribe,
 		set,
-		/** Read `?next` / `?next=0` off an address; anything else leaves it. */
+		/** Dev only: read `?next` / `?next=0` off an address; anything else leaves it. */
 		fromUrl
 	};
 }
