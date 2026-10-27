@@ -2360,13 +2360,16 @@
 						<code>--fs-sm</code>, and every notice has a home at every width.
 					</li>
 					<li>
-						<strong>Materials as shipped</strong> (⚓ Nate: "parchment is really noticeable"): a
-						routine toast is glass (<code>--glass-plate</code>); an error toast is paper with a 4px
-						danger stripe and stays until dismissed; a banner is paper with a severity stripe; the
-						confirm dialog is paper. Corners <code>--r-md</code>. The timer is a ring round the ✕,
-						and the ✕'s hover is that ring's circle. The toast has no backdrop blur: it had one, and
-						it went because the toast's slate is opaque enough that the blur could not be seen (⚓
-						Nate 2026-10-27; sweep 2.2). The rule against backdrop blur stands.
+						<strong>Materials as shipped</strong> (⚓ Nate: "parchment is really noticeable"): ↻
+						every toast is paper (⚓ Nate 2026-10-27, from the <code>/lab/toast-attention</code>
+						blind test: a glass toast could come and go unseen), its kind a mark and a 4px left
+						stripe in the state colour; an error also stays until dismissed. A banner is paper with
+						a severity stripe; the confirm dialog is paper. Corners <code>--r-md</code>. The timer
+						is a ring round the ✕, and the ✕'s hover is that ring's circle. A toast arrives on the
+						shared rise (<code>riseIn</code>: 30px, quartOut 300ms, rounded to whole pixels, a
+						linear 150ms fade), as does the Roster's keys bar, which floats on
+						<code>--surface-float</code>. No backdrop blur: the rule stands, and the toast's old one
+						could not be seen (sweep 2.2).
 						<em>Open</em>: paper notices beside an instrument's one paper card (2.4), and the
 						literal ring and hover colours (1.5).
 					</li>
