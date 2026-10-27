@@ -30,6 +30,13 @@
   <url><loc>https://critcalc.app/contribute</loc><priority>0.5</priority></url>
   <url><loc>https://critcalc.app/beta</loc><priority>0.3</priority></url>
   <url><loc>https://critcalc.app/library</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/library/rotations</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/library/lineups</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/teams</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/roster</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/profile</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/profile/new</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/trash</loc><priority>0.3</priority></url>
   <url><loc>https://critcalc.app/privacy</loc><priority>0.3</priority></url>
   <url><loc>https://critcalc.app/settings</loc><priority>0.3</priority></url>
 </urlset>
