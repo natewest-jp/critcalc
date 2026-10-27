@@ -896,7 +896,7 @@
 			color-mix(in srgb, var(--wash) var(--wash-peak), transparent),
 			transparent
 		);
-		animation: wash-out var(--wash-ms) ease-out both;
+		animation: wash-out var(--wash-ms) linear both;
 	}
 	@keyframes wash-out {
 		from {
@@ -916,7 +916,7 @@
 		color: var(--chrome);
 		text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
 		pointer-events: none;
-		animation: wash-out var(--cue-ms) ease-in both;
+		animation: wash-out var(--cue-ms) linear both;
 	}
 
 	/* ── Phone form (design §5.2) ── */
