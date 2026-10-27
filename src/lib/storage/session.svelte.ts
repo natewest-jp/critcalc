@@ -1922,9 +1922,11 @@ class StorageSession {
 		const back = await this.#revive(db, store, id, now);
 		if (typeof back === 'object') {
 			// Said even for an Undo: a silent one reads as a broken button.
-			// TODO(copy): PLACEHOLDER wording, awaiting Nate.
 			const twin = back.clash.name || rotationLabel(back.clash.slots);
-			notices.toast('warning', `Already a team as “${twin}”, so this one stayed in the Trash`);
+			notices.toast(
+				'warning',
+				`“${twin}” already has these four, so this team stayed in the Trash`
+			);
 			return false;
 		}
 		if (!back) return false;
