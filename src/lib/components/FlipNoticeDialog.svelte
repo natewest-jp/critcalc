@@ -56,7 +56,8 @@
 		},
 		{
 			title: 'Save teams directly',
-			body: 'Teams is its own section now, where you can set up teams ahead of time, like Genshin’s Party Setup.'
+			body: 'Teams is its own section now, where you can set up teams ahead of time, like Genshin’s Party Setup.',
+			clip: 'flip-teams-v1'
 		},
 		{
 			title: 'Shared links open in Theorycraft',
