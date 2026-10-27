@@ -32,7 +32,14 @@ import {
 	slotsFromNotation,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
-import { notices, heldKey, announceAfterReload, type NoticeKind } from '$lib/notices.svelte';
+import {
+	notices,
+	heldKey,
+	announceAfterReload,
+	named,
+	type NoticeKind,
+	type NoticeText
+} from '$lib/notices.svelte';
 import { colourValue, isReservedName, pictureUrl } from '$lib/profileLook';
 import { get as readStore } from 'svelte/store';
 import { ensureStorage, reopenStorage } from './boot';
@@ -641,7 +648,9 @@ class StorageSession {
 			const name = rec.name ?? this.#derived.get(id);
 			notices.toast(
 				'info',
-				`${name ? `“${name}”` : `This ${rec.type}`} was deleted in another tab, so this tab moved on`
+				name
+					? named`${name} was deleted in another tab, so this tab moved on`
+					: `This ${rec.type} was deleted in another tab, so this tab moved on`
 			);
 		}
 	}
@@ -934,7 +943,7 @@ class StorageSession {
 		if (p.deleted)
 			return void this.switchTo(THEORYCRAFT_ID, () => ({
 				kind: 'warning',
-				text: `${p.name} was deleted in another tab, so this tab is in Theorycraft now`
+				text: named`${p.name} was deleted in another tab, so this tab is in Theorycraft now`
 			}));
 		this.#useProfile(p);
 	}
@@ -1338,7 +1347,7 @@ class StorageSession {
 		await this.open(copy.id);
 		// ↻ EVERY routed copy says so (notices round, 2026-10-26; was the first
 		// only): each one puts a different document in front of the person.
-		notices.toast('info', `Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
+		notices.toast('info', named`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
 	}
 
 	/** Compare → Duplicate and compare: a copy beside the original, where the
@@ -1406,15 +1415,20 @@ class StorageSession {
 			if (self) this.#plannerContext(self);
 			else this.plannerPair = null;
 		}
-		const where =
+		const owner = this.profiles.find((p) => p.id === awayProfile)?.name;
+		const where: NoticeText =
 			awayProfile === this.profile?.id
-				? 'the Library'
+				? ['the Library']
 				: awayProfile === THEORYCRAFT_ID
-					? 'Theorycraft’s Library'
-					: `${this.profiles.find((p) => p.id === awayProfile)?.name ?? 'its profile'}’s Library`;
+					? ['Theorycraft’s Library']
+					: owner
+						? named`${owner}’s Library`
+						: ['its profile’s Library'];
 		notices.toast(
 			'info',
-			`Comparison closed · ${awayLabel || 'the other rotation'} is in ${where}`
+			awayLabel
+				? named`Comparison closed · ${awayLabel} is in ${where}`
+				: named`Comparison closed · the other rotation is in ${where}`
 		);
 	}
 
@@ -1823,7 +1837,7 @@ class StorageSession {
 			p.current[tool] === id ? { ...p, current: { ...p.current, [tool]: null } } : p
 		);
 		this.version++;
-		await this.switchTo(profileId, (p) => ({ kind: 'success', text: `Moved to ${p.name}` }));
+		await this.switchTo(profileId, (p) => ({ kind: 'success', text: named`Moved to ${p.name}` }));
 		await this.open(id);
 	}
 
@@ -1866,7 +1880,7 @@ class StorageSession {
 		await put(db, 'profiles', $state.snapshot(rec) as ProfileRecord);
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id: rec.id });
 		await this.#loadProfiles();
-		await this.switchTo(rec.id, (p) => ({ kind: 'success', text: `Added ${p.name}` }));
+		await this.switchTo(rec.id, (p) => ({ kind: 'success', text: named`Added ${p.name}` }));
 		return true;
 	}
 
@@ -1912,7 +1926,9 @@ class StorageSession {
 		await this.#loadProfiles();
 		notices.toast(
 			'success',
-			wasActive ? `Moved ${name} to Trash. You’re in Theorycraft now.` : `Moved ${name} to Trash`,
+			wasActive
+				? named`Moved ${name} to Trash. You’re in Theorycraft now.`
+				: named`Moved ${name} to Trash`,
 			{
 				...toastLook(gone),
 				actions: [
@@ -1986,14 +2002,14 @@ class StorageSession {
 			const twin = back.clash.name || rotationLabel(back.clash.slots);
 			notices.toast(
 				'warning',
-				`“${twin}” already has these four, so this team stayed in the Trash`
+				named`${twin} already has these four, so this team stayed in the Trash`
 			);
 			return false;
 		}
 		if (!back) return false;
 		if (say) {
 			const p = this.profiles.find((x) => x.id === rec.profileId);
-			if (p) notices.toast('success', `Restored to ${p.name}`, toastLook(p));
+			if (p) notices.toast('success', named`Restored to ${p.name}`, toastLook(p));
 		}
 		return true;
 	}
@@ -2049,7 +2065,7 @@ class StorageSession {
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id });
 		await this.#loadProfiles();
 		this.version++;
-		if (say) notices.toast('success', `Restored ${p.name}`, toastLook(p));
+		if (say) notices.toast('success', named`Restored ${p.name}`, toastLook(p));
 		return true;
 	}
 
@@ -2085,7 +2101,7 @@ class StorageSession {
 	 */
 	async switchTo(
 		id: string,
-		say?: ((p: ProfileRecord) => { kind: NoticeKind; text: string }) | null
+		say?: ((p: ProfileRecord) => { kind: NoticeKind; text: NoticeText }) | null
 	): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === this.profile?.id) return;
@@ -2108,7 +2124,7 @@ class StorageSession {
 		this.version++;
 		this.switchedAt = Date.now();
 		if (say !== null) {
-			const { kind, text } = say?.(next) ?? { kind: 'info', text: `Switched to ${next.name}` };
+			const { kind, text } = say?.(next) ?? { kind: 'info', text: named`Switched to ${next.name}` };
 			notices.toast(kind, text, toastLook(next));
 		}
 	}

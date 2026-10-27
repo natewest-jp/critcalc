@@ -18,7 +18,7 @@
 	import { get } from 'svelte/store';
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
 	import { menu } from '$lib/menuState.svelte';
-	import { notices } from '$lib/notices.svelte';
+	import { notices, named } from '$lib/notices.svelte';
 	import { storageSession } from '$lib/storage/session.svelte';
 	import { pictureOf, type Picture, type ProfileColour, type Twin } from '$lib/storage/records';
 	import { PROFILE_PICTURES } from '$lib/profilePictures.generated';
@@ -239,7 +239,7 @@
 		if (c.lineups) await storageSession.removeAll('lineup');
 		if (c.teams) await storageSession.removeAllTeams();
 		for (const k of Object.keys(toClear) as Clearable[]) toClear[k] = false;
-		notices.toast('success', `Cleared ${target.name}’s data`);
+		notices.toast('success', named`Cleared ${target.name}’s data`);
 	}
 
 	// ── Delete, asked as a DIALOG (notices §3.4) ────────────────────────────

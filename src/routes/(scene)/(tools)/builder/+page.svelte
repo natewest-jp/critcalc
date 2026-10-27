@@ -31,7 +31,7 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
-	import { notices, type NoticeAction } from '$lib/notices.svelte';
+	import { notices, named, type NoticeAction, type NoticeText } from '$lib/notices.svelte';
 	import { ControlAnswer, sayOutcome } from '$lib/controlAnswer.svelte';
 	import { INVALID_SHARE_LINK, NO_TEAM_IN_LINK } from '$lib/storage/arrivals';
 	import {
@@ -428,9 +428,13 @@
 		const i = slotOfCharacter(from.slots, id);
 		const left = from.slots[i] ?? id;
 		boards.setSlot(boardId, from.id, i, null);
-		notices.toast('success', `${nameOf(left)} left ${teamLabel(board, indexOfTeam(from.id))}`, {
-			actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
-		});
+		notices.toast(
+			'success',
+			named`${[nameOf(left)]} left ${teamLabel(board, indexOfTeam(from.id))}`,
+			{
+				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
+			}
+		);
 	}
 
 	/** The Lineup's Clear (2026-10-20): every team emptied in one press,
@@ -457,7 +461,7 @@
 		const label = teamLabel(board, i);
 		boards.removeTeam(boardId, teamId);
 		if (team.slots.some((x) => x !== null))
-			notices.toast('success', `Removed ${label}`, {
+			notices.toast('success', named`Removed ${label}`, {
 				actions: [{ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) }]
 			});
 	}
@@ -676,7 +680,11 @@
 		const pin = pinnedRotation(team, bank);
 		const left = boards.setSlot(boardId, team.id, s.slot, id);
 		const name = nameOf(id);
-		const from = left.length ? ` (from ${teamLabel(board, indexOfTeam(left[0]))})` : '';
+		// Plain words (a NoticeText), the team's label in it a name.
+		const from: NoticeText = left.length
+			? named` (from ${teamLabel(board, indexOfTeam(left[0]))})`
+			: [];
+		const who: NoticeText = [`${name} replaced ${nameOf(incumbent)}`];
 		const actions: NoticeAction[] = [];
 		if (pin)
 			actions.push({
@@ -689,9 +697,7 @@
 		actions.push({ label: 'Undo', run: () => boards.restoreTeams(boardId, snapshot) });
 		notices.toast(
 			'success',
-			pin
-				? `${name} replaced ${nameOf(incumbent)}${from}. “${pin.name}” is no longer pinned.`
-				: `${name} replaced ${nameOf(incumbent)}${from}`,
+			pin ? named`${who}${from}. ${pin.name} is no longer pinned.` : named`${who}${from}`,
 			{ actions }
 		);
 		if (tabbed) tab = 'lineup';

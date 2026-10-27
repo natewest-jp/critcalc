@@ -15,7 +15,7 @@
  * document. Band B is each tool's own business.
  */
 
-import { notices, type NoticeAction } from './notices.svelte';
+import { notices, named, type NoticeAction } from './notices.svelte';
 import type { Outcome } from './controlAnswer.svelte';
 import { fromStore, get } from 'svelte/store';
 import { linksIntro, moveRequest, MOVE_TO_PROFILE } from './moveRequest.svelte';
@@ -403,7 +403,7 @@ class DocumentBarState {
 			);
 			if (twin) {
 				this.#link(twin.id, twin.name);
-				notices.toast('info', `Already saved as “${twin.name}”`);
+				notices.toast('info', named`Already saved as ${twin.name}`);
 				return;
 			}
 			this.#link(savedNotations.save(payload), activeTab.label);

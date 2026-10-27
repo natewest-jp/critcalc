@@ -5875,7 +5875,10 @@
 		pointer-events: none;
 	}
 	.rp-composer--pinned .rp-composer-body::before {
-		background-color: var(--surface-raised);
+		/* ↻ 2026-10-27 (⚓ Nate): --surface, the bench's own slate (was
+		   --surface-raised, a stop lighter), so the two plates on the tool
+		   are one material; the field's well sits a stop under it. */
+		background-color: var(--surface);
 	}
 	/* ↻ 2026-10-27 (⚓ Nate): pinned, the field is a WELL in the plate — the
 	   chart's own ground. Its at-rest fill (--fill-rest, 13% chrome) is tuned to
@@ -5943,14 +5946,24 @@
 		height: calc(13px * 1.6 + 20px);
 	}
 	/* ↻ 2026-10-27 (⚓ Nate, "a little slim"): with Clear the pair is two
-	   ordinary small buttons tall, a few px past a one-line box. The body tops
-	   the field to them (below) so the two still share a top edge. */
+	   ordinary small buttons tall, and an empty or one-line field is exactly
+	   that tall too (its line centred by the padding below), growing from
+	   there. The body tops the two, so they share a top edge as it grows. */
 	.rp-history--clear {
 		grid-template-rows: 24px 24px;
 		height: auto;
 	}
 	.rp-composer-body:has(.rp-history--clear) {
 		align-items: flex-start;
+	}
+	/* The stack's 50px (24 + 2 + 24), less the editor's 13px × 1.6 line,
+	   split above and below. The pre-load stand-in follows, or the swap-in
+	   jumps. ⛔ Not in the dock, which keeps the phone's tighter box. */
+	.rp-composer:not(.rp-composer--docked)
+		.rp-composer-body:has(.rp-history--clear)
+		.rp-notation
+		:global(:is(.cm-content, .rp-notation-placeholder)) {
+		padding-block: calc((50px - 13px * 1.6) / 2);
 	}
 	/* ↻ 2026-10-27 (⚓ Nate): with Clear, three stacked in one line's height
 	   were ~13px each. Undo and Redo side by side, Clear spanning both under
