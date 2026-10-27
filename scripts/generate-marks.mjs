@@ -265,6 +265,9 @@ const MARKS = {
 	/** `forward` slimmed, for the Builder's vertical Planner plate on a phone
 	 *  (2026-10-20, ⚓ Nate): the arrow's shaft cost width the lineup wanted. */
 	forwardSlim: 'ChevronRight',
+	/** `back` slimmed, for the phone's "Menu" way back on the full-screen menu
+	 *  (2026-10-27): it was a unicode ‹, and a mark is geometry. */
+	backSlim: 'ChevronLeft',
 
 	/** The planner's Human timing plate (2026-09-14): a person's hand on the
 	 *  button. Chosen over `Pointer` (sparser ink), `PersonStanding` (reads as
