@@ -150,7 +150,7 @@
 		max-height: calc(100svh - 5rem);
 		display: flex;
 		flex-direction: column;
-		border-radius: var(--r-lg, 6px);
+		border-radius: var(--r-md);
 		background: var(--surface);
 		color: var(--text);
 		overflow: hidden;
