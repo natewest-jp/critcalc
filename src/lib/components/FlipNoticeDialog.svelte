@@ -47,22 +47,22 @@
 	const PAGES: Page[] = [
 		{
 			title: 'No more Save buttons',
-			body: 'Your work saves itself as you go, and the top bar shows Saved once it has.',
+			body: 'Your work saves itself as you go. The top bar shows every time it saves.',
 			clip: 'flip-save-v1'
 		},
 		{
 			title: 'No more tabs',
-			body: 'Each tool holds one rotation or lineup at a time. Its name in the top bar opens the Library, where the others are.',
+			body: 'Each tool holds one rotation or lineup at a time. Its name in the top bar opens the full Library.',
 			clip: 'flip-notabs-v1'
 		},
 		{
 			title: 'Set up teams ahead of time',
-			body: 'Teams, the two figures in the top bar, holds the teams you make, like Genshin’s Party Setup. Each one can start a rotation or a lineup.',
+			body: 'Teams, the two figures in the top bar, lets you make team presets, like Genshin’s Party Setup.',
 			clip: 'flip-teams-v1'
 		},
 		{
 			title: 'Shared links open in Theorycraft',
-			body: 'Theorycraft is a profile with no roster: Every character is there at every level. Shared links open there so your own profiles stay as you left them, and you can switch to it from your picture in the top bar.',
+			body: 'Theorycraft is a built-in profile with no roster. It’s the place to explore ideas that don’t fit your profiles. Shared links open there so your own profiles stay as you left them.',
 			clip: 'flip-theorycraft-v1'
 		}
 	];
