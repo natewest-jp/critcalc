@@ -35,6 +35,30 @@
 	<h2 id="2026-10">October 2026</h2>
 
 	<div class="timeline">
+		<!-- ⏭ Ships with the flip (copy pass 2026-10-27): date it the day it goes live. -->
+		<article class="entry">
+			<header class="entry-head">
+				<h3>Profiles, and a new layout</h3>
+				<time class="entry-date" datetime="2026-10-27">October 27</time>
+			</header>
+			<p>
+				critcalc now keeps your work in profiles, so you can plan for separate Genshin accounts. A
+				profile holds its own roster, teams, and library of rotations and lineups.
+			</p>
+			<p>
+				Shared links open in Theorycraft, a built-in profile with no roster for exploring ideas
+				outside your own profiles.
+			</p>
+			<p>
+				Tools now work with one rotation or lineup at a time. However, the rotation planner has a
+				<strong>Compare</strong> button beside the bench, so you can flip between two ideas quickly.
+			</p>
+			<p>
+				Work saves itself as you go, and anything you delete stays in the Trash for 30 days. If you
+				used the site before, everything you had is in a new profile called My profile.
+			</p>
+		</article>
+
 		<article class="entry">
 			<header class="entry-head">
 				<h3>A team you open stays on the bench</h3>

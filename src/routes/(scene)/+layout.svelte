@@ -12,6 +12,9 @@
 	import type MenuStateT from '$lib/components/MenuState.svelte';
 	import type MoveDialogT from '$lib/components/MoveDialog.svelte';
 	import type LinksDialogT from '$lib/components/LinksDialog.svelte';
+	import type FlipNoticeDialogT from '$lib/components/FlipNoticeDialog.svelte';
+	import { flipNotice, raiseFlipNotice } from '$lib/flipNotice.svelte';
+	import { dev } from '$app/environment';
 	import { menu, rememberSurface } from '$lib/menuState.svelte';
 	import { resolve } from '$app/paths';
 	import { linksIntro, moveRequest } from '$lib/moveRequest.svelte';
@@ -115,6 +118,39 @@
 	$effect(() => {
 		if (linksIntro.open && !LinksDialogC)
 			void import('$lib/components/LinksDialog.svelte').then((m) => (LinksDialogC = m.default));
+	});
+
+	/** The once-only returning-visitor dialog (flip-readiness §1 item 4),
+	 *  loaded on first use. While it is open it holds the links dialog below
+	 *  and the migration toast (the session waits on `afterFlipNotice`). */
+	let FlipNoticeDialogC = $state<typeof FlipNoticeDialogT | null>(null);
+	$effect(() => {
+		if (flipNotice.open && !FlipNoticeDialogC)
+			void import('$lib/components/FlipNoticeDialog.svelte').then(
+				(m) => (FlipNoticeDialogC = m.default)
+			);
+	});
+	onMount(() => {
+		// Dev: `?flipNotice` shows it on any page without touching the stored
+		// flag, for testers whose browser migrated before the dialog existed.
+		if (dev && page.url.searchParams.has('flipNotice')) {
+			raiseFlipNotice();
+			return;
+		}
+		if (!nextOn) return;
+		// ⚓ The SCENE layout, not the tools one, so it shows on the landing
+		// too; the root layout has already started the open (memoized).
+		void (async () => {
+			const [{ ensureStorage }, { getMeta, setMeta }] = await Promise.all([
+				import('$lib/storage/boot'),
+				import('$lib/storage/db')
+			]);
+			const db = await ensureStorage();
+			if (!db || !(await getMeta(db)).flipNotice) return;
+			// Cleared once answered, as `backupOffer` is (marked seen only after
+			// it was shown).
+			raiseFlipNotice(() => void setMeta(db, { flipNotice: false }));
+		})();
 	});
 
 	// A restore says so once the page is back (notices round).
@@ -377,7 +413,9 @@
 		{#if MoveDialogC && moveRequest.id}{#key moveRequest.id}<MoveDialogC
 					id={moveRequest.id}
 				/>{/key}{/if}
-		{#if LinksDialogC && linksIntro.open}<LinksDialogC />{/if}
+		{#if FlipNoticeDialogC && flipNotice.open}<FlipNoticeDialogC />{/if}
+		<!-- Held behind the returning-visitor dialog: one notice at a time. -->
+		{#if LinksDialogC && linksIntro.open && !flipNotice.open}<LinksDialogC />{/if}
 		<!-- Toasts and dialogs (notices §3.2, §3.4): one home on every surface. -->
 		<NoticeRegion />
 	</div>

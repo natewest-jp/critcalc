@@ -7,11 +7,33 @@
  * a backup file meets. Nothing in `localStorage` is written or removed.
  */
 
-import { buildEnvelope, parseBackup } from '$lib/utils/settingsBackup';
+import { BACKUP_KEYS, buildEnvelope, parseBackup } from '$lib/utils/settingsBackup';
 import { getMeta, openDb, writeMigration } from './db';
 import { replayJournals } from './journal';
 import { migrate } from './migrate';
 import { newId } from './records';
+
+/**
+ * ⚓ The returning-visitor signal (flip-readiness §1 item 4): did this browser
+ * use the site before the redesign? Any backup key present RAW counts —
+ * ⛔ never `parseBackup(...).ok`, since a sanitizer dropping (say) one empty
+ * tab would read a real visitor as new. Catches anyone who opened the Planner
+ * or Builder (the old tools layout writes `rotationTabs` on any visit); misses
+ * a visitor who only saw the landing, About, Help or Visualizers, accepted.
+ * ⛔ `vizWorkspace` never counts: the Visualizers page saves its layout on
+ * LOAD, outside the switch, and its onMount runs before the root layout's
+ * boot — so a brand-new visitor landing there would read as returning.
+ */
+const NOT_A_SIGNAL: ReadonlySet<string> = new Set(['critcalc:vizWorkspace']);
+
+export function hadLegacyData(storage: Pick<Storage, 'getItem'>): boolean {
+	try {
+		return BACKUP_KEYS.some((k) => !NOT_A_SIGNAL.has(k) && storage.getItem(k) != null);
+	} catch {
+		// Blocked site data: nothing could have been stored either.
+		return false;
+	}
+}
 
 let opening: Promise<IDBDatabase | null> | undefined;
 
@@ -49,7 +71,9 @@ async function open(): Promise<IDBDatabase | null> {
 			const parsed = parseBackup(JSON.stringify(buildEnvelope(now)), now);
 			// An empty browser is `ok: false` ("no recognizable data"): Theorycraft alone.
 			const data = parsed.ok ? parsed.data : {};
-			await writeMigration(db, migrate(data, { now, newId }), now);
+			await writeMigration(db, migrate(data, { now, newId }), now, {
+				flipNotice: hadLegacyData(localStorage)
+			});
 		}
 		// What a page that unloaded mid-save had not written yet (journal.ts).
 		await replayJournals(db);

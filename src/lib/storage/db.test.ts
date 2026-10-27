@@ -52,6 +52,16 @@ describe('storage', () => {
 		});
 	});
 
+	it('records the returning-visitor dialog only when asked to', async () => {
+		await writeMigration(db, sample(), NOW, { flipNotice: true });
+		expect((await getMeta(db)).flipNotice).toBe(true);
+		await setMeta(db, { flipNotice: false });
+		expect((await getMeta(db)).flipNotice).toBe(false);
+		const other = await openDb(new IDBFactory());
+		await writeMigration(other, sample(), NOW);
+		expect(await getMeta(other)).not.toHaveProperty('flipNotice');
+	});
+
 	it('a second migration writes NOTHING (two tabs opening at once)', async () => {
 		await writeMigration(db, sample(), NOW);
 		let n = 100;

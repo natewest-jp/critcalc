@@ -38,6 +38,10 @@ export type Meta = {
 	 *  a backup once, then clears this (§13.1, ⚓ Nate 2026-10-23: a notice
 	 *  AFTER the copy, never a prompt blocking it). */
 	backupOffer?: boolean;
+	/** The browser held the OLD layout's data at the migration: the first
+	 *  page shows the returning-visitor dialog once, then clears this
+	 *  (flip-readiness §1 item 4; decided by `boot.ts` `hadLegacyData`). */
+	flipNotice?: boolean;
 	/** ⚓ The real profile a shared link left (Nate 2026-10-27, flip-readiness
 	 *  §3): the next NEW tab opens back in it. Cleared by that return and by
 	 *  any switch the visitor makes themselves. */
@@ -182,7 +186,8 @@ export async function setMeta(db: IDBDatabase, patch: Meta): Promise<void> {
 export async function writeMigration(
 	db: IDBDatabase,
 	result: MigrationResult,
-	now: number
+	now: number,
+	{ flipNotice = false }: { flipNotice?: boolean } = {}
 ): Promise<boolean> {
 	const tx = db.transaction(['profiles', 'documents', 'teams', META], 'readwrite');
 	const meta = tx.objectStore(META);
@@ -200,7 +205,8 @@ export async function writeMigration(
 			...cur,
 			migratedAt: now,
 			activeProfileId: result.activeProfileId,
-			...(backupOffer && { backupOffer })
+			...(backupOffer && { backupOffer }),
+			...(flipNotice && { flipNotice })
 		},
 		META_KEY
 	);

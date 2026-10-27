@@ -103,6 +103,7 @@ import {
 	recordBackupReminded
 } from '$lib/utils/storageDurability';
 import { menu } from '$lib/menuState.svelte';
+import { afterFlipNotice, flipNoticeHolds } from '$lib/flipNotice.svelte';
 import { scrollBehavior } from '$lib/motion';
 import {
 	THEORYCRAFT_ID,
@@ -237,8 +238,16 @@ class StorageSession {
 		await this.#loadBuilder(profile);
 		this.active = true;
 		settleDocuments(true);
-		if (meta.backupOffer) await this.#offerBackup(db);
-		else await this.#remindBackup(db, meta);
+		const backupNotice = () =>
+			meta.backupOffer ? this.#offerBackup(db) : this.#remindBackup(db, meta);
+		// ⚓ Held behind the returning-visitor dialog (flip-readiness §1 item 4):
+		// two notices at once were seen on a shared link. ⚠ Not awaited then —
+		// the wait is the visitor's, and the tools must not wait on it.
+		if (flipNoticeHolds(meta.flipNotice === true))
+			void afterFlipNotice(true)
+				.then(backupNotice)
+				.catch((err) => console.warn('[critcalc] the backup notice failed', err));
+		else await backupNotice();
 		return true;
 	}
 
