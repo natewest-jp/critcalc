@@ -35,14 +35,15 @@
 	import { dismissFlipNotice } from '$lib/flipNotice.svelte';
 	import { menu } from '$lib/menuState.svelte';
 
-	type Page = { title: string; body: string; clip?: string };
+	type Page = { title: string; body: string; clip: string };
 
 	/** The lead-in, under the title on every page (and above the phone's list). */
 	const LEAD =
 		'Everything you had is still here. Your roster, rotations, and lineups are now in a profile called My profile, and a few things work differently.';
 
-	/** ⏭ `clip` names a pair in static/assets/whats-new: `<clip>.mp4` and its
-	 *  still `<clip>.webp`. A page without one shows an empty box (demo). */
+	/** `clip` names a pair in static/assets/whats-new: `<clip>.mp4` (x264 from
+	 *  Nate's ProRes master, kept in the gitignored assets-src/whats-new) and
+	 *  its still `<clip>.webp`. ⚠ /assets is immutable: a new cut ships as -v2. */
 	const PAGES: Page[] = [
 		{
 			title: 'No more Save buttons',
@@ -61,7 +62,8 @@
 		},
 		{
 			title: 'Shared links open in Theorycraft',
-			body: 'Theorycraft is a built-in profile for exploring things that don’t belong in your own profiles.'
+			body: 'Theorycraft is a built-in profile for exploring things that don’t belong in your own profiles.',
+			clip: 'flip-theorycraft-v1'
 		}
 	];
 	const LAST = PAGES.length - 1;
@@ -155,9 +157,7 @@
 			<div class="media">
 				{#each PAGES as p, i (p.title)}
 					<div class="slot" class:is-on={i === page} inert={i !== page}>
-						{#if !p.clip}
-							<span class="empty">Clip to come</span>
-						{:else if still}
+						{#if still}
 							<img src="/assets/whats-new/{p.clip}.webp" alt="" />
 						{:else}
 							<video
@@ -289,10 +289,6 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-	}
-	.empty {
-		color: var(--muted);
-		font-size: var(--fs-sm);
 	}
 
 	.pages {
