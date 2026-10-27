@@ -68,12 +68,19 @@
 		return next === undefined ? value : resolveToken(next, local, root, depth + 1);
 	}
 
-	/** Parse the :root block of app.css. The block ends at the first column-0
-	 *  `}` — every line inside it is tab-indented. */
+	/** Every column-0 `:root {` block of app.css, as one body. Each block ends at
+	 *  its first column-0 `}` (every line inside is tab-indented). ↻ 2026-10-27:
+	 *  there are FOUR (the interface size and profile tokens, the scroll fade's
+	 *  scale and the instrument layout's knobs each open their own), and
+	 *  reading only the first hid the rest from every group below. The
+	 *  `:root` blocks nested in `@media` are tab-indented and so not matched:
+	 *  they re-set values at other widths, and a swatch shows the default. A
+	 *  later declaration wins, as it does in the cascade. */
+	const rootBody = (css: string): string =>
+		[...css.matchAll(/^:root \{([\s\S]*?)^\}/gm)].map((m) => m[1]).join('\n');
+
 	function parseRootTokens(css: string): Token[] {
-		const start = css.indexOf(':root {');
-		const end = css.indexOf('\n}', start);
-		const decls = declsIn(css.slice(start + ':root {'.length, end));
+		const decls = declsIn(rootBody(css));
 		return [...decls].map(([name, value]) => ({
 			name,
 			value,
@@ -91,7 +98,7 @@
 		const block = new RegExp(`^${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`, 'm').exec(css);
 		if (!block) return [];
 		const local = declsIn(block[1]);
-		const root = declsIn(css.slice(css.indexOf(':root {') + 7, css.indexOf('\n}')));
+		const root = declsIn(rootBody(css));
 		return [...local].map(([name, value]) => ({
 			name,
 			value,
@@ -109,7 +116,9 @@
 	const CTX_ORDER = [
 		'--frame-bg',
 		'--surface',
+		'--surface-broad',
 		'--surface-raised',
+		'--surface-hover',
 		'--surface-well',
 		'--border',
 		'--text',
@@ -137,6 +146,7 @@
 	const structure = exact('--bg', '--text', '--muted', '--bright-ink', '--chrome', '--neutral');
 	const roleNet = exact(
 		'--surface',
+		'--surface-broad',
 		'--surface-raised',
 		'--surface-well',
 		'--border',
@@ -150,12 +160,25 @@
 		'--scene-dim'
 	);
 	const chartInk = pre('--chart-');
-	const metrics = exact('--chrome-h', '--site-footer-h');
+	const metrics = exact('--chrome-h', '--site-footer-h', '--site-pad-x');
+	/** The interface size (app.css § THE INTERFACE SIZE). Claimed before the UI
+	 *  state colours because it shares their `--ui-` prefix and is not one. */
+	const interfaceSize = exact('--ui-ctl-h', '--ui-ctl-fs', '--ui-bar-h');
+	const profileTokens = exact('--profile-theorycraft', '--portrait-unowned');
+	const teamHues = pre('--team-hue-');
+	const insetLines = exact('--inset-line', '--inset-line-quiet', '--inset-line-mid');
+	const landing = exact('--hero-lit', '--hero-rule', '--veil-ground-top', '--veil-ground-bottom');
+	const layoutKnobs = exact(
+		'--scroll-fade-scale',
+		'--instrument-side',
+		'--instrument-main-aspect',
+		'--instrument-slider-max'
+	);
 	/* Deliberately also shown under the glass family (`pre('--glass-')` claims
 	   it). The register section needs to display its own stop, and a token that
 	   is BOTH a material and a content role earns two appearances. */
 	const famAnnotation = exact('--glass-bar');
-	const uiStates = pre('--ui-');
+	const uiStates = pre('--ui-').filter((t) => !interfaceSize.includes(t));
 	const geometry = [...pre('--r-'), ...exact('--frame-inset')];
 	const motion = exact('--t-snap', '--t-quick', '--t-move');
 	const interaction = exact(
@@ -191,6 +214,12 @@
 			glass,
 			structure,
 			metrics,
+			interfaceSize,
+			profileTokens,
+			teamHues,
+			insetLines,
+			landing,
+			layoutKnobs,
 			famAnnotation,
 			roleNet,
 			chartInk,
@@ -540,9 +569,11 @@
 			<div class="sg-fam">
 				<h3><code>.ctx-dark</code></h3>
 				<p class="sg-note">
-					Chart-like panels — timelines, plots, gauge wells — and the bench ribbon. Parchment on
-					navy. Also the <strong>root safety net</strong>: a surface that forgets to declare a
-					context lands here rather than on an orphan hue.
+					Chart-like panels — timelines, plots, gauge wells — the bench ribbon, and the
+					<strong>menu state</strong>, which fills the screen with this ground (see
+					<a href="#redesign">the redesign</a>). Parchment on navy. Also the
+					<strong>root safety net</strong>: a surface that forgets to declare a context lands here
+					rather than on an orphan hue.
 				</p>
 				<div class="sg-swatches">
 					{#each ctxDark as t (t.name)}{@render swatch(t)}{/each}
@@ -580,6 +611,20 @@
 				</div>
 			</div>
 		</div>
+
+		<p class="sg-note">
+			<strong>Two rungs beyond the ladder, and each belongs to one axis.</strong>
+			<code>--surface-broad</code> is the paper's SIZE axis: <code>parchment-50</code> for a large
+			panel or heading ribbon, <code>--surface</code> (<code>parchment-100</code>) for a card on it,
+			so the thing on the paper is the darker one. Dark has no size axis and aliases it to
+			<code>--surface</code>; glass aliases it to the panel stop.
+			<code>--surface-hover</code> is the HOVER rung: the glass stop on <code>.ctx-glass</code>, and
+			<code>slate-600</code> on <code>.ctx-dark</code>, one rung above raised. 🐛 Slate gained it on
+			2026-10-25 (the full-screen round): it was defined only on glass, so on slate every
+			<code>var(--surface-hover)</code> painted nothing and a hovered card dropped to its ground. A
+			verb hovered on a hovered card goes one rung down, to <code>--surface-raised</code>. Paper
+			declares no hover rung. Record: <code>docs/fullscreen-surface-round.md</code>.
+		</p>
 
 		<p class="sg-note">
 			<strong>⚠ Three rules the glass material added, each paid for while building it.</strong>
@@ -744,10 +789,15 @@
 		<p class="sg-note">
 			⚠ <strong>What stays white:</strong> branding and top-level chrome — the site nav, the
 			<code>?</code>/<code>i</code>/gear. ⚓ Nate. Those are the site speaking as itself rather than
-			the tool speaking, and <code>--chrome</code> is that voice. <code>.site-chrome</code>
-			re-declares the accent
-			<em>and its four derived tokens</em> — it sits inside <code>.tool-shell</code> on tool routes,
-			so without them the chrome bar would inherit the shell's gold. ⚠ Gold sits ΔH 0.5° from
+			the tool speaking, and <code>--chrome</code> is that voice. ↻
+			<strong>The top bar keeps the result and drops the mechanism.</strong>
+			<code>TopBar.svelte</code> does not wear <code>.site-chrome</code>; on a tool route it renders
+			inside the tools layout's <code>data-zone="tool"</code>, so its accent is gold. It stays white
+			by naming no accent: the tool words are <code>--chrome</code> (70% at rest), the current tool
+			is a glass fill (<code>--glass-hover</code>, never gold), and the one gold thing, BETA, reads
+			<code>--accent</code> directly. <code>.site-chrome</code> and its re-declared accent belong to
+			<code>SiteChrome.svelte</code>, the old layout's bar. Record:
+			<code>docs/title-bar-round.md</code>. ⚠ Gold sits ΔH 0.5° from
 			<code>--el-geo-main</code>, which is fine and deliberate: geo is identity chroma at C.150, the
 			accent is ornament at C.066, so <em>chroma</em> is what separates them. Don't "fix" it by rotating
 			off geo — that rotates it off parchment.
@@ -780,10 +830,12 @@
 		<p class="sg-note">
 			Portalled popovers (<code>$lib/actions/portal</code>) are appended to
 			<code>&lt;body&gt;</code>, which severs <code>.tool-shell</code> ancestry — the action stamps
-			<code>data-zone="tool"</code> on the way out so a tool popover keeps its tool accent.
-			<code>ChromeModals</code> is mounted outside <code>.tool-shell</code> deliberately, so
-			Help/About/Settings read the world's voice in <em>both</em> zones. That is intended: they are meta
-			surfaces, not tool surfaces.
+			<code>data-zone="tool"</code> on the way out so a tool popover keeps its tool accent. Help,
+			About and Settings are sections of the <strong>menu state</strong> (<code
+				>MenuState.svelte</code
+			>), a screen of slate rather than a modal, so they take the dark context's accent like any
+			slate surface. (The old layout mounted them as <code>ChromeModals</code> outside
+			<code>.tool-shell</code>, in the world's voice.)
 		</p>
 	</section>
 
@@ -1039,11 +1091,18 @@
 			<strong>Not a caution and not an error.</strong>
 			Nothing to click, nothing the user did, nothing wrong with the character; red on 122 cards at once
 			read as "something is broken here".
-			<br />⚠ <strong>It is the only zoned UI state colour</strong> — <code>#f6d365</code> on dark,
-			<code>#998136</code> on <code>.ctx-light</code>, the same move the accent makes. ⛔ And the
-			light rung sits at the GRAPHICAL floor (3.02:1) because it cannot go further: at the 4.5:1
+			<br />⚠ <strong>It was the first zoned UI state colour</strong> — <code>#f6d365</code> on
+			dark, <code>#998136</code> on <code>.ctx-light</code>, the same move the accent makes. ⛔ And
+			the light rung sits at the GRAPHICAL floor (3.02:1) because it cannot go further: at the 4.5:1
 			text floor it lands ΔE .030 from <code>--gold-700</code>, i.e. it becomes the light accent.
 			<strong>Provisional may be a MARK on paper and never prose ink.</strong>
+			<br />↻ <strong>2026-10-26 (the notices round): warning and positive are zoned too.</strong>
+			Paper banners and error toasts gave them a paper consumer. ⚓ Nate: the paper set is matched at
+			danger's contrast (danger stays unzoned, 3.33:1), each hue carried down in OKLCH at the most chroma
+			sRGB allows: <code>--ui-warning</code> <code>#c85d02</code> (its hue nudged 58° → 50°, since
+			at its own hue the gamut edge is browner), <code>--ui-positive</code> <code>#018d65</code>.
+			Both are marks on paper, like provisional, never prose ink. The swatches below are the dark
+			values; the paper ones live in the <code>.ctx-light</code> block.
 		</p>
 		<div class="sg-swatches">
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
@@ -1216,8 +1275,88 @@
 		</div>
 
 		<h3>Metrics</h3>
+		<p class="sg-note">
+			<strong><code>--site-pad-x</code> is the one site gutter</strong> (⚓ Nate, the edges round,
+			2026-10-25): the screen's side margin, read by the top bar, the tools and the menu state, so
+			the wordmark, a toolbar and the sidebar's items start on one line. 16px to 800px, 2vw between,
+			32px from 1600, rounded to whole pixels because the bench ribbon docks by measuring inside it
+			and a fractional x sets every label in it a different sub-pixel off in Safari.
+			<code>--chrome-h</code> is the height everything that reserves the bar reads; under the new
+			layout it is <code>var(--ui-bar-h)</code> (<code>:root[data-next]</code>).
+		</p>
 		<div class="sg-swatches">
 			{#each metrics as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>The interface size</h3>
+		<p class="sg-note">
+			<strong>One control size for the top bar and every toolbar, in three steps</strong> (⚓ Nate
+			2026-10-22; app.css § THE INTERFACE SIZE): <code>--ui-ctl-h</code> a control's height,
+			<code>--ui-ctl-fs</code> its type, <code>--ui-bar-h</code> the top bar. Small 11px · 28 · 48
+			below <code>compact</code> (the phone, always), Medium 12px · 32 · 56 by default, Large 13px ·
+			36 · 64 from <code>huge</code> (2200px). The control grows a little faster than its type, so
+			the larger sizes are not cramped. Picked by width alone: the Settings pin retired on
+			2026-10-26, since browser zoom already moves the width these queries read. ToolStack sets band
+			B's row and controls to <code>--ui-ctl-h</code>, and band B's <code>.btn</code>/<code
+				>.tab</code
+			>
+			type to
+			<code>--ui-ctl-fs</code>, so <code>BAND_CTRL_H</code> (36) is the old layout's number. 🎛️ Nate's
+			to tune by eye. The swatches show Medium.
+		</p>
+		<div class="sg-swatches">
+			{#each interfaceSize as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>Layout knobs</h3>
+		<p class="sg-note">
+			🎛️ Values, not roles, each documented where it is used: <code>--scroll-fade-scale</code>
+			multiplies every <code>.scroll-fade</code>'s length (app.css § THE SCROLL FADE; see
+			<a href="#layout">Layout</a>), and the three <code>--instrument-*</code> knobs size the Visualizers'
+			instrument grid (app.css § THE INSTRUMENT LAYOUT).
+		</p>
+		<div class="sg-swatches">
+			{#each layoutKnobs as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>Profiles and teams</h3>
+		<p class="sg-note">
+			<code>--profile-theorycraft</code> is Theorycraft's white, the one profile colour no real
+			profile can wear, so a guest is never mistaken for anyone's own. The other profile colours are
+			not tokens: they are the element hues (see <a href="#laws">Laws · Color</a>).
+			<code>--portrait-unowned</code> is a <code>filter</code> value, not a colour: a character you don't
+			own fades with some colour kept, so a team built round one doesn't read as a punishment (⚓ Nate
+			2026-10-25). The team hues are ⏳ placeholders (lineups design §11.6 item 8).
+		</p>
+		<div class="sg-swatches">
+			{#each profileTokens as t (t.name)}{@render swatch(t)}{/each}
+			{#each teamHues as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>The inset line</h3>
+		<p class="sg-note">
+			The gold line an <a href="#insets">inset border</a> draws. Borders stay ink; the inset is the
+			one line that is ornament, so it is gold, zoned like the accent (gold-400 on dark, gold-700 on
+			paper). The <code>:root</code> values are what a groundless element over the night inherits,
+			so they carry alpha. <code>--inset-line-mid</code> is the stop for an inset that crosses a seam
+			between two grounds and is never re-declared per context.
+		</p>
+		<div class="sg-swatches">
+			{#each insetLines as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>The hero cards and the veil ground</h3>
+		<p class="sg-note">
+			<code>--hero-lit</code> is a hovered hero card's gold, one rung up from the accent, on the
+			card's content and never its frame; <code>--hero-rule</code> is the card label's opaque rule
+			(⚓ Nate).
+			<code>--veil-ground-top</code>/<code>-bottom</code> are the night gradient for a surface that
+			stands in for the world (the loading veil, the 404), taken from the dimmed crest. Use
+			<code>VeilGround.svelte</code>, which keeps the grain with it; re-measure if the plate or
+			<code>SCENE_DIM</code> changes.
+		</p>
+		<div class="sg-swatches">
+			{#each landing as t (t.name)}{@render swatch(t)}{/each}
 		</div>
 
 		{#if unclaimed.length}
@@ -2038,6 +2177,18 @@
 						>
 						Don't cross them. <code>--accent</code> is zoned and never leaves its zone — don't hard-code
 						a context's accent in the world (landing scene, static pages).
+					</li>
+					<li>
+						<strong>The one sanctioned crossing: a profile's colour is an element hue.</strong> ⚓
+						Nate (profiles design §2.3): the profile colours are the seven elements plus
+						Theorycraft's white (<code>--profile-theorycraft</code>), resolved by
+						<code>profileLook.ts</code>
+						to
+						<code>var(--el-&lt;x&gt;-main)</code>. They mark WHOSE something is, on chrome: the
+						profile picture's ring, the sidebar's current edge on a profile's own places, the
+						Library's guest edge, Trash rows, the switch toast's swatch and the top bar's switch
+						wash. Everywhere else the line above holds. A colour can repeat across profiles (the
+						least worn is offered first).
 					</li>
 					<li>
 						<strong>Structure whispers; content carries the chroma.</strong> A ground is a near-neutral
