@@ -1,8 +1,8 @@
 # The flip notice: 2026-10-27
 
-The returning-visitor dialog and the What's new entry for the flip, shaped with Nate in one session, then the flip itself merged. `feat/flip-notice` merged as `f65dd3f7`, `release/flip` as `bcc38c25` (= `main`), **not pushed**. Gates on `bcc38c25`: vitest 2620, check, lint (tracked files), build, e2e chrome + webkit 160 passed (⚠ the fixture pins the OLD layout, `'0'`, so the new default is covered by vitest and the browser sweeps, not e2e).
+The returning-visitor dialog and the What's new entry for the flip, shaped with Nate in one session, then the flip itself merged. `feat/flip-notice` merged as `f65dd3f7`, `release/flip` as `bcc38c25`. **Live 2026-10-27** (pushed `0e25d360`; see §5). Gates on `bcc38c25`: vitest 2620, check, lint (tracked files), build, e2e chrome + webkit 160 passed (⚠ the fixture pins the OLD layout, `'0'`, so the new default is covered by vitest and the browser sweeps, not e2e).
 
-⏭ **Next (a fresh session, ⚓ Nate):** one last pre-flip check on `main`; if it is green, push (the flip goes live on deploy). Then re-date the What's new entry if go-live is not October 27, and Nate's cold-load look at `/library` and `/roster` on a production preview (flip-readiness §3).
+✅ **Live 2026-10-27.** The pre-flip check, one fix and the push are in §5. What is left lives on the to-do list, not here.
 
 ## 1. What shipped
 
@@ -55,3 +55,12 @@ Checks per master: `ffprobe` (size, tags, frame count), `blackdetect`, first vs 
 - **An untracked copy of a file a branch adds blocks the merge**: the save clip was copied into the main checkout for Nate to view; it had to be removed (byte-identical, checked with `cmp`) before merging.
 - **Ghostty does not always open a terminal path link** (seen for `/private/tmp`): put anything Nate must open in the repo, or `open -R` it.
 - **Copy:** a dialog page body is a plain string, so control names in it (**Saved**, **Teams**) are not bold; splitting the sentence to bold them would break the whole-sentence rule (style guide §3.1).
+
+## 5. The pre-flip check and go-live (2026-10-27, evening)
+
+- **Gates on `d7a87898`:** vitest 2620, check, build, eslint. Prettier failed only on this file's clip table (reformatted). e2e was not rerun; the only commit after `bcc38c25` (green, 160) was docs. Nothing in the dependencies, adapter, `_headers` or `_redirects` had changed since the last push.
+- **Browser sweep of the production build** (headless Chromium, 1440×900 and 390×844), all passed: a fresh visitor loads all 23 sitemap routes cold with no errors and writes nothing of the old layout to localStorage; a returning visitor migrates into "My profile" (tabs, saved rotations, roster), sees the dialog once, and the migration toast waits for it; `?next` and `?next=0` do nothing in production while a stored `'0'` still gives the old layout; `?r=` links open for both visitors.
+- **The old-layout first paint is never seen** (flip-readiness §3): the prerendered HTML is the old shell, but at 4× CPU throttle the scene's veil covers it until `data-next` is set, then fades onto the new layout. Nate checked real Safari: fine.
+- **One bug, fixed before the push** (`fix/flip-notice-phone-media`, merged `0e25d360`): the dialog chose its phone form in `onMount`, so the first render built the desktop form and a phone fetched two clips and four stills (~640 KB) it never shows. The form is now decided at init.
+- **Rulings (⚓ Nate):** a first-visit shared link that releases the "Opened in Theorycraft" dialog and the migration toast together, after the flip dialog, is accepted. The Planner inspector should show the rotation's constellation, not the roster's (queued on the to-do list).
+- **Deploy:** live about 90 seconds after the push; the clips serve with `immutable` caching. ⛔ Fix forward rather than a Cloudflare rollback: post-flip edits live in IndexedDB, which the old bundle cannot read, and the migration runs once, so edits made during a rollback would not carry forward.
