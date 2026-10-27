@@ -22,10 +22,10 @@
 
   Dev: `?flipNotice` on any page shows it without touching the stored flag.
 
-  ⚠️ EVERY STRING BELOW IS A DRAFT: the copy is Nate's and gets its pass once
-  the shape settles (read docs/text/style-guide.md + glossary.md first). The
-  phone list still reuses the desktop sentences, and two of them are wrong
-  there: the Library opens from the document name, and Teams is in ☰.
+  Copy: Nate's draft, given its pass 2026-10-27 once the shape settled (read
+  docs/text/style-guide.md + glossary.md before changing it). Each sentence
+  is true on a phone too, since the phone list reuses them: the document's
+  NAME opens the Library in both top bars, and Teams' two figures are in both.
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
@@ -47,22 +47,22 @@
 	const PAGES: Page[] = [
 		{
 			title: 'No more Save buttons',
-			body: 'All your work is auto-saved to your Library.',
+			body: 'Your work saves itself as you go, and the top bar shows Saved once it has.',
 			clip: 'flip-save-v1'
 		},
 		{
 			title: 'No more tabs',
-			body: 'Each tool holds one rotation or lineup at a time. Click on the current tool’s button at the top to open the Library.',
+			body: 'Each tool holds one rotation or lineup at a time. Its name in the top bar opens the Library, where the others are.',
 			clip: 'flip-notabs-v1'
 		},
 		{
-			title: 'Save teams directly',
-			body: 'Teams is its own section now, where you can set up teams ahead of time, like Genshin’s Party Setup.',
+			title: 'Set up teams ahead of time',
+			body: 'Teams, the two figures in the top bar, holds the teams you make, like Genshin’s Party Setup. Each one can start a rotation or a lineup.',
 			clip: 'flip-teams-v1'
 		},
 		{
 			title: 'Shared links open in Theorycraft',
-			body: 'Theorycraft is a built-in profile for exploring things that don’t belong in your own profiles.',
+			body: 'Theorycraft is a profile with no roster: Every character is there at every level. Shared links open there so your own profiles stay as you left them, and you can switch to it from your picture in the top bar.',
 			clip: 'flip-theorycraft-v1'
 		}
 	];

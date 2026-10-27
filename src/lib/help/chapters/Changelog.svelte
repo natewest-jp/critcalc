@@ -35,7 +35,7 @@
 	<h2 id="2026-10">October 2026</h2>
 
 	<div class="timeline">
-		<!-- ⏭ DRAFT (⚓ Nate 2026-10-27): ships with the flip; date it the day it goes live. -->
+		<!-- ⏭ Ships with the flip (copy pass 2026-10-27): date it the day it goes live. -->
 		<article class="entry">
 			<header class="entry-head">
 				<h3>Profiles, and a new layout</h3>
@@ -43,18 +43,18 @@
 			</header>
 			<p>
 				critcalc now keeps your work in profiles, one for each Genshin account if you play more than
-				one. A profile holds your roster, the teams you make, and your rotations and lineups. Shared
-				links open in Theorycraft, which has every character at every level and sits apart from your
-				profiles; anything that arrives there can go to a profile with <strong
-					>Move to a profile</strong
-				>.
+				one. A profile holds your roster, your teams, and your rotations and lineups. Shared links
+				open in Theorycraft, a profile with no roster where every character is there at every level,
+				and <strong>Move to a profile</strong> takes anything you want to keep into one of yours.
 			</p>
 			<p>
-				The layout changed with it. One bar at the top holds the tools and the places your work
-				lives, each tool has its own toolbar, and the rotation planner has an inspector beside its
-				timeline. Work saves itself, and anything you delete stays in the Trash for 30 days. If you
-				used the site before, everything you had is in a profile called My profile.
+				The layout changed with it. The top bar holds the tools, <strong>Teams</strong>, and your
+				profile, and each tool has its own toolbar under it. A tool holds one rotation or lineup at
+				a time; its name in the top bar opens the Library, where the others are. Work saves itself
+				as you go, and anything you delete stays in the Trash for 30 days. The rotation planner also
+				has an <strong>Inspector</strong> beside its timeline.
 			</p>
+			<p>If you used the site before, everything you had is in a profile called My profile.</p>
 		</article>
 
 		<article class="entry">
