@@ -687,13 +687,20 @@ class RotationTabsState {
 		this.setDocument(text, makeSeating(seats, placed));
 	}
 
-	/** The text and seats as they are now, to put back (an Undo toast). */
+	/** The text and seats as they are now, to put back (an Undo toast).
+	 *  ⚠️ The toast outlives the tab it was made for: `setDocument` writes the
+	 *  ACTIVE tab, so an Undo pressed after a switch would put this tab's text
+	 *  and seats over another one (and leave this one as it is). It does
+	 *  nothing unless the tab is still the one in front, and works again if
+	 *  you switch back while the toast is up. */
 	#snapshot(): () => void {
+		const tabId = this.activeTabId;
 		const text = this.notation;
 		const seats = [...this.seats];
 		const placed = [...this.seating.placed];
 		return () => {
-			if (this.canEdit()) this.setDocument(text, makeSeating(seats, placed));
+			if (this.activeTabId !== tabId || !this.canEdit()) return;
+			this.setDocument(text, makeSeating(seats, placed));
 		};
 	}
 
