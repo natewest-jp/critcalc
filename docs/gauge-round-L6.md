@@ -363,6 +363,8 @@ against, which is the one relationship a gauge plot needs most. Above the axis, 
 becomes a **shared axis with a chart on either side of it**: the same DAW convention that
 put it on the top edge in the first place, now doing twice the work.
 
+↻ **2026-10-27: superseded.** The header (ruler + this lane) is now the first row INSIDE the track scroller; the follower strip, its mirror and `onHeaderWheel` are gone, because on a phone the follower visibly trailed the bars (`docs/preflip-cleanups-round.md`). The two paragraphs below are the record of what it was.
+
 ⚠️ **It lives in the RULER'S STRIP, not the track scroller.** That strip exists so the
 notes panel can never push the axis, and it is a scroll FOLLOWER — `overflow: hidden`,
 `scrollLeft` mirrored from the tracks. The lane inherits the mirror and the edge fade for

@@ -1,5 +1,7 @@
 # The responsive sweep (2026-10-15)
 
+> ↻ 2026-10-27: the pinned composer (§3 item 10) now stands at the foot for every rotation height, pinned at the shell's bottom pad (24px, not 8), on `--surface` with a well field — `docs/preflip-cleanups-round.md`.
+
 The mobile and wide-screen sweep before launch: five parallel surveys (the
 Planner from 320 to 1137, the Planner from 1135 to 3440, the Team Builder, the
 Visualizers, and the landing + static pages + overlays), each followed by an
