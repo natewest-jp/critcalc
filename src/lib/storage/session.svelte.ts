@@ -923,6 +923,9 @@ class StorageSession {
 				{ tabs: rotationTabs.tabs.map((t) => (t.id === id ? tab : t)), activeTabId: id },
 				false
 			);
+			// Its pair too (2026-10-27): a comparison ended or begun in the tab
+			// that holds it showed on here until a reload.
+			this.#plannerContext(doc);
 		} else if (doc.type === 'lineup' && boards.boards.some((b) => b.id === id)) {
 			const board = lineupToBoard(doc);
 			this.#remember(doc, this.#derived.get(id) ?? board.label);
