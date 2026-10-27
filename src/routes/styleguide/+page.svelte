@@ -1109,11 +1109,12 @@
 			<br />↻ <strong>2026-10-27: <code>--ui-info</code>, neutral information</strong> (⚓ Nate): a
 			fact stated with no consequence attached, the values in a buff tooltip. It is the one blue,
 			and it gets away with it by chroma: a quiet blue (<code>--blue-400</code>,
-			<code>#81b6de</code>, C .080, about half of hydro's) reads as a blue beside the elements
-			rather than as one. Unlike the others it is <strong>prose ink on paper</strong>, so its paper
-			rung (<code>--blue-700</code>, <code>#296b96</code>) clears 4.5:1 on both: 4.61:1 on
-			<code>--surface</code>, 5.17:1 on <code>--surface-broad</code>. The four grounds side by side
-			are on <code>/lab</code>.
+			<code>#79b6e9</code>, C .097, well under hydro's .153) reads as a blue beside the elements
+			rather than as one. On paper it is a mark like the others (<code>--blue-700</code>,
+			<code>#3682bb</code>, 3.31:1 on <code>--surface</code>), at the family's lightness, so an info
+			toast's stripe sits beside its siblings (↻ ⚓ Nate 2026-10-27: it was first a darker,
+			text-safe rung that read as off-family). Blue as running text on paper would need its own
+			darker rung. The grounds side by side are on <code>/lab</code>.
 		</p>
 		<div class="sg-swatches">
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
@@ -2360,13 +2361,16 @@
 						<code>--fs-sm</code>, and every notice has a home at every width.
 					</li>
 					<li>
-						<strong>Materials as shipped</strong> (⚓ Nate: "parchment is really noticeable"): a
-						routine toast is glass (<code>--glass-plate</code>); an error toast is paper with a 4px
-						danger stripe and stays until dismissed; a banner is paper with a severity stripe; the
-						confirm dialog is paper. Corners <code>--r-md</code>. The timer is a ring round the ✕,
-						and the ✕'s hover is that ring's circle. The toast has no backdrop blur: it had one, and
-						it went because the toast's slate is opaque enough that the blur could not be seen (⚓
-						Nate 2026-10-27; sweep 2.2). The rule against backdrop blur stands.
+						<strong>Materials as shipped</strong> (⚓ Nate: "parchment is really noticeable"): ↻
+						every toast is paper (⚓ Nate 2026-10-27, from the <code>/lab/toast-attention</code>
+						blind test: a glass toast could come and go unseen), its kind a mark and a 4px left stripe
+						in the state colour; an error also stays until dismissed. A banner is paper with a severity
+						stripe; the confirm dialog is paper. Corners <code>--r-md</code>. The timer is a ring
+						round the ✕, and the ✕'s hover is that ring's circle. A toast arrives on the shared rise
+						(<code>riseIn</code>: 30px, quartOut 300ms, rounded to whole pixels, a linear 150ms
+						fade), as does the Roster's keys bar, which floats on
+						<code>--surface-float</code>. No backdrop blur: the rule stands, and the toast's old one
+						could not be seen (sweep 2.2).
 						<em>Open</em>: paper notices beside an instrument's one paper card (2.4), and the
 						literal ring and hover colours (1.5).
 					</li>

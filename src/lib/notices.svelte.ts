@@ -29,6 +29,8 @@ export type Toast = {
 	actions: NoticeAction[];
 	/** A profile's colour, shown as a disc in place of the mark. */
 	swatch?: string;
+	/** The profile's picture inside that disc (⚓ Nate 2026-10-27). */
+	picture?: string | null;
 	/** How long it stays; null = until dismissed. */
 	ms: number | null;
 	paused: boolean;
@@ -97,6 +99,7 @@ class Notices {
 		opts: {
 			actions?: NoticeAction[];
 			swatch?: string;
+			picture?: string | null;
 			ms?: number | null;
 			onGone?: () => void;
 		} = {}
@@ -110,6 +113,7 @@ class Notices {
 			text,
 			actions,
 			swatch: opts.swatch,
+			picture: opts.picture,
 			ms,
 			paused: false
 		};

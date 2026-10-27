@@ -25,6 +25,8 @@
  * $lib/landing/transition.ts. These bands are interaction motion inside a tool.
  */
 
+import { linear, quartOut } from 'svelte/easing';
+
 /** A CONTROL — buttons, chips, tabs, links, pips. CSS only; nothing mounts. */
 export const T_SNAP = 120;
 
@@ -33,6 +35,41 @@ export const T_QUICK = 150;
 
 /** TRAVEL across a distance. CSS only; one resident (the toggle thumb). */
 export const T_MOVE = 240;
+
+/**
+ * ⚓ THE ARRIVAL RISE (Nate 2026-10-27, `/lab/toast-attention`): what appears
+ * UNBIDDEN — a toast, the Roster's keys bar — rises into place so peripheral
+ * vision catches its start. 🎛️ Nate's by-eye values: 30px, quartOut over
+ * 300ms, the fade linear over T_QUICK (the fade law: a surface's fade is
+ * linear, its movement may ease). quartOut 300 was matched to his first pick,
+ * expoOut 450, over the first 90ms with about half its sub-pixel tail.
+ *
+ * The rise is ROUNDED to whole pixels: WebKit snaps glyphs to whole pixels
+ * while a box glides, so a card settling at fractional offsets can shimmer
+ * its text, and the keys bar's own note forbids a fractional transform. At
+ * this speed the steps are invisible (checked in real Safari).
+ */
+export const RISE_PX = 30;
+export const T_RISE = 300;
+
+/** The rise as a Svelte `in:` transition. Two clocks: the movement eases
+ *  over T_RISE, the opacity is linear over T_QUICK. Reduced motion is no
+ *  motion, through `motion()`. */
+export function riseIn(_node: Element) {
+	const rMs = motion(T_RISE);
+	const fMs = motion(T_QUICK);
+	const duration = Math.max(rMs, fMs);
+	return {
+		duration,
+		easing: linear,
+		css: (t: number) => {
+			const at = t * duration;
+			const opacity = fMs ? Math.min(1, at / fMs) : 1;
+			const y = Math.round((1 - quartOut(rMs ? Math.min(1, at / rMs) : 1)) * RISE_PX);
+			return `opacity: ${opacity}; transform: translateY(${y}px);`;
+		}
+	};
+}
 
 /**
  * The band, or 0 when the reader has asked for less motion.

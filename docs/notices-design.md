@@ -66,10 +66,11 @@ click-again delete and reset.
 **Job:** an event: something happened that you may want to know, undo or
 act on. **Place:** ONE home per page, bottom centre of the surface; on a
 phone tool, above the notation dock. Rendered once, at layout level, for
-every surface (tools, full screen, landing). **Look:** glass plate
-(`--glass-plate` + blur), body size, a mark in the severity colour (or a
-profile's colour disc), optional buttons, a ✕, and a thin line along the
-bottom showing the time left. **An error toast is PAPER** with a danger rule.
+every surface (tools, full screen, landing). **Look:** ↻ **PAPER, every kind**
+(⚓ Nate 2026-10-27, §9): body size, a mark in the severity colour (or a
+profile's colour disc), a 4px left stripe in the same colour, optional
+buttons, and a ✕ with the time left as a ring round it. (It began as a glass
+plate with a blur for routine news and paper for errors.)
 On a narrow surface the buttons drop to their own row.
 
 **Time** (🎛️): success 4 s, info 6 s, warning 8 s; with a button at least 8 s;
@@ -80,8 +81,10 @@ dismissed). Any toast pauses while pointed at or focused (WCAG 2.2.1).
 oldest that can fade makes room (an error never does). A once-ever notice is
 marked seen only once it has been on screen (or dismissed), never before.
 
-**Motion:** in, a 16 px rise with a linear fade (`--t-quick`); out, a linear
-fade; the stack reflows with `--t-move`. Reduced motion: the tokens zero.
+**Motion:** ↻ in, the shared ARRIVAL RISE (`riseIn` in `$lib/motion.ts`, ⚓
+Nate 2026-10-27): 30px, quartOut over 300ms, rounded to whole pixels, with a
+linear fade over `--t-quick`; out, a linear fade; the stack reflows with
+`--t-move`. Reduced motion: the durations zero. (It began as a 16px rise.)
 
 **A11y:** the region is `aria-live="polite"` and stays mounted (a live region
 inserted with its text is often not announced); an error is `role="alert"`.
@@ -138,9 +141,9 @@ its own shape. What sets it apart, so it never borrows another's:
 
 | Severity | Mark                     | Colour                           | Toast material | Toast time          | Banner             |
 | -------- | ------------------------ | -------------------------------- | -------------- | ------------------- | ------------------ |
-| Success  | check                    | `--ui-positive`                  | glass          | 4 s                 | –                  |
-| Info     | info (or a profile disc) | `--text`                         | glass          | 6 s                 | –                  |
-| Warning  | warn                     | `--ui-warning` (paper: new rung) | glass          | 8 s                 | paper, dismissable |
+| Success  | check                    | `--ui-positive`                  | paper          | 4 s                 | –                  |
+| Info     | info (or a profile disc) | `--ui-info`                      | paper          | 6 s                 | –                  |
+| Warning  | warn                     | `--ui-warning` (paper: new rung) | paper          | 8 s                 | paper, dismissable |
 | Error    | warn                     | `--ui-danger`                    | **paper**      | **until dismissed** | paper, stays       |
 
 ## 5. Deletes and the Trash
@@ -272,3 +275,25 @@ touch never shows and nobody finds.
 - Not this round: the Trash (deletes in the Library stay as they are until
   it lands); hover-only explanations; hints; a generic failure surface for
   every `void` storage write (MoveDialog and team saves are covered).
+
+## 10. Paper toasts and the arrival rise (Nate, 2026-10-27, `/lab/toast-attention`)
+
+A blind test (a toast fired at a random moment while looking elsewhere) found
+that glass toasts, and the Roster's keys bar, can appear and go unseen.
+Peripheral vision catches brightness contrast and the start of a movement,
+not hue, detail or size, and a dark card on dark grounds has neither.
+
+- ✅ **Every toast is paper.** The kind is its mark and a 4px left stripe in
+  the state colour (info is `--ui-info`). It demands attention every time, and
+  that is accepted: notices are rare, and once seen it can be ignored or
+  dismissed. ⚠ A whole-paper surface would blunt it; none exists.
+- ✅ **The arrival rise** for anything that appears unbidden: 30px, quartOut
+  over 300ms, fade linear over 150ms, movement rounded to whole pixels
+  (`riseIn`). Picked first as expoOut 450ms; quartOut 300 matches it over the
+  first 90ms with about half the sub-pixel tail. Rounding is invisible at this
+  speed (checked in real Safari) and keeps WebKit from shimmering text.
+- ✅ **The keys bar** is lifted to `--surface-float` (slate-500), no rim, and
+  arrives on the same rise.
+- ✅ **No backdrop blur** on toasts (it could not be seen through the slate).
+- ⏭ The toast and the keys bar share bottom centre on the Roster, so an Undo
+  toast while editing lands on the keys bar.

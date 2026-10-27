@@ -4,8 +4,13 @@
   surface, the landing) has the same place to look.
 
   Toasts: bottom centre, above the Planner's phone dock (`--notice-floor`,
-  which the dock publishes). Glass for routine news; an ERROR is paper and
-  stays until dismissed. The time left is a ring round the ✕ (⚓ Nate
+  which the dock publishes). ⚓ ALL PAPER (Nate 2026-10-27, from the
+  `/lab/toast-attention` blind test): on a dark site paper is the one big
+  brightness step, which is what peripheral vision catches; a glass toast
+  could come and go unseen. The kind is the mark and a 4px left stripe in its
+  state colour; an error also stays until dismissed. They arrive on the shared
+  rise (`riseIn`). ⚠ A whole-paper surface would blunt this; none exists, and
+  the shadow still separates the card there. The time left is a ring round the ✕ (⚓ Nate
   2026-10-26: the ring over the edge and the line), and the ✕'s hover is the
   ring's own circle, never a rounded rectangle behind it.
 
@@ -13,12 +18,12 @@
   announced.
 -->
 <script lang="ts">
-	import { fly, fade } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { linear } from 'svelte/easing';
 	import Mark from './Mark.svelte';
 	import { notices, type NoticeKind } from '$lib/notices.svelte';
-	import { motion, outroInert, introLive, T_QUICK, T_MOVE } from '$lib/motion';
+	import { motion, outroInert, introLive, riseIn, T_QUICK, T_MOVE } from '$lib/motion';
 
 	const MARK: Record<NoticeKind, 'check' | 'about' | 'warn'> = {
 		success: 'check',
@@ -49,13 +54,11 @@
 		<div
 			class="nt-slot"
 			animate:flip={{ duration: motion(T_MOVE) }}
-			in:fly={{ y: 16, duration: motion(T_QUICK), easing: linear }}
+			in:riseIn
 			out:fade={{ duration: motion(T_QUICK), easing: linear }}
 		>
 			<div
-				class="nt nt--{t.kind}"
-				class:ctx-light={t.kind === 'error'}
-				class:ctx-glass={t.kind !== 'error'}
+				class="nt nt--{t.kind} ctx-light"
 				role={t.kind === 'error' ? 'alert' : undefined}
 				onpointerenter={() => notices.pause(t.id)}
 				onpointerleave={() => notices.resume(t.id)}
@@ -63,7 +66,16 @@
 				onfocusout={() => notices.resume(t.id)}
 			>
 				{#if t.swatch}
-					<span class="nt-swatch" style:--pp={t.swatch}></span>
+					<!-- A picture sits on slate (`ctx-dark`), as in the top bar: a
+					     character avatar has no backing of its own, and on paper it
+					     showed the parchment through (⚓ Nate 2026-10-27). -->
+					<span
+						class="nt-swatch"
+						class:has-picture={!!t.picture}
+						class:ctx-dark={!!t.picture}
+						style:--pp={t.swatch}
+						>{#if t.picture}<img src={t.picture} alt="" />{/if}</span
+					>
 				{:else}
 					<span class="nt-mark"><Mark name={MARK[t.kind]} size={18} /></span>
 				{/if}
@@ -167,49 +179,62 @@
 		gap: 0.4rem 0.7rem;
 		max-width: 34rem;
 		min-height: 3rem;
-		padding: 0.55rem 0.55rem 0.55rem 0.9rem;
+		padding: 0.55rem 0.55rem 0.55rem 1.1rem;
 		border-radius: var(--r-md);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
-		box-shadow:
-			0 10px 30px rgb(0 0 0 / 0.45),
-			inset 0 0 0 1px rgb(255 255 255 / 0.1);
-	}
-	.nt.ctx-glass {
-		background: var(--glass-plate);
-		color: var(--text);
-	}
-	/* An error is paper: the brightest thing on a dark site. */
-	.nt.ctx-light {
-		padding-left: 1.1rem;
+		/* Paper inverts the ink ladder: --muted anchors. */
 		background: var(--surface);
 		color: var(--muted);
 		box-shadow:
 			0 10px 30px rgb(0 0 0 / 0.5),
-			inset 4px 0 0 var(--ui-danger);
+			inset 4px 0 0 var(--nt-stripe);
+	}
+	.nt--success {
+		--nt-stripe: var(--ui-positive);
+	}
+	.nt--info {
+		--nt-stripe: var(--ui-info);
+	}
+	.nt--warning {
+		--nt-stripe: var(--ui-warning);
+	}
+	.nt--error {
+		--nt-stripe: var(--ui-danger);
 	}
 	.nt-mark,
 	.nt-swatch {
 		grid-area: mark;
 	}
+	/* The mark wears its stripe's colour. */
 	.nt-mark {
 		display: inline-flex;
-	}
-	.nt--success .nt-mark {
-		color: var(--ui-positive);
-	}
-	.nt--warning .nt-mark {
-		color: var(--ui-warning);
-	}
-	.nt--error .nt-mark {
-		color: var(--ui-danger);
+		color: var(--nt-stripe);
 	}
 	.nt-swatch {
 		width: 20px;
 		height: 20px;
 		border-radius: 50%;
 		border: 2px solid var(--pp);
-		background: color-mix(in srgb, var(--pp) 35%, var(--bg));
+		background: color-mix(in srgb, var(--pp) 35%, var(--surface));
+	}
+	/* ⚓ With the profile's picture (Nate 2026-10-27): larger, the colour as a
+	   2px ring outside it, as the top bar wears it, on slate (the disc claims
+	   .ctx-dark, so --surface below is the slate ground). */
+	.nt-swatch.has-picture {
+		display: grid;
+		place-items: center;
+		width: 30px;
+		height: 30px;
+		border: none;
+		box-shadow: 0 0 0 2px var(--pp);
+		background: var(--surface);
+		overflow: hidden;
+	}
+	.nt-swatch img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 	.nt-text {
 		grid-area: text;
