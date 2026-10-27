@@ -8,7 +8,8 @@
 
   ⚓ A CLICK-THROUGH (Nate 2026-10-27, Genshin's "new feature" language): one
   page per change, each with a looping clip Nate records. The lead-in sits
-  above the first change rather than on a page of its own.
+  under the title, above the clip, on every page (⚓ Nate 2026-10-27): only
+  on the first, the clip box would move between pages.
   - Every page is rendered at once, stacked in one grid cell, so the dialog
     takes the TALLEST page's height and nothing jumps under the Next button.
   - Clips are 4:3 (1024×768, 2× a 512px box). Only a page you have reached,
@@ -36,7 +37,7 @@
 
 	type Page = { title: string; body: string; clip?: string };
 
-	/** The lead-in, above the first page (and the phone's list). */
+	/** The lead-in, under the title on every page (and above the phone's list). */
 	const LEAD =
 		'Everything you had is still here. Your roster, rotations, and lineups are now in a profile called My profile, and a few things work differently.';
 
@@ -50,7 +51,8 @@
 		},
 		{
 			title: 'No more tabs',
-			body: 'Each tool holds one rotation or lineup at a time. Click on the current tool’s button at the top to open the Library.'
+			body: 'Each tool holds one rotation or lineup at a time. Click on the current tool’s button at the top to open the Library.',
+			clip: 'flip-notabs-v1'
 		},
 		{
 			title: 'Save teams directly',
@@ -140,9 +142,9 @@
 		aria-labelledby="fn-title"
 	>
 		<h2 class="title" id="fn-title">critcalc has a new layout</h2>
+		<p class="note lead">{LEAD}</p>
 
 		{#if phone}
-			<p class="note">{LEAD}</p>
 			<ul class="list">
 				{#each PAGES as p (p.title)}
 					<li><strong>{p.title}:</strong> {p.body}</li>
@@ -175,7 +177,6 @@
 			<div class="pages" aria-live="polite">
 				{#each PAGES as p, i (p.title)}
 					<div class="page" class:is-on={i === page} inert={i !== page}>
-						{#if i === 0}<p class="note lead">{LEAD}</p>{/if}
 						<h3 class="head">{p.title}</h3>
 						<p class="note">{p.body}</p>
 						{#if i === LAST}
@@ -241,7 +242,7 @@
 	}
 	.title {
 		margin: 0;
-		padding: 1rem 1.3rem 0.8rem;
+		padding: 1rem 1.3rem 0.5rem;
 		font-family: var(--font-display);
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
@@ -307,6 +308,8 @@
 		line-height: 1.5;
 	}
 	.lead {
+		margin-bottom: 1rem;
+		padding-inline: 1.3rem;
 		color: var(--muted);
 	}
 	.more {
@@ -316,9 +319,6 @@
 		font: inherit;
 		font-size: var(--fs-sm);
 		cursor: pointer;
-	}
-	.is-phone .note {
-		padding-inline: 1.3rem;
 	}
 	.list {
 		margin: 0 0 0.6rem;
