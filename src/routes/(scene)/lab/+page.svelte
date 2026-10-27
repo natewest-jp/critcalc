@@ -66,8 +66,8 @@
 	 *  mark, where the family (positive, warning, danger) sits near L .58 and
 	 *  3.3:1. Candidates are page-local literals (the /lab exemption). */
 	const PAPER_BLUES = [
-		{ key: 'now', hex: '#296b96', note: '--blue-700 today · L .51 · 4.61:1 · text-safe' },
-		{ key: 'demo', hex: '#3682bb', note: 'the toast lab’s stand-in · L .59 · 3.31:1' },
+		{ key: 'was', hex: '#296b96', note: 'the old text-safe rung · L .51 · 4.61:1' },
+		{ key: 'chosen', hex: '#3682bb', note: '--blue-700 now (⚓ Nate) · L .59 · 3.31:1' },
 		{ key: 'family', hex: '#3483b7', note: 'at --ui-info’s hue, family lightness · L .59 · ~3.3:1' }
 	] as const;
 	const PAPER_FAMILY = [
@@ -85,33 +85,33 @@
 	 *  rungs (on paper the axis is SIZE: broad panels are parchment-50, cards
 	 *  and controls on them parchment-100). */
 	const INFO_GROUNDS = [
-		{ key: 'night', cls: '', label: 'ctx-night', note: '--blue-400 · #81b6de', broad: false },
+		{ key: 'night', cls: '', label: 'ctx-night', note: '--blue-400 · #83b5df', broad: false },
 		{
 			key: 'glass',
 			cls: 'ctx-glass',
 			label: 'ctx-glass',
-			note: '--blue-400 · #81b6de',
+			note: '--blue-400 · #83b5df',
 			broad: false
 		},
 		{
 			key: 'dark',
 			cls: 'ctx-dark',
 			label: 'ctx-dark — slate',
-			note: '--blue-400 · 5.67:1',
+			note: '--blue-400 · 5.65:1',
 			broad: false
 		},
 		{
 			key: 'light-broad',
 			cls: 'ctx-light',
 			label: 'ctx-light — --surface-broad',
-			note: '--blue-700 · #296b96 · 5.17:1',
+			note: '--blue-700 · #3682bb · 3.71:1',
 			broad: true
 		},
 		{
 			key: 'light',
 			cls: 'ctx-light',
 			label: 'ctx-light — --surface',
-			note: '--blue-700 · #296b96 · 4.61:1',
+			note: '--blue-700 · #3682bb · 3.31:1',
 			broad: false
 		}
 	];
@@ -211,7 +211,7 @@
 	<!-- ⚓ Nate 2026-10-27: the new neutral-information blue on every ground,
 	     as prose ink and as a small mark, to judge the PAPER rung by eye. Paper
 	     is shown on both of its rungs, since the colour is tuned against both
-	     (4.62:1 on --surface, 5.19:1 on --surface-broad). -->
+	     (3.31:1 on --surface, 3.71:1 on --surface-broad: a mark, like its family). -->
 	<section>
 		<h2 class="lab-h">--ui-info · neutral information</h2>
 		<div class="lab-grid lab-grid--info">
