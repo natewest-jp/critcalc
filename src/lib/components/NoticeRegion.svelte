@@ -66,7 +66,9 @@
 				onfocusout={() => notices.resume(t.id)}
 			>
 				{#if t.swatch}
-					<span class="nt-swatch" style:--pp={t.swatch}></span>
+					<span class="nt-swatch" class:has-picture={!!t.picture} style:--pp={t.swatch}
+						>{#if t.picture}<img src={t.picture} alt="" />{/if}</span
+					>
 				{:else}
 					<span class="nt-mark"><Mark name={MARK[t.kind]} size={18} /></span>
 				{/if}
@@ -208,6 +210,23 @@
 		border-radius: 50%;
 		border: 2px solid var(--pp);
 		background: color-mix(in srgb, var(--pp) 35%, var(--surface));
+	}
+	/* ⚓ With the profile's picture (Nate 2026-10-27): larger, the colour as a
+	   2px ring outside it, as the top bar wears it. */
+	.nt-swatch.has-picture {
+		display: grid;
+		place-items: center;
+		width: 30px;
+		height: 30px;
+		border: none;
+		box-shadow: 0 0 0 2px var(--pp);
+		background: var(--surface);
+		overflow: hidden;
+	}
+	.nt-swatch img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 	.nt-text {
 		grid-area: text;

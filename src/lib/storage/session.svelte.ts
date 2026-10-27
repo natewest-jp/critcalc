@@ -33,7 +33,8 @@ import {
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
 import { notices, heldKey, announceAfterReload, type NoticeKind } from '$lib/notices.svelte';
-import { colourValue, isReservedName } from '$lib/profileLook';
+import { colourValue, isReservedName, pictureUrl } from '$lib/profileLook';
+import { get as readStore } from 'svelte/store';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -81,7 +82,13 @@ import {
 	type JournalDoc,
 	type RosterChanges
 } from './journal';
-import { bindRoster, type LoadoutEntry, type RosterPart, type SavedNotation } from '$lib/stores';
+import {
+	bindRoster,
+	siteSettings,
+	type LoadoutEntry,
+	type RosterPart,
+	type SavedNotation
+} from '$lib/stores';
 import {
 	askOnFirstSave,
 	backupReminderDue,
@@ -93,6 +100,7 @@ import { scrollBehavior } from '$lib/motion';
 import {
 	THEORYCRAFT_ID,
 	newId,
+	pictureOf,
 	type Picture,
 	type ProfileColour,
 	type Roster,
@@ -117,6 +125,15 @@ import {
 export { rotationAsSaved } from './convert';
 
 /** Approved by Nate 2026-10-23. */
+/** A profile as a toast shows it: its colour as the disc's ring and, ⚓ Nate
+ *  2026-10-27, its picture inside (the one the top bar shows). */
+function toastLook(p: ProfileRecord): { swatch: string; picture: string | null } {
+	return {
+		swatch: colourValue(p.colour),
+		picture: pictureUrl(pictureOf(p), readStore(siteSettings).useNewOutfits, p.twin)
+	};
+}
+
 const MIGRATED_NOTICE = `Your roster, rotations, and lineups are now in a profile, ${MIGRATED_PROFILE_NAME}`;
 
 /** How long typing must pause before a save (ms). `visibilitychange` flushes
@@ -1853,7 +1870,7 @@ class StorageSession {
 			'success',
 			wasActive ? `Moved ${name} to Trash. You’re in Theorycraft now.` : `Moved ${name} to Trash`,
 			{
-				swatch: colourValue(gone.colour),
+				...toastLook(gone),
 				actions: [
 					{
 						label: 'Undo',
@@ -1923,7 +1940,7 @@ class StorageSession {
 		if (!back) return false;
 		if (say) {
 			const p = this.profiles.find((x) => x.id === rec.profileId);
-			if (p) notices.toast('success', `Restored to ${p.name}`, { swatch: colourValue(p.colour) });
+			if (p) notices.toast('success', `Restored to ${p.name}`, toastLook(p));
 		}
 		return true;
 	}
@@ -1963,7 +1980,7 @@ class StorageSession {
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id });
 		await this.#loadProfiles();
 		this.version++;
-		if (say) notices.toast('success', `Restored ${p.name}`, { swatch: colourValue(p.colour) });
+		if (say) notices.toast('success', `Restored ${p.name}`, toastLook(p));
 		return true;
 	}
 
@@ -2021,7 +2038,7 @@ class StorageSession {
 		this.switchedAt = Date.now();
 		if (say !== null) {
 			const { kind, text } = say?.(next) ?? { kind: 'info', text: `Switched to ${next.name}` };
-			notices.toast(kind, text, { swatch: colourValue(next.colour) });
+			notices.toast(kind, text, toastLook(next));
 		}
 	}
 
