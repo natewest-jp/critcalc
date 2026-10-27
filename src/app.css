@@ -1729,6 +1729,14 @@
 	   full-screen sidebar's current item had no fill (Nate). One rung up reads
 	   as the thing coming toward you, on the ground and on a raised card alike. */
 	--surface-hover: var(--slate-600);
+	/* ⚓ FLOATING, two rungs above raised (Nate 2026-10-27, the toast-attention
+	   lab): a dark surface that appears unbidden over slate — today the Roster's
+	   keys bar — must be brighter than every ground it can land on, or it can
+	   come and go unseen. No rim; the brightness step and the shadow carry it.
+	   --surface-float-key is its keycap, one step lighter again. ⚠ Ink on it is
+	   --text, since --muted reaches only 3.4 to 1 here. Toasts went to paper instead. */
+	--surface-float: var(--slate-500);
+	--surface-float-key: color-mix(in srgb, var(--parchment-100) 16%, var(--slate-500));
 	/* ⚠ NO SIZE AXIS ON DARK. --surface-broad is a PAPER distinction (see
 	   .ctx-light): Genshin splits its parchment grounds by extent, and does not
 	   split its dark ones. Aliased to --surface so the role resolves everywhere
