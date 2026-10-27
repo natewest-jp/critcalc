@@ -1294,63 +1294,12 @@
 		const cs = getComputedStyle(trackScrollEl);
 		return { left: parseFloat(cs.paddingLeft) || 0, right: parseFloat(cs.paddingRight) || 0 };
 	});
-	// The ruler strip viewport — a pure FOLLOWER of the track scroller (overflow
-	// hidden, no user scroll): it only ever receives programmatic scrollLeft
-	// writes, so it can't be momentum-scrolling when one lands.
-	let rulerScrollEl: HTMLDivElement | undefined;
-
-	// ↻ 2026-08-11 (the timeline round): THE GESTURE LATCH IS GONE, and it is
-	// worth recording what it was for, because deleting a hard-won workaround
-	// looks reckless without the reason.
-	//
-	// There used to be TWO user-scrollable elements here — the tracks and a
-	// hand-built external scrollbar below them — mirroring each other. A
-	// programmatic scrollLeft write onto an element that is momentum-scrolling
-	// breaks the scroll (Chrome/Firefox hitch; Safari resolves the interrupted
-	// momentum by JUMPING to the end), so each side had to know when the other
-	// was driving, via a 150ms source latch.
-	//
-	// ⚓ NATE 2026-08-11: "the only thing we need [the custom scrollbar] to
-	// avoid" was the native overlay scrollbar drawing on top of the bottom lane's
-	// bars. Styling ::-webkit-scrollbar makes the scrollbar non-overlay — it
-	// takes layout space instead of floating over content — so a bottom gutter
-	// on the scroller solves that directly (see .rp-track-scroll). With the
-	// second scroller gone there is exactly ONE gesture source and one
-	// write-only follower, which is a shape that cannot have the bug the latch
-	// defended against. The whole class of failure left with the DOM node.
-	let mirrorRaf = 0;
-
-	function scheduleMirror() {
-		if (mirrorRaf) return;
-		mirrorRaf = requestAnimationFrame(() => {
-			mirrorRaf = 0;
-			if (!trackScrollEl || !rulerScrollEl) return;
-			rulerScrollEl.scrollLeft = trackScrollEl.scrollLeft;
-		});
-	}
-
-	/**
-	 * The header strip's wheel, handed to the tracks (2026-08-17).
-	 *
-	 * The strip is `overflow: hidden` — that is what makes it a follower — so a
-	 * gesture over it did nothing at all. That was invisible while the strip held
-	 * only the ruler (nobody scrolls a chart by its axis), and stopped being
-	 * invisible the moment the AURA LANE moved up here: it is a chart occupying
-	 * a third of the header, and a chart that will not scroll under the cursor
-	 * reads as broken.
-	 *
-	 * ⚠ HORIZONTAL ONLY, deliberately. Over the tracks a vertical wheel scrolls
-	 * the PAGE (the scroller is x-only), so forwarding deltaY would give the
-	 * header a behaviour the surface it mirrors does not have. Writing
-	 * `trackScrollEl.scrollLeft` fires its scroll event, which brings the strip
-	 * back into line through the existing mirror — the follower is never written
-	 * from two places.
-	 */
-	function onHeaderWheel(e: WheelEvent) {
-		if (!trackScrollEl || e.deltaX === 0) return;
-		trackScrollEl.scrollLeft += e.deltaX;
-		e.preventDefault();
-	}
+	// ↻ 2026-10-27: THERE IS NO FOLLOWER. The ruler and the aura lane ride
+	// INSIDE the track scroller (see the header's markup), so one native scroll
+	// moves them with the bars. They used to be a separate `overflow: hidden`
+	// strip whose scrollLeft was copied from here in a rAF, which on a phone
+	// trailed the compositor's scroll by a frame or more (⚓ Nate). The old
+	// gesture latch and the external scrollbar it defended are long gone too.
 
 	// Pointer guard while scrolling. Chrome freezes hover processing during an
 	// active trackpad gesture but resumes it around gesture end — which on
@@ -1374,12 +1323,10 @@
 	}
 	$effect(() => () => {
 		clearTimeout(scrollIdleTimer);
-		cancelAnimationFrame(mirrorRaf);
 	});
 
 	function onTrackScroll() {
 		markScrolling();
-		scheduleMirror();
 	}
 
 	let totalDuration = $derived.by(() => {
@@ -2940,17 +2887,7 @@
 		     now stands proud of the BANDS as well as the surface, so its anchor
 		     has to span both — and one dock definition, shared by both benched
 		     tools, replaces the two that had silently drifted apart. -->
-		<!-- ── Ruler strip (full frame width, ABOVE the track area) ── -->
-		<!-- Its own row so the notes panel can never push it: the ruler
-		     viewport is a scroll FOLLOWER (overflow hidden, mirrored from the
-		     track/ext scrollers), and the view cluster stays pinned to the
-		     frame's right edge. -->
-		<div class="rp-ruler-strip">
-			<!-- The ruler takes the SAME edge roll-off as the tracks below it
-			     (⚓ NATE 2026-08-11): it is the same instrument seen from the top,
-			     and a faded bar under a hard-cut time axis reads as two objects.
-			     Its scrollLeft is written programmatically, which still fires the
-			     scroll events the action listens for. -->
+		<div class="rp-timeline-area">
 			<!-- ⚓ THE UNIT DATUM'S LABELS, on the far side of the 0s line (⚓ NATE
 			     2026-08-17) — in the frame's own left padding, which is the only room
 			     that exists there: the ruler and the tracks below both begin at the
@@ -2958,8 +2895,7 @@
 			     measures.
 			     ⚠⚠ A SIBLING OF THE SCROLLER, NOT A CHILD OF THE PLOT. The first attempt
 			     hung them off the plot's left edge, where `getBoundingClientRect`
-			     reported a perfectly good box and NOTHING PAINTED — `.rp-ruler-scroll`
-			     is `overflow: hidden` (that is what makes it a follower) and clips
+			     reported a perfectly good box and NOTHING PAINTED — the scroller clips
 			     anything outside its content box. ⛔ Don't move them back inside.
 			     ⚓ Sitting outside the scroller also makes them a real LEGEND: they hold
 			     still while the chart scrolls under them, which is what a datum reading
@@ -2976,357 +2912,6 @@
 					{/each}
 				</div>
 			{/if}
-			<div
-				class="rp-ruler-scroll scroll-fade-x"
-				bind:this={rulerScrollEl}
-				use:scrollFade={{ axis: 'x' }}
-				onwheel={onHeaderWheel}
-			>
-				<!-- ONE width-sized box for the whole header, so the aura plot and the
-				     ruler cannot disagree about how long the rotation is — they are two
-				     readings of the same x axis and the width is stated once. -->
-				<div class="rp-header-inner" style:width="{totalWidth}px">
-					<!-- ══ TARGET AURA lane (L6; moved here 2026-08-17) ═══════════════
-				     The first surface the gauge has. Three bands, top to bottom,
-				     each closer to what it describes: reaction labels, then the
-				     applications that caused them, then the auras those left
-				     behind. Rendered whenever the Auras layer is on, even with
-				     nothing landed yet (↻ 2026-10-22: it waited for the first
-				     application and jumped the chart while you typed).
-
-				     ⚓ NATE: IT SITS ABOVE THE TIME AXIS. It shipped at the bottom
-				     of the track area, ~600px from the ticks it is read against;
-				     here the ruler becomes a SHARED axis with a chart on either
-				     side of it, which is the same DAW convention that put the axis
-				     on the top edge in the first place.
-
-				     ⚠ IT IS IN THE RULER'S STRIP, NOT THE TRACK SCROLLER, so it is
-				     a scroll FOLLOWER: `rulerScrollEl.scrollLeft` is mirrored from
-				     the tracks. That is what keeps the notes panel from pushing it
-				     (the whole reason this strip exists) — and it costs the wheel,
-				     which the strip's own handler forwards back. -->
-					{#if showAuraLane}
-						<div class="rp-aura-lane" style:height="{auraLaneH}px">
-							<!-- Reaction markers. ⚓ THE PAYOFF: reactions have been in the
-						     IR since P4 and drawn NOWHERE — the player saw the buff
-						     bars a reaction caused but never the reaction itself. -->
-							<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
-								<span class="rp-lane-name">Target aura</span>
-								{#each auraLane.markers as marker (marker.time)}
-									<!-- ⚓ A RUN IS ONE MARKER. A ticking reaction (Electro-Charged,
-									     Lunar-Charged, Burning) collapses into a single marker whose
-									     name carries the count — see `collapseReactionRuns`. The pip
-									     marks the instant it STARTED; the span and the ticks are in
-									     the tooltip and under the crosshair.
-									     ⛔ It does NOT draw a bracket, and that was measured rather
-									     than judged: at resting zoom the label is wider than the run
-									     it names, so any extent from the pip reads as an underline of
-									     the text. -->
-									<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-									<div
-										class="rp-aura-marker"
-										class:rp-aura-marker--lit={auraRunLit(marker.time, marker.endTime)}
-										style:left="{xForTime(marker.time)}px"
-										onmouseenter={(e) => {
-											showTooltip(e, markerTooltip(marker));
-											onAuraMarkEnter(marker.time);
-										}}
-										onmouseleave={onAuraMarkLeave}
-										onclick={() => pv.revealInLog(marker.time / FPS)}
-									>
-										<span class="rp-aura-marker-pip"></span>
-										<!-- ⚠ DROPPED, never truncated — a two-character stub names
-										     nothing and still costs the pip its clearance. The
-										     threshold is the label's OWN measured width now
-										     (`auraMarkerLabels`); it was a flat 26px, which sliced
-										     every name longer than that into a different-looking
-										     stub. The pip alone is honest ("a reaction happened
-										     here") and the tooltip still says which. -->
-										{#if auraMarkerShown.has(marker.time)}
-											<span class="rp-aura-marker-label">{marker.label}</span>
-										{/if}
-									</div>
-								{/each}
-							</div>
-
-							<!-- Application ticks — every gauge the rotation put on the
-						     target. ⚓ The tick carries its ELEMENT'S colour (it belongs
-						     to the row below it); the --ui-provisional FOOT is the
-						     squiggle rule: we took this application, and its unit value
-						     is our 1U stand-in rather than measured data. -->
-							<div
-								class="rp-aura-ticks"
-								style:height="{AURA_TICK_H}px"
-								style:--rp-pill-r="{AURA_PILL_R}px"
-							>
-								{#each auraLane.ticks as tick, ti (ti)}
-									<!-- ⚓ Clicking a pip or a marker opens the LOG at its row
-									     (Nate 2026-09-24). No key handler: the log is reached by
-									     its own band-B plate, and its rows are the keyboard path. -->
-									<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
-									<span
-										class="rp-aura-tick"
-										class:rp-aura-tick--provisional={tick.provisional}
-										class:rp-aura-tick--lit={auraLit(tick.time)}
-										style:left="{xForTime(tick.time)}px"
-										style:background={pal(tick.element).main}
-										onmouseenter={(e) => {
-											onAuraMarkEnter(tick.time);
-											showTooltip(e, {
-												sourceLabel: `${getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId} · ${secondsLabel(tick.time)}s`,
-												effects: [
-													{
-														stat: `${tick.element[0].toUpperCase()}${tick.element.slice(1)} applied`,
-														displayValue: `${tick.units}U`
-													},
-													// ⚠️⚠️ WHAT THIS PILL IS STANDING IN FOR. Applications on
-													// one frame draw at one x, so all but the first are
-													// invisible — and the Polestar Field's ledger counts
-													// APPLICATIONS, so a reader checking that number against
-													// the marks would come up short with nothing to explain
-													// the gap. ⚓ Near-coincident pills separate as you zoom;
-													// these never do, which is why the count is stated.
-													...(tick.sameFrame
-														? [
-																{
-																	stat: 'On this frame',
-																	displayValue: `${tick.sameFrame} applications`
-																}
-															]
-														: []),
-													// ⚓ THE SQUIGGLE RULE IN WORDS. The yellow foot says a
-													// value is a stand-in; only here can it say WHICH value
-													// and what would replace it. A provenance mark the reader
-													// cannot resolve is just a blemish.
-													...(tick.provisional
-														? [
-																{
-																	stat: 'Gauge strength',
-																	displayValue: 'not measured — 1U assumed'
-																}
-															]
-														: [])
-												],
-												isMutuallyExclusive: false
-											});
-										}}
-										onmouseleave={onAuraMarkLeave}
-										onclick={() => pv.revealInLog(tick.time / FPS)}
-									></span>
-								{/each}
-							</div>
-
-							<!-- ⚓ ONE OVERLAID PLOT, drawn at 1:1 across the whole track.
-						     A single SVG at the track's own width means no viewBox
-						     stretch — which is what makes the gauge LINE possible, and
-						     the line is what lets two auras cross legibly where two
-						     solid areas would have gone to mud. -->
-							<!-- svelte-ignore a11y_no_static_element_interactions -->
-							<div
-								class="rp-aura-plot"
-								style:height="{AURA_PLOT_H}px"
-								onmousemove={onAuraMove}
-								onmouseleave={onAuraLeave}
-							>
-								<svg class="rp-aura-svg" width={totalWidth} height={AURA_PLOT_H} aria-hidden="true">
-									<!-- The one datum: whole units below the ceiling, so the y
-							     axis can be read without hovering. Under the fills.
-
-							     ⚓ NAMED AT ITS LEFT END (⚓ NATE 2026-08-17). An unlabelled
-							     rule tells a theorycrafter what they already know and tells
-							     everyone else nothing — it reads as chart furniture rather
-							     than as a QUANTITY, so a 0.8U aura under it looks like a
-							     short bar instead of "most of one unit". The Gauge Explorer
-							     has labelled its unit axis since it was built; this is the
-							     lane catching up, and it is what stops the 2U ceiling
-							     reading as arbitrary (see `auraUMax`).
-							     ⚠ It SCROLLS with the plot, like the lane names — one datum
-							     stated where the chart begins. -->
-									<!-- ⚓ THE HAIRLINE HALF OF THE APPLICATION MARKER, shared with
-									     the Gauge Explorer: each pill above drops a line into the
-									     gauge it changed, so the step in the plot is TIED to the hit
-									     that caused it instead of being left to the eye.
-									     ⚠ Drawn FIRST, under the rules and the auras — it is a
-									     pointer, not data, and an application whose line crossed a
-									     gauge line would read as a value. `stroke-opacity` is paint
-									     alpha, which the sub-pixel laws require here. -->
-									{#each auraLane.ticks as tick, ti (`h${ti}`)}
-										<line
-											x1={xForTime(tick.time)}
-											x2={xForTime(tick.time)}
-											y1="0"
-											y2={AURA_PLOT_H}
-											stroke={pal(tick.element).main}
-											stroke-opacity="0.22"
-										/>
-									{/each}
-									<!-- ⚓ THE RULES RUN THE WHOLE TRACK; their labels live OUTSIDE
-									     it (⚓ NATE 2026-08-17), in the frame's own left padding on the
-									     far side of the 0s line — which is exactly how the Gauge
-									     Explorer reads, and it retires two workarounds at once: the
-									     rule no longer has to yield its first 20px to a label sitting
-									     on top of the data, and the label no longer has to dodge it.
-									     ⚠ The labels are NOT in this SVG (see .rp-aura-units below):
-									     the plot is inside the horizontal scroller and a datum legend
-									     that scrolled away would be useless. -->
-									{#each auraUnitRules as u (u)}
-										<line
-											x1="0"
-											x2={totalWidth}
-											y1={auraYOf(u)}
-											y2={auraYOf(u)}
-											stroke="var(--rp-grid)"
-										/>
-									{/each}
-									<defs>
-										<!-- The fill fades OUT toward the baseline so overlapping
-									     auras stay separable; the colour lives in the line. -->
-										{#each auraPaths as p (p.id)}
-											{#if p.fill}
-												<linearGradient id="rp-aura-{p.id}" x1="0" y1="0" x2="0" y2="1">
-													<stop offset="0%" stop-color={p.color} stop-opacity="0.34" />
-													<stop offset="100%" stop-color={p.color} stop-opacity="0" />
-												</linearGradient>
-											{/if}
-										{/each}
-									</defs>
-									{#each auraPaths as p (p.id)}
-										{#if p.fill}
-											<path d={p.fill} fill="url(#rp-aura-{p.id})" />
-										{/if}
-									{/each}
-									<!-- Lines last, so a short aura is never buried under a
-								     taller one's fill. -->
-									{#each auraPaths as p (p.id)}
-										<path
-											d={p.line}
-											fill="none"
-											stroke={p.color}
-											stroke-width="2"
-											stroke-dasharray={p.dash ?? 'none'}
-											stroke-linejoin="round"
-											stroke-linecap={p.dash ? 'butt' : 'round'}
-										/>
-									{/each}
-								</svg>
-								{#each auraLabels as entry (entry.mod + entry.span.start)}
-									<span
-										class="rp-aura-series-name"
-										style:color={entry.color}
-										style:left="{xForTime(entry.span.start) + 4}px"
-										style:top="{Math.max(0, auraYOf(entry.span.openingU) - 11)}px"
-										>{entry.label}</span
-									>
-								{/each}
-								{#if auraCursorX !== null}
-									<span class="rp-aura-crosshair" style:left="{auraCursorX}px"></span>
-								{/if}
-							</div>
-							<!-- ⚓ WHAT THE REACTION LEFT IN THE WORLD. Under the baseline
-							     because these are ENTITIES, not gauge: a dendro core and a
-							     Starlight Prism have lifetimes but no units, and putting
-							     them inside the plot would hang them off an axis that does
-							     not measure them.
-							     ⚠ A core's bar ends where something ATE it — that instant
-							     comes from the gauge's own events and cannot be derived from
-							     the Bloom, which is the whole reason the strip is worth its
-							     pixels rather than being a nominal 6s stub. -->
-							{#if gadgetRows.length > 0}
-								<div class="rp-gadget-strip" style:height="{gadgetStripH}px">
-									{#each gadgetRows as row (row.kind)}
-										{@const h = gadgetRowH(row.capacity)}
-										<!-- svelte-ignore a11y_no_static_element_interactions -->
-										<div
-											class="rp-gadget-row"
-											style:height="{h}px"
-											onmouseleave={() => {
-												gadgetHover = null;
-												onAuraMarkLeave();
-											}}
-										>
-											<svg width={totalWidth} height={h} aria-hidden="true">
-												<!-- STATE: how many are standing, as ONE translucent shape.
-												     ⛔ No gradient and ⛔ no outline — the fill alone is what
-												     lets this row and the Prism's read as the same object. -->
-												<path
-													d={gadgetStair(row.runs, row.capacity, h)}
-													fill={row.color}
-													fill-opacity={GADGET_FILL_ALPHA}
-													stroke="none"
-												/>
-												<!-- Hit areas for the state, one per run — the count is what a
-												     reader cannot get off a 3px step, so every run can be asked. -->
-												{#each row.runs as run, ri (`r${ri}`)}
-													<rect
-														x={xForTime(run.start)}
-														y="0"
-														width={Math.max(1, xForTime(run.end) - xForTime(run.start))}
-														height={h}
-														fill="transparent"
-														onmouseenter={(e) => gadgetRunEnter(e, row, run, ri)}
-													/>
-												{/each}
-												<!-- EVENTS: one solid disc per spawn, the application pill's own
-												     size. ⚓ Painted LAST so a mark is never behind the state it
-												     caused, and hit LAST for the same reason — the dot is what a
-												     reader is aiming at. -->
-												<!-- ⚓ HOVER IS A RING, NOT A DIMMING (⚓ Nate). Dimming was
-												     answering "which life is this" — a question the row stopped
-												     asking when the leaders went; what is left is "which SPAWN am
-												     I pointing at", and that wants a mark ON the thing rather
-												     than a wash over everything else. The ring is the aura tick's
-												     own lit state (`box-shadow: 0 0 0 2px var(--chrome)`), in the
-												     form SVG can carry it. -->
-												{#each row.spawns as spawn, si (`d${si}`)}
-													<circle
-														cx={xForTime(spawn.time)}
-														cy={gadgetDotCy}
-														r={AURA_PILL_R}
-														fill={row.color}
-														stroke="var(--chrome)"
-														stroke-width="2"
-														stroke-opacity={gadgetHover === `${row.kind}:dot:${si}` ? 1 : 0}
-														onmouseenter={(e) => gadgetDotEnter(e, row, spawn, si)}
-													/>
-												{/each}
-											</svg>
-										</div>
-									{/each}
-								</div>
-							{/if}
-						</div>
-					{/if}
-					<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
-				     rise to the seam, labels above them. -->
-					<div class="rp-ruler" style:height="{RULER_H}px">
-						{#each ticks as tick (tick.t)}
-							<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
-								{#if tick.major && tick.t > 0}
-									<span class="rp-tick-label">{tick.t}s</span>
-								{/if}
-							</div>
-						{/each}
-						<!-- Lap marks (Round B): where each repeat begins. A gold rule
-						     the ruler's height with a ×N label — the axis's own
-						     vocabulary for "again", and gold because a lap seam is
-						     the one thing on the ruler the READER put there. -->
-						{#each lapStarts as lap (lap.lap)}
-							<div class="rp-lap-mark" style:left="{projectX(lap.t, scale)}px">
-								<span class="rp-lap-label">×{lap.lap}</span>
-							</div>
-						{/each}
-					</div>
-					{#if playheadX !== null}
-						<span class="rp-playhead" style:left="{playheadX}px"></span>
-					{/if}
-				</div>
-			</div>
-			<!-- The view cluster (total · zoom · Notes) used to ride this strip's
-			     right end. It moved to BAND B in the toolbar round: it is view
-			     state, and the bands are where view state lives now, in every
-			     tool. The ruler keeps the full frame width it always wanted. -->
-		</div>
-		<div class="rp-timeline-area">
 			<div class="rp-scroll-wrapper">
 				<!-- The label column is GONE (abutting round). It was already pure
 				     reservation — the ribbon stood over its full height, so nothing
@@ -3343,6 +2928,353 @@
 					onscroll={onTrackScroll}
 					use:scrollFade={{ axis: 'x' }}
 				>
+					<!-- ↻ 2026-10-27: THE HEADER RIDES IN THE TRACK SCROLLER. It was a
+					     strip of its own, a scroll FOLLOWER whose scrollLeft was copied from
+					     here a frame later (it existed so the old notes panel could push the
+					     tracks and not the axis; the notes are their own column now). The
+					     tracks scroll on the compositor, so on a phone the ticks and the
+					     aura lane trailed the bars visibly (⚓ Nate). One scroller, one
+					     scroll: nothing to copy, nothing to lag. -->
+					<!-- ONE width-sized box for the whole header, so the aura plot and the
+					     ruler cannot disagree about how long the rotation is — they are two
+					     readings of the same x axis and the width is stated once. -->
+					<div class="rp-header-inner" style:width="{totalWidth}px">
+						<!-- ══ TARGET AURA lane (L6; moved here 2026-08-17) ═══════════════
+					     The first surface the gauge has. Three bands, top to bottom,
+					     each closer to what it describes: reaction labels, then the
+					     applications that caused them, then the auras those left
+					     behind. Rendered whenever the Auras layer is on, even with
+					     nothing landed yet (↻ 2026-10-22: it waited for the first
+					     application and jumped the chart while you typed).
+
+					     ⚓ NATE: IT SITS ABOVE THE TIME AXIS. It shipped at the bottom
+					     of the track area, ~600px from the ticks it is read against;
+					     here the ruler becomes a SHARED axis with a chart on either
+					     side of it, which is the same DAW convention that put the axis
+					     on the top edge in the first place.
+
+					     ↻ 2026-10-27: it is in the TRACK SCROLLER, above the ruler (it
+					     was a scroll follower in a strip of its own, see above). -->
+						{#if showAuraLane}
+							<div class="rp-aura-lane" style:height="{auraLaneH}px">
+								<!-- Reaction markers. ⚓ THE PAYOFF: reactions have been in the
+							     IR since P4 and drawn NOWHERE — the player saw the buff
+							     bars a reaction caused but never the reaction itself. -->
+								<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
+									<span class="rp-lane-name">Target aura</span>
+									{#each auraLane.markers as marker (marker.time)}
+										<!-- ⚓ A RUN IS ONE MARKER. A ticking reaction (Electro-Charged,
+										     Lunar-Charged, Burning) collapses into a single marker whose
+										     name carries the count — see `collapseReactionRuns`. The pip
+										     marks the instant it STARTED; the span and the ticks are in
+										     the tooltip and under the crosshair.
+										     ⛔ It does NOT draw a bracket, and that was measured rather
+										     than judged: at resting zoom the label is wider than the run
+										     it names, so any extent from the pip reads as an underline of
+										     the text. -->
+										<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
+										<div
+											class="rp-aura-marker"
+											class:rp-aura-marker--lit={auraRunLit(marker.time, marker.endTime)}
+											style:left="{xForTime(marker.time)}px"
+											onmouseenter={(e) => {
+												showTooltip(e, markerTooltip(marker));
+												onAuraMarkEnter(marker.time);
+											}}
+											onmouseleave={onAuraMarkLeave}
+											onclick={() => pv.revealInLog(marker.time / FPS)}
+										>
+											<span class="rp-aura-marker-pip"></span>
+											<!-- ⚠ DROPPED, never truncated — a two-character stub names
+											     nothing and still costs the pip its clearance. The
+											     threshold is the label's OWN measured width now
+											     (`auraMarkerLabels`); it was a flat 26px, which sliced
+											     every name longer than that into a different-looking
+											     stub. The pip alone is honest ("a reaction happened
+											     here") and the tooltip still says which. -->
+											{#if auraMarkerShown.has(marker.time)}
+												<span class="rp-aura-marker-label">{marker.label}</span>
+											{/if}
+										</div>
+									{/each}
+								</div>
+
+								<!-- Application ticks — every gauge the rotation put on the
+							     target. ⚓ The tick carries its ELEMENT'S colour (it belongs
+							     to the row below it); the --ui-provisional FOOT is the
+							     squiggle rule: we took this application, and its unit value
+							     is our 1U stand-in rather than measured data. -->
+								<div
+									class="rp-aura-ticks"
+									style:height="{AURA_TICK_H}px"
+									style:--rp-pill-r="{AURA_PILL_R}px"
+								>
+									{#each auraLane.ticks as tick, ti (ti)}
+										<!-- ⚓ Clicking a pip or a marker opens the LOG at its row
+										     (Nate 2026-09-24). No key handler: the log is reached by
+										     its own band-B plate, and its rows are the keyboard path. -->
+										<!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events -->
+										<span
+											class="rp-aura-tick"
+											class:rp-aura-tick--provisional={tick.provisional}
+											class:rp-aura-tick--lit={auraLit(tick.time)}
+											style:left="{xForTime(tick.time)}px"
+											style:background={pal(tick.element).main}
+											onmouseenter={(e) => {
+												onAuraMarkEnter(tick.time);
+												showTooltip(e, {
+													sourceLabel: `${getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId} · ${secondsLabel(tick.time)}s`,
+													effects: [
+														{
+															stat: `${tick.element[0].toUpperCase()}${tick.element.slice(1)} applied`,
+															displayValue: `${tick.units}U`
+														},
+														// ⚠️⚠️ WHAT THIS PILL IS STANDING IN FOR. Applications on
+														// one frame draw at one x, so all but the first are
+														// invisible — and the Polestar Field's ledger counts
+														// APPLICATIONS, so a reader checking that number against
+														// the marks would come up short with nothing to explain
+														// the gap. ⚓ Near-coincident pills separate as you zoom;
+														// these never do, which is why the count is stated.
+														...(tick.sameFrame
+															? [
+																	{
+																		stat: 'On this frame',
+																		displayValue: `${tick.sameFrame} applications`
+																	}
+																]
+															: []),
+														// ⚓ THE SQUIGGLE RULE IN WORDS. The yellow foot says a
+														// value is a stand-in; only here can it say WHICH value
+														// and what would replace it. A provenance mark the reader
+														// cannot resolve is just a blemish.
+														...(tick.provisional
+															? [
+																	{
+																		stat: 'Gauge strength',
+																		displayValue: 'not measured — 1U assumed'
+																	}
+																]
+															: [])
+													],
+													isMutuallyExclusive: false
+												});
+											}}
+											onmouseleave={onAuraMarkLeave}
+											onclick={() => pv.revealInLog(tick.time / FPS)}
+										></span>
+									{/each}
+								</div>
+
+								<!-- ⚓ ONE OVERLAID PLOT, drawn at 1:1 across the whole track.
+							     A single SVG at the track's own width means no viewBox
+							     stretch — which is what makes the gauge LINE possible, and
+							     the line is what lets two auras cross legibly where two
+							     solid areas would have gone to mud. -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
+								<div
+									class="rp-aura-plot"
+									style:height="{AURA_PLOT_H}px"
+									onmousemove={onAuraMove}
+									onmouseleave={onAuraLeave}
+								>
+									<svg
+										class="rp-aura-svg"
+										width={totalWidth}
+										height={AURA_PLOT_H}
+										aria-hidden="true"
+									>
+										<!-- The one datum: whole units below the ceiling, so the y
+								     axis can be read without hovering. Under the fills.
+
+								     ⚓ NAMED AT ITS LEFT END (⚓ NATE 2026-08-17). An unlabelled
+								     rule tells a theorycrafter what they already know and tells
+								     everyone else nothing — it reads as chart furniture rather
+								     than as a QUANTITY, so a 0.8U aura under it looks like a
+								     short bar instead of "most of one unit". The Gauge Explorer
+								     has labelled its unit axis since it was built; this is the
+								     lane catching up, and it is what stops the 2U ceiling
+								     reading as arbitrary (see `auraUMax`).
+								     ⚠ It SCROLLS with the plot, like the lane names — one datum
+								     stated where the chart begins. -->
+										<!-- ⚓ THE HAIRLINE HALF OF THE APPLICATION MARKER, shared with
+										     the Gauge Explorer: each pill above drops a line into the
+										     gauge it changed, so the step in the plot is TIED to the hit
+										     that caused it instead of being left to the eye.
+										     ⚠ Drawn FIRST, under the rules and the auras — it is a
+										     pointer, not data, and an application whose line crossed a
+										     gauge line would read as a value. `stroke-opacity` is paint
+										     alpha, which the sub-pixel laws require here. -->
+										{#each auraLane.ticks as tick, ti (`h${ti}`)}
+											<line
+												x1={xForTime(tick.time)}
+												x2={xForTime(tick.time)}
+												y1="0"
+												y2={AURA_PLOT_H}
+												stroke={pal(tick.element).main}
+												stroke-opacity="0.22"
+											/>
+										{/each}
+										<!-- ⚓ THE RULES RUN THE WHOLE TRACK; their labels live OUTSIDE
+										     it (⚓ NATE 2026-08-17), in the frame's own left padding on the
+										     far side of the 0s line — which is exactly how the Gauge
+										     Explorer reads, and it retires two workarounds at once: the
+										     rule no longer has to yield its first 20px to a label sitting
+										     on top of the data, and the label no longer has to dodge it.
+										     ⚠ The labels are NOT in this SVG (see .rp-aura-units below):
+										     the plot is inside the horizontal scroller and a datum legend
+										     that scrolled away would be useless. -->
+										{#each auraUnitRules as u (u)}
+											<line
+												x1="0"
+												x2={totalWidth}
+												y1={auraYOf(u)}
+												y2={auraYOf(u)}
+												stroke="var(--rp-grid)"
+											/>
+										{/each}
+										<defs>
+											<!-- The fill fades OUT toward the baseline so overlapping
+										     auras stay separable; the colour lives in the line. -->
+											{#each auraPaths as p (p.id)}
+												{#if p.fill}
+													<linearGradient id="rp-aura-{p.id}" x1="0" y1="0" x2="0" y2="1">
+														<stop offset="0%" stop-color={p.color} stop-opacity="0.34" />
+														<stop offset="100%" stop-color={p.color} stop-opacity="0" />
+													</linearGradient>
+												{/if}
+											{/each}
+										</defs>
+										{#each auraPaths as p (p.id)}
+											{#if p.fill}
+												<path d={p.fill} fill="url(#rp-aura-{p.id})" />
+											{/if}
+										{/each}
+										<!-- Lines last, so a short aura is never buried under a
+									     taller one's fill. -->
+										{#each auraPaths as p (p.id)}
+											<path
+												d={p.line}
+												fill="none"
+												stroke={p.color}
+												stroke-width="2"
+												stroke-dasharray={p.dash ?? 'none'}
+												stroke-linejoin="round"
+												stroke-linecap={p.dash ? 'butt' : 'round'}
+											/>
+										{/each}
+									</svg>
+									{#each auraLabels as entry (entry.mod + entry.span.start)}
+										<span
+											class="rp-aura-series-name"
+											style:color={entry.color}
+											style:left="{xForTime(entry.span.start) + 4}px"
+											style:top="{Math.max(0, auraYOf(entry.span.openingU) - 11)}px"
+											>{entry.label}</span
+										>
+									{/each}
+									{#if auraCursorX !== null}
+										<span class="rp-aura-crosshair" style:left="{auraCursorX}px"></span>
+									{/if}
+								</div>
+								<!-- ⚓ WHAT THE REACTION LEFT IN THE WORLD. Under the baseline
+								     because these are ENTITIES, not gauge: a dendro core and a
+								     Starlight Prism have lifetimes but no units, and putting
+								     them inside the plot would hang them off an axis that does
+								     not measure them.
+								     ⚠ A core's bar ends where something ATE it — that instant
+								     comes from the gauge's own events and cannot be derived from
+								     the Bloom, which is the whole reason the strip is worth its
+								     pixels rather than being a nominal 6s stub. -->
+								{#if gadgetRows.length > 0}
+									<div class="rp-gadget-strip" style:height="{gadgetStripH}px">
+										{#each gadgetRows as row (row.kind)}
+											{@const h = gadgetRowH(row.capacity)}
+											<!-- svelte-ignore a11y_no_static_element_interactions -->
+											<div
+												class="rp-gadget-row"
+												style:height="{h}px"
+												onmouseleave={() => {
+													gadgetHover = null;
+													onAuraMarkLeave();
+												}}
+											>
+												<svg width={totalWidth} height={h} aria-hidden="true">
+													<!-- STATE: how many are standing, as ONE translucent shape.
+													     ⛔ No gradient and ⛔ no outline — the fill alone is what
+													     lets this row and the Prism's read as the same object. -->
+													<path
+														d={gadgetStair(row.runs, row.capacity, h)}
+														fill={row.color}
+														fill-opacity={GADGET_FILL_ALPHA}
+														stroke="none"
+													/>
+													<!-- Hit areas for the state, one per run — the count is what a
+													     reader cannot get off a 3px step, so every run can be asked. -->
+													{#each row.runs as run, ri (`r${ri}`)}
+														<rect
+															x={xForTime(run.start)}
+															y="0"
+															width={Math.max(1, xForTime(run.end) - xForTime(run.start))}
+															height={h}
+															fill="transparent"
+															onmouseenter={(e) => gadgetRunEnter(e, row, run, ri)}
+														/>
+													{/each}
+													<!-- EVENTS: one solid disc per spawn, the application pill's own
+													     size. ⚓ Painted LAST so a mark is never behind the state it
+													     caused, and hit LAST for the same reason — the dot is what a
+													     reader is aiming at. -->
+													<!-- ⚓ HOVER IS A RING, NOT A DIMMING (⚓ Nate). Dimming was
+													     answering "which life is this" — a question the row stopped
+													     asking when the leaders went; what is left is "which SPAWN am
+													     I pointing at", and that wants a mark ON the thing rather
+													     than a wash over everything else. The ring is the aura tick's
+													     own lit state (`box-shadow: 0 0 0 2px var(--chrome)`), in the
+													     form SVG can carry it. -->
+													{#each row.spawns as spawn, si (`d${si}`)}
+														<circle
+															cx={xForTime(spawn.time)}
+															cy={gadgetDotCy}
+															r={AURA_PILL_R}
+															fill={row.color}
+															stroke="var(--chrome)"
+															stroke-width="2"
+															stroke-opacity={gadgetHover === `${row.kind}:dot:${si}` ? 1 : 0}
+															onmouseenter={(e) => gadgetDotEnter(e, row, spawn, si)}
+														/>
+													{/each}
+												</svg>
+											</div>
+										{/each}
+									</div>
+								{/if}
+							</div>
+						{/if}
+						<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
+					     rise to the seam, labels above them. -->
+						<div class="rp-ruler" style:height="{RULER_H}px">
+							{#each ticks as tick (tick.t)}
+								<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
+									{#if tick.major && tick.t > 0}
+										<span class="rp-tick-label">{tick.t}s</span>
+									{/if}
+								</div>
+							{/each}
+							<!-- Lap marks (Round B): where each repeat begins. A gold rule
+							     the ruler's height with a ×N label — the axis's own
+							     vocabulary for "again", and gold because a lap seam is
+							     the one thing on the ruler the READER put there. -->
+							{#each lapStarts as lap (lap.lap)}
+								<div class="rp-lap-mark" style:left="{projectX(lap.t, scale)}px">
+									<span class="rp-lap-label">×{lap.lap}</span>
+								</div>
+							{/each}
+						</div>
+						{#if playheadX !== null}
+							<span class="rp-playhead" style:left="{playheadX}px"></span>
+						{/if}
+					</div>
 					<div
 						class="rp-tracks"
 						style:width="{totalWidth}px"
@@ -3991,8 +3923,7 @@
 		     The track scroller styles its own scrollbar now, which makes it
 		     non-overlay, and reserves a gutter for it — so the bar lands on empty
 		     space by construction rather than by being moved somewhere else. See
-		     .rp-track-scroll, and scheduleMirror for what the second scroller was
-		     costing in sync machinery. -->
+		     .rp-track-scroll. -->
 
 		<!-- ⛔ THE CHARACTER SOURCE OVERLAY STOOD HERE — retired 2026-08-13.
 		     It was a non-modal panel covering the whole frame: the ~122-card
@@ -4360,7 +4291,7 @@
 		min-width: 0;
 		/* ⛔ `position: relative` LEFT WITH THE SOURCE (2026-08-13). It was the
 		   overlay's containing block and nothing else's: both remaining children
-		   — .rp-ruler-strip and .rp-timeline-area — declare their own, so every
+		   — .rp-timeline-area declared its own (and the ruler strip did then), so every
 		   absolutely-positioned descendant already anchors nearer than this. A
 		   stale "containing block for X" on a frame with no X is how a stacking
 		   context gets inherited by accident later. */
@@ -4487,11 +4418,10 @@
 		min-width: 0;
 		overflow-x: auto;
 		overflow-y: hidden;
-		/* ⚓ Nate 2026-09-24: no rubber band. The ruler and the aura lane are
-		   scroll FOLLOWERS mirrored from scrollLeft, and an elastic overscroll
-		   moves the content without moving scrollLeft — so a sharp fling tore
-		   the ticks away from the bars they time. Momentum itself stays (that
-		   is the OS's, and harmless); only the bounce past the ends goes. */
+		/* ⚓ Nate 2026-09-24: no rubber band. It was for the ruler and the aura
+		   lane, then scroll FOLLOWERS that an elastic overscroll tore away from
+		   the bars; they ride in here since 2026-10-27, and the bounce stays
+		   off as the chart's behaviour. Momentum stays (that is the OS's). */
 		overscroll-behavior-x: none;
 		padding-bottom: var(--rp-scrollbar-gutter);
 		/* Firefox has no ::-webkit-scrollbar; this is its whole vocabulary. */
@@ -4524,25 +4454,11 @@
 		--buff-label-fade: 12px;
 	}
 
-	/* ── Ruler strip (top time axis, DAW convention) ──────────── */
-	/* Full frame width, its own row above the track area — the notes panel
-	   pushes only the tracks, never this strip. The viewport is a scroll
-	   FOLLOWER (overflow hidden, mirrored in scheduleMirror). Ticks rise to
-	   the seam below; labels sit above the stubs. Mirrored by the PNG
-	   painter. */
-	.rp-ruler-strip {
-		position: relative;
-		display: flex;
-	}
-	.rp-ruler-scroll {
-		flex: 1;
-		min-width: 0;
-		overflow: hidden;
-		/* Must match .rp-track-scroll's, or the two edges of one instrument would
-		   ramp at different rates. A follower needs no scrollbar gutter. */
-		--scroll-fade: 48px;
-	}
-	/* ↻ 2026-08-17: the strip carries the AURA LANE above the ruler, so its
+	/* ── The header (top time axis, DAW convention) ──────────── */
+	/* The first row of the track scroller (↻ 2026-10-27; it was a follower
+	   strip above it). Ticks rise to the seam below; labels sit above the
+	   stubs. Mirrored by the PNG painter. */
+	/* ↻ 2026-08-17: the header carries the AURA LANE above the ruler, so its
 	   contents are a column and the width is stated ONCE, on this box. Two
 	   readings of one x axis cannot be allowed to disagree about how long the
 	   rotation is. */
@@ -5961,6 +5877,16 @@
 	.rp-composer--pinned .rp-composer-body::before {
 		background-color: var(--surface-raised);
 	}
+	/* ↻ 2026-10-27 (⚓ Nate): pinned, the field is a WELL in the plate — the
+	   chart's own ground. Its at-rest fill (--fill-rest, 13% chrome) is tuned to
+	   composite near that ground over the dimmed scene, and the editor's dimmed
+	   tokens are mixed against it (notationEditorExtension's COMPOSER_BG); laid
+	   over slate-700 it came out far lighter, and the `>` separators (dim 30%)
+	   all but vanished. The ring stays. */
+	.rp-composer--pinned .rp-notation :global(.cm-editor),
+	.rp-composer--pinned .rp-notation :global(.rp-notation-placeholder) {
+		background: var(--rp-chart-bg);
+	}
 	/* The dock keeps its own one wrapping row (field · pair · key row). */
 	.rp-composer--docked .rp-composer-body {
 		display: contents;
@@ -6015,6 +5941,16 @@
 		align-self: start;
 		gap: 2px;
 		height: calc(13px * 1.6 + 20px);
+	}
+	/* ↻ 2026-10-27 (⚓ Nate, "a little slim"): with Clear the pair is two
+	   ordinary small buttons tall, a few px past a one-line box. The body tops
+	   the field to them (below) so the two still share a top edge. */
+	.rp-history--clear {
+		grid-template-rows: 24px 24px;
+		height: auto;
+	}
+	.rp-composer-body:has(.rp-history--clear) {
+		align-items: flex-start;
 	}
 	/* ↻ 2026-10-27 (⚓ Nate): with Clear, three stacked in one line's height
 	   were ~13px each. Undo and Redo side by side, Clear spanning both under
@@ -6248,14 +6184,10 @@
 	   ⚠ The aura lane's unit labels (.rp-aura-units) stand in the frame's left
 	   padding, so scrolled content passes UNDER them; their halo is what keeps
 	   them legible there, as it has been on a phone since 2026-10-15.
-	   ⚠ BOTH SCROLLERS, ONE RULE: the ruler (and the aura lane inside it) is a
-	   scroll follower mirrored from scrollLeft, so its box, padding and fade must
-	   match the tracks' exactly or the ticks slide off the bars they time.
 	   ⚠ The padding is read back in JS (`trackPad`, per side): the content
 	   viewport is the client width MINUS both, for the axis floor, the playback
 	   follow and scroll-to-seconds. */
-	.rp-track-scroll,
-	.rp-ruler-scroll {
+	.rp-track-scroll {
 		--rp-reach-l: calc(var(--room-left, 0px) + var(--rp-frame-pad-x));
 		--rp-reach-r: calc(var(--room-right, 0px) + var(--rp-frame-pad-x));
 		margin-left: calc(var(--rp-reach-l) * -1);
@@ -6264,8 +6196,7 @@
 		padding-right: var(--rp-reach-r);
 	}
 	@media (max-width: 40rem) {
-		.rp-track-scroll,
-		.rp-ruler-scroll {
+		.rp-track-scroll {
 			--scroll-fade: 20px;
 		}
 	}

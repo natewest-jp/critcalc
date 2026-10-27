@@ -210,7 +210,8 @@ function document(v: unknown, profiles: Set<string>, now: number): DocumentRecor
 			: {}),
 		...(v.pinned === true ? { pinned: true as const } : {}),
 		...(v.fromLink === true ? { fromLink: true as const } : {}),
-		...(str(v.pairId) ? { pairId: v.pairId } : {})
+		...(str(v.pairId) ? { pairId: v.pairId } : {}),
+		...(str(v.pairId) && v.pairHome === true ? { pairHome: true as const } : {})
 	};
 	if (v.type === 'rotation') {
 		const body = rotationBody(v.body);
@@ -267,7 +268,11 @@ function sanitizeStore(v: unknown, now: number): MigrationResult | null {
 	}
 	// A pair whose other side did not come is no pair.
 	const docIds = new Set(documents.map((d) => d.id));
-	for (const d of documents) if (d.pairId && !docIds.has(d.pairId)) delete d.pairId;
+	for (const d of documents)
+		if (d.pairId && !docIds.has(d.pairId)) {
+			delete d.pairId;
+			delete d.pairHome;
+		}
 	// A current pointer to a document that did not come is a fresh start.
 	for (const p of profiles) {
 		for (const t of ['planner', 'builder'] as const) {

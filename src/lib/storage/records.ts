@@ -131,6 +131,14 @@ type DocumentCommon = SyncFields & {
 	 * crosses profiles: the real profile's document and its Theorycraft copy.
 	 */
 	pairId?: string;
+	/**
+	 * ⚓ This side is the pair's HOME (2026-10-27, Nate): the rotation the
+	 * comparison was started from — the original of a duplicate, the current
+	 * one of a Compare with…, the profile's own of a what-if. Home is the left
+	 * side, and ✕ ends the pair and returns there from either side. On the home
+	 * document only; a pair made before it has none and is ordered as it was.
+	 */
+	pairHome?: true;
 };
 
 export type RotationDocument = DocumentCommon & { type: 'rotation'; body: RotationBody };

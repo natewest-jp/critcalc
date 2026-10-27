@@ -1194,6 +1194,8 @@ class StorageSession {
 		createdAt: number;
 		/** This side, for naming the two. */
 		self: { profileId: string; createdAt: number };
+		/** Which side is home (`pairHome`); null for a pair made before it. */
+		home: 'self' | 'other' | null;
 	} | null>(null);
 
 	/** The document each tool showed before its current one (⌃`, §4.2). */
@@ -1216,6 +1218,7 @@ class StorageSession {
 						profileId: p.profileId,
 						createdAt: p.createdAt,
 						self: { profileId: doc!.profileId, createdAt: doc!.createdAt },
+						home: doc!.pairHome ? ('self' as const) : p.pairHome ? ('other' as const) : null,
 						label:
 							p.name ?? (p.type === 'rotation' ? rotationLabel(p.body.slots) : lineupLabel(p.body))
 					}
@@ -1253,17 +1256,20 @@ class StorageSession {
 		return d && !d.deleted && d.type === 'rotation' ? d : null;
 	}
 
-	/** Pair two documents, ending any pair either was in. `b` null ends `a`'s. */
+	/** Pair two documents, ending any pair either was in, with `a` as HOME.
+	 *  `b` null ends `a`'s. */
 	async #setPair(a: string, b: string | null): Promise<void> {
 		const db = this.#db;
 		if (!db) return;
 		const now = Date.now();
-		const write = async (id: string, pairId: string | undefined) => {
+		const write = async (id: string, pairId: string | undefined, home = false) => {
 			const next = await modify(db, 'documents', id, (d) => {
 				if (!d || d.deleted) return null;
 				const out = { ...d, updatedAt: now } as DocumentRecord;
 				if (pairId) out.pairId = pairId;
 				else delete out.pairId;
+				if (pairId && home) out.pairHome = true;
+				else delete out.pairHome;
 				return out;
 			});
 			if (!next) return;
@@ -1276,7 +1282,7 @@ class StorageSession {
 		};
 		await unpairOld(a);
 		if (b) await unpairOld(b);
-		await write(a, b ?? undefined);
+		await write(a, b ?? undefined, true);
 		if (b) await write(b, a);
 		this.version++;
 	}
@@ -1372,15 +1378,44 @@ class StorageSession {
 		this.#plannerContext(this.#records.get(doc.id) ?? doc);
 	}
 
-	/** ✕: the pair ends; both documents stay. */
-	async endPair(): Promise<void> {
+	/**
+	 * ✕: the pair ends and both documents stay. ⚓ It returns HOME from either
+	 * side (Nate 2026-10-27): what you compare against is a thought about the
+	 * work in front of you, not your new work, and leaving a guest on screen
+	 * left you in your profile editing Theorycraft's copy. A toast says where
+	 * the other one went. `home` is the control's reading of which side that
+	 * is: the stored `pairHome`, else the left side as a pair from before it
+	 * was ordered.
+	 */
+	async endPair(home: 'self' | 'other'): Promise<void> {
 		const id = rotationTabs.activeTabId;
 		const pair = this.plannerPair;
 		if (!pair) return;
 		await this.#setPair(id, null);
-		const self = this.#records.get(id);
-		if (self) this.#plannerContext(self);
-		else this.plannerPair = null;
+		// Home only within the profile on screen: from inside Theorycraft a
+		// what-if's home is another profile's, which Theorycraft never opens.
+		const goHome = home === 'other' && pair.profileId === this.profile?.id;
+		const away = goHome ? this.#records.get(id) : undefined;
+		const awayProfile = goHome ? pair.self.profileId : pair.profileId;
+		const awayLabel = goHome
+			? (away?.name ?? (away?.type === 'rotation' ? rotationLabel(away.body.slots) : ''))
+			: pair.label;
+		if (goHome) await this.open(pair.id);
+		else {
+			const self = this.#records.get(id);
+			if (self) this.#plannerContext(self);
+			else this.plannerPair = null;
+		}
+		const where =
+			awayProfile === this.profile?.id
+				? 'the Library'
+				: awayProfile === THEORYCRAFT_ID
+					? 'Theorycraft’s Library'
+					: `${this.profiles.find((p) => p.id === awayProfile)?.name ?? 'its profile'}’s Library`;
+		notices.toast(
+			'info',
+			`Comparison closed · ${awayLabel || 'the other rotation'} is in ${where}`
+		);
 	}
 
 	/** The partner of each document that has one, for the Library's guest rows
@@ -1444,7 +1479,7 @@ class StorageSession {
 				// copy for the next pass to duplicate. ⚓ The rotation's own
 				// `updatedAt` stays: pairing it is not an edit, and it must not
 				// jump to the top of the Library.
-				await putMany(db, 'documents', [copy, { ...d, pairId: copy.id }]);
+				await putMany(db, 'documents', [copy, { ...d, pairId: copy.id, pairHome: true }]);
 			}
 		}
 		await setMeta(db, { guestsMadeAt: now });
