@@ -115,10 +115,10 @@
 	<!-- eslint-disable svelte/no-navigation-without-resolve -- the external form -->
 	<p>
 		Please report it through the
-		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>. Inside
-		a tool, <strong>Report a problem</strong> in the <strong>⋯</strong> menu opens the same form
-		with a link to what you’re looking at already filled in. A character’s details card has its own
-		link:
+		<a href={FEEDBACK_FORM_URL} target="_blank" rel="noopener noreferrer">feedback form</a>.
+		<strong>Report a problem</strong>
+		in the top bar’s <strong>?</strong> menu opens the same form with a link to what you’re looking
+		at already filled in. A character’s details card has its own link:
 		<strong>Something not right with this character?</strong>
 	</p>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
