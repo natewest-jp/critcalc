@@ -307,7 +307,10 @@
 		font-size: var(--fs-md);
 		line-height: 1.5;
 	}
+	/* The global .note caps its measure at 56ch; here the panel already
+	   bounds it, and the full width saves the lead-in a line (⚓ Nate). */
 	.lead {
+		max-width: none;
 		margin-bottom: 1rem;
 		padding-inline: 1.3rem;
 		color: var(--muted);
