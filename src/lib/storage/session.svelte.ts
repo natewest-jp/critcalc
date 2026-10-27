@@ -32,8 +32,16 @@ import {
 	slotsFromNotation,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
-import { notices, heldKey, announceAfterReload, type NoticeKind } from '$lib/notices.svelte';
-import { colourValue, isReservedName } from '$lib/profileLook';
+import {
+	notices,
+	heldKey,
+	announceAfterReload,
+	named,
+	type NoticeKind,
+	type NoticeText
+} from '$lib/notices.svelte';
+import { colourValue, isReservedName, pictureUrl } from '$lib/profileLook';
+import { get as readStore } from 'svelte/store';
 import { ensureStorage, reopenStorage } from './boot';
 import {
 	boardToLineupBody,
@@ -62,7 +70,7 @@ import {
 import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
 import { MIGRATED_PROFILE_NAME, type MigrationResult } from './migrate';
 import { applyBackup, buildEnvelope, downloadEnvelope } from '$lib/utils/settingsBackup';
-import { settleDocuments } from './arrivals';
+import { linkTab, settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
 import { cleared, expired, inTrash, takenWith, trashRuns, type TrashRun } from './trash';
 import {
@@ -81,7 +89,13 @@ import {
 	type JournalDoc,
 	type RosterChanges
 } from './journal';
-import { bindRoster, type LoadoutEntry, type RosterPart, type SavedNotation } from '$lib/stores';
+import {
+	bindRoster,
+	siteSettings,
+	type LoadoutEntry,
+	type RosterPart,
+	type SavedNotation
+} from '$lib/stores';
 import {
 	askOnFirstSave,
 	backupReminderDue,
@@ -94,6 +108,7 @@ import { scrollBehavior } from '$lib/motion';
 import {
 	THEORYCRAFT_ID,
 	newId,
+	pictureOf,
 	type Picture,
 	type ProfileColour,
 	type Roster,
@@ -118,6 +133,15 @@ import {
 export { rotationAsSaved } from './convert';
 
 /** Approved by Nate 2026-10-23. */
+/** A profile as a toast shows it: its colour as the disc's ring and, ⚓ Nate
+ *  2026-10-27, its picture inside (the one the top bar shows). */
+function toastLook(p: ProfileRecord): { swatch: string; picture: string | null } {
+	return {
+		swatch: colourValue(p.colour),
+		picture: pictureUrl(pictureOf(p), readStore(siteSettings).useNewOutfits, p.twin)
+	};
+}
+
 const MIGRATED_NOTICE = `Your roster, rotations, and lineups are now in a profile, ${MIGRATED_PROFILE_NAME}`;
 
 /** How long typing must pause before a save (ms). `visibilitychange` flushes
@@ -230,6 +254,15 @@ class StorageSession {
 	/** The profile the site opens in: the stored choice while it is live, else
 	 *  Theorycraft (a profile deleted in another tab can leave the pointer). */
 	async #activeProfile(db: IDBDatabase, meta: Meta): Promise<ProfileRecord | undefined> {
+		// ⚓ A link's Theorycraft lasts for the tab it arrived in (a reload
+		// there stays); the next new tab opens back in the profile it left.
+		if (meta.returnToProfileId && !linkTab.has()) {
+			meta = { ...meta, activeProfileId: meta.returnToProfileId, returnToProfileId: undefined };
+			await setMeta(db, {
+				activeProfileId: meta.activeProfileId,
+				returnToProfileId: undefined
+			});
+		}
 		const chosen = meta.activeProfileId
 			? await get(db, 'profiles', meta.activeProfileId)
 			: undefined;
@@ -624,7 +657,9 @@ class StorageSession {
 			const name = rec.name ?? this.#derived.get(id);
 			notices.toast(
 				'info',
-				`${name ? `“${name}”` : `This ${rec.type}`} was deleted in another tab, so this tab moved on`
+				name
+					? named`${name} was deleted in another tab, so this tab moved on`
+					: `This ${rec.type} was deleted in another tab, so this tab moved on`
 			);
 		}
 	}
@@ -897,6 +932,9 @@ class StorageSession {
 				{ tabs: rotationTabs.tabs.map((t) => (t.id === id ? tab : t)), activeTabId: id },
 				false
 			);
+			// Its pair too (2026-10-27): a comparison ended or begun in the tab
+			// that holds it showed on here until a reload.
+			this.#plannerContext(doc);
 		} else if (doc.type === 'lineup' && boards.boards.some((b) => b.id === id)) {
 			const board = lineupToBoard(doc);
 			this.#remember(doc, this.#derived.get(id) ?? board.label);
@@ -917,7 +955,7 @@ class StorageSession {
 		if (p.deleted)
 			return void this.switchTo(THEORYCRAFT_ID, () => ({
 				kind: 'warning',
-				text: `${p.name} was deleted in another tab, so this tab is in Theorycraft now`
+				text: named`${p.name} was deleted in another tab, so this tab is in Theorycraft now`
 			}));
 		this.#useProfile(p);
 	}
@@ -1177,6 +1215,8 @@ class StorageSession {
 		createdAt: number;
 		/** This side, for naming the two. */
 		self: { profileId: string; createdAt: number };
+		/** Which side is home (`pairHome`); null for a pair made before it. */
+		home: 'self' | 'other' | null;
 	} | null>(null);
 
 	/** The document each tool showed before its current one (⌃`, §4.2). */
@@ -1199,6 +1239,7 @@ class StorageSession {
 						profileId: p.profileId,
 						createdAt: p.createdAt,
 						self: { profileId: doc!.profileId, createdAt: doc!.createdAt },
+						home: doc!.pairHome ? ('self' as const) : p.pairHome ? ('other' as const) : null,
 						label:
 							p.name ?? (p.type === 'rotation' ? rotationLabel(p.body.slots) : lineupLabel(p.body))
 					}
@@ -1236,17 +1277,20 @@ class StorageSession {
 		return d && !d.deleted && d.type === 'rotation' ? d : null;
 	}
 
-	/** Pair two documents, ending any pair either was in. `b` null ends `a`'s. */
+	/** Pair two documents, ending any pair either was in, with `a` as HOME.
+	 *  `b` null ends `a`'s. */
 	async #setPair(a: string, b: string | null): Promise<void> {
 		const db = this.#db;
 		if (!db) return;
 		const now = Date.now();
-		const write = async (id: string, pairId: string | undefined) => {
+		const write = async (id: string, pairId: string | undefined, home = false) => {
 			const next = await modify(db, 'documents', id, (d) => {
 				if (!d || d.deleted) return null;
 				const out = { ...d, updatedAt: now } as DocumentRecord;
 				if (pairId) out.pairId = pairId;
 				else delete out.pairId;
+				if (pairId && home) out.pairHome = true;
+				else delete out.pairHome;
 				return out;
 			});
 			if (!next) return;
@@ -1259,7 +1303,7 @@ class StorageSession {
 		};
 		await unpairOld(a);
 		if (b) await unpairOld(b);
-		await write(a, b ?? undefined);
+		await write(a, b ?? undefined, true);
 		if (b) await write(b, a);
 		this.version++;
 	}
@@ -1315,7 +1359,7 @@ class StorageSession {
 		await this.open(copy.id);
 		// ↻ EVERY routed copy says so (notices round, 2026-10-26; was the first
 		// only): each one puts a different document in front of the person.
-		notices.toast('info', `Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
+		notices.toast('info', named`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
 	}
 
 	/** Compare → Duplicate and compare: a copy beside the original, where the
@@ -1355,15 +1399,49 @@ class StorageSession {
 		this.#plannerContext(this.#records.get(doc.id) ?? doc);
 	}
 
-	/** ✕: the pair ends; both documents stay. */
-	async endPair(): Promise<void> {
+	/**
+	 * ✕: the pair ends and both documents stay. ⚓ It returns HOME from either
+	 * side (Nate 2026-10-27): what you compare against is a thought about the
+	 * work in front of you, not your new work, and leaving a guest on screen
+	 * left you in your profile editing Theorycraft's copy. A toast says where
+	 * the other one went. `home` is the control's reading of which side that
+	 * is: the stored `pairHome`, else the left side as a pair from before it
+	 * was ordered.
+	 */
+	async endPair(home: 'self' | 'other'): Promise<void> {
 		const id = rotationTabs.activeTabId;
 		const pair = this.plannerPair;
 		if (!pair) return;
 		await this.#setPair(id, null);
-		const self = this.#records.get(id);
-		if (self) this.#plannerContext(self);
-		else this.plannerPair = null;
+		// Home only within the profile on screen: from inside Theorycraft a
+		// what-if's home is another profile's, which Theorycraft never opens.
+		const goHome = home === 'other' && pair.profileId === this.profile?.id;
+		const away = goHome ? this.#records.get(id) : undefined;
+		const awayProfile = goHome ? pair.self.profileId : pair.profileId;
+		const awayLabel = goHome
+			? (away?.name ?? (away?.type === 'rotation' ? rotationLabel(away.body.slots) : ''))
+			: pair.label;
+		if (goHome) await this.open(pair.id);
+		else {
+			const self = this.#records.get(id);
+			if (self) this.#plannerContext(self);
+			else this.plannerPair = null;
+		}
+		const owner = this.profiles.find((p) => p.id === awayProfile)?.name;
+		const where: NoticeText =
+			awayProfile === this.profile?.id
+				? ['the Library']
+				: awayProfile === THEORYCRAFT_ID
+					? ['Theorycraft’s Library']
+					: owner
+						? named`${owner}’s Library`
+						: ['its profile’s Library'];
+		notices.toast(
+			'info',
+			awayLabel
+				? named`Comparison closed · ${awayLabel} is in ${where}`
+				: named`Comparison closed · the other rotation is in ${where}`
+		);
 	}
 
 	/** The partner of each document that has one, for the Library's guest rows
@@ -1427,7 +1505,7 @@ class StorageSession {
 				// copy for the next pass to duplicate. ⚓ The rotation's own
 				// `updatedAt` stays: pairing it is not an edit, and it must not
 				// jump to the top of the Library.
-				await putMany(db, 'documents', [copy, { ...d, pairId: copy.id }]);
+				await putMany(db, 'documents', [copy, { ...d, pairId: copy.id, pairHome: true }]);
 			}
 		}
 		await setMeta(db, { guestsMadeAt: now });
@@ -1771,7 +1849,7 @@ class StorageSession {
 			p.current[tool] === id ? { ...p, current: { ...p.current, [tool]: null } } : p
 		);
 		this.version++;
-		await this.switchTo(profileId, (p) => ({ kind: 'success', text: `Moved to ${p.name}` }));
+		await this.switchTo(profileId, (p) => ({ kind: 'success', text: named`Moved to ${p.name}` }));
 		await this.open(id);
 	}
 
@@ -1814,7 +1892,7 @@ class StorageSession {
 		await put(db, 'profiles', $state.snapshot(rec) as ProfileRecord);
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id: rec.id });
 		await this.#loadProfiles();
-		await this.switchTo(rec.id, (p) => ({ kind: 'success', text: `Added ${p.name}` }));
+		await this.switchTo(rec.id, (p) => ({ kind: 'success', text: named`Added ${p.name}` }));
 		return true;
 	}
 
@@ -1860,9 +1938,11 @@ class StorageSession {
 		await this.#loadProfiles();
 		notices.toast(
 			'success',
-			wasActive ? `Moved ${name} to Trash. You’re in Theorycraft now.` : `Moved ${name} to Trash`,
+			wasActive
+				? named`Moved ${name} to Trash. You’re in Theorycraft now.`
+				: named`Moved ${name} to Trash`,
 			{
-				swatch: colourValue(gone.colour),
+				...toastLook(gone),
 				actions: [
 					{
 						label: 'Undo',
@@ -1929,21 +2009,46 @@ class StorageSession {
 			if (!(await this.#untrashProfile(db, owner.id, now, false))) return false;
 		}
 		const back = await this.#revive(db, store, id, now);
+		if (typeof back === 'object') {
+			// Said even for an Undo: a silent one reads as a broken button.
+			const twin = back.clash.name || rotationLabel(back.clash.slots);
+			notices.toast(
+				'warning',
+				named`${twin} already has these four, so this team stayed in the Trash`
+			);
+			return false;
+		}
 		if (!back) return false;
 		if (say) {
 			const p = this.profiles.find((x) => x.id === rec.profileId);
-			if (p) notices.toast('success', `Restored to ${p.name}`, { swatch: colourValue(p.colour) });
+			if (p) notices.toast('success', named`Restored to ${p.name}`, toastLook(p));
 		}
 		return true;
 	}
 
-	/** One record out of the Trash, told to every tab. */
+	/**
+	 * One record out of the Trash, told to every tab. ⚓ One team per set
+	 * (`saveTeam`, `updateTeam`): a team whose four are already another live
+	 * team of its profile stays in the Trash and names that team (`clash`).
+	 * Refused rather than merged, so neither team's name or loadout is lost;
+	 * deleting the live one lets it back.
+	 */
 	async #revive(
 		db: IDBDatabase,
 		store: 'documents' | 'teams',
 		id: string,
 		now: number
-	): Promise<boolean> {
+	): Promise<boolean | { clash: TeamRecord }> {
+		if (store === 'teams') {
+			const t = await get(db, 'teams', id);
+			const key = t && teamKey(t.slots);
+			const clash =
+				key &&
+				(await getAll(db, 'teams', t.profileId)).find(
+					(o) => o.id !== id && teamKey(o.slots) === key
+				);
+			if (clash) return { clash };
+		}
 		const next = await modify(db, store, id, (r) => {
 			if (!r || !r.deleted || r.purged) return null;
 			const { deleted: _, ...live } = r;
@@ -1972,7 +2077,7 @@ class StorageSession {
 		this.#channel?.post({ kind: 'saved', store: 'profiles', id });
 		await this.#loadProfiles();
 		this.version++;
-		if (say) notices.toast('success', `Restored ${p.name}`, { swatch: colourValue(p.colour) });
+		if (say) notices.toast('success', named`Restored ${p.name}`, toastLook(p));
 		return true;
 	}
 
@@ -2008,7 +2113,7 @@ class StorageSession {
 	 */
 	async switchTo(
 		id: string,
-		say?: ((p: ProfileRecord) => { kind: NoticeKind; text: string }) | null
+		say?: ((p: ProfileRecord) => { kind: NoticeKind; text: NoticeText }) | null
 	): Promise<void> {
 		const db = this.#db ?? (await ensureStorage());
 		if (!db || id === this.profile?.id) return;
@@ -2020,7 +2125,9 @@ class StorageSession {
 			this.#release('builder');
 		}
 		await this.#flushRoster();
-		await setMeta(db, { activeProfileId: id });
+		// A switch of the visitor's own ends a pending return; a link's
+		// (`toTheorycraft`) sets it again straight after.
+		await setMeta(db, { activeProfileId: id, returnToProfileId: undefined });
 		this.#useProfile(next);
 		if (this.active) {
 			await this.#loadPlanner(next);
@@ -2029,8 +2136,8 @@ class StorageSession {
 		this.version++;
 		this.switchedAt = Date.now();
 		if (say !== null) {
-			const { kind, text } = say?.(next) ?? { kind: 'info', text: `Switched to ${next.name}` };
-			notices.toast(kind, text, { swatch: colourValue(next.colour) });
+			const { kind, text } = say?.(next) ?? { kind: 'info', text: named`Switched to ${next.name}` };
+			notices.toast(kind, text, toastLook(next));
 		}
 	}
 
@@ -2038,7 +2145,11 @@ class StorageSession {
 	 *  real profile, which the arrival says out loud. */
 	async toTheorycraft(): Promise<boolean> {
 		if (!this.profile || this.profile.id === THEORYCRAFT_ID) return false;
+		const left = this.profile.id;
 		await this.switchTo(THEORYCRAFT_ID, null);
+		const db = this.#db ?? (await ensureStorage());
+		if (db) await setMeta(db, { returnToProfileId: left });
+		linkTab.mark();
 		return true;
 	}
 

@@ -28,9 +28,9 @@
 	</p>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	<p>
-		The quickest route is from inside a tool. <strong>Report a problem</strong> in a tool’s
-		<strong>⋯</strong> menu opens the form with a link to what you’re looking at, so I see the same
-		rotation, lineup, or instrument you did. A character’s details card has its own link,
+		The quickest route is <strong>Report a problem</strong> in the top bar’s
+		<strong>?</strong> menu, which opens the form with a link to what you’re looking at, so I see
+		the same rotation, lineup, or instrument you did. A character’s details card has its own link,
 		<strong>Something not right with this character?</strong> It fills in the character and their constellation.
 	</p>
 	<p>

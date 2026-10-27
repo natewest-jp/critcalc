@@ -36,6 +36,9 @@
 	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { fade } from 'svelte/transition';
+	import { linear } from 'svelte/easing';
+	import { motion, riseIn, T_QUICK } from '$lib/motion';
 	import { browser } from '$app/environment';
 	import Mark from './Mark.svelte';
 	import BandMenu from './BandMenu.svelte';
@@ -53,6 +56,7 @@
 	import { rosterView, type RosterShow } from '$lib/rosterView.svelte';
 	import { menu } from '$lib/menuState.svelte';
 	import { notices } from '$lib/notices.svelte';
+	import { storageSession } from '$lib/storage/session.svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 
 	let {
@@ -81,6 +85,15 @@
 
 	// ── The lock ─────────────────────────────────────────────────────────────
 	let editing = $state(false);
+	/** The keys bar shows while a tile has KEYBOARD focus. It used to be a CSS
+	 *  `:has(.til-card:focus-visible)` fade; it is state now so it can arrive
+	 *  on the shared rise (`riseIn`, ⚓ Nate 2026-10-27). `focusout` lands
+	 *  before the next element is focused, hence the microtask. */
+	let keysOn = $state(false);
+	let mainEl = $state<HTMLElement>();
+	function trackKeys(): void {
+		keysOn = !!mainEl?.querySelector('.til-card:focus-visible');
+	}
 	let nudge = $state(false);
 	function nudgeLock(): void {
 		nudge = false;
@@ -247,10 +260,14 @@
 	const plural = (n: number) => `${n} character${n === 1 ? '' : 's'}`;
 	/** A bulk edit, and a toast whose Undo takes back ITS characters only: a
 	 *  later edit to anyone else survives it (a whole-roster restore lost
-	 *  them). The take-back is itself an edit, so ⌘Z can redo the bulk. */
+	 *  them). The take-back is itself an edit, so ⌘Z can redo the bulk.
+	 *  ⚠️ The toast outlives the profile it was made in, and the roster stores
+	 *  are whichever profile is in front, so its Undo does nothing once the
+	 *  profile has changed (it would write this profile's marks into that one). */
 	function bulk(list: CharacterIndexEntry[], c6: boolean, owned: boolean, text: string): void {
 		record();
 		const before = past.at(-1)!;
+		const profileId = storageSession.profile?.id;
 		const m = { ...get(ownership) };
 		const k = { ...get(constellations) };
 		for (const c of list) {
@@ -261,7 +278,14 @@
 		ownership.replaceAll(m);
 		if (c6) constellations.replaceAll(k);
 		notices.toast('success', text, {
-			actions: [{ label: 'Undo', run: () => takeBack(list, before) }]
+			actions: [
+				{
+					label: 'Undo',
+					run: () => {
+						if (storageSession.profile?.id === profileId) takeBack(list, before);
+					}
+				}
+			]
 		});
 	}
 	function takeBack(list: CharacterIndexEntry[], before: Snapshot): void {
@@ -511,10 +535,20 @@
 {/snippet}
 
 <div class="ros">
-	<div class="ros-main">
+	<div
+		class="ros-main"
+		bind:this={mainEl}
+		onfocusin={trackKeys}
+		onfocusout={() => queueMicrotask(trackKeys)}
+	>
 		{#if !inMenu}<div class="ros-bar">{@render barActions()}</div>{/if}
-		{#if editing}
-			<p class="ros-keys" aria-label="Keyboard shortcuts">
+		{#if editing && keysOn}
+			<p
+				class="ros-keys"
+				aria-label="Keyboard shortcuts"
+				in:riseIn
+				out:fade={{ duration: motion(T_QUICK), easing: linear }}
+			>
 				{#each KEYS as k (k.does)}
 					<span class="ros-key"
 						>{#each k.keys as key, i (i)}{#if key === '–'}<span class="ros-key-dash">–</span
@@ -797,11 +831,13 @@
 	   pointer passes through it. The fade is linear (the fade law) on the
 	   surface clock. */
 	.ros-keys {
-		/* Centred by auto margins between two zero insets, ⛔ never a
-		   translate: it fades, and an opacity fade on a transform-placed box
-		   dances in WebKit (the sub-pixel laws). Lifted off the bottom edge so
-		   it sits in the eye line (⚓ Nate), but low, never mid-grid: there it
-		   would cover the tiles you are arrowing through. */
+		/* Centred by auto margins between two zero insets, ⛔ never a resting
+		   translate: an opacity fade on a box at fractional offsets dances in
+		   WebKit (the sub-pixel laws). Its arrival rise is a transform, but
+		   ROUNDED to whole pixels (`riseIn`), which keeps it off those offsets.
+		   Lifted off the bottom edge so it sits in the eye line (⚓ Nate), but
+		   low, never mid-grid: there it would cover the tiles you are arrowing
+		   through. ⚓ Floating (Nate 2026-10-27): --surface-float, no rim. */
 		position: absolute;
 		z-index: 2;
 		left: 0;
@@ -816,21 +852,11 @@
 		margin: 0 auto;
 		padding: 10px 18px;
 		border-radius: var(--r-sm);
-		background: var(--surface-raised);
-		box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
-		color: var(--muted);
+		background: var(--surface-float);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
+		color: var(--text);
 		font-size: var(--fs-md);
 		pointer-events: none;
-		opacity: 0;
-		visibility: hidden;
-		transition:
-			opacity var(--t-quick),
-			visibility var(--t-quick);
-		transition-timing-function: linear;
-	}
-	.ros-main:has(.til-card:focus-visible) .ros-keys {
-		opacity: 1;
-		visibility: visible;
 	}
 	.ros-key {
 		display: inline-flex;
@@ -841,7 +867,7 @@
 		min-width: 26px;
 		padding: 0 7px;
 		border-radius: var(--r-xs);
-		background: var(--surface-hover);
+		background: var(--surface-float-key);
 		color: var(--text);
 		/* Body, not mono: in the mono face a capital O and a zero are twins. */
 		font-family: var(--font-body);

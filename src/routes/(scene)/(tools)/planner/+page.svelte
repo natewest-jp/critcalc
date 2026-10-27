@@ -394,6 +394,9 @@
 		const t = e.target as HTMLElement | null;
 		if (t?.closest('input, textarea, select, [contenteditable], [role="textbox"]')) return;
 		if (document.querySelector('[aria-modal="true"]')) return;
+		// The menu state covers the tool but is not `aria-modal`, so the check
+		// above misses it (the session's ⌃` flip keeps the same guard).
+		if (document.querySelector('[data-menu-state]')) return;
 		if (e.key === ' ' && t?.closest('button, a, [role="radio"]') && t !== clickFocused) return;
 		e.preventDefault();
 		if (e.key === ' ') {
@@ -500,6 +503,7 @@
 	     content margin below the strip's bottom end. -->
 	<ToolStack
 		benched
+		floor={$nextLayout}
 		noBandA={$nextLayout}
 		benchHidden={!$nextLayout && benchRowHidden($siteSettings.showBenchRow)}
 		benchCollapsed={$nextLayout && benchFolded}

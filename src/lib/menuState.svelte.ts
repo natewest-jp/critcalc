@@ -106,6 +106,32 @@ export function sectionForPath(pathname: string, search = ''): Section | null {
 export const chapterSection = (area: ChromeAreaId, chapter: string): Section =>
 	`${area}/${chapter}` as Section;
 
+/**
+ * THE LAST SURFACE (2026-10-27, ⚓ Nate): the landing or tool this tab last
+ * showed outside the menu state, so a section reloaded on its own route
+ * still closes to where you were rather than to the landing. Per TAB, as
+ * the shallow entries it stands in for are: sessionStorage outlives a
+ * reload and dies with the tab. The pathname only, ⛔ never the search: a
+ * `?r=` link would import its rotation a second time.
+ */
+const SURFACE_KEY = 'critcalc:lastSurface';
+
+export function rememberSurface(pathname: string): void {
+	try {
+		sessionStorage.setItem(SURFACE_KEY, pathname);
+	} catch {
+		// Storage refused: closing falls back to the fixed exits.
+	}
+}
+
+function lastSurface(): string | null {
+	try {
+		return sessionStorage.getItem(SURFACE_KEY);
+	} catch {
+		return null;
+	}
+}
+
 class MenuState {
 	/** The section on a route of its own, set by the pages layout while the
 	 *  switch is on (a cold load of `/roster`, a link to `/about`). */
@@ -207,7 +233,7 @@ class MenuState {
 	/**
 	 * Leave the menu state. Over a tool, back over every entry this visit
 	 * pushed. On a section's own route there is nothing underneath, so it goes
-	 * to the landing (as a static page's Escape always has).
+	 * to the last surface this tab showed (a reload), else to a fixed exit.
 	 */
 	close(): void {
 		this.attempt(() => this.#close());
@@ -216,14 +242,16 @@ class MenuState {
 	#close(): void {
 		const depth = page.state.menuDepth ?? 0;
 		if (this.routed) {
-			// A Library place's way out is its own tool; anything else, home.
+			// The surface this tab last showed, when it has one (a reload).
+			// Else a Library place's way out is its own tool; anything else, home.
 			const place = this.section;
 			const to =
-				place === 'rotations'
+				lastSurface() ??
+				(place === 'rotations'
 					? resolve('/planner')
 					: place === 'lineups'
 						? resolve('/builder')
-						: resolve('/');
+						: resolve('/'));
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolved above
 			void goto(to);
 			return;

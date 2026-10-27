@@ -19,9 +19,10 @@
 	 * decision that has landed. It is shipped and real, and it may still move.
 	 */
 	import appCss from '../../app.css?raw';
+	import { resolve } from '$app/paths';
 	import Mark from '$lib/components/Mark.svelte';
 	import { MARK_NODES, type MarkName } from '$lib/marks.generated';
-	import { BAND_A_H, BAND_B_H, BAND_GAP, BAND_STACK_GAP, BAND_RADIUS } from '$lib/toolBands';
+	import { BAND_GAP, BAND_STACK_GAP } from '$lib/toolBands';
 	import { SCENE_DIM, dimPixel } from '$lib/landing/sceneDim';
 
 	type Token = { name: string; value: string; resolved: string };
@@ -68,12 +69,19 @@
 		return next === undefined ? value : resolveToken(next, local, root, depth + 1);
 	}
 
-	/** Parse the :root block of app.css. The block ends at the first column-0
-	 *  `}` — every line inside it is tab-indented. */
+	/** Every column-0 `:root {` block of app.css, as one body. Each block ends at
+	 *  its first column-0 `}` (every line inside is tab-indented). ↻ 2026-10-27:
+	 *  there are four (the interface size and profile tokens, the scroll fade's
+	 *  scale and the instrument layout's knobs each open their own), and
+	 *  reading only the first hid the rest from every group below. The
+	 *  `:root` blocks nested in `@media` are tab-indented and so not matched:
+	 *  they re-set values at other widths, and a swatch shows the default. A
+	 *  later declaration wins, as it does in the cascade. */
+	const rootBody = (css: string): string =>
+		[...css.matchAll(/^:root \{([\s\S]*?)^\}/gm)].map((m) => m[1]).join('\n');
+
 	function parseRootTokens(css: string): Token[] {
-		const start = css.indexOf(':root {');
-		const end = css.indexOf('\n}', start);
-		const decls = declsIn(css.slice(start + ':root {'.length, end));
+		const decls = declsIn(rootBody(css));
 		return [...decls].map(([name, value]) => ({
 			name,
 			value,
@@ -91,7 +99,7 @@
 		const block = new RegExp(`^${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`, 'm').exec(css);
 		if (!block) return [];
 		const local = declsIn(block[1]);
-		const root = declsIn(css.slice(css.indexOf(':root {') + 7, css.indexOf('\n}')));
+		const root = declsIn(rootBody(css));
 		return [...local].map(([name, value]) => ({
 			name,
 			value,
@@ -109,7 +117,9 @@
 	const CTX_ORDER = [
 		'--frame-bg',
 		'--surface',
+		'--surface-broad',
 		'--surface-raised',
+		'--surface-hover',
 		'--surface-well',
 		'--border',
 		'--text',
@@ -125,7 +135,7 @@
 
 	/** L0 — the primitive ramps (Genshin Night, 2026-08-09). A NUMBER means a
 	 *  primitive and no component may name one; these exist to be pointed AT. */
-	const ramps = ['night', 'slate', 'parchment', 'gold', 'ink', 'red'].map((name) => ({
+	const ramps = ['night', 'slate', 'parchment', 'gold', 'ink', 'red', 'blue'].map((name) => ({
 		name,
 		rungs: tokens.filter((t) => new RegExp(`^--${name}-\\d+$`).test(t.name))
 	}));
@@ -137,6 +147,7 @@
 	const structure = exact('--bg', '--text', '--muted', '--bright-ink', '--chrome', '--neutral');
 	const roleNet = exact(
 		'--surface',
+		'--surface-broad',
 		'--surface-raised',
 		'--surface-well',
 		'--border',
@@ -150,12 +161,25 @@
 		'--scene-dim'
 	);
 	const chartInk = pre('--chart-');
-	const metrics = exact('--chrome-h', '--site-footer-h');
+	const metrics = exact('--chrome-h', '--site-footer-h', '--site-pad-x');
+	/** The interface size (app.css § THE INTERFACE SIZE). Claimed before the UI
+	 *  state colours because it shares their `--ui-` prefix and is not one. */
+	const interfaceSize = exact('--ui-ctl-h', '--ui-ctl-fs', '--ui-bar-h');
+	const profileTokens = exact('--profile-theorycraft', '--portrait-unowned');
+	const teamHues = pre('--team-hue-');
+	const insetLines = exact('--inset-line', '--inset-line-quiet', '--inset-line-mid');
+	const landing = exact('--hero-lit', '--hero-rule', '--veil-ground-top', '--veil-ground-bottom');
+	const layoutKnobs = exact(
+		'--scroll-fade-scale',
+		'--instrument-side',
+		'--instrument-main-aspect',
+		'--instrument-slider-max'
+	);
 	/* Deliberately also shown under the glass family (`pre('--glass-')` claims
 	   it). The register section needs to display its own stop, and a token that
 	   is BOTH a material and a content role earns two appearances. */
 	const famAnnotation = exact('--glass-bar');
-	const uiStates = pre('--ui-');
+	const uiStates = pre('--ui-').filter((t) => !interfaceSize.includes(t));
 	const geometry = [...pre('--r-'), ...exact('--frame-inset')];
 	const motion = exact('--t-snap', '--t-quick', '--t-move');
 	const interaction = exact(
@@ -191,6 +215,12 @@
 			glass,
 			structure,
 			metrics,
+			interfaceSize,
+			profileTokens,
+			teamHues,
+			insetLines,
+			landing,
+			layoutKnobs,
 			famAnnotation,
 			roleNet,
 			chartInk,
@@ -313,7 +343,7 @@
 	 *  two grounds and the glass, which is where the open questions are. Counted
 	 *  anyway, so "we censused the palette" cannot quietly mean "we censused most
 	 *  of it", and so a ramp that has gone slack shows up without being expanded. */
-	const otherRamps = ['night', 'gold', 'ink', 'red'].map((name) => {
+	const otherRamps = ['night', 'gold', 'ink', 'red', 'blue'].map((name) => {
 		const rows = census(name);
 		return { name, total: rows.length, free: rows.filter(isFree).map((r) => r.rung.name) };
 	});
@@ -437,7 +467,9 @@
 		['surfaces', 'Surfaces'],
 		['insets', 'Inset borders'],
 		['marks', 'Marks'],
-		['bands', 'Tool bands'],
+		['bands', 'Top bar & toolbar'],
+		['layout', 'Layout'],
+		['redesign', 'Redesign surfaces'],
 		['migration', 'Exceptions'],
 		['laws', 'Laws']
 	];
@@ -540,9 +572,11 @@
 			<div class="sg-fam">
 				<h3><code>.ctx-dark</code></h3>
 				<p class="sg-note">
-					Chart-like panels — timelines, plots, gauge wells — and the bench ribbon. Parchment on
-					navy. Also the <strong>root safety net</strong>: a surface that forgets to declare a
-					context lands here rather than on an orphan hue.
+					Chart-like panels — timelines, plots, gauge wells — the bench ribbon, and the
+					<strong>menu state</strong>, which fills the screen with this ground (see
+					<a href="#redesign">the redesign</a>). Parchment on navy. Also the
+					<strong>root safety net</strong>: a surface that forgets to declare a context lands here
+					rather than on an orphan hue.
 				</p>
 				<div class="sg-swatches">
 					{#each ctxDark as t (t.name)}{@render swatch(t)}{/each}
@@ -580,6 +614,20 @@
 				</div>
 			</div>
 		</div>
+
+		<p class="sg-note">
+			<strong>Two rungs beyond the ladder, and each belongs to one axis.</strong>
+			<code>--surface-broad</code> is the paper's size axis: <code>parchment-50</code> for a large
+			panel or heading ribbon, <code>--surface</code> (<code>parchment-100</code>) for a card on it,
+			so the thing on the paper is the darker one. Dark has no size axis and aliases it to
+			<code>--surface</code>; glass aliases it to the panel stop.
+			<code>--surface-hover</code> is the hover rung: the glass stop on <code>.ctx-glass</code>, and
+			<code>slate-600</code> on <code>.ctx-dark</code>, one rung above raised. 🐛 Slate gained it on
+			2026-10-25 (the full-screen round): it was defined only on glass, so on slate every
+			<code>var(--surface-hover)</code> painted nothing and a hovered card dropped to its ground. A
+			verb hovered on a hovered card goes one rung down, to <code>--surface-raised</code>. Paper
+			declares no hover rung. Record: <code>docs/fullscreen-surface-round.md</code>.
+		</p>
 
 		<p class="sg-note">
 			<strong>⚠ Three rules the glass material added, each paid for while building it.</strong>
@@ -744,10 +792,15 @@
 		<p class="sg-note">
 			⚠ <strong>What stays white:</strong> branding and top-level chrome — the site nav, the
 			<code>?</code>/<code>i</code>/gear. ⚓ Nate. Those are the site speaking as itself rather than
-			the tool speaking, and <code>--chrome</code> is that voice. <code>.site-chrome</code>
-			re-declares the accent
-			<em>and its four derived tokens</em> — it sits inside <code>.tool-shell</code> on tool routes,
-			so without them the chrome bar would inherit the shell's gold. ⚠ Gold sits ΔH 0.5° from
+			the tool speaking, and <code>--chrome</code> is that voice. ↻
+			<strong>The top bar keeps the result and drops the mechanism.</strong>
+			<code>TopBar.svelte</code> does not wear <code>.site-chrome</code>; on a tool route it renders
+			inside the tools layout's <code>data-zone="tool"</code>, so its accent is gold. It stays white
+			by naming no accent: the tool words are <code>--chrome</code> (70% at rest), the current tool
+			is a glass fill (<code>--glass-hover</code>, never gold), and the one gold thing, BETA, reads
+			<code>--accent</code> directly. <code>.site-chrome</code> and its re-declared accent belong to
+			<code>SiteChrome.svelte</code>, the old layout's bar. Record:
+			<code>docs/title-bar-round.md</code>. ⚠ Gold sits ΔH 0.5° from
 			<code>--el-geo-main</code>, which is fine and deliberate: geo is identity chroma at C.150, the
 			accent is ornament at C.066, so <em>chroma</em> is what separates them. Don't "fix" it by rotating
 			off geo — that rotates it off parchment.
@@ -780,10 +833,12 @@
 		<p class="sg-note">
 			Portalled popovers (<code>$lib/actions/portal</code>) are appended to
 			<code>&lt;body&gt;</code>, which severs <code>.tool-shell</code> ancestry — the action stamps
-			<code>data-zone="tool"</code> on the way out so a tool popover keeps its tool accent.
-			<code>ChromeModals</code> is mounted outside <code>.tool-shell</code> deliberately, so
-			Help/About/Settings read the world's voice in <em>both</em> zones. That is intended: they are meta
-			surfaces, not tool surfaces.
+			<code>data-zone="tool"</code> on the way out so a tool popover keeps its tool accent. Help,
+			About and Settings are sections of the <strong>menu state</strong> (<code
+				>MenuState.svelte</code
+			>), a screen of slate rather than a modal, so they take the dark context's accent like any
+			slate surface. (The old layout mounted them as <code>ChromeModals</code> outside
+			<code>.tool-shell</code>, in the world's voice.)
 		</p>
 	</section>
 
@@ -1039,11 +1094,27 @@
 			<strong>Not a caution and not an error.</strong>
 			Nothing to click, nothing the user did, nothing wrong with the character; red on 122 cards at once
 			read as "something is broken here".
-			<br />⚠ <strong>It is the only zoned UI state colour</strong> — <code>#f6d365</code> on dark,
-			<code>#998136</code> on <code>.ctx-light</code>, the same move the accent makes. ⛔ And the
-			light rung sits at the GRAPHICAL floor (3.02:1) because it cannot go further: at the 4.5:1
+			<br />⚠ <strong>It was the first zoned UI state colour</strong> — <code>#f6d365</code> on
+			dark, <code>#998136</code> on <code>.ctx-light</code>, the same move the accent makes. ⛔ And
+			the light rung sits at the GRAPHICAL floor (3.02:1) because it cannot go further: at the 4.5:1
 			text floor it lands ΔE .030 from <code>--gold-700</code>, i.e. it becomes the light accent.
 			<strong>Provisional may be a MARK on paper and never prose ink.</strong>
+			<br />↻ <strong>2026-10-26 (the notices round): warning and positive are zoned too.</strong>
+			Paper banners and error toasts gave them a paper consumer. ⚓ Nate: the paper set is matched at
+			danger's contrast (danger stays unzoned, 3.33:1), each hue carried down in OKLCH at the most chroma
+			sRGB allows: <code>--ui-warning</code> <code>#c85d02</code> (its hue nudged 58° → 50°, since
+			at its own hue the gamut edge is browner), <code>--ui-positive</code> <code>#018d65</code>.
+			Both are marks on paper, like provisional, never prose ink. The swatches below are the dark
+			values; the paper ones live in the <code>.ctx-light</code> block.
+			<br />↻ <strong>2026-10-27: <code>--ui-info</code>, neutral information</strong> (⚓ Nate): a
+			fact stated with no consequence attached, the values in a buff tooltip. It is the one blue,
+			and it gets away with it by chroma: a quiet blue (<code>--blue-400</code>,
+			<code>#79b6e9</code>, C .097, well under hydro's .153) reads as a blue beside the elements
+			rather than as one. On paper it is a mark like the others (<code>--blue-700</code>,
+			<code>#3682bb</code>, 3.31:1 on <code>--surface</code>), at the family's lightness, so an info
+			toast's stripe sits beside its siblings (↻ ⚓ Nate 2026-10-27: it was first a darker,
+			text-safe rung that read as off-family). Blue as running text on paper would need its own
+			darker rung. The grounds side by side are on <code>/lab</code>.
 		</p>
 		<div class="sg-swatches">
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
@@ -1069,9 +1140,12 @@
 				both tool frames.
 			</li>
 			<li>
-				<code>--r-md</code> — <strong>modals only.</strong> Help / About / Settings and the pages panel.
-				A modal is the one surface with no ground to belong to, so it keeps the softer corner that says
-				"lifted off" — the same reason it is also the one surface that keeps an edge border.
+				<code>--r-md</code> — <strong>surfaces that float.</strong> Modals (the Links and Move
+				dialogs, the Builder's <code>InspectModal</code>), portalled popovers (<code>BandMenu</code
+				>), and the notices: toasts, banners and the confirm dialog (⚓ Nate,
+				<code>docs/notices-design.md</code> §9). A floating surface has no ground to belong to, so it
+				keeps the softer corner that says "lifted off". (Help, About and Settings were modals here until
+				the menu state made them screens.)
 			</li>
 			<li><code>--r-round</code> — genuinely round things: thumbs, dots, capsules.</li>
 		</ul>
@@ -1108,7 +1182,7 @@
 			surface's needs shape it.
 		</p>
 
-		<h3>Motion & interaction surfaces</h3>
+		<h3 id="motion">Motion & interaction surfaces</h3>
 		<p class="sg-note">
 			Both ladders were <em>already</em> converged in practice — <code>150ms ease</code> appeared 123
 			times, and accent 20%/55% were the two spikes across the whole codebase. Naming them is what stops
@@ -1152,15 +1226,29 @@
 			amplitude is why this one files under surfaces.
 		</p>
 		<p class="sg-note">
-			<strong>A token is a duration AND its easing, one value.</strong> There is one easing in the
-			product; splitting it onto a second axis would double every call site to buy a distinction
-			nobody asked for. ⚠
+			<strong>A token is a duration AND its easing, one value.</strong> The tokens share one easing;
+			splitting it onto a second axis would double every call site to buy a distinction nobody asked
+			for. ⚠
 			<strong><code>prefers-reduced-motion</code> is honoured by zeroing the bands</strong>
 			in one block, so a rule that reaches for one is covered whether or not it exists yet. Only three
 			things still honour it by hand: the scene/nav machinery, Svelte's
 			<code>transition:</code> directive (JS, which cannot read a custom property — what
 			<code>src/lib/motion.ts</code> mirrors the numbers for), and keyframe
 			<code>animation</code>s, which a duration token cannot reach at all.
+		</p>
+		<p class="sg-note">
+			⚓ <strong>The fade law: every fade of a SURFACE is linear</strong> (Nate; reaffirmed
+			2026-10-25, scoped 2026-10-27). That covers a wash, the tool crossfade, a toast or a modal
+			arriving or leaving, and the landing. The reason is that an eased fade's visible time is not
+			its stated duration: most of the change happens in the middle, so a 150ms ease reads shorter
+			than 150ms and a long ease-out seems to hang at the end. That only matters when you are
+			watching the fade, and you watch a surface.
+			<strong>A CONTROL's small state change keeps the token's easing</strong>: hover rings, hover
+			verbs, and chip and button states on the
+			<code>--t-*</code> tokens. At 120–150ms on a hairline the curve cannot be seen, and
+			<code>ease</code> is the conventional choice there. So a surface's fade writes
+			<code>linear</code> beside its token's duration (the tool crossfade in
+			<code>(tools)/+layout.svelte</code> is the model), and a control just names the token.
 		</p>
 		<div class="sg-swatches">
 			{#each motion as t (t.name)}{@render swatch(t)}{/each}
@@ -1216,8 +1304,88 @@
 		</div>
 
 		<h3>Metrics</h3>
+		<p class="sg-note">
+			<strong><code>--site-pad-x</code> is the one site gutter</strong> (⚓ Nate, the edges round,
+			2026-10-25): the screen's side margin, read by the top bar, the tools and the menu state, so
+			the wordmark, a toolbar and the sidebar's items start on one line. 16px to 800px, 2vw between,
+			32px from 1600, rounded to whole pixels because the bench ribbon docks by measuring inside it
+			and a fractional x sets every label in it a different sub-pixel off in Safari.
+			<code>--chrome-h</code> is the height everything that reserves the bar reads; under the new
+			layout it is <code>var(--ui-bar-h)</code> (<code>:root[data-next]</code>).
+		</p>
 		<div class="sg-swatches">
 			{#each metrics as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>The interface size</h3>
+		<p class="sg-note">
+			<strong>One control size for the top bar and every toolbar, in three steps</strong> (⚓ Nate
+			2026-10-22; app.css § THE INTERFACE SIZE): <code>--ui-ctl-h</code> a control's height,
+			<code>--ui-ctl-fs</code> its type, <code>--ui-bar-h</code> the top bar. Small 11px · 28 · 48
+			below <code>compact</code> (the phone, always), Medium 12px · 32 · 56 by default, Large 13px ·
+			36 · 64 from <code>huge</code> (2200px). The control grows a little faster than its type, so
+			the larger sizes are not cramped. Picked by width alone: the Settings pin retired on
+			2026-10-26, since browser zoom already moves the width these queries read. ToolStack sets band
+			B's row and controls to <code>--ui-ctl-h</code>, and band B's <code>.btn</code>/<code
+				>.tab</code
+			>
+			type to
+			<code>--ui-ctl-fs</code>, so <code>BAND_CTRL_H</code> (36) is the old layout's number. 🎛️ Nate's
+			to tune by eye. The swatches show Medium.
+		</p>
+		<div class="sg-swatches">
+			{#each interfaceSize as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>Layout knobs</h3>
+		<p class="sg-note">
+			🎛️ Values, not roles, each documented where it is used: <code>--scroll-fade-scale</code>
+			multiplies every <code>.scroll-fade</code>'s length (app.css § THE SCROLL FADE; see
+			<a href="#layout">Layout</a>), and the three <code>--instrument-*</code> knobs size the Visualizers'
+			instrument grid (app.css § THE INSTRUMENT LAYOUT).
+		</p>
+		<div class="sg-swatches">
+			{#each layoutKnobs as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>Profiles and teams</h3>
+		<p class="sg-note">
+			<code>--profile-theorycraft</code> is Theorycraft's white, the one profile colour no real
+			profile can wear, so a guest is never mistaken for anyone's own. The other profile colours are
+			not tokens: they are the element hues (see <a href="#laws">Laws · Color</a>).
+			<code>--portrait-unowned</code> is a <code>filter</code> value, not a colour: a character you don't
+			own fades with some colour kept, so a team built round one doesn't read as a punishment (⚓ Nate
+			2026-10-25). The team hues are ⏳ placeholders (lineups design §11.6 item 8).
+		</p>
+		<div class="sg-swatches">
+			{#each profileTokens as t (t.name)}{@render swatch(t)}{/each}
+			{#each teamHues as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>The inset line</h3>
+		<p class="sg-note">
+			The gold line an <a href="#insets">inset border</a> draws. Borders stay ink; the inset is the
+			one line that is ornament, so it is gold, zoned like the accent (gold-400 on dark, gold-700 on
+			paper). The <code>:root</code> values are what a groundless element over the night inherits,
+			so they carry alpha. <code>--inset-line-mid</code> is the stop for an inset that crosses a seam
+			between two grounds and is never re-declared per context.
+		</p>
+		<div class="sg-swatches">
+			{#each insetLines as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>The hero cards and the veil ground</h3>
+		<p class="sg-note">
+			<code>--hero-lit</code> is a hovered hero card's gold, one rung up from the accent, on the
+			card's content and never its frame; <code>--hero-rule</code> is the card label's opaque rule
+			(⚓ Nate).
+			<code>--veil-ground-top</code>/<code>-bottom</code> are the night gradient for a surface that
+			stands in for the world (the loading veil, the 404), taken from the dimmed crest. Use
+			<code>VeilGround.svelte</code>, which keeps the grain with it; re-measure if the plate or
+			<code>SCENE_DIM</code> changes.
+		</p>
+		<div class="sg-swatches">
+			{#each landing as t (t.name)}{@render swatch(t)}{/each}
 		</div>
 
 		{#if unclaimed.length}
@@ -1277,7 +1445,7 @@
 				<p class="sg-voice-sample sg-voice-sample--label">
 					ROSTER · CAN PROVIDE · ELEMENT · Search characters…
 				</p>
-				<span class="sg-val">kickers · field labels · section heads · resting control text</span>
+				<span class="sg-val">field labels · resting control text (a kicker is gold)</span>
 			</div>
 			<div class="sg-voice">
 				<span class="sg-zone-tag">prose — <code>--text</code></span>
@@ -1345,10 +1513,13 @@
 			<span class="sg-badge sg-badge--trial">on trial</span>
 		</h2>
 		<p class="sg-note">
-			One base, two variants, two sizes. ↻ 2026-10-24 (⚓ Nate, under the switch until the flip):
-			<strong>every control is sentence case</strong>, shown exactly as written. "Verbs shout, nouns
-			don't" was arbitrary, and the capitals cost a toolbar its width. Kickers stay uppercase: they
-			are labels, not controls.
+			One base, two variants, two sizes. ↻ 2026-10-24 (⚓ Nate): <strong
+				>every control is sentence case</strong
+			>, shown exactly as written. "Verbs shout, nouns don't" was arbitrary, and the capitals cost a
+			toolbar its width. Kickers stay uppercase: they are labels, not controls. In a toolbar a
+			button takes the <a href="#tokens">interface size</a>: its height is <code>--ui-ctl-h</code>
+			and its type
+			<code>--ui-ctl-fs</code>, overriding the sizes in the specs below.
 		</p>
 		<p class="sg-note">
 			↻ 2026-08-07 — <strong>the base button is OPAQUE.</strong> It used to be a transparent ghost
@@ -1373,7 +1544,7 @@
 				</div>
 				{@render spec(
 					'.btn · --primary · .is-active · :disabled',
-					'3px · 0.32/0.65rem · fs-sm · sentence case · opaque --btn-face at rest, --btn-face-hover on hover. .is-active mixes the accent at 20% INTO the face rather than replacing it — a selected button that swapped its plate for a translucent accent came out quieter than its neighbours'
+					'3px · 0.32/0.65rem · fs-md · sentence case · opaque --btn-face at rest, --btn-face-hover on hover. .is-active mixes the accent at 20% INTO the face rather than replacing it — a selected button that swapped its plate for a translucent accent came out quieter than its neighbours'
 				)}
 			</div>
 
@@ -1423,15 +1594,14 @@
 	<section id="chips">
 		<h2>Chips & tabs <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
-			↻ 2026-10-25 (⚓ Nate, under the switch until the flip): <strong
-				>ON and CHOSEN are a FILL; a RING is the hand.</strong
-			>
+			↻ 2026-10-25 (⚓ Nate): <strong>On and chosen are a fill; a ring is the hand.</strong>
 			A chosen chip, segment or filter, and a plate that is on, takes the accent at 20% over the button
 			face (<code>.btn.is-active</code>'s recipe); an element chip fills in its own hue. The gold
 			ring it replaces shared its shape with the hover ring, and on a phone the last control tapped
 			keeps its hover, so "on" and "touched" read alike. Hover rings show only where a pointer can
-			hover. A ring that means <em>you are here</em> (the top bar's current tool, keyboard focus)
-			stays a ring. Voice: a content chip keeps
+			hover. Keyboard focus stays a ring. (The top bar's current tool was the other ring here; since
+			the title-bar round it is a glass fill too, and its hover ring is a hand.) Voice: a content
+			chip keeps
 			<code>capitalize</code>, because its label is often a raw id ("sword"); an instrument chip is
 			shown exactly as written, in sentence case.
 		</p>
@@ -1450,7 +1620,7 @@
 				</div>
 				{@render spec(
 					'.chip · .active · .chip--element',
-					'CONTENT voice — sentence case, ls-mid, fs-sm. Names, roles, capabilities, elements'
+					'CONTENT voice — capitalize (labels are often raw ids), ls-mid, fs-md. Names, roles, capabilities, elements. Chosen = the accent 20% over --btn-face; an element chip 24% of its own hue'
 				)}
 			</div>
 
@@ -1462,7 +1632,7 @@
 				</div>
 				{@render spec(
 					'.chip--control · .chip-sub',
-					'INSTRUMENT voice — fs-md, shown as written (sentence case). Instrument settings and modes'
+					'INSTRUMENT voice — fs-lg, shown as written (sentence case). Instrument settings and modes. .chip--sm is the dense instrument row (fs-md, ls-tight: the Gauge presets, the RES & DEF rows)'
 				)}
 			</div>
 
@@ -1481,7 +1651,7 @@
 				</div>
 				{@render spec(
 					'.chip--icon',
-					'6px · square · glyph-only. Rests at 0.35 opacity, active lifts to 1 + element ring'
+					'6px · square · glyph-only. Rests at 0.35 opacity; chosen lifts to 1 and fills with its hue (28% over --btn-face), no ring'
 				)}
 			</div>
 
@@ -1506,7 +1676,7 @@
 				</div>
 				{@render spec(
 					'.tab · .active · .tab--lg · .tab--closeable',
-					'ONE tab system, body face — drops Bitter and the 5px radius. Document tabs (band A) are the base size and the whole live population; --lg is a promoted rung with NO consumer since the Team Builder’s Atlas/Roster/Compare row became a parchment nav plate (2026-08-09)'
+					'ONE tab system, body face — drops Bitter and the 5px radius. ⚠ No .tab renders in the new layout: the document tabs lived in band A, which is gone (the document is the top bar’s), and AreaTabs serves only the old modal Help. The class stays until step 5 retires the old layout; --lg has had no consumer since 2026-08-09'
 				)}
 			</div>
 		</div>
@@ -1615,13 +1785,14 @@
 					<h2 class="title">Panel or card title</h2>
 					<p class="subtitle">a subtitle, capitalized</p>
 					<p class="note">
-						A note: one class, fs-md, relaxed leading, muted, NO margin — the container spaces it.
-						Replaces seven per-instrument copies plus the Team Builder captions.
+						A note: one class, fs-lg, relaxed leading, muted, a 56ch measure, NO margin — the
+						container spaces it. Replaces seven per-instrument copies plus the Team Builder
+						captions.
 					</p>
 				</div>
 				{@render spec(
 					'.kicker · .title · .subtitle · .note',
-					'kicker = --muted UPPER ls-widest + rule, and BODY FACE — a section heading, not a main header · title = --text, Bitter (⚓ Nate 2026-08-09) · note = --muted, it is data-adjacent'
+					'kicker = GOLD (--accent, since 2026-08-10) UPPER fs-lg ls-widest + a gold rule at 22%, and BODY FACE — a section heading, not a main header. Gold names a block; elsewhere it is rationed, not forbidden (⚓ Nate 2026-10-27) · title = --text, Bitter, fs-3xl (⚓ Nate 2026-08-09) · note = --muted fs-lg, 56ch max, it is data-adjacent'
 				)}
 			</div>
 
@@ -1678,9 +1849,11 @@
 			come up with a concept and propose it". <strong>Don't propose additions.</strong> Strokes are
 			<strong>2px</strong> (⚓ Nate), which also puts the family on the rule rung the system already
 			had: <em>rules are 2px, section dividers 1px</em>. ⚠️ A host may override that with
-			<code>--inset-stroke</code> — a per-box knob, <em>not</em> a second rung: 2px reads as a rule round
-			a panel and as a border round a 40px plate. One caller so far, the Team Builder's selected navigation
-			item at 1.5px (⚓ Nate 2026-08-10).
+			<code>--inset-stroke</code> — a per-box knob, <em>not</em> a second rung: 2px reads as a rule
+			round a panel and as a border round a 40px plate. Its one caller, the Team Builder's selected
+			navigation item at 1.5px (⚓ Nate 2026-08-10), is gone with that navigation, so
+			<strong>nothing outside <code>/lab</code> wears <code>.inset</code> today</strong>. The family
+			stays declared, waiting for a surface that earns it.
 		</p>
 		<p class="sg-note">
 			⚠️ <strong
@@ -1757,11 +1930,36 @@
 						control needs its own label; the mark can never be it.
 					</li>
 					<li>
+						<strong>A mark can be filled, for a closed shape whose interior is the picture.</strong>
+						Lucide is a stroke-only set, so <code>&lt;Mark filled&gt;</code> fills the geometry in
+						<code>currentColor</code> and keeps the stroke under it (play, pause: ⚓ Nate
+						2026-08-13).
+						<code>filled="solid"</code> fills the areas with no stroke and keeps the stroke on open
+						line parts, for a star whose points are the picture: the wish mark and the lit astroids
+						(⚓ Nate, the Roster round, 2026-10-26), where round joins blunted every tip. ⛔ Not on
+						an open path: it fills whatever region the curve encloses. The argument is at
+						<code>filled</code>
+						in
+						<code>Mark.svelte</code>.
+					</li>
+					<li>
 						⛔ <strong>Do not install <code>@lucide/svelte</code></strong>, and do not hand-copy
 						SVGs off the site. Both were considered and rejected — a component per icon is hundreds
 						of instances at roster scale, and a downloaded file has no provenance, no version and no
 						licence trail. <code>src/lib/marks.test.ts</code> guards the generated artifact against all
 						of it.
+					</li>
+					<li>
+						<strong
+							>A glyph Lucide has no word for is bespoke, and goes through the same generator.</strong
+						>
+						<code>scripts/lib/bespoke-marks.mjs</code> holds Nate's own art, drawn in Lucide's idiom
+						(stroked paths on its 24 grid), each entry citing its source in
+						<code>assets-src/</code>;
+						<code>generate-marks.mjs</code> merges it into <code>MarkName</code>, and
+						<code>marks.test.ts</code> reads the same record. One so far: <code>handOff</code>,
+						Human timing off (⚓ Nate, the toolbar refinement, 2026-10-24). The hand-copy rule above
+						is about provenance, and this art has it.
 					</li>
 					<li>
 						⛔ <strong>Not for the element icons or the brand mark.</strong> Those are build
@@ -1821,10 +2019,12 @@
 						<code>currentColor</code> stroke.
 					</li>
 					<li>
-						<code>scripts/probe-marks.mjs</code> is the guard.
-						<code>marks.test.ts</code> proves the SET is coherent; it cannot prove the site stopped typesetting,
-						and a static grep can't tell a control glyph from prose. The probe walks the RENDERED text
-						of every tool surface — it caught one the grep missed.
+						<code>marks.test.ts</code> proves the set is coherent; it cannot prove the site stopped
+						typesetting, and a static grep can't tell a control glyph from prose.
+						<code>e2e/marks.spec.ts</code> is the guard: it walks the rendered text of the tool
+						surfaces for a list of banned code points. (It replaced
+						<code>scripts/probe-marks.mjs</code> on 2026-08-09, when the probe drawer retired.) ⚠ It knows
+						only the code points it lists.
 					</li>
 				</ul>
 			</div>
@@ -1833,41 +2033,27 @@
 
 	<!-- ═══════════════════════════════════════════════════════════════ BANDS ══ -->
 	<section id="bands">
-		<h2>Tool bands <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<h2>The top bar and the toolbar <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
-			Every tool renders a <code>ToolStack</code>: <strong>two rows</strong> over its surface, free
-			of the tool frame, with the bench ribbon proud of the whole stack. ↻ ⚓ Nate, over three days
-			— first they stopped abutting, then
-			<strong>band A stopped being a band at all</strong>, and then band B stopped being one
-			wherever a tool splits it. What is left of "a band" is a height and a gap: both rows are runs
-			of glass PLATES standing on the scene, on <em>one</em> glass stop — band B's darker well
-			retired with the tier it was marking. ⚠️ <code>BAND_CTRL_H</code> (36px, icon-only controls
-			excepted) is a <strong>band B</strong> number: its plates fill their row, band A's take their
-			natural height and its ROW IS THAT HEIGHT — <code>BAND_A_H</code> is 27px because a
-			<code>.tab</code> measures 26.72 (⚓ Nate 2026-08-10, undoing the one-evening match: band A
-			filling a 36px row made the DOCUMENT row read as the heavier of the two, which is backwards,
-			and with no ground under them there was nothing for the extra 9px to be air <em>inside</em>).
-			⚠️ Re-measure it if a band A control's type or padding moves — the row has no slack left. The
-			only rail left is the one a tool asks for by filling
-			<code>bandBCenter</code>, and that rail is a plate like the others. Geometry knobs:
-			<code>src/lib/toolBands.ts</code>. Document flows:
-			<code>src/lib/documentBar.svelte.ts</code>.
+			<strong>Two rows over every tool: the site's top bar, then the tool's own toolbar.</strong>
+			The top bar (<code>TopBar.svelte</code>, <a href="#redesign">the redesign</a>) holds the
+			document: the current tool's button names it and opens its Library, with the save status
+			beside it. The toolbar is <code>ToolStack</code>'s one row, still called band B in the code:
+			the view, what you are looking at inside this tool and how. ↻ The old layout had a second
+			band, band A, for the document (tabs · save · load · share · reset); ToolStack's
+			<code>noBandA</code>
+			drops it in all three tools, and the old form lives on only until step 5 retires it. Geometry knobs:
+			<code>src/lib/toolBands.ts</code>. Records: <code>docs/top-bar-round.md</code>,
+			<code>docs/toolbar-refine-round.md</code>, <code>docs/builder-toolbar-round.md</code>.
 		</p>
 		<div class="sg-band-demo">
-			<div class="sg-band sg-band--a" style:height="{BAND_A_H}px">
-				<span class="sg-zone-tag">band A — NO GROUND, {BAND_A_H}px = its tallest control</span>
-				<span class="sg-val">the DOCUMENT · controls are the glass</span>
+			<div class="sg-band sg-band--a" style:height="var(--ui-bar-h)">
+				<span class="sg-zone-tag">the top bar — --ui-bar-h</span>
+				<span class="sg-val">brand · the three tools, centred · doors</span>
 			</div>
-			<div class="sg-band-gap" style:height="{BAND_GAP}px">
-				<span class="sg-val">{BAND_GAP}px — BAND_GAP, the gap BETWEEN BUTTONS (⚓ Nate)</span>
-			</div>
-			<div
-				class="sg-band sg-band--b"
-				style:height="{BAND_B_H}px"
-				style:border-radius="{BAND_RADIUS}px"
-			>
-				<span class="sg-zone-tag">band B — {BAND_B_H}px, rail only when split</span>
-				<span class="sg-val">the VIEW</span>
+			<div class="sg-band sg-band--a" style:height="var(--ui-ctl-h)">
+				<span class="sg-zone-tag">the toolbar — --ui-ctl-h, no ground</span>
+				<span class="sg-val">the view · each control is a glass plate · Share last</span>
 			</div>
 			<div class="sg-band-gap" style:height="{BAND_STACK_GAP}px">
 				<span class="sg-val">{BAND_STACK_GAP}px of bare scene, then the tool surface</span>
@@ -1878,30 +2064,38 @@
 				<h3>Rules</h3>
 				<ul>
 					<li>
-						<strong>THE TAXONOMY IS THE POINT.</strong> Which band a control goes in is a rule, not
-						a preference. <strong>Band A = the DOCUMENT</strong> — which working team am I editing,
-						and what can I do to it whole (tabs · save · load · share · reset). It is
-						<em>identical</em> in the planner and the Team Builder, because they edit ONE document.
-						<strong>Band B = the VIEW</strong> — what am I looking at inside this tool, and how (planner
-						zoom/notes, TB Atlas/Roster/Compare + con lens, Viz per-tile pickers).
+						<strong>The taxonomy is the point.</strong> Which row a control goes in is a rule, not a
+						preference.
+						<strong
+							>The top bar holds the places you start work from and the things you reach for
+							mid-task</strong
+						>
+						(⚓ Nate, the title-bar round): the tools, Teams, Help, Settings, the profile picture. Places
+						you set up once (the Roster, About) sit one layer down.
+						<strong>The toolbar holds the view</strong>: the Planner's play, zoom, Total and hand,
+						Buffs and Auras; the Builder's search, owned and wishlist toggles, Clear and con lens;
+						each Visualizers tile's picker.
 					</li>
 					<li>
-						<strong>The bands travel with their tool</strong> — but the reason changed. It used to
-						be structural: A and B abutted, so they were one object, and a screen-locked A over a
-						world-locked B would tear at their shared seam on every tool→tool leg. ↻ 2026-08-09
-						<strong>there is no shared seam any more</strong>, so that constraint is GONE — if band
-						A is ever to become the screen-locked HUD beside the ribbon, the split is what unblocks
-						it. They still travel together today; nothing has asked them not to. Continuity across
-						the fade stays the ribbon's job.
+						<strong>Share is the toolbar's last plate</strong> (⚓ Nate, 2026-10-25): it acts on the document
+						the toolbar sits over, not on the site, so it left the top bar. The Planner's is a menu (link,
+						KQM, two image actions), the Builder's one plate on the lineup side.
 					</li>
 					<li>
-						<strong>Both bands are <code>ctx-glass</code></strong> (↻ 2026-08-09). Band B's ground
-						has now been three things: the beige <code>--ribbon</code> (a misreading — that token is
-						a darker band laid ON a light fill, not a whole toolbar), then the light context's
-						paper, now glass. It had no choice on the last one:
-						<strong>there is no light glass.</strong> The A/B distinction never depended on the grounds
-						anyway, and depends on them even less now that the two are separate objects with air between
-						them.
+						<strong>The toolbar has no ground; its controls are the glass.</strong> Each control is
+						a
+						<code>ctx-glass</code> plate standing on the scene, <code>{BAND_GAP}px</code> apart (<code
+							>BAND_GAP</code
+						>, the gap between buttons). Band B's ground has been beige, paper and glass in turn; ↻
+						2026-10-24 (⚓ Nate) the 3-up centre zone dropped its rail too, so the Planner's Total
+						and hand stand on the night. A zone keeps its layout job. A Visualizers tile's controls
+						are cut by the tile gap, a run of plates per instrument.
+					</li>
+					<li>
+						<strong>One control size.</strong> The toolbar's row and its controls are
+						<code>--ui-ctl-h</code>, and band B's buttons take <code>--ui-ctl-fs</code> as their
+						type, the same as the top bar's (<a href="#tokens">the interface size</a>).
+						<code>BAND_CTRL_H</code> (36) and <code>BAND_A_H</code> are the old layout's numbers.
 					</li>
 					<li>
 						<strong>Band B re-points <code>--text</code> at <code>--muted</code>.</strong> It is a CONTROL
@@ -1909,18 +2103,21 @@
 						Prose belongs in the surface below.
 					</li>
 					<li>
-						<strong
-							>The beige selected-plate pilot lives on <code>.band-a .tab.active</code>.</strong
-						>
-						That is exactly Genshin's idiom: the bright plate marks the selected row on the DARK strip.
-						Band B selects with the ordinary ring.
+						<strong>Chosen is a fill here as everywhere</strong> (<a href="#chips"
+							>Chips &amp; tabs</a
+						>): an on plate takes the accent 20% over its face. Below <code>compact</code> a control keeps
+						its mark and drops its word, and the overflow folds into a ⋯ that carries a gold dot while
+						something in it is on.
 					</li>
 					<li>
-						<strong>Each band rounds its own four corners</strong> (↻ 2026-08-09). When they
-						abutted, the stack clipped its children and only the four <em>outer</em> corners
-						rounded, with the seam square. Split, there is nothing to clip and both boxes round
-						fully — which gives
-						<code>--r-xs</code> twice the evidence while it is on trial.
+						<strong>The phone bench has a rail</strong> (⚓ Nate, the toolbar refinement):
+						ToolStack's
+						<code>benchRail</code> is one control-high strip above the bench row, joined to it as
+						one slate object, its chevron always at the left end so the toggle never moves. Open, it
+						holds Save as team / In Teams and Compare; folded, the four side portraits stacked. On a
+						desk the same controls live in the bench's foot, which grows to hold them (<code
+							>footGrow</code
+						>). Compare moved to the bench because a comparison is a second version of this team.
 					</li>
 					<li>
 						<code>BandMenu</code> is <strong>portalled</strong>, and the reason has now changed
@@ -1936,6 +2133,399 @@
 				</ul>
 			</div>
 		</div>
+	</section>
+
+	<!-- ══════════════════════════════════════════════════════════════ LAYOUT ══ -->
+	<section id="layout">
+		<h2>Layout <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<p class="sg-note">
+			The rules that place a surface rather than paint it. <strong
+				><code>$lib/breakpoints.ts</code> is the breakpoint table</strong
+			>, each rung with its measured content fact; custom properties do not work in media queries,
+			so every <code>@media</code> writes the literal and cites the table.
+		</p>
+		<div class="sg-laws sg-laws--tight">
+			<div class="sg-law">
+				<h3>Rules</h3>
+				<ul>
+					<li>
+						<strong>One control size, one gutter.</strong> The top bar and every toolbar size their
+						controls from <a href="#tokens">the interface size</a> (Small · Medium · Large, by
+						width), and the bars, the tools and the menu state all stand on
+						<code>--site-pad-x</code>, so the wordmark, a toolbar and the sidebar's items start on
+						one line.
+					</li>
+					<li>
+						<strong>A scroller's live edges roll off</strong> (<code>.scroll-fade</code> /
+						<code>.scroll-fade-x</code>, ⚓ Nate 2026-08-11): a fading edge says "cut off" where a
+						hard edge reads as "the column ended". It is a mask because there is no ground to fade
+						into: these scrollers sit on the bare dimmed scene, and a gradient scrim would need a
+						colour. ⛔ Don't convert it to a <code>::before</code> gradient. 🎛️ Each consumer's
+						length times
+						<code>--scroll-fade-scale</code>.
+					</li>
+					<li>
+						<strong>The fade ends at the neighbour</strong> (⚓ Nate, the edges round, 2026-10-25).
+						A scroller reaches into the bare scene around it with a negative margin and pads back by
+						the same amount, so at rest nothing moves and once scrolled its fade is transparent at
+						the toolbar, the bench, an aside or the screen's edge. The gap is published, never
+						guessed: ToolStack's <code>.tool-surface</code> sets
+						<code>--room-top/-bottom/-left/-right</code>, and ToolColumns narrows the side facing an
+						aside. ⚠ Every clipping ancestor must reach too, and JS that measures the viewport must
+						subtract the pad-back (<code>clientHeight</code>
+						includes it). Law: app.css § THE FADE ENDS AT THE NEIGHBOUR; record
+						<code>docs/edges-round.md</code>.
+					</li>
+					<li>
+						<strong>Under a coarse pointer a tap area grows and its paint does not</strong> (⚓
+						Nate: 44px; app.css § THE COARSE-POINTER HIT BOXES). Listed controls wear an empty,
+						absolutely placed <code>::before</code> that stretches them toward 44px per axis, and a
+						grown box may take only half the gap to its neighbour (<code>--hit-x</code> /
+						<code>--hit-y</code>), so a tap in a gap goes to the nearer control. The slider's own
+						box grows to 24px with its paint held on the content box. ⚠ <code>pointer: coarse</code> is
+						a different axis from width and is not in the breakpoint table, and a renamed class drops
+						out of the list silently.
+					</li>
+					<li>
+						<strong
+							>Below <code>toolMin</code> the bench is a row, and in the Planner it has a rail.</strong
+						>
+						See <a href="#bands">the toolbar</a> for the rail and the desk's bench foot; the aside
+						becomes a drawer (<code>ToolColumns</code> <code>sheet</code>). Full record:
+						<code>docs/responsive-survey-2026-09-01.md</code> Part IV.
+					</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<!-- ════════════════════════════════════════════════════════════ REDESIGN ══ -->
+	<section id="redesign">
+		<h2>The redesign's surfaces <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<p class="sg-note">
+			The profiles-and-surfaces build (2026-10-20 → 27) added surfaces this page did not cover. Each
+			entry names its component and its round record; the component holds the rest, scoped. Design:
+			<code>docs/profiles-and-surfaces-design.md</code>. ⚠ Where a sweep finding is still waiting on
+			a ruling it is named here as <em>open</em>, and the entry describes what ships today.
+		</p>
+		<div class="sg-laws">
+			<div class="sg-law">
+				<h3>The top bar</h3>
+				<ul>
+					<li>
+						<code>TopBar.svelte</code>; records <code>docs/top-bar-round.md</code>,
+						<code>docs/title-bar-round.md</code>. Order: brand · the three tools, centred · the
+						profile picture · Teams · <code>?</code> · ⚙. The picture leads the right-hand run so Theorycraft's
+						"Add your account" grows toward the centre and pushes no icon.
+					</li>
+					<li>
+						<strong>Tool words on the night, no plate at rest</strong>: Bitter,
+						<code>--chrome</code>
+						at 70%, full white on hover. The current tool is its glass fill alone, with the tool as a
+						small bold Bitter label over the document's name, so the face never changes on a switch. A
+						1px <code>--line-edge</code> ring on hover, only on the buttons that open the Library.
+					</li>
+					<li>
+						<strong>Doors sized by ink</strong> (<a href="#laws">Laws · Chrome</a>); the profile
+						picture is 2px over the disc height with its element ring only, no dark outer ring. BETA
+						is anchored to the wordmark (<code>−0.5em</code>), not to the bar's height.
+					</li>
+					<li>
+						<strong>The save status</strong> is a state beside the document's name: "Saving…" with a pulsing
+						dot, "✓ Saved" for 1.6s, then nothing. A failure escalates to a banner.
+					</li>
+					<li>
+						<strong>A profile switch</strong> washes the profile's colour down from the bar and
+						shows its name under the picture; under reduced motion a words toast carries it. Both of
+						the cue's fades are linear (the fade law, <a href="#motion">Motion</a>).
+					</li>
+					<li>
+						The landing hides the tool buttons and keeps their space, so the bar does not shift. The
+						phone bar is logo · document · picture · Teams · compass · ⚙, pinned right.
+					</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>The menu state</h3>
+				<ul>
+					<li>
+						<code>MenuState.svelte</code>: the full-screen surface, a state on slate (<code
+							>.ctx-dark</code
+						>) covering the screen, never an overlay. Records
+						<code>docs/fullscreen-surface-round.md</code>,
+						<code>docs/fullscreen-cleanups-round.md</code>.
+					</li>
+					<li>
+						<strong>The sidebar</strong>: 17rem, items at <code>--fs-xl</code> (16px) with 18px line marks,
+						quieter uppercase group headers, counts on Rotations and Lineups (⛔ none on Trash: it nudges
+						people to micromanage what is on its way out). The profile switcher is its first row and expands
+						in place; Help and About fold to one item each, whose heading is the first chapter's page;
+						Settings sits at the foot. The current item is the hover rung plus a 2px inset edge, gold
+						or the profile's colour.
+					</li>
+					<li>
+						<strong>The page</strong>: the ✕ pinned to the content area's top right (on a phone, "‹
+						Menu" is the way back). A section may hand controls to the ✕'s line (<code
+							>menu.headActions</code
+						>), fill the content height so only its grid scrolls (<code>fills</code>), or drop the
+						head entirely (<code>headless</code>, the team details). The index never shows on
+						desktop; on a phone it leads with three tool tiles wearing the landing's figures, the
+						current one in a 1.5px gold inset.
+					</li>
+					<li>
+						<strong>The reading layout</strong> (Help, About): chapters at 68ch beside a 16–28rem margin
+						for figures and notes, folding under ~56rem of content width (a container query).
+					</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>Library places</h3>
+				<ul>
+					<li>
+						<code>LibraryPlace.svelte</code>. A collection fills the width (no cap). Rotations are
+						rows, the notation's opening in the middle (gone under 40rem); lineups are cards. Every
+						portrait is the side portrait, the blank one in an empty seat. Pins are a shelf of cards
+						across the top. A same-profile compare pair is one entry, A the row and B beneath with
+						A/B tags.
+					</li>
+					<li>
+						Verbs follow <a href="#laws">hover only where a pointer can hover</a>; the current ring
+						is a pseudo-element painted over them. The New… buttons are <code>--fs-lg</code>.
+					</li>
+					<li>
+						<strong>Lineup cards</strong> (⚓ Nate, the cleanups round): each team row leads with
+						what it faces (a Stygian boss, an Abyss half, a custom team's number), then 40px faces
+						and the saved team's name; a hairline rule after the lead column; cards take the row's
+						tallest height and the foot holds the bottom edge. ⚠ Rows align on the disc's line (<code
+							>align-items: end</code
+						>): a side portrait's box includes the hair above it. ⛔ The faces were sized to fill
+						the card once and read as posters; judge against the sibling card on the same surface.
+					</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>Teams and the team details</h3>
+				<ul>
+					<li>
+						<code>TeamsPlace.svelte</code>, <code>TeamDetail.svelte</code>,
+						<code>TeamMemberPortrait.svelte</code>; record <code>docs/teams-surface-round.md</code>.
+						Cards keep forward-facing portraits on the element well with a 2px ring, the one
+						full-screen card that does.
+					</li>
+					<li>
+						<strong>The loadout is cutout pips</strong> round a portrait's bottom right (the
+						artifact set at the corner, the weapon above it), 22px on a card and 26 in the details;
+						the disc paints
+						<code>--pip-ground</code>, which the card sets to its own ground, so it stays cut out on
+						hover. Only what is equipped gets a pip.
+					</li>
+					<li>
+						The whole card opens the details; Delete is its one verb. An unowned member fades
+						through
+						<code>--portrait-unowned</code>.
+					</li>
+					<li>
+						<strong>The details</strong>: no page head and no ✕ (two closes on one screen were taken
+						for each other); the name is the title; Done leaves, Cancel + Save appear once anything
+						changed. The party strip sits over the Roster's tiles under
+						<code>CharacterFilterStrip</code>, with resonance and faction chips centred under the
+						four. A member on the team is the house selected state on its tile, a ground that stays
+						plus a gold ring; hovering a member lights their tile and the reverse. A pick with no
+						seat chosen nudges the party.
+					</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>Notices</h3>
+				<ul>
+					<li>
+						<code>$lib/notices.svelte.ts</code> (the channel), <code>NoticeRegion.svelte</code>
+						(toasts and the dialog, mounted once), <code>NoticeBanners.svelte</code> (under the
+						toolbar, and at the top of the menu state's content). Spec
+						<code>docs/notices-design.md</code>; specimen board
+						<a href={resolve('/lab/notices')}><code>/lab/notices</code></a> (dev only).
+					</li>
+					<li>
+						<strong>Five shapes, each with one job</strong>: the control answers for itself; a toast
+						is an event (bottom centre); a banner is a condition (top of the surface); a dialog is a
+						decision whose cause is away from the eye; the status is a state. A sixth, hints, comes
+						later and will never wear a severity colour. A notice never replaces another: toasts
+						queue, banners stack.
+					</li>
+					<li>
+						<strong>Notice text is body size</strong> (<code>--fs-xl</code>) or larger, never
+						<code>--fs-sm</code>, and every notice has a home at every width.
+					</li>
+					<li>
+						<strong>Materials as shipped</strong> (⚓ Nate: "parchment is really noticeable"): ↻
+						every toast is paper (⚓ Nate 2026-10-27, from the <code>/lab/toast-attention</code>
+						blind test: a glass toast could come and go unseen), its kind a mark and a 4px left stripe
+						in the state colour; an error also stays until dismissed. A banner is paper with a severity
+						stripe; the confirm dialog is paper. Corners <code>--r-md</code>. The timer is a ring
+						round the ✕, and the ✕'s hover is that ring's circle. A toast arrives on the shared rise
+						(<code>riseIn</code>: 30px, quartOut 300ms, rounded to whole pixels, a linear 150ms
+						fade), as does the Roster's keys bar, which floats on
+						<code>--surface-float</code>. No backdrop blur: the rule stands, and the toast's old one
+						could not be seen (sweep 2.2).
+						<em>Open</em>: paper notices beside an instrument's one paper card (2.4), and the
+						literal ring and hover colours (1.5).
+					</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>The inspector</h3>
+				<ul>
+					<li>
+						Record <code>docs/inspector-round.md</code>. In the Planner, a pane in the aside (<code
+							>PlannerInspector.svelte</code
+						>: a team page, a character page, a bar page), 300 / 340 / 380px by screen. ⚓ A pick is
+						a reference, never a copy: whoever draws the thing re-resolves it on every rebuild, so
+						an edit updates the page.
+					</li>
+					<li>
+						A picked bar wears a gold inset ring, DOM-only, so the PNG export is unringed by
+						construction. The bench shows the picked character by holding its portrait ring's hover
+						gold (<code>SlotPortrait</code> <code>picked</code>, <code>--sel-ring</code>).
+					</li>
+					<li>
+						In the Builder, <code>InspectModal</code>: one frame (a hairline in the plain
+						<code>--border</code>; ⛔ no element-tinted frame, ring or button), one header grammar
+						(a gold
+						<code>.kicker</code> for the context, the title in the display face at
+						<code>--fs-4xl</code>, a hairline under the header), one inset (<code>--im-pad-x</code>
+						/
+						<code>--im-pad-top</code>). It takes Escape in the capture phase.
+					</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>Profile identity</h3>
+				<ul>
+					<li>
+						A profile has a colour (an element hue, or Theorycraft's white: <a href="#laws"
+							>Laws · Color</a
+						>), a picture (<code>profileLook.ts</code>, built art from
+						<code>profilePictures.generated.ts</code>; Theorycraft's is reserved) and a Traveler
+						twin (<code>$lib/travelerTwin.svelte.ts</code>, the one reader).
+					</li>
+					<li>
+						The guest's mark is Theorycraft's white as a 1.5px inset ring on the current tool's
+						button (TopBar <code>.is-guest</code>), a colour no real profile can wear.
+					</li>
+					<li>
+						⚓ The UI says "profile", never "account", except for the player's Genshin account:
+						"account" makes it sound like a server keeps the data. Record <code
+							>docs/profile-surface-round.md</code
+						>.
+					</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>Scrims, and the setting row</h3>
+				<ul>
+					<li>
+						<strong>Scrims have no role yet</strong>, a pending decision for Nate. What ships is
+						five literals: <code>rgba(16,16,19,.72)</code> (the Links, Move and tab-limit dialogs),
+						<code>rgb(6 9 16 / .6)</code> (the notices dialog), <code>rgb(0 0 0 / .55)</code>
+						(<code>InspectModal</code>), <code>.5</code> (the boss and opponents details) and
+						<code>rgba(3,6,14,.45)</code> (the <code>ToolColumns</code> drawer). Don't add a sixth; reuse
+						the nearest, and leave the role to that decision.
+					</li>
+					<li>
+						<strong>The setting row</strong> (app.css § THE SETTING ROW; record
+						<code>docs/settings-surface-round.md</code>, shared with the Profile page) is NAME ·
+						CONTROL · NOTE in fixed columns (12rem · 22rem · up to 28rem), so the names make one
+						column and the controls one edge. <code>.sp</code> is a container: below 53rem the note
+						folds under the name, below 34rem the control does too. <code>.sp-section</code> is a
+						kicker plus its rows,
+						<code>--danger</code> reddens its kicker; <code>.sp-value</code> is the value inside a
+						note (a <code>&lt;strong&gt;</code> in the ink, so it is found before the sentence is
+						read; ⛔ never the sentence or its label), and <code>.is-stale</code> turns it warning
+						ink only when it is a problem;
+						<code>.sp-status</code> is a state where a button would otherwise be. ⛔ No rule between rows.
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="sg-specimens">
+			<div class="sg-cell sg-cell--wide">
+				<div class="sg-stage sg-stage--block">
+					<div class="sp">
+						<section class="sp-section">
+							<h3 class="kicker sp-section-title">Appearance</h3>
+							<label class="sp-row">
+								<span class="sp-name">Updated outfits</span>
+								<span class="sp-ctl">
+									<span class="toggle">
+										<input type="checkbox" checked />
+										<span class="toggle-track"><span class="toggle-thumb"></span></span>
+										<span class="toggle-label">On</span>
+									</span>
+								</span>
+								<span class="sp-note"
+									>The note sits level with its row, in the margin. Last backup:
+									<strong class="sp-value">3 days ago</strong>.</span
+								>
+							</label>
+						</section>
+					</div>
+				</div>
+				{@render spec(
+					'.sp · .sp-section · .sp-row · .sp-name · .sp-ctl · .sp-note · .sp-value',
+					'NAME · CONTROL · NOTE · a container that folds at 53rem and 34rem · the kicker’s rule is the only separator'
+				)}
+			</div>
+		</div>
+
+		<h3>Older globals this page had not listed</h3>
+		<ul class="sg-list">
+			<li>
+				<code>.banner</code> / <code>.banner-end</code>: a narrow opaque section label on the dimmed
+				scene, uppercase at <code>--fs-xl</code>, its trailing count or control at the far end.
+				Declared with no consumer today. ⚠ Not the notices' banner, which is a different thing with
+				the same word (<code>NoticeBanners</code>, <code>.nb</code>).
+			</li>
+			<li>
+				<code>.night-ribbon</code> (<code>--danger</code>): a header that belongs to the sky, a .55
+				scrim with no ink ladder. ⏸ Declared but unclaimed on purpose (⚓ Nate 2026-08-11); the
+				argument is at its rule.
+			</li>
+			<li>
+				<code>.instrument</code> and <code>.instrument-chart</code> / <code>-controls</code> /
+				<code>-readout</code> / <code>-graph</code>: the Visualizers' three slots (app.css § THE
+				INSTRUMENT LAYOUT; <a href="#laws">Laws · Structure</a>).
+				<code>.slider-control</code> / <code>-header</code> / <code>-label</code>,
+				<code>.slider</code>
+				and <code>.readout</code> are an instrument's slider row, its knob flat on
+				<code>--knob</code>.
+			</li>
+			<li>
+				<code>.cov-state--lit / --provisional / --missing / --notModeled / --na</code>: the coverage
+				strip's five registers, in UI state colours (⛔ never element colours: coverage is not a
+				mechanic); <code>.is-dim</code> recedes in the paint.
+			</li>
+			<li>
+				<code>.band--3up</code>: ToolStack's three-zone toolbar, flanks plus a centre that takes
+				what they leave. The centre has no ground (<a href="#bands">the toolbar</a>).
+			</li>
+			<li>
+				In <code>.prose</code>: <code>.lede</code>, the one thing larger than body copy (<code
+					>--fs-2xl</code
+				>, muted), and <code>.flavor</code>, an italic item-description line under a heading (⚓
+				Nate 2026-10-16, sparingly: the tools' Help chapters, Beta, the error page). Outside prose,
+				<code>.link</code>
+				is a text link in running UI text (accent ink, an underline faint at rest and lit on hover), and
+				<code>.link--quiet</code> keeps the surrounding ink.
+			</li>
+		</ul>
 	</section>
 
 	<!-- ═══════════════════════════════════════════════════════════ MIGRATION ══ -->
@@ -2040,6 +2630,18 @@
 						a context's accent in the world (landing scene, static pages).
 					</li>
 					<li>
+						<strong>The one sanctioned crossing: a profile's colour is an element hue.</strong> ⚓
+						Nate (profiles design §2.3): the profile colours are the seven elements plus
+						Theorycraft's white (<code>--profile-theorycraft</code>), resolved by
+						<code>profileLook.ts</code>
+						to
+						<code>var(--el-&lt;x&gt;-main)</code>. They mark whose something is, on chrome: the
+						profile picture's ring, the sidebar's current edge on a profile's own places, the
+						Library's guest edge, Trash rows, the switch toast's swatch and the top bar's switch
+						wash. Everywhere else the line above holds. A colour can repeat across profiles (the
+						least worn is offered first).
+					</li>
+					<li>
 						<strong>Structure whispers; content carries the chroma.</strong> A ground is a near-neutral
 						LIT by the scene (C .010–.040) — real chroma on it white-balances every element bar sitting
 						on it by simultaneous contrast, and fights the border. Identity chroma belongs to CONTENT
@@ -2092,17 +2694,21 @@
 						<code>timelineExport.mirror.test.ts</code> makes mirror drift a test failure.
 					</li>
 					<li>
-						<strong>Selection is accent — except at the very top of the ladder.</strong> A top-level
-						NAVIGATION selects with <code>--sel-surface</code> (beige) +
-						<code>--sel-ink</code>: the selected thing is the screen's one bright plate, Genshin's
-						Stygian selected-row idiom. Two consumers — the Team Builder's Atlas/Roster/Compare
-						plate and the Help chapter nav. Everywhere else selection remains
-						<code>--sel-fill</code>/<code>--sel-ring</code>. NO beige panels — the pilot's extent is
-						a deliberate knob. ↻ ⚓ Nate 2026-08-10: it left the DOCUMENT TABS, where every
-						neighbour had become glass and the one lit plate pulled the eye off the tool; those
-						select by DENSITY now — an opaque slate among panes. (Amends 2026-08-01: gray AND beige
-						are both freely available to this site; the old "beige belongs to the sister site" split
-						is retired.)
+						<strong
+							>Selection is accent, and top-level navigation says "you are here" by ground.</strong
+						>
+						The top bar's current tool is a glass fill (<code>--glass-hover</code>), never gold. The
+						menu state's sidebar marks its current item with the hover rung (<code
+							>--surface-hover</code
+						>) and a 2px inset edge: gold, or the profile's colour on a profile's own places
+						(Profile, Roster, Teams, Rotations, Lineups; ⚓ Nate,
+						<code>docs/fullscreen-cleanups-round.md</code>). A selected team member's tile wears a
+						ground that stays plus a gold ring (⚓ Nate rejected ring + glow + badge). Everywhere
+						else selection is the accent fill. ↻ The beige plate (<code>--sel-surface</code> +
+						<code>--sel-ink</code>, Genshin's Stygian selected row) has one consumer left,
+						<code>HelpAreaShell</code>, which only the old layout renders; the Team Builder's
+						Atlas/Roster/Compare plate it was built for is gone. Gray and beige both remain
+						available to this site.
 					</li>
 				</ul>
 			</div>
@@ -2122,8 +2728,8 @@
 					<li>
 						<strong>Three voices, and they don't swap.</strong> <code>--chrome</code> white is
 						branding, site chrome and the biggest headers — never body copy or data. Inside a panel,
-						<code>--text</code> is prose and <code>--muted</code> is the label voice (kickers, field labels,
-						section heads). Both come from the context, never from a literal.
+						<code>--text</code> is prose and <code>--muted</code> is the label voice (field labels, resting
+						controls; a kicker is gold). Both come from the context, never from a literal.
 					</li>
 					<li>
 						<strong>Controls are sentence case</strong> (↻ 2026-10-24, ⚓ Nate — it retired "verbs shout,
@@ -2162,8 +2768,16 @@
 						emphasis, not chrome.)
 					</li>
 					<li>
-						<strong>Button marks are 28px</strong> and built as a disc with the glyph as an evenodd
-						HOLE, so one path takes <code>currentColor</code>. The notification mark is 12px.
+						<strong>The top bar's doors are sized by ink, not by box</strong> (⚓ Nate, the
+						title-bar round, 2026-10-25). Each is a disc with the glyph as an evenodd HOLE, so one
+						path takes
+						<code>currentColor</code>. They share one height, <code>--tb-glyph-h</code> =
+						<code>--ui-ctl-h</code> − 6px, times <code>--disc</code> (1.12) and a per-door
+						<code>--ink</code> where its art is sparse (the compass ×1.1 of the discs, Teams 1.22):
+						ink per height² runs from 0.71 (help) to 0.35 (Teams), so equal boxes would not look
+						equal. The ratios ride the interface size, about 29px at Medium. ⚠ A wash path states
+						<code>fill="#000"</code>, or it inherits <code>currentColor</code> and paints solid. (The
+						old bar's marks were a fixed 28px.)
 					</li>
 					<li>
 						<strong>Slider knobs are flat.</strong> Their analogue is the toggle thumb — also a
@@ -2187,9 +2801,23 @@
 					<li>
 						<strong>On is a fill; a ring is the hand</strong> (↻ 2026-10-25, ⚓ Nate). A plate that
 						is on and a chip, segment or filter that is chosen fill with the accent at 20% over the
-						face (an element in its own hue). Rings are for hover (only where a pointer can hover),
-						focus, and "you are here". Behind the switch until the flip:
-						<code>:where(:root[data-next])</code> in app.css.
+						face (an element in its own hue). Rings are for hover and keyboard focus. The rules are
+						written <code>:where(:root[data-next])</code> in app.css, beside a
+						<code>:where(:root:not([data-next]))</code> half that serves only the old layout until
+						step 5 deletes it; <code>:where</code> adds no weight, so both keep the specificity that was
+						tested.
+					</li>
+					<li>
+						<strong>Hover only where a pointer can hover.</strong> A hover ring or wash is written
+						inside
+						<code>@media (hover: hover)</code>: on a phone the last control tapped keeps its hover
+						state, so an unguarded hover reads as "on". The other half: anything that appears on
+						hover (the Library's and Teams' verbs) also shows on keyboard focus,
+						<code>:has(:focus-visible)</code> rather than <code>:focus-within</code> (a clicked Pin
+						held them up), and under <code>@media (hover: none)</code>, where nothing can hover to
+						find it, it is always shown (a team card's Delete) or folds into a ⋯ (the Library's
+						verbs). Record:
+						<code>docs/fullscreen-surface-round.md</code>.
 					</li>
 				</ul>
 			</div>
@@ -2198,9 +2826,12 @@
 				<h3>Safari / WebKit</h3>
 				<ul>
 					<li>
-						<strong>No filters.</strong> Dimming is <code>fill-opacity</code> on the glyph, never
-						<code>opacity</code> on the element — element opacity creates a WebKit transparency layer,
-						which shows as 1px jitter under parallax.
+						<strong>No filters on what moves.</strong> Dimming a glyph is <code>fill-opacity</code>,
+						never <code>opacity</code> on the element — element opacity creates a WebKit
+						transparency layer, which shows as 1px jitter under parallax. ↻ A static
+						<code>filter</code>
+						on something that stays put is fine: the unowned portraits’
+						<code>--portrait-unowned</code> scrolls the full Roster smoothly in real Safari (⚓ Nate 2026-10-27).
 					</li>
 					<li>
 						<strong>Alpha lives in the PAINT.</strong> The rule above is not about glyphs, it is
@@ -2227,8 +2858,11 @@
 						Hover raises the toplight, never the fill's opacity.
 					</li>
 					<li>
-						No per-item <code>&lt;img&gt;</code> on roster-scale grids until ~Safari 27 — use
-						<code>background-image</code>.
+						Prefer <code>background-image</code> to a per-item <code>&lt;img&gt;</code> on
+						roster-scale grids that mount during a transition: <code>CharacterCard</code> measured
+						222ms → 2ms. ↻ A grid that mounts at rest is fine with <code>&lt;img&gt;</code> (the Roster
+						and team details, checked in real Safari, ⚓ Nate 2026-10-27), so convert one only if it shows
+						a cost.
 					</li>
 				</ul>
 			</div>
@@ -2273,6 +2907,14 @@
 						<code>motion()</code>.
 					</li>
 					<li>New persistent scene animations must suspend on tool routes.</li>
+					<li>
+						<strong>A refused action nudges, with the one nudge</strong> (app.css
+						<code>@keyframes nudge</code>; ⚓ the motion sweep, 2026-10-18): 2px either way in whole
+						pixels, spent as <code>animation: nudge 120ms 2</code>. ⛔ Never a local shake; three
+						used to exist and none was tuned on purpose. It rides <code>translate</code>, so it
+						composes with a hover lift, and it honours reduced motion itself: the keyframe is
+						redefined empty, which still fires <code>animationend</code> for a caller clearing its flag.
+					</li>
 				</ul>
 			</div>
 
@@ -2280,8 +2922,20 @@
 				<h3>Structure</h3>
 				<ul>
 					<li>
-						Modals are for <strong>meta</strong> only (settings, help, static pages). Every
-						<strong>tool</strong> feature is a docked panel or an in-frame overlay.
+						<strong>Three surfaces, site-wide</strong> (⚓ Nate,
+						<code>docs/inspector-round.md</code>): the <strong>tools</strong> (work), the
+						<strong>menu state</strong>
+						(places you go to on purpose: the Library, Teams, Roster, Help, About, Settings, Profile,
+						Trash) and the
+						<strong>inspector</strong> (reference about one thing picked out of the work, read
+						beside it, never edited). Everything else is attached to a control: a tooltip, a
+						popover, a confirmation, a notice. A tool feature is a docked panel or an in-frame
+						overlay,
+						<strong>except the inspector, whose shape is the tool's</strong> (ruling 1): a pane in
+						the Planner's aside, a modal in the Builder (<code>InspectModal</code>, the character,
+						boss and opponents sharing one shell), none in the Visualizers. A dialog is for a
+						decision whose cause is away from where you are looking (<a href="#redesign">notices</a
+						>).
 					</li>
 					<li>
 						In-frame overlays can't paint above the fixed chrome strip (<code>.tool-main</code> is
@@ -2319,13 +2973,18 @@
 						ribbon fades in place.
 					</li>
 					<li>
-						<strong>The bench ribbon opens on band A's top edge</strong> (↻ 2026-08-17, ⚓ Nate). It
-						used to stand <code>RIBBON_OVERHANG_Y</code> (12px) proud at <em>both</em> ends so it
-						read as the object in front; the tail round took the bottom half of that away (a point
-						terminates, it does not overhang), and the top half was buying a difference the
-						silhouette already states — at the cost of the topmost horizontal in the tool lining up
-						with nothing. The constant survives at <strong>0</strong>: it is still the one knob for
-						this relationship, and the cards do not move when it changes, because
+						<strong>The bench ribbon opens on the top edge of the tool's stack</strong> (↻
+						2026-08-17, ⚓ Nate; written for band A's top edge, and with band A gone that edge is
+						the toolbar's). Its head is <code>ribbonHead(trackTop, noBandA, bandBH)</code>, which
+						reads the toolbar's measured height (<code>benchBand.bandBH</code>, published by
+						ToolStack) because the row follows the interface size. It used to stand
+						<code>RIBBON_OVERHANG_Y</code>
+						(12px) proud at <em>both</em> ends so it read as the object in front; the tail round
+						took the bottom half of that away (a point terminates, it does not overhang), and the
+						top half was buying a difference the silhouette already states — at the cost of the
+						topmost horizontal in the tool lining up with nothing. The constant survives at
+						<strong>0</strong>: it is still the one knob for this relationship, and the cards do not
+						move when it changes, because
 						<code>RIBBON_HEAD</code> adds back exactly what the dock subtracts. Consequences to
 						respect: nothing may live in the column beneath the strip (the planner's lane names
 						moved into their own lanes; the Team Builder's team readout moved to the work zone's top
@@ -2349,8 +3008,12 @@
 						in
 						<code>$lib/toolColumns</code>); the bands above span both. The aside is always the DARK
 						column and holds ONE occupant at a time, which each tool decides in a single expression
-						— the planner's notes, or its Source's filters covering them; the Team Builder's filters
-						on the Roster only. The filters are <code>CharacterFilterStrip</code> (the column,
+						— the planner's <strong>inspector</strong> (its team page holds the notes; a picked bar,
+						cast or chip opens its own page; 300 / 340 from <code>broad</code> / 380px from
+						<code>vast</code>, <code>--rp-inspector-w</code>) or its aura <strong>log</strong>
+						(262px), the exclusivity held in <code>plannerView.aside</code>. The Source and its
+						filters retired 2026-08-13. The filters are <code>CharacterFilterStrip</code> (the
+						column,
 						<code>CharacterFilterRail</code>, retired 2026-10-26) and the tiles are
 						<code>CharacterGrid</code>: siblings that meet on the consumer's
 						<code>filters</code> object, not one component with a private layout. Per-tool sizing
@@ -2385,8 +3048,8 @@
 						<code>.instrument</code>: the Readout last in one column, beside the controls under a
 						full-width chart from 38rem, a full-height column from 60rem. ⚓ 2026-08-13:
 						<strong>band B is cut by the tile gap</strong>
-						here and paints nothing (band A still spans the screen), so each instrument's picker and actions
-						are their own run of glass plates; and the gap
+						here and paints nothing, so each instrument's picker and actions are their own run of glass
+						plates; and the gap
 						<em>between</em> instruments is deliberately <strong>double</strong> the gap inside one, since
 						with the frames gone it is the only thing left saying where one argument ends.
 					</li>
@@ -2456,7 +3119,9 @@
 						<a href="#families">closed</a> — it is gold.) Picking the colour was a value change;
 						deciding which affordances earn it is not. Right now every
 						<code>--accent</code>-derived selection ring, hover wash and link in the app turned gold
-						at once, which is more gold than Genshin spends on a screen. Ration is the open half.
+						at once, which is more gold than Genshin spends on a screen. ↻ ⚓ Nate 2026-10-27: gold
+						can be used, just not overused. It names a block, marks what is chosen or pinned, and
+						may mark an occasional word (the Library's “Open now”). Ration it per screen.
 					</li>
 					<li>
 						⛔ <strong>CLOSED: the shaped scrim.</strong> Built (ellipse, then a soft rounded box
@@ -2483,9 +3148,12 @@
 						with nothing softening them. Nothing measurable decides this one.
 					</li>
 					<li>
-						<strong>Modals are still opaque.</strong> They mount outside <code>.tool-shell</code>
-						and float over the <em>undimmed</em> landing as well as the crest, where glass would be nearly
-						transparent. Deliberately left out of the glass round; they may want a material of their own.
+						<strong>Which material is a dialog?</strong> Still opaque, and today in three forms: the
+						notices' confirm dialog is paper with no border (<code>NoticeRegion</code>,
+						<code>docs/notices-design.md</code>); the Links, Move and tab-limit dialogs are slate
+						with no border; <code>InspectModal</code> is slate with one <code>--border</code> hairline
+						(⚓ the inspector round's one frame). Each was ruled on its own; nothing reconciles the three
+						yet (sweep finding 2.3, for Nate).
 					</li>
 					<li>
 						<strong>The element icons are tuned for dark grounds.</strong> They are a build artifact
@@ -2496,10 +3164,14 @@
 						answer.
 					</li>
 					<li>
-						<strong>Meta overlays read the WORLD's voice, not a context.</strong> Help / About /
-						Settings mount outside <code>.tool-shell</code> deliberately, so they inherit the root net
-						— the dark context's grounds carrying the world's neutral ink. It coheres, but it is inherited
-						rather than chosen. Genshin's own menus are light; flipping them is one class.
+						✅ <strong>CLOSED: meta surfaces have a context of their own.</strong> Help, About and
+						Settings used to be overlays that inherited the root net, the world's voice by default.
+						The menu state made the choice (⚓ Nate,
+						<code>docs/profiles-and-surfaces-design.md</code>): the full-screen state is a state,
+						not an overlay, on slate covering the whole screen, Genshin's own grammar for menus that
+						take over (Party Setup, the Archive). It claims <code>.ctx-dark</code>; Help and About
+						are text on slate, and the few paper patches (Theorycraft's
+						<code>.invite</code>) are <code>ctx-light</code>.
 					</li>
 					<li>
 						<strong>The border sweep is unfinished.</strong> The pattern layer is done —
@@ -2510,8 +3182,9 @@
 					</li>
 					<li>
 						<strong>Which surfaces earn an inset border?</strong> There are
-						<a href="#insets">five to choose from</a> now instead of one, which turns the question from
-						"invent something" into "pick". Nothing wears one yet except the bench ribbon.
+						<a href="#insets">two to choose from</a> (a closed set), which turns the question from
+						"invent something" into "pick". Nothing outside <code>/lab</code> wears the
+						<code>.inset</code> class; the bench ribbon draws its own two-stroke frame.
 					</li>
 					<li>
 						<strong>Is 1px a rung, or is it 3px?</strong> <code>--r-xs</code> exists to answer that on

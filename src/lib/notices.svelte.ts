@@ -22,13 +22,45 @@ export type NoticeKind = 'success' | 'info' | 'warning' | 'error';
 
 export type NoticeAction = { label: string; run: () => void };
 
+/**
+ * A toast's words, with the NAMES in it marked (⚓ Nate 2026-10-27): a
+ * rotation's, a lineup's, a team's or a profile's name is set a little
+ * heavier, so it is clear where a name is being stated. A plain string has
+ * none. Build one with `named`.
+ */
+export type NoticeText = string | readonly (string | { name: string })[];
+
+/**
+ * A toast text whose `${}` values are NAMES: named`Restored ${p.name}`. ⚠ A
+ * STRING value is always a name; plain words go in as an array (`['the
+ * Library']`), and a NoticeText built elsewhere is spliced in as it is, so a
+ * phrase holding a name of its own composes.
+ */
+export function named(strings: TemplateStringsArray, ...values: NoticeText[]): NoticeText {
+	const out: (string | { name: string })[] = [];
+	strings.forEach((s, i) => {
+		if (s) out.push(s);
+		if (i >= values.length) return;
+		const v = values[i];
+		if (typeof v === 'string') out.push({ name: v });
+		else out.push(...v);
+	});
+	return out;
+}
+
+/** Its words alone (for anything that wants a string). */
+export const plainText = (t: NoticeText): string =>
+	typeof t === 'string' ? t : t.map((p) => (typeof p === 'string' ? p : p.name)).join('');
+
 export type Toast = {
 	id: number;
 	kind: NoticeKind;
-	text: string;
+	text: NoticeText;
 	actions: NoticeAction[];
 	/** A profile's colour, shown as a disc in place of the mark. */
 	swatch?: string;
+	/** The profile's picture inside that disc (⚓ Nate 2026-10-27). */
+	picture?: string | null;
 	/** How long it stays; null = until dismissed. */
 	ms: number | null;
 	paused: boolean;
@@ -93,10 +125,11 @@ class Notices {
 	 */
 	toast(
 		kind: NoticeKind,
-		text: string,
+		text: NoticeText,
 		opts: {
 			actions?: NoticeAction[];
 			swatch?: string;
+			picture?: string | null;
 			ms?: number | null;
 			onGone?: () => void;
 		} = {}
@@ -110,6 +143,7 @@ class Notices {
 			text,
 			actions,
 			swatch: opts.swatch,
+			picture: opts.picture,
 			ms,
 			paused: false
 		};

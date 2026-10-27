@@ -122,7 +122,7 @@
 		display: flex;
 		flex-direction: column;
 		border: 1px solid var(--border);
-		border-radius: var(--r-lg, 6px);
+		border-radius: var(--r-md);
 		background: var(--surface);
 		color: var(--text);
 		overflow: hidden auto;

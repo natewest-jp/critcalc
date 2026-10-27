@@ -60,6 +60,75 @@
 		}
 	];
 
+	/** The paper-blue comparison (⚓ Nate 2026-10-27): he preferred the toast
+	 *  lab's stand-in to --ui-info's paper rung. The rung was made dark to be
+	 *  TEXT-safe (4.61:1), but its only paper consumer is a toast's stripe and
+	 *  mark, where the family (positive, warning, danger) sits near L .58 and
+	 *  3.3:1. Candidates are page-local literals (the /lab exemption). */
+	const PAPER_BLUES = [
+		{ key: 'was', hex: '#296b96', note: 'the old text-safe rung · L .51 · 4.61:1' },
+		{ key: 'chosen', hex: '#3682bb', note: '--blue-700 now (⚓ Nate) · L .59 · 3.31:1' },
+		{ key: 'family', hex: '#3483b7', note: 'at --ui-info’s hue, family lightness · L .59 · ~3.3:1' }
+	] as const;
+	/** The dark rung, now vs richer (⚓ Nate asked to see it, 2026-10-27): the
+	 *  richer one lifts chroma by the same proportion the paper rung gained when
+	 *  it became the stand-in (.080 → .097), same lightness. ⚓ Nate chose it
+	 *  ("subtle, but nice"); kept as the record. Page-local. */
+	const DARK_BLUES = [
+		{ key: 'was', hex: '#83b5df', note: 'was · C .080 · 5.65:1 on slate' },
+		{ key: 'chosen', hex: '#79b6e9', note: '--blue-400 now (⚓ Nate) · C .097 · 5.67:1 on slate' }
+	] as const;
+	const DARK_GROUNDS = [
+		{ key: 'night', cls: '' },
+		{ key: 'glass', cls: 'ctx-glass' },
+		{ key: 'slate', cls: 'ctx-dark' }
+	] as const;
+	const PAPER_FAMILY = [
+		{ kind: 'success', mark: 'check', text: 'Team saved', color: 'var(--ui-positive)' },
+		{ kind: 'warning', mark: 'warn', text: 'The lineup is full', color: 'var(--ui-warning)' },
+		{
+			kind: 'error',
+			mark: 'warn',
+			text: 'That share link couldn’t be read',
+			color: 'var(--ui-danger)'
+		}
+	] as const;
+
+	/** The --ui-info board: the four grounds, with paper split into its two
+	 *  rungs (on paper the axis is SIZE: broad panels are parchment-50, cards
+	 *  and controls on them parchment-100). */
+	const INFO_GROUNDS = [
+		{ key: 'night', cls: '', label: 'ctx-night', note: '--blue-400 · #79b6e9', broad: false },
+		{
+			key: 'glass',
+			cls: 'ctx-glass',
+			label: 'ctx-glass',
+			note: '--blue-400 · #79b6e9',
+			broad: false
+		},
+		{
+			key: 'dark',
+			cls: 'ctx-dark',
+			label: 'ctx-dark — slate',
+			note: '--blue-400 · 5.67:1',
+			broad: false
+		},
+		{
+			key: 'light-broad',
+			cls: 'ctx-light',
+			label: 'ctx-light — --surface-broad',
+			note: '--blue-700 · #3682bb · 3.71:1',
+			broad: true
+		},
+		{
+			key: 'light',
+			cls: 'ctx-light',
+			label: 'ctx-light — --surface',
+			note: '--blue-700 · #3682bb · 3.31:1',
+			broad: false
+		}
+	];
+
 	const LINE_STOPS = ['--line-faint', '--line-soft', '--line-strong', '--line-edge'];
 
 	/**
@@ -146,6 +215,88 @@
 						{/each}
 					</div>
 					<div class="spec-note">{g.note}</div>
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════════════════ 2 · --ui-info ══ -->
+	<!-- ⚓ Nate 2026-10-27: the new neutral-information blue on every ground,
+	     as prose ink and as a small mark, to judge the PAPER rung by eye. Paper
+	     is shown on both of its rungs, since the colour is tuned against both
+	     (3.31:1 on --surface, 3.71:1 on --surface-broad: a mark, like its family). -->
+	<section>
+		<h2 class="lab-h">--ui-info · neutral information</h2>
+		<div class="lab-grid lab-grid--info">
+			{#each INFO_GROUNDS as g (g.key)}
+				<div class="spec {g.cls}" class:spec--bare={g.key === 'night'} class:spec--broad={g.broad}>
+					<div class="spec-tag">{g.label}</div>
+					<div class="info-row">
+						<span class="info-stat">ATK</span>
+						<span class="info-value">+20%</span>
+					</div>
+					<div class="info-row">
+						<span class="info-stat">Elemental Mastery</span>
+						<span class="info-value">+120</span>
+					</div>
+					<p class="info-prose">
+						Body text with <span class="info-ink">a value in the info blue</span> beside it.
+					</p>
+					<div class="info-marks">
+						<span class="info-dot"></span>
+						<span class="info-mark"><Mark name="about" /></span>
+						<span class="info-mark"><Mark name="buff" /></span>
+					</div>
+					<div class="spec-note">{g.note}</div>
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════ 2a · the dark blue, now vs richer ══ -->
+	<section>
+		<h2 class="lab-h">The dark blue · was vs chosen</h2>
+		<div class="db-grid">
+			{#each DARK_GROUNDS as g (g.key)}
+				<div class="spec {g.cls}" class:spec--bare={g.key === 'night'}>
+					<div class="spec-tag">{g.key}</div>
+					{#each DARK_BLUES as b (b.key)}
+						<div class="db-row" style:--db={b.hex}>
+							<span class="db-key">{b.key}</span>
+							<span class="info-stat">ATK</span>
+							<span class="db-value">+20%</span>
+							<span class="info-stat">Elemental Mastery</span>
+							<span class="db-value">+120</span>
+							<span class="db-mark"><Mark name="about" /></span>
+						</div>
+					{/each}
+					<div class="spec-note">{DARK_BLUES.map((b) => b.note).join(' · ')}</div>
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════ 2b · the paper blue, as a toast ══ -->
+	<section>
+		<h2 class="lab-h">The paper blue · on a toast, beside its family</h2>
+		<div class="pb-grid">
+			{#each PAPER_BLUES as b (b.key)}
+				<div class="pb-col">
+					<div class="spec-tag">{b.key} · {b.hex}</div>
+					<div class="pb-toast ctx-light" style:--pb={b.hex}>
+						<span class="pb-mark"><Mark name="about" size={18} /></span>
+						<span>Opened in Theorycraft · your profiles are untouched</span>
+					</div>
+					{#each PAPER_FAMILY as f (f.kind)}
+						<div class="pb-toast ctx-light" style:--pb={f.color}>
+							<span class="pb-mark"><Mark name={f.mark} size={18} /></span>
+							<span>{f.text}</span>
+						</div>
+					{/each}
+					<p class="pb-ink ctx-light" style:--pb={b.hex}>
+						As text on paper: <span class="pb-word">+20% ATK</span>
+					</p>
+					<div class="spec-note">{b.note}</div>
 				</div>
 			{/each}
 		</div>
@@ -385,6 +536,125 @@
 	.spec-line {
 		height: 2px;
 	}
+	/* ── the dark blue, now vs richer ── */
+	.db-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+		gap: 1.5rem;
+	}
+	.db-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.35rem 0;
+		font-size: var(--fs-lg);
+	}
+	.db-key {
+		width: 3.6rem;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	.db-value {
+		color: var(--db);
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+	}
+	.db-mark {
+		display: inline-flex;
+		margin-left: auto;
+		color: var(--db);
+	}
+
+	/* ── the paper-blue comparison: the real toast's paper look, static ── */
+	.pb-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+		gap: 1.5rem;
+	}
+	.pb-col {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+	.pb-toast {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		min-height: 3rem;
+		padding: 0.55rem 0.9rem 0.55rem 1.1rem;
+		border-radius: var(--r-md);
+		background: var(--surface);
+		color: var(--muted);
+		font-size: var(--fs-xl);
+		line-height: var(--lh-snug);
+		box-shadow:
+			0 10px 30px rgb(0 0 0 / 0.5),
+			inset 4px 0 0 var(--pb);
+	}
+	.pb-mark {
+		display: inline-flex;
+		color: var(--pb);
+	}
+	.pb-ink {
+		margin: 0;
+		padding: 0.6rem 0.9rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+		color: var(--muted);
+		font-size: var(--fs-lg);
+	}
+	.pb-word {
+		color: var(--pb);
+		font-weight: var(--fw-semibold);
+	}
+
+	/* ── the --ui-info board ── */
+	.lab-grid--info {
+		grid-template-columns: repeat(5, 1fr);
+	}
+	.spec--broad {
+		background: var(--surface-broad);
+	}
+	.info-row {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+	/* The BuffDetailRows pairing, at its real size and weight. */
+	.info-stat {
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.info-value {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--ui-info);
+	}
+	.info-prose {
+		margin: 0;
+		font-size: var(--fs-md);
+		line-height: var(--lh-relaxed);
+		color: var(--text);
+	}
+	.info-ink {
+		color: var(--ui-info);
+	}
+	.info-marks {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		color: var(--ui-info);
+	}
+	.info-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: var(--r-round);
+		background: var(--ui-info);
+	}
+	.info-mark {
+		display: inline-flex;
+	}
+
 	.spec-note {
 		font-size: var(--fs-xs);
 		line-height: var(--lh-normal);

@@ -42,6 +42,10 @@ export type Meta = {
 	 *  page shows the returning-visitor dialog once, then clears this
 	 *  (flip-readiness §1 item 4; decided by `boot.ts` `hadLegacyData`). */
 	flipNotice?: boolean;
+	/** ⚓ The real profile a shared link left (Nate 2026-10-27, flip-readiness
+	 *  §3): the next NEW tab opens back in it. Cleared by that return and by
+	 *  any switch the visitor makes themselves. */
+	returnToProfileId?: string;
 };
 
 const META = 'meta';

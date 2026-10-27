@@ -131,6 +131,14 @@ type DocumentCommon = SyncFields & {
 	 * crosses profiles: the real profile's document and its Theorycraft copy.
 	 */
 	pairId?: string;
+	/**
+	 * ⚓ This side is the pair's HOME (2026-10-27, Nate): the rotation the
+	 * comparison was started from — the original of a duplicate, the current
+	 * one of a Compare with…, the profile's own of a what-if. Home is the left
+	 * side, and ✕ ends the pair and returns there from either side. On the home
+	 * document only; a pair made before it has none and is ordered as it was.
+	 */
+	pairHome?: true;
 };
 
 export type RotationDocument = DocumentCommon & { type: 'rotation'; body: RotationBody };
@@ -178,7 +186,19 @@ export function makeTheorycraft(now: number, twin: Twin = 'aether'): ProfileReco
 	};
 }
 
-/** A record id. `crypto.randomUUID` is in every current engine and in Node,
- *  and unlike the 8-character ids the localStorage stores minted, it stays
- *  unique once records from two devices meet. */
-export const newId = (): string => crypto.randomUUID();
+/** A record id: a v4 UUID, which unlike the 8-character ids the localStorage
+ *  stores minted stays unique once records from two devices meet.
+ *  ⚠️ `crypto.randomUUID` is missing on iOS 15.0–15.3 and in any insecure
+ *  context (a phone on the dev server over LAN `http://`), and an id is
+ *  minted at module import, so a throw there takes down hydration site-wide.
+ *  `getRandomValues` has neither gap and builds the same shape. */
+export const newId = (): string =>
+	typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : uuidFromRandomValues();
+
+function uuidFromRandomValues(): string {
+	const b = crypto.getRandomValues(new Uint8Array(16));
+	b[6] = (b[6] & 0x0f) | 0x40; // version 4
+	b[8] = (b[8] & 0x3f) | 0x80; // RFC 4122 variant
+	const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+	return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}

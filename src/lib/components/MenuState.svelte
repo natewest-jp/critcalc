@@ -439,7 +439,7 @@
 			<header class="head">
 				<div class="head-text">
 					<button class="head-back" onclick={() => menu.show('index')}
-						><span aria-hidden="true">‹</span> Menu</button
+						><Mark name="backSlim" size={12} /> Menu</button
 					>
 					<!-- ⛔ No group kicker over the title (↻ Nate 2026-10-26): it said
 					     the profile's name, "Library" or "Settings" again, and over
@@ -774,6 +774,14 @@
 		/* The far edge is the site gutter, so the content ends where a tool's
 		   does; the near side is the gap off the sidebar's rule. */
 		padding: 1.5rem var(--site-pad-x) 4rem clamp(1rem, 3vw, 3rem);
+		/* WHERE A SECTION'S STICKY HEADER STANDS (2026-10-27, the Coverage
+		   table's column labels): just under the pinned ✕ (its 1.25rem drop,
+		   16px mark and 0.25rem padding a side, then a 0.5rem gap), measured
+		   from the content edge, since a sticky inset does not count this
+		   box's padding. A sticky header fills the REACH above itself once it
+		   sticks, or the rows show through between it and the top bar. */
+		--menu-sticky-top: calc(1.25rem + 16px + 0.5rem + 0.5rem - 1.5rem);
+		--menu-sticky-reach: calc(1.5rem + var(--menu-sticky-top));
 	}
 	.head {
 		display: flex;
@@ -810,7 +818,8 @@
 		position: absolute;
 		top: calc(var(--chrome-h) + 1.25rem);
 		right: var(--site-pad-x);
-		z-index: 1;
+		/* Over a section's sticky header and the band it fills (z 1). */
+		z-index: 2;
 	}
 	/* A section's controls (menu.headActions), on the ✕'s line and left of
 	   it, so the two read as one group at the top right. */
@@ -860,12 +869,19 @@
 	   inside the usual 45–75 (it was 56ch, ~62). The site-wide cap on
 	   `.prose p, li` (app.css) is lifted here so the column sets it once.
 	   The MARGIN takes what is left up to 28rem: a screenshot of the UI has
-	   to be big enough to read, so it gets the room, not the text. */
+	   to be big enough to read, so it gets the room, not the text.
+	   ⚠️ Only when the chapter HAS a margin: a column reserved for nothing
+	   left every Help and About chapter in a build (where the mock below is
+	   stripped) beside an empty 16–28rem. Asked of the DOM rather than of
+	   `dev`, so the first real figure opens the margin by itself. */
 	.reading {
 		display: grid;
-		grid-template-columns: minmax(0, 68ch) minmax(16rem, 28rem);
+		grid-template-columns: minmax(0, 68ch);
 		column-gap: 3rem;
 		align-items: start;
+	}
+	.reading:has(> .margin) {
+		grid-template-columns: minmax(0, 68ch) minmax(16rem, 28rem);
 	}
 	.chapter {
 		min-width: 0;
@@ -900,7 +916,7 @@
 		container-type: inline-size;
 	}
 	@container (max-width: 56rem) {
-		.reading {
+		.reading:has(> .margin) {
 			grid-template-columns: minmax(0, 68ch);
 		}
 		.margin {
@@ -952,6 +968,7 @@
 		}
 		.head-back {
 			display: inline-flex;
+			align-items: center;
 			gap: 0.3rem;
 		}
 		/* ‹ Menu is the way back on a phone; the top bar's document button
@@ -965,6 +982,9 @@
 		}
 		.main {
 			padding: 1rem var(--site-pad-x) 3rem;
+			/* No ✕ here: a sticky header stands flush at the top. */
+			--menu-sticky-top: -1rem;
+			--menu-sticky-reach: 0px;
 		}
 		.main.is-fill {
 			padding-bottom: 0;

@@ -47,7 +47,7 @@
 		position: fixed;
 		z-index: 61;
 		inset: 4.25rem 1.5rem 1.5rem;
-		border-radius: var(--r-lg, 6px);
+		border-radius: var(--r-md);
 		/* The modals' light edge (ChromeOverlay's .overlay-panel), set at the
 		   same level — outside the body's .ctx-dark — so --border resolves as
 		   theirs does (⚓ Nate, 2026-10-18: it was the one window without it). */

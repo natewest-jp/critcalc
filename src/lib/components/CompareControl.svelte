@@ -3,7 +3,9 @@
   ⚓ A pair, not a mode: two rotations, ONE showing, a flip between them (⌃`
   too), ⛔ never drawn over each other. Unpaired, it offers the two ways in:
   Duplicate and compare (copy this rotation, keep the original as the other
-  side) and Compare with… (the Library, picking).
+  side) and Compare with… (the Library, picking). ↻ 2026-10-27: the original
+  is HOME, on the left; the comparison's side carries the ✕ that ends the
+  pair and returns home.
 
   ↻ 2026-10-24 (toolbar refinement, ⚓ Nate): it left the toolbar for the
   bench. A comparison is a second VERSION OF THIS TEAM — it is usually born on
@@ -46,18 +48,30 @@
 	const nameOfProfile = (id: string) =>
 		storageSession.profiles.find((p) => p.id === id)?.name ?? 'Theorycraft';
 
-	/** The two sides, left to right, and which one is showing. */
+	/** The two sides, left to right, and which one is showing. ⚓ HOME is
+	 *  the left (Nate 2026-10-27): the side the comparison was started from.
+	 *  A pair from before `pairHome` keeps its old order — a what-if's real
+	 *  profile first, else the older — and its left side counts as home. */
 	const sides = $derived.by(() => {
 		if (!pair) return null;
-		const self = { ...pair.self, current: true };
-		const other = { profileId: pair.profileId, createdAt: pair.createdAt, current: false };
+		const self = { ...pair.self, current: true, which: 'self' as const };
+		const other = {
+			profileId: pair.profileId,
+			createdAt: pair.createdAt,
+			current: false,
+			which: 'other' as const
+		};
 		const cross = self.profileId !== other.profileId;
-		// A what-if: the real profile first, Theorycraft's copy second.
-		const ordered = cross
-			? [self, other].sort(
-					(a, b) => Number(a.profileId === THEORYCRAFT_ID) - Number(b.profileId === THEORYCRAFT_ID)
-				)
-			: [self, other].sort((a, b) => a.createdAt - b.createdAt);
+		const ordered = pair.home
+			? pair.home === 'self'
+				? [self, other]
+				: [other, self]
+			: cross
+				? [self, other].sort(
+						(a, b) =>
+							Number(a.profileId === THEORYCRAFT_ID) - Number(b.profileId === THEORYCRAFT_ID)
+					)
+				: [self, other].sort((a, b) => a.createdAt - b.createdAt);
 		return ordered.map((s, i) => ({
 			...s,
 			// The phone's rail has no room for two profile names: a what-if's
@@ -71,7 +85,8 @@
 				: i === 0
 					? 'A'
 					: 'B',
-			guest: cross && s.profileId === THEORYCRAFT_ID
+			guest: cross && s.profileId === THEORYCRAFT_ID,
+			home: i === 0
 		}));
 	});
 
@@ -93,32 +108,47 @@
 	}
 </script>
 
-{#snippet endButton()}
-	<button
-		class="btn btn--sm btn--icon cmp-end"
-		type="button"
-		title="End the comparison (both rotations stay)"
-		aria-label="End the comparison"
-		onclick={() => void storageSession.endPair()}><Mark name="close" /></button
-	>
-{/snippet}
-
-{#snippet pairControl(withEnd: boolean)}
+{#snippet pairControl()}
 	<div class="cmp-pair">
 		<div class="segment cmp-seg" role="group" aria-label="Comparing">
-			{#each sides ?? [] as s, i (i)}
-				<button
-					class="btn btn--sm"
-					class:is-active={s.current}
-					class:is-guest={s.guest}
-					type="button"
-					aria-pressed={s.current}
-					title={s.current ? `${s.label}: on screen` : `Switch to ${s.label} (⌃\`)`}
-					onclick={() => !s.current && flip()}><span class="cmp-label">{s.label}</span></button
-				>
+			{#each sides ?? [] as s (s.which)}
+				{@const pick = () => !s.current && flip()}
+				{@const pickTitle = s.current ? `${s.label}: on screen` : `Switch to ${s.label} (⌃\`)`}
+				{#if s.home}
+					<button
+						class="btn btn--sm"
+						class:is-active={s.current}
+						class:is-guest={s.guest}
+						type="button"
+						aria-pressed={s.current}
+						title={pickTitle}
+						onclick={pick}><span class="cmp-label">{s.label}</span></button
+					>
+				{:else}
+					<!-- ⚓ THE ✕ RIDES IN THE COMPARISON'S OWN SIDE (Nate 2026-10-27):
+					     it closes THIS one and returns home, so it sits on what it
+					     closes. Two buttons in one segment, never one nested in the
+					     other. -->
+					<span class="cmp-away" class:is-active={s.current} class:is-guest={s.guest}>
+						<button
+							class="btn btn--sm cmp-away-pick"
+							type="button"
+							aria-pressed={s.current}
+							title={pickTitle}
+							onclick={pick}><span class="cmp-label">{s.label}</span></button
+						>
+						<button
+							class="btn btn--sm btn--icon cmp-away-end"
+							type="button"
+							aria-label="End the comparison"
+							title={`End the comparison and return to ${sides?.[0].label ?? 'the original'} (both rotations stay)`}
+							onclick={() => void storageSession.endPair(sides?.[0].which ?? 'self')}
+							><Mark name="close" size={12} /></button
+						>
+					</span>
+				{/if}
 			{/each}
 		</div>
-		{#if withEnd}{@render endButton()}{/if}
 	</div>
 {/snippet}
 
@@ -150,7 +180,7 @@
 			<!-- Folded, the faces need the room, and the pair with its ✕ reads
 			     as one without it. -->
 			{#if !compact}<span class="cmp-rail-mark" aria-hidden="true"><Mark name="swap" /></span>{/if}
-			{@render pairControl(true)}
+			{@render pairControl()}
 		</div>
 	{:else if storageSession.active}
 		<BandMenu
@@ -165,13 +195,9 @@
 		</BandMenu>
 	{/if}
 {:else if sides}
-	<!-- The foot is narrow: ✕ heads the block so the two names get its width. -->
 	<div class="cmp-foot">
-		<div class="cmp-head">
-			<span class="cmp-kicker">Comparing</span>
-			{@render endButton()}
-		</div>
-		{@render pairControl(false)}
+		<span class="cmp-kicker">Comparing</span>
+		{@render pairControl()}
 	</div>
 {:else if storageSession.active}
 	<span class="cmp-start">
@@ -187,14 +213,6 @@
 		flex-direction: column;
 		gap: 4px;
 		width: 100%;
-	}
-	.cmp-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	.cmp-head .cmp-end {
-		background: none;
 	}
 	.cmp-seg > :global(.btn) {
 		padding-inline: 0.35rem;
@@ -217,16 +235,54 @@
 		flex: 1 1 auto;
 		min-width: 0;
 	}
-	.cmp-seg > :global(.btn) {
+	.cmp-seg > :global(.btn),
+	.cmp-away {
 		flex: 1 1 0;
 		min-width: 0;
+	}
+	/* The comparison's side: one segment holding its pick and its ✕. The
+	   SEGMENT wears the chosen fill (app.css, .segment > .btn.is-active), so
+	   the two buttons read as one side; each keeps its own hover. */
+	.cmp-away {
+		display: flex;
+		border-radius: var(--r-xs);
+	}
+	.cmp-away > :global(.btn) {
+		border-radius: var(--r-xs);
+		background: transparent;
+	}
+	.cmp-away-pick {
+		flex: 1 1 auto;
+		min-width: 0;
+		padding-inline: 0.35rem;
+	}
+	.cmp-away-end {
+		flex: none;
+		min-width: 0;
+		padding-inline: 0.3rem;
+		color: var(--muted);
+	}
+	@media (hover: hover) {
+		.cmp-away > :global(.btn:hover) {
+			background: var(--fill-hover);
+		}
+		.cmp-away-end:hover {
+			color: var(--text);
+		}
+	}
+	.cmp-away.is-active {
+		background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
+	}
+	.cmp-away.is-active .cmp-away-pick {
+		color: var(--ink-active);
 	}
 	.cmp-label {
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	/* ⚓ The guest's side wears Theorycraft's white (§4.6). */
-	.cmp-seg > :global(.btn.is-guest.is-active) {
+	.cmp-seg > :global(.btn.is-guest.is-active),
+	.cmp-away.is-guest.is-active {
 		box-shadow: inset 0 0 0 1.5px var(--profile-theorycraft);
 	}
 	.cmp-start,

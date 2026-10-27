@@ -115,6 +115,19 @@
 	--red-500: #c9524a;
 	--red-400: #d26a5c;
 
+	/* BLUE — neutral information (⚓ Nate 2026-10-27): the --ui-info pair, and
+	   nothing else yet. 400 began as the buff tooltip's value blue, a literal in
+	   BuffDetailRows (#90b4d0, oklch .753 .056 242), and ⚓ Nate asked for a
+	   little more saturation (2026-10-27, chroma .056 → .080), and ↻ the same day
+	   picked the toast lab's paper blue, so both rungs now sit at ITS hue (244°;
+	   the move from 242° is invisible), and the dark rung took the same chroma
+	   lift the paper one had (.080 → .097, "subtle, but nice"). Still a quiet blue, about half of
+	   hydro's chroma (.153), so it stays clear of the element (see --ui-info).
+	   700 is the same hue carried down for paper, the way --gold-700 carries
+	   the accent. */
+	--blue-400: #79b6e9; /* --ui-info on night, slate and glass — oklch .754 .097 244 */
+	--blue-700: #3682bb; /* --ui-info on paper — oklch .585 .115 244 */
+
 	/* ══ L1 · COMPOSITING ══════════════════════════════════════════════════════
 	   The alphas Fable recovered. Two different fates, and the split is a law:
 
@@ -902,6 +915,12 @@
 	   Nothing to click, nothing the user did. See the block above for the census
 	   that split it out of --ui-danger. */
 	--ui-provisional: #f6d365;
+	/* NEUTRAL INFORMATION (⚓ Nate 2026-10-27): a fact the interface states with
+	   no consequence attached, the value in a buff tooltip. ↻ This reopens the
+	   "WE HAVE NO FREE BLUE" ruling above for one rung, by chroma rather than
+	   hue: --blue-400 is C .080, about half of hydro's (.153), so it reads as a
+	   quiet blue beside the elements rather than as one. 5.67 to 1 on slate. */
+	--ui-info: var(--blue-400);
 	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
 	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
 	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);
@@ -1520,7 +1539,13 @@
    variable, and which is why $lib/motion.ts exists and why its helpers return 0
    under the same query. Keyframe `animation`s are the third gap and cannot be
    closed this way at all: a duration token has nothing to say to `@keyframes`.
-   (`pulse-confirm` is the only one, and it still declares its own reduce path.)
+   So each keyframe declares its own reduce path: here, `pulse-confirm` and
+   the shared `nudge` (which empties its frames rather than going `none`); in
+   components, TopBar's `st-pulse`, RosterTab's `ros-flash` and CritInstrument's
+   `cv-dot-in`. The rest need none of their own: TopBar's `brief-in` runs on
+   --t-quick, its `wash-out` on a duration from $lib/motion.ts, ToolColumns'
+   `tc-aside-rise` on scroll rather than time, and NoticeRegion's `nt-drain`
+   is the toast's timer ring, which is left running.
 
    ↻ 2026-08-12: the site chrome's private 200ms folded in (⚓ Nate), taking
    three more blocks with it. Nothing outside the three exceptions above is
@@ -1706,6 +1731,14 @@
 	   full-screen sidebar's current item had no fill (Nate). One rung up reads
 	   as the thing coming toward you, on the ground and on a raised card alike. */
 	--surface-hover: var(--slate-600);
+	/* ⚓ FLOATING, two rungs above raised (Nate 2026-10-27, the toast-attention
+	   lab): a dark surface that appears unbidden over slate — today the Roster's
+	   keys bar — must be brighter than every ground it can land on, or it can
+	   come and go unseen. No rim; the brightness step and the shadow carry it.
+	   --surface-float-key is its keycap, one step lighter again. ⚠ Ink on it is
+	   --text, since --muted reaches only 3.4 to 1 here. Toasts went to paper instead. */
+	--surface-float: var(--slate-500);
+	--surface-float-key: color-mix(in srgb, var(--parchment-100) 16%, var(--slate-500));
 	/* ⚠ NO SIZE AXIS ON DARK. --surface-broad is a PAPER distinction (see
 	   .ctx-light): Genshin splits its parchment grounds by extent, and does not
 	   split its dark ones. Aliased to --surface so the role resolves everywhere
@@ -1733,10 +1766,15 @@
 	/* ↻ ⚓ NATE 2026-08-10: THE ROLES DROP TO THE TWO MOST TRANSPARENT STOPS —
 	   "the higher alpha mix borders are probably never going to be used". The
 	   four stops stay declared (they are the ladder, and the .30/.42 rungs are
-	   what a future ornament would climb to), but nothing points at the top two
-	   any more, which is the honest way to retire a value: let the census report
-	   it free and delete it once we are sure. See the .ctx-light block for the
-	   same move on paper, where a whisper was already the intent. */
+	   what a future ornament would climb to). No role points at the top two any
+	   more, but components do: ↻ by 2026-10-27, 13 uses in 9 files read
+	   --line-strong or --line-edge directly, among them the top bar's hover
+	   ring on the current tool (--line-edge, ⚓ Nate, docs/title-bar-round.md),
+	   the Library, the side and slot portraits and the Builder's checks. The
+	   styleguide's census counts ramp rungs inside app.css, so it cannot see
+	   these consumers: don't delete either stop. See the
+	   .ctx-light block for the same move on paper, where a whisper was already
+	   the intent. */
 	--border: var(--line-soft);
 	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
@@ -1887,6 +1925,12 @@
 	--ui-provisional: #998136;
 	--ui-warning: #c85d02; /* oklch .600 .158 50 · 3.34:1 (night: #f4a261, 1.65) */
 	--ui-positive: #018d65; /* oklch .571 .121 164 · 3.35:1 (night: #5be0ac, 1.32) */
+	/* ↻ 2026-10-27 (⚓ Nate, after /lab's paper-blue board): --ui-info on paper
+	   is a MARK like the three above (a toast's stripe and icon), at their
+	   lightness and contrast, 3.31 to 1 on --surface. It was first a darker,
+	   text-safe 4.61 to 1, which read as off-family beside them. ⚠ If blue is
+	   ever wanted as running TEXT on paper, that needs its own darker rung. */
+	--ui-info: var(--blue-700);
 	--knob: var(--muted);
 	/* The promoted control ink flips to the DARKEST thing this context owns —
 	   see --ink-active at :root for why it can't stay --text here. */
@@ -3721,10 +3765,14 @@ img {
    rule's surface area today — ⚓ "let's start with that, and see what other gold
    accents develop from there."
 
-   ⚠ STILL OPEN, DELIBERATELY: inline emphasis. Ours is gold today, and one hue
-   on two unrelated jobs is exactly the drift the census exists to catch. ⚓ Nate
-   parked it for the --el-* round — borrowing the element's own hue is the
-   leading candidate, and it is what Genshin does. Do not settle it here. */
+   ↻ SOFTENED (⚓ Nate 2026-10-27): gold can be used, just not OVERUSED. Since
+   the rule was written it has spread on purpose: it is mixed into the chosen
+   fill, it is the planner's hand mark, pins and wishlist pips wear it, and the
+   Library's "Open now" is a gold word. The block rule above still describes
+   the kicker; what it no longer does is forbid gold anywhere else. Spend it on
+   what NAMES or MARKS a thing, and ration it per screen. Inline emphasis as a
+   habit is still parked for the --el-* round (the element's own hue is the
+   leading candidate, as in Genshin). */
 .kicker {
 	margin: 0;
 	font-family: var(--font-body);
