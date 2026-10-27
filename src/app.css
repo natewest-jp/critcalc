@@ -116,12 +116,15 @@
 	--red-400: #d26a5c;
 
 	/* BLUE — neutral information (⚓ Nate 2026-10-27): the --ui-info pair, and
-	   nothing else yet. 400 is the buff tooltip's value blue, which had lived as
-	   a literal in BuffDetailRows (oklch .753 .056 242 — a GREYED blue, which is
-	   how it stays clear of hydro and cryo, see --ui-info). 700 is the same hue
-	   carried down for paper, the way --gold-700 carries the accent. */
-	--blue-400: #90b4d0; /* --ui-info on night, slate and glass */
-	--blue-700: #3e6a89; /* --ui-info on paper — oklch .505 .070 242 */
+	   nothing else yet. 400 began as the buff tooltip's value blue, a literal in
+	   BuffDetailRows (#90b4d0, oklch .753 .056 242), and ⚓ Nate asked for a
+	   little more saturation in both rungs (2026-10-27): same lightness and hue,
+	   chroma .056 → .080 here and .070 → .095 on paper. Still a quiet blue, about
+	   half of hydro's chroma (.153), so it stays clear of the element (see
+	   --ui-info). 700 is the same hue carried down for paper, the way --gold-700
+	   carries the accent. */
+	--blue-400: #81b6de; /* --ui-info on night, slate and glass — oklch .754 .080 242 */
+	--blue-700: #296b96; /* --ui-info on paper — oklch .506 .095 241 */
 
 	/* ══ L1 · COMPOSITING ══════════════════════════════════════════════════════
 	   The alphas Fable recovered. Two different fates, and the split is a law:
@@ -913,8 +916,8 @@
 	/* NEUTRAL INFORMATION (⚓ Nate 2026-10-27): a fact the interface states with
 	   no consequence attached, the value in a buff tooltip. ↻ This reopens the
 	   "WE HAVE NO FREE BLUE" ruling above for one rung, by chroma rather than
-	   hue: --blue-400 is C .056, a third of hydro's and half of cryo's, so it reads as a
-	   cool grey-blue beside them rather than as an element. 5.64:1 on slate. */
+	   hue: --blue-400 is C .080, about half of hydro's (.153), so it reads as a
+	   quiet blue beside the elements rather than as one. 5.67:1 on slate. */
 	--ui-info: var(--blue-400);
 	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
 	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
@@ -1914,10 +1917,10 @@
 	--ui-positive: #018d65; /* oklch .571 .121 164 · 3.35:1 (night: #5be0ac, 1.32) */
 	/* ↻ 2026-10-27: --ui-info is PROSE INK (a tooltip's values), so unlike the
 	   three marks above it clears the 4.5:1 text floor on both paper rungs:
-	   4.62:1 on --surface (parchment-100), 5.19:1 on --surface-broad
-	   (parchment-50). Same hue as night's (242°), chroma lifted .056 → .070 so
-	   it stays a blue beside the navy ink (ΔE .076 from --ink-700) instead of
-	   reading as a lighter body text. (night: #90b4d0, 1.74 here) */
+	   4.61:1 on --surface (parchment-100), 5.17:1 on --surface-broad
+	   (parchment-50). Same hue as night's, chroma .095 so it reads as a blue
+	   beside the navy ink instead of a lighter body text (↻ .070 → .095,
+	   ⚓ Nate 2026-10-27: a little more saturation). */
 	--ui-info: var(--blue-700);
 	--knob: var(--muted);
 	/* The promoted control ink flips to the DARKEST thing this context owns —

@@ -1108,12 +1108,11 @@
 			values; the paper ones live in the <code>.ctx-light</code> block.
 			<br />↻ <strong>2026-10-27: <code>--ui-info</code>, neutral information</strong> (⚓ Nate): a
 			fact stated with no consequence attached, the values in a buff tooltip. It is the one blue,
-			and it gets away with it by chroma: a greyed blue (<code>--blue-400</code>,
-			<code>#90b4d0</code>, C .056) reads as cool grey beside hydro and cryo rather than as an
-			element. Unlike the others it is <strong>prose ink on paper</strong>, so its paper rung (<code
-				>--blue-700</code
-			>, <code>#3e6a89</code>) clears 4.5:1 on both: 4.62:1 on
-			<code>--surface</code>, 5.19:1 on <code>--surface-broad</code>. The four grounds side by side
+			and it gets away with it by chroma: a quiet blue (<code>--blue-400</code>,
+			<code>#81b6de</code>, C .080, about half of hydro's) reads as a blue beside the elements
+			rather than as one. Unlike the others it is <strong>prose ink on paper</strong>, so its paper
+			rung (<code>--blue-700</code>, <code>#296b96</code>) clears 4.5:1 on both: 4.61:1 on
+			<code>--surface</code>, 5.17:1 on <code>--surface-broad</code>. The four grounds side by side
 			are on <code>/lab</code>.
 		</p>
 		<div class="sg-swatches">

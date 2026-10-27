@@ -64,33 +64,33 @@
 	 *  rungs (on paper the axis is SIZE: broad panels are parchment-50, cards
 	 *  and controls on them parchment-100). */
 	const INFO_GROUNDS = [
-		{ key: 'night', cls: '', label: 'ctx-night', note: '--blue-400 · #90b4d0', broad: false },
+		{ key: 'night', cls: '', label: 'ctx-night', note: '--blue-400 · #81b6de', broad: false },
 		{
 			key: 'glass',
 			cls: 'ctx-glass',
 			label: 'ctx-glass',
-			note: '--blue-400 · #90b4d0',
+			note: '--blue-400 · #81b6de',
 			broad: false
 		},
 		{
 			key: 'dark',
 			cls: 'ctx-dark',
 			label: 'ctx-dark — slate',
-			note: '--blue-400 · 5.64:1',
+			note: '--blue-400 · 5.67:1',
 			broad: false
 		},
 		{
 			key: 'light-broad',
 			cls: 'ctx-light',
 			label: 'ctx-light — --surface-broad',
-			note: '--blue-700 · #3e6a89 · 5.19:1',
+			note: '--blue-700 · #296b96 · 5.17:1',
 			broad: true
 		},
 		{
 			key: 'light',
 			cls: 'ctx-light',
 			label: 'ctx-light — --surface',
-			note: '--blue-700 · #3e6a89 · 4.62:1',
+			note: '--blue-700 · #296b96 · 4.61:1',
 			broad: false
 		}
 	];
