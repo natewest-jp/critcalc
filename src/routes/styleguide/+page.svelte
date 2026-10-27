@@ -1132,10 +1132,11 @@
 			</li>
 			<li>
 				<code>--r-md</code> — <strong>surfaces that float.</strong> Modals (the Links and Move
-				dialogs, the Builder's <code>InspectModal</code>), portalled popovers (<code>BandMenu</code>), and the notices: toasts, banners and
-				the confirm dialog (⚓ Nate, <code>docs/notices-design.md</code> §9). A floating surface has no
-				ground to belong to, so it keeps the softer corner that says "lifted off". (Help, About and Settings
-				were modals here until the menu state made them screens.)
+				dialogs, the Builder's <code>InspectModal</code>), portalled popovers (<code>BandMenu</code
+				>), and the notices: toasts, banners and the confirm dialog (⚓ Nate,
+				<code>docs/notices-design.md</code> §9). A floating surface has no ground to belong to, so it
+				keeps the softer corner that says "lifted off". (Help, About and Settings were modals here until
+				the menu state made them screens.)
 			</li>
 			<li><code>--r-round</code> — genuinely round things: thumbs, dots, capsules.</li>
 		</ul>
@@ -1216,15 +1217,29 @@
 			amplitude is why this one files under surfaces.
 		</p>
 		<p class="sg-note">
-			<strong>A token is a duration AND its easing, one value.</strong> There is one easing in the
-			product; splitting it onto a second axis would double every call site to buy a distinction
-			nobody asked for. ⚠
+			<strong>A token is a duration AND its easing, one value.</strong> The tokens share one easing;
+			splitting it onto a second axis would double every call site to buy a distinction nobody asked
+			for. ⚠
 			<strong><code>prefers-reduced-motion</code> is honoured by zeroing the bands</strong>
 			in one block, so a rule that reaches for one is covered whether or not it exists yet. Only three
 			things still honour it by hand: the scene/nav machinery, Svelte's
 			<code>transition:</code> directive (JS, which cannot read a custom property — what
 			<code>src/lib/motion.ts</code> mirrors the numbers for), and keyframe
 			<code>animation</code>s, which a duration token cannot reach at all.
+		</p>
+		<p class="sg-note">
+			⚓ <strong>The fade law: every fade of a SURFACE is linear</strong> (Nate; reaffirmed
+			2026-10-25, scoped 2026-10-27). That covers a wash, the tool crossfade, a toast or a modal
+			arriving or leaving, and the landing. The reason is that an eased fade's visible time is not
+			its stated duration: most of the change happens in the middle, so a 150ms ease reads shorter
+			than 150ms and a long ease-out seems to hang at the end. That only matters when you are
+			watching the fade, and you watch a surface.
+			<strong>A CONTROL's small state change keeps the token's easing</strong>: hover rings, hover
+			verbs, and chip and button states on the
+			<code>--t-*</code> tokens. At 120–150ms on a hairline the curve cannot be seen, and
+			<code>ease</code> is the conventional choice there. So a surface's fade writes
+			<code>linear</code> beside its token's duration (the tool crossfade in
+			<code>(tools)/+layout.svelte</code> is the model), and a control just names the token.
 		</p>
 		<div class="sg-swatches">
 			{#each motion as t (t.name)}{@render swatch(t)}{/each}
@@ -2212,8 +2227,8 @@
 					</li>
 					<li>
 						<strong>A profile switch</strong> washes the profile's colour down from the bar and
-						shows its name under the picture; under reduced motion a words toast carries it.
-						Both of the cue's fades are linear (the fade law, <a href="#motion">Motion</a>).
+						shows its name under the picture; under reduced motion a words toast carries it. Both of
+						the cue's fades are linear (the fade law, <a href="#motion">Motion</a>).
 					</li>
 					<li>
 						The landing hides the tool buttons and keeps their space, so the bar does not shift. The
