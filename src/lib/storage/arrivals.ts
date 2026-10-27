@@ -18,6 +18,29 @@ export const documentsReady: Promise<boolean> = new Promise((r) => (settle = r))
 
 export const settleDocuments = (viaStore: boolean): void => settle(viaStore);
 
+const LINK_TAB_KEY = 'critcalc:linkTab';
+
+/** ⚓ "This tab arrived by a link that left a real profile" (Nate 2026-10-27).
+ *  Per TAB, so a reload there stays in Theorycraft while the next new tab
+ *  opens back in the profile (`Meta.returnToProfileId`). Without
+ *  sessionStorage it reads as unmarked: a reload then returns too. */
+export const linkTab = {
+	has(): boolean {
+		try {
+			return sessionStorage.getItem(LINK_TAB_KEY) === '1';
+		} catch {
+			return false;
+		}
+	},
+	mark(): void {
+		try {
+			sessionStorage.setItem(LINK_TAB_KEY, '1');
+		} catch {
+			/* storage blocked: see above */
+		}
+	}
+};
+
 /** The notice an arrival shows when it had to leave a real profile. */
 export const OPENED_IN_THEORYCRAFT = 'Opened in Theorycraft · your profiles are untouched';
 

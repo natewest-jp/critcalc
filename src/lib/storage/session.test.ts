@@ -6,8 +6,9 @@
  */
 import { IDBFactory } from 'fake-indexeddb';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { get, getAll, openDb, put, setMeta, tombstone } from './db';
+import { get, getAll, getMeta, openDb, put, setMeta, tombstone } from './db';
 import {
+	THEORYCRAFT_ID,
 	makeTheorycraft,
 	type ProfileRecord,
 	type RotationBody,
@@ -494,5 +495,45 @@ describe('team loadouts', () => {
 			weaponId: 'sacrificial_sword',
 			weaponRefinement: 5
 		});
+	});
+});
+
+describe('a shared link leaves Theorycraft for its own tab (flip-readiness §3)', () => {
+	/** A browser tab is its own sessionStorage; a reload keeps it. */
+	const inTab = async (session: Storage) => {
+		vi.stubGlobal('sessionStorage', session);
+		return tab();
+	};
+
+	it('the next new tab opens back in the profile the link left', async () => {
+		const A = await inTab(memoryStorage());
+		expect(await A.s.toTheorycraft()).toBe(true);
+		expect(A.s.profile?.id).toBe(THEORYCRAFT_ID);
+		expect((await getMeta(db)).returnToProfileId).toBe('p1');
+
+		const B = await inTab(memoryStorage());
+		expect(B.s.profile?.id).toBe('p1');
+		const meta = await getMeta(db);
+		expect(meta.activeProfileId).toBe('p1');
+		expect(meta.returnToProfileId).toBeUndefined();
+	});
+
+	it('a reload of the link tab stays in Theorycraft', async () => {
+		const linkTabStorage = memoryStorage();
+		const A = await inTab(linkTabStorage);
+		await A.s.toTheorycraft();
+		const reloaded = await inTab(linkTabStorage);
+		expect(reloaded.s.profile?.id).toBe(THEORYCRAFT_ID);
+		expect((await getMeta(db)).returnToProfileId).toBe('p1');
+	});
+
+	it('a switch the visitor makes themselves cancels the return', async () => {
+		const A = await inTab(memoryStorage());
+		await A.s.toTheorycraft();
+		await A.s.switchTo('p1', null);
+		await A.s.switchTo(THEORYCRAFT_ID, null);
+		expect((await getMeta(db)).returnToProfileId).toBeUndefined();
+		const B = await inTab(memoryStorage());
+		expect(B.s.profile?.id).toBe(THEORYCRAFT_ID);
 	});
 });
