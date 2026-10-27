@@ -60,6 +60,27 @@
 		}
 	];
 
+	/** The paper-blue comparison (⚓ Nate 2026-10-27): he preferred the toast
+	 *  lab's stand-in to --ui-info's paper rung. The rung was made dark to be
+	 *  TEXT-safe (4.61:1), but its only paper consumer is a toast's stripe and
+	 *  mark, where the family (positive, warning, danger) sits near L .58 and
+	 *  3.3:1. Candidates are page-local literals (the /lab exemption). */
+	const PAPER_BLUES = [
+		{ key: 'now', hex: '#296b96', note: '--blue-700 today · L .51 · 4.61:1 · text-safe' },
+		{ key: 'demo', hex: '#3682bb', note: 'the toast lab’s stand-in · L .59 · 3.31:1' },
+		{ key: 'family', hex: '#3483b7', note: 'at --ui-info’s hue, family lightness · L .59 · ~3.3:1' }
+	] as const;
+	const PAPER_FAMILY = [
+		{ kind: 'success', mark: 'check', text: 'Team saved', color: 'var(--ui-positive)' },
+		{ kind: 'warning', mark: 'warn', text: 'The lineup is full', color: 'var(--ui-warning)' },
+		{
+			kind: 'error',
+			mark: 'warn',
+			text: 'That share link couldn’t be read',
+			color: 'var(--ui-danger)'
+		}
+	] as const;
+
 	/** The --ui-info board: the four grounds, with paper split into its two
 	 *  rungs (on paper the axis is SIZE: broad panels are parchment-50, cards
 	 *  and controls on them parchment-100). */
@@ -214,6 +235,32 @@
 						<span class="info-mark"><Mark name="buff" /></span>
 					</div>
 					<div class="spec-note">{g.note}</div>
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════ 2b · the paper blue, as a toast ══ -->
+	<section>
+		<h2 class="lab-h">The paper blue · on a toast, beside its family</h2>
+		<div class="pb-grid">
+			{#each PAPER_BLUES as b (b.key)}
+				<div class="pb-col">
+					<div class="spec-tag">{b.key} · {b.hex}</div>
+					<div class="pb-toast ctx-light" style:--pb={b.hex}>
+						<span class="pb-mark"><Mark name="about" size={18} /></span>
+						<span>Opened in Theorycraft · your profiles are untouched</span>
+					</div>
+					{#each PAPER_FAMILY as f (f.kind)}
+						<div class="pb-toast ctx-light" style:--pb={f.color}>
+							<span class="pb-mark"><Mark name={f.mark} size={18} /></span>
+							<span>{f.text}</span>
+						</div>
+					{/each}
+					<p class="pb-ink ctx-light" style:--pb={b.hex}>
+						As text on paper: <span class="pb-word">+20% ATK</span>
+					</p>
+					<div class="spec-note">{b.note}</div>
 				</div>
 			{/each}
 		</div>
@@ -453,6 +500,49 @@
 	.spec-line {
 		height: 2px;
 	}
+	/* ── the paper-blue comparison: the real toast's paper look, static ── */
+	.pb-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+		gap: 1.5rem;
+	}
+	.pb-col {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+	.pb-toast {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		min-height: 3rem;
+		padding: 0.55rem 0.9rem 0.55rem 1.1rem;
+		border-radius: var(--r-md);
+		background: var(--surface);
+		color: var(--muted);
+		font-size: var(--fs-xl);
+		line-height: var(--lh-snug);
+		box-shadow:
+			0 10px 30px rgb(0 0 0 / 0.5),
+			inset 4px 0 0 var(--pb);
+	}
+	.pb-mark {
+		display: inline-flex;
+		color: var(--pb);
+	}
+	.pb-ink {
+		margin: 0;
+		padding: 0.6rem 0.9rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+		color: var(--muted);
+		font-size: var(--fs-lg);
+	}
+	.pb-word {
+		color: var(--pb);
+		font-weight: var(--fw-semibold);
+	}
+
 	/* ── the --ui-info board ── */
 	.lab-grid--info {
 		grid-template-columns: repeat(5, 1fr);
