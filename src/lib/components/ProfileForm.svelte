@@ -361,7 +361,7 @@
 				<span class="sp-ctl">
 					{#if editing}
 						<input
-							class="text"
+							class="field"
 							value={editing.name}
 							oninput={(e) => (typed = e.currentTarget.value)}
 							onchange={commitName}
@@ -370,7 +370,7 @@
 						/>
 					{:else}
 						<input
-							class="text"
+							class="field"
 							bind:value={name}
 							placeholder="My profile"
 							maxlength="40"
@@ -472,7 +472,7 @@
 				{/each}
 			</div>
 			<input
-				class="text pf-search"
+				class="field pf-search"
 				type="search"
 				bind:value={query}
 				placeholder="Search characters"
@@ -503,16 +503,6 @@
 	}
 	.pf-warn {
 		color: var(--ui-warning);
-	}
-	.text {
-		width: 100%;
-		padding: 0.4rem 0.6rem;
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm);
-		background: var(--surface-well);
-		color: var(--text);
-		font: inherit;
-		font-size: var(--fs-lg);
 	}
 
 	/* The current picture in its colour's frame, as the top bar shows it. */
@@ -608,10 +598,10 @@
 		font-size: var(--fs-md);
 		color: var(--muted);
 	}
-	.text.pf-search {
+	/* The global .field's look; only its width and place are local. */
+	.pf-search {
 		width: min(16rem, 100%);
 		margin-top: 0.75rem;
-		font-size: var(--fs-md);
 	}
 	.pictures {
 		display: grid;

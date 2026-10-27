@@ -105,7 +105,7 @@
 	}
 	.bt-value {
 		font-size: var(--fs-sm);
-		color: #90b4d0;
+		color: var(--ui-info);
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 	}

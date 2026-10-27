@@ -439,7 +439,7 @@
 			<header class="head">
 				<div class="head-text">
 					<button class="head-back" onclick={() => menu.show('index')}
-						><span aria-hidden="true">‹</span> Menu</button
+						><Mark name="backSlim" size={12} /> Menu</button
 					>
 					<!-- ⛔ No group kicker over the title (↻ Nate 2026-10-26): it said
 					     the profile's name, "Library" or "Settings" again, and over
@@ -952,6 +952,7 @@
 		}
 		.head-back {
 			display: inline-flex;
+			align-items: center;
 			gap: 0.3rem;
 		}
 		/* ‹ Menu is the way back on a phone; the top bar's document button

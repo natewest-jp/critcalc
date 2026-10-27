@@ -170,14 +170,13 @@
 		padding: 0.55rem 0.55rem 0.55rem 0.9rem;
 		border-radius: var(--r-md);
 		font-size: var(--fs-xl);
-		line-height: 1.35;
+		line-height: var(--lh-snug);
 		box-shadow:
 			0 10px 30px rgb(0 0 0 / 0.45),
 			inset 0 0 0 1px rgb(255 255 255 / 0.1);
 	}
 	.nt.ctx-glass {
 		background: var(--glass-plate);
-		backdrop-filter: blur(14px);
 		color: var(--text);
 	}
 	/* An error is paper: the brightest thing on a dark site. */
@@ -319,7 +318,7 @@
 	.nd-body {
 		margin: 0 0 1.25rem;
 		font-size: var(--fs-xl);
-		line-height: 1.45;
+		line-height: var(--lh-normal);
 		white-space: pre-line;
 	}
 	.nd-acts {

@@ -1517,7 +1517,7 @@
 		height: fit-content;
 		width: min(26rem, calc(100vw - 2rem));
 		padding: 1.1rem 1.25rem 1rem;
-		border-radius: var(--r-lg, 6px);
+		border-radius: var(--r-md);
 		background: var(--surface-raised);
 		color: var(--text);
 		box-shadow: 0 10px 40px rgb(0 0 0 / 0.5);

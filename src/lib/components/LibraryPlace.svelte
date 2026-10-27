@@ -272,7 +272,7 @@
 {#snippet labelOrEdit(d: DocumentRecord)}
 	{#if renaming === d.id}
 		<input
-			class="rename"
+			class="field rename"
 			bind:value={draft}
 			placeholder={d.type === 'rotation'
 				? rotationLabel(d.body.slots)
@@ -1041,15 +1041,14 @@
 		font-weight: var(--fw-medium);
 		color: var(--muted);
 	}
+	/* The global .field's look; local is only what fits it into the row: its
+	   width, a tighter padding so a row does not grow while you rename, and
+	   the label's own size (--fs-lg, ⚓ Nate 2026-10-27: the field's --fs-xl
+	   read too large in place of the name it edits). */
 	.rename {
 		min-width: 0;
 		width: min(24rem, 100%);
 		padding: 0.15rem 0.4rem;
-		border: 1px solid var(--border);
-		border-radius: var(--r-sm);
-		background: var(--surface-well);
-		color: var(--text);
-		font: inherit;
 		font-size: var(--fs-lg);
 	}
 	.row-meta {

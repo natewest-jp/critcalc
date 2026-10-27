@@ -290,8 +290,6 @@
 		font: inherit;
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
 		cursor: pointer;
 		transition: color var(--t-snap);
 	}

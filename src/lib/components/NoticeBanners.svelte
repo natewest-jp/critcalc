@@ -82,7 +82,7 @@
 		background: var(--surface);
 		color: var(--text);
 		font-size: var(--fs-xl);
-		line-height: 1.4;
+		line-height: var(--lh-snug);
 		box-shadow:
 			0 6px 20px rgb(0 0 0 / 0.35),
 			inset 4px 0 0 var(--nb-ink);
