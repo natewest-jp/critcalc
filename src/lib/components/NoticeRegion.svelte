@@ -177,7 +177,6 @@
 	}
 	.nt.ctx-glass {
 		background: var(--glass-plate);
-		backdrop-filter: blur(14px);
 		color: var(--text);
 	}
 	/* An error is paper: the brightest thing on a dark site. */

@@ -2365,9 +2365,11 @@
 						routine toast is glass (<code>--glass-plate</code>); an error toast is paper with a 4px
 						danger stripe and stays until dismissed; a banner is paper with a severity stripe; the
 						confirm dialog is paper. Corners <code>--r-md</code>. The timer is a ring round the ✕,
-						and the ✕'s hover is that ring's circle. <em>Open</em>: the toast's backdrop blur
-						against the retired-blur law (sweep 2.2), paper notices beside an instrument's one paper
-						card (2.4), and the literal ring and hover colours (1.5).
+						and the ✕'s hover is that ring's circle. The toast has no backdrop blur: it had one, and
+						it went because the toast's slate is opaque enough that the blur could not be seen (⚓
+						Nate 2026-10-27; sweep 2.2). The rule against backdrop blur stands.
+						<em>Open</em>: paper notices beside an instrument's one paper card (2.4), and the
+						literal ring and hover colours (1.5).
 					</li>
 				</ul>
 			</div>
