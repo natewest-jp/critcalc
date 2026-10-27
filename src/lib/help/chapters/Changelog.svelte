@@ -42,19 +42,21 @@
 				<time class="entry-date" datetime="2026-10-27">October 27</time>
 			</header>
 			<p>
-				critcalc now keeps your work in profiles, one for each Genshin account if you play more than
-				one. A profile holds your roster, your teams, and your rotations and lineups. Shared links
-				open in Theorycraft, a profile with no roster where every character is there at every level,
-				and <strong>Move to a profile</strong> takes anything you want to keep into one of yours.
+				critcalc now keeps your work in profiles, so you can plan for separate Genshin accounts. A
+				profile holds its own roster, teams, and library of rotations and lineups.
 			</p>
 			<p>
-				The layout changed with it. The top bar holds the tools, <strong>Teams</strong>, and your
-				profile, and each tool has its own toolbar under it. A tool holds one rotation or lineup at
-				a time; its name in the top bar opens the Library, where the others are. Work saves itself
-				as you go, and anything you delete stays in the Trash for 30 days. The rotation planner also
-				has an <strong>Inspector</strong> beside its timeline.
+				Shared links open in Theorycraft, a built-in profile with no roster for exploring ideas
+				outside your own profiles.
 			</p>
-			<p>If you used the site before, everything you had is in a profile called My profile.</p>
+			<p>
+				Tools now work with one rotation or lineup at a time. However, the rotation planner has a
+				<strong>Compare</strong> button beside the bench, so you can flip between two ideas quickly.
+			</p>
+			<p>
+				Work saves itself as you go, and anything you delete stays in the Trash for 30 days. If you
+				used the site before, everything you had is in a new profile called My profile.
+			</p>
 		</article>
 
 		<article class="entry">
