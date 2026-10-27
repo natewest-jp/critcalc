@@ -38,6 +38,10 @@ export type Meta = {
 	 *  a backup once, then clears this (§13.1, ⚓ Nate 2026-10-23: a notice
 	 *  AFTER the copy, never a prompt blocking it). */
 	backupOffer?: boolean;
+	/** ⚓ The real profile a shared link left (Nate 2026-10-27, flip-readiness
+	 *  §3): the next NEW tab opens back in it. Cleared by that return and by
+	 *  any switch the visitor makes themselves. */
+	returnToProfileId?: string;
 };
 
 const META = 'meta';

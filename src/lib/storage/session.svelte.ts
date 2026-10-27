@@ -62,7 +62,7 @@ import {
 import { buildStoreBackup, type StoreBackup, type StoreParse } from './backup';
 import { MIGRATED_PROFILE_NAME, type MigrationResult } from './migrate';
 import { applyBackup, buildEnvelope, downloadEnvelope } from '$lib/utils/settingsBackup';
-import { settleDocuments } from './arrivals';
+import { linkTab, settleDocuments } from './arrivals';
 import { levelChanges, movedBody, type LevelChange } from './move';
 import { cleared, expired, inTrash, takenWith, trashRuns, type TrashRun } from './trash';
 import {
@@ -221,6 +221,15 @@ class StorageSession {
 	/** The profile the site opens in: the stored choice while it is live, else
 	 *  Theorycraft (a profile deleted in another tab can leave the pointer). */
 	async #activeProfile(db: IDBDatabase, meta: Meta): Promise<ProfileRecord | undefined> {
+		// ⚓ A link's Theorycraft lasts for the tab it arrived in (a reload
+		// there stays); the next new tab opens back in the profile it left.
+		if (meta.returnToProfileId && !linkTab.has()) {
+			meta = { ...meta, activeProfileId: meta.returnToProfileId, returnToProfileId: undefined };
+			await setMeta(db, {
+				activeProfileId: meta.activeProfileId,
+				returnToProfileId: undefined
+			});
+		}
 		const chosen = meta.activeProfileId
 			? await get(db, 'profiles', meta.activeProfileId)
 			: undefined;
@@ -2036,7 +2045,9 @@ class StorageSession {
 			this.#release('builder');
 		}
 		await this.#flushRoster();
-		await setMeta(db, { activeProfileId: id });
+		// A switch of the visitor's own ends a pending return; a link's
+		// (`toTheorycraft`) sets it again straight after.
+		await setMeta(db, { activeProfileId: id, returnToProfileId: undefined });
 		this.#useProfile(next);
 		if (this.active) {
 			await this.#loadPlanner(next);
@@ -2054,7 +2065,11 @@ class StorageSession {
 	 *  real profile, which the arrival says out loud. */
 	async toTheorycraft(): Promise<boolean> {
 		if (!this.profile || this.profile.id === THEORYCRAFT_ID) return false;
+		const left = this.profile.id;
 		await this.switchTo(THEORYCRAFT_ID, null);
+		const db = this.#db ?? (await ensureStorage());
+		if (db) await setMeta(db, { returnToProfileId: left });
+		linkTab.mark();
 		return true;
 	}
 
