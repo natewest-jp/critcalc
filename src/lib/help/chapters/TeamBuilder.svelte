@@ -118,8 +118,9 @@
 	</p>
 	{#if $nextLayout}
 		<p>
-			The toolbar narrows further: <strong>Show</strong> for owned or wishlisted characters, a name
-			search, and <strong>More</strong> for weapon, rarity, region, and factions like Hexerei or Moonsign.
+			The toolbar narrows further: a name search, <strong>Owned</strong> and
+			<strong>Wishlist</strong>, and <strong>More</strong> for weapon, rarity, region, and factions like
+			Hexerei or Moonsign.
 		</p>
 	{:else}
 		<p>
@@ -217,9 +218,9 @@
 		in their place.
 	</p>
 	<p>
-		The rotation planner sends you here too: Clicking a portrait on its bench opens swap mode for
-		that team. Picking someone renames them in the notation and takes you back; Cancel returns
-		without changing anything. An empty slot works the same way and adds someone instead.
+		The rotation planner sends you here too: <strong>⇄</strong> on one of its bench cards opens swap mode
+		for that slot. Picking someone renames them in the notation and takes you back; Cancel returns without
+		changing anything. Clicking an empty slot’s portrait works the same way and adds someone instead.
 	</p>
 </section>
 
@@ -231,8 +232,9 @@
 			will see the pin under <strong>Planner</strong> become a menu, which you can use to pin a
 			specific rotation to that team. Characters you don’t own then read that rotation’s
 			constellations.
-			<strong>Planner</strong> opens the pinned rotation, or a new rotation with the team’s names if nothing
-			is pinned. Changing the team’s members drops the pin; the rotation itself stays in the Library.
+			<strong>Planner</strong> opens the pinned rotation, or, if nothing is pinned, a new rotation with
+			the team already on the bench. Changing the team’s members drops the pin; the rotation itself stays
+			in the Library.
 		</p>
 	{:else}
 		<p>
@@ -257,10 +259,9 @@
 		<p>
 			Your roster is under <strong>Roster</strong> in the profile menu (your picture in the top
 			bar), and <strong>Edit in Roster</strong> in a character’s details goes there too. Mark who
-			you own, who you’re wishing for, and at what constellation. <strong>Show</strong>,
-			<strong>My constellations</strong> and the constellation chips all read it, so filling in your roster
-			makes the tools more useful. In Theorycraft there is no roster: every character is there at every
-			level.
+			you own, who you’re wishing for, and at what constellation. <strong>Owned</strong>,
+			<strong>Wishlist</strong>, <strong>My constellations</strong>, and the constellation chips all
+			read it. In Theorycraft there is no roster: every character is there at every level.
 		</p>
 	{:else}
 		<p>
@@ -284,7 +285,7 @@
 	{/if}
 	{#if $nextLayout}
 		<p>
-			<strong>Share</strong> in the top bar copies a link with the lineup’s teams, preset, season, No
+			<strong>Share</strong> in the toolbar copies a link with the lineup’s teams, preset, season, No
 			repeats setting, and constellations. (Pinned rotations are not included.) It opens in Theorycraft
 			for the reader.
 		</p>

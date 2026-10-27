@@ -35,8 +35,8 @@
 		{#if $nextLayout}
 			<li>
 				Your profiles, each with its name, picture, and color, its roster (which characters you own
-				or have wishlisted, at what constellation, with their loadouts), its teams, rotations, and
-				lineups, and which of them is open.
+				or have wishlisted, and at what constellation), its teams and their loadouts, its rotations
+				and lineups, and which of them is open.
 			</li>
 		{:else}
 			<li>Your roster: which characters you own or have wishlisted, and at what constellation.</li>
@@ -60,8 +60,8 @@
 		<p>
 			critcalc sets no cookies. A backup file from <a href={resolve('/settings')}>Settings</a>
 			carries all of it. <strong>Clear data</strong> on a profile’s own page clears what it holds:
-			its roster, loadouts, rotations, lineups, and teams. <strong>Delete everything</strong> in Settings
-			removes every profile, the Trash, and your settings from this browser.
+			its roster, teams, rotations, and lineups. <strong>Delete everything</strong> in Settings removes
+			every profile, the Trash, and your settings from this browser.
 		</p>
 	{:else}
 		<p>

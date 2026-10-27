@@ -34,9 +34,10 @@
 	<p>
 		That said, I don’t have all characters or constellations. Calling all mains! If you see
 		something wrong with a character you know,
-		<a href={resolve('/contribute')}>Contribute</a> says how to report it. The
-		<strong>Report a problem</strong> item in a tool’s <strong>⋯</strong> menu is the fastest way, because
-		it sends a link to exactly what you were looking at.
+		<a href={resolve('/contribute')}>Contribute</a> says how to report it.
+		<strong>Report a problem</strong>
+		in the top bar’s <strong>?</strong> menu is the fastest way, because it sends a link to exactly what
+		you were looking at.
 	</p>
 	<p>Any and all help is appreciated!</p>
 </section>

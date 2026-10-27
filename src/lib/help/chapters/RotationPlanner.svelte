@@ -118,11 +118,11 @@
 	</p>
 	<p>
 		Each slot on the bench beside the timeline has a bench card. Clicking the portrait opens the
-		character’s details. On a wide screen, the two buttons at the card’s left change the slot: The
-		top one opens the team builder’s swap mode for that slot, and picking someone there takes you
-		back to the planner with the notation renamed throughout. The bottom one removes the character
-		from the team and deletes their notation. Clicking an empty slot’s portrait adds someone
-		instead. On a phone, the remove button is in the character’s details.
+		character’s page in the inspector. On a wide screen, the two buttons at the card’s left change
+		the slot: The top one opens the team builder’s swap mode for that slot, and picking someone
+		there takes you back to the planner with the notation renamed throughout. The bottom one removes
+		the character from the team and deletes their notation. Clicking an empty slot’s portrait adds
+		someone instead. On a phone, <strong>Remove from team</strong> is on the character’s page in the inspector.
 	</p>
 	{#if $nextLayout}
 		<p>
@@ -324,13 +324,14 @@
 </section>
 
 <section>
-	<h2 id="notes">Notes and coverage</h2>
+	<h2 id="inspector">The inspector</h2>
 	{#if $nextLayout}
 		<p>
-			<strong>Notes</strong> opens the notes panel: the caveats on each character’s kit, where the timeline
-			knowingly differs from the game, with constellation notes shown from the level the rotation uses.
-			Each character ends with a link to their coverage. The button is disabled when the team’s kits have
-			nothing to note.
+			<strong>Inspector</strong> opens a panel beside the timeline. It starts on the team: each character
+			with the caveats on their kit, where the timeline knowingly differs from the game, with constellation
+			notes from the level the rotation uses. Click a bench portrait, a buff bar, an E or Q, a summon
+			or shield, or a chip under the chart, and the inspector shows that instead. Clicking the same thing
+			again closes it. A character’s page links to their coverage.
 		</p>
 	{:else}
 		<p>
@@ -365,7 +366,7 @@
 			characters you own.
 		</p>
 		<p>
-			<strong>Compare</strong> in the toolbar pairs two rotations.
+			<strong>Compare</strong>, under the bench, pairs two rotations.
 			<strong>Duplicate and compare</strong>
 			copies this one so you can change the copy, and <strong>Compare with…</strong> picks another from
 			the Library. The button that takes Compare’s place, or ⌃`, switches between them.
@@ -396,7 +397,7 @@
 	{/if}
 	{#if $nextLayout}
 		<p>
-			<strong>Share</strong> in the top bar copies a link, the KQM notation, or an image of the timeline.
+			<strong>Share</strong> in the toolbar copies a link, the KQM notation, or an image of the timeline.
 			The link opens the rotation with its constellations and loadouts in Theorycraft, so it doesn’t change
 			the reader’s profiles. The KQM copy removes inputs that are specific to critcalc — time tokens,
 			optional marks, and stack counts — and keeps the rest as you wrote it. The image is the whole timeline,
