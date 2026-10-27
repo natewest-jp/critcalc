@@ -54,22 +54,22 @@
 			called My profile, and a few things work differently:
 		</p>
 		<ul class="list">
-			<li><strong>No more Save buttons:</strong> All your work is auto-saved to your library.</li>
+			<li><strong>No more Save buttons:</strong> All your work is auto-saved to your Library.</li>
 			<li>
 				<strong>No more tabs:</strong> Each tool holds one rotation or lineup at a time. Click on the
 				current tool’s button at the top to open the Library.
 			</li>
 			<li>
-				<strong>Save teams directly:</strong> Now critcalc has a Teams section for you to pre-save teams,
-				just like Genshin’s party setup.
+				<strong>Save teams directly:</strong> Teams is its own section now, where you can set up teams
+				ahead of time, like Genshin’s Party Setup.
 			</li>
 			<li>
-				<strong>Shared links open in Theorycraft:</strong> This is a default profile that acts as a place
-				to explore things that don’t belong in your profiles.
+				<strong>Shared links open in Theorycraft:</strong> Theorycraft is a built-in profile for exploring
+				things that don’t belong in your own profiles.
 			</li>
 		</ul>
 		<div class="actions">
-			<button class="btn" onclick={() => close(true)}>Full changelog</button>
+			<button class="btn" onclick={() => close(true)}>What’s new</button>
 			<button class="btn btn--primary" bind:this={okEl} onclick={() => close()}>Got it</button>
 		</div>
 	</div>
