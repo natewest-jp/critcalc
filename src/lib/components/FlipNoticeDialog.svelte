@@ -46,22 +46,31 @@
 	role="presentation"
 >
 	<div class="fn-panel ctx-dark" role="alertdialog" aria-modal="true" aria-labelledby="fn-title">
-		<!-- TODO(copy): the title. -->
-		<h2 class="title" id="fn-title">TODO(copy): title</h2>
-		<!-- TODO(copy): the body. A paragraph, a list (`<ul class="list">`, styled
-		     below) or both; delete what goes unused. -->
-		<p class="note">TODO(copy): what changed for a returning visitor.</p>
+		<!-- ⏭ DRAFT copy (⚓ Nate 2026-10-27; still being shaped, possibly into a
+		     click-through with a demo per item). -->
+		<h2 class="title" id="fn-title">critcalc has a new layout</h2>
+		<p class="note">
+			Everything you had is still here. Your roster, rotations, and lineups are now in a profile
+			called My profile, and a few things work differently:
+		</p>
 		<ul class="list">
-			<li>TODO(copy): a change</li>
-			<li>TODO(copy): another change</li>
+			<li><strong>No more Save buttons:</strong> All your work is auto-saved to your library.</li>
+			<li>
+				<strong>No more tabs:</strong> Each tool holds one rotation or lineup at a time. Click on the
+				current tool’s button at the top to open the Library.
+			</li>
+			<li>
+				<strong>Save teams directly:</strong> Now critcalc has a Teams section for you to pre-save teams,
+				just like Genshin’s party setup.
+			</li>
+			<li>
+				<strong>Shared links open in Theorycraft:</strong> This is a default profile that acts as a place
+				to explore things that don’t belong in your profiles.
+			</li>
 		</ul>
 		<div class="actions">
-			<!-- TODO(copy): the What's new button's label (or drop the button). -->
-			<button class="btn" onclick={() => close(true)}>TODO(copy): What’s new</button>
-			<!-- TODO(copy): the answer. -->
-			<button class="btn btn--primary" bind:this={okEl} onclick={() => close()}
-				>TODO(copy): Got it</button
-			>
+			<button class="btn" onclick={() => close(true)}>Full changelog</button>
+			<button class="btn btn--primary" bind:this={okEl} onclick={() => close()}>Got it</button>
 		</div>
 	</div>
 </div>
