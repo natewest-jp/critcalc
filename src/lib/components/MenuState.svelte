@@ -860,12 +860,19 @@
 	   inside the usual 45–75 (it was 56ch, ~62). The site-wide cap on
 	   `.prose p, li` (app.css) is lifted here so the column sets it once.
 	   The MARGIN takes what is left up to 28rem: a screenshot of the UI has
-	   to be big enough to read, so it gets the room, not the text. */
+	   to be big enough to read, so it gets the room, not the text.
+	   ⚠️ Only when the chapter HAS a margin: a column reserved for nothing
+	   left every Help and About chapter in a build (where the mock below is
+	   stripped) beside an empty 16–28rem. Asked of the DOM rather than of
+	   `dev`, so the first real figure opens the margin by itself. */
 	.reading {
 		display: grid;
-		grid-template-columns: minmax(0, 68ch) minmax(16rem, 28rem);
+		grid-template-columns: minmax(0, 68ch);
 		column-gap: 3rem;
 		align-items: start;
+	}
+	.reading:has(> .margin) {
+		grid-template-columns: minmax(0, 68ch) minmax(16rem, 28rem);
 	}
 	.chapter {
 		min-width: 0;
@@ -900,7 +907,7 @@
 		container-type: inline-size;
 	}
 	@container (max-width: 56rem) {
-		.reading {
+		.reading:has(> .margin) {
 			grid-template-columns: minmax(0, 68ch);
 		}
 		.margin {
