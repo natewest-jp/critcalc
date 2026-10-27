@@ -1128,9 +1128,11 @@
 				both tool frames.
 			</li>
 			<li>
-				<code>--r-md</code> — <strong>modals only.</strong> Help / About / Settings and the pages panel.
-				A modal is the one surface with no ground to belong to, so it keeps the softer corner that says
-				"lifted off" — the same reason it is also the one surface that keeps an edge border.
+				<code>--r-md</code> — <strong>surfaces that float.</strong> Modals (the Links and Move
+				dialogs), portalled popovers (<code>BandMenu</code>), and the notices: toasts, banners and
+				the confirm dialog (⚓ Nate, <code>docs/notices-design.md</code> §9). A floating surface has no
+				ground to belong to, so it keeps the softer corner that says "lifted off". (Help, About and Settings
+				were modals here until the menu state made them screens.)
 			</li>
 			<li><code>--r-round</code> — genuinely round things: thumbs, dots, capsules.</li>
 		</ul>
@@ -1416,7 +1418,7 @@
 				<p class="sg-voice-sample sg-voice-sample--label">
 					ROSTER · CAN PROVIDE · ELEMENT · Search characters…
 				</p>
-				<span class="sg-val">kickers · field labels · section heads · resting control text</span>
+				<span class="sg-val">field labels · resting control text (a kicker is gold)</span>
 			</div>
 			<div class="sg-voice">
 				<span class="sg-zone-tag">prose — <code>--text</code></span>
@@ -1484,10 +1486,13 @@
 			<span class="sg-badge sg-badge--trial">on trial</span>
 		</h2>
 		<p class="sg-note">
-			One base, two variants, two sizes. ↻ 2026-10-24 (⚓ Nate, under the switch until the flip):
-			<strong>every control is sentence case</strong>, shown exactly as written. "Verbs shout, nouns
-			don't" was arbitrary, and the capitals cost a toolbar its width. Kickers stay uppercase: they
-			are labels, not controls.
+			One base, two variants, two sizes. ↻ 2026-10-24 (⚓ Nate): <strong
+				>every control is sentence case</strong
+			>, shown exactly as written. "Verbs shout, nouns don't" was arbitrary, and the capitals cost a
+			toolbar its width. Kickers stay uppercase: they are labels, not controls. In a toolbar a
+			button takes the <a href="#tokens">interface size</a>: its height is <code>--ui-ctl-h</code>
+			and its type
+			<code>--ui-ctl-fs</code>, overriding the sizes in the specs below.
 		</p>
 		<p class="sg-note">
 			↻ 2026-08-07 — <strong>the base button is OPAQUE.</strong> It used to be a transparent ghost
@@ -1512,7 +1517,7 @@
 				</div>
 				{@render spec(
 					'.btn · --primary · .is-active · :disabled',
-					'3px · 0.32/0.65rem · fs-sm · sentence case · opaque --btn-face at rest, --btn-face-hover on hover. .is-active mixes the accent at 20% INTO the face rather than replacing it — a selected button that swapped its plate for a translucent accent came out quieter than its neighbours'
+					'3px · 0.32/0.65rem · fs-md · sentence case · opaque --btn-face at rest, --btn-face-hover on hover. .is-active mixes the accent at 20% INTO the face rather than replacing it — a selected button that swapped its plate for a translucent accent came out quieter than its neighbours'
 				)}
 			</div>
 
@@ -1562,15 +1567,14 @@
 	<section id="chips">
 		<h2>Chips & tabs <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
-			↻ 2026-10-25 (⚓ Nate, under the switch until the flip): <strong
-				>ON and CHOSEN are a FILL; a RING is the hand.</strong
-			>
+			↻ 2026-10-25 (⚓ Nate): <strong>On and chosen are a fill; a ring is the hand.</strong>
 			A chosen chip, segment or filter, and a plate that is on, takes the accent at 20% over the button
 			face (<code>.btn.is-active</code>'s recipe); an element chip fills in its own hue. The gold
 			ring it replaces shared its shape with the hover ring, and on a phone the last control tapped
 			keeps its hover, so "on" and "touched" read alike. Hover rings show only where a pointer can
-			hover. A ring that means <em>you are here</em> (the top bar's current tool, keyboard focus)
-			stays a ring. Voice: a content chip keeps
+			hover. Keyboard focus stays a ring. (The top bar's current tool was the other ring here; since
+			the title-bar round it is a glass fill too, and its hover ring is a hand.) Voice: a content
+			chip keeps
 			<code>capitalize</code>, because its label is often a raw id ("sword"); an instrument chip is
 			shown exactly as written, in sentence case.
 		</p>
@@ -1589,7 +1593,7 @@
 				</div>
 				{@render spec(
 					'.chip · .active · .chip--element',
-					'CONTENT voice — sentence case, ls-mid, fs-sm. Names, roles, capabilities, elements'
+					'CONTENT voice — capitalize (labels are often raw ids), ls-mid, fs-md. Names, roles, capabilities, elements. Chosen = the accent 20% over --btn-face; an element chip 24% of its own hue'
 				)}
 			</div>
 
@@ -1601,7 +1605,7 @@
 				</div>
 				{@render spec(
 					'.chip--control · .chip-sub',
-					'INSTRUMENT voice — fs-md, shown as written (sentence case). Instrument settings and modes'
+					'INSTRUMENT voice — fs-lg, shown as written (sentence case). Instrument settings and modes. .chip--sm is the dense instrument row (fs-md, ls-tight: the Gauge presets, the RES & DEF rows)'
 				)}
 			</div>
 
@@ -1620,7 +1624,7 @@
 				</div>
 				{@render spec(
 					'.chip--icon',
-					'6px · square · glyph-only. Rests at 0.35 opacity, active lifts to 1 + element ring'
+					'6px · square · glyph-only. Rests at 0.35 opacity; chosen lifts to 1 and fills with its hue (28% over --btn-face), no ring'
 				)}
 			</div>
 
@@ -1645,7 +1649,7 @@
 				</div>
 				{@render spec(
 					'.tab · .active · .tab--lg · .tab--closeable',
-					'ONE tab system, body face — drops Bitter and the 5px radius. Document tabs (band A) are the base size and the whole live population; --lg is a promoted rung with NO consumer since the Team Builder’s Atlas/Roster/Compare row became a parchment nav plate (2026-08-09)'
+					'ONE tab system, body face — drops Bitter and the 5px radius. ⚠ No .tab renders in the new layout: the document tabs lived in band A, which is gone (the document is the top bar’s), and AreaTabs serves only the old modal Help. The class stays until step 5 retires the old layout; --lg has had no consumer since 2026-08-09'
 				)}
 			</div>
 		</div>
@@ -1754,13 +1758,14 @@
 					<h2 class="title">Panel or card title</h2>
 					<p class="subtitle">a subtitle, capitalized</p>
 					<p class="note">
-						A note: one class, fs-md, relaxed leading, muted, NO margin — the container spaces it.
-						Replaces seven per-instrument copies plus the Team Builder captions.
+						A note: one class, fs-lg, relaxed leading, muted, a 56ch measure, NO margin — the
+						container spaces it. Replaces seven per-instrument copies plus the Team Builder
+						captions.
 					</p>
 				</div>
 				{@render spec(
 					'.kicker · .title · .subtitle · .note',
-					'kicker = --muted UPPER ls-widest + rule, and BODY FACE — a section heading, not a main header · title = --text, Bitter (⚓ Nate 2026-08-09) · note = --muted, it is data-adjacent'
+					'kicker = GOLD (--accent, since 2026-08-10) UPPER fs-lg ls-widest + a gold rule at 22%, and BODY FACE — a section heading, not a main header. Gold names a block, never a word · title = --text, Bitter, fs-3xl (⚓ Nate 2026-08-09) · note = --muted fs-lg, 56ch max, it is data-adjacent'
 				)}
 			</div>
 
@@ -1817,9 +1822,11 @@
 			come up with a concept and propose it". <strong>Don't propose additions.</strong> Strokes are
 			<strong>2px</strong> (⚓ Nate), which also puts the family on the rule rung the system already
 			had: <em>rules are 2px, section dividers 1px</em>. ⚠️ A host may override that with
-			<code>--inset-stroke</code> — a per-box knob, <em>not</em> a second rung: 2px reads as a rule round
-			a panel and as a border round a 40px plate. One caller so far, the Team Builder's selected navigation
-			item at 1.5px (⚓ Nate 2026-08-10).
+			<code>--inset-stroke</code> — a per-box knob, <em>not</em> a second rung: 2px reads as a rule
+			round a panel and as a border round a 40px plate. Its one caller, the Team Builder's selected
+			navigation item at 1.5px (⚓ Nate 2026-08-10), is gone with that navigation, so
+			<strong>nothing outside <code>/lab</code> wears <code>.inset</code> today</strong>. The family
+			stays declared, waiting for a surface that earns it.
 		</p>
 		<p class="sg-note">
 			⚠️ <strong
@@ -1896,11 +1903,36 @@
 						control needs its own label; the mark can never be it.
 					</li>
 					<li>
+						<strong>A mark can be FILLED, for a closed shape whose interior is the picture.</strong>
+						Lucide is a stroke-only set, so <code>&lt;Mark filled&gt;</code> fills the geometry in
+						<code>currentColor</code> and keeps the stroke under it (play, pause: ⚓ Nate
+						2026-08-13).
+						<code>filled="solid"</code> fills the areas with no stroke and keeps the stroke on open
+						line parts, for a star whose points are the picture: the wish mark and the lit astroids
+						(⚓ Nate, the Roster round, 2026-10-26), where round joins blunted every tip. ⛔ Not on
+						an open path: it fills whatever region the curve encloses. The argument is at
+						<code>filled</code>
+						in
+						<code>Mark.svelte</code>.
+					</li>
+					<li>
 						⛔ <strong>Do not install <code>@lucide/svelte</code></strong>, and do not hand-copy
 						SVGs off the site. Both were considered and rejected — a component per icon is hundreds
 						of instances at roster scale, and a downloaded file has no provenance, no version and no
 						licence trail. <code>src/lib/marks.test.ts</code> guards the generated artifact against all
 						of it.
+					</li>
+					<li>
+						<strong
+							>A glyph Lucide has no word for is BESPOKE, and goes through the same generator.</strong
+						>
+						<code>scripts/lib/bespoke-marks.mjs</code> holds Nate's own art, drawn in Lucide's idiom
+						(stroked paths on its 24 grid), each entry citing its source in
+						<code>assets-src/</code>;
+						<code>generate-marks.mjs</code> merges it into <code>MarkName</code>, and
+						<code>marks.test.ts</code> reads the same record. One so far: <code>handOff</code>,
+						Human timing off (⚓ Nate, the toolbar refinement, 2026-10-24). The hand-copy rule above
+						is about provenance, and this art has it.
 					</li>
 					<li>
 						⛔ <strong>Not for the element icons or the brand mark.</strong> Those are build
@@ -1960,10 +1992,12 @@
 						<code>currentColor</code> stroke.
 					</li>
 					<li>
-						<code>scripts/probe-marks.mjs</code> is the guard.
-						<code>marks.test.ts</code> proves the SET is coherent; it cannot prove the site stopped typesetting,
-						and a static grep can't tell a control glyph from prose. The probe walks the RENDERED text
-						of every tool surface — it caught one the grep missed.
+						<code>marks.test.ts</code> proves the SET is coherent; it cannot prove the site stopped
+						typesetting, and a static grep can't tell a control glyph from prose.
+						<code>e2e/marks.spec.ts</code> is the guard: it walks the RENDERED text of the tool
+						surfaces for a list of banned code points. (It replaced
+						<code>scripts/probe-marks.mjs</code> on 2026-08-09, when the probe drawer retired.) ⚠ It knows
+						only the code points it lists.
 					</li>
 				</ul>
 			</div>
@@ -2273,8 +2307,8 @@
 					<li>
 						<strong>Three voices, and they don't swap.</strong> <code>--chrome</code> white is
 						branding, site chrome and the biggest headers — never body copy or data. Inside a panel,
-						<code>--text</code> is prose and <code>--muted</code> is the label voice (kickers, field labels,
-						section heads). Both come from the context, never from a literal.
+						<code>--text</code> is prose and <code>--muted</code> is the label voice (field labels, resting
+						controls; a kicker is gold). Both come from the context, never from a literal.
 					</li>
 					<li>
 						<strong>Controls are sentence case</strong> (↻ 2026-10-24, ⚓ Nate — it retired "verbs shout,
@@ -2313,8 +2347,16 @@
 						emphasis, not chrome.)
 					</li>
 					<li>
-						<strong>Button marks are 28px</strong> and built as a disc with the glyph as an evenodd
-						HOLE, so one path takes <code>currentColor</code>. The notification mark is 12px.
+						<strong>The top bar's doors are sized by INK, not by box</strong> (⚓ Nate, the
+						title-bar round, 2026-10-25). Each is a disc with the glyph as an evenodd HOLE, so one
+						path takes
+						<code>currentColor</code>. They share one height, <code>--tb-glyph-h</code> =
+						<code>--ui-ctl-h</code> − 6px, times <code>--disc</code> (1.12) and a per-door
+						<code>--ink</code> where its art is sparse (the compass ×1.1 of the discs, Teams 1.22):
+						ink per height² runs from 0.71 (help) to 0.35 (Teams), so equal boxes would not look
+						equal. The ratios ride the interface size, about 29px at Medium. ⚠ A wash path states
+						<code>fill="#000"</code>, or it inherits <code>currentColor</code> and paints solid. (The
+						old bar's marks were a fixed 28px.)
 					</li>
 					<li>
 						<strong>Slider knobs are flat.</strong> Their analogue is the toggle thumb — also a
@@ -2338,9 +2380,23 @@
 					<li>
 						<strong>On is a fill; a ring is the hand</strong> (↻ 2026-10-25, ⚓ Nate). A plate that
 						is on and a chip, segment or filter that is chosen fill with the accent at 20% over the
-						face (an element in its own hue). Rings are for hover (only where a pointer can hover),
-						focus, and "you are here". Behind the switch until the flip:
-						<code>:where(:root[data-next])</code> in app.css.
+						face (an element in its own hue). Rings are for hover and keyboard focus. The rules are
+						written <code>:where(:root[data-next])</code> in app.css, beside a
+						<code>:where(:root:not([data-next]))</code> half that serves only the old layout until
+						step 5 deletes it; <code>:where</code> adds no weight, so both keep the specificity that was
+						tested.
+					</li>
+					<li>
+						<strong>Hover only where a pointer can hover.</strong> A hover ring or wash is written
+						inside
+						<code>@media (hover: hover)</code>: on a phone the last control tapped keeps its hover
+						state, so an unguarded hover reads as "on". The other half: anything that APPEARS on
+						hover (the Library's and Teams' verbs) also shows on keyboard focus,
+						<code>:has(:focus-visible)</code> rather than <code>:focus-within</code> (a clicked Pin
+						held them up), and under <code>@media (hover: none)</code>, where nothing can hover to
+						find it, it is always shown (a team card's Delete) or folds into a ⋯ (the Library's
+						verbs). Record:
+						<code>docs/fullscreen-surface-round.md</code>.
 					</li>
 				</ul>
 			</div>
@@ -2431,8 +2487,20 @@
 				<h3>Structure</h3>
 				<ul>
 					<li>
-						Modals are for <strong>meta</strong> only (settings, help, static pages). Every
-						<strong>tool</strong> feature is a docked panel or an in-frame overlay.
+						<strong>Three surfaces, site-wide</strong> (⚓ Nate,
+						<code>docs/inspector-round.md</code>): the <strong>tools</strong> (work), the
+						<strong>menu state</strong>
+						(places you go to on purpose: the Library, Teams, Roster, Help, About, Settings,
+						Profile, Trash) and the
+						<strong>inspector</strong> (reference about one thing picked out of the work, read
+						beside it, never edited). Everything else is attached to a control: a tooltip, a
+						popover, a confirmation, a notice. A tool feature is a docked panel or an in-frame
+						overlay,
+						<strong>except the inspector, whose shape is the tool's</strong> (ruling 1): a pane in
+						the Planner's aside, a modal in the Builder (<code>InspectModal</code>, the character,
+						boss and opponents sharing one shell), none in the Visualizers. A dialog is for a
+						decision whose cause is away from where you are looking (<a href="#redesign">notices</a
+						>).
 					</li>
 					<li>
 						In-frame overlays can't paint above the fixed chrome strip (<code>.tool-main</code> is
@@ -2661,8 +2729,9 @@
 					</li>
 					<li>
 						<strong>Which surfaces earn an inset border?</strong> There are
-						<a href="#insets">five to choose from</a> now instead of one, which turns the question from
-						"invent something" into "pick". Nothing wears one yet except the bench ribbon.
+						<a href="#insets">two to choose from</a> (a closed set), which turns the question from
+						"invent something" into "pick". Nothing outside <code>/lab</code> wears the
+						<code>.inset</code> class; the bench ribbon draws its own two-stroke frame.
 					</li>
 					<li>
 						<strong>Is 1px a rung, or is it 3px?</strong> <code>--r-xs</code> exists to answer that on
