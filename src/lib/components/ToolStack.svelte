@@ -51,6 +51,7 @@
 		benchCollapsed = false,
 		benchRail,
 		fill = false,
+		floor = false,
 		bandALeft,
 		bandARight,
 		bandAClass = '',
@@ -93,6 +94,13 @@
 		benchRail?: Snippet;
 		/** The surface flexes to fill the stack's height (viewport-fit tools). */
 		fill?: boolean;
+		/**
+		 * The stack is at LEAST the viewport's height and the surface flexes to
+		 * fill it, but grows with its content and page-scrolls past it (the
+		 * planner, so its composer can stand at the screen's foot however short
+		 * the rotation). Above `toolMin` only.
+		 */
+		floor?: boolean;
 		bandALeft?: Snippet;
 		bandARight?: Snippet;
 		/**
@@ -138,6 +146,7 @@
 <div
 	class="tool-stack"
 	class:tool-stack--fill={fill}
+	class:tool-stack--floor={floor}
 	class:tool-stack--benched={benched}
 	class:tool-stack--bench-hidden={benched && benchHidden}
 	class:tool-stack--bench-collapsed={benched && benchCollapsed}
@@ -289,6 +298,25 @@
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
+	}
+
+	/* The FLOOR form (the planner, 2026-10-27, ⚓ Nate): `fill`'s height as a
+	   MINIMUM, so a short surface still reaches the screen's foot and a long one
+	   page-scrolls as before. The surface is a flex column so the tool inside
+	   can push its last row (the composer) to the bottom. Above BP.toolMin only:
+	   below it the composer rides in the page, and below `compact` it docks. */
+	@media (min-width: 54rem) {
+		.tool-stack--floor {
+			min-height: calc(
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) -
+					var(--tool-pad-bottom, 1.5rem)
+			);
+		}
+		.tool-stack--floor .tool-surface {
+			flex: 1 0 auto;
+			display: flex;
+			flex-direction: column;
+		}
 	}
 
 	/* THE ROOM AROUND THE SURFACE (⚓ Nate 2026-10-25, the edges round): how

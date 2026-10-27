@@ -503,6 +503,7 @@
 	     content margin below the strip's bottom end. -->
 	<ToolStack
 		benched
+		floor={$nextLayout}
 		noBandA={$nextLayout}
 		benchHidden={!$nextLayout && benchRowHidden($siteSettings.showBenchRow)}
 		benchCollapsed={$nextLayout && benchFolded}

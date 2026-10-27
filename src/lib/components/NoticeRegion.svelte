@@ -79,7 +79,8 @@
 				{:else}
 					<span class="nt-mark"><Mark name={MARK[t.kind]} size={18} /></span>
 				{/if}
-				<span class="nt-text">{t.text}</span>
+				<!-- prettier-ignore -->
+				<span class="nt-text">{#if typeof t.text === 'string'}{t.text}{:else}{#each t.text as part, i (i)}{#if typeof part === 'string'}{part}{:else}<span class="nt-name">{part.name}</span>{/if}{/each}{/if}</span>
 				{#if t.actions.length}
 					<span class="nt-acts">
 						{#each t.actions as a (a.label)}
@@ -239,6 +240,11 @@
 	.nt-text {
 		grid-area: text;
 		min-width: 0;
+	}
+	/* A name in the words (NoticeText): a rung heavier, so it reads as a name
+	   being stated (⚓ Nate 2026-10-27). Weight only; the ink stays the toast's. */
+	.nt-name {
+		font-weight: var(--fw-semibold);
 	}
 	.nt-acts {
 		grid-area: acts;

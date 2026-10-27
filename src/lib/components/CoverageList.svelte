@@ -197,6 +197,38 @@
 		const r = (event.currentTarget as HTMLElement).getBoundingClientRect();
 		tip = { id, key, x: r.left + r.width / 2, y: r.top };
 	}
+
+	// -------------------------------------------------------------------------
+	// The column header: stuck or at rest
+	// -------------------------------------------------------------------------
+
+	/** Whether the column header is held by its sticky inset (CSS cannot ask
+	 *  in Safari). A zero-height marker stays where the header would rest; once
+	 *  it has scrolled above the header's top, the header is stuck. */
+	let stuck = $state(false);
+	function stuckWatch(node: HTMLElement) {
+		const marker = document.createElement('div');
+		marker.setAttribute('aria-hidden', 'true');
+		node.before(marker);
+		let raf = 0;
+		const measure = () => {
+			raf = 0;
+			stuck = marker.getBoundingClientRect().top < node.getBoundingClientRect().top - 0.5;
+		};
+		const schedule = () => {
+			if (!raf) raf = requestAnimationFrame(measure);
+		};
+		// Capture: the scroller is an ancestor, and a scroll event does not bubble.
+		document.addEventListener('scroll', schedule, { capture: true, passive: true });
+		schedule();
+		return {
+			destroy() {
+				document.removeEventListener('scroll', schedule, { capture: true });
+				if (raf) cancelAnimationFrame(raf);
+				marker.remove();
+			}
+		};
+	}
 </script>
 
 <div class="coverage">
@@ -276,7 +308,7 @@
 	{/if}
 
 	<div class="cov-table" style:--cov-template={layout.template}>
-		<div class="cov-columns" aria-hidden="true">
+		<div class="cov-columns" class:is-stuck={stuck} aria-hidden="true" use:stuckWatch>
 			<span class="cov-name-spacer"></span>
 			<div class="strip strip-head">
 				{#each layout.colSpan as [col, [a, b]] (col)}
@@ -530,13 +562,26 @@
 	}
 	.cov-columns {
 		position: sticky;
-		/* It scrolls inside the overlay's chapter body or the route's panel;
-		   top: 0 is the scrollport's edge in both. */
-		top: 0;
+		/* It scrolls inside the menu state's main column, which says where a
+		   sticky header stands (clear of its ✕); top: 0 is the scrollport's edge
+		   in the old layout's overlay and route panel. */
+		top: var(--menu-sticky-top, 0px);
 		z-index: 1;
 		padding: 0.4rem 0;
 		background: var(--surface);
 		border-bottom: 1px solid var(--border);
+	}
+	/* Once stuck, the band between it and the scrollport's top is its own
+	   ground too, or the rows scroll by in that gap. Only once stuck: at rest
+	   that band is the controls above it. */
+	.cov-columns.is-stuck::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 100%;
+		height: var(--menu-sticky-reach, 0px);
+		background: var(--surface);
 	}
 	.strip {
 		display: grid;
@@ -564,7 +609,7 @@
 	.cov-row {
 		border-bottom: 1px solid var(--border);
 		/* A deep link scrolls the first named row in under the sticky header. */
-		scroll-margin-top: 2.5rem;
+		scroll-margin-top: calc(var(--menu-sticky-reach, 0px) + 2.5rem);
 	}
 	.row-button {
 		width: 100%;
