@@ -285,7 +285,7 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 	// --slate-700 because it happens to look right, and then a context flip
 	// leaves it painting a dark rung on a paper panel with no way to notice.
 	it('no component names a primitive rung directly (the L0 law)', () => {
-		const RAMPS = 'night|slate|parchment|gold|ink|red';
+		const RAMPS = 'night|slate|parchment|gold|ink|red|blue';
 		const re = new RegExp(`var\\(\\s*--(?:${RAMPS})-\\d+`, 'g');
 		const root = fileURLToPath(new URL('../..', import.meta.url));
 		const offenders: string[] = [];

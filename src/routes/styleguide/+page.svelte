@@ -135,7 +135,7 @@
 
 	/** L0 — the primitive ramps (Genshin Night, 2026-08-09). A NUMBER means a
 	 *  primitive and no component may name one; these exist to be pointed AT. */
-	const ramps = ['night', 'slate', 'parchment', 'gold', 'ink', 'red'].map((name) => ({
+	const ramps = ['night', 'slate', 'parchment', 'gold', 'ink', 'red', 'blue'].map((name) => ({
 		name,
 		rungs: tokens.filter((t) => new RegExp(`^--${name}-\\d+$`).test(t.name))
 	}));
@@ -343,7 +343,7 @@
 	 *  two grounds and the glass, which is where the open questions are. Counted
 	 *  anyway, so "we censused the palette" cannot quietly mean "we censused most
 	 *  of it", and so a ramp that has gone slack shows up without being expanded. */
-	const otherRamps = ['night', 'gold', 'ink', 'red'].map((name) => {
+	const otherRamps = ['night', 'gold', 'ink', 'red', 'blue'].map((name) => {
 		const rows = census(name);
 		return { name, total: rows.length, free: rows.filter(isFree).map((r) => r.rung.name) };
 	});
@@ -1106,6 +1106,15 @@
 			at its own hue the gamut edge is browner), <code>--ui-positive</code> <code>#018d65</code>.
 			Both are marks on paper, like provisional, never prose ink. The swatches below are the dark
 			values; the paper ones live in the <code>.ctx-light</code> block.
+			<br />↻ <strong>2026-10-27: <code>--ui-info</code>, neutral information</strong> (⚓ Nate): a
+			fact stated with no consequence attached, the values in a buff tooltip. It is the one blue,
+			and it gets away with it by chroma: a greyed blue (<code>--blue-400</code>,
+			<code>#90b4d0</code>, C .056) reads as cool grey beside hydro and cryo rather than as an
+			element. Unlike the others it is <strong>prose ink on paper</strong>, so its paper rung (<code
+				>--blue-700</code
+			>, <code>#3e6a89</code>) clears 4.5:1 on both: 4.62:1 on
+			<code>--surface</code>, 5.19:1 on <code>--surface-broad</code>. The four grounds side by side
+			are on <code>/lab</code>.
 		</p>
 		<div class="sg-swatches">
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
