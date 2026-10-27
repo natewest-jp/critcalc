@@ -34,6 +34,11 @@ describe('the returning-visitor signal (flip-readiness §1 item 4)', () => {
 		expect(hadLegacyData(storage({ 'critcalc:nextLayout': '1' }))).toBe(false);
 	});
 
+	it('the Visualizers layout alone does not count (it is saved on load)', () => {
+		const viz = { 'critcalc:vizWorkspace': '{"v":1,"assignment":[],"slots":"auto"}' };
+		expect(hadLegacyData(storage(viz))).toBe(false);
+	});
+
 	it('blocked site data reads as a first visit', () => {
 		const blocked = {
 			getItem: () => {

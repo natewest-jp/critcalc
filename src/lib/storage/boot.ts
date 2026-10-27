@@ -20,10 +20,15 @@ import { newId } from './records';
  * tab would read a real visitor as new. Catches anyone who opened the Planner
  * or Builder (the old tools layout writes `rotationTabs` on any visit); misses
  * a visitor who only saw the landing, About, Help or Visualizers, accepted.
+ * ⛔ `vizWorkspace` never counts: the Visualizers page saves its layout on
+ * LOAD, outside the switch, and its onMount runs before the root layout's
+ * boot — so a brand-new visitor landing there would read as returning.
  */
+const NOT_A_SIGNAL: ReadonlySet<string> = new Set(['critcalc:vizWorkspace']);
+
 export function hadLegacyData(storage: Pick<Storage, 'getItem'>): boolean {
 	try {
-		return BACKUP_KEYS.some((k) => storage.getItem(k) != null);
+		return BACKUP_KEYS.some((k) => !NOT_A_SIGNAL.has(k) && storage.getItem(k) != null);
 	} catch {
 		// Blocked site data: nothing could have been stored either.
 		return false;
