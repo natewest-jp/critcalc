@@ -152,7 +152,7 @@
 				"timer": 30
 			},
 			"infusion": "pyro",
-			"caveat": "Her attacks are drawn as Pyro throughout, as if Masque of the Red Death were always active. In game they stay Physical until her Bond of Life reaches 30% of her Max HP."
+			"caveat": "Her attacks are drawn as Pyro throughout, and each Normal Attack hit shortens All Is Ash's cooldown, as if Masque of the Red Death were always active. In game, neither happens until her Bond of Life reaches 30% of her Max HP."
 		},
 		{
 			"id": "arlecchino__skill__all_is_ash",
