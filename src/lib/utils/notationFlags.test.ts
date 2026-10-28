@@ -159,4 +159,13 @@ describe('charged attacks drawn with a stand-in', () => {
 	it('says nothing about a bow’s C, A or sC — its aimed shot is measured', () => {
 		expect(flagNotation('Ganyu C1 C A sC')).toEqual([]);
 	});
+
+	it('flags the twin a real profile did not choose, and only when told the profile’s', () => {
+		const flags = flagNotation('Anemo Aether E > Bennett Q', undefined, 'lumine');
+		expect(flags.map((f) => [f.text, f.reason, flagSeverity(f.reason)])).toEqual([
+			['Anemo Aether', 'other-twin', 'provisional']
+		]);
+		expect(flagNotation('Anemo Lumine E > Anemo Traveler Q', undefined, 'lumine')).toEqual([]);
+		expect(flagNotation('Anemo Aether E')).toEqual([]);
+	});
 });

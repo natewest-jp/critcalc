@@ -18,6 +18,7 @@ import {
 	notationSegments,
 	orderedCharacterIds,
 	renameCharacterInNotation,
+	setTwinInNotation,
 	seatTeam,
 	seatsFromLegacy,
 	awakeIds,
@@ -297,5 +298,29 @@ describe('seatTeam', () => {
 			null,
 			null
 		]);
+	});
+});
+
+// The Traveler's twin (twin frames round, 2026-10-28).
+describe('setTwinInNotation', () => {
+	it('names the twin in every segment the Traveler leads, and clears it to the bare name', () => {
+		const pinned = setTwinInNotation(
+			'Anemo Traveler E > Bennett Q > Anemo Traveler N2C',
+			'traveler_anemo',
+			'lumine'
+		);
+		expect(pinned).toBe('Anemo Lumine E > Bennett Q > Anemo Lumine N2C');
+		expect(setTwinInNotation(pinned, 'traveler_anemo', null)).toBe(
+			'Anemo Traveler E > Bennett Q > Anemo Traveler N2C'
+		);
+	});
+
+	it('keeps a pinned twin when one Traveler is swapped for another', () => {
+		expect(renameCharacterInNotation('Anemo Lumine E Q', 'traveler_anemo', 'traveler_geo')).toBe(
+			'Geo Lumine E Q'
+		);
+		expect(renameCharacterInNotation('Anemo Lumine E Q', 'traveler_anemo', 'bennett')).toBe(
+			'Bennett E Q'
+		);
 	});
 });

@@ -37,7 +37,13 @@ import {
 import { tokenizeNotation, MAX_NOTATION_CHARS, type Token, type TokenKind } from './tokenizer';
 import { flagNotation, flagSeverity, type NotationFlag } from './notationFlags';
 import { seatsField } from './notationSeats';
-import { searchCharacterIndex, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+import { get } from 'svelte/store';
+import { travelerTwin, twinRoutes } from '$lib/travelerTwin.svelte';
+import {
+	searchCharacterIndex,
+	searchTwinNames,
+	getIndexEntryByDisplayName
+} from '$lib/data/characterLookup';
 import { elementPalette } from './elementColors';
 import { resolveActionElement, type NormalActionKind } from './actionElement';
 import type { Element } from '$lib/types/ability';
@@ -261,7 +267,15 @@ const notationHighlight = ViewPlugin.fromClass(
 			// own without a scan. A bracket-inner flag (`2[hE]`) has no top-level
 			// token to attach to and is emitted as its own nested mark below.
 			const flags = new Map<string, NotationFlag>();
-			for (const flag of flagNotation(doc, view.state.field(seatsField, false)?.seats)) {
+			// The profile's twin only where the other one is a what-if (a real
+			// profile's own rotation). Read per build: a profile switch opens
+			// another document, which rebuilds.
+			const profileTwin = twinRoutes() ? get(travelerTwin) : null;
+			for (const flag of flagNotation(
+				doc,
+				view.state.field(seatsField, false)?.seats,
+				profileTwin
+			)) {
 				if (flag.reason === 'unknown-character' && caretInside(view, flag.from, flag.to)) continue;
 				flags.set(`${flag.from}:${flag.to}`, flag);
 			}
@@ -394,16 +408,20 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 	if (/\s/.test(trimmed)) return null;
 	if (trimmed.length < 2) return null;
 
-	const matches = searchCharacterIndex(trimmed);
-	if (matches.length === 0) return null;
+	// A Traveler's twin names (`Anemo Lumine`) are offered only when typed.
+	const names = [
+		...searchCharacterIndex(trimmed).map((c) => c.displayName),
+		...searchTwinNames(trimmed)
+	];
+	if (names.length === 0) return null;
 
 	const from = pos - trimmed.length;
 	return {
 		from,
-		options: matches.map((char) => ({
-			label: char.displayName,
+		options: names.map((name) => ({
+			label: name,
 			// Append a space so the user can immediately type the first action token
-			apply: char.displayName + ' '
+			apply: name + ' '
 		})),
 		// Keep the completion open while typing non-whitespace
 		validFor: /^\S*$/

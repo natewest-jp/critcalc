@@ -2,6 +2,9 @@
 	import Mark from './Mark.svelte';
 	import ConMark from './ConMark.svelte';
 	import SidePortrait from './SidePortrait.svelte';
+	import { rotationTwin } from '$lib/travelerTwin.svelte';
+	import type { Twin } from '$lib/storage/records';
+	import { twinLabel } from '$lib/data/characterLookup';
 	/**
 	 * SlotPortrait — the slot card of the Planner's bench ribbon, labelling a
 	 * timeline track group.
@@ -79,6 +82,7 @@
 		ownedCon,
 		loadoutEntry,
 		onSetCon,
+		onSetTwin,
 		onSetArtifact,
 		onSetWeapon,
 		onSetRefinement,
@@ -108,6 +112,9 @@
 		/** Effective loadout to display (already layer-resolved). */
 		loadoutEntry: LoadoutEntry;
 		onSetCon: (level: number) => void;
+		/** A Traveler's twin choice, offered above the constellation pips (twin
+		 *  frames round, 2026-10-28). Omit for anyone else. */
+		onSetTwin?: (twin: Twin) => void;
 		onSetArtifact: (artifactSetId: string | undefined) => void;
 		onSetWeapon: (weaponId: string | undefined, refinement: 1 | 2 | 3 | 4 | 5) => void;
 		onSetRefinement: (r: 1 | 2 | 3 | 4 | 5) => void;
@@ -260,6 +267,10 @@
 		onSetCon(level);
 		conOpen = false;
 	}
+	function chooseTwin(twin: Twin) {
+		onSetTwin?.(twin);
+		conOpen = false;
+	}
 
 	function openLoadout(e: MouseEvent, section: LoadoutSection) {
 		e.stopPropagation();
@@ -314,6 +325,7 @@
 					id={char ? slotId : null}
 					size={compact ? compactDisc : CARD_PORTRAIT}
 					fadeRight={compact ? 2 : 6}
+					twin={$rotationTwin}
 				/>
 			</span>
 			{#if onPortraitClick}
@@ -465,15 +477,31 @@
 		style:left="{conX}px"
 		style:top="{conY}px"
 	>
-		{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
-			<button
-				class="sp-pip"
-				class:sp-pip--filled={level > 0 && level <= conLevel}
-				class:sp-pip--current={level === conLevel}
-				style:--pip-color={p.main}
-				onclick={() => chooseCon(level)}>{level}</button
-			>
-		{/each}
+		{#if onSetTwin}
+			<!-- The Traveler's twin: Aether and Lumine are timed apart. -->
+			<div class="sp-twins" role="group" aria-label="Twin">
+				{#each ['aether', 'lumine'] as const as twin (twin)}
+					<button
+						class="sp-twin"
+						class:sp-twin--current={twin === $rotationTwin}
+						style:--pip-color={p.main}
+						aria-pressed={twin === $rotationTwin}
+						onclick={() => chooseTwin(twin)}>{twinLabel(twin)}</button
+					>
+				{/each}
+			</div>
+		{/if}
+		<div class="sp-pips">
+			{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
+				<button
+					class="sp-pip"
+					class:sp-pip--filled={level > 0 && level <= conLevel}
+					class:sp-pip--current={level === conLevel}
+					style:--pip-color={p.main}
+					onclick={() => chooseCon(level)}>{level}</button
+				>
+			{/each}
+		</div>
 	</div>
 {/if}
 {#if loadoutOpen && char}
@@ -1070,6 +1098,42 @@
 		padding: 10px 11px;
 		max-height: calc(100vh - 16px);
 		overflow-y: auto;
+	}
+	/* The pips are one row; a Traveler's twin choice sits above them. */
+	.sp-popover:not(.sp-popover--panel) {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.sp-pips,
+	.sp-twins {
+		display: flex;
+		gap: 4px;
+	}
+	.sp-twin {
+		flex: 1;
+		height: 24px;
+		border-radius: var(--r-round);
+		border: none;
+		background: var(--fill-rest);
+		color: var(--muted);
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		cursor: pointer;
+		padding: 0 8px;
+		transition:
+			background var(--t-snap),
+			box-shadow var(--t-snap),
+			color var(--t-snap);
+	}
+	.sp-twin--current {
+		background: color-mix(in srgb, var(--pip-color) 30%, transparent);
+		color: var(--pip-color);
+		box-shadow: inset 0 0 0 1.5px var(--pip-color);
+	}
+	.sp-twin:hover {
+		background: var(--fill-hover);
+		color: var(--pip-color, var(--text));
 	}
 	.sp-pip {
 		width: 24px;

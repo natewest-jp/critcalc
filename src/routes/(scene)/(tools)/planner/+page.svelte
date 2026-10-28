@@ -26,6 +26,7 @@
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { rotationTabs as rt, slotsFromNotation } from '$lib/rotationTabs.svelte';
 	import SidePortrait from '$lib/components/SidePortrait.svelte';
+	import { rotationTwin } from '$lib/travelerTwin.svelte';
 	import type CompareControlT from '$lib/components/CompareControl.svelte';
 	import type SaveTeamButtonT from '$lib/components/SaveTeamButton.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
@@ -477,7 +478,11 @@
 			>
 				{#each rt.seats as id, i (i)}
 					<span class="rp-rail-face" style:z-index={i} style:--rail-face="{RAIL_FACE}px">
-						<SidePortrait id={id && id !== 'blank' ? id : null} size={RAIL_FACE} />
+						<SidePortrait
+							id={id && id !== 'blank' ? id : null}
+							size={RAIL_FACE}
+							twin={$rotationTwin}
+						/>
 					</span>
 				{/each}
 			</button>

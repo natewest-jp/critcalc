@@ -25,7 +25,8 @@ import {
 	type Board,
 	type BoardPreset
 } from '$lib/boards.svelte';
-import { teamKey } from '$lib/utils/notationEdit';
+import { setTwinInNotation, teamKey } from '$lib/utils/notationEdit';
+import { twinLabel } from '$lib/data/characterLookup';
 import {
 	newTabId,
 	rotationTabs,
@@ -1317,6 +1318,21 @@ class StorageSession {
 	 * copy is where its what-ifs live.
 	 */
 	async whatIf(charId: string, level: number): Promise<void> {
+		await this.#whatIf(charId, { level });
+	}
+
+	/**
+	 * ⚓ The TWIN what-if (twin frames round, ⚓ Nate 2026-10-28): the Traveler
+	 * played as the twin the profile did not choose. Every account chose one, so
+	 * it routes like a level against the roster — a Theorycraft copy, paired and
+	 * shown, its notation naming the twin (`Anemo Aether`) because a bare name
+	 * in a guest still reads the real profile's twin.
+	 */
+	async whatIfTwin(charId: string, twin: Twin): Promise<void> {
+		await this.#whatIf(charId, { twin });
+	}
+
+	async #whatIf(charId: string, change: { level?: number; twin?: Twin }): Promise<void> {
 		const profile = this.profile;
 		if (profile?.kind !== 'real' || this.plannerGuest) return;
 		const doc = await this.#currentRotation();
@@ -1324,7 +1340,9 @@ class StorageSession {
 		const partner = doc.pairId ? await get(this.#db, 'documents', doc.pairId) : undefined;
 		if (partner && !partner.deleted && partner.profileId === THEORYCRAFT_ID) {
 			await this.open(partner.id);
-			rotationTabs.setTabCon(charId, level);
+			if (change.level !== undefined) rotationTabs.setTabCon(charId, change.level);
+			if (change.twin)
+				rotationTabs.notation = setTwinInNotation(rotationTabs.notation, charId, change.twin);
 			return;
 		}
 		const { constellations: roster, ownership: owned } = profile.roster;
@@ -1335,7 +1353,9 @@ class StorageSession {
 		]);
 		const con: Record<string, number> = {};
 		for (const id of ids) con[id] = rotationTabs.levelOf(id, roster, owned);
-		con[charId] = level;
+		if (change.level !== undefined) con[charId] = change.level;
+		const body = bakeLoadout($state.snapshot(doc.body), this.plannerTeam ?? undefined);
+		if (change.twin) body.notation = setTwinInNotation(body.notation, charId, change.twin);
 		const now = Date.now();
 		const copy: RotationDocument = {
 			id: newId(),
@@ -1346,7 +1366,7 @@ class StorageSession {
 			createdAt: now,
 			openedAt: now,
 			// The copy has no team in Theorycraft: what it inherited becomes its own.
-			body: { ...bakeLoadout($state.snapshot(doc.body), this.plannerTeam ?? undefined), con }
+			body: { ...body, con }
 		};
 		await put(this.#db, 'documents', copy);
 		this.#channel?.post({
@@ -1359,7 +1379,12 @@ class StorageSession {
 		await this.open(copy.id);
 		// ↻ EVERY routed copy says so (notices round, 2026-10-26; was the first
 		// only): each one puts a different document in front of the person.
-		notices.toast('info', named`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`);
+		notices.toast(
+			'info',
+			change.twin
+				? named`Saved to Theorycraft · ${profile.name} plays ${twinLabel(profile.twin)}`
+				: named`Saved to Theorycraft · it doesn't match ${profile.name}'s roster`
+		);
 	}
 
 	/** Compare → Duplicate and compare: a copy beside the original, where the
