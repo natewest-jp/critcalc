@@ -35,6 +35,23 @@
 	<h2 id="2026-10">October 2026</h2>
 
 	<div class="timeline">
+		<article class="entry">
+			<header class="entry-head">
+				<h3>The Traveler twins, and Arlecchino’s cooldown</h3>
+				<time class="entry-date" datetime="2026-10-28">October 28</time>
+			</header>
+			<p>
+				Aether and Lumine attack at different speeds in game, and the rotation planner now times
+				each twin separately, in all seven elements. <code>Cryo Traveler</code> uses your profile’s
+				twin; write <code>Cryo Aether</code> or <code>Cryo Lumine</code> to choose one, or pick the twin
+				from the Traveler’s constellation on the bench.
+			</p>
+			<p>
+				Arlecchino’s skill cooldown. Each Normal Attack hit now takes 0.8 seconds off All Is Ash’s
+				cooldown, as it does in game.
+			</p>
+		</article>
+
 		<!-- ⏭ Ships with the flip (copy pass 2026-10-27): date it the day it goes live. -->
 		<article class="entry">
 			<header class="entry-head">
