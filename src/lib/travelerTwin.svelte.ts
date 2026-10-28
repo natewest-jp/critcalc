@@ -15,6 +15,8 @@ import { siteSettings } from '$lib/stores';
 import { nextLayout } from '$lib/nextLayout';
 import { storageSession } from '$lib/storage/session.svelte';
 import type { Twin } from '$lib/storage/records';
+import { rotationTabs } from '$lib/rotationTabs.svelte';
+import { notationTwin } from '$lib/data/characterLookup';
 
 const settings = fromStore(siteSettings);
 const next = fromStore(nextLayout);
@@ -25,3 +27,23 @@ export const travelerTwin = toStore(
 			? storageSession.profile.twin
 			: settings.current.travelerVariant
 );
+
+const profileTwin = fromStore(travelerTwin);
+
+/**
+ * ⚓ The twin the Planner's rotation PLAYS (twin frames round, 2026-10-28; Nate:
+ * the portrait follows the notation): the one its notation pins with
+ * `<Element> Aether|Lumine`, else the profile's. The bench, the Planner's rail
+ * and inspector read this, so a Lumine rotation shows Lumine in any profile.
+ * Every other portrait (roster, Builder, Library) stays the account's.
+ */
+export const rotationTwin = toStore(
+	(): Twin => notationTwin(rotationTabs.notation) ?? profileTwin.current
+);
+
+/** Whether the Planner is in a REAL profile's own rotation, where a twin the
+ *  profile did not choose routes to a Theorycraft guest (`whatIfTwin`). */
+export const twinRoutes = (): boolean =>
+	!!next.current && storageSession.profile?.kind === 'real' && !storageSession.plannerGuest;
+/** Whether the Planner is showing a guest, whose names are always explicit. */
+export const plannerGuest = (): boolean => !!next.current && storageSession.plannerGuest;

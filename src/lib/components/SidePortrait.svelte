@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { travelerTwin } from '$lib/travelerTwin.svelte';
+	import type { Twin } from '$lib/storage/records';
 	/**
 	 * SidePortrait — the overhanging side portrait (lineups design §9.5a), the
 	 * Stygian Onslaught party screen's shape: a PLAIN ring on a dark disc, the
@@ -47,7 +48,8 @@
 		con,
 		ownedCon,
 		selected = false,
-		fadeRight
+		fadeRight,
+		twin
 	}: {
 		id: string | null;
 		/** The DISC's diameter in px. The art is larger (see `SIDE_ART_PER_DISC`). */
@@ -62,7 +64,11 @@
 		 *  into the ground before whatever sits beside the portrait (the bench
 		 *  card's name and loadout). Absent: no fade. */
 		fadeRight?: number;
+		/** The Traveler twin to draw. Absent: the profile's (`travelerTwin`). */
+		twin?: Twin;
 	} = $props();
+
+	const shownTwin = $derived(twin ?? $travelerTwin);
 
 	/** 🎛️ The fade's length, px. */
 	const FADE_W = 8;
@@ -81,7 +87,7 @@
 		const img = e.currentTarget as HTMLImageElement;
 		if (id && !img.dataset.triedFallback) {
 			img.dataset.triedFallback = '1';
-			img.src = getAvatarFallback(id, 'side', $travelerTwin);
+			img.src = getAvatarFallback(id, 'side', shownTwin);
 		} else {
 			img.style.display = 'none';
 		}
@@ -110,7 +116,7 @@
 			class="spt-art"
 			class:spt-art--clip={geometry.clipBelow}
 			class:spt-art--fade={fadeRight !== undefined && !geometry.clipBelow}
-			src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $travelerTwin)}
+			src={getAvatar(id, $siteSettings.useNewOutfits, 'side', shownTwin)}
 			alt={name}
 			onerror={handleError}
 		/>

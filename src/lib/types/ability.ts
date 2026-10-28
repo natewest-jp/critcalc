@@ -1409,6 +1409,8 @@ export type Summon = {
 	duration: number;
 	/** Frames (60fps) from cast start until the summon spawns. Defaults to 0. */
 	spawnsAt?: number;
+	/** Lumine's spawn frame, where it differs — see `TwinOverlay`. */
+	twin?: TwinOverlay<{ spawnsAt: number }>;
 	durationModifiers?: DurationModifier[];
 	/** Whether the summon stays in place or follows the caster. */
 	mobility?: 'stationary' | 'follows';
@@ -2374,7 +2376,24 @@ export type FrameMap = Partial<Record<ActionKey, number>> & {
  * `chargeHits[]`). Override only when the canonical tag diverges (none in
  * the curated corpus today).
  */
-export type NormalHit = { name?: string; frames: FrameMap; damageTag?: DamageTag };
+/**
+ * ⚓ THE TRAVELER'S OTHER TWIN (twin frames round, 2026-10-28). gcsim times
+ * Aether and Lumine apart (`c.gender` 0/1): their normals, charged attacks,
+ * several E/Q casts and a few hitmarks differ, in all seven elements. The base
+ * fields are AETHER's (gcsim gender 0, what the frames audit has always read)
+ * and `twin.lumine` states only where Lumine differs. `forTwin()` in
+ * `$lib/data/twin.ts` is the ONE reader: it hands the parser a character whose
+ * base fields ARE the chosen twin's, so nothing downstream knows a twin exists.
+ * ⛔ Travelers only (lint B.32). Written by `migrate-frames-shape.mjs --twin`.
+ */
+export type TwinOverlay<T> = { lumine: T };
+
+export type NormalHit = {
+	name?: string;
+	frames: FrameMap;
+	damageTag?: DamageTag;
+	twin?: TwinOverlay<{ frames: FrameMap }>;
+};
 
 /**
  * Dynamic event-triggered extension of an active duration window. Authored on
@@ -2466,6 +2485,12 @@ export type NormalAbility = AbilityCommon & {
 	input: Input[];
 	/** Per-hit timing for the normal-attack combo. Required. */
 	hits: NormalHit[];
+	/** Lumine's charged and plunge maps, where they differ — see `TwinOverlay`. */
+	twin?: TwinOverlay<{
+		chargeFrames?: FrameMap;
+		plungeFrames?: FrameMap;
+		lowPlungeFrames?: FrameMap;
+	}>;
 	/** Nightsoul points this form's actions spend from the owner's pool
 	 *  (Mavuika's Flamestrider: 1 per Normal Attack swing at its landing, 10 per
 	 *  dash at its start — gcsim `attack.go` / `dash.go`). */
@@ -3141,6 +3166,8 @@ export type EndsStance = {
 };
 
 type SkillCommonFields = AbilityCommon & {
+	/** Lumine's cast timing, where it differs — see `TwinOverlay`. */
+	twin?: TwinOverlay<{ frames?: FrameMap; application?: ElementalApplication[] }>;
 	abilityType: 'skill';
 	input: Input[];
 	/** Frame-accurate cast timing (60fps). Required for E/Q. */
@@ -3382,6 +3409,8 @@ export type SkillAbility =
 
 /** Fields shared by all burst behavior variants. */
 type BurstCommonFields = AbilityCommon & {
+	/** Lumine's cast timing, where it differs — see `TwinOverlay`. */
+	twin?: TwinOverlay<{ frames?: FrameMap; application?: ElementalApplication[] }>;
 	abilityType: 'burst';
 	input: Input[];
 	frames: FrameMap;
@@ -3599,6 +3628,8 @@ export type HeldCast = {
 
 export type AbilityVariant = {
 	label: string;
+	/** Lumine's timing for this form, where it differs — see `TwinOverlay`. */
+	twin?: TwinOverlay<{ frames?: FrameMap; application?: ElementalApplication[] }>;
 	/** This form is a hold of the player's length — see `HeldCast`. */
 	held?: HeldCast;
 	/** REPLACES the base's `nightsoul` — see `NightsoulCastSpec`. */

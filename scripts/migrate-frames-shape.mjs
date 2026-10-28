@@ -52,6 +52,9 @@ import {
 	dumperDriverEntry,
 	GCSIM_ILLEGAL_F,
 	gcsimKeyFor,
+	withTwinEntries,
+	enterTwin,
+	leaveTwin,
 	loadDrivers,
 	preserveFrameMap,
 	toFrameMap,
@@ -178,6 +181,8 @@ async function main() {
 		raw: readFileSync(join(CHAR_DIR, n), 'utf8')
 	}));
 	for (const c of chars) c.data = JSON.parse(c.raw);
+	// ⚓ Lumine is written by the same pass as everyone else (twin frames round).
+	const entries = withTwinEntries(chars);
 
 	const driverTable = {};
 	for (const c of chars) {
@@ -205,8 +210,9 @@ async function main() {
 	};
 	const held = [];
 
-	for (const c of chars) {
-		if (only && c.data.id !== only) continue;
+	for (const c of entries) {
+		if (only && (c.twinOf ?? c).data.id !== only) continue;
+		enterTwin(c);
 		const gk = gcsimKeyFor(c.data.id);
 		const cd = dump.characters[gk];
 		const byKey = new Map((cd?.abilities ?? []).map((a) => [a.key, a]));
@@ -236,10 +242,12 @@ async function main() {
 				m.set(withWalk(m.frames, want));
 				stats.migrated++;
 			}
-			const next = await format(surgicalRewrite(c.raw, JSON.parse(c.raw), c.data), prettierOptions);
-			if (next !== c.raw) {
+			const w = leaveTwin(c);
+			if (!w) continue;
+			const next = await format(surgicalRewrite(w.raw, JSON.parse(w.raw), w.data), prettierOptions);
+			if (next !== w.raw) {
 				stats.files++;
-				if (write) writeFileSync(c.file, next);
+				if (write) writeFileSync(w.file, next);
 			}
 			continue;
 		}
@@ -360,10 +368,12 @@ async function main() {
 
 		// ⚓ Surgical: only what this run changed is rewritten (`lib/json-edit.mjs`).
 		// ⛔ Never `format(JSON.stringify(c.data))` — it reflows the whole hand-formatted file.
-		const next = await format(surgicalRewrite(c.raw, JSON.parse(c.raw), c.data), prettierOptions);
-		if (next !== c.raw) {
+		const w = leaveTwin(c);
+		if (!w) continue;
+		const next = await format(surgicalRewrite(w.raw, JSON.parse(w.raw), w.data), prettierOptions);
+		if (next !== w.raw) {
 			stats.files++;
-			if (write) writeFileSync(c.file, next);
+			if (write) writeFileSync(w.file, next);
 		}
 	}
 

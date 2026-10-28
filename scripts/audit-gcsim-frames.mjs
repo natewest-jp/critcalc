@@ -39,6 +39,7 @@ import {
 	dumperDriverEntry,
 	frameMapDisagreements,
 	gcsimKeyFor,
+	withTwinViews,
 	loadDrivers,
 	prereqFor,
 	splitApplications,
@@ -407,12 +408,15 @@ function main() {
 		.map((n) => JSON.parse(readFileSync(join(CHAR_DIR, n), 'utf8')))
 		.filter((c) => !only || c.id === only)
 		.sort((a, b) => a.id.localeCompare(b.id));
+	// ⚓ Each Traveler is audited twice: as Aether (its base fields) and as its
+	// Lumine view against gcsim's `lumine…` (twin frames round, 2026-10-28).
+	const audited = withTwinViews(chars);
 
 	// ⚓ The capture sets are DERIVED from the corpus, not listed. Every gated ability
 	// contributes the set it needs; the driver table only supplies the steps for a
 	// `state` gate.
 	const driverTable = {};
-	for (const char of chars) {
+	for (const char of audited) {
 		const gk = gcsimKeyFor(char.id);
 		const entry = dumperDriverEntry(char, drivers[gk]);
 		if (entry) driverTable[gk] = entry;
@@ -423,7 +427,8 @@ function main() {
 		cons: DUMP_CONS,
 		drivers: driverTable,
 		horizon: HORIZON,
-		only: only ? gcsimKeyFor(only) : ''
+		// A Traveler's view is a second gcsim key, so its run is the whole roster.
+		only: only && !only.startsWith('traveler_') ? gcsimKeyFor(only) : ''
 	});
 
 	const noSource = [];
@@ -454,7 +459,7 @@ function main() {
 	// above zero had that counter advanced by something BEFORE the cast. Only casts
 	// and N1 qualify — any later normal had its own combo walked onto it.
 	const sharedAcross = [];
-	const charById = new Map(chars.map((c) => [gcsimKeyFor(c.id), c]));
+	const charById = new Map(audited.map((c) => [gcsimKeyFor(c.id), c]));
 	for (const [gk, cd] of Object.entries(dump.characters)) {
 		const char = charById.get(gk);
 		if (!char) continue;
@@ -471,7 +476,7 @@ function main() {
 		}
 	}
 
-	for (const char of chars) {
+	for (const char of audited) {
 		const gk = gcsimKeyFor(char.id);
 		const cd = dump.characters[gk];
 		const maps = authoredMaps(

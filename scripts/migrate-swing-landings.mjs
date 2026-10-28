@@ -42,6 +42,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { applyEdits, modify } from 'jsonc-parser';
+import { surgicalRewrite } from './lib/json-edit.mjs';
 import { format, resolveConfig } from 'prettier';
 
 import { runDumper } from './lib/gcsim-dump.mjs';
@@ -50,6 +51,10 @@ import {
 	authoredMaps,
 	dumperDriverEntry,
 	gcsimKeyFor,
+	withTwinEntries,
+	enterTwin,
+	leaveTwin,
+	withLands,
 	loadDrivers
 } from './lib/gcsim-map.mjs';
 
@@ -111,7 +116,7 @@ async function main() {
 		cons: 0,
 		drivers: driverTable,
 		horizon: HORIZON,
-		only: only ? gcsimKeyFor(only) : ''
+		only: only && !only.startsWith('traveler_') ? gcsimKeyFor(only) : ''
 	});
 
 	const prettierOptions = { ...(await resolveConfig(chars[0].file)), parser: 'json' };
@@ -127,7 +132,11 @@ async function main() {
 		ambiguous: []
 	};
 
-	for (const c of chars) {
+	// ⚓ Lumine is written by the same pass as everyone else (twin frames round).
+	// Her entry edits the OBJECT and folds back (a text edit has no overlay to aim
+	// at), on top of whatever text the Traveler's own pass produced.
+	for (const c of withTwinEntries(chars)) {
+		enterTwin(c);
 		const gk = gcsimKeyFor(c.data.id);
 		const cd = dump.characters[gk];
 		const dumped = cd ? new Map((cd.abilities ?? []).map((x) => [x.key, x])) : null;
@@ -243,6 +252,11 @@ async function main() {
 				stats.unchanged++;
 				continue;
 			}
+			if (c.twinOf) {
+				m.set(withLands(m.frames, lands));
+				stats.authored++;
+				continue;
+			}
 			const path = landsPath(c.data, m.path);
 			if (!path) {
 				stats.uncovered++;
@@ -261,11 +275,21 @@ async function main() {
 			const g = m.group.replace(/\[\d+\]/, '[]');
 			byGroup[g] = (byGroup[g] ?? 0) + 1;
 		}
-		if (c.text === c.raw) continue;
-		const next = await format(c.text, prettierOptions);
-		if (next !== c.raw) {
+		if (c.twinPending) {
+			// Hand the twin entry this pass's text, so it builds on it.
+			c.orig = c.raw;
+			c.raw = c.text;
+			c.data = JSON.parse(c.text);
+		}
+		const w = leaveTwin(c);
+		if (!w) continue;
+		const text = c.twinOf ? surgicalRewrite(w.raw, JSON.parse(w.raw), w.data) : c.text;
+		const orig = w.orig ?? w.raw;
+		if (text === orig) continue;
+		const next = await format(text, prettierOptions);
+		if (next !== orig) {
 			stats.files++;
-			if (write) writeFileSync(c.file, next);
+			if (write) writeFileSync(w.file, next);
 		}
 	}
 

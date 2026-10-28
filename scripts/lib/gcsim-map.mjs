@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 // `frameAt` here; a duplicated fallback rule is precisely the class of bug L4b exists
 // to remove.
 import { frameAt } from '../../src/lib/utils/frames.ts';
+import { forTwin } from '../../src/lib/data/twin.ts';
 
 export { frameAt };
 
@@ -42,9 +43,11 @@ export const WALK_KEY = 'W';
  *  writes a shape the resolver reads differently. */
 export const CANCEL_KEYS = new Set(['E', 'Q', 'D', 'J', 'swap']);
 
-/** ⚠️ The six Travelers are NOT in the no-gcsim-source set — they map by name, not
- *  by the underscore rule. gcsim keys them by body (`aether…`); the corpus does not
- *  model the Aether/Lumine split for frames and the two are frame-identical upstream. */
+/** ⚠️ The Travelers are NOT in the no-gcsim-source set — they map by name, not by
+ *  the underscore rule. gcsim keys them by body: the base JSON is AETHER's
+ *  (`aether…`, gcsim gender 0) and its Lumine VIEW (`TWIN_SUFFIX`) is `lumine…`.
+ *  ↻ 2026-10-28: this used to say the twins are "frame-identical upstream", which
+ *  was false — gcsim times them apart in all seven elements (twin frames round). */
 const KEY_OVERRIDES = {
 	traveler_anemo: 'aetheranemo',
 	traveler_cryo: 'aethercryo',
@@ -55,7 +58,95 @@ const KEY_OVERRIDES = {
 	traveler_pyro: 'aetherpyro'
 };
 
-export const gcsimKeyFor = (id) => KEY_OVERRIDES[id] ?? id.replace(/_/g, '');
+export const gcsimKeyFor = (id) =>
+	id.endsWith(TWIN_SUFFIX)
+		? KEY_OVERRIDES[id.slice(0, -TWIN_SUFFIX.length)].replace(/^aether/, 'lumine')
+		: (KEY_OVERRIDES[id] ?? id.replace(/_/g, ''));
+
+// ---------------------------------------------------------------------------
+// ⚓ The Traveler's twin (twin frames round, 2026-10-28)
+// ---------------------------------------------------------------------------
+//
+// A Traveler's JSON is Aether's, with Lumine's differences in `twin.lumine`
+// overlays (`TwinOverlay`, read at runtime by `$lib/data/twin.ts`). The tools see
+// Lumine as a second CHARACTER: `twinView` hands them a plain object whose base
+// fields are hers, id `traveler_x@lumine`, which every audit and writer already
+// knows how to measure and rewrite; `foldTwin` then writes back only where she
+// differs from Aether. ⚓ So no writer learns what an overlay is, and the rules
+// that time Lumine are by construction the rules that time everyone else.
+
+/** The id suffix of a Traveler's Lumine view. */
+export const TWIN_SUFFIX = '@lumine';
+
+const isTraveler = (id) => id.startsWith('traveler_') && !id.endsWith(TWIN_SUFFIX);
+
+const stripTwin = (x) => {
+	if (Array.isArray(x)) return x.forEach(stripTwin);
+	if (!x || typeof x !== 'object') return;
+	delete x.twin;
+	for (const v of Object.values(x)) stripTwin(v);
+};
+
+/** Lumine as a character of her own, or null for anyone but a Traveler. */
+export function twinView(char) {
+	if (!isTraveler(char.id)) return null;
+	const view = structuredClone(forTwin(char, 'lumine'));
+	stripTwin(view);
+	view.id = `${char.id}${TWIN_SUFFIX}`;
+	return view;
+}
+
+/** Every character, each Traveler followed by its Lumine view. */
+export const withTwinViews = (chars) => chars.flatMap((c) => [c, ...[twinView(c) ?? []].flat()]);
+
+/** Key-order-insensitive equality: a writer may rebuild a map in another order. */
+const canon = (x) =>
+	Array.isArray(x)
+		? x.map(canon)
+		: x && typeof x === 'object'
+			? Object.fromEntries(
+					Object.keys(x)
+						.sort()
+						.map((k) => [k, canon(x[k])])
+				)
+			: x;
+const same = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
+
+/** Set (or clear) one overlay field: Lumine's value where it is not Aether's. */
+function foldField(node, viewNode, key) {
+	const lum = viewNode?.[key];
+	const has = lum !== undefined && !same(node[key], lum);
+	if (has) {
+		node.twin ??= { lumine: {} };
+		node.twin.lumine[key] = lum;
+	} else if (node.twin) delete node.twin.lumine[key];
+	if (node.twin && !Object.keys(node.twin.lumine).length) delete node.twin;
+}
+
+/**
+ * Write a (possibly rewritten) Lumine view back into its Traveler as overlays.
+ * ⚠️ The sites are the `TwinOverlay` fields in `$lib/types/ability.ts`, and the
+ * two must agree; anything else a writer changed on the view is dropped.
+ */
+export function foldTwin(base, view) {
+	base.abilities.forEach((a, i) => {
+		const v = view.abilities[i];
+		if (a.abilityType === 'normal') {
+			a.hits.forEach((h, j) => foldField(h, v.hits[j], 'frames'));
+			for (const k of ['chargeFrames', 'plungeFrames', 'lowPlungeFrames']) foldField(a, v, k);
+			return;
+		}
+		if (a.abilityType !== 'skill' && a.abilityType !== 'burst') return;
+		const summons = (n, vn) =>
+			(n.summons ?? []).forEach((s, j) => foldField(s, vn.summons?.[j], 'spawnsAt'));
+		for (const k of ['frames', 'application']) foldField(a, v, k);
+		summons(a, v);
+		(a.variants ?? []).forEach((x, j) => {
+			for (const k of ['frames', 'application']) foldField(x, v.variants[j], k);
+			summons(x, v.variants[j]);
+		});
+	});
+}
 
 export const loadDrivers = () => JSON.parse(readFileSync(DRIVERS_PATH, 'utf8'));
 
@@ -589,4 +680,31 @@ export function splitApplications(apps, ability) {
 	cast.sort((a, b) => a.frame - b.frame);
 	ticks.sort((a, b) => a.frame - b.frame);
 	return { cast, ticks, regular };
+}
+
+/**
+ * ⚓ A WRITER'S twin pass. Each Traveler entry `{file, raw, data}` is followed by a
+ * twin entry, which `enterTwin` fills with the Lumine view of the Traveler AS IT
+ * NOW STANDS — after its Aether pass — so a map the writer leaves alone reads as
+ * Aether's and folds to no overlay. `leaveTwin` folds the view back and returns
+ * the entry to write, or null for a Traveler whose twin entry will write it.
+ */
+export const withTwinEntries = (entries) =>
+	entries.flatMap((c) => {
+		if (!isTraveler(c.data.id)) return [c];
+		c.twinPending = true;
+		return [c, { file: c.file, twinOf: c }];
+	});
+
+export function enterTwin(c) {
+	if (!c.twinOf) return;
+	c.raw = c.twinOf.raw;
+	c.data = twinView(c.twinOf.data);
+}
+
+export function leaveTwin(c) {
+	if (c.twinPending) return null;
+	if (!c.twinOf) return c;
+	foldTwin(c.twinOf.data, c.data);
+	return c.twinOf;
 }

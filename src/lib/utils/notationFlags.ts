@@ -42,7 +42,8 @@
 
 import { tokenizeNotation, tokenizeActionRun, type Token } from './tokenizer';
 import { TEAM_SIZE } from './notationEdit';
-import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+import { getIndexEntryByDisplayName, twinLabel, twinOfName } from '$lib/data/characterLookup';
+import type { Twin } from '$lib/storage/records';
 
 export type NotationFlagReason =
 	/** The leading name of a segment resolves to nobody — the segment is skipped. */
@@ -53,7 +54,10 @@ export type NotationFlagReason =
 	/** A cast token the segment's character cannot perform — timed by a stand-in. */
 	| 'approximate-cast'
 	/** A fifth (or later) distinct character: parsed, but with no slot to draw in. */
-	| 'no-slot';
+	| 'no-slot'
+	/** A real profile's rotation names the twin the profile did not choose: timed
+	 *  as written, which is not the account's Traveler (twin frames round). */
+	| 'other-twin';
 
 export type NotationFlag = {
 	/** Start offset in the notation string (inclusive). */
@@ -150,7 +154,10 @@ export function flagNotation(
 	/** The party's seats AFTER the seat rule (§8.1). Given, a name is flagged
 	 *  only if it found no seat (all four awake); absent, the old count — the
 	 *  fifth distinct name. */
-	seats?: readonly (string | null)[]
+	seats?: readonly (string | null)[],
+	/** The profile's twin, given only where the other one is a what-if (a real
+	 *  profile's own rotation); a name pinning the other twin is then flagged. */
+	profileTwin?: Twin | null
 ): NotationFlag[] {
 	const flags: NotationFlag[] = [];
 	const tokens = tokenizeNotation(notation);
@@ -178,6 +185,16 @@ export function flagNotation(
 			// The segment never parses, so its casts approximate nothing.
 			continue;
 		}
+
+		const twin = twinOfName(head.text);
+		if (profileTwin && twin && twin !== profileTwin)
+			flags.push({
+				from: head.from,
+				to: head.to,
+				text: head.text,
+				reason: 'other-twin',
+				message: `Your profile’s Traveler is ${twinLabel(profileTwin)}. This rotation is timed as ${twinLabel(twin)}.`
+			});
 
 		if (!distinct.includes(entry.id)) {
 			distinct.push(entry.id);

@@ -30,7 +30,13 @@
  */
 
 import { tokenizeNotation } from './tokenizer';
-import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+import {
+	getCharacterIndexEntry,
+	getIndexEntryByDisplayName,
+	travelerName,
+	twinOfName
+} from '$lib/data/characterLookup';
+import type { Twin } from '$lib/storage/records';
 
 /** How many characters a team holds. The notation may name more — they parse,
  *  and the linter says they have nowhere to sit (notationFlags).
@@ -276,6 +282,25 @@ export function renameCharacterInNotation(
 	const name = displayNameFor(toCharId);
 	let out = notation;
 	// Descending, so an earlier splice can't shift a later span's offsets.
+	for (const seg of notationSegments(notation).reverse()) {
+		if (seg.charId !== charId) continue;
+		// One Traveler swapped for another keeps the twin its name pinned.
+		const twin = toCharId.startsWith('traveler_')
+			? twinOfName(notation.slice(seg.nameFrom, seg.nameTo))
+			: null;
+		out = out.slice(0, seg.nameFrom) + travelerName(name, twin) + out.slice(seg.nameTo);
+	}
+	return out;
+}
+
+/**
+ * Name the Traveler `charId` as `twin` in every segment it leads (twin frames
+ * round, 2026-10-28): `Anemo Lumine`, or the bare `Anemo Traveler` for null,
+ * which plays the profile's twin. Actions untouched.
+ */
+export function setTwinInNotation(notation: string, charId: string, twin: Twin | null): string {
+	const name = travelerName(displayNameFor(charId), twin);
+	let out = notation;
 	for (const seg of notationSegments(notation).reverse()) {
 		if (seg.charId !== charId) continue;
 		out = out.slice(0, seg.nameFrom) + name + out.slice(seg.nameTo);

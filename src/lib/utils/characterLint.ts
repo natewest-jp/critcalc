@@ -528,6 +528,64 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 	if (!hasSkillOrBurst)
 		push('warn', 'missing-cast-ability', 'character has no skill or burst ability');
 
+	// (B.21) A TWIN OVERLAY (twin frames round, 2026-10-28): only a Traveler has
+	// a second twin, and an overlay may only restate the fields `forTwin()` reads —
+	// any other key would be silently ignored. ⚓ The overlaid VALUES are linted
+	// by every other rule through the Lumine resolution (`characterLint.test.ts`).
+	{
+		const OVERLAY_KEYS: Record<string, readonly string[]> = {
+			hit: ['frames'],
+			normal: ['chargeFrames', 'plungeFrames', 'lowPlungeFrames'],
+			cast: ['frames', 'application'],
+			variant: ['frames', 'application'],
+			summon: ['spawnsAt']
+		};
+		const traveler = c.id.startsWith('traveler_');
+		const check = (host: unknown, site: string, abilityId: string) => {
+			const twin = (host as { twin?: unknown }).twin;
+			if (twin === undefined) return;
+			if (!traveler)
+				return push(
+					'strict',
+					'twin-overlay',
+					`${site} carries a twin overlay; only a Traveler has a twin`,
+					abilityId
+				);
+			const keys = Object.keys(twin as object);
+			const lumine = (twin as { lumine?: object }).lumine;
+			const bad = Object.keys(lumine ?? {}).filter((k) => !OVERLAY_KEYS[site].includes(k));
+			if (keys.length !== 1 || keys[0] !== 'lumine' || !lumine || !Object.keys(lumine).length)
+				push(
+					'strict',
+					'twin-overlay',
+					`${site} twin must be { lumine: {…} } and not empty`,
+					abilityId
+				);
+			if (bad.length)
+				push(
+					'strict',
+					'twin-overlay',
+					`${site} twin overlays ${bad.join(', ')}; it may only restate ${OVERLAY_KEYS[site].join(', ')}`,
+					abilityId
+				);
+		};
+		for (const a of c.abilities) {
+			if (a.abilityType === 'normal') {
+				check(a, 'normal', a.id);
+				(a.hits ?? []).forEach((h) => check(h, 'hit', a.id));
+			} else if (a.abilityType === 'skill' || a.abilityType === 'burst') {
+				check(a, 'cast', a.id);
+				for (const s of a.summons ?? []) check(s, 'summon', a.id);
+				for (const v of a.variants ?? []) {
+					check(v, 'variant', a.id);
+					for (const s of v.summons ?? []) check(s, 'summon', a.id);
+				}
+			} else if ((a as { twin?: unknown }).twin !== undefined) {
+				push('strict', 'twin-overlay', `a ${a.abilityType} carries a twin overlay`, a.id);
+			}
+		}
+	}
+
 	// (D.50) A CHANNELLED Charged Attack and the droplets it absorbs
 	// (`ChargeChannel`, Neuvillette's Equitable Judgment, 2026-10-17): every
 	// number a non-negative integer of FRAMES, the charge-up shrinking with each

@@ -75,7 +75,9 @@
 	import type { LoadoutSource } from './LoadoutPanel.svelte';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { awakeIds } from '$lib/utils/notationEdit';
+	import { awakeIds, setTwinInNotation } from '$lib/utils/notationEdit';
+	import { plannerGuest, rotationTwin, travelerTwin, twinRoutes } from '$lib/travelerTwin.svelte';
+	import type { Twin } from '$lib/storage/records';
 	import { nextLayout } from '$lib/nextLayout';
 	import { plannerView } from '$lib/plannerView.svelte';
 	import type SaveTeamButtonT from './SaveTeamButton.svelte';
@@ -193,6 +195,26 @@
 			return;
 		}
 		rt.setTabCon(id, level);
+	}
+	/**
+	 * ⚓ The Traveler's TWIN (twin frames round, ⚓ Nate 2026-10-28). The
+	 * profile's own twin is the bare name; the other twin in a real profile is a
+	 * what-if, routed like a level to a Theorycraft guest; anywhere else the
+	 * notation names it. A guest names both explicitly: a bare name there would
+	 * read whichever profile it is next opened in.
+	 */
+	function setTwin(id: string, twin: Twin): void {
+		if (twin === $rotationTwin) return;
+		if (twinRoutes() && twin !== $travelerTwin) {
+			void import('$lib/storage/session.svelte').then((m) => m.storageSession.whatIfTwin(id, twin));
+			return;
+		}
+		if (!rt.canEdit()) return;
+		rt.notation = setTwinInNotation(
+			rt.notation,
+			id,
+			twin === $travelerTwin && !plannerGuest() ? null : twin
+		);
 	}
 	/** What this rotation's own choices sit on: its team's (under the switch)
 	 *  or the roster default. */
@@ -342,6 +364,9 @@
 					loadoutEntry={char ? effectiveLoadout(char.id) : {}}
 					loadoutSource={char ? loadoutSourceOf(char.id) : undefined}
 					onSetCon={(level) => char && setCon(char.id, level)}
+					onSetTwin={char?.id.startsWith('traveler_')
+						? (twin) => setTwin(char.id, twin)
+						: undefined}
 					onSetArtifact={(artId) => char && setOwnLoadout(char.id, { artifactSetId: artId })}
 					onSetWeapon={(wid, ref) =>
 						char && setOwnLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}

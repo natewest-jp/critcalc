@@ -6,7 +6,13 @@
 	import type { NotationEditor } from '$lib/utils/notationEditor';
 	import { emptySeating, type Seating } from '$lib/utils/notationEdit';
 	import RotationCoverage from './RotationCoverage.svelte';
-	import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+	import {
+		getCharacterIndexEntry,
+		getIndexEntryByDisplayName,
+		notationTwin,
+		twinOfName
+	} from '$lib/data/characterLookup';
+	import { forTwin } from '$lib/data/twin';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import { constellations, ownership, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
@@ -449,7 +455,15 @@
 	// Derived: character data per slot
 	// ---------------------------------------------------------------------------
 
-	let slotCharacters = $derived(characterSlots.map((id) => getLoadedCharacter(id)));
+	// ⚓ The twin this rotation plays (twin frames round, 2026-10-28): the one its
+	// notation pins (`Anemo Lumine`), else the profile's. A Traveler's frames are
+	// resolved to it before the parser sees them (`forTwin`), so the parse never
+	// learns a twin exists.
+	let rotationTwin = $derived(notationTwin(notation) ?? $travelerTwin);
+
+	let slotCharacters = $derived(
+		characterSlots.map((id) => forTwin(getLoadedCharacter(id), rotationTwin))
+	);
 
 	// ---------------------------------------------------------------------------
 	// Derived: rotation (filtered to only characters present in slots)
@@ -461,7 +475,7 @@
 	// for the beat until it resolves (the parser is null-tolerant by design).
 	function resolveCharacter(name: string) {
 		const entry = getIndexEntryByDisplayName(name);
-		return entry ? getLoadedCharacter(entry.id) : null;
+		return entry ? forTwin(getLoadedCharacter(entry.id), twinOfName(name) ?? rotationTwin) : null;
 	}
 
 	// Portrait-column display name: travelers read as just "Traveler" — the
@@ -660,7 +674,8 @@
 			annotatedTracks,
 			rotation.windows,
 			effectiveCon,
-			getLoadedCharacter
+			// The twin the parse ran, or a secondary summon's spawn key misses.
+			(id) => forTwin(getLoadedCharacter(id), rotationTwin)
 		);
 		// A linear scan, not a lookup map: characterId ↔ slotIdx is a bijection
 		// over the tracks (see computeSummonSubrows' TRAP note), the array is a
@@ -1551,7 +1566,7 @@
 				real ? slotId : 'blank',
 				$siteSettings.useNewOutfits,
 				'side',
-				$travelerTwin
+				rotationTwin
 			),
 			conLevel: con,
 			conShort: real && owned !== undefined && (owned === null || owned < con),

@@ -14,6 +14,7 @@ import { describe, it, expect } from 'vitest';
 import { isCurated, lintCharacter, type LintIssue } from './characterLint';
 import type { CharacterData } from '$lib/types/character';
 import { evalTriggerFilter, getDefaultDamageTag } from '$lib/types/ability';
+import { forTwin, hasTwinOverlays } from '$lib/data/twin';
 
 const modules = import.meta.glob('../data/characters/*.json', { eager: true });
 const all = Object.values(modules)
@@ -35,6 +36,16 @@ describe('character lint', () => {
 	const allIssues: LintIssue[] = [];
 	for (const c of curated) {
 		allIssues.push(...lintCharacter(c));
+		// ⚓ Lumine is linted as a character of her own: every rule reads her
+		// overlaid values exactly as the parser will (twin frames round).
+		if (hasTwinOverlays(c))
+			allIssues.push(
+				...lintCharacter(forTwin(c, 'lumine')).map((i) => ({
+					...i,
+					charId: c.id,
+					message: `(Lumine) ${i.message}`
+				}))
+			);
 	}
 
 	const byChar = new Map<string, LintIssue[]>();
@@ -2300,5 +2311,36 @@ describe('unknown-value description length (E.27)', () => {
 			offenders.map((i) => `${i.charId}: ${i.message}`),
 			'unknown-value descriptions render verbatim where a number goes'
 		).toEqual([]);
+	});
+});
+
+// (B.21) Twin overlays — the Traveler's Lumine (twin frames round, 2026-10-28).
+describe('twin overlay (B.21)', () => {
+	const traveler = all.find((c) => c.id === 'traveler_anemo')!;
+	const withSkillTwin = (c: CharacterData, twin: unknown): CharacterData => ({
+		...c,
+		abilities: c.abilities.map((a) =>
+			a.abilityType === 'skill' ? { ...a, twin } : a
+		) as typeof c.abilities
+	});
+	const twinIssues = (c: CharacterData) =>
+		lintCharacter(c).filter((i) => i.check === 'twin-overlay');
+
+	it('passes the shipped Traveler overlays', () => {
+		expect(twinIssues(traveler)).toEqual([]);
+	});
+
+	it('refuses an overlay on anyone but a Traveler', () => {
+		const other = curated.find((c) => !c.id.startsWith('traveler_'))!;
+		expect(twinIssues(withSkillTwin(other, { lumine: { frames: { anim: 30 } } }))).toHaveLength(1);
+	});
+
+	it('refuses a field forTwin() does not read', () => {
+		const bad = withSkillTwin(traveler, { lumine: { cooldown: 4 } });
+		expect(
+			twinIssues(bad)
+				.map((i) => i.message)
+				.join()
+		).toMatch(/cooldown/);
 	});
 });
