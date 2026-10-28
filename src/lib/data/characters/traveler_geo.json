@@ -16,11 +16,31 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
-				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
-				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
-				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
-				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
+				{
+					"name": "N1",
+					"frames": { "anim": 28, "hit": 13, "N": 17 },
+					"twin": { "lumine": { "frames": { "anim": 32, "hit": 16, "N": 24 } } }
+				},
+				{
+					"name": "N2",
+					"frames": { "anim": 28, "hit": 13, "N": 26 },
+					"twin": { "lumine": { "frames": { "anim": 23, "hit": 10, "N": 21 } } }
+				},
+				{
+					"name": "N3",
+					"frames": { "anim": 36, "hit": 16, "N": 32 },
+					"twin": { "lumine": { "frames": { "anim": 39, "hit": 19, "N": 27 } } }
+				},
+				{
+					"name": "N4",
+					"frames": { "anim": 45, "hit": 30, "N": 39 },
+					"twin": { "lumine": { "frames": { "anim": 45, "hit": 23, "N": 38 } } }
+				},
+				{
+					"name": "N5",
+					"frames": { "anim": 69, "hit": 25 },
+					"twin": { "lumine": { "frames": { "anim": 64, "hit": 14 } } }
+				}
 			],
 			"chargeFrames": {
 				"anim": 55,
@@ -52,7 +72,20 @@
 					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"twin": {
+				"lumine": {
+					"chargeFrames": {
+						"anim": 58,
+						"lands": [14, 25],
+						"E": 34,
+						"Q": 35,
+						"D": 25,
+						"J": 25,
+						"swap": 25
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_geo__skill__starfell_sword",
@@ -106,7 +139,24 @@
 				"Frames: skillFrames[0][0]=InitAbilSlice(81), ActionDash=25 ActionJump=24 ActionSwap=67. Per E-spec swap/N/Q/D/J — Q defaults to animLen=81."
 			],
 			"description": "Calls upon the power of Geo to summon forth a giant Meteorite that will deal AoE Geo DMG to opponents in front of you upon impact.\n\nThe Meteorite remains on the field after impact and acts as Geo-imbued matter. It can also be destroyed by enemy attacks.",
-			"application": [{ "frame": 62, "element": "geo", "units": 2 }]
+			"application": [
+				{
+					"frame": 62,
+					"element": "geo",
+					"units": 2
+				}
+			],
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 80,
+						"N": 79,
+						"D": 23,
+						"J": 24,
+						"swap": 65
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_geo__burst__wake_of_earth",
@@ -152,7 +202,18 @@
 				{ "frame": 81, "element": "geo", "units": 2 },
 				{ "frame": 96, "element": "geo", "units": 2 },
 				{ "frame": 111, "element": "geo", "units": 2 }
-			]
+			],
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 64,
+						"N": 62,
+						"D": 42,
+						"J": 42,
+						"swap": 49
+					}
+				}
+			}
 		}
 	],
 	"passives": [

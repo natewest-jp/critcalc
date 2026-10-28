@@ -22,6 +22,15 @@
 						"anim": 28,
 						"hit": 13,
 						"N": 17
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 32,
+								"hit": 16,
+								"N": 24
+							}
+						}
 					}
 				},
 				{
@@ -30,6 +39,15 @@
 						"anim": 28,
 						"hit": 13,
 						"N": 26
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 23,
+								"hit": 10,
+								"N": 21
+							}
+						}
 					}
 				},
 				{
@@ -38,6 +56,15 @@
 						"anim": 36,
 						"hit": 16,
 						"N": 32
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 39,
+								"hit": 19,
+								"N": 27
+							}
+						}
 					}
 				},
 				{
@@ -46,6 +73,15 @@
 						"anim": 45,
 						"hit": 30,
 						"N": 39
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 45,
+								"hit": 23,
+								"N": 38
+							}
+						}
 					}
 				},
 				{
@@ -53,6 +89,14 @@
 					"frames": {
 						"anim": 69,
 						"hit": 25
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 64,
+								"hit": 14
+							}
+						}
 					}
 				}
 			],
@@ -88,7 +132,20 @@
 					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"twin": {
+				"lumine": {
+					"chargeFrames": {
+						"anim": 58,
+						"lands": [14, 25],
+						"E": 34,
+						"Q": 35,
+						"D": 25,
+						"J": 25,
+						"swap": 25
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_anemo__skill__palm_vortex",
@@ -97,8 +154,8 @@
 			"abilityType": "skill",
 			"behavior": "instant",
 			"frames": {
-				"anim": 74,
-				"Q": 76,
+				"anim": 76,
+				"N": 74,
 				"D": 30,
 				"J": 31,
 				"swap": 66
@@ -201,6 +258,17 @@
 						"from": 32,
 						"every": 18,
 						"polls": 6
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 146,
+								"N": 145,
+								"D": 116,
+								"J": 116,
+								"swap": 145
+							}
+						}
 					}
 				}
 			],
@@ -223,7 +291,18 @@
 					"units": 1
 				}
 			],
-			"nothingToModel": true
+			"nothingToModel": true,
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 62,
+						"N": 61,
+						"D": 31,
+						"J": 31,
+						"swap": 60
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_anemo__burst__gust_surge",
@@ -296,11 +375,23 @@
 				"C6 note removed (capability sweep 2026-07-28): a stale note here claimed a +60% party RES buff on Swirl — not the live kit. The real C6 (Intertwined Winds, anemo resShred on burst hits) is authored on the constellation entry.",
 				"A6 rigor 2026-07-12: summon duration corrected 5.57 → 4.03 (gcsim burst.go). The renderer adds duration to spawnsAt=94 (endAt=spawnAt+duration), so 5.57s — gcsim's from-CAST status window (334f) mis-set as from-SPAWN — drew 12 tick markers for a 9-tick burst. Male status 336f − spawn 94f = 242f = 4.03s renders the correct 9 ticks (last tick 4.0s < 4.03s; strict-< needs >4.0).",
 				"[A7] The additional absorbed-element hit deals 50% of base Anemo DMG (varies by element); the tornado can absorb at any of its 9 ticks. Only the Anemo per-tick damage is shown as summon ticks.",
-				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim traveler/common/anemo/burst.go:81: the tornado ticks from f94 are the Gust Surge series."
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim traveler/common/anemo/burst.go:81: the tornado ticks from f94 are the Gust Surge series.",
+				"Twin frames round 2026-10-28 (gcsim 2350be9e8 traveler/common/anemo/burst.go:13,79-92): burstHitmarks = {96, 94} by twin sets only the amcburst STATUS length (hitmark + 240); the nine ticks are queued at a literal 94 + 30i for both twins, so spawnsAt stays 94 with no Lumine overlay. ⛔ Don't read burstHitmarks as the first tick."
 			],
 			"description": "Aether/Lumine summons a swirling tornado that pulls enemies and objects toward itself, dealing continuous Anemo DMG. The tornado may absorb the elements of Hydro, Pyro, Cryo, or Electro it comes into contact with, dealing additional Elemental DMG of that type.",
 			"application": [],
-			"nonHitting": true
+			"nonHitting": true,
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 105,
+						"E": 104,
+						"D": 90,
+						"J": 90,
+						"swap": 95
+					}
+				}
+			}
 		}
 	],
 	"passives": [

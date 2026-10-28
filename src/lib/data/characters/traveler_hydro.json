@@ -22,6 +22,15 @@
 						"anim": 28,
 						"hit": 13,
 						"N": 17
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 32,
+								"hit": 16,
+								"N": 24
+							}
+						}
 					}
 				},
 				{
@@ -30,6 +39,15 @@
 						"anim": 28,
 						"hit": 13,
 						"N": 26
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 23,
+								"hit": 10,
+								"N": 21
+							}
+						}
 					}
 				},
 				{
@@ -38,6 +56,15 @@
 						"anim": 36,
 						"hit": 16,
 						"N": 32
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 39,
+								"hit": 19,
+								"N": 27
+							}
+						}
 					}
 				},
 				{
@@ -46,6 +73,15 @@
 						"anim": 45,
 						"hit": 30,
 						"N": 39
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 45,
+								"hit": 23,
+								"N": 38
+							}
+						}
 					}
 				},
 				{
@@ -53,6 +89,14 @@
 					"frames": {
 						"anim": 69,
 						"hit": 25
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 64,
+								"hit": 14
+							}
+						}
 					}
 				}
 			],
@@ -88,7 +132,20 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"twin": {
+				"lumine": {
+					"chargeFrames": {
+						"anim": 58,
+						"lands": [14, 25],
+						"E": 34,
+						"Q": 35,
+						"D": 25,
+						"J": 25,
+						"swap": 25
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_hydro__skill__aquacrest_saber",
@@ -235,7 +292,8 @@
 				"Capability sweep 2026-07-28: deleted stale beta note 'C4 (Tide Tributary): +20% Hydro DMG on E cast' — the release C4 is 'Pouring Descent' (Aquacrest Aegis shield), authored on the constellation entry. Description refreshed to genshin-db 5.2.12 combat2 text (beta '22 Dewdrops' wording replaced).",
 				"[A7] Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — and the closing claim is now stale. The Hold variant authors a full 24-entry `application[]` running out to frame 418, so the aura lane DOES pip the Dewdrop channel — 'only the cast is shown' reads as false the moment the lane is on. What is genuinely absent is per-tick DAMAGE (never rendered for anyone) and the HP cost (the sim carries no HP state at all, tool-wide). Neither shortens a bar, moves a marker or blanks a lane the tool otherwise fills. Category: invisible-omission.",
-				"✅ `icdGate` { timer 90 } (first hit of each window) authored 2026-09-17 (cast-icd-gate round; read off gcsim's group tables via the frames audit's §4b, ⛔ never inferred from an applied count). `ICDGroupTravelerDewdrop` (90f, first only) on the hold's Dewdrop stream; the 24 entries at 15f used to apply every third. The finale (+372) is on gcsim's DEFAULT group with a counter of its own, so it applies once whatever the stream does — carried as an entry-level `noICD`, the one-hit approximation of a separate counter."
+				"✅ `icdGate` { timer 90 } (first hit of each window) authored 2026-09-17 (cast-icd-gate round; read off gcsim's group tables via the frames audit's §4b, ⛔ never inferred from an applied count). `ICDGroupTravelerDewdrop` (90f, first only) on the hold's Dewdrop stream; the 24 entries at 15f used to apply every third. The finale (+372) is on gcsim's DEFAULT group with a counter of its own, so it applies once whatever the stream does — carried as an entry-level `noICD`, the one-hit approximation of a separate counter.",
+				"Twin frames round 2026-10-28 (gcsim 2350be9e8 traveler/common/hydro/skill.go:18): skillPressHitmarks = {25, 26}, so Lumine's press lands at 26 (twin.lumine.application); the 70f entry is the same for both."
 			],
 			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG.",
 			"application": [
@@ -251,7 +309,28 @@
 			"icdGate": {
 				"timer": 90
 			},
-			"nothingToModel": true
+			"nothingToModel": true,
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 44,
+						"N": 43,
+						"D": 41,
+						"J": 40,
+						"swap": 43
+					},
+					"application": [
+						{
+							"frame": 26,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 70
+						}
+					]
+				}
+			}
 		},
 		{
 			"id": "traveler_hydro__burst__rising_waters",
@@ -298,7 +377,12 @@
 							"stat": "atk",
 							"element": "hydro"
 						}
-					]
+					],
+					"twin": {
+						"lumine": {
+							"spawnsAt": 36
+						}
+					}
 				}
 			],
 			"effects": [],
@@ -310,7 +394,8 @@
 				"Bubble follows a fixed forward path from cast position — modeled as stationary (movement isn't visualized in our planner).",
 				"[A7] C2 was authored as a +3s duration modifier on the burst's Rising Waters Bubble summon (4s -> 7s). Original caveat framed the -30% movement-speed reduction as yielding 14 ticks vs 8 by slowing drift to 0.7s/tile; per curator notes the 14-tick count actually follows from the +3s duration (7s / 0.5s tick interval), which is modeled, so the movement-speed omission does not change tick count.",
 				"Capability sweep 2026-07-28: C2 renamed from stale beta 'Liquid Drift' to release 'Trickling Purity' (genshin-db 5.2.12) — durationModifier source label updated. Description refreshed to genshin-db combat3 text.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Sentence one is a positional/movement mechanic — the bubble's drift speed has no representation on a time axis and the summon is deliberately authored `stationary` because movement is not visualised anywhere. Sentence two describes WORKING behavior: the C2 +3s is applied as a durationModifier and the 0.5s ticks run over the widened window, which is exactly what the lane draws. Nothing wrong, nothing missing. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Sentence one is a positional/movement mechanic — the bubble's drift speed has no representation on a time axis and the summon is deliberately authored `stationary` because movement is not visualised anywhere. Sentence two describes WORKING behavior: the C2 +3s is applied as a durationModifier and the 0.5s ticks run over the widened window, which is exactly what the lane draws. Nothing wrong, nothing missing. Category: invisible-omission.",
+				"Twin frames round 2026-10-28 (gcsim 2350be9e8 traveler/common/hydro/burst.go:13): burstFirstHitmark = {34, 36}, so Lumine's bubble lands and spawns at 36 (twin.lumine on the cast and the summon). consumeEnergyFrame {4, 6} differs too; energy timing is not drawn."
 			],
 			"description": "Unleashes a slow-moving floating bubble that deals continuous Hydro DMG to nearby opponents.",
 			"application": [
@@ -319,7 +404,26 @@
 					"element": "hydro",
 					"units": 1
 				}
-			]
+			],
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 78,
+						"N": 77,
+						"E": 77,
+						"D": 77,
+						"J": 77,
+						"swap": 76
+					},
+					"application": [
+						{
+							"frame": 36,
+							"element": "hydro",
+							"units": 1
+						}
+					]
+				}
+			}
 		}
 	],
 	"passives": [

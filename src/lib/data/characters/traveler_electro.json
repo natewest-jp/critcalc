@@ -16,11 +16,31 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
-				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
-				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
-				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
-				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
+				{
+					"name": "N1",
+					"frames": { "anim": 28, "hit": 13, "N": 17 },
+					"twin": { "lumine": { "frames": { "anim": 32, "hit": 16, "N": 24 } } }
+				},
+				{
+					"name": "N2",
+					"frames": { "anim": 28, "hit": 13, "N": 26 },
+					"twin": { "lumine": { "frames": { "anim": 23, "hit": 10, "N": 21 } } }
+				},
+				{
+					"name": "N3",
+					"frames": { "anim": 36, "hit": 16, "N": 32 },
+					"twin": { "lumine": { "frames": { "anim": 39, "hit": 19, "N": 27 } } }
+				},
+				{
+					"name": "N4",
+					"frames": { "anim": 45, "hit": 30, "N": 39 },
+					"twin": { "lumine": { "frames": { "anim": 45, "hit": 23, "N": 38 } } }
+				},
+				{
+					"name": "N5",
+					"frames": { "anim": 69, "hit": 25 },
+					"twin": { "lumine": { "frames": { "anim": 64, "hit": 14 } } }
+				}
 			],
 			"chargeFrames": {
 				"anim": 55,
@@ -51,7 +71,20 @@
 					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"twin": {
+				"lumine": {
+					"chargeFrames": {
+						"anim": 58,
+						"lands": [14, 25],
+						"E": 34,
+						"Q": 35,
+						"D": 25,
+						"J": 25,
+						"swap": 25
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_electro__skill__lightning_blade",
@@ -80,7 +113,23 @@
 				"Frames: skillFrames[0]=InitAbilSlice(57), ActionBurst=56 ActionDash=42 ActionJump=42 ActionSwap=56. Per E-spec swap/N/Q/D/J."
 			],
 			"description": "Brandishing the discarded sword, the Traveler hurls it forward with a flash of lightning, dealing Electro DMG to opponents in its path. The sword will then split into 3 Abundance Amulets, granting Energy to the character that touches it.",
-			"application": [{ "frame": 21, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 21,
+					"element": "electro",
+					"units": 1
+				}
+			],
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 57,
+						"D": 42,
+						"J": 42,
+						"swap": 55
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_electro__burst__bellowing_thunder",
@@ -139,7 +188,23 @@
 				"A6 rigor 2026-07-12: Falling Thunder scaling corrected 32.8 -> 59.04 (talent lvl 10; gcsim stats.go burstTick[9]=0.5904 — prior 32.8 was the lvl-1 figure burstTick[0], and no talent sidecar exists so the 2026-07-12 normalization sweep skipped this char). Also fixed stale note constants: Falling Thunder 32.8%->59.04%, and burstRegen[lvl=10] 4->1 (gcsim burstRegen[9]=1; the 4 confused it with skillRegen)."
 			],
 			"description": "Releases the powers of lightning, dealing Electro DMG to surrounding opponents and creating a Lightning Shroud field around the Traveler. The Traveler's Normal and Charged Attacks while within this field will trigger Falling Thunder, which will damage enemies.",
-			"application": [{ "frame": 37, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 37,
+					"element": "electro",
+					"units": 1
+				}
+			],
+			"twin": {
+				"lumine": {
+					"frames": {
+						"anim": 62,
+						"N": 61,
+						"J": 61,
+						"swap": 61
+					}
+				}
+			}
 		}
 	],
 	"passives": [

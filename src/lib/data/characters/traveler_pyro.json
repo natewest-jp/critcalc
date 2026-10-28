@@ -22,6 +22,15 @@
 						"anim": 28,
 						"hit": 13,
 						"N": 17
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 32,
+								"hit": 16,
+								"N": 24
+							}
+						}
 					}
 				},
 				{
@@ -30,6 +39,15 @@
 						"anim": 28,
 						"hit": 13,
 						"N": 26
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 23,
+								"hit": 10,
+								"N": 21
+							}
+						}
 					}
 				},
 				{
@@ -38,6 +56,15 @@
 						"anim": 36,
 						"hit": 16,
 						"N": 32
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 39,
+								"hit": 19,
+								"N": 27
+							}
+						}
 					}
 				},
 				{
@@ -46,6 +73,15 @@
 						"anim": 45,
 						"hit": 30,
 						"N": 39
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 45,
+								"hit": 23,
+								"N": 38
+							}
+						}
 					}
 				},
 				{
@@ -53,6 +89,14 @@
 					"frames": {
 						"anim": 69,
 						"hit": 25
+					},
+					"twin": {
+						"lumine": {
+							"frames": {
+								"anim": 64,
+								"hit": 14
+							}
+						}
 					}
 				}
 			],
@@ -85,7 +129,20 @@
 					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"twin": {
+				"lumine": {
+					"chargeFrames": {
+						"anim": 58,
+						"lands": [14, 25],
+						"E": 34,
+						"Q": 35,
+						"D": 25,
+						"J": 25,
+						"swap": 25
+					}
+				}
+			}
 		},
 		{
 			"id": "traveler_pyro__skill__flowfire_blade",
@@ -112,6 +169,7 @@
 					"frames": {
 						"anim": 81,
 						"N": 61,
+						"E": 77,
 						"Q": 59,
 						"D": 60,
 						"J": 61,

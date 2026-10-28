@@ -42,6 +42,9 @@ import {
 	CHAR_DIR,
 	dumperDriverEntry,
 	gcsimKeyFor,
+	withTwinEntries,
+	enterTwin,
+	leaveTwin,
 	loadDrivers,
 	prereqFor,
 	splitApplications,
@@ -82,8 +85,10 @@ async function main() {
 	const uncovered = [];
 	const applyNothing = [];
 
-	for (const c of chars) {
-		if (only && c.data.id !== only) continue;
+	// ⚓ Lumine is written by the same pass as everyone else (twin frames round).
+	for (const c of withTwinEntries(chars)) {
+		if (only && (c.twinOf ?? c).data.id !== only) continue;
+		enterTwin(c);
 		const gk = gcsimKeyFor(c.data.id);
 		const byKey = new Map((dump.characters[gk]?.abilities ?? []).map((a) => [a.key, a]));
 
@@ -143,10 +148,12 @@ async function main() {
 
 		// ⚓ Surgical: only what this run changed is rewritten (`lib/json-edit.mjs`).
 		// ⛔ Never `format(JSON.stringify(c.data))` — it reflows the whole hand-formatted file.
-		const next = await format(surgicalRewrite(c.raw, JSON.parse(c.raw), c.data), prettierOptions);
-		if (next !== c.raw) {
+		const w = leaveTwin(c);
+		if (!w) continue;
+		const next = await format(surgicalRewrite(w.raw, JSON.parse(w.raw), w.data), prettierOptions);
+		if (next !== w.raw) {
 			stats.files++;
-			if (write) writeFileSync(c.file, next);
+			if (write) writeFileSync(w.file, next);
 		}
 	}
 
