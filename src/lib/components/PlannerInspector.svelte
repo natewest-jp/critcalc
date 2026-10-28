@@ -7,7 +7,9 @@
 	import { openCoverage } from '$lib/coverage/openCoverage';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import type { PlannerSample } from '$lib/data/plannerSamples';
-	import { siteSettings } from '$lib/stores';
+	import { constellations, ownership, siteSettings } from '$lib/stores';
+	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
+	import { storageSession } from '$lib/storage/session.svelte';
 	import type { SlotCaveatEntry } from '$lib/timeline/slotCaveats';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { getAvatar, hasAvatar } from '$lib/utils/getAvatar';
@@ -116,7 +118,18 @@
 				<Mark name="close" size={12} /> Remove from team
 			</button>
 		{/if}
-		<CharacterDetails id={charId} conMode="mine" defaultBuild={false} compact>
+		<!-- ⚓ The level the TIMELINE draws, not the roster's (Nate 2026-10-27):
+		     a what-if on the bench card can draw C6 while the roster holds C2.
+		     Theorycraft has no roster to compare against, so no roster line. -->
+		<CharacterDetails
+			id={charId}
+			conMode="mine"
+			defaultBuild={false}
+			rotationNote={false}
+			rotationLevel={rt.levelOf(charId, $constellations, $ownership)}
+			rosterLine={!rt.rosterless && storageSession.profile?.kind !== 'theorycraft'}
+			compact
+		>
 			{#snippet afterRoster()}
 				{#if notesFor(charId).length > 0}
 					<section class="pi-section">

@@ -42,6 +42,8 @@
 		defaultBuild = true,
 		rotationNote = !defaultBuild,
 		compact = false,
+		rotationLevel,
+		rosterLine = true,
 		onLeave,
 		afterRoster
 	}: {
@@ -55,6 +57,14 @@
 		rotationNote?: boolean;
 		/** A narrow column (the inspector pane): capability rows stack. */
 		compact?: boolean;
+		/** The level the ROTATION draws this character at (the Planner's
+		 *  inspector, 2026-10-28). Given, it leads the card and the capabilities
+		 *  lock against it; the roster's own level drops to a secondary line, since
+		 *  the timeline beside it can draw a level the roster does not hold. */
+		rotationLevel?: number;
+		/** The roster line, hidden where there is no roster to speak of
+		 *  (Theorycraft). */
+		rosterLine?: boolean;
 		/** Called before a link here takes the reader elsewhere — the modal
 		 *  closes behind Edit in Roster and See coverage. */
 		onLeave?: () => void;
@@ -76,7 +86,8 @@
 	const myCon = $derived($constellations[id] ?? 0);
 	const myOwnership = $derived($ownership[id]);
 
-	const viewCon = $derived(conCapFor(conMode, myCon));
+	const viewCon = $derived(rotationLevel ?? conCapFor(conMode, myCon));
+	const leadsWithRotation = $derived(rotationLevel !== undefined && !entry?.noConstellations);
 
 	// Full provenance derivation, client-side from the loaded payload — the same
 	// brain as the build-time index, so badges and card can never disagree.
@@ -153,49 +164,67 @@
 	<!-- ⚓ READ-ONLY (lineups design §11.6 item 2): the Library's Roster tab is
 	     the one place the roster is edited, so details in both tools say what
 	     it holds and link there, arriving on this character. -->
-	<section>
-		<p class="kicker">Your roster</p>
-		<p class="dc-roster">
-			<span class="dc-roster-state"
-				>{#if myOwnership === 'owned'}<Mark name="check" size={13} /> Owned{#if !entry?.noConstellations}{` · C${myCon}`}{/if}{:else if myOwnership === 'wishlist'}<Mark
-						name="wish"
-						size={13}
-						filled="solid"
-					/> On your wishlist{:else}Not owned{/if}</span
-			>
-			<button
-				class="btn btn--sm"
-				onclick={() => {
-					// ⚠ Read the id BEFORE leaving: props are live, and a modal host
-					// clears the one this card was opened with.
-					const target = id;
-					onLeave?.();
-					library.openRoster(target);
-				}}>Edit in Roster</button
-			>
-		</p>
-		{#if rotationNote}
-			<p class="note dc-note">
-				To set this character’s constellation for this rotation only, use the selector on the
-				Planner rather than the Roster.
+	{#snippet rosterState()}{#if myOwnership === 'owned'}<Mark name="check" size={13} /> Owned{#if !entry?.noConstellations}{` · C${myCon}`}{/if}{:else if myOwnership === 'wishlist'}<Mark
+				name="wish"
+				size={13}
+				filled="solid"
+			/> On your wishlist{:else}Not owned{/if}{/snippet}
+	{#snippet editInRoster(cls: string)}
+		<button
+			class={cls}
+			onclick={() => {
+				// ⚠ Read the id BEFORE leaving: props are live, and a modal host
+				// clears the one this card was opened with.
+				const target = id;
+				onLeave?.();
+				library.openRoster(target);
+			}}>Edit in Roster</button
+		>
+	{/snippet}
+	{#if leadsWithRotation}
+		<!-- The level the timeline draws (the bench card's picker), and the
+		     roster's only as an aside: the two differ for a character you don't
+		     own, and inside a Theorycraft copy. -->
+		<section>
+			<p class="kicker">This rotation</p>
+			<p class="dc-roster"><span class="dc-roster-state">C{rotationLevel}</span></p>
+			{#if rosterLine}
+				<p class="dc-roster-aside">
+					<span class="dc-roster-state">Your roster: {@render rosterState()}</span>
+					· {@render editInRoster('link link--quiet')}
+				</p>
+			{/if}
+		</section>
+	{:else if rosterLine}
+		<section>
+			<p class="kicker">Your roster</p>
+			<p class="dc-roster">
+				<span class="dc-roster-state">{@render rosterState()}</span>
+				{@render editInRoster('btn btn--sm')}
 			</p>
-		{/if}
-		<!-- The roster's LOADOUT (Layer 1), beside its constellation (lineups
+			{#if rotationNote}
+				<p class="note dc-note">
+					To set this character’s constellation for this rotation only, use the selector on the
+					Planner rather than the Roster.
+				</p>
+			{/if}
+			<!-- The roster's LOADOUT (Layer 1), beside its constellation (lineups
 		     design §2.1): it was editable only through the bench, and the Team
 		     Builder has no bench any more. Same panel the bench opens; writes
 		     land in the roster, where a rotation's own picks fall back to it. -->
-		{#if defaultBuild}
-			<p class="kicker dc-build-kicker">Default build</p>
-			<LoadoutPanel
-				loadoutEntry={$loadout[id] ?? {}}
-				weaponType={entry?.weapon}
-				elementColor={color}
-				onSetArtifact={(setId) => loadout.setArtifact(id, setId)}
-				onSetWeapon={(weaponId, r) => loadout.setWeapon(id, weaponId, r)}
-				onSetRefinement={(r) => loadout.setWeapon(id, $loadout[id]?.weaponId, r)}
-			/>
-		{/if}
-	</section>
+			{#if defaultBuild}
+				<p class="kicker dc-build-kicker">Default build</p>
+				<LoadoutPanel
+					loadoutEntry={$loadout[id] ?? {}}
+					weaponType={entry?.weapon}
+					elementColor={color}
+					onSetArtifact={(setId) => loadout.setArtifact(id, setId)}
+					onSetWeapon={(weaponId, r) => loadout.setWeapon(id, weaponId, r)}
+					onSetRefinement={(r) => loadout.setWeapon(id, $loadout[id]?.weaponId, r)}
+				/>
+			{/if}
+		</section>
+	{/if}
 
 	{@render afterRoster?.()}
 
@@ -348,6 +377,14 @@
 		justify-content: space-between;
 		gap: 0.5rem 1rem;
 		margin: 0;
+	}
+	.dc-roster-aside {
+		margin: 0.35rem 0 0;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+	.dc-roster-aside .dc-roster-state {
+		font-size: inherit;
 	}
 	.dc-roster-state {
 		display: inline-flex;
