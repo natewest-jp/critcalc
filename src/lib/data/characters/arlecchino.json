@@ -111,7 +111,20 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s."
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "cooldownReduce",
+					"source": "character",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"amount": 0.8,
+					"reduces": "skill",
+					"procCooldown": 0.03
+				}
+			],
 			"description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina, dashing toward a nearby opponent and cleaving once.\nContinuously holding this button will cause Arlecchino to consume Stamina and engage in up to 5s of high-speed movement.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\n\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s.",
 			"_curatorNotes": [
 				"↻ MASQUE'S PYRO INFUSION AUTHORED 2026-09-17 (T1 tranche) as `infusion: pyro` on this ability — the Durin dark-commit shape. gcsim `attack.go` / `charge.go` / `plunge.go` set `ai.Element = Pyro` (with IgnoreInfusion) on every N, CA and plunge hit while `masque-of-the-red-death` is active, i.e. while her Bond of Life is ≥ 30% of Max HP. Bond of Life is still untracked, so the infusion is drawn ALWAYS ON: a played Arlecchino sits in Masque for essentially her whole field time, and before this every swing applied NOTHING (measured `Arlecchino E N1 N2 N3 C Q` → four Pyro applications, none from the six swings or the CA) — which also left her authored `chargedIcdWindow` unreachable. The over-claim is the opening swings before the first directive is absorbed; caveated. The BoL-scaled FlatDmg stays out of scope (damage magnitude). The generator's old `manual` Masque damage entry stays removed.",
@@ -121,7 +134,8 @@
 				"Charged-attack chargeFrames includes ActionCharge = 53 (CA-into-CA cancel) — omitted per recipe key-set rule for charged attacks (no C key).",
 				"High plunge variants exist in gcsim (highPlungeFrames distinct from low) but are not represented per recipe. plungeFrames sourced from gcsim's lowPlungeFrames. ActionDash not set on lowPlungeFrames — D omitted per recipe rule. ActionCharge = 69 set on lowPlungeFrames — omitted per recipe key-set rule (no C on plunges).",
 				"gcsim restricts plunge to AirborneXianyun-launched only — sim limitation, not in-game.",
-				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing.",
+				"AUTHORED 2026-10-28 (player report, feedback Sheet 2026-10-21): every Normal Attack hit in Masque of the Red Death takes 0.8s off All Is Ash. gcsim `attack.go` `bondConsumeCB`: on an enemy hit while `naBuffKey` (Masque) is active, behind a 2-frame `bondConsumeICDKey`, `ReduceActionCooldown(ActionSkill, 0.8*60)`. Only normal attacks register the callback (not `charge.go`/`plunge.go`), hence `abilityType: normal`. Masque is drawn always-on like the infusion above, so every swing reduces, including the opening ones before her first Bond of Life. N4 lands twice (`lands`), so a full combo is 7 hits = 5.6s, matching gcsim. Bond of Life and its consumption stay unmodelled; this is the cooldown half only."
 			],
 			"lowPlungeFrames": {
 				"anim": 79,
