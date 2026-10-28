@@ -2,16 +2,18 @@
 	"_note": "What the daily check-in last SAW, per source — `.claude/skills/daily-checkin/SKILL.md`. Updated at the end of every check-in; 'what's new' is a diff against this file.",
 	"gcsim": {
 		"audited": "4eda9fc5f",
-		"date": "2026-10-13",
-		"tag": "v2.49.0"
+		"seenUpstream": "2350be9e8",
+		"date": "2026-10-28",
+		"tag": "v2.49.0",
+		"note": "upstream moved only web UI (2026-10-22/23); clone not fast-forwarded, nothing under internal/characters changed"
 	},
 	"feedback": {
 		"sheetConnected": true,
-		"lastRow": 2,
-		"lastTimestamp": "20/10/2026 01:30:04"
+		"lastRow": 4,
+		"lastTimestamp": "27/10/2026 22:28:29"
 	},
 	"github": {
-		"lastSeen": "2026-10-20T00:00:00Z"
+		"lastSeen": "2026-10-28T00:00:00Z"
 	},
 	"genshinDb": "5.2.14",
 	"endgame": {
@@ -20,6 +22,6 @@
 		"pending": ["Abyss: next cycle 凌振之月 (lunaris beta id 20098) — no English name yet"]
 	},
 	"todo": {
-		"lastSwept": "fbfb6c69"
+		"lastSwept": "789b029f"
 	}
 }
