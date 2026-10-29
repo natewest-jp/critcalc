@@ -27,7 +27,7 @@ Budget: about 10,000 characters. Records: `docs/rounds/planner-slots-round.md`, 
 - `?r=` links are built by `rotationUrl.ts` at format 3 (with `slots` and `placed`). Format 2 still decodes; format 1 does not. Layers, zoom and human timing are never in the codec.
 - The editor lints (`notationFlags.ts`, fed by the eager index's `casts`) under one rule: `--ui-warning` means "we cannot take this" (an unresolvable name, a token we don't simulate), and `--ui-provisional` means "we took it, and this is a stand-in" (an approximated cast, a named character who isn't seated, the other twin).
 - `A` is a bow's aimed shot, an alias for its charged attack. `W` walks: it resets the attack string and ends the action before it at that action's walk point (`peekActionKey` → `'W'`, which `frameAt` resolves to `anim`), lasts gcsim's bare 1 frame, and draws nothing. FrameMaps carry gcsim's per-character walk overrides as a `W` key (written by `migrate-frames-shape.mjs --walk`), and the audit reads an absent `W` as a claim (`WALK_KEY`).
-- ⚠️ The notation editor is lazy-loaded. Never statically import `notationEditor` from code the planner can reach.
+- ⚠️ The notation editor is lazy-loaded. Never statically import `notationEditor` from code the planner can reach (`conventions.test.ts` checks).
 
 ## The toolbar
 

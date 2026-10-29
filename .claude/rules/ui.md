@@ -24,13 +24,13 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - On paper the axis is size, not depth: `--surface-broad` (parchment-50) for large panels and heading ribbons, `--surface` (parchment-100) for cards, buttons and layers on a broad panel. So the thing on the paper is darker than the paper, and `.ctx-light` has no raised rung. Paper inverts the ink ladder: `--muted` anchors and `--text` recedes.
 - `--accent` is gold: `--gold-400` on dark and night, `--gold-700` on light (one hue at two rungs). Gold names a block, never a word: the `.kicker` and its rule are gold, titles are not. No gold fill or glow on paper.
 - Borders are ink. The inset frame is gold (`--inset-line`, zoned by context), 1px by default and 2px on large panels (`--inset-stroke`).
-- `--debuff` is not a token: `var(--debuff)` would silently inherit. Destructive or loss ink is `--ui-danger`. `--ui-warning` means "we cannot take this"; `--ui-provisional` means "we took it, and this is a stand-in".
+- `--debuff` is not a token: `var(--debuff)` would silently inherit (`conventions.test.ts` checks). Destructive or loss ink is `--ui-danger`. `--ui-warning` means "we cannot take this"; `--ui-provisional` means "we took it, and this is a stand-in".
 - ⚠️ A `color-mix` fed by another `color-mix` crashes WebKit. Derived stops ship as resolved literals, with the recipe checked in the mirror test.
 
 ## Materials
 
 - **Night looks, glass touches, paper answers.** Charts sit on the scene; `.panel` (which is `.ctx-glass`) holds apparatus; `.panel.panel--paper` is the one readout card per instrument. It is written as a compound selector because a lone modifier ties with `.panel` and loses on source order.
-- No surface paints a slab to stand on. The `.frame` class is retired; `--frame-bg` survives only as the unpainted mix reference.
+- No surface paints a slab to stand on. The `.frame` class is retired (`conventions.test.ts` checks); `--frame-bg` survives only as the unpainted mix reference.
 - Glass is `.58` for a panel and `.45` for a well. Hovering a pane (under `@media (hover: hover)`) is `.80` plus an ink ring. A lit plate is a dim gold fill. Density separates resting from engaged.
 - The shaped scrim is scrapped.
 

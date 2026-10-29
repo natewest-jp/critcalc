@@ -12,9 +12,7 @@ Budget: about 6,000 characters. Rules in the present tense; the suite's history 
 
 - `npm run test:e2e:chrome` (about a minute) after every round. `npm run test:e2e` (Chrome and WebKit in one invocation, about 3.3 minutes) before a merge. Say in the commit when a run was skipped and which commit last ran green.
 - A green run is one "N passed" line, and the exit code covers both engines.
-- ⚠️ Always pass `--project=` for a single spec (`npx playwright test e2e/x.spec.ts --project=webkit`). A bare run includes the Firefox project and hangs.
-- ⚠️ Never pipe e2e output through `tail`.
-- ⚠️ Never run another gate beside it. It serves `build/`, so a `npm run build` or `prettier --write` in another shell rewrites the tree the browsers are loading, and the failures scatter across unrelated specs.
+- Pass `--project=` for a single spec (`npx playwright test e2e/x.spec.ts --project=webkit`), never pipe the output through `tail`, and never build or reformat while a run is serving `build/`. The guard hook refuses all three and says why.
 - Each run builds and serves its own preview, so it cannot measure a stale server.
 - The `chrome` project runs Playwright's headless shell (Chromium, not Nate's Chrome). Real-Chrome and real-Safari checks are manual.
 - Variants: `test:e2e:webkit`, `test:e2e:ui`, `test:e2e:storm` (the cross-engine nav storm, tagged `@storm` and excluded from the default run; needs `--workers=1`, because concurrent headless browsers driving the WebGL scene starve each other's `requestAnimationFrame`), `test:e2e:report`.

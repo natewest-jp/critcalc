@@ -28,7 +28,7 @@ Since 2026-10-27 the site runs the profiles layout: each profile holds its own d
 
 - No speculative abstractions. Flag a data gap as `// TODO: data gap — [field]`.
 - SSR and hydration: paint a deterministic default first, then restore client state in `onMount`.
-- Page meta comes from one map, `src/lib/seo.ts`, rendered once by `SeoHead.svelte` in the root layout. Never give a page its own `<svelte:head>` title: `<svelte:head>` does not dedupe, so the page would ship two of every tag. A new route needs an entry in `seo.ts` and in `static/sitemap.xml`.
+- Page meta comes from one map, `src/lib/seo.ts`, rendered once by `SeoHead.svelte` in the root layout. Never give a page its own `<svelte:head>` title: `<svelte:head>` does not dedupe, so the page would ship two of every tag. A new route needs an entry in `seo.ts` and in `static/sitemap.xml`. `src/lib/conventions.test.ts` checks all three.
 - Errors have two surfaces that catch different things: `src/routes/+error.svelte` handles routing and load failures (chiefly 404, rendered outside the scene), and the `<svelte:boundary>` in `(tools)/+layout.svelte` catches a throw during render. ⚠️ That boundary is the only one, so the full-screen sections under `(pages)` have none yet.
 - `/assets/*` is immutable and add-only. A redrawn asset ships under a new name (`-v2`), never as an overwrite.
 - Mechanics are verified against the local gcsim checkout at `~/Code/gcsim` (tick cadences, scalings, targeting, in `internal/characters/{id}/`). Fetch it first.
@@ -40,6 +40,8 @@ Since 2026-10-27 the site runs the profiles layout: each profile holds its own d
 Before every commit: `npx vitest run`, `npm run check` (svelte-check), `npm run lint` (Prettier and ESLint), and `npm run build`. The production build is the real gate: never verify against dev alone.
 
 End-to-end tests: `npm run test:e2e:chrome` after every round, `npm run test:e2e` (both engines) before a merge. The rules for running and writing them are in `.claude/rules/e2e.md`.
+
+The guard hook (`.claude/hooks/guard.mjs`, registered in `.claude/settings.json`) refuses a few commands and edits that have gone wrong before, and says why: a bare `playwright test`, e2e output piped through `tail`, `git merge -F -`, building or reformatting during an e2e run, hand-editing a `*.generated.ts` file, and a new `scripts/probe-*.mjs`. When one of its rules stops being true, delete the rule.
 
 **Tests.** A bug fix or a new mechanic in the engine or data layer (parser, sim, gauge, reactions, codecs, timing, notation edits, data conventions) ships with a Vitest test beside the module, named in the commit and in the report. No approval needed. The test checks behaviour, not internals, so it survives unrelated refactors. Where a right answer exists before the fix (gcsim, an in-game log, Nate's report), write the failing test first. A verified damage or buff figure becomes a regression fixture.
 
@@ -54,28 +56,16 @@ End-to-end tests: `npm run test:e2e:chrome` after every round, `npm run test:e2e
 - Conventional commit types (`feat` `fix` `refactor` `perf` `test` `docs` `chore` `revert`) plus three of ours: `tune` (hand-tuned values, not behaviour), `polish` (refining an existing surface, no new capability), and `experiment` (exploratory work, usually on an `experiment/` branch). The scope names the area: `(planner)`, `(data)`, `(builder)`, `(visualizers)`, `(sim)`, `(pages)`, `(text)` and so on.
 - The subject names the change; the body says why, including what was tried and rejected.
 - Feature branches merge with `--no-ff` and the message `Merge <branch> — <summary>`. The merge commit is the hash to cite later.
-- `git merge -F -` does not read stdin.
 
 ## Where to find things
 
-| Need                                                                               | Go to                                                                                                                                                           |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Area rules (each loads on its own when you read or edit a file its `paths:` match) | `.claude/rules/`: `data` · `schema` · `sim` · `gauge` · `timeline` · `planner` · `builder` · `visualizers` · `ui` · `tool-chrome` · `scene` · `scripts` · `e2e` |
-| Character data and its types                                                       | `src/lib/data/characters/`, `src/lib/types/`                                                                                                                    |
-| Derived capabilities                                                               | `src/lib/capabilities/deriveCapabilities.ts`                                                                                                                    |
-| Parser and sim                                                                     | `src/lib/utils/notationParser.ts` (the façade), `src/lib/sim/`                                                                                                  |
-| Timeline projections                                                               | `src/lib/timeline/`, drawn by `src/lib/components/RotationTimeline.svelte`                                                                                      |
-| Rotation links (`?r=`)                                                             | `src/lib/utils/rotationUrl.ts`                                                                                                                                  |
-| Profiles and documents (IndexedDB)                                                 | `src/lib/storage/`                                                                                                                                              |
-| Settings and small local stores (localStorage)                                     | `src/lib/stores.ts` (`siteSettings`, `constellations`, `loadout`)                                                                                               |
-| Breakpoints                                                                        | `src/lib/breakpoints.ts` (the table) and `src/lib/media.svelte.ts`                                                                                              |
-| Design tokens and global styles                                                    | `src/app.css`; judge on `/lab`, look things up on `/styleguide`                                                                                                 |
-| The scene (WebGL night sky)                                                        | `src/lib/landing/`                                                                                                                                              |
-| Audits, generators, writers                                                        | `scripts/`                                                                                                                                                      |
-| Skills (step-by-step recipes)                                                      | `.claude/skills/`: `ingest-character`, `gcsim-frames`, `verify`, `daily-checkin`                                                                                |
-| Why something is the way it is                                                     | the round records in `docs/rounds/` (their index is `docs/rounds/round-history.md`)                                                                             |
-| Current design of a surface                                                        | `docs/design/`                                                                                                                                                  |
-| What's next                                                                        | memory `project_post_launch_todo` (the one to-do list)                                                                                                          |
+- **Area rules**, each loading on its own when you read or edit a file its `paths:` match: `.claude/rules/` (`data` · `schema` · `sim` · `gauge` · `timeline` · `planner` · `builder` · `visualizers` · `ui` · `tool-chrome` · `scene` · `scripts` · `e2e`).
+- **Character data and types:** `src/lib/data/characters/`, `src/lib/types/`. **Derived capabilities:** `src/lib/capabilities/deriveCapabilities.ts`.
+- **Parser and sim:** `src/lib/utils/notationParser.ts` (the façade) and `src/lib/sim/`. **Timeline projections:** `src/lib/timeline/`, drawn by `src/lib/components/RotationTimeline.svelte`. **Rotation links (`?r=`):** `src/lib/utils/rotationUrl.ts`.
+- **Profiles and documents (IndexedDB):** `src/lib/storage/`. **Settings and small local stores (localStorage):** `src/lib/stores.ts` (`siteSettings`, `constellations`, `loadout`).
+- **Breakpoints:** `src/lib/breakpoints.ts` (the table) and `src/lib/media.svelte.ts`. **Design tokens and global styles:** `src/app.css`; judge on `/lab`, look things up on `/styleguide`. **The scene (WebGL night sky):** `src/lib/landing/`.
+- **Audits, generators, writers:** `scripts/`. **Skills (step-by-step recipes):** `.claude/skills/` (`ingest-character`, `gcsim-frames`, `verify`, `daily-checkin`).
+- **Why something is the way it is:** the round records in `docs/rounds/` (index: `docs/rounds/round-history.md`). **The current design of a surface:** `docs/design/`. **What's next:** `docs/todo.md`, the one to-do list.
 
 House words: a **round** is one unit of work with its own branch and record. **The oracle** is gcsim, run through `scripts/gcsim-dump/`. **The corpus** is the full set of character JSONs. **Night, glass and paper** are the three materials (`.claude/rules/ui.md`). **The bench** is the planner's slot cards beside the timeline.
 
