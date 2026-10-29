@@ -38,10 +38,11 @@ test.describe('lineup and slots', () => {
 		await expectLineup(page, ['Crit heatmap', 'Gauge explorer']);
 
 		const actions = page.locator('.ws-band-actions .btn');
-		await expect(actions.filter({ hasText: 'Share' }), 'share on both cells').toHaveCount(2);
-		// "Reset" became "Defaults" in the toolbar round — it sat one word away
-		// from the workspace-level "Reset workspace" with no way to tell them apart.
-		await expect(actions.filter({ hasText: 'Defaults' })).toHaveCount(2);
+		await expect(actions.filter({ hasText: 'Copy link' }), 'a link on both cells').toHaveCount(2);
+		// Each tile's Defaults lives in its own ⋯ (toolbar round, design §5.3).
+		await expect(
+			page.locator('.band-menu-trigger[aria-label="More instrument actions"]')
+		).toHaveCount(2);
 	});
 
 	test('picking an already-visible instrument swaps the two tiles', async ({ page }) => {
@@ -67,6 +68,8 @@ test.describe('lineup and slots', () => {
 		await page.reload({ waitUntil: 'networkidle' });
 		await expectLineup(page, ['Gauge explorer', 'Crit heatmap']); // the swap persisted
 
+		// Reset layout sits in the toolbar's Layout plate (design §5.3).
+		await page.locator('.band-menu-trigger', { hasText: 'Layout' }).click();
 		await page.locator('.ws-reset').click();
 		await expectLineup(page, ['Crit heatmap', 'Gauge explorer']);
 		const stored = await page.evaluate(
@@ -107,12 +110,13 @@ test.describe('deep links', () => {
 		await expect(triggers(page).first()).toHaveText(/Crit heatmap/);
 		await expect(page.locator('.cv-value-input').first(), 'shared CR applied').toHaveValue('90');
 
-		// Per-instrument "Defaults" restores that tile's own controls.
+		// Per-instrument "Defaults" (in the tile's ⋯) restores that tile's own controls.
 		await page
 			.locator('.ws-band-cell')
 			.first()
-			.locator('.ws-band-actions .btn', { hasText: 'Defaults' })
+			.locator('.band-menu-trigger[aria-label="More instrument actions"]')
 			.click();
+		await page.locator('.band-menu-item', { hasText: 'Defaults' }).click();
 		await expect(page.locator('.cv-value-input').first(), 'CR back to its default').toHaveValue(
 			'70'
 		);

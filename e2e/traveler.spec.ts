@@ -1,8 +1,8 @@
-import { test, expect, openTool, openRoster, KEYS } from './fixtures/critcalc';
+import { test, expect, openSection, openTool, openRoster } from './fixtures/critcalc';
 
 /**
  * Traveler portraits: Aether by default, Lumine on the stored setting, and the
- * settings control writes the same key both read.
+ * profile's twin control persists what both read.
  *
  * Why this is promoted and not a one-off: a missing avatar SSRs a 404 `<img>`,
  * and prerender FAILS on those — so an avatar regression breaks the build, not
@@ -49,24 +49,23 @@ test('the stored variant flips every portrait to Lumine', async ({ page, seed })
 	).toBe(true);
 });
 
-test('the settings control reflects and persists the variant', async ({ page, seed }) => {
+/**
+ * ⚓ The twin is an ACCOUNT fact (profiles design §13.5): it lives on the
+ * active profile, set on its Profile page, and a stored `travelerVariant`
+ * migrates onto it. Persisted in IndexedDB, so a reload is the proof.
+ */
+test("the profile's Traveler control reflects and persists the twin", async ({ page, seed }) => {
 	await seed({ settings: { travelerVariant: 'lumine' } });
-	await page.goto('/settings', { waitUntil: 'networkidle' });
+	await openSection(page, '/profile');
 
-	// Scoped to the Traveler segment — the consolidated SettingsPanel renders
-	// several `.sp-segment` radiogroups.
-	const seg = page.locator('.sp-segment[aria-label="Traveler variant"]');
-	// Segment buttons render UPPERCASE (control voice) — compare case-insensitively.
-	const options = (await seg.locator('.btn').allInnerTexts()).map((t) => t.toLowerCase());
-	expect(options).toEqual(expect.arrayContaining(['aether', 'lumine']));
-
-	const active = await seg.locator('.btn.is-active').innerText();
-	expect(active.toLowerCase(), 'active option reflects the stored setting').toBe('lumine');
+	const seg = page.locator('.segment[role="radiogroup"][aria-label="Traveler"]');
+	await expect(seg.locator('.btn.is-active'), 'reflects the migrated setting').toHaveText(
+		/lumine/i
+	);
 
 	await seg.locator('.btn', { hasText: 'Aether' }).click();
-	const stored = await page.evaluate(
-		(k) => JSON.parse(localStorage.getItem(k) ?? '{}').travelerVariant,
-		KEYS.settings
-	);
-	expect(stored, 'the click persisted').toBe('aether');
+	await expect(seg.locator('.btn.is-active')).toHaveText(/aether/i);
+
+	await page.reload();
+	await expect(seg.locator('.btn.is-active'), 'the click persisted').toHaveText(/aether/i);
 });

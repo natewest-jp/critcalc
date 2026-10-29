@@ -16,20 +16,17 @@ test('the bench leaves on the way to the Builder and comes back with the team', 
 }) => {
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/planner');
-	expect(await benchNames(page)).toHaveLength(4);
+	await expect.poll(() => benchNames(page)).toHaveLength(4);
 
-	await page.locator('.chrome-nav a[href*="builder"]').click();
-	await page.waitForURL(/builder/, { timeout: 10_000 });
-	await page.waitForTimeout(1400); // the pan + band travel
+	await page.locator('.nav-btn', { hasText: 'Builder' }).click();
+	await page.waitForURL(/builder/);
 	await expect(page.locator('.bench-band-mount'), 'the Builder has no bench').toBeHidden();
 
-	await page.locator('.chrome-nav a[href*="planner"]').click();
-	await page.waitForURL(/planner/, { timeout: 10_000 });
-	await page.waitForTimeout(1400);
-	const planner = await benchNames(page);
-	expect(planner, 'the planner’s team is untouched by the trip').toEqual(
-		expect.arrayContaining(NAMES)
-	);
+	await page.locator('.nav-btn', { hasText: 'Planner' }).click();
+	await page.waitForURL(/planner/);
+	await expect
+		.poll(() => benchNames(page), { message: 'the planner’s team is untouched by the trip' })
+		.toEqual(expect.arrayContaining(NAMES));
 	expect(page.url(), 'no ?team= anywhere in the trip').not.toContain('team=');
 });
 
@@ -50,13 +47,12 @@ test("the planner's ⇄ opens swap mode on its own team", async ({ page, seed })
 	await openTool(page, '/planner');
 
 	// ↻ 2026-10-22: the portrait reads the character, and ⇄ in the rail swaps.
+	// ↻ The flip: it reads it in the Planner's inspector pane.
 	await page.locator('.bench-band-mount .sp-side-hit').first().click();
-	await expect(page.locator('.dc-backdrop'), 'the portrait reads the character').toHaveCount(1);
-	await page.keyboard.press('Escape');
-	await expect(page.locator('.dc-backdrop')).toHaveCount(0);
+	await expect(page.locator('.pi-title'), 'the portrait reads the character').toHaveText('Bennett');
 
 	await page.locator(SWAP).first().click();
-	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
+	await page.locator(ERRAND).waitFor();
 	await expect(page.locator('.tb-dest')).toHaveText(/Replacing Bennett/);
 	await expect(page.locator(`${ERRAND} .bv-slot--swap`), 'the slot that was clicked').toHaveCount(
 		1
@@ -73,12 +69,11 @@ test('Cancel returns unchanged; a pick renames in the planner and returns', asyn
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/planner');
 	await page.locator(SWAP).first().click();
-	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
+	await page.locator(ERRAND).waitFor();
 
 	await page.locator(ERRAND).getByRole('button', { name: 'Cancel' }).click();
-	await page.waitForURL(/planner/, { timeout: 10_000 });
-	await page.waitForTimeout(1400); // the pan + band travel
-	expect(await benchNames(page), 'Cancel changes nothing').toEqual(NAMES);
+	await page.waitForURL(/planner/);
+	await expect.poll(() => benchNames(page), { message: 'Cancel changes nothing' }).toEqual(NAMES);
 
 	// ⚠ THIS SECOND ⇄ IS THE REGRESSION GUARD, not setup noise. It is an A→B→A
 	// trip, and Svelte REVIVES the planner rather than re-mounting it — so the
@@ -87,13 +82,13 @@ test('Cancel returns unchanged; a pick renames in the planner and returns', asyn
 	// down. Keyed registration (BenchBandState#hosts) is the fix, and this click
 	// is what proves it.
 	await page.locator(SWAP).first().click();
-	await page.locator(ERRAND).waitFor({ timeout: 10_000 });
+	await page.locator(ERRAND).waitFor();
 	await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
 
-	await page.waitForURL(/planner/, { timeout: 10_000 });
-	const names = await benchNames(page);
-	expect(names, 'Furina replaces Bennett in slot 1').toContain('Furina');
-	expect(names).not.toContain('Bennett');
+	await page.waitForURL(/planner/);
+	await expect
+		.poll(() => benchNames(page), { message: 'Furina replaces Bennett in slot 1' })
+		.toEqual(['Furina', 'Jean', 'Diona', 'Gorou']);
 });
 
 // ⚓ Escape means cancel (Nate 2026-10-15, pre-launch sweep item 7): every way
@@ -114,11 +109,10 @@ test('Escape, the ✕ or the portrait again ends the swap and returns unchanged'
 	];
 	for (const [how, leave] of exits) {
 		await page.locator(SWAP).first().click();
-		await page.locator(ERRAND).waitFor({ timeout: 10_000 });
+		await page.locator(ERRAND).waitFor();
 		await expect(page.locator('.tb-dest')).toHaveText(/Replacing Bennett/);
 		await leave();
-		await page.waitForURL(/planner/, { timeout: 10_000 });
-		await page.waitForTimeout(1400); // the pan + band travel
-		expect(await benchNames(page), `${how} changes nothing`).toEqual(NAMES);
+		await page.waitForURL(/planner/);
+		await expect.poll(() => benchNames(page), { message: `${how} changes nothing` }).toEqual(NAMES);
 	}
 });

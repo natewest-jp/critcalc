@@ -85,6 +85,15 @@ export type SeedState = {
  */
 const EXPECTED_NOISE = /404|Failed to load resource/;
 
+/**
+ * A page error that is the BROWSER's, not ours: a ResizeObserver callback
+ * that changes layout defers the remaining notifications to the next frame,
+ * and WebKit surfaces that as an uncaught error (Chrome stays quiet). Seen
+ * 2026-10-29 arriving in the Builder from the Library's New lineup. Nothing is
+ * lost, so it does not fail a test; any other page error still does.
+ */
+const BROWSER_NOISE = /^ResizeObserver loop completed with undelivered notifications\.?$/;
+
 type Fixtures = {
 	/** Seed localStorage BEFORE the first navigation. Call, then goto. */
 	seed: (state: SeedState) => Promise<void>;
@@ -92,44 +101,14 @@ type Fixtures = {
 	consoleErrors: string[];
 	/** Set true in a test that intentionally provokes an error. */
 	allowConsoleErrors: boolean;
-	/** Holds every test on the OLD layout (see the fixture). */
-	oldLayout: void;
 };
-
-/** The switch's key (`src/lib/nextLayout.ts`): absent is the new layout. */
-const NEXT_LAYOUT_KEY = 'critcalc:nextLayout';
 
 export const test = base.extend<Fixtures>({
 	allowConsoleErrors: [false, { option: true }],
 
-	/**
-	 * ⚓ THE FLIP (2026-10-27) made the new layout the default, and every spec
-	 * here was written against the old one. Storing `'0'` keeps the suite on
-	 * the old layout, where it still guards the code the two share; the new
-	 * layout is covered by vitest until a smoke spec is approved.
-	 *
-	 * ⚠ `auto: true` so it applies to every test, seeded or not. ⚠ Same rule
-	 * as `seed`: fill the key only when it is ABSENT, never overwrite. The
-	 * script re-runs on every navigation, so a test that clears storage gets
-	 * the old layout back on its next load instead of a silent switch.
-	 */
-	oldLayout: [
-		async ({ page }, use) => {
-			await page.addInitScript((key: string) => {
-				// try: the teardown's `about:blank` has no storage to touch.
-				try {
-					if (localStorage.getItem(key) === null) localStorage.setItem(key, '0');
-				} catch {
-					/* no storage on this document */
-				}
-			}, NEXT_LAYOUT_KEY);
-			await use();
-		},
-		{ auto: true }
-	],
-
 	seed: async ({ page }, use) => {
 		await use(async (state: SeedState) => {
+			awaitingNotice.add(page);
 			// Resolve the team to its notation HERE, in Node: addInitScript's body is
 			// serialized into the page and cannot reach the index.
 			const notation = state.team ? seedNotation(state.team) : '';
@@ -199,7 +178,9 @@ export const test = base.extend<Fixtures>({
 	consoleErrors: [
 		async ({ page, allowConsoleErrors }, use, testInfo) => {
 			const errors: string[] = [];
-			page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+			page.on('pageerror', (e) => {
+				if (!BROWSER_NOISE.test(e.message)) errors.push(`pageerror: ${e.message}`);
+			});
 			page.on('console', (m) => {
 				if (m.type() === 'error' && !EXPECTED_NOISE.test(m.text()))
 					errors.push(`console: ${m.text()}`);
@@ -236,8 +217,51 @@ export { expect };
  * too early reads the placeholder, not the app.
  */
 export async function openTool(page: Page, path: string) {
-	await page.goto(path, { waitUntil: 'networkidle' });
+	await page.goto(path);
 	await page.locator('.tool-main').waitFor({ state: 'visible' });
+	await answerNotice(page);
+}
+
+/**
+ * Open a menu-state SECTION (`/settings`, `/roster`, `/library/…`, a chapter)
+ * and wait for the menu state itself. ⚠ The address SSRs as the old static
+ * page and hydration swaps in the section, so typing into the first paint
+ * types into a box that is about to be replaced (a search that never
+ * filtered, 2026-10-29).
+ */
+export async function openSection(page: Page, path: string) {
+	await page.goto(path);
+	await page.locator('div.menu').waitFor({ state: 'visible' });
+	await answerNotice(page);
+}
+
+/** Pages whose seed makes the next arrival a returning visitor's. */
+const awaitingNotice = new WeakSet<Page>();
+
+/**
+ * ⚠ A SEEDED browser is a RETURNING VISITOR: the old-layout keys `seed`
+ * writes are exactly what the first load migrates into IndexedDB
+ * (`storage/boot.ts`), and that raises the once-only dialog about the new
+ * layout, every time. So `openTool`/`openSection` answer it on arrival,
+ * deterministically. Two cuts that failed (2026-10-29):
+ * - a locator handler (`addLocatorHandler`) only runs when an action is
+ *   BLOCKED, and the dialog's close then moved focus out from under a tap that
+ *   had just landed (the phone dock's editor, WebKit);
+ * - keeping that handler BESIDE this: handlers also run inside `waitFor`, so
+ *   it closed the dialog while this waited for it to appear.
+ * By its buttons, never Escape: one Escape closes the dialog AND the
+ * full-screen section under it (seen on `/profile`). A seeded test must
+ * therefore arrive through one of the two helpers, or the dialog stays up.
+ */
+async function answerNotice(page: Page) {
+	if (!awaitingNotice.has(page)) return;
+	awaitingNotice.delete(page);
+	const panel = page.locator('.fn-panel');
+	await panel.waitFor({ state: 'visible' });
+	const dots = panel.locator('.dot');
+	if (await dots.count()) await dots.last().click();
+	await panel.locator('.btn--primary').click();
+	await panel.waitFor({ state: 'detached' });
 }
 
 /** Put the Team Builder's split control on Roster and wait for the grid.

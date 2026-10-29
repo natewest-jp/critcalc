@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/critcalc';
+import { test, expect, openTool } from './fixtures/critcalc';
 
 /**
  * CROSS-ENGINE: does the tool→tool orchestration ever leave a page layer
@@ -47,12 +47,12 @@ test(
 	'a tool→tool nav storm leaves no page layer mis-set',
 	{ tag: '@storm' },
 	async ({ page, seed }, testInfo) => {
-		// A cycle is ~16s of real-time settles. Run this with `--workers=1`
+		// A cycle is ~2.5s of real-time settles. Run this with `--workers=1`
 		// (`npm run test:e2e:storm` does): three headless browsers each driving the
 		// GL scene at once starve each other's rAF, and the transitions this test
 		// measures then take far longer than their nominal durations — which looks
 		// exactly like the bug it hunts.
-		test.setTimeout(CYCLES * 30_000 + 90_000);
+		test.setTimeout(CYCLES * 10_000 + 60_000);
 
 		await seed({
 			team: {
@@ -64,26 +64,33 @@ test(
 				label: 'Seed'
 			}
 		});
-		await page.goto('/planner', { waitUntil: 'networkidle' });
+		await openTool(page, '/planner');
 		await page.waitForTimeout(1000);
 
-		const click = (tool: string) => page.click(`.chrome-nav a[href*="${tool}"]`);
+		const click = (tool: string) => page.click(`.nav-btn[href*="${tool}"]`);
 
+		// ↻ 2026-10-29 (the flip): tools change IN PLACE, a 150ms crossfade
+		// (title-bar round), so the settles shrank from the crane's ~3.5s to
+		// 600ms and the interrupt lands 60ms in, inside the fade.
 		for (let i = 0; i < CYCLES; i++) {
-			// A dockless leg (the ribbon joins the tool surface), settled between —
-			// then the storm: navigate away and interrupt back mid-flight.
+			// A settled leg each way, then the storm: navigate away and
+			// interrupt back mid-flight.
 			await click('visualizers');
-			await page.waitForTimeout(4600);
+			await page.waitForTimeout(600);
 			await click('planner');
-			await page.waitForTimeout(3400);
+			await page.waitForTimeout(600);
 			await click('builder');
-			await page.waitForTimeout(3600);
+			await page.waitForTimeout(600);
 			await click('planner');
-			await page.waitForTimeout(1100); // interrupt mid-transition
+			await page.waitForTimeout(60); // interrupt mid-transition
 			await click('builder');
-			await page.waitForTimeout(3600);
+			await page.waitForTimeout(600);
 		}
 
+		// The last switch's fade-out (150ms), mount and fade-in (200ms) can run
+		// past the 600ms settle straight after a storm; at 600ms Chrome was
+		// measured mid-fade (two layers part-visible), fully at rest 500ms on.
+		await page.waitForTimeout(1500);
 		const result = await page.evaluate(() => ({
 			hits: window.__toolWatchdog?.hits ?? null,
 			last: window.__toolWatchdog?.last ?? null,

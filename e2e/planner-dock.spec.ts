@@ -31,7 +31,7 @@ test('on a phone the composer docks, opens in one tap, and its key row types', a
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/planner');
 
-	expect(await composerHome(page)).toBe('docked');
+	await expect.poll(() => composerHome(page)).toBe('docked');
 	const strip = page.locator('.rp-dock-strip');
 	await expect(strip, 'collapsed on arrival').toBeVisible();
 
@@ -55,7 +55,7 @@ test('leaving the planner takes the dock with it, and coming back re-docks it', 
 }) => {
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/planner');
-	expect(await composerHome(page)).toBe('docked');
+	await expect.poll(() => composerHome(page)).toBe('docked');
 
 	// The tool links are folded into the compass at this width; the link is
 	// still in the DOM, and clicking it is an ordinary in-app navigation.
@@ -63,7 +63,9 @@ test('leaving the planner takes the dock with it, and coming back re-docks it', 
 		document.querySelector<HTMLAnchorElement>('a[href="/builder"]')?.click()
 	);
 	await page.waitForURL(/\/builder$/, { timeout: 10_000 });
-	expect(await composerHome(page), 'not left pinned over the Builder').not.toBe('docked');
+	await expect
+		.poll(() => composerHome(page), { message: 'not left pinned over the Builder' })
+		.not.toBe('docked');
 
 	await page.evaluate(() =>
 		document.querySelector<HTMLAnchorElement>('a[href="/planner"]')?.click()
