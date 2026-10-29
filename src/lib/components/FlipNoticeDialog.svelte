@@ -117,21 +117,24 @@
 	let okEl = $state<HTMLButtonElement | undefined>();
 	$effect(() => okEl?.focus());
 
+	/**
+	 * ⚠ In the CAPTURE phase, and a handled key goes no further: the menu
+	 * state also listens on the window and mounts first, so in the bubble
+	 * phase it heard Escape before this could claim it, and one Escape closed
+	 * the dialog AND the section under it (a cold load of `/profile` landed on
+	 * the landing). The dialog is modal, so nothing beneath should hear it.
+	 */
 	function onKey(e: KeyboardEvent): void {
-		if (e.key === 'Escape') {
-			e.preventDefault();
-			close();
-		} else if (!phone && e.key === 'ArrowRight') {
-			e.preventDefault();
-			go(page + 1);
-		} else if (!phone && e.key === 'ArrowLeft') {
-			e.preventDefault();
-			go(page - 1);
-		}
+		if (e.key === 'Escape') close();
+		else if (!phone && e.key === 'ArrowRight') go(page + 1);
+		else if (!phone && e.key === 'ArrowLeft') go(page - 1);
+		else return;
+		e.preventDefault();
+		e.stopPropagation();
 	}
 </script>
 
-<svelte:window onkeydown={onKey} />
+<svelte:window onkeydowncapture={onKey} />
 
 <!-- `outroInert` is the outro-eats-your-click fix; ⛔ don't drop it. -->
 <div
