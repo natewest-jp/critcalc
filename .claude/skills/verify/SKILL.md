@@ -5,7 +5,7 @@ description: Build, serve, and drive critcalc in headless Chrome to verify chang
 
 # Verifying critcalc changes
 
-> ⚠️ **Read CLAUDE.md § Verification Policy first.** Driving a browser is the
+> ⚠️ **Read CLAUDE.md § Gates and verification first.** Driving a browser is the
 > LAST resort, not the first: run `npm run test` / `check` / `lint` / `build`,
 > and answer from source or docs where you can. Visual/rendering judgments are
 > Nate's eyes, not a script's, and nothing Safari-facing counts as verified

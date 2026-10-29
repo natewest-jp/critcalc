@@ -85,8 +85,8 @@ vite.config.ts.timestamp-*
 /assets-src/
 
 # Scratch / generated artifacts — regenerable, not a source of truth
-# scratch/ is where throwaway verification scripts go (CLAUDE.md § Verification
-# Policy) — written, run, reported, deleted in the same turn. Never committed.
+# scratch/ is where throwaway verification scripts go (CLAUDE.md § Gates and
+# verification) — written, run, reported, deleted in the same turn. Never committed.
 scratch/
 claude-artifacts/
 probe-*.png

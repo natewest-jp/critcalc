@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
  * The browser-surface harness (2026-08-09).
  *
  * Replaces the hand-run `scripts/probe-*.mjs` era: the checks that earned
- * promotion under CLAUDE.md § Verification Policy live in `e2e/` and run as one
+ * promotion under CLAUDE.md § Gates and verification live in `e2e/` and run as one
  * command. Anything NOT promoted does not belong here — see that policy before
  * adding a spec.
  *

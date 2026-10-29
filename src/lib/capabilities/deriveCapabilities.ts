@@ -958,7 +958,7 @@ function walkAbility(
 			holderElement
 		};
 		pushEffectCapabilities(variant.effects, ctx, out);
-		// A variant's summons/effects REPLACE the base's (src/lib/CLAUDE.md), so
+		// A variant's summons/effects REPLACE the base's (.claude/rules/schema.md), so
 		// its window is read off whatever the variant actually carries, falling
 		// back to the base where the variant restates nothing.
 		pushTagCapabilities(
