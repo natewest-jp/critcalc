@@ -44,7 +44,7 @@ Each settled decision carries the date it was confirmed. The "Open questions" se
 
 - **Default transition (#1 — "lift and dim"):** click a hero → camera tilts up → floor exits off the bottom → horizon line travels past the bottom edge → starfield dims via overlay → tool panel fades in centered against the dimmed sky. Safe, legible, repeatable.
 - **Transition #3 — "hero rises, world falls away":** chosen hero card lifts and grows; floor and other heroes fall away beneath; the chosen hero expands into the tool surface. Reserved for **cases where a natural visual fit exists** between the hero vignette and the tool's entry surface. Decide per tool when authoring.
-- **Transition #2 — "through-the-light" (portal):** ~~reserved for the sister site~~ — **superseded; see the 2026-05-31 amendment below.**
+- **Transition #2 — "through-the-light" (portal):** ~~reserved for the sister site (weaselthief.com)~~ — **superseded; see the 2026-05-31 amendment below.**
 
 **Superseded / amended — 2026-05-31 (the cross-browser perf pivot)**
 
@@ -122,7 +122,7 @@ Each settled decision carries the date it was confirmed. The "Open questions" se
 - **Camera transition motion details** — exact curves, durations, what physically rises/falls, when the dim overlay drops in relative to the tilt. Prototype once a stylable landing exists.
 - **Per-tool transition choice (#1 vs #3)** — decide per tool whether the hero vignette has a natural visual fit for the morph (transition #3) or defaults to lift-and-dim (#1). Decide when authoring each tool's transition.
 - **Mobile landing composition** — different design entirely vs. portrait reflow of desktop. Deferred until desktop is settled.
-- **Cross-site link placement (critcalc ↔ the sister site)** — on a contained no-scroll cinematic landing, where does the sister-site link live? Options to weigh: distant light on the horizon (a "you can see another world out there"), a second-stage camera move (sideways instead of upward), utility-route chrome only, or a dual-brand-mark treatment. Pending.
+- **Cross-site link placement (critcalc ↔ weaselthief.com)** — on a contained no-scroll cinematic landing, where does the sister-site link live? Options to weigh: distant light on the horizon (a "you can see another world out there"), a second-stage camera move (sideways instead of upward), utility-route chrome only, or a dual-brand-mark treatment. Pending.
 - **`/about` route content** — currently linked from header nav but route doesn't exist. Decide content + author when ready.
 - **Hero vignette authoring** — Nate is crafting in vector. Will return for concept inspiration and sizing when authoring begins.
 - **Tool internals visual unification** — once landing palette is locked, walk through each tool to align surface colors, accent usage, and remove "hollow-element" patterns that accreted during functional development.
