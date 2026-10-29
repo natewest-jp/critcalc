@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test';
 /**
  * THE CREST IS ONE REST (⚓ Nate 2026-08-07): the twinkle field freezes on a
  * single frame when a tool leg settles, and stays on THAT frame for as long as
- * you are in the crest tool space — through every tool→tool crane — thawing
+ * you are in the crest tool space — through every tool→tool switch — thawing
  * only on the way back down to the landing.
  *
  * Why a script and not an eyeball, in a suite that otherwise leaves looking to
@@ -33,7 +33,7 @@ const scene = (page: Page) =>
 	});
 
 /** Sample the star clock every frame across a tool→tool navigation, then settle. */
-async function sampleLeg(page: Page, linkText: string, holdMs = 3600) {
+async function sampleLeg(page: Page, linkText: string, holdMs = 800) {
 	await page.evaluate(() => {
 		window.__starSamples = [];
 		const rec = () => {
@@ -43,7 +43,10 @@ async function sampleLeg(page: Page, linkText: string, holdMs = 3600) {
 		};
 		requestAnimationFrame(rec);
 	});
-	await page.locator('.chrome-nav a', { hasText: linkText }).click();
+	await page.locator('.nav-btn', { hasText: linkText }).click();
+	// Wait for the ADDRESS, then hold: under load WebKit had not committed
+	// the navigation 800ms after the click.
+	await page.waitForURL(`**/${linkText.toLowerCase()}`);
 	await page.waitForTimeout(holdMs);
 	return page.evaluate(() => window.__starSamples!);
 }
@@ -67,19 +70,18 @@ test('the star clock holds one frame across every tool leg, and thaws on descend
 	await page.waitForTimeout(900);
 	expect((await scene(page))!.t, 'the frozen frame survives idle time').toBe(rest0!.t);
 
-	// ── The crane: the world sweeps, the field does not ──────────────────────
+	// ── A tool switch: the tool changes, the field does not ─────────────────
+	// ↻ The flip retired the side crane: tools change IN PLACE (a 150ms
+	// crossfade at one pose), so the leg is proved by the address, not the
+	// camera.
 	const toTb = await sampleLeg(page, 'Builder');
-	expect(
-		spread(toTb.map((s) => s.cx)),
-		'the camera actually craned (the test exercised the real thing)'
-	).toBeGreaterThan(100);
+	expect(toTb.at(-1)!.path, 'the tool actually switched').toBe('/builder');
 	expect(spread(toTb.map((s) => s.t)), 'RP→TB: the clock never moves across the leg').toBe(0);
 
 	const afterTb = await scene(page);
 	expect(afterTb!.t, 'RP→TB settles on the SAME frame').toBe(rest0!.t);
 	expect(afterTb!.twinkling, 'the loop is stopped again after the leg').toBe(false);
 
-	// A second leg, with the opposite pose sign.
 	const toViz = await sampleLeg(page, 'Visualizers');
 	expect(spread(toViz.map((s) => s.t)), 'TB→Viz: the clock never moves').toBe(0);
 	expect((await scene(page))!.t, 'three tools deep, still the same frame').toBe(rest0!.t);
@@ -87,7 +89,7 @@ test('the star clock holds one frame across every tool leg, and thaws on descend
 	// ── The descend thaws it — resuming, not jumping ─────────────────────────
 	const beforeDescend = await scene(page);
 	const wallClockAtPause = await page.evaluate(() => performance.now());
-	await page.locator('.chrome-brand, a[href="/"]').first().click();
+	await page.locator('.tb-home').click();
 	await page.waitForTimeout(3200);
 
 	const landed = await scene(page);

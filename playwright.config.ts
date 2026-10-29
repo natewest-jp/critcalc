@@ -50,6 +50,11 @@ export default defineConfig({
 	use: {
 		baseURL: `http://localhost:${PORT}`,
 		viewport: VIEWPORT,
+		// A missing element fails in seconds, not at the 60s test timeout: the
+		// flip's first run of the old specs spent most of its 7.6 min waiting
+		// out clicks on selectors that no longer exist.
+		actionTimeout: 10_000,
+		navigationTimeout: 20_000,
 		trace: 'retain-on-failure',
 		video: 'off',
 		screenshot: 'off'

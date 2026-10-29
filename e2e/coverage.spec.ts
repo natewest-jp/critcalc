@@ -1,4 +1,4 @@
-import { test, expect, CHARACTER_COUNT } from './fixtures/critcalc';
+import { test, expect, openSection, openTool, CHARACTER_COUNT } from './fixtures/critcalc';
 
 /**
  * The coverage page at the browser surface (docs/coverage-round.md §8; the
@@ -17,7 +17,7 @@ for (const [label, viewport] of [
 		test.use({ viewport });
 
 		test('lists every character, search narrows it, a row opens in place', async ({ page }) => {
-			await page.goto('/coverage');
+			await openSection(page, '/coverage');
 			const rows = page.locator('.cov-row');
 			await expect(rows).toHaveCount(CHARACTER_COUNT);
 
@@ -34,7 +34,7 @@ for (const [label, viewport] of [
 		});
 
 		test('a ?c= link shows exactly its characters, and Show all returns', async ({ page }) => {
-			await page.goto('/coverage?c=bennett,xiangling,nobody');
+			await openSection(page, '/coverage?c=bennett,xiangling,nobody');
 			const rows = page.locator('.cov-row');
 			await expect(rows).toHaveCount(2);
 			await expect(page.locator('.row-details')).toHaveCount(2);
@@ -45,19 +45,24 @@ for (const [label, viewport] of [
 	});
 }
 
+/**
+ * ↻ 2026-10-29 (the flip): the link lives on the Planner's INSPECTOR (what
+ * Notes became), and Coverage opens as a menu-state section over the tool:
+ * its own address, the tool kept mounted, one Escape back.
+ */
 test('a coverage link opens over the tool, and closing it stays on the tool', async ({
 	page,
 	seed
 }) => {
 	await seed({ team: { slots: ['baizhu', 'bennett'], notation: 'Baizhu E Q > Bennett E Q' } });
-	await page.goto('/planner');
-	await page.getByRole('button', { name: 'Toggle notes panel' }).click();
+	await openTool(page, '/planner');
+	await page.locator('.tool-main').evaluate((el) => el.setAttribute('data-e2e-mark', '1'));
+	await page.locator('.rp-notes-btn', { hasText: 'Inspector' }).click();
 	await page.getByRole('link', { name: 'Coverage for this team' }).click();
 
-	await expect(page.locator('.overlay-panel .cov-row')).toHaveCount(2);
-	await expect(page).toHaveURL(/\/planner$/);
-
+	await expect(page.locator('div.menu .cov-row')).toHaveCount(2);
 	await page.keyboard.press('Escape');
-	await expect(page.locator('.overlay-panel')).toHaveCount(0);
+	await expect(page.locator('div.menu')).toBeHidden();
 	await expect(page).toHaveURL(/\/planner$/);
+	await expect(page.locator('.tool-main[data-e2e-mark="1"]'), 'never remounted').toHaveCount(1);
 });

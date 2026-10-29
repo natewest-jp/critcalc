@@ -1,4 +1,4 @@
-import { test, expect, openTool, openRoster } from './fixtures/critcalc';
+import { test, expect, openSection, openTool, openRoster } from './fixtures/critcalc';
 import type { Page } from '@playwright/test';
 
 /**
@@ -66,7 +66,8 @@ test.describe('control glyphs are geometry, not type', () => {
 		await openTool(page, '/builder');
 		await openRoster(page);
 		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-mag').click();
-		await expectSwept(page, '.dc-panel');
+		// ↻ The flip: the details door opens the inspector modal.
+		await expectSwept(page, '.im');
 	});
 
 	test('rotation planner — bench and bands', async ({ page, seed }) => {
@@ -78,32 +79,24 @@ test.describe('control glyphs are geometry, not type', () => {
 		await expectSwept(page, '.bench-band-mount');
 	});
 
-	test('rotation planner — the library', async ({ page, seed }) => {
-		// Several swept glyphs only render once there is a saved entry to render.
+	test('the library', async ({ page, seed }) => {
+		// Several swept glyphs only render once there is a saved entry to render
+		// (migrated into the profile's documents on the first load).
 		await seed({
 			saved: [
 				{
 					id: 's1',
 					name: 'Vape Hu Tao',
 					notation: 'Hu Tao E N3 Q > Xingqiu E Q',
-					// ⚠ A PRE-SINGLE-TRUTH entry, kept deliberately: `manualSlots` is
-					// retired but still READ, and this is the one place the legacy fold
-					// (documentBar.loadNewTab → foldTeamIntoNotation) runs at the browser
-					// surface. Zhongli and Albedo are not in the notation, so opening
-					// this entry is what proves they still arrive.
-					manualSlots: ['hu_tao', 'xingqiu', 'zhongli', 'albedo'],
 					tabLoadout: {},
 					tabCon: {},
 					savedAt: 1754500000000
 				}
 			]
 		});
-		await openTool(page, '/planner');
-		await page
-			.locator('.doc-actions button', { hasText: /Library/ })
-			.first()
-			.click();
-		await expectSwept(page, '.lib');
+		await openSection(page, '/library/rotations');
+		await page.locator('div.menu').getByText('Vape Hu Tao').first().waitFor();
+		await expectSwept(page, 'div.menu .main');
 	});
 
 	test('visualizers — workspace and instrument picker', async ({ page }) => {

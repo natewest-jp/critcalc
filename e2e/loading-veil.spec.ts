@@ -46,10 +46,12 @@ test.describe('lifecycle', () => {
 
 		let reappeared = false;
 		for (const link of ['Builder', 'Visualizers']) {
-			await page.locator('.chrome-nav a', { hasText: link }).click();
-			await page.waitForTimeout(600);
+			await page.locator('.nav-btn', { hasText: link }).click();
+			await expect(page.locator('.nav-btn.is-current')).toHaveText(new RegExp(link));
+			// The veil would be back in the DOM by now: it is SSR markup that only
+			// a hard load paints, and the tools crossfade in 150ms.
+			await page.waitForTimeout(300);
 			if (await page.locator('#loading-veil').count()) reappeared = true;
-			await page.waitForTimeout(2200);
 		}
 		expect(reappeared, 'the veil is a first-load object, not a transition').toBe(false);
 	});

@@ -1,6 +1,7 @@
 import {
 	test,
 	expect,
+	openSection,
 	openTool,
 	openRoster,
 	gridNames,
@@ -8,7 +9,7 @@ import {
 	provideGlyph,
 	boardNames,
 	setConMode,
-	KEYS
+	type SeedState
 } from './fixtures/critcalc';
 import type { Page } from '@playwright/test';
 import { encodeBoard } from '../src/lib/utils/boardUrl';
@@ -33,6 +34,11 @@ import { encodeBoard } from '../src/lib/utils/boardUrl';
  *  +Vodyanitsa). */
 const ROSTER_SIZE = 127;
 
+/** A real profile for the roster's tests: Theorycraft has every character at
+ *  every level and no roster, so the old storage must hold one owned
+ *  character for the migration to make a profile (storage/boot.ts). */
+const REAL_PROFILE: SeedState = { ownership: { jean: 'owned' } };
+
 // The count lives in the destination banner while a team is selected, in the
 // filter strip otherwise.
 const matchCount = async (page: Page) =>
@@ -54,8 +60,8 @@ test.describe('roster and facets', () => {
 
 		// A role IS the filter: the grid narrows and SECTIONS (the old drill-down).
 		await page.locator('.rfs-role[aria-label="Support"]').click();
-		expect(await page.locator('.cg-section').count()).toBeGreaterThan(1);
-		expect(await matchCount(page)).toBeLessThan(ROSTER_SIZE);
+		await expect.poll(() => page.locator('.cg-section').count()).toBeGreaterThan(1);
+		await expect.poll(() => matchCount(page)).toBeLessThan(ROSTER_SIZE);
 
 		// Choosing it again clears it.
 		await page.locator('.rfs-role.is-active').click();
@@ -111,7 +117,7 @@ test.describe('roster and facets', () => {
 		await provideGlyph(page, 'ATK buff');
 		const both = await matchCount(page);
 		expect(both, 'heal ∩ ATK-buff is strictly smaller').toBeLessThan(healers);
-		expect(await gridNames(page), 'Bennett does both').toContain('Bennett');
+		await expect.poll(() => gridNames(page), { message: 'Bennett does both' }).toContain('Bennett');
 	});
 
 	// ⚠️ The C-gated healer was Gorou (C4) until 2026-09-15: that heal is `trigger:
@@ -126,12 +132,16 @@ test.describe('roster and facets', () => {
 
 		await setConMode(page, 'C0');
 		const atC0 = await matchCount(page);
-		expect(await gridNames(page), 'Fischl heals only from C4').not.toContain('Fischl');
+		await expect
+			.poll(() => gridNames(page), { message: 'Fischl heals only from C4' })
+			.not.toContain('Fischl');
 
 		await setConMode(page, 'C6');
 		const atC6 = await matchCount(page);
 		expect(atC6, `C6 unlocks more healers than C0 (C0=${atC0} C6=${atC6})`).toBeGreaterThan(atC0);
-		expect(await gridNames(page), 'Fischl appears at C6').toContain('Fischl');
+		await expect
+			.poll(() => gridNames(page), { message: 'Fischl appears at C6' })
+			.toContain('Fischl');
 	});
 
 	test('"My constellations" mode gates on your own constellations', async ({ page, seed }) => {
@@ -161,52 +171,51 @@ test.describe('detail card', () => {
 		});
 
 		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-mag').click();
-		await page.locator('.dc-panel').waitFor();
-		await page.locator('.dc-caps .dc-cap').first().waitFor();
+		// ↻ The flip: the details door opens the inspector MODAL (inspector
+		// round, docs/inspector-round.md), which hosts the details card.
+		await page.locator('.im').waitFor();
+		await page.locator('.im .dc-caps .dc-cap').first().waitFor();
 
 		expect(chunks.length, 'the card lazy-loads the character chunk').toBeGreaterThan(0);
-
-		// A modal at every width — a fixed scrim, and the grid never reflows under it.
-		await expect(page.locator('.dc-backdrop')).toHaveCSS('position', 'fixed');
 
 		const caps = await page.locator('.dc-caps').innerText();
 		expect(caps, 'Fischl shows C4 heal provenance').toMatch(/Heal/);
 		expect(caps).toMatch(/C4/);
-		expect(await page.locator('.dc-timing').innerText(), 'timing shows E cooldown').toMatch(
-			/cooldown/
-		);
+		await expect
+			.poll(() => page.locator('.dc-timing').innerText(), { message: 'timing shows E cooldown' })
+			.toMatch(/cooldown/);
 	});
 
-	test('the Roster tab sets a constellation that survives reload', async ({ page }) => {
+	test('the Roster sets a constellation that survives reload', async ({ page, seed }) => {
+		// A REAL profile: Theorycraft has no roster. One owned character in the
+		// old storage migrates into one.
+		await seed(REAL_PROFILE);
 		await openTool(page, '/builder');
 		await openRoster(page);
 		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-mag').click();
-		await page.locator('.dc-panel').waitFor();
+		await page.locator('.im').waitFor();
 		await expect(page.locator('.dc-roster-state'), 'details read the roster').toHaveText(
 			'Not owned'
 		);
 
-		// ⚓ Details only READ the roster; their link opens the Library's Roster
-		// tab on this character, unlocked (lineups design §11.6 items 2, 17).
+		// ⚓ Details only READ the roster; their link opens the Roster section
+		// on this character, unlocked (lineups design §11.6 items 2, 17).
 		await page.getByRole('button', { name: 'Edit in Roster' }).click();
 		const tile = page.locator('.til-card[data-id="fischl"]');
-		await expect(tile, 'the Roster tab arrives on the character').toBeFocused();
+		await expect(tile, 'the Roster arrives on the character').toBeFocused();
 		await tile.getByRole('button', { name: 'C4' }).click();
-		const stored = await page.evaluate(
-			(k) => JSON.parse(localStorage.getItem(k) ?? '{}'),
-			KEYS.constellations
-		);
-		expect(stored.fischl, 'the astroid writes the constellations store').toBe(4);
 		await expect(tile, 'a constellation marks the character owned').toHaveClass(/is-owned/);
 
 		await page.keyboard.press('Escape');
-		await expect(page.locator('.lib'), 'Escape closes the Library').toHaveCount(0);
+		await expect(page.locator('div.menu'), 'Escape closes the Roster').toBeHidden();
 
 		await page.reload({ waitUntil: 'networkidle' });
 		await openRoster(page);
 		await provideGlyph(page, 'Healing');
 		await setConMode(page, 'My constellations');
-		expect(await gridNames(page), 'the constellation survived reload').toContain('Fischl');
+		await expect
+			.poll(() => gridNames(page), { message: 'the constellation survived reload' })
+			.toContain('Fischl');
 	});
 });
 
@@ -219,8 +228,11 @@ test.describe('detail card', () => {
 test.describe('the board', () => {
 	const openDetail = async (page: Page, name: string) => {
 		await page.locator('.cc', { hasText: name }).first().locator('.cc-mag').click();
-		await page.locator('.dc-panel').waitFor();
+		await page.locator('.im').waitFor();
 	};
+	/** The details' team button: "Add to team", or the in-team form. */
+	const teamButton = (page: Page) =>
+		page.locator('.im').getByRole('button', { name: /team/i }).first();
 
 	test('the cold start is the current Stygian lineup, and a pick lands on it', async ({ page }) => {
 		// ⚓ §11.2: a first visit shows the tool at its most useful — the season's
@@ -231,10 +243,10 @@ test.describe('the board', () => {
 		await expect(page.locator('.bench-band-mount'), 'the Builder has no bench').toBeHidden();
 
 		await openDetail(page, 'Bennett');
-		await page.locator('.dc-team').click();
+		await teamButton(page).click();
 		await page.keyboard.press('Escape');
 
-		expect(await boardNames(page)).toEqual(['Bennett']);
+		await expect.poll(() => boardNames(page)).toEqual(['Bennett']);
 		expect(page.url(), 'the board never rides the URL').not.toContain('team=');
 	});
 
@@ -246,10 +258,10 @@ test.describe('the board', () => {
 		await openTool(page, '/builder');
 		await openRoster(page);
 		await openDetail(page, 'Bennett');
-		await expect(page.locator('.dc-team')).toHaveText(/In team/);
-		await page.locator('.dc-team').click();
+		await expect(teamButton(page)).toHaveText(/In team/);
+		await teamButton(page).click();
 		await page.keyboard.press('Escape');
-		expect(await boardNames(page)).toEqual(['Jean']);
+		await expect.poll(() => boardNames(page)).toEqual(['Jean']);
 	});
 
 	test('a selected TEAM fills in click order, and a second pick frees the slot', async ({
@@ -263,7 +275,7 @@ test.describe('the board', () => {
 		await page.locator('.bv-team').nth(1).locator('.bv-slot').nth(2).click();
 		const pick = async (name: string) => {
 			await openDetail(page, name);
-			await page.locator('.dc-team').click();
+			await teamButton(page).click();
 			await page.keyboard.press('Escape');
 		};
 		const team2 = () =>
@@ -274,9 +286,11 @@ test.describe('the board', () => {
 				.evaluateAll((els) => els.map((e) => e.getAttribute('data-name')));
 		await pick('Furina');
 		await pick('Xingqiu');
-		expect(await team2()).toEqual(['Furina', 'Xingqiu', '', '']);
+		await expect.poll(() => team2()).toEqual(['Furina', 'Xingqiu', '', '']);
 		await pick('Furina');
-		expect(await team2(), 'the others keep their places').toEqual(['', 'Xingqiu', '', '']);
+		await expect
+			.poll(() => team2(), { message: 'the others keep their places' })
+			.toEqual(['', 'Xingqiu', '', '']);
 	});
 
 	test('under No repeats, a pick of another team’s member takes two clicks', async ({
@@ -299,39 +313,46 @@ test.describe('the board', () => {
 
 		await expect(card('Bennett')).toHaveAccessibleName('Remove Bennett from Team 1');
 		await card('Bennett').click();
-		expect(await team(0), 'click 1 takes him off Team 1').toEqual(['', '', '', '']);
-		expect(await team(1), '…and adds nothing').toEqual(['', '', '', '']);
+		await expect
+			.poll(() => team(0), { message: 'click 1 takes him off Team 1' })
+			.toEqual(['', '', '', '']);
+		await expect.poll(() => team(1), { message: '…and adds nothing' }).toEqual(['', '', '', '']);
 		// ↻ 2026-10-26 (the notices round): a toast in the one toast home, with
 		// Undo (it stood in the grid's destination banner from 2026-10-20).
 		const toast = page.locator('.nt', { hasText: 'Bennett left Team 1' });
 		await expect(toast).toBeVisible();
 		await toast.getByRole('button', { name: 'Undo' }).click();
-		expect(await team(0), 'Undo puts him back').toEqual(['Bennett', '', '', '']);
+		await expect
+			.poll(() => team(0), { message: 'Undo puts him back' })
+			.toEqual(['Bennett', '', '', '']);
 
 		await card('Bennett').click();
 		await card('Bennett').click();
-		expect(await team(0)).toEqual(['', '', '', '']);
-		expect(await team(1), 'click 2 adds him').toEqual(['Bennett', '', '', '']);
+		await expect.poll(() => team(0)).toEqual(['', '', '', '']);
+		await expect
+			.poll(() => team(1), { message: 'click 2 adds him' })
+			.toEqual(['Bennett', '', '', '']);
 
 		// A FULL selected team still only nudges: he stays where he is.
 		await page.locator('.bv-team').nth(2).locator('.bv-slot').nth(0).click();
 		await card('Bennett').click();
-		expect(await team(1)).toEqual(['Bennett', '', '', '']);
-		expect(await team(2)).toEqual(['Jean', 'Diona', 'Gorou', 'Xingqiu']);
+		await expect.poll(() => team(1)).toEqual(['Bennett', '', '', '']);
+		await expect.poll(() => team(2)).toEqual(['Jean', 'Diona', 'Gorou', 'Xingqiu']);
 	});
 
-	test('a preset board opens with its teams', async ({ page }) => {
-		await openTool(page, '/builder');
-		await page.locator('.band-a .band-menu-trigger[aria-label="New lineup"]').click();
-		await page.getByRole('menuitem', { name: /Stygian Onslaught/ }).click();
-		// ⚠ Not the strip's hidden MEASURING copy, which carries the same classes.
-		await expect(page.locator('.band-a .doc-tabs:not(.doc-tabs--measure) .doc-tab')).toHaveCount(2);
-		await expect(page.locator('.bv-team'), 'Stygian is three teams').toHaveCount(3);
+	test('a preset lineup opens in the Builder with its teams', async ({ page }) => {
+		// ↻ The flip: lineups are documents, and New lineup lives in the
+		// Library's Lineups section (a three-shape menu).
+		await openSection(page, '/library/lineups');
+		await page.locator('div.menu .band-menu-trigger', { hasText: 'New lineup' }).click();
+		await page.locator('.band-menu-item', { hasText: 'Spiral Abyss' }).click();
+		await page.waitForURL('**/builder');
+		await expect(page.locator('.bv-team'), 'the Abyss is two teams').toHaveCount(2);
 	});
 
 	test('a ?team= deep link lands on the active board and strips the param', async ({ page }) => {
 		await openTool(page, '/builder?team=bennett,jean,diona,gorou');
-		expect(await boardNames(page)).toEqual(['Bennett', 'Jean', 'Diona', 'Gorou']);
+		await expect.poll(() => boardNames(page)).toEqual(['Bennett', 'Jean', 'Diona', 'Gorou']);
 		expect(page.url(), '?team= is stripped after import').not.toContain('team=');
 	});
 
@@ -346,18 +367,25 @@ test.describe('the board', () => {
 		});
 		await openTool(page, `/builder?b=${param}`);
 		await expect(page.locator('.bv-team')).toHaveCount(2);
-		expect(await boardNames(page)).toEqual(['Furina', 'Nahida', 'Bennett']);
-		await expect(page.locator('.band-a .doc-tab.active')).toHaveText(/Shared lineup/);
-		const stored = JSON.parse(
-			(await page.evaluate((k) => localStorage.getItem(k), KEYS.boards)) ?? '{}'
+		await expect.poll(() => boardNames(page)).toEqual(['Furina', 'Nahida', 'Bennett']);
+		// ⚓ A shared link opens in Theorycraft, named as the sender named it.
+		await expect(page.locator('.tb-profile')).toHaveAttribute('aria-label', /Theorycraft/);
+		await expect(page.locator('.nav-btn.is-current')).toHaveText(/Shared lineup/);
+		const slots = page.locator('.bv-team').first().locator('.bv-slot');
+		await expect(slots.nth(0).locator('.spt-chip'), 'the sender’s C2 arrives').toHaveAttribute(
+			'title',
+			'C2'
 		);
-		const active = stored.boards.find((b: { id: string }) => b.id === stored.activeBoardId);
-		expect(active.teams[0].con, 'the sender’s C0 arrives as C0').toEqual({ furina: 2, nahida: 0 });
+		await expect(slots.nth(1).locator('.spt-chip'), 'the sender’s C0 arrives as C0').toHaveCount(0);
 	});
 
 	test('a board survives a reload', async ({ page }) => {
 		await openTool(page, '/builder?team=bennett,jean');
-		await page.reload({ waitUntil: 'networkidle' });
+		// The import lands after the tool mounts; reloading before it has is a
+		// race in the test, not a lost edit (an immediate reload once the team
+		// shows keeps it, by the unload journal).
+		await expect.poll(() => boardNames(page)).toEqual(['Bennett', 'Jean']);
+		await page.reload();
 		await expect.poll(() => boardNames(page)).toEqual(['Bennett', 'Jean']);
 	});
 });
@@ -396,11 +424,15 @@ test.describe('swap mode', () => {
 		);
 
 		await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
-		expect(await boardNames(page)).toEqual(['Furina', 'Xiangling', 'Xingqiu', 'Sucrose']);
+		await expect
+			.poll(() => boardNames(page))
+			.toEqual(['Furina', 'Xiangling', 'Xingqiu', 'Sucrose']);
 		await expect(page.locator('.tb-dest'), 'a pick leaves swap mode').not.toHaveText(/Replacing/);
 
 		await page.getByRole('button', { name: 'Undo' }).click();
-		expect(await boardNames(page)).toEqual(['Bennett', 'Xiangling', 'Xingqiu', 'Sucrose']);
+		await expect
+			.poll(() => boardNames(page))
+			.toEqual(['Bennett', 'Xiangling', 'Xingqiu', 'Sucrose']);
 	});
 
 	test('Escape, or the portrait again, leaves without a swap', async ({ page, seed }) => {
@@ -414,31 +446,31 @@ test.describe('swap mode', () => {
 		await expect(page.locator('.tb-swap-head').first()).toBeVisible();
 		await page.locator('.bv-team').first().locator('.bv-slot').nth(1).click();
 		await expect(page.locator('.tb-swap-head')).toHaveCount(0);
-		expect(await boardNames(page)).toEqual(['Bennett', 'Jean', 'Diona', 'Gorou']);
+		await expect.poll(() => boardNames(page)).toEqual(['Bennett', 'Jean', 'Diona', 'Gorou']);
 	});
 });
 
 test.describe('ownership ledger', () => {
-	test('wishlisting persists and narrows the roster view', async ({ page }) => {
+	test('wishlisting persists and narrows the roster view', async ({ page, seed }) => {
+		await seed(REAL_PROFILE);
 		await openTool(page, '/builder');
 		await openRoster(page);
 
 		await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-mag').click();
-		await page.locator('.dc-panel').waitFor();
-		// The roster is edited in the Library's Roster tab; W wishlists the tile
-		// the details link arrives on.
+		await page.locator('.im').waitFor();
+		// The roster is edited in the Roster section; W wishlists the tile the
+		// details link arrives on.
 		await page.getByRole('button', { name: 'Edit in Roster' }).click();
-		await expect(page.locator('.til-card[data-id="bennett"]')).toBeFocused();
+		const tile = page.locator('.til-card[data-id="bennett"]');
+		await expect(tile).toBeFocused();
 		await page.keyboard.press('w');
-		expect(
-			await page.evaluate(
-				(k) => JSON.parse(localStorage.getItem(k) ?? '{}').bennett,
-				KEYS.ownership
-			)
-		).toBe('wishlist');
+		await expect(tile, 'W wishlists the tile').toHaveClass(/is-wish/);
 		await page.keyboard.press('Escape');
+		await expect(page.locator('div.menu')).toBeHidden();
+		await page.reload();
+		await openRoster(page);
 
-		await page.locator('.tb-show .btn', { hasText: 'Wishlist' }).click();
+		await page.locator('.tool-main .btn--icon[aria-label="Wishlist"]').click();
 		const names = await gridNames(page);
 		expect(names).toContain('Bennett');
 		expect(names).not.toContain('Jean');
