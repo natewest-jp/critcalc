@@ -2,7 +2,7 @@
  * src/lib/sim/thresholds.ts
  *
  * ⚓ THE ONE READER OF `onStack` (stack-threshold round, 2026-09-18 —
- * `docs/stack-threshold-round.md`). A trigger that fires the instant the summed
+ * `docs/rounds/stack-threshold-round.md`). A trigger that fires the instant the summed
  * count of its `keys` reaches `count`, spends the set, and records a
  * `stackThreshold` IR event that the buff projection anchors on.
  *

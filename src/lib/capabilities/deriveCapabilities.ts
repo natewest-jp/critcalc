@@ -691,7 +691,7 @@ function pushEffectCapabilities(
 		// `Trigger` union, so the condition no longer typechecks. ⚓ The guarantee
 		// moved UPSTREAM — characterLint B.18 refuses the trigger — which is the
 		// stronger place for it: a filter here would still have let the data exist.
-		// docs/manual-trigger-retirement-round.md.
+		// docs/rounds/manual-trigger-retirement-round.md.
 		const mapped = effectCapability(effect);
 		if (!mapped) continue;
 		const composed = composeConditions(ctx.hostConditions, effect.conditions);

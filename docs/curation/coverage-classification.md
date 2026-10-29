@@ -1,6 +1,6 @@
 # Coverage classification — the record
 
-_Coverage round (`docs/coverage-round.md` §6). First pass 2026-09-23 by four agents; ⚓ Nate ruled the nine
+_Coverage round (`docs/rounds/coverage-round.md` §6). First pass 2026-09-23 by four agents; ⚓ Nate ruled the nine
 classes below the same day; a second pass applied the rulings row by row and the result is WRITTEN to
 the character data (`notModeled` / `nothingToModel` / `modeledBy` on each host). **This file is now
 the record of those calls, not a proposal.** ⚠️ Nate's markup landed inside `cdf62b29` (a

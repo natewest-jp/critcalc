@@ -26,7 +26,7 @@ export type FactionProvenance = { faction: string; bonusName: string };
  *
  * ⚓ `factionBonuses` effects now join the candidate pool (they reached the
  * capability layer but never the planner, so no Secret Rite buff had ever drawn
- * a bar — see docs/faction-bonuses-round.md).
+ * a bar — see docs/rounds/faction-bonuses-round.md).
  *
  * ⚠ They must NOT be indistinguishable from the ability's own effects once
  * collected. Every emit site in `buffWindows` pools one cast's effects into ONE
@@ -69,7 +69,7 @@ const REGISTERED = new WeakSet<CharacterData>();
  * condition are pure duplication of their entry's level — none names a
  * different level, none negates it — so an entry-level gate cannot change the
  * meaning of a single authored effect. It can only stop the ungated ones from
- * leaking. See docs/constellation-gating-plan.md.
+ * leaking. See docs/rounds/constellation-gating-plan.md.
  *
  * ⚠ `constellationScaling` is a DIFFERENT mechanism (it scales a buff's VALUE
  * at a level, on an effect that is already unlocked) and must not be folded in.
@@ -375,7 +375,7 @@ export function getCharacterEffectsForCast(
  *  already holds that ability and must not have a second one of the same type
  *  substituted for it (see `nonAbilityEffectSourcesOf`). `registerShieldOnCast`
  *  is the author: a shield Effect on a constellation entry reached no lane at
- *  any level until it read this pool — see docs/constellation-shield-gap.md.
+ *  any level until it read this pool — see docs/rounds/constellation-shield-gap.md.
  *
  *  ⚠ No `castLabel`: passives and constellations carry no `variants`, so there
  *  is nothing for a cast label to resolve against. */

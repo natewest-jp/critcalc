@@ -626,7 +626,7 @@
 			2026-10-25 (the full-screen round): it was defined only on glass, so on slate every
 			<code>var(--surface-hover)</code> painted nothing and a hovered card dropped to its ground. A
 			verb hovered on a hovered card goes one rung down, to <code>--surface-raised</code>. Paper
-			declares no hover rung. Record: <code>docs/fullscreen-surface-round.md</code>.
+			declares no hover rung. Record: <code>docs/rounds/fullscreen-surface-round.md</code>.
 		</p>
 
 		<p class="sg-note">
@@ -800,7 +800,7 @@
 			is a glass fill (<code>--glass-hover</code>, never gold), and the one gold thing, BETA, reads
 			<code>--accent</code> directly. <code>.site-chrome</code> and its re-declared accent belong to
 			<code>SiteChrome.svelte</code>, the old layout's bar. Record:
-			<code>docs/title-bar-round.md</code>. ⚠ Gold sits ΔH 0.5° from
+			<code>docs/rounds/title-bar-round.md</code>. ⚠ Gold sits ΔH 0.5° from
 			<code>--el-geo-main</code>, which is fine and deliberate: geo is identity chroma at C.150, the
 			accent is ornament at C.066, so <em>chroma</em> is what separates them. Don't "fix" it by rotating
 			off geo — that rotates it off parchment.
@@ -1143,9 +1143,9 @@
 				<code>--r-md</code> — <strong>surfaces that float.</strong> Modals (the Links and Move
 				dialogs, the Builder's <code>InspectModal</code>), portalled popovers (<code>BandMenu</code
 				>), and the notices: toasts, banners and the confirm dialog (⚓ Nate,
-				<code>docs/notices-design.md</code> §9). A floating surface has no ground to belong to, so it
-				keeps the softer corner that says "lifted off". (Help, About and Settings were modals here until
-				the menu state made them screens.)
+				<code>docs/design/notices-design.md</code> §9). A floating surface has no ground to belong to,
+				so it keeps the softer corner that says "lifted off". (Help, About and Settings were modals here
+				until the menu state made them screens.)
 			</li>
 			<li><code>--r-round</code> — genuinely round things: thumbs, dots, capsules.</li>
 		</ul>
@@ -2043,8 +2043,9 @@
 			band, band A, for the document (tabs · save · load · share · reset); ToolStack's
 			<code>noBandA</code>
 			drops it in all three tools, and the old form lives on only until step 5 retires it. Geometry knobs:
-			<code>src/lib/toolBands.ts</code>. Records: <code>docs/top-bar-round.md</code>,
-			<code>docs/toolbar-refine-round.md</code>, <code>docs/builder-toolbar-round.md</code>.
+			<code>src/lib/toolBands.ts</code>. Records: <code>docs/rounds/top-bar-round.md</code>,
+			<code>docs/rounds/toolbar-refine-round.md</code>,
+			<code>docs/rounds/builder-toolbar-round.md</code>.
 		</p>
 		<div class="sg-band-demo">
 			<div class="sg-band sg-band--a" style:height="var(--ui-bar-h)">
@@ -2174,7 +2175,7 @@
 						aside. ⚠ Every clipping ancestor must reach too, and JS that measures the viewport must
 						subtract the pad-back (<code>clientHeight</code>
 						includes it). Law: app.css § THE FADE ENDS AT THE NEIGHBOUR; record
-						<code>docs/edges-round.md</code>.
+						<code>docs/rounds/edges-round.md</code>.
 					</li>
 					<li>
 						<strong>Under a coarse pointer a tap area grows and its paint does not</strong> (⚓
@@ -2192,7 +2193,7 @@
 						>
 						See <a href="#bands">the toolbar</a> for the rail and the desk's bench foot; the aside
 						becomes a drawer (<code>ToolColumns</code> <code>sheet</code>). Full record:
-						<code>docs/responsive-survey-2026-09-01.md</code> Part IV.
+						<code>docs/rounds/responsive-survey-2026-09-01.md</code> Part IV.
 					</li>
 				</ul>
 			</div>
@@ -2205,18 +2206,19 @@
 		<p class="sg-note">
 			The profiles-and-surfaces build (2026-10-20 → 27) added surfaces this page did not cover. Each
 			entry names its component and its round record; the component holds the rest, scoped. Design:
-			<code>docs/profiles-and-surfaces-design.md</code>. ⚠ Where a sweep finding is still waiting on
-			a ruling it is named here as <em>open</em>, and the entry describes what ships today.
+			<code>docs/design/profiles-and-surfaces-design.md</code>. ⚠ Where a sweep finding is still
+			waiting on a ruling it is named here as <em>open</em>, and the entry describes what ships
+			today.
 		</p>
 		<div class="sg-laws">
 			<div class="sg-law">
 				<h3>The top bar</h3>
 				<ul>
 					<li>
-						<code>TopBar.svelte</code>; records <code>docs/top-bar-round.md</code>,
-						<code>docs/title-bar-round.md</code>. Order: brand · the three tools, centred · the
-						profile picture · Teams · <code>?</code> · ⚙. The picture leads the right-hand run so Theorycraft's
-						"Add your account" grows toward the centre and pushes no icon.
+						<code>TopBar.svelte</code>; records <code>docs/rounds/top-bar-round.md</code>,
+						<code>docs/rounds/title-bar-round.md</code>. Order: brand · the three tools, centred ·
+						the profile picture · Teams · <code>?</code> · ⚙. The picture leads the right-hand run so
+						Theorycraft's "Add your account" grows toward the centre and pushes no icon.
 					</li>
 					<li>
 						<strong>Tool words on the night, no plate at rest</strong>: Bitter,
@@ -2253,8 +2255,8 @@
 						<code>MenuState.svelte</code>: the full-screen surface, a state on slate (<code
 							>.ctx-dark</code
 						>) covering the screen, never an overlay. Records
-						<code>docs/fullscreen-surface-round.md</code>,
-						<code>docs/fullscreen-cleanups-round.md</code>.
+						<code>docs/rounds/fullscreen-surface-round.md</code>,
+						<code>docs/rounds/fullscreen-cleanups-round.md</code>.
 					</li>
 					<li>
 						<strong>The sidebar</strong>: 17rem, items at <code>--fs-xl</code> (16px) with 18px line marks,
@@ -2311,9 +2313,9 @@
 				<ul>
 					<li>
 						<code>TeamsPlace.svelte</code>, <code>TeamDetail.svelte</code>,
-						<code>TeamMemberPortrait.svelte</code>; record <code>docs/teams-surface-round.md</code>.
-						Cards keep forward-facing portraits on the element well with a 2px ring, the one
-						full-screen card that does.
+						<code>TeamMemberPortrait.svelte</code>; record
+						<code>docs/rounds/teams-surface-round.md</code>. Cards keep forward-facing portraits on
+						the element well with a 2px ring, the one full-screen card that does.
 					</li>
 					<li>
 						<strong>The loadout is cutout pips</strong> round a portrait's bottom right (the
@@ -2346,7 +2348,7 @@
 						<code>$lib/notices.svelte.ts</code> (the channel), <code>NoticeRegion.svelte</code>
 						(toasts and the dialog, mounted once), <code>NoticeBanners.svelte</code> (under the
 						toolbar, and at the top of the menu state's content). Spec
-						<code>docs/notices-design.md</code>; specimen board
+						<code>docs/design/notices-design.md</code>; specimen board
 						<a href={resolve('/lab/notices')}><code>/lab/notices</code></a> (dev only).
 					</li>
 					<li>
@@ -2381,11 +2383,10 @@
 				<h3>The inspector</h3>
 				<ul>
 					<li>
-						Record <code>docs/inspector-round.md</code>. In the Planner, a pane in the aside (<code
-							>PlannerInspector.svelte</code
-						>: a team page, a character page, a bar page), 300 / 340 / 380px by screen. ⚓ A pick is
-						a reference, never a copy: whoever draws the thing re-resolves it on every rebuild, so
-						an edit updates the page.
+						Record <code>docs/rounds/inspector-round.md</code>. In the Planner, a pane in the aside
+						(<code>PlannerInspector.svelte</code>: a team page, a character page, a bar page), 300 /
+						340 / 380px by screen. ⚓ A pick is a reference, never a copy: whoever draws the thing
+						re-resolves it on every rebuild, so an edit updates the page.
 					</li>
 					<li>
 						A picked bar wears a gold inset ring, DOM-only, so the PNG export is unringed by
@@ -2421,7 +2422,7 @@
 					<li>
 						⚓ The UI says "profile", never "account", except for the player's Genshin account:
 						"account" makes it sound like a server keeps the data. Record <code
-							>docs/profile-surface-round.md</code
+							>docs/rounds/profile-surface-round.md</code
 						>.
 					</li>
 				</ul>
@@ -2440,11 +2441,11 @@
 					</li>
 					<li>
 						<strong>The setting row</strong> (app.css § THE SETTING ROW; record
-						<code>docs/settings-surface-round.md</code>, shared with the Profile page) is NAME ·
-						CONTROL · NOTE in fixed columns (12rem · 22rem · up to 28rem), so the names make one
-						column and the controls one edge. <code>.sp</code> is a container: below 53rem the note
-						folds under the name, below 34rem the control does too. <code>.sp-section</code> is a
-						kicker plus its rows,
+						<code>docs/rounds/settings-surface-round.md</code>, shared with the Profile page) is
+						NAME · CONTROL · NOTE in fixed columns (12rem · 22rem · up to 28rem), so the names make
+						one column and the controls one edge. <code>.sp</code> is a container: below 53rem the
+						note folds under the name, below 34rem the control does too. <code>.sp-section</code> is
+						a kicker plus its rows,
 						<code>--danger</code> reddens its kicker; <code>.sp-value</code> is the value inside a
 						note (a <code>&lt;strong&gt;</code> in the ink, so it is found before the sentence is
 						read; ⛔ never the sentence or its label), and <code>.is-stale</code> turns it warning
@@ -2702,9 +2703,12 @@
 							>--surface-hover</code
 						>) and a 2px inset edge: gold, or the profile's colour on a profile's own places
 						(Profile, Roster, Teams, Rotations, Lineups; ⚓ Nate,
-						<code>docs/fullscreen-cleanups-round.md</code>). A selected team member's tile wears a
-						ground that stays plus a gold ring (⚓ Nate rejected ring + glow + badge). Everywhere
-						else selection is the accent fill. ↻ The beige plate (<code>--sel-surface</code> +
+						<code>docs/rounds/fullscreen-cleanups-round.md</code>). A selected team member's tile
+						wears a ground that stays plus a gold ring (⚓ Nate rejected ring + glow + badge).
+						Everywhere else selection is the accent fill. ↻ The beige plate (<code
+							>--sel-surface</code
+						>
+						+
 						<code>--sel-ink</code>, Genshin's Stygian selected row) has one consumer left,
 						<code>HelpAreaShell</code>, which only the old layout renders; the Team Builder's
 						Atlas/Roster/Compare plate it was built for is gone. Gray and beige both remain
@@ -2817,7 +2821,7 @@
 						held them up), and under <code>@media (hover: none)</code>, where nothing can hover to
 						find it, it is always shown (a team card's Delete) or folds into a ⋯ (the Library's
 						verbs). Record:
-						<code>docs/fullscreen-surface-round.md</code>.
+						<code>docs/rounds/fullscreen-surface-round.md</code>.
 					</li>
 				</ul>
 			</div>
@@ -2923,7 +2927,7 @@
 				<ul>
 					<li>
 						<strong>Three surfaces, site-wide</strong> (⚓ Nate,
-						<code>docs/inspector-round.md</code>): the <strong>tools</strong> (work), the
+						<code>docs/rounds/inspector-round.md</code>): the <strong>tools</strong> (work), the
 						<strong>menu state</strong>
 						(places you go to on purpose: the Library, Teams, Roster, Help, About, Settings, Profile,
 						Trash) and the
@@ -3150,8 +3154,8 @@
 					<li>
 						<strong>Which material is a dialog?</strong> Still opaque, and today in three forms: the
 						notices' confirm dialog is paper with no border (<code>NoticeRegion</code>,
-						<code>docs/notices-design.md</code>); the Links, Move and tab-limit dialogs are slate
-						with no border; <code>InspectModal</code> is slate with one <code>--border</code> hairline
+						<code>docs/design/notices-design.md</code>); the Links, Move and tab-limit dialogs are
+						slate with no border; <code>InspectModal</code> is slate with one <code>--border</code> hairline
 						(⚓ the inspector round's one frame). Each was ruled on its own; nothing reconciles the three
 						yet (sweep finding 2.3, for Nate).
 					</li>
@@ -3167,10 +3171,10 @@
 						✅ <strong>CLOSED: meta surfaces have a context of their own.</strong> Help, About and
 						Settings used to be overlays that inherited the root net, the world's voice by default.
 						The menu state made the choice (⚓ Nate,
-						<code>docs/profiles-and-surfaces-design.md</code>): the full-screen state is a state,
-						not an overlay, on slate covering the whole screen, Genshin's own grammar for menus that
-						take over (Party Setup, the Archive). It claims <code>.ctx-dark</code>; Help and About
-						are text on slate, and the few paper patches (Theorycraft's
+						<code>docs/design/profiles-and-surfaces-design.md</code>): the full-screen state is a
+						state, not an overlay, on slate covering the whole screen, Genshin's own grammar for
+						menus that take over (Party Setup, the Archive). It claims <code>.ctx-dark</code>; Help
+						and About are text on slate, and the few paper patches (Theorycraft's
 						<code>.invite</code>) are <code>ctx-light</code>.
 					</li>
 					<li>

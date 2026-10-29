@@ -66,4 +66,4 @@ Budget: about 10,000 characters. Judge a look on `/lab` (the specimen board) and
 - Toolbar groups sit at even gaps, with no rules inside a control strip.
 - Anything that must escape a toolbar or popover clip portals (`BandMenu.svelte`).
 - Avatars come from `getAvatar(id, preferNewfit, size, traveler)`, with the Traveler from the profile's `travelerTwin`. The availability manifest (`hasAvatar`) prevents server-rendered 404 images, which fail prerendering. Regenerate with `npm run generate-newfit`.
-- Notices (toasts, banners, confirms, save status) follow `docs/notices-design.md`. ⚠️ An Undo toast must check that its document and profile are still active.
+- Notices (toasts, banners, confirms, save status) follow `docs/design/notices-design.md`. ⚠️ An Undo toast must check that its document and profile are still active.

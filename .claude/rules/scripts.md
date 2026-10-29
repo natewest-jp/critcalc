@@ -5,7 +5,7 @@ paths:
 
 # Scripts, audits and the gcsim oracle
 
-Budget: about 10,000 characters. Rules in the present tense; history belongs in the round records under `docs/`.
+Budget: about 10,000 characters. Rules in the present tense; history belongs in the round records in `docs/rounds/`.
 
 ## The scripts
 
@@ -33,7 +33,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - An applied count says only that the default is wrong, never what is right.
 - A `× 1` row in `gcsim-frames-diff.md` §5 is not a cadence.
 - A capture behind a prerequisite sees the prerequisite's summon ticking.
-- None of the remaining misses is a rule we believe wrong. Reopen a specific mechanic (Oz's burst geometry, construct resonance), never "counter sharing" as a programme. Record: `docs/icd-group-round.md` §9–§10.
+- None of the remaining misses is a rule we believe wrong. Reopen a specific mechanic (Oz's burst geometry, construct resonance), never "counter sharing" as a programme. Record: `docs/rounds/icd-group-round.md` §9–§10.
 
 ## Oracle artefacts: never migrate
 

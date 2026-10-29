@@ -592,7 +592,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// gains → snapshot → consumes there, and THIS hit carries the snapshot it
 	// took (`stacks`, joined through `ctx.tickStacks`). ⚓ The two are one tick
 	// seen twice — the one that FIRED and the one that is RECORDED — so ⛔ never
-	// dispatch from both ends. See `docs/summon-tick-stacks-round.md` §10.
+	// dispatch from both ends. See `docs/rounds/summon-tick-stacks-round.md` §10.
 
 	// ⚓ FLAGGED `viaEntity`, and it is what makes `onHit.source: 'active'`
 	// answerable. A tick carries its OWNER's id while its owner may be off field,

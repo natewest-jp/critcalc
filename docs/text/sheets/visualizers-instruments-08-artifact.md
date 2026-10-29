@@ -1,6 +1,6 @@
 # Worksheet — Artifact Rolls
 
-> ✅ **CLOSED + APPLIED 2026-10-06** (the Artifact Odds pass, `docs/artifact-odds-pass-2026-10-06.md`).
+> ✅ **CLOSED + APPLIED 2026-10-06** (the Artifact Odds pass, `docs/rounds/artifact-odds-pass-2026-10-06.md`).
 > ⛔ SUPERSEDED — the rulings a translator needs now live in
 > `docs/text/ledger/notes/vz_artifact.md`, keyed to the generated inventory. Kept for history;
 > ⚠️ the instrument is renamed **Artifact Odds** (id `artifact`), the four modes it describes

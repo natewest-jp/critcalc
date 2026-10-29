@@ -12,7 +12,7 @@ paths:
 
 # Character data
 
-Budget: about 10,000 characters. Rules in the present tense; history belongs in the round records under `docs/`.
+Budget: about 10,000 characters. Rules in the present tense; history belongs in the round records in `docs/rounds/`.
 
 ## Where it lives
 
@@ -56,7 +56,7 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - A cast's shields are its resolved ability's own effects plus `getNonAbilityEffectsForCast`. Never `getCharacterEffectsForCast`. One span, one bar (lint B.8a).
 - Co-op shields are unmodelled: Nicole C2, Diona C2's splash. Kirara C2 is the house form: the description is kept, with no `effects`. Traveler (Hydro) C4 stays inert.
 - A shield with no in-game label renders as the lane's generic "Shield". Never invent a label.
-- Record: `docs/constellation-shield-gap.md` §7.
+- Record: `docs/rounds/constellation-shield-gap.md` §7.
 
 ## Summons
 
@@ -66,12 +66,12 @@ Budget: about 10,000 characters. Rules in the present tense; history belongs in 
 - `BuffEffect.stacks` has no consumer.
 - A character without frames can still carry ability structure.
 - ⚠️ Adding a `State` member takes two edits: the union and `characterLint`'s `STATES`.
-- Record: `docs/furina-arkhe-round.md` §6–§9.
+- Record: `docs/rounds/furina-arkhe-round.md` §6–§9.
 
 ## Measuring a data round
 
 - The corpus digest cannot see several things per tranche (one E and one Q each, no `readyAt`, no Geo partner, and a `passive` buff makes no window). Measure at the site too.
-- A hit reaching `hitRecords` is not a hit reaching a consumer, and a comment claiming a fix is not evidence of one (`docs/summon-tick-stacks-round.md`).
+- A hit reaching `hitRecords` is not a hit reaching a consumer, and a comment claiming a fix is not evidence of one (`docs/rounds/summon-tick-stacks-round.md`).
 - Never scope a multi-character measurement to a single character.
 
 ## Checks that guard this data

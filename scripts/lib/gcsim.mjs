@@ -12,7 +12,7 @@
  *
  * So hitmarks (`element.frame - action.frame`), gauge units (`dur / 25`) and
  * "does this cast apply at all" (absence of the event) are all OBSERVABLE.
- * See docs/gauge-round-L0.md for the full spike record.
+ * See docs/rounds/gauge-round-L0.md for the full spike record.
  *
  * ⚠️ Stats are irrelevant to elemental application — EM scales reaction DAMAGE,
  * not gauge — so the generated config carries no artifacts and no substats.

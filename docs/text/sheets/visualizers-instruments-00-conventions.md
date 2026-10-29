@@ -105,7 +105,7 @@ titles by measured ink (`AXIS_INK` in `crit.ts`: Plex Sans cap height, a 0.13px 
 the baseline), so the equal gaps assume all-caps Latin. Dropping the uppercase brings
 descenders in (`g`, `p`), and a locale whose capitals carry accents or descend
 (`É`, `Ç`, any CJK) will sit off the gaps too. ⏭ Not a text decision — flag it for the
-i18n pass (`docs/i18n-plan.md`), where `AXIS_INK` becomes per-locale or is measured live.
+i18n pass (`docs/design/i18n-plan.md`), where `AXIS_INK` becomes per-locale or is measured live.
 
 ---
 

@@ -1,7 +1,7 @@
 # Notes — `vz_wish` (Wish Odds)
 
 Hand-written half of the ledger for `../inventory/vz_wish.md`. Written at the close of the
-Wish Odds pass (2026-10-04, `docs/wish-odds-pass-2026-10-04.md`); the rulings come from
+Wish Odds pass (2026-10-04, `docs/rounds/wish-odds-pass-2026-10-04.md`); the rulings come from
 worksheet 06 + the conventions sheet (both superseded) and from that pass, where Nate
 rewrote the explainers with Claude.
 

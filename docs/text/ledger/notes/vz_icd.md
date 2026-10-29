@@ -1,7 +1,7 @@
 # Notes — `vz_icd` (ICD Timeline)
 
 Hand-written half of the ledger for `../inventory/vz_icd.md`. Written at the close of the
-ICD Timeline pass (2026-10-04, `docs/icd-timeline-pass-2026-10-04.md`); the rulings come
+ICD Timeline pass (2026-10-04, `docs/rounds/icd-timeline-pass-2026-10-04.md`); the rulings come
 from worksheet 02 + the conventions sheet (both superseded) and from that pass.
 
 ## The surface

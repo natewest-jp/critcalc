@@ -135,7 +135,7 @@
 							"stat": "atk",
 							"element": "electro",
 							"_curatorNotes": [
-								"icdGate authored 2026-08-17 (ICD-group round b): gcsim skill.go:145 sets ICDGroupFischl on the Oz tick, whose table entry (pkg/core/attacks/icd_groups.dm.go) is a 300f reset window with every 4th hit applying inside it. Measured 3/10 applied against standard ICD's 4. ⚓ This is the series docs/icd-group-round.md §3 prices the whole sub-landing on — 8 oracle applications across both Ozes, and the ONE genuinely-group row in that residue."
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim skill.go:145 sets ICDGroupFischl on the Oz tick, whose table entry (pkg/core/attacks/icd_groups.dm.go) is a 300f reset window with every 4th hit applying inside it. Measured 3/10 applied against standard ICD's 4. ⚓ This is the series docs/rounds/icd-group-round.md §3 prices the whole sub-landing on — 8 oracle applications across both Ozes, and the ONE genuinely-group row in that residue."
 							]
 						},
 						{
@@ -395,7 +395,7 @@
 				"⚠️ source 'active' is what makes this RIGHT WHERE GCSIM IS WRONG, and the oracle should not be used to judge it. gcsim gates on ae.Info.ActorIndex != Player.Active(), and Oz's attacks carry Fischl's actor index — so with Fischl on field, Oz's own reactions pass the check. Measured in docs/curation/gcsim-reaction-diff.md's quicken fixture, EVERY Thundering Retribution gcsim emits lands exactly 4 frames after an Oz application, i.e. every one of them is a proc the game does not make. Our source 'active' refuses an application delivered by an entity, so those do not fire here and the oracle will keep reporting them missing. That is the correct outcome.",
 				"Two divergences kept small and deliberate: gcsim stores the 0.5s ICD on the ACTIVE character (so a swap refreshes it) while ours is per-effect, and A4's snapshot is Oz's rather than Fischl's current stats — neither affects elemental application, which is all this feeds today.",
 				"In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it, making reliable activation highly aura-dependent; off-field-Fischl compositions rarely benefit.",
-				"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): STALE — both claims are now working behavior. The A4 proc is authored on BOTH Ozes as a damage effect on {onReaction, source:`active`, icdGate:`none`}; `source:active` refuses an offer carrying viaEntity, which is exactly the \"Oz`s own reactions do not count\" rule. See docs/mark-triggered-damage-round.md."
+				"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): STALE — both claims are now working behavior. The A4 proc is authored on BOTH Ozes as a damage effect on {onReaction, source:`active`, icdGate:`none`}; `source:active` refuses an offer carrying viaEntity, which is exactly the \"Oz`s own reactions do not count\" rule. See docs/rounds/mark-triggered-damage-round.md."
 			]
 		}
 	],
@@ -529,7 +529,7 @@
 			"_curatorNotes": [
 				"↻ `duringSummon` ADDED to both gates, 2026-09-16 (T0.5) — and ⚠️⚠️ MEASURED INERT TODAY, which is why this note exists. gcsim asc.go:135-160: both the atkpHook and the emHook `return` when !StatusIsActive(ozActiveKey), so the Secret Rite needs Oz ON THE FIELD and ours drew off any Electro reaction Fischl triggered, Oz long gone. The condition is correct data about the mechanic, but a `state` gate is UNRESOLVABLE on the reaction buff pass and the projection drops only a definitive false — measured `Fischl E A ~13s > Klee E N1 N2 N3 > Fischl A A`: Oz dies at 10.30s and the 22.48s Overload still draws a 22.48→32.48s +22.5% ATK bar, before AND after this edit. ⛔ So don't read it as handled. It starts working the day §1.G (resolved states in the buff projections) lands, and until then the divergence is narrow: it needs Fischl herself to trigger an Electro reaction with Oz down, and her normals are Physical.",
 				"⛔ No caveat for it: lint E.28 refuses a caveat on a factionBonus effect, and the nearest ability-shaped host is the skill, where an entry about a faction bonus would be reading the wrong label. Filed here instead.",
-				"↻ RESOLVED (state-gates round §1.G, 2026-09-19 — `docs/state-gates-round.md`): the reaction buff pass reads Fischl's `duringSummon` at the reaction. Measured `Bennett E > Fischl C` (no Oz): the +22.5% ATK bar no longer draws; under Oz it draws per Overload as before."
+				"↻ RESOLVED (state-gates round §1.G, 2026-09-19 — `docs/rounds/state-gates-round.md`): the reaction buff pass reads Fischl's `duringSummon` at the reaction. Measured `Bennett E > Fischl C` (no Oz): the +22.5% ATK bar no longer draws; under Oz it draws per Overload as before."
 			]
 		}
 	],

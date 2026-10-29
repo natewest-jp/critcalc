@@ -25,7 +25,7 @@
  *     (comparisons, property keys, imports, console/DOM calls are skipped).
  *
  * Key = `<surface>_<slug of the text>` — identifier-safe, because Paraglide
- * compiles each key to a function (`docs/i18n-plan.md` §3). Identical text on
+ * compiles each key to a function (`docs/design/i18n-plan.md` §3). Identical text on
  * one surface is ONE message with several locations.
  *
  * ⚠️ Known limits, also printed into the inventory:

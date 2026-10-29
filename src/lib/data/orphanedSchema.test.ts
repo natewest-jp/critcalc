@@ -51,9 +51,9 @@ const INERT: Record<string, string> = {
 	// be listed here); #3 mobility turned out to have a LIVE consumer
 	// (sim/states.ts's duringSummon inference) — the finding was stale.
 	durationModel:
-		'a required key of BuffEffect.stacks, which has NO consumer — retires WITH that shape in the nine-author pass (docs/stack-count-display-round.md §5), not alone',
+		'a required key of BuffEffect.stacks, which has NO consumer — retires WITH that shape in the nine-author pass (docs/rounds/stack-count-display-round.md §5), not alone',
 	shortName:
-		'declared on ability/artifact/weapon, rendered nowhere — kept for the coverage page row (docs/coverage-round.md §7)'
+		'declared on ability/artifact/weapon, rendered nowhere — kept for the coverage page row (docs/rounds/coverage-round.md §7)'
 };
 
 const DATA_DIRS = ['src/lib/data/characters', 'src/lib/data/artifacts', 'src/lib/data/weapons'];

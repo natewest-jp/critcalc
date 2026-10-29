@@ -544,7 +544,7 @@
 			     Play disables on an empty rotation (nothing to keep time with) and
 			     keeps its glass at full, same rule as its neighbours below.
 			     Loop and Laps: the cursor wraps at the end here (a rhythm aid);
-			     the Laps STREAM is Round B (docs/playback-round-plan.md §3). -->
+			     the Laps STREAM is Round B (docs/rounds/playback-round-plan.md §3). -->
 			<div class="rp-transport" role="group" aria-label="Playback">
 				<!-- REWIND (2026-09-30): back to the start — and while playing, go
 				     again from the top with the count-in, which is the only way to

@@ -2,7 +2,7 @@
  * src/lib/sim/absorb.ts
  *
  * ⚓⚓ ELEMENTAL ABSORPTION — THE LOCK (absorption round, 2026-10-17;
- * `docs/elemental-absorption-survey.md`, ⚓ Nate's answers in §8). An Anemo
+ * `docs/rounds/elemental-absorption-survey.md`, ⚓ Nate's answers in §8). An Anemo
  * summon or cast polls the enemy's aura from a first-check frame at a fixed
  * interval, stops at the first element of its priority order the target holds,
  * and keeps that element for the rest of its life. What the lock FEEDS is the

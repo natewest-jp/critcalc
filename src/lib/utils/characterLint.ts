@@ -1502,7 +1502,7 @@ function lintAbility(
 		}
 	}
 
-	// (E.29) The coverage page's two positive statements (docs/coverage-round.md
+	// (E.29) The coverage page's two positive statements (docs/rounds/coverage-round.md
 	// §5.1, §6). A ruling and "nothing to model" each REPLACE authored effects,
 	// so a host carrying either beside `effects` says two things at once — and
 	// the page would believe whichever it read first. A ruling's `reason` is
@@ -3219,7 +3219,7 @@ function lintEffect(
 			// for a shield it registers a whole extra bar on the wrong cast and
 			// a second `shieldEnd` with it. All four onCast shields hosted this
 			// way bind explicitly today, so this pins the property rather than
-			// fixing anything. See docs/constellation-shield-gap.md.
+			// fixing anything. See docs/rounds/constellation-shield-gap.md.
 			const sev = eff.type === 'shield' && t.type === 'onCast' ? 'strict' : 'warn';
 			push(
 				sev,
@@ -3281,7 +3281,7 @@ function lintEffect(
 	// Alhaitham's C2 mirror gain is `onCast skill` + `onCast burst` + the A1 path,
 	// not an `onCast skill` with an apology attached.
 	//
-	// docs/manual-trigger-retirement.md is the record.
+	// docs/rounds/manual-trigger-retirement.md is the record.
 	//
 	// ⚠️ The allowlist this rule shipped behind is GONE (2026-09-21) and so is
 	// `'manual'` itself — the member no longer exists in the `Trigger` union, so
@@ -3291,7 +3291,7 @@ function lintEffect(
 		push(
 			'strict',
 			'manual-trigger',
-			'`manual` is a retired trigger and reaches no surface — state when the effect fires (one effect per in-game source), or retire it to the host description + _curatorNotes (docs/manual-trigger-retirement.md)',
+			'`manual` is a retired trigger and reaches no surface — state when the effect fires (one effect per in-game source), or retire it to the host description + _curatorNotes (docs/rounds/manual-trigger-retirement.md)',
 			location
 		);
 	}

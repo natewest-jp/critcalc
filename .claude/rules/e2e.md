@@ -6,7 +6,7 @@ paths:
 
 # End-to-end tests (Playwright)
 
-Budget: about 6,000 characters. Rules in the present tense; the suite's history is `docs/e2e-rewrite-round.md`.
+Budget: about 6,000 characters. Rules in the present tense; the suite's history is `docs/rounds/e2e-rewrite-round.md`.
 
 ## Running
 

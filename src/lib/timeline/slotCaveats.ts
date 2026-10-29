@@ -54,7 +54,7 @@ export function collectSlotCaveats(
 		// ⚓ A CONSTELLATION'S CAVEAT IS GATED BY ITS ENTRY (2026-08-18). This is
 		// the non-buff half of the same defect — a C6's note used to sit in the
 		// Notes panel of a C0 rotation, describing a kit the reader does not
-		// have. See docs/constellation-gating-plan.md.
+		// have. See docs/rounds/constellation-gating-plan.md.
 		const caveats = effectSourcesAtConstellation(char, constellationLevels[char.id] ?? 0)
 			.filter((a) => a.caveat)
 			.map((a) => ({

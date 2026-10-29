@@ -6,7 +6,7 @@
  * authors `CharacterData.nightsoulPool`; Mavuika is the only author today.
  *
  * gcsim's model, which all four of Nate's in-game runs matched
- * (`docs/mavuika-nightsoul-round-2026-10-16.md`):
+ * (`docs/rounds/mavuika-nightsoul-round-2026-10-16.md`):
  *
  *   - Points drain every 6 frames from the ENTRY frame (the phase survives a
  *     refill), by `drainPerTick` plus the current form's `extraDrainPerTick`.

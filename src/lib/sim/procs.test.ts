@@ -272,7 +272,7 @@ describe('Nahida — Tri-Karma Purification, end to end', () => {
 		// counter-SHARING half of the same fault and is held: gcsim keys ICD by
 		// `(character, tag)` and gives BOTH Ozes `ICDTagElementalArt` from one
 		// function, so its counter spans the recast while ours restarts per series
-		// (docs/icd-group-round.md §4).
+		// (docs/rounds/icd-group-round.md §4).
 		const procs = appsOf('Nahida E Q > Fischl E Q > Fischl N3', 'nahida')
 			.filter(([, u]) => u === 1.5)
 			.map(([t]) => t);

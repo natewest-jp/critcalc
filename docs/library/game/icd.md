@@ -110,7 +110,7 @@ at most N applications per window**:
   volleys of four, so the 8th entry is never reached and each volley applies once.
 - **Model:** `IcdParams.cap` in `icd.ts` (the standard carries `cap: 8`). ↻ **Authored
   since the ICD cap round (2026-10-04):** `IcdWindow.cap`, read by `icdParamsFor` — Chevreuse's
-  mines are `{180, every 3, cap 2}`, Layla's stars `{180, every 7, cap 2}` (`docs/icd-cap-round.md`).
+  mines are `{180, every 3, cap 2}`, Layla's stars `{180, every 7, cap 2}` (`docs/rounds/icd-cap-round.md`).
 - ⚠️ **A list is not a cycle.** `{1, 0}` is "first only", not "every 2nd": past the end
   gcsim reads the LAST entry, which is 0. Three summon windows had been authored as if the
   list repeated (Aino, Citlali, Escoffier) — harmless at their cadences, wrong as rules.
@@ -189,7 +189,7 @@ We model elemental-application ICD **binary**, not as full sequences:
   skills and bursts, where 112 of 166 gcsim skills are `ICDTagNone` and our schema has no
   way to say which); gcsim's **counter SHARING** across everything one character emits
   under one tag, which is an engine question and not a data one
-  (`docs/icd-group-round.md` §4, held); the groups that apply two or three times at a
+  (`docs/rounds/icd-group-round.md` §4, held); the groups that apply two or three times at a
   regular period and then **STOP** for the rest of the window (↻ 2026-10-04: `IcdWindow.cap`
   carries it — see "The list is finite"); the `1,1` reaction groups
   (axis #2, below); and Nahida's `1.5` gauge, which is deliberately **not** in the cadence

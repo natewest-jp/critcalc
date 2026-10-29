@@ -292,7 +292,7 @@ Nate's UGC-dummy combat logs (`assets-src/ingame-logs/2026-10-14/frozen-*.PNG`).
   Cryo beside the Frozen at once (the swap decays it below 0.5), so a 1U Sucrose E
   swirled BOTH, immediately and 3s later — two Swirl lines, ONE damage number (the
   same-element gate). In practice the double is the normal case.
-- **Absorption:** Frozen counts as Cryo (`docs/elemental-absorption-survey.md` §6 Q3).
+- **Absorption:** Frozen counts as Cryo (`docs/rounds/elemental-absorption-survey.md` §6 Q3).
 - Side note: Swirl damage read 6395 for ~8s after any Columbina hit and 6156
   otherwise, across five runs — an unidentified ~4% buff, not an element effect.
 

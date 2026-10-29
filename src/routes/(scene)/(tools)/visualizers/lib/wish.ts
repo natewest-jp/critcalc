@@ -6,7 +6,7 @@
 // 4★'s constellations, a charted weapon's refinements — is the same chain:
 // a pity counter, a guarantee flag and a copy count, stepped one pull at a
 // time. Deliberate simplifications, each measured against GGanalysis
-// (docs/wish-odds-pass-2026-10-04.md §1):
+// (docs/rounds/wish-odds-pass-2026-10-04.md §1):
 //   - Capturing Radiance is the OFFICIAL consolidated 55%, independent per 5★
 //     (the interior counter is not fully reverse-engineered; GGanalysis's
 //     conservative counter model differs by <1% at C6).

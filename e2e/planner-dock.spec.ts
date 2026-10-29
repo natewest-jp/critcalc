@@ -1,7 +1,7 @@
 import { test, expect, openTool } from './fixtures/critcalc';
 
 /**
- * THE PHONE DOCK (mobile round, 2026-10-14 — docs/planner-mobile-round-2026-10-14.md).
+ * THE PHONE DOCK (mobile round, 2026-10-14 — docs/rounds/planner-mobile-round-2026-10-14.md).
  * Below `compact` the composer is MOVED to <body> and pinned to the screen's
  * foot, collapsed to one line until tapped.
  *

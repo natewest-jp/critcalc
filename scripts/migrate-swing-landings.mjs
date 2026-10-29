@@ -3,7 +3,7 @@
  * scripts/migrate-swing-landings.mjs
  *
  * Authors `FrameMap.lands` — the frame a swing's FIRST hit lands — on the normal-style
- * maps that state no `hit`. §1.K stage 2 (docs/swing-hitmark-round.md).
+ * maps that state no `hit`. §1.K stage 2 (docs/rounds/swing-hitmark-round.md).
  *
  * ⚓⚓ WHY THESE MAPS STATE NONE. `hit` is gcsim's `InitNormalCancelSlice(hitmark,
  * anim)` tier: the hitmark AND the fill for E/Q/D/J/swap. gcsim builds every charged

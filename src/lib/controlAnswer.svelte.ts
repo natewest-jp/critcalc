@@ -1,5 +1,5 @@
 /**
- * THE CONTROL ANSWERS (docs/notices-design.md §3.1): the outcome of a click
+ * THE CONTROL ANSWERS (docs/design/notices-design.md §3.1): the outcome of a click
  * said ON the control that was clicked, "✓ Copied" / "Couldn't copy", where
  * the eye already is. When the control is out of sight (an item inside the
  * phone's ⋯ menu, which closes on the click), the same outcome goes to a

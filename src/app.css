@@ -1769,7 +1769,7 @@
 	   what a future ornament would climb to). No role points at the top two any
 	   more, but components do: ↻ by 2026-10-27, 13 uses in 9 files read
 	   --line-strong or --line-edge directly, among them the top bar's hover
-	   ring on the current tool (--line-edge, ⚓ Nate, docs/title-bar-round.md),
+	   ring on the current tool (--line-edge, ⚓ Nate, docs/rounds/title-bar-round.md),
 	   the Library, the side and slot portraits and the Builder's checks. The
 	   styleguide's census counts ramp rungs inside app.css, so it cannot see
 	   these consumers: don't delete either stop. See the
@@ -2500,7 +2500,7 @@ img {
    lines" — the pages layout and the About/Help overlay both say so). Nothing
    set it: the narrower panel of the time was doing the bounding, and at the
    72rem panel paragraphs ran ~125 characters a line from 1280 up. 56ch is
-   .note's number (W1, docs/responsive-survey-2026-09-01.md), derived from
+   .note's number (W1, docs/rounds/responsive-survey-2026-09-01.md), derived from
    this column's own 49.2ch / 53.3ch. Every .prose block is text-align: start,
    so the leftover width is right-hand margin. */
 .prose p,
@@ -2564,7 +2564,7 @@ img {
 }
 
 /* ── Coverage states ──────────────────────────────────────────────────────
-   The five registers of the coverage strip (docs/coverage-round.md §3), one
+   The five registers of the coverage strip (docs/rounds/coverage-round.md §3), one
    place for the strip (CoverageStrip) and the legend's swatches. ⚓ Nate
    2026-09-23: modeled is --ui-positive and not-modeled hatches in --ui-danger,
    so the strip reads at a glance; stand-in and missing are the editor's own
@@ -3834,7 +3834,7 @@ img {
 	   them), the widest legitimate one is 43ch — so this is INERT on 17 of 19
 	   and bites only the two readings of the one defect. Every .note is
 	   text-align: start, so a max-width cannot shift one sideways.
-	   Full derivation: docs/responsive-survey-2026-09-01.md § W1. */
+	   Full derivation: docs/rounds/responsive-survey-2026-09-01.md § W1. */
 	max-width: 56ch;
 	font-size: var(--fs-lg);
 	line-height: var(--lh-relaxed);
@@ -3974,7 +3974,7 @@ img {
    ever reaches into another's paint. A side held short hands what it can't
    take to the opposite side, if that side has room. Where the rule holds a
    control under 44 the reason is its neighbours — dense rows Nate tuned by
-   hand — and the record (docs/responsive-sweep-2026-10-15.md §3 item 1)
+   hand — and the record (docs/rounds/responsive-sweep-2026-10-15.md §3 item 1)
    lists each one. Where two rows of one kind wrap (the fingerprint), the
    later row paints over the earlier one's reach, so its own glyphs keep
    their area.

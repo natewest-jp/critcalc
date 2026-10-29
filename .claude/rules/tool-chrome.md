@@ -17,7 +17,7 @@ paths:
 
 # Site and tool chrome
 
-Budget: about 8,000 characters. The design is `docs/profiles-and-surfaces-design.md`; the records are `docs/title-bar-round.md`, `docs/toolbar-refine-round.md`, `docs/edges-round.md` and `docs/builder-toolbar-round.md`.
+Budget: about 8,000 characters. The design is `docs/design/profiles-and-surfaces-design.md`; the records are `docs/rounds/title-bar-round.md`, `docs/rounds/toolbar-refine-round.md`, `docs/rounds/edges-round.md` and `docs/rounds/builder-toolbar-round.md`.
 
 ## The old layout
 

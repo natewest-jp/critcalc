@@ -1,7 +1,7 @@
 # critcalc glossary — one name per thing
 
 **Status:** ✅ RULED by Nate 2026-09-22 — every proposed canonical below accepted as
-written. Round record: `docs/text-round.md`.
+written. Round record: `docs/rounds/text-round.md`.
 
 ⚓ **This is the artifact the worksheets are checked against, and the artifact a
 translator is handed.** Its job is to make sure one thing has one name — because an
@@ -11,7 +11,7 @@ locale.
 **Translatability column:**
 
 - 🔓 **translate** — ordinary prose, localize normally
-- 🔒 **frozen** — ⛔ never translated, in any locale (see `docs/text-round.md` §2 R2)
+- 🔒 **frozen** — ⛔ never translated, in any locale (see `docs/rounds/text-round.md` §2 R2)
 - 🏷 **label frozen, explanation translates** — keep the English term as the label,
   localize the sentence that explains it
 

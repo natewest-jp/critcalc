@@ -1,6 +1,6 @@
 # critcalc
 
-Budget: about 12,000 characters. This file holds what applies everywhere. Area rules live in `.claude/rules/`, history lives in `docs/`, and the upkeep rules are at the bottom.
+Budget: about 12,000 characters. This file holds what applies everywhere. Area rules live in `.claude/rules/`, history lives in `docs/rounds/`, and the upkeep rules are at the bottom.
 
 ## What this is
 
@@ -73,8 +73,8 @@ End-to-end tests: `npm run test:e2e:chrome` after every round, `npm run test:e2e
 | The scene (WebGL night sky)                                                        | `src/lib/landing/`                                                                                                                                              |
 | Audits, generators, writers                                                        | `scripts/`                                                                                                                                                      |
 | Skills (step-by-step recipes)                                                      | `.claude/skills/`: `ingest-character`, `gcsim-frames`, `verify`, `daily-checkin`                                                                                |
-| Why something is the way it is                                                     | the round records in `docs/` (`*-round.md`), and `docs/round-history.md`                                                                                        |
-| Current design of a surface                                                        | `docs/profiles-and-surfaces-design.md`, `docs/team-builder-lineups-design.md`, `docs/notices-design.md`                                                         |
+| Why something is the way it is                                                     | the round records in `docs/rounds/` (their index is `docs/rounds/round-history.md`)                                                                             |
+| Current design of a surface                                                        | `docs/design/`                                                                                                                                                  |
 | What's next                                                                        | memory `project_post_launch_todo` (the one to-do list)                                                                                                          |
 
 House words: a **round** is one unit of work with its own branch and record. **The oracle** is gcsim, run through `scripts/gcsim-dump/`. **The corpus** is the full set of character JSONs. **Night, glass and paper** are the three materials (`.claude/rules/ui.md`). **The bench** is the planner's slot cards beside the timeline.
@@ -86,5 +86,5 @@ House words: a **round** is one unit of work with its own branch and record. **T
 - Instruction files speak in the present tense: no dates, commit hashes, round names, or notes about what something used to be. When a rule changes, rewrite it in place.
 - A rule is one sentence, its reason, and where to read more. ⚠️ marks a genuine trap and nothing else. No capitals for emphasis.
 - If a test, lint rule or hook can check a rule, it does, and the prose shrinks to one line naming the check.
-- At the end of a round: its record goes in `docs/`, and only there. A rule file changes only if a standing rule changed. Memory gets only lessons about working together.
+- At the end of a round: its record goes in `docs/rounds/`, and only there. A rule file changes only if a standing rule changed. Memory gets only lessons about working together.
 - Budgets: this file about 12,000 characters, each rule file about 10,000. When one runs over, move detail out rather than raising the budget.

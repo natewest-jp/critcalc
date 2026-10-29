@@ -195,7 +195,7 @@ carry the reasoning.
   trigger that listens to somebody else's output — `onHit`, `onReaction`, or
   **`whileNormalAttacking`** (⚠️ summon-hosted ONLY, lint B.13c), armed by
   `armedFor` or the summon's liveness. ⚠️⚠️ A proc's `icdGate` is NOT
-  `procCooldown`. `docs/coordinated-attacks-round.md`.
+  `procCooldown`. `docs/rounds/coordinated-attacks-round.md`.
 - **`BuffEffect.onFieldDelay`** (lint B.14) — how long the receiver must have
   been on field. Only meaningful on `target: 'active'`; its waiver is a
   `Condition`, ⛔ not a bespoke key.
@@ -214,7 +214,7 @@ carry the reasoning.
   enabler does nothing for Conduct. `docs/library/game/stellar-reactions.md`.
 - **`manual` is RETIRED (2026-09-21)** — the member is gone from `Trigger` and
   lint B.18 refuses one. Name the in-game source instead (one effect per in-game
-  source; `docs/manual-trigger-retirement-round.md`), and ⛔ never write a
+  source; `docs/rounds/manual-trigger-retirement-round.md`), and ⛔ never write a
   caveat that says "add it manually".
 
 ⚠️ **A field with no consumer FAILS the gate** (`orphanedSchema.test.ts`) — the

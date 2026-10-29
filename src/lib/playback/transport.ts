@@ -1,6 +1,6 @@
 /**
  * The transport's pure core (playback round, 2026-09-29; plan
- * docs/playback-round-plan.md §5–§6). Rune-free so vitest exercises it.
+ * docs/rounds/playback-round-plan.md §5–§6). Rune-free so vitest exercises it.
  *
  * ⚓ ONE CLOCK, READ ABSOLUTELY. The Gauge Explorer's playhead advances by rAF
  * DELTAS and clamps a long absence, so a hidden tab suspends it in place — the

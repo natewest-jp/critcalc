@@ -6,7 +6,7 @@
  * ⚠️ NOT a leak and NOT the constellation gate's doing — nothing drew at C0 or
  * at C6 — it is the [[orphaned_schema]] blind spot: `shield` effects ARE read,
  * just not from that source, so a green guard said nothing.
- * Record: docs/constellation-shield-gap.md.
+ * Record: docs/rounds/constellation-shield-gap.md.
  *
  * ⚠️⚠️ THE CORPUS DIFFERENTIAL IN `constellationGating.test.ts` COULD NOT SEE
  * THIS AND STILL CANNOT. It runs at C0, where these shields drew nothing before

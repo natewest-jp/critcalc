@@ -76,7 +76,7 @@ export function inferredStates(
 	 * action AND every cast, so a forward scan is O(casts-per-character²): the
 	 * 2026-08-14 sweep measured 16,000 bursts on Bennett at 663 ms against 50 ms
 	 * for the same input on Keqing, whose abilities are not `stationary` so the
-	 * branch never runs at all (docs/parser-hardening-2026-08-14.md §3).
+	 * branch never runs at all (docs/rounds/parser-hardening-2026-08-14.md §3).
 	 *
 	 * The cast whose summon window covers `cursor` is overwhelmingly the most
 	 * recent one — windows are seconds long and casts arrive in time order — so
@@ -180,7 +180,7 @@ export function clampStance(
 	// in 29 of the 31 `terminatesOnSwap` stances the swap ends the state for good
 	// (gcsim's swap handlers / the kit text); Mavuika's two end the bike and the
 	// Crucible too, and it is her Nightsoul's Blessing that outlives the swap —
-	// a separate defect. `docs/mizuki-holds-field-round-2026-10-16.md` §3.
+	// a separate defect. `docs/rounds/mizuki-holds-field-round-2026-10-16.md` §3.
 	stance.ownerUptime = Math.min(stance.ownerUptime, stanceEnd - stance.start);
 	if (stance.companion) closeStateWindows(ctx, cs, characterId, stance.companion.name, stanceEnd);
 	if (getCooldownStartsAtStanceEnd(stance.ownerAbility))

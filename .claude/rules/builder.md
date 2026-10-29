@@ -15,7 +15,7 @@ paths:
 
 # Team Builder
 
-Budget: about 6,000 characters. Read `docs/team-builder-lineups-design.md` before any Builder work. Records: `docs/builder-toolbar-round.md`, `docs/tb-lineup-fit-round-2026-10-20.md`, `docs/tb-endgame-round-2026-10-09.md`.
+Budget: about 6,000 characters. Read `docs/design/team-builder-lineups-design.md` before any Builder work. Records: `docs/rounds/builder-toolbar-round.md`, `docs/rounds/tb-lineup-fit-round-2026-10-20.md`, `docs/rounds/tb-endgame-round-2026-10-09.md`.
 
 ## Shape
 

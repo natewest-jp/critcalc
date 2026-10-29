@@ -220,7 +220,7 @@ describe('deriveCoverage — grants', () => {
 			application: []
 		});
 		expect(deriveCoverage(stated)['E.grants'].state).toBe('lit');
-		// Linnea's Lumi WAS one of the known tick gaps (docs/summon-tick-gaps-round.md);
+		// Linnea's Lumi WAS one of the known tick gaps (docs/rounds/summon-tick-gaps-round.md);
 		// her strikes are a sequence since the Lumi round, 2026-10-17, and a strike
 		// step is damage carried.
 		expect(deriveCoverage(linnea as unknown as CharacterData)['E.grants'].state).toBe('lit');

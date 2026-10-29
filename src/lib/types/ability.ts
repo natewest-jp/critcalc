@@ -685,7 +685,7 @@ export type Trigger =
 			 *  it is why every Thundering Retribution in the oracle fires 4 frames
 			 *  after an Oz application. The sim tags an entity-delivered
 			 *  application so this source can refuse it. See
-			 *  docs/mark-triggered-damage-round.md §1. */
+			 *  docs/rounds/mark-triggered-damage-round.md §1. */
 			/** ⚓ `'others'` — any party member's reaction BUT the holder's own
 			 *  (Prune's Secret Rite: only a character carrying Tolling Rally counts,
 			 *  and Tolling Rally never goes to her). Read by the buff passes only —
@@ -743,7 +743,7 @@ export type Trigger =
 	| { type: 'onHeal' }
 	| { type: 'onState'; state: State }
 	/* ⛔⛔ `manual` WAS HERE and is RETIRED (2026-09-21,
-	   docs/manual-trigger-retirement-round.md). It meant "the player toggles it"
+	   docs/rounds/manual-trigger-retirement-round.md). It meant "the player toggles it"
 	   and there was never a toggle: its only occurrence in `src` was this
 	   declaration, so 167 effects across 69 characters drew no bar, no marker and
 	   no chip, while `deriveCapabilities` claimed every one of them in the Team
@@ -758,7 +758,7 @@ export type Trigger =
 	| { type: 'onSwapIn' }
 	/**
 	 * ⚓ A STACK THRESHOLD — fires the instant the SUM of `keys` reaches `count`
-	 * (stack-threshold round, 2026-09-18; `docs/stack-threshold-round.md`).
+	 * (stack-threshold round, 2026-09-18; `docs/rounds/stack-threshold-round.md`).
 	 *
 	 * Columbina's Gravity is the case and the reason it has a reader: while the
 	 * Gravity Ripple is out, every party Lunar reaction accrues Gravity, at 60 the
@@ -1060,7 +1060,7 @@ export type Trigger =
 			 * said, and `collectSummonTicks` widens its bound by exactly one tick to
 			 * honour it. ⛔ It cannot buy more than that.
 			 *
-			 * Read `docs/gauge-round-L5e.md` §4 for the measured worklist.
+			 * Read `docs/rounds/gauge-round-L5e.md` §4 for the measured worklist.
 			 */
 			tickCap?: number;
 			/**
@@ -1127,7 +1127,7 @@ export type Trigger =
 	 * Heavy only while a Moondrift stands — refused, she Pounds instead on a
 	 * different gap. ⛔ Not a `summonTick`: one constant interval cannot say a
 	 * cycle, and two gated series on independent phases collide at the switch
-	 * (`docs/summon-tick-gaps-round.md` §1.3).
+	 * (`docs/rounds/summon-tick-gaps-round.md` §1.3).
 	 *
 	 * The summon's strike effects ARE its steps, in authored order; the
 	 * summon's `strikeSequence` says where the chain starts and what a refused
@@ -1488,7 +1488,7 @@ export type Summon = {
 	 *  series read it. */
 	absorbs?: AbsorbSpec;
 	/** ⚓ The positive statement that this summon deals and applies NOTHING of
-	 *  its own (coverage round, docs/coverage-round.md §5.2) — a taunt, a
+	 *  its own (coverage round, docs/rounds/coverage-round.md §5.2) — a taunt, a
 	 *  shield gadget, a heal-only field. Read by the coverage page only: a
 	 *  summon with no `effects` and no `dealsNothing` reads as a stand-in there
 	 *  (its window draws, its ticks may not). ⛔ Not `effects: []`, which means
@@ -2454,7 +2454,7 @@ export type AbilityCommon = {
 	/** Availability gate — if present and evaluates false, ability is not resolvable. */
 	conditions?: Condition;
 	effects?: Effect[];
-	/** ⚓ A RULING as data (coverage round, docs/coverage-round.md §5.1): this
+	/** ⚓ A RULING as data (coverage round, docs/rounds/coverage-round.md §5.1): this
 	 *  host describes something we decided not to model — co-op shields,
 	 *  distance-based mechanics, a low-probability proc. `reason` is
 	 *  USER-FACING (the coverage page renders it; caveat style guide: name the
@@ -2729,7 +2729,7 @@ export type NormalAbility = AbilityCommon & {
 	 * attack is Physical and applies nothing, so this is spent by a stance
 	 * infusion (Hu Tao, Cyno, Flins) or one granted by a teammate — which is
 	 * why it is authored on every character gcsim measures rather than only on
-	 * the self-infusers. See docs/icd-group-round.md.
+	 * the self-infusers. See docs/rounds/icd-group-round.md.
 	 */
 	chargedIcdWindow?: IcdWindow;
 	/**
@@ -2810,7 +2810,7 @@ export type PlungeVariant = {
  * be CANCELLED (the FrameMap) and never when it landed, so the parser applied
  * `char.element` at every E/Q cast, unconditionally — including Xiangling's E, which in
  * game applies zero Pyro because it only puts Guoba on the field. See
- * `docs/gauge-round.md` §1 and contract C3.
+ * `docs/rounds/gauge-round.md` §1 and contract C3.
  *
  * ⛔ **AN ABSENT LIST IS NOT "1U AT CAST".** Absent means we never drove this ability and
  * do not know; it applies nothing and is counted in the provisional register. An EMPTY
@@ -2870,7 +2870,7 @@ export type ElementRef =
 
 /**
  * ⚓ AN ANEMO ABSORBER'S LOCK (absorption round, 2026-10-17;
- * `docs/elemental-absorption-survey.md`). Poll the enemy's aura from `from`
+ * `docs/rounds/elemental-absorption-survey.md`). Poll the enemy's aura from `from`
  * FRAMES after the CAST, every `every` frames (absent = ONE draw at `from`), at
  * most `polls` times (absent = while the host lives), and keep the first element
  * of `order` the target holds — Frozen counting as Cryo, Burning as Pyro.
@@ -3049,7 +3049,7 @@ export type PlungeBlessing = { points?: number; enters?: true; spendsAll?: true 
 /**
  * ⚓ A CHARGED ATTACK THAT SPINS (Mavuika's Flamestrider, bike Charged Attack
  * round, 2026-10-16; gcsim `charge.go`, timings measured with its CLI —
- * `docs/mavuika-nightsoul-round-2026-10-16.md` §7). Notation, after Prydwen and
+ * `docs/rounds/mavuika-nightsoul-round-2026-10-16.md` §7). Notation, after Prydwen and
  * KQM: each `C` is ONE spin hit (`C3` three); `F` is the finisher leap; a `D`
  * between two `C`s (or after an `F`) is the dash cancel (`CDC`, `FDC`).
  *
@@ -3114,7 +3114,7 @@ export type NightsoulCastSpec = {
  * her into that form instead of ending anything.
  *
  * Verified in game against all four of Nate's runs (C0, 2026-10-16) once each
- * Ring hit's 3-point cost is counted — `docs/mavuika-nightsoul-round-2026-10-16.md`.
+ * Ring hit's 3-point cost is counted — `docs/rounds/mavuika-nightsoul-round-2026-10-16.md`.
  */
 export type NightsoulPoolSpec = {
 	/** The Blessing state the pool holds open while it has points. */
@@ -3205,7 +3205,7 @@ type SkillCommonFields = AbilityCommon & {
 	 *  chain (`start + cd`, `start + 2cd`, …) from the base skill's cooldown
 	 *  clock, and re-written on every re-entry (gcsim discards the in-progress
 	 *  queue and starts a fresh one). ⛔⛔ Never authored without the
-	 *  reduction that closes the loop — see docs/cooldown-reduction-round.md §0:
+	 *  reduction that closes the loop — see docs/rounds/cooldown-reduction-round.md §0:
 	 *  alone it says "ready 11s into a 12s stance", further from play than
 	 *  the ready-at-zero it replaces. */
 	startsOnCooldown?: boolean;

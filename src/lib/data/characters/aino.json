@@ -240,7 +240,7 @@
 				"EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries.",
 				"[A7] Caveat previously also stated the summon's AoE radius increases under Moonsign Ascendant Gleam (1 → 4); dropped from the user-facing caveat because the timeline does not display AoE radius, so it is not a divergence the user could be misled by. The radius change is already documented in the A1 passive (Modular Efficiency Protocol) curator note.",
 				"↻ 2026-08-18: the ability caveat (\"Shown at the base 1.5s rate; the faster rate is not modeled\") was DELETED — the Ascendant Gleam cadence is authored as a second, Moonsign-gated tick series, so the timeline shows the right rate and the caveat guide forbids describing working behaviour. ⚠️ The Gleam radius change (1 → 4) stays unmodelled and gets no caveat either: the tool is single-target, so a larger AoE is not decision-relevant here.",
-				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim aino/burst.go enumerates the Ducky ticks inside Burst() from f133 — those are the summon series, the cast lands nothing."
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/rounds/nonhitting-casts-round.md §1)): gcsim aino/burst.go enumerates the Ducky ticks inside Burst() from f133 — those are the summon series, the cast lands nothing."
 			],
 			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG.",
 			"application": [],

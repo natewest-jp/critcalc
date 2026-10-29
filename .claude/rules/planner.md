@@ -17,7 +17,7 @@ paths:
 
 # Rotation Planner
 
-Budget: about 10,000 characters. Records: `docs/planner-slots-round.md`, `docs/bench-portrait-round-2026-10-13.md`, `docs/planner-mobile-round-2026-10-14.md`, `docs/playback-round-plan.md`. The timeline's drawing rules are in `.claude/rules/timeline.md`.
+Budget: about 10,000 characters. Records: `docs/rounds/planner-slots-round.md`, `docs/rounds/bench-portrait-round-2026-10-13.md`, `docs/rounds/planner-mobile-round-2026-10-14.md`, `docs/rounds/playback-round-plan.md`. The timeline's drawing rules are in `.claude/rules/timeline.md`.
 
 ## The team and the notation
 

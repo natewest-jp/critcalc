@@ -1,6 +1,6 @@
 /**
  * The Rotation Planner's transport (playback round, 2026-09-29; plan
- * docs/playback-round-plan.md §5–§6). ONE instance for the site, like
+ * docs/rounds/playback-round-plan.md §5–§6). ONE instance for the site, like
  * `plannerView`: band B's plates drive it and the timeline draws its cursor, and
  * the two must agree on a single clock.
  *

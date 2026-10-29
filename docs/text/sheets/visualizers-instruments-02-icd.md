@@ -1,6 +1,6 @@
 # Worksheet — ICD Timeline
 
-> ✅ **CLOSED + APPLIED 2026-10-04** (the ICD Timeline pass, `docs/icd-timeline-pass-2026-10-04.md`).
+> ✅ **CLOSED + APPLIED 2026-10-04** (the ICD Timeline pass, `docs/rounds/icd-timeline-pass-2026-10-04.md`).
 > ⛔ SUPERSEDED — the rulings a translator needs now live in
 > `docs/text/ledger/notes/vz_icd.md`, keyed to the generated inventory. Kept for history;
 > ⚠️ the Element panel, the legend in the SVG and the three Readout lines it describes are

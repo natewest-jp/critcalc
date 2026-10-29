@@ -1,6 +1,6 @@
 # Worksheet — Enemy DEF & RES
 
-> ✅ **CLOSED + APPLIED 2026-10-06** (the DEF & RES pass, `docs/defres-pass-2026-10-06.md`).
+> ✅ **CLOSED + APPLIED 2026-10-06** (the DEF & RES pass, `docs/rounds/defres-pass-2026-10-06.md`).
 > ⛔ SUPERSEDED — the rulings a translator needs now live in
 > `docs/text/ledger/notes/vz_defres.md`, keyed to the generated inventory. Kept for history;
 > ⚠️ the instrument is renamed **Enemy RES & DEF** (id `defres`), its two views are STACKED

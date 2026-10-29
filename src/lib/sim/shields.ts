@@ -66,7 +66,7 @@ import {
  *  burst and neither had ever drawn. ⚠ NOT a leak and NOT the constellation
  *  gate's doing (they drew nothing at C0 *or* C6) — it is the orphaned-schema
  *  guard's blind spot, since `shield` effects ARE read, just not from this
- *  source. See docs/constellation-shield-gap.md. */
+ *  source. See docs/rounds/constellation-shield-gap.md. */
 export function registerShieldOnCast(
 	ctx: SimContext,
 	char: CharacterData,

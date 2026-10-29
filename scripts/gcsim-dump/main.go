@@ -8,7 +8,7 @@
 //      that follows the cast, with its frame offset
 //
 // ⚓ Both come out of the same call, which is why the gauge round's C4b insists on
-// ONE re-extraction pass. See docs/gauge-round-L4.md.
+// ONE re-extraction pass. See docs/rounds/gauge-round-L4.md.
 //
 // ⚓ `action.InvalidAction` is index 0 of the slice and BOTH of gcsim's constructors
 // fill it with the `animation` argument — `InitAbilSlice(animation)` fills every slot,
@@ -149,7 +149,7 @@ type Application struct {
 // IcdInfo is gcsim's element-application ICD for one hit, reduced to the numbers
 // that carry all of it. ⛔ IT DELIBERATELY CARRIES NO GROUP NAME: gcsim has 58 of
 // them, that is a taxonomy we would have to maintain, and its entire content is
-// the fields below (docs/icd-group-round.md §6a).
+// the fields below (docs/rounds/icd-group-round.md §6a).
 //
 // gcsim's model (`pkg/target/icd.go`, `WillApplyEle`): state is keyed
 // `(character, ICDTag)` — the TAG, never the group. The GROUP contributes exactly

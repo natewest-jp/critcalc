@@ -11,7 +11,7 @@ paths:
 
 # Timeline projections and the aura lane
 
-Budget: about 10,000 characters. `src/lib/timeline/` holds pure projection modules over the parser's IR, each with tests. Records: `docs/gauge-round-L6.md`, `docs/curation/polestar-field-round.md` §6–§12.
+Budget: about 10,000 characters. `src/lib/timeline/` holds pure projection modules over the parser's IR, each with tests. Records: `docs/rounds/gauge-round-L6.md`, `docs/curation/polestar-field-round.md` §6–§12.
 
 ## Bars
 

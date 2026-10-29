@@ -1,7 +1,7 @@
 # critcalc style guide — the site's voice
 
 **Status:** ✅ RULED by Nate 2026-09-22 — every recommendation below accepted as written.
-Round record: `docs/text-round.md`.
+Round record: `docs/rounds/text-round.md`.
 **Scope:** every user-facing string except character `caveat`s, which have their own
 guide (`docs/curation/caveat-style-guide.md`) and are ⛔ out of the rewrite.
 
@@ -532,7 +532,7 @@ about crit ratios that is not cosmetic.
 ### 3.8 ⛔ Never translate the frozen list
 
 Notation tokens, character/ability/weapon names, stat and element names, theorycrafting
-jargon, the brand. Full table with reasons: `docs/text-round.md` §2 R2.
+jargon, the brand. Full table with reasons: `docs/rounds/text-round.md` §2 R2.
 
 ⚓ For jargon the rule has a positive half: **keep the English term as the label and
 localize the explanation.** "ICD" stays "ICD"; the sentence explaining what an ICD is

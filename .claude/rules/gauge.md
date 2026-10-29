@@ -11,7 +11,7 @@ paths:
 
 # The gauge, ICD and reactions
 
-Budget: about 10,000 characters. Rules in the present tense; the reasoning is in the gauge round records (`docs/gauge-round*.md`) and `docs/icd-group-round.md` §9 (⚠️ its §3 and §8 describe the model before the change).
+Budget: about 10,000 characters. Rules in the present tense; the reasoning is in the gauge round records (`docs/rounds/gauge-round*.md`) and `docs/rounds/icd-group-round.md` §9 (⚠️ its §3 and §8 describe the model before the change).
 
 ## One model, two shapes
 

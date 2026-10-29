@@ -1,7 +1,7 @@
 # Notes — `vz_crit` (Crit Heatmap)
 
 Hand-written half of the ledger for `../inventory/vz_crit.md`. Written at the close of the
-Crit Heatmap pass (2026-10-02, `docs/crit-heatmap-pass-2026-10-02.md`); the rulings come
+Crit Heatmap pass (2026-10-02, `docs/rounds/crit-heatmap-pass-2026-10-02.md`); the rulings come
 from worksheet 01 + the conventions sheet (both superseded) and from that pass.
 
 ## The surface

@@ -3,7 +3,7 @@
  * charges recharge one at a time, a sibling can `startsOnCooldown`, and a
  * `procCap` counts fires per stance. Synthetic characters throughout, so the
  * assertions survive corpus re-authoring; the Varka/Raiden shapes are measured
- * in `docs/cooldown-reduction-round.md` §5.
+ * in `docs/rounds/cooldown-reduction-round.md` §5.
  */
 import { describe, it, expect } from 'vitest';
 import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
@@ -353,7 +353,7 @@ describe('Anemo Resonance — a team skill-cooldown modifier, not a reduction', 
 // ---------------------------------------------------------------------------
 // A special charge that SPENDS a skill charge (`specialChargeSpends`), and a
 // skill-fired cdReset that names ONE ability (`resetsAbility`) — Varka's Azure
-// Devour and his C1, 2026-09-18 (docs/varka-azure-devour-round.md).
+// Devour and his C1, 2026-09-18 (docs/rounds/varka-azure-devour-round.md).
 // ---------------------------------------------------------------------------
 
 const actions = (r: ParsedRotation, label: string): ActionEvent[] =>

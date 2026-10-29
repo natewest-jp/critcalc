@@ -653,7 +653,7 @@ export function buildNotationExtensions(
 		// Hard ceiling on document length. Highlighting, linting and parsing all
 		// run synchronously per keystroke, and a few hundred bytes of legal-but-
 		// hostile notation can expand into millions of IR events — a freeze with
-		// no exception to catch (docs/parser-hardening-2026-08-14.md).
+		// no exception to catch (docs/rounds/parser-hardening-2026-08-14.md).
 		//
 		// Rejecting the whole transaction (rather than truncating it) is the
 		// deliberate choice: a silently shortened paste is a DIFFERENT rotation

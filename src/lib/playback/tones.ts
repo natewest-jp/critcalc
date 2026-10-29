@@ -1,6 +1,6 @@
 /**
  * The playback sound — voices, synthesised (playback round, 2026-09-29; plan
- * docs/playback-round-plan.md §5; the vocabulary ⚓ Nate 2026-09-29).
+ * docs/rounds/playback-round-plan.md §5; the vocabulary ⚓ Nate 2026-09-29).
  *
  * ⚓ SYNTHESISED, NO ASSETS. Every sound is a few LAYERS with gain envelopes,
  * built from the numbers in this file, so it is identical on every browser and

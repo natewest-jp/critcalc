@@ -187,7 +187,7 @@ const FALLBACK_BURST_CD_F = framesOf(GENERIC_BURST.cooldown);
  * nothing else, so `Ifa ~99999999s` — FOURTEEN typed characters — parsed happily
  * in 2.5 ms, reported no unknown tokens, and handed a 99,999,999-second duration
  * to a ruler that allocates one tick object per second. That OOM-ed the tab.
- * (docs/parser-hardening-2026-08-14.md §1.)
+ * (docs/rounds/parser-hardening-2026-08-14.md §1.)
  *
  * One hour is far past any real rotation — the longest are minutes — while still
  * leaving room for someone deliberately modelling a long wait. ⚠️ It is a
@@ -2161,7 +2161,7 @@ export function runRotation(
 				} else if ((/^C\d*$/.test(t) || t === 'F') && spinAbility()) {
 					// ⚓⚓ THE SPIN (`chargeSpin`): each `C` is ONE spin hit, `F` the
 					// finisher; gcsim `charge.go`, timings measured with its CLI
-					// (docs/mavuika-nightsoul-round-2026-10-16.md §7). The finisher is
+					// (docs/rounds/mavuika-nightsoul-round-2026-10-16.md §7). The finisher is
 					// automatic only where the game forces it — a Normal Attack next,
 					// or the spin's maximum; before a dash, jump, skill, burst or swap
 					// a missing `F` means none (⚓ Nate, gcsim-faithful).

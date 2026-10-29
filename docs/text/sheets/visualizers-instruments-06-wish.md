@@ -1,6 +1,6 @@
 # Worksheet — Wish Odds
 
-> ✅ **CLOSED + APPLIED 2026-10-04** (the Wish Odds pass, `docs/wish-odds-pass-2026-10-04.md`).
+> ✅ **CLOSED + APPLIED 2026-10-04** (the Wish Odds pass, `docs/rounds/wish-odds-pass-2026-10-04.md`).
 > ⛔ SUPERSEDED — the rulings a translator needs now live in
 > `docs/text/ledger/notes/vz_wish.md`, keyed to the generated inventory. Kept for history;
 > ⚠️ the banner chips, the pmf silhouette and the three Readout lines it describes are gone

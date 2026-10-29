@@ -258,7 +258,7 @@
 						}
 					],
 					"_curatorNotes": [
-						"Exists only to gate the Kinu summon on C2 (docs/summon-conditions-round.md). It states no frames, cooldown, application or effects, so every one of those falls through to the base burst. The frames audit cannot reach a plain-input variant (variantDumpKey returns null) and has nothing to compare: it authors no frames."
+						"Exists only to gate the Kinu summon on C2 (docs/curation/summon-conditions-round.md). It states no frames, cooldown, application or effects, so every one of those falls through to the base burst. The frames audit cannot reach a plain-input variant (variantDumpKey returns null) and has nothing to compare: it authors no frames."
 					]
 				}
 			]

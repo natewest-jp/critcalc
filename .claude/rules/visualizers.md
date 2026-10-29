@@ -5,7 +5,7 @@ paths:
 
 # Visualizers
 
-Budget: about 5,000 characters. Records: `docs/instrument-layout-round-2026-10-06.md`, `docs/instrument-passes-2026-10-01.md`, and the per-instrument passes in `docs/`. The gauge model is in `.claude/rules/gauge.md`.
+Budget: about 5,000 characters. Records: `docs/rounds/instrument-layout-round-2026-10-06.md`, `docs/rounds/instrument-passes-2026-10-01.md`, and the per-instrument passes in `docs/rounds/`. The gauge model is in `.claude/rules/gauge.md`.
 
 ## The workspace
 

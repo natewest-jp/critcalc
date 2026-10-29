@@ -10,7 +10,7 @@
  * walked every constellation whatever the level, so the 184 constellation
  * effects authored without their own `conditions` were live at C0 — the round's
  * probe measured 34 bars across 23 characters, and this file's wider rotation
- * puts it at 59 across 25. Record: docs/constellation-gating-plan.md.
+ * puts it at 59 across 25. Record: docs/rounds/constellation-gating-plan.md.
  *
  * ⚓⚓ WHY THE CORPUS TEST IS A DIFFERENTIAL, NOT A SNAPSHOT. It compares two
  * parses of the SAME tree — the real C0 parse against a C0 parse of the same

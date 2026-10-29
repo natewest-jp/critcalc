@@ -2,7 +2,7 @@
  * scripts/audit-gcsim-reactions.mjs
  *
  * Diffs the planner's elemental model against gcsim, per the gauge round's L0
- * (docs/gauge-round-L0.md). Writes docs/curation/gcsim-reaction-diff.md.
+ * (docs/rounds/gauge-round-L0.md). Writes docs/curation/gcsim-reaction-diff.md.
  *
  * ⛔ A REVIEW-CANDIDATE GENERATOR, NEVER AN AUTO-FIXER — the same contract as
  * audit-genshin-db-diff.mjs. gcsim is an implementation-level second source

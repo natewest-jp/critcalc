@@ -1,6 +1,6 @@
 /**
  * buffWindows.faction.test.ts — the invariants the faction-bonus wiring rests
- * on (2026-08-15, docs/faction-bonuses-round.md).
+ * on (2026-08-15, docs/rounds/faction-bonuses-round.md).
  *
  * `factionBonuses` effects reach the planner's candidate pools as of this
  * round. Two things must hold for that to be safe, and neither is visible from

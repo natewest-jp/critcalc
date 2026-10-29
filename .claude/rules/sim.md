@@ -10,7 +10,7 @@ paths:
 
 # Parser and sim
 
-Budget: about 10,000 characters. Rules in the present tense; the reasoning is in the round records under `docs/` (start with `docs/gauge-round-L3.md` for the sim's shape). The gauge, ICD and reactions are in `.claude/rules/gauge.md`; field meanings in `.claude/rules/schema.md`.
+Budget: about 10,000 characters. Rules in the present tense; the reasoning is in the round records in `docs/rounds/` (start with `docs/rounds/gauge-round-L3.md` for the sim's shape). The gauge, ICD and reactions are in `.claude/rules/gauge.md`; field meanings in `.claude/rules/schema.md`.
 
 ## Shape
 
@@ -48,7 +48,7 @@ Budget: about 10,000 characters. Rules in the present tense; the reasoning is in
 
 - `effectSourcesAtConstellation` (`src/lib/utils/effectCollection.ts`) is the one walk of a character's effect surface. Never reintroduce `[...abilities, ...passives, ...constellations]` at a site that decides something.
 - Gate the walk that asks "does this fire", never the walk that asks "what keys exist". The four key-space walks in `stacks.ts` stay ungated. Don't double-gate `deriveCapabilities`.
-- Guarded by `constellationGating.test.ts`. Record: `docs/constellation-gating-plan.md` §7.
+- Guarded by `constellationGating.test.ts`. Record: `docs/rounds/constellation-gating-plan.md` §7.
 
 ## Off-field damage and proc listeners
 
@@ -57,7 +57,7 @@ Budget: about 10,000 characters. Rules in the present tense; the reasoning is in
 - 1.5U is an ICD-group multiplier, not a durability.
 - The coordinated-attack stream is any damage the opponent takes, summons included.
 - The tick onHit pass is rotation-wide per character and hands the tick dispatchers a null segment pool. An empty stacks map and `undefined` are different answers.
-- Records: `docs/mark-triggered-damage-round.md`, `docs/coordinated-attacks-round.md`.
+- Records: `docs/rounds/mark-triggered-damage-round.md`, `docs/rounds/coordinated-attacks-round.md`.
 
 ## Human timing
 
@@ -68,4 +68,4 @@ Budget: about 10,000 characters. Rules in the present tense; the reasoning is in
 ## Notation length
 
 - `MAX_NOTATION_CHARS` (`tokenizer.ts`) is enforced by both `decodeRotation` and the editor, so the two entry points cannot drift. It is a safety guard against a hostile `?r=` link, not a product limit.
-- Never bound cost with semantic caps ("nobody writes ten Qs"). Fix the algorithm. Record: `docs/parser-hardening-2026-08-14.md`.
+- Never bound cost with semantic caps ("nobody writes ten Qs"). Fix the algorithm. Record: `docs/rounds/parser-hardening-2026-08-14.md`.

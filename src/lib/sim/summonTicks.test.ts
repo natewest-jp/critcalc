@@ -307,7 +307,7 @@ describe('a conditional cadence — the faster-tick class', () => {
 
 describe("Lumi's strike sequence (Lumi round, 2026-10-17)", () => {
 	// ⚓ Each case replays one of Nate's live combat logs (2026-10-14,
-	// `assets-src/ingame-logs/2026-10-14/linnea-*.PNG`; docs/summon-tick-gaps-round.md
+	// `assets-src/ingame-logs/2026-10-14/linnea-*.PNG`; docs/rounds/summon-tick-gaps-round.md
 	// §1.5) — the strike instants and the Geo applications, held to the log's
 	// run-to-run jitter (±0.06s per gap, so 0.1s) once the log's clock is aligned
 	// to the cast. The two E logs open 0.136s apart (1.753 / 1.889s), so the

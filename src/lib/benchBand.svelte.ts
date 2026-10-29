@@ -390,7 +390,7 @@ export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME
 // HORIZONTAL: a strip of four cards ABOVE the band stack, spanning the tool's
 // full width, instead of a column beside it.
 //
-// ⚓ WHY IT EXISTS: the survey (docs/responsive-survey-2026-09-01.md § 7)
+// ⚓ WHY IT EXISTS: the survey (docs/rounds/responsive-survey-2026-09-01.md § 7)
 // walked the planner's min-content chain and found its 852px minimum was
 // never the Gantt — the timeline scrolls — but ~240px of reserved ribbon
 // column plus a 564px control row. The column is this. Horizontal, the bench

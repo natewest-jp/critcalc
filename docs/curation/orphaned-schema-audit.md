@@ -112,7 +112,7 @@ key with no schema at all — worth folding into `_curatorNotes` or declaring.
   nor energy by constitution. The capability layer and Team Builder do consume them.
 - ~~**`manual` triggers (167)** — by design~~ ↻ **OVERTURNED**: the channel reached no
   surface and was RETIRED 2026-09-21 (127 → 0, struck from the `Trigger` union —
-  `docs/manual-trigger-retirement-round.md`). The ⚠️ that used to sit here was right.
+  `docs/rounds/manual-trigger-retirement-round.md`). The ⚠️ that used to sit here was right.
 - **`mobility = "follows"`, `input = "N4"/"N6"`** flagged by pass B are matched
   dynamically, not by literal — pass-B false positives.
 - **Provenance keys** (`curatedAt`, `draftedBy`, `generatedAt`, …) — documentation by
@@ -128,7 +128,7 @@ key with no schema at all — worth folding into `_curatorNotes` or declaring.
   ⚠️ Deliberately NOT wired anywhere else: a reaction proc draws no timeline bar (it
   grants nothing) and does not enter the finalize hit stream (so it triggers no artifact
   `onHit` set, which IS a divergence from the game — recorded in Nahida's curator notes
-  and in `docs/mark-triggered-damage-round.md` §3.4).
+  and in `docs/rounds/mark-triggered-damage-round.md` §3.4).
 
 ---
 
@@ -196,9 +196,9 @@ had gone stale in the five weeks since the run:
   run — `sim/states.ts`'s `duringSummon` inference reads `'stationary'` at two sites. Not
   retired; it has a live consumer.
 - **#4 `durationModel`** — retires WITH `BuffEffect.stacks` (a shape with no consumer at
-  all) in the nine-author pass `docs/stack-count-display-round.md` §5 queues, ⛔ not alone.
+  all) in the nine-author pass `docs/rounds/stack-count-display-round.md` §5 queues, ⛔ not alone.
   `INERT` reason updated.
 - **#5 `shortName`** — kept; its consumer is the coverage page's row
-  (`docs/coverage-round.md` §7).
+  (`docs/rounds/coverage-round.md` §7).
 - **#6 `framesSource`** — its consumer is the coverage page (§5.3), which declares it and
   reads `gcsim-pr` as provisional timing. `INERT` reason updated until it lands.

@@ -1,6 +1,6 @@
 /**
  * states.test.ts — the two primitives of the Lauma charged-forms round
- * (2026-09-16; spec + record in docs/lauma-charged-forms-round.md).
+ * (2026-09-16; spec + record in docs/rounds/lauma-charged-forms-round.md).
  *
  *   1. A transient state that ENDS ON THE OWNER'S NEXT ATTACK OR CAST
  *      (`terminatesOnAction`) and CHAINS into a second state when it ends

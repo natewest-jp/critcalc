@@ -1,6 +1,6 @@
 /**
  * The Repeat stream's text (playback round B, 2026-09-29; plan
- * docs/playback-round-plan.md §3–§4).
+ * docs/rounds/playback-round-plan.md §3–§4).
  *
  * ⚓ Repeat simulates the notation JOINED TO ITSELF by a swap — the document,
  * then `> document` again, `REPEAT_LAPS` times in all. The join is a `>`
